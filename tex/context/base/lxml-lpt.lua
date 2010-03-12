@@ -475,10 +475,10 @@ local lp_or      = P("|")  / " or "
 local lp_and     = P("&")  / " and "
 
 local lp_builtin = P (
-P("firstindex")      / "1" +
-P("lastindex")       / "(#ll.__p__.dt or 1)" +
-P("firstelement")    / "1" +
-P("lastelement")     / "(ll.__p__.en or 1)" +
+        P("firstindex")   / "1" +
+        P("lastindex")    / "(#ll.__p__.dt or 1)" +
+        P("firstelement") / "1" +
+        P("lastelement")  / "(ll.__p__.en or 1)" +
         P("first")        / "1" +
         P("last")         / "#list" +
         P("rootposition") / "order" +
@@ -488,7 +488,7 @@ P("lastelement")     / "(ll.__p__.en or 1)" +
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
         P("text")         / "(ll.dt[1] or '')" +
---~         P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
+    --  P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
         P("name")         / "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)" +
         P("tag")          / "ll.tg" +
         P("ns")           / "ll.ns"

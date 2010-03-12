@@ -610,8 +610,8 @@
   {\dodoubleempty\dodefinemathmatrix}
 
 \def\dodefinemathmatrix[#1]% [#2]%
-  {\unexpanded\setvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
-   \unexpanded\setvalue{\e!stop #1}{\dostopmathmatrix}%
+  {\setuvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
+   \setuvalue{\e!stop #1}{\dostopmathmatrix}%
    \setupmathmatrix[#1]}% [#2]
 
 \definemathmatrix[matrix]

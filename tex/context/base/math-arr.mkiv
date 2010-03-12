@@ -217,13 +217,13 @@
 \def\redefinebotharrow#1#2#3% real dirty, this overload!
   {\doifdefined{#1}
      {\pushmacro\dohandlemtharrow
-      \def\dohandlemtharrow[##1][##2]{\unexpanded\setvalue{#1}{\dohandlemtharrow[#2][##2]}}%
+      \def\dohandlemtharrow[##1][##2]{\setuvalue{#1}{\dohandlemtharrow[#2][##2]}}%
       % == \def\dohandlemtharrow[##1][##2]{\dodefinebotharrow{#1}{#2}{##2}}%
       \getvalue{#1}%
       \popmacro\dohandlemtharrow}}
 
 \def\dodefinebotharrow#1#2#3%
-  {\unexpanded\setvalue{#1}{\dohandlemtharrow[#2][#3]}}
+  {\setuvalue{#1}{\dohandlemtharrow[#2][#3]}}
 
 \def\dohandlemtharrow
   {\dotripleempty\doxmtharrow}
@@ -363,9 +363,9 @@
 
 \def\dodefinemathoverarrow[#1][#2][#3]%
   {\ifthirdargument
-      \unexpanded\setvalue{#1}{\dohandlemathoverarrow[#2][#3]}%
+      \setuvalue{#1}{\dohandlemathoverarrow[#2][#3]}%
     \else
-      \unexpanded\setvalue{#1}{\dohandlemathoverarrow[\zeropoint][#2]}%
+      \setuvalue{#1}{\dohandlemathoverarrow[\zeropoint][#2]}%
     \fi}
 
 \def\dohandlemathoverarrow[#1][#2]%
@@ -390,9 +390,9 @@
 
 \def\dodefinemathunderarrow[#1][#2][#3]%
   {\ifthirdargument
-      \unexpanded\setvalue{#1}{\dohandlemathunderarrow[#2][#3]}%
+      \setuvalue{#1}{\dohandlemathunderarrow[#2][#3]}%
     \else
-      \unexpanded\setvalue{#1}{\dohandlemathunderarrow[0.3ex][#2]}%
+      \setuvalue{#1}{\dohandlemathunderarrow[0.3ex][#2]}%
     \fi}
 
 \def\dohandlemathunderarrow[#1][#2]%

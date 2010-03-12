@@ -258,7 +258,7 @@ function buffers.run(name,list,encapsulate)
     end
 end
 
-local printer = (lpeg.linebyline/texprint)^0
+local printer = (lpeg.patterns.textline/texprint)^0
 
 function buffers.get(name)
     local b = buffers.data[name]

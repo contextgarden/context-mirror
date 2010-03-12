@@ -13,6 +13,7 @@ local concat, insert, remove, gsub, find = table.concat, table.insert, table.rem
 local format, sub, gsub, find, gmatch, match = string.format, string.sub, string.gsub, string.find, string.gmatch, string.match
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
+local P, S, C, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 
 if not tex and not tex.sprint then
     tex = {
@@ -61,30 +62,27 @@ finalizers.tex = finalizers.tex or { }
 -- because we avoid tokenization of leading spaces and xml can be
 -- rather verbose (indented)
 
-local crlf      = lpeg.P("\r\n")
-local cr        = lpeg.P("\r")
-local lf        = lpeg.P("\n")
-local newline   = crlf + cr + lf
-local space     = lpeg.S(" \t\f\v")
-local ampersand = lpeg.P("&")
-local semicolon = lpeg.P(";")
+local newline   = lpeg.patterns.newline
+local space     = lpeg.patterns.spacer
+local ampersand = P("&")
+local semicolon = P(";")
 local spacing   = newline * space^0
-local content   = lpeg.C((1-spacing-ampersand)^1)
-local verbose   = lpeg.C((1-(space+newline))^1)
-local entity    = ampersand * lpeg.C((1-semicolon)^1) * semicolon
+local content   = C((1-spacing-ampersand)^1)
+local verbose   = C((1-(space+newline))^1)
+local entity    = ampersand * C((1-semicolon)^1) * semicolon
 
 local xmltextcapture = (
-    space^0 * newline^2  * lpeg.Cc("")            / texprint  + -- better ^-2 ?
-    space^0 * newline    * space^0 * lpeg.Cc(" ") / texsprint +
-    content                                       / function(str) return texsprint(notcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                        / xml.resolved_entity
+    space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
+    space^0 * newline    * space^0 * Cc(" ") / texsprint +
+    content                                  / function(str) return texsprint(notcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
+    entity                                  / xml.resolved_entity
 )^0
 
 local ctxtextcapture = (
-    space^0 * newline^2  * lpeg.Cc("")            / texprint  + -- better ^-2 ?
-    space^0 * newline    * space^0 * lpeg.Cc(" ") / texsprint +
-    content                                       / function(str) return texsprint(ctxcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                        / xml.resolved_entity
+    space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
+    space^0 * newline    * space^0 * Cc(" ") / texsprint +
+    content                                  / function(str) return texsprint(ctxcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
+    entity                                   / xml.resolved_entity
 )^0
 
 local forceraw, rawroot = false, nil
@@ -178,7 +176,6 @@ function lxml.store(id,root,filename)
     end
 end
 
---~ local splitter = lpeg.C((1-lpeg.P(":"))^1) * lpeg.P("::") * lpeg.C(lpeg.P(1)^1)
 local splitter = lpeg.splitat("::")
 
 lxml.idsplitter = splitter
@@ -482,12 +479,12 @@ end
 
 local pihandlers = { }  xml.pihandlers = pihandlers
 
-local kind   = lpeg.P("context-") * lpeg.C((1-lpeg.P("-"))^1) * lpeg.P("-directive")
-local space  = lpeg.S(" \n\r")
+local kind   = P("context-") * C((1-P("-"))^1) * P("-directive")
+local space  = S(" \n\r")
 local spaces = space^0
-local class  = lpeg.C((1-space)^0)
+local class  = C((1-space)^0)
 local key    = class
-local value  = lpeg.C(lpeg.P(1-(space * -1))^0)
+local value  = C(P(1-(space * -1))^0)
 
 local parser = kind * spaces * class * spaces * key * spaces * value
 

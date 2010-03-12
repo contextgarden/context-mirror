@@ -18,7 +18,7 @@ local lpegmatch = lpeg.match
 
 local S, P, R, C, V, Cc, Ct, Cs = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs
 
-local letter     = lpeg.utf8
+local letter     = lpeg.patterns.utf8
 local space      = S(" \n\r\t")
 local spaces     = space^0/""
 local integer    = P("-")^-1 * R("09")^1

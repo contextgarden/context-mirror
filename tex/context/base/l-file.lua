@@ -301,3 +301,12 @@ end
 -- test { "c:", "c:aa", "c:aa/bb", "c:aa/bb/cc", "c:aa/bb/cc.dd", "c:aa/bb/cc.dd.ee" }
 -- test { "/aa", "/aa/bb", "/aa/bb/cc", "/aa/bb/cc.dd", "/aa/bb/cc.dd.ee" }
 -- test { "aa", "aa/bb", "aa/bb/cc", "aa/bb/cc.dd", "aa/bb/cc.dd.ee" }
+
+--~ -- todo:
+--~
+--~ if os.type == "windows" then
+--~     local currentdir = lfs.currentdir
+--~     function lfs.currentdir()
+--~         return (gsub(currentdir(),"\\","/"))
+--~     end
+--~ end

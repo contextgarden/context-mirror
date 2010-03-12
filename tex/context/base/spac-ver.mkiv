@@ -78,9 +78,42 @@
 
 \fi
 
+% \def\presetnormallineheight
+%   {\edef\normallineheight{\@@itline}%
+%   %done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
+%    \iflocalinterlinespace \else
+%      \doifdefined\bodyfontinterlinespecs
+%        {\doifsomething\bodyfontinterlinespace
+%           {\edef\normallineheight{\bodyfontinterlinespace}}}%
+%    \fi}
+
+% \def\setupspecifiedinterlinespace[#1]%
+%   {\getparameters[\??it][#1]%
+%    \scratchdimen0\@@itheight\points
+%    \advance\scratchdimen 0\@@itdepth\points
+%    \ifdim\scratchdimen>\onepoint
+%      \showmessage\m!layouts{10}{\@@itheight,\@@itdepth}%
+%      \let\@@itheight\strutheightfactor
+%      \let\@@itdepth \strutdepthfactor
+%    \else
+%      \let\strutheightfactor\@@itheight
+%      \let\strutdepthfactor \@@itdepth
+%    \fi
+%    \let\minimumstrutheight \@@itminheight
+%    \let\minimumstrutdepth  \@@itmindepth
+%    \let\minimumlinedistance\@@itdistance
+%    \let\normallineheight   \@@itline % let ! ! ! ! ! ivm ex
+%    \doifelse\@@ittop\v!height % new, topskip does more bad than good
+%      {\let\topskipfactor   \@@itheight}
+%      {\let\topskipfactor   \@@ittop   }%
+%    \let\maxdepthfactor     \@@itbottom
+%    \let\baselinegluefactor \@@itstretch
+%    \setfontparameters % redundant, can be \setstrut, test first
+%    \updateraggedskips} % yes indeed
+
 \def\presetnormallineheight
-  {\edef\normallineheight{\@@itline}%
-%  done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
+  {\edef\normallineheight{\interlinespaceparameter\c!line}%
+  %done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
    \iflocalinterlinespace \else
      \doifdefined\bodyfontinterlinespecs
        {\doifsomething\bodyfontinterlinespace
@@ -88,42 +121,27 @@
    \fi}
 
 \def\setupspecifiedinterlinespace[#1]%
-  {\getparameters[\??it][#1]%
-   \scratchdimen0\@@itheight\points
-   \advance\scratchdimen 0\@@itdepth\points
-   \ifdim\scratchdimen>\onepoint
-     \showmessage\m!layouts{10}{\@@itheight,\@@itdepth}%
-     \let\@@itheight\strutheightfactor
-     \let\@@itdepth \strutdepthfactor
-   \else
-     \let\strutheightfactor\@@itheight
-     \let\strutdepthfactor \@@itdepth
+  {\getparameters[\??it\currentinterlinespace][#1]%
+   \dosetupspecifiedinterlinespaceindeed}
+
+\def\dosetupspecifiedinterlinespaceindeed
+  {\edef\strutheightfactor  {\interlinespaceparameter\c!height}%
+   \edef\strutdepthfactor   {\interlinespaceparameter\c!depth}%
+   \edef\minimumstrutheight {\interlinespaceparameter\c!minheight}%
+   \edef\minimumstrutdepth  {\interlinespaceparameter\c!mindepth}%
+   \edef\minimumlinedistance{\interlinespaceparameter\c!distance}%
+   \edef\normallineheight   {\interlinespaceparameter\c!line}%
+   \edef\topskipfactor      {\interlinespaceparameter\c!top}%
+   \edef\maxdepthfactor     {\interlinespaceparameter\c!bottom}%
+   \edef\baselinegluefactor {\interlinespaceparameter\c!stretch}%
+   % often topskip does more bad than good, so:
+   \ifx\topskipfactor\v!height
+     \let\topskipfactor\strutheightfactor
    \fi
-   \let\minimumstrutheight \@@itminheight
-   \let\minimumstrutdepth  \@@itmindepth
-   \let\minimumlinedistance\@@itdistance
-   \let\normallineheight   \@@itline % let ! ! ! ! ! ivm ex
-   \doifelse\@@ittop\v!height % new, topskip does more bad than good
-     {\let\topskipfactor   \@@itheight}
-     {\let\topskipfactor   \@@ittop   }%
-   \let\maxdepthfactor     \@@itbottom
-   \let\baselinegluefactor \@@itstretch
    \setfontparameters % redundant, can be \setstrut, test first
    \updateraggedskips} % yes indeed
 
 \let\currentrelativeinterlinespace\empty
-
-% \def\setuprelativeinterlinespace[#1]%
-%   {\processallactionsinset
-%      [#1]
-%      [      \v!on=>\oninterlineskip,
-%            \v!off=>\offinterlineskip,
-%          \v!reset=>\let\currentrelativeinterlinespace\empty
-%                    \let\setrelativeinterlinespace\relax
-%                    \setfontparameters,
-%           \v!auto=>\let\setrelativeinterlinespace\dosetrelativeinterlinespace,
-%        \s!unknown=>\assignvalue\commalistelement\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
-%                    \spacing\currentrelativeinterlinespace]}
 
 \setvalue{\??it::\v!on   }{\oninterlineskip}
 \setvalue{\??it::\v!off  }{\offinterlineskip}
@@ -132,9 +150,15 @@
                            \setfontparameters}
 \setvalue{\??it::\v!auto }{\let\setrelativeinterlinespace\dosetrelativeinterlinespace}
 
-\def\dosetspecifiedrelativeinterlinespace#1%
-  {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
-   \spacing\currentrelativeinterlinespace}
+% \def\dosetspecifiedrelativeinterlinespace#1%
+%   {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+%    \spacing\currentrelativeinterlinespace}
+
+\def\dosetspecifiedrelativeinterlinespace#1% fragile?
+  {\doifdimensionelse{#1}
+     {\setupspecifiedinterlinespace[\c!line=#1]}
+     {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+      \spacing\currentrelativeinterlinespace}}
 
 \def\setuprelativeinterlinespace[#1]%
   {\processcommalist[#1]\dosetuprelativeinterlinespace}
@@ -158,6 +182,43 @@
 \newtoks \everysetupglobalinterlinespace
 \newtoks \everysetuplocalinterlinespace
 
+% \def\complexsetupinterlinespace[#1]% \commalistelement ipv #1
+%   {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
+%    \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
+
+\def\interlinespaceparameter          #1{\csname\dointerlinespaceparameter{\??it\currentinterlinespace}#1\endcsname}
+\def\dointerlinespaceparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dointerlinespaceparentparameter\csname#1\s!parent\endcsname#2\fi}
+\def\dointerlinespaceparentparameter#1#2{\ifx#1\relax\s!empty\else\dointerlinespaceparameter#1#2\fi}
+
+\newconditional\interlinespaceisset
+
+\let\currentinterlinespace\empty
+
+\def\defineinterlinespace
+  {\dodoubleempty\dodefineinterlinespace}
+
+\def\dodefineinterlinespace[#1][#2]%
+  {\getparameters[\??it#1][\s!parent=\??it,#2]}
+
+\unexpanded\def\setupinterlinespace
+  {\dodoubleempty\dosetupinterlinespace}
+
+\def\dosetupinterlinespace[#1][#2]%
+  {\settrue\interlinespaceisset % reset has to be done when needed
+   \ifsecondargument
+     \getparameters[\??it#1][#2]%
+   \else\iffirstargument
+     \edef\currentinterlinespace{\ifcsname\??it#1\s!parent\endcsname#1\fi}%
+     \ifx\currentinterlinespace\empty
+       \complexsetupinterlinespace[#1]%
+     \else
+       \dosetupspecifiedinterlinespaceindeed
+     \fi
+   \else
+     \let\currentinterlinespace\empty
+     \simplesetupinterlinespace
+   \fi\fi}
+
 \def\complexsetupinterlinespace[#1]% \commalistelement ipv #1
   {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
    \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
@@ -169,27 +230,80 @@
    \the\everysetuplocalinterlinespace
    \localinterlinespacefalse}
 
+% \def\dosetupcheckedinterlinespace#1% often a chain
+%   {\edef\askedinterlinespace{#1}%
+%    \ifx\askedinterlinespace\empty
+%      \simplesetupinterlinespace
+%    \else
+%      \normalexpanded{\noexpand\doifassignmentelse{\askedinterlinespace}%
+%        \noexpand\setupspecifiedinterlinespace
+%        \noexpand\setuprelativeinterlinespace[\askedinterlinespace]}%
+%      \iflocalinterlinespace
+%        \the\everysetuplocalinterlinespace
+%      \else
+%        \localinterlinespacetrue
+%        \the\everysetuplocalinterlinespace
+%        \localinterlinespacefalse
+%      \fi
+%    \fi}
+
+\def\dosetupcheckedinterlinespace#1% often a chain
+  {\edef\askedinterlinespace{#1}%
+   \ifx\askedinterlinespace\empty
+     \simplesetupinterlinespace
+   \else\ifcsname\??it\askedinterlinespace\s!parent\endcsname
+     \pushmacro\currentinterlinespace
+     \let\currentinterlinespace\askedinterlinespace
+     \dosetupspecifiedinterlinespaceindeed
+     \iflocalinterlinespace
+       \the\everysetuplocalinterlinespace
+     \else
+       \localinterlinespacetrue
+       \the\everysetuplocalinterlinespace
+       \localinterlinespacefalse
+     \fi
+     \popmacro\currentinterlinespace
+   \else
+     \normalexpanded{\noexpand\doifassignmentelse{\askedinterlinespace}%
+       \noexpand\setupspecifiedinterlinespace
+       \noexpand\setuprelativeinterlinespace[\askedinterlinespace]}%
+     \iflocalinterlinespace
+       \the\everysetuplocalinterlinespace
+     \else
+       \localinterlinespacetrue
+       \the\everysetuplocalinterlinespace
+       \localinterlinespacefalse
+     \fi
+   \fi\fi}
+
+% \unexpanded\def\setuplocalinterlinespace[#1]%
+%   {\localinterlinespacetrue
+%    \let\@@saveditheight   \@@itheight
+%    \let\@@saveditdepth    \@@itdepth
+%    \let\@@saveditline     \@@itline
+%    \let\@@saveditminheight\@@itminheight
+%    \let\@@saveditmindepth \@@itmindepth
+%    \let\@@saveditdistance \@@itdistance
+%    \let\@@savedittop      \@@ittop
+%    \let\@@saveditbottom   \@@itbottom
+%    \let\@@saveditstretch  \@@itstretch
+%    \setupinterlinespace[#1]%
+%    \let\@@itheight   \@@saveditheight
+%    \let\@@itdepth    \@@saveditdepth
+%    \let\@@itline     \@@saveditline
+%    \let\@@itminheight\@@saveditminheight
+%    \let\@@itmindepth \@@saveditmindepth
+%    \let\@@itdistance \@@saveditdistance
+%    \let\@@ittop      \@@savedittop
+%    \let\@@itbottom   \@@saveditbottom
+%    \let\@@itstretch  \@@saveditstretch
+%    \localinterlinespacefalse}
+
 \unexpanded\def\setuplocalinterlinespace[#1]%
   {\localinterlinespacetrue
-   \let\@@saveditheight   \@@itheight
-   \let\@@saveditdepth    \@@itdepth
-   \let\@@saveditline     \@@itline
-   \let\@@saveditminheight\@@itminheight
-   \let\@@saveditmindepth \@@itmindepth
-   \let\@@saveditdistance \@@itdistance
-   \let\@@savedittop      \@@ittop
-   \let\@@saveditbottom   \@@itbottom
-   \let\@@saveditstretch  \@@itstretch
+   \pushmacro\currentinterlinespace
    \setupinterlinespace[#1]%
-   \let\@@itheight   \@@saveditheight
-   \let\@@itdepth    \@@saveditdepth
-   \let\@@itline     \@@saveditline
-   \let\@@itminheight\@@saveditminheight
-   \let\@@itmindepth \@@saveditmindepth
-   \let\@@itdistance \@@saveditdistance
-   \let\@@ittop      \@@savedittop
-   \let\@@itbottom   \@@saveditbottom
-   \let\@@itstretch  \@@saveditstretch
+   \popmacro\currentinterlinespace
    \localinterlinespacefalse}
 
 \let\switchtointerlinespace\setuplocalinterlinespace

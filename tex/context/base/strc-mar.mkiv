@@ -138,8 +138,10 @@
 
 \def\checkedcurrentmarks{\markcurrentcs} % #1 shared current mark
 
-\let\currentsplittopmarknumber\currenttopmarknumber
-\let\normalsplittopmarks      \normaltopmarks
+\let\currentsplitfirstmarknumber\currentfirstmarknumber
+\let\currentsplittopmarknumber  \currenttopmarknumber
+\let\currentsplitbotmarknumber  \currentbotmarknumber
+\let\normalsplittopmarks        \normaltopmarks
 
 \def\uncheckedautotopmark        {\normaltopmarks       \markautocs} % #1
 \def\uncheckedautofirstmark      {\normalfirstmarks     \markautocs} % #1

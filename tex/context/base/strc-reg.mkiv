@@ -132,9 +132,9 @@
   {\setupregister[#1][\s!parent=\??id]%
    \ctxlua{jobregisters.define('#1')}%
    \presetheadtext[#1=\Word{#1}]%
-   \unexpanded\setvalue{#1}{\dodoubleempty\doregister[#1]}%
-   \unexpanded\setvalue{\e!see#1}{\dodoubleempty\doseeregister[#1]}%
-%  \unexpanded\setvalue{\e!coupled#1}{\dolinkedregister{#1}}%
+   \setuvalue{#1}{\dodoubleempty\doregister[#1]}%
+   \setuvalue{\e!see#1}{\dodoubleempty\doseeregister[#1]}%
+%  \setuvalue{\e!coupled#1}{\dolinkedregister{#1}}%
    \setvalue{\e!place#1}{\placeregister[#1]}%
    \setvalue{\e!complete#1}{\completeregister[#1]}%
    \setvalue{\e!setup#1\e!endsetup}[##1]{\getparameters[\??id#1][##1]}}

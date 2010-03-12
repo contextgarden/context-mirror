@@ -87,7 +87,7 @@
    \fi
    \normalexpanded{\checkalldefinedbars{\noexpand\doredefinebar{#1}\the\checkalldefinedbars}}%
    \dodefinebarindeed{#1}%
-   \unexpanded\setvalue{#1}{\doruled{#1}}}
+   \setuvalue{#1}{\doruled{#1}}}
 
 \def\dodefinebarindeed#1%
   {\bgroup
@@ -233,7 +233,7 @@
    \fi
    \normalexpanded{\checkalldefinedshifts{\noexpand\doredefineshift{#1}\the\checkalldefinedshifts}}%
    \dodefineshiftindeed{#1}%
-   \unexpanded\setvalue{#1}{\doshifted{#1}}}
+   \setuvalue{#1}{\doshifted{#1}}}
 
 \def\dodefineshiftindeed#1%
   {\bgroup

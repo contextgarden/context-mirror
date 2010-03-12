@@ -33,6 +33,7 @@ local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatabl
 local format, lower, find, match = string.format, string.lower, string.find, string.match
 local utfchar = unicode.utf8.char
 local lpegmatch = lpeg.match
+local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
 --[[ldx--
 <p>First a hack to enable namespace resolving. A namespace is characterized by
@@ -44,7 +45,7 @@ much cleaner.</p>
 
 xml.xmlns = xml.xmlns or { }
 
-local check = lpeg.P(false)
+local check = P(false)
 local parse = check
 
 --[[ldx--
@@ -57,8 +58,8 @@ xml.registerns("mml","mathml")
 --ldx]]--
 
 function xml.registerns(namespace, pattern) -- pattern can be an lpeg
-    check = check + lpeg.C(lpeg.P(lower(pattern))) / namespace
-    parse = lpeg.P { lpeg.P(check) + 1 * lpeg.V(1) }
+    check = check + C(P(lower(pattern))) / namespace
+    parse = P { P(check) + 1 * V(1) }
 end
 
 --[[ldx--
@@ -336,8 +337,6 @@ local function fromdec(s)
     end
 end
 
-local P, S, R, C, V, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cs
-
 local rest = (1-P(";"))^0
 local many = P(1)^0
 
@@ -439,10 +438,7 @@ local valid            = R('az', 'AZ', '09') + S('_-.')
 local name_yes         = C(valid^1) * colon * C(valid^1)
 local name_nop         = C(P(true)) * C(valid^1)
 local name             = name_yes + name_nop
-
-local utfbom           = P('\000\000\254\255') + P('\255\254\000\000') +
-                         P('\255\254') + P('\254\255') + P('\239\187\191') -- no capture
-
+local utfbom           = lpeg.patterns.utfbom -- no capture
 local spacing          = C(space^0)
 
 ----- entitycontent    = (1-open-semicolon)^0
@@ -527,10 +523,10 @@ local doctype          = (spacing * begindoctype     * somedoctype     * enddoct
 
 --  nicer but slower:
 --
---  local instruction = (lpeg.Cc("@pi@") * spacing * begininstruction * someinstruction * endinstruction) / add_special
---  local comment     = (lpeg.Cc("@cm@") * spacing * begincomment     * somecomment     * endcomment    ) / add_special
---  local cdata       = (lpeg.Cc("@cd@") * spacing * begincdata       * somecdata       * endcdata      ) / add_special
---  local doctype     = (lpeg.Cc("@dt@") * spacing * begindoctype     * somedoctype     * enddoctype    ) / add_special
+--  local instruction = (Cc("@pi@") * spacing * begininstruction * someinstruction * endinstruction) / add_special
+--  local comment     = (Cc("@cm@") * spacing * begincomment     * somecomment     * endcomment    ) / add_special
+--  local cdata       = (Cc("@cd@") * spacing * begincdata       * somecdata       * endcdata      ) / add_special
+--  local doctype     = (Cc("@dt@") * spacing * begindoctype     * somedoctype     * enddoctype    ) / add_special
 
 local trailer = space^0 * (text_unparsed/set_message)^0
 

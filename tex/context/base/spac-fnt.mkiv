@@ -61,8 +61,11 @@
 
 %D Bonus macro, see core-sec.tex
 
+\newconditional\fontattributeisset
+
 \unexpanded\def\dosetfontattribute#1#2%
   {\ifcsname#1#2\endcsname
+     \settrue\fontattributeisset % reset is done elsewhere
      \@EA\doconvertfont\csname#1#2\@EA\endcsname
    \fi\empty}
 

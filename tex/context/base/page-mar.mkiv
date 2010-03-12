@@ -58,7 +58,7 @@
       \c!hoffset=\leftmargindistance,
       \c!command=,
       #2]%
-   \unexpanded\setvalue{#1}{\dohandlemarginline{#1}}}
+   \setuvalue{#1}{\dohandlemarginline{#1}}}
 
 \def\marginlineparameter  #1{\csname\??im\??im\currentmarginline#1\endcsname}
 \def\marginlineexecuter #1#2{\executeifdefined{\??im\??im\currentmarginline#1}{#2}}

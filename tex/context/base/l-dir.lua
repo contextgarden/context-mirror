@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['l-dir'] = {
     license   = "see context related readme files"
 }
 
+-- dir.expand_name will be merged with cleanpath and collapsepath
+
 local type = type
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
 local lpegmatch = lpeg.match
@@ -174,7 +176,7 @@ end
 
 local make_indeed = true -- false
 
-if string.find(os.getenv("PATH"),";") then
+if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
 
     function dir.mkdirs(...)
         local str, pth = "", ""
@@ -241,7 +243,7 @@ if string.find(os.getenv("PATH"),";") then
 --~         print(dir.mkdirs("///a/b/c"))
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
-    function dir.expand_name(str)
+    function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
             first = lfs.currentdir() .. "/"

@@ -891,22 +891,26 @@ local cache = { }
 local function split_kpse_path(str) -- beware, this can be either a path or a {specification}
     local found = cache[str]
     if not found then
-        str = gsub(str,"\\","/")
-        local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
-        found = { }
-        for i=1,#split do
-            local s = split[i]
-            if not find(s,"^{*unset}*") then
-                found[#found+1] = s
+        if str == "" then
+            found = { }
+        else
+            str = gsub(str,"\\","/")
+            local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
+            found = { }
+            for i=1,#split do
+                local s = split[i]
+                if not find(s,"^{*unset}*") then
+                    found[#found+1] = s
+                end
             end
-        end
-        if trace_expansions then
-            logs.report("fileio","splitting path specification '%s'",str)
-            for k,v in ipairs(found) do
-                logs.report("fileio","% 4i: %s",k,v)
+            if trace_expansions then
+                logs.report("fileio","splitting path specification '%s'",str)
+                for k,v in ipairs(found) do
+                    logs.report("fileio","% 4i: %s",k,v)
+                end
             end
+            cache[str] = found
         end
-        cache[str] = found
     end
     return found
 end

@@ -345,57 +345,55 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
-lpeg = require("lpeg")
+local lpeg = require("lpeg")
 
-lpeg.patterns = lpeg.patterns or { } -- so that we can share
+lpeg.patterns  = lpeg.patterns or { } -- so that we can share
+local patterns = lpeg.patterns
 
-local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local P, R, S, Ct, C, Cs, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.V
 local match = lpeg.match
 
---~ l-lpeg.lua :
+local digit, sign      = R('09'), S('+-')
+local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
+local utf8byte         = R("\128\191")
 
---~ lpeg.digit         = lpeg.R('09')^1
---~ lpeg.sign          = lpeg.S('+-')^1
---~ lpeg.cardinal      = lpeg.P(lpeg.sign^0 * lpeg.digit^1)
---~ lpeg.integer       = lpeg.P(lpeg.sign^0 * lpeg.digit^1)
---~ lpeg.float         = lpeg.P(lpeg.sign^0 * lpeg.digit^0 * lpeg.P('.') * lpeg.digit^1)
---~ lpeg.number        = lpeg.float + lpeg.integer
---~ lpeg.oct           = lpeg.P("0") * lpeg.R('07')^1
---~ lpeg.hex           = lpeg.P("0x") * (lpeg.R('09') + lpeg.R('AF'))^1
---~ lpeg.uppercase     = lpeg.P("AZ")
---~ lpeg.lowercase     = lpeg.P("az")
+patterns.utf8byte      = utf8byte
+patterns.utf8one       = R("\000\127")
+patterns.utf8two       = R("\194\223") * utf8byte
+patterns.utf8three     = R("\224\239") * utf8byte * utf8byte
+patterns.utf8four      = R("\240\244") * utf8byte * utf8byte * utf8byte
 
---~ lpeg.eol           = lpeg.S('\r\n\f')^1 -- includes formfeed
---~ lpeg.space         = lpeg.S(' ')^1
---~ lpeg.nonspace      = lpeg.P(1-lpeg.space)^1
---~ lpeg.whitespace    = lpeg.S(' \r\n\f\t')^1
---~ lpeg.nonwhitespace = lpeg.P(1-lpeg.whitespace)^1
-
-local hash = { }
+patterns.digit         = digit
+patterns.sign          = sign
+patterns.cardinal      = sign^0 * digit^1
+patterns.integer       = sign^0 * digit^1
+patterns.float         = sign^0 * digit^0 * P('.') * digit^1
+patterns.number        = patterns.float + patterns.integer
+patterns.oct           = P("0") * R("07")^1
+patterns.hex           = P("0x") * R("09","AF")^1
+patterns.lowercase     = R("az")
+patterns.uppercase     = R("AZ")
+patterns.letter        = patterns.lowercase + patterns.uppercase
+patterns.space         = S(" ")
+patterns.eol           = S("\n\r")
+patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
+patterns.newline       = crlf + cr + lf
+patterns.nonspace      = 1 - patterns.space
+patterns.nonspacer     = 1 - patterns.spacer
+patterns.whitespace    = patterns.eol + patterns.spacer
+patterns.nonwhitespace = 1 - patterns.whitespace
+patterns.utf8          = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
+patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
 
 function lpeg.anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * lpeg.V(1) }
-end
-
-function lpeg.startswith(pattern) --slightly adapted
-    return P(pattern)
+    return P { P(pattern) + 1 * V(1) } -- why so complex?
 end
 
 function lpeg.splitter(pattern, action)
     return (((1-P(pattern))^1)/action+1)^0
 end
 
--- variant:
-
---~ local parser = lpeg.Ct(lpeg.splitat(newline))
-
-local crlf     = P("\r\n")
-local cr       = P("\r")
-local lf       = P("\n")
-local space    = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
-local newline  = crlf + cr + lf
-local spacing  = space^0 * newline
-
+local spacing  = patterns.spacer^0 * patterns.newline -- sort of strip
 local empty    = spacing * Cc("")
 local nonempty = Cs((1-spacing)^1) * spacing^-1
 local content  = (empty + nonempty)^1
@@ -406,7 +404,7 @@ function string:splitlines()
     return match(capture,self)
 end
 
-lpeg.linebyline = content -- better make a sublibrary
+patterns.textline = content
 
 --~ local p = lpeg.splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
 --~ local p = lpeg.splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
@@ -472,36 +470,30 @@ end
 
 --~ from roberto's site:
 --~
---~ -- decode a two-byte UTF-8 sequence
---~ local function f2 (s)
+--~ local function f1 = string.byte
+--~
+--~ local function f2(s)
 --~   local c1, c2 = string.byte(s, 1, 2)
 --~   return c1 * 64 + c2 - 12416
 --~ end
 --~
---~ -- decode a three-byte UTF-8 sequence
---~ local function f3 (s)
+--~ local function f3(s)
 --~   local c1, c2, c3 = string.byte(s, 1, 3)
 --~   return (c1 * 64 + c2) * 64 + c3 - 925824
 --~ end
 --~
---~ -- decode a four-byte UTF-8 sequence
---~ local function f4 (s)
+--~ local function f4(s)
 --~   local c1, c2, c3, c4 = string.byte(s, 1, 4)
 --~   return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168
 --~ end
 --~
 --~ local cont = lpeg.R("\128\191")   -- continuation byte
---~
---~ local utf8 = lpeg.R("\0\127") / string.byte
+--~ local utf8 = lpeg.R("\0\127") / f1
 --~            + lpeg.R("\194\223") * cont / f2
 --~            + lpeg.R("\224\239") * cont * cont / f3
 --~            + lpeg.R("\240\244") * cont * cont * cont / f4
 --~
 --~ local decode_pattern = lpeg.Ct(utf8^0) * -1
-
-local cont = R("\128\191")   -- continuation byte
-
-lpeg.patterns.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
 
 
 end -- of closure
@@ -1729,7 +1721,7 @@ if not modules then modules = { } end modules ['l-os'] = {
 
 -- maybe build io.flush in os.execute
 
-local find, format = string.find, string.format
+local find, format, gsub = string.find, string.format, string.gsub
 local random, ceil = math.random, math.ceil
 
 local execute, spawn, exec, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.flush
@@ -1809,13 +1801,15 @@ end
 
 -- no need for function anymore as we have more clever code and helpers now
 
-os.resolvers = { }
+os.resolvers = os.resolvers or { }
+
+local resolvers = os.resolvers
 
 local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end }
 local osix = osmt.__index
 
 osmt.__index = function(t,k)
-    return (os.resolvers[k] or osix)(t,k)
+    return (resolvers[k] or osix)(t,k)
 end
 
 setmetatable(os,osmt)
@@ -2327,6 +2321,15 @@ end
 -- test { "/aa", "/aa/bb", "/aa/bb/cc", "/aa/bb/cc.dd", "/aa/bb/cc.dd.ee" }
 -- test { "aa", "aa/bb", "aa/bb/cc", "aa/bb/cc.dd", "aa/bb/cc.dd.ee" }
 
+--~ -- todo:
+--~
+--~ if os.type == "windows" then
+--~     local currentdir = lfs.currentdir
+--~     function lfs.currentdir()
+--~         return (gsub(currentdir(),"\\","/"))
+--~     end
+--~ end
+
 
 end -- of closure
 
@@ -2558,6 +2561,8 @@ if not modules then modules = { } end modules ['l-dir'] = {
     license   = "see context related readme files"
 }
 
+-- dir.expand_name will be merged with cleanpath and collapsepath
+
 local type = type
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
 local lpegmatch = lpeg.match
@@ -2726,7 +2731,7 @@ end
 
 local make_indeed = true -- false
 
-if string.find(os.getenv("PATH"),";") then
+if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
 
     function dir.mkdirs(...)
         local str, pth = "", ""
@@ -2793,7 +2798,7 @@ if string.find(os.getenv("PATH"),";") then
 --~         print(dir.mkdirs("///a/b/c"))
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
-    function dir.expand_name(str)
+    function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
             first = lfs.currentdir() .. "/"
@@ -3196,6 +3201,15 @@ local concat, format, gmatch = table.concat, string.format, string.gmatch
 local tostring, type = tostring, type
 local lpegmatch = lpeg.match
 
+local P, R, V = lpeg.P, lpeg.R, lpeg.V
+
+local escape, left, right = P("\\"), P('{'), P('}')
+
+lpeg.patterns.balanced = P {
+    [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
+    [2] = left * V(1) * right
+}
+
 local space     = lpeg.P(' ')
 local equal     = lpeg.P("=")
 local comma     = lpeg.P(",")
@@ -3368,21 +3382,14 @@ end
 
 -- temporary here
 
-local digit    = lpeg.R("09")
-local period   = lpeg.P(".")
-local zero     = lpeg.P("0")
-
---~ local finish   = lpeg.P(-1)
---~ local nodigit  = (1-digit) + finish
---~ local case_1   = (period * zero^1 * #nodigit)/"" -- .000
---~ local case_2   = (period * (1-(zero^0/"") * #nodigit)^1 * (zero^0/"") * nodigit) -- .010 .10 .100100
-
+local digit         = lpeg.R("09")
+local period        = lpeg.P(".")
+local zero          = lpeg.P("0")
 local trailingzeros = zero^0 * -digit -- suggested by Roberto R
-local case_1 = period * trailingzeros / ""
-local case_2 = period * (digit - trailingzeros)^1 * (trailingzeros / "")
-
-local number   = digit^1 * (case_1 + case_2)
-local stripper = lpeg.Cs((number + 1)^0)
+local case_1        = period * trailingzeros / ""
+local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
+local number        = digit^1 * (case_1 + case_2)
+local stripper      = lpeg.Cs((number + 1)^0)
 
 --~ local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
 --~ collectgarbage("collect")
@@ -3820,6 +3827,7 @@ local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatabl
 local format, lower, find, match = string.format, string.lower, string.find, string.match
 local utfchar = unicode.utf8.char
 local lpegmatch = lpeg.match
+local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
 --[[ldx--
 <p>First a hack to enable namespace resolving. A namespace is characterized by
@@ -3831,7 +3839,7 @@ much cleaner.</p>
 
 xml.xmlns = xml.xmlns or { }
 
-local check = lpeg.P(false)
+local check = P(false)
 local parse = check
 
 --[[ldx--
@@ -3844,8 +3852,8 @@ xml.registerns("mml","mathml")
 --ldx]]--
 
 function xml.registerns(namespace, pattern) -- pattern can be an lpeg
-    check = check + lpeg.C(lpeg.P(lower(pattern))) / namespace
-    parse = lpeg.P { lpeg.P(check) + 1 * lpeg.V(1) }
+    check = check + C(P(lower(pattern))) / namespace
+    parse = P { P(check) + 1 * V(1) }
 end
 
 --[[ldx--
@@ -4123,8 +4131,6 @@ local function fromdec(s)
     end
 end
 
-local P, S, R, C, V, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cs
-
 local rest = (1-P(";"))^0
 local many = P(1)^0
 
@@ -4226,10 +4232,7 @@ local valid            = R('az', 'AZ', '09') + S('_-.')
 local name_yes         = C(valid^1) * colon * C(valid^1)
 local name_nop         = C(P(true)) * C(valid^1)
 local name             = name_yes + name_nop
-
-local utfbom           = P('\000\000\254\255') + P('\255\254\000\000') +
-                         P('\255\254') + P('\254\255') + P('\239\187\191') -- no capture
-
+local utfbom           = lpeg.patterns.utfbom -- no capture
 local spacing          = C(space^0)
 
 ----- entitycontent    = (1-open-semicolon)^0
@@ -4314,10 +4317,10 @@ local doctype          = (spacing * begindoctype     * somedoctype     * enddoct
 
 --  nicer but slower:
 --
---  local instruction = (lpeg.Cc("@pi@") * spacing * begininstruction * someinstruction * endinstruction) / add_special
---  local comment     = (lpeg.Cc("@cm@") * spacing * begincomment     * somecomment     * endcomment    ) / add_special
---  local cdata       = (lpeg.Cc("@cd@") * spacing * begincdata       * somecdata       * endcdata      ) / add_special
---  local doctype     = (lpeg.Cc("@dt@") * spacing * begindoctype     * somedoctype     * enddoctype    ) / add_special
+--  local instruction = (Cc("@pi@") * spacing * begininstruction * someinstruction * endinstruction) / add_special
+--  local comment     = (Cc("@cm@") * spacing * begincomment     * somecomment     * endcomment    ) / add_special
+--  local cdata       = (Cc("@cd@") * spacing * begincdata       * somecdata       * endcdata      ) / add_special
+--  local doctype     = (Cc("@dt@") * spacing * begindoctype     * somedoctype     * enddoctype    ) / add_special
 
 local trailer = space^0 * (text_unparsed/set_message)^0
 
@@ -8765,22 +8768,26 @@ local cache = { }
 local function split_kpse_path(str) -- beware, this can be either a path or a {specification}
     local found = cache[str]
     if not found then
-        str = gsub(str,"\\","/")
-        local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
-        found = { }
-        for i=1,#split do
-            local s = split[i]
-            if not find(s,"^{*unset}*") then
-                found[#found+1] = s
+        if str == "" then
+            found = { }
+        else
+            str = gsub(str,"\\","/")
+            local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
+            found = { }
+            for i=1,#split do
+                local s = split[i]
+                if not find(s,"^{*unset}*") then
+                    found[#found+1] = s
+                end
             end
-        end
-        if trace_expansions then
-            logs.report("fileio","splitting path specification '%s'",str)
-            for k,v in ipairs(found) do
-                logs.report("fileio","% 4i: %s",k,v)
+            if trace_expansions then
+                logs.report("fileio","splitting path specification '%s'",str)
+                for k,v in ipairs(found) do
+                    logs.report("fileio","% 4i: %s",k,v)
+                end
             end
+            cache[str] = found
         end
-        cache[str] = found
     end
     return found
 end

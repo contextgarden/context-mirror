@@ -30,7 +30,7 @@ end
 
 job.register('structure.blocks.collected', structure.blocks.tobesaved, initializer)
 
-local printer = (lpeg.linebyline/texprint)^0
+local printer = (lpeg.patterns.textline/texprint)^0 -- can be shared
 
 function blocks.print(name,data,hide)
     if hide then

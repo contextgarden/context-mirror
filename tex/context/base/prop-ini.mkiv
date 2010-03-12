@@ -98,15 +98,15 @@
    \letgvalue{\??py\s!check#1}\docheckproperty
    \doifelsevalue{\??py#1\c!method}\v!command
      {\doifelsevalue{\??py#1\c!global}\v!yes
-        {\unexpanded\setgvalue{\e!start#1}{\dostartproperty{#1}}%
-         \unexpanded\setgvalue{\e!stop #1}{\dostopproperty}}%
-        {\unexpanded\setgvalue{\e!start#1}{\dostartgproperty{#1}}%
-         \unexpanded\setgvalue{\e!stop #1}{\dostopgproperty}}}%
+        {\setugvalue{\e!start#1}{\dostartproperty{#1}}%
+         \setugvalue{\e!stop #1}{\dostopproperty}}%
+        {\setugvalue{\e!start#1}{\dostartgproperty{#1}}%
+         \setugvalue{\e!stop #1}{\dostopgproperty}}}%
      {\doifelsevalue{\??py#1\c!global}\v!yes
-        {\unexpanded\setgvalue{\e!start#2}[##1]{\dostartproperty{##1}}%
-         \unexpanded\setgvalue{\e!stop #2}{\dostopproperty}}%
-        {\unexpanded\setgvalue{\e!start#2}[##1]{\dostartgproperty{##1}}%
-         \unexpanded\setgvalue{\e!stop #2}{\dostopgproperty}}}}
+        {\setugvalue{\e!start#2}[##1]{\dostartproperty{##1}}%
+         \setugvalue{\e!stop #2}{\dostopproperty}}%
+        {\setugvalue{\e!start#2}[##1]{\dostartgproperty{##1}}%
+         \setugvalue{\e!stop #2}{\dostopgproperty}}}}
 
 \def\nododefineproperty[#1][#2][#3]%
   {}

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 03/10/10 23:51:28
+-- merge date  : 03/12/10 19:55:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -302,57 +302,58 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
-lpeg = require("lpeg")
+local lpeg = require("lpeg")
 
-lpeg.patterns = lpeg.patterns or { } -- so that we can share
+lpeg.patterns  = lpeg.patterns or { } -- so that we can share
+local patterns = lpeg.patterns
 
-local P, R, S, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local P, R, S, Ct, C, Cs, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.V
 local match = lpeg.match
 
---~ l-lpeg.lua :
+local digit, sign      = R('09'), S('+-')
+local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
+local utf8byte         = R("\128\191")
 
---~ lpeg.digit         = lpeg.R('09')^1
---~ lpeg.sign          = lpeg.S('+-')^1
---~ lpeg.cardinal      = lpeg.P(lpeg.sign^0 * lpeg.digit^1)
---~ lpeg.integer       = lpeg.P(lpeg.sign^0 * lpeg.digit^1)
---~ lpeg.float         = lpeg.P(lpeg.sign^0 * lpeg.digit^0 * lpeg.P('.') * lpeg.digit^1)
---~ lpeg.number        = lpeg.float + lpeg.integer
---~ lpeg.oct           = lpeg.P("0") * lpeg.R('07')^1
---~ lpeg.hex           = lpeg.P("0x") * (lpeg.R('09') + lpeg.R('AF'))^1
---~ lpeg.uppercase     = lpeg.P("AZ")
---~ lpeg.lowercase     = lpeg.P("az")
+patterns.utf8byte      = utf8byte
+patterns.utf8one       = R("\000\127")
+patterns.utf8two       = R("\194\223") * utf8byte
+patterns.utf8three     = R("\224\239") * utf8byte * utf8byte
+patterns.utf8four      = R("\240\244") * utf8byte * utf8byte * utf8byte
 
---~ lpeg.eol           = lpeg.S('\r\n\f')^1 -- includes formfeed
---~ lpeg.space         = lpeg.S(' ')^1
---~ lpeg.nonspace      = lpeg.P(1-lpeg.space)^1
---~ lpeg.whitespace    = lpeg.S(' \r\n\f\t')^1
---~ lpeg.nonwhitespace = lpeg.P(1-lpeg.whitespace)^1
-
-local hash = { }
+patterns.digit         = digit
+patterns.sign          = sign
+patterns.cardinal      = sign^0 * digit^1
+patterns.integer       = sign^0 * digit^1
+patterns.float         = sign^0 * digit^0 * P('.') * digit^1
+patterns.number        = patterns.float + patterns.integer
+patterns.oct           = P("0") * R("07")^1
+patterns.octal         = patterns.oct
+patterns.HEX           = P("0x") * R("09","AF")^1
+patterns.hex           = P("0x") * R("09","af")^1
+patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
+patterns.lowercase     = R("az")
+patterns.uppercase     = R("AZ")
+patterns.letter        = patterns.lowercase + patterns.uppercase
+patterns.space         = S(" ")
+patterns.eol           = S("\n\r")
+patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
+patterns.newline       = crlf + cr + lf
+patterns.nonspace      = 1 - patterns.space
+patterns.nonspacer     = 1 - patterns.spacer
+patterns.whitespace    = patterns.eol + patterns.spacer
+patterns.nonwhitespace = 1 - patterns.whitespace
+patterns.utf8          = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
+patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
 
 function lpeg.anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * lpeg.V(1) }
-end
-
-function lpeg.startswith(pattern) --slightly adapted
-    return P(pattern)
+    return P { P(pattern) + 1 * V(1) } -- why so complex?
 end
 
 function lpeg.splitter(pattern, action)
     return (((1-P(pattern))^1)/action+1)^0
 end
 
--- variant:
-
---~ local parser = lpeg.Ct(lpeg.splitat(newline))
-
-local crlf     = P("\r\n")
-local cr       = P("\r")
-local lf       = P("\n")
-local space    = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
-local newline  = crlf + cr + lf
-local spacing  = space^0 * newline
-
+local spacing  = patterns.spacer^0 * patterns.newline -- sort of strip
 local empty    = spacing * Cc("")
 local nonempty = Cs((1-spacing)^1) * spacing^-1
 local content  = (empty + nonempty)^1
@@ -363,7 +364,7 @@ function string:splitlines()
     return match(capture,self)
 end
 
-lpeg.linebyline = content -- better make a sublibrary
+patterns.textline = content
 
 --~ local p = lpeg.splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
 --~ local p = lpeg.splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
@@ -419,46 +420,23 @@ end
 --~     local p = pp
 --~     for l=1,#list do
 --~         if p then
---~             p = p + lpeg.P(list[l])
+--~             p = p + P(list[l])
 --~         else
---~             p = lpeg.P(list[l])
+--~             p = P(list[l])
 --~         end
 --~     end
 --~     return p
 --~ end
 
 --~ from roberto's site:
---~
---~ -- decode a two-byte UTF-8 sequence
---~ local function f2 (s)
---~   local c1, c2 = string.byte(s, 1, 2)
---~   return c1 * 64 + c2 - 12416
---~ end
---~
---~ -- decode a three-byte UTF-8 sequence
---~ local function f3 (s)
---~   local c1, c2, c3 = string.byte(s, 1, 3)
---~   return (c1 * 64 + c2) * 64 + c3 - 925824
---~ end
---~
---~ -- decode a four-byte UTF-8 sequence
---~ local function f4 (s)
---~   local c1, c2, c3, c4 = string.byte(s, 1, 4)
---~   return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168
---~ end
---~
---~ local cont = lpeg.R("\128\191")   -- continuation byte
---~
---~ local utf8 = lpeg.R("\0\127") / string.byte
---~            + lpeg.R("\194\223") * cont / f2
---~            + lpeg.R("\224\239") * cont * cont / f3
---~            + lpeg.R("\240\244") * cont * cont * cont / f4
---~
---~ local decode_pattern = lpeg.Ct(utf8^0) * -1
 
-local cont = R("\128\191")   -- continuation byte
+local f1 = string.byte
 
-lpeg.patterns.utf8 = R("\0\127") + R("\194\223") * cont + R("\224\239") * cont * cont + R("\240\244") * cont * cont * cont
+local function f2(s) local c1, c2         = f1(s,1,2) return   c1 * 64 + c2                       -    12416 end
+local function f3(s) local c1, c2, c3     = f1(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
+local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
+
+patterns.utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
 
 end -- closure
 
@@ -1737,6 +1715,15 @@ end
 -- test { "c:", "c:aa", "c:aa/bb", "c:aa/bb/cc", "c:aa/bb/cc.dd", "c:aa/bb/cc.dd.ee" }
 -- test { "/aa", "/aa/bb", "/aa/bb/cc", "/aa/bb/cc.dd", "/aa/bb/cc.dd.ee" }
 -- test { "aa", "aa/bb", "aa/bb/cc", "aa/bb/cc.dd", "aa/bb/cc.dd.ee" }
+
+--~ -- todo:
+--~
+--~ if os.type == "windows" then
+--~     local currentdir = lfs.currentdir
+--~     function lfs.currentdir()
+--~         return (gsub(currentdir(),"\\","/"))
+--~     end
+--~ end
 
 end -- closure
 

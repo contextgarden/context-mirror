@@ -474,9 +474,9 @@
    \fi}
 
 \def\dodefinedescriptioncommands#1#2%
-  {\unexpanded\setevalue        {#1}{\noexpand\dodescriptioncommand{#1}}%
-   \unexpanded\setevalue{\e!start#1}{\noexpand\dodescriptionstart  {#1}}%
-   \unexpanded\setevalue{\e!stop #1}{\noexpand\dodescriptionstop   {#1}}}
+  {\setuevalue        {#1}{\noexpand\dodescriptioncommand{#1}}%
+   \setuevalue{\e!start#1}{\noexpand\dodescriptionstart  {#1}}%
+   \setuevalue{\e!stop #1}{\noexpand\dodescriptionstop   {#1}}}
 
 % handle descriptions
 
@@ -602,9 +602,9 @@
 
 \def\dodefineenumerationcommands#1#2#3#4% since we use \currentdescription, we need an edef
   {\setevalue{\??dd#3#1\s!parent}{#4}%
-   \unexpanded\setevalue        {#3#1}{\noexpand\doenumerationcommand{#1}{#2}{#3}}%
-   \unexpanded\setevalue{\e!start#3#1}{\noexpand\doenumerationstart  {#1}{#2}{#3}}%
-   \unexpanded\setevalue{\e!stop #3#1}{\noexpand\doenumerationstop   {#1}{#2}{#3}}}
+   \setuevalue        {#3#1}{\noexpand\doenumerationcommand{#1}{#2}{#3}}%
+   \setuevalue{\e!start#3#1}{\noexpand\doenumerationstart  {#1}{#2}{#3}}%
+   \setuevalue{\e!stop #3#1}{\noexpand\doenumerationstop   {#1}{#2}{#3}}}
 
 % handle enumeration
 
@@ -912,12 +912,12 @@
    \fi}
 
 \def\dodefinelabelcommands#1#2%
-  {\unexpanded\setevalue            {#1}{\noexpand\dolabelnumbercommand  {#1}}%
-   \unexpanded\setevalue{\c!reset    #1}{\noexpand\doresetlabelnumber    {#1}}%
-  %\unexpanded\setevalue{\c!set      #1}{\noexpand\dosetlabelnumber      {#1}}% [#2] or {#2}  ?
-   \unexpanded\setevalue{\e!next     #1}{\noexpand\donextlabelnumber     {#1}}%
-   \unexpanded\setevalue{\e!increment#1}{\noexpand\doincrementlabelnumber{#1}}%
-   \unexpanded\setevalue{\c!current  #1}{\noexpand\docurrentlabelnumber  {#1}}}
+  {\setuevalue            {#1}{\noexpand\dolabelnumbercommand  {#1}}%
+   \setuevalue{\c!reset    #1}{\noexpand\doresetlabelnumber    {#1}}%
+  %\setuevalue{\c!set      #1}{\noexpand\dosetlabelnumber      {#1}}% [#2] or {#2}  ?
+   \setuevalue{\e!next     #1}{\noexpand\donextlabelnumber     {#1}}%
+   \setuevalue{\e!increment#1}{\noexpand\doincrementlabelnumber{#1}}%
+   \setuevalue{\c!current  #1}{\noexpand\docurrentlabelnumber  {#1}}}
 
 % this is just for downward compatibility, we might drop it
 
@@ -982,9 +982,9 @@
       [\c!text,\c!separator,\c!width,\c!style,\c!color,
        \c!headstyle,\c!sample,\c!before,\c!after,\c!distance]%
    \getparameters[\??ds#1][#2]%
-   \unexpanded\setvalue            {#1}{\dododefineindenting{#1}{0}{1}}%
-   \unexpanded\setvalue      {\v!sub#1}{\dododefineindenting{#1}{1}{2}}%
-   \unexpanded\setvalue{\v!sub\v!sub#1}{\dododefineindenting{#1}{2}{3}}}
+   \setuvalue            {#1}{\dododefineindenting{#1}{0}{1}}%
+   \setuvalue      {\v!sub#1}{\dododefineindenting{#1}{1}{2}}%
+   \setuvalue{\v!sub\v!sub#1}{\dododefineindenting{#1}{2}{3}}}
 
 \def\dododefineindenting#1#2#3%
   {\par

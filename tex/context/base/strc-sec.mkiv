@@ -399,14 +399,21 @@
 \unexpanded\def\placeheadtext  {\dosingleempty\doplaceheadtext  } % use with care
 \unexpanded\def\placeheadnumber{\dosingleempty\doplaceheadnumber} % use with care
 
+\ifdefined\setupheadcomponentfont \else
+
+    \def\setupheadcomponentfont#1#2%
+      {\dosetstructureheadattributes\c!style\c!color
+       \dosetstructureheadattributes#1#2%
+       \dontconvertfont
+       \setupinterlinespace}
+
+\fi
+
 \def\doplaceheadtext[#1]%
   {\dontleavehmode
    \begingroup
    \edef\currentstructurehead{#1}%
-   \dosetstructureheadattributes\c!style\c!color
-   \dosetstructureheadattributes\c!textstyle\c!textcolor
-   \dontconvertfont
-   \setupinterlinespace
+   \setupheadcomponentfont\c!textstyle\c!textcolor
    \relax
    \getspecificstructuretitle{\thenamedstructureheadlevel{#1}}%
    \endgraf
@@ -416,10 +423,7 @@
   {\dontleavehmode
    \begingroup
    \edef\currentstructurehead{#1}%
-   \dosetstructureheadattributes\c!style\c!color
-   \dosetstructureheadattributes\c!numberstyle\c!numbercolor
-   \dontconvertfont
-   \setupinterlinespace
+   \setupheadcomponentfont\c!numberstyle\c!numbercolor
    \relax
    \getfullstructurenumber{\thenamedstructureheadlevel{#1}}%
    \endgraf

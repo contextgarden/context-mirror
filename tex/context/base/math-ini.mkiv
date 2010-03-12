@@ -244,12 +244,12 @@
   {\ifthirdargument
      \processaction
        [#3]
-       [one=>\unexpanded\setvalue{#1}##1{\puremathcomm{#2}{#4{##1}}},
-        two=>\unexpanded\setvalue{#1}##1##2{\puremathcomm{#2}{#4{##1}{##2}}}]%
+       [one=>\setuvalue{#1}##1{\puremathcomm{#2}{#4{##1}}},
+        two=>\setuvalue{#1}##1##2{\puremathcomm{#2}{#4{##1}{##2}}}]%
    \else\ifsecondargument
-     \unexpanded\setvalue{#1}{\puremathcomm{#2}{#4}}%
+     \setuvalue{#1}{\puremathcomm{#2}{#4}}%
    \else
-     \unexpanded\setvalue{#1}{\puremathcomm{nothing}{#4}}%
+     \setuvalue{#1}{\puremathcomm{nothing}{#4}}%
    \fi\fi}
 
 %D Moved from font-ini.mkiv:

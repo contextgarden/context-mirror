@@ -2423,10 +2423,10 @@
    \expanded{\NormalTLTU{\the\scratchdimen}}%
    % spacing, was depth=4 height=8 (counters, sigh, now macros)
    \doifelse\@@tiheight\v!strut
-     {\let\StrutHeightFactor\@@itheight}
+     {\let\StrutHeightFactor\strutheightfactor}
      {\let\StrutHeightFactor\@@tiheight}%
    \doifelse\@@tidepth\v!strut
-     {\let\StrutDepthFactor\@@itdepth}
+     {\let\StrutDepthFactor\strutdepthfactor}
      {\let\StrutDepthFactor\@@tidepth}%
    \scratchdimen\StrutHeightFactor\points \multiply\scratchdimen 10%
    \edef\StrutHeightFactor{\withoutpt\the\scratchdimen}%

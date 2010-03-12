@@ -59,9 +59,9 @@
 
 \def\dodefinelinenote[#1][#2]%
   {\definenote[ln:#1][#2]%
-   \unexpanded\setvalue        {#1}{\dolinenote     {#1}}%
-   \unexpanded\setvalue{\e!start#1}{\dostartlinenote{#1}}%
-   \unexpanded\setvalue{\e!stop #1}{\dostoplinenote {#1}}}
+   \setuvalue        {#1}{\dolinenote     {#1}}%
+   \setuvalue{\e!start#1}{\dostartlinenote{#1}}%
+   \setuvalue{\e!stop #1}{\dostoplinenote {#1}}}
 
 \def\setuplinenote[#1]% convenient
   {\setupnote[ln:#1]}

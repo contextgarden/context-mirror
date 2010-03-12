@@ -554,7 +554,7 @@
         \setgvalue{\??tf#1\s!default}{#2}%
       \fi
       \ifcsname#1\endcsname \else
-        \unexpanded\setgvalue{#1}{\switchtotypeface[#1][#2]}%
+        \setugvalue{#1}{\switchtotypeface[#1][#2]}%
       \fi}}
 
 \def\setuptypeface% [class] [settings]

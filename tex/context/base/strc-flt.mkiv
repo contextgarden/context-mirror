@@ -20,7 +20,7 @@
 %D This module needs a cleanup and will be split in
 %D strc-flt.tex and page-flt.mkiv cq. page-flt.mkii.
 
-\ifx\addlocalbackgroundtobox\undefined \def\addlocalbackgroundtobox{\resetglobal\gobbleoneargument} \fi
+\ifdefined\addlocalbackgroundtobox\else \def\addlocalbackgroundtobox{\resetglobal\gobbleoneargument} \fi
 
 \def\placefloats{\doflushfloats}  % keep this one
 
@@ -268,16 +268,16 @@
    \dodefinefloatcommands[#1][#2]}
 
 \def\dodefinefloatcommands[#1][#2]%
-  {\setvalue        {\e!place\e!listof#2}{\dodoubleempty\doplacelist[#1]}%
-   \setvalue     {\e!complete\e!listof#2}{\dotripleempty\dodocompletelist[#1][#2]}%
-   \setvalue                 {\e!place#1}{\dotripleempty\docomplexplacefloat[#1]}%
-   \setvalue               {\e!reserve#1}{\doquadrupleempty\docomplexreserveblock[#1]}%
-   \setvalue          {\e!start#1\e!text}{\dotripleempty\docomplexstarttextblock[#1]}%
-   \setvalue           {\e!stop#1\e!text}{\dostoptextfloat}%
-   \setvalue{\e!start\e!reserve#1\e!text}{\doquadrupleempty\docomplexstartreservetextblock[#1]}%
-   \setvalue {\e!stop\e!reserve#1\e!text}{\dostoptextfloat}%
-   \setvalue              {\e!emptyone#1}{\doemptyfloatblock{#1}}%
-   \setvalue              {\e!emptytwo#1}{\doemptyfloatblock{#1}}}
+  {\setuvalue        {\e!place\e!listof#2}{\dodoubleempty\doplacelist[#1]}%
+   \setuvalue     {\e!complete\e!listof#2}{\dotripleempty\dodocompletelist[#1][#2]}%
+   \setuvalue                 {\e!place#1}{\dotripleempty\docomplexplacefloat[#1]}%
+   \setuvalue               {\e!reserve#1}{\doquadrupleempty\docomplexreserveblock[#1]}%
+   \setuvalue          {\e!start#1\e!text}{\dotripleempty\docomplexstarttextblock[#1]}%
+   \setuvalue           {\e!stop#1\e!text}{\dostoptextfloat}%
+   \setuvalue{\e!start\e!reserve#1\e!text}{\doquadrupleempty\docomplexstartreservetextblock[#1]}%
+   \setuvalue {\e!stop\e!reserve#1\e!text}{\dostoptextfloat}%
+   \setuvalue              {\e!emptyone#1}{\doemptyfloatblock{#1}}%
+   \setuvalue              {\e!emptytwo#1}{\doemptyfloatblock{#1}}}
 
 %D Fallback float body:
 
@@ -1103,8 +1103,8 @@
 
 \let\dorestorefloatstatus\relax
 
-\ifx\doflushfloats\undefined \let\doflushfloats\relax \fi
-\ifx\flushfloatbox\undefined \let\flushfloatbox\relax \fi
+\ifdefined\doflushfloats\else \let\doflushfloats\relax \fi
+\ifdefined\flushfloatbox\else \let\flushfloatbox\relax \fi
 
 % needed in the splitter:
 
@@ -1173,12 +1173,12 @@
    \flushfloatbox
    \blank[\floatsharedparameter\c!spaceafter]}
 
-\ifx\someherefloat\undefined \let\someherefloat\doplacefloatbox \fi
-\ifx\someslotfloat\undefined \let\someslotfloat\doplacefloatbox \fi
-\ifx\somefixdfloat\undefined \let\somefixdfloat\doplacefloatbox \fi
-\ifx\sometopsfloat\undefined \let\sometopsfloat\doplacefloatbox \fi
-\ifx\somebotsfloat\undefined \let\somebotsfloat\doplacefloatbox \fi
-\ifx\somesidefloat\undefined \let\somesidefloat\doplacefloatbox \fi
+\ifdefined\someherefloat\else \let\someherefloat\doplacefloatbox \fi
+\ifdefined\someslotfloat\else \let\someslotfloat\doplacefloatbox \fi
+\ifdefined\somefixdfloat\else \let\somefixdfloat\doplacefloatbox \fi
+\ifdefined\sometopsfloat\else \let\sometopsfloat\doplacefloatbox \fi
+\ifdefined\somebotsfloat\else \let\somebotsfloat\doplacefloatbox \fi
+\ifdefined\somesidefloat\else \let\somesidefloat\doplacefloatbox \fi
 
 % test case:
 %
@@ -1374,7 +1374,7 @@
 
 % minwidth=fit,width=max : no overshoot, as wide as graphic
 
-\ifx\moveboxontogrid\undefined \let\movecaptionontogrid\gobblethreearguments \fi
+\ifdefined\moveboxontogrid\else \let\movecaptionontogrid\gobblethreearguments \fi
 
 \def\locatefloatbox
   {\chardef\alignstrutmode\zerocount
@@ -2052,7 +2052,7 @@
         \@EA\aftersplitstring \floatcolumn\at*\to\floatrow
         \@EA\beforesplitstring\floatcolumn\at*\to\floatcolumn
         % todo: nog algemeen otr
-        \ifx\OTRSETsetpreferedcolumnslot\undefined\else
+        \ifdefined\OTRSETsetpreferedcolumnslot
           \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
         \fi}
        {\let\floatcolumn\empty

@@ -322,7 +322,38 @@
 %    \TeX
 %    \endgroup}
 %
-% \let\LuaTeX \luaTeX
-% \let\LUATEX \luaTeX
+% a further iteration from the list, patched again
+
+% \ifx\fontalternative\c!it -\else
+% \ifx\fontalternative\c!sl -\else
+% \ifx\fontalternative\c!bi -\else
+% \ifx\fontalternative\c!bs -\fi\fi\fi\fi
+
+\def\LuaTeX
+  {\dontleavehmode
+   \begingroup
+     Lua%
+     % hope for kerning, try aT
+     \setbox0\hbox{aT}%
+     \setbox2\hbox{a\kern\zeropoint T}%
+     \ifdim\wd0=\wd2 % kerns can go two ways
+       % no aT kerning, try oT as a is not symmetrical
+       \setbox0\hbox{oT}%
+       \setbox2\hbox{o\kern\zeropoint T}%
+       \ifdim\wd0=\wd2 % kerns can go two ways
+         % no aT and oT kerning, try To
+         \setbox0\hbox{To}%
+         \setbox2\hbox{T\kern\zeropoint o}%
+         % maybe we need to compensate for the angle (sl/it/bs/bi)
+       \fi
+       \ifdim\wd0=\wd2\else
+         \kern\dimexpr\wd0-\wd2\relax
+       \fi
+     \fi
+     \TeX
+   \endgroup}
+
+\let\luaTeX \LuaTeX
+\let\LUATEX \LuaTeX
 
 \protect \endinput

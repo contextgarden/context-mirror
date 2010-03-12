@@ -2655,9 +2655,9 @@
       \c!orientation=,
       \c!indenting=,
       #2]%
-   \unexpanded\setvalue{\e!start#1}{\dostartframedtext[#1]}%
-   \unexpanded\setvalue{\e!stop #1}{\dostopframedtext     }%
-   \unexpanded\setvalue        {#1}{\doframedtext     [#1]}}
+   \setuvalue{\e!start#1}{\dostartframedtext[#1]}%
+   \setuvalue{\e!stop #1}{\dostopframedtext     }%
+   \setuvalue        {#1}{\doframedtext     [#1]}}
 
 \def\defineframedtext
   {\dodoubleempty\dodefineframedtext}
@@ -2833,7 +2833,7 @@
 
 \def\dodefineframed[#1][#2]%
   {\iffirstargument
-     \unexpanded\setvalue{#1}{\dodoubleempty\doframed[#2]}%
+     \setuvalue{#1}{\dodoubleempty\doframed[#2]}%
    \fi}
 
 \def\doframed[#1][#2]%

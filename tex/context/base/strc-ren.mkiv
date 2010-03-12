@@ -31,22 +31,51 @@
   {\the\everyheadstart
    \doif{\structureheadparameter\c!margintext}\v!yes\placemargincontent}
 
+\def\setupheadcomponentfont#1#2%
+  {\ifconditional\structureheadisdisplay
+     \edef\askedstructureheadinterlinespace{\structureheadparameter\c!interlinespace}%
+     \ifx\askedstructureheadinterlinespace\empty
+       % here the interline space is only set when style sets no space
+       \setfalse\fontattributeisset
+       \setfalse\interlinespaceisset
+       \dosetstructureheadattributes\c!style\c!color
+       \ifconditional\fontattributeisset \ifconditional\interlinespaceisset \else
+         \setupinterlinespace
+       \fi \fi
+       \setfalse\fontattributeisset \dosetstructureheadattributes#1#2%
+       \ifconditional\fontattributeisset \ifconditional\interlinespaceisset \else
+         \setupinterlinespace
+       \fi \fi
+     \else
+       % here the set interline space overloads any other set space in the style
+       \setfalse\fontattributeisset
+       \dosetstructureheadattributes\c!style\c!color
+       \ifconditional\fontattributeisset
+         \dosetupcheckedinterlinespace\askedstructureheadinterlinespace
+       \fi
+       \setfalse\fontattributeisset
+       \dosetstructureheadattributes#1#2%
+       \ifconditional\fontattributeisset
+         \dosetupcheckedinterlinespace\askedstructureheadinterlinespace
+       \fi
+     \fi
+   \else
+     \setfalse\fontattributeisset
+     \dosetstructureheadattributes\c!style\c!color
+     \ifconditional\fontattributeisset
+       \setupspacing
+     \fi
+     \setfalse\fontattributeisset
+     \dosetstructureheadattributes#1#2%
+     \ifconditional\fontattributeisset
+       \setupspacing
+     \fi
+   \fi
+   \dontconvertfont}
+
 \def\doplaceheadtextcomponent#1#2%
   {\begingroup
-     \dosetstructureheadattributes\c!style\c!color
-     % nasty, we need to adapt twice
-     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
-       \setupinterlinespace
-     \else
-       \setupspacing
-     \fi
-     \dosetstructureheadattributes\c!textstyle\c!textcolor
-     \dontconvertfont
-     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
-       \setupinterlinespace
-     \else
-       \setupspacing
-     \fi
+     \setupheadcomponentfont\c!textstyle\c!textcolor
      % \ifcase\headtimingmode#1\fi % can introduce cr
      \structureheadparameter\c!commandbefore
      \placeheadmargintexts
@@ -74,8 +103,7 @@
 
 \def\doplaceheadnumbercomponent#1#2%
   {\begingroup
-     \dosetstructureheadattributes\c!style\c!color
-     \dosetstructureheadattributes\c!numberstyle\c!numbercolor
+     \setupheadcomponentfont\c!numberstyle\c!numbercolor
      % \getvalue{\??ko\currentstructurehead\c!commandbefore}% strange, why here? moved 21/11/2005
      \placeheadmargintexts
      \ifconditional\structureheadisdisplay % \ifdisplaysectionhead

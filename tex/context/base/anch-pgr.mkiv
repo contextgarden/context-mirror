@@ -950,7 +950,7 @@
         \c!leftoffset,\c!rightoffset,\c!topoffset,\c!bottomoffset]%
      \getparameters[\??td#1][#2]%
      \doifvalue{\??td#1\c!state}\v!start\checktextbackgrounds
-     \unexpanded\setvalue{#1}%
+     \setuvalue{#1}%
        {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
      \setvalue{\e!start#1}{\starttextbackground[#1]}%
      \setvalue{\e!stop #1}{\stoptextbackground}%

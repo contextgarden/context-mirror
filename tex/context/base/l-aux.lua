@@ -14,13 +14,22 @@ local concat, format, gmatch = table.concat, string.format, string.gmatch
 local tostring, type = tostring, type
 local lpegmatch = lpeg.match
 
+local P, R, V = lpeg.P, lpeg.R, lpeg.V
+
+local escape, left, right = P("\\"), P('{'), P('}')
+
+lpeg.patterns.balanced = P {
+    [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
+    [2] = left * V(1) * right
+}
+
 local space     = lpeg.P(' ')
 local equal     = lpeg.P("=")
 local comma     = lpeg.P(",")
 local lbrace    = lpeg.P("{")
 local rbrace    = lpeg.P("}")
 local nobrace   = 1 - (lbrace+rbrace)
-local nested    = lpeg.P{ lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
+local nested    = lpeg.P { lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
 local spaces    = space^0
 
 local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
@@ -186,21 +195,14 @@ end
 
 -- temporary here
 
-local digit    = lpeg.R("09")
-local period   = lpeg.P(".")
-local zero     = lpeg.P("0")
-
---~ local finish   = lpeg.P(-1)
---~ local nodigit  = (1-digit) + finish
---~ local case_1   = (period * zero^1 * #nodigit)/"" -- .000
---~ local case_2   = (period * (1-(zero^0/"") * #nodigit)^1 * (zero^0/"") * nodigit) -- .010 .10 .100100
-
+local digit         = lpeg.R("09")
+local period        = lpeg.P(".")
+local zero          = lpeg.P("0")
 local trailingzeros = zero^0 * -digit -- suggested by Roberto R
-local case_1 = period * trailingzeros / ""
-local case_2 = period * (digit - trailingzeros)^1 * (trailingzeros / "")
-
-local number   = digit^1 * (case_1 + case_2)
-local stripper = lpeg.Cs((number + 1)^0)
+local case_1        = period * trailingzeros / ""
+local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
+local number        = digit^1 * (case_1 + case_2)
+local stripper      = lpeg.Cs((number + 1)^0)
 
 --~ local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
 --~ collectgarbage("collect")

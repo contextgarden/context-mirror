@@ -71,10 +71,10 @@
 \def\definecharacter#1 #2 %
   {\doifnumberelse{\string#2}
      {\setevalue{\string#1}{\utfchar{#2}}} % or {\expandafter\chardef\csname#1\endcsname#2\relax}
-     {\unexpanded\setvalue {\string#1}{#2}}}
+     {\setuvalue {\string#1}{#2}}}
 
 \def\definecommand#1 #2 %
-  {\unexpanded\setvalue{\string#1}{#2}}
+  {\setuvalue{\string#1}{#2}}
 
 %D \macros
 %D   {everyuppercase, EveryUppercase,

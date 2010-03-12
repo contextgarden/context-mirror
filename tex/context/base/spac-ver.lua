@@ -1088,6 +1088,14 @@ function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an action
     end
 end
 
+--~ function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
+--~     if groupcode == "" then -- mvl only
+--~         return head, false
+--~     else
+--~         return head, false
+--~     end
+--~ end
+
 --~ tasks.appendaction("finalizers", "lists", "nodes.repackage_graphicvadjust")
 
 nodes.builders = nodes.builder or { }

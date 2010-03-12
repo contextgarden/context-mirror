@@ -25,9 +25,9 @@
 
 % not yet ok in mkiv ... marknotes .. will be completely redone
 
-\unprotect
+\endinput
 
-% taco, what is the best way to append a otr chunk (insert pagediscards?)
+\unprotect
 
 \let\currentoutputstream\s!default
 
@@ -107,20 +107,11 @@
         \kern\strutdepth}%
    \fi}
 
-% \def\presetoutputstream
-%   {\pdffirstlineheight\strutheight
-%    \pdflastlinedepth  \strutdepth
-%    \pdfeachlineheight \strutheight
-%    \pdfeachlinedepth  \strutdepth}
-
 \let\presetoutputstream\relax
 
 \def\outputstreamht  [#1]{\ht\outputstreamtag{#1}}
 \def\outputstreamdp  [#1]{\dp\outputstreamtag{#1}}
 \def\outputstreamwd  [#1]{\wd\outputstreamtag{#1}}
-
-%def\outputstreambox [#1]{\ifvoid\outputstreamtag{#1}\else\box \outputstreamtag{#1}\fi}
-%def\outputstreamcopy[#1]{\ifvoid\outputstreamtag{#1}\else\copy\outputstreamtag{#1}\fi}
 
 \def\dowithoutputstreambox#1[#2]{\ifvoid\outputstreamtag{#2}\else#1\outputstreamtag{#2}\fi}
 
@@ -129,55 +120,13 @@
 \def\outputstreamunvcopy{\dowithoutputstreambox\unvcopy}
 \def\outputstreamunvbox {\dowithoutputstreambox\unvbox }
 
-%D Footnotes don't go along with streams, simply because there is no
-%D way to re-split inserts. A dirty way out is to use marks and store
-%D notes that way.
+%D Obsolete in \MKIV:
 
-% not mkiv ready yet
-
-\def\definemarknote
-  {\dodoubleempty\dodefinemarknote}
-
-\def\dodefinemarknote[#1][#2]%
-  {\definemarking[mn:#1]%
-   \setvalue{mn:#1:n}{0}%
-   \getparameters
-     [mn:#1]
-     [\c!before=,
-      \c!after=,
-      \c!inbetween=\endgraf,
-      \c!command=\firstofoneargument,
-      #2]}
-
-\def\setmarknote[#1]#2%
-  {\doglobal\incrementvalue{mn:#1:n}%
-   \setgvalue{mn:#1:t:\getvalue{mn:#1:n}}{#2}%
-   \expanded{\marking[mn:#1]{\getvalue{mn:#1:n}}}}
-
-\def\flushmarknotes[#1]% assumes split
-  {\begingroup
-%    \edef\firstmarknote{0\fetchmark[mn:#1][column:first]}%
-%    \edef\lastmarknote {0\fetchmark[mn:#1][column:last]}%
-%    \ifnum\firstmarknote<\lastmarknote\relax
-%      \getvalue{mn:#1\c!before}%
-%      \dostepwiserecurse\firstmarknote\lastmarknote\plusone
-%        {\ifnum\recurselevel>\firstmarknote\relax
-%           \ifnum\recurselevel<\lastmarknote\relax
-%             \getvalue{mn:#1\c!inbetween}%
-%           \fi
-%         \fi
-%         \getvalue{mn:#1\c!command}{\getvalue{mn:#1:t:\recurselevel}}}%
-%      \getvalue{mn:#1\c!after}%
-%    \fi
-   \endgroup}
-
-\def\erasemarknotes[#1]%
-  {\begingroup
-   \edef\firstmarknote{0\fetchmark[mn:#1][column:first]}%
-   \edef\lastmarknote {0\fetchmark[mn:#1][column:last]}%
-   \dostepwiserecurse\firstmarknote\lastmarknote\plusone
-     {\global\letvalue{mn:#1:t:\recurselevel}\empty}%
-   \endgroup}
+\def\definemarknote          {\dodoubleempty\dodefinemarknote}
+\def\dodefinemarknote[#1][#2]{}
+\def\setmarknote         [#1]{\gobbleoneargument}
+\def\flushmarknotes      [#1]{}
+\def\erasemarknotes      [#1]{}
 
 %D The next section implements synchronization of (currently
 %D two) output streams. In due time we will implement both a

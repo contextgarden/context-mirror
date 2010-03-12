@@ -859,7 +859,7 @@
             \c!leftmargin,\c!rightmargin,\c!indentnext,
             \c!before,\c!after,\c!left,\c!right]}}%
    \doifsomething{#1}
-     {\unexpanded\setvalue{#1}{\delimitedtext[#1]}%
+     {\setuvalue{#1}{\delimitedtext[#1]}%
       \setvalue{\e!start#1}{\startdelimitedtext[#1]}%
       \setvalue{\e!stop #1}{\stopdelimitedtext}}}
 

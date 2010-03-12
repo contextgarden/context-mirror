@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['l-os'] = {
 
 -- maybe build io.flush in os.execute
 
-local find, format = string.find, string.format
+local find, format, gsub = string.find, string.format, string.gsub
 local random, ceil = math.random, math.ceil
 
 local execute, spawn, exec, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.flush
@@ -88,13 +88,15 @@ end
 
 -- no need for function anymore as we have more clever code and helpers now
 
-os.resolvers = { }
+os.resolvers = os.resolvers or { }
+
+local resolvers = os.resolvers
 
 local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end }
 local osix = osmt.__index
 
 osmt.__index = function(t,k)
-    return (os.resolvers[k] or osix)(t,k)
+    return (resolvers[k] or osix)(t,k)
 end
 
 setmetatable(os,osmt)

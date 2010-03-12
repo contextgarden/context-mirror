@@ -34,7 +34,7 @@ function finders.generic(tag,filename,filetype)
 end
 
 --~ local lpegmatch = lpeg.match
---~ local getlines = lpeg.Ct(lpeg.linebyline)
+--~ local getlines = lpeg.Ct(lpeg.patterns.textline)
 
 local input_translator, utf_translator, user_translator = nil, nil, nil
 

@@ -82,10 +82,7 @@ local function add(a,b) if b then return a..b else return a end end
 local keyword    = lpeg.C((lpeg.R("az","AZ","09") + lpeg.S("@_:-"))^1)  -- lpeg.C((1-space)^1)
 local s_quoted   = ((escape*single) + collapsed + (1-single))^0
 local d_quoted   = ((escape*double) + collapsed + (1-double))^0
-local balanced   = lpeg.P {
-    [1] = ((escape * (left+right)) + (1 - (left+right)) + lpeg.V(2))^0,
-    [2] = left * lpeg.V(1) * right
-}
+local balanced   = lpeg.patterns.balanced
 
 local s_value    = (single/"") * s_quoted * (single/"")
 local d_value    = (double/"") * d_quoted * (double/"")

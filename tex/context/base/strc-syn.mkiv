@@ -107,12 +107,12 @@
      \ifthirdargument
        \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
      \fi
-     \unexpanded\setvalue{#1}{\definesynonym[\v!no][#1]}% \name
+     \setuvalue{#1}{\definesynonym[\v!no][#1]}% \name
    \else
      \ifthirdargument
        \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
      \fi
-     \unexpanded\setvalue{#1}{\definesynonym[\v!yes][#1]}% \name
+     \setuvalue{#1}{\definesynonym[\v!yes][#1]}% \name
    \fi
    \getparameters[\??sm#1][\s!parent=\??sm,\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
@@ -150,7 +150,7 @@
             used    = false,
         }
      })}%
-     \doif{#1}\v!yes{\unexpanded\setxvalue\currentsynonymtag{\noexpand\doinsertsynonym{\currentsynonym}{\currentsynonymtag}}}%
+     \doif{#1}\v!yes{\setuxvalue\currentsynonymtag{\noexpand\doinsertsynonym{\currentsynonym}{\currentsynonymtag}}}%
    \fi
    \endgroup}
 
@@ -275,9 +275,9 @@
        {\ifx#3\relax \else
           \unexpanded\def#3##1{\doinsertsort{#1}{##1}}%
         \fi}%
-     \unexpanded\setvalue{#1}{\definesort[\v!no][#1]}%
+     \setuvalue{#1}{\definesort[\v!no][#1]}%
    \else
-     \unexpanded\setvalue{#1}{\definesort[\v!yes][#1]}%
+     \setuvalue{#1}{\definesort[\v!yes][#1]}%
    \fi
    \getparameters[\??so#1][\s!parent=\??so,\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
@@ -313,7 +313,7 @@
         %   used    = false,
         }
      })}%
-     \doif{#1}\v!yes{\unexpanded\setxvalue\currentsortingtag{\noexpand\doinsertsort{\currentsorting}{\currentsortingtag}}}%
+     \doif{#1}\v!yes{\setuxvalue\currentsortingtag{\noexpand\doinsertsort{\currentsorting}{\currentsortingtag}}}%
    \fi
    \endgroup}
 
