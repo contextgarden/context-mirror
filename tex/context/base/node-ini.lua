@@ -212,7 +212,7 @@ end
 
 nodes.count = count
 
--- new
+-- new, will move
 
 function attributes.ofnode(n)
     local a = n.attr

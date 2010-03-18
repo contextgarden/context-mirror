@@ -8,15 +8,19 @@ if not modules then modules = { } end modules ['page-lin'] = {
 
 -- experimental
 
+local trace_numbers = false  trackers.register("lines.numbers",  function(v) trace_numbers = v end)
+
 local format = string.format
 local texsprint, texwrite, texbox = tex.sprint, tex.write, tex.box
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
 
-nodes            = nodes            or { }
-nodes.lines      = nodes.lines      or { }
-nodes.lines.data = nodes.lines.data or { } -- start step tag
+nodes             = nodes             or { }
+nodes.lines       = nodes.lines       or { }
+nodes.lines.data  = nodes.lines.data  or { } -- start step tag
+
+storage.register("lines/data", nodes.lines.data, "nodes.lines.data")
 
 -- if there is demand for it, we can support multiple numbering streams
 -- and use more than one attibute
@@ -37,6 +41,7 @@ local traverse         = node.traverse
 local copy_node        = node.copy
 
 local data = nodes.lines.data
+local last = #data
 
 nodes.lines.scratchbox = nodes.lines.scratchbox or 0
 
@@ -99,20 +104,35 @@ function filters.line.linenumber(data) -- raw
     texwrite(data.entries.linenumber or "0")
 end
 
-
--- boxed variant
+-- boxed variant, todo: use number mechanism
 
 nodes.lines.boxed = { }
 
+-- todo: cache setups, and free id no longer used
+-- use interfaces.cachesetup(t)
+
 function nodes.lines.boxed.register(configuration)
-    data[#data+1] = configuration
-    return #data
+    last = last + 1
+    data[last] = configuration
+    if trace_numbers then
+        logs.report("lines","registering setup %s",last)
+    end
+    return last
 end
+
 function nodes.lines.boxed.setup(n,configuration)
     local d = data[n]
     if d then
-        for k,v in pairs(configuration) do d[k] = v end
+        if trace_numbers then
+            logs.report("lines","updating setup %s",n)
+        end
+        for k,v in pairs(configuration) do
+            d[k] = v
+        end
     else
+        if trace_numbers then
+            logs.report("lines","registering setup %s (br)",n)
+        end
         data[n] = configuration
     end
     return n
@@ -123,10 +143,14 @@ local leftskip = nodes.leftskip
 local function check_number(n,a,skip) -- move inline
     local d = data[a]
     if d then
-        local s = d.start
+        local s = d.start or 1
         current_list[#current_list+1] = { n, s }
         if not skip and s % d.step == 0 then
-            texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}\\endgraf", d.tag or "", s, n.shift, n.width, leftskip(n.list)))
+            local tag = d.tag or ""
+            texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}\\endgraf", tag, s, n.shift, n.width, leftskip(n.list)))
+            if trace_numbers then
+                logs.report("numbers","making number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
+            end
         else
             texsprint(ctxcatcodes, "\\skipnumber\\endgraf")
         end
@@ -139,9 +163,6 @@ function nodes.lines.boxed.stage_one(n)
     local head = texbox[n]
     if head then
         local list = head.list
-    --~ while list.id == vlist and not list.next do
-    --~     list = list.list
-    --~ end
         local last_a, skip = nil, false
         for n in traverse_id(hlist,list) do -- attr test here and quit as soon as zero found
             if n.height == 0 and n.depth == 0 then
@@ -178,116 +199,11 @@ function nodes.lines.boxed.stage_two(n,m)
         for l in traverse_id(hlist,texbox[m].list) do
             t[#t+1] = copy_node(l)
         end
-        for j=1,#current_list do
-            local l = current_list[j]
-            local n, m = l[1], l[2]
-            i = i + 1
-            t[i].next = n.list
-            n.list = t[i]
+        for i=1,#current_list do
+            local li = current_list[i]
+            local n, m, ti = li[1], li[2], t[i]
+            ti.next, n.list = n.list, ti
             resolve(n,m)
        end
     end
-end
-
--- flow variant
---
--- it's too hard to make this one robust, so for the moment it's not
--- available; todo: line refs
-
-if false then
-
-    nodes.lines.flowed = { }
-
-    function nodes.lines.flowed.prepare(tag)
-        for i=1,#data do -- ??
-            texsprint(ctxcatcodes,format("\\ctxlua{nodes.lines.flowed.prepare_a(%s)}\\ctxlua{nodes.lines.flowed.prepare_b(%s)}",i,i))
-        end
-    end
-
-    function nodes.lines.flowed.prepare_a(i)
-        local d = data[i]
-        local p = d.present
-        if p and p < chunksize then
-            local b = nodes.lines.scratchbox
-            texsprint(ctxcatcodes, format("{\\forgetall\\global\\setbox%s=\\vbox{\\unvbox%s\\relax\\offinterlineskip", b, b))
-            while p < chunksize do
-                texsprint(ctxcatcodes, format("\\mkmaketextlinenumber{%s}{%s}\\endgraf",d.start,1))
-                p = p + 1
-                d.start = d.start + d.step
-            end
-            d.present = p
-            texsprint(ctxcatcodes, "}}")
-        end
-    end
-
-    function nodes.lines.flowed.prepare_b(i)
-        local d = data[i]
-        local b = nodes.lines.scratchbox
-        local l = texbox[b]
-        if l then
-            l = l.list
-            local n = d.numbers
-            while l do
-                if l.id == hlist then
-                    local m = copy_node(l)
-                    m.next = nil
-                    if n then
-                        n.next = m
-                    else
-                        d.numbers = m
-                    end
-                    n = m
-                end
-                l = l.next
-            end
-        end
-        tex.box[b] = nil
-    end
-
-    function nodes.lines.flowed.cleanup(i)
-        if i then
-            node.flush_list(data[i].numbers)
-        else
-            for i=1,#data do
-                node.flush_list(data[i].numbers)
-            end
-        end
-    end
-
-    local function check_number(n,a)
-        local d = data[a]
-        if d then
-            local m = d.numbers
-            if m then
-                d.numbers = m.next
-                m.next = n.list
-                n.list = m
-                d.present = d.present - 1
-            end
-        end
-    end
-
-    function nodes.lines.flowed.apply(head)
-        for n in node.traverse(head) do
-            local id = n.id
-            if id == hlist then
-                if n.height == 0 and n.depth == 0 then
-                    -- skip funny hlists
-                else
-                    local a = has_attribute(n,line_number)
-                    if a and a > 0 then
-                        if has_attribute(n,display_math) then
-                            if nodes.is_display_math(n) then
-                                check_number(n,a)
-                            end
-                        else
-                            check_number(n,a)
-                        end
-                    end
-                end
-            end
-        end
-        return head, true
-    end
-
 end

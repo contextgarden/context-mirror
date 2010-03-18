@@ -13,6 +13,7 @@ local format, gmatch, concat, round, match = string.format, string.gmatch, table
 local sprint = tex.sprint
 local tonumber, type = tonumber, type
 local lpegmatch = lpeg.match
+local texbox = tex.box
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
@@ -426,11 +427,10 @@ metapost.textext_current = metapost.first_box
 metapost.multipass       = false
 
 function metapost.free_boxes() -- todo: mp direct list ipv box
-    local tb = tex.box
     for i = metapost.first_box,metapost.last_box do
-        local b = tb[i]
+        local b = texbox[i]
         if b then
-            tb[i] = nil -- no node.flush_list(b) needed, else double free error
+            texbox[i] = nil -- no node.flush_list(b) needed, else double free error
         else
             break
         end
@@ -480,7 +480,8 @@ function metapost.specials.ts(specification,object,result,flusher)
                 metapost.textext_current = metapost.first_box + n - 1
             end
             local b = metapost.textext_current
-            sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b, metapost.sxsy(tex.wd[b],tex.ht[b],tex.dp[b])))
+            local box = texbox[b]
+            sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b, metapost.sxsy(box.width,box.height,box.depth)))
             result = { "Q" }
             return object, result
         end
@@ -697,8 +698,10 @@ function metapost.text_texts_data()
         if trace_textexts then
             logs.report("metapost","passed data: order %s, box %s",n,i)
         end
-        if tex.box[i] then
-            t[#t+1] = format("_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;", n,tex.wd[i]/factor, n,tex.ht[i]/factor, n,tex.dp[i]/factor)
+        local box = texbox[i]
+        if box then
+            t[#t+1] = format("_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;",
+                n,box.width/factor,n,box.height/factor,n,box.depth/factor)
         else
             break
         end

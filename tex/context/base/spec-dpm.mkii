@@ -411,7 +411,8 @@
      \scratchcounter#4\advance\scratchcounter\minusone
      \special{pdf: out \ifcase#5-\fi#2
         % <</Page \the\scratchcounter\space /View [/Fit] /Title (#3)>>}%
-          <</Title (#3) /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
+        % <</Title (#3) /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
+          <</Title \ifPDFunicode<#3>\else(#3)\fi\space /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
    \fi}
 
 %D \macros

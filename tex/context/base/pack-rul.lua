@@ -10,16 +10,16 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 <p>An explanation is given in the history document <t>mk</t>.</p>
 --ldx]]--
 
-local texdimen, texcount, texbox, texwd = tex.dimen, tex.count, tex.box, tex.wd
+local texdimen, texcount, texbox = tex.dimen, tex.count, tex.box
 local hpack, free, copy, traverse_id = node.hpack, node.free, node.copy_list, node.traverse_id
 
 function commands.doreshapeframedbox(n)
-    local noflines, lastlinelength = 0, 0
-    if texwd[n] ~= 0 then
-        local list = texbox[n].list
+    local noflines, lastlinelength, box = 0, 0, texbox[n]
+    if box.width ~= 0 then
+        local list = box.list
         if list then
             local width, done = 0, false
-            for h in traverse_id('hlist',list) do
+            for h in traverse_id('hlist',list) do -- no dir etc needed
                 local l = h.list
                 if l then
                     done = true
@@ -37,14 +37,14 @@ function commands.doreshapeframedbox(n)
                         local l = h.list
                         if l then
                     --  if h.width ~= width then -- else no display math handling (uses shift)
-                            h.list = hpack(l,width,'exactly')
+                            h.list = hpack(l,width,'exactly',h.dir)
                             h.shift = 0 -- needed for display math
                             h.width = width
                     --  end
                         end
                     end
                 end
-                texwd[n] = width
+                box.width = width
             end
         end
     end

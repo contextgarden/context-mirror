@@ -70,6 +70,8 @@ end
 
 lpdf.pagedest = pagedest
 
+local defaultdestination = pdfarray { 0, pdfconstant("Fit") }
+
 local function link(url,filename,destination,page,actions)
     if filename and filename ~= "" then
         if file.basename(filename) == tex.jobname then
@@ -92,9 +94,9 @@ local function link(url,filename,destination,page,actions)
         }
     elseif filename and filename ~= "" then
         return pdfdictionary {
-            S = pdf_gotor,
+            S = pdf_gotor, -- can also be pdf_launch
             F = filename,
-            D = destination and destination ~= "" and destination,
+            D = (destination and destination ~= "" and destination), -- or defaultdestination,
             NewWindow = (actions.newwindow and true) or nil,
         }
     elseif destination and destination ~= "" then
@@ -270,12 +272,13 @@ runners["inner with arguments"] = function(var,actions)
 end
 
 runners["outer"] = function(var,actions)
-    return link(nil,var.f,nil,nil,actions) -- var.o ?
+    local file, url = jobreferences.checkedfileorurl(var.outer,var.outer)
+    return link(url,file,var.arguments,nil,actions)
 end
 
 runners["outer with inner"] = function(var,actions)
-    -- todo: resolve url/file name
-    return link(nil,var.f,var.inner,var.r,actions)
+    local file = jobreferences.checkedfile(var.f)
+    return link(nil,file,var.inner,var.r,actions)
 end
 
 runners["special outer with operation"] = function(var,actions)
@@ -335,10 +338,7 @@ specials.i = specials.internal
 function specials.page(var,actions) -- better resolve in strc-ref
     local file = var.f
     if file then
-        local f = jobreferences.files.data[file]
-        if f then
-            file = f[1] or file
-        end
+        file = jobreferences.checkedfile(file)
         return link(nil,file,nil,p or var.operation,actions)
     else
         local p = jobreferences.pages[var.operation]
@@ -368,62 +368,23 @@ function specials.order(var,actions) -- jobreferences.specials !
     end
 end
 
-function specials.url(var,actions) -- better resolve in strc-ref
-    local url = var.operation
-    if url then
-        local u = jobreferences.urls.data[url]
-        if u then
-            local u, f = u[1], u[2]
-            if f and f ~= "" then
-                url = u .. "/" .. f
-            else
-                url = u
-            end
-        end
-    end
+function specials.url(var,actions)
+    local url = jobreferences.checkedurl(var.operation)
     return link(url,nil,var.arguments,nil,actions)
 end
 
-function specials.file(var,actions) -- better resolve in strc-ref
-    local file = var.operation
-    if file then
-        local f = jobreferences.files.data[file]
-        if f then
-            file = f[1] or file
-        end
-    end
+function specials.file(var,actions)
+    local file = jobreferences.checkedfile(var.operation)
     return link(nil,file,var.arguments,nil,actions)
 end
 
-function specials.fileorurl(var,actions) -- better resolve in strc-ref
-    local whatever, url, file = var.operation, nil, nil
-    if whatever then
-        local w = jobreferences.files.data[whatever]
-        if w then
-            file = w[1]
-        else
-            w = jobreferences.urls.data[whatever]
-            if w then
-                local u, f = w[1], w[2]
-                if f and f ~= "" then
-                    url = u .. "/" .. f
-                else
-                    url = u
-                end
-            end
-        end
-    end
+function specials.fileorurl(var,actions)
+    local file, url = jobreferences.checkedfileorurl(var.operation,var.operation)
     return link(url,file,var.arguments,nil,actions)
 end
 
-function specials.program(var,content) -- better resolve in strc-ref
-    local program = var.operation
-    if program then
-        local p = jobreferences.programs[program]
-        if p then
-            program = p[1]
-        end
-    end
+function specials.program(var,content)
+    local program = jobreferences.checkedprogram(var.operation)
     return lpdf.launch(program,var.arguments)
 end
 

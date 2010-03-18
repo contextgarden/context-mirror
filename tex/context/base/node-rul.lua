@@ -13,26 +13,28 @@ local disc  = node.id("disc")
 local rule  = node.id("rule")
 
 function nodes.strip_range(first,last) -- todo: dir
-    local current = first
-    while current ~= last do
-        local id = current.id
-        if id == glyph or id == disc then
---~         if id == glyph or id == rule or id == disc then
-            first = current
-            break
-        else
-            current = current.next
+    if first and last then -- just to be sure
+        local current = first
+        while current and current ~= last do
+            local id = current.id
+            if id == glyph or id == disc then
+    --~         if id == glyph or id == rule or id == disc then
+                first = current
+                break
+            else
+                current = current.next
+            end
         end
-    end
-    local current = last
-    while current ~= first do
-        local id = current.id
---~         if id == glyph or id == rule or id == disc then
-        if id == glyph or id == disc then
-            last = current
-            break
-        else
-            current = current.prev
+        local current = last
+        while current and current ~= first do
+            local id = current.id
+    --~         if id == glyph or id == rule or id == disc then
+            if id == glyph or id == disc then
+                last = current
+                break
+            else
+                current = current.prev
+            end
         end
     end
     return first, last
@@ -169,6 +171,7 @@ function nodes.rules.define(settings)
 end
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
+-- check for f and l
     local r, m
     if true then
         f, l = strip_range(f,l)

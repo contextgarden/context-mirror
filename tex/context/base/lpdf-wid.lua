@@ -31,6 +31,8 @@ local pdfimmediateobj = pdf.immediateobj
 
 local pdfannotation   = nodes.pdfannotation
 
+local hpack_node, write_node = node.hpack, node.write
+
 -- symbols
 
 local presets = { } -- xforms
@@ -133,10 +135,10 @@ function codeinjections.registercomment(specification)
             Parent  = pdfreference(nd),
         }
         d.Popup = pdfreference(nc)
-        texbox["commentboxone"] = node.hpack(pdfannotation(0,0,0,d(),nd))
-        texbox["commentboxtwo"] = node.hpack(pdfannotation(specification.width,specification.height,0,c(),nc))
+        texbox["commentboxone"] = hpack_node(pdfannotation(0,0,0,d(),nd)) -- current dir
+        texbox["commentboxtwo"] = hpack_node(pdfannotation(specification.width,specification.height,0,c(),nc)) -- current dir
     else
-        texbox["commentboxone"] = node.hpack(pdfannotation(0,0,0,d()))
+        texbox["commentboxone"] = hpack_node(pdfannotation(0,0,0,d())) -- current dir
         texbox["commentboxtwo"] = nil
     end
 end
@@ -209,7 +211,7 @@ function codeinjections.attachfile(specification)
     local width  = specification.width  or 0
     local height = specification.height or 0
     local depth  = specification.depth  or 0
-    node.write(pdfannotation(width,height,depth,d()))
+    write_node(pdfannotation(width,height,depth,d()))
 end
 
 function codeinjections.attachmentid(filename)
@@ -266,7 +268,7 @@ local function insertrenderingwindow(label,width,height,specification)
         AA      = actions,
     }
     local r = pdfreserveobj("annot")
-    node.write(pdfannotation(width,height,0,d(),r)) -- save ref
+    write_node(pdfannotation(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
 

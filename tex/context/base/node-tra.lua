@@ -333,7 +333,8 @@ function nodes.tosequence(start,stop,compact)
     if start then
         local t = { }
         while start do
-            if start.id == glyph then
+            local id = start.id
+            if id == glyph then
                 local c = start.char
                 if compact then
                     if start.components then
@@ -344,11 +345,13 @@ function nodes.tosequence(start,stop,compact)
                 else
                     t[#t+1] = format("U+%04X:%s",c,utfchar(c))
                 end
+            elseif id == whatsit and start.subtype == 6 or start.subtype == 7 then
+                t[#t+1] = "[" .. start.dir .. "]"
             else
                 if compact then
                     t[#t+1] = "[]"
                 else
-                    t[#t+1] = match(tostring(start),": (%S+)")
+                    t[#t+1] = node_type(id)
                 end
             end
             if start == stop then

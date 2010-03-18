@@ -47,6 +47,8 @@ function statistics.starttiming(instance)
         if not instance.loadtime then
             instance.loadtime = 0
         end
+    else
+--~         logs.report("system","nested timing (%s)",tostring(instance))
     end
     instance.timing = it + 1
 end

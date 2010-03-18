@@ -93,10 +93,10 @@
 %D \reference[here]{some text}
 %D \stoptyping
 
-\def\textreference {\dosingleargument\dotextreference}
-\def\pagereference {\dosingleargument\dopagereference}
-\def\reference     {\dosingleargument\doreference    }
-\def\setreference  {\dodoubleargument\dosetreference }
+\unexpanded\def\textreference {\dosingleargument\dotextreference}
+\unexpanded\def\pagereference {\dosingleargument\dopagereference}
+\unexpanded\def\reference     {\dosingleargument\doreference    }
+\unexpanded\def\setreference  {\dodoubleargument\dosetreference }
 
 %D These are implemented in a low level form as:
 

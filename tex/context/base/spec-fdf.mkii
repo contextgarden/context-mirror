@@ -377,21 +377,39 @@
   \flushPDFpageboxes
 \to \everyshipout
 
+% \def\doPDFsetupidentity#1#2#3#4#5#6%
+%   {\bgroup
+%    \enablePDFdocencoding
+%    \edef\!!stringa{#5}%
+%    \ifx\!!stringa\empty \ifx\pdfdate\undefined\else
+%      \edef\!!stringa{D:\pdfdate}%
+%    \fi \fi
+%    \expanded{\doPDFaddtoinfo
+%      {/Title (#1)
+%       /Subject (#2)
+%       /Author (#3)
+%       /Creator (#4)
+%       /ModDate (\!!stringa)
+%       /ID (\jobname.\!!stringa) % needed for pdf/x
+%       /Keywords (#6)}}%
+%    \egroup}
+
 \def\doPDFsetupidentity#1#2#3#4#5#6%
   {\bgroup
    \enablePDFdocencoding
-   \edef\!!stringa{#5}%
-   \ifx\!!stringa\empty \ifx\pdfdate\undefined\else
-     \edef\!!stringa{D:\pdfdate}%
-   \fi \fi
+   \sanitizePDFencoding#1\to\idtitle  \stripstring\idtitle
+   \sanitizePDFencoding#2\to\idsubject\stripstring\idsubject
+   \sanitizePDFencoding#3\to\idauthor \stripstring\idauthor
+   \sanitizePDFencoding#4\to\idcreator\stripstring\idcreator
+   \sanitizePDFencoding#6\to\idkeyword\stripstring\idkeyword
    \expanded{\doPDFaddtoinfo
-     {/Title (#1)
-      /Subject (#2)
-      /Author (#3)
-      /Creator (#4)
-      /ModDate (\!!stringa)
-      /ID (\jobname.\!!stringa) % needed for pdf/x
-      /Keywords (#6)}}%
+     {/Title   \ifPDFunicode<\idtitle  >\else(\idtitle  )\fi
+      /Subject \ifPDFunicode<\idsubject>\else(\idsubject)\fi
+      /Author  \ifPDFunicode<\idauthor >\else(\idauthor )\fi
+      /Creator \ifPDFunicode<\idcreator>\else(\idcreator)\fi
+      /ModDate (#4)
+      /ID (\jobname.#5) % needed for pdf/x
+      /Keywords \ifPDFunicode<\idkeyword>\else(\idkeyword)\fi}}%
    \egroup}
 
 %D \macros
@@ -1179,10 +1197,8 @@
 
 \def\doPDFinsertbookmark#1#2#3#4#5% level sublevels text page open=1
   {\bgroup
-   % todo, unicode
-   \sanitizePDFdocencoding#3\to\bookmarktext % uses scratchcounter
+   \sanitizePDFencoding#3\to\bookmarktext % uses scratchcounter
    \stripstring\bookmarktext
-  %\sanitizePDFstring#3\to\bookmarktext
    \doPDFbookmark{#1}{#2}{\bookmarktext}{#4}{#5}%
    \egroup}
 
@@ -2364,7 +2380,69 @@
    \let^^M=\\}
 \egroup
 
-\let\sanitizePDFencoding\sanitizePDFdocencoding
+% \let\sanitizePDFencoding\sanitizePDFdocencoding
+
+%D The conversions comes down to (for the sake of speed the
+%D implementation combines steps):
+%D
+%D \startitemize
+%D \item we expand the \UTF\ sequences into \type {\unicodechar}'s
+%D \item spaces become character 255's (so that they are not
+%D      gobbled in argument fetching
+%D \item normal \ASCII\ chars are unchanged
+%D \item \par's and alike are converted to \type {\unicodechar}'s
+%D \stopitemize
+%D
+%D This happens by expansion; next we convert the resulting
+%D sequence by interpreting the stream.
+
+\long\def\sanitizePDFuniencoding#1\to#2%
+  {\enablePDFunicrlf
+   \simplifycommands % added due to Dohyun Kim
+   \let\unicodechar\relax % prevent further expansion
+   \retainlccodes\lccode32=255 % slooow
+   \lowercasestring\PDFunicodetrigger#1\to#2%
+   \edef#2{\expandafter\doPDFuni#2\empty\empty}} % slooow
+
+%D Handling of empty lines:
+
+\bgroup
+\catcode`\^^M=\@@active
+\gdef\enablePDFunicrlf%
+  {\def\\{\unicodechar{13}}%
+   \def\par{\\\\}%
+   \catcode`\^^M=\@@active%
+   \let^^M=\\}
+\egroup
+
+%D Conversion to 16 bit \UNICODE:
+
+\def\PDFunicodechar#1%
+  {\@EA\lchexnumbers\@EA{\number\utfdiv{#1}}%
+   \@EA\lchexnumbers\@EA{\number\utfmod{#1}}}
+
+\def\PDFunicodetrigger
+  {\unicodechar{65279}}
+
+%D The postprocessor:
+
+\def\doPDFuni#1%
+  {\ifx#1\relax
+     \@EA\dodoPDFuni
+   \else\ifx#1\empty
+     % quit
+   \else
+     \@EAEAEA\nodoPDFuni
+   \fi\fi#1}
+
+\def\nodoPDFuni#1%
+  {\PDFunicodechar{\ifnum`#1=255 32\else`#1\fi}\doPDFuni}
+
+\def\dodoPDFuni#1#2%
+  {\PDFunicodechar{#2}\doPDFuni}
+
+\def\sanitizePDFencoding
+  {\doifelse\currentregime{utf}{\PDFunicodetrue\sanitizePDFuniencoding}\sanitizePDFdocencoding}
 
 %D A bit out of place, but useful:
 

@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['font-gds'] = {
 local type, next = type, next
 local gmatch = string.gmatch
 
+local trace_goodies = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
+
 -- goodies=name,colorscheme=,featureset=
 --
 -- goodies=auto
@@ -36,6 +38,13 @@ local function getgoodies(filename) -- maybe a merge is better
             data[filename] = false -- signal for not found
         else
             goodies = dofile(fullname) or false
+            if not goodies then
+                logs.report("fonts", "goodie file '%s' is invalid",fullname)
+                return nil
+            elseif trace_goodies then
+                logs.report("fonts", "goodie file '%s' is loaded",fullname)
+            end
+            goodies.name = goodies.name or "no name"
             for name, fnc in next, list do
                 fnc(goodies)
             end
@@ -93,14 +102,30 @@ local function flattened(t,tt)
     return tt
 end
 
+fonts.flattened_features = flattened
+
+function fonts.goodies.prepare_features(goodies,name,set)
+    if set then
+        local ff = fonts.flattened_features(set)
+        local fullname = goodies.name .. "::" .. name
+        local n, s = preset_context(fullname,"",ff)
+        goodies.featuresets[name] = s -- set
+        if trace_goodies then
+            logs.report("fonts", "feature set '%s' gets number %s and name '%s'",name,n,fullname)
+        end
+        return n
+    end
+end
+
 local function initialize(goodies,tfmdata)
     local featuresets = goodies.featuresets
     local goodiesname = goodies.name
     if featuresets then
-        for name,set in next, featuresets do
-            local ff = flattened(set)
-            local n, s = preset_context(goodiesname .. "::" .. name,"",ff)
-            featuresets[name] = s -- set
+        if trace_goodies then
+            logs.report("fonts", "checking featuresets in '%s'",goodies.name)
+        end
+        for name, set in next, featuresets do
+            fonts.goodies.prepare_features(goodies,name,set)
         end
     end
 end

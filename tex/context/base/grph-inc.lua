@@ -36,7 +36,7 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
-local texsprint, texbox, texwd, texht, texdp = tex.sprint, tex.box, tex.wd, tex.ht, tex.dp
+local texsprint, texbox = tex.sprint, tex.box
 local contains = table.contains
 local concat = table.concat
 
@@ -670,8 +670,9 @@ function figures.done(data)
     figures.n = figures.n + 1
     data = data or figures.current()
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
-    ds.width  = texwd[nr]
-    ds.height = texht[nr]
+    local box = tex.box[nr]
+    ds.width  = box.width
+    ds.height = box.height
     ds.xscale = ds.width /(du.width  or 1)
     ds.yscale = ds.height/(du.height or 1)
     return data
@@ -680,10 +681,11 @@ end
 function figures.dummy(data)
     data = data or figures.current()
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
-    texbox[nr] = node.new("hlist")
-    texwd [nr] = du.width  or figures.defaultwidth
-    texht [nr] = du.height or figures.defaultheight
-    texdp [nr] = du.depth  or figures.defaultdepth
+    local box = node.new("hlist")
+    box.width  = du.width  or figures.defaultwidth
+    box.height = du.height or figures.defaultheight
+    box.depth  = du.depth  or figures.defaultdepth
+    texbox[nr] = box
 end
 
 -- -- -- generic -- -- --
@@ -757,9 +759,9 @@ function figures.includers.generic(data)
     if figure then
         local nr = figures.boxnumber
         -- it looks like we have a leak in attributes here .. todo
-        texbox[nr] = node.hpack(img.node(figure))
-     -- texbox[nr] = img.node(figure) -- img.write(figure) -- assigning img.node directly no longer valid
-        texwd[nr], texht[nr], texdp[nr] = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
+        local box = node.hpack(img.node(figure)) -- img.node(figure) not longer valid
+        box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
+        texbox[nr] = box
         ds.objectnumber = figure.objnum
         texsprint(ctxcatcodes,"\\relocateexternalfigure")
     end

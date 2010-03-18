@@ -57,11 +57,34 @@ function scripts.fonts.reload()
     end
 end
 
+local function subfont(sf)
+    if sf then
+        return string.format("index: % 2s", sf)
+    else
+        return ""
+    end
+end
+
+local function fontweight(fw)
+    if fw then
+        return string.format("conflict: %s", fw)
+    else
+        return ""
+    end
+end
+
 local function showfeatures(tag,specification)
     logs.simple("mapping : %s",tag)
     logs.simple("fontname: %s",specification.fontname)
     logs.simple("fullname: %s",specification.fullname)
     logs.simple("filename: %s",specification.filename)
+    logs.simple("family  : %s",specification.familyname or "<nofamily>")
+    logs.simple("weight  : %s",specification.weight or "<noweight>")
+    logs.simple("style   : %s",specification.style or "<nostyle>")
+    logs.simple("width   : %s",specification.width or "<nowidth>")
+    logs.simple("variant : %s",specification.variant or "<novariant>")
+    logs.simple("subfont : %s",subfont(specification.subfont))
+    logs.simple("fweight : %s",fontweight(specification.fontweight))
     -- maybe more
     local features = fonts.get_features(specification.filename,specification.format)
     if features then
@@ -104,44 +127,33 @@ local function reloadbase(reload)
     end
 end
 
-local function subfont(sf)
-    if sf then
-        return string.format("index: % 2s", sf)
-    else
-        return ""
-    end
-end
-local function fontweight(fw)
-    if fw then
-        return string.format("conflict: %s", fw)
-    else
-        return ""
-    end
-end
-
 local function list_specifications(t,info)
     if t then
-        local s, w = table.sortedkeys(t), { 0, 0, 0 }
-        for k,v in ipairs(s) do
-            local entry = t[v]
-            s[k] = {
-                entry.familyname  or "<nofamily>",
-                entry.weight      or "<noweight>",
-                entry.style       or "<nostyle>",
-                entry.width       or "<nowidth>",
-                entry.variant     or "<novariant>",
-                entry.fontname,
-                entry.filename,
-                subfont(entry.subfont),
-                fontweight(entry.fontweight),
-            }
---~ if info then
---~     showfeatures(v,t[v])
---~ end
-        end
-        table.formatcolumns(s)
-        for k,v in ipairs(s) do
-            texio.write_nl(v)
+        local s = table.sortedkeys(t)
+        if info then
+            for k,v in ipairs(s) do
+                showfeatures(v,t[v])
+            end
+        else
+            for k,v in ipairs(s) do
+                local entry = t[v]
+                s[k] = {
+                    entry.familyname  or "<nofamily>",
+                    entry.weight      or "<noweight>",
+                    entry.style       or "<nostyle>",
+                    entry.width       or "<nowidth>",
+                    entry.variant     or "<novariant>",
+                    entry.fontname,
+                    entry.filename,
+                    subfont(entry.subfont),
+                    fontweight(entry.fontweight),
+                }
+                e[k] = entry
+            end
+            table.formatcolumns(s)
+            for k,v in ipairs(s) do
+                texio.write_nl(v)
+            end
         end
     end
 end

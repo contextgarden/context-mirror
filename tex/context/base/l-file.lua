@@ -19,7 +19,9 @@ function file.removesuffix(filename)
 end
 
 function file.addsuffix(filename, suffix)
-    if not find(filename,"%.[%a%d]+$") then
+    if not suffix or suffix == "" then
+        return filename
+    elseif not find(filename,"%.[%a%d]+$") then
         return filename .. "." .. suffix
     else
         return filename

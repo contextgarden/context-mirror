@@ -55,15 +55,15 @@ local html_menu = [[
 
 local directrun = true
 
-function goodies.progress.make_svg(filename,other)
+function plugins.progress.make_svg(filename,other)
     local metadata, menudata, c = { }, { }, 0
     metadata[#metadata+1] = 'outputformat := "svg" ;'
     for _, kind in pairs { "parameters", "nodes" } do
         local mdk = { }
         menudata[kind] = mdk
-        for n, name in pairs(goodies.progress[kind](filename)) do
-            local first = goodies.progress.path(filename,name)
-            local second = goodies.progress.path(filename,other)
+        for n, name in pairs(plugins.progress[kind](filename)) do
+            local first = plugins.progress.path(filename,name)
+            local second = plugins.progress.path(filename,other)
             c = c + 1
             metadata[#metadata+1] = format(meta,c,first,second)
             mdk[#mdk+1] = { name, c }
@@ -88,7 +88,7 @@ function goodies.progress.make_svg(filename,other)
     end
 end
 
-function goodies.progress.makehtml(filename,other,menudata,metadata)
+function plugins.progress.makehtml(filename,other,menudata,metadata)
     local graphics = { }
     local result = { graphics = graphics }
     for _, kind in pairs { "parameters", "nodes" } do
@@ -97,9 +97,9 @@ function goodies.progress.makehtml(filename,other,menudata,metadata)
         result[kind] = menu
         for k, v in ipairs(md) do
             local name, number = v[1], v[2]
-            local min     = goodies.progress.bot(filename,name)
-            local max     = goodies.progress.top(filename,name)
-            local pages   = goodies.progress.pages(filename)
+            local min     = plugins.progress.bot(filename,name)
+            local max     = plugins.progress.top(filename,name)
+            local pages   = plugins.progress.pages(filename)
             local average = math.round(max/pages)
             if directrun then
                 local data = metadata[number]
@@ -119,20 +119,20 @@ function goodies.progress.makehtml(filename,other,menudata,metadata)
     return result
 end
 
-function goodies.progress.valid_file(name)
+function plugins.progress.valid_file(name)
     return name and name ~= "" and lfs.isfile(name .. "-luatex-progress.lut")
 end
 
-function goodies.progress.make_lmx_page(name,launch,remove)
+function plugins.progress.make_lmx_page(name,launch,remove)
 
     local filename = name .. "-luatex-progress"
     local other    = "elapsed_time"
     local template = 'context-timing.lmx'
 
-    goodies.progress.convert(filename)
+    plugins.progress.convert(filename)
 
-    local menudata, metadata = goodies.progress.make_svg(filename,other)
-    local htmldata = goodies.progress.makehtml(filename,other,menudata,metadata)
+    local menudata, metadata = plugins.progress.make_svg(filename,other)
+    local htmldata = plugins.progress.makehtml(filename,other,menudata,metadata)
 
     lmx.htmfile = function(name) return name .. "-timing.xhtml" end
     lmx.lmxfile = function(name) return resolvers.find_file(name,'tex') end
@@ -165,13 +165,13 @@ scripts.timings = scripts.timings or { }
 function scripts.timings.xhtml(filename)
     if filename == "" then
         logs.simple("provide filename")
-    elseif not goodies.progress.valid_file(filename) then
+    elseif not plugins.progress.valid_file(filename) then
         logs.simple("first run context again with the --timing option")
     else
         local basename = file.removesuffix(filename)
         local launch   = environment.argument("launch")
         local remove   = environment.argument("remove")
-        goodies.progress.make_lmx_page(basename,launch,remove)
+        plugins.progress.make_lmx_page(basename,launch,remove)
     end
 end
 

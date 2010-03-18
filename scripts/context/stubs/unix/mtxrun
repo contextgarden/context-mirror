@@ -8359,7 +8359,7 @@ function resolvers.getownpath()
             if os.binsuffix ~= "" then
                 binary = file.replacesuffix(binary,os.binsuffix)
             end
-            for p in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
+            for p in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do -- can be helper
                 local b = file.join(p,binary)
                 if lfs.isfile(b) then
                     -- we assume that after changing to the path the currentdir function
@@ -11801,8 +11801,24 @@ function runners.execute_script(fullname,internal,nosplit)
                         logs.simpleline()
                         io.flush()
                     end
-                    local code = os.exec(command) -- maybe spawn
-                    return code == 0
+                    -- no os.exec because otherwise we get the wrong return value
+                    local code = os.execute(command) -- maybe spawn
+                    if code == 0 then
+                        return true
+                    else
+                        if binary then
+                            binary = file.addsuffix(binary,os.binsuffix)
+                            for p in string.gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
+                                if lfs.isfile(file.join(p,binary)) then
+                                    return false
+                                end
+                            end
+                            logs.simpleline()
+                            logs.simple("This script needs '%s' which seems not to be installed.",binary)
+                            logs.simpleline()
+                        end
+                        return false
+                    end
                 end
             end
         end

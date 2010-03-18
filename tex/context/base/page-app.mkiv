@@ -96,16 +96,16 @@
 
 \presetlocalframed[\??tg]
 
-\def\setupTEXpage
+\unexpanded\def\setupTEXpage
   {\dodoubleargument\getparameters[\??tg]}
 
-\def\startTEXpage
+\unexpanded\def\startTEXpage
   {\dosingleempty\dostartTEXpage}
 
 \def\dostartTEXpage[#1]%
   {\dostartfittingpage[\??tg][#1]\gobblespacetokens}
 
-\def\stopTEXpage
+\unexpanded\def\stopTEXpage
   {\removelastspace
    \dostopfittingpage}
 
@@ -127,14 +127,14 @@
 %D
 %D maybe I should support stream=yes in framed.
 
-\def\startTEXstream
+\unexpanded\def\startTEXstream
   {\dosingleempty\dostartTEXstream}
 
 \def\dostartTEXstream[#1]%
   {\page
    \defineoutputstream[tex]%
    \enableoutputstream[tex]%
-   \def\stopTEXstream
+   \unexpanded\def\stopTEXstream
      {\disableoutputstream
       \startTEXpage
       \outputstreamunvbox[tex]%

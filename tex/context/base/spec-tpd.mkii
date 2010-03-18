@@ -1176,7 +1176,7 @@
    \pdfoutline
      user {<</S /GoTo /D [\PDFobjectreference\space\PDFpageviewwrd]>>}%
      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
-     {#3}}
+     {\ifPDFunicode<#3>\else#3\fi}}
 
 %D \macros
 %D   {doPDFdictionaryobject,doPDFarrayobject}

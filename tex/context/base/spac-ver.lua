@@ -20,7 +20,7 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 local next, type, tonumber = next, type, tonumber
 local format, gmatch, concat, match = string.format, string.gmatch, table.concat, string.match
 local ceil, floor, max, min, round = math.ceil, math.floor, math.max, math.min, math.round
-local texsprint, texlists, texdimen, texbox, texht, texdp = tex.sprint, tex.lists, tex.dimen, tex.box, tex.ht, tex.dp
+local texsprint, texlists, texdimen, texbox = tex.sprint, tex.lists, tex.dimen, tex.box
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 
@@ -63,6 +63,7 @@ local count_nodes        = nodes.count
 local node_ids_to_string = nodes.ids_to_string
 local hpack_node         = node.hpack
 local vpack_node         = node.vpack
+local writable_spec      = nodes.writable_spec
 
 local glyph   = node.id("glyph")
 local penalty = node.id("penalty")
@@ -247,6 +248,7 @@ local function snap_topskip(current,method)
     local wd = w
     if spec then
         wd = 0
+        spec = writable_spec(current)
         spec.width = wd
     end
     return w, wd
@@ -551,8 +553,8 @@ function vspacing.snap_box(n,how)
                     logs.report("snapper", "hlist not snapped, already done")
                 end
             else
-                local h, d, ch, cd, lines = snap_hlist(box,sv,texht[n],texdp[n])
-                texht[n], texdp[n] = ch, cd
+                local h, d, ch, cd, lines = snap_hlist(box,sv,box.height,box.depth)
+                box.height, box.depth = ch, cd
                 if trace_vsnapping then
                     logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,"direct",lines)
                 end
@@ -696,6 +698,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                             if cs and ps.stretch_order == 0 and ps.shrink_order == 0 and cs.stretch_order == 0 and cs.shrink_order == 0 then
                                 local pw, pp, pm = ps.width, ps.stretch, ps.shrink
                                 local cw, cp, cm = cs.width, cs.stretch, cs.shrink
+                                ps = writable_spec(previous)
                                 ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
                                 if trace then trace_natural("removed",current) end
                                 head, current = remove_node(head, current, true)
@@ -774,7 +777,8 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                     head, current = remove_node(head, current, true)
                 elseif sc == add then
                     if trace then trace_skip('add',sc,so,sp,current) end
-                    local old, new = glue_data.spec, current.spec
+--~                     local old, new = glue_data.spec, current.spec
+                    local old, new = writable_spec(glue_data), current.spec
                     old.width   = old.width   + new.width
                     old.stretch = old.stretch + new.stretch
                     old.shrink  = old.shrink  + new.shrink
@@ -798,6 +802,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                     set_attribute(current,snap_method,0)
                     local spec = current.spec
                     if spec then
+                        spec = writable_spec(current)
                         spec.width = 0
                         if trace_vsnapping then
                             logs.report("snapper", "lineskip set to zero")
@@ -1063,7 +1068,7 @@ function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an action
                         head, h, n = remove_node(head,h)
                         local pl = p.list
                         if n.width ~= 0 then
-                            n = hpack_node(n,0,'exactly')
+                            n = hpack_node(n,0,'exactly') -- todo: dir
                         end
                         if pl then
                             pl.prev = n

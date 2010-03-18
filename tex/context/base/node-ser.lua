@@ -196,6 +196,8 @@ local function serialize(root,name,handle,depth,m)
                     else
                         handle(format("%s %s=%q,",depth,key(k),v))
                     end
+                elseif t == "boolean" then
+                    handle(format("%s %s=%q,",depth,key(k),tostring(v)))
                 elseif v then -- userdata or table
                     serialize(v,k,handle,depth,m+1)
                 end

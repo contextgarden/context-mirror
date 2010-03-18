@@ -44,6 +44,12 @@
 
 \catcode`\|=\oldbarcode
 
+\def\loadpstricksmodule[#1]%
+  {\chardef\oldbarcode\the\catcode`\|
+   \catcode`\|=12
+   \readfile{#1}{}{}%
+   \catcode`\|=\oldbarcode}
+
 %D The next piece of code is for John Culleton who suggested to
 %D handle \PSTRICKS\ in a similar fashion as \METAPOST, i.e.\
 %D using a child process. For the moment there is no support
@@ -111,6 +117,7 @@
 \long\def\dostartPSTRICKS[#1]#2\stopPSTRICKS
   {\doifelse{\jobsuffix}{dvi} % will some day move to app as switch
      {\hbox{#2}}
-     {\startTEXapplication[#1]{\usemodule[pstric]}#2\stopTEXapplication}}
+%      {\startTEXapplication[#1]{\usemodule[pstric]}#2\stopTEXapplication}}
+     {\startTEXapplication[#1]{}#2\stopTEXapplication}}
 
 \protect \endinput

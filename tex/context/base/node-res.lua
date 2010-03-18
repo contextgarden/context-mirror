@@ -120,6 +120,48 @@ function nodes.latelua(code)
     return n
 end
 
+--[[
+<p>At some point we ran into a problem that the glue specification
+of the zeropoint dimension was overwritten when adapting a glue spec
+node. This is a side effect of glue specs being shared. After a
+couple of hours tracing and debugging Taco and I came to the
+conclusion that it made no sense to complicate the spec allocator
+and settled on a writable flag. This all is a side effect of the
+fact that some glues use reserved memory slots (with the zeropoint
+glue being a noticeable one). So, next we wrap this into a function
+and hide it for the user. And yes, LuaTeX now gives a warning as
+well.</p>
+]]--
+
+if tex.luatexversion > 51 then
+
+    function nodes.writable_spec(n)
+        local spec = n.spec
+        if not spec then
+            spec = copy_node(glue_spec)
+            n.spec = spec
+        elseif not spec.writable then
+            spec = copy_node(spec)
+            n.spec = spec
+        end
+        return spec
+    end
+
+else
+
+    function nodes.writable_spec(n)
+        local spec = n.spec
+        if not spec then
+            spec = copy_node(glue_spec)
+        else
+            spec = copy_node(spec)
+        end
+        n.spec = spec
+        return spec
+    end
+
+end
+
 local cache = { }
 
 function nodes.usernumber(num)

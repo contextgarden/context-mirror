@@ -61,6 +61,7 @@ scripts.patterns.list = {
     { "??",  "hyph-sr-cyrl.tex",       "serbian" },
     { "sv",  "hyph-sv.tex",            "swedish" },
     { "tr",  "hyph-tr.tex",            "turkish" },
+    { "tk",  "hyph-tk.tex",            "turkman" },
     { "uk",  "hyph-uk.tex",            "ukrainian" },
     { "??",  "hyph-zh-latn.tex",       "zh-latn, chinese Pinyin" },
 }

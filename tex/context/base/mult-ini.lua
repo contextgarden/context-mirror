@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
 
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local lpegmatch = lpeg.match
+local serialize = table.serialize
 
 interfaces           = interfaces           or { }
 interfaces.messages  = interfaces.messages  or { }
@@ -73,4 +74,28 @@ end
 
 function interfaces.setconstant(constant,given)
     constants[given] = constant
+end
+
+-- it's nicer to have numbers as reference than a hash
+
+interfaces.cachedsetups = interfaces.cachedsetups or { }
+interfaces.hashedsetups = interfaces.hashedsetups or { }
+
+storage.register("interfaces.cachedsetups", interfaces.cachedsetups, "interfaces.cachedsetups")
+storage.register("interfaces.hashedsetups", interfaces.hashedsetups, "interfaces.hashedsetups")
+
+local cachedsetups = interfaces.cachedsetups
+local hashedsetups = interfaces.hashedsetups
+
+function interfaces.cachesetup(t)
+    local hash = serialize(t)
+    local done = hashedsetups[hash]
+    if done then
+        return cachedsetups[done]
+    else
+        done = #cachedsetups + 1
+        cachedsetups[done] = t
+        hashedsetups[hash] = done
+        return t
+    end
 end

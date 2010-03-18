@@ -1086,7 +1086,7 @@
 \let\pseudoendstrut\removeunwantedspaces
 
 \def\resetteststrut
-  {\let\strutwidth\zeropoint
+  {\def\strutwidth{\zeropoint}% no let
    \setstrut}
 
 \ifdefined\setfontparameters\else
@@ -1115,7 +1115,7 @@
    \lineskip\zeropoint
    \lineskiplimit\maxdimen
    % We also need this here now; thanks to taco for figuring that out!
-   \let\minimumlinedistance\zeropoint}
+   \def\minimumlinedistance{\zeropoint}}
 
 \def\nointerlineskip
   {\prevdepth-\thousandpoint}

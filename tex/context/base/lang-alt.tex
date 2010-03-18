@@ -23,6 +23,8 @@
 %  Azeri/Azerbaijani, Chuvash, Turkish, Turkmen
 %  Kazakh, Kazar, Kireghiz, Noghay, Talar
 %  Buryat, Kalmuck, Khalkha
+%
+% Turkmen translation by Nazar Annagurban <nazartm at gmail.com> 18. March 2010
 
 \unprotect
 
@@ -38,53 +40,112 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!year,\ ,\v!month,\ ,\v!day}]
+   
+\installlanguage
+  [\s!tk]
+  [\c!spacing=\v!broad,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day}
+   \s!patterns=\s!tk,
+   \s!lefthyphenmin=1,
+   \s!righthyphenmin=2]
 
 \installlanguage [turkish] [\s!tr]
+\installlanguage [turkmen] [\s!tk]
 
 \setupheadtext [\s!tr] [\v!content=Fihrist]
+\setupheadtext [\s!tk] [\v!content=Mazmuny]
 \setupheadtext [\s!tr] [\v!tables=Tablolar]
+\setupheadtext [\s!tk] [\v!tables=Tablisalar]
 \setupheadtext [\s!tr] [\v!figures=\Scedilla ekiller]
+\setupheadtext [\s!tk] [\v!figures=Suratlar]
 \setupheadtext [\s!tr] [\v!graphics=Grafikler]
+\setupheadtext [\s!tk] [\v!graphics=Grafikler]
 \setupheadtext [\s!tr] [\v!intermezzi=...]
+\setupheadtext [\s!tk] [\v!intermezzi=Arakesmeler]
 \setupheadtext [\s!tr] [\v!index=\Idotaccent ndex]
+\setupheadtext [\s!tk] [\v!index=Indeks]
 \setupheadtext [\s!tr] [\v!abbreviations=K\dotlessi saltmalar]
+\setupheadtext [\s!tk] [\v!abbreviations=Gysgaltmalar]
 \setupheadtext [\s!tr] [\v!logos=Logolar]
+\setupheadtext [\s!tk] [\v!logos=Logolar]
 \setupheadtext [\s!tr] [\v!units=Birimler]
+\setupheadtext [\s!tk] [\v!units=Birlikler]
 
 \setuplabeltext [\s!tr] [\v!table=Tablo ]
+\setuplabeltext [\s!tk] [\v!table=Tablisa]
 \setuplabeltext [\s!tr] [\v!figure=\Scedilla ekil ]
+\setuplabeltext [\s!tk] [\v!figure=Surat]
 \setuplabeltext [\s!tr] [\v!intermezzo=... ]
-\setuplabeltext [\s!tr] [\v!graphic=Grafik ]
+\setuplabeltext [\s!tk] [\v!intermezzo=Arakesme]
+\setuplabeltext [\s!tr] [\v!graphic=Grafik]
+\setuplabeltext [\s!tk] [\v!graphic=Grafik]
 \setuplabeltext [\s!tr] [\v!chapter=]
+\setuplabeltext [\s!tk] [\v!chapter=Bap]
 \setuplabeltext [\s!tr] [\v!section=]
+\setuplabeltext [\s!tk] [\v!section=]
 \setuplabeltext [\s!tr] [\v!subsection=]
+\setuplabeltext [\s!tk] [\v!subsection=]
 \setuplabeltext [\s!tr] [\v!subsubsection=]
 \setuplabeltext [\s!tr] [\v!subsubsubsection=]
+\setuplabeltext [\s!tk] [\v!subsubsubsection=]
 \setuplabeltext [\s!tr] [\v!appendix=]
+\setuplabeltext [\s!tk] [\v!appendix=Go\scedilla ma\ccedilla a]
 \setuplabeltext [\s!tr] [\v!part=Cilt ]
+\setuplabeltext [\s!tk] [\v!part=B\odiaeresis l\udiaeresis m]
 \setuplabeltext [\s!tr] [\v!line=sat\dotlessi r ]
+\setuplabeltext [\s!tk] [\v!line=setir]
 \setuplabeltext [\s!tr] [\v!lines=sat\dotlessi rlar ]
+\setuplabeltext [\s!tk] [\v!lines=setirler]
 
-\setuplabeltext [\s!tr]   [\v!january=ocak]
+\setuplabeltext [\s!tk]  [\v!january=\yacute anwar]
+\setuplabeltext [\s!tk]  [\v!february=fewral]
+\setuplabeltext [\s!tk]  [\v!march=mart]
+\setuplabeltext [\s!tk]  [\v!april=aprel]
+\setuplabeltext [\s!tk]  [\v!may=ma\yacute]
+\setuplabeltext [\s!tk]  [\v!june=i\yacute un]
+\setuplabeltext [\s!tk]  [\v!july=i\yacute ul]
+\setuplabeltext [\s!tk]  [\v!august=awgust]
+\setuplabeltext [\s!tk]  [\v!september=sent\yacute abr]
+\setuplabeltext [\s!tk]  [\v!october=okt\yacute abr]
+\setuplabeltext [\s!tk]  [\v!november=no\yacute abr]
+\setuplabeltext [\s!tk]  [\v!december=dekabr]
+
+\setuplabeltext [\s!tr]  [\v!january=ocak]
 \setuplabeltext [\s!tr]  [\v!february=\Scedilla ubat]
-\setuplabeltext [\s!tr]     [\v!march=mart]
-\setuplabeltext [\s!tr]     [\v!april=nisan]
-\setuplabeltext [\s!tr]       [\v!may=may\dotlessi s]
-\setuplabeltext [\s!tr]      [\v!june=haziran]
-\setuplabeltext [\s!tr]      [\v!july=temmuz]
-\setuplabeltext [\s!tr]    [\v!august=a\gbreve ustos]
-\setuplabeltext [\s!tr] [\v!september=eyl\udiaeresis l]
-\setuplabeltext [\s!tr]   [\v!october=ekim]
+\setuplabeltext [\s!tr]  [\v!march=mart]
+\setuplabeltext [\s!tr]  [\v!april=nisan]
+\setuplabeltext [\s!tr]  [\v!may=may\dotlessi s]
+\setuplabeltext [\s!tr]  [\v!june=haziran]
+\setuplabeltext [\s!tr]  [\v!july=temmuz]
+\setuplabeltext [\s!tr]  [\v!august=a\gbreve ustos]
+\setuplabeltext [\s!tr]  [\v!september=eyl\udiaeresis l]
+\setuplabeltext [\s!tr]  [\v!october=ekim]
 \setuplabeltext [\s!tr]  [\v!november=kas\dotlessi m]
 \setuplabeltext [\s!tr]  [\v!december=aral\dotlessi k]
 
-\setuplabeltext [\s!tr]    [\v!sunday=pazar]
-\setuplabeltext [\s!tr]    [\v!monday=pazartesi]
-\setuplabeltext [\s!tr]   [\v!tuesday=sal\dotlessi]
-\setuplabeltext [\s!tr] [\v!wednesday=\ccedilla ar\scedilla amba]
+\setuplabeltext [\s!tr]  [\v!sunday=pazar]
+\setuplabeltext [\s!tr]  [\v!monday=pazartesi]
+\setuplabeltext [\s!tr]  [\v!tuesday=sal\dotlessi]
+\setuplabeltext [\s!tr]  [\v!wednesday=\ccedilla ar\scedilla amba]
 \setuplabeltext [\s!tr]  [\v!thursday=per\scedilla embe]
-\setuplabeltext [\s!tr]    [\v!friday=cuma]
+\setuplabeltext [\s!tr]  [\v!friday=cuma]
 \setuplabeltext [\s!tr]  [\v!saturday=cumartesi]
+
+\setuplabeltext [\s!tk]  [\v!sunday=dyn\ccedilla\ g\udiaeresis n]
+\setuplabeltext [\s!tk]  [\v!monday=birinji g\udiaeresis n]
+\setuplabeltext [\s!tk]  [\v!tuesday=ikinji g\udiaeresis n]
+\setuplabeltext [\s!tk]  [\v!wednesday=\udiaeresis\ccedilla\udiaeresis nji]
+\setuplabeltext [\s!tk]  [\v!thursday=d\odiaeresis rd\udiaeresis nji g\udiaeresis n]
+\setuplabeltext [\s!tk]  [\v!friday=b\adiaeresis\scedilla inji g\udiaeresis n]
+\setuplabeltext [\s!tk]  [\v!saturday=altynjy g\udiaeresis n]
 
 %D \ShowAllLanguageValues [\s!tr] [turkish] {Turkish} {delight} % turks fruit
 

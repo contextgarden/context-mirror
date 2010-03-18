@@ -1670,34 +1670,85 @@ mathematics.make_font ( "mathtimes-math", {
 } )
 
 mathematics.make_font ( "charter-math", {
-    { name = "file:bchr8a", features = "virtualmath", main = true },
+ -- { name = "file:bchr8a", features = "virtualmath", main = true },
+    { name = "file:bchri8a", features = "virtualmath", main = true },
  -- { name = "md-chr7m.tfm", vector = "tex-mr" },
     { name = "md-chri7m.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "md-chri7m.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "md-chr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "md-chr7v.tfm", vector = "tex-ex", extension = true },
+ -- { name = "md-chbma.tfm", vector = "tex-ma" },
+ -- { name = "md-chbmb.tfm", vector = "tex-mb" },
     { name = "msam10.tfm", vector = "tex-ma" },
     { name = "msbm10.tfm", vector = "tex-mb" },
 } )
 
 mathematics.make_font ( "garamond-math", {
-    { name = "file:ugmr8y", features = "virtualmath", main = true },
+ -- { name = "file:ugmr8a", features = "virtualmath", main = true },
+    { name = "file:ugmri8a", features = "virtualmath", main = true },
  -- { name = "md-gmr7m.tfm", vector = "tex-mr" },
     { name = "md-gmri7m.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "md-gmri7m.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "md-gmr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "md-gmr7v.tfm", vector = "tex-ex", extension = true },
+ -- { name = "md-gmmma.tfm", vector = "tex-ma" },
+ -- { name = "md-gmmmb.tfm", vector = "tex-mb" },
     { name = "msam10.tfm", vector = "tex-ma" },
     { name = "msbm10.tfm", vector = "tex-mb" },
 } )
 
 mathematics.make_font ( "utopia-math", {
-    { name = "file:putr8y", features = "virtualmath", main = true },
+ -- { name = "file:putr8a", features = "virtualmath", main = true },
+    { name = "file:putri8a", features = "virtualmath", main = true },
  -- { name = "md-utr7m.tfm", vector = "tex-mr" },
     { name = "md-utri7m.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "md-utri7m.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "md-utr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
     { name = "md-utr7v.tfm", vector = "tex-ex", extension = true },
+ -- { name = "md-utbma.tfm", vector = "tex-ma" },
+ -- { name = "md-utbmb.tfm", vector = "tex-mb" },
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "charter-math", {
+ -- { name = "file:bchr8a", features = "virtualmath", main = true },
+    { name = "file:bchri8a", features = "virtualmath", main = true },
+ -- { name = "md-chr7m.tfm", vector = "tex-mr" },
+    { name = "md-chri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "md-chri7m.tfm", vector = "tex-it", skewchar=0x7F },
+    { name = "md-chr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+    { name = "md-chr7v.tfm", vector = "tex-ex", extension = true },
+ -- { name = "md-chbma.tfm", vector = "tex-ma" },
+ -- { name = "md-chbmb.tfm", vector = "tex-mb" },
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "garamond-math", {
+ -- { name = "file:ugmr8a", features = "virtualmath", main = true },
+    { name = "file:ugmri8a", features = "virtualmath", main = true },
+ -- { name = "md-gmr7m.tfm", vector = "tex-mr" },
+    { name = "md-gmri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "md-gmri7m.tfm", vector = "tex-it", skewchar=0x7F },
+    { name = "md-gmr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+    { name = "md-gmr7v.tfm", vector = "tex-ex", extension = true },
+ -- { name = "md-gmmma.tfm", vector = "tex-ma" },
+ -- { name = "md-gmmmb.tfm", vector = "tex-mb" },
+    { name = "msam10.tfm", vector = "tex-ma" },
+    { name = "msbm10.tfm", vector = "tex-mb" },
+} )
+
+mathematics.make_font ( "utopia-math", {
+ -- { name = "file:putr8a", features = "virtualmath", main = true },
+    { name = "file:putri8a", features = "virtualmath", main = true },
+ -- { name = "md-utr7m.tfm", vector = "tex-mr" },
+    { name = "md-utri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+    { name = "md-utri7m.tfm", vector = "tex-it", skewchar=0x7F },
+    { name = "md-utr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+    { name = "md-utr7v.tfm", vector = "tex-ex", extension = true },
+ -- { name = "md-utbma.tfm", vector = "tex-ma" },
+ -- { name = "md-utbmb.tfm", vector = "tex-mb" },
     { name = "msam10.tfm", vector = "tex-ma" },
     { name = "msbm10.tfm", vector = "tex-mb" },
 } )
@@ -1714,97 +1765,6 @@ mathematics.make_font ( "hvmath-math", {
 } )
 
 -- the lucida mess
-
---~ fonts.enc.math["lbr-ma"] = {
---~     [0x000A5] = 0x03, -- yen
---~     [0x000B7] = 0xE1, -- centerdot
---~     [0x000F0] = 0x03, -- eth
---~     [0x00127] = 0x1B, -- hbar
---~     [0x003DC] = 0x03, -- digamma
---~     [0x003F6] = 0x03, -- backepsilon
---~     [0x0219A] = 0x32, -- nleftarrow
---~     [0x0219B] = 0x33, -- nrightarrow
---~     [0x0219E] = 0x23, -- twoheadleftarrow
---~     [0x021A0] = 0x25, -- twoheadrightarrow
---~     [0x021A2] = 0x28, -- leftarrowtail
---~     [0x021A3] = 0x29, -- rightarrowtail
---~     [0x021A6] = 0x2C, -- mapsto
---~     [0x021A9] = 0x3C, -- hookleftarrow
---~     [0x021AA] = 0x3E, -- hookrightarrow
---~     [0x021AB] = 0x3F, -- looparrowleft
---~     [0x021AC] = 0x40, -- looparrowright
---~     [0x021AD] = 0x91, -- leftrightsquigarrow
---~     [0x021AE] = 0x34, -- nleftrightarrow
---~     [0x021B0] = 0x7B, -- Lsh
---~     [0x021B1] = 0x7D, -- Rsh
---~     [0x021B6] = 0x87, -- curvearrowleft
---~     [0x021B7] = 0x88, -- curvearrowright
---~     [0x021BA] = 0x8C, -- circlearrowright
---~     [0x021BB] = 0x8B, -- circlearrowleft
---~     [0x021BF] = 0x76, -- upharpoonleft
---~     [0x021C2] = 0x77, -- downharpoonright
---~     [0x021C3] = 0x78, -- downharpoonleft
---~     [0x021C4] = 0x6D, -- rightleftarrows
---~     [0x021C6] = 0x6E, -- leftrightarrows
---~     [0x021C7] = 0x71, -- leftleftarrows
---~     [0x021C8] = 0x72, -- upuparrows
---~     [0x021C9] = 0x73, -- rightrightarrows
---~     [0x021CA] = 0x74, -- downdownarrows
---~     [0x021CB] = 0x79, -- leftrightharpoons
---~     [0x021CC] = 0x7A, -- rightleftharpoons
---~     [0x021CD] = 0x66, -- nLeftarrow
---~     [0x021CE] = 0x67, -- nLeftrightarrow
---~     [0x021CF] = 0x68, -- nRightarrow
---~     [0x021DA] = 0x6A, -- Lleftarrow
---~     [0x021DB] = 0x6C, -- Rrightarrow
---~     [0x021E0] = 0x38, -- dashleftarrow
---~     [0x02204] = 0x20, -- nexists
---~     [0x02226] = 0xF7, -- nparallel
---~     [0x02241] = 0x96, -- nsim
---~     [0x02268] = 0xDC, -- lneqq
---~     [0x02269] = 0xDE, -- gneqq
---~     [0x0226E] = 0x9A, -- nless
---~     [0x0226F] = 0x9B, -- ngtr
---~     [0x02270] = 0x9C, -- nleq
---~     [0x02271] = 0x9D, -- ngeq
---~     [0x02280] = 0xE5, -- nprec
---~     [0x02281] = 0xE6, -- nsucc
---~     [0x02288] = 0xC8, -- nsubseteq
---~     [0x02289] = 0xC9, -- nsupseteq
---~     [0x0228A] = 0xCC, -- subsetneq
---~     [0x0228B] = 0xCD, -- supsetneq
---~     [0x022AC] = 0xF8, -- nvdash
---~     [0x022AD] = 0xFA, -- nvDash
---~     [0x022AE] = 0xF9, -- nVdash
---~     [0x022AF] = 0xFB, -- nVDash
---~     [0x022BA] = 0x03, -- intercal
---~     [0x022D4] = 0xF3, -- pitchfork
---~     [0x022E6] = 0xE0, -- lnsim
---~     [0x022E7] = 0xE2, -- gnsim
---~     [0x022E8] = 0xEB, -- precnsim
---~     [0x022E9] = 0xEC, -- succnsim
---~     [0x022EA] = 0xF0, -- ntriangleright
---~     [0x022EB] = 0xEF, -- ntriangleleft
---~     [0x022EC] = 0xF1, -- ntrianglelefteq
---~     [0x022ED] = 0xF2, -- ntrianglerighteq
---~     [0x0231C] = 0x5B, -- ulcorner
---~     [0x0231D] = 0x5C, -- urcorner
---~     [0x0231E] = 0x5D, -- llcorner
---~     [0x0231F] = 0x5E, -- lrcorner
---~     [0x025A2] = 0x03, -- blacksquare
---~     [0x02605] = 0xAB, -- bigstar
---~     [0x02713] = 0xAC, -- checkmark
---~     [0x029EB] = 0x09, -- blacklozenge
---~     [0x02A87] = 0xDA, -- lneq
---~     [0x02A89] = 0xE4, -- lnapprox
---~     [0x02A8A] = 0xE3, -- gnapprox
---~     [0x02AB5] = 0xE9, -- precneqq
---~     [0x02AB6] = 0xEA, -- succneqq
---~     [0x02AB9] = 0xED, -- precnapprox
---~     [0x02ABA] = 0xEE, -- succnapprox
---~     [0x02ACB] = 0xCE, -- subsetneqq
---~     [0x02ACC] = 0xCF, -- supsetneqq
---~ }
 
 fonts.enc.math["lbr-ma"] = {
     [0x025CB] = 0x00, -- circle
@@ -2056,12 +2016,6 @@ fonts.enc.math["lbr-mb"] = {
     [0x1D718] = 0x9B, -- varkappa
 }
 
---~ fonts.enc.math["lbr-mi"] = {
---~     ["0x00127"] = 0x9D, -- hbar
---~     ["0x003D1"] = 0x02, -- varTheta
---~     ["0x020D7"] = 0x7E, -- vec
---~ }
-
 fonts.enc.math["lbr-sy"] = {
     [0x021CB] = 0x8D, -- leftrightharpoons
     [0x021CC] = 0x8E, -- rightleftharpoons
@@ -2108,18 +2062,6 @@ fonts.enc.math["lbr-sy"] = {
 }
 
 fonts.enc.math["lbr-sy"] = table.merged(fonts.enc.math["tex-sy"],fonts.enc.math["lbr-sy"])
-
---~ fonts.enc.math["lbr-rm"] = {
---~     [0x00060] = 0x12, -- grave
---~     [0x000A8] = 0x7F, -- ddot
---~     [0x000AF] = 0x16, -- bar
---~     [0x000B4] = 0x13, -- acute
---~     [0x002C6] = 0x5E, -- hat
---~     [0x002C7] = 0x14, -- check
---~     [0x002D8] = 0x15, -- breve
---~     [0x002D9] = 0x05, -- dot
---~     [0x002DC] = 0x7E, -- tilde
---~ }
 
 mathematics.make_font ( "lucida-math", {
     { name = "file:lbr.afm", features = "virtualmath", main = true },

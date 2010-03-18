@@ -38,5 +38,6 @@ end end
 --~         tex.sprint(string.format("more pi: %s %s %s\\par",...))
 --~     end)
 --~     tex.sprint(string.format("\\setbox0=\\hbox{%s}",math.pi*n))
---~     lua.flush(tex.wd[0],tex.ht[0],tex.dp[0])
+--~     local box = tex.box[0]
+--~     lua.flush(box.width,box.height,box.depth)
 --~ end

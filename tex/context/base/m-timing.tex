@@ -36,7 +36,7 @@
 \ctxloadluafile{trac-tim}{}
 
 \startluacode
-local progress = goodies.progress
+local progress = plugins.progress
 
 function progress.show(filename,parameters,nodes,other)
     for n, name in pairs(parameters or progress.parameters(filename)) do
@@ -51,16 +51,16 @@ end
 % \everyfirstshipout
 
 \startnotmode[no-timing]
-    \appendtoks\ctxlua{goodies.progress.store()}\to\everystarttext
-    \appendtoks\ctxlua{goodies.progress.store()}\to\everyshipout
-    \ctxlua{main.register_stop_actions(function() goodies.progress.save() end)}
+    \appendtoks\ctxlua{plugins.progress.store()}\to\everystarttext
+    \appendtoks\ctxlua{plugins.progress.store()}\to\everyshipout
+    \ctxlua{main.register_stop_actions(function() plugins.progress.save() end)}
 \stopnotmode
 
 \def\ShowNamedUsage#1#2#3%
   {\setbox\scratchbox\vbox\bgroup\startMPcode
       begingroup ; save p, q, b, h, w ;
       path p, q, b ; numeric h, w ;
-      p := \ctxlua{tex.sprint(goodies.progress.path("#1","#2"))} ;
+      p := \ctxlua{tex.sprint(plugins.progress.path("#1","#2"))} ;
 % p := p shifted -llcorner p ;
       if bbwidth(p) > 1 :
         h := 100 ; w := 2 * h ;
@@ -71,7 +71,7 @@ end
         draw b withcolor \MPcolor{usage:frame} ;
         draw p withcolor \MPcolor{usage:line} ;
         if ("#3" <> "") and ("#3" <> "#2") :
-          q := \ctxlua{tex.sprint(goodies.progress.path("#1","#3"))} ;
+          q := \ctxlua{tex.sprint(plugins.progress.path("#1","#3"))} ;
 % q := q shifted -llcorner q ;
           if bbwidth(q) > 1 :
             q := q xstretched w ;
@@ -87,16 +87,16 @@ end
      \startlinecorrection
          \box\scratchbox \endgraf
          \hbox to \scratchdimen{\tttf\strut\detokenize{#2}\hss
-          min:\ctxlua{tex.sprint(goodies.progress.bot("#1","\detokenize{#2}"))}, %
-          max:\ctxlua{tex.sprint(goodies.progress.top("#1","\detokenize{#2}"))}, %
-          pages:\ctxlua{tex.sprint(goodies.progress.pages("#1"))}%
+          min:\ctxlua{tex.sprint(plugins.progress.bot("#1","\detokenize{#2}"))}, %
+          max:\ctxlua{tex.sprint(plugins.progress.top("#1","\detokenize{#2}"))}, %
+          pages:\ctxlua{tex.sprint(plugins.progress.pages("#1"))}%
          }%
      \stoplinecorrection
    \fi}
 
-\def\LoadUsage      #1{\ctxlua{goodies.progress.convert("#1")}}
-\def\ShowUsage      #1{\ctxlua{goodies.progress.show("#1",nil,nil,"elapsed_time")}}
-\def\ShowMemoryUsage#1{\ctxlua{goodies.progress.show("#1",nil,{}, "elapsed_time")}}
-\def\ShowNodeUsage  #1{\ctxlua{goodies.progress.show("#1",{},nil, "elapsed_time")}}
+\def\LoadUsage      #1{\ctxlua{plugins.progress.convert("#1")}}
+\def\ShowUsage      #1{\ctxlua{plugins.progress.show("#1",nil,nil,"elapsed_time")}}
+\def\ShowMemoryUsage#1{\ctxlua{plugins.progress.show("#1",nil,{}, "elapsed_time")}}
+\def\ShowNodeUsage  #1{\ctxlua{plugins.progress.show("#1",{},nil, "elapsed_time")}}
 
 \endinput

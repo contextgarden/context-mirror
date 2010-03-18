@@ -410,17 +410,17 @@ end)
 local calculate_scale = fonts.tfm.calculate_scale
 
 function fonts.tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
-    local scaledpoints, delta = calculate_scale(tfmtable, scaledpoints, relativeid)
+    local scaledpoints, delta, units = calculate_scale(tfmtable, scaledpoints, relativeid)
     if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
         local relativedata = fontdata[relativeid]
         local id_x_height = relativedata and relativedata.parameters and relativedata.parameters.x_height
         local tf_x_height = id_x_height and tfmtable.parameters and tfmtable.parameters.x_height * delta
         if tf_x_height then
             scaledpoints = (id_x_height/tf_x_height) * scaledpoints
-            delta = scaledpoints/(tfmtable.units or 1000)
+            delta = scaledpoints/units
         end
     end
-    return scaledpoints, delta
+    return scaledpoints, delta, units
 end
 
 --~ table.insert(readers.sequence,1,'vtf')

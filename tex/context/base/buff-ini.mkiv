@@ -169,6 +169,9 @@
 
 \def\definebuffer
   {\dodoubleempty\dodefinebuffer}
+
+\def\thebuffernumber#1%
+  {\csname\??bu#1\c!number\endcsname}
 
 \unexpanded\def\getbuffer
   {\dodoubleempty\dogetbuffer}

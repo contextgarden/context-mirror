@@ -590,7 +590,8 @@
      %\scratchcounter#4\advance\scratchcounter\minusone
      \special{pdf:outline #1 %\ifcase#5 opened\fi
         % <</Title (#3) /A <</S /GoTo /D (page:\the\scratchcounter)>>>>}%
-          <</Title (#3) /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
+        % <</Title (#3) /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
+          <</Title \ifPDFunicode<#3>\else(#3)\fi\space /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
    \fi}
 
 %D \macros

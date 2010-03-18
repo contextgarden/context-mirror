@@ -1,6 +1,6 @@
--- merged file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts-merged.lua
--- parent file : c:/data/develop/context/texmf/tex/generic/context/luatex-fonts.lua
--- merge date  : 03/12/10 19:55:31
+-- merged file : luatex-fonts-merged.lua
+-- parent file : luatex-fonts.lua
+-- merge date  : 03/18/10 14:42:03
 
 do -- begin closure to overcome local limits and interference
 
@@ -1433,7 +1433,9 @@ function file.removesuffix(filename)
 end
 
 function file.addsuffix(filename, suffix)
-    if not find(filename,"%.[%a%d]+$") then
+    if not suffix or suffix == "" then
+        return filename
+    elseif not find(filename,"%.[%a%d]+$") then
         return filename .. "." .. suffix
     else
         return filename
@@ -2339,7 +2341,7 @@ end
 
 nodes.count = count
 
--- new
+-- new, will move
 
 function attributes.ofnode(n)
     local a = n.attr
@@ -2482,6 +2484,48 @@ function nodes.latelua(code)
     local n = copy_node(latelua)
     n.data = code
     return n
+end
+
+--[[
+<p>At some point we ran into a problem that the glue specification
+of the zeropoint dimension was overwritten when adapting a glue spec
+node. This is a side effect of glue specs being shared. After a
+couple of hours tracing and debugging Taco and I came to the
+conclusion that it made no sense to complicate the spec allocator
+and settled on a writable flag. This all is a side effect of the
+fact that some glues use reserved memory slots (with the zeropoint
+glue being a noticeable one). So, next we wrap this into a function
+and hide it for the user. And yes, LuaTeX now gives a warning as
+well.</p>
+]]--
+
+if tex.luatexversion > 51 then
+
+    function nodes.writable_spec(n)
+        local spec = n.spec
+        if not spec then
+            spec = copy_node(glue_spec)
+            n.spec = spec
+        elseif not spec.writable then
+            spec = copy_node(spec)
+            n.spec = spec
+        end
+        return spec
+    end
+
+else
+
+    function nodes.writable_spec(n)
+        local spec = n.spec
+        if not spec then
+            spec = copy_node(glue_spec)
+        else
+            spec = copy_node(spec)
+        end
+        n.spec = spec
+        return spec
+    end
+
 end
 
 local cache = { }
@@ -3572,29 +3616,21 @@ local charactercache = { }
 -- a virtual font has italic correction make sure to set the
 -- has_italic flag. Some more flags will be added in the future.
 
-
 function tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
-    local delta = scaledpoints/(tfmtable.units or 1000) -- brr, some open type fonts have 2048
-    return scaledpoints, delta
+    local units = tfmtable.units or 1000
+    local delta = scaledpoints/units -- brr, some open type fonts have 2048
+    return scaledpoints, delta, units
 end
 
 function tfm.do_scale(tfmtable, scaledpoints, relativeid)
  -- tfm.prepare_base_kerns(tfmtable) -- optimalization
-    local scaledpoints, delta = tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
-    if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
-        local relativedata = fontdata[relativeid]
-        local id_x_height = relativedata and relativedata.parameters and relativedata.parameters.x_height
-        local tf_x_height = id_x_height and tfmtable.parameters and tfmtable.parameters.x_height * delta
-        if tf_x_height then
-            scaledpoints = (id_x_height/tf_x_height) * scaledpoints
-            delta = scaledpoints/(tfmtable.units or 1000)
-        end
-    end
+    local t = { } -- the new table
+    local scaledpoints, delta, units = tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
+    t.units_per_em = units or 1000
     local hdelta, vdelta = delta, delta
-    local t = { }
     -- unicoded unique descriptions shared cidinfo characters changed parameters indices
     for k,v in next, tfmtable do
         if type(v) == "table" then
@@ -9726,7 +9762,7 @@ function fonts.methods.node.otf.features(head,font,attr)
     local ra  = rl      [attr]     if ra == nil then ra  = { } rl      [attr]     = ra  end -- attr can be false
     -- sequences always > 1 so no need for optimization
     for s=1,#sequences do
-    local pardir, txtdir = 0, { }
+        local pardir, txtdir = 0, { }
         local success = false
         local sequence = sequences[s]
         local r = ra[s] -- cache
@@ -9752,12 +9788,10 @@ function fonts.methods.node.otf.features(head,font,attr)
                             -- only first attribute match check, so we assume simple fina's
                             -- default can become a font feature itself
                             if l[language] then
---~                                 valid, what = true, language
                                 valid, what = s_e or a_e, language
                         --  elseif l[default] then
                         --      valid, what = true, default
                             elseif l[wildcard] then
---~                                 valid, what = true, wildcard
                                 valid, what = s_e or a_e, wildcard
                             end
                             if valid then
@@ -9833,19 +9867,15 @@ function fonts.methods.node.otf.features(head,font,attr)
                     if not lookupcache then
                         report_missing_cache(typ,lookupname)
                     else
---~ print(typ,lookupname,lookupcache,table.serialize(lookupcache))
                         while start do
                             local id = start.id
                             if id == glyph then
---~                                 if start.font == font and start.subtype<256 and (not attr or has_attribute(start,0,attr)) and (not attribute or has_attribute(start,state,attribute)) then
                                 if start.font == font and start.subtype<256 and has_attribute(start,0,attr) and (not attribute or has_attribute(start,state,attribute)) then
                                     local lookupmatch = lookupcache[start.char]
                                     if lookupmatch then
                                         -- sequence kan weg
                                         local ok
---~ print("!!!")
                                         start, ok = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,1)
---~ texio.write_nl(tostring(lookupname),tostring(lookupmatch),tostring(ok))
                                         if ok then
                                             success = true
                                         end
@@ -9870,25 +9900,6 @@ function fonts.methods.node.otf.features(head,font,attr)
                             --         start = start.next
                             --     end
                             elseif id == whatsit then
---~                             if subtype == 7 then
---~                                 local dir = start.dir
---~                                 if dir == "+TRT" then
---~                                     rlmode = -1
---~                                 elseif dir == "+TLT" then
---~                                     rlmode = 1
---~                                 else
---~                                     rlmode = 0
---~                                 end
---~                             elseif subtype == 6 then
---~                                 local dir = start.dir
---~                                 if dir == "TRT" then
---~                                     rlmode = -1
---~                                 elseif dir == "TLT" then
---~                                     rlmode = 1
---~                                 else
---~                                     rlmode = 0
---~                                 end
---~                             end
                                 local subtype = start.subtype
                                 if subtype == 7 then
                                     local dir = start.dir
@@ -9974,59 +9985,40 @@ function fonts.methods.node.otf.features(head,font,attr)
                         --     end
                         elseif id == whatsit then
                             local subtype = start.subtype
---~                             if subtype == 7 then
---~                                 local dir = start.dir
---~                                 if dir == "+TRT" then
---~                                     rlmode = -1
---~                                 elseif dir == "+TLT" then
---~                                     rlmode = 1
---~                                 else
---~                                     rlmode = 0
---~                                 end
---~                             elseif subtype == 6 then
---~                                 local dir = start.dir
---~                                 if dir == "TRT" then
---~                                     rlmode = -1
---~                                 elseif dir == "TLT" then
---~                                     rlmode = 1
---~                                 else
---~                                     rlmode = 0
---~                                 end
---~                             end
-                                local subtype = start.subtype
-                                if subtype == 7 then
-                                    local dir = start.dir
-                                    if     dir == "+TRT" or dir == "+TLT" then
-                                        insert(txtdir,dir)
-                                    elseif dir == "-TRT" or dir == "-TLT" then
-                                        remove(txtdir)
-                                    end
-                                    local d = txtdir[#txtdir]
-                                    if d == "+TRT" then
-                                        rlmode = -1
-                                    elseif d == "+TLT" then
-                                        rlmode = 1
-                                    else
-                                        rlmode = pardir
-                                    end
-                                    if trace_directions then
-                                        logs.report("fonts","directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
-                                    end
-                                elseif subtype == 6 then
-                                    local dir = start.dir
-                                    if dir == "TRT" then
-                                        pardir = -1
-                                    elseif dir == "TLT" then
-                                        pardir = 1
-                                    else
-                                        pardir = 0
-                                    end
+                            local subtype = start.subtype
+                            if subtype == 7 then
+                                local dir = start.dir
+                                if     dir == "+TRT" or dir == "+TLT" then
+                                    insert(txtdir,dir)
+                                elseif dir == "-TRT" or dir == "-TLT" then
+                                    remove(txtdir)
+                                end
+                                local d = txtdir[#txtdir]
+                                if d == "+TRT" then
+                                    rlmode = -1
+                                elseif d == "+TLT" then
+                                    rlmode = 1
+                                else
                                     rlmode = pardir
-                                --~ txtdir = { }
+                                end
+                                if trace_directions then
+                                    logs.report("fonts","directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
+                                end
+                            elseif subtype == 6 then
+                                local dir = start.dir
+                                if dir == "TRT" then
+                                    pardir = -1
+                                elseif dir == "TLT" then
+                                    pardir = 1
+                                else
+                                    pardir = 0
+                                end
+                                rlmode = pardir
+                            --~ txtdir = { }
                                 if trace_directions then
                                     logs.report("fonts","directions after pardir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                 end
-                                end
+                            end
                             start = start.next
                         else
                             start = start.next

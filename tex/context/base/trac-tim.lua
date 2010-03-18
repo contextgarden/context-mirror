@@ -10,10 +10,10 @@ local format, gsub = string.format, string.gsub
 local concat, sort = table.concat, table.sort
 local next, pairs, ipairs = next, pairs, ipairs
 
-goodies          = goodies          or { }
-goodies.progress = goodies.progress or { }
+plugins          = plugins          or { }
+plugins.progress = plugins.progress or { }
 
-local progress = goodies.progress
+local progress = plugins.progress
 
 progress = progress or { }
 

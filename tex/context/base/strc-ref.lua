@@ -291,6 +291,55 @@ function commands.doiffiledefinedelse(name)
     commands.doifelse(files[name])
 end
 
+-- helpers
+
+function jobreferences.checkedfile(whatever) -- return whatever if not resolved
+    if whatever then
+        local w = files[whatever]
+        if w then
+            return w[1]
+        else
+            return whatever
+        end
+    end
+end
+
+function jobreferences.checkedurl(whatever) -- return whatever if not resolved
+    if whatever then
+        local w = urls[whatever]
+        if w then
+            local u, f = w[1], w[2]
+            if f and f ~= "" then
+                return u .. "/" .. f
+            else
+                return u
+            end
+        else
+            return whatever
+        end
+    end
+end
+
+function jobreferences.checkedfileorurl(whatever,default) -- return nil, nil if not resolved
+    if whatever then
+        local w = files[whatever]
+        if w then
+            return w[1], nil
+        else
+            local w = urls[whatever]
+            if w then
+                local u, f = w[1], w[2]
+                if f and f ~= "" then
+                    return nil, u .. "/" .. f
+                else
+                    return nil, u
+                end
+            end
+        end
+    end
+    return default
+end
+
 -- programs
 
 jobreferences.programs      = jobreferences.programs      or { }
@@ -308,6 +357,17 @@ function jobreferences.programs.get(name)
     local f = programs[name]
     if f then
         texsprint(ctxcatcodes,f[1])
+    end
+end
+
+function jobreferences.checkedprogram(whatever) -- return whatever if not resolved
+    if whatever then
+        local w = programs[whatever]
+        if w then
+            return w[1]
+        else
+            return whatever
+        end
     end
 end
 

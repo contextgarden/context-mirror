@@ -70,34 +70,37 @@
 \def\mkdoprocessboxcontents   #1{\mkaddtextlinenumbers{#1}\plusone      \plusone}
 \def\mkdoprocesscolumncontents#1{\mkaddtextlinenumbers{#1}\currentcolumn\nofcolumns}
 
-\def\mkdefinetextlinenumbering
-  {\setxvalue{ln:c:\currentlinenumbering}{\number\ctxlua{tex.sprint(nodes.lines.boxed.register({
-        start  = \linenumberparameter\c!start,
-        step   = \linenumberparameter\c!step,
-        method = "\linenumberparameter\c!method",
-        tag    = "\currentlinenumbering",
-    }))}}}
+\def\mklinenumberparameters
+  {continue = "\linenumberparameter\c!continue",
+   start    = \linenumberparameter\c!start,
+   step     = \linenumberparameter\c!step,
+   method   = "\linenumberparameter\c!method",
+   tag      = "\currentlinenumbering"}
 
-\def\mkstarttextlinenumbering#1#2%
+\def\mklinenumberupdateparameters
+  {continue = "\linenumberparameter\c!continue"}
+
+\def\mkdefinetextlinenumbering
+  {\setxvalue{ln:c:\currentlinenumbering}{\number\ctxlua{tex.sprint(nodes.lines.boxed.register({\mklinenumberparameters}))}}}
+
+\def\mkupdatetextlinenumbering
+  {\ctxlua{nodes.lines.boxed.setup(\getvalue{ln:c:\currentlinenumbering},{\mklinenumberupdateparameters})}}
+
+\def\mkstarttextlinenumbering#1#2% always when assignment
   {\globallet\mkprocesspagecontents  \mkdoprocesspagecontents
    \globallet\mkprocesscolumncontents\mkdoprocesscolumncontents
    \global\settrue\boxcontentneedsprocessing % see core-rul.mkiv
    \edef\currentlinenumbering{#1}%
    \ifcase#2\relax
-     % continue
+     \mkupdatetextlinenumbering % continue
    \or
-     \mkdefinetextlinenumbering % restart
+     \mkdefinetextlinenumbering % only when assignment
    \fi
    \attribute\linenumberattribute\getvalue{ln:c:\currentlinenumbering}\relax}
 
 \def\mksetuptextlinenumbering
   {\ifcsname ln:c:\currentlinenumbering\endcsname
-     \expanded{\ctxlua{nodes.lines.boxed.setup(\getvalue{ln:c:\currentlinenumbering},{
-          start  = \linenumberparameter\c!start,
-          step   = \linenumberparameter\c!step,
-          method = "\linenumberparameter\c!method",
-          tag    = "\currentlinenumbering"
-      })}}%
+     \ctxlua{nodes.lines.boxed.setup(\getvalue{ln:c:\currentlinenumbering},{\mklinenumberparameters})}%
    \fi}
 
 \def\mkstoptextlinenumbering
@@ -172,7 +175,7 @@
    \c!start=1,
    \c!step=1,
    \c!method=\v!first,
-   \c!continue=v!no,
+   \c!continue=\v!no,
    \c!location=\v!left,
    \c!style=,
    \c!color=,
@@ -211,24 +214,52 @@
 \expandafter\chardef\csname\??rn:a:\v!flushright\endcsname \plustwo
 \expandafter\chardef\csname\??rn:a:\v!auto      \endcsname \plusfive
 
+% \def\dostartlinenumbering[#1][#2]% todo: c!continue
+%   {\begingroup
+%    \chardef\linenumbermode\plusone
+%    \ifsecondargument
+%      \def\currentlinenumbering{#1}%
+%      \doifnumberelse{#2}% downward compatible
+%        {\setvalue{\??rn#1\c!start}{#2}}%
+%        {\doif{#2}\v!continue{\chardef\linenumbermode\zerocount}}%
+%    \else\iffirstargument
+%      \doifnumberelse{#1}% downward compatible
+%        {\let\currentlinenumbering\empty
+%         \setvalue{\??rn\c!start}{#1}}%
+%        {\doifelse{#1}\v!continue
+%           {\let\currentlinenumbering\empty
+%            \chardef\linenumbermode\zerocount}
+%           {\def\currentlinenumbering{#1}}}%
+%    \fi\fi
+%    \doif{\linenumberparameter\c!continue}\v!yes
+%      {\chardef\linenumbermode\zerocount}%
+%    \numberinglinestrue
+%    \the\beforeeverylinenumbering
+%    \mkstarttextlinenumbering\currentlinenumbering\linenumbermode}
+
 \def\dostartlinenumbering[#1][#2]% todo: c!continue
   {\begingroup
    \chardef\linenumbermode\plusone
    \ifsecondargument
      \def\currentlinenumbering{#1}%
-     \doifnumberelse{#2}% downward compatible
-       {\setvalue{\??rn#1\c!start}{#2}}%
-       {\doif{#2}\v!continue{\chardef\linenumbermode\zerocount}}%
+     \doifassignmentelse{#2}
+       {\getparameters[\??rn\currentlinenumbering][#2]}
+       {\doifnumberelse{#2}% downward compatible
+          {\setvalue{\??rn#1\c!start}{#2}}%
+          {\doif{#2}\v!continue
+             {\getparameters[\??rn\currentlinenumbering][\c!continue=\v!yes]%
+              \chardef\linenumbermode\zerocount}}}%
    \else\iffirstargument
      \doifnumberelse{#1}% downward compatible
        {\let\currentlinenumbering\empty
         \setvalue{\??rn\c!start}{#1}}%
        {\doifelse{#1}\v!continue
           {\let\currentlinenumbering\empty
+           \getparameters[\??rn\currentlinenumbering][\c!continue=\v!yes]%
            \chardef\linenumbermode\zerocount}
           {\def\currentlinenumbering{#1}}}%
    \fi\fi
-   \doifelse{\linenumberparameter\c!continue}\v!yes
+   \doif{\linenumberparameter\c!continue}\v!yes
      {\chardef\linenumbermode\zerocount}%
    \numberinglinestrue
    \the\beforeeverylinenumbering
@@ -450,33 +481,3 @@
      {\in[lr:b:#1]--\in[lr:e:#1]}}
 
 \protect \endinput
-
-\iffalse % \iftrue  eventually we will do it like ...
-
-    \appendtoks\ctxlua{nodes.lines.flowed.prepare()}\to\everyshipout
-    \appendtoks\ctxlua{nodes.lines.flowed.cleanup()}\to\everybye
-
-    \def\mkstarttextlinenumbering#1#2%
-      {\ctxlua{nodes.lines.flowed.prepare("#1")}%
-       \attribute\linenumberattribute#2\relax}
-
-    \def\mkstoptextlinenumbering
-      {\attribute\linenumberattribute\attributeunsetvalue}
-
-    \def\mkmaketextlinenumber#1#2%
-      {\hbox \bgroup
-       \ifcase#2\relax
-         %
-       \or
-         \llap{#1\quad\hskip#2\scaledpoint}%
-       \else
-         \rlap{\hskip\textwidth\quad#1\hskip#2\scaledpoint}%
-       \fi
-       \egroup}
-
-    \ctxlua{
-        nodes.lines.scratchbox = \number\linenumberscratchbox ;
-     -- register nodes.lines.flowed.apply in post_linebreak_filter actions
-    }
-
-\fi
