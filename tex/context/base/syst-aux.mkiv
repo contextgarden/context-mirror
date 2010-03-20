@@ -6332,6 +6332,71 @@
      \expandafter\thirdoffourarguments
    \fi}
 
+%D Ok, here's another one, slower but seldom used. This one scans the text.
+%D
+%D \starttabulate[|Tc|Tc|]
+%D \NC pt      \NC  \doifdimenstringelse     {pt}{yes}{no} \NC \NR
+%D \NC 12pt    \NC  \doifdimenstringelse  {-12pt}{yes}{no} \NC \NR
+%D \NC 1pt     \NC  \doifdimenstringelse    {1pt}{yes}{no} \NC \NR
+%D \NC 12pt    \NC  \doifdimenstringelse   {12pt}{yes}{no} \NC \NR
+%D \NC 12.0pt  \NC  \doifdimenstringelse {12.0pt}{yes}{no} \NC \NR
+%D \NC -.12pt  \NC  \doifdimenstringelse {-.12pt}{yes}{no} \NC \NR
+%D \NC .12pt   \NC  \doifdimenstringelse  {.12pt}{yes}{no} \NC \NR
+%D \NC -12pt   \NC  \doifdimenstringelse  {-12pt}{yes}{no} \NC \NR
+%D \NC -12.0pt \NC  \doifdimenstringelse{-12.0pt}{yes}{no} \NC \NR
+%D \NC big     \NC  \doifdimenstringelse    {big}{yes}{no} \NC \NR
+%D \NC 10      \NC  \doifdimenstringelse     {10}{yes}{no} \NC \NR
+%D \NC 1       \NC  \doifdimenstringelse      {1}{yes}{no} \NC \NR
+%D \stoptabulate
+
+\def\doifdimenstringelse#1{\normalexpanded{\noexpand\dodimenteststageone#1}\empty\empty]}
+
+\def\dodimenteststageone  #1#2{\csname d!1!\ifcsname d!1!#2\endcsname#2\else x\fi\endcsname#2}
+\def\dodimenteststagetwo  #1#2{\csname d!2!\ifcsname d!2!#2\endcsname#2\else x\fi\endcsname#2}
+\def\dodimenteststagethree #1]{\csname d!3!\ifcsname d!3!#1\endcsname#1\else x\fi\endcsname}
+
+\expandafter\let\csname d!1!x\endcsname\dodimenteststagethree
+\expandafter\let\csname d!2!x\endcsname\dodimenteststagethree
+\expandafter\let\csname d!3!x\endcsname\secondoftwoarguments
+
+\expandafter\let\csname d!1!.\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!1!,\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!1!1\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!2\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!3\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!4\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!5\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!6\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!7\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!8\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!9\endcsname\dodimenteststageone
+\expandafter\let\csname d!1!0\endcsname\dodimenteststageone
+
+\expandafter\let\csname d!2!1\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!2\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!3\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!4\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!5\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!6\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!7\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!8\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!9\endcsname\dodimenteststagetwo
+\expandafter\let\csname d!2!0\endcsname\dodimenteststagetwo
+
+\expandafter\let\csname d!3!pt\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!pc\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!in\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!bp\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!cm\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!mm\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!dd\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!cc\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!sp\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!ex\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!em\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!nd\endcsname\firstoftwoarguments
+\expandafter\let\csname d!3!nc\endcsname\firstoftwoarguments
+
 %D \macros
 %D   {comparedimension,comparedimensioneps}
 %D

@@ -154,8 +154,14 @@
 %   {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
 %    \spacing\currentrelativeinterlinespace}
 
+% \def\dosetspecifiedrelativeinterlinespace#1% fragile?
+%   {\doifdimensionelse{#1}
+%      {\setupspecifiedinterlinespace[\c!line=#1]}
+%      {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+%       \spacing\currentrelativeinterlinespace}}
+
 \def\dosetspecifiedrelativeinterlinespace#1% fragile?
-  {\doifdimensionelse{#1}
+  {\doifdimenstringelse{#1}
      {\setupspecifiedinterlinespace[\c!line=#1]}
      {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
       \spacing\currentrelativeinterlinespace}}

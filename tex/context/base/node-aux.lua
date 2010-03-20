@@ -31,14 +31,14 @@ function nodes.merge(a,b)
     return a, b
 end
 
-local fields, whatsits = { }, { }
+local fields, whatsitfields = { }, { }
 
 for k, v in pairs(node.types()) do
     if v == "whatsit" then
         fields[k], fields[v] = { }, { }
         for kk, vv in pairs(node.whatsits()) do
             local f = node_fields(k,kk)
-            whatsits[kk], whatsits[vv] = f, f
+            whatsitfields[kk], whatsitfields[vv] = f, f
         end
     else
         local f = node_fields(k)
@@ -46,11 +46,69 @@ for k, v in pairs(node.types()) do
     end
 end
 
-nodes.fields, nodes.whatsits = fields, whatsits
+nodes.fields, nodes.whatsitfields = fields, whatsitfields
 
 function nodes.info(n)
-    logs.report(format("%14s","type"),node.type(n.id))
-    for k,v in pairs(fields[n.id]) do
+    local id = n.id
+    local tp = node.type(id)
+    local list = (tp == "whatsit" and whatsitfields[n.subtype]) or fields[id]
+    logs.report(format("%14s","type"),tp)
+    for k,v in pairs(list) do
         logs.report(format("%14s",v),gsub(gsub(tostring(n[v]),"%s+"," "),"node ",""))
     end
 end
+
+-- history:
+--
+-- local function cp_skipable(a,id)  -- skipable nodes at the margins during character protrusion
+--     return (
+--             id ~= glyph_node
+--         or  id == ins_node
+--         or  id == mark_node
+--         or  id == adjust_node
+--         or  id == penalty_node
+--         or (id == glue_node    and a.spec == 0)
+--         or (id == disc_node    and a.pre == nil and a.post == nil and a.replace == nil)
+--         or (id == math_node    and a.surround == 0)
+--         or (id == kern_node    and (a.kern == 0 or a.subtype == NORMAL))
+--         or (id == hlist_node   and a.width == 0 and a.height == 0 and a.depth == 0 and a.list == nil)
+--         or (id == whatsit_node and a.subtype ~= pdf_refximage_node and a.subtype ~= pdf_refxform_node)
+--     )
+-- end
+--
+-- local function glyph_width(a)
+--     local ch = chardata[a.font][a.char]
+--     return (ch and ch.width) or 0
+-- end
+--
+-- local function glyph_total(a)
+--     local ch = chardata[a.font][a.char]
+--     return (ch and (ch.height+ch.depth)) or 0
+-- end
+--
+-- local function non_discardable(a) -- inline
+--     return a.id < math_node -- brrrr
+-- end
+--
+-- local function calculate_badness(t,s)
+--     if t == 0 then
+--         return 0
+--     elseif s <= 0 then
+--         return INF_BAD
+--     else
+--         local r
+--         if t <= 7230584 then
+--             r = t * 297 / s
+--         elseif s >= 1663497 then
+--             r = t / floor(s / 297)
+--         else
+--             r = t
+--         end
+--         r = floor(r)
+--         if r > 1290 then
+--             return INF_BAD
+--         else
+--             return floor((r * r * r + 0x20000) / 0x40000) -- 0400000 / 01000000
+--         end
+--     end
+-- end

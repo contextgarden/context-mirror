@@ -16,7 +16,7 @@ table.</p>
 --ldx]]--
 
 local format, match, gsub, type, setmetatable = string.format, string.match, string.gsub, type, setmetatable
-local lpegmatch = lpeg.match
+local P, S, R, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.match
 
 number = number or { }
 
@@ -125,10 +125,12 @@ a number and optionally a unit. When no unit is given a constant
 capture takes place.</p>
 --ldx]]--
 
-local amount = (lpeg.S("+-")^0 * lpeg.R("09")^0 * lpeg.P(".")^0 * lpeg.R("09")^0) + lpeg.Cc("0")
-local unit   = lpeg.R("az")^1
+local amount = (S("+-")^0 * R("09")^0 * P(".")^0 * R("09")^0) + Cc("0")
+local unit   = R("az")^1
 
-local pattern = amount/tonumber * (unit^1/dimenfactors + lpeg.Cc(1)) -- tonumber is new
+local pattern = amount/tonumber * (unit^1/dimenfactors + Cc(1)) -- tonumber is new
+
+lpeg.patterns.dimenpair = pattern
 
 --[[ldx--
 <p>We use a metatable to intercept errors. When no key is found in
@@ -148,10 +150,17 @@ function string:todimen()
         return self
     else
         local value, unit = lpegmatch(pattern,self)
-        print(value,unit)
         return value/unit
     end
 end
+
+local amount = S("+-")^0 * R("09")^0 * S(".,")^0 * R("09")^0
+local unit   = P("pt") + P("cm") + P("mm") + P("sp") + P("bp") + P("in")  +
+               P("pc") + P("dd") + P("cc") + P("nd") + P("nc")
+
+local pattern = amount * unit
+
+lpeg.patterns.validdimen = pattern
 
 --[[ldx--
 <p>This converter accepts calls like:</p>

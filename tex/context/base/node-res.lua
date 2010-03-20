@@ -64,7 +64,7 @@ local penalty    = nodes.register(new_node("penalty"))
 local glue       = nodes.register(new_node("glue"))
 local glue_spec  = nodes.register(new_node("glue_spec"))
 local glyph      = nodes.register(new_node("glyph",0))
-local textdir    = nodes.register(new_node("whatsit",whatsits.dir)) -- 7
+local textdir    = nodes.register(new_node("whatsit",whatsits.dir)) -- 7 (6 is local par node)
 local rule       = nodes.register(new_node("rule"))
 local latelua    = nodes.register(new_node("whatsit",whatsits.late_lua)) -- 35
 local user_n     = nodes.register(new_node("whatsit",whatsits.user_defined)) user_n.type = 100 -- 44

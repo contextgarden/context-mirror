@@ -31,11 +31,13 @@
 
 \usePSTRICKSmodule[pst-barcode]
 
+\definefont[barcodefont][file:ocrb10]
+% \definefont[barcodefont][file:texgyreheros-regular]
+
 \startluacode
 plugins.barcodes = { }
 
-function plugins.barcodes.strip(original)
-    local code = string.gsub(original,"%-","")
+local function split(code)
     local t = { string.byte(code,1,#code) }
     if #t >= 12 then
         local s = 0
@@ -47,6 +49,14 @@ function plugins.barcodes.strip(original)
         end
         local m = s % 10
         local c = (m > 0 and (10 - m)) or 0
+        return t, s, m, c
+    end
+end
+
+function plugins.barcodes.isbn_1(original)
+    local code = string.gsub(original,"%-","")
+    local t, s, m, c = split(code)
+    if t then
         if #t == 13 then
             local e = ((c == t[13] - 48) and "correct") or "wrong"
             logs.report("isbn code","code=%s, sum=%s, checksum=%s, modulo=%s, status=%s",original,s,m,c,e)
@@ -57,24 +67,40 @@ function plugins.barcodes.strip(original)
     end
     tex.sprint(code)
 end
+
+function plugins.barcodes.isbn_2(original)
+    local code = string.gsub(original,"%-","")
+    local t, s, m, c = split(code)
+    if t and #t == 12 then
+        original = original .. "-" .. c
+    end
+    tex.sprint(original)
+end
 \stopluacode
 
 \startsetups barcode:isbn
     \scale
         [width=5cm]
         {
-            \normalexpanded { \noexpand \setPSTRICKS {
-                \noexpand \pspicture(-4mm,-1mm)(38mm,26mm)
-                    \noexpand \psbarcode {
-                        \ctxlua{plugins.barcodes.strip("\getvariable{barcode}{code}")}
-                    } {
-                        includetext guardwhitespace
-                    } {
-                        ean13
-                    }
-                \noexpand \endpspicture
+            \vbox {
+                \hbox {
+                    \hskip3.7mm
+                    \scale[width=34mm]{\barcodefont ISBN \ctxlua{plugins.barcodes.isbn_2("\getvariable{barcode}{code}")}}
+                }
+                \par
+                \normalexpanded { \noexpand \setPSTRICKS {
+                    \noexpand \pspicture(-4mm,-1mm)(38mm,26mm)
+                        \noexpand \psbarcode {
+                            \ctxlua{plugins.barcodes.isbn_1("\getvariable{barcode}{code}")}
+                        } {
+                            includetext guardwhitespace
+                        } {
+                            ean13
+                        }
+                    \noexpand \endpspicture
+                }
+                \noexpand \processPSTRICKS }
             }
-            \noexpand \processPSTRICKS }
         }
 \stopsetups
 

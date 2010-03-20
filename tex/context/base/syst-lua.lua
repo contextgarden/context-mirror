@@ -33,13 +33,17 @@ function commands.report(s,t,...)
     commands.writestatus("!"..s,format(t,...))
 end
 
-function commands.doifelse(b)
+local function testcase(b)
     if b then -- faster with if than with expression
         texsprint(ctxcatcodes,"\\firstoftwoarguments")
     else
         texsprint(ctxcatcodes,"\\secondoftwoarguments")
     end
 end
+
+commands.testcase = testcase
+commands.doifelse = testcase
+
 function commands.doif(b)
     if b then
         texsprint(ctxcatcodes,"\\firstofoneargument")
@@ -54,8 +58,6 @@ function commands.doifnot(b)
         texsprint(ctxcatcodes,"\\firstofoneargument")
     end
 end
-
-commands.testcase = commands.doifelse
 
 function commands.boolcase(b)
     if b then texwrite(1) else texwrite(0) end
@@ -76,11 +78,11 @@ function commands.doifcommonelse(a,b)
     for i=1,#ha do
         for j=1,#hb do
             if ha[i] == hb[j] then
-                return commands.testcase(true)
+                return testcase(true)
             end
         end
     end
-    return commands.testcase(false)
+    return testcase(false)
 end
 
 function commands.doifinsetelse(a,b)
@@ -88,10 +90,10 @@ function commands.doifinsetelse(a,b)
     if not hb then hb = lpegmatch(s,b) h[b] = hb end
     for i=1,#hb do
         if a == hb[i] then
-            return commands.testcase(true)
+            return testcase(true)
         end
     end
-    return commands.testcase(false)
+    return testcase(false)
 end
 
 function commands. def   (cs,value) texsprint(ctxcatcodes,format( "\\def\\%s{%s}",cs,value)) end
@@ -99,3 +101,9 @@ function commands.edef   (cs,value) texsprint(ctxcatcodes,format("\\edef\\%s{%s}
 function commands.gdef   (cs,value) texsprint(ctxcatcodes,format("\\gdef\\%s{%s}",cs,value)) end
 function commands.xdef   (cs,value) texsprint(ctxcatcodes,format("\\xdef\\%s{%s}",cs,value)) end
 function commands.chardef(cs,value) texsprint(ctxcatcodes,format("\\chardef\\%s=%s\\relax",cs,value)) end
+
+local pattern = lpeg.patterns.validdimen
+
+function commands.doifdimenstringelse(str)
+    testcase(lpegmatch(pattern,str))
+end

@@ -313,3 +313,8 @@ end
 --~ for i=1,10 do
 --~     logs.system(syslogname,"context","test","fonts","font %s recached due to newer version (%s)","blabla","123")
 --~ end
+
+function logs.fatal(where,...)
+    logs.report(where,"fatal error: %s, aborting now",format(...))
+    os.exit()
+end
