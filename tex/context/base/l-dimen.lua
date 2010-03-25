@@ -128,9 +128,9 @@ capture takes place.</p>
 local amount = (S("+-")^0 * R("09")^0 * P(".")^0 * R("09")^0) + Cc("0")
 local unit   = R("az")^1
 
-local pattern = amount/tonumber * (unit^1/dimenfactors + Cc(1)) -- tonumber is new
+local dimenpair = amount/tonumber * (unit^1/dimenfactors + Cc(1)) -- tonumber is new
 
-lpeg.patterns.dimenpair = pattern
+lpeg.patterns.dimenpair = dimenpair
 
 --[[ldx--
 <p>We use a metatable to intercept errors. When no key is found in
@@ -149,7 +149,7 @@ function string:todimen()
     if type(self) == "number" then
         return self
     else
-        local value, unit = lpegmatch(pattern,self)
+        local value, unit = lpegmatch(dimenpair,self)
         return value/unit
     end
 end
@@ -158,7 +158,7 @@ local amount = S("+-")^0 * R("09")^0 * S(".,")^0 * R("09")^0
 local unit   = P("pt") + P("cm") + P("mm") + P("sp") + P("bp") + P("in")  +
                P("pc") + P("dd") + P("cc") + P("nd") + P("nc")
 
-local pattern = amount * unit
+local validdimen = amount * unit
 
 lpeg.patterns.validdimen = pattern
 
@@ -166,12 +166,12 @@ lpeg.patterns.validdimen = pattern
 <p>This converter accepts calls like:</p>
 
 <typing>
-string.todimen("10"))
-string.todimen(".10"))
-string.todimen("10.0"))
-string.todimen("10.0pt"))
-string.todimen("10pt"))
-string.todimen("10.0pt"))
+string.todimen("10")
+string.todimen(".10")
+string.todimen("10.0")
+string.todimen("10.0pt")
+string.todimen("10pt")
+string.todimen("10.0pt")
 </typing>
 
 <p>And of course the often more efficient:</p>
@@ -371,7 +371,7 @@ function dimen(a)
             if k then
                 a = k
             else
-                local value, unit = lpegmatch(pattern,a)
+                local value, unit = lpegmatch(dimenpair,a)
                 if type(unit) == "function" then
                     k = value/unit()
                 else
@@ -395,7 +395,7 @@ function string:todimen()
     else
         local k = known[self]
         if not k then
-            local value, unit = lpegmatch(pattern,self)
+            local value, unit = lpegmatch(dimenpair,self)
             if value and unit then
                 k = value/unit
             else

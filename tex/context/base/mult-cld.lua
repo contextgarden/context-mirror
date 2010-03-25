@@ -59,51 +59,52 @@ trackers.register("context.flush",     function(v) if v then context.trace()    
 trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
 
 local function writer(k,...)
-    flush(ctxcatcodes,k)
-    local t = { ... }
-    local nt = #t
-    if nt > 0 then
-        for i=1,nt do
-            local ti = t[i]
-            local typ = type(ti)
-            if ti == nil then
-                -- next
-            elseif typ == "function" then
-                flush(ctxcatcodes,"{\\mkivflush{" .. _store_(ti) .. "}}")
-            elseif typ == "string" or typ == "number" then
-                flush(ctxcatcodes,"{",ti,"}")
-            elseif typ == "table" then
-                local c = concat(ti,",")
-                if c ~= "" then
-                    flush(ctxcatcodes,"[",c,"]")
-                else
-                    flush(ctxcatcodes,"[")
-                    local done = false
-                    for k, v in next, ti do
-                        if done then
-                            flush(ctxcatcodes,",",k,'=',v)
-                        else
-                            flush(ctxcatcodes,k,'=',v)
-                            done = true
+    if k then
+        flush(ctxcatcodes,k)
+        local t = { ... }
+        local nt = #t
+        if nt > 0 then
+            for i=1,nt do
+                local ti = t[i]
+                local typ = type(ti)
+                if ti == nil then
+                    -- next
+                elseif typ == "function" then
+                    flush(ctxcatcodes,"{\\mkivflush{" .. _store_(ti) .. "}}")
+                elseif typ == "string" or typ == "number" then
+                    flush(ctxcatcodes,"{",ti,"}")
+                elseif typ == "table" then
+                    local c = concat(ti,",")
+                    if c ~= "" then
+                        flush(ctxcatcodes,"[",c,"]")
+                    else
+                        flush(ctxcatcodes,"[")
+                        local done = false
+                        for k, v in next, ti do
+                            if done then
+                                flush(ctxcatcodes,",",k,'=',v)
+                            else
+                                flush(ctxcatcodes,k,'=',v)
+                                done = true
+                            end
                         end
+                        flush(ctxcatcodes,"]")
                     end
-                    flush(ctxcatcodes,"]")
+            --  elseif typ == "boolean" then
+            --      flush(ctxcatcodes,"\n")
+                elseif ti == true then
+                    flush(ctxcatcodes,"\n")
+                elseif typ == false then
+                --  if force == "direct" then
+                    flush(ctxcatcodes,tostring(ti))
+                --  end
+                else
+                    logs.report("interfaces","error: %s gets a weird argument %s",k,tostring(ti))
                 end
-        --  elseif typ == "boolean" then
-        --      flush(ctxcatcodes,"\n")
-            elseif ti == true then
-                flush(ctxcatcodes,"\n")
-            elseif typ == false then
-            --  if force == "direct" then
-                flush(ctxcatcodes,tostring(ti))
-            --  end
-            else
-                logs.report("interfaces","error: %s gets a weird argument %s",k,tostring(ti))
             end
         end
     end
 end
-
 
 -- -- --
 
@@ -131,6 +132,8 @@ end
 local function caller(t,f,a,...)
     if a then
         flush(ctxcatcodes,format(f,a,...))
+    elseif type(f) == "function" then
+        flush(ctxcatcodes,"{\\mkivflush{" .. _store_(f) .. "}}")
     elseif f then
         flush(ctxcatcodes,f)
     else

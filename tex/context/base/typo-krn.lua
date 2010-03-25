@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['typo-krn'] = {
     license   = "see context related readme files"
 }
 
+-- todo: insertbefore etc
+
 local utf = unicode.utf8
 
 local next, type = next, type

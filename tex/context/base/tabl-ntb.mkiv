@@ -1237,26 +1237,28 @@
        \fi
         \advance\xxrowTBL\plusone}%
      % distribute overshoot equally
-     \ifdim\dimen4<\dimen0
-       \advance\dimen0 -\dimen4
-       \divide\dimen0 \!!countb
-       \xxrowTBL\xrowTBL
-       \settblhei\xrowTBL{\the\dimen2}%
-       \dorecurse\!!countb
-         {\dorecurse\maximumcol
-            {\ifnum\recurselevel=\xcolTBL\else
-               \scratchdimen\dimexpr\gettblht\xxrowTBL\recurselevel+\dimen0\relax
-               \settblht\xxrowTBL\recurselevel{\the\scratchdimen}%
-               \ifdim\gettblhei\xxrowTBL<\scratchdimen
-                 \settblhei\xxrowTBL{\the\scratchdimen}%
-               \fi
-             \fi}%
-          \advance\xxrowTBL\plusone}%
-     \else\ifdim\dimen4>\dimen0
-        \iftightTBLrowspan
-          \settblhei\xrowTBL{\the\dimen2}%
-        \fi
-     \fi\fi
+     \ifdim\dimen2>\zeropoint % new: test on natural-003
+       \ifdim\dimen4<\dimen0
+         \advance\dimen0 -\dimen4
+         \divide\dimen0 \!!countb
+         \xxrowTBL\xrowTBL
+         \settblhei\xrowTBL{\the\dimen2}%
+         \dorecurse\!!countb
+           {\dorecurse\maximumcol
+              {\ifnum\recurselevel=\xcolTBL\else
+                 \scratchdimen\dimexpr\gettblht\xxrowTBL\recurselevel+\dimen0\relax
+                 \settblht\xxrowTBL\recurselevel{\the\scratchdimen}%
+                 \ifdim\gettblhei\xxrowTBL<\scratchdimen
+                   \settblhei\xxrowTBL{\the\scratchdimen}%
+                 \fi
+               \fi}%
+            \advance\xxrowTBL\plusone}%
+       \else\ifdim\dimen4>\dimen0
+         \iftightTBLrowspan
+           \settblhei\xrowTBL{\the\dimen2}%
+         \fi
+       \fi\fi
+     \fi
    \fi}
 
 \def\checktblheightsone

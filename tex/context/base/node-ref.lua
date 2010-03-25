@@ -127,10 +127,10 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
                     if prev and prev.id == glue and prev.subtype == 15 then
                         width = dimensions(current,first,prev.prev) -- maybe not current as we already take care of it
                     else
-                        if moveright and first.spec then
+                        if moveright and first.writable then
                             width = width - first.spec.stretch*current.glue_set * current.glue_sign
                         end
-                        if last.spec then
+                        if last.writable then
                             width = width - last.spec.stretch*current.glue_set * current.glue_sign
                         end
                     end

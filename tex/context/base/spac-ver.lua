@@ -242,14 +242,24 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
     return h, d, ch, cd, (ch+cd)/snaphtdp
 end
 
+--~ local function snap_topskip(current,method)
+--~     local spec = current.spec
+--~     local w = spec.width
+--~     local wd = w
+--~     if spec then
+--~         wd = 0
+--~         spec = writable_spec(current)
+--~         spec.width = wd
+--~     end
+--~     return w, wd
+--~ end
+
 local function snap_topskip(current,method)
     local spec = current.spec
     local w = spec.width
     local wd = w
-    if spec then
-        wd = 0
-        spec = writable_spec(current)
-        spec.width = wd
+    if spec.writable then
+        spec.width, wd = 0, 0
     end
     return w, wd
 end
@@ -397,23 +407,19 @@ local trace_list, tracing_info, before, after = { }, false, "", ""
 
 local function glue_to_string(glue)
     local spec = glue.spec
-    if spec then
-        local t = { }
-        t[#t+1] = aux.strip_zeros(number.topoints(spec.width))
-        if spec.stretch_order and spec.stretch_order ~= 0 then
-            t[#t+1] = format("plus -%sfi%s",spec.stretch/65536,string.rep("l",math.abs(spec.stretch_order)-1))
-        elseif spec.stretch and spec.stretch ~= 0 then
-            t[#t+1] = format("plus %s",aux.strip_zeros(number.topoints(spec.stretch)))
-        end
-        if spec.shrink_order and spec.shrink_order ~= 0 then
-            t[#t+1] = format("minus -%sfi%s",spec.shrink/65536,string.rep("l",math.abs(spec.shrink_order)-1))
-        elseif spec.shrink and spec.shrink ~= 0 then
-            t[#t+1] = format("minus %s",aux.strip_zeros(number.topoints(spec.shrink)))
-        end
-        return concat(t," ")
-    else
-        return "[0pt]"
+    local t = { }
+    t[#t+1] = aux.strip_zeros(number.topoints(spec.width))
+    if spec.stretch_order and spec.stretch_order ~= 0 then
+        t[#t+1] = format("plus -%sfi%s",spec.stretch/65536,string.rep("l",math.abs(spec.stretch_order)-1))
+    elseif spec.stretch and spec.stretch ~= 0 then
+        t[#t+1] = format("plus %s",aux.strip_zeros(number.topoints(spec.stretch)))
     end
+    if spec.shrink_order and spec.shrink_order ~= 0 then
+        t[#t+1] = format("minus -%sfi%s",spec.shrink/65536,string.rep("l",math.abs(spec.shrink_order)-1))
+    elseif spec.shrink and spec.shrink ~= 0 then
+        t[#t+1] = format("minus %s",aux.strip_zeros(number.topoints(spec.shrink)))
+    end
+    return concat(t," ")
 end
 
 local function nodes_to_string(head)
@@ -424,11 +430,7 @@ local function nodes_to_string(head)
         if id == penalty then
             t[#t+1] = format("%s:%s",ty,current.penalty)
         elseif id == glue then
-            if current.spec then
-                t[#t+1] = format("%s:%s",ty,aux.strip_zeros(number.topoints(current.spec.width)))
-            else
-                t[#t+1] = format("%s:[0pt]",ty)
-            end
+            t[#t+1] = format("%s:%s",ty,aux.strip_zeros(number.topoints(current.spec.width)))
         elseif id == kern then
             t[#t+1] = format("%s:%s",ty,aux.strip_zeros(number.topoints(current.kern)))
         else
@@ -537,8 +539,9 @@ local skips = {
 }
 
 local free_glue_node = free_node
-local free_glue_spec = free_node
 local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8
+
+--~ local function free_glue_node(n) free_node(n.spec) free_node(n) end
 
 function vspacing.snap_box(n,how)
     local sv = snapmethods[how]
@@ -602,10 +605,9 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         if glue_data then
             if force_glue then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
-                local spec = glue_data.spec
-                head, _ = forced_skip(head,current,(spec and spec.width) or 0,"before",trace)
+                head, _ = forced_skip(head,current,glue_data.spec.width,"before",trace)
                 free_glue_node(glue_data)
-            elseif glue_data.spec then
+            elseif glue_data.spec.writable then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
                 head, _ = insert_node_before(head,current,glue_data)
             else
@@ -693,12 +695,12 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                     local previous = current.prev
                     if previous and previous.id == glue and previous.subtype == 0 then
                         local ps = previous.spec
-                        if ps then
+                        if ps.writable then
                             local cs = current.spec
-                            if cs and ps.stretch_order == 0 and ps.shrink_order == 0 and cs.stretch_order == 0 and cs.shrink_order == 0 then
+                            if cs.writable and ps.stretch_order == 0 and ps.shrink_order == 0 and cs.stretch_order == 0 and cs.shrink_order == 0 then
                                 local pw, pp, pm = ps.width, ps.stretch, ps.shrink
                                 local cw, cp, cm = cs.width, cs.stretch, cs.shrink
-                                ps = writable_spec(previous)
+                                ps = writable_spec(previous) -- no writable needed here
                                 ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
                                 if trace then trace_natural("removed",current) end
                                 head, current = remove_node(head, current, true)
@@ -749,8 +751,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 -- is now exclusive, maybe support goback as combi, else why a set
                 if sc == largest then
                     local cs, gs = current.spec, glue_data.spec
-                    local cw = (cs and cs.width) or 0
-                    local gw = (gs and gs.width) or 0
+                    local cw, gw = cs.width, gs.width
                     if cw > gw then
                         if trace then trace_skip('largest',sc,so,sp,current) end
                         free_glue_node(glue_data) -- also free spec
@@ -800,9 +801,8 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 local s = has_attribute(current,snap_method)
                 if s and s ~= 0 then
                     set_attribute(current,snap_method,0)
-                    local spec = current.spec
-                    if spec then
-                        spec = writable_spec(current)
+                    if current.spec.writable then
+                        local spec = writable_spec(current)
                         spec.width = 0
                         if trace_vsnapping then
                             logs.report("snapper", "lineskip set to zero")
@@ -822,8 +822,8 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 local s = has_attribute(current,snap_method)
                 if s and s ~= 0 then
                     set_attribute(current,snap_method,0)
-                    local spec = current.spec
-                    if spec then
+                    if current.spec.writable then
+                        local spec = writable_spec(current)
                         spec.width = 0
                         if trace_vsnapping then
                             logs.report("snapper", "baselineskip set to zero")
@@ -845,7 +845,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 head, current = remove_node(head, current, true)
             elseif glue_data then
                 local ps, gs = current.spec, glue_data.spec
-                if ps and gs and ps.width > gs.width then
+                if ps.writable and gs.writable and ps.width > gs.width then
                     glue_data.spec = copy_node(ps)
                     if trace then trace_natural("taking parskip",current) end
                 else
@@ -900,7 +900,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             current = current.next
             --
         else -- other glue
-            if snap and trace_vsnapping and current.spec and current.spec.width ~= 0 then
+            if snap and trace_vsnapping and current.spec.writable and current.spec.width ~= 0 then
                 logs.report("snapper", "%s of %s (kept)",skips[subtype],current.spec.width)
             --~ current.spec.width = 0
             end

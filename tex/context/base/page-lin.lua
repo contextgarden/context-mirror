@@ -138,7 +138,7 @@ function nodes.lines.boxed.setup(n,configuration)
     return n
 end
 
-local leftskip = nodes.leftskip
+local the_left_margin = nodes.the_left_margin
 
 local function check_number(n,a,skip) -- move inline
     local d = data[a]
@@ -147,7 +147,7 @@ local function check_number(n,a,skip) -- move inline
         current_list[#current_list+1] = { n, s }
         if not skip and s % d.step == 0 then
             local tag = d.tag or ""
-            texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}\\endgraf", tag, s, n.shift, n.width, leftskip(n.list)))
+            texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}\\endgraf", tag, s, n.shift, n.width, the_left_margin(n.list)))
             if trace_numbers then
                 logs.report("numbers","making number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
             end

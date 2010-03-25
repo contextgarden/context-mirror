@@ -45,7 +45,13 @@ function parbuilders.constructor(head,followed_by_display)
         if attribute then
             local constructor = names[attribute]
             if constructor then
-                return constructors[constructor](head,followed_by_display)
+                local handler = constructor and constructors[constructor]
+                if handler then
+                    return handler(head,followed_by_display)
+                else
+                    logs.report("parbuilders","handler '%s' is not defined",tostring(constructor))
+                    return true -- let tex break
+                end
             end
         end
         return true -- let tex break

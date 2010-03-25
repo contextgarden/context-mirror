@@ -306,15 +306,27 @@
 
 \newif\ifbibcitecompress\bibcitecompresstrue
 
-\appendtoks
-  \processaction
-    [\@@pbnumbering]
-    [    \v!yes=>\let\@@pbinumbercommand\firstofoneargument,
-          \v!no=>\let\@@pbinumbercommand\gobbleoneargument,
-       \v!short=>\def\@@pbinumbercommand##1{\bibgetvars\currentpublicationkey},
-         \v!bib=>\def\@@pbinumbercommand##1{\bibgetvarn\currentpublicationkey},
-     \s!unknown=>\let\@@pbinumbercommand\firstofoneargument]%
-\to \everysetuppublications
+% \appendtoks
+%   \processaction
+%     [\@@pbnumbering]
+%     [    \v!yes=>\let\@@pbinumbercommand\firstofoneargument,
+%           \v!no=>\let\@@pbinumbercommand\gobbleoneargument,
+%        \v!short=>\def\@@pbinumbercommand##1{\bibgetvars\currentpublicationkey},
+%          \v!bib=>\def\@@pbinumbercommand##1{\bibgetvarn\currentpublicationkey},
+%      \s!unknown=>\let\@@pbinumbercommand\firstofoneargument]%
+% \to \everysetuppublications
+
+\def\@@pbinumbercommand{\executeifdefined{\??pb:\c!numbercommand:\@@pbnumbering}\firstofoneargument}
+
+\letvalue{\??pb:\c!numbercommand:\v!yes  }\firstofoneargument
+\letvalue{\??pb:\c!numbercommand:\v!no   }\gobbleoneargument
+\setvalue{\??pb:\c!numbercommand:\v!short}#1{\bibgetvars\currentpublicationkey}
+\setvalue{\??pb:\c!numbercommand:\v!bib  }#1{\bibgetvarn\currentpublicationkey}
+
+% to be tested
+%
+% \setvalue{\??pb:\c!numbercommand:\v!short}{\bibgetvars\currentpublicationkey\firstofoneargument}
+% \setvalue{\??pb:\c!numbercommand:\v!bib  }{\bibgetvarn\currentpublicationkey\firstofoneargument}
 
 \appendtoks
   \processaction

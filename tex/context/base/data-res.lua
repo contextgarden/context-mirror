@@ -1837,7 +1837,7 @@ function resolvers.find_given_files(filename)
     local hashes = instance.hashes
     for k=1,#hashes do
         local hash = hashes[k]
-        local files = instance.files[hash.tag]
+        local files = instance.files[hash.tag] or { }
         local blist = files[bname]
         if not blist then
             local rname = "remap:"..bname

@@ -67,7 +67,7 @@ end
 --         or  id == mark_node
 --         or  id == adjust_node
 --         or  id == penalty_node
---         or (id == glue_node    and a.spec == 0)
+--         or (id == glue_node    and a.spec.writable)
 --         or (id == disc_node    and a.pre == nil and a.post == nil and a.replace == nil)
 --         or (id == math_node    and a.surround == 0)
 --         or (id == kern_node    and (a.kern == 0 or a.subtype == NORMAL))
@@ -112,3 +112,34 @@ end
 --         end
 --     end
 -- end
+--
+-- left-overs
+--
+-- local function round_xn_over_d(x, n, d)
+--     local positive -- was x >= 0
+--     if x >= 0 then
+--         positive = true
+--     else
+--         x = -x
+--         positive = false
+--     end
+--     local t = floor(x % 0x8000) * n              -- 0100000
+--     local f = floor(t / 0x8000)                  -- 0100000
+--     local u = floor(x / 0x8000) * n + f          -- 0100000
+--     local v = floor(u % d) * 0x8000 + f          -- 0100000
+--     if floor(u / d) >= 0x8000 then               -- 0100000
+--         logs.error("parbuilder",'arith_error')
+--     else
+--         u = 0x8000 * floor(u / d) + floor(v / d) -- 0100000
+--     end
+--     v = floor(v % d)
+--     if 2*v >= d then
+--         u = u + 1
+--     end
+--     if positive then
+--         return u
+--     else
+--         return -u
+--     end
+-- end
+

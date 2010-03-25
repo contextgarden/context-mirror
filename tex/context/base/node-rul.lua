@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['node-rul'] = {
 }
 
 -- this will go to an auxiliary module
+-- beware: rules now have a dir field
 
 local glyph = node.id("glyph")
 local disc  = node.id("disc")
@@ -85,7 +86,7 @@ local checkdir = true
 -- we assume {glyphruns} and no funny extra kerning, ok, maybe we need
 -- a dummy character as start and end; anyway we only collect glyphs
 
-local function process_words(attribute,data,flush,head,parent)
+local function process_words(attribute,data,flush,head,parent) -- we have hlistdir and local dir
     local n = head
     if n then
         local f, l, a, d, i, level
@@ -215,7 +216,9 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             insert_after(head,r,k)
         end
         if trace_ruled then
-            logs.report("ruled", "level: %s, width: %s, nodes: %s, text: %s",level,w,n_tostring(f,l),n_tosequence(f,l,true))
+            logs.report("ruled", "level: %s, width: %i, height: %i, depth: %i, nodes: %s, text: %s",
+                level,w,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
+             -- level,r.width,r.height,r.depth,n_tostring(f,l),n_tosequence(f,l,true))
         end
     end
     return head

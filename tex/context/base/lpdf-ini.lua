@@ -483,6 +483,10 @@ end
 function lpdf.finalizedocument()
     if not environment.initex then
         run(documentfinalizers,"document")
+        function lpdf.finalizedocument()
+            logs.report("backend","serious error: the document is finalized multiple times")
+            function lpdf.finalizedocument() end
+        end
     end
 end
 

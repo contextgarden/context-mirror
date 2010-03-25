@@ -20,7 +20,7 @@ local function cleanup_page(head) -- rough
     local start = head
     while start do
         local id = start.id
-        if id == disc or (id == glue and not start.spec) or (id == kern and start.kern == 0) or id == mark then
+        if id == disc or (id == glue and not start.writable) or (id == kern and start.kern == 0) or id == mark then
             head, start, tmp = remove_node(head,start)
             free_node(tmp)
         elseif id == hlist or id == vlist then

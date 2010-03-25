@@ -39,6 +39,7 @@ local format, lower, find, match, gsub, gmatch = string.format, string.lower, st
 local texsprint, texbox = tex.sprint, tex.box
 local contains = table.contains
 local concat = table.concat
+local todimen = string.todimen
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
@@ -47,6 +48,7 @@ local trace_figures    = false  trackers.register("figures.locating",   function
 local trace_bases      = false  trackers.register("figures.bases",      function(v) trace_bases      = v end)
 local trace_programs   = false  trackers.register("figures.programs",   function(v) trace_programs   = v end)
 local trace_conversion = false  trackers.register("figures.conversion", function(v) trace_conversion = v end)
+local trace_inclusion  = false  trackers.register("figures.inclusion",  function(v) trace_inclusion  = v end)
 
 --- some extra img functions ---
 
@@ -794,22 +796,29 @@ end
 
 function figures.checkers.mov(data)
     local dr, du, ds = data.request, data.used, data.status
-    dr.width = (dr.width or figures.defaultwidth):todimen()
-    dr.height = (dr.height or figures.defaultheight):todimen()
-    du.width = dr.width
-    du.height = dr.height
-    du.foundname = du.fullname
-    local code = backends.codeinjections.insertmovie {
-        width      = du.width or dr.width,
-        height     = du.height or dr.height,
-        factor     = number.dimenfactors.bp,
-        ["repeat"] = dr["repeat"],
-        controls   = dr.controls,
-        preview    = dr.preview,
-        label      = dr.label,
-        foundname  = du.foundname,
-    }
-    texsprint(ctxcatcodes,format("\\startfoundexternalfigure{%ssp}{%ssp}%s\\stopfoundexternalfigure",du.width,du.height,code))
+    local width = todimen(dr.width or figures.defaultwidth)
+    local height = todimen(dr.height or figures.defaultheight)
+    local foundname = du.fullname
+    dr.width, dr.height = width, height
+    du.width, du.height, du.foundname = width, height, foundname
+    if trace_inclusion then
+        logs.report("figures","including movie '%s': width %s, height %s",foundname,width,height)
+    end
+    -- we need to push the node.write in between ... we could make a shared helper for this
+    context.startfoundexternalfigure(width .. "sp",height .. "sp")
+    context(function()
+        backends.codeinjections.insertmovie {
+            width      = width,
+            height     = height,
+            factor     = number.dimenfactors.bp,
+            ["repeat"] = dr["repeat"],
+            controls   = dr.controls,
+            preview    = dr.preview,
+            label      = dr.label,
+            foundname  = foundname,
+        }
+    end)
+    context.stopfoundexternalfigure()
     return data
 end
 

@@ -8,35 +8,38 @@ if not modules then modules = { } end modules ['grph-u3d'] = {
 
 -- see lpdf-u3d.lua for comment
 
-local format = string.format
+local trace_inclusion = false  trackers.register("figures.inclusion",  function(v) trace_inclusion = v end)
 
-local texsprint     = tex.sprint
-local ctxcatcodes   = tex.ctxcatcodes
-local pdfannotation = nodes.pdfannotation
+local pdfannotation   = nodes.pdfannotation
+local todimen         = string.todimen
+
+-- maybe todo: backends.codeinjections.insertu3d
 
 function figures.checkers.u3d(data)
     local dr, du, ds = data.request, data.used, data.status
-    local width = (dr.width or figures.defaultwidth):todimen()
-    local height = (dr.height or figures.defaultheight):todimen()
+    local width = todimen(dr.width or figures.defaultwidth)
+    local height = todimen(dr.height or figures.defaultheight)
     local foundname = du.fullname
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
-    texsprint(ctxcatcodes,format("\\startfoundexternalfigure{%ssp}{%ssp}",width,height))
-    local annot, preview, ref = backends.pdf.helpers.insert3d {
-        foundname = foundname,
-        width     = width,
-        height    = height,
-        factor    = number.dimenfactors.bp,
-        display   = dr.display,
-        controls  = dr.controls,
-        label     = dr.label,
-    }
- -- node.write(pdfannotation(width,-height,0,annot()))
-    texsprint(ctxcatcodes,format("\\pdfannot width %ssp height %ssp {%s}",width,height,annot())) -- brrrr
---~     if ref then -- wrong ! a direct ref should work
---~         texsprint(ctxcatcodes,format("\\smash{\\pdfrefximage%s\\relax}",ref)) -- brrrr
---~     end
-    texsprint(ctxcatcodes,"\\stopfoundexternalfigure")
+    if trace_inclusion then
+        logs.report("figures","including u3d '%s': width %s, height %s",foundname,width,height)
+    end
+    context.startfoundexternalfigure(width .. "sp",height .. "sp")
+    context(function()
+        local annotation, preview, ref = backends.pdf.helpers.insert3d {
+            foundname = foundname,
+            width     = width,
+            height    = height,
+            factor    = number.dimenfactors.bp,
+            display   = dr.display,
+            controls  = dr.controls,
+            label     = dr.label,
+        }
+--~         print(annotation, preview, ref)
+        node.write(pdfannotation(width,height,0,annotation()))
+    end)
+    context.stopfoundexternalfigure()
     return data
 end
 

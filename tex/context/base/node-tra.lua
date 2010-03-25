@@ -31,6 +31,7 @@ local vlist   = node.id('vlist')
 local disc    = node.id('disc')
 local glue    = node.id('glue')
 local kern    = node.id('kern')
+local rule    = node.id('rule')
 local whatsit = node.id('whatsit')
 
 local copy_node_list  = node.copy_list
@@ -347,6 +348,12 @@ function nodes.tosequence(start,stop,compact)
                 end
             elseif id == whatsit and start.subtype == 6 or start.subtype == 7 then
                 t[#t+1] = "[" .. start.dir .. "]"
+            elseif id == rule then
+                if compact then
+                    t[#t+1] = "|"
+                else
+                    t[#t+1] = node_type(id)
+                end
             else
                 if compact then
                     t[#t+1] = "[]"

@@ -17,12 +17,12 @@ local find_node_tail = node.tail or node.slide
 
 local chardata = characters.data
 
-function nodes.leftskip(n)
+function nodes.the_left_margin(n) -- todo: three values
     while n do
         local id = n.id
         if id == glue then
             if n.subtype == 8 then -- 7 in c/web source
-                return (n.spec and n.spec.width) or 0
+                return n.spec.width
             else
                 return 0
             end
@@ -37,14 +37,14 @@ function nodes.leftskip(n)
     return 0
 end
 
-function nodes.rightskip(n)
+function nodes.the_right_margin(n)
     if n then
         n = find_node_tail(n)
         while n do
             local id = n.id
             if id == glue then
                 if n.subtype == 9 then -- 8 in the c/web source
-                    return (n.spec and n.spec.width) or 0
+                    return n.spec.width
                 else
                     return 0
                 end

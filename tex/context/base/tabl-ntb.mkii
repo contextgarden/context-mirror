@@ -1213,6 +1213,7 @@
        \fi
         \advance\xxrowTBL\plusone}%
      % distribute overshoot equally
+\ifdim\dimen2>\zeropoint % see natural-003
      \ifdim\dimen4<\dimen0
        \advance\dimen0 -\dimen4
        \divide\dimen0 \!!countb
@@ -1231,6 +1232,7 @@
      \else\ifdim\dimen4>\dimen0
        \settblhei\xrowTBL{\the\dimen2}%
      \fi\fi
+\fi
    \fi}
 
 \def\checktblheightsone
