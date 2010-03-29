@@ -12,7 +12,8 @@ local gmatch, concat = string.gmatch, table.concat
 local utfchar = utf.char
 
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
-local trace_expansion  = false  trackers.register("fonts.expansion" , function(v) trace_expansion  = v end)
+local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
+local trace_goodies    = false  trackers.register("fonts.goodies",    function(v) trace_goodies    = v end)
 
 commands = commands or { }
 
@@ -90,6 +91,23 @@ function initializers.common.lineheight(tfmdata,value)
 end
 
 -- -- -- -- -- --
+-- shared
+-- -- -- -- -- --
+
+local function get_class_and_vector(tfmdata,value,where) -- "expansions"
+    local g_where = tfmdata.goodies and tfmdata.goodies[where]
+    local f_where = fonts[where]
+    local g_classes = g_where and g_where.classes
+    local class = g_where and g_where[value] or f_where.classes[value]
+    if class then
+        local class_vector = class.vector
+        local g_vectors = g_where and g_where.vectors
+        local vector = g_vectors and g_vectors[class_vector] or f_where.vectors[class_vector]
+        return class, vector
+    end
+end
+
+-- -- -- -- -- --
 -- expansion (hz)
 -- -- -- -- -- --
 
@@ -127,15 +145,29 @@ vectors['default'] = {
 
 vectors['quality'] = vectors['default'] -- metatable ?
 
+--~ function table.locator(...)
+--~     local k = { ... }
+--~     return function(t)
+--~         for i=1,#k do
+--~             t = t[k[i]]
+--~             if not k then
+--~                 return false
+--~             end
+--~         end
+--~         return t
+--~     end
+--~ end
+
+--~ local locate = table.locator { "goodies", "expansions" }
+
 function initializers.common.expansion(tfmdata,value)
     if value then
-        local class = classes[value]
+        local class, vector = get_class_and_vector(tfmdata,value,"expansions")
         if class then
-            local vector = vectors[class.vector]
             if vector then
                 local stretch, shrink, step, factor = class.stretch or 0, class.shrink or 0, class.step or 0, class.factor or 1
                 if trace_expansion then
-                    logs.report("fonts","set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",value,class.vector,factor,stretch,shrink,step)
+                    logs.report("fonts","set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",value,class_vector,factor,stretch,shrink,step)
                 end
                 tfmdata.stretch, tfmdata.shrink, tfmdata.step, tfmdata.auto_expand = stretch * 10, shrink * 10, step * 10, true
                 local data = characters and characters.data
@@ -161,7 +193,7 @@ function initializers.common.expansion(tfmdata,value)
                     end
                 end
             elseif trace_expansion then
-                logs.report("fonts","unknown expansion vector '%s' in class '%s",class.vector,value)
+                logs.report("fonts","unknown expansion vector '%s' in class '%s",class_vector,value)
             end
         elseif trace_expansion then
             logs.report("fonts","unknown expansion class '%s'",value)
@@ -176,6 +208,8 @@ initializers.node.otf.expansion = initializers.common.expansion
 
 initializers.base.afm.expansion = initializers.common.expansion
 initializers.node.afm.expansion = initializers.common.expansion
+
+fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
 
 -- -- -- -- -- --
 -- protrusion
@@ -399,15 +433,14 @@ function initializers.common.protrusion(tfmdata,value)
             -- possible values: left right both yes no (experimental)
             map_opbd_onto_protrusion(tfmdata,value,opbd)
         else
-            local class = classes[value]
+            local class, vector = get_class_and_vector(tfmdata,value,"protrusions")
             if class then
-                local vector = vectors[class.vector]
                 if vector then
                     local factor = class.factor or 1
                     local left   = class.left   or 1
                     local right  = class.right  or 1
                     if trace_protrusion then
-                        logs.report("fonts","set protrusion class %s, vector: %s, factor: %s, left: %s, right: %s",value,class.vector,factor,left,right)
+                        logs.report("fonts","set protrusion class %s, vector: %s, factor: %s, left: %s, right: %s",value,class_vector,factor,left,right)
                     end
                     local data = characters.data
                     local emwidth = tfmdata.parameters.quad
@@ -442,7 +475,7 @@ function initializers.common.protrusion(tfmdata,value)
                         end
                     end
                 elseif trace_protrusion then
-                    logs.report("fonts","unknown protrusion vector '%s' in class '%s",class.vector,value)
+                    logs.report("fonts","unknown protrusion vector '%s' in class '%s",class_vector,value)
                 end
             elseif trace_protrusion then
                 logs.report("fonts","unknown protrusion class '%s'",value)
@@ -458,6 +491,10 @@ initializers.node.otf.protrusion = initializers.common.protrusion
 
 initializers.base.afm.protrusion = initializers.common.protrusion
 initializers.node.afm.protrusion = initializers.common.protrusion
+
+fonts.goodies.register("protrusions", function(...) return fonts.goodies.report("protrusions", trace_protrusion, ...) end)
+
+-- -- --
 
 function initializers.common.nostackmath(tfmdata,value)
     tfmdata.ignore_stack_math = value

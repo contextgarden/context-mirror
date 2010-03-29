@@ -13,11 +13,15 @@
 
 \writestatus{loading}{ConTeXt Font Support / Colorschemes}
 
-\registerctxluafile{font-gds}{1.001}
+% \registerctxluafile{font-gds}{1.001}
 
 \unprotect
 
-% this will become colorgroups
+\def\loadfontgoodies[#1]%
+  {\ctxlua{fonts.goodies.get("#1")}}
+
+
+% this will become colorgroups and move to font-col or so
 
 \definecolor[colorscheme:1:1][s=.75]
 \definecolor[colorscheme:1:2][r=.75]

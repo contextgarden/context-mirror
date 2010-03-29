@@ -361,7 +361,10 @@ patterns.integer       = sign^0 * digit^1
 patterns.float         = sign^0 * digit^0 * P('.') * digit^1
 patterns.number        = patterns.float + patterns.integer
 patterns.oct           = P("0") * R("07")^1
-patterns.hex           = P("0x") * R("09","AF")^1
+patterns.octal         = patterns.oct
+patterns.HEX           = P("0x") * R("09","AF")^1
+patterns.hex           = P("0x") * R("09","af")^1
+patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
 patterns.lowercase     = R("az")
 patterns.uppercase     = R("AZ")
 patterns.letter        = patterns.lowercase + patterns.uppercase
@@ -451,40 +454,23 @@ end
 --~     local p = pp
 --~     for l=1,#list do
 --~         if p then
---~             p = p + lpeg.P(list[l])
+--~             p = p + P(list[l])
 --~         else
---~             p = lpeg.P(list[l])
+--~             p = P(list[l])
 --~         end
 --~     end
 --~     return p
 --~ end
 
 --~ from roberto's site:
---~
---~ local function f1 = string.byte
---~
---~ local function f2(s)
---~   local c1, c2 = string.byte(s, 1, 2)
---~   return c1 * 64 + c2 - 12416
---~ end
---~
---~ local function f3(s)
---~   local c1, c2, c3 = string.byte(s, 1, 3)
---~   return (c1 * 64 + c2) * 64 + c3 - 925824
---~ end
---~
---~ local function f4(s)
---~   local c1, c2, c3, c4 = string.byte(s, 1, 4)
---~   return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168
---~ end
---~
---~ local cont = lpeg.R("\128\191")   -- continuation byte
---~ local utf8 = lpeg.R("\0\127") / f1
---~            + lpeg.R("\194\223") * cont / f2
---~            + lpeg.R("\224\239") * cont * cont / f3
---~            + lpeg.R("\240\244") * cont * cont * cont / f4
---~
---~ local decode_pattern = lpeg.Ct(utf8^0) * -1
+
+local f1 = string.byte
+
+local function f2(s) local c1, c2         = f1(s,1,2) return   c1 * 64 + c2                       -    12416 end
+local function f3(s) local c1, c2, c3     = f1(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
+local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
+
+patterns.utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
 
 
 end -- of closure
@@ -2029,7 +2015,9 @@ function file.removesuffix(filename)
 end
 
 function file.addsuffix(filename, suffix)
-    if not find(filename,"%.[%a%d]+$") then
+    if not suffix or suffix == "" then
+        return filename
+    elseif not find(filename,"%.[%a%d]+$") then
         return filename .. "." .. suffix
     else
         return filename
@@ -3406,7 +3394,7 @@ local comma     = lpeg.P(",")
 local lbrace    = lpeg.P("{")
 local rbrace    = lpeg.P("}")
 local nobrace   = 1 - (lbrace+rbrace)
-local nested    = lpeg.P{ lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
+local nested    = lpeg.P { lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
 local spaces    = space^0
 
 local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
@@ -4312,6 +4300,8 @@ function statistics.starttiming(instance)
         if not instance.loadtime then
             instance.loadtime = 0
         end
+    else
+--~         logs.report("system","nested timing (%s)",tostring(instance))
     end
     instance.timing = it + 1
 end
@@ -4779,6 +4769,11 @@ end
 --~ for i=1,10 do
 --~     logs.system(syslogname,"context","test","fonts","font %s recached due to newer version (%s)","blabla","123")
 --~ end
+
+function logs.fatal(where,...)
+    logs.report(where,"fatal error: %s, aborting now",format(...))
+    os.exit()
+end
 
 
 end -- of closure
@@ -5256,13 +5251,17 @@ end
 -- also we now follow the stupid route: if not set then just assume *one*
 -- cnf file under texmf (i.e. distribution)
 
-resolvers.ownpath     = resolvers.ownpath or nil
-resolvers.ownbin      = resolvers.ownbin  or arg[-2] or arg[-1] or arg[0] or "luatex"
+local args = environment and environment.original_arguments or arg -- this needs a cleanup
+
+resolvers.ownbin  = resolvers.ownbin or args[-2] or arg[-2] or args[-1] or arg[-1] or arg [0] or "luatex"
+resolvers.ownbin  = string.gsub(resolvers.ownbin,"\\","/")
+resolvers.ownpath = resolvers.ownpath or file.dirname(resolvers.ownbin)
+
 resolvers.autoselfdir = true -- false may be handy for debugging
 
 function resolvers.getownpath()
     if not resolvers.ownpath then
-        if resolvers.autoselfdir and os.selfdir then
+        if resolvers.autoselfdir and os.selfdir and os.selfdir ~= "" then
             resolvers.ownpath = os.selfdir
         else
             local binary = resolvers.ownbin
@@ -6400,19 +6399,21 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     instance.format = "othertextfiles" -- kind of everything, maybe texinput is better
                 end
                 --
-                local resolved = collect_instance_files(basename)
-                if #result == 0 then
-                    local lowered = lower(basename)
-                    if filename ~= lowered then
-                        resolved = collect_instance_files(lowered)
+                if basename ~= filename then
+                    local resolved = collect_instance_files(basename)
+                    if #result == 0 then
+                        local lowered = lower(basename)
+                        if filename ~= lowered then
+                            resolved = collect_instance_files(lowered)
+                        end
                     end
-                end
-                resolvers.format = savedformat
-                --
-                for r=1,#resolved do
-                    local rr = resolved[r]
-                    if find(rr,pattern) then
-                        result[#result+1], ok = rr, true
+                    resolvers.format = savedformat
+                    --
+                    for r=1,#resolved do
+                        local rr = resolved[r]
+                        if find(rr,pattern) then
+                            result[#result+1], ok = rr, true
+                        end
                     end
                 end
                 -- a real wildcard:
@@ -6624,7 +6625,7 @@ function resolvers.find_given_files(filename)
     local hashes = instance.hashes
     for k=1,#hashes do
         local hash = hashes[k]
-        local files = instance.files[hash.tag]
+        local files = instance.files[hash.tag] or { }
         local blist = files[bname]
         if not blist then
             local rname = "remap:"..bname

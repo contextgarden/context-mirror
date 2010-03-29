@@ -346,7 +346,7 @@
 \def\raggedspaceamount   {\interwordspace} % {.3333em}
 \def\raggedxspaceamount  {.5em}
 
-\def\notragged
+\unexpanded\def\notragged
   {\chardef\raggedstatus\zerocount
    \leftskip  1\leftskip
    \rightskip 1\rightskip
@@ -357,12 +357,12 @@
 
 \let\forgetragged\notragged
 
-\def\raggedleft
+\unexpanded\def\raggedleft
   {\setraggedness\leftraggedness
    \setraggedskips1\leftraggedness\zeropoint\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
 
-\def\raggedcenter
+\unexpanded\def\raggedcenter
   {\setraggedness\middleraggedness
    \setraggedskips2\middleraggedness\middleraggedness\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
@@ -377,12 +377,12 @@
 %D
 %D However, the next alternative, suggested by Taco, is better.
 
-\def\raggedright
+\unexpanded\def\raggedright
   {\setraggedness\rightraggedness
    \setraggedskips3\zeropoint\rightraggedness\raggedspaceamount
      \raggedxspaceamount\raggedfillamount\parindent}
 
-\def\veryraggedleft
+\unexpanded\def\veryraggedleft
   {\setraggedskips1\raggedfillamount\zeropoint\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
 
@@ -395,22 +395,22 @@
 %D
 %D but this one is not accepted by the macros.
 
-\def\veryraggedcenter
+\unexpanded\def\veryraggedcenter
   {\setraggedskips2\raggedfillamount\raggedfillamount\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
 
-\def\veryraggedright
+\unexpanded\def\veryraggedright
   {\setraggedskips3\zeropoint\raggedfillamount\raggedspaceamount
      \raggedxspaceamount\zeropoint\parindent}
 
-\def\ttraggedright
+\unexpanded\def\ttraggedright
   {\tttf
    \setraggedskips3\zeropoint\rightraggedness
      \zeropoint\zeropoint\zeropoint\parindent} % \ctxparindent
 
 %D A bonus one:
 
-\def\raggedwidecenter
+\unexpanded\def\raggedwidecenter
   {\setraggedness\middleraggedness
    \setraggedskips2\raggedhalffillamount\raggedhalffillamount
      \raggedspaceamount\raggedxspaceamount\zeropoint\zeropoint}
@@ -482,11 +482,11 @@
 
 \ifx\sethyphenationvariables\undefined \let\sethyphenationvariables\relax \fi
 
-\def\lesshyphens
+\unexpanded\def\lesshyphens
   {\advance\hyphenminoffset\plusone
    \sethyphenationvariables}
 
-\def\morehyphens
+\unexpanded\def\morehyphens
   {\ifcase\hyphenminoffset \else
      \advance\hyphenminoffset\minusone
    \fi
@@ -498,7 +498,7 @@
 \def\dodosetupalign#1{\csname @@align@@#1\endcsname}
 \def\dodosetupngila#1{\csname @@ngila@@#1\endcsname}
 
-\def\setupalign
+\unexpanded\def\setupalign
   {\dosingleargument\dosetupalign}
 
 \def\dosetupalign[#1]% can be made faster by checking for defined #1
@@ -516,11 +516,11 @@
 % \setupalign[middle]     \input ward \par % centreer
 % \setupalign[center]     \input ward \par
 
-\def\startalignment
+\unexpanded\def\startalignment
   {\bgroup
    \setupalign}
 
-\def\stopalignment
+\unexpanded\def\stopalignment
   {\par
    \egroup}
 
@@ -672,6 +672,6 @@
 \setvalue{\s!simple\c!align\v!flushleft  }#1#2{\hbox to #1{#2\hss}}
 \setvalue{\s!simple\c!align\v!middle     }#1#2{\hbox to #1{\hss#2\hss}}
 
-\def\simplealignedbox#1{\executeifdefined{\s!simple\c!align#1}{\getvalue{\s!simple\c!align\v!right}}}
+\unexpanded\def\simplealignedbox#1{\executeifdefined{\s!simple\c!align#1}{\getvalue{\s!simple\c!align\v!right}}}
 
 \protect \endinput

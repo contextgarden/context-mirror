@@ -1238,14 +1238,14 @@ end
 -- todo: we need to do a dummy run
 
 function scripts.context.trackers()
-    environment.files = { "m-trackers" }
+    environment.files = { resolvers.find_file("m-trackers.tex") }
     scripts.context.multipass.nofruns = 1
     scripts.context.run()
     -- maybe filter from log
 end
 
 function scripts.context.directives()
-    environment.files = { "m-directives" }
+    environment.files = { resolvers.find_file("m-directives.tex") }
     scripts.context.multipass.nofruns = 1
     scripts.context.run()
     -- maybe filter from log

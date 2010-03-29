@@ -641,7 +641,7 @@
 \def\dotypefileverbatim
   {\doinitializeverbatim
    \beginofverbatimlines
-   \ctxlua{buffers.typefile("\readfilename","\typingparameter\c!strip")}%
+   \ctxlua{buffers.typefile("\readfilename","\typingparameter\c!strip","\typingparameter\c!lines")}%
    \endofverbatimlines}
 
 \def\dotypefilelinesverbatim#1#2%
@@ -652,7 +652,7 @@
      {}
      {\doinitializeverbatim
       \beginofverbatimlines
-      \ctxlua{buffers.type("_typing_","\typingparameter\c!strip")}%
+      \ctxlua{buffers.type("_typing_","\typingparameter\c!strip","\typingparameter\c!lines")}%
       \endofverbatimlines
       \csname#2\endcsname}}
 
@@ -695,6 +695,27 @@
 %D \startcode[start=10]
 %D ...
 %D \stopcode
+%D \stoptyping
+
+%D Ranges:
+%D
+%D \starttyping
+%D % label:start:one
+%D
+%D \def\MyMacro
+%D   {just an example}
+%D
+%D % label:stop:one
+%D
+%D \starttext
+%D
+%D % \typefile[file][lines={3,6}]{whatever.tex}
+%D
+%D % \typefile[file][lines={3,+2}]{whatever.tex}
+%D
+%D \typefile[file][lines={label:start:one,label:stop:one}]{whatever.tex}
+%D
+%D \stoptext
 %D \stoptyping
 
 %D \macros

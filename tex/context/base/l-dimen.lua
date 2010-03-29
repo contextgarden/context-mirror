@@ -408,6 +408,10 @@ function string:todimen()
     end
 end
 
+function number.toscaled(d)
+    return format("0.5f",d/2^16)
+end
+
 --[[ldx--
 <p>In a similar fashion we can define a glue datatype. In that case we
 probably use a hash instead of a one-element table.</p>

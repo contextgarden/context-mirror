@@ -90,7 +90,7 @@ local function processor(head,followed_by_display)
         stoptiming(parbuilders)
         return head
     else
-        return true -- ler tex do the work
+        return true -- let tex do the work
     end
 end
 

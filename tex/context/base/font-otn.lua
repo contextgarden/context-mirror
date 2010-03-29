@@ -10,6 +10,9 @@ if not modules then modules = { } end modules ['font-otn'] = {
 -- much functionality could only be implemented thanks to the husayni font
 -- of Idris Samawi Hamid to who we dedicate this module.
 
+-- I'm in the process of cleaning up the code (which happens in another
+-- file) so don't rely on things staying the same.
+
 -- some day when we can jit this, we can use more functions
 
 -- we can use more lpegs when lpeg is extended with function args and so
@@ -1835,9 +1838,6 @@ local resolved = { } -- we only resolve a font,script,language pair once
 
 -- todo: pass all these 'locals' in a table
 
--- maybe some day i'll make an alternative that works on 'sub direction runs' which might be
--- more efficient for arabic but it has quite some consequences
-
 function fonts.methods.node.otf.features(head,font,attr)
     if trace_steps then
         checkstep(head)
@@ -1945,12 +1945,12 @@ function fonts.methods.node.otf.features(head,font,attr)
                 local handler = handlers[typ]
                 local thecache = featuredata[typ] or { }
                 -- we need to get rid of this slide !
-                start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
+                local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
                 while start do
                     local id = start.id
                     if id == glyph then
---~                         if start.subtype<256 and start.font == font and (not attr or has_attribute(start,0,attr)) then
-                        if start.subtype<256 and start.font == font and has_attribute(start,0,attr) then
+                        if start.subtype<256 and start.font == font and (not attr or has_attribute(start,0,attr)) then
+--~                         if start.subtype<256 and start.font == font and has_attribute(start,0,attr) then
                             for i=1,#subtables do
                                 local lookupname = subtables[i]
                                 local lookupcache = thecache[lookupname]
@@ -1978,7 +1978,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                 local handler = handlers[typ]
                 local ns = #subtables
                 local thecache = featuredata[typ] or { }
-                start = head -- local ?
+                local start = head -- local ?
                 rlmode = 0 -- to be checked ?
                 if ns == 1 then
                     local lookupname = subtables[1]
@@ -1989,7 +1989,8 @@ function fonts.methods.node.otf.features(head,font,attr)
                         while start do
                             local id = start.id
                             if id == glyph then
-                                if start.font == font and start.subtype<256 and has_attribute(start,0,attr) and (not attribute or has_attribute(start,state,attribute)) then
+--~                                 if start.font == font and start.subtype<256 and has_attribute(start,0,attr) and (not attribute or has_attribute(start,state,attribute)) then
+                                if start.font == font and start.subtype<256 and (not attr or has_attribute(start,0,attr)) and (not attribute or has_attribute(start,state,attribute)) then
                                     local lookupmatch = lookupcache[start.char]
                                     if lookupmatch then
                                         -- sequence kan weg
@@ -2063,8 +2064,8 @@ function fonts.methods.node.otf.features(head,font,attr)
                     while start do
                         local id = start.id
                         if id == glyph then
---~                             if start.subtype<256 and start.font == font and (not attr or has_attribute(start,0,attr)) and (not attribute or has_attribute(start,state,attribute)) then
-                            if start.subtype<256 and start.font == font and has_attribute(start,0,attr) and (not attribute or has_attribute(start,state,attribute)) then
+                            if start.subtype<256 and start.font == font and (not attr or has_attribute(start,0,attr)) and (not attribute or has_attribute(start,state,attribute)) then
+--~                             if start.subtype<256 and start.font == font and has_attribute(start,0,attr) and (not attribute or has_attribute(start,state,attribute)) then
                                 for i=1,ns do
                                     local lookupname = subtables[i]
                                     local lookupcache = thecache[lookupname]

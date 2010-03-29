@@ -24,8 +24,18 @@ fonts.goodies.list = fonts.goodies.list or { }
 local data = fonts.goodies.data
 local list = fonts.goodies.list
 
+
+function fonts.goodies.report(what,trace,goodies)
+    if trace_goodies or trace then
+        local whatever = goodies[what]
+        if whatever then
+            logs.report("fonts", "goodie '%s' found in '%s'",what,goodies.name)
+        end
+    end
+end
+
 local function getgoodies(filename) -- maybe a merge is better
-    local goodies = data[filename]
+    local goodies = data[filename] -- we assume no suffix is given
     if goodies ~= nil then
         -- found or tagged unfound
     elseif type(filename) == "string" then
@@ -246,6 +256,33 @@ fonts.initializers.node.otf.featureset  = fonts.initializers.common.featureset
 
 fonts.initializers.base.otf.colorscheme = fonts.initializers.common.colorscheme
 fonts.initializers.node.otf.colorscheme = fonts.initializers.common.colorscheme
+
+-- experiment, we have to load the definitions immediately as they precede
+-- the definition so they need to be initialized in the typescript
+
+local function initialize(goodies)
+    local mathgoodies = goodies.mathematics
+    local virtuals = mathgoodies and mathgoodies.virtuals
+    local mapfiles = mathgoodies and mathgoodies.mapfiles
+    local maplines = mathgoodies and mathgoodies.maplines
+    if virtuals then
+        for name, specification in next, virtuals do
+            mathematics.make_font(name,specification)
+        end
+    end
+    if mapfiles then
+        for i=1,#mapfiles do
+            pdf.pdfmapfile = mapfiles[i]
+        end
+    end
+    if maplines then
+        for i=1,#maplines do
+            pdf.pdfmapline = maplines[i]
+        end
+    end
+end
+
+fonts.goodies.register("mathematics", initialize)
 
 -- The following file (husayni.lfg) is the experimental setup that we used
 -- for Idris font. For the moment we don't store this in the cache and quite

@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['lpdf-u3d'] = {
 -- an overhaul. There are some messy leftovers that will be
 -- removed in future versions.
 
-local format = string.format
+local format, find = string.format, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 
 local pdfconstant   = lpdf.constant
@@ -354,9 +354,19 @@ function backends.pdf.helpers.insert3d(spec) -- width, height, factor, display, 
 
     local stream = streams[label]
     if not stream then
+
+        local subtype, subdata = "U3D", io.readdata(foundname) or ""
+        if find(subdata,"^PRC") then
+            subtype == "PRC"
+        elseif find(subdata,"^U3D") then
+            subtype == "U3D"
+        elseif file.extname(foundname) == "prc" then
+            subtype == "PRC"
+        end
+
         local attr = pdfdictionary {
             Type    = pdfconstant("3D"),
-            Subtype = pdfconstant("U3D"),
+            Subtype = pdfconstant(subtype),
         }
         local streamviews = checkedkey(streamparam, "views", "table")
         if streamviews then

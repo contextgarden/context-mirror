@@ -141,8 +141,7 @@
         % \definefontsynonym[MathRoman][LMMath10-Regular@lmroman10-math]
         % \definefontsynonym[MathBold] [LMMath10-Bold@lmroman10-boldmath]
 
-        \loadmapfile[lm-math.map]
-        \loadmapfile[lm-rm.map]
+        \loadfontgoodies[lm-math]
     \stoptypescript
 
     \starttypescript [serif] [modern,computer-modern,latin-modern] [name]
@@ -534,15 +533,15 @@
     % Times Math (tx)
 
     \starttypescript [math][times][all]
+        \loadfontgoodies[tx-math]
         \definefontsynonym[MathRoman][txmath@tx-math]
-        \loadmapfile[original-youngryu-tx.map]
     \stoptypescript
 
     % Palatino Math (px)
 
     \starttypescript [math][palatino][all]
+        \loadfontgoodies[px-math]
         \definefontsynonym[MathRoman][pxmath@px-math]
-        \loadmapfile[original-youngryu-px.map]
     \stoptypescript
 
 \stoptypescriptcollection
@@ -588,27 +587,23 @@
     \stoptypescript
 
     \starttypescript [math][antykwa-torunska][all]
+        \loadfontgoodies[antykwa-math]
         \definefontsynonym[MathRoman][antykwamath@antykwa-math]
     \stoptypescript
 
     \starttypescript [math][antykwa-torunska-light][all]
+        \loadfontgoodies[antykwa-math]
         \definefontsynonym[MathRoman][antykwalightmath@antykwa-light-math]
     \stoptypescript
 
     \starttypescript [math][antykwa-torunska-cond][all]
+        \loadfontgoodies[antykwa-math]
         \definefontsynonym[MathRoman][antykwacondmath@antykwa-cond-math]
     \stoptypescript
 
     \starttypescript [math][antykwa-torunska-lightcond][all]
+        \loadfontgoodies[antykwa-math]
         \definefontsynonym[MathRoman][antykwalightcondmath@antykwa-lightcond-math]
-    \stoptypescript
-
-    \starttypescript [math] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
-        \usemathcollection[default]
-        \loadmapfile[antt-rm.map]
-        \loadmapfile[antt-mi.map]
-        \loadmapfile[antt-sy.map]
-        \loadmapfile[antt-ex.map]
     \stoptypescript
 
     \starttypescript [serif] [antykwa-torunska] [name]
@@ -921,10 +916,7 @@
     \stoptypescript
 
     \starttypescript [math] [iwona,iwona-light,iwona-medium,iwona-heavy] [all]
-        \loadmapfile[iwona-rm.map]
-        \loadmapfile[iwona-mi.map]
-        \loadmapfile[iwona-sy.map]
-        \loadmapfile[iwona-ex.map]
+        \loadfontgoodies[iwona-math]
     \stoptypescript
 
     \starttypescript [sans] [iwona-light] [name]
@@ -1122,33 +1114,35 @@
         \definefontsynonym[Kurier-HeavyItalic]   [kurierhi]
     \stoptypescript
 
-    \starttypescript [math] [kurier] [default]
-        \definefontsynonym [Kurier-Math-Letters-Regular]       [rm-kurierr]
-        \definefontsynonym [Kurier-Math-Letters-Italic]        [mi-kurierri]
-        \definefontsynonym [Kurier-Math-Symbols-Regular]       [sy-kurierrz]
-        \definefontsynonym [Kurier-Math-Extension-Regular]     [ex-kurierr]
-    \stoptypescript
+%     todo:
 
-    \starttypescript [math] [kurier-light] [default]
-        \definefontsynonym [Kurier-Math-Letters-Light-Regular] [rm-kurierl]
-        \definefontsynonym [Kurier-Math-Letters-Light-Italic]  [mi-kurierli]
-        \definefontsynonym [Kurier-Math-Symbols-Light]         [sy-kurierlz]
-        \definefontsynonym [Kurier-Math-Extension-Light]       [ex-kurierl]
-    \stoptypescript
+%     \starttypescript [math] [kurier] [default]
+%         \definefontsynonym [Kurier-Math-Letters-Regular]       [rm-kurierr]
+%         \definefontsynonym [Kurier-Math-Letters-Italic]        [mi-kurierri]
+%         \definefontsynonym [Kurier-Math-Symbols-Regular]       [sy-kurierrz]
+%         \definefontsynonym [Kurier-Math-Extension-Regular]     [ex-kurierr]
+%     \stoptypescript
 
-    \starttypescript [math] [kurier-medium] [default]
-        \definefontsynonym [Kurier-Math-Letters-Medium-Regular] [rm-kurierm]
-        \definefontsynonym [Kurier-Math-Letters-Medium-Italic]  [mi-kuriermi]
-        \definefontsynonym [Kurier-Math-Symbols-Medium-Regular] [sy-kuriermz]
-        \definefontsynonym [Kurier-Math-Extension-Medium]       [ex-kurierm]
-    \stoptypescript
+%     \starttypescript [math] [kurier-light] [default]
+%         \definefontsynonym [Kurier-Math-Letters-Light-Regular] [rm-kurierl]
+%         \definefontsynonym [Kurier-Math-Letters-Light-Italic]  [mi-kurierli]
+%         \definefontsynonym [Kurier-Math-Symbols-Light]         [sy-kurierlz]
+%         \definefontsynonym [Kurier-Math-Extension-Light]       [ex-kurierl]
+%     \stoptypescript
 
-    \starttypescript [math] [kurier,kurier-light,kurier-medium] [default]
-        \loadmapfile[kurier-rm.map]
-        \loadmapfile[kurier-mi.map]
-        \loadmapfile[kurier-sy.map]
-        \loadmapfile[kurier-ex.map]
-    \stoptypescript
+%     \starttypescript [math] [kurier-medium] [default]
+%         \definefontsynonym [Kurier-Math-Letters-Medium-Regular] [rm-kurierm]
+%         \definefontsynonym [Kurier-Math-Letters-Medium-Italic]  [mi-kuriermi]
+%         \definefontsynonym [Kurier-Math-Symbols-Medium-Regular] [sy-kuriermz]
+%         \definefontsynonym [Kurier-Math-Extension-Medium]       [ex-kurierm]
+%     \stoptypescript
+
+%     \starttypescript [math] [kurier,kurier-light,kurier-medium] [default]
+%         \loadmapfile[kurier-rm.map]
+%         \loadmapfile[kurier-mi.map]
+%         \loadmapfile[kurier-sy.map]
+%         \loadmapfile[kurier-ex.map]
+%     \stoptypescript
 
     \starttypescript [sans] [kurier-light] [name]
         \setups[font:fallback:sans]
@@ -1174,26 +1168,28 @@
         \definefontsynonym [SansBoldItalic] [Kurier-Heavy-Italic]
     \stoptypescript
 
-    \starttypescript [math] [kurier-light] [name]
-        \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Light-Regular]
-        %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Light-Italic]
-        %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Light]
-        %definefontsynonym [MathExtension] [Kurier-Math-Extension-Light]
-    \stoptypescript
+%    todo:
 
-    \starttypescript [math] [kurier] [name]
-        \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Regular]
-        %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Italic]
-        %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Regular]
-        %definefontsynonym [MathExtension] [Kurier-Math-Extension-Regular]
-    \stoptypescript
+%     \starttypescript [math] [kurier-light] [name]
+%         \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Light-Regular]
+%         %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Light-Italic]
+%         %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Light]
+%         %definefontsynonym [MathExtension] [Kurier-Math-Extension-Light]
+%     \stoptypescript
 
-    \starttypescript [math] [kurier-medium] [name]
-        \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Medium-Regular]
-        %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Medium-Italic]
-        %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Medium]
-        %definefontsynonym [MathExtension] [Kurier-Math-Extension-Medium]
-    \stoptypescript
+%     \starttypescript [math] [kurier] [name]
+%         \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Regular]
+%         %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Italic]
+%         %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Regular]
+%         %definefontsynonym [MathExtension] [Kurier-Math-Extension-Regular]
+%     \stoptypescript
+
+%     \starttypescript [math] [kurier-medium] [name]
+%         \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Medium-Regular]
+%         %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Medium-Italic]
+%         %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Medium]
+%         %definefontsynonym [MathExtension] [Kurier-Math-Extension-Medium]
+%     \stoptypescript
 
 \stoptypescriptcollection
 
@@ -1234,8 +1230,8 @@
 \starttypescriptcollection[mathtimes]
 
     \starttypescript [math] [mathtimes] [all]
+        \loadfontgoodies[mathtimes-math]
         \definefontsynonym[MathRoman][mathtimes@mathtimes-math]
-        \loadmapfile[mathtime.map]
     \stoptypescript
 
     \starttypescript [mathtimes]
@@ -1249,42 +1245,6 @@
 \stoptypescriptcollection
 
 \starttypescriptcollection[lucida]
-
-    % \starttypescript [serif] [lucida] [name]
-    % 	\usetypescript[serif][fallback]
-    % 	\definefontsynonym[Serif]          [\s!name:LucidaBright]
-    % 	\definefontsynonym[SerifBold]      [\s!name:LucidaBright-Demi]
-    % 	\definefontsynonym[SerifItalic]    [\s!name:LucidaBright-Italic]
-    % 	\definefontsynonym[SerifBoldItalic][\s!name:LucidaBright-DemiItalic]
-    % \stoptypescript
-
-    % \starttypescript [sans] [lucida] [name]
-    % 	\usetypescript[sans][fallback]
-    % 	\definefontsynonym[Sans]			[\s!name:LucidaSans]
-    % 	\definefontsynonym[SansItalic]		[\s!name:LucidaSans-Oblique]
-    % 	\definefontsynonym[SansBold]    	[\s!name:LucidaSans-Demi]
-    % 	\definefontsynonym[SansBoldItalic]	[\s!name:LucidaSans-DemiOblique]
-    % \stoptypescript
-
-    % \starttypescript [mono] [lucida] [name]
-    % 	\usetypescript[mono][fallback]
-    % 	\definefontsynonym[Mono]			[\s!name:LucidaSans-Typewriter]
-    % 	\definefontsynonym[MonoItalic]		[\s!name:LucidaSans-TypewriterOblique]
-    % 	\definefontsynonym[MonoBold]		[\s!name:LucidaSans-TypewriterBold]
-    % 	\definefontsynonym[MonoBoldItalic]	[\s!name:LucidaSans-TypewriterBoldOblique]
-    % \stoptypescript
-
-    % \starttypescript [math] [lucida] [all]
-    %     \definefontsynonym[MathRoman][lucidamath@lucida-math]
-    %     \loadmapfile[lucida.map]
-    % \stoptypescript
-
-    % \starttypescript [lucida]
-    %     \definetypeface[lucida][rm][\s!serif][lucida][\s!default][\s!features=\s!default]
-    %     \definetypeface[lucida][ss][\s!sans] [lucida][\s!default][\s!features=\s!default]
-    %     \definetypeface[lucida][tt][\s!mono] [lucida][\s!default][\s!features=\s!default]
-    %     \definetypeface[lucida][mm][\s!math] [lucida][\s!default]
-    % \stoptypescript
 
     \starttypescript [serif] [lucida]
         \definefontsynonym [LucidaBright]               [\s!name:LucidaBright]
@@ -1344,8 +1304,8 @@
     \stoptypescript
 
     \starttypescript [math] [lucida]
+        \loadfontgoodies[lucida-math]
         \definefontsynonym[MathRoman][lucidamath@lucida-math]
-        \loadmapfile[lucida.map]
     \stoptypescript
 
     \starttypescript [serif] [lucida] [name]
@@ -1446,18 +1406,18 @@
 \starttypescriptcollection [mathdesign]
 
     \starttypescript [math] [charter,mathdesignch] [all]
+        \loadfontgoodies[charter-math]
         \definefontsynonym[MathRoman][chartermath@charter-math]
-        \loadmapfile[mdbch.map]
     \stoptypescript
 
     \starttypescript [math] [garamond,mathdesigngm] [all]
+        \loadfontgoodies[garamond-math]
         \definefontsynonym[MathRoman][garamondmath@garamond-math]
-        \loadmapfile[mdugm.map]
     \stoptypescript
 
     \starttypescript [math] [utopia,mathdesignut] [all]
+        \loadfontgoodies[utopia-math]
         \definefontsynonym[MathRoman][utopiamath@utopia-math]
-        \loadmapfile[mdput.map]
     \stoptypescript
 
 \stoptypescriptcollection

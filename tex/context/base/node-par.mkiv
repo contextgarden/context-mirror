@@ -32,6 +32,10 @@
 
 \definesystemattribute[parbuilder] \chardef\parbuilderattribute \dogetattributeid{parbuilder}
 
+% todo auto-enable
+
+% management (enable/disable) is global and will move to lua
+
 \newcount\nofparbuilders
 
 \def\defineparbuilder[#1]%
@@ -42,11 +46,14 @@
 \def\startparbuilder[#1]%
   {\edef\@@currentparbuilder{\number\attribute\parbuilderattribute}%
    \globalpushmacro\@@currentparbuilder
-   \getvalue{\??ng:#1}}
+   \getvalue{\??ng:#1}%
+   \checkparbuilders}
 
 \def\stopparbuilder
-  {\globalpopmacro\@@currentparbuilder
-   \attribute\parbuilderattribute\@@currentparbuilder\relax}
+  {\ifhmode\par\fi
+   \globalpopmacro\@@currentparbuilder
+   \attribute\parbuilderattribute\@@currentparbuilder\relax
+   \checkparbuilders}
 
 \def\setmainparbuilder[#1]%
   {\ctxlua{parbuilders.setmain("#1")}}
@@ -60,5 +67,12 @@
 
 \def\enableparbuilders {\ctxlua{parbuilders.enable ()}}
 \def\disableparbuilders{\ctxlua{parbuilders.disable()}}
+
+\def\checkparbuilders % can be more efficient as we don't want to do this to often
+  {\ifcase\attribute\parbuilderattribute
+     \disableparbuilders
+   \else
+     \enableparbuilders
+   \fi}
 
 \protect \endinput

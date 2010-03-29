@@ -12,6 +12,7 @@ local texsprint, count, texsetcount = tex.sprint, tex.count, tex.setcount
 local format, concat, gmatch, match, find, lower, gsub = string.format, table.concat, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next, type = tostring, next, type
 local lpegmatch = lpeg.match
+local round = math.round
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -19,7 +20,7 @@ local trace_defining = false  trackers.register("fonts.defining", function(v) tr
 
 local tfm      = fonts.tfm
 local define   = fonts.define
-local fontdata = fonts.ids
+local fontdata = fonts.identifiers
 local specify  = define.specify
 
 specify.context_setups  = specify.context_setups  or { }
@@ -462,3 +463,57 @@ function fonts.nbfs(amount,precision)
     end
     texsprint(ctxcatcodes,lpegmatch(stripper,format(f,amount/65536)))
 end
+
+-- for the moment here, this will become a chain of extras that is
+-- hooked into the ctx registration (or scaler or ...)
+
+function fonts.set_digit_width(font)
+    local tfmtable = fontdata[font]
+    local parameters = tfmtable.parameters
+    local width = parameters.digitwidth
+    if not width then
+        width = round(parameters.quad/2) -- maybe tex.scale
+        local characters = tfmtable.characters
+        for i=48,57 do
+            local wd = round(characters[i].width)
+            if wd > width then
+                width = wd
+            end
+        end
+        parameters.digitwidth = width
+    end
+    return width
+end
+
+fonts.get_digit_width = fonts.set_digit_width
+
+-- soon to be obsolete:
+
+local loaded = { -- prevent loading
+  ["original-base.map"     ] = true,
+  ["original-ams-base.map" ] = true,
+  ["original-ams-euler.map"] = true,
+  ["original-public-lm.map"] = true,
+}
+
+function fonts.map.loadfile(name)
+    name = file.addsuffix(name,"map")
+    if not loaded[name] then
+        pdf.pdfmapfile = name
+        loaded[name] = true
+    end
+end
+
+function fonts.map.loadline(how,line)
+    pdf.pdfmapline = how .. " " .. line
+end
+
+function fonts.map.reset()
+    pdf.pdfmapfile = ""
+end
+
+fonts.map.reset() -- resets the default file
+
+-- we need an 'do after the banner hook'
+
+-- pdf.pdfmapfile = "mkiv-base.map" -- loads the default file

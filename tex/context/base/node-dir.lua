@@ -113,7 +113,7 @@ nodes.pardir_is_opposite = {
     },
 }
 
-nodes.textdir_is_opposite= {
+nodes.textdir_is_opposite = {
     TLT = {
      -- TLT = false,
         TRT = true, ["+TRT"] = true,
@@ -167,7 +167,7 @@ nodes.glyphdir_is_opposite = {
     },
 }
 
-nodes.pardir_is_eq = {
+nodes.pardir_is_equal = {
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -194,7 +194,7 @@ nodes.pardir_is_eq = {
     },
 }
 
-nodes.textdir_is_eq = {
+nodes.textdir_is_equal = {
     TLT = {
         TLT = true, ["+TLT"] = true,
      -- TRT = false,
@@ -221,7 +221,7 @@ nodes.textdir_is_eq = {
     },
 }
 
-nodes.glyphdir_is_eq = {
+nodes.glyphdir_is_equal = {
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -248,7 +248,7 @@ nodes.glyphdir_is_eq = {
     },
 }
 
-nodes.partextdir_is_eq = {
+nodes.partextdir_is_equal = {
     TLT = {
      -- TLT = false,
      -- TRT = false,

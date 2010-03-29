@@ -57,7 +57,7 @@ if not resolvers.instance then
         callback.register('read_map_file'       , function(file) return resolvers.loadbinfile(file,"map") end)
         callback.register('read_ocp_file'       , function(file) return resolvers.loadbinfile(file,"ocp") end)
      -- output
-        callback.register('read_pk_file'        , function(file) return resolvers.loadbinfile(file,"pk")  end)
+        callback.register('read_pk_file'        , function(file) return resolvers.loadbinfile(file,"pk")  end) -- 600dpi/manfnt.720pk
         callback.register('read_sfd_file'       , function(file) return resolvers.loadbinfile(file,"sfd") end)
         callback.register('read_vf_file'        , function(file) return resolvers.loadbinfile(file,"vf" ) end)
 

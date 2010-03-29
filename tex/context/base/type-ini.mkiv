@@ -328,117 +328,31 @@
 
 \def\quittypescriptscanning{\settrue\quittingtypescript}
 
-% status
-%
-% 1 loaded
-% 2 reported
-% 3 preloaded
+%D Map files will go away in \LUATEX, but till that happens we
+%D use stripped down support for loading them.
 
-% flags ipv \c!state, more flag values
+\def\loadmapfile{\dosingleempty\doloadmapfile}
+\def\loadmapline{\dodoubleempty\doloadmapline}
 
-\def\dopreloadmapfile#1%
-  {\splitfiletype{#1}%
-   \writestatus\m!fonts{assuming map file: \splitoffname}%
-   \setxvalue{\splitoffname \c!state}{3}%
-   \doglobal\removefromcommalist\splitoffname\allfontmapsfiles}
+\def\doloadmapfile     [#1]{\ctxlua{fonts.map.loadfile("#1")}}
+\def\doloadmapline [#1][#2]{\ctxlua{fonts.map.loadline("#1","#2")}}
+\def\forgetmapfiles        {\ctxlua{fonts.map.reset()}}
 
-\def\preloadmapfile[#1]{\processcommacommand[#1]\dopreloadmapfile}
-\def\loadmapfile   [#1]{\processcommacommand[#1]\loadthemapfile}
-\def\unloadmapfile [#1]{\processcommacommand[#1]\unloadthemapfile}
-
-% too soon, no driver known, \ifproductionrun \loadallfontmapfiles \fi
-
-\def\loadthemapfile#1%
-  {\splitfiletype{#1}%
-   \doglobal\addtocommalist\splitoffname\allfontmapsfiles}
-
-\def\unloadthemapfile#1%
-  {\splitfiletype{#1}%
-   \doglobal\removefromcommalist\splitoffname\allfontmapsfiles}
-
-\let\usedmapfile            \gobbletwoarguments
-\let\usedmapline            \gobbletwoarguments
-\let\doregisterloadedmapfile\gobbleoneargument
-
-\def\doloadfontmapfile#1%
-  {\ifcsname#1\c!state\endcsname\else
-     \writestatus\m!fonts{using map file: #1}%
-     \doregisterloadedmapfile{#1}%
-     \doloadmapfile{=}{#1.\f!fontmapextension}% +/add =/replace -/remove
-     \setxvalue{#1\c!state}{1}%
-   \fi}
-
-\def\doreportfontmapfile#1%
-  {\ifcsname#1\c!state\endcsname\else
-     \writestatus\m!fonts{needs map file: #1}%
-     \setxvalue{#1\c!state}{2}%
-    \fi}
-
-\def\loadallfontmapfiles
-  {%\message{[\allfontmapsfiles]}%
-   \ifconditional\resettingmapfile
-     \writestatus\m!fonts{resetting map file list}%
-     \doresetmapfilelist
-     \global\setfalse\resettingmapfile
-   \fi
-   \ifx\allfontmapsfiles\empty \else
-     \ifautoloadmapfiles
-       \processcommacommand[\allfontmapsfiles]\doloadfontmapfile
-     \else
-       \processcommacommand[\allfontmapsfiles]\doreportfontmapfile
-     \fi
-     \forgetmapfiles
-   \fi}
-
-\def\loadmapline
-  {\dodoubleempty\dodoloadmapline}
-
-\def\dodoloadmapline[#1][#2]%
-  {\loadallfontmapfiles % ! ! !
-   \ifsecondargument
-     \doloadmapline{#1}{#2}% special
-   \else
-     \doloadmapline{=}{#1}% special
-   \fi}
-
-% since this is driver dependent, and since we may set map files
-% before an output format is defined, we need to postpone it; we
-% cannot use starttext as hook because an output switch can be part
-% of a style; an alternative is to no longer permit driver switching
-% after the first \starttext, but that will break compatibility
-% because \startcomponent ... \environment ... is pretty legal.
-
-% the map directives need to end up in the right place in the stream
-
-% hm, the timing of when pdftex needs the map file info keeps changing;
-% it's really time to move to map line support
-
-% \everybeforeshipout \expandafter % will move as it is backend dependent
-%   {\expandafter\appendtoks
-%    \expandafter\loadallfontmapfiles
-%    \expandafter\to
-%    \expandafter\pageboundsettings
-%    \the\everybeforeshipout}
-
-\appendtoks
-   \loadallfontmapfiles
-\to \pageboundsettings
+\let\loadallfontmapfiles\relax
+\let\allfontmapsfiles   \empty
+\let\preloadmapfile     \loadmapfile
+\let\resetmapfiles      \forgetmapfiles
+\let\disablemapfiles    \forgetmapfiles
 
 \newif\ifautoloadmapfiles
 
-\let\allfontmapsfiles\empty
+% \appendtoks
+%     \pdfmapfile{}% somehow does not work at the lua end
+% \to \everyjob
 
-\def\forgetmapfiles
-  {\globallet\allfontmapsfiles\empty}
-
-\newconditional\resettingmapfile
-
-\def\resetmapfiles
-  {\global\settrue\resettingmapfile}
-
-\def\disablemapfiles
-  {\resetmapfiles
-   \forgetmapfiles}
+\prependtoks
+    \loadmapfile[mkiv-base.map]%
+\to \everystarttext
 
 %D A handy shortcut:
 

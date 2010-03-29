@@ -69,6 +69,7 @@ local new_glue = nodes.glue
 
 local insert_before, insert_after, strip_range = node.insert_before, node.insert_after, nodes.strip_range
 local list_dimensions, has_attribute, set_attribute = node.dimensions, node.has_attribute, node.set_attribute
+local hpack_nodes = node.hpack
 local dimenfactor = fonts.dimenfactor
 local texwrite = tex.write
 
@@ -260,7 +261,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     local prev, next = first.prev, last.next
     first.prev, last.next = nil, nil
     local width, height, depth = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,first,next)
-    local list = node.hpack(first,width,"exactly")
+    local list = hpack_nodes(first,width,"exactly")
     if first == head then
         head = list
     end

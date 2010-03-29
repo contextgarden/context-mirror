@@ -469,13 +469,17 @@ end
 -- also we now follow the stupid route: if not set then just assume *one*
 -- cnf file under texmf (i.e. distribution)
 
-resolvers.ownpath     = resolvers.ownpath or nil
-resolvers.ownbin      = resolvers.ownbin  or arg[-2] or arg[-1] or arg[0] or "luatex"
+local args = environment and environment.original_arguments or arg -- this needs a cleanup
+
+resolvers.ownbin  = resolvers.ownbin or args[-2] or arg[-2] or args[-1] or arg[-1] or arg [0] or "luatex"
+resolvers.ownbin  = string.gsub(resolvers.ownbin,"\\","/")
+resolvers.ownpath = resolvers.ownpath or file.dirname(resolvers.ownbin)
+
 resolvers.autoselfdir = true -- false may be handy for debugging
 
 function resolvers.getownpath()
     if not resolvers.ownpath then
-        if resolvers.autoselfdir and os.selfdir then
+        if resolvers.autoselfdir and os.selfdir and os.selfdir ~= "" then
             resolvers.ownpath = os.selfdir
         else
             local binary = resolvers.ownbin
@@ -1613,19 +1617,21 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     instance.format = "othertextfiles" -- kind of everything, maybe texinput is better
                 end
                 --
-                local resolved = collect_instance_files(basename)
-                if #result == 0 then
-                    local lowered = lower(basename)
-                    if filename ~= lowered then
-                        resolved = collect_instance_files(lowered)
+                if basename ~= filename then
+                    local resolved = collect_instance_files(basename)
+                    if #result == 0 then
+                        local lowered = lower(basename)
+                        if filename ~= lowered then
+                            resolved = collect_instance_files(lowered)
+                        end
                     end
-                end
-                resolvers.format = savedformat
-                --
-                for r=1,#resolved do
-                    local rr = resolved[r]
-                    if find(rr,pattern) then
-                        result[#result+1], ok = rr, true
+                    resolvers.format = savedformat
+                    --
+                    for r=1,#resolved do
+                        local rr = resolved[r]
+                        if find(rr,pattern) then
+                            result[#result+1], ok = rr, true
+                        end
                     end
                 end
                 -- a real wildcard:

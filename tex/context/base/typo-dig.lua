@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['typo-dig'] = {
 
 local next, type = next, type
 local format, insert = string.format, table.insert
+local round = math.round
 
 local trace_digits = false  trackers.register("nodes.digits", function(v) trace_digits = v end)
 
@@ -24,8 +25,10 @@ local kern  = node.id("kern")
 
 local new_glue = nodes.glue
 
-local fontdata = fonts.ids
-local chardata = characters.data
+local fontdata = fonts.identifiers
+local chardata = fonts.characters
+local quaddata = fonts.quads
+local charbase = characters.data
 
 digits           = digits or { }
 digits.actions   = { }
@@ -57,9 +60,9 @@ end
 
 actions[1] = function(start,attribute)
     local char = start.char
-    if chardata[char].category == "nd" then
-        local fdf = fontdata[start.font]
-        local oldwidth, newwidth = fdf.characters[char].width, fdf.parameters.quad/2
+    if charbase[char].category == "nd" then
+        local font = start.font
+        local oldwidth, newwidth = start.width, fonts.get_digit_width(font)
         if newwidth ~= oldwidth then
             local start = nodes.aligned(start,start,newwidth,"middle") -- return three node pointers
             return start, true

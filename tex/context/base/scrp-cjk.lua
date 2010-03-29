@@ -26,7 +26,9 @@ local kind_to_number = scripts.kind_to_number
 local number_to_kind = scripts.number_to_kind
 local hash           = scripts.hash
 local cjk            = scripts.cjk
-local fontdata       = fonts.ids
+
+local fontdata       = fonts.identifiers
+local quaddata       = fonts.quads
 
 -- raggedleft is controlled by leftskip and we might end up with a situation where
 -- the intercharacter spacing interferes with this; the solution is to patch the
@@ -38,8 +40,7 @@ local inter_char_hangul_penalty = 0
 
 local function set_parameters(font,data)
     -- beware: parameters can be nil in e.g. punk variants
-    local parameters = fontdata[font].parameters
-    local quad = (parameters and parameters.quad or parameters[6]) or 0
+    local quad = quaddata[font]
     inter_char_half_shrink    = data.inter_char_half_shrink_factor * quad
     inter_char_stretch        = data.inter_char_stretch_factor * quad
     inter_char_hangul_penalty = data.inter_char_hangul_penalty

@@ -119,8 +119,8 @@ function buffers.verbatimbreak(n,m)
     end
 end
 
-function buffers.strip(lines)
-    local first, last = 1, #lines
+function buffers.strip(lines,first,last)
+    local first, last = first or 1, last or #lines
     for i=first,last do
         if #lines[i] == 0 then
             first = first + 1
@@ -138,7 +138,46 @@ function buffers.strip(lines)
     return first, last, last - first + 1
 end
 
-function buffers.type(name,realign)
+function buffers.range(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
+    local first, last = first or 1, last or #lines
+    local what = aux.settings_to_array(range)
+    local r_first, r_last = what[1], what[2]
+    local f, l = tonumber(r_first), tonumber(r_last)
+    if r_first then
+        if f then
+            if f > first then
+                first = f
+            end
+        else
+            for i=first,last do
+                if find(lines[i],r_first) then
+                    first, strip = i + 1
+                    break
+                end
+            end
+        end
+    end
+    if r_last then
+        if l then
+            if find(r_last,"^[%+]") then -- 1,+3
+                l = first + l
+            end
+            if l < last then
+                last = l
+            end
+        else
+            for i=first,last do
+                if find(lines[i],r_last) then
+                    last = i - 1
+                    break
+                end
+            end
+        end
+    end
+    return first, last
+end
+
+function buffers.type(name,realign,range)
     local lines = data[name]
     local action = buffers.typeline
     if lines then
@@ -151,6 +190,10 @@ function buffers.type(name,realign)
         end
         local line, n = 0, 0
         local first, last, m = buffers.strip(lines)
+        if range then
+            first, last = buffers.range(lines,first,last,range)
+            first, last = buffers.strip(lines,first,last,range)
+        end
         hooks.begin_of_display()
         for i=first,last do
             n, line = action(lines[i], n, m, line)
@@ -180,7 +223,7 @@ function buffers.loaddata(filename) -- this one might go away
     end
 end
 
-function buffers.typefile(name,realign) -- still somewhat messy, since name can be be suffixless
+function buffers.typefile(name,realign,range) -- still somewhat messy, since name can be be suffixless
     local str = buffers.loaddata(name)
     if str and str~= "" then
         local lines = str:splitlines()
@@ -190,6 +233,10 @@ function buffers.typefile(name,realign) -- still somewhat messy, since name can 
         local line, n, action = 0, 0, buffers.typeline
         local first, last, m = buffers.strip(lines)
         hooks.begin_of_display()
+        if range then
+            first, last = buffers.range(lines,first,last,range)
+            first, last = buffers.strip(lines,first,last,range)
+        end
         for i=first,last do
             n, line = action(lines[i], n, m, line)
         end

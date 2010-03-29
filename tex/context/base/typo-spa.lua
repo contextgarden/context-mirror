@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['typo-spa'] = {
     license   = "see context related readme files"
 }
 
+-- get rid of tex.scale here
+
 local utf = unicode.utf8
 
 local next, type = next, type
@@ -21,7 +23,9 @@ local remove_node        = nodes.remove
 local make_penalty_node  = nodes.penalty
 local make_glue_node     = nodes.glue
 local glyph              = node.id("glyph")
-local fontdata           = fonts.ids
+
+local fontdata           = fonts.identifiers
+local quaddata           = fonts.quads
 
 spacings           = spacings         or { }
 spacings.mapping   = spacings.mapping or { }
@@ -58,7 +62,7 @@ function spacings.process(namespace,attribute,head)
                     unset_attribute(start,attribute) -- needed?
                     if map then
                         local left, right, alternative = map.left, map.right, map.alternative
-                        local quad = fontdata[start.font].parameters.quad
+                        local quad = quaddata[start.font]
                         local prev = start.prev
                         if left and left ~= 0 and prev then
                             local ok = false

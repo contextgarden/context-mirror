@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['typo-krn'] = {
     license   = "see context related readme files"
 }
 
--- todo: insertbefore etc
-
 local utf = unicode.utf8
 
 local next, type = next, type
@@ -30,17 +28,29 @@ local glue  = node.id('glue')
 local hlist = node.id('hlist')
 local vlist = node.id('vlist')
 
-local fontdata = fonts.ids
-local chardata = characters.data
+local fontdata = fonts.identifiers
+local chardata = fonts.characters
+local quaddata = fonts.quads
 
 kerns           = kerns or { }
 kerns.mapping   = kerns.mapping or { }
+kerns.factors   = kerns.factors or { }
 kerns.attribute = attributes.private("kern")
 
 storage.register("kerns/mapping", kerns.mapping, "kerns.mapping")
+storage.register("kerns/factors", kerns.factors, "kerns.factors")
 
-function kerns.setspacing(id,factor)
-    kerns.mapping[id] = factor
+local mapping = kerns.mapping
+local factors = kerns.factors
+
+function kerns.setspacing(factor)
+    local a = factors[factor]
+    if not a then
+        a = #mapping + 1
+        factors[factors], mapping[a] = a, factor
+    end
+    tex.attribute[kerns.attribute] = a
+    return a
 end
 
 -- one must use liga=no and mode=base and kern=yes
@@ -48,12 +58,9 @@ end
 -- make sure it runs after all others
 -- there will be a width adaptor field in nodes so this will change
 -- todo: interchar kerns / disc nodes / can be made faster
--- todo: cache quad and so
-
-local mapping = kerns.mapping
 
 local function process(namespace,attribute,head,force)
-    local scale = tex.scale
+    local scale = tex.scale -- will go
     local start, done, lastfont = head, false, nil
     while start do
         -- faster to test for attr first
@@ -93,22 +100,16 @@ local function process(namespace,attribute,head,force)
                             -- nothing
                         elseif pid == kern and prev.subtype == 0 then
                             prev.subtype = 1
-                            prev.kern = prev.kern + scale(fontdata[lastfont].parameters.quad,krn)
+                            prev.kern = prev.kern + scale(quaddata[lastfont],krn)
                             done = true
                         elseif pid == glyph then
-                            -- fontdata access can be done more efficient
                             if prev.font == lastfont then
                                 local prevchar, lastchar = prev.char, start.char
-                                local fnt = fontdata[lastfont]
-                                local tfm = fnt.characters[prevchar]
-                                local ickern = tfm.kerns
-                                if ickern and ickern[lastchar] then
-                                    krn = scale(ickern[lastchar]+fnt.parameters.quad,krn)
-                                else
-                                    krn = scale(fnt.parameters.quad,krn)
-                                end
+                                local kerns = chardata[lastfont][prevchar].kerns
+                                local kern = kerns and kerns[lastchar] or 0
+                                krn = scale(kern+quaddata[lastfont],krn)
                             else
-                                krn = scale(fnt.parameters.quad,krn)
+                                krn = scale(quaddata[lastfont],krn)
                             end
                             insert_node_before(head,start,make_kern_node(krn))
                             done = true
@@ -161,16 +162,11 @@ local function process(namespace,attribute,head,force)
                             else
                                 if prv and prv.id == glyph and prv.font == lastfont then
                                     local prevchar, lastchar = prv.char, start.char
-                                    local fnt = fontdata[lastfont]
-                                    local tfm = fnt.characters[prevchar]
-                                    local ickern = tfm.kerns
-                                    if ickern and ickern[lastchar] then
-                                        krn = scale(ickern[lastchar]+fnt.parameters.quad,krn)
-                                    else
-                                        krn = scale(fnt.parameters.quad,krn)
-                                    end
+                                    local kerns = chardata[lastfont][prevchar].kerns
+                                    local kern = kerns and kerns[lastchar] or 0
+                                    krn = scale(kern+quaddata[lastfont],krn)
                                 else
-                                    krn = scale(fnt.parameters.quad,krn)
+                                    krn = scale(quaddata[lastfont],krn)
                                 end
                                 disc.replace = make_kern_node(krn)
                             end
@@ -195,11 +191,11 @@ local function process(namespace,attribute,head,force)
                     end
                 elseif lastfont and (id == hlist or id == vlist) then -- todo: lookahead
                     if start.prev then
-                        insert_node_before(head,start,make_kern_node(scale(fontdata[lastfont].parameters.quad,krn)))
+                        insert_node_before(head,start,make_kern_node(scale(quaddata[lastfont],krn)))
                         done = true
                     end
                     if start.next then
-                        insert_node_after(head,start,make_kern_node(scale(fontdata[lastfont].parameters.quad,krn)))
+                        insert_node_after(head,start,make_kern_node(scale(quaddata[lastfont],krn)))
                         done = true
                     end
                 end
