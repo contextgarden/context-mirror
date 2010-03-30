@@ -1,0 +1,27 @@
+return {
+    name = "charter-math",
+    version = "1.00",
+    comment = "Goodies that complement charter math.",
+    author = "Hans, Mojca, Aditya",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mdbch.map",
+        },
+        virtuals = {
+            ["charter-math"] = {
+             -- { name = "file:bchr8a", features = "virtualmath", main = true },
+                { name = "file:bchri8a", features = "virtualmath", main = true },
+             -- { name = "md-chr7m.tfm", vector = "tex-mr" },
+                { name = "md-chri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "md-chri7m.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "md-chr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "md-chr7v.tfm", vector = "tex-ex", extension = true },
+             -- { name = "md-chbma.tfm", vector = "tex-ma" },
+             -- { name = "md-chbmb.tfm", vector = "tex-mb" },
+                { name = "msam10.tfm", vector = "tex-ma" },
+                { name = "msbm10.tfm", vector = "tex-mb" },
+            }
+        }
+    }
+}

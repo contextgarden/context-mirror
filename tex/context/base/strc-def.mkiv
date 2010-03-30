@@ -287,14 +287,14 @@
 
 \setuplist
   [\v!part]
-  [\c!before={\blank\page[\v!preference]},
+  [\c!before={\blank[\v!preference,\v!big]}, % sort of mkii compatible, watch columns
    \c!after=\blank,
    \c!label=\v!yes,
    \c!distance=1em]
 
 \setuplist
   [\v!chapter]
-  [\c!before={\blank\page[\v!preference]},
+  [\c!before={\blank[\v!preference,\v!big]}, % sort of mkii compatible, watch columns
    \c!after=]
 
 \setuplist [\v!part]                [\c!width=0em]

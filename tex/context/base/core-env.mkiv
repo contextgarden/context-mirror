@@ -108,11 +108,11 @@
 
 % simple ones
 
-\def\doifmodeelse{\unprotect\dodoifmodeelse}
-\def\doifmode    {\unprotect\dodoifmode}
-\def\doifnotmode {\unprotect\dodoifnotmode}
-\def\startmode   {\unprotect\dostartmode}
-\def\startnotmode{\unprotect\dostartnotmode}
+\unexpanded\def\doifmodeelse{\unprotect\dodoifmodeelse}
+\unexpanded\def\doifmode    {\unprotect\dodoifmode}
+\unexpanded\def\doifnotmode {\unprotect\dodoifnotmode}
+\unexpanded\def\startmode   {\unprotect\dostartmode}
+\unexpanded\def\startnotmode{\unprotect\dostartnotmode}
 
 \def\dodoifmodeelse
   {\docheckformode\firstoftwoarguments\secondoftwoarguments}
@@ -123,23 +123,23 @@
 \def\dodoifnotmode
   {\docheckformode\gobbleoneargument\firstofoneargument}
 
-\long\def\dostartmode[#1]%
+\long\unexpanded\def\dostartmode[#1]%
   {\docheckformode\donothing\dostopmode{#1}}
 
 \long\def\dostartnotmode[#1]%
   {\docheckformode\dostopnotmode\donothing{#1}}
 
-\let\stopmode   \donothing
-\let\stopnotmode\donothing
+\unexpanded\def\stopmode   {} % no relax
+\unexpanded\def\stopnotmode{} % no relax
 
 \long\def\dostopmode   #1\stopmode   {}
 \long\def\dostopnotmode#1\stopnotmode{}
 
-\def\doifallmodeselse{\unprotect\dodoifallmodeselse}
-\def\doifallmodes    {\unprotect\dodoifallmodes}
-\def\doifnotallmodes {\unprotect\dodoifnotallmodes}
-\def\startallmodes   {\unprotect\dostartallmodes}
-\def\startnotallmodes{\unprotect\dostartnotallmodes}
+\unexpanded\def\doifallmodeselse{\unprotect\dodoifallmodeselse}
+\unexpanded\def\doifallmodes    {\unprotect\dodoifallmodes}
+\unexpanded\def\doifnotallmodes {\unprotect\dodoifnotallmodes}
+\unexpanded\def\startallmodes   {\unprotect\dostartallmodes}
+\unexpanded\def\startnotallmodes{\unprotect\dostartnotallmodes}
 
 \def\dodoifallmodeselse
   {\docheckforallmodes\firstoftwoarguments\secondoftwoarguments}
@@ -156,8 +156,8 @@
 \long\def\dostartnotallmodes[#1]%
   {\docheckforallmodes\dostopnotallmodes\donothing{#1}}
 
-\let\stopallmodes   \donothing
-\let\stopnotallmodes\donothing
+\unexpanded\def\stopallmodes   {} % no relax
+\unexpanded\def\stopnotallmodes{} % no relax
 
 \long\def\dostopallmodes   #1\stopallmodes   {}
 \long\def\dostopnotallmodes#1\stopnotallmodes{}
@@ -168,8 +168,8 @@
 
 %D Setups:
 
-\let\startsetups\relax % to please dep checker
-\let\stopsetups \relax % to please dep checker
+\unexpanded\def\startsetups{} % to please dep checker
+\unexpanded\def\stopsetups {} % to please dep checker
 
 \expanded
   {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
@@ -179,8 +179,8 @@
 
 \letvalue{\e!stop\v!setups}\relax
 
-\unexpanded \def\setups{\doifnextbgroupelse\dosetupsA\dosetupsB} % {..} or [..]
-\unexpanded \def\setup {\doifnextbgroupelse\dosetups \dosetupsC} % {..} or [..]
+\unexpanded\def\setups{\doifnextbgroupelse\dosetupsA\dosetupsB} % {..} or [..]
+\unexpanded\def\setup {\doifnextbgroupelse\dosetups \dosetupsC} % {..} or [..]
 
 \def\dosetupsA  #1{\processcommacommand[#1]\dosetups} % {..}
 \def\dosetupsB[#1]{\processcommacommand[#1]\dosetups} % [..]

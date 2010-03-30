@@ -1,0 +1,27 @@
+return {
+    name = "utopia-math",
+    version = "1.00",
+    comment = "Goodies that complement utopia math.",
+    author = "Hans, Mojca, Aditya",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mdput.map",
+        },
+        virtuals = {
+            ["utopia-math"] = {
+             -- { name = "file:putr8a", features = "virtualmath", main = true },
+                { name = "file:putri8a", features = "virtualmath", main = true },
+             -- { name = "md-utr7m.tfm", vector = "tex-mr" },
+                { name = "md-utri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "md-utri7m.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "md-utr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "md-utr7v.tfm", vector = "tex-ex", extension = true },
+             -- { name = "md-utbma.tfm", vector = "tex-ma" },
+             -- { name = "md-utbmb.tfm", vector = "tex-mb" },
+                { name = "msam10.tfm", vector = "tex-ma" },
+                { name = "msbm10.tfm", vector = "tex-mb" },
+            }
+        }
+    }
+}

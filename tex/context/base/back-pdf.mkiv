@@ -71,13 +71,10 @@
 %D Unfortunately this is still needed (also for  \METAPOST\ to
 %D \PDF\ converter):
 
-\def\doresetmapfilelist
-  {\global\let\doresetmapfilelist\relax
-   \pdfmapfile{original-empty.map}}
-
-\def\doloadmapfile #1#2{\pdfmapfile{#1#2}}
-\def\doloadmapline #1#2{\pdfmapline{#1#2}}
-
+% \def\doresetmapfilelist
+%   {\global\let\doresetmapfilelist\relax
+%    \pdfmapfile{original-empty.map}}
+%
 % \appendtoksonce \loadallfontmapfiles \to \pdfbackendeveryxform
 % \appendtoksonce \loadallfontmapfiles \to \pdfbackendeveryximage
 

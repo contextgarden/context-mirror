@@ -145,10 +145,10 @@ function scripts.watch.watch()
                                     local path, base = replacements.outputpath, file.basename(replacements.filename)
                                     joblog.runtime = clock() - joblog.runtime
                                     if base ~= "" then
-                                        joblog.result  = file.replacesuffix(file.join(path,base),"pdf")
-                                        joblog.size    = lfs.attributes(joblog.result,"size")
+                                        joblog.result = file.replacesuffix(file.join(path,base),"pdf")
+                                        joblog.size   = lfs.attributes(joblog.result,"size")
                                     end
-                                    joblog.status  = "finished"
+                                    joblog.status = "finished"
                                 else
                                     joblog.status = "invalid command"
                                 end

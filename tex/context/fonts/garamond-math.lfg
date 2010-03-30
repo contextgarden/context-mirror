@@ -1,0 +1,27 @@
+return {
+    name = "garamond-math",
+    version = "1.00",
+    comment = "Goodies that complement garamond math.",
+    author = "Hans, Mojca, Aditya",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mdugm.map",
+        },
+        virtuals = {
+            ["garamond-math"] = {
+             -- { name = "file:ugmr8a", features = "virtualmath", main = true },
+                { name = "file:ugmri8a", features = "virtualmath", main = true },
+             -- { name = "md-gmr7m.tfm", vector = "tex-mr" },
+                { name = "md-gmri7m.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "md-gmri7m.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "md-gmr7y.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "md-gmr7v.tfm", vector = "tex-ex", extension = true },
+             -- { name = "md-gmmma.tfm", vector = "tex-ma" },
+             -- { name = "md-gmmmb.tfm", vector = "tex-mb" },
+                { name = "msam10.tfm", vector = "tex-ma" },
+                { name = "msbm10.tfm", vector = "tex-mb" },
+            }
+        }
+    }
+}

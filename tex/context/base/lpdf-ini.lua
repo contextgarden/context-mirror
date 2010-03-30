@@ -331,6 +331,8 @@ function lpdf.reserveobject(name)
     return r
 end
 
+--~ local pdfreserveobject = lpdf.reserveobject
+
 function lpdf.flushobject(name,data)
     if data then
         name = names[name] or name
@@ -524,6 +526,8 @@ lpdf.protectresources = true
 function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then trace_set("catalog",k) catalog[k] = v end end
 function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then trace_set("info",   k) info   [k] = v end end
 function lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then trace_set("names",  k) names  [k] = v end end
+
+local dummy = pdfreserveobj() -- else bug in hvmd due so some internal luatex conflict
 
 local r_extgstates,  d_extgstates  = pdfreserveobj(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
 local r_colorspaces, d_colorspaces = pdfreserveobj(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
