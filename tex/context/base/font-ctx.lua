@@ -499,21 +499,21 @@ local loaded = { -- prevent loading
 function fonts.map.loadfile(name)
     name = file.addsuffix(name,"map")
     if not loaded[name] then
-        pdf.pdfmapfile = name
+        pdf.mapfile(name)
         loaded[name] = true
     end
 end
 
 function fonts.map.loadline(how,line)
-    pdf.pdfmapline = how .. " " .. line
+    pdf.mapline(how .. " " .. line)
 end
 
 function fonts.map.reset()
-    pdf.pdfmapfile = ""
+    pdf.mapfile("")
 end
 
 fonts.map.reset() -- resets the default file
 
 -- we need an 'do after the banner hook'
 
--- pdf.pdfmapfile = "mkiv-base.map" -- loads the default file
+-- pdf.mapfile("mkiv-base.map") -- loads the default file

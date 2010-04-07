@@ -15,6 +15,8 @@
 
 % \processbetween gebruiken in head/tail macros
 
+% todo: \aligntab \alignmark (after 0.60 is out)
+
 \unprotect
 
 %D I can probably reimplement this using a \LUA||\TEX\ combination
@@ -1462,7 +1464,7 @@
 % \NC \digits $@@@.@@1,@@$ \NC\NR
 % \stoptabulatie
 
-\def\setuptabulate
+\unexpanded\def\setuptabulate
   {\dotripleempty\dosetuptabulate}
 
 \def\dosetuptabulate[#1][#2][#3]%

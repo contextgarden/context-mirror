@@ -37,9 +37,10 @@ local chardata = characters.data
 local is_letter = characters.is_letter
 
 function visualizer.flush_line(str,nested)
-    local state, first = 0, false
+    local state, first, i = 0, false, 0
     buffers.currentcolors = colors
     for c in utfcharacters(str) do
+        i = i + 1
         if c == " " then
             state = finish_state(state)
             texsprint(ctxcatcodes,"\\obs")
@@ -49,6 +50,7 @@ function visualizer.flush_line(str,nested)
             texsprint(ctxcatcodes,"\\obs")
             if buffers.visualizers.enabletab then
                 texsprint(ctxcatcodes,rep("\\obs ",i%buffers.visualizers.tablength))
+                i = 0
             end
             first = false
         elseif first then

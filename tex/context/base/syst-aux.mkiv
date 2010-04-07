@@ -3614,7 +3614,7 @@
    \csname t\strippedcsname#1\endcsname}
 
 \def\newevery#1#2%
-  {\newtoks#1% we test for redefinition elsewhere
+  {\ifx#1\everypar\else\newtoks#1\fi% we test for redefinition elsewhere
    \ifx#2\relax\else\ifdefined#2\else
      \expandafter\newtoks\csname t\strippedcsname#1\endcsname
      \def#2{\dowithevery#1}%

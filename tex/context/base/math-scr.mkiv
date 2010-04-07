@@ -28,9 +28,8 @@
 \global\let\normalsuper=^
 \global\let\normalsuber=_
 
-\newcount\supersubmode
-
-\newevery\everysupersub \EverySuperSub
+\ifdefined\supersubmode \else \newcount\supersubmode        \fi
+\ifdefined\newevery     \else \everysupersub \EverySuperSub \fi
 
 \appendtoks \advance\supersubmode \plusone \to \everysupersub
 

@@ -71,8 +71,8 @@
 
 % todo: everysetupfloat everysetupcaption for all floats
 
-\def\setupfloats  {\dosingleargument\dosetupfloats} % was \??bk
-\def\setupcaptions{\dosingleargument\dosetupcaptions}
+\unexpanded\def\setupfloats  {\dosingleargument\dosetupfloats} % was \??bk
+\unexpanded\def\setupcaptions{\dosingleargument\dosetupcaptions}
 
 \let\alldefinedfloats\empty
 
@@ -208,8 +208,8 @@
 
 %D Individial settings:
 
-\def\setupfloat  {\dodoubleargument\dosetupfloat}
-\def\setupcaption{\dodoubleargument\dosetupcaption}
+\unexpanded\def\setupfloat  {\dodoubleargument\dosetupfloat}
+\unexpanded\def\setupcaption{\dodoubleargument\dosetupcaption}
 
 \newtoks\everysetupfloat
 \newtoks\everysetupcaption
@@ -337,7 +337,7 @@
 
 % NOT YET REDONE ! ! ! ! !
 
-    \def\placefloatcaption
+    \unexpanded\def\placefloatcaption
       {\dodoubleempty\doplacefloatcaption}
 
     \long\def\doplacefloatcaption[#1][#2]#3%
@@ -345,7 +345,7 @@
        \placefloatcaptiontext[#1]%
        \placefloatcaptionreference[#1]}
 
-    \def\setfloatcaption % \dosetfloatcaption already in use
+    \unexpanded\def\setfloatcaption % \dosetfloatcaption already in use
       {\dodoubleempty\dodosetfloatcaption} % beware, name clash
 
     \long\def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
@@ -1007,6 +1007,7 @@
 
 \newdimen\floatwidth
 \newdimen\floatheight
+\newdimen\floatdepth
 
 \def\dosavefloatinfo   {\showmessage\m!floatblocks2{\the\totalnoffloats}}
 \def\doinsertfloatinfo {\showmessage\m!floatblocks4{\the\totalnoffloats}}
@@ -1979,29 +1980,24 @@
 
 \newif\ifparfloat
 
-\long\def\dosetfloatbox#1#2#3% todo : \global\setbox
+\long\def\dosetfloatbox#1#2#3% todo : \global\setbox, currently messy
   {\ifvisible
      \par
      \edef\floatcaptiondirectives{\floatparameter\c!location,\floatcaptionparameter\c!location}%
      \ifparfloat\@EA\dosetparfloat\else\@EA\dosetpagfloat\fi{#1}{#2}{#3}%
      \setlocalfloatdimensions{#1}%
+     \global\advance\totalnoffloats\plusone
      \setbox\floatbox\hbox{\dosavefloatdata\box\floatbox}% still needed? we will do renumbering differently
-     \global\floatheight\ht\floatbox
-     \global\advance\floatheight \dp\floatbox
+     \global\floatheight\htdp\floatbox
      \global\floatwidth\wd\floatbox
-     \global\advance\totalnoffloats \plusone
      \doifnotinset\v!margin{#1} % gaat namelijk nog fout
        {\setbox\floatbox\vbox
           {\parindent\zeropoint
            \doifconcepttracing{\inleftmargin{\framed{\infofont\the\totalnoffloats}}}%
            \box\floatbox}}%
      \wd\floatbox\floatwidth
-     \dimen0=\floatheight
-     \advance\dimen0 \lineheight
-     \ifdim\dimen0<\textheight
-     \else
-       \global\floatheight\textheight
-       \global\advance\floatheight -\lineheight
+     \ifdim\dimexpr\floatheight+\lineheight\relax<\textheight \else
+       \global\floatheight\dimexpr\textheight-\lineheight\relax
        \ht\floatbox\floatheight
        \dp\floatbox\zeropoint
        \showmessage\m!floatblocks{10}{\the\totalnoffloats}%

@@ -272,12 +272,12 @@ local function initialize(goodies)
     end
     if mapfiles then
         for i=1,#mapfiles do
-            pdf.pdfmapfile = mapfiles[i]
+            pdf.mapfile(mapfiles[i]) -- todo: backend function
         end
     end
     if maplines then
         for i=1,#maplines do
-            pdf.pdfmapline = maplines[i]
+            pdf.mapline(maplines[i]) -- todo: backend function
         end
     end
 end

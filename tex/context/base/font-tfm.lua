@@ -494,6 +494,8 @@ t.colorscheme = tfmtable.colorscheme
             local vc = v.commands
             if vc then
                 -- we assume non scaled commands here
+                -- tricky .. we need to scale pseudo math glyphs too
+                -- which is why we deal with rules too
                 local ok = false
                 for i=1,#vc do
                     local key = vc[i][1]
@@ -511,6 +513,8 @@ t.colorscheme = tfmtable.colorscheme
                             tt[#tt+1] = { key, ivc[2]*hdelta }
                         elseif key == "down" then
                             tt[#tt+1] = { key, ivc[2]*vdelta }
+                        elseif key == "rule" then
+                            tt[#tt+1] = { key, ivc[2]*vdelta, ivc[3]*hdelta }
                         else -- not comment
                             tt[#tt+1] = ivc -- shared since in cache and untouched
                         end

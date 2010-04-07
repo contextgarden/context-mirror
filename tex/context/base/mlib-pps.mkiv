@@ -26,6 +26,12 @@
 
 % this will move !
 
+% Instead of preallocated boxes we now use a table of lists so that we
+% have no limitation. Typically an example of a next version solution
+% due to \LUATEX\ evolving.
+
+\newbox\MPtextbox
+
 \def\MPLIBfigure#1#2#3#4#5#6#7% todo: move Q q to lua
   {\setbox\scratchbox\hbox{\externalfigure[#7]}%
    \ctxlua{metapost.edefsxsy(\number\wd\scratchbox,\number\ht\scratchbox,0)}%
@@ -33,25 +39,31 @@
    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[sx=\sx,sy=\sy]{\box\scratchbox}\hss}}%
    \pdfliteral direct{Q}}
 
-\def\MPLIBsettext#1% #2% we could as well store in hlists at the lua end i.e. just one box
-  {\global\setbox#1\hbox}
-% {\global\setbox#1\hbox\bgroup\the\everyMPLIBtext\let\next}
-
-\def\MPLIBfreetext#1%
-  {\global\setbox#1\emptybox}
+\def\MPLIBsettext#1% #2%
+  {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
 
 \def\MPLIBgettextscaled#1#2#3%  why a copy
-  {\vbox to \zeropoint{\vss\hbox to \zeropoint{\black\scale[sx=#2,sy=#3]{\raise\dp#1\copy#1}\hss}}}
-
-\def\MPLIBallocate#1%
-  {\newbox\MPLIBfirst
-   \dorecurse{\numexpr#1-1\relax}{\let\MPLIBlast\relax\newbox\MPLIBlast}%
-   \MPLIBregister}
-
-\def\MPLIBregister % after allocate!
-  {\ctxlua{metapost.first_box, metapost.last_box = \number\MPLIBfirst, \number\MPLIBlast}}
+  {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
+   \vbox to \zeropoint{\vss\hbox to \zeropoint{\black\scale[sx=#2,sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\hss}}}
 
 \def\MPLIBgraphictext#1%
   {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
 
 \protect \endinput
+
+% \def\MPLIBsettext#1% #2% we could as well store in hlists at the lua end i.e. just one box
+% {\global\setbox#1\hbox}
+%
+% \def\MPLIBfreetext#1%
+%   {\global\setbox#1\emptybox}
+%
+% \def\MPLIBgettextscaled#1#2#3%  why a copy
+%   {\vbox to \zeropoint{\vss\hbox to \zeropoint{\black\scale[sx=#2,sy=#3]{\raise\dp#1\copy#1}\hss}}}
+%
+% \def\MPLIBallocate#1%
+%   {\newbox\MPLIBfirst
+%    \dorecurse{\numexpr#1-1\relax}{\let\MPLIBlast\relax\newbox\MPLIBlast}%
+%    \MPLIBregister}
+%
+% \def\MPLIBregister % after allocate!
+%   {\ctxlua{metapost.first_box, metapost.last_box = \number\MPLIBfirst, \number\MPLIBlast}}

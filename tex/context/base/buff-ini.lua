@@ -410,7 +410,7 @@ function buffers.loadvisualizer(name)
         if not hn then
         --  hn = buffers.newvisualizer(name)
             hn = handlers[visualizers.defaultname]
-            handlers[name] = n
+            handlers[name] = hn
             if trace_visualize then
                 logs.report("buffers","mapping '%s' visualizer onto '%s'",name,visualizers.defaultname)
             end

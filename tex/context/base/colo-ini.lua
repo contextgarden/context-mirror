@@ -415,18 +415,21 @@ end
 
 -- experiment  (a bit of a hack, as we need to get the attribute number)
 
-local min, abs = math.min, math.abs
+local min = math.min
+
+-- a[b,c] -> b+a*(c-b)
 
 local function f(one,two,i,fraction)
-    local a, b = one[i], two[i]
-    if a > b then
-        return min(fraction*(a+b),1)
-    else
-        return min(1-fraction*(a+b),1)
+    local o, t = one[i], two[i]
+    local otf = o + fraction * (t - o)
+    if otf > 1 then
+        otf = 1
     end
+    return otf
 end
 
 function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,specs,global,freeze)
+    fraction = tonumber(fraction) or 1
     local one, two = colors.value(c_one), colors.value(c_two)
     if one and two then
         local csone, cstwo = one[1], two[1]
@@ -448,10 +451,10 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     end
     local one, two = transparencies.value(a_one), transparencies.value(a_two)
     local t = settings_to_hash_strict(specs)
-    local ta = (t and t.a) or (one and one[1]) or (two and two[1])
-    local tt = (t and t.t) or (one and two and f(one,two,2,fraction))
---~ print(t,table.serialize(t),ta,tt)
+    local ta = tonumber((t and t.a) or (one and one[1]) or (two and two[1]))
+    local tt = tonumber((t and t.t) or (one and two and f(one,two,2,fraction)))
     if ta and tt then
+--~     print(ta,tt)
         definetransparent(name,transparencies.register(name,ta,tt),global)
     end
 end

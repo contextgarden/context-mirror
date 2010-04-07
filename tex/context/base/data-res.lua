@@ -471,64 +471,17 @@ end
 
 local args = environment and environment.original_arguments or arg -- this needs a cleanup
 
---~ resolvers.ownbin  = resolvers.ownbin or args[-2] or arg[-2] or args[-1] or arg[-1] or arg [0] or "luatex"
---~ resolvers.ownbin  = string.gsub(resolvers.ownbin,"\\","/")
---~ resolvers.ownpath = resolvers.ownpath or file.dirname(resolvers.ownbin)
-
---~ resolvers.autoselfdir = true -- false may be handy for debugging
-
---~ function resolvers.getownpath()
---~     if not resolvers.ownpath then
---~         if resolvers.autoselfdir and os.selfdir and os.selfdir ~= "" then
---~             resolvers.ownpath = os.selfdir
---~         else
---~             local binary = resolvers.ownbin
---~             if os.binsuffix ~= "" then
---~                 binary = file.replacesuffix(binary,os.binsuffix)
---~             end
---~             for p in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
---~                 local b = file.join(p,binary)
---~                 if lfs.isfile(b) then
---~                     -- we assume that after changing to the path the currentdir function
---~                     -- resolves to the real location and use this side effect here; this
---~                     -- trick is needed because on the mac installations use symlinks in the
---~                     -- path instead of real locations
---~                     local olddir = lfs.currentdir()
---~                     if lfs.chdir(p) then
---~                         local pp = lfs.currentdir()
---~                         if trace_locating and p ~= pp then
---~                             logs.report("fileio","following symlink '%s' to '%s'",p,pp)
---~                         end
---~                         resolvers.ownpath = pp
---~                         lfs.chdir(olddir)
---~                     else
---~                         if trace_locating then
---~                             logs.report("fileio","unable to check path '%s'",p)
---~                         end
---~                         resolvers.ownpath =  p
---~                     end
---~                     break
---~                 end
---~             end
---~         end
---~         if not resolvers.ownpath then resolvers.ownpath = '.' end
---~     end
---~     return resolvers.ownpath
---~ end
-
-local args = environment and environment.original_arguments or arg -- this needs a cleanup
-
 resolvers.ownbin = resolvers.ownbin or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
-resolvers.ownbin = string.gsub(resolvers.ownbin,"\\","/")
+resolvers.ownbin = gsub(resolvers.ownbin,"\\","/")
 
 function resolvers.getownpath()
     local ownpath = resolvers.ownpath or os.selfdir
     if not ownpath or ownpath == "" then
         ownpath = args[-1] or arg[-1]
-        ownpath = ownpath and file.dirname(string.gsub(ownpath,"\\","/"))
+        ownpath = ownpath and file.dirname(gsub(ownpath,"\\","/"))
         if not ownpath or ownpath == "" then
             ownpath = args[-0] or arg[-0]
-            ownpath = ownpath and file.dirname(string.gsub(ownpath,"\\","/"))
+            ownpath = ownpath and file.dirname(gsub(ownpath,"\\","/"))
         end
         local binary = resolvers.ownbin
         if not ownpath or ownpath == "" then
@@ -580,7 +533,7 @@ end
 local own_places = { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF" }
 
 local function identify_own()
-    local ownpath = resolvers.getownpath() or lfs.currentdir()
+    local ownpath = resolvers.getownpath() or dir.current()
     local ie = instance.environment
     if ownpath then
         if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = file.collapse_path(ownpath) end
@@ -946,7 +899,6 @@ end
 -- A config (optionally) has the paths split in tables. Internally
 -- we join them and split them after the expansion has taken place. This
 -- is more convenient.
-
 
 local checkedsplit = string.checkedsplit
 local normalsplit  = string.split

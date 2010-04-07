@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
     license   = "see context related readme files"
 }
 
--- This code is very experimental !
-
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub
 local utfvalues = string.utfvalues
@@ -436,9 +434,12 @@ local function resetpageproperties()
 end
 
 local function setpageproperties()
-    texset("global", "pdfpageresources", pageresources  ())
-    texset("global", "pdfpageattr",      pageattributes ())
-    texset("global", "pdfpagesattr",     pagesattributes())
+--~     texset("global", "pdfpageresources", pageresources  ())
+--~     texset("global", "pdfpageattr",      pageattributes ())
+--~     texset("global", "pdfpagesattr",     pagesattributes())
+    pdf.pageresources   = pageresources  ()
+    pdf.pageattributes  = pageattributes ()
+    pdf.pagesattributes = pagesattributes()
 end
 
 function lpdf.addtopageresources  (k,v) pageresources  [k] = v end
@@ -505,23 +506,13 @@ local function trace_flush(what)
     end
 end
 
+lpdf.protectresources = true
+
 local catalog, info, names = pdfdictionary(), pdfdictionary(), pdfdictionary()
 
-local function flushcatalog() if not environment.initex then trace_flush("catalog") pdf.pdfcatalog = catalog() end end
-local function flushinfo   () if not environment.initex then trace_flush("info")    pdf.pdfinfo    = info   () end end
-local function flushnames  () if not environment.initex then trace_flush("names")   pdf.pdfnames   = names  () end end
-
-if pdf and not pdf.pdfcatalog then
-
-    local c_template, i_template, n_template = "\\normalpdfcatalog{%s}", "\\normalpdfinfo{%s}", "\\normalpdfnames{%s}"
-
-    flushcatalog = function() if not environment.initex then texsprint(ctxcatcodes,format(c_template,catalog())) end end
-    flushinfo    = function() if not environment.initex then texsprint(ctxcatcodes,format(i_template,info   ())) end end
-    flushnames   = function() if not environment.initex then texsprint(ctxcatcodes,format(n_template,names  ())) end end
-
-end
-
-lpdf.protectresources = true
+local function flushcatalog() if not environment.initex then trace_flush("catalog") pdf.catalog = catalog() end end
+local function flushinfo   () if not environment.initex then trace_flush("info")    pdf.info    = info   () end end
+local function flushnames  () if not environment.initex then trace_flush("names")   pdf.names   = names  () end end
 
 function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then trace_set("catalog",k) catalog[k] = v end end
 function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then trace_set("info",   k) info   [k] = v end end

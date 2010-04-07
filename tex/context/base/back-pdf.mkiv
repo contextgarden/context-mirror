@@ -44,13 +44,13 @@
 
 %D These are the only official methods to add stuff to the resources.
 
-\def\pdfbackendsetcatalog       #1#2{\ctxlua{lpdf.addtocatalog        ("#1",\!!bs#2\!!es)}} \newtoks\pdfcatalog
-\def\pdfbackendsetinfo          #1#2{\ctxlua{lpdf.addtoinfo           ("#1",\!!bs#2\!!es)}} \newtoks\pdfinfo
-\def\pdfbackendsetname          #1#2{\ctxlua{lpdf.addtonames          ("#1",\!!bs#2\!!es)}} \newtoks\pdfnames
+\def\pdfbackendsetcatalog       #1#2{\ctxlua{lpdf.addtocatalog        ("#1",\!!bs#2\!!es)}}
+\def\pdfbackendsetinfo          #1#2{\ctxlua{lpdf.addtoinfo           ("#1",\!!bs#2\!!es)}}
+\def\pdfbackendsetname          #1#2{\ctxlua{lpdf.addtonames          ("#1",\!!bs#2\!!es)}}
 
-\def\pdfbackendsetpageattribute #1#2{\ctxlua{lpdf.addtopageattributes ("#1",\!!bs#2\!!es)}} \newtoks\pdfpageresources
-\def\pdfbackendsetpagesattribute#1#2{\ctxlua{lpdf.addtopagesattributes("#1",\!!bs#2\!!es)}} \newtoks\pdfpageattr
-\def\pdfbackendsetpageresource  #1#2{\ctxlua{lpdf.addtopageresources  ("#1",\!!bs#2\!!es)}} \newtoks\pdfpagesattr
+\def\pdfbackendsetpageattribute #1#2{\ctxlua{lpdf.addtopageattributes ("#1",\!!bs#2\!!es)}}
+\def\pdfbackendsetpagesattribute#1#2{\ctxlua{lpdf.addtopagesattributes("#1",\!!bs#2\!!es)}}
+\def\pdfbackendsetpageresource  #1#2{\ctxlua{lpdf.addtopageresources  ("#1",\!!bs#2\!!es)}}
 
 \def\pdfbackendsetextgstate     #1#2{\ctxlua{lpdf.adddocumentextgstate ("#1",lpdf.verbose(\!!bs#2\!!es))}}
 \def\pdfbackendsetcolorspace    #1#2{\ctxlua{lpdf.adddocumentcolorspace("#1",lpdf.verbose(\!!bs#2\!!es))}}
@@ -58,6 +58,15 @@
 \def\pdfbackendsetshade         #1#2{\ctxlua{lpdf.adddocumentshade     ("#1",lpdf.verbose(\!!bs#2\!!es))}}
 
 \def\pdfbackendcurrentresources     {\ctxlua{lpdf.collectedresources()}}
+
+%D Let's block these:
+
+\let\pdfcatalog      \relax  \newtoks\pdfcatalog
+\let\pdfinfo         \relax  \newtoks\pdfinfo
+\let\pdfnames        \relax  \newtoks\pdfnames
+\let\pdfpageresources\relax  \newtoks\pdfpageresources
+\let\pdfpageattr     \relax  \newtoks\pdfpageattr
+\let\pdfpagesattr    \relax  \newtoks\pdfpagesattr
 
 %D An example of usage is:
 

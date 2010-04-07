@@ -56,6 +56,8 @@
    \gdef\setcharactercasing[##1]{\attribute\caseattribute##1\relax}%
    \setcharactercasing}
 
+% todo: names casings
+
 \unexpanded\def\WORD {\groupedcommand{\setcharactercasing[\plusone  ]}{}}
 \unexpanded\def\word {\groupedcommand{\setcharactercasing[\plustwo  ]}{}}
 \unexpanded\def\Word {\groupedcommand{\setcharactercasing[\plusthree]}{}}
@@ -177,7 +179,7 @@
 \def\setupcapitals
   {\dosingleempty\dosetupcapitals}
 
-\def\dosetupcapitals[#1]%
+\def\dosetupcapitals[#1]% todo: don't use grouping just a switch
   {\getparameters[\??kk][#1]%
    \doifelse\@@kktitle\v!yes
      {\definealternativestyle[\v!capital][\normalsmallcapped][\normalsmallcapped]%

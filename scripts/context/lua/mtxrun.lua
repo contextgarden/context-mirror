@@ -2557,6 +2557,12 @@ local lpegmatch = lpeg.match
 
 dir = dir or { }
 
+-- handy
+
+function dir.current()
+    return (gsub(lfs.currentdir(),"\\","/"))
+end
+
 -- optimizing for no string.find (*) does not save time
 
 local attributes = lfs.attributes
@@ -2635,29 +2641,48 @@ local filter = Cs ( (
 )^0 )
 
 local function glob(str,t)
-    if type(str) == "table" then
-        local t = t or { }
-        for s=1,#str do
-            glob(str[s],t)
+    if type(t) == "function" then
+        if type(str) == "table" then
+            for s=1,#str do
+                glob(str[s],t)
+            end
+        elseif lfs.isfile(str) then
+            t(str)
+        else
+            local split = lpegmatch(pattern,str)
+            if split then
+                local root, path, base = split[1], split[2], split[3]
+                local recurse = find(base,"%*%*")
+                local start = root .. path
+                local result = lpegmatch(filter,start .. base)
+                glob_pattern(start,result,recurse,t)
+            end
         end
-        return t
-    elseif lfs.isfile(str) then
-        local t = t or { }
-        t[#t+1] = str
-        return t
     else
-        local split = lpegmatch(pattern,str)
-        if split then
+        if type(str) == "table" then
             local t = t or { }
-            local action = action or function(name) t[#t+1] = name end
-            local root, path, base = split[1], split[2], split[3]
-            local recurse = find(base,"%*%*")
-            local start = root .. path
-            local result = lpegmatch(filter,start .. base)
-            glob_pattern(start,result,recurse,action)
+            for s=1,#str do
+                glob(str[s],t)
+            end
+            return t
+        elseif lfs.isfile(str) then
+            local t = t or { }
+            t[#t+1] = str
             return t
         else
-            return { }
+            local split = lpegmatch(pattern,str)
+            if split then
+                local t = t or { }
+                local action = action or function(name) t[#t+1] = name end
+                local root, path, base = split[1], split[2], split[3]
+                local recurse = find(base,"%*%*")
+                local start = root .. path
+                local result = lpegmatch(filter,start .. base)
+                glob_pattern(start,result,recurse,action)
+                return t
+            else
+                return { }
+            end
         end
     end
 end
@@ -2789,8 +2814,7 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
     function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
-            first = lfs.currentdir() .. "/"
-            first = gsub(first,"\\","/")
+            first = dir.current() .. "/"
         end
         if not first then
             first, last = match(str,"^(//)/*(.*)$")
@@ -2800,15 +2824,13 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
             if first and not find(last,"^/") then
                 local d = lfs.currentdir()
                 if lfs.chdir(first) then
-                    first = lfs.currentdir()
-                    first = gsub(first,"\\","/")
+                    first = dir.current()
                 end
                 lfs.chdir(d)
             end
         end
         if not first then
-            first, last = lfs.currentdir(), str
-            first = gsub(first,"\\","/")
+            first, last = dir.current(), str
         end
         last = gsub(last,"//","/")
         last = gsub(last,"/%./","/")
@@ -8343,64 +8365,17 @@ end
 
 local args = environment and environment.original_arguments or arg -- this needs a cleanup
 
---~ resolvers.ownbin  = resolvers.ownbin or args[-2] or arg[-2] or args[-1] or arg[-1] or arg [0] or "luatex"
---~ resolvers.ownbin  = string.gsub(resolvers.ownbin,"\\","/")
---~ resolvers.ownpath = resolvers.ownpath or file.dirname(resolvers.ownbin)
-
---~ resolvers.autoselfdir = true -- false may be handy for debugging
-
---~ function resolvers.getownpath()
---~     if not resolvers.ownpath then
---~         if resolvers.autoselfdir and os.selfdir and os.selfdir ~= "" then
---~             resolvers.ownpath = os.selfdir
---~         else
---~             local binary = resolvers.ownbin
---~             if os.binsuffix ~= "" then
---~                 binary = file.replacesuffix(binary,os.binsuffix)
---~             end
---~             for p in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
---~                 local b = file.join(p,binary)
---~                 if lfs.isfile(b) then
---~                     -- we assume that after changing to the path the currentdir function
---~                     -- resolves to the real location and use this side effect here; this
---~                     -- trick is needed because on the mac installations use symlinks in the
---~                     -- path instead of real locations
---~                     local olddir = lfs.currentdir()
---~                     if lfs.chdir(p) then
---~                         local pp = lfs.currentdir()
---~                         if trace_locating and p ~= pp then
---~                             logs.report("fileio","following symlink '%s' to '%s'",p,pp)
---~                         end
---~                         resolvers.ownpath = pp
---~                         lfs.chdir(olddir)
---~                     else
---~                         if trace_locating then
---~                             logs.report("fileio","unable to check path '%s'",p)
---~                         end
---~                         resolvers.ownpath =  p
---~                     end
---~                     break
---~                 end
---~             end
---~         end
---~         if not resolvers.ownpath then resolvers.ownpath = '.' end
---~     end
---~     return resolvers.ownpath
---~ end
-
-local args = environment and environment.original_arguments or arg -- this needs a cleanup
-
 resolvers.ownbin = resolvers.ownbin or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
-resolvers.ownbin = string.gsub(resolvers.ownbin,"\\","/")
+resolvers.ownbin = gsub(resolvers.ownbin,"\\","/")
 
 function resolvers.getownpath()
     local ownpath = resolvers.ownpath or os.selfdir
     if not ownpath or ownpath == "" then
         ownpath = args[-1] or arg[-1]
-        ownpath = ownpath and file.dirname(string.gsub(ownpath,"\\","/"))
+        ownpath = ownpath and file.dirname(gsub(ownpath,"\\","/"))
         if not ownpath or ownpath == "" then
             ownpath = args[-0] or arg[-0]
-            ownpath = ownpath and file.dirname(string.gsub(ownpath,"\\","/"))
+            ownpath = ownpath and file.dirname(gsub(ownpath,"\\","/"))
         end
         local binary = resolvers.ownbin
         if not ownpath or ownpath == "" then
@@ -8452,7 +8427,7 @@ end
 local own_places = { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF" }
 
 local function identify_own()
-    local ownpath = resolvers.getownpath() or lfs.currentdir()
+    local ownpath = resolvers.getownpath() or dir.current()
     local ie = instance.environment
     if ownpath then
         if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = file.collapse_path(ownpath) end
@@ -8818,7 +8793,6 @@ end
 -- A config (optionally) has the paths split in tables. Internally
 -- we join them and split them after the expansion has taken place. This
 -- is more convenient.
-
 
 local checkedsplit = string.checkedsplit
 local normalsplit  = string.split

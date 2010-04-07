@@ -1067,7 +1067,9 @@
      \executepagebreakhandler\v!yes
    \fi
    \ifnum\prevrealpageno<\realpageno
+\ifcase\pageornamentstate\or
      \global\chardef\pageornamentstate\zerocount
+\fi
    \fi
    \egroup}
 

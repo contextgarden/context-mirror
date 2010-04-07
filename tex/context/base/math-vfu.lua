@@ -205,6 +205,25 @@ local function dots(main,id,size,unicode)
     end
 end
 
+local function vertbar(main,id,size,parent,scale,unicode)
+    local characters = main.characters
+    local cp = characters[parent]
+    local sc = scale * size
+    local pc = { "slot", id, parent }
+    characters[unicode] = {
+        width    = cp.width,
+        height   = cp.height + sc,
+        depth    = cp.depth + sc,
+        commands = {
+            push, { "down", -sc }, pc, pop,
+            push, { "down",  sc }, pc, pop,
+                                   pc,
+        },
+        next = cp.next -- can be extensible
+    }
+    cp.next = unicode
+end
+
 function fonts.vf.math.alas(main,id,size)
     for i=0x7A,0x7D do
         make(main,id,size,i,1)
@@ -222,6 +241,10 @@ function fonts.vf.math.alas(main,id,size)
     minus(main,id,size,0xFF501)
     arrow(main,0x2190,0xFE190,0xFF501,true) -- left
     arrow(main,0x2192,0xFE192,0xFF501,false) -- right
+    vertbar(main,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
+    vertbar(main,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
+    vertbar(main,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
+    vertbar(main,id,size,0xFF603,0.30,0xFF604) -- Bigg : 1.75 bodyfontsize
 end
 
 local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage

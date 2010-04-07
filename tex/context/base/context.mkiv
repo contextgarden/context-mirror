@@ -20,8 +20,8 @@
 
 \loadcorefile{syst-ini}
 
-\ifnum\luatexversion<47 % also change message
-    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.47!}
+\ifnum\luatexversion<60 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.60!}
     \expandafter\end
 \fi
 
@@ -88,6 +88,8 @@
 \loadmarkfile{trac-tex}
 \loadmarkfile{trac-lmx}
 \loadmarkfile{trac-deb}
+
+%loadmarkfile{blob-ini} % not yet public (typesetting in pure lua)
 
 \loadcorefile{supp-box}
 

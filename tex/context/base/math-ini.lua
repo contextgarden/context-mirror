@@ -287,13 +287,24 @@ function mathematics.big(tfmdata,unicode,n)
     local t = tfmdata.characters
     local c = t[unicode]
     if c then
-        local next = c.next
-        while next do
-            if n <= 1 then
-                return next
-            else
-                n = n - 1
-                next = t[next].next
+        local vv = c.vert_variants or c.next and t[c.next].vert_variants
+        if vv then
+            local vvn = vv[n]
+            return vvn and vvn.glyph or vv[#vv].glyph or unicode
+        else
+            local next = c.next
+            while next do
+                if n <= 1 then
+                    return next
+                else
+                    n = n - 1
+                    local tn = t[next].next
+                    if tn then
+                        next = tn
+                    else
+                        return next
+                    end
+                end
             end
         end
     end

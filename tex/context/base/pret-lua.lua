@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['pret-lua'] = {
     license   = "see context related readme files"
 }
 
+-- this is not a real parser as we also want to typeset wrong output
+-- and a real parser would choke on that
+
 local utf = unicode.utf8
 
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
@@ -136,6 +139,22 @@ end
 -- we will also provide a proper parser based pretty printer although normaly
 -- a pretty printer should handle faulty code too (educational purposes)
 
+local function written(state,c,i)
+    if c == " " then
+        state = finish_state(state)
+        texsprint(ctxcatcodes,"\\obs")
+    elseif c == "\t" then
+        state = finish_state(state)
+        texsprint(ctxcatcodes,"\\obs")
+        if buffers.visualizers.enabletab then
+            texsprint(ctxcatcodes,rep("\\obs ",i%buffers.visualizers.tablength))
+        end
+    else
+        texwrite(c)
+    end
+    return state, 0
+end
+
 function visualizer.flush_line(str, nested)
     local state, instr, inesc, word = 0, false, false, nil
     buffers.currentcolors = colors
@@ -167,8 +186,9 @@ function visualizer.flush_line(str, nested)
         if pre then
             code = pre
         end
-        local p, s = nil, nil
+        local p, s, i = nil, nil, 0
         for c in utfcharacters(code) do
+            i = i + 1
             if instr then
                 if p then
                     texwrite(p)
@@ -191,7 +211,7 @@ function visualizer.flush_line(str, nested)
                     else
                         inesc = false
                     end
-                    texwrite(c)
+                    state, i = written(state,c,i)
                 end
             elseif c == "[" then
                 if word then
@@ -206,7 +226,7 @@ function visualizer.flush_line(str, nested)
                     p = nil
                 else
                     if p then
-                        texwrite(p)
+                        state, i = written(state,p,i)
                     end
                     p = c
                 end
@@ -223,7 +243,7 @@ function visualizer.flush_line(str, nested)
                     p = nil
                 else
                     if p then
-                        texwrite(p)
+                        state, i = written(state,p,i)
                     end
                     p = c
                 end
@@ -234,18 +254,18 @@ function visualizer.flush_line(str, nested)
                     state = finish_state(state)
                     p = nil
                 end
-                if c == " " then
+                if c == " " or c == "\t" then
                     if word then
                         state = flush_lua_word(state,word)
                         word = nil
                     end
-                    texsprint(ctxcatcodes,"\\obs")
+                    state, i = written(state,c,i)
                 elseif inlongstring then
-                    texwrite(c)
+                    state, i = written(state,c,i)
                 elseif c == '"' or c == "'" then
                     instr = true
                     state = change_state(states[c],state)
-                    texwrite(c)
+                    state, i = written(state,c,i)
                     state = finish_state(state)
                     s = c
                 elseif find(c,"^[%a]$") then
@@ -262,17 +282,18 @@ function visualizer.flush_line(str, nested)
                 end
             end
         end
-if p then
-    texwrite(p)
-    p = nil
-end
+        if p then
+            texwrite(p)
+            -- state, i = written(state,p,i)
+            p = nil
+        end
         state = flush_lua_word(state,word)
         if post then
             state = change_state(states['--'], state)
             texwrite("--")
             state = finish_state(state)
             for c in utfcharacters(post) do
-                if c == " " then texsprint(ctxcatcodes,"\\obs") else texwrite(c) end
+                state, i = written(state,c,i)
             end
         end
     end
@@ -281,7 +302,10 @@ end
         state = change_state(states['--'], state)
         texwrite("[[")
         state = finish_state(state)
-        texwrite(comment)
+     -- texwrite(comment) -- maybe also split and
+        for c in utfcharacters(comment) do
+            state, i = written(state,c,i)
+        end
     end
     state = finish_state(state)
 end

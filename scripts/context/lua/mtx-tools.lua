@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mtx-tools'] = {
     license   = "see context related readme files"
 }
 
-local find, format, sub, rep, gsub = string.find, string.format, string.sub, string.rep, string.gsub
+local find, format, sub, rep, gsub, lower = string.find, string.format, string.sub, string.rep, string.gsub, string.lower
 
 scripts       = scripts       or { }
 scripts.tools = scripts.tools or { }
@@ -41,6 +41,35 @@ function scripts.tools.disarmutfbomb()
         logs.simple("use --force to do a real disarming")
     end
 end
+
+function scripts.tools.downcase()
+    local pattern = environment.argument('pattern') or "*"
+    local recurse = environment.argument('recurse')
+    local force   = environment.argument('force')
+    local n = 0
+    if recurse and not find(pattern,"^%*%*%/") then
+        pattern = "**/*" .. pattern
+    end
+    dir.glob(pattern,function(name)
+        local basename = file.basename(name)
+        if lower(basename) ~= basename then
+            n = n + 1
+            if force then
+                os.rename(name,lower(name))
+            end
+        end
+    end)
+    if n > 0 then
+        if force then
+            logs.simple("%s files renamed",n)
+        else
+            logs.simple("use --force to do a real rename (%s files involved)",n)
+        end
+    else
+        logs.simple("nothing to do")
+    end
+end
+
 
 function scripts.tools.dirtoxml()
 
@@ -120,19 +149,26 @@ messages.help = [[
     --force             remove indeed
 
 --dirtoxml              glob directory into xml
-    --pattern           glob pattern (default: .*)
+    --pattern           glob pattern (default: *)
     --url               url attribute (no processing)
     --root              the root of the globbed path (default: .)
     --output            output filename (console by default)
     --recurse           recurse into subdirecories
     --stripname         take pathpart of given pattern
     --longname          set name attributes to full path name
+
+--downcase
+    --pattern           glob pattern (default: *)
+    --recurse           recurse into subdirecories
+    --force             downcase indeed
 ]]
 
 if environment.argument("disarmutfbomb") then
     scripts.tools.disarmutfbomb()
 elseif environment.argument("dirtoxml") then
     scripts.tools.dirtoxml()
+elseif environment.argument("downcase") then
+    scripts.tools.downcase()
 else
     logs.help(messages.help)
 end

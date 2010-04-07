@@ -24,9 +24,6 @@
 
 % textext ipv btex ... etex
 
-\ifx\undefined\MPtoks \newtoks\MPtoks \fi
-\ifx\undefined\MPnox  \newbox \MPbox  \fi
-
 \unprotect
 
 \startMPextensions
@@ -37,15 +34,18 @@
 
 % \def\newchar#1{\chardef#1=0 }
 
-\newdimen\parwidth
-\newdimen\parheight
-\newdimen\parvoffset
-\newdimen\parhoffset
-\newcount\parlines
-\newtoks \partoks
-\newbox  \shapetextbox
-\newif   \ifparseries
-\chardef \parfirst=0
+\ifdefined\MPtoks   \else \newtoks\MPtoks        \fi
+\ifdefined\MPnox    \else \newbox \MPbox         \fi
+
+\ifdefined\newdimen \else \newdimen\parwidth     \fi
+\ifdefined\newdimen \else \newdimen\parheight    \fi
+\ifdefined\newdimen \else \newdimen\parvoffset   \fi
+\ifdefined\newdimen \else \newdimen\parhoffset   \fi
+\ifdefined\newcount \else \newcount\parlines     \fi
+\ifdefined\newtoks  \else \newtoks \partoks      \fi
+\ifdefined\newbox   \else \newbox  \shapetextbox \fi
+\ifdefined\newif    \else \newif   \ifparseries  \fi
+\ifdefined\chardef  \else \chardef \parfirst=0   \fi
 
 \def\startshapetext[#1]%
   {\global\newcounter\currentshapetext

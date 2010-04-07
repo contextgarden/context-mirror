@@ -294,15 +294,15 @@
    \dochecknote}
 
 \appendtoks
-  \letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule % hm
+  \setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule}% hm
   \letvalue{\??vn\c!rule:a:\currentnote}\v!left
 \to \everysetupnote
 
 \appendtoks
   \expanded{\processallactionsinset
     [\noteparameter\c!rule]}
-    [     \v!on=>\letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule,
-      \v!normal=>\letvalue{\??vn\c!rule:c:\currentnote}\normalnoterule,
+    [     \v!on=>\setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule}, % no let as it can be changed afterwards
+      \v!normal=>\setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule},
         \v!left=>\setvalue{\??vn\c!rule:a:\currentnote}{l2r},
        \v!right=>\setvalue{\??vn\c!rule:a:\currentnote}{r2l},
          \v!off=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,
@@ -593,14 +593,13 @@
 \def\@@somenotedescription     {\@@notemakedescription}
 \def\@@startsomenotedescription{\@@notemakedescription}
 
-\def\@@notemakedescription[#1]#2#3% todo ... proper [key=value] etc
+\def\@@notemakedescription[#1]#2#3%
   {\ifnotesenabled
+     \edef\currentdescriptionreference{#1}%
      \iftrialtypesetting
-        % some day a roll back
-% temp hack
-\doenumerationcheckconditions
-\let\currentnote\currentdescriptionmain
-\typesetdummynotesymbol
+        \doenumerationcheckconditions
+        \let\currentnote\currentdescriptionmain
+        \typesetdummynotesymbol
      \else
        \begingroup
        \doenumerationcheckconditions
@@ -631,14 +630,6 @@
        \endgroup
      \fi
    \fi
-%    \ifconditional\skipnoteplacement \else
-%      \kern\notesignal\relax % \relax is needed to honor spaces
-%      \iftrialtypesetting
-%        % todo: reserve some space for symbol, in that case we need to be able to roll back notes
-%      \else
-%        \global\setfalse\skipnoteplacement
-%      \fi
-%    \fi}
    \ifconditional\skipnoteplacement
      \global\setfalse\skipnoteplacement
    \else

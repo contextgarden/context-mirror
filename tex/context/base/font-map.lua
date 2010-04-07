@@ -278,21 +278,21 @@ end
 --         local fullname = e.fullname or ""
 --         if e.slant and e.slant ~= 0 then
 --             if e.encoding then
---                 pdf.pdfmapline = format('= %s %s "%g SlantFont" <%s <%s',e.name,fullname,e.slant,e.encoding,e.fontfile))
+--                 pdf.mapline(format('= %s %s "%g SlantFont" <%s <%s',e.name,fullname,e.slant,e.encoding,e.fontfile)))
 --             else
---                 pdf.pdfmapline = format('= %s %s "%g SlantFont" <%s',e.name,fullname,e.slant,e.fontfile))
+--                 pdf.mapline(format('= %s %s "%g SlantFont" <%s',e.name,fullname,e.slant,e.fontfile)))
 --             end
 --         elseif e.extend and e.extend ~= 1 and e.extend ~= 0 then
 --             if e.encoding then
---                 pdf.pdfmapline = format('= %s %s "%g ExtendFont" <%s <%s',e.name,fullname,e.extend,e.encoding,e.fontfile))
+--                 pdf.mapline(format('= %s %s "%g ExtendFont" <%s <%s',e.name,fullname,e.extend,e.encoding,e.fontfile)))
 --             else
---                 pdf.pdfmapline = format('= %s %s "%g ExtendFont" <%s',e.name,fullname,e.extend,e.fontfile))
+--                 pdf.mapline(format('= %s %s "%g ExtendFont" <%s',e.name,fullname,e.extend,e.fontfile)))
 --             end
 --         else
 --             if e.encoding then
---                 pdf.pdfmapline = format('= %s %s <%s <%s',e.name,fullname,e.encoding,e.fontfile))
+--                 pdf.mapline(format('= %s %s <%s <%s',e.name,fullname,e.encoding,e.fontfile)))
 --             else
---                 pdf.pdfmapline = format('= %s %s <%s',e.name,fullname,e.fontfile))
+--                 pdf.mapline(format('= %s %s <%s',e.name,fullname,e.fontfile)))
 --             end
 --         end
 --     else

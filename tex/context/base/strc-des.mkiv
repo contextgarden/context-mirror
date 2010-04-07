@@ -424,10 +424,11 @@
    \csname @@description\currentdescriptionlocation\endcsname} % args not needed
 
 \def\@@makedescription[#1]#2%
-  {\postponenotes % new, assumes grouping
-   \doenumerationcheckconditions
-   \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#2},\c!bookmark=,\c!list=][]%
-   \@@dostartdescriptionindeed}
+ {\postponenotes % new, assumes grouping
+  \edef\currentdescriptionreference{#1}%
+  \doenumerationcheckconditions
+  \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#2},\c!bookmark=,\c!list=][]%
+  \@@dostartdescriptionindeed}
 
 \def\dostartstoreddescription
   {\@@dostartdescriptionindeed}

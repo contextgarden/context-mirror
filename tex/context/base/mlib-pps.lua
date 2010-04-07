@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, pos
 
 -- current limitation: if we have textext as well as a special color then due to
 -- prescript/postscript overload we can have problems
+--
+-- todo: report max textexts
 
 local format, gmatch, concat, round, match = string.format, string.gmatch, table.concat, math.round, string.match
 local sprint = tex.sprint
@@ -421,33 +423,59 @@ end
 
 local current_format, current_graphic
 
-metapost.first_box       = metapost.first_box or 1000
-metapost.last_box        = metapost.last_box or 1100
-metapost.textext_current = metapost.first_box
+-- metapost.first_box       = metapost.first_box or 1000
+-- metapost.last_box        = metapost.last_box or 1100
+--~ metapost.textext_current = metapost.first_box
 metapost.multipass       = false
 
+local textexts = { }
+
 function metapost.free_boxes() -- todo: mp direct list ipv box
-    for i = metapost.first_box,metapost.last_box do
-        local b = texbox[i]
-        if b then
-            texbox[i] = nil -- no node.flush_list(b) needed, else double free error
-        else
-            break
+ -- for i = metapost.first_box,metapost.last_box do
+ --     local b = texbox[i]
+ --     if b then
+ --         texbox[i] = nil -- no node.flush_list(b) needed, else double free error
+ --     else
+ --         break
+ --     end
+ -- end
+    for n, box in next, textexts do
+        local tn = textexts[n]
+        if tn then
+            -- somehow not flushed (used)
+            textexts[n] = nil
         end
     end
+    textexts = { }
+end
+
+function metapost.settext(box,slot)
+    textexts[slot] = node.copy_list(texbox[box])
+    texbox[box] = nil
+    -- this will become
+    -- textexts[slot] = texbox[box]
+    -- unsetbox(box)
+end
+
+function metapost.gettext(box,slot)
+    texbox[box] = textexts[slot]
+    textexts[slot] = nil
 end
 
 function metapost.specials.tf(specification,object)
 --~ print("setting", metapost.textext_current)
     local n, str = match(specification,"^(%d+):(.+)$")
     if n and str then
-        if metapost.textext_current < metapost.last_box then
-            metapost.textext_current = metapost.first_box + n - 1
-        end
+        n = tonumber(n)
+     -- if metapost.textext_current < metapost.last_box then
+     --     metapost.textext_current = metapost.first_box + n - 1
+     -- end
         if trace_textexts then
-            logs.report("metapost","first pass: order %s, box %s",n,metapost.textext_current)
+         -- logs.report("metapost","first pass: order %s, box %s",n,metapost.textext_current)
+            logs.report("metapost","first pass: order %s",n)
         end
-        sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,str))
+     -- sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,str))
+        sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",n,str))
         metapost.multipass = true
     end
     return { }, nil, nil, nil
@@ -457,8 +485,10 @@ function metapost.specials.ts(specification,object,result,flusher)
     -- print("getting", metapost.textext_current)
     local n, str = match(specification,"^(%d+):(.+)$")
     if n and str then
+        n = tonumber(n)
         if trace_textexts then
-            logs.report("metapost","second pass: order %s, box %s",n,metapost.textext_current)
+         -- logs.report("metapost","second pass: order %s, box %s",n,metapost.textext_current)
+            logs.report("metapost","second pass: order %s",n)
         end
         local op = object.path
         local first, second, fourth = op[1], op[2], op[4]
@@ -470,18 +500,24 @@ function metapost.specials.ts(specification,object,result,flusher)
         if not trace_textexts then
             object.path = nil
         end
-        local before = function() -- no need for function
+        local before = function() -- no need for before function (just do it directly)
         --~ flusher.flushfigure(result)
         --~ sprint(ctxcatcodes,format("\\MPLIBgettext{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,metapost.textext_current))
         --~ result = { }
             result[#result+1] = format("q %f %f %f %f %f %f cm", sx,rx,ry,sy,tx,ty)
             flusher.flushfigure(result)
-            if metapost.textext_current < metapost.last_box then
-                metapost.textext_current = metapost.first_box + n - 1
+            -- if metapost.textext_current < metapost.last_box then
+            --     metapost.textext_current = metapost.first_box + n - 1
+            --  end
+         -- local b = metapost.textext_current
+         -- local box = texbox[b]
+            local box = textexts[n]
+            if box then
+             -- sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b,metapost.sxsy(box.width,box.height,box.depth)))
+                sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",n,metapost.sxsy(box.width,box.height,box.depth)))
+            else
+                -- error
             end
-            local b = metapost.textext_current
-            local box = texbox[b]
-            sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b, metapost.sxsy(box.width,box.height,box.depth)))
             result = { "Q" }
             return object, result
         end
@@ -693,12 +729,13 @@ end
 
 function metapost.text_texts_data()
     local t, n = { }, 0
-    for i = metapost.first_box, metapost.last_box do
-        n = n + 1
+--~     for i = metapost.first_box, metapost.last_box do
+--~         n = n + 1
+--~         local box = texbox[i]
+    for n, box in next, textexts do
         if trace_textexts then
             logs.report("metapost","passed data: order %s, box %s",n,i)
         end
-        local box = texbox[i]
         if box then
             t[#t+1] = format("_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;",
                 n,box.width/factor,n,box.height/factor,n,box.depth/factor)
@@ -706,6 +743,7 @@ function metapost.text_texts_data()
             break
         end
     end
+--~     print(table.serialize(t))
     return t
 end
 
@@ -724,7 +762,7 @@ function metapost.graphic_base_pass(mpsformat,str,preamble,askedfig)
     else
         preamble, done_2, forced_2 = "", false, false
     end
-    metapost.textext_current = metapost.first_box
+ -- metapost.textext_current = metapost.first_box
     metapost.intermediate.needed  = false
     metapost.multipass = false -- no needed here
     current_format, current_graphic = mpsformat, str
@@ -763,7 +801,7 @@ end
 
 function metapost.graphic_extra_pass(askedfig)
     local nofig = (askedfig and "") or false
-    metapost.textext_current = metapost.first_box
+ -- metapost.textext_current = metapost.first_box
     metapost.process(current_format, {
         nofig or "beginfig(1); ",
         "_trial_run_ := false ;",

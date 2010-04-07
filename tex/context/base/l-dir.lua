@@ -14,6 +14,12 @@ local lpegmatch = lpeg.match
 
 dir = dir or { }
 
+-- handy
+
+function dir.current()
+    return (gsub(lfs.currentdir(),"\\","/"))
+end
+
 -- optimizing for no string.find (*) does not save time
 
 local attributes = lfs.attributes
@@ -92,29 +98,48 @@ local filter = Cs ( (
 )^0 )
 
 local function glob(str,t)
-    if type(str) == "table" then
-        local t = t or { }
-        for s=1,#str do
-            glob(str[s],t)
+    if type(t) == "function" then
+        if type(str) == "table" then
+            for s=1,#str do
+                glob(str[s],t)
+            end
+        elseif lfs.isfile(str) then
+            t(str)
+        else
+            local split = lpegmatch(pattern,str)
+            if split then
+                local root, path, base = split[1], split[2], split[3]
+                local recurse = find(base,"%*%*")
+                local start = root .. path
+                local result = lpegmatch(filter,start .. base)
+                glob_pattern(start,result,recurse,t)
+            end
         end
-        return t
-    elseif lfs.isfile(str) then
-        local t = t or { }
-        t[#t+1] = str
-        return t
     else
-        local split = lpegmatch(pattern,str)
-        if split then
+        if type(str) == "table" then
             local t = t or { }
-            local action = action or function(name) t[#t+1] = name end
-            local root, path, base = split[1], split[2], split[3]
-            local recurse = find(base,"%*%*")
-            local start = root .. path
-            local result = lpegmatch(filter,start .. base)
-            glob_pattern(start,result,recurse,action)
+            for s=1,#str do
+                glob(str[s],t)
+            end
+            return t
+        elseif lfs.isfile(str) then
+            local t = t or { }
+            t[#t+1] = str
             return t
         else
-            return { }
+            local split = lpegmatch(pattern,str)
+            if split then
+                local t = t or { }
+                local action = action or function(name) t[#t+1] = name end
+                local root, path, base = split[1], split[2], split[3]
+                local recurse = find(base,"%*%*")
+                local start = root .. path
+                local result = lpegmatch(filter,start .. base)
+                glob_pattern(start,result,recurse,action)
+                return t
+            else
+                return { }
+            end
         end
     end
 end
@@ -246,8 +271,7 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
     function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
-            first = lfs.currentdir() .. "/"
-            first = gsub(first,"\\","/")
+            first = dir.current() .. "/"
         end
         if not first then
             first, last = match(str,"^(//)/*(.*)$")
@@ -257,15 +281,13 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
             if first and not find(last,"^/") then
                 local d = lfs.currentdir()
                 if lfs.chdir(first) then
-                    first = lfs.currentdir()
-                    first = gsub(first,"\\","/")
+                    first = dir.current()
                 end
                 lfs.chdir(d)
             end
         end
         if not first then
-            first, last = lfs.currentdir(), str
-            first = gsub(first,"\\","/")
+            first, last = dir.current(), str
         end
         last = gsub(last,"//","/")
         last = gsub(last,"/%./","/")

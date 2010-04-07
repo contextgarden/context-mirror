@@ -16,7 +16,7 @@ local set_attribute  = node.set_attribute
 local has_attribute  = node.has_attribute
 local mlist_to_hlist = node.mlist_to_hlist
 local font_of_family = node.family_font
-local fontdata       = fonts.ids
+local fontdata       = fonts.identifiers
 
 local format, rep  = string.format, string.rep
 local utfchar, utfbyte = utf.char, utf.byte
