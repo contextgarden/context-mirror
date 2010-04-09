@@ -424,18 +424,7 @@
   %\setcolumntextheight\relax
    \widowpenalty\zerocount % is gewoon beter
    \clubpenalty \zerocount % zeker bij grids
-   \ifsomefloatwaiting
-     \showmessage\m!columns6{\the\savednoffloats}%
-     \global\setbox\savedfloatlist\box\floatlist
-     \xdef\restoresavedfloats
-       {\global\savednoffloats\the\savednoffloats
-        \global\setbox\floatlist\box\savedfloatlist
-        \global\noexpand\somefloatwaitingtrue}%
-     \global\savednoffloats\zerocount
-     \global\somefloatwaitingfalse
-   \else
-     \global\let\restoresavedfloats\relax
-   \fi
+   \dopushcolumnfloats
    \dimen0\dimexpr\pagetotal+\parskip+\openlineheight\relax
    \ifdim\dimen0<\pagegoal
      \allowbreak
@@ -525,7 +514,7 @@
    \synchronizeoutput % new may 2004 / we need to: \pagegoal\vsize
    \checkendcolumnfootnotes
    \dosomebreak\allowbreak
-   \restoresavedfloats}
+   \dopopcolumnfloats}
 
 %D Because some initializations happen three times, we
 %D defined a macro for them. Erasing \type{\everypar} is
@@ -1228,30 +1217,51 @@
 %D When all those floats are flushed, we switch to the local
 %D flushing routine.
 
-\def\setcolumnfloats
-  {\xdef\globalsavednoffloats{\the\savednoffloats}%
-   \ifnum\globalsavednoffloats>\zerocount
-     \setglobalcolumnfloats
+\def\dopushcolumnfloats
+  {\ifsomefloatwaiting
+     \showmessage\m!columns6{\the\savednoffloats}%
+     \global\setbox\savedfloatlist\box\floatlist
+     \xdef\dopopcolumnfloats
+       {\global\savednoffloats\the\savednoffloats
+        \global\setbox\floatlist\box\savedfloatlist
+        \global\noexpand\somefloatwaitingtrue}%
+     \global\savednoffloats\zerocount
+     \global\somefloatwaitingfalse
    \else
-     \setlocalcolumnfloats
+     \global\let\dopopcolumnfloats\relax
    \fi}
 
-\def\setglobalcolumnfloats
-  {\everypar\emptytoks
-   \let\flushcolumnfloat\relax
-  %\let\doroomfloat\relax
-   \let\docheckiffloatfits\relax
-   \let\flushcolumnfloats\noflushcolumnfloats}
+\let\dopopcolumnfloats\relax
+
+% \def\setcolumnfloats % messy as it adapts everypar
+%   {\xdef\globalsavednoffloats{\the\savednoffloats}%
+%    \ifnum\globalsavednoffloats>\zerocount
+%      \setglobalcolumnfloats % hm, we always push so this never happens
+%    \else
+%      \setlocalcolumnfloats
+%    \fi}
+
+\def\setcolumnfloats % messy as it adapts everypar, we need to adapt this
+  {\setlocalcolumnfloats}
+
+\newconditional\onlylocalcolumnfloats % temp hack as we will redo floats (grid snapping is also messy now)
+
+\def\OTRMULdocheckiffloatfits{\ifconditional\onlylocalcolumnfloats\docolumnroomfloat  \else\relax                 \fi}
+\def\OTRMULdosetbothinserts  {\ifconditional\onlylocalcolumnfloats\relax              \else\OTRONEdosetbothinserts\fi}
+\def\OTRMULdotopinsertions   {\ifconditional\onlylocalcolumnfloats\relax              \else\OTRONEdotopinsertions \fi}
+\def\OTRMULdoflushfloats     {\ifconditional\onlylocalcolumnfloats\doflushcolumnfloats\else\OTRONEdoflushfloats   \fi}
 
 \def\setlocalcolumnfloats
-  {\everypar{\flushnotes\flushcolumnfloat\flushmargincontents\checkindentation}%
+  {\settrue\onlylocalcolumnfloats
+   \everypar{\flushnotes\flushcolumnfloat\flushmargincontents\checkindentation}%
    \let\flushcolumnfloat\doflushcolumnfloat
-  %\let\doroomfloat\docolumnroomfloat
-   \let\docheckiffloatfits\docolumnroomfloat
-   \let\flushcolumnfloats\doflushcolumnfloats
-   \let\doflushfloats\doflushcolumnfloats % new
-   \let\dosetbothinserts\relax
-   \let\dotopinsertions\relax}
+   \let\flushcolumnfloats\doflushcolumnfloats}
+
+\def\setglobalcolumnfloats
+  {\setfalse\onlylocalcolumnfloats
+   \everypar\emptytoks
+   \let\flushcolumnfloat\relax
+   \let\flushcolumnfloats\noflushcolumnfloats}
 
 \def\noflushcolumnfloats
   {\bgroup
@@ -1316,24 +1326,17 @@
    \else
      \bgroup
      \getcolumnstatus\column\count255\total\dimen0\goal\dimen2\\%
-     \advance\dimen0 2\openlineheight % nog nodig ?
-    %\ifnum\count255=\nofcolumns
-    %  \getinsertionheight
-    % %\message{\insertionheight}\wait
-    %  \advance\dimen0 \insertionheight
-    %\fi
+     \dofloatsgetinfo{text}%
      \setbox\scratchbox\vbox % tricky met objecten ?
        {\blank[\@@bkspacebefore]
-        \snaptogrid\vbox{\copy\floatbox}}%
-     \advance\dimen0 \ht\scratchbox
-     \advance\dimen0 .5\lineheight % needed because goal a bit higher
-    %\message{column: \the\count255; total: \the\dimen0; goal: \the\dimen2}\wait
+        \snaptogrid\vbox{\vskip\floatheight}}% copy?
+     \advance\dimen0\dimexpr\ht\scratchbox+2\openlineheight+.5\lineheight\relax\relax % needed because goal a bit higher
      \ifdim\dimen0>\dimen2
        \global\roomforfloatfalse
      \else
        \global\roomforfloattrue
      \fi
-     \ifdim\wd\floatbox>\hsize
+     \ifdim\floatwidth>\hsize
        \showmessage\m!columns{11}\empty
        \global\roomforfloatfalse
      \fi
@@ -1353,40 +1356,33 @@
      \let\doflushcolumnfloat\relax
      \getcolumnstatus\column\mofcolumns\total\dimen0\goal\dimen2\\%
      \ifdim\dimen0>\zeropoint
-       \dogetfloat
-       \ifdim\wd\floatbox>\hsize
-         \doresavefloat
+       \dofloatsgetinfo{text}%
+       \ifdim\floatwidth>\hsize
+          % dropped ?
        \else
-        %\setbox2=\vbox
-        %  {\blank[\@@bkspacebefore]
-        %   \snaptogrid\vbox{\copy\floatbox}%
-        %   \blank[\@@bkspaceafter]
-         \setbox2=\vbox
+         \setbox2\vbox
            {\blank[\@@bkspacebefore]
-            \snaptogrid\vbox{\copy\floatbox}}%
+            \snaptogrid\vbox{\vskip\floatheight}}%
          \advance\dimen0 \ht2
          \ifdim\dimen0>\dimen2
            \ifnum\mofcolumns<\nofcolumns
              \advance\mofcolumns \plusone
-%% bug %%    \edef\currenttopcolumnbox{\getvalue{\@@topcol\the\count255}}%
              \ifdim\ht\currenttopcolumnbox=\zeropoint
+               \dofloatsflush{text}{1}%
                \global\setbox\currenttopcolumnbox\vbox
-                 {\snaptogrid\vbox{\copy\floatbox}
+                 {\snaptogrid\vbox{\box\floatbox}
                   \whitespace % nodig ?
                   \blank[\@@bkspaceafter]}%
-               \dimen4=\ht\currenttopcolumnbox
-               \advance\dimen4 \dp\currenttopcolumnbox
+               \dimen4=\htdp\currenttopcolumnbox
                \global\advance\vsize -\dimen4
                \advance\dimen4 -\pagegoal
                \global\pagegoal-\dimen4
                \showmessage\m!columns{12}a%
              \else
                \showmessage\m!columns{12}b%
-               \doresavefloat
              \fi
            \else
              \showmessage\m!columns{12}c%
-             \doresavefloat
            \fi
          \else
            \ifhmode{\setbox0\lastbox}\fi% waar is die er in geslopen
@@ -1396,6 +1392,7 @@
              \blank[\@@bkspacebefore]
              \nobreak
            \fi
+           \dofloatsflush{text}{1}%
            \flushfloatbox
            \blank[\@@bkspaceafter]
          \fi
@@ -1418,6 +1415,7 @@
 %D When handling lots of (small) floats spacing can get worse
 %D because of lining out the columns.
 
+
 \def\doflushcolumnfloats
   {\ifpostponecolumnfloats\else
      \bgroup
@@ -1432,53 +1430,49 @@
             \global\setbox\currenttopcolumnbox\vbox
               {\snaptogrid\vbox
                  {\copy\currenttopcolumnbox
-                  \hbox{\vphantom{\copy\floatbox}}}
+                  \hbox{\vphantom{\vskip\floatheight}}}% known from previous
                   \whitespace % nodig ?
                   \blank[\@@bkspaceafter]}%
           \else
-            \dogetfloat
-            \ifdim\wd\floatbox>\finalcolumntextwidth % better somewhere else too
-              \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
-            \fi % otherwise the graphic may disappear
-            \ifdim\wd\floatbox>\hsize
-              \dimen0\wd\floatbox
-              \advance\dimen0 \intercolumnwidth
-              \dimen2\hsize
-              \advance\dimen2 \intercolumnwidth
-              \advance\dimen0 .5pt % hm, why 1
-              \advance\dimen2 .5pt % hm, why 2
+            \dofloatsgetinfo{text}%
+            \ifdim\floatwidth>\hsize
+              \dimen0\dimexpr\floatwidth+\intercolumnwidth+.5pt\relax
+              \dimen2\dimexpr\hsize     +\intercolumnwidth+.5pt\relax
               \divide\dimen0 \dimen2
               \count0\dimen0
               \advance\count0 \plusone
               \ifnum\count0>\count2
-                \doresavefloat
                 \count0\zerocount
               \else
-                \dimen0=\count0\hsize
-                \advance\dimen0 \count0\intercolumnwidth
-                \advance\dimen0 -\intercolumnwidth
+                \dimen0\dimexpr\count0\hsize+\count0\intercolumnwidth-\intercolumnwidth\relax
+                \dofloatsflush{text}{1}%
+                \ifdim\floatwidth>\finalcolumntextwidth % better somewhere else too
+                  \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
+                \fi % otherwise the graphic may disappear
                 \global\setbox\floatbox\hbox to \dimen0
-                 %{\hss\hbox{\copy\floatbox}\hss}%
                   {\processaction[\@@bklocation] % how easy to forget
-                     [  \v!left=>\copy\floatbox\hss,
-                       \v!right=>\hss\copy\floatbox,
-                      \s!default=>\hss\copy\floatbox\hss,
-                      \s!unknown=>\hss\copy\floatbox\hss]}%
+                     [   \v!left=>\box\floatbox\hss,
+                        \v!right=>\hss\box\floatbox,
+                      \s!default=>\hss\box\floatbox\hss,
+                      \s!unknown=>\hss\box\floatbox\hss]}%
               \fi
               \showmessage\m!columns{13}\empty
             \else
-            %  \showmessage\m!columns{13}\empty
+              \dofloatsflush{text}{1}%
+              \ifdim\floatwidth>\finalcolumntextwidth % better somewhere else too
+                \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
+              \fi % otherwise the graphic may disappear
+            % \showmessage\m!columns{13}\empty
             \fi
             \ifdim\ht\floatbox>\zeropoint\relax
               \global\setbox\currenttopcolumnbox\vbox
                 {\snaptogrid\vbox
-                   {\copy\currenttopcolumnbox
-                    \copy\floatbox}
+                   {\box\currenttopcolumnbox % was copy
+                    \box\floatbox}
                  \whitespace % nodig ?
                  \blank[\@@bkspaceafter]}%
             \fi
-            \dimen6\ht\currenttopcolumnbox
-            \advance\dimen6 \dp\currenttopcolumnbox
+            \dimen6\htdp\currenttopcolumnbox
           \fi
           \ifdim\dimen4<\ht\currenttopcolumnbox
             \dimen4\ht\currenttopcolumnbox

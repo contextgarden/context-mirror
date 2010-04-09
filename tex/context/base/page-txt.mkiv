@@ -236,8 +236,21 @@
 %D the \type {status} variable. This is handled by the next
 %D couple of macros.
 
+% \def\settextlinestatus#1%
+%   {\edef\textlinestatus{\csname\??tk#1\c!state\endcsname}}
+
 \def\settextlinestatus#1%
-  {\edef\textlinestatus{\csname\??tk#1\c!state\endcsname}}
+  {\ifcase0\csname\??tk#1\c!n\endcsname\relax
+     \edef\textlinestatus{\csname\??tk#1\c!state\endcsname}%
+   \else
+     \setxvalue{\??tk#1\c!n}{\the\numexpr\csname\??tk#1\c!n\endcsname-1}%
+     \let\textlinestatus\v!stop
+   \fi}
+
+\appendtoks
+   \doifinset\v!header\floatspecification{\setxvalue{\??tk\v!header\c!n}{1}}%
+   \doifinset\v!footer\floatspecification{\setxvalue{\??tk\v!footer\c!n}{1}}%
+\to \everybeforeflushedpagefloat
 
 \def\resettextlinestatus#1% postpone
   {\expandafter\gdef\csname\??tk#1\s!reset\endcsname{\global\expandafter\let\csname\??tk#1\c!state\endcsname\v!normal}}
@@ -822,11 +835,11 @@
 %D While the header and footer lines are moved away from the
 %D main text, the top and bottom lines are centered.
 
-\setuptop   [\c!state=\v!normal,\c!before=\vss,\c!after=\vss,\c!strut=]
-\setupheader[\c!state=\v!normal,\c!before=,    \c!after=\vss,\c!strut=\v!yes]
-\setuptext  [\c!state=\v!normal,\c!before=\vss,\c!after=\vss,\c!strut=]
-\setupfooter[\c!state=\v!normal,\c!before=\vss,\c!after=,    \c!strut=\v!yes]
-\setupbottom[\c!state=\v!normal,\c!before=\vss,\c!after=\vss,\c!strut=]
+\setuptop   [\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=\vss,\c!strut=]
+\setupheader[\c!state=\v!normal,\c!n=0,\c!before=,    \c!after=\vss,\c!strut=\v!yes]
+\setuptext  [\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=\vss,\c!strut=]
+\setupfooter[\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=,    \c!strut=\v!yes]
+\setupbottom[\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=\vss,\c!strut=]
 
 \setuptop   [\c!style=,\c!color=]
 \setupheader[\c!style=,\c!color=]

@@ -1329,13 +1329,15 @@
         \global\setbox\floatbox\lastbox}%
    \fi}
 
+% for the moment resave is still needed here
+
 \def\OTRSETsavebox#1% clean up the skips
   {\OTRSETunpreparebox{#1}%
-   \dosavefloat}
+   \dofloatssave{text}}
 
 \def\OTRSETresavebox#1% clean up the skips
   {\OTRSETunpreparebox{#1}%
-   \doresavefloat}
+   \dofloatsresave{text}}
 
 \def\OTRSETflushfloatbox % nog verder doorvoeren en meer info in marge
   {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
@@ -1345,10 +1347,11 @@
    \def\OTRSETsavebox##1{\!!doneafalse}%
    \doloop
      {\ifsomefloatwaiting
-\OTRSETskipstart
-        \dogetfloat
-        \ifdim\wd\floatbox>\zeropoint
+        \OTRSETskipstart
+        \dofloatsgetinfo{text}%
+        \ifdim\floatwidth>\zeropoint
           \!!doneatrue
+          \dofloatsflush{text}{1}%
           \dp\floatbox\zeropoint
           \OTRSETstoreincolumnslot{TBLR}\floatbox
           \if!!donea

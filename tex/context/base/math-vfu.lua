@@ -245,6 +245,10 @@ function fonts.vf.math.alas(main,id,size)
     vertbar(main,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
     vertbar(main,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
     vertbar(main,id,size,0xFF603,0.30,0xFF604) -- Bigg : 1.75 bodyfontsize
+    vertbar(main,id,size,0x02225,0.10,0xFF605)
+    vertbar(main,id,size,0xFF605,0.30,0xFF606)
+    vertbar(main,id,size,0xFF606,0.30,0xFF607)
+    vertbar(main,id,size,0xFF607,0.30,0xFF608)
 end
 
 local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage

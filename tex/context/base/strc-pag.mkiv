@@ -23,10 +23,11 @@
 
 % Allocation:
 
-\countdef\realpageno = 0  \realpageno = 1
-\countdef\userpageno = 1  \userpageno = 1
-\countdef\subpageno  = 2  \subpageno  = 0 % !!
-\countdef\arrangeno  = 3  \arrangeno  = 0 % !!
+\countdef\realpageno  = 0  \realpageno  = 1
+\countdef\userpageno  = 1  \userpageno  = 1
+\countdef\subpageno   = 2  \subpageno   = 0 % !!
+\countdef\arrangeno   = 3  \arrangeno   = 0 % !!
+\countdef\pagenoshift = 4  \pagenoshift = 0 % !!
 
 \let\pageno\userpageno
 
@@ -280,8 +281,6 @@
 \setvalue{\??pn+\v!empty}{\doincrementpagenumber\dosynchronizepagenumber}
 \letvalue{\??pn+\v!keep }\dosynchronizepagenumber
 
-% todo: check if number set, and reset it after testing; also take care of \global\shiftedrealpagenotrue
-
 % Control:
 
 \def\getpagestatus % hierboven gebruiken
@@ -427,13 +426,6 @@
         {\chardef\overallpagenumberstate\zerocount}%
 \to \everysetuppagenumbering
 
-% \appendtoks % todo: set state: none, start, stop, reset
-%    % this makes starting at an even page possible
-%    \ifnum\realpageno=1 \ifodd\pageno \else
-%      \global\shiftedrealpagenotrue
-%    \fi \fi
-% \to \everysetupuserpagenumber
-
 % Done
 
 % \c!way=\v!by\v!part
@@ -483,10 +475,10 @@
 \def\checkpagenumbershift
   {\userpageno\rawstructurecounter[\s!userpage]\relax
    \ifnum\realpageno=\plusone
-        \ifodd\userpageno
-        \else
-            \global\shiftedrealpagenotrue
-        \fi
+     \ifodd\userpageno
+     \else
+       \global\pagenoshift\plusone
+     \fi
    \fi}
 
 \appendtoks % todo: set state: none, start, stop, reset

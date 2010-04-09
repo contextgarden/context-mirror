@@ -27,9 +27,12 @@ sorters.mappings     = { }
 sorters.replacements = { }
 sorters.language     = 'en'
 
+local mappings = sorters.mappings
+local entries  = sorters.entries
+
 function sorters.comparers.basic(sort_a,sort_b)
     -- sm assignment is slow, will become sorters.initialize
-    local sm = sorters.mappings[sorters.language or sorters.defaultlanguage] or sorters.mappings.en
+    local sm = mappings[sorters.language or sorters.defaultlanguage] or mappings.en
     if #sort_a > #sort_b then
         if #sort_b == 0 then
             return 1
@@ -115,7 +118,7 @@ end
 
 function sorters.firstofsplit(split)
     -- numbers are left padded by spaces
-    local se = sorters.entries[sorters.language or sorters.defaultlanguage] -- slow, will become sorters.initialize
+    local se = entries[sorters.language or sorters.defaultlanguage] or entries.en-- slow, will become sorters.initialize
     local vs = split[1]
     local entry = (vs and vs[1]) or ""
     return entry, (se and se[entry]) or "\000"
@@ -127,7 +130,7 @@ sorters.defaultlanguage = 'en'
 
 function sorters.splitters.utf(str) -- brrr, todo: language
     local r = sorters.replacements[sorters.language] or sorters.replacements[sorters.defaultlanguage] or { }
- -- local m = sorters.mappings    [sorters.language] or sorters.mappings    [sorters.defaultlanguage] or { }
+ -- local m = mappings    [sorters.language] or mappings    [sorters.defaultlanguage] or { }
     local u = characters.uncompose
     local b = utf.byte
     local t = { }

@@ -230,3 +230,12 @@ function helpers.prefix(data,prefixspec)
         end
     end
 end
+
+function pages.is_odd(n)
+    n = n or texcount.realpageno
+    if texcount.pagenoshift % 2 == 0 then
+        return n % 2 == 0
+    else
+        return n % 2 ~= 0
+    end
+end

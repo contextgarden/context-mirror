@@ -982,175 +982,44 @@
 \newdimen\botinserted
 \newdimen\topinserted
 
-%D Extra float registers.
-
-\newif\ifsomefloatwaiting     \somefloatwaitingfalse
-\newif\ifroomforfloat         \roomforfloattrue
-\newif\ifnofloatpermitted     \nofloatpermittedfalse
-
-\newcount\totalnoffloats      \totalnoffloats =0
-\newcount\savednoffloats      \savednoffloats =0
-\newcount\noffloatinserts     \noffloatinserts=0
-
-\newbox\floatlist
-\newbox\savedfloatlist
-
-\newif\ifflushingfloats \flushingfloatsfalse
-
-\newbox\floattext
-
-\newdimen\floattextwidth
-\newdimen\floattextheight
-
-\newbox\floatbox
-\newbox\savedfloatbox
-
-\newdimen\floatwidth
-\newdimen\floatheight
-\newdimen\floatdepth
-
-\def\dosavefloatinfo   {\showmessage\m!floatblocks2{\the\totalnoffloats}}
-\def\doinsertfloatinfo {\showmessage\m!floatblocks4{\the\totalnoffloats}}
-\def\dofloatflushedinfo{\showmessage\m!floatblocks3{\the\numexpr\totalnoffloats-\savednoffloats\relax}}
-
-\def\dogetfloat
-  {\ifsomefloatwaiting
-     \global\setbox\floatlist\vbox
-       {\unvbox\floatlist
-        \global\setbox\globalscratchbox\lastbox}%
-     \ifcenterfloatbox
-       \ifdim\wd\globalscratchbox<\hsize
-         \setbox\floatbox\hbox to \hsize{\hss\box\globalscratchbox\hss}%
-       \else
-         \setbox\floatbox\box\globalscratchbox % local !
-         % retain special alignments
-         \ifinsidecolumns
-           \ifdim\wd\floatbox>\makeupwidth
-             \wd\floatbox\makeupwidth
-           \fi
-         \fi
-       \fi
-     \else
-       \setbox\floatbox\box\globalscratchbox % local !
-     \fi
-     \global\advance\savednoffloats \minusone
-     \ifcase\savednoffloats
-       \global\somefloatwaitingfalse
-     \fi
-   \else
-     \global\savednoffloats\zerocount
-     \global\setbox\floatbox\emptybox
-   \fi}
-
-\def\uncenteredfloatbox
-  {\ifcenterfloatbox
-     \ifhbox\floatbox\relax % remove centering
-       \ifdim\wd\floatbox=\hsize
-         \ifhbox\floatbox
-           \setbox\scratchbox\hbox
-             {\unhbox\floatbox
-              \unskip\unskip
-              \global\setbox\globalscratchbox\lastbox}%
-           \box\globalscratchbox
-         \else
-           \box\floatbox
-         \fi
-       \else
-         \box\floatbox
-       \fi
-     \else
-       \box\floatbox
-     \fi
-   \else
-     \box\floatbox
-   \fi}
-
-\def\dosavefloat
-  {\global\setbox\floatlist\vbox
-     {\nointerlineskip
-      \uncenteredfloatbox
-      \unvbox\floatlist}%
-   \global\advance\savednoffloats \plusone
-   \global\somefloatwaitingtrue
-   \dosavefloatinfo
-   \nonoindentation}
-
-\def\doresavefloat
-  {\global\setbox\floatlist\vbox
-     {\nointerlineskip
-      \unvbox\floatlist
-      \uncenteredfloatbox}%
-   \global\advance\savednoffloats \plusone
-   \global\somefloatwaitingtrue}
-
-\def\doreversesavefloat
-  {\global\setbox\floatlist\vbox
-     {\nointerlineskip
-      \unvbox\floatlist
-      \uncenteredfloatbox}%
-   \global\advance\savednoffloats \plusone
-   \global\somefloatwaitingtrue
-   \dosavefloatinfo}
-
-% better (todo): \savednofsavedfloats
-
-\def\dosavefloatstatus
-  {\global\setbox\savedfloatlist\copy\floatlist
-   \global\setbox\savedfloatbox \copy\floatbox
-   \xdef\dorestorefloatstatus
-     {\global\setbox\floatlist\box\savedfloatlist
-      \global\setbox\floatbox \box\savedfloatbox
-      \global\savednoffloats\the\savednoffloats}}
-
-\let\dorestorefloatstatus\relax
-
-\ifdefined\doflushfloats\else \let\doflushfloats\relax \fi
-\ifdefined\flushfloatbox\else \let\flushfloatbox\relax \fi
-
-% needed in the splitter:
-
-\newcount\savedsavednoffloats
-
-\let\dopopsavedfloats\relax
-
-\def\dopushsavedfloats
-  {\global\setbox\savedfloatlist\box\floatlist
-   \global\savedsavednoffloats\savednoffloats
-   \global\savednoffloats\savednoffloats
-   \global\somefloatwaitingfalse
-   \gdef\dopopsavedfloats
-     {\global\advance\savednoffloats\savedsavednoffloats
-      \global\setbox\floatlist\vbox\bgroup
-        \ifvoid\floatlist     \else\unvbox\floatlist     \fi
-        \ifvoid\savedfloatlist\else\unvbox\savedfloatlist\fi
-      \egroup
-      \global\ifcase\savednoffloats
-        \somefloatwaitingfalse\else\somefloatwaitingtrue\fi
-      \globallet\dopopsavedfloats\relax}}
-
-\def\doflushsavedfloats % simplified \OTRONEdodoflushfloats
-  {\doloop
-     {\ifsomefloatwaiting
-        \dogetfloat
-        \dofloatflushedinfo
-        \docheckiffloatfits
-        \ifroomforfloat
-          \doplacefloatbox
-        \else
-          \doreversesavefloat
-          \exitloop
-        \fi
-      \else
-        \exitloop
-      \fi}}
-
-% top and bottom
-
 \newif\iftopofinsert
 \newif\iftestfloatbox
-\newif\ifcenterfloatbox       \centerfloatboxtrue
-\newif\iflocalcenterfloatbox  \localcenterfloatboxfalse
-\newif\ifglobalcenterfloatbox \globalcenterfloatboxfalse
+
+\newdimen\floatsideskip         \floatsideskip  =12pt
+\newdimen\floattopskip          \floattopskip   =\floattopskip
+\newdimen\floatbottomskip       \floatbottomskip=\floattopskip
+
+\newdimen\sidefloattopskip      \sidefloattopskip   =\floattopskip
+\newdimen\sidefloatbottomskip   \sidefloatbottomskip=\floatbottomskip
+
+\newskip\sidefloatdownshift
+\newskip\sidefloatleftshift
+\newskip\sidefloatrightshift
+
+\def\sidefloattopoffset         {\openstrutdepth} % {\strutdp}
+
+\newcount\noftopfloats          \noftopfloats=2
+\newcount\nofbotfloats          \nofbotfloats=0
+
+\def\docalculatefloatskip#1#2%
+  {\doifelsenothing{#2}
+     {\global#1\zeropoint}
+     {\doifelse{#2}\v!none
+        {\global#1\zeropoint}
+        {\setbox\scratchbox\vbox{\whitespace\normalexpanded{\noexpand\blank[#2]}}%
+         \global#1\ht\scratchbox}}}
+
+\def\calculatefloatskips
+  {{\docalculatefloatskip\floattopskip{\floatsharedparameter\c!spacebefore}%
+    \docalculatefloatskip\floatbottomskip{\floatsharedparameter\c!spaceafter}%
+    \docalculatefloatskip\sidefloattopskip{\floatsharedparameter\c!sidespacebefore}%
+    \docalculatefloatskip\sidefloatbottomskip{\floatsharedparameter\c!sidespaceafter}%
+    \gdef\sidefloattopoffset{\openstrutdepth}% was \def
+    \global\floatsideskip\floatsharedparameter\c!margin
+    \global\sidefloatleftshift\floatparameter\c!leftmargindistance
+    \global\sidefloatrightshift\floatparameter\c!rightmargindistance
+    \global\noftopfloats\floatsharedparameter\c!ntop\relax
+    \global\nofbotfloats\floatsharedparameter\c!nbottom\relax}}
 
 % beter de laatste skip buiten de \insert uitvoeren,
 % bovendien bij volle flush onder baseline.
@@ -1166,7 +1035,7 @@
 
 \def\betweenfloatblanko% assumes that spaceafter is present
   {\blank[\floatsharedparameter\c!spacebefore]} % or v!back,....
-
+
 \def\doplacefloatbox
   {%\forgetall % NO
    \whitespace
@@ -1319,51 +1188,6 @@
         {\doifelse\floatmethod\v!bottom
            {\placesomebotsfloat[#1]}
            {\placesomeherefloat[#1]}}}}
-
-% De onderstaande macro wordt gebruikt bij de macros
-% voor het plaatsen van tabellen en figuren (klopt niet
-% meer).
-%
-% \dofloat         {plaats} {label1} {label2}
-% \docompletefloat {nummer} {referentie} {plaats} {label} {inhoud}
-% \box\floatbox    inhoud+referentie
-% \do???float#1    #1 = boxnummer
-
-\newdimen\floatsideskip         \floatsideskip  =12pt
-\newdimen\floattopskip          \floattopskip   =\floattopskip
-\newdimen\floatbottomskip       \floatbottomskip=\floattopskip
-
-\newdimen\sidefloattopskip      \sidefloattopskip   =\floattopskip
-\newdimen\sidefloatbottomskip   \sidefloatbottomskip=\floatbottomskip
-
-\newskip\sidefloatdownshift
-\newskip\sidefloatleftshift
-\newskip\sidefloatrightshift
-
-\def\sidefloattopoffset         {\openstrutdepth} % {\strutdp}
-
-\newcount\noftopfloats          \noftopfloats=2
-\newcount\nofbotfloats          \nofbotfloats=0
-
-\def\docalculatefloatskip#1#2%
-  {\doifelsenothing{#2}
-     {\global#1\zeropoint}
-     {\doifelse{#2}\v!none
-        {\global#1\zeropoint}
-        {\setbox\scratchbox\vbox{\whitespace\normalexpanded{\noexpand\blank[#2]}}%
-         \global#1\ht\scratchbox}}}
-
-\def\calculatefloatskips
-  {{\docalculatefloatskip\floattopskip{\floatsharedparameter\c!spacebefore}%
-    \docalculatefloatskip\floatbottomskip{\floatsharedparameter\c!spaceafter}%
-    \docalculatefloatskip\sidefloattopskip{\floatsharedparameter\c!sidespacebefore}%
-    \docalculatefloatskip\sidefloatbottomskip{\floatsharedparameter\c!sidespaceafter}%
-    \gdef\sidefloattopoffset{\openstrutdepth}% was \def
-    \global\floatsideskip\floatsharedparameter\c!margin
-    \global\sidefloatleftshift\floatparameter\c!leftmargindistance
-    \global\sidefloatrightshift\floatparameter\c!rightmargindistance
-    \global\noftopfloats\floatsharedparameter\c!ntop\relax
-    \global\nofbotfloats\floatsharedparameter\c!nbottom\relax}}
 
 \def\borderedfloatbox
   {\localframed

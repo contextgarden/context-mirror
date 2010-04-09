@@ -176,28 +176,6 @@
 
 \newif\iftopofinsert
 
-% \def\OTRONEdosettopinserts
-%   {\bgroup
-%    \ifsomefloatwaiting
-%      \noffloatinserts\zerocount
-%      \let\totaltopinserted\!!zeropoint
-%      \OTRONEdodosettopinserts
-%      \ifnum\@@bknbottom=\zerocount
-%        \ifnum\@@bknlines>\zerocount
-%          \ifdim\totaltopinserted>\zeropoint\relax
-%            \dimen0=\lineheight
-%            \dimen0=\@@bknlines\dimen0
-%            \advance\dimen0 \totaltopinserted\relax
-%            \ifdim\dimen0>\textheight
-%              \showmessage\m!floatblocks8\@@bknlines
-%              \vfilll\eject
-%            \fi
-%          \fi
-%        \fi
-%      \fi
-%    \fi
-%    \egroup}
-
 \def\OTRONEdosettopinserts
   {\bgroup
    \ifsomefloatwaiting
@@ -357,57 +335,35 @@
 
 \def\OTRONEflushfloatbox % nog verder doorvoeren en meer info in marge
   {\ifcenterfloatbox \ifdim\wd\floatbox<\hsize
-     \setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
+     \global\setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
    \fi \fi
-   \snaptogrid\hbox{\iftestfloatbox\ruledhbox\fi{\copy\floatbox}}}
+   \snaptogrid\hbox{\iftestfloatbox\ruledhbox\fi{\box\floatbox}}} % was copy
 
 \def\OTRONEdodoflushfloats % much in common with OTRSET
   {\ifsomefloatwaiting
      \ifpackflushedfloats
-       \centerfloatboxfalse
-       \dogetfloat
-       \ifdim\wd\floatbox>\makeupwidth
-         \global\setbox\floatbox\hbox to \makeupwidth{\hss\box\floatbox\hss}%
-       \fi
+       \centerfloatboxfalse % not needed as we do call directly
+       \dofloatscollect{text}{\hsize}{1em}%
        \OTRONEsetvsize
-       \!!widtha\wd\floatbox
-       \dofloatflushedinfo
-       \doloop
-         {\ifsomefloatwaiting
-            \dosavefloatstatus
-            \dogetfloat
-            \advance\!!widtha 1em % variable
-            \advance\!!widtha \wd\floatbox\relax
-            \ifdim\!!widtha>\hsize
-              \dorestorefloatstatus
-              \global\somefloatwaitingtrue
-              \exitloop
-            \else
-              \global\setbox\floatbox\hbox
-                {\ifcase\columndirection % nog document wide
-                   \ifvoid\savedfloatbox\else
-                     \ifhbox\savedfloatbox\unhbox\else\box\fi\savedfloatbox\hfil
-                   \fi
-                   \ifhbox\floatbox\unhbox\else\box\fi\floatbox
-                 \else
-                   \ifhbox\floatbox\unhbox\else\box\fi\floatbox
-                   \ifvoid\savedfloatbox\else
-                     \hfil\ifhbox\savedfloatbox\unhbox\else\box\fi\savedfloatbox
-                   \fi
-                 \fi}%
-              \dofloatflushedinfo
-            \fi
-          \else
-            \exitloop
-          \fi}%
        \global\setbox\floatbox\hbox to \hsize
-         {\hfil\ifhbox\floatbox\unhbox\else\box\fi\floatbox\hfil}%
+         {\hfil
+          \dorecurse\nofcollectedfloats
+            {\ifcase\columndirection % nog document wide
+               \dofloatsflush{text}{1}%
+             \else
+               \dofloatsflushn{text}{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+             \fi
+             \ifdim\wd\floatbox>\makeupwidth % \hsize
+               \hbox to \makeupwidth{\hss\box\floatbox\hss}%
+             \else
+               \box\floatbox
+             \fi
+             \ifnum\recurselevel<\nofcollectedfloats
+               \hfil
+             \fi}%
+          \hfil}%
      \else
-      %\bgroup % \box\floatbox can be in use!? messy
        \dogetfloat
-      %\doplacefloatbox
-      %\egroup
-       \dofloatflushedinfo
      \fi
      % there is a chance that due to rounding errors, the float
      % fits on a page where it was first rejected, in which case
@@ -428,8 +384,7 @@
      \fi
      % should be an option
      \endgroup
-     \dimen0\dimexpr\pagetotal+\ht\floatbox+\dp\floatbox+\floattopskip-\pageshrink\relax
-    %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
+     \dimen0\dimexpr\pagetotal+\floatheight+\floattopskip-\pageshrink\relax
      \dimen2\pagegoal
      \relax % needed
      \ifcase\textfloatmethod
@@ -535,20 +490,9 @@
      \doifinset\v!tall{#1}\flushsidefloatsafterpar
    \fi}
 
-\def\OTRONEdosomepagefloat#1[#2]%
-  {%\checkwaitingfloats{#1}%
-   \global\setbox#1\vbox
-     {\unvbox#1%
-      \vbox to \textheight
-        {\doifnotinset\v!high{#2}\vfill
-         \box\floatbox
-         \doifnotinset\v!low{#2}\vfill}%
-      \goodbreak}%
-   \doinsertfloatinfo}
-
-\def\OTRONEsomepagefloat     {\OTRONEdosomepagefloat\collectedpagefloats}
-\def\OTRONEsomeleftpagefloat {\OTRONEdosomepagefloat\collectedleftpagefloats}
-\def\OTRONEsomerightpagefloat{\OTRONEdosomepagefloat\collectedrightpagefloats}
+\def\OTRONEsomepagefloat     [#1]{\dofloatssavepagefloat{page}     {#1}}
+\def\OTRONEsomeleftpagefloat [#1]{\dofloatssavepagefloat{leftpage} {#1}}
+\def\OTRONEsomerightpagefloat[#1]{\dofloatssavepagefloat{rightpage}{#1}}
 
 \def\OTRONEsometopsfloat[#1]%
   {\ifdim\topinserted=\zeropoint

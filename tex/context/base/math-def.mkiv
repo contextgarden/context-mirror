@@ -106,15 +106,42 @@
 
 % using attributes
 
-\def\choosemathbig#1#2%
-  {\attribute\mathsizeattribute#1\relax
-   \left#2\right.%
-   \attribute\mathsizeattribute\attributeunsetvalue}
+\chardef\bigmathdelimitermethod\plusone
 
-\definemathcommand [big]  {\choosemathbig\plusone  }
-\definemathcommand [Big]  {\choosemathbig\plustwo  }
-\definemathcommand [bigg] {\choosemathbig\plusthree}
-\definemathcommand [Bigg] {\choosemathbig\plusfour }
+\def\plainbigdelimiters % traditional method
+  {\chardef\bigmathdelimitermethod\plustwo}
+
+\def\doplainbigmath#1#2%
+  {{\hbox{$%
+      \nulldelimiterspace\zeropoint\relax
+      \mathsurround\zeropoint
+  $}}}
+
+\def\doleftbigmath #1{\ifx#1\relax\else\left#1\expandafter\doleftbigmath \fi}
+\def\dorightbigmath#1{\ifx#1\relax\else\right.\expandafter\dorightbigmath\fi}
+
+\def\choosemathbig#1#2% so we accent \big{||} as well
+  {{\hbox{$%
+      \ifcase\bigmathdelimitermethod
+        \doleftbigmath#2\relax
+        \dorightbigmath#2\relax
+      \or
+        \attribute\mathsizeattribute#1\relax
+        \doleftbigmath#2\relax
+        \dorightbigmath#2\relax
+      \else
+        \doleftbigmath#2\relax
+        \vbox\!!to\getvalue{\??mm:b:\number#1}\bodyfontsize{}%
+        \dorightbigmath#2\relax
+      \fi
+      \nulldelimiterspace\zeropoint\relax
+      \mathsurround\zeropoint
+  $}}}
+
+\definemathcommand [big]  {\choosemathbig\plusone  } \setvalue{\??mm:b:1}{0.85}
+\definemathcommand [Big]  {\choosemathbig\plustwo  } \setvalue{\??mm:b:2}{1.15}
+\definemathcommand [bigg] {\choosemathbig\plusthree} \setvalue{\??mm:b:3}{1.45}
+\definemathcommand [Bigg] {\choosemathbig\plusfour } \setvalue{\??mm:b:4}{1.75}
 
 \definemathcommand [bigl]  [open]  [one] {\big}
 \definemathcommand [bigm]  [rel]   [one] {\big}

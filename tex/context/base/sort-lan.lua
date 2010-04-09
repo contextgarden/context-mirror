@@ -158,6 +158,11 @@ sorters.mappings['cz'] = {
     [uc(0x017E)] = 40, -- zcaron
 }
 
+-- French
+
+sorters.entries ['fr'] = sorters.entries ['en']
+sorters.mappings['fr'] = sorters.mappings['en']
+
 -- German (by Wolfgang Schuster)
 
 -- DIN 5007-1

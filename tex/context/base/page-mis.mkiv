@@ -43,11 +43,11 @@
       \unvcopy\marginbox
       \ifvoid\marginbox\else\expandafter\@@mbinbetween\fi
       \box\floatbox\filbreak}%
-   \ifdim\ht\marginbox>\textheight
-     \dosavefloatinfo
-   \else
-     \doinsertfloatinfo
-   \fi}
+  \ifdim\ht\marginbox>\textheight
+  % \dosavefloatinfo
+  \else
+    \doinsertfloatinfo
+  \fi}
 
 \newbox\preparedmarginbox
 
@@ -163,44 +163,6 @@
 \newcount \nofpostponedpageblocks
 
 % \ifinpostponing: handhaven, want gebruikt in stijlen ! ! ! ! !
-
-\def\doflushoddpagefloats
-  {\ifvoid\collectedleftpagefloats
-     \ifvoid\collectedrightpagefloats\else
-        \unvbox\collectedrightpagefloats
-        \page
-       %\the\everytopofpage
-     \fi
-   \fi}
-
-\def\doflushevenpagefloats
-  {\ifvoid\collectedleftpagefloats\else
-     \unvbox\collectedleftpagefloats
-     \page
-    %\the\everytopofpage
-   \fi
-   \ifvoid\collectedrightpagefloats\else
-      \unvbox\collectedrightpagefloats
-      \page
-     %\the\everytopofpage
-   \fi}
-
-\def\doflushcommonpagefloats
-  {\ifvoid\collectedpagefloats\else
-     % message
-     \unvbox\collectedpagefloats
-   \fi}
-
-\def\doflushpagefloats
-  {\doifoddpageelse
-     \doflushoddpagefloats
-     \doflushevenpagefloats
-   \doflushcommonpagefloats}
-
-% \def\flushrestfloats
-%   {\doif{\floatsharedparameter\c!cache}\v!no\doflushfloats}
-
-% \let\flushrestfloats\relax
 
 \def\dodoflushpostponedblocks
   {\bgroup % we need the font switch, else problems inside split verbatim

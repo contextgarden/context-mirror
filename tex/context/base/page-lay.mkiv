@@ -993,14 +993,12 @@
 %D it is used in cross referencing. The next switch is set
 %D when we start at an even page.
 
-\newif\ifshiftedrealpageno
-
 % We could use nested if here plus some \@EAEAEA's but but the
 % next variant has less expansion which is nicer in tracing.
 
-\def\doifoddpageelse   {\ifshiftedrealpageno\expandafter\doifoddpageelseyes  \else\expandafter\doifoddpageelsenop  \fi}
-\def\doifoddpageelseyes{\ifodd   \realpageno\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments \fi}
-\def\doifoddpageelsenop{\ifodd   \realpageno\expandafter\firstoftwoarguments \else\expandafter\secondoftwoarguments\fi}
+\def\doifoddpageelse   {\ifodd\pagenoshift\expandafter\doifoddpageelseyes  \else\expandafter\doifoddpageelsenop  \fi}
+\def\doifoddpageelseyes{\ifodd\realpageno \expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments \fi}
+\def\doifoddpageelsenop{\ifodd\realpageno \expandafter\firstoftwoarguments \else\expandafter\secondoftwoarguments\fi}
 
 \let\doifonevenpaginaelse\doifoddpageelse
 

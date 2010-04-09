@@ -152,4 +152,3 @@ mathematics.extras.add(0xFE323, {
 --~ \Umathchardef\bracerd="0 "1 "FF07B
 --~ \Umathchardef\bracelu="0 "1 "FF07C
 --~ \Umathchardef\braceru="0 "1 "FF07D
-

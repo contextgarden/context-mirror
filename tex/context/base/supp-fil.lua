@@ -243,17 +243,17 @@ function support.usemodules(prefix,askedname,truename)
         if trace_modules then
             logs.report("modules","skipping '%s' (not found)",truename)
         else
-            context.showmessage("systems",6,askedname)
+            interfaces.showmessage("systems",6,askedname)
         end
     elseif status == 1 then
         if not trace_modules then
-            context.showmessage("systems",5,askedname)
+            interfaces.showmessage("systems",5,askedname)
         end
     else
         if trace_modules then
             logs.report("modules","skipping '%s' (already loaded)",truename)
         else
-            context.showmessage("systems",7,askedname)
+            interfaces.showmessage("systems",7,askedname)
         end
     end
     modstatus[hashname] = status
