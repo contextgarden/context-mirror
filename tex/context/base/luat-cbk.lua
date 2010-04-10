@@ -31,8 +31,12 @@ local frozen, stack = { }, { }
 
 callback.original_register_callback = register_callback
 
-local function frozenmessage(what,name)
+local function frozen_message(what,name)
     logs.report("callbacks","not %s frozen '%s' (%s)",what,name,frozen[name])
+end
+
+local function frozen_callback(name)
+    return nil, format("callback '%s' is frozen (%s)",name,frozen[name])
 end
 
 local function state(name)
@@ -51,9 +55,9 @@ function callbacks.report()
     for name, func in table.sortedpairs(list) do
         local str = frozen[name]
         if str then
-            logs.report("callbacks","%s: %s -> %s",state(func),name,str)
+            logs.report("callbacks","%s: %s -> %s",state(name),name,str)
         else
-            logs.report("callbacks","%s: %s",state(func),name)
+            logs.report("callbacks","%s: %s",state(name),name)
         end
     end
 end
@@ -92,22 +96,22 @@ end
 function callbacks.register(name,func,freeze)
     if frozen[name] then
         if trace_callbacks then
-            frozenmessage("registering",name)
+            frozen_message("registering",name)
         end
+        return frozen_callback(name)
     elseif freeze then
         frozen[name] = (type(freeze) == "string" and freeze) or "registered"
-        register_callback(name,func)
-    else
-        register_callback(name,func)
     end
+    return register_callback(name,func)
 end
 
 function callback.register(name,func) -- original
     if not frozen[name] then
-        register_callback(name,func)
+        return register_callback(name,func)
     elseif trace_callbacks then
-        frozenmessage("registering",name)
+        frozen_message("registering",name)
     end
+    return frozen_callback(name)
 end
 
 function callbacks.push(name, func)
@@ -120,7 +124,7 @@ function callbacks.push(name, func)
         insert(sn,find_callback(name))
         register_callback(name, func)
     elseif trace_callbacks then
-        frozenmessage("pushing",name)
+        frozen_message("pushing",name)
     end
 end
 

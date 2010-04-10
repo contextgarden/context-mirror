@@ -143,7 +143,7 @@ function jobpositions.MPpos(id)
     end
 end
 
-local splitter = lpeg.splitat(",")
+local splitter = lpeg.Ct(lpeg.splitat(","))
 
 function jobpositions.MPplus(id,n,default)
     local jpi = pcol[id] or ptbs[id]

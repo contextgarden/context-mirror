@@ -37,15 +37,15 @@
 \ifdefined\MPtoks   \else \newtoks\MPtoks        \fi
 \ifdefined\MPnox    \else \newbox \MPbox         \fi
 
-\ifdefined\newdimen \else \newdimen\parwidth     \fi
-\ifdefined\newdimen \else \newdimen\parheight    \fi
-\ifdefined\newdimen \else \newdimen\parvoffset   \fi
-\ifdefined\newdimen \else \newdimen\parhoffset   \fi
-\ifdefined\newcount \else \newcount\parlines     \fi
-\ifdefined\newtoks  \else \newtoks \partoks      \fi
-\ifdefined\newbox   \else \newbox  \shapetextbox \fi
-\ifdefined\newif    \else \newif   \ifparseries  \fi
-\ifdefined\chardef  \else \chardef \parfirst=0   \fi
+\ifdefined\parwidth     \else \newdimen\parwidth     \fi
+\ifdefined\parheight    \else \newdimen\parheight    \fi
+\ifdefined\parvoffset   \else \newdimen\parvoffset   \fi
+\ifdefined\parhoffset   \else \newdimen\parhoffset   \fi
+\ifdefined\parlines     \else \newcount\parlines     \fi
+\ifdefined\partoks      \else \newtoks \partoks      \fi
+\ifdefined\shapetextbox \else \newbox  \shapetextbox \fi
+\ifdefined\ifparseries  \else \newif   \ifparseries  \fi
+\ifdefined\parfirst     \else \chardef \parfirst=0   \fi
 
 \def\startshapetext[#1]%
   {\global\newcounter\currentshapetext

@@ -5280,7 +5280,8 @@ resolvers.ownbin = gsub(resolvers.ownbin,"\\","/")
 
 function resolvers.getownpath()
     local ownpath = resolvers.ownpath or os.selfdir
-    if not ownpath or ownpath == "" then
+print(ownpath,os.selfdir)
+    if not ownpath or ownpath == "" or ownpath == "unset" then
         ownpath = args[-1] or arg[-1]
         ownpath = ownpath and file.dirname(gsub(ownpath,"\\","/"))
         if not ownpath or ownpath == "" then

@@ -38,6 +38,8 @@
 # fcd [--find] whatever . (last choice with this pattern)
 # fcd --list
 
+# todo: HOMEDRIVE\HOMEPATH
+
 require 'rbconfig'
 
 class FastCD

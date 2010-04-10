@@ -87,12 +87,13 @@ end
 --~ print(os.date("%H:%M:%S",os.time()))
 
 -- no need for function anymore as we have more clever code and helpers now
+-- this metatable trickery might as well disappear
 
 os.resolvers = os.resolvers or { }
 
 local resolvers = os.resolvers
 
-local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end }
+local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end } -- maybe nil
 local osix = osmt.__index
 
 osmt.__index = function(t,k)
