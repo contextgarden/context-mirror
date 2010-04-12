@@ -20,11 +20,11 @@
 
 \unprotect
 
-%D To be checked:
+%D To be checked and removed
 
 %def\dosavefloatinfo   {\showmessage\m!floatblocks2{\the\totalnoffloats}}
 \def\doinsertfloatinfo {\showmessage\m!floatblocks4{\the\totalnoffloats}}
-%def\dofloatflushedinfo{\showmessage\m!floatblocks3{\the\numexpr\totalnoffloats-\savednoffloats\relax}}
+\def\dofloatflushedinfo{\showmessage\m!floatblocks3{\the\numexpr\totalnoffloats-\savednoffloats\relax}}
 
 %D Extra float registers.
 
