@@ -489,7 +489,7 @@ fonts.get_digit_width = fonts.set_digit_width
 
 -- soon to be obsolete:
 
-local loaded = { -- prevent loading
+local loaded = { -- prevent double loading
   ["original-base.map"     ] = true,
   ["original-ams-base.map" ] = true,
   ["original-ams-euler.map"] = true,
@@ -504,8 +504,19 @@ function fonts.map.loadfile(name)
     end
 end
 
+local loaded = { -- prevent double loading
+}
+
 function fonts.map.loadline(how,line)
-    pdf.mapline(how .. " " .. line)
+    if line then
+        how = how .. " " .. line
+    elseif how == "" then
+        how = "= " .. line
+    end
+    if not loaded[how] then
+        pdf.mapline(how)
+        loaded[how] = true
+    end
 end
 
 function fonts.map.reset()

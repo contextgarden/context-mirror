@@ -536,6 +536,21 @@
 \appendtoks
     \ifcase\boldmathmode\or\dosetmathfamily\mbfam\c!mb\fi
 \to \mathstrategies
+
+% \chardef\msfam\plustwo % math symbol
+%
+% \def\c!ms{ms}
+%
+% \unexpanded\def\ms{\ifmmode\fam\plustwo\else\setcurrentfontalternative\c!ms\fi}
+%
+% \chardef\symbolmathmode\zerocount
+%
+% \def\enablesymbolmath {\chardef\symbolmathmode\plusone  }
+% \def\disablesymbolmath{\chardef\symbolmathmode\zerocount}
+%
+% \appendtoks
+%     \ifcase\symbolmathmode\or\dosetmathfamily\msfam\c!ms\fi
+% \to \mathstrategies
 
 %D All used styles, like rm, ss and tt, are saved in a comma
 %D separated list. Appart from practical limitations one can
@@ -2616,29 +2631,6 @@
    \checkfontnamecombinations
    \setcurrentfontstyle\normalizedbodyfontsize}
 
-%D The previous macros show that it's is not always
-%D neccessary to define the whole bunch of fonts, take for
-%D instance the sequence:
-%D
-%D \starttyping
-%D \setupbodyfont
-%D   [ams]
-%D
-%D \definebodyfont [24pt] [mm]
-%D   [ma=msam10 at 24pt,
-%D    mb=msbm10 at 24pt]
-%D
-%D \switchtobodyfont
-%D   [24pt]
-%D
-%D This is a 24pt $\blacktriangleleft$
-%D \stoptyping
-%D
-%D Here we didn't define the 24 point bodyfont environment, so
-%D it's defined automatically. Of course one can always use the
-%D \TEX\ primitive \type{\font} to switch to whatever font
-%D needed.
-
 %D When asking for a complete font switch, for instance from 10
 %D to 12~points, the next macro does the job. First we
 %D normalize the size, next we define the current range of
@@ -2669,7 +2661,7 @@
 %D and/or options defined in files, for example:
 %D
 %D \starttyping
-%D \setupbodyfont[cmr,ams,12pt,roman]
+%D \setupbodyfont[modern,12pt,roman]
 %D \stoptyping
 %D
 %D This command affects the document as a whole: text, headers

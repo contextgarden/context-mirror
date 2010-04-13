@@ -24,8 +24,7 @@ fonts.vf.math.optional = false
 
 local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
 
-local function negate(main,unicode,basecode)
-    local characters = main.characters
+local function negate(main,characters,id,size,unicode,basecode)
     if not characters[unicode] then
         local basechar = characters[basecode]
         if basechar then
@@ -54,8 +53,7 @@ end
 --~ \Umathchardef\bracelu="0 "1 "FF07C
 --~ \Umathchardef\braceru="0 "1 "FF07D
 
-local function brace(main,unicode,first,rule,left,right,rule,last)
-    local characters = main.characters
+local function brace(main,characters,id,size,unicode,first,rule,left,right,rule,last)
     if not characters[unicode] then
         characters[unicode] = {
             horiz_variants = {
@@ -70,24 +68,25 @@ local function brace(main,unicode,first,rule,left,right,rule,last)
     end
 end
 
-local function arrow(main,unicode,arrow,minus,isleft)
-    if isleft then
-        t = {
-            { extender = 0, glyph = arrow },
-            { extender = 1, glyph = minus  },
-        }
-    else
-        t = {
-            { extender = 0, glyph = minus },
-            { extender = 1, glyph = arrow },
-        }
+local function arrow(main,characters,id,size,unicode,arrow,minus,isleft)
+    if characters[unicode] then
+        if isleft then
+            t = {
+                { extender = 0, glyph = arrow },
+                { extender = 1, glyph = minus  },
+            }
+        else
+            t = {
+                { extender = 0, glyph = minus },
+                { extender = 1, glyph = arrow },
+            }
+        end
+    --~     main.characters[unicode] = { horiz_variants = t }
+        characters[unicode].horiz_variants = t
     end
---~     main.characters[unicode] = { horiz_variants = t }
-    main.characters[unicode].horiz_variants = t
 end
 
-local function parent(main,unicode,first,rule,last)
-    local characters = main.characters
+local function parent(main,characters,id,size,unicode,first,rule,last)
     if not characters[unicode] then
         characters[unicode] = {
             horiz_variants = {
@@ -101,13 +100,13 @@ end
 
 local push, pop, step = { "push" }, { "pop" }, 0.2 -- 0.1 is nicer but gives larger files
 
-local function make(main,id,size,n,m)
-    local characters = main.characters
-    local xu = main.parameters.x_height + 0.3*size
-    local xd = 0.3*size
-    local old, upslot, dnslot, uprule, dnrule = 0xFF000+n, 0xFF100+n, 0xFF200+n, 0xFF300+m, 0xFF400+m
+local function make(main,characters,id,size,n,m)
+    local old = 0xFF000+n
     local c = characters[old]
     if c then
+        local upslot, dnslot, uprule, dnrule = 0xFF100+n, 0xFF200+n, 0xFF300+m, 0xFF400+m
+        local xu = main.parameters.x_height + 0.3*size
+        local xd = 0.3*size
         local w, h, d = c.width, c.height, c.depth
         local thickness = h - d
         local rulewidth = step*size -- we could use an overlap
@@ -128,127 +127,131 @@ local function make(main,id,size,n,m)
     end
 end
 
-local function minus(main,id,size,unicode)
-    local characters = main.characters
-    local mu = size/18
+local function minus(main,characters,id,size,unicode)
     local minus = characters[0x002D]
-    local width = minus.width - 5*mu
-    characters[unicode] = {
-        width = width, height = minus.height, depth = minus.depth,
-        commands = { push, { "right", -3*mu }, { "slot", id, 0x002D }, pop }
-    }
+    if minus then
+        local mu = size/18
+        local width = minus.width - 5*mu
+        characters[unicode] = {
+            width = width, height = minus.height, depth = minus.depth,
+            commands = { push, { "right", -3*mu }, { "slot", id, 0x002D }, pop }
+        }
+    end
 end
 
-local function dots(main,id,size,unicode)
-    local characters = main.characters
+local function dots(main,characters,id,size,unicode)
     local c = characters[0x002E]
-    local w, h, d = c.width, c.height, c.depth
-    local mu = size/18
-    local right3mu  = { "right", 3*mu }
-    local right1mu  = { "right", 1*mu }
-    local up1size   = { "down", -.1*size }
-    local up4size   = { "down", -.4*size }
-    local up7size   = { "down", -.7*size }
-    local right2muw = { "right", 2*mu + w }
-    local slot = { "slot", id, 0x002E }
-    if unicode == 0x22EF then
-        local c = characters[0x022C5]
-        if c then
-            local w, h, d = c.width, c.height, c.depth
-            local slot = { "slot", id, 0x022C5 }
+    if c then
+        local w, h, d = c.width, c.height, c.depth
+        local mu = size/18
+        local right3mu  = { "right", 3*mu }
+        local right1mu  = { "right", 1*mu }
+        local up1size   = { "down", -.1*size }
+        local up4size   = { "down", -.4*size }
+        local up7size   = { "down", -.7*size }
+        local right2muw = { "right", 2*mu + w }
+        local slot = { "slot", id, 0x002E }
+        if unicode == 0x22EF then
+            local c = characters[0x022C5]
+            if c then
+                local w, h, d = c.width, c.height, c.depth
+                local slot = { "slot", id, 0x022C5 }
+                characters[unicode] = {
+                    width = 3*w + 2*3*mu, height = h, depth = d,
+                    commands = { push, slot, right3mu, slot, right3mu, slot, pop }
+                }
+            end
+        elseif unicode == 0x22EE then
+            -- weird height !
+            characters[unicode] = {
+                width = w, height = h+(1.4)*size, depth = 0,
+                commands = { push, push, slot, pop, up4size, push, slot, pop, up4size, slot, pop }
+            }
+        elseif unicode == 0x22F1 then
+            characters[unicode] = {
+                width = 3*w + 6*size/18, height = 1.5*size, depth = 0,
+                commands = {
+                    push,
+                        right1mu,
+                        push, up7size, slot, pop,
+                        right2muw,
+                        push, up4size, slot, pop,
+                        right2muw,
+                        push, up1size, slot, pop,
+                        right1mu,
+                    pop
+                }
+            }
+        elseif unicode == 0x22F0 then
+            characters[unicode] = {
+                width = 3*w + 6*size/18, height = 1.5*size, depth = 0,
+                commands = {
+                    push,
+                        right1mu,
+                        push, up1size, slot, pop,
+                        right2muw,
+                        push, up4size, slot, pop,
+                        right2muw,
+                        push, up7size, slot, pop,
+                        right1mu,
+                    pop
+                }
+            }
+        else
             characters[unicode] = {
                 width = 3*w + 2*3*mu, height = h, depth = d,
                 commands = { push, slot, right3mu, slot, right3mu, slot, pop }
             }
         end
-    elseif unicode == 0x22EE then
-        -- weird height !
-        characters[unicode] = {
-            width = w, height = h+(1.4)*size, depth = 0,
-            commands = { push, push, slot, pop, up4size, push, slot, pop, up4size, slot, pop }
-        }
-    elseif unicode == 0x22F1 then
-        characters[unicode] = {
-            width = 3*w + 6*size/18, height = 1.5*size, depth = 0,
-            commands = {
-                push,
-                    right1mu,
-                    push, up7size, slot, pop,
-                    right2muw,
-                    push, up4size, slot, pop,
-                    right2muw,
-                    push, up1size, slot, pop,
-                    right1mu,
-                pop
-            }
-        }
-    elseif unicode == 0x22F0 then
-        characters[unicode] = {
-            width = 3*w + 6*size/18, height = 1.5*size, depth = 0,
-            commands = {
-                push,
-                    right1mu,
-                    push, up1size, slot, pop,
-                    right2muw,
-                    push, up4size, slot, pop,
-                    right2muw,
-                    push, up7size, slot, pop,
-                    right1mu,
-                pop
-            }
-        }
-    else
-        characters[unicode] = {
-            width = 3*w + 2*3*mu, height = h, depth = d,
-            commands = { push, slot, right3mu, slot, right3mu, slot, pop }
-        }
     end
 end
 
-local function vertbar(main,id,size,parent,scale,unicode)
-    local characters = main.characters
+local function vertbar(main,characters,id,size,parent,scale,unicode)
     local cp = characters[parent]
-    local sc = scale * size
-    local pc = { "slot", id, parent }
-    characters[unicode] = {
-        width    = cp.width,
-        height   = cp.height + sc,
-        depth    = cp.depth + sc,
-        commands = {
-            push, { "down", -sc }, pc, pop,
-            push, { "down",  sc }, pc, pop,
-                                   pc,
-        },
-        next = cp.next -- can be extensible
-    }
-    cp.next = unicode
+    if cp then
+        local sc = scale * size
+        local pc = { "slot", id, parent }
+        characters[unicode] = {
+            width    = cp.width,
+            height   = cp.height + sc,
+            depth    = cp.depth + sc,
+            commands = {
+                push, { "down", -sc }, pc, pop,
+                push, { "down",  sc }, pc, pop,
+                                       pc,
+            },
+            next = cp.next -- can be extensible
+        }
+        cp.next = unicode
+    end
 end
 
 function fonts.vf.math.alas(main,id,size)
+    local characters = main.characters
     for i=0x7A,0x7D do
-        make(main,id,size,i,1)
+        make(main,characters,id,size,i,1)
     end
-    brace (main,0x23DE,0xFF17A,0xFF301,0xFF17D,0xFF17C,0xFF301,0xFF17B)
-    brace (main,0x23DF,0xFF27C,0xFF401,0xFF27B,0xFF27A,0xFF401,0xFF27D)
-    parent(main,0x23DC,0xFF17A,0xFF301,0xFF17B)
-    parent(main,0x23DD,0xFF27C,0xFF401,0xFF27D)
-    negate(main,0x2260,0x003D)
-    dots(main,id,size,0x2026) -- ldots
-    dots(main,id,size,0x22EE) -- vdots
-    dots(main,id,size,0x22EF) -- cdots
-    dots(main,id,size,0x22F1) -- ddots
-    dots(main,id,size,0x22F0) -- udots
-    minus(main,id,size,0xFF501)
-    arrow(main,0x2190,0xFE190,0xFF501,true) -- left
-    arrow(main,0x2192,0xFE192,0xFF501,false) -- right
-    vertbar(main,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
-    vertbar(main,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
-    vertbar(main,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
-    vertbar(main,id,size,0xFF603,0.30,0xFF604) -- Bigg : 1.75 bodyfontsize
-    vertbar(main,id,size,0x02225,0.10,0xFF605)
-    vertbar(main,id,size,0xFF605,0.30,0xFF606)
-    vertbar(main,id,size,0xFF606,0.30,0xFF607)
-    vertbar(main,id,size,0xFF607,0.30,0xFF608)
+    brace  (main,characters,id,size,0x23DE,0xFF17A,0xFF301,0xFF17D,0xFF17C,0xFF301,0xFF17B)
+    brace  (main,characters,id,size,0x23DF,0xFF27C,0xFF401,0xFF27B,0xFF27A,0xFF401,0xFF27D)
+    parent (main,characters,id,size,0x23DC,0xFF17A,0xFF301,0xFF17B)
+    parent (main,characters,id,size,0x23DD,0xFF27C,0xFF401,0xFF27D)
+    negate (main,characters,id,size,0x2260,0x003D)
+    dots   (main,characters,id,size,0x2026) -- ldots
+    dots   (main,characters,id,size,0x22EE) -- vdots
+    dots   (main,characters,id,size,0x22EF) -- cdots
+    dots   (main,characters,id,size,0x22F1) -- ddots
+    dots   (main,characters,id,size,0x22F0) -- udots
+    minus  (main,characters,id,size,0xFF501)
+    arrow  (main,characters,id,size,0x2190,0xFE190,0xFF501,true) -- left
+    arrow  (main,characters,id,size,0x2192,0xFE192,0xFF501,false) -- right
+    vertbar(main,characters,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
+    vertbar(main,characters,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
+    vertbar(main,characters,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
+    vertbar(main,characters,id,size,0xFF603,0.30,0xFF604) -- Bigg : 1.75 bodyfontsize
+    vertbar(main,characters,id,size,0x02225,0.10,0xFF605)
+    vertbar(main,characters,id,size,0xFF605,0.30,0xFF606)
+    vertbar(main,characters,id,size,0xFF606,0.30,0xFF607)
+    vertbar(main,characters,id,size,0xFF607,0.30,0xFF608)
 end
 
 local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage

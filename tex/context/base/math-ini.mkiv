@@ -136,15 +136,7 @@
 %D \macros
 %D   {boldsymbol}
 %D
-%D The math definition is inspired by amsmath.
-%D
-%D \startbuffer
-%D \definetypeface [boldmath] [mm] [boldmath] [latin-modern] [modern] [encoding=texnansi]
-%D
-%D $a \times b$ $a \boldsymbol{\times} b$
-%D \stopbuffer
-%D
-%D \typebuffer \start \getbuffer \stop
+%D To be done.
 
 \let\mathboldsymbol\relax % yet unsupported, will be
 
@@ -219,23 +211,7 @@
 \def\definemathsymbol        {\dosixtupleempty\dodefinemathsymbol}
 \def\dodefinemathsymbol      [#1][#2][#3][#4][#5][#6]{}
 \def\definemathcharacter     {\dosixtupleempty\dodefinemathcharacter}
-\def\redefinemathcharacter   {\dosixtupleempty\dodefinemathcharacter}
 \def\dodefinemathcharacter   [#1][#2][#3][#4][#5][#6]{}
-\def\startmathcollection     [#1]{}
-\def\setmathcollection       #1{}
-\def\stopmathcollection      {}
-\def\startrawmathcollection  {}
-\def\stoprawmathcollection   {}
-\def\setmathtoks             {}
-\let\currentmathcollection   \s!default
-\let\nomathcollection        \s!default
-\let\mathcollection          \s!default
-\def\enablemathcollection    [#1]{}
-\def\usemathcollection       {\dodoubleempty\dousemathcollection}
-\def\dousemathcollection     [#1][#2]{}
-\let\mathclass               \nomathcollection
-\let\autoenablemathcollection\relax
-\def\resetmathcollection     [#1]{}
 
 \def\definemathcommand
   {\dotripleempty\dodefinemathcommand}
