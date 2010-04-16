@@ -120,7 +120,7 @@ function string:checkedsplit(separator)
     return match(c,self)
 end
 
---~ function lpeg.L(list,pp)
+--~ function lpeg.append(list,pp)
 --~     local p = pp
 --~     for l=1,#list do
 --~         if p then

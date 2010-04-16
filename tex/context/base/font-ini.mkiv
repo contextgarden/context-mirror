@@ -3421,7 +3421,7 @@
 %D some typing:
 
 \def\setfont% geen \dosetfont mogelijk
-  {\def\next{\nextfont\setupinterlinespace}%
+  {\def\next{\nextfont\setupinterlinespace}% hm, we need to use \setuplocalinterlinespace
    \afterassignment\next\font\nextfont=}
 
 %D One can call this macro as:

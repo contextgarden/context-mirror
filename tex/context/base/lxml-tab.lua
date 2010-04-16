@@ -145,7 +145,7 @@ element.</p>
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
 local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
-local strip, cleanup, utfize, resolve, keep = false, false, false, false, false
+local strip, cleanup, utfize, resolve, resolve_predefined = false, false, false, false, false
 local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
@@ -349,7 +349,7 @@ xml.parsedentitylpeg = parsedentity
 local predefined = {
     amp  = "&",
     lt   = "<",
-    gt   = "<",
+    gt   = ">",
     quot = '"',
     apos = "'",
 }
@@ -358,7 +358,7 @@ local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
-            a = not keep and predefined[str]
+            a = resolve_predefined and predefined[str]
             if a then
                 -- one of the predefined
             elseif type(resolve) == "function" then
@@ -404,7 +404,7 @@ local function handle_any_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &%s;",str)
             end
-            a = not keep and predefined[str]
+            a = resolve_predefined and predefined[str]
             if a then
                 -- one of the predefined
                 acache[str] = a
@@ -553,7 +553,7 @@ local function xmlconvert(data, settings)
     strip = settings.strip_cm_and_dt
     utfize = settings.utfize_entities
     resolve = settings.resolve_entities
-    keep = settings.keep_predefined_entities
+    resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
     cleanup = settings.text_cleanup
     stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
     acache, hcache, dcache = { }, { }, { } -- not stored

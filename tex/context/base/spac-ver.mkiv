@@ -2012,7 +2012,7 @@
 
 \def\dodefinelines[#1][#2]%
   {\getparameters[\??rg#1][\s!parent=\??rg,#2]%
-   \setvalue{\e!start#1}{\dodoubleempty\dostartlines[#1]}%
+   \setvalue{\e!start#1}{\dostartlines[#1]}%
    \setvalue{\e!stop #1}{\dostoplines}}
 
 \def\setuplines
@@ -2024,18 +2024,16 @@
      {\def\docommand##1{\getparameters[\??rg##1][#2]}%
       \processcommacommand[#1]\docommand}}
 
-\def\dostartlines[#1][#2]%
+\def\dostartlines[#1]%
   {\bgroup
    \edef\currentlines{#1}%
-   \ifsecondargument
-     \getparameters[\??rg\currentlines][#2]%
-   \fi
    \linesparameter\c!before
    \pushmacro\checkindentation
    \whitespace
    \begingroup
    \dosetlinesattributes\c!style\c!color
    \setupindenting[\linesparameter\c!indenting]%
+   \setupalign[\linesparameter\c!align]%
    \typesettinglinestrue
    \setupwhitespace[\v!none]%
    \obeylines

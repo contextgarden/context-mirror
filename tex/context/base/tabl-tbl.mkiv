@@ -175,6 +175,7 @@
 \newif    \ifframedtabulate
 
 \newdimen \tabulatepwidth
+\newdimen \tabulatexwidth
 \newdimen \tabulatewidth
 \newdimen \tabulateunit
 \newdimen \tabulatemaxpheight
@@ -318,6 +319,13 @@
 \unexpanded\def\beforetabulateentry{\ignorespaces\tabulatehook}
 \unexpanded\def\aftertabulateentry {\unskip\unskip\ifmmode\else\endgraf\fi}
 
+\unexpanded\def\beginreshapedtabulatepar
+  {\dowithnextbox
+     {\ctxlua{commands.doreshapeframedbox(\number\nextbox)}\ifvmode\unvbox\else\box\fi\nextbox}
+     \vbox\bgroup}
+
+\let\endreshapedtabulatepar\egroup
+
 \def\dodosettabulatepreamble#1#2% only makes sense for many tabulates
   {\normalexpanded{\!!toksa{\the\!!toksa
         &\hskip\pretabskip\noexpand\pretabrule##&%
@@ -330,7 +338,7 @@
                \noexpand\autotabulatetrue
             \fi
         \else
-            \ifnum\tabulatemodus=\zeropoint
+            \ifnum\tabulatemodus=\zerocount
                 \hbox to
             \else
                 \hsize
@@ -341,8 +349,11 @@
             \noexpand\bbskip
             \bgroup % we cannot combine the if because a cell may have only one ##
                 \noexpand#1%
+                \ifcase\tabulatereshape\else
+                    \beginreshapedtabulatepar
+                \fi
                 \noexpand\ifnum\noexpand\tabulatetype=\plusone\noexpand\else
-                    \the\tabulatebmath
+                    \the\tabulatebmath % maybe later?
                     \the\tabulatefont
                     \the\tabulatesettings
                     \the\tabulatebefore
@@ -358,6 +369,9 @@
                     \the\tabulateafter
                     \the\tabulateemath
                 \noexpand\fi
+                \ifcase\tabulatereshape\else
+                    \endreshapedtabulatepar
+                \fi
                 \noexpand#2%
             \egroup
         \egroup
@@ -485,6 +499,8 @@
      [   \v!fit=>\let\tabulatemodus\plusthree,
        \v!fixed=>\let\tabulatemodus\plusthree
                  \tabulatenopbreaktrue,
+        \v!auto=>\let\tabulatemodus\plusthree
+                 \let\tabulatereshape\plusone,
      \s!unknown=>\tabulatewidth#1\relax]%
    \ifnum\tabulatedimen=\plusone
      \global\advance\tabulatepwidth\tabulatewidth
@@ -535,11 +551,12 @@
   {\let\tabulatealign\@@tabulatealign
    \let\tabulatemodus\zerocount
    \let\tabulatedimen\zerocount
-   \tabulatebefore  \emptytoks
-   \tabulateafter   \emptytoks
-   \tabulatebmath   \emptytoks
-   \tabulateemath   \emptytoks
-   \tabulatefont    \emptytoks
+   \let\tabulatereshape\zerocount
+   \tabulatebefore\emptytoks
+   \tabulateafter\emptytoks
+   \tabulatebmath\emptytoks
+   \tabulateemath\emptytoks
+   \tabulatefont\emptytoks
    \tabulatesettings\emptytoks
    \global\advance\tabulatecolumns\plusone
    \expandafter\let\csname\??tt:s:\the\tabulatecolumns\endcsname\donothing
@@ -1019,7 +1036,7 @@
 \def\tabulatexeskipone{\par\egroup\egroup\glet\tabulatehook\dotabulatehook}
 
 \def\tabulatebaselinecorrection
-  {\def\dobaselinecorrection
+  {\def\dobaselinecorrection % todo: mkiv
      {\vskip-\prevdepth
       \vskip\strutdp
       \vskip\strutdp}%
@@ -1241,6 +1258,7 @@
    \totalnoftabulatelines\noftabulatelines
    \minusnoftabulatelines\noftabulatelines
    \global\tabulatepwidth\zeropoint
+   \global\tabulatexwidth\zeropoint
    \global\tabulateequalfalse
    \resettabulatepheight
    \ifinsidesplitfloat
@@ -1309,7 +1327,7 @@
    \ifnum\nofautotabulate>\zerocount
      % so, even if the natural size is larger, in the final
      % run, we force the calculated width
-     \tabulatewidth\dimexpr\hsize-\wd0-\tabulatepwidth\relax
+     \tabulatewidth\dimexpr\hsize-\wd0-\tabulatepwidth-\tabulatexwidth\relax
      \ifnum\nofautotabulate>\zerocount
        \divide\tabulatewidth \nofautotabulate\relax
      \fi

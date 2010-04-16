@@ -13,6 +13,7 @@ return {
             "iwona-mi.map",
             "iwona-sy.map",
             "iwona-ex.map",
+            "mkiv-base.map",
         },
         virtuals = {
             ["iwona-math"] = {

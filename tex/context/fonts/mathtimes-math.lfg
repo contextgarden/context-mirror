@@ -7,6 +7,7 @@ return {
     mathematics = {
         mapfiles = {
             "mathtime.map",
+            "mkiv-base.map",
         },
         virtuals = {
             ["mathtimes-math"] = {

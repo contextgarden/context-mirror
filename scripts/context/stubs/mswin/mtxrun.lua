@@ -459,7 +459,7 @@ function string:checkedsplit(separator)
     return match(c,self)
 end
 
---~ function lpeg.L(list,pp)
+--~ function lpeg.append(list,pp)
 --~     local p = pp
 --~     for l=1,#list do
 --~         if p then
@@ -1786,12 +1786,13 @@ end
 --~ print(os.date("%H:%M:%S",os.time()))
 
 -- no need for function anymore as we have more clever code and helpers now
+-- this metatable trickery might as well disappear
 
 os.resolvers = os.resolvers or { }
 
 local resolvers = os.resolvers
 
-local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end }
+local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end } -- maybe nil
 local osix = osmt.__index
 
 osmt.__index = function(t,k)
@@ -8370,7 +8371,7 @@ resolvers.ownbin = gsub(resolvers.ownbin,"\\","/")
 
 function resolvers.getownpath()
     local ownpath = resolvers.ownpath or os.selfdir
-    if not ownpath or ownpath == "" then
+    if not ownpath or ownpath == "" or ownpath == "unset" then
         ownpath = args[-1] or arg[-1]
         ownpath = ownpath and file.dirname(gsub(ownpath,"\\","/"))
         if not ownpath or ownpath == "" then

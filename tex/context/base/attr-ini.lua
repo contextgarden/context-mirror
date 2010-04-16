@@ -98,8 +98,7 @@ local registered = colors.registered
 local numbers    = attributes.numbers
 local list       = attributes.list
 
-local min = math.min
-local max = math.max
+local min, max, floor = math.min, math.max, math.floor
 
 local nodeinjections = backends.nodeinjections
 local codeinjections = backends.codeinjections
@@ -125,10 +124,77 @@ local function cmyktogray(c,m,y,k)
     return rgbtogray(cmyktorgb(c,m,y,k))
 end
 
+-- http://en.wikipedia.org/wiki/HSI_color_space
+-- http://nl.wikipedia.org/wiki/HSV_(kleurruimte)
+
+
+local function hsvtorgb(h,s,v)
+ -- h = h % 360
+    local hd = h/60
+    local hf = floor(hd)
+    local hi = hf % 6
+ -- local f =  hd - hi
+    local f =  hd - hf
+    local p = v * (1 - s)
+    local q = v * (1 - f * s)
+    local t = v * (1 - (1 - f) * s)
+    if hi == 0 then
+        return v, t, p
+    elseif hi == 1 then
+        return q, v, p
+    elseif hi == 2 then
+        return p, v, t
+    elseif hi == 3 then
+        return p, q, v
+    elseif hi == 4 then
+        return t, p, v
+    elseif hi == 5 then
+        return v, p, q
+    else
+        print("error in hsv -> rgb",hi,h,s,v)
+    end
+end
+
+function rgbtohsv(r,g,b)
+    local offset, maximum, other_1, other_2
+    if r >= g and r >= b then
+        offset, maximum, other_1, other_2 = 0, r, g, b
+    elseif g >= r and g >= b then
+        offset, maximum, other_1, other_2 = 2, g, b, r
+    else
+        offset, maximum, other_1, other_2 = 4, b, r, g
+    end
+    if maximum == 0 then
+        return 0, 0, 0
+    end
+    local minimum = other_1 < other_2 and other_1 or other_2
+    if maximum == minimum then
+        return 0, 0, maximum
+    end
+    local delta = maximum - minimum
+    return (offset + (other_1-other_2)/delta)*60, delta/maximum, maximum
+end
+
+function graytorgb(s) -- unweighted
+   return 1-s, 1-s, 1-s
+end
+
+function hsvtogray(h,s,v)
+    return rgb_to_gray(hsv_to_rgb(h,s,v))
+end
+
+function grayto_hsv(s)
+    return 0, 0, s
+end
+
 colors.rgbtocmyk  = rgbtocmyk
 colors.rgbtogray  = rgbtogray
 colors.cmyktorgb  = cmyktorgb
 colors.cmyktogray = cmyktogray
+colors.rgbtohsv   = rgbtohsv
+colors.hsvtorgb   = hsvtorgb
+colors.hsvtogray  = hsvtogray
+colors.graytohsv  = graytohsv
 
 -- we can share some *data by using s, rgb and cmyk hashes, but
 -- normally the amount of colors is not that large; storing the
@@ -234,7 +300,7 @@ function colors.register(name, colorspace, ...) -- passing 9 vars is faster (but
     local stamp = format(templates[colorspace],...)
     local color = registered[stamp]
     if not color then
-        color = #values+1
+        color = #values + 1
         values[color] = colors[colorspace](...)
         registered[stamp] = color
     -- colors.reviver(color)

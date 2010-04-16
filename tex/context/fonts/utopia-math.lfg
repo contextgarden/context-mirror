@@ -7,6 +7,7 @@ return {
     mathematics = {
         mapfiles = {
             "mdput.map",
+            "mkiv-base.map",
         },
         virtuals = {
             ["utopia-math"] = {

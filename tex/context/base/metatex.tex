@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D We can experiment here with runtime loading, id est no longer
+%D use a format. However, we still need a stub then but it could
+%D as well be luatools (mtxrun) itself then.
+
 %D This format is just a minimal layer on top of the \LUATEX\
 %D engine and will not provide high level functionality. It can
 %D be used as basis for dedicated (specialized) macro packages.
@@ -35,9 +39,18 @@
 
 \ifx\normalinput\undefined \let\normalinput\input \fi
 
-\def\loadcorefile#1{\normalinput#1\relax}
+\def\loadcorefile#1{\normalinput#1.tex \relax}
+\def\loadmarkfile#1{\normalinput#1.mkiv\relax}
 
-\loadcorefile{syst-ini}      % some basic commands and allocations that are expected down the line
+\loadcorefile{syst-ini}
+
+\ifnum\luatexversion<60 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.60!}
+    \expandafter\end
+\fi
+
+\newtoks\metatexversiontoks \metatexversiontoks\expandafter{\metatexversion} % at the lua end
+
 \loadcorefile{syst-pln}      % plain tex initializations of internal registers (no further code)
 
 \loadmarkfile{luat-cod}      %
@@ -46,11 +59,11 @@
 
 % needs stripping:
 
-\loadcorefile{catc-ini.mkiv} % catcode table management
-\loadcorefile{catc-act.tex}  % active character definition mechanisms
-\loadcorefile{catc-def.tex}  % some generic catcode tables
-\loadcorefile{catc-ctx.tex}  % a couple of context specific tables but expected by later modules
-\loadcorefile{catc-sym.tex}  % some definitions related to \letter<tokens>
+\loadmarkfile{catc-ini}     % catcode table management
+\loadcorefile{catc-act}     % active character definition mechanisms
+\loadcorefile{catc-def}     % some generic catcode tables
+\loadcorefile{catc-ctx}     % a couple of context specific tables but expected by later modules
+\loadcorefile{catc-sym}     % some definitions related to \letter<tokens>
 
 % helpers, maybe less
 

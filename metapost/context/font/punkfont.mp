@@ -331,19 +331,19 @@ z1=pp(1.5u,0); z2=pp(1.5u,h); z3=pp(w-1.5u,h); z4=pp(w-1.5u,0);
 pd z1; pd z4; draw z1--z2--z3--z4;  % stems and bar
 endchar;
 
-beginpunkchar(930,13,1,1); % $\Sigma$
+beginpunkchar(931,13,1,1); % $\Sigma$
 z1=pp(w-u,h); z2=pp(u,h); z3=pp(.5w-u,.5h); z4=pp(u,0); z5=pp(w-u,0);
 pd z1; pd z5; draw z1--z2{.5[z4,z5]-z2}..z3--z4--z5; % arms and diagonals
 endchar;
 
-beginpunkchar(932,15,1,.5); % $\Upsilon$
+beginpunkchar(933,15,1,.5); % $\Upsilon$
 z1=pp(u,.8h); z2=pp(.3w,h); z3=pp(.5w,.5h); z4=pp(.5w,0);
 pd z1; pd z4; draw z1..z2..tension2..z3---z4; % left arc and stem
 z5=pp(w-u,.8h); z6=pp(.7w,h);
 pd z5; draw z5..z6..tension2..{z4-z3}z3; % right arc
 endchar;
 
-beginpunkchar(933,13,1,2); % $\Phi$
+beginpunkchar(934,13,1,2); % $\Phi$
 z1=pp(.5w,h); z2=pp(.5w,0); pd z1; pd z2; draw z1--z2; % stem
 z3=pp(.5w,2/3h); z4=pp(u,.5h); z5=pp(.5w,1/4h); z6=pp(w-u,.5h);
 pd z3; draw z3..z4..z5..z6..z3; % bowl

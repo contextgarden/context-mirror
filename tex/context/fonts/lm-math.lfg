@@ -213,6 +213,7 @@ return {
         mapfiles = {
             "lm-math.map",
             "lm-rm.map",
+            "mkiv-base.map",
         },
         virtuals = {
             ["lmroman5-math"]      = five,

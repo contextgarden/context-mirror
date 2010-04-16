@@ -13,6 +13,7 @@ return {
             "antt-mi.map",
             "antt-sy.map",
             "antt-ex.map",
+            "mkiv-base.map",
         },
         virtuals = {
             ["antykwa-math"] = {

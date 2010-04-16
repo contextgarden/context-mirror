@@ -489,11 +489,11 @@ fonts.get_digit_width = fonts.set_digit_width
 
 -- soon to be obsolete:
 
-local loaded = { -- prevent double loading
-  ["original-base.map"     ] = true,
-  ["original-ams-base.map" ] = true,
-  ["original-ams-euler.map"] = true,
-  ["original-public-lm.map"] = true,
+local loaded = { -- prevent loading (happens in cont-sys files)
+    ["original-base.map"     ] = true,
+    ["original-ams-base.map" ] = true,
+    ["original-ams-euler.map"] = true,
+    ["original-public-lm.map"] = true,
 }
 
 function fonts.map.loadfile(name)
