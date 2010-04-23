@@ -377,6 +377,12 @@
 % test|^|test
 % \stop
 
+% x\discretionary{1}{2}{3}xxxxxxx
+% xxxxxxx\discretionary{1}{2}{3}x
+%
+% xxx3xxx
+% xxx1<newline>2xxx
+
 \def\hyphenliketextmodediscretionary#1#2%
   {\ifconditional\spaceafterdiscretionary
      \prewordbreak\hbox{#1}\relax

@@ -3950,7 +3950,7 @@ element.</p>
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
 local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
-local strip, cleanup, utfize, resolve, keep = false, false, false, false, false
+local strip, cleanup, utfize, resolve, resolve_predefined = false, false, false, false, false
 local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
@@ -4154,7 +4154,7 @@ xml.parsedentitylpeg = parsedentity
 local predefined = {
     amp  = "&",
     lt   = "<",
-    gt   = "<",
+    gt   = ">",
     quot = '"',
     apos = "'",
 }
@@ -4163,7 +4163,7 @@ local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
-            a = not keep and predefined[str]
+            a = resolve_predefined and predefined[str]
             if a then
                 -- one of the predefined
             elseif type(resolve) == "function" then
@@ -4209,7 +4209,7 @@ local function handle_any_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &%s;",str)
             end
-            a = not keep and predefined[str]
+            a = resolve_predefined and predefined[str]
             if a then
                 -- one of the predefined
                 acache[str] = a
@@ -4358,7 +4358,7 @@ local function xmlconvert(data, settings)
     strip = settings.strip_cm_and_dt
     utfize = settings.utfize_entities
     resolve = settings.resolve_entities
-    keep = settings.keep_predefined_entities
+    resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
     cleanup = settings.text_cleanup
     stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
     acache, hcache, dcache = { }, { }, { } -- not stored
@@ -10971,13 +10971,29 @@ if not modules then modules = { } end modules ['data-lua'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local gsub = string.gsub
+local gsub, insert = string.gsub, table.insert
 local unpack = unpack or table.unpack
 
 local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
 local clibformats = { 'lib' }
-local  libpaths   = file.split_path(package.path)
-local clibpaths   = file.split_path(package.cpath)
+
+local _path_, libpaths, _cpath_, clibpaths
+
+function package.libpaths()
+    if not _path_ or package.path ~= _path_ then
+        _path_ = package.path
+        libpaths = file.split_path(_path_)
+    end
+    return libpaths
+end
+
+function package.clibpaths()
+    if not _cpath_ or package.cpath ~= _cpath_ then
+        _cpath_ = package.cpath
+        clibpaths = file.split_path(_cpath_)
+    end
+    return clibpaths
+end
 
 local function thepath(...)
     local t = { ... } t[#t+1] = "?.lua"
@@ -10988,15 +11004,34 @@ local function thepath(...)
     return path
 end
 
+local p_libpaths, a_libpaths = { }, { }
+
 function package.append_libpath(...)
-    table.insert(libpaths,thepath(...))
+    insert(a_libpath,thepath(...))
 end
 
 function package.prepend_libpath(...)
-    table.insert(libpaths,1,thepath(...))
+    insert(p_libpaths,1,thepath(...))
 end
 
 -- beware, we need to return a loadfile result !
+
+local function loaded(libpaths,name,simple)
+    for i=1,#libpaths do -- package.path, might become option
+        local libpath = libpaths[i]
+        local resolved = gsub(libpath,"%?",simple)
+        if trace_locating then -- more detail
+            logs.report("fileio","! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
+        end
+        if resolvers.isreadable.file(resolved) then
+            if trace_locating then
+                logs.report("fileio","! lib '%s' located via 'package.path': '%s'",name,resolved)
+            end
+            return loadfile(resolved)
+        end
+    end
+end
+
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
     if trace_locating then -- mode detail
@@ -11015,21 +11050,15 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
             return loadfile(resolved)
         end
     end
+    -- libpaths
+    local libpaths, clibpaths = package.libpaths(), package.clibpaths()
     local simple = gsub(name,"%.lua$","")
     local simple = gsub(simple,"%.","/")
-    for i=1,#libpaths do -- package.path, might become option
-        local libpath = libpaths[i]
-        local resolved = gsub(libpath,"?",simple)
-        if trace_locating then -- more detail
-            logs.report("fileio","! checking for '%s' on 'package.path': '%s'",simple,libpath)
-        end
-        if resolvers.isreadable.file(resolved) then
-            if trace_locating then
-                logs.report("fileio","! lib '%s' located via 'package.path': '%s'",name,resolved)
-            end
-            return loadfile(resolved)
-        end
+    local resolved = loaded(p_libpaths,name,simple) or loaded(libpaths,name,simple) or loaded(a_libpaths,name,simple)
+    if resolved then
+        return resolved
     end
+    --
     local libname = file.addsuffix(simple,os.libsuffix)
     for i=1,#clibformats do
         -- better have a dedicated loop

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['node-typ'] = {
     license   = "see context related readme files"
 }
 
+-- this will be replaced by blob-ini cum suis so typesetting will go away
+
 local utfvalues = string.utfvalues
 
 local newglyph = nodes.glyph
@@ -15,7 +17,7 @@ local hpack, vpack = node.hpack, node.vpack
 
 typesetting = typesetting or { }
 
-local function tonodes(str,fontid,spacing)
+local function tonodes(str,fontid,spacing) -- don't use this
     local head, prev = nil, nil
     for s in utfvalues(str) do
         local next

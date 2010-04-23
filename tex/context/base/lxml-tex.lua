@@ -327,11 +327,11 @@ xml.originalload = xml.originalload or xml.load
 
 local noffiles, nofconverted = 0, 0
 
-function xml.load(filename)
+function xml.load(filename,settings)
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
-    local xmltable = xml.convert((ok and data) or "")
+    local xmltable = xml.convert((ok and data) or "",settings)
     stoptiming(xml)
     return xmltable
 end
@@ -343,7 +343,9 @@ local function entityconverter(id,str)
 end
 
 function lxml.convert(id,data,entities,compress)
-    local settings = { }
+    local settings = {
+        unify_predefined_entities = true,
+    }
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true
     end

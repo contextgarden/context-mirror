@@ -145,7 +145,7 @@ element.</p>
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
 local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
-local strip, cleanup, utfize, resolve, resolve_predefined = false, false, false, false, false
+local strip, cleanup, utfize, resolve, resolve_predefined, unify_predefined = false, false, false, false, false, false
 local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
@@ -273,52 +273,6 @@ function xml.unknown_dec_entity_format(str) return (str == "" and "&error;") or 
 function xml.unknown_hex_entity_format(str) return format("&#x%s;",str) end
 function xml.unknown_any_entity_format(str) return format("&#x%s;",str) end
 
-local function handle_hex_entity(str)
-    local h = hcache[str]
-    if not h then
-        if utfize then
-            local n = tonumber(str,16)
-            h = (n and utfchar(n)) or xml.unknown_hex_entity_format(str) or ""
-            if not n then
-                logs.report("xml","utfize, ignoring hex entity &#x%s;",str)
-            elseif trace_entities then
-                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,c)
-            end
-        else
-            if trace_entities then
-                logs.report("xml","found entity &#x%s;",str)
-            end
-            h = "&#c" .. str .. ";"
-        end
-        hcache[str] = h
-    end
-    return h
-end
-
-local function handle_dec_entity(str)
-    local d = dcache[str]
-    if not d then
-        if utfize then
-            local n = tonumber(str)
-            d = (n and utfchar(n)) or xml.unknown_dec_entity_format(str) or ""
-            if not n then
-                logs.report("xml","utfize, ignoring dec entity &#%s;",str)
-            elseif trace_entities then
-                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,c)
-            end
-        else
-            if trace_entities then
-                logs.report("xml","found entity &#%s;",str)
-            end
-            d = "&#" .. str .. ";"
-        end
-        dcache[str] = d
-    end
-    return d
-end
-
--- one level expansion (simple case)
-
 local function fromhex(s)
     local n = tonumber(s,16)
     if n then
@@ -337,6 +291,8 @@ local function fromdec(s)
     end
 end
 
+-- one level expansion (simple case), no checking done
+
 local rest = (1-P(";"))^0
 local many = P(1)^0
 
@@ -344,21 +300,85 @@ local parsedentity =
     P("&") * (P("#x")*(rest/fromhex) + P("#")*(rest/fromdec)) * P(";") * P(-1) +
              (P("#x")*(many/fromhex) + P("#")*(many/fromdec))
 
-xml.parsedentitylpeg = parsedentity
+-- parsing in the xml file
 
-local predefined = {
-    amp  = "&",
-    lt   = "<",
-    gt   = ">",
-    quot = '"',
-    apos = "'",
+local predefined_unified = {
+    [38] = "&amp;",
+    [42] = "&quot;",
+    [47] = "&apos;",
+    [74] = "&lt;",
+    [76] = "&gr;",
 }
+
+local predefined_simplified = {
+    [38] = "&", amp  = "&",
+    [42] = '"', quot = '"',
+    [47] = "'", apos = "'",
+    [74] = "<", lt   = "<",
+    [76] = ">", gt   = ">",
+}
+
+local function handle_hex_entity(str)
+    local h = hcache[str]
+    if not h then
+        local n = tonumber(str,16)
+        h = unify_predefined and predefined_unified[n]
+        if h then
+            if trace_entities then
+                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,h)
+            end
+        elseif utfize then
+            h = (n and utfchar(n)) or xml.unknown_hex_entity_format(str) or ""
+            if not n then
+                logs.report("xml","utfize, ignoring hex entity &#x%s;",str)
+            elseif trace_entities then
+                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,h)
+            end
+        else
+            if trace_entities then
+                logs.report("xml","found entity &#x%s;",str)
+            end
+            h = "&#x" .. str .. ";"
+        end
+        hcache[str] = h
+    end
+    return h
+end
+
+local function handle_dec_entity(str)
+    local d = dcache[str]
+    if not d then
+        local n = tonumber(str)
+        d = unify_predefined and predefined_unified[n]
+        if d then
+            if trace_entities then
+                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,d)
+            end
+        elseif utfize then
+            d = (n and utfchar(n)) or xml.unknown_dec_entity_format(str) or ""
+            if not n then
+                logs.report("xml","utfize, ignoring dec entity &#%s;",str)
+            elseif trace_entities then
+                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,h)
+            end
+        else
+            if trace_entities then
+                logs.report("xml","found entity &#%s;",str)
+            end
+            d = "&#" .. str .. ";"
+        end
+        dcache[str] = d
+    end
+    return d
+end
+
+xml.parsedentitylpeg = parsedentity
 
 local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
-            a = resolve_predefined and predefined[str]
+            a = resolve_predefined and predefined_simplified[str]
             if a then
                 -- one of the predefined
             elseif type(resolve) == "function" then
@@ -404,7 +424,7 @@ local function handle_any_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &%s;",str)
             end
-            a = resolve_predefined and predefined[str]
+            a = resolve_predefined and predefined_simplified[str]
             if a then
                 -- one of the predefined
                 acache[str] = a
@@ -554,6 +574,7 @@ local function xmlconvert(data, settings)
     utfize = settings.utfize_entities
     resolve = settings.resolve_entities
     resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
+    unify_predefined = settings.unify_predefined_entities -- &#038; -> &amp;
     cleanup = settings.text_cleanup
     stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
     acache, hcache, dcache = { }, { }, { } -- not stored
@@ -660,21 +681,19 @@ the whole file first. The function accepts a string representing
 a filename or a file handle.</p>
 --ldx]]--
 
-function xml.load(filename)
+function xml.load(filename,settings)
+    local data = ""
     if type(filename) == "string" then
+     -- local data = io.loaddata(filename) - -todo: check type in io.loaddata
         local f = io.open(filename,'r')
         if f then
-            local root = xmlconvert(f:read("*all"))
+            data = f:read("*all")
             f:close()
-            return root
-        else
-            return xmlconvert("")
         end
     elseif filename then -- filehandle
-        return xmlconvert(filename:read("*all"))
-    else
-        return xmlconvert("")
+        data = filename:read("*all")
     end
+    return xmlconvert(data,settings)
 end
 
 --[[ldx--

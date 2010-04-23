@@ -85,32 +85,14 @@
    \appendseparatedlistcontent{#1}%
    \appendseparatedlistparameter\c!right}
 
+% a version more robust with regard to {a a} b c d situations:
 
-% % % so far
-
-% \def\dodefineprocessseplist#1#2% separator \docommand
-%   {\def\dodoprocessseplist##1##2#1%
-%      {\ifx\relax##1%
-%         \expandafter\nodoprocessseplist
-%       \else\ifx##1#1%
-%         #2{}%
-%         #2{##2}%
-%         \expandafter\expandafter\expandafter\dodoprocessseplist
-%       \else
-%         #2{##1##2}%
-%         \expandafter\expandafter\expandafter\dodoprocessseplist
-%       \fi\fi}%
-%    \def\doprocessseplist##1\relax
-%      {\dodoprocessseplist##1#1\relax#1\relax\relax\end}}
-%
-% a version more robust with regard to {a a} b c d situations
-
-\def\edef@relax{\relax}
+\edef\detokenizedrelax{\detokenize{\relax}}
 
 \def\dodefineprocessseplist#1#2% separator \docommand
   {\def\dodoprocessseplist##1##2#1%
-     {\edef\!!stringa{##1}%
-      \ifx\edef@relax\!!stringa
+     {\edef\!!stringa{\detokenize{##1}}%
+      \ifx\detokenizedrelax\!!stringa
         \expandafter\nodoprocessseplist
       \else\ifx\!!stringa#1%
         #2{}%
@@ -403,5 +385,16 @@ d e f
 a,b,c
 d,e,f
 \stopseparatedlist
+
+\defineseparatedlist[CSV]
+  [separator=comma,
+   before=\bTABLE, after=\eTABLE,
+   first=\bTR, last=\eTR,
+   left=\bTD, right=\eTD]
+
+\startCSV
+a,b,c,č
+d,e,f,š
+\stopCSV
 
 \stoptext

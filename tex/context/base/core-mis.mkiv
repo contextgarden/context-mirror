@@ -623,7 +623,7 @@
 
 \def\setuphyphenmark[#1]% sign=normal|wide
   {\dodoubleargument\getparameters[\??kp][#1]%
-   \doifinsetelse\@@kpsign {\v!normal}
+   \doifelse\@@kpsign {\v!normal}% was inset?
      {\let\textmodehyphen\normalhyphen  \let\textmodehyphendiscretionary\normalhyphendiscretionary}
      {\let\textmodehyphen\composedhyphen\let\textmodehyphendiscretionary\composedhyphendiscretionary}}
 
@@ -642,14 +642,14 @@
 
 \def\normalhyphendiscretionary
   {\discretionary
-     {\hbox{\directsymbol\empty\c!lefthyphen}}
      {\hbox{\directsymbol\empty\c!righthyphen}}
+     {\hbox{\directsymbol\empty\c!lefthyphen}}
      {\hbox{\directsymbol\empty\c!hyphen}}}
 
 \def\composedhyphendiscretionary
   {\discretionary
-     {\hbox{\directsymbol\empty\c!leftcompoundhyphen}}
      {\hbox{\directsymbol\empty\c!rightcompoundhyphen}}
+     {\hbox{\directsymbol\empty\c!leftcompoundhyphen}}
      {\hbox{\directsymbol\empty\c!compoundhyphen}}}
 
 \let\textmodehyphen             \composedhyphen

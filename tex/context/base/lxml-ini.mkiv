@@ -100,12 +100,12 @@
 
 % todo: \xmldoifelseattribute
 
-\def\xmldoif             #1#2{\ctxlua{lxml.doif("#1","#2")}}
-\def\xmldoifnot          #1#2{\ctxlua{lxml.doifnot("#1","#2")}}
-\def\xmldoifelse         #1#2{\ctxlua{lxml.doifelse("#1","#2")}}
-\def\xmldoiftext         #1#2{\ctxlua{lxml.doiftext("#1","#2")}}
-\def\xmldoifnottext      #1#2{\ctxlua{lxml.doifnottext("#1","#2")}}
-\def\xmldoifelsetext     #1#2{\ctxlua{lxml.doifelsetext("#1","#2")}}
+\def\xmldoif             #1#2{\ctxlua{lxml.doif        (\!!bs#1\!!es,\!!bs#2\!!es)}}
+\def\xmldoifnot          #1#2{\ctxlua{lxml.doifnot     (\!!bs#1\!!es,\!!bs#2\!!es)}}
+\def\xmldoifelse         #1#2{\ctxlua{lxml.doifelse    (\!!bs#1\!!es,\!!bs#2\!!es)}}
+\def\xmldoiftext         #1#2{\ctxlua{lxml.doiftext    (\!!bs#1\!!es,\!!bs#2\!!es)}}
+\def\xmldoifnottext      #1#2{\ctxlua{lxml.doifnottext (\!!bs#1\!!es,\!!bs#2\!!es)}}
+\def\xmldoifelsetext     #1#2{\ctxlua{lxml.doifelsetext(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
 %def\xmldoifelseempty    #1#2{\ctxlua{lxml.doifelseempty("#1","#2")}} % #2, "*" or "" == self not yet implemented
 %def\xmldoifelseselfempty  #1{\ctxlua{lxml.doifelseempty("#1")}}

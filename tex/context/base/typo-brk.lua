@@ -9,21 +9,27 @@ if not modules then modules = { } end modules ['typo-brk'] = {
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
+local utfbyte, utfchar = utf.byte, utf.char
 local format = string.format
 
+local settings_to_array  = aux.settings_to_array
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local set_attribute      = node.set_attribute
 local copy_node          = node.copy
+local free_node          = node.free
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local make_penalty_node  = nodes.penalty
 local make_glue_node     = nodes.glue
 local make_disc_node     = nodes.disc
+local make_glyph_node    = nodes.glyph
+local remove_node        = nodes.remove -- ! nodes
+local tonodes            = blobs.tonodes
 
-local glyph   = node.id("glyph")
-local kern    = node.id("kern")
+local glyph = node.id("glyph")
+local kern  = node.id("kern")
 
 breakpoints           = breakpoints         or { }
 breakpoints.mapping   = breakpoints.mapping or { }
@@ -34,7 +40,8 @@ storage.register("breakpoints/mapping", breakpoints.mapping, "breakpoints.mappin
 
 local mapping = breakpoints.mapping
 
-function breakpoints.setreplacement(id,char,kind,before,after,language)
+function breakpoints.setreplacement(id,char,language,settings)
+    char = utfbyte(char)
     local map = mapping[id]
     if not map then
         map = { }
@@ -45,71 +52,76 @@ function breakpoints.setreplacement(id,char,kind,before,after,language)
         cmap = { }
         map[char] = cmap
     end
-    cmap[language or ""] = { kind or 1, before or 1, after or 1 }
+    local left, right, middle = settings.left, settings.right, settings.middle
+    cmap[language or ""] = {
+        kind   = tonumber(settings.kind)   or 1,
+        nleft  = tonumber(settings.nleft)  or 1,
+        nright = tonumber(settings.nright) or 1,
+        left   = left   ~= "" and left     or nil,
+        right  = right  ~= "" and right    or nil,
+        middle = middle ~= "" and middle   or nil,
+    } -- was { kind or 1, before or 1, after or 1 }
+end
+
+local function insert_break(head,start,before,after)
+    insert_node_before(head,start,make_penalty_node(before))
+    insert_node_before(head,start,make_glue_node(0))
+    insert_node_after(head,start,make_glue_node(0))
+    insert_node_after(head,start,make_penalty_node(after))
 end
 
 breakpoints.methods[1] = function(head,start)
     if start.prev and start.next then
-        insert_node_before(head,start,make_penalty_node(10000))
-        insert_node_before(head,start,make_glue_node(0))
-        insert_node_after(head,start,make_glue_node(0))
-        insert_node_after(head,start,make_penalty_node(0))
+        insert_break(head,start,10000,0)
     end
     return head, start
 end
 breakpoints.methods[2] = function(head,start) -- ( => (-
     if start.prev and start.next then
-        local tmp = start
-        start = make_disc_node()
-        start.prev, start.next = tmp.prev, tmp.next
-        tmp.prev.next, tmp.next.prev = start, start
-        tmp.prev, tmp.next = nil, nil
+        local tmp
+        head, start, tmp = remove_node(head,start)
+        head, start = insert_node_before(head,start,make_disc_node())
         start.replace = tmp
         local tmp, hyphen = copy_node(tmp), copy_node(tmp)
         hyphen.char = languages.prehyphenchar(tmp.lang)
         tmp.next, hyphen.prev = hyphen, tmp
         start.post = tmp
-        insert_node_before(head,start,make_penalty_node(10000))
-        insert_node_before(head,start,make_glue_node(0))
-        insert_node_after(head,start,make_glue_node(0))
-        insert_node_after(head,start,make_penalty_node(10000))
+        insert_break(head,start,10000,10000)
     end
     return head, start
 end
 breakpoints.methods[3] = function(head,start) -- ) => -)
     if start.prev and start.next then
-        local tmp = start
-        start = make_disc_node()
-        start.prev, start.next = tmp.prev, tmp.next
-        tmp.prev.next, tmp.next.prev = start, start
-        tmp.prev, tmp.next = nil, nil
+        local tmp
+        head, start, tmp = remove_node(head,start)
+        head, start = insert_node_before(head,start,make_disc_node())
         start.replace = tmp
         local tmp, hyphen = copy_node(tmp), copy_node(tmp)
         hyphen.char = languages.prehyphenchar(tmp.lang)
         tmp.prev, hyphen.next = hyphen, tmp
         start.pre = hyphen
-        insert_node_before(head,start,make_penalty_node(10000))
-        insert_node_before(head,start,make_glue_node(0))
-        insert_node_after(head,start,make_glue_node(0))
-        insert_node_after(head,start,make_penalty_node(10000))
+        insert_break(head,start,10000,10000)
     end
     return head, start
 end
 breakpoints.methods[4] = function(head,start) -- - => - - -
     if start.prev and start.next then
-        local tmp = start
-        start = make_disc_node()
-        start.prev, start.next = tmp.prev, tmp.next
-        tmp.prev.next, tmp.next.prev = start, start
-        tmp.prev, tmp.next = nil, nil
-        -- maybe prehyphenchar etc
-        start.pre = copy_node(tmp)
-        start.post = copy_node(tmp)
-        start.replace = tmp
-        insert_node_before(head,start,make_penalty_node(10000))
-        insert_node_before(head,start,make_glue_node(0))
-        insert_node_after(head,start,make_glue_node(0))
-        insert_node_after(head,start,make_penalty_node(10000))
+        local tmp
+        head, start, tmp = remove_node(head,start)
+        head, start = insert_node_before(head,start,make_disc_node())
+        start.pre, start.post, start.replace = copy_node(tmp), copy_node(tmp), tmp
+        insert_break(head,start,10000,10000)
+    end
+    return head, start
+end
+breakpoints.methods[5] = function(head,start,settings) -- x => p q r
+    if start.prev and start.next then
+        local tmp
+        head, start, tmp = remove_node(head,start)
+        head, start = insert_node_before(head,start,make_disc_node())
+        start.pre, start.post, start.replace = tonodes(settings.right,tmp), tonodes(settings.left,tmp), tonodes(settings.middle,tmp)
+        free_node(tmp)
+        insert_break(head,start,10000,10000)
     end
     return head, start
 end
@@ -134,18 +146,18 @@ function breakpoints.process(namespace,attribute,head)
                         -- we do a sanity check for language
                         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
                         if smap then
-                            if n >= smap[2] then
-                                local m = smap[3]
+                            if n >= smap.nleft then
+                                local m = smap.nright
                                 local next = start.next
-                                while next do -- gamble on same attribute
+                                while next do -- gamble on same attribute (not that important actually)
                                     local id = next.id
-                                    if id == glyph then -- gamble on same attribute
+                                    if id == glyph then -- gamble on same attribute (not that important actually)
                                         if map[next.char] then
                                             break
                                         elseif m == 1 then
-                                            local method = methods[smap[1]]
+                                            local method = methods[smap.kind]
                                             if method then
-                                                head, start = method(head,start)
+                                                head, start = method(head,start,smap)
                                                 done = true
                                             end
                                             break
@@ -172,6 +184,8 @@ function breakpoints.process(namespace,attribute,head)
                 else
                     n = 0
                 end
+            else
+             -- n = n + 1 -- if we want single char handling (|-|) then we will use grouping and then we need this
             end
         elseif id == kern and start.subtype == 0 then
             -- ignore intercharacter kerning, will go way
