@@ -103,7 +103,7 @@
 \let\figurescaleyscale   \figureyscale
 
 \appendtoks
-    \ctxlua {
+    \ctxlua { % figures.defaultwidth .. why not dimen
         figures.setpaths("\@@exlocation","\@@exdirectory") ;
         figures.defaultwidth  = \number\dimexpr\defaultfigurewidth \relax ;
         figures.defaultheight = \number\dimexpr\defaultfigureheight\relax ;
@@ -286,7 +286,7 @@
      \global\setsystemmode  \v!figure % todo, also: \v!resource
    \fi}
 
-\def\startfoundexternalfigure#1#2%
+\def\startfoundexternalfigure#1#2% ht wd
   {\global\setbox\foundexternalfigure\vbox to #2\bgroup\vss\hbox to #1\bgroup}
 
 \def\stopfoundexternalfigure

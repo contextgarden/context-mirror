@@ -382,11 +382,83 @@ function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and 
                             end
                         end
                     else
---~                         str.ni = i
+        --~                         str.ni = i
                         t[#t+1] = str
                     end
                 end
                 e.dt = t
+            end
+        end
+    end
+end
+
+function xml.strip_whitespace(root, pattern, nolines, anywhere) -- strips all leading and trailing spacing
+    local collected = xmlparseapply({ root },pattern) -- beware, indices no longer are valid now
+    if collected then
+        for i=1,#collected do
+            local e = collected[i]
+            local edt = e.dt
+            if edt then
+                if anywhere then
+                    local t = { }
+                    for e=1,#edt do
+                        local str = edt[e]
+                        if type(str) ~= "string" then
+                            t[#t+1] = str
+                        elseif str ~= "" then
+                            -- todo: lpeg for each case
+                            if nolines then
+                                str = gsub(str,"%s+"," ")
+                            end
+                            str = gsub(str,"^%s*(.-)%s*$","%1")
+                            if str ~= "" then
+                                t[#t+1] = str
+                            end
+                        end
+                    end
+                    e.dt = t
+                else
+                    -- we can assume a regular sparse xml table with no successive strings
+                    -- otherwise we should use a while loop
+                    if #edt > 0 then
+                        -- strip front
+                        local str = edt[1]
+                        if type(str) ~= "string" then
+                            -- nothing
+                        elseif str == "" then
+                            remove(edt,1)
+                        else
+                            if nolines then
+                                str = gsub(str,"%s+"," ")
+                            end
+                            str = gsub(str,"^%s+","")
+                            if str == "" then
+                                remove(edt,1)
+                            else
+                                edt[1] = str
+                            end
+                        end
+                    end
+                    if #edt > 1 then
+                        -- strip end
+                        local str = edt[#edt]
+                        if type(str) ~= "string" then
+                            -- nothing
+                        elseif str == "" then
+                            remove(edt)
+                        else
+                            if nolines then
+                                str = gsub(str,"%s+"," ")
+                            end
+                            str = gsub(str,"%s+$","")
+                            if str == "" then
+                                remove(edt)
+                            else
+                                edt[#edt] = str
+                            end
+                        end
+                    end
+                end
             end
         end
     end

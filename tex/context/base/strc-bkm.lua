@@ -59,21 +59,33 @@ local function stripped(str) -- kind of generic
     return str
 end
 
+-- todo: collect specs and collect later i.e. multiple places
+
 function bookmarks.place()
     if names ~= "" then
         local list = lists.filter(names,"all",nil,lists.collected)
+        local lastlevel = 1
         if #list > 0 then
             local opened, levels = aux.settings_to_set(opened), { }
             for i=1,#list do
                 local li = list[i]
                 local metadata = li.metadata
                 local name = metadata.name
-                if not metadata.nolist and levelmap[name] then
+                if not metadata.nolist then -- and levelmap[name] then
                     local titledata = li.titledata
                     if titledata then
+                        local structural = levelmap[name]
+                        lastlevel = structural or lastlevel
+                        local title = titledata.bookmark
+                        if (not title or title == "") and not structural then
+                            -- placeholder, todo: bookmarklabel
+                            title = name .. ": " .. (titledata.title or "?")
+                        else
+                            title = titledata.title or "?"
+                        end
                         levels[#levels+1] = {
-                            levelmap[name],
-                            stripped(titledata.bookmark or titledata.title or "?"),
+                            lastlevel,
+                            stripped(title),
                             li.references, -- has internal and realpage
                             allopen or opened[name]
                         }

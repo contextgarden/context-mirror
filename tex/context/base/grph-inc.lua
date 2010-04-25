@@ -671,23 +671,29 @@ end
 function figures.done(data)
     figures.n = figures.n + 1
     data = data or figures.current()
+--~ print(table.serialize(figures.current()))
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
-    local box = tex.box[nr]
+    local box = texbox[nr]
     ds.width  = box.width
     ds.height = box.height
     ds.xscale = ds.width /(du.width  or 1)
     ds.yscale = ds.height/(du.height or 1)
+--~ print(table.serialize(figures.current()))
     return data
 end
 
 function figures.dummy(data)
     data = data or figures.current()
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
-    local box = node.new("hlist")
-    box.width  = du.width  or figures.defaultwidth
-    box.height = du.height or figures.defaultheight
-    box.depth  = du.depth  or figures.defaultdepth
-    texbox[nr] = box
+    local box = node.hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
+    du.width  = du.width  or figures.defaultwidth
+    du.height = du.height or figures.defaultheight
+    du.depth  = du.depth  or figures.defaultdepth
+ -- box.dir = "TLT"
+    box.width  = du.width
+    box.height = du.height
+    box.depth  = du.depth
+    texbox[nr] = box -- hm, should be global (to be checked for consistency)
 end
 
 -- -- -- generic -- -- --

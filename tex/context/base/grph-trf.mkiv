@@ -115,6 +115,7 @@
    \global\let\finalscaleboxxfactor\!!hundred
    \global\let\finalscaleboxyfactor\!!hundred
    \ifdim\nextboxht>\zeropoint \ifdim\nextboxwd>\zeropoint
+     % hm, still useful? better in lua anyway
      \edef\scaleboxstampa % slow way [can be combined]
        {\scaleparameter\c!scale \scaleparameter\c!xscale \scaleparameter\c!yscale
         \scaleparameter\c!factor\scaleparameter\c!wfactor\scaleparameter\c!hfactor
@@ -128,10 +129,10 @@
        \ifx\scaleboxstampb\scaleboxstampc
         % no scaling, but still check; new, gone again
 % wrong: scaled proportionally as side effect
-%         \doifsomething{\scaleparameter\c!maxwidth }{\letvalue{\currentscaletag\c!factor}\v!fit}%
-%         \doifsomething{\scaleparameter\c!maxheight}{\letvalue{\currentscaletag\c!factor}\v!fit}%
-        \insidefloattrue % trick
-        \dodoscaleboxcalculations
+%        \doifsomething{\scaleparameter\c!maxwidth }{\letvalue{\currentscaletag\c!factor}\v!fit}%
+%        \doifsomething{\scaleparameter\c!maxheight}{\letvalue{\currentscaletag\c!factor}\v!fit}%
+         \insidefloattrue % trick
+         \dodoscaleboxcalculations
        \else
          \dosetscalboxsxsy
          \nodoscaleboxcalculations
@@ -201,7 +202,6 @@
    \xdef\finalscaleboxyfactor{\the\scaleboxscay}%
    \xdef\finalscaleboxxscale {\withoutpt\the\dimexpr\scax\points/\plushundred\relax}%
    \xdef\finalscaleboxyscale {\withoutpt\the\dimexpr\scay\points/\plushundred\relax}}
-
 
 \setvalue{\??xy:\c!grid:\v!yes     }{\getnoflines   \fighei\setevalue{\currentscaletag\c!height}{\the\noflines\lineheight}}
 \setvalue{\??xy:\c!grid:\v!height  }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+\strutdepth\relax}}
@@ -374,8 +374,7 @@
       \else % hm, there should be an option to force this
         \ifdim\pagegoal<\maxdimen
           \ifdim\pagetotal<\pagegoal
-            \scratchdimen\pagegoal
-            \advance\scratchdimen -\pagetotal
+            \scratchdimen\dimexpr\pagegoal-\pagetotal\relax
           \else
             \scratchdimen\scaleboxoutervsize % \textheight
           \fi

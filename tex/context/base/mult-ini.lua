@@ -99,3 +99,7 @@ function interfaces.cachesetup(t)
         return t
     end
 end
+
+function interfaces.is_command(str)
+    return (str and str ~= "" and token.csname_name(token.create(str)) ~= "") or false
+end

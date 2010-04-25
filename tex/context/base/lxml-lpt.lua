@@ -143,17 +143,17 @@ apply_axis['child'] = function(list)
     for l=1,#list do
         local ll = list[l]
         local dt = ll.dt
-local en = 0
+        local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
-en = en + 1
-dk.ei = en
+            en = en + 1
+            dk.ei = en
             end
         end
-ll.en = en
+        ll.en = en
     end
     return collected
 end
@@ -161,18 +161,18 @@ end
 local function collect(list,collected)
     local dt = list.dt
     if dt then
-local en = 0
+        local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
-en = en + 1
-dk.ei = en
+                en = en + 1
+                dk.ei = en
                 collect(dk,collected)
             end
         end
-list.en = en
+        list.en = en
     end
 end
 apply_axis['descendant'] = function(list)
@@ -186,18 +186,18 @@ end
 local function collect(list,collected)
     local dt = list.dt
     if dt then
-local en = 0
+        local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
-en = en + 1
-dk.ei = en
+                en = en + 1
+                dk.ei = en
                 collect(dk,collected)
             end
         end
-list.en = en
+        list.en = en
     end
 end
 apply_axis['descendant-or-self'] = function(list)
@@ -834,17 +834,17 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
                         add_comment(parsed, "initial-child removed") -- we could also make it a auto-self
                         remove(parsed,1)
                     end
-local np = #parsed -- can have changed
-if np > 1 then
-    local pnp = parsed[np]
-    if pnp.kind == "nodes" and pnp.nodetest == true then
-        local nodes = pnp.nodes
-        if nodes[1] == true and nodes[2] == false and nodes[3] == false then
-            add_comment(parsed, "redundant final wildcard filter removed")
-            remove(parsed,np)
-        end
-    end
-end
+                    local np = #parsed -- can have changed
+                    if np > 1 then
+                        local pnp = parsed[np]
+                        if pnp.kind == "nodes" and pnp.nodetest == true then
+                            local nodes = pnp.nodes
+                            if nodes[1] == true and nodes[2] == false and nodes[3] == false then
+                                add_comment(parsed, "redundant final wildcard filter removed")
+                                remove(parsed,np)
+                            end
+                        end
+                    end
                 end
             else
                 parsed = { pattern = pattern }
@@ -869,6 +869,10 @@ end
 
 -- caching found lookups saves not that much (max .1 sec on a 8 sec run)
 -- and it also messes up finalizers
+
+-- watch out: when there is a finalizer, it's always called as there
+-- can be cases that a finalizer returns (or does) something in case
+-- there is no match; an example of this is count()
 
 local profiled = { }  xml.profiled = profiled
 
@@ -897,6 +901,12 @@ local function profiled_apply(list,parsed,nofparsed,order)
             return collected
         end
         if not collected or #collected == 0 then
+            local pn = i < nofparsed and parsed[nofparsed]
+            if pn and pn.kind == "finalizer" then
+                collected = pn.finalizer(collected)
+                p.finalized = p.finalized + 1
+                return collected
+            end
             return nil
         end
     end
@@ -928,10 +938,16 @@ local function traced_apply(list,parsed,nofparsed,order)
             logs.report("lpath", "% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
         elseif kind == "finalizer" then
             collected = pi.finalizer(collected)
-            logs.report("lpath", "% 10i : fi : %s : %s(%s)",(collected and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
+            logs.report("lpath", "% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
             return collected
         end
         if not collected or #collected == 0 then
+            local pn = i < nofparsed and parsed[nofparsed]
+            if pn and pn.kind == "finalizer" then
+                collected = pn.finalizer(collected)
+                logs.report("lpath", "% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pn.name,pn.arguments or "")
+                return collected
+            end
             return nil
         end
     end
@@ -956,6 +972,10 @@ local function normal_apply(list,parsed,nofparsed,order)
             return pi.finalizer(collected)
         end
         if not collected or #collected == 0 then
+            local pf = i < nofparsed and parsed[nofparsed].finalizer
+            if pf then
+                return pf(collected) -- can be anything
+            end
             return nil
         end
     end
