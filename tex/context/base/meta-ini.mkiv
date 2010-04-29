@@ -138,9 +138,14 @@
 
 \def\MPaskedfigure{false}
 
-\long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
-  {\begingroup % needed?
-\forgetall
+\def\currentMPinitializations
+  {\ifconditional\includeMPinitializations\the\MPinitializations;\fi\theMPrandomseed;}
+
+\def\currentMPpreamble
+  {\ifconditional\includeMPextensions\the\MPextensions;\the\MPuserinclusions;\fi\the\MPinstancetoks;}
+
+\def\dostartcurrentMPgraphic
+  {\begingroup
    \enableincludeMPgraphics
    \the\everyMPgraphic
    \presetMPdefinitions
@@ -151,18 +156,28 @@
      {\setfalse\includeMPextensions}%
    \doifelsevalue{\@@MPF\currentMPgraphicinstance\s!initializations}\v!yes
      {\settrue \includeMPinitializations}%
-     {\setfalse\includeMPinitializations}%
+     {\setfalse\includeMPinitializations}}
+
+\def\dostopcurrentMPgraphic
+  {\global\MPinstancetoks\emptytoks
+   \global\settrue\METAFUNinitialized % becomes obsolete
+   \endgroup}
+
+\unexpanded\long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
+  {\dostartcurrentMPgraphic
+   \forgetall
    \setbox\MPgraphicbox\hbox\bgroup
-     \normalexpanded{\noexpand\ctxlua{metapost.graphic("\currentMPgraphicinstance", "\currentMPgraphicformat",
-           \!!bs\ifconditional\includeMPinitializations\the\MPinitializations;\fi\theMPrandomseed;#1;\!!es,
-           \!!bs\ifconditional\includeMPextensions\the\MPextensions;\the\MPuserinclusions;\fi\the\MPinstancetoks;\!!es,
-           \MPaskedfigure
+     \normalexpanded{\noexpand\ctxlua{metapost.graphic(
+       "\currentMPgraphicinstance",
+       "\currentMPgraphicformat",
+       \!!bs#1\!!es,
+       \!!bs\currentMPinitializations\!!es,
+       \!!bs\currentMPpreamble\!!es,
+       \MPaskedfigure
      )}}%
    \egroup
-     \global\MPinstancetoks\emptytoks
-     \global\settrue\METAFUNinitialized % becomes obsolete
    \placeMPgraphic
-   \endgroup}
+   \dostopcurrentMPgraphic}
 
 \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
 
@@ -235,7 +250,7 @@
 
 \def\getMPdrawing
   {\ifMPdrawingdone
-     \expandafter\processMPgraphic\expandafter{\MPdrawingdata}%
+     \expandafter\processMPgraphic\expandafter{\MPdrawingdata}% is this expansion still needed?
    \fi}
 
 \def\startMPdrawing
@@ -252,8 +267,19 @@
 
 \let\stopMPdrawing\relax
 
-\long\def\startMPclip#1#2\stopMPclip
-  {\long\setgvalue{MPC:#1}{\ctxlua{metapost.getclippath(\!!bs#2\!!es)}}}
+\long\def\startMPclip#1#2\stopMPclip % todo: store at the lua end
+  {\dostartcurrentMPgraphic
+   \long\setxvalue{MPC:#1}{\noexpand\ctxlua{metapost.theclippath(
+     "\currentMPgraphicinstance",
+     "\currentMPgraphicformat",
+     \!!bs#2\!!es,
+     \!!bs\currentMPinitializations\!!es,
+     \!!bs\currentMPpreamble\!!es
+   )}}%
+   \dostopcurrentMPgraphic}
+
+% \unexpanded\def\processMPgraphic
+%   {\doprocessMPgraphic\placeMPgraphic}
 
 \let\stopMPclip\relax
 
@@ -447,8 +473,7 @@
    \def\@@meta{#1:}%
    \extendMPoverlaystamp{#2}% incl prepare
    \ifcsname\@@MPG\overlaystamp:#1\endcsname\else
-     \enableincludeMPgraphics
-%      \forgetall
+     \enableincludeMPgraphics % redundant
      \global\advance\MPobjectcounter\plusone
      \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
      \setxvalue{\@@MPG\overlaystamp:#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
@@ -475,10 +500,9 @@
 
 \long\def\handleuseMPgraphic#1#2#3%
   {\begingroup
-%    \forgetall % check this
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
-   \enableincludeMPgraphics
+   \enableincludeMPgraphics % redundant
    \processMPgraphic{#3}%
    \endgroup}
 
@@ -501,7 +525,7 @@
   {\begingroup
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
-   \enableincludeMPgraphics
+   \enableincludeMPgraphics % redundant
    \global\advance\MPobjectcounter\plusone
    \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
    \setxvalue{\@@MPG#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%

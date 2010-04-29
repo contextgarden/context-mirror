@@ -140,6 +140,7 @@
 		<cd:variable name='display' value='scherm'/>
 		<cd:variable name='dot' value='punt'/>
 		<cd:variable name='doublesided' value='dubbelzijdig'/>
+		<cd:variable name='down' value='omlaag'/>
 		<cd:variable name='each' value='elk'/>
 		<cd:variable name='edge' value='rand'/>
 		<cd:variable name='empty' value='leeg'/>
@@ -494,6 +495,7 @@
 		<cd:variable name='units' value='eenheden'/>
 		<cd:variable name='unknown' value='onbekend'/>
 		<cd:variable name='unpacked' value='vanelkaar'/>
+		<cd:variable name='up' value='omhoog'/>
 		<cd:variable name='url' value='url'/>
 		<cd:variable name='used' value='gebruikt'/>
 		<cd:variable name='value' value='waarde'/>

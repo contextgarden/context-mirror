@@ -155,6 +155,7 @@ local function curved(ith,pth)
 end
 
 local function flushnormalpath(path, t, open)
+    t = t or { }
     local pth, ith
     for i=1,#path do
         pth = path[i]
@@ -183,6 +184,7 @@ local function flushnormalpath(path, t, open)
 end
 
 local function flushconcatpath(path, t, open)
+    t = t or { }
     t[#t+1] = format("%f %f %f %f %f %f cm", sx, rx, ry, sy, tx ,ty)
     local pth, ith
     for i=1,#path do

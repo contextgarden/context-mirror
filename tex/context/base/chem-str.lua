@@ -443,7 +443,7 @@ function chemicals.stop()
     if trace_structure then
         logs.report("chemical", "metapost code:\n%s", mpcode)
     end
-    metapost.graphic(chemicals.instance,chemicals.format,mpcode,"")
+    metapost.graphic(chemicals.instance,chemicals.format,mpcode)
     metacode = nil
 end
 

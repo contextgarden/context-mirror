@@ -102,7 +102,7 @@ local values = {
 
 local colonsplitter = lpeg.splitat(":")
 
-local function listtohash(str) -- redundant?
+local function listtohash(str)
     local t = { }
     for s in gmatch(str,"[^, ]+") do
         local key, detail = lpegmatch(colonsplitter,s)
@@ -114,7 +114,7 @@ local function listtohash(str) -- redundant?
                 if k then
                     detail = tonumber("0" .. detail)
                     if detail then
-                        t[k] = fraction
+                        t[k] = detail
                     end
                 else
                     k = values[key]
@@ -150,15 +150,30 @@ function vspacing.define_snap_method(name,method)
     tex.write(n)
 end
 
+--~ local rule_id  = node.id("rule")
+--~ local vlist_id = node.id("vlist")
+--~ function nodes.makevtop(n)
+--~     if n.id == vlist_id then
+--~         local list = n.list
+--~         local height = (list and list.id <= rule_id and list.height) or 0
+--~         n.depth = n.depth - height + n.height
+--~         n.height = height
+--~     end
+--~ end
+
 local function snap_hlist(current,method,height,depth) -- method.strut is default
     local snapht, snapdp
+--~ print(table.serialize(method))
     if method["local"] then
+        -- snapping is done immediately here
         snapht, snapdp = texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth
     else
+        -- snapping might happen later in the otr
         snapht, snapdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
     end
     local h, d = height or current.height, depth or current.depth
     local hr, dr, ch, cd = method.hfraction or 1, method.dfraction or 1, h, d
+    local tlines, blines = method.tlines or 1, method.blines or 1
     local done, plusht, plusdp = false, snapht, snapdp
     local snaphtdp = snapht + snapdp
     if method.none then
@@ -170,6 +185,7 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
     if method.line then
         plusht, plusdp = plusht + snaphtdp, plusdp + snaphtdp
     end
+
     if method.first then
         if current.id == vlist then
             local list, lh, ld = current.list
@@ -203,6 +219,7 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
             end
         end
     end
+
     if done then
         -- first or last
     elseif method.minheight then
@@ -222,13 +239,15 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
         cd = plusdp
     end
     if method.top then
-        ch = ch + (method.tlines or 1) * snaphtdp
+        ch = ch + tlines * snaphtdp
     end
     if method.bottom then
-        cd = cd + (method.blines or 1) * snaphtdp
+        cd = cd + blines * snaphtdp
     end
+
     local offset = method.offset
     if offset then
+        -- we need to set the attr
         local shifted = vpack_node(current.list)
         shifted.shift = offset
         current.list = shifted
@@ -239,6 +258,7 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
     if not depth then
         current.depth = cd
     end
+ -- set_attribute(current,snap_method,0)
     return h, d, ch, cd, (ch+cd)/snaphtdp
 end
 

@@ -140,6 +140,7 @@
 		<cd:variable name='display' value='display'/>
 		<cd:variable name='dot' value='punct'/>
 		<cd:variable name='doublesided' value='douafete'/>
+		<cd:variable name='down' value='down'/>
 		<cd:variable name='each' value='fiecare'/>
 		<cd:variable name='edge' value='bordura'/>
 		<cd:variable name='empty' value='gol'/>
@@ -494,6 +495,7 @@
 		<cd:variable name='units' value='unitati'/>
 		<cd:variable name='unknown' value='necunoscut'/>
 		<cd:variable name='unpacked' value='despachetat'/>
+		<cd:variable name='up' value='up'/>
 		<cd:variable name='url' value='url'/>
 		<cd:variable name='used' value='folosit'/>
 		<cd:variable name='value' value='valoare'/>

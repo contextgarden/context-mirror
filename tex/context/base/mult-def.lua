@@ -11119,6 +11119,14 @@ return {
   },
  },
  ["variables"]={
+  ["down"]={
+   ["en"]="down",
+   ["nl"]="omlaag",
+  },
+  ["up"]={
+   ["en"]="up",
+   ["nl"]="omhoog",
+  },
   ["underbar"]={
    ["cs"]="podtrzeno",
    ["de"]="unterstrichen",

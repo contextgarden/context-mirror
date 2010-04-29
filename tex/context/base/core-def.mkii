@@ -74,6 +74,13 @@
 
 % \appendtoks\everyjob\expandafter{\the\everyjob\checkpreprocessor}\to\everydump
 
+% temporary here:
+
+% \in \at \about \from \over
+
+\unexpanded\def\arg{\mathortext\normalmatharg\normaltextarg}
+
+% brrr
 % normally one does not want this to happen nested, maybe there
 % is more; non public vars btw, will become conditionals
 
@@ -92,5 +99,7 @@
 \prependtoks \synctexwarning \to \everyjob
 \prependtoks \synctexwarning \to \everystarttext
 \appendtoks  \synctexwarning \to \everystoptext
+
+% last minute hacks
 
 \protect \endinput

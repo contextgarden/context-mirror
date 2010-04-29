@@ -11,12 +11,32 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
 local format, join = string.format, table.concat
 local sprint = tex.sprint
 
+local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+
 metapost = metapost or {}
 metapost.defaultformat = "metafun"
 
-function metapost.graphic(instance,mpsformat,str,preamble,askedfig)
+function metapost.graphic(instance,mpsformat,str,initializations,preamble,askedfig)
     local mpx = metapost.format(instance,mpsformat or metapost.defaultformat)
-    metapost.graphic_base_pass(mpx,str,preamble,askedfig)
+    metapost.graphic_base_pass(mpx,str,initializations,preamble,askedfig)
+end
+
+function metapost.getclippath(instance,mpsformat,data,initializations,preamble)
+    local mpx = metapost.format(instance,mpsformat or metapost.defaultformat)
+    if mpx and data then
+        starttiming(metapost)
+        starttiming(metapost.exectime)
+        local result = mpx:execute(format("%s;beginfig(1);%s;%s;endfig;",preamble or "",initializations or "",data))
+        stoptiming(metapost.exectime)
+        if result.status > 0 then
+            logs.report("metafun", "%s: %s", result.status, result.error or result.term or result.log)
+            result = nil
+        else
+            result = metapost.filterclippath(result)
+        end
+        stoptiming(metapost)
+        return result
+    end
 end
 
 function metapost.filterclippath(result)
@@ -26,16 +46,25 @@ function metapost.filterclippath(result)
             local figure = figures[1]
             local objects = figure:objects()
             if objects then
+                local lastclippath
                 for o=1,#objects do
                     local object = objects[o]
                     if object.type == "start_clip" then
-                        return join(metapost.flushnormalpath(object.path,{ }),"\n")
+                        lastclippath = object.path
                     end
                 end
+                return lastclippath
             end
         end
     end
-    return ""
+end
+
+function metapost.theclippath(...)
+    local result = metapost.getclippath(...)
+    if result then -- we could just print the table
+        result = join(metapost.flushnormalpath(object.path),"\n")
+        sprint(result)
+    end
 end
 
 statistics.register("metapost processing time", function()

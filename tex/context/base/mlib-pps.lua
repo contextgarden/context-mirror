@@ -16,6 +16,7 @@ local sprint = tex.sprint
 local tonumber, type = tonumber, type
 local lpegmatch = lpeg.match
 local texbox = tex.box
+local copy_list = node.copy_list
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
@@ -421,7 +422,7 @@ end
 
 -- no need for a before here
 
-local current_format, current_graphic
+local current_format, current_graphic, current_initializations
 
 -- metapost.first_box       = metapost.first_box or 1000
 -- metapost.last_box        = metapost.last_box or 1100
@@ -450,7 +451,7 @@ function metapost.free_boxes() -- todo: mp direct list ipv box
 end
 
 function metapost.settext(box,slot)
-    textexts[slot] = node.copy_list(texbox[box])
+    textexts[slot] = copy_list(texbox[box])
     texbox[box] = nil
     -- this will become
     -- textexts[slot] = texbox[box]
@@ -458,8 +459,8 @@ function metapost.settext(box,slot)
 end
 
 function metapost.gettext(box,slot)
-    texbox[box] = textexts[slot]
-    textexts[slot] = nil
+    texbox[box] = copy_list(textexts[slot])
+--  textexts[slot] = nil -- no, pictures can be placed several times
 end
 
 function metapost.specials.tf(specification,object)
@@ -727,6 +728,13 @@ function metapost.sxsy(wd,ht,dp) -- helper for text
     return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
+local no_trial_run       = "_trial_run_ := false ;"
+local do_trial_run       = "if unknown _trial_run_ : boolean _trial_run_ fi ; _trial_run_ := true ;"
+local text_data_template = "_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;"
+local do_begin_fig       = "; beginfig(1); "
+local do_end_fig         = "; endfig ;"
+local do_safeguard       = ";"
+
 function metapost.text_texts_data()
     local t, n = { }, 0
 --~     for i = metapost.first_box, metapost.last_box do
@@ -737,8 +745,7 @@ function metapost.text_texts_data()
             logs.report("metapost","passed data: order %s, box %s",n,i)
         end
         if box then
-            t[#t+1] = format("_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;",
-                n,box.width/factor,n,box.height/factor,n,box.depth/factor)
+            t[#t+1] = format(text_data_template,n,box.width/factor,n,box.height/factor,n,box.depth/factor)
         else
             break
         end
@@ -753,27 +760,29 @@ metapost.intermediate.needed  = false
 
 metapost.method = 1 -- 1:dumb 2:clever
 
-function metapost.graphic_base_pass(mpsformat,str,preamble,askedfig)
+function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,askedfig)
     local nofig = (askedfig and "") or false
     local done_1, done_2, forced_1, forced_2
     str, done_1, forced_1 = metapost.check_texts(str)
-    if preamble then
-        preamble, done_2, forced_2 = metapost.check_texts(preamble)
-    else
+    if not preamble or preamble == "" then
         preamble, done_2, forced_2 = "", false, false
+    else
+        preamble, done_2, forced_2 = metapost.check_texts(preamble)
     end
  -- metapost.textext_current = metapost.first_box
     metapost.intermediate.needed  = false
     metapost.multipass = false -- no needed here
-    current_format, current_graphic = mpsformat, str
+    current_format, current_graphic, current_initializations = mpsformat, str, initializations or ""
     if metapost.method == 1 or (metapost.method == 2 and (done_1 or done_2)) then
      -- first true means: trialrun, second true means: avoid extra run if no multipass
         local flushed = metapost.process(mpsformat, {
             preamble,
-            nofig or "beginfig(1); ",
-            "if unknown _trial_run_ : boolean _trial_run_ fi ; _trial_run_ := true ;",
-            str,
-            nofig or "endfig ;"
+            nofig or do_begin_fig,
+            do_trial_run,
+            current_initializations,
+            do_safeguard,
+            current_graphic,
+            nofig or do_end_fig
      -- }, true, nil, true )
         }, true, nil, not (forced_1 or forced_2), false, askedfig)
         if metapost.intermediate.needed then
@@ -788,11 +797,13 @@ function metapost.graphic_base_pass(mpsformat,str,preamble,askedfig)
         end
     else
         metapost.process(mpsformat, {
-            preamble or "",
-            nofig or "beginfig(1); ",
-            "_trial_run_ := false ;",
-            str,
-            nofig or "endfig ;"
+            preamble,
+            nofig or do_begin_fig,
+            no_trial_run,
+            current_initializations,
+            do_safeguard,
+            current_graphic,
+            nofig or do_end_fig
         }, false, nil, false, false, askedfig )
     end
     -- here we could free the textext boxes
@@ -803,30 +814,14 @@ function metapost.graphic_extra_pass(askedfig)
     local nofig = (askedfig and "") or false
  -- metapost.textext_current = metapost.first_box
     metapost.process(current_format, {
-        nofig or "beginfig(1); ",
-        "_trial_run_ := false ;",
+        nofig or do_begin_fig,
+        no_trial_run,
         concat(metapost.text_texts_data()," ;\n"),
+        current_initializations,
+        do_safeguard,
         current_graphic,
-        nofig or "endfig ;"
+        nofig or do_end_fig
     }, false, nil, false, true, askedfig )
-end
-
-function metapost.getclippath(data)
-    local mpx = metapost.format("metafun")
-    if mpx and data then
-        starttiming(metapost)
-        starttiming(metapost.exectime)
-        local result = mpx:execute(format("beginfig(1);%s;endfig;",data))
-        stoptiming(metapost.exectime)
-        if result.status > 0 then
-            print("error", result.status, result.error or result.term or result.log)
-            result = ""
-        else
-            result = metapost.filterclippath(result)
-        end
-        stoptiming(metapost)
-        sprint(result)
-    end
 end
 
 metapost.tex = metapost.tex or { }

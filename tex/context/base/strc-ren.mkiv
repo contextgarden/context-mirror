@@ -127,7 +127,6 @@
 
 \def\doplacestructureheadtext#1#2#3% nodes, text, endstuff
   {\beginheadplacement
-%    \postponenotes
    \doresettructureheadnumbercontent
    \ifconditional\structureheadleaveempty
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint {#1}%
@@ -143,7 +142,6 @@
 
 \def\doplacestructureheadnumbertext#1#2#3#4% nodes number text nodes
   {\beginheadplacement
-%    \postponenotes
    \doiftextelse{#2}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
    \ifconditional\structureheadleaveempty
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint{#1}%
@@ -277,8 +275,8 @@
      % kind of special, we want to snap heads also according to local specs local
      \ifgridsnapping
        \begingroup
+       \edef\currentstructureheadgridsnapping{\structureheadparameter\c!grid}%
        \ifconditional\structureheadisdisplay
-         \edef\currentstructureheadgridsnapping{\structureheadparameter\c!grid}%
          \ifx\currentstructureheadgridsnapping\empty\else
            \dosetstructureheadattributes\c!style\c!color
            \setupinterlinespace
@@ -286,7 +284,7 @@
            \setupinterlinespace
          \fi
        \fi
-       \snaptogrid[\structureheadparameter\c!grid]\hbox
+       \snaptogrid[\currentstructureheadgridsnapping]\hbox
          {\hskip\localheadskip\hskip\structureheadparameter\c!margin\box\sectionheadbox}%
        \endgroup
      \else

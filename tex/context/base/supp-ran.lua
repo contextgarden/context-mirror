@@ -48,8 +48,10 @@ end
 -- maybe stack
 
 function commands.freezerandomseed(n)
-    if seed == false then
+ -- print("<<<<",seed,last)
+    if seed == false or seed == nil then
         seed = last
+        math.setrandomseedi(seed,"freeze",seed)
     end
     if n then
         randomseed(n)
@@ -57,8 +59,9 @@ function commands.freezerandomseed(n)
 end
 
 function commands.defrostrandomseed()
+ -- print(">>>>",seed,last)
     if seed ~= false then
-        math.setrandomseedi(last,"defrost")
+        math.setrandomseedi(seed,"defrost",seed) -- was last (bug)
         seed = false
     end
 end

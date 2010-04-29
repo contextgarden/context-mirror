@@ -88,13 +88,13 @@
    \setbox\preparedmarginbox\vbox
       {\@@mbbefore\box\preparedmarginbox\@@mbafter}%
    \def\rightmarginbox
-     {\def\plaatsrechtermargeblok
+     {\def\placerightmarginblock
         {\setbox\preparedmarginbox\hbox to \rightmarginwidth
            {\@@mbleft\box\preparedmarginbox\@@mbright}%
          \vsmashbox\preparedmarginbox
          \box\preparedmarginbox}}%
    \def\leftmarginbox
-     {\def\plaatslinkermargeblok
+     {\def\placeleftmarginblock
         {\setbox\preparedmarginbox\hbox to \leftmarginwidth
            {\@@mbright\box\preparedmarginbox\@@mbleft}%
          \vsmashbox\preparedmarginbox

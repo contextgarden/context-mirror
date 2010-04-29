@@ -1658,10 +1658,10 @@
 \starttypescriptcollection[postscript]
 
     \starttypescript [postscript]
-        \definetypeface [postscript] [rm] [serif] [times]     [default]
-        \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=0.9]
-        \definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1]
-        \definetypeface [postscript] [mm] [math]  [times]     [default]
+        \definetypeface [postscript] [rm] [\s!serif] [times]     [\s!default]
+        \definetypeface [postscript] [ss] [\s!sans]  [helvetica] [\s!default] [\s!rscale=0.9]
+        \definetypeface [postscript] [tt] [\s!mono]  [courier]   [\s!default] [\s!rscale=1.1]
+        \definetypeface [postscript] [mm] [\s!math]  [times]     [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
@@ -1679,10 +1679,22 @@
     \stoptypescript
 
     \starttypescript [pagella-euler]
-        \definetypeface [\typescriptone] [rm] [serif] [pagella] [default]
-    %   \definetypeface [\typescriptone] [ss] [sans]  [pagella] [default] [rscale=auto]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]  [default] [rscale=auto]
-        \definetypeface [\typescriptone] [mm] [math]  [euler]   [default] [rscale=auto]
+        \definetypeface [\typescriptone] [rm] [\s!serif] [pagella] [\s!default]
+    %   \definetypeface [\typescriptone] [ss] [\s!sans]  [pagella] [\s!default] [\s!rscale=auto]
+        \definetypeface [\typescriptone] [tt] [\s!mono]  [modern]  [\s!default] [\s!rscale=auto]
+        \definetypeface [\typescriptone] [mm] [\s!math]  [euler]   [\s!default] [\s!rscale=auto]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [serif] [euler] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [Serif] [\s!file:euler.otf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [euler]
+        \definetypeface [euler] [rm] [\s!serif] [euler]  [\s!default]
+        \definetypeface [euler] [tt] [\s!mono]  [modern] [\s!default] [\s!rscale=auto]
+        \definetypeface [euler] [mm] [\s!math]  [euler]  [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

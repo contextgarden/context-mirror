@@ -66,6 +66,10 @@
 \ifdefined\from  \let\normalmathfrom \from  \unexpanded\def\from {\mathortext\normalmathfrom \dospecialfrom } \else \let\from \dospecialfrom  \fi
 \ifdefined\over  \let\normalmathover \over  \unexpanded\def\over {\mathortext\normalmathover \dospecialabout} \else \let\over \dospecialabout \fi
 
+\unexpanded\def\arg{\mathortext\normalmatharg\normaltextarg}
+
+% brrr
+
 \appendtoks
     \synchronizegloballinespecs
     \synchronizelocallinespecs

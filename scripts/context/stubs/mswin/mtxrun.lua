@@ -12123,6 +12123,13 @@ end
 function runners.execute_ctx_script(filename)
     local arguments = environment.arguments_after
     local fullname = runners.find_mtx_script(filename) or ""
+    if file.extname(fullname) == "cld" then
+        -- handy in editors where we force --autopdf
+        logs.simple("running cld script: %s",filename)
+        table.insert(arguments,1,fullname)
+        table.insert(arguments,"--autopdf")
+        fullname = runners.find_mtx_script("context") or ""
+    end
     -- retry after generate but only if --autogenerate
     if fullname == "" and environment.argument("autogenerate") then -- might become the default
         instance.renewcache = true

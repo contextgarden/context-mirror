@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/25/10 15:55:41
+-- merge date  : 04/29/10 22:30:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -9593,6 +9593,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
     local skipmark, skipligature, skipbase = flags[1], flags[2], flags[3]
     local someskip = skipmark or skipligature or skipbase -- could be stored in flags for a fast test (hm, flags could be false !)
     local markclass = sequence.markclass -- todo, first we need a proper test
+    local skipped = false
     for k=1,#contexts do
         local match, current, last = true, start, start
         local ck = contexts[k]
@@ -9627,6 +9628,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     if ccd then
                                         local class = ccd.class
                                         if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                            skipped = true
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
@@ -9671,6 +9673,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     if ccd then
                                         local class = ccd.class
                                         if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                            skipped = true
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
@@ -9725,6 +9728,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                     if ccd then
                                         local class = ccd.class
                                         if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                            skipped = true
                                             if trace_skips then
                                                 show_skip(kind,chainname,char,ck,class)
                                             end
@@ -9790,8 +9794,47 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                     end
                  else
                     -- actually this needs a more complex treatment for which we will use chainmores
+--~                     local i = 1
+--~                     repeat
+--~                         local chainlookupname = chainlookups[i]
+--~                         local chainlookup = lookuptable[chainlookupname]
+--~                         local cp = chainmores[chainlookup.type]
+--~                         if cp then
+--~                             local ok, n
+--~                             start, ok, n = cp(start,last,kind,chainname,ck,cache,chainlookup,chainlookupname,i,sequence)
+--~                             -- messy since last can be changed !
+--~                             if ok then
+--~                                 done = true
+--~                                 start = start.next
+--~                                 if n then
+--~                                     -- skip next one(s) if ligature
+--~                                     i = i + n - 1
+--~                                 end
+--~                             end
+--~                         else
+--~                             logprocess("%s: multiple subchains for %s are not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
+--~                         end
+--~                         i = i + 1
+--~                     until i > nofchainlookups
+
                     local i = 1
                     repeat
+if skipped then
+    while true do
+        local char = start.char
+        local ccd = descriptions[char]
+        if ccd then
+            local class = ccd.class
+            if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                start = start.next
+            else
+                break
+            end
+        else
+            break
+        end
+    end
+end
                         local chainlookupname = chainlookups[i]
                         local chainlookup = lookuptable[chainlookupname]
                         local cp = chainmores[chainlookup.type]
@@ -9801,17 +9844,18 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                             -- messy since last can be changed !
                             if ok then
                                 done = true
-                                start = start.next
-                                if n then
-                                    -- skip next one(s) if ligature
-                                    i = i + n - 1
-                                end
+                                -- skip next one(s) if ligature
+                                i = i + (n or 1)
+                            else
+                                i = i + 1
                             end
                         else
                             logprocess("%s: multiple subchains for %s are not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
+                            i = i + 1
                         end
-                        i = i + 1
+                        start = start.next
                     until i > nofchainlookups
+
                 end
             else
                 local replacements = ck[7]

@@ -140,6 +140,7 @@
 		<cd:variable name='display' value='نمایش'/>
 		<cd:variable name='dot' value='نقطه'/>
 		<cd:variable name='doublesided' value='دورو'/>
+		<cd:variable name='down' value='down'/>
 		<cd:variable name='each' value='هر'/>
 		<cd:variable name='edge' value='لبه'/>
 		<cd:variable name='empty' value='تهی'/>
@@ -494,6 +495,7 @@
 		<cd:variable name='units' value='واحدها'/>
 		<cd:variable name='unknown' value='ناشناس'/>
 		<cd:variable name='unpacked' value='غیرفشرده'/>
+		<cd:variable name='up' value='up'/>
 		<cd:variable name='url' value='url'/>
 		<cd:variable name='used' value='استفاده‌شده'/>
 		<cd:variable name='value' value='مقدار'/>
