@@ -44,24 +44,27 @@ lpdf.tosixteen = tosixteen
 
 -- lpeg is some 5 times faster than gsub (in test) on escaping
 
-local escapes = {
-    ["\\"] = "\\\\",
-    ["/"] = "\\/", ["#"] = "\\#",
-    ["<"] = "\\<", [">"] = "\\>",
-    ["["] = "\\[", ["]"] = "\\]",
-    ["("] = "\\(", [")"] = "\\)",
-}
-
-local escaped = lpeg.Cs(lpeg.Cc("(") * (lpeg.S("\\/#<>[]()")/escapes + lpeg.P(1))^0 * lpeg.Cc(")"))
+-- local escapes = {
+--     ["\\"] = "\\\\",
+--     ["/"] = "\\/", ["#"] = "\\#",
+--     ["<"] = "\\<", [">"] = "\\>",
+--     ["["] = "\\[", ["]"] = "\\]",
+--     ["("] = "\\(", [")"] = "\\)",
+-- }
+--
+-- local escaped = lpeg.Cs(lpeg.Cc("(") * (lpeg.S("\\/#<>[]()")/escapes + lpeg.P(1))^0 * lpeg.Cc(")"))
+--
+-- local function toeight(str)
+--     if not str or str == "" then
+--         return "()"
+--     else
+--         return lpegmatch(escaped,str)
+--     end
+-- end
+--
+-- -- no need for escaping .. just use unicode instead
 
 local function toeight(str)
- -- if not str or str == "" then
- --     return "()"
- -- else
- --     return lpegmatch(escaped,str)
- -- end
- --
- -- no need for escaping .. just use unicode instead
     return "(" .. str .. ")"
 end
 

@@ -250,7 +250,7 @@ function sections.somelevel(given)
             status[i] = nil
         end
     end
-structure.counters.check(newdepth)
+    structure.counters.check(newdepth)
     ownnumbers[newdepth] = given.numberdata.ownnumber or ""
     given.numberdata.ownnumber = nil
     data.depth = newdepth
@@ -569,9 +569,9 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             end
             --
             local prefixlist = set and sets.getall("structure:prefixes","",set) -- "" == block
-if starter then
-    processors.sprint(ctxcatcodes,starter)
-end
+            if starter then
+                processors.sprint(ctxcatcodes,starter)
+            end
             if prefixlist and (kind == 'section' or kind == 'prefix') then
                 -- find valid set (problem: for sectionnumber we should pass the level)
             --  if kind == "section" then

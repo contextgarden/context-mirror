@@ -330,6 +330,7 @@ function lists.process(...)
         local r = lists.result[i]
         local m = r.metadata
         texsprint(ctxcatcodes,format("\\processlistofstructure{%s}{%s}{%i}",m.name,m.kind,i))
+--~         context.processlistofstructure(m.name,m.kind,i)
     end
 end
 
@@ -454,7 +455,8 @@ function lists.prefixednumber(name,n,prefixspec,numberspec)
         helpers.prefix(data,prefixspec)
         local numberdata = data.numberdata
         if numberdata then
-            sections.typesetnumber(numberdata,"number",spec or false,numberdata or false)
+--~     print(table.serialize(numberspec))
+            sections.typesetnumber(numberdata,"number",numberspec or false,numberdata or false)
         end
     end
 end

@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['colo-ini'] = {
     license   = "see context related readme files"
 }
 
+local type = type
 local concat = table.concat
 local format, gmatch, gsub, lower, match, find = string.format, string.gmatch, string.gsub, string.lower, string.match, string.find
 local texsprint = tex.sprint
