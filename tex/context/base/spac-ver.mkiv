@@ -928,9 +928,17 @@
 % treatment; tests with using an attribute so far have shown that
 % it's slower because testing the attribute takes time too
 
+\newdimen\tempstrutdimen
+
 \def\dosetstrut
   {\let\strut\normalstrut
-   \edef\strutheight{\the\strutht}%
+   \tempstrutdimen\dimexpr\strutht+\strutdp-\lineheight\relax
+   \ifabsnum\tempstrutdimen<\plustwo
+      % compensate rounding error /- 1sp to avoid too many
+      % 1sp baselineskips in for instance verbatim
+      \strutht\dimexpr\strutht-\tempstrutdimen\relax
+   \fi
+   \edef\strutheight{\the\strutht}% maybe better \number\strutht sp
    \edef\strutdepth {\the\strutdp}%
    \ifdim\strutwidth=\zeropoint
       \dosetstruthide

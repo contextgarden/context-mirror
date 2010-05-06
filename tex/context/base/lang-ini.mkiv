@@ -318,10 +318,12 @@
 \newtoks \everylanguage
 
 \def\sethyphenationvariables
-  {\lefthyphenmin 0\languageparameter\s!lefthyphenmin \relax
-   \righthyphenmin0\languageparameter\s!righthyphenmin\relax
-   \lefthyphenmin \numexpr\lefthyphenmin +\hyphenminoffset\relax
-   \righthyphenmin\numexpr\righthyphenmin+\hyphenminoffset\relax}
+  {\ctxlua{languages.setup(tex.language, {
+        lefthyphen  = "\languageparameter\c!lefthyphen",
+        righthyphen = "\languageparameter\c!righthyphen",
+    } )}%
+   \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
+   \righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax}
 
 \def\docomplexlanguage% assumes that \currentlanguage is set
   {\edef\currentdefaultlanguage{\defaultlanguage\currentlanguage}%
@@ -331,6 +333,11 @@
    \relax
    % will be definable and move to core-spa !
    \doifelse{\languageparameter\c!spacing}\v!broad\nonfrenchspacing\frenchspacing}
+
+% \mainlanguage[nl] \setuplanguage[nl][lefthyphen=,righthyphen=?]
+%
+% \dorecurse{100}{dit is toch wel een heel\normalhyphendiscretionary lang\normalhyphendiscretionary woord \recurselevel\ }
+% \dorecurse{100}{dit is toch wel een heellangwoord \recurselevel\ }
 
 % The following may be a solution for the fact that one cannot
 % change catcodes of characters like : and ; inside an environment.

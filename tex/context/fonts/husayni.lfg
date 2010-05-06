@@ -167,7 +167,8 @@ return {
             [3] = {
 				"Ttaa.waqf", "SsLY.waqf", "QLY.waqf", "Miim.waqf", "LA.waqf", "Jiim.waqf", "Threedotsabove.waqf", "Siin.waqf", "Ssaad.waqf", "Qaaf.waqf", "SsL.waqf", "QF.waqf", "SKTH.waqf", "WQFH.waqf", "Kaaf.waqf", "Ayn.ruku", "Miim.nuun_high", "Siin.Ssaad", "Nuunsmall", "emptydot_low", "emptydot_high", "Sifr.fill", "Miim.nuun_low", "Nuun.tanwiin",
             },
-            [4] = {"ZeroArabic.ayah", "OneArabic.ayah", "TwoArabic.ayah", "ThreeArabic.ayah", "FourArabic.ayah", "FiveArabic.ayah", "SixArabic.ayah", "SevenArabic.ayah", "EightArabic.ayah", "NineArabic.ayah", "FourFarsi.ayah", "FiveFarsi.ayah", "SixFarsi.ayah", "FourFarsi.urdu_ayah", "SevenFarsi.urdu_ayah","ZeroArabic.ayah_small","OneArabic.ayah_small","TwoArabic.ayah_small","ThreeArabic.ayah_small","FourArabic.ayah.001","FiveArabic.ayah_small","SixArabic.ayah_small","SevenArabic.ayah_small","EightArabic.ayah_small","NineArabic.ayah_small",
+            [4] = {
+                "ZeroArabic.ayah", "OneArabic.ayah", "TwoArabic.ayah", "ThreeArabic.ayah", "FourArabic.ayah", "FiveArabic.ayah", "SixArabic.ayah", "SevenArabic.ayah", "EightArabic.ayah", "NineArabic.ayah", "FourFarsi.ayah", "FiveFarsi.ayah", "SixFarsi.ayah", "FourFarsi.urdu_ayah", "SevenFarsi.urdu_ayah","ZeroArabic.ayah_small","OneArabic.ayah_small","TwoArabic.ayah_small","ThreeArabic.ayah_small","FourArabic.ayah.001","FiveArabic.ayah_small","SixArabic.ayah_small","SevenArabic.ayah_small","EightArabic.ayah_small","NineArabic.ayah_small",
             },
             [5] = {
                 "Ayah", "Ayah.alt1", "Ayah.alt2", "Ayah.alt3", "Ayah2",

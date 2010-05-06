@@ -644,6 +644,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth,
             texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth)
     end
+    if trace then trace_info("start analyzing",where,what) end
     while current do
         local id, subtype = current.id, current.subtype
         if id == hlist or id == vlist then

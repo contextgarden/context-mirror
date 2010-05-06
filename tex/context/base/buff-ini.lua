@@ -113,7 +113,7 @@ function buffers.verbatimbreak(n,m)
     if flags.optimize_verbatim then
         if n == 2 or n == m then
             texsprint(no_break_command)
-        else
+        elseif n > 1 then
             texsprint(do_break_command)
         end
     end

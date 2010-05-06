@@ -168,6 +168,20 @@ local function tolang(what)
     end
 end
 
+function languages.setup(what,settings)
+    what = languages.tolang(what or tex.language)
+    local lefthyphen  = settings.lefthyphen
+    local righthyphen = settings.righthyphen
+    lefthyphen  = lefthyphen  ~= "" and lefthyphen  or nil
+    righthyphen = righthyphen ~= "" and righthyphen or nil
+    lefthyphen  = lefthyphen  and utf.byte(lefthyphen)  or 0
+    righthyphen = righthyphen and utf.byte(righthyphen) or 0
+    lang.posthyphenchar(what,lefthyphen)
+    lang.prehyphenchar (what,righthyphen)
+    lang.postexhyphenchar(what,lefthyphen)
+    lang.preexhyphenchar (what,righthyphen)
+end
+
 function languages.prehyphenchar(what)
     return lang.prehyphenchar(tolang(what))
 end
@@ -289,7 +303,7 @@ languages.words.colors    = {
     ["unknown"] = "red",
 }
 
-do
+do -- can use predefined patterns
 
     local spacing = lpeg.S(" \n\r\t")
     local markup  = lpeg.S("-=")
