@@ -170,7 +170,7 @@
    \pushendofline
    \unprotect
    % we could have something readfilewithMKfallback
-   \readfile\currenttypefile\donothing{\readfile{\currenttypefile.\mksuffix}\donothing\donothing}%
+   \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}%
    \protect
    \popendofline
    \stopreadingfile}
@@ -495,7 +495,8 @@
    \ifmmode\mr\else\tf\fi} % needed ?
 
 \def\usetypefile[#1]% recurses on path !
-  {\readfile{\f!typeprefix#1}\donothing\donothing}
+  {\edef\currenttypefile{\f!typeprefix#1}%
+   \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}}
 
 %D For Taco:
 %D

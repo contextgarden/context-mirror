@@ -16,6 +16,28 @@
 %D in good old \TEX, and these may differ a bit. Here we also see
 %D some oldstyle definitions which normally are done with features.
 
+\starttypescriptcollection[fallback]
+
+\starttypescript [fallback]
+    \definetypeface [] [rm] [serif] [modern] [computer-modern]
+    \definetypeface [] [ss] [sans]  [modern] [computer-modern]
+    \definetypeface [] [tt] [mono]  [modern] [computer-modern]
+    \definetypeface [] [mm] [math]  [modern] [computer-modern]
+    \quittypescriptscanning
+\stoptypescript
+
+% faster
+%
+% \starttypescript [fallback]
+%     \definetypeface [] [rm] [serif] [modern] [default]
+%     \definetypeface [] [ss] [sans]  [modern] [default]
+%     \definetypeface [] [tt] [mono]  [modern] [default]
+%     \definetypeface [] [mm] [math]  [modern] [default]
+%     \quittypescriptscanning
+% \stoptypescript
+
+\stoptypescriptcollection
+
 % if a fontname equals the filename, then use
 %
 % \setupfontsynonym  [LMRoman10-DemiOblique]                                 [\s!features=\s!default] % file is lowercase, so fails

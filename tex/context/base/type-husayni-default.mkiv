@@ -1,0 +1,146 @@
+﻿\definefontfeature
+  [husayni-default]
+  [analyze=yes,mode=node,
+   language=dflt,script=arab,
+   ccmp=yes, % adds identity dots to unicode letters; includes dynamic dot placement
+   init=yes,medi=yes,fina=yes, % contextual analysis
+   % dlig=yes, % Hamzahbelow under YaaHamzahabove
+   rlig=yes, % indispensable
+   calt=yes, % ayah+numerals
+   salt=yes, % includes manual justification with Tatwiil
+   % fchr=yes % formatting chars
+   anum=yes, % replace latin numerals with arabic-script ones
+   ss01=yes, % Allah, Muhammad,
+   % ss02=yes, % ss01 + Allah_final
+   ss03=yes, % level-1 stack over Jiim, initial entry only
+   % ss04=yes, % level-1 stack over Jiim, initial/medial entry
+   % ss05=yes, % multi-level Jiim stacking, initial/medial entry
+   % ss06=yes, % aesthetic Faa/Qaaf for FJ_mm, FJ_mf connection
+   ss07=yes, % initial-entry stacking over Haa
+   % ss08=yes, % initial/medial stacking over Haa, minus HM_mf strings
+   % ss09=yes, % initial/medial Haa stacking plus HM_mf strings
+   ss10=yes, % basic dipped Miim, initial-entry B_S-stack over Miim
+   % ss11=yes, % full dipped Miim, initial-entry B_S-stack over Miim
+   ss12=yes, % XBM_im initial-medial entry B_S-stack over Miim,
+   % ss13=yes, % full initial-medial entry B_S-stacked Miim
+   % ss14=yes, initial entry, stacked Laam on Miim
+   ss15=yes, % full stacked Laam-on-Miim
+   ss16=yes, % initial entry, stacked Ayn-on-Miim
+   % ss17=yes, % full stacked Ayn-on-Miim
+   % ss18=yes, % LMJ_im % already contained in ss03--05, may remove
+   ss19=yes, % LM_im
+   % ss20=yes, % KLM_m, sloped Miim
+   % ss21=yes, % KLM_i_mm/LM_mm, sloped Miim
+   % ss22=yes, % filled sloped Miim
+   % ss23=yes, % LM_mm, non-sloped Miim
+   ss24=yes, % BR_i_mf, BN_i_mf
+   ss25=yes, % basic LH_im % might merge with ss24
+   ss26=yes, % full Yaa.final special strings: BY_if, BY_mf, LY_mf
+   ss27=yes, % basic thin Miim.final
+   % ss28=yes, % full thin Miim.final % to be moved to jsnn
+   % ss29=yes, % basic short Miim.final
+   % ss30=yes, % full short Miim.final % to be moved to jsnn
+   ss31=yes, % basic Raa.final strings: JR and SR
+   % ss32=yes, % basic Raa.final strings: JR, SR, and BR
+   % ss33=yes, % TtR % to be moved to jsnn
+   ss34=yes, % AyR style % also available in jsnn
+   ss35=yes, % full Kaaf contexts
+   ss36=yes, % full Laam contexts
+   ss37=yes, % Miim-Miim contexts
+   ss38=yes, % basic dipped Haa, B_SH_mm
+   % ss39=yes, % full dipped Haa,  B_S_LH_i_mm_Mf
+   % ss40=yes, % aesthetic dipped medial Haa
+   ss41=yes, % high and low Baa strings
+   ss42=yes, % diagonal entry
+   ss43=yes, % initial alternates
+   % ss44=yes, % hooked final alif
+   % ss45=yes, % BMA_f
+   % ss46=yes, % BM_mm_alt, for JBM combinations
+   % ss47=yes, % Shaddah-<kasrah> combo
+   % ss48=yes, % Auto-sukuun
+   % ss49=yes, % No vowels
+   % ss50=yes, % Shaddah/MaaddahHamzah only
+   % ss51=yes, % No Skuun
+   % ss52=yes, % No Waslah
+   % ss53=yes, % No Waslah
+   % ss54=yes, % chopped finals
+   % ss55=yes, % idgham-tanwin
+   ss60=yes, % 
+   % js01=yes, % Raawide
+   % js02=yes, % Yaawide
+   % js03=yes, % Kaafwide
+   % js04=yes, % Nuunwide
+   % js05=yes, % Kaafwide Nuunwide Siinwide Baawide
+   % js06=yes, % final Haa wide
+   % js07=yes, % thin Miim
+   % js08=yes, % short Miim
+   % js09=yes, % wide Siin
+   % js10=yes, % thuluth-style initial Haa, final Miim, MRw_mf
+   % js11=yes, % level-1 stretching
+   % js12=yes, % level-2 stretching
+   % js13=yes, % level-3 stretching
+   % js14=yes, % final Alif
+   % js15=yes, % hooked final Alif
+   js16=yes, % aesthetic medial Faa/Qaaf
+   % js17=yes, % fancy isol Haa after Daal, Raa, and Waaw
+   % js18=yes, % Laamwide, alternate substitution
+   % js19=yes, % level-4 stretching, only siin and Hhaa for basmalah
+   % js20=yes, % level-5 stretching, only siin and Hhaa for basmalah
+   % js21=yes, % Haa.final_alt2
+   % calt=yes, % to be used for vowel/dot-based dynamics
+   % ttwl=yes, % for simple, horizontal stretching, not yet implemented in luatex/mkiv
+   % flts=yes, % Final Glyph On Line Alternates Short: Baa-like
+   % fltw=yes, % Final Glyph On Line Alternates Wide: Baa-like
+   % gclr=yes, % Geometric Cursive LR : for testing GPOS only!
+   % gcrl=yes, % Geometric Cursive RL
+   % gklr=yes, % Geometric Kerning LR
+   % gkrl=yes, % Geometric Kerning RL
+   kern=yes, % includes kerning of dot-base pairs, and final pairs in continuous strings
+   curs=yes, % we don't curs final pairs, padj for that
+   mark=yes, % vowels
+   mkmk=yes, % stacked vowels
+   tlig=yes,
+   colorscheme=husayni:default]
+
+\definefontfeature
+  [husayni-tt]
+  [analyze=yes,mode=node,
+   language=dflt,script=arab,
+   ccmp=yes, % adds identity dots to unicode letters; includes dynamic dot placement
+   init=yes,medi=yes,fina=yes, % contextual analysis
+   rlig=yes, % indispensable
+   fchr=yes,
+   kern=yes, % includes kerning of dot-base pairs, and final pairs in continuous strings
+   curs=yes, % we don't curs final pairs, padj for that
+   mark=yes, % vowels
+   mkmk=yes] % stacked vowels
+
+\definefontfeature
+  [husayni-mono]
+  [analyze=yes,mode=node,
+   language=dflt,script=arab,ccmp=no,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   rlig=yes,liga=yes,
+   mset=yes]
+   
+\definedelimitedtext
+  [ornatequote]
+  [left={‏\char"FD3F\penalty10000},
+   right={‏\char"FD3E\penalty10000}]   
+   
+\definedelimitedtext
+  [arparenthesis]
+  [left={‏\char"0028},
+   right={‏\char"0029}] 
+
+\definedelimitedtext
+  [arquotation]
+  [left={‏\symbol[rightquotation]},
+   right={‏\symbol[leftquotation]},
+   leftmargin=standard]
+
+\definedelimitedtext
+  [arquote]
+  [left={‏\symbol[rightquote]},
+   right={‏\symbol[leftquote]},
+   leftmargin=standard]

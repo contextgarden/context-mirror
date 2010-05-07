@@ -269,17 +269,29 @@
        \else
          \let\openbookmarklist\empty
        \fi
-       \global\let\bookmarklevellist\empty
-       \def\bookmarklevelcount{0}%
-       \doprocessbookmarks[#1]\dogetbookmarkelement
-       \dolistelement{}{}{}{}{}{}% needed to finish the first pass
-       \doprocessbookmarks[#1]\doputbookmarkelement
-       \flushbookmark
+       \xdef\doplacebookmarksindeed{\noexpand\dodoplacebookmarksindeed[#1][\openbookmarklist]}
        \egroup
      \else
        \expanded{\placebookmarks\@EA[\getvalue{\??ih\v!content\c!list}]}%
      \fi
    \fi}
+
+\def\dodoplacebookmarksindeed[#1][#2]%
+  {\bgroup
+   \edef\openbookmarklist{#2}%
+   \global\let\bookmarklevellist\empty
+   \def\bookmarklevelcount{0}%
+   \doprocessbookmarks[#1]\dogetbookmarkelement
+   \dolistelement{}{}{}{}{}{}% needed to finish the first pass
+   \doprocessbookmarks[#1]\doputbookmarkelement
+   \flushbookmark
+   \egroup}
+
+\let\doplacebookmarksindeed\relax
+
+\prependtoks
+    \doplacebookmarksindeed % new, now postponed so that halfway defined commands work out ok
+\to \everystoptext
 
 \def\doprocessbookmarks[#1]#2%
   {\let\dolistelement#2\relax

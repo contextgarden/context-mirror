@@ -23,7 +23,7 @@ local _path_, libpaths, _cpath_, clibpaths
 function package.libpaths()
     if not _path_ or package.path ~= _path_ then
         _path_ = package.path
-        libpaths = file.split_path(_path_)
+        libpaths = file.split_path(_path_,";")
     end
     return libpaths
 end
@@ -31,7 +31,7 @@ end
 function package.clibpaths()
     if not _cpath_ or package.cpath ~= _cpath_ then
         _cpath_ = package.cpath
-        clibpaths = file.split_path(_cpath_)
+        clibpaths = file.split_path(_cpath_,";")
     end
     return clibpaths
 end

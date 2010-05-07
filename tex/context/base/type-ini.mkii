@@ -158,7 +158,7 @@
        \startreadingfile
        \pushendofline
        \unprotect
-       \readfile\currenttypefile\donothing\donothing
+       \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}%
        \protect
        \popendofline
        \stopreadingfile
@@ -172,7 +172,7 @@
      \startreadingfile
      \pushendofline
      \unprotect
-     \readfile\currenttypefile\donothing\donothing
+     \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}%
      \protect
      \popendofline
      \stopreadingfile

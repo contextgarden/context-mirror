@@ -11,6 +11,163 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\starttypescriptcollection[size]
+
+\starttypescript [serif] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [rm] [default]
+\stoptypescript
+
+\starttypescript [sans] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [ss] [default]
+\stoptypescript
+
+\starttypescript [mono] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [tt] [default]
+\stoptypescript
+
+\starttypescript [math,boldmath] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [mm] [default]
+\stoptypescript
+
+\starttypescript [bfmath] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [mm] [bfmath]
+\stoptypescript
+
+\starttypescript [handwriting] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [hw] [default]
+\stoptypescript
+
+\starttypescript [calligraphy] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [cg] [default]
+\stoptypescript
+
+\starttypescript [casual] [default] [size] % maps onto rm !
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [rm] [default]
+\stoptypescript
+
+\starttypescript [all] [dtp] [size]
+
+  \definebodyfontenvironment
+    [4pt]
+    [\s!text=4pt,\s!script=4pt,\s!scriptscript=4pt,
+     \c!x=4pt,\c!xx=4pt,\c!big=6pt,\c!small=4pt]
+
+  \definebodyfontenvironment
+    [5pt]
+    [\s!text=5pt,\s!script=5pt,\s!scriptscript=5pt,
+     \c!x=5pt,\c!xx=5pt,\c!big=7pt,\c!small=5pt]
+
+  \definebodyfontenvironment
+    [6pt]
+    [\s!text=6pt,\s!script=5pt,\s!scriptscript=5pt,
+     \c!x=5pt,\c!xx=5pt,\c!big=8pt,\c!small=5pt]
+
+  \definebodyfontenvironment
+    [7pt]
+    [\s!text=7pt,\s!script=6pt,\s!scriptscript=5pt,
+     \c!x=6pt,\c!xx=5pt,\c!big=9pt,\c!small=5pt]
+
+  \definebodyfontenvironment
+    [8pt]
+    [\s!text=8pt,\s!script=6pt,\s!scriptscript=5pt,
+     \c!x=6pt,\c!xx=5pt,\c!big=10pt,\c!small=6pt]
+
+  \definebodyfontenvironment
+    [9pt]
+    [\s!text=9pt,\s!script=7pt,\s!scriptscript=5pt,
+     \c!x=7pt,\c!xx=5pt,\c!big=11pt,\c!small=7pt]
+
+  \definebodyfontenvironment
+    [10pt]
+    [\s!text=10pt,\s!script=7pt,\s!scriptscript=5pt,
+     \c!x=8pt,\c!xx=6pt,\c!big=12pt,\c!small=8pt]
+
+  \definebodyfontenvironment
+    [11pt]
+    [\s!text=11pt,\s!script=8pt,\s!scriptscript=6pt,
+     \c!x=9pt,\c!xx=7pt,\c!big=13pt,\c!small=9pt]
+
+  \definebodyfontenvironment
+    [12pt]
+    [\s!text=12pt,\s!script=9pt,\s!scriptscript=7pt,
+     \c!x=10pt,\c!xx=8pt,\c!big=14pt,\c!small=10pt]
+
+  \definebodyfontenvironment
+    [13pt]
+    [\s!text=13pt,\s!script=10pt,\s!scriptscript=8pt,
+     \c!x=11pt,\c!xx=9pt,\c!big=16pt,\c!small=11pt]
+
+  \definebodyfontenvironment
+    [14pt]
+    [\s!text=14pt,\s!script=10pt,\s!scriptscript=7pt,
+     \c!x=12pt,\c!xx=10pt,\c!big=16pt,\c!small=12pt]
+
+  \definebodyfontenvironment
+    [16pt]
+    [\s!text=16pt,\s!script=12pt,\s!scriptscript=9pt,
+     \c!x=13pt,\c!xx=11pt,\c!big=18pt,\c!small=14pt]
+
+  % suboptimal math sizes
+
+  \definebodyfontenvironment
+    [18pt]
+    [\s!text=18pt,\s!script=16pt,\s!scriptscript=14pt,
+     \c!x=16pt,\c!xx=14pt,\c!big=22pt,\c!small=16pt]
+
+  \definebodyfontenvironment
+    [22pt]
+    [\s!text=22pt,\s!script=22pt,\s!scriptscript=18pt,
+     \c!x=18pt,\c!xx=16pt,\c!big=28pt,\c!small=18pt]
+
+  \definebodyfontenvironment
+    [28pt]
+    [\s!text=28pt,\s!script=22pt,\s!scriptscript=18pt,
+     \c!x=22pt,\c!xx=18pt,\c!big=28pt,\c!small=22pt]
+
+\stoptypescript
+
+\starttypescript [serif] [dtp] [size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [rm] [default]
+\stoptypescript
+
+\starttypescript [sans] [dtp] [size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [ss] [default]
+\stoptypescript
+
+\starttypescript [mono] [dtp] [size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [tt] [default]
+\stoptypescript
+
+\starttypescript [math,boldmath] [dtp] [size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [mm] [default]
+\stoptypescript
+
+\stoptypescriptcollection
+
 \starttypescriptcollection[size-mkiv]
 
 \starttypescript [serif] [computer-modern] [size]

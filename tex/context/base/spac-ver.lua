@@ -167,9 +167,16 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
     if method["local"] then
         -- snapping is done immediately here
         snapht, snapdp = texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth
+    elseif method["global"] then
+        snapht, snapdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
     else
+        -- maybe autolocal
         -- snapping might happen later in the otr
         snapht, snapdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
+        local lsnapht, lsnapdp = texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth
+        if snapht ~= lsnapht and snapdp ~= lsnapdp then
+            snapht, snapdp = lsnapht, lsnapdp
+        end
     end
     local h, d = height or current.height, depth or current.depth
     local hr, dr, ch, cd = method.hfraction or 1, method.dfraction or 1, h, d
@@ -573,7 +580,7 @@ function vspacing.snap_box(n,how)
             local s = has_attribute(list,snap_method)
             if s == 0 then
                 if trace_vsnapping then
-                    logs.report("snapper", "hlist not snapped, already done")
+                --  logs.report("snapper", "hlist not snapped, already done")
                 end
             else
                 local h, d, ch, cd, lines = snap_hlist(box,sv,box.height,box.depth)
@@ -648,6 +655,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
     while current do
         local id, subtype = current.id, current.subtype
         if id == hlist or id == vlist then
+-- needs checking, why so many calls
             if snap then
                 local s = has_attribute(current,snap_method)
                 if not s then
@@ -656,7 +664,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 --  end
                 elseif s == 0 then
                     if trace_vsnapping then
-                        logs.report("snapper", "hlist not snapped, already done")
+                    --  logs.report("snapper", "hlist not snapped, already done")
                     end
                 else
                     local sv = snapmethods[s]
