@@ -62,7 +62,7 @@ end
 function metapost.theclippath(...)
     local result = metapost.getclippath(...)
     if result then -- we could just print the table
-        result = join(metapost.flushnormalpath(object.path),"\n")
+        result = join(metapost.flushnormalpath(result),"\n")
         sprint(result)
     end
 end

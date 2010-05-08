@@ -104,7 +104,7 @@ if (($pattern eq '')||($Help)) {
     my $error =  system ($runner) ;
     if ($error) {
         print "\n$program : error while processing mp file\n" ;
-        exit ;
+        exit 1 ;
     } else {
         $pattern =~ s/\.mp$//io ;
         @files = glob "$pattern.*" ;
@@ -131,7 +131,11 @@ foreach my $file (@files) {
         } else {
             $command = "$command \\\\relax $file" ;
         }
-        system($command) ;
+        my $error = system($command) ;
+        if ($error) {
+            print "\n$program : error while processing tex file\n" ;
+            exit 1 ;
+        }
         my $pdfsrc = basename($_).".pdf";
         rename ($pdfsrc, "$_-$1.pdf") ;
         if (-e $pdfsrc) {

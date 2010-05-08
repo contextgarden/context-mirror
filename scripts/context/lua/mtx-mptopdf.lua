@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['mtx-mptopdf'] = {
     version   = 1.303,
-    comment   = "companion to mtxrun.lua",
+    comment   = "companion to mtxrun.lua, patched by HH so errors are his",
     author    = "Taco Hoekwater, Elvenkind BV, Dordrecht NL",
     copyright = "Elvenkind BV / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -32,16 +32,18 @@ function scripts.mptopdf.aux.do_convert (fname)
         else
             command = string.format('%s \\\\relax "%s"',command,fname)
         end
-        os.execute(command)
-        local name, suffix = file.nameonly(fname), file.extname(fname)
-        local pdfsrc =  name .. ".pdf"
-        if lfs.isfile(pdfsrc) then
-            pdfdest = name .. "-" .. suffix .. ".pdf"
-            os.rename(pdfsrc, pdfdest)
-            if lfs.isfile(pdfsrc) then -- rename failed
-                file.copy(pdfsrc, pdfdest)
+        local result = os.execute(command)
+        if result == 0 then
+            local name, suffix = file.nameonly(fname), file.extname(fname)
+            local pdfsrc =  name .. ".pdf"
+            if lfs.isfile(pdfsrc) then
+                pdfdest = name .. "-" .. suffix .. ".pdf"
+                os.rename(pdfsrc, pdfdest)
+                if lfs.isfile(pdfsrc) then -- rename failed
+                    file.copy(pdfsrc, pdfdest)
+                end
+                done = 1
             end
-            done = 1
         end
     end
     return done, pdfdest

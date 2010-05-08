@@ -3950,7 +3950,7 @@ element.</p>
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
 local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
-local strip, cleanup, utfize, resolve, resolve_predefined = false, false, false, false, false
+local strip, cleanup, utfize, resolve, resolve_predefined, unify_predefined = false, false, false, false, false, false
 local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
@@ -4078,52 +4078,6 @@ function xml.unknown_dec_entity_format(str) return (str == "" and "&error;") or 
 function xml.unknown_hex_entity_format(str) return format("&#x%s;",str) end
 function xml.unknown_any_entity_format(str) return format("&#x%s;",str) end
 
-local function handle_hex_entity(str)
-    local h = hcache[str]
-    if not h then
-        if utfize then
-            local n = tonumber(str,16)
-            h = (n and utfchar(n)) or xml.unknown_hex_entity_format(str) or ""
-            if not n then
-                logs.report("xml","utfize, ignoring hex entity &#x%s;",str)
-            elseif trace_entities then
-                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,c)
-            end
-        else
-            if trace_entities then
-                logs.report("xml","found entity &#x%s;",str)
-            end
-            h = "&#c" .. str .. ";"
-        end
-        hcache[str] = h
-    end
-    return h
-end
-
-local function handle_dec_entity(str)
-    local d = dcache[str]
-    if not d then
-        if utfize then
-            local n = tonumber(str)
-            d = (n and utfchar(n)) or xml.unknown_dec_entity_format(str) or ""
-            if not n then
-                logs.report("xml","utfize, ignoring dec entity &#%s;",str)
-            elseif trace_entities then
-                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,c)
-            end
-        else
-            if trace_entities then
-                logs.report("xml","found entity &#%s;",str)
-            end
-            d = "&#" .. str .. ";"
-        end
-        dcache[str] = d
-    end
-    return d
-end
-
--- one level expansion (simple case)
-
 local function fromhex(s)
     local n = tonumber(s,16)
     if n then
@@ -4142,6 +4096,8 @@ local function fromdec(s)
     end
 end
 
+-- one level expansion (simple case), no checking done
+
 local rest = (1-P(";"))^0
 local many = P(1)^0
 
@@ -4149,21 +4105,85 @@ local parsedentity =
     P("&") * (P("#x")*(rest/fromhex) + P("#")*(rest/fromdec)) * P(";") * P(-1) +
              (P("#x")*(many/fromhex) + P("#")*(many/fromdec))
 
-xml.parsedentitylpeg = parsedentity
+-- parsing in the xml file
 
-local predefined = {
-    amp  = "&",
-    lt   = "<",
-    gt   = ">",
-    quot = '"',
-    apos = "'",
+local predefined_unified = {
+    [38] = "&amp;",
+    [42] = "&quot;",
+    [47] = "&apos;",
+    [74] = "&lt;",
+    [76] = "&gr;",
 }
+
+local predefined_simplified = {
+    [38] = "&", amp  = "&",
+    [42] = '"', quot = '"',
+    [47] = "'", apos = "'",
+    [74] = "<", lt   = "<",
+    [76] = ">", gt   = ">",
+}
+
+local function handle_hex_entity(str)
+    local h = hcache[str]
+    if not h then
+        local n = tonumber(str,16)
+        h = unify_predefined and predefined_unified[n]
+        if h then
+            if trace_entities then
+                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,h)
+            end
+        elseif utfize then
+            h = (n and utfchar(n)) or xml.unknown_hex_entity_format(str) or ""
+            if not n then
+                logs.report("xml","utfize, ignoring hex entity &#x%s;",str)
+            elseif trace_entities then
+                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,h)
+            end
+        else
+            if trace_entities then
+                logs.report("xml","found entity &#x%s;",str)
+            end
+            h = "&#x" .. str .. ";"
+        end
+        hcache[str] = h
+    end
+    return h
+end
+
+local function handle_dec_entity(str)
+    local d = dcache[str]
+    if not d then
+        local n = tonumber(str)
+        d = unify_predefined and predefined_unified[n]
+        if d then
+            if trace_entities then
+                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,d)
+            end
+        elseif utfize then
+            d = (n and utfchar(n)) or xml.unknown_dec_entity_format(str) or ""
+            if not n then
+                logs.report("xml","utfize, ignoring dec entity &#%s;",str)
+            elseif trace_entities then
+                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,h)
+            end
+        else
+            if trace_entities then
+                logs.report("xml","found entity &#%s;",str)
+            end
+            d = "&#" .. str .. ";"
+        end
+        dcache[str] = d
+    end
+    return d
+end
+
+xml.parsedentitylpeg = parsedentity
 
 local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
-            a = resolve_predefined and predefined[str]
+            a = resolve_predefined and predefined_simplified[str]
             if a then
                 -- one of the predefined
             elseif type(resolve) == "function" then
@@ -4209,7 +4229,7 @@ local function handle_any_entity(str)
             if trace_entities then
                 logs.report("xml","found entity &%s;",str)
             end
-            a = resolve_predefined and predefined[str]
+            a = resolve_predefined and predefined_simplified[str]
             if a then
                 -- one of the predefined
                 acache[str] = a
@@ -4359,6 +4379,7 @@ local function xmlconvert(data, settings)
     utfize = settings.utfize_entities
     resolve = settings.resolve_entities
     resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
+    unify_predefined = settings.unify_predefined_entities -- &#038; -> &amp;
     cleanup = settings.text_cleanup
     stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
     acache, hcache, dcache = { }, { }, { } -- not stored
@@ -4465,21 +4486,19 @@ the whole file first. The function accepts a string representing
 a filename or a file handle.</p>
 --ldx]]--
 
-function xml.load(filename)
+function xml.load(filename,settings)
+    local data = ""
     if type(filename) == "string" then
+     -- local data = io.loaddata(filename) - -todo: check type in io.loaddata
         local f = io.open(filename,'r')
         if f then
-            local root = xmlconvert(f:read("*all"))
+            data = f:read("*all")
             f:close()
-            return root
-        else
-            return xmlconvert("")
         end
     elseif filename then -- filehandle
-        return xmlconvert(filename:read("*all"))
-    else
-        return xmlconvert("")
+        data = filename:read("*all")
     end
+    return xmlconvert(data,settings)
 end
 
 --[[ldx--
@@ -5109,17 +5128,17 @@ apply_axis['child'] = function(list)
     for l=1,#list do
         local ll = list[l]
         local dt = ll.dt
-local en = 0
+        local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
-en = en + 1
-dk.ei = en
+            en = en + 1
+            dk.ei = en
             end
         end
-ll.en = en
+        ll.en = en
     end
     return collected
 end
@@ -5127,18 +5146,18 @@ end
 local function collect(list,collected)
     local dt = list.dt
     if dt then
-local en = 0
+        local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
-en = en + 1
-dk.ei = en
+                en = en + 1
+                dk.ei = en
                 collect(dk,collected)
             end
         end
-list.en = en
+        list.en = en
     end
 end
 apply_axis['descendant'] = function(list)
@@ -5152,18 +5171,18 @@ end
 local function collect(list,collected)
     local dt = list.dt
     if dt then
-local en = 0
+        local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
                 collected[#collected+1] = dk
                 dk.ni = k -- refresh
-en = en + 1
-dk.ei = en
+                en = en + 1
+                dk.ei = en
                 collect(dk,collected)
             end
         end
-list.en = en
+        list.en = en
     end
 end
 apply_axis['descendant-or-self'] = function(list)
@@ -5800,17 +5819,17 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
                         add_comment(parsed, "initial-child removed") -- we could also make it a auto-self
                         remove(parsed,1)
                     end
-local np = #parsed -- can have changed
-if np > 1 then
-    local pnp = parsed[np]
-    if pnp.kind == "nodes" and pnp.nodetest == true then
-        local nodes = pnp.nodes
-        if nodes[1] == true and nodes[2] == false and nodes[3] == false then
-            add_comment(parsed, "redundant final wildcard filter removed")
-            remove(parsed,np)
-        end
-    end
-end
+                    local np = #parsed -- can have changed
+                    if np > 1 then
+                        local pnp = parsed[np]
+                        if pnp.kind == "nodes" and pnp.nodetest == true then
+                            local nodes = pnp.nodes
+                            if nodes[1] == true and nodes[2] == false and nodes[3] == false then
+                                add_comment(parsed, "redundant final wildcard filter removed")
+                                remove(parsed,np)
+                            end
+                        end
+                    end
                 end
             else
                 parsed = { pattern = pattern }
@@ -5835,6 +5854,10 @@ end
 
 -- caching found lookups saves not that much (max .1 sec on a 8 sec run)
 -- and it also messes up finalizers
+
+-- watch out: when there is a finalizer, it's always called as there
+-- can be cases that a finalizer returns (or does) something in case
+-- there is no match; an example of this is count()
 
 local profiled = { }  xml.profiled = profiled
 
@@ -5863,6 +5886,12 @@ local function profiled_apply(list,parsed,nofparsed,order)
             return collected
         end
         if not collected or #collected == 0 then
+            local pn = i < nofparsed and parsed[nofparsed]
+            if pn and pn.kind == "finalizer" then
+                collected = pn.finalizer(collected)
+                p.finalized = p.finalized + 1
+                return collected
+            end
             return nil
         end
     end
@@ -5894,10 +5923,16 @@ local function traced_apply(list,parsed,nofparsed,order)
             logs.report("lpath", "% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
         elseif kind == "finalizer" then
             collected = pi.finalizer(collected)
-            logs.report("lpath", "% 10i : fi : %s : %s(%s)",(collected and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
+            logs.report("lpath", "% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
             return collected
         end
         if not collected or #collected == 0 then
+            local pn = i < nofparsed and parsed[nofparsed]
+            if pn and pn.kind == "finalizer" then
+                collected = pn.finalizer(collected)
+                logs.report("lpath", "% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pn.name,pn.arguments or "")
+                return collected
+            end
             return nil
         end
     end
@@ -5922,6 +5957,10 @@ local function normal_apply(list,parsed,nofparsed,order)
             return pi.finalizer(collected)
         end
         if not collected or #collected == 0 then
+            local pf = i < nofparsed and parsed[nofparsed].finalizer
+            if pf then
+                return pf(collected) -- can be anything
+            end
             return nil
         end
     end
@@ -6698,11 +6737,83 @@ function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and 
                             end
                         end
                     else
---~                         str.ni = i
+        --~                         str.ni = i
                         t[#t+1] = str
                     end
                 end
                 e.dt = t
+            end
+        end
+    end
+end
+
+function xml.strip_whitespace(root, pattern, nolines, anywhere) -- strips all leading and trailing spacing
+    local collected = xmlparseapply({ root },pattern) -- beware, indices no longer are valid now
+    if collected then
+        for i=1,#collected do
+            local e = collected[i]
+            local edt = e.dt
+            if edt then
+                if anywhere then
+                    local t = { }
+                    for e=1,#edt do
+                        local str = edt[e]
+                        if type(str) ~= "string" then
+                            t[#t+1] = str
+                        elseif str ~= "" then
+                            -- todo: lpeg for each case
+                            if nolines then
+                                str = gsub(str,"%s+"," ")
+                            end
+                            str = gsub(str,"^%s*(.-)%s*$","%1")
+                            if str ~= "" then
+                                t[#t+1] = str
+                            end
+                        end
+                    end
+                    e.dt = t
+                else
+                    -- we can assume a regular sparse xml table with no successive strings
+                    -- otherwise we should use a while loop
+                    if #edt > 0 then
+                        -- strip front
+                        local str = edt[1]
+                        if type(str) ~= "string" then
+                            -- nothing
+                        elseif str == "" then
+                            remove(edt,1)
+                        else
+                            if nolines then
+                                str = gsub(str,"%s+"," ")
+                            end
+                            str = gsub(str,"^%s+","")
+                            if str == "" then
+                                remove(edt,1)
+                            else
+                                edt[1] = str
+                            end
+                        end
+                    end
+                    if #edt > 1 then
+                        -- strip end
+                        local str = edt[#edt]
+                        if type(str) ~= "string" then
+                            -- nothing
+                        elseif str == "" then
+                            remove(edt)
+                        else
+                            if nolines then
+                                str = gsub(str,"%s+"," ")
+                            end
+                            str = gsub(str,"%s+$","")
+                            if str == "" then
+                                remove(edt)
+                            else
+                                edt[#edt] = str
+                            end
+                        end
+                    end
+                end
             end
         end
     end
@@ -10623,11 +10734,13 @@ function statistics.check_fmt_status(texname)
             local luv = dofile(luvname)
             if luv and luv.sourcefile then
                 local sourcehash = md5.hex(io.loaddata(resolvers.find_file(luv.sourcefile)) or "unknown")
-                if luv.enginebanner and luv.enginebanner ~= enginebanner then
-                    return "engine mismatch"
+                local luvbanner = luv.enginebanner or "?"
+                if luvbanner ~= enginebanner then
+                    return string.format("engine mismatch (luv:%s <> bin:%s)",luvbanner,enginebanner)
                 end
-                if luv.sourcehash and luv.sourcehash ~= sourcehash then
-                    return "source mismatch"
+                local luvhash = luv.sourcehash or "?"
+                if luvhash ~= sourcehash then
+                    return string.format("source mismatch (luv:%s <> bin:%s)",luvhash,sourcehash)
                 end
             else
                 return "invalid status file"
@@ -10982,7 +11095,7 @@ local _path_, libpaths, _cpath_, clibpaths
 function package.libpaths()
     if not _path_ or package.path ~= _path_ then
         _path_ = package.path
-        libpaths = file.split_path(_path_)
+        libpaths = file.split_path(_path_,";")
     end
     return libpaths
 end
@@ -10990,7 +11103,7 @@ end
 function package.clibpaths()
     if not _cpath_ or package.cpath ~= _cpath_ then
         _cpath_ = package.cpath
-        clibpaths = file.split_path(_cpath_)
+        clibpaths = file.split_path(_cpath_,";")
     end
     return clibpaths
 end

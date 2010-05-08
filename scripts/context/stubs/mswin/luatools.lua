@@ -7419,11 +7419,13 @@ function statistics.check_fmt_status(texname)
             local luv = dofile(luvname)
             if luv and luv.sourcefile then
                 local sourcehash = md5.hex(io.loaddata(resolvers.find_file(luv.sourcefile)) or "unknown")
-                if luv.enginebanner and luv.enginebanner ~= enginebanner then
-                    return "engine mismatch"
+                local luvbanner = luv.enginebanner or "?"
+                if luvbanner ~= enginebanner then
+                    return string.format("engine mismatch (luv:%s <> bin:%s)",luvbanner,enginebanner)
                 end
-                if luv.sourcehash and luv.sourcehash ~= sourcehash then
-                    return "source mismatch"
+                local luvhash = luv.sourcehash or "?"
+                if luvhash ~= sourcehash then
+                    return string.format("source mismatch (luv:%s <> bin:%s)",luvhash,sourcehash)
                 end
             else
                 return "invalid status file"
