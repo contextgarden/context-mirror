@@ -18,4 +18,24 @@
 % \expanded{\defineactivecharacter \number"2000E} {\textdir TRT\relax}
 % \expanded{\defineactivecharacter \number"2000F} {\textdir TLT\relax}
 
+\unexpanded\def\showdirsinmargin
+  {\doifelse{\the\pardir}\!!TLT
+     {\inleft{\normalexpanded{\noexpand\hbox dir TLT{\ttxx[\the\pardir,\the\textdir]}}}}
+     {\inleft{\normalexpanded{\noexpand\hbox dir TLT{\ttxx[\the\pardir,\the\textdir]}}}}}
+
+\bgroup
+    \catcode`L=\othercatcode \gdef\istltdir#1#2#3{\if#2L0\else1\fi}
+    \catcode`R=\othercatcode \gdef\istrtdir#1#2#3{\if#2R0\else1\fi}
+\egroup
+
+\def\istlttextdir{\expandafter\istltdir\the\textdir}
+\def\istrttextdir{\expandafter\istrtdir\the\textdir}
+
+\def\istltpardir {\expandafter\istltdir\the\pardir }
+\def\istrtpardir {\expandafter\istrtdir\the\pardir }
+
+% \ifcase\istlttextdir          Y\else N\fi
+% \ifcase\istltpardir           Y\else N\fi
+% \ifcase\istltdir    TRT\relax Y\else N\fi
+
 \protect \endinput

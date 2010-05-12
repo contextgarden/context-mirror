@@ -5438,8 +5438,18 @@
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
         <cd:parameter name="luogo">
-          <cd:constant type="intesto"/>
+          <cd:constant type="centro"/>
+          <cd:constant type="sinistra"/>
+          <cd:constant type="margine"/>
           <cd:constant type="inmargine"/>
+          <cd:constant type="insinistra"/>
+          <cd:constant type="destra"/>
+          <cd:constant type="indestra"/>
+          <cd:constant type="interno"/>
+          <cd:constant type="esterno"/>
+          <cd:constant type="testo"/>
+          <cd:constant type="begin"/>
+          <cd:constant type="end"/>
         </cd:parameter>
         <cd:parameter name="stile">
           <cd:resolve name="style"/>

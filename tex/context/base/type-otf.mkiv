@@ -16,6 +16,25 @@
 %D in good old \TEX, and these may differ a bit. Here we also see
 %D some oldstyle definitions which normally are done with features.
 
+
+% \starttypescriptcollection[myfonts]
+%
+%     \starttypescript [serif] [myserif] [name]
+%         \setups[font:fallback:serif]
+%         \definefontsynonym [Serif]           [file:myserif.ttf]           [features=default]
+%         \definefontsynonym [SerifBold]       [file:myserifbold.ttf]       [features=default]
+%         \definefontsynonym [SerifItalic]     [file:myserifitalic.ttf]     [features=default]
+%         \definefontsynonym [SerifBoldItalic] [file:myserifbolditalic.ttf] [features=default]
+%     \stoptypescript
+%
+%     \starttypescript[myfont]
+%         \definetypeface [myfont] [rm] [serif] [myserif] [default]
+%     \stoptypescript
+%
+% \stoptypescriptcollection
+%
+% \setupbodyfont[myfont]
+
 \starttypescriptcollection[fallback]
 
 \starttypescript [fallback]
@@ -813,51 +832,78 @@
 
     \stoptypescript
 
-    % maybe no -Regular etc
-
-    \starttypescript [math] [antykwa-torunska-light] [name]
-        \definefontsynonym [MathRoman]     [AntykwaTorunska-Math-Letters-Light]
-        %definefontsynonym [MathItalic]    [AntykwaTorunska-Math-Letters-LightItalic]
-        %definefontsynonym [MathSymbol]    [AntykwaTorunska-Math-Symbols-Light]
-        %definefontsynonym [MathExtension] [AntykwaTorunska-Math-Extension-Light]
-    \stoptypescript
-
-    \starttypescript [math] [antykwa-torunska] [name]
-        \definefontsynonym [MathRoman]     [AntykwaTorunska-Math-Letters-Regular]
-        %definefontsynonym [MathItalic]    [AntykwaTorunska-Math-Letters-Italic]
-        %definefontsynonym [MathSymbol]    [AntykwaTorunska-Math-Symbols-Regular]
-        %definefontsynonym [MathExtension] [AntykwaTorunska-Math-Extension-Regular]
-    \stoptypescript
-
-    \starttypescript [math] [antykwa-torunska-cond] [name]
-        \definefontsynonym [MathRoman]     [AntykwaTorunska-Math-Letters-CondRegular]
-        %definefontsynonym [MathItalic]    [AntykwaTorunska-Math-Letters-CondItalic]
-        %definefontsynonym [MathSymbol]    [AntykwaTorunska-Math-Symbols-CondRegular]
-        %definefontsynonym [MathExtension] [AntykwaTorunska-Math-Extension-CondRegular]
-    \stoptypescript
-
-    \starttypescript [math] [antykwa-torunska-lightcond] [name]
-        \definefontsynonym [MathRoman]     [AntykwaTorunska-Math-Letters-CondLight]
-        %definefontsynonym [MathItalic]    [AntykwaTorunska-Math-Letters-CondLightItalic]
-        %definefontsynonym [MathSymbol]    [AntykwaTorunska-Math-Symbols-CondLight]
-        %definefontsynonym [MathExtension] [AntykwaTorunska-Math-Extension-CondLight]
-    \stoptypescript
-
     \starttypescript [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
         \definetypeface[antykwa][rm][serif][\typescriptone] [default]
-        \definetypeface[antykwa][ss][sans] [modern]         [default,rscale=1.05]
-        \definetypeface[antykwa][tt][mono] [modern]         [default,rscale=1.05]
+        \definetypeface[antykwa][ss][sans] [modern]         [default] [rscale=1.05]
+        \definetypeface[antykwa][tt][mono] [modern]         [default] [rscale=1.05]
         \definetypeface[antykwa][mm][math] [\typescriptone] [default]
         \quittypescriptscanning
     \stoptypescript
 
     % Antykwa Poltawskiego (GUST)
 
-    \starttypescript [serif] [antykwa-poltawskiego]
-        \definefontsynonym [AntykwaPoltawskiego-Regular]    [antpr]
-        \definefontsynonym [AntykwaPoltawskiego-Bold]       [antpb]
-        \definefontsynonym [AntykwaPoltawskiego-Italic]     [antpri]
-        \definefontsynonym [AntykwaPoltawskiego-BoldItalic] [antpbi]
+%     \starttypescript [serif] [antykwa-poltawskiego]
+%         \definefontsynonym [AntykwaPoltawskiego-Regular]    [antpr]
+%         \definefontsynonym [AntykwaPoltawskiego-Bold]       [antpb]
+%         \definefontsynonym [AntykwaPoltawskiego-Italic]     [antpri]
+%         \definefontsynonym [AntykwaPoltawskiego-BoldItalic] [antpbi]
+%     \stoptypescript
+
+%     \starttypescript [serif] [antykwa-poltawskiego] [name]
+%         \definefontsynonym [Serif]            [AntykwaPoltawskiego-Regular]
+%         \definefontsynonym [SerifBold]        [AntykwaPoltawskiego-Bold]
+%         \definefontsynonym [SerifItalic]      [AntykwaPoltawskiego-Italic]
+%         \definefontsynonym [SerifSlanted]     [AntykwaPoltawskiego-Italic]
+%         \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-Bold]
+%         \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-Bold]
+%         \definefontsynonym [SerifCaps]        [AntykwaPoltawskiego-Regular]
+%     \stoptypescript
+
+    \starttypescript [serif] [antykwa-poltawskiego,antykwa-poltawskiego-light]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Light]            [\s!file:AntPoltLtCond-Regular]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-LightItalic]      [\s!file:AntPoltLtCond-Italic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Regular]          [\s!file:AntPoltCond-Regular]        [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Italic]           [\s!file:AntPoltCond-Italic]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Medium]           [\s!file:AntPoltMdCond-Bold]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-MediumItalic]     [\s!file:AntPoltMdCond-BoldItalic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Bold]             [\s!file:AntPoltCond-Bold]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-BoldItalic]       [\s!file:AntPoltCond-BoldItalic]     [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Regular]      [\s!file:AntPoltLtSemiCond-Regular]  [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Italic]       [\s!file:AntPoltLtSemiCond-Italic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Regular]      [\s!file:AntPoltSemiCond-Regular]    [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Italic]       [\s!file:AntPoltSemiCond-Italic]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Medium]       [\s!file:AntPoltMdSemiCond-Bold]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-MediumItalic] [\s!file:AntPoltMdSemiCond-BdItalic] [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Bold]         [\s!file:AntPoltSemiCond-Bold]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-BoldItalic]   [\s!file:AntPoltSemiCond-BoldItalic] [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-Light]                      [\s!file:AntPoltLt-Regular]          [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-LightItalic]                [\s!file:AntPoltLt-Italic]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Regular]                    [\s!file:AntPolt-Regular]            [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Italic]                     [\s!file:AntPolt-Italic]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Medium]                     [\s!file:AntPoltMd-Bold]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-MediumItalic]               [\s!file:AntPoltMd-BoldItalic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Bold]                       [\s!file:AntPolt-Bold]               [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-BoldItalic]                 [\s!file:AntPolt-BoldItalic]         [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Light]         [\s!file:AntPoltLtSemiExtd-Regular]  [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-LightItalic]   [\s!file:AntPoltLtSemiExtd-Italic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Regular]       [\s!file:AntPoltSemiExtd-Regular]    [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Italic]        [\s!file:AntPoltSemiExtd-Italic]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Medium]        [\s!file:AntPoltMdSemiExtd-Bold]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-MediumItalic]  [\s!file:AntPoltMdSemiExtd-BdItalic] [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Bold]          [\s!file:AntPoltSemiExtd-Bold]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-BoldItalic]    [\s!file:AntPoltSemiExtd-BoldItalic] [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Light]             [\s!file:AntPoltLtExtd-Regular]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-LightItalic]       [\s!file:AntPoltLtExtd-Italic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Regular]           [\s!file:AntPoltExtd-Regular]        [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Italic]            [\s!file:AntPoltExtd-Italic]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Medium]            [\s!file:AntPoltMdExtd-Bold]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-MediumItalic]      [\s!file:AntPoltMdExtd-BoldItalic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Bold]              [\s!file:AntPoltExtd-Bold]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-BoldItalic]        [\s!file:AntPoltExtd-BoldItalic]     [\s!features=\s!default]
     \stoptypescript
 
     \starttypescript [serif] [antykwa-poltawskiego] [name]
@@ -865,9 +911,25 @@
         \definefontsynonym [SerifBold]        [AntykwaPoltawskiego-Bold]
         \definefontsynonym [SerifItalic]      [AntykwaPoltawskiego-Italic]
         \definefontsynonym [SerifSlanted]     [AntykwaPoltawskiego-Italic]
-        \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-Bold]
-        \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-Bold]
-        \definefontsynonym [SerifCaps]        [AntykwaPoltawskiego-Regular]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-BoldItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-poltawskiego-light] [name]
+        \definefontsynonym [Serif]            [AntykwaPoltawskiego-Light]
+        \definefontsynonym [SerifBold]        [AntykwaPoltawskiego-Medium]
+        \definefontsynonym [SerifItalic]      [AntykwaPoltawskiego-LightItalic]
+        \definefontsynonym [SerifSlanted]     [AntykwaPoltawskiego-LightItalic]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-MediumItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-MediumItalic]
+    \stoptypescript
+
+    \starttypescript [antykwa-poltawskiego,antykwa-poltawskiego-light]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.05]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.05]
+        \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.05]
+        \quittypescriptscanning
     \stoptypescript
 
 \stoptypescriptcollection
@@ -1086,34 +1148,6 @@
         \definefontsynonym [SansBoldItalic] [Iwona-CapsCondHeavy-Italic]
     \stoptypescript
 
-    \starttypescript [math] [iwona-light] [name]
-        \definefontsynonym [MathRoman]     [Iwona-Math-Letters-Light-Regular]
-        %definefontsynonym [MathItalic]    [Iwona-Math-Letters-Light-Italic]
-        %definefontsynonym [MathSymbol]    [Iwona-Math-Symbols-Light]
-        %definefontsynonym [MathExtension] [Iwona-Math-Extension-Light]
-    \stoptypescript
-
-    \starttypescript [math] [iwona] [name]
-        \definefontsynonym [MathRoman]     [Iwona-Math-Letters-Regular]
-        %definefontsynonym [MathItalic]    [Iwona-Math-Letters-Italic]
-        %definefontsynonym [MathSymbol]    [Iwona-Math-Symbols-Regular]
-        %definefontsynonym [MathExtension] [Iwona-Math-Extension-Regular]
-    \stoptypescript
-
-    \starttypescript [math] [iwona-medium] [name]
-        \definefontsynonym [MathRoman]     [Iwona-Math-Letters-Medium-Regular]
-        %definefontsynonym [MathItalic]    [Iwona-Math-Letters-Medium-Italic]
-        %definefontsynonym [MathSymbol]    [Iwona-Math-Symbols-Medium]
-        %definefontsynonym [MathExtension] [Iwona-Math-Extension-Medium]
-    \stoptypescript
-
-    \starttypescript [math] [iwona-heavy] [name]
-        \definefontsynonym [MathRoman]     [Iwona-Math-Letters-Heavy-Regular]
-        %definefontsynonym [MathItalic]    [Iwona-Math-Letters-Heavy-Italic]
-        %definefontsynonym [MathSymbol]    [Iwona-Math-Symbols-Heavy]
-        %definefontsynonym [MathExtension] [Iwona-Math-Extension-Heavy]
-    \stoptypescript
-
     \starttypescript [iwona,iwona-light,iwona-heavy,iwona-medium]
         \definetypeface[\typescriptone][ss][sans] [\typescriptone] [default]
         \definetypeface[\typescriptone][rm][serif][modern]         [default]
@@ -1141,36 +1175,6 @@
         \definefontsynonym[Kurier-HeavyItalic]   [kurierhi]
     \stoptypescript
 
-%     todo:
-
-%     \starttypescript [math] [kurier] [default]
-%         \definefontsynonym [Kurier-Math-Letters-Regular]       [rm-kurierr]
-%         \definefontsynonym [Kurier-Math-Letters-Italic]        [mi-kurierri]
-%         \definefontsynonym [Kurier-Math-Symbols-Regular]       [sy-kurierrz]
-%         \definefontsynonym [Kurier-Math-Extension-Regular]     [ex-kurierr]
-%     \stoptypescript
-
-%     \starttypescript [math] [kurier-light] [default]
-%         \definefontsynonym [Kurier-Math-Letters-Light-Regular] [rm-kurierl]
-%         \definefontsynonym [Kurier-Math-Letters-Light-Italic]  [mi-kurierli]
-%         \definefontsynonym [Kurier-Math-Symbols-Light]         [sy-kurierlz]
-%         \definefontsynonym [Kurier-Math-Extension-Light]       [ex-kurierl]
-%     \stoptypescript
-
-%     \starttypescript [math] [kurier-medium] [default]
-%         \definefontsynonym [Kurier-Math-Letters-Medium-Regular] [rm-kurierm]
-%         \definefontsynonym [Kurier-Math-Letters-Medium-Italic]  [mi-kuriermi]
-%         \definefontsynonym [Kurier-Math-Symbols-Medium-Regular] [sy-kuriermz]
-%         \definefontsynonym [Kurier-Math-Extension-Medium]       [ex-kurierm]
-%     \stoptypescript
-
-%     \starttypescript [math] [kurier,kurier-light,kurier-medium] [default]
-%         \loadmapfile[kurier-rm.map]
-%         \loadmapfile[kurier-mi.map]
-%         \loadmapfile[kurier-sy.map]
-%         \loadmapfile[kurier-ex.map]
-%     \stoptypescript
-
     \starttypescript [sans] [kurier-light] [name]
         \setups[font:fallback:sans]
         \definefontsynonym [Sans]           [Kurier-Light-Regular]
@@ -1194,29 +1198,6 @@
         \definefontsynonym [SansBold]       [Kurier-Heavy-Regular]
         \definefontsynonym [SansBoldItalic] [Kurier-Heavy-Italic]
     \stoptypescript
-
-%    todo:
-
-%     \starttypescript [math] [kurier-light] [name]
-%         \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Light-Regular]
-%         %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Light-Italic]
-%         %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Light]
-%         %definefontsynonym [MathExtension] [Kurier-Math-Extension-Light]
-%     \stoptypescript
-
-%     \starttypescript [math] [kurier] [name]
-%         \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Regular]
-%         %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Italic]
-%         %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Regular]
-%         %definefontsynonym [MathExtension] [Kurier-Math-Extension-Regular]
-%     \stoptypescript
-
-%     \starttypescript [math] [kurier-medium] [name]
-%         \definefontsynonym [MathRoman]     [Kurier-Math-Letters-Medium-Regular]
-%         %definefontsynonym [MathItalic]    [Kurier-Math-Letters-Medium-Italic]
-%         %definefontsynonym [MathSymbol]    [Kurier-Math-Symbols-Medium]
-%         %definefontsynonym [MathExtension] [Kurier-Math-Extension-Medium]
-%     \stoptypescript
 
 \stoptypescriptcollection
 

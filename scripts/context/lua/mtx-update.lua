@@ -196,6 +196,7 @@ function scripts.update.synchronize()
     if force then
         dir.mkdirs(format("%s/%s", texroot, "texmf-cache"))
         dir.mkdirs(format("%s/%s", texroot, "texmf-local"))
+        dir.mkdirs(format("%s/%s", texroot, "texmf-project"))
     end
 
     if ok or not force then

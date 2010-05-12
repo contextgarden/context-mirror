@@ -89,11 +89,15 @@
         if document.arguments.sort then
             table.sort(document.files)
         end
-        local emptypages = document.arguments.addempty or ""
-        local textwidth = document.arguments.textwidth or "0cm"
+        local emptypages = document.arguments.addempty  or ""
+        local textwidth  = document.arguments.textwidth or "0cm"
         for _, filename in ipairs(document.files) do
             if not string.find(filename,"^mtx%-context%-") then
-                fprint("\\insertpages[%s][%s][width=%s]",filename,emptypages,textwidth)
+                context.insertpages (
+                    { filename },
+                    { emptypages },
+                    { width = textwidth }
+                )
             end
         end
     else

@@ -89,12 +89,16 @@
 
 \edef\detokenizedrelax{\detokenize{\relax}}
 
+\edef\processseplistseparator{\detokenize{,}}%
+
 \def\dodefineprocessseplist#1#2% separator \docommand
-  {\def\dodoprocessseplist##1##2#1%
+  {\edef\processseplistseparator{\detokenize{#1}}%
+   \def\dodoprocessseplist##1##2#1%
      {\edef\!!stringa{\detokenize{##1}}%
       \ifx\detokenizedrelax\!!stringa
         \expandafter\nodoprocessseplist
-      \else\ifx\!!stringa#1%
+    % \else\ifx\!!stringa#1%
+      \else\ifx\!!stringa\processseplistseparator
         #2{}%
         #2{##2}%
         \expandafter\expandafter\expandafter\dodoprocessseplist
@@ -396,5 +400,22 @@ d,e,f
 a,b,c,č
 d,e,f,š
 \stopCSV
+
+\enableregime[utf]
+
+\defineseparatedlist[X][separator=X,left=(,right=),first=\endgraf,last=\endgraf]
+\defineseparatedlist[Y][separator=Y,left=(,right=),first=\endgraf,last=\endgraf]
+
+\startX
+aXb
+Xc
+čXš
+\stopX
+
+\startY
+aYb
+Yc
+čYš
+\stopY
 
 \stoptext

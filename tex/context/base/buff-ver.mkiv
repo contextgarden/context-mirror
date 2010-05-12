@@ -85,7 +85,7 @@
    \spaceskip\wd\scratchbox
    \xspaceskip\spaceskip}
 
-\let\obeycharacters\relax
+\let\obeycharacters\relax % tab mess can go
 
 \setvalue{\??tp:\c!lines:\v!yes       }{\obeybreakpoints}
 \setvalue{\??tp:\c!lines:\v!hyphenated}{\obeyhyphens}
@@ -96,17 +96,12 @@
 \setvalue{\??tp:\c!option:\v!none     }{\let\obeycharacters\relax}
 \setvalue{\??tp:\c!option:\empty      }{\let\obeycharacters\relax}
 \setvalue{\??tp:\c!option:\v!color    }{\setupprettiesintype{\typingparameter\c!option}%
-                                        \let\obeycharacters\setupprettytype
-                                        \let\obeytabs\ignoretabs}
+                                        \let\obeycharacters\setupprettytype}
 \setvalue{\??tp:\c!option:\v!normal   }{\let\obeycharacters\setupgroupedtype}
-\setvalue{\??tp:\c!option:\v!slanted  }{\let\obeycharacters\setupslantedtype
-                                        \let\obeytabs\ignoretabs}
+\setvalue{\??tp:\c!option:\v!slanted  }{\let\obeycharacters\setupslantedtype}
 \setvalue{\??tp:\c!option:\s!unknown  }{\setupprettiesintype{\typingparameter\c!option}%
-                                        \let\obeycharacters\setupprettytype
-                                        \let\obeytabs\ignoretabs}
-
-%setvalue{\??tp:\c!option:\v!commands }{\def\obeycharacters{\setupcommandsintype}%
-%                                       \let\obeytabs\ignoretabs}
+                                        \let\obeycharacters\setupprettytype}
+%setvalue{\??tp:\c!option:\v!commands }{\def\obeycharacters{\setupcommandsintype}}
 
 \def\dosetverbatimfont
   {\redoconvertfont\dosetfontattribute{\currenttypingclass\currenttyping}\c!style
@@ -123,9 +118,6 @@
    \getvalue{\??tp:\c!lines:\typingparameter\c!lines}%
    \getvalue{\??tp:\c!empty:\typingparameter\c!empty}%
    \getvalue{\??tp:\c!option:\ifcsname\??tp:\c!option:\typingparameter\c!option\endcsname\typingparameter\c!option\else\s!unknown\fi}%
-   \doifnumberelse{\typingparameter\c!tab}
-     {\def\obeytabs{\setfixedtabskips{\typingparameter\c!tab}}}%
-     \donothing
    \setupverbatimcolor}
 
 \newtoks \everyinitializeverbatim
@@ -141,11 +133,17 @@
 \let\noverbatimeop\ignoreendofpretty
 \let\noverbatimsop\ignorebeginofpretty
 
-\def\doinitializeverbatim
+\def\doinitializeverbatim % todo: combine all in one call is faster
   {\ctxlua{buffers.visualizers.reset()}%
    \doifelse{\typingparameter\c!space}\v!on
      {\let\obs\fastcontrolspace}%
      {\let\obs\specialobeyedspace}%
+   \edef\askedverbatimtab{\typingparameter\c!tab}%
+   \doifelse\askedverbatimtab\v!no
+     {\ctxlua{buffers.settablength(1)}}
+     {\doifnumberelse{\askedverbatimtab}
+        {\ctxlua{buffers.settablength(\askedverbatimtab)}}
+        {\ctxlua{buffers.settablength()}}}%
    \ctxlua{buffers.doifelsevisualizer("\prettyidentifier")}
      {\ctxlua{buffers.setvisualizer("\prettyidentifier")}%
       \let\bop\doverbatimbop
@@ -321,15 +319,6 @@
    \catcode`\>=\@@other
    \futurelet\next\dodotype}
 
-% \def\dodotype
-%   {\ifx\next\bgroup
-%      \@EA\dodotypeA
-%    \else\if\next<%
-%      \doifelse{\typingparameter\c!option}\v!none{\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
-%    \else
-%      \@EAEAEA\dodotypeD
-%    \fi\fi}
-
 \def\dodotype
   {\ifx\next\bgroup
      \@EA\dodotypeA
@@ -411,12 +400,8 @@
    \setupcommonverbatim
   %\dosetverbatimfont
   %\setverbatimspaceskip
-  %\let\obeytabs \ignoretabs  % probably not needed
-  %\let\obeylines\ignorelines % probably not needed
-  %\let\obeypages\ignorepages % probably not needed
   %\setupcopyverbatim         % not needed
-  \setcatcodetable\vrbcatcodes
-  }
+  \setcatcodetable\vrbcatcodes}
 
 %D \macros
 %D   {setuptype}
@@ -593,6 +578,7 @@
    \else
      \edef\verbatimbaselineskip{\the\scratchskip}%
    \fi
+\doifsomething{\typingparameter\c!align}{\setupalign[\typingparameter\c!align]}%
    \setupcommonverbatim}
 
 %D The basic display verbatim commands are defined in an
@@ -674,8 +660,7 @@
   {\stopverbatimcolor
    \stoppacked  % includes \egroup
    \typingparameter\c!after
-   \egroup
-   \dochecknextindentation{\??tp#1}%
+   \normalexpanded{\egroup\checknextindentation[\typingparameter\c!indentnext]}%
    \dorechecknextindentation}
 
 %D Line numbering for files is combined with filtering, while
@@ -770,6 +755,8 @@
 %D \stoptyping
 %D
 %D The definitions default to the standard typing values.
+
+% TODO: parent etc !
 
 \def\presettyping[#1][#2]% brrr also use parent here
   {\copyparameters[\??tp#1][\??tp][\c!color,\c!style]%
@@ -877,34 +864,6 @@
    \else
      \dodotypefile[\v!file][]{#3}%
    \fi\fi}
-
-% \def\dosetuptypelinenumbering#1% fuzzy
-%   {\ifcsname\currenttypingclass\currenttyping\c!start\endcsname \else
-%      \setuptyping[\currenttyping][\c!start=1,\c!stop=,\c!step=1,\c!nlines=]%
-%    \fi
-%    \setuptyping[\currenttyping][#1]%
-%    \doifelse{\typingparameter\c!numbering}\v!file
-%      {% kind of special: filters lines !
-%       \setuplinenumbering[\c!method=\v!file]%
-%       \donetrue}
-%      {\doifelse{\typingparameter\c!numbering}\v!line
-%         {% \setuplinenumbering defaults start/step to 1/1, so we need
-%          \doifinsetelse\v!continue{#1,\typingparameter\c!start}
-%            {\scratchcounter0\typingparameter\c!n
-%             \setxtypingparameter\c!start{\ifnum\scratchcounter=0 1\else\number\scratchcounter\fi}}%
-%            {\doifnothing{\typingparameter\c!start}{\settypingparameter\c!start{1}}}%
-%          \doifnothing{\typingparameter\c!step}{\settypingparameter\c!step{1}}%
-%          \setuplinenumbering
-%            [\c!method=\v!type,
-%              \c!start=\typingparameter\c!start,
-%               \c!stop=\typingparameter\c!stop,
-%               \c!step=\typingparameter\c!step]%
-%          \donetrue}
-%         {\donefalse}}%
-%    \ifdone
-%      \def\beginofverbatimlines{\startlinenumbering}%
-%      \def\endofverbatimlines  {\stoplinenumbering\setxtypingparameter\c!n{\number\linenumber}}%
-%    \fi}
 
 \def\dosetuptypelinenumbering#1% fuzzy
   {%\ifcsname\currenttypingclass\currenttyping\c!start\endcsname \else

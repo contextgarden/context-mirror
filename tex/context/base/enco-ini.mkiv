@@ -66,7 +66,7 @@
    \setvalue{\??ac\string#1\string#2}{#3}}
 
 \def\dohandleaccent#1#2%
-  {\csname\??ac\string#1\string#2\endcsname}
+  {\csname\??ac\string#1\string#2\empty\endcsname}
 
 \def\definecharacter#1 #2 %
   {\doifnumberelse{\string#2}
@@ -360,6 +360,23 @@
 
 \def\flushcontrolspacebox
   {\copy\controlspacebox}
+
+% a few defaults (\<whatever>{}), we really need the verbose \empty as it will be
+% stringified
+
+\defineaccent ^ {\empty} {\textcircumflex}
+\defineaccent ` {\empty} {\textgrave}
+\defineaccent ~ {\empty} {\texttilde}
+\defineaccent " {\empty} {\textdiaeresis}
+\defineaccent ' {\empty} {\textacute}
+\defineaccent . {\empty} {\textdotaccent}
+\defineaccent = {\empty} {\textmacron}
+\defineaccent c {\empty} {\textcedilla}
+\defineaccent H {\empty} {\texthungarumlaut}
+\defineaccent k {\empty} {\textogonek}
+\defineaccent r {\empty} {\textring}
+\defineaccent u {\empty} {\textbreve}
+\defineaccent v {\empty} {\textcaron}
 
 % from enco-acc:
 %

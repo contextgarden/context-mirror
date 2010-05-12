@@ -5438,8 +5438,18 @@
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
         <cd:parameter name="locatie">
-          <cd:constant type="intext"/>
+          <cd:constant type="centru"/>
+          <cd:constant type="stanga"/>
+          <cd:constant type="margine"/>
           <cd:constant type="inmargine"/>
+          <cd:constant type="instanga"/>
+          <cd:constant type="dreapta"/>
+          <cd:constant type="indreapta"/>
+          <cd:constant type="intern"/>
+          <cd:constant type="extern"/>
+          <cd:constant type="text"/>
+          <cd:constant type="begin"/>
+          <cd:constant type="end"/>
         </cd:parameter>
         <cd:parameter name="stil">
           <cd:resolve name="style"/>

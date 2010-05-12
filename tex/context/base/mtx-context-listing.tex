@@ -1,5 +1,3 @@
-% engine=luatex
-
 %D \module
 %D   [       file=mtx-context-listing,
 %D        version=2008.11.10, % about that time i started playing with this
@@ -23,53 +21,79 @@
 % --topspace=dimension  : distance above first line
 % --backspace=dimension : distance before left margin
 % --pretty              : pretty print comform suffix (temporarily disabled)
+% --bodyfont=list       : additional bodyfont settings
+% --paperformat=spec    : paper*print or paperxprint
 %
 % end help
 
+\input mtx-context-common.tex
+
 \setupbodyfont
-  [11pt,tt]
-
-\setuplayout
-  [header=0cm,
-   footer=1.5cm,
-   width=middle,
-   height=middle]
-
-% todo: use \arguments{topspace}
-
-\startluacode
-    local topspace = document.arguments["topspace"] or 0
-    if dimen(topspace) > dimen(0) then
-        tex.sprint(string.format("\\setuplayout[topspace=%s]",dimen(topspace)))
-    end
-    local backspace = document.arguments["backspace"] or 0
-    if dimen(topspace) > dimen(0) then
-        tex.sprint(string.format("\\setuplayout[backspace=%s]",dimen(backspace)))
-    end
-\stopluacode
+  [11pt,tt,\getdocumentargument{bodyfont}]
 
 \setuptyping
   [lines=yes]
 
-\setuptyping
-  [option=color]
+\setuplayout
+  [header=0cm,
+   footer=1.5cm,
+   topspace=\getdocumentargumentdefault{topspace}{1.5cm},
+   backspace=\getdocumentargumentdefault{backspace}{1.5cm},
+   width=middle,
+   height=middle]
+
+\setuppapersize
+  [\getdocumentargument{paperformat_paper}]
+  [\getdocumentargument{paperformat_print}]
+
+% \startluacode
+%     -- syntax check
+%     local topspace  = dimen(document.arguments.topspace  or 0)
+%     local backspace = dimen(document.arguments.backspace or 0)
+%     local zeropoint = dimen(0)
+%     if topspace > zeropoint then
+%         context.setuplayout { topspace = tostring(topspace) }
+%     end
+%     if backspace > zeropoint then
+%         context.setuplayout { backspace = tostring(backspace) }
+%     end
+% \stopluacode
 
 \starttext
 
 \startluacode
+    local types = {
+        mkiv = "tex",
+        mkii = "tex",
+        cld  = "lua",
+        lfg  = "lua",
+    }
+
     if #document.files > 0 then
-        if document.arguments["sort"] then
+        if document.arguments.sort then
             table.sort(document.files)
         end
         for _, filename in ipairs(document.files) do
             if not string.find(filename,"^mtx%-context%-") then
-                tex.sprint("\\page\n")
-                tex.sprint(string.format("\\setupfootertexts[\\detokenize{%s}][\\pagenumber]\n",file.basename(filename)))
-                tex.sprint(string.format("\\typefile{%s}",filename))
+                local pretty = document.arguments.pretty
+                if pretty == true then
+                    pretty = file.extname(filename) or ""
+                elseif pretty == false then
+                    pretty = ""
+                else
+                    -- forced
+                end
+                context.page()
+                context.setupfootertexts( -- return true: we need to keep this entry
+                    { function() context.detokenize(file.basename(filename)) return true end },
+                    { function() context.pagenumber() return true end }
+                )
+                context.setuptyping { option = types[pretty] or pretty }
+                context.typefile(filename)
             end
         end
     else
-        tex.sprint(tex.ctxcatcodes,"no files given")
+        context("no files given")
     end
 \stopluacode
 

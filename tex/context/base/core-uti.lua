@@ -285,6 +285,7 @@ function statistics.formatruntime(runtime)
     local pages = tex.count['realpageno'] - 1
     if shipped > 0 or pages > 0 then
         local persecond = shipped / runtime
+        if pages == 0 then pages = shipped end
         return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
     else
         return format("%s seconds",runtime)

@@ -129,6 +129,8 @@ end
 storage.register("lua/numbers", lua.numbers, "lua.numbers")
 storage.register("lua/messages", lua.messages, "lua.messages")
 
+--~ local arguments, files = document.arguments, document.files -- set later
+
 function document.setargument(key,value)
     document.arguments[key] = value
 end
@@ -147,6 +149,10 @@ function document.getargument(key,default)
         document.arguments[key] = v
     end
     tex.sprint(tex.ctxcatcodes,v or default or "")
+end
+
+function document.setfilename(i,name)
+    document.files[tonumber(i)] = name
 end
 
 function document.getfilename(i)

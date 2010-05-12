@@ -99,7 +99,7 @@ function scripts.mptopdf.convertall()
                 logs.simple("%s => %s", r[1], r[2])
             end
         else
-            logs.simple("no input files match %s", table.concat(files,' '))
+            logs.simple("no files are converted")
         end
     else
         logs.simple("no files match %s", table.concat(environment.files,' '))

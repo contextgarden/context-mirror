@@ -120,9 +120,6 @@
 \definemarginline[atleftmargin] [\c!location=\v!left, \c!command=\lrlap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
 \definemarginline[atrightmargin][\c!location=\v!right,\c!command=\rllap,\c!width=\zeropoint,\c!distance=\zeropoint,\c!hoffset=\zeropoint]
 
-\ifx\lrlap\undefined \def\lrlap#1{\llap{\rlap{#1}}} \fi
-\ifx\rllap\undefined \def\rllap#1{\rlap{\llap{#1}}} \fi
-
 \def\lrlap#1{\llap{\rlap{#1}}}
 \def\rllap#1{\rlap{\hskip\hsize\llap{#1}}}
 

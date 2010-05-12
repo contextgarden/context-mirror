@@ -13,7 +13,8 @@ if not modules then modules = { } end modules ['mult-cld'] = {
 -- code. It can also be handy when generating documents from databases or
 -- when constructing large tables or so.
 --
--- Todo: optional checking against interface!
+-- Todo: optional checking against interface
+-- Todo: coroutine trickery
 
 context = context or { }
 
@@ -21,7 +22,7 @@ local format, concat = string.format, table.concat
 local next, type = next, type
 local texsprint, texiowrite, ctxcatcodes = tex.sprint, texio.write, tex.ctxcatcodes
 
-local flush = texsprint
+local flush = texsprint or function(cct,...) print(table.concat{...}) end
 
 local _stack_, _n_ = { }, 0
 
@@ -32,8 +33,11 @@ local function _store_(ti)
 end
 
 local function _flush_(n)
-    _stack_[n]()
-    _stack_[n] = nil
+    if not _stack_[n]() then
+        _stack_[n] = nil
+    else
+        -- keep, beware, that way the stack can grow
+    end
 end
 
 context._stack_ = _stack_
@@ -74,9 +78,15 @@ local function writer(k,...)
                 elseif typ == "string" or typ == "number" then
                     flush(ctxcatcodes,"{",ti,"}")
                 elseif typ == "table" then
-                    local c = concat(ti,",")
-                    if c ~= "" then
-                        flush(ctxcatcodes,"[",c,"]")
+                    local tn = #ti
+                    if tn > 0 then
+                        for j=1,tn do
+                            local tj = ti[j]
+                            if type(tj) == "function" then
+                                ti[j] = "\\mkivflush{" .. _store_(tj) .. "}"
+                            end
+                        end
+                        flush(ctxcatcodes,"[",concat(ti,","),"]")
                     else
                         flush(ctxcatcodes,"[")
                         local done = false
@@ -98,6 +108,8 @@ local function writer(k,...)
                 --  if force == "direct" then
                     flush(ctxcatcodes,tostring(ti))
                 --  end
+                elseif typ == "thread" then
+                    logs.report("interfaces","coroutines not supported as we cannot yeild across boundaries")
                 else
                     logs.report("interfaces","error: %s gets a weird argument %s",k,tostring(ti))
                 end
@@ -108,26 +120,12 @@ end
 
 -- -- --
 
---~ local function indexer(t,k)
---~     local f = function(...) return writer("\\"..k.." ",...) end
---~     t[k] = f
---~     return f
---~ end
-
 local function indexer(t,k)
     local c = "\\" .. k .. " "
     local f = function(...) return writer(c,...) end
     t[k] = f
     return f
 end
-
---~ local function caller(t,f,...)
---~     if f then
---~         flush(ctxcatcodes,format(f,...))
---~     else
---~         flush(ctxcatcodes,"\n")
---~     end
---~ end
 
 local function caller(t,f,a,...)
     if a then

@@ -12,7 +12,7 @@
 
 <html>
     <head>
-        <script language="JavaScript">
+        <script type='text/javascript'>
             <!--
                 window.focus();
             -->

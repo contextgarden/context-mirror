@@ -471,6 +471,13 @@
    \the\everyresetformulas
    \dorechecknextindentation} % here ?
 
+%D \starttyping
+%D % test \par       % no preceding hlist
+%D % $$x$$           % preceding hlist
+%D % \noindent $$x$$ % no preceding hlist
+%D \startformula x \stopformula % now has \noindent (in mkii we messed with baselineskip)
+%D \stoptyping
+
 \def\startdisplaymath
   {\bgroup
    \par
@@ -480,14 +487,15 @@
    \ifvmode
       \prevdepth-\maxdimen % texbook pagina 79-80
    \fi
-   $$
+   \noindent % else funny hlist with funny baselineskip
+   \Ustartdisplaymath
    \setdisplaydimensions
   %\setpredisplaysize
    \startinnermath}
 
 \def\stopdisplaymath
   {\stopinnermath
-   $$%
+   \Ustopdisplaymath
    \par
    \afterdisplayspace
    \par
@@ -580,10 +588,10 @@
    \fi
    \hbox to \localhsize \bgroup
      \hss
-     \def\normalstartformula{\vskip-\strutdepth$$}% i hate this
-     \def\normalstopformula {$$}%
-     \def\startformula      {$\vcenter\bgroup\normalstartformula}%
-     \def\stopformula       {\normalstopformula\egroup$\hss}%
+     \def\normalstartformula{\vskip-\strutdepth\Ustartdisplaymath}% i hate this
+     \def\normalstopformula {\Ustopdisplaymath}%
+     \def\startformula      {\Ustartmath\vcenter\bgroup\normalstartformula}%
+     \def\stopformula       {\normalstopformula\egroup\Ustopmath\hss}%
      #2%
      \egroup
    \stopdisplaymath

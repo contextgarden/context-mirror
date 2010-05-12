@@ -89,6 +89,7 @@
 		<cd:variable name='backward' value='indietro'/>
 		<cd:variable name='bbl' value='bbl'/>
 		<cd:variable name='before' value='prima'/>
+		<cd:variable name='begin' value='begin'/>
 		<cd:variable name='bib' value='bib'/>
 		<cd:variable name='big' value='grande'/>
 		<cd:variable name='bigbodyfont' value='grossofontdeltesto'/>
@@ -144,6 +145,7 @@
 		<cd:variable name='each' value='ogni'/>
 		<cd:variable name='edge' value='bordo'/>
 		<cd:variable name='empty' value='vuoto'/>
+		<cd:variable name='end' value='end'/>
 		<cd:variable name='endnote' value='endnote'/>
 		<cd:variable name='enumeration' value='enumerazione'/>
 		<cd:variable name='environment' value='ambiente'/>

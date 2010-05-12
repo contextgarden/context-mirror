@@ -1460,14 +1460,16 @@
 \def\doinlinemframed[#1]#2%
   {\begingroup
    \mframedstyle\mathstyle\relax
-   \inframed[#1]{$\triggermathstyle\mframedstyle#2$}%
+   \inframed[#1]{\Ustartmath\triggermathstyle\mframedstyle#2\Ustopmath}%
    \endgroup}
+
+\def\funnymathstrut{\Ustartmath\triggermathstyle\mframedstyle\vphantom{(}\Ustopmath}
 
 \def\dodisplaymframed[#1]#2%
   {\begingroup
    \mframedstyle\mathstyle\relax
-   \def\normalstrut{$\triggermathstyle\mframedstyle\vphantom{(}$}%
-   \framed[#1]{$\triggermathstyle\mframedstyle#2$}%
+   \let\normalstrut\funnymathstrut
+   \framed[#1]{\Ustartmath\triggermathstyle\mframedstyle#2\Ustopmath}%
    \endgroup}
 
 \def\mframed  {\dosingleempty\dodisplaymframed}

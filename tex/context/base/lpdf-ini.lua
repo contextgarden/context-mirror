@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 }
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
-local char, byte, format, gsub, concat, match, sub = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub
+local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfvalues = string.utfvalues
 local texwrite, texset, texsprint, ctxcatcodes = tex.write, tex.set, tex.sprint, tex.ctxcatcodes
 local sind, cosd = math.sind, math.cosd
@@ -64,25 +64,21 @@ lpdf.tosixteen = tosixteen
 --
 -- -- no need for escaping .. just use unicode instead
 
+-- \0 \t \n \r \f <space> ( ) [ ] { } / %
+
 local function toeight(str)
     return "(" .. str .. ")"
 end
 
 lpdf.toeight = toeight
 
-local escapes = "-"
-
-local escaped = lpeg.Cs(lpeg.Cc("(") * (lpeg.S("\\/#<>[]()")/escapes + lpeg.P(1))^0 * lpeg.Cc(")"))
-
-local function cleaned(str)
-    if not str or str == "" then
-        return "()"
-    else
-        return lpegmatch(escaped,str)
-    end
-end
-
-lpdf.cleaned = cleaned
+--~ local escaped = lpeg.Cs((lpeg.S("\0\t\n\r\f ()[]{}/%")/"#" + lpeg.P(1))^0)
+--~
+--~ local function cleaned(str)
+--~     return (str and str ~= "" and lpegmatch(escaped,str)) or ""
+--~ end
+--~
+--~ lpdf.cleaned = cleaned -- not public yet
 
 local function merge_t(a,b)
     local t = { }
@@ -262,11 +258,20 @@ for i=-1,9 do cache[i] = pdfnumber(i) end
 
 local cache = { } -- can be weak
 
+local forbidden, replacements = "\0\t\n\r\f ()[]{}/%%#\\", { } -- table faster than function
+
+for s in gmatch(forbidden,".") do
+    replacements[s] = format("#%02x",byte(s))
+end
+
+local escaped = lpeg.Cs(lpeg.Cc("/") * (lpeg.S(forbidden)/replacements + lpeg.P(1))^0)
+
 local function pdfconstant(str,default)
     str = str or default or ""
     local c = cache[str]
     if not c then
-        c = setmetatable({ "/" .. str },mt_c)
+     -- c = setmetatable({ "/" .. str },mt_c)
+        c = setmetatable({ lpegmatch(escaped,str) },mt_c)
         cache[str] = c
     end
     return c

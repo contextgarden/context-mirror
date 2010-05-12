@@ -35,10 +35,15 @@ local current_list     = { }
 local cross_references = { }
 local chunksize        = 250 -- not used in boxed
 
-local has_attribute    = node.has_attribute
-local traverse_id      = node.traverse_id
-local traverse         = node.traverse
-local copy_node        = node.copy
+local has_attribute      = node.has_attribute
+local traverse_id        = node.traverse_id
+local traverse           = node.traverse
+local copy_node          = node.copy
+local hpack_node         = node.hpack
+local insert_node_after  = node.insert_after
+local insert_node_before = node.insert_before
+
+local whatsit = node.id("whatsit")
 
 local data = nodes.lines.data
 local last = #data
@@ -147,7 +152,7 @@ local function check_number(n,a,skip) -- move inline
         current_list[#current_list+1] = { n, s }
         if not skip and s % d.step == 0 then
             local tag = d.tag or ""
-            texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}\\endgraf", tag, s, n.shift, n.width, the_left_margin(n.list)))
+            texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}{%s}\\endgraf",tag,s,n.shift,n.width,the_left_margin(n.list),n.dir))
             if trace_numbers then
                 logs.report("numbers","making number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
             end
@@ -181,9 +186,10 @@ function nodes.lines.boxed.stage_one(n)
                             check_number(n,a,skip)
                         end
                     else
-                        if node.first_character(n.list) then
+                        -- the following test fails somehow (change in luatex?)
+                     -- if node.first_character(n.list) then
                             check_number(n,a,skip)
-                        end
+                     -- end
                     end
                     skip = false
                 end

@@ -5438,8 +5438,18 @@
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
         <cd:parameter name="platz">
-          <cd:constant type="imtext"/>
+          <cd:constant type="mittig"/>
+          <cd:constant type="links"/>
+          <cd:constant type="marginalie"/>
           <cd:constant type="imrand"/>
+          <cd:constant type="imlinken"/>
+          <cd:constant type="rechts"/>
+          <cd:constant type="imrechten"/>
+          <cd:constant type="innen"/>
+          <cd:constant type="aussen"/>
+          <cd:constant type="text"/>
+          <cd:constant type="begin"/>
+          <cd:constant type="end"/>
         </cd:parameter>
         <cd:parameter name="stil">
           <cd:resolve name="style"/>

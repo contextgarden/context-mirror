@@ -428,6 +428,15 @@ lpeg.splitat = splitat
 
 local cache = { }
 
+function lpeg.split(separator,str)
+    local c = cache[separator]
+    if not c then
+        c = Ct(splitat(separator))
+        cache[separator] = c
+    end
+    return match(c,str)
+end
+
 function string:split(separator)
     local c = cache[separator]
     if not c then
@@ -438,6 +447,17 @@ function string:split(separator)
 end
 
 local cache = { }
+
+function lpeg.checkedsplit(separator,str)
+    local c = cache[separator]
+    if not c then
+        separator = P(separator)
+        local other = C((1 - separator)^0)
+        c = Ct(separator^0 * other * (separator^1 * other)^0)
+        cache[separator] = c
+    end
+    return match(c,str)
+end
 
 function string:checkedsplit(separator)
     local c = cache[separator]
@@ -5710,6 +5730,8 @@ local normalsplit  = string.split
 
 local cache = { }
 
+local splitter = lpeg.Ct(lpeg.splitat(lpeg.S(os.type == "windows" and ";" or ":;")))
+
 local function split_kpse_path(str) -- beware, this can be either a path or a {specification}
     local found = cache[str]
     if not found then
@@ -5717,7 +5739,8 @@ local function split_kpse_path(str) -- beware, this can be either a path or a {s
             found = { }
         else
             str = gsub(str,"\\","/")
-            local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
+--~             local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
+local split = lpegmatch(splitter,str)
             found = { }
             for i=1,#split do
                 local s = split[i]
@@ -6180,7 +6203,7 @@ end
 
 function resolvers.expanded_path_list(str)
     if not str then
-        return ep or { }
+        return ep or { } -- ep ?
     elseif instance.savelists then
         -- engine+progname hash
         str = gsub(str,"%$","")

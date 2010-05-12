@@ -315,13 +315,10 @@
 \def\NEWPAGE     {\SystemSpecialB{newpage}}
 \def\NEWLINE     {\SystemSpecialB{newline}}
 
-
 \doifmodeelse {mkiv} {
-    \def\THANH{Han The Thanh} % todo
+    \unexpanded\def\THANH{H\agrave n Th\ecircumflexacute\ Th\agrave nh}
 } {
-    \def\THANH{H\`an Th\^e\llap{\raise 0.5ex\hbox{\'{}}} Th\`anh}
+    \unexpanded\def\THANH{H\`an Th\^e\llap{\raise 0.5ex\hbox{\'{}}} Th\`anh}
 }
-
-%def\THANH       {H\`an Th\ecircumflexacute\ Th\`anh}
 
 \endinput

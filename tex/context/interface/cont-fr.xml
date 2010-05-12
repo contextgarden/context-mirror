@@ -5438,8 +5438,18 @@
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
         <cd:parameter name="emplacement">
-          <cd:constant type="danstexte"/>
+          <cd:constant type="milieu"/>
+          <cd:constant type="gauche"/>
+          <cd:constant type="marge"/>
           <cd:constant type="dansmarge"/>
+          <cd:constant type="dansgauche"/>
+          <cd:constant type="droite"/>
+          <cd:constant type="dansdroit"/>
+          <cd:constant type="interieur"/>
+          <cd:constant type="exterieur"/>
+          <cd:constant type="texte"/>
+          <cd:constant type="begin"/>
+          <cd:constant type="end"/>
         </cd:parameter>
         <cd:parameter name="style">
           <cd:resolve name="style"/>

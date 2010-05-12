@@ -5438,8 +5438,18 @@
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
         <cd:parameter name="plaats">
-          <cd:constant type="intekst"/>
+          <cd:constant type="midden"/>
+          <cd:constant type="links"/>
+          <cd:constant type="marge"/>
           <cd:constant type="inmarge"/>
+          <cd:constant type="inlinker"/>
+          <cd:constant type="rechts"/>
+          <cd:constant type="inrechter"/>
+          <cd:constant type="binnen"/>
+          <cd:constant type="buiten"/>
+          <cd:constant type="tekst"/>
+          <cd:constant type="begin"/>
+          <cd:constant type="eind"/>
         </cd:parameter>
         <cd:parameter name="letter">
           <cd:resolve name="style"/>

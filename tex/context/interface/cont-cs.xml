@@ -5438,8 +5438,18 @@
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
         <cd:parameter name="misto">
-          <cd:constant type="dotextu"/>
+          <cd:constant type="nastred"/>
+          <cd:constant type="vlevo"/>
+          <cd:constant type="marginalie"/>
           <cd:constant type="naokraji"/>
+          <cd:constant type="vlevo"/>
+          <cd:constant type="vpravo"/>
+          <cd:constant type="vpravo"/>
+          <cd:constant type="uvnitr"/>
+          <cd:constant type="vnejsi"/>
+          <cd:constant type="text"/>
+          <cd:constant type="begin"/>
+          <cd:constant type="end"/>
         </cd:parameter>
         <cd:parameter name="pismeno">
           <cd:resolve name="style"/>

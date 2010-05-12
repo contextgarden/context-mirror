@@ -12,7 +12,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
     <head>
-        <script type="text/javascript">
+        <script type='text/javascript'>
             <!--
                 window.focus() ;
                 <?lua pv('javascripts')?> ;

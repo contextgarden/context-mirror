@@ -190,12 +190,16 @@
 
 \def\setdocumentfilename       #1#2{\ctxlua{document.setfilename(#1,"#2")}}
 \def\setdocumentargument       #1#2{\ctxlua{document.setargument("#1","#2")}}
-\def\setdefaultdocumentargument#1#2{\ctxlua{document.getargument("#1","#2")}}
-\def\getdocumentfilename         #1{\ctxlua{document.getfilename(#1)}}
-\def\getdocumentargument         #1{\ctxlua{document.getargument(#1)}}
+\def\setdocumentargumentdefault#1#2{\ctxlua{document.setdefaultargument("#1","#2")}}
+\def\getdocumentfilename         #1{\ctxlua{document.getfilename("#1")}}
+\def\getdocumentargument         #1{\ctxlua{document.getargument("#1")}}
+\def\getdocumentargumentdefault#1#2{\ctxlua{document.getargument("#1","#2")}}
 \def\doifdocumentargumentelse    #1{\doifsomethingelse{\getdocumentargument{#1}}}
 \def\doifdocumentargument        #1{\doifsomething    {\getdocumentargument{#1}}}
 \def\doifnotdocumentargument     #1{\doifnothing      {\getdocumentargument{#1}}}
+\def\doifdocumentfilenameelse    #1{\doifsomethingelse{\getdocumentfilename{#1}}}
+\def\doifdocumentfilename        #1{\doifsomething    {\getdocumentfilename{#1}}}
+\def\doifnotdocumentfilename     #1{\doifnothing      {\getdocumentfilename{#1}}}
 
 \let\doifelsedocumentargument\doifdocumentargumentelse
 

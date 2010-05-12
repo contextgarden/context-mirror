@@ -122,14 +122,16 @@ end
 function buffers.strip(lines,first,last)
     local first, last = first or 1, last or #lines
     for i=first,last do
-        if #lines[i] == 0 then
+        local li = lines[i]
+        if #li == 0 or find(li,"^%s*$") then
             first = first + 1
         else
             break
         end
     end
     for i=last,first,-1 do
-        if #lines[i] == 0 then
+        local li = lines[i]
+        if #li == 0 or find(li,"^%s*$") then
             last = last - 1
         else
             break
@@ -380,10 +382,15 @@ end
 
 -- maybe just line(n,str) empty(n,str)
 
-visualizers.handlers  = visualizers.handlers or { }
 visualizers.tablength = 7
 visualizers.enabletab = true -- false
 visualizers.obeyspace = true
+
+function buffers.settablength(tablength)
+    visualizers.tablength = tablength and tonumber(tablength) or 7
+end
+
+visualizers.handlers  = visualizers.handlers or { }
 
 local handlers = visualizers.handlers
 
@@ -426,6 +433,8 @@ end
 local default = buffers.newvisualizer(visualizers.defaultname)
 
 --~ print(variables.typing) os.exit()
+
+-- will become cleaner
 
 local currentvisualizer, currenthandler
 

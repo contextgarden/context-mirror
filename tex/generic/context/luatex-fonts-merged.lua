@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/08/10 13:33:54
+-- merge date  : 05/12/10 18:43:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -394,6 +394,15 @@ lpeg.splitat = splitat
 
 local cache = { }
 
+function lpeg.split(separator,str)
+    local c = cache[separator]
+    if not c then
+        c = Ct(splitat(separator))
+        cache[separator] = c
+    end
+    return match(c,str)
+end
+
 function string:split(separator)
     local c = cache[separator]
     if not c then
@@ -404,6 +413,17 @@ function string:split(separator)
 end
 
 local cache = { }
+
+function lpeg.checkedsplit(separator,str)
+    local c = cache[separator]
+    if not c then
+        separator = P(separator)
+        local other = C((1 - separator)^0)
+        c = Ct(separator^0 * other * (separator^1 * other)^0)
+        cache[separator] = c
+    end
+    return match(c,str)
+end
 
 function string:checkedsplit(separator)
     local c = cache[separator]

@@ -900,10 +900,11 @@ end
 -- we join them and split them after the expansion has taken place. This
 -- is more convenient.
 
-local checkedsplit = string.checkedsplit
-local normalsplit  = string.split
+--~ local checkedsplit = string.checkedsplit
 
 local cache = { }
+
+local splitter = lpeg.Ct(lpeg.splitat(lpeg.S(os.type == "windows" and ";" or ":;")))
 
 local function split_kpse_path(str) -- beware, this can be either a path or a {specification}
     local found = cache[str]
@@ -912,7 +913,8 @@ local function split_kpse_path(str) -- beware, this can be either a path or a {s
             found = { }
         else
             str = gsub(str,"\\","/")
-            local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
+--~             local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
+local split = lpegmatch(splitter,str)
             found = { }
             for i=1,#split do
                 local s = split[i]
@@ -1375,7 +1377,7 @@ end
 
 function resolvers.expanded_path_list(str)
     if not str then
-        return ep or { }
+        return ep or { } -- ep ?
     elseif instance.savelists then
         -- engine+progname hash
         str = gsub(str,"%$","")

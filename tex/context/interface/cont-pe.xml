@@ -5438,8 +5438,18 @@
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
         <cd:parameter name="مکان">
-          <cd:constant type="درون‌متن"/>
+          <cd:constant type="میان"/>
+          <cd:constant type="چپ"/>
+          <cd:constant type="حاشیه"/>
           <cd:constant type="درون‌حاشیه"/>
+          <cd:constant type="درون‌چپ"/>
+          <cd:constant type="راست"/>
+          <cd:constant type="درون‌راست"/>
+          <cd:constant type="داخلی"/>
+          <cd:constant type="خارجی"/>
+          <cd:constant type="متن"/>
+          <cd:constant type="begin"/>
+          <cd:constant type="end"/>
         </cd:parameter>
         <cd:parameter name="سبک">
           <cd:resolve name="style"/>

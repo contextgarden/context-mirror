@@ -166,7 +166,7 @@
 
 \def\@@mathlimopcomm #1{\mathop{#1}} %no \limits
 \def\@@mathnolopcomm #1{\mathop{#1}\nolimits}
-\def\@@mathboxcomm   #1{\dontleavehmode\hbox{$\mathsurround\zeropoint#1$}}
+\def\@@mathboxcomm   #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
 \def\@@mathchoicecomm#1{[todo #1]}
 
 \chardef\mathordcode    = 0  \let\mathordcomm     \mathord
@@ -302,9 +302,11 @@
 %D
 %D This hooks into the math handler with:
 
-\appendtoks
-    \setmathfunctionstyle\currentmathtextstyle
-\to \everybodyfont
+% no longer supported this way, has to be done with \setupmathematics
+%
+% \appendtoks
+%     \setmathfunctionstyle\currentmathtextstyle
+% \to \everybodyfont
 
 %D Usage:
 %D

@@ -17,6 +17,8 @@
 
 \unprotect
 
+% todo: save settings
+
 % low level interface
 
 \registerctxluafile{page-lin}{1.001}
@@ -34,35 +36,17 @@
 
 \newconditional\tracelinenumbering
 
-% \def\mkaddtextlinenumbers#1#2#3% box col max
-%   {\bgroup
-%    \fullrestoreglobalbodyfont
-%    \def\skipnumber{\hbox{}}%
-%    \ifcase#3\relax
-%      \let\makenumber\mkskiplinenumber
-%    \or
-%      \let\makenumber\mkleftlinenumber
-%    \else\ifcase#2\relax
-%      \let\makenumber\mkskiplinenumber
-%    \or
-%      \let\makenumber\mkleftlinenumber
-%    \else
-%      \let\makenumber\mkrightlinenumber
-%    \fi\fi
-%    \mkprocesstextlinenumbers{#1}%
-%    \egroup}
-
 \def\mkprocesstextlinenumbers#1%
   {\setbox\linenumberscratchbox\vbox{\forgetall\offinterlineskip\ctxlua{nodes.lines.boxed.stage_one(\number#1)}}%
    \ctxlua{nodes.lines.boxed.stage_two(\number#1,\number\linenumberscratchbox)}}% can move to lua code
 
-% id nr shift width leftskip
+% id nr shift width leftskip dir
 
-% \def\mkskiplinenumber #1#2#3#4#5{}
-% \def\mkleftlinenumber #1#2#3#4#5{\hbox{\llap{#2\quad\hskip#3\scaledpoint}}}
-% \def\mkrightlinenumber#1#2#3#4#5{\hbox{\rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\quad#2}}}
+% \def\mkskiplinenumber #1#2#3#4#6#5{}
+% \def\mkleftlinenumber #1#2#3#4#5#6{\hbox{\llap{#2\quad\hskip#3\scaledpoint}}}
+% \def\mkrightlinenumber#1#2#3#4#5#6{\hbox{\rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\quad#2}}}
 
-\def\makenumber#1#2{\hbox{\llap{#1\quad\hskip#2\scaledpoint}}\endgraf}%
+\let\makenumber\gobblesixarguments
 
 \newconditional\boxcontentneedsprocessing
 
@@ -134,7 +118,7 @@
 \let\currentlinenumbering\empty
 
 \chardef\linenumbermode      = 1 % 0=continue, 1=restart
-\chardef\linenumberlocation  = 1 % 0=middle, 1=left, 2=right, 3=inner, 4=outer, 5=text
+\chardef\linenumberlocation  = 1 % 0=middle, 1=left, 2=right, 3=inner, 4=outer, 5=text, 6=begin, 7=end
 \chardef\linenumberalignment = 5 % 0=middle, 1=left, 2=right, 5=auto
 
 \newevery \beforeeverylinenumbering \relax
@@ -206,6 +190,8 @@
 \expandafter\chardef\csname\??rn:l:\v!inner   \endcsname \plusthree
 \expandafter\chardef\csname\??rn:l:\v!outer   \endcsname \plusfour
 \expandafter\chardef\csname\??rn:l:\v!text    \endcsname \plusfive
+\expandafter\chardef\csname\??rn:l:\v!begin   \endcsname \plussix
+\expandafter\chardef\csname\??rn:l:\v!end     \endcsname \plusseven
 
 \expandafter\chardef\csname\??rn:a:\v!middle    \endcsname \zerocount
 \expandafter\chardef\csname\??rn:a:\v!right     \endcsname \plusone
@@ -213,29 +199,6 @@
 \expandafter\chardef\csname\??rn:a:\v!left      \endcsname \plustwo
 \expandafter\chardef\csname\??rn:a:\v!flushright\endcsname \plustwo
 \expandafter\chardef\csname\??rn:a:\v!auto      \endcsname \plusfive
-
-% \def\dostartlinenumbering[#1][#2]% todo: c!continue
-%   {\begingroup
-%    \chardef\linenumbermode\plusone
-%    \ifsecondargument
-%      \def\currentlinenumbering{#1}%
-%      \doifnumberelse{#2}% downward compatible
-%        {\setvalue{\??rn#1\c!start}{#2}}%
-%        {\doif{#2}\v!continue{\chardef\linenumbermode\zerocount}}%
-%    \else\iffirstargument
-%      \doifnumberelse{#1}% downward compatible
-%        {\let\currentlinenumbering\empty
-%         \setvalue{\??rn\c!start}{#1}}%
-%        {\doifelse{#1}\v!continue
-%           {\let\currentlinenumbering\empty
-%            \chardef\linenumbermode\zerocount}
-%           {\def\currentlinenumbering{#1}}}%
-%    \fi\fi
-%    \doif{\linenumberparameter\c!continue}\v!yes
-%      {\chardef\linenumbermode\zerocount}%
-%    \numberinglinestrue
-%    \the\beforeeverylinenumbering
-%    \mkstarttextlinenumbering\currentlinenumbering\linenumbermode}
 
 \def\dostartlinenumbering[#1][#2]% todo: c!continue
   {\begingroup
@@ -272,7 +235,7 @@
 
 % number placement
 
-\let\mkskiplinenumber \gobblefivearguments
+\let\mkskiplinenumber \gobblesixarguments
 
 \def\mkdoinnerlinenumber{\doifoddpageelse\mkdoleftlinenumber\mkdorightlinenumber}
 \def\mkdoouterlinenumber{\doifoddpageelse\mkdorightlinenumber\mkdoleftlinenumber}
@@ -290,6 +253,10 @@
      \expandafter\mkdoouterlinenumber
    \or
      \expandafter\mkdotextlinenumber
+   \or
+     \expandafter\mkdobeginlinenumber
+   \or
+     \expandafter\mkdoendlinenumber
    \fi}
 
 \def\mkrightlinenumber
@@ -304,49 +271,71 @@
    \or
      \expandafter\mkdoinnerlinenumber
    \or
-     \expandafter\mkdorightlinenumber
+     \expandafter\mkdotextlinenumber
+   \or
+     \expandafter\mkdoendlinenumber
+   \or
+     \expandafter\mkdobeginlinenumber
    \fi}
 
 \def\mkaddtextlinenumbers#1#2#3% box col max
   {\bgroup
-   \chardef\linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
-   \chardef\linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
+   \chardef\linenumberbox       #1\relax
+   \chardef\linenumbercolumn    #2\relax
+   \chardef\linenumberlastcolumn#3\relax
    \fullrestoreglobalbodyfont
    \def\skipnumber{\hbox{}}%
-   \ifcase#3\relax
-     \let\makenumber\mkskiplinenumber
+   \let\makenumber\maketextlinenumber
+   \mkprocesstextlinenumbers\linenumberbox
+   \egroup}
+
+\def\maketextlinenumber#1%
+  {\edef\currentlinenumbering{#1}%
+   \chardef\linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
+   \chardef\linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
+   \ifcase\linenumberlastcolumn\relax
+     \let\domakenumber\mkskiplinenumber
    \or
     % one column
      \ifcase\linenumberlocation
+       \let\domakenumber\mkskiplinenumber
         % hm
      \or
-       \let\makenumber\mkleftlinenumber
+       \let\domakenumber\mkleftlinenumber
      \or
-       \let\makenumber\mkrightlinenumber
+       \let\domakenumber\mkrightlinenumber
      \or % inner
-       \let\makenumber\mkdoinnerlinenumber
+       \let\domakenumber\mkdoinnerlinenumber
      \or % outer
-       \let\makenumber\mkdoouterlinenumber
+       \let\domakenumber\mkdoouterlinenumber
      \or % text
-       \let\makenumber\mkdotextlinenumber
+       \let\domakenumber\mkdotextlinenumber
+     \or
+       \let\domakenumber\mkdobeginlinenumber
+     \or
+       \let\domakenumber\mkdoendlinenumber
      \fi
-   \else\ifcase#2\relax
-     \let\makenumber\mkskiplinenumber
+   \else\ifcase\linenumbercolumn\relax
+     \let\domakenumber\mkskiplinenumber
    \or
-     \let\makenumber\mkleftlinenumber
+     \let\domakenumber\mkleftlinenumber
      \ifcase\linenumberlocation\or
        \chardef\linenumberlocation\plusone
      \or
        \chardef\linenumberlocation\plustwo
-     \or
+     \else
        \chardef\linenumberlocation\plusone
      \or
        \chardef\linenumberlocation\plusone
      \or
        \chardef\linenumberlocation\plusone
+     \or
+       \chardef\linenumberlocation\plusone % todo
+     \or
+       \chardef\linenumberlocation\plusone % todo
      \fi
    \else
-     \let\makenumber\mkrightlinenumber
+     \let\domakenumber\mkrightlinenumber
      \ifcase\linenumberlocation\or
        \chardef\linenumberlocation\plustwo
      \or
@@ -355,26 +344,52 @@
        \chardef\linenumberlocation\plustwo
      \or
        \chardef\linenumberlocation\plustwo
+     \or
+       \chardef\linenumberlocation\plustwo % todo
+     \or
+       \chardef\linenumberlocation\plustwo % todo
      \fi
    \fi\fi
-   \mkprocesstextlinenumbers{#1}%
-   \egroup}
+   \domakenumber{#1}}
 
-\def\mkdotextlinenumber #1#2#3#4#5% beware, one needs so compensate for this in the width !
+\def\mkdotextlinenumber #1#2#3#4#5#6% beware, one needs so compensate for this in the width !
   {\hbox{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}
 
-\def\mkdoleftlinenumber #1#2#3#4#5%
-  {\hbox{\llap{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}}
+\def\mkdotextlinenumber #1#2#3#4#5#6% beware, one needs so compensate for this in the width !
+  {\hbox{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}
 
-\def\mkdorightlinenumber#1#2#3#4#5%
-  {\hbox{\rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\dosomelinenumber{#1}{1}{#2}{#5}}}}
+\def\mkdoleftlinenumber #1#2#3#4#5#6%
+  {\naturalhbox to \zeropoint
+     {\ifcase\istltdir#6\else \hskip-#4\scaledpoint \fi
+      \llap{\dosomelinenumber{#1}{2}{#2}{#5}\kern#3\scaledpoint}}}
+
+\def\mkdorightlinenumber#1#2#3#4#5#6%
+  {\naturalhbox to \zeropoint
+     {\ifcase\istltdir#6\else \hskip-#4\scaledpoint \fi
+      \rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\dosomelinenumber{#1}{1}{#2}{#5}}}}
+
+\def\mkdobeginlinenumber #1#2#3#4#5#6%
+  {\ifcase\istltdir#6\relax
+     \chardef\linenumberlocation\plusone
+     \expandafter\mkdoleftlinenumber
+   \else
+     \chardef\linenumberlocation\plustwo
+     \expandafter\mkdorightlinenumber
+   \fi{#1}{#2}{#3}{#4}{#5}{#6}}
+
+\def\mkdoendlinenumber#1#2#3#4#5#6%
+  {\ifcase\istltdir#6\relax
+     \chardef\linenumberlocation\plustwo
+     \expandafter\mkdorightlinenumber
+   \else
+     \chardef\linenumberlocation\plusone
+     \expandafter\mkdoleftlinenumber
+   \fi{#1}{#2}{#3}{#4}{#5}{#6}}
 
 \def\dosomelinenumber#1#2#3#4% tag 1=left|2=right linenumber leftskip
   {\begingroup
    \def\currentlinenumbering{#1}%
    \def\linenumber{#3}% unsafe
-%    \chardef\linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
-%    \chardef\linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
    \doifelse{\linenumberparameter\c!width}\v!margin
      {\linenumberwidth\leftmarginwidth}
      {\linenumberwidth\linenumberparameter\c!width}%

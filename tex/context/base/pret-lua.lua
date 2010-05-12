@@ -263,6 +263,10 @@ function visualizer.flush_line(str, nested)
                 elseif inlongstring then
                     state, i = written(state,c,i)
                 elseif c == '"' or c == "'" then
+if word then
+    state = flush_lua_word(state,word)
+    word = nil
+end
                     instr = true
                     state = change_state(states[c],state)
                     state, i = written(state,c,i)

@@ -303,7 +303,7 @@
 
 \def\dosetnormallanguage#1#2% current default
   {\edef\askedlanguagepatterns{\specificlanguageparameter{#1}\s!patterns}%
-   \normallanguage=\ctxlua{tex.sprint(languages.enable({"\askedlanguagepatterns","#1","\askedlanguagepatterns","#2"}))}%
+   \normallanguage=\ctxlua{tex.sprint(languages.enable({"\askedlanguagepatterns","#1","#2"}))}%
    \ifproductionrun
      \setxvalue{\??la\??la#1#2}{\number\normallanguage}%
    \fi}
@@ -317,7 +317,7 @@
 
 \newtoks \everylanguage
 
-\def\sethyphenationvariables
+\def\sethyphenationvariables % as we can have cloning we need to set it each time, unless we move all to lua
   {\ctxlua{languages.setup(tex.language, {
         lefthyphen  = "\languageparameter\c!lefthyphen",
         righthyphen = "\languageparameter\c!righthyphen",
@@ -552,33 +552,6 @@
 
 \let\preloadallpatterns\relax % just for old times sake
 \let\preloadlanguages  \relax % just for old times sake
-
-%D This might bexcome a seperate file:
-
-% mkiv only -- todo: internationalize command names
-
-% \loadspellchecklist[en][words-en.txt]
-% \loadspellchecklist[us][words-en.txt]
-% \loadspellchecklist[nl][words-nl.txt]
-% \setupspellchecking[state=start]
-
-\def\loadspellchecklist
-  {\dodoubleempty\doloadspellchecklist}
-
-\def\doloadspellchecklist[#1][#2]%
-  {\ctxlua{languages.words.load("#1","#2")}}
-
-\def\setupspellchecking
-  {\dosingleargument\dosetupspellchecking}
-
-\def\setupspellchecking[#1]% todo colors
-  {\getparameters[\??wl][#1]%
-   \doifelse\@@wlstate\v!start
-     {\ctxlua{languages.words.enable()}}
-     {\ctxlua{languages.words.disable()}}}
-
-\setupspellchecking
-  [\c!state=\v!stop]
 
 \uchyph=1
 

@@ -89,6 +89,7 @@
 		<cd:variable name='backward' value='zpet'/>
 		<cd:variable name='bbl' value='bbl'/>
 		<cd:variable name='before' value='pred'/>
+		<cd:variable name='begin' value='begin'/>
 		<cd:variable name='bib' value='bib'/>
 		<cd:variable name='big' value='velke'/>
 		<cd:variable name='bigbodyfont' value='bigbodyfont'/>
@@ -144,6 +145,7 @@
 		<cd:variable name='each' value='kazdy'/>
 		<cd:variable name='edge' value='hrana'/>
 		<cd:variable name='empty' value='prazdne'/>
+		<cd:variable name='end' value='end'/>
 		<cd:variable name='endnote' value='endnote'/>
 		<cd:variable name='enumeration' value='vycet'/>
 		<cd:variable name='environment' value='prostredi'/>

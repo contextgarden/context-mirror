@@ -9,12 +9,12 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 -- needs a cleanup (share locals)
 
 local utf = unicode.utf8
-
-local find, lower, format, match, utfchar = string.find, string.lower, string.format, string.match, utf.char
+local utfbyte = utf.byte
+local format = string.format
 local concat = table.concat
 local lpegmatch = lpeg.match
 
-if lang.use_new then lang.use_new(true) end
+local trace_patterns = false  trackers.register("languages.patterns",  function(v) trace_patterns = v end)
 
 languages                  = languages or {}
 languages.version          = 1.009
@@ -32,18 +32,13 @@ local langdata = languages.hyphenation.data
 --~ string  =lang:hyphenation()
 --~ lang:clear_hyphenation()
 
-
 -- we can consider hiding data (faster access too)
-
---~ local function filter(filename,what)
---~     local data = io.loaddata(resolvers.find_file(filename))
---~     local data = match(data,string.format("\\%s%%s*(%%b{})",what or "patterns"))
---~     return match(data,"{%s*(.-)%s*}") or ""
---~ end
 
 -- loading the 26 languages that we normally load in mkiv, the string based variant
 -- takes .84 seconds (probably due to the sub's) while the lpeg variant takes .78
 -- seconds
+--
+-- the following lpeg can probably be improved (it was one of the first I made)
 
 local leftbrace  = lpeg.P("{")
 local rightbrace = lpeg.P("}")
@@ -57,7 +52,7 @@ local command    = lpeg.P("\\patterns")
 local parser     = (1-command)^0 * command * content
 
 local function filterpatterns(filename)
-    if find(filename,"%.rpl") then
+    if file.extname(filename) == "rpl" then
         return io.loaddata(resolvers.find_file(filename)) or ""
     else
         return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "")
@@ -68,7 +63,7 @@ local command = lpeg.P("\\hyphenation")
 local parser  = (1-command)^0 * command * content
 
 local function filterexceptions(filename)
-    if find(filename,"%.rhl") then
+    if file.extname(filename) == "rhl" then
         return io.loaddata(resolvers.find_file(filename)) or ""
     else
         return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or {}) -- "" ?
@@ -96,14 +91,22 @@ function languages.hyphenation.number(tag)
     return (d and d:id()) or 0
 end
 
+lang.exceptions = lang.hyphenation
+
 local function loadthem(tag, filename, filter, target)
     statistics.starttiming(languages)
     local data = record(tag)
-    filename = (filename and filename ~= "" and resolvers.find_file(filename)) or ""
-    local ok = filename ~= ""
+    local fullname = (filename and filename ~= "" and resolvers.find_file(filename)) or ""
+    local ok = fullname ~= ""
     if ok then
-        lang[target](data,filterpatterns(filename))
+        if trace_patterns then
+            logs.report("languages","filtering %s for language '%s' from '%s'",target,tag,fullname)
+        end
+        lang[target](data,filterpatterns(fullname))
     else
+        if trace_patterns then
+            logs.report("languages","no %s for language '%s' in '%s'",target,tag,filename or "?")
+        end
         lang[target](data,"")
     end
     langdata[tag] = data
@@ -116,7 +119,7 @@ function languages.hyphenation.loadpatterns(tag, patterns)
 end
 
 function languages.hyphenation.loadexceptions(tag, exceptions)
-    return loadthem(tag, patterns, filterexceptions, "hyphenation")
+    return loadthem(tag, patterns, filterexceptions, "exceptions")
 end
 
 function languages.hyphenation.exceptions(tag, ...)
@@ -174,8 +177,8 @@ function languages.setup(what,settings)
     local righthyphen = settings.righthyphen
     lefthyphen  = lefthyphen  ~= "" and lefthyphen  or nil
     righthyphen = righthyphen ~= "" and righthyphen or nil
-    lefthyphen  = lefthyphen  and utf.byte(lefthyphen)  or 0
-    righthyphen = righthyphen and utf.byte(righthyphen) or 0
+    lefthyphen  = lefthyphen  and utfbyte(lefthyphen)  or 0
+    righthyphen = righthyphen and utfbyte(righthyphen) or 0
     lang.posthyphenchar(what,lefthyphen)
     lang.prehyphenchar (what,righthyphen)
     lang.postexhyphenchar(what,lefthyphen)
@@ -234,7 +237,7 @@ function languages.enable(tags)
     for i=1,#tags do
         local tag = tags[i]
         local l = registered[tag]
-        if l then
+        if l and l ~= "" then
             if not l.loaded then
                 local tag = l.parent
                 local number = languages.hyphenation.number(tag)
@@ -248,6 +251,9 @@ function languages.enable(tags)
                     numbers[l.number] = tag
                 end
                 l.loaded = true
+                if trace_patterns then
+                    logs.report("languages","assigning number %s",l.number)
+                end
             end
             if l.number > 0 then
                 return l.number
@@ -292,188 +298,6 @@ function languages.logger.report()
     end
     return (#result > 0 and concat(result," ")) or "none"
 end
-
-languages.words           = languages.words      or {}
-languages.words.data      = languages.words.data or {}
-languages.words.enables   = false
-languages.words.threshold = 4
-
-languages.words.colors    = {
-    ["known"]   = "green",
-    ["unknown"] = "red",
-}
-
-do -- can use predefined patterns
-
-    local spacing = lpeg.S(" \n\r\t")
-    local markup  = lpeg.S("-=")
-    local lbrace  = lpeg.P("{")
-    local rbrace  = lpeg.P("}")
-    local disc    = (lbrace * (1-rbrace)^0 * rbrace)^1 -- or just 3 times, time this
-    local word    = lpeg.Cs((markup/"" + disc/"" + (1-spacing))^1)
-
-    function languages.words.load(tag, filename)
-        local filename = resolvers.find_file(filename,'other text file') or ""
-        if filename ~= "" then
-            statistics.starttiming(languages)
-            local data = io.loaddata(filename) or ""
-            local words = languages.words.data[tag] or {}
-            parser = (spacing + word/function(s) words[s] = true end)^0
-            lpegmatch(parser,data)
-            languages.words.data[tag] = words
-            statistics.stoptiming(languages)
-        end
-    end
-
-end
-
-function languages.words.found(id, str)
-    local tag = numbers[id]
-    if tag then
-        local data = languages.words.data[tag]
-        return data and (data[str] or data[lower(str)])
-    else
-        return false
-    end
-end
-
--- The following code is an adaption of experimental code for
--- hyphenating and spell checking.
-
-do
-
-    local glyph, disc, kern = node.id('glyph'), node.id('disc'), node.id('kern')
-
-    local bynode   = node.traverse
-    local chardata = characters.data
-
-    local function mark_words(head,found) -- can be optimized
-        local current, start, str, language, n = head, nil, "", nil, 0
-        local function action()
-            if #str > 0 then
-                local f = found(language,str)
-                if f then
-                    for i=1,n do
-                        f(start)
-                        start = start.next
-                    end
-                end
-            end
-            str, start, n = "", nil, 0
-        end
-        while current do
-            local id = current.id
-            if id == glyph then
-                local a = current.lang
-                if a then
-                    if a ~= language then
-                        if start then
-                            action()
-                        end
-                        language = a
-                    end
-                elseif start then
-                    action()
-                    language = a
-                end
-                local components = current.components
-                if components then
-                    start = start or current
-                    n = n + 1
-                    for g in bynode(components) do
-                        str = str .. utfchar(g.char)
-                    end
-                else
-                    local code = current.char
-                    if chardata[code].uccode or chardata[code].lccode then
-                        start = start or current
-                        n = n + 1
-                        str = str .. utfchar(code)
-                    elseif start then
-                        action()
-                    end
-                end
-            elseif id == disc then
-                if n > 0 then n = n + 1 end
-                -- ok
-            elseif id == kern and current.subtype == 0 and start then
-                -- ok
-            elseif start then
-                action()
-            end
-            current = current.next
-        end
-        if start then
-            action()
-        end
-        return head
-    end
-
-    languages.words.methods = { }
-    languages.words.method  = 1
-
-    local lw = languages.words
-
-    languages.words.methods[1] = function(head, attribute, yes, nop)
-        local set   = node.set_attribute
-        local unset = node.unset_attribute
-        local right, wrong = false, false
-        if yes then right = function(n) set(n,attribute,yes) end end
-        if nop then wrong = function(n) set(n,attribute,nop) end end
-        for n in node.traverse(head) do
-            unset(n,attribute) -- hm
-        end
-        local found, done = languages.words.found, false
-        mark_words(head, function(language,str)
-            if #str < lw.threshold then
-                return false
-            elseif found(language,str) then
-                done = true
-                return right
-            else
-                done = true
-                return wrong
-            end
-        end)
-        return head, done
-    end
-
-    local color = attributes.private('color')
-
-    function languages.words.check(head)
-        if lw.enabled and head.next then
-            local colors = lw.colors
-            local alc    = attributes.list[color]
-            return lw.methods[lw.method](head, color, alc[colors.known], alc[colors.unknown])
-        else
-            return head, false
-        end
-    end
-
-    function languages.words.enable()
-        tasks.enableaction("processors","languages.words.check")
-        languages.words.enabled = true
-    end
-
-    function languages.words.disable()
-        languages.words.enabled = false
-    end
-
-end
-
--- for the moment we hook it into the attribute handler
-
---~ languagehacks = { }
-
---~ function languagehacks.process(namespace,attribute,head)
---~     return languages.check(head)
---~ end
-
---~ chars.plugins[chars.plugins+1] = {
---~     name = "language",
---~     namespace = languagehacks,
---~     processor = languagehacks.process
---~ }
 
 -- must happen at the tex end
 

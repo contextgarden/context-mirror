@@ -17,6 +17,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 -- still needed tex -> lua -> tex > lua chain (needed because we can have
 -- expandable settings at the tex end
 
+-- todo: strip baselineskip around display math
+
 local next, type, tonumber = next, type, tonumber
 local format, gmatch, concat, match = string.format, string.gmatch, table.concat, string.match
 local ceil, floor, max, min, round = math.ceil, math.floor, math.max, math.min, math.round

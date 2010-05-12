@@ -151,15 +151,15 @@ local function do_registerspotcolor(parent,name,parentnumber,e,f,d,p)
         if v then
             local kind = colors.default -- else problems with shading etc
             if kind == 1 then kind = v[1] end
+            if e and e ~= "" then
+                registrations.spotcolorname(parent,e) -- before registration of the color
+            end
             if     kind == 2 then -- name noffractions names p's r g b
                 registrations.grayspotcolor(parent,f,d,p,v[2])
             elseif kind == 3 then
                 registrations.rgbspotcolor (parent,f,d,p,v[3],v[4],v[5])
             elseif kind == 4 then
                 registrations.cmykspotcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
-            end
-            if e and e ~= "" then
-                registrations.spotcolorname(parent,e)
             end
         end
         registered[parentnumber] = true

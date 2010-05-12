@@ -89,6 +89,7 @@
 		<cd:variable name='backward' value='achteruit'/>
 		<cd:variable name='bbl' value='bbl'/>
 		<cd:variable name='before' value='voor'/>
+		<cd:variable name='begin' value='begin'/>
 		<cd:variable name='bib' value='bib'/>
 		<cd:variable name='big' value='groot'/>
 		<cd:variable name='bigbodyfont' value='grootkorps'/>
@@ -144,6 +145,7 @@
 		<cd:variable name='each' value='elk'/>
 		<cd:variable name='edge' value='rand'/>
 		<cd:variable name='empty' value='leeg'/>
+		<cd:variable name='end' value='eind'/>
 		<cd:variable name='endnote' value='eindnoot'/>
 		<cd:variable name='enumeration' value='doornummering'/>
 		<cd:variable name='environment' value='omgeving'/>

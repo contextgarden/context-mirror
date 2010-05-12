@@ -603,8 +603,8 @@
 
 \let\relativefontsize \defaultrelativefontsize
 
-\def\saverelativefontsize#1#2% #1=rm|ss|.. #2=waarde
-  {\setxvalue{\fontclass#1\s!rscale}{#2}}
+% \def\saverelativefontsize#1#2% #1=rm|ss|.. #2=waarde
+%   {\setxvalue{\fontclass#1\s!rscale}{#2}}
 
 \def\checkrelativefontid
   {\ifcsname\??tf\fontclass\s!rname\endcsname
@@ -613,9 +613,6 @@
      \@EA\xdef\csname\??tf\fontclass\s!rname\endcsname{\the\lastfontid}%
       \let\relativefontid\empty
    \fi}
-
-% \def\checkrelativefontid
-%   {\let\relativefontid\minusone}
 
 \def\checkrelativefontsize#1%
   {\edef\relativefontsize
@@ -632,28 +629,6 @@
    \else
      \let\relativefontid\minusone
    \fi}
-
-% \letvalue{\s!default\s!rscale}\defaultrelativefontsize
-%
-% \def\checkrelativefontsize#1%
-%   {\edef\relativefontsize
-%      {\csname
-%         \ifcsname\fontclass#1\s!rscale\endcsname
-%           \fontclass#1%
-%         \else\ifcsname\defaultfontclass#1\s!rscale\endcsname
-%           \defaultfontclass#1%
-%         \else
-%           \s!default
-%         \fi\fi
-%       \s!rscale\endcsname}}
-
-%D We also save:
-
-\def\savemathtextstyle#1% #1=rm|ss|..
-  {\doifsomething{#1}{\setxvalue{\fontclass\c!mm\s!text}{#1}}}
-
-\def\currentmathtextstyle % we default to empty !
-  {\executeifdefined{\fontclass\c!mm\s!text}\empty}
 
 %D Scaling macros:
 %D
@@ -761,8 +736,8 @@
    \the\everydefinefont}
 
 \def\updatefontclassparameters
-  {\edef\@@fontclassfeatures {\ifcsname\fontclass\s!features \endcsname\csname\fontclass\s!features \endcsname\fi}%
-   \edef\@@fontclassfallbacks{\ifcsname\fontclass\s!fallbacks\endcsname\csname\fontclass\s!fallbacks\endcsname\fi}}
+  {\edef\@@fontclassfeatures {\ifcsname\fontclass\fontstyle\s!features \endcsname\csname\fontclass\fontstyle\s!features \endcsname\fi}%
+   \edef\@@fontclassfallbacks{\ifcsname\fontclass\fontstyle\s!fallbacks\endcsname\csname\fontclass\fontstyle\s!fallbacks\endcsname\fi}}
 
 % resolve
 
@@ -1164,7 +1139,6 @@
    \let\localrelativefontsize\defaultrelativefontsize
    \let\localabsolutefontsize\fontbody
    \lowleveldefinefont{#2}\rawfontidentifier
-%    \let\localrelativefontsize\defaultrelativefontsize % not needed
    \csname\rawfontidentifier\endcsname
    \autofontsizefalse
    \setfontcharacteristics
@@ -1177,7 +1151,6 @@
      \def\localrelativefontsize{#1}%
      \def\localabsolutefontsize{#2}%
      \lowleveldefinefont{#4}\newfontidentifier
-%      \let\localrelativefontsize\defaultrelativefontsize % not needed
    \fi
    \csname\newfontidentifier\endcsname
    \autofontsizefalse
@@ -2105,11 +2078,6 @@
 \def\registerfontclass#1%
   {\letgvalue{\@fontclass@#1}\v!yes} % global ?
 
-% \def\setcurrentfontclass#1%
-%   {\ifcsname\@fontclass@#1\endcsname
-%      \edef\fontclass{#1}%
-%    \fi}
-
 \edef\@no@fontclass@{\@fontclass@:?:}
 
 \def\setcurrentfontclass#1%
@@ -2120,6 +2088,11 @@
    \else\ifcase\currentgrouplevel
      \trycurrentfontclass{#1}%
    \fi\fi\fi}
+
+\def\savefontclassparameters#1#2#3#4% #1=rm|ss|.. rscale features fallbacks
+  {\setxvalue{\fontclass#1\s!rscale   }{#2}%
+   \setxvalue{\fontclass#1\s!features }{#3}%
+   \setxvalue{\fontclass#1\s!fallbacks}{#4}}
 
 \settrue\autotypescripts
 
@@ -2272,48 +2245,6 @@
 
 \let\fontstrategy\relax
 
-% \def\synchronizefont
-%   {\tryingfonttrue
-%    \ifx\fontclass\empty\else
-%      \global\let\fontstrategy\dofontclassstrategy
-%      \the\fontstrategies \relax % \relax still needed ?
-%    \fi
-%    \iftryingfont
-%      \global\let\fontstrategy\dofontstrategy
-%      \the\fontstrategies \relax % \relax still needed ?
-%    \fi
-%    \autofontsizefalse
-%    \ifskipfontcharacteristics
-%      \setfontcharacteristics
-%      \the\everyfontswitch
-%    \fi}
-
-% \def\dofontstrategy#1#2#3#4#5%
-%   {\ifcsname#2#3#4#5\endcsname
-%      #1\csname#2#3#4#5\endcsname \tryingfontfalse
-%    \fi}
-
-% \def\dofontclassstrategy#1#2#3#4#5%
-%   {\ifcsname\fontclass#2#3#4#5\endcsname
-%      #1\csname\fontclass#2#3#4#5\endcsname \tryingfontfalse
-%    \fi}
-
-% \def\synchronizefont % we can have dups i.e. no need to let fontstrategy
-%   {\tryingfonttrue
-%    \ifx\fontclass\empty\else
-%      \global\let\fontstrategy\dofontclassstrategy
-%      \applyfontstrategies
-%    \fi
-%    \iftryingfont
-%      \global\let\fontstrategy\dofontstrategy
-%      \applyfontstrategies
-%    \fi
-%    \autofontsizefalse
-%    \ifskipfontcharacteristics
-%      \setfontcharacteristics
-%      \the\everyfontswitch
-%    \fi}
-
 \def\synchronizefont % we can have dups i.e. no need to let fontstrategy
   {\tryingfonttrue
    \ifx\fontclass\empty
@@ -2326,69 +2257,6 @@
      \setfontcharacteristics
      \the\everyfontswitch
    \fi}
-
-% \appendtoks \iftryingfont \fontstrategy \autofontsizefalse % --- --- --- --- % pt tt bf a
-%   \fontbody \fontstyle \fontalternative \fontsize
-% \fi \to \fontstrategies
-%
-% \appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- --- def % pt tt bf
-%   \fontbody \fontstyle \fontalternative \defaultfontsize
-% \fi \to \fontstrategies
-%
-% \appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- def --- % pt tt tf a
-%   \fontbody \fontstyle \defaultfontalternative \fontsize
-% \fi \to \fontstrategies
-%
-% \appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % --- --- def def % pt tt tf
-%   \fontbody \fontstyle \defaultfontalternative \defaultfontsize
-% \fi \to \fontstrategies
-%
-% \appendtoks \iftryingfont \fontstrategy \autofontsizefalse % --- def def def % pt rm tf
-%   \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
-% \fi \to \fontstrategies
-%
-% \appendtoks \iftryingfont \fontstrategy \autofontsizetrue  % def def def def % rm tf
-%   \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
-% \fi \to \fontstrategies
-
-% \def\fontstrategiesa % --- --- --- --- % pt tt bf a
-%   {\fontstrategy \autofontsizefalse \fontbody \fontstyle \fontalternative \fontsize
-%    \iftryingfont \fontstrategiesb \fi}
-% \def\fontstrategiesb % --- --- --- def % pt tt bf
-%   {\fontstrategy \autofontsizetrue  \fontbody \fontstyle \fontalternative \defaultfontsize
-%    \iftryingfont \fontstrategiesc \fi}
-% \def\fontstrategiesc % --- --- def --- % pt tt tf a
-%   {\fontstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \fontsize
-%    \iftryingfont \fontstrategiesd \fi}
-% \def\fontstrategiesd % --- --- def def % pt tt tf
-%   {\fontstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \defaultfontsize
-%    \iftryingfont \fontstrategiese \fi}
-% \def\fontstrategiese % --- def def def % pt rm tf
-%   {\fontstrategy \autofontsizefalse \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
-%    \iftryingfont \fontstrategiesf \fi}
-% \def\fontstrategiesf % def def def def % rm tf
-%   {\fontstrategy \autofontsizetrue \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize}
-
-% \fontstrategies {\fontstrategiesa}
-% \let\applyfontstrategies\fontstrategiesa
-
-% \def\fontclassstrategiesa % --- --- --- --- % pt tt bf a
-%   {\dofontclassstrategy \autofontsizefalse \fontbody \fontstyle \fontalternative \fontsize
-%    \iftryingfont \fontclassstrategiesb \fi}
-% \def\fontclassstrategiesb % --- --- --- def % pt tt bf
-%   {\dofontclassstrategy \autofontsizetrue  \fontbody \fontstyle \fontalternative \defaultfontsize
-%    \iftryingfont \fontclassstrategiesc \fi}
-% \def\fontclassstrategiesc % --- --- def --- % pt tt tf a
-%   {\dofontclassstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \fontsize
-%    \iftryingfont \fontclassstrategiesd \fi}
-% \def\fontclassstrategiesd % --- --- def def % pt tt tf
-%   {\dofontclassstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \defaultfontsize
-%    \iftryingfont \fontclassstrategiese \fi}
-% \def\fontclassstrategiese % --- def def def % pt rm tf
-%   {\dofontclassstrategy \autofontsizefalse \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
-%    \iftryingfont \fontclassstrategiesf \fi}
-% \def\fontclassstrategiesf % def def def def % rm tf
-%   {\dofontclassstrategy \autofontsizetrue \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize}
 
 \def\fontclassstrategiesa % --- --- --- --- % pt tt bf a
   {\ifcsname\fontclass\fontbody \fontstyle \fontalternative \fontsize\endcsname
@@ -2439,24 +2307,6 @@
    \fi}
 
 % no class
-
-% \def\fontstrategiesa % --- --- --- --- % pt tt bf a
-%   {\dofontstrategy \autofontsizefalse \fontbody \fontstyle \fontalternative \fontsize
-%    \iftryingfont \fontstrategiesb \fi}
-% \def\fontstrategiesb % --- --- --- def % pt tt bf
-%   {\dofontstrategy \autofontsizetrue  \fontbody \fontstyle \fontalternative \defaultfontsize
-%    \iftryingfont \fontstrategiesc \fi}
-% \def\fontstrategiesc % --- --- def --- % pt tt tf a
-%   {\dofontstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \fontsize
-%    \iftryingfont \fontstrategiesd \fi}
-% \def\fontstrategiesd % --- --- def def % pt tt tf
-%   {\dofontstrategy \autofontsizetrue \fontbody \fontstyle \defaultfontalternative \defaultfontsize
-%    \iftryingfont \fontstrategiese \fi}
-% \def\fontstrategiese % --- def def def % pt rm tf
-%   {\dofontstrategy \autofontsizefalse \fontbody \defaultfontstyle \defaultfontalternative \defaultfontsize
-%    \iftryingfont \fontstrategiesf \fi}
-% \def\fontstrategiesf % def def def def % rm tf
-%   {\dofontstrategy \autofontsizetrue \defaultfontbody \defaultfontstyle \defaultfontalternative \defaultfontsize}
 
 \def\fontstrategiesa % --- --- --- --- % pt tt bf a
   {\ifcsname\fontbody \fontstyle \fontalternative \fontsize\endcsname
@@ -3213,19 +3063,6 @@
 
 %D or even better:
 
-% \def\doemphasistypeface#1#2% slow
-%   {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!slanted
-%      {#1}%
-%      {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!italic
-%         {#2}%
-%         {\doifelsevaluenothing{\??ft\fontclass\normalizedbodyfontsize\c!em}
-%            {\doifelsevalue{\??ft\normalizedbodyfontsize\c!em}\v!slanted
-%               {#1}%
-%               {\doifelsevalue{\??ft\normalizedbodyfontsize\c!em}\v!italic
-%                  {#2}%
-%                  {\getvalue{\??ft\normalizedbodyfontsize\c!em}}}}
-%            {\getvalue{\??ft\fontclass\normalizedbodyfontsize\c!em}}}}}
-
 \def\doemphasistypeface#1#2%
   {\edef\emphasizedtypeface{\csname\??ft\fontclass\normalizedbodyfontsize\c!em\endcsname}%
    \ifx\emphasizedtypeface\v!slanted
@@ -3317,18 +3154,6 @@
   {\ifhmode
      \expandafter\emphasislook
    \fi}
-
-% \def\emphasislook
-%   {\begingroup
-%    \beginrobusttest
-%    \futurelet\next\emphasistest}
-
-% \def\emphasistest
-%   {\normalifcat\noexpand\next,%
-%      \endrobusttest\expandafter\doemphasiscorrection
-%    \normalelse
-%      \endrobusttest\expandafter\dododoemphasiscorrection
-%    \normalfi}
 
 \def\emphasislook
   {\begingroup

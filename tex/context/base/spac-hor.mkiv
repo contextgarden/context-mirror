@@ -115,7 +115,7 @@
 \setvalue{\??in->\v!no   }{\noindentation}
 \setvalue{\??in->\v!auto }{\autoindentation}
 
-\def\checknextindentation[#1]%
+\unexpanded\def\checknextindentation[#1]%
   {\csname\??in->\ifcsname\??in->#1\endcsname#1\else\s!empty\fi\endcsname}
 
 %D Here come the handlers.

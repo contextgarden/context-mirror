@@ -1,5 +1,3 @@
-% engine=luatex
-
 %D \module
 %D   [       file=mtx-context-combine,
 %D        version=2009.03.21,
@@ -19,16 +17,18 @@
 %
 % usage: context --extra=combine [options] list-of-files
 %
-% --sort                  : sort filenames first
-% --paperoffset=dimension : left-top-offset
-% --nobanner              : no footer etc
-% --combination           : h*v or hxv
-% --paperformat           : paper*print or paperxprint
-% --nobanner              : no footerlines
-% --bannerheight          : height of banner
-% --bannerstring          : height of bannerstring
+% --sort                   : sort filenames first
+% --paperoffset=dimension  : left-top-offset
+% --nobanner               : no footer etc
+% --combination            : h*v or hxv
+% --paperformat=spec       : paper*print or paperxprint
+% --nobanner               : no footerlines
+% --bannerheight=dimension : height of banner
+% --bannerstring=dimension : height of bannerstring
 %
 % end help
+
+\input mtx-context-common.tex
 
 \doifdocumentargumentelse {paperoffset} {
 
@@ -50,45 +50,16 @@
    width=middle,
    height=middle]
 
-\startluacode
-    local combination = document.arguments['combination'] or '2*2'
-    local nx, ny = string.match(combination,"^(%d+)%s*[%*x]%s*(%d+)$")
-    if not nx then
-        nx, ny = 2, 2
-    elseif not ny then
-        nx = tonumber(combination) or 2
-        ny = nx
-    else
-        nx = tonumber(nx) or 2
-        ny = tonumber(ny) or nx or 2
-    end
-    document.setargument("nx",nx)
-    document.setargument("ny",ny)
-\stopluacode
-
-\startluacode
-    local paperformat = document.arguments['paperformat'] or 'A4*A4'
-    paperformat = string.upper(paperformat)
-    local f, t = string.match(paperformat,"^(.-)%s*[%*xX]%s*(.-)$")
-    if not f then
-        f, t = "A4", "A4"
-    elseif not t then
-        t = f
-    end
-    document.setargument("from",f)
-    document.setargument("to",t)
-\stopluacode
-
 \setuppapersize
-  [\getdocumentargument{from}]
-  [\getdocumentargument{to}]
+  [\getdocumentargument{paperformat_paper}]
+  [\getdocumentargument{paperformat_print}]
 
 \doifnotdocumentargument {bannerheight} {
     \setuplayout
         [footer=1cm]
 }
 
-\doifdocumentargumentelse {nobanner} {yes} {
+\doifelse {\getdocumentargument{nobanner}} {yes} {
     \setuplayout
       [footer=0cm]
     \setupbackgrounds
@@ -112,7 +83,6 @@
 
 \startluacode
     local format = string.format
-    local fprint = function(...) tex.sprint(tex.ctxcatcodes,format(...)) end
 
     if #document.files > 0 then
         if document.arguments["sort"] then
@@ -120,25 +90,25 @@
         end
         local dobanner = not document.arguments["nobanner"]
         local bannerheight = document.arguments["bannerheight"]
-        local nx = document.arguments.nx or 2
-        local ny = document.arguments.ny or 2
+        local nx = document.arguments.combination_nx or 2
+        local ny = document.arguments.combination_ny or 2
         for _, filename in ipairs(document.files) do
             if not string.find(filename,"^mtx%-context%-") then
                 -- could be a macro
                 local bannerstring = format("\\tttf\\detokenize{%s}\\quad\\quad\\currentdate\\quad\\quad\\pagenumber",file.basename(filename))
                 if dobanner then
                     if bannerheight then
-                        fprint("\\setuptexttexts[{\\setlayerframed[page][preset=middlebottom][frame=off,height=%s]{%s}}]",bannerheight,bannerstring)
+                        context("\\setuptexttexts[{\\setlayerframed[page][preset=middlebottom][frame=off,height=%s]{%s}}]",bannerheight,bannerstring)
                     else
-                        fprint("\\setupfootertexts[{%s}]",bannerstring)
+                        context("\\setupfootertexts[{%s}]",bannerstring)
                     end
                 end
-                fprint("\\combinepages[%s][nx=%s,ny=%s]",filename,nx,ny)
-                fprint("\\page")
+                context("\\combinepages[%s][nx=%s,ny=%s]",filename,nx,ny)
+                context("\\page")
             end
         end
     else
-        fprint("no files given")
+        context("no files given")
     end
 \stopluacode
 

@@ -32,6 +32,7 @@ local registrations  = backends.pdf.registrations
 local pdfliteral, register = nodes.pdfliteral, nodes.register
 
 local pdfconstant      = lpdf.constant
+local pdfstring        = lpdf.string
 local pdfdictionary    = lpdf.dictionary
 local pdfarray         = lpdf.array
 local pdfreference     = lpdf.reference
