@@ -1923,13 +1923,24 @@
 \def\xdoget@n@parameters#1]%
   {\xprocesscommaitem#1,],\@relax@}
 
+% \def\xdoget@e@parameters#1]%
+%   {\let\dosetnvalue\dosetvalue
+%    \let\dosetvalue\dosetevalue
+%    \let\p!doassign\p!e!doassign
+%    \xprocesscommaitem#1,],\@relax@
+%    \let\p!doassign\p!n!doassign
+%    \let\dosetvalue\dosetnvalue
+%    \let\xdogetparameters\xdoget@n@parameters
+%    \let\currentvalue\empty}
+
 \def\xdoget@e@parameters#1]%
-  {\let\dosetnvalue\dosetvalue
-   \let\dosetvalue\dosetevalue
+  {\let\dosetnvalue\setsomevalue
+   \let\setsomevalue\dosetevalue
    \let\p!doassign\p!e!doassign
+   \let\setsomevalue\dosetevalue
    \xprocesscommaitem#1,],\@relax@
    \let\p!doassign\p!n!doassign
-   \let\dosetvalue\dosetnvalue
+   \let\setsomevalue\dosetnvalue
    \let\xdogetparameters\xdoget@n@parameters
    \let\currentvalue\empty}
 

@@ -189,19 +189,19 @@ function colors.definesimplegray(name,s)
 end
 
 function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
-    local r = match(str,"^#(.+)$") -- for old times sake (if we need to feed from xml or so)
-    local t = (r and { h = r }) or settings_to_hash_strict(str)
+    local x = match(str,"^#(.+)$") -- for old times sake (if we need to feed from xml or so)
+    local t = (x and { x = x }) or settings_to_hash_strict(str)
     if t then
-        if t.v then
-            local r, g, b = colors.hsvtorgb(tonumber(t.h) or 0, tonumber(t.s) or 1, tonumber(t.v) or 1) -- maybe later native
-            definecolor(name, register_color(name,'rgb',r,g,b), global)
-        elseif t.h then
-            local r, g, b = match(t.h .. "000000","(..)(..)(..)") -- watch the 255
-            definecolor(name, register_color(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255), global)
-        elseif t.r or t.g or t.b then
+        if t.r or t.g or t.b then
             definecolor(name, register_color(name,'rgb', tonumber(t.r) or 0, tonumber(t.g) or 0, tonumber(t.b) or 0), global)
         elseif t.c or t.m or t.y or t.k then
             definecolor(name, register_color(name,'cmyk',tonumber(t.c) or 0, tonumber(t.m) or 0, tonumber(t.y) or 0, tonumber(t.k) or 0), global)
+        elseif t.v then
+            local r, g, b = colors.hsvtorgb(tonumber(t.h) or 0, tonumber(t.s) or 1, tonumber(t.v) or 1) -- maybe later native
+            definecolor(name, register_color(name,'rgb',r,g,b), global)
+        elseif t.x or t.h then
+            local r, g, b = match((t.x or t.h) .. "000000","(..)(..)(..)") -- watch the 255
+            definecolor(name, register_color(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255), global)
         else
             definecolor(name, register_color(name,'gray',tonumber(t.s) or 0), global)
         end

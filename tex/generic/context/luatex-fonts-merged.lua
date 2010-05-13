@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/12/10 18:43:22
+-- merge date  : 05/13/10 23:36:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -411,6 +411,8 @@ function string:split(separator)
     end
     return match(c,self)
 end
+
+lpeg.splitters = cache
 
 local cache = { }
 
@@ -5873,7 +5875,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.645 -- beware: also sync font-mis.lua
+otf.version          = 2.650 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -8195,6 +8197,7 @@ results in different tables.</p>
 local concat, insert, remove = table.concat, table.insert, table.remove
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
+local lpegmatch = lpeg.match
 
 local otf = fonts.otf
 local tfm = fonts.tfm
@@ -8238,7 +8241,7 @@ local zwj      = 0x200D
 local wildcard = "*"
 local default  = "dflt"
 
-local split_at_space = lpeg.Ct(lpeg.splitat(" ")) -- no trailing or multiple spaces anyway
+local split_at_space = lpeg.splitters[" "] or lpeg.Ct(lpeg.splitat(" ")) -- no trailing or multiple spaces anyway
 
 local glyph   = node.id('glyph')
 local glue    = node.id('glue')
@@ -10280,11 +10283,11 @@ otf.features.prepare = { }
 -- document)
 
 local function split(replacement,original,cache,unicodes)
-    -- we can cache this too, but not the same
+    -- we can cache this too, but not the same (although unicode is a unique enough hash)
     local o, t, n = { }, { }, 0
     for s in gmatch(original,"[^ ]+") do
         local us = unicodes[s]
-        if type(us) == "number" then
+        if type(us) == "number" then -- tonumber(us)
             o[#o+1] = us
         else
             o[#o+1] = us[1]
@@ -10293,7 +10296,7 @@ local function split(replacement,original,cache,unicodes)
     for s in gmatch(replacement,"[^ ]+") do
         n = n + 1
         local us = unicodes[s]
-        if type(us) == "number" then
+        if type(us) == "number" then -- tonumber(us)
             t[o[n]] = us
         else
             t[o[n]] = us[1]
@@ -10641,6 +10644,46 @@ function prepare_contextchains(tfmdata)
                                     if sequence[1] then
                                         -- this is different from normal coverage, we assume only replacements
                                         t[#t+1] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
+                                        for unic, _ in next, sequence[start] do
+                                            local cu = contexts[unic]
+                                            if not cu then
+                                                contexts[unic] = t
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    elseif fmt == "glyphs" then
+                        if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
+                            logs.report("otf process","unsupported coverage %s for %s",lookuptype,lookupname)
+                        else
+                            local contexts = contextchain[lookupname]
+                            if not contexts then
+                                contexts = { }
+                                contextchain[lookupname] = contexts
+                            end
+                            local t = { }
+                            for nofrules=1,#rules do
+                                -- nearly the same as coverage so we could as well rename it
+                                local rule = rules[nofrules]
+                                local glyphs = rule.glyphs
+                                if glyphs and glyphs.names then
+                                    local fore, back, names, sequence = glyphs.fore, glyphs.back, glyphs.names, { }
+                                    if fore and fore ~= "" then
+                                        fore = lpegmatch(split_at_space,fore)
+                                        uncover(fore,sequence,cache,unicodes)
+                                    end
+                                    local start = #sequence + 1
+                                    names = lpegmatch(split_at_space,names)
+                                    uncover(names,sequence,cache,unicodes)
+                                    local stop = #sequence
+                                    if back and back ~= "" then
+                                        back = lpegmatch(split_at_space,back)
+                                        uncover(back,sequence,cache,unicodes)
+                                    end
+                                    if sequence[1] then
+                                        t[#t+1] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
                                         for unic, _ in next, sequence[start] do
                                             local cu = contexts[unic]
                                             if not cu then

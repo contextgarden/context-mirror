@@ -16,16 +16,19 @@ if not modules then modules = { } end modules ['lpdf-u3d'] = {
 local format, find = string.format, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 
-local pdfconstant   = lpdf.constant
-local pdfboolean    = lpdf.boolean
-local pdfunicode    = lpdf.unicode
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfnull       = lpdf.null
-local pdfreference  = lpdf.reference
+local pdfconstant      = lpdf.constant
+local pdfboolean       = lpdf.boolean
+local pdfnumber        = lpdf.number
+local pdfunicode       = lpdf.unicode
+local pdfdictionary    = lpdf.dictionary
+local pdfarray         = lpdf.array
+local pdfnull          = lpdf.null
+local pdfreference     = lpdf.reference
 
-local checkedkey    = lpdf.checkedkey
-local limited       = lpdf.limited
+local pdfimmediateobj  = pdf.immediateobj
+
+local checkedkey       = lpdf.checkedkey
+local limited          = lpdf.limited
 
 local schemes = table.tohash {
     "Artwork", "None", "White", "Day", "Night", "Hard",
@@ -62,13 +65,14 @@ end
 
 local function make3dview(view)
 
-    local name = viewname
-    local name = pdfunicode((view.name ~= "" and name) or "unknown view")
+    local name = view.name
+    local name = pdfunicode(name ~= "" and name or "unknown view")
 
     local viewdict = pdfdictionary {
-       Type = pdfconstant("3DView"),
-       XN   = name,
-       IN   = name,
+        Type = pdfconstant("3DView"),
+        XN   = name,
+        IN   = name,
+        NR   = true,
     }
 
     local bg = checkedkey(view,"bg","table")
@@ -312,25 +316,21 @@ local function make3dview(view)
             local node = checkedkey(nodes,i,"table")
             if node then
                 local position = checkedkey(node,"position","table")
-                position = position and #position == 12 and pdfarray(position)
-                if position then
-                    nodelist[#nodelist+1] = pdfdictionary {
-                        Type = pdfconstant("3DNode"),
-                        N    = node.name or ("node_" .. i), -- pdfunicode ?
-                        V    = node.visible or true,
-                        O    = node.opacity or 0,
-                        RM   = pdfdictionary {
-                            Type    = pdfconstant("3DRenderMode"),
-                            Subtype = pdfconstant(node.rendermode or "Solid"),
-                        },
-                        M    = position,
-                    }
-                end
+                nodelist[#nodelist+1] = pdfdictionary {
+                    Type = pdfconstant("3DNode"),
+                    N    = node.name or ("node_" .. i), -- pdfunicode ?
+                    M    = position and #position == 12 and pdfarray(position),
+                    V    = node.visible or true,
+                    O    = node.opacity or 0,
+                    RM   = pdfdictionary {
+                        Type    = pdfconstant("3DRenderMode"),
+                        Subtype = pdfconstant(node.rendermode or "Solid"),
+                    },
+                }
             end
       end
-      viewdict.NR = true
       viewdict.NA = nodelist
-   end
+    end
 
    return viewdict
 
@@ -349,19 +349,19 @@ function backends.pdf.helpers.insert3d(spec) -- width, height, factor, display, 
 
     local activationdict = pdfdictionary {
        TB = pdfboolean(param.toolbar,true),
-       NP = pdfboolean(param.tree,true),
+       NP = pdfboolean(param.tree,false),
     }
 
     local stream = streams[label]
     if not stream then
 
-        local subtype, subdata = "U3D", io.readdata(foundname) or ""
+        local subtype, subdata = "U3D", io.loaddata(foundname) or ""
         if find(subdata,"^PRC") then
-            subtype == "PRC"
+            subtype = "PRC"
         elseif find(subdata,"^U3D") then
-            subtype == "U3D"
+            subtype = "U3D"
         elseif file.extname(foundname) == "prc" then
-            subtype == "PRC"
+            subtype = "PRC"
         end
 
         local attr = pdfdictionary {
@@ -388,12 +388,12 @@ function backends.pdf.helpers.insert3d(spec) -- width, height, factor, display, 
         if js then
             local jsref = stored_js[js]
             if not jsref then
-                jsref = pdf.immediateobj("streamfile",js)
+                jsref = pdfimmediateobj("streamfile",js)
                 stored_js[js] = jsref
             end
             attr.OnInstantiate = pdfreference(jsref)
         end
-        stored_3d[label] = pdf.immediateobj("streamfile",foundname,attr())
+        stored_3d[label] = pdfimmediateobj("streamfile",foundname,attr())
         stream = 1
     else
        stream = stream + 1
@@ -422,13 +422,50 @@ function backends.pdf.helpers.insert3d(spec) -- width, height, factor, display, 
         local tag = format("%s:%s:%s",label,stream,preview)
         local ref = stored_pr[tag]
         if not ref then
-        --  weird, has to be a /Form and not an /Image so we need a wrap = true key
-        --  local figure = img.immediatewrite { filename = preview, width = width, height = height }
-            local figure = img.immediatewrite { stream = ".5 .75 .75 rg 0 0 20 10 re f", bbox = {0,0,20,10 } }
+            local figure = img.immediatewrite {
+                filename = preview,
+                width = width,
+                height = height
+            }
+        --  local figure = img.immediatewrite {
+        --      stream = ".5 .75 .75 rg 0 0 20 10 re f",
+        --      bbox = { 0, 0, 20, 10 }
+        --  }
             ref = figure.objnum
             stored_pr[tag] = ref
         end
-        annot.AP = ref and pdfdictionary { N = pdfreference(ref) }
+        if ref then
+            local zero, one = pdfnumber(0), pdfnumber(1) -- not really needed
+            local pw   = pdfdictionary {
+                Type      = pdfconstant("XObject"),
+                Subtype   = pdfconstant("Form"),
+                FormType  = one,
+                BBox      = pdfarray { zero, zero, pdfnumber(factor*width), pdfnumber(factor*height) },
+                Matrix    = pdfarray { one, zero, zero, one, zero, zero },
+                Resources = pdfdictionary {
+                                XObject = pdfdictionary {
+                                    IM = pdfreference(ref)
+                                }
+                            },
+                ExtGState = pdfdictionary {
+                                GS = pdfdictionary {
+                                    Type = pdfconstant("ExtGState"),
+                                    CA   = one,
+                                    ca   = one,
+                                }
+                            },
+                ProcSet    = pdfarray { pdfconstant("PDF"), pdfconstant("ImageC") },
+            }
+            local pwd = pdfimmediateobj(
+                "stream",
+                format("q /GS gs %s 0 0 %s 0 0 cm /IM Do Q",
+                factor*width,factor*height),
+                pw()
+            )
+            annot.AP = pdfdictionary {
+                N = pdfreference(pwd)
+            }
+        end
         return annot, figure, ref
     else
         activationdict.A = pdfconstant("PV")

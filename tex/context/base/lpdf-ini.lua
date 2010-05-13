@@ -285,11 +285,15 @@ local function pdfnull()
     return p_null
 end
 
+--~ print(pdfboolean(false),pdfboolean(false,false),pdfboolean(false,true))
+--~ print(pdfboolean(true),pdfboolean(true,false),pdfboolean(true,true))
+--~ print(pdfboolean(nil,true),pdfboolean(nil,false))
+
 local function pdfboolean(b,default)
-    if ((type(b) == "boolean") and b) or default then
-        return p_true
+    if type(b) == "boolean" then
+        return b and p_true or p_false
     else
-        return p_false
+        return default and p_true or p_false
     end
 end
 

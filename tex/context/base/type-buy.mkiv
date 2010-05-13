@@ -15,7 +15,7 @@
 
 % Informal : Vulis
 
-\starttypescript [casual] [informal] [name]
+\starttypescript [casual] [informal]
     \definefontsynonym [Serif]            [Informal-Regular]
     \definefontsynonym [SerifBold]        [Informal-Bold]
     \definefontsynonym [SerifSlanted]     [Informal-Oblique]
@@ -32,20 +32,22 @@
     \definefontsynonym [MathSymbol]    [Informal-MathSymbols]
 \stoptypescript
 
-\starttypescript [casual] [informal] [default]
-    \definefontsynonym [Informal-Regular]     [ifrm10cm]
-    \definefontsynonym [Informal-Bold]        [ifrb10cm]
-    \definefontsynonym [Informal-Oblique]     [ifro10cm]
-    \definefontsynonym [Informal-BoldOblique] [ifbo10cm]
-    \loadmapfile[original-micropress-informal.map]
+\starttypescript [casual] [informal]
+    \definefontsynonym [Informal-Regular]     [file:ifrg]
+    \definefontsynonym [Informal-Bold]        [file:ifb]
+    \definefontsynonym [Informal-Oblique]     [file:ifo]
+    \definefontsynonym [Informal-BoldOblique] [file:ifbo]
 \stoptypescript
 
 \starttypescript [math] [informal] [default]
-    \definefontsynonym [Informal-Regular]             [ifrm10cm]
-    \definefontsynonym [Informal-MathExtendedSymbols] [ifex10]
-    \definefontsynonym [Informal-MathItalics]         [ifmi10]
-    \definefontsynonym [Informal-MathSymbols]         [ifsy10]
-    \loadmapfile[original-micropress-informal.map]
+    \loadfontgoodies[informal-math]
+    \definefontsynonym[MathRoman][informalmath@informal-math]
+\stoptypescript
+
+\starttypescript [informal]
+    \definetypeface[informal][rm][casual][informal][default]
+    \definetypeface[informal][tt][mono]  [modern]  [default][rscale=0.95]
+    \definetypeface[informal][mm][math]  [informal][default]
 \stoptypescript
 
 % Sabon

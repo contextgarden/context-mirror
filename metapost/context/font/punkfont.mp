@@ -63,6 +63,15 @@ if unknown punk_font_loaded :
     path dot_pen_path ;
     dot_pen_path := tensepath makepath currentpen ;
 
+% px#   :=  .8pt# ; % horizontal thickness of pen
+% define_pixels(u,dev) ;
+% define_blacker_pixels(px,py,dot) ;
+% pickup pencircle xscaled 1.25px yscaled 1.25py ;
+% punk_pen := savepen ;
+% pickup pencircle scaled 1.25dot ;
+% path dot_pen_path ;
+% dot_pen_path := tensepath makepath currentpen ;
+
     defaultcolormodel := 1 ;
 
     def beginpunkchar(expr c,n,h,v) = % code $c$; width is $n$ units

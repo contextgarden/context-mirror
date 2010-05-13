@@ -116,6 +116,8 @@ function string:split(separator)
     return match(c,self)
 end
 
+lpeg.splitters = cache
+
 local cache = { }
 
 function lpeg.checkedsplit(separator,str)

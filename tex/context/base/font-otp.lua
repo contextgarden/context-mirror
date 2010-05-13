@@ -176,15 +176,21 @@ function fonts.otf.enhancers.pack(data)
                             end
                             local c = vv.coverage
                             if c then
-                                c.before  = c.before  and pack(c.before )
-                                c.after   = c.after   and pack(c.after  )
-                                c.current = c.current and pack(c.current)
+                                local cc = c.before  if cc then c.before  = pack(cc) end
+                                local cc = c.after   if cc then c.after   = pack(cc) end
+                                local cc = c.current if cc then c.current = pack(cc) end
                             end
                             local c = vv.reversecoverage
                             if c then
-                                c.before  = c.before  and pack(c.before )
-                                c.after   = c.after   and pack(c.after  )
-                                c.current = c.current and pack(c.current)
+                                local cc = c.before  if cc then c.before  = pack(cc) end
+                                local cc = c.after   if cc then c.after   = pack(cc) end
+                                local cc = c.current if cc then c.current = pack(cc) end
+                            end
+                            -- no need to pack vv.glyphs
+                            local c = vv.glyphs
+                            if c then
+                                if c.fore == "" then c.fore = nil end
+                                if c.back == "" then c.back = nil end
                             end
                         end
                     end
@@ -292,158 +298,6 @@ function fonts.otf.enhancers.pack(data)
         end
     end
 end
-
---~ function fonts.otf.enhancers.unpack(data)
---~     if data then
---~         local t = data.tables
---~         if t then
---~             for k, v in next, data.glyphs do
---~                 local tv = t[v.boundingbox] if tv then v.boundingbox = tv end
---~                 local l = v.slookups
---~                 if l then
---~                     for k,v in next, l do
---~                         local tv = t[v] if tv then l[k] = tv end
---~                     end
---~                 end
---~                 local l = v.mlookups
---~                 if l then
---~                     for k,v in next, l do
---~                         for i=1,#v do
---~                             local tv = t[v[i]] if tv then v[i] = tv end
---~                             local vi = v[i]
---~                             local what = vi[1]
---~                             if what == "pair" then
---~                                 local tv = t[vi[3]] if tv then vi[3] = tv end
---~                                 local tv = t[vi[4]] if tv then vi[4] = tv end
---~                             elseif what == "position" then
---~                                 local tv = t[vi[2]] if tv then vi[2] = tv end
---~                             end
---~                         end
---~                     end
---~                 end
---~                 local m = v.mykerns
---~                 if m then
---~                     local tv = t[m] if tv then m = tv v.mykerns = m end -- secondary optimization
---~                     for k,v in next, m do
---~                         local tv = t[v] if tv then m[k] = tv end
---~                     end
---~                 end
---~                 local m = v.math
---~                 if m then
---~                     local mk = m.kerns
---~                     if mk then
---~                         local tv = t[mk] if tv then mk = tv m.kerns = mk end -- secondary optimization
---~                         for k,v in next, mk do
---~                             local tv = t[v] if tv then mk[k] = tv end
---~                         end
---~                     end
---~                 end
---~                 local a = v.anchors
---~                 if a then
---~                     local tv = t[a] if tv then a = tv v.anchors = a end -- secondary optimization
---~                     for k,v in next, a do
---~                         if k == "baselig" then
---~                             for kk, vv in next, v do
---~                                 for kkk=1,#vv do
---~                                     local tv = t[vv[kkk]] if tv then vv[kkk] = tv end
---~                                 end
---~                             end
---~                         else
---~                             for kk, vv in next, v do
---~                                 local tv = t[vv] if tv then v[kk] = tv end
---~                             end
---~                         end
---~                     end
---~                 end
---~             end
---~             if data.lookups then
---~                 for k, v in next, data.lookups do
---~                     local r = v.rules
---~                     if r then
---~                         for kk, vv in next, r do
---~                             local l = vv.lookups
---~                             if l then
---~                                 local tv = t[l] if tv then vv.lookups = tv end
---~                             end
---~                             local c = vv.coverage
---~                             if c then
---~                                 local cc = c.before  if cc then local tv = t[cc] if tv then c.before  = tv end end
---~                                       cc = c.after   if cc then local tv = t[cc] if tv then c.after   = tv end end
---~                                       cc = c.current if cc then local tv = t[cc] if tv then c.current = tv end end
---~                             end
---~                             local c = vv.reversecoverage
---~                             if c then
---~                                 local cc = c.before  if cc then local tv = t[cc] if tv then c.before  = tv end end
---~                                       cc = c.after   if cc then local tv = t[cc] if tv then c.after   = tv end end
---~                                       cc = c.current if cc then local tv = t[cc] if tv then c.current = tv end end
---~                             end
---~                         end
---~                     end
---~                 end
---~             end
---~             local luatex = data.luatex
---~             if luatex then
---~                 local la = luatex.anchor_to_lookup
---~                 if la then
---~                     for lookup, ldata in next, la do
---~                         local tv = t[ldata] if tv then la[lookup] = tv end
---~                     end
---~                 end
---~                 local la = luatex.lookup_to_anchor
---~                 if la then
---~                     for lookup, ldata in next, la do
---~                         local tv = t[ldata] if tv then la[lookup] = tv end
---~                     end
---~                 end
---~                 local ls = luatex.sequences
---~                 if ls then
---~                     for feature, fdata in next, ls do
---~                         local flags = fdata.flags
---~                         if flags then
---~                             local tv = t[flags] if tv then fdata.flags = tv end
---~                         end
---~                         local subtables = fdata.subtables
---~                         if subtables then
---~                             local tv = t[subtables] if tv then fdata.subtables = tv end
---~                         end
---~                         local features = fdata.features
---~                         if features then
---~                             local tv = t[features] if tv then fdata.features = tv features = tv end -- secondary pack
---~                             for script, sdata in next, features do
---~                                 local tv = t[sdata] if tv then features[script] = tv end
---~                             end
---~                         end
---~                     end
---~                 end
---~                 local ls = luatex.lookups
---~                 if ls then
---~                     for lookups, fdata in next, ls do
---~                         local flags = fdata.flags
---~                         if flags then
---~                             local tv = t[flags] if tv then fdata.flags = tv end
---~                         end
---~                         local subtables = fdata.subtables
---~                         if subtables then
---~                             local tv = t[subtables] if tv then fdata.subtables = tv end
---~                         end
---~                     end
---~                 end
---~                 local lf = luatex.features
---~                 if lf then
---~                     for _, g in next, fonts.otf.glists do
---~                         local gl = lf[g]
---~                         if gl then
---~                             for feature, spec in next, gl do
---~                                 local tv = t[spec] if tv then gl[feature] = tv end
---~                             end
---~                         end
---~                     end
---~                 end
---~             end
---~             data.tables = nil
---~         end
---~     end
---~ end
 
 function fonts.otf.enhancers.unpack(data)
     if data then
@@ -570,6 +424,7 @@ function fonts.otf.enhancers.unpack(data)
                                       cc = c.after   if cc then local tv = t[cc] if tv then c.after   = tv end end
                                       cc = c.current if cc then local tv = t[cc] if tv then c.current = tv end end
                             end
+                            -- no need to unpack vv.glyphs
                         end
                     end
                 end
