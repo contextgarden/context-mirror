@@ -287,6 +287,7 @@
         {\showmessage\m!publications{6}{bibl-\@@pbalternative}}
         {\showmessage\m!publications{1}{bibl-\@@pbalternative}}%
       \let\@@pbalternative\empty}%
+   \let\setuppublicationlayout\normalsetuppublicationlayout % overloaded in bibl-num ... vadjust needs to be done with option
    \getparameters[\??pb][#1]% as bibl-* can have set things back
    \the\everysetuppublications
    \ignorespaces}
@@ -389,7 +390,9 @@
    \setuplist[pubs][\c!samplesize={AA99},\c!alternative=a,\c!interaction=,\c!pagenumber=\v!no,#1,\c!command=]}
 
 \def\setuppublicationlayout[#1]#2%
-  {\setvalue{\??pv:l:#1}{#2\unskip}}
+  {\setvalue{\??pv:l:#1}{#2}}
+
+\let\normalsetuppublicationlayout\setuppublicationlayout
 
 \setuppublicationlist[\c!title=,\c!command=\dospecialbibinsert,\c!maybeyear=\v!on]
 
@@ -937,7 +940,10 @@
    \let\biblanguage\empty
    \ignorespaces
    \bibgetvard{#1}%
+   \removeunwantedspaces
+   \ignorespaces
    \bibalternative{\bibgetvart{#1}}%
+   \removeunwantedspaces
    \egroup}
 
 %D An few afterthoughts:

@@ -497,15 +497,27 @@
 
 %D A smaller and bolder variant, more like the math and monospaced ones.
 
+% \def\fakeunderscore
+%   {\dontleavehmode\hbox % was \leavevmode
+%      {\setbox\scratchbox\hbox{(}%
+%       \scratchdimen.2\dp\scratchbox
+%       \setbox\scratchbox\hbox{\space}%
+%       \vrule
+%         \!!depth \scratchdimen
+%         \!!width \wd\scratchbox
+%         \!!height\zeropoint}}
+
+% \startTEXpage
+%     \ruledhbox{\strut$1\fakeunderscore^{1\fakeunderscore}$}
+%     \ruledhbox{\strut$1\xfakeunderscore^{1\xfakeunderscore}$}
+% \stopTEXpage
+
 \def\fakeunderscore
-  {\leavevmode\hbox
-     {\setbox\scratchbox\hbox{(}%
-      \scratchdimen.2\dp\scratchbox
-      \setbox\scratchbox\hbox{\space}%
-      \vrule
-        \!!depth \scratchdimen
-        \!!width \wd\scratchbox
-        \!!height\zeropoint}}
+  {\relax\ifmmode
+     \vrule\!!depth .12\fontexheight\mathstylefont\normalmathstyle\!!width \fontinterwordspace\mathstylefont\normalmathstyle\!!height\zeropoint\relax
+   \else
+     \dontleavehmode\hbox{\vrule\!!depth .12\fontexheight\font\!!width \fontinterwordspace\font\!!height\zeropoint}%
+   \fi}
 
 \def\fakeunderscores{\let\_\fakeunderscore}
 \def\textunderscores{\let\_\textunderscore}

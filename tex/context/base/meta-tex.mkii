@@ -103,12 +103,13 @@
 
 \long\def\doTeXtext[#1]#2#3%
   {\begingroup
+   \setnormalcatcodes
+   \chardef\activecharactermode\plusone % compensates ** in meta-ini.mkii
+   \endlinechar\minusone
+   \everyeof\emptytoks
+   %\def\ascii{#3}\scantokens\expandafter{\ascii}}%
    \setbox\nextbox\hbox
-     {\setnormalcatcodes
-      \endlinechar\minusone
-      \everyeof\emptytoks
-     %\def\ascii{#3}\scantokens\expandafter{\ascii}}%
-      \ifcase\TeXtextcolormode
+     {\ifcase\TeXtextcolormode
         \scantokens{\executeifdefined{textext@@#1}\firstofoneargument{#3}}%
       \else
         \localcolortrue

@@ -350,15 +350,18 @@
 
 \ifdefined\normalsuber\else \def\normalsuber{_} \fi
 \ifdefined\normalsuper\else \def\normalsuper{^} \fi
+\ifdefined\normalaltab\else \def\normalaltab{&} \fi
 
 \bgroup
 
     \catcode`_=\active
     \catcode`^=\active
+    \catcode`&=\active
 
     \global \everynonknuthmode {\appendtoks
         \let_\normalsuber
         \let^\normalsuper
+        \let&\normalaltab
     \to \everymathematics}
 
 \egroup
@@ -366,19 +369,23 @@
 \appendtoks
     \mathcode`_="8000
     \mathcode`^="8000
+    \mathcode`&="8000
     \catcode`_=\@@other
     \catcode`^=\@@other
+    \catcode`&=\@@other
 \to \everynonknuthmode
 
 \appendtoks
     \catcode`_=\@@subscript
     \catcode`^=\@@superscript
+    \catcode`&=\@@alignment
 \to \everydonknuthmode
 
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
         \catcode`_=\@@other
         \catcode`^=\@@other
+        \catcode`&=\@@other
     \stopextendcatcodetable
 \to \everynonknuthmode
 
@@ -386,6 +393,7 @@
     \startextendcatcodetable\ctxcatcodes
         \catcode`_=\@@subscript
         \catcode`^=\@@superscript
+        \catcode`&=\@@alignment
     \stopextendcatcodetable
 \to \everydonknuthmode
 
@@ -559,6 +567,19 @@
     \crampedscriptscriptstyle \fi     % 6 -> 7
     #1}}
 
+\def\mathstylefont#1% #1 is number (\normalmathstyle)
+  {\ifcase#1\relax
+     \textfont         \or
+     \textfont         \or
+     \textfont         \or
+     \textfont         \or
+     \scriptfont       \or
+     \scriptfont       \or
+     \scriptscriptfont \or
+     \scriptscriptfont \else
+     \textfont
+   \fi\zerocount}
+
 %D Something similar can be used in the (re|)|definition
 %D of \type {\text}. This version is a variation on the one
 %D in the math module (see \type{m-math} and|/|or \type
@@ -577,6 +598,12 @@
 \def\dodomathtext#1#2#3% no \everymath !
  %{\hbox{\everymath{#1}\switchtobodyfont  [#2]#3}} % 15 sec
   {\hbox{\everymath{#1}\setcurrentfontbody{#2}#3}} %  3 sec (no math)
+
+%D Safeguard against redefinitions:
+
+\appendtoks
+    \let\_\normalunderscore % is textunderscore or fakeunderscore
+\to \everymathematics
 
 %D Because we may overload \type {\text} in other (structuring)
 %D macros, we say:

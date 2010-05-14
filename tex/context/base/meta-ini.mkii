@@ -715,7 +715,14 @@
 \appendtoks
     \disablediscretionaries
     \disablecompoundcharacters
-    \chardef\activecharactermode\zerocount % new, experimental (if complaints than only in enco-ffr.mkii)
+\to\everyMPgraphic
+
+% New, experimental (if complaints than only in enco-ffr.mkii), well
+% Mojca complained that it does not work with utf-8 and textext, see
+% ** in meta-tex.
+
+\appendtoks
+    \chardef\activecharactermode\zerocount
 \to\everyMPgraphic
 
 \appendtoks

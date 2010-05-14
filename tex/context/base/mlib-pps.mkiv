@@ -30,7 +30,8 @@
 % have no limitation. Typically an example of a next version solution
 % due to \LUATEX\ evolving.
 
-\newbox\MPtextbox
+\newbox \MPtextbox
+\newtoks\everyMPLIBsettext
 
 \def\MPLIBfigure#1#2#3#4#5#6#7% todo: move Q q to lua
   {\setbox\scratchbox\hbox{\externalfigure[#7]}%
