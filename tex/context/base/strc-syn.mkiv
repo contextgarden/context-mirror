@@ -172,7 +172,7 @@
    \def\currentsynonym{#1}%
    \dosetsynonymattributes\c!synonymstyle\c!synonymcolor
    \synonymparameter\c!synonymcommand{\ctxlua{joblists.synonym("#1","#2")}}%
-   \endgroup}
+   \normalexpanded{\endgroup\synonymparameter\c!next}}
 
 \def\placelistofsynonyms
   {\dodoubleempty\doplacelistofsynonyms}
@@ -320,9 +320,10 @@
 \unexpanded\def\doinsertsort#1#2% name tag
   {\begingroup
    % no kap currently, of .. we need to map cap onto WORD
+   \edef\currentsorting{#1}%
    \dosetsynonymattributes\c!style\c!color
    \ctxlua{joblists.synonym("#1","#2")}%
-   \endgroup}
+   \normalexpanded{\endgroup\sortingparameter\c!next}}
 
 \def\registersort
   {\dodoubleargument\doregistersort}

@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['sort-lan'] = {
 
 local utf = unicode.utf8
 
+local uc = utf.char
+local ub = utf.byte
+
 -- this is a rather preliminary and incomplete file
 -- maybe we should load this kind of stuff runtime
 
@@ -15,6 +18,8 @@ local utf = unicode.utf8
 
 -- The next one can be more efficient when not indexed this way, but
 -- other languages are sparse so for the moment we keep this one.
+
+-- replacements are indexed as they need to be applied in sequence
 
 sorters = sorters or { entries = { }, replacements = { }, mappings =  { } }
 
@@ -64,9 +69,6 @@ sorters.entries     ['nl'] = sorters.entries ['en']
 sorters.mappings    ['nl'] = sorters.mappings['en']
 
 -- czech
-
-local uc = utf.char
-local ub = utf.byte
 
 sorters.replacements['cz'] = {
     [1] = { "ch", uc(0xFF01) }
@@ -160,6 +162,59 @@ sorters.mappings['cz'] = {
     ['z']        = 41, -- z
     [uc(0x017E)] = 42, -- zcaron
 }
+
+sorters.mappings['cz'] = {
+    ['a']        =  1, -- a
+    [uc(0x00E1)] =  3, -- aacute
+    ['b']        =  5, -- b
+    ['c']        =  7, -- c
+    [uc(0x010D)] =  9, -- ccaron
+    ['d']        = 11, -- d
+    [uc(0x010F)] = 13, -- dcaron
+    ['e']        = 15, -- e
+    [uc(0x00E9)] = 17, -- eacute
+    [uc(0x011B)] = 19, -- ecaron
+    ['f']        = 21, -- f
+    ['g']        = 23, -- g
+    ['h']        = 25, -- h
+    [uc(0xFF01)] = 27, -- ch
+    ['i']        = 29, -- i
+    [uc(0x00ED)] = 31, -- iacute
+    ['j']        = 33, -- j
+    ['k']        = 35, -- k
+    ['l']        = 37, -- l
+    ['m']        = 39, -- m
+    ['n']        = 41, -- n
+    [uc(0x0147)] = 43, -- ncaron
+    [uc(0x00F3)] = 45, -- oacute
+    ['p']        = 47, -- p
+    ['q']        = 49, -- q
+    ['r']        = 51, -- r
+    [uc(0x0147)] = 53, -- rcaron
+    ['s']        = 55, -- s
+    [uc(0x0161)] = 57, -- scaron
+    ['t']        = 59, -- t
+    [uc(0x0165)] = 61, -- tcaron
+    ['u']        = 63, -- u
+    [uc(0x00FA)] = 65, -- uacute
+    [uc(0x016F)] = 67, -- uring
+    ['v']        = 69, -- v
+    ['w']        = 71, -- w
+    ['x']        = 73, -- x
+    ['y']        = 75, -- y
+    [uc(0x00FD)] = 77, -- yacute
+    ['z']        = 79, -- z
+    [uc(0x017E)] = 81, -- zcaron
+}
+
+sorters.replacements['cs'] = sorters.replacements['cz']
+sorters.entries     ['cs'] = sorters.entries     ['cz']
+sorters.mappings    ['cs'] = sorters.mappings    ['cz']
+
+sorters.add_uppercase_entries (sorters.entries.cs)
+sorters.add_uppercase_mappings(sorters.mappings.cs,1)
+
+--~ print(table.serialize(sorters.mappings.cs))
 
 -- French
 

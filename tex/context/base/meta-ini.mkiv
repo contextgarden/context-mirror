@@ -267,30 +267,26 @@
 
 \let\stopMPdrawing\relax
 
-\long\def\startMPclip#1#2\stopMPclip % todo: store at the lua end
-  {\dostartcurrentMPgraphic
-   \long\setxvalue{MPC:#1}{\noexpand\ctxlua{metapost.theclippath(
-     "\currentMPgraphicinstance",
-     "\currentMPgraphicformat",
-     \!!bs#2\!!es,
-     \!!bs\currentMPinitializations\!!es,
-     \!!bs\currentMPpreamble\!!es
-   )}}%
-   \dostopcurrentMPgraphic}
-
-% \unexpanded\def\processMPgraphic
-%   {\doprocessMPgraphic\placeMPgraphic}
-
 \let\stopMPclip\relax
+
+\long\def\startMPclip#1#2\stopMPclip % todo: store at the lua end or just store less
+  {\long\setgvalue{MPC:#1}{#2}}
 
 \def\grabMPclippath#1#2#3#4#5% #5 is alternative
   {\begingroup
    \edef\width {#3\space}\let\overlaywidth \width
    \edef\height{#4\space}\let\overlayheight\height
    \ifcsname MPC:#1\endcsname
-     \xdef\MPclippath{\getvalue{MPC:#1}}%
+     \dostartcurrentMPgraphic
+       \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath(
+         "\currentMPgraphicinstance",
+         "\currentMPgraphicformat",
+         \!!bs\getvalue{MPC:#1}\!!es,
+         \!!bs\currentMPinitializations\!!es,
+         \!!bs\currentMPpreamble\!!es
+       )}}}%
+     \dostopcurrentMPgraphic
      \ifx\MPclippath\empty\xdef\MPclippath{#5}\fi
-     \setxvalue{MPC:#1}{\MPclippath}%
    \else
      \xdef\MPclippath{#5}%
    \fi

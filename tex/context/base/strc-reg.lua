@@ -18,10 +18,13 @@ local ctxcatcodes = tex.ctxcatcodes
 
 local variables = interfaces.variables
 
-local helpers   = structure.helpers
-local sections  = structure.sections
-local documents = structure.documents
-local pages     = structure.pages
+local helpers    = structure.helpers
+local sections   = structure.sections
+local documents  = structure.documents
+local pages      = structure.pages
+local processors = structure.processors
+
+local processor_split = processors.split
 
 local matching_till_depth, number_at_depth = sections.matching_till_depth, sections.number_at_depth
 
@@ -216,8 +219,19 @@ local function preprocessentries(rawdata)
     local entries = rawdata.entries
     if entries then
         local e, k = entries[1] or "", entries[2] or ""
-        local et = (type(e) == "table" and e) or lpegmatch(entrysplitter,e)
-        local kt = (type(k) == "table" and k) or lpegmatch(entrysplitter,k)
+        local et, kt, entryproc, pageproc
+        if type(e) == "table" then
+            et = e
+        else
+            entryproc, e = processor_split(e)
+            et = lpegmatch(entrysplitter,e)
+        end
+        if type(k) == "table" then
+            kt = e
+        else
+            pageproc, k = processor_split(k)
+            kt = lpegmatch(entrysplitter,k)
+        end
         entries = { }
         for k=1,#et do
             entries[k] = { et[k] or "", kt[k] or "" }
@@ -230,6 +244,9 @@ local function preprocessentries(rawdata)
             end
         end
         rawdata.list = entries
+        if pageproc or entryproc then
+            rawdata.processors = { entryproc, pageproc }
+        end
         rawdata.entries = nil
     else
         rawdata.list = { { "", "" } } -- br
@@ -434,19 +451,45 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
     local function pagenumber(entry)
         local er = entry.references
         texsprint(ctxcatcodes,format("\\registeronepage{%s}{%s}{",er.internal or 0,er.realpage or 0)) -- internal realpage content
+local proc = entry.processors and entry.processors[2]
+if proc then
+    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+    helpers.prefixpage(entry,prefixspec,pagespec)
+    texsprint(ctxcatcodes,"}")
+else
         helpers.prefixpage(entry,prefixspec,pagespec)
+end
         texsprint(ctxcatcodes,"}")
     end
     local function pagerange(f_entry,t_entry,is_last)
         local er = f_entry.references
         texsprint(ctxcatcodes,format("\\registerpagerange{%s}{%s}{",er.internal or 0,er.realpage or 0))
+local proc = entry.processors and entry.processors[2]
+if proc then
+    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+    helpers.prefixpage(f_entry,prefixspec,pagespec)
+    texsprint(ctxcatcodes,"}")
+else
         helpers.prefixpage(f_entry,prefixspec,pagespec)
+end
         local er = t_entry.references
         texsprint(ctxcatcodes,format("}{%s}{%s}{",er.internal or 0,er.lastrealpage or er.realpage or 0))
         if is_last then
+if proc then
+    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+    helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
+    texsprint(ctxcatcodes,"}")
+else
             helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
+end
         else
+if proc then
+    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+    helpers.prefixpage(t_entry,prefixspec,pagespec)
+    texsprint(ctxcatcodes,"}")
+else
             helpers.prefixpage(t_entry,prefixspec,pagespec)
+end
         end
         texsprint(ctxcatcodes,"}")
     end
@@ -483,10 +526,24 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
                         end
                         if metadata then
                             texsprint(ctxcatcodes,"\\registerentry{")
+local proc = entry.processors and entry.processors[1]
+if proc then
+    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+    helpers.title(e[i],metadata)
+    texsprint(ctxcatcodes,"}")
+else
                             helpers.title(e[i],metadata)
+end
                             texsprint(ctxcatcodes,"}")
                         else
+local proc = entry.processors and entry.processors[1]
+if proc then
+    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+    texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
+    texsprint(ctxcatcodes,"}")
+else
                             texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
+end
                         end
                     else
                         done[i] = false
@@ -496,7 +553,7 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
             local kind = entry.metadata.kind
             if kind == 'entry' then
                 texsprint(ctxcatcodes,"\\startregisterpages")
---~ collapse_ranges = true
+            --~ collapse_ranges = true
                 if collapse_singles or collapse_ranges then
                     -- we collapse ranges and keep existing ranges as they are
                     -- so we get prebuilt as well as built ranges
@@ -647,7 +704,14 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
             elseif kind == 'see' then
                 -- maybe some day more words
                 texsprint(ctxcatcodes,"\\startregisterseewords")
+local proc = entry.processors and entry.processors[1]
+if proc then
+    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+    texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
+    texsprint(ctxcatcodes,"}")
+else
                 texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
+end
                 texsprint(ctxcatcodes,"\\stopregisterseewords")
             end
         end

@@ -57,11 +57,14 @@
 \definemathcommand [iiint]  {\repeatintegral\plustwo  }
 \definemathcommand [iiiint] {\repeatintegral\plusthree}
 
+%def\integralrepeatsymbol{\intop}
+\def\integralrepeatsymbol{{\int}}
+
 \def\repeatintegral#1%
   {\scratchtoks\emptytoks
    \let\dointlimits\donothing
    \let\dodointlimits\intlimits
-   \dorecurse{#1}{\appendtoks \intop \dointkern \to \scratchtoks}
+   \dorecurse{#1}{\appendtoks \integralrepeatsymbol \dointkern \to \scratchtoks}
    \appendtoks \intop \dointlimits \dodointlimits \to \scratchtoks
    \edef\dodorepeatintegral{\the\scratchtoks}%
    \futurelet\next\dorepeatintegral}

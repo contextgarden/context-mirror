@@ -37,4 +37,13 @@
     \xmlmain{#1}
 \stopxmlsetups
 
+\def\bibxmldoifelse#1#2#3#4#5% entry field before after else
+  {\xmldoifelse{#1}{/field[@name='#2']}{#3\xmlfilter{#1}{/field[@name='#2']/context()}#4}{#5}}
+
+\def\bibxmldoif#1#2#3#4% entry field before after
+  {\xmldoif{#1}{/field[@name='#2']}{#3\xmlfilter{#1}{/field[@name='#2']/context()}#4}}
+
+\def\bibxmldoifnot#1#2#3#4% entry field before after
+  {\xmldoifnot{#1}{/field[@name='#2']}{#3\xmlfilter{#1}{/field[@name='#2']/context()}#4}}
+
 \protect \endinput

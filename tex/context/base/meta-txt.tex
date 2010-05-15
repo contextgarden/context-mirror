@@ -24,6 +24,8 @@
 
 % textext ipv btex ... etex
 
+% we need a proper prefix here
+
 \unprotect
 
 \startMPextensions
@@ -35,7 +37,7 @@
 % \def\newchar#1{\chardef#1=0 }
 
 \ifdefined\MPtoks   \else \newtoks\MPtoks        \fi
-\ifdefined\MPnox    \else \newbox \MPbox         \fi
+\ifdefined\MPbox    \else \newbox \MPbox         \fi
 
 \ifdefined\parwidth     \else \newdimen\parwidth     \fi
 \ifdefined\parheight    \else \newdimen\parheight    \fi
@@ -44,7 +46,7 @@
 \ifdefined\parlines     \else \newcount\parlines     \fi
 \ifdefined\partoks      \else \newtoks \partoks      \fi
 \ifdefined\shapetextbox \else \newbox  \shapetextbox \fi
-\ifdefined\ifparseries  \else \newif   \ifparseries  \fi
+                              \newif   \ifparseries
 \ifdefined\parfirst     \else \chardef \parfirst=0   \fi
 
 \def\startshapetext[#1]%

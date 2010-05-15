@@ -40,6 +40,8 @@ do
     local l_s, r_s = P("["), P("]")
     local l_g, r_g = P("{"), P("}")
 
+    local okay = lpeg.P("{[}") + lpeg.P("{]}")
+
     local esc     = P("\\")
     local cr      = P("\r")
     local lf      = P("\n")
@@ -72,7 +74,7 @@ do
         ["tokens"]   = (V("ignore") + V("whatever") + V("grouped") +  V("setup") + V("display") + V("inline") + V("errors") + 1)^0,
         ["whatever"] = line + esc * 1 + C(P("%") * (1-line)^0),
         ["grouped"]  = l_g * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_g - r_g))^0 * r_g,
-        ["setup"]    = l_s * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_s - r_s))^0 * r_s,
+        ["setup"]    = l_s * (okay + V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_s - r_s))^0 * r_s,
         ["display"]  = d_m * (V("whatever") + V("grouped") + (1 - d_m))^0 * d_m,
         ["inline"]   = i_m * (V("whatever") + V("grouped") + (1 - i_m))^0 * i_m,
         ["errors"]   = (V("gerror")+ V("serror") + V("derror") + V("ierror")),

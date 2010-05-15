@@ -194,6 +194,7 @@ local packlist = {
     "pagedata",
     "directives",
     "specification",
+    "processors", -- might become key under directives or metadata
 --  "references", -- we need to rename of them as only one packs (not structure.lists.references)
 }
 

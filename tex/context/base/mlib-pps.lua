@@ -685,7 +685,7 @@ do
 
     local function convert(str)
         found = true
-        return "textext(\"" .. str .. "\")"
+        return "rawtextext(\"" .. str .. "\")" -- centered
     end
     local function ditto(str)
         return "\" & ditto & \""

@@ -15,9 +15,11 @@ if not modules then modules = { } end modules ['sort-ini'] = {
 
 local utf = unicode.utf8
 local gsub, rep, sort, concat = string.gsub, string.rep, table.sort, table.concat
+local utfbyte, utfchar = utf.byte, utf.char
 local utfcharacters, utfvalues, strcharacters = string.utfcharacters, string.utfvalues, string.characters
+local chardata = characters.data
 
-local trace_sorters = false -- true
+local trace_tests = false  trackers.register("sorters.tests", function(v) trace_tests = v end)
 
 sorters              = { }
 sorters.comparers    = { }
@@ -27,12 +29,13 @@ sorters.mappings     = { }
 sorters.replacements = { }
 sorters.language     = 'en'
 
-local mappings = sorters.mappings
-local entries  = sorters.entries
+local mappings     = sorters.mappings
+local entries      = sorters.entries
+local replacements = sorters.replacements
 
-function sorters.comparers.basic(sort_a,sort_b)
+function sorters.comparers.basic(sort_a,sort_b,map)
     -- sm assignment is slow, will become sorters.initialize
-    local sm = mappings[sorters.language or sorters.defaultlanguage] or mappings.en
+    local sm = map or mappings[sorters.language or sorters.defaultlanguage] or mappings.en
     if #sort_a > #sort_b then
         if #sort_b == 0 then
             return 1
@@ -118,9 +121,9 @@ end
 
 function sorters.firstofsplit(split)
     -- numbers are left padded by spaces
-    local se = entries[sorters.language or sorters.defaultlanguage] or entries.en-- slow, will become sorters.initialize
+    local se = entries[sorters.language or sorters.defaultlanguage] or entries.en -- slow, will become sorters.initialize
     local vs = split[1]
-    local entry = (vs and vs[1]) or ""
+    local entry = vs and vs[1] or ""
     return entry, (se and se[entry]) or "\000"
 end
 
@@ -132,37 +135,74 @@ function sorters.splitters.utf(str) -- brrr, todo: language
     local r = sorters.replacements[sorters.language] or sorters.replacements[sorters.defaultlanguage] or { }
  -- local m = mappings    [sorters.language] or mappings    [sorters.defaultlanguage] or { }
     local u = characters.uncompose
-    local b = utf.byte
     local t = { }
     for _,v in next, r do
         str = gsub(str,v[1],v[2])
     end
     for c in utfcharacters(str) do -- maybe an lpeg
-        if #c == 1 then
-            t[#t+1] = c
-        else
-            for cc in strcharacters(c) do
-                t[#t+1] = cc
-            end
-        end
+        t[#t+1] = c
     end
     return t
 end
 
+function table.remap(t)
+    local tt = { }
+    for k,v in pairs(t) do
+        tt[v]  = k
+    end
+    return tt
+end
+
 function sorters.sort(entries,cmp)
-    if trace_sorters then
+    local language = sorters.language or sorters.defaultlanguage
+    local map = mappings[language] or mappings.en
+    if trace_tests then
+        local function pack(l)
+            local t = { }
+            for i=1,#l do
+                local tt, li = { }, l[i]
+                for j=1,#li do
+                    local lij = li[j]
+                    if utfbyte(lij) > 0xFF00 then
+                        tt[j] = "[]"
+                    else
+                        tt[j] = li[j]
+                    end
+                end
+                t[i] = concat(tt)
+            end
+            return concat(t," + ")
+        end
         sort(entries, function(a,b)
-            local r = cmp(a,b)
+            local r = cmp(a,b,map)
             local as, bs = a.split, b.split
             if as and bs then
-                logs.report("sorter","%s %s %s",
-                    concat(as[1]), (not r and "?") or (r<0 and "<") or (r>0 and ">") or "=", concat(bs[1]))
+                logs.report("sorter","%s %s %s",pack(as),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(bs))
             end
             return r == -1
         end)
     else
         sort(entries, function(a,b)
-            return cmp(a,b) == -1
+            return cmp(a,b,map) == -1
         end)
+    end
+end
+
+function sorters.add_uppercase_entries(entries)
+    for k, v in pairs(entries) do
+        local u = chardata[utfbyte(k)].uccode
+        if u then
+            entries[utfchar(u)] = v
+        end
+    end
+end
+
+function sorters.add_uppercase_mappings(mappings,offset)
+    offset = offset or 0
+    for k, v in pairs(mappings) do
+        local u = chardata[utfbyte(k)].uccode
+        if u then
+            mappings[utfchar(u)] = v + offset
+        end
     end
 end

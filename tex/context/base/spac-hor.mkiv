@@ -15,6 +15,8 @@
 
 \unprotect
 
+\registerctxluafile{spac-hor}{1.001}
+
 \let\currentindentation\empty % amount/keyword
 \let\currentindenting  \empty % method
 
@@ -906,5 +908,25 @@
 \appendtoks
    \normalspaces % to be sure
 \to \everybeforeoutput
+
+%D A more robust variant ofthe \MKII\ one:
+%D
+%D \startbuffer
+%D bla \TEX\autoinsertnextspace bla
+%D bla \TEX\autoinsertnextspace (bla)
+%D bla (\TEX\autoinsertnextspace) bla
+%D bla \TEX\autoinsertnextspace\ bla
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% unexpanded is important here as it prevents premature expansion in
+% e.g. \normalexpanded{\egroup\sortingparameter\c!next}
+
+\unexpanded\def\autoinsertnextspace
+  {\futurelet\nexttoken\doautoinsertnextspace}
+
+\def\doautoinsertnextspace
+  {\ctxlua{commands.autonextspace("\meaning\nexttoken")}} % todo, just consult nexttoken at the lua end
 
 \protect \endinput
