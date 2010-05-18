@@ -929,4 +929,9 @@
 \def\doautoinsertnextspace
   {\ctxlua{commands.autonextspace("\meaning\nexttoken")}} % todo, just consult nexttoken at the lua end
 
+%D Moved from bib module:
+
+\def\outdented#1%
+  {\hskip-\hangindent#1\relax}
+
 \protect \endinput

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/14/10 15:26:38
+-- merge date  : 05/18/10 10:57:58
 
 do -- begin closure to overcome local limits and interference
 
@@ -11077,8 +11077,6 @@ if not modules then modules = { } end modules ['font-otc'] = {
 local format, insert = string.format, table.insert
 local type, next = type, next
 
-local ctxcatcodes = tex.ctxcatcodes
-
 -- we assume that the other otf stuff is loaded already
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
@@ -11281,33 +11279,6 @@ fonts.initializers.node.otf.lineheight  = fonts.initializers.common.lineheight
 
 fonts.initializers.base.otf.compose     = fonts.initializers.common.compose
 fonts.initializers.node.otf.compose     = fonts.initializers.common.compose
-
--- bonus function
-
-function otf.name_to_slot(name) -- todo: afm en tfm
-    local tfmdata = fonts.ids[font.current()]
-    if tfmdata and tfmdata.shared then
-        local otfdata = tfmdata.shared.otfdata
-        local unicode = otfdata.luatex.unicodes[name]
-        if not unicode then
-            return string.byte("?") -- nil
-        elseif type(unicode) == "number" then
-            return unicode
-        else
-            return unicode[1]
-        end
-    end
-    return nil
-end
-
-function otf.char(n) -- todo: afm en tfm
-    if type(n) == "string" then
-        n = otf.name_to_slot(n)
-    end
-    if n then
-        tex.sprint(ctxcatcodes,format("\\char%s ",n))
-    end
-end
 
 end -- closure
 
@@ -12353,6 +12324,26 @@ fonts.otf.meanings = fonts.otf.meanings or { }
 fonts.otf.meanings.normalize = fonts.otf.meanings.normalize or function(t)
     if t.rand then
         t.rand = "random"
+    end
+end
+
+-- bonus
+
+function fonts.otf.name_to_slot(name)
+    local tfmdata = fonts.ids[font.current()]
+    if tfmdata and tfmdata.shared then
+        local otfdata = tfmdata.shared.otfdata
+        local unicode = otfdata.luatex.unicodes[name]
+        return unicode and (type(unicode) == "number" and unicode or unicode[1])
+    end
+end
+
+function fonts.otf.char(n)
+    if type(n) == "string" then
+        n = fonts.otf.name_to_slot(n)
+    end
+    if type(n) == "number" then
+        tex.sprint("\\char" .. n)
     end
 end
 

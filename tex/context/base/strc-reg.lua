@@ -399,17 +399,21 @@ end
 function jobregisters.finalize(data,options)
     local result = data.result
     data.metadata.nofsorted = #result
-    local split = { }
+    local split, lasttag, s, d = { }, nil, nil, nil
     -- maps character to index (order)
     for k=1,#result do
         local v = result[k]
         local entry, tag = sorters.firstofsplit(v.split)
-        local s = split[tag] -- keeps track of change
-        if not s then
-            s = { tag = tag, data = { } }
-            split[tag] = s
+        if tag ~= lasttag then
+            if trace_registers then
+                logs.report("registers","splitting at %s",tag)
+            end
+            d = { }
+            s = { tag = tag, data = d }
+            split[#split+1] = s
+            lasttag = tag
         end
-        s.data[#s.data+1] = v
+        d[#d+1] = v
     end
     data.result = split
 end
@@ -441,6 +445,8 @@ function jobregisters.userdata(index,name)
     end
 end
 
+-- proc can be wrapped
+
 function jobregisters.flush(data,options,prefixspec,pagespec)
     local equal = table.are_equal
     texsprint(ctxcatcodes,"\\startregisteroutput")
@@ -451,51 +457,52 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
     local function pagenumber(entry)
         local er = entry.references
         texsprint(ctxcatcodes,format("\\registeronepage{%s}{%s}{",er.internal or 0,er.realpage or 0)) -- internal realpage content
-local proc = entry.processors and entry.processors[2]
-if proc then
-    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-    helpers.prefixpage(entry,prefixspec,pagespec)
-    texsprint(ctxcatcodes,"}")
-else
-        helpers.prefixpage(entry,prefixspec,pagespec)
-end
+        local proc = entry.processors and entry.processors[2]
+        if proc then
+            texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+            helpers.prefixpage(entry,prefixspec,pagespec)
+            texsprint(ctxcatcodes,"}")
+        else
+            helpers.prefixpage(entry,prefixspec,pagespec)
+        end
         texsprint(ctxcatcodes,"}")
     end
     local function pagerange(f_entry,t_entry,is_last)
         local er = f_entry.references
         texsprint(ctxcatcodes,format("\\registerpagerange{%s}{%s}{",er.internal or 0,er.realpage or 0))
-local proc = entry.processors and entry.processors[2]
-if proc then
-    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-    helpers.prefixpage(f_entry,prefixspec,pagespec)
-    texsprint(ctxcatcodes,"}")
-else
-        helpers.prefixpage(f_entry,prefixspec,pagespec)
-end
+    local proc = entry.processors and entry.processors[2]
+        if proc then
+            texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+            helpers.prefixpage(f_entry,prefixspec,pagespec)
+            texsprint(ctxcatcodes,"}")
+        else
+            helpers.prefixpage(f_entry,prefixspec,pagespec)
+        end
         local er = t_entry.references
         texsprint(ctxcatcodes,format("}{%s}{%s}{",er.internal or 0,er.lastrealpage or er.realpage or 0))
         if is_last then
-if proc then
-    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-    helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
-    texsprint(ctxcatcodes,"}")
-else
-            helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
-end
+            if proc then
+                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+                helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
+                texsprint(ctxcatcodes,"}")
+            else
+                helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
+            end
         else
-if proc then
-    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-    helpers.prefixpage(t_entry,prefixspec,pagespec)
-    texsprint(ctxcatcodes,"}")
-else
-            helpers.prefixpage(t_entry,prefixspec,pagespec)
-end
+            if proc then
+                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+                helpers.prefixpage(t_entry,prefixspec,pagespec)
+                texsprint(ctxcatcodes,"}")
+            else
+                helpers.prefixpage(t_entry,prefixspec,pagespec)
+            end
         end
         texsprint(ctxcatcodes,"}")
     end
     -- ranges need checking !
-    for k, letter in ipairs(table.sortedkeys(result)) do
-        local sublist = result[letter]
+--~     for k, letter in ipairs(table.sortedkeys(result)) do
+    for i=1,#result do
+        local sublist = result[i]
         local done = { false, false, false, false }
         local data = sublist.data
         local d, n = 0, 0
@@ -526,24 +533,24 @@ end
                         end
                         if metadata then
                             texsprint(ctxcatcodes,"\\registerentry{")
-local proc = entry.processors and entry.processors[1]
-if proc then
-    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-    helpers.title(e[i],metadata)
-    texsprint(ctxcatcodes,"}")
-else
-                            helpers.title(e[i],metadata)
-end
+                            local proc = entry.processors and entry.processors[1]
+                            if proc then
+                                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+                                helpers.title(e[i],metadata)
+                                texsprint(ctxcatcodes,"}")
+                            else
+                                helpers.title(e[i],metadata)
+                            end
                             texsprint(ctxcatcodes,"}")
                         else
-local proc = entry.processors and entry.processors[1]
-if proc then
-    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-    texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
-    texsprint(ctxcatcodes,"}")
-else
-                            texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
-end
+                            local proc = entry.processors and entry.processors[1]
+                            if proc then
+                                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+                                texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
+                                texsprint(ctxcatcodes,"}")
+                            else
+                                texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
+                            end
                         end
                     else
                         done[i] = false
@@ -704,14 +711,14 @@ end
             elseif kind == 'see' then
                 -- maybe some day more words
                 texsprint(ctxcatcodes,"\\startregisterseewords")
-local proc = entry.processors and entry.processors[1]
-if proc then
-    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-    texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
-    texsprint(ctxcatcodes,"}")
-else
-                texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
-end
+                local proc = entry.processors and entry.processors[1]
+                if proc then
+                    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
+                    texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
+                    texsprint(ctxcatcodes,"}")
+                else
+                    texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
+                end
                 texsprint(ctxcatcodes,"\\stopregisterseewords")
             end
         end

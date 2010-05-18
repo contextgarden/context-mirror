@@ -74,10 +74,6 @@ function hacks.add(str,listindex)
 end
 
 local function compare(a,b)
-    return ordered[a[1]] < ordered[b[1]]
-end
-
-local function compare(a,b)
     local aa, bb = a[1], b[1]
     if aa and bb then
         return ordered[aa] < ordered[bb]
@@ -93,7 +89,7 @@ function hacks.flush(sortvariant)
         sort(list,compare)
     end
     for i=1,#list do
-        texsprint(ctxcatcodes,format("\\doprocessbibtexentry{%s}",list[i][1]))
+        context.doprocessbibtexentry(list[i][1])
     end
 end
 
@@ -180,155 +176,19 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
                 end
             end
         end
-        for i=1,#collected do
-            local c = collected[i]
-            if c[3] then
-                texsprint(ctxcatcodes,format("\\dowithbibtexnumrefrange{%s}{%s}{%s}{%s}{%s}{%s}{%s}",#collected,i,prefix,c[1],c[2],c[3],c[4]))
-            else
-                texsprint(ctxcatcodes,format("\\dowithbibtexnumref{%s}{%s}{%s}{%s}{%s}",#collected,i,prefix,c[1],c[2]))
+        if #collected > 0 then
+            for i=1,#collected do
+                local c = collected[i]
+                if c[3] then
+                    context.dowithbibtexnumrefrange(#collected,i,prefix,c[1],c[2],c[3],c[4])
+                else
+                    context.dowithbibtexnumref(#collected,i,prefix,c[1],c[2])
+                end
             end
+        else
+            context.nobibtexnumref("error 1")
         end
+    else
+        context.nobibtexnumref("error 2")
     end
 end
-
--- we've decided that external references make no sense
---
--- local function compare(a,b)
---     return a[3] < b[3]
--- end
---
--- local function resolve(subset,block,rest)
---     local blk, tag, found = block, nil, nil
---     if rest then
---         if block then
---             tag = blk .. ":" .. rest
---             found = subset[tag]
---             if not found then
---                 for i=block-1,1,-1 do
---                     tag = i .. ":" .. rest
---                     found = subset[tag]
---                     if found then
---                         blk = i
---                         break
---                     end
---                 end
---             end
---         end
---         if not found then
---             blk = "*"
---             tag = blk .. ":" .. rest
---             found = subset[tag]
---         end
---     end
---     return blk, rest, found
--- end
-
--- local function set_error(results,...)
---     local re = results[false]
---     if not re then re = { } results[false] = re end
---     re[#re+1] = { format(...) }
--- end
---
--- local function resolve_outer(results,outer,inner)
---     if inner then
---         if outer then
---             local re = results[outer]
---             if not re then re = { } results[outer] = re end
---             -- todo: external refs
---             re[#re+1] = { format("%s: %s",outer,inner) }
---         else
---             set_error(results,"no outer for inner: %s",inner)
---         end
---     else
---         set_error(results,"no inner for outer: %s",outer)
---     end
--- end
---
--- function hacks.resolve(prefix,block,reference) -- maybe already feed it split
---     local set, bug = jobreferences.identify(prefix,reference)
---     local subset = jobreferences.collected[prefix or ""] or jobreferences.collected[""]
---     if subset then
---         local jobname = tex.jobname
---         local results, done = { [jobname] = { } }, { }
---         local rj = results[jobname]
---         block = tonumber(block)
---         for i=1,#set do
---             local s = set[i]
---             local inner, outer, special = s.inner, s.outer, s.special
---             if special == "file" then
---                 resolve_outer(results,outer,s.operation)
---             elseif outer then
---                 resolve_outer(results,outer,inner)
---             elseif inner then
---                 local blk, inner, found = resolve(subset,block,inner)
---                 local current = found and found.entries and found.entries.text
---                 if current and not done[current] then
---                     rj[#rj+1] = { blk, inner, current }
---                     done[current] = true
---                 end
---             end
---         end
---         for where, result in next, results do
---             if where then -- else errors
---                 sort(result,compare)
---             end
---         end
---         local first, last, firsti, lasti, firstr, lastr
---         local function finish(cw)
---             if first then
---                 if last > first + 1 then
---                     cw[#cw+1] = { firstr[1], firstr[2], lastr[1], lastr[2] }
---                 else
---                     cw[#cw+1] = { firstr[1], firstr[2] }
---                     if last > first then
---                         cw[#cw+1] = { lastr[1], lastr[2] }
---                     end
---                 end
---             end
---         end
---         local collections = { }
---         for where, result in next, results do
---             if where == jobname then
---                 local cw = { }
---                 for i=1,#result do
---                     local r = result[i]
---                     local current = r[3]
---                     if not first then
---                         first, last, firsti, lasti, firstr, lastr = current, current, i, i, r, r
---                     elseif current == last + 1 then
---                         last, lasti, lastr = current, i, r
---                     else
---                         finish(cw)
---                         first, last, firsti, lasti, firstr, lastr = current, current, i, i, r, r
---                     end
---                 end
---                 finish(cw)
---                 if next(cw) then collections[where] = cw end
---             elseif where == false then
---                 collections[where] = result -- temp hack
---             else
---                 collections[where] = result -- temp hack
---             end
---         end
---         for where, collection in next, collections do
---             local n = #collection
---             for i=1,n do
---                 local c = collection[i]
---                 if where == jobname then
---                     -- internals
---                     if c[4] then
---                         texsprint(ctxcatcodes,format("\\dowithbibtexnumrefrange{%s}{%s}{%s}{%s}{%s}{%s}{%s}",n,i,prefix,c[1],c[2],c[3],c[4]))
---                     else
---                         texsprint(ctxcatcodes,format("\\dowithbibtexnumref{%s}{%s}{%s}{%s}{%s}",n,i,prefix,c[1],c[2]))
---                     end
---                 elseif where == false then
---                     -- errors
---                     texsprint(ctxcatcodes,c[1])
---                 else
---                     -- externals
---                     texsprint(ctxcatcodes,c[1])
---                 end
---             end
---         end
---     end
--- end

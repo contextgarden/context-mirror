@@ -257,3 +257,23 @@ fonts.otf.meanings.normalize = fonts.otf.meanings.normalize or function(t)
         t.rand = "random"
     end
 end
+
+-- bonus
+
+function fonts.otf.name_to_slot(name)
+    local tfmdata = fonts.ids[font.current()]
+    if tfmdata and tfmdata.shared then
+        local otfdata = tfmdata.shared.otfdata
+        local unicode = otfdata.luatex.unicodes[name]
+        return unicode and (type(unicode) == "number" and unicode or unicode[1])
+    end
+end
+
+function fonts.otf.char(n)
+    if type(n) == "string" then
+        n = fonts.otf.name_to_slot(n)
+    end
+    if type(n) == "number" then
+        tex.sprint("\\char" .. n)
+    end
+end

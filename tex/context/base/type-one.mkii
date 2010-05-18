@@ -2596,4 +2596,46 @@
 
 \stoptypescriptcollection
 
+\starttypescriptcollection[libertine]
+
+    \starttypescript [serif] [libertine] [ec]
+        \definefontsynonym [Libertine-Regular]    [fxlr-t1]  [encoding=ec]
+        \definefontsynonym [Libertine-Italic]     [fxlri-t1] [encoding=ec]
+        \definefontsynonym [Libertine-Bold]       [fxlb-t1]  [encoding=ec]
+        \definefontsynonym [Libertine-BoldItalic] [fxlbi-t1] [encoding=ec]
+        \definefontsynonym [Libertine-SmallCaps]  [fxlrc-t1] %[encoding=ec]
+        \loadmapfile [libertine.map]
+    \stoptypescript
+
+    \starttypescript [serif] [libertine] [name]
+        \definefontsynonym [Serif]           [Libertine-Regular]
+        \definefontsynonym [SerifItalic]     [Libertine-Italic]
+        \definefontsynonym [SerifSlanted]    [Libertine-Italic]
+        \definefontsynonym [SerifBold]       [Libertine-Bold]
+        \definefontsynonym [SerifBoldItalic] [Libertine-BoldItalic]
+        \definefontsynonym [SerifBoldSlanted][Libertine-BoldItalic]
+        \definefontsynonym [SerifCaps]       [Libertine-SmallCaps]
+    \stoptypescript
+
+    \starttypescript [libertine] [ec]
+        \definetypeface [libertine] [tt] [mono]  [default]   [default] [encoding=ec]
+        \definetypeface [libertine] [ss] [sans]  [default]   [default] [encoding=ec]
+        \definetypeface [libertine] [rm] [serif] [libertine] [default] [encoding=ec]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[inconsolata]
+
+    \starttypescript [mono] [inconsolata] [ec]
+        \definefontsynonym [Inconsolata] [ec-inconsolata] [encoding=ec]
+        \pdfmapline{ec-inconsolata Inconsolata "fi4ECEncoding ReEncodeFont" <[fi4-ec.enc <Inconsolata.pfb}
+    \stoptypescript
+
+    \starttypescript [mono] [inconsolata] [name]
+        \definefontsynonym [Mono] [Inconsolata]
+    \stoptypescript
+
+\stoptypescriptcollection
+
 \endinput

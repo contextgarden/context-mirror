@@ -244,8 +244,8 @@
 \appendtoks
     \global\setfalse\insideplaceformula
     \global\setfalse\insideplacesubformula
-    \global\setfalse\insideformulas
-    \global\setfalse\insidesubformulas
+%     \global\setfalse\insideformulas
+%     \global\setfalse\insidesubformulas
 \to \everyresetformulas
 
 \newif\ifinformula
@@ -541,7 +541,8 @@
 \def\stopsubformulas
   {\nonoindentation
    \checknextindentation[\formulaparameter\c!indentnext]%
-   \the\everyresetformulas
+   \the\everyresetformulas % to be checked
+   \global\setfalse\insidesubformulas
    \dorechecknextindentation} % here ?
 
 %D Named subformulas (to be redone)
@@ -595,6 +596,7 @@
      #2%
      \egroup
    \stopdisplaymath
+   \global\setfalse\insideformulas
    \egroup
    \the\everyresetformulas
    \hangafter\minusone    % added for side floats

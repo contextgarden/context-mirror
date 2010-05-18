@@ -17,11 +17,122 @@
 
 \unprotect
 
+% todo: et al limiters
+% todo: split: citationvariant and publicationvariant
+
+%D This interface is under development. As I don't use \BIBTEX\ myself I need
+%D some motivation to spend time on it, and an occasional question on the
+%D list can be a reason. A few examples. As \BIBTEX\ databases can be poluted
+%D by local commands, we need to catch:
+%D
+%D \startbuffer
+%D \defbibtexcommand\MF  {MF}
+%D \defbibtexcommand\MP  {MP}
+%D \defbibtexcommand\TUB {TUGboat}
+%D \defbibtexcommand\Mc  {Mac}
+%D \defbibtexcommand\sltt{\tt}
+%D \defbibtexcommand\<#1>{\type{#1}}
+%D \defbibtexcommand\acro#1{#1}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Let's define a session and load a few databases. We convert to \UTF\ and
+%D strip commands.
+%D
+%D \startbuffer
+%D \definebibtexsession  [somebibtex]
+%D \registerbibtexfile   [somebibtex] [tugboat.bib]
+%D \registerbibtexfile   [somebibtex] [komoedie.bib]
+%D \preparebibtexsession [somebibtex] [convert,strip]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This loads an mapping (work in progress):
+%D
+%D \startbuffer
+%D \def\currentbibtexformat{apa} \input bxml-\currentbibtexformat.mkiv
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D There are several ways to handle the \XML. It helps if you're a bit
+%D familiar with \XML\ processing in \MKIV.
+%D
+%D Here we regular setups. Three elements are mapped but only one
+%D is actually used and applied to root element \type {/bibtex}.
+%D
+%D \startbuffer
+%D \startxmlsetups bibtex
+%D     \xmlregistereddocumentsetups{#1}{}
+%D     \xmlsetsetup{#1}{bibtex|entry|field}{bibtex:*}
+%D     \xmlmain{#1}
+%D \stopxmlsetups
+%D
+%D \startxmlsetups bibtex:bibtex
+%D     \xmlfilter{#1}{
+%D         /entry[@category='article']
+%D         /field[@name='author' and (find(text(),'Hagen') or find(text(),'Hoekwater'))]
+%D         /../command(bibtex:format)
+%D     }
+%D \stopxmlsetups
+%D
+%D \applytobibtexsession[somebibtex][bibtex]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D A simpler setup is given next. Here we just apply a setup to the root
+%D element directly:
+%D
+%D \startbuffer
+%D \startxmlsetups bibtex:list
+%D     \xmlfilter{#1}{/bibtex/entry/command(bibtex:format)}
+%D \stopxmlsetups
+%D
+%D \applytobibtexsession[somebibtex][bibtex:list]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D A slightly more complex expression:
+%D
+%D \startbuffer
+%D \startxmlsetups bibtex:filter
+%D     \xmlfilter{#1}{
+%D         /bibtex
+%D         /entry[@category='article']
+%D         /field[@name='author' and (find(text(),'Hagen') or find(text(),'Hoekwater'))]
+%D         /../command(bibtex:format)
+%D     }
+%D \stopxmlsetups
+%D
+%D \applytobibtexsession[somebibtex][bibtex:filter]
+%D \stopbuffer
+%D
+%D \typebuffer
+
+\newtoks  \everydefinebibtexsession
+\newtoks  \everypreparebibtexsession
+\newtoks  \everysetupbibtexsession
+\setfalse \tracebibtexformat
+
 \def\definebibtexsession           {\dosingleargument\dodefinebibtexsession}
 \def\preparebibtexsession          {\dodoubleempty   \dopreparebibtexsession}
+\def\setupbibtexsession            {\dodoubleargument\dosetupbibtexsession}
 
-\def\dodefinebibtexsession     [#1]{\ctxlua{commands.definebibtexsession("#1")}}
-\def\dopreparebibtexsession[#1][#2]{\ctxlua{commands.preparebibtexsession("#1","#2")}}
+\def\dodefinebibtexsession     [#1]{\edef\currentbibtexsession{#1}%
+                                    \ctxlua{commands.definebibtexsession("#1")}%
+                                    \the\everydefinebibtexsession}
+
+\def\dopreparebibtexsession[#1][#2]{\edef\currentbibtexsession{#1}%
+                                    \ctxlua{commands.preparebibtexsession("#1","#2")}%
+                                    \the\everypreparebibtexsession}
+
+\def\dosetupbibtexsession  [#1][#2]{\edef\currentbibtexsession{#1}%
+                                    \getparameters[\??pb#1][#2]%
+                                    \the\everysetupbibtexsession}
 
 \def\registerbibtexfile            {\dodoubleargument\doregisterbibtexfile}
 \def\registerbibtexentry           {\dodoubleargument\doregisterbibtexentry}
@@ -31,19 +142,154 @@
 \def\doregisterbibtexentry [#1][#2]{\ctxlua{commands.registerbibtexentry("#1","#2")}}
 \def\doapplytobibtexsession[#1][#2]{\xmlprocessregistered{bibtex:#1}{#2}{#2}}
 
+\unexpanded\def\bibtexcommand#1%
+  {\ifcsname\??pb:c:#1\endcsname \else
+     \fakebibtexcommand{#1}%
+   \fi
+   \csname\??pb:c:#1\endcsname}
+
+\def\fakebibtexcommand#1%
+  {\ifcsname#1\endcsname
+     \writestatus{bibtex}{unknown command: #1, using built-in context variant}%
+     \setugvalue{\??pb:c:#1}{\dosomebibtexcommand{#1}}%
+   \else
+     \writestatus{bibtex}{unknown command: #1}%
+     \setugvalue{\??pb:c:#1}{\dofakebibtexcommand{#1}}%
+   \fi}
+
+\let\dosomebibtexcommand  \getvalue
+\def\dofakebibtexcommand#1{{\tttf#1}}
+
+\def\defbibtexcommand#1%
+  {\setuvalue{\strippedcsname#1}}
+
+\def\bibxmldoifelse#1{\xmldoifelse\currentbibxmlnode{/field[@name='#1']}}
+\def\bibxmldoif    #1{\xmldoif    \currentbibxmlnode{/field[@name='#1']}}
+\def\bibxmldoifnot #1{\xmldoifnot \currentbibxmlnode{/field[@name='#1']}}
+\def\bibxmlflush   #1{\xmlcontext \currentbibxmlnode{/field[@name='#1']}}
+\def\bibxmlsetup     {\xmlsetup   \currentbibxmlnode} % {#1}
+
+\def\currentbibtexformat{apa}    % ho wto interface this, maybe split loading and key
+\def\currentbibxmlnode  {unset}
+\def\currentbibxmltag   {unset}
+
 \startxmlsetups bibtex
     \xmlregistereddocumentsetups{#1}{}
     \xmlsetsetup{#1}{bibtex|entry|field}{bibtex:*}
     \xmlmain{#1}
 \stopxmlsetups
 
-\def\bibxmldoifelse#1#2#3#4#5% entry field before after else
-  {\xmldoifelse{#1}{/field[@name='#2']}{#3\xmlfilter{#1}{/field[@name='#2']/context()}#4}{#5}}
+\startxmlsetups bibtex:format
+    \bibtexpublicationsparameter\c!before\relax % prevents lookahead
+    \edef\currentbibxmlnode    {#1}
+    \edef\currentbibxmltag     {\xmlatt{#1}{tag}}
+    \edef\currentbibxmlcategory{\xmlatt{#1}{category}}
+    \ifconditional\tracebibtexformat
+        \tracedbibxmlintro\currentbibxmltag
+        \tracedbibxmlintro\currentbibxmlcategory
+    \fi
+    \ignorespaces
+    \xmlcommand{#1}{.}{bibtex:\currentbibtexformat:\currentbibxmlcategory}
+    \removeunwantedspaces
+    \bibtexpublicationsparameter\c!after\relax % prevents lookahead
+\stopxmlsetups
 
-\def\bibxmldoif#1#2#3#4% entry field before after
-  {\xmldoif{#1}{/field[@name='#2']}{#3\xmlfilter{#1}{/field[@name='#2']/context()}#4}}
+\startxmlsetups bibtex:list
+    \xmlfilter{#1}{/bibtex/entry/command(bibtex:format)}
+\stopxmlsetups
 
-\def\bibxmldoifnot#1#2#3#4% entry field before after
-  {\xmldoifnot{#1}{/field[@name='#2']}{#3\xmlfilter{#1}{/field[@name='#2']/context()}#4}}
+\startxmlsetups bibtex:bibtex
+    \xmlfilter{#1}{/entry/command(bibtex:format)}
+\stopxmlsetups
+
+% formatters
+
+\let\normalbibxmlflush\bibxmlflush
+
+\definecolor[bibtextracecolor][darkred]
+
+\def\tracedbibxmlintro#1{{\tttf#1 -> }}
+\def\tracedbibxmlflush#1{\color[bibtextracecolor]{\tttf[#1]}}
+\def\tracedbibxmltexts#1{\color[bibtextracecolor]{\tttf<#1>}}
+
+\def\tracedbibxmltext
+  {\ifconditional\tracebibtexformat
+     \expandafter\tracedbibxmltexts % plural
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\bibxmlflush
+  {\ifconditional\tracebibtexformat
+     \expandafter\tracedbibxmlflush
+   \else
+     \expandafter\normalbibxmlflush
+   \fi}
+
+\startxmlsetups bibtex:format:common:author
+   \ifconditional\tracebibtexformat
+        \bibxmlflush\currentbibtexvariant
+   \else
+        \xmlfilter{#1}{/field[@name='\currentbibtexvariant']/bibtexconcat(
+            '\bibtexpublicationsparameter\c!namesep',
+            '\bibtexpublicationsparameter\c!lastnamesep',
+            '\bibtexpublicationsparameter\c!finalnamesep'
+        )}
+    \fi
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:author
+    \begingroup
+        \def\currentbibtexvariant{author}
+        \xmlsetup{#1}{bibtex:format:common:author}
+    \endgroup
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:artauthor
+    \begingroup
+        \def\currentbibtexvariant{artauthor}
+        \xmlsetup{#1}{bibtex:format:common:author}
+    \endgroup
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:editor
+    \begingroup
+        \def\currentbibtexvariant{editor}
+        \xmlsetup{#1}{bibtex:format:common:author}
+    \endgroup
+\stopxmlsetups
+
+% lists
+
+\def\bibtexlistprocessor
+  {\ctxlua{bibtex.hacks.add(structure.lists.uservalue("\currentlist",\currentlistindex,"bibref"),\currentlistindex)}}
+
+\appendtoks
+    \definelist[\currentbibtexsession]%
+    \setuplist[\currentbibtexsession][\c!state=\v!start,\c!width=]%
+    \installstructurelistprocessor{\currentbibtexsession:userdata}{\bibtexlistprocessor}%
+\to \everydefinebibtexsession
+
+% \def\installbibtexsorter#1#2%
+%   {\setvalue{\??pb:\c!sort:#1}{#2}}
+
+% \installbibtexsorter\v!no     {no}
+% \installbibtexsorter\v!author {au}
+% \installbibtexsorter\v!title  {ti}
+% \installbibtexsorter\v!short  {ab}
+% \installbibtexsorter\empty    {no}
+% \installbibtexsorter\s!default{no}
+
+% \setupbibtex
+%   [\c!sorttype=\v!cite,
+%    \c!sort=no]
+
+% \long\def\startpublication#1\stoppublication
+%   {\blank
+%    todo
+%    \blank}
+
+% \let\stoppublication\relax
 
 \protect \endinput
+

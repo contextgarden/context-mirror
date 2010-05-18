@@ -2662,11 +2662,12 @@
 % \definefontfeature[mathscript]       [math-script]
 % \definefontfeature[mathscriptscript] [math-scriptscript]
 
-%D Also new:
+%D Also new, handy for manuals:
 
-% handy for manuals
+\unexpanded\def\fontchar#1{\ctxlua{fonts.char("#1")}}
 
-\def\otfchar#1{\ctxlua{fonts.otf.char("#1")}}
+\let\otfchar\fontchar % will disappear, for compatibility only
+\let\afmchar\fontchar % will disappear, for compatibility only
 
 %D: We cannot yet inherit because no colors are predefined.
 
@@ -3732,56 +3733,23 @@
 %D \macros
 %D   {definefontvariant,fontvariant,variant}
 %D
-%D A slightly adapted version of Adam Lindsays variant patches:
-%D
-%D \starttyping
-%D \usetypescriptfile[type-psc] \loadmapfile[texnansi-public-fpl]
-%D \usetypescript[palatino][texnansi] \setupbodyfont[palatino]
-%D
-%D \definefontvariant [Serif][osf] [OsF]
-%D
-%D \startlines
-%D {\sc abcdefgHIJKlmnop}
-%D 123{\Var[osf]456}789
-%D {\Var[osf] 123{\Var[reset]456}789}
-%D {\it  123{\Var[osf]456}789
-%D {\Var[osf]123{\Var[reset]456}789}}
-%D {\tfb\bf 123{\Var[osf]456}789
-%D {\Var[osf] 123{\Var[reset]456}789}}
-%D {\sc  123{\Var[osf]456}789
-%D {\Var[osf]  123{\Var[reset]456}789}}
-%D \stoplines
-%D \stoptyping
+%D This command is obsolete in \MKIV\ as we have features. It might
+%D come back using the local features handlers.
 
-\def\definefontvariant
-  {\dotripleargument\dodefinefontvariant}
+\def\definefontvariant{\dotripleargument\dodefinefontvariant}
 
-\def\dodefinefontvariant[#1][#2][#3]%
-  {\setvalue{\??fv#1#2}{#3}}
+\def\dodefinefontvariant[#1][#2][#3]{}
+\def\variant                    [#1]{}
 
-\def\fontvariant#1#2{\executeifdefined{\??fv#1#2}\empty}
-
-\def\dosetscaledfont
-  {\checkrelativefontsize\fontstyle
-   \scaledfontsize\currentfontscale\bodyfontsize
-   \scaledfontsize\relativefontsize\scaledfontsize}
-
-\unexpanded\def\variant[#1]% slow
-  {\dosetscaledfont
-   \normalexpanded{\noexpand\definedfont[\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1} at \the\dimexpr\scaledfontsize\relax]}%
-   \ignoreimplicitspaces}
-
-\ifx\Var\undefined \let\Var\variant \fi
+\ifdefined\Var\else \let\Var\variant \fi
 
 %D By default we load the Computer Modern Roman fonts (but
 %D not yet at this moment) and activate the 12pt roman
 %D bodyfont. Sans serif and teletype are also available and
-%D can be called for by \type{\ss} and \type{\tt}.
-
-% \setupbodyfont [unk, rm]
-% \setupbodyfont [rm]
-
-%D Also needed is:
+%D can be called for by \type{\ss} and \type{\tt}. Loading
+%D takes place elsewhere.
+%D
+%D For tracing purposes we define:
 
 \definefont[tinyfont][Mono at 1ex]
 
@@ -3817,8 +3785,6 @@
 % \definestyleinstance[mine][sl][\tt]
 
 % {\bf test \mine test \sl test \mine test \bs oeps \mine oeps {\tt test \mine \bf test}}
-
-\definesystemvariable{sx}
 
 \def\definestylecollection
   {\dosingleargument\dodefinestylecollection}

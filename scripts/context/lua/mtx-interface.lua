@@ -138,7 +138,7 @@ function scripts.interface.check()
 end
 
 function scripts.interface.context()
-    local filename = resolvers.find_file("mult-def.lua") or ""
+    local filename = resolvers.find_file(environment.files[1] or "mult-def.lua") or ""
     if filename ~= "" then
         local interface = dofile(filename)
         if interface and next(interface) then
@@ -213,7 +213,7 @@ function scripts.interface.context()
 end
 
 function scripts.interface.messages()
-    local filename = resolvers.find_file("mult-mes.lua") or ""
+    local filename = resolvers.find_file(environment.files[1] or "mult-mes.lua") or ""
     if filename ~= "" then
         local messages = dofile(filename)
         for _, interface in ipairs(messageinterfaces) do

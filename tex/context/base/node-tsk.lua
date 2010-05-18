@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['node-tsk'] = {
     license   = "see context related readme files"
 }
 
+-- this might move to task-*
+
 local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 
 tasks      = tasks       or { }
@@ -33,6 +35,7 @@ function tasks.enableaction(name,action)
         data.runner = false
     end
 end
+
 function tasks.disableaction(name,action)
     local data = tasks.data[name]
     if data then
@@ -40,6 +43,7 @@ function tasks.disableaction(name,action)
         data.runner = false
     end
 end
+
 function tasks.enablegroup(name,group)
     local data = tasks.data[name]
     if data then
@@ -47,6 +51,7 @@ function tasks.enablegroup(name,group)
         data.runner = false
     end
 end
+
 function tasks.disablegroup(name,group)
     local data = tasks.data[name]
     if data then
@@ -224,10 +229,11 @@ function tasks.table(name) --maybe move this to task-deb.lua
                 local o = order[i]
                 local l = list[o]
                 if #l == 0 then
-                    NC() type(o) NC() NC() NR()
+                    NC() type(o) NC() context("unset") NC() NR()
                 else
+                    local done = false
                     for k, v in table.sortedpairs(l) do
-                        NC() type(o) NC() type(v) NC() NR()
+                        NC() if not done then type(o) done = true end NC() type(v) NC() NR()
                     end
                 end
             end

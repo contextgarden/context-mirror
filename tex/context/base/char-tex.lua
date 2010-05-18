@@ -66,10 +66,24 @@ local commands = (P('\\') * C(R("az","AZ")^1)) / remap_commands
 local convert_accents  = Cs((accents  + P(1))^0)
 local convert_commands = Cs((commands + P(1))^0)
 
-function characters.tex.toutf(str)
-    if find(str,"\\") then
-        str = lpegmatch(convert_commands,str)
-        str = lpegmatch(convert_accents,str)
+local no_l = P("{") / ""
+local no_r = P("}") / ""
+
+local convert_accents_strip  = Cs((no_l * accents  * no_r + accents  + P(1))^0)
+local convert_commands_strip = Cs((no_l * commands * no_r + commands + P(1))^0)
+
+function characters.tex.toutf(str,strip)
+    if find(str,"\\") then -- we can start at teh found position
+        if strip then
+            str = lpegmatch(convert_commands_strip,str)
+            str = lpegmatch(convert_accents_strip,str)
+        else
+            str = lpegmatch(convert_commands,str)
+            str = lpegmatch(convert_accents,str)
+        end
     end
     return str
 end
+
+--~ print(characters.tex.toutf([[\"{e}]]),true)
+--~ print(characters.tex.toutf([[{\"{e}}]],true))

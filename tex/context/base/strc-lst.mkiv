@@ -127,7 +127,7 @@
 % \appendtoks
 % \to \everystructurelist
 
-\def\placestructurelist#1#2#3%
+\def\placestructurelist#1#2#3% hm ... [][][]
   {\ctxlua{structure.lists.process("#1","#2","#3")}}
 
 \def\analysestructurelist#1#2#3%
@@ -189,7 +189,11 @@
 % so far (todo: also recursive)
 
 \def\listalternativeparameter#1%
-  {\csname\??li\??li\listparameter\c!alternative#1\endcsname}
+  {\ifcsname\??li\??li\listparameter\c!alternative#1\endcsname
+      \csname\??li\??li\listparameter\c!alternative#1\endcsname
+   \else
+       \listparameter{#1}%
+   \fi}
 
 \def\setuplistalternative[#1]%
   {\dodoubleargument\getparameters[\??li\??li#1]}
@@ -209,8 +213,8 @@
 
 \def\listdots{\leaders\hbox to .5em{\hss.\hss}\hfill}
 
-\setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}}
-\getvalue{\??li\c!alternative}
+% \setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}} % ?
+% \getvalue{\??li\c!alternative} % ?
 
 \def\checklistexistence#1%
   {\ifcsname\??li#1\s!parent\endcsname \else
@@ -615,7 +619,7 @@
             \!!widthc\zeropoint}
            {\!!widtha\listparameter\c!width}}
         {\!!widtha\listparameter\c!width}}%
-   \getvalue{\??li\c!alternative\listparameter\c!alternative}%
+%    \getvalue{\??li\c!alternative\listparameter\c!alternative}% ?
    \endgraf
    \noindent
    \domakelistelement\v!all{#2}\hbox

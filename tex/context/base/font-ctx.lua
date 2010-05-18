@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 -- needs a cleanup: merge of replace, lang/script etc
 
 local texsprint, count, texsetcount = tex.sprint, tex.count, tex.setcount
-local format, concat, gmatch, match, find, lower, gsub = string.format, table.concat, string.gmatch, string.match, string.find, string.lower, string.gsub
+local format, concat, gmatch, match, find, lower, gsub, byte = string.format, table.concat, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
+
 local tostring, next, type = tostring, next, type
 local lpegmatch = lpeg.match
 local round = math.round
@@ -528,3 +529,41 @@ fonts.map.reset() -- resets the default file
 -- we need an 'do after the banner hook'
 
 -- pdf.mapfile("mkiv-base.map") -- loads the default file
+
+local nounicode = byte("?")
+
+local function name_to_slot(name) -- maybe some day rawdata
+    local tfmdata = fonts.ids[font.current()]
+    local shared = tfmdata and tfmdata.shared
+    local fntdata = shared and shared.otfdata or shared.afmdata
+    if fntdata then
+        local unicode = fntdata.luatex.unicodes[name]
+        if not unicode then
+            return nounicode
+        elseif type(unicode) == "number" then
+            return unicode
+        else -- multiple unicodes
+            return unicode[1]
+        end
+    end
+    return nounicode
+end
+
+fonts.name_to_slot = name_to_slot
+
+function fonts.char(n) -- todo: afm en tfm
+    if type(n) == "string" then
+        n = name_to_slot(n)
+    end
+    if type(n) == "number" then
+        texsprint(ctxcatcodes,format("\\char%s ",n))
+    end
+end
+
+-- thsi will become obsolete:
+
+fonts.otf.name_to_slot = name_to_slot
+fonts.afm.name_to_slot = name_to_slot
+
+fonts.otf.char = fonts.char
+fonts.afm.char = fonts.char

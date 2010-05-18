@@ -181,6 +181,18 @@ function sorters.sort(entries,cmp)
             end
             return r == -1
         end)
+        local s
+        for i=1,#entries do
+            local split = entries[i].split
+            local entry, first = sorters.firstofsplit(split)
+            if first == s then
+                first = "  "
+            else
+                s = first
+                logs.report("sorter",">> %s 0x%05X (%s 0x%05X)",first,utfbyte(first),entry,utfbyte(entry))
+            end
+            logs.report("sorter","   %s",pack(split))
+        end
     else
         sort(entries, function(a,b)
             return cmp(a,b,map) == -1
@@ -188,21 +200,31 @@ function sorters.sort(entries,cmp)
     end
 end
 
+-- some day we can have a characters.upper and characters.lower
+
 function sorters.add_uppercase_entries(entries)
-    for k, v in pairs(entries) do
+    local new = { }
+    for k, v in next, entries do
         local u = chardata[utfbyte(k)].uccode
         if u then
-            entries[utfchar(u)] = v
+            new[utfchar(u)] = v
         end
+    end
+    for k, v in next, new do
+        entries[k] = v
     end
 end
 
 function sorters.add_uppercase_mappings(mappings,offset)
-    offset = offset or 0
-    for k, v in pairs(mappings) do
+    local new = { }
+    for k, v in next, mappings do
         local u = chardata[utfbyte(k)].uccode
         if u then
-            mappings[utfchar(u)] = v + offset
+            new[utfchar(u)] = v + offset
         end
+    end
+    offset = offset or 0
+    for k, v in next, new do
+        mappings[k] = v
     end
 end
