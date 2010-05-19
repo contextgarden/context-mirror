@@ -12,11 +12,16 @@ bibtex files and converts them to xml so that the we access the content
 in a convenient way. Actually handling the data takes place elsewhere.</p>
 --ldx]]--
 
+local utf = unicode.utf8
 local lower, format, gsub, concat = string.lower, string.format, string.gsub, table.concat
 local next = next
+local utfchar = utf.char
 local lpegmatch = lpeg.match
 local textoutf = characters and characters.tex.toutf
 local variables = interfaces and interfaces.variables
+
+local finalizers = xml.finalizers.tex
+local xmlfilter, xmltext = xml.filter, xml.text
 
 local trace_bibxml = false  trackers.register("publications.bibxml", function(v) trace_bibtex = v end)
 
@@ -124,6 +129,7 @@ function bibtex.convert(session,content)
     data, shortcuts, entries = session.data, session.shortcuts, session.entries
  -- session.size = session.size + #content
     bibtex.size = bibtex.size + #content
+    session.size = session.size + #content
     lpegmatch(grammar,content or "")
     statistics.stoptiming(bibtex)
 end
@@ -148,6 +154,7 @@ function bibtex.new()
         xml = xml.convert("<?xml version='1.0' standalone='yes'?>\n<bibtex></bibtex>"),
         size = 0,
         entries = nil,
+        loaded = false,
     }
 end
 
@@ -178,6 +185,11 @@ local filter = Cs(
 )
 
 function bibtex.toxml(session,options)
+    if session.loaded then
+        return
+    else
+        session.loaded = true
+    end
     -- we can always speed this up if needed
     -- format slows down things a bit but who cares
     statistics.starttiming(bibtex)
@@ -214,13 +226,16 @@ function bibtex.toxml(session,options)
         end
     end
     result[#result+1] = format("</bibtex>")
+    result = concat(result,"\n")
     -- alternatively we could use lxml.convert
-    session.xml = xml.convert(concat(result,"\n"), {
+    session.xml = xml.convert(result, {
         resolve_entities            = true,
         resolve_predefined_entities = true, -- in case we have escaped entities
      -- unify_predefined_entities   = true, -- &#038; -> &amp;
         utfize_entities             = true,
     } )
+    session.data = nil
+    session.shortcuts = nil
     statistics.stoptiming(bibtex)
 end
 
@@ -275,9 +290,349 @@ end)
 --~ print(table.serialize(session.shortcuts))
 --~ print(xml.serialize(session.xml))
 
--- this will move:
+if not characters then dofile(resolvers.find_file("char-def.lua")) end
+
+local chardata = characters.data
+local concat = table.concat
+
+local P, Ct, lpegmatch = lpeg.P, lpeg.Ct, lpeg.match
+
+local space, comma = P(" "), P(",")
+
+local andsplitter    = Ct(lpeg.splitat(space^1 * "and" * space^1))
+local commasplitter  = Ct(lpeg.splitat(space^0 * comma * space^0))
+local spacesplitter  = Ct(lpeg.splitat(space^1))
+local firstcharacter = lpeg.patterns.utf8byte
+
+function is_upper(str)
+    local first = lpegmatch(firstcharacter,str)
+    local okay = chardata[first]
+    return okay and okay.category == "lu"
+end
+
+local function splitauthors(str)
+    local authors = lpegmatch(andsplitter,str)
+    for i=1,#authors do
+        local firstnames, vons, surnames, initials, juniors, words
+        local author = authors[i]
+        local split = lpegmatch(commasplitter,author)
+        local n = #split
+        if n == 1 then
+            --~ First von Last
+            words = lpegmatch(spacesplitter,author)
+            firstnames, vons, surnames = { }, { }, { }
+            local i, n = 1, #words
+            while i <= n do
+                local w = words[i]
+                if is_upper(w) then
+                    firstnames[#firstnames+1], i = w, i + 1
+                else
+                    break
+                end
+            end
+            while i <= n do
+                local w = words[i]
+                if is_upper(w) then
+                    break
+                else
+                    vons[#vons+1], i = w, i + 1
+                end
+            end
+            while i <= n do
+                surnames[#surnames+1], i = words[i], i + 1
+            end
+        elseif n == 2 then
+            --~ von Last, First
+            words    = lpegmatch(spacesplitter,split[2])
+            surnames = lpegmatch(spacesplitter,split[1])
+            firstnames, vons = { }, { }
+            local i, n = 1, #words
+            while i <= n do
+                local w = words[i]
+                if is_upper(w) then
+                    firstnames[#firstnames+1], i = w, i + 1
+                else
+                    break
+                end
+            end
+            while i <= n do
+                vons[#vons+1], i = words[i], i + 1
+            end
+        else
+            --~ von Last, Jr ,First
+            firstnames = lpegmatch(spacesplitter,split[1])
+            juniors    = lpegmatch(spacesplitter,split[2])
+            surnames   = lpegmatch(spacesplitter,split[3])
+            if n > 3 then
+                -- error
+            end
+        end
+        if #surnames == 0 then
+            surnames[1] = firstnames[#firstnames]
+            firstnames[#firstnames] = nil
+        end
+        if firstnames then
+            initials = { }
+            for i=1,#firstnames do
+                initials[i] = utfchar(lpegmatch(firstcharacter,firstnames[i]))
+            end
+        end
+        authors[i] = {
+            original   = author,
+            firstnames = firstnames,
+            vons       = vons,
+            surnames   = surnames,
+            initials   = initials,
+            juniors    = juniors,
+        }
+    end
+    authors.original = str
+    return authors
+end
+
+local function the_initials(initials,symbol)
+    local t, symbol = { }, symbol or "."
+    for i=1,#initials do
+        t[i] = initials[i] .. symbol
+    end
+    return t
+end
+
+-- authors
+
+bibtex.authors = bibtex.authors or { }
+
+local authors = bibtex.authors
+
+local defaultsettings = {
+    firstnamesep        = " ",
+    vonsep              = " ",
+    surnamesep          = " ",
+    juniorsep           = " ",
+    surnamejuniorsep    = ", ",
+    juniorjuniorsep     = ", ",
+    surnamefirstnamesep = ", ",
+    surnameinitialsep   = ", ",
+    namesep             = ", ",
+    lastnamesep         = " and ",
+    finalnamesep        = " and ",
+}
+
+function authors.normal(author,settings)
+    local firstnames, vons, surnames, juniors = author.firstnames, author.vons, author.surnames, author.juniors
+    local result, settings = { }, settings or defaultsettings
+    if firstnames and #firstnames > 0 then
+        result[#result+1] = concat(firstnames," ")
+        result[#result+1] = settings.firstnamesep or defaultsettings.firstnamesep
+    end
+    if vons and #vons > 0 then
+        result[#result+1] = concat(vons," ")
+        result[#result+1] = settings.vonsep or defaultsettings.vonsep
+    end
+    if surnames then
+        result[#result+1] = concat(surnames," ")
+    end
+    if juniors and #juniors > 0 then
+        result[#result+1] = concat(juniors," ")
+        result[#result+1] = settings.surnamesep or defaultsettings.surnamesep
+    end
+    return concat(result)
+end
+
+function authors.normalshort(author,settings)
+    local firstnames, vons, surnames, juniors = author.firstnames, author.vons, author.surnames, author.juniors
+    local result, settings = { }, settings or defaultsettings
+    if firstnames and #firstnames > 0 then
+        result[#result+1] = concat(firstnames," ")
+        result[#result+1] = settings.firstnamesep or defaultsettings.firstnamesep
+    end
+    if vons and #vons > 0 then
+        result[#result+1] = concat(vons," ")
+        result[#result+1] = settings.vonsep or defaultsettings.vonsep
+    end
+    if surnames then
+        result[#result+1] = concat(surnames," ")
+    end
+    if juniors and #juniors > 0 then
+        result[#result+1] = concat(juniors," ")
+        result[#result+1] = settings.surnamejuniorsep or defaultsettings.surnamejuniorsep
+    end
+    return concat(result)
+end
+
+function authors.inverted(author,settings)
+    local firstnames, vons, surnames, juniors = author.firstnames, author.vons, author.surnames, author.juniors
+    local result, settings = { }, settings or defaultsettings
+    if vons and #vons > 0 then
+        result[#result+1] = concat(vons," ")
+        result[#result+1] = settings.vonsep or defaultsettings.vonsep
+    end
+    if surnames then
+        result[#result+1] = concat(surnames," ")
+    end
+    if juniors and #juniors > 0 then
+        result[#result+1] = settings.juniorjuniorsep or defaultsettings.juniorjuniorsep
+        result[#result+1] = concat(juniors," ")
+    end
+    if firstnames and #firstnames > 0 then
+        result[#result+1] = settings.surnamefirstnamesep or defaultsettings.surnamefirstnamesep
+        result[#result+1] = concat(firstnames," ")
+    end
+    return concat(result)
+end
+
+function authors.invertedshort(author,settings)
+    local vons, surnames, initials, juniors = author.vons, author.surnames, author.initials, author.juniors
+    local result, settings = { }, settings or defaultsettings
+    if vons and #vons > 0 then
+        result[#result+1] = concat(vons," ")
+        result[#result+1] = settings.vonsep or defaultsettings.vonsep
+    end
+    if surnames then
+        result[#result+1] = concat(surnames," ")
+    end
+    if juniors and #juniors > 0 then
+        result[#result+1] = settings.juniorjuniorsep or defaultsettings.juniorjuniorsep
+        result[#result+1] = concat(juniors," ")
+    end
+    if initials and #initials > 0 then
+        result[#result+1] = settings.surnameinitialsep or defaultsettings.surnameinitialsep
+        result[#result+1] = concat(the_initials(initials)," ")
+    end
+    return concat(result)
+end
+
+local lastconcatsize = 1
+
+local function bibtexconcat(t,settings)
+    local namesep      = settings.namesep      or defaultsettings.namesep      or ", "
+    local lastnamesep  = settings.lastnamesep  or defaultsettings.lastnamesep  or namesep
+    local finalnamesep = settings.finalnamesep or defaultsettings.finalnamesep or lastnamesep
+    local lastconcatsize = #t
+    if lastconcatsize > 2 then
+        local s = { }
+        for i=1,lastconcatsize-2 do
+            s[i] = t[i] .. namesep
+        end
+        s[lastconcatsize-1], s[lastconcatsize] = t[lastconcatsize-1] .. finalnamesep, t[lastconcatsize]
+        return concat(s)
+    elseif lastconcatsize > 1 then
+        return concat(t,lastnamesep)
+    elseif lastconcatsize > 0 then
+        return t[1]
+    else
+        return ""
+    end
+end
+
+function authors.concat(author,combiner,what,settings)
+    if type(combiner) == "string" then
+        combiner = authors[combiner or "normal"] or authors.normal
+    end
+    local split = splitauthors(author)
+    local setting = settings[what]
+    local etallimit, etaldisplay, etaltext = 1000, 1000, ""
+    if setting then
+        etallimit   = settings.etallimit   or 1000
+        etaldisplay = settings.etaldisplay or etallimit
+        etalltext   = settings.etaltext    or ""
+    end
+    local max = #split
+    if max > etallimit and etaldisplay < max then
+        max = etaldisplay
+    end
+    for i=1,max do
+        split[i] = combiner(split[i],settings)
+    end
+    local result = bibtexconcat(split,settings)
+    if max < #split then
+        return result
+    else
+        return result .. etaltext
+    end
+end
+
+function authors.short(author,year)
+    local result = { }
+    if author then
+        local authors = splitauthors(author)
+        for a=1,#authors do
+            local aa = authors[a]
+            local initials = aa.initials
+            for i=1,#initials do
+                result[#result+1] = initials[i]
+            end
+            local surnames = aa.surnames
+            for s=1,#surnames do
+                result[#result+1] = utfchar(lpegmatch(firstcharacter,surnames[s]))
+            end
+        end
+    end
+    if year then
+        result[#result+1] = year
+    end
+    return concat(result)
+end
+
+-- We can consider creating a hashtable key -> entry but I wonder if
+-- pays off.
+
+local function collectauthoryears(id,list)
+    list = aux.settings_to_hash(list)
+    id = lxml.get_id(id)
+    local found = { }
+    for e in xml.collected(id,"/bibtex/entry") do
+        if list[e.at.tag] then
+            local year   = xmlfilter(e,"xml:///field[@name='year']/text()")
+            local author = xmlfilter(e,"xml:///field[@name='author']/text()")
+            if author and year then
+                local a = found[author]
+                if not a then
+                    a = { }
+                    found[author] = a
+                end
+                local y = a[year]
+                if not y then
+                    y = { }
+                    a[year] = y
+                end
+                y[#y+1] = e
+            end
+        end
+    end
+    -- found = { author = { year_1 = { e1, e2, e3 } } }
+    local done = { }
+    for author, years in next, found do
+        local yrs = { }
+        for year, entries in next, years do
+            if subyears then
+             -- -- add letters to all entries of an author and if so shouldn't
+             -- -- we tag all years of an author as soon as we do this?
+             -- if #entries > 1 then
+             --     for i=1,#years do
+             --         local entry = years[i]
+             --         -- years[i] = year .. string.char(i + string.byte("0") - 1)
+             --     end
+             -- end
+            else
+                yrs[#yrs+1] = year
+            end
+        end
+        done[author] = yrs
+    end
+    return done
+end
+
+local method, settings = "normal", { }
+
+function authors.setsettings(s)
+    settings = s or settings
+end
 
 if commands then
+
+    local texsprint   = tex and tex.sprint
+    local ctxcatcodes = tex and tex.ctxcatcodes
 
     local sessions = { }
 
@@ -285,9 +640,9 @@ if commands then
         sessions[name] = bibtex.new()
     end
 
-    function commands.preparebibtexsession(name,options)
+    function commands.preparebibtexsession(name,xmlname,options)
         bibtex.toxml(sessions[name],options)
-        lxml.register("bibtex:"..name,sessions[name].xml)
+        lxml.register(xmlname,sessions[name].xml)
     end
 
     function commands.registerbibtexfile(name,filename)
@@ -298,42 +653,110 @@ if commands then
         local session = sessions[name]
         local entries = session.entries
         if not entries then
-            session.entries = { [entry] = true }
+            session.entries = { [entry] = true } -- here we can keep more info
         else
             entries[entry] = true
         end
     end
 
-    local splitter = Ct(lpeg.splitat(" and "))
+    -- commands.bibtexconcat = bibtexconcat
 
-    local function bibtexconcat(str,between,betweenlast,betweentwo)
-        between     = between     or ", "
-        betweenlast = betweenlast or between
-        betweentwo  = betweentwo  or betweenlast
-        local s = lpegmatch(splitter,str)
-        local n = #s
-        if n > 2 then
-            for i=1,n-2 do
-                s[i] = s[i] .. between
+    -- finalizers can be rather dumb as we have just text and no embedded xml
+
+    function finalizers.bibtexconcat(collected,method,what)
+        if collected then
+            local author = collected[1].dt[1] or ""
+            if author ~= "" then
+                texsprint(ctxcatcodes,authors.concat(author,method,what,settings))
             end
-            s[n-1] = s[n-1] .. betweenlast
-            str = concat(s)
-        elseif n > 1 then
-            str = concat(s,betweentwo)
-        end
-        return str
-    end
-
- -- commands.bibtexconcat = bibtexconcat
-
-    local finalizers = xml.finalizers.tex
-
-    function finalizers.bibtexconcat(collected,...)
-        if collected then -- rather dumb, just text, no embedded xml
-            tex.sprint(tex.ctxcatcodes,bibtexconcat(collected[1].dt[1] or "",...))
         end
     end
 
- -- print(commands.bibtextconcat("hans and taco and hartmut",", "," en "))
+    function finalizers.bibtexshort(collected)
+        if collected then
+            local c = collected[1]
+            local year   = xmlfilter(c,"xml://field[@name='year']/text()")
+            local author = xmlfilter(c,"xml://field[@name='author']/text()")
+            texsprint(ctxcatcodes,authors.short(author,year))
+        end
+    end
 
+    -- experiment:
+
+    --~ -- alternative approach: keep data at the tex end
+
+    --~ local function xbibtexconcat(t,sep,finalsep,lastsep)
+    --~     local n = #t
+    --~     if n > 0 then
+    --~         context(t[1])
+    --~         if n > 1 then
+    --~             if n > 2 then
+    --~                 for i=2,n-1 do
+    --~                     context.bibtexpublicationsparameter("sep")
+    --~                     context(t[i])
+    --~                 end
+    --~                 context.bibtexpublicationsparameter("finalsep")
+    --~             else
+    --~                 context.bibtexpublicationsparameter("lastsep")
+    --~             end
+    --~             context(t[n])
+    --~         end
+    --~     end
+    --~ end
+
+    -- todo : sort
+
+    -- todo: choose between bibtex or commands namespace
+
+    function bibtex.authorref(id,list)
+        local result = collectauthoryears(id,list,method,what)
+        for author, years in next, result do
+            texsprint(ctxcatcodes,authors.concat(author,method,what,settings))
+        end
+    end
+
+    function bibtex.authoryearref(id,list)
+        local result = collectauthoryears(id,list,method,what)
+        for author, years in next, result do
+            texsprint(ctxcatcodes,authors.concat(author,method,what,settings)," (",concat(years,", "),")")
+        end
+    end
+
+    function bibtex.authoryearsref(id,list)
+        local result = collectauthoryears(id,list,method,what)
+        for author, years in next, result do
+            texsprint(ctxcatcodes,"(",authors.concat(author,method,what,settings),", ",concat(years,", "),")")
+        end
+    end
+
+    function bibtex.singular_or_plural(singular,plural)
+        if lastconcatsize and lastconcatsize > 1 then
+            texsprint(ctxcatcodes,plural)
+        else
+            texsprint(ctxcatcodes,singular)
+        end
+    end
 end
+
+
+--~ local function test(sample)
+--~     local authors = splitauthors(sample)
+--~     print(table.serialize(authors))
+--~     for i=1,#authors do
+--~         local author = authors[i]
+--~         print(normalauthor       (author,settings))
+--~         print(normalshortauthor  (author,settings))
+--~         print(invertedauthor     (author,settings))
+--~         print(invertedshortauthor(author,settings))
+--~     end
+--~     print(concatauthors(sample,settings,normalauthor))
+--~     print(concatauthors(sample,settings,normalshortauthor))
+--~     print(concatauthors(sample,settings,invertedauthor))
+--~     print(concatauthors(sample,settings,invertedshortauthor))
+--~ end
+
+--~ local sample_a = "Hagen, Hans and Hoekwater, Taco Whoever T. Ex. and Henkel Hut, Hartmut Harald von der"
+--~ local sample_b = "Hans Hagen  and Taco Whoever T. Ex. Hoekwater  and Hartmut Harald von der Henkel Hut"
+
+--~ test(sample_a)
+--~ test(sample_b)

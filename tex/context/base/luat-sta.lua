@@ -45,6 +45,10 @@ function states.set_by_tag(tag,key,value,default,persistent)
                     if not dk then
                         dk = { }
                         d[k] = dk
+                    elseif type(dk) == "string" then
+                        -- invalid table, unable to upgrade structure
+                        -- hope for the best or delete the state file
+                        break
                     end
                     d = dk
                 end

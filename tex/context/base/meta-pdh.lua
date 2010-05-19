@@ -166,7 +166,7 @@ function mptopdf.flushconcat()
 end
 
 function mptopdf.flushpath(cmd)
-    -- faster: no local function and ipairs
+    -- faster: no local function and loop
     if #mptopdf.stack.path > 0 then
         local path = { }
         if mptopdf.stack.concat then

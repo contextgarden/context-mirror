@@ -11,7 +11,7 @@ xml = xml or { }
 
 local utf = unicode.utf8
 
-local utfchar, utfbyte = utf.char, utf.byte
+local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
 local concat = table.concat
 local next, tonumber = next, tonumber
 local texsprint, texprint = tex.sprint, tex.print
@@ -632,3 +632,21 @@ characters.active_offset = 0x10000 -- there will be remapped in that byte range
 --     entities.amp = utfchar(characters.active_offset + utfbyte("&"))
 --     entities.gt  = utfchar(characters.active_offset + utfbyte(">"))
 -- end
+
+-- some day we will make a table
+
+function characters.lower(str)
+    local new = { }
+    for u in utfvalues(str) do
+        new[#new+1] = utfchar(data[u].lccode or u)
+    end
+    return concat(new)
+end
+
+function characters.upper(str)
+    local new = { }
+    for u in utfvalues(str) do
+        new[#new+1] = utfchar(data[u].uccode or u)
+    end
+    return concat(new)
+end

@@ -283,12 +283,12 @@ function jobregisters.extend(name,tag,rawdata) -- maybe do lastsection internall
             rr.lastsection = structure.sections.currentid()
             if rawdata then
                 preprocessentries(rawdata)
-                for k,v in pairs(rawdata) do
+                for k,v in next, rawdata do
                     if not r[k] then
                         r[k] = v
                     else
                         local rk = r[k]
-                        for kk,vv in pairs(v) do
+                        for kk,vv in next, v do
                             if vv ~= "" then
                                 rk[kk] = vv
                             end
@@ -370,7 +370,9 @@ end
 
 function jobregisters.unique(data,options)
     local result, prev, equal = { }, nil, table.are_equal
-    for _,v in ipairs(data.result) do
+    local dataresult = data.result
+    for k=1,#dataresult do
+        local v = dataresult[k]
         if not prev then
             result[#result+1], prev = v, v
         else
@@ -500,7 +502,6 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
         texsprint(ctxcatcodes,"}")
     end
     -- ranges need checking !
---~     for k, letter in ipairs(table.sortedkeys(result)) do
     for i=1,#result do
         local sublist = result[i]
         local done = { false, false, false, false }

@@ -1017,6 +1017,9 @@
         <cd:parameter name="palet">
           <cd:constant type="cd:name"/>
         </cd:parameter>
+        <cd:parameter name="range">
+          <cd:constant type="cd:text"/>
+        </cd:parameter>
         <cd:parameter name="lines">
           <cd:constant type="yes"/>
           <cd:constant type="no"/>

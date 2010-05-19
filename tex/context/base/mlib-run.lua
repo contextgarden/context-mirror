@@ -208,7 +208,7 @@ function metapost.reset(mpx)
             mpxformats[mpx] = nil
         end
     else
-        for name, instance in pairs(mpxformats) do
+        for name, instance in next, mpxformats do
             if instance == mpx then
                 mpx:finish()
                 mpxformats[name] = nil
@@ -347,7 +347,8 @@ function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
                     if astable then
                         local result = { }
                         logs.simple("storing %s figures in table",#sorted)
-                        for k, v in ipairs(sorted) do
+                        for k=1,#sorted do
+                            local v = sorted[k]
                             if outputformat == "mps" then
                                 result[v] = figures[v]:postscript()
                             else
@@ -357,7 +358,8 @@ function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
                         return result
                     else
                         local basename = file.removesuffix(file.basename(filename))
-                        for k, v in ipairs(sorted) do
+                        for k=1,#sorted do
+                            local v = sorted[k]
                             local output
                             if outputformat == "mps" then
                                 output = figures[v]:postscript()

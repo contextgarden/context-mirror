@@ -697,16 +697,29 @@ do
         forced = true
     end
 
+    local texmess   = (dquote/ditto + (1 - etex))^0
+
+    local function ignore(s)
+        logs.report("mplib","ignoring verbatim tex: %s",s)
+        return ""
+    end
+
     local parser = P {
-        [1] = Cs((V(2)/register + V(3)/convert + V(4)/force + 1)^0),
+        [1] = Cs((V(2)/register + V(4)/ignore + V(3)/convert + V(5)/force + 1)^0),
         [2] = ttex + gtex,
-        [3] = (btex + vtex) * spacing * Cs((dquote/ditto + (1 - etex))^0) * etex,
-        [4] = multipass, -- experimental, only for testing
+        [3] = btex * spacing * Cs(texmess) * etex,
+        [4] = vtex * spacing * Cs(texmess) * etex,
+        [5] = multipass, -- experimental, only for testing
     }
 
     -- currently a a one-liner produces less code
 
-    local parser = Cs(((ttex + gtex)/register + ((btex + vtex) * spacing * Cs((dquote/ditto + (1 - etex))^0) * etex)/convert + 1)^0)
+    local parser = Cs((
+        (ttex + gtex)/register
+      + (btex * spacing * Cs(texmess) * etex)/convert
+      + (vtex * spacing * Cs(texmess) * etex)/ignore
+      + 1
+    )^0)
 
     function metapost.check_texts(str)
         found, forced = false, false
@@ -786,7 +799,7 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,asked
      -- }, true, nil, true )
         }, true, nil, not (forced_1 or forced_2), false, askedfig)
         if metapost.intermediate.needed then
-            for _, action in pairs(metapost.intermediate.actions) do
+            for _, action in next, metapost.intermediate.actions do
                 action()
             end
         end

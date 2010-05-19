@@ -248,7 +248,7 @@ function scripts.chars.makeencoutf()
             end
             local f = open("xetx-cls.tex",banner_utf_classes)
             if f then
-                for k, v in pairs(xtxclasses) do
+                for k, v in next, xtxclasses do
                     f:write(format("\\defineXTXcharinjectionclass[lb:%s]\n",k))
                 end
                 f:write("\n")

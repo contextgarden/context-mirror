@@ -55,13 +55,15 @@ local html_menu = [[
 
 local directrun = true
 
+local what = { "parameters", "nodes" }
+
 function plugins.progress.make_svg(filename,other)
     local metadata, menudata, c = { }, { }, 0
     metadata[#metadata+1] = 'outputformat := "svg" ;'
-    for _, kind in pairs { "parameters", "nodes" } do
-        local mdk = { }
+    for i=1,#what do
+        local kind, mdk = what[i], { }
         menudata[kind] = mdk
-        for n, name in pairs(plugins.progress[kind](filename)) do
+        for n, name in next, plugins.progress[kind](filename) do
             local first = plugins.progress.path(filename,name)
             local second = plugins.progress.path(filename,other)
             c = c + 1
@@ -91,11 +93,12 @@ end
 function plugins.progress.makehtml(filename,other,menudata,metadata)
     local graphics = { }
     local result = { graphics = graphics }
-    for _, kind in pairs { "parameters", "nodes" } do
+    for i=1,#what do
+        local kind, menu = what[i], { }
         local md = menudata[kind]
-        local menu = { }
         result[kind] = menu
-        for k, v in ipairs(md) do
+        for k=1,#md do
+            local v = md[k]
             local name, number = v[1], v[2]
             local min     = plugins.progress.bot(filename,name)
             local max     = plugins.progress.top(filename,name)

@@ -2931,7 +2931,7 @@
 
 \def\dodefinealternativestyle[#1][#2][#3]%
   {\def\docommand##1%
-     {\ifcsname##1\endcsname\else\setvalue{##1}{\groupedcommand{#2}{}}\fi
+     {\ifcsname##1\endcsname\else\setuvalue{##1}{\groupedcommand{#2}{}}\fi
       \setvalue{\@letter@  ##1}{#2}%
       \setvalue{\@noletter@##1}{#3}}%
    \processcommalist[#1]\docommand}

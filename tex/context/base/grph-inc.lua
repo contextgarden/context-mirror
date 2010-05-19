@@ -133,19 +133,21 @@ figures.formats = {
 
 function figures.setlookups()
     figures.suffixes, figures.patterns = { }, { }
-    for _, format in pairs(figures.order) do
+    for _, format in next, figures.order do
         local data = figures.formats[format]
         local fs, fp = figures.suffixes, figures.patterns
-        if data.list then
-            for _, s in ipairs(data.list) do
-                fs[s] = format -- hash
+        local list = data.list
+        if list then
+            for i=1,#list do
+                fs[list[i]] = format -- hash
             end
         else
             fs[format] = format
         end
-        if data.patterns then
-            for _, s in ipairs(data.patterns) do
-                fp[#fp+1] = { s, format } -- array
+        local patterns = data.patterns
+        if patterns then
+            for i=1,#patterns do
+                fp[#fp+1] = { patterns[i], format } -- array
             end
         end
     end
@@ -194,7 +196,9 @@ function figures.setpaths(locationset,pathlist)
     end
     if h[iv["global"]] then
      -- for s in gmatch(pathlist,",* *([^,]+)") do
-        for _, s in ipairs(aux.settings_to_array(pathlist)) do
+        local list = aux.settings_to_array(pathlist)
+        for i=1,#list do
+            local s = list[i]
             if not contains(t,s) then
                 t[#t+1] = s
             end
@@ -208,20 +212,6 @@ function figures.setpaths(locationset,pathlist)
 end
 
 -- check conversions and handle it here
-
---~ local keys = img.keys()
-
---~ function figures.hash(data)
---~     local i = data.status.private
---~     local t = { }
---~     for _, v in ipairs(keys) do
---~         local iv = i[v]
---~         if iv then
---~             t[#t+1] = v .. '=' .. iv
---~         end
---~     end
---~     return table.concat(t,"+")
---~ end
 
 function figures.hash(data)
     return data.status.hash or tostring(data.status.private) -- the <img object>
@@ -459,7 +449,9 @@ local function locate(request) -- name, format, cache
         askedformat = lower(askedformat)
         local format = figures.suffixes[askedformat]
         if not format then
-            for _, pattern in ipairs(figures.patterns) do
+            local figurepatterns = figures.patterns
+            for i=1,#figurepatterns do
+                local pattern = figurepatterns[i]
                 if find(askedformat,pattern[1]) then
                     format = pattern[2]
                     break
@@ -492,7 +484,9 @@ local function locate(request) -- name, format, cache
             end
         else
             -- type given
-            for _, path in ipairs(figures.paths) do
+            local figurepaths = figures.paths
+            for i=1,#figurepaths do
+                local path = figurepaths[i]
                 local check = path .. "/" .. askedname
              -- we pass 'true' as it can be an url as well, as the type
              -- is given we don't waste much time
@@ -523,9 +517,12 @@ local function locate(request) -- name, format, cache
         if trace_figures then
             commands.writestatus("figures","strategy: rootbased path")
         end
-        for _, format in ipairs(figures.order) do
+        local figureorder = figures.order
+        for i=1,#figureorder do
+            local format = figureorder[i]
             local list = figures.formats[format].list or { format }
-            for _, suffix in ipairs(list) do
+            for j=1,#list do
+                local suffix = list[j]
                 local check = file.addsuffix(askedname,suffix)
                 if figures.exists(check,format,resolve_too) then
                     return register(askedname, {
@@ -543,12 +540,17 @@ local function locate(request) -- name, format, cache
             if trace_figures then
                 commands.writestatus("figures","strategy: unknown format, prefer quality")
             end
-            for _, format in ipairs(figures.order) do
+            local figurepaths = figures.paths
+            local figureorder = figures.order
+            for j=1,#figureorder do
+                local format = figureorder[j]
                 local list = figures.formats[format].list or { format }
-                for _, suffix in ipairs(list) do
+                for k=1,#list do
+                    local suffix = list[k]
                  -- local name = file.replacesuffix(askedbase,suffix)
                     local name = file.replacesuffix(askedname,suffix)
-                    for _, path in ipairs(figures.paths) do
+                    for i=1,#figurepaths do
+                        local path = figurepaths[i]
                         local check = path .. "/" .. name
                         local isfile = url.hashed(check).scheme == "file"
                         if not isfile then
@@ -571,10 +573,15 @@ local function locate(request) -- name, format, cache
             if trace_figures then
                 commands.writestatus("figures","strategy: unknown format, prefer path")
             end
-            for _, path in ipairs(figures.paths) do
-                for _, format in ipairs(figures.order) do
+            local figurepaths = figures.paths
+            local figureorder = figures.order
+            for i=1,#figurepaths do
+                local path = figurepaths[i]
+                for j=1,#figureorder do
+                    local format = figureorder[j]
                     local list = figures.formats[format].list or { format }
-                    for _, suffix in ipairs(list) do
+                    for k=1,#list do
+                        local suffix = list[k]
                         local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
                         if figures.exists(check,format,resolve_too) then
                             return register(askedname, {
@@ -593,9 +600,12 @@ local function locate(request) -- name, format, cache
             if trace_figures then
                 commands.writestatus("figures","strategy: default tex path")
             end
-            for _, format in ipairs(figures.order) do
+            local figureorder = figures.order
+            for j=1,#figureorder do
+                local format = figureorder[j]
                 local list = figures.formats[format].list or { format }
-                for _, suffix in ipairs(list) do
+                for k=1,#list do
+                    local suffix = list[k]
                     local check = resolvers.find_file(file.replacesuffix(askedname,suffix))
                     if check and check ~= "" then
                         return register(askedname, {
@@ -643,7 +653,9 @@ end
 
 function figures.identify(data)
     data = data or figures.current()
-    for _, identifier in ipairs(figures.identifiers.list) do
+    local list = figures.identifiers.list
+    for i=1,#list do
+        local identifier = list[i]
         data = identifier(data)
         if data.status.status > 0 then
             break
@@ -1015,7 +1027,9 @@ function bases.find(basename,askedlabel)
         local page = 0
         if base[2] == nil then
             -- no yet located
-            for _, path in ipairs(figures.paths) do
+            local figurepaths = figures.paths
+            for i=1,#figurepaths do
+                local path = figurepaths[i]
                 local xmlfile = path .. "/" .. basename
                 if io.exists(xmlfile) then
                     base[2] = xmlfile
@@ -1056,7 +1070,9 @@ end
 -- we can access sequential or by name
 
 function bases.locate(askedlabel)
-    for _, entry in ipairs(bases.list) do
+    local list = bases.list
+    for i=1,#list do
+        local entry = list[i]
         local t = bases.find(entry[1],askedlabel)
         if t then
             return t

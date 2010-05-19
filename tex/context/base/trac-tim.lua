@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['trac-tim'] = {
 
 local format, gsub = string.format, string.gsub
 local concat, sort = table.concat, table.sort
-local next, pairs, ipairs = next, pairs, ipairs
+local next, tonumber = next, tonumber
 
 plugins          = plugins          or { }
 plugins.progress = plugins.progress or { }
@@ -50,7 +50,7 @@ function progress.store()
         elapsed_time = c - last,
         node_memory  = nodes.usage(),
     }
-    for k, v in pairs(params) do
+    for k, v in next, params do
         if status[v] then t[v] = status[v] end
     end
     data[#data+1] = t
@@ -72,21 +72,22 @@ local function convert(name)
             pages = #data
             if pages > 1 then
                 local factor = 100
-                for k,v in ipairs(data) do
-                    for k,v in pairs(v.node_memory) do
+                for k=1,#data do
+                    for k, v in next, data[k].node_memory do
                         keys[k] = true
                     end
                 end
-                for k,v in ipairs(data) do
-                    local m = v.node_memory
-                    for k, _ in pairs(keys) do
+                for k=1,#data do
+                    local m = data[k].node_memory
+                    for k, v in next, keys do
                         if not m[k] then m[k] = 0 end
                     end
                 end
                 local function path(tag,subtag)
                     local b, t, s = nil, nil, { }
-                    for k,v in ipairs(data) do
-                        local v = (subtag and v[tag][subtag]) or v[tag]
+                    for k=1,#data do
+                        local v = data[k][tag]
+                        v = v and (subtag and v[subtag]) or v
                         if v then
                             v = tonumber(v)
                             if b then
@@ -110,15 +111,15 @@ local function convert(name)
                     else
                         delta = factor/delta
                     end
-                    for k, v in ipairs(s) do
-                        s[k] = "(" .. k .. "," .. (v-b)*delta .. ")"
+                    for k=1,#s do
+                        s[k] = "(" .. k .. "," .. (s[k]-b)*delta .. ")"
                     end
                     paths[tagname] = concat(s,"--")
                 end
-                for _, tag in pairs(params) do
+                for _, tag in next, params do
                     path(tag)
                 end
-                for tag, _ in pairs(keys) do
+                for tag, _ in next, keys do
                     path("node_memory",tag)
                     names[#names+1] = tag
                 end

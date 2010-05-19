@@ -232,7 +232,7 @@ function tasks.table(name) --maybe move this to task-deb.lua
                     NC() type(o) NC() context("unset") NC() NR()
                 else
                     local done = false
-                    for k, v in table.sortedpairs(l) do
+                    for k, v in table.sortedhash(l) do
                         NC() if not done then type(o) done = true end NC() type(v) NC() NR()
                     end
                 end

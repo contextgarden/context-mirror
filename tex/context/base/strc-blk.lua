@@ -66,7 +66,7 @@ function blocks.setstate(state,name,tag)
         elseif all then
             sn.all = state
         else
-            for _, tag in pairs(tags) do
+            for _, tag in next, tags do
                 sn[tag] = state
             end
         end
@@ -92,7 +92,7 @@ function blocks.select(state,name,tag,criterium)
                 blocks.print(name,ri.data,hide)
             else
                 local mtags = metadata.tags
-                for tag, sta in pairs(tags) do
+                for tag, sta in next, tags do
                     if mtags[tag] then
                         blocks.print(name,ri.data,hide)
                         break
@@ -130,7 +130,7 @@ function blocks.save(name,tag,buffer) -- wrong, not yet adapted
         end
     else
         local sn = states[name]
-        for tag, _ in pairs(tags) do
+        for tag, _ in next, tags do
             if sn[tag] == nil then
                 if allstate ~= "hide" then
                     blocks.print(name,data)

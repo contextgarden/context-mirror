@@ -24,7 +24,9 @@ local function list(list,report)
     local instance = resolvers.instance
     local pat = upper(pattern or "","")
     local report = report or texio.write_nl
-    for _,key in pairs(table.sortedkeys(list)) do
+    local sorted = table.sortedkeys(list)
+    for i=1,#sorted do
+        local key = sorted[i]
         if instance.pattern == "" or find(upper(key),pat) then
             if instance.kpseonly then
                 if instance.kpsevars[key] then
@@ -43,11 +45,14 @@ function resolvers.listers.expansions() list(resolvers.instance.expansions) end
 function resolvers.listers.configurations(report)
     local report = report or texio.write_nl
     local instance = resolvers.instance
-    for _,key in ipairs(table.sortedkeys(instance.kpsevars)) do
+    local sorted = table.sortedkeys(instance.kpsevars)
+    for i=1,#sorted do
+        local key = sorted[i]
         if not instance.pattern or (instance.pattern=="") or find(key,instance.pattern) then
             report(format("%s\n",key))
-            for i,c in ipairs(instance.order) do
-                local str = c[key]
+            local order = instance.order
+            for i=1,#order do
+                local str = order[i][key]
                 if str then
                     report(format("\t%s\t%s",i,str))
                 end

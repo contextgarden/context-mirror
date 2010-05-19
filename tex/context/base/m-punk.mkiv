@@ -158,8 +158,8 @@ do
             fonts.vf.aux.compose_characters(t)
             list[d] = font.define(t)
         end
-        for k, v in pairs(t) do
-            g[k] = v -- kind of replace, when not present, make nil
+        for k=1,#t do
+            g[k] = t[k] -- kind of replace, when not present, make nil
         end
         g.virtualized = true
         g.variants = list

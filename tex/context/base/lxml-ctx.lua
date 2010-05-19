@@ -50,11 +50,11 @@ function xml.ctx.tshow(specification)
         if specification.warning then
             local comment = parsed.comment
             if comment then
-                for k, v in ipairs(comment) do
+                for k=1,#comment do
                     context.NC()
                     context("!")
                     context.NC()
-                    context.rlap(v)
+                    context.rlap(comment[k])
                     context.NR()
                 end
                 context.TB()

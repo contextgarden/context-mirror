@@ -6,7 +6,8 @@ itself serves as an example of using <logo label='lua'/> in combination
 with <logo label='tex'/>.
 
 I will rewrite this using lpeg once I have the time to study that nice new
-subsystem.
+subsystem. On the other hand, we cannot expect proper <logo label='tex'/>
+ad for educational purposed the syntax migh be wrong.
 --ldx]]--
 
 banner = "version 1.0.1 - 2007+ - PRAGMA ADE / CONTEXT"
@@ -126,79 +127,8 @@ ldx.make_index = true
 
 function ldx.enhance(data) -- i need to use lpeg and then we can properly autoindent -)
     local e = ldx.escape
-    for _,v in pairs(data) do
-        if v.code then
-            local dqs, sqs, com, cmt, cod = { }, { }, { }, { }, e(v.code)
-            cod = cod:gsub('\\"', "##d##")
-            cod = cod:gsub("\\'", "##s##")
-            cod = cod:gsub("%-%-%[%[.-%]%]%-%-", function(s)
-                cmt[#cmt+1] = s
-                return "[[[[".. #cmt .."]]]]"
-            end)
-            cod = cod:gsub("%-%-([^\n]*)", function(s)
-                com[#com+1] = s
-                return "[[".. #com .."]]"
-            end)
-            cod = cod:gsub("(%b\"\")", function(s)
-                dqs[#dqs+1] = s:sub(2,-2) or ""
-                return "<<<<".. #dqs ..">>>>"
-            end)
-            cod = cod:gsub("(%b\'\')", function(s)
-                sqs[#sqs+1] = s:sub(2,-2) or ""
-                return "<<".. #sqs ..">>"
-            end)
-            cod = cod:gsub("(%a+)",function(key)
-                local class = ldx.keywords.reserved[key]
-                if class then
-                    return "<key class='" .. class .. "'>" .. key .. "</key>"
-                else
-                    return key
-                end
-            end)
-            cod = cod:gsub("<<<<(%d+)>>>>", function(s)
-                return "<dqs>" .. dqs[tonumber(s)] .. "</dqs>"
-            end)
-            cod = cod:gsub("<<(%d+)>>", function(s)
-                return "<sqs>" .. sqs[tonumber(s)] .. "</sqs>"
-            end)
-            cod = cod:gsub("%[%[%[%[(%d+)%]%]%]%]", function(s)
-                return cmt[tonumber(s)]
-            end)
-            cod = cod:gsub("%[%[(%d+)%]%]", function(s)
-                return "<com>" .. com[tonumber(s)] .. "</com>"
-            end)
-            cod = cod:gsub("##d##", "\\\"")
-            cod = cod:gsub("##s##", "\\\'")
-            if ldx.make_index then
-                local lines = cod:split("\n")
-                local f = "(<key class='1'>function</key>)%s+([%w%.]+)%s*%("
-                for k,v in pairs(lines) do
-                    -- functies
-                    v = v:gsub(f,function(key, str)
-                        return "<function>" .. str .. "</function>("
-                    end)
-                    -- variables
-                    v = v:gsub("^([%w][%w%,%s]-)(=[^=])",function(str, rest)
-                        local t = string.split(str, ",%s*")
-                        for k,v in pairs(t) do
-                            t[k] = "<variable>" .. v .. "</variable>"
-                        end
-                        return table.join(t,", ") .. rest
-                    end)
-                    -- so far
-                    lines[k] = v
-                end
-                v.code = table.concat(lines,"\n")
-            else
-                v.code = cod
-            end
-        end
-    end
-end
-
-function ldx.enhance(data) -- i need to use lpeg and then we can properly autoindent -)
-    local e = ldx.escape
-    for _,v in pairs(data) do
+    for k=1,#data do
+        local v = data[k]
         if v.code then
             local dqs, sqs, com, cmt, cod = { }, { }, { }, { }, e(v.code)
             cod = cod:gsub('\\"', "##d##")
@@ -244,7 +174,8 @@ function ldx.enhance(data) -- i need to use lpeg and then we can properly autoin
             if ldx.make_index then
                 local lines = cod:split("\n")
                 local f = "(<key class='1'>function</key>)%s+([%w%.]+)%s*%("
-                for k,v in pairs(lines) do
+                for k=1,#lines do
+                    local v = lines[k]
                     -- functies
                     v = v:gsub(f,function(key, str)
                         return "<function>" .. str .. "</function>("
@@ -252,8 +183,8 @@ function ldx.enhance(data) -- i need to use lpeg and then we can properly autoin
                     -- variables
                     v = v:gsub("^([%w][%w%,%s]-)(=[^=])",function(str, rest)
                         local t = string.split(str, ",%s*")
-                        for k,v in pairs(t) do
-                            t[k] = "<variable>" .. v .. "</variable>"
+                        for k=1,#t do
+                            t[k] = "<variable>" .. t[k] .. "</variable>"
                         end
                         return table.join(t,", ") .. rest
                     end)
@@ -276,14 +207,17 @@ and by calculating the indentation we also avoid space troubles. It also makes
 it possible to change the indentation afterwards.
 --ldx]]--
 
-function ldx.as_xml(data)
+function ldx.as_xml(data) -- ldx: not needed
     local t, cmode = { }, false
     t[#t+1] = "<?xml version='1.0' standalone='yes'?>\n"
     t[#t+1] = "\n<document xmlns:ldx='http://www.pragma-ade.com/schemas/ldx.rng' xmlns='http://www.pragma-ade.com/schemas/ldx.rng'>\n"
-    for _,v in pairs(data) do -- ldx: not needed
+    for k=1,#data do
+        local v = data[k]
         if v.code and not v.code:is_empty() then
             t[#t+1] = "\n<code>\n"
-            for k,v in pairs(v.code:split("\n")) do -- make this faster
+            local split = v.code:split("\n")
+            for k=1,#split do -- make this faster
+                local v = split[k]
                 local a, b = v:find("^(%s+)")
                 if v then v = v:gsub("[\n\r ]+$","") end
                 if a and b then

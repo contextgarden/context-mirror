@@ -409,8 +409,9 @@ end
 function document.setups.showused()
     local current = document.setups.current
     if current.root and next(current.used) then
-        for k,v in ipairs(table.sortedkeys(current.used)) do
-            xml.sprint(current.used[v])
+        local sorted = table.sortedkeys(current.used)
+        for i=1,#sorted do
+            xml.sprint(current.used[sorted[i]])
         end
     end
 end
@@ -421,8 +422,9 @@ function document.setups.showall()
         for e in xml.collected(current.root,"cd:command") do
             list[document.setups.name(e)] = e
         end
-        for k,v in ipairs(table.sortedkeys(list)) do
-            xml.sprint(list[v])
+        local sorted = table.sortedkeys(list)
+        for i=1,#sorted do
+            xml.sprint(list[sorted[i]])
         end
     end
 end
@@ -599,11 +601,14 @@ local function doit(configuration,filename,hashed)
     local result = { content = "error" }
 
     local names, refs, ints = document.setups.names(lastinterface), { }, { }
-    for k,v in ipairs(names) do
+    for k=1,#names do
+        local v = names[k]
         refs[k] = formats.href_in_list[lastmode]:format(v[1],lastmode,v[2])
     end
     if lastmode ~= 2 then
-        for k,v in ipairs(table.sortedkeys(interfaces)) do
+        local sorted = table.sortedkeys(interfaces)
+        for k=1,#sorted do
+            local v = sorted[k]
             ints[k] = formats.interface:format(interfaces[v],lastmode,v)
         end
     end
@@ -634,8 +639,9 @@ local function doit(configuration,filename,hashed)
     elseif lastcommand and lastcommand ~= "" then
         local data = document.setups.collect(lastcommand,lastinterface,lastmode)
         if data then
-            local extra = { }
-            for k, v in ipairs { "environment", "category", "source", "mode" } do
+            local what, extra = { "environment", "category", "source", "mode" }, { }
+            for k=1,#what do
+                local v = what[k]
                 if data[v] and data[v] ~= "" then
                     lmx.set(v, data[v])
                     extra[#extra+1] = v .. ": " .. data[v]

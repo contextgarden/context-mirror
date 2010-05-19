@@ -632,7 +632,7 @@
 \def\dotypefileverbatim
   {\doinitializeverbatim
    \beginofverbatimlines
-   \ctxlua{buffers.typefile("\readfilename","\typingparameter\c!strip","\typingparameter\c!lines")}%
+   \ctxlua{buffers.typefile("\readfilename","\typingparameter\c!strip","\typingparameter\c!range")}%
    \endofverbatimlines}
 
 \def\dotypefilelinesverbatim#1#2%
@@ -643,7 +643,7 @@
      {}
      {\doinitializeverbatim
       \beginofverbatimlines
-      \ctxlua{buffers.type("_typing_","\typingparameter\c!strip","\typingparameter\c!lines")}%
+      \ctxlua{buffers.type("_typing_","\typingparameter\c!strip","\typingparameter\c!range")}%
       \endofverbatimlines
       \csname#2\endcsname}}
 
@@ -699,11 +699,11 @@
 %D
 %D \starttext
 %D
-%D % \typefile[file][lines={3,6}]{whatever.tex}
+%D % \typefile[file][range={3,6}]{whatever.tex}
 %D
-%D % \typefile[file][lines={3,+2}]{whatever.tex}
+%D % \typefile[file][range={3,+2}]{whatever.tex}
 %D
-%D \typefile[file][lines={label:start:one,label:stop:one}]{whatever.tex}
+%D \typefile[file][range={label:start:one,label:stop:one}]{whatever.tex}
 %D
 %D \stoptext
 %D \stoptyping
@@ -996,6 +996,7 @@
           \c!escape=, % yes | no | START,STOP BTEX,ETEX
        \c!numbering=\v!no,
            \c!lines=,
+           \c!range=,
            \c!empty=,
            \c!start=1,
             \c!stop=,

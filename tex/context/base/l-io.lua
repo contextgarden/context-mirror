@@ -170,13 +170,14 @@ function io.ask(question,default,options)
         elseif not options then
             return answer
         else
-            for _,v in pairs(options) do
-                if v == answer then
+            for k=1,#options do
+                if options[k] == answer then
                     return answer
                 end
             end
             local pattern = "^" .. answer
-            for _,v in pairs(options) do
+            for k=1,#options do
+                local v = options[k]
                 if find(v,pattern) then
                     return v
                 end

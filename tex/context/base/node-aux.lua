@@ -33,10 +33,10 @@ end
 
 local fields, whatsitfields = { }, { }
 
-for k, v in pairs(node.types()) do
+for k, v in next, node.types() do
     if v == "whatsit" then
         fields[k], fields[v] = { }, { }
-        for kk, vv in pairs(node.whatsits()) do
+        for kk, vv in next, node.whatsits() do
             local f = node_fields(k,kk)
             whatsitfields[kk], whatsitfields[vv] = f, f
         end
@@ -53,7 +53,7 @@ function nodes.info(n)
     local tp = node.type(id)
     local list = (tp == "whatsit" and whatsitfields[n.subtype]) or fields[id]
     logs.report(format("%14s","type"),tp)
-    for k,v in pairs(list) do
+    for k,v in next, list do
         logs.report(format("%14s",v),gsub(gsub(tostring(n[v]),"%s+"," "),"node ",""))
     end
 end

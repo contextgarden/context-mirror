@@ -204,8 +204,9 @@ local make_indeed = true -- false
 if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
 
     function dir.mkdirs(...)
-        local str, pth = "", ""
-        for _, s in ipairs({...}) do
+        local str, pth, t = "", "", { ... }
+        for i=1,#t do
+            local s = t[i]
             if s ~= "" then
                 if str ~= "" then
                     str = str .. "/" .. s
@@ -303,8 +304,9 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
 else
 
     function dir.mkdirs(...)
-        local str, pth = "", ""
-        for _, s in ipairs({...}) do
+        local str, pth, t = "", "", { ... }
+        for i=1,#t do
+            local s = t[i]
             if s ~= "" then
                 if str ~= "" then
                     str = str .. "/" .. s

@@ -774,8 +774,9 @@
 %D    \ruledvtop{\typebuffer}}
 %D \stoptyping
 
-\def\justonespace
-  {\removelastspace\space} % \removeunwantedspaces\space
+\unexpanded\def\justonespace{\removeunwantedspaces\space}
+%unexpanded\def\justaperiod {\removeunwantedspaces.}
+%unexpanded\def\justacomma  {\removeunwantedspaces,}
 
 \def\ignorecrlf
   {\let\crlf\justonespace\let\\\crlf}

@@ -303,14 +303,16 @@ end
 
 local function walk_tree(pathlist,suffix,identify)
     if pathlist then
-        for _, path in ipairs(pathlist) do
+        for i=1,#pathlist do
+            local path = pathlist[i]
             path = resolvers.clean_path(path .. "/")
             path = gsub(path,"/+","/")
             local pattern = path .. "**." .. suffix -- ** forces recurse
             logs.report("fontnames", "globbing path %s",pattern)
             local t = dir.glob(pattern)
             sort(t,sorter)
-            for _, completename in ipairs(t) do -- ipairs
+            for j=1,#t do
+                local completename = t[j]
                 identify(completename,file.basename(completename),suffix,completename)
             end
         end
@@ -523,7 +525,7 @@ local function checkduplicate(where) -- fails on "Romantik" but that's a border 
         end
     end
     local n = 0
-    for k, v in table.sortedpairs(loaded) do
+    for k, v in table.sortedhash(loaded) do
         local nv = #v
         if nv > 1 then
             if trace_warnings then
@@ -656,7 +658,9 @@ local function analysefiles()
         end
     end
     local function traverse(what, method)
-        for n, suffix in ipairs(filters.list) do
+        local list = filters.list
+        for n=1,#list do
+            local suffix = list[n]
             local t = os.gettimeofday() -- use elapser
             nofread, nofskipped = 0, 0
             suffix = lower(suffix)
@@ -1352,7 +1356,9 @@ names.old_to_new = table.swapped(names.new_to_old)
 
 function names.exists(name)
     local found = false
-    for k,v in ipairs(filters.list) do
+    local list = filters.list
+    for k=1,#list do
+        local v = list[k]
         found = (resolvers.find_file(name,v) or "") ~= ""
         if found then
             return found

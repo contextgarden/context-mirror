@@ -29,7 +29,8 @@ function finders.tree(specification,filetype)
                 done[path] = hash
             end
             local pattern = "/" .. gsub(name,"([%.%-%+])", "%%%1") .. "$"
-            for k, v in pairs(hash) do
+            for k=1,#hash do
+                local v = hash[k]
                 if find(v,pattern) then
                     found[specification] = v
                     return v

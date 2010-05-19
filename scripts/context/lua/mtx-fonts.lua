@@ -31,8 +31,9 @@ function fonts.names.simple()
             version = simpleversion,
         }
         local specifications = data.specifications
-        for _, format in ipairs(simplelist) do
-            for tag, index in pairs(data.mappings[format]) do
+        for i=1,#simplelist do
+            local format = simplelist[i]
+            for tag, index in next, data.mappings[format] do
                 local s = specifications[index]
                 simplemappings[tag] = { s.rawname, s.filename, s.subfont }
             end
@@ -88,7 +89,7 @@ local function showfeatures(tag,specification)
     -- maybe more
     local features = fonts.get_features(specification.filename,specification.format)
     if features then
-        for what, v in table.sortedpairs(features) do
+        for what, v in table.sortedhash(features) do
             local data = features[what]
             if data and next(data) then
                 logs.simple()
@@ -96,9 +97,9 @@ local function showfeatures(tag,specification)
                 logs.simple()
                 logs.simple("feature  script   languages")
                 logs.simple()
-                for f,ff in table.sortedpairs(data) do
+                for f,ff in table.sortedhash(data) do
                     local done = false
-                    for s, ss in table.sortedpairs(ff) do
+                    for s, ss in table.sortedhash(ff) do
                         if s == "*"  then s       = "all" end
                         if ss  ["*"] then ss["*"] = nil ss.all = true end
                         if done then
@@ -131,11 +132,13 @@ local function list_specifications(t,info)
     if t then
         local s = table.sortedkeys(t)
         if info then
-            for k,v in ipairs(s) do
+            for k=1,#s do
+                local v = s[k]
                 showfeatures(v,t[v])
             end
         else
-            for k,v in ipairs(s) do
+            for k=1,#s do
+                local v = s[k]
                 local entry = t[v]
                 s[k] = {
                     entry.familyname  or "<nofamily>",
@@ -151,7 +154,8 @@ local function list_specifications(t,info)
                 e[k] = entry
             end
             table.formatcolumns(s)
-            for k,v in ipairs(s) do
+            for k=1,#s do
+                local v = s[k]
                 texio.write_nl(v)
             end
         end
@@ -162,11 +166,13 @@ local function list_matches(t,info)
     if t then
         local s, w = table.sortedkeys(t), { 0, 0, 0 }
         if info then
-            for k,v in ipairs(s) do
+            for k=1,#s do
+                local v = s[k]
                 showfeatures(v,t[v])
             end
         else
-            for k,v in ipairs(s) do
+            for k=1,#s do
+                local v = s[k]
                 local entry = t[v]
                 s[k] = {
                     v,
@@ -176,8 +182,8 @@ local function list_matches(t,info)
                 }
             end
             table.formatcolumns(s)
-            for k,v in ipairs(s) do
-                texio.write_nl(v)
+            for k=1,#s do
+                texio.write_nl(s[k])
             end
         end
     end
@@ -263,7 +269,8 @@ function scripts.fonts.save()
                 if fontinfo then
                     logs.simple("font: %s located as %s",name,filename)
                     if fontinfo[1] then
-                        for _, v in ipairs(fontinfo) do
+                        for k=1,#fontinfo do
+                            local v = fontinfo[k]
                             save(v.fontname,fontloader.open(filename,v.fullname))
                         end
                     else

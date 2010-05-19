@@ -51,7 +51,7 @@ function regimes.load(regime)
         environment.loadluafile("regi-"..regime, 1.001)
         if regimes.data[regime] then
             regimes.utf[regime] = { }
-            for k,v in pairs(regimes.data[regime]) do
+            for k,v in next, regimes.data[regime] do
                 regimes.utf[regime][char(k)] = utfchar(v)
             end
         end

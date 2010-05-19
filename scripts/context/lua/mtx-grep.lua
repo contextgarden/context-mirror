@@ -70,7 +70,9 @@ function scripts.grep.find(pattern, files, offset)
         end
         local capture = (content/check)^0
         for i=offset or 1, #files do
-            for _, nam in ipairs(dir.glob(files[i])) do
+            local globbed = dir.glob(files[i])
+            for i=1,#globbed do
+                local nam = globbed[i]
                 name = nam
                 local data = io.loaddata(name)
                 if data then

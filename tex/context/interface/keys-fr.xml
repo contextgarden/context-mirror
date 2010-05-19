@@ -767,6 +767,7 @@
 		<cd:constant name='mindepth' value='profondeurmin'/>
 		<cd:constant name='minheight' value='hauteurmin'/>
 		<cd:constant name='minwidth' value='largeurmin'/>
+		<cd:constant name='monthconversion' value='monthconversion'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='nom'/>
 		<cd:constant name='namesep' value='namesep'/>
@@ -859,6 +860,7 @@
 		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='rayon'/>
 		<cd:constant name='random' value='aleatoire'/>
+		<cd:constant name='range' value='range'/>
 		<cd:constant name='reduction' value='reduction'/>
 		<cd:constant name='ref' value='ref'/>
 		<cd:constant name='refcommand' value='refcommand'/>

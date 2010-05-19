@@ -107,7 +107,7 @@ local function patch_domh(data,filename,threshold)
         end
      end
      if tex.luatexversion < 48 then
-        for _, g in pairs(data.glyphs) do
+        for _, g in next, data.glyphs do
            local name = g.name
            if find(name,"^integral$") or find(name,"^integral%.vsize") then
               local width, italic = g.width or 0, g.italic_correction or 0

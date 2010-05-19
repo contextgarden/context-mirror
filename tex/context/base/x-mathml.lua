@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['x-mathml'] = {
     license   = "see context related readme files"
 }
 
-local type, pairs = type, pairs
+local type, next = type, next
 local utf = unicode.utf8
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
@@ -398,7 +398,7 @@ function xml.functions.remapmmlcsymbol(e)
                     at.cdbase = nil
                     e.dt = { }
                     if type(tg) == "table" then
-                        for k, v in pairs(tg) do
+                        for k, v in next, tg do
                             if k == "tag" then
                                 e.tg = v
                             else
@@ -452,7 +452,7 @@ end
 
 function table.keys_as_string(t)
     local k = { }
-    for k,_ in pairs(t) do
+    for k,_ in next, t do
         k[#k+1] = k
     end
     return concat(k,"")

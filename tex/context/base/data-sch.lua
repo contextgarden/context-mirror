@@ -117,12 +117,12 @@ schemes.install('ftp')
 
 statistics.register("scheme handling time", function()
     local l, r = { }, { }
-    for k, v in table.sortedpairs(loaded) do
+    for k, v in table.sortedhash(loaded) do
         if v > 0 then
             l[#l+1] = k .. ":" .. v
         end
     end
-    for k, v in table.sortedpairs(reused) do
+    for k, v in table.sortedhash(reused) do
         if v > 0 then
             r[#r+1] = k .. ":" .. v
         end

@@ -230,7 +230,7 @@ function string:totable()
     return lpegmatch(pattern,self)
 end
 
---~ for _, str in ipairs {
+--~ local t = {
 --~     "1234567123456712345671234567",
 --~     "a\tb\tc",
 --~     "aa\tbb\tcc",
@@ -238,7 +238,10 @@ end
 --~     "aaaa\tbbbb\tcccc",
 --~     "aaaaa\tbbbbb\tccccc",
 --~     "aaaaaa\tbbbbbb\tcccccc",
---~ } do print(string.tabtospace(str)) end
+--~ }
+--~ for k,v do
+--~     print(string.tabtospace(t[k]))
+--~ end
 
 function string.tabtospace(str,tab)
     -- we don't handle embedded newlines

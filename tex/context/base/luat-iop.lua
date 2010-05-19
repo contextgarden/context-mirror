@@ -11,65 +11,61 @@ if not modules then modules = { } end modules ['luat-iop'] = {
 -- we can feed back specific patterns and paths into the next
 -- mechanism
 
-if not io.inp then io.inp = { } end
-if not io.out then io.out = { } end
+local lower, find, sub = string.lower, string.find, string.sub
 
-io.inp.blocked      = { }
-io.out.blocked      = { }
-io.inp.permitted    = { }
-io.out.permitted    = { }
-io.inp.modes        = { } -- functions
-io.out.modes        = { } -- functions
+local ioinp = io.inp if not ioinp then ioinp = { } io.inp = ioinp end
+local ioout = io.out if not ioout then ioout = { } io.out = ioout end
 
-io.blocked_openers  = { } -- *.open(name,method)
+ioinp.modes, ioout.modes = { }, { }  -- functions
 
-function io.inp.inhibit  (name) table.insert(io.inp.blocked,   name) end
-function io.out.inhibit  (name) table.insert(io.out.blocked,   name) end
-function io.inp.permit   (name) table.insert(io.inp.permitted, name) end
-function io.out.permit   (name) table.insert(io.out.permitted, name) end
+local inp_blocked, inp_permitted = { }, { }
+local out_blocked, out_permitted = { }, { }
 
-function io.register_opener(func) table.insert(io.blocked_openers,   func) end
+local function i_inhibit(name) inp_blocked  [#inp_blocked  +1] = name end
+local function o_inhibit(name) out_blocked  [#out_blocked  +1] = name end
+local function i_permit (name) inp_permitted[#inp_permitted+1] = name end
+local function o_permit (name) out_permitted[#out_permitted+1] = name end
 
-function io.finalize_openers(func)
-    if (#io.out.blocked > 0) or (#io.inp.blocked > 0) then
-        do
-            local open          = func
-            local out_permitted = io.out.permitted
-            local inp_permitted = io.inp.permitted
-            local out_blocked   = io.out.blocked
-            local inp_blocked   = io.inp.blocked
-            return function(name,method)
-                local function checked(blocked, permitted)
-                    local n = string.lower(name)
-                    for _,b in pairs(blocked) do
-                        if string.find(n,b) then
-                            for _,p in pairs(permitted) do
-                                if string.find(n,p) then
-                                    return true
-                                end
-                            end
-                            return false
-                        end
-                    end
+ioinp.inhibit, ioinp.permit = i_inhibit, o_permit
+ioout.inhibit, ioout.permit = o_inhibit, o_permit
+
+local blocked_openers = { } -- *.open(name,method)
+
+function io.register_opener(func)
+    blocked_openers[#blocked_openers+1] = func
+end
+
+local function checked(name,blocked,permitted)
+    local n = lower(name)
+    for _,b in next, blocked do
+        if find(n,b) then
+            for _,p in next, permitted do
+                if find(n,p) then
                     return true
                 end
-                if method and string.find(method,'[wa]') then
-                    if #out.blocked > 0 then
-                        if not checked(out_blocked, out_permitted) then
-                            -- print("writing to " .. name .. " is not permitted")
-                            return nil
-                        end
-                    end
-                else
-                    if #inp.blocked > 0 then
-                        if not checked(inp_blocked, inp_permitted) then
-                            -- print("reading from " .. name .. " is not permitted")
-                            return nil
-                        end
-                    end
-                end
-                return open(name,method)
             end
+            return false
+        end
+    end
+    return true
+end
+
+function io.finalize_openers(func)
+    if #out_blocked > 0 or #inp_blocked > 0 then
+        local open = func -- why not directly?
+        return function(name,method)
+            if method and find(method,'[wa]') then
+                if #out_blocked > 0 and not checked(name,out_blocked,out_permitted) then
+                    -- print("writing to " .. name .. " is not permitted")
+                    return nil
+                end
+            else
+                if #inp_blocked > 0 and not checked(name,inp_blocked,inp_permitted) then
+                    -- print("reading from " .. name .. " is not permitted")
+                    return nil
+                end
+            end
+            return open(name,method)
         end
     else
         return func
@@ -91,21 +87,13 @@ end
 --~ f = io.open('c:/windows/crap.log')    print(f)
 --~ f = io.open('c:/windows/wmsetup.log') print(f)
 
-function io.set_opener_modes(i,o)
-    for _,v in pairs({'inp','out'}) do
-        if io[v][i] then
-            io[v][i]()
-        elseif io[v][string.sub(i,1,1)] then
-            io[v][string.sub(i,1,1)]()
-        end
-    end
-    io.open = io.finalize_openers(io.open)
-end
+local inpout = { 'inp', 'out' }
 
 function io.set_opener_modes(i,o)
-    local f
-    for _,v in pairs({'inp','out'}) do
-        f = io[v][i] or io[v][string.sub(i,1,1)]
+    local first = sub(i,1,1)
+    for k=1,#inpout do
+        local iov = io[inpout[k]]
+        local f = iov[i] or iov[first]
         if f then f() end
     end
     io.open = io.finalize_openers(io.open)
@@ -113,43 +101,46 @@ end
 
 -- restricted
 
-function io.inp.modes.restricted()
-    io.inp.inhibit('^%.[%a]')
+function ioinp.modes.restricted()
+    i_inhibit('^%.[%a]')
 end
-function io.out.modes.restricted()
-    io.out.inhibit('^%.[%a]')
+
+function ioout.modes.restricted()
+    o_inhibit('^%.[%a]')
 end
 
 -- paranoid
 
-function io.inp.modes.paranoid()
-    io.inp.inhibit('.*')
-    io.inp.inhibit('%.%.')
-    io.inp.permit('^%./')
-    io.inp.permit('[^/]')
-    resolvers.do_with_path('TEXMF',io.inp.permit)
+function ioinp.modes.paranoid()
+    i_inhibit('.*')
+    i_inhibit('%.%.')
+    i_permit('^%./')
+    i_permit('[^/]')
+    resolvers.do_with_path('TEXMF',i_permit)
 end
-function io.out.modes.paranoid()
-    io.out.inhibit('.*')
-    resolvers.do_with_path('TEXMFOUTPUT',io.out.permit)
+
+function ioout.modes.paranoid()
+    o_inhibit('.*')
+    resolvers.do_with_path('TEXMFOUTPUT',o_permit)
 end
 
 -- handy
 
-function io.inp.modes.handy()
-    io.inp.inhibit('%.%.')
+function ioinp.modes.handy()
+    i_inhibit('%.%.')
     if os.type == 'windows' then
-        io.inp.inhibit('/windows/')
-        io.inp.inhibit('/winnt/')
+        i_inhibit('/windows/')
+        i_inhibit('/winnt/')
     else
-        io.inp.inhibit('^/etc')
+        i_inhibit('^/etc')
     end
 end
-function io.out.modes.handy()
-    io.out.inhibit('.*')
-    io.out.permit('%./')
-    io.out.permit('^%./')
-    io.out.permit('[^/]')
+
+function ioout.modes.handy()
+    o_inhibit('.*')
+    o_permit('%./')
+    o_permit('^%./')
+    o_permit('[^/]')
 end
 
 --~ io.set_opener_modes('p','p')

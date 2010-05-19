@@ -34,7 +34,7 @@ end
 
 function fonts.logger.report(complete)
     local t = { }
-    for name, used in table.sortedpairs(fonts.used) do
+    for name, used in table.sortedhash(fonts.used) do
         if complete then
             t[#t+1] = used .. "->" .. file.basename(name)
         else

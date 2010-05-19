@@ -67,8 +67,8 @@ function scripts.texworks.start(indeed)
         logs.simple("unable to locate %s",workname)
         return false
     end
-    for _, subpath in ipairs(texworkspaths)  do
-        dir.makedirs(file.join(datapath,subpath))
+    for i=1,#texworkspaths do
+        dir.makedirs(file.join(datapath,texworkspaths[i]))
     end
     os.setenv("TW_INIPATH",datapath)
     os.setenv("TW_LIBPATH",datapath)

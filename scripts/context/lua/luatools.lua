@@ -269,7 +269,7 @@ function string:totable()
     return lpegmatch(pattern,self)
 end
 
---~ for _, str in ipairs {
+--~ local t = {
 --~     "1234567123456712345671234567",
 --~     "a\tb\tc",
 --~     "aa\tbb\tcc",
@@ -277,7 +277,10 @@ end
 --~     "aaaa\tbbbb\tcccc",
 --~     "aaaaa\tbbbbb\tccccc",
 --~     "aaaaaa\tbbbbbb\tcccccc",
---~ } do print(string.tabtospace(str)) end
+--~ }
+--~ for k,v do
+--~     print(string.tabtospace(t[k]))
+--~ end
 
 function string.tabtospace(str,tab)
     -- we don't handle embedded newlines
@@ -446,6 +449,8 @@ function string:split(separator)
     return match(c,self)
 end
 
+lpeg.splitters = cache
+
 local cache = { }
 
 function lpeg.checkedsplit(separator,str)
@@ -510,7 +515,7 @@ table.join = table.concat
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
-local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
+local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
 local unpack = unpack or table.unpack
 
 function table.strip(tab)
@@ -577,7 +582,7 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
-function table.sortedpairs(t)
+function table.sortedhash(t)
     local s = sortedhashkeys(t) -- maybe just sortedkeys
     local n = 0
     local function kv(s)
@@ -587,6 +592,8 @@ function table.sortedpairs(t)
     end
     return kv, s
 end
+
+table.sortedpairs = table.sortedhash
 
 function table.append(t, list)
     for _,v in next, list do
@@ -710,18 +717,18 @@ end
 
 -- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
 
-function table.is_empty(t)
+function table.is_empty(t) -- obolete, use inline code instead
     return not t or not next(t)
 end
 
-function table.one_entry(t)
+function table.one_entry(t) -- obolete, use inline code instead
     local n = next(t)
     return n and not next(t,n)
 end
 
-function table.starts_at(t)
-    return ipairs(t,1)(t,0)
-end
+--~ function table.starts_at(t) -- obsolete, not nice
+--~     return ipairs(t,1)(t,0)
+--~ end
 
 function table.tohash(t,value)
     local h = { }
@@ -825,7 +832,7 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) then
-        local first, last = nil, 0 -- #root cannot be trusted here
+        local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
         if compact then
             -- NOT: for k=1,#root do (we need to quit at nil)
             for k,v in ipairs(root) do -- can we use next?
@@ -1534,13 +1541,14 @@ function io.ask(question,default,options)
         elseif not options then
             return answer
         else
-            for _,v in pairs(options) do
-                if v == answer then
+            for k=1,#options do
+                if options[k] == answer then
                     return answer
                 end
             end
             local pattern = "^" .. answer
-            for _,v in pairs(options) do
+            for k=1,#options do
+                local v = options[k]
                 if find(v,pattern) then
                     return v
                 end
@@ -2314,7 +2322,7 @@ function file.splitname(str) -- returns drive, path, base, suffix
     return lpegmatch(pattern,str)
 end
 
--- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end
+-- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
 --
 -- test { "c:", "c:/aa", "c:/aa/bb", "c:/aa/bb/cc", "c:/aa/bb/cc.dd", "c:/aa/bb/cc.dd.ee" }
 -- test { "c:", "c:aa", "c:aa/bb", "c:aa/bb/cc", "c:aa/bb/cc.dd", "c:aa/bb/cc.dd.ee" }
@@ -2759,8 +2767,9 @@ local make_indeed = true -- false
 if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
 
     function dir.mkdirs(...)
-        local str, pth = "", ""
-        for _, s in ipairs({...}) do
+        local str, pth, t = "", "", { ... }
+        for i=1,#t do
+            local s = t[i]
             if s ~= "" then
                 if str ~= "" then
                     str = str .. "/" .. s
@@ -2858,8 +2867,9 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
 else
 
     function dir.mkdirs(...)
-        local str, pth = "", ""
-        for _, s in ipairs({...}) do
+        local str, pth, t = "", "", { ... }
+        for i=1,#t do
+            local s = t[i]
             if s ~= "" then
                 if str ~= "" then
                     str = str .. "/" .. s
@@ -3031,14 +3041,20 @@ unicode.utfname = {
     [4] = 'utf-32-be'
 }
 
-function unicode.utftype(f) -- \000 fails !
+-- \000 fails in <= 5.0 but is valid in >=5.1 where %z is depricated
+
+function unicode.utftype(f)
     local str = f:read(4)
     if not str then
         f:seek('set')
         return 0
-    elseif find(str,"^%z%z\254\255") then
+ -- elseif find(str,"^%z%z\254\255") then            -- depricated
+ -- elseif find(str,"^\000\000\254\255") then        -- not permitted and bugged
+    elseif find(str,"\000\000\254\255",1,true) then  -- seems to work okay (TH)
         return 4
-    elseif find(str,"^\255\254%z%z") then
+ -- elseif find(str,"^\255\254%z%z") then            -- depricated
+ -- elseif find(str,"^\255\254\000\000") then        -- not permitted and bugged
+    elseif find(str,"\255\254\000\000",1,true) then  -- seems to work okay (TH)
         return 3
     elseif find(str,"^\254\255") then
         f:seek('set',2)
@@ -3239,6 +3255,7 @@ if not modules then modules = { } end modules ['l-utils'] = {
 
 local gsub = string.gsub
 local concat = table.concat
+local type, next = type, next
 
 if not utils        then utils        = { } end
 if not utils.merger then utils.merger = { } end
@@ -3314,9 +3331,10 @@ function utils.merger._self_libs_(libs,list)
     if type(libs) == 'string' then libs = { libs } end
     if type(list) == 'string' then list = { list } end
     local foundpath = nil
-    for _, lib in ipairs(libs) do
-        for _, pth in ipairs(list) do
-            pth = gsub(pth,"\\","/") -- file.clean_path
+    for i=1,#libs do
+        local lib = libs[i]
+        for j=1,#list do
+            local pth = gsub(list[j],"\\","/") -- file.clean_path
             utils.report("checking library path %s",pth)
             local name = pth .. "/" .. lib
             if lfs.isfile(name) then
@@ -3328,7 +3346,8 @@ function utils.merger._self_libs_(libs,list)
     if foundpath then
         utils.report("using library path %s",foundpath)
         local right, wrong = { }, { }
-        for _, lib in ipairs(libs) do
+        for i=1,#libs do
+            local lib = libs[i]
             local fullname = foundpath .. "/" .. lib
             if lfs.isfile(fullname) then
             --  right[#right+1] = lib
@@ -3681,6 +3700,8 @@ if not modules then modules = { } end modules ['trac-tra'] = {
 -- bound to a variable, like node.new, node.copy etc (contrary to for instance
 -- node.has_attribute which is bound to a has_attribute local variable in mkiv)
 
+local debug = require "debug"
+
 local getinfo = debug.getinfo
 local type, next = type, next
 local concat = table.concat
@@ -3728,7 +3749,7 @@ function debugger.showstats(printer,threshold)
     local total, grandtotal, functions = 0, 0, 0
     printer("\n") -- ugly but ok
  -- table.sort(counters)
-    for func, count in pairs(counters) do
+    for func, count in next, counters do
         if count > threshold then
             local name = getname(func)
             if not find(name,"for generator") then
@@ -3763,7 +3784,7 @@ end
 --~     local total, grandtotal, functions = 0, 0, 0
 --~     printer("\n") -- ugly but ok
 --~  -- table.sort(counters)
---~     for func, count in pairs(counters) do
+--~     for func, count in next, counters do
 --~         if count > threshold then
 --~             printer(format("%8i  %s", count, func))
 --~             total = total + count
@@ -3939,8 +3960,9 @@ end
 
 function setters.show(t)
     commands.writestatus("","")
-    for k,v in ipairs(setters.list(t)) do
-        commands.writestatus(t.name,v)
+    local list = setters.list(t)
+    for k=1,#list do
+        commands.writestatus(t.name,list[k])
     end
     commands.writestatus("","")
 end
@@ -4064,7 +4086,8 @@ if not environment.jobname                              then             environ
 function environment.initialize_arguments(arg)
     local arguments, files = { }, { }
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
-    for index, argument in pairs(arg) do
+    for index=1,#arg do
+        local argument = arg[index]
         if index > 0 then
             local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
@@ -4097,14 +4120,15 @@ function environment.argument(name,partial)
         return arguments[name]
     elseif partial then
         if not sortedflags then
-            sortedflags = { }
-            for _,v in pairs(table.sortedkeys(arguments)) do
-                sortedflags[#sortedflags+1] = "^" .. v
+            sortedflags = table.sortedkeys(arguments)
+            for k=1,#sortedflags do
+                sortedflags[k] = "^" .. sortedflags[k]
             end
             environment.sortedflags = sortedflags
         end
         -- example of potential clash: ^mode ^modefile
-        for _,v in ipairs(sortedflags) do
+        for k=1,#sortedflags do
+            local v = sortedflags[k]
             if find(name,v) then
                 return arguments[sub(v,2,#v)]
             end
@@ -4113,9 +4137,13 @@ function environment.argument(name,partial)
     return nil
 end
 
+environment.argument("x",true)
+
 function environment.split_arguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }
-    for _,v in ipairs(environment.original_arguments) do
+    local original_arguments = environment.original_arguments
+    for k=1,#original_arguments do
+        local v = original_arguments[k]
         if not done and v == separator then
             done = true
         elseif done then
@@ -4134,9 +4162,10 @@ function environment.reconstruct_commandline(arg,noquote)
         a = resolvers.resolve(a)
         a = unquote(a)
         return a
-    elseif next(arg) then
+    elseif #arg > 0 then
         local result = { }
-        for _,a in ipairs(arg) do -- ipairs 1 .. #n
+        for i=1,#arg do
+            local a = arg[i]
             a = resolvers.resolve(a)
             a = unquote(a)
             a = gsub(a,'"','\\"') -- tricky
@@ -4157,7 +4186,8 @@ if arg then
     -- new, reconstruct quoted snippets (maybe better just remove the " then and add them later)
     local newarg, instring = { }, false
 
-    for index, argument in ipairs(arg) do
+    for index=1,#arg do
+        local argument = arg[index]
         if find(argument,"^\"") then
             newarg[#newarg+1] = gsub(argument,"^\"","")
             if not find(argument,"\"$") then
@@ -4840,7 +4870,7 @@ if not modules then modules = { } end modules ['data-inp'] = {
 -- * some public auxiliary functions were made private
 --
 -- TODO: os.getenv -> os.env[]
--- TODO: instances.[hashes,cnffiles,configurations,522] -> ipairs (alles check, sneller)
+-- TODO: instances.[hashes,cnffiles,configurations,522]
 -- TODO: check escaping in find etc, too much, too slow
 
 -- This lib is multi-purpose and can be loaded again later on so that
@@ -5251,8 +5281,8 @@ local function splitpathexpr(str, t, validate)
         end
     end
     if trace_expansions then
-        for k,v in ipairs(t) do
-            logs.report("fileio","% 4i: %s",k,v)
+        for k=1,#t do
+            logs.report("fileio","% 4i: %s",k,t[k])
         end
     end
     return t
@@ -5457,7 +5487,9 @@ local function load_cnf_file(fname)
 end
 
 local function collapse_cnf_data() -- potential optimization: pass start index (setup and configuration are shared)
-    for _,c in ipairs(instance.order) do
+    local order = instance.order
+    for i=1,#order do
+        local c = order[i]
         for k,v in next, c do
             if not instance.variables[k] then
                 if instance.environment[k] then
@@ -5473,8 +5505,9 @@ end
 
 function resolvers.load_cnf()
     local function loadoldconfigdata()
-        for _, fname in ipairs(instance.cnffiles) do
-            load_cnf_file(fname)
+        local cnffiles = instance.cnffiles
+        for i=1,#cnffiles do
+            load_cnf_file(cnffiles[i])
         end
     end
     -- instance.cnffiles contain complete names now !
@@ -5486,9 +5519,10 @@ function resolvers.load_cnf()
             logs.report("fileio","no cnf files found (TEXMFCNF may not be set/known)")
         end
     else
-        instance.rootpath = instance.cnffiles[1]
-        for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = file.collapse_path(fname)
+        local cnffiles = instance.cnffiles
+        instance.rootpath = cnffiles[1]
+        for k=1,#cnffiles do
+            instance.cnffiles[k] = file.collapse_path(cnffiles[k])
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
@@ -5516,8 +5550,9 @@ function resolvers.load_lua()
         -- yet harmless
     else
         instance.rootpath = instance.luafiles[1]
-        for k,fname in ipairs(instance.luafiles) do
-            instance.luafiles[k] = file.collapse_path(fname)
+        local luafiles = instance.luafiles
+        for k=1,#luafiles do
+            instance.luafiles[k] = file.collapse_path(luafiles[k])
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
@@ -5580,7 +5615,9 @@ end
 -- locators
 
 function resolvers.locatelists()
-    for _, path in ipairs(resolvers.clean_path_list('TEXMF')) do
+    local texmfpaths = resolvers.clean_path_list('TEXMF')
+    for i=1,#texmfpaths do
+        local path = texmfpaths[i]
         if trace_locating then
             logs.report("fileio","locating list of '%s'",path)
         end
@@ -5613,7 +5650,9 @@ function resolvers.loadfiles()
     instance.loaderror = false
     instance.files = { }
     if not instance.renewcache then
-        for _, hash in ipairs(instance.hashes) do
+        local hashes = instance.hashes
+        for k=1,#hashes do
+            local hash = hashes[k]
             resolvers.hashdatabase(hash.tag,hash.name)
             if instance.loaderror then break end
         end
@@ -5627,8 +5666,9 @@ end
 -- generators:
 
 function resolvers.loadlists()
-    for _, hash in ipairs(instance.hashes) do
-        resolvers.generatedatabase(hash.tag)
+    local hashes = instance.hashes
+    for i=1,#hashes do
+        resolvers.generatedatabase(hashes[i].tag)
     end
 end
 
@@ -5725,8 +5765,7 @@ end
 -- we join them and split them after the expansion has taken place. This
 -- is more convenient.
 
-local checkedsplit = string.checkedsplit
-local normalsplit  = string.split
+--~ local checkedsplit = string.checkedsplit
 
 local cache = { }
 
@@ -5750,8 +5789,8 @@ local split = lpegmatch(splitter,str)
             end
             if trace_expansions then
                 logs.report("fileio","splitting path specification '%s'",str)
-                for k,v in ipairs(found) do
-                    logs.report("fileio","% 4i: %s",k,v)
+                for k=1,#found do
+                    logs.report("fileio","% 4i: %s",k,found[k])
                 end
             end
             cache[str] = found
@@ -5763,8 +5802,9 @@ end
 resolvers.split_kpse_path = split_kpse_path
 
 function resolvers.splitconfig()
-    for i,c in ipairs(instance) do
-        for k,v in pairs(c) do
+    for i=1,#instance do
+        local c = instance[i]
+        for k,v in next, c do
             if type(v) == 'string' then
                 local t = split_kpse_path(v)
                 if #t > 1 then
@@ -5776,8 +5816,10 @@ function resolvers.splitconfig()
 end
 
 function resolvers.joinconfig()
-    for i,c in ipairs(instance.order) do
-        for k,v in pairs(c) do -- ipairs?
+    local order = instance.order
+    for i=1,#order do
+        local c = order[i]
+        for k,v in next, c do -- indexed?
             if type(v) == 'table' then
                 c[k] = file.join_path(v)
             end
@@ -5804,8 +5846,9 @@ end
 function resolvers.splitexpansions()
     local ie = instance.expansions
     for k,v in next, ie do
-        local t, h = { }, { }
-        for _,vv in ipairs(split_kpse_path(v)) do
+        local t, h, p = { }, { }, split_kpse_path(v)
+        for kk=1,#p do
+            local vv = p[kk]
             if vv ~= "" and not h[vv] then
                 t[#t+1] = vv
                 h[vv] = true
@@ -5852,11 +5895,15 @@ function resolvers.serialize(files)
     end
     t[#t+1] = "return {"
     if instance.sortdata then
-        for _, k in pairs(sortedkeys(files)) do -- ipairs
+	local sortedfiles = sortedkeys(files)
+	for i=1,#sortedfiles do
+	    local k = sortedfiles[i]
             local fk  = files[k]
             if type(fk) == 'table' then
                 t[#t+1] = "\t['" .. k .. "']={"
-                for _, kk in pairs(sortedkeys(fk)) do -- ipairs
+		local sortedfk = sortedkeys(fk)
+        	for j=1,#sortedfk do
+                    local kk = sortedfk[j]
                     t[#t+1] = dump(kk,fk[kk],"\t\t")
                 end
                 t[#t+1] = "\t},"
@@ -5968,7 +6015,9 @@ function resolvers.resetconfig()
 end
 
 function resolvers.loadnewconfig()
-    for _, cnf in ipairs(instance.luafiles) do
+    local luafiles = instance.luafiles
+    for i=1,#luafiles do
+        local cnf = luafiles[i]
         local pathname = file.dirname(cnf)
         local filename = file.join(pathname,resolvers.luaname)
         local blob = loadfile(filename)
@@ -6013,7 +6062,9 @@ end
 
 function resolvers.loadoldconfig()
     if not instance.renewcache then
-        for _, cnf in ipairs(instance.cnffiles) do
+        local cnffiles = instance.cnffiles
+        for i=1,#cnffiles do
+            local cnf = cnffiles[i]
             local dname = file.dirname(cnf)
             resolvers.load_data(dname,'configuration')
             instance.order[#instance.order+1] = instance.configuration[dname]
@@ -6817,13 +6868,14 @@ function resolvers.for_files(command, files, filetype, mustexist)
         if trace_locating then
             report('') -- ?
         end
-        for _, file in ipairs(files) do
+        for f=1,#files do
+            local file = files[f]
             local result = command(file,filetype,mustexist)
             if type(result) == 'string' then
                 report(result)
             else
-                for _,v in ipairs(result) do
-                    report(v)
+                for i=1,#result do
+                    report(result[i]) -- could be unpack
                 end
             end
         end
@@ -6870,7 +6922,7 @@ end
 
 function table.sequenced(t,sep) -- temp here
     local s = { }
-    for k, v in pairs(t) do -- pairs?
+    for k, v in next, t do -- indexed?
         s[#s+1] = k .. "=" .. tostring(v)
     end
     return concat(s, sep or " | ")
@@ -6902,8 +6954,9 @@ function resolvers.clean_path(str)
 end
 
 function resolvers.do_with_path(name,func)
-    for _, v in pairs(resolvers.expanded_path_list(name)) do -- pairs?
-        func("^"..resolvers.clean_path(v))
+    local pathlist = resolvers.expanded_path_list(name)
+    for i=1,#pathlist do
+        func("^"..resolvers.clean_path(pathlist[i]))
     end
 end
 
@@ -6912,7 +6965,9 @@ function resolvers.do_with_var(name,func)
 end
 
 function resolvers.with_files(pattern,handle)
-    for _, hash in ipairs(instance.hashes) do
+    local hashes = instance.hashes
+    for i=1,#hashes do
+        local hash = hashes[i]
         local blobpath = hash.tag
         local blobtype = hash.type
         if blobpath then
@@ -6927,7 +6982,7 @@ function resolvers.with_files(pattern,handle)
                         if type(v) == "string" then
                             handle(blobtype,blobpath,v,k)
                         else
-                            for _,vv in pairs(v) do -- ipairs?
+                            for _,vv in next, v do -- indexed
                                 handle(blobtype,blobpath,vv,k)
                             end
                         end
@@ -7098,7 +7153,8 @@ function caches.setpath(...)
         caches.path = '.'
     end
     caches.path = resolvers.clean_path(caches.path)
-    if not table.is_empty({...}) then
+    local dirs = { ... }
+    if #dirs > 0 then
         local pth = dir.mkdirs(caches.path,...)
         return pth
     end
@@ -7281,7 +7337,7 @@ end
 function containers.is_valid(container, name)
     if name and name ~= "" then
         local storage = container.storage[name]
-        return storage and not table.is_empty(storage) and storage.cache_version == container.version
+        return storage and storage.cache_version == container.version
     else
         return false
     end
@@ -7385,12 +7441,13 @@ resolvers.automounted = resolvers.automounted or { }
 
 function resolvers.automount(usecache)
     local mountpaths = resolvers.clean_path_list(resolvers.expansion('TEXMFMOUNT'))
-    if table.is_empty(mountpaths) and usecache then
+    if (not mountpaths or #mountpaths == 0) and usecache then
         mountpaths = { caches.setpath("mount") }
     end
-    if not table.is_empty(mountpaths) then
+    if mountpaths and #mountpaths > 0 then
         statistics.starttiming(resolvers.instance)
-        for k, root in pairs(mountpaths) do
+        for k=1,#mountpaths do
+            local root = mountpaths[k]
             local f = io.open(root.."/url.tmi")
             if f then
                 for line in f:lines() do
@@ -7661,7 +7718,9 @@ local function list(list,report)
     local instance = resolvers.instance
     local pat = upper(pattern or "","")
     local report = report or texio.write_nl
-    for _,key in pairs(table.sortedkeys(list)) do
+    local sorted = table.sortedkeys(list)
+    for i=1,#sorted do
+        local key = sorted[i]
         if instance.pattern == "" or find(upper(key),pat) then
             if instance.kpseonly then
                 if instance.kpsevars[key] then
@@ -7680,11 +7739,14 @@ function resolvers.listers.expansions() list(resolvers.instance.expansions) end
 function resolvers.listers.configurations(report)
     local report = report or texio.write_nl
     local instance = resolvers.instance
-    for _,key in ipairs(table.sortedkeys(instance.kpsevars)) do
+    local sorted = table.sortedkeys(instance.kpsevars)
+    for i=1,#sorted do
+        local key = sorted[i]
         if not instance.pattern or (instance.pattern=="") or find(key,instance.pattern) then
             report(format("%s\n",key))
-            for i,c in ipairs(instance.order) do
-                local str = c[key]
+            local order = instance.order
+            for i=1,#order do
+                local str = order[i][key]
                 if str then
                     report(format("\t%s\t%s",i,str))
                 end
@@ -7945,8 +8007,9 @@ function runners.make_format(texname)
                     logs.simple("using uncompiled initialization file: %s",luaname)
                 end
             else
-                for _, v in pairs({instance.luaname, instance.progname, barename}) do
-                    v = string.gsub(v..".lua","%.lua%.lua$",".lua")
+                local what = { instance.luaname, instance.progname, barename }
+                for k=1,#what do
+                    local v = string.gsub(what[k]..".lua","%.lua%.lua$",".lua")
                     if v and (v ~= "") then
                         luaname = resolvers.find_files(v)[1] or ""
                         if luaname ~= "" then
@@ -7970,7 +8033,8 @@ function runners.make_format(texname)
                 logs.simple("using lua initialization file: %s",luaname)
                 local mp = dir.glob(file.removesuffix(file.basename(luaname)).."-*.mem")
                 if mp and #mp > 0 then
-                    for _, name in ipairs(mp) do
+                    for i=1,#mp do
+                        local name = mp[i]
                         logs.simple("removing related mplib format %s", file.basename(name))
                         os.remove(name)
                     end

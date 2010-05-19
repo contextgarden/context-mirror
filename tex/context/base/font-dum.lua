@@ -55,11 +55,14 @@ fonts.names.old_to_new = { }
 
 local data, loaded = nil, false
 
+local fileformats = { "lua", "tex", "other text files" }
+
 function fonts.names.resolve(name,sub)
     if not loaded then
         local basename = fonts.names.basename
         if basename and basename ~= "" then
-            for _, format in ipairs { "lua", "tex", "other text files" } do
+            for i=1,#fileformats do
+                local format = fileformats[i]
                 local foundname = resolvers.find_file(basename,format) or ""
                 if foundname ~= "" then
                     data = dofile(foundname)

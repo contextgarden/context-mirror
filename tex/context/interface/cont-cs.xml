@@ -1017,6 +1017,9 @@
         <cd:parameter name="paleta">
           <cd:constant type="cd:name"/>
         </cd:parameter>
+        <cd:parameter name="range">
+          <cd:constant type="cd:text"/>
+        </cd:parameter>
         <cd:parameter name="radky">
           <cd:constant type="ano"/>
           <cd:constant type="ne"/>

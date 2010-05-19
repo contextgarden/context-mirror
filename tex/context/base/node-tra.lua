@@ -209,7 +209,7 @@ function nodes.tracers.steppers.features()
     while f do
         if f.id == glyph then
             local tfmdata, t = fontdata[f.font], { }
-            for feature, value in table.sortedpairs(tfmdata.shared.features) do
+            for feature, value in table.sortedhash(tfmdata.shared.features) do
                 if feature == "number" or feature == "features" then
                     -- private
                 elseif type(value) == "boolean" then

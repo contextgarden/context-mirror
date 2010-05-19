@@ -54,9 +54,13 @@ function scripts.profiler.analyse(filename)
         f:close()
         print("")
         local loaded = { }
-        for _, filename in ipairs(table.sortedkeys(times)) do
+        local sortedtable.sortedkeys(times)
+        for i=1,#sorted do
+            local filename = sorted[i]
             local functions = times[filename]
-            for _, functionname in ipairs(table.sortedkeys(functions)) do
+            local sorted = table.sortedkeys(functions)
+            for i=1,#sorted do
+                local functionname = sorted[i]
                 local totaltime = functions[functionname]
                 local count = counts[functionname]
                 totalcount = totalcount + count
@@ -81,7 +85,9 @@ function scripts.profiler.analyse(filename)
             end
         end
         print("")
-        for _, call in ipairs(table.sortedkeys(calls)) do
+        local sorted = table.sortedkeys(calls)
+        for i=1,#sorted do
+            local call = sorted[i]
             local n = calls[call]
             totalcalls = totalcalls + n
             if n > callthreshold then

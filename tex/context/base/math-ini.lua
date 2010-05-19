@@ -274,7 +274,7 @@ mathematics.entities = mathematics.entities or { }
 
 function mathematics.register_xml_entities()
     local entities = xml.entities
-    for name, unicode in pairs(mathematics.entities) do
+    for name, unicode in next, mathematics.entities do
         if not entities[name] then
             entities[name] = utfchar(unicode)
         end

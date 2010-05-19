@@ -123,7 +123,9 @@ local suffixes = table.tohash { 'tex','mkii','mkiv','mp' }
 function scripts.modules.process(runtex)
     local processed = { }
     local prep = environment.argument("prep")
-    for _, shortname in ipairs(environment.files) do
+    local files = environment.files
+    for i=1,#files do
+        local shortname = files[i]
         local suffix = file.suffix(shortname)
         if suffixes[suffix] then
             local longname
@@ -139,7 +141,8 @@ function scripts.modules.process(runtex)
             end
         end
     end
-    for _, name in ipairs(processed) do
+    for i=1,#processed do
+        local name = processed[i]
         logs.simple("modules","processed: %s",name)
     end
 end

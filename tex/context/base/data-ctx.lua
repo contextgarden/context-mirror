@@ -19,7 +19,9 @@ function resolvers.save_used_files_in_trees(filename,jobname)
             f:write(format("\t<rl:name>%s</rl:name>\n",jobname))
         end
         f:write("\t<rl:files>\n")
-        for _,v in ipairs(table.sortedkeys(found)) do
+        local sorted = table.sortedkeys(found)
+        for k=1,#sorted do
+            local v = sorted[k]
             f:write(format("\t\t<rl:file n='%s'>%s</rl:file>\n",found[v],v))
         end
         f:write("\t</rl:files>\n")

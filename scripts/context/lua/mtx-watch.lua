@@ -10,7 +10,7 @@ scripts       = scripts       or { }
 scripts.watch = scripts.watch or { }
 
 local format, concat, difftime, time = string.format, table.concat, os.difftime, os.time
-local pairs, ipairs, next, type = pairs, ipairs, next, type
+local next, type = next, type
 
 -- the machine/instance matches the server app we use
 
@@ -23,7 +23,7 @@ function scripts.watch.save_exa_modes(joblog,ctmname)
         local t= { }
         t[#t+1] = "<?xml version='1.0' standalone='yes'?>\n"
         t[#t+1] = "<exa:variables xmlns:exa='htpp://www.pragma-ade.com/schemas/exa-variables.rng'>"
-        for k, v in pairs(joblog.values) do
+        for k, v in next, joblog.values do
             t[#t+1] = format("\t<exa:variable label='%s'>%s</exa:variable>", k, tostring(v))
         end
         t[#t+1] = "</exa:variables>"
@@ -87,21 +87,22 @@ function scripts.watch.watch()
     if #paths > 0 then
         if environment.argument("automachine") then
             logpath = string.gsub(logpath,"/machine/","/"..machine.."/")
-            for i, path in ipairs(paths) do
-                paths[i] = string.gsub(path,"/machine/","/"..machine.."/")
+            for i=1,#paths do
+                paths[i] = string.gsub(paths[i],"/machine/","/"..machine.."/")
             end
         end
-        for _, path in ipairs(paths) do
-            logs.report("watch", "watching path ".. path)
+        for i=1,#paths do
+            logs.report("watch", "watching path ".. paths[i])
         end
         local function process()
             local done = false
-            for _, path in ipairs(paths) do
+            for i=1,#paths do
+                local path = paths[i]
                 lfs.chdir(path)
                 local files = { }
                 glob(files,path)
                 table.sort(files) -- what gets sorted here, todo: by time
-                for name, time in pairs(files) do
+                for name, time in next, files do
                 --~ local ok, joblog = xpcall(function() return dofile(name) end, function() end )
                     local ok, joblog = pcall(dofile,name)
                     if ok and joblog then
@@ -210,12 +211,14 @@ function scripts.watch.watch()
                 local delta = difftime(currenttime,lasttime)
                 if delta > cleanupdelay then
                     lasttime = currenttime
-                    for _, path in ipairs(paths) do
+                    for i=1,#paths do
+                        local path = paths[i]
                         if string.find(path,"%.") then
                             -- safeguard, we want a fully qualified path
                         else
                             local files = dir.glob(file.join(path,"*"))
-                            for _, name in ipairs(files) do
+                            for i=1,#files do
+                                local name = files[i]
                                 local filetime = lfs.attributes(name,"modification")
                                 local delta = difftime(currenttime,filetime)
                                 if delta > cleanupdelay then
@@ -255,10 +258,11 @@ function scripts.watch.collect_logs(path) -- clean 'm up too
     local files = dir.globfiles(path,false,"^%d+%.lua$")
     local collection = { }
     local valid = table.tohash({"filename","result","runtime","size","status"})
-    for _, name in ipairs(files) do
+    for i=1,#files do
+        local name = files[i]
         local t = dofile(name)
         if t and type(t) == "table" and t.status then
-            for k, v in pairs(t) do
+            for k, v in next, t do
                 if not valid[k] then
                     t[k] = nil
                 end
@@ -270,20 +274,20 @@ function scripts.watch.collect_logs(path) -- clean 'm up too
 end
 
 function scripts.watch.save_logs(collection,path) -- play safe
-    if collection and not table.is_empty(collection) then
+    if collection and next(collection) then
         path = path or environment.argument("logpath") or ""
         path = (path == "" and ".") or path
         local filename = format("%s/collected-%s.lua",path,tostring(time()))
         io.savedata(filename,table.serialize(collection,true))
         local check = dofile(filename)
-        for k,v in pairs(check) do
+        for k,v in next, check do
             if not collection[k] then
                 logs.error("watch", "error in saving file")
                 os.remove(filename)
                 return false
             end
         end
-        for k,v in pairs(check) do
+        for k,v in next, check do
             os.remove(format("%s.lua",k))
         end
         return true
@@ -297,10 +301,11 @@ function scripts.watch.collect_collections(path) -- removes duplicates
     path = (path == "" and ".") or path
     local files = dir.globfiles(path,false,"^collected%-%d+%.lua$")
     local collection = { }
-    for _, name in ipairs(files) do
+    for i=1,#files do
+        local name = files[i]
         local t = dofile(name)
         if t and type(t) == "table" then
-            for k, v in pairs(t) do
+            for k, v in next, t do
                 collection[k] = v
             end
         end
@@ -311,12 +316,14 @@ end
 function scripts.watch.show_logs(path) -- removes duplicates
     local collection = scripts.watch.collect_collections(path) or { }
     local max = 0
-    for k,v in pairs(collection) do
+    for k,v in next, collection do
         v = v.filename or "?"
         if #v > max then max = #v end
     end
-    print(max)
-    for k,v in ipairs(table.sortedkeys(collection)) do
+ -- print(max)
+    local sorted = table.sortedkeys(collection)
+    for k=1,#sorted do
+        local v = sorted[k]
         local c = collection[v]
         local f, s, r, n = c.filename or "?", c.status or "?", c.runtime or 0, c.size or 0
         logs.report("watch", format("%s  %s  %3i  %8i  %s",string.padd(f,max," "),string.padd(s,10," "),r,n,v))
@@ -335,7 +342,8 @@ function scripts.watch.cleanup_stale_files() -- removes duplicates
         logs.report("watch","dryrun, use --force for real cleanup")
         local files = dir.glob(file.join(path,"*"))
         local rtime = time()
-        for _, name in ipairs(files) do
+        for i=1,#files do
+            local name = files[i]
             local mtime = lfs.attributes(name,"modification")
             local delta = difftime(rtime,mtime)
             if delta > delay then

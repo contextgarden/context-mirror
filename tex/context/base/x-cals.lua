@@ -47,17 +47,17 @@ local valignments = {
 local function adapt(widths,b,w,delta,sum,n,what)
     if b == "equal" then
         delta = delta/n
-        for k, v in pairs(w) do
+        for k, v in next, w do
             widths[k] = n_todimen(v - delta)
         end
     elseif b == "proportional" then
         delta = delta/sum
-        for k, v in pairs(w) do
+        for k, v in next, w do
             widths[k] = n_todimen(v - v*delta)
         end
     elseif type(b) == "number" and b < 1 then
         delta = b*delta/sum
-        for k, v in pairs(w) do
+        for k, v in next, w do
             widths[k] = n_todimen(v - v*delta)
         end
     end
@@ -89,7 +89,7 @@ local function getspecs(root, pattern, names, widths)
         -- forget about it
     elseif shrink_widths or stretch_widths then
         local sum, n, w = 0, 0, { }
-        for _, v in pairs(widths) do
+        for _, v in next, widths do
             n = n + 1
             v = (type(v) == "string" and s_todimen(v)) or v
             if v then

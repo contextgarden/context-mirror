@@ -18,7 +18,8 @@ local messageinterfaces = { 'en','cs','de','it','nl','ro','fr','pe','no' }
 function flushers.scite(interface,collection)
     local result, i = {}, 0
     result[#result+1] = format("keywordclass.macros.context.%s=",interface)
-    for _, command in ipairs(collection) do
+    for i=1,#collection do
+        local command = collection[i]
         if i==0 then
             result[#result+1] = "\\\n"
             i = 5
@@ -38,7 +39,8 @@ function flushers.jedit(interface,collection)
     result[#result+1] = "<MODE>"
     result[#result+1] = "\t<RULES>"
     result[#result+1] = "\t\t<KEYWORDS>"
-    for _, command in ipairs(collection) do
+    for i=1,#collection do
+        local command = collection[i]
         result[#result+1] = format("\t\t\t<KEYWORD2>%s</KEYWORD2>",command)
     end
     result[#result+1] = "\t\t</KEYWORDS>"
@@ -52,7 +54,8 @@ function flushers.bbedit(interface,collection)
     result[#result+1] = "<?xml version='1.0'?>"
     result[#result+1] = "<key>BBLMKeywordList</key>"
     result[#result+1] = "<array>"
-    for _, command in ipairs(collection) do
+    for i=1,#collection do
+        local command = collection[i]
         result[#result+1]  = format("\t<string>\\%s</string>",command)
     end
     result[#result+1] = "</array>"
@@ -60,7 +63,8 @@ function flushers.bbedit(interface,collection)
 end
 
 function flushers.raw(interface,collection)
-    for _, command in ipairs(collection) do
+    for i=1,#collection do
+        local command = collection[i]
         logs.simple(command)
     end
 end
@@ -74,7 +78,8 @@ function scripts.interface.editor(editor)
     if xmlfile == "" then
         logs.simple("unable to locate cont-en.xml")
     end
-    for _, interface in ipairs(interfaces) do
+    for i=1,#interfaces do
+        local interface = interfaces[i]
         local keyfile = resolvers.find_file(format("keys-%s.xml",interface)) or ""
         if keyfile == "" then
             logs.simple("unable to locate keys-*.xml")
@@ -150,7 +155,9 @@ function scripts.interface.context()
                 texresult[#texresult+1] = format("%% definitions for interface %s for language %s\n%%",what,language)
                 xmlresult[#xmlresult+1] = format("\t<!-- definitions for interface %s for language %s -->\n",what,language)
                 xmlresult[#xmlresult+1] = format("\t<cd:%s>",what)
-                for _, key in ipairs(table.sortedkeys(t)) do
+                local sorted = table.sortedkeys(t)
+                for i=1,#sorted do
+                    local key = sorted[i]
                     local v = t[key]
                     local value = v[language] or v["en"]
                     if not value then
@@ -178,7 +185,7 @@ function scripts.interface.context()
                     return a .. b .. c .. b
                 end)
             end
-            for language, _ in pairs(commands.setuplayout) do
+            for language, _ in next, commands.setuplayout do
                 local texresult, xmlresult = { }, { }
                 texresult[#texresult+1] = format("%% this file is auto-generated, don't edit this file\n%%")
                 xmlresult[#xmlresult+1] = format("<?xml version='1.0'?>\n",tag)
@@ -216,7 +223,8 @@ function scripts.interface.messages()
     local filename = resolvers.find_file(environment.files[1] or "mult-mes.lua") or ""
     if filename ~= "" then
         local messages = dofile(filename)
-        for _, interface in ipairs(messageinterfaces) do
+        for i=1,#messageinterfaces do
+            local interface = messageinterfaces[i]
             local texresult = { }
             for category, data in next, messages do
                 for tag, message in next, data do

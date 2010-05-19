@@ -86,7 +86,8 @@ end
 
 local function resolve(str)
     if type(str) == "table" then
-        for k, v in pairs(str) do -- ipairs
+        for k=1,#str do
+            local v = str[k]
             str[k] = resolve(v) or v
         end
     elseif str and str ~= "" then
@@ -99,7 +100,7 @@ resolvers.resolve = resolve
 
 if os.uname then
 
-    for k, v in pairs(os.uname()) do
+    for k, v in next, os.uname() do
         if not prefixes[k] then
             prefixes[k] = function() return v end
         end

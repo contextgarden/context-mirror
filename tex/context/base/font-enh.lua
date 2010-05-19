@@ -65,7 +65,7 @@ function tfm.set_features(tfmdata)
     local shared = tfmdata.shared
 --  local tfmdata = shared.tfmdata
     local features = shared.features
-    if not table.is_empty(features) then
+    if features and next(features) then
         local mode = tfmdata.mode or fonts.mode
         local fi = fonts.initializers[mode]
         if fi and fi.tfm then

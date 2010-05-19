@@ -21,8 +21,11 @@ local temppath    = caches.setpath("temp","mtx-server-ctx-fonttest")
 local basename    = "mtx-server-ctx-fonttest-data.lua"
 local basepath    = temppath
 
-for _, suffix in ipairs { "tex", "pdf", "log" } do
-    os.remove(file.join(temppath,file.addsuffix(tempname,suffix)))
+local remove_suffixes = { "tex", "pdf", "log" }
+local what_options = { "trace", "basemode" }
+
+for i=1,#remove_suffixes do
+    os.remove(file.join(temppath,file.addsuffix(tempname,remove_suffixes[i])))
 end
 
 local process_templates = { }
@@ -167,18 +170,18 @@ local function showfeatures(f)
             local function show(what)
                 local data = features[what]
                 if data and next(data) then
-                    for f,ff in pairs(data) do
+                    for f,ff in next, data do
                         if find(f,"<") then
                             -- ignore aat for the moment
                         else
                             fea[f] = true
-                            for s, ss in pairs(ff) do
+                            for s, ss in next, ff do
                                 if find(s,"%*") then
                                     -- ignore *
                                 else
                                     scr[s] = true
                                     local rs = rev[s] if not rs then rs = {} rev[s] = rs end
-                                    for k, l in pairs(ss) do
+                                    for k, l in next, ss do
                                         if find(k,"%*") then
                                             -- ignore *
                                         else
@@ -193,16 +196,16 @@ local function showfeatures(f)
                     end
                 end
             end
-            for what, v in table.sortedpairs(features) do
+            for what, v in table.sortedhash(features) do
                 show(what)
             end
             local stupid = { }
             stupid[#stupid+1] = "var feature_hash = new Array ;"
-            for s, sr in pairs(rev) do
+            for s, sr in next, rev do
                 stupid[#stupid+1] = format("feature_hash['%s'] = new Array ;",s)
-                for l, lr in pairs(sr) do
+                for l, lr in next, sr do
                     stupid[#stupid+1] = format("feature_hash['%s']['%s'] = new Array ;",s,l)
-                    for f, fr in pairs(lr) do
+                    for f, fr in next, lr do
                         stupid[#stupid+1] = format("feature_hash['%s']['%s']['%s'] = true ;",s,l,f)
                     end
                 end
@@ -244,7 +247,7 @@ local function select_font()
         local listoffonts = { }
         listoffonts[#listoffonts+1] = "<table>"
         listoffonts[#listoffonts+1] = template_h
-        for k, v in table.sortedpairs(t) do
+        for k, v in table.sortedhash(t) do
             local kind = v.format
             if kind == "otf" or kind == "ttf" or kind == "ttc" then
                 local fontname = v.fontname
@@ -297,7 +300,9 @@ local function edit_font(currentfont,detail,tempname)
         local htmldata = showfeatures(specification.filename)
         if htmldata then
             local features, languages, scripts, options = { }, { }, { }, { }
-            for k,v in ipairs(table.sortedkeys(htmldata.scripts)) do
+            local sorted = table.sortedkeys(htmldata.scripts)
+            for k=1,#sorted do
+                local v = sorted[k]
                 local s = fonts.otf.tables.scripts[v] or v
                 if detail and v == detail.script then
                     scripts[#scripts+1] = format("<input title='%s' id='s-%s' type='radio' name='script' value='%s' onclick='check_script()' checked='checked'/>&nbsp;<span id='t-s-%s'>%s</span>",s,v,v,v,v)
@@ -305,7 +310,9 @@ local function edit_font(currentfont,detail,tempname)
                     scripts[#scripts+1] = format("<input title='%s' id='s-%s' type='radio' name='script' value='%s' onclick='check_script()' />&nbsp;<span id='t-s-%s'>%s</span>",s,v,v,v,v)
                 end
             end
-            for k,v in ipairs(table.sortedkeys(htmldata.languages)) do
+            local sorted = table.sortedkeys(htmldata.languages)
+            for k=1,#sorted do
+                local v = sorted[k]
                 local l = fonts.otf.tables.languages[v] or v
                 if detail and v == detail.language then
                     languages[#languages+1] = format("<input title='%s' id='l-%s' type='radio' name='language' value='%s' onclick='check_language()' checked='checked'/>&nbsp;<span id='t-l-%s'>%s</span>",l,v,v,v,v)
@@ -313,7 +320,9 @@ local function edit_font(currentfont,detail,tempname)
                     languages[#languages+1] = format("<input title='%s' id='l-%s' type='radio' name='language' value='%s' onclick='check_language()' />&nbsp;<span id='t-l-%s'>%s</span>",l,v,v,v,v)
                 end
             end
-            for k,v in ipairs(table.sortedkeys(htmldata.features)) do
+            local sorted = table.sortedkeys(htmldata.features)
+            for k=1,#sorted do
+                local v = sorted[k]
                 local f = fonts.otf.tables.features[v] or v
                 if detail and detail["f-"..v] then
                     features[#features+1] = format("<input title='%s' id='f-%s' type='checkbox' name='f-%s' onclick='check_feature()' checked='checked'/>&nbsp;<span id='t-f-%s'>%s</span>",f,v,v,v,v)
@@ -321,7 +330,8 @@ local function edit_font(currentfont,detail,tempname)
                     features[#features+1] = format("<input title='%s' id='f-%s' type='checkbox' name='f-%s' onclick='check_feature()' />&nbsp;<span id='t-f-%s'>%s</span>",f,v,v,v,v)
                 end
             end
-            for k, v in ipairs { "trace", "basemode" } do
+            for k=1,#what_options do
+                local v = what_options[k]
                 if detail and detail["o-"..v] then
                     options[#options+1] = format("<input id='o-%s' type='checkbox' name='o-%s' checked='checked'/>&nbsp;%s",v,v,v)
                 else
@@ -352,7 +362,7 @@ local function process_font(currentfont,detail) -- maybe just fontname
         format("language=%s",detail.language or "dflt"),
         format("script=%s",detail.script or "dflt"),
     }
-    for k,v in pairs(detail) do
+    for k,v in next, detail do
         local f = match(k,"^f%-(.*)$")
         if f then
             features[#features+1] = format("%s=yes",f)
@@ -418,15 +428,15 @@ local function show_font(currentfont,detail)
     result[#result+1] = format("<tr><td class='tc'>width:      </td><td>%s</td></tr>",specification.width   ~= "" and specification.width      or "normal")
     result[#result+1] = "</table>"
     if features then
-        for what, v in table.sortedpairs(features) do
+        for what, v in table.sortedhash(features) do
             local data = features[what]
             if data and next(data) then
                 result[#result+1] = format("<h1>%s features</h1>",what)
                 result[#result+1] = "<table>"
                 result[#result+1] = "<tr><th>feature</th><th>tag&nbsp;</th><th>script&nbsp;</th><th>languages&nbsp;</th></tr>"
-                for f,ff in table.sortedpairs(data) do
+                for f,ff in table.sortedhash(data) do
                     local done = false
-                    for s, ss in table.sortedpairs(ff) do
+                    for s, ss in table.sortedhash(ff) do
                         if s == "*"  then s       = "all" end
                         if ss  ["*"] then ss["*"] = nil ss.all = true end
                         if done then
@@ -504,10 +514,10 @@ local function loadstored(detail,currentfont,name)
         detail.title = storage.title or detail.title
         detail.sampletext = storage.text or detail.sampletext
         detail.name = name or "no name"
-        for k,v in pairs(storage.features) do
+        for k,v in next, storage.features do
             detail["f-"..k] = v
         end
-        for k,v in pairs(storage.options) do
+        for k,v in next, storage.options do
             detail["o-"..k] = v
         end
     end
@@ -542,10 +552,11 @@ local function save_font(currentfont,detail)
         text = string.strip(detail.sampletext or text)
         name = string.strip(detail.name or name)
         title = string.strip(detail.title or title)
-        for k,v in pairs(htmldata.features) do
+        for k,v in next, htmldata.features do
             if detail["f-"..k] then features[k] = true end
         end
-        for k,v in ipairs { "trace", "basemode" } do
+        for k=1,#what_options do
+            local v = what_options[k]
             if detail["o-"..v] then options[k] = true end
         end
     end
@@ -565,7 +576,7 @@ local function load_font(currentfont)
     local storage = loadbase(datafile)
     local result = {}
     result[#result+1] = format("<tr><th>del&nbsp;</th><th>name&nbsp;</th><th>font&nbsp;</th><th>fontname&nbsp;</th><th>script&nbsp;</th><th>language&nbsp;</th><th>features&nbsp;</th><th>title&nbsp;</th><th>sampletext&nbsp;</th></tr>")
-    for k,v in table.sortedpairs(storage) do
+    for k,v in table.sortedhash(storage) do
         local fontname, fontfile = get_specification(v.font)
         result[#result+1] = format("<tr><td><a href='mtx-server-ctx-fonttest.lua?deletename=%s'>x</a>&nbsp;</td><td><a href='mtx-server-ctx-fonttest.lua?loadname=%s'>%s</a>&nbsp;</td><td>%s&nbsp;</td<td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td></tr>",
             k,k,k,v.font,fontname,v.script,v.language,concat(table.sortedkeys(v.features)," "),v.title or "no title",v.text or "")
@@ -653,9 +664,12 @@ function doit(configuration,filename,hashed)
 
     -- lua table and adapt
 
-    local menu = { }
-    for k, v in ipairs { 'process', 'select', 'save', 'load', 'edit', 'reset', 'features', 'source', 'log', 'info', 'extras'} do
-        menu[#menu+1] = format("<button name='action' value='%s' type='submit'>%s</button>",v,v)
+    local buttons = { 'process', 'select', 'save', 'load', 'edit', 'reset', 'features', 'source', 'log', 'info', 'extras'}
+    local menu    = { }
+
+    for i=1,#buttons do
+        local button = buttons[i]
+        menu[#menu+1] = format("<button name='action' value='%s' type='submit'>%s</button>",button,button)
     end
 
     variables.menu           = concat(menu,"&nbsp;")

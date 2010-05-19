@@ -287,8 +287,10 @@ languages.hyphenation.loadexceptions("zerolanguage") -- else bug
 languages.logger = languages.logger or { }
 
 function languages.logger.report()
-    local result = {}
-    for _, tag in ipairs(table.sortedkeys(registered)) do
+    local result = { }
+    local sorted = table.sortedkeys(registered)
+    for i=1,#sorted do
+        local tag = sorted[i]
         local l = registered[tag]
         if l.loaded then
             local p = (l.patterns   and "pat") or '-'

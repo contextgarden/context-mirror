@@ -109,19 +109,19 @@ end
 function statistics.report_storage(whereto)
     whereto = whereto or "term and log"
     write_nl(whereto," ","stored tables:"," ")
-    for k,v in table.sortedpairs(storage.data) do
+    for k,v in table.sortedhash(storage.data) do
         write_nl(whereto,format("%03i %s",k,v[1]))
     end
     write_nl(whereto," ","stored modules:"," ")
-    for k,v in table.sortedpairs(lua.bytedata) do
+    for k,v in table.sortedhash(lua.bytedata) do
         write_nl(whereto,format("%03i %s %s",k,v[2],v[1]))
     end
     write_nl(whereto," ","stored attributes:"," ")
-    for k,v in table.sortedpairs(attributes.names) do
+    for k,v in table.sortedhash(attributes.names) do
         write_nl(whereto,format("%03i %s",k,v))
     end
     write_nl(whereto," ","stored catcodetables:"," ")
-    for k,v in table.sortedpairs(catcodes.names) do
+    for k,v in table.sortedhash(catcodes.names) do
         write_nl(whereto,format("%03i %s",k,table.concat(v," ")))
     end
     write_nl(whereto," ")

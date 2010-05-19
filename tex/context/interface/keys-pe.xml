@@ -767,6 +767,7 @@
 		<cd:constant name='mindepth' value='کمترین‌عمق'/>
 		<cd:constant name='minheight' value='کمترین‌ارتفاع'/>
 		<cd:constant name='minwidth' value='کمترین‌عرض'/>
+		<cd:constant name='monthconversion' value='monthconversion'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='نام'/>
 		<cd:constant name='namesep' value='namesep'/>
@@ -859,6 +860,7 @@
 		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='شعاع'/>
 		<cd:constant name='random' value='تصادفی'/>
+		<cd:constant name='range' value='range'/>
 		<cd:constant name='reduction' value='کاهش'/>
 		<cd:constant name='ref' value='رج'/>
 		<cd:constant name='refcommand' value='refcommand'/>

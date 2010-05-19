@@ -46,7 +46,7 @@ function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
 end
 
 --~ xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
---~ xml.unescapes = { } for k,v in pairs(xml.escapes) do xml.unescapes[v] = k end
+--~ xml.unescapes = { } for k,v in next, xml.escapes do xml.unescapes[v] = k end
 
 --~ function xml.escaped  (str) return (gsub(str,"(.)"   , xml.escapes  )) end
 --~ function xml.unescaped(str) return (gsub(str,"(&.-;)", xml.unescapes)) end

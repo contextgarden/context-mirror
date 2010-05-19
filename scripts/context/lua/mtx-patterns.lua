@@ -14,25 +14,25 @@ scripts.patterns = scripts.patterns or { }
 scripts.patterns.list = {
     { "??",  "hyph-ar.tex",            "arabic" },
     { "bg",  "hyph-bg.tex",            "bulgarian" },
---  { "ca",  "hyph-ca.tex",            "" },
+    { "ca",  "hyph-ca.tex",            "catalan" },
     { "??",  "hyph-cop.tex",           "coptic" },
     { "cs",  "hyph-cs.tex",            "czech" },
-    { "??",  "hyph-cy.tex",            "welsh" },
+    { "cy",  "hyph-cy.tex",            "welsh" },
     { "da",  "hyph-da.tex",            "danish" },
     { "deo", "hyph-de-1901.tex",       "german, old spelling" },
     { "de",  "hyph-de-1996.tex",       "german, new spelling" },
 --~ { "??",  "hyph-el-monoton.tex",    "" },
 --~ { "??",  "hyph-el-polyton.tex",    "" },
---~ { "agr", "hyph-grc",               "ancient greek" },
+    { "agr", "hyph-grc",               "ancient greek" },
 --~ { "???", "hyph-x-ibycus",          "ancient greek in ibycus encoding" },
 --~ { "gr",  "",                       "" },
-    { "??",  "hyph-eo.tex",            "esperanto" },
+    { "eo",  "hyph-eo.tex",            "esperanto" },
     { "gb",  "hyph-en-gb.tex",         "british english" },
     { "us",  "hyph-en-us.tex",	       "american english" },
     { "es",  "hyph-es.tex",            "spanish" },
     { "et",  "hyph-et.tex",            "estonian" },
     { "eu",  "hyph-eu.tex",            "basque" }, -- ba is Bashkir!
-    { "??",  "hyph-fa.tex",            "farsi" },
+    { "fa",  "hyph-fa.tex",            "farsi" },
     { "fi",  "hyph-fi.tex",            "finnish" },
     { "fr",  "hyph-fr.tex",            "french" },
 --  { "??",  "hyph-ga.tex",            "" },
@@ -43,12 +43,11 @@ scripts.patterns.list = {
     { "hu",  "hyph-hu.tex",            "hungarian" },
     { "??",  "hyph-ia.tex",            "interlingua" },
     { "??",  "hyph-id.tex",            "indonesian" },
-    { "??",  "hyph-is.tex",            "icelandic" },
+    { "is",  "hyph-is.tex",            "icelandic" },
     { "it",  "hyph-it.tex",            "italian" },
     { "la",  "hyph-la.tex",            "latin" },
     { "lt",  "hyph-lt.tex",            "lithuanian" },
-    { "??",  "hyph-mn-cyrl.tex",       "mongolian, cyrillic script" },
-    { "??",  "hyph-mn-cyrl-x-new.tex", "mongolian, cyrillic script (new patterns)" },
+    { "mn",  "hyph-mn-cyrl.tex",       "mongolian, cyrillic script" },
     { "nb",  "hyph-nb.tex",            "norwegian bokmål" },
     { "nl",  "hyph-nl.tex",            "dutch" },
     { "nn",  "hyph-nn.tex",            "norwegian nynorsk" },
@@ -56,14 +55,14 @@ scripts.patterns.list = {
     { "pt",  "hyph-pt.tex",            "portuguese" },
     { "ro",  "hyph-ro.tex",            "romanian" },
     { "ru",  "hyph-ru.tex",            "russian" },
-    { "sk",  "hyph-sk.tex",            "" },
+    { "sk",  "hyph-sk.tex",            "slovak" },
     { "sl",  "hyph-sl.tex",            "slovenian" },
-    { "??",  "hyph-sr-cyrl.tex",       "serbian" },
+    { "sr",  "hyph-sr-cyrl.tex",       "serbian" },
     { "sv",  "hyph-sv.tex",            "swedish" },
     { "tr",  "hyph-tr.tex",            "turkish" },
     { "tk",  "hyph-tk.tex",            "turkman" },
     { "uk",  "hyph-uk.tex",            "ukrainian" },
-    { "??",  "hyph-zh-latn.tex",       "zh-latn, chinese Pinyin" },
+    { "zh",  "hyph-zh-latn.tex",       "zh-latn, chinese Pinyin" },
 }
 
 
@@ -154,7 +153,7 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
         end
         h.patterns = nil
         h.hyphenation = nil
-        for k, v in pairs(h) do
+        for k, v in next, h do
             if not permitted_commands[k] then okay = false end
             if mnemonic then
                 logs.simple("command \\%s found in language %s, file %s, n=%s",k,mnemonic,name,v)
@@ -163,7 +162,7 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
             end
         end
         if not environment.argument("fast") then
-            for k, v in pairs(c) do
+            for k, v in next, c do
                 if mnemonic then
                     logs.simple("command \\%s found in comment of language %s, file %s, n=%s",k,mnemonic,name,v)
                 else
@@ -223,7 +222,7 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
             end
         end
         local stripped = { }
-        for k, v in pairs(p) do
+        for k, v in next, p do
             if mnemonic then
                 logs.simple("invalid character %s (0x%04X) in patterns of language %s, file %s, n=%s",char(k),k,mnemonic,name,v)
             else
@@ -235,7 +234,7 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
                 stripped[k] = true
             end
         end
-        for k, v in pairs(h) do
+        for k, v in next, h do
             if mnemonic then
                 logs.simple("invalid character %s (0x%04X) in exceptions of language %s, file %s, n=%s",char(k),k,mnemonic,name,v)
             else
@@ -248,7 +247,7 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
             end
         end
         local stripset = ""
-        for k, v in pairs(stripped) do
+        for k, v in next, stripped do
             logs.simple("entries that contain character %s will be omitted",char(k))
             stripset = stripset .. "%" .. char(k)
         end
@@ -294,8 +293,10 @@ end
 function scripts.patterns.check()
     local path = environment.argument("path") or "."
     local found = false
-    if #environment.files > 0 then
-        for _, name in ipairs(environment.files) do
+    local files = environment.files
+    if #files > 0 then
+        for i=1,#files do
+            local name = files[i]
             logs.simple("checking language file %s", name)
             local okay = scripts.patterns.load(path,name,nil,not environment.argument("fast"))
             if #environment.files > 1 then
@@ -303,7 +304,7 @@ function scripts.patterns.check()
             end
         end
     else
-        for k, v in pairs(scripts.patterns.list) do
+        for k, v in next, scripts.patterns.list do
             local mnemonic, name = v[1], v[2]
             logs.simple("checking language %s, file %s", mnemonic, name)
             local okay = scripts.patterns.load(path,name,mnemonic,not environment.argument("fast"))
@@ -324,7 +325,7 @@ function scripts.patterns.convert()
         if path == destination then
             logs.simple("source path and destination path should differ (use --path and/or --destination)")
         else
-            for k, v in pairs(scripts.patterns.list) do
+            for k, v in next, scripts.patterns.list do
                 local mnemonic, name = v[1], v[2]
                 logs.simple("converting language %s, file %s", mnemonic, name)
                 local okay, patterns, hyphenations, comment, stripped, pused, hused = scripts.patterns.load(path,name,false)
@@ -362,3 +363,4 @@ end
 -- mtxrun --script pattern --check          --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
 -- mtxrun --script pattern --check   --fast --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
 -- mtxrun --script pattern --convert        --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns --destination=e:/tmp/patterns
+-- mtxrun --script pattern --convert        --path=c:/data/develop/svn-hyphen/branches/luatex/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns

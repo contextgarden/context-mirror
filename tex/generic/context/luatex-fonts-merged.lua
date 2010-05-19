@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/18/10 10:57:58
+-- merge date  : 05/19/10 16:24:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -236,7 +236,7 @@ function string:totable()
     return lpegmatch(pattern,self)
 end
 
---~ for _, str in ipairs {
+--~ local t = {
 --~     "1234567123456712345671234567",
 --~     "a\tb\tc",
 --~     "aa\tbb\tcc",
@@ -244,7 +244,10 @@ end
 --~     "aaaa\tbbbb\tcccc",
 --~     "aaaaa\tbbbbb\tccccc",
 --~     "aaaaaa\tbbbbbb\tcccccc",
---~ } do print(string.tabtospace(str)) end
+--~ }
+--~ for k,v do
+--~     print(string.tabtospace(t[k]))
+--~ end
 
 function string.tabtospace(str,tab)
     -- we don't handle embedded newlines
@@ -583,7 +586,7 @@ table.join = table.concat
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
-local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
+local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
 local unpack = unpack or table.unpack
 
 function table.strip(tab)
@@ -650,7 +653,7 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
-function table.sortedpairs(t)
+function table.sortedhash(t)
     local s = sortedhashkeys(t) -- maybe just sortedkeys
     local n = 0
     local function kv(s)
@@ -660,6 +663,8 @@ function table.sortedpairs(t)
     end
     return kv, s
 end
+
+table.sortedpairs = table.sortedhash
 
 function table.append(t, list)
     for _,v in next, list do
@@ -783,18 +788,18 @@ end
 
 -- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
 
-function table.is_empty(t)
+function table.is_empty(t) -- obolete, use inline code instead
     return not t or not next(t)
 end
 
-function table.one_entry(t)
+function table.one_entry(t) -- obolete, use inline code instead
     local n = next(t)
     return n and not next(t,n)
 end
 
-function table.starts_at(t)
-    return ipairs(t,1)(t,0)
-end
+--~ function table.starts_at(t) -- obsolete, not nice
+--~     return ipairs(t,1)(t,0)
+--~ end
 
 function table.tohash(t,value)
     local h = { }
@@ -898,7 +903,7 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) then
-        local first, last = nil, 0 -- #root cannot be trusted here
+        local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
         if compact then
             -- NOT: for k=1,#root do (we need to quit at nil)
             for k,v in ipairs(root) do -- can we use next?
@@ -1733,7 +1738,7 @@ function file.splitname(str) -- returns drive, path, base, suffix
     return lpegmatch(pattern,str)
 end
 
--- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end
+-- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
 --
 -- test { "c:", "c:/aa", "c:/aa/bb", "c:/aa/bb/cc", "c:/aa/bb/cc.dd", "c:/aa/bb/cc.dd.ee" }
 -- test { "c:", "c:aa", "c:aa/bb", "c:aa/bb/cc", "c:aa/bb/cc.dd", "c:aa/bb/cc.dd.ee" }
@@ -1925,13 +1930,14 @@ function io.ask(question,default,options)
         elseif not options then
             return answer
         else
-            for _,v in pairs(options) do
-                if v == answer then
+            for k=1,#options do
+                if options[k] == answer then
                     return answer
                 end
             end
             local pattern = "^" .. answer
-            for _,v in pairs(options) do
+            for k=1,#options do
+                local v = options[k]
                 if find(v,pattern) then
                     return v
                 end
@@ -2151,7 +2157,7 @@ end
 function containers.is_valid(container, name)
     if name and name ~= "" then
         local storage = container.storage[name]
-        return storage and not table.is_empty(storage) and storage.cache_version == container.version
+        return storage and storage.cache_version == container.version
     else
         return false
     end
@@ -2475,7 +2481,7 @@ nodes.whatsits = { } -- table.swapped(node.whatsits())
 local reserved = { }
 local whatsits = nodes.whatsits
 
-for k, v in pairs(node.whatsits()) do
+for k, v in next, node.whatsits() do
     whatsits[k], whatsits[v] = v, k -- two way
 end
 
@@ -3870,7 +3876,7 @@ t.colorscheme = tfmtable.colorscheme
     local characters = tfmtable.characters
     local nameneeded = not tfmtable.shared.otfdata --hack
     local changed = tfmtable.changed or { } -- for base mode
-    local ischanged = not table.is_empty(changed)
+    local ischanged = changed and next(changed)
     local indices = tfmtable.indices
     local luatex = tfmtable.luatex
     local tounicode = luatex and luatex.tounicode
@@ -4293,6 +4299,31 @@ function tfm.replacements(tfm,value)
  -- tfm.characters[0x0022] = tfm.characters[0x201D]
     tfm.characters[0x0027] = tfm.characters[0x2019]
  -- tfm.characters[0x0060] = tfm.characters[0x2018]
+end
+
+-- checking
+
+function tfm.checked_filename(metadata,whatever)
+    local foundfilename = metadata.foundfilename
+    if not foundfilename then
+        local askedfilename = metadata.filename or ""
+        if askedfilename ~= "" then
+            foundfilename = resolvers.findbinfile(askedfilename,"") or ""
+            if foundfilename == "" then
+                logs.report("fonts","source file '%s' is not found",askedfilename)
+                foundfilename = resolvers.findbinfile(file.basename(askedfilename),"") or ""
+                if foundfilename ~= "" then
+                    logs.report("fonts","using source file '%s' (cache mismatch)",foundfilename)
+                end
+            end
+        elseif whatever then
+            logs.report("fonts","no source file for '%s'",whatever)
+            foundfilename = ""
+        end
+        metadata.foundfilename = foundfilename
+    --  logs.report("fonts","using source file '%s'",foundfilename)
+    end
+    return foundfilename
 end
 
 -- status info
@@ -5131,13 +5162,13 @@ local to_scripts   = otf.tables.to_scripts
 local to_languages = otf.tables.to_languages
 local to_features  = otf.tables.to_features
 
-for k, v in pairs(to_features) do
+for k, v in next, to_features do
     local stripped = gsub(k,"%-"," ")
     to_features[stripped] = v
     local stripped = gsub(k,"[^a-zA-Z0-9]","")
     to_features[stripped] = v
 end
-for k, v in pairs(to_features) do
+for k, v in next, to_features do
     to_features[lower(k)] = v
 end
 
@@ -5672,7 +5703,7 @@ fonts.map.add_to_unicode = function(data,filename)
         end
     end
     if trace_unimapping then
-        for index, glyph in table.sortedpairs(data.glyphs) do
+        for index, glyph in table.sortedhash(data.glyphs) do
             local toun, name, unic = tounicode[index], glyph.name, glyph.unicode or -1 -- play safe
             if toun then
                 logs.report("load otf","internal: 0x%05X, name: %s, unicode: 0x%05X, tounicode: %s",index,name,unic,toun)
@@ -5722,7 +5753,7 @@ end
 --
 -- function fonts.map.flush(backend) -- will also erase the accumulated data
 --     local flushline = fonts.map.line[backend or "pdftex"] or fonts.map.line.pdftex
---     for _, e in pairs(fonts.map.data) do
+--     for _, e in next, fonts.map.data do
 --         flushline(e)
 --     end
 --     fonts.map.data = { }
@@ -6371,7 +6402,7 @@ end
 otf.enhancers["merge cid fonts"] = function(data,filename)
     -- we can also move the names to data.luatex.names which might
     -- save us some more memory (at the cost of harder tracing)
-    if data.subfonts and table.is_empty(data.glyphs) then
+    if data.subfonts and data.glyphs and next(data.glyphs) then
         local cidinfo = data.cidinfo
         local verbose = fonts.verbose
         if cidinfo.registry then
@@ -7150,7 +7181,7 @@ end
 
 function otf.set_features(tfmdata,features)
     local processes = { }
-    if not table.is_empty(features) then
+    if features and next(features) then
         local lists = {
             fonts.triggers,
             fonts.processors,
@@ -7225,14 +7256,14 @@ function otf.otf_to_tfm(specification)
 --~ print(cache_id)
     if not tfmdata then
         local otfdata = otf.load(filename,format,sub,features and features.featurefile)
-        if not table.is_empty(otfdata) then
+        if otfdata and next(otfdata) then
             otfdata.shared = otfdata.shared or {
                 featuredata = { },
                 anchorhash  = { },
                 initialized = false,
             }
             tfmdata = otf.copy_to_tfm(otfdata,cache_id)
-            if not table.is_empty(tfmdata) then
+            if tfmdata and next(tfmdata) then
                 tfmdata.unique = tfmdata.unique or { }
                 tfmdata.shared = tfmdata.shared or { } -- combine
                 local shared = tfmdata.shared
@@ -7357,12 +7388,12 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
             designsize = 100
         end
         local spaceunits = 500
-        tfm.units              = metadata.units_per_em or 1000
-        -- we need a runtime lookup because of running from cdrom or zip, brrr
-        tfm.filename           = resolvers.findbinfile(luatex.filename,"") or luatex.filename
+        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
+        tfm.filename           = fonts.tfm.checked_filename(luatex)
         tfm.fullname           = metadata.fullname
         tfm.fontname           = metadata.fontname
         tfm.psname             = tfm.fontname or tfm.fullname
+        tfm.units              = metadata.units_per_em or 1000
         tfm.encodingbytes      = 2
         tfm.cidinfo            = data.cidinfo
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
@@ -11787,14 +11818,14 @@ a helper function.</p>
 
 function define.check(features,defaults) -- nb adapts features !
     local done = false
-    if table.is_empty(features) then
-        features, done = table.fastcopy(defaults), true
-    else
+    if features and next(features) then
         for k,v in next, defaults do
             if features[k] == nil then
                 features[k], done = v, true
             end
         end
+    else
+        features, done = table.fastcopy(defaults), true
     end
     return features, done -- done signals a change
 end
@@ -12124,11 +12155,14 @@ fonts.names.old_to_new = { }
 
 local data, loaded = nil, false
 
+local fileformats = { "lua", "tex", "other text files" }
+
 function fonts.names.resolve(name,sub)
     if not loaded then
         local basename = fonts.names.basename
         if basename and basename ~= "" then
-            for _, format in ipairs { "lua", "tex", "other text files" } do
+            for i=1,#fileformats do
+                local format = fileformats[i]
                 local foundname = resolvers.find_file(basename,format) or ""
                 if foundname ~= "" then
                     data = dofile(foundname)

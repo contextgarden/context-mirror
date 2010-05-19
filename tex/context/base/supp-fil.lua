@@ -262,7 +262,7 @@ end
 statistics.register("loaded tex modules", function()
     if next(modstatus) then
         local t, f = { }, { }
-        for k, v in table.sortedpairs(modstatus) do
+        for k, v in table.sortedhash(modstatus) do
             k = file.basename(k)
             if v == 0 then
                 f[#f+1] = k

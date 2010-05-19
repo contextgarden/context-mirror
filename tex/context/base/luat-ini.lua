@@ -44,6 +44,8 @@ just a lightweight suggestive system, not a watertight
 one.</p>
 --ldx]]--
 
+local debug = require "debug"
+
 local string, table, lpeg, math, io, system = string, table, lpeg, math, io, system
 local next, setfenv = next, setfenv or debug.setfenv
 local format = string.format
@@ -79,7 +81,7 @@ local protected = {
 userdata, thirddata, moduledata = nil, nil, nil
 
 if not setfenv then
-    texio.write_nl("warning: we need to fix setfenv")
+    texio.write_nl("warning: we need to fix setfenv by using 'load in' or '_ENV'")
 end
 
 function protect(name)

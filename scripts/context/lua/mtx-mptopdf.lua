@@ -86,7 +86,8 @@ function scripts.mptopdf.convertall()
             exit(1)
         end
         local report = { }
-        for _,fn in ipairs(files) do
+        for i=1,#files do
+            local fn = files[i]
             local success, name = scripts.mptopdf.aux.do_convert(fn)
             if success > 0 then
                 report[#report+1] = { fn, name }
@@ -95,7 +96,8 @@ function scripts.mptopdf.convertall()
         if #report > 0 then
             logs.simple("number of converted files: %i", #report)
             logs.simple("")
-            for _, r in ipairs(report) do
+            for i=1,#report do
+                local r = report[i]
                 logs.simple("%s => %s", r[1], r[2])
             end
         else

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-mis'] = {
     license   = "see context related readme files"
 }
 
-local next, pairs, ipairs = next, pairs, ipairs
+local next = next
 local lower, strip = string.lower, string.strip
 
 fonts.otf = fonts.otf or { }
@@ -33,6 +33,8 @@ function fonts.otf.loadcached(filename,format,sub)
     end
 end
 
+local featuregroups = { "gsub", "gpos" }
+
 function fonts.get_features(name,t,script,language)
     local t = lower(t or (name and file.extname(name)) or "")
     if t == "otf" or t == "ttf" or t == "ttc" or t == "dfont" then
@@ -47,20 +49,28 @@ function fonts.get_features(name,t,script,language)
                     local data = fontloader.to_table(ff)
                     fontloader.close(ff)
                     local features = { }
-                    for k, what in pairs { "gsub", "gpos" } do
+                    for k=1,#featuregroups do
+                        local what = featuregroups[k]
                         local dw = data[what]
                         if dw then
                             local f = { }
                             features[what] = f
-                            for _, d in ipairs(dw) do
-                                if d.features then
-                                    for _, df in ipairs(d.features) do
+                            for i=1,#dw do
+                                local d = dw[i]
+                                local dfeatures = d.features
+                                if dfeatures then
+                                    for i=1,#dfeatures do
+                                        local df = dfeatures[i]
                                         local tag = strip(lower(df.tag))
                                         local ft = f[tag] if not ft then ft = {} f[tag] = ft end
-                                        for _, ds in ipairs(df.scripts) do
+                                        local dfscripts = df.scripts
+                                        for i=1,#dfscripts do
+                                            local ds = dfscripts[i]
                                             local scri = strip(lower(ds.script))
                                             local fts = ft[scri] if not fts then fts = {} ft[scri] = fts end
-                                            for _, lang in ipairs(ds.langs) do
+                                            local dslangs = ds.langs
+                                            for i=1,#dslangs do
+                                                local lang = dslangs[i]
                                                 lang = strip(lower(lang))
                                                 if scri == script then
                                                     if lang == language then

@@ -52,8 +52,9 @@ end
 function pdfview.open(...)
     local opencall = opencalls[pdfview.method]
     if opencall then
-        for _, name in ipairs({...}) do
-            name = fullname(name)
+        local t = { ... }
+        for i=1,#t do
+            local name = fullname(t[i])
             if io.exists(name) then
                 os.execute(format('%s "%s" 2>&1', opencall, name))
                 openedfiles[name] = true
@@ -65,8 +66,9 @@ end
 function pdfview.close(...)
     local closecall = closecalls[pdfview.method]
     if closecall then
-        for _, name in ipairs({...}) do
-            name = fullname(name)
+        local t = { ... }
+        for i=1,#t do
+            local name = fullname(t[i])
             if openedfiles[name] then
                 os.execute(format('%s "%s" 2>&1', closecall, name))
                 openedfiles[name] = nil

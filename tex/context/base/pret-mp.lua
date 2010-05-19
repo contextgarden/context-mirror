@@ -135,8 +135,8 @@ local states = {
 
 local known_words = { }
 
-for k,v in pairs(visualizer.identifiers) do
-    for _,w in pairs(v) do
+for k,v in next, visualizer.identifiers do
+    for _,w in next, v do
         known_words[w] = k
     end
 end

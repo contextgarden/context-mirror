@@ -131,7 +131,7 @@ function nodes.lines.boxed.setup(n,configuration)
         if trace_numbers then
             logs.report("lines","updating setup %s",n)
         end
-        for k,v in pairs(configuration) do
+        for k,v in next, configuration do
             d[k] = v
         end
     else

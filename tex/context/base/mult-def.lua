@@ -8779,6 +8779,10 @@ return {
    ["pe"]="کمترین‌عرض",
    ["ro"]="latimeminima",
   },
+  ["monthconversion"]={
+   ["en"]="monthconversion",
+   ["nl"]="maandconversie",
+  },
   ["n"]={
    ["cs"]="n",
    ["de"]="n",
@@ -9427,6 +9431,10 @@ return {
    ["nl"]="willekeur",
    ["pe"]="تصادفی",
    ["ro"]="aleator",
+  },
+  ["range"]={
+   ["en"]="range",
+   ["nl"]="bereik",
   },
   ["reduction"]={
    ["cs"]="redukce",

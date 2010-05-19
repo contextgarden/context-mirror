@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['luat-cbk'] = {
 }
 
 local insert, remove, find = table.insert, table.remove, string.find
+local collectgarbage, type, next = collectgarbage, type, next
+local round = math.round
 
 local trace_checking = false  trackers.register("memory.checking", function(v) trace_checking = v end)
 
@@ -52,7 +54,7 @@ end
 
 function callbacks.report()
     local list = callback.list()
-    for name, func in table.sortedpairs(list) do
+    for name, func in table.sortedhash(list) do
         local str = frozen[name]
         if str then
             logs.report("callbacks","%s: %s -> %s",state(name),name,str)
@@ -63,16 +65,10 @@ function callbacks.report()
 end
 
 function callbacks.table()
+    local NC, NR, verbatim = context.NC, context.NR, context.type
     context.starttabulate { "|l|l|p|" }
-    for name, func in table.sortedpairs(callback.list()) do
-        context.NC()
-        context.type(name)
-        context.NC()
-        context.type(state(name))
-        context.NC()
-        context(frozen[name] or "")
-        context.NC()
-        context.NR()
+    for name, func in table.sortedhash(callback.list()) do
+        NC() verbatim(name) NC() verbatim(state(name)) NC() context(frozen[name] or "") NC() NR()
     end
     context.stoptabulate()
 end
@@ -83,7 +79,7 @@ function callbacks.freeze(name,freeze)
     if find(name,"%*") then
         local pattern = name -- string.simpleesc(name)
         local list = callback.list()
-        for name, func in pairs(list) do
+        for name, func in next, list do
             if find(name,pattern) then
                 frozen[name] = freeze or frozen[name] or "frozen"
             end
@@ -239,7 +235,6 @@ function garbagecollector.check(size,criterium)
         criterium = criterium or garbagecollector.criterium
         if not size or (criterium and criterium > 0 and size > criterium) then
             if trace_checking then
-                local round = math.round or math.floor
                 local b = collectgarbage("count")
                 collectgarbage("collect")
                 local a = collectgarbage("count")

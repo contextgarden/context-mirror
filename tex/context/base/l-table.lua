@@ -11,7 +11,7 @@ table.join = table.concat
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
-local type, next, tostring, tonumber, ipairs, pairs = type, next, tostring, tonumber, ipairs, pairs
+local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
 local unpack = unpack or table.unpack
 
 function table.strip(tab)
@@ -78,7 +78,7 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
-function table.sortedpairs(t)
+function table.sortedhash(t)
     local s = sortedhashkeys(t) -- maybe just sortedkeys
     local n = 0
     local function kv(s)
@@ -88,6 +88,8 @@ function table.sortedpairs(t)
     end
     return kv, s
 end
+
+table.sortedpairs = table.sortedhash
 
 function table.append(t, list)
     for _,v in next, list do
@@ -211,18 +213,18 @@ end
 
 -- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
 
-function table.is_empty(t)
+function table.is_empty(t) -- obolete, use inline code instead
     return not t or not next(t)
 end
 
-function table.one_entry(t)
+function table.one_entry(t) -- obolete, use inline code instead
     local n = next(t)
     return n and not next(t,n)
 end
 
-function table.starts_at(t)
-    return ipairs(t,1)(t,0)
-end
+--~ function table.starts_at(t) -- obsolete, not nice
+--~     return ipairs(t,1)(t,0)
+--~ end
 
 function table.tohash(t,value)
     local h = { }
@@ -326,7 +328,7 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) then
-        local first, last = nil, 0 -- #root cannot be trusted here
+        local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
         if compact then
             -- NOT: for k=1,#root do (we need to quit at nil)
             for k,v in ipairs(root) do -- can we use next?

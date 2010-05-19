@@ -142,7 +142,7 @@ commands.other  = token.command_id("other_char")
 function collectors.default_words(t,str)
     t[#t+1] = tokens.bgroup
     t[#t+1] = token.create("red")
-    for k,v in ipairs(str) do
+    for i=1,#str do
         t[#t+1] = tokens.other('*')
     end
     t[#t+1] = tokens.egroup
@@ -151,7 +151,9 @@ end
 function collectors.with_words(tag,handle)
     local t, w = { }, { }
     handle = handle or collectors.default_words
-    for _,v in ipairs(collectors.data[tag]) do
+    local tagdata = collectors.data[tag]
+    for k=1,#tagdata do
+        local v = tagdata[k]
         if v[1] == commands.letter then
             w[#w+1] = v[2]
         else
@@ -201,7 +203,7 @@ collectors.show_methods.a = function(data) -- no need to store the table, just p
     texsprint(ctxcatcodes, "\\starttabulate[|T|Tr|cT|Tr|T|]")
     texsprint(ctxcatcodes, format(template,"cmd","chr","","id","name"))
     texsprint(ctxcatcodes, "\\HL")
-    for _,v in pairs(data) do
+    for _,v in next, data do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
         local name = gsub(token.command_name(v) or "","_","\\_")
         if id > 0 then
@@ -231,7 +233,7 @@ collectors.show_methods.b_c = function(data,swap) -- no need to store the table,
     end
     texsprint(ctxcatcodes, format(template,"cmd","chr","name"))
     texsprint(ctxcatcodes, "\\HL")
-    for _,v in pairs(data) do
+    for _,v in next, data do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
         local name = gsub(token.command_name(v) or "","_","\\_")
         if id > 0 then

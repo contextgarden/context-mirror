@@ -111,7 +111,8 @@ function caches.setpath(...)
         caches.path = '.'
     end
     caches.path = resolvers.clean_path(caches.path)
-    if not table.is_empty({...}) then
+    local dirs = { ... }
+    if #dirs > 0 then
         local pth = dir.mkdirs(caches.path,...)
         return pth
     end

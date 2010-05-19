@@ -112,8 +112,9 @@ function scripts.convert.convertall()
 end
 
 function scripts.convert.convertgiven()
-    for _, name in ipairs(environment.files) do
-        graphics.converters.convertfile(name)
+    local files = environment.files
+    for i=1,#files do
+        graphics.converters.convertfile(files[i])
     end
 end
 

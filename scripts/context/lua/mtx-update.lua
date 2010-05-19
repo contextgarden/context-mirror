@@ -207,8 +207,8 @@ function scripts.update.synchronize()
 
         local function collection_to_list_of_folders(collection, platform)
             local archives = {}
-            for _, c in ipairs(collection) do
-                local archive = c[1]
+            for i=1,#collection do
+                local archive = collection[i][1]
                 archive = archive:gsub("<platform>", platform)
                 archive = archive:gsub("<version>", version)
                 archives[#archives+1] = archive
@@ -264,7 +264,8 @@ function scripts.update.synchronize()
             local available_modules = get_list_of_files_from_rsync({"modules/"})
             -- hash of requested modules
             -- local h = table.tohash(extras:split(","))
-            for _, s in ipairs(available_modules) do
+            for i=1,#available_modules do
+                local s = available_modules[i]
             --  if extras == "all" or h[s] then
                 if extras.all or extras[s] then
                     scripts.update.modules[#scripts.update.modules+1] = { format("modules/%s/",s), "texmf-context" }
@@ -278,7 +279,8 @@ function scripts.update.synchronize()
             if collection and platform then
                 platform = scripts.update.platforms[platform]
                 if platform then
-                    for _, c in ipairs(collection) do
+                    for i=1,#collection do
+                        local c = collection[i]
                         local archive = c[1]:gsub("<platform>", platform)
                         local destination = format("%s/%s", texroot, c[2]:gsub("<platform>", platform))
                         destination = destination:gsub("\\","/")
@@ -292,30 +294,32 @@ function scripts.update.synchronize()
             end
         end
 
-        for platform, _ in pairs(platforms) do
+        for platform, _ in next, platforms do
             add_collection(scripts.update.base,platform)
         end
-        for platform, _ in pairs(platforms) do
+        for platform, _ in next, platforms do
             add_collection(scripts.update.modules,platform)
         end
-        for engine, _ in pairs(engines) do
-            for platform, _ in pairs(platforms) do
+        for engine, _ in next, engines do
+            for platform, _ in next, platforms do
                 add_collection(scripts.update.engines[engine],platform)
             end
         end
 
         if goodies and type(goodies) == "table" then
-            for goodie, _ in pairs(goodies) do
-                for platform, _ in pairs(platforms) do
+            for goodie, _ in next, goodies do
+                for platform, _ in next, platforms do
                     add_collection(scripts.update.goodies[goodie],platform)
                 end
             end
         end
 
         local combined = { }
-        for _, repository in ipairs(scripts.update.repositories) do
+        local update_repositories = scripts.update.repositories
+        for i=1,#update_repositories do
+            local repository = update_repositories
             if repositories[repository] then
-                for _, v in pairs(individual) do
+                for _, v in next, individual do
                     local archive, destination = v[1], v[2]
                     local cd = combined[destination]
                     if not cd then
@@ -327,14 +331,14 @@ function scripts.update.synchronize()
             end
         end
         if logs.verbose then
-            for k, v in pairs(combined) do
+            for k, v in next, combined do
                 logs.report("update", k)
-                for k,v in ipairs(v) do
-                    logs.report("update", "  <= " .. v)
+                for i=1,#v do
+                    logs.report("update", "  <= " .. v[i])
                 end
             end
         end
-        for destination, archive in pairs(combined) do
+        for destination, archive in next, combined do
             local archives, command = concat(archive," "), ""
         --  local normalflags, deleteflags = states.get("rsync.flags.normal"), states.get("rsync.flags.delete")
         --    if environment.argument("keep") or destination:find("%.$") then
@@ -376,7 +380,7 @@ function scripts.update.synchronize()
             end
         end
 
-        for platform, _ in pairs(platforms) do
+        for platform, _ in next, platforms do
             update_script('luatools',platform)
             update_script('mtxrun',platform)
         end
@@ -400,7 +404,7 @@ end
 
 function table.fromhash(t)
     local h = { }
-    for k, v in pairs(t) do -- no ipairs here
+    for k, v in next, t do -- not indexed
         if v then h[#h+1] = k end
     end
     return h
@@ -426,19 +430,19 @@ function scripts.update.make()
     local askedformats = formats
     local texformats = table.tohash(scripts.update.texformats)
     local mpformats = table.tohash(scripts.update.mpformats)
-    for k,v in pairs(texformats) do
+    for k,v in next, texformats do
         if not askedformats[k] then
             texformats[k] = nil
         end
     end
-    for k,v in pairs(mpformats) do
+    for k,v in next, mpformats do
         if not askedformats[k] then
             mpformats[k] = nil
         end
     end
     local formatlist = concat(table.fromhash(texformats), " ")
     if formatlist ~= "" then
-        for engine in pairs(engines) do
+        for engine in next, engines do
             if engine == "luatex" then
                 scripts.update.run(format("context --make")) -- maybe also formatlist
             else
@@ -511,7 +515,7 @@ if scripts.savestate then
     local valid = scripts.update.engines
     for r in gmatch(environment.argument("engine") or "all","([^, ]+)") do
         if r == "all" then
-            for k, v in pairs(valid) do
+            for k, v in next, valid do
                 if k ~= "all" then
                     states.set("engines." .. k, true)
                 end

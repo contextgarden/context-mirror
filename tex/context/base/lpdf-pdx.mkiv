@@ -1,0 +1,71 @@
+%D \module
+%D   [       file=lpdf-pdx,
+%D        version=2010.02.11,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=PDF-X,
+%D         author=Peter Rolf \& Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA] % and peter
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Backend Macros / PDF-X}
+
+\unprotect
+
+%  declare default color space
+% all device based entries of the same CS are mapped to the defined ICCprofile then;
+%   i.e.  /DeviceRGB --> /ICCBased RGB profile
+% TODO: allow multiple default profiles (one per CS)
+%
+% external ICC profile dictionary (PDF/X-4p and PDF/X-5p)
+%
+% - ProfileName (not file name!)
+% - URLs (array containing at least one URL); the keyword FSA is wrong!
+% - CheckSum (16byte MD5 hash)
+% - ProfileCS (GRAY,RGB,CMYK)
+% - ICCVersion (bytes 8..11 from the header of the ICC profile, as a hex string)
+
+\registerctxluafile{lpdf-pdx} {}
+
+% \def\embedICCprofile#1#2% colorspace, name
+%   {\ctxlua{backends.codeinjections.addiccprofile("#1","#2")}}
+
+\def\douseinternalICCprofile[#1]%
+  {\getparameters[\??ic][colorspace=,filename=,#1]%
+   \ctxlua{backends.codeinjections.useinternalICCprofile(
+     "\@@iccolorspace","\@@icfilename")}}
+
+% create a dictionary for an external ICC profile (PDF/X-4p and PDF/X-5pg only)
+% the referenced ICC profile is not embedded
+
+\def\douseexternalICCprofile[#1]%
+  {\getparameters[\??ic][colorspace=,name=,url=,checksum=,version=,#1]%
+   \ctxlua{backends.codeinjections.useexternalICCprofile(
+     "\@@iccolorspace","\@@icname","\@@icurl","\@@icchecksum","\@@icversion")}}
+
+% use an ICC profile as default colorspace for all device dependend colors;
+% all device based entries of the same CS are mapped to the defined ICCprofile then;
+% i.e. /DeviceRGB --> /ICCBased RGB profile always embed the profile!
+
+\def\douseICCdefaultprofile[#1]%
+  {\getparameters[\??ic][colorspace=,filename=,#1]%
+   \ctxlua{backends.codeinjections.useICCdefaultprofile(
+     "\@@iccolorspace","\@@icfilename")}}
+
+% embedding rules for output intent profile differ for the PDF/X versions
+
+\def\dousePDFXoutputintent[#1]%
+  {\getparameters[\??ic][reference=\v!yes,outputcondition=,info=,id=,name=,#1]%
+   \ctxlua{backends.codeinjections.usePDFXoutputintent(
+     "\@@icid","\@@icname","\@@icreference","\@@icoutputcondition","\@@icinfo")}}
+
+\def\useinternalICCprofile{\dosingleempty\douseinternalICCprofile}
+\def\useexternalICCprofile{\dosingleempty\douseexternalICCprofile}
+\def\useICCdefaultprofile {\dosingleempty\douseICCdefaultprofile }
+\def\usePDFXoutputintent  {\dosingleempty\dousePDFXoutputintent  }
+
+\protect \endinput
+

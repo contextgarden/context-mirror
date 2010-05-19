@@ -66,7 +66,7 @@ do
 
     function ctxrunner.reflag(flags)
         local t = { }
-        for _, flag in pairs(flags) do
+        for _, flag in next, flags do
             local key, value = flag:match("^(.-)=(.+)$")
             if key and value then
                 t[key] = value
@@ -122,21 +122,24 @@ do
                 return
             end
         end
-        if table.is_empty(ctxdata.prepfiles) then
-            logs.simple("nothing prepared, no ctl file saved")
-            os.remove(ctlname)
-        else
+        local prepfiles = ctxdata.prepfiles
+        if prepfiles and next(prepfiles) then
             logs.simple("saving logdata in: %s",ctlname)
             f = io.open(ctlname,'w')
             if f then
                 f:write("<?xml version='1.0' standalone='yes'?>\n\n")
                 f:write(string.format("<ctx:preplist local='%s'>\n",yn(ctxdata.runlocal)))
-                for _, name in ipairs(table.sortedkeys(ctxdata.prepfiles)) do
-                    f:write(string.format("\t<ctx:prepfile done='%s'>%s</ctx:prepfile>\n",yn(ctxdata.prepfiles[name]),name))
+                local sorted = table.sortedkeys(prepfiles)
+                for i=1,#sorted do
+                    local name = sorted[i]
+                    f:write(string.format("\t<ctx:prepfile done='%s'>%s</ctx:prepfile>\n",yn(prepfiles[name]),name))
                 end
                 f:write("</ctx:preplist>\n")
                 f:close()
             end
+        else
+            logs.simple("nothing prepared, no ctl file saved")
+            os.remove(ctlname)
         end
     end
 
@@ -179,7 +182,7 @@ do
         local found    = lfs.isfile(usedname)
 
         if not found then
-            for _, path in pairs(ctxdata.locations) do
+            for _, path in next, ctxdata.locations do
                 local fullname = file.join(path,ctxdata.ctxname)
                 if lfs.isfile(fullname) then
                     usedname, found = fullname, true
@@ -220,8 +223,9 @@ do
 
         ctxdata.flags = ctxrunner.reflag(ctxdata.flags)
 
-        for _, message in ipairs(ctxdata.messages) do
-            logs.simple("ctx comment: %s", xml.tostring(message))
+        local messages = ctxdata.messages
+        for i=1,#messages do
+            logs.simple("ctx comment: %s", xml.tostring(messages[i]))
         end
 
         for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value[@name='job']") do
@@ -261,7 +265,9 @@ do
                     local pluspath = false
                     if #oldfiles == 0 then
                         -- message: no files match pattern
-                        for _, p in ipairs(ctxdata.paths) do
+                        local paths = ctxdata.paths
+                        for i=1,#paths do
+                            local p = paths[i]
                             local oldfiles = dir.glob(path.join(p,pattern))
                             if #oldfiles > 0 then
                                 pluspath = true
@@ -272,15 +278,18 @@ do
                     if #oldfiles == 0 then
                         -- message: no old files
                     else
-                        for _, oldfile in ipairs(oldfiles) do
-                            newfile = oldfile .. "." .. suffix -- addsuffix will add one only
+                        for i=1,#oldfiles do
+                            local oldfile = oldfiles[i]
+                            local newfile = oldfile .. "." .. suffix -- addsuffix will add one only
                             if ctxdata.runlocal then
                                 newfile = file.basename(newfile)
                             end
                             if oldfile ~= newfile and file.needsupdate(oldfile,newfile) then
                             --  message: oldfile needs preprocessing
                             --  os.remove(newfile)
-                                for _, pp in ipairs(preprocessor:split(',')) do
+                                local splitted = preprocessor:split(',')
+                                for i=1,#splitted do
+                                    local pp = splitted[i]
                                     local command = commands[pp]
                                     if command then
                                         command = xml.copy(command)
@@ -361,7 +370,9 @@ scripts.context.multipass = {
 
 function scripts.context.multipass.hashfiles(jobname)
     local hash = { }
-    for _, suffix in ipairs(scripts.context.multipass.suffixes) do
+    local suffixes = scripts.context.multipass.suffixes
+    for i=1,#suffixes do
+        local suffix = suffixes[i]
         local full = jobname .. suffix
         hash[full] = md5.hex(io.loaddata(full) or "unknown")
     end
@@ -369,7 +380,7 @@ function scripts.context.multipass.hashfiles(jobname)
 end
 
 function scripts.context.multipass.changed(oldhash, newhash)
-    for k,v in pairs(oldhash) do
+    for k,v in next, oldhash do
         if v ~= newhash[k] then
             return true
         end
@@ -407,7 +418,7 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         end
         local function setvalues(flag,format,plural)
             if type(flag) == "table"  then
-                for k, v in pairs(flag) do
+                for k, v in next, flag do
                     f:write(format:format(v),"\n")
                 end
             else
@@ -650,7 +661,7 @@ function scripts.context.run(ctxdata,filename)
     local files = (filename and { filename }) or environment.files
     if ctxdata then
         -- todo: interface
-        for k,v in pairs(ctxdata.flags) do
+        for k,v in next, ctxdata.flags do
             environment.setargument(k,v)
         end
     end
@@ -671,7 +682,8 @@ function scripts.context.run(ctxdata,filename)
         end
         --
         if formatfile and scriptfile then
-            for _, filename in ipairs(files) do
+            for i=1,#files do
+                local filename = files[i]
                 local basename, pathname = file.basename(filename), file.dirname(filename)
                 local jobname = file.removesuffix(basename)
                 if pathname == "" then
@@ -735,7 +747,7 @@ function scripts.context.run(ctxdata,filename)
                             oldbase = file.removesuffix(jobname)
                             newbase = file.removesuffix(resultname)
                             if oldbase ~= newbase then
-                                for _, suffix in pairs(scripts.context.beforesuffixes) do
+                                for _, suffix in next, scripts.context.beforesuffixes do
                                     local oldname = file.addsuffix(oldbase,suffix)
                                     local newname = file.addsuffix(newbase,suffix)
                                     local tmpname = "keep-"..oldname
@@ -839,7 +851,7 @@ function scripts.context.run(ctxdata,filename)
                         os.remove(jobname..".top")
                         --
                         if resultname then
-                            for _, suffix in pairs(scripts.context.aftersuffixes) do
+                            for _, suffix in next, scripts.context.aftersuffixes do
                                 local oldname = file.addsuffix(oldbase,suffix)
                                 local newname = file.addsuffix(newbase,suffix)
                                 local tmpname = "keep-"..oldname
@@ -948,9 +960,11 @@ function scripts.context.make(name)
         (environment.argument("xetex")  and "mtxrun texexec.rb --make --xetex " ) or false,
     }
     local list = (name and { name }) or (environment.files[1] and environment.files) or scripts.context.defaultformats
-    for _, name in ipairs(list) do
+    for i=1,#list do
+        local name = list[i]
         name = scripts.context.interfaces[name] or name
-        for _, runner in ipairs(runners) do
+        for i=1,#runners do
+            local runner = runners[i]
             if runner then
                 local command = runner .. name
                 logs.simple("running command: %s",command)
@@ -1096,15 +1110,15 @@ function scripts.context.purge_job(jobname,all)
         jobname = file.basename(jobname)
         local filebase = file.removesuffix(jobname)
         local deleted = { }
-        for _, suffix in ipairs(obsolete_results) do
-            deleted[#deleted+1] = purge_file(filebase.."."..suffix,filebase..".pdf")
+        for i=1,#obsolete_results do
+            deleted[#deleted+1] = purge_file(filebase.."."..obsolete_results[i],filebase..".pdf")
         end
-        for _, suffix in ipairs(temporary_runfiles) do
-            deleted[#deleted+1] = purge_file(filebase.."."..suffix)
+        for i=1,#temporary_runfiles do
+            deleted[#deleted+1] = purge_file(filebase.."."..temporary_runfiles[i])
         end
         if all then
-            for _, suffix in ipairs(persistent_runfiles) do
-                deleted[#deleted+1] = purge_file(filebase.."."..suffix)
+            for i=1,#persistent_runfiles do
+                deleted[#deleted+1] = purge_file(filebase.."."..persistent_runfiles[i])
             end
         end
         if #deleted > 0 then
@@ -1122,7 +1136,8 @@ function scripts.context.purge(all)
     local persistent = table.tohash(persistent_runfiles)
     local generic = table.tohash(generic_files)
     local deleted = { }
-    for _, name in ipairs(files) do
+    for i=1,#files do
+        local name = files[i]
         local suffix = file.extname(name)
         local basename = file.basename(name)
         if obsolete[suffix] or temporary[suffix] or persistent[suffix] or generic[basename] then
@@ -1191,7 +1206,8 @@ function scripts.context.extras(pattern)
         else
             logs.extendbanner(extra)
         end
-        for k,v in ipairs(list) do
+        for i=1,#list do
+            local v = list[i]
             local data = io.loaddata(v) or ""
             data = string.match(data,"begin help(.-)end help")
             if data then

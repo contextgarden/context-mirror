@@ -3,8 +3,8 @@
 % This file is part of hyph-utf8 package and resulted from
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.
 %
-% Source: TODO:WRITEME (yyyy-mm-dd)
-% Author: Maksym Polyakov <polyama at auburn.edu>, <mpoliak at i.com.ua>
+% Source: mnhyphn.tex (2008-03-30)
+% Author: Dorjgotov Batmunkh <bataak at gmail.com>
 %
 % The above mentioned file should become obsolete,
 % and the author of the original file should preferaby modify this file instead.
@@ -43,7 +43,7 @@
 % - \lccode is *forbidden*, and I really mean it
 % - all the patterns should be in UTF-8
 % - the only "allowed" TeX commands in this file are: \patterns, \hyphenation,
-%   and if you really cannot do without, also  \message
+%   and if you really cannot do without, also \input and \message
 % - in particular, please no \catcode or \lccode changes,
 %   they belong to loadhyph-foo.tex,
 %   and no \lefthyphenmin and \righthyphenmin,
@@ -60,11 +60,27 @@
 %
 %------------------------------------------------------------------------------
 %
-% Ukrainian hyphenation patterns in LCY (cp866nav) encoding.    
-% Copyright 1998-2001 Maksym Polyakov.                          
-% Released 2001/05/10.
-% This file can be redistributed and/or modified                
-% under the terms of the LaTeX Project Public License (lppl).   
-% Please, send bug reports via e-mail:                          
-%   polyama@auburn.edu                                          
-%   mpoliak@i.com.ua                                            
+%% mnhyphn.tex v1.2 2008/03/23 (2010/04/03)
+%% Copyright 2007-2010 by Dorjgotov Batmunkh, National University of Mongolia
+%% email bataak@gmail.com
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% Special thanks to: Jim Hefferon and Robin Fairbairns
+%
+% There are few basic rules in mongolian
+%
+% 1. If there is a consonant then it can use hyphen before it.
+%    And if there're two consonants then it can use hyphen before second consonant.
+%    Are there three consonants then it can put hyphen before third consonant,
+%    also are there four consonants then it can use hyphen before fourth consonant.
+% 2. In the case of hardsign or softsign, it's possible to hyphen after these signs.
+%    For instance, байгуулъ-я, үзүүль-е
+% 3. However one vowel can be belong to a syllable, it's not possible to use hyphen.
+%

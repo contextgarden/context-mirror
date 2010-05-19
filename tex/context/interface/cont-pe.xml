@@ -1017,6 +1017,9 @@
         <cd:parameter name="لوح">
           <cd:constant type="cd:name"/>
         </cd:parameter>
+        <cd:parameter name="range">
+          <cd:constant type="cd:text"/>
+        </cd:parameter>
         <cd:parameter name="خطها">
           <cd:constant type="بله"/>
           <cd:constant type="نه"/>

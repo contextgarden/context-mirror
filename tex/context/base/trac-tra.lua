@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['trac-tra'] = {
 -- bound to a variable, like node.new, node.copy etc (contrary to for instance
 -- node.has_attribute which is bound to a has_attribute local variable in mkiv)
 
+local debug = require "debug"
+
 local getinfo = debug.getinfo
 local type, next = type, next
 local concat = table.concat
@@ -57,7 +59,7 @@ function debugger.showstats(printer,threshold)
     local total, grandtotal, functions = 0, 0, 0
     printer("\n") -- ugly but ok
  -- table.sort(counters)
-    for func, count in pairs(counters) do
+    for func, count in next, counters do
         if count > threshold then
             local name = getname(func)
             if not find(name,"for generator") then
@@ -92,7 +94,7 @@ end
 --~     local total, grandtotal, functions = 0, 0, 0
 --~     printer("\n") -- ugly but ok
 --~  -- table.sort(counters)
---~     for func, count in pairs(counters) do
+--~     for func, count in next, counters do
 --~         if count > threshold then
 --~             printer(format("%8i  %s", count, func))
 --~             total = total + count
@@ -268,8 +270,9 @@ end
 
 function setters.show(t)
     commands.writestatus("","")
-    for k,v in ipairs(setters.list(t)) do
-        commands.writestatus(t.name,v)
+    local list = setters.list(t)
+    for k=1,#list do
+        commands.writestatus(t.name,list[k])
     end
     commands.writestatus("","")
 end

@@ -15,7 +15,9 @@ local bomb_1, bomb_2 = "^\254\255", "^\239\187\191"
 
 function scripts.tools.disarmutfbomb()
     local force, done = environment.argument("force"), false
-    for _, name in ipairs(environment.files) do
+    local files = environment.files
+    for i=1,#files do
+        local name = files[i]
         if lfs.isfile(name) then
             local data = io.loaddata(name)
             if not data then
@@ -90,7 +92,7 @@ function scripts.tools.dirtoxml()
     local function flush(list,result,n,path)
         n, result = n or 1, result or { }
         local d = rep("  ",n)
-        for name, attr in table.sortedpairs(list) do
+        for name, attr in table.sortedhash(list) do
             local mode = attr.mode
             if mode == "file" then
                 result[#result+1] = format("%s<file name='%s'>",d,(longname and path and join(path,name)) or name)

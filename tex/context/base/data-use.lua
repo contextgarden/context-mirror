@@ -52,12 +52,13 @@ resolvers.automounted = resolvers.automounted or { }
 
 function resolvers.automount(usecache)
     local mountpaths = resolvers.clean_path_list(resolvers.expansion('TEXMFMOUNT'))
-    if table.is_empty(mountpaths) and usecache then
+    if (not mountpaths or #mountpaths == 0) and usecache then
         mountpaths = { caches.setpath("mount") }
     end
-    if not table.is_empty(mountpaths) then
+    if mountpaths and #mountpaths > 0 then
         statistics.starttiming(resolvers.instance)
-        for k, root in pairs(mountpaths) do
+        for k=1,#mountpaths do
+            local root = mountpaths[k]
             local f = io.open(root.."/url.tmi")
             if f then
                 for line in f:lines() do

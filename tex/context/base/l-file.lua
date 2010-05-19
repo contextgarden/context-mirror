@@ -297,7 +297,7 @@ function file.splitname(str) -- returns drive, path, base, suffix
     return lpegmatch(pattern,str)
 end
 
--- function test(t) for k, v in pairs(t) do print(v, "=>", file.splitname(v)) end end
+-- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
 --
 -- test { "c:", "c:/aa", "c:/aa/bb", "c:/aa/bb/cc", "c:/aa/bb/cc.dd", "c:/aa/bb/cc.dd.ee" }
 -- test { "c:", "c:aa", "c:aa/bb", "c:aa/bb/cc", "c:aa/bb/cc.dd", "c:aa/bb/cc.dd.ee" }

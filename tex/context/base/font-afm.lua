@@ -478,7 +478,7 @@ function afm.copy_to_tfm(data)
             end
             tfm.encodingbytes      = metadata.encodingbytes or 2
             tfm.fullname           = metadata.fullname
-            tfm.filename           = metadata.filename
+            tfm.filename           = metadata.filename -- = tfm.checked_filename(metadata) -- to be tested first
             tfm.name               = tfm.fullname
             tfm.psname             = tfm.fullname
             tfm.type               = "real"
@@ -582,7 +582,7 @@ function afm.set_features(tfmdata)
     local shared = tfmdata.shared
     local afmdata = shared.afmdata
     local features = shared.features
-    if not table.is_empty(features) then
+    if features and next(features) then
         local mode = tfmdata.mode or fonts.mode
         local initializers = fonts.initializers
         local fi = initializers[mode]
@@ -671,10 +671,10 @@ function afm.afm_to_tfm(specification)
         local tfmdata  = containers.read(tfm.cache(), cache_id) -- cache with features applied
         if not tfmdata then
             local afmdata = afm.load(afmname)
-            if not table.is_empty(afmdata) then
+            if afmdata and next(afmdata) then
                 afm.add_dimensions(afmdata)
                 tfmdata = afm.copy_to_tfm(afmdata)
-                if not table.is_empty(tfmdata) then
+                if tfmdata and next(tfmdata) then
                     tfmdata.shared = tfmdata.shared or { }
                     tfmdata.unique = tfmdata.unique or { }
                     tfmdata.shared.afmdata  = afmdata

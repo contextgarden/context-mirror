@@ -126,7 +126,7 @@ function mkiv.tolist(t)
     for i=1,#t do
         r[i] = t[i]
     end
-    for k,v in table.sortedpairs(t) do
+    for k,v in table.sortedhash(t) do
         if type(k) ~= "number" then
             r[#r+1] = k .. "=" .. v
         end

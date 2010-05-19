@@ -159,7 +159,7 @@ function tracers.dump_hash(filename,delta)
     local list = { }
     local hash = tex.hashtokens()
     local command_name = token.command_name
-    for name, token in pairs(hash) do
+    for name, token in next, hash do
         if not delta or not saved[name] then
             -- token: cmd, chr, csid -- combination cmd,chr determines name
             local kind = command_name(token)

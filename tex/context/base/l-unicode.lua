@@ -48,14 +48,20 @@ unicode.utfname = {
     [4] = 'utf-32-be'
 }
 
-function unicode.utftype(f) -- \000 fails !
+-- \000 fails in <= 5.0 but is valid in >=5.1 where %z is depricated
+
+function unicode.utftype(f)
     local str = f:read(4)
     if not str then
         f:seek('set')
         return 0
-    elseif find(str,"^%z%z\254\255") then
+ -- elseif find(str,"^%z%z\254\255") then            -- depricated
+ -- elseif find(str,"^\000\000\254\255") then        -- not permitted and bugged
+    elseif find(str,"\000\000\254\255",1,true) then  -- seems to work okay (TH)
         return 4
-    elseif find(str,"^\255\254%z%z") then
+ -- elseif find(str,"^\255\254%z%z") then            -- depricated
+ -- elseif find(str,"^\255\254\000\000") then        -- not permitted and bugged
+    elseif find(str,"\255\254\000\000",1,true) then  -- seems to work okay (TH)
         return 3
     elseif find(str,"^\254\255") then
         f:seek('set',2)

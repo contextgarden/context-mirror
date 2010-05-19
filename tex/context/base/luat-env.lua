@@ -49,7 +49,8 @@ if not environment.jobname                              then             environ
 function environment.initialize_arguments(arg)
     local arguments, files = { }, { }
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
-    for index, argument in pairs(arg) do
+    for index=1,#arg do
+        local argument = arg[index]
         if index > 0 then
             local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
@@ -82,14 +83,15 @@ function environment.argument(name,partial)
         return arguments[name]
     elseif partial then
         if not sortedflags then
-            sortedflags = { }
-            for _,v in pairs(table.sortedkeys(arguments)) do
-                sortedflags[#sortedflags+1] = "^" .. v
+            sortedflags = table.sortedkeys(arguments)
+            for k=1,#sortedflags do
+                sortedflags[k] = "^" .. sortedflags[k]
             end
             environment.sortedflags = sortedflags
         end
         -- example of potential clash: ^mode ^modefile
-        for _,v in ipairs(sortedflags) do
+        for k=1,#sortedflags do
+            local v = sortedflags[k]
             if find(name,v) then
                 return arguments[sub(v,2,#v)]
             end
@@ -98,9 +100,13 @@ function environment.argument(name,partial)
     return nil
 end
 
+environment.argument("x",true)
+
 function environment.split_arguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }
-    for _,v in ipairs(environment.original_arguments) do
+    local original_arguments = environment.original_arguments
+    for k=1,#original_arguments do
+        local v = original_arguments[k]
         if not done and v == separator then
             done = true
         elseif done then
@@ -119,9 +125,10 @@ function environment.reconstruct_commandline(arg,noquote)
         a = resolvers.resolve(a)
         a = unquote(a)
         return a
-    elseif next(arg) then
+    elseif #arg > 0 then
         local result = { }
-        for _,a in ipairs(arg) do -- ipairs 1 .. #n
+        for i=1,#arg do
+            local a = arg[i]
             a = resolvers.resolve(a)
             a = unquote(a)
             a = gsub(a,'"','\\"') -- tricky
@@ -142,7 +149,8 @@ if arg then
     -- new, reconstruct quoted snippets (maybe better just remove the " then and add them later)
     local newarg, instring = { }, false
 
-    for index, argument in ipairs(arg) do
+    for index=1,#arg do
+        local argument = arg[index]
         if find(argument,"^\"") then
             newarg[#newarg+1] = gsub(argument,"^\"","")
             if not find(argument,"\"$") then

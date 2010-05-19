@@ -252,7 +252,8 @@ function scripts.webserver.run(configuration)
     end
     -- locate root and index file in tex tree
     if not lfs.isdir(configuration.root) then
-        for _, name in ipairs(indices) do
+        for i=1,#indices do
+            local name = indices[i]
             local root = resolvers.resolve("path:" .. name) or ""
             if root ~= "" then
                 configuration.root = root
@@ -263,7 +264,8 @@ function scripts.webserver.run(configuration)
     end
     configuration.root = dir.expand_name(configuration.root)
     if not configuration.index then
-        for _, name in ipairs(indices) do
+        for i=1,#indices do
+            local name = indices[i]
             if lfs.isfile(file.join(configuration.root,name)) then
                 configuration.index = name -- we will prepend the rootpath later
                 break

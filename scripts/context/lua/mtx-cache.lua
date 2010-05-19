@@ -22,9 +22,11 @@ function scripts.cache.collect_two(...)
     return path, rest
 end
 
+local suffixes = { "afm", "tfm", "def", "enc", "otf", "mp", "data" }
+
 function scripts.cache.process_one(action)
-    for k, v in ipairs({ "afm", "tfm", "def", "enc", "otf", "mp", "data" }) do
-        action("fonts", v)
+    for i=1,#suffixes do
+        action("fonts", suffixes[i])
     end
 end
 
@@ -35,13 +37,10 @@ end
 -- todo: recursive delete of paths
 
 function scripts.cache.remove(list,keep)
-    local keepsuffixes = { }
-    for _, v in ipairs(keep or {}) do
-        keepsuffixes[v] = true
-    end
-    local n = 0
-    for _,filename in ipairs(list) do
-        if filename:find("luatex%-cache") then -- safeguard
+    local n, keepsuffixes = 0, table.tohash(keep or { })
+    for i=1,#list do
+        local filename = list[i]
+        if string.find(filename,"luatex%-cache") then -- safeguard
             if not keepsuffixes[file.extname(filename) or ""] then
                 os.remove(filename)
                 n = n + 1

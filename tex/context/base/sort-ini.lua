@@ -147,7 +147,7 @@ end
 
 function table.remap(t)
     local tt = { }
-    for k,v in pairs(t) do
+    for k,v in next, t do
         tt[v]  = k
     end
     return tt

@@ -28,7 +28,8 @@ function scripts.scite.start(indeed)
         fontpath = ""
     end
     local binpaths = file.split_path(os.getenv("PATH")) or file.split_path(os.getenv("path"))
-    for _, scitesignal in ipairs(scitesignals) do
+    for i=1,#scitesignals do
+        local scitesignal = scitesignals[i]
         local scitepath = resolvers.find_file(scitesignal,"other text files") or ""
         if scitepath ~= "" then
             scitepath  = file.dirname(scitepath) -- data
@@ -83,11 +84,11 @@ function scripts.scite.start(indeed)
             logdata[#logdata+1] = { "up to date : %s", basename }
         end
     end
-    for _, property in ipairs(properties) do
-        check_state(property,userpath)
+    for i=1,#properties do
+        check_state(properties[i],userpath)
     end
-    for _, luafile in ipairs(luafiles) do
-        check_state(luafile,userpath)
+    for i=1,#luafiles do
+        check_state(luafiles[i],userpath)
     end
     if fontpath ~= "" then
         check_state(extrafont,fontpath)
@@ -127,14 +128,16 @@ function scripts.scite.start(indeed)
     end
     if #logdata > 0 then
         logs.simple("")
-        for k,v in ipairs(logdata) do
+        for k=1,#logdata do
+            local v = logdata[k]
             logs.simple(v[1],v[2])
         end
     end
     if indeed then
         if #tobecopied > 0 then
             logs.simple("warning    : copying updated files")
-            for _, what in ipairs(tobecopied) do
+            for i=1,#tobecopied do
+                local what = tobecopied[i]
                 logs.simple("copying    : '%s' => '%s'",what[1],what[2])
                 file.copy(what[1],what[2])
             end

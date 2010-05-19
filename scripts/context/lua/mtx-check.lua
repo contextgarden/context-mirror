@@ -105,8 +105,10 @@ function scripts.checker.check(filename)
     local str = io.loaddata(filename)
     if str then
         validator.check(str)
-        if #validator.errors > 0 then
-            for k, v in ipairs(validator.errors) do
+        local errors = validator.errors
+        if #errors > 0 then
+            for k=1,#errors do
+                local v = errors[k]
                 local kind, position, line = v[1], v[2], v[3]
                 local data = str:sub(position-30,position+30)
                 data = data:gsub("(.)", {

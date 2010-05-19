@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['l-utils'] = {
 
 local gsub = string.gsub
 local concat = table.concat
+local type, next = type, next
 
 if not utils        then utils        = { } end
 if not utils.merger then utils.merger = { } end
@@ -85,9 +86,10 @@ function utils.merger._self_libs_(libs,list)
     if type(libs) == 'string' then libs = { libs } end
     if type(list) == 'string' then list = { list } end
     local foundpath = nil
-    for _, lib in ipairs(libs) do
-        for _, pth in ipairs(list) do
-            pth = gsub(pth,"\\","/") -- file.clean_path
+    for i=1,#libs do
+        local lib = libs[i]
+        for j=1,#list do
+            local pth = gsub(list[j],"\\","/") -- file.clean_path
             utils.report("checking library path %s",pth)
             local name = pth .. "/" .. lib
             if lfs.isfile(name) then
@@ -99,7 +101,8 @@ function utils.merger._self_libs_(libs,list)
     if foundpath then
         utils.report("using library path %s",foundpath)
         local right, wrong = { }, { }
-        for _, lib in ipairs(libs) do
+        for i=1,#libs do
+            local lib = libs[i]
             local fullname = foundpath .. "/" .. lib
             if lfs.isfile(fullname) then
             --  right[#right+1] = lib

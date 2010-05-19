@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['data-inp'] = {
 -- * some public auxiliary functions were made private
 --
 -- TODO: os.getenv -> os.env[]
--- TODO: instances.[hashes,cnffiles,configurations,522] -> ipairs (alles check, sneller)
+-- TODO: instances.[hashes,cnffiles,configurations,522]
 -- TODO: check escaping in find etc, too much, too slow
 
 -- This lib is multi-purpose and can be loaded again later on so that
@@ -426,8 +426,8 @@ local function splitpathexpr(str, t, validate)
         end
     end
     if trace_expansions then
-        for k,v in ipairs(t) do
-            logs.report("fileio","% 4i: %s",k,v)
+        for k=1,#t do
+            logs.report("fileio","% 4i: %s",k,t[k])
         end
     end
     return t
@@ -632,7 +632,9 @@ local function load_cnf_file(fname)
 end
 
 local function collapse_cnf_data() -- potential optimization: pass start index (setup and configuration are shared)
-    for _,c in ipairs(instance.order) do
+    local order = instance.order
+    for i=1,#order do
+        local c = order[i]
         for k,v in next, c do
             if not instance.variables[k] then
                 if instance.environment[k] then
@@ -648,8 +650,9 @@ end
 
 function resolvers.load_cnf()
     local function loadoldconfigdata()
-        for _, fname in ipairs(instance.cnffiles) do
-            load_cnf_file(fname)
+        local cnffiles = instance.cnffiles
+        for i=1,#cnffiles do
+            load_cnf_file(cnffiles[i])
         end
     end
     -- instance.cnffiles contain complete names now !
@@ -661,9 +664,10 @@ function resolvers.load_cnf()
             logs.report("fileio","no cnf files found (TEXMFCNF may not be set/known)")
         end
     else
-        instance.rootpath = instance.cnffiles[1]
-        for k,fname in ipairs(instance.cnffiles) do
-            instance.cnffiles[k] = file.collapse_path(fname)
+        local cnffiles = instance.cnffiles
+        instance.rootpath = cnffiles[1]
+        for k=1,#cnffiles do
+            instance.cnffiles[k] = file.collapse_path(cnffiles[k])
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
@@ -691,8 +695,9 @@ function resolvers.load_lua()
         -- yet harmless
     else
         instance.rootpath = instance.luafiles[1]
-        for k,fname in ipairs(instance.luafiles) do
-            instance.luafiles[k] = file.collapse_path(fname)
+        local luafiles = instance.luafiles
+        for k=1,#luafiles do
+            instance.luafiles[k] = file.collapse_path(luafiles[k])
         end
         for i=1,3 do
             instance.rootpath = file.dirname(instance.rootpath)
@@ -755,7 +760,9 @@ end
 -- locators
 
 function resolvers.locatelists()
-    for _, path in ipairs(resolvers.clean_path_list('TEXMF')) do
+    local texmfpaths = resolvers.clean_path_list('TEXMF')
+    for i=1,#texmfpaths do
+        local path = texmfpaths[i]
         if trace_locating then
             logs.report("fileio","locating list of '%s'",path)
         end
@@ -788,7 +795,9 @@ function resolvers.loadfiles()
     instance.loaderror = false
     instance.files = { }
     if not instance.renewcache then
-        for _, hash in ipairs(instance.hashes) do
+        local hashes = instance.hashes
+        for k=1,#hashes do
+            local hash = hashes[k]
             resolvers.hashdatabase(hash.tag,hash.name)
             if instance.loaderror then break end
         end
@@ -802,8 +811,9 @@ end
 -- generators:
 
 function resolvers.loadlists()
-    for _, hash in ipairs(instance.hashes) do
-        resolvers.generatedatabase(hash.tag)
+    local hashes = instance.hashes
+    for i=1,#hashes do
+        resolvers.generatedatabase(hashes[i].tag)
     end
 end
 
@@ -924,8 +934,8 @@ local split = lpegmatch(splitter,str)
             end
             if trace_expansions then
                 logs.report("fileio","splitting path specification '%s'",str)
-                for k,v in ipairs(found) do
-                    logs.report("fileio","% 4i: %s",k,v)
+                for k=1,#found do
+                    logs.report("fileio","% 4i: %s",k,found[k])
                 end
             end
             cache[str] = found
@@ -937,8 +947,9 @@ end
 resolvers.split_kpse_path = split_kpse_path
 
 function resolvers.splitconfig()
-    for i,c in ipairs(instance) do
-        for k,v in pairs(c) do
+    for i=1,#instance do
+        local c = instance[i]
+        for k,v in next, c do
             if type(v) == 'string' then
                 local t = split_kpse_path(v)
                 if #t > 1 then
@@ -950,8 +961,10 @@ function resolvers.splitconfig()
 end
 
 function resolvers.joinconfig()
-    for i,c in ipairs(instance.order) do
-        for k,v in pairs(c) do -- ipairs?
+    local order = instance.order
+    for i=1,#order do
+        local c = order[i]
+        for k,v in next, c do -- indexed?
             if type(v) == 'table' then
                 c[k] = file.join_path(v)
             end
@@ -978,8 +991,9 @@ end
 function resolvers.splitexpansions()
     local ie = instance.expansions
     for k,v in next, ie do
-        local t, h = { }, { }
-        for _,vv in ipairs(split_kpse_path(v)) do
+        local t, h, p = { }, { }, split_kpse_path(v)
+        for kk=1,#p do
+            local vv = p[kk]
             if vv ~= "" and not h[vv] then
                 t[#t+1] = vv
                 h[vv] = true
@@ -1026,11 +1040,15 @@ function resolvers.serialize(files)
     end
     t[#t+1] = "return {"
     if instance.sortdata then
-        for _, k in pairs(sortedkeys(files)) do -- ipairs
+	local sortedfiles = sortedkeys(files)
+	for i=1,#sortedfiles do
+	    local k = sortedfiles[i]
             local fk  = files[k]
             if type(fk) == 'table' then
                 t[#t+1] = "\t['" .. k .. "']={"
-                for _, kk in pairs(sortedkeys(fk)) do -- ipairs
+		local sortedfk = sortedkeys(fk)
+        	for j=1,#sortedfk do
+                    local kk = sortedfk[j]
                     t[#t+1] = dump(kk,fk[kk],"\t\t")
                 end
                 t[#t+1] = "\t},"
@@ -1142,7 +1160,9 @@ function resolvers.resetconfig()
 end
 
 function resolvers.loadnewconfig()
-    for _, cnf in ipairs(instance.luafiles) do
+    local luafiles = instance.luafiles
+    for i=1,#luafiles do
+        local cnf = luafiles[i]
         local pathname = file.dirname(cnf)
         local filename = file.join(pathname,resolvers.luaname)
         local blob = loadfile(filename)
@@ -1187,7 +1207,9 @@ end
 
 function resolvers.loadoldconfig()
     if not instance.renewcache then
-        for _, cnf in ipairs(instance.cnffiles) do
+        local cnffiles = instance.cnffiles
+        for i=1,#cnffiles do
+            local cnf = cnffiles[i]
             local dname = file.dirname(cnf)
             resolvers.load_data(dname,'configuration')
             instance.order[#instance.order+1] = instance.configuration[dname]
@@ -1991,13 +2013,14 @@ function resolvers.for_files(command, files, filetype, mustexist)
         if trace_locating then
             report('') -- ?
         end
-        for _, file in ipairs(files) do
+        for f=1,#files do
+            local file = files[f]
             local result = command(file,filetype,mustexist)
             if type(result) == 'string' then
                 report(result)
             else
-                for _,v in ipairs(result) do
-                    report(v)
+                for i=1,#result do
+                    report(result[i]) -- could be unpack
                 end
             end
         end
@@ -2044,7 +2067,7 @@ end
 
 function table.sequenced(t,sep) -- temp here
     local s = { }
-    for k, v in pairs(t) do -- pairs?
+    for k, v in next, t do -- indexed?
         s[#s+1] = k .. "=" .. tostring(v)
     end
     return concat(s, sep or " | ")
@@ -2076,8 +2099,9 @@ function resolvers.clean_path(str)
 end
 
 function resolvers.do_with_path(name,func)
-    for _, v in pairs(resolvers.expanded_path_list(name)) do -- pairs?
-        func("^"..resolvers.clean_path(v))
+    local pathlist = resolvers.expanded_path_list(name)
+    for i=1,#pathlist do
+        func("^"..resolvers.clean_path(pathlist[i]))
     end
 end
 
@@ -2086,7 +2110,9 @@ function resolvers.do_with_var(name,func)
 end
 
 function resolvers.with_files(pattern,handle)
-    for _, hash in ipairs(instance.hashes) do
+    local hashes = instance.hashes
+    for i=1,#hashes do
+        local hash = hashes[i]
         local blobpath = hash.tag
         local blobtype = hash.type
         if blobpath then
@@ -2101,7 +2127,7 @@ function resolvers.with_files(pattern,handle)
                         if type(v) == "string" then
                             handle(blobtype,blobpath,v,k)
                         else
-                            for _,vv in pairs(v) do -- ipairs?
+                            for _,vv in next, v do -- indexed
                                 handle(blobtype,blobpath,vv,k)
                             end
                         end

@@ -725,7 +725,7 @@ local function copy(old,tables)
         if not tables[old] then
             tables[old] = new
         end
-        for k,v in pairs(old) do
+        for k,v in next, old do
             new[k] = (type(v) == "table" and (tables[v] or copy(v, tables))) or v
         end
         local mt = getmetatable(old)

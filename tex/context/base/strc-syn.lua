@@ -151,7 +151,9 @@ function joblists.flush(data,options) -- maybe pass the settings differently
     local kind = data.metadata.kind   -- hack, will be done better
 --~     texsprint(ctxcatcodes,format("\\start%soutput",kind))
     local result = data.result
-    for k, letter in ipairs(table.sortedkeys(result)) do
+    local sorted = table.sortedkeys(result)
+    for k=1,#sorted do
+        local letter = sorted[k]
         local sublist = result[letter]
         local data = sublist.data
 --~         texsprint(ctxcatcodes,format("\\start%ssection{%s}",kind,sublist.tag))

@@ -293,7 +293,7 @@ function sections.somelevel(given)
         numbers[newdepth] = newn
     end
     status[newdepth] = given or { }
-    for k, v in pairs(data.checkers) do
+    for k, v in next, data.checkers do
         if v[1] == newdepth and v[2] then
             v[2](k)
         end
@@ -485,7 +485,9 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local set           = ""
         local segments      = ""
         local criterium     = ""
-        for _, data in ipairs { ... } do -- can be multiple parametersets
+        local dataset = { ... }
+        for d=1,#dataset do
+            local data = dataset[d] -- can be multiple parametersets
             if data then
                 if separatorset  == "" then separatorset  = data.separatorset  or "" end
                 if conversionset == "" then conversionset = data.conversionset or "" end

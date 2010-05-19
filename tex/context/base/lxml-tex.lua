@@ -709,8 +709,9 @@ function lxml.installsetup(what,document,setup,where)
 end
 
 function lxml.flushsetups(id,...)
-    local done = { }
-    for _, document in ipairs({...}) do
+    local done, list = { }, { ... }
+    for i=1,#list do
+        local document = list[i]
         local sd = setups[document]
         if sd then
             for k=1,#sd do
@@ -719,7 +720,6 @@ function lxml.flushsetups(id,...)
                     if trace_loading then
                         commands.writestatus("lxml","applying setup %02i = %s to %s",k,v,document)
                     end
---~                     texsprint(ctxcatcodes,"\\directsetup{",v,"}")
                     texsprint(ctxcatcodes,"\\xmlsetup{",id,"}{",v,"}")
                     done[v] = true
                 end
@@ -904,6 +904,7 @@ local function count(collected)
 end
 
 local function position(collected,n)
+    -- todo: if not n then == match
     if collected then
         n = tonumber(n) or 0
         if n < 0 then
@@ -915,7 +916,7 @@ local function position(collected,n)
     end
 end
 
-local function match(collected)
+local function match(collected) -- is match in preceding collected, never change, see bibxml
     texwrite((collected and collected[1].mi) or 0)
 end
 
@@ -946,7 +947,7 @@ local function command(collected,cmd)
 end
 
 local function attribute(collected,a,default)
-    if collected then
+    if collected and #collected > 0 then
         local at = collected[1].at
         local str = (at and at[a]) or default
         if str and str ~= "" then
@@ -990,6 +991,24 @@ local function ctxtext(collected)
     if collected then
         for c=1,#collected do
             texsprint(ctxcatcodes,collected[1].dt)
+        end
+    end
+end
+
+local lowerchars, upperchars = characters.lower, characters.upper
+
+local function lower(collected)
+    if collected then
+        for c=1,#collected do
+            texsprint(ctxcatcodes,lowerchars(collected[1].dt[1]))
+        end
+    end
+end
+
+local function upper(collected)
+    if collected then
+        for c=1,#collected do
+            texsprint(ctxcatcodes,upperchars(collected[1].dt[1]))
         end
     end
 end
@@ -1040,6 +1059,8 @@ finalizers.count          = count
 finalizers.command        = command
 finalizers.attribute      = attribute
 finalizers.text           = text
+finalizers.lower          = lower
+finalizers.upper          = upper
 finalizers.ctxtext        = ctxtext
 finalizers.context        = ctxtext
 finalizers.position       = position
@@ -1170,7 +1191,7 @@ function lxml.context(id,pattern) -- the content, untouched by commands
         ctx_text(collected.dt[1])
     else
         local collected = lxmlparseapply(id,pattern) or get_id(id)
-        if collected then
+        if collected and #collected > 0 then
             texsprint(ctxcatcodes,collected[1].dt)
         end
     end

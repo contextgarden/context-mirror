@@ -16,7 +16,9 @@ executer.execute   = os.execute
 
 function executer.register(...)
     local ep = executer.permitted
-    for k,v in pairs({...}) do
+    local t = { ... }
+    for k=1,#t do
+        local v = t[k]
         ep[#ep+1] = (v == "*" and ".*") or v
     end
 end
@@ -37,7 +39,9 @@ function executer.finalize() -- todo: os.exec, todo: report ipv print
         else
             name, arguments = t[1], concat(t," ",2,#t)
         end
-        for _,v in pairs(executer.permitted) do
+        local permitted = executer.permitted
+        for k=1,#permitted do
+            local v = permitted[k]
             if find(name,v) then
                 execute(name .. " " .. arguments)
             --  print("executed: " .. name .. " " .. arguments)

@@ -194,7 +194,7 @@ function buffers.type(name,realign,range)
         local first, last, m = buffers.strip(lines)
         if range then
             first, last = buffers.range(lines,first,last,range)
-            first, last = buffers.strip(lines,first,last,range)
+            first, last = buffers.strip(lines,first,last)
         end
         hooks.begin_of_display()
         for i=first,last do
@@ -237,7 +237,7 @@ function buffers.typefile(name,realign,range) -- still somewhat messy, since nam
         hooks.begin_of_display()
         if range then
             first, last = buffers.range(lines,first,last,range)
-            first, last = buffers.strip(lines,first,last,range)
+            first, last = buffers.strip(lines,first,last)
         end
         for i=first,last do
             n, line = action(lines[i], n, m, line)
@@ -367,11 +367,12 @@ function buffers.inspect(name)
     local b = data[name]
     if b then
         if type(b) == "table" then
-            for _,v in ipairs(b) do
+            for k=1,#b do
+                local v = b[k]
                 if v == "" then
                     texsprint(ctxcatcodes,"[crlf]\\par ") -- space ?
                 else
-                    texsprint(ctxcatcodes,(gsub(b,"(.)",tobyte)),"\\par")
+                    texsprint(ctxcatcodes,(gsub(v,"(.)",tobyte)),"\\par")
                 end
             end
         else
