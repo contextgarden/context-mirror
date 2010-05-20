@@ -24,6 +24,10 @@ local documents  = structure.documents
 local pages      = structure.pages
 local processors = structure.processors
 
+local mappings     = sorters.mappings
+local entries      = sorters.entries
+local replacements = sorters.replacements
+
 local processor_split = processors.split
 
 local matching_till_depth, number_at_depth = sections.matching_till_depth, sections.number_at_depth
@@ -302,26 +306,12 @@ end
 
 -- sorting and rendering
 
+local compare = sorters.comparers.basic
+
 function jobregisters.compare(a,b)
-    local result = 0
-    local compare = sorters.comparers.basic
-    local ea, eb = a.split, b.split
-    local na, nb = #ea, #eb
-    local max = na
-    if nb < max then max = nb end
-    for i=1,max do
-        if result == 0 then
-            result = compare(ea[i],eb[i])
-        else
-            break
-        end
-    end
+    local result = compare(a,b)
     if result ~= 0 then
         return result
-    elseif na > nb then
-        return 1
-    elseif nb > na then
-        return -1
     elseif a.metadata.kind == 'entry' then -- e/f/t
         local page_a, page_b = a.references.realpage, b.references.realpage
         if not page_a or not page_b then
@@ -331,9 +321,8 @@ function jobregisters.compare(a,b)
         elseif page_a > page_b then
             return  1
         end
-    else
-        return 0
     end
+    return 0
 end
 
 function jobregisters.filter(data,options)
@@ -405,7 +394,7 @@ function jobregisters.finalize(data,options)
     -- maps character to index (order)
     for k=1,#result do
         local v = result[k]
-        local entry, tag = sorters.firstofsplit(v.split)
+        local entry, tag = sorters.firstofsplit(v)
         if tag ~= lasttag then
             if trace_registers then
                 logs.report("registers","splitting at %s",tag)
@@ -424,7 +413,7 @@ function jobregisters.analysed(class,options)
     local data = collected[class]
     if data and data.entries then
         options = options or { }
-        sorters.language = options.language or sorters.defaultlanguage
+        sorters.setlanguage(options.language)
         jobregisters.filter(data,options)   -- filter entries into results (criteria)
         jobregisters.prepare(data,options)  -- adds split table parallel to list table
         jobregisters.sort(data,options)     -- sorts results

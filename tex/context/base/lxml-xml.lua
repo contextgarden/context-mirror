@@ -34,8 +34,10 @@ local function reverse(collected)
 end
 
 local function attribute(collected,name)
-    local at = collected and collected[1].at
-    return at and at[name]
+    if collected and #collected > 0 then
+        local at = collected[1].at
+        return at and at[name]
+    end
 end
 
 local function att(id,name)

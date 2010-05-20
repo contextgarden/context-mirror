@@ -6,12 +6,10 @@ if not modules then modules = { } end modules ['sort-ini'] = {
     license   = "see context related readme files"
 }
 
--- todo:
---
--- out of range
--- uppercase
--- texutil compatible
--- always expand to utf
+-- It took a while to get there, but with Fleetwood Mac's "Don't Stop"
+-- playing in the background we sort of got it done.
+
+-- todo: cleanup splits (in other modules)
 
 local utf = unicode.utf8
 local gsub, rep, sort, concat = string.gsub, string.rep, table.sort, table.concat
@@ -27,34 +25,38 @@ sorters.splitters    = { }
 sorters.entries      = { }
 sorters.mappings     = { }
 sorters.replacements = { }
-sorters.language     = 'en'
 
 local mappings     = sorters.mappings
 local entries      = sorters.entries
 local replacements = sorters.replacements
 
-function sorters.comparers.basic(sort_a,sort_b,map)
-    -- sm assignment is slow, will become sorters.initialize
-    local sm = map or mappings[sorters.language or sorters.defaultlanguage] or mappings.en
+local language, defaultlanguage, dummy = 'en', 'en', { }
+
+local currentreplacements, currentmappings, currententries
+
+function sorters.setlanguage(lang)
+    language = lang or language or defaultlanguage
+    currentreplacements = replacements[language] or replacements[defaultlanguage] or dummy
+    currentmappings     = mappings    [language] or mappings    [defaultlanguage] or dummy
+    currententries      = entries     [language] or entries     [defaultlanguage] or dummy
+    return currentreplacements, currentmappings, currententries
+end
+
+sorters.setlanguage()
+
+-- maybe inline code if it's too slow
+
+local function basicsort(sort_a,sort_b)
     if #sort_a > #sort_b then
         if #sort_b == 0 then
             return 1
         else
             for i=1,#sort_b do
                 local ai, bi = sort_a[i], sort_b[i]
-                local am, bm = sm[ai], sm[bi]
-                if am and bm then
-                    if am > bm then
-                        return  1
-                    elseif am < bm then
-                        return -1
-                    end
-                else
-                    if ai > bi then
-                        return  1
-                    elseif ai < bi then
-                        return -1
-                    end
+                if ai > bi then
+                    return  1
+                elseif ai < bi then
+                    return -1
                 end
             end
             return 1
@@ -65,19 +67,10 @@ function sorters.comparers.basic(sort_a,sort_b,map)
         else
             for i=1,#sort_a do
                 local ai, bi = sort_a[i], sort_b[i]
-                local am, bm = sm[ai], sm[bi]
-                if am and bm then
-                    if am > bm then
-                        return  1
-                    elseif am < bm then
-                        return -1
-                    end
-                else
-                    if ai > bi then
-                        return  1
-                    elseif ai < bi then
-                        return -1
-                    end
+                if ai > bi then
+                    return  1
+                elseif ai < bi then
+                    return -1
                 end
             end
             return -1
@@ -87,22 +80,45 @@ function sorters.comparers.basic(sort_a,sort_b,map)
     else
         for i=1,#sort_a do
             local ai, bi = sort_a[i], sort_b[i]
-            local am, bm = sm[ai], sm[bi]
-            if am and bm then
-                if am > bm then
-                    return  1
-                elseif am < bm then
-                    return -1
-                end
-            else
-                if ai > bi then
-                    return  1
-                elseif ai < bi then
-                    return -1
-                end
+            if ai > bi then
+                return  1
+            elseif ai < bi then
+                return -1
             end
         end
         return 0
+    end
+end
+
+function sorters.comparers.basic(a,b)
+    local ea, eb = a.split, b.split
+    local na, nb = #ea, #eb
+    if na == 0 and nb == 0 then
+        -- simple variant (single word)
+        local result = basicsort(ea.e,eb.e)
+        return result == 0 and result or basicsort(ea.m,eb.m)
+    else
+        -- complex variant, used in register (multiple words)
+        local result = 0
+        for i=1,nb < na and nb or na do
+            local eai, ebi = ea[i], eb[i]
+            result = basicsort(eai.e,ebi.e)
+            if result == 0 then
+                result = basicsort(eai.m,ebi.m)
+            end
+            if result ~= 0 then
+                break
+            end
+        end
+        if result ~= 0 then
+            return result
+        elseif na > nb then
+            return 1
+        elseif nb > na then
+            return -1
+        else
+            return 0
+        end
     end
 end
 
@@ -119,30 +135,38 @@ function sorters.strip(str) -- todo: only letters and such utf.gsub("([^%w%d])",
     end
 end
 
-function sorters.firstofsplit(split)
+local function firstofsplit(entry)
     -- numbers are left padded by spaces
-    local se = entries[sorters.language or sorters.defaultlanguage] or entries.en -- slow, will become sorters.initialize
-    local vs = split[1]
-    local entry = vs and vs[1] or ""
-    return entry, (se and se[entry]) or "\000"
+    local split = entry.split
+    if #split > 0 then
+        split = split[1].s
+    else
+        split = split.s
+    end
+    local entry = split and split[1] or ""
+    return entry, currententries[entry] or "\000"
 end
 
-sorters.defaultlanguage = 'en'
+sorters.firstofsplit = firstofsplit
 
 -- beware, numbers get spaces in front
 
-function sorters.splitters.utf(str) -- brrr, todo: language
-    local r = sorters.replacements[sorters.language] or sorters.replacements[sorters.defaultlanguage] or { }
- -- local m = mappings    [sorters.language] or mappings    [sorters.defaultlanguage] or { }
-    local u = characters.uncompose
-    local t = { }
-    for _,v in next, r do
-        str = gsub(str,v[1],v[2])
+function sorters.splitters.utf(str)
+    if #currentreplacements > 0 then
+        for k=1,#currentreplacements do
+            local v = currentreplacements[k]
+            str = gsub(str,v[1],v[2])
+        end
     end
-    for c in utfcharacters(str) do -- maybe an lpeg
-        t[#t+1] = c
+    local s, m, e, n = { }, { }, { }, 0
+    for sc in utfcharacters(str) do -- maybe an lpeg
+        n = n + 1
+        local mc, ec = currentmappings[sc] or utfbyte(sc), currententries[sc]
+        s[n] = sc
+        m[n] = mc
+        e[n] = currentmappings[ec] or mc
     end
-    return t
+    return { s = s, m = m, e = e }
 end
 
 function table.remap(t)
@@ -153,49 +177,51 @@ function table.remap(t)
     return tt
 end
 
-function sorters.sort(entries,cmp)
-    local language = sorters.language or sorters.defaultlanguage
-    local map = mappings[language] or mappings.en
-    if trace_tests then
-        local function pack(l)
-            local t = { }
-            for i=1,#l do
-                local tt, li = { }, l[i]
-                for j=1,#li do
-                    local lij = li[j]
-                    if utfbyte(lij) > 0xFF00 then
-                        tt[j] = "[]"
-                    else
-                        tt[j] = li[j]
-                    end
-                end
-                t[i] = concat(tt)
+local function pack(entry)
+    local t = { }
+    local split = entry.split
+    if #split > 0 then
+        for i=1,#split do
+            local tt, li = { }, split[i].s
+            for j=1,#li do
+                local lij = li[j]
+                tt[j] = utfbyte(lij) > 0xFF00 and "[]" or lij
             end
-            return concat(t," + ")
+            t[i] = concat(tt)
         end
-        sort(entries, function(a,b)
-            local r = cmp(a,b,map)
-            local as, bs = a.split, b.split
-            if as and bs then
-                logs.report("sorter","%s %s %s",pack(as),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(bs))
-            end
+        return concat(t," + ")
+    else
+        local t, li = { }, split.s
+        for j=1,#li do
+            local lij = li[j]
+            t[j] = utfbyte(lij) > 0xFF00 and "[]" or lij
+        end
+        return concat(t)
+    end
+end
+
+function sorters.sort(entries,cmp)
+    if trace_tests then
+        sort(entries,function(a,b)
+            local r = cmp(a,b)
+            logs.report("sorter","%s %s %s",pack(a),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(b))
             return r == -1
         end)
         local s
         for i=1,#entries do
-            local split = entries[i].split
-            local entry, first = sorters.firstofsplit(split)
+            local entry = entries[i]
+            local letter, first = firstofsplit(entry)
             if first == s then
                 first = "  "
             else
                 s = first
-                logs.report("sorter",">> %s 0x%05X (%s 0x%05X)",first,utfbyte(first),entry,utfbyte(entry))
+                logs.report("sorter",">> %s 0x%05X (%s 0x%05X)",first,utfbyte(first),letter,utfbyte(letter))
             end
-            logs.report("sorter","   %s",pack(split))
+            logs.report("sorter","   %s",pack(entry))
         end
     else
-        sort(entries, function(a,b)
-            return cmp(a,b,map) == -1
+        sort(entries,function(a,b)
+            return cmp(a,b) == -1
         end)
     end
 end

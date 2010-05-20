@@ -81,7 +81,7 @@ sorters.entries['cz'] = {
     ['c']        = "c",        -- c
     [uc(0x010D)] = uc(0x010D), -- ccaron
     ['d']        = "d",        -- d
-    [uc(0x010F)] = uc(0x010F), -- dcaron
+    [uc(0x010F)] = "d",        -- dcaron
     ['e']        = "e",        -- e
     [uc(0x00E9)] = "e",        -- eacute
     [uc(0x011B)] = "e",        -- ecaron
@@ -96,16 +96,16 @@ sorters.entries['cz'] = {
     ['l']        = "l",        -- l
     ['m']        = "m",        -- m
     ['n']        = "n",        -- n
-    [uc(0x0147)] = uc(0x0147), -- ncaron
+    ['ň']        = "n",        -- ncaron
     ['o']        = "o",        -- o
     ['p']        = "p",        -- p
     ['q']        = "q",        -- q
     ['r']        = "r",        -- r
-    [uc(0x0147)] = uc(0x0147), -- rcaron
+    ['ř']        = "ř",        -- rcaron
     ['s']        = "s",        -- s
     [uc(0x0161)] = uc(0x0161), -- scaron
     ['t']        = "t",        -- t
-    [uc(0x0165)] = uc(0x0165), -- tcaron
+    [uc(0x0165)] = "t",        -- tcaron
     ['u']        = "u",        -- u
     [uc(0x00FA)] = "u",        -- uacute
     [uc(0x016F)] = "u",        -- uring
@@ -113,7 +113,7 @@ sorters.entries['cz'] = {
     ['w']        = "w",        -- w
     ['x']        = "x",        -- x
     ['y']        = "y",        -- y
-    [uc(0x00FD)] = uc(0x00FD), -- yacute
+    [uc(0x00FD)] = "y",        -- yacute
     ['z']        = "z",        -- z
     [uc(0x017E)] = uc(0x017E), -- zcaron
 }
@@ -140,12 +140,12 @@ sorters.mappings['cz'] = {
     ['l']        = 37, -- l
     ['m']        = 39, -- m
     ['n']        = 41, -- n
-    [uc(0x0147)] = 43, -- ncaron
+    ['ň']        = 43, -- ncaron
     ['o']        = 45, -- o
     ['p']        = 47, -- p
     ['q']        = 49, -- q
     ['r']        = 51, -- r
-    [uc(0x0147)] = 53, -- rcaron
+    ['ř']        = 53, -- rcaron
     ['s']        = 55, -- s
     [uc(0x0161)] = 57, -- scaron
     ['t']        = 59, -- t
@@ -162,12 +162,12 @@ sorters.mappings['cz'] = {
     [uc(0x017E)] = 81, -- zcaron
 }
 
+sorters.add_uppercase_entries (sorters.entries.cz)
+sorters.add_uppercase_mappings(sorters.mappings.cz,0) -- 1 can be option (but then we need a runtime variant)
+
 sorters.replacements['cs'] = sorters.replacements['cz']
 sorters.entries     ['cs'] = sorters.entries     ['cz']
 sorters.mappings    ['cs'] = sorters.mappings    ['cz']
-
-sorters.add_uppercase_entries (sorters.entries.cs)
-sorters.add_uppercase_mappings(sorters.mappings.cs,1)
 
 --~ print(table.serialize(sorters.mappings.cs))
 
@@ -191,7 +191,7 @@ sorters.replacements['DIN 5007-2'] = {
     { "ü", 'ue' },
     { "Ä", 'Ae' },
     { "Ö", 'Oe' },
-    { "Ü", 'Ue' }
+    { "Ü", 'Ue' },
 }
 
 sorters.entries     ['DIN 5007-2'] = sorters.entries ['en']
@@ -286,6 +286,32 @@ sorters.entries['fi'] = {
     ["U"] = "u", ["V"] = "v", ["W"] = "w", ["X"] = "x", ["Y"] = "y",
     ["Z"] = "z", ["Å"] = "å", ["Ä"] = "ä", ["Ö"] = "ö",
 }
+
+-- slovenian
+--
+-- MM: this will change since we need to add accented vowels
+
+sorters.entries['sl'] = {
+    ["a"] = "a", ["b"] = "b", ["c"] = "c", ["č"] = "č", ["ć"] = "ć", ["d"] = "d",
+    ["đ"] = "đ", ["e"] = "e", ["f"] = "f", ["g"] = "g", ["h"] = "h", ["i"] = "i",
+    ["j"] = "j", ["k"] = "k", ["l"] = "l", ["m"] = "m", ["n"] = "n", ["o"] = "o",
+    ["p"] = "p", ["q"] = "q", ["r"] = "r", ["s"] = "s", ["š"] = "š", ["t"] = "t",
+    ["u"] = "u", ["v"] = "v", ["w"] = "w", ["x"] = "x", ["y"] = "y", ["z"] = "z",
+    ["ž"] = "ž",
+}
+
+
+sorters.mappings['sl'] = {
+    ["a"] =  1, ["b"] =  3, ["c"] =  5, ["č"] =  7, ["ć"] =  9, ["d"] = 11,
+    ["đ"] = 13, ["e"] = 15, ["f"] = 17, ["g"] = 19, ["h"] = 21, ["i"] = 23,
+    ["j"] = 25, ["k"] = 27, ["l"] = 29, ["m"] = 31, ["n"] = 33, ["o"] = 35,
+    ["p"] = 37, ["q"] = 39, ["r"] = 41, ["s"] = 43, ["š"] = 45, ["t"] = 47,
+    ["u"] = 49, ["v"] = 51, ["w"] = 53, ["x"] = 55, ["y"] = 57, ["z"] = 59,
+    ["ž"] = 61,
+}
+
+sorters.add_uppercase_entries (sorters.entries.sl)
+sorters.add_uppercase_mappings(sorters.mappings.sl,0) -- cf. MM
 
 --~ sorters.test = ''
 --~ sorters.test = 'nl'

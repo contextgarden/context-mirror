@@ -91,9 +91,7 @@ function lxml.sorters.show(name)
     end
 end
 
-function lxml.sorters.compare(a,b)
-    return sorters.comparers.basic(a.split,b.split)
-end
+lxml.sorters.compare = sorters.comparers.basic -- (a,b)
 
 function lxml.sorters.sort(name)
     local list = lists[name]
@@ -112,6 +110,7 @@ function lxml.sorters.sort(name)
         -- preparation
         local strip = sorters.strip
         local splitter = sorters.splitters.utf
+        local firstofsplit = sorters.firstofsplit
         for i=1, #results do
             local r = results[i]
             r.split = splitter(strip(r.key))
@@ -123,7 +122,7 @@ function lxml.sorters.sort(name)
         local split = { }
         for k=1,#results do -- rather generic so maybe we need a function
             local v = results[k]
-            local entry, tag = sorters.firstofsplit(v.split)
+            local entry, tag = firstofsplit(v)
             local s = split[entry] -- keeps track of change
             if not s then
                 s = { tag = tag, data = { } }
@@ -140,19 +139,19 @@ end
 function lxml.sorters.flush(name,setup)
     local list = lists[name]
     local results = list and list.results
+    local xmlw = context.xmlw
     if results and next(results) then
         for key, result in next, results do
             local tag, data = result.tag, result.data
             for d=1,#data do
-                local dr = data[d]
-                texsprint(ctxcatcodes,"\\xmlw{",setup,"}{",dr.entry,"}")
+                xmlw(setup,data[d].entry)
             end
         end
     else
         local entries = list and list.entries
         if entries then
             for i=1,#entries do
-                texsprint(ctxcatcodes,"\\xmlw{",setup,"}{",entries[i][1],"}")
+                xmlw(setup,entries[i][1])
             end
         end
     end

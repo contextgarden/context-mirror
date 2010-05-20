@@ -92,9 +92,7 @@ function joblists.meaning(class,tag)
     end
 end
 
-function joblists.compare(a,b)
-    return sorters.comparers.basic(a.split,b.split)
-end
+joblists.compare = sorters.comparers.basic -- (a,b)
 
 function joblists.filter(data,options)
     local result = { }
@@ -136,7 +134,7 @@ function joblists.finalize(data,options)
     local split = { }
     for k=1,#result do
         local v = result[k]
-        local entry, tag = sorters.firstofsplit(v.split)
+        local entry, tag = sorters.firstofsplit(v)
         local s = split[entry] -- keeps track of change
         if not s then
             s = { tag = tag, data = { } }
@@ -172,6 +170,8 @@ end
 function joblists.analysed(class,options)
     local data = joblists.collected[class]
     if data and data.entries then
+        options = options or { }
+        sorters.setlanguage(options.language)
         joblists.filter(data,options)   -- filters entries to result
         joblists.prepare(data,options)  -- adds split table parallel to list table
         joblists.sort(data,options)     -- sorts entries in result

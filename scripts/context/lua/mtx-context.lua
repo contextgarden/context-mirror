@@ -237,8 +237,8 @@ do
             commands[e.at and e.at['name'] or "unknown"] = e
         end
 
-        local suffix   = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/attribute(suffix)") or ctxdata.suffix
-        local runlocal = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/attribute(local)")
+        local suffix   = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/attribute('suffix')") or ctxdata.suffix
+        local runlocal = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/attribute('local')")
 
         runlocal = toboolean(runlocal)
 

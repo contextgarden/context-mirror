@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/19/10 16:24:38
+-- merge date  : 05/20/10 20:00:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -587,7 +587,55 @@ local concat, sort, insert, remove = table.concat, table.sort, table.insert, tab
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
 local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
-local unpack = unpack or table.unpack
+
+-- Starting with version 5.2 Lua no longer provide ipairs, which makes
+-- sense. As we already used the for loop and # in most places the
+-- impact on ConTeXt was not that large; the remaining ipairs already
+-- have been replaced. In a similar fashio we also hardly used pairs.
+--
+-- Just in case, we provide the fallbacks as discussed in Programming
+-- in Lua (http://www.lua.org/pil/7.3.html):
+
+if not ipairs then
+
+    -- for k, v in ipairs(t) do                ... end
+    -- for k=1,#t            do local v = t[k] ... end
+
+    local function iterate(a,i)
+        i = i + 1
+        local v = a[i]
+        if v ~= nil then
+            return i, v --, nil
+        end
+    end
+
+    function ipairs(a)
+        return iterate, a, 0
+    end
+
+end
+
+if not pairs then
+
+    -- for k, v in pairs(t) do ... end
+    -- for k, v in next, t  do ... end
+
+    function pairs(t)
+        return next, t -- , nil
+    end
+
+end
+
+-- Also, unpack has been moved to the table table, and for compatiility
+-- reasons we provide both now.
+
+if not table.unpack then
+    table.unpack = _G.unpack
+elseif not unpack then
+    _G.unpack = table.unpack
+end
+
+-- extra functions, some might go (when not used)
 
 function table.strip(tab)
     local lst = { }
@@ -774,7 +822,7 @@ end
 table.fastcopy = fastcopy
 table.copy     = copy
 
--- rougly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
+-- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
 
 function table.sub(t,i,j)
     return { unpack(t,i,j) }
@@ -797,7 +845,7 @@ function table.one_entry(t) -- obolete, use inline code instead
     return n and not next(t,n)
 end
 
---~ function table.starts_at(t) -- obsolete, not nice
+--~ function table.starts_at(t) -- obsolete, not nice anyway
 --~     return ipairs(t,1)(t,0)
 --~ end
 
@@ -1434,6 +1482,7 @@ function table.insert_after_value(t,value,extra)
     end
     insert(t,#t+1,extra)
 end
+
 
 end -- closure
 

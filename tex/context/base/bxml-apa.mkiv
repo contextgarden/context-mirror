@@ -188,7 +188,7 @@
 
 \startxmlsetups bibtex:apa:common:title-it-and-series
     \bibxmldoif {title} {
-        \bgroup\it\bibxmlflush{title}\egroup
+        \bgroup\it\bibxmlflush{title}\/\egroup
         \bibxmldoif {series} {
             \bibtexlparent\bibxmlflush{series}\bibtexrparent
         }
@@ -314,7 +314,7 @@
         \bibxmlflush{title}\bibtexperiod
     }
     \bibxmldoifelse {journal} {
-        \bgroup\it\bibxmlflush{journal}\egroup
+        \bgroup\it\bibxmlflush{journal}\/\egroup
     } {
         \bibxmldoif {crossref} {
             In\bibtexspace\bibxmlflush{crossref}
@@ -372,7 +372,7 @@
                 \bibxmldoif {volume} {
                     \bibtexcomma volume\nonbreakablespace\bibxmlflush{volume}
                     \bibxmldoif {series} {
-                        \bibtexspace of\nonbreakablespace\bgroup\it\bibxmlflush{series}\egroup
+                        \bibtexspace of\nonbreakablespace\bgroup\it\bibxmlflush{series}\/\egroup
                     }
                     \bibxmldoif {chapter} {
                        \bibtexcomma\bibxmlflush{chapter}
@@ -427,7 +427,7 @@
                 \bibxmldoif {volume} {
                     \bibtexcomma volume\nonbreakablespace\bibxmlflush{volume}
                     \bibxmldoif {series} {
-                        \bibtexspace of\nonbreakablespace\bgroup\it\bibxmlflush{series}\egroup
+                        \bibtexspace of\nonbreakablespace\bgroup\it\bibxmlflush{series}\/\egroup
                     }
                     \bibxmldoif {chapter} {
                         \bibtexcomma\bibxmlflush{chapter}
@@ -470,7 +470,7 @@
     In\bibtexspace
     \bibxmldoifelse {title} {
         \bibxmlsetup{bibtex:format:editors}\bibtexcomma
-        \bgroup\it\bibxmlflush{title}\egroup
+        \bgroup\it\bibxmlflush{title}\/\egroup
         \bibxmldoif {series} {
             \bibxmldoif {volume} {
                 \bibtexcomma number\bibtexspace\bibxmlflush{volume}\bibtexspace in
@@ -509,7 +509,7 @@
             \bibxmlflush{bibtex:apa:format:editors}
             \bibtexcomma\bibtexsingularplural{editor}{editors}\bibtexcomma
         }
-        \bgroup\it\bibxmlflush{title}\egroup
+        \bgroup\it\bibxmlflush{title}\/\egroup
         \bibxmldoif {series} {
             \bibxmldoif {volume} {
                 \bibtexcomma number~\bibxmlflush{volume} in
@@ -539,7 +539,7 @@
 \startxmlsetups bibtex:apa:proceedings
     \bibxmlsetup{bibtex:apa:common:editor-or-key-and-year}
     \bibxmldoif {title} {
-        \bgroup\it\bibxmlflush{title}\egroup
+        \bgroup\it\bibxmlflush{title}\/\egroup
         \bibxmldoif {volume} {
             \bibtexcomma number\bibtexspace\bibxmlflush{volume}\bibtexspace in\bibtexspace
         }

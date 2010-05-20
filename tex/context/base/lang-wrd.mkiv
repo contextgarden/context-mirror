@@ -19,12 +19,14 @@
 
 \unprotect
 
-% mkiv only -- todo: internationalize command names
-
 % \loadspellchecklist[en][words-en.txt]
 % \loadspellchecklist[us][words-en.txt]
 % \loadspellchecklist[nl][words-nl.txt]
-% \setupspellchecking[state=start]
+% \setupspellchecking[state=start,method=1]
+%
+% \setupspellchecking[state=start,method=2]
+% ...
+% \typefile{\jobname.words}
 
 \def\loadspellchecklist
   {\dodoubleempty\doloadspellchecklist}
@@ -38,10 +40,15 @@
 \def\setupspellchecking[#1]% todo colors
   {\getparameters[\??wl][#1]%
    \doifelse\@@wlstate\v!start
-     {\ctxlua{languages.words.enable()}}
+     {\ctxlua{languages.words.enable(\@@wlmethod)}}
      {\ctxlua{languages.words.disable()}}}
 
 \setupspellchecking
-  [\c!state=\v!stop]
+  [\c!state=\v!stop,
+   \c!method=1]
+
+\appendtoks
+    \ctxlua{languages.words.dump_used_words("\jobname.words")}%
+\to \everybye
 
 \protect \endinput

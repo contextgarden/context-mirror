@@ -10,12 +10,26 @@ local utf = unicode.utf8
 local lower, utfchar = string.lower, utf.char
 local lpegmatch = lpeg.match
 
-languages.words           = languages.words      or {}
-languages.words.data      = languages.words.data or {}
-languages.words.enables   = false
-languages.words.threshold = 4
+languages.words = languages.words or { }
 
-languages.words.colors    = {
+local words = languages.words
+
+words.data      = words.data or { }
+words.enables   = false
+words.threshold = 4
+
+local set_attribute   = node.set_attribute
+local unset_attribute = node.unset_attribute
+local traverse_nodes  = node.traverse
+local node_id         = node.id
+local wordsdata       = words.data
+local chardata        = characters.data
+
+local glyph_node = node_id('glyph')
+local disc_node  = node_id('disc')
+local kern_node  = node_id('kern')
+
+words.colors    = {
     ["known"]   = "green",
     ["unknown"] = "red",
 }
@@ -27,23 +41,30 @@ local rbrace  = lpeg.P("}")
 local disc    = (lbrace * (1-rbrace)^0 * rbrace)^1 -- or just 3 times, time this
 local word    = lpeg.Cs((markup/"" + disc/"" + (1-spacing))^1)
 
-function languages.words.load(tag, filename)
-    local filename = resolvers.find_file(filename,'other text file') or ""
-    if filename ~= "" then
+local loaded = { } -- we share lists
+
+function words.load(tag,filename)
+    local fullname = resolvers.find_file(filename,'other text file') or ""
+    if fullname ~= "" then
         statistics.starttiming(languages)
-        local data = io.loaddata(filename) or ""
-        local words = languages.words.data[tag] or {}
-        parser = (spacing + word/function(s) words[s] = true end)^0
-        lpegmatch(parser,data)
-        languages.words.data[tag] = words
+        local list = loaded[fullname]
+        if not list then
+            list = wordsdata[tag] or { }
+            local parser = (spacing + word/function(s) list[s] = true end)^0
+            lpegmatch(parser,io.loaddata(fullname) or "")
+            loaded[fullname] = list
+        end
+        wordsdata[tag] = list
         statistics.stoptiming(languages)
+    else
+        logs.report("languages","missing words file '%s'",filename)
     end
 end
 
-function languages.words.found(id, str)
-    local tag = numbers[id]
+function words.found(id, str)
+    local tag = languages.numbers[id]
     if tag then
-        local data = languages.words.data[tag]
+        local data = wordsdata[tag]
         return data and (data[str] or data[lower(str)])
     else
         return false
@@ -53,16 +74,11 @@ end
 -- The following code is an adaption of experimental code for
 -- hyphenating and spell checking.
 
-local glyph, disc, kern = node.id('glyph'), node.id('disc'), node.id('kern')
-
-local bynode   = node.traverse
-local chardata = characters.data
-
-local function mark_words(head,found) -- can be optimized
+local function mark_words(head,whenfound) -- can be optimized
     local current, start, str, language, n = head, nil, "", nil, 0
     local function action()
         if #str > 0 then
-            local f = found(language,str)
+            local f = whenfound(language,str)
             if f then
                 for i=1,n do
                     f(start)
@@ -74,7 +90,7 @@ local function mark_words(head,found) -- can be optimized
     end
     while current do
         local id = current.id
-        if id == glyph then
+        if id == glyph_node then
             local a = current.lang
             if a then
                 if a ~= language then
@@ -91,7 +107,7 @@ local function mark_words(head,found) -- can be optimized
             if components then
                 start = start or current
                 n = n + 1
-                for g in bynode(components) do
+                for g in traverse_nodes(components) do
                     str = str .. utfchar(g.char)
                 end
             else
@@ -104,10 +120,11 @@ local function mark_words(head,found) -- can be optimized
                     action()
                 end
             end
-        elseif id == disc then
-            if n > 0 then n = n + 1 end
-            -- ok
-        elseif id == kern and current.subtype == 0 and start then
+        elseif id == disc_node then
+            if n > 0 then
+                n = n + 1
+            end
+        elseif id == kern_node and current.subtype == 0 and start then
             -- ok
         elseif start then
             action()
@@ -120,23 +137,21 @@ local function mark_words(head,found) -- can be optimized
     return head
 end
 
-languages.words.methods = { }
-languages.words.method  = 1
+words.methods = { }
+words.method  = 1
 
-local lw = languages.words
+local methods = words.methods
 
-languages.words.methods[1] = function(head, attribute, yes, nop)
-    local set   = node.set_attribute
-    local unset = node.unset_attribute
+methods[1] = function(head, attribute, yes, nop)
     local right, wrong = false, false
-    if yes then right = function(n) set(n,attribute,yes) end end
-    if nop then wrong = function(n) set(n,attribute,nop) end end
-    for n in node.traverse(head) do
-        unset(n,attribute) -- hm
+    if yes then right = function(n) set_attribute(n,attribute,yes) end end
+    if nop then wrong = function(n) set_attribute(n,attribute,nop) end end
+    for n in traverse_nodes(head) do
+        unset_attribute(n,attribute) -- hm, not that selective (reset color)
     end
-    local found, done = languages.words.found, false
+    local found, done = words.found, false
     mark_words(head, function(language,str)
-        if #str < lw.threshold then
+        if #str < words.threshold then
             return false
         elseif found(language,str) then
             done = true
@@ -149,25 +164,50 @@ languages.words.methods[1] = function(head, attribute, yes, nop)
     return head, done
 end
 
+local list, dump = { }, false -- todo: per language
+
+local lower = characters.lower
+
+methods[2] = function(head, attribute)
+    dump = true
+    mark_words(head, function(language,str)
+        if #str >= words.threshold then
+            str = lower(str)
+            list[str] = (list[str] or 0) + 1
+        end
+    end)
+    return head, true
+end
+
+words.used = list
+
+function words.dump_used_words(name)
+    if dump then
+        logs.report("languages","saving list of used words in '%s'",name)
+        io.savedata(name,table.serialize(list))
+    end
+end
+
 local color = attributes.private('color')
 
-function languages.words.check(head)
-    if lw.enabled and head.next then
-        local colors = lw.colors
+function words.check(head)
+    if words.enabled and head.next then
+        local colors = words.colors
         local alc    = attributes.list[color]
-        return lw.methods[lw.method](head, color, alc[colors.known], alc[colors.unknown])
+        return methods[words.method](head, color, alc[colors.known], alc[colors.unknown])
     else
         return head, false
     end
 end
 
-function languages.words.enable()
+function words.enable(method)
     tasks.enableaction("processors","languages.words.check")
-    languages.words.enabled = true
+    words.method = method or words.method or 1
+    words.enabled = true
 end
 
-function languages.words.disable()
-    languages.words.enabled = false
+function words.disable()
+    words.enabled = false
 end
 
 -- for the moment we hook it into the attribute handler

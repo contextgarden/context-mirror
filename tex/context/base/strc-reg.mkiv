@@ -658,8 +658,7 @@
 \def\withregisterpagecommand#1#2#3%
   {\def\currentregisterpageindex{#1}%
    \iflocation
-   % \goto{\registerparameter\c!pagecommand{#3}}[internal(#1)]%
-     \goto{\registerparameter\c!pagecommand{#3}}[page(#3)]%
+     \goto{\registerparameter\c!pagecommand{#3}}[internal(#1)]%
    \else
      \registerparameter\c!pagecommand{#3}%
    \fi}
