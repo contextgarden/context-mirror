@@ -6,24 +6,28 @@ if not modules then modules = { } end modules ['sort-lan'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
-
-local uc = utf.char
-local ub = utf.byte
-
 -- this is a rather preliminary and incomplete file
 -- maybe we should load this kind of stuff runtime
 
--- english
-
--- The next one can be more efficient when not indexed this way, but
--- other languages are sparse so for the moment we keep this one.
-
 -- replacements are indexed as they need to be applied in sequence
 
-sorters = sorters or { entries = { }, replacements = { }, mappings =  { } }
+local utf = unicode.utf8
+local uc = utf.char
+local ub = utf.byte
 
-sorters.entries['en'] = {
+local mappings                   = sorters.mappings
+local entries                    = sorters.entries
+local replacements               = sorters.replacements
+
+local add_uppercase_replacements = sorters.add_uppercase_replacements
+local add_uppercase_entries      = sorters.add_uppercase_entries
+local add_uppercase_mappings     = sorters.add_uppercase_mappings
+
+local replacement_offset         = sorters.replacement_offset
+
+-- english
+
+entries['en'] = {
     ["a"] = "a", ["b"] = "b", ["c"] = "c", ["d"] = "d", ["e"] = "e",
     ["f"] = "f", ["g"] = "g", ["h"] = "h", ["i"] = "i", ["j"] = "j",
     ["k"] = "k", ["l"] = "l", ["m"] = "m", ["n"] = "n", ["o"] = "o",
@@ -38,7 +42,7 @@ sorters.entries['en'] = {
     ["Z"] = "z",
 }
 
-sorters.mappings['en'] = {
+mappings['en'] = {
     ["a"] =  1, ["b"] =  3, ["c"] =  5, ["d"] =  7, ["e"] =  9,
     ["f"] = 11, ["g"] = 13, ["h"] = 15, ["i"] = 17, ["j"] = 19,
     ["k"] = 21, ["l"] = 23, ["m"] = 25, ["n"] = 27, ["o"] = 29,
@@ -64,17 +68,20 @@ sorters.mappings['en'] = {
 
 -- dutch
 
-sorters.replacements['nl'] = { { "ij", 'y' }, { "IJ", 'Y' } }
-sorters.entries     ['nl'] = sorters.entries ['en']
-sorters.mappings    ['nl'] = sorters.mappings['en']
+replacements['nl'] = { { "ij", 'y' }, { "IJ", 'Y' } }
+entries     ['nl'] = entries ['en']
+mappings    ['nl'] = mappings['en']
 
 -- czech
 
-sorters.replacements['cz'] = {
-    [1] = { "ch", uc(0xFF01) }
+local cz_ch = uc(replacement_offset + 1)
+local cz_CH = uc(replacement_offset + 2)
+
+replacements['cz'] = {
+    [1] = { "ch", cz_ch }
 }
 
-sorters.entries['cz'] = {
+entries['cz'] = {
     ['a']        = "a",        -- a
     [uc(0x00E1)] = "a",        -- aacute
     ['b']        = "b",        -- b
@@ -88,7 +95,7 @@ sorters.entries['cz'] = {
     ['f']        = "f",        -- f
     ['g']        = "g",        -- g
     ['h']        = "h",        -- h
-    [uc(0xFF01)] = "ch",       -- ch
+    [cz_ch]      = "ch",       -- ch
     ['i']        = "i",        -- i
     [uc(0x00ED)] = "i",        -- iacute
     ['j']        = "j",        -- j
@@ -118,7 +125,7 @@ sorters.entries['cz'] = {
     [uc(0x017E)] = uc(0x017E), -- zcaron
 }
 
-sorters.mappings['cz'] = {
+mappings['cz'] = {
     ['a']        =  1, -- a
     [uc(0x00E1)] =  3, -- aacute
     ['b']        =  5, -- b
@@ -132,7 +139,7 @@ sorters.mappings['cz'] = {
     ['f']        = 21, -- f
     ['g']        = 23, -- g
     ['h']        = 25, -- h
-    [uc(0xFF01)] = 27, -- ch
+    [cz_ch]      = 27, -- ch
     ['i']        = 29, -- i
     [uc(0x00ED)] = 31, -- iacute
     ['j']        = 33, -- j
@@ -162,30 +169,33 @@ sorters.mappings['cz'] = {
     [uc(0x017E)] = 81, -- zcaron
 }
 
-sorters.add_uppercase_entries (sorters.entries.cz)
-sorters.add_uppercase_mappings(sorters.mappings.cz,0) -- 1 can be option (but then we need a runtime variant)
+add_uppercase_entries ("cz")
+add_uppercase_mappings("cz") -- 1 can be option (but then we need a runtime variant)
 
-sorters.replacements['cs'] = sorters.replacements['cz']
-sorters.entries     ['cs'] = sorters.entries     ['cz']
-sorters.mappings    ['cs'] = sorters.mappings    ['cz']
+entries ['cz'][cz_CH] = entries ['cz'][cz_ch]
+mappings['cz'][cz_CH] = mappings['cz'][cz_ch]
 
---~ print(table.serialize(sorters.mappings.cs))
+replacements['cs'] = replacements['cz']
+entries     ['cs'] = entries     ['cz']
+mappings    ['cs'] = mappings    ['cz']
+
+--~ print(table.serialize(mappings.cs))
 
 -- French
 
-sorters.entries ['fr'] = sorters.entries ['en']
-sorters.mappings['fr'] = sorters.mappings['en']
+entries ['fr'] = entries ['en']
+mappings['fr'] = mappings['en']
 
 -- German (by Wolfgang Schuster)
 
 -- DIN 5007-1
 
-sorters.entries  ['DIN 5007-1'] = sorters.entries ['en']
-sorters.mappings ['DIN 5007-1'] = sorters.mappings['en']
+entries  ['DIN 5007-1'] = entries ['en']
+mappings ['DIN 5007-1'] = mappings['en']
 
 -- DIN 5007-2
 
-sorters.replacements['DIN 5007-2'] = {
+replacements['DIN 5007-2'] = { -- todo: add_uppercase_replacements
     { "ä", 'ae' },
     { "ö", 'oe' },
     { "ü", 'ue' },
@@ -194,104 +204,100 @@ sorters.replacements['DIN 5007-2'] = {
     { "Ü", 'Ue' },
 }
 
-sorters.entries     ['DIN 5007-2'] = sorters.entries ['en']
-sorters.mappings    ['DIN 5007-2'] = sorters.mappings['en']
+--~ add_uppercase_replacements('DIN 5007-2')
+
+entries     ['DIN 5007-2'] = entries ['en']
+mappings    ['DIN 5007-2'] = mappings['en']
 
 -- Duden
 
-sorters.replacements['Duden'] = { { "ß", 's' } }
-sorters.entries     ['Duden'] = sorters.entries ['en']
-sorters.mappings    ['Duden'] = sorters.mappings['en']
+replacements['Duden'] = { { "ß", 's' } }
+entries     ['Duden'] = entries ['en']
+mappings    ['Duden'] = mappings['en']
 
 -- new german
 
-sorters.entries     ['de'] = sorters.entries ['en']
-sorters.mappings    ['de'] = sorters.mappings['en']
+entries     ['de'] = entries ['en']
+mappings    ['de'] = mappings['en']
 
 -- old german
 
-sorters.entries     ['deo'] = sorters.entries ['de']
-sorters.mappings    ['deo'] = sorters.mappings['de']
+entries     ['deo'] = entries ['de']
+mappings    ['deo'] = mappings['de']
 
 -- german - Germany
 
-sorters.entries     ['de-DE'] = sorters.entries ['de']
-sorters.mappings    ['de-DE'] = sorters.mappings['de']
+entries     ['de-DE'] = entries ['de']
+mappings    ['de-DE'] = mappings['de']
 
 -- german - Swiss
 
-sorters.entries     ['de-CH'] = sorters.entries ['de']
-sorters.mappings    ['de-CH'] = sorters.mappings['de']
+entries     ['de-CH'] = entries ['de']
+mappings    ['de-CH'] = mappings['de']
 
 -- german - Austria
 
-sorters.entries['de-AT'] = {
+entries['de-AT'] = {
     ["a"] = "a", ["ä"] = "ä", ["b"] = "b", ["c"] = "c", ["d"] = "d",
     ["e"] = "e", ["f"] = "f", ["g"] = "g", ["h"] = "h", ["i"] = "i",
     ["j"] = "j", ["k"] = "k", ["l"] = "l", ["m"] = "m", ["n"] = "n",
     ["o"] = "o", ["ö"] = "ö", ["p"] = "p", ["q"] = "q", ["r"] = "r",
     ["s"] = "s", ["t"] = "t", ["u"] = "u", ["ü"] = "ü", ["v"] = "v",
     ["w"] = "w", ["x"] = "x", ["y"] = "y", ["z"] = "z",
-    ["A"] = "a", ["Ä"] = "ä", ["B"] = "b", ["C"] = "c", ["D"] = "d",
-    ["E"] = "e", ["F"] = "f", ["G"] = "g", ["H"] = "h", ["I"] = "i",
-    ["J"] = "j", ["K"] = "k", ["L"] = "l", ["M"] = "m", ["N"] = "n",
-    ["O"] = "o", ["Ö"] = "ö", ["P"] = "p", ["Q"] = "q", ["R"] = "r",
-    ["S"] = "s", ["T"] = "t", ["U"] = "u", ["Ü"] = "ü", ["V"] = "v",
-    ["W"] = "w", ["X"] = "x", ["Y"] = "y", ["Z"] = "z",
+--  ["A"] = "a", ["Ä"] = "ä", ["B"] = "b", ["C"] = "c", ["D"] = "d",
+--  ["E"] = "e", ["F"] = "f", ["G"] = "g", ["H"] = "h", ["I"] = "i",
+--  ["J"] = "j", ["K"] = "k", ["L"] = "l", ["M"] = "m", ["N"] = "n",
+--  ["O"] = "o", ["Ö"] = "ö", ["P"] = "p", ["Q"] = "q", ["R"] = "r",
+--  ["S"] = "s", ["T"] = "t", ["U"] = "u", ["Ü"] = "ü", ["V"] = "v",
+--  ["W"] = "w", ["X"] = "x", ["Y"] = "y", ["Z"] = "z",
 }
 
-sorters.mappings['de-AT'] = {
+mappings['de-AT'] = {
     ["a"] =  1, ["ä"] =  3, ["b"] =  5, ["c"] =  7, ["d"] =  9,
     ["e"] = 11, ["f"] = 13, ["g"] = 15, ["h"] = 17, ["i"] = 19,
     ["j"] = 21, ["k"] = 23, ["l"] = 25, ["m"] = 27, ["n"] = 29,
     ["o"] = 31, ["ö"] = 33, ["p"] = 35, ["q"] = 37, ["r"] = 39,
     ["s"] = 41, ["t"] = 43, ["u"] = 45, ["ü"] = 47, ["v"] = 49,
     ["w"] = 51, ["x"] = 53, ["y"] = 55, ["z"] = 57,
-    ["A"] =  2, ["Ä"] =  4, ["B"] =  6, ["C"] =  8, ["D"] = 10,
-    ["E"] = 12, ["F"] = 14, ["G"] = 16, ["H"] = 18, ["I"] = 20,
-    ["J"] = 22, ["K"] = 24, ["L"] = 26, ["M"] = 28, ["N"] = 30,
-    ["O"] = 32, ["Ö"] = 34, ["P"] = 36, ["Q"] = 38, ["R"] = 40,
-    ["S"] = 42, ["T"] = 44, ["U"] = 46, ["Ü"] = 48, ["V"] = 50,
-    ["W"] = 52, ["X"] = 54, ["Y"] = 56, ["Z"] = 58,
+--  ["A"] =  2, ["Ä"] =  4, ["B"] =  6, ["C"] =  8, ["D"] = 10,
+--  ["E"] = 12, ["F"] = 14, ["G"] = 16, ["H"] = 18, ["I"] = 20,
+--  ["J"] = 22, ["K"] = 24, ["L"] = 26, ["M"] = 28, ["N"] = 30,
+--  ["O"] = 32, ["Ö"] = 34, ["P"] = 36, ["Q"] = 38, ["R"] = 40,
+--  ["S"] = 42, ["T"] = 44, ["U"] = 46, ["Ü"] = 48, ["V"] = 50,
+--  ["W"] = 52, ["X"] = 54, ["Y"] = 56, ["Z"] = 58,
 }
+
+add_uppercase_entries ('de-AT')
+add_uppercase_mappings('de-AT',1)
 
 -- finish (by Wolfgang Schuster)
 
-sorters.entries['fi'] = {
-    [ 1] = "a", [ 3] = "b", [ 5] = "c", [ 7] = "d", [ 9] = "e",
-    [11] = "f", [13] = "g", [15] = "h", [17] = "i", [19] = "j",
-    [21] = "k", [23] = "l", [25] = "m", [27] = "n", [29] = "o",
-    [31] = "p", [33] = "q", [35] = "r", [37] = "s", [39] = "t",
-    [41] = "u", [43] = "v", [45] = "w", [47] = "x", [49] = "y",
-    [51] = "z", [53] = "å", [55] = "ä", [57] = "ö",
-    [ 2] =   1, [ 4] =   3, [ 6] =   5, [ 8] =   7, [10] =   9,
-    [12] =  11, [14] =  13, [16] =  15, [18] =  17, [20] =  19,
-    [22] =  21, [24] =  23, [26] =  25, [28] =  27, [30] =  29,
-    [32] =  31, [34] =  33, [36] =  35, [38] =  37, [40] =  39,
-    [42] =  41, [44] =  43, [46] =  45, [48] =  47, [50] =  49,
-    [52] =  51, [54] =  53, [56] =  55, [58] =  57,
-}
-
-sorters.entries['fi'] = {
+entries['fi'] = {
     ["a"] = "a", ["b"] = "b", ["c"] = "c", ["d"] = "d", ["e"] = "e",
     ["f"] = "f", ["g"] = "g", ["h"] = "h", ["i"] = "i", ["j"] = "j",
     ["k"] = "k", ["l"] = "l", ["m"] = "m", ["n"] = "n", ["o"] = "o",
     ["p"] = "p", ["q"] = "q", ["r"] = "r", ["s"] = "s", ["t"] = "t",
     ["u"] = "u", ["v"] = "v", ["w"] = "w", ["x"] = "x", ["y"] = "y",
     ["z"] = "z", ["å"] = "å", ["ä"] = "ä", ["ö"] = "ö",
-    ["A"] = "a", ["B"] = "b", ["C"] = "c", ["D"] = "d", ["E"] = "e",
-    ["F"] = "f", ["G"] = "g", ["H"] = "h", ["I"] = "i", ["J"] = "j",
-    ["K"] = "k", ["L"] = "l", ["M"] = "m", ["N"] = "n", ["O"] = "o",
-    ["P"] = "p", ["Q"] = "q", ["R"] = "r", ["S"] = "s", ["T"] = "t",
-    ["U"] = "u", ["V"] = "v", ["W"] = "w", ["X"] = "x", ["Y"] = "y",
-    ["Z"] = "z", ["Å"] = "å", ["Ä"] = "ä", ["Ö"] = "ö",
 }
+
+mappings['fi'] = {
+    ["a"] =  1, ["b"] =  3, ["c"] =  5, ["d"] =  7, ["e"] =  9,
+    ["f"] = 11, ["g"] = 13, ["h"] = 15, ["i"] = 17, ["j"] = 19,
+    ["k"] = 21, ["l"] = 23, ["m"] = 25, ["n"] = 27, ["o"] = 29,
+    ["p"] = 31, ["q"] = 33, ["r"] = 35, ["s"] = 37, ["t"] = 39,
+    ["u"] = 41, ["v"] = 43, ["w"] = 45, ["x"] = 47, ["y"] = 49,
+    ["z"] = 51, ["å"] = 53, ["ä"] = 55, ["ö"] = 57,
+}
+
+add_uppercase_entries ("fi")
+add_uppercase_mappings("fi")
 
 -- slovenian
 --
 -- MM: this will change since we need to add accented vowels
 
-sorters.entries['sl'] = {
+entries['sl'] = {
     ["a"] = "a", ["b"] = "b", ["c"] = "c", ["č"] = "č", ["ć"] = "ć", ["d"] = "d",
     ["đ"] = "đ", ["e"] = "e", ["f"] = "f", ["g"] = "g", ["h"] = "h", ["i"] = "i",
     ["j"] = "j", ["k"] = "k", ["l"] = "l", ["m"] = "m", ["n"] = "n", ["o"] = "o",
@@ -300,8 +306,7 @@ sorters.entries['sl'] = {
     ["ž"] = "ž",
 }
 
-
-sorters.mappings['sl'] = {
+mappings['sl'] = {
     ["a"] =  1, ["b"] =  3, ["c"] =  5, ["č"] =  7, ["ć"] =  9, ["d"] = 11,
     ["đ"] = 13, ["e"] = 15, ["f"] = 17, ["g"] = 19, ["h"] = 21, ["i"] = 23,
     ["j"] = 25, ["k"] = 27, ["l"] = 29, ["m"] = 31, ["n"] = 33, ["o"] = 35,
@@ -310,45 +315,5 @@ sorters.mappings['sl'] = {
     ["ž"] = 61,
 }
 
-sorters.add_uppercase_entries (sorters.entries.sl)
-sorters.add_uppercase_mappings(sorters.mappings.sl,0) -- cf. MM
-
---~ sorters.test = ''
---~ sorters.test = 'nl'
---~ sorters.test = 'cz'
-
---~ if sorters.test == 'nl' then -- dutch test
-
---~     data = {
---~         { 'e', { {"ijsco",""} },2,"","","",""},
---~         { 'e', { {"ysco" ,""} },2,"","","",""},
---~         { 'e', { {"ijsco",""} },2,"","","",""},
---~         { 'e', { {"hans" ,""}, {"aap" ,""} },2,"","","",""},
---~         { 'e', { {"$a$"  ,""} },2,"","","",""},
---~         { 'e', { {"aap"  ,""} },2,"","","",""},
---~         { 'e', { {"hans" ,""}, {"aap" ,""} },6,"","","",""},
---~         { 'e', { {"hans" ,""}, {"noot",""} },2,"","","",""},
---~         { 'e', { {"hans" ,""}, {"mies",""} },2,"","","",""},
---~         { 'e', { {"hans" ,""}, {"mies",""} },2,"","","",""},
---~         { 'e', { {"hans" ,""}, {"mies",""}, [3] = {"oeps",""} },2,"","","",""},
---~         { 'e', { {"hans" ,""}, {"mies",""}, [3] = {"oeps",""} },4,"","","",""},
---~     }
---~     sorters.index.process({ entries = data, language = 'nl'})
-
---~ elseif sorters.test == 'cz' then -- czech test
-
---~     data = {
---~         { 'e', { {"blabla",""} },2,"","","",""},
---~         { 'e', { {"czacza",""} },2,"","","",""},
---~         { 'e', { {"albalb",""} },2,"","","",""},
---~         { 'e', { {"azcazc",""} },2,"","","",""},
---~         { 'e', { {"chacha",""} },2,"","","",""},
---~         { 'e', { {"hazzah",""} },2,"","","",""},
---~         { 'e', { {"iaccai",""} },2,"","","",""},
---~     }
---~     sorters.index.process({ entries = data, language = 'cz'})
-
---~ end
-
-
---~ print(table.serialize(sorters))
+add_uppercase_entries ("sl")
+add_uppercase_mappings("sl") -- cf. MM

@@ -16,6 +16,7 @@ local gsub, rep, sort, concat = string.gsub, string.rep, table.sort, table.conca
 local utfbyte, utfchar = utf.byte, utf.char
 local utfcharacters, utfvalues, strcharacters = string.utfcharacters, string.utfvalues, string.characters
 local chardata = characters.data
+local next, type, tonumber = next, type, tonumber
 
 local trace_tests = false  trackers.register("sorters.tests", function(v) trace_tests = v end)
 
@@ -25,6 +26,15 @@ sorters.splitters    = { }
 sorters.entries      = { }
 sorters.mappings     = { }
 sorters.replacements = { }
+
+sorters.ignored_offset     = 0x10000
+sorters.replacement_offset = 0x10000
+sorters.digits_offset      = 0x20000
+sorters.digits_maximum     = 0xFFFFF
+
+local ignored_offset = sorters.ignored_offset
+local digits_offset  = sorters.digits_offset
+local digits_maximum = sorters.digits_maximum
 
 local mappings     = sorters.mappings
 local entries      = sorters.entries
@@ -47,7 +57,9 @@ sorters.setlanguage()
 -- maybe inline code if it's too slow
 
 local function basicsort(sort_a,sort_b)
-    if #sort_a > #sort_b then
+    if not sort_a or not sort_b then
+        return 0
+    elseif #sort_a > #sort_b then
         if #sort_b == 0 then
             return 1
         else
@@ -104,7 +116,7 @@ function sorters.comparers.basic(a,b)
             local eai, ebi = ea[i], eb[i]
             result = basicsort(eai.e,ebi.e)
             if result == 0 then
-                result = basicsort(eai.m,ebi.m)
+                result = basicsort(eai.m,ebi.m) -- only needed it there are m's
             end
             if result ~= 0 then
                 break
@@ -122,13 +134,23 @@ function sorters.comparers.basic(a,b)
     end
 end
 
-local function padd(s) return rep(" ",10-#s) .. s end -- or format with padd
+local function numify(s)
+    return rep(" ",10-#s) .. s -- or format with padd
+end
+
+local function numify(s)
+    s = digits_offset + tonumber(s)
+    if s > digits_maximum then
+        s = digits_maximum
+    end
+    return utfchar(s)
+end
 
 function sorters.strip(str) -- todo: only letters and such utf.gsub("([^%w%d])","")
     if str then
         str = gsub(str,"\\%S*","")
         str = gsub(str,"[%s%[%](){}%$\"\']*","")
-        str = gsub(str,"(%d+)",padd) -- sort numbers properly
+        str = gsub(str,"(%d+)",numify) -- sort numbers properly
         return str
     else
         return ""
@@ -158,16 +180,42 @@ function sorters.splitters.utf(str)
             str = gsub(str,v[1],v[2])
         end
     end
-    local s, m, e, n = { }, { }, { }, 0
+    local s, e, m, n = { }, { }, { }, 0
     for sc in utfcharacters(str) do -- maybe an lpeg
+        local ec, mc = currententries[sc], currentmappings[sc] or utfbyte(sc)
         n = n + 1
-        local mc, ec = currentmappings[sc] or utfbyte(sc), currententries[sc]
         s[n] = sc
-        m[n] = mc
         e[n] = currentmappings[ec] or mc
+        m[n] = mc
     end
-    return { s = s, m = m, e = e }
+    return { s = s, e = e, m = m }
 end
+
+-- we can use one array instead (sort of like in mkii)
+-- but for the moment we do it this way as it is more
+-- handy for tracing
+
+-- function sorters.splitters.utf(str)
+--     if #currentreplacements > 0 then
+--         for k=1,#currentreplacements do
+--             local v = currentreplacements[k]
+--             str = gsub(str,v[1],v[2])
+--         end
+--     end
+--     local s, e, m, n = { }, { }, { }, 0
+--     for sc in utfcharacters(str) do -- maybe an lpeg
+--         local ec, mc = currententries[sc], currentmappings[sc] or utfbyte(sc)
+--         n = n + 1
+--         ec = currentmappings[ec] or mc
+--         s[n] = sc
+--         e[n] = ec
+--         if ec ~= mc then
+--             n = n + 1
+--             e[n] = mc
+--         end
+--     end
+--     return { s = s, e = e }
+-- end
 
 function table.remap(t)
     local tt = { }
@@ -185,7 +233,7 @@ local function pack(entry)
             local tt, li = { }, split[i].s
             for j=1,#li do
                 local lij = li[j]
-                tt[j] = utfbyte(lij) > 0xFF00 and "[]" or lij
+                tt[j] = utfbyte(lij) > ignored_offset and "[]" or lij
             end
             t[i] = concat(tt)
         end
@@ -194,7 +242,7 @@ local function pack(entry)
         local t, li = { }, split.s
         for j=1,#li do
             local lij = li[j]
-            t[j] = utfbyte(lij) > 0xFF00 and "[]" or lij
+            t[j] = utfbyte(lij) > ignored_offset and "[]" or lij
         end
         return concat(t)
     end
@@ -228,29 +276,42 @@ end
 
 -- some day we can have a characters.upper and characters.lower
 
-function sorters.add_uppercase_entries(entries)
-    local new = { }
-    for k, v in next, entries do
+function sorters.add_uppercase_replacements(what)
+    local rep, new = replacements[what], { }
+    for i=1,#rep do
+        local r = rep[i]
+        local u = chardata[utfbyte(r[1])].uccode
+        if u then
+            new[utfchar(u)] = r[2]
+        end
+    end
+    for k, v in next, new do
+        rep[k] = v
+    end
+end
+
+function sorters.add_uppercase_entries(what)
+    local ent, new = entries[what], { }
+    for k, v in next, ent do
         local u = chardata[utfbyte(k)].uccode
         if u then
             new[utfchar(u)] = v
         end
     end
     for k, v in next, new do
-        entries[k] = v
+        ent[k] = v
     end
 end
 
-function sorters.add_uppercase_mappings(mappings,offset)
-    local new = { }
-    for k, v in next, mappings do
+function sorters.add_uppercase_mappings(what,offset)
+    local map, new, offset = mappings[what], { }, offset or 0
+    for k, v in next, map do
         local u = chardata[utfbyte(k)].uccode
         if u then
             new[utfchar(u)] = v + offset
         end
     end
-    offset = offset or 0
     for k, v in next, new do
-        mappings[k] = v
+        map[k] = v
     end
 end

@@ -16,7 +16,7 @@ slower but look nicer this way.</p>
 
 local utf = unicode.utf8
 
-local floor, mod, date, time, concat = math.floor, math.mod, os.date, os.time, table.concat
+local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, format, rep = string.lower, string.format, string.rep
 local texsprint, utfchar = tex.sprint, utf.char
 local tonumber, tostring = tonumber, tostring
@@ -296,10 +296,10 @@ function converters.toabjad(n,what)
         return medium[n]
     else
         local a, b, c, d
-        a, n = floor(n/1000), mod(n,1000)
-        b, n = floor(n/ 100), mod(n, 100)
-        c, n = floor(n/  10), mod(n,  10)
-        d, n = floor(n/   1), mod(n,   1)
+        a, n = floor(n/1000), n % 1000 -- mod(n,1000)
+        b, n = floor(n/ 100), n %  100 -- mod(n, 100)
+        c, n = floor(n/  10), n %   10 -- mod(n,  10)
+        d, n = floor(n/   1), n %    1 -- mod(n,   1)
         return (large[4][a] or "") .. (large[3][b] or "") .. (large[2][c] or "") .. (large[1][d] or "")
     end
 end
