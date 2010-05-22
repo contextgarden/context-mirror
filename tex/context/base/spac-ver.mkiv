@@ -87,7 +87,7 @@
 %           {\edef\normallineheight{\bodyfontinterlinespace}}}%
 %    \fi}
 
-% \def\setupspecifiedinterlinespace[#1]%
+% \unexpanded\def\setupspecifiedinterlinespace[#1]%
 %   {\getparameters[\??it][#1]%
 %    \scratchdimen0\@@itheight\points
 %    \advance\scratchdimen 0\@@itdepth\points
@@ -120,7 +120,7 @@
           {\edef\normallineheight{\bodyfontinterlinespace}}}%
    \fi}
 
-\def\setupspecifiedinterlinespace[#1]%
+\unexpanded\def\setupspecifiedinterlinespace[#1]%
   {\getparameters[\??it\currentinterlinespace][#1]%
    \dosetupspecifiedinterlinespaceindeed}
 
@@ -166,7 +166,7 @@
      {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
       \spacing\currentrelativeinterlinespace}}
 
-\def\setuprelativeinterlinespace[#1]%
+\unexpanded\def\setuprelativeinterlinespace[#1]%
   {\processcommalist[#1]\dosetuprelativeinterlinespace}
 
 \def\dosetuprelativeinterlinespace#1%
@@ -200,7 +200,7 @@
 
 \let\currentinterlinespace\empty
 
-\def\defineinterlinespace
+\unexpanded\def\defineinterlinespace
   {\dodoubleempty\dodefineinterlinespace}
 
 \def\dodefineinterlinespace[#1][#2]%
@@ -521,7 +521,7 @@
 
 \definesystemvariable {ws} % whitespace
 
-\def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
+\unexpanded\def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
 
 \definewhitespacemethod [\v!fix]      {}
 \definewhitespacemethod [\v!fixed]    {\setfalse\flexiblewhitespace}
@@ -619,7 +619,7 @@
 
 \let\doaroundlinecorrection\relax
 
-\def\startlinecorrection
+\unexpanded\def\startlinecorrection
   {\dodoubleempty\dostartlinecorrection}
 
 \def\dostartlinecorrection[#1][#2]% #2 gobbles spaces
@@ -634,7 +634,7 @@
    \offbaselinecorrection
    \ignorespaces}
 
-\def\stoplinecorrection
+\unexpanded\def\stoplinecorrection
   {\stopbaselinecorrection
    \doaroundlinecorrection
    \egroup}
@@ -992,7 +992,7 @@
 %D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR
 %D \stoptabulate
 
-\def\setupstrut
+\unexpanded\def\setupstrut
   {\dosingleempty\dosetupstrut}
 
 \def\dosetupstrut[#1]% yet undocumented, todo: fontstrut
@@ -1361,7 +1361,7 @@
    \fi
    \setevalue{\??gr:#1}{\attribute\snapmethodattribute\csname\currentsnapper\endcsname\space}}
 
-\def\definegridsnapping
+\unexpanded\def\definegridsnapping
   {\dodoubleargument\dodefinegridsnapping}
 
 \def\dodefinegridsnapping[#1][#2]%
@@ -1466,7 +1466,7 @@
 
 \def\snaptogrid {\dosingleempty\dosnaptogrid}
 \def\moveongrid {\dosingleempty\domoveongrid}
-\def\placeongrid{\dosingleempty\doplaceongrid}
+\unexpanded\def\placeongrid{\dosingleempty\doplaceongrid}
 
 \def\dodomoveongrid[#1]%
   {} % gone, unless we set an attribute
@@ -1702,7 +1702,7 @@
    \attribute\skippenaltyattribute #1\relax
    \flushblankhandling}
 
-\def\startblankhandling
+\unexpanded\def\startblankhandling
   {\par
    \ifvmode
      \expandafter\dostartblankhandling
@@ -1718,7 +1718,7 @@
    \setfalse\someblankdone
    \the\everybeforeblankhandling}
 
-\def\stopblankhandling
+\unexpanded\def\stopblankhandling
   {\the\everyafterblankhandling
    \ifconditional\someblankdone
      \vskip\blankskip
@@ -1735,7 +1735,7 @@
 
 % % % % we can move much to lua once we can expand there % % % %
 
-\def\definevspacingamount
+\unexpanded\def\definevspacingamount
   {\dotripleempty\dodefinevspacingamount}
 
 % \def\dodefinevspacingamount[#1][#2][#3]%
@@ -1753,7 +1753,7 @@
   {\settrue\someblankdone
    \advance\blankskip#1\dimexpr#2\relax}
 
-\def\definevspacing
+\unexpanded\def\definevspacing
   {\dodoubleempty\dodefinevspacing}
 
 \def\dodefinevspacing[#1][#2]%
@@ -1884,7 +1884,7 @@
 %D care as it does {\em not} work in tandem with the other spacing
 %D commands.
 
-\def\definevspace
+\unexpanded\def\definevspace
   {\dotripleempty\dodefinevspace}
 
 \def\dodefinevspace[#1][#2][#3]%
@@ -1944,10 +1944,10 @@
 %D \stoplines
 %D \stoptyping
 
-% \def\setuplines
+% \unexpanded\def\setuplines
 %   {\dodoubleargument\getparameters[\??rg]}
 %
-% \def\startlines
+% \unexpanded\def\startlines
 %   {\@@rgbefore
 %    \pushmacro\checkindentation
 %    \whitespace
@@ -1968,7 +1968,7 @@
 %    \activatespacehandler\@@rgspace
 %    \GotoPar}
 %
-% \def\stoplines
+% \unexpanded\def\stoplines
 %   {\endgroup
 %    \popmacro\checkindentation
 %    \@@rgafter}
@@ -2015,7 +2015,7 @@
    \c!indenting=\v!no,
    \c!space=\v!default]
 
-\def\definelines
+\unexpanded\def\definelines
   {\dodoubleempty\dodefinelines}
 
 \def\dodefinelines[#1][#2]%
@@ -2023,7 +2023,7 @@
    \setvalue{\e!start#1}{\dostartlines[#1]}%
    \setvalue{\e!stop #1}{\dostoplines}}
 
-\def\setuplines
+\unexpanded\def\setuplines
   {\dodoubleempty\dosetuplines}
 
 \def\dosetuplines[#1][#2]%

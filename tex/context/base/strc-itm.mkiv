@@ -204,7 +204,7 @@
      \setevalue{\??op\currentitemgroup#1\s!parent}{\??op\currentitemgroup}%
    \fi}
 
-\def\defineitemgroup
+\unexpanded\def\defineitemgroup
   {\dotripleempty\dodefineitemgroup}
 
 \def\dodefineitemgroup[#1][#2][#3]% todo: clone
@@ -225,7 +225,7 @@
 
 \newtoks\everysetupitemgroup
 
-\def\setupitemgroups % [#1]
+\unexpanded\def\setupitemgroups % [#1]
   {\dodoubleargument\getparameters[\??oo]} % [#1]
 
 \def\packitems
@@ -402,7 +402,7 @@
   {\def\docommand##1{\dodosetupitemgroup[##1][#2][#3][#4]}%
    \processcommalist[#1]\docommand}
 
-\def\setupitemgroup
+\unexpanded\def\setupitemgroup
   {\doquadrupleempty\dosetupitemgroup}
 
 \def\doadvanceitem
@@ -513,7 +513,7 @@
 \newconditional\autoconcatnextitem \settrue \autoconcatnextitem
 \newsignal     \itemsignal
 
-\def\startitemgroup
+\unexpanded\def\startitemgroup
   {\dotripleempty\dostartitemgroup}
 
 \def\dostartitemgroup[#1][#2][#3]%
@@ -591,7 +591,7 @@
      \expandafter\flushcollecteditems
    \fi}
 
-\def\stopcollectitems
+\unexpanded\def\stopcollectitems
   {\ifconditional\randomizeitems
      \newcounter\itemcollectcounterdone
      \ifnum\itemcollectcounter>\zerocount
@@ -599,7 +599,7 @@
      \fi
    \fi}
 
-\def\startcollectitems
+\unexpanded\def\startcollectitems
   {\ifconditional\randomizeitems
      \newcounter\itemcollectcounter
      \letvalue{\e!start\v!item}\collectitemgroupitem
@@ -607,7 +607,7 @@
 
 %D End of plugin.
 
-\ifx\startcolumns\undefined \def\startcolumns[#1]{} \fi
+\ifx\startcolumns\undefined \unexpanded\def\startcolumns[#1]{} \fi
 \ifx\stopcolumns \undefined \let\stopcolumns\relax  \fi
 
 \def\dosetsymalign#1% hm, we should use one of the core-spa macros or make a helper
@@ -761,7 +761,7 @@
 % \item \input ward \item \input ward \item \input ward
 % \stopitemize \blank
 
-\def\stopitemgroup
+\unexpanded\def\stopitemgroup
   {\stopcollectitems
    \ifconditional\textlistitem
      \removeunwantedspaces\space\ignorespaces
@@ -1078,11 +1078,9 @@
        \dodolapitem
      \fi\fi\fi
    \fi
-   \forceunexpanded % needed for m conversion (\os) / i need to look into this
    \setevalue{\@@currentitemsymbol\currentitemlevel}%
      {\getvalue{\@@localitemsymbol\currentitemlevel}}% still problems with \uchar ?
     %{\noexpand\getvalue{\@@localitemsymbol\currentitemlevel}}% no, spoils subrefs
-   \resetunexpanded
    \setfalse\headlistitem
    \setfalse\sublistitem
    \setfalse\symbollistitem
@@ -1144,7 +1142,7 @@
 
 \chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
 
-\unprotected\def\complexdoitemgroupitem[#1]%
+\def\complexdoitemgroupitem[#1]%
   {\def\currentitemreference{#1}%
    \ifconditional\textlistitem
      % begin of item

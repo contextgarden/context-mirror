@@ -61,8 +61,8 @@
 \def\dointeractionbarparentparameter    #1#2{\ifx#1\relax\s!empty\else\dointeractionbarparameter    #1#2\fi}
 \def\dointeractionbarparentparameterhash#1#2{\ifx#1\relax        \else\dointeractionbarparameterhash#1#2\fi}
 
-\def\defineinteractionbar{\dodoubleargument\dodefineinteractionbar}
-\def\setupinteractionbar {\dodoubleempty   \dosetupinteractionbar}
+\unexpanded\def\defineinteractionbar{\dodoubleargument\dodefineinteractionbar}
+\unexpanded\def\setupinteractionbar {\dodoubleempty   \dosetupinteractionbar}
 \def\interactionbar      {\dodoubleempty   \dointeractionbar}
 
 \def\dosetupinteractionbar[#1][#2]%

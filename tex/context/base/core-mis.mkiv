@@ -169,7 +169,7 @@
    \noindent\hbox{\box0\hskip-\wd2\box2}%
    \dostopitems}
 
-\def\setupitems
+\unexpanded\def\setupitems
   {\dosingleargument\dosetupitems}
 
 \def\complexitems[#1]%
@@ -217,10 +217,10 @@
       #2]%
    \setvalue{\e!place#1}{\doplacement[\??pl#1]}}
 
-\def\defineplacement
+\unexpanded\def\defineplacement
   {\dodoubleempty\dodefineplacement}
 
-\def\setupplacement
+\unexpanded\def\setupplacement
   {\dodoubleempty\dosetupplacement}
 
 \def\dosetupplacement[#1]%
@@ -334,7 +334,7 @@
           \c!color=\paragraphparameter\c!color]}%
    \setupparagraphs[\currentparagraph][1][\c!distance=\zeropoint]}
 
-\def\defineparagraphs
+\unexpanded\def\defineparagraphs
   {\dodoubleargument\dodefineparagraphs}
 
 \def\dosetupparagraphs[#1][#2][#3]%
@@ -352,7 +352,7 @@
      \getparameters[\??al][#1]%
    \fi}
 
-\def\setupparagraphs
+\unexpanded\def\setupparagraphs
   {\dotripleempty\dosetupparagraphs}
 
 \setupparagraphs
@@ -502,7 +502,7 @@
       \c!before=\@@tabefore,
       \c!after=\@@taafter]}
 
-\def\setuptab
+\unexpanded\def\setuptab
   {\dosingleargument\dosetuptab}
 
 \setuptab
@@ -618,10 +618,10 @@
 %
 % obsolete:
 
-\def\setuphyphenmark
+\unexpanded\def\setuphyphenmark
   {\dodoubleargument\getparameters[\??kp]}
 
-\def\setuphyphenmark[#1]% sign=normal|wide
+\unexpanded\def\setuphyphenmark[#1]% sign=normal|wide
   {\dodoubleargument\getparameters[\??kp][#1]%
    \doifelse\@@kpsign {\v!normal}% was inset?
      {\let\textmodehyphen\normalhyphen  \let\textmodehyphendiscretionary\normalhyphendiscretionary}
@@ -739,8 +739,8 @@
 %D \typebuffer
 %D \getbuffer
 
-\def\startsubsentence{\beginofsubsentence     \prewordbreak\beginofsubsentencespacing}
-\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+\unexpanded\def\startsubsentence{\beginofsubsentence     \prewordbreak\beginofsubsentencespacing}
+\unexpanded\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
 
 %D \defineXMLenvironment [subsentence]
 %D   {|<|}
@@ -829,7 +829,7 @@
   {\executeifdefined{\??ci\currentdelimitedtext#1}%
   {\executeifdefined{\??ci#1}\empty}}}
 
-\def\definedelimitedtext
+\unexpanded\def\definedelimitedtext
   {\dodoubleempty\dodefinedelimitedtext}
 
 \def\dodefinedelimitedtext[#1][#2]%
@@ -863,7 +863,7 @@
       \setvalue{\e!start#1}{\startdelimitedtext[#1]}%
       \setvalue{\e!stop #1}{\stopdelimitedtext}}}
 
-\def\setupdelimitedtext
+\unexpanded\def\setupdelimitedtext
   {\dotripleargument\dosetupdelimitedtext}
 
 \def\dosetupdelimitedtext[#1][#2][#3]% #2 = optional level
@@ -882,7 +882,7 @@
 
 \let\dohandlerepeatdelimitedtext\relax
 
-\def\startdelimitedtext[#1]%
+\unexpanded\def\startdelimitedtext[#1]%
   {\bgroup
    \pushdelimitedtext{#1}%
    \doifelse{\delimitedtextparameter\c!method}\s!font
@@ -976,7 +976,7 @@
    \dohandlerightdelimitedtext\c!right
    \dostopattributes}
 
-\def\stopdelimitedtext
+\unexpanded\def\stopdelimitedtext
   {\dostopdelimitedtext
    \popdelimitedtext
    \egroup}
@@ -1000,8 +1000,8 @@
 
 % shortcuts
 
-\def\startdelimited{\startdelimitedtext}
-\def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
+\unexpanded\def\startdelimited{\startdelimitedtext}
+\unexpanded\def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
 \def\delimited     {\delimitedtext}
 
 \def\leftdelimitedtextmark
@@ -1197,8 +1197,8 @@
 %   [\c!indentnext=\v!no,
 %    \c!spacebefore=\v!nowhite]
 
-\def\setupquotation{\setupdelimitedtext[\v!quotation]}
-\def\setupquote    {\setupdelimitedtext[\v!quote]}
+\unexpanded\def\setupquotation{\setupdelimitedtext[\v!quotation]}
+\unexpanded\def\setupquote    {\setupdelimitedtext[\v!quote]}
 
 % seldom used, move from kernel to run time module
 
@@ -1357,7 +1357,7 @@
 %
 % \definesystemvariable{ri}
 %
-% \def\setuprows
+% \unexpanded\def\setuprows
 %   {\dodoubleargument\getparameters[\??ri]}
 %
 % \definecomplexorsimpleempty\startrows
@@ -1380,7 +1380,7 @@
 %    \bgroup
 %    \row}
 %
-% \def\stoprows
+% \unexpanded\def\stoprows
 %   {\do@@ribottom
 %    \egroup
 %    \egroup}
@@ -1593,7 +1593,7 @@
 \newbox\firstpairedbox
 \newbox\secondpairedbox
 
-\def\definepairedbox
+\unexpanded\def\definepairedbox
   {\dodoubleempty\dodefinepairedbox}
 
 \def\dodefinepairedbox[#1][#2]%
@@ -1617,13 +1617,13 @@
    \setvalue{\e!setup#1\e!endsetup}{\setuppairedbox[#1]}%
    \setvalue{\e!place#1}{\placepairedbox[#1]}}
 
-\def\setuppairedbox
+\unexpanded\def\setuppairedbox
   {\dodoubleempty\dosetuppairedbox}
 
 \def\dosetuppairedbox[#1]%
   {\getparameters[\??ld#1]}
 
-\def\placepairedbox
+\unexpanded\def\placepairedbox
   {\bgroup\dodoubleempty\doplacepairedbox}
 
 \def\doplacepairedbox[#1][#2]% watch the hsize/vsize tricks
@@ -1778,7 +1778,7 @@
 \newcount\horcombination  % counter
 \newcount\totcombination
 
-\def\definecombination
+\unexpanded\def\definecombination
   {\dodoubleempty\dodefinecombination}
 
 \def\dodefinecombination[#1][#2]%
@@ -1790,7 +1790,7 @@
    \getparameters
      [\??co#1][#2]}
 
-\def\setupcombinations
+\unexpanded\def\setupcombinations
   {\dodoubleempty\dosetupcombinations}
 
 \def\dosetupcombinations[#1][#2]%
@@ -1803,7 +1803,7 @@
 \def\combinationparameter#1%
   {\csname\??co\currentcombination#1\endcsname}%
 
-\def\startcombination
+\unexpanded\def\startcombination
   {\bgroup % so we can grab a group
    \dodoubleempty\dostartcombination}
 
@@ -1921,20 +1921,20 @@
 
 % formally ok:
 %
-% \def\stopcombination
+% \unexpanded\def\stopcombination
 %   {\egroup
 %    \egroup}
 %
 % more robust:
 %
-% \def\stopcombination
+% \unexpanded\def\stopcombination
 %   {{}{}{}{}{}{}{}{}% catches (at most 4) missing entries
 %    \egroup
 %    \egroup}
 %
 % even better:
 
-\def\stopcombination
+\unexpanded\def\stopcombination
   {{\scratchtoks{{}{}{}}\dorecurse\totcombination{\appendtoks{}{}{}{}\to\scratchtoks}\expandafter}\the\scratchtoks
    \egroup
    \egroup}
@@ -2005,7 +2005,7 @@
 %D
 %D \typebuffer \getbuffer
 
-\def\startfloatcombination
+\unexpanded\def\startfloatcombination
   {\dodoubleempty\dostartfloatcombination}
 
 \def\dostartfloatcombination[#1][#2]%
@@ -2013,7 +2013,7 @@
   %\insidecolumnstrue % trick, forces no centering, todo: proper switch/feature
    \chardef\postcenterfloatmethod\zerocount
    \forcelocalfloats
-   \def\stopfloatcombination
+   \unexpanded\def\stopfloatcombination
      {\scratchtoks\emptytoks
       \dorecurse\noflocalfloats
         {\appendetoks{\noexpand\getlocalfloat{\recurselevel}}{}\to\scratchtoks}%
@@ -2021,7 +2021,7 @@
       \resetlocalfloats
      \egroup}}
 
-\def\placerelativetoeachother#1#2%
+\unexpanded\def\placerelativetoeachother#1#2%
   {\bgroup
    \dowithnextbox
      {\bgroup
@@ -2034,8 +2034,8 @@
         \hbox}
      \hbox}
 
-\def\placeontopofeachother{\placerelativetoeachother\halign\hss}
-\def\placesidebyside      {\placerelativetoeachother\valign\vss}
+\unexpanded\def\placeontopofeachother{\placerelativetoeachother\halign\hss}
+\unexpanded\def\placesidebyside      {\placerelativetoeachother\valign\vss}
 
 %D A couple of examples, demonstrating how the depth is
 %D taken care of:
@@ -2256,7 +2256,7 @@
 
 \presetlocalframed[\??ro]
 
-\def\setuprotate
+\unexpanded\def\setuprotate
   {\dodoubleargument\getparameters[\??ro]}
 
 \setuprotate
@@ -2294,7 +2294,7 @@
 
 \def\??fr{@@fr}
 
-\def\setuphorizontaldivision
+\unexpanded\def\setuphorizontaldivision
   {\dodoubleargument\getparameters[\??fr]}
 
 \def\horizontaldivision

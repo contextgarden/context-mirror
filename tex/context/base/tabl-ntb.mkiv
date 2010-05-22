@@ -351,7 +351,7 @@
 %D
 %D \start \tightTBLrowspanfalse \getbuffer \stop
 
-\def\setupTBLcell#1#2% cell over col over row
+\unexpanded\def\setupTBLcell#1#2% cell over col over row
   {\setupTBLsection % already forgotten
    \edef\positiverow{\number#1}%
    \edef\positivecol{\number#2}%
@@ -657,7 +657,7 @@
 \long\def\doTABLEfoot[#1]#2\eTABLEfoot{\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
 
 \long\def\doTABLEsection[#1]#2%
-  {\def\setupTBLsection{\getparameters[\@@tbl\@@tbl][#1]}%
+  {\unexpanded\def\setupTBLsection{\getparameters[\@@tbl\@@tbl][#1]}%
    #2%
    \let\setupTBLsection\relax}
 
@@ -1601,7 +1601,7 @@
 %     \bTRs[xx] \bTD      oeps \eTD  \bTD oeps \eTD \eTRs
 % \eTABLE
 
-\def\defineTABLEsetup
+\unexpanded\def\defineTABLEsetup
   {\dodoubleargument\dodefineTABLEsetup}
 
 \def\dodefineTABLEsetup[#1][#2]%

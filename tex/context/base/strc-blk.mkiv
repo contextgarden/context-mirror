@@ -25,12 +25,12 @@
 
 \def\blockparameter#1#2{\ifcsname\??tb#1#2\endcsname\csname\??tb#1#2\endcsname\fi}
 
-\def\setupblockparameters{\dodoubleargument       \dosetupblock} % fast one (for compatibility)
-\def\setupblock          {\dodoubleargumentwithset\dosetupblock} % handles set
+\unexpanded\def\setupblockparameters{\dodoubleargument       \dosetupblock} % fast one (for compatibility)
+\unexpanded\def\setupblock          {\dodoubleargumentwithset\dosetupblock} % handles set
 
 \def\dosetupblock[#1]{\getparameters[\??tb#1]} % [#1][#2]}
 
-\def\defineblock[#1]%
+\unexpanded\def\defineblock[#1]%
   {\processcommalist[#1]\dodefineblock}
 
 \def\dodefineblock#1%

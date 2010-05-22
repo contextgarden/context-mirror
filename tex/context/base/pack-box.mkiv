@@ -103,7 +103,7 @@
      \egroup}%
      \vbox}
 
-\def\defineanchor
+\unexpanded\def\defineanchor
   {\doquadrupleempty\dodefineanchor}
 
 \def\dodefineanchor[#1][#2][#3][#4]%
@@ -123,7 +123,7 @@
 
 \def\@@collectorbox{@@collectorbox}
 
-\def\definecollector
+\unexpanded\def\definecollector
   {\dodoubleargument\dodefinecollector}
 
 \def\dodefinecollector[#1][#2]%
@@ -139,7 +139,7 @@
       \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
       \c!location=rb,\c!corner=,#2]}
 
-\def\setupcollector
+\unexpanded\def\setupcollector
   {\dodoubleargument\dosetupcollector}
 
 \def\dosetupcollector[#1][#2]%
@@ -388,7 +388,7 @@
       [#1][#2]}%
      {\egroup\getvalue{#1}}}
 
-\def\defineornament
+\unexpanded\def\defineornament
   {\dotripleempty\dodefineornament}
 
 \def\dodefineornament[#1][#2][#3]%
@@ -430,7 +430,7 @@
 
 \newcount\nofbleeds % per pag
 
-\def\setupbleeding
+\unexpanded\def\setupbleeding
   {\dodoubleempty\getparameters[\??bg]}
 
 \setupbleeding

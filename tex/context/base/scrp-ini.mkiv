@@ -50,7 +50,7 @@
 
 % when #2 == string, then only synonym, no settings
 
-\def\definescript
+\unexpanded\def\definescript
   {\dodoubleargument\dodefinescript}
 
 \def\dodefinescript[#1][#2]%
@@ -62,7 +62,7 @@
      {\getparameters[\??ls#1][\s!parent=#2]}%
    \setvalue{#1}{\dosetscript{#1}}}
 
-\def\setupscript
+\unexpanded\def\setupscript
   {\dodoubleargument\dosetupscript}
 
 \def\dosetupscript[#1][#2]%
@@ -79,8 +79,8 @@
    \fi}
 
 \def\setscript  [#1]{\dosetscript{#1}}
-\def\startscript[#1]{\begingroup\dosetscript{#1}}
-\def\stopscript     {\endgroup}
+\unexpanded\def\startscript[#1]{\begingroup\dosetscript{#1}}
+\unexpanded\def\stopscript     {\endgroup}
 
 % \setscript[hangul] \hangul \startscript[hangul]
 

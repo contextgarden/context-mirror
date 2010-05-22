@@ -190,43 +190,59 @@ end
 
 function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
     local x = match(str,"^#(.+)$") -- for old times sake (if we need to feed from xml or so)
-    local t = (x and { x = x }) or settings_to_hash_strict(str)
-    if t then
-        if t.r or t.g or t.b then
-            definecolor(name, register_color(name,'rgb', tonumber(t.r) or 0, tonumber(t.g) or 0, tonumber(t.b) or 0), global)
-        elseif t.c or t.m or t.y or t.k then
-            definecolor(name, register_color(name,'cmyk',tonumber(t.c) or 0, tonumber(t.m) or 0, tonumber(t.y) or 0, tonumber(t.k) or 0), global)
-        elseif t.v then
-            local r, g, b = colors.hsvtorgb(tonumber(t.h) or 0, tonumber(t.s) or 1, tonumber(t.v) or 1) -- maybe later native
-            definecolor(name, register_color(name,'rgb',r,g,b), global)
-        elseif t.x or t.h then
-            local r, g, b = match((t.x or t.h) .. "000000","(..)(..)(..)") -- watch the 255
-            definecolor(name, register_color(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255), global)
-        else
-            definecolor(name, register_color(name,'gray',tonumber(t.s) or 0), global)
-        end
-        if t.a and t.t then
-            definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
-        elseif colors.couple then
-        --  definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
-            definetransparent(name, 0, global) -- can be sped up
-        end
-    elseif freeze then
-        local ca = attributes_list[a_color]       [str]
-        local ta = attributes_list[a_transparency][str]
-        if ca then
-            definecolor(name, ca, global)
-        end
-        if ta then
-            definetransparent(name, ta, global)
-        end
+    if x then
+        local r, g, b = match(x .. "000000","(..)(..)(..)") -- watch the 255
+        definecolor(name, register_color(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255), global)
     else
-        inheritcolor(name, str, global)
-        inherittransparent(name, str, global)
-    --  if global and str ~= "" then -- For Peter Rolf who wants access to the numbers in Lua. (Currently only global is supported.)
-    --      attributes_list[a_color]       [name] = attributes_list[a_color]       [str] or attributes.unsetvalue  -- reset
-    --      attributes_list[a_transparency][name] = attributes_list[a_transparency][str] or attributes.unsetvalue
-    --  end
+        local settings = settings_to_hash_strict(str)
+        if settings then
+            local r, g, b = settings.r, settings.g, settings.b
+            if r or g or b then
+                definecolor(name, register_color(name,'rgb', tonumber(r) or 0, tonumber(g) or 0, tonumber(b) or 0), global)
+            else
+                local c, m, y, k = settings.c, settings.m, settings.y, settings.k
+                if c or m or y or b then
+                    definecolor(name, register_color(name,'cmyk',tonumber(c) or 0, tonumber(m) or 0, tonumber(y) or 0, tonumber(k) or 0), global)
+                else
+                    local h, s, v = settings.h, settings.s, settings.v
+                    if v then
+                        r, g, b = colors.hsvtorgb(tonumber(h) or 0, tonumber(s) or 1, tonumber(v) or 1) -- maybe later native
+                        definecolor(name, register_color(name,'rgb',r,g,b), global)
+                    else
+                        local x = settings.x or h
+                        if x then
+                            r, g, b = match(x .. "000000","(..)(..)(..)") -- watch the 255
+                            definecolor(name, register_color(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255), global)
+                        else
+                            definecolor(name, register_color(name,'gray',tonumber(s) or 0), global)
+                        end
+                    end
+                end
+            end
+            local a, t = settings.a, settings.t
+            if a and t then
+                definetransparent(name, transparencies.register(name,transparent[a] or tonumber(a) or 1,tonumber(t) or 1), global)
+            elseif colors.couple then
+            --  definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
+                definetransparent(name, 0, global) -- can be sped up
+            end
+        elseif freeze then
+            local ca = attributes_list[a_color]       [str]
+            local ta = attributes_list[a_transparency][str]
+            if ca then
+                definecolor(name, ca, global)
+            end
+            if ta then
+                definetransparent(name, ta, global)
+            end
+        else
+            inheritcolor(name, str, global)
+            inherittransparent(name, str, global)
+        --  if global and str ~= "" then -- For Peter Rolf who wants access to the numbers in Lua. (Currently only global is supported.)
+        --      attributes_list[a_color]       [name] = attributes_list[a_color]       [str] or attributes.unsetvalue  -- reset
+        --      attributes_list[a_transparency][name] = attributes_list[a_transparency][str] or attributes.unsetvalue
+        --  end
+        end
     end
 end
 

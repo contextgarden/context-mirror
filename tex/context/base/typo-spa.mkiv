@@ -25,13 +25,13 @@
 
 \newcount \maxcharacterspacingid
 
-\def\definecharacterspacing[#1]%
+\unexpanded\def\definecharacterspacing[#1]%
   {\ifcsname\??ch#1\endcsname \else
      \global\advance\maxcharacterspacingid\plusone
      \setxvalue{\??ch:#1}{\the\maxcharacterspacingid}%
    \fi}
 
-\def\setupcharacterspacing
+\unexpanded\def\setupcharacterspacing
   {\dotripleargument\dosetupcharacterspacing}
 
 \def\dosetupcharacterspacing[#1][#2][#3]%

@@ -128,14 +128,14 @@
 \newdimen\linenumberwidth
 \newdimen\linenumberdistance
 
-\def\definelinenumbering
+\unexpanded\def\definelinenumbering
   {\dosingleempty\dodefinelinenumbering}
 
 \def\dodefinelinenumbering[#1]%
   {\edef\currentlinenumbering{#1}%
    \mkdefinetextlinenumbering}
 
-\def\setuplinenumbering
+\unexpanded\def\setuplinenumbering
   {\dodoubleempty\dosetuplinenumbering}
 
 \def\dosetuplinenumbering[#1][#2]%
@@ -172,7 +172,7 @@
 
 \definelinenumbering
 
-\def\startlinenumbering
+\unexpanded\def\startlinenumbering
   {\dodoubleempty\dostartlinenumbering}
 
 % no intermediate changes in values, define a class, otherwise each range
@@ -228,7 +228,7 @@
    \the\beforeeverylinenumbering
    \mkstarttextlinenumbering\currentlinenumbering\linenumbermode}
 
-\def\stoplinenumbering
+\unexpanded\def\stoplinenumbering
   {\mkstoptextlinenumbering
    \the\aftereverylinenumbering
    \endgroup}
@@ -448,8 +448,8 @@
 % referencing
 
 \def\someline [#1]{\mkstartlinereference{#1}\mkstoplinereference{#1}}
-\def\startline[#1]{\mkstartlinereference{#1}}
-\def\stopline [#1]{\mkstoplinereference {#1}}
+\unexpanded\def\startline[#1]{\mkstartlinereference{#1}}
+\unexpanded\def\stopline [#1]{\mkstoplinereference {#1}}
 
 \def\mkshowstartlinereference#1%
   {\ifconditional\tracelinenumbering

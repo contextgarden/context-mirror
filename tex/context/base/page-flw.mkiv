@@ -18,7 +18,7 @@
 
 \unprotect
 
-\def\definetextflow
+\unexpanded\def\definetextflow
   {\dodoubleempty\dodefinetextflow}
 
 \def\dodefinetextflow[#1][#2]% flow settings
@@ -47,7 +47,7 @@
 \def\doiftextflow#1%
   {\doiftextflowelse{#1}\firstofoneargument\gobbleoneargument}
 
-\def\starttextflow[#1]%
+\unexpanded\def\starttextflow[#1]%
   {\doiftextflowcollectorelse{#1}
      {\global\setbox\textflowcollector{#1}\vbox
         \bgroup
@@ -55,7 +55,7 @@
         \hsize\textflowparameter{#1}\c!width
         \doifsomething{\textflowparameter{#1}\c!style}%
           {\doconvertfont{\textflowparameter{#1}\c!style}}%
-        \def\stoptextflow{\endgraf\egroup}}
+        \unexpanded\def\stoptextflow{\endgraf\egroup}}
      {\let\stoptextflow\relax}}
 
 \def\flushtextflow#1%

@@ -93,7 +93,7 @@
 \chardef\linetablepage  \zerocount
 \chardef\linetablerepeat\zerocount
 
-\def\setuplinetable
+\unexpanded\def\setuplinetable
   {\dotripleempty\dosetuplinetable}
 
 \def\dosetuplinetable[#1][#2][#3]%
@@ -182,7 +182,7 @@
 }
      {\xdef\noflinetablelines{\linetableparameter\c!lines}}}
 
-\def\startlinetablecell
+\unexpanded\def\startlinetablecell
   {\dosingleempty\dostartlinetablecell}
 
 \def\dostartlinetablecell[#1]%
@@ -247,7 +247,7 @@
      \dostartattributes{\??lec\number\linetablecolumn}\c!style\c!color\empty
      \begstrut \ignorespaces}
 
-% \def\stoplinetablecell
+% \unexpanded\def\stoplinetablecell
 %   {\unskip \endstrut
 %    \dostopattributes
 %    \ifcase\linetablemode
@@ -269,7 +269,7 @@
 
 \newconditional\linetableautoheight  \settrue\linetableautoheight
 
-\def\stoplinetablecell
+\unexpanded\def\stoplinetablecell
   {\unskip \endstrut
    \dostopattributes
    \ifcase\linetablemode
@@ -298,7 +298,7 @@
    \fi
    \egroup}
 
-% \def\stoplinetablecell
+% \unexpanded\def\stoplinetablecell
 %   {\unskip \endstrut
 %    \dostopattributes
 %    \ifcase\linetablemode
@@ -387,14 +387,14 @@
      \setnoftableslines
    \fi}
 
-\def\startlinetablepart
+\unexpanded\def\startlinetablepart
   {\global\linetablesubcol\zerocount
    \setbox\scratchbox\hbox\bgroup
    \doconvertfont{\linetablerparameter\c!style}%
    \startcolor[\linetablerparameter\c!color]%
    \ignorespaces}
 
-\def\stoplinetablepart
+\unexpanded\def\stoplinetablepart
   {\ifnum\linetablepart>\zerocount
      \unskip \unskip % remove last intercolumn skip (distance+fill)
    \fi
@@ -514,7 +514,7 @@
 
 % \linetableparameter\c!var -> \@@levar (when no classes)
 
-\def\startlinetablerun % to do: quit when nested
+\unexpanded\def\startlinetablerun % to do: quit when nested
   {\bgroup
    \inlinetabletrue
    % autowidth
@@ -571,7 +571,7 @@
    \let\NR\linetableNR
    \flushlinetablehead}
 
-\def\stoplinetablerun
+\unexpanded\def\stoplinetablerun
   {\globallet\linetableline\!!maxcard
    \chardef\linetableheadstate\zerocount % blocked
    \flushlinetableparts
@@ -736,19 +736,19 @@
   {\stoplinetablecell % dummy
    \linetableER}
 
-\def\startlinetable
+\unexpanded\def\startlinetable
   {\startlinetablerun}
 
-\def\stoplinetable
+\unexpanded\def\stoplinetable
   {\stoplinetablerun}
 
-\def\startlinetableanalysis
+\unexpanded\def\startlinetableanalysis
   {\bgroup
    \linetableprerolltrue
    \trialtypesettingtrue
    \startlinetablerun}
 
-\def\stoplinetableanalysis
+\unexpanded\def\stoplinetableanalysis
   {\stoplinetablerun
    \egroup
    \globallet\noflinetablerows\linetablerows
@@ -767,7 +767,7 @@
 
 \newtoks \@@linetablehead
 
-\long\def\startlinetablehead#1\stoplinetablehead
+\long\unexpanded\def\startlinetablehead#1\stoplinetablehead
   {\ifinlinetable
      \@@linetablehead\emptytoks
    \fi

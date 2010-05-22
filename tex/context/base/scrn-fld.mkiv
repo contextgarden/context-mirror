@@ -67,7 +67,7 @@
   {\def\dopresetfieldsymbols##1{\processcommalist[##1]\dopresetfieldsymbol}%
    \@EA\processcommalist\@EA[#1]\dopresetfieldsymbols}
 
-\def\definedefaultsymbols
+\unexpanded\def\definedefaultsymbols
   {\definesymbol[defaultyes][\mathematics{\times}]%
    \definesymbol[defaultno ][\mathematics{\cdot }]}
 
@@ -452,7 +452,7 @@
 
 %D And one more:
 
-\def\definefieldstack
+\unexpanded\def\definefieldstack
   {\dotripleargument\dodefinefieldstack}
 
 \def\dodefinefieldstack[#1][#2][#3]% name, symbols, settings
@@ -505,7 +505,7 @@
 
 \newtoks\everysetupforms
 
-\def\setupforms{\dosingleempty\dosetupforms}
+\unexpanded\def\setupforms{\dosingleempty\dosetupforms}
 
 \def\dosetupforms[#1]
   {\getparameters[\??fr][#1]%
@@ -520,7 +520,7 @@
 
 %D Goodie: (unchecked in \MKIV)
 
-\def\definepushbutton % name optional setup
+\unexpanded\def\definepushbutton % name optional setup
   {\dodoubleempty\dodefinepushbutton}
 
 \def\dodefinepushbutton[#1][#2]% name setup
@@ -533,7 +533,7 @@
   {\doifsymboldefinedelse{psym:#1:#2}%
      \donothing{\definesymbol[psym:#1:#2][{#3}]}}
 
-\def\definepushsymbol
+\unexpanded\def\definepushsymbol
   {\dotripleargument\dodefinepushsymbol}
 
 \def\dodefinepushsymbol[#1][#2]% [#3]

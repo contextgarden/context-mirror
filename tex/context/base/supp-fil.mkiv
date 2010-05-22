@@ -412,13 +412,13 @@
 \newtoks \everystartreadingfile
 \newtoks \everystopreadingfile
 
-\def\startreadingfile% beter een every en \setnormalcatcodes
+\unexpanded\def\startreadingfile% beter een every en \setnormalcatcodes
   {\global\advance\readingfilelevel\plusone
    \the\everystartreadingfile
    \beginrestorecatcodes
    \setcatcodetable\prtcatcodes}
 
-\def\stopreadingfile
+\unexpanded\def\stopreadingfile
   {\endrestorecatcodes
    \the\everystopreadingfile
    \global\advance\readingfilelevel\minusone}

@@ -70,7 +70,7 @@
    \global\advance\previouspropertylevel\minusone
    \global\advance\propertylevel\minusone}
 
-\def\defineproperty
+\unexpanded\def\defineproperty
   {\dotripleempty\dodefineproperty}
 
 \def\dodefineproperty[#1]%
@@ -113,7 +113,7 @@
 
 \def\doifelseproperty#1{\doifdefinedelse{\??py#1\c!global}}
 
-\def\setupproperty
+\unexpanded\def\setupproperty
   {\dodoubleempty\dosetupproperty}
 
 \def\dosetupproperty[#1][#2]% local
@@ -144,7 +144,7 @@
 \def\checkedpropertyparameter#1% only self
   {\ifcsname\??py\currentproperty#1\endcsname\csname\??py\currentproperty#1\endcsname\fi}
 
-\def\definepropertyhandler#1{\setvalue{\??py*#1}}
+\unexpanded\def\definepropertyhandler#1{\setvalue{\??py*#1}}
 \def\propertyhandler      #1{\getvalue{\??py*#1}}
 
 \protect \endinput

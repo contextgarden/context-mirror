@@ -46,7 +46,7 @@
 %D therefore embed them in some macro's that (force and)
 %D remove the indentation and restore it afterwards.
 
-\def\definemarginline
+\unexpanded\def\definemarginline
   {\dodoubleargument\dodefinemarginline}
 
 \def\dodefinemarginline[#1][#2]%
@@ -193,7 +193,7 @@
 \newcount\margincontentlevel
 \newdimen\margincontentheight
 
-\def\setupinmargin
+\unexpanded\def\setupinmargin
   {\dodoubleempty\dosetupinmargin}
 
 \def\dosetupinmargin[#1][#2]%
@@ -436,7 +436,7 @@
       \makemargintextblock\v!right\v!left{#2}%
       \rlap{\placemargincontentseparator}}}
 
-\def\placemargincontentseparator
+\unexpanded\def\placemargincontentseparator
   {\ifnum\margincontentlevel>\zerocount
      \ifx\margincontentseparator\empty\else
        \bgroup
@@ -499,7 +499,7 @@
      {\dodoinmargin[#1][#2][#3][#4][#5]}
      {\dodoinmargin[#1][#2][#3][][#4]}}
 
-\def\defineinmargin
+\unexpanded\def\defineinmargin
   {\doquadrupleempty\dodefineinmargin}
 
 \def\dodefineinmargin[#1][#2][#3][#4]%
@@ -761,7 +761,7 @@
    \global\chardef\margintextcollected\zerocount
    \global\collectedmargintexts\emptytoks}
 
-\def\placemargincontent
+\unexpanded\def\placemargincontent
   {\ifcase\margintextcollected\else % was level check
      \bgroup
        \redoconvertfont % !!
@@ -772,7 +772,7 @@
 
 % For old times sake (i use it in project styles) we provide
 
-\def\placemargintexts {\placemargincontent}
+\unexpanded\def\placemargintexts {\placemargincontent}
 \def\resetmargetitels {\resetmargincontent}
 \def\margewoordpositie{\margewoord} % obsolete, now no longer range
 

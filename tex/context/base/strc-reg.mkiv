@@ -76,7 +76,7 @@
 
 \newtoks\everysetupregister
 
-\def\setupregisters
+\unexpanded\def\setupregisters
   {\dotripleempty\dosetupregisters}
 
 \def\dosetupregisters[#1][#2][#3]%
@@ -125,7 +125,7 @@
 
 %D Definition:
 
-\def\defineregister
+\unexpanded\def\defineregister
   {\dodoubleargument\dodefineregister}
 
 \def\dodefineregister[#1][#2]% #2?
@@ -278,8 +278,8 @@
 \def\donoregister  #1#2#3{\doflushatpar{\doregisterstructurepageregister{#1}{\c!keys={#2},\c!entries={#3}}{}}}
 \def\dodoregister#1#2#3#4{\doflushatpar{\doregisterstructurepageregister{#1}{\c!keys={#2},\c!alternative=#3,\c!entries={#4}}{}}}
 
-\def\startregister{\doquadrupleempty\dostartregister}
-\def\stopregister {\dodoubleargument\dostopregister}
+\unexpanded\def\startregister{\doquadrupleempty\dostartregister}
+\unexpanded\def\stopregister {\dodoubleargument\dostopregister}
 
 % a synonym, so that we can nest with overlap without syntax check problems
 
@@ -377,8 +377,8 @@
 \def\dosetstructurepageregister[#1][#2][#3]% [register][settings][userdata]
   {\doflushatpar{\doregisterstructurepageregister{#1}{#2}{#3}}}
 
-\def\startstructurepageregister{\doquadrupleempty\dostartstructurepageregister}
-\def\stopstructurepageregister {\dodoubleargument\dostopstructurepageregister}
+\unexpanded\def\startstructurepageregister{\doquadrupleempty\dostartstructurepageregister}
+\unexpanded\def\stopstructurepageregister {\dodoubleargument\dostopstructurepageregister}
 
 \let\openstructurepageregisterrange \startstructurepageregister
 \let\closestructurepageregisterrange\stopstructurepageregister
@@ -466,7 +466,7 @@
     \dontcomplain
 \to \everyplaceregister
 
-\def\placeregister
+\unexpanded\def\placeregister
   {\dodoubleempty\doplaceregister}
 
 \def\doplaceregister[#1][#2]%
@@ -600,49 +600,49 @@
 %D placeindex as then flushing takes place inside the index. Took me hours
 %D to notice that.
 
-\def\startregisteroutput
+\unexpanded\def\startregisteroutput
   {\endgraf
    \begingroup
    \forgetparindent
    \forgetparskip}
 
-\def\stopregisteroutput
+\unexpanded\def\stopregisteroutput
   {\endgraf
    \endgroup}
 
-\def\startregisterentries#1% depth
+\unexpanded\def\startregisterentries#1% depth
   {\endgraf
    \begingroup
    \dosetregisterattributes\c!textstyle\c!textcolor
    \advance\leftskip\numexpr#1-1\relax\dimexpr\registerparameter\c!distance\relax
    \hangindent\registerparameter\c!distance\hangafter\plusone}
 
-\def\stopregisterentries
+\unexpanded\def\stopregisterentries
   {\endgraf
    \endgroup}
 
-\def\startregistersection#1% title
+\unexpanded\def\startregistersection#1% title
   {\registercharacter{#1}\endgraf}
 
-\def\stopregistersection
+\unexpanded\def\stopregistersection
   {\endgraf}
 
 \newconditional\registerpagedone
 
-\def\startregisterpages
+\unexpanded\def\startregisterpages
   {\begingroup
    \setfalse\registerpagedone
    \dosetregisterattributes\c!pagestyle\c!pagecolor}
 
-\def\stopregisterpages
+\unexpanded\def\stopregisterpages
   {\endgroup}
 
-\def\startregisterseewords
+\unexpanded\def\startregisterseewords
   {\begingroup
    \setfalse\registerpagedone
    \dosetregisterattributes\c!pagestyle\c!pagecolor}
 
-\def\stopregisterseewords
+\unexpanded\def\stopregisterseewords
   {\endgroup}
 
 \def\registerpageseparator% todo: , configurable

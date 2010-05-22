@@ -18,7 +18,7 @@
 \newcount\filterstate \filterstate\plusone
 
 \registerctxluafile{node-ini}{1.001}
-\registerctxluafile{node-mir}{1.001}
+\registerctxluafile{node-dir}{1.001}
 \registerctxluafile{node-aux}{1.001}
 \registerctxluafile{node-tst}{1.001}
 \registerctxluafile{node-tra}{1.001} % we might split it off (module)
@@ -37,7 +37,7 @@
 
 \ifdefined \v!global \else \def\v!global{global} \fi % for metatex
 
-\def\defineattribute
+\unexpanded\def\defineattribute
   {\dodoubleempty\dodefineattribute}
 
 \def\dodefineattribute[#1][#2]% alternatively we can let lua do the housekeeping
@@ -47,7 +47,7 @@
   %\writestatus\m!systems{defining attribute #1 with number \number\lastallocatedattribute}%
    \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
 
-\def\definesystemattribute
+\unexpanded\def\definesystemattribute
   {\dodoubleempty\dodefinesystemattribute}
 
 \def\dodefinesystemattribute[#1][#2]% alternatively we can let lua do the housekeeping
@@ -77,8 +77,8 @@
 \def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,false,true)}}}
 \def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,true,true)}}}
 
-\def\starttracingnodes[#1]{\ctxlua{nodes.tracers.characters.start("#1")}}
-\def\stoptracingnodes     {\ctxlua{nodes.tracers.characters.stop()}}
+\unexpanded\def\starttracingnodes[#1]{\ctxlua{nodes.tracers.characters.start("#1")}}
+\unexpanded\def\stoptracingnodes     {\ctxlua{nodes.tracers.characters.stop()}}
 
 % \starttext
 %     \starttracingnodes[characters]

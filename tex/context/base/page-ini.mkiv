@@ -128,7 +128,7 @@
 
 \ifx\dosetuplayout\undefined % overloaded in page-lay !
 
-  \def\setuplayout{\dodoubleempty\getparameters[\??ly]}
+  \unexpanded\def\setuplayout{\dodoubleempty\getparameters[\??ly]}
 
 \fi
 
@@ -586,7 +586,7 @@
       \space#1:\space\ascii\space
       \!!doneatrue}}
 
-\def\placeversioninfo % nog engels maken
+\unexpanded\def\placeversioninfo % nog engels maken
   {\ifcase\conceptmode
      % 0 : nothing
    \or
@@ -1240,7 +1240,7 @@
 % \definepagebreak[instance][forsure]
 % \definepagebreak[forsure][yes,+4]
 
-\def\definepagebreak
+\unexpanded\def\definepagebreak
   {\dodoubleargument\dodefinepagebreak}
 
 \def\dodefinepagebreak[#1][#2]% non recursive, meant for simple mappings
@@ -1257,7 +1257,7 @@
 \long\def\installcolumnbreakhandler#1#2#3% #1=otr-id #2=tag
   {\long\setvalue{\??cn:#1:#2}{#3}}
 
-\def\definecolumnbreak
+\unexpanded\def\definecolumnbreak
   {\dodoubleargument\dodefinecolumnbreak}
 
 \def\dodefinecolumnbreak[#1][#2]% non recursive, meant for simple mappings
@@ -1458,10 +1458,10 @@
 
 \newbox\facingpage
 
-\def\setupoppositeplacing
+\unexpanded\def\setupoppositeplacing
   {\dodoubleargument\getparameters[\??np]}
 
-\def\startopposite
+\unexpanded\def\startopposite
   {\dowithnextboxcontent
      {\hsize\makeupwidth}%
      {\global\setbox\facingpage\vbox
@@ -1474,7 +1474,7 @@
          \box\nextbox}}%
      \vbox\bgroup}
 
-\def\stopopposite
+\unexpanded\def\stopopposite
   {\egroup}
 
 \def\finishfacingpage

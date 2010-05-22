@@ -59,14 +59,14 @@
      \null \page
    \fi \fi }
 
-\def\startspread
+\unexpanded\def\startspread
   {\bgroup
    \ifdoublesided
      \page[\v!left]%
     %\setsystemmode{spread}%
      \inspreadtrue
      \expanded{\setuplayout[\c!textwidth=\the\dimexpr2\textwidth+2\backspace\relax]}%
-     \def\startspread{\bgroup\let\stopspread\egroup}%
+     \unexpanded\def\startspread{\bgroup\let\stopspread\egroup}%
      \let\stopspread\dostopspread
    \else
      \let\stopspread\egroup

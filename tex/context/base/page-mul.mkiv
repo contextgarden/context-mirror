@@ -1527,7 +1527,7 @@
 %
 % \stopcolumns
 
-\def\setupcolumns
+\unexpanded\def\setupcolumns
   {\dosingleempty\dosetupcolumns}
 
 \def\dosetupcolumns[#1]%
@@ -1620,7 +1620,7 @@
        \ifdim\ctxparskip>\zeropoint\relax
          \setupwhitespace[\@@klblank]%
        \fi
-       \def\stopcolumns
+       \unexpanded\def\stopcolumns
          {\endmulticolumns
           \global\insidecolumnsfalse
           \endgroup
@@ -1644,7 +1644,7 @@
 %D interwoven and therefore to be integrated when the multi
 %D column modules are merged. (moved from cont-new.tex)
 
-\def\setupcolumnspan[#1]%
+\unexpanded\def\setupcolumnspan[#1]%
   {\getparameters[\??ks][#1]}
 
 \presetlocalframed
@@ -1704,10 +1704,10 @@
       %\topskipcorrection % becomes an option !
        \EveryPar{\begstrut\EveryPar{}}} % also !
 
-\def\startcolumnspan
+\unexpanded\def\startcolumnspan
   {\dosingleempty\dostartcolumnspan}
 
-\def\stopcolumnspan
+\unexpanded\def\stopcolumnspan
   {\egroup}
 
 \setupcolumns
@@ -1728,7 +1728,7 @@
 
 %D Undocumented and still under development.
 
-\def\startsimplecolumns
+\unexpanded\def\startsimplecolumns
   {\dosingleempty\dostartsimplecolumns}
 
 \def\dostartsimplecolumns[#1]%
@@ -1742,7 +1742,7 @@
    \setbox\scratchbox\vbox\bgroup
    \forgetall} % \blank[\v!disable]
 
-\def\stopsimplecolumns
+\unexpanded\def\stopsimplecolumns
   {\removebottomthings
    \egroup
    \rigidcolumnbalance\scratchbox

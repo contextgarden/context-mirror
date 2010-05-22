@@ -367,7 +367,7 @@
 %D We can trace references by setting the next switch to
 %D true.
 
-\def\definereference
+\unexpanded\def\definereference
   {\dodoubleempty\dodefinereference}
 
 \def\dodefinereference[#1][#2]%
@@ -589,7 +589,7 @@
 
 \chardef\autocrossfilereferences=0
 
-\def\setupreferencing
+\unexpanded\def\setupreferencing
   {\dosingleargument\dosetupreferencing}
 
 \def\dosetupreferencing[#1]%
@@ -639,7 +639,7 @@
 \def\incrementreferenceprefix{+}
 \def\decrementreferenceprefix{-}
 
-\def\setupreferenceprefix[#1]%
+\unexpanded\def\setupreferenceprefix[#1]%
   {\edef\@@rfprefix{#1}%
    \ifx\@@rfprefix\empty
      \let\referenceprefix\empty
@@ -905,7 +905,7 @@
 
 % todo: inherit; probably not yet mkiv okay
 
-\def\definereferenceformat
+\unexpanded\def\definereferenceformat
   {\dodoubleargument\dodefinereferenceformat}
 
 \def\dodefinereferenceformat[#1][#2]%
@@ -1253,7 +1253,7 @@
 %D
 %D \showsetup{setupurl}
 
-\def\setupurl
+\unexpanded\def\setupurl
   {\dodoubleargument\getparameters[\??ur]}
 
 \unexpanded\def\url[#1]%
@@ -1349,10 +1349,10 @@
 
 % also lua, like urls and files
 
-\def\setupprograms
+\unexpanded\def\setupprograms
   {\dodoubleargument\getparameters[\??pr]}
 
-\def\defineprogram
+\unexpanded\def\defineprogram
   {\dotripleargument\dodefineprogram}
 
 \def\dodefineprogram[#1][#2][#3]%
@@ -1399,7 +1399,7 @@
 %D
 %D \showsetup{gotopage}
 
-\def\definepage
+\unexpanded\def\definepage
   {\dodoubleargument\dodefinepage}
 
 \def\dodefinepage[#1][#2]%
@@ -1483,7 +1483,7 @@
 %D
 %D \showsetup{setupbuttons}
 
-\def\setupbuttons
+\unexpanded\def\setupbuttons
   {\dodoubleargument\getparameters[\??bt]}
 
 \definecomplexorsimpleempty\button
@@ -1782,7 +1782,7 @@
 %     \stop \blank
 % \stoptext
 
-\def\setupreferencestructureprefix
+\unexpanded\def\setupreferencestructureprefix
   {\dotripleargument\dosetupreferencestructureprefix}
 
 \def\getreferencestructureprefix#1#2#3%
@@ -1796,7 +1796,7 @@
         connector     = \!!bs\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixconnector\!!es,
   }}
 
-\def\setupreferencestructureprefix
+\unexpanded\def\setupreferencestructureprefix
   {\dotripleempty\dosetupreferencestructureprefix}
 
 \def\dosetupreferencestructureprefix[#1][#2][#3]%

@@ -202,7 +202,7 @@
 %D   \NC \tex{xrightleftharpoons }  \NC \xrightleftharpoons [big]  \NC \NR
 %D \stoptable}
 
-\def\definematharrow
+\unexpanded\def\definematharrow
   {\doquadrupleargument\dodefinematharrow}
 
 \def\dodefinematharrow[#1][#2][#3][#4]% name type[none|both] template command
@@ -358,7 +358,7 @@
 %D These macros for define math-overarrows are adapted from
 %D \filename{amsmath.sty}
 
-\def\definemathoverarrow
+\unexpanded\def\definemathoverarrow
   {\dotripleargument\dodefinemathoverarrow}
 
 \def\dodefinemathoverarrow[#1][#2][#3]%
@@ -383,7 +383,7 @@
 
 %D Now the under arrows
 
-\def\definemathunderarrow
+\unexpanded\def\definemathunderarrow
   {\dotripleargument\dodefinemathunderarrow}
 
 %D For underarrows the default kern is 0.3ex

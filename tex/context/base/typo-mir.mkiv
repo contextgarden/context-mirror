@@ -31,7 +31,7 @@
 
 \newtoks\everysetupdirections
 
-\def\setupdirections[#1]% there will be more like setting up directions themselves
+\unexpanded\def\setupdirections[#1]% there will be more like setting up directions themselves
   {\getparameters[\??di][#1]%
    \the\everysetupdirections}
 

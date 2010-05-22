@@ -84,9 +84,9 @@
 \newtoks\everysetupuserpagenumber % todo: set state: none, start, stop, reset
 \newtoks\everysetupsubpagenumber  % todo: set state: none, start, stop, reset
 
-\def\setuprealpagenumber{\dosingleargument\dosetuprealpagenumber}
-\def\setupuserpagenumber{\dosingleargument\dosetupuserpagenumber}
-\def\setupsubpagenumber {\dosingleargument\dosetupsubpagenumber}
+\unexpanded\def\setuprealpagenumber{\dosingleargument\dosetuprealpagenumber}
+\unexpanded\def\setupuserpagenumber{\dosingleargument\dosetupuserpagenumber}
+\unexpanded\def\setupsubpagenumber {\dosingleargument\dosetupsubpagenumber}
 
 \def\dosavepagenumberstate#1{\edef\oldpagenumberstate{\structurecounterparameter#1\c!state}}
 
@@ -295,7 +295,7 @@
 
 \newtoks\everysetuppagenumbering
 
-\def\setuppagenumbering
+\unexpanded\def\setuppagenumbering
   {\dosingleempty\dosetuppagenumbering}
 
 \def\dosetuppagenumbering[#1]%

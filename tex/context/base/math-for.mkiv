@@ -44,7 +44,7 @@
 
 \newtoks \everysetupformulas
 
-\def\setupformulas
+\unexpanded\def\setupformulas
   {\dodoubleempty\dosetupformulas}
 
 \def\dosetupformulas[#1][#2]%
@@ -69,7 +69,7 @@
 
 \newtoks \everysetuptextformulas
 
-\def\setuptextformulas
+\unexpanded\def\setuptextformulas
   {\dosingleempty\dosetuptextformulas}
 
 \def\dosetuptextformulas[#1]%

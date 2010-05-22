@@ -53,7 +53,7 @@
 \def\dosetuplinewidth[#1]%
   {\assigndimension{#1}\linewidth{.2\points}{.4\points}{.6\points}}
 
-\def\setuplinewidth
+\unexpanded\def\setuplinewidth
   {\dosingleargument\dosetuplinewidth}
 
 %D \macros
@@ -73,7 +73,7 @@
 %D
 %D \showsetup{setupscreens}
 
-\def\setupscreens
+\unexpanded\def\setupscreens
   {\dodoubleargument\getparameters[\??rs]}
 
 %D We will communicate through module specific variables, current
@@ -295,7 +295,7 @@
 
 \appendtoks \oninterlineskip \to \everyoverlay
 
-\def\defineoverlay
+\unexpanded\def\defineoverlay
   {\dodoubleargument\dodefineoverlay}
 
 \def\dodefineoverlay[#1][#2]%
@@ -624,7 +624,7 @@
    \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
    \dodoubleempty\startlocalframed[\??ol:\the\framednesting]}
 
-\def\setupframed
+\unexpanded\def\setupframed
   {\dodoubleempty\dosetupframed}
 
 \def\dosetupframed
@@ -884,7 +884,7 @@
 
 % todo: protect local \framednames
 
-\def\startlocalframed[#1][#2]%
+\unexpanded\def\startlocalframed[#1][#2]%
   {\bgroup
    \inframedtrue
    \edef\@@framed{#1}%
@@ -1153,7 +1153,7 @@
 %D ...,bottom=\kern0pt,...
 %D \stoptyping
 
-\def\stoplocalframed
+\unexpanded\def\stoplocalframed
   {\dontshowcomposition
    \@@stopframedorientation % hm, wrong place ! should rotate the result (after reshape)
    \handleframedlocator\c!before\@@locallocation
@@ -2069,7 +2069,7 @@
 %D
 %D \showsetup{setupblackrules}
 
-\def\setupblackrules
+\unexpanded\def\setupblackrules
   {\dodoubleargument\getparameters[\??bj]}
 
 %D \macros
@@ -2206,7 +2206,7 @@
 %D
 %D \showsetup{setupmarginrules}
 
-\def\setupmarginrules
+\unexpanded\def\setupmarginrules
   {\dodoubleargument\getparameters[\??ka]}
 
 %D \macros
@@ -2436,7 +2436,7 @@
 \def\dosetupthinrules[#1]%
   {\getparameters[\??dl][#1]}
 
-\def\setupthinrules
+\unexpanded\def\setupthinrules
   {\dosingleargument\dosetupthinrules}
 
 \def\dothinrules[#1]%
@@ -2661,7 +2661,7 @@
    \setuvalue{\e!stop #1}{\dostopframedtext     }%
    \setuvalue        {#1}{\doframedtext     [#1]}}
 
-\def\defineframedtext
+\unexpanded\def\defineframedtext
   {\dodoubleempty\dodefineframedtext}
 
 %D We define the general (and original) case by just saying:
@@ -2683,7 +2683,7 @@
      \getparameters[\??kd\v!framedtext][#1]%
    \fi}
 
-\def\setupframedtexts
+\unexpanded\def\setupframedtexts
   {\dodoubleempty\dosetupframedtexts}
 
 \def\dostartframedtext
@@ -2830,7 +2830,7 @@
 %D
 %D \showsetup{defineframed}
 
-\def\defineframed
+\unexpanded\def\defineframed
   {\dodoubleempty\dodefineframed}
 
 \def\dodefineframed[#1][#2]%
@@ -2889,7 +2889,7 @@
 %D The implementation looks a bit complicated due to the
 %D optional arguments.
 
-\def\setuptextrules
+\unexpanded\def\setuptextrules
   {\dodoubleargument\getparameters[\??tl]}
 
 \def\complextextrule[#1]% if needed we can make it installable
@@ -2983,14 +2983,14 @@
 
 %D The grouped commands also supports bodyfont switching:
 
-\def\starttextrule#1%
+\unexpanded\def\starttextrule#1%
   {\bgroup
    \def\dounknowntextrule{\domiddletextrule}
    \dotoptextrule{#1}
    \bgroup
    \doifsomething\@@tlbodyfont{\switchtobodyfont[\@@tlbodyfont]}}
 
-\def\stoptextrule
+\unexpanded\def\stoptextrule
   {\par
    \egroup
    \dobottomtextrule\empty
@@ -3019,7 +3019,7 @@
 %D \showsetup{fillinrules}
 %D \showsetup{setupfillinrules}
 
-\def\setupfillinrules
+\unexpanded\def\setupfillinrules
   {\dodoubleargument\getparameters[\??il]}
 
 \definecomplexorsimpleempty\fillinrules
@@ -3102,7 +3102,7 @@
 %D \showsetup{fillinline}
 %D \showsetup{setupfillinlines}
 
-\def\setupfillinlines
+\unexpanded\def\setupfillinlines
   {\dodoubleargument\getparameters[\??iv]}
 
 \definecomplexorsimpleempty\fillinline
@@ -3182,7 +3182,7 @@
       \let\stopbackground \relax
       \let\background     \relax}}
 
-\def\setupbackground
+\unexpanded\def\setupbackground
   {\dosingleargument\dosetupbackground}
 
 %D Actually typesetting the background is implemented rather
@@ -3334,7 +3334,7 @@
 %D
 %D \typebuffer
 
-% \def\defineframedcontent
+% \unexpanded\def\defineframedcontent
 %   {\dodoubleempty\dodefineframedcontent}
 %
 % \def\dodefineframedcontent[#1][#2]%
@@ -3351,14 +3351,14 @@
 %       \c!right=,
 %       #2]}
 %
-% \def\setupframedcontent
+% \unexpanded\def\setupframedcontent
 %   {\dodoubleempty\dosetupframedcontent}
 %
 % \def\dosetupframedcontent[#1][#2]%
 %   {\def\docommand##1{\getparameters[\??fc##1][#2]}%
 %    \processcommacommand[#1]\docommand}
 %
-% \def\startframedcontent[#1]%
+% \unexpanded\def\startframedcontent[#1]%
 %   {\bgroup
 %    \doifelse{#1}\v!off
 %      {\let\stopframedcontent\egroup}
@@ -3367,7 +3367,7 @@
 %       \fi}}
 %
 % \def\dostartframedcontent#1%
-%   {\def\stopframedcontent{\dostopframedcontent{#1}}%
+%   {\unexpanded\def\stopframedcontent{\dostopframedcontent{#1}}%
 %    \setbox\framebox\hbox\bgroup
 %      \setlocalhsize
 %      \hsize\localhsize
@@ -3424,20 +3424,20 @@
 \def\letframedcontentparameter#1%
   {\letvalue{\??fc\@@framedcontent#1}}
 
-\def\defineframedcontent
+\unexpanded\def\defineframedcontent
   {\dodoubleempty\dodefineframedcontent}
 
 \def\dodefineframedcontent[#1][#2]%
   {\getparameters[\??fc#1][\s!parent=\??fc,#2]}
 
-\def\setupframedcontent
+\unexpanded\def\setupframedcontent
   {\dodoubleempty\dosetupframedcontent}
 
 \def\dosetupframedcontent[#1][#2]%
   {\def\docommand##1{\getparameters[\??fc##1][#2]}%
    \processcommacommand[#1]\docommand}
 
-\def\startframedcontent
+\unexpanded\def\startframedcontent
   {\dosingleempty\dostartframedcontent}
 
 \def\dostartframedcontent[#1]%
@@ -3447,7 +3447,7 @@
    \doifnot{#1}\v!off{\dodostartframedcontent{#1}}}
 
 \def\dodostartframedcontent#1%
-  {\def\stopframedcontent{\dostopframedcontent{#1}}%
+  {\unexpanded\def\stopframedcontent{\dostopframedcontent{#1}}%
    \setbox\framebox\hbox\bgroup
      \setlocalhsize
      \hsize\localhsize

@@ -203,7 +203,7 @@
 %D \starttext \pagefigure[two.1] \stoptext
 %D \stoptyping
 
-\def\startpagefigure
+\unexpanded\def\startpagefigure
   {\dodoubleempty\dostartpagefigure}
 
 \def\dostartpagefigure[#1][#2]%
@@ -212,7 +212,7 @@
    \startTEXpage[\c!offset=\@@exoffset]%
      \externalfigure[#1][#2]\ignorespaces} % so we can put some text below the graphic
 
-\def\stoppagefigure
+\unexpanded\def\stoppagefigure
   {\stopTEXpage
    \egroup}
 

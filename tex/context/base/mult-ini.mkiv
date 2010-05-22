@@ -162,9 +162,9 @@
 %D \def\e!name{meaning}
 %D \stoptyping
 
-\def\defineinterfaceconstant #1#2{\setvalue{\c!prefix!#1}{#2}}
-\def\defineinterfacevariable #1#2{\setvalue{\v!prefix!#1}{#2}}
-\def\defineinterfaceelement  #1#2{\setvalue{\e!prefix!#1}{#2}}
+\unexpanded\def\defineinterfaceconstant #1#2{\setvalue{\c!prefix!#1}{#2}}
+\unexpanded\def\defineinterfacevariable #1#2{\setvalue{\v!prefix!#1}{#2}}
+\unexpanded\def\defineinterfaceelement  #1#2{\setvalue{\e!prefix!#1}{#2}}
 
 %D Next come some interface independant constants:
 %D
@@ -173,12 +173,12 @@
 %D \definefileconstant      {name} {meaning}
 %D \stoptyping
 
-\def\definereferenceconstant #1#2{\setvalue{\r!prefix!#1}{#2}}
-\def\definefileconstant      #1#2{\setvalue{\f!prefix!#1}{#2}}
+\unexpanded\def\definereferenceconstant #1#2{\setvalue{\r!prefix!#1}{#2}}
+\unexpanded\def\definefileconstant      #1#2{\setvalue{\f!prefix!#1}{#2}}
 
 %D A new one:
 
-\def\definetypescriptconstant#1#2{\setvalue{\t!prefix!#1}{#2}}
+\unexpanded\def\definetypescriptconstant#1#2{\setvalue{\t!prefix!#1}{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D
@@ -187,8 +187,8 @@
 %D \definemessageconstant {name}
 %D \stoptyping
 
-\def\definesystemconstant  #1{\setvalue{\s!prefix!#1}{#1}}
-\def\definemessageconstant #1{\setvalue{\m!prefix!#1}{#1}}
+\unexpanded\def\definesystemconstant  #1{\setvalue{\s!prefix!#1}{#1}}
+\unexpanded\def\definemessageconstant #1{\setvalue{\m!prefix!#1}{#1}}
 
 %D In a parameter driven system, some parameters are shared
 %D by more system components. In \CONTEXT\ we can distinguish
@@ -199,7 +199,7 @@
 %D \definesystemvariable {name}
 %D \stoptyping
 
-\def\definesystemvariable#1{\setevalue{\??prefix#1}{\@@prefix#1}}
+\unexpanded\def\definesystemvariable#1{\setevalue{\??prefix#1}{\@@prefix#1}}
 
 \definesystemvariable{ms}
 
@@ -267,7 +267,7 @@
 %D \stopinterface
 %D \stoptyping
 
-\def\startinterface #1
+\unexpanded\def\startinterface #1
   {\doifnot{#1}{all}{\doifnotinset\currentinterface{#1}{\gobbleuntil\stopinterface}}}
 
 \let\stopinterface\relax
@@ -358,7 +358,7 @@
 %D which puts the message text asked for in \type
 %D {\currentmessagetext}.
 
-\def\startmessages #1 library: #2 %
+\unexpanded\def\startmessages #1 library: #2 %
   {\bgroup
    \ifcsname\m!prefix!#2\endcsname\else\setgvalue{\m!prefix!#2}{#2}\fi
    \catcode13=\active
@@ -671,7 +671,7 @@
 %D system module. Let us define some simple setup command:
 %D
 %D \starttyping
-%D \def\setupbox[#1]%
+%D \unexpanded\def\setupbox[#1]%
 %D   {\getparameters[\??bx][#1]}
 %D \stoptyping
 %D
@@ -764,7 +764,7 @@
 %D in these situations we could use the c||version, but for
 %D documentation purposes the x||alternative comes in handy.
 
-\def\defineinterfaceconstant#1#2%
+\unexpanded\def\defineinterfaceconstant#1#2%
   {\setvalue{\c!prefix!#1}{#2}}
 
 %D \macros
@@ -793,10 +793,10 @@
 
 %D We just ignore these:
 
-\def\startvariables{\gobbleuntil\stopvariables}
-\def\startconstants{\gobbleuntil\stopconstants}
-\def\startelements {\gobbleuntil\stopelements}
-\def\startcommands {\gobbleuntil\stopcommands}
+\unexpanded\def\startvariables{\gobbleuntil\stopvariables}
+\unexpanded\def\startconstants{\gobbleuntil\stopconstants}
+\unexpanded\def\startelements {\gobbleuntil\stopelements}
+\unexpanded\def\startcommands {\gobbleuntil\stopcommands}
 
 %D \macros
 %D   {interfaced}

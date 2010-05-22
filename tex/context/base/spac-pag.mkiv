@@ -125,7 +125,7 @@
 
 \newcount\pagesignallevel
 
-\def\startsignalrightpage % one may do a \postsignalrightplace
+\unexpanded\def\startsignalrightpage % one may do a \postsignalrightplace
   {\advance\pagesignallevel\plusone
    \presignalrightpage
    \let\signalrightpage\relax
@@ -134,7 +134,7 @@
    \doifrightpageelse\donothing\donothing
    \freezepagestate}
 
-\def\stopsignalrightpage
+\unexpanded\def\stopsignalrightpage
   {\ifcase\pagesignallevel\or\postsignalrightpage\fi
    \advance\pagesignallevel\minusone}
 

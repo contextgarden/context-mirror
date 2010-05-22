@@ -34,10 +34,10 @@
 \def\doloadspellchecklist[#1][#2]%
   {\ctxlua{languages.words.load("#1","#2")}}
 
-\def\setupspellchecking
+\unexpanded\def\setupspellchecking
   {\dosingleargument\dosetupspellchecking}
 
-\def\setupspellchecking[#1]% todo colors
+\unexpanded\def\setupspellchecking[#1]% todo colors
   {\getparameters[\??wl][#1]%
    \doifelse\@@wlstate\v!start
      {\ctxlua{languages.words.enable(\@@wlmethod)}}

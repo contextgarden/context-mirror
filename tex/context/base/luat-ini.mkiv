@@ -44,8 +44,8 @@
 \long\def\dodostartluacode#1\stopluacode
   {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
 
-\def\startlua    {\dostartlua    } % tex catcodes
-\def\startluacode{\dostartluacode} % lua catcodes
+\unexpanded\def\startlua    {\dostartlua    } % tex catcodes
+\unexpanded\def\startluacode{\dostartluacode} % lua catcodes
 
 %D Some delayed definitions:
 
@@ -134,7 +134,7 @@
    \obeyluatokens
    \csname dodostartnamed#1\v!code\endcsname}
 
-\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
+\unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
   {\scratchcounter\ctxlua{lua.registername("#1","#3")}%
    \normalexpanded{\long\edef\csname dodostartnamed#1\v!code\endcsname##1\csname\e!stop#1\v!code\endcsname}%
      {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
@@ -209,7 +209,7 @@
 
 %D Experimental:
 
-\def\startluaparameterset[#1]%
+\unexpanded\def\startluaparameterset[#1]%
   {\begingroup
    \obeylualines
    \obeyluatokens

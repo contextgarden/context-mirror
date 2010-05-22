@@ -34,7 +34,7 @@
 %D \showsetup{setupmakeup}
 %D \showsetup{startmakeup}
 
-\def\definemakeup
+\unexpanded\def\definemakeup
   {\dodoubleargument\dodefinemakeup}
 
 \def\dodefinemakeup[#1][#2]%
@@ -64,7 +64,7 @@
    \setvalue{\e!start#1\e!makeup}{\startmakeup[#1]}%
    \setvalue{\e!stop #1\e!makeup}{\stopmakeup}}
 
-\def\setupmakeup
+\unexpanded\def\setupmakeup
   {\dodoubleargument\dosetupmakeup}
 
 \def\dosetupmakeup[#1]%
@@ -84,7 +84,7 @@
 
 \let\currentmakeup\empty
 
-\def\startmakeup
+\unexpanded\def\startmakeup
   {\dodoubleempty\dostartmakeup}
 
 \def\dostartmakeup[#1][#2]%
@@ -198,7 +198,7 @@
 %D by setting their associated status variables. The
 %D connection between them is made by the following macro
 
-\def\setupmakeuplayout
+\unexpanded\def\setupmakeuplayout
   {\setupfooter[\c!state=\makeupparameter\c!footerstate]%
    \setupheader[\c!state=\makeupparameter\c!headerstate]%
    \setuptext  [\c!state=\makeupparameter\c!textstate]%

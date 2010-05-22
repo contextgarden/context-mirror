@@ -29,8 +29,8 @@
 % \definepropertyhandler \v!overprint {\dotriggeroverprint\v!overprint}
 % \definepropertyhandler \v!knockout  {\dotriggeroverprint\v!knockout }
 %
-% \def\startoverprintproperty{\dotriggeroverprint\v!overprint}
-% \def\stopoverprintproperty {\dotriggeroverprint\v!knockout }
+% \unexpanded\def\startoverprintproperty{\dotriggeroverprint\v!overprint}
+% \unexpanded\def\stopoverprintproperty {\dotriggeroverprint\v!knockout }
 
 %D Negative cum suis.
 
@@ -40,8 +40,8 @@
 \definepropertyhandler \v!negative {\dotriggernegative\v!negative}
 \definepropertyhandler \v!positive {\dotriggernegative\v!positive}
 
-\def\startnegativeproperty{\dotriggernegative\v!negative}
-\def\stopnegativeproperty {\dotriggernegative\v!positive}
+\unexpanded\def\startnegativeproperty{\dotriggernegative\v!negative}
+\unexpanded\def\stopnegativeproperty {\dotriggernegative\v!positive}
 
 %D Special font effects.
 
@@ -68,7 +68,7 @@
 \definepropertyhandler \v!hidden {\mktriggereffect\v!hidden}
 \definepropertyhandler \v!stretch{\mktriggereffect\v!normal}
 
-\def\starteffectproperty{\mktriggereffect\currentproperty}
-\def\stopeffectproperty {\mktriggereffect\v!normal       }
+\unexpanded\def\starteffectproperty{\mktriggereffect\currentproperty}
+\unexpanded\def\stopeffectproperty {\mktriggereffect\v!normal       }
 
 \protect \endinput

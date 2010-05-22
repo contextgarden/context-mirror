@@ -39,7 +39,7 @@
 
 % todo: better inheritane system
 
-\def\setupstructurecountering{\dodoubleempty\getparameters[\??nn]}
+\unexpanded\def\setupstructurecountering{\dodoubleempty\getparameters[\??nn]}
 
 \setupstructurecountering
   [\c!way=\v!by\v!chapter,
@@ -96,7 +96,7 @@
 % \def\dostructurecounterparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dostructurecounterparentparameter\csname#1\s!number\endcsname#2\fi}
 % \def\dostructurecounterparentparameter#1#2{\ifx#1\relax\s!empty\else\dostructurecounterparameter#1#2\fi}
 
-\def\definestructurecounter
+\unexpanded\def\definestructurecounter
   {\dodoubleempty\dodefinestructurecounter}
 
 \def\dodefinestructurecounter[#1][#2]%
@@ -115,7 +115,7 @@
   {\getparameters[\??nn#1][\c!number=#2]%
    \docheckstructurecountersetup{#1}}
 
-\def\setupstructurecounter
+\unexpanded\def\setupstructurecounter
   {\dodoubleargument\dosetupstructurecounter}
 
 \def\dosetupstructurecounter[#1][#2]%
@@ -324,7 +324,7 @@
 
 % funny, here, todo: these are the defaults
 
-\def\setupnumbering
+\unexpanded\def\setupnumbering
   {\dodoubleempty\getparameters[\??nr]}
 
 \setupnumbering

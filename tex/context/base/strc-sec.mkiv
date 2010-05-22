@@ -75,7 +75,7 @@
 
 \let\laststructuresectionname\empty
 
-\def\definestructuresection[#1]%
+\unexpanded\def\definestructuresection[#1]%
   {\doifundefined{\??nh#1}
      {\global\advance\maxstructuredepth\plusone
       \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
@@ -98,7 +98,7 @@
       \fi
       \xdef\laststructuresectionname{#1}}}
 
-\def\setupstructuresection
+\unexpanded\def\setupstructuresection
   {\dotripleempty\dosetupstructuresection}
 
 \def\dosetupstructuresection[#1]%
@@ -123,9 +123,9 @@
 \let\currentstructurehead\empty
 \newtoks\everystructureheadsetup
 
-\def\setupstructureheads{\dosingleargument\dosetupstructureheads}
-\def\setupstructurehead {\dodoubleempty\dosetupstructurehead}
-\def\definestructurehead{\dodoubleempty\dodefinestructurehead}
+\unexpanded\def\setupstructureheads{\dosingleargument\dosetupstructureheads}
+\unexpanded\def\setupstructurehead {\dodoubleempty\dosetupstructurehead}
+\unexpanded\def\definestructurehead{\dodoubleempty\dodefinestructurehead}
 
 \newif\ifsectionnumber % maybe conditional
 
@@ -401,7 +401,7 @@
 
 \ifdefined\setupheadcomponentfont \else
 
-    \def\setupheadcomponentfont#1#2%
+    \unexpanded\def\setupheadcomponentfont#1#2%
       {\dosetstructureheadattributes\c!style\c!color
        \dosetstructureheadattributes#1#2%
        \dontconvertfont
@@ -520,18 +520,18 @@
 
 % typesetting
 
-\def\placestructureheadnumbertext % dummy, will be overloaded
+\unexpanded\def\placestructureheadnumbertext % dummy, will be overloaded
   {\getstructureheadnumber/\getstructureheadtitle
    \getstructureheadsyncs}
 
-\def\placestructureheadtext % dummy, will be overloaded
+\unexpanded\def\placestructureheadtext % dummy, will be overloaded
   {\getstructureheadtitle
    \getstructureheadsyncs}
 
-\def\placestructureheadempty % dummy, will be overloaded
+\unexpanded\def\placestructureheadempty % dummy, will be overloaded
   {\getstructureheadsyncs}
 
-\def\placestructureheadhidden
+\unexpanded\def\placestructureheadhidden
   {\setxvalue{\currentstructurehead:sync}%
      {\noexpand\pagetype[\currentstructureheadcoupling]% hm also number
       \noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}%
@@ -734,7 +734,7 @@
 \def\thenamedstructureheadlevel#1%
   {\structuresectionlevel{\structuresectionheadsection{\structuresectionheadcoupling{#1}}}}
 
-\def\setupheadnumber
+\unexpanded\def\setupheadnumber
   {\dodoubleargument\dosetupheadnumber}
 
 \def\dosetupheadnumber[#1][#2]% todo: reset if at other level

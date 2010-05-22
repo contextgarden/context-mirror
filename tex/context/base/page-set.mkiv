@@ -268,8 +268,8 @@
 \def\OTRSETerasegridcells#1#2#3#4%
   {\doOTRSETsetgridcells{\emptybox}{#1}{#2}{#3}{#4}{\emptybox}}
 
-\def\setupcolumnsetlines{\doquintupleempty\dosetupcolumnsettrick[l]}
-\def\setupcolumnsetstart{\doquintupleempty\dosetupcolumnsettrick[s]}
+\unexpanded\def\setupcolumnsetlines{\doquintupleempty\dosetupcolumnsettrick[l]}
+\unexpanded\def\setupcolumnsetstart{\doquintupleempty\dosetupcolumnsettrick[s]}
 
 \def\dosetupcolumnsettrick[#1][#2][#3][#4][#5]% tag id page col value
   {% not needed, is already relative
@@ -1463,7 +1463,7 @@
 
 % vanaf hier:
 
-\def\definecolumnset
+\unexpanded\def\definecolumnset
   {\dodoubleargument\dodefinecolumnset}
 
 \def\dodefinecolumnset[#1][#2]%
@@ -1497,7 +1497,7 @@
       \c!width=\getvalue{\??mc#1\c!width},
       \c!distance=\getvalue{\??mc#1\c!distance}]}
 
-\def\setupcolumnset
+\unexpanded\def\setupcolumnset
   {\dotripleargument\dosetupcolumnset}
 
 \def\dosetupcolumnset[#1][#2][#3]%
@@ -1626,7 +1626,7 @@
 \let\currentcolumnset\empty
 \chardef\OTRSETfinish\zerocount
 
-\def\startcolumnset
+\unexpanded\def\startcolumnset
   {\dodoubleempty\dostartcolumnset}
 
 \def\dostartcolumnset[#1][#2]%
@@ -1675,7 +1675,7 @@
       \egroup}
      {}}
 
-\def\stopcolumnset
+\unexpanded\def\stopcolumnset
   {\relax
    \ifnum\columnsetlevel=\plusone
      \endgraf % needed, else wrong vsize in one par case
@@ -1733,9 +1733,9 @@
 
 % better:
 
-\def\definecolumnsetarea   {\definecolumntextarea}
-\def\setupcolumnsetarea    {\setupcolumntextarea}
-\def\setupcolumnsetareatext{\setupcolumntextareatext}
+\unexpanded\def\definecolumnsetarea   {\definecolumntextarea}
+\unexpanded\def\setupcolumnsetarea    {\setupcolumntextarea}
+\unexpanded\def\setupcolumnsetareatext{\setupcolumntextareatext}
 
 % so this will be changed
 
@@ -2167,7 +2167,7 @@
 
 % links rechts => odd, even, n, named
 
-\def\definecolumntextarea
+\unexpanded\def\definecolumntextarea
   {\dotripleempty\dodefinecolumntextarea}
 
 \def\dodefinecolumntextarea[#1][#2][#3]% y=0 is mogelijke en handig !
@@ -2193,7 +2193,7 @@
      \definecolumntextarea[#1][\v!next][#2]%
    \fi}
 
-\def\setupcolumntextarea
+\unexpanded\def\setupcolumntextarea
   {\dotripleempty\dosetupcolumntextarea}
 
 \def\dosetupcolumntextarea[#1][#2][#3]%
@@ -2251,7 +2251,7 @@
      {\getvalue{\??mt#1#2\c!nx}}{\getvalue{\??mt#1#2\c!ny}}
      {\copy\placeholderboxd}}
 
-\def\placecolumntextareas
+\unexpanded\def\placecolumntextareas
   {\ifodd\realpageno
      \doplacecolumntextareas\columnrightareas\v!right
    \else
@@ -2363,7 +2363,7 @@
      \OTRSETsetgridcell\!!counta\!!countb\box0%
    \fi}
 
-\def\setupcolumntextareatext
+\unexpanded\def\setupcolumntextareatext
   {\dotripleempty\dosetupcolumntextareatext}
 
 \long\def\dosetupcolumntextareatext[#1][#2][#3]%
@@ -2418,7 +2418,7 @@
   {\!!counta#1\!!countb#2\docalculatecolumnsetspan
    \edef\columnsetspanhsize{\the\!!widtha}}
 
-\def\definecolumnsetspan
+\unexpanded\def\definecolumnsetspan
   {\dodoubleempty\dodefinecolumnsetspan}
 
 \def\dodefinecolumnsetspan[#1][#2]%
@@ -2445,7 +2445,7 @@
 
 \definecolumnsetspan[\s!default]
 
-\def\setupcolumnsetspan
+\unexpanded\def\setupcolumnsetspan
   {\dodoubleempty\dosetupcolumnsetspan}
 
 \def\dosetupcolumnsetspan[#1][#2]%
@@ -2455,7 +2455,7 @@
      \setupcolumnsetspan[\s!default][#1]%
    \fi}
 
-\def\startcolumnsetspan
+\unexpanded\def\startcolumnsetspan
   {\dotripleempty\dostartcolumnsetspan}
 
 %%%%%%%%%%%%%%%% TODO
@@ -2496,7 +2496,7 @@
      \ifnum\columnsetlevel>\zerocount
        \framedtextparameter{cs:#1}\c!before
      \fi
-     \def\stopcolumnsetspan{\dostopcolumnsetspan{#1}}}
+     \unexpanded\def\stopcolumnsetspan{\dostopcolumnsetspan{#1}}}
 
 \def\dostopcolumnsetspan#1%
   {\par

@@ -980,12 +980,12 @@
 \newconditional\tablerepeathead
 \newconditional\tablerepeattail
 
-\def\starttable
+\unexpanded\def\starttable
   {\bgroup
    \doif\@@tisplit\v!auto
      {\ifinsidesplitfloat\let\@@tisplit\v!yes\fi}%
    \doifinsetelse\@@tisplit{\v!yes,\v!repeat}
-     {\def\stoptable{\stoptables\egroup}%
+     {\unexpanded\def\stoptable{\stoptables\egroup}%
       \starttables}
      {\doifelsenothing\@@tiframe
         {\ifinsidefloat\else\startbaselinecorrection\fi}
@@ -993,7 +993,7 @@
       \postponenotes
       \firststagestartTABLE}}
 
-\def\stoptable
+\unexpanded\def\stoptable
   {\chuckTABLEautorow % before the tail, else noalign problem
    \insertTABLEtail
    \TABLEnoalign{\globalletempty\@@TABLEhead}%
@@ -1039,7 +1039,7 @@
 %D The implementation of the definition macro is not that
 %D complicated:
 
-\def\definetabletemplate % to be redone
+\unexpanded\def\definetabletemplate % to be redone
   {\bgroup
    \catcode`\|=\@@other
    \doquadrupleempty\dodefinetabletemplate}
@@ -1208,7 +1208,7 @@
 
 \newbox\tablecontentbox
 
-\def\starttables
+\unexpanded\def\starttables
   {\bgroup
    \splittablestrue
    \doifelse\@@tisplit\v!repeat
@@ -1220,7 +1220,7 @@
    \global\TABLEinbreakfalse
    \firststagestartTABLE}
 
-% \def\stoptables
+% \unexpanded\def\stoptables
 %   {\ifconditional\tablerepeattail\else\insertTABLEtail\fi
 %    \finishTABLE
 %    \egroup
@@ -1228,7 +1228,7 @@
 %    \flushnotes
 %    \egroup}
 
-\def\stoptables
+\unexpanded\def\stoptables
    {\chuckTABLEautorow % AM: before the tail, else noalign problem
     \ifconditional\tablerepeattail\else\insertTABLEtail\fi
     \finishTABLE
@@ -1454,7 +1454,7 @@
      \global\TABLEgraydonefalse
    \fi}
 
-\def\defineTABLEendings
+\unexpanded\def\defineTABLEendings
   {\let\SR\TableSR
    \let\FR\TableFR
    \let\MR\TableMR
@@ -1694,13 +1694,13 @@
 %D \sym{\type{\HC}} a horizontal colored line
 %D \stopitemize
 
-% \def\defineTABLErules
+% \unexpanded\def\defineTABLErules
 %   {\let\VL\TableVL
 %    \let\VC\TableVC
 %    \let\HL\TableHL
 %    \let\HC\TableHC}
 
-\def\defineTABLErules
+\unexpanded\def\defineTABLErules
   {\let\VL\TableVL
    \let\VC\TableVC
    \let\HL\TableHL
@@ -1865,7 +1865,7 @@
 
 % n+1 uitleggen
 
-\def\defineTABLEsteps
+\unexpanded\def\defineTABLEsteps
   {\let\NL\TableNL
    \let\NR\TableNR
    \let\NC\TableNC
@@ -1931,7 +1931,7 @@
 
 \newif\ifTABLEdivision
 
-% \def\defineTABLEdivisions
+% \unexpanded\def\defineTABLEdivisions
 %   {\global\TABLEdivisionfalse % in start
 %    \let\DL\TableDL
 %    \let\DC\TableDC
@@ -1939,7 +1939,7 @@
 %    \let\VD\TableDV
 %    \let\DR\TableDR}
 
-\def\defineTABLEdivisions
+\unexpanded\def\defineTABLEdivisions
   {\global\TABLEdivisionfalse % in start
    \let\DL\TableDL
    \let\DC\TableDC
@@ -2044,7 +2044,7 @@
 % definieer: \CL \RL (eerste \CL[green] = hele row! / \CL[1,green])
 % dus: \CL en \RL mix tussen \HL en \BL
 
-\def\defineTABLEbackgrounds
+\unexpanded\def\defineTABLEbackgrounds
   {\let\BC        \TableBC
    \let\BL        \TableBL
    \let\BR        \TableBR
@@ -2345,7 +2345,7 @@
      \global\chardef\TABLEendofrowdepth \TABLErowfactor
    \fi}
 
-\def\defineTABLEshorthands%
+\unexpanded\def\defineTABLEshorthands%
   {\def\SPAN##1{\use{##1}}%
    \def\TWO    {\use2}%
    \def\THREE  {\use3}%
@@ -2354,7 +2354,7 @@
    \def\SIX    {\use6}%
    \def\REF    {\ReFormat}}
 
-\def\defineTABLEunits
+\unexpanded\def\defineTABLEunits
   {\processaction
      [\@@tidistance]
      [  \v!none=>\OpenUp00\def\LOW{\Lower6 },
@@ -2414,8 +2414,8 @@
    \expanded{\switchtobodyfont[\@@tibodyfont]}%
    % linecolor
    \doifsomething\@@tirulecolor
-     {\def\startglobalTABLEcolor{\startcolor[\@@tirulecolor]}%
-      \def\stopglobalTABLEcolor {\stopcolor}}%
+     {\unexpanded\def\startglobalTABLEcolor{\startcolor[\@@tirulecolor]}%
+      \unexpanded\def\stopglobalTABLEcolor {\stopcolor}}%
    % linethickness
    \LineThicknessFactor4
    \scratchdimen\@@tirulethickness

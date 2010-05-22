@@ -87,7 +87,7 @@
 
 \def\MPinstancetoks{\csname\@@MPF::\currentMPgraphicinstance\endcsname}
 
-\def\defineMPinstance
+\unexpanded\def\defineMPinstance
   {\dodoubleargument\dodefineMPinstance}
 
 \def\dodefineMPinstance[#1][#2]%
@@ -352,7 +352,7 @@
 
 \def\@@meta{meta:}
 
-\def\setupMPvariables
+\unexpanded\def\setupMPvariables
   {\dodoubleempty\dosetupMPvariables}
 
 \def\dosetupMPvariables[#1][#2]%
@@ -448,7 +448,7 @@
 \let\MPshiftdrawingtrue \ignoreMPboxdepth
 \let\MPshiftdrawingfalse\normalMPboxdepth
 
-\def\placeMPgraphic
+\unexpanded\def\placeMPgraphic
   {\ifcase\MPboxmode
    \or   % 1
      \doobeyMPboxdepth
@@ -477,7 +477,7 @@
    \getvalue{\@@MPG\overlaystamp:#1}%
    \endgroup}
 
-\long\def\startuniqueMPgraphic
+\long\unexpanded\def\startuniqueMPgraphic
   {\dodoublegroupempty\dostartuniqueMPgraphic}
 
 \long\def\dostartuniqueMPgraphic#1#2#3\stopuniqueMPgraphic%
@@ -502,13 +502,13 @@
    \processMPgraphic{#3}%
    \endgroup}
 
-\long\def\startuseMPgraphic
+\long\unexpanded\def\startuseMPgraphic
   {\dodoublegroupempty\dostartuseMPgraphic}
 
 \long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic
   {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
 
-\long\def\startusableMPgraphic % redundant but handy
+\long\unexpanded\def\startusableMPgraphic % redundant but handy
   {\dodoublegroupempty\dostartusableMPgraphic}
 
 \long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic
@@ -528,7 +528,7 @@
    \getvalue{\@@MPG#1}%
    \endgroup}
 
-\long\def\startreusableMPgraphic
+\long\unexpanded\def\startreusableMPgraphic
   {\dodoublegroupempty\dostartreusableMPgraphic}
 
 \long\def\dostartreusableMPgraphic#1#2#3\stopreusableMPgraphic
@@ -567,7 +567,7 @@
 \def\overlaypagestamp
   {\MPpageprefix\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
-\long\def\startuniqueMPpagegraphic
+\long\unexpanded\def\startuniqueMPpagegraphic
   {\dodoublegroupempty\dostartuniqueMPpagegraphic}
 
 \long\def\dostartuniqueMPpagegraphic#1#2#3\stopuniqueMPpagegraphic
@@ -1172,10 +1172,10 @@
      \reuseMPgraphic{\@@MPG#1@S@}%
    \fi}
 
-\def\startstaticMPfigure#1#2\stopstaticMPfigure
+\unexpanded\def\startstaticMPfigure#1#2\stopstaticMPfigure
   {\startreusableMPgraphic{\@@MPG#1@S@}#2\stopreusableMPgraphic}
 
-\long\def\startstaticMPgraphic
+\long\unexpanded\def\startstaticMPgraphic
   {\dodoublegroupempty\dostartstaticMPgraphic}
 
 \long\def\dostartstaticMPgraphic#1#2#3\stopstaticMPgraphic
@@ -1254,7 +1254,7 @@
 
 \newtoks \everysetupMPgraphics
 
-\def\setupMPgraphics[#1]%
+\unexpanded\def\setupMPgraphics[#1]%
   {\getparameters[\??mp][#1]%
    \the\everysetupMPgraphics}
 

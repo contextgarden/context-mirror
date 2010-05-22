@@ -206,14 +206,14 @@
 
 \let\mathcharacter           \getvalue
 \let\textcharacter           \getvalue
-\def\definefamilysynonym     {\dotripleempty\dodefinefamilysynonym}
+\unexpanded\def\definefamilysynonym     {\dotripleempty\dodefinefamilysynonym}
 \def\dodefinefamilysynonym   [#1][#2][#3]{}
-\def\definemathsymbol        {\dosixtupleempty\dodefinemathsymbol}
+\unexpanded\def\definemathsymbol        {\dosixtupleempty\dodefinemathsymbol}
 \def\dodefinemathsymbol      [#1][#2][#3][#4][#5][#6]{}
-\def\definemathcharacter     {\dosixtupleempty\dodefinemathcharacter}
+\unexpanded\def\definemathcharacter     {\dosixtupleempty\dodefinemathcharacter}
 \def\dodefinemathcharacter   [#1][#2][#3][#4][#5][#6]{}
 
-\def\definemathcommand
+\unexpanded\def\definemathcommand
   {\dotripleempty\dodefinemathcommand}
 
 \def\dodefinemathcommand[#1][#2][#3]#4% command class args meaning
@@ -415,7 +415,7 @@
 
 \newtoks\everysetupmathematics
 
-\def\setupmathematics
+\unexpanded\def\setupmathematics
   {\dosingleargument\dosetupmathematics}
 
 \def\dosetupmathematics[#1]%
@@ -464,7 +464,7 @@
 
 \setupmathematics
   [lcgreek=\v!italic,
-   ucgreek=\v!none]
+   ucgreek=\v!normal] % was: none
 
 %D \macros
 %D   {enablemathpunctuation,disablemathpunctuation}

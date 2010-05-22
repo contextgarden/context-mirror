@@ -41,7 +41,7 @@
 %D \definecomposedutf 318 108 126 % lcaron
 %D \stoptyping
 
-\def\definecomposedutf#1 #2 #3 %
+\unexpanded\def\definecomposedutf#1 #2 #3 %
   {\ctxlua{characters.filters.utf.add_grapheme("#1","#2","#3")}}
 
 \protect

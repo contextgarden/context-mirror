@@ -186,7 +186,7 @@
 
 % \definetypescriptsynonym[lbr][cmr]
 
-\def\definetypescriptsynonym
+\unexpanded\def\definetypescriptsynonym
   {\dodoubleempty\dodefinetypescriptsynonym}
 
 \def\dodefinetypescriptsynonym[#1][#2]%
@@ -283,7 +283,7 @@
 \def\doprocesstypescript
   {\pushmacro\fontclass}
 
-\def\stoptypescript
+\unexpanded\def\stoptypescript
   {\popmacro\fontclass}
 
 \long\def\noprocesstypescript#1\stoptypescript
@@ -364,7 +364,7 @@
 %  \setupfontsynonym [\typescriptprefix\typescriptone] [handling=\typescriptthree]
 % \stoptypescript
 
-\def\definetypescriptprefix
+\unexpanded\def\definetypescriptprefix
   {\dodoubleargument\dodefinetypescriptprefix}
 
 \def\dodefinetypescriptprefix[#1][#2]%
@@ -477,7 +477,7 @@
         \setugvalue{#1}{\switchtotypeface[#1][#2]}%
       \fi}}
 
-\def\setuptypeface% [class] [settings]
+\unexpanded\def\setuptypeface% [class] [settings]
   {\doquadrupleempty\doswitchtotypeface[\setupbodyfont][\fontclass]}
 
 \unexpanded\def\switchtotypeface% [class] [settings]

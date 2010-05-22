@@ -127,7 +127,7 @@
 % \appendtoks
 % \to \everystructurelist
 
-\def\placestructurelist#1#2#3% hm ... [][][]
+\unexpanded\def\placestructurelist#1#2#3% hm ... [][][]
   {\ctxlua{structure.lists.process("#1","#2","#3")}}
 
 \def\analysestructurelist#1#2#3%
@@ -195,7 +195,7 @@
        \listparameter{#1}%
    \fi}
 
-\def\setuplistalternative[#1]%
+\unexpanded\def\setuplistalternative[#1]%
   {\dodoubleargument\getparameters[\??li\??li#1]}
 
 \def\listfill   {\listalternativeparameter\c!command }
@@ -226,7 +226,7 @@
    \def\docommand##1{\getparameters[\??li##1][#2]}%
    \processcommalist[#1]\docommand}
 
-\def\setuplist
+\unexpanded\def\setuplist
   {\dodoubleargument\dosetuplist}
 
 \def\dodefinelist[#1][#2][#3]%
@@ -237,7 +237,7 @@
         {\getparameters[\??li#1][\s!parent=\??li]}
         {\getparameters[\??li#1][\s!parent=\??li#2,#3]}}}
 
-\def\setuplists % new, but not for users (hardly handy)
+\unexpanded\def\setuplists % new, but not for users (hardly handy)
   {\dodoubleargument\getparameters[\??li]}
 
 \setuplists
@@ -298,13 +298,13 @@
  % \c!pageprefixconnector=\listparameter\c!prefixconnector,
  ]%\c!pagesegments=2:2]
 
-\def\definelist
+\unexpanded\def\definelist
   {\dotripleempty\dodefinelist}
 
-\def\placelist
+\unexpanded\def\placelist
   {\dodoubleempty\doplacelist}
 
-\def\placerawlist
+\unexpanded\def\placerawlist
   {\dodoubleempty\doplacerawlist}
 
 \def\dobeginoflist
@@ -498,7 +498,7 @@
 % \definelistplacement[MyListItem][none]#1#2#3%
 %   {(#1) (#2) (#3)}
 
-\def\definelistplacement
+\unexpanded\def\definelistplacement
   {\dodoubleempty\dodefinelistplacement}
 
 \def\dodefinelistplacement[#1][#2]%
@@ -834,7 +834,7 @@
 
 \def\combinedlistparameter#1{\csname\??ih\currentcombinedlist#1\endcsname}
 
-\def\setupcombinedlist
+\unexpanded\def\setupcombinedlist
   {\dodoubleargument\dosetupcombinedlist}
 
 \def\dosetupcombinedlist[#1][#2]%
@@ -842,7 +842,7 @@
    \edef\currentcombinedlist{#1}%
    \normalexpanded{\noexpand\setuplist[\combinedlistparameter\c!list]}[#2]}
 
-\def\definecombinedlist
+\unexpanded\def\definecombinedlist
   {\dotripleempty\dodefinecombinedlist}
 
 \def\dodefinecombinedlist[#1][#2][#3]%
@@ -853,7 +853,7 @@
    \setvalue{\e!place#1}{\dodoubleempty\doplacecombinedlist[#1]}%
    \setvalue{\e!complete#1}{\dodoubleempty\docompletecombinedlist[#1]}}
 
-\def\placecombinedlist
+\unexpanded\def\placecombinedlist
   {\dodoubleempty\doplacecombinedlist}
 
 \def\doplacecombinedlist[#1][#2]% we can move much of the analysis to lua
@@ -925,7 +925,7 @@
 %
 % \definesystemvariable {ll} % ListLength
 %
-% \def\setupremaininglistlength[#1]%
+% \unexpanded\def\setupremaininglistlength[#1]%
 %   {\getparameters[\??ll][#1]%
 %    \globallet\listlengthcounter\!!zerocount}
 %

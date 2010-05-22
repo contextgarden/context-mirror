@@ -27,11 +27,11 @@
 
 \newevery \everyheadstart \relax
 
-\def\placeheadmargintexts
+\unexpanded\def\placeheadmargintexts
   {\the\everyheadstart
    \doif{\structureheadparameter\c!margintext}\v!yes\placemargincontent}
 
-\def\setupheadcomponentfont#1#2%
+\unexpanded\def\setupheadcomponentfont#1#2%
   {\ifconditional\structureheadisdisplay
      \edef\askedstructureheadinterlinespace{\structureheadparameter\c!interlinespace}%
      \ifx\askedstructureheadinterlinespace\empty
@@ -154,13 +154,13 @@
    \fi
    \endheadplacement{#4}}
 
-\def\placestructureheadnumbertext
+\unexpanded\def\placestructureheadnumbertext
   {\doplacestructureheadnumbertext\empty\getstructureheadnumber\getstructureheadtitle\getstructureheadsyncs}
 
-\def\placestructureheadtext
+\unexpanded\def\placestructureheadtext
   {\doplacestructureheadtext\empty\getstructureheadtitle\getstructureheadsyncs}
 
-\def\placestructureheadempty
+\unexpanded\def\placestructureheadempty
   {\hbox \structureheadattribute {\getstructureheadsyncs}}
 
 %D \starttyping
@@ -343,7 +343,7 @@
 
 \let\numberheadalternative\v!normal
 
-\def\defineheadplacement
+\unexpanded\def\defineheadplacement
   {\dodoubleargument\dodefineheadplacement}
 
 \def\dodefineheadplacement[#1][#2]% #3#4
@@ -439,7 +439,7 @@
       \fi
       #2}}
 
-\def\placeheadmargin#1#2%
+\unexpanded\def\placeheadmargin#1#2%
   {\vbox
      {\localheadsetup
       \begstrut % use one \strut here!
@@ -474,7 +474,7 @@
    {\begstrut#2}%
    \egroup}
 
-\def\placeheadlohi#1#2#3%
+\unexpanded\def\placeheadlohi#1#2#3%
   {\ifconditional\structureheadshownumber % \ifheadnumbercontent
      \setbox0\hbox{#2}
      \setbox2=#1{\localheadsetup\advance\hsize-\wd0\relax#3}%

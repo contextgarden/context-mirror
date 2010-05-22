@@ -114,14 +114,14 @@
   {\the\everystarttext
    \global\everystarttext\emptytoks}
 
-\def\starttext
+\unexpanded\def\starttext
   {\doateverystarttext
    \ifcase\textlevel
      \registerfileinfo[begin]\jobfilename
    \fi
    \global\advance\textlevel\plusone}
 
-\def\stoptext
+\unexpanded\def\stoptext
   {\global\advance\textlevel\minusone
    \ifnum\textlevel>\zerocount \else
      \flushfinallayoutpage % optional
@@ -191,7 +191,7 @@
 \def\environment #1 % at outermost level only (load only once)
   {\pushmacro\startenvironment
    \pushmacro\stopenvironment
-   \def\startenvironment ##1 {}%
+   \unexpanded\def\startenvironment ##1 {}%
    \let\stopenvironment\relax
    \startreadingfile
    \doexecutefileonce{#1}
@@ -242,24 +242,24 @@
      \expandafter\endinput
    \fi}
 
-\def\startproject #1 %
+\unexpanded\def\startproject #1 %
   {\donextlevel\v!project\currentproject
      \donotexecutefile\doexecutefileonce
      \doexecutefileonce\doexecutefile#1\\}
 
-\def\startproduct #1 %
+\unexpanded\def\startproduct #1 %
   {\doateverystarttext
    \donextlevel\v!product\currentproduct
      \doexecutefileonce\doexecutefileonce
      \donotexecutefile\doexecutefile#1\\}
 
-\def\startcomponent #1 %
+\unexpanded\def\startcomponent #1 %
   {\doateverystarttext
    \donextlevel\v!component\currentcomponent
      \doexecutefileonce\doexecutefileonce
      \donotexecutefile\doexecutefile#1\\}
 
-\def\startenvironment #1 %
+\unexpanded\def\startenvironment #1 %
   {\donextlevel\v!environment\currentenvironment
      \donotexecutefile\doexecutefileonce
      \donotexecutefile\donotexecutefile#1\\}
@@ -269,10 +269,10 @@
 %     2: \startmode[*product] product \stopmode \endgraf
 % \stopproject
 
-\def\stopproject    {\doprevlevel}
-\def\stopproduct    {\doprevlevel}
-\def\stopcomponent  {\doprevlevel}
-\def\stopenvironment{\doprevlevel}
+\unexpanded\def\stopproject    {\doprevlevel}
+\unexpanded\def\stopproduct    {\doprevlevel}
+\unexpanded\def\stopcomponent  {\doprevlevel}
+\unexpanded\def\stopenvironment{\doprevlevel}
 
 % more or less replaced by modes
 

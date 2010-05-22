@@ -87,7 +87,7 @@
 \def\domenuparentparameter    #1#2{\ifx#1\relax\s!empty\else\domenuparameter    #1#2\fi}
 \def\domenuparentparameterhash#1#2{\ifx#1\relax        \else\domenuparameterhash#1#2\fi}
 
-\def\defineinteractionmenu
+\unexpanded\def\defineinteractionmenu
   {\dotripleempty\dodefineinteractionmenu}
 
 \def\dodefineinteractionmenu[#1][#2][#3]% [name] [location] [settings]
@@ -117,14 +117,14 @@
 
 %D Setup menus:
 
-\def\setupinteractionmenu
+\unexpanded\def\setupinteractionmenu
   {\dodoubleargument\dosetupinteractionmenu}
 
 \def\dosetupinteractionmenu[#1][#2]%
   {\def\docommand##1{\getparameters[\??am##1][#2]}%
    \processcommalist[#1]\docommand}
 
-\def\setupinteractionmenus[#1]%
+\unexpanded\def\setupinteractionmenus[#1]%
   {\getparameters[\??am][#1]}
 
 %D Fill menus:
@@ -157,7 +157,7 @@
      \csname\??am:\c!menu:#1\endcsname
    \fi}
 
-% \def\defineinteractionmenuclass
+% \unexpanded\def\defineinteractionmenuclass
 %   {\dodoubleargument\dodefineinteractionmenuclass}
 %
 % \def\dodefineinteractionmenuclass[#1][#2]% tag hori|veri
@@ -574,13 +574,13 @@
 % \setupinteractionmenu[\v!top   ] [\c!height=\topheight    ]
 % \setupinteractionmenu[\v!bottom] [\c!height=\bottomheight ]
 
-\def\placeleftedgetextblock % Is \hss/\hsize really needed here? (check outer level and settings)
+\unexpanded\def\placeleftedgetextblock % Is \hss/\hsize really needed here? (check outer level and settings)
   {\hbox to \leftedgewidth{\hsize\leftedgewidth\hss\interactionmenus[\v!left]}}
 
-\def\placerightedgetextblock % Is \hss/\hsize really needed here? (check outer level and settings)
+\unexpanded\def\placerightedgetextblock % Is \hss/\hsize really needed here? (check outer level and settings)
   {\hbox to \rightedgewidth{\hsize\rightedgewidth\interactionmenus[\v!right]\hss}}
 
-\def\placetoptextblock
+\unexpanded\def\placetoptextblock
   {\vbox to \topheight
      {\vsize\topheight
       \csname\??tk\v!top\c!before\endcsname
@@ -588,7 +588,7 @@
       \csname\??tk\v!top\c!after\endcsname
       \kern\zeropoint}}
 
-\def\placebottomtextblock
+\unexpanded\def\placebottomtextblock
   {\vbox to \bottomheight
      {\vsize\bottomheight
       \csname\??tk\v!bottom\c!before\endcsname

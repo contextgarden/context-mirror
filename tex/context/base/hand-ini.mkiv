@@ -39,8 +39,8 @@
 
 %D New stuff.
 
-\def\setupfontexpansion {\dodoubleargument\dosetupfontexpansion }
-\def\setupfontprotrusion{\dodoubleargument\dosetupfontprotrusion}
+\unexpanded\def\setupfontexpansion {\dodoubleargument\dosetupfontexpansion }
+\unexpanded\def\setupfontprotrusion{\dodoubleargument\dosetupfontprotrusion}
 
 \def\dosetupfontexpansion [#1][#2]{\ctxlua{commands.setupfontexpansion ("#1","#2")}}
 \def\dosetupfontprotrusion[#1][#2]{\ctxlua{commands.setupfontprotrusion("#1","#2")}}
@@ -60,9 +60,9 @@
 \appendtoks \disableadjusting  \to \everyforgetall % Here or not here?
 \appendtoks \disableprotruding \to \everyforgetall % Here or not here?
 
-\def\startfonthandling             #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
-\def\definefonthandling              {\dotripleempty\dodefinefonthandling}
-\def\setupfonthandling               {\dodoubleempty\dosetupfonthandling }
+\unexpanded\def\startfonthandling             #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
+\unexpanded\def\definefonthandling              {\dotripleempty\dodefinefonthandling}
+\unexpanded\def\setupfonthandling               {\dodoubleempty\dosetupfonthandling }
 \def\dodefinefonthandling[#1][#2][#3]{\fonthandlingerror}
 \def\dosetupfonthandling     [#1][#2]{\fonthandlingerror}
 \def\usehandling                 [#1]{\fonthandlingerror}

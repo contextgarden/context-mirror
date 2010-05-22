@@ -91,7 +91,7 @@
 
 % todo: move the edef to lua
 
-\def\definetwopasslist        #1{\ctxlua{jobpasses.define('#1')}}
+\unexpanded\def\definetwopasslist        #1{\ctxlua{jobpasses.define('#1')}}
 \def\gettwopassdata           #1{\edef\twopassdata{\ctxlua{jobpasses.get("#1")}}\testtwopassdata}
 \def\checktwopassdata         #1{\edef\twopassdata{\ctxlua{jobpasses.check("#1")}}\testtwopassdata}
 \def\findtwopassdata        #1#2{\edef\twopassdata{\ctxlua{jobpasses.find("#1","#2")}}\testtwopassdata}

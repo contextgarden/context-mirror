@@ -46,9 +46,9 @@
 \let\currenttextprefixtag  \s!unknown
 \let\currenttextprefixclass\s!unknown
 
-\def\setupheadtext     {\setfalse\protecttextprefixes\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
-\def\setuplabeltext    {\setfalse\protecttextprefixes\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
-\def\setupmathlabeltext{\setfalse\protecttextprefixes\let\currenttextprefixclass\??mm\dodoubleempty\dosetupsometextprefix}
+\unexpanded\def\setupheadtext     {\setfalse\protecttextprefixes\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
+\unexpanded\def\setuplabeltext    {\setfalse\protecttextprefixes\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
+\unexpanded\def\setupmathlabeltext{\setfalse\protecttextprefixes\let\currenttextprefixclass\??mm\dodoubleempty\dosetupsometextprefix}
 
 \def\dosetupsometextprefix[#1][#2]%
   {\ifsecondargument

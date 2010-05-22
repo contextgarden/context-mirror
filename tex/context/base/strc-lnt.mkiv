@@ -54,7 +54,7 @@
 \def\dostoplinenote#1[#2]%
   {\stopline[#2]}
 
-\def\definelinenote
+\unexpanded\def\definelinenote
   {\dodoubleempty\dodefinelinenote}
 
 \def\dodefinelinenote[#1][#2]%
@@ -63,7 +63,7 @@
    \setuvalue{\e!start#1}{\dostartlinenote{#1}}%
    \setuvalue{\e!stop #1}{\dostoplinenote {#1}}}
 
-\def\setuplinenote[#1]% convenient
+\unexpanded\def\setuplinenote[#1]% convenient
   {\setupnote[ln:#1]}
 
 % We predefine one, namely \type {\linenote} cum suis.

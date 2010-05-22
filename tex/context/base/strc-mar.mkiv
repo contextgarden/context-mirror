@@ -73,7 +73,7 @@
      \clearmarks#1%
    \fi}
 
-\def\definenewmark#1%
+\unexpanded\def\definenewmark#1%
   {\ifcsname\string#1:m\endcsname\else
      \@EA\@EA\@EA\newcount  \markstatecs  #1\global\markstatecs#1\plusone
      \@EA\@EA\@EA\renewmarks\markautocs   #1%
@@ -225,7 +225,7 @@
 \def\dowithmarkcommandtwo#1#2#3% \command {mark} {mark}
   {\expandafter#1\csname\??mk:\markingcoupling{#2}\expandafter\endcsname\csname\??mk:\markingcoupling{#3}\endcsname}
 
-\def\setupmarking
+\unexpanded\def\setupmarking
   {\dodoubleargument\dosetupmarking}
 
 \def\dosetupmarking[#1][#2]%
@@ -245,7 +245,7 @@
 
 \let\alldefinedmarks\empty
 
-\def\definemarking
+\unexpanded\def\definemarking
   {\dodoubleempty\dodefinemarking}
 
 \def\dodefinemarking[#1][#2]%
@@ -278,7 +278,7 @@
 \def\relatemarking[#1]#2[#3]% define 1 as child of 2
   {\dowithmarkcommandtwo\addmarkreset{#1}{#3}}
 
-\def\definerawmarking[#1]%
+\unexpanded\def\definerawmarking[#1]%
   {\dododefinemarking[#1][#1]%
    \getgparameters[\??mk#1][\c!limittext=]} % global !
 

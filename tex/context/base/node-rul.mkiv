@@ -68,7 +68,7 @@
 \def\dobarparameter      #1#2{\ifcsname\??on#1#2\endcsname\??on#1#2\else\expandafter\dobarparentparameter\csname\??on#1\s!parent\endcsname#2\fi}
 \def\dobarparentparameter#1#2{\ifx#1\relax\s!empty\else\dobarparameter#1#2\fi}
 
-\def\definebar
+\unexpanded\def\definebar
   {\dotripleempty\dodefinebar}
 
 \def\dodefinebar[#1][#2][#3]%
@@ -149,7 +149,7 @@
   {\csname\??on:s:\number\currentbarnesting\endcsname
    \global\advance\currentbarnesting\minusone}
 
-\def\setupbars
+\unexpanded\def\setupbars
   {\dodoubleempty\dosetupbars}
 
 \def\dosetupbars[#1][#2]% not that efficient
@@ -192,7 +192,7 @@
 \expandafter\let\expandafter\underbars  \csname\v!underbars  \endcsname
 \expandafter\let\expandafter\overbars   \csname\v!overbars   \endcsname
 
-\def\setupunderbar[#1]% too incompatible for the moment
+\unexpanded\def\setupunderbar[#1]% too incompatible for the moment
   {}
 
 %D This will move: (a bit duplicated)
@@ -214,7 +214,7 @@
    \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
    \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
 
-\def\defineshift
+\unexpanded\def\defineshift
   {\dotripleempty\dodefineshift}
 
 \def\dodefineshift[#1][#2][#3]%
@@ -299,7 +299,7 @@
 \unexpanded\def\stopshift
   {\endgroup}
 
-\def\setupshifts
+\unexpanded\def\setupshifts
   {\dodoubleempty\dosetupshifts}
 
 \def\dosetupshifts[#1][#2]% not that efficient

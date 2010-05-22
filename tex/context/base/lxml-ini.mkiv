@@ -222,10 +222,10 @@
 % \xmlsetfunction{main}{verbatim}{lxml.displayverbatim}
 % \xmlsetfunction{main}{verb}    {lxml.inlineverbatim}
 
-% \def\startxmldisplayverbatim[#1]{}
-% \def\stopxmldisplayverbatim     {}
-% \def\startxmlinlineverbatim [#1]{}
-% \def\stopxmlinlineverbatim      {}
+% \unexpanded\def\startxmldisplayverbatim[#1]{}
+% \unexpanded\def\stopxmldisplayverbatim     {}
+% \unexpanded\def\startxmlinlineverbatim [#1]{}
+% \unexpanded\def\stopxmlinlineverbatim      {}
 
 % we use an xml: namespace so one has to define a suitable verbatim, say
 %
@@ -233,17 +233,17 @@
 %
 % this is experimental!
 
-\def\startxmldisplayverbatim[#1]%
+\unexpanded\def\startxmldisplayverbatim[#1]%
   {\startpacked % \begingroup
    \let\currenttypingclass\??tp
    \edef\currenttyping{xml:#1}%
-   \def\stopxmldisplayverbatim
+   \unexpanded\def\stopxmldisplayverbatim
      {\endofverbatimlines
       \stoppacked} % \endgroup
    \doinitializeverbatim
    \beginofverbatimlines}
 
-\def\startxmlinlineverbatim[#1]%
+\unexpanded\def\startxmlinlineverbatim[#1]%
   {\begingroup
    \let\currenttypingclass\??ty
    \edef\currenttyping{xml:#1}%
@@ -254,14 +254,14 @@
 
 \newtoks \collectingtoks
 
-\def\startcollect#1\stopcollect
+\unexpanded\def\startcollect#1\stopcollect
   {\collectingtoks\@EA{\the\collectingtoks#1}}
 
-\def\startexpandedcollect#1\stopexpandedcollect
+\unexpanded\def\startexpandedcollect#1\stopexpandedcollect
   {\normalexpanded{\collectingtoks{\the\collectingtoks#1}}}
 
-\def\startcollecting{\collectingtoks\emptytoks}
-\def\stopcollecting {\the\collectingtoks}
+\unexpanded\def\startcollecting{\collectingtoks\emptytoks}
+\unexpanded\def\stopcollecting {\the\collectingtoks}
 
 \def\inlinemessage #1{\dontleavehmode{\tttf#1}}
 \def\displaymessage#1{\blank\inlinemessage{#1}\blank}
@@ -287,7 +287,7 @@
 
 \newtoks\everysetupxml
 
-\def\setupxml[#1]{\getparameters[\??xm][#1]\the\everysetupxml}
+\unexpanded\def\setupxml[#1]{\getparameters[\??xm][#1]\the\everysetupxml}
 
 
 \letvalue{\??xm:\s!default:\v!normal}\zerocount

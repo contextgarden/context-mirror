@@ -317,7 +317,7 @@ function scripts.update.synchronize()
         local combined = { }
         local update_repositories = scripts.update.repositories
         for i=1,#update_repositories do
-            local repository = update_repositories
+            local repository = update_repositories[i]
             if repositories[repository] then
                 for _, v in next, individual do
                     local archive, destination = v[1], v[2]

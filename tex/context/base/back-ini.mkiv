@@ -163,6 +163,6 @@
    \edef\jobsuffix{#1}%
    \setsystemmode\jobsuffix}
 
-\def\setupoutput[#1]{} % will be command line switch
+\unexpanded\def\setupoutput[#1]{} % will be command line switch
 
 \protect \endinput

@@ -116,7 +116,7 @@
 \def\tracedformulamode
   {\hbox{\quad\tt\txx[\number\placeformulanumbermode,\number\formulasnumbermode,\number\subformulasnumbermode,\number\nestedformulanumbermode]}}
 
-\def\placecurrentformulanumber
+\unexpanded\def\placecurrentformulanumber
   {\rm % nodig ?
    \doif{\formulaparameter\c!location}\v!right{\hskip\formulaparameter\c!distance}%
    \formulaparameter\c!numbercommand
@@ -267,7 +267,7 @@
 
 %D
 
-\def\defineformula
+\unexpanded\def\defineformula
   {\dodoubleempty\dodefineformula}
 
 \def\dodefineformula[#1][#2]%
@@ -277,7 +277,7 @@
       \setvalue{\e!start#1\v!formula}{\dostartformula{#1}}%
       \setvalue{\e!stop #1\v!formula}{\dostopformula}}}
 
-\def\defineformulaalternative
+\unexpanded\def\defineformulaalternative
   {\dotripleargument\dodefineformulaalternative}
 
 \def\dodefineformulaalternative[#1][#2][#3]%
@@ -320,7 +320,7 @@
 
 \def\subformulaparameter#1{\ifcname\??fn#1\endcsname\cname\??fn#1\endcsname\fi}
 
-\def\setupsubformulas
+\unexpanded\def\setupsubformulas
   {\dodoubleargument\getparameters[\??fn]}
 
 \setupsubformulas
@@ -478,7 +478,7 @@
 %D \startformula x \stopformula % now has \noindent (in mkii we messed with baselineskip)
 %D \stoptyping
 
-\def\startdisplaymath
+\unexpanded\def\startdisplaymath
   {\bgroup
    \par
    \informulatrue
@@ -493,7 +493,7 @@
   %\setpredisplaysize
    \startinnermath}
 
-\def\stopdisplaymath
+\unexpanded\def\stopdisplaymath
   {\stopinnermath
    $$% \Ustopdisplaymath
    \par
@@ -530,7 +530,7 @@
 % \placeformula {f} \startspformule \fakespacingformula \stopspformule
 % \fakewords{20}{40}
 
-\def\startsubformulas
+\unexpanded\def\startsubformulas
   {\dosingleempty\dostartsubformulas}
 
 \def\dostartsubformulas[#1]%
@@ -538,7 +538,7 @@
    \global\settrue\insidesubformulas
    \handlesubformulasnumbering}
 
-\def\stopsubformulas
+\unexpanded\def\stopsubformulas
   {\nonoindentation
    \checknextindentation[\formulaparameter\c!indentnext]%
    \the\everyresetformulas % to be checked
@@ -547,14 +547,14 @@
 
 %D Named subformulas (to be redone)
 
-\def\startnamedsubformulas
+\unexpanded\def\startnamedsubformulas
   {\dosingleempty\dostartnamedsubformulas}
 
 \def\dostartnamedsubformulas[#1]#2%
   {\setformulalistentry{#2}%
    \startsubformulas[#1]}
 
-\def\stopnamedsubformulas
+\unexpanded\def\stopnamedsubformulas
   {\stopsubformulas}
 
 %D Experimental goodie:
@@ -568,7 +568,7 @@
 %D
 %D \typebuffer \getbuffer
 
-\def\startformulas
+\unexpanded\def\startformulas
   {\dosingleempty\dostartformulas}
 
 \def\dostartformulas[#1]#2\stopformulas % new / to be internationalized
@@ -580,7 +580,7 @@
    \forgetdisplayskips
    \startdisplaymath
    \setlocalhsize
-   \long\def\startformula##1\stopformula
+   \long\unexpanded\def\startformula##1\stopformula
      {\advance\scratchcounter\plusone}%
    \scratchcounter\zerocount
    #2% preroll
@@ -591,8 +591,8 @@
      \hss
      \def\normalstartformula{\vskip-\strutdepth\Ustartdisplaymath}% i hate this
      \def\normalstopformula {\Ustopdisplaymath}%
-     \def\startformula      {\Ustartmath\vcenter\bgroup\normalstartformula}%
-     \def\stopformula       {\normalstopformula\egroup\Ustopmath\hss}%
+     \unexpanded\def\startformula      {\Ustartmath\vcenter\bgroup\normalstartformula}%
+     \unexpanded\def\stopformula       {\normalstopformula\egroup\Ustopmath\hss}%
      #2%
      \egroup
    \stopdisplaymath
@@ -639,12 +639,12 @@
   {\def\currentformulasuffix{#1}%
    \dododoformulanumber}
 
-\def\placeformula
+\unexpanded\def\placeformula
   {\doglobal\settrue\insideplaceformula
    \settrue\incrementformulanumber
    \dodoubleempty\doplaceformula}
 
-\def\placesubformula
+\unexpanded\def\placesubformula
   {\doglobal\settrue\insideplacesubformula
    \setfalse\incrementformulanumber
    \dodoubleempty\doplaceformula}
@@ -735,7 +735,7 @@
 
 % todo
 
-\def\placenamedformula
+\unexpanded\def\placenamedformula
   {\dosingleempty\doplacenamedformula}
 
 \def\doplacenamedformula[#1]#2%

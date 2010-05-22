@@ -44,7 +44,7 @@
 
 \newtoks\everysetupinteraction
 
-\def\setupinteraction
+\unexpanded\def\setupinteraction
   {\dosingleargument\dodosetupinteraction}
 
 \def\dodosetupinteraction[#1]% % \dosetupinteraction == special

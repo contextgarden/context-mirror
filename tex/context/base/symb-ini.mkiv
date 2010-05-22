@@ -45,7 +45,7 @@
 % ss:set:tag -> symbol out of set
 % sstag      -> list of symbols in set
 
-\def\definesymbol
+\unexpanded\def\definesymbol
   {\dotripleempty\dodefinesymbol}
 
 % \def\dodefinesymbol[#1][#2][#3]% class name meaning
@@ -155,7 +155,7 @@
 
 \appendtoks \resetexternalfigures \to \everysymbol
 
-\def\definefiguresymbol
+\unexpanded\def\definefiguresymbol
   {\dotripleempty\dodefinefiguresymbol}
 
 \def\dodefinefiguresymbol[#1][#2][#3]%
@@ -233,15 +233,15 @@
 
 \let\currentsymboldef\empty
 
-\def\startsymbolset[#1]
+\unexpanded\def\startsymbolset[#1]
   {\def\currentsymboldef{#1}}
 
-\def\stopsymbolset
+\unexpanded\def\stopsymbolset
   {\let\currentsymboldef\empty}
 
 \newtoks\symbolsetups
 
-\def\setupsymbolset[#1]%
+\unexpanded\def\setupsymbolset[#1]%
   {\prependtoksonce\fetchsymbol{#1}\to\symbolsetups}
 
 \def\resetsymbolset

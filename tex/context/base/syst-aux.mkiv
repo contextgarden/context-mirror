@@ -444,26 +444,19 @@
 \def\globallet{\global\let}  \let\glet\globallet
 
 %D \macros
-%D   {donottest,unexpanded}
+%D   {unexpanded}
 %D
-%D When expansion of a macro gives problems, we can precede it
-%D by \type{\donottest}. It seems that protection is one of the
-%D burdens of developers of packages, so maybe that's why in
-%D \ETEX\ protection is solved in a more robust way.
-%D
-%D Because we use thi smodule onl in \MKIV, we have removed the
+%D Because we use this module only in \MKIV, we have removed the
 %D old protection code.
 %D
 %D \starttyping
 %D \unexpanded\def\somecommand{... ... ...}
 %D \stoptyping
+%D
+%D This overloads the \ETEX\ primitive but as we already had an \MKII\
+%D solution we keep the same name for a similar mechanism.
 
-\let \donottest       \firstofoneargument % we need to weed
-\let \honorunexpanded \empty              % we need to weed
-\let \forceunexpanded \empty              % we need to weed
-\let \resetunexpanded \empty              % we need to weed
-
-\let \unexpanded      \normalprotected
+\let\unexpanded\normalprotected
 
 %D \macros
 %D   {doifundefined,doifdefined,
@@ -628,8 +621,7 @@
    \fi}
 
 %D \macros
-%D   {doif,doifelse,doifnot,
-%D    donottest}
+%D   {doif,doifelse,doifnot}
 %D
 %D Programming in \TEX\ differs from programming in procedural
 %D languages like \MODULA. This means that one --- well, let me
@@ -646,9 +638,6 @@
 %D \doifnot  {string1} {string2} {...}
 %D \doifelse {string1} {string2} {then ...}{else ...}
 %D \stoptyping
-%D
-%D When expansion gives problems, we can precede the
-%D troublemaker with \type{\donottest}.
 
 \long\def\doif#1#2%
   {\edef\!!stringa{#1}\edef\!!stringb{#2}%
@@ -1156,11 +1145,11 @@
 %D
 %D Two more:
 
-\long\def\startprocesscommalist[#1]#2\stopprocesscommalist
+\long\unexpanded\def\startprocesscommalist[#1]#2\stopprocesscommalist
   {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
    \processcommalist[#1]\currentcommalistcommand}
 
-\long\def\startprocesscommacommand[#1]#2\stopprocesscommacommand
+\long\unexpanded\def\startprocesscommacommand[#1]#2\stopprocesscommacommand
   {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
    \normalexpanded{\noexpand\processcommacommand[#1]}\currentcommalistcommand}
 
@@ -1879,11 +1868,11 @@
 \def\processassignmentcommand[#1]%
   {\normalexpanded{\noexpand\processassignmentlist[#1]}}
 
-\long\def\startprocessassignmentlist[#1]#2\stopprocessassignmentlist
+\long\unexpanded\def\startprocessassignmentlist[#1]#2\stopprocessassignmentlist
   {\long\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
    \processassignmentlist[#1]\currentassignmentlistcommand}
 
-\long\def\startprocessassignmentcommand[#1]#2\stopprocessassignmentcommand
+\long\unexpanded\def\startprocessassignmentcommand[#1]#2\stopprocessassignmentcommand
   {\long\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
    \normalexpanded{\noexpand\processassignmentlist[#1]}\currentassignmentlistcommand}
 
@@ -2163,7 +2152,7 @@
 %D \def\dosetupsomething[#1][#2]%
 %D   {... #1 ... #2 ...}
 %D
-%D \def\setupsomething
+%D \unexpanded\def\setupsomething
 %D   {\dodoubleargument\dosetupsomething}
 %D \stoptyping
 %D
@@ -2501,13 +2490,13 @@
 \def\docomplexorsimpleempty#1%
   {\doifnextoptionalelse{\firstargumenttrue#1}{\firstargumentfalse#1[]}}
 
-\def\definecomplexorsimple#1%
+\unexpanded\def\definecomplexorsimple#1%
   {\unexpanded\edef#1%
      {\noexpand\docomplexorsimple
         \@EA\noexpand\csname\s!complex\strippedcsname#1\endcsname
         \@EA\noexpand\csname\s!simple \strippedcsname#1\endcsname}}
 
-\def\definecomplexorsimpleempty#1%
+\unexpanded\def\definecomplexorsimpleempty#1%
   {\unexpanded\edef#1%
      {\noexpand\docomplexorsimpleempty
         \@EA\noexpand\csname\s!complex\strippedcsname#1\endcsname}}
@@ -2902,7 +2891,7 @@
 
 %D Also new:
 
-\def\define#1%
+\unexpanded\def\define#1%
   {\ifdefined#1%
      \message{[\noexpand#1is already defined]}%
      \expandafter\def\expandafter\gobbleddefinition
@@ -4008,7 +3997,7 @@
 %D hard coded delimiter like in:
 %D
 %D \starttyping
-%D \def\startcommand#1\stopcommand%
+%D \unexpanded\def\startcommand#1\stopcommand%
 %D   {... #1 ...}
 %D \stoptyping
 %D
@@ -4029,7 +4018,7 @@
 %D This means that:
 %D
 %D \starttyping
-%D \def\starthello%
+%D \unexpanded\def\starthello%
 %D   {\grabuntil{stophello}\message}
 %D
 %D \starthello Hello world!\stophello
@@ -5328,7 +5317,7 @@
 %D \def\dodefinesomething[#1][#2]%
 %D   {\getparameters[\??xx#1][#2]}
 %D
-%D \def\definesomething%
+%D \unexpanded\def\definesomething%
 %D   {\dodoubleargumentwithset\dodefinesomething}
 %D \stoptyping
 %D
@@ -5940,10 +5929,10 @@
 \def\dostopglobaldefs
   {\globaldefs\ifcsname @gd@\the\globaldefs\endcsname\zerocount}
 
-\def\startlocal  {\dostartglobaldefs>-}
-\def\stoplocal   {\dostopglobaldefs}
-\def\startglobal {\dostartglobaldefs<+}
-\def\stopglobal  {\dostopglobaldefs}
+\unexpanded\def\startlocal  {\dostartglobaldefs>-}
+\unexpanded\def\stoplocal   {\dostopglobaldefs}
+\unexpanded\def\startglobal {\dostartglobaldefs<+}
+\unexpanded\def\stopglobal  {\dostopglobaldefs}
 
 %D \macros
 %D   {twodigitrounding}
@@ -5975,7 +5964,7 @@
 %D Beware of verbatim, i.e. catcode changes.
 %D
 %D \starttyping
-%D \def\starthans%
+%D \unexpanded\def\starthans%
 %D   {\processcontent{stophans}\test{\message{\test}\wait}}
 %D \stoptyping
 %D
@@ -6162,10 +6151,10 @@
 
 % better: push/pop
 
-\def\startstrictinspectnextcharacter
+\unexpanded\def\startstrictinspectnextcharacter
   {\let\inspectnextcharacter\strictinspectnextcharacter}
 
-\def\stopstrictinspectnextcharacter
+\unexpanded\def\stopstrictinspectnextcharacter
   {\let\inspectnextcharacter\normalinspectnextcharacter}
 
 \def\strictdoifnextoptionalelse#1#2%
@@ -6309,7 +6298,7 @@
 
 \def\??dm{@@dm} % brrr
 
-\def\definemeasure
+\unexpanded\def\definemeasure
   {\dodoubleargument\dodefinemeasure}
 
 \def\dodefinemeasure[#1][#2]%
@@ -6979,11 +6968,11 @@
 
 \newbox\nointerferencebox
 
-\def\startnointerference % not even grouped !
+\unexpanded\def\startnointerference % not even grouped !
   {\setbox\nointerferencebox\vbox
    \bgroup}
 
-\def\stopnointerference
+\unexpanded\def\stopnointerference
   {\egroup
    \setbox\nointerferencebox\emptybox}
 

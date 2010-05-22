@@ -238,6 +238,10 @@ function aux.accesstable(target)
     return t
 end
 
+--~ function string.commaseparated(str)
+--~     return gmatch(str,"([^,%s]+)")
+--~ end
+
 -- as we use this a lot ...
 
 --~ function aux.cachefunction(action,weak)

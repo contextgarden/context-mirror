@@ -476,12 +476,14 @@ function afm.copy_to_tfm(data)
                 characters[u] = { }
                 descriptions[u] = d
             end
-            tfm.encodingbytes      = metadata.encodingbytes or 2
-            tfm.fullname           = metadata.fullname
-            tfm.filename           = metadata.filename -- = tfm.checked_filename(metadata) -- to be tested first
-            tfm.name               = tfm.fullname
-            tfm.psname             = tfm.fullname
-            tfm.type               = "real"
+            tfm.encodingbytes      = 2 -- was metadata.encodingbytes or 2
+            tfm.filename           = fonts.tfm.checked_filename(luatex) -- was metadata.filename
+            tfm.fontname           = metadata.fontname or metadata.fullname
+            tfm.fullname           = metadata.fullname or metadata.fontname
+            tfm.psname             = tfm.fullname -- in otf: tfm.fontname or tfm.fullname
+            tfm.name               = tfm.filename or tfm.fullname or tfm.fontname
+            tfm.format             = 'type1'
+            tfm.type               = 'real'
             tfm.units              = 1000
             tfm.direction          = 0
             tfm.boundarychar_label = 0
@@ -714,20 +716,17 @@ function tfm.read_from_afm(specification)
         tfmtable.name = specification.name
         tfmtable = tfm.scale(tfmtable, specification.size, specification.relativeid)
         local afmdata = tfmtable.shared.afmdata
-        local filename = afmdata and afmdata.luatex and afmdata.luatex.filename
-        if not filename then
-            -- try to locate anyway and set afmdata.luatex.filename
-        end
-        if filename then
-            tfmtable.encodingbytes = 2
-            tfmtable.filename = resolvers.findbinfile(filename,"") or filename
-            tfmtable.fontname = afmdata.metadata.fontname or afmdata.metadata.fullname
-            tfmtable.fullname = afmdata.metadata.fullname or afmdata.metadata.fontname
-            tfmtable.format   = 'type1'
-            tfmtable.name     = afmdata.luatex.filename or tfmtable.fullname
-        end
+--~         local filename = afmdata and afmdata.luatex and afmdata.luatex.filename
+--~         if filename then
+--~             tfmtable.encodingbytes = 2
+--~             tfmtable.filename = resolvers.findbinfile(filename,"") or filename
+--~             tfmtable.fontname = afmdata.metadata.fontname or afmdata.metadata.fullname
+--~             tfmtable.fullname = afmdata.metadata.fullname or afmdata.metadata.fontname
+--~             tfmtable.format   = 'type1'
+--~             tfmtable.name     = afmdata.luatex.filename or tfmtable.fullname
+--~         end
         if fonts.dontembed[filename] then
-            tfmtable.file = nil
+            tfmtable.file = nil -- or filename ?
         end
         fonts.logger.save(tfmtable,'afm',specification)
     end

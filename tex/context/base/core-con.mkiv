@@ -596,10 +596,10 @@
 %       \setvalue{\??cv#1}##1{\csname\??cv#1##1\endcsname}}
 %      {\setvalue{\??cv#1}{#2}}}
 %
-% \def\defineconversion%
+% \unexpanded\def\defineconversion%
 %   {\dodoubleargument\dodefineconversion}
 
-\def\defineconversion
+\unexpanded\def\defineconversion
   {\dotripleempty\dodefineconversion}
 
 \def\dodefineconversion[#1][#2][#3]%

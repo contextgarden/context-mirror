@@ -108,7 +108,7 @@
 
 \newtoks \collectedtextdata
 
-\long\def\starttextdata#1\stoptextdata
+\long\unexpanded\def\starttextdata#1\stoptextdata
   {\doglobal\appendtoks#1\to\collectedtextdata}
 
 \def\flushtextdata
@@ -248,7 +248,7 @@
 
 \newconditional\arrangedbackgroundokay % more ifs -> conditionals
 
-\def\setuparranging[#1]%
+\unexpanded\def\setuparranging[#1]%
   {\ifarrangingdisabled \else
      \doifelse{#1}\v!disable
        {\global\arrangingdisabledtrue}
@@ -807,7 +807,7 @@
 
 % #1=name #2=horizontal|vertical #3=shiftlist
 
-\def\definepageshift
+\unexpanded\def\definepageshift
   {\dotripleargument\dodefinepageshift}
 
 \def\dodefinepageshift[#1][#2][#3]%
@@ -848,7 +848,7 @@
      \next
    \fi}
 
-\def\setuppageshift
+\unexpanded\def\setuppageshift
   {\dotripleempty\dosetuppageshift}
 
 \def\dosetuppageshift[#1][#2][#3]% page|paper horizontal vertical
@@ -1146,7 +1146,7 @@
 %D \stoppagecomment
 %D \stoptyping
 
-\def\setuppagecomment
+\unexpanded\def\setuppagecomment
   {\dosingleempty\dosetuppagecomment}
 
 \def\dosetuppagecomment[#1]%
@@ -1181,7 +1181,7 @@
 
 \def\@@pcprintpapersize{\printpapersize}
 
-\def\placepagecommentTB
+\unexpanded\def\placepagecommentTB
   {\vbox to \printpaperheight
      {%\forgetall
       \hsize\printpaperwidth
@@ -1199,7 +1199,7 @@
       \doifelse\@@pclocation\v!bottom\vss{\vskip\dimexpr\paperheight+\@@pcdistance\relax}%
       \vskip\@@pcoffset}}
 
-\def\placepagecommentLR
+\unexpanded\def\placepagecommentLR
   {\hbox to \printpaperwidth
      {\hskip\@@pcoffset
       \doifelse\@@pclocation\v!right{\hskip\paperwidth\hskip\@@pcdistance}\hss

@@ -47,7 +47,7 @@
 %     draw \sometxt[framed]{black} rotated 45 ;
 % \stopMPcode
 
-\def\definetextext[#1]#2{\setvalue{@@st@@[#1]}{#2}\setvalue{@@st@@[#1] }{#2}} % we don't grab spaces after [#1]
+\unexpanded\def\definetextext[#1]#2{\setvalue{@@st@@[#1]}{#2}\setvalue{@@st@@[#1] }{#2}} % we don't grab spaces after [#1]
 
 \long\def\sometxt#1#{\dosometxt{#1}}  % grab optional [args]
 

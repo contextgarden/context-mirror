@@ -32,7 +32,7 @@
       \let\startmarginblock\dontstartmargeblok
       \let\stopmarginblock\dontstopmargeblok}}
 
-\def\setupmarginblocks
+\unexpanded\def\setupmarginblocks
   {\dosingleargument\dosetupmarginblocks}
 
 \newbox\marginbox
@@ -64,10 +64,10 @@
         \@@mbbottom}%
    \fi}
 
-\def\placerightmarginblock
+\unexpanded\def\placerightmarginblock
   {\hskip\rightmarginwidth}
 
-\def\placeleftmarginblock
+\unexpanded\def\placeleftmarginblock
   {\hskip\leftmarginwidth}
 
 \def\checkmarginblocks
@@ -88,13 +88,13 @@
    \setbox\preparedmarginbox\vbox
       {\@@mbbefore\box\preparedmarginbox\@@mbafter}%
    \def\rightmarginbox
-     {\def\placerightmarginblock
+     {\unexpanded\def\placerightmarginblock
         {\setbox\preparedmarginbox\hbox to \rightmarginwidth
            {\@@mbleft\box\preparedmarginbox\@@mbright}%
          \vsmashbox\preparedmarginbox
          \box\preparedmarginbox}}%
    \def\leftmarginbox
-     {\def\placeleftmarginblock
+     {\unexpanded\def\placeleftmarginblock
         {\setbox\preparedmarginbox\hbox to \leftmarginwidth
            {\@@mbright\box\preparedmarginbox\@@mbleft}%
          \vsmashbox\preparedmarginbox

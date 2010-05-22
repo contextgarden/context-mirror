@@ -67,7 +67,7 @@
 
 \newtoks\everysetupsynonyms
 
-\def\setupsynonyms
+\unexpanded\def\setupsynonyms
   {\dodoubleargument\dosetupsynonyms}
 
 \def\dosetupsynonyms[#1][#2]%
@@ -98,7 +98,7 @@
   %\c!expansion=,
    \s!language=\currentmainlanguage]
 
-\def\definesynonyms
+\unexpanded\def\definesynonyms
   {\doquadrupleempty\dodefinesynonyms}
 
 \def\dodefinesynonyms[#1][#2][#3][#4]% name plural \meaning \use
@@ -121,7 +121,7 @@
    \setvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
    \setvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}}
 
-\def\definesynonym
+\unexpanded\def\definesynonym
   {\dotripleempty\dodefinesynonym}
 
 \def\dodefinesynonym[#1][#2][#3]#4#5%
@@ -174,7 +174,7 @@
    \synonymparameter\c!synonymcommand{\ctxlua{joblists.synonym("#1","#2")}}%
    \normalexpanded{\endgroup\synonymparameter\c!next}}
 
-\def\placelistofsynonyms
+\unexpanded\def\placelistofsynonyms
   {\dodoubleempty\doplacelistofsynonyms}
 
 \def\doplacelistofsynonyms[#1][#2]%
@@ -243,7 +243,7 @@
 
 \newtoks\everysetupsorting
 
-\def\setupsorting
+\unexpanded\def\setupsorting
   {\dodoubleargument\dosetupsorting}
 
 \def\dosetupsorting[#1][#2]%
@@ -264,7 +264,7 @@
   %\c!expansion=,
    \s!language=\currentmainlanguage]
 
-\def\definesorting
+\unexpanded\def\definesorting
   {\dotripleempty\dodefinesorting}
 
 % if #3=\relax or \v!none, then no command but still protected
@@ -286,7 +286,7 @@
    \setvalue{\e!place   \e!listof#2}{\placelistofsorts[#1]}%
    \setvalue{\e!complete\e!listof#2}{\completelistofsorts[#1]}}
 
-\def\definesort
+\unexpanded\def\definesort
   {\dotripleempty\dodefinesort}
 
 \def\dodefinesort[#1][#2][#3]#4%
@@ -335,10 +335,10 @@
 %
 % maybe just 'commandset' and then combine
 
-\def\placelistofsorts
+\unexpanded\def\placelistofsorts
   {\dodoubleempty\placelistofsorts}
 
-\def\placelistofsorts[#1][#2]% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
+\unexpanded\def\placelistofsorts[#1][#2]% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
   {\begingroup
    \def\currentsorting{#1}%
    \getparameters[\??so#1][#2]%

@@ -114,7 +114,7 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
     if subset then
         local result, done = { }, { }
         block = tonumber(block)
-        for rest in gmatch(reference,"([^,]+)") do
+        for rest in gmatch(reference,"([^,%s]+)") do
             local blk, tag, found = block, nil, nil
             if block then
                 tag = blk .. ":" .. rest

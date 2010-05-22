@@ -27,8 +27,8 @@
 
 \newbox\otfcollector
 
-\def\startotfcollecting{\ctxlua{nodes.tracers.steppers.start()}}
-\def\stopotfcollecting {\ctxlua{nodes.tracers.steppers.stop()}}
+\unexpanded\def\startotfcollecting{\ctxlua{nodes.tracers.steppers.start()}}
+\unexpanded\def\stopotfcollecting {\ctxlua{nodes.tracers.steppers.stop()}}
 \def\resetotfcollecting{\ctxlua{nodes.tracers.steppers.reset()}}
 
 % Rather experimental:
@@ -88,12 +88,12 @@
       \stoplinecorrection
       \blank}}
 
-\def\startotfsample
+\unexpanded\def\startotfsample
   {\enabletrackers[*otf.sample]% beware, kind of global
    \startotfcollecting
    \begingroup}
 
-\def\stopotfsample
+\unexpanded\def\stopotfsample
   {\endgroup
    \stopotfcollecting
    \disabletrackers[*otf.sample]% beware, kind of global: otf.sample

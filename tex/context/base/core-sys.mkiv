@@ -52,7 +52,7 @@
 
 \newtoks \everysetupsystem
 
-\def\setupsystem
+\unexpanded\def\setupsystem
   {\dosingleargument\dosetupsystem}
 
 \def\dosetupsystem[#1]%
@@ -136,7 +136,7 @@
 %D \stoptext
 %D \stoptyping
 
-\def\setuprandomize[#1]%
+\unexpanded\def\setuprandomize[#1]%
   {\doifsomething{#1}
      {\bgroup
       % tex's time is in minutes
@@ -180,10 +180,10 @@
      {\globaldefs\getvalue{@gd@\the\globaldefs}\relax}
      {\globaldefs\zerocount}}
 
-\def\startlocal  {\dostartglobaldefs>-}
-\def\stoplocal   {\dostopglobaldefs}
-\def\startglobal {\dostartglobaldefs<+}
-\def\stopglobal  {\dostopglobaldefs}
+\unexpanded\def\startlocal  {\dostartglobaldefs>-}
+\unexpanded\def\stoplocal   {\dostopglobaldefs}
+\unexpanded\def\startglobal {\dostartglobaldefs<+}
+\unexpanded\def\stopglobal  {\dostopglobaldefs}
 
 \def\complexstart[#1]{\bgroup\getvalue{\e!start#1}}
 \def\complexstop [#1]{\getvalue{\e!stop #1}\egroup}
@@ -223,14 +223,14 @@
   {\def\docommand##1{\dododefinestartstop[##1][#2]}%
    \processcommalist[#1]\docommand}
 
-\def\definestartstop
+\unexpanded\def\definestartstop
   {\dodoubleargument\dodefinestartstop}
 
 \def\dosetupstartstop[#1][#2]%
   {\def\docommand##1{\getparameters[\??be##1][#2]}%
    \processcommalist[#1]\docommand}
 
-\def\setupstartstop
+\unexpanded\def\setupstartstop
   {\dodoubleargument\dosetupstartstop}
 
 % \docommand kan niet worden gebruikt omdat deze macro
@@ -243,10 +243,10 @@
 % \def\executeprotected#1%
 %   {\csname\??pc\string#1\endcsname}
 %
-% \def\defineprotected#1#2%
+% \unexpanded\def\defineprotected#1#2%
 %   {\expandafter\def\csname\??pc\string#2\endcsname}
 %
-% \def\defineunprotected#1%
+% \unexpanded\def\defineunprotected#1%
 %   {\def#1}
 %
 % \def\doprotected%
@@ -350,7 +350,7 @@
 %     end
 % \stopluacode
 %
-% \def\define#1#{\ctxlua{commands.define([[\detokenize{#1}]])}}
+% \unexpanded\def\define#1#{\ctxlua{commands.define([[\detokenize{#1}]])}}
 %
 % \starttext
 %     \define[2]\whatevera{#1+#2}

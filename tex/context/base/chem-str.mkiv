@@ -49,7 +49,7 @@
 
 \unprotect
 
-\def\setupchemical
+\unexpanded\def\setupchemical
   {\dosingleempty\dosetupchemical}
 
 \def\dosetupchemical
@@ -57,7 +57,7 @@
 
 \let\setupchemicals\setupchemical
 
-\def\setupchemicalframed
+\unexpanded\def\setupchemicalframed
   {\dosingleempty\dosetupchemicalframed}
 
 \def\dosetupchemicalframed
@@ -65,7 +65,7 @@
 
 \def\chemicalparameter#1{\csname\??cm#1\endcsname}
 
-\def\definechemical
+\unexpanded\def\definechemical
   {\dosingleargument\dodefinechemical} % global
 
 \def\dodefinechemical[#1]#2%
@@ -76,7 +76,7 @@
    #2% flush
    \stopnointerference}
 
-\def\definechemicalsymbol
+\unexpanded\def\definechemicalsymbol
   {\dodoubleempty\dodefinechemicalsymbol}
 
 \def\dodefinechemicalsymbol[#1][#2]%
@@ -440,7 +440,7 @@
 
 \newif\ifinchemicalformula
 
-\def\startchemicalformula
+\unexpanded\def\startchemicalformula
   {\mathortext\vcenter\vbox\bgroup
    \forgetall
    \inchemicalformulatrue
@@ -453,7 +453,7 @@
    \setfalse\formulachemicalhastop
    \setfalse\formulachemicalhasbot }
 
-\def\stopchemicalformula
+\unexpanded\def\stopchemicalformula
   {\tabskip1em\relax
    \nointerlineskip
    \ifconditional\formulachemicalhastop

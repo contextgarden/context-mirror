@@ -171,7 +171,7 @@
 \unexpanded\def\startfont
   {\bgroup\definedfont}
 
-\def\stopfont
+\unexpanded\def\stopfont
   {\egroup}
 
 \def\doiffontcharelse#1#2%
@@ -916,7 +916,7 @@
 % We could use an indirect method ... store in 'array' and refer to
 % slot.
 
-\def\definefontsynonym[#1]#2[#3]%
+\unexpanded\def\definefontsynonym[#1]#2[#3]%
   {\edef\@@fontname{#1}%
    \edef\@@fontfile{#3}%
    \ifx\fontclass\empty
@@ -983,7 +983,7 @@
 
 \let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
 
-\def\setupfontsynonym
+\unexpanded\def\setupfontsynonym
   {\dodoubleempty\dosetupfontsynonym}
 
 \def\dosetupfontsynonym[#1][#2]% not yet supported, will do when needed
@@ -1056,7 +1056,7 @@
 %
 % \setupbodyfont[palatino]
 
-\def\startfontclass
+\unexpanded\def\startfontclass
   {\dosingleempty\dostartfontclass}
 
 \def\dostartfontclass[#1]%
@@ -1065,7 +1065,7 @@
      {\let\fontclass\empty}
      {\doifsomething{#1}{\def\fontclass{#1}}}}
 
-\def\stopfontclass
+\unexpanded\def\stopfontclass
   {\popmacro\fontclass}
 
 %D \macros
@@ -1095,7 +1095,7 @@
 %D
 %D The implementation looks as follows:
 
-\def\definefont
+\unexpanded\def\definefont
   {\dotripleempty\dodefinefont}
 
 \def\dodefinefont[#1][#2][#3]% [name][spec][1.6 | line=10pt | setup_id]
@@ -1112,7 +1112,7 @@
      {\setuplocalinterlinespace[#3]%
       \setupspacing}} % needed ?
 
-\def\definefrozenfont
+\unexpanded\def\definefrozenfont
   {\dotripleempty\dodefinefrozenfont}
 
 \def\dodefinefrozenfont[#1][#2][#3]%
@@ -1226,11 +1226,11 @@
       \processcommacommand[\fontalternativelist]\dodocommand}%
    \processcommacommand[\fontsizelist]\docommand}
 
-\def\definefontsize[#1]% sneller met toks
+\unexpanded\def\definefontsize[#1]% sneller met toks
   {\addtocommalist{#1}\fontsizelist
    \checkfontnamecombinations}
 
-\def\definefontalternative[#1]%
+\unexpanded\def\definefontalternative[#1]%
   {\addtocommalist{#1}\fontalternativelist
    \checkfontnamecombinations}
 
@@ -1348,7 +1348,7 @@
      \let\k!text     \k!savedtext
    \fi}
 
-\def\definebodyfontenvironment
+\unexpanded\def\definebodyfontenvironment
   {\dotripleempty\dodefinebodyfontenvironment}
 
 \def\dodefinebodyfontenvironment[#1][#2][#3]% class size settings
@@ -1434,7 +1434,7 @@
 
 % this one already catches both define/setup
 
-\def\setupbodyfontenvironment{\definebodyfontenvironment}
+\unexpanded\def\setupbodyfontenvironment{\definebodyfontenvironment}
 
 %D Just a couple of interface macros:
 
@@ -1527,7 +1527,7 @@
 %D user definitions like \type{\tfw} or \type{\bfq} for real
 %D large alternatives.
 
-\def\definebodyfont
+\unexpanded\def\definebodyfont
   {\doquadrupleempty\redefinebodyfont}
 
 \def\redefinebodyfont[#1][#2][#3][#4]%
@@ -1608,30 +1608,30 @@
 \def\dodefinebodyfontnopxx#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
    \@EA\let\csname*#2#1#3#4#5*\endcsname\undefined
-   \normalprotected\@EA\edef\csname#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
+   \unexpanded\@EA\edef\csname#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
 
 \def\dodefinebodyfontyesxx#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
    \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#5*\endcsname\undefined
-   \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
+   \unexpanded\@EA\fcxdef\csname\fontclass#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
 
 \def\dodefinebodyfontnopmm#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
    \@EA\let\csname*#2#1#3#4#51*\endcsname\undefined
    \@EA\let\csname*#2#1#3#4#52*\endcsname\undefined
    \@EA\let\csname*#2#1#3#4#53*\endcsname\undefined
-   \normalprotected\@EA\edef\csname#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
-   \normalprotected\@EA\edef\csname#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
-   \normalprotected\@EA\edef\csname#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
+   \unexpanded\@EA\edef\csname#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\edef\csname#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\edef\csname#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
 
 \def\dodefinebodyfontyesmm#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
    \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#51*\endcsname\undefined
    \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#52*\endcsname\undefined
    \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#53*\endcsname\undefined
-   \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
-   \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
-   \normalprotected\@EA\fcxdef\csname\fontclass#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
+   \unexpanded\@EA\fcxdef\csname\fontclass#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\fcxdef\csname\fontclass#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\fcxdef\csname\fontclass#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
 
 \def\checkbodyfont#1% tests for ttsl mmbf
   {\edef\c!!mm{#1}%
@@ -1701,7 +1701,7 @@
      \defineunknownfont{\csname\??ft#1#2\endcsname}%
    \fi}
 
-\def\defineunknownfont#1%
+\unexpanded\def\defineunknownfont#1%
   {\let\c!savedtext\c!text
    \let\c!text\s!text
    \donefalse
@@ -1729,23 +1729,6 @@
 %D These macros show that quite some definitions take place.
 %D Fonts are not loaded yet! This means that at format
 %D generation time, no font files are preloaded.
-
-%D A previous implementation used:
-%D
-%D \starttyping
-%D \type {\setvalue{name}{\donottest...}}
-%D \stoptyping
-%D
-%D instead of the more memory hungry:
-%D
-%D \starttyping
-%D \setuvalue{name}{...}
-%D \stoptyping
-%D
-%D The first alternative saves about 500 hash entries (about
-%D 2.5\% of the total number of entries used. The second
-%D alternative is currently used, because that one can more
-%D easily be made \ETEX\ aware.
 
 %D \macros
 %D   {everybodyfont,Everybodyfont,everyglobalbodyfont}
@@ -2473,7 +2456,7 @@
       \setvalue{\@style@##1}{\csname#2\endcsname}}%
    \processcommalist[#1]\docommand}
 
-\def\definefontstyle
+\unexpanded\def\definefontstyle
   {\dodoubleargument\dodefinefontstyle}
 
 \def\setfontstyle#1#2%  #1:name (roman, romaan)  #2:style (rm)
@@ -2602,7 +2585,7 @@
 
 %D Experimental:
 
-\def\definefontfeature
+\unexpanded\def\definefontfeature
   {\dotripleargument\dodefinefontfeature}
 
 \def\dodefinefontfeature[#1][#2][#3]%
@@ -2790,7 +2773,7 @@
   {\def\docommand##1{\setvalue{##1}{\switchtobodyfont[#2]}}%
    \processcommalist[#1]\docommand}
 
-\def\definebodyfontswitch
+\unexpanded\def\definebodyfontswitch
   {\dodoubleargument\dodefinebodyfontswitch}
 
 %D \macros
@@ -2936,10 +2919,10 @@
       \setvalue{\@noletter@##1}{#3}}%
    \processcommalist[#1]\docommand}
 
-\def\definealternativestyle
+\unexpanded\def\definealternativestyle
   {\dotripleempty\dodefinealternativestyle}
 
-\def\definestyle{\definealternativestyle}
+\unexpanded\def\definestyle{\definealternativestyle}
 
 %D Maybe too geneneric, but probably ok is the following. (Maybe one
 %D day we will use a dedicated grouped command for styles.)
@@ -3736,7 +3719,7 @@
 %D This command is obsolete in \MKIV\ as we have features. It might
 %D come back using the local features handlers.
 
-\def\definefontvariant{\dotripleargument\dodefinefontvariant}
+\unexpanded\def\definefontvariant{\dotripleargument\dodefinefontvariant}
 
 \def\dodefinefontvariant[#1][#2][#3]{}
 \def\variant                    [#1]{}
@@ -3767,11 +3750,11 @@
 \def\style[#1]% for inline usage, like \color
   {\groupedcommand{\ifcsname#1\endcsname\csname#1\endcsname\else\definedfont[#1]\fi}{}}
 
-\def\startstyle[#1]%
+\unexpanded\def\startstyle[#1]%
   {\begingroup
    \ifcsname#1\endcsname\csname#1\endcsname\else\definedfont[#1]\fi}
 
-\def\stopstyle
+\unexpanded\def\stopstyle
   {\endgroup}
 
 %D Still experimental (might even go away).
@@ -3786,7 +3769,7 @@
 
 % {\bf test \mine test \sl test \mine test \bs oeps \mine oeps {\tt test \mine \bf test}}
 
-\def\definestylecollection
+\unexpanded\def\definestylecollection
   {\dosingleargument\dodefinestylecollection}
 
 \def\dodefinestylecollection[#1]%
@@ -3798,7 +3781,7 @@
      \processcommacommand[\fontstylelist,\s!default]\docommand
    \fi}
 
-\def\definestyleinstance
+\unexpanded\def\definestyleinstance
   {\doquadrupleargument\dodefinestyleinstance}
 
 \def\dodefinestyleinstance[#1][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]

@@ -38,7 +38,7 @@
 
 \xmlregistersetup{xml:mml:define}
 
-\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[@@MML#1]}
+\unexpanded\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[@@MML#1]}
 
 \def\MMLhack{\let\MMLpar\par \let\par\relax \everyvbox{\let\par\MMLpar}}
 
@@ -152,7 +152,7 @@
 
 %D In the styles, options can be set with:
 
-\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[MML#1]} % no @@ because passed to lua
+\unexpanded\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[MML#1]} % no @@ because passed to lua
 
 %D We will apply inner math to all bits and pieces made up by an
 %D \type {apply}.

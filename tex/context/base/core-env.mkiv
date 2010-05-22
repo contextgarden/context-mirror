@@ -174,8 +174,8 @@
 \expanded
   {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
      {\begingroup\noexpand\doifnextoptionalelse
-        {\noexpand\startsetupsA\@EA\noexpand\csname\e!stop\v!setups\endcsname}
-        {\noexpand\startsetupsB\@EA\noexpand\csname\e!stop\v!setups\endcsname}}}
+        {\noexpand\dostartsetupsA\@EA\noexpand\csname\e!stop\v!setups\endcsname}
+        {\noexpand\dostartsetupsB\@EA\noexpand\csname\e!stop\v!setups\endcsname}}}
 
 \letvalue{\e!stop\v!setups}\relax
 
@@ -209,9 +209,6 @@
 \def\dodoprocesslocalsetups
   {\@EA\processcommalist\@EA[\tobeprocessedsetups]\dosetups}
 
-% \def\setupwithargument#1%
-%   {\csname\??su:\ifcsname\??su:#1\endcsname#1\else\letterpercent\fi\endcsname}
-
 \edef\setupwithargument#1% saves a few expansions
   {\noexpand\csname\??su:\noexpand\ifcsname\??su:#1\endcsname#1\noexpand\else\letterpercent\noexpand\fi\endcsname}
 
@@ -222,27 +219,27 @@
 
 \chardef\setupseolmode\plusone
 
-\def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
-\def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
-\def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
-\def\startxmlsetups  {\xxstartsetups\plustwo  \stopxmlsetups  } \let\stopxmlsetups  \relax
+\unexpanded\def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
+\unexpanded\def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
+\unexpanded\def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
+\unexpanded\def\startxmlsetups  {\xxstartsetups\plustwo  \stopxmlsetups  } \let\stopxmlsetups  \relax
 
 \def\xxstartsetups#1#2%
-  {\begingroup\let\setupseolmode#1\doifnextoptionalelse{\startsetupsA#2}{\startsetupsB#2}}
+  {\begingroup\let\setupseolmode#1\doifnextoptionalelse{\dostartsetupsA#2}{\dostartsetupsB#2}}
 
-\def\startsetupsA#1% [ ] delimited
+\def\dostartsetupsA#1% [ ] delimited
   {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
    \dotripleempty\dostartsetups[#1]}
 
-\def\startsetupsB#1#2 % space delimited
+\def\dostartsetupsB#1#2 % space delimited
   {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
    \dodostartsetups#1\empty{#2}}
 
-\def\startsetupsC[#1][#2][#3]{\dodostartsetups#1{#2}{#3}}   % [..] [..]
-\def\startsetupsD[#1][#2][#3]{\dodostartsetups#1\empty{#2}} % [..]
+\def\dostartsetupsC[#1][#2][#3]{\dodostartsetups#1{#2}{#3}}   % [..] [..]
+\def\dostartsetupsD[#1][#2][#3]{\dodostartsetups#1\empty{#2}} % [..]
 
 \def\dostartsetups
-  {\ifthirdargument\@EA\startsetupsC\else\@EA\startsetupsD\fi}
+  {\ifthirdargument\@EA\dostartsetupsC\else\@EA\dostartsetupsD\fi}
 
 \long\def\dodostartsetups#1#2#3%
   {\long\def\dododostartsetups##1#1%
@@ -361,7 +358,7 @@
 \def\getvariabledefault#1#2% #3% can be command, so no ifcsname here
   {\executeifdefined{\??vars:#1:#2}}% {#3}
 
-% \def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
+% \unexpanded\def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
 %
 % \def\doifenvelse#1{\doifdefinedelse{\??en#1}} % speed up
 % \def\doifenv    #1{\doifdefined    {\??en#1}} % speed up
@@ -381,7 +378,7 @@
 
 \def\s!environment{environment}
 
-\def\setupenv   {\dotripleargument\dosetvariables[\getrawparameters][\s!environment]}
+\unexpanded\def\setupenv   {\dotripleargument\dosetvariables[\getrawparameters][\s!environment]}
 \def\doifenvelse{\doifelsevariable  \s!environment}
 \def\doifenv    {\doifvariable      \s!environment}
 \def\doifnotenv {\doifnotvariable   \s!environment}

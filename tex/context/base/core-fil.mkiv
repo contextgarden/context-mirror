@@ -43,7 +43,7 @@
 
 % will be redone in mkiv
 
-\def\definefilesynonym
+\unexpanded\def\definefilesynonym
   {\dodoubleempty\dodefinefilesynonym}
 
 \def\dodefinefilesynonym[#1][#2]%
@@ -55,7 +55,7 @@
 %D \macros
 %D   {definefilefallback}
 
-\def\definefilefallback
+\unexpanded\def\definefilefallback
   {\dodoubleargument\dodefinefilefallback}
 
 \def\dodefinefilefallback[#1][#2]%
@@ -146,7 +146,7 @@
 \let\currentmoduleparameters\empty
 \let\currentmodule          \s!unknown
 
-\def\startmodule
+\unexpanded\def\startmodule
   {\doifnextoptionalelse\dostartmodule\nostartmodule}
 
 \def\nostartmodule #1 %
@@ -157,11 +157,11 @@
    \pushmacro\currentmoduleparameters
    \def\currentmodule{#1}}
 
-\def\stopmodule
+\unexpanded\def\stopmodule
   {\popmacro\currentmoduleparameters
    \popmacro\currentmodule}
 
-\def\setupmodule
+\unexpanded\def\setupmodule
   {\dodoubleempty\dosetupmodule}
 
 \def\dosetupmodule[#1][#2]%
@@ -202,7 +202,7 @@
 
 \let\stopmoduletestsection\donothing
 
-\def\startmoduletestsection
+\unexpanded\def\startmoduletestsection
   {\bgroup
    \setupmodule % we need to make sure that the vars are set
    \doifelse{\currentmoduleparameter\v!test}\v!yes
@@ -273,7 +273,7 @@
 
 \def\documentresources{\@@erurl}
 
-\def\setupexternalresources
+\unexpanded\def\setupexternalresources
   {\dodoubleargument\getparameters[\??er]}
 
 \setupexternalresources

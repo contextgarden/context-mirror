@@ -76,7 +76,7 @@
 
 % use \noindentation to suppress next indentation
 
-\def\defineindentingmethod[#1]#2%
+\unexpanded\def\defineindentingmethod[#1]#2%
   {\setvalue{\??in:#1}{#2}}
 
 \defineindentingmethod [\v!no]     {\parindent\zeropoint}% was: \ctxparindent\noindent}
@@ -287,7 +287,7 @@
 \def\newfrenchspacing{\setfrenchspacing{1050}}
 \def\nonfrenchspacing{\resetfrenchspacing}
 
-\def\definespacingmethod[#1]#2{\setvalue{\??sg\??sg#1}{#2}}
+\unexpanded\def\definespacingmethod[#1]#2{\setvalue{\??sg\??sg#1}{#2}}
 
 \definespacingmethod[\v!packed]{\newfrenchspacing}
 \definespacingmethod[\v!broad ]{\nonfrenchspacing}
@@ -462,7 +462,7 @@
 \def\donarrower[#1]% hm, can be dorepeat directly
   {\dorepeatwithcommand[#1]\donarrowermethod}
 
-\def\definenarrowermethod[#1]#2%
+\unexpanded\def\definenarrowermethod[#1]#2%
   {\setvalue{\??sl:#1}{#2}}
 
 \def\donarrowermethod#1%
@@ -497,11 +497,11 @@
 %    \advance\rightskip \dimexpr\ctxrightskip+\ctxmidskip\relax
 %    \seteffectivehsize}
 %
-% \def\stopnarrower
+% \unexpanded\def\stopnarrower
 %   {\@@slafter % was hard coded \par / needed, else skips forgotten
 %    \egroup}
 %
-% \def\setupnarrower
+% \unexpanded\def\setupnarrower
 %   {\dodoubleargument\getparameters[\??sl]}
 
 %D Contrary to \MKII\ we can now define classes of narrower (generalized
@@ -519,7 +519,7 @@
    \c!right=1.5em,
    \c!middle=1.5em]
 
-\def\definenarrower
+\unexpanded\def\definenarrower
   {\dodoubleempty\dodefinenarrower}
 
 \def\dodefinenarrower[#1][#2]%
@@ -527,7 +527,7 @@
    \setvalue{\e!start#1}{\dodoubleempty\dostartnarrower[#1]}%
    \setvalue{\e!stop #1}{\dostopnarrower}}
 
-\def\setupnarrower
+\unexpanded\def\setupnarrower
   {\dodoubleempty\dosetupnarrower}
 
 \def\dosetupnarrower[#1][#2]%
@@ -629,7 +629,7 @@
 
 %D Tolerance:
 
-\def\definetolerancemethod
+\unexpanded\def\definetolerancemethod
   {\dodoubleargument\dodefinetolerancemethod}
 
 \def\dodefinetolerancemethod[#1][#2]#3%
@@ -655,7 +655,7 @@
      {\processcommacommand[#1]\dotolerancencemethodvertical}
      {\processcommacommand[#1]\dotolerancencemethodhorizontal}}
 
-\def\setuptolerance
+\unexpanded\def\setuptolerance
   {\dosingleargument\dosetuptolerance}
 
 %D \macros
@@ -781,7 +781,7 @@
 \def\ignorecrlf
   {\let\crlf\justonespace\let\\\crlf}
 
-\def\definehspace
+\unexpanded\def\definehspace
   {\dotripleempty\dodefinehspace}
 
 \def\dodefinehspace[#1][#2][#3]% #1 = optional namespace

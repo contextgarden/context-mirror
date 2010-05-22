@@ -54,7 +54,7 @@
 %D \definegraphictypesynonym[jbg]  [jb2]
 %D \stoptyping
 
-\def\definegraphictypesynonym
+\unexpanded\def\definegraphictypesynonym
   {\dodoubleargument\dodefinegraphictypesynonym}
 
 \def\dodefinegraphictypesynonym[#1][#2]%
@@ -286,10 +286,10 @@
      \global\setsystemmode  \v!figure % todo, also: \v!resource
    \fi}
 
-\def\startfoundexternalfigure#1#2% ht wd
+\unexpanded\def\startfoundexternalfigure#1#2% ht wd
   {\global\setbox\foundexternalfigure\vbox to #2\bgroup\vss\hbox to #1\bgroup}
 
-\def\stopfoundexternalfigure
+\unexpanded\def\stopfoundexternalfigure
   {\hss\egroup\egroup}
 
 \def\emptyfoundexternalfigure

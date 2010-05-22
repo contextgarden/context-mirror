@@ -22,7 +22,7 @@
 \ifx\s!preset \undefined \def\s!preset {preset}  \fi
 \ifx\s!syncpos\undefined \def\s!syncpos{syncpos} \fi
 
-\def\definesyncpositions[#1]%
+\unexpanded\def\definesyncpositions[#1]%
   {\global\let\flushsyncpositions\doflushsyncpositions % only when used
    \setcounter{\s!num:\s!syncpos:#1}{0}%
    \doglobal\appendtoksonce\csname\s!reset :\s!syncpos:#1\endcsname\to\resetsyncpositions

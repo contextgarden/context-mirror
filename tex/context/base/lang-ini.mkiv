@@ -73,7 +73,7 @@
 \let\currentlanguage    \empty
 \let\currentmainlanguage\empty
 
-\def\setupcurrentlanguage[#1]{\setcurrentlanguage\currentmainlanguage{#1}}
+\unexpanded\def\setupcurrentlanguage[#1]{\setcurrentlanguage\currentmainlanguage{#1}}
 
 \def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
   {\edef\xaskedlanguage{#1}% otherwise clash with \askedlanguage
@@ -199,7 +199,7 @@
 %D
 %D Beware, this command can only be used when a language is installed.
 
-\unprotected \def\setuplanguage
+\unexpanded\def\setuplanguage
   {\dodoubleempty\dosetuplanguage}
 
 \def\dosetuplanguage[#1][#2]% handy patch for testing

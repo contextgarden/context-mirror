@@ -103,7 +103,7 @@
 
 \newtoks\tobeprocessednotes
 
-\def\processnotes#1% #1: \macro that uses \currentnote
+\unexpanded\def\processnotes#1% #1: \macro that uses \currentnote
   {\def\doprocesssomenote##1{\edef\currentnote{##1}\let\currentdescription\currentnote#1}%
    \the\tobeprocessednotes}
 
@@ -156,7 +156,7 @@
 %D Are quite ligitimate, we default to a simple one 20\% of the
 %D text width.
 
-\def\setupnotes
+\unexpanded\def\setupnotes
   {\dodoubleargument\getparameters[\??vn]}
 
 \setupnotes
@@ -206,14 +206,14 @@
 \def\@@defaultnotedefloc{\v!inleft}
 \def\@@defaultnotedefdis{\!!zeropoint}
 
-\def\startnotedef{\resetdescriptions\csname\e!start\??vn\??vn\currentnote\endcsname}
-\def\stopnotedef                   {\csname\e!stop \??vn\??vn\currentnote\endcsname}
+\unexpanded\def\startnotedef{\resetdescriptions\csname\e!start\??vn\??vn\currentnote\endcsname}
+\unexpanded\def\stopnotedef                   {\csname\e!stop \??vn\??vn\currentnote\endcsname}
 
 \def\currentnoteins{\csname\??vn:\currentnote\endcsname}
 
 \newtoks \everysetupnote
 
-\def\definenote
+\unexpanded\def\definenote
   {\dodoubleempty\dodefinenote}
 
 \def\dodefinenote[#1][#2]%
@@ -282,7 +282,7 @@
 %     \dochecknote
 % \to \everysetupnote
 
-\def\setupnote
+\unexpanded\def\setupnote
   {\dodoubleempty\dosetupnote}
 
 \def\dosetupnote[#1][#2]%
@@ -463,7 +463,7 @@
 
 %D A bit messy:
 
-\def\placenoterule
+\unexpanded\def\placenoterule
   {\bgroup
    \setupalign[\getvalue{\??vn\c!rule:a:\currentnote}]%
    \righttoleft
@@ -471,7 +471,7 @@
    \par
    \egroup}
 
-\def\normalnoterule
+\unexpanded\def\normalnoterule
   {\ifvmode
      \dontleavehmode \blackrule
        [ \c!color=\noteparameter\c!rulecolor,
@@ -484,7 +484,7 @@
 
 \ifx\setnotehsize\undefined
 
-  \def\setnotehsize{\hsize\noteparameter\c!width\relax} % can be overloaded
+  \unexpanded\def\setnotehsize{\hsize\noteparameter\c!width\relax} % can be overloaded
 
 \fi
 
@@ -576,8 +576,8 @@
 
 \newconditional\skipnoteplacement
 
-\def\setnote    [#1]{\getvalue{#1}}
-\def\setnotetext[#1]{\global\settrue\skipnoteplacement\getvalue{#1}}
+\unexpanded\def\setnote    [#1]{\getvalue{#1}}
+\unexpanded\def\setnotetext[#1]{\global\settrue\skipnoteplacement\getvalue{#1}}
 
 \def\domovednote#1#2#3#4%
   {\ifcase\ctxlua{structure.notes.deltapage("#1",#2)}\or\symbol[#3]\or\symbol[#4]\fi}
@@ -645,7 +645,7 @@
       \ctxlua{structure.notes.number("\currentnote",\currentnotenumber)}% \currentdescriptionnumberentry
       \domovednote{#1}{#2}\v!previouspage\v!nextpage}}
 
-\def\typesetsomenotesymbol#1#2% running text
+\unexpanded\def\typesetsomenotesymbol#1#2% running text
   {\removeunwantedspaces
    \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
@@ -657,7 +657,7 @@
      {\directgotobox{\dotypesetsomenotesymbol{#1}{#2}}[page(\ctxlua{structure.notes.getnumberpage("#1",\number#2)})]}% f:
    \globallet\lastnotesymbol\relax}
 
-\def\typesetdummynotesymbol % temp hack
+\unexpanded\def\typesetdummynotesymbol % temp hack
   {\removeunwantedspaces
    \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
@@ -799,7 +799,7 @@
 %D
 %D This command is implemented rather straightforward as:
 
-\def\notesymbol
+\unexpanded\def\notesymbol
   {\dodoubleempty\donotesymbol}
 
 \def\donotesymbol[#1][#2]%
@@ -827,11 +827,11 @@
 %
 % \dorecurse{6}{\input tufte\footnote{\input ward \input tufte \relax}}
 
-\def\placenoteinserts
+\unexpanded\def\placenoteinserts
   {\processnotes\doplacenoteinserts}
 
-\def\unvboxed {\ifvmode\unvbox \else\box \fi}
-\def\unvcopied{\ifvmode\unvcopy\else\copy\fi}
+\unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi}
+\unexpanded\def\unvcopied{\ifvmode\unvcopy\else\copy\fi}
 
 \def\doplacenoteinserts
   {\relax\ifdim\ht\currentnoteins>\zeropoint\relax
@@ -958,7 +958,7 @@
 
 \newconditional\inlocalnotes
 
-\def\startlocalnotes
+\unexpanded\def\startlocalnotes
   {\dosingleempty\dostartlocalnotes}
 
 \def\dostartlocalnotes[#1]%
@@ -966,7 +966,7 @@
    \settrue\inlocalnotes
    \processcommacommand[\localnoteslist]\dodostartlocalnotes}
 
-\def\stoplocalnotes
+\unexpanded\def\stoplocalnotes
   {\processcommacommand[\localnoteslist]\dodostoplocalnotes
    \setfalse\inlocalnotes}
 
@@ -981,7 +981,7 @@
      {\restorestructurecounter[#1]}%
    \ctxlua{structure.notes.restore("#1")}}
 
-\def\placelocalnotes
+\unexpanded\def\placelocalnotes
   {\dodoubleempty\doplacelocalnotes}
 
 \def\doplacelocalnotes[#1][#2]%
@@ -1031,10 +1031,10 @@
 %D
 %D \showsetup{placefootnotes}
 
-\def\placebottomnotes
+\unexpanded\def\placebottomnotes
   {\processnotes\placenoteinserts}
 
-\def\placenotes
+\unexpanded\def\placenotes
   {\dodoubleempty\doplacenotes}
 
 \def\doplacenotes[#1][#2]%
@@ -1118,13 +1118,13 @@
 
     % is this ok? endnotes and such
 
-    \def\fakenotes
+    \unexpanded\def\fakenotes
       {\ifhmode\endgraf\fi\ifvmode
          \calculatetotalclevernoteheight
          \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
        \fi}
 
-    \def\fakepagenotes
+    \unexpanded\def\fakepagenotes
       {\ifhmode\endgraf\fi\ifvmode
          \calculatetotalpagenoteheight
          \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
@@ -1232,20 +1232,20 @@
 
 %D Compatibility macros:
 
-            \def\setupfootnotedefinition{\setupnotedefinition                [\v!footnote]}
-            \def\setupfootnotes         {\setupnote                          [\v!footnote]}
-%unexpanded \def\footnote               {\setnote                            [\v!footnote]}
-\unexpanded \def\footnotetext           {\setnotetext                        [\v!footnote]}
-            %def\note                   {\dodoubleempty\notesymbol           [\v!footnote]} %  alleen footnote
-            \def\placefootnotes         {\dodoubleempty\doplacefootnotes     [\v!footnote]}
-            \def\placelocalfootnotes    {\dodoubleempty\doplacelocalfootnotes[\v!footnote]}
-            \def\startlocalfootnotes    {\startlocalnotes                    [\v!footnote]} %  alleen footnote
-            \def\stoplocalfootnotes     {\stoplocalnotes }
+\unexpanded\def\setupfootnotedefinition{\setupnotedefinition                [\v!footnote]}
+\unexpanded\def\setupfootnotes         {\setupnote                          [\v!footnote]}
+%unexpanded\def\footnote               {\setnote                            [\v!footnote]}
+\def\footnotetext           {\setnotetext                        [\v!footnote]}
+%unexpanded\def\note                   {\dodoubleempty\notesymbol           [\v!footnote]} %  alleen footnote
+\unexpanded\def\placefootnotes         {\dodoubleempty\doplacefootnotes     [\v!footnote]}
+\unexpanded\def\placelocalfootnotes    {\dodoubleempty\doplacelocalfootnotes[\v!footnote]}
+\unexpanded\def\startlocalfootnotes    {\startlocalnotes                    [\v!footnote]} %  alleen footnote
+\unexpanded\def\stoplocalfootnotes     {\stoplocalnotes }
 
 \def\doplacefootnotes     [#1][#2]{\ifsecondargument\placenotes     [#1][#2,\c!height=\textheight]\else\placenotes     [#1]\fi}
 \def\doplacelocalfootnotes[#1][#2]{\ifsecondargument\placelocalnotes[#1][#2,\c!height=\textheight]\else\placelocalnotes[#1]\fi}
 
-\def\note{\dodoubleempty\donote}
+\unexpanded\def\note{\dodoubleempty\donote}
 
 \def\donote[#1][#2]{\ifsecondargument\donotesymbol[#1][#2]\else\secondargumenttrue\donotesymbol[\v!footnote][#1]\fi}
 
@@ -1264,12 +1264,12 @@
 \def\ownnotesymbol#1% #1 gets number passed
   {\executeifdefined{\??vn::\currentnote}\empty}
 
-\def\setnotesymbol[#1]#2#3%
+\unexpanded\def\setnotesymbol[#1]#2#3%
   {\prewordbreak % prevent lookback
    \setgvalue{\??vn::#1}{#3}
    \dolastnotesymbol}
 
-\def\ownnote[#1]#2#3#4%
+\unexpanded\def\ownnote[#1]#2#3#4%
   {\setnotesymbol[#1]{#2}{#3}%
    \setnotetext  [#1]{#4}}
 

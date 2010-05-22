@@ -414,7 +414,7 @@
 
 \let\@@localchemicalstyle\empty
 
-\def\setupchemicalformat[#1]%
+\unexpanded\def\setupchemicalformat[#1]%
   {\processaction
      [\getvalue{#1\c!size}]
      [  \v!small=>\def\@@localchemicalformat{\scriptscriptstyle},
@@ -449,7 +449,7 @@
    \setupchemicalformat[\??chemical\s!chemical]%
    \ignorespaces}
 
-\def\setupchemical
+\unexpanded\def\setupchemical
   {\dosingleargument\dosetupchemical}
 
 \def\@@dochemicalstyle%       % default mapping
@@ -729,11 +729,11 @@
    \def\@@chemicalpostponed{}%
    \complexorsimpleempty\startchemical}
 
-\def\startchemical
+\unexpanded\def\startchemical
   {\bgroup % t.b.v. ungrouped floats
    \dostartchemical}
 
-\def\stopchemical
+\unexpanded\def\stopchemical
   {\checkchemicalpicture
    \@@endchemicalpicture
    \egroup
@@ -2273,7 +2273,7 @@
      {\writestatus{ppchtex}{chemical definition #1 is redefined}}%
    \setvalue{\??chemical#1}{#2}}
 
-\def\definechemical%
+\unexpanded\def\definechemical%
   {\dosingleargument\dodefinechemical}
 
 \def\getpredefinedchemical#1%

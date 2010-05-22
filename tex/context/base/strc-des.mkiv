@@ -444,7 +444,7 @@
 
 % setup descriptions
 
-\def\setupdescriptions
+\unexpanded\def\setupdescriptions
   {\dodoubleempty\dosetupdescriptions}
 
 \def\dosetupdescriptions[#1][#2]% % beter: \iffirstargument
@@ -459,7 +459,7 @@
 
 % define descriptions
 
-\def\definedescription
+\unexpanded\def\definedescription
   {\dotripleemptywithset\dodefinedescription}
 
 \def\dodefinedescription[#1][#2][#3]% to be simplified cf enumeration
@@ -533,7 +533,7 @@
 
 % setup enumerations
 
-\def\setupenumerations
+\unexpanded\def\setupenumerations
   {\dodoubleempty\dosetupenumerations}
 
 \def\dodosetupenumerations[#1][#2]%
@@ -550,7 +550,7 @@
 
 % define enumerations
 
-\def\defineenumeration
+\unexpanded\def\defineenumeration
   {\dotripleemptywithset\dodefineenumeration}
 
 \def\dodefineenumeration[#1][#2][#3]% #2 or #3 assignment
@@ -892,10 +892,10 @@
 
 % unfinished
 
-\def\setuplabels
+\unexpanded\def\setuplabels
   {\getparameters[\??db]}
 
-\def\definelabel
+\unexpanded\def\definelabel
   {\dotripleargumentwithset\dodefinelabel}
 
 \def\dodefinelabel[#1][#2][#3]% #2 or #3 assignment
@@ -962,7 +962,7 @@
 
 % to be reimplmented
 
-\def\setupindentations
+\unexpanded\def\setupindentations
   {\dodoubleempty\dosetupindentations}
 
 \def\dosetupindentations[#1][#2]%
@@ -975,7 +975,7 @@
 \def\dodosetupindentations[#1][#2]%
   {\getparameters[\??ds#1][#2]}
 
-\def\defineindenting
+\unexpanded\def\defineindenting
   {\dodoubleargumentwithset\dodefineindenting}
 
 \def\dodefineindenting[#1][#2]%

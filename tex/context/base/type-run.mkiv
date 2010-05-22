@@ -25,7 +25,7 @@
    \edef\typescriptone  {\truetypescript{#1}}%
    \edef\typescripttwo  {\truetypescript{#2}}%
    \edef\typescriptthree{\truetypescript{#3}}%
-   \def\starttypescript
+   \unexpanded\def\starttypescript
      {\bgroup
       \obeylines % else we loose the first line due to lookahead
       \dotripleempty\dostarttypescript}
@@ -35,7 +35,7 @@
       \dochecktypescript{##2}\typescripttwo  \ifdone
       \dochecktypescript{##3}\typescriptthree\ifdone
         \def\next%
-          {\def\stoptypescript{\egroup\type{\stoptypescript}}
+          {\unexpanded\def\stoptypescript{\egroup\type{\stoptypescript}}
            % what follows now is quite ugly
            \skipfirstverbatimlinefalse
            \type{\starttypescript}

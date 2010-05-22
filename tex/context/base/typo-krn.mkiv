@@ -23,14 +23,14 @@
 %
 % {\setcharacterkerning[extrakerning]\input davis\relax}
 
-\def\definecharacterkerning
+\unexpanded\def\definecharacterkerning
   {\dodoubleargument\dodefinecharacterkerning}
 
 \def\dodefinecharacterkerning[#1][#2]%
   {\getparameters[\??ck#1][\c!factor=0.125,#2]%
    \setgvalue{\??ck:#1}{\ctxlua{kerns.setspacing(\csname\??ck#1\c!factor\endcsname)}}}
 
-\def\setupcharacterkerning
+\unexpanded\def\setupcharacterkerning
   {\dodoubleargument\dosetupcharacterkerning}
 
 \def\dosetupcharacterkerning[#1][#2]%

@@ -71,10 +71,10 @@
 % level of a number in sets. This is all handles at the \LUA\ end.
 % References to such sets travel with the multipass information.
 
-\def\definestructureresetset     {\dotripleempty\dodefinestructureresetset}
-\def\definestructureseparatorset {\dotripleempty\dodefinestructureseparatorset}
-\def\definestructureconversionset{\dotripleempty\dodefinestructureconversionset}
-\def\definestructureprefixset    {\dotripleempty\dodefinestructureprefixset}
+\unexpanded\def\definestructureresetset     {\dotripleempty\dodefinestructureresetset}
+\unexpanded\def\definestructureseparatorset {\dotripleempty\dodefinestructureseparatorset}
+\unexpanded\def\definestructureconversionset{\dotripleempty\dodefinestructureconversionset}
+\unexpanded\def\definestructureprefixset    {\dotripleempty\dodefinestructureprefixset}
 
 \def\dodefinestructureresetset     [#1][#2][#3]{\ctxlua{structure.sets.define("structure:resets",     "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}",true)}}
 \def\dodefinestructureseparatorset [#1][#2][#3]{\ctxlua{structure.sets.define("structure:separators", "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}

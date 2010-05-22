@@ -30,6 +30,8 @@
 \loadcorefile{norm-ctx}
 \loadcorefile{syst-pln}
 
+\newif\ifCONTEXT \CONTEXTtrue % will disappear
+
 \loadmarkfile{luat-cod}
 \loadmarkfile{luat-bas}
 \loadmarkfile{luat-lib}
@@ -40,7 +42,8 @@
 \loadcorefile{catc-ctx}
 \loadcorefile{catc-sym}
 
-\newif\ifCONTEXT \CONTEXTtrue % will disappear
+% From here on we have \unexpanded being \normalprotected, as we
+% already had \unexpanded long before etex came around.
 
 \loadmarkfile{syst-aux}
 \loadmarkfile{syst-lua}

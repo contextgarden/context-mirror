@@ -25,7 +25,7 @@
 
 \newtoks\everysetupinteractionscreen
 
-\def\setupinteractionscreen
+\unexpanded\def\setupinteractionscreen
   {\dosingleempty\dosetupinteractionscreen}
 
 \def\dosetupinteractionscreen[#1]%
@@ -132,9 +132,9 @@
 \def\dolinkedlistparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolinkedlistparentparameter\csname#1\s!parent\endcsname#2\fi}
 \def\dolinkedlistparentparameter#1#2{\ifx#1\relax\s!empty\else\dolinkedlistparameter#1#2\fi}
 
-\def\definelinkedlist{\dodoubleargument\dodefinelinkedlist}
-\def\setuplinkedlist {\dodoubleargument\dosetuplinkedlist }
-\def\setuplinkedlists{\dosingleargument\dosetuplinkedlists}
+\unexpanded\def\definelinkedlist{\dodoubleargument\dodefinelinkedlist}
+\unexpanded\def\setuplinkedlist {\dodoubleargument\dosetuplinkedlist }
+\unexpanded\def\setuplinkedlists{\dosingleargument\dosetuplinkedlists}
 
 \def\dodefinelinkedlist[#1][#2]%
   {\ctxlua{interactions.definelinkedlist("#1")}%
@@ -200,7 +200,7 @@
 
 \let\askedpagetransitions\empty
 
-\def\setuppagetransitions
+\unexpanded\def\setuppagetransitions
   {\dosingleempty\dosetuppagetransitions}
 
 \def\dosetuppagetransitions[#1]%
@@ -240,10 +240,10 @@
 \def\dodoflushcommentanchors
   {\executeifdefined{\??cc:\c!location:\@@cclocation}\hbox{\box\commentbox}}
 
-\def\setupcomment
+\unexpanded\def\setupcomment
   {\dodoubleargument\getparameters[\??cc]}
 
-\def\placecomments{\box\commentcollection} % when option=buffer
+\unexpanded\def\placecomments{\box\commentcollection} % when option=buffer
 
 \def\doinsertcomment#1%
   {\begingroup
@@ -277,7 +277,7 @@
    \setcurrentbuffer{\v!comment\v!buffer}%
    \dostartbuffer[\v!comment\v!buffer][\v!comment\v!buffer][\e!start\v!comment][\e!stop\v!comment]}
 
-\def\stopcomment
+\unexpanded\def\stopcomment
   {\doif\@@ccstate\v!start
      {\global\let\flushcommentanchors\doflushcommentanchors
       \global\setbox\commentbox\frozenhbox
@@ -455,7 +455,7 @@
 
 \setvalue{\??at:\v!high}#1{\struttedbox{\tbox{#1}}}
 
-\def\setupattachments
+\unexpanded\def\setupattachments
   {\dodoubleempty\getparameters[\??at]}
 
 \setupattachments
@@ -493,7 +493,7 @@
       }}%
    \fi}
 
-\def\setupexternalsoundtracks
+\unexpanded\def\setupexternalsoundtracks
   {\dodoubleargument\getparameters[\??sd]}
 
 \setupexternalsoundtracks
@@ -545,7 +545,7 @@
 \def\renderingwidth    {8cm}
 \def\renderingheight   {6cm}
 
-\def\definerenderingwindow
+\unexpanded\def\definerenderingwindow
   {\dodoubleempty\dodefinerenderingwindow}
 
 \def\dodefinerenderingwindow[#1][#2]%
@@ -556,13 +556,13 @@
       \c!width=\renderingwidth,\c!height=\renderingheight,%
       #2]}
 
-\def\setuprenderingwindow
+\unexpanded\def\setuprenderingwindow
   {\dodoubleargument\dosetuprenderingwindow}
 
 \def\dosetuprenderingwindow[#1]%
   {\getparameters[\??rw#1]}
 
-\def\placerenderingwindow
+\unexpanded\def\placerenderingwindow
   {\dodoubleempty\doplacerenderingwindow}
 
 \def\doplacerenderingwindow[#1][#2]%

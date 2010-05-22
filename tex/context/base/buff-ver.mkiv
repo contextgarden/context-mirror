@@ -19,7 +19,7 @@
 
 \ifdefined\startlinenumbering\else \let\startlinenumbering    \relax \fi
 \ifdefined\stoplinenumbering \else \let\stoplinenumbering     \relax \fi
-\ifdefined\setuplinenumbering\else \def\setuplinenumbering[#1]{}     \fi
+\ifdefined\setuplinenumbering\else \unexpanded\def\setuplinenumbering[#1]{}     \fi
 
 % D \macros
 % D   {iflinepar}
@@ -66,7 +66,7 @@
    \uppercasestring#2\to\asciib
    \setevalue{\??ty\??ty\asciia}{\asciib}}
 
-\def\setupprettiesintype#1%
+\unexpanded\def\setupprettiesintype#1%
   {\uppercasestring#1\to\ascii
    \edef\prettyidentifier{\executeifdefined{\??ty\??ty\ascii}{TEX}}%
    \begingroup
@@ -76,7 +76,7 @@
    \ctxlua{buffers.loadvisualizer("\ascii")}%
    \endgroup}
 
-\def\setupprettytype
+\unexpanded\def\setupprettytype
   {\processingverbatimtrue % will move
    \ctxlua{buffers.visualizers.reset()}}
 
@@ -107,7 +107,7 @@
   {\redoconvertfont\dosetfontattribute{\currenttypingclass\currenttyping}\c!style
    \normalnoligatures\font}
 
-\def\setupcommonverbatim
+\unexpanded\def\setupcommonverbatim
   {\let\prettyidentifier\s!default
    %
    \def\prettyidentifierfont{\typingparameter\c!icommand}%
@@ -210,14 +210,14 @@
 %D
 %D \typebuffer \start \getbuffer \stop
 
-\def\setupcommandsintype
+\unexpanded\def\setupcommandsintype
   {\ctxlua{buffers.set_escape("\currenttyping",\!!bs\typingparameter\c!escape\!!es)}}
 
 \appendtoks
     \setupcommandsintype
 \to \everyinitializeverbatim
 
-\def\setupslantedtype
+\unexpanded\def\setupslantedtype
   {\slantedtypepermittedtrue}
 
 \ifx\setupprettytype  \undefined \let\setupprettytype  \relax             \fi
@@ -408,7 +408,7 @@
 %D
 %D Some characteristics of \type{\type} can be set up by:
 
-\def\setuptype
+\unexpanded\def\setuptype
   {\dodoubleempty\dosetuptype}
 
 \def\dosetuptype[#1][#2]%
@@ -724,7 +724,7 @@
      \getparameters[\??tp][#1]%
    \fi}
 
-\def\setuptyping
+\unexpanded\def\setuptyping
   {\dodoubleempty\dosetuptyping}
 
 %D \macros
@@ -733,7 +733,7 @@
 %D Specific inline verbatim commands can be defined with the
 %D following command.
 
-\def\definetype
+\unexpanded\def\definetype
   {\dodoubleempty\dodefinetype}
 
 \def\dodefinetype[#1][#2]%
@@ -768,7 +768,7 @@
    \setvalue{\e!stop #1}{\dostoptyping {#1}}%
    \presettyping[#1][#2]}
 
-\def\definetyping
+\unexpanded\def\definetyping
   {\dodoubleempty\dodefinetyping}
 
 %D We can use some core color commands. These are faster than
@@ -776,7 +776,7 @@
 %D line basis.
 %D
 %D \starttyping
-%D \def\setupverbatimcolor%
+%D \unexpanded\def\setupverbatimcolor%
 %D   {\edef\prettypalet{\prettyidentifier\typingparameter\c!palet}%
 %D    \def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
 %D    \def\endofpretty       {\stopcolormode}}
@@ -791,7 +791,7 @@
 \def\normalstopverbatimcolor {\stopcolor}
 \def\normalverbatimcolor     {\getvalue{\typingparameter\c!color}}% command !
 
-\def\setupnormalprettyverbatim
+\unexpanded\def\setupnormalprettyverbatim
   {\edef\prettypalet{\prettyidentifier\prettypalet}%
    \let\beginofpretty     \normalbeginofpretty
    \let\endofpretty       \normalendofpretty
@@ -799,7 +799,7 @@
    \let\stopverbatimcolor \normalstopverbatimcolor
    \let\verbatimcolor     \normalverbatimcolor}
 
-\def\setupignoreprettyverbatim
+\unexpanded\def\setupignoreprettyverbatim
   {\let\prettypalet       \empty
    \let\beginofpretty     \ignorebeginofpretty
    \let\endofpretty       \ignoreendofpretty
@@ -807,7 +807,7 @@
    \let\stopverbatimcolor \normalstopverbatimcolor
    \let\verbatimcolor     \normalverbatimcolor}
 
-\def\setupverbatimcolor
+\unexpanded\def\setupverbatimcolor
   {\edef\prettypalet{\typingparameter\c!palet}%
    \ifx\prettypalet\empty
      \setupignoreprettyverbatim

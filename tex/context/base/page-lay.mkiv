@@ -202,10 +202,10 @@
 %D
 %D \showsetup{definepapersize}
 
-\def\definepapersize
+\unexpanded\def\definepapersize
   {\dodoubleempty\dodefinepapersize}
 
-\def\definepapersize
+\unexpanded\def\definepapersize
   {\dotripleempty\dodefinepapersize}
 
 \def\dodefinepapersize[#1][#2][#3]%
@@ -275,7 +275,7 @@
 
 \def\paperscale{1} \newif\ifnegateprintbox
 
-\def\setuppaper[#1]%
+\unexpanded\def\setuppaper[#1]%
   {\getparameters[\??pp][\c!paper=,\c!page=,#1]%
    \edef\@@ppxy{\the\numexpr\@@ppnx*\@@ppny\relax}%
    \doifelsenothing\@@pppage
@@ -286,7 +286,7 @@
         {\dodosetuppapersize[\@@pppage][\printpapersize]}
         {\dodosetuppapersize[\@@pppage][\@@pppaper]}}}
 
-\def\setuppapersize
+\unexpanded\def\setuppapersize
   {\dodoubleempty\dosetuppapersize}
 
 \def\dosetuppapersize[#1][#2]%
@@ -424,7 +424,7 @@
 % \def\checkforems[#1]%
 %   {\processcommalist[#1]\docheckforems}
 
-\ifx\setups\undefined \def\setups[#1]{\setdefaultpenalties} \fi
+\ifx\setups\undefined \unexpanded\def\setups[#1]{\setdefaultpenalties} \fi
 
 % \newtoks \everybeforelayout \relax
 % \newtoks \everyafterlayout  \relax
@@ -653,7 +653,7 @@
       \v!doublesided=>\doublesidedprinttrue,
       \v!singlesided=>\doublesidedprintfalse]}
 
-\def\definelayout
+\unexpanded\def\definelayout
   {\dodoubleargument\dodefinelayout}
 
 \def\dodefinelayout[#1][#2]%
@@ -682,7 +682,7 @@
    \checkcurrentlayout % here ?
    \presetcenterpagebox}
 
-\def\setuplayout
+\unexpanded\def\setuplayout
   {\dodoubleempty\dosetuplayout}
 
 \let\@@zaheight\!!zeropoint
@@ -1125,11 +1125,11 @@
 %D {\definelayout}, so this hack will disappear in future
 %D versions.
 
-\def\startlocallayout
+\unexpanded\def\startlocallayout
   {\globalpushmacro\restorepapersize
    \globalpushmacro\currentlayout}
 
-\def\stoplocallayout
+\unexpanded\def\stoplocallayout
   {\globalpopmacro\currentlayout
    \globalpopmacro\restorepapersize
    \restorepapersize

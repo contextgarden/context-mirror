@@ -36,7 +36,7 @@
 
 \ifx\undefined\defineoverlay \message{loaded to early} \wait \fi
 
-\def\defineoverlay
+\unexpanded\def\defineoverlay
   {\dotripleempty\dodefineoverlay}
 
 \def\dodefineoverlay[#1][#2][#3]% overlay [layer] content
@@ -67,7 +67,7 @@
 
 % todo : links/rechts
 
-\def\definelayer
+\unexpanded\def\definelayer
   {\dodoubleargument\dodefinelayer}
 
 \def\dodefinelayer[#1][#2]% \zeropoint ipv \!!zeropoint
@@ -103,7 +103,7 @@
 %D After a layer is defined, you can change its
 %D characteristics.
 
-\def\setuplayer
+\unexpanded\def\setuplayer
   {\dodoubleargument\dosetuplayer}
 
 \def\dosetuplayer[#1][#2]%
@@ -214,7 +214,7 @@
    \xdef\lastlayerxpos{\the\dimexpr-\MPx{lyr:#1:\layerpage}+\MPx{lyr:\the\currentlayerdata}\relax}%
    \xdef\lastlayerypos{\the\dimexpr \MPy{lyr:#1:\layerpage}-\MPy{lyr:\the\currentlayerdata}\relax}}
 
-\def\definelayerpreset
+\unexpanded\def\definelayerpreset
  {\dodoubleargument\dodefinelayerpreset}
 
 % \def\dodefinelayerpreset[#1][#2]%
@@ -694,7 +694,7 @@
       \c!xoffset=\!!zeropoint,%
       \c!yoffset=\!!zeropoint]}
 
-\def\setuppositioning
+\unexpanded\def\setuppositioning
   {\resetpositioning
    \dodoubleargument\getparameters[\??ps]}
 

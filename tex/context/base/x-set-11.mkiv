@@ -37,13 +37,13 @@
 
 % general
 
-\def\setupnumfont  {}
-\def\setuptxtfont  {}
-\def\setupintfont  {\WORD}
-\def\setupvarfont  {\sl}
-\def\setupoptfont  {\sl}
-\def\setupalwcolor {}
-\def\setupoptcolor {darkgray}
+\unexpanded\def\setupnumfont  {}
+\unexpanded\def\setuptxtfont  {}
+\unexpanded\def\setupintfont  {\WORD}
+\unexpanded\def\setupvarfont  {\sl}
+\unexpanded\def\setupoptfont  {\sl}
+\unexpanded\def\setupalwcolor {}
+\unexpanded\def\setupoptcolor {darkgray}
 
 \def\c!setup!definereserved#1#2%
   {\setvalue{c!setup!:r:#1}{#2}}
@@ -152,10 +152,10 @@
 
 \newif\ifshortsetup
 
-\def\setup     {\shortsetupfalse\doshowsetup}
+\unexpanded\def\setup     {\shortsetupfalse\doshowsetup}
 \def\showsetup {\shortsetupfalse\doshowsetup}
 \def\shortsetup{\shortsetuptrue \doshowsetup}
-\def\setupsetup{\dodoubleargument\getparameters[\??stp]}
+\unexpanded\def\setupsetup{\dodoubleargument\getparameters[\??stp]}
 
 %unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\showsetupindeed{#3}\par}
 \unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\xmlsetup{#3}{xml:setups:typeset}\par}
@@ -179,8 +179,8 @@
 \def\showsetupindeed#1%
   {\xmlfilterlist{\loadedsetups}{/interface/command[@name='#1']/command(xml:setups:typeset)}}
 
-\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
-\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
+\unexpanded\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
+\unexpanded\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
 
 \let\placeeverysetup\placeallsetups
 
@@ -293,21 +293,21 @@
 
 %D This is the second pass; here we generate the table.
 
-\def\startfirstSETUPcolumn#1%
+\unexpanded\def\startfirstSETUPcolumn#1%
   {\bgroup
    \advance\leftskip 2em
    \noindent\llap{\hbox to 2em{#1\hss}}}
 
-\def\stopfirstSETUPcolumn
+\unexpanded\def\stopfirstSETUPcolumn
   {\endgraf
    \egroup}
 
-\def\startsecondSETUPcolumn#1#2%
+\unexpanded\def\startsecondSETUPcolumn#1#2%
   {\bgroup
    \advance\hangindent\dimexpr\currentSETUPwidth+2.5em\relax
    \noindent \hbox to \hangindent{#1\hss\hbox to 2.5em{\hss#2\hss}}}
 
-\def\stopsecondSETUPcolumn
+\unexpanded\def\stopsecondSETUPcolumn
   {\endgraf
    \egroup}
 

@@ -110,11 +110,11 @@
 %D
 %D \getbuffer \typebuffer
 
-\def\definecolor         {\dodoubleargument\dodefinecolor}
-\def\defineglobalcolor   {\dodoubleargument\dodefineglobalcolor}
-\def\definenamedcolor    {\dodoubleargument\dodefinenamedcolor}
-\def\definespotcolor     {\dotripleargument\dodefinespotcolor}
-\def\definemultitonecolor{\doquadrupleempty\dodefinemultitonecolor}
+\unexpanded\def\definecolor         {\dodoubleargument\dodefinecolor}
+\unexpanded\def\defineglobalcolor   {\dodoubleargument\dodefineglobalcolor}
+\unexpanded\def\definenamedcolor    {\dodoubleargument\dodefinenamedcolor}
+\unexpanded\def\definespotcolor     {\dotripleargument\dodefinespotcolor}
+\unexpanded\def\definemultitonecolor{\doquadrupleempty\dodefinemultitonecolor}
 
 %D \macros
 %D   {startcolor,stopcolor,
@@ -149,10 +149,10 @@
 \unexpanded\def\fastcolored      [#1]#2{\begingroup\dodefinefastcolor[@colored@][#1]\doactivatecolor{@colored@}#2\endgroup}
            \def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}
            \def\predefineindexcolor[#1]{\flushatshipout{\hbox{\color[#1]{}}}}
-           \def\startcolorpage         {\startcolor[\ifx\maintextcolor\empty\defaulttextcolor\else\maintextcolor\fi]}
-           \def\stopcolorpage          {\stopcolor}
-           \def\startraster        [#1]{\dosetrastercolor{#1}}
-           \def\stopraster             {}
+           \unexpanded\def\startcolorpage         {\startcolor[\ifx\maintextcolor\empty\defaulttextcolor\else\maintextcolor\fi]}
+           \unexpanded\def\stopcolorpage          {\stopcolor}
+           \unexpanded\def\startraster        [#1]{\dosetrastercolor{#1}}
+           \unexpanded\def\stopraster             {}
            \def\raster             [#1]{\groupedcommand{\dosetrastercolor{#1}}{}}
            \def\faststartcolor     [#1]{\doactivatecolor{#1}}
            \def\faststopcolor          {}
@@ -182,8 +182,8 @@
 %D \macros
 %D   {startcurrentcolor,stopcurrentcolor}
 
-\def\startcurrentcolor{\startcolor[\outercolorname]}
-\def\stopcurrentcolor {\stopcolor}
+\unexpanded\def\startcurrentcolor{\startcolor[\outercolorname]}
+\unexpanded\def\stopcurrentcolor {\stopcolor}
 
 %D \macros
 %D   {setupcolor}
@@ -208,7 +208,7 @@
 
 \let\colorstyle\empty
 
-\def\setupcolor
+\unexpanded\def\setupcolor
   {\dosingleargument\dosetupcolor}
 
 \def\dosetupcolor[#1]%
@@ -233,7 +233,7 @@
 %D
 %D This command numbers to names:
 
-\def\definetransparency
+\unexpanded\def\definetransparency
   {\dodoubleargument\dodefinetransparency}
 
 \unexpanded\def\setupcolors
@@ -365,7 +365,7 @@
 %D This saves us some typing in for instance the modules that
 %D deal with pretty verbatim typesetting.
 
-\def\definepalet
+\unexpanded\def\definepalet
   {\dodoubleargument\dodefinepalet}
 
 \def\dodefinepalet[#1][#2]%
@@ -408,7 +408,7 @@
 
 \let\currentpalet\empty
 
-\def\setuppalet
+\unexpanded\def\setuppalet
   {\dosingleempty\dosetuppalet}
 
 \def\dosetuppalet[#1]%
@@ -472,7 +472,7 @@
 %D defining each color separate, it also loads faster and takes
 %D less bytes.
 
-\def\definecolorgroup
+\unexpanded\def\definecolorgroup
   {\dotripleempty\dodefinecolorgroup}
 
 \def\dododefinecolorgroupgray         [#1][#2:#3]{\definecolor    [#1:\the\colorcount][s=#2]}
@@ -917,7 +917,7 @@
 
 \def\registermaintextcolor{\ctxlua{colors.main = \thecolorattribute\maintextcolor}}
 
-\def\starttextcolor[#1]%
+\unexpanded\def\starttextcolor[#1]%
   {\doifsomething{#1}
      {\definecolor[\@@themaintextcolor][#1]%
       \let\maintextcolor\@@themaintextcolor

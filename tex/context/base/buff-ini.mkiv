@@ -146,7 +146,7 @@
    \ctxlua{buffers.set("\currentbuffer", \!!bs\detokenize{#2}\!!es)}%
    \endgroup}
 
-\def\setupbuffer
+\unexpanded\def\setupbuffer
   {\dodoubleempty\dosetupbuffer}
 
 \def\dosetupbuffer[#1][#2]%
@@ -167,7 +167,7 @@
      \getparameters[\??bu#1][#2]%
    \fi}
 
-\def\definebuffer
+\unexpanded\def\definebuffer
   {\dodoubleempty\dodefinebuffer}
 
 \def\thebuffernumber#1%
@@ -275,20 +275,20 @@
      \ifsecondargument
        \dosetbufferoffset{#1}%
        \doifelse{#2}\v!all
-         {\def\startbufferparagraph{\normalbufferparagraph{#1}}}
-         {\def\startbufferparagraph{\filterbufferparagraph{#1}{#2}}}%
-       \def\stopbufferparagraph{\dostopbufferparagraph{#1}}%
+         {\unexpanded\def\startbufferparagraph{\normalbufferparagraph{#1}}}
+         {\unexpanded\def\startbufferparagraph{\filterbufferparagraph{#1}{#2}}}%
+       \unexpanded\def\stopbufferparagraph{\dostopbufferparagraph{#1}}%
        \def\next{\getparagraphedbuffer[#1]}%
      \else
        \dosetbufferoffset\empty
-       \def\startbufferparagraph{\filterbufferparagraph{}{#1}}%
-       \def\stopbufferparagraph{\dostopbufferparagraph{}}%
+       \unexpanded\def\startbufferparagraph{\filterbufferparagraph{}{#1}}%
+       \unexpanded\def\stopbufferparagraph{\dostopbufferparagraph{}}%
        \def\next{\getparagraphedbuffer[]}%
      \fi
    \else
      \dosetbufferoffset\empty
-     \def\startbufferparagraph{\normalbufferparagraph{}}%
-     \def\stopbufferparagraph{\dostopbufferparagraph{}}%
+     \unexpanded\def\startbufferparagraph{\normalbufferparagraph{}}%
+     \unexpanded\def\stopbufferparagraph{\dostopbufferparagraph{}}%
      \def\next{\getparagraphedbuffer[]}%
    \fi
    \next}
@@ -328,7 +328,7 @@
 
 \def\fakebufferparagraph#1%
   {\bgroup
-   \def\stopbufferparagraph{\dostopbufferparagraph{#1}\egroup\egroup}%
+   \unexpanded\def\stopbufferparagraph{\dostopbufferparagraph{#1}\egroup\egroup}%
    \setbox\scratchbox\vbox\bgroup\dostartbufferparagraph{#1}}
 
 % definitions

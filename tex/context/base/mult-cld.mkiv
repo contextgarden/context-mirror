@@ -20,9 +20,9 @@
 
 \unprotect
 
-\def\defmkivstart#1{\normalprotected\expandafter\def\csname\e!start#1\endcsname}
-\def\defmkivstop #1{\normalprotected\expandafter\def\csname\e!stop #1\endcsname}
-\def\defmkiv     #1{\normalprotected\expandafter\def\csname        #1\endcsname}
+\def\defmkivstart#1{\unexpanded\expandafter\def\csname\e!start#1\endcsname}
+\def\defmkivstop #1{\unexpanded\def\csname\e!stop #1\endcsname}
+\def\defmkiv     #1{\unexpanded\def\csname        #1\endcsname}
 
 \def\mkivflush   #1{\ctxlua{context._flush_(#1)}}
 

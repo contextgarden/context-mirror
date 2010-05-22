@@ -70,7 +70,7 @@
    \catcode`\%   \othercatcode
    \catcode127   \othercatcode}
 
-\long\def\startcatcodetable#1#2\stopcatcodetable
+\long\normalprotected\def\startcatcodetable#1#2\stopcatcodetable
   {\bgroup
    \catcodetable\scratchcatcodes
    \the\setdefaultcatcodes
@@ -80,7 +80,7 @@
 
 \newcatcodetable\dummycatcodes
 
-\long\def\startextendcatcodetable#1#2\stopextendcatcodetable
+\long\normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
   {\bgroup
    \catcodetable#1\relax
    \globaldefs\plusone
@@ -90,7 +90,7 @@
 
 % ==
 %
-% \long\def\startextendcatcodetable#1#2\stopextendcatcodetable
+% \long\normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
 %   {\bgroup
 %    \scratchcounter\the\catcodetable
 %    \catcodetable #1 #2
@@ -283,7 +283,7 @@
 %D in the current vector):
 %D
 %D \starttyping
-%D \def\startcrap
+%D \normalprotected\def\startcrap
 %D   {\bgroup
 %D    \pushcatcodes
 %D    \whitespace
@@ -291,7 +291,7 @@
 %D    \activatespacehandler\v!yes
 %D    \strut}
 %D
-%D \def\stopcrap
+%D \normalprotected\def\stopcrap
 %D   {\popcatcodes
 %D   \egroup}
 %D \stoptyping

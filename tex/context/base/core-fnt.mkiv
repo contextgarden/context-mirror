@@ -268,7 +268,7 @@
 
 %  to do: more fine tuning
 
-\def\setupinitial
+\unexpanded\def\setupinitial
   {\dodoubleempty\getparameters[\??dc]}
 
 \definefontsynonym[Initial][Regular] % prefered initial identifier
@@ -284,7 +284,7 @@
 
 \def\AutoDroppedCapsCommand{\NiceDroppedCaps\@@dccommand\@@dcfont\@@dcdistance\@@dcn}%
 
-\def\placeinitial
+\unexpanded\def\placeinitial
   {\doifelse\@@dclocation\v!margin{\chardef\DropMode\plusone}{\chardef\DropMode\zerocount}%
    \doif    \@@dcstate\v!start{\ifcase\@@dcn\else\AutoDroppedCaps\fi}}
 

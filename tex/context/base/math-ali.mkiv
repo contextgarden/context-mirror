@@ -153,7 +153,7 @@
 
 %D Here we implement the user interface part.
 
-\def\setupmathalignment
+\unexpanded\def\setupmathalignment
   {\dodoubleempty\dosetupmathalignment}
 
 \def\dosetupmathalignment[#1][#2]%
@@ -240,7 +240,7 @@
   {\finishalignno
    \popmacro\doalignNC}
 
-\def\definemathalignment
+\unexpanded\def\definemathalignment
   {\dodoubleempty\dodefinemathalignment}
 
 \def\dodefinemathalignment[#1]% [#2]%
@@ -440,7 +440,7 @@
 %D
 %D Another wish \unknown
 
-\def\setupmathcases
+\unexpanded\def\setupmathcases
   {\dodoubleempty\dosetupmathcases}
 
 \def\dosetupmathcases[#1][#2]%
@@ -500,7 +500,7 @@
    \mathcasesparameter\c!right
    \endgroup}
 
-\def\definemathcases
+\unexpanded\def\definemathcases
   {\dodoubleempty\dodefinemathcases}
 
 \def\dodefinemathcases[#1]% [#2]%
@@ -556,7 +556,7 @@
 %D
 %D Yet another one \unknown
 
-\def\setupmathmatrix
+\unexpanded\def\setupmathmatrix
   {\dodoubleempty\dosetupmathmatrix}
 
 \def\dosetupmathmatrix[#1][#2]%
@@ -606,7 +606,7 @@
    \buildmathmatrix
    \halign \@EA \bgroup\the\scratchtoks \crcr}
 
-\def\definemathmatrix
+\unexpanded\def\definemathmatrix
   {\dodoubleempty\dodefinemathmatrix}
 
 \def\dodefinemathmatrix[#1]% [#2]%
@@ -806,11 +806,11 @@
 %D
 %D Just a handy keystroke safer:
 
-\def\startmatrices
+\unexpanded\def\startmatrices
   {\begingroup
    \setupmathmatrix}
 
-\def\stopmatrices
+\unexpanded\def\stopmatrices
   {\endgroup}
 
 %D \startbuffer
@@ -858,7 +858,7 @@
 %D
 %D {\em example code}
 
-\def\startintertext#1\stopintertext
+\unexpanded\def\startintertext#1\stopintertext
   {\noalign{\dointertext{#1}}}
 
 \def\intertext#1%
@@ -888,7 +888,7 @@
 % %D \stopformula
 % %D \stoptyping
 
-% \def\startsubstack
+% \unexpanded\def\startsubstack
 %    {\begingroup
 %     \null
 %     \vcenter\bgroup
@@ -905,7 +905,7 @@
 %     \everycr\emptytoks
 %     \halign\bgroup\hfil$\scriptstyle\mathstrut##$\hfil\crcr}
 
-% \def\stopsubstack
+% \unexpanded\def\stopsubstack
 %    {\crcr
 %     \egroup
 %     \popmacro\domatrixNC
@@ -944,7 +944,7 @@
 %D
 %D \typebuffer which gives \getbuffer
 
-\def\startsubstack
+\unexpanded\def\startsubstack
   {\begingroup
    \vcenter\bgroup
    \baselineskip\mathstacktotal
@@ -962,7 +962,7 @@
    \everycr\emptytoks
    \halign\bgroup\hfil$\scriptstyle##$\hfil\crcr}
 
-\def\stopsubstack
+\unexpanded\def\stopsubstack
   {\crcr
    \egroup
    \egroup
@@ -1051,16 +1051,16 @@
 %D \type {\stopinnermath} can be overloaded in specialized
 %D modules.
 
-\def\startinnermath
+\unexpanded\def\startinnermath
   {\getvalue{\e!start\??fm\formulaparameter\c!align}}
 
-\def\stopinnermath
+\unexpanded\def\stopinnermath
   {\getvalue{\e!stop \??fm\formulaparameter\c!align}}
 
 \def\mathinnerstrut
   {\doif{\formulaparameter\c!strut}\v!yes\strut}
 
-\long\def\defineinnermathhandler#1#2#3%
+\long\unexpanded\def\defineinnermathhandler#1#2#3%
   {\setvalue{\e!start\??fm#1}{#2}%
    \setvalue{\e!stop \??fm#1}{#3}}
 
@@ -1073,7 +1073,7 @@
 \chardef\mathnumberstatus=0 % nothing normal shift_right
 \let\mathnumbercorrection\!!zeropoint
 
-\def\startmathbox#1%
+\unexpanded\def\startmathbox#1%
   {\hsize\displaywidth
    \global\chardef\mathnumberstatus\plusone
    \chardef\mathraggedstatus#1\relax
@@ -1109,7 +1109,7 @@
      \@leqno
    \fi}
 
-\def\stopmathbox
+\unexpanded\def\stopmathbox
   {$%
    \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
    \egroup

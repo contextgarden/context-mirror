@@ -66,7 +66,7 @@
 \def\dodefinehbox[#1][#2]%
   {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}
 
-\def\definehbox
+\unexpanded\def\definehbox
   {\dodoubleargument\dodefinehbox}
 
 \def\iobox#1#2#3#% here #3# is not really needed
@@ -329,13 +329,13 @@
       \framed[\c!align=\v!right]{\thepardata}}}%
    \endgroup}
 
-\def\startshowpardata
+\unexpanded\def\startshowpardata
   {\begingroup
    \showcomposition
    \showstruts\tracepositionstrue \tracingparagraphs\maxdimen
    \appendtoksonce\showpardata\let\showpardata\relax\to\everypar}
 
-\def\stopshowpardata
+\unexpanded\def\stopshowpardata
   {\endgraf
    \endgroup}
 

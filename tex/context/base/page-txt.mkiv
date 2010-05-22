@@ -64,7 +64,7 @@
 %D \showsetup{setupfooter}
 %D \showsetup{setupbottom}
 
-\def\setuplayouttext
+\unexpanded\def\setuplayouttext
   {\dotripleempty\dosetuplayouttext}
 
 \def\dosetuplayouttext[#1][#2][#3]% beware, non global
@@ -86,11 +86,11 @@
      \fi
    \fi}
 
-\def\setuptop    {\dotripleempty\dosetuplayouttext[\v!top]}
-\def\setupheader {\dotripleempty\dosetuplayouttext[\v!header]}
-\def\setuptext   {\dotripleempty\dosetuplayouttext[\v!text]}
-\def\setupfooter {\dotripleempty\dosetuplayouttext[\v!footer]}
-\def\setupbottom {\dotripleempty\dosetuplayouttext[\v!bottom]}
+\unexpanded\def\setuptop    {\dotripleempty\dosetuplayouttext[\v!top]}
+\unexpanded\def\setupheader {\dotripleempty\dosetuplayouttext[\v!header]}
+\unexpanded\def\setuptext   {\dotripleempty\dosetuplayouttext[\v!text]}
+\unexpanded\def\setupfooter {\dotripleempty\dosetuplayouttext[\v!footer]}
+\unexpanded\def\setupbottom {\dotripleempty\dosetuplayouttext[\v!bottom]}
 
 %D \macros
 %D  {noheaderandfooterlines,notopandbottomlines}
@@ -125,11 +125,11 @@
 %D \showsetup{setupfootertexts}
 %D \showsetup{setupbottomtexts}
 
-\def\setuptoptexts    {\dosixtupleempty\dosetuptexts[\v!top    ]}
-\def\setupheadertexts {\dosixtupleempty\dosetuptexts[\v!header ]}
-\def\setuptexttexts   {\dosixtupleempty\dosetuptexts[\v!text   ]}
-\def\setupfootertexts {\dosixtupleempty\dosetuptexts[\v!footer ]}
-\def\setupbottomtexts {\dosixtupleempty\dosetuptexts[\v!bottom ]}
+\unexpanded\def\setuptoptexts    {\dosixtupleempty\dosetuptexts[\v!top    ]}
+\unexpanded\def\setupheadertexts {\dosixtupleempty\dosetuptexts[\v!header ]}
+\unexpanded\def\setuptexttexts   {\dosixtupleempty\dosetuptexts[\v!text   ]}
+\unexpanded\def\setupfootertexts {\dosixtupleempty\dosetuptexts[\v!footer ]}
+\unexpanded\def\setupbottomtexts {\dosixtupleempty\dosetuptexts[\v!bottom ]}
 
 %D The left, right and center variables can also be set
 %D directly using the previously discussed macros.
@@ -192,7 +192,7 @@
 %D The next macro will be cleaned up and made less messy and
 %D dependent.
 
-\def\placetextlinestrut#1%
+\unexpanded\def\placetextlinestrut#1%
   {\doifvalue{#1\c!strut}\v!yes{\setstrut\strut}}
 
 \def\dosingletexts#1#2#3#4#5#6%
@@ -255,7 +255,7 @@
 \def\resettextlinestatus#1% postpone
   {\expandafter\gdef\csname\??tk#1\s!reset\endcsname{\global\expandafter\let\csname\??tk#1\c!state\endcsname\v!normal}}
 
-\def\placelayouttextline#1% #2
+\unexpanded\def\placelayouttextline#1% #2
   {\settextlinestatus#1%
    \csname\??tk::\ifcsname\??tk::\textlinestatus\endcsname\textlinestatus\else\s!unknown\fi\endcsname#1} % {#2}
 
@@ -710,7 +710,7 @@
 %D dependent) reference point.
 
 \ifx\undefined\placepositionanchors
-  \def\placepositionanchors{\vskip\textheight}
+  \unexpanded\def\placepositionanchors{\vskip\textheight}
 \fi
 
 %D \macros
@@ -734,7 +734,7 @@
 %D \chapter{tweede} \dorecurse{20}{\input tufte \relax}
 %D \stoptyping
 
-\def\definetext
+\unexpanded\def\definetext
   {\doseventupleempty\dodefinetext}
 
 \def\dodefinetext[#1][#2][#3][#4][#5][#6][#7]%

@@ -135,8 +135,8 @@
 \newtoks\everystarttextproperties
 \newtoks\everystoptextproperties
 
-\def\starttextproperties{\the\everystarttextproperties}
-\def\stoptextproperties {\the\everystoptextproperties}
+\unexpanded\def\starttextproperties{\the\everystarttextproperties}
+\unexpanded\def\stoptextproperties {\the\everystoptextproperties}
 
 %D \macros
 %D   {defineinputmode,setinputmode}
@@ -145,7 +145,7 @@
 
 % not in mkiv
 
-\def\defineinputmode[#1]{\@EA\newtoks\csname every#1inputmode\endcsname}
+\unexpanded\def\defineinputmode[#1]{\@EA\newtoks\csname every#1inputmode\endcsname}
 \def\setinputmode   [#1]{\the\executeifdefined{every#1inputmode}\emptytoks}
 
 \defineinputmode [TEX]
@@ -201,7 +201,7 @@
 
 \appendtoks \boxedcontenttrue \to \everyboxedcontent
 
-\def\startboxedcontent{\bgroup\the\everyboxedcontent}
+\unexpanded\def\startboxedcontent{\bgroup\the\everyboxedcontent}
 \let\stopboxedcontent  \egroup
 
 %D \macros
@@ -230,8 +230,8 @@
 %D \stoptext
 %D \stoptyping
 
-\def\defineselector{\dodoubleargument\dodefineselector}
-\def\setupselector {\dodoubleargument\dosetupselector}
+\unexpanded\def\defineselector{\dodoubleargument\dodefineselector}
+\unexpanded\def\setupselector {\dodoubleargument\dosetupselector}
 
 \def\dodefineselector[#1][#2]{\getparameters[\??sx#1][\c!max=2,\c!n=1,#2]}
 \def\dosetupselector [#1][#2]{\getparameters[\??sx#1][#2]}

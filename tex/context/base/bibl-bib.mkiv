@@ -118,9 +118,9 @@
 \newtoks  \everysetupbibtexsession
 \setfalse \tracebibtexformat
 
-\def\definebibtexsession           {\dosingleargument\dodefinebibtexsession}
+\unexpanded\def\definebibtexsession           {\dosingleargument\dodefinebibtexsession}
 \def\preparebibtexsession          {\dodoubleempty   \dopreparebibtexsession}
-\def\setupbibtexsession            {\dodoubleargument\dosetupbibtexsession}
+\unexpanded\def\setupbibtexsession            {\dodoubleargument\dosetupbibtexsession}
 
 \def\dodefinebibtexsession     [#1]{\edef\currentbibtexsession{#1}%
                                     \ctxlua{commands.definebibtexsession("#1")}%
@@ -321,7 +321,7 @@
 %   [\c!sorttype=\v!cite,
 %    \c!sort=no]
 
-% \long\def\startpublication#1\stoppublication
+% \long\unexpanded\def\startpublication#1\stoppublication
 %   {\blank
 %    todo
 %    \blank}
@@ -389,22 +389,22 @@
 
 % setup commands
 
-\def\setupbibtexpublications
+\unexpanded\def\setupbibtexpublications
   {\let\currentpublicationclass\??pb
    \let\everysetupbibtexwhatever\everysetupbibtexpublications
    \dodoubleargument\dosetupbibtexwhatever}
 
-\def\setupbibtexcitations
+\unexpanded\def\setupbibtexcitations
   {\let\currentpublicationclass\??pv
    \let\everysetupbibtexwhatever\everysetupbibtexcitations
    \dodoubleargument\dosetupbibtexwhatever}
 
-\def\setupbibtexpublicationvariants
+\unexpanded\def\setupbibtexpublicationvariants
   {\let\currentpublicationclass\??pb
    \let\everysetupbibtexwhatever\everysetupbibtexpublications
    \dotripleargument\dosetupbibtexwhatevervariant}
 
-\def\setupbibtexcitationvariants
+\unexpanded\def\setupbibtexcitationvariants
   {\let\currentpublicationclass\??pv
    \let\everysetupbibtexwhatever\everysetupbibtexcitations
    \dotripleargument\dosetupbibtexwhatevervariant}
@@ -515,7 +515,7 @@
 \to \everysetupbibtexlistplacement
 
 \def\completebibtexpublications{\dodoubleempty\docompletebibtexpublications}
-\def\placebibtexpublications   {\dodoubleempty\doplacebibtexpublications}
+\unexpanded\def\placebibtexpublications   {\dodoubleempty\doplacebibtexpublications}
 
 \def\docompletebibtexpublications[#1][#2]% title might become obsolete, just headtext
   {\begingroup

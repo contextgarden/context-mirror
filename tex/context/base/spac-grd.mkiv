@@ -169,7 +169,7 @@
      \fi
    \fi}
 
-\def\startbaselinecorrection
+\unexpanded\def\startbaselinecorrection
   {\bgroup
    \let\stopbaselinecorrection\egroup
    \ifcase\baselinecorrectionmode
@@ -248,7 +248,7 @@
 
 \let\normalstartbaselinecorrection\startbaselinecorrection
 
-\def\startbaselinecorrection
+\unexpanded\def\startbaselinecorrection
   {\ifgridsnapping
      \snaptogrid[v!normal]\vbox\bgroup
      \let\stopbaselinecorrection\egroup

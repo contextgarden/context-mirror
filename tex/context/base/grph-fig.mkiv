@@ -15,7 +15,7 @@
 
 \unprotect
 
-\def\setupexternalfigures
+\unexpanded\def\setupexternalfigures
   {\dosingleempty\dosetupexternalfigures}
 
 \def\dosetupexternalfigures[#1]%
@@ -87,7 +87,7 @@
 %
 % \defineexternalfigure[name][settings]
 
-\def\defineexternalfigure
+\unexpanded\def\defineexternalfigure
   {\dodoubleargument\dodefineexternalfigure}
 
 \def\dodefineexternalfigure[#1][#2]%
@@ -181,7 +181,7 @@
       \ifdim\scratchdimen<\xexternalfigurecollectionminheight \xexternalfigurecollectionminheight\scratchdimen \fi
    \fi}
 
-\def\startexternalfigurecollection[#1]%
+\unexpanded\def\startexternalfigurecollection[#1]%
   {\begingroup
    \def\currentexternalfigurecollection{#1}%
    \settrue\inexternalfigurecollection
@@ -190,7 +190,7 @@
    \xexternalfigurecollectionminheight\maxdimen
    \xexternalfigurecollectionmaxheight\zeropoint}
 
-\def\stopexternalfigurecollection
+\unexpanded\def\stopexternalfigurecollection
   {\setxvalue{\??ef:c:\currentexternalfigurecollection:\c!minwidth }{\the\xexternalfigurecollectionminwidth }%
    \setxvalue{\??ef:c:\currentexternalfigurecollection:\c!maxwidth }{\the\xexternalfigurecollectionmaxwidth }%
    \setxvalue{\??ef:c:\currentexternalfigurecollection:\c!minheight}{\the\xexternalfigurecollectionminheight}%
@@ -253,7 +253,7 @@
 \long\def\resourcecomment#1%
   {\long\gdef\currentresourcecomment{#1}}
 
-\long\def\startresourcecomment#1\stopresourcecomment
+\long\unexpanded\def\startresourcecomment#1\stopresourcecomment
   {\long\gdef\currentresourcecomment{#1}}
 
 \let\currentresourcecomment\empty
@@ -370,7 +370,7 @@
      {\hskip2em\box\colorbarbox}%
    \global\wd\colorbarbox\zeropoint}
 
-\def\placestartfigure[#1][#2][#3]#4\placestopfigure[#5]%
+\unexpanded\def\placestartfigure[#1][#2][#3]#4\placestopfigure[#5]%
   {\hbox
      {\setbox0\hbox
         {\useexternalfigure[\s!dummy][#2][#3,#5]%
@@ -482,7 +482,7 @@
 \long\def\dostartfigure#1%
   {\dotripleargument\dodostartfigure#1\stopfigure}
 
-\def\startfigure
+\unexpanded\def\startfigure
   {\grabuntil{\e!stop\v!figure}\dostartfigure}
 
 %D NEW: used in styledesign manual
@@ -550,10 +550,10 @@
 
 \definesystemvariable{tz}
 
-\def\definetypesetting{\dotripleempty\dodefinetypesetting}
+\unexpanded\def\definetypesetting{\dotripleempty\dodefinetypesetting}
 \def\typesetfile      {\dotripleempty\dotypesetfile}
 
-\def\definetypesetting{\dotripleempty\dodefinetypesetting}
+\unexpanded\def\definetypesetting{\dotripleempty\dodefinetypesetting}
 \def\typesetfile      {\dotripleempty\dotypesetfile}
 
 \def\dodefinetypesetting[#1][#2][#3]% <name> options settings-a

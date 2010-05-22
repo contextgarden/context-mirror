@@ -52,14 +52,14 @@
 
 \let\stopmathmode\relax
 
-\def\startmathmode % cannot be used nested
+\unexpanded\def\startmathmode % cannot be used nested
   {\relax\ifmmode
      \let\stopmathmode\relax
    \else
      \Ustartmath\let\stopmathmode\Ustopmath
    \fi}
 
-\def\startmathmode % nested variant
+\unexpanded\def\startmathmode % nested variant
   {\relax\ifmmode
      \begingroup\let\stopmathmode\endgroup
    \else

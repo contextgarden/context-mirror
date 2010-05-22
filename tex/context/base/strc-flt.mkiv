@@ -22,7 +22,7 @@
 
 \ifdefined\addlocalbackgroundtobox\else \def\addlocalbackgroundtobox{\resetglobal\gobbleoneargument} \fi
 
-\def\placefloats{\doflushfloats}  % keep this one
+\unexpanded\def\placefloats{\doflushfloats}  % keep this one
 
 \let\currentfloat\empty
 
@@ -231,7 +231,7 @@
 
 %D Definitions:
 
-\def\definefloat
+\unexpanded\def\definefloat
   {\dotripleempty\dodefinefloat}
 
 \def\dodefinefloat[#1][#2][#3]% #1=naam #2=meervoud #3=parent
@@ -381,9 +381,9 @@
       {\letgvalue{@fl@r@#1}\relax
        \letgvalue{@fl@t@#1}\relax}
 
-    \def\placefloatcaptiontext     [#1]{\getvalue{@fl@t@#1}}
-    \def\placefloatcaptionnumber   [#1]{\getvalue{@fl@n@#1}}
-    \def\placefloatcaptionreference[#1]{\getvalue{@fl@r@#1}}
+    \unexpanded\def\placefloatcaptiontext     [#1]{\getvalue{@fl@t@#1}}
+    \unexpanded\def\placefloatcaptionnumber   [#1]{\getvalue{@fl@n@#1}}
+    \unexpanded\def\placefloatcaptionreference[#1]{\getvalue{@fl@r@#1}}
 
     % still needed for uguide
 
@@ -450,7 +450,7 @@
 %     \fi
 % \stopsetups
 %
-% \def\setupswithbox[#1]{\dowithnextbox{\setups[#1]}\vbox}
+% \unexpanded\def\setupswithbox[#1]{\dowithnextbox{\setups[#1]}\vbox}
 %
 % test \setupswithbox[somefigure]{\framed[width=3cm]                         {}} test
 % test \setupswithbox[somefigure]{\framed[width=\dimexpr\textwidth+3cm\relax]{}} test
@@ -973,7 +973,7 @@
   {\flushsidefloats % hoort eigenlijk niet hier
    \docomplexreserveblock[#1][#2][\v!text,#3,\v!left][#4]}
 
-\def\placefloat
+\unexpanded\def\placefloat
   {\dotripleempty\docomplexplacefloat}
 
 \installinsertion\topins
@@ -1943,16 +1943,16 @@
 \def\somebackspacefloat    [#1]{\somesidefloat[#1]}
 \def\somecutspacefloat     [#1]{\somesidefloat[#1]}
 
-\def\placesomeslotfloat     {\OTRcommand\someslotfloat}
-\def\placesomeherefloat     {\OTRcommand\someherefloat}
-\def\placesomefixdfloat     {\OTRcommand\somefixdfloat}
-\def\placesomepagefloat     {\OTRcommand\somepagefloat}
-\def\placesomeleftpagefloat {\OTRcommand\someleftpagefloat}
-\def\placesomerightpagefloat{\OTRcommand\somerightpagefloat}
-\def\placesometopsfloat     {\OTRcommand\sometopsfloat}
-\def\placesomebotsfloat     {\OTRcommand\somebotsfloat}
-\def\placesomesidefloat     {\OTRcommand\somesidefloat}
-\def\placesomefacefloat     {\OTRcommand\somefacefloat}
+\unexpanded\def\placesomeslotfloat     {\OTRcommand\someslotfloat}
+\unexpanded\def\placesomeherefloat     {\OTRcommand\someherefloat}
+\unexpanded\def\placesomefixdfloat     {\OTRcommand\somefixdfloat}
+\unexpanded\def\placesomepagefloat     {\OTRcommand\somepagefloat}
+\unexpanded\def\placesomeleftpagefloat {\OTRcommand\someleftpagefloat}
+\unexpanded\def\placesomerightpagefloat{\OTRcommand\somerightpagefloat}
+\unexpanded\def\placesometopsfloat     {\OTRcommand\sometopsfloat}
+\unexpanded\def\placesomebotsfloat     {\OTRcommand\somebotsfloat}
+\unexpanded\def\placesomesidefloat     {\OTRcommand\somesidefloat}
+\unexpanded\def\placesomefacefloat     {\OTRcommand\somefacefloat}
 
 \def\somefixdfloat     {\placesomefixdfloat}
 \def\somepagefloat     {\placesomepagefloat}

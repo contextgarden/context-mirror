@@ -59,7 +59,7 @@
    \global\let\currentoutputstream\s!default
    \ctxlua{streams.disable()}}
 
-\def\startoutputstream[#1]%
+\unexpanded\def\startoutputstream[#1]%
   {\begingroup
    \initializeoutputstreams
    \the\everyenableoutputstream
@@ -67,7 +67,7 @@
    \xdef\currentoutputstream{#1}%
    \ctxlua{streams.start("#1")}}
 
-\def\stopoutputstream
+\unexpanded\def\stopoutputstream
   {\ctxlua{streams.stop()}%
    \endgroup}
 
@@ -81,7 +81,7 @@
 
 \def\pushoutputstream       {\dosingleempty\dopushoutputstream}
 
-% \def\defineoutputstream[#1]%
+% \unexpanded\def\defineoutputstream[#1]%
 %   {\doifundefined{otrs:#1}{\expandafter\newbox\csname otrs:#1\endcsname}}
 %
 % \def\useoutputstream[#1]%
@@ -95,7 +95,7 @@
 
 %D Obsolete in \MKIV:
 
-\def\definemarknote          {\dodoubleempty\dodefinemarknote}
+\unexpanded\def\definemarknote          {\dodoubleempty\dodefinemarknote}
 \def\dodefinemarknote[#1][#2]{}
 \def\setmarknote         [#1]{\gobbleoneargument}
 \def\flushmarknotes      [#1]{}

@@ -76,7 +76,7 @@
      \fi
    \fi\fi}
 
-\def\placepositionanchors % todo : depth pagebox
+\unexpanded\def\placepositionanchors % todo : depth pagebox
   {\ifpositioning
      \setbox\scratchbox\vbox to \textheight
        {\simpletopskipcorrection
@@ -145,7 +145,7 @@
 
 % obsolete and wrong anyway
 %
-% \long\def\defineMPpositiongraphic#1%
+% \long\unexpanded\def\defineMPpositiongraphic#1%
 %   {\long\setvalue{\MPoverlayposprefix#1}}
 
 %D The rest of the definitions concerning such overlays may
@@ -180,14 +180,14 @@
         \vfill}%
    \fi}
 
-\def\startpositionoverlay#1%
+\unexpanded\def\startpositionoverlay#1%
   {\iftrialtypesetting % we don't want redundant entries in the list
      \@EA\gobbleuntil\@EA\stoppositionoverlay
    \else
      \def\currentpositionoverlay{#1}%
    \fi}
 
-\def\stoppositionoverlay
+\unexpanded\def\stoppositionoverlay
   {\let\currentpositionoverlay\empty}
 
 \def\resetpositionoverlay#1%
@@ -741,15 +741,15 @@
            lineradius=\textbackgroundparameter\c!radius}}%
    \stoppositionoverlay}
 
-\def\stoptextbackground
+\unexpanded\def\stoptextbackground
   {\dodostoptextbackground
    \carryoverpar\egroup}
 
-\def\starttextbackgroundmanual
+\unexpanded\def\starttextbackgroundmanual
   {\dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
    \fpos\currentparbackground\ignorespaces}
 
-\def\stoptextbackgroundmanual
+\unexpanded\def\stoptextbackgroundmanual
   {\tpos\currentparbackground
    \dostopattributes}
 
@@ -937,7 +937,7 @@
     \fi
    \fi}
 
-\def\definetextbackground
+\unexpanded\def\definetextbackground
   {\dodoubleempty\dodefinetextbackground}
 
 \def\dodefinetextbackground[#1][#2]% parent and ..parameter
@@ -956,7 +956,7 @@
      \setvalue{\e!stop #1}{\stoptextbackground}%
    \fi}
 
-\def\setuptextbackground
+\unexpanded\def\setuptextbackground
   {\dodoubleargument\dosetuptextbackground}
 
 \def\dosetuptextbackground[#1][#2]%
@@ -1636,7 +1636,7 @@
    \copyposition{e:#1}{e:#2}%
    \dosetpositionaction{b:#2}{\dopositionaction{b:#1}}}
 
-\def\definepositionframed
+\unexpanded\def\definepositionframed
   {\dodoubleargument\dodefinepositionframed}
 
 \def\dodefinepositionframed[#1][#2]%

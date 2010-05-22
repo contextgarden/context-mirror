@@ -241,7 +241,7 @@
 
 \newtoks\everysetupbibtex
 
-\def\setupbibtex
+\unexpanded\def\setupbibtex
   {\dosingleempty\dosetupbibtex}
 
 \def\dosetupbibtex[#1]%
@@ -277,7 +277,7 @@
 
 \newtoks\everysetuppublications
 
-\def\setuppublications
+\unexpanded\def\setuppublications
   {\dosingleargument\dosetuppublications}
 
 \def\dosetuppublications[#1]%
@@ -382,14 +382,14 @@
 
 \def\publicationlistparameter#1{\csname\??pv:l:#1\endcsname}
 
-\def\setuppublicationlist
+\unexpanded\def\setuppublicationlist
   {\dosingleempty\dosetuppublicationlist}
 
 \def\dosetuppublicationlist[#1]%
   {\getparameters[\??pv:l:][#1]%
    \setuplist[pubs][\c!samplesize={AA99},\c!alternative=a,\c!interaction=,\c!pagenumber=\v!no,#1,\c!command=]}
 
-\def\setuppublicationlayout[#1]#2%
+\unexpanded\def\setuppublicationlayout[#1]#2%
   {\setvalue{\??pv:l:#1}{#2}}
 
 \let\normalsetuppublicationlayout\setuppublicationlayout
@@ -694,7 +694,7 @@
 %         \exitloop
 %       \fi}}
 
-\def\clearbibitemtwo#1% is this reset really needed? after all we reset the counter adn we are local
+\def\clearbibitemtwo#1% is this reset really needed? after all we reset the counter and we are local
   {%\dofastrecurse\plusone{\csname#1@num\endcsname}\plusone{\expandafter\let\csname\??pb @#1\recurselevel\undefined}%
    \letvalue{#1@num}\!!zerocount}
 
@@ -733,7 +733,7 @@
 %D
 %D Now prohibits comments, so % can be used for urls
 
-\def\startpublication
+\unexpanded\def\startpublication
   {\begingroup
    \catcode`\%=\othercatcode
    \dosingleempty\dostartpublication}
@@ -881,7 +881,7 @@
 
 \def\bibrefprefix{\number\bibtexblock:}
 
-\def\placepublications
+\unexpanded\def\placepublications
   {\dosingleempty\doplacepublications}
 
 \def\doplacepublications[#1]%
@@ -1038,7 +1038,7 @@
 
 %D \macros{setupcite}
 
-\def\setupcite{\dodoubleempty\dosetupcite}
+\unexpanded\def\setupcite{\dodoubleempty\dosetupcite}
 
 \def\dosetupcite[#1][#2]%
   {\ifsecondargument

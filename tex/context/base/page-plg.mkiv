@@ -186,10 +186,10 @@
 \setvalue{\??ly\c!method:\v!leftpage }{\getvalue{\??ly\c!method:\v!page}}
 \setvalue{\??ly\c!method:\v!rightpage}{\getvalue{\??ly\c!method:\v!page}}
 
-% \long\def\startpagelayout[#1]#2\stoppagelayout
+% \long\unexpanded\def\startpagelayout[#1]#2\stoppagelayout
 %   {\long\setvalue{\??ly\c!method:#1}{#2}}
 
-\long\def\startpagelayout
+\long\unexpanded\def\startpagelayout
   {\bgroup\catcode`\^^M=\@@ignore\dostartpagelayout}
 
 \long\def\dostartpagelayout[#1]#2\stoppagelayout
