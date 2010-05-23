@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/22/10 12:06:27
+-- merge date  : 05/23/10 15:03:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -3588,55 +3588,27 @@ fonts.define.specify.synonyms = fonts.define.specify.synonyms or { }
 
 -- tracing
 
-fonts.color = fonts.color or { }
+if not fonts.color then
 
-local attribute = attributes.private('color')
-local mapping   = (attributes and attributes.list[attribute])  or { }
+    fonts.color = {
+        set   = function() end,
+        reset = function() end,
+    }
 
-local set_attribute   = node.set_attribute
-local unset_attribute = node.unset_attribute
+end
 
-function fonts.color.set(n,c)
-    local mc = mapping[c]
-    if not mc then
-        unset_attribute(n,attribute)
+-- format identification
+
+fonts.formats = { }
+
+function fonts.fontformat(filename,default)
+    local extname = file.extname(filename)
+    local format = fonts.formats[extname]
+    if format then
+        return format
     else
-        set_attribute(n,attribute,mc)
-    end
-end
-function fonts.color.reset(n)
-    unset_attribute(n,attribute)
-end
-
--- this will change ...
-
-function fonts.show_char_data(n)
-    local tfmdata = fonts.ids[font.current()]
-    if tfmdata then
-        if type(n) == "string" then
-            n = utf.byte(n)
-        end
-        local chr = tfmdata.characters[n]
-        if chr then
-            write_nl(format("%s @ %s => U%04X => %s => ",tfmdata.fullname,tfmdata.size,n,utf.char(n)) .. serialize(chr,false))
-        end
-    end
-end
-
-function fonts.show_font_parameters()
-    local tfmdata = fonts.ids[font.current()]
-    if tfmdata then
-        local parameters, mathconstants = tfmdata.parameters, tfmdata.MathConstants
-        local hasparameters, hasmathconstants = parameters and next(parameters), mathconstants and next(mathconstants)
-        if hasparameters then
-            write_nl(format("%s @ %s => parameters => ",tfmdata.fullname,tfmdata.size) .. serialize(parameters,false))
-        end
-        if hasmathconstants then
-            write_nl(format("%s @ %s => math constants => ",tfmdata.fullname,tfmdata.size) .. serialize(mathconstants,false))
-        end
-        if not hasparameters and not hasmathconstants then
-            write_nl(format("%s @ %s => no parameters and/or mathconstants",tfmdata.fullname,tfmdata.size))
-        end
+        logs.report("fonts define","unable to detemine font format for '%s'",filename)
+        return default
     end
 end
 
@@ -6451,7 +6423,10 @@ end
 otf.enhancers["merge cid fonts"] = function(data,filename)
     -- we can also move the names to data.luatex.names which might
     -- save us some more memory (at the cost of harder tracing)
-    if data.subfonts and data.glyphs and next(data.glyphs) then
+    if data.subfonts then
+        if data.glyphs and next(data.glyphs) then
+            logs.report("load otf","replacing existing glyph table due to subfonts")
+        end
         local cidinfo = data.cidinfo
         local verbose = fonts.verbose
         if cidinfo.registry then
@@ -7365,6 +7340,11 @@ end
 -- we cannot share descriptions as virtual fonts might extend them (ok, we could
 -- use a cache with a hash
 
+fonts.formats.dfont = "truetype"
+fonts.formats.ttc   = "truetype"
+fonts.formats.ttf   = "truetype"
+fonts.formats.otf   = "opentype"
+
 function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder the tma to unicode (nasty due to one->many)
     if data then
         local glyphs, pfminfo, metadata = data.glyphs or { }, data.pfminfo or { }, data.metadata or { }
@@ -7445,7 +7425,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         tfm.name               = tfm.filename or tfm.fullname or tfm.fontname
         tfm.units              = metadata.units_per_em or 1000
         tfm.encodingbytes      = 2
-        tfm.format             = (metadata.order2 == 1 and 'truetype') or 'opentype'
+        tfm.format             = fonts.fontformat(tfm.filename,"opentype")
         tfm.cidinfo            = data.cidinfo
         tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
         tfm.type               = "real"

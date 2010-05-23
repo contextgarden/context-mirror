@@ -560,10 +560,65 @@ function fonts.char(n) -- todo: afm en tfm
     end
 end
 
--- thsi will become obsolete:
+-- moved from ini:
+
+fonts.color = { } -- dummy in ini
+
+local attribute = attributes.private('color')
+local mapping   = (attributes and attributes.list[attribute])  or { }
+
+local set_attribute   = node.set_attribute
+local unset_attribute = node.unset_attribute
+
+function fonts.color.set(n,c)
+    local mc = mapping[c]
+    if not mc then
+        unset_attribute(n,attribute)
+    else
+        set_attribute(n,attribute,mc)
+    end
+end
+
+function fonts.color.reset(n)
+    unset_attribute(n,attribute)
+end
+
+-- this will become obsolete:
 
 fonts.otf.name_to_slot = name_to_slot
 fonts.afm.name_to_slot = name_to_slot
 
 fonts.otf.char = fonts.char
 fonts.afm.char = fonts.char
+
+-- this will change ...
+
+function fonts.show_char_data(n)
+    local tfmdata = fonts.ids[font.current()]
+    if tfmdata then
+        if type(n) == "string" then
+            n = utf.byte(n)
+        end
+        local chr = tfmdata.characters[n]
+        if chr then
+            write_nl(format("%s @ %s => U%04X => %s => ",tfmdata.fullname,tfmdata.size,n,utf.char(n)) .. serialize(chr,false))
+        end
+    end
+end
+
+function fonts.show_font_parameters()
+    local tfmdata = fonts.ids[font.current()]
+    if tfmdata then
+        local parameters, mathconstants = tfmdata.parameters, tfmdata.MathConstants
+        local hasparameters, hasmathconstants = parameters and next(parameters), mathconstants and next(mathconstants)
+        if hasparameters then
+            write_nl(format("%s @ %s => parameters => ",tfmdata.fullname,tfmdata.size) .. serialize(parameters,false))
+        end
+        if hasmathconstants then
+            write_nl(format("%s @ %s => math constants => ",tfmdata.fullname,tfmdata.size) .. serialize(mathconstants,false))
+        end
+        if not hasparameters and not hasmathconstants then
+            write_nl(format("%s @ %s => no parameters and/or mathconstants",tfmdata.fullname,tfmdata.size))
+        end
+    end
+end

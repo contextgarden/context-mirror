@@ -77,11 +77,13 @@ function bookmarks.place()
                         local structural = levelmap[name]
                         lastlevel = structural or lastlevel
                         local title = titledata.bookmark
-                        if (not title or title == "") and not structural then
-                            -- placeholder, todo: bookmarklabel
-                            title = name .. ": " .. (titledata.title or "?")
-                        else
-                            title = titledata.title or "?"
+                        if not title or title == "" then
+                            if not structural then
+                                -- placeholder, todo: bookmarklabel
+                                title = name .. ": " .. (titledata.title or "?")
+                            else
+                                title = titledata.title or "?"
+                            end
                         end
                         levels[#levels+1] = {
                             lastlevel,

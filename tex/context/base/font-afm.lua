@@ -456,6 +456,9 @@ function afm.add_dimensions(data) -- we need to normalize afm to otf i.e. indexe
     end
 end
 
+fonts.formats.afm = "type1"
+fonts.formats.pfb = "type1"
+
 function afm.copy_to_tfm(data)
     if data then
         local glyphs = data.glyphs
@@ -482,7 +485,7 @@ function afm.copy_to_tfm(data)
             tfm.fullname           = metadata.fullname or metadata.fontname
             tfm.psname             = tfm.fullname -- in otf: tfm.fontname or tfm.fullname
             tfm.name               = tfm.filename or tfm.fullname or tfm.fontname
-            tfm.format             = 'type1'
+            tfm.format             = fonts.fontformat(tfm.filename,"type1")
             tfm.type               = 'real'
             tfm.units              = 1000
             tfm.direction          = 0

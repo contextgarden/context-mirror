@@ -982,6 +982,7 @@
 
 \unexpanded\def\starttable
   {\bgroup
+   \let\stoptable\dostoptable
    \doif\@@tisplit\v!auto
      {\ifinsidesplitfloat\let\@@tisplit\v!yes\fi}%
    \doifinsetelse\@@tisplit{\v!yes,\v!repeat}
@@ -993,7 +994,12 @@
       \postponenotes
       \firststagestartTABLE}}
 
-\unexpanded\def\stoptable
+% We cannot define \unexpanded\def\dostoptable a ssomehow lookahead
+% in alignments fail then, so we relax it and define it locally.
+
+\let\stoptabel\relax
+
+\def\dostoptable
   {\chuckTABLEautorow % before the tail, else noalign problem
    \insertTABLEtail
    \TABLEnoalign{\globalletempty\@@TABLEhead}%
@@ -1210,6 +1216,7 @@
 
 \unexpanded\def\starttables
   {\bgroup
+   \let\stoptables\dostoptables
    \splittablestrue
    \doifelse\@@tisplit\v!repeat
      {\settrue \tablerepeathead\settrue \tablerepeattail}
@@ -1220,23 +1227,17 @@
    \global\TABLEinbreakfalse
    \firststagestartTABLE}
 
-% \unexpanded\def\stoptables
-%   {\ifconditional\tablerepeattail\else\insertTABLEtail\fi
-%    \finishTABLE
-%    \egroup
-%    \dosplittablebox\tablecontentbox
-%    \flushnotes
-%    \egroup}
+\let\stoptables\relax % needed for \noalign
 
-\unexpanded\def\stoptables
-   {\chuckTABLEautorow % AM: before the tail, else noalign problem
-    \ifconditional\tablerepeattail\else\insertTABLEtail\fi
-    \finishTABLE
-    \egroup
-\dontcomplain
-    \dosplittablebox\tablecontentbox
-    \flushnotes
-    \egroup}
+\def\dostoptables
+  {\chuckTABLEautorow % AM: before the tail, else noalign problem
+   \ifconditional\tablerepeattail\else\insertTABLEtail\fi
+   \finishTABLE
+   \egroup
+   \dontcomplain
+   \dosplittablebox\tablecontentbox
+   \flushnotes
+   \egroup}
 
 \newdimen\TABLEcaptionheight % obsolete
 

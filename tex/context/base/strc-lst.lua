@@ -338,12 +338,14 @@ function lists.analyze(...)
     lists.result = lists.filter(...)
 end
 
-function lists.userdata(name,r,tag) -- to tex
-    local str = lists.result[r]
-    str = str and str.userdata
-    str = str and str[tag]
-    if str then
-        texsprint(ctxcatcodes,str)
+function lists.userdata(name,r,tag) -- to tex (todo: xml)
+    local result = lists.result[r]
+    if result then
+        local userdata, metadata = result.userdata, result.metadata
+        local str = userdata and userdata[tag]
+        if str then
+            texsprint(metadata and metadata.catcodes or ctxcatcodes,str)
+        end
     end
 end
 
