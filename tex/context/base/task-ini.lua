@@ -28,6 +28,7 @@ tasks.appendaction("processors", "fonts",       "nodes.inject_kerns")           
 tasks.appendaction("processors", "fonts",       "nodes.protect_glyphs", nil, "nohead")       -- maybe todo
 tasks.appendaction("processors", "fonts",       "kernel.ligaturing")                         -- always on
 tasks.appendaction("processors", "fonts",       "kernel.kerning")                            -- always on
+tasks.appendaction("processors", "fonts",       "nodes.stripping.process")                   -- disabled (might move)
 
 tasks.appendaction("processors", "lists",       "lists.handle_spacing")                      -- disabled
 tasks.appendaction("processors", "lists",       "lists.handle_kerning")                      -- disabled
@@ -72,6 +73,7 @@ tasks.disableaction("processors", "chars.handle_mirroring")
 tasks.disableaction("processors", "languages.words.check")
 tasks.disableaction("processors", "lists.handle_spacing")
 tasks.disableaction("processors", "lists.handle_kerning")
+tasks.disableaction("processors", "nodes.stripping.process")
 
 tasks.disableaction("shipouts",   "nodes.rules.process")
 tasks.disableaction("shipouts",   "nodes.shifts.process")

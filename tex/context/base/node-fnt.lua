@@ -45,6 +45,8 @@ if tex.attribute[0] < 0 then
 
 end
 
+-- this will be redone and split in a generic one and a context one
+
 function nodes.process_characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)

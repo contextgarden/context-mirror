@@ -1381,14 +1381,109 @@
         \definefontsynonym [MathExtension] [AntykwaTorunska-Math-Extension-CondLight]
     \stoptypescript
 
+    \starttypescript [antykwa-torunska] [texnansi,ec,8r,uc,t5,t2a]
+        \definetypeface[antykwa][rm][serif][antykwa-torunska]   [default][encoding=\typescripttwo]
+        \definetypeface[antykwa][ss][sans] [modern]             [default][encoding=\typescripttwo,rscale=1.05]
+        \definetypeface[antykwa][tt][mono] [modern]             [default][encoding=\typescripttwo,rscale=1.1]
+        \definetypeface[antykwa][mm][math] [antykwa-torunska]   [default][encoding=\typescripttwo]
+        \quittypescriptscanning
+    \stoptypescript
+
     % Antykwa Poltawskiego (GUST)
 
-    \starttypescript [serif] [antykwa-poltawskiego] [texnansi,ec,8r]
-        \definefontsynonym [AntykwaPoltawskiego-Regular]    [\typescriptthree-antpr]  [encoding=\typescriptthree]
-        \definefontsynonym [AntykwaPoltawskiego-Bold]       [\typescriptthree-antpb]  [encoding=\typescriptthree]
-        \definefontsynonym [AntykwaPoltawskiego-Italic]     [\typescriptthree-antpri] [encoding=\typescriptthree]
-        \definefontsynonym [AntykwaPoltawskiego-BoldItalic] [\typescriptthree-antpbi] [encoding=\typescriptthree]
-        \loadmapfile[\typescriptthree-public-antp.map]
+    \starttypescript [serif] [antykwa-poltawskiego,antykwa-poltawskiego-light] [ec,texnansi,qx,t5]
+
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Light]                [\typescriptthree-antpl17]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-LightItalic]          [\typescriptthree-antpli17]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Regular]              [\typescriptthree-antpr17]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Italic]               [\typescriptthree-antpri17]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Medium]               [\typescriptthree-antpm17]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-MediumItalic]         [\typescriptthree-antpmi17]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Bold]                 [\typescriptthree-antpb17]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-BoldItalic]           [\typescriptthree-antpbi17]    [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsLight]            [\typescriptthree-antpl17-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsLightItalic]      [\typescriptthree-antpli17-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsRegular]          [\typescriptthree-antpr17-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsItalic]           [\typescriptthree-antpri17-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsMedium]           [\typescriptthree-antpm17-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsMediumItalic]     [\typescriptthree-antpmi17-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsBold]             [\typescriptthree-antpb17-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsBoldItalic]       [\typescriptthree-antpbi17-sc] [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Regular]          [\typescriptthree-antpl12]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Italic]           [\typescriptthree-antpli12]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Regular]          [\typescriptthree-antpr12]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Italic]           [\typescriptthree-antpri12]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Medium]           [\typescriptthree-antpm12]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-MediumItalic]     [\typescriptthree-antpmi12]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Bold]             [\typescriptthree-antpb12]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-BoldItalic]       [\typescriptthree-antpbi12]    [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsRegular]      [\typescriptthree-antpl12-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsItalic]       [\typescriptthree-antpli12-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsRegular]      [\typescriptthree-antpr12-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsItalic]       [\typescriptthree-antpri12-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsMedium]       [\typescriptthree-antpm12-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsMediumItalic] [\typescriptthree-antpmi12-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsBold]         [\typescriptthree-antpb12-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsBoldItalic]   [\typescriptthree-antpbi12-sc] [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-Light]                          [\typescriptthree-antpl10]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-LightItalic]                    [\typescriptthree-antpli10]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Regular]                        [\typescriptthree-antpr10]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Italic]                         [\typescriptthree-antpri10]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Medium]                         [\typescriptthree-antpm10]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-MediumItalic]                   [\typescriptthree-antpmi10]    [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Bold]                           [\typescriptthree-antpb10]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-BoldItalic]                     [\typescriptthree-antpbi10]    [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-CapsLight]                      [\typescriptthree-antpl10-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-CapsLightItalic]                [\typescriptthree-antpli10-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-CapsRegular]                    [\typescriptthree-antpr10-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-CapsItalic]                     [\typescriptthree-antpri10-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-CapsMedium]                     [\typescriptthree-antpm10-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-CapsMediumItalic]               [\typescriptthree-antpmi10-sc] [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-CapsBold]                       [\typescriptthree-antpb10-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-CapsBoldItalic]                 [\typescriptthree-antpbi10-sc] [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Light]             [\typescriptthree-antpl8]      [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-LightItalic]       [\typescriptthree-antpli8]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Regular]           [\typescriptthree-antpr8]      [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Italic]            [\typescriptthree-antpri8]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Medium]            [\typescriptthree-antpm8]      [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-MediumItalic]      [\typescriptthree-antpmi8]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Bold]              [\typescriptthree-antpb8]      [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-BoldItalic]        [\typescriptthree-antpbi8]     [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsLight]         [\typescriptthree-antpl8-sc]   [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsLightItalic]   [\typescriptthree-antpli8-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsRegular]       [\typescriptthree-antpr8-sc]   [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsItalic]        [\typescriptthree-antpri8-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsMedium]        [\typescriptthree-antpm8-sc]   [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsMediumItalic]  [\typescriptthree-antpmi8-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsBold]          [\typescriptthree-antpb8-sc]   [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsBoldItalic]    [\typescriptthree-antpbi8-sc]  [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Light]                 [\typescriptthree-antpl6]      [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-LightItalic]           [\typescriptthree-antpli6]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Regular]               [\typescriptthree-antpr6]      [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Italic]                [\typescriptthree-antpri6]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Medium]                [\typescriptthree-antpm6]      [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-MediumItalic]          [\typescriptthree-antpmi6]     [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Bold]                  [\typescriptthree-antpb6]      [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-BoldItalic]            [\typescriptthree-antpbi6]     [encoding=\typescriptthree]
+
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsLight]             [\typescriptthree-antpl6-sc]   [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsLightItalic]       [\typescriptthree-antpli6-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsRegular]           [\typescriptthree-antpr6-sc]   [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsItalic]            [\typescriptthree-antpri6-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsMedium]            [\typescriptthree-antpm6-sc]   [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsMediumItalic]      [\typescriptthree-antpmi6-sc]  [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsBold]              [\typescriptthree-antpb6-sc]   [encoding=\typescriptthree]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsBoldItalic]        [\typescriptthree-antpbi6-sc]  [encoding=\typescriptthree]
+
+        \loadmapfile[poltawski-\typescriptthree.map]
     \stoptypescript
 
     \starttypescript [serif] [antykwa-poltawskiego] [name]
@@ -1396,16 +1491,28 @@
         \definefontsynonym [SerifBold]        [AntykwaPoltawskiego-Bold]
         \definefontsynonym [SerifItalic]      [AntykwaPoltawskiego-Italic]
         \definefontsynonym [SerifSlanted]     [AntykwaPoltawskiego-Italic]
-        \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-Bold]
-        \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-Bold]
-        \definefontsynonym [SerifCaps]        [AntykwaPoltawskiego-Regular]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-BoldItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-BoldItalic]
+        \definefontsynonym [SerifCaps]        [AntykwaPoltawskiego-CapsRegular]
     \stoptypescript
 
-    \starttypescript [antykwa-torunska] [texnansi,ec,8r,uc,t5,t2a]
-        \definetypeface[antykwa][rm][serif][antykwa-torunska]   [default][encoding=\typescripttwo]
-        \definetypeface[antykwa][ss][sans] [modern]             [default][encoding=\typescripttwo,rscale=1.05]
-        \definetypeface[antykwa][tt][mono] [modern]             [default][encoding=\typescripttwo,rscale=1.1]
-        \definetypeface[antykwa][mm][math] [antykwa-torunska]   [default][encoding=\typescripttwo]
+    \starttypescript [serif] [antykwa-poltawskiego-light] [name]
+        \definefontsynonym [Serif]            [AntykwaPoltawskiego-Light]
+        \definefontsynonym [SerifBold]        [AntykwaPoltawskiego-Medium]
+        \definefontsynonym [SerifItalic]      [AntykwaPoltawskiego-LightItalic]
+        \definefontsynonym [SerifSlanted]     [AntykwaPoltawskiego-LightItalic]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-MediumItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-MediumItalic]
+        \definefontsynonym [SerifCaps]        [AntykwaPoltawskiego-CapsLight]
+    \stoptypescript
+
+    % condensed and extended variants are still missing
+
+    \starttypescript [antykwa-poltawskiego,antykwa-poltawskiego-light] [ec,texnansi,qx,t5]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [encoding=\typescripttwo]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [encoding=\typescripttwo,rscale=1.05] % scaling?
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [encoding=\typescripttwo,rscale=1.05] % scaling?
+        \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [encoding=\typescripttwo,rscale=1.05] % scaling?
         \quittypescriptscanning
     \stoptypescript
 

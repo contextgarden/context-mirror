@@ -1065,9 +1065,13 @@
      \executepagebreakhandler\v!yes
    \fi
    \ifnum\prevrealpageno<\realpageno
-\ifcase\pageornamentstate\or
-     \global\chardef\pageornamentstate\zerocount
-\fi
+   % there must have been a reason why i added the ifcase
+   % but it fails on tests/mkiv/pages/ornaments-001.tex
+   % as WS found out so we have to wait till the next side
+   % effect shows up
+   % \ifcase\pageornamentstate\or
+       \global\chardef\pageornamentstate\zerocount
+   % \fi
    \fi
    \egroup}
 

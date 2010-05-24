@@ -23,6 +23,7 @@ local trace_loading  = false  trackers.register("afm.loading",  function(v) trac
 
 local format, match, gmatch, lower, gsub = string.format, string.match, string.gmatch, string.lower, string.gsub
 local lpegmatch = lpeg.match
+local abs = math.abs
 
 fonts      = fonts     or { }
 fonts.afm  = fonts.afm or { }
@@ -466,74 +467,48 @@ function afm.copy_to_tfm(data)
             local metadata, luatex = data.metadata, data.luatex
             local unicodes, indices = luatex.unicodes, luatex.indices
             local characters, parameters, descriptions = { }, { }, { }
-            local tfm = {
-                characters = characters,
-                parameters = parameters,
-                descriptions = descriptions,
-                indices = indices,
-                unicodes = unicodes,
-                luatex = luatex,
-            }
+            -- todo : merge into tfm
             for u, i in next, indices do
                 local d = glyphs[i]
                 characters[u] = { }
                 descriptions[u] = d
             end
-            tfm.encodingbytes      = 2 -- was metadata.encodingbytes or 2
-            tfm.filename           = fonts.tfm.checked_filename(luatex) -- was metadata.filename
-            tfm.fontname           = metadata.fontname or metadata.fullname
-            tfm.fullname           = metadata.fullname or metadata.fontname
-            tfm.psname             = tfm.fullname -- in otf: tfm.fontname or tfm.fullname
-            tfm.name               = tfm.filename or tfm.fullname or tfm.fontname
-            tfm.format             = fonts.fontformat(tfm.filename,"type1")
-            tfm.type               = 'real'
-            tfm.units              = 1000
-            tfm.direction          = 0
-            tfm.boundarychar_label = 0
-            tfm.boundarychar       = 65536
-        --~ tfm.false_boundarychar = 65536 -- produces invalid tfm in luatex
-            tfm.designsize         = (metadata.designsize or 10)*65536
-            local spaceunits = 500
-            tfm.spacer = "500 units"
+            local filename = fonts.tfm.checked_filename(luatex) -- was metadata.filename
+            local fontname = metadata.fontname or metadata.fullname
+            local fullname = metadata.fullname or metadata.fontname
+            local endash, emdash, space, spaceunits = unicodes['space'], unicodes['emdash'], "space", 500
             -- same as otf
-            local endash, emdash = unicodes['space'], unicodes['emdash']
             if metadata.isfixedpitch then
                 if descriptions[endash] then
-                    spaceunits, tfm.spacer = descriptions[endash].width, "space"
+                    spaceunits, spacer = descriptions[endash].width, "space"
                 end
                 if not spaceunits and descriptions[emdash] then
-                    spaceunits, tfm.spacer = descriptions[emdash].width, "emdash"
+                    spaceunits, spacer = descriptions[emdash].width, "emdash"
                 end
                 if not spaceunits and metadata.charwidth then
-                    spaceunits, tfm.spacer = metadata.charwidth, "charwidth"
+                    spaceunits, spacer = metadata.charwidth, "charwidth"
                 end
             else
                 if descriptions[endash] then
-                    spaceunits, tfm.spacer = descriptions[endash].width, "space"
+                    spaceunits, spacer = descriptions[endash].width, "space"
                 end
-            --    if not spaceunits and descriptions[emdash] then
-            --        spaceunits, tfm.spacer = descriptions[emdash].width/2, "emdash/2"
-            --    end
                 if not spaceunits and metadata.charwidth then
-                    spaceunits, tfm.spacer = metadata.charwidth, "charwidth"
+                    spaceunits, spacer = metadata.charwidth, "charwidth"
                 end
             end
-            --
             spaceunits = tonumber(spaceunits)
+            if spaceunits < 200 then
+                -- todo: warning
+            end
+            --
             parameters.slant         = 0
             parameters.space         = spaceunits
             parameters.space_stretch = 500
             parameters.space_shrink  = 333
             parameters.x_height      = 400
             parameters.quad          = 1000
-            if spaceunits < 200 then
-                -- todo: warning
-            end
-            tfm.ascender    = math.abs(metadata.ascender  or 0)
-            tfm.descender   = math.abs(metadata.descender or 0)
             local italicangle = data.metadata.italicangle
             if italicangle then
-                tfm.italicangle = italicangle
                 parameters.slant = parameters.slant - math.round(math.tan(italicangle*math.pi/180))
             end
             if metadata.isfixedpitch then
@@ -563,8 +538,34 @@ function afm.copy_to_tfm(data)
                     parameters[k] = v
                 end
             end
+            --
             if next(characters) then
-                return tfm
+                return {
+                    characters         = characters,
+                    parameters         = parameters,
+                    descriptions       = descriptions,
+                    indices            = indices,
+                    unicodes           = unicodes,
+                    luatex             = luatex,
+                    encodingbytes      = 2,
+                    filename           = filename,
+                    fontname           = fontname,
+                    fullname           = fullname,
+                    psname             = fullname, -- in otf: tfm.fontname or tfm.fullname
+                    name               = filename or fullname or fontname,
+                    format             = fonts.fontformat(filename,"type1"),
+                    type               = 'real',
+                    units              = 1000,
+                    direction          = 0,
+                    boundarychar_label = 0,
+                    boundarychar       = 65536,
+                --~ false_boundarychar = 65536, -- produces invalid tfm in luatex
+                    designsize         = (metadata.designsize or 10)*65536,
+                    spacer             = spacer,
+                    ascender           = abs(metadata.ascender  or 0),
+                    descender          = abs(metadata.descender or 0),
+                    italicangle        = italicangle,
+                }
             end
         end
     end

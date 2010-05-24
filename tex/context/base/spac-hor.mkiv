@@ -935,4 +935,12 @@
 \def\outdented#1%
   {\hskip-\hangindent#1\relax}
 
+%D Beware: due to char-def this becomes an active character but that
+%D might change sometime when we will replace all these specials to
+%D node insertions. We might even expand it to utf then as it then
+%D can be used in string comparison (not that much needed anyway).
+
+\chardef\zwnj="200C
+\chardef\zwj ="200D
+
 \protect \endinput

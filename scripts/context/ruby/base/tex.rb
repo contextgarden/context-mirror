@@ -761,7 +761,8 @@ class TEX
         # utilities
         report('start of analysis')
         results = Array.new
-        ['texexec','texutil','ctxtools'].each do |program|
+        # ['texexec','texutil','ctxtools'].each do |program|
+        ['texexec'].each do |program|
             result = `texmfstart #{program} --help`
             result.sub!(/.*?(#{program}[^\n]+)\n.*/mi) do $1 end
             results.push("#{result}")
@@ -2052,7 +2053,10 @@ end
 
                     Kpse.runscript('ctxtools',rawbase,'--purge')       if getvariable('purge')
                     Kpse.runscript('ctxtools',rawbase,'--purge --all') if getvariable('purgeall')
-# till here
+
+                    # runcommand('mtxrun','--script','ctxtools',rawbase,'--purge')       if getvariable('purge')
+                    # runcommand('mtxrun','--script','ctxtools',rawbase,'--purge --all') if getvariable('purgeall')
+
                 when 'latex' then
 
                     ok = runtex(rawname)

@@ -13,7 +13,6 @@ local utfchar = utf.char
 
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
-local trace_goodies    = false  trackers.register("fonts.goodies",    function(v) trace_goodies    = v end)
 
 commands = commands or { }
 
@@ -25,9 +24,11 @@ of neutral.</p>
 
 fonts.triggers            = fonts.triggers            or { }
 fonts.initializers        = fonts.initializers        or { }
+fonts.methods             = fonts.methods             or { }
 fonts.initializers.common = fonts.initializers.common or { }
 
 local initializers = fonts.initializers
+local methods      = fonts.methods
 
 --[[ldx--
 <p>This feature will remove inter-digit kerns.</p>
@@ -575,3 +576,48 @@ initializers.node.otf.extend = initializers.common.extend
 
 initializers.base.afm.extend = initializers.common.extend
 initializers.node.afm.extend = initializers.common.extend
+
+-- historic stuff, move from font-ota
+
+local delete_node = nodes.delete
+local glyph       = node.id("glyph")
+local fontdata    = fonts.ids
+
+fonts.strippables = fonts.strippables or { -- just a placeholder
+    [0x200C] = true, -- zwnj
+    [0x200D] = true, -- zwj
+}
+
+local strippables = fonts.strippables
+
+local function processformatters(head,font)
+    local how = fontdata[font].shared.features.formatters
+    if how == nil or how == "strip" then -- nil when forced
+        local current, done = head, false
+        while current do
+            if current.id == glyph and current.subtype<256 and current.font == font then
+                local char = current.char
+                if strippables[char] then
+                    head, current = delete_node(head,current)
+                    done = true
+                else
+                    current = current.next
+                end
+            else
+                current = current.next
+            end
+        end
+        return head, done
+    else
+        return head, false
+    end
+end
+
+methods.node.otf.formatters = processformatters
+methods.base.otf.formatters = processformatters
+
+fonts.otf.tables.features['formatters'] = 'Hide Formatting Characters'
+
+fonts.otf.features.register("formatters")
+
+table.insert(fonts.manipulators,"formatters") -- at end

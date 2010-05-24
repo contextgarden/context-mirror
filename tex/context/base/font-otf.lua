@@ -11,6 +11,7 @@ local utf = unicode.utf8
 local concat, getn, utfbyte = table.concat, table.getn, utf.byte
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
+local abs = math.abs
 local lpegmatch = lpeg.match
 
 local trace_private    = false  trackers.register("otf.private",      function(v) trace_private      = v end)
@@ -1356,10 +1357,12 @@ function otf.features.register(name,default)
     otf.features.default[name] = default
 end
 
+-- for context this will become a task handler
+
 function otf.set_features(tfmdata,features)
     local processes = { }
     if features and next(features) then
-        local lists = {
+        local lists = { -- why local
             fonts.triggers,
             fonts.processors,
             fonts.manipulators,
@@ -1396,7 +1399,7 @@ function otf.set_features(tfmdata,features)
                 end
             end
         end
-        local fm = fonts.methods[mode]
+        local fm = fonts.methods[mode] -- todo: zonder node/mode otf/...
         if fm then
             local fmotf = fm.otf
             if fmotf then
@@ -1505,14 +1508,11 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         local unicodes = luatex.unicodes -- names to unicodes
         local indices = luatex.indices
         local characters, parameters, math_parameters, descriptions = { }, { }, { }, { }
-        local tfm = {
-            characters = characters,
-            parameters = parameters,
-            math_parameters = math_parameters,
-            descriptions = descriptions,
-            indices = indices,
-            unicodes = unicodes,
-        }
+        local designsize = metadata.designsize or metadata.design_size or 100
+        if designsize == 0 then
+            designsize = 100
+        end
+        local spaceunits = 500
         -- indices maps from unicodes to indices
         for u, i in next, indices do
             characters[u] = { } -- we need this because for instance we add protruding info and loop over characters
@@ -1565,65 +1565,49 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
             end
         end
         -- end math
-        local designsize = metadata.designsize or metadata.design_size or 100
-        if designsize == 0 then
-            designsize = 100
-        end
-        local spaceunits = 500
-        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
-        tfm.filename           = fonts.tfm.checked_filename(luatex)
-        tfm.fontname           = metadata.fontname
-        tfm.fullname           = metadata.fullname or tfm.fontname
-        tfm.psname             = tfm.fontname or tfm.fullname
-        tfm.name               = tfm.filename or tfm.fullname or tfm.fontname
-        tfm.units              = metadata.units_per_em or 1000
-        tfm.encodingbytes      = 2
-        tfm.format             = fonts.fontformat(tfm.filename,"opentype")
-        tfm.cidinfo            = data.cidinfo
-        tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
-        tfm.type               = "real"
-        tfm.direction          = 0
-        tfm.boundarychar_label = 0
-        tfm.boundarychar       = 65536
-        tfm.designsize         = (designsize/10)*65536
-        tfm.spacer             = "500 units"
-        local endash, emdash = 0x20, 0x2014 -- unicodes['space'], unicodes['emdash']
+        local endash, emdash, space = 0x20, 0x2014, "space" -- unicodes['space'], unicodes['emdash']
         if metadata.isfixedpitch then
             if descriptions[endash] then
-                spaceunits, tfm.spacer = descriptions[endash].width, "space"
+                spaceunits, spacer = descriptions[endash].width, "space"
             end
             if not spaceunits and descriptions[emdash] then
-                spaceunits, tfm.spacer = descriptions[emdash].width, "emdash"
+                spaceunits, spacer = descriptions[emdash].width, "emdash"
             end
             if not spaceunits and metadata.charwidth then
-                spaceunits, tfm.spacer = metadata.charwidth, "charwidth"
+                spaceunits, spacer = metadata.charwidth, "charwidth"
             end
         else
             if descriptions[endash] then
-                spaceunits, tfm.spacer = descriptions[endash].width, "space"
+                spaceunits, spacer = descriptions[endash].width, "space"
             end
             if not spaceunits and descriptions[emdash] then
-                spaceunits, tfm.spacer = descriptions[emdash].width/2, "emdash/2"
+                spaceunits, spacer = descriptions[emdash].width/2, "emdash/2"
             end
             if not spaceunits and metadata.charwidth then
-                spaceunits, tfm.spacer = metadata.charwidth, "charwidth"
+                spaceunits, spacer = metadata.charwidth, "charwidth"
             end
         end
         spaceunits = tonumber(spaceunits) or tfm.units/2 -- 500 -- brrr
+        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
+        local filename = fonts.tfm.checked_filename(luatex)
+        local fontname = metadata.fontname
+        local fullname = metadata.fullname or fontname
+        local cidinfo  = data.cidinfo
+        local units    = metadata.units_per_em or 1000
+        --
+        cidinfo.registry = cidinfo and cidinfo.registry or "" -- weird here, fix upstream
+        --
         parameters.slant         = 0
-        parameters.space         = spaceunits              -- 3.333 (cmr10)
-        parameters.space_stretch = tfm.units/2   --  500   -- 1.666 (cmr10)
-        parameters.space_shrink  = 1*tfm.units/3 --  333   -- 1.111 (cmr10)
-        parameters.x_height      = 2*tfm.units/5 --  400
-        parameters.quad          = tfm.units     -- 1000
-        if spaceunits < 2*tfm.units/5 then
+        parameters.space         = spaceunits          -- 3.333 (cmr10)
+        parameters.space_stretch = units/2   --  500   -- 1.666 (cmr10)
+        parameters.space_shrink  = 1*units/3 --  333   -- 1.111 (cmr10)
+        parameters.x_height      = 2*units/5 --  400
+        parameters.quad          = units     -- 1000
+        if spaceunits < 2*units/5 then
             -- todo: warning
         end
         local italicangle = metadata.italicangle
-        tfm.ascender    = math.abs(metadata.ascent  or 0)
-        tfm.descender   = math.abs(metadata.descent or 0)
         if italicangle then -- maybe also in afm _
-            tfm.italicangle = italicangle
             parameters.slant = parameters.slant - math.round(math.tan(italicangle*math.pi/180))
         end
         if metadata.isfixedpitch then
@@ -1645,8 +1629,34 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
                 end
             end
         end
-        -- [6]
-        return tfm
+        --
+        return {
+            characters         = characters,
+            parameters         = parameters,
+            math_parameters    = math_parameters,
+            descriptions       = descriptions,
+            indices            = indices,
+            unicodes           = unicodes,
+            type               = "real",
+            direction          = 0,
+            boundarychar_label = 0,
+            boundarychar       = 65536,
+            designsize         = (designsize/10)*65536,
+            spacer             = "500 units",
+            encodingbytes      = 2,
+            filename           = filename,
+            fontname           = fontname,
+            fullname           = fullname,
+            psname             = fontname or fullname,
+            name               = filename or fullname,
+            units              = units,
+            format             = fonts.fontformat(filename,"opentype"),
+            cidinfo            = cidinfo,
+            ascender           = abs(metadata.ascent  or 0),
+            descender          = abs(metadata.descent or 0),
+            spacer             = spacer,
+            italicangle        = italicangle,
+        }
     else
         return nil
     end

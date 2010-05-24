@@ -424,6 +424,12 @@
 %D We already defined these auxiliary macros in the system
 %D modules. Starting with this module however, we have to take
 %D multi||linguality a bit more serious.
+%D
+%D The additional \type {\c!internal!n} prefixing is no longer
+%D needed as we now have separate interface files when dealing
+%D with setups (quick ref docs) and no longer reload the whole
+%D interface. (We no longer need the link back to the main
+%D internal interface.)
 
 \def\doresetvalue#1#2%
   {\dosetvalue{#1}{#2}{}}
@@ -690,7 +696,7 @@
 %D depending on the actual language. In dutch we just say:
 %D
 %D \starttyping
-%D \setupblock [width=3cm, height=1cm]
+%D \stelblokin [breedte=3cm,hoogte=1cm]
 %D \stoptyping
 %D
 %D and get ourselves \type{\@@bxwidth} and \type{\@@bxheight}
@@ -739,7 +745,10 @@
 %D \stopnarrower
 
 %D Anno 2003 I've forgotten why the \type {\c!internal} is
-%D still in there; it's probably a left over from an experiment.
+%D still in there; it's probably a left over from the time that
+%D the user interface documents were not using a specification
+%D alongside a keyword specification but used a shared file in
+%D which case we need to go in both directions.
 
 \let\c!internal!y \string
 \def\c!internal!n {-}

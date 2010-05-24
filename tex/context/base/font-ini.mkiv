@@ -1320,7 +1320,11 @@
 %D have a similar meaning, and therefore can lead to an
 %D unwanted loop, we temporary redefine \type{\c!text}. For
 %D the moment this in only place that some trickery is needed
-%D to fool the multilingual interface.
+%D to fool the multilingual interface. However, long ago
+%D we decided to stick to \s!text in definitions as it closely
+%D relates to the math model where text, script and scriptscript
+%D are used untranslated. Also, we are now english at the low
+%D level so it cannot go wrong anymore.
 %D
 %D When instead of a size the keyword \type{unknown} is
 %D passed, fractions (relations) are used instead of fixed
@@ -2079,15 +2083,38 @@
 
 \settrue\autotypescripts
 
+% \def\trycurrentfontclass#1%
+%   {\ifconditional\autotypescripts
+%      \usetypescript[#1]%
+%      \ifcsname\@fontclass@#1\endcsname
+%        \edef\fontclass{#1}%
+%      \else
+%        \letvalue{\@no@fontclass@#1}\empty
+%      \fi
+%    \else
+%      \letvalue{\@no@fontclass@#1}\empty
+%    \fi}
+
 \def\trycurrentfontclass#1%
   {\ifconditional\autotypescripts
+     % try to load typescript #1
      \usetypescript[#1]%
      \ifcsname\@fontclass@#1\endcsname
        \edef\fontclass{#1}%
      \else
-       \letvalue{\@no@fontclass@#1}\empty
+       % try to load type-#1.mkiv
+       \usetypescriptfile[\f!typeprefix#1]%
+       % try to load typescript #1
+       \usetypescript[#1]%
+       \ifcsname\@fontclass@#1\endcsname
+         \edef\fontclass{#1}%
+       \else
+         % todo: message
+         \letvalue{\@no@fontclass@#1}\empty
+       \fi
      \fi
    \else
+     % todo: message
      \letvalue{\@no@fontclass@#1}\empty
    \fi}
 

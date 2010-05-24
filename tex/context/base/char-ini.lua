@@ -422,6 +422,7 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
                         end
                     end
                 elseif is_command[category] then
+                    -- this might change: contextcommand ipv contextname
                 --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\%s}}",u,utfchar(u),contextname))
                     texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
                     activated[#activated+1] = "\\c"..u.."\\a"
@@ -650,3 +651,48 @@ function characters.upper(str)
     end
     return concat(new)
 end
+
+-- -- some day we might go this route, but it does not really save that much
+-- -- so not now (we can generate a lot using mtx-unicode that operates on the
+-- -- database)
+--
+-- -- category cjkwd direction linebreak
+--
+-- -- adobename comment contextcommand contextname description fallback lccode
+-- -- mathclass mathfiller mathname mathspec mathstretch mathsymbol mirror
+-- -- range shcode specials uccode uccodes unicodeslot
+--
+-- local data = {
+--     ['one']={
+--         common = {
+--             category="cc",
+--             direction="bn",
+--             linebreak="cm",
+--         },
+--         vector = {
+--             [0x0000] = {
+--                 description="NULL",
+--                 group='one',
+--                 unicodeslot=0x0000,
+--             },
+--             {
+--                 description="START OF HEADING",
+--                 group='one',
+--                 unicodeslot=0x0001,
+--             },
+--         }
+--     }
+-- }
+--
+-- local chardata, groupdata = { }, { }
+--
+-- for group, gdata in next, data do
+--     local common, vector = { __index = gdata.common }, gdata.vector
+--     for character, cdata in next, vector do
+--         chardata[character] = cdata
+--         setmetatable(cdata,common)
+--     end
+--     groupdata[group] = gdata
+-- end
+
+--~ characters.data, characters.groups = chardata, groupdata

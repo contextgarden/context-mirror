@@ -461,7 +461,7 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
     local function pagerange(f_entry,t_entry,is_last)
         local er = f_entry.references
         texsprint(ctxcatcodes,format("\\registerpagerange{%s}{%s}{",er.internal or 0,er.realpage or 0))
-    local proc = entry.processors and entry.processors[2]
+        local proc = f_entry.processors and f_entry.processors[2]
         if proc then
             texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
             helpers.prefixpage(f_entry,prefixspec,pagespec)

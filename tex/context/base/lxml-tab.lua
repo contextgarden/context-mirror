@@ -30,7 +30,7 @@ xml = xml or { }
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
-local format, lower, find, match = string.format, string.lower, string.find, string.match
+local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
 local utfchar = unicode.utf8.char
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs

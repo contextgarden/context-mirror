@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/23/10 15:03:42
+-- merge date  : 05/24/10 13:05:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -3329,6 +3329,8 @@ if tex.attribute[0] < 0 then
 
 end
 
+-- this will be redone and split in a generic one and a context one
+
 function nodes.process_characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
@@ -5858,6 +5860,7 @@ local utf = unicode.utf8
 local concat, getn, utfbyte = table.concat, table.getn, utf.byte
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
+local abs = math.abs
 local lpegmatch = lpeg.match
 
 local trace_private    = false  trackers.register("otf.private",      function(v) trace_private      = v end)
@@ -7203,10 +7206,12 @@ function otf.features.register(name,default)
     otf.features.default[name] = default
 end
 
+-- for context this will become a task handler
+
 function otf.set_features(tfmdata,features)
     local processes = { }
     if features and next(features) then
-        local lists = {
+        local lists = { -- why local
             fonts.triggers,
             fonts.processors,
             fonts.manipulators,
@@ -7243,7 +7248,7 @@ function otf.set_features(tfmdata,features)
                 end
             end
         end
-        local fm = fonts.methods[mode]
+        local fm = fonts.methods[mode] -- todo: zonder node/mode otf/...
         if fm then
             local fmotf = fm.otf
             if fmotf then
@@ -7352,14 +7357,11 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         local unicodes = luatex.unicodes -- names to unicodes
         local indices = luatex.indices
         local characters, parameters, math_parameters, descriptions = { }, { }, { }, { }
-        local tfm = {
-            characters = characters,
-            parameters = parameters,
-            math_parameters = math_parameters,
-            descriptions = descriptions,
-            indices = indices,
-            unicodes = unicodes,
-        }
+        local designsize = metadata.designsize or metadata.design_size or 100
+        if designsize == 0 then
+            designsize = 100
+        end
+        local spaceunits = 500
         -- indices maps from unicodes to indices
         for u, i in next, indices do
             characters[u] = { } -- we need this because for instance we add protruding info and loop over characters
@@ -7412,65 +7414,49 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
             end
         end
         -- end math
-        local designsize = metadata.designsize or metadata.design_size or 100
-        if designsize == 0 then
-            designsize = 100
-        end
-        local spaceunits = 500
-        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
-        tfm.filename           = fonts.tfm.checked_filename(luatex)
-        tfm.fontname           = metadata.fontname
-        tfm.fullname           = metadata.fullname or tfm.fontname
-        tfm.psname             = tfm.fontname or tfm.fullname
-        tfm.name               = tfm.filename or tfm.fullname or tfm.fontname
-        tfm.units              = metadata.units_per_em or 1000
-        tfm.encodingbytes      = 2
-        tfm.format             = fonts.fontformat(tfm.filename,"opentype")
-        tfm.cidinfo            = data.cidinfo
-        tfm.cidinfo.registry   = tfm.cidinfo.registry or ""
-        tfm.type               = "real"
-        tfm.direction          = 0
-        tfm.boundarychar_label = 0
-        tfm.boundarychar       = 65536
-        tfm.designsize         = (designsize/10)*65536
-        tfm.spacer             = "500 units"
-        local endash, emdash = 0x20, 0x2014 -- unicodes['space'], unicodes['emdash']
+        local endash, emdash, space = 0x20, 0x2014, "space" -- unicodes['space'], unicodes['emdash']
         if metadata.isfixedpitch then
             if descriptions[endash] then
-                spaceunits, tfm.spacer = descriptions[endash].width, "space"
+                spaceunits, spacer = descriptions[endash].width, "space"
             end
             if not spaceunits and descriptions[emdash] then
-                spaceunits, tfm.spacer = descriptions[emdash].width, "emdash"
+                spaceunits, spacer = descriptions[emdash].width, "emdash"
             end
             if not spaceunits and metadata.charwidth then
-                spaceunits, tfm.spacer = metadata.charwidth, "charwidth"
+                spaceunits, spacer = metadata.charwidth, "charwidth"
             end
         else
             if descriptions[endash] then
-                spaceunits, tfm.spacer = descriptions[endash].width, "space"
+                spaceunits, spacer = descriptions[endash].width, "space"
             end
             if not spaceunits and descriptions[emdash] then
-                spaceunits, tfm.spacer = descriptions[emdash].width/2, "emdash/2"
+                spaceunits, spacer = descriptions[emdash].width/2, "emdash/2"
             end
             if not spaceunits and metadata.charwidth then
-                spaceunits, tfm.spacer = metadata.charwidth, "charwidth"
+                spaceunits, spacer = metadata.charwidth, "charwidth"
             end
         end
         spaceunits = tonumber(spaceunits) or tfm.units/2 -- 500 -- brrr
+        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
+        local filename = fonts.tfm.checked_filename(luatex)
+        local fontname = metadata.fontname
+        local fullname = metadata.fullname or fontname
+        local cidinfo  = data.cidinfo
+        local units    = metadata.units_per_em or 1000
+        --
+        cidinfo.registry = cidinfo and cidinfo.registry or "" -- weird here, fix upstream
+        --
         parameters.slant         = 0
-        parameters.space         = spaceunits              -- 3.333 (cmr10)
-        parameters.space_stretch = tfm.units/2   --  500   -- 1.666 (cmr10)
-        parameters.space_shrink  = 1*tfm.units/3 --  333   -- 1.111 (cmr10)
-        parameters.x_height      = 2*tfm.units/5 --  400
-        parameters.quad          = tfm.units     -- 1000
-        if spaceunits < 2*tfm.units/5 then
+        parameters.space         = spaceunits          -- 3.333 (cmr10)
+        parameters.space_stretch = units/2   --  500   -- 1.666 (cmr10)
+        parameters.space_shrink  = 1*units/3 --  333   -- 1.111 (cmr10)
+        parameters.x_height      = 2*units/5 --  400
+        parameters.quad          = units     -- 1000
+        if spaceunits < 2*units/5 then
             -- todo: warning
         end
         local italicangle = metadata.italicangle
-        tfm.ascender    = math.abs(metadata.ascent  or 0)
-        tfm.descender   = math.abs(metadata.descent or 0)
         if italicangle then -- maybe also in afm _
-            tfm.italicangle = italicangle
             parameters.slant = parameters.slant - math.round(math.tan(italicangle*math.pi/180))
         end
         if metadata.isfixedpitch then
@@ -7492,8 +7478,34 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
                 end
             end
         end
-        -- [6]
-        return tfm
+        --
+        return {
+            characters         = characters,
+            parameters         = parameters,
+            math_parameters    = math_parameters,
+            descriptions       = descriptions,
+            indices            = indices,
+            unicodes           = unicodes,
+            type               = "real",
+            direction          = 0,
+            boundarychar_label = 0,
+            boundarychar       = 65536,
+            designsize         = (designsize/10)*65536,
+            spacer             = "500 units",
+            encodingbytes      = 2,
+            filename           = filename,
+            fontname           = fontname,
+            fullname           = fullname,
+            psname             = fontname or fullname,
+            name               = filename or fullname,
+            units              = units,
+            format             = fonts.fontformat(filename,"opentype"),
+            cidinfo            = cidinfo,
+            ascender           = abs(metadata.ascent  or 0),
+            descender          = abs(metadata.descent or 0),
+            spacer             = spacer,
+            italicangle        = italicangle,
+        }
     else
         return nil
     end
@@ -10817,13 +10829,7 @@ local penalty = node.id('penalty')
 local set_attribute      = node.set_attribute
 local has_attribute      = node.has_attribute
 local traverse_id        = node.traverse_id
-local delete_node        = nodes.delete
-local replace_node       = nodes.replace
-local insert_node_after  = node.insert_after
-local insert_node_before = node.insert_before
 local traverse_node_list = node.traverse
-
-local new_glue_node      = nodes.glue
 
 local fontdata = fonts.ids
 local state    = attributes.private('state')
@@ -10837,7 +10843,6 @@ local a_to_language = otf.a_to_language
 -- in the future we will use language/script attributes instead of the
 -- font related value, but then we also need dynamic features which is
 -- somewhat slower; and .. we need a chain of them
-
 
 function fonts.initializers.node.otf.analyze(tfmdata,value,attr)
     if attr and attr > 0 then
@@ -10977,8 +10982,6 @@ function fonts.analyzers.methods.nocolor(head,font,attr)
     return head, true
 end
 
-otf.remove_joiners = false -- true -- for idris who want it as option
-
 local function finish(first,last)
     if last then
         if first == last then
@@ -11024,22 +11027,10 @@ function fonts.analyzers.methods.arab(head,font,attr) -- maybe make a special ve
     local tfmdata = fontdata[font]
     local marks = tfmdata.marks
     local first, last, current, done = nil, nil, head, false
-    local joiners, nonjoiners
-    local removejoiners = tfmdata.remove_joiners -- or otf.remove_joiners
-    if removejoiners then
-        joiners, nonjoiners = { }, { }
-    end
     while current do
         if current.id == glyph and current.subtype<256 and current.font == font and not has_attribute(current,state) then
             done = true
             local char = current.char
-            if removejoiners then
-                if char == zwj then
-                    joiners[#joiners+1] = current
-                elseif char == zwnj then
-                    nonjoiners[#nonjoiners+1] = current
-                end
-            end
             if marks[char] then
                 set_attribute(current,state,5) -- mark
                 if trace_analyzing then fcs(current,"font:mark") end
@@ -11085,24 +11076,7 @@ function fonts.analyzers.methods.arab(head,font,attr) -- maybe make a special ve
         current = current.next
     end
     first, last = finish(first,last)
-    if removejoiners then
-        -- is never head
-        for i=1,#joiners do
-            delete_node(head,joiners[i])
-        end
-        for i=1,#nonjoiners do
-            replace_node(head,nonjoiners[i],new_glue_node(0)) -- or maybe a kern
-        end
-    end
     return head, done
-end
-
-table.insert(fonts.manipulators,"joiners")
-
-function fonts.initializers.node.otf.joiners(tfmdata,value)
-    if value == "strip" then
-        tfmdata.remove_joiners = true
-    end
 end
 
 end -- closure
@@ -12122,7 +12096,7 @@ fonts = fonts or { }
 
 -- general
 
-fonts.otf.pack          = false
+fonts.otf.pack          = false -- only makes sense in context
 fonts.tfm.resolve_vf    = false -- no sure about this
 fonts.tfm.fontname_mode = "specification" -- somehow latex needs this
 
@@ -12392,5 +12366,24 @@ function fonts.otf.char(n)
         tex.sprint("\\char" .. n)
     end
 end
+
+-- another one:
+
+fonts.strippables = table.tohash {
+    0x000AD, 0x017B4, 0x017B5, 0x0200B, 0x0200C, 0x0200D, 0x0200E, 0x0200F, 0x0202A, 0x0202B,
+    0x0202C, 0x0202D, 0x0202E, 0x02060, 0x02061, 0x02062, 0x02063, 0x0206A, 0x0206B, 0x0206C,
+    0x0206D, 0x0206E, 0x0206F, 0x0FEFF, 0x1D173, 0x1D174, 0x1D175, 0x1D176, 0x1D177, 0x1D178,
+    0x1D179, 0x1D17A, 0xE0001, 0xE0020, 0xE0021, 0xE0022, 0xE0023, 0xE0024, 0xE0025, 0xE0026,
+    0xE0027, 0xE0028, 0xE0029, 0xE002A, 0xE002B, 0xE002C, 0xE002D, 0xE002E, 0xE002F, 0xE0030,
+    0xE0031, 0xE0032, 0xE0033, 0xE0034, 0xE0035, 0xE0036, 0xE0037, 0xE0038, 0xE0039, 0xE003A,
+    0xE003B, 0xE003C, 0xE003D, 0xE003E, 0xE003F, 0xE0040, 0xE0041, 0xE0042, 0xE0043, 0xE0044,
+    0xE0045, 0xE0046, 0xE0047, 0xE0048, 0xE0049, 0xE004A, 0xE004B, 0xE004C, 0xE004D, 0xE004E,
+    0xE004F, 0xE0050, 0xE0051, 0xE0052, 0xE0053, 0xE0054, 0xE0055, 0xE0056, 0xE0057, 0xE0058,
+    0xE0059, 0xE005A, 0xE005B, 0xE005C, 0xE005D, 0xE005E, 0xE005F, 0xE0060, 0xE0061, 0xE0062,
+    0xE0063, 0xE0064, 0xE0065, 0xE0066, 0xE0067, 0xE0068, 0xE0069, 0xE006A, 0xE006B, 0xE006C,
+    0xE006D, 0xE006E, 0xE006F, 0xE0070, 0xE0071, 0xE0072, 0xE0073, 0xE0074, 0xE0075, 0xE0076,
+    0xE0077, 0xE0078, 0xE0079, 0xE007A, 0xE007B, 0xE007C, 0xE007D, 0xE007E, 0xE007F,
+}
+
 
 end -- closure
