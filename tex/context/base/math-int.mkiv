@@ -53,21 +53,44 @@
 
 %D More integrals (AM):
 
-\definemathcommand [iint]   {\repeatintegral\plusone  }
-\definemathcommand [iiint]  {\repeatintegral\plustwo  }
-\definemathcommand [iiiint] {\repeatintegral\plusthree}
-
 %def\integralrepeatsymbol{\intop}
 \def\integralrepeatsymbol{{\int}}
 
-\def\repeatintegral#1%
+% \def\repeatintegral#1%
+%   {\scratchtoks\emptytoks
+%    \let\dointlimits\donothing
+%    \let\dodointlimits\intlimits
+%    \dorecurse{#1}{\appendtoks \integralrepeatsymbol \dointkern \to \scratchtoks}%
+%    \appendtoks \intop \dointlimits \dodointlimits \to \scratchtoks
+%    \edef\dodorepeatintegral{\the\scratchtoks}%
+%    \futurelet\next\dorepeatintegral}
+
+% \definemathcommand [iint]   {\repeatintegral\plusone  }
+% \definemathcommand [iiint]  {\repeatintegral\plustwo  }
+% \definemathcommand [iiiint] {\repeatintegral\plusthree}
+
+\def\fakerepeatintegral#1%
   {\scratchtoks\emptytoks
-   \let\dointlimits\donothing
-   \let\dodointlimits\intlimits
-   \dorecurse{#1}{\appendtoks \integralrepeatsymbol \dointkern \to \scratchtoks}
+   \dorecurse{#1}{\appendtoks \integralrepeatsymbol \dointkern \to \scratchtoks}%
    \appendtoks \intop \dointlimits \dodointlimits \to \scratchtoks
-   \edef\dodorepeatintegral{\the\scratchtoks}%
+   \edef\dodorepeatintegral{\the\scratchtoks}}
+
+\def\repeatintegral#1#2#3%
+  {\let\dointlimits\donothing
+   \let\dodointlimits\intlimits
+   \iffontchar\textfont\zerocount#1\relax
+    %\edef\dodorepeatintegral{\utfchar{#1}}%
+     \let\dodorepeatintegral#2%
+   \else
+     \fakerepeatintegral{#3}%
+   \fi
    \futurelet\next\dorepeatintegral}
+
+% This is a temporary solution, as we will make a virtual glyph in lm.
+
+\definemathcommand [iint]   {\repeatintegral{"222B}\normaliint  \plusone  }
+\definemathcommand [iiint]  {\repeatintegral{"222C}\normaliiint \plustwo  }
+\definemathcommand [iiiint] {\repeatintegral{"222D}\normaliiiint\plusthree}
 
 %D If the \type{\limits} option is used after \type{\iint}, use
 %D \type{\mathop} and fudge the left hand space a bit to make the

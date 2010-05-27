@@ -9,7 +9,7 @@ return {
             "original-micropress-informal.map",
         },
         virtuals = {
-            ["hvmath-math"] = {
+            ["informal-math"] = {
                 { name = "file:ifrg.afm", features = "virtualmath", main = true },
                 { name = "ifrm10cm.tfm", vector="tex-mr" },
                 { name = "ifmi10", vector = "tex-mi", skewchar=0x7F },

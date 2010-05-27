@@ -351,15 +351,25 @@ module Kpse
         end
     end
 
+    # def Kpse.runscript(name,filename=[],options=[])
+        # setscript(name,`texmfstart --locate #{name}`) unless @@scripts.key?(name)
+        # cmd = "#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
+        # system(cmd)
+    # end
+
+    # def Kpse.pipescript(name,filename=[],options=[])
+        # setscript(name,`texmfstart --locate #{name}`) unless @@scripts.key?(name)
+        # cmd = "#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
+        # `#{cmd}`
+    # end
+
     def Kpse.runscript(name,filename=[],options=[])
-        setscript(name,`texmfstart --locate #{name}`) unless @@scripts.key?(name)
-        cmd = "#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
+        cmd = "mtxrun --script #{name} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
         system(cmd)
     end
 
     def Kpse.pipescript(name,filename=[],options=[])
-        setscript(name,`texmfstart --locate #{name}`) unless @@scripts.key?(name)
-        cmd = "#{@@scripts[name]} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
+        cmd = "mtxrun --script #{name} #{[options].flatten.join(' ')} #{[filename].flatten.join(' ')}"
         `#{cmd}`
     end
 

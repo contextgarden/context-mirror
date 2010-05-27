@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['buff-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: deal with jobname here, or actually, "" is valid as well
+
 -- ctx lua reference model / hooks and such
 -- to be optimized
 
@@ -336,6 +338,15 @@ local function content(name,separator) -- no print
 end
 
 buffers.content = content
+
+function buffers.evaluate(name)
+    local ok = loadstring(content(name))
+    if ok then
+        ok()
+    else
+        logs.report("buffers","invalid lua code in buffer '%s'",name)
+    end
+end
 
 function buffers.collect(names,separator) -- no print
     -- maybe we should always store a buffer as table so

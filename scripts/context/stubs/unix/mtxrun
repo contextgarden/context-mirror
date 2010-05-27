@@ -2097,41 +2097,76 @@ local concat = table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
 
+local function dirname(name,default)
+    return match(name,"^(.+)[/\\].-$") or (default or "")
+end
+
+local function basename(name)
+    return match(name,"^.+[/\\](.-)$") or name
+end
+
+local function nameonly(name)
+    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
+end
+
+local function extname(name,default)
+    return match(name,"^.+%.([^/\\]-)$") or default or ""
+end
+
+local function splitname(name)
+    local n, s = match(name,"^(.+)%.([^/\\]-)$")
+    return n or name, s or ""
+end
+
+file.basename = basename
+file.dirname  = dirname
+file.nameonly = nameonly
+file.extname  = extname
+file.suffix   = extname
+
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
 end
 
-function file.addsuffix(filename, suffix)
+function file.addsuffix(filename, suffix, criterium)
     if not suffix or suffix == "" then
         return filename
-    elseif not find(filename,"%.[%a%d]+$") then
+    elseif criterium == true then
         return filename .. "." .. suffix
     else
-        return filename
+        local n, s = splitname(filename)
+        if s and s ~= "" then
+            local t = type(criterium)
+            if t == "table" then
+                -- keep if in criterium
+                for i=1,#criterium do
+                    if s == criterium[i] then
+                        return filename
+                    end
+                end
+            elseif t == "string" then
+                -- keep if criterium
+                if s == criterium then
+                    return filename
+                end
+            end
+        end
+        return n .. "." .. suffix
     end
 end
+
+--~ print(file.addsuffix("name","new")                   .. "-> name.new")
+--~ print(file.addsuffix("name.old","new")               .. "-> name.old")
+--~ print(file.addsuffix("name.old","new",true)          .. "-> name.old.new")
+--~ print(file.addsuffix("name.old","new","new")         .. "-> name.new")
+--~ print(file.addsuffix("name.old","new","old")         .. "-> name.old")
+--~ print(file.addsuffix("name.old","new","foo")         .. "-> name.new")
+--~ print(file.addsuffix("name.old","new",{"foo","bar"}) .. "-> name.new")
+--~ print(file.addsuffix("name.old","new",{"old","bar"}) .. "-> name.old")
 
 function file.replacesuffix(filename, suffix)
     return (gsub(filename,"%.[%a%d]+$","")) .. "." .. suffix
 end
-
-function file.dirname(name,default)
-    return match(name,"^(.+)[/\\].-$") or (default or "")
-end
-
-function file.basename(name)
-    return match(name,"^.+[/\\](.-)$") or name
-end
-
-function file.nameonly(name)
-    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
-end
-
-function file.extname(name,default)
-    return match(name,"^.+%.([^/\\]-)$") or default or ""
-end
-
-file.suffix = file.extname
 
 --~ function file.join(...)
 --~     local pth = concat({...},"/")
@@ -2184,7 +2219,7 @@ end
 --~ print(file.join("//nas-1","/y"))
 
 function file.iswritable(name)
-    local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
+    local a = lfs.attributes(name) or lfs.attributes(dirname(name,"."))
     return a and sub(a.permissions,2,2) == "w"
 end
 
@@ -9328,8 +9363,11 @@ function resolvers.expand_variables()
     local expansions, environment, variables = { }, instance.environment, instance.variables
     local env = resolvers.env
     instance.expansions = expansions
-    if instance.engine   ~= "" then environment['engine']   = instance.engine   end
-    if instance.progname ~= "" then environment['progname'] = instance.progname end
+    local engine, progname = instance.engine, instance.progname
+    if type(engine)   ~= "string" then instance.engine,   engine   = "", "" end
+    if type(progname) ~= "string" then instance.progname, progname = "", "" end
+    if engine   ~= "" then environment['engine']   = engine   end
+    if progname ~= "" then environment['progname'] = progname end
     for k,v in next, environment do
         local a, b = match(k,"^(%a+)%_(.*)%s*$")
         if a and b then
@@ -9733,7 +9771,8 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     end
                 else
                     local suffixes = resolvers.suffixes_of_format(instance.format)
-                    for _, s in next, suffixes do
+                    for i=1,#suffixes do
+                        local s = suffixes[i]
                         forcedname = filename .. "." .. s
                         if resolvers.isreadable.file(forcedname) then
                             if trace_locating then
@@ -9795,6 +9834,10 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
     else
         -- search spec
         local filetype, extra, done, wantedfiles, ext = '', nil, false, { }, file.extname(filename)
+        -- tricky as filename can be bla.1.2.3
+--~         if not suffixmap[ext] then --- probably needs to be done elsewhere too
+--~             wantedfiles[#wantedfiles+1] = filename
+--~         end
         if ext == "" then
             if not instance.force_suffixes then
                 wantedfiles[#wantedfiles+1] = filename
@@ -9803,7 +9846,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             wantedfiles[#wantedfiles+1] = filename
         end
         if instance.format == "" then
-            if ext == "" then
+            if ext == "" or not suffixmap[ext] then
                 local forcedname = filename .. '.tex'
                 wantedfiles[#wantedfiles+1] = forcedname
                 filetype = resolvers.format_of_suffix(forcedname)
@@ -9817,10 +9860,10 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 end
             end
         else
-            if ext == "" then
-                local suffixes = resolvers.suffixes_of_format(instance.format)
-                for _, s in next, suffixes do
-                    wantedfiles[#wantedfiles+1] = filename .. "." .. s
+            local suffixes = resolvers.suffixes_of_format(instance.format)
+            if ext == "" or not suffixmap[ext] then
+                for i=1,#suffixes do
+                    wantedfiles[#wantedfiles+1] = filename .. "." .. suffixes[i]
                 end
             end
             filetype = instance.format
@@ -9897,16 +9940,16 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                             done = true
                             if instance.allresults then
                                 if trace_detail then
-                                    logs.report("fileio","match in hash for file '%s' on path '%s', continue scanning",f,d)
+                                    logs.report("fileio","match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
                                 end
                             else
                                 if trace_detail then
-                                    logs.report("fileio","match in hash for file '%s' on path '%s', quit scanning",f,d)
+                                    logs.report("fileio","match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
                                 end
                                 break
                             end
                         elseif trace_detail then
-                            logs.report("fileio","no match in hash for file '%s' on path '%s'",f,d)
+                            logs.report("fileio","no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
                         end
                     end
                 end
@@ -10104,6 +10147,8 @@ function resolvers.load(option)
         resolvers.automount()
     end
     statistics.stoptiming(instance)
+    local files = instance.files
+    return files and next(files)
 end
 
 function resolvers.for_files(command, files, filetype, mustexist)
@@ -10866,11 +10911,11 @@ function statistics.check_fmt_status(texname)
                 local sourcehash = md5.hex(io.loaddata(resolvers.find_file(luv.sourcefile)) or "unknown")
                 local luvbanner = luv.enginebanner or "?"
                 if luvbanner ~= enginebanner then
-                    return string.format("engine mismatch (luv:%s <> bin:%s)",luvbanner,enginebanner)
+                    return format("engine mismatch (luv: %s <> bin: %s)",luvbanner,enginebanner)
                 end
                 local luvhash = luv.sourcehash or "?"
                 if luvhash ~= sourcehash then
-                    return string.format("source mismatch (luv:%s <> bin:%s)",luvhash,sourcehash)
+                    return format("source mismatch (luv: %s <> bin: %s)",luvhash,sourcehash)
                 end
             else
                 return "invalid status file"
@@ -12165,7 +12210,7 @@ function runners.execute_program(fullname)
     return false
 end
 
--- the --usekpse flag will fallback on kpse (hm, we can better update mtx-stubs)
+-- the --usekpse flag will fallback (not default) on kpse (hm, we can better update mtx-stubs)
 
 local windows_stub = '@echo off\013\010setlocal\013\010set ownpath=%%~dp0%%\013\010texlua "%%ownpath%%mtxrun.lua" --usekpse --execute %s %%*\013\010endlocal\013\010'
 local unix_stub    = '#!/bin/sh\010mtxrun --usekpse --execute %s \"$@\"\010'
@@ -12560,7 +12605,14 @@ if environment.argument("usekpse") or environment.argument("forcekpse") or is_mk
 
 else
 
-    resolvers.load()
+    if not resolvers.load() then
+        logs.simple("forcing cache reload")
+        instance.renewcache = true
+        logs.setverbose(true)
+        if not resolvers.load() then
+            logs.simple("there is something wrong with your system")
+        end
+    end
 
 end
 

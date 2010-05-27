@@ -233,18 +233,29 @@ end
 
 define.resolvers = resolvers
 
+-- todo: reporter
+
 function define.resolvers.file(specification)
-    specification.forced = file.extname(specification.name)
-    specification.name = file.removesuffix(specification.name)
+    local suffix = file.suffix(specification.name)
+    if fonts.formats[suffix] then
+        specification.forced = suffix
+        specification.name = file.removesuffix(specification.name)
+    end
 end
 
 function define.resolvers.name(specification)
     local resolve = fonts.names.resolve
     if resolve then
-        specification.resolved, specification.sub = fonts.names.resolve(specification.name,specification.sub)
-        if specification.resolved then
-            specification.forced = file.extname(specification.resolved)
-            specification.name = file.removesuffix(specification.resolved)
+        local resolved, sub = fonts.names.resolve(specification.name,specification.sub)
+        specification.resolved, specification.sub = resolved, sub
+        if resolved then
+            local suffix = file.suffix(resolved)
+            if fonts.formats[suffix] then
+                specification.forced = suffix
+                specification.name = file.removesuffix(resolved)
+            else
+                specification.name = resolved
+            end
         end
     else
         define.resolvers.file(specification)
@@ -456,7 +467,7 @@ end
 local function check_otf(forced,specification,suffix,what)
     local name = specification.name
     if forced then
-        name = file.addsuffix(name,suffix)
+        name = file.addsuffix(name,suffix,true)
     end
     local fullname, tfmtable = resolvers.findbinfile(name,suffix) or "", nil -- one shot
     if fullname == "" then

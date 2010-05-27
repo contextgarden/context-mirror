@@ -921,6 +921,9 @@ local function foundname(name,sub) -- sub is not used currently
             return found
         end
     end
+    if trace_names then
+        logs.report("fonts","font with name '%s' cannot be found",name)
+    end
 end
 
 function names.resolvedspecification(askedname,sub)

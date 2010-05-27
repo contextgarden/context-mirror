@@ -1223,8 +1223,11 @@ function resolvers.expand_variables()
     local expansions, environment, variables = { }, instance.environment, instance.variables
     local env = resolvers.env
     instance.expansions = expansions
-    if instance.engine   ~= "" then environment['engine']   = instance.engine   end
-    if instance.progname ~= "" then environment['progname'] = instance.progname end
+    local engine, progname = instance.engine, instance.progname
+    if type(engine)   ~= "string" then instance.engine,   engine   = "", "" end
+    if type(progname) ~= "string" then instance.progname, progname = "", "" end
+    if engine   ~= "" then environment['engine']   = engine   end
+    if progname ~= "" then environment['progname'] = progname end
     for k,v in next, environment do
         local a, b = match(k,"^(%a+)%_(.*)%s*$")
         if a and b then
@@ -1628,7 +1631,8 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     end
                 else
                     local suffixes = resolvers.suffixes_of_format(instance.format)
-                    for _, s in next, suffixes do
+                    for i=1,#suffixes do
+                        local s = suffixes[i]
                         forcedname = filename .. "." .. s
                         if resolvers.isreadable.file(forcedname) then
                             if trace_locating then
@@ -1690,6 +1694,10 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
     else
         -- search spec
         local filetype, extra, done, wantedfiles, ext = '', nil, false, { }, file.extname(filename)
+        -- tricky as filename can be bla.1.2.3
+--~         if not suffixmap[ext] then --- probably needs to be done elsewhere too
+--~             wantedfiles[#wantedfiles+1] = filename
+--~         end
         if ext == "" then
             if not instance.force_suffixes then
                 wantedfiles[#wantedfiles+1] = filename
@@ -1698,7 +1706,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             wantedfiles[#wantedfiles+1] = filename
         end
         if instance.format == "" then
-            if ext == "" then
+            if ext == "" or not suffixmap[ext] then
                 local forcedname = filename .. '.tex'
                 wantedfiles[#wantedfiles+1] = forcedname
                 filetype = resolvers.format_of_suffix(forcedname)
@@ -1712,10 +1720,10 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 end
             end
         else
-            if ext == "" then
-                local suffixes = resolvers.suffixes_of_format(instance.format)
-                for _, s in next, suffixes do
-                    wantedfiles[#wantedfiles+1] = filename .. "." .. s
+            local suffixes = resolvers.suffixes_of_format(instance.format)
+            if ext == "" or not suffixmap[ext] then
+                for i=1,#suffixes do
+                    wantedfiles[#wantedfiles+1] = filename .. "." .. suffixes[i]
                 end
             end
             filetype = instance.format
@@ -1792,16 +1800,16 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                             done = true
                             if instance.allresults then
                                 if trace_detail then
-                                    logs.report("fileio","match in hash for file '%s' on path '%s', continue scanning",f,d)
+                                    logs.report("fileio","match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
                                 end
                             else
                                 if trace_detail then
-                                    logs.report("fileio","match in hash for file '%s' on path '%s', quit scanning",f,d)
+                                    logs.report("fileio","match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
                                 end
                                 break
                             end
                         elseif trace_detail then
-                            logs.report("fileio","no match in hash for file '%s' on path '%s'",f,d)
+                            logs.report("fileio","no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
                         end
                     end
                 end
@@ -1999,6 +2007,8 @@ function resolvers.load(option)
         resolvers.automount()
     end
     statistics.stoptiming(instance)
+    local files = instance.files
+    return files and next(files)
 end
 
 function resolvers.for_files(command, files, filetype, mustexist)

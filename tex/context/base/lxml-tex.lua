@@ -932,9 +932,10 @@ local function index(collected,n)
     end
 end
 
-local function command(collected,cmd)
-    if collected then
-        for c=1,#collected do
+local function command(collected,cmd,otherwise)
+    local n = collected and #collected
+    if n and n > 0 then
+        for c=1,n do
             local e = collected[c]
             local ix = e.ix
             if not ix then
@@ -943,6 +944,8 @@ local function command(collected,cmd)
             end
             texsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",e.name,"::",ix,"}")
         end
+    elseif otherwise then
+        texsprint(ctxcatcodes,"\\xmlw{",otherwise,"}{#1}")
     end
 end
 

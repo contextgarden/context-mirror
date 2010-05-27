@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/24/10 13:05:12
+-- merge date  : 05/27/10 13:47:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -1504,41 +1504,76 @@ local concat = table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
 
+local function dirname(name,default)
+    return match(name,"^(.+)[/\\].-$") or (default or "")
+end
+
+local function basename(name)
+    return match(name,"^.+[/\\](.-)$") or name
+end
+
+local function nameonly(name)
+    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
+end
+
+local function extname(name,default)
+    return match(name,"^.+%.([^/\\]-)$") or default or ""
+end
+
+local function splitname(name)
+    local n, s = match(name,"^(.+)%.([^/\\]-)$")
+    return n or name, s or ""
+end
+
+file.basename = basename
+file.dirname  = dirname
+file.nameonly = nameonly
+file.extname  = extname
+file.suffix   = extname
+
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
 end
 
-function file.addsuffix(filename, suffix)
+function file.addsuffix(filename, suffix, criterium)
     if not suffix or suffix == "" then
         return filename
-    elseif not find(filename,"%.[%a%d]+$") then
+    elseif criterium == true then
         return filename .. "." .. suffix
     else
-        return filename
+        local n, s = splitname(filename)
+        if s and s ~= "" then
+            local t = type(criterium)
+            if t == "table" then
+                -- keep if in criterium
+                for i=1,#criterium do
+                    if s == criterium[i] then
+                        return filename
+                    end
+                end
+            elseif t == "string" then
+                -- keep if criterium
+                if s == criterium then
+                    return filename
+                end
+            end
+        end
+        return n .. "." .. suffix
     end
 end
+
+--~ print(file.addsuffix("name","new")                   .. "-> name.new")
+--~ print(file.addsuffix("name.old","new")               .. "-> name.old")
+--~ print(file.addsuffix("name.old","new",true)          .. "-> name.old.new")
+--~ print(file.addsuffix("name.old","new","new")         .. "-> name.new")
+--~ print(file.addsuffix("name.old","new","old")         .. "-> name.old")
+--~ print(file.addsuffix("name.old","new","foo")         .. "-> name.new")
+--~ print(file.addsuffix("name.old","new",{"foo","bar"}) .. "-> name.new")
+--~ print(file.addsuffix("name.old","new",{"old","bar"}) .. "-> name.old")
 
 function file.replacesuffix(filename, suffix)
     return (gsub(filename,"%.[%a%d]+$","")) .. "." .. suffix
 end
-
-function file.dirname(name,default)
-    return match(name,"^(.+)[/\\].-$") or (default or "")
-end
-
-function file.basename(name)
-    return match(name,"^.+[/\\](.-)$") or name
-end
-
-function file.nameonly(name)
-    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
-end
-
-function file.extname(name,default)
-    return match(name,"^.+%.([^/\\]-)$") or default or ""
-end
-
-file.suffix = file.extname
 
 --~ function file.join(...)
 --~     local pth = concat({...},"/")
@@ -1591,7 +1626,7 @@ end
 --~ print(file.join("//nas-1","/y"))
 
 function file.iswritable(name)
-    local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
+    local a = lfs.attributes(name) or lfs.attributes(dirname(name,"."))
     return a and sub(a.permissions,2,2) == "w"
 end
 
@@ -3533,6 +3568,7 @@ if not modules then modules = { } end modules ['font-ini'] = {
 local utf = unicode.utf8
 local format, serialize = string.format, table.serialize
 local write_nl = texio.write_nl
+local lower = string.lower
 
 if not fontloader then fontloader = fontforge end
 
@@ -3604,12 +3640,12 @@ end
 fonts.formats = { }
 
 function fonts.fontformat(filename,default)
-    local extname = file.extname(filename)
+    local extname = lower(file.extname(filename))
     local format = fonts.formats[extname]
     if format then
         return format
     else
-        logs.report("fonts define","unable to detemine font format for '%s'",filename)
+        logs.report("fonts define","unable to determine font format for '%s'",filename)
         return default
     end
 end
@@ -11536,18 +11572,29 @@ end
 
 define.resolvers = resolvers
 
+-- todo: reporter
+
 function define.resolvers.file(specification)
-    specification.forced = file.extname(specification.name)
-    specification.name = file.removesuffix(specification.name)
+    local suffix = file.suffix(specification.name)
+    if fonts.formats[suffix] then
+        specification.forced = suffix
+        specification.name = file.removesuffix(specification.name)
+    end
 end
 
 function define.resolvers.name(specification)
     local resolve = fonts.names.resolve
     if resolve then
-        specification.resolved, specification.sub = fonts.names.resolve(specification.name,specification.sub)
-        if specification.resolved then
-            specification.forced = file.extname(specification.resolved)
-            specification.name = file.removesuffix(specification.resolved)
+        local resolved, sub = fonts.names.resolve(specification.name,specification.sub)
+        specification.resolved, specification.sub = resolved, sub
+        if resolved then
+            local suffix = file.suffix(resolved)
+            if fonts.formats[suffix] then
+                specification.forced = suffix
+                specification.name = file.removesuffix(resolved)
+            else
+                specification.name = resolved
+            end
         end
     else
         define.resolvers.file(specification)
@@ -11759,7 +11806,7 @@ end
 local function check_otf(forced,specification,suffix,what)
     local name = specification.name
     if forced then
-        name = file.addsuffix(name,suffix)
+        name = file.addsuffix(name,suffix,true)
     end
     local fullname, tfmtable = resolvers.findbinfile(name,suffix) or "", nil -- one shot
     if fullname == "" then

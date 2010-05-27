@@ -171,7 +171,7 @@
 \unexpanded\def\startsetups{} % to please dep checker
 \unexpanded\def\stopsetups {} % to please dep checker
 
-\expanded
+\expanded % will become obsolete
   {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
      {\begingroup\noexpand\doifnextoptionalelse
         {\noexpand\dostartsetupsA\@EA\noexpand\csname\e!stop\v!setups\endcsname}
@@ -241,7 +241,7 @@
 \def\dostartsetups
   {\ifthirdargument\@EA\dostartsetupsC\else\@EA\dostartsetupsD\fi}
 
-\long\def\dodostartsetups#1#2#3%
+\long\def\dodostartsetups#1#2#3% needs a speedup
   {\long\def\dododostartsetups##1#1%
      {\endgroup
       \dodoglobal % bah
