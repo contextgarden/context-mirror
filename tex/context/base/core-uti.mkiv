@@ -21,18 +21,6 @@
   {\ctxlua{jobvariables.save("\strippedcsname#1","#2")}}
 
 \appendtoks
-    \ctxlua{storage.dump()}% will move to lua
-\to \everydump
-
-\appendtoks
-    \ctxlua{storage.finalize()}% will move to lua
-\to \everyfinalizeluacode
-
-\appendtoks
-    \ctxlua{nodes.cleanup_reserved()}% will move to lua
-\to \everydump
-
-\appendtoks
     \ctxlua {
         job.comment("file: \jobname")
         job.comment("format: \contextformat")
@@ -44,23 +32,9 @@
 
 \def\notuccompression{\ctxlua{job.pack=false}}
 
-% cleaner, for the moment
-
-% \appendtoks
-%     \ctxlua {
-%         os.remove("\jobname.tui")
-%         os.remove("\jobname.tuo")
-%     }%
-% \to \everystarttext
-
 %D Some styles might use these use these commands:
 
-\newif \ifutilitydone
-\let   \checkutilities         \relax
-\let   \currentutilityfilename \jobname
-\def   \installprogram         {\dosingleempty\doinstallprogram}
-\def   \doinstallprogram   [#1]{\gobbleoneargument}
-\def   \installedprogram   [#1]{}
-\let   \installplugin          \gobblethreearguments
+\def\installprogram      {\dosingleempty\doinstallprogram}
+\def\doinstallprogram[#1]{\gobbleoneargument}
 
 \protect \endinput

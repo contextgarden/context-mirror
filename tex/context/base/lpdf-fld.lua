@@ -15,6 +15,8 @@ local lpegmatch = lpeg.match
 
 local trace_fields = false  trackers.register("widgets.fields",   function(v) trace_fields   = v end)
 
+local report_fields = logs.new("fields")
+
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 local variables = interfaces.variables
@@ -255,7 +257,7 @@ local function fieldstates(specification,forceyes,values,default)
         return
     end
     local v = aux.settings_to_array(values)
-    local yes, off
+    local yes, off, yesn, yesr, yesd, offn, offr, offd
     if #v == 1 then
         yes, off = v[1], v[1]
     else
@@ -423,7 +425,7 @@ function codeinjections.definefield(specification)
         local kind = specification.kind
         if not kind then
             if trace_fields then
-                logs.report("fields","invalid definition of '%s': unknown type",n)
+                report_fields("invalid definition of '%s': unknown type",n)
             end
         elseif kind == "radio" then
             local values = specification.values
@@ -434,10 +436,10 @@ function codeinjections.definefield(specification)
                 end
                 fields[n] = specification
                 if trace_fields then
-                    logs.report("fields","defining '%s' as radio",n or "?")
+                    report_fields("defining '%s' as radio",n or "?")
                 end
             elseif trace_fields then
-                logs.report("fields","invalid definition of radio '%s': missing values",n)
+                report_fields("invalid definition of radio '%s': missing values",n)
             end
         elseif kind == "sub" then
             -- not in main field list !
@@ -449,16 +451,16 @@ function codeinjections.definefield(specification)
                 end
                 if trace_fields then
                     local p = radios[n] and radios[n].parent
-                    logs.report("fields","defining '%s' as sub of radio '%s'",n or "?",p or "?")
+                    report_fields("defining '%s' as sub of radio '%s'",n or "?",p or "?")
                 end
             elseif trace_fields then
-                logs.report("fields","invalid definition of radio sub '%s': no parent",n)
+                report_fields("invalid definition of radio sub '%s': no parent",n)
             end
             predefinesymbols(specification)
         elseif kind == "text" or kind == "line" then
             fields[n] = specification
             if trace_fields then
-                logs.report("fields","defining '%s' as %s",n,kind)
+                report_fields("defining '%s' as %s",n,kind)
             end
             if specification.values ~= "" and specification.default == "" then
                 specification.default, specification.values = specification.values, nil
@@ -466,12 +468,12 @@ function codeinjections.definefield(specification)
         else
             fields[n] = specification
             if trace_fields then
-                logs.report("fields","defining '%s' as %s",n,kind)
+                report_fields("defining '%s' as %s",n,kind)
             end
             predefinesymbols(specification)
         end
     elseif trace_fields then
-        logs.report("fields","invalid definition of '%s': already defined",n)
+        report_fields("invalid definition of '%s': already defined",n)
     end
 end
 
@@ -479,22 +481,22 @@ function codeinjections.clonefield(specification)
     local p, c, v = specification.parent, specification.children, specification.variant
     if not p or not c then
         if trace_fields then
-            logs.report("fields","invalid clone: children: '%s', parent '%s', variant: '%s'",p or "?",c or "?", v or "?")
+            report_fields("invalid clone: children: '%s', parent '%s', variant: '%s'",p or "?",c or "?", v or "?")
         end
     else
         for n in gmatch(c,"[^, ]+") do
             local f, r, c, x = fields[n], radios[n], clones[n], fields[p]
             if f or r or c then
                 if trace_fields then
-                    logs.report("fields","already cloned: child: '%s', parent '%s', variant: '%s'",p or "?",n or "?", v or "?")
+                    report_fields("already cloned: child: '%s', parent '%s', variant: '%s'",p or "?",n or "?", v or "?")
                 end
             elseif x then
                 if trace_fields then
-                    logs.report("fields","invalid clone: child: '%s', variant: '%s', no parent",n or "?", v or "?")
+                    report_fields("invalid clone: child: '%s', variant: '%s', no parent",n or "?", v or "?")
                 end
             else
                 if trace_fields then
-                    logs.report("fields","cloning: child: '%s', parent '%s', variant: '%s'",p or "?",n or "?", v or "?")
+                    report_fields("cloning: child: '%s', parent '%s', variant: '%s'",p or "?",n or "?", v or "?")
                 end
                 clones[n] = specification
                 predefinesymbols(specification)
@@ -601,7 +603,7 @@ local methods = { }
 function codeinjections.typesetfield(name,specification)
     local field = fields[name] or radios[name] or clones[name]
     if not field then
-        logs.report("fields", "unknown child '%s'",name)
+        report_fields( "unknown child '%s'",name)
         -- unknown field
         return
     end
@@ -613,7 +615,7 @@ function codeinjections.typesetfield(name,specification)
     if method then
         method(name,specification,variant)
     else
-        logs.report("fields", "unknown method '%s' for child '%s'",field.kind,name)
+        report_fields( "unknown method '%s' for child '%s'",field.kind,name)
     end
 end
 
@@ -638,12 +640,12 @@ end
 function methods.line(name,specification,variant,extras)
     local field = fields[name]
     if variant == "copy" or variant == "clone" then
-        logs.report("fields","todo: clones of text fields")
+        report_fields("todo: clones of text fields")
     end
     local kind = field.kind
     if not field.pobj then
         if trace_fields then
-            logs.report("fields","using parent text '%s'",name)
+            report_fields("using parent text '%s'",name)
         end
         if extras then
             enhance(specification,extras)
@@ -669,7 +671,7 @@ function methods.line(name,specification,variant,extras)
     end
     specification = field.specification or { } -- todo: radio spec
     if trace_fields then
-        logs.report("fields","using child text '%s'",name)
+        report_fields("using child text '%s'",name)
     end
     local d = pdfdictionary {
         Subtype = pdf_widget,
@@ -692,13 +694,13 @@ end
 function methods.choice(name,specification,variant,extras)
     local field = fields[name]
     if variant == "copy" or variant == "clone" then
-        logs.report("fields","todo: clones of choice fields")
+        report_fields("todo: clones of choice fields")
     end
     local kind = field.kind
     local d
     if not field.pobj then
         if trace_fields then
-            logs.report("fields","using parent choice '%s'",name)
+            report_fields("using parent choice '%s'",name)
         end
         if extras then
             enhance(specification,extras)
@@ -718,7 +720,7 @@ function methods.choice(name,specification,variant,extras)
     end
     specification = field.specification or { }
     if trace_fields then
-        logs.report("fields","using child choice '%s'",name)
+        report_fields("using child choice '%s'",name)
     end
     local d = pdfdictionary {
         Subtype = pdf_widget,
@@ -746,13 +748,13 @@ function methods.check(name,specification,variant)
     -- contrary to radio there is no way to associate then
     local field = fields[name]
     if variant == "copy" or variant == "clone" then
-        logs.report("fields","todo: clones of check fields")
+        report_fields("todo: clones of check fields")
     end
     local kind = field.kind
     local appearance, default = fieldstates(field,true)
     if not field.pobj then
         if trace_fields then
-            logs.report("fields","using parent check '%s'",name)
+            report_fields("using parent check '%s'",name)
         end
         local d = pdfdictionary {
             Subtype  = pdf_widget,
@@ -773,7 +775,7 @@ function methods.check(name,specification,variant)
     end
     specification = field.specification or { } -- todo: radio spec
     if trace_fields then
-        logs.report("fields","using child check '%s'",name)
+        report_fields("using child check '%s'",name)
     end
     local d = pdfdictionary {
         Subtype = pdf_widget,
@@ -794,12 +796,12 @@ end
 function methods.push(name,specification,variant)
     local field = fields[name]
     if variant == "copy" or variant == "clone" then
-        logs.report("fields","todo: clones of push fields")
+        report_fields("todo: clones of push fields")
     end
     local kind = field.kind
     if not field.pobj then
         if trace_fields then
-            logs.report("fields","using parent push '%s'",name)
+            report_fields("using parent push '%s'",name)
         end
         enhance(specification,"PushButton")
         local d = pdfdictionary {
@@ -818,7 +820,7 @@ function methods.push(name,specification,variant)
     end
     specification = field.specification or { } -- todo: radio spec
     if trace_fields then
-        logs.report("fields","using child push '%s'",name)
+        report_fields("using child push '%s'",name)
     end
     local d = pdfdictionary {
         Subtype = pdf_widget,
@@ -851,7 +853,7 @@ function methods.sub(name,specification,variant)
     local default = radiodefault(parent,field)
     if not parent.pobj then
         if trace_fields then
-            logs.report("fields","using parent '%s' of radio '%s' with values '%s' and default '%s'",parent.name,name,parent.values or "?",parent.default or "?")
+            report_fields("using parent '%s' of radio '%s' with values '%s' and default '%s'",parent.name,name,parent.values or "?",parent.default or "?")
         end
         local specification = parent.specification or { }
     --  enhance(specification,"Radio,RadiosInUnison")
@@ -868,7 +870,7 @@ function methods.sub(name,specification,variant)
         save_parent(parent,specification,d)
     end
     if trace_fields then
-        logs.report("fields","using child radio '%s' with values '%s'",name,values or "?")
+        report_fields("using child radio '%s' with values '%s'",name,values or "?")
     end
     local d = pdfdictionary {
         Subtype = pdf_widget,

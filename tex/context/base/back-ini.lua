@@ -8,9 +8,9 @@ if not modules then modules = { } end modules ['back-ini'] = {
 
 backends = backends or { }
 
-local trace_backend = false
+local trace_backend = false local function nothing() return nil end
 
-local function nothing() return nil end
+local report_backends = logs.new("backends")
 
 backends.nothing = nothing
 
@@ -107,7 +107,7 @@ function backends.install(what)
         local backend = backends[what]
         if backend then
             if trace_backend then
-                logs.report("backend", "initializing backend %s (%s)",what,backend.comment or "no comment")
+                report_backends("initializing backend %s (%s)",what,backend.comment or "no comment")
             end
             backends.current = what
             for _, category in next, { "nodeinjections", "codeinjections", "registrations"} do
@@ -117,18 +117,18 @@ function backends.install(what)
                     for name, meaning in next, whereto do
                         if plugin[name] then
                             whereto[name] = plugin[name]
-                        --  logs.report("backend", "installing function %s in category %s of %s",name,category,what)
+                        --  report_backends("installing function %s in category %s of %s",name,category,what)
                         elseif trace_backend then
-                            logs.report("backend", "no function %s in category %s of %s",name,category,what)
+                            report_backends("no function %s in category %s of %s",name,category,what)
                         end
                     end
                 elseif trace_backend then
-                    logs.report("backend", "no category %s in %s",category,what)
+                    report_backends("no category %s in %s",category,what)
                 end
             end
             backends.helpers = backend.helpers
         elseif trace_backend then
-            logs.report("backend", "no backend named %s",what)
+            report_backends("no backend named %s",what)
         end
     end
 end

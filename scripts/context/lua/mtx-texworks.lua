@@ -83,7 +83,7 @@ function scripts.texworks.start(indeed)
     end
 end
 
-logs.extendbanner("TeXworks Startup Script 1.00",true)
+logs.extendbanner("TeXworks Startup Script 1.00")
 
 messages.help = [[
 --start [--verbose]   start texworks

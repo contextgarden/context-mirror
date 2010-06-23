@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D We can experiment here with runtime loading, id est no longer
+%D We can experiment here with runtime loading, i.e. no longer
 %D use a format. However, we still need a stub then but it could
 %D as well be luatools (mtxrun) itself then.
 
@@ -51,7 +51,9 @@
 
 \newtoks\metatexversiontoks \metatexversiontoks\expandafter{\metatexversion} % at the lua end
 
+%loadcorefile{norm-ctx}
 \loadcorefile{syst-pln}      % plain tex initializations of internal registers (no further code)
+\loadmarkfile{syst-mes}
 
 \loadmarkfile{luat-cod}      %
 \loadmarkfile{luat-bas}      %
@@ -84,6 +86,10 @@
 \loadmarkfile{char-utf}
 \loadmarkfile{char-ini}
 \loadmarkfile{char-enc}      % \registerctxluafile{char-enc}{1.001}
+
+% attributes
+
+\loadmarkfile{attr-ini}
 
 % nodes
 

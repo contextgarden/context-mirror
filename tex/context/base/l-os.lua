@@ -8,24 +8,95 @@ if not modules then modules = { } end modules ['l-os'] = {
 
 -- maybe build io.flush in os.execute
 
-local find, format, gsub = string.find, string.format, string.gsub
+local find, format, gsub, upper = string.find, string.format, string.gsub, string.upper
 local random, ceil = math.random, math.ceil
+local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
+local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
-local execute, spawn, exec, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.flush
+-- The following code permits traversing the environment table, at least
+-- in luatex. Internally all environment names are uppercase.
+
+if not os.__getenv__ then
+
+    os.__getenv__ = os.getenv
+    os.__setenv__ = os.setenv
+
+    if os.env then
+
+        local osgetenv  = os.getenv
+        local ossetenv  = os.setenv
+        local osenv     = os.env      local _ = osenv.PATH -- initialize the table
+
+        function os.setenv(k,v)
+            if v == nil then
+                v = ""
+            end
+            local K = upper(k)
+            osenv[K] = v
+            ossetenv(K,v)
+        end
+
+        function os.getenv(k)
+            local K = upper(k)
+            local v = osenv[K] or osenv[k] or osgetenv(K) or osgetenv(k)
+            if v == "" then
+                return nil
+            else
+                return v
+            end
+        end
+
+    else
+
+        local ossetenv  = os.setenv
+        local osgetenv  = os.getenv
+        local osenv     = { }
+
+        function os.setenv(k,v)
+            if v == nil then
+                v = ""
+            end
+            local K = upper(k)
+            osenv[K] = v
+        end
+
+        function os.getenv(k)
+            local K = upper(k)
+            local v = osenv[K] or osgetenv(K) or osgetenv(k)
+            if v == "" then
+                return nil
+            else
+                return v
+            end
+        end
+
+        local function __index(t,k)
+            return os.getenv(k)
+        end
+        local function __newindex(t,k,v)
+            os.setenv(k,v)
+        end
+
+        os.env = { }
+
+        setmetatable(os.env, { __index = __index, __newindex = __newindex } )
+
+    end
+
+end
+
+-- end of environment hack
+
+local execute, spawn, exec, iopopen, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.popen, io.flush
 
 function os.execute(...) ioflush() return execute(...) end
 function os.spawn  (...) ioflush() return spawn  (...) end
 function os.exec   (...) ioflush() return exec   (...) end
+function io.popen  (...) ioflush() return iopopen(...) end
 
 function os.resultof(command)
-    ioflush() -- else messed up logging
     local handle = io.popen(command,"r")
-    if not handle then
-    --  print("unknown command '".. command .. "' in os.resultof")
-        return ""
-    else
-        return handle:read("*all") or ""
-    end
+    return handle and handle:read("*all") or ""
 end
 
 --~ os.type     : windows | unix (new, we already guessed os.platform)
@@ -101,24 +172,6 @@ osmt.__index = function(t,k)
 end
 
 setmetatable(os,osmt)
-
-if not os.setenv then
-
-    -- we still store them but they won't be seen in
-    -- child processes although we might pass them some day
-    -- using command concatination
-
-    local env, getenv = { }, os.getenv
-
-    function os.setenv(k,v)
-        env[k] = v
-    end
-
-    function os.getenv(k)
-        return env[k] or getenv(k)
-    end
-
-end
 
 -- we can use HOSTTYPE on some platforms
 
@@ -240,7 +293,7 @@ elseif name == "kfreebsd" then
         -- we sometims have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
         if find(architecture,"x86_64") then
-            platform = "kfreebsd-64"
+            platform = "kfreebsd-amd64"
         else
             platform = "kfreebsd-i386"
         end

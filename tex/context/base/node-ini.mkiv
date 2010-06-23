@@ -33,41 +33,6 @@
 \registerctxluafile{node-inj}{1.001} % we might split it off
 \registerctxluafile{node-typ}{1.001} % experimental
 
-\newtoks \attributesresetlist
-
-\ifdefined \v!global \else \def\v!global{global} \fi % for metatex
-
-\unexpanded\def\defineattribute
-  {\dodoubleempty\dodefineattribute}
-
-\def\dodefineattribute[#1][#2]% alternatively we can let lua do the housekeeping
-  {\expandafter\newattribute\csname @attr@#1\endcsname
-   \expandafter        \xdef\csname :attr:#1\endcsname{\number\lastallocatedattribute}%
-   \ctxlua{attributes.define("#1",\number\lastallocatedattribute)}%
-  %\writestatus\m!systems{defining attribute #1 with number \number\lastallocatedattribute}%
-   \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
-
-\unexpanded\def\definesystemattribute
-  {\dodoubleempty\dodefinesystemattribute}
-
-\def\dodefinesystemattribute[#1][#2]% alternatively we can let lua do the housekeeping
-  {\scratchcounter\ctxlua{tex.print(attributes.private("#1"))}\relax
-   \global\expandafter\attributedef\csname @attr@#1\endcsname\scratchcounter
-          \expandafter        \xdef\csname :attr:#1\endcsname{\number\scratchcounter}%
-  %\writestatus\m!systems{defining system attribute #1 with number \number\scratchcounter}%
-   \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
-
-% expandable so we can \edef them for speed
-
-\def\dosetattribute#1#2{\csname @attr@#1\endcsname#2\relax}
-\def\doresetattribute#1{\csname @attr@#1\endcsname\attributeunsetvalue}
-\def\dogetattribute  #1{\number\csname @attr@#1\endcsname}
-\def\dogetattributeid#1{\csname :attr:#1\endcsname}
-
-\let\dompattribute\gobbletwoarguments
-
-\def\resetallattributes{\the\attributesresetlist}
-
 \newcount\shownodescounter
 
 \def\shownextnodes     {\afterassignment\doshownodes\shownextnodescounter}

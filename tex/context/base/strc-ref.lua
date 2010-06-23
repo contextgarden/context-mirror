@@ -12,6 +12,8 @@ local texsprint, texwrite, texcount, texsetcount = tex.sprint, tex.write, tex.co
 
 local trace_referencing = false  trackers.register("structure.referencing", function(v) trace_referencing = v end)
 
+local report_references = logs.new("references")
+
 local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
 local constants   = interfaces.constants
@@ -226,7 +228,7 @@ local function register_from_lists(collected,derived)
                     local t = { kind, i }
                     for s in gmatch(reference,"%s*([^,]+)") do
                         if trace_referencing then
-                            logs.report("referencing","list entry %s provides %s reference '%s' on realpage %s",i,kind,s,realpage)
+                            report_references("list entry %s provides %s reference '%s' on realpage %s",i,kind,s,realpage)
                         end
                         d[s] = t -- share them
                     end
@@ -633,7 +635,7 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                         set.has_tex = true
                     end
                 else
-                --  logs.report("references","funny pattern: %s",ri or "?")
+                --  report_references("funny pattern: %s",ri or "?")
                 end
             end
         end
@@ -988,17 +990,17 @@ function jobreferences.filter(name,...) -- number page title ...
             filter = filter and (filter[name] or filter.unknown or filters.generic[name] or filters.generic.unknown)
             if filter then
                 if trace_referencing then
-                    logs.report("referencing","name '%s', kind '%s', using dedicated filter",name,kind)
+                    report_references("name '%s', kind '%s', using dedicated filter",name,kind)
                 end
                 filter(data,name,...)
             elseif trace_referencing then
-                logs.report("referencing","name '%s', kind '%s', using generic filter",name,kind)
+                report_references("name '%s', kind '%s', using generic filter",name,kind)
             end
         elseif trace_referencing then
-            logs.report("referencing","name '%s', unknown kind",name)
+            report_references("name '%s', unknown kind",name)
         end
     elseif trace_referencing then
-        logs.report("referencing","name '%s', no reference",name)
+        report_references("name '%s', no reference",name)
     end
 end
 

@@ -25,6 +25,8 @@ buffers.visualizers = { }
 local trace_run       = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
 local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
+local report_buffers = logs.new("buffers")
+
 local utf = unicode.utf8
 
 local concat, texsprint, texprint, texwrite = table.concat, tex.sprint, tex.print, tex.write
@@ -344,7 +346,7 @@ function buffers.evaluate(name)
     if ok then
         ok()
     else
-        logs.report("buffers","invalid lua code in buffer '%s'",name)
+        report_buffers("invalid lua code in buffer '%s'",name)
     end
 end
 
@@ -431,10 +433,10 @@ function buffers.loadvisualizer(name)
             hn = handlers[visualizers.defaultname]
             handlers[name] = hn
             if trace_visualize then
-                logs.report("buffers","mapping '%s' visualizer onto '%s'",name,visualizers.defaultname)
+                report_buffers("mapping '%s' visualizer onto '%s'",name,visualizers.defaultname)
             end
         elseif trace_visualize then
-            logs.report("buffers","loading '%s' visualizer",name)
+            report_buffers("loading '%s' visualizer",name)
         end
         return hn
     end
@@ -455,13 +457,13 @@ function buffers.setvisualizer(str)
     currenthandler = handlers[currentvisualizer]
     if currenthandler then
     --  if trace_visualize then
-    --      logs.report("buffers","enabling specific '%s' visualizer",currentvisualizer)
+    --      report_buffers("enabling specific '%s' visualizer",currentvisualizer)
     --  end
     else
         currentvisualizer = visualizers.defaultname
         currenthandler = handlers.default
     --  if trace_visualize then
-    --      logs.report("buffers","enabling default visualizer '%s'",currentvisualizer)
+    --      report_buffers("enabling default visualizer '%s'",currentvisualizer)
     --  end
     end
     if currenthandler.reset then
@@ -775,7 +777,7 @@ function buffers.set_escape(name,pair)
         if pair == variables.no then
             visualizer.flush_line = visualizer.normal_flush_line or visualizer.flush_line
             if trace_visualize then
-                logs.report("buffers","resetting escape range for visualizer '%s'",name)
+                report_buffers("resetting escape range for visualizer '%s'",name)
             end
         else
             local start, stop
@@ -796,10 +798,10 @@ function buffers.set_escape(name,pair)
                     flush_escaped_line(str,pattern,visualizer.normal_flush_line)
                 end
                 if trace_visualize then
-                    logs.report("buffers","setting escape range for visualizer '%s' to %s -> %s",name,start,stop)
+                    report_buffers("setting escape range for visualizer '%s' to %s -> %s",name,start,stop)
                 end
             elseif trace_visualize then
-                logs.report("buffers","problematic escape specification '%s' for visualizer '%s'",pair,name)
+                report_buffers("problematic escape specification '%s' for visualizer '%s'",pair,name)
             end
         end
     end

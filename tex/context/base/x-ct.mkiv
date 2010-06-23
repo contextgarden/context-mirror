@@ -15,7 +15,7 @@
 
 \startmodule [ct]
 
-\ctxloadluafile{x-ct}{}
+\registerctxluafile{x-ct}{}
 
 \startxmlsetups xml:context:process
     \xmlsetfunction {\xmldocument} {context:tabulate}    {lxml.context.tabulate}

@@ -14,7 +14,7 @@
 %D We've split the functionality of syst-cat.* over more files
 %D now so that we can load more selectively.
 
-\registerctxluafile{catc-ini} {1.001}
+\registerctxluafile{catc-ini}{1.001}
 
 %D A long standing wish has been the availability of catcode
 %D arrays. Because traditional \TEX\ does not provide this we
@@ -55,9 +55,7 @@
   {\global\advance\cctdefcounter\plusone
    \expandafter\xdef\csname @@ccn:\number\cctdefcounter\endcsname{\string#1}% logging
    \global\chardef#1\cctdefcounter
-   \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}%
-   % we have two ways to access catcodetable numbers
-   \startruntimectxluacode tex.\expandafter\gobbleoneargument\string#1 = \number#1 ;\stopruntimectxluacode}
+   \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}}
 
 \newcatcodetable \scratchcatcodes \initcatcodetable\scratchcatcodes
 

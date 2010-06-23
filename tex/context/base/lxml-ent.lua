@@ -24,6 +24,8 @@ original entity is returned.</p>
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
+local report_xml = logs.new("xml")
+
 xml.entities = xml.entities or { } -- xml.entity_handler == function
 
 storage.register("xml/entities",xml.entities,"xml.entities") -- this will move to lxml
@@ -37,7 +39,7 @@ local parsedentity = xml.parsedentitylpeg
 function xml.register_entity(key,value)
     entities[key] = value
     if trace_entities then
-        logs.report("xml","registering entity '%s' as: %s",key,value)
+        report_xml("registering entity '%s' as: %s",key,value)
     end
 end
 

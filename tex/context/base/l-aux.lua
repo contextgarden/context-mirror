@@ -70,11 +70,7 @@ end
 function aux.settings_to_hash(str,existing)
     if str and str ~= "" then
         hash = existing or { }
-        if moretolerant then
-            lpegmatch(pattern_b_s,str)
-        else
-            lpegmatch(pattern_a_s,str)
-        end
+        lpegmatch(pattern_a_s,str)
         return hash
     else
         return { }

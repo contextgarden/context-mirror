@@ -13,6 +13,8 @@ if not modules then modules = { } end modules ['chem-str'] = {
 local trace_structure = false  trackers.register("chemistry.structure",  function(v) trace_structure = v end)
 local trace_textstack = false  trackers.register("chemistry.textstack",  function(v) trace_textstack = v end)
 
+local report_chemistry = logs.new("chemistry")
+
 local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.match, string.lower, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local apply = structure.processors.apply
@@ -170,7 +172,7 @@ local function fetch(txt)
     end
     if t then
         if trace_textstack then
-            logs.report("chemical", "fetching from stack %s slot %s: %s",txt,st.n,t)
+            report_chemistry("fetching from stack %s slot %s: %s",txt,st.n,t)
         end
 st.n = st.n + 1
     end
@@ -441,7 +443,7 @@ function chemicals.stop()
     metacode[#metacode+1] = "chem_stop_structure ;"
     local mpcode = concat(metacode,"\n")
     if trace_structure then
-        logs.report("chemical", "metapost code:\n%s", mpcode)
+        report_chemistry("metapost code:\n%s", mpcode)
     end
     metapost.graphic(chemicals.instance,chemicals.format,mpcode)
     metacode = nil

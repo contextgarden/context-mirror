@@ -443,13 +443,6 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         --
         setalways("\\unprotect")
         --
-        setalways("%% special commands, mostly for the ctx development team")
-        --
-        if environment.argument("dumpdelta") then
-            setalways("\\tracersdumpdelta")
-        elseif environment.argument("dumphash") then
-            setalways("\\tracersdumphash")
-        end
         setalways("%% feedback and basic job control")
         if type(environment.argument("track")) == "string" then
             setvalue ("track"    , "\\enabletrackers[%s]")
@@ -591,9 +584,9 @@ scripts.context.interfaces = {
 scripts.context.defaultformats  = {
     "cont-en",
     "cont-nl",
-    "mptopdf",
---  "metatex",
-    "metafun",
+--  "mptopdf", -- todo: mak emkiv variant
+--  "metatex", -- will show up soon
+--  "metafun", -- todo: mp formats
 --  "plain"
 }
 
@@ -686,7 +679,7 @@ function scripts.context.run(ctxdata,filename)
                 local filename = files[i]
                 local basename, pathname = file.basename(filename), file.dirname(filename)
                 local jobname = file.removesuffix(basename)
-                if pathname == "" then
+                if pathname == "" and not environment.argument("global") then
                     filename = "./" .. filename
                 end
                 -- look at the first line
@@ -747,14 +740,23 @@ function scripts.context.run(ctxdata,filename)
                             oldbase = file.removesuffix(jobname)
                             newbase = file.removesuffix(resultname)
                             if oldbase ~= newbase then
-                                for _, suffix in next, scripts.context.beforesuffixes do
-                                    local oldname = file.addsuffix(oldbase,suffix)
-                                    local newname = file.addsuffix(newbase,suffix)
-                                    local tmpname = "keep-"..oldname
-                                    os.remove(tmpname)
-                                    os.rename(oldname,tmpname)
-                                    os.remove(oldname)
-                                    os.rename(newname,oldname)
+                                if environment.argument("purgeresult") then
+                                    for _, suffix in next, scripts.context.aftersuffixes do
+                                        local oldname = file.addsuffix(oldbase,suffix)
+                                        local newname = file.addsuffix(newbase,suffix)
+                                        os.remove(newname)
+                                        os.remove(oldname)
+                                    end
+                                else
+                                    for _, suffix in next, scripts.context.beforesuffixes do
+                                        local oldname = file.addsuffix(oldbase,suffix)
+                                        local newname = file.addsuffix(newbase,suffix)
+                                        local tmpname = "keep-"..oldname
+                                        os.remove(tmpname)
+                                        os.rename(oldname,tmpname)
+                                        os.remove(oldname)
+                                        os.rename(newname,oldname)
+                                    end
                                 end
                             else
                                 resultname = nil
@@ -851,13 +853,24 @@ function scripts.context.run(ctxdata,filename)
                         os.remove(jobname..".top")
                         --
                         if resultname then
-                            for _, suffix in next, scripts.context.aftersuffixes do
-                                local oldname = file.addsuffix(oldbase,suffix)
-                                local newname = file.addsuffix(newbase,suffix)
-                                local tmpname = "keep-"..oldname
-                                os.remove(newname)
-                                os.rename(oldname,newname)
-                                os.rename(tmpname,oldname)
+                            if environment.argument("purgeresult") then
+                                -- so, if there is no result then we don't get the old one, but
+                                -- related files (log etc) are still there for tracing purposes
+                                for _, suffix in next, scripts.context.aftersuffixes do
+                                    local oldname = file.addsuffix(oldbase,suffix)
+                                    local newname = file.addsuffix(newbase,suffix)
+                                    os.remove(newname) -- to be sure
+                                    os.rename(oldname,newname)
+                                end
+                            else
+                                for _, suffix in next, scripts.context.aftersuffixes do
+                                    local oldname = file.addsuffix(oldbase,suffix)
+                                    local newname = file.addsuffix(newbase,suffix)
+                                    local tmpname = "keep-"..oldname
+                                    os.remove(newname)
+                                    os.rename(oldname,newname)
+                                    os.rename(tmpname,oldname)
+                                end
                             end
                             logs.simple("result renamed to: %s",newbase)
                         end
@@ -953,32 +966,33 @@ function scripts.context.pipe()
     end
 end
 
+local make_mkiv_format = environment.make_format
+
+local function make_mkii_format(name,engine)
+    if environment.argument(engine) then
+        local command = string.format("mtxrun texexec.rb --make --%s %s",name,engine)
+        logs.simple("running command: %s",command)
+        os.spawn(command)
+    end
+end
+
 function scripts.context.make(name)
-    local runners = {
-        "luatools --make --compile ",
-        (environment.argument("pdftex") and "mtxrun texexec.rb --make --pdftex ") or false,
-        (environment.argument("xetex")  and "mtxrun texexec.rb --make --xetex " ) or false,
-    }
     local list = (name and { name }) or (environment.files[1] and environment.files) or scripts.context.defaultformats
     for i=1,#list do
         local name = list[i]
-        name = scripts.context.interfaces[name] or name
-        for i=1,#runners do
-            local runner = runners[i]
-            if runner then
-                local command = runner .. name
-                logs.simple("running command: %s",command)
-                os.spawn(command)
-            end
+        name = scripts.context.interfaces[name] or name or ""
+        if name ~= "" then
+            make_mkiv_format(name)
+            make_mkii_format(name,"pdftex")
+            make_mkii_format(name,"xetex")
         end
     end
 end
 
 function scripts.context.generate()
-    -- hack, should also be a shared function
-    local command = "luatools --generate "
-    logs.simple("running command: %s",command)
-    os.spawn(command)
+    resolvers.instance.renewcache = true
+    trackers.enable("resolvers.locating")
+    resolvers.load()
 end
 
 function scripts.context.ctx()
@@ -1271,9 +1285,10 @@ function scripts.context.timed(action)
     statistics.timed(action)
 end
 
-local zipname    = "cont-tmf.zip"
-local mainzip    = "http://www.pragma-ade.com/context/latest/" .. zipname
-local validtrees = { "texmf-local", "texmf-context" }
+local zipname     = "cont-tmf.zip"
+local mainzip     = "http://www.pragma-ade.com/context/latest/" .. zipname
+local validtrees  = { "texmf-local", "texmf-context" }
+local selfscripts = { "mtxrun.lua" } -- was: { "luatools.lua", "mtxrun.lua" }
 
 function zip.loaddata(zipfile,filename) -- should be in zip lib
     local f = zipfile:open(filename)
@@ -1380,7 +1395,7 @@ function scripts.context.update()
                 end
             end
         end
-        for _, scriptname in next, { "luatools.lua", "mtxrun.lua" } do
+        for _, scriptname in next, selfscripts do
             local oldscript = resolvers.find_file(scriptname) or ""
             if oldscript ~= "" and is_okay(oldscript) then
                 local newscript = "./scripts/context/lua/" .. scriptname
@@ -1396,8 +1411,10 @@ function scripts.context.update()
             end
         end
         if force then
-            os.execute("context --generate")
-            os.execute("context --make")
+         -- os.execute("context --generate")
+         -- os.execute("context --make")
+            scripts.context.generate()
+            scripts.context.make()
         end
     end
     if force then
@@ -1407,7 +1424,7 @@ function scripts.context.update()
     end
 end
 
-logs.extendbanner("ConTeXt Process Management 0.51",true)
+logs.extendbanner("ConTeXt Process Management 0.51")
 
 messages.help = [[
 --run                 process (one or more) files (default action)
@@ -1428,6 +1445,7 @@ messages.help = [[
 --result=name         rename the resulting output to the given name
 --trackers=list       show/set tracker variables
 --directives=list     show/set directive variables
+--purgeresult         purge result file before run
 
 --forcexml            force xml stub (optional flag: --mkii)
 --forcecld            force cld (context lua document) stub
@@ -1466,13 +1484,6 @@ expert options:
 
 --extra=name          process extra (mtx-context-<name> in distribution)
 --extras              show extras
-]]
-
-messages.private = [[
-private options:
-
---dumphash            dump hash table afterwards
---dumpdelta           dump hash table afterwards (only new entries)
 ]]
 
 messages.special = [[
@@ -1517,7 +1528,7 @@ elseif environment.argument("touch") then
 elseif environment.argument("update") then
     scripts.context.update()
 elseif environment.argument("expert") then
-    logs.help(table.join({ messages.expert, messages.private, messages.special },"\n"))
+    logs.help(table.join({ messages.expert, messages.special },"\n"))
 elseif environment.argument("extras") then
     scripts.context.extras()
 elseif environment.argument("extra") then

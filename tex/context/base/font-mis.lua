@@ -11,7 +11,7 @@ local lower, strip = string.lower, string.strip
 
 fonts.otf = fonts.otf or { }
 
-fonts.otf.version = fonts.otf.version or 2.650
+fonts.otf.version = fonts.otf.version or 2.653
 fonts.otf.pack    = true
 fonts.otf.cache   = containers.define("fonts", "otf", fonts.otf.version, true)
 
@@ -24,7 +24,7 @@ function fonts.otf.loadcached(filename,format,sub)
         hash = hash .. "-" .. sub
     end
     hash = containers.cleanname(hash)
-    local data = containers.read(fonts.otf.cache(), hash)
+    local data = containers.read(fonts.otf.cache, hash)
     if data and not data.verbose then
         fonts.otf.enhancers.unpack(data)
         return data

@@ -15,6 +15,8 @@ local variables, constants = interfaces.variables, interfaces.constants
 
 local trace_bibtex = false  trackers.register("publications.bibtex", function(v) trace_bibtex = v end)
 
+local report_publications = logs.new("publications")
+
 local hacks = bibtex.hacks
 
 local list, done, alldone, used, registered, ordered  = { }, { }, { }, { }, { }, { }
@@ -34,7 +36,7 @@ function hacks.process(settings)
         interfaces.showmessage("publications",3)
         io.savedata(file.addsuffix(jobname,"aux"),format(template,style,database))
         if trace_bibtex then
-            logs.report("publications","processing bibtex file '%s'",jobname)
+            report_publications("processing bibtex file '%s'",jobname)
         end
         os.execute(format("bibtex %s",jobname))
         -- purge 'm
@@ -43,7 +45,7 @@ end
 
 function hacks.register(str)
     if trace_bibtex then
-        logs.report("publications","registering bibtex entry '%s'",str)
+        report_publications("registering bibtex entry '%s'",str)
     end
     registered[#registered+1] = str
     ordered[str] = #registered
@@ -73,13 +75,13 @@ function hacks.add(str,listindex)
     end
 end
 
-local function compare(a,b)
-    local aa, bb = a[1], b[1]
+local function compare(a,b) -- quite some checking for non-nil
+    local aa, bb = a and a[1], b and b[1]
     if aa and bb then
-        return ordered[aa] < ordered[bb]
-    else
-        return true
+        local oa, ob = ordered[aa], ordered[bb]
+        return oa and ob and oa < ob
     end
+    return false
 end
 
 function hacks.flush(sortvariant)
@@ -106,7 +108,8 @@ end
 -- we look forward
 
 local function compare(a,b)
-    return a[3] < b[3]
+    local aa, bb = a and a[3], b and b[3]
+    return aa and bb and aa < bb
 end
 
 function hacks.resolve(prefix,block,reference) -- maybe already feed it split

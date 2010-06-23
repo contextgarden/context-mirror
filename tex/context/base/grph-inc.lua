@@ -50,6 +50,8 @@ local trace_programs   = false  trackers.register("figures.programs",   function
 local trace_conversion = false  trackers.register("figures.conversion", function(v) trace_conversion = v end)
 local trace_inclusion  = false  trackers.register("figures.inclusion",  function(v) trace_inclusion  = v end)
 
+local report_graphics = logs.new("graphics")
+
 --- some extra img functions ---
 
 local imgkeys = img.keys()
@@ -333,7 +335,7 @@ local function register(askedname,specification)
             end
             local converter = (newformat ~= format) and figures.converters[format]
             if trace_conversion then
-                logs.report("figures","checking conversion of '%s': old format '%s', new format '%s', conversion '%s'",
+                report_graphics("checking conversion of '%s': old format '%s', new format '%s', conversion '%s'",
                     askedname,format,newformat,conversion or "default")
             end
             if converter then
@@ -375,12 +377,12 @@ local function register(askedname,specification)
                 local newtime = lfs.attributes(newname,'modification') or 0
                 if oldtime > newtime then
                     if trace_conversion then
-                        logs.report("figures","converting '%s' from '%s' to '%s'",askedname,format,newformat)
+                        report_graphics("converting '%s' from '%s' to '%s'",askedname,format,newformat)
                     end
                     converter(oldname,newname)
                 else
                     if trace_conversion then
-                        logs.report("figures","no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
+                        report_graphics("no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
                     end
                 end
                 if io.exists(newname) then
@@ -430,10 +432,17 @@ local function locate(request) -- name, format, cache
     end
     -- protocol check
     local hashed = url.hashed(askedname)
-    if hashed and hashed.scheme ~= "file" then
-        local foundname = resolvers.findbinfile(askedname)
-        if foundname then
-            askedname = foundname
+    if hashed then
+        if hashed.scheme == "file" then
+            local path = hashed.path
+            if path and path ~= "" then
+                askedname = path
+            end
+        else
+            local foundname = resolvers.findbinfile(askedname)
+            if foundname then
+                askedname = foundname
+            end
         end
     end
     -- we could use the hashed data instead
@@ -745,11 +754,11 @@ function figures.checkers.generic(data)
         figure, data = f or figure, d or data
         figures.loaded[hash] = figure
         if trace_conversion then
-            logs.report("figures","new graphic, hash: %s",hash)
+            report_graphics("new graphic, hash: %s",hash)
         end
     else
         if trace_conversion then
-            logs.report("figures","existing graphic, hash: %s",hash)
+            report_graphics("existing graphic, hash: %s",hash)
         end
     end
     if figure then
@@ -820,7 +829,7 @@ function figures.checkers.mov(data)
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
     if trace_inclusion then
-        logs.report("figures","including movie '%s': width %s, height %s",foundname,width,height)
+        report_graphics("including movie '%s': width %s, height %s",foundname,width,height)
     end
     -- we need to push the node.write in between ... we could make a shared helper for this
     context.startfoundexternalfigure(width .. "sp",height .. "sp")
@@ -903,7 +912,7 @@ end
 local function runprogram(...)
     local command = format(...)
     if trace_conversion or trace_programs then
-        logs.report("figures","running %s",command)
+        report_graphics("running %s",command)
     end
     os.spawn(command)
 end
@@ -977,7 +986,7 @@ figures.programs.convert = {
 function gifconverter.pdf(oldname,newname)
     local convert = figures.programs.convert
     runprogram (
-        "convert %s %s",
+        "%s %s %s %s",
         convert.command, makeoptions(convert.options), oldname, newname
     )
 end

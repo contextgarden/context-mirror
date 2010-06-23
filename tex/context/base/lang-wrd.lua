@@ -10,6 +10,8 @@ local utf = unicode.utf8
 local lower, utfchar = string.lower, utf.char
 local lpegmatch = lpeg.match
 
+local report_languages = logs.new("languages")
+
 languages.words = languages.words or { }
 
 local words = languages.words
@@ -57,7 +59,7 @@ function words.load(tag,filename)
         wordsdata[tag] = list
         statistics.stoptiming(languages)
     else
-        logs.report("languages","missing words file '%s'",filename)
+        report_languages("missing words file '%s'",filename)
     end
 end
 
@@ -183,7 +185,7 @@ words.used = list
 
 function words.dump_used_words(name)
     if dump then
-        logs.report("languages","saving list of used words in '%s'",name)
+        report_languages("saving list of used words in '%s'",name)
         io.savedata(name,table.serialize(list))
     end
 end

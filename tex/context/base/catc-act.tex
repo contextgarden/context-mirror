@@ -58,4 +58,8 @@
 
 \def\makecharacteractive #1 {\catcode`#1\active}
 
+\def\installanddefineactivecharacter #1 % #2%
+  {\normalexpanded{\noexpand\installactivecharacter \utfchar{#1} }%
+   \defineactivecharacter #1 }% {#2}}
+
 \endinput

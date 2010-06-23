@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['node-fnt'] = {
     license   = "see context related readme files"
 }
 
+if not context then os.exit() end -- generic function in node-dum
+
 local next, type = next, type
 
 local trace_characters = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
@@ -32,20 +34,6 @@ local fontdata = fonts.ids
 -- elsewhere, danger: injected nodes will not be dealt with but that does not
 -- happen often; we could consider processing sublists but that might need mor
 -- checking later on; the current approach also permits variants
-
-if tex.attribute[0] < 0 then
-
-    texio.write_nl("log","!")
-    texio.write_nl("log","! Attribute 0 is reserved for ConTeXt's font feature management and has to be")
-    texio.write_nl("log","! set to zero. Also, some attributes in the range 1-255 are used for special")
-    texio.write_nl("log","! purposed so setting them at the TeX end might break the font handler.")
-    texio.write_nl("log","!")
-
-    tex.attribute[0] = 0 -- else no features
-
-end
-
--- this will be redone and split in a generic one and a context one
 
 function nodes.process_characters(head)
     -- either next or not, but definitely no already processed list
@@ -100,16 +88,17 @@ function nodes.process_characters(head)
             prevattr = attr
         end
     end
+
     -- we could combine these and just make the attribute nil
     if u == 1 then
         local font, processors = next(usedfonts)
         local n = #processors
         if n > 0 then
-            local h, d = processors[1](head,font,false)
+            local h, d = processors[1](head,font,0)
             head, done = h or head, done or d
             if n > 1 then
                 for i=2,n do
-                    local h, d = processors[i](head,font,false)
+                    local h, d = processors[i](head,font,0)
                     head, done = h or head, done or d
                 end
             end
@@ -117,11 +106,11 @@ function nodes.process_characters(head)
     elseif u > 0 then
         for font, processors in next, usedfonts do
             local n = #processors
-            local h, d = processors[1](head,font,false)
+            local h, d = processors[1](head,font,0)
             head, done = h or head, done or d
             if n > 1 then
                 for i=2,n do
-                    local h, d = processors[i](head,font,false)
+                    local h, d = processors[i](head,font,0)
                     head, done = h or head, done or d
                 end
             end
@@ -162,46 +151,5 @@ function nodes.process_characters(head)
     return head, true
 end
 
-if node.protect_glyphs then
-
-    nodes.protect_glyphs   = node.protect_glyphs
-    nodes.unprotect_glyphs = node.unprotect_glyphs
-
-else do
-
-    -- initial value subtype     : X000 0001 =  1 = 0x01 = char
-    --
-    -- expected before linebreak : X000 0000 =  0 = 0x00 = glyph
-    --                             X000 0010 =  2 = 0x02 = ligature
-    --                             X000 0100 =  4 = 0x04 = ghost
-    --                             X000 1010 = 10 = 0x0A = leftboundary lig
-    --                             X001 0010 = 18 = 0x12 = rightboundary lig
-    --                             X001 1010 = 26 = 0x1A = both boundaries lig
-    --                             X000 1100 = 12 = 0x1C = leftghost
-    --                             X001 0100 = 20 = 0x14 = rightghost
-
-    function nodes.protect_glyphs(head)
-        local done = false
-        for g in traverse_id(glyph,head) do
-            local s = g.subtype
-            if s == 1 then
-                done, g.subtype = true, 256
-            elseif s <= 256 then
-                done, g.subtype = true, 256 + s
-            end
-        end
-        return done
-    end
-
-    function nodes.unprotect_glyphs(head)
-        local done = false
-        for g in traverse_id(glyph,head) do
-            local s = g.subtype
-            if s > 256 then
-                done, g.subtype = true, s - 256
-            end
-        end
-        return done
-    end
-
-end end
+nodes.protect_glyphs   = node.protect_glyphs
+nodes.unprotect_glyphs = node.unprotect_glyphs

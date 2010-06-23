@@ -118,7 +118,14 @@
 \let\dofinishpagereference\dofinishfullreference
 \let\dofinishuserreference\dofinishfullreference
 
-\def\dodosetreference#1#2#3#4% kind labels userdata text -> todo: userdata
+\def\dodosetreference
+  {\ifreferencing
+      \expandafter\dododosetreference
+   \else
+      \expandafter\gobblefourarguments
+   \fi}
+
+\def\dododosetreference#1#2#3#4% kind labels userdata text -> todo: userdata
   {\ifreferencing
      \edef\currentreferencekind{#1}%
      \edef\currentreferencelabels{#2}%
@@ -917,8 +924,7 @@
         \c!label=, % can be {left}{right}
         \c!command=\in,
         #2]%
-     \setuvalue{#1}%
-       {\dontleavehmode\doexecutereferenceformat{#1}}%
+     \setuvalue{#1}{\dontleavehmode\doexecutereferenceformat{#1}}%
    \fi}
 
 \def\noexecutelabelreferenceformat#1%
@@ -933,12 +939,21 @@
 \def\doexecutereferenceformat#1%
   {\gdef\leftofreference {\csname\??rf#1\c!left \endcsname}%
    \gdef\rightofreference{\csname\??rf#1\c!right\endcsname}%
-   \global\let\textofreference\empty % otherwise ~ added
+   \glet\textofreference\empty % otherwise ~ added
    \doifelsevaluenothing{\??rf#1\c!label}\noexecutelabelreferenceformat\doexecutelabelreferenceformat{#1}}
 
-\let\leftofreference \relax
-\let\rightofreference\relax
-\let\textofreference \relax
+\newtoks\everyresetreferenceformat
+
+\def\resetreferenceformat
+  {\the\everyresetreferenceformat}
+
+\appendtoks
+    \glet\leftofreference \relax
+    \glet\rightofreference\relax
+    \glet\textofreference \relax
+\to \everyresetreferenceformat
+
+\resetreferenceformat
 
 % fails on metafun  {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
 %
@@ -973,7 +988,7 @@
 \unexpanded\def\dospecialin{\let\currentreferencecontent\currentreferencedefault\doinatreference}
 \unexpanded\def\dospecialat{\let\currentreferencecontent\currentreferencepage   \doinatreference}
 
-\newtoks\leftreferencetoks
+\newtoks\leftreferencetoks  % needs a reset too?
 \newtoks\rightreferencetoks
 
 \def\doinatreference
@@ -1022,6 +1037,7 @@
    \doifreferencefoundelse{#4}
      {\doifelsenothing{#1}\dosymbolreference\dowantedreference{#1}{#2}[#4]}%
      {\dounknownreference{#1}{#2}[#4]}%
+   \resetreferenceformat
    \endgroup}
 
 \let\dosymbolreference\dowantedreference

@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Tracking Macros / TeX}
 
+\registerctxluafile{trac-tex}{1.001}
+
 %D All tracing flags at the \TEX\ end will be redone this way so
 %D that we have a similar mechanism for \TEX\ and \LUA. Also, the
 %D currently used if's might become conditionals.
@@ -33,23 +35,8 @@
 \def\doenabletextracer #1{\csname  enabletracer#1\endcsname}
 \def\dodisabletextracer#1{\csname disabletracer#1\endcsname}
 
-% context --directives=system.nostatistics   ...
+% The next one is for Taco, although we can use directives as well:
 
-\def\nomkivstatistics{\ctxlua{statistics.enable = false}} % for taco
-
-\def\tracersdumphash {\ctxlua{tracers.register_dump_hash(false)}}
-\def\tracersdumpdelta{\ctxlua{tracers.register_dump_hash(true)}}
-
-% wrong place:
-
-\def\traceluausage
-  {\dosingleempty\dotraceluausage}
-
-\def\dotraceluausage[#1]%
-  {\ctxlua{debugger.enable()}%
-   \appendtoks
-     \ctxlua{debugger.disable() debugger.showstats(print,\doifnumberelse{#1}{#1}{5000})}^
-   \to \everybye
-   \gdef\dotraceluausage[#1]{}}
+\def\nomkivstatistics{\enabledirectives[system.nostatistics]}
 
 \protect \endinput

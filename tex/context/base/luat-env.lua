@@ -14,6 +14,8 @@ if not modules then modules = { } end modules ['luat-env'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
+local report_resolvers = logs.new("resolvers")
+
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquote, quote = string.unquote, string.quote
 
@@ -28,11 +30,13 @@ end
 -- dirty tricks
 
 if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
-    arg[-1]=arg[0] arg[0]=arg[2] for k=3,#arg do arg[k-2]=arg[k] end arg[#arg]=nil arg[#arg]=nil
-end
-
-if profiler and os.env["MTX_PROFILE_RUN"] == "YES" then
-    profiler.start("luatex-profile.log")
+    arg[-1] = arg[0]
+    arg[ 0] = arg[2]
+    for k=3,#arg do
+        arg[k-2] = arg[k]
+    end
+    arg[#arg] = nil -- last
+    arg[#arg] = nil -- pre-last
 end
 
 -- environment
@@ -42,9 +46,33 @@ environment.arguments   = { }
 environment.files       = { }
 environment.sortedflags = nil
 
-if not environment.jobname or environment.jobname == "" then if tex then environment.jobname = tex.jobname end end
-if not environment.version or environment.version == "" then             environment.version = "unknown"   end
-if not environment.jobname                              then             environment.jobname = "unknown"   end
+local mt = {
+    __index = function(_,k)
+        if k == "version" then
+            local version = tex.toks and tex.toks.contextversiontoks
+            if version and version ~= "" then
+                rawset(environment,"version",version)
+                return version
+            else
+                return "unknown"
+            end
+        elseif k == "jobname" or k == "formatname" then
+            local name = tex and tex[k]
+            if name or name== "" then
+                rawset(environment,k,name)
+                return name
+            else
+                return "unknown"
+            end
+        elseif k == "outputfilename" then
+            local name = environment.jobname
+            rawset(environment,k,name)
+            return name
+        end
+    end
+}
+
+setmetatable(environment,mt)
 
 function environment.initialize_arguments(arg)
     local arguments, files = { }, { }
@@ -99,8 +127,6 @@ function environment.argument(name,partial)
     end
     return nil
 end
-
-environment.argument("x",true)
 
 function environment.split_arguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }
@@ -197,28 +223,20 @@ end
 
 environment.loadedluacode = loadfile -- can be overloaded
 
---~ function environment.loadedluacode(name)
---~     if os.spawn("texluac -s -o texluac.luc " .. name) == 0 then
---~         local chunk = loadstring(io.loaddata("texluac.luc"))
---~         os.remove("texluac.luc")
---~         return chunk
---~     else
---~         environment.loadedluacode = loadfile -- can be overloaded
---~         return loadfile(name)
---~     end
---~ end
-
-function environment.luafilechunk(filename) -- used for loading lua bytecode in the format
+function environment.luafilechunk(filename,silent) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
+        local data = environment.loadedluacode(fullname)
         if trace_locating then
-            logs.report("fileio","loading file %s", fullname)
+            report_resolvers("loading file %s%s", fullname, not data and " failed" or "")
+        elseif not silent then
+            texio.write("<",data and "+ " or "- ",fullname,">")
         end
-        return environment.loadedluacode(fullname)
+        return data
     else
         if trace_locating then
-            logs.report("fileio","unknown file %s", filename)
+            report_resolvers("unknown file %s", filename)
         end
         return nil
     end
@@ -238,7 +256,7 @@ function environment.loadluafile(filename, version)
     local fullname = (lucname and environment.luafile(lucname)) or ""
     if fullname ~= "" then
         if trace_locating then
-            logs.report("fileio","loading %s", fullname)
+            report_resolvers("loading %s", fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
     end
@@ -256,7 +274,7 @@ function environment.loadluafile(filename, version)
                 return true
             else
                 if trace_locating then
-                    logs.report("fileio","version mismatch for %s: lua=%s, luc=%s", filename, v, version)
+                    report_resolvers("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
                 end
                 environment.loadluafile(filename)
             end
@@ -267,12 +285,12 @@ function environment.loadluafile(filename, version)
     fullname = (luaname and environment.luafile(luaname)) or ""
     if fullname ~= "" then
         if trace_locating then
-            logs.report("fileio","loading %s", fullname)
+            report_resolvers("loading %s", fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
         if not chunk then
             if trace_locating then
-                logs.report("fileio","unknown file %s", filename)
+                report_resolvers("unknown file %s", filename)
             end
         else
             assert(chunk)()

@@ -10,6 +10,8 @@ local format, concat, gsub = string.format, table.concat, string.gsub
 local texsprint = tex.sprint
 local abs, sqrt, round = math.abs, math.sqrt, math.round
 
+local report_mplib = logs.new("mplib")
+
 local copy_node, write_node = node.copy, node.write
 
 local ctxcatcodes = tex.ctxcatcodes
@@ -69,7 +71,7 @@ function metapost.flush_literal(d) -- \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_l
         literal.data = savedliterals[d]
         write_node(literal)
     else
-        logs.report("metapost","problem flushing literal %s",d)
+        report_mplib("problem flushing literal %s",d)
     end
 end
 

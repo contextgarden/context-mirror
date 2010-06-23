@@ -24,26 +24,22 @@
 %D \macros
 %D   {\equaldigits}
 %D
-%D \starttyping
+%D \startbuffer
 %D test test \ruledhbox{123}               test test\par
 %D test test \ruledhbox{\equaldigits{123}} test test\par
 %D test test            \equaldigits{123}  test test\par
-%D \stoptyping
+%D \stopbuffer
 %D
 %D \typebuffer
 %D
 %D This calls result in:
 %D
-%D \startvoorbeeld
 %D \startlines
 %D \getbuffer
 %D \stoplines
-%D \stopvoorbeeld
 
-\unexpanded\def\setdigitsmanipulation
-  {\ctxlua{digits.enable()}%
-   \gdef\setdigitsmanipulation[##1]{\attribute\digitsattribute##1\relax}%
-   \setdigitsmanipulation}
+\unexpanded\def\setdigitsmanipulation[#1]%
+  {\ctxlua{typesetting.digits.set(\number#1)}}
 
 \unexpanded\def\equaldigits{\groupedcommand{\setdigitsmanipulation[\plusone]}{}}
 \unexpanded\def\dummydigit {\hphantom{\setdigitsmanipulation[\plusone]0}}

@@ -17,6 +17,8 @@ local next = next
 
 local trace_injections = false  trackers.register("nodes.injections", function(v) trace_injections = v end)
 
+local report_injections = logs.new("injections")
+
 fonts     = fonts      or { }
 fonts.tfm = fonts.tfm  or { }
 fonts.ids = fonts.ids  or { }
@@ -27,6 +29,7 @@ local glyph = node.id('glyph')
 local kern  = node.id('kern')
 
 local traverse_id        = node.traverse_id
+local unset_attribute    = node.unset_attribute
 local has_attribute      = node.has_attribute
 local set_attribute      = node.set_attribute
 local insert_node_before = node.insert_before
@@ -88,8 +91,10 @@ function nodes.set_kern(current,factor,rlmode,x,tfmchr)
         local bound = #kerns + 1
         set_attribute(current,kernpair,bound)
         kerns[bound] = { rlmode, dx }
+        return dx, bound
+    else
+        return 0, 0
     end
-    return dx, bound
 end
 
 function nodes.set_mark(start,base,factor,rlmode,ba,ma,index) --ba=baseanchor, ma=markanchor
@@ -104,7 +109,7 @@ function nodes.set_mark(start,base,factor,rlmode,ba,ma,index) --ba=baseanchor, m
             set_attribute(start,markdone,index)
             return dx, dy, bound
         else
-            logs.report("nodes mark", "possible problem, U+%04X is base without data (id: %s)",base.char,bound)
+            report_injections("possible problem, U+%04X is base mark without data (id: %s)",base.char,bound)
         end
     end
     index = index or 1
@@ -120,10 +125,7 @@ function nodes.trace_injection(head)
     local function dir(n)
         return (n and n<0 and "r-to-l") or (n and n>0 and "l-to-r") or ("unset")
     end
-    local function report(...)
-        logs.report("nodes finisher",...)
-    end
-    report("begin run")
+    report_injections("begin run")
     for n in traverse_id(glyph,head) do
         if n.subtype < 256 then
             local kp = has_attribute(n,kernpair)
@@ -132,45 +134,46 @@ function nodes.trace_injection(head)
             local md = has_attribute(n,markdone)
             local cb = has_attribute(n,cursbase)
             local cc = has_attribute(n,curscurs)
-            report("char U+%05X, font=%s",n.char,n.font)
+            report_injections("char U+%05X, font=%s",n.char,n.font)
             if kp then
                 local k = kerns[kp]
                 if k[3] then
-                    report("  pairkern: dir=%s, x=%s, y=%s, w=%s, h=%s",dir(k[1]),k[2] or "?",k[3] or "?",k[4] or "?",k[5] or "?")
+                    report_injections("  pairkern: dir=%s, x=%s, y=%s, w=%s, h=%s",dir(k[1]),k[2] or "?",k[3] or "?",k[4] or "?",k[5] or "?")
                 else
-                    report("  kern: dir=%s, dx=%s",dir(k[1]),k[2] or "?")
+                    report_injections("  kern: dir=%s, dx=%s",dir(k[1]),k[2] or "?")
                 end
             end
             if mb then
-                report("  markbase: bound=%s",mb)
+                report_injections("  markbase: bound=%s",mb)
             end
             if mm then
                 local m = marks[mm]
                 if mb then
                     local m = m[mb]
                     if m then
-                        report("  markmark: bound=%s, index=%s, dx=%s, dy=%s",mm,md or "?",m[1] or "?",m[2] or "?")
+                        report_injections("  markmark: bound=%s, index=%s, dx=%s, dy=%s",mm,md or "?",m[1] or "?",m[2] or "?")
                     else
-                        report("  markmark: bound=%s, missing index",mm)
+                        report_injections("  markmark: bound=%s, missing index",mm)
                     end
                 else
                     m = m[1]
-                    report("  markmark: bound=%s, dx=%s, dy=%s",mm,m[1] or "?",m[2] or "?")
+                    report_injections("  markmark: bound=%s, dx=%s, dy=%s",mm,m[1] or "?",m[2] or "?")
                 end
             end
             if cb then
-                report("  cursbase: bound=%s",cb)
+                report_injections("  cursbase: bound=%s",cb)
             end
             if cc then
                 local c = cursives[cc]
-                report("  curscurs: bound=%s, dir=%s, dx=%s, dy=%s",cc,dir(c[1]),c[2] or "?",c[3] or "?")
+                report_injections("  curscurs: bound=%s, dir=%s, dx=%s, dy=%s",cc,dir(c[1]),c[2] or "?",c[3] or "?")
             end
         end
     end
-    report("end run")
+    report_injections("end run")
 end
 
 -- todo: reuse tables (i.e. no collection), but will be extra fields anyway
+-- todo: check for attribute
 
 function nodes.inject_kerns(head,where,keep)
     local has_marks, has_cursives, has_kerns = next(marks), next(cursives), next(kerns)
@@ -193,6 +196,7 @@ function nodes.inject_kerns(head,where,keep)
                     mk[n] = tm[n.char]
                     local k = has_attribute(n,kernpair)
                     if k then
+--~ unset_attribute(k,kernpair)
                         local kk = kerns[k]
                         if kk then
                             local x, y, w, h = kk[2] or 0, kk[3] or 0, kk[4] or 0, kk[5] or 0
@@ -342,39 +346,21 @@ function nodes.inject_kerns(head,where,keep)
                  -- only w can be nil, can be sped up when w == nil
                     local rl, x, w, r2l = k[1], k[2] or 0, k[4] or 0, k[6]
                     local wx = w - x
---~                     if rl < 0 then
---~                         if r2l then
---~                             if wx ~= 0 then
---~                                 insert_node_before(head,n,newkern(wx))
---~                             end
---~                             if x ~= 0 then
---~                                 insert_node_after (head,n,newkern(x))
---~                             end
---~                         else
---~                             if x ~= 0 then
---~                                 insert_node_before(head,n,newkern(x))
---~                             end
---~                             if wx ~= 0 then
---~                                 insert_node_after(head,n,newkern(wx))
---~                             end
---~                         end
---~                     else
-                        if r2l then
-                            if wx ~= 0 then
-                                insert_node_before(head,n,newkern(wx))
-                            end
-                            if x ~= 0 then
-                                insert_node_after (head,n,newkern(x))
-                            end
-                        else
-                            if x ~= 0 then
-                                insert_node_before(head,n,newkern(x))
-                            end
-                            if wx ~= 0 then
-                                insert_node_after(head,n,newkern(wx))
-                            end
+                    if r2l then
+                        if wx ~= 0 then
+                            insert_node_before(head,n,newkern(wx))
                         end
---~                     end
+                        if x ~= 0 then
+                            insert_node_after (head,n,newkern(x))
+                        end
+                    else
+                        if x ~= 0 then
+                            insert_node_before(head,n,newkern(x))
+                        end
+                        if wx ~= 0 then
+                            insert_node_after(head,n,newkern(wx))
+                        end
+                    end
                 end
             end
             if next(cx) then
@@ -401,35 +387,19 @@ function nodes.inject_kerns(head,where,keep)
             nodes.trace_injection(head)
         end
         for n in traverse_id(glyph,head) do
-            local k = has_attribute(n,kernpair)
-            if k then
-                local kk = kerns[k]
-                if kk then
-                    local rl, x, y, w = kk[1], kk[2] or 0, kk[3], kk[4]
-                    if y and y ~= 0 then
-                        n.yoffset = y -- todo: h ?
-                    end
-                    if w then
-                        -- copied from above
-                        local r2l = kk[6]
-                        local wx = w - x
---~                         if rl < 0 then
---~                             if r2l then
---~                                 if x ~= 0 then
---~                                     insert_node_before(head,n,newkern(x))
---~                                 end
---~                                 if wx ~= 0 then
---~                                     insert_node_after(head,n,newkern(wx))
---~                                 end
---~                             else
---~                                 if wx ~= 0 then
---~                                     insert_node_before(head,n,newkern(wx))
---~                                 end
---~                                 if x ~= 0 then
---~                                     insert_node_after (head,n,newkern(x))
---~                                 end
---~                             end
---~                         else
+            if n.subtype < 256 then
+                local k = has_attribute(n,kernpair)
+                if k then
+                    local kk = kerns[k]
+                    if kk then
+                        local rl, x, y, w = kk[1], kk[2] or 0, kk[3], kk[4]
+                        if y and y ~= 0 then
+                            n.yoffset = y -- todo: h ?
+                        end
+                        if w then
+                            -- copied from above
+                            local r2l = kk[6]
+                            local wx = w - x
                             if r2l then
                                 if wx ~= 0 then
                                     insert_node_before(head,n,newkern(wx))
@@ -445,11 +415,11 @@ function nodes.inject_kerns(head,where,keep)
                                     insert_node_after(head,n,newkern(wx))
                                 end
                             end
---~                         end
-                    else
-                        -- simple (e.g. kernclass kerns)
-                        if x ~= 0 then
-                            insert_node_before(head,n,newkern(x))
+                        else
+                            -- simple (e.g. kernclass kerns)
+                            if x ~= 0 then
+                                insert_node_before(head,n,newkern(x))
+                            end
                         end
                     end
                 end

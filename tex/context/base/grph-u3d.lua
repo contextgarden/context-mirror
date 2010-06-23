@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['grph-u3d'] = {
 
 local trace_inclusion = false  trackers.register("figures.inclusion",  function(v) trace_inclusion = v end)
 
+local report_graphics = logs.new("graphics")
+
 local pdfannotation   = nodes.pdfannotation
 local todimen         = string.todimen
 
@@ -19,11 +21,11 @@ function figures.checkers.u3d(data)
     local dr, du, ds = data.request, data.used, data.status
     local width = todimen(dr.width or figures.defaultwidth)
     local height = todimen(dr.height or figures.defaultheight)
-    local foundname = du.fullname
+    local foundname = du.report_graphics(
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
     if trace_inclusion then
-        logs.report("figures","including u3d '%s': width %s, height %s",foundname,width,height)
+        report_graphics("including u3d '%s': width %s, height %s",foundname,width,height)
     end
     context.startfoundexternalfigure(width .. "sp",height .. "sp")
     context(function()

@@ -26,6 +26,8 @@ local texattribute = tex.attribute
 
 local trace_greek  = false  trackers.register("math.greek",  function(v) trace_greek = v end)
 
+local report_math = logs.new("mathematics")
+
 mathematics = mathematics or { }
 
 -- we could use one level less and have tf etc be tables directly but the
@@ -400,7 +402,7 @@ function mathematics.remap_alphabets(char,mathalphabet,mathgreek)
                 local alphabet = r and r.alphabet or "regular"
                 local style = r and r.style or "tf"
                 if trace_greek then
-                    logs.report("math","before: char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
+                    report_math("before: char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
                 end
                 local s = remapping[islc or isuc][style]
                 if s then
@@ -408,7 +410,7 @@ function mathematics.remap_alphabets(char,mathalphabet,mathgreek)
                     mathalphabet, style = data and data.attribute or mathalphabet, s
                 end
                 if trace_greek then
-                    logs.report("math","after : char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
+                    report_math("after : char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
                 end
             end
         end
@@ -420,13 +422,13 @@ function mathematics.remap_alphabets(char,mathalphabet,mathgreek)
             -- nothing to remap
         elseif char >= 0x030 and char <= 0x039 then
             local o = offset.digits
-            newchar = (type(o) == "table" and (o[char] or char)) or (char - 0x030 + o)
+            newchar = o and ((type(o) == "table" and (o[char] or char)) or (char - 0x030 + o))
         elseif char >= 0x041 and char <= 0x05A then
             local o = offset.ucletters
-            newchar = (type(o) == "table" and (o[char] or char)) or (char - 0x041 + o)
+            newchar = o and ((type(o) == "table" and (o[char] or char)) or (char - 0x041 + o))
         elseif char >= 0x061 and char <= 0x07A then
             local o = offset.lcletters
-            newchar = (type(o) == "table" and (o[char] or char)) or (char - 0x061 + o)
+            newchar = o and ((type(o) == "table" and (o[char] or char)) or (char - 0x061 + o))
         elseif islcgreek[char] then
             newchar = offset.lcgreek[char]
         elseif isucgreek[char] then

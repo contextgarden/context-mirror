@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['luat-exe'] = {
 local match, find = string.match, string.find
 local concat = table.concat
 
+local report_executer = logs.new("executer")
+
 if not executer then executer = { } end
 
 executer.permitted = { }
@@ -48,12 +50,12 @@ function executer.finalize() -- todo: os.exec, todo: report ipv print
                 execute(name .. " " .. arguments)
             --  print("executed: " .. name .. " " .. arguments)
             else
-                logs.report("executer","not permitted: %s %s"name,arguments)
+                report_executer("not permitted: %s %s",name,arguments)
             end
         end
     end
     function executer.finalize()
-        logs.report("executer","already finalized")
+        report_executer("already finalized")
     end
     executer.register = executer.finalize
     os.execute = executer.execute
@@ -69,3 +71,20 @@ end
 --~ executer.execute("dir *.tex")
 --~ executer.execute("ls *.tex")
 --~ os.execute('ls')
+
+function executer.check()
+    local mode = resolvers.variable("command_mode")
+    local list = resolvers.variable("command_list")
+    if mode == "none" then
+        executer.finalize()
+    elseif mode == "list" and list ~= "" then
+        for s in string.gmatch("[^%s,]",list) do
+            executer.register(s)
+        end
+        executer.finalize()
+    else
+        -- all
+    end
+end
+
+--~ executer.check()

@@ -1,5 +1,5 @@
 if not modules then modules = { } end modules ['data-tmp'] = {
-    version   = 1.001,
+    version   = 1.100,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
@@ -22,63 +22,141 @@ being written at the same time is small. We also need to extend
 luatools with a recache feature.</p>
 --ldx]]--
 
-local format, lower, gsub = string.format, string.lower, string.gsub
+local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
+local mkdirs, isdir = dir.mkdirs, lfs.isdir
 
-local trace_cache = false  trackers.register("resolvers.cache", function(v) trace_cache = v end) -- not used yet
+local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
+
+local report_cache = logs.new("cache")
+
+local report_resolvers = logs.new("resolvers")
 
 caches = caches or { }
 
-caches.path     = caches.path or nil
-caches.base     = caches.base or "luatex-cache"
-caches.more     = caches.more or "context"
-caches.direct   = false -- true is faster but may need huge amounts of memory
-caches.tree     = false
-caches.paths    = caches.paths or nil
-caches.force    = false
-caches.defaults = { "TEXMFCACHE", "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
+caches.base      = caches.base or "luatex-cache"
+caches.more      = caches.more or "context"
+caches.direct    = false -- true is faster but may need huge amounts of memory
+caches.tree      = false
+caches.force     = true
+caches.ask       = false
+caches.defaults  = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 
-function caches.temp()
-    local cachepath = nil
-    local function check(list,isenv)
-        if not cachepath then
-            for k=1,#list do
-                local v = list[k]
-                cachepath = (isenv and (os.env[v] or "")) or v or ""
-                if cachepath == "" then
-                    -- next
-                else
-                    cachepath = resolvers.clean_path(cachepath)
-                    if lfs.isdir(cachepath) and file.iswritable(cachepath) then -- lfs.attributes(cachepath,"mode") == "directory"
-                        break
-                    elseif caches.force or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
-                        dir.mkdirs(cachepath)
-                        if lfs.isdir(cachepath) and file.iswritable(cachepath) then
-                            break
+local writable, readables, usedreadables = nil, { }, { }
+
+-- we could use a metatable for writable and readable but not yet
+
+local function identify()
+    -- Combining the loops makes it messy. First we check the format cache path
+    -- and when the last component is not present we try to create it.
+    local texmfcaches = resolvers.clean_path_list("TEXMFCACHE")
+    if texmfcaches then
+        for k=1,#texmfcaches do
+            local cachepath = texmfcaches[k]
+            if cachepath ~= "" then
+                cachepath = resolvers.clean_path(cachepath)
+                cachepath = file.collapse_path(cachepath)
+                local valid = isdir(cachepath)
+                if valid then
+                    if file.isreadable(cachepath) then
+                        readables[#readables+1] = cachepath
+                        if not writable and file.iswritable(cachepath) then
+                            writable = cachepath
+                        end
+                    end
+                elseif not writable and caches.force then
+                    local cacheparent = file.dirname(cachepath)
+                    if file.iswritable(cacheparent) then
+                        if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
+                            mkdirs(cachepath)
+                            if isdir(cachepath) and file.iswritable(cachepath) then
+                                report_cache("created: %s",cachepath)
+                                writable = cachepath
+                                readables[#readables+1] = cachepath
+                            end
                         end
                     end
                 end
-                cachepath = nil
             end
         end
     end
-    check(resolvers.clean_path_list("TEXMFCACHE") or { })
-    check(caches.defaults,true)
-    if not cachepath then
-        print("\nfatal error: there is no valid (writable) cache path defined\n")
+    -- As a last resort we check some temporary paths but this time we don't
+    -- create them.
+    local texmfcaches = caches.defaults
+    if texmfcaches then
+        for k=1,#texmfcaches do
+            local cachepath = texmfcaches[k]
+            cachepath = resolvers.getenv(cachepath)
+            if cachepath ~= "" then
+                cachepath = resolvers.clean_path(cachepath)
+                local valid = isdir(cachepath)
+                if valid and file.isreadable(cachepath) then
+                    if not writable and file.iswritable(cachepath) then
+                        readables[#readables+1] = cachepath
+                        writable = cachepath
+                        break
+                    end
+                end
+            end
+        end
+    end
+    -- Some extra checking. If we have no writable or readable path then we simply
+    -- quit.
+    if not writable then
+        report_cache("fatal error: there is no valid writable cache path defined")
         os.exit()
-    elseif not lfs.isdir(cachepath) then -- lfs.attributes(cachepath,"mode") ~= "directory"
-        print(format("\nfatal error: cache path %s is not a directory\n",cachepath))
+    elseif #readables == 0 then
+        report_cache("fatal error: there is no valid readable cache path defined")
         os.exit()
     end
-    cachepath = file.collapse_path(cachepath)
-    function caches.temp()
-        return cachepath
+    -- why here
+    writable = dir.expand_name(resolvers.clean_path(writable)) -- just in case
+    -- moved here
+    local base, more, tree = caches.base, caches.more, caches.tree or caches.treehash() -- we have only one writable tree
+    if tree then
+        caches.tree = tree
+        writable = mkdirs(writable,base,more,tree)
+        for i=1,#readables do
+            readables[i] = file.join(readables[i],base,more,tree)
+        end
+    else
+        writable = mkdirs(writable,base,more)
+        for i=1,#readables do
+            readables[i] = file.join(readables[i],base,more)
+        end
     end
-    return cachepath
+    -- end
+    if trace_cache then
+        for i=1,#readables do
+            report_cache("using readable path '%s' (order %s)",readables[i],i)
+        end
+        report_cache("using writable path '%s'",writable)
+    end
+    identify = function()
+        return writable, readables
+    end
+    return writable, readables
 end
 
-function caches.configpath()
-    return table.concat(resolvers.instance.cnffiles,";")
+function caches.usedpaths()
+    local writable, readables = identify()
+    if #readables > 1 then
+        local result = { }
+        for i=1,#readables do
+            local readable = readables[i]
+            if usedreadables[i] or readable == writable then
+                result[#result+1] = format("readable: '%s' (order %s)",readable,i)
+            end
+        end
+        result[#result+1] = format("writable: '%s'",writable)
+        return result
+    else
+        return writable
+    end
+end
+
+function caches.configfiles()
+    return table.concat(resolvers.instance.specification,";")
 end
 
 function caches.hashed(tree)
@@ -86,7 +164,7 @@ function caches.hashed(tree)
 end
 
 function caches.treehash()
-    local tree = caches.configpath()
+    local tree = caches.configfiles()
     if not tree or tree == "" then
         return false
     else
@@ -94,35 +172,68 @@ function caches.treehash()
     end
 end
 
-function caches.setpath(...)
-    if not caches.path then
-        if not caches.path then
-            caches.path = caches.temp()
-        end
-        caches.path = resolvers.clean_path(caches.path) -- to be sure
-        caches.tree = caches.tree or caches.treehash()
-        if caches.tree then
-            caches.path = dir.mkdirs(caches.path,caches.base,caches.more,caches.tree)
+local r_cache, w_cache = { }, { } -- normally w in in r but who cares
+
+local function getreadablepaths(...) -- we can optimize this as we have at most 2 tags
+    local tags = { ... }
+    local hash = concat(tags,"/")
+    local done = r_cache[hash]
+    if not done then
+        local writable, readables = identify() -- exit if not found
+        if #tags > 0 then
+            done = { }
+            for i=1,#readables do
+                done[i] = file.join(readables[i],...)
+            end
         else
-            caches.path = dir.mkdirs(caches.path,caches.base,caches.more)
+            done = readables
         end
+        r_cache[hash] = done
     end
-    if not caches.path then
-        caches.path = '.'
-    end
-    caches.path = resolvers.clean_path(caches.path)
-    local dirs = { ... }
-    if #dirs > 0 then
-        local pth = dir.mkdirs(caches.path,...)
-        return pth
-    end
-    caches.path = dir.expand_name(caches.path)
-    return caches.path
+    return done
 end
 
-function caches.definepath(category,subcategory)
+local function getwritablepath(...)
+    local tags = { ... }
+    local hash = concat(tags,"/")
+    local done = w_cache[hash]
+    if not done then
+        local writable, readables = identify() -- exit if not found
+        if #tags > 0 then
+            done = mkdirs(writable,...)
+        else
+            done = writable
+        end
+        w_cache[hash] = done
+    end
+    return done
+end
+
+caches.getreadablepaths = getreadablepaths
+caches.getwritablepath  = getwritablepath
+
+function caches.getfirstreadablefile(filename,...)
+    local rd = getreadablepaths(...)
+    for i=1,#rd do
+        local path = rd[i]
+        local fullname = file.join(path,filename)
+        if file.isreadable(fullname) then
+            usedreadables[i] = true
+            return fullname, path
+        end
+    end
+    return caches.setfirstwritablefile(filename,...)
+end
+
+function caches.setfirstwritablefile(filename,...)
+    local wr = getwritablepath(...)
+    local fullname = file.join(wr,filename)
+    return fullname, wr
+end
+
+function caches.define(category,subcategory) -- for old times sake
     return function()
-        return caches.setpath(category,subcategory)
+        return getwritablepath(category,subcategory)
     end
 end
 
@@ -130,22 +241,22 @@ function caches.setluanames(path,name)
     return path .. "/" .. name .. ".tma", path .. "/" .. name .. ".tmc"
 end
 
-function caches.loaddata(path,name)
-    local tmaname, tmcname = caches.setluanames(path,name)
-    local loader = loadfile(tmcname) or loadfile(tmaname)
-    if loader then
-        loader = loader()
-        collectgarbage("step")
-        return loader
-    else
-        return false
+function caches.loaddata(readables,name)
+    if type(readables) == "string" then
+        readables = { readables }
     end
+    for i=1,#readables do
+        local path = readables[i]
+        local tmaname, tmcname = caches.setluanames(path,name)
+        local loader = loadfile(tmcname) or loadfile(tmaname)
+        if loader then
+            loader = loader()
+            collectgarbage("step")
+            return loader
+        end
+    end
+    return false
 end
-
---~ function caches.loaddata(path,name)
---~     local tmaname, tmcname = caches.setluanames(path,name)
---~     return dofile(tmcname) or dofile(tmaname)
---~ end
 
 function caches.iswritable(filepath,filename)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
@@ -169,10 +280,79 @@ function caches.savedata(filepath,filename,data,raw)
     utils.lua.compile(tmaname, tmcname, cleanup, strip)
 end
 
--- here we use the cache for format loading (texconfig.[formatname|jobname])
+-- moved from data-res:
 
---~ if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
-if tex and texconfig and (not texconfig.formatname or texconfig.formatname == "") and input and resolvers.instance then
-    if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end -- or luc
-    texconfig.formatname = caches.setpath("formats") .. "/" .. gsub(texconfig.luaname,"%.lu.$",".fmt")
+local content_state = { }
+
+function caches.contentstate()
+    return content_state or { }
 end
+
+function caches.loadcontent(cachename,dataname)
+    local name = caches.hashed(cachename)
+    local full, path = caches.getfirstreadablefile(name ..".lua","trees")
+    local filename = file.join(path,name)
+    local blob = loadfile(filename .. ".luc") or loadfile(filename .. ".lua")
+    if blob then
+        local data = blob()
+        if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
+            content_state[#content_state+1] = data.uuid
+            if trace_locating then
+                report_resolvers("loading '%s' for '%s' from '%s'",dataname,cachename,filename)
+            end
+            return data.content
+        elseif trace_locating then
+            report_resolvers("skipping '%s' for '%s' from '%s'",dataname,cachename,filename)
+        end
+    elseif trace_locating then
+        report_resolvers("skipping '%s' for '%s' from '%s'",dataname,cachename,filename)
+    end
+end
+
+function caches.collapsecontent(content)
+    for k, v in next, content do
+        if type(v) == "table" and #v == 1 then
+            content[k] = v[1]
+        end
+    end
+end
+
+function caches.savecontent(cachename,dataname,content)
+    local name = caches.hashed(cachename)
+    local full, path = caches.setfirstwritablefile(name ..".lua","trees")
+    local filename = file.join(path,name) -- is full
+    local luaname, lucname = filename .. ".lua", filename .. ".luc"
+    if trace_locating then
+        report_resolvers("preparing '%s' for '%s'",dataname,cachename)
+    end
+    local data = {
+        type    = dataname,
+        root    = cachename,
+        version = resolvers.cacheversion,
+        date    = os.date("%Y-%m-%d"),
+        time    = os.date("%H:%M:%S"),
+        content = content,
+        uuid    = os.uuid(),
+    }
+    local ok = io.savedata(luaname,table.serialize(data,true))
+    if ok then
+        if trace_locating then
+            report_resolvers("category '%s', cachename '%s' saved in '%s'",dataname,cachename,luaname)
+        end
+        if utils.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
+            if trace_locating then
+                report_resolvers("'%s' compiled to '%s'",dataname,lucname)
+            end
+            return true
+        else
+            if trace_locating then
+                report_resolvers("compiling failed for '%s', deleting file '%s'",dataname,lucname)
+            end
+            os.remove(lucname)
+        end
+    elseif trace_locating then
+        report_resolvers("unable to save '%s' in '%s' (access error)",dataname,luaname)
+    end
+end
+
+

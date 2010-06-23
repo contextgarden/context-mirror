@@ -327,7 +327,7 @@ local function process(head,first,last)
                     if action then
                         local font = first.font
                         if font ~= lastfont then
-                            lastfont, done = font, true
+                            lastfont = font
                             set_parameters(font,dataset)
                         end
                         action(head,first)
@@ -359,7 +359,7 @@ local function process(head,first,last)
                     previous = "start"
                 end
             end
-            if upcoming == stop then
+            if upcoming == last then -- was stop
                 break
             else
                 first = upcoming
@@ -530,7 +530,7 @@ local function process(head,first,last)
                     if action then
                         local font = first.font
                         if font ~= lastfont then
-                            lastfont, done = font, true
+                            lastfont = font
                             set_parameters(font,dataset)
                         end
                         action(head,first)
@@ -562,7 +562,7 @@ local function process(head,first,last)
                     previous = "start"
                 end
             end
-            if upcoming == stop then
+            if upcoming == last then -- was stop
                 break
             else
                 first = upcoming

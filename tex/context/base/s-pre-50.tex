@@ -62,7 +62,7 @@
 %D Structure and trick.
 
 \def\StartSteps
-  {\checkutilities}
+  {\doifnotmode{mkiv}{\checkutilities}}
 
 \def\StopSteps
   {\resetcollector[contribution]}

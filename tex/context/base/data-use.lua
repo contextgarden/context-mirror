@@ -10,41 +10,7 @@ local format, lower, gsub, find = string.format, string.lower, string.gsub, stri
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
--- since we want to use the cache instead of the tree, we will now
--- reimplement the saver.
-
-local save_data = resolvers.save_data
-local load_data = resolvers.load_data
-
-resolvers.cachepath = nil  -- public, for tracing
-resolvers.usecache  = true -- public, for tracing
-
-function resolvers.save_data(dataname)
-    save_data(dataname, function(cachename,dataname)
-        resolvers.usecache = not toboolean(resolvers.expansion("CACHEINTDS") or "false",true)
-        if resolvers.usecache then
-            resolvers.cachepath = resolvers.cachepath or caches.definepath("trees")
-            return file.join(resolvers.cachepath(),caches.hashed(cachename))
-        else
-            return file.join(cachename,dataname)
-        end
-    end)
-end
-
-function resolvers.load_data(pathname,dataname,filename)
-    load_data(pathname,dataname,filename,function(dataname,filename)
-        resolvers.usecache = not toboolean(resolvers.expansion("CACHEINTDS") or "false",true)
-        if resolvers.usecache then
-            resolvers.cachepath = resolvers.cachepath or caches.definepath("trees")
-            return file.join(resolvers.cachepath(),caches.hashed(pathname))
-        else
-            if not filename or (filename == "") then
-                filename = dataname
-            end
-            return file.join(pathname,filename)
-        end
-    end)
-end
+local report_resolvers = logs.new("resolvers")
 
 -- we will make a better format, maybe something xml or just text or lua
 
@@ -53,7 +19,7 @@ resolvers.automounted = resolvers.automounted or { }
 function resolvers.automount(usecache)
     local mountpaths = resolvers.clean_path_list(resolvers.expansion('TEXMFMOUNT'))
     if (not mountpaths or #mountpaths == 0) and usecache then
-        mountpaths = { caches.setpath("mount") }
+        mountpaths = caches.getreadablepaths("mount")
     end
     if mountpaths and #mountpaths > 0 then
         statistics.starttiming(resolvers.instance)
@@ -67,7 +33,7 @@ function resolvers.automount(usecache)
                             -- skip
                         elseif find(line,"^zip://") then
                             if trace_locating then
-                                logs.report("fileio","mounting %s",line)
+                                report_resolvers("mounting %s",line)
                             end
                             table.insert(resolvers.automounted,line)
                             resolvers.usezipfile(line)
@@ -83,8 +49,8 @@ end
 
 -- status info
 
-statistics.register("used config path", function() return caches.configpath()  end)
-statistics.register("used cache path",  function() return caches.temp() or "?" end)
+statistics.register("used config file", function() return caches.configfiles() end)
+statistics.register("used cache path",  function() return caches.usedpaths() end)
 
 -- experiment (code will move)
 

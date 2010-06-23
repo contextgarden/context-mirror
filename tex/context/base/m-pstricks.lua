@@ -17,8 +17,9 @@ if not modules then modules = { } end modules ['m-pstricks'] = {
 local format, lower, concat, gmatch = string.format, string.lower, table.concat, string.gmatch
 local variables = interfaces.variables
 
-plugins          = plugins or { }
-plugins.pstricks = plugins.pstricks or { }
+moduledata.pstricks = moduledata.pstricks or { }
+
+local report_pstricks = logs.new("pstricks")
 
 local template = [[
 \starttext
@@ -41,13 +42,13 @@ local template = [[
 local modules = { }
 local graphics = 0
 
-function plugins.pstricks.usemodule(names)
+function moduledata.pstricks.usemodule(names)
     for name in gmatch(names,"([^%s,]+)") do
         modules[#modules+1] = format([[\readfile{%s}{}{}]],name)
     end
 end
 
-function plugins.pstricks.process(n)
+function moduledata.pstricks.process(n)
     graphics = graphics + 1
     local name = string.format("%s-pstricks-%04i",tex.jobname,graphics)
     local data = buffers.collect("def-"..n)
@@ -65,9 +66,9 @@ function plugins.pstricks.process(n)
         if lfs.isfile(pdffile) then
             context.externalfigure( { pdffile }, { object = variables.no } )
         else
-            logs.report("plugins","pstricks run failed, no pdf file")
+            report_pstricks("run failed, no pdf file")
         end
     else
-        logs.report("plugins","pstricks run failed, no ps file")
+        report_pstricks("run failed, no ps file")
     end
 end

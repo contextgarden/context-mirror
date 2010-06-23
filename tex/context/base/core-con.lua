@@ -418,7 +418,7 @@ local vector = {
 --~     return concat(result)
 --~ end
 
-function tochinese(n,name) -- normal, caps, all
+local function tochinese(n,name) -- normal, caps, all
  -- improved version by Li Yanrui
     local result = { }
     local vector = vector[name] or vector.normal

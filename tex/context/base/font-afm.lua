@@ -21,6 +21,8 @@ local trace_features = false  trackers.register("afm.features", function(v) trac
 local trace_indexing = false  trackers.register("afm.indexing", function(v) trace_indexing = v end)
 local trace_loading  = false  trackers.register("afm.loading",  function(v) trace_loading  = v end)
 
+local report_afm = logs.new("load afm")
+
 local format, match, gmatch, lower, gsub = string.format, string.match, string.gmatch, string.lower, string.gsub
 local lpegmatch = lpeg.match
 local abs = math.abs
@@ -163,50 +165,41 @@ local function get_variables(data,fontmetrics)
     end
 end
 
-local function get_indexes(data,filename)
-    local pfbfile = file.replacesuffix(filename,"pfb")
-    local pfbname = resolvers.find_file(pfbfile,"pfb") or ""
-    if pfbname == "" then
-        pfbname = resolvers.find_file(file.basename(pfbfile),"pfb") or ""
-    end
-    if pfbname ~= "" then
-        data.luatex.filename = pfbname
-        local pfbblob = fontloader.open(pfbname)
-        if pfbblob then
-            local characters = data.characters
-            local pfbdata = fontloader.to_table(pfbblob)
-        --~ print(table.serialize(pfbdata))
-            if pfbdata then
-                local glyphs = pfbdata.glyphs
-                if glyphs then
-                    if trace_loading then
-                        logs.report("load afm","getting index data from %s",pfbname)
-                    end
-                    -- local offset = (glyphs[0] and glyphs[0] != .notdef) or 0
-                    for index, glyph in next, glyphs do
-                        local name = glyph.name
-                        if name then
-                            local char = characters[name]
-                            if char then
-                                if trace_indexing then
-                                    logs.report("load afm","glyph %s has index %s",name,index)
-                                end
-                                char.index = index
+local function get_indexes(data,pfbname)
+    data.luatex.filename = pfbname
+    local pfbblob = fontloader.open(pfbname)
+    if pfbblob then
+        local characters = data.characters
+        local pfbdata = fontloader.to_table(pfbblob)
+    --~ print(table.serialize(pfbdata))
+        if pfbdata then
+            local glyphs = pfbdata.glyphs
+            if glyphs then
+                if trace_loading then
+                    report_afm("getting index data from %s",pfbname)
+                end
+                -- local offset = (glyphs[0] and glyphs[0] != .notdef) or 0
+                for index, glyph in next, glyphs do
+                    local name = glyph.name
+                    if name then
+                        local char = characters[name]
+                        if char then
+                            if trace_indexing then
+                                report_afm("glyph %s has index %s",name,index)
                             end
+                            char.index = index
                         end
                     end
-                elseif trace_loading then
-                    logs.report("load afm","no glyph data in pfb file %s",pfbname)
                 end
             elseif trace_loading then
-                logs.report("load afm","no data in pfb file %s",pfbname)
+                report_afm("no glyph data in pfb file %s",pfbname)
             end
-            fontloader.close(pfbblob)
         elseif trace_loading then
-            logs.report("load afm","invalid pfb file %s",pfbname)
+            report_afm("no data in pfb file %s",pfbname)
         end
+        fontloader.close(pfbblob)
     elseif trace_loading then
-        logs.report("load afm","no pfb file for %s",filename)
+        report_afm("invalid pfb file %s",pfbname)
     end
 end
 
@@ -223,21 +216,21 @@ function afm.read_afm(filename)
         }
         afmblob = gsub(afmblob,"StartCharMetrics(.-)EndCharMetrics", function(charmetrics)
             if trace_loading then
-                logs.report("load afm","loading char metrics")
+                report_afm("loading char metrics")
             end
             get_charmetrics(data,charmetrics,vector)
             return ""
         end)
         afmblob = gsub(afmblob,"StartKernPairs(.-)EndKernPairs", function(kernpairs)
             if trace_loading then
-                logs.report("load afm","loading kern pairs")
+                report_afm("loading kern pairs")
             end
             get_kernpairs(data,kernpairs)
             return ""
         end)
         afmblob = gsub(afmblob,"StartFontMetrics%s+([%d%.]+)(.-)EndFontMetrics", function(version,fontmetrics)
             if trace_loading then
-                logs.report("load afm","loading variables")
+                report_afm("loading variables")
             end
             data.afmversion = version
             get_variables(data,fontmetrics)
@@ -245,11 +238,10 @@ function afm.read_afm(filename)
             return ""
         end)
         data.luatex = { }
-        get_indexes(data,filename)
         return data
     else
         if trace_loading then
-            logs.report("load afm","no valid afm file %s",filename)
+            report_afm("no valid afm file %s",filename)
         end
         return nil
     end
@@ -266,30 +258,51 @@ function afm.load(filename)
     filename = resolvers.find_file(filename,'afm') or ""
     if filename ~= "" then
         local name = file.removesuffix(file.basename(filename))
-        local data = containers.read(afm.cache(),name)
-        local size = lfs.attributes(filename,"size") or 0
-        if not data or data.verbose ~= fonts.verbose or data.size ~= size then
-            logs.report("load afm", "reading %s",filename)
+        local data = containers.read(afm.cache,name)
+        local attr = lfs.attributes(filename)
+        local size, time = attr.size or 0, attr.modification or 0
+        --
+        local pfbfile = file.replacesuffix(name,"pfb")
+        local pfbname = resolvers.find_file(pfbfile,"pfb") or ""
+        if pfbname == "" then
+            pfbname = resolvers.find_file(file.basename(pfbfile),"pfb") or ""
+        end
+        local pfbsize, pfbtime = 0, 0
+        if pfbname ~= "" then
+            local attr = lfs.attributes(pfbname)
+            pfbsize, pfbtime = attr.size or 0, attr.modification or 0
+        end
+        if not data or data.verbose ~= fonts.verbose
+                or data.size ~= size or data.time ~= time or data.pfbsize ~= pfbsize or data.pfbtime ~= pfbtime then
+            report_afm( "reading %s",filename)
             data = afm.read_afm(filename)
             if data then
             --  data.luatex = data.luatex or { }
-                logs.report("load afm", "unifying %s",filename)
+                if pfbname ~= "" then
+                    get_indexes(data,pfbname)
+                elseif trace_loading then
+                    report_afm("no pfb file for %s",filename)
+                end
+                report_afm( "unifying %s",filename)
                 afm.unify(data,filename)
                 if afm.enhance_data then
-                    logs.report("load afm", "add ligatures")
+                    report_afm( "add ligatures")
                     afm.add_ligatures(data,'ligatures') -- easier this way
-                    logs.report("load afm", "add tex-ligatures")
+                    report_afm( "add tex-ligatures")
                     afm.add_ligatures(data,'texligatures') -- easier this way
-                    logs.report("load afm", "add extra kerns")
+                    report_afm( "add extra kerns")
                     afm.add_kerns(data) -- faster this way
                 end
-                logs.report("load afm", "add tounicode data")
+                report_afm( "add tounicode data")
                 fonts.map.add_to_unicode(data,filename)
                 data.size = size
+                data.time = time
+                data.pfbsize = pfbsize
+                data.pfbtime = pfbtime
                 data.verbose = fonts.verbose
-                logs.report("load afm","saving: %s in cache",name)
-                data = containers.write(afm.cache(), name, data)
-                data = containers.read(afm.cache(),name)
+                report_afm("saving: %s in cache",name)
+                data = containers.write(afm.cache, name, data)
+                data = containers.read(afm.cache,name)
             end
         end
         return data
@@ -310,7 +323,7 @@ function afm.unify(data, filename)
             if not code then
                 code = private
                 private = private + 1
-                logs.report("afm glyph", "assigning private slot U+%04X for unknown glyph name %s", code, name)
+                report_afm("assigning private slot U+%04X for unknown glyph name %s", code, name)
             end
         end
         local index = blob.index
@@ -476,7 +489,7 @@ function afm.copy_to_tfm(data)
             local filename = fonts.tfm.checked_filename(luatex) -- was metadata.filename
             local fontname = metadata.fontname or metadata.fullname
             local fullname = metadata.fullname or metadata.fontname
-            local endash, emdash, space, spaceunits = unicodes['space'], unicodes['emdash'], "space", 500
+            local endash, emdash, spacer, spaceunits = unicodes['space'], unicodes['emdash'], "space", 500
             -- same as otf
             if metadata.isfixedpitch then
                 if descriptions[endash] then
@@ -607,7 +620,7 @@ function afm.set_features(tfmdata)
                         local value = features[f]
                         if value and fiafm[f] then -- brr
                             if trace_features then
-                                logs.report("define afm","initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
+                                report_afm("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
                             end
                             fiafm[f](tfmdata,value)
                             mode = tfmdata.mode or fonts.mode
@@ -619,7 +632,7 @@ function afm.set_features(tfmdata)
         end
         local fm = fonts.methods[mode]
         local fmafm = fm and fm.afm
-        if fmfm then
+        if fmafm then
             local lists = {
                 afm.features.list,
             }
@@ -656,13 +669,13 @@ function afm.afm_to_tfm(specification)
     local afmname = specification.filename or specification.name
     if specification.forced == "afm" or specification.format == "afm" then -- move this one up
         if trace_loading then
-            logs.report("load afm","forcing afm format for %s",afmname)
+            report_afm("forcing afm format for %s",afmname)
         end
     else
         local tfmname = resolvers.findbinfile(afmname,"ofm") or ""
         if tfmname ~= "" then
             if trace_loading then
-                logs.report("load afm","fallback from afm to tfm for %s",afmname)
+                report_afm("fallback from afm to tfm for %s",afmname)
             end
             afmname = ""
         end
@@ -674,7 +687,7 @@ function afm.afm_to_tfm(specification)
         specification = fonts.define.resolve(specification) -- new, was forgotten
         local features = specification.features.normal
         local cache_id = specification.hash
-        local tfmdata  = containers.read(tfm.cache(), cache_id) -- cache with features applied
+        local tfmdata  = containers.read(tfm.cache, cache_id) -- cache with features applied
         if not tfmdata then
             local afmdata = afm.load(afmname)
             if afmdata and next(afmdata) then
@@ -688,9 +701,9 @@ function afm.afm_to_tfm(specification)
                     afm.set_features(tfmdata)
                 end
             elseif trace_loading then
-                logs.report("load afm","no (valid) afm file found with name %s",afmname)
+                report_afm("no (valid) afm file found with name %s",afmname)
             end
-            tfmdata = containers.write(tfm.cache(),cache_id,tfmdata)
+            tfmdata = containers.write(tfm.cache,cache_id,tfmdata)
         end
         return tfmdata
     end
@@ -720,18 +733,6 @@ function tfm.read_from_afm(specification)
         tfmtable.name = specification.name
         tfmtable = tfm.scale(tfmtable, specification.size, specification.relativeid)
         local afmdata = tfmtable.shared.afmdata
---~         local filename = afmdata and afmdata.luatex and afmdata.luatex.filename
---~         if filename then
---~             tfmtable.encodingbytes = 2
---~             tfmtable.filename = resolvers.findbinfile(filename,"") or filename
---~             tfmtable.fontname = afmdata.metadata.fontname or afmdata.metadata.fullname
---~             tfmtable.fullname = afmdata.metadata.fullname or afmdata.metadata.fontname
---~             tfmtable.format   = 'type1'
---~             tfmtable.name     = afmdata.luatex.filename or tfmtable.fullname
---~         end
-        if fonts.dontembed[filename] then
-            tfmtable.file = nil -- or filename ?
-        end
         fonts.logger.save(tfmtable,'afm',specification)
     end
     return tfmtable

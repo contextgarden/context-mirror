@@ -2139,5 +2139,49 @@
 \def\somerightpagefloat{\placesomerightpagefloat}
 \def\somefacefloat     {\placesomefacefloat}
 \def\someslotfloat     {\placesomeslotfloat}
-
+
+%D Local floats.
+
+\def\setuplocalfloats
+  {\getparameters[\??lf]}
+
+\setuplocalfloats
+  [%\c!before=\blank,
+   %\c!after=\blank,
+   \c!inbetween=\blank]
+
+\installfloathandler \v!local \somelocalfloat
+
+\initializeboxstack{localfloats}
+
+\newcounter\noflocalfloats
+
+\def\resetlocalfloats
+  {\doglobal\newcounter\noflocalfloats
+   \initializeboxstack{localfloats}}
+
+\def\somelocalfloat[#1]%
+  {\doglobal\increment\noflocalfloats
+   \savebox{localfloats}{\noflocalfloats}{\box\floatbox}}
+
+\def\getlocalfloats
+  {\dorecurse\noflocalfloats
+     {\ifnum\recurselevel=\plusone % 1\relax
+        \getvalue{\??lf\c!before}%
+      \else
+        \getvalue{\??lf\c!inbetween}%
+      \fi
+      \dontleavehmode\hbox{\foundbox{localfloats}\recurselevel}%
+      \ifnum\recurselevel=\noflocalfloats\relax
+        \getvalue{\??lf\c!after}%
+      \fi}}
+
+\def\flushlocalfloats
+  {\getlocalfloats
+   \resetlocalfloats}
+
+\def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
+
+\def\forcelocalfloats{\let\forcedfloatmethod\v!local}
+
 \protect \endinput

@@ -10,6 +10,8 @@ local next, match = next, string.match
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
+local report_define = logs.new("define fonts")
+
 -- tfmdata has also fast access to indices and unicodes
 -- to be checked: otf -> tfm -> tfmscaled
 --
@@ -76,7 +78,7 @@ function tfm.set_features(tfmdata)
                         local value = features[f]
                         if value and fi.tfm[f] then -- brr
                             if tfm.trace_features then
-                                logs.report("define font","initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
+                                report_define("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
                             end
                             fi.tfm[f](tfmdata,value)
                             mode = tfmdata.mode or fonts.mode
@@ -127,7 +129,7 @@ function tfm.reencode(tfmdata,encoding)
             for k,v in next, data.unicodes do
                 if k ~= v then
                     if trace_defining then
-                        logs.report("define font","reencoding U+%04X to U+%04X",k,v)
+                        report_define("reencoding U+%04X to U+%04X",k,v)
                     end
                     characters[k] = original[v]
                 end
@@ -154,7 +156,7 @@ function tfm.remap(tfmdata,remapping)
         for k,v in next, vector do
             if k ~= v then
                 if trace_defining then
-                    logs.report("define font","remapping U+%04X to U+%04X",k,v)
+                    report_define("remapping U+%04X to U+%04X",k,v)
                 end
                 local c = original[k]
                 characters[v] = c
@@ -191,7 +193,7 @@ fonts.initializers.node.tfm.remap = tfm.remap
 --~             for k,v in next, data.unicodes do
 --~                 if k ~= v then
 --~                     if trace_defining then
---~                         logs.report("define font","mapping %s onto %s",k,v)
+--~                         report_define("mapping %s onto %s",k,v)
 --~                     end
 --~                     characters[k] = original[v]
 --~                 end

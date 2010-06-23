@@ -170,7 +170,7 @@ end
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
-local nsdata, nsdone, nsforced, nsselector, nstrigger
+local nsdata, nsnone, nslistwise, nsforced, nsselector, nstrigger
 local current, current_selector, done = 0, 0, false -- nb, stack has a local current !
 
 function states.initialize(namespace,attribute,head)

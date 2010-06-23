@@ -14,27 +14,11 @@ local ctxcatcodes = tex.ctxcatcodes
 
 commands = commands or { } cs = commands -- shorter
 
-function commands.writestatus(a,b,c,...)
-    if c then
-        texiowrite_nl(format("%-16s: %s\n",a,format(b,c,...)))
-    else
-        texiowrite_nl(format("%-16s: %s\n",a,b)) -- b can have %'s
-    end
-end
-function commands.writedebug(a,b,c,...)
-    if c then
-        texiowrite_nl(format("%-16s| %s\n",a,format(b,c,...)))
-    else
-        texiowrite_nl(format("%-16s| %s\n",a,b)) -- b can have %'s
-    end
-end
-
-function commands.report(s,t,...)
-    commands.writestatus("!"..s,format(t,...))
-end
+function commands.writereport(...) logs.report(...) end -- not that efficient
+function commands.writestatus(...) logs.status(...) end
 
 local function testcase(b)
-    if b then -- faster with if than with expression
+    if b then -- looks faster with if than with expression
         texsprint(ctxcatcodes,"\\firstoftwoarguments")
     else
         texsprint(ctxcatcodes,"\\secondoftwoarguments")
@@ -51,6 +35,7 @@ function commands.doif(b)
         texsprint(ctxcatcodes,"\\gobbleoneargument")
     end
 end
+
 function commands.doifnot(b)
     if b then
         texsprint(ctxcatcodes,"\\gobbleoneargument")

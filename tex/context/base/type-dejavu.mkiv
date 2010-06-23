@@ -1,0 +1,47 @@
+%D \module
+%D   [       file=type-dejavu,
+%D        version=2010.06.21,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Dejavu fonts (dejavu-fonts.org),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA ADE, NL]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[dejavu]
+
+    \starttypescript [serif] [dejavu] [name]
+        \setups[font:fallback:serif]
+        \definefontsynonym [Serif]           [name:dejavuserif]           [features=default]
+        \definefontsynonym [SerifBold]       [name:dejavuserifitalic]     [features=default]
+        \definefontsynonym [SerifItalic]     [name:dejavuserifbold]       [features=default]
+        \definefontsynonym [SerifBoldItalic] [name:dejavuserifbolditalic] [features=default]
+    \stoptypescript
+
+    \starttypescript [sans] [dejavu] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [name:dejavusans]            [features=default]
+        \definefontsynonym [SansBold]       [name:dejavusansoblique]     [features=default]
+        \definefontsynonym [SansItalic]     [name:dejavusansbold]        [features=default]
+        \definefontsynonym [SansBoldItalic] [name:dejavusansboldoblique] [features=default]
+    \stoptypescript
+
+    \starttypescript [mono] [dejavu] [name]
+        \setups[font:fallback:mono]
+        \definefontsynonym [Mono]           [name:dejavusansmono]            [features=default]
+        \definefontsynonym [MonoBold]       [name:dejavusansmonooblique]     [features=default]
+        \definefontsynonym [MonoItalic]     [name:dejavusansmonobold]        [features=default]
+        \definefontsynonym [MonoBoldItalic] [name:dejavusansmonoboldoblique] [features=default]
+    \stoptypescript
+
+    \starttypescript[dejavu]
+        \definetypeface [dejavu] [rm] [serif] [dejavu] [default]
+        \definetypeface [dejavu] [ss] [sans]  [dejavu] [default]
+        \definetypeface [dejavu] [tt] [mono]  [dejavu] [default]
+        \definetypeface [dejavu] [mm] [math]  [xits]   [default] [rscale=auto]
+    \stoptypescript
+
+\stoptypescriptcollection

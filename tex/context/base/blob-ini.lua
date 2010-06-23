@@ -24,6 +24,8 @@ if not modules then modules = { } end modules ['blob-ini'] = {
 
 local type = type
 
+local report_blobs = logs.new("blobs")
+
 local utfvalues = string.utfvalues
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
@@ -147,7 +149,7 @@ function blobs.pack(t,how)
         if how == "vertical" then
             -- we need to prepend a local par node
             -- list[i].pack = node.vpack(list[i].head,"exactly")
-            logs.report("blobs","vpack not yet supported")
+            report_blobs("vpack not yet supported")
         else
             list[i].pack = hpack_node_list(list[i].head,"exactly")
         end

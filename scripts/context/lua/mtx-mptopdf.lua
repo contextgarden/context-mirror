@@ -108,7 +108,7 @@ function scripts.mptopdf.convertall()
     end
 end
 
-logs.extendbanner("MetaPost to PDF Converter 0.51",true)
+logs.extendbanner("MetaPost to PDF Converter 0.51")
 
 messages.help = [[
 --rawmp               raw metapost run

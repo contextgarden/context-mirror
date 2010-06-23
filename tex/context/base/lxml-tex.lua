@@ -15,7 +15,7 @@ local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 local P, S, C, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 
-if not tex and not tex.sprint then
+if not tex and not tex.sprint then -- no longer needed
     tex = {
         sprint = function(catcodes,...) texio.write(table.concat{...}) end,
         print  = function(catcodes,...) texio.write(table.concat{...}) end,
@@ -42,6 +42,8 @@ local trace_setups   = false  trackers.register("lxml.setups",   function(v) tra
 local trace_loading  = false  trackers.register("lxml.loading",  function(v) trace_loading  = v end)
 local trace_access   = false  trackers.register("lxml.access",   function(v) trace_access   = v end)
 local trace_comments = false  trackers.register("lxml.comments", function(v) trace_comments = v end)
+
+local report_lxml = logs.new("lxml")
 
 lxml              = lxml or { }
 lxml.loaded       = lxml.loaded or { }
@@ -211,20 +213,20 @@ local function get_id(id, qualified)
                                 return root
                             end
                         elseif trace_access then
-                            logs.report("lxml","'%s' has no index entry '%s'",d,i)
+                            report_lxml("'%s' has no index entry '%s'",d,i)
                         end
                     elseif trace_access then
-                        logs.report("lxml","'%s' has no index",d)
+                        report_lxml("'%s' has no index",d)
                     end
                 elseif trace_access then
-                    logs.report("lxml","'%s' is not loaded",d)
+                    report_lxml("'%s' is not loaded",d)
                 end
             elseif trace_access then
-                logs.report("lxml","'%s' is not loaded",i)
+                report_lxml("'%s' is not loaded",i)
             end
         end
     elseif trace_access then
-        logs.report("lxml","invalid id (nil)")
+        report_lxml("invalid id (nil)")
     end
 end
 
@@ -270,7 +272,7 @@ local function addindex(name,check_sum,force)
         root.index = index
         root.maxindex = maxindex
         if trace_access then
-            logs.report("lxml","%s indexed, %s nodes",tostring(name),maxindex)
+            report_lxml("%s indexed, %s nodes",tostring(name),maxindex)
         end
     end
 end
@@ -444,7 +446,7 @@ end
 
 local function tex_comment(e,handlers)
     if trace_comments then
-        logs.report("lxml","comment: %s",e.dt[1])
+        report_lxml("comment: %s",e.dt[1])
     end
 end
 
@@ -470,7 +472,7 @@ local function tex_element(e,handlers)
                 end
                 texsprint(ctxcatcodes,"\\xmlw{",command,"}{",rootname,"::",ix,"}")
             else
-                logs.report("lxml", "fatal error: no index for '%s'",command)
+                report_lxml( "fatal error: no index for '%s'",command)
                 texsprint(ctxcatcodes,"\\xmlw{",command,"}{",ix or 0,"}")
             end
         elseif tc == "function" then
@@ -522,7 +524,7 @@ local function ctx_text(e)
 end
 
 local function tex_handle(...)
---  logs.report("lxml", "error while flushing: %s", concat { ... })
+--  report_lxml( "error while flushing: %s", concat { ... })
     texsprint(...) -- notcatcodes is active anyway
 end
 
@@ -762,19 +764,19 @@ function lxml.setsetup(id,pattern,setup)
                     local ix = e.ix or 0
                     if setup == "-" then
                         e.command = false
-                        logs.report("lxml","lpath matched (a) %5i: %s = %s -> skipped",c,ix,setup)
+                        report_lxml("lpath matched (a) %5i: %s = %s -> skipped",c,ix,setup)
                     elseif setup == "+" then
                         e.command = true
-                        logs.report("lxml","lpath matched (b) %5i: %s = %s -> text",c,ix,setup)
+                        report_lxml("lpath matched (b) %5i: %s = %s -> text",c,ix,setup)
                     else
                         local tg = e.tg
                         if tg then -- to be sure
                             e.command = tg
                             local ns = e.rn or e.ns
                             if ns == "" then
-                                logs.report("lxml","lpath matched (c) %5i: %s = %s -> %s",c,ix,tg,tg)
+                                report_lxml("lpath matched (c) %5i: %s = %s -> %s",c,ix,tg,tg)
                             else
-                                logs.report("lxml","lpath matched (d) %5i: %s = %s:%s -> %s",c,ix,ns,tg,tg)
+                                report_lxml("lpath matched (d) %5i: %s = %s:%s -> %s",c,ix,ns,tg,tg)
                             end
                         end
                     end
@@ -792,7 +794,7 @@ function lxml.setsetup(id,pattern,setup)
                 end
             end
         elseif trace_setups then
-            logs.report("lxml","no lpath matches for %s",pattern)
+            report_lxml("no lpath matches for %s",pattern)
         end
     else
         local a, b = match(setup,"^(.+:)([%*%-])$")
@@ -806,23 +808,23 @@ function lxml.setsetup(id,pattern,setup)
                         if b == "-" then
                             e.command = false
                             if ns == "" then
-                                logs.report("lxml","lpath matched (e) %5i: %s = %s -> skipped",c,ix,tg)
+                                report_lxml("lpath matched (e) %5i: %s = %s -> skipped",c,ix,tg)
                             else
-                                logs.report("lxml","lpath matched (f) %5i: %s = %s:%s -> skipped",c,ix,ns,tg)
+                                report_lxml("lpath matched (f) %5i: %s = %s:%s -> skipped",c,ix,ns,tg)
                             end
                         elseif b == "+" then
                             e.command = true
                             if ns == "" then
-                                logs.report("lxml","lpath matched (g) %5i: %s = %s -> text",c,ix,tg)
+                                report_lxml("lpath matched (g) %5i: %s = %s -> text",c,ix,tg)
                             else
-                                logs.report("lxml","lpath matched (h) %5i: %s = %s:%s -> text",c,ix,ns,tg)
+                                report_lxml("lpath matched (h) %5i: %s = %s:%s -> text",c,ix,ns,tg)
                             end
                         else
                             e.command = a .. tg
                             if ns == "" then
-                                logs.report("lxml","lpath matched (i) %5i: %s = %s -> %s",c,ix,tg,e.command)
+                                report_lxml("lpath matched (i) %5i: %s = %s -> %s",c,ix,tg,e.command)
                             else
-                                logs.report("lxml","lpath matched (j) %5i: %s = %s:%s -> %s",c,ix,ns,tg,e.command)
+                                report_lxml("lpath matched (j) %5i: %s = %s:%s -> %s",c,ix,ns,tg,e.command)
                             end
                         end
                     end
@@ -839,7 +841,7 @@ function lxml.setsetup(id,pattern,setup)
                     end
                 end
             elseif trace_setups then
-                logs.report("lxml","no lpath matches for %s",pattern)
+                report_lxml("no lpath matches for %s",pattern)
             end
         else
             local collected = lxmlparseapply(id,pattern)
@@ -850,9 +852,9 @@ function lxml.setsetup(id,pattern,setup)
                         e.command = setup
                         local ns, tg, ix = e.rn or e.ns, e.tg, e.ix or 0
                         if ns == "" then
-                            logs.report("lxml","lpath matched (k) %5i: %s = %s -> %s",c,ix,tg,setup)
+                            report_lxml("lpath matched (k) %5i: %s = %s -> %s",c,ix,tg,setup)
                         else
-                            logs.report("lxml","lpath matched (l) %5i: %s = %s:%s -> %s",c,ix,ns,tg,setup)
+                            report_lxml("lpath matched (l) %5i: %s = %s:%s -> %s",c,ix,ns,tg,setup)
                         end
                     end
                 else
@@ -861,7 +863,7 @@ function lxml.setsetup(id,pattern,setup)
                     end
                 end
             elseif trace_setups then
-                logs.report("lxml","no lpath matches for %s",pattern)
+                report_lxml("no lpath matches for %s",pattern)
             end
         end
     end

@@ -38,8 +38,6 @@ if not modules then modules = { } end modules ['mtxrun'] = {
 -- remember for subruns: _CTX_K_S_#{original}_
 -- remember for subruns: TEXMFSTART.#{original} [tex.rb texmfstart.rb]
 
-texlua = true
-
 -- begin library merge
 
 
@@ -97,13 +95,6 @@ function string:unquote()
     return (gsub(self,"^([\"\'])(.*)%1$","%2"))
 end
 
---~ function string:unquote()
---~     if find(self,"^[\'\"]") then
---~         return sub(self,2,-2)
---~     else
---~         return self
---~     end
---~ end
 
 function string:quote() -- we could use format("%q")
     return format("%q",self)
@@ -126,11 +117,6 @@ function string:limit(n,sentinel)
     end
 end
 
---~ function string:strip() -- the .- is quite efficient
---~  -- return match(self,"^%s*(.-)%s*$") or ""
---~  -- return match(self,'^%s*(.*%S)') or '' -- posted on lua list
---~     return find(s,'^%s*$') and '' or match(s,'^%s*(.*%S)')
---~ end
 
 do -- roberto's variant:
     local space    = lpeg.S(" \t\v\n")
@@ -217,13 +203,6 @@ function is_number(str) -- tonumber
     return find(str,"^[%-%+]?[%d]-%.?[%d+]$") == 1
 end
 
---~ print(is_number("1"))
---~ print(is_number("1.1"))
---~ print(is_number(".1"))
---~ print(is_number("-0.1"))
---~ print(is_number("+0.1"))
---~ print(is_number("-.1"))
---~ print(is_number("+.1"))
 
 function string:split_settings() -- no {} handling, see l-aux for lpeg variant
     if find(self,"=") then
@@ -278,18 +257,6 @@ function string:totable()
     return lpegmatch(pattern,self)
 end
 
---~ local t = {
---~     "1234567123456712345671234567",
---~     "a\tb\tc",
---~     "aa\tbb\tcc",
---~     "aaa\tbbb\tccc",
---~     "aaaa\tbbbb\tcccc",
---~     "aaaaa\tbbbbb\tccccc",
---~     "aaaaaa\tbbbbbb\tcccccc",
---~ }
---~ for k,v do
---~     print(string.tabtospace(t[k]))
---~ end
 
 function string.tabtospace(str,tab)
     -- we don't handle embedded newlines
@@ -390,6 +357,11 @@ patterns.whitespace    = patterns.eol + patterns.spacer
 patterns.nonwhitespace = 1 - patterns.whitespace
 patterns.utf8          = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
 patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
+patterns.validutf8     = patterns.utf8^0 * P(-1) * Cc(true) + Cc(false)
+
+patterns.undouble      = P('"')/"" * (1-P('"'))^0 * P('"')/""
+patterns.unsingle      = P("'")/"" * (1-P("'"))^0 * P("'")/""
+patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
 function lpeg.anywhere(pattern) --slightly adapted from website
     return P { P(pattern) + 1 * V(1) } -- why so complex?
@@ -412,10 +384,6 @@ end
 
 patterns.textline = content
 
---~ local p = lpeg.splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
---~ local p = lpeg.splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
---~ local p = lpeg.splitat("->",false)  print(match(p,"oeps"))              -- oeps
---~ local p = lpeg.splitat("->",true)   print(match(p,"oeps"))              -- oeps
 
 local splitters_s, splitters_m = { }, { }
 
@@ -484,19 +452,7 @@ function string:checkedsplit(separator)
     return match(c,self)
 end
 
---~ function lpeg.append(list,pp)
---~     local p = pp
---~     for l=1,#list do
---~         if p then
---~             p = p + P(list[l])
---~         else
---~             p = P(list[l])
---~         end
---~     end
---~     return p
---~ end
 
---~ from roberto's site:
 
 local f1 = string.byte
 
@@ -505,6 +461,53 @@ local function f3(s) local c1, c2, c3     = f1(s,1,3) return  (c1 * 64 + c2) * 6
 local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
 
 patterns.utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
+
+local cache = { }
+
+function lpeg.stripper(str)
+    local s = cache[str]
+    if not s then
+        s = Cs(((S(str)^1)/"" + 1)^0)
+        cache[str] = s
+    end
+    return s
+end
+
+function lpeg.replacer(t)
+    if #t > 0 then
+        local p
+        for i=1,#t do
+            local ti= t[i]
+            local pp = P(ti[1]) / ti[2]
+            p = (p and p + pp ) or pp
+        end
+        return Cs((p + 1)^0)
+    end
+end
+
+
+local splitters_f, splitters_s = { }, { }
+
+function lpeg.firstofsplit(separator) -- always return value
+    local splitter = splitters_f[separator]
+    if not splitter then
+        separator = P(separator)
+        splitter = C((1 - separator)^0)
+        splitters_f[separator] = splitter
+    end
+    return splitter
+end
+
+function lpeg.secondofsplit(separator) -- nil if not split
+    local splitter = splitters_s[separator]
+    if not splitter then
+        separator = P(separator)
+        splitter = (1 - separator)^0 * separator * C(P(1)^0)
+        splitters_s[separator] = splitter
+    end
+    return splitter
+end
+
 
 
 end -- of closure
@@ -783,9 +786,6 @@ function table.one_entry(t) -- obolete, use inline code instead
     return n and not next(t,n)
 end
 
---~ function table.starts_at(t) -- obsolete, not nice anyway
---~     return ipairs(t,1)(t,0)
---~ end
 
 function table.tohash(t,value)
     local h = { }
@@ -806,12 +806,6 @@ function table.fromhash(t)
     return h
 end
 
---~ print(table.serialize(t), "\n")
---~ print(table.serialize(t,"name"), "\n")
---~ print(table.serialize(t,false), "\n")
---~ print(table.serialize(t,true), "\n")
---~ print(table.serialize(t,"name",true), "\n")
---~ print(table.serialize(t,"name",true,true), "\n")
 
 table.serialize_functions = true
 table.serialize_compact   = true
@@ -871,8 +865,7 @@ local function do_serialize(root,name,depth,level,indexed)
         if indexed then
             handle(format("%s{",depth))
         elseif name then
-        --~ handle(format("%s%s={",depth,key(name)))
-            if type(name) == "number" then -- or find(k,"^%d+$") then
+                    if type(name) == "number" then -- or find(k,"^%d+$") then
                 if hexify then
                     handle(format("%s[0x%04X]={",depth,name))
                 else
@@ -901,10 +894,8 @@ local function do_serialize(root,name,depth,level,indexed)
         for i=1,#sk do
             local k = sk[i]
             local v = root[k]
-            --~ if v == root then
-                -- circular
-            --~ else
-            local t = type(v)
+                            -- circular
+                        local t = type(v)
             if compact and first and type(k) == "number" and k >= first and k <= last then
                 if t == "number" then
                     if hexify then
@@ -947,12 +938,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s __p__=nil,",depth))
                 end
             elseif t == "number" then
-            --~ if hexify then
-            --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
-            --~ else
-            --~     handle(format("%s %s=%s,",depth,key(k),v)) -- %.99g
-            --~ end
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                                                                            if type(k) == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
@@ -973,8 +959,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "string" then
                 if reduce and tonumber(v) then
-                --~ handle(format("%s %s=%s,",depth,key(k),v))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                                    if type(k) == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=%s,",depth,k,v))
                         else
@@ -986,8 +971,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         handle(format("%s [%q]=%s,",depth,k,v))
                     end
                 else
-                --~ handle(format("%s %s=%q,",depth,key(k),v))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                                    if type(k) == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=%q,",depth,k,v))
                         else
@@ -1001,8 +985,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "table" then
                 if not next(v) then
-                    --~ handle(format("%s %s={},",depth,key(k)))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                                        if type(k) == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]={},",depth,k))
                         else
@@ -1016,8 +999,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 elseif inline then
                     local st = simple_table(v)
                     if st then
-                    --~ handle(format("%s %s={ %s },",depth,key(k),concat(st,", ")))
-                        if type(k) == "number" then -- or find(k,"^%d+$") then
+                                            if type(k) == "number" then -- or find(k,"^%d+$") then
                             if hexify then
                                 handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
                             else
@@ -1035,8 +1017,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     do_serialize(v,k,depth,level+1)
                 end
             elseif t == "boolean" then
-            --~ handle(format("%s %s=%s,",depth,key(k),tostring(v)))
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                            if type(k) == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=%s,",depth,k,tostring(v)))
                     else
@@ -1049,8 +1030,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "function" then
                 if functions then
-                    --~ handle(format('%s %s=loadstring(%q),',depth,key(k),dump(v)))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                                        if type(k) == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=loadstring(%q),",depth,k,dump(v)))
                         else
@@ -1063,8 +1043,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     end
                 end
             else
-                --~ handle(format("%s %s=%q,",depth,key(k),tostring(v)))
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                                if type(k) == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
                     else
@@ -1076,8 +1055,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s [%q]=%q,",depth,k,tostring(v)))
                 end
             end
-            --~ end
-        end
+                    end
     end
    if level > 0 then
         handle(format("%s},",depth))
@@ -1118,19 +1096,11 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
         handle("t={")
     end
     if root and next(root) then
-        do_serialize(root,name,"",0,indexed)
+        do_serialize(root,name,"",0)
     end
     handle("}")
 end
 
---~ name:
---~
---~ true     : return     { }
---~ false    :            { }
---~ nil      : t        = { }
---~ string   : string   = { }
---~ 'return' : return     { }
---~ number   : [number] = { }
 
 function table.serialize(root,name,reduce,noquotes,hexify)
     local t = { }
@@ -1353,9 +1323,6 @@ function table.swapped(t)
     return s
 end
 
---~ function table.are_equal(a,b)
---~     return table.serialize(a) == table.serialize(b)
---~ end
 
 function table.clone(t,p) -- t is optional or nil or table
     if not p then
@@ -1421,6 +1388,17 @@ function table.insert_after_value(t,value,extra)
     insert(t,#t+1,extra)
 end
 
+function table.sequenced(t,sep)
+    local s = { }
+    for k, v in next, t do -- indexed?
+        s[#s+1] = k .. "=" .. tostring(v)
+    end
+    return concat(s, sep or " | ")
+end
+
+function table.print(...)
+    print(table.serialize(...))
+end
 
 
 end -- of closure
@@ -1756,17 +1734,6 @@ function set.contains(n,s)
     end
 end
 
---~ local c = set.create{'aap','noot','mies'}
---~ local s = set.tonumber(c)
---~ local t = set.totable(s)
---~ print(t['aap'])
---~ local c = set.create{'zus','wim','jet'}
---~ local s = set.tonumber(c)
---~ local t = set.totable(s)
---~ print(t['aap'])
---~ print(t['jet'])
---~ print(set.contains(t,'jet'))
---~ print(set.contains(t,'aap'))
 
 
 
@@ -1784,29 +1751,97 @@ if not modules then modules = { } end modules ['l-os'] = {
 
 -- maybe build io.flush in os.execute
 
-local find, format, gsub = string.find, string.format, string.gsub
+local find, format, gsub, upper = string.find, string.format, string.gsub, string.upper
 local random, ceil = math.random, math.ceil
+local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
+local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
-local execute, spawn, exec, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.flush
+-- The following code permits traversing the environment table, at least
+-- in luatex. Internally all environment names are uppercase.
+
+if not os.__getenv__ then
+
+    os.__getenv__ = os.getenv
+    os.__setenv__ = os.setenv
+
+    if os.env then
+
+        local osgetenv  = os.getenv
+        local ossetenv  = os.setenv
+        local osenv     = os.env      local _ = osenv.PATH -- initialize the table
+
+        function os.setenv(k,v)
+            if v == nil then
+                v = ""
+            end
+            local K = upper(k)
+            osenv[K] = v
+            ossetenv(K,v)
+        end
+
+        function os.getenv(k)
+            local K = upper(k)
+            local v = osenv[K] or osenv[k] or osgetenv(K) or osgetenv(k)
+            if v == "" then
+                return nil
+            else
+                return v
+            end
+        end
+
+    else
+
+        local ossetenv  = os.setenv
+        local osgetenv  = os.getenv
+        local osenv     = { }
+
+        function os.setenv(k,v)
+            if v == nil then
+                v = ""
+            end
+            local K = upper(k)
+            osenv[K] = v
+        end
+
+        function os.getenv(k)
+            local K = upper(k)
+            local v = osenv[K] or osgetenv(K) or osgetenv(k)
+            if v == "" then
+                return nil
+            else
+                return v
+            end
+        end
+
+        local function __index(t,k)
+            return os.getenv(k)
+        end
+        local function __newindex(t,k,v)
+            os.setenv(k,v)
+        end
+
+        os.env = { }
+
+        setmetatable(os.env, { __index = __index, __newindex = __newindex } )
+
+    end
+
+end
+
+-- end of environment hack
+
+local execute, spawn, exec, iopopen, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.popen, io.flush
 
 function os.execute(...) ioflush() return execute(...) end
 function os.spawn  (...) ioflush() return spawn  (...) end
 function os.exec   (...) ioflush() return exec   (...) end
+function io.popen  (...) ioflush() return iopopen(...) end
 
 function os.resultof(command)
-    ioflush() -- else messed up logging
     local handle = io.popen(command,"r")
-    if not handle then
-    --  print("unknown command '".. command .. "' in os.resultof")
-        return ""
-    else
-        return handle:read("*all") or ""
-    end
+    return handle and handle:read("*all") or ""
 end
 
---~ os.type     : windows | unix (new, we already guessed os.platform)
---~ os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
---~ os.platform : extended os.name with architecture
 
 if not io.fileseparator then
     if find(os.getenv("PATH"),";") then
@@ -1856,11 +1891,6 @@ function os.runtime()
     return os.gettimeofday() - startuptime
 end
 
---~ print(os.gettimeofday()-os.time())
---~ os.sleep(1.234)
---~ print (">>",os.runtime())
---~ print(os.date("%H:%M:%S",os.gettimeofday()))
---~ print(os.date("%H:%M:%S",os.time()))
 
 -- no need for function anymore as we have more clever code and helpers now
 -- this metatable trickery might as well disappear
@@ -1877,24 +1907,6 @@ osmt.__index = function(t,k)
 end
 
 setmetatable(os,osmt)
-
-if not os.setenv then
-
-    -- we still store them but they won't be seen in
-    -- child processes although we might pass them some day
-    -- using command concatination
-
-    local env, getenv = { }, os.getenv
-
-    function os.setenv(k,v)
-        env[k] = v
-    end
-
-    function os.getenv(k)
-        return env[k] or getenv(k)
-    end
-
-end
 
 -- we can use HOSTTYPE on some platforms
 
@@ -2016,7 +2028,7 @@ elseif name == "kfreebsd" then
         -- we sometims have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
         if find(architecture,"x86_64") then
-            platform = "kfreebsd-64"
+            platform = "kfreebsd-amd64"
         else
             platform = "kfreebsd-i386"
         end
@@ -2093,9 +2105,10 @@ if not modules then modules = { } end modules ['l-file'] = {
 
 file = file or { }
 
-local concat = table.concat
+local insert, concat = table.insert, table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
+local getcurrentdir = lfs.currentdir
 
 local function dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
@@ -2133,6 +2146,13 @@ function file.addsuffix(filename, suffix, criterium)
         return filename
     elseif criterium == true then
         return filename .. "." .. suffix
+    elseif not criterium then
+        local n, s = splitname(filename)
+        if not s or s == "" then
+            return filename .. "." .. suffix
+        else
+            return filename
+        end
     else
         local n, s = splitname(filename)
         if s and s ~= "" then
@@ -2155,32 +2175,11 @@ function file.addsuffix(filename, suffix, criterium)
     end
 end
 
---~ print(file.addsuffix("name","new")                   .. "-> name.new")
---~ print(file.addsuffix("name.old","new")               .. "-> name.old")
---~ print(file.addsuffix("name.old","new",true)          .. "-> name.old.new")
---~ print(file.addsuffix("name.old","new","new")         .. "-> name.new")
---~ print(file.addsuffix("name.old","new","old")         .. "-> name.old")
---~ print(file.addsuffix("name.old","new","foo")         .. "-> name.new")
---~ print(file.addsuffix("name.old","new",{"foo","bar"}) .. "-> name.new")
---~ print(file.addsuffix("name.old","new",{"old","bar"}) .. "-> name.old")
 
 function file.replacesuffix(filename, suffix)
     return (gsub(filename,"%.[%a%d]+$","")) .. "." .. suffix
 end
 
---~ function file.join(...)
---~     local pth = concat({...},"/")
---~     pth = gsub(pth,"\\","/")
---~     local a, b = match(pth,"^(.*://)(.*)$")
---~     if a and b then
---~         return a .. gsub(b,"//+","/")
---~     end
---~     a, b = match(pth,"^(//)(.*)$")
---~     if a and b then
---~         return a .. gsub(b,"//+","/")
---~     end
---~     return (gsub(pth,"//+","/"))
---~ end
 
 local trick_1 = char(1)
 local trick_2 = "^" .. trick_1 .. "/+"
@@ -2208,15 +2207,6 @@ function file.join(...)
     return (gsub(pth,"//+","/"))
 end
 
---~ print(file.join("//","/y"))
---~ print(file.join("/","/y"))
---~ print(file.join("","/y"))
---~ print(file.join("/x/","/y"))
---~ print(file.join("x/","/y"))
---~ print(file.join("http://","/y"))
---~ print(file.join("http://a","/y"))
---~ print(file.join("http:///a","/y"))
---~ print(file.join("//nas-1","/y"))
 
 function file.iswritable(name)
     local a = lfs.attributes(name) or lfs.attributes(dirname(name,"."))
@@ -2233,17 +2223,6 @@ file.is_writable = file.iswritable
 
 -- todo: lpeg
 
---~ function file.split_path(str)
---~     local t = { }
---~     str = gsub(str,"\\", "/")
---~     str = gsub(str,"(%a):([;/])", "%1\001%2")
---~     for name in gmatch(str,"([^;:]+)") do
---~         if name ~= "" then
---~             t[#t+1] = gsub(name,"\001",":")
---~         end
---~     end
---~     return t
---~ end
 
 local checkedsplit = string.checkedsplit
 
@@ -2258,31 +2237,62 @@ end
 
 -- we can hash them weakly
 
-function file.collapse_path(str)
-    str = gsub(str,"\\","/")
-    if find(str,"/") then
-        str = gsub(str,"^%./",(gsub(lfs.currentdir(),"\\","/")) .. "/") -- ./xx in qualified
-        str = gsub(str,"/%./","/")
-        local n, m = 1, 1
-        while n > 0 or m > 0 do
-            str, n = gsub(str,"[^/%.]+/%.%.$","")
-            str, m = gsub(str,"[^/%.]+/%.%./","")
-        end
-        str = gsub(str,"([^/])/$","%1")
-    --  str = gsub(str,"^%./","") -- ./xx in qualified
-        str = gsub(str,"/%.$","")
+
+function file.collapse_path(str,anchor)
+    if anchor and not find(str,"^/") and not find(str,"^%a:") then
+        str = getcurrentdir() .. "/" .. str
     end
-    if str == "" then str = "." end
-    return str
+    if str == "" or str =="." then
+        return "."
+    elseif find(str,"^%.%.") then
+        str = gsub(str,"\\","/")
+        return str
+    elseif not find(str,"%.") then
+        str = gsub(str,"\\","/")
+        return str
+    end
+    str = gsub(str,"\\","/")
+    local starter, rest = match(str,"^(%a+:/*)(.-)$")
+    if starter then
+        str = rest
+    end
+    local oldelements = checkedsplit(str,"/")
+    local newelements = { }
+    local i = #oldelements
+    while i > 0 do
+        local element = oldelements[i]
+        if element == '.' then
+            -- do nothing
+        elseif element == '..' then
+            local n = i -1
+            while n > 0 do
+                local element = oldelements[n]
+                if element ~= '..' and element ~= '.' then
+                    oldelements[n] = '.'
+                    break
+                else
+                    n = n - 1
+                end
+             end
+            if n < 1 then
+               insert(newelements,1,'..')
+            end
+        elseif element ~= "" then
+            insert(newelements,1,element)
+        end
+        i = i - 1
+    end
+    if #newelements == 0 then
+        return starter or "."
+    elseif starter then
+        return starter .. concat(newelements, '/')
+    elseif find(str,"^/") then
+        return "/" .. concat(newelements,'/')
+    else
+        return concat(newelements, '/')
+    end
 end
 
---~ print(file.collapse_path("/a"))
---~ print(file.collapse_path("a/./b/.."))
---~ print(file.collapse_path("a/aa/../b/bb"))
---~ print(file.collapse_path("a/../.."))
---~ print(file.collapse_path("a/.././././b/.."))
---~ print(file.collapse_path("a/./././b/.."))
---~ print(file.collapse_path("a/b/c/../.."))
 
 function file.robustname(str)
     return (gsub(str,"[^%a%d%/%-%.\\]+","-"))
@@ -2297,92 +2307,23 @@ end
 
 -- lpeg variants, slightly faster, not always
 
---~ local period    = lpeg.P(".")
---~ local slashes   = lpeg.S("\\/")
---~ local noperiod  = 1-period
---~ local noslashes = 1-slashes
---~ local name      = noperiod^1
 
---~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.C(noperiod^1) * -1
 
---~ function file.extname(name)
---~     return lpegmatch(pattern,name) or ""
---~ end
 
---~ local pattern = lpeg.Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 
---~ function file.removesuffix(name)
---~     return lpegmatch(pattern,name)
---~ end
 
---~ local pattern = (noslashes^0 * slashes)^1 * lpeg.C(noslashes^1) * -1
 
---~ function file.basename(name)
---~     return lpegmatch(pattern,name) or name
---~ end
 
---~ local pattern = (noslashes^0 * slashes)^1 * lpeg.Cp() * noslashes^1 * -1
 
---~ function file.dirname(name)
---~     local p = lpegmatch(pattern,name)
---~     if p then
---~         return sub(name,1,p-2)
---~     else
---~         return ""
---~     end
---~ end
 
---~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
 
---~ function file.addsuffix(name, suffix)
---~     local p = lpegmatch(pattern,name)
---~     if p then
---~         return name
---~     else
---~         return name .. "." .. suffix
---~     end
---~ end
 
---~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
 
---~ function file.replacesuffix(name,suffix)
---~     local p = lpegmatch(pattern,name)
---~     if p then
---~         return sub(name,1,p-2) .. "." .. suffix
---~     else
---~         return name .. "." .. suffix
---~     end
---~ end
 
---~ local pattern = (noslashes^0 * slashes)^0 * lpeg.Cp() * ((noperiod^1 * period)^1 * lpeg.Cp() + lpeg.P(true)) * noperiod^1 * -1
 
---~ function file.nameonly(name)
---~     local a, b = lpegmatch(pattern,name)
---~     if b then
---~         return sub(name,a,b-2)
---~     elseif a then
---~         return sub(name,a)
---~     else
---~         return name
---~     end
---~ end
 
---~ local test = file.extname
---~ local test = file.basename
---~ local test = file.dirname
---~ local test = file.addsuffix
---~ local test = file.replacesuffix
---~ local test = file.nameonly
 
---~ print(1,test("./a/b/c/abd.def.xxx","!!!"))
---~ print(2,test("./../b/c/abd.def.xxx","!!!"))
---~ print(3,test("a/b/c/abd.def.xxx","!!!"))
---~ print(4,test("a/b/c/def.xxx","!!!"))
---~ print(5,test("a/b/c/def","!!!"))
---~ print(6,test("def","!!!"))
---~ print(7,test("def.xxx","!!!"))
 
---~ local tim = os.clock() for i=1,250000 do local ext = test("abd.def.xxx","!!!") end print(os.clock()-tim)
 
 -- also rewrite previous
 
@@ -2422,14 +2363,6 @@ end
 -- test { "/aa", "/aa/bb", "/aa/bb/cc", "/aa/bb/cc.dd", "/aa/bb/cc.dd.ee" }
 -- test { "aa", "aa/bb", "aa/bb/cc", "aa/bb/cc.dd", "aa/bb/cc.dd.ee" }
 
---~ -- todo:
---~
---~ if os.type == "windows" then
---~     local currentdir = lfs.currentdir
---~     function lfs.currentdir()
---~         return (gsub(currentdir(),"\\","/"))
---~     end
---~ end
 
 
 end -- of closure
@@ -2455,18 +2388,6 @@ if not md5.HEX then function md5.HEX(str) return convert(str,"%02X") end end
 if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
 if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 
---~ if not md5.HEX then
---~     local function remap(chr) return format("%02X",byte(chr)) end
---~     function md5.HEX(str) return (gsub(md5.sum(str),".",remap)) end
---~ end
---~ if not md5.hex then
---~     local function remap(chr) return format("%02x",byte(chr)) end
---~     function md5.hex(str) return (gsub(md5.sum(str),".",remap)) end
---~ end
---~ if not md5.dec then
---~     local function remap(chr) return format("%03i",byte(chr)) end
---~     function md5.dec(str) return (gsub(md5.sum(str),".",remap)) end
---~ end
 
 file.needs_updating_threshold = 1
 
@@ -2522,9 +2443,10 @@ if not modules then modules = { } end modules ['l-url'] = {
     license   = "see context related readme files"
 }
 
-local char, gmatch, gsub = string.char, string.gmatch, string.gsub
+local char, gmatch, gsub, format, byte = string.char, string.gmatch, string.gsub, string.format, string.byte
+local concat = table.concat
 local tonumber, type = tonumber, type
-local lpegmatch = lpeg.match
+local lpegmatch, lpegP, lpegC, lpegR, lpegS, lpegCs, lpegCc = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc
 
 -- from the spec (on the web):
 --
@@ -2542,21 +2464,34 @@ local function tochar(s)
     return char(tonumber(s,16))
 end
 
-local colon, qmark, hash, slash, percent, endofstring = lpeg.P(":"), lpeg.P("?"), lpeg.P("#"), lpeg.P("/"), lpeg.P("%"), lpeg.P(-1)
+local colon, qmark, hash, slash, percent, endofstring = lpegP(":"), lpegP("?"), lpegP("#"), lpegP("/"), lpegP("%"), lpegP(-1)
 
-local hexdigit  = lpeg.R("09","AF","af")
-local plus      = lpeg.P("+")
-local escaped   = (plus / " ") + (percent * lpeg.C(hexdigit * hexdigit) / tochar)
+local hexdigit  = lpegR("09","AF","af")
+local plus      = lpegP("+")
+local nothing   = lpegCc("")
+local escaped   = (plus / " ") + (percent * lpegC(hexdigit * hexdigit) / tochar)
 
 -- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
 
-local scheme    =                 lpeg.Cs((escaped+(1-colon-slash-qmark-hash))^2) * colon + lpeg.Cc("")
-local authority = slash * slash * lpeg.Cs((escaped+(1-      slash-qmark-hash))^0)         + lpeg.Cc("")
-local path      = slash *         lpeg.Cs((escaped+(1-            qmark-hash))^0)         + lpeg.Cc("")
-local query     = qmark         * lpeg.Cs((escaped+(1-                  hash))^0)         + lpeg.Cc("")
-local fragment  = hash          * lpeg.Cs((escaped+(1-           endofstring))^0)         + lpeg.Cc("")
+local scheme    =                 lpegCs((escaped+(1-colon-slash-qmark-hash))^2) * colon + nothing
+local authority = slash * slash * lpegCs((escaped+(1-      slash-qmark-hash))^0)         + nothing
+local path      = slash *         lpegCs((escaped+(1-            qmark-hash))^0)         + nothing
+local query     = qmark         * lpegCs((escaped+(1-                  hash))^0)         + nothing
+local fragment  = hash          * lpegCs((escaped+(1-           endofstring))^0)         + nothing
 
 local parser = lpeg.Ct(scheme * authority * path * query * fragment)
+
+lpeg.patterns.urlsplitter = parser
+
+local escapes = { }
+
+for i=0,255 do
+    escapes[i] = format("%%%02X",i)
+end
+
+local escaper = lpeg.Cs((lpegR("09","AZ","az") + lpegS("-./_") + lpegP(1) / escapes)^0)
+
+lpeg.patterns.urlescaper = escaper
 
 -- todo: reconsider Ct as we can as well have five return values (saves a table)
 -- so we can have two parsers, one with and one without
@@ -2570,15 +2505,27 @@ end
 function url.hashed(str)
     local s = url.split(str)
     local somescheme = s[1] ~= ""
-    return {
-        scheme    = (somescheme and s[1]) or "file",
-        authority = s[2],
-        path      = s[3],
-        query     = s[4],
-        fragment  = s[5],
-        original  = str,
-        noscheme  = not somescheme,
-    }
+    if not somescheme then
+        return {
+            scheme    = "file",
+            authority = "",
+            path      = str,
+            query     = "",
+            fragment  = "",
+            original  = str,
+            noscheme  = true,
+        }
+    else
+        return {
+            scheme    = s[1],
+            authority = s[2],
+            path      = s[3],
+            query     = s[4],
+            fragment  = s[5],
+            original  = str,
+            noscheme  = false,
+        }
+    end
 end
 
 function url.hasscheme(str)
@@ -2589,15 +2536,25 @@ function url.addscheme(str,scheme)
     return (url.hasscheme(str) and str) or ((scheme or "file:///") .. str)
 end
 
-function url.construct(hash)
-    local fullurl = hash.sheme .. "://".. hash.authority .. hash.path
-    if hash.query then
-        fullurl = fullurl .. "?".. hash.query
+function url.construct(hash) -- dodo: we need to escape !
+    local fullurl = { }
+    local scheme, authority, path, query, fragment = hash.scheme, hash.authority, hash.path, hash.query, hash.fragment
+    if scheme and scheme ~= "" then
+        fullurl[#fullurl+1] = scheme .. "://"
     end
-    if hash.fragment then
-        fullurl = fullurl .. "?".. hash.fragment
+    if authority and authority ~= "" then
+        fullurl[#fullurl+1] = authority
     end
-    return fullurl
+    if path and path ~= "" then
+        fullurl[#fullurl+1] = "/" .. path
+    end
+    if query and query ~= "" then
+        fullurl[#fullurl+1] = "?".. query
+    end
+    if fragment and fragment ~= "" then
+        fullurl[#fullurl+1] = "#".. fragment
+    end
+    return lpegmatch(escaper,concat(fullurl))
 end
 
 function url.filename(filename)
@@ -2617,37 +2574,12 @@ function url.query(str)
     end
 end
 
---~ print(url.filename("file:///c:/oeps.txt"))
---~ print(url.filename("c:/oeps.txt"))
---~ print(url.filename("file:///oeps.txt"))
---~ print(url.filename("file:///etc/test.txt"))
---~ print(url.filename("/oeps.txt"))
 
---~ from the spec on the web (sort of):
---~
---~ function test(str)
---~     print(table.serialize(url.hashed(str)))
---~ end
---~
---~ test("%56pass%20words")
---~ test("file:///c:/oeps.txt")
---~ test("file:///c|/oeps.txt")
---~ test("file:///etc/oeps.txt")
---~ test("file://./etc/oeps.txt")
---~ test("file:////etc/oeps.txt")
---~ test("ftp://ftp.is.co.za/rfc/rfc1808.txt")
---~ test("http://www.ietf.org/rfc/rfc2396.txt")
---~ test("ldap://[2001:db8::7]/c=GB?objectClass?one#what")
---~ test("mailto:John.Doe@example.com")
---~ test("news:comp.infosystems.www.servers.unix")
---~ test("tel:+1-816-555-1212")
---~ test("telnet://192.0.2.16:80/")
---~ test("urn:oasis:names:specification:docbook:dtd:xml:4.1.2")
---~ test("/etc/passwords")
---~ test("http://www.pragma-ade.com/spaced%20name")
 
---~ test("zip:///oeps/oeps.zip#bla/bla.tex")
---~ test("zip:///oeps/oeps.zip?bla/bla.tex")
+
+
+
+
 
 
 end -- of closure
@@ -2802,11 +2734,6 @@ end
 
 dir.glob = glob
 
---~ list = dir.glob("**/*.tif")
---~ list = dir.glob("/**/*.tif")
---~ list = dir.glob("./**/*.tif")
---~ list = dir.glob("oeps/**/*.tif")
---~ list = dir.glob("/oeps/**/*.tif")
 
 local function globfiles(path,recurse,func,files) -- func == pattern or function
     if type(func) == "string" then
@@ -2850,10 +2777,6 @@ function dir.ls(pattern)
     return table.concat(glob(pattern),"\n")
 end
 
---~ mkdirs("temp")
---~ mkdirs("a/b/c")
---~ mkdirs(".","/a/b/c")
---~ mkdirs("a","b","c")
 
 local make_indeed = true -- false
 
@@ -2913,17 +2836,6 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
         return pth, (lfs.isdir(pth) == true)
     end
 
---~         print(dir.mkdirs("","","a","c"))
---~         print(dir.mkdirs("a"))
---~         print(dir.mkdirs("a:"))
---~         print(dir.mkdirs("a:/b/c"))
---~         print(dir.mkdirs("a:b/c"))
---~         print(dir.mkdirs("a:/bbb/c"))
---~         print(dir.mkdirs("/a/b/c"))
---~         print(dir.mkdirs("/aaa/b/c"))
---~         print(dir.mkdirs("//a/b/c"))
---~         print(dir.mkdirs("///a/b/c"))
---~         print(dir.mkdirs("a/bbb//ccc/"))
 
     function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
@@ -2963,7 +2875,7 @@ else
         local str, pth, t = "", "", { ... }
         for i=1,#t do
             local s = t[i]
-            if s ~= "" then
+            if s and s ~= "" then -- we catch nil and false
                 if str ~= "" then
                     str = str .. "/" .. s
                 else
@@ -2997,13 +2909,6 @@ else
         return pth, (lfs.isdir(pth) == true)
     end
 
---~         print(dir.mkdirs("","","a","c"))
---~         print(dir.mkdirs("a"))
---~         print(dir.mkdirs("/a/b/c"))
---~         print(dir.mkdirs("/aaa/b/c"))
---~         print(dir.mkdirs("//a/b/c"))
---~         print(dir.mkdirs("///a/b/c"))
---~         print(dir.mkdirs("a/bbb//ccc/"))
 
     function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
@@ -3060,7 +2965,7 @@ function toboolean(str,tolerant)
     end
 end
 
-function string.is_boolean(str)
+function string.is_boolean(str,default)
     if type(str) == "string" then
         if str == "true" or str == "yes" or str == "on" or str == "t" then
             return true
@@ -3068,7 +2973,7 @@ function string.is_boolean(str)
             return false
         end
     end
-    return nil
+    return default
 end
 
 function boolean.alwaystrue()
@@ -3077,6 +2982,211 @@ end
 
 function boolean.falsetrue()
     return false
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['l-unicode'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+if not unicode then
+
+    unicode = { utf8 = { } }
+
+    local floor, char = math.floor, string.char
+
+    function unicode.utf8.utfchar(n)
+        if n < 0x80 then
+            return char(n)
+        elseif n < 0x800 then
+            return char(0xC0 + floor(n/0x40))  .. char(0x80 + (n % 0x40))
+        elseif n < 0x10000 then
+            return char(0xE0 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+        elseif n < 0x40000 then
+            return char(0xF0 + floor(n/0x40000)) .. char(0x80 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+        else -- wrong:
+          -- return char(0xF1 + floor(n/0x1000000)) .. char(0x80 + floor(n/0x40000)) .. char(0x80 + floor(n/0x1000)) .. char(0x80 + (floor(n/0x40) % 0x40)) .. char(0x80 + (n % 0x40))
+            return "?"
+        end
+    end
+
+end
+
+utf = utf or unicode.utf8
+
+local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
+local char, byte, find, bytepairs = string.char, string.byte, string.find, string.bytepairs
+
+-- 0  EF BB BF      UTF-8
+-- 1  FF FE         UTF-16-little-endian
+-- 2  FE FF         UTF-16-big-endian
+-- 3  FF FE 00 00   UTF-32-little-endian
+-- 4  00 00 FE FF   UTF-32-big-endian
+
+unicode.utfname = {
+    [0] = 'utf-8',
+    [1] = 'utf-16-le',
+    [2] = 'utf-16-be',
+    [3] = 'utf-32-le',
+    [4] = 'utf-32-be'
+}
+
+-- \000 fails in <= 5.0 but is valid in >=5.1 where %z is depricated
+
+function unicode.utftype(f)
+    local str = f:read(4)
+    if not str then
+        f:seek('set')
+        return 0
+ -- elseif find(str,"^%z%z\254\255") then            -- depricated
+ -- elseif find(str,"^\000\000\254\255") then        -- not permitted and bugged
+    elseif find(str,"\000\000\254\255",1,true) then  -- seems to work okay (TH)
+        return 4
+ -- elseif find(str,"^\255\254%z%z") then            -- depricated
+ -- elseif find(str,"^\255\254\000\000") then        -- not permitted and bugged
+    elseif find(str,"\255\254\000\000",1,true) then  -- seems to work okay (TH)
+        return 3
+    elseif find(str,"^\254\255") then
+        f:seek('set',2)
+        return 2
+    elseif find(str,"^\255\254") then
+        f:seek('set',2)
+        return 1
+    elseif find(str,"^\239\187\191") then
+        f:seek('set',3)
+        return 0
+    else
+        f:seek('set')
+        return 0
+    end
+end
+
+function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
+    local result, tmp, n, m, p = { }, { }, 0, 0, 0
+    -- lf | cr | crlf / (cr:13, lf:10)
+    local function doit()
+        if n == 10 then
+            if p ~= 13 then
+                result[#result+1] = concat(tmp)
+                tmp = { }
+                p = 0
+            end
+        elseif n == 13 then
+            result[#result+1] = concat(tmp)
+            tmp = { }
+            p = n
+        else
+            tmp[#tmp+1] = utfchar(n)
+            p = 0
+        end
+    end
+    for l,r in bytepairs(str) do
+        if r then
+            if endian then
+                n = l*256 + r
+            else
+                n = r*256 + l
+            end
+            if m > 0 then
+                n = (m-0xD800)*0x400 + (n-0xDC00) + 0x10000
+                m = 0
+                doit()
+            elseif n >= 0xD800 and n <= 0xDBFF then
+                m = n
+            else
+                doit()
+            end
+        end
+    end
+    if #tmp > 0 then
+        result[#result+1] = concat(tmp)
+    end
+    return result
+end
+
+function unicode.utf32_to_utf8(str, endian)
+    local result = { }
+    local tmp, n, m, p = { }, 0, -1, 0
+    -- lf | cr | crlf / (cr:13, lf:10)
+    local function doit()
+        if n == 10 then
+            if p ~= 13 then
+                result[#result+1] = concat(tmp)
+                tmp = { }
+                p = 0
+            end
+        elseif n == 13 then
+            result[#result+1] = concat(tmp)
+            tmp = { }
+            p = n
+        else
+            tmp[#tmp+1] = utfchar(n)
+            p = 0
+        end
+    end
+    for a,b in bytepairs(str) do
+        if a and b then
+            if m < 0 then
+                if endian then
+                    m = a*256*256*256 + b*256*256
+                else
+                    m = b*256 + a
+                end
+            else
+                if endian then
+                    n = m + a*256 + b
+                else
+                    n = m + b*256*256*256 + a*256*256
+                end
+                m = -1
+                doit()
+            end
+        else
+            break
+        end
+    end
+    if #tmp > 0 then
+        result[#result+1] = concat(tmp)
+    end
+    return result
+end
+
+local function little(c)
+    local b = byte(c) -- b = c:byte()
+    if b < 0x10000 then
+        return char(b%256,b/256)
+    else
+        b = b - 0x10000
+        local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
+        return char(b1%256,b1/256,b2%256,b2/256)
+    end
+end
+
+local function big(c)
+    local b = byte(c)
+    if b < 0x10000 then
+        return char(b/256,b%256)
+    else
+        b = b - 0x10000
+        local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
+        return char(b1/256,b1%256,b2/256,b2%256)
+    end
+end
+
+function unicode.utf8_to_utf16(str,littleendian)
+    if littleendian then
+        return char(255,254) .. utfgsub(str,".",little)
+    else
+        return char(254,255) .. utfgsub(str,".",big)
+    end
 end
 
 
@@ -3141,7 +3251,7 @@ if not modules then modules = { } end modules ['l-utils'] = {
 
 -- hm, quite unreadable
 
-local gsub = string.gsub
+local gsub, format = string.gsub, string.format
 local concat = table.concat
 local type, next = type, next
 
@@ -3149,81 +3259,79 @@ if not utils        then utils        = { } end
 if not utils.merger then utils.merger = { } end
 if not utils.lua    then utils.lua    = { } end
 
-utils.merger.m_begin = "begin library merge"
-utils.merger.m_end   = "end library merge"
-utils.merger.pattern =
+utils.report = utils.report or print
+
+local merger = utils.merger
+
+merger.strip_comment = true
+
+local m_begin_merge   = "begin library merge"
+local m_end_merge     = "end library merge"
+local m_begin_closure = "do -- create closure to overcome 200 locals limit"
+local m_end_closure   = "end -- of closure"
+
+local m_pattern =
     "%c+" ..
-    "%-%-%s+" .. utils.merger.m_begin ..
+    "%-%-%s+" .. m_begin_merge ..
     "%c+(.-)%c+" ..
-    "%-%-%s+" .. utils.merger.m_end ..
+    "%-%-%s+" .. m_end_merge ..
     "%c+"
 
-function utils.merger._self_fake_()
-    return
-        "-- " .. "created merged file" .. "\n\n" ..
-        "-- " .. utils.merger.m_begin  .. "\n\n" ..
-        "-- " .. utils.merger.m_end    .. "\n\n"
+local m_format =
+    "\n\n-- " .. m_begin_merge ..
+    "\n%s\n" ..
+    "-- " .. m_end_merge .. "\n\n"
+
+local m_faked =
+    "-- " .. "created merged file" .. "\n\n" ..
+    "-- " .. m_begin_merge .. "\n\n" ..
+    "-- " .. m_end_merge .. "\n\n"
+
+local function self_fake()
+    return m_faked
 end
 
-function utils.report(...)
-    print(...)
+local function self_nothing()
+    return ""
 end
 
-utils.merger.strip_comment = true
-
-function utils.merger._self_load_(name)
-    local f, data = io.open(name), ""
-    if f then
-        utils.report("reading merge from %s",name)
-        data = f:read("*all")
-        f:close()
+local function self_load(name)
+    local data = io.loaddata(name) or ""
+    if data == "" then
+        utils.report("merge: unknown file %s",name)
     else
-        utils.report("unknown file to merge %s",name)
-    end
-    if data and utils.merger.strip_comment then
-        -- saves some 20K
-        data = gsub(data,"%-%-~[^\n\r]*[\r\n]", "")
+        utils.report("merge: inserting %s",name)
     end
     return data or ""
 end
 
-function utils.merger._self_save_(name, data)
+local function self_save(name, data)
     if data ~= "" then
-        local f = io.open(name,'w')
-        if f then
-            utils.report("saving merge from %s",name)
-            f:write(data)
-            f:close()
+        if merger.strip_comment then
+            -- saves some 20K
+            local n = #data
+            data = gsub(data,"%-%-~[^\n\r]*[\r\n]","")
+            utils.report("merge: %s bytes of comment stripped, %s bytes of code left",n-#data,#data)
         end
+        io.savedata(name,data)
+        utils.report("merge: saving %s",name)
     end
 end
 
-function utils.merger._self_swap_(data,code)
-    if data ~= "" then
-        return (gsub(data,utils.merger.pattern, function(s)
-            return "\n\n" .. "-- "..utils.merger.m_begin .. "\n" .. code .. "\n" .. "-- "..utils.merger.m_end .. "\n\n"
-        end, 1))
-    else
-        return ""
-    end
+local function self_swap(data,code)
+    return data ~= "" and (gsub(data,m_pattern, function() return format(m_format,code) end, 1)) or ""
 end
 
---~ stripper:
---~
---~ data = gsub(data,"%-%-~[^\n]*\n","")
---~ data = gsub(data,"\n\n+","\n")
-
-function utils.merger._self_libs_(libs,list)
-    local result, f, frozen = { }, nil, false
+local function self_libs(libs,list)
+    local result, f, frozen, foundpath = { }, nil, false, nil
     result[#result+1] = "\n"
     if type(libs) == 'string' then libs = { libs } end
     if type(list) == 'string' then list = { list } end
-    local foundpath = nil
     for i=1,#libs do
         local lib = libs[i]
         for j=1,#list do
             local pth = gsub(list[j],"\\","/") -- file.clean_path
-            utils.report("checking library path %s",pth)
+            utils.report("merge: checking library path %s",pth)
             local name = pth .. "/" .. lib
             if lfs.isfile(name) then
                 foundpath = pth
@@ -3232,76 +3340,58 @@ function utils.merger._self_libs_(libs,list)
         if foundpath then break end
     end
     if foundpath then
-        utils.report("using library path %s",foundpath)
+        utils.report("merge: using library path %s",foundpath)
         local right, wrong = { }, { }
         for i=1,#libs do
             local lib = libs[i]
             local fullname = foundpath .. "/" .. lib
             if lfs.isfile(fullname) then
-            --  right[#right+1] = lib
-                utils.report("merging library %s",fullname)
-                result[#result+1] = "do -- create closure to overcome 200 locals limit"
+                utils.report("merge: using library %s",fullname)
+                right[#right+1] = lib
+                result[#result+1] = m_begin_closure
                 result[#result+1] = io.loaddata(fullname,true)
-                result[#result+1] = "end -- of closure"
+                result[#result+1] = m_end_closure
             else
-            --  wrong[#wrong+1] = lib
-                utils.report("no library %s",fullname)
+                utils.report("merge: skipping library %s",fullname)
+                wrong[#wrong+1] = lib
             end
         end
         if #right > 0 then
-            utils.report("merged libraries: %s",concat(right," "))
+            utils.report("merge: used libraries: %s",concat(right," "))
         end
         if #wrong > 0 then
-            utils.report("skipped libraries: %s",concat(wrong," "))
+            utils.report("merge: skipped libraries: %s",concat(wrong," "))
         end
     else
-        utils.report("no valid library path found")
+        utils.report("merge: no valid library path found")
     end
     return concat(result, "\n\n")
 end
 
-function utils.merger.selfcreate(libs,list,target)
+function merger.selfcreate(libs,list,target)
     if target then
-        utils.merger._self_save_(
-            target,
-            utils.merger._self_swap_(
-                utils.merger._self_fake_(),
-                utils.merger._self_libs_(libs,list)
-            )
-        )
+        self_save(target,self_swap(self_fake(),self_libs(libs,list)))
     end
 end
 
-function utils.merger.selfmerge(name,libs,list,target)
-    utils.merger._self_save_(
-        target or name,
-        utils.merger._self_swap_(
-            utils.merger._self_load_(name),
-            utils.merger._self_libs_(libs,list)
-        )
-    )
+function merger.selfmerge(name,libs,list,target)
+    self_save(target or name,self_swap(self_load(name),self_libs(libs,list)))
 end
 
-function utils.merger.selfclean(name)
-    utils.merger._self_save_(
-        name,
-        utils.merger._self_swap_(
-            utils.merger._self_load_(name),
-            ""
-        )
-    )
+function merger.selfclean(name)
+    self_save(name,self_swap(self_load(name),self_nothing()))
 end
 
-function utils.lua.compile(luafile, lucfile, cleanup, strip) -- defaults: cleanup=false strip=true
- -- utils.report("compiling",luafile,"into",lucfile)
+function utils.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
+    utils.report("lua: compiling %s into %s",luafile,lucfile)
     os.remove(lucfile)
     local command = "-o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
     if strip ~= false then
         command = "-s " .. command
     end
-    local done = (os.spawn("texluac " .. command) == 0) or (os.spawn("luac " .. command) == 0)
+    local done = os.spawn("texluac " .. command) == 0 or os.spawn("luac " .. command) == 0
     if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
-     -- utils.report("removing",luafile)
+        utils.report("lua: removing %s",luafile)
         os.remove(luafile)
     end
     return done
@@ -3385,11 +3475,7 @@ end
 function aux.settings_to_hash(str,existing)
     if str and str ~= "" then
         hash = existing or { }
-        if moretolerant then
-            lpegmatch(pattern_b_s,str)
-        else
-            lpegmatch(pattern_a_s,str)
-        end
+        lpegmatch(pattern_a_s,str)
         return hash
     else
         return { }
@@ -3519,12 +3605,6 @@ local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
 local number        = digit^1 * (case_1 + case_2)
 local stripper      = lpeg.Cs((number + 1)^0)
 
---~ local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
---~ collectgarbage("collect")
---~ str = string.rep(sample,10000)
---~ local ts = os.clock()
---~ lpegmatch(stripper,str)
---~ print(#str, os.clock()-ts, lpegmatch(stripper,sample))
 
 lpeg.patterns.strip_zeros = stripper
 
@@ -3553,235 +3633,305 @@ function aux.accesstable(target)
     return t
 end
 
---~ function string.commaseparated(str)
---~     return gmatch(str,"([^,%s]+)")
---~ end
 
 -- as we use this a lot ...
 
---~ function aux.cachefunction(action,weak)
---~     local cache = { }
---~     if weak then
---~         setmetatable(cache, { __mode = "kv" } )
---~     end
---~     local function reminder(str)
---~         local found = cache[str]
---~         if not found then
---~             found = action(str)
---~             cache[str] = found
---~         end
---~         return found
---~     end
---~     return reminder, cache
---~ end
 
 
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['trac-tra'] = {
+if not modules then modules = { } end modules ['trac-inf'] = {
     version   = 1.001,
-    comment   = "companion to trac-tra.mkiv",
+    comment   = "companion to trac-inf.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
--- the <anonymous> tag is kind of generic and used for functions that are not
--- bound to a variable, like node.new, node.copy etc (contrary to for instance
--- node.has_attribute which is bound to a has_attribute local variable in mkiv)
+-- As we want to protect the global tables, we no longer store the timing
+-- in the tables themselves but in a hidden timers table so that we don't
+-- get warnings about assignments. This is more efficient than using rawset
+-- and rawget.
 
-local debug = require "debug"
+local format = string.format
+local clock = os.gettimeofday or os.clock -- should go in environment
 
-local getinfo = debug.getinfo
-local type, next = type, next
-local concat = table.concat
-local format, find, lower, gmatch, gsub = string.format, string.find, string.lower, string.gmatch, string.gsub
+local statusinfo, n, registered = { }, 0, { }
 
-debugger = debugger or { }
+statistics = statistics or { }
 
-local counters = { }
-local names = { }
+statistics.enable    = true
+statistics.threshold = 0.05
 
--- one
+local timers = { }
 
-local function hook()
-    local f = getinfo(2,"f").func
-    local n = getinfo(2,"Sn")
---  if n.what == "C" and n.name then print (n.namewhat .. ': ' .. n.name) end
-    if f then
-        local cf = counters[f]
-        if cf == nil then
-            counters[f] = 1
-            names[f] = n
-        else
-            counters[f] = cf + 1
+local function hastiming(instance)
+    return instance and timers[instance]
+end
+
+local function resettiming(instance)
+    timers[instance or "notimer"] = { timing = 0, loadtime = 0 }
+end
+
+local function starttiming(instance)
+    local timer = timers[instance or "notimer"]
+    if not timer then
+        timer = { }
+        timers[instance or "notimer"] = timer
+    end
+    local it = timer.timing
+    if not it then
+        it = 0
+    end
+    if it == 0 then
+        timer.starttime = clock()
+        if not timer.loadtime then
+            timer.loadtime = 0
         end
     end
+    timer.timing = it + 1
 end
-local function getname(func)
-    local n = names[func]
-    if n then
-        if n.what == "C" then
-            return n.name or '<anonymous>'
-        else
-            -- source short_src linedefined what name namewhat nups func
-            local name = n.name or n.namewhat or n.what
-            if not name or name == "" then name = "?" end
-            return format("%s : %s : %s", n.short_src or "unknown source", n.linedefined or "--", name)
-        end
+
+local function stoptiming(instance, report)
+    local timer = timers[instance or "notimer"]
+    local it = timer.timing
+    if it > 1 then
+        timer.timing = it - 1
     else
-        return "unknown"
+        local starttime = timer.starttime
+        if starttime then
+            local stoptime = clock()
+            local loadtime = stoptime - starttime
+            timer.stoptime = stoptime
+            timer.loadtime = timer.loadtime + loadtime
+            if report then
+                statistics.report("load time %0.3f",loadtime)
+            end
+            timer.timing = 0
+            return loadtime
+        end
+    end
+    return 0
+end
+
+local function elapsedtime(instance)
+    local timer = timers[instance or "notimer"]
+    return format("%0.3f",timer and timer.loadtime or 0)
+end
+
+local function elapsedindeed(instance)
+    local timer = timers[instance or "notimer"]
+    return (timer and timer.loadtime or 0) > statistics.threshold
+end
+
+local function elapsedseconds(instance,rest) -- returns nil if 0 seconds
+    if elapsedindeed(instance) then
+        return format("%s seconds %s", elapsedtime(instance),rest or "")
     end
 end
-function debugger.showstats(printer,threshold)
-    printer   = printer or texio.write or print
-    threshold = threshold or 0
-    local total, grandtotal, functions = 0, 0, 0
-    printer("\n") -- ugly but ok
- -- table.sort(counters)
-    for func, count in next, counters do
-        if count > threshold then
-            local name = getname(func)
-            if not find(name,"for generator") then
-                printer(format("%8i  %s", count, name))
-                total = total + count
+
+statistics.hastiming      = hastiming
+statistics.resettiming    = resettiming
+statistics.starttiming    = starttiming
+statistics.stoptiming     = stoptiming
+statistics.elapsedtime    = elapsedtime
+statistics.elapsedindeed  = elapsedindeed
+statistics.elapsedseconds = elapsedseconds
+
+-- general function
+
+function statistics.register(tag,fnc)
+    if statistics.enable and type(fnc) == "function" then
+        local rt = registered[tag] or (#statusinfo + 1)
+        statusinfo[rt] = { tag, fnc }
+        registered[tag] = rt
+        if #tag > n then n = #tag end
+    end
+end
+
+function statistics.show(reporter)
+    if statistics.enable then
+        if not reporter then reporter = function(tag,data,n) texio.write_nl(tag .. " " .. data) end end
+        -- this code will move
+        local register = statistics.register
+        register("luatex banner", function()
+            return string.lower(status.banner)
+        end)
+        register("control sequences", function()
+            return format("%s of %s", status.cs_count, status.hash_size+status.hash_extra)
+        end)
+        register("callbacks", function()
+            local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
+            return format("direct: %s, indirect: %s, total: %s", total-indirect, indirect, total)
+        end)
+        register("current memory usage", statistics.memused)
+        register("runtime",statistics.runtime)
+        for i=1,#statusinfo do
+            local s = statusinfo[i]
+            local r = s[2]()
+            if r then
+                reporter(s[1],r,n)
             end
         end
-        grandtotal = grandtotal + count
-        functions = functions + 1
-    end
-    printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
-end
-
--- two
-
---~ local function hook()
---~     local n = getinfo(2)
---~     if n.what=="C" and not n.name then
---~         local f = tostring(debug.traceback())
---~         local cf = counters[f]
---~         if cf == nil then
---~             counters[f] = 1
---~             names[f] = n
---~         else
---~             counters[f] = cf + 1
---~         end
---~     end
---~ end
---~ function debugger.showstats(printer,threshold)
---~     printer   = printer or texio.write or print
---~     threshold = threshold or 0
---~     local total, grandtotal, functions = 0, 0, 0
---~     printer("\n") -- ugly but ok
---~  -- table.sort(counters)
---~     for func, count in next, counters do
---~         if count > threshold then
---~             printer(format("%8i  %s", count, func))
---~             total = total + count
---~         end
---~         grandtotal = grandtotal + count
---~         functions = functions + 1
---~     end
---~     printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
---~ end
-
--- rest
-
-function debugger.savestats(filename,threshold)
-    local f = io.open(filename,'w')
-    if f then
-        debugger.showstats(function(str) f:write(str) end,threshold)
-        f:close()
+        texio.write_nl("") -- final newline
+        statistics.enable = false
     end
 end
 
-function debugger.enable()
-    debug.sethook(hook,"c")
-end
-
-function debugger.disable()
-    debug.sethook()
---~ counters[debug.getinfo(2,"f").func] = nil
-end
-
-function debugger.tracing()
-    local n = tonumber(os.env['MTX.TRACE.CALLS']) or tonumber(os.env['MTX_TRACE_CALLS']) or 0
-    if n > 0 then
-        function debugger.tracing() return true  end ; return true
-    else
-        function debugger.tracing() return false end ; return false
-    end
-end
-
---~ debugger.enable()
-
---~ print(math.sin(1*.5))
---~ print(math.sin(1*.5))
---~ print(math.sin(1*.5))
---~ print(math.sin(1*.5))
---~ print(math.sin(1*.5))
-
---~ debugger.disable()
-
---~ print("")
---~ debugger.showstats()
---~ print("")
---~ debugger.showstats(print,3)
-
-setters      = setters      or { }
-setters.data = setters.data or { }
-
---~ local function set(t,what,value)
---~     local data, done = t.data, t.done
---~     if type(what) == "string" then
---~         what = aux.settings_to_array(what) -- inefficient but ok
---~     end
---~     for i=1,#what do
---~         local w = what[i]
---~         for d, f in next, data do
---~             if done[d] then
---~                 -- prevent recursion due to wildcards
---~             elseif find(d,w) then
---~                 done[d] = true
---~                 for i=1,#f do
---~                     f[i](value)
---~                 end
---~             end
---~         end
---~     end
---~ end
-
-local function set(t,what,value)
-    local data, done = t.data, t.done
-    if type(what) == "string" then
-        what = aux.settings_to_hash(what) -- inefficient but ok
-    end
-    for w, v in next, what do
-        if v == "" then
-            v = value
-        else
-            v = toboolean(v)
+function statistics.show_job_stat(tag,data,n)
+    if type(data) == "table" then
+        for i=1,#data do
+            statistics.show_job_stat(tag,data[i],n)
         end
-        for d, f in next, data do
-            if done[d] then
-                -- prevent recursion due to wildcards
-            elseif find(d,w) then
-                done[d] = true
-                for i=1,#f do
-                    f[i](v)
+    else
+        texio.write_nl(format("%-15s: %s - %s","mkiv lua stats",tag:rpadd(n," "),data))
+    end
+end
+
+function statistics.memused() -- no math.round yet -)
+    local round = math.round or math.floor
+    return format("%s MB (ctx: %s MB)",round(collectgarbage("count")/1000), round(status.luastate_bytes/1000000))
+end
+
+starttiming(statistics)
+
+function statistics.formatruntime(runtime) -- indirect so it can be overloaded and
+    return format("%s seconds", runtime)   -- indeed that happens in cure-uti.lua
+end
+
+function statistics.runtime()
+    stoptiming(statistics)
+    return statistics.formatruntime(elapsedtime(statistics))
+end
+
+function statistics.timed(action,report)
+    report = report or logs.simple
+    starttiming("run")
+    action()
+    stoptiming("run")
+    report("total runtime: %s",elapsedtime("run"))
+end
+
+-- where, not really the best spot for this:
+
+commands = commands or { }
+
+function commands.resettimer(name)
+    resettiming(name or "whatever")
+    starttiming(name or "whatever")
+end
+
+function commands.elapsedtime(name)
+    stoptiming(name or "whatever")
+    tex.sprint(elapsedtime(name or "whatever"))
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['trac-set'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type, next, tostring = type, next, tostring
+local concat = table.concat
+local format, find, lower, gsub = string.format, string.find, string.lower, string.gsub
+local is_boolean = string.is_boolean
+
+setters = { }
+
+local data = { } -- maybe just local
+
+-- We can initialize from the cnf file. This is sort of tricky as
+-- laster defined setters also need to be initialized then. If set
+-- this way, we need to ensure that they are not reset later on.
+
+local trace_initialize = false
+
+local function report(what,filename,name,key,value)
+    texio.write_nl(format("%s setter, filename: %s, name: %s, key: %s, value: %s",what,filename,name,key,value))
+end
+
+function setters.initialize(filename,name,values) -- filename only for diagnostics
+    local data = data[name]
+    if data then
+        data = data.data
+        if data then
+            for key, value in next, values do
+                key = gsub(key,"_",".")
+                value = is_boolean(value,value)
+                local functions = data[key]
+                if functions then
+                    if #functions > 0 and not functions.value then
+                        if trace_initialize then
+                            report("doing",filename,name,key,value)
+                        end
+                        for i=1,#functions do
+                            functions[i](value)
+                        end
+                        functions.value = value
+                    else
+                        if trace_initialize then
+                            report("skipping",filename,name,key,value)
+                        end
+                    end
+                else
+                    -- we do a simple preregistration i.e. not in the
+                    -- list as it might be an obsolete entry
+                    functions = { default = value }
+                    data[key] = functions
+                    if trace_initialize then
+                        report("storing",filename,name,key,value)
+                    end
                 end
             end
         end
     end
 end
 
-local function reset(t)
-    for d, f in next, t.data do
-        for i=1,#f do
-            f[i](false)
+-- user interface code
+
+local function set(t,what,newvalue)
+    local data, done = t.data, t.done
+    if type(what) == "string" then
+        what = aux.settings_to_hash(what) -- inefficient but ok
+    end
+    for w, value in next, what do
+        if value == "" then
+            value = newvalue
+        elseif not value then
+            value = false -- catch nil
+        else
+            value = is_boolean(value,value)
         end
+        for name, functions in next, data do
+            if done[name] then
+                -- prevent recursion due to wildcards
+            elseif find(name,w) then
+                done[name] = true
+                for i=1,#functions do
+                    functions[i](value)
+                end
+                functions.value = value
+            end
+        end
+    end
+end
+
+local function reset(t)
+    for name, functions in next, t.data do
+        for i=1,#functions do
+            functions[i](false)
+        end
+        functions.value = false
     end
 end
 
@@ -3802,17 +3952,26 @@ end
 function setters.register(t,what,...)
     local data = t.data
     what = lower(what)
-    local w = data[what]
-    if not w then
-        w = { }
-        data[what] = w
+    local functions = data[what]
+    if not functions then
+        functions = { }
+        data[what] = functions
     end
+    local default = functions.default -- can be set from cnf file
     for _, fnc in next, { ... } do
         local typ = type(fnc)
-        if typ == "function" then
-            w[#w+1] = fnc
-        elseif typ == "string" then
-            w[#w+1] = function(value) set(t,fnc,value,nesting) end
+        if typ == "string" then
+            local s = fnc -- else wrong reference
+            fnc = function(value) set(t,s,value) end
+        elseif typ ~= "function" then
+            fnc = nil
+        end
+        if fnc then
+            functions[#functions+1] = fnc
+            if default then
+                fnc(default)
+                functions.value = default
+            end
         end
     end
 end
@@ -3853,8 +4012,16 @@ end
 function setters.show(t)
     commands.writestatus("","")
     local list = setters.list(t)
+    local category = t.name
     for k=1,#list do
-        commands.writestatus(t.name,list[k])
+        local name = list[k]
+        local functions = t.data[name]
+        if functions then
+            local value, default, modules = functions.value, functions.default, #functions
+            value   = value   == nil and "unset" or tostring(value)
+            default = default == nil and "unset" or tostring(default)
+            commands.writestatus(category,format("%-25s   modules: %2i   default: %5s   value: %5s",name,modules,default,value))
+        end
     end
     commands.writestatus("","")
 end
@@ -3867,7 +4034,7 @@ end
 function setters.new(name)
     local t
     t = {
-        data     = { },
+        data     = { }, -- indexed, but also default and value fields
         name     = name,
         enable   = function(...) setters.enable  (t,...) end,
         disable  = function(...) setters.disable (t,...) end,
@@ -3875,7 +4042,7 @@ function setters.new(name)
         list     = function(...) setters.list    (t,...) end,
         show     = function(...) setters.show    (t,...) end,
     }
-    setters.data[name] = t
+    data[name] = t
     return t
 end
 
@@ -3893,12 +4060,12 @@ local e = directives.enable
 local d = directives.disable
 
 function directives.enable(...)
-    commands.writestatus("directives","enabling: %s",concat({...}," "))
+    (commands.writestatus or logs.report)("directives","enabling: %s",concat({...}," "))
     e(...)
 end
 
 function directives.disable(...)
-    commands.writestatus("directives","disabling: %s",concat({...}," "))
+    (commands.writestatus or logs.report)("directives","disabling: %s",concat({...}," "))
     d(...)
 end
 
@@ -3906,12 +4073,12 @@ local e = experiments.enable
 local d = experiments.disable
 
 function experiments.enable(...)
-    commands.writestatus("experiments","enabling: %s",concat({...}," "))
+    (commands.writestatus or logs.report)("experiments","enabling: %s",concat({...}," "))
     e(...)
 end
 
 function experiments.disable(...)
-    commands.writestatus("experiments","disabling: %s",concat({...}," "))
+    (commands.writestatus or logs.report)("experiments","disabling: %s",concat({...}," "))
     d(...)
 end
 
@@ -3921,6 +4088,946 @@ directives.register("system.nostatistics", function(v)
     statistics.enable = not v
 end)
 
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['trac-tra'] = {
+    version   = 1.001,
+    comment   = "companion to trac-tra.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- the <anonymous> tag is kind of generic and used for functions that are not
+-- bound to a variable, like node.new, node.copy etc (contrary to for instance
+-- node.has_attribute which is bound to a has_attribute local variable in mkiv)
+
+local debug = require "debug"
+
+local getinfo = debug.getinfo
+local type, next = type, next
+local format, find = string.format, string.find
+local is_boolean = string.is_boolean
+
+debugger = debugger or { }
+
+local counters = { }
+local names = { }
+
+-- one
+
+local function hook()
+    local f = getinfo(2,"f").func
+    local n = getinfo(2,"Sn")
+--  if n.what == "C" and n.name then print (n.namewhat .. ': ' .. n.name) end
+    if f then
+        local cf = counters[f]
+        if cf == nil then
+            counters[f] = 1
+            names[f] = n
+        else
+            counters[f] = cf + 1
+        end
+    end
+end
+
+local function getname(func)
+    local n = names[func]
+    if n then
+        if n.what == "C" then
+            return n.name or '<anonymous>'
+        else
+            -- source short_src linedefined what name namewhat nups func
+            local name = n.name or n.namewhat or n.what
+            if not name or name == "" then name = "?" end
+            return format("%s : %s : %s", n.short_src or "unknown source", n.linedefined or "--", name)
+        end
+    else
+        return "unknown"
+    end
+end
+
+function debugger.showstats(printer,threshold)
+    printer   = printer or texio.write or print
+    threshold = threshold or 0
+    local total, grandtotal, functions = 0, 0, 0
+    printer("\n") -- ugly but ok
+ -- table.sort(counters)
+    for func, count in next, counters do
+        if count > threshold then
+            local name = getname(func)
+            if not find(name,"for generator") then
+                printer(format("%8i  %s", count, name))
+                total = total + count
+            end
+        end
+        grandtotal = grandtotal + count
+        functions = functions + 1
+    end
+    printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
+end
+
+-- two
+
+
+-- rest
+
+function debugger.savestats(filename,threshold)
+    local f = io.open(filename,'w')
+    if f then
+        debugger.showstats(function(str) f:write(str) end,threshold)
+        f:close()
+    end
+end
+
+function debugger.enable()
+    debug.sethook(hook,"c")
+end
+
+function debugger.disable()
+    debug.sethook()
+end
+
+local function trace_calls(n)
+    debugger.enable()
+    luatex.register_stop_actions(function()
+        debugger.disable()
+        debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
+    end)
+    trace_calls = function() end
+end
+
+if directives then
+    directives.register("system.tracecalls", function(n) trace_calls(n) end) -- indirect is needed for nilling
+end
+
+
+
+
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['trac-log'] = {
+    version   = 1.001,
+    comment   = "companion to trac-log.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- xml logging is only usefull in normal runs, not in ini mode
+-- it looks like some tex logging (like filenames) is broken (no longer
+-- interceoted at the tex end so the xml variant is not that useable now)
+
+
+local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
+local format, gmatch = string.format, string.gmatch
+local texcount = tex and tex.count
+
+--[[ldx--
+<p>This is a prelude to a more extensive logging module. For the sake
+of parsing log files, in addition to the standard logging we will
+provide an <l n='xml'/> structured file. Actually, any logging that
+is hooked into callbacks will be \XML\ by default.</p>
+--ldx]]--
+
+logs = logs or { }
+
+--[[ldx--
+<p>This looks pretty ugly but we need to speed things up a bit.</p>
+--ldx]]--
+
+local moreinfo = [[
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net
+]]
+
+local functions = {
+    'report', 'status', 'start', 'stop', 'push', 'pop', 'line', 'direct',
+    'start_run', 'stop_run',
+    'start_page_number', 'stop_page_number',
+    'report_output_pages', 'report_output_log',
+    'report_tex_stat', 'report_job_stat',
+    'show_open', 'show_close', 'show_load',
+    'dummy',
+}
+
+local method = "nop"
+
+function logs.set_method(newmethod)
+    method = newmethod
+    -- a direct copy might be faster but let's try this for a while
+    setmetatable(logs, { __index = logs[method] })
+end
+
+function logs.get_method()
+    return method
+end
+
+-- installer
+
+local data = { }
+
+function logs.new(category)
+    local logger = data[category]
+    if not logger then
+        logger = function(...)
+            logs.report(category,...)
+        end
+        data[category] = logger
+    end
+    return logger
+end
+
+
+
+-- nop logging (maybe use __call instead)
+
+local noplog = { } logs.nop = noplog  setmetatable(logs, { __index = noplog })
+
+for i=1,#functions do
+    noplog[functions[i]] = function() end
+end
+
+-- tex logging
+
+local texlog = { }  logs.tex = texlog  setmetatable(texlog, { __index = noplog })
+
+function texlog.report(a,b,c,...)
+    if c then
+        write_nl(format("%-16s> %s\n",a,format(b,c,...)))
+    elseif b then
+        write_nl(format("%-16s> %s\n",a,b))
+    else
+        write_nl(format("%-16s>\n",a))
+    end
+end
+
+function texlog.status(a,b,c,...)
+    if c then
+        write_nl(format("%-16s: %s\n",a,format(b,c,...)))
+    elseif b then
+        write_nl(format("%-16s: %s\n",a,b)) -- b can have %'s
+    else
+        write_nl(format("%-16s:>\n",a))
+    end
+end
+
+function texlog.line(fmt,...) -- new
+    if fmt then
+        write_nl(format(fmt,...))
+    else
+        write_nl("")
+    end
+end
+
+local real, user, sub
+
+function texlog.start_page_number()
+    real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
+end
+
+local report_pages = logs.new("pages") -- not needed but saves checking when we grep for it
+
+function texlog.stop_page_number()
+    if real > 0 then
+        if user > 0 then
+            if sub > 0 then
+                report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
+            else
+                report_pages("flushing realpage %s, userpage %s",real,user)
+            end
+        else
+            report_pages("flushing realpage %s",real)
+        end
+    else
+        report_pages("flushing page")
+    end
+    io.flush()
+end
+
+texlog.report_job_stat = statistics and statistics.show_job_stat
+
+-- xml logging
+
+local xmllog = { }  logs.xml = xmllog  setmetatable(xmllog, { __index = noplog })
+
+function xmllog.report(category,fmt,s,...) -- new
+    if s then
+        write_nl(format("<r category='%s'>%s</r>",category,format(fmt,s,...)))
+    elseif fmt then
+        write_nl(format("<r category='%s'>%s</r>",category,fmt))
+    else
+        write_nl(format("<r category='%s'/>",category))
+    end
+end
+
+function xmllog.status(category,fmt,s,...)
+    if s then
+        write_nl(format("<s category='%s'>%s</r>",category,format(fmt,s,...)))
+    elseif fmt then
+        write_nl(format("<s category='%s'>%s</r>",category,fmt))
+    else
+        write_nl(format("<s category='%s'/>",category))
+    end
+end
+
+function xmllog.line(fmt,...) -- new
+    if fmt then
+        write_nl(format("<r>%s</r>",format(fmt,...)))
+    else
+        write_nl("<r/>")
+    end
+end
+
+function xmllog.start() write_nl("<%s>" ) end
+function xmllog.stop () write_nl("</%s>") end
+function xmllog.push () write_nl("<!-- ") end
+function xmllog.pop  () write_nl(" -->" ) end
+
+function xmllog.start_run()
+    write_nl("<?xml version='1.0' standalone='yes'?>")
+    write_nl("<job>") --  xmlns='www.pragma-ade.com/luatex/schemas/context-job.rng'
+    write_nl("")
+end
+
+function xmllog.stop_run()
+    write_nl("</job>")
+end
+
+function xmllog.start_page_number()
+    write_nl(format("<p real='%s' page='%s' sub='%s'", texcount.realpageno, texcount.userpageno, texcount.subpageno))
+end
+
+function xmllog.stop_page_number()
+    write("/>")
+    write_nl("")
+end
+
+function xmllog.report_output_pages(p,b)
+    write_nl(format("<v k='pages' v='%s'/>", p))
+    write_nl(format("<v k='bytes' v='%s'/>", b))
+    write_nl("")
+end
+
+function xmllog.report_output_log()
+    -- nothing
+end
+
+function xmllog.report_tex_stat(k,v)
+    write_nl("log","<v k='"..k.."'>"..tostring(v).."</v>")
+end
+
+local nesting = 0
+
+function xmllog.show_open(name)
+    nesting = nesting + 1
+    write_nl(format("<f l='%s' n='%s'>",nesting,name))
+end
+
+function xmllog.show_close(name)
+    write("</f> ")
+    nesting = nesting - 1
+end
+
+function xmllog.show_load(name)
+    write_nl(format("<f l='%s' n='%s'/>",nesting+1,name))
+end
+
+-- initialization
+
+if tex and (tex.jobname or tex.formatname) then
+    -- todo: this can be set in mtxrun ... or maybe we should just forget about this alternative format
+    if (os.getenv("mtx.directives.logmethod") or os.getenv("mtx_directives_logmethod")) == "xml" then
+        logs.set_method('xml')
+    else
+        logs.set_method('tex')
+    end
+else
+    logs.set_method('nop')
+end
+
+-- logging in runners -> these are actually the nop loggers
+
+local name, banner = 'report', 'context'
+
+function noplog.report(category,fmt,...) -- todo: fmt,s
+    if fmt then
+        write_nl(format("%s | %s: %s",name,category,format(fmt,...)))
+    elseif category then
+        write_nl(format("%s | %s",name,category))
+    else
+        write_nl(format("%s |",name))
+    end
+end
+
+noplog.status = noplog.report -- just to be sure, never used
+
+function noplog.simple(fmt,...) -- todo: fmt,s
+    if fmt then
+        write_nl(format("%s | %s",name,format(fmt,...)))
+    else
+        write_nl(format("%s |",name))
+    end
+end
+
+if utils then
+    utils.report = function(...) logs.simple(...) end
+end
+
+function logs.setprogram(newname,newbanner)
+    name, banner = newname, newbanner
+end
+
+function logs.extendbanner(newbanner)
+    banner = banner .. " | ".. newbanner
+end
+
+function logs.reportlines(str) -- todo: <lines></lines>
+    for line in gmatch(str,"(.-)[\n\r]") do
+        logs.report(line)
+    end
+end
+
+function logs.reportline() -- for scripts too
+    logs.report()
+end
+
+function logs.simpleline()
+    logs.report()
+end
+
+function logs.simplelines(str) -- todo: <lines></lines>
+    for line in gmatch(str,"(.-)[\n\r]") do
+        logs.simple(line)
+    end
+end
+
+function logs.reportbanner() -- for scripts too
+    logs.report(banner)
+end
+
+function logs.help(message,option)
+    logs.reportbanner()
+    logs.reportline()
+    logs.reportlines(message)
+    if option ~= "nomoreinfo" then
+        logs.reportline()
+        logs.reportlines(moreinfo)
+    end
+end
+
+-- logging to a file
+
+
+function logs.system(whereto,process,jobname,category,...)
+    local message = format("%s %s => %s => %s => %s\r",os.date("%d/%m/%y %H:%m:%S"),process,jobname,category,format(...))
+    for i=1,10 do
+        local f = io.open(whereto,"a")
+        if f then
+            f:write(message)
+            f:close()
+            break
+        else
+            sleep(0.1)
+        end
+    end
+end
+
+-- bonus
+
+function logs.fatal(where,...)
+    logs.report(where,"fatal error: %s, aborting now",format(...))
+    os.exit()
+end
+
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['trac-pro'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local getmetatable, setmetatable, rawset, type = getmetatable, setmetatable, rawset, type
+
+-- The protection implemented here is probably not that tight but good enough to catch
+-- problems due to naive usage.
+--
+-- There's a more extensive version (trac-xxx.lua) that supports nesting.
+--
+-- This will change when we have _ENV in lua 5.2+
+
+local trace_namespaces = false  trackers.register("system.namespaces", function(v) trace_namespaces = v end)
+
+local report_system = logs.new("system")
+
+namespaces = { }
+
+local registered = { }
+
+local function report_index(k,name)
+    if trace_namespaces then
+        report_system("reference to '%s' in protected namespace '%s', %s",k,name,debug.traceback())
+    else
+        report_system("reference to '%s' in protected namespace '%s'",k,name)
+    end
+end
+
+local function report_newindex(k,name)
+    if trace_namespaces then
+        report_system("assignment to '%s' in protected namespace '%s', %s",k,name,debug.traceback())
+    else
+        report_system("assignment to '%s' in protected namespace '%s'",k,name)
+    end
+end
+
+local function register(name)
+    local data = name == "global" and _G or _G[name]
+    if not data then
+        return -- error
+    end
+    registered[name] = data
+    local m = getmetatable(data)
+    if not m then
+        m = { }
+        setmetatable(data,m)
+    end
+    local index, newindex = { }, { }
+    m.__saved__index = m.__index
+    m.__no__index = function(t,k)
+        if not index[k] then
+            index[k] = true
+            report_index(k,name)
+        end
+        return nil
+    end
+    m.__saved__newindex = m.__newindex
+    m.__no__newindex = function(t,k,v)
+        if not newindex[k] then
+            newindex[k] = true
+            report_newindex(k,name)
+        end
+        rawset(t,k,v)
+    end
+    m.__protection__depth = 0
+end
+
+local function private(name) -- maybe save name
+    local data = registered[name]
+    if not data then
+        data = _G[name]
+        if not data then
+            data = { }
+            _G[name] = data
+        end
+        register(name)
+    end
+    return data
+end
+
+local function protect(name)
+    local data = registered[name]
+    if not data then
+        return
+    end
+    local m = getmetatable(data)
+    local pd = m.__protection__depth
+    if pd > 0 then
+        m.__protection__depth = pd + 1
+    else
+        m.__save_d_index, m.__saved__newindex = m.__index, m.__newindex
+        m.__index, m.__newindex = m.__no__index, m.__no__newindex
+        m.__protection__depth = 1
+    end
+end
+
+local function unprotect(name)
+    local data = registered[name]
+    if not data then
+        return
+    end
+    local m = getmetatable(data)
+    local pd = m.__protection__depth
+    if pd > 1 then
+        m.__protection__depth = pd - 1
+    else
+        m.__index, m.__newindex = m.__saved__index, m.__saved__newindex
+        m.__protection__depth = 0
+    end
+end
+
+local function protectall()
+    for name, _ in next, registered do
+        if name ~= "global" then
+            protect(name)
+        end
+    end
+end
+
+local function unprotectall()
+    for name, _ in next, registered do
+        if name ~= "global" then
+            unprotect(name)
+        end
+    end
+end
+
+namespaces.register     = register        -- register when defined
+namespaces.private      = private         -- allocate and register if needed
+namespaces.protect      = protect
+namespaces.unprotect    = unprotect
+namespaces.protectall   = protectall
+namespaces.unprotectall = unprotectall
+
+namespaces.private("namespaces") registered = { } register("global") -- unreachable
+
+directives.register("system.protect", function(v)
+    if v then
+        protectall()
+    else
+        unprotectall()
+    end
+end)
+
+directives.register("system.checkglobals", function(v)
+    if v then
+        report_system("enabling global namespace guard")
+        protect("global")
+    else
+        report_system("disabling global namespace guard")
+        unprotect("global")
+    end
+end)
+
+-- dummy section (will go to luat-dum.lua)
+
+
+
+
+
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['luat-env'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- A former version provided functionality for non embeded core
+-- scripts i.e. runtime library loading. Given the amount of
+-- Lua code we use now, this no longer makes sense. Much of this
+-- evolved before bytecode arrays were available and so a lot of
+-- code has disappeared already.
+
+local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+
+local report_resolvers = logs.new("resolvers")
+
+local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
+local unquote, quote = string.unquote, string.quote
+
+-- precautions
+
+os.setlocale(nil,nil) -- useless feature and even dangerous in luatex
+
+function os.setlocale()
+    -- no way you can mess with it
+end
+
+-- dirty tricks
+
+if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
+    arg[-1] = arg[0]
+    arg[ 0] = arg[2]
+    for k=3,#arg do
+        arg[k-2] = arg[k]
+    end
+    arg[#arg] = nil -- last
+    arg[#arg] = nil -- pre-last
+end
+
+-- environment
+
+environment             = environment or { }
+environment.arguments   = { }
+environment.files       = { }
+environment.sortedflags = nil
+
+local mt = {
+    __index = function(_,k)
+        if k == "version" then
+            local version = tex.toks and tex.toks.contextversiontoks
+            if version and version ~= "" then
+                rawset(environment,"version",version)
+                return version
+            else
+                return "unknown"
+            end
+        elseif k == "jobname" or k == "formatname" then
+            local name = tex and tex[k]
+            if name or name== "" then
+                rawset(environment,k,name)
+                return name
+            else
+                return "unknown"
+            end
+        elseif k == "outputfilename" then
+            local name = environment.jobname
+            rawset(environment,k,name)
+            return name
+        end
+    end
+}
+
+setmetatable(environment,mt)
+
+function environment.initialize_arguments(arg)
+    local arguments, files = { }, { }
+    environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
+    for index=1,#arg do
+        local argument = arg[index]
+        if index > 0 then
+            local flag, value = match(argument,"^%-+(.-)=(.-)$")
+            if flag then
+                arguments[flag] = unquote(value or "")
+            else
+                flag = match(argument,"^%-+(.+)")
+                if flag then
+                    arguments[flag] = true
+                else
+                    files[#files+1] = argument
+                end
+            end
+        end
+    end
+    environment.ownname = environment.ownname or arg[0] or 'unknown.lua'
+end
+
+function environment.setargument(name,value)
+    environment.arguments[name] = value
+end
+
+-- todo: defaults, better checks e.g on type (boolean versus string)
+--
+-- tricky: too many hits when we support partials unless we add
+-- a registration of arguments so from now on we have 'partial'
+
+function environment.argument(name,partial)
+    local arguments, sortedflags = environment.arguments, environment.sortedflags
+    if arguments[name] then
+        return arguments[name]
+    elseif partial then
+        if not sortedflags then
+            sortedflags = table.sortedkeys(arguments)
+            for k=1,#sortedflags do
+                sortedflags[k] = "^" .. sortedflags[k]
+            end
+            environment.sortedflags = sortedflags
+        end
+        -- example of potential clash: ^mode ^modefile
+        for k=1,#sortedflags do
+            local v = sortedflags[k]
+            if find(name,v) then
+                return arguments[sub(v,2,#v)]
+            end
+        end
+    end
+    return nil
+end
+
+function environment.split_arguments(separator) -- rather special, cut-off before separator
+    local done, before, after = false, { }, { }
+    local original_arguments = environment.original_arguments
+    for k=1,#original_arguments do
+        local v = original_arguments[k]
+        if not done and v == separator then
+            done = true
+        elseif done then
+            after[#after+1] = v
+        else
+            before[#before+1] = v
+        end
+    end
+    return before, after
+end
+
+function environment.reconstruct_commandline(arg,noquote)
+    arg = arg or environment.original_arguments
+    if noquote and #arg == 1 then
+        local a = arg[1]
+        a = resolvers.resolve(a)
+        a = unquote(a)
+        return a
+    elseif #arg > 0 then
+        local result = { }
+        for i=1,#arg do
+            local a = arg[i]
+            a = resolvers.resolve(a)
+            a = unquote(a)
+            a = gsub(a,'"','\\"') -- tricky
+            if find(a," ") then
+                result[#result+1] = quote(a)
+            else
+                result[#result+1] = a
+            end
+        end
+        return table.join(result," ")
+    else
+        return ""
+    end
+end
+
+if arg then
+
+    -- new, reconstruct quoted snippets (maybe better just remove the " then and add them later)
+    local newarg, instring = { }, false
+
+    for index=1,#arg do
+        local argument = arg[index]
+        if find(argument,"^\"") then
+            newarg[#newarg+1] = gsub(argument,"^\"","")
+            if not find(argument,"\"$") then
+                instring = true
+            end
+        elseif find(argument,"\"$") then
+            newarg[#newarg] = newarg[#newarg] .. " " .. gsub(argument,"\"$","")
+            instring = false
+        elseif instring then
+            newarg[#newarg] = newarg[#newarg] .. " " .. argument
+        else
+            newarg[#newarg+1] = argument
+        end
+    end
+    for i=1,-5,-1 do
+        newarg[i] = arg[i]
+    end
+
+    environment.initialize_arguments(newarg)
+    environment.original_arguments = newarg
+    environment.raw_arguments = arg
+
+    arg = { } -- prevent duplicate handling
+
+end
+
+-- weird place ... depends on a not yet loaded module
+
+function environment.texfile(filename)
+    return resolvers.find_file(filename,'tex')
+end
+
+function environment.luafile(filename)
+    local resolved = resolvers.find_file(filename,'tex') or ""
+    if resolved ~= "" then
+        return resolved
+    end
+    resolved = resolvers.find_file(filename,'texmfscripts') or ""
+    if resolved ~= "" then
+        return resolved
+    end
+    return resolvers.find_file(filename,'luatexlibs') or ""
+end
+
+environment.loadedluacode = loadfile -- can be overloaded
+
+function environment.luafilechunk(filename,silent) -- used for loading lua bytecode in the format
+    filename = file.replacesuffix(filename, "lua")
+    local fullname = environment.luafile(filename)
+    if fullname and fullname ~= "" then
+        local data = environment.loadedluacode(fullname)
+        if trace_locating then
+            report_resolvers("loading file %s%s", fullname, not data and " failed" or "")
+        elseif not silent then
+            texio.write("<",data and "+ " or "- ",fullname,">")
+        end
+        return data
+    else
+        if trace_locating then
+            report_resolvers("unknown file %s", filename)
+        end
+        return nil
+    end
+end
+
+-- the next ones can use the previous ones / combine
+
+function environment.loadluafile(filename, version)
+    local lucname, luaname, chunk
+    local basename = file.removesuffix(filename)
+    if basename == filename then
+        lucname, luaname = basename .. ".luc",  basename .. ".lua"
+    else
+        lucname, luaname = nil, basename -- forced suffix
+    end
+    -- when not overloaded by explicit suffix we look for a luc file first
+    local fullname = (lucname and environment.luafile(lucname)) or ""
+    if fullname ~= "" then
+        if trace_locating then
+            report_resolvers("loading %s", fullname)
+        end
+        chunk = loadfile(fullname) -- this way we don't need a file exists check
+    end
+    if chunk then
+        assert(chunk)()
+        if version then
+            -- we check of the version number of this chunk matches
+            local v = version -- can be nil
+            if modules and modules[filename] then
+                v = modules[filename].version -- new method
+            elseif versions and versions[filename] then
+                v = versions[filename]        -- old method
+            end
+            if v == version then
+                return true
+            else
+                if trace_locating then
+                    report_resolvers("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
+                end
+                environment.loadluafile(filename)
+            end
+        else
+            return true
+        end
+    end
+    fullname = (luaname and environment.luafile(luaname)) or ""
+    if fullname ~= "" then
+        if trace_locating then
+            report_resolvers("loading %s", fullname)
+        end
+        chunk = loadfile(fullname) -- this way we don't need a file exists check
+        if not chunk then
+            if trace_locating then
+                report_resolvers("unknown file %s", filename)
+            end
+        else
+            assert(chunk)()
+            return true
+        end
+    end
+    return false
+end
 
 
 end -- of closure
@@ -3941,6 +5048,8 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
+local report_xml = logs.new("xml")
+
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
 handles comment and processing instructions, has a different structure, provides
@@ -3955,7 +5064,6 @@ optimize the code.</p>
 
 xml = xml or { }
 
---~ local xml = xml
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
@@ -4079,7 +5187,7 @@ local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
 
-function initialize_mt(root)
+local function initialize_mt(root)
     mt = { __index = root } -- will be redefined later
 end
 
@@ -4183,7 +5291,7 @@ local reported_attribute_errors = { }
 
 local function attribute_value_error(str)
     if not reported_attribute_errors[str] then
-        logs.report("xml","invalid attribute value: %q",str)
+        report_xml("invalid attribute value: %q",str)
         reported_attribute_errors[str] = true
         at._error_ = str
     end
@@ -4191,7 +5299,7 @@ local function attribute_value_error(str)
 end
 local function attribute_specification_error(str)
     if not reported_attribute_errors[str] then
-        logs.report("xml","invalid attribute specification: %q",str)
+        report_xml("invalid attribute specification: %q",str)
         reported_attribute_errors[str] = true
         at._error_ = str
     end
@@ -4254,18 +5362,18 @@ local function handle_hex_entity(str)
         h = unify_predefined and predefined_unified[n]
         if h then
             if trace_entities then
-                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,h)
+                report_xml("utfize, converting hex entity &#x%s; into %s",str,h)
             end
         elseif utfize then
             h = (n and utfchar(n)) or xml.unknown_hex_entity_format(str) or ""
             if not n then
-                logs.report("xml","utfize, ignoring hex entity &#x%s;",str)
+                report_xml("utfize, ignoring hex entity &#x%s;",str)
             elseif trace_entities then
-                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,h)
+                report_xml("utfize, converting hex entity &#x%s; into %s",str,h)
             end
         else
             if trace_entities then
-                logs.report("xml","found entity &#x%s;",str)
+                report_xml("found entity &#x%s;",str)
             end
             h = "&#x" .. str .. ";"
         end
@@ -4281,18 +5389,18 @@ local function handle_dec_entity(str)
         d = unify_predefined and predefined_unified[n]
         if d then
             if trace_entities then
-                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,d)
+                report_xml("utfize, converting dec entity &#%s; into %s",str,d)
             end
         elseif utfize then
             d = (n and utfchar(n)) or xml.unknown_dec_entity_format(str) or ""
             if not n then
-                logs.report("xml","utfize, ignoring dec entity &#%s;",str)
+                report_xml("utfize, ignoring dec entity &#%s;",str)
             elseif trace_entities then
-                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,h)
+                report_xml("utfize, converting dec entity &#%s; into %s",str,h)
             end
         else
             if trace_entities then
-                logs.report("xml","found entity &#%s;",str)
+                report_xml("found entity &#%s;",str)
             end
             d = "&#" .. str .. ";"
         end
@@ -4317,7 +5425,7 @@ local function handle_any_entity(str)
             end
             if a then
                 if trace_entities then
-                    logs.report("xml","resolved entity &%s; -> %s (internal)",str,a)
+                    report_xml("resolved entity &%s; -> %s (internal)",str,a)
                 end
                 a = lpegmatch(parsedentity,a) or a
             else
@@ -4326,11 +5434,11 @@ local function handle_any_entity(str)
                 end
                 if a then
                     if trace_entities then
-                        logs.report("xml","resolved entity &%s; -> %s (external)",str,a)
+                        report_xml("resolved entity &%s; -> %s (external)",str,a)
                     end
                 else
                     if trace_entities then
-                        logs.report("xml","keeping entity &%s;",str)
+                        report_xml("keeping entity &%s;",str)
                     end
                     if str == "" then
                         a = "&error;"
@@ -4342,7 +5450,7 @@ local function handle_any_entity(str)
             acache[str] = a
         elseif trace_entities then
             if not acache[str] then
-                logs.report("xml","converting entity &%s; into %s",str,a)
+                report_xml("converting entity &%s; into %s",str,a)
                 acache[str] = a
             end
         end
@@ -4351,7 +5459,7 @@ local function handle_any_entity(str)
         local a = acache[str]
         if not a then
             if trace_entities then
-                logs.report("xml","found entity &%s;",str)
+                report_xml("found entity &%s;",str)
             end
             a = resolve_predefined and predefined_simplified[str]
             if a then
@@ -4370,7 +5478,7 @@ local function handle_any_entity(str)
 end
 
 local function handle_end_entity(chr)
-    logs.report("xml","error in entity, %q found instead of ';'",chr)
+    report_xml("error in entity, %q found instead of ';'",chr)
 end
 
 local space            = S(' \r\n\t')
@@ -4505,7 +5613,7 @@ local function xmlconvert(data, settings)
     resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
     unify_predefined = settings.unify_predefined_entities -- &#038; -> &amp;
     cleanup = settings.text_cleanup
-    stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
+    stack, top, at, xmlns, errorstr, entities = { }, { }, { }, { }, nil, settings.entities or { }
     acache, hcache, dcache = { }, { }, { } -- not stored
     reported_attribute_errors = { }
     if settings.parent_root then
@@ -4533,6 +5641,7 @@ local function xmlconvert(data, settings)
     else
         errorstr = "invalid xml file - no text at all"
     end
+    local result
     if errorstr and errorstr ~= "" then
         result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={ }, er = true } } }
         setmetatable(stack, mt)
@@ -4713,7 +5822,7 @@ local function verbose_element(e,handlers)
             ats[#ats+1] = format('%s=%q',k,v)
         end
     end
-    if ern and trace_remap and ern ~= ens then
+    if ern and trace_entities and ern ~= ens then
         ens = ern
     end
     if ens ~= "" then
@@ -4844,7 +5953,7 @@ local function newhandlers(settings)
     if settings then
         for k,v in next, settings do
             if type(v) == "table" then
-                tk = t[k] if not tk then tk = { } t[k] = tk end
+                local tk = t[k] if not tk then tk = { } t[k] = tk end
                 for kk,vv in next, v do
                     tk[kk] = vv
                 end
@@ -4955,7 +6064,7 @@ local function xmltext(root) -- inline
     return (root and xmltostring(root)) or ""
 end
 
-function initialize_mt(root)
+initialize_mt = function(root) -- redefinition
     mt = { __tostring = xmltext, __index = root }
 end
 
@@ -4990,7 +6099,6 @@ xml.string = xmlstring
 <p>A few helpers:</p>
 --ldx]]--
 
---~ xmlsetproperty(root,"settings",settings)
 
 function xml.settings(e)
     while e do
@@ -5152,6 +6260,8 @@ local trace_lpath    = false  if trackers then trackers.register("xml.path",    
 local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
 local trace_lprofile = false  if trackers then trackers.register("xml.profile", function(v) trace_lpath  = v trace_lparse = v trace_lprofile = v end) end
 
+local report_lpath = logs.new("lpath")
+
 --[[ldx--
 <p>We've now arrived at an interesting part: accessing the tree using a subset
 of <l n='xpath'/> and since we're not compatible we call it <l n='lpath'/>. We
@@ -5178,7 +6288,7 @@ local function fallback (t, name)
     if fn then
         t[name] = fn
     else
-        logs.report("xml","unknown sub finalizer '%s'",tostring(name))
+        report_lpath("unknown sub finalizer '%s'",tostring(name))
         fn = function() end
     end
     return fn
@@ -5239,11 +6349,6 @@ apply_axis['root'] = function(list)
 end
 
 apply_axis['self'] = function(list)
---~     local collected = { }
---~     for l=1,#list do
---~         collected[#collected+1] = list[l]
---~     end
---~     return collected
     return list
 end
 
@@ -5370,38 +6475,10 @@ apply_axis['namespace'] = function(list)
 end
 
 apply_axis['following'] = function(list) -- incomplete
---~     local collected = { }
---~     for l=1,#list do
---~         local ll = list[l]
---~         local p = ll.__p__
---~         local d = p.dt
---~         for i=ll.ni+1,#d do
---~             local di = d[i]
---~             if type(di) == "table" then
---~                 collected[#collected+1] = di
---~                 break
---~             end
---~         end
---~     end
---~     return collected
     return { }
 end
 
 apply_axis['preceding'] = function(list) -- incomplete
---~     local collected = { }
---~     for l=1,#list do
---~         local ll = list[l]
---~         local p = ll.__p__
---~         local d = p.dt
---~         for i=ll.ni-1,1,-1 do
---~             local di = d[i]
---~             if type(di) == "table" then
---~                 collected[#collected+1] = di
---~                 break
---~             end
---~         end
---~     end
---~     return collected
     return { }
 end
 
@@ -5664,14 +6741,12 @@ local converter = Cs (
 )
 
 cleaner = Cs ( (
---~     lp_fastpos +
     lp_reserved +
     lp_number +
     lp_string +
 1 )^1 )
 
 
---~ expr
 
 local template_e = [[
     local expr = xml.expressions
@@ -5722,13 +6797,13 @@ local skip = { }
 
 local function errorrunner_e(str,cnv)
     if not skip[str] then
-        logs.report("lpath","error in expression: %s => %s",str,cnv)
+        report_lpath("error in expression: %s => %s",str,cnv)
         skip[str] = cnv or str
     end
     return false
 end
 local function errorrunner_f(str,arg)
-    logs.report("lpath","error in finalizer: %s(%s)",str,arg or "")
+    report_lpath("error in finalizer: %s(%s)",str,arg or "")
     return false
 end
 
@@ -5895,7 +6970,7 @@ local function lshow(parsed)
     end
     local s = table.serialize_functions -- ugly
     table.serialize_functions = false -- ugly
-    logs.report("lpath","%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,false))
+    report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,false))
     table.serialize_functions = s -- ugly
 end
 
@@ -5925,7 +7000,7 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
                 local np = #parsed
                 if np == 0 then
                     parsed = { pattern = pattern, register_self, state = "parsing error" }
-                    logs.report("lpath","parsing error in '%s'",pattern)
+                    report_lpath("parsing error in '%s'",pattern)
                     lshow(parsed)
                 else
                     -- we could have done this with a more complex parser but this
@@ -6029,32 +7104,32 @@ local function traced_apply(list,parsed,nofparsed,order)
     if trace_lparse then
         lshow(parsed)
     end
-    logs.report("lpath", "collecting : %s",parsed.pattern)
-    logs.report("lpath", " root tags : %s",tagstostring(list))
-    logs.report("lpath", "     order : %s",order or "unset")
+    report_lpath("collecting : %s",parsed.pattern)
+    report_lpath(" root tags : %s",tagstostring(list))
+    report_lpath("     order : %s",order or "unset")
     local collected = list
     for i=1,nofparsed do
         local pi = parsed[i]
         local kind = pi.kind
         if kind == "axis" then
             collected = apply_axis[pi.axis](collected)
-            logs.report("lpath", "% 10i : ax : %s",(collected and #collected) or 0,pi.axis)
+            report_lpath("% 10i : ax : %s",(collected and #collected) or 0,pi.axis)
         elseif kind == "nodes" then
             collected = apply_nodes(collected,pi.nodetest,pi.nodes)
-            logs.report("lpath", "% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
+            report_lpath("% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
         elseif kind == "expression" then
             collected = apply_expression(collected,pi.evaluator,order)
-            logs.report("lpath", "% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
+            report_lpath("% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
         elseif kind == "finalizer" then
             collected = pi.finalizer(collected)
-            logs.report("lpath", "% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
+            report_lpath("% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
             return collected
         end
         if not collected or #collected == 0 then
             local pn = i < nofparsed and parsed[nofparsed]
             if pn and pn.kind == "finalizer" then
                 collected = pn.finalizer(collected)
-                logs.report("lpath", "% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pn.name,pn.arguments or "")
+                report_lpath("% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pn.name,pn.arguments or "")
                 return collected
             end
             return nil
@@ -6167,7 +7242,7 @@ expressions.boolean   = toboolean
 -- user interface
 
 local function traverse(root,pattern,handle)
-    logs.report("xml","use 'xml.selection' instead for '%s'",pattern)
+    report_lpath("use 'xml.selection' instead for '%s'",pattern)
     local collected = parse_apply({ root },pattern)
     if collected then
         for c=1,#collected do
@@ -6215,7 +7290,7 @@ local function dofunction(collected,fnc)
                 f(collected[c])
             end
         else
-            logs.report("xml","unknown function '%s'",fnc)
+            report_lpath("unknown function '%s'",fnc)
         end
     end
 end
@@ -6407,7 +7482,6 @@ local function xmlgsub(t,old,new) -- will be replaced
     end
 end
 
---~ xml.gsub = xmlgsub
 
 function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
     if d and k then
@@ -6419,12 +7493,7 @@ function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
     end
 end
 
---~ xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
---~ xml.unescapes = { } for k,v in next, xml.escapes do xml.unescapes[v] = k end
 
---~ function xml.escaped  (str) return (gsub(str,"(.)"   , xml.escapes  )) end
---~ function xml.unescaped(str) return (gsub(str,"(&.-;)", xml.unescapes)) end
---~ function xml.cleansed (str) return (gsub(str,"<.->"  , ''           )) end -- "%b<>"
 
 local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Cs
 
@@ -6490,6 +7559,8 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
 
+local report_xml = logs.new("xml")
+
 local xmlparseapply, xmlconvert, xmlcopy, xmlname = xml.parse_apply, xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 
@@ -6498,7 +7569,7 @@ local insert, remove = table.insert, table.remove
 local gmatch, gsub = string.gmatch, string.gsub
 
 local function report(what,pattern,c,e)
-    logs.report("xml","%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
+    report_xml("%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
 end
 
 local function withelements(e,handle,depth)
@@ -6651,12 +7722,7 @@ local function xmltoelement(whatever,root)
         return whatever -- string
     end
     if element then
-    --~ if element.ri then
-    --~     element = element.dt[element.ri].dt
-    --~ else
-    --~     element = element.dt
-    --~ end
-    end
+                        end
     return element
 end
 
@@ -6795,9 +7861,6 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
                 -- for the moment hard coded
                 epdt[ek.ni] = xml.escaped(data) -- d[k] = xml.escaped(data)
             else
---~                 local settings = xmldata.settings
---~                 settings.parent_root = xmldata -- to be tested
---~                 local xi = xmlconvert(data,settings)
                 local xi = xmlinheritedconvert(data,xmldata)
                 if not xi then
                     epdt[ek.ni] = "" -- xml.empty(d,k)
@@ -6814,28 +7877,7 @@ end
 
 xml.include = include
 
---~ local function manipulate(xmldata,pattern,manipulator) -- untested and might go away
---~     local collected = xmlparseapply({ xmldata },pattern)
---~     if collected then
---~         local xmltostring = xml.tostring
---~         for c=1,#collected do
---~             local e = collected[c]
---~             local data = manipulator(xmltostring(e))
---~             if data == "" then
---~                 epdt[e.ni] = ""
---~             else
---~                 local xi = xmlinheritedconvert(data,xmldata)
---~                 if not xi then
---~                     epdt[e.ni] = ""
---~                 else
---~                     epdt[e.ni] = xml.body(xi) -- xml.assign(d,k,xi)
---~                 end
---~             end
---~         end
---~     end
---~ end
 
---~ xml.manipulate = manipulate
 
 function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and trailing space !
     local collected = xmlparseapply({ root },pattern)
@@ -6861,8 +7903,7 @@ function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and 
                             end
                         end
                     else
-        --~                         str.ni = i
-                        t[#t+1] = str
+                                t[#t+1] = str
                     end
                 end
                 e.dt = t
@@ -7320,825 +8361,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['luat-env'] = {
-    version   = 1.001,
-    comment   = "companion to luat-lib.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
--- A former version provided functionality for non embeded core
--- scripts i.e. runtime library loading. Given the amount of
--- Lua code we use now, this no longer makes sense. Much of this
--- evolved before bytecode arrays were available and so a lot of
--- code has disappeared already.
-
-local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
-
-local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
-local unquote, quote = string.unquote, string.quote
-
--- precautions
-
-os.setlocale(nil,nil) -- useless feature and even dangerous in luatex
-
-function os.setlocale()
-    -- no way you can mess with it
-end
-
--- dirty tricks
-
-if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
-    arg[-1]=arg[0] arg[0]=arg[2] for k=3,#arg do arg[k-2]=arg[k] end arg[#arg]=nil arg[#arg]=nil
-end
-
-if profiler and os.env["MTX_PROFILE_RUN"] == "YES" then
-    profiler.start("luatex-profile.log")
-end
-
--- environment
-
-environment             = environment or { }
-environment.arguments   = { }
-environment.files       = { }
-environment.sortedflags = nil
-
-if not environment.jobname or environment.jobname == "" then if tex then environment.jobname = tex.jobname end end
-if not environment.version or environment.version == "" then             environment.version = "unknown"   end
-if not environment.jobname                              then             environment.jobname = "unknown"   end
-
-function environment.initialize_arguments(arg)
-    local arguments, files = { }, { }
-    environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
-    for index=1,#arg do
-        local argument = arg[index]
-        if index > 0 then
-            local flag, value = match(argument,"^%-+(.-)=(.-)$")
-            if flag then
-                arguments[flag] = unquote(value or "")
-            else
-                flag = match(argument,"^%-+(.+)")
-                if flag then
-                    arguments[flag] = true
-                else
-                    files[#files+1] = argument
-                end
-            end
-        end
-    end
-    environment.ownname = environment.ownname or arg[0] or 'unknown.lua'
-end
-
-function environment.setargument(name,value)
-    environment.arguments[name] = value
-end
-
--- todo: defaults, better checks e.g on type (boolean versus string)
---
--- tricky: too many hits when we support partials unless we add
--- a registration of arguments so from now on we have 'partial'
-
-function environment.argument(name,partial)
-    local arguments, sortedflags = environment.arguments, environment.sortedflags
-    if arguments[name] then
-        return arguments[name]
-    elseif partial then
-        if not sortedflags then
-            sortedflags = table.sortedkeys(arguments)
-            for k=1,#sortedflags do
-                sortedflags[k] = "^" .. sortedflags[k]
-            end
-            environment.sortedflags = sortedflags
-        end
-        -- example of potential clash: ^mode ^modefile
-        for k=1,#sortedflags do
-            local v = sortedflags[k]
-            if find(name,v) then
-                return arguments[sub(v,2,#v)]
-            end
-        end
-    end
-    return nil
-end
-
-environment.argument("x",true)
-
-function environment.split_arguments(separator) -- rather special, cut-off before separator
-    local done, before, after = false, { }, { }
-    local original_arguments = environment.original_arguments
-    for k=1,#original_arguments do
-        local v = original_arguments[k]
-        if not done and v == separator then
-            done = true
-        elseif done then
-            after[#after+1] = v
-        else
-            before[#before+1] = v
-        end
-    end
-    return before, after
-end
-
-function environment.reconstruct_commandline(arg,noquote)
-    arg = arg or environment.original_arguments
-    if noquote and #arg == 1 then
-        local a = arg[1]
-        a = resolvers.resolve(a)
-        a = unquote(a)
-        return a
-    elseif #arg > 0 then
-        local result = { }
-        for i=1,#arg do
-            local a = arg[i]
-            a = resolvers.resolve(a)
-            a = unquote(a)
-            a = gsub(a,'"','\\"') -- tricky
-            if find(a," ") then
-                result[#result+1] = quote(a)
-            else
-                result[#result+1] = a
-            end
-        end
-        return table.join(result," ")
-    else
-        return ""
-    end
-end
-
-if arg then
-
-    -- new, reconstruct quoted snippets (maybe better just remove the " then and add them later)
-    local newarg, instring = { }, false
-
-    for index=1,#arg do
-        local argument = arg[index]
-        if find(argument,"^\"") then
-            newarg[#newarg+1] = gsub(argument,"^\"","")
-            if not find(argument,"\"$") then
-                instring = true
-            end
-        elseif find(argument,"\"$") then
-            newarg[#newarg] = newarg[#newarg] .. " " .. gsub(argument,"\"$","")
-            instring = false
-        elseif instring then
-            newarg[#newarg] = newarg[#newarg] .. " " .. argument
-        else
-            newarg[#newarg+1] = argument
-        end
-    end
-    for i=1,-5,-1 do
-        newarg[i] = arg[i]
-    end
-
-    environment.initialize_arguments(newarg)
-    environment.original_arguments = newarg
-    environment.raw_arguments = arg
-
-    arg = { } -- prevent duplicate handling
-
-end
-
--- weird place ... depends on a not yet loaded module
-
-function environment.texfile(filename)
-    return resolvers.find_file(filename,'tex')
-end
-
-function environment.luafile(filename)
-    local resolved = resolvers.find_file(filename,'tex') or ""
-    if resolved ~= "" then
-        return resolved
-    end
-    resolved = resolvers.find_file(filename,'texmfscripts') or ""
-    if resolved ~= "" then
-        return resolved
-    end
-    return resolvers.find_file(filename,'luatexlibs') or ""
-end
-
-environment.loadedluacode = loadfile -- can be overloaded
-
---~ function environment.loadedluacode(name)
---~     if os.spawn("texluac -s -o texluac.luc " .. name) == 0 then
---~         local chunk = loadstring(io.loaddata("texluac.luc"))
---~         os.remove("texluac.luc")
---~         return chunk
---~     else
---~         environment.loadedluacode = loadfile -- can be overloaded
---~         return loadfile(name)
---~     end
---~ end
-
-function environment.luafilechunk(filename) -- used for loading lua bytecode in the format
-    filename = file.replacesuffix(filename, "lua")
-    local fullname = environment.luafile(filename)
-    if fullname and fullname ~= "" then
-        if trace_locating then
-            logs.report("fileio","loading file %s", fullname)
-        end
-        return environment.loadedluacode(fullname)
-    else
-        if trace_locating then
-            logs.report("fileio","unknown file %s", filename)
-        end
-        return nil
-    end
-end
-
--- the next ones can use the previous ones / combine
-
-function environment.loadluafile(filename, version)
-    local lucname, luaname, chunk
-    local basename = file.removesuffix(filename)
-    if basename == filename then
-        lucname, luaname = basename .. ".luc",  basename .. ".lua"
-    else
-        lucname, luaname = nil, basename -- forced suffix
-    end
-    -- when not overloaded by explicit suffix we look for a luc file first
-    local fullname = (lucname and environment.luafile(lucname)) or ""
-    if fullname ~= "" then
-        if trace_locating then
-            logs.report("fileio","loading %s", fullname)
-        end
-        chunk = loadfile(fullname) -- this way we don't need a file exists check
-    end
-    if chunk then
-        assert(chunk)()
-        if version then
-            -- we check of the version number of this chunk matches
-            local v = version -- can be nil
-            if modules and modules[filename] then
-                v = modules[filename].version -- new method
-            elseif versions and versions[filename] then
-                v = versions[filename]        -- old method
-            end
-            if v == version then
-                return true
-            else
-                if trace_locating then
-                    logs.report("fileio","version mismatch for %s: lua=%s, luc=%s", filename, v, version)
-                end
-                environment.loadluafile(filename)
-            end
-        else
-            return true
-        end
-    end
-    fullname = (luaname and environment.luafile(luaname)) or ""
-    if fullname ~= "" then
-        if trace_locating then
-            logs.report("fileio","loading %s", fullname)
-        end
-        chunk = loadfile(fullname) -- this way we don't need a file exists check
-        if not chunk then
-            if trace_locating then
-                logs.report("fileio","unknown file %s", filename)
-            end
-        else
-            assert(chunk)()
-            return true
-        end
-    end
-    return false
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['trac-inf'] = {
-    version   = 1.001,
-    comment   = "companion to trac-inf.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
-local format = string.format
-
-local statusinfo, n, registered = { }, 0, { }
-
-statistics = statistics or { }
-
-statistics.enable    = true
-statistics.threshold = 0.05
-
--- timing functions
-
-local clock = os.gettimeofday or os.clock
-
-local notimer
-
-function statistics.hastimer(instance)
-    return instance and instance.starttime
-end
-
-function statistics.resettiming(instance)
-    if not instance then
-        notimer = { timing = 0, loadtime = 0 }
-    else
-        instance.timing, instance.loadtime = 0, 0
-    end
-end
-
-function statistics.starttiming(instance)
-    if not instance then
-        notimer = { }
-        instance = notimer
-    end
-    local it = instance.timing
-    if not it then
-        it = 0
-    end
-    if it == 0 then
-        instance.starttime = clock()
-        if not instance.loadtime then
-            instance.loadtime = 0
-        end
-    else
---~         logs.report("system","nested timing (%s)",tostring(instance))
-    end
-    instance.timing = it + 1
-end
-
-function statistics.stoptiming(instance, report)
-    if not instance then
-        instance = notimer
-    end
-    if instance then
-        local it = instance.timing
-        if it > 1 then
-            instance.timing = it - 1
-        else
-            local starttime = instance.starttime
-            if starttime then
-                local stoptime = clock()
-                local loadtime = stoptime - starttime
-                instance.stoptime = stoptime
-                instance.loadtime = instance.loadtime + loadtime
-                if report then
-                    statistics.report("load time %0.3f",loadtime)
-                end
-                instance.timing = 0
-                return loadtime
-            end
-        end
-    end
-    return 0
-end
-
-function statistics.elapsedtime(instance)
-    if not instance then
-        instance = notimer
-    end
-    return format("%0.3f",(instance and instance.loadtime) or 0)
-end
-
-function statistics.elapsedindeed(instance)
-    if not instance then
-        instance = notimer
-    end
-    local t = (instance and instance.loadtime) or 0
-    return t > statistics.threshold
-end
-
-function statistics.elapsedseconds(instance,rest) -- returns nil if 0 seconds
-    if statistics.elapsedindeed(instance) then
-        return format("%s seconds %s", statistics.elapsedtime(instance),rest or "")
-    end
-end
-
--- general function
-
-function statistics.register(tag,fnc)
-    if statistics.enable and type(fnc) == "function" then
-        local rt = registered[tag] or (#statusinfo + 1)
-        statusinfo[rt] = { tag, fnc }
-        registered[tag] = rt
-        if #tag > n then n = #tag end
-    end
-end
-
-function statistics.show(reporter)
-    if statistics.enable then
-        if not reporter then reporter = function(tag,data,n) texio.write_nl(tag .. " " .. data) end end
-        -- this code will move
-        local register = statistics.register
-        register("luatex banner", function()
-            return string.lower(status.banner)
-        end)
-        register("control sequences", function()
-            return format("%s of %s", status.cs_count, status.hash_size+status.hash_extra)
-        end)
-        register("callbacks", function()
-            local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
-            return format("direct: %s, indirect: %s, total: %s", total-indirect, indirect, total)
-        end)
-        register("current memory usage", statistics.memused)
-        register("runtime",statistics.runtime)
---         --
-        for i=1,#statusinfo do
-            local s = statusinfo[i]
-            local r = s[2]()
-            if r then
-                reporter(s[1],r,n)
-            end
-        end
-        texio.write_nl("") -- final newline
-        statistics.enable = false
-    end
-end
-
-function statistics.show_job_stat(tag,data,n)
-    texio.write_nl(format("%-15s: %s - %s","mkiv lua stats",tag:rpadd(n," "),data))
-end
-
-function statistics.memused() -- no math.round yet -)
-    local round = math.round or math.floor
-    return format("%s MB (ctx: %s MB)",round(collectgarbage("count")/1000), round(status.luastate_bytes/1000000))
-end
-
-if statistics.runtime then
-    -- already loaded and set
-elseif luatex and luatex.starttime then
-    statistics.starttime = luatex.starttime
-    statistics.loadtime = 0
-    statistics.timing = 0
-else
-    statistics.starttiming(statistics)
-end
-
-function statistics.runtime()
-    statistics.stoptiming(statistics)
-    return statistics.formatruntime(statistics.elapsedtime(statistics))
-end
-
-function statistics.formatruntime(runtime)
-    return format("%s seconds", statistics.elapsedtime(statistics))
-end
-
-function statistics.timed(action,report)
-    local timer = { }
-    report = report or logs.simple
-    statistics.starttiming(timer)
-    action()
-    statistics.stoptiming(timer)
-    report("total runtime: %s",statistics.elapsedtime(timer))
-end
-
--- where, not really the best spot for this:
-
-commands = commands or { }
-
-local timer
-
-function commands.resettimer()
-    statistics.resettiming(timer)
-    statistics.starttiming(timer)
-end
-
-function commands.elapsedtime()
-    statistics.stoptiming(timer)
-    tex.sprint(statistics.elapsedtime(timer))
-end
-
-commands.resettimer()
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['trac-log'] = {
-    version   = 1.001,
-    comment   = "companion to trac-log.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
--- this is old code that needs an overhaul
-
---~ io.stdout:setvbuf("no")
---~ io.stderr:setvbuf("no")
-
-local write_nl, write = texio.write_nl or print, texio.write or io.write
-local format, gmatch = string.format, string.gmatch
-local texcount = tex and tex.count
-
-if texlua then
-    write_nl = print
-    write    = io.write
-end
-
---[[ldx--
-<p>This is a prelude to a more extensive logging module. For the sake
-of parsing log files, in addition to the standard logging we will
-provide an <l n='xml'/> structured file. Actually, any logging that
-is hooked into callbacks will be \XML\ by default.</p>
---ldx]]--
-
-logs     = logs     or { }
-logs.xml = logs.xml or { }
-logs.tex = logs.tex or { }
-
---[[ldx--
-<p>This looks pretty ugly but we need to speed things up a bit.</p>
---ldx]]--
-
-logs.moreinfo = [[
-more information about ConTeXt and the tools that come with it can be found at:
-
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
-]]
-
-logs.levels = {
-    ['error']   = 1,
-    ['warning'] = 2,
-    ['info']    = 3,
-    ['debug']   = 4,
-}
-
-logs.functions = {
-    'report', 'start', 'stop', 'push', 'pop', 'line', 'direct',
-    'start_run', 'stop_run',
-    'start_page_number', 'stop_page_number',
-    'report_output_pages', 'report_output_log',
-    'report_tex_stat', 'report_job_stat',
-    'show_open', 'show_close', 'show_load',
-}
-
-logs.tracers = {
-}
-
-logs.level = 0
-logs.mode  = string.lower((os.getenv("MTX.LOG.MODE") or os.getenv("MTX_LOG_MODE") or "tex"))
-
-function logs.set_level(level)
-    logs.level = logs.levels[level] or level
-end
-
-function logs.set_method(method)
-    for _, v in next, logs.functions do
-        logs[v] = logs[method][v] or function() end
-    end
-end
-
--- tex logging
-
-function logs.tex.report(category,fmt,...) -- new
-    if fmt then
-        write_nl(category .. " | " .. format(fmt,...))
-    else
-        write_nl(category .. " |")
-    end
-end
-
-function logs.tex.line(fmt,...) -- new
-    if fmt then
-        write_nl(format(fmt,...))
-    else
-        write_nl("")
-    end
-end
-
---~ function logs.tex.start_page_number()
---~     local real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
---~     if real > 0 then
---~         if user > 0 then
---~             if sub > 0 then
---~                 write(format("[%s.%s.%s",real,user,sub))
---~             else
---~                 write(format("[%s.%s",real,user))
---~             end
---~         else
---~             write(format("[%s",real))
---~         end
---~     else
---~         write("[-")
---~     end
---~ end
-
---~ function logs.tex.stop_page_number()
---~     write("]")
---~ end
-
-local real, user, sub
-
-function logs.tex.start_page_number()
-    real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
-end
-
-function logs.tex.stop_page_number()
-    if real > 0 then
-        if user > 0 then
-            if sub > 0 then
-                logs.report("pages", "flushing realpage %s, userpage %s, subpage %s",real,user,sub)
-            else
-                logs.report("pages", "flushing realpage %s, userpage %s",real,user)
-            end
-        else
-            logs.report("pages", "flushing realpage %s",real)
-        end
-    else
-        logs.report("pages", "flushing page")
-    end
-    io.flush()
-end
-
-logs.tex.report_job_stat = statistics.show_job_stat
-
--- xml logging
-
-function logs.xml.report(category,fmt,...) -- new
-    if fmt then
-        write_nl(format("<r category='%s'>%s</r>",category,format(fmt,...)))
-    else
-        write_nl(format("<r category='%s'/>",category))
-    end
-end
-function logs.xml.line(fmt,...) -- new
-    if fmt then
-        write_nl(format("<r>%s</r>",format(fmt,...)))
-    else
-        write_nl("<r/>")
-    end
-end
-
-function logs.xml.start() if logs.level > 0 then tw("<%s>" ) end end
-function logs.xml.stop () if logs.level > 0 then tw("</%s>") end end
-function logs.xml.push () if logs.level > 0 then tw("<!-- ") end end
-function logs.xml.pop  () if logs.level > 0 then tw(" -->" ) end end
-
-function logs.xml.start_run()
-    write_nl("<?xml version='1.0' standalone='yes'?>")
-    write_nl("<job>") --  xmlns='www.pragma-ade.com/luatex/schemas/context-job.rng'
-    write_nl("")
-end
-
-function logs.xml.stop_run()
-    write_nl("</job>")
-end
-
-function logs.xml.start_page_number()
-    write_nl(format("<p real='%s' page='%s' sub='%s'", texcount.realpageno, texcount.userpageno, texcount.subpageno))
-end
-
-function logs.xml.stop_page_number()
-    write("/>")
-    write_nl("")
-end
-
-function logs.xml.report_output_pages(p,b)
-    write_nl(format("<v k='pages' v='%s'/>", p))
-    write_nl(format("<v k='bytes' v='%s'/>", b))
-    write_nl("")
-end
-
-function logs.xml.report_output_log()
-end
-
-function logs.xml.report_tex_stat(k,v)
-    texiowrite_nl("log","<v k='"..k.."'>"..tostring(v).."</v>")
-end
-
-local level = 0
-
-function logs.xml.show_open(name)
-    level = level + 1
-    texiowrite_nl(format("<f l='%s' n='%s'>",level,name))
-end
-
-function logs.xml.show_close(name)
-    texiowrite("</f> ")
-    level = level - 1
-end
-
-function logs.xml.show_load(name)
-    texiowrite_nl(format("<f l='%s' n='%s'/>",level+1,name))
-end
-
---
-
-local name, banner = 'report', 'context'
-
-local function report(category,fmt,...)
-    if fmt then
-        write_nl(format("%s | %s: %s",name,category,format(fmt,...)))
-    elseif category then
-        write_nl(format("%s | %s",name,category))
-    else
-        write_nl(format("%s |",name))
-    end
-end
-
-local function simple(fmt,...)
-    if fmt then
-        write_nl(format("%s | %s",name,format(fmt,...)))
-    else
-        write_nl(format("%s |",name))
-    end
-end
-
-function logs.setprogram(_name_,_banner_,_verbose_)
-    name, banner = _name_, _banner_
-    if _verbose_ then
-        trackers.enable("resolvers.locating")
-    end
-    logs.set_method("tex")
-    logs.report = report -- also used in libraries
-    logs.simple = simple -- only used in scripts !
-    if utils then
-        utils.report = simple
-    end
-    logs.verbose = _verbose_
-end
-
-function logs.setverbose(what)
-    if what then
-        trackers.enable("resolvers.locating")
-    else
-        trackers.disable("resolvers.locating")
-    end
-    logs.verbose = what or false
-end
-
-function logs.extendbanner(_banner_,_verbose_)
-    banner = banner .. " | ".. _banner_
-    if _verbose_ ~= nil then
-        logs.setverbose(what)
-    end
-end
-
-logs.verbose = false
-logs.report  = logs.tex.report
-logs.simple  = logs.tex.report
-
-function logs.reportlines(str) -- todo: <lines></lines>
-    for line in gmatch(str,"(.-)[\n\r]") do
-        logs.report(line)
-    end
-end
-
-function logs.reportline() -- for scripts too
-    logs.report()
-end
-
-logs.simpleline = logs.reportline
-
-function logs.reportbanner() -- for scripts too
-    logs.report(banner)
-end
-
-function logs.help(message,option)
-    logs.reportbanner()
-    logs.reportline()
-    logs.reportlines(message)
-    local moreinfo = logs.moreinfo or ""
-    if moreinfo ~= "" and option ~= "nomoreinfo" then
-        logs.reportline()
-        logs.reportlines(moreinfo)
-    end
-end
-
-logs.set_level('error')
-logs.set_method('tex')
-
-function logs.system(whereto,process,jobname,category,...)
-    for i=1,10 do
-        local f = io.open(whereto,"a")
-        if f then
-            f:write(format("%s %s => %s => %s => %s\r",os.date("%d/%m/%y %H:%m:%S"),process,jobname,category,format(...)))
-            f:close()
-            break
-        else
-            sleep(0.1)
-        end
-    end
-end
-
---~ local syslogname = "oeps.xxx"
---~
---~ for i=1,10 do
---~     logs.system(syslogname,"context","test","fonts","font %s recached due to newer version (%s)","blabla","123")
---~ end
-
-function logs.fatal(where,...)
-    logs.report(where,"fatal error: %s, aborting now",format(...))
-    os.exit()
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['data-inp'] = {
+if not modules then modules = { } end modules ['data-ini'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -8146,262 +8369,205 @@ if not modules then modules = { } end modules ['data-inp'] = {
     license   = "see context related readme files",
 }
 
--- After a few years using the code the large luat-inp.lua file
--- has been split up a bit. In the process some functionality was
--- dropped:
---
--- * support for reading lsr files
--- * selective scanning (subtrees)
--- * some public auxiliary functions were made private
---
--- TODO: os.getenv -> os.env[]
--- TODO: instances.[hashes,cnffiles,configurations,522]
--- TODO: check escaping in find etc, too much, too slow
-
--- This lib is multi-purpose and can be loaded again later on so that
--- additional functionality becomes available. We will split thislogs.report("fileio",
--- module in components once we're done with prototyping. This is the
--- first code I wrote for LuaTeX, so it needs some cleanup. Before changing
--- something in this module one can best check with Taco or Hans first; there
--- is some nasty trickery going on that relates to traditional kpse support.
-
--- To be considered: hash key lowercase, first entry in table filename
--- (any case), rest paths (so no need for optimization). Or maybe a
--- separate table that matches lowercase names to mixed case when
--- present. In that case the lower() cases can go away. I will do that
--- only when we run into problems with names ... well ... Iwona-Regular.
-
--- Beware, loading and saving is overloaded in luat-tmp!
-
-local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
-local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
+local gsub, find, gmatch = string.gsub, string.find, string.gmatch
+local concat = table.concat
 local next, type = next, type
-local lpegmatch = lpeg.match
 
-local trace_locating, trace_detail, trace_expansions = false, false, false
+local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
 
-trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
-trackers.register("resolvers.details",    function(v) trace_detail     = v end)
-trackers.register("resolvers.expansions", function(v) trace_expansions = v end) -- todo
+local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
+local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
+local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-if not resolvers then
-    resolvers = {
-        suffixes     = { },
-        formats      = { },
-        dangerous    = { },
-        suffixmap    = { },
-        alternatives = { },
-        locators     = { },  -- locate databases
-        hashers      = { },  -- load databases
-        generators   = { },  -- generate databases
-    }
+local report_resolvers = logs.new("resolvers")
+
+local ostype, osname, ossetenv, osgetenv = os.type, os.name, os.setenv, os.getenv
+
+-- The code here used to be part of a data-res but for convenience
+-- we now split it over multiple files. As this file is now the
+-- starting point we introduce resolvers here.
+
+resolvers = resolvers or { }
+
+-- We don't want the kpse library to kick in. Also, we want to be able to
+-- execute programs. Control over execution is implemented later.
+
+texconfig.kpse_init    = false
+texconfig.shell_escape = 't'
+
+kpse = { original = kpse }
+
+setmetatable(kpse, {
+    __index = function(kp,name)
+        local r = resolvers[name]
+        if not r then
+            r = function (...)
+                report_resolvers("not supported: %s(%s)",name,concat(...))
+            end
+            rawset(kp,name,r)
+        end
+        return r
+    end
+} )
+
+-- First we check a couple of environment variables. Some might be
+-- set already but we need then later on. We start with the system
+-- font path.
+
+do
+
+    local osfontdir = osgetenv("OSFONTDIR")
+
+    if osfontdir and osfontdir ~= "" then
+        -- ok
+    elseif osname == "windows" then
+        ossetenv("OSFONTDIR","c:/windows/fonts//")
+    elseif osname == "macosx" then
+        ossetenv("OSFONTDIR","$HOME/Library/Fonts//;/Library/Fonts//;/System/Library/Fonts//")
+    end
+
 end
 
-local resolvers = resolvers
+-- Next comes the user's home path. We need this as later on we have
+-- to replace ~ with its value.
 
-resolvers.locators  .notfound = { nil }
-resolvers.hashers   .notfound = { nil }
-resolvers.generators.notfound = { nil }
+do
 
-resolvers.cacheversion = '1.0.1'
-resolvers.cnfname      = 'texmf.cnf'
-resolvers.luaname      = 'texmfcnf.lua'
-resolvers.homedir      = os.env[os.type == "windows" and 'USERPROFILE'] or os.env['HOME'] or '~'
-resolvers.cnfdefault   = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}'
+    local homedir = osgetenv(ostype == "windows" and 'USERPROFILE' or 'HOME') or '~'
 
-local dummy_path_expr = "^!*unset/*$"
+    homedir = file.collapse_path(homedir)
 
-local formats      = resolvers.formats
-local suffixes     = resolvers.suffixes
-local dangerous    = resolvers.dangerous
-local suffixmap    = resolvers.suffixmap
-local alternatives = resolvers.alternatives
+    ossetenv("HOME",       homedir) -- can be used in unix cnf files
+    ossetenv("USERPROFILE",homedir) -- can be used in windows cnf files
 
-formats['afm'] = 'AFMFONTS'       suffixes['afm'] = { 'afm' }
-formats['enc'] = 'ENCFONTS'       suffixes['enc'] = { 'enc' }
-formats['fmt'] = 'TEXFORMATS'     suffixes['fmt'] = { 'fmt' }
-formats['map'] = 'TEXFONTMAPS'    suffixes['map'] = { 'map' }
-formats['mp']  = 'MPINPUTS'       suffixes['mp']  = { 'mp' }
-formats['ocp'] = 'OCPINPUTS'      suffixes['ocp'] = { 'ocp' }
-formats['ofm'] = 'OFMFONTS'       suffixes['ofm'] = { 'ofm', 'tfm' }
-formats['otf'] = 'OPENTYPEFONTS'  suffixes['otf'] = { 'otf' } -- 'ttf'
-formats['opl'] = 'OPLFONTS'       suffixes['opl'] = { 'opl' }
-formats['otp'] = 'OTPINPUTS'      suffixes['otp'] = { 'otp' }
-formats['ovf'] = 'OVFFONTS'       suffixes['ovf'] = { 'ovf', 'vf' }
-formats['ovp'] = 'OVPFONTS'       suffixes['ovp'] = { 'ovp' }
-formats['tex'] = 'TEXINPUTS'      suffixes['tex'] = { 'tex' }
-formats['tfm'] = 'TFMFONTS'       suffixes['tfm'] = { 'tfm' }
-formats['ttf'] = 'TTFONTS'        suffixes['ttf'] = { 'ttf', 'ttc', 'dfont' }
-formats['pfb'] = 'T1FONTS'        suffixes['pfb'] = { 'pfb', 'pfa' }
-formats['vf']  = 'VFFONTS'        suffixes['vf']  = { 'vf' }
+    environment.homedir = homedir
 
-formats['fea'] = 'FONTFEATURES'   suffixes['fea'] = { 'fea' }
-formats['cid'] = 'FONTCIDMAPS'    suffixes['cid'] = { 'cid', 'cidmap' }
+end
 
-formats ['texmfscripts'] = 'TEXMFSCRIPTS' -- new
-suffixes['texmfscripts'] = { 'rb', 'pl', 'py' } -- 'lua'
+-- The following code sets the name of the own binary and its
+-- path. This is fallback code as we have os.selfdir now.
 
-formats ['lua'] = 'LUAINPUTS' -- new
-suffixes['lua'] = { 'lua', 'luc', 'tma', 'tmc' }
+do
 
--- backward compatible ones
+    local args = environment.original_arguments or arg -- this needs a cleanup
 
-alternatives['map files']            = 'map'
-alternatives['enc files']            = 'enc'
-alternatives['cid maps']             = 'cid' -- great, why no cid files
-alternatives['font feature files']   = 'fea' -- and fea files here
-alternatives['opentype fonts']       = 'otf'
-alternatives['truetype fonts']       = 'ttf'
-alternatives['truetype collections'] = 'ttc'
-alternatives['truetype dictionary']  = 'dfont'
-alternatives['type1 fonts']          = 'pfb'
+    local ownbin  = environment.ownbin  or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
+    local ownpath = environment.ownpath or os.selfdir
 
--- obscure ones
+    ownbin  = file.collapse_path(ownbin)
+    ownpath = file.collapse_path(ownpath)
 
-formats ['misc fonts'] = ''
-suffixes['misc fonts'] = { }
-
-formats     ['sfd']                      = 'SFDFONTS'
-suffixes    ['sfd']                      = { 'sfd' }
-alternatives['subfont definition files'] = 'sfd'
-
--- lib paths
-
-formats ['lib'] = 'CLUAINPUTS' -- new (needs checking)
-suffixes['lib'] = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
-
--- In practice we will work within one tds tree, but i want to keep
--- the option open to build tools that look at multiple trees, which is
--- why we keep the tree specific data in a table. We used to pass the
--- instance but for practical pusposes we now avoid this and use a
--- instance variable.
-
--- here we catch a few new thingies (todo: add these paths to context.tmf)
---
--- FONTFEATURES  = .;$TEXMF/fonts/fea//
--- FONTCIDMAPS   = .;$TEXMF/fonts/cid//
-
--- we always have one instance active
-
-resolvers.instance = resolvers.instance or nil -- the current one (slow access)
-local instance = resolvers.instance or nil -- the current one (fast access)
-
-function resolvers.newinstance()
-
-    -- store once, freeze and faster (once reset we can best use
-    -- instance.environment) maybe better have a register suffix
-    -- function
-
-    for k, v in next, suffixes do
-        for i=1,#v do
-            local vi = v[i]
-            if vi then
-                suffixmap[vi] = k
+    if not ownpath or ownpath == "" or ownpath == "unset" then
+        ownpath = args[-1] or arg[-1]
+        ownpath = ownpath and filedirname(gsub(ownpath,"\\","/"))
+        if not ownpath or ownpath == "" then
+            ownpath = args[-0] or arg[-0]
+            ownpath = ownpath and filedirname(gsub(ownpath,"\\","/"))
+        end
+        local binary = ownbin
+        if not ownpath or ownpath == "" then
+            ownpath = ownpath and filedirname(binary)
+        end
+        if not ownpath or ownpath == "" then
+            if os.binsuffix ~= "" then
+                binary = file.replacesuffix(binary,os.binsuffix)
+            end
+            local path = osgetenv("PATH")
+            if path then
+                for p in gmatch(path,"[^"..io.pathseparator.."]+") do
+                    local b = filejoin(p,binary)
+                    if lfs.isfile(b) then
+                        -- we assume that after changing to the path the currentdir function
+                        -- resolves to the real location and use this side effect here; this
+                        -- trick is needed because on the mac installations use symlinks in the
+                        -- path instead of real locations
+                        local olddir = lfs.currentdir()
+                        if lfs.chdir(p) then
+                            local pp = lfs.currentdir()
+                            if trace_locating and p ~= pp then
+                                report_resolvers("following symlink '%s' to '%s'",p,pp)
+                            end
+                            ownpath = pp
+                            lfs.chdir(olddir)
+                        else
+                            if trace_locating then
+                                report_resolvers("unable to check path '%s'",p)
+                            end
+                            ownpath =  p
+                        end
+                        break
+                    end
+                end
             end
         end
-    end
-
-    -- because vf searching is somewhat dangerous, we want to prevent
-    -- too liberal searching esp because we do a lookup on the current
-    -- path anyway; only tex (or any) is safe
-
-    for k, v in next, formats do
-        dangerous[k] = true
-    end
-    dangerous.tex = nil
-
-    -- the instance
-
-    local newinstance = {
-        rootpath        = '',
-        treepath        = '',
-        progname        = 'context',
-        engine          = 'luatex',
-        format          = '',
-        environment     = { },
-        variables       = { },
-        expansions      = { },
-        files           = { },
-        remap           = { },
-        configuration   = { },
-        setup           = { },
-        order           = { },
-        found           = { },
-        foundintrees    = { },
-        kpsevars        = { },
-        hashes          = { },
-        cnffiles        = { },
-        luafiles        = { },
-        lists           = { },
-        remember        = true,
-        diskcache       = true,
-        renewcache      = false,
-        scandisk        = true,
-        cachepath       = nil,
-        loaderror       = false,
-        sortdata        = false,
-        savelists       = true,
-        cleanuppaths    = true,
-        allresults      = false,
-        pattern         = nil, -- lists
-        data            = { }, -- only for loading
-        force_suffixes  = true,
-        fakepaths       = { },
-    }
-
-    local ne = newinstance.environment
-
-    for k,v in next, os.env do
-        ne[k] = resolvers.bare_variable(v)
-    end
-
-    return newinstance
-
-end
-
-function resolvers.setinstance(someinstance)
-    instance = someinstance
-    resolvers.instance = someinstance
-    return someinstance
-end
-
-function resolvers.reset()
-    return resolvers.setinstance(resolvers.newinstance())
-end
-
-local function reset_hashes()
-    instance.lists = { }
-    instance.found = { }
-end
-
-local function check_configuration() -- not yet ok, no time for debugging now
-    local ie, iv = instance.environment, instance.variables
-    local function fix(varname,default)
-        local proname = varname .. "." .. instance.progname or "crap"
-        local p, v = ie[proname], ie[varname] or iv[varname]
-        if not ((p and p ~= "") or (v and v ~= "")) then
-            iv[varname] = default -- or environment?
+        if not ownpath or ownpath == "" then
+            ownpath = "."
+            report_resolvers("forcing fallback ownpath .")
+        elseif trace_locating then
+            report_resolvers("using ownpath '%s'",ownpath)
         end
     end
-    local name = os.name
-    if name == "windows" then
-        fix("OSFONTDIR", "c:/windows/fonts//")
-    elseif name == "macosx" then
-        fix("OSFONTDIR", "$HOME/Library/Fonts//;/Library/Fonts//;/System/Library/Fonts//")
-    else
-        -- bad luck
-    end
-    fix("LUAINPUTS"   , ".;$TEXINPUTS;$TEXMFSCRIPTS") -- no progname, hm
-    -- this will go away some day
-    fix("FONTFEATURES", ".;$TEXMF/fonts/{data,fea}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
-    fix("FONTCIDMAPS" , ".;$TEXMF/fonts/{data,cid}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS")
-    --
-    fix("LUATEXLIBS"  , ".;$TEXMF/luatex/lua//")
+
+    environment.ownbin  = ownbin
+    environment.ownpath = ownpath
+
 end
 
-function resolvers.bare_variable(str) -- assumes str is a string
-    return (gsub(str,"\s*([\"\']?)(.+)%1\s*", "%2"))
+resolvers.ownpath = environment.ownpath
+
+function resolvers.getownpath()
+    return environment.ownpath
 end
+
+-- The self variables permit us to use only a few (or even no)
+-- environment variables.
+
+do
+
+    local ownpath = environment.ownpath or dir.current()
+
+    if ownpath then
+        ossetenv('SELFAUTOLOC',    file.collapse_path(ownpath))
+        ossetenv('SELFAUTODIR',    file.collapse_path(ownpath .. "/.."))
+        ossetenv('SELFAUTOPARENT', file.collapse_path(ownpath .. "/../.."))
+    else
+        report_resolvers("error: unable to locate ownpath")
+        os.exit()
+    end
+
+end
+
+-- The running os:
+
+-- todo: check is context sits here os.platform is more trustworthy
+-- that the bin check as mtx-update runs from another path
+
+local texos   = environment.texos   or osgetenv("TEXOS")
+local texmfos = environment.texmfos or osgetenv('SELFAUTODIR')
+
+if not texos or texos == "" then
+    texos = file.basename(texmfos)
+end
+
+ossetenv('TEXMFOS',       texmfos)      -- full bin path
+ossetenv('TEXOS',         texos)        -- partial bin parent
+ossetenv('SELFAUTOSYSTEM',os.platform)  -- bonus
+
+environment.texos   = texos
+environment.texmfos = texmfos
+
+-- The current root:
+
+local texroot = environment.texroot or osgetenv("TEXROOT")
+
+if not texroot or texroot == "" then
+    texroot = osgetenv('SELFAUTOPARENT')
+    ossetenv('TEXROOT',texroot)
+end
+
+environment.texroot = file.collapse_path(texroot)
+
+-- Tracing. Todo ...
 
 function resolvers.settrace(n) -- no longer number but: 'locating' or 'detail'
     if n then
@@ -8410,73 +8576,44 @@ function resolvers.settrace(n) -- no longer number but: 'locating' or 'detail'
     end
 end
 
-resolvers.settrace(os.getenv("MTX_INPUT_TRACE"))
+resolvers.settrace(osgetenv("MTX_INPUT_TRACE"))
 
-function resolvers.osenv(key)
-    local ie = instance.environment
-    local value = ie[key]
-    if value == nil then
-     -- local e = os.getenv(key)
-        local e = os.env[key]
-        if e == nil then
-         -- value = "" -- false
-        else
-            value = resolvers.bare_variable(e)
-        end
-        ie[key] = value
-    end
-    return value or ""
-end
+-- todo:
 
-function resolvers.env(key)
-    return instance.environment[key] or resolvers.osenv(key)
-end
+-- if profiler and osgetenv("MTX_PROFILE_RUN") == "YES" then
+--     profiler.start("luatex-profile.log")
+-- end
 
---
 
-local function expand_vars(lst) -- simple vars
-    local variables, env = instance.variables, resolvers.env
-    local function resolve(a)
-        return variables[a] or env(a)
-    end
-    for k=1,#lst do
-        lst[k] = gsub(lst[k],"%$([%a%d%_%-]+)",resolve)
-    end
-end
+end -- of closure
 
-local function expanded_var(var) -- simple vars
-    local function resolve(a)
-        return instance.variables[a] or resolvers.env(a)
-    end
-    return (gsub(var,"%$([%a%d%_%-]+)",resolve))
-end
+do -- create closure to overcome 200 locals limit
 
-local function entry(entries,name)
-    if name and (name ~= "") then
-        name = gsub(name,'%$','')
-        local result = entries[name..'.'..instance.progname] or entries[name]
-        if result then
-            return result
-        else
-            result = resolvers.env(name)
-            if result then
-                instance.variables[name] = result
-                resolvers.expand_variables()
-                return instance.expansions[name] or ""
-            end
-        end
-    end
-    return ""
-end
+if not modules then modules = { } end modules ['data-exp'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
 
-local function is_entry(entries,name)
-    if name and name ~= "" then
-        name = gsub(name,'%$','')
-        return (entries[name..'.'..instance.progname] or entries[name]) ~= nil
-    else
-        return false
-    end
-end
+local format, gsub, find, gmatch, lower = string.format, string.gsub, string.find, string.gmatch, string.lower
+local concat, sort = table.concat, table.sort
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local lpegCt, lpegCs, lpegP, lpegC, lpegS = lpeg.Ct, lpeg.Cs, lpeg.P, lpeg.C, lpeg.S
+local type, next = type, next
+
+local ostype = os.type
+local collapse_path = file.collapse_path
+
+local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
+local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
+
+local report_resolvers = logs.new("resolvers")
+
+-- As this bit of code is somewhat special it gets its own module. After
+-- all, when working on the main resolver code, I don't want to scroll
+-- past this every time.
 
 -- {a,b,c,d}
 -- a,b,c/{p,q,r},d
@@ -8497,6 +8634,8 @@ end
 -- applying lpeg, but experiments with lpeg parsing this proved not to
 -- work that well; the parsing is ok, but dealing with the resulting
 -- table is a pain because we need to work inside-out recursively
+
+local dummy_path_expr = "^!*unset/*$"
 
 local function do_first(a,b)
     local t = { }
@@ -8524,17 +8663,21 @@ local function do_three(a,b,c)
     return a .. b.. c
 end
 
-local function splitpathexpr(str, t, validate)
+local stripper_1 = lpeg.stripper("{}@")
+
+local replacer_1 = lpeg.replacer {
+    { ",}", ",@}" },
+    { "{,", "{@," },
+}
+
+local function splitpathexpr(str, newlist, validate)
     -- no need for further optimization as it is only called a
     -- few times, we can use lpeg for the sub
     if trace_expansions then
-        logs.report("fileio","expanding variable '%s'",str)
+        report_resolvers("expanding variable '%s'",str)
     end
-    t = t or { }
-    str = gsub(str,",}",",@}")
-    str = gsub(str,"{,","{@,")
- -- str = "@" .. str .. "@"
-    local ok, done
+    local t, ok, done = newlist or { }, false, false
+    str = lpegmatch(replacer_1,str)
     while true do
         done = false
         while true do
@@ -8553,8 +8696,7 @@ local function splitpathexpr(str, t, validate)
         if ok > 0 then done = true end
         if not done then break end
     end
-    str = gsub(str,"[{}]", "")
-    str = gsub(str,"@","")
+    str = lpegmatch(stripper_1,str)
     if validate then
         for s in gmatch(str,"[^,]+") do
             s = validate(s)
@@ -8567,13 +8709,24 @@ local function splitpathexpr(str, t, validate)
     end
     if trace_expansions then
         for k=1,#t do
-            logs.report("fileio","% 4i: %s",k,t[k])
+            report_resolvers("% 4i: %s",k,t[k])
         end
     end
     return t
 end
 
-local function expanded_path_from_list(pathlist) -- maybe not a list, just a path
+local function validate(s)
+    local isrecursive = find(s,"//$")
+    s = collapse_path(s)
+    if isrecursive then
+        s = s .. "//"
+    end
+    return s ~= "" and not find(s,dummy_path_expr) and s
+end
+
+resolvers.validated_path = validate -- keeps the trailing //
+
+function resolvers.expanded_path_from_list(pathlist) -- maybe not a list, just a path
     -- a previous version fed back into pathlist
     local newlist, ok = { }, false
     for k=1,#pathlist do
@@ -8583,17 +8736,13 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
         end
     end
     if ok then
-        local function validate(s)
-            s = file.collapse_path(s)
-            return s ~= "" and not find(s,dummy_path_expr) and s
-        end
         for k=1,#pathlist do
             splitpathexpr(pathlist[k],newlist,validate)
         end
     else
         for k=1,#pathlist do
             for p in gmatch(pathlist[k],"([^,]+)") do
-                p = file.collapse_path(p)
+                p = validate(p)
                 if p ~= "" then newlist[#newlist+1] = p end
             end
         end
@@ -8601,289 +8750,1221 @@ local function expanded_path_from_list(pathlist) -- maybe not a list, just a pat
     return newlist
 end
 
--- we follow a rather traditional approach:
---
--- (1) texmf.cnf given in TEXMFCNF
--- (2) texmf.cnf searched in default variable
---
--- also we now follow the stupid route: if not set then just assume *one*
--- cnf file under texmf (i.e. distribution)
+-- We also put some cleanup code here.
 
-local args = environment and environment.original_arguments or arg -- this needs a cleanup
+local cleanup -- used recursively
 
-resolvers.ownbin = resolvers.ownbin or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
-resolvers.ownbin = gsub(resolvers.ownbin,"\\","/")
+cleanup = lpeg.replacer {
+    { "!",  "" },
+    { "\\", "/" },
+    { "~" , function() return lpegmatch(cleanup,environment.homedir) end },
+}
 
-function resolvers.getownpath()
-    local ownpath = resolvers.ownpath or os.selfdir
-    if not ownpath or ownpath == "" or ownpath == "unset" then
-        ownpath = args[-1] or arg[-1]
-        ownpath = ownpath and file.dirname(gsub(ownpath,"\\","/"))
-        if not ownpath or ownpath == "" then
-            ownpath = args[-0] or arg[-0]
-            ownpath = ownpath and file.dirname(gsub(ownpath,"\\","/"))
-        end
-        local binary = resolvers.ownbin
-        if not ownpath or ownpath == "" then
-            ownpath = ownpath and file.dirname(binary)
-        end
-        if not ownpath or ownpath == "" then
-            if os.binsuffix ~= "" then
-                binary = file.replacesuffix(binary,os.binsuffix)
-            end
-            for p in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
-                local b = file.join(p,binary)
-                if lfs.isfile(b) then
-                    -- we assume that after changing to the path the currentdir function
-                    -- resolves to the real location and use this side effect here; this
-                    -- trick is needed because on the mac installations use symlinks in the
-                    -- path instead of real locations
-                    local olddir = lfs.currentdir()
-                    if lfs.chdir(p) then
-                        local pp = lfs.currentdir()
-                        if trace_locating and p ~= pp then
-                            logs.report("fileio","following symlink '%s' to '%s'",p,pp)
-                        end
-                        ownpath = pp
-                        lfs.chdir(olddir)
-                    else
-                        if trace_locating then
-                            logs.report("fileio","unable to check path '%s'",p)
-                        end
-                        ownpath =  p
+function resolvers.clean_path(str)
+    return str and lpegmatch(cleanup,str)
+end
+
+-- This one strips quotes and funny tokens.
+
+
+local expandhome = lpegP("~") / "$HOME" -- environment.homedir
+
+local dodouble = lpegP('"')/"" * (expandhome + (1 - lpegP('"')))^0 * lpegP('"')/""
+local dosingle = lpegP("'")/"" * (expandhome + (1 - lpegP("'")))^0 * lpegP("'")/""
+local dostring =                 (expandhome +  1              )^0
+
+local stripper = lpegCs(
+    lpegpatterns.unspacer * (dosingle + dodouble + dostring) * lpegpatterns.unspacer
+)
+
+function resolvers.checked_variable(str) -- assumes str is a string
+    return lpegmatch(stripper,str) or str
+end
+
+-- The path splitter:
+
+-- A config (optionally) has the paths split in tables. Internally
+-- we join them and split them after the expansion has taken place. This
+-- is more convenient.
+
+
+local cache = { }
+
+local splitter = lpegCt(lpeg.splitat(lpegS(ostype == "windows" and ";" or ":;"))) -- maybe add ,
+
+local function split_configuration_path(str) -- beware, this can be either a path or a { specification }
+    if str then
+        local found = cache[str]
+        if not found then
+            if str == "" then
+                found = { }
+            else
+                str = gsub(str,"\\","/")
+                local split = lpegmatch(splitter,str)
+                found = { }
+                for i=1,#split do
+                    local s = split[i]
+                    if not find(s,"^{*unset}*") then
+                        found[#found+1] = s
                     end
-                    break
+                end
+                if trace_expansions then
+                    report_resolvers("splitting path specification '%s'",str)
+                    for k=1,#found do
+                        report_resolvers("% 4i: %s",k,found[k])
+                    end
+                end
+                cache[str] = found
+            end
+        end
+        return found
+    end
+end
+
+resolvers.split_configuration_path = split_configuration_path
+
+function resolvers.split_path(str)
+    if type(str) == 'table' then
+        return str
+    else
+        return split_configuration_path(str)
+    end
+end
+
+function resolvers.join_path(str)
+    if type(str) == 'table' then
+        return file.join_path(str)
+    else
+        return str
+    end
+end
+
+-- The next function scans directories and returns a hash where the
+-- entries are either strings or tables.
+
+-- starting with . or .. etc or funny char
+
+
+
+
+local weird = lpegP(".")^1 + lpeg.anywhere(lpegS("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+
+function resolvers.scan_files(specification)
+    if trace_locating then
+        report_resolvers("scanning path '%s'",specification)
+    end
+    local attributes, directory = lfs.attributes, lfs.dir
+    local files = { __path__ = specification }
+    local n, m, r = 0, 0, 0
+    local function scan(spec,path)
+        local full = (path == "" and spec) or (spec .. path .. '/')
+        local dirs = { }
+        for name in directory(full) do
+            if not lpegmatch(weird,name) then
+                local mode = attributes(full..name,'mode')
+                if mode == 'file' then
+                    n = n + 1
+                    local f = files[name]
+                    if f then
+                        if type(f) == 'string' then
+                            files[name] = { f, path }
+                        else
+                            f[#f+1] = path
+                        end
+                    else -- probably unique anyway
+                        files[name] = path
+                        local lower = lower(name)
+                        if name ~= lower then
+                            files["remap:"..lower] = name
+                            r = r + 1
+                        end
+                    end
+                elseif mode == 'directory' then
+                    m = m + 1
+                    if path ~= "" then
+                        dirs[#dirs+1] = path..'/'..name
+                    else
+                        dirs[#dirs+1] = name
+                    end
                 end
             end
         end
-        if not ownpath or ownpath == "" then
-            ownpath = "."
-            logs.report("fileio","forcing fallback ownpath .")
-        elseif trace_locating then
-            logs.report("fileio","using ownpath '%s'",ownpath)
+        if #dirs > 0 then
+            sort(dirs)
+            for i=1,#dirs do
+                scan(spec,dirs[i])
+            end
         end
     end
-    resolvers.ownpath = ownpath
-    function resolvers.getownpath()
-        return resolvers.ownpath
+    scan(specification .. '/',"")
+    files.__files__, files.__directories__, files.__remappings__ = n, m, r
+    if trace_locating then
+        report_resolvers("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
-    return ownpath
+    return files
 end
 
-local own_places = { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF" }
 
-local function identify_own()
-    local ownpath = resolvers.getownpath() or dir.current()
-    local ie = instance.environment
-    if ownpath then
-        if resolvers.env('SELFAUTOLOC')    == "" then os.env['SELFAUTOLOC']    = file.collapse_path(ownpath) end
-        if resolvers.env('SELFAUTODIR')    == "" then os.env['SELFAUTODIR']    = file.collapse_path(ownpath .. "/..") end
-        if resolvers.env('SELFAUTOPARENT') == "" then os.env['SELFAUTOPARENT'] = file.collapse_path(ownpath .. "/../..") end
-    else
-        logs.report("fileio","error: unable to locate ownpath")
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['data-env'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local formats      = { }  resolvers.formats      = formats
+local suffixes     = { }  resolvers.suffixes     = suffixes
+local dangerous    = { }  resolvers.dangerous    = dangerous
+local suffixmap    = { }  resolvers.suffixmap    = suffixmap
+local alternatives = { }  resolvers.alternatives = alternatives
+
+formats['afm']          = 'AFMFONTS'       suffixes['afm']          = { 'afm' }
+formats['enc']          = 'ENCFONTS'       suffixes['enc']          = { 'enc' }
+formats['fmt']          = 'TEXFORMATS'     suffixes['fmt']          = { 'fmt' }
+formats['map']          = 'TEXFONTMAPS'    suffixes['map']          = { 'map' }
+formats['mp']           = 'MPINPUTS'       suffixes['mp']           = { 'mp' }
+formats['ocp']          = 'OCPINPUTS'      suffixes['ocp']          = { 'ocp' }
+formats['ofm']          = 'OFMFONTS'       suffixes['ofm']          = { 'ofm', 'tfm' }
+formats['otf']          = 'OPENTYPEFONTS'  suffixes['otf']          = { 'otf' }
+formats['opl']          = 'OPLFONTS'       suffixes['opl']          = { 'opl' }
+formats['otp']          = 'OTPINPUTS'      suffixes['otp']          = { 'otp' }
+formats['ovf']          = 'OVFFONTS'       suffixes['ovf']          = { 'ovf', 'vf' }
+formats['ovp']          = 'OVPFONTS'       suffixes['ovp']          = { 'ovp' }
+formats['tex']          = 'TEXINPUTS'      suffixes['tex']          = { 'tex' }
+formats['tfm']          = 'TFMFONTS'       suffixes['tfm']          = { 'tfm' }
+formats['ttf']          = 'TTFONTS'        suffixes['ttf']          = { 'ttf', 'ttc', 'dfont' }
+formats['pfb']          = 'T1FONTS'        suffixes['pfb']          = { 'pfb', 'pfa' }
+formats['vf']           = 'VFFONTS'        suffixes['vf']           = { 'vf' }
+formats['fea']          = 'FONTFEATURES'   suffixes['fea']          = { 'fea' }
+formats['cid']          = 'FONTCIDMAPS'    suffixes['cid']          = { 'cid', 'cidmap' }
+formats['texmfscripts'] = 'TEXMFSCRIPTS'   suffixes['texmfscripts'] = { 'rb', 'pl', 'py' }
+formats['lua']          = 'LUAINPUTS'      suffixes['lua']          = { 'lua', 'luc', 'tma', 'tmc' }
+formats['lib']          = 'CLUAINPUTS'     suffixes['lib']          = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
+
+-- backward compatible ones
+
+alternatives['map files']            = 'map'
+alternatives['enc files']            = 'enc'
+alternatives['cid maps']             = 'cid' -- great, why no cid files
+alternatives['font feature files']   = 'fea' -- and fea files here
+alternatives['opentype fonts']       = 'otf'
+alternatives['truetype fonts']       = 'ttf'
+alternatives['truetype collections'] = 'ttc'
+alternatives['truetype dictionary']  = 'dfont'
+alternatives['type1 fonts']          = 'pfb'
+
+--[[ldx--
+<p>If you wondered about some of the previous mappings, how about
+the next bunch:</p>
+--ldx]]--
+
+-- kpse specific ones (a few omitted) .. we only add them for locating
+-- files that we don't use anyway
+
+formats['base']                      = 'MFBASES'         suffixes['base']                     = { 'base', 'bas' }
+formats['bib']                       = ''                suffixes['bib']                      = { 'bib' }
+formats['bitmap font']               = ''                suffixes['bitmap font']              = { }
+formats['bst']                       = ''                suffixes['bst']                      = { 'bst' }
+formats['cmap files']                = 'CMAPFONTS'       suffixes['cmap files']               = { 'cmap' }
+formats['cnf']                       = ''                suffixes['cnf']                      = { 'cnf' }
+formats['cweb']                      = ''                suffixes['cweb']                     = { 'w', 'web', 'ch' }
+formats['dvips config']              = ''                suffixes['dvips config']             = { }
+formats['gf']                        = ''                suffixes['gf']                       = { '<resolution>gf' }
+formats['graphic/figure']            = ''                suffixes['graphic/figure']           = { 'eps', 'epsi' }
+formats['ist']                       = ''                suffixes['ist']                      = { 'ist' }
+formats['lig files']                 = 'LIGFONTS'        suffixes['lig files']                = { 'lig' }
+formats['ls-R']                      = ''                suffixes['ls-R']                     = { }
+formats['mem']                       = 'MPMEMS'          suffixes['mem']                      = { 'mem' }
+formats['MetaPost support']          = ''                suffixes['MetaPost support']         = { }
+formats['mf']                        = 'MFINPUTS'        suffixes['mf']                       = { 'mf' }
+formats['mft']                       = ''                suffixes['mft']                      = { 'mft' }
+formats['misc fonts']                = ''                suffixes['misc fonts']               = { }
+formats['other text files']          = ''                suffixes['other text files']         = { }
+formats['other binary files']        = ''                suffixes['other binary files']       = { }
+formats['pdftex config']             = 'PDFTEXCONFIG'    suffixes['pdftex config']            = { }
+formats['pk']                        = ''                suffixes['pk']                       = { '<resolution>pk' }
+formats['PostScript header']         = 'TEXPSHEADERS'    suffixes['PostScript header']        = { 'pro' }
+formats['sfd']                       = 'SFDFONTS'        suffixes['sfd']                      = { 'sfd' }
+formats['TeX system documentation']  = ''                suffixes['TeX system documentation'] = { }
+formats['TeX system sources']        = ''                suffixes['TeX system sources']       = { }
+formats['Troff fonts']               = ''                suffixes['Troff fonts']              = { }
+formats['type42 fonts']              = 'T42FONTS'        suffixes['type42 fonts']             = { }
+formats['web']                       = ''                suffixes['web']                      = { 'web', 'ch' }
+formats['web2c files']               = 'WEB2C'           suffixes['web2c files']              = { }
+formats['fontconfig files']          = 'FONTCONFIG_PATH' suffixes['fontconfig files']         = { } -- not unique
+
+alternatives['subfont definition files'] = 'sfd'
+
+-- A few accessors, mostly for command line tool.
+
+function resolvers.suffix_of_format(str)
+    local s = suffixes[str]
+    return s and s[1] or ""
+end
+
+function resolvers.suffixes_of_format(str)
+    return suffixes[str] or { }
+end
+
+-- As we don't register additional suffixes anyway, we can as well
+-- freeze the reverse map here.
+
+for name, suffixlist in next, suffixes do
+    for i=1,#suffixlist do
+        suffixmap[suffixlist[i]] = name
+    end
+end
+
+setmetatable(suffixes, { __newindex = function(suffixes,name,suffixlist)
+    rawset(suffixes,name,suffixlist)
+    suffixes[name] = suffixlist
+    for i=1,#suffixlist do
+        suffixmap[suffixlist[i]] = name
+    end
+end } )
+
+for name, format in next, formats do
+    dangerous[name] = true
+end
+
+-- because vf searching is somewhat dangerous, we want to prevent
+-- too liberal searching esp because we do a lookup on the current
+-- path anyway; only tex (or any) is safe
+
+dangerous.tex = nil
+
+
+-- more helpers
+
+function resolvers.format_of_var(str)
+    return formats[str] or formats[alternatives[str]] or ''
+end
+
+function resolvers.format_of_suffix(str) -- of file
+    return suffixmap[file.extname(str)] or 'tex'
+end
+
+function resolvers.variable_of_format(str)
+    return formats[str] or formats[alternatives[str]] or ''
+end
+
+function resolvers.var_of_format_or_suffix(str)
+    local v = formats[str]
+    if v then
+        return v
+    end
+    v = formats[alternatives[str]]
+    if v then
+        return v
+    end
+    v = suffixmap[fileextname(str)]
+    if v then
+        return formats[v]
+    end
+    return ''
+end
+
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['data-tmp'] = {
+    version   = 1.100,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+--[[ldx--
+<p>This module deals with caching data. It sets up the paths and
+implements loaders and savers for tables. Best is to set the
+following variable. When not set, the usual paths will be
+checked. Personally I prefer the (users) temporary path.</p>
+
+</code>
+TEXMFCACHE=$TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
+</code>
+
+<p>Currently we do no locking when we write files. This is no real
+problem because most caching involves fonts and the chance of them
+being written at the same time is small. We also need to extend
+luatools with a recache feature.</p>
+--ldx]]--
+
+local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
+local mkdirs, isdir = dir.mkdirs, lfs.isdir
+
+local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
+
+local report_cache = logs.new("cache")
+
+local report_resolvers = logs.new("resolvers")
+
+caches = caches or { }
+
+caches.base      = caches.base or "luatex-cache"
+caches.more      = caches.more or "context"
+caches.direct    = false -- true is faster but may need huge amounts of memory
+caches.tree      = false
+caches.force     = true
+caches.ask       = false
+caches.defaults  = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
+
+local writable, readables, usedreadables = nil, { }, { }
+
+-- we could use a metatable for writable and readable but not yet
+
+local function identify()
+    -- Combining the loops makes it messy. First we check the format cache path
+    -- and when the last component is not present we try to create it.
+    local texmfcaches = resolvers.clean_path_list("TEXMFCACHE")
+    if texmfcaches then
+        for k=1,#texmfcaches do
+            local cachepath = texmfcaches[k]
+            if cachepath ~= "" then
+                cachepath = resolvers.clean_path(cachepath)
+                cachepath = file.collapse_path(cachepath)
+                local valid = isdir(cachepath)
+                if valid then
+                    if file.isreadable(cachepath) then
+                        readables[#readables+1] = cachepath
+                        if not writable and file.iswritable(cachepath) then
+                            writable = cachepath
+                        end
+                    end
+                elseif not writable and caches.force then
+                    local cacheparent = file.dirname(cachepath)
+                    if file.iswritable(cacheparent) then
+                        if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
+                            mkdirs(cachepath)
+                            if isdir(cachepath) and file.iswritable(cachepath) then
+                                report_cache("created: %s",cachepath)
+                                writable = cachepath
+                                readables[#readables+1] = cachepath
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    -- As a last resort we check some temporary paths but this time we don't
+    -- create them.
+    local texmfcaches = caches.defaults
+    if texmfcaches then
+        for k=1,#texmfcaches do
+            local cachepath = texmfcaches[k]
+            cachepath = resolvers.getenv(cachepath)
+            if cachepath ~= "" then
+                cachepath = resolvers.clean_path(cachepath)
+                local valid = isdir(cachepath)
+                if valid and file.isreadable(cachepath) then
+                    if not writable and file.iswritable(cachepath) then
+                        readables[#readables+1] = cachepath
+                        writable = cachepath
+                        break
+                    end
+                end
+            end
+        end
+    end
+    -- Some extra checking. If we have no writable or readable path then we simply
+    -- quit.
+    if not writable then
+        report_cache("fatal error: there is no valid writable cache path defined")
+        os.exit()
+    elseif #readables == 0 then
+        report_cache("fatal error: there is no valid readable cache path defined")
         os.exit()
     end
-    if resolvers.env('TEXMFCNF') == "" then os.env['TEXMFCNF'] = resolvers.cnfdefault end
-    if resolvers.env('TEXOS')    == "" then os.env['TEXOS']    = resolvers.env('SELFAUTODIR') end
-    if resolvers.env('TEXROOT')  == "" then os.env['TEXROOT']  = resolvers.env('SELFAUTOPARENT') end
-    if trace_locating then
-        for i=1,#own_places do
-            local v = own_places[i]
-            logs.report("fileio","variable '%s' set to '%s'",v,resolvers.env(v) or "unknown")
-        end
-    end
-    identify_own = function() end
-end
-
-function resolvers.identify_cnf()
-    if #instance.cnffiles == 0 then
-        -- fallback
-        identify_own()
-        -- the real search
-        resolvers.expand_variables()
-        local t = resolvers.split_path(resolvers.env('TEXMFCNF'))
-        t = expanded_path_from_list(t)
-        expand_vars(t) -- redundant
-        local function locate(filename,list)
-            for i=1,#t do
-                local ti = t[i]
-                local texmfcnf = file.collapse_path(file.join(ti,filename))
-                if lfs.isfile(texmfcnf) then
-                    list[#list+1] = texmfcnf
-                end
-            end
-        end
-        locate(resolvers.luaname,instance.luafiles)
-        locate(resolvers.cnfname,instance.cnffiles)
-    end
-end
-
-local function load_cnf_file(fname)
-    fname = resolvers.clean_path(fname)
-    local lname = file.replacesuffix(fname,'lua')
-    if lfs.isfile(lname) then
-        local dname = file.dirname(fname) -- fname ?
-        if not instance.configuration[dname] then
-            resolvers.load_data(dname,'configuration',lname and file.basename(lname))
-            instance.order[#instance.order+1] = instance.configuration[dname]
+    -- why here
+    writable = dir.expand_name(resolvers.clean_path(writable)) -- just in case
+    -- moved here
+    local base, more, tree = caches.base, caches.more, caches.tree or caches.treehash() -- we have only one writable tree
+    if tree then
+        caches.tree = tree
+        writable = mkdirs(writable,base,more,tree)
+        for i=1,#readables do
+            readables[i] = file.join(readables[i],base,more,tree)
         end
     else
-        f = io.open(fname)
-        if f then
+        writable = mkdirs(writable,base,more)
+        for i=1,#readables do
+            readables[i] = file.join(readables[i],base,more)
+        end
+    end
+    -- end
+    if trace_cache then
+        for i=1,#readables do
+            report_cache("using readable path '%s' (order %s)",readables[i],i)
+        end
+        report_cache("using writable path '%s'",writable)
+    end
+    identify = function()
+        return writable, readables
+    end
+    return writable, readables
+end
+
+function caches.usedpaths()
+    local writable, readables = identify()
+    if #readables > 1 then
+        local result = { }
+        for i=1,#readables do
+            local readable = readables[i]
+            if usedreadables[i] or readable == writable then
+                result[#result+1] = format("readable: '%s' (order %s)",readable,i)
+            end
+        end
+        result[#result+1] = format("writable: '%s'",writable)
+        return result
+    else
+        return writable
+    end
+end
+
+function caches.configfiles()
+    return table.concat(resolvers.instance.specification,";")
+end
+
+function caches.hashed(tree)
+    return md5.hex(gsub(lower(tree),"[\\\/]+","/"))
+end
+
+function caches.treehash()
+    local tree = caches.configfiles()
+    if not tree or tree == "" then
+        return false
+    else
+        return caches.hashed(tree)
+    end
+end
+
+local r_cache, w_cache = { }, { } -- normally w in in r but who cares
+
+local function getreadablepaths(...) -- we can optimize this as we have at most 2 tags
+    local tags = { ... }
+    local hash = concat(tags,"/")
+    local done = r_cache[hash]
+    if not done then
+        local writable, readables = identify() -- exit if not found
+        if #tags > 0 then
+            done = { }
+            for i=1,#readables do
+                done[i] = file.join(readables[i],...)
+            end
+        else
+            done = readables
+        end
+        r_cache[hash] = done
+    end
+    return done
+end
+
+local function getwritablepath(...)
+    local tags = { ... }
+    local hash = concat(tags,"/")
+    local done = w_cache[hash]
+    if not done then
+        local writable, readables = identify() -- exit if not found
+        if #tags > 0 then
+            done = mkdirs(writable,...)
+        else
+            done = writable
+        end
+        w_cache[hash] = done
+    end
+    return done
+end
+
+caches.getreadablepaths = getreadablepaths
+caches.getwritablepath  = getwritablepath
+
+function caches.getfirstreadablefile(filename,...)
+    local rd = getreadablepaths(...)
+    for i=1,#rd do
+        local path = rd[i]
+        local fullname = file.join(path,filename)
+        if file.isreadable(fullname) then
+            usedreadables[i] = true
+            return fullname, path
+        end
+    end
+    return caches.setfirstwritablefile(filename,...)
+end
+
+function caches.setfirstwritablefile(filename,...)
+    local wr = getwritablepath(...)
+    local fullname = file.join(wr,filename)
+    return fullname, wr
+end
+
+function caches.define(category,subcategory) -- for old times sake
+    return function()
+        return getwritablepath(category,subcategory)
+    end
+end
+
+function caches.setluanames(path,name)
+    return path .. "/" .. name .. ".tma", path .. "/" .. name .. ".tmc"
+end
+
+function caches.loaddata(readables,name)
+    if type(readables) == "string" then
+        readables = { readables }
+    end
+    for i=1,#readables do
+        local path = readables[i]
+        local tmaname, tmcname = caches.setluanames(path,name)
+        local loader = loadfile(tmcname) or loadfile(tmaname)
+        if loader then
+            loader = loader()
+            collectgarbage("step")
+            return loader
+        end
+    end
+    return false
+end
+
+function caches.iswritable(filepath,filename)
+    local tmaname, tmcname = caches.setluanames(filepath,filename)
+    return file.iswritable(tmaname)
+end
+
+function caches.savedata(filepath,filename,data,raw)
+    local tmaname, tmcname = caches.setluanames(filepath,filename)
+    local reduce, simplify = true, true
+    if raw then
+        reduce, simplify = false, false
+    end
+    data.cache_uuid = os.uuid()
+    if caches.direct then
+        file.savedata(tmaname, table.serialize(data,'return',false,true,false)) -- no hex
+    else
+        table.tofile(tmaname, data,'return',false,true,false) -- maybe not the last true
+    end
+    local cleanup = resolvers.boolean_variable("PURGECACHE", false)
+    local strip = resolvers.boolean_variable("LUACSTRIP", true)
+    utils.lua.compile(tmaname, tmcname, cleanup, strip)
+end
+
+-- moved from data-res:
+
+local content_state = { }
+
+function caches.contentstate()
+    return content_state or { }
+end
+
+function caches.loadcontent(cachename,dataname)
+    local name = caches.hashed(cachename)
+    local full, path = caches.getfirstreadablefile(name ..".lua","trees")
+    local filename = file.join(path,name)
+    local blob = loadfile(filename .. ".luc") or loadfile(filename .. ".lua")
+    if blob then
+        local data = blob()
+        if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
+            content_state[#content_state+1] = data.uuid
             if trace_locating then
-                logs.report("fileio","loading configuration file %s", fname)
+                report_resolvers("loading '%s' for '%s' from '%s'",dataname,cachename,filename)
             end
-            local line, data, n, k, v
-            local dname = file.dirname(fname)
-            if not instance.configuration[dname] then
-                instance.configuration[dname] = { }
-                instance.order[#instance.order+1] = instance.configuration[dname]
+            return data.content
+        elseif trace_locating then
+            report_resolvers("skipping '%s' for '%s' from '%s'",dataname,cachename,filename)
+        end
+    elseif trace_locating then
+        report_resolvers("skipping '%s' for '%s' from '%s'",dataname,cachename,filename)
+    end
+end
+
+function caches.collapsecontent(content)
+    for k, v in next, content do
+        if type(v) == "table" and #v == 1 then
+            content[k] = v[1]
+        end
+    end
+end
+
+function caches.savecontent(cachename,dataname,content)
+    local name = caches.hashed(cachename)
+    local full, path = caches.setfirstwritablefile(name ..".lua","trees")
+    local filename = file.join(path,name) -- is full
+    local luaname, lucname = filename .. ".lua", filename .. ".luc"
+    if trace_locating then
+        report_resolvers("preparing '%s' for '%s'",dataname,cachename)
+    end
+    local data = {
+        type    = dataname,
+        root    = cachename,
+        version = resolvers.cacheversion,
+        date    = os.date("%Y-%m-%d"),
+        time    = os.date("%H:%M:%S"),
+        content = content,
+        uuid    = os.uuid(),
+    }
+    local ok = io.savedata(luaname,table.serialize(data,true))
+    if ok then
+        if trace_locating then
+            report_resolvers("category '%s', cachename '%s' saved in '%s'",dataname,cachename,luaname)
+        end
+        if utils.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
+            if trace_locating then
+                report_resolvers("'%s' compiled to '%s'",dataname,lucname)
             end
-            local data = instance.configuration[dname]
-            while true do
-                local line, n = f:read(), 0
-                if line then
-                    while true do -- join lines
-                        line, n = gsub(line,"\\%s*$", "")
-                        if n > 0 then
-                            line = line .. f:read()
-                        else
+            return true
+        else
+            if trace_locating then
+                report_resolvers("compiling failed for '%s', deleting file '%s'",dataname,lucname)
+            end
+            os.remove(lucname)
+        end
+    elseif trace_locating then
+        report_resolvers("unable to save '%s' in '%s' (access error)",dataname,luaname)
+    end
+end
+
+
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['data-met'] = {
+    version   = 1.100,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local find = string.find
+
+local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
+
+local report_resolvers = logs.new("resolvers")
+
+resolvers.locators     = { notfound = { nil } }  -- locate databases
+resolvers.hashers      = { notfound = { nil } }  -- load databases
+resolvers.generators   = { notfound = { nil } }  -- generate databases
+
+function resolvers.splitmethod(filename)
+    if not filename then
+        return { } -- safeguard
+    elseif type(filename) == "table" then
+        return filename -- already split
+    elseif not find(filename,"://") then
+        return { scheme="file", path = filename, original = filename } -- quick hack
+    else
+        return url.hashed(filename)
+    end
+end
+
+function resolvers.methodhandler(what, filename, filetype) -- ...
+    filename = file.collapse_path(filename)
+    local specification = (type(filename) == "string" and resolvers.splitmethod(filename)) or filename -- no or { }, let it bomb
+    local scheme = specification.scheme
+    local resolver = resolvers[what]
+    if resolver[scheme] then
+        if trace_locating then
+            report_resolvers("handler '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
+        end
+        return resolver[scheme](filename,filetype)
+    else
+        return resolver.tex(filename,filetype) -- todo: specification
+    end
+end
+
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['data-res'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- In practice we will work within one tds tree, but i want to keep
+-- the option open to build tools that look at multiple trees, which is
+-- why we keep the tree specific data in a table. We used to pass the
+-- instance but for practical purposes we now avoid this and use a
+-- instance variable. We always have one instance active (sort of global).
+
+-- todo: cache:/// home:///
+
+local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
+local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
+local next, type = next, type
+
+local lpegP, lpegS, lpegR, lpegC, lpegCc, lpegCs, lpegCt = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+
+local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
+local collapse_path = file.collapse_path
+
+local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
+local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
+local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
+
+local report_resolvers = logs.new("resolvers")
+
+local expanded_path_from_list  = resolvers.expanded_path_from_list
+local checked_variable         = resolvers.checked_variable
+local split_configuration_path = resolvers.split_configuration_path
+
+local ostype, osname, osenv, ossetenv, osgetenv = os.type, os.name, os.env, os.setenv, os.getenv
+
+resolvers.cacheversion = '1.0.1'
+resolvers.configbanner = ''
+resolvers.homedir      = environment.homedir
+resolvers.criticalvars = { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF", "TEXMF", "TEXOS" }
+resolvers.luacnfspec   = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}' -- rubish path
+resolvers.luacnfname   = 'texmfcnf.lua'
+resolvers.luacnfstate  = "unknown"
+
+local unset_variable  = "unset"
+
+local formats      = resolvers.formats
+local suffixes     = resolvers.suffixes
+local dangerous    = resolvers.dangerous
+local suffixmap    = resolvers.suffixmap
+local alternatives = resolvers.alternatives
+
+resolvers.instance = resolvers.instance or nil -- the current one (slow access)
+local     instance = resolvers.instance or nil -- the current one (fast access)
+
+function resolvers.newinstance()
+
+    local newinstance = {
+        progname        = 'context',
+        engine          = 'luatex',
+        format          = '',
+        environment     = { },
+        variables       = { },
+        expansions      = { },
+        files           = { },
+        setups          = { },
+        order           = { },
+        found           = { },
+        foundintrees    = { },
+        origins         = { },
+        hashes          = { },
+        specification   = { },
+        lists           = { },
+        remember        = true,
+        diskcache       = true,
+        renewcache      = false,
+        loaderror       = false,
+        savelists       = true,
+        allresults      = false,
+        pattern         = nil, -- lists
+        data            = { }, -- only for loading
+        force_suffixes  = true,
+        fakepaths       = { },
+    }
+
+    local ne = newinstance.environment
+
+    for k, v in next, osenv do
+        ne[upper(k)] = checked_variable(v)
+    end
+
+    return newinstance
+
+end
+
+function resolvers.setinstance(someinstance)
+    instance = someinstance
+    resolvers.instance = someinstance
+    return someinstance
+end
+
+function resolvers.reset()
+    return resolvers.setinstance(resolvers.newinstance())
+end
+
+local function reset_hashes()
+    instance.lists = { }
+    instance.found = { }
+end
+
+function resolvers.setenv(key,value)
+    if instance then
+        instance.environment[key] = value
+        ossetenv(key,value)
+    end
+end
+
+function resolvers.getenv(key)
+    local value = instance.environment[key]
+    if value and value ~= "" then
+        return value
+    else
+        local e = osgetenv(key)
+        return e ~= nil and e ~= "" and checked_variable(e) or ""
+    end
+end
+
+resolvers.env = resolvers.getenv
+
+local function expand_vars(lst) -- simple vars
+    local variables, getenv = instance.variables, resolvers.getenv
+    local function resolve(a)
+        local va = variables[a] or ""
+        return (va ~= "" and va) or getenv(a) or ""
+    end
+    for k=1,#lst do
+        local var = lst[k]
+        var = gsub(var,"%$([%a%d%_%-]+)",resolve)
+        var = gsub(var,";+",";")
+        var = gsub(var,";[!{}/\\]+;",";")
+        lst[k] = var
+    end
+end
+
+local function resolve(key)
+    local value = instance.variables[key]
+    if value and value ~= "" then
+        return value
+    end
+    local value = instance.environment[key]
+    if value and value ~= "" then
+        return value
+    end
+    local e = osgetenv(key)
+    return e ~= nil and e ~= "" and checked_variable(e) or ""
+end
+
+local function expanded_var(var) -- simple vars
+    var = gsub(var,"%$([%a%d%_%-]+)",resolve)
+    var = gsub(var,";+",";")
+    var = gsub(var,";[!{}/\\]+;",";")
+    return var
+end
+
+local function entry(entries,name)
+    if name and name ~= "" then
+        name = gsub(name,'%$','')
+        local result = entries[name..'.'..instance.progname] or entries[name]
+        if result then
+            return result
+        else
+            result = resolvers.getenv(name)
+            if result then
+                instance.variables[name] = result
+                resolvers.expand_variables()
+                return instance.expansions[name] or ""
+            end
+        end
+    end
+    return ""
+end
+
+local function is_entry(entries,name)
+    if name and name ~= "" then
+        name = gsub(name,'%$','')
+        return (entries[name..'.'..instance.progname] or entries[name]) ~= nil
+    else
+        return false
+    end
+end
+
+function resolvers.report_critical_variables()
+    if trace_locating then
+        for i=1,#resolvers.criticalvars do
+            local v = resolvers.criticalvars[i]
+            report_resolvers("variable '%s' set to '%s'",v,resolvers.getenv(v) or "unknown")
+        end
+        report_resolvers()
+    end
+    resolvers.report_critical_variables = function() end
+end
+
+local function identify_configuration_files()
+    local specification = instance.specification
+    if #specification == 0 then
+        local cnfspec = resolvers.getenv('TEXMFCNF')
+        if cnfspec == "" then
+            cnfspec = resolvers.luacnfspec
+            resolvers.luacnfstate = "default"
+        else
+            resolvers.luacnfstate = "environment"
+        end
+        resolvers.report_critical_variables()
+        resolvers.expand_variables()
+        local cnfpaths = expanded_path_from_list(resolvers.split_path(cnfspec))
+        expand_vars(cnfpaths) --- hm
+        local luacnfname = resolvers.luacnfname
+        for i=1,#cnfpaths do
+            local filename = collapse_path(filejoin(cnfpaths[i],luacnfname))
+            if lfs.isfile(filename) then
+                specification[#specification+1] = filename
+            end
+        end
+    end
+end
+
+local function load_configuration_files()
+    local specification = instance.specification
+    if #specification > 0 then
+        local luacnfname = resolvers.luacnfname
+        for i=1,#specification do
+            local filename = specification[i]
+            local pathname = filedirname(filename)
+            local filename = filejoin(pathname,luacnfname)
+            local blob = loadfile(filename)
+            if blob then
+                local data = blob()
+                data = data and data.content
+                local setups = instance.setups
+                if data then
+                    if trace_locating then
+                        report_resolvers("loading configuration file '%s'",filename)
+                        report_resolvers()
+                    end
+                    -- flattening is easier to deal with as we need to collapse
+                    local t = { }
+                    for k, v in next, data do -- v = progname
+                        if v ~= unset_variable then
+                            local kind = type(v)
+                            if kind == "string" then
+                                t[k] = v
+                            elseif kind == "table" then
+                                -- this operates on the table directly
+                                setters.initialize(filename,k,v)
+                                -- this doesn't (maybe metatables some day)
+                                for kk, vv in next, v do -- vv = variable
+                                    if vv ~= unset_variable then
+                                        if type(vv) == "string" then
+                                            t[kk.."."..k] = vv
+                                        end
+                                    end
+                                end
+                            else
+                             -- report_resolvers("strange key '%s' in configuration file '%s'",k,filename)
+                            end
+                        end
+                    end
+                    setups[pathname] = t
+
+                    if resolvers.luacnfstate == "default" then
+                        -- the following code is not tested
+                        local cnfspec = t["TEXMFCNF"]
+                        if cnfspec then
+                            -- we push the value into the main environment (osenv) so
+                            -- that it takes precedence over the default one and therefore
+                            -- also over following definitions
+                            resolvers.setenv('TEXMFCNF',cnfspec)
+                            -- we now identify and load the specified configuration files
+                            instance.specification = { }
+                            identify_configuration_files()
+                            load_configuration_files()
+                            -- we prevent further overload of the configuration variable
+                            resolvers.luacnfstate = "configuration"
+                            -- we quit the outer loop
                             break
                         end
                     end
-                    if not find(line,"^[%%#]") then
-                        local l = gsub(line,"%s*%%.*$","")
-                        local k, v = match(l,"%s*(.-)%s*=%s*(.-)%s*$")
-                        if k and v and not data[k] then
-                            v = gsub(v,"[%%#].*",'')
-                            data[k] = gsub(v,"~","$HOME")
-                            instance.kpsevars[k] = true
-                        end
-                    end
+
                 else
-                    break
+                    if trace_locating then
+                        report_resolvers("skipping configuration file '%s'",filename)
+                    end
+                    setups[pathname] = { }
+                    instance.loaderror = true
                 end
+            elseif trace_locating then
+                report_resolvers("skipping configuration file '%s'",filename)
             end
-            f:close()
-        elseif trace_locating then
-            logs.report("fileio","skipping configuration file '%s'", fname)
+            instance.order[#instance.order+1] = instance.setups[pathname]
+            if instance.loaderror then
+                break
+            end
         end
+    elseif trace_locating then
+        report_resolvers("warning: no lua configuration files found")
     end
 end
 
-local function collapse_cnf_data() -- potential optimization: pass start index (setup and configuration are shared)
-    local order = instance.order
+local function collapse_configuration_data() -- potential optimization: pass start index (setup and configuration are shared)
+    local order, variables, environment, origins = instance.order, instance.variables, instance.environment, instance.origins
     for i=1,#order do
         local c = order[i]
         for k,v in next, c do
-            if not instance.variables[k] then
-                if instance.environment[k] then
-                    instance.variables[k] = instance.environment[k]
+            if variables[k] then
+                -- okay
+            else
+                local ek = environment[k]
+                if ek and ek ~= "" then
+                    variables[k], origins[k] = ek, "env"
                 else
-                    instance.kpsevars[k] = true
-                    instance.variables[k] = resolvers.bare_variable(v)
+                    local bv = checked_variable(v)
+                    variables[k], origins[k] = bv, "cnf"
                 end
             end
         end
     end
-end
-
-function resolvers.load_cnf()
-    local function loadoldconfigdata()
-        local cnffiles = instance.cnffiles
-        for i=1,#cnffiles do
-            load_cnf_file(cnffiles[i])
-        end
-    end
-    -- instance.cnffiles contain complete names now !
-    -- we still use a funny mix of cnf and new but soon
-    -- we will switch to lua exclusively as we only use
-    -- the file to collect the tree roots
-    if #instance.cnffiles == 0 then
-        if trace_locating then
-            logs.report("fileio","no cnf files found (TEXMFCNF may not be set/known)")
-        end
-    else
-        local cnffiles = instance.cnffiles
-        instance.rootpath = cnffiles[1]
-        for k=1,#cnffiles do
-            instance.cnffiles[k] = file.collapse_path(cnffiles[k])
-        end
-        for i=1,3 do
-            instance.rootpath = file.dirname(instance.rootpath)
-        end
-        instance.rootpath = file.collapse_path(instance.rootpath)
-        if instance.diskcache and not instance.renewcache then
-            resolvers.loadoldconfig(instance.cnffiles)
-            if instance.loaderror then
-                loadoldconfigdata()
-                resolvers.saveoldconfig()
-            end
-        else
-            loadoldconfigdata()
-            if instance.renewcache then
-                resolvers.saveoldconfig()
-            end
-        end
-        collapse_cnf_data()
-    end
-    check_configuration()
-end
-
-function resolvers.load_lua()
-    if #instance.luafiles == 0 then
-        -- yet harmless
-    else
-        instance.rootpath = instance.luafiles[1]
-        local luafiles = instance.luafiles
-        for k=1,#luafiles do
-            instance.luafiles[k] = file.collapse_path(luafiles[k])
-        end
-        for i=1,3 do
-            instance.rootpath = file.dirname(instance.rootpath)
-        end
-        instance.rootpath = file.collapse_path(instance.rootpath)
-        resolvers.loadnewconfig()
-        collapse_cnf_data()
-    end
-    check_configuration()
 end
 
 -- database loading
 
-function resolvers.load_hash()
-    resolvers.locatelists()
+-- locators
+
+function resolvers.locatedatabase(specification)
+    return resolvers.methodhandler('locators', specification)
+end
+
+function resolvers.locators.tex(specification)
+    if specification and specification ~= '' and lfs.isdir(specification) then
+        if trace_locating then
+            report_resolvers("tex locator '%s' found",specification)
+        end
+        resolvers.append_hash('file',specification,filename,true) -- cache
+    elseif trace_locating then
+        report_resolvers("tex locator '%s' not found",specification)
+    end
+end
+
+-- hashers
+
+function resolvers.hashdatabase(tag,name)
+    return resolvers.methodhandler('hashers',tag,name)
+end
+
+local function load_file_databases()
+    instance.loaderror, instance.files = false, { }
+    if not instance.renewcache then
+        local hashes = instance.hashes
+        for k=1,#hashes do
+            local hash = hashes[k]
+            resolvers.hashdatabase(hash.tag,hash.name)
+            if instance.loaderror then break end
+        end
+    end
+end
+
+function resolvers.hashers.tex(tag,name) -- used where?
+    local content = caches.loadcontent(tag,'files')
+    if content then
+        instance.files[tag] = content
+    else
+        instance.files[tag] = { }
+        instance.loaderror = true
+    end
+end
+
+local function locate_file_databases()
+    -- todo: cache:// and tree:// (runtime)
+    local texmfpaths = resolvers.expanded_path_list('TEXMF')
+    for i=1,#texmfpaths do
+        local path = collapse_path(texmfpaths[i])
+        local stripped = gsub(path,"^!!","")
+        local runtime = stripped == path
+        path = resolvers.clean_path(path)
+        if stripped ~= "" then
+            if lfs.isdir(path) then
+                local spec = resolvers.splitmethod(stripped)
+                if spec.scheme == "cache" then
+                    stripped = spec.path
+                elseif runtime and (spec.noscheme or spec.scheme == "file") then
+                    stripped = "tree:///" .. stripped
+                end
+                if trace_locating then
+                    if runtime then
+                        report_resolvers("locating list of '%s' (runtime)",path)
+                    else
+                        report_resolvers("locating list of '%s' (cached)",path)
+                    end
+                end
+                resolvers.locatedatabase(stripped) -- nothing done with result
+            else
+                if trace_locating then
+                    if runtime then
+                        report_resolvers("skipping list of '%s' (runtime)",path)
+                    else
+                        report_resolvers("skipping list of '%s' (cached)",path)
+                    end
+                end
+            end
+        end
+    end
+    if trace_locating then
+        report_resolvers()
+    end
+end
+
+local function generate_file_databases()
+    local hashes = instance.hashes
+    for i=1,#hashes do
+        resolvers.methodhandler('generators',hashes[i].tag)
+    end
+    if trace_locating then
+        report_resolvers()
+    end
+end
+
+local function save_file_databases() -- will become cachers
+    for i=1,#instance.hashes do
+        local hash = instance.hashes[i]
+        local cachename = hash.tag
+        if hash.cache then
+            local content = instance.files[cachename]
+            caches.collapsecontent(content)
+            caches.savecontent(cachename,"files",content)
+        elseif trace_locating then
+            report_resolvers("not saving runtime tree '%s'",cachename)
+        end
+    end
+end
+
+local function load_databases()
+    locate_file_databases()
     if instance.diskcache and not instance.renewcache then
-        resolvers.loadfiles()
+        load_file_databases()
         if instance.loaderror then
-            resolvers.loadlists()
-            resolvers.savefiles()
+            generate_file_databases()
+            save_file_databases()
         end
     else
-        resolvers.loadlists()
+        generate_file_databases()
         if instance.renewcache then
-            resolvers.savefiles()
+            save_file_databases()
         end
     end
 end
 
-function resolvers.append_hash(type,tag,name)
+function resolvers.append_hash(type,tag,name,cache)
     if trace_locating then
-        logs.report("fileio","hash '%s' appended",tag)
+        report_resolvers("hash '%s' appended",tag)
     end
-    insert(instance.hashes, { ['type']=type, ['tag']=tag, ['name']=name } )
+    insert(instance.hashes, { type = type, tag = tag, name = name, cache = cache } )
 end
 
-function resolvers.prepend_hash(type,tag,name)
+function resolvers.prepend_hash(type,tag,name,cache)
     if trace_locating then
-        logs.report("fileio","hash '%s' prepended",tag)
+        report_resolvers("hash '%s' prepended",tag)
     end
-    insert(instance.hashes, 1, { ['type']=type, ['tag']=tag, ['name']=name } )
+    insert(instance.hashes, 1, { type = type, tag = tag, name = name, cache = cache } )
 end
 
 function resolvers.extend_texmf_var(specification) -- crap, we could better prepend the hash
 --  local t = resolvers.expanded_path_list('TEXMF') -- full expansion
-    local t = resolvers.split_path(resolvers.env('TEXMF'))
+    local t = resolvers.split_path(resolvers.getenv('TEXMF'))
     insert(t,1,specification)
     local newspec = concat(t,";")
     if instance.environment["TEXMF"] then
@@ -8897,241 +9978,14 @@ function resolvers.extend_texmf_var(specification) -- crap, we could better prep
     reset_hashes()
 end
 
--- locators
-
-function resolvers.locatelists()
-    local texmfpaths = resolvers.clean_path_list('TEXMF')
-    for i=1,#texmfpaths do
-        local path = texmfpaths[i]
-        if trace_locating then
-            logs.report("fileio","locating list of '%s'",path)
-        end
-        resolvers.locatedatabase(file.collapse_path(path))
-    end
-end
-
-function resolvers.locatedatabase(specification)
-    return resolvers.methodhandler('locators', specification)
-end
-
-function resolvers.locators.tex(specification)
-    if specification and specification ~= '' and lfs.isdir(specification) then
-        if trace_locating then
-            logs.report("fileio","tex locator '%s' found",specification)
-        end
-        resolvers.append_hash('file',specification,filename)
-    elseif trace_locating then
-        logs.report("fileio","tex locator '%s' not found",specification)
-    end
-end
-
--- hashers
-
-function resolvers.hashdatabase(tag,name)
-    return resolvers.methodhandler('hashers',tag,name)
-end
-
-function resolvers.loadfiles()
-    instance.loaderror = false
-    instance.files = { }
-    if not instance.renewcache then
-        local hashes = instance.hashes
-        for k=1,#hashes do
-            local hash = hashes[k]
-            resolvers.hashdatabase(hash.tag,hash.name)
-            if instance.loaderror then break end
-        end
-    end
-end
-
-function resolvers.hashers.tex(tag,name)
-    resolvers.load_data(tag,'files')
-end
-
--- generators:
-
-function resolvers.loadlists()
-    local hashes = instance.hashes
-    for i=1,#hashes do
-        resolvers.generatedatabase(hashes[i].tag)
-    end
-end
-
-function resolvers.generatedatabase(specification)
-    return resolvers.methodhandler('generators', specification)
-end
-
--- starting with . or .. etc or funny char
-
-local weird = lpeg.P(".")^1 + lpeg.anywhere(lpeg.S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
-
---~ local l_forbidden = lpeg.S("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
---~ local l_confusing = lpeg.P(" ")
---~ local l_character = lpeg.patterns.utf8
---~ local l_dangerous = lpeg.P(".")
-
---~ local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * lpeg.P(-1)
---~ ----- l_normal = l_normal * lpeg.Cc(true) + lpeg.Cc(false)
-
---~ local function test(str)
---~     print(str,lpeg.match(l_normal,str))
---~ end
---~ test("ヒラギノ明朝 Pro W3")
---~ test("..ヒラギノ明朝 Pro W3")
---~ test(":ヒラギノ明朝 Pro W3;")
---~ test("ヒラギノ明朝 /Pro W3;")
---~ test("ヒラギノ明朝 Pro  W3")
-
-function resolvers.generators.tex(specification)
-    local tag = specification
-    if trace_locating then
-        logs.report("fileio","scanning path '%s'",specification)
-    end
-    instance.files[tag] = { }
-    local files = instance.files[tag]
-    local n, m, r = 0, 0, 0
-    local spec = specification .. '/'
-    local attributes = lfs.attributes
-    local directory = lfs.dir
-    local function action(path)
-        local full
-        if path then
-            full = spec .. path .. '/'
-        else
-            full = spec
-        end
-        for name in directory(full) do
-            if not lpegmatch(weird,name) then
-         -- if lpegmatch(l_normal,name) then
-                local mode = attributes(full..name,'mode')
-                if mode == 'file' then
-                    if path then
-                        n = n + 1
-                        local f = files[name]
-                        if f then
-                            if type(f) == 'string' then
-                                files[name] = { f, path }
-                            else
-                                f[#f+1] = path
-                            end
-                        else -- probably unique anyway
-                            files[name] = path
-                            local lower = lower(name)
-                            if name ~= lower then
-                                files["remap:"..lower] = name
-                                r = r + 1
-                            end
-                        end
-                    end
-                elseif mode == 'directory' then
-                    m = m + 1
-                    if path then
-                        action(path..'/'..name)
-                    else
-                        action(name)
-                    end
-                end
-            end
-        end
-    end
-    action()
-    if trace_locating then
-        logs.report("fileio","%s files found on %s directories with %s uppercase remappings",n,m,r)
-    end
-end
-
--- savers, todo
-
-function resolvers.savefiles()
-    resolvers.save_data('files')
-end
-
--- A config (optionally) has the paths split in tables. Internally
--- we join them and split them after the expansion has taken place. This
--- is more convenient.
-
---~ local checkedsplit = string.checkedsplit
-
-local cache = { }
-
-local splitter = lpeg.Ct(lpeg.splitat(lpeg.S(os.type == "windows" and ";" or ":;")))
-
-local function split_kpse_path(str) -- beware, this can be either a path or a {specification}
-    local found = cache[str]
-    if not found then
-        if str == "" then
-            found = { }
-        else
-            str = gsub(str,"\\","/")
---~             local split = (find(str,";") and checkedsplit(str,";")) or checkedsplit(str,io.pathseparator)
-local split = lpegmatch(splitter,str)
-            found = { }
-            for i=1,#split do
-                local s = split[i]
-                if not find(s,"^{*unset}*") then
-                    found[#found+1] = s
-                end
-            end
-            if trace_expansions then
-                logs.report("fileio","splitting path specification '%s'",str)
-                for k=1,#found do
-                    logs.report("fileio","% 4i: %s",k,found[k])
-                end
-            end
-            cache[str] = found
-        end
-    end
-    return found
-end
-
-resolvers.split_kpse_path = split_kpse_path
-
-function resolvers.splitconfig()
-    for i=1,#instance do
-        local c = instance[i]
-        for k,v in next, c do
-            if type(v) == 'string' then
-                local t = split_kpse_path(v)
-                if #t > 1 then
-                    c[k] = t
-                end
-            end
-        end
-    end
-end
-
-function resolvers.joinconfig()
-    local order = instance.order
-    for i=1,#order do
-        local c = order[i]
-        for k,v in next, c do -- indexed?
-            if type(v) == 'table' then
-                c[k] = file.join_path(v)
-            end
-        end
-    end
-end
-
-function resolvers.split_path(str)
-    if type(str) == 'table' then
-        return str
-    else
-        return split_kpse_path(str)
-    end
-end
-
-function resolvers.join_path(str)
-    if type(str) == 'table' then
-        return file.join_path(str)
-    else
-        return str
-    end
+function resolvers.generators.tex(specification,tag)
+    instance.files[tag or specification] = resolvers.scan_files(specification)
 end
 
 function resolvers.splitexpansions()
     local ie = instance.expansions
     for k,v in next, ie do
-        local t, h, p = { }, { }, split_kpse_path(v)
+        local t, h, p = { }, { }, split_configuration_path(v)
         for kk=1,#p do
             local vv = p[kk]
             if vv ~= "" and not h[vv] then
@@ -9149,219 +10003,16 @@ end
 
 -- end of split/join code
 
-function resolvers.saveoldconfig()
-    resolvers.splitconfig()
-    resolvers.save_data('configuration')
-    resolvers.joinconfig()
-end
-
-resolvers.configbanner = [[
--- This is a Luatex configuration file created by 'luatools.lua' or
--- 'luatex.exe' directly. For comment, suggestions and questions you can
--- contact the ConTeXt Development Team. This configuration file is
--- not copyrighted. [HH & TH]
-]]
-
-function resolvers.serialize(files)
-    -- This version is somewhat optimized for the kind of
-    -- tables that we deal with, so it's much faster than
-    -- the generic serializer. This makes sense because
-    -- luatools and mtxtools are called frequently. Okay,
-    -- we pay a small price for properly tabbed tables.
-    local t = { }
-    local function dump(k,v,m) -- could be moved inline
-        if type(v) == 'string' then
-            return m .. "['" .. k .. "']='" .. v .. "',"
-        elseif #v == 1 then
-            return m .. "['" .. k .. "']='" .. v[1] .. "',"
-        else
-            return m .. "['" .. k .. "']={'" .. concat(v,"','").. "'},"
-        end
-    end
-    t[#t+1] = "return {"
-    if instance.sortdata then
-	local sortedfiles = sortedkeys(files)
-	for i=1,#sortedfiles do
-	    local k = sortedfiles[i]
-            local fk  = files[k]
-            if type(fk) == 'table' then
-                t[#t+1] = "\t['" .. k .. "']={"
-		local sortedfk = sortedkeys(fk)
-        	for j=1,#sortedfk do
-                    local kk = sortedfk[j]
-                    t[#t+1] = dump(kk,fk[kk],"\t\t")
-                end
-                t[#t+1] = "\t},"
-            else
-                t[#t+1] = dump(k,fk,"\t")
-            end
-        end
-    else
-        for k, v in next, files do
-            if type(v) == 'table' then
-                t[#t+1] = "\t['" .. k .. "']={"
-                for kk,vv in next, v do
-                    t[#t+1] = dump(kk,vv,"\t\t")
-                end
-                t[#t+1] = "\t},"
-            else
-                t[#t+1] = dump(k,v,"\t")
-            end
-        end
-    end
-    t[#t+1] = "}"
-    return concat(t,"\n")
-end
-
-local data_state = { }
+-- we used to have 'files' and 'configurations' so therefore the following
+-- shared function
 
 function resolvers.data_state()
-    return data_state or { }
-end
-
-function resolvers.save_data(dataname, makename) -- untested without cache overload
-    for cachename, files in next, instance[dataname] do
-        local name = (makename or file.join)(cachename,dataname)
-        local luaname, lucname = name .. ".lua", name .. ".luc"
-        if trace_locating then
-            logs.report("fileio","preparing '%s' for '%s'",dataname,cachename)
-        end
-        for k, v in next, files do
-            if type(v) == "table" and #v == 1 then
-                files[k] = v[1]
-            end
-        end
-        local data = {
-            type    = dataname,
-            root    = cachename,
-            version = resolvers.cacheversion,
-            date    = os.date("%Y-%m-%d"),
-            time    = os.date("%H:%M:%S"),
-            content = files,
-            uuid    = os.uuid(),
-        }
-        local ok = io.savedata(luaname,resolvers.serialize(data))
-        if ok then
-            if trace_locating then
-                logs.report("fileio","'%s' saved in '%s'",dataname,luaname)
-            end
-            if utils.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
-                if trace_locating then
-                    logs.report("fileio","'%s' compiled to '%s'",dataname,lucname)
-                end
-            else
-                if trace_locating then
-                    logs.report("fileio","compiling failed for '%s', deleting file '%s'",dataname,lucname)
-                end
-                os.remove(lucname)
-            end
-        elseif trace_locating then
-            logs.report("fileio","unable to save '%s' in '%s' (access error)",dataname,luaname)
-        end
-    end
-end
-
-function resolvers.load_data(pathname,dataname,filename,makename) -- untested without cache overload
-    filename = ((not filename or (filename == "")) and dataname) or filename
-    filename = (makename and makename(dataname,filename)) or file.join(pathname,filename)
-    local blob = loadfile(filename .. ".luc") or loadfile(filename .. ".lua")
-    if blob then
-        local data = blob()
-        if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
-            data_state[#data_state+1] = data.uuid
-            if trace_locating then
-                logs.report("fileio","loading '%s' for '%s' from '%s'",dataname,pathname,filename)
-            end
-            instance[dataname][pathname] = data.content
-        else
-            if trace_locating then
-                logs.report("fileio","skipping '%s' for '%s' from '%s'",dataname,pathname,filename)
-            end
-            instance[dataname][pathname] = { }
-            instance.loaderror = true
-        end
-    elseif trace_locating then
-        logs.report("fileio","skipping '%s' for '%s' from '%s'",dataname,pathname,filename)
-    end
-end
-
--- some day i'll use the nested approach, but not yet (actually we even drop
--- engine/progname support since we have only luatex now)
---
--- first texmfcnf.lua files are located, next the cached texmf.cnf files
---
--- return {
---     TEXMFBOGUS = 'effe checken of dit werkt',
--- }
-
-function resolvers.resetconfig()
-    identify_own()
-    instance.configuration, instance.setup, instance.order, instance.loaderror = { }, { }, { }, false
-end
-
-function resolvers.loadnewconfig()
-    local luafiles = instance.luafiles
-    for i=1,#luafiles do
-        local cnf = luafiles[i]
-        local pathname = file.dirname(cnf)
-        local filename = file.join(pathname,resolvers.luaname)
-        local blob = loadfile(filename)
-        if blob then
-            local data = blob()
-            if data then
-                if trace_locating then
-                    logs.report("fileio","loading configuration file '%s'",filename)
-                end
-                if true then
-                    -- flatten to variable.progname
-                    local t = { }
-                    for k, v in next, data do -- v = progname
-                        if type(v) == "string" then
-                            t[k] = v
-                        else
-                            for kk, vv in next, v do -- vv = variable
-                                if type(vv) == "string" then
-                                    t[vv.."."..v] = kk
-                                end
-                            end
-                        end
-                    end
-                    instance['setup'][pathname] = t
-                else
-                    instance['setup'][pathname] = data
-                end
-            else
-                if trace_locating then
-                    logs.report("fileio","skipping configuration file '%s'",filename)
-                end
-                instance['setup'][pathname] = { }
-                instance.loaderror = true
-            end
-        elseif trace_locating then
-            logs.report("fileio","skipping configuration file '%s'",filename)
-        end
-        instance.order[#instance.order+1] = instance.setup[pathname]
-        if instance.loaderror then break end
-    end
-end
-
-function resolvers.loadoldconfig()
-    if not instance.renewcache then
-        local cnffiles = instance.cnffiles
-        for i=1,#cnffiles do
-            local cnf = cnffiles[i]
-            local dname = file.dirname(cnf)
-            resolvers.load_data(dname,'configuration')
-            instance.order[#instance.order+1] = instance.configuration[dname]
-            if instance.loaderror then break end
-        end
-    end
-    resolvers.joinconfig()
+    return caches.contentstate()
 end
 
 function resolvers.expand_variables()
     local expansions, environment, variables = { }, instance.environment, instance.variables
-    local env = resolvers.env
+    local getenv = resolvers.getenv
     instance.expansions = expansions
     local engine, progname = instance.engine, instance.progname
     if type(engine)   ~= "string" then instance.engine,   engine   = "", "" end
@@ -9376,7 +10027,7 @@ function resolvers.expand_variables()
             expansions[k] = v
         end
     end
-    for k,v in next, environment do -- move environment to expansions
+    for k,v in next, environment do -- move environment to expansions (variables are already in there)
         if not expansions[k] then expansions[k] = v end
     end
     for k,v in next, variables do -- move variables to expansions
@@ -9385,7 +10036,7 @@ function resolvers.expand_variables()
     local busy = false
     local function resolve(a)
         busy = true
-        return expansions[a] or env(a)
+        return expansions[a] or getenv(a)
     end
     while true do
         busy = false
@@ -9393,6 +10044,8 @@ function resolvers.expand_variables()
             local s, n = gsub(v,"%$([%a%d%_%-]+)",resolve)
             local s, m = gsub(s,"%$%{([%a%d%_%-]+)%}",resolve)
             if n > 0 or m > 0 then
+                s = gsub(s,";+",";")
+                s = gsub(s,";[!{}/\\]+;",";")
                 expansions[k]= s
             end
         end
@@ -9429,63 +10082,59 @@ function resolvers.unexpanded_path(str)
     return file.join_path(resolvers.unexpanded_path_list(str))
 end
 
-do -- no longer needed
+local done = { }
 
-    local done = { }
-
-    function resolvers.reset_extra_path()
-        local ep = instance.extra_paths
-        if not ep then
-            ep, done = { }, { }
-            instance.extra_paths = ep
-        elseif #ep > 0 then
-            instance.lists, done = { }, { }
-        end
+function resolvers.reset_extra_path()
+    local ep = instance.extra_paths
+    if not ep then
+        ep, done = { }, { }
+        instance.extra_paths = ep
+    elseif #ep > 0 then
+        instance.lists, done = { }, { }
     end
+end
 
-    function resolvers.register_extra_path(paths,subpaths)
-        local ep = instance.extra_paths or { }
-        local n = #ep
-        if paths and paths ~= "" then
-            if subpaths and subpaths ~= "" then
-                for p in gmatch(paths,"[^,]+") do
-                    -- we gmatch each step again, not that fast, but used seldom
-                    for s in gmatch(subpaths,"[^,]+") do
-                        local ps = p .. "/" .. s
-                        if not done[ps] then
-                            ep[#ep+1] = resolvers.clean_path(ps)
-                            done[ps] = true
-                        end
-                    end
-                end
-            else
-                for p in gmatch(paths,"[^,]+") do
-                    if not done[p] then
-                        ep[#ep+1] = resolvers.clean_path(p)
-                        done[p] = true
-                    end
-                end
-            end
-        elseif subpaths and subpaths ~= "" then
-            for i=1,n do
+function resolvers.register_extra_path(paths,subpaths)
+    local ep = instance.extra_paths or { }
+    local n = #ep
+    if paths and paths ~= "" then
+        if subpaths and subpaths ~= "" then
+            for p in gmatch(paths,"[^,]+") do
                 -- we gmatch each step again, not that fast, but used seldom
                 for s in gmatch(subpaths,"[^,]+") do
-                    local ps = ep[i] .. "/" .. s
+                    local ps = p .. "/" .. s
                     if not done[ps] then
                         ep[#ep+1] = resolvers.clean_path(ps)
                         done[ps] = true
                     end
                 end
             end
+        else
+            for p in gmatch(paths,"[^,]+") do
+                if not done[p] then
+                    ep[#ep+1] = resolvers.clean_path(p)
+                    done[p] = true
+                end
+            end
         end
-        if #ep > 0 then
-            instance.extra_paths = ep -- register paths
-        end
-        if #ep > n then
-            instance.lists = { } -- erase the cache
+    elseif subpaths and subpaths ~= "" then
+        for i=1,n do
+            -- we gmatch each step again, not that fast, but used seldom
+            for s in gmatch(subpaths,"[^,]+") do
+                local ps = ep[i] .. "/" .. s
+                if not done[ps] then
+                    ep[#ep+1] = resolvers.clean_path(ps)
+                    done[ps] = true
+                end
+            end
         end
     end
-
+    if #ep > 0 then
+        instance.extra_paths = ep -- register paths
+    end
+    if #ep > n then
+        instance.lists = { } -- erase the cache
+    end
 end
 
 local function made_list(instance,list)
@@ -9530,7 +10179,7 @@ function resolvers.clean_path_list(str)
     local t = resolvers.expanded_path_list(str)
     if t then
         for i=1,#t do
-            t[i] = file.collapse_path(resolvers.clean_path(t[i]))
+            t[i] = collapse_path(resolvers.clean_path(t[i]))
         end
     end
     return t
@@ -9570,33 +10219,6 @@ function resolvers.expand_path_from_var(str)
     return file.join_path(resolvers.expanded_path_list_from_var(str))
 end
 
-function resolvers.format_of_var(str)
-    return formats[str] or formats[alternatives[str]] or ''
-end
-function resolvers.format_of_suffix(str)
-    return suffixmap[file.extname(str)] or 'tex'
-end
-
-function resolvers.variable_of_format(str)
-    return formats[str] or formats[alternatives[str]] or ''
-end
-
-function resolvers.var_of_format_or_suffix(str)
-    local v = formats[str]
-    if v then
-        return v
-    end
-    v = formats[alternatives[str]]
-    if v then
-        return v
-    end
-    v = suffixmap[file.extname(str)]
-    if v then
-        return formats[isf]
-    end
-    return ''
-end
-
 function resolvers.expand_braces(str) -- output variable and brace expansion of STRING
     local ori = resolvers.variable(str)
     local pth = expanded_path_from_list(resolvers.split_path(ori))
@@ -9609,9 +10231,9 @@ function resolvers.isreadable.file(name)
     local readable = lfs.isfile(name) -- brrr
     if trace_detail then
         if readable then
-            logs.report("fileio","file '%s' is readable",name)
+            report_resolvers("file '%s' is readable",name)
         else
-            logs.report("fileio","file '%s' is not readable", name)
+            report_resolvers("file '%s' is not readable", name)
         end
     end
     return readable
@@ -9627,10 +10249,10 @@ local function collect_files(names)
     for k=1,#names do
         local fname = names[k]
         if trace_detail then
-            logs.report("fileio","checking name '%s'",fname)
+            report_resolvers("checking name '%s'",fname)
         end
-        local bname = file.basename(fname)
-        local dname = file.dirname(fname)
+        local bname = filebasename(fname)
+        local dname = filedirname(fname)
         if dname == "" or find(dname,"^%.") then
             dname = false
         else
@@ -9643,7 +10265,7 @@ local function collect_files(names)
             local files = blobpath and instance.files[blobpath]
             if files then
                 if trace_detail then
-                    logs.report("fileio","deep checking '%s' (%s)",blobpath,bname)
+                    report_resolvers("deep checking '%s' (%s)",blobpath,bname)
                 end
                 local blobfile = files[bname]
                 if not blobfile then
@@ -9655,53 +10277,38 @@ local function collect_files(names)
                     end
                 end
                 if blobfile then
+                    local blobroot = files.__path__ or blobpath
                     if type(blobfile) == 'string' then
                         if not dname or find(blobfile,dname) then
-                            filelist[#filelist+1] = {
-                                hash.type,
-                                file.join(blobpath,blobfile,bname), -- search
-                                resolvers.concatinators[hash.type](blobpath,blobfile,bname) -- result
-                            }
+                            local kind   = hash.type
+                            local search = filejoin(blobpath,blobfile,bname)
+                            local result = resolvers.concatinators[hash.type](blobroot,blobfile,bname)
+                            if trace_detail then
+                                report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                            end
+                            filelist[#filelist+1] = { kind, search, result }
                         end
                     else
                         for kk=1,#blobfile do
                             local vv = blobfile[kk]
                             if not dname or find(vv,dname) then
-                                filelist[#filelist+1] = {
-                                    hash.type,
-                                    file.join(blobpath,vv,bname), -- search
-                                    resolvers.concatinators[hash.type](blobpath,vv,bname) -- result
-                                }
+                                local kind   = hash.type
+                                local search = filejoin(blobpath,vv,bname)
+                                local result = resolvers.concatinators[hash.type](blobroot,vv,bname)
+                                if trace_detail then
+                                    report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                end
+                                filelist[#filelist+1] = { kind, search, result }
                             end
                         end
                     end
                 end
             elseif trace_locating then
-                logs.report("fileio","no match in '%s' (%s)",blobpath,bname)
+                report_resolvers("no match in '%s' (%s)",blobpath,bname)
             end
         end
     end
-    if #filelist > 0 then
-        return filelist
-    else
-        return nil
-    end
-end
-
-function resolvers.suffix_of_format(str)
-    if suffixes[str] then
-        return suffixes[str][1]
-    else
-        return ""
-    end
-end
-
-function resolvers.suffixes_of_format(str)
-    if suffixes[str] then
-        return suffixes[str]
-    else
-        return {}
-    end
+    return #filelist > 0 and filelist or nil
 end
 
 function resolvers.register_in_trees(name)
@@ -9721,27 +10328,28 @@ local function can_be_dir(name) -- can become local
             fakepaths[name] = 2 -- no directory
         end
     end
-    return (fakepaths[name] == 1)
+    return fakepaths[name] == 1
 end
 
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = file.collapse_path(filename)
+    filename = collapse_path(filename)
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
         if instance.found[stamp] then
             if trace_locating then
-                logs.report("fileio","remembering file '%s'",filename)
+                report_resolvers("remembering file '%s'",filename)
             end
+            resolvers.register_in_trees(filename) -- for tracing used files
             return instance.found[stamp]
         end
     end
     if not dangerous[instance.format or "?"] then
         if resolvers.isreadable.file(filename) then
             if trace_detail then
-                logs.report("fileio","file '%s' found directly",filename)
+                report_resolvers("file '%s' found directly",filename)
             end
             instance.found[stamp] = { filename }
             return { filename }
@@ -9749,37 +10357,39 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
     end
     if find(filename,'%*') then
         if trace_locating then
-            logs.report("fileio","checking wildcard '%s'", filename)
+            report_resolvers("checking wildcard '%s'", filename)
         end
         result = resolvers.find_wildcard_files(filename)
     elseif file.is_qualified_path(filename) then
         if resolvers.isreadable.file(filename) then
             if trace_locating then
-                logs.report("fileio","qualified name '%s'", filename)
+                report_resolvers("qualified name '%s'", filename)
             end
             result = { filename }
         else
-            local forcedname, ok, suffix = "", false, file.extname(filename)
+            local forcedname, ok, suffix = "", false, fileextname(filename)
             if suffix == "" then -- why
                 if instance.format == "" then
                     forcedname = filename .. ".tex"
                     if resolvers.isreadable.file(forcedname) then
                         if trace_locating then
-                            logs.report("fileio","no suffix, forcing standard filetype 'tex'")
+                            report_resolvers("no suffix, forcing standard filetype 'tex'")
                         end
                         result, ok = { forcedname }, true
                     end
                 else
-                    local suffixes = resolvers.suffixes_of_format(instance.format)
-                    for i=1,#suffixes do
-                        local s = suffixes[i]
-                        forcedname = filename .. "." .. s
-                        if resolvers.isreadable.file(forcedname) then
-                            if trace_locating then
-                                logs.report("fileio","no suffix, forcing format filetype '%s'", s)
+                    local format_suffixes = suffixes[instance.format]
+                    if format_suffixes then
+                        for i=1,#format_suffixes do
+                            local s = format_suffixes[i]
+                            forcedname = filename .. "." .. s
+                            if resolvers.isreadable.file(forcedname) then
+                                if trace_locating then
+                                    report_resolvers("no suffix, forcing format filetype '%s'", s)
+                                end
+                                result, ok = { forcedname }, true
+                                break
                             end
-                            result, ok = { forcedname }, true
-                            break
                         end
                     end
                 end
@@ -9787,7 +10397,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             if not ok and suffix ~= "" then
                 -- try to find in tree (no suffix manipulation), here we search for the
                 -- matching last part of the name
-                local basename = file.basename(filename)
+                local basename = filebasename(filename)
                 local pattern = gsub(filename .. "$","([%.%-])","%%%1")
                 local savedformat = instance.format
                 local format = savedformat or ""
@@ -9828,16 +10438,13 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 -- end
             end
             if not ok and trace_locating then
-                logs.report("fileio","qualified name '%s'", filename)
+                report_resolvers("qualified name '%s'", filename)
             end
         end
     else
         -- search spec
-        local filetype, extra, done, wantedfiles, ext = '', nil, false, { }, file.extname(filename)
+        local filetype, extra, done, wantedfiles, ext = '', nil, false, { }, fileextname(filename)
         -- tricky as filename can be bla.1.2.3
---~         if not suffixmap[ext] then --- probably needs to be done elsewhere too
---~             wantedfiles[#wantedfiles+1] = filename
---~         end
         if ext == "" then
             if not instance.force_suffixes then
                 wantedfiles[#wantedfiles+1] = filename
@@ -9851,24 +10458,26 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 wantedfiles[#wantedfiles+1] = forcedname
                 filetype = resolvers.format_of_suffix(forcedname)
                 if trace_locating then
-                    logs.report("fileio","forcing filetype '%s'",filetype)
+                    report_resolvers("forcing filetype '%s'",filetype)
                 end
             else
                 filetype = resolvers.format_of_suffix(filename)
                 if trace_locating then
-                    logs.report("fileio","using suffix based filetype '%s'",filetype)
+                    report_resolvers("using suffix based filetype '%s'",filetype)
                 end
             end
         else
-            local suffixes = resolvers.suffixes_of_format(instance.format)
             if ext == "" or not suffixmap[ext] then
-                for i=1,#suffixes do
-                    wantedfiles[#wantedfiles+1] = filename .. "." .. suffixes[i]
+                local format_suffixes = suffixes[instance.format]
+                if format_suffixes then
+                    for i=1,#format_suffixes do
+                        wantedfiles[#wantedfiles+1] = filename .. "." .. format_suffixes[i]
+                    end
                 end
             end
             filetype = instance.format
             if trace_locating then
-                logs.report("fileio","using given filetype '%s'",filetype)
+                report_resolvers("using given filetype '%s'",filetype)
             end
         end
         local typespec = resolvers.variable_of_format(filetype)
@@ -9876,13 +10485,13 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         if not pathlist or #pathlist == 0 then
             -- no pathlist, access check only / todo == wildcard
             if trace_detail then
-                logs.report("fileio","checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
+                report_resolvers("checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
             end
             for k=1,#wantedfiles do
                 local fname = wantedfiles[k]
                 if fname and resolvers.isreadable.file(fname) then
                     filename, done = fname, true
-                    result[#result+1] = file.join('.',fname)
+                    result[#result+1] = filejoin('.',fname)
                     break
                 end
             end
@@ -9900,11 +10509,11 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             local dirlist = { }
             if filelist then
                 for i=1,#filelist do
-                    dirlist[i] = file.dirname(filelist[i][2]) .. "/"
+                    dirlist[i] = filedirname(filelist[i][3]) .. "/" -- was [2] .. gamble
                 end
             end
             if trace_detail then
-                logs.report("fileio","checking filename '%s'",filename)
+                report_resolvers("checking filename '%s'",filename)
             end
             -- a bit messy ... esp the doscan setting here
             local doscan
@@ -9927,7 +10536,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     expression = gsub(expression,"//", '/.-/')      -- not ok for /// but harmless
                     expression = "^" .. expression .. "$"
                     if trace_detail then
-                        logs.report("fileio","using pattern '%s' for path '%s'",expression,pathname)
+                        report_resolvers("using pattern '%s' for path '%s'",expression,pathname)
                     end
                     for k=1,#filelist do
                         local fl = filelist[k]
@@ -9936,20 +10545,19 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                         if find(d,expression) then
                             --- todo, test for readable
                             result[#result+1] = fl[3]
-                            resolvers.register_in_trees(f) -- for tracing used files
                             done = true
                             if instance.allresults then
                                 if trace_detail then
-                                    logs.report("fileio","match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
+                                    report_resolvers("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
                                 end
                             else
                                 if trace_detail then
-                                    logs.report("fileio","match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
+                                    report_resolvers("match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
                                 end
                                 break
                             end
                         elseif trace_detail then
-                            logs.report("fileio","no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
+                            report_resolvers("no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
                         end
                     end
                 end
@@ -9962,10 +10570,10 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                             if can_be_dir(ppname) then
                                 for k=1,#wantedfiles do
                                     local w = wantedfiles[k]
-                                    local fname = file.join(ppname,w)
+                                    local fname = filejoin(ppname,w)
                                     if resolvers.isreadable.file(fname) then
                                         if trace_detail then
-                                            logs.report("fileio","found '%s' by scanning",fname)
+                                            report_resolvers("found '%s' by scanning",fname)
                                         end
                                         result[#result+1] = fname
                                         done = true
@@ -9979,14 +10587,16 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     end
                 end
                 if not done and doscan then
-                    -- todo: slow path scanning
+                    -- todo: slow path scanning ... although we now have tree:// supported in $TEXMF
                 end
                 if done and not instance.allresults then break end
             end
         end
     end
     for k=1,#result do
-        result[k] = file.collapse_path(result[k])
+        local rk = collapse_path(result[k])
+        result[k] = rk
+        resolvers.register_in_trees(rk) -- for tracing used files
     end
     if instance.remember then
         instance.found[stamp] = result
@@ -9996,7 +10606,7 @@ end
 
 if not resolvers.concatinators  then resolvers.concatinators = { } end
 
-resolvers.concatinators.tex  = file.join
+resolvers.concatinators.tex  = filejoin
 resolvers.concatinators.file = resolvers.concatinators.tex
 
 function resolvers.find_files(filename,filetype,mustexist)
@@ -10023,8 +10633,14 @@ function resolvers.find_file(filename,filetype,mustexist)
     return (resolvers.find_files(filename,filetype,mustexist)[1] or "")
 end
 
+function resolvers.find_path(filename,filetype)
+    local path = resolvers.find_files(filename,filetype)[1] or ""
+    -- todo return current path
+    return file.dirname(path)
+end
+
 function resolvers.find_given_files(filename)
-    local bname, result = file.basename(filename), { }
+    local bname, result = filebasename(filename), { }
     local hashes = instance.hashes
     for k=1,#hashes do
         local hash = hashes[k]
@@ -10081,9 +10697,9 @@ local function doit(path,blist,bname,tag,kind,result,allresults)
     return done
 end
 
-function resolvers.find_wildcard_files(filename) -- todo: remap:
+function resolvers.find_wildcard_files(filename) -- todo: remap: and lpeg
     local result = { }
-    local bname, dname = file.basename(filename), file.dirname(filename)
+    local bname, dname = filebasename(filename), filedirname(filename)
     local path = gsub(dname,"^*/","")
     path = gsub(path,"*",".*")
     path = gsub(path,"-","%%-")
@@ -10136,26 +10752,24 @@ end
 
 function resolvers.load(option)
     statistics.starttiming(instance)
-    resolvers.resetconfig()
-    resolvers.identify_cnf()
-    resolvers.load_lua() -- will become the new method
-    resolvers.expand_variables()
-    resolvers.load_cnf() -- will be skipped when we have a lua file
+    identify_configuration_files()
+    load_configuration_files()
+    collapse_configuration_data()
     resolvers.expand_variables()
     if option ~= "nofiles" then
-        resolvers.load_hash()
+        load_databases()
         resolvers.automount()
     end
     statistics.stoptiming(instance)
     local files = instance.files
-    return files and next(files)
+    return files and next(files) and true
 end
 
 function resolvers.for_files(command, files, filetype, mustexist)
     if files and #files > 0 then
         local function report(str)
             if trace_locating then
-                logs.report("fileio",str) -- has already verbose
+                report_resolvers(str) -- has already verbose
             else
                 print(str)
             end
@@ -10203,51 +10817,6 @@ function resolvers.register_file(files, name, path)
     end
 end
 
-function resolvers.splitmethod(filename)
-    if not filename then
-        return { } -- safeguard
-    elseif type(filename) == "table" then
-        return filename -- already split
-    elseif not find(filename,"://") then
-        return { scheme="file", path = filename, original=filename } -- quick hack
-    else
-        return url.hashed(filename)
-    end
-end
-
-function table.sequenced(t,sep) -- temp here
-    local s = { }
-    for k, v in next, t do -- indexed?
-        s[#s+1] = k .. "=" .. tostring(v)
-    end
-    return concat(s, sep or " | ")
-end
-
-function resolvers.methodhandler(what, filename, filetype) -- ...
-    filename = file.collapse_path(filename)
-    local specification = (type(filename) == "string" and resolvers.splitmethod(filename)) or filename -- no or { }, let it bomb
-    local scheme = specification.scheme
-    if resolvers[what][scheme] then
-        if trace_locating then
-            logs.report("fileio","handler '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
-        end
-        return resolvers[what][scheme](filename,filetype) -- todo: specification
-    else
-        return resolvers[what].tex(filename,filetype) -- todo: specification
-    end
-end
-
-function resolvers.clean_path(str)
-    if str then
-        str = gsub(str,"\\","/")
-        str = gsub(str,"^!+","")
-        str = gsub(str,"^~",resolvers.homedir)
-        return str
-    else
-        return nil
-    end
-end
-
 function resolvers.do_with_path(name,func)
     local pathlist = resolvers.expanded_path_list(name)
     for i=1,#pathlist do
@@ -10259,45 +10828,13 @@ function resolvers.do_with_var(name,func)
     func(expanded_var(name))
 end
 
-function resolvers.with_files(pattern,handle)
-    local hashes = instance.hashes
-    for i=1,#hashes do
-        local hash = hashes[i]
-        local blobpath = hash.tag
-        local blobtype = hash.type
-        if blobpath then
-            local files = instance.files[blobpath]
-            if files then
-                for k,v in next, files do
-                    if find(k,"^remap:") then
-                        k = files[k]
-                        v = files[k] -- chained
-                    end
-                    if find(k,pattern) then
-                        if type(v) == "string" then
-                            handle(blobtype,blobpath,v,k)
-                        else
-                            for _,vv in next, v do -- indexed
-                                handle(blobtype,blobpath,vv,k)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
 function resolvers.locate_format(name)
-    local barename, fmtname = gsub(name,"%.%a+$",""), ""
-    if resolvers.usecache then
-        local path = file.join(caches.setpath("formats")) -- maybe platform
-        fmtname = file.join(path,barename..".fmt") or ""
-    end
+    local barename = gsub(name,"%.%a+$","")
+    local fmtname = caches.getfirstreadablefile(barename..".fmt","formats") or ""
     if fmtname == "" then
         fmtname = resolvers.find_files(barename..".fmt")[1] or ""
+        fmtname = resolvers.clean_path(fmtname)
     end
-    fmtname = resolvers.clean_path(fmtname)
     if fmtname ~= "" then
         local barename = file.removesuffix(fmtname)
         local luaname, lucname, luiname = barename .. ".lua", barename .. ".luc", barename .. ".lui"
@@ -10322,196 +10859,48 @@ function resolvers.boolean_variable(str,default)
     end
 end
 
-texconfig.kpse_init = false
-
-kpse = { original = kpse } setmetatable(kpse, { __index = function(k,v) return resolvers[v] end } )
-
--- for a while
-
-input = resolvers
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['data-tmp'] = {
-    version   = 1.001,
-    comment   = "companion to luat-lib.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
---[[ldx--
-<p>This module deals with caching data. It sets up the paths and
-implements loaders and savers for tables. Best is to set the
-following variable. When not set, the usual paths will be
-checked. Personally I prefer the (users) temporary path.</p>
-
-</code>
-TEXMFCACHE=$TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
-</code>
-
-<p>Currently we do no locking when we write files. This is no real
-problem because most caching involves fonts and the chance of them
-being written at the same time is small. We also need to extend
-luatools with a recache feature.</p>
---ldx]]--
-
-local format, lower, gsub = string.format, string.lower, string.gsub
-
-local trace_cache = false  trackers.register("resolvers.cache", function(v) trace_cache = v end) -- not used yet
-
-caches = caches or { }
-
-caches.path     = caches.path or nil
-caches.base     = caches.base or "luatex-cache"
-caches.more     = caches.more or "context"
-caches.direct   = false -- true is faster but may need huge amounts of memory
-caches.tree     = false
-caches.paths    = caches.paths or nil
-caches.force    = false
-caches.defaults = { "TEXMFCACHE", "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
-
-function caches.temp()
-    local cachepath = nil
-    local function check(list,isenv)
-        if not cachepath then
-            for k=1,#list do
-                local v = list[k]
-                cachepath = (isenv and (os.env[v] or "")) or v or ""
-                if cachepath == "" then
-                    -- next
-                else
-                    cachepath = resolvers.clean_path(cachepath)
-                    if lfs.isdir(cachepath) and file.iswritable(cachepath) then -- lfs.attributes(cachepath,"mode") == "directory"
-                        break
-                    elseif caches.force or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
-                        dir.mkdirs(cachepath)
-                        if lfs.isdir(cachepath) and file.iswritable(cachepath) then
-                            break
+function resolvers.with_files(pattern,handle,before,after) -- can be a nice iterator instead
+    local instance = resolvers.instance
+    local hashes = instance.hashes
+    for i=1,#hashes do
+        local hash = hashes[i]
+        local blobtype = hash.type
+        local blobpath = hash.tag
+        if blobpath then
+            if before then
+                before(blobtype,blobpath,pattern)
+            end
+            local files = instance.files[blobpath]
+            local total, checked, done = 0, 0, 0
+            if files then
+                for k,v in next, files do
+                    total = total + 1
+                    if find(k,"^remap:") then
+                        k = files[k]
+                        v = k -- files[k] -- chained
+                    end
+                    if find(k,pattern) then
+                        if type(v) == "string" then
+                            checked = checked + 1
+                            if handle(blobtype,blobpath,v,k) then
+                                done = done + 1
+                            end
+                        else
+                            checked = checked + #v
+                            for i=1,#v do
+                                if handle(blobtype,blobpath,v[i],k) then
+                                    done = done + 1
+                                end
+                            end
                         end
                     end
                 end
-                cachepath = nil
+            end
+            if after then
+                after(blobtype,blobpath,pattern,total,checked,done)
             end
         end
     end
-    check(resolvers.clean_path_list("TEXMFCACHE") or { })
-    check(caches.defaults,true)
-    if not cachepath then
-        print("\nfatal error: there is no valid (writable) cache path defined\n")
-        os.exit()
-    elseif not lfs.isdir(cachepath) then -- lfs.attributes(cachepath,"mode") ~= "directory"
-        print(format("\nfatal error: cache path %s is not a directory\n",cachepath))
-        os.exit()
-    end
-    cachepath = file.collapse_path(cachepath)
-    function caches.temp()
-        return cachepath
-    end
-    return cachepath
-end
-
-function caches.configpath()
-    return table.concat(resolvers.instance.cnffiles,";")
-end
-
-function caches.hashed(tree)
-    return md5.hex(gsub(lower(tree),"[\\\/]+","/"))
-end
-
-function caches.treehash()
-    local tree = caches.configpath()
-    if not tree or tree == "" then
-        return false
-    else
-        return caches.hashed(tree)
-    end
-end
-
-function caches.setpath(...)
-    if not caches.path then
-        if not caches.path then
-            caches.path = caches.temp()
-        end
-        caches.path = resolvers.clean_path(caches.path) -- to be sure
-        caches.tree = caches.tree or caches.treehash()
-        if caches.tree then
-            caches.path = dir.mkdirs(caches.path,caches.base,caches.more,caches.tree)
-        else
-            caches.path = dir.mkdirs(caches.path,caches.base,caches.more)
-        end
-    end
-    if not caches.path then
-        caches.path = '.'
-    end
-    caches.path = resolvers.clean_path(caches.path)
-    local dirs = { ... }
-    if #dirs > 0 then
-        local pth = dir.mkdirs(caches.path,...)
-        return pth
-    end
-    caches.path = dir.expand_name(caches.path)
-    return caches.path
-end
-
-function caches.definepath(category,subcategory)
-    return function()
-        return caches.setpath(category,subcategory)
-    end
-end
-
-function caches.setluanames(path,name)
-    return path .. "/" .. name .. ".tma", path .. "/" .. name .. ".tmc"
-end
-
-function caches.loaddata(path,name)
-    local tmaname, tmcname = caches.setluanames(path,name)
-    local loader = loadfile(tmcname) or loadfile(tmaname)
-    if loader then
-        loader = loader()
-        collectgarbage("step")
-        return loader
-    else
-        return false
-    end
-end
-
---~ function caches.loaddata(path,name)
---~     local tmaname, tmcname = caches.setluanames(path,name)
---~     return dofile(tmcname) or dofile(tmaname)
---~ end
-
-function caches.iswritable(filepath,filename)
-    local tmaname, tmcname = caches.setluanames(filepath,filename)
-    return file.iswritable(tmaname)
-end
-
-function caches.savedata(filepath,filename,data,raw)
-    local tmaname, tmcname = caches.setluanames(filepath,filename)
-    local reduce, simplify = true, true
-    if raw then
-        reduce, simplify = false, false
-    end
-    data.cache_uuid = os.uuid()
-    if caches.direct then
-        file.savedata(tmaname, table.serialize(data,'return',false,true,false)) -- no hex
-    else
-        table.tofile(tmaname, data,'return',false,true,false) -- maybe not the last true
-    end
-    local cleanup = resolvers.boolean_variable("PURGECACHE", false)
-    local strip = resolvers.boolean_variable("LUACSTRIP", true)
-    utils.lua.compile(tmaname, tmcname, cleanup, strip)
-end
-
--- here we use the cache for format loading (texconfig.[formatname|jobname])
-
---~ if tex and texconfig and texconfig.formatname and texconfig.formatname == "" then
-if tex and texconfig and (not texconfig.formatname or texconfig.formatname == "") and input and resolvers.instance then
-    if not texconfig.luaname then texconfig.luaname = "cont-en.lua" end -- or luc
-    texconfig.formatname = caches.setpath("formats") .. "/" .. gsub(texconfig.luaname,"%.lu.$",".fmt")
 end
 
 
@@ -10519,7 +10908,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['data-res'] = {
+if not modules then modules = { } end modules ['data-pre'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -10527,14 +10916,15 @@ if not modules then modules = { } end modules ['data-res'] = {
     license   = "see context related readme files"
 }
 
---~ print(resolvers.resolve("abc env:tmp file:cont-en.tex path:cont-en.tex full:cont-en.tex rel:zapf/one/p-chars.tex"))
 
 local upper, lower, gsub = string.upper, string.lower, string.gsub
 
 local prefixes = { }
 
-prefixes.environment = function(str)
-    return resolvers.clean_path(os.getenv(str) or os.getenv(upper(str)) or os.getenv(lower(str)) or "")
+local getenv = resolvers.getenv
+
+prefixes.environment = function(str) -- getenv is case insensitive anyway
+    return resolvers.clean_path(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
 end
 
 prefixes.relative = function(str,n)
@@ -10672,7 +11062,7 @@ end -- of closure
 do -- create closure to overcome 200 locals limit
 
 if not modules then modules = { } end modules ['data-con'] = {
-    version   = 1.001,
+    version   = 1.100,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
@@ -10702,46 +11092,58 @@ containers = containers or { }
 
 containers.usecache = true
 
+local report_cache = logs.new("cache")
+
 local function report(container,tag,name)
     if trace_cache or trace_containers then
-        logs.report(format("%s cache",container.subcategory),"%s: %s",tag,name or 'invalid')
+        report_cache("container: %s, tag: %s, name: %s",container.subcategory,tag,name or 'invalid')
     end
 end
 
 local allocated = { }
 
--- tracing
+local mt = {
+    __index = function(t,k)
+        if k == "writable" then
+            local writable = caches.getwritablepath(t.category,t.subcategory) or { "." }
+            t.writable = writable
+            return writable
+        elseif k == "readables" then
+            local readables = caches.getreadablepaths(t.category,t.subcategory) or { "." }
+            t.readables = readables
+            return readables
+        end
+    end
+}
 
 function containers.define(category, subcategory, version, enabled)
-    return function()
-        if category and subcategory then
-            local c = allocated[category]
-            if not c then
-                c  = { }
-                allocated[category] = c
-            end
-            local s = c[subcategory]
-            if not s then
-                s = {
-                    category = category,
-                    subcategory = subcategory,
-                    storage = { },
-                    enabled = enabled,
-                    version = version or 1.000,
-                    trace = false,
-                    path = caches and caches.setpath and caches.setpath(category,subcategory),
-                }
-                c[subcategory] = s
-            end
-            return s
-        else
-            return nil
+    if category and subcategory then
+        local c = allocated[category]
+        if not c then
+            c  = { }
+            allocated[category] = c
         end
+        local s = c[subcategory]
+        if not s then
+            s = {
+                category    = category,
+                subcategory = subcategory,
+                storage     = { },
+                enabled     = enabled,
+                version     = version or math.pi, -- after all, this is TeX
+                trace       = false,
+             -- writable    = caches.getwritablepath  and caches.getwritablepath (category,subcategory) or { "." },
+             -- readables   = caches.getreadablepaths and caches.getreadablepaths(category,subcategory) or { "." },
+            }
+            setmetatable(s,mt)
+            c[subcategory] = s
+        end
+        return s
     end
 end
 
 function containers.is_usable(container, name)
-    return container.enabled and caches and caches.iswritable(container.path, name)
+    return container.enabled and caches and caches.iswritable(container.writable, name)
 end
 
 function containers.is_valid(container, name)
@@ -10754,18 +11156,20 @@ function containers.is_valid(container, name)
 end
 
 function containers.read(container,name)
-    if container.enabled and caches and not container.storage[name] and containers.usecache then
-        container.storage[name] = caches.loaddata(container.path,name)
-        if containers.is_valid(container,name) then
+    local storage = container.storage
+    local stored = storage[name]
+    if not stored and container.enabled and caches and containers.usecache then
+        stored = caches.loaddata(container.readables,name)
+        if stored and stored.cache_version == container.version then
             report(container,"loaded",name)
         else
-            container.storage[name] = nil
+            stored = nil
         end
-    end
-    if container.storage[name] then
+        storage[name] = stored
+    elseif stored then
         report(container,"reusing",name)
     end
-    return container.storage[name]
+    return stored
 end
 
 function containers.write(container, name, data)
@@ -10774,7 +11178,7 @@ function containers.write(container, name, data)
         if container.enabled and caches then
             local unique, shared = data.unique, data.shared
             data.unique, data.shared = nil, nil
-            caches.savedata(container.path, name, data)
+            caches.savedata(container.writable, name, data)
             report(container,"saved",name)
             data.unique, data.shared = unique, shared
         end
@@ -10809,41 +11213,7 @@ local format, lower, gsub, find = string.format, string.lower, string.gsub, stri
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
--- since we want to use the cache instead of the tree, we will now
--- reimplement the saver.
-
-local save_data = resolvers.save_data
-local load_data = resolvers.load_data
-
-resolvers.cachepath = nil  -- public, for tracing
-resolvers.usecache  = true -- public, for tracing
-
-function resolvers.save_data(dataname)
-    save_data(dataname, function(cachename,dataname)
-        resolvers.usecache = not toboolean(resolvers.expansion("CACHEINTDS") or "false",true)
-        if resolvers.usecache then
-            resolvers.cachepath = resolvers.cachepath or caches.definepath("trees")
-            return file.join(resolvers.cachepath(),caches.hashed(cachename))
-        else
-            return file.join(cachename,dataname)
-        end
-    end)
-end
-
-function resolvers.load_data(pathname,dataname,filename)
-    load_data(pathname,dataname,filename,function(dataname,filename)
-        resolvers.usecache = not toboolean(resolvers.expansion("CACHEINTDS") or "false",true)
-        if resolvers.usecache then
-            resolvers.cachepath = resolvers.cachepath or caches.definepath("trees")
-            return file.join(resolvers.cachepath(),caches.hashed(pathname))
-        else
-            if not filename or (filename == "") then
-                filename = dataname
-            end
-            return file.join(pathname,filename)
-        end
-    end)
-end
+local report_resolvers = logs.new("resolvers")
 
 -- we will make a better format, maybe something xml or just text or lua
 
@@ -10852,7 +11222,7 @@ resolvers.automounted = resolvers.automounted or { }
 function resolvers.automount(usecache)
     local mountpaths = resolvers.clean_path_list(resolvers.expansion('TEXMFMOUNT'))
     if (not mountpaths or #mountpaths == 0) and usecache then
-        mountpaths = { caches.setpath("mount") }
+        mountpaths = caches.getreadablepaths("mount")
     end
     if mountpaths and #mountpaths > 0 then
         statistics.starttiming(resolvers.instance)
@@ -10866,7 +11236,7 @@ function resolvers.automount(usecache)
                             -- skip
                         elseif find(line,"^zip://") then
                             if trace_locating then
-                                logs.report("fileio","mounting %s",line)
+                                report_resolvers("mounting %s",line)
                             end
                             table.insert(resolvers.automounted,line)
                             resolvers.usezipfile(line)
@@ -10882,8 +11252,8 @@ end
 
 -- status info
 
-statistics.register("used config path", function() return caches.configpath()  end)
-statistics.register("used cache path",  function() return caches.temp() or "?" end)
+statistics.register("used config file", function() return caches.configfiles() end)
+statistics.register("used cache path",  function() return caches.usedpaths() end)
 
 -- experiment (code will move)
 
@@ -10945,6 +11315,8 @@ local unpack = unpack or table.unpack
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
+local report_resolvers = logs.new("resolvers")
+
 -- zip:///oeps.zip?name=bla/bla.tex
 -- zip:///oeps.zip?tree=tex/texmf-local
 -- zip:///texmf.zip?tree=/tex/texmf
@@ -10995,16 +11367,16 @@ function locators.zip(specification) -- where is this used? startup zips (untest
     local zfile = zip.openarchive(name) -- tricky, could be in to be initialized tree
     if trace_locating then
         if zfile then
-            logs.report("fileio","zip locator, archive '%s' found",specification.original)
+            report_resolvers("zip locator, archive '%s' found",specification.original)
         else
-            logs.report("fileio","zip locator, archive '%s' not found",specification.original)
+            report_resolvers("zip locator, archive '%s' not found",specification.original)
         end
     end
 end
 
 function hashers.zip(tag,name)
     if trace_locating then
-        logs.report("fileio","loading zip file '%s' as '%s'",name,tag)
+        report_resolvers("loading zip file '%s' as '%s'",name,tag)
     end
     resolvers.usezipfile(format("%s?tree=%s",tag,name))
 end
@@ -11029,25 +11401,25 @@ function finders.zip(specification,filetype)
             local zfile = zip.openarchive(specification.path)
             if zfile then
                 if trace_locating then
-                    logs.report("fileio","zip finder, archive '%s' found",specification.path)
+                    report_resolvers("zip finder, archive '%s' found",specification.path)
                 end
                 local dfile = zfile:open(q.name)
                 if dfile then
                     dfile = zfile:close()
                     if trace_locating then
-                        logs.report("fileio","zip finder, file '%s' found",q.name)
+                        report_resolvers("zip finder, file '%s' found",q.name)
                     end
                     return specification.original
                 elseif trace_locating then
-                    logs.report("fileio","zip finder, file '%s' not found",q.name)
+                    report_resolvers("zip finder, file '%s' not found",q.name)
                 end
             elseif trace_locating then
-                logs.report("fileio","zip finder, unknown archive '%s'",specification.path)
+                report_resolvers("zip finder, unknown archive '%s'",specification.path)
             end
         end
     end
     if trace_locating then
-        logs.report("fileio","zip finder, '%s' not found",filename)
+        report_resolvers("zip finder, '%s' not found",filename)
     end
     return unpack(finders.notfound)
 end
@@ -11060,25 +11432,25 @@ function openers.zip(specification)
             local zfile = zip.openarchive(zipspecification.path)
             if zfile then
                 if trace_locating then
-                    logs.report("fileio","zip opener, archive '%s' opened",zipspecification.path)
+                    report_resolvers("zip opener, archive '%s' opened",zipspecification.path)
                 end
                 local dfile = zfile:open(q.name)
                 if dfile then
                     logs.show_open(specification)
                     if trace_locating then
-                        logs.report("fileio","zip opener, file '%s' found",q.name)
+                        report_resolvers("zip opener, file '%s' found",q.name)
                     end
                     return openers.text_opener(specification,dfile,'zip')
                 elseif trace_locating then
-                    logs.report("fileio","zip opener, file '%s' not found",q.name)
+                    report_resolvers("zip opener, file '%s' not found",q.name)
                 end
             elseif trace_locating then
-                logs.report("fileio","zip opener, unknown archive '%s'",zipspecification.path)
+                report_resolvers("zip opener, unknown archive '%s'",zipspecification.path)
             end
         end
     end
     if trace_locating then
-        logs.report("fileio","zip opener, '%s' not found",filename)
+        report_resolvers("zip opener, '%s' not found",filename)
     end
     return unpack(openers.notfound)
 end
@@ -11091,27 +11463,27 @@ function loaders.zip(specification)
             local zfile = zip.openarchive(specification.path)
             if zfile then
                 if trace_locating then
-                    logs.report("fileio","zip loader, archive '%s' opened",specification.path)
+                    report_resolvers("zip loader, archive '%s' opened",specification.path)
                 end
                 local dfile = zfile:open(q.name)
                 if dfile then
                     logs.show_load(filename)
                     if trace_locating then
-                        logs.report("fileio","zip loader, file '%s' loaded",filename)
+                        report_resolvers("zip loader, file '%s' loaded",filename)
                     end
                     local s = dfile:read("*all")
                     dfile:close()
                     return true, s, #s
                 elseif trace_locating then
-                    logs.report("fileio","zip loader, file '%s' not found",q.name)
+                    report_resolvers("zip loader, file '%s' not found",q.name)
                 end
             elseif trace_locating then
-                logs.report("fileio","zip loader, unknown archive '%s'",specification.path)
+                report_resolvers("zip loader, unknown archive '%s'",specification.path)
             end
         end
     end
     if trace_locating then
-        logs.report("fileio","zip loader, '%s' not found",filename)
+        report_resolvers("zip loader, '%s' not found",filename)
     end
     return unpack(openers.notfound)
 end
@@ -11129,7 +11501,7 @@ function resolvers.usezipfile(zipname)
         if z then
             local instance = resolvers.instance
             if trace_locating then
-                logs.report("fileio","zip registering, registering archive '%s'",zipname)
+                report_resolvers("zip registering, registering archive '%s'",zipname)
             end
             statistics.starttiming(instance)
             resolvers.prepend_hash('zip',zipname,zipfile)
@@ -11138,10 +11510,10 @@ function resolvers.usezipfile(zipname)
             instance.files[zipname] = resolvers.register_zip_file(z,tree or "")
             statistics.stoptiming(instance)
         elseif trace_locating then
-            logs.report("fileio","zip registering, unknown archive '%s'",zipname)
+            report_resolvers("zip registering, unknown archive '%s'",zipname)
         end
     elseif trace_locating then
-        logs.report("fileio","zip registering, '%s' not found",zipname)
+        report_resolvers("zip registering, '%s' not found",zipname)
     end
 end
 
@@ -11153,7 +11525,7 @@ function resolvers.register_zip_file(z,tree)
         filter = format("^%s/(.+)/(.-)$",tree)
     end
     if trace_locating then
-        logs.report("fileio","zip registering, using filter '%s'",filter)
+        report_resolvers("zip registering, using filter '%s'",filter)
     end
     local register, n = resolvers.register_file, 0
     for i in z:files() do
@@ -11170,9 +11542,96 @@ function resolvers.register_zip_file(z,tree)
             n = n + 1
         end
     end
-    logs.report("fileio","zip registering, %s files registered",n)
+    report_resolvers("zip registering, %s files registered",n)
     return files
 end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['data-tre'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- \input tree://oeps1/**/oeps.tex
+
+local find, gsub, format = string.find, string.gsub, string.format
+local unpack = unpack or table.unpack
+
+local report_resolvers = logs.new("resolvers")
+
+local done, found, notfound = { }, { }, resolvers.finders.notfound
+
+function resolvers.finders.tree(specification,filetype)
+    local fnd = found[specification]
+    if not fnd then
+        local spec = resolvers.splitmethod(specification).path or ""
+        if spec ~= "" then
+            local path, name = file.dirname(spec), file.basename(spec)
+            if path == "" then path = "." end
+            local hash = done[path]
+            if not hash then
+                local pattern = path .. "/*" -- we will use the proper splitter
+                hash = dir.glob(pattern)
+                done[path] = hash
+            end
+            local pattern = "/" .. gsub(name,"([%.%-%+])", "%%%1") .. "$"
+            for k=1,#hash do
+                local v = hash[k]
+                if find(v,pattern) then
+                    found[specification] = v
+                    return v
+                end
+            end
+        end
+        fnd = unpack(notfound) -- unpack ? why not just notfound[1]
+        found[specification] = fnd
+    end
+    return fnd
+end
+
+function resolvers.locators.tree(specification)
+    local spec = resolvers.splitmethod(specification)
+    local path = spec.path
+    if path ~= '' and lfs.isdir(path) then
+        if trace_locating then
+            report_resolvers("tree locator '%s' found (%s)",path,specification)
+        end
+        resolvers.append_hash('tree',specification,path,false) -- don't cache
+    elseif trace_locating then
+        report_resolvers("tree locator '%s' not found",path)
+    end
+end
+
+function resolvers.hashers.tree(tag,name)
+    if trace_locating then
+        report_resolvers("analysing tree '%s' as '%s'",name,tag)
+    end
+    -- todo: maybe share with done above
+    local spec = resolvers.splitmethod(tag)
+    local path = spec.path
+    resolvers.generators.tex(path,tag) -- we share this with the normal tree analyzer
+end
+
+function resolvers.generators.tree(tag)
+    local spec = resolvers.splitmethod(tag)
+    local path = spec.path
+    resolvers.generators.tex(path,tag) -- we share this with the normal tree analyzer
+end
+
+function resolvers.concatinators.tree(tag,path,name)
+    return file.join(tag,path,name)
+end
+
+resolvers.isreadable.tree    = file.isreadable
+resolvers.openers.tree       = resolvers.openers.generic
+resolvers.loaders.tree       = resolvers.loaders.generic
 
 
 end -- of closure
@@ -11187,32 +11646,31 @@ if not modules then modules = { } end modules ['data-crl'] = {
     license   = "see context related readme files"
 }
 
-local gsub = string.gsub
+-- this one is replaced by data-sch.lua --
 
 curl = curl or { }
 
-curl.cached    = { }
-curl.cachepath = caches.definepath("curl")
-
+local gsub = string.gsub
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
-function curl.fetch(protocol, name)
-    local cachename = curl.cachepath() .. "/" .. gsub(name,"[^%a%d%.]+","-")
---  cachename = gsub(cachename,"[\\/]", io.fileseparator)
-    cachename = gsub(cachename,"[\\]", "/") -- cleanup
-    if not curl.cached[name] then
+local cached = { }
+
+function curl.fetch(protocol, name) -- todo: use socket library
+    local cleanname = gsub(name,"[^%a%d%.]+","-")
+    local cachename = caches.setfirstwritablefile(cleanname,"curl")
+    if not cached[name] then
         if not io.exists(cachename) then
-            curl.cached[name] = cachename
+            cached[name] = cachename
             local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name -- no protocol .. "://"
             os.spawn(command)
         end
         if io.exists(cachename) then
-            curl.cached[name] = cachename
+            cached[name] = cachename
         else
-            curl.cached[name] = ""
+            cached[name] = ""
         end
     end
-    return curl.cached[name]
+    return cached[name]
 end
 
 function finders.curl(protocol,filename)
@@ -11259,6 +11717,8 @@ if not modules then modules = { } end modules ['data-lua'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
+local report_resolvers = logs.new("resolvers")
+
 local gsub, insert = string.gsub, table.insert
 local unpack = unpack or table.unpack
 
@@ -11287,7 +11747,7 @@ local function thepath(...)
     local t = { ... } t[#t+1] = "?.lua"
     local path = file.join(unpack(t))
     if trace_locating then
-        logs.report("fileio","! appending '%s' to 'package.path'",path)
+        report_resolvers("! appending '%s' to 'package.path'",path)
     end
     return path
 end
@@ -11309,11 +11769,11 @@ local function loaded(libpaths,name,simple)
         local libpath = libpaths[i]
         local resolved = gsub(libpath,"%?",simple)
         if trace_locating then -- more detail
-            logs.report("fileio","! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
+            report_resolvers("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
         end
         if resolvers.isreadable.file(resolved) then
             if trace_locating then
-                logs.report("fileio","! lib '%s' located via 'package.path': '%s'",name,resolved)
+                report_resolvers("! lib '%s' located via 'package.path': '%s'",name,resolved)
             end
             return loadfile(resolved)
         end
@@ -11323,17 +11783,17 @@ end
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
     if trace_locating then -- mode detail
-        logs.report("fileio","! locating '%s'",name)
+        report_resolvers("! locating '%s'",name)
     end
     for i=1,#libformats do
         local format = libformats[i]
         local resolved = resolvers.find_file(name,format) or ""
         if trace_locating then -- mode detail
-            logs.report("fileio","! checking for '%s' using 'libformat path': '%s'",name,format)
+            report_resolvers("! checking for '%s' using 'libformat path': '%s'",name,format)
         end
         if resolved ~= "" then
             if trace_locating then
-                logs.report("fileio","! lib '%s' located via environment: '%s'",name,resolved)
+                report_resolvers("! lib '%s' located via environment: '%s'",name,resolved)
             end
             return loadfile(resolved)
         end
@@ -11356,11 +11816,11 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
             local path = paths[p]
             local resolved = file.join(path,libname)
             if trace_locating then -- mode detail
-                logs.report("fileio","! checking for '%s' using 'clibformat path': '%s'",libname,path)
+                report_resolvers("! checking for '%s' using 'clibformat path': '%s'",libname,path)
             end
             if resolvers.isreadable.file(resolved) then
                 if trace_locating then
-                    logs.report("fileio","! lib '%s' located via 'clibformat': '%s'",libname,resolved)
+                    report_resolvers("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
                 end
                 return package.loadlib(resolved,name)
             end
@@ -11370,140 +11830,33 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
         local libpath = clibpaths[i]
         local resolved = gsub(libpath,"?",simple)
         if trace_locating then -- more detail
-            logs.report("fileio","! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
+            report_resolvers("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
         end
         if resolvers.isreadable.file(resolved) then
             if trace_locating then
-                logs.report("fileio","! lib '%s' located via 'package.cpath': '%s'",name,resolved)
+                report_resolvers("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
             end
             return package.loadlib(resolved,name)
         end
     end
     -- just in case the distribution is messed up
     if trace_loading then -- more detail
-        logs.report("fileio","! checking for '%s' using 'luatexlibs': '%s'",name)
+        report_resolvers("! checking for '%s' using 'luatexlibs': '%s'",name)
     end
     local resolved = resolvers.find_file(file.basename(name),'luatexlibs') or ""
     if resolved ~= "" then
         if trace_locating then
-            logs.report("fileio","! lib '%s' located by basename via environment: '%s'",name,resolved)
+            report_resolvers("! lib '%s' located by basename via environment: '%s'",name,resolved)
         end
         return loadfile(resolved)
     end
     if trace_locating then
-        logs.report("fileio",'? unable to locate lib: %s',name)
+        report_resolvers('? unable to locate lib: %s',name)
     end
 --  return "unable to locate " .. name
 end
 
 resolvers.loadlualib = require
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['luat-kps'] = {
-    version   = 1.001,
-    comment   = "companion to luatools.lua",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
---[[ldx--
-<p>This file is used when we want the input handlers to behave like
-<type>kpsewhich</type>. What to do with the following:</p>
-
-<typing>
-{$SELFAUTOLOC,$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}
-$SELFAUTOLOC    : /usr/tex/bin/platform
-$SELFAUTODIR    : /usr/tex/bin
-$SELFAUTOPARENT : /usr/tex
-</typing>
-
-<p>How about just forgetting about them?</p>
---ldx]]--
-
-local suffixes = resolvers.suffixes
-local formats  = resolvers.formats
-
-suffixes['gf']                       = { '<resolution>gf' }
-suffixes['pk']                       = { '<resolution>pk' }
-suffixes['base']                     = { 'base' }
-suffixes['bib']                      = { 'bib' }
-suffixes['bst']                      = { 'bst' }
-suffixes['cnf']                      = { 'cnf' }
-suffixes['mem']                      = { 'mem' }
-suffixes['mf']                       = { 'mf' }
-suffixes['mfpool']                   = { 'pool' }
-suffixes['mft']                      = { 'mft' }
-suffixes['mppool']                   = { 'pool' }
-suffixes['graphic/figure']           = { 'eps', 'epsi' }
-suffixes['texpool']                  = { 'pool' }
-suffixes['PostScript header']        = { 'pro' }
-suffixes['ist']                      = { 'ist' }
-suffixes['web']                      = { 'web', 'ch' }
-suffixes['cweb']                     = { 'w', 'web', 'ch' }
-suffixes['cmap files']               = { 'cmap' }
-suffixes['lig files']                = { 'lig' }
-suffixes['bitmap font']              = { }
-suffixes['MetaPost support']         = { }
-suffixes['TeX system documentation'] = { }
-suffixes['TeX system sources']       = { }
-suffixes['dvips config']             = { }
-suffixes['type42 fonts']             = { }
-suffixes['web2c files']              = { }
-suffixes['other text files']         = { }
-suffixes['other binary files']       = { }
-suffixes['opentype fonts']           = { 'otf' }
-
-suffixes['fmt']                      = { 'fmt' }
-suffixes['texmfscripts']             = { 'rb','lua','py','pl' }
-
-suffixes['pdftex config']            = { }
-suffixes['Troff fonts']              = { }
-
-suffixes['ls-R']                     = { }
-
---[[ldx--
-<p>If you wondered abou tsome of the previous mappings, how about
-the next bunch:</p>
---ldx]]--
-
-formats['bib']                      = ''
-formats['bst']                      = ''
-formats['mft']                      = ''
-formats['ist']                      = ''
-formats['web']                      = ''
-formats['cweb']                     = ''
-formats['MetaPost support']         = ''
-formats['TeX system documentation'] = ''
-formats['TeX system sources']       = ''
-formats['Troff fonts']              = ''
-formats['dvips config']             = ''
-formats['graphic/figure']           = ''
-formats['ls-R']                     = ''
-formats['other text files']         = ''
-formats['other binary files']       = ''
-
-formats['gf']                       = ''
-formats['pk']                       = ''
-formats['base']                     = 'MFBASES'
-formats['cnf']                      = ''
-formats['mem']                      = 'MPMEMS'
-formats['mf']                       = 'MFINPUTS'
-formats['mfpool']                   = 'MFPOOL'
-formats['mppool']                   = 'MPPOOL'
-formats['texpool']                  = 'TEXPOOL'
-formats['PostScript header']        = 'TEXPSHEADERS'
-formats['cmap files']               = 'CMAPFONTS'
-formats['type42 fonts']             = 'T42FONTS'
-formats['web2c files']              = 'WEB2C'
-formats['pdftex config']            = 'PDFTEXCONFIG'
-formats['texmfscripts']             = 'TEXMFSCRIPTS'
-formats['bitmap font']              = ''
-formats['lig files']                = 'LIGFONTS'
 
 
 end -- of closure
@@ -11519,49 +11872,52 @@ if not modules then modules = { } end modules ['data-aux'] = {
 }
 
 local find = string.find
+local type, next = type, next
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+
+local report_resolvers = logs.new("resolvers")
 
 function resolvers.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
     local scriptpath = "scripts/context/lua"
     newname = file.addsuffix(newname,"lua")
     local oldscript = resolvers.clean_path(oldname)
     if trace_locating then
-        logs.report("fileio","to be replaced old script %s", oldscript)
+        report_resolvers("to be replaced old script %s", oldscript)
     end
     local newscripts = resolvers.find_files(newname) or { }
     if #newscripts == 0 then
         if trace_locating then
-            logs.report("fileio","unable to locate new script")
+            report_resolvers("unable to locate new script")
         end
     else
         for i=1,#newscripts do
             local newscript = resolvers.clean_path(newscripts[i])
             if trace_locating then
-                logs.report("fileio","checking new script %s", newscript)
+                report_resolvers("checking new script %s", newscript)
             end
             if oldscript == newscript then
                 if trace_locating then
-                    logs.report("fileio","old and new script are the same")
+                    report_resolvers("old and new script are the same")
                 end
             elseif not find(newscript,scriptpath) then
                 if trace_locating then
-                    logs.report("fileio","new script should come from %s",scriptpath)
+                    report_resolvers("new script should come from %s",scriptpath)
                 end
             elseif not (find(oldscript,file.removesuffix(newname).."$") or find(oldscript,newname.."$")) then
                 if trace_locating then
-                    logs.report("fileio","invalid new script name")
+                    report_resolvers("invalid new script name")
                 end
             else
                 local newdata = io.loaddata(newscript)
                 if newdata then
                     if trace_locating then
-                        logs.report("fileio","old script content replaced by new content")
+                        report_resolvers("old script content replaced by new content")
                     end
                     io.savedata(oldscript,newdata)
                     break
                 elseif trace_locating then
-                    logs.report("fileio","unable to load new script")
+                    report_resolvers("unable to load new script")
                 end
             end
         end
@@ -11581,70 +11937,116 @@ if not modules then modules = { } end modules ['data-tmf'] = {
     license   = "see context related readme files"
 }
 
-local find, gsub, match = string.find, string.gsub, string.match
-local getenv, setenv = os.getenv, os.setenv
+--  =  <<
+--  ?  ??
+--  <  +=
+--  >  =+
 
--- loads *.tmf files in minimal tree roots (to be optimized and documented)
+function resolvers.load_tree(tree)
+    if type(tree) == "string" and tree ~= "" then
 
-function resolvers.check_environment(tree)
-    logs.simpleline()
-    setenv('TMP', getenv('TMP') or getenv('TEMP') or getenv('TMPDIR') or getenv('HOME'))
-    setenv('TEXOS', getenv('TEXOS') or ("texmf-" .. os.platform))
-    setenv('TEXPATH', gsub(tree or "tex","\/+$",''))
-    setenv('TEXMFOS', getenv('TEXPATH') .. "/" .. getenv('TEXOS'))
-    logs.simpleline()
-    logs.simple("preset : TEXPATH => %s", getenv('TEXPATH'))
-    logs.simple("preset : TEXOS   => %s", getenv('TEXOS'))
-    logs.simple("preset : TEXMFOS => %s", getenv('TEXMFOS'))
-    logs.simple("preset : TMP     => %s", getenv('TMP'))
-    logs.simple('')
-end
+        local getenv, setenv = resolvers.getenv, resolvers.setenv
 
-function resolvers.load_environment(name) -- todo: key=value as well as lua
-    local f = io.open(name)
-    if f then
-        for line in f:lines() do
-            if find(line,"^[%%%#]") then
-                -- skip comment
-            else
-                local key, how, value = match(line,"^(.-)%s*([<=>%?]+)%s*(.*)%s*$")
-                if how then
-                    value = gsub(value,"%%(.-)%%", function(v) return getenv(v) or "" end)
-                        if how == "=" or how == "<<" then
-                            setenv(key,value)
-                    elseif how == "?" or how == "??" then
-                            setenv(key,getenv(key) or value)
-                    elseif how == "<" or how == "+=" then
-                        if getenv(key) then
-                            setenv(key,getenv(key) .. io.fileseparator .. value)
-                        else
-                            setenv(key,value)
-                        end
-                    elseif how == ">" or how == "=+" then
-                        if getenv(key) then
-                            setenv(key,value .. io.pathseparator .. getenv(key))
-                        else
-                            setenv(key,value)
-                        end
-                    end
-                end
-            end
+        -- later might listen to the raw osenv var as well
+        local texos   = "texmf-" .. os.platform
+
+        local oldroot = environment.texroot
+        local newroot = file.collapse_path(tree)
+
+        local newtree = file.join(newroot,texos)
+        local newpath = file.join(newtree,"bin")
+
+        if not lfs.isdir(newtree) then
+            logs.simple("no '%s' under tree %s",texos,tree)
+            os.exit()
         end
-        f:close()
+        if not lfs.isdir(newpath) then
+            logs.simple("no '%s/bin' under tree %s",texos,tree)
+            os.exit()
+        end
+
+        local texmfos = newtree
+
+        environment.texroot = newroot
+        environment.texos   = texos
+        environment.texmfos = texmfos
+
+        setenv('SELFAUTOPARENT', newroot)
+        setenv('SELFAUTODIR',    newtree)
+        setenv('SELFAUTOLOC',    newpath)
+        setenv('TEXROOT',        newroot)
+        setenv('TEXOS',          texos)
+        setenv('TEXMFOS',        texmfos)
+        setenv('TEXROOT',        newroot)
+        setenv('TEXMFCNF',       resolvers.luacnfspec)
+        setenv("PATH",           newpath .. io.pathseparator .. getenv("PATH"))
+
+        logs.simple("changing from root '%s' to '%s'",oldroot,newroot)
+        logs.simple("prepending '%s' to binary path",newpath)
+        logs.simple()
     end
 end
 
-function resolvers.load_tree(tree)
-    if tree and tree ~= "" then
-        local setuptex = 'setuptex.tmf'
-        if lfs.attributes(tree, "mode") == "directory" then -- check if not nil
-            setuptex = tree .. "/" .. setuptex
-        else
-            setuptex = tree
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['data-lst'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- used in mtxrun
+
+local find, concat, upper, format = string.find, table.concat, string.upper, string.format
+
+resolvers.listers = resolvers.listers or { }
+
+local function tabstr(str)
+    if type(str) == 'table' then
+        return concat(str," | ")
+    else
+        return str
+    end
+end
+
+local function list(list,report,pattern)
+    pattern = pattern and pattern ~= "" and upper(pattern) or ""
+    local instance = resolvers.instance
+    local report = report or texio.write_nl
+    local sorted = table.sortedkeys(list)
+    for i=1,#sorted do
+        local key = sorted[i]
+        if pattern == "" or find(upper(key),pattern) then
+            report(format('%s  %s=%s',instance.origins[key] or "---",key,tabstr(list[key])))
         end
-        if io.exists(setuptex) then
-            resolvers.check_environment(tree)
-            resolvers.load_environment(setuptex)
+    end
+end
+
+function resolvers.listers.variables (report,pattern) list(resolvers.instance.variables, report,pattern) end
+function resolvers.listers.expansions(report,pattern) list(resolvers.instance.expansions,report,pattern) end
+
+function resolvers.listers.configurations(report,pattern)
+    pattern = pattern and pattern ~= "" and upper(pattern) or ""
+    local report = report or texio.write_nl
+    local instance = resolvers.instance
+    local sorted = table.sortedkeys(instance.kpsevars)
+    for i=1,#sorted do
+        local key = sorted[i]
+        if pattern == "" or find(upper(key),pattern) then
+            report(format("%s\n",key))
+            local order = instance.order
+            for i=1,#order do
+                local str = order[i][key]
+                if str then
+                    report(format("\t%s\t%s",i,str))
+                end
+            end
+            report("")
         end
     end
 end
@@ -11753,111 +12155,140 @@ function states.get(key,default)
     return states.get_by_tag(states.tag,key,default)
 end
 
---~ states.data.update = {
---~ 	["version"] = {
---~ 		["major"] = 0,
---~ 		["minor"] = 1,
---~ 	},
---~ 	["rsync"] = {
---~ 		["server"]     = "contextgarden.net",
---~ 		["module"]     = "minimals",
---~ 		["repository"] = "current",
---~ 		["flags"]      = "-rpztlv --stats",
---~ 	},
---~ 	["tasks"] = {
---~ 		["update"] = true,
---~ 		["make"]   = true,
---~         ["delete"] = false,
---~ 	},
---~ 	["platform"] = {
---~ 		["host"]  = true,
---~ 		["other"] = {
---~ 			["mswin"]     = false,
---~ 			["linux"]     = false,
---~ 			["linux-64"]  = false,
---~ 			["osx-intel"] = false,
---~ 			["osx-ppc"]   = false,
---~ 			["sun"]       = false,
---~ 		},
---~ 	},
---~ 	["context"] = {
---~ 		["available"] = {"current", "beta", "alpha", "experimental"},
---~ 		["selected"]  = "current",
---~ 	},
---~ 	["formats"] = {
---~ 		["cont-en"] = true,
---~ 		["cont-nl"] = true,
---~ 		["cont-de"] = false,
---~ 		["cont-cz"] = false,
---~ 		["cont-fr"] = false,
---~ 		["cont-ro"] = false,
---~ 	},
---~ 	["engine"] = {
---~ 		["pdftex"] = {
---~ 			["install"] = true,
---~ 			["formats"] = {
---~ 				["pdftex"] = true,
---~ 			},
---~ 		},
---~ 		["luatex"] = {
---~ 			["install"] = true,
---~ 			["formats"] = {
---~ 			},
---~ 		},
---~ 		["xetex"] = {
---~ 			["install"] = true,
---~ 			["formats"] = {
---~ 				["xetex"] = false,
---~ 			},
---~ 		},
---~ 		["metapost"] = {
---~ 			["install"] = true,
---~ 			["formats"] = {
---~ 				["mpost"] = true,
---~ 				["metafun"] = true,
---~ 			},
---~ 		},
---~ 	},
---~ 	["fonts"] = {
---~ 	},
---~ 	["doc"] = {
---~ 	},
---~ 	["modules"] = {
---~ 		["f-urwgaramond"] = false,
---~ 		["f-urwgothic"] = false,
---~ 		["t-bnf"] = false,
---~ 		["t-chromato"] = false,
---~ 		["t-cmscbf"] = false,
---~ 		["t-cmttbf"] = false,
---~ 		["t-construction-plan"] = false,
---~ 		["t-degrade"] = false,
---~ 		["t-french"] = false,
---~ 		["t-lettrine"] = false,
---~ 		["t-lilypond"] = false,
---~ 		["t-mathsets"] = false,
---~ 		["t-tikz"] = false,
---~ 		["t-typearea"] = false,
---~ 		["t-vim"] = false,
---~ 	},
---~ }
 
---~ states.save("teststate", "update")
---~ states.load("teststate", "update")
 
---~ print(states.get_by_tag("update","rsync.server","unknown"))
---~ states.set_by_tag("update","rsync.server","oeps")
---~ print(states.get_by_tag("update","rsync.server","unknown"))
---~ states.save("teststate", "update")
---~ states.load("teststate", "update")
---~ print(states.get_by_tag("update","rsync.server","unknown"))
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['luat-fmt'] = {
+    version   = 1.001,
+    comment   = "companion to mtxrun",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- helper for mtxrun
+
+function environment.make_format(name)
+    -- change to format path (early as we need expanded paths)
+    local olddir = lfs.currentdir()
+    local path = caches.getwritablepath("formats") or "" -- maybe platform
+    if path ~= "" then
+        lfs.chdir(path)
+    end
+    logs.simple("format path: %s",lfs.currentdir())
+    -- check source file
+    local texsourcename = file.addsuffix(name,"tex")
+    local fulltexsourcename = resolvers.find_file(texsourcename,"tex") or ""
+    if fulltexsourcename == "" then
+        logs.simple("no tex source file with name: %s",texsourcename)
+        lfs.chdir(olddir)
+        return
+    else
+        logs.simple("using tex source file: %s",fulltexsourcename)
+    end
+    local texsourcepath = dir.expand_name(file.dirname(fulltexsourcename)) -- really needed
+    -- check specification
+    local specificationname = file.replacesuffix(fulltexsourcename,"lus")
+    local fullspecificationname = resolvers.find_file(specificationname,"tex") or ""
+    if fullspecificationname == "" then
+        specificationname = file.join(texsourcepath,"context.lus")
+        fullspecificationname = resolvers.find_file(specificationname,"tex") or ""
+    end
+    if fullspecificationname == "" then
+        logs.simple("unknown stub specification: %s",specificationname)
+        lfs.chdir(olddir)
+        return
+    end
+    local specificationpath = file.dirname(fullspecificationname)
+    -- load specification
+    local usedluastub = nil
+    local usedlualibs = dofile(fullspecificationname)
+    if type(usedlualibs) == "string" then
+        usedluastub = file.join(file.dirname(fullspecificationname),usedlualibs)
+    elseif type(usedlualibs) == "table" then
+        logs.simple("using stub specification: %s",fullspecificationname)
+        local texbasename = file.basename(name)
+        local luastubname = file.addsuffix(texbasename,"lua")
+        local lucstubname = file.addsuffix(texbasename,"luc")
+        -- pack libraries in stub
+        logs.simple("creating initialization file: %s",luastubname)
+        utils.merger.selfcreate(usedlualibs,specificationpath,luastubname)
+        -- compile stub file (does not save that much as we don't use this stub at startup any more)
+        local strip = resolvers.boolean_variable("LUACSTRIP", true)
+        if utils.lua.compile(luastubname,lucstubname,false,strip) and lfs.isfile(lucstubname) then
+            logs.simple("using compiled initialization file: %s",lucstubname)
+            usedluastub = lucstubname
+        else
+            logs.simple("using uncompiled initialization file: %s",luastubname)
+            usedluastub = luastubname
+        end
+    else
+        logs.simple("invalid stub specification: %s",fullspecificationname)
+        lfs.chdir(olddir)
+        return
+    end
+    -- generate format
+    local q = string.quote
+    local command = string.format("luatex --ini --lua=%s %s %sdump",q(usedluastub),q(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
+    logs.simple("running command: %s\n",command)
+    os.spawn(command)
+    -- remove related mem files
+    local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
+ -- logs.simple("removing related mplib format with pattern '%s'", pattern)
+    local mp = dir.glob(pattern)
+    if mp then
+        for i=1,#mp do
+            local name = mp[i]
+            logs.simple("removing related mplib format %s", file.basename(name))
+            os.remove(name)
+        end
+    end
+    lfs.chdir(olddir)
+end
+
+function environment.run_format(name,data,more)
+ -- hm, rather old code here; we can now use the file.whatever functions
+    if name and name ~= "" then
+        local barename = file.removesuffix(name)
+        local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats")
+        if fmtname == "" then
+            fmtname = resolvers.find_file(file.addsuffix(barename,"fmt")) or ""
+        end
+        fmtname = resolvers.clean_path(fmtname)
+        if fmtname == "" then
+            logs.simple("no format with name: %s",name)
+        else
+            local barename = file.removesuffix(name) -- expanded name
+            local luaname = file.addsuffix(barename,"luc")
+            if not lfs.isfile(luaname) then
+                luaname = file.addsuffix(barename,"lua")
+            end
+            if not lfs.isfile(luaname) then
+                logs.simple("using format name: %s",fmtname)
+                logs.simple("no luc/lua with name: %s",barename)
+            else
+                local q = string.quote
+                local command = string.format("luatex --fmt=%s --lua=%s %s %s",q(barename),q(luaname),q(data),more ~= "" and q(more) or "")
+                logs.simple("running command: %s",command)
+                os.spawn(command)
+            end
+        end
+    end
+end
 
 
 end -- of closure
 -- end library merge
 
-own = { } -- not local
+own = { } -- not local, might change
 
-own.libs = { -- todo: check which ones are really needed
+own.libs = { -- order can be made better
+
     'l-string.lua',
     'l-lpeg.lua',
     'l-table.lua',
@@ -11870,24 +12301,32 @@ own.libs = { -- todo: check which ones are really needed
     'l-url.lua',
     'l-dir.lua',
     'l-boolean.lua',
+    'l-unicode.lua',
     'l-math.lua',
---  'l-unicode.lua',
---  'l-tex.lua',
     'l-utils.lua',
     'l-aux.lua',
---  'l-xml.lua',
+
+    'trac-inf.lua',
+    'trac-set.lua',
     'trac-tra.lua',
+    'trac-log.lua',
+    'trac-pro.lua',
+    'luat-env.lua', -- can come before inf (as in mkiv)
+
     'lxml-tab.lua',
     'lxml-lpt.lua',
---  'lxml-ent.lua',
+ -- 'lxml-ent.lua',
     'lxml-mis.lua',
     'lxml-aux.lua',
     'lxml-xml.lua',
-    'luat-env.lua',
-    'trac-inf.lua',
-    'trac-log.lua',
-    'data-res.lua',
+
+
+    'data-ini.lua',
+    'data-exp.lua',
+    'data-env.lua',
     'data-tmp.lua',
+    'data-met.lua',
+    'data-res.lua',
     'data-pre.lua',
     'data-inp.lua',
     'data-out.lua',
@@ -11896,13 +12335,15 @@ own.libs = { -- todo: check which ones are really needed
 --  'data-tex.lua',
 --  'data-bin.lua',
     'data-zip.lua',
+    'data-tre.lua',
     'data-crl.lua',
     'data-lua.lua',
-    'data-kps.lua', -- so that we can replace kpsewhich
     'data-aux.lua', -- updater
-    'data-tmf.lua', -- tree files
-    -- needed ?
-    'luat-sta.lua', -- states
+    'data-tmf.lua',
+    'data-lst.lua',
+
+    'luat-sta.lua',
+    'luat-fmt.lua',
 }
 
 -- We need this hack till luatex is fixed.
@@ -11915,35 +12356,60 @@ end
 
 -- End of hack.
 
-own.name = (environment and environment.ownname) or arg[0]  or 'luatools.lua'
+own.name = (environment and environment.ownname) or arg[0] or 'mtxrun.lua'
+own.path = string.gsub(string.match(own.name,"^(.+)[\\/].-$") or ".","\\","/")
 
+local ownpath, owntree = own.path, environment and environment.ownpath or own.path
 
-own.path = string.match(own.name,"^(.+)[\\/].-$") or "."
-own.list = { '.' }
-if own.path ~= '.' then
-    table.insert(own.list,own.path)
-end
-table.insert(own.list,own.path.."/../../../tex/context/base")
-table.insert(own.list,own.path.."/mtx")
-table.insert(own.list,own.path.."/../sources")
+own.list = {
+    '.',
+    ownpath ,
+    ownpath .. "/../sources", -- HH's development path
+    owntree .. "/../../texmf-local/tex/context/base",
+    owntree .. "/../../texmf-context/tex/context/base",
+    owntree .. "/../../texmf-dist/tex/context/base",
+    owntree .. "/../../texmf/tex/context/base",
+    owntree .. "/../../../texmf-local/tex/context/base",
+    owntree .. "/../../../texmf-context/tex/context/base",
+    owntree .. "/../../../texmf-dist/tex/context/base",
+    owntree .. "/../../../texmf/tex/context/base",
+}
+
+if own.path == "." then table.remove(own.list,1) end
 
 local function locate_libs()
-    for _, lib in pairs(own.libs) do
-        for _, pth in pairs(own.list) do
-            local filename = string.gsub(pth .. "/" .. lib,"\\","/")
-            local codeblob = loadfile(filename)
-            if codeblob then
-                codeblob()
-                own.list = { pth } -- speed up te search
-                break
+    for l=1,#own.libs do
+        local lib = own.libs[l]
+        for p =1,#own.list do
+            local pth = own.list[p]
+            local filename = pth .. "/" .. lib
+            local found = lfs.isfile(filename)
+            if found then
+                return pth
             end
         end
     end
 end
 
-if not resolvers then
-    locate_libs()
+local function load_libs()
+    local found = locate_libs()
+    if found then
+        for l=1,#own.libs do
+            local filename = found .. "/" .. own.libs[l]
+            local codeblob = loadfile(filename)
+            if codeblob then
+                codeblob()
+            end
+        end
+    else
+        resolvers = nil
+    end
 end
+
+if not resolvers then
+    load_libs()
+end
+
 
 if not resolvers then
     print("")
@@ -11954,7 +12420,11 @@ if not resolvers then
     os.exit()
 end
 
-logs.setprogram('MTXrun',"TDS Runner Tool 1.24",environment.arguments["verbose"] or false)
+logs.setprogram('MTXrun',"TDS Runner Tool 1.26")
+
+if environment.arguments["verbose"] then
+    trackers.enable("resolvers.locating")
+end
 
 local instance = resolvers.reset()
 
@@ -11982,8 +12452,8 @@ messages.help = [[
 --ifchanged=filename  only execute when given file has changed (md checksum)
 --iftouched=old,new   only execute when given file has changed (time stamp)
 
---make                create stubs for (context related) scripts
---remove              remove stubs (context related) scripts
+--makestubs           create stubs for (context related) scripts
+--removestubs         remove stubs (context related) scripts
 --stubpath=binpath    paths where stubs wil be written
 --windows             create windows (mswin) stubs
 --unix                create unix (linux) stubs
@@ -12003,7 +12473,23 @@ messages.help = [[
 --forcekpse           force using kpse (handy when no mkiv and cache installed but less functionality)
 
 --prefixes            show supported prefixes
+
+--generate            generate file database
+
+--variables           show configuration variables
+--expansions          show expanded variables
+--configurations      show configuration order
+--expand-braces       expand complex variable
+--expand-path         expand variable (resolve paths)
+--expand-var          expand variable (resolve references)
+--show-path           show path expansion of ...
+--var-value           report value of variable
+--find-file           report file location
+--find-path           report path of file
+
+--pattern=str         filter variables
 ]]
+
 
 runners.applications = {
     ["lua"] = "luatex --luaonly",
@@ -12057,45 +12543,40 @@ end
 
 function runners.prepare()
     local checkname = environment.argument("ifchanged")
-    if checkname and checkname ~= "" then
+    local verbose = environment.argument("verbose")
+    if type(checkname) == "string" and checkname ~= "" then
         local oldchecksum = file.loadchecksum(checkname)
         local newchecksum = file.checksum(checkname)
         if oldchecksum == newchecksum then
-            logs.simple("file '%s' is unchanged",checkname)
+            if verbose then
+                logs.simple("file '%s' is unchanged",checkname)
+            end
             return "skip"
-        else
+        elseif verbose then
             logs.simple("file '%s' is changed, processing started",checkname)
         end
         file.savechecksum(checkname)
     end
-    local oldname, newname = string.split(environment.argument("iftouched") or "", ",")
-    if oldname and newname and oldname ~= "" and newname ~= "" then
-        if not file.needs_updating(oldname,newname) then
-            logs.simple("file '%s' and '%s' have same age",oldname,newname)
-            return "skip"
-        else
-            logs.simple("file '%s' is older than '%s'",oldname,newname)
-        end
-    end
-    local tree = environment.argument('tree') or ""
-    if environment.argument('autotree') then
-        tree = os.getenv('TEXMFSTART_TREE') or os.getenv('TEXMFSTARTTREE') or tree
-    end
-    if tree and tree ~= "" then
-        resolvers.load_tree(tree)
-    end
-    local env = environment.argument('environment') or ""
-    if env and env ~= "" then
-        for _,e in pairs(string.split(env)) do
-            -- maybe force suffix when not given
-            resolvers.load_tree(e)
+    local touchname = environment.argument("iftouched")
+    if type(touchname) == "string" and touchname ~= "" then
+        local oldname, newname = string.split(touchname, ",")
+        if oldname and newname and oldname ~= "" and newname ~= "" then
+            if not file.needs_updating(oldname,newname) then
+                if verbose then
+                    logs.simple("file '%s' and '%s' have same age",oldname,newname)
+                end
+                return "skip"
+            elseif verbose then
+                logs.simple("file '%s' is older than '%s'",oldname,newname)
+            end
         end
     end
     local runpath = environment.argument("path")
-    if runpath and not lfs.chdir(runpath) then
+    if type(runpath) == "string" and not lfs.chdir(runpath) then
         logs.simple("unable to change to path '%s'",runpath)
         return "error"
     end
+    runners.prepare = function() end
     return "run"
 end
 
@@ -12333,7 +12814,7 @@ end
 
 function runners.launch_file(filename)
     instance.allresults = true
-    logs.setverbose(true)
+    trackers.enable("resolvers.locating")
     local pattern = environment.arguments["pattern"]
     if not pattern or pattern == "" then
         pattern = filename
@@ -12413,7 +12894,19 @@ function runners.find_mtx_script(filename)
     return fullname
 end
 
-function runners.execute_ctx_script(filename)
+function runners.register_arguments(...)
+    local arguments = environment.arguments_after
+    local passedon = { ... }
+    for i=#passedon,1,-1 do
+        local pi = passedon[i]
+        if pi then
+            table.insert(arguments,1,pi)
+        end
+    end
+end
+
+function runners.execute_ctx_script(filename,...)
+    runners.register_arguments(...)
     local arguments = environment.arguments_after
     local fullname = runners.find_mtx_script(filename) or ""
     if file.extname(fullname) == "cld" then
@@ -12426,7 +12919,7 @@ function runners.execute_ctx_script(filename)
     -- retry after generate but only if --autogenerate
     if fullname == "" and environment.argument("autogenerate") then -- might become the default
         instance.renewcache = true
-        logs.setverbose(true)
+        trackers.enable("resolvers.locating")
         resolvers.load()
         --
         fullname = runners.find_mtx_script(filename) or ""
@@ -12466,10 +12959,9 @@ function runners.execute_ctx_script(filename)
             return true
         end
     else
-    --  logs.setverbose(true)
         if filename == "" or filename == "help" then
             local context = resolvers.find_file("mtx-context.lua")
-            logs.setverbose(true)
+            trackers.enable("resolvers.locating")
             if context ~= "" then
                 local result = dir.glob((string.gsub(context,"mtx%-context","mtx-*"))) -- () needed
                 local valid = { }
@@ -12603,87 +13095,317 @@ if environment.argument("usekpse") or environment.argument("forcekpse") or is_mk
 
     end
 
+    function runners.loadbase()
+    end
+
 else
 
-    if not resolvers.load() then
-        logs.simple("forcing cache reload")
-        instance.renewcache = true
-        logs.setverbose(true)
-        if not resolvers.load() then
-            logs.simple("there is something wrong with your system")
+    function runners.loadbase(...)
+        if not resolvers.load(...) then
+            logs.simple("forcing cache reload")
+            instance.renewcache = true
+            trackers.enable("resolvers.locating")
+            if not resolvers.load(...) then
+                logs.simple("the resolver databases are not present or outdated")
+            end
         end
     end
 
 end
 
+resolvers.load_tree(environment.argument('tree'))
+
 if environment.argument("selfmerge") then
+
     -- embed used libraries
-    utils.merger.selfmerge(own.name,own.libs,own.list)
+
+    runners.loadbase()
+    local found = locate_libs()
+    if found then
+        utils.merger.selfmerge(own.name,own.libs,{ found })
+    end
+
 elseif environment.argument("selfclean") then
+
     -- remove embedded libraries
+
+    runners.loadbase()
     utils.merger.selfclean(own.name)
+
 elseif environment.argument("selfupdate") then
-    logs.setverbose(true)
+
+    runners.loadbase()
+    trackers.enable("resolvers.locating")
     resolvers.update_script(own.name,"mtxrun")
+
 elseif environment.argument("ctxlua") or environment.argument("internal") then
+
     -- run a script by loading it (using libs)
+
+    runners.loadbase()
     ok = runners.execute_script(filename,true)
+
 elseif environment.argument("script") or environment.argument("scripts") then
+
     -- run a script by loading it (using libs), pass args
+
+    runners.loadbase()
     if is_mkii_stub then
-    -- execute mkii script
         ok = runners.execute_script(filename,false,true)
     else
         ok = runners.execute_ctx_script(filename)
     end
+
 elseif environment.argument("execute") then
+
     -- execute script
+
+    runners.loadbase()
     ok = runners.execute_script(filename)
+
 elseif environment.argument("direct") then
+
     -- equals bin:
+
+    runners.loadbase()
     ok = runners.execute_program(filename)
+
 elseif environment.argument("edit") then
+
     -- edit file
+
+    runners.loadbase()
     runners.edit_script(filename)
+
 elseif environment.argument("launch") then
+
+    runners.loadbase()
     runners.launch_file(filename)
-elseif environment.argument("make") then
-    -- make stubs
+
+elseif environment.argument("makestubs") then
+
+    -- make stubs (depricated)
+
     runners.handle_stubs(true)
-elseif environment.argument("remove") then
-    -- remove stub
+
+elseif environment.argument("removestubs") then
+
+    -- remove stub (depricated)
+
+    runners.loadbase()
     runners.handle_stubs(false)
+
 elseif environment.argument("resolve") then
+
     -- resolve string
+
+    runners.loadbase()
     runners.resolve_string(filename)
+
 elseif environment.argument("locate") then
+
     -- locate file
+
+    runners.loadbase()
     runners.locate_file(filename)
-elseif environment.argument("platform")then
+
+elseif environment.argument("platform") or environment.argument("show-platform") then
+
     -- locate platform
+
+    runners.loadbase()
     runners.locate_platform()
+
 elseif environment.argument("prefixes") then
+
+    runners.loadbase()
     runners.prefixes()
+
 elseif environment.argument("timedrun") then
+
     -- locate platform
+
+    runners.loadbase()
     runners.timedrun(filename)
+
+elseif environment.argument("variables") or environment.argument("show-variables") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--variables",filename)
+
+    resolvers.load("nofiles")
+    resolvers.listers.variables(false,environment.argument("pattern"))
+
+elseif environment.argument("expansions") or environment.argument("show-expansions") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--expansions",filename)
+
+    resolvers.load("nofiles")
+    resolvers.listers.expansions(false,environment.argument("pattern"))
+
+elseif environment.argument("configurations") or environment.argument("show-configurations") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--configurations",filename)
+
+    resolvers.load("nofiles")
+    resolvers.listers.configurations(false,environment.argument("pattern"))
+
+elseif environment.argument("find-file") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--find-file",filename)
+
+    resolvers.load()
+    local pattern = environment.argument("pattern")
+    local format = environment.arguments["format"] or instance.format
+    if not pattern then
+        runners.register_arguments(filename)
+        environment.initialize_arguments(environment.arguments_after)
+        resolvers.for_files(resolvers.find_files,environment.files,format)
+    elseif type(pattern) == "string" then
+        instance.allresults = true -- brrrr
+        resolvers.for_files(resolvers.find_files,{ pattern }, format)
+    end
+
+elseif environment.argument("find-path") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--find-path",filename)
+
+    resolvers.load()
+    local path = resolvers.find_path(filename, instance.my_format)
+    if logs.verbose then
+        logs.simple(path)
+    else
+        print(path)
+    end
+
+elseif environment.argument("expand-braces") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--expand-braces",filename)
+
+    resolvers.load("nofiles")
+    runners.register_arguments(filename)
+    environment.initialize_arguments(environment.arguments_after)
+    resolvers.for_files(resolvers.expand_braces, environment.files)
+
+elseif environment.argument("expand-path") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--expand-path",filename)
+
+    resolvers.load("nofiles")
+    runners.register_arguments(filename)
+    environment.initialize_arguments(environment.arguments_after)
+    resolvers.for_files(resolvers.expand_path, environment.files)
+
+elseif environment.argument("expand-var") or environment.argument("expand-variable") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--expand-var",filename)
+
+    resolvers.load("nofiles")
+    runners.register_arguments(filename)
+    environment.initialize_arguments(environment.arguments_after)
+    resolvers.for_files(resolvers.expand_var, environment.files)
+
+elseif environment.argument("show-path") or environment.argument("path-value") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--show-path",filename)
+
+    resolvers.load("nofiles")
+    runners.register_arguments(filename)
+    environment.initialize_arguments(environment.arguments_after)
+    resolvers.for_files(resolvers.show_path, environment.files)
+
+elseif environment.argument("var-value") or environment.argument("show-value") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--show-value",filename)
+
+    resolvers.load("nofiles")
+    runners.register_arguments(filename)
+    environment.initialize_arguments(environment.arguments_after)
+    resolvers.for_files(resolvers.var_value,environment.files)
+
+elseif environment.argument("format-path") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--format-path",filename)
+
+    resolvers.load()
+    logs.simple(caches.getwritablepath("format"))
+
+elseif environment.argument("pattern") then
+
+    -- luatools
+
+    runners.execute_ctx_script("mtx-base","--pattern='" .. environment.argument("pattern") .. "'",filename)
+
+elseif environment.argument("generate") then
+
+    -- luatools
+
+    instance.renewcache = true
+    trackers.enable("resolvers.locating")
+    resolvers.load()
+
+elseif environment.argument("make") or environment.argument("ini") or environment.argument("compile") then
+
+    -- luatools: runners.execute_ctx_script("mtx-base","--make",filename)
+
+    resolvers.load()
+    trackers.enable("resolvers.locating")
+    environment.make_format(filename)
+
+elseif environment.argument("run") then
+
+    -- luatools
+
+    runners.execute_ctx_script("mtx-base","--run",filename)
+
+elseif environment.argument("fmt") then
+
+    -- luatools
+
+    runners.execute_ctx_script("mtx-base","--fmt",filename)
+
+elseif environment.argument("help") and filename=='base' then
+
+    -- luatools
+
+    runners.execute_ctx_script("mtx-base","--help")
+
 elseif environment.argument("help") or filename=='help' or filename == "" then
+
     logs.help(messages.help)
-    -- execute script
+
 elseif filename:find("^bin:") then
+
+    runners.loadbase()
     ok = runners.execute_program(filename)
+
 elseif is_mkii_stub then
+
     -- execute mkii script
+
+    runners.loadbase()
     ok = runners.execute_script(filename,false,true)
-else
+
+elseif false then
+
+    runners.loadbase()
     ok = runners.execute_ctx_script(filename)
     if not ok then
         ok = runners.execute_script(filename)
     end
+
+else
+
+    runners.execute_ctx_script("mtx-base",filename)
+
 end
 
-if os.platform == "unix" then
-    io.write("\n")
+if logs.verbose then
+    logs.simpleline()
+    logs.simple("runtime: %0.3f seconds",os.runtime())
+end
+
+if os.type ~= "windows" then
+    texio.write("\n")
 end
 
 if ok == false then ok = 1 elseif ok == true then ok = 0 end

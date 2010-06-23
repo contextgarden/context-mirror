@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% last_data was written wrong so it needs checking
+
 \startluacode
     local last_data = nil
     local format = string.format
@@ -20,7 +22,7 @@
     end
     function fonts.otf.show_shape(n)
         local tfmdata = fonts.ids[font.current()]
-        lastdata = tfmdata
+        last_data = tfmdata
         local charnum = tonumber(n)
         if not charnum then
             charnum = tfmdata.unicodes[n]
@@ -197,7 +199,7 @@
     end
     function fonts.otf.show_all_shapes(start,stop)
         local tfmdata = fonts.ids[font.current()]
-        lastdata = tfmdata
+        last_data = tfmdata
         start, stop = start or "\\startTEXpage\\gobbleoneargument", stop or "\\stopTEXpage"
         local unicodes, indices, descriptions = tfmdata.unicodes, tfmdata.indices, tfmdata.descriptions
         for _, unicode in next, table.sortedkeys(descriptions) do
@@ -210,7 +212,7 @@
         end
     end
     function fonts.otf.show_shape_field(unicode,name)
-        local tfmdata = lastdata or fonts.ids[font.current()]
+        local tfmdata = last_data or fonts.ids[font.current()]
         local d = tfmdata.descriptions[unicode]
         if d then
             if name == "unicode" then
@@ -268,5 +270,6 @@
 \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{NameMe.1190} \stopTEXpage
 
 \ShowAllGlyphShapes{simplenaskhi}{100bp}
+% \ShowAllGlyphShapes{xits}{100bp}
 
 \stoptext

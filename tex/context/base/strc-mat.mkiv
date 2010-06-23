@@ -129,10 +129,16 @@
 
 \def\doplacecurrentformulanumber
   {\dohandlecurrentformulareferences
-   %\currentformulasattribute   % todo
-   %\currentformulasattribute   % todo
-   %\currentsubformulaattribute % todo
    \labeltexts\currentformula{\doconvertedstructurecounter[\v!formula][]}}
+
+% \def\theboxdestinationattribute#1{\iflocation\ifx#1\relax\else\ifx#1\empty\else attr      \destinationattribute#1\fi\fi\fi}
+% \def\thedestinationattribute   #1{\iflocation\ifx#1\relax\else\ifx#1\empty\else \attribute\destinationattribute#1\fi\fi\fi}
+
+\def\theformuladestinationattribute#1%
+  {\iflocation\ifx#1\relax\else\ifx#1\empty\else
+     \attribute\destinationattribute#1%
+     \glet#1\relax
+   \fi\fi\fi}
 
 \appendtoks
     \glet\currentplaceformulasynchronize \relax
@@ -141,6 +147,8 @@
     \glet\currentnestedformulasynchronize\relax
     \let\currentformula\empty
 \to \everyresetformulas
+
+% currently we do the number, some day we will do the (sub) formula
 
 \def\dohandlecurrentformulareferences
   {\ifnum\placeformulanumbermode=\plusthree
@@ -152,6 +160,7 @@
        \currentplaceformulaattribute
      \currentplaceformulasynchronize
      \glet\currentplaceformulasynchronize\relax
+\theformuladestinationattribute\currentplaceformulaattribute
    \fi
    \ifnum\formulasnumbermode=\plusthree
      \storecurrentformulanumber
@@ -162,6 +171,7 @@
        \currentformulasattribute
      \currentformulassynchronize
      \glet\currentformulassynchronize\relax
+\theformuladestinationattribute\currentformulasattribute
    \fi
    \ifnum\subformulasnumbermode=\plusthree
      \currentsubformulassynchronize
@@ -176,16 +186,20 @@
        \currentnestedformulaattribute
      \currentnestedformulasynchronize
      \glet\currentnestedformulasynchronize\relax
+\theformuladestinationattribute\currentnestedformulaattribute
    \fi}
+
+% needs checking ... too many:
+
+\let\currentplaceformulaattribute\relax \let\currentplaceformulasynchronize\relax \let\currentplaceformulanumber\relax
+\let\currentformulaattribute     \relax \let\currentformulasynchronize     \relax \let\currentformulanumber     \relax
+\let\currentsubformulaattribute  \relax \let\currentsubformulasynchronize  \relax \let\currentsubformulanumber  \relax
+\let\currentformulasattribute    \relax \let\currentformulassynchronize    \relax \let\currentformulasnumber    \relax
 
 \let\currentformulasreference     \empty \let\currentformulassuffix     \empty
 \let\currentformulareference      \empty \let\currentformulasuffix      \empty
 \let\currentsubformulareference   \empty \let\currentsubformulasuffix   \empty
 \let\currentnestedformulareference\empty \let\currentnestedformulasuffix\empty
-
-\let\currentformulasynchronize   \relax  \let\currentformulaattribute   \relax
-\let\currentsubformulasynchronize\relax  \let\currentsubformulaattribute\relax
-\let\currentformulassynchronize  \relax  \let\currentformulasattribute  \relax
 
 \def\dohandleformulanumbering
   {\doincrementsubstructurecounter[\v!formula][1]%

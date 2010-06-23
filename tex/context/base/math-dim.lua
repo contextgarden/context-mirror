@@ -249,7 +249,6 @@ function mathematics.dimensions(dimens)
             end
             t[variable] = tt
         end
---~ logs.report("warning", "version 0.47 is needed for proper delimited math")
         local d = {
             AxisHeight                                  = t . axis                  . text_style,
             AccentBaseHeight                            = t . accent_base_height    . text_style,

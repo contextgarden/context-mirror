@@ -13,6 +13,8 @@ local texsprint, texcount = tex.sprint, tex.count
 
 local trace_counters = false  trackers.register("structure.counters", function(v) trace_counters = v end)
 
+local report_counters = logs.new("counters")
+
 structure              = structure           or { }
 structure.helpers      = structure.helpers   or { }
 structure.sections     = structure.sections  or { }
@@ -108,7 +110,7 @@ local function constructor(t,s,name,i)
     end
 end
 
-local enhance = function()
+local function enhance()
     for name, cd in next, counterdata do
         local data = cd.data
         for i=1,#data do
@@ -275,14 +277,14 @@ local function synchronize(name,d)
     local dc = d.counter
     if dc then
         if trace_counters then
-            logs.report("counters","setting counter %s with name %s to %s",dc,name,d.number)
+            report_counters("setting counter %s with name %s to %s",dc,name,d.number)
         end
         tex.setcount("global",dc,d.number)
     end
     local cs = counterspecials[name]
     if cs then
         if trace_counters then
-            logs.report("counters","invoking special for name %s",name)
+            report_counters("invoking special for name %s",name)
         end
         cs()
     end
@@ -390,10 +392,10 @@ end
 
 function counters.check(level) -- not used (yet)
     for name, cd in next, counterdata do
-        -- logs.report("counters","%s %s %s",name,cd.level,level)
+        -- report_counters("%s %s %s",name,cd.level,level)
         if cd.level == level then
             if trace_counters then
-                logs.report("counters","resetting %s at level %s",name,level)
+                report_counters("resetting %s at level %s",name,level)
             end
             counters.reset(name)
         end

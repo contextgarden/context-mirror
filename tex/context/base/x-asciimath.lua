@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['x-asciimath'] = {
 
 local trace_mapping = false  if trackers then trackers.register("asciimath.mapping", function(v) trace_mapping = v end) end
 
+local report_asciimath = logs.new("asciimath")
+
 local format = string.format
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local lpegmatch = lpeg.match
@@ -164,22 +166,22 @@ local parser
 local function converted(original,totex)
     local ok, result
     if trace_mapping then
-        logs.report("asciimath","original  : %s",original)
+        report_asciimath("original  : %s",original)
     end
     local premapped = lpegmatch(premapper,original)
     if premapped then
         if trace_mapping then
-            logs.report("asciimath","prepared  : %s",premapped)
+            report_asciimath("prepared  : %s",premapped)
         end
         local parsed = lpegmatch(parser,premapped)
         if parsed then
             if trace_mapping then
-                logs.report("asciimath","parsed    : %s",parsed)
+                report_asciimath("parsed    : %s",parsed)
             end
             local postmapped = lpegmatch(postmapper,parsed)
             if postmapped then
                 if trace_mapping then
-                    logs.report("asciimath","finalized : %s",postmapped)
+                    report_asciimath("finalized : %s",postmapped)
                 end
                 result, ok = postmapped, true
             else

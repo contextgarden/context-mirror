@@ -354,7 +354,11 @@
    \normalexpanded{\noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}}%
    \currentstructuresynchronize}
 
-\unexpanded\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
+% \unexpanded\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
+
+\unexpanded\def\fullstructureheadnumber
+   {\edef\currentstructureheadlabeltag{\currentstructureblock\c!label}%
+    \labeltexts{\structureheadparameter\currentstructureheadlabeltag}{\structurenumber}}
 
 % \def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
 % \unexpanded\def\fullstructureheadtitle{\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}

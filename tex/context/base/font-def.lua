@@ -16,6 +16,9 @@ local directive_embedall = false  directives.register("fonts.embedall", function
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
 trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
 
+local report_define = logs.new("define fonts")
+local report_afm    = logs.new("load afm")
+
 --[[ldx--
 <p>Here we deal with defining fonts. We do so by intercepting the
 default loader that only handles <l n='tfm'/>.</p>
@@ -120,7 +123,7 @@ end
 function define.makespecification(specification, lookup, name, sub, method, detail, size)
     size = size or 655360
     if trace_defining then
-        logs.report("define font","%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
+        report_define("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
             specification, (lookup ~= "" and lookup) or "[file]", (name ~= "" and name) or "-",
             (sub ~= "" and sub) or "-", (method ~= "" and method) or "-", (detail ~= "" and detail) or "-")
     end
@@ -318,14 +321,14 @@ function tfm.read(specification)
         if forced ~= "" then
             tfmtable = readers[lower(forced)](specification)
             if not tfmtable then
-                logs.report("define font","forced type %s of %s not found",forced,specification.name)
+                report_define("forced type %s of %s not found",forced,specification.name)
             end
         else
             for s=1,#sequence do -- reader sequence
                 local reader = sequence[s]
                 if readers[reader] then -- not really needed
                     if trace_defining then
-                        logs.report("define font","trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
+                        report_define("trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
                     end
                     tfmtable = readers[reader](specification)
                     if tfmtable then
@@ -350,7 +353,7 @@ function tfm.read(specification)
         end
     end
     if not tfmtable then
-        logs.report("define font","font with name %s is not found",specification.name)
+        report_define("font with name %s is not found",specification.name)
     end
     return tfmtable
 end
@@ -410,7 +413,7 @@ local function check_afm(specification,fullname)
                 foundname = shortname
              -- tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
                 if trace_loading then
-                    logs.report("load afm","stripping encoding prefix from filename %s",afmname)
+                    report_afm("stripping encoding prefix from filename %s",afmname)
                 end
             end
         end
@@ -543,7 +546,7 @@ function define.register(fontdata,id)
         local hash = fontdata.hash
         if not tfm.internalized[hash] then
             if trace_defining then
-                logs.report("define font","loading at 2 id %s, hash: %s",id or "?",hash or "?")
+                report_define("loading at 2 id %s, hash: %s",id or "?",hash or "?")
             end
             fonts.identifiers[id] = fontdata
             fonts.characters [id] = fontdata.characters
@@ -589,7 +592,7 @@ function define.read(specification,size,id) -- id can be optional, name can alre
     specification = define.resolve(specification)
     local hash = tfm.hash_instance(specification)
     if cache_them then
-        local fontdata = containers.read(fonts.cache(),hash) -- for tracing purposes
+        local fontdata = containers.read(fonts.cache,hash) -- for tracing purposes
     end
     local fontdata = define.registered(hash) -- id
     if not fontdata then
@@ -602,7 +605,7 @@ function define.read(specification,size,id) -- id can be optional, name can alre
             end
         end
         if cache_them then
-            fontdata = containers.write(fonts.cache(),hash,fontdata) -- for tracing purposes
+            fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes
         end
         if fontdata then
             fontdata.hash = hash
@@ -614,9 +617,9 @@ function define.read(specification,size,id) -- id can be optional, name can alre
     end
     define.last = fontdata or id -- todo ! ! ! ! !
     if not fontdata then
-        logs.report("define font", "unknown font %s, loading aborted",specification.name)
+        report_define( "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(fontdata) == "table" then
-        logs.report("define font","using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
+        report_define("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
             fontdata.type          or "unknown",
             id                     or "?",
             fontdata.name          or "?",
@@ -637,18 +640,18 @@ function vf.find(name)
         local format = fonts.logger.format(name)
         if format == 'tfm' or format == 'ofm' then
             if trace_defining then
-                logs.report("define font","locating vf for %s",name)
+                report_define("locating vf for %s",name)
             end
             return resolvers.findbinfile(name,"ovf")
         else
             if trace_defining then
-                logs.report("define font","vf for %s is already taken care of",name)
+                report_define("vf for %s is already taken care of",name)
             end
             return nil -- ""
         end
     else
         if trace_defining then
-            logs.report("define font","locating vf for %s",name)
+            report_define("locating vf for %s",name)
         end
         return resolvers.findbinfile(name,"ovf")
     end

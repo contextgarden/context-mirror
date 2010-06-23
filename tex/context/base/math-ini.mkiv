@@ -250,10 +250,10 @@
   {\normalhbox\bgroup\mf
    \dowithnextbox{\flushnextbox\egroup}\normalhbox}
 
-\def\mbox
+\def\mbox % we cannot add \dontleavehmode ... else no \setbox0\mbox possible
   {\ifmmode\normalmbox\else\normalhbox\fi}
 
-\def\enablembox
+\unexpanded\def\enablembox
   {\appendtoks
      \ifx\normalhbox\undefined\let\normalhbox\hbox\fi
      \let\hbox\mbox

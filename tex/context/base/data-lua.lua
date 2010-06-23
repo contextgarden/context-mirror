@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['data-lua'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
+local report_resolvers = logs.new("resolvers")
+
 local gsub, insert = string.gsub, table.insert
 local unpack = unpack or table.unpack
 
@@ -40,7 +42,7 @@ local function thepath(...)
     local t = { ... } t[#t+1] = "?.lua"
     local path = file.join(unpack(t))
     if trace_locating then
-        logs.report("fileio","! appending '%s' to 'package.path'",path)
+        report_resolvers("! appending '%s' to 'package.path'",path)
     end
     return path
 end
@@ -62,11 +64,11 @@ local function loaded(libpaths,name,simple)
         local libpath = libpaths[i]
         local resolved = gsub(libpath,"%?",simple)
         if trace_locating then -- more detail
-            logs.report("fileio","! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
+            report_resolvers("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
         end
         if resolvers.isreadable.file(resolved) then
             if trace_locating then
-                logs.report("fileio","! lib '%s' located via 'package.path': '%s'",name,resolved)
+                report_resolvers("! lib '%s' located via 'package.path': '%s'",name,resolved)
             end
             return loadfile(resolved)
         end
@@ -76,17 +78,17 @@ end
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
     if trace_locating then -- mode detail
-        logs.report("fileio","! locating '%s'",name)
+        report_resolvers("! locating '%s'",name)
     end
     for i=1,#libformats do
         local format = libformats[i]
         local resolved = resolvers.find_file(name,format) or ""
         if trace_locating then -- mode detail
-            logs.report("fileio","! checking for '%s' using 'libformat path': '%s'",name,format)
+            report_resolvers("! checking for '%s' using 'libformat path': '%s'",name,format)
         end
         if resolved ~= "" then
             if trace_locating then
-                logs.report("fileio","! lib '%s' located via environment: '%s'",name,resolved)
+                report_resolvers("! lib '%s' located via environment: '%s'",name,resolved)
             end
             return loadfile(resolved)
         end
@@ -109,11 +111,11 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
             local path = paths[p]
             local resolved = file.join(path,libname)
             if trace_locating then -- mode detail
-                logs.report("fileio","! checking for '%s' using 'clibformat path': '%s'",libname,path)
+                report_resolvers("! checking for '%s' using 'clibformat path': '%s'",libname,path)
             end
             if resolvers.isreadable.file(resolved) then
                 if trace_locating then
-                    logs.report("fileio","! lib '%s' located via 'clibformat': '%s'",libname,resolved)
+                    report_resolvers("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
                 end
                 return package.loadlib(resolved,name)
             end
@@ -123,28 +125,28 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
         local libpath = clibpaths[i]
         local resolved = gsub(libpath,"?",simple)
         if trace_locating then -- more detail
-            logs.report("fileio","! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
+            report_resolvers("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
         end
         if resolvers.isreadable.file(resolved) then
             if trace_locating then
-                logs.report("fileio","! lib '%s' located via 'package.cpath': '%s'",name,resolved)
+                report_resolvers("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
             end
             return package.loadlib(resolved,name)
         end
     end
     -- just in case the distribution is messed up
     if trace_loading then -- more detail
-        logs.report("fileio","! checking for '%s' using 'luatexlibs': '%s'",name)
+        report_resolvers("! checking for '%s' using 'luatexlibs': '%s'",name)
     end
     local resolved = resolvers.find_file(file.basename(name),'luatexlibs') or ""
     if resolved ~= "" then
         if trace_locating then
-            logs.report("fileio","! lib '%s' located by basename via environment: '%s'",name,resolved)
+            report_resolvers("! lib '%s' located by basename via environment: '%s'",name,resolved)
         end
         return loadfile(resolved)
     end
     if trace_locating then
-        logs.report("fileio",'? unable to locate lib: %s',name)
+        report_resolvers('? unable to locate lib: %s',name)
     end
 --  return "unable to locate " .. name
 end

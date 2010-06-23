@@ -150,7 +150,7 @@ end
 --  context --ctx=m-modules.ctx xxx.mkiv
 
 
-logs.extendbanner("ConTeXt Module Documentation Generators 1.00",true)
+logs.extendbanner("ConTeXt Module Documentation Generators 1.00")
 
 messages.help = [[
 --convert             convert source files (tex, mkii, mkiv, mp) to 'ted' files

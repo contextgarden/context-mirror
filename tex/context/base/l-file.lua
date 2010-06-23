@@ -10,9 +10,10 @@ if not modules then modules = { } end modules ['l-file'] = {
 
 file = file or { }
 
-local concat = table.concat
+local insert, concat = table.insert, table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
+local getcurrentdir = lfs.currentdir
 
 local function dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
@@ -50,6 +51,13 @@ function file.addsuffix(filename, suffix, criterium)
         return filename
     elseif criterium == true then
         return filename .. "." .. suffix
+    elseif not criterium then
+        local n, s = splitname(filename)
+        if not s or s == "" then
+            return filename .. "." .. suffix
+        else
+            return filename
+        end
     else
         local n, s = splitname(filename)
         if s and s ~= "" then
@@ -72,14 +80,14 @@ function file.addsuffix(filename, suffix, criterium)
     end
 end
 
---~ print(file.addsuffix("name","new")                   .. "-> name.new")
---~ print(file.addsuffix("name.old","new")               .. "-> name.old")
---~ print(file.addsuffix("name.old","new",true)          .. "-> name.old.new")
---~ print(file.addsuffix("name.old","new","new")         .. "-> name.new")
---~ print(file.addsuffix("name.old","new","old")         .. "-> name.old")
---~ print(file.addsuffix("name.old","new","foo")         .. "-> name.new")
---~ print(file.addsuffix("name.old","new",{"foo","bar"}) .. "-> name.new")
---~ print(file.addsuffix("name.old","new",{"old","bar"}) .. "-> name.old")
+--~ print("1 " .. file.addsuffix("name","new")                   .. " -> name.new")
+--~ print("2 " .. file.addsuffix("name.old","new")               .. " -> name.old")
+--~ print("3 " .. file.addsuffix("name.old","new",true)          .. " -> name.old.new")
+--~ print("4 " .. file.addsuffix("name.old","new","new")         .. " -> name.new")
+--~ print("5 " .. file.addsuffix("name.old","new","old")         .. " -> name.old")
+--~ print("6 " .. file.addsuffix("name.old","new","foo")         .. " -> name.new")
+--~ print("7 " .. file.addsuffix("name.old","new",{"foo","bar"}) .. " -> name.new")
+--~ print("8 " .. file.addsuffix("name.old","new",{"old","bar"}) .. " -> name.old")
 
 function file.replacesuffix(filename, suffix)
     return (gsub(filename,"%.[%a%d]+$","")) .. "." .. suffix
@@ -175,31 +183,94 @@ end
 
 -- we can hash them weakly
 
-function file.collapse_path(str)
-    str = gsub(str,"\\","/")
-    if find(str,"/") then
-        str = gsub(str,"^%./",(gsub(lfs.currentdir(),"\\","/")) .. "/") -- ./xx in qualified
-        str = gsub(str,"/%./","/")
-        local n, m = 1, 1
-        while n > 0 or m > 0 do
-            str, n = gsub(str,"[^/%.]+/%.%.$","")
-            str, m = gsub(str,"[^/%.]+/%.%./","")
-        end
-        str = gsub(str,"([^/])/$","%1")
-    --  str = gsub(str,"^%./","") -- ./xx in qualified
-        str = gsub(str,"/%.$","")
+--~ function file.old_collapse_path(str) -- fails on b.c/..
+--~     str = gsub(str,"\\","/")
+--~     if find(str,"/") then
+--~         str = gsub(str,"^%./",(gsub(lfs.currentdir(),"\\","/")) .. "/") -- ./xx in qualified
+--~         str = gsub(str,"/%./","/")
+--~         local n, m = 1, 1
+--~         while n > 0 or m > 0 do
+--~             str, n = gsub(str,"[^/%.]+/%.%.$","")
+--~             str, m = gsub(str,"[^/%.]+/%.%./","")
+--~         end
+--~         str = gsub(str,"([^/])/$","%1")
+--~     --  str = gsub(str,"^%./","") -- ./xx in qualified
+--~         str = gsub(str,"/%.$","")
+--~     end
+--~     if str == "" then str = "." end
+--~     return str
+--~ end
+--~
+--~ The previous one fails on "a.b/c"  so Taco came up with a split based
+--~ variant. After some skyping we got it sort of compatible with the old
+--~ one. After that the anchoring to currentdir was added in a better way.
+--~ Of course there are some optimizations too. Finally we had to deal with
+--~ windows drive prefixes and thinsg like sys://.
+
+function file.collapse_path(str,anchor)
+    if anchor and not find(str,"^/") and not find(str,"^%a:") then
+        str = getcurrentdir() .. "/" .. str
     end
-    if str == "" then str = "." end
-    return str
+    if str == "" or str =="." then
+        return "."
+    elseif find(str,"^%.%.") then
+        str = gsub(str,"\\","/")
+        return str
+    elseif not find(str,"%.") then
+        str = gsub(str,"\\","/")
+        return str
+    end
+    str = gsub(str,"\\","/")
+    local starter, rest = match(str,"^(%a+:/*)(.-)$")
+    if starter then
+        str = rest
+    end
+    local oldelements = checkedsplit(str,"/")
+    local newelements = { }
+    local i = #oldelements
+    while i > 0 do
+        local element = oldelements[i]
+        if element == '.' then
+            -- do nothing
+        elseif element == '..' then
+            local n = i -1
+            while n > 0 do
+                local element = oldelements[n]
+                if element ~= '..' and element ~= '.' then
+                    oldelements[n] = '.'
+                    break
+                else
+                    n = n - 1
+                end
+             end
+            if n < 1 then
+               insert(newelements,1,'..')
+            end
+        elseif element ~= "" then
+            insert(newelements,1,element)
+        end
+        i = i - 1
+    end
+    if #newelements == 0 then
+        return starter or "."
+    elseif starter then
+        return starter .. concat(newelements, '/')
+    elseif find(str,"^/") then
+        return "/" .. concat(newelements,'/')
+    else
+        return concat(newelements, '/')
+    end
 end
 
---~ print(file.collapse_path("/a"))
---~ print(file.collapse_path("a/./b/.."))
---~ print(file.collapse_path("a/aa/../b/bb"))
---~ print(file.collapse_path("a/../.."))
---~ print(file.collapse_path("a/.././././b/.."))
---~ print(file.collapse_path("a/./././b/.."))
---~ print(file.collapse_path("a/b/c/../.."))
+--~ local function test(str)
+--~    print(string.format("%-20s %-15s %-15s",str,file.collapse_path(str),file.collapse_path(str,true)))
+--~ end
+--~ test("a/b.c/d") test("b.c/d") test("b.c/..")
+--~ test("/") test("c:/..") test("sys://..")
+--~ test("") test("./") test(".") test("..") test("./..") test("../..")
+--~ test("a") test("./a") test("/a") test("a/../..")
+--~ test("a/./b/..") test("a/aa/../b/bb") test("a/.././././b/..") test("a/./././b/..")
+--~ test("a/b/c/../..") test("./a/b/c/../..") test("a/b/c/../..")
 
 function file.robustname(str)
     return (gsub(str,"[^%a%d%/%-%.\\]+","-"))

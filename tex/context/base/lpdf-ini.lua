@@ -21,6 +21,8 @@ local trace_resources  = false  trackers.register("backend.resources",  function
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
 local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
 
+local report_backends = logs.new("backends")
+
 lpdf = lpdf or { }
 
 local function tosixteen(str)
@@ -185,18 +187,18 @@ local tostring_v = function(t)
     end
 end
 
-local function value_x(t)     return t                      end -- the call is experimental
-local function value_s(t,key) return t[1]                   end -- the call is experimental
-local function value_u(t,key) return t[1]                   end -- the call is experimental
-local function value_n(t,key) return t[1]                   end -- the call is experimental
-local function value_c(t)     return sub(t[1],2)            end -- the call is experimental
-local function value_d(t)     return tostring_d(t,true,key) end -- the call is experimental
-local function value_a(t)     return tostring_a(t,true,key) end -- the call is experimental
-local function value_z()      return nil                    end -- the call is experimental
-local function value_t(t)     return t.value or true        end -- the call is experimental
-local function value_f(t)     return t.value or false       end -- the call is experimental
-local function value_r()      return t[1]                   end -- the call is experimental
-local function value_v()      return t[1]                   end -- the call is experimental
+local function value_x(t)     return t                  end -- the call is experimental
+local function value_s(t,key) return t[1]               end -- the call is experimental
+local function value_u(t,key) return t[1]               end -- the call is experimental
+local function value_n(t,key) return t[1]               end -- the call is experimental
+local function value_c(t)     return sub(t[1],2)        end -- the call is experimental
+local function value_d(t)     return tostring_d(t,true) end -- the call is experimental
+local function value_a(t)     return tostring_a(t,true) end -- the call is experimental
+local function value_z()      return nil                end -- the call is experimental
+local function value_t(t)     return t.value or true    end -- the call is experimental
+local function value_f(t)     return t.value or false   end -- the call is experimental
+local function value_r()      return t[1]               end -- the call is experimental
+local function value_v()      return t[1]               end -- the call is experimental
 
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end
 
@@ -333,10 +335,10 @@ function lpdf.reserveobject(name)
     if name then
         names[name] = r
         if trace_objects then
-            logs.report("backends", "reserving object number %s under name '%s'",r,name)
+            report_backends("reserving object number %s under name '%s'",r,name)
         end
     elseif trace_objects then
-        logs.report("backends", "reserving object number %s",r)
+        report_backends("reserving object number %s",r)
     end
     return r
 end
@@ -349,25 +351,25 @@ function lpdf.flushobject(name,data)
         if name then
             if trace_objects then
                 if trace_detail then
-                    logs.report("backends", "flushing object data to reserved object with name '%s' -> %s",name,tostring(data))
+                    report_backends("flushing object data to reserved object with name '%s' -> %s",name,tostring(data))
                 else
-                    logs.report("backends", "flushing object data to reserved object with name '%s'",name)
+                    report_backends("flushing object data to reserved object with name '%s'",name)
                 end
             end
             return pdfimmediateobj(name,tostring(data))
         else
             if trace_objects then
                 if trace_detail then
-                    logs.report("backends", "flushing object data to reserved object with number %s -> %s",name,tostring(data))
+                    report_backends("flushing object data to reserved object with number %s -> %s",name,tostring(data))
                 else
-                    logs.report("backends", "flushing object data to reserved object with number %s",name)
+                    report_backends("flushing object data to reserved object with number %s",name)
                 end
             end
             return pdfimmediateobj(tostring(data))
         end
     else
         if trace_objects and trace_detail then
-            logs.report("backends", "flushing object data -> %s",tostring(name))
+            report_backends("flushing object data -> %s",tostring(name))
         end
         return pdfimmediateobj(tostring(name))
     end
@@ -463,7 +465,7 @@ local function set(where,f,when,what)
     local w = where[when]
     w[#w+1] = f
     if trace_finalizers then
-        logs.report("backend","%s set: [%s,%s]",what,when,#w)
+        report_backends("%s set: [%s,%s]",what,when,#w)
     end
 end
 
@@ -472,7 +474,7 @@ local function run(where,what)
         local w = where[i]
         for j=1,#w do
             if trace_finalizers then
-                logs.report("backend","%s finalizer: [%s,%s]",what,i,j)
+                report_backends("%s finalizer: [%s,%s]",what,i,j)
             end
             w[j]()
         end
@@ -499,22 +501,28 @@ function lpdf.finalizedocument()
     if not environment.initex then
         run(documentfinalizers,"document")
         function lpdf.finalizedocument()
-            logs.report("backend","serious error: the document is finalized multiple times")
+            report_backends("serious error: the document is finalized multiple times")
             function lpdf.finalizedocument() end
         end
     end
 end
 
+if callbacks.known("finish_pdffile") then
+    callbacks.register("finish_pdffile",function() if not environment.initex then run(documentfinalizers,"document") end end)
+    function lpdf.finalizedocument() end
+end
+
+
 -- some minimal tracing, handy for checking the order
 
 local function trace_set(what,key)
     if trace_resources then
-        logs.report("backend", "setting key '%s' in '%s'",key,what)
+        report_backends("setting key '%s' in '%s'",key,what)
     end
 end
 local function trace_flush(what)
     if trace_resources then
-        logs.report("backend", "flushing '%s'",what)
+        report_backends("flushing '%s'",what)
     end
 end
 

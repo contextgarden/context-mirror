@@ -20,35 +20,30 @@ local function tabstr(str)
     end
 end
 
-local function list(list,report)
+local function list(list,report,pattern)
+    pattern = pattern and pattern ~= "" and upper(pattern) or ""
     local instance = resolvers.instance
-    local pat = upper(pattern or "","")
     local report = report or texio.write_nl
     local sorted = table.sortedkeys(list)
     for i=1,#sorted do
         local key = sorted[i]
-        if instance.pattern == "" or find(upper(key),pat) then
-            if instance.kpseonly then
-                if instance.kpsevars[key] then
-                    report(format("%s=%s",key,tabstr(list[key])))
-                end
-            else
-                report(format('%s %s=%s',(instance.kpsevars[key] and 'K') or 'E',key,tabstr(list[key])))
-            end
+        if pattern == "" or find(upper(key),pattern) then
+            report(format('%s  %s=%s',instance.origins[key] or "---",key,tabstr(list[key])))
         end
     end
 end
 
-function resolvers.listers.variables () list(resolvers.instance.variables ) end
-function resolvers.listers.expansions() list(resolvers.instance.expansions) end
+function resolvers.listers.variables (report,pattern) list(resolvers.instance.variables, report,pattern) end
+function resolvers.listers.expansions(report,pattern) list(resolvers.instance.expansions,report,pattern) end
 
-function resolvers.listers.configurations(report)
+function resolvers.listers.configurations(report,pattern)
+    pattern = pattern and pattern ~= "" and upper(pattern) or ""
     local report = report or texio.write_nl
     local instance = resolvers.instance
     local sorted = table.sortedkeys(instance.kpsevars)
     for i=1,#sorted do
         local key = sorted[i]
-        if not instance.pattern or (instance.pattern=="") or find(key,instance.pattern) then
+        if pattern == "" or find(upper(key),pattern) then
             report(format("%s\n",key))
             local order = instance.order
             for i=1,#order do

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ctxloadluafile{m-pstricks}{}
+\registerctxluafile{m-pstricks}{}
 
 %D \startbuffer
 %D \usePSTRICKSmodule[pst-barcode]
@@ -57,8 +57,8 @@
 
 \definebuffer[PSTRICKS]
 
-\unexpanded\def\processPSTRICKS      {\ctxlua{plugins.pstricks.process(\thebuffernumber{PSTRICKS})}}
-\unexpanded\def\usePSTRICKSmodule[#1]{\ctxlua{plugins.pstricks.usemodule("#1")}}
+\unexpanded\def\processPSTRICKS      {\ctxlua{moduledata.pstricks.process(\thebuffernumber{PSTRICKS})}}
+\unexpanded\def\usePSTRICKSmodule[#1]{\ctxlua{moduledata.pstricks.usemodule("#1")}}
 \unexpanded\def\setPSTRICKS        #1{\setbuffer[def-\thebuffernumber{PSTRICKS}]#1\endbuffer}
 
 \let\stopPSTRICKS\processPSTRICKS

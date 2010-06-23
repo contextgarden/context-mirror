@@ -27,6 +27,8 @@ local trace_remapping  = false  trackers.register("math.remapping",  function(v)
 local trace_processing = false  trackers.register("math.processing", function(v) trace_processing = v end)
 local trace_analyzing  = false  trackers.register("math.analyzing",  function(v) trace_analyzing  = v end)
 
+local report_noads = logs.new("noads")
+
 local noad_ord               =  0
 local noad_op_displaylimits  =  1
 local noad_op_limits         =  2
@@ -85,50 +87,53 @@ local all_noads = {
 
 noads.processors = noads.processors or { }
 
-local function process(start,what,n)
+local function process(start,what,n,parent)
     if n then n = n + 1 else n = 0 end
     while start do
         if trace_processing then
-            logs.report("math","%s%s",rep("  ",n or 0),tostring(start))
+            report_noads("%s%s",rep("  ",n or 0),tostring(start))
         end
         local id = start.id
         local proc = what[id]
         if proc then
-            proc(start,what,n)
+            local done, newstart = proc(start,what,n,parent or start.prev)
+            if newstart then
+                start = newstart
+            end
         elseif id == math_char or id == math_text_char or id == math_delim then
             break
         elseif id == math_style then
             -- has a next
         elseif id == math_noad then
-            local noad = start.nucleus      if noad then process(noad,what,n) end -- list
-                  noad = start.sup          if noad then process(noad,what,n) end -- list
-                  noad = start.sub          if noad then process(noad,what,n) end -- list
+            local noad = start.nucleus      if noad then process(noad,what,n,start) end -- list
+                  noad = start.sup          if noad then process(noad,what,n,start) end -- list
+                  noad = start.sub          if noad then process(noad,what,n,start) end -- list
         elseif id == math_box or id == math_sub then
-            local noad = start.list         if noad then process(noad,what,n) end -- list
+            local noad = start.list         if noad then process(noad,what,n,start) end -- list
         elseif id == math_fraction then
-            local noad = start.num          if noad then process(noad,what,n) end -- list
-                  noad = start.denom        if noad then process(noad,what,n) end -- list
-                  noad = start.left         if noad then process(noad,what,n) end -- delimiter
-                  noad = start.right        if noad then process(noad,what,n) end -- delimiter
+            local noad = start.num          if noad then process(noad,what,n,start) end -- list
+                  noad = start.denom        if noad then process(noad,what,n,start) end -- list
+                  noad = start.left         if noad then process(noad,what,n,start) end -- delimiter
+                  noad = start.right        if noad then process(noad,what,n,start) end -- delimiter
         elseif id == math_choice then
-            local noad = start.display      if noad then process(noad,what,n) end -- list
-                  noad = start.text         if noad then process(noad,what,n) end -- list
-                  noad = start.script       if noad then process(noad,what,n) end -- list
-                  noad = start.scriptscript if noad then process(noad,what,n) end -- list
+            local noad = start.display      if noad then process(noad,what,n,start) end -- list
+                  noad = start.text         if noad then process(noad,what,n,start) end -- list
+                  noad = start.script       if noad then process(noad,what,n,start) end -- list
+                  noad = start.scriptscript if noad then process(noad,what,n,start) end -- list
         elseif id == math_fence then
-            local noad = start.delim        if noad then process(noad,what,n) end -- delimiter
+            local noad = start.delim        if noad then process(noad,what,n,start) end -- delimiter
         elseif id == math_radical then
-            local noad = start.nucleus      if noad then process(noad,what,n) end -- list
-                  noad = start.sup          if noad then process(noad,what,n) end -- list
-                  noad = start.sub          if noad then process(noad,what,n) end -- list
-                  noad = start.left         if noad then process(noad,what,n) end -- delimiter
-                  noad = start.degree       if noad then process(noad,what,n) end -- list
+            local noad = start.nucleus      if noad then process(noad,what,n,start) end -- list
+                  noad = start.sup          if noad then process(noad,what,n,start) end -- list
+                  noad = start.sub          if noad then process(noad,what,n,start) end -- list
+                  noad = start.left         if noad then process(noad,what,n,start) end -- delimiter
+                  noad = start.degree       if noad then process(noad,what,n,start) end -- list
         elseif id == math_accent then
-            local noad = start.nucleus      if noad then process(noad,what,n) end -- list
-                  noad = start.sup          if noad then process(noad,what,n) end -- list
-                  noad = start.sub          if noad then process(noad,what,n) end -- list
-                  noad = start.accent       if noad then process(noad,what,n) end -- list
-                  noad = start.bot_accent   if noad then process(noad,what,n) end -- list
+            local noad = start.nucleus      if noad then process(noad,what,n,start) end -- list
+                  noad = start.sup          if noad then process(noad,what,n,start) end -- list
+                  noad = start.sub          if noad then process(noad,what,n,start) end -- list
+                  noad = start.accent       if noad then process(noad,what,n,start) end -- list
+                  noad = start.bot_accent   if noad then process(noad,what,n,start) end -- list
         else
             -- glue, penalty, etc
         end
@@ -146,7 +151,7 @@ local mathgreek    = attributes.private("mathgreek")
 noads.processors.relocate = { }
 
 local function report_remap(tag,id,old,new,extra)
-    logs.report("math","remapping %s in font %s from U+%04X (%s) to U+%04X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
+    report_noads("remapping %s in font %s from U+%04X (%s) to U+%04X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
 end
 
 local remap_alphabets = mathematics.remap_alphabets
@@ -247,9 +252,9 @@ end
 
 local mathsize = attributes.private("mathsize")
 
-noads.processors.resize = { }
+local resize = { } noads.processors.resize = resize
 
-noads.processors.resize[math_fence] = function(pointer)
+resize[math_fence] = function(pointer)
     if pointer.subtype == 1 then -- left
         local a = has_attribute(pointer,mathsize)
         if a and a > 0 then
@@ -266,7 +271,7 @@ noads.processors.resize[math_fence] = function(pointer)
 end
 
 function noads.resize_characters(head,style,penalties)
-    process(head,noads.processors.resize)
+    process(head,resize)
     return true
 end
 
@@ -274,13 +279,13 @@ end
 
 local mathpunctuation = attributes.private("mathpunctuation")
 
-noads.processors.respace = { }
+local respace = { } noads.processors.respace = respace
 
 local chardata = characters.data
 
 -- only [nd,ll,ul][po][nd,ll,ul]
 
-noads.processors.respace[math_noad] = function(pointer)
+respace[math_noad] = function(pointer)
     if pointer.subtype == noad_ord then
         local a = has_attribute(pointer,mathpunctuation)
         if a and a > 0 then
@@ -327,9 +332,8 @@ noads.processors.respace[math_noad] = function(pointer)
     end
 end
 
-
 function noads.respace_characters(head,style,penalties)
-    noads.process(head,noads.processors.respace)
+    process(head,respace)
     return true
 end
 

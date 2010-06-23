@@ -70,9 +70,6 @@
   {\uppercasestring#1\to\ascii
    \edef\prettyidentifier{\executeifdefined{\??ty\??ty\ascii}{TEX}}%
    \begingroup
-   % we can move this to lua
-   % \lowercasestring \f!prettyprefix\prettyidentifier\to\filename
-   % \doonlyonce\filename{\ctxloadluafile\filename\empty}%
    \ctxlua{buffers.loadvisualizer("\ascii")}%
    \endgroup}
 

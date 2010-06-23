@@ -1,0 +1,76 @@
+%D \module
+%D   [       file=m-mathcrap,
+%D        version=2010.05.30,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Math Crap,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is meant for those who want to use the (incomplete and sort of useless)
+%D unicode superscripts and subscripts. We should look ahead and collapse them
+%D but I will only implement that in calcmath when the need is there. Now the
+%D spacing can be somewhat non optimal but probably that does not matter here.
+%D
+%D \startbuffer
+%D $a₀₁₂₃₄₅₆₇₈₉₋₌₊$
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+
+\unprotect
+
+\unexpanded\def\mathunicodesupercrap#1{\mathortext{{^{#1}}}{\high{#1}}}
+\unexpanded\def\mathunicodesubcrap  #1{\mathortext{{_{#1}}}{\low {#1}}}
+
+\ifdefined\installanddefineactivecharacter\else
+
+    \def\installanddefineactivecharacter #1 #2% we need this as command
+      {\normalexpanded{\noexpand\installactivecharacter \utfchar{#1} }%
+       \defineactivecharacter #1 {#2}}
+
+\fi
+
+\installanddefineactivecharacter "2070 {\mathunicodesupercrap 0}
+\installanddefineactivecharacter "00B9 {\mathunicodesupercrap 1}₀
+\installanddefineactivecharacter "00B2 {\mathunicodesupercrap 2}₀
+\installanddefineactivecharacter "00B3 {\mathunicodesupercrap 3}₀
+\installanddefineactivecharacter "2074 {\mathunicodesupercrap 4}
+\installanddefineactivecharacter "2075 {\mathunicodesupercrap 5}
+\installanddefineactivecharacter "2076 {\mathunicodesupercrap 6}
+\installanddefineactivecharacter "2077 {\mathunicodesupercrap 7}
+\installanddefineactivecharacter "2078 {\mathunicodesupercrap 8}
+\installanddefineactivecharacter "2079 {\mathunicodesupercrap 9}
+\installanddefineactivecharacter "207A {\mathunicodesupercrap +}
+\installanddefineactivecharacter "207B {\mathunicodesupercrap -}
+\installanddefineactivecharacter "207C {\mathunicodesupercrap =}
+\installanddefineactivecharacter "207D {\mathunicodesupercrap (}
+\installanddefineactivecharacter "207E {\mathunicodesupercrap )}
+\installanddefineactivecharacter "207F {\mathunicodesupercrap n}
+
+\installanddefineactivecharacter "2080 {\mathunicodesubcrap   0}
+\installanddefineactivecharacter "2081 {\mathunicodesubcrap   1}
+\installanddefineactivecharacter "2082 {\mathunicodesubcrap   2}
+\installanddefineactivecharacter "2083 {\mathunicodesubcrap   3}
+\installanddefineactivecharacter "2084 {\mathunicodesubcrap   4}
+\installanddefineactivecharacter "2085 {\mathunicodesubcrap   5}
+\installanddefineactivecharacter "2086 {\mathunicodesubcrap   6}
+\installanddefineactivecharacter "2087 {\mathunicodesubcrap   7}
+\installanddefineactivecharacter "2088 {\mathunicodesubcrap   8}
+\installanddefineactivecharacter "2089 {\mathunicodesubcrap   9}
+\installanddefineactivecharacter "208A {\mathunicodesubcrap   +}
+\installanddefineactivecharacter "208B {\mathunicodesubcrap   -}
+\installanddefineactivecharacter "208C {\mathunicodesubcrap   =}
+\installanddefineactivecharacter "208D {\mathunicodesubcrap   (}
+\installanddefineactivecharacter "208E {\mathunicodesubcrap   )}
+\installanddefineactivecharacter "2090 {\mathunicodesubcrap   A}
+\installanddefineactivecharacter "2091 {\mathunicodesubcrap   E}
+\installanddefineactivecharacter "2092 {\mathunicodesubcrap   O}
+\installanddefineactivecharacter "2093 {\mathunicodesubcrap   X}
+%installanddefineactivecharacter "2094 {\mathunicodesubcrap   ?} % SCHWAA
+
+\protect \endinput

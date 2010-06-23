@@ -43,6 +43,8 @@ local trace_lpath    = false  if trackers then trackers.register("xml.path",    
 local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
 local trace_lprofile = false  if trackers then trackers.register("xml.profile", function(v) trace_lpath  = v trace_lparse = v trace_lprofile = v end) end
 
+local report_lpath = logs.new("lpath")
+
 --[[ldx--
 <p>We've now arrived at an interesting part: accessing the tree using a subset
 of <l n='xpath'/> and since we're not compatible we call it <l n='lpath'/>. We
@@ -69,7 +71,7 @@ local function fallback (t, name)
     if fn then
         t[name] = fn
     else
-        logs.report("xml","unknown sub finalizer '%s'",tostring(name))
+        report_lpath("unknown sub finalizer '%s'",tostring(name))
         fn = function() end
     end
     return fn
@@ -613,13 +615,13 @@ local skip = { }
 
 local function errorrunner_e(str,cnv)
     if not skip[str] then
-        logs.report("lpath","error in expression: %s => %s",str,cnv)
+        report_lpath("error in expression: %s => %s",str,cnv)
         skip[str] = cnv or str
     end
     return false
 end
 local function errorrunner_f(str,arg)
-    logs.report("lpath","error in finalizer: %s(%s)",str,arg or "")
+    report_lpath("error in finalizer: %s(%s)",str,arg or "")
     return false
 end
 
@@ -786,7 +788,7 @@ local function lshow(parsed)
     end
     local s = table.serialize_functions -- ugly
     table.serialize_functions = false -- ugly
-    logs.report("lpath","%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,false))
+    report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,false))
     table.serialize_functions = s -- ugly
 end
 
@@ -816,7 +818,7 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
                 local np = #parsed
                 if np == 0 then
                     parsed = { pattern = pattern, register_self, state = "parsing error" }
-                    logs.report("lpath","parsing error in '%s'",pattern)
+                    report_lpath("parsing error in '%s'",pattern)
                     lshow(parsed)
                 else
                     -- we could have done this with a more complex parser but this
@@ -920,32 +922,32 @@ local function traced_apply(list,parsed,nofparsed,order)
     if trace_lparse then
         lshow(parsed)
     end
-    logs.report("lpath", "collecting : %s",parsed.pattern)
-    logs.report("lpath", " root tags : %s",tagstostring(list))
-    logs.report("lpath", "     order : %s",order or "unset")
+    report_lpath("collecting : %s",parsed.pattern)
+    report_lpath(" root tags : %s",tagstostring(list))
+    report_lpath("     order : %s",order or "unset")
     local collected = list
     for i=1,nofparsed do
         local pi = parsed[i]
         local kind = pi.kind
         if kind == "axis" then
             collected = apply_axis[pi.axis](collected)
-            logs.report("lpath", "% 10i : ax : %s",(collected and #collected) or 0,pi.axis)
+            report_lpath("% 10i : ax : %s",(collected and #collected) or 0,pi.axis)
         elseif kind == "nodes" then
             collected = apply_nodes(collected,pi.nodetest,pi.nodes)
-            logs.report("lpath", "% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
+            report_lpath("% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
         elseif kind == "expression" then
             collected = apply_expression(collected,pi.evaluator,order)
-            logs.report("lpath", "% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
+            report_lpath("% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
         elseif kind == "finalizer" then
             collected = pi.finalizer(collected)
-            logs.report("lpath", "% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
+            report_lpath("% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
             return collected
         end
         if not collected or #collected == 0 then
             local pn = i < nofparsed and parsed[nofparsed]
             if pn and pn.kind == "finalizer" then
                 collected = pn.finalizer(collected)
-                logs.report("lpath", "% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pn.name,pn.arguments or "")
+                report_lpath("% 10i : fi : %s : %s(%s)",(type(collected) == "table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pn.name,pn.arguments or "")
                 return collected
             end
             return nil
@@ -1058,7 +1060,7 @@ expressions.boolean   = toboolean
 -- user interface
 
 local function traverse(root,pattern,handle)
-    logs.report("xml","use 'xml.selection' instead for '%s'",pattern)
+    report_lpath("use 'xml.selection' instead for '%s'",pattern)
     local collected = parse_apply({ root },pattern)
     if collected then
         for c=1,#collected do
@@ -1106,7 +1108,7 @@ local function dofunction(collected,fnc)
                 f(collected[c])
             end
         else
-            logs.report("xml","unknown function '%s'",fnc)
+            report_lpath("unknown function '%s'",fnc)
         end
     end
 end

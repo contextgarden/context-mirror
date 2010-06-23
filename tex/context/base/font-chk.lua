@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['font-chk'] = {
 
 -- possible optimization: delayed initialization of vectors
 
+local report_fonts = logs.new("fonts")
+
 fonts              = fonts or { }
 fonts.checkers     = fonts.checkers or { }
 
@@ -40,7 +42,7 @@ function fonts.register_message(font,char,message)
         messages[message] = category
     end
     if not category[char] then
-        logs.report("fonts","char U+%04X in font '%s' with id %s: %s",char,tfmdata.fullname,font,message)
+        report_fonts("char U+%04X in font '%s' with id %s: %s",char,tfmdata.fullname,font,message)
         category[char] = true
     end
 end

@@ -29,6 +29,8 @@ local ctxcatcodes, xmlcatcodes, notcatcodes = tex.ctxcatcodes, tex.xmlcatcodes, 
 
 local trace_processors = false  trackers.register("structure.processors", function(v) trace_processors = v end)
 
+local report_processors = logs.new("processors")
+
 -- move this
 
 commands = commands or { }
@@ -216,7 +218,7 @@ function processors.sprint(catcodes,str,fnc,...)
         code = (fnc and fnc(str,...)) or str
     end
     if trace_processors then
-        logs.report("processors","cct: %s, seq: %s",catcodes,code)
+        report_processors("cct: %s, seq: %s",catcodes,code)
     end
     texsprint(catcodes,code)
 end

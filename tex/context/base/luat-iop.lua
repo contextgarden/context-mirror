@@ -87,18 +87,6 @@ end
 --~ f = io.open('c:/windows/crap.log')    print(f)
 --~ f = io.open('c:/windows/wmsetup.log') print(f)
 
-local inpout = { 'inp', 'out' }
-
-function io.set_opener_modes(i,o)
-    local first = sub(i,1,1)
-    for k=1,#inpout do
-        local iov = io[inpout[k]]
-        local f = iov[i] or iov[first]
-        if f then f() end
-    end
-    io.open = io.finalize_openers(io.open)
-end
-
 -- restricted
 
 function ioinp.modes.restricted()
@@ -143,6 +131,14 @@ function ioout.modes.handy()
     o_permit('[^/]')
 end
 
---~ io.set_opener_modes('p','p')
---~ io.set_opener_modes('r','r')
---~ io.set_opener_modes('h','h')
+
+function io.checkopeners()
+    local inp = resolvers.variable("input_mode")
+    local out = resolvers.variable("output_mode")
+    inp = inp and ioinp.modes[inp]
+    out = out and ioinp.modes[out]
+    if inp then inp() end
+    if out then out() end
+end
+
+--~ io.checkopeners()

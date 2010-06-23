@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['node-tsk'] = {
 
 local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 
+local report_tasks = logs.new("tasks")
+
 tasks      = tasks       or { }
 tasks.data = tasks.data  or { }
 
@@ -87,7 +89,7 @@ end
 function tasks.showactions(name,group,action,where,kind)
     local data = tasks.data[name]
     if data then
-        logs.report("nodes","task %s, list:\n%s",name,sequencer.nodeprocessor(data.list))
+        report_tasks("task %s, list:\n%s",name,sequencer.nodeprocessor(data.list))
     end
 end
 
@@ -118,7 +120,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s'",name)
+                        report_tasks("creating runner '%s'",name)
                     end
                     runner = compile(data.list,nodeprocessor,0)
                     data.runner = runner
@@ -132,7 +134,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s' with 1 extra arguments",name)
+                        report_tasks("creating runner '%s' with 1 extra arguments",name)
                     end
                     runner = compile(data.list,nodeprocessor,1)
                     data.runner = runner
@@ -146,7 +148,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s' with 2 extra arguments",name)
+                        report_tasks("creating runner '%s' with 2 extra arguments",name)
                     end
                     runner = compile(data.list,nodeprocessor,2)
                     data.runner = runner
@@ -160,7 +162,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s' with 3 extra arguments",name)
+                        report_tasks("creating runner '%s' with 3 extra arguments",name)
                     end
                     runner = compile(data.list,nodeprocessor,3)
                     data.runner = runner
@@ -174,7 +176,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s' with 4 extra arguments",name)
+                        report_tasks("creating runner '%s' with 4 extra arguments",name)
                     end
                     runner = compile(data.list,nodeprocessor,4)
                     data.runner = runner
@@ -188,7 +190,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s' with 5 extra arguments",name)
+                        report_tasks("creating runner '%s' with 5 extra arguments",name)
                     end
                     runner = compile(data.list,nodeprocessor,5)
                     data.runner = runner
@@ -202,7 +204,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        logs.report("nodes","creating task runner '%s' with n extra arguments",name)
+                        report_tasks("creating runner '%s' with n extra arguments",name)
                     end
                     runner = compile(data.list,nodeprocessor,"n")
                     data.runner = runner

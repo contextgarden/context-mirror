@@ -169,7 +169,7 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                             end
                             if charsacc then
                                 local chr_t = cache[chr]
-                                if not cht_t then
+                                if not chr_t then
                                     chr_t = {"slot", 1, chr}
                                     cache[chr] = chr_t
                                 end

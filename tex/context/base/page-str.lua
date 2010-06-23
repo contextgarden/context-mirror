@@ -20,6 +20,8 @@ local new_glyph = nodes.glyph
 local trace_collecting = false  trackers.register("streams.collecting", function(v) trace_collecting = v end)
 local trace_flushing   = false  trackers.register("streams.flushing",   function(v) trace_flushing   = v end)
 
+local report_streams = logs.new("streams")
+
 streams = streams or { }
 
 local data, name, stack = { }, nil, { }
@@ -63,7 +65,7 @@ function streams.collect(head,where)
             dana[1] = head
         end
         if trace_collecting then
-            logs.report("streams","appending snippet '%s' to slot %s",name,#dana)
+            report_streams("appending snippet '%s' to slot %s",name,#dana)
         end
         return nil, true
     else
@@ -80,7 +82,7 @@ function streams.push(thename)
         if dana then
             dana[#dana+1] = false
             if trace_collecting then
-                logs.report("streams","pushing snippet '%s'",thename)
+                report_streams("pushing snippet '%s'",thename)
             end
         end
     end
@@ -94,7 +96,7 @@ function streams.flush(name,copy) -- problem: we need to migrate afterwards
             -- nothing to flush
         elseif copy then
             if trace_flushing then
-                logs.report("streams","flushing copies of %s slots of '%s'",dn,name)
+                report_streams("flushing copies of %s slots of '%s'",dn,name)
             end
             for i=1,dn do
                 local di = dana[i]
@@ -107,7 +109,7 @@ function streams.flush(name,copy) -- problem: we need to migrate afterwards
             end
         else
             if trace_flushing then
-                logs.report("streams","flushing %s slots of '%s'",dn,name)
+                report_streams("flushing %s slots of '%s'",dn,name)
             end
             for i=1,dn do
                 local di = dana[i]
@@ -126,7 +128,7 @@ function streams.synchronize(list) -- this is an experiment !
     list = aux.settings_to_array(list)
     local max = 0
     if trace_flushing then
-        logs.report("streams","synchronizing list: %s",concat(list," "))
+        report_streams("synchronizing list: %s",concat(list," "))
     end
     for i=1,#list do
         local dana = data[list[i]]
@@ -138,7 +140,7 @@ function streams.synchronize(list) -- this is an experiment !
         end
     end
     if trace_flushing then
-        logs.report("streams","maximum number of slots: %s",max)
+        report_streams("maximum number of slots: %s",max)
     end
     for m=1,max do
         local height, depth = 0, 0
@@ -157,12 +159,12 @@ function streams.synchronize(list) -- this is an experiment !
                 end
                 dana[m] = vbox
                 if trace_flushing then
-                    logs.report("streams","slot %s of '%s' is packed to height %s and depth %s",m,name,ht,dp)
+                    report_streams("slot %s of '%s' is packed to height %s and depth %s",m,name,ht,dp)
                 end
             end
         end
         if trace_flushing then
-            logs.report("streams","slot %s has max height %s and max depth %s",m,height,depth)
+            report_streams("slot %s has max height %s and max depth %s",m,height,depth)
         end
         local strutht, strutdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
         local struthtdp = strutht + strutdp
@@ -178,7 +180,7 @@ function streams.synchronize(list) -- this is an experiment !
                         -- actually we need to add glue and repack
                         vbox.height, vbox.depth = height, depth
                         if trace_flushing then
-                            logs.report("streams","slot %s of '%s' with delta (%s,%s) is compensated",m,i,delta_height,delta_depth)
+                            report_streams("slot %s of '%s' with delta (%s,%s) is compensated",m,i,delta_height,delta_depth)
                         end
                     else
                         -- this is not yet ok as we also need to keep an eye on vertical spacing
@@ -199,7 +201,7 @@ function streams.synchronize(list) -- this is an experiment !
                         vbox.list = nil
                         free_node(vbox)
                         if trace_flushing then
-                            logs.report("streams","slot %s:%s with delta (%s,%s) is compensated by %s lines",m,i,delta_height,delta_depth,n)
+                            report_streams("slot %s:%s with delta (%s,%s) is compensated by %s lines",m,i,delta_height,delta_depth,n)
                         end
                     end
                 end

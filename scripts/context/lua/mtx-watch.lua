@@ -356,7 +356,7 @@ function scripts.watch.cleanup_stale_files() -- removes duplicates
     end
 end
 
-logs.extendbanner("ConTeXt Request Watchdog 1.00",true)
+logs.extendbanner("ConTeXt Request Watchdog 1.00")
 
 messages.help = [[
 --logpath             optional path for log files

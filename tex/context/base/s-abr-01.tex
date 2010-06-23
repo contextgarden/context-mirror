@@ -287,33 +287,36 @@
 \def\SystemSpecialA#1{$\langle\it#1\rangle$}
 \def\SystemSpecialB#1{{\tttf<#1>}}
 
-\def\CATCODE     {\SystemSpecialA{catcode}}
-\def\CATCODES    {\SystemSpecialA{catcodes}}
-\def\DIMENSION   {\SystemSpecialA{dimension}}
-\def\DIMENSIONS  {\SystemSpecialA{dimensions}}
-\def\COUNTER     {\SystemSpecialA{counter}}
-\def\COUNTERS    {\SystemSpecialA{counters}}
-\def\HBOX        {\SystemSpecialA{hbox}}
-\def\HBOXES      {\SystemSpecialA{hboxes}}
-\def\VBOX        {\SystemSpecialA{vbox}}
-\def\VBOXES      {\SystemSpecialA{vboxes}}
-\def\BOX         {\SystemSpecialA{box}}
-\def\BOXES       {\SystemSpecialA{boxes}}
-\def\TOKENLIST   {\SystemSpecialA{token list}}
-\def\TOKENLISTS  {\SystemSpecialA{token lists}}
-\def\NEWLINE     {\SystemSpecialA{newline}}
-\def\SKIP        {\SystemSpecialA{skip}}
-\def\SKIPS       {\SystemSpecialA{skips}}
-\def\MUSKIP      {\SystemSpecialA{muskip}}
-\def\MUSKIPS     {\SystemSpecialA{muskips}}
-\def\MARK        {\SystemSpecialA{mark}}
-\def\MARKS       {\SystemSpecialA{marks}}
+\unexpanded\def\CATCODE     {\SystemSpecialA{catcode}}
+\unexpanded\def\CATCODES    {\SystemSpecialA{catcodes}}
+\unexpanded\def\DIMENSION   {\SystemSpecialA{dimension}}
+\unexpanded\def\DIMENSIONS  {\SystemSpecialA{dimensions}}
+\unexpanded\def\COUNTER     {\SystemSpecialA{counter}}
+\unexpanded\def\COUNTERS    {\SystemSpecialA{counters}}
+\unexpanded\def\HBOX        {\SystemSpecialA{hbox}}
+\unexpanded\def\HBOXES      {\SystemSpecialA{hboxes}}
+\unexpanded\def\VBOX        {\SystemSpecialA{vbox}}
+\unexpanded\def\VBOXES      {\SystemSpecialA{vboxes}}
+\unexpanded\def\BOX         {\SystemSpecialA{box}}
+\unexpanded\def\BOXES       {\SystemSpecialA{boxes}}
+\unexpanded\def\TOKENLIST   {\SystemSpecialA{token list}}
+\unexpanded\def\TOKENLISTS  {\SystemSpecialA{token lists}}
+\unexpanded\def\NEWLINE     {\SystemSpecialA{newline}}
+\unexpanded\def\SKIP        {\SystemSpecialA{skip}}
+\unexpanded\def\SKIPS       {\SystemSpecialA{skips}}
+\unexpanded\def\MUSKIP      {\SystemSpecialA{muskip}}
+\unexpanded\def\MUSKIPS     {\SystemSpecialA{muskips}}
+\unexpanded\def\MARK        {\SystemSpecialA{mark}}
+\unexpanded\def\MARKS       {\SystemSpecialA{marks}}
 
-\def\SPACE       {\SystemSpecialB{space}}
-\def\EOF         {\SystemSpecialB{eof}}
-\def\TAB         {\SystemSpecialB{tab}}
-\def\NEWPAGE     {\SystemSpecialB{newpage}}
-\def\NEWLINE     {\SystemSpecialB{newline}}
+\unexpanded\def\SPACE       {\SystemSpecialB{space}}
+\unexpanded\def\EOF         {\SystemSpecialB{eof}}
+\unexpanded\def\TAB         {\SystemSpecialB{tab}}
+\unexpanded\def\NEWPAGE     {\SystemSpecialB{newpage}}
+\unexpanded\def\NEWLINE     {\SystemSpecialB{newline}}
+
+\unexpanded\def\LUWATEEKH   {لُواتيخ} % kh ī t ā w [u] l
+\unexpanded\def\luwateekh   {luwātīkh}
 
 \doifmodeelse {mkiv} {
     \unexpanded\def\THANH{H\agrave n Th\ecircumflexacute\ Th\agrave nh}

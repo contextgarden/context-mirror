@@ -150,7 +150,7 @@ function scripts.scite.start(indeed)
     end
 end
 
-logs.extendbanner("Scite Startup Script 1.00",true)
+logs.extendbanner("Scite Startup Script 1.00")
 
 messages.help = [[
 --start [--verbose]   start scite

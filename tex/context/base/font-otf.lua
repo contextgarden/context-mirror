@@ -8,10 +8,11 @@ if not modules then modules = { } end modules ['font-otf'] = {
 
 local utf = unicode.utf8
 
-local concat, getn, utfbyte = table.concat, table.getn, utf.byte
+local concat, utfbyte = table.concat, utf.byte
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local abs = math.abs
+local getn = table.getn
 local lpegmatch = lpeg.match
 
 local trace_private    = false  trackers.register("otf.private",      function(v) trace_private      = v end)
@@ -21,6 +22,8 @@ local trace_dynamics   = false  trackers.register("otf.dynamics",     function(v
 local trace_sequences  = false  trackers.register("otf.sequences",    function(v) trace_sequences    = v end)
 local trace_math       = false  trackers.register("otf.math",         function(v) trace_math         = v end)
 local trace_defining   = false  trackers.register("fonts.defining",   function(v) trace_defining     = v end)
+
+local report_otf = logs.new("load otf")
 
 --~ trackers.enable("otf.loading")
 
@@ -81,7 +84,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = otf.enhancers        or { }
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.650 -- beware: also sync font-mis.lua
+otf.version          = 2.653 -- beware: also sync font-mis.lua
 otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
@@ -182,7 +185,7 @@ local function load_featurefile(ff,featurefile)
         featurefile = resolvers.find_file(file.addsuffix(featurefile,'fea'),'fea')
         if featurefile and featurefile ~= "" then
             if trace_loading then
-                logs.report("load otf", "featurefile: %s", featurefile)
+                report_otf("featurefile: %s", featurefile)
             end
             fontloader.apply_featurefile(ff, featurefile)
         end
@@ -193,7 +196,7 @@ function otf.enhance(name,data,filename,verbose)
     local enhancer = otf.enhancers[name]
     if enhancer then
         if (verbose ~= nil and verbose) or trace_loading then
-            logs.report("load otf","enhance: %s (%s)",name,filename)
+            report_otf("enhance: %s (%s)",name,filename)
         end
         enhancer(data,filename)
     end
@@ -221,6 +224,8 @@ local enhancers = {
 
 function otf.load(filename,format,sub,featurefile)
     local name = file.basename(file.removesuffix(filename))
+    local attr = lfs.attributes(filename)
+    local size, time = attr.size or 0, attr.modification or 0
     if featurefile then
         name = name .. "@" .. file.removesuffix(file.basename(featurefile))
     end
@@ -230,10 +235,9 @@ function otf.load(filename,format,sub,featurefile)
         hash = hash .. "-" .. sub
     end
     hash = containers.cleanname(hash)
-    local data = containers.read(otf.cache(), hash)
-    local size = lfs.attributes(filename,"size") or 0
-    if not data or data.verbose ~= fonts.verbose or data.size ~= size then
-        logs.report("load otf","loading: %s (hash: %s)",filename,hash)
+    local data = containers.read(otf.cache,hash)
+    if not data or data.verbose ~= fonts.verbose or data.size ~= size or data.time ~= time then
+        report_otf("loading: %s (hash: %s)",filename,hash)
         local ff, messages
         if sub then
             ff, messages = fontloader.open(filename,sub)
@@ -242,22 +246,22 @@ function otf.load(filename,format,sub,featurefile)
         end
         if trace_loading and messages and #messages > 0 then
             if type(messages) == "string" then
-                logs.report("load otf","warning: %s",messages)
+                report_otf("warning: %s",messages)
             else
                 for m=1,#messages do
-                    logs.report("load otf","warning: %s",tostring(messages[m]))
+                    report_otf("warning: %s",tostring(messages[m]))
                 end
             end
         else
-            logs.report("load otf","font loaded okay")
+            report_otf("font loaded okay")
         end
         if ff then
             load_featurefile(ff,featurefile)
             data = fontloader.to_table(ff)
             fontloader.close(ff)
             if data then
-                logs.report("load otf","file size: %s", size)
-                logs.report("load otf","enhancing ...")
+                report_otf("file size: %s", size)
+                report_otf("enhancing ...")
                 for e=1,#enhancers do
                     otf.enhance(enhancers[e],data,filename)
                     io.flush() -- we want instant messages
@@ -266,22 +270,23 @@ function otf.load(filename,format,sub,featurefile)
                     otf.enhance("pack",data,filename)
                 end
                 data.size = size
+                data.time = time
                 data.verbose = fonts.verbose
-                logs.report("load otf","saving in cache: %s",filename)
-                data = containers.write(otf.cache(), hash, data)
+                report_otf("saving in cache: %s",filename)
+                data = containers.write(otf.cache, hash, data)
                 collectgarbage("collect")
-                data = containers.read(otf.cache(), hash) -- this frees the old table and load the sparse one
+                data = containers.read(otf.cache, hash) -- this frees the old table and load the sparse one
                 collectgarbage("collect")
             else
-                logs.report("load otf","loading failed (table conversion error)")
+                report_otf("loading failed (table conversion error)")
             end
         else
-            logs.report("load otf","loading failed (file read error)")
+            report_otf("loading failed (file read error)")
         end
     end
     if data then
         if trace_defining then
-            logs.report("define font","loading from cache: %s",hash)
+            report_otf("loading from cache: %s",hash)
         end
         otf.enhance("unpack",data,filename,false) -- no message here
         otf.add_dimensions(data)
@@ -332,8 +337,8 @@ function otf.show_feature_order(otfdata,filename)
     local sequences = otfdata.luatex.sequences
     if sequences and #sequences > 0 then
         if trace_loading then
-            logs.report("otf check","font %s has %s sequences",filename,#sequences)
-            logs.report("otf check"," ")
+            report_otf("font %s has %s sequences",filename,#sequences)
+            report_otf(" ")
         end
         for nos=1,#sequences do
             local sequence = sequences[nos]
@@ -342,7 +347,7 @@ function otf.show_feature_order(otfdata,filename)
             local subtables = sequence.subtables or { "no-subtables" }
             local features = sequence.features
             if trace_loading then
-                logs.report("otf check","%3i  %-15s  %-20s  [%s]",nos,name,typ,concat(subtables,","))
+                report_otf("%3i  %-15s  %-20s  [%s]",nos,name,typ,concat(subtables,","))
             end
             if features then
                 for feature, scripts in next, features do
@@ -355,16 +360,16 @@ function otf.show_feature_order(otfdata,filename)
                         tt[#tt+1] = format("[%s: %s]",script,concat(ttt," "))
                     end
                     if trace_loading then
-                        logs.report("otf check","       %s: %s",feature,concat(tt," "))
+                        report_otf("       %s: %s",feature,concat(tt," "))
                     end
                 end
             end
         end
         if trace_loading then
-            logs.report("otf check","\n")
+            report_otf("\n")
         end
     elseif trace_loading then
-        logs.report("otf check","font %s has no sequences",filename)
+        report_otf("font %s has no sequences",filename)
     end
 end
 
@@ -579,7 +584,7 @@ otf.enhancers["merge cid fonts"] = function(data,filename)
     -- save us some more memory (at the cost of harder tracing)
     if data.subfonts then
         if data.glyphs and next(data.glyphs) then
-            logs.report("load otf","replacing existing glyph table due to subfonts")
+            report_otf("replacing existing glyph table due to subfonts")
         end
         local cidinfo = data.cidinfo
         local verbose = fonts.verbose
@@ -613,17 +618,17 @@ otf.enhancers["merge cid fonts"] = function(data,filename)
                     subfont.glyphs = nil
                 end
                 if trace_loading then
-                    logs.report("load otf","cid font remapped, %s unicode points, %s symbolic names, %s glyphs",nofunicodes, nofnames, nofunicodes+nofnames)
+                    report_otf("cid font remapped, %s unicode points, %s symbolic names, %s glyphs",nofunicodes, nofnames, nofunicodes+nofnames)
                 end
                 data.glyphs = glyphs
                 data.map = data.map or { }
                 data.map.map = uni_to_int
                 data.map.backmap = int_to_uni
             elseif trace_loading then
-                logs.report("load otf","unable to remap cid font, missing cid file for %s",filename)
+                report_otf("unable to remap cid font, missing cid file for %s",filename)
             end
         elseif trace_loading then
-            logs.report("load otf","font %s has no glyphs",filename)
+            report_otf("font %s has no glyphs",filename)
         end
     end
 end
@@ -635,11 +640,11 @@ otf.enhancers["prepare unicode"] = function(data,filename)
     local glyphs = data.glyphs
     local mapmap = data.map
     if not mapmap then
-        logs.report("load otf","no map in %s",filename)
+        report_otf("no map in %s",filename)
         mapmap = { }
         data.map = { map = mapmap }
     elseif not mapmap.map then
-        logs.report("load otf","no unicode map in %s",filename)
+        report_otf("no unicode map in %s",filename)
         mapmap = { }
         data.map.map = mapmap
     else
@@ -658,7 +663,7 @@ otf.enhancers["prepare unicode"] = function(data,filename)
                     unicodes[name] = private
                     internals[index] = true
                     if trace_private then
-                        logs.report("load otf","enhance: glyph %s at index U+%04X is moved to private unicode slot U+%04X",name,index,private)
+                        report_otf("enhance: glyph %s at index U+%04X is moved to private unicode slot U+%04X",name,index,private)
                     end
                     private = private + 1
                 else
@@ -701,9 +706,9 @@ otf.enhancers["prepare unicode"] = function(data,filename)
     end
     if trace_loading then
         if #multiples > 0 then
-            logs.report("load otf","%s glyph are reused: %s",#multiples, concat(multiples," "))
+            report_otf("%s glyph are reused: %s",#multiples, concat(multiples," "))
         else
-            logs.report("load otf","no glyph are reused")
+            report_otf("no glyph are reused")
         end
     end
     luatex.indices = indices
@@ -789,14 +794,12 @@ otf.enhancers["check math"] = function(data,filename)
                 if hv then
                     math.horiz_variants = hv.variants
                     local p = hv.parts
-                    if p then
-                        if #p>0 then
-                            for i=1,#p do
-                                local pi = p[i]
-                                pi.glyph = unicodes[pi.component] or 0
-                            end
-                            math.horiz_parts = p
+                    if p and #p > 0 then
+                        for i=1,#p do
+                            local pi = p[i]
+                            pi.glyph = unicodes[pi.component] or 0
                         end
+                        math.horiz_parts = p
                     end
                     local ic = hv.italic_correction
                     if ic and ic ~= 0 then
@@ -808,14 +811,12 @@ otf.enhancers["check math"] = function(data,filename)
                     local uc = unicodes[index]
                     math.vert_variants = vv.variants
                     local p = vv.parts
-                    if p then
-                        if #p>0 then
-                            for i=1,#p do
-                                local pi = p[i]
-                                pi.glyph = unicodes[pi.component] or 0
-                            end
-                            math.vert_parts = p
+                    if p and #p > 0 then
+                        for i=1,#p do
+                            local pi = p[i]
+                            pi.glyph = unicodes[pi.component] or 0
                         end
+                        math.vert_parts = p
                     end
                     local ic = vv.italic_correction
                     if ic and ic ~= 0 then
@@ -851,7 +852,7 @@ otf.enhancers["share widths"] = function(data,filename)
     end
     if most > 1000 then
         if trace_loading then
-            logs.report("load otf", "most common width: %s (%s times), sharing (cjk font)",wd,most)
+            report_otf("most common width: %s (%s times), sharing (cjk font)",wd,most)
         end
         for k, v in next, glyphs do
             if v.width == wd then
@@ -864,10 +865,15 @@ end
 
 -- kern: ttf has a table with kerns
 
+-- Weird, as maxfirst and maxseconds can have holes, first seems to be indexed, but
+-- seconds can start at 2 .. this need to be fixed as getn as well as # are sort of
+-- unpredictable alternatively we could force an [1] if not set (maybe I will do that
+-- anyway).
+
 --~ otf.enhancers["reorganize kerns"] = function(data,filename)
 --~     local glyphs, mapmap, unicodes = data.glyphs, data.luatex.indices, data.luatex.unicodes
 --~     local mkdone = false
---~     for index, glyph in next, data.glyphs do
+--~     for index, glyph in next, glyphs do
 --~         if glyph.kerns then
 --~             local mykerns = { }
 --~             for k,v in next, glyph.kerns do
@@ -876,7 +882,7 @@ end
 --~                     local uvc = unicodes[vc]
 --~                     if not uvc then
 --~                         if trace_loading then
---~                             logs.report("load otf","problems with unicode %s of kern %s at glyph %s",vc,k,index)
+--~                             report_otf("problems with unicode %s of kern %s at glyph %s",vc,k,index)
 --~                         end
 --~                     else
 --~                         if type(vl) ~= "table" then
@@ -906,16 +912,19 @@ end
 --~         end
 --~     end
 --~     if trace_loading and mkdone then
---~         logs.report("load otf", "replacing 'kerns' tables by 'mykerns' tables")
+--~         report_otf("replacing 'kerns' tables by 'mykerns' tables")
 --~     end
 --~     if data.kerns then
 --~         if trace_loading then
---~             logs.report("load otf", "removing global 'kern' table")
+--~             report_otf("removing global 'kern' table")
 --~         end
 --~         data.kerns = nil
 --~     end
 --~     local dgpos = data.gpos
 --~     if dgpos then
+--~         local separator = lpeg.P(" ")
+--~         local other = ((1 - separator)^0) / unicodes
+--~         local splitter = lpeg.Ct(other * (separator * other)^0)
 --~         for gp=1,#dgpos do
 --~             local gpos = dgpos[gp]
 --~             local subtables = gpos.subtables
@@ -924,55 +933,69 @@ end
 --~                     local subtable = subtables[s]
 --~                     local kernclass = subtable.kernclass -- name is inconsistent with anchor_classes
 --~                     if kernclass then -- the next one is quite slow
+--~                         local split = { } -- saves time
 --~                         for k=1,#kernclass do
 --~                             local kcl = kernclass[k]
 --~                             local firsts, seconds, offsets, lookups = kcl.firsts, kcl.seconds, kcl.offsets, kcl.lookup -- singular
 --~                             if type(lookups) ~= "table" then
 --~                                 lookups = { lookups }
 --~                             end
+--~                             local maxfirsts, maxseconds = getn(firsts), getn(seconds)
+--~                             for _, s in next, firsts do
+--~                                 split[s] = split[s] or lpegmatch(splitter,s)
+--~                             end
+--~                             for _, s in next, seconds do
+--~                                 split[s] = split[s] or lpegmatch(splitter,s)
+--~                             end
 --~                             for l=1,#lookups do
 --~                                 local lookup = lookups[l]
---~                                 -- weird, as maxfirst and maxseconds can have holes
---~                                 local maxfirsts, maxseconds = getn(firsts), getn(seconds)
---~                                 if trace_loading then
---~                                     logs.report("load otf", "adding kernclass %s with %s times %s pairs",lookup, maxfirsts, maxseconds)
---~                                 end
---~                                 for fk, fv in next, firsts do
---~                                     for first in gmatch(fv,"[^ ]+") do
---~                                         local first_unicode = unicodes[first]
---~                                         if type(first_unicode) == "number" then
---~                                             first_unicode = { first_unicode }
+--~                                 local function do_it(fk,first_unicode)
+--~                                     local glyph = glyphs[mapmap[first_unicode]]
+--~                                     if glyph then
+--~                                         local mykerns = glyph.mykerns
+--~                                         if not mykerns then
+--~                                             mykerns = { } -- unicode indexed !
+--~                                             glyph.mykerns = mykerns
 --~                                         end
---~                                         for f=1,#first_unicode do
---~                                             local glyph = glyphs[mapmap[first_unicode[f]]]
---~                                             if glyph then
---~                                                 local mykerns = glyph.mykerns
---~                                                 if not mykerns then
---~                                                     mykerns = { } -- unicode indexed !
---~                                                     glyph.mykerns = mykerns
---~                                                 end
---~                                                 local lookupkerns = mykerns[lookup]
---~                                                 if not lookupkerns then
---~                                                     lookupkerns = { }
---~                                                     mykerns[lookup] = lookupkerns
---~                                                 end
---~                                                 for sk, sv in next, seconds do
---~                                                     local offset = offsets[(fk-1) * maxseconds + sk]
---~                                                     --~ local offset = offsets[sk] -- (fk-1) * maxseconds + sk]
---~                                                     for second in gmatch(sv,"[^ ]+") do
---~                                                         local second_unicode = unicodes[second]
---~                                                         if type(second_unicode) == "number" then
+--~                                         local lookupkerns = mykerns[lookup]
+--~                                         if not lookupkerns then
+--~                                             lookupkerns = { }
+--~                                             mykerns[lookup] = lookupkerns
+--~                                         end
+--~                                         local baseoffset = (fk-1) * maxseconds
+--~                                         for sk=2,maxseconds do -- we can avoid this loop with a table
+--~                                             local sv = seconds[sk]
+--~                                             local splt = split[sv]
+--~                                             if splt then
+--~                                                 local offset = offsets[baseoffset + sk]
+--~                                                 --~ local offset = offsets[sk] -- (fk-1) * maxseconds + sk]
+--~                                                 if offset then
+--~                                                     for i=1,#splt do
+--~                                                         local second_unicode = splt[i]
+--~                                                         if tonumber(second_unicode) then
 --~                                                             lookupkerns[second_unicode] = offset
---~                                                         else
---~                                                             for s=1,#second_unicode do
---~                                                                 lookupkerns[second_unicode[s]] = offset
---~                                                             end
---~                                                         end
+--~                                                         else for s=1,#second_unicode do
+--~                                                             lookupkerns[second_unicode[s]] = offset
+--~                                                         end end
 --~                                                     end
 --~                                                 end
---~                                             elseif trace_loading then
---~                                                 logs.report("load otf", "no glyph data for U+%04X", first_unicode[f])
 --~                                             end
+--~                                         end
+--~                                     elseif trace_loading then
+--~                                         report_otf("no glyph data for U+%04X", first_unicode)
+--~                                     end
+--~                                 end
+--~                                 for fk=1,#firsts do
+--~                                     local fv = firsts[fk]
+--~                                     local splt = split[fv]
+--~                                     if splt then
+--~                                         for i=1,#splt do
+--~                                             local first_unicode = splt[i]
+--~                                             if tonumber(first_unicode) then
+--~                                                 do_it(fk,first_unicode)
+--~                                             else for f=1,#first_unicode do
+--~                                                 do_it(fk,first_unicode[f])
+--~                                             end end
 --~                                         end
 --~                                     end
 --~                                 end
@@ -990,7 +1013,27 @@ end
 otf.enhancers["reorganize kerns"] = function(data,filename)
     local glyphs, mapmap, unicodes = data.glyphs, data.luatex.indices, data.luatex.unicodes
     local mkdone = false
-    for index, glyph in next, data.glyphs do
+    local function do_it(lookup,first_unicode,kerns)
+        local glyph = glyphs[mapmap[first_unicode]]
+        if glyph then
+            local mykerns = glyph.mykerns
+            if not mykerns then
+                mykerns = { } -- unicode indexed !
+                glyph.mykerns = mykerns
+            end
+            local lookupkerns = mykerns[lookup]
+            if not lookupkerns then
+                lookupkerns = { }
+                mykerns[lookup] = lookupkerns
+            end
+            for second_unicode, kern in next, kerns do
+                lookupkerns[second_unicode] = kern
+            end
+        elseif trace_loading then
+            report_otf("no glyph data for U+%04X", first_unicode)
+        end
+    end
+    for index, glyph in next, glyphs do
         if glyph.kerns then
             local mykerns = { }
             for k,v in next, glyph.kerns do
@@ -999,7 +1042,7 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
                     local uvc = unicodes[vc]
                     if not uvc then
                         if trace_loading then
-                            logs.report("load otf","problems with unicode %s of kern %s at glyph %s",vc,k,index)
+                            report_otf("problems with unicode %s of kern %s at glyph %s",vc,k,index)
                         end
                     else
                         if type(vl) ~= "table" then
@@ -1029,11 +1072,11 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
         end
     end
     if trace_loading and mkdone then
-        logs.report("load otf", "replacing 'kerns' tables by 'mykerns' tables")
+        report_otf("replacing 'kerns' tables by 'mykerns' tables")
     end
     if data.kerns then
         if trace_loading then
-            logs.report("load otf", "removing global 'kern' table")
+            report_otf("removing global 'kern' table")
         end
         data.kerns = nil
     end
@@ -1050,75 +1093,53 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
                     local subtable = subtables[s]
                     local kernclass = subtable.kernclass -- name is inconsistent with anchor_classes
                     if kernclass then -- the next one is quite slow
+                        local split = { } -- saves time
                         for k=1,#kernclass do
                             local kcl = kernclass[k]
                             local firsts, seconds, offsets, lookups = kcl.firsts, kcl.seconds, kcl.offsets, kcl.lookup -- singular
                             if type(lookups) ~= "table" then
                                 lookups = { lookups }
                             end
-                            local split = { }
+                            local maxfirsts, maxseconds = getn(firsts), getn(seconds)
+                            -- here we could convert split into a list of unicodes which is a bit
+                            -- faster but as this is only done when caching it does not save us much
+                            for _, s in next, firsts do
+                                split[s] = split[s] or lpegmatch(splitter,s)
+                            end
+                            for _, s in next, seconds do
+                                split[s] = split[s] or lpegmatch(splitter,s)
+                            end
                             for l=1,#lookups do
                                 local lookup = lookups[l]
-                                -- weird, as maxfirst and maxseconds can have holes, first seems to be indexed, seconds starts at 2
-                                local maxfirsts, maxseconds = getn(firsts), getn(seconds)
-                                for _, s in next, firsts do
-                                    split[s] = split[s] or lpegmatch(splitter,s)
-                                end
-                                for _, s in next, seconds do
-                                    split[s] = split[s] or lpegmatch(splitter,s)
-                                end
-                                if trace_loading then
-                                    logs.report("load otf", "adding kernclass %s with %s times %s pairs",lookup, maxfirsts, maxseconds)
-                                end
-                                local function do_it(fk,first_unicode)
-                                    local glyph = glyphs[mapmap[first_unicode]]
-                                    if glyph then
-                                        local mykerns = glyph.mykerns
-                                        if not mykerns then
-                                            mykerns = { } -- unicode indexed !
-                                            glyph.mykerns = mykerns
-                                        end
-                                        local lookupkerns = mykerns[lookup]
-                                        if not lookupkerns then
-                                            lookupkerns = { }
-                                            mykerns[lookup] = lookupkerns
-                                        end
-                                        local baseoffset = (fk-1) * maxseconds
-                                        for sk=2,maxseconds do
-                                            local sv = seconds[sk]
-                                            local offset = offsets[baseoffset + sk]
-                                            --~ local offset = offsets[sk] -- (fk-1) * maxseconds + sk]
-                                            local splt = split[sv]
-                                            if splt then
-                                                for i=1,#splt do
-                                                    local second_unicode = splt[i]
-                                                    if tonumber(second_unicode) then
-                                                        lookupkerns[second_unicode] = offset
-                                                    else
-                                                        for s=1,#second_unicode do
-                                                            lookupkerns[second_unicode[s]] = offset
-                                                        end
-                                                    end
-                                                end
-                                            end
-                                        end
-                                    elseif trace_loading then
-                                        logs.report("load otf", "no glyph data for U+%04X", first_unicode)
-                                    end
-                                end
                                 for fk=1,#firsts do
                                     local fv = firsts[fk]
                                     local splt = split[fv]
                                     if splt then
+                                        local kerns, baseoffset = { }, (fk-1) * maxseconds
+                                        for sk=2,maxseconds do
+                                            local sv = seconds[sk]
+                                            local splt = split[sv]
+                                            if splt then
+                                                local offset = offsets[baseoffset + sk]
+                                                if offset then
+                                                    for i=1,#splt do
+                                                        local second_unicode = splt[i]
+                                                        if tonumber(second_unicode) then
+                                                            kerns[second_unicode] = offset
+                                                        else for s=1,#second_unicode do
+                                                            kerns[second_unicode[s]] = offset
+                                                        end end
+                                                    end
+                                                end
+                                            end
+                                        end
                                         for i=1,#splt do
                                             local first_unicode = splt[i]
                                             if tonumber(first_unicode) then
-                                                do_it(fk,first_unicode)
-                                            else
-                                                for f=1,#first_unicode do
-                                                    do_it(fk,first_unicode[f])
-                                                end
-                                            end
+                                                do_it(lookup,first_unicode,kerns)
+                                            else for f=1,#first_unicode do
+                                                do_it(lookup,first_unicode[f],kerns)
+                                            end end
                                         end
                                     end
                                 end
@@ -1132,6 +1153,14 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
         end
     end
 end
+
+
+
+
+
+
+
+
 
 otf.enhancers["strip not needed data"] = function(data,filename)
     local verbose = fonts.verbose
@@ -1203,7 +1232,7 @@ otf.enhancers["check math parameters"] = function(data,filename)
             local pmp = private_math_parameters[m]
             if not mathdata[pmp] then
                 if trace_loading then
-                    logs.report("load otf", "setting math parameter '%s' to 0", pmp)
+                    report_otf("setting math parameter '%s' to 0", pmp)
                 end
                 mathdata[pmp] = 0
             end
@@ -1248,11 +1277,11 @@ otf.enhancers["flatten glyph lookups"] = function(data,filename)
                             end
                         else
                             if trace_loading then
-                                logs.report("load otf", "flattening needed, report to context list")
+                                report_otf("flattening needed, report to context list")
                             end
                             for a, b in next, s do
                                 if trace_loading and vvv[a] then
-                                    logs.report("load otf", "flattening conflict, report to context list")
+                                    report_otf("flattening conflict, report to context list")
                                 end
                                 vvv[a] = b
                             end
@@ -1314,7 +1343,7 @@ otf.enhancers["flatten feature tables"] = function(data,filename)
     for _, tag in next, otf.glists do
         if data[tag] then
             if trace_loading then
-                logs.report("load otf", "flattening %s table", tag)
+                report_otf("flattening %s table", tag)
             end
             for k, v in next, data[tag] do
                 local features = v.features
@@ -1383,7 +1412,7 @@ function otf.set_features(tfmdata,features)
                             if value and fiotf[f] then -- brr
                                 if not done[f] then -- so, we can move some to triggers
                                     if trace_features then
-                                        logs.report("define otf","initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown', tfmdata.fullname or 'unknown')
+                                        report_otf("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown', tfmdata.fullname or 'unknown')
                                     end
                                     fiotf[f](tfmdata,value) -- can set mode (no need to pass otf)
                                     mode = tfmdata.mode or fonts.mode -- keep this, mode can be set local !
@@ -1410,7 +1439,7 @@ function otf.set_features(tfmdata,features)
                             local f = list[i]
                             if fmotf[f] then -- brr
                                 if trace_features then
-                                    logs.report("define otf","installing feature handler %s for mode %s for font %s",f,mode or 'unknown', tfmdata.fullname or 'unknown')
+                                    report_otf("installing feature handler %s for mode %s for font %s",f,mode or 'unknown', tfmdata.fullname or 'unknown')
                                 end
                                 processes[#processes+1] = fmotf[f]
                             end
@@ -1432,7 +1461,7 @@ function otf.otf_to_tfm(specification)
     local format   = specification.format
     local features = specification.features.normal
     local cache_id = specification.hash
-    local tfmdata  = containers.read(tfm.cache(),cache_id)
+    local tfmdata  = containers.read(tfm.cache,cache_id)
 --~ print(cache_id)
     if not tfmdata then
         local otfdata = otf.load(filename,format,sub,features and features.featurefile)
@@ -1466,7 +1495,7 @@ function otf.otf_to_tfm(specification)
                 shared.processes, shared.features = otf.set_features(tfmdata,fonts.define.check(features,otf.features.default))
             end
         end
-        containers.write(tfm.cache(),cache_id,tfmdata)
+        containers.write(tfm.cache,cache_id,tfmdata)
     end
     return tfmdata
 end
@@ -1512,7 +1541,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         if designsize == 0 then
             designsize = 100
         end
-        local spaceunits = 500
+        local spaceunits, spacer = 500, "space"
         -- indices maps from unicodes to indices
         for u, i in next, indices do
             characters[u] = { } -- we need this because for instance we add protruding info and loop over characters
@@ -1531,9 +1560,8 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
                 -- we have them shared because that packs nicer
                 -- we could prepare the variants and keep 'm in descriptions
                 if m then
-                    local variants = m.horiz_variants
+                    local variants, parts, c = m.horiz_variants, m.horiz_parts, char
                     if variants then
-                        local c = char
                         for n in gmatch(variants,"[^ ]+") do
                             local un = unicodes[n]
                             if un and u ~= un then
@@ -1541,21 +1569,26 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
                                 c = characters[un]
                             end
                         end
-                        c.horiz_variants = m.horiz_parts
-                    else
-                        local variants = m.vert_variants
-                        if variants then
-                            local c = char
-                            for n in gmatch(variants,"[^ ]+") do
-                                local un = unicodes[n]
-                                if un and u ~= un then
-                                    c.next = un
-                                    c = characters[un]
-                                end
+                        c.horiz_variants = parts
+                    elseif parts then
+                        c.horiz_variants = parts
+                    end
+                    local variants, parts, c = m.vert_variants, m.vert_parts, char
+                    if variants then
+                        for n in gmatch(variants,"[^ ]+") do
+                            local un = unicodes[n]
+                            if un and u ~= un then
+                                c.next = un
+                                c = characters[un]
                             end
-                            c.vert_variants = m.vert_parts
-                            c.vert_italic_correction = m.vert_italic_correction
-                        end
+                        end -- c is now last in chain
+                        c.vert_variants = parts
+                    elseif parts then
+                        c.vert_variants = parts
+                    end
+                    local italic_correction = m.vert_italic_correction
+                    if italic_correction then
+                        c.vert_italic_correction = italic_correction
                     end
                     local kerns = m.kerns
                     if kerns then
@@ -1684,7 +1717,7 @@ function tfm.read_from_open_type(specification)
                         if p then
                             local ps = p * specification.textsize / 100
                             if trace_math then
-                                logs.report("define font","asked script size: %s, used: %s (%2.2f %%)",s,ps,(ps/s)*100)
+                                report_otf("asked script size: %s, used: %s (%2.2f %%)",s,ps,(ps/s)*100)
                             end
                             s = ps
                         end
@@ -1693,7 +1726,7 @@ function tfm.read_from_open_type(specification)
                         if p then
                             local ps = p * specification.textsize / 100
                             if trace_math then
-                                logs.report("define font","asked scriptscript size: %s, used: %s (%2.2f %%)",s,ps,(ps/s)*100)
+                                report_otf("asked scriptscript size: %s, used: %s (%2.2f %%)",s,ps,(ps/s)*100)
                             end
                             s = ps
                         end
@@ -1708,7 +1741,7 @@ function tfm.read_from_open_type(specification)
             if specname then
                 tfmtable.name = specname
                 if trace_defining then
-                    logs.report("define font","overloaded fontname: '%s'",specname)
+                    report_otf("overloaded fontname: '%s'",specname)
                 end
             end
         end

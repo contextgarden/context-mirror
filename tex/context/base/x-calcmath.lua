@@ -9,11 +9,12 @@ if not modules then modules = { } end modules ['x-calcmath'] = {
 local format, lower, upper, gsub, sub = string.format, string.lower, string.upper, string.gsub, string.sub
 local lpegmatch = lpeg.match
 
-tex = tex or { }
+local texsprint = (tex and tex.sprint) or function(catcodes,str) print(str) end
 
-texsprint = tex.sprint or function(catcodes,str) print(str) end
+moduledata          = moduledata or { }
+moduledata.calcmath = moduledata.calcmath or { }
 
-calcmath = { }
+local calcmath = moduledata.calcmath
 
 local list_1 = {
     "median", "min", "max", "round", "ln", "log",

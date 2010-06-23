@@ -154,7 +154,7 @@ end
 --~ scripts.profiler.analyse("t:/manuals/mk/mk-fonts-profile.lua")
 --~ scripts.profiler.analyse("t:/manuals/mk/mk-introduction-profile.lua")
 
-logs.extendbanner("ConTeXt MkIV LuaTeX Profiler 1.00",true)
+logs.extendbanner("ConTeXt MkIV LuaTeX Profiler 1.00")
 
 messages.help = [[
 --analyse             analyse lua calls

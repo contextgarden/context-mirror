@@ -516,55 +516,7 @@ local concat, sort, insert, remove = table.concat, table.sort, table.insert, tab
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
 local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
-
--- Starting with version 5.2 Lua no longer provide ipairs, which makes
--- sense. As we already used the for loop and # in most places the
--- impact on ConTeXt was not that large; the remaining ipairs already
--- have been replaced. In a similar fashio we also hardly used pairs.
---
--- Just in case, we provide the fallbacks as discussed in Programming
--- in Lua (http://www.lua.org/pil/7.3.html):
-
-if not ipairs then
-
-    -- for k, v in ipairs(t) do                ... end
-    -- for k=1,#t            do local v = t[k] ... end
-
-    local function iterate(a,i)
-        i = i + 1
-        local v = a[i]
-        if v ~= nil then
-            return i, v --, nil
-        end
-    end
-
-    function ipairs(a)
-        return iterate, a, 0
-    end
-
-end
-
-if not pairs then
-
-    -- for k, v in pairs(t) do ... end
-    -- for k, v in next, t  do ... end
-
-    function pairs(t)
-        return next, t -- , nil
-    end
-
-end
-
--- Also, unpack has been moved to the table table, and for compatiility
--- reasons we provide both now.
-
-if not table.unpack then
-    table.unpack = _G.unpack
-elseif not unpack then
-    _G.unpack = table.unpack
-end
-
--- extra functions, some might go (when not used)
+local unpack = unpack or table.unpack
 
 function table.strip(tab)
     local lst = { }
@@ -751,7 +703,7 @@ end
 table.fastcopy = fastcopy
 table.copy     = copy
 
--- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
+-- rougly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
 
 function table.sub(t,i,j)
     return { unpack(t,i,j) }
@@ -774,7 +726,7 @@ function table.one_entry(t) -- obolete, use inline code instead
     return n and not next(t,n)
 end
 
---~ function table.starts_at(t) -- obsolete, not nice anyway
+--~ function table.starts_at(t) -- obsolete, not nice
 --~     return ipairs(t,1)(t,0)
 --~ end
 
@@ -1411,7 +1363,6 @@ function table.insert_after_value(t,value,extra)
     end
     insert(t,#t+1,extra)
 end
-
 
 
 end -- of closure
@@ -2088,76 +2039,41 @@ local concat = table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
 
-local function dirname(name,default)
-    return match(name,"^(.+)[/\\].-$") or (default or "")
-end
-
-local function basename(name)
-    return match(name,"^.+[/\\](.-)$") or name
-end
-
-local function nameonly(name)
-    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
-end
-
-local function extname(name,default)
-    return match(name,"^.+%.([^/\\]-)$") or default or ""
-end
-
-local function splitname(name)
-    local n, s = match(name,"^(.+)%.([^/\\]-)$")
-    return n or name, s or ""
-end
-
-file.basename = basename
-file.dirname  = dirname
-file.nameonly = nameonly
-file.extname  = extname
-file.suffix   = extname
-
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
 end
 
-function file.addsuffix(filename, suffix, criterium)
+function file.addsuffix(filename, suffix)
     if not suffix or suffix == "" then
         return filename
-    elseif criterium == true then
+    elseif not find(filename,"%.[%a%d]+$") then
         return filename .. "." .. suffix
     else
-        local n, s = splitname(filename)
-        if s and s ~= "" then
-            local t = type(criterium)
-            if t == "table" then
-                -- keep if in criterium
-                for i=1,#criterium do
-                    if s == criterium[i] then
-                        return filename
-                    end
-                end
-            elseif t == "string" then
-                -- keep if criterium
-                if s == criterium then
-                    return filename
-                end
-            end
-        end
-        return n .. "." .. suffix
+        return filename
     end
 end
-
---~ print(file.addsuffix("name","new")                   .. "-> name.new")
---~ print(file.addsuffix("name.old","new")               .. "-> name.old")
---~ print(file.addsuffix("name.old","new",true)          .. "-> name.old.new")
---~ print(file.addsuffix("name.old","new","new")         .. "-> name.new")
---~ print(file.addsuffix("name.old","new","old")         .. "-> name.old")
---~ print(file.addsuffix("name.old","new","foo")         .. "-> name.new")
---~ print(file.addsuffix("name.old","new",{"foo","bar"}) .. "-> name.new")
---~ print(file.addsuffix("name.old","new",{"old","bar"}) .. "-> name.old")
 
 function file.replacesuffix(filename, suffix)
     return (gsub(filename,"%.[%a%d]+$","")) .. "." .. suffix
 end
+
+function file.dirname(name,default)
+    return match(name,"^(.+)[/\\].-$") or (default or "")
+end
+
+function file.basename(name)
+    return match(name,"^.+[/\\](.-)$") or name
+end
+
+function file.nameonly(name)
+    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
+end
+
+function file.extname(name,default)
+    return match(name,"^.+%.([^/\\]-)$") or default or ""
+end
+
+file.suffix = file.extname
 
 --~ function file.join(...)
 --~     local pth = concat({...},"/")
@@ -2210,7 +2126,7 @@ end
 --~ print(file.join("//nas-1","/y"))
 
 function file.iswritable(name)
-    local a = lfs.attributes(name) or lfs.attributes(dirname(name,"."))
+    local a = lfs.attributes(name) or lfs.attributes(file.dirname(name,"."))
     return a and sub(a.permissions,2,2) == "w"
 end
 
@@ -3748,10 +3664,6 @@ function aux.accesstable(target)
     end
     return t
 end
-
---~ function string.commaseparated(str)
---~     return gmatch(str,"([^,%s]+)")
---~ end
 
 -- as we use this a lot ...
 
@@ -6166,11 +6078,8 @@ function resolvers.expand_variables()
     local expansions, environment, variables = { }, instance.environment, instance.variables
     local env = resolvers.env
     instance.expansions = expansions
-    local engine, progname = instance.engine, instance.progname
-    if type(engine)   ~= "string" then instance.engine,   engine   = "", "" end
-    if type(progname) ~= "string" then instance.progname, progname = "", "" end
-    if engine   ~= "" then environment['engine']   = engine   end
-    if progname ~= "" then environment['progname'] = progname end
+    if instance.engine   ~= "" then environment['engine']   = instance.engine   end
+    if instance.progname ~= "" then environment['progname'] = instance.progname end
     for k,v in next, environment do
         local a, b = match(k,"^(%a+)%_(.*)%s*$")
         if a and b then
@@ -6574,8 +6483,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                     end
                 else
                     local suffixes = resolvers.suffixes_of_format(instance.format)
-                    for i=1,#suffixes do
-                        local s = suffixes[i]
+                    for _, s in next, suffixes do
                         forcedname = filename .. "." .. s
                         if resolvers.isreadable.file(forcedname) then
                             if trace_locating then
@@ -6637,10 +6545,6 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
     else
         -- search spec
         local filetype, extra, done, wantedfiles, ext = '', nil, false, { }, file.extname(filename)
-        -- tricky as filename can be bla.1.2.3
---~         if not suffixmap[ext] then --- probably needs to be done elsewhere too
---~             wantedfiles[#wantedfiles+1] = filename
---~         end
         if ext == "" then
             if not instance.force_suffixes then
                 wantedfiles[#wantedfiles+1] = filename
@@ -6649,7 +6553,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             wantedfiles[#wantedfiles+1] = filename
         end
         if instance.format == "" then
-            if ext == "" or not suffixmap[ext] then
+            if ext == "" then
                 local forcedname = filename .. '.tex'
                 wantedfiles[#wantedfiles+1] = forcedname
                 filetype = resolvers.format_of_suffix(forcedname)
@@ -6663,10 +6567,10 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 end
             end
         else
-            local suffixes = resolvers.suffixes_of_format(instance.format)
-            if ext == "" or not suffixmap[ext] then
-                for i=1,#suffixes do
-                    wantedfiles[#wantedfiles+1] = filename .. "." .. suffixes[i]
+            if ext == "" then
+                local suffixes = resolvers.suffixes_of_format(instance.format)
+                for _, s in next, suffixes do
+                    wantedfiles[#wantedfiles+1] = filename .. "." .. s
                 end
             end
             filetype = instance.format
@@ -6743,16 +6647,16 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                             done = true
                             if instance.allresults then
                                 if trace_detail then
-                                    logs.report("fileio","match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
+                                    logs.report("fileio","match in hash for file '%s' on path '%s', continue scanning",f,d)
                                 end
                             else
                                 if trace_detail then
-                                    logs.report("fileio","match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
+                                    logs.report("fileio","match in hash for file '%s' on path '%s', quit scanning",f,d)
                                 end
                                 break
                             end
                         elseif trace_detail then
-                            logs.report("fileio","no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
+                            logs.report("fileio","no match in hash for file '%s' on path '%s'",f,d)
                         end
                     end
                 end
@@ -7597,11 +7501,11 @@ function statistics.check_fmt_status(texname)
                 local sourcehash = md5.hex(io.loaddata(resolvers.find_file(luv.sourcefile)) or "unknown")
                 local luvbanner = luv.enginebanner or "?"
                 if luvbanner ~= enginebanner then
-                    return format("engine mismatch (luv: %s <> bin: %s)",luvbanner,enginebanner)
+                    return string.format("engine mismatch (luv:%s <> bin:%s)",luvbanner,enginebanner)
                 end
                 local luvhash = luv.sourcehash or "?"
                 if luvhash ~= sourcehash then
-                    return format("source mismatch (luv: %s <> bin: %s)",luvhash,sourcehash)
+                    return string.format("source mismatch (luv:%s <> bin:%s)",luvhash,sourcehash)
                 end
             else
                 return "invalid status file"

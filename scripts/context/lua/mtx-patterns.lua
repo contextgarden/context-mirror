@@ -6,81 +6,103 @@ if not modules then modules = { } end modules ['mtx-patterns'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local format, find, concat = string.format, string.find, table.concat
 
 scripts          = scripts          or { }
 scripts.patterns = scripts.patterns or { }
 
 scripts.patterns.list = {
-    { "??",  "hyph-ar.tex",            "arabic" },
+    -- no patterns for arabic
+--  { "ar",  "hyph-ar.tex",            "arabic" },
+    -- not supported
+--  { "as",  "hyph-as.tex",            "assamese" },
     { "bg",  "hyph-bg.tex",            "bulgarian" },
+    -- not supported
+--  { "bn",  "hyph-bn.tex",            "bengali" },
     { "ca",  "hyph-ca.tex",            "catalan" },
-    { "??",  "hyph-cop.tex",           "coptic" },
+    -- not supported
+--  { "cop", "hyph-cop.tex",           "coptic" },
     { "cs",  "hyph-cs.tex",            "czech" },
     { "cy",  "hyph-cy.tex",            "welsh" },
     { "da",  "hyph-da.tex",            "danish" },
     { "deo", "hyph-de-1901.tex",       "german, old spelling" },
     { "de",  "hyph-de-1996.tex",       "german, new spelling" },
+    { "??",  "hyph-de-ch-1901.tex",    "swiss german" },
 --~ { "??",  "hyph-el-monoton.tex",    "" },
 --~ { "??",  "hyph-el-polyton.tex",    "" },
-    { "agr", "hyph-grc",               "ancient greek" },
---~ { "???", "hyph-x-ibycus",          "ancient greek in ibycus encoding" },
---~ { "gr",  "",                       "" },
-    { "eo",  "hyph-eo.tex",            "esperanto" },
+    { "agr", "hyph-grc.tex",           "ancient greek" },
     { "gb",  "hyph-en-gb.tex",         "british english" },
     { "us",  "hyph-en-us.tex",	       "american english" },
+--~ { "gr",  "",                       "" },
+    -- these patterns do not satisfy the rules of 'clean patterns'
+--  { "eo",  "hyph-eo.tex",            "esperanto" },
     { "es",  "hyph-es.tex",            "spanish" },
     { "et",  "hyph-et.tex",            "estonian" },
-    { "eu",  "hyph-eu.tex",            "basque" }, -- ba is Bashkir!
-    { "fa",  "hyph-fa.tex",            "farsi" },
+    { "eu",  "hyph-eu.tex",            "basque" },
+    -- no patterns for farsi/persian
+--  { "fa",  "hyph-fa.tex",            "farsi" },
     { "fi",  "hyph-fi.tex",            "finnish" },
     { "fr",  "hyph-fr.tex",            "french" },
---  { "??",  "hyph-ga.tex",            "" },
---  { "??",  "hyph-gl.tex",            "" },
---  { "??",  "hyph-grc.tex",           "" },
+    { "??",  "hyph-ga.tex",            "irish" },
+    { "??",  "hyph-gl.tex",            "galician" },
+    -- not supported
+--  { "gu",  "hyph-gu.tex",            "gujarati" },
+    -- not supported
+--  { "hi",  "hyph-hi.tex",            "hindi" },
     { "hr",  "hyph-hr.tex",            "croatian" },
     { "??",  "hyph-hsb.tex",           "upper sorbian" },
     { "hu",  "hyph-hu.tex",            "hungarian" },
+    -- not supported
+--  { "hy",  "hyph-hy.tex",            "armenian" },
     { "??",  "hyph-ia.tex",            "interlingua" },
     { "??",  "hyph-id.tex",            "indonesian" },
     { "is",  "hyph-is.tex",            "icelandic" },
     { "it",  "hyph-it.tex",            "italian" },
+    { "??",  "hyph-kmr.tex",           "kurmanji" },
+    -- not supported
+--  { "kn",  "hyph-kn.tex",            "kannada" },
     { "la",  "hyph-la.tex",            "latin" },
+    -- not supported
+--  { "lo",  "hyph-lo.tex",            "lao" },
     { "lt",  "hyph-lt.tex",            "lithuanian" },
+    { "??",  "hyph-lv.tex",            "latvian" },
     { "mn",  "hyph-mn-cyrl.tex",       "mongolian, cyrillic script" },
     { "nb",  "hyph-nb.tex",            "norwegian bokmål" },
     { "nl",  "hyph-nl.tex",            "dutch" },
     { "nn",  "hyph-nn.tex",            "norwegian nynorsk" },
+    -- not supported
+--  { "or",  "hyph-or.tex",            "oriya" },
+    -- not supported
+--  { "pa",  "hyph-pa.tex",            "panjabi" },
+    -- not supported
+--  { "",  "hyph-.tex",            "" },
     { "pl",  "hyph-pl.tex",            "polish" },
     { "pt",  "hyph-pt.tex",            "portuguese" },
     { "ro",  "hyph-ro.tex",            "romanian" },
     { "ru",  "hyph-ru.tex",            "russian" },
+    -- not supported
+--  { "sa",  "hyph-sa.tex",            "sanskrit" },
     { "sk",  "hyph-sk.tex",            "slovak" },
     { "sl",  "hyph-sl.tex",            "slovenian" },
+    -- TODO: there is both Cyrillic and Latin script available
     { "sr",  "hyph-sr-cyrl.tex",       "serbian" },
     { "sv",  "hyph-sv.tex",            "swedish" },
+    -- not supported
+--  { "ta",  "hyph-ta.tex",            "tamil" },
+    -- not supported
+--  { "te",  "hyph-te.tex",            "telugu" },
+    { "tk",  "hyph-tk.tex",            "turkmen" },
     { "tr",  "hyph-tr.tex",            "turkish" },
-    { "tk",  "hyph-tk.tex",            "turkman" },
     { "uk",  "hyph-uk.tex",            "ukrainian" },
     { "zh",  "hyph-zh-latn.tex",       "zh-latn, chinese Pinyin" },
 }
-
 
 -- stripped down from lpeg example:
 
 local utf = unicode.utf8
 
-local cont = lpeg.R("\128\191")   -- continuation byte
-
-local utf8 = lpeg.R("\0\127")
-           + lpeg.R("\194\223") * cont
-           + lpeg.R("\224\239") * cont * cont
-           + lpeg.R("\240\244") * cont * cont * cont
-
-local validutf = (utf8^0/function() return true end) * (lpeg.P(-1)/function() return false end)
-
 function utf.check(str)
-    return lpeg.match(validutf,str)
+    return lpeg.match(lpeg.patterns.validutf8,str)
 end
 
 local permitted_commands = table.tohash {
@@ -174,8 +196,8 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
         data = data:gsub(" *[\n\r]+","\n")
         local patterns = data:match("\\patterns[%s]*{[%s]*(.-)[%s]*}") or ""
         local hyphenations = data:match("\\hyphenation[%s]*{[%s]*(.-)[%s]*}") or ""
-        patterns = patterns:gsub(" +","\n")
-        hyphenations = hyphenations:gsub(" +","\n")
+        patterns = patterns:gsub("[ \t]+","\n")
+        hyphenations = hyphenations:gsub("[ \t]+","\n")
         local p, h = { }, { }
         local pats, hyps = { } , { }
         local pused, hused = { } , { }
@@ -262,27 +284,83 @@ function scripts.patterns.load(path,name,mnemonic,fullcheck)
     end
 end
 
-function scripts.patterns.save(destination,mnemonic,patterns,hyphenations,comment,stripped,pused,hused)
+function scripts.patterns.save(destination,mnemonic,name,patterns,hyphenations,comment,stripped,pused,hused)
     local nofpatterns = #patterns
     local nofhyphenations = #hyphenations
-    local pu = table.concat(table.sortedkeys(pused), " ")
-    local hu = table.concat(table.sortedkeys(hused), " ")
     logs.simple("language %s has %s patterns and %s exceptions",mnemonic,nofpatterns,nofhyphenations)
     if mnemonic ~= "??" then
+        local pu = concat(table.sortedkeys(pused), " ")
+        local hu = concat(table.sortedkeys(hused), " ")
+
         local rmefile = file.join(destination,"lang-"..mnemonic..".rme")
         local patfile = file.join(destination,"lang-"..mnemonic..".pat")
         local hypfile = file.join(destination,"lang-"..mnemonic..".hyp")
+        local luafile = file.join(destination,"lang-"..mnemonic..".lua") -- suffix might change to llg
+
         local topline = "% generated by mtxrun --script pattern --convert"
         local banner = "% for comment and copyright, see " .. rmefile
         logs.simple("saving language data for %s",mnemonic)
         if not comment or comment == "" then comment = "% no comment" end
         if not type(destination) == "string" then destination = "." end
+
+        local lines = string.splitlines(comment)
+        for i=1,#lines do
+            if not find(lines[i],"^%%") then
+                lines[i] = "% " .. lines[i]
+            end
+        end
+
+        local metadata = {
+         -- texcomment = comment,
+            texcomment = concat(lines,"\n"),
+            source     = name,
+            mnemonic   = mnemonic,
+        }
+
+        local patterndata, hyphenationdata
+        if nofpatterns > 0 then
+            patterndata = {
+                n            = nofpatterns,
+                data         = concat(patterns," ") or nil,
+                characters   = concat(table.sortedkeys(pused),""),
+                minhyphenmin = 1, -- determined by pattern author
+                minhyphenmax = 1, -- determined by pattern author
+            }
+        else
+            patterndata = {
+                n = nofpatterns,
+            }
+        end
+        if nofhyphenations > 0 then
+            hyphenationdata = {
+                n          = nofhyphenations,
+                data       = concat(hyphenations," "),
+                characters = concat(table.sortedkeys(hused),""),
+            }
+        else
+            hyphenationdata = {
+                n = nofhyphenations,
+            }
+        end
+        local data = {
+            -- a prelude to language goodies, like we have font goodies and in
+            -- mkiv we can use this file directly
+            version    = "1.001",
+            comment    = topline,
+            metadata   = metadata,
+            patterns   = patterndata,
+            exceptions = hyphenationdata,
+        }
+
         os.remove(rmefile)
         os.remove(patfile)
         os.remove(hypfile)
+        os.remove(luafile)
+
         io.savedata(rmefile,format("%s\n\n%s",topline,comment))
-        io.savedata(patfile,format("%s\n\n%s\n\n%% used: %s\n\n\\patterns{\n%s}",topline,banner,pu,table.concat(patterns,"\n")))
-        io.savedata(hypfile,format("%s\n\n%s\n\n%% used: %s\n\n\\hyphenation{\n%s}",topline,banner,hu,table.concat(hyphenations,"\n")))
+        io.savedata(patfile,format("%s\n\n%s\n\n%% used: %s\n\n\\patterns{\n%s}",topline,banner,pu,concat(patterns,"\n")))
+        io.savedata(hypfile,format("%s\n\n%s\n\n%% used: %s\n\n\\hyphenation{\n%s}",topline,banner,hu,concat(hyphenations,"\n")))
+        io.savedata(luafile,table.serialize(data,true))
     end
 end
 
@@ -330,7 +408,7 @@ function scripts.patterns.convert()
                 logs.simple("converting language %s, file %s", mnemonic, name)
                 local okay, patterns, hyphenations, comment, stripped, pused, hused = scripts.patterns.load(path,name,false)
                 if okay then
-                    scripts.patterns.save(destination,mnemonic,patterns,hyphenations,comment,stripped,pused,hused)
+                    scripts.patterns.save(destination,mnemonic,name,patterns,hyphenations,comment,stripped,pused,hused)
                 else
                     logs.simple("convertion aborted due to error(s)")
                 end
@@ -340,11 +418,13 @@ function scripts.patterns.convert()
     end
 end
 
-logs.extendbanner("ConTeXt Pattern File Management 0.20",true)
+logs.extendbanner("ConTeXt Pattern File Management 0.20")
 
 messages.help = [[
 --convert             generate context language files (mnemonic driven, if not given then all)
 --check               check pattern file (or those used by context when no file given)
+--path                source path where hyph-foo.tex files are stored
+--destination         destination path
 
 --fast                only report filenames, no lines
 ]]

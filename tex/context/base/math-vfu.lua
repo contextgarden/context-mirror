@@ -11,9 +11,12 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 -- characters report it to the ConTeXt mailing list.
 
 local type, next = type, next
+local max = math.max
 
 local trace_virtual = false trackers.register("math.virtual", function(v) trace_virtual = v end)
 local trace_timings = false trackers.register("math.timings", function(v) trace_timings = v end)
+
+local report_virtual = logs.new("virtual math")
 
 fonts.enc.math = fonts.enc.math or { }
 
@@ -69,20 +72,19 @@ local function brace(main,characters,id,size,unicode,first,rule,left,right,rule,
 end
 
 local function arrow(main,characters,id,size,unicode,arrow,minus,isleft)
-    if characters[unicode] then
-        if isleft then
-            t = {
-                { extender = 0, glyph = arrow },
-                { extender = 1, glyph = minus  },
-            }
-        else
-            t = {
-                { extender = 0, glyph = minus },
-                { extender = 1, glyph = arrow },
-            }
-        end
-    --~     main.characters[unicode] = { horiz_variants = t }
-        characters[unicode].horiz_variants = t
+    local chr = characters[unicode]
+    if not chr then
+        -- skip
+    elseif isleft then
+        chr.horiz_variants = {
+            { extender = 0, glyph = arrow },
+            { extender = 1, glyph = minus  },
+        }
+    else
+        chr.horiz_variants = {
+            { extender = 0, glyph = minus },
+            { extender = 1, glyph = arrow },
+        }
     end
 end
 
@@ -226,32 +228,107 @@ local function vertbar(main,characters,id,size,parent,scale,unicode)
     end
 end
 
+local function jointwo(main,characters,id,size,unicode,u1,d12,u2)
+    local c1, c2 = characters[u1], characters[u2]
+    if c1 and c2 then
+        local w1, w2 = c1.width, c2.width
+        local mu = size/18
+        characters[unicode] = {
+            width    = w1 + w2 - d12*mu,
+            height   = max(c1.height or 0, c2.height or 0),
+            depth    = max(c1.depth or 0, c2.depth or 0),
+            commands = {
+                { "slot", id, u1 },
+                { "right", -d12*mu } ,
+                { "slot", id, u2 },
+            }
+        }
+    end
+end
+
+local function jointhree(main,characters,id,size,unicode,u1,d12,u2,d23,u3)
+    local c1, c2, c3 = characters[u1], characters[u2], characters[u3]
+    if c1 and c2 and c3 then
+        local w1, w2, w3 = c1.width, c2.width, c3.width
+        local mu = size/18
+        characters[unicode] = {
+            width    = w1 + w2 + w3 - d12*mu - d23*mu,
+            height   = max(c1.height or 0, c2.height or 0, c3.height or 0),
+            depth    = max(c1.depth or 0, c2.depth or 0, c3.depth or 0),
+            commands = {
+                { "slot", id, u1 },
+                { "right", - d12*mu } ,
+                { "slot", id, u2 },
+                { "right", - d23*mu },
+                { "slot", id, u3 },
+            }
+        }
+    end
+end
+
+local function stack(main,characters,id,size,unicode,u1,d12,u2)
+    local c1, c2 = characters[u1], characters[u2]
+    if c1 and c2 then
+        local w1, w2 = c1.width, c2.width
+        local h1, h2 = c1.height, c2.height
+        local d1, d2 = c1.depth, c2.depth
+        local mu = size/18
+        characters[unicode] = {
+            width    = w1,
+            height   = h1 + h2 + d12,
+            depth    = d1,
+            commands = {
+                { "slot", id, u1 },
+                { "right", - w1/2 - w2/2 } ,
+                { "down", -h1 + d2 -d12*mu } ,
+                { "slot", id, u2 },
+            }
+        }
+    end
+end
+
 function fonts.vf.math.alas(main,id,size)
     local characters = main.characters
     for i=0x7A,0x7D do
         make(main,characters,id,size,i,1)
     end
-    brace  (main,characters,id,size,0x23DE,0xFF17A,0xFF301,0xFF17D,0xFF17C,0xFF301,0xFF17B)
-    brace  (main,characters,id,size,0x23DF,0xFF27C,0xFF401,0xFF27B,0xFF27A,0xFF401,0xFF27D)
-    parent (main,characters,id,size,0x23DC,0xFF17A,0xFF301,0xFF17B)
-    parent (main,characters,id,size,0x23DD,0xFF27C,0xFF401,0xFF27D)
-    negate (main,characters,id,size,0x2260,0x003D)
-    dots   (main,characters,id,size,0x2026) -- ldots
-    dots   (main,characters,id,size,0x22EE) -- vdots
-    dots   (main,characters,id,size,0x22EF) -- cdots
-    dots   (main,characters,id,size,0x22F1) -- ddots
-    dots   (main,characters,id,size,0x22F0) -- udots
-    minus  (main,characters,id,size,0xFF501)
-    arrow  (main,characters,id,size,0x2190,0xFE190,0xFF501,true) -- left
-    arrow  (main,characters,id,size,0x2192,0xFE192,0xFF501,false) -- right
-    vertbar(main,characters,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
-    vertbar(main,characters,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
-    vertbar(main,characters,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
-    vertbar(main,characters,id,size,0xFF603,0.30,0xFF604) -- Bigg : 1.75 bodyfontsize
-    vertbar(main,characters,id,size,0x02225,0.10,0xFF605)
-    vertbar(main,characters,id,size,0xFF605,0.30,0xFF606)
-    vertbar(main,characters,id,size,0xFF606,0.30,0xFF607)
-    vertbar(main,characters,id,size,0xFF607,0.30,0xFF608)
+    brace    (main,characters,id,size,0x23DE,0xFF17A,0xFF301,0xFF17D,0xFF17C,0xFF301,0xFF17B)
+    brace    (main,characters,id,size,0x23DF,0xFF27C,0xFF401,0xFF27B,0xFF27A,0xFF401,0xFF27D)
+    parent   (main,characters,id,size,0x23DC,0xFF17A,0xFF301,0xFF17B)
+    parent   (main,characters,id,size,0x23DD,0xFF27C,0xFF401,0xFF27D)
+    negate   (main,characters,id,size,0x2260,0x003D)
+    dots     (main,characters,id,size,0x2026) -- ldots
+    dots     (main,characters,id,size,0x22EE) -- vdots
+    dots     (main,characters,id,size,0x22EF) -- cdots
+    dots     (main,characters,id,size,0x22F1) -- ddots
+    dots     (main,characters,id,size,0x22F0) -- udots
+    minus    (main,characters,id,size,0xFF501)
+    arrow    (main,characters,id,size,0x2190,0xFE190,0xFF501,true) -- left
+    arrow    (main,characters,id,size,0x2192,0xFE192,0xFF501,false) -- right
+    vertbar  (main,characters,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
+    vertbar  (main,characters,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
+    vertbar  (main,characters,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
+    vertbar  (main,characters,id,size,0xFF603,0.30,0xFF604) -- Bigg : 1.75 bodyfontsize
+    vertbar  (main,characters,id,size,0x02016,0.10,0xFF605)
+    vertbar  (main,characters,id,size,0xFF605,0.30,0xFF606)
+    vertbar  (main,characters,id,size,0xFF606,0.30,0xFF607)
+    vertbar  (main,characters,id,size,0xFF607,0.30,0xFF608)
+    jointwo  (main,characters,id,size,0x21A6,0xFE321,0,0x02192)           -- \mapstochar\rightarrow
+    jointwo  (main,characters,id,size,0x21A9,0x02190,3,0xFE323)           -- \leftarrow\joinrel\rhook
+    jointwo  (main,characters,id,size,0x21AA,0xFE322,3,0x02192)           -- \lhook\joinrel\rightarrow
+    stack    (main,characters,id,size,0x2259,0x0003D,3,0x02227)           -- \buildrel\wedge\over=
+    jointwo  (main,characters,id,size,0x22C8,0x022B3,4,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
+    jointwo  (main,characters,id,size,0x2284,0x00338,0,0x02282)           -- \not\subset
+    jointwo  (main,characters,id,size,0x2285,0x00338,0,0x02283)           -- \not\supset
+    jointwo  (main,characters,id,size,0x22A7,0x0007C,3,0x0003D)           -- \mathrel|\joinrel=
+    jointwo  (main,characters,id,size,0x27F5,0x02190,3,0x0002D)           -- \leftarrow\joinrel\relbar
+    jointwo  (main,characters,id,size,0x27F6,0x0002D,3,0x02192)           -- \relbar\joinrel\rightarrow
+    jointwo  (main,characters,id,size,0x27F7,0x02190,3,0x02192)           -- \leftarrow\joinrel\rightarrow
+    jointwo  (main,characters,id,size,0x27F8,0x021D0,3,0x0003D)           -- \Leftarrow\joinrel\Relbar
+    jointwo  (main,characters,id,size,0x27F9,0x0003D,3,0x021D2)           -- \Relbar\joinrel\Rightarrow
+    jointwo  (main,characters,id,size,0x27FA,0x021D0,3,0x021D2)           -- \Leftarrow\joinrel\Rightarrow
+    jointhree(main,characters,id,size,0x27FB,0x02190,3,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
+    jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,3,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
 end
 
 local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage
@@ -268,7 +345,7 @@ function fonts.basecopy(tfmtable,name)
         end
         t.characters = c
     else
-        logs.report("math virtual","font %s has no characters",name)
+        report_virtual("font %s has no characters",name)
     end
     if parameters then
         for k, v in next, parameters do
@@ -276,7 +353,7 @@ function fonts.basecopy(tfmtable,name)
         end
         t.parameters = p
     else
-        logs.report("math virtual","font %s has no parameters",name)
+        report_virtual("font %s has no parameters",name)
     end
     -- tricky ... what if fullname does not exist
     if fullname then
@@ -310,14 +387,14 @@ function fonts.vf.math.define(specification,set)
         local ssname = ss.name
         if ss.optional and fonts.vf.math.optional then
             if trace_virtual then
-                logs.report("math virtual","loading font %s subfont %s with name %s at %s is skipped",name,s,ssname,size)
+                report_virtual("loading font %s subfont %s with name %s at %s is skipped",name,s,ssname,size)
             end
         else
             if ss.features then ssname = ssname .. "*" .. ss.features end
             if ss.main then main = s end
             local f, id = fonts.tfm.read_and_define(ssname,size)
             if not f then
-                logs.report("math virtual","loading font %s subfont %s with name %s at %s is skipped, not found",name,s,ssname,size)
+                report_virtual("loading font %s subfont %s with name %s at %s is skipped, not found",name,s,ssname,size)
             else
                 n = n + 1
                 okset[n] = ss
@@ -325,7 +402,30 @@ function fonts.vf.math.define(specification,set)
                 lst[n] = { id = id, size = size }
                 if not shared[s] then shared[n] = { } end
                 if trace_virtual then
-                    logs.report("math virtual","loading font %s subfont %s with name %s at %s as id %s using encoding %s",name,s,ssname,size,id,ss.vector or "none")
+                    report_virtual("loading font %s subfont %s with name %s at %s as id %s using encoding %s",name,s,ssname,size,id,ss.vector or "none")
+                end
+                if not ss.checked then
+                    ss.checked = true
+                    local vector = fonts.enc.math[ss.vector]
+                    if vector then
+                        -- we resolve named glyphs only once as we can assume that vectors
+                        -- are unique to a font set (when we read an afm we get those names
+                        -- mapped onto the private area)
+                        for unicode, index in next, vector do
+                            if not tonumber(index) then
+                                local u = f.unicodes
+                                u = u and u[index]
+                                if u then
+                                    if trace_virtual then
+                                        report_virtual("resolving name %s to %s",index,u)
+                                    end
+                                else
+                                    report_virtual("unable to resolve name %s",index)
+                                end
+                                vector[unicode] = u
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -356,7 +456,7 @@ function fonts.vf.math.define(specification,set)
                     mm.big_op_spacing3        = fp[11] or 0 -- big_op_spacing3         minimum baselineskip above displayed op
                     mm.big_op_spacing4        = fp[12] or 0 -- big_op_spacing4         minimum baselineskip below displayed op
                     mm.big_op_spacing5        = fp[13] or 0 -- big_op_spacing5         padding above and below displayed limits
-                --  logs.report("math virtual","loading and virtualizing font %s at size %s, setting ex parameters",name,size)
+                --  report_virtual("loading and virtualizing font %s at size %s, setting ex parameters",name,size)
                 elseif ss.parameters then
                     mp.x_height      = fp.x_height or mp.x_height
                     mm.x_height      = mm.x_height or fp.x_height or 0 -- x_height                height of x
@@ -375,10 +475,10 @@ function fonts.vf.math.define(specification,set)
                     mm.delim1        = fp[20] or 0 -- delim1                  size of \atopwithdelims delimiters in display styles
                     mm.delim2        = fp[21] or 0 -- delim2                  size of \atopwithdelims delimiters in non-displays
                     mm.axis_height   = fp[22] or 0 -- axis_height             height of fraction lines above the baseline
-                --  logs.report("math virtual","loading and virtualizing font %s at size %s, setting sy parameters",name,size)
+                --  report_virtual("loading and virtualizing font %s at size %s, setting sy parameters",name,size)
                 end
             else
-                logs.report("math virtual","font %s, no parameters set",name)
+                report_virtual("font %s, no parameters set",name)
             end
             local vectorname = ss.vector
             if vectorname then
@@ -399,9 +499,9 @@ function fonts.vf.math.define(specification,set)
                             local ru = rv[unicode]
                             if not ru then
                                 if trace_virtual then
-                                    logs.report("math virtual", "unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
+                                    report_virtual( "unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
                                 elseif not already_reported then
-                                    logs.report("math virtual", "the mapping is incomplete for '%s' at %s",name,number.topoints(size))
+                                    report_virtual( "the mapping is incomplete for '%s' at %s",name,number.topoints(size))
                                     already_reported = true
                                 end
                                 rv[unicode] = true
@@ -577,7 +677,7 @@ function fonts.vf.math.define(specification,set)
         fonts.vf.math.alas(main,#lst,size)
     end
     if trace_virtual or trace_timings then
-        logs.report("math virtual","loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)
+        report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)
     end
     main.has_italic = true
     main.type = "virtual" -- not needed
@@ -1015,7 +1115,8 @@ fonts.enc.math["tex-sy"] = {
     [0x027E8] = 0x68, -- <, langle
     [0x027E9] = 0x69, -- >, rangle
     [0x0007C] = 0x6A, -- |, mid, lvert, rvert
-    [0x02225] = 0x6B, -- parallel, Vert, lVert, rVert, arrowvert
+    [0x02225] = 0x6B, -- parallel
+ -- [0x02016] = 0x00, -- Vert, lVert, rVert, arrowvert, Arrowvert
     [0x02195] = 0x6C, -- updownarrow
     [0x021D5] = 0x6D, -- Updownarrow
     [0x0005C] = 0x6E, -- \, backslash, setminus
@@ -1302,6 +1403,11 @@ fonts.enc.math["tex-mb"] = {
     [0x0210F] = 0x7D, -- planckover2pi         \hslash
     [0x00127] = 0x7E, -- planckover2pi1        \hbar
     [0x003F6] = 0x7F, -- epsiloninv            \backepsilon
+}
+
+fonts.enc.math["tex-mc"] = {
+    -- this file has no tfm so it gets mapped in the private space
+    [0xFE324] = "mapsfromchar",
 }
 
 fonts.enc.math["tex-fraktur"] = {

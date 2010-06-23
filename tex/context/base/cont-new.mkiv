@@ -17,9 +17,9 @@
 
 \unprotect
 
-\ctxlua{logs.report = commands.report} % this will become default
+% \ctxlua{logs.report = commands.writereport} % this will become default
 
-\def\immediatemessage#1{\ctxlua{commands.writestatus("message","#1")}}
+\def\immediatemessage#1{\ctxlua{logs.status("message","#1")}}
 
 % we need to figure this out (to be discussed)
 

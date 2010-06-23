@@ -15,6 +15,8 @@ local format, serialize = string.format, table.serialize
 local write_nl = texio.write_nl
 local lower = string.lower
 
+local report_define = logs.new("define fonts")
+
 if not fontloader then fontloader = fontforge end
 
 fontloader.totable = fontloader.to_table
@@ -90,7 +92,7 @@ function fonts.fontformat(filename,default)
     if format then
         return format
     else
-        logs.report("fonts define","unable to determine font format for '%s'",filename)
+        report_define("unable to determine font format for '%s'",filename)
         return default
     end
 end

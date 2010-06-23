@@ -134,8 +134,6 @@
 \def\endMPgraphicgroup
   {\endgroup}
 
-\newconditional \METAFUNinitialized
-
 \def\MPaskedfigure{false}
 
 \def\currentMPinitializations
@@ -160,7 +158,6 @@
 
 \def\dostopcurrentMPgraphic
   {\global\MPinstancetoks\emptytoks
-   \global\settrue\METAFUNinitialized % becomes obsolete
    \endgroup}
 
 \unexpanded\long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
@@ -1210,7 +1207,7 @@
 %D In any case we need to tell the converter what the inherited color
 %D is to start with. Case~3 is kind of unpredictable as it closely
 %D relates to the order in which paths are flushed. If you want to
-%Dinherit automatically from the surrounding, you can best stick to
+%D inherit automatically from the surrounding, you can best stick to
 %D variant 1. Variant 0 (an isolated graphic) is the default.
 %D
 %D \startbuffer

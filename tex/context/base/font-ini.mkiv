@@ -55,6 +55,7 @@
 \writestatus{loading}{ConTeXt Font Macros / Initialization}
 
 \registerctxluafile{font-ini}{1.001}
+\registerctxluafile{font-clr}{1.001}
 \registerctxluafile{node-fnt}{1.001} % here
 \registerctxluafile{font-enc}{1.001}
 \registerctxluafile{font-map}{1.001}
@@ -2702,7 +2703,7 @@
   [liga=yes,kern=yes,compose=yes,tlig=yes,trep=yes]
 
 \definefontfeature
-  [arabic]
+  [arabic] % this will become obsolete
   [mode=node,language=dflt,script=arab,ccmp=yes,
    init=yes,medi=yes,fina=yes,isol=yes,
    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
@@ -2714,7 +2715,7 @@
 
 \definefontfeature
   [virtualmath]
-  [mode=base,liga=yes,kern=yes,tlig=yes,trep=yes]
+  [mode=base,liga=yes,kern=yes,tlig=yes,trep=yes,language=dflt,script=math]
 
 % for the moment here, this will change but we need it for mk.tex
 

@@ -230,4 +230,20 @@
 \ifdefined\doflushfloats\else \let\doflushfloats\relax \fi
 \ifdefined\flushfloatbox\else \let\flushfloatbox\relax \fi
 
+% temp hack, needed to prevent floatbox being forgotten during
+% output, this will change to using another box for flushing
+%
+% \dorecurse{700}{text } \placefigure[top][]{First} {\framed{bla 1}}
+%                        \placefigure[top][]{Second}{\framed{bla 2}}
+% \dorecurse {40}{text } \placefigure[top][]{Third} {\framed{bla 3}}
+
+\newbox\savedfloatbox
+
+\appendtoks
+    \global\setbox\savedfloatbox\box\floatbox
+\to \everybeforeoutput
+\appendtoks
+    \global\setbox\floatbox\box\savedfloatbox
+\to \everyafteroutput
+
 \protect \endinput

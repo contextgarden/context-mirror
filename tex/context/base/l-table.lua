@@ -605,7 +605,7 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
         handle("t={")
     end
     if root and next(root) then
-        do_serialize(root,name,"",0,indexed)
+        do_serialize(root,name,"",0)
     end
     handle("}")
 end
@@ -908,3 +908,14 @@ function table.insert_after_value(t,value,extra)
     insert(t,#t+1,extra)
 end
 
+function table.sequenced(t,sep)
+    local s = { }
+    for k, v in next, t do -- indexed?
+        s[#s+1] = k .. "=" .. tostring(v)
+    end
+    return concat(s, sep or " | ")
+end
+
+function table.print(...)
+    print(table.serialize(...))
+end

@@ -144,7 +144,7 @@ function scripts.tools.dirtoxml()
 
 end
 
-logs.extendbanner("Some File Related Goodies 1.01",true)
+logs.extendbanner("Some File Related Goodies 1.01")
 
 messages.help = [[
 --disarmutfbomb       remove utf bomb if present

@@ -86,6 +86,7 @@ local baselineskip      = register_node(new_node("glue",2))
 local leftskip          = register_node(new_node("glue",8))
 local rightskip         = register_node(new_node("glue",9))
 local temp              = register_node(new_node("temp",0))
+local noad              = register_node(new_node("noad"))
 
 function nodes.zeroglue(n)
     local s = n.spec
@@ -212,6 +213,11 @@ end
 function nodes.temp()
     return copy_node(temp)
 end
+
+function nodes.noad()
+    return copy_node(noad)
+end
+
 --[[
 <p>At some point we ran into a problem that the glue specification
 of the zeropoint dimension was overwritten when adapting a glue spec
@@ -225,33 +231,16 @@ and hide it for the user. And yes, LuaTeX now gives a warning as
 well.</p>
 ]]--
 
-if tex.luatexversion > 51 then
-
-    function nodes.writable_spec(n)
-        local spec = n.spec
-        if not spec then
-            spec = copy_node(glue_spec)
-            n.spec = spec
-        elseif not spec.writable then
-            spec = copy_node(spec)
-            n.spec = spec
-        end
-        return spec
-    end
-
-else
-
-    function nodes.writable_spec(n)
-        local spec = n.spec
-        if not spec then
-            spec = copy_node(glue_spec)
-        else
-            spec = copy_node(spec)
-        end
+function nodes.writable_spec(n)
+    local spec = n.spec
+    if not spec then
+        spec = copy_node(glue_spec)
         n.spec = spec
-        return spec
+    elseif not spec.writable then
+        spec = copy_node(spec)
+        n.spec = spec
     end
-
+    return spec
 end
 
 local cache = { }
@@ -300,3 +289,5 @@ end) -- \topofboxstack
 statistics.register("node memory usage", function() -- comes after cleanup !
     return status.node_mem_usage
 end)
+
+lua.registerfinalizer(nodes.cleanup_reserved)

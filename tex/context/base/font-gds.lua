@@ -11,6 +11,8 @@ local gmatch = string.gmatch
 
 local trace_goodies = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
 
+local report_fonts = logs.new("fonts")
+
 -- goodies=name,colorscheme=,featureset=
 --
 -- goodies=auto
@@ -28,7 +30,7 @@ function fonts.goodies.report(what,trace,goodies)
     if trace_goodies or trace then
         local whatever = goodies[what]
         if whatever then
-            logs.report("fonts", "goodie '%s' found in '%s'",what,goodies.name)
+            report_fonts("goodie '%s' found in '%s'",what,goodies.name)
         end
     end
 end
@@ -43,15 +45,15 @@ local function getgoodies(filename) -- maybe a merge is better
             fullname = resolvers.find_file(file.addsuffix(filename,"lua")) or "" -- fallback suffix
         end
         if fullname == "" then
-            logs.report("fonts", "goodie file '%s.lfg' is not found",filename)
+            report_fonts("goodie file '%s.lfg' is not found",filename)
             data[filename] = false -- signal for not found
         else
             goodies = dofile(fullname) or false
             if not goodies then
-                logs.report("fonts", "goodie file '%s' is invalid",fullname)
+                report_fonts("goodie file '%s' is invalid",fullname)
                 return nil
             elseif trace_goodies then
-                logs.report("fonts", "goodie file '%s' is loaded",fullname)
+                report_fonts("goodie file '%s' is loaded",fullname)
             end
             goodies.name = goodies.name or "no name"
             for name, fnc in next, list do
@@ -120,7 +122,7 @@ function fonts.goodies.prepare_features(goodies,name,set)
         local n, s = preset_context(fullname,"",ff)
         goodies.featuresets[name] = s -- set
         if trace_goodies then
-            logs.report("fonts", "feature set '%s' gets number %s and name '%s'",name,n,fullname)
+            report_fonts("feature set '%s' gets number %s and name '%s'",name,n,fullname)
         end
         return n
     end
@@ -131,7 +133,7 @@ local function initialize(goodies,tfmdata)
     local goodiesname = goodies.name
     if featuresets then
         if trace_goodies then
-            logs.report("fonts", "checking featuresets in '%s'",goodies.name)
+            report_fonts("checking featuresets in '%s'",goodies.name)
         end
         for name, set in next, featuresets do
             fonts.goodies.prepare_features(goodies,name,set)
@@ -211,6 +213,7 @@ local glyph         = node.id("glyph")
 
 function fonts.goodies.colorschemes.coloring(head)
     local lastfont, lastscheme
+    local done = false
     for n in traverse_id(glyph,head) do
         local a = has_attribute(n,a_colorscheme)
         if a then
@@ -221,11 +224,13 @@ function fonts.goodies.colorschemes.coloring(head)
             if lastscheme then
                 local sc = lastscheme[n.char]
                 if sc then
+                    done = true
                     fcs(n,"colorscheme:"..a..":"..sc) -- slow
                 end
             end
         end
     end
+    return head, done
 end
 
 function fonts.goodies.colorschemes.enable()

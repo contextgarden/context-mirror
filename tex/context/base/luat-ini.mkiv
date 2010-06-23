@@ -135,17 +135,20 @@
    \csname dodostartnamed#1\v!code\endcsname}
 
 \unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
-  {\scratchcounter\ctxlua{lua.registername("#1","#3")}%
-   \normalexpanded{\long\edef\csname dodostartnamed#1\v!code\endcsname##1\csname\e!stop#1\v!code\endcsname}%
-     {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
-   \long\expandafter\def \csname\e!start#1\v!code\endcsname   {\dostartnamedluacode{#1}}%
-   \long\expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}}
+  {\ifcsname dodostartnamed#1\v!code\endcsname\else
+     \scratchcounter\ctxlua{lua.registername("#1","#3")}%
+     \normalexpanded{\long\edef\csname dodostartnamed#1\v!code\endcsname##1\csname\e!stop#1\v!code\endcsname}%
+       {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
+     \long\expandafter\def \csname\e!start#1\v!code\endcsname   {\dostartnamedluacode{#1}}%
+     \long\expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
+   \fi}
 
 %D We predefine a few.
 
+% \definenamedlua[module][module instance] % not needed
+
 \definenamedlua[user]    [private user instance]
 \definenamedlua[third]   [third party module instance]
-\definenamedlua[module]  [module instance]
 \definenamedlua[isolated][isolated instance]
 
 %D In practice this works out as follows:

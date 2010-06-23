@@ -31,6 +31,8 @@ nears zero.</p>
 
 local trace_graphics = false  trackers.register("metapost.graphics", function(v) trace_graphics = v end)
 
+local report_mplib = logs.new("mplib")
+
 local format, gsub, match = string.format, string.gsub, string.match
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
@@ -121,20 +123,20 @@ end
 
 function metapost.reporterror(result)
     if not result then
-        metapost.report("mp error: no result object returned")
+        report_mplib("mp error: no result object returned")
     elseif result.status > 0 then
         local t, e, l = result.term, result.error, result.log
         if t and t ~= "" then
-            metapost.report("mp terminal: %s",t)
+            report_mplib("mp terminal: %s",t)
         end
         if e then
-            metapost.report("mp error: %s",(e=="" and "?") or e)
+            report_mplib("mp error: %s",(e=="" and "?") or e)
         end
         if not t and not e and l then
             metapost.lastlog = metapost.lastlog .. "\n" .. l
-            metapost.report("mp log: %s",l)
+            report_mplib("mp log: %s",l)
         else
-            metapost.report("mp error: unknown, no error, terminal or log messages")
+            report_mplib("mp error: unknown, no error, terminal or log messages")
         end
     else
         return false
@@ -142,22 +144,63 @@ function metapost.reporterror(result)
     return true
 end
 
-function metapost.checkformat(mpsinput, mpsformat, dirname)
-    mpsinput  = file.addsuffix(mpsinput or "metafun", "mp")
-    mpsformat = file.removesuffix(file.basename(mpsformat or texconfig.formatname or (tex and tex.formatname) or mpsinput))
-    local mpsbase = file.removesuffix(file.basename(mpsinput))
+--~ function metapost.checkformat(mpsinput)
+--~     local mpsversion = environment.version or "unset version"
+--~     local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
+--~     local mpsformat  = file.removesuffix(file.basename(mpsformat or texconfig.formatname or (tex and tex.formatname) or mpsinput))
+--~     local mpsbase    = file.removesuffix(file.basename(mpsinput))
+--~     if mpsbase ~= mpsformat then
+--~         mpsformat = mpsformat .. "-" .. mpsbase
+--~     end
+--~     mpsformat = file.addsuffix(mpsformat, "mem")
+--~     local pth = file.dirname(texconfig.formatname or "") -- to be made dynamic
+--~     if pth ~= "" then
+--~         mpsformat = file.join(pth,mpsformat)
+--~     end
+--~     if lfs.isfile(mpsformat) then
+--~         commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformat)
+--~         local mpx, result = metapost.load(mpsformat)
+--~         if mpx then
+--~             local result = mpx:execute("show mp_parent_version ;")
+--~             if not result.log then
+--~                 metapost.reporterror(result)
+--~             else
+--~                 local version = match(result.log,">> *(.-)[\n\r]") or "unknown"
+--~                 version = gsub(version,"[\'\"]","")
+--~                 if version ~= mpsversion then
+--~                     commands.writestatus("mplib","version mismatch: %s <> %s", version or "unknown", mpsversion)
+--~                 else
+--~                     return mpx
+--~                 end
+--~             end
+--~         else
+--~             commands.writestatus("mplib","error in loading '%s' from '%s'", mpsinput, mpsformat)
+--~             metapost.reporterror(result)
+--~         end
+--~     end
+--~     commands.writestatus("mplib","making '%s' into '%s'", mpsinput, mpsformat)
+--~     metapost.make(mpsinput,mpsformat,mpsversion) -- somehow return ... fails here
+--~     if lfs.isfile(mpsformat) then
+--~         commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformat)
+--~         return metapost.load(mpsformat)
+--~     else
+--~         commands.writestatus("mplib","problems with '%s' from '%s'", mpsinput, mpsformat)
+--~     end
+--~ end
+
+function metapost.checkformat(mpsinput)
+    local mpsversion = environment.version or "unset version"
+    local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
+    local mpsformat  = file.removesuffix(file.basename(texconfig.formatname or (tex and tex.formatname) or mpsinput))
+    local mpsbase    = file.removesuffix(file.basename(mpsinput))
     if mpsbase ~= mpsformat then
         mpsformat = mpsformat .. "-" .. mpsbase
     end
     mpsformat = file.addsuffix(mpsformat, "mem")
-    local pth = dirname or file.dirname(texconfig.formatname or "")
-    if pth ~= "" then
-        mpsformat = file.join(pth,mpsformat)
-    end
-    local the_version = environment.version or "unset version"
-    if lfs.isfile(mpsformat) then
-        commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformat)
-        local mpx, result = metapost.load(mpsformat)
+    local mpsformatfullname = caches.getfirstreadablefile(mpsformat,"formats") or ""
+    if mpsformatfullname ~= "" then
+        commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformatfullname)
+        local mpx, result = metapost.load(mpsformatfullname)
         if mpx then
             local result = mpx:execute("show mp_parent_version ;")
             if not result.log then
@@ -165,24 +208,25 @@ function metapost.checkformat(mpsinput, mpsformat, dirname)
             else
                 local version = match(result.log,">> *(.-)[\n\r]") or "unknown"
                 version = gsub(version,"[\'\"]","")
-                if version ~= the_version then
-                    commands.writestatus("mplib","version mismatch: %s <> %s", version or "unknown", the_version)
+                if version ~= mpsversion then
+                    commands.writestatus("mplib","version mismatch: %s <> %s", version or "unknown", mpsversion)
                 else
                     return mpx
                 end
             end
         else
-            commands.writestatus("mplib","error in loading '%s' from '%s'", mpsinput, mpsformat)
+            commands.writestatus("mplib","error in loading '%s' from '%s'", mpsinput, mpsformatfullname)
             metapost.reporterror(result)
         end
     end
-    commands.writestatus("mplib","making '%s' into '%s'", mpsinput, mpsformat)
-    metapost.make(mpsinput,mpsformat,the_version) -- somehow return ... fails here
-    if lfs.isfile(mpsformat) then
-        commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformat)
-        return metapost.load(mpsformat)
+    local mpsformatfullname = caches.setfirstwritablefile(mpsformat,"formats")
+    commands.writestatus("mplib","making '%s' into '%s'", mpsinput, mpsformatfullname)
+    metapost.make(mpsinput,mpsformatfullname,mpsversion) -- somehow return ... fails here
+    if lfs.isfile(mpsformatfullname) then
+        commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformatfullname)
+        return metapost.load(mpsformatfullname)
     else
-        commands.writestatus("mplib","problems with '%s' from '%s'", mpsinput, mpsformat)
+        commands.writestatus("mplib","problems with '%s' from '%s'", mpsinput, mpsformatfullname)
     end
 end
 
@@ -258,7 +302,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                             local str = (result.term ~= "" and result.term) or "no terminal output"
                             if not str:is_empty() then
                                 metapost.lastlog = metapost.lastlog .. "\n" .. str
-                                metapost.report("mp log: %s",str)
+                                report_mplib("mp log: %s",str)
                             end
                         end
                         if result.fig then
@@ -266,7 +310,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                         end
                     end
                 else
-                    metapost.report("mp error: invalid graphic component %s",i)
+                    report_mplib("mp error: invalid graphic component %s",i)
                 end
             end
        else
@@ -284,13 +328,13 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             end
             -- todo: error message
             if not result then
-                metapost.report("mp error: no result object returned")
+                report_mplib("mp error: no result object returned")
             elseif result.status > 0 then
-                metapost.report("mp error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
+                report_mplib("mp error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
             else
                 if metapost.showlog then
                     metapost.lastlog = metapost.lastlog .. "\n" .. result.term
-                    metapost.report("mp info: %s",result.term or "no-term")
+                    report_mplib("mp info: %s",result.term or "no-term")
                 end
                 if result.fig then
                     converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
@@ -308,11 +352,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
 end
 
 function metapost.convert()
-    metapost.report('mp warning: no converter set')
-end
-
-function metapost.report(...)
-    logs.report("mplib",...)
+    report_mplib('mp warning: no converter set')
 end
 
 -- handy
@@ -326,7 +366,7 @@ function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
     if not data then
         logs.simple("unknown file '%s'",filename or "?")
     else
-        local mpx = metapost.checkformat(formatname,formatname,caches.setpath("formats"))
+        local mpx = metapost.checkformat(formatname)
         if not mpx then
             logs.simple("unknown format '%s'",formatname or "?")
         else

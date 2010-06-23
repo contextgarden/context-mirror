@@ -12,6 +12,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% we can make this module a bit cleaner using more recent features
+
 % \startluacode
 %     collectgarbage("stop")
 %     function collectgarbage() return 0 end
@@ -97,7 +99,7 @@
 \let\currentSETUPfullname\s!unknown
 
 \startxmlsetups xml:setups:assemblename
-    \doifelse {\xmlatt{#1}{environment}} {yes} {
+    \doifelse {\xmlatt{#1}{type}} {environment} {
         \let\currentSETUPprefix\e!start
     } {
         \let\currentSETUPprefix\empty
@@ -153,8 +155,8 @@
 \newif\ifshortsetup
 
 \unexpanded\def\setup     {\shortsetupfalse\doshowsetup}
-\def\showsetup {\shortsetupfalse\doshowsetup}
-\def\shortsetup{\shortsetuptrue \doshowsetup}
+\unexpanded\def\showsetup {\shortsetupfalse\doshowsetup}
+\unexpanded\def\shortsetup{\shortsetuptrue \doshowsetup}
 \unexpanded\def\setupsetup{\dodoubleargument\getparameters[\??stp]}
 
 %unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\showsetupindeed{#3}\par}
@@ -176,8 +178,11 @@
   {\registersort[texcommand][stp:x:#1]%
    \showsetupindeed{#1}}
 
+% \def\showsetupindeed#1%
+%   {\xmlfilterlist{\loadedsetups}{/interface/command[@name='#1']/command(xml:setups:typeset)}}
+
 \def\showsetupindeed#1%
-  {\xmlfilterlist{\loadedsetups}{/interface/command[@name='#1']/command(xml:setups:typeset)}}
+  {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
 
 \unexpanded\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \unexpanded\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
@@ -231,7 +236,7 @@
                     \ttsl
                 }
                 \tex{\e!stop}
-                \xmlfilter{#1}{/sequence/variable/first()}
+                \xmlfilter{#1}{/sequence/first()}
                 \ignorespaces
             \egroup
         }

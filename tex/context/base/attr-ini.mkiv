@@ -20,8 +20,6 @@
 
 \registerctxluafile{attr-ini}{1.001}
 
-%D This might move:
-
 \def\pushattribute#1%
   {\global\advance\csname\??ae:\string#1\endcsname\plusone
    \global\expandafter\mathchardef\csname\??ae:\string#1:\number\csname\??ae:\string#1\endcsname\endcsname\attribute#1}
@@ -32,6 +30,41 @@
 
 \def\installattributestack#1%
   {\expandafter\newcount\csname\??ae:\string#1\endcsname}
+
+\newtoks \attributesresetlist
+
+\ifdefined \v!global \else \def\v!global{global} \fi % for metatex
+
+\unexpanded\def\defineattribute
+  {\dodoubleempty\dodefineattribute}
+
+\def\dodefineattribute[#1][#2]% alternatively we can let lua do the housekeeping
+  {\expandafter\newattribute\csname @attr@#1\endcsname
+   \expandafter        \xdef\csname :attr:#1\endcsname{\number\lastallocatedattribute}%
+   \ctxlua{attributes.define("#1",\number\lastallocatedattribute)}%
+  %\writestatus\m!systems{defining attribute #1 with number \number\lastallocatedattribute}%
+   \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
+
+\unexpanded\def\definesystemattribute
+  {\dodoubleempty\dodefinesystemattribute}
+
+\def\dodefinesystemattribute[#1][#2]% alternatively we can let lua do the housekeeping
+  {\scratchcounter\ctxlua{tex.print(attributes.private("#1"))}\relax
+   \global\expandafter\attributedef\csname @attr@#1\endcsname\scratchcounter
+          \expandafter        \xdef\csname :attr:#1\endcsname{\number\scratchcounter}%
+  %\writestatus\m!systems{defining system attribute #1 with number \number\scratchcounter}%
+   \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
+
+% expandable so we can \edef them for speed
+
+\def\dosetattribute#1#2{\csname @attr@#1\endcsname#2\relax}
+\def\doresetattribute#1{\csname @attr@#1\endcsname\attributeunsetvalue}
+\def\dogetattribute  #1{\number\csname @attr@#1\endcsname}
+\def\dogetattributeid#1{\csname :attr:#1\endcsname}
+
+\let\dompattribute\gobbletwoarguments
+
+\def\resetallattributes{\the\attributesresetlist}
 
 %D For the moment we put this here (later it will move to where it's used):
 
@@ -53,118 +86,4 @@
 \definesystemattribute[ruled]                                  \chardef\ruledattribute          \dogetattributeid{ruled}
 \definesystemattribute[shifted]                                \chardef\shiftedattribute        \dogetattributeid{shifted}
 
-% \definesystemattribute[ignore]
-%
-% \edef\startignorecontent{\dosetattribute{ignore}\plusone}
-% \edef\stopignorecontent {\doresetattribute{ignore}}
-
-% todo: no need for 'color' argument, we can set that once at startup; currently
-% a bit inconsistent
-
-% 1=off  2=gray  3=spot  4=rgb  5=cmyk  6=cmy % only 1/2/4/5 are supported
-%
-% We could combine this in one attribute but this is not faster and also
-% less flexible because sometimes we want to freeze the attribute bit.
-%
-% Watch out: real color support will be implemented later.
-
-\newcount\currentcolormodel
-
-\def\dosetcolormodel#1%
-  {\currentcolormodel\ctxlua{tex.print(colors.setmodel('#1'))}%
-   \attribute\colormodelattribute\currentcolormodel}
-
-\dosetcolormodel{all}
-
-\appendtoks
-    \dosetcolormodel{all}% redundant?
-\to \everyjob
-
-\def\registerrgbcolor   #1#2#3#4{\ctxlua{colors.register('#1','rgb' ,#2,#3,#4)}}
-\def\registercmykcolor#1#2#3#4#5{\ctxlua{colors.register('#1','cmyk',#2,#3,#4,#5)}}
-\def\registergraycolor      #1#2{\ctxlua{colors.register('#1','gray',#2)}}
-
-% transparency
-
-\def\registertransparency#1#2#3%
-  {\setevalue{(ts:#1)}{\attribute\transparencyattribute\ctxlua{tex.write(transparencies.register(#2,#3))} }}
-
-\def\sometransparencyswitch#1{\csname(ts:#1)\endcsname}
-
-\def\sometransparencyswitch
-  {\ctxlua{transparencies.enable()}%
-   \gdef\sometransparencyswitch##1{\csname(ts:##1)\endcsname}%
-   \sometransparencyswitch}
-
-% \registertransparency {one} {1} {.5}
-% \registertransparency {two} {1} {.6}
-
-% overprint
-
-\def\registercolorintent#1#2%
-  {\setevalue{(os:#1)}{\attribute\colorintentattribute\ctxlua{tex.write(colorintents.register('#2'))} }}
-
-\def\dotriggercolorintent
-  {\ctxlua{colorintents.enable()}%
-   \gdef\dotriggercolorintent##1{\csname(os:##1)\endcsname}%
-   \dotriggercolorintent}
-
-\registercolorintent{knockout} {knockout}
-\registercolorintent{overprint}{overprint}
-
-\installattributestack\colorintentattribute
-
-\setevalue{(os:#\v!none}{\attribute\colorintentattribute\attributeunsetvalue} % does this work out ok?
-
-% negative
-
-\def\registernegative#1#2%
-  {\setevalue{(ns:#1)}{\attribute\negativeattribute\ctxlua{tex.write(negatives.register('#2'))} }}
-
-\def\dotriggernegative
-  {\ctxlua{negatives.enable()}%
-   \gdef\dotriggernegative##1{\csname(ns:##1)\endcsname}%
-   \dotriggernegative}
-
-\registernegative{positive}{positive}
-\registernegative{negative}{negative}
-
-% effect
-
-\def\registereffect#1#2#3% #2=stretch #3=rulethickness
-  {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}%
-     {\attribute\effectattribute\ctxlua{tex.write(effects.register('#1',#2,\number\dimexpr#3\relax))} }}
-
-\def\dotriggereffect
-  {\ctxlua{effects.enable()}%
-   \gdef\dotriggereffect##1##2##3%
-     {\ifcsname(es:##1:##2:\number\dimexpr##3\relax)\endcsname\else\registereffect{##1}{##2}{##3}\fi
-      \csname(es:##1:##2:\number\dimexpr##3\relax)\endcsname}%
-   \dotriggereffect}
-
-% \registereffect{normal}
-% \registereffect{inner}
-% \registereffect{outer}
-% \registereffect{both}
-% \registereffect{hidden}
-
-% viewerlayers (will probably change a bit)
-
-% needs to work over stopitemize grouping etc
-
-\def\registerviewerlayer#1#2% global !
-  {\setxvalue{(vl:#1)}{\global\attribute\viewerlayerattribute\ctxlua{tex.write(viewerlayers.register('#2'))} }}
-
-\setevalue{(vl:)}{\global\attribute\viewerlayerattribute\attributeunsetvalue}
-
-\def\dotriggerviewerlayer
-  {\ctxlua{viewerlayers.enable()}%
-   \gdef\dotriggerviewerlayer##1{\csname(vl:##1)\endcsname}%
-   \dotriggerviewerlayer}
-
 \protect \endinput
-
-% test case
-%
-% {\green \hbox to \hsize{\leaders\hrule  \hfill a}\par}
-% {\red   \hbox to \hsize{\leaders\hbox{x}\hfill a}\par}

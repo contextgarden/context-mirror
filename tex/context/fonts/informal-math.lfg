@@ -11,11 +11,11 @@ return {
         virtuals = {
             ["informal-math"] = {
                 { name = "file:ifrg.afm", features = "virtualmath", main = true },
-                { name = "ifrm10cm.tfm", vector="tex-mr" },
-                { name = "ifmi10", vector = "tex-mi", skewchar=0x7F },
-                { name = "ifmi10.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "ifsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ifex10.tfm", vector = "tex-ex", extension = true },
+                { name = "file:ifrm10cm.tfm", vector="tex-mr" },
+                { name = "file:ifmi10.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "file:ifmi10.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "file:ifsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "file:ifex10.tfm", vector = "tex-ex", extension = true },
             }
         }
     }

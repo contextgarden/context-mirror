@@ -91,11 +91,8 @@ else
     -- modules contain a little bit of code that is not used. It's
     -- not worth weeding.
 
-    loadmodule('node-ini.lua')
-    loadmodule('node-res.lua') -- will be stripped
-    loadmodule('node-inj.lua') -- will be replaced (luatex > .50)
-    loadmodule('node-fnt.lua')
     loadmodule('node-dum.lua')
+    loadmodule('node-inj.lua') -- will be replaced (luatex >= .70)
 
     -- Now come the font modules that deal with traditional TeX fonts
     -- as well as open type fonts. We don't load the afm related code
@@ -117,7 +114,7 @@ else
     loadmodule('font-oti.lua')
     loadmodule('font-otb.lua')
     loadmodule('font-otn.lua')
-    loadmodule('font-ota.lua') -- might be split
+    loadmodule('font-ota.lua')
     loadmodule('font-otc.lua')
     loadmodule('font-def.lua')
     loadmodule('font-xtx.lua')

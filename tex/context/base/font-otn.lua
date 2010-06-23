@@ -145,6 +145,12 @@ local trace_steps        = false  trackers.register("otf.steps",        function
 local trace_skips        = false  trackers.register("otf.skips",        function(v) trace_skips        = v end)
 local trace_directions   = false  trackers.register("otf.directions",   function(v) trace_directions   = v end)
 
+local report_direct   = logs.new("otf direct")
+local report_subchain = logs.new("otf subchain")
+local report_chain    = logs.new("otf chain")
+local report_process  = logs.new("otf process")
+local report_prepare  = logs.new("otf prepare")
+
 trackers.register("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 trackers.register("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
 
@@ -242,10 +248,10 @@ local function logprocess(...)
     if trace_steps then
         registermessage(...)
     end
-    logs.report("otf direct",...)
+    report_direct(...)
 end
 local function logwarning(...)
-    logs.report("otf direct",...)
+    report_direct(...)
 end
 
 local function gref(n)
@@ -822,7 +828,7 @@ local krn = kerns[nextchar]
                             end
                         end
                     else
-                        logs.report("%s: check this out (old kern stuff)",pref(kind,lookupname))
+                        report_process("%s: check this out (old kern stuff)",pref(kind,lookupname))
                         local a, b = krn[3], krn[7]
                         if a and a ~= 0 then
                             local k = set_kern(snext,factor,rlmode,a)
@@ -861,11 +867,10 @@ local function logprocess(...)
     if trace_steps then
         registermessage(...)
     end
-    logs.report("otf subchain",...)
+    report_subchain(...)
 end
-local function logwarning(...)
-    logs.report("otf subchain",...)
-end
+
+local logwarning = report_subchain
 
 -- ['coverage']={
 --     ['after']={ "r" },
@@ -904,11 +909,10 @@ local function logprocess(...)
     if trace_steps then
         registermessage(...)
     end
-    logs.report("otf chain",...)
+    report_chain(...)
 end
-local function logwarning(...)
-    logs.report("otf chain",...)
-end
+
+local logwarning = report_chain
 
 -- We could share functions but that would lead to extra function calls with many
 -- arguments, redundant tests and confusing messages.
@@ -1058,7 +1062,7 @@ end
 <p>Here we replace start by new glyph. First we delete the rest of the match.</p>
 --ldx]]--
 
-function chainprocs.gsub_alternate(start,stop,kind,lookupname,currentcontext,cache,currentlookup)
+function chainprocs.gsub_alternate(start,stop,kind,chainname,currentcontext,cache,currentlookup,chainlookupname)
     -- todo: marks ?
     delete_till_stop(start,stop)
     local current = start
@@ -1155,7 +1159,7 @@ function chainprocs.gsub_ligature(start,stop,kind,chainname,currentcontext,cache
                         logprocess("%s: replacing character %s upto %s by ligature %s",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(startchar),gref(stop.char),gref(l2))
                     end
                 end
-                start = toligature(kind,lookup,start,stop,l2,currentlookup.flags[1],discfound)
+                start = toligature(kind,lookupname,start,stop,l2,currentlookup.flags[1],discfound)
                 return start, true, nofreplacements
             elseif trace_bugs then
                 if start == stop then
@@ -1490,7 +1494,7 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,cur
                                     end
                                 end
                             else
-                                logs.report("%s: check this out (old kern stuff)",cref(kind,chainname,chainlookupname))
+                                report_process("%s: check this out (old kern stuff)",cref(kind,chainname,chainlookupname))
                                 local a, b = krn[3], krn[7]
                                 if a and a ~= 0 then
                                     local k = set_kern(snext,factor,rlmode,a)
@@ -1864,11 +1868,10 @@ local function logprocess(...)
     if trace_steps then
         registermessage(...)
     end
-    logs.report("otf process",...)
+    report_process(...)
 end
-local function logwarning(...)
-    logs.report("otf process",...)
-end
+
+local logwarning = report_process
 
 local function report_missing_cache(typ,lookup)
     local f = missing[currentfont] if not f then f = { } missing[currentfont] = f end
@@ -1882,6 +1885,9 @@ end
 local resolved = { } -- we only resolve a font,script,language pair once
 
 -- todo: pass all these 'locals' in a table
+--
+-- dynamics will be isolated some day ... for the moment we catch attribute zero
+-- not being set
 
 function fonts.methods.node.otf.features(head,font,attr)
     if trace_steps then
@@ -1926,8 +1932,7 @@ function fonts.methods.node.otf.features(head,font,attr)
     local ra  = rl      [attr]     if ra == nil then ra  = { } rl      [attr]     = ra  end -- attr can be false
     -- sequences always > 1 so no need for optimization
     for s=1,#sequences do
-        local pardir, txtdir = 0, { }
-        local success = false
+        local pardir, txtdir, success = 0, { }, false
         local sequence = sequences[s]
         local r = ra[s] -- cache
         if r == nil then
@@ -1965,7 +1970,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                 end
                                 if trace_applied then
                                     local typ, action = match(sequence.type,"(.*)_(.*)")
-                                    logs.report("otf node mode",
+                                    report_process(
                                         "%s font: %03i, dynamic: %03i, kind: %s, lookup: %3i, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
                                         (valid and "+") or "-",font,attr or 0,kind,s,script,language,what,typ,action,sequence.name)
                                 end
@@ -1994,24 +1999,33 @@ function fonts.methods.node.otf.features(head,font,attr)
                 while start do
                     local id = start.id
                     if id == glyph then
-                        if start.subtype<256 and start.font == font and (not attr or has_attribute(start,0,attr)) then
---~                         if start.subtype<256 and start.font == font and has_attribute(start,0,attr) then
-                            for i=1,#subtables do
-                                local lookupname = subtables[i]
-                                local lookupcache = thecache[lookupname]
-                                if lookupcache then
-                                    local lookupmatch = lookupcache[start.char]
-                                    if lookupmatch then
-                                        start, success = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,i)
-                                        if success then
-                                            break
-                                        end
-                                    end
-                                else
-                                    report_missing_cache(typ,lookupname)
-                                end
+                        if start.subtype<256 and start.font == font then
+                            local a = has_attribute(start,0)
+                            if a then
+                                a = a == attr
+                            else
+                                a = true
                             end
-                            if start then start = start.prev end
+                            if a then
+                                for i=1,#subtables do
+                                    local lookupname = subtables[i]
+                                    local lookupcache = thecache[lookupname]
+                                    if lookupcache then
+                                        local lookupmatch = lookupcache[start.char]
+                                        if lookupmatch then
+                                            start, success = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,i)
+                                            if success then
+                                                break
+                                            end
+                                        end
+                                    else
+                                        report_missing_cache(typ,lookupname)
+                                    end
+                                end
+                                if start then start = start.prev end
+                            else
+                                start = start.prev
+                            end
                         else
                             start = start.prev
                         end
@@ -2034,18 +2048,27 @@ function fonts.methods.node.otf.features(head,font,attr)
                         while start do
                             local id = start.id
                             if id == glyph then
---~                                 if start.font == font and start.subtype<256 and has_attribute(start,0,attr) and (not attribute or has_attribute(start,state,attribute)) then
-                                if start.font == font and start.subtype<256 and (not attr or has_attribute(start,0,attr)) and (not attribute or has_attribute(start,state,attribute)) then
-                                    local lookupmatch = lookupcache[start.char]
-                                    if lookupmatch then
-                                        -- sequence kan weg
-                                        local ok
-                                        start, ok = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,1)
-                                        if ok then
-                                            success = true
-                                        end
+                                if start.subtype<256 and start.font == font then
+                                    local a = has_attribute(start,0)
+                                    if a then
+                                        a = (a == attr) and (not attribute or has_attribute(start,state,attribute))
+                                    else
+                                        a = not attribute or has_attribute(start,state,attribute)
                                     end
-                                    if start then start = start.next end
+                                    if a then
+                                        local lookupmatch = lookupcache[start.char]
+                                        if lookupmatch then
+                                            -- sequence kan weg
+                                            local ok
+                                            start, ok = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,1)
+                                            if ok then
+                                                success = true
+                                            end
+                                        end
+                                        if start then start = start.next end
+                                    else
+                                        start = start.next
+                                    end
                                 else
                                     start = start.next
                                 end
@@ -2082,7 +2105,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                         rlmode = pardir
                                     end
                                     if trace_directions then
-                                        logs.report("fonts","directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
+                                        report_process("directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                     end
                                 elseif subtype == 6 then
                                     local dir = start.dir
@@ -2096,7 +2119,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                     rlmode = pardir
                                 --~ txtdir = { }
                                     if trace_directions then
-                                        logs.report("fonts","directions after pardir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
+                                        report_process("directions after pardir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                     end
                                 end
                                 start = start.next
@@ -2109,27 +2132,36 @@ function fonts.methods.node.otf.features(head,font,attr)
                     while start do
                         local id = start.id
                         if id == glyph then
-                            if start.subtype<256 and start.font == font and (not attr or has_attribute(start,0,attr)) and (not attribute or has_attribute(start,state,attribute)) then
---~                             if start.subtype<256 and start.font == font and has_attribute(start,0,attr) and (not attribute or has_attribute(start,state,attribute)) then
-                                for i=1,ns do
-                                    local lookupname = subtables[i]
-                                    local lookupcache = thecache[lookupname]
-                                    if lookupcache then
-                                        local lookupmatch = lookupcache[start.char]
-                                        if lookupmatch then
-                                            -- we could move all code inline but that makes things even more unreadable
-                                            local ok
-                                            start, ok = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,i)
-                                            if ok then
-                                                success = true
-                                                break
-                                            end
-                                        end
-                                    else
-                                        report_missing_cache(typ,lookupname)
-                                    end
+                            if start.subtype<256 and start.font == font then
+                                local a = has_attribute(start,0)
+                                if a then
+                                    a = (a == attr) and (not attribute or has_attribute(start,state,attribute))
+                                else
+                                    a = not attribute or has_attribute(start,state,attribute)
                                 end
-                                if start then start = start.next end
+                                if a then
+                                    for i=1,ns do
+                                        local lookupname = subtables[i]
+                                        local lookupcache = thecache[lookupname]
+                                        if lookupcache then
+                                            local lookupmatch = lookupcache[start.char]
+                                            if lookupmatch then
+                                                -- we could move all code inline but that makes things even more unreadable
+                                                local ok
+                                                start, ok = handler(start,r[4],lookupname,lookupmatch,sequence,featuredata,i)
+                                                if ok then
+                                                    success = true
+                                                    break
+                                                end
+                                            end
+                                        else
+                                            report_missing_cache(typ,lookupname)
+                                        end
+                                    end
+                                    if start then start = start.next end
+                                else
+                                    start = start.next
+                                end
                             else
                                 start = start.next
                             end
@@ -2150,7 +2182,6 @@ function fonts.methods.node.otf.features(head,font,attr)
                         --     end
                         elseif id == whatsit then
                             local subtype = start.subtype
-                            local subtype = start.subtype
                             if subtype == 7 then
                                 local dir = start.dir
                                 if     dir == "+TRT" or dir == "+TLT" then
@@ -2167,7 +2198,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                     rlmode = pardir
                                 end
                                 if trace_directions then
-                                    logs.report("fonts","directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
+                                    report_process("directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                 end
                             elseif subtype == 6 then
                                 local dir = start.dir
@@ -2181,7 +2212,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                 rlmode = pardir
                             --~ txtdir = { }
                                 if trace_directions then
-                                    logs.report("fonts","directions after pardir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
+                                    report_process("directions after pardir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                 end
                             end
                             start = start.next
@@ -2280,7 +2311,7 @@ local function prepare_lookups(tfmdata)
     -- as well (no big deal)
     --
     local action = {
-        substitution = function(p,lookup,k,glyph,unicode)
+        substitution = function(p,lookup,glyph,unicode)
             local old, new = unicode, unicodes[p[2]]
             if type(new) == "table" then
                 new = new[1]
@@ -2289,10 +2320,10 @@ local function prepare_lookups(tfmdata)
             if not s then s = { } single[lookup] = s end
             s[old] = new
         --~ if trace_lookups then
-        --~     logs.report("define otf","lookup %s: substitution %s => %s",lookup,old,new)
+        --~     report_prepare("lookup %s: substitution %s => %s",lookup,old,new)
         --~ end
         end,
-        multiple = function (p,lookup,k,glyph,unicode)
+        multiple = function (p,lookup,glyph,unicode)
             local old, new = unicode, { }
             local m = multiple[lookup]
             if not m then m = { } multiple[lookup] = m end
@@ -2306,10 +2337,10 @@ local function prepare_lookups(tfmdata)
                 end
             end
         --~ if trace_lookups then
-        --~     logs.report("define otf","lookup %s: multiple %s => %s",lookup,old,concat(new," "))
+        --~     report_prepare("lookup %s: multiple %s => %s",lookup,old,concat(new," "))
         --~ end
         end,
-        alternate = function(p,lookup,k,glyph,unicode)
+        alternate = function(p,lookup,glyph,unicode)
             local old, new = unicode, { }
             local a = alternate[lookup]
             if not a then a = { } alternate[lookup] = a end
@@ -2323,12 +2354,12 @@ local function prepare_lookups(tfmdata)
                 end
             end
         --~ if trace_lookups then
-        --~     logs.report("define otf","lookup %s: alternate %s => %s",lookup,old,concat(new,"|"))
+        --~     report_prepare("lookup %s: alternate %s => %s",lookup,old,concat(new,"|"))
         --~ end
         end,
-        ligature = function (p,lookup,k,glyph,unicode)
+        ligature = function (p,lookup,glyph,unicode)
         --~ if trace_lookups then
-        --~     logs.report("define otf","lookup %s: ligature %s => %s",lookup,p[2],glyph.name)
+        --~     report_prepare("lookup %s: ligature %s => %s",lookup,p[2],glyph.name)
         --~ end
             local first = true
             local t = ligature[lookup]
@@ -2337,7 +2368,7 @@ local function prepare_lookups(tfmdata)
                 if first then
                     local u = unicodes[s]
                     if not u then
-                        logs.report("define otf","lookup %s: ligature %s => %s ignored due to invalid unicode",lookup,p[2],glyph.name)
+                        report_prepare("lookup %s: ligature %s => %s ignored due to invalid unicode",lookup,p[2],glyph.name)
                         break
                     elseif type(u) == "number" then
                         if not t[u] then
@@ -2374,13 +2405,13 @@ local function prepare_lookups(tfmdata)
             end
             t[2] = unicode
         end,
-        position = function(p,lookup,k,glyph,unicode)
+        position = function(p,lookup,glyph,unicode)
             -- not used
             local s = position[lookup]
             if not s then s = { } position[lookup] = s end
             s[unicode] = p[2] -- direct pointer to kern spec
         end,
-        pair = function(p,lookup,k,glyph,unicode)
+        pair = function(p,lookup,glyph,unicode)
             local s = pair[lookup]
             if not s then s = { } pair[lookup] = s end
             local others = s[unicode]
@@ -2407,7 +2438,7 @@ local function prepare_lookups(tfmdata)
                 end
             end
         --~ if trace_lookups then
-        --~     logs.report("define otf","lookup %s: pair for U+%04X",lookup,unicode)
+        --~     report_prepare("lookup %s: pair for U+%04X",lookup,unicode)
         --~ end
         end,
     }
@@ -2416,7 +2447,7 @@ local function prepare_lookups(tfmdata)
         local lookups = glyph.slookups
         if lookups then
             for lookup, p in next, lookups do
-                action[p[1]](p,lookup,k,glyph,unicode)
+                action[p[1]](p,lookup,glyph,unicode)
             end
         end
         local lookups = glyph.mlookups
@@ -2424,7 +2455,7 @@ local function prepare_lookups(tfmdata)
             for lookup, whatever in next, lookups do
                 for i=1,#whatever do -- normaly one
                     local p = whatever[i]
-                    action[p[1]](p,lookup,k,glyph,unicode)
+                    action[p[1]](p,lookup,glyph,unicode)
                 end
             end
         end
@@ -2435,7 +2466,7 @@ local function prepare_lookups(tfmdata)
                 if not k then k = { } kerns[lookup] = k end
                 k[unicode] = krn -- ref to glyph, saves lookup
             --~ if trace_lookups then
-            --~     logs.report("define otf","lookup %s: kern for U+%04X",lookup,unicode)
+            --~     report_prepare("lookup %s: kern for U+%04X",lookup,unicode)
             --~ end
             end
         end
@@ -2451,7 +2482,7 @@ local function prepare_lookups(tfmdata)
                                 if not f then f = { } mark[lookup]  = f end
                                 f[unicode] = anchors -- ref to glyph, saves lookup
                             --~ if trace_lookups then
-                            --~     logs.report("define otf","lookup %s: mark anchor %s for U+%04X",lookup,name,unicode)
+                            --~     report_prepare("lookup %s: mark anchor %s for U+%04X",lookup,name,unicode)
                             --~ end
                             end
                         end
@@ -2465,7 +2496,7 @@ local function prepare_lookups(tfmdata)
                                 if not f then f = { } cursive[lookup]  = f end
                                 f[unicode] = anchors -- ref to glyph, saves lookup
                             --~ if trace_lookups then
-                            --~     logs.report("define otf","lookup %s: exit anchor %s for U+%04X",lookup,name,unicode)
+                            --~     report_prepare("lookup %s: exit anchor %s for U+%04X",lookup,name,unicode)
                             --~ end
                             end
                         end
@@ -2479,7 +2510,7 @@ end
 -- local cache = { }
 luatex = luatex or {} -- this has to change ... we need a better one
 
-function prepare_contextchains(tfmdata)
+local function prepare_contextchains(tfmdata)
     local otfdata = tfmdata.shared.otfdata
     local lookups = otfdata.lookups
     if lookups then
@@ -2498,7 +2529,7 @@ function prepare_contextchains(tfmdata)
         for lookupname, lookupdata in next, otfdata.lookups do
             local lookuptype = lookupdata.type
             if not lookuptype then
-                logs.report("otf process","missing lookuptype for %s",lookupname)
+                report_prepare("missing lookuptype for %s",lookupname)
             else
                 local rules = lookupdata.rules
                 if rules then
@@ -2506,7 +2537,7 @@ function prepare_contextchains(tfmdata)
                     -- contextchain[lookupname][unicode]
                     if fmt == "coverage" then
                         if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
-                            logs.report("otf process","unsupported coverage %s for %s",lookuptype,lookupname)
+                            report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
                         else
                             local contexts = contextchain[lookupname]
                             if not contexts then
@@ -2542,7 +2573,7 @@ function prepare_contextchains(tfmdata)
                         end
                     elseif fmt == "reversecoverage" then
                         if lookuptype ~= "reversesub" then
-                            logs.report("otf process","unsupported reverse coverage %s for %s",lookuptype,lookupname)
+                            report_prepare("unsupported reverse coverage %s for %s",lookuptype,lookupname)
                         else
                             local contexts = reversecontextchain[lookupname]
                             if not contexts then
@@ -2582,7 +2613,7 @@ function prepare_contextchains(tfmdata)
                         end
                     elseif fmt == "glyphs" then
                         if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
-                            logs.report("otf process","unsupported coverage %s for %s",lookuptype,lookupname)
+                            report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
                         else
                             local contexts = contextchain[lookupname]
                             if not contexts then
@@ -2653,7 +2684,7 @@ function fonts.initializers.node.otf.features(tfmdata,value)
             prepare_lookups(tfmdata)
             otfdata.shared.initialized = true
             if trace_preparing then
-                logs.report("otf process","preparation time is %0.3f seconds for %s",os.clock()-t,tfmdata.fullname or "?")
+                report_prepare("preparation time is %0.3f seconds for %s",os.clock()-t,tfmdata.fullname or "?")
             end
         end
     end

@@ -10,10 +10,9 @@ local format, gsub = string.format, string.gsub
 local concat, sort = table.concat, table.sort
 local next, tonumber = next, tonumber
 
-plugins          = plugins          or { }
-plugins.progress = plugins.progress or { }
+moduledata.progress = moduledata.progress or { }
 
-local progress = plugins.progress
+local progress = moduledata.progress
 
 progress = progress or { }
 
@@ -39,7 +38,7 @@ local params = {
 local last  = os.clock()
 local data  = { }
 
-function progress.save()
+function progress.save(name)
     io.savedata((name or progress.defaultfilename) .. ".lut",table.serialize(data,true))
     data = { }
 end
@@ -129,8 +128,8 @@ local function convert(name)
         sort(names)
         processed[name] = {
             names = names,
-            top = top,
-            bot = bot,
+            top   = top,
+            bot   = bot,
             pages = pages,
             paths = paths,
         }
@@ -143,18 +142,23 @@ progress.convert = convert
 function progress.bot(name,tag)
     return convert(name).bot[tag] or 0
 end
+
 function progress.top(name,tag)
     return convert(name).top[tag] or 0
 end
+
 function progress.pages(name,tag)
     return convert(name).pages or 0
 end
+
 function progress.path(name,tag)
     return convert(name).paths[tag] or "origin"
 end
+
 function progress.nodes(name)
     return convert(name).names or { }
 end
+
 function progress.parameters(name)
     return params -- shared
 end

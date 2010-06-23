@@ -19,6 +19,8 @@ local ctxcatcodes = tex.ctxcatcodes
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
+local report_define = logs.new("define fonts")
+
 local tfm      = fonts.tfm
 local define   = fonts.define
 local fontdata = fonts.identifiers
@@ -302,7 +304,7 @@ function define.command_1(str)
     local fullname, size = lpegmatch(splitpattern,str)
     local lookup, name, sub, method, detail = get_specification(fullname)
     if not name then
-        logs.report("define font","strange definition '%s'",str)
+        report_define("strange definition '%s'",str)
         texsprint(ctxcatcodes,"\\fcglet\\somefontname\\defaultfontfile")
     elseif name == "unknown" then
         texsprint(ctxcatcodes,"\\fcglet\\somefontname\\defaultfontfile")
@@ -336,7 +338,7 @@ local n = 0
 
 function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,mathsize,textsize,relativeid)
     if trace_defining then
-        logs.report("define font","memory usage before: %s",statistics.memused())
+        report_define("memory usage before: %s",statistics.memused())
     end
     -- name is now resolved and size is scaled cf sa/mo
     local lookup, name, sub, method, detail = get_specification(str or "")
@@ -369,11 +371,11 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
     end
     local tfmdata = define.read(specification,size) -- id not yet known
     if not tfmdata then
-        logs.report("define font","unable to define %s as \\%s",name,cs)
+        report_define("unable to define %s as \\%s",name,cs)
         texsetcount("global","lastfontid",-1)
     elseif type(tfmdata) == "number" then
         if trace_defining then
-            logs.report("define font","reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+            report_define("reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
         tex.definefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
@@ -388,7 +390,7 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
         tex.definefont(global,cs,id)
         tfm.cleanup_table(tfmdata)
         if trace_defining then
-            logs.report("define font","defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+            report_define("defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
         -- resolved (when designsize is used):
         texsprint(ctxcatcodes,format("\\def\\somefontsize{%isp}",tfmdata.size))
@@ -398,7 +400,7 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
         texsetcount("global","lastfontid",id)
     end
     if trace_defining then
-        logs.report("define font","memory usage after: %s",statistics.memused())
+        report_define("memory usage after: %s",statistics.memused())
     end
     statistics.stoptiming(fonts)
 end
@@ -468,7 +470,7 @@ end
 -- for the moment here, this will become a chain of extras that is
 -- hooked into the ctx registration (or scaler or ...)
 
-function fonts.set_digit_width(font)
+function fonts.set_digit_width(font) -- max(quad/2,wd(0..9))
     local tfmtable = fontdata[font]
     local parameters = tfmtable.parameters
     local width = parameters.digitwidth
@@ -560,29 +562,6 @@ function fonts.char(n) -- todo: afm en tfm
     end
 end
 
--- moved from ini:
-
-fonts.color = { } -- dummy in ini
-
-local attribute = attributes.private('color')
-local mapping   = (attributes and attributes.list[attribute])  or { }
-
-local set_attribute   = node.set_attribute
-local unset_attribute = node.unset_attribute
-
-function fonts.color.set(n,c)
-    local mc = mapping[c]
-    if not mc then
-        unset_attribute(n,attribute)
-    else
-        set_attribute(n,attribute,mc)
-    end
-end
-
-function fonts.color.reset(n)
-    unset_attribute(n,attribute)
-end
-
 -- this will become obsolete:
 
 fonts.otf.name_to_slot = name_to_slot
@@ -622,3 +601,4 @@ function fonts.show_font_parameters()
         end
     end
 end
+

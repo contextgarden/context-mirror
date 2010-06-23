@@ -16,7 +16,6 @@
 %D in good old \TEX, and these may differ a bit. Here we also see
 %D some oldstyle definitions which normally are done with features.
 
-
 % \starttypescriptcollection[myfonts]
 %
 %     \starttypescript [serif] [myserif] [name]
@@ -1493,7 +1492,7 @@
     \stoptypescript
 
     \starttypescript [math] [asana] [name]
-        \definefontsynonym [MathRoman] [AsanaMath] [\s!features=math\mathsizesuffix]
+        \definefontsynonym [MathRoman] [AsanaMath] [\s!features=\s!math\mathsizesuffix]
     \stoptypescript
 
     \starttypescript[asana]
@@ -1528,13 +1527,13 @@
     \stoptypescript
 
     \starttypescript [math] [cambria,cambria-m,cambria-a] [name]
-        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=math\mathsizesuffix]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math\mathsizesuffix]
     \stoptypescript
     \starttypescript [math] [cambria-x] [name]
-        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=math]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math]
     \stoptypescript
     \starttypescript [math] [cambria-y] [name]
-        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=math-nostack\mathsizesuffix]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math-nostack\mathsizesuffix]
     \stoptypescript
 
     \starttypescript [serif] [cambria,cambria-m,cambria-a] [name]
@@ -1647,7 +1646,7 @@
 
 \starttypescriptcollection[liberation]
 
-    \starttypescript [serif] [liberationserif] [name]
+    \starttypescript [serif] [liberation] [name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]           [\s!file:liberationserif-regular]    [\s!features=\s!default]
         \definefontsynonym [\s!SerifBold]       [\s!file:liberationserif-bold]       [\s!features=\s!default]
@@ -1655,7 +1654,7 @@
         \definefontsynonym [\s!SerifBoldItalic] [\s!file:liberationserif-bolditalic] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [sans] [liberationsans] [name]
+    \starttypescript [sans] [liberation] [name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [\s!file:liberationsans-regular]    [\s!features=\s!default]
         \definefontsynonym [\s!SansBold]       [\s!file:liberationsans-bold]       [\s!features=\s!default]
@@ -1663,7 +1662,7 @@
         \definefontsynonym [\s!SansBoldItalic] [\s!file:liberationsans-bolditalic] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [mono] [liberationmono] [name]
+    \starttypescript [mono] [liberation] [name]
         \setups[\s!font:\s!fallback:\s!mono]
         \definefontsynonym [\s!Mono]           [\s!file:liberationmono-regular]    [\s!features=\s!default]
         \definefontsynonym [\s!MonoBold]       [\s!file:liberationmono-bold]       [\s!features=\s!default]
@@ -1672,10 +1671,10 @@
     \stoptypescript
 
     \starttypescript[liberation]
-        \definetypeface [liberation] [rm] [serif] [liberationserif] [default]
-        \definetypeface [liberation] [ss] [sans]  [liberationsans]  [default] [rscale=0.870]
-        \definetypeface [liberation] [tt] [mono]  [liberationmono]  [default] [rscale=0.870]
-        \definetypeface [liberation] [mm] [math]  [times]           [default] [rscale=1.040]
+        \definetypeface [liberation] [rm] [serif] [liberation] [default]
+        \definetypeface [liberation] [ss] [sans]  [liberation] [default] [rscale=0.870]
+        \definetypeface [liberation] [tt] [mono]  [liberation] [default] [rscale=0.870]
+        \definetypeface [liberation] [mm] [math]  [times]      [default] [rscale=1.040]
     \stoptypescript
 
 \stoptypescriptcollection
@@ -1762,8 +1761,8 @@
     \stoptypescript
 
     \starttypescript [math] [euler] [name]
-    %   \definefontsynonym [MathRoman] [EulerMath] [\s!features=math]
-        \definefontsynonym [MathRoman] [EulerMath] [\s!features=math\mathsizesuffix]
+    %   \definefontsynonym [MathRoman] [EulerMath] [\s!features=\s!math]
+        \definefontsynonym [MathRoman] [EulerMath] [\s!features=\s!math\mathsizesuffix]
     \stoptypescript
 
     \starttypescript [pagella-euler]
@@ -1784,6 +1783,59 @@
         \definetypeface [euler] [tt] [\s!mono]  [modern] [\s!default] [\s!rscale=auto]
         \definetypeface [euler] [mm] [\s!math]  [euler]  [\s!default]
         \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[stix]
+
+    % This typescript is only provided to keep an eye on developments of this font
+    % but currenty these are not proper opentype math fonts (for instance they have
+    % no math table yet). We will not make a virtual font for this as eventually
+    % there will be a decent version. Beware, we force an otf suffix as there happen
+    % to be ttf files as well. BTW, why 'italic' infull and 'bol' without 'd'?
+
+    \starttypescript [math] [stix] [name]
+        \definefontsynonym[MathRoman][\s!file:stixgeneral.otf] [\s!features=\s!math]
+    \stoptypescript
+
+    \starttypescript [serif] [stix] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym[\s!Serif]          [\s!file:stixgeneral.otf]       [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBold]      [\s!file:stixgeneralbol.otf]    [\s!features=\s!default]
+        \definefontsynonym[\s!SerifItalic]    [\s!file:stixgeneralitalic.otf] [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBoldItalic][\s!file:stixgeneralbolita.otf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript[stix]
+        \definetypeface [stix] [rm] [\s!serif] [stix] [\s!default]
+        \definetypeface [stix] [mm] [\s!math]  [stix] [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[xits]
+
+    % This one makes more sense. Xits uses the glyph collection from stix but packages
+    % it in a proper OpenType Math font.
+
+    \starttypescript [math] [xits] [name]
+        \definefontsynonym[MathRoman][file:xits-math.otf][\s!features=\s!math\mathsizesuffix]
+    \stoptypescript
+
+    \starttypescript [serif] [xits] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym[\s!Serif]          [\s!file:xits-regular.otf]    [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBold]      [\s!file:xits-bold.otf]       [\s!features=\s!default]
+        \definefontsynonym[\s!SerifItalic]    [\s!file:xits-italic.otf]     [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBoldItalic][\s!file:xits-bolditalic.otf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript[xits]
+        \definetypeface [xits] [rm] [\s!serif] [xits]   [\s!default]
+        \definetypeface [xits] [ss] [\s!sans]  [heros]  [\s!default] [\s!rscale=0.9]
+        \definetypeface [xits] [tt] [\s!mono]  [modern] [\s!default] [\s!rscale=1.05]
+        \definetypeface [xits] [mm] [\s!math]  [xits]   [\s!default]
     \stoptypescript
 
 \stoptypescriptcollection

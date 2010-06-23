@@ -236,27 +236,6 @@
 %D of a digit. Watch the \type {\mathaxisheight} trickery (this
 %D font related register stored the math axis).
 
-% \def\scandigits#1%
-%   {\if#1.\doscandigit1\chardef\skipdigit0\else
-%    \if#1,\doscandigit2\chardef\skipdigit0\else
-%    \if#1@\hphantom{0}\chardef\skipdigit1\else
-%    \if#1_\hphantom{0}\chardef\skipdigit1\else
-%    \if#1/\digitsgn{\hphantom{+}}\chardef\skipdigit0\else
-%    \if#1-\digitsgn-\chardef\skipdigit0\else
-%    \if#1+\digitsgn+\chardef\skipdigit0\else
-%    \if#1=\digitsgn\zeroamount\chardef\skipdigit0\else
-%    \if#1s\digitsgn{\hphantom{\positive}}\chardef\skipdigit0\else
-%    \if#1p\digitsgn\positive\chardef\skipdigit0\else
-%    \if#1m\digitsgn\negative\chardef\skipdigit0\else
-%    \if#1n\digitsgn\negative\chardef\skipdigit0\else
-%       #1\chardef\skipdigit0\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
-
-% \def\digitsep#1%
-%   {\doscandigit#1\chardef\skipdigit0}
-%
-% \def\digitnop
-%   {\hphantom{0}\chardef\skipdigit1}
-
 % 0,=
 % 0,==  second = results in delta(00,=)
 % 0,-   is invalid, should be =

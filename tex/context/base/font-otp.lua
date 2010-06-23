@@ -13,6 +13,8 @@ local sort, concat = table.sort, table.concat
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
+local report_otf = logs.new("load otf")
+
 fonts               = fonts               or { }
 fonts.otf           = fonts.otf           or { }
 fonts.otf.enhancers = fonts.otf.enhancers or { }
@@ -70,7 +72,7 @@ function fonts.otf.enhancers.pack(data)
         local function success(stage,pass)
             if #t == 0 then
                 if trace_loading then
-                    logs.report("load otf","pack quality: nothing to pack")
+                    report_otf("pack quality: nothing to pack")
                 end
                 return false
             elseif #t >= threshold then
@@ -98,12 +100,12 @@ function fonts.otf.enhancers.pack(data)
                     data.tables = tt
                 end
                 if trace_loading then
-                    logs.report("load otf","pack quality: stage %s, pass %s, %s packed, 1-10:%s, 11-20:%s, rest:%s (criterium: %s)", stage, pass, one+two+rest, one, two, rest, criterium)
+                    report_otf("pack quality: stage %s, pass %s, %s packed, 1-10:%s, 11-20:%s, rest:%s (criterium: %s)", stage, pass, one+two+rest, one, two, rest, criterium)
                 end
                 return true
             else
                 if trace_loading then
-                    logs.report("load otf","pack quality: stage %s, pass %s, %s packed, aborting pack (threshold: %s)", stage, pass, #t, threshold)
+                    report_otf("pack quality: stage %s, pass %s, %s packed, aborting pack (threshold: %s)", stage, pass, #t, threshold)
                 end
                 return false
             end
