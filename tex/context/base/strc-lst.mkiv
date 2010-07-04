@@ -88,6 +88,11 @@
         userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
    }}}%
    \expanded{\ctxlatelua{structure.lists.enhance(\currentlistnumber)}}%
+   % new from here
+   \xdef\currentstructurelistattribute{\ctxlua{tex.write(jobreferences.setinternalreference(nil,nil,\nextinternalreference))}}%
+   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   \begingroup\attribute\destinationattribute\currentdestinationattribute\hbox{}\endgroup % todo
+   % end of new
    \endgroup}
 
 \def\structurelistlocation
@@ -130,7 +135,7 @@
 \unexpanded\def\placestructurelist#1#2#3% hm ... [][][]
   {\ctxlua{structure.lists.process("#1","#2","#3")}}
 
-\def\analysestructurelist#1#2#3%
+\unexpanded\def\analysestructurelist#1#2#3%
   {\ctxlua{structure.lists.analyze("#1","#2","#3")}}
 
 \def\firststructureelementinlist#1%
@@ -141,7 +146,7 @@
 
 \def\@@structurelistprocess{structurelist:process:}
 
-\def\installstructurelistprocessor#1#2%
+\unexpanded\def\installstructurelistprocessor#1#2%
   {\expandafter\def\csname\@@structurelistprocess#1\endcsname{#2}}
 
 \def\usestructurelistprocessor#1%
@@ -158,7 +163,7 @@
 %   \chapter{Two} \section{First} \section{Second}
 % \stoptext
 
-\def\processlistofstructure#1#2#3% name, method, n
+\unexpanded\def\processlistofstructure#1#2#3% name, method, n
   {\ctxlua{structure.lists.pushnesting(#3)}%
    \edef\currentlist      {#1}%
    \edef\currentlistmethod{#2}%
@@ -324,20 +329,19 @@
 
 % writing to lists
 
-\def\writetolist[#1]{\gobbletwoarguments}
 \let\dowritetolist  \gobblefourarguments
 \let\dodowritetolist\gobblefourarguments
 
-\def\writebetweenlist[#1]#2%
+\unexpanded\def\writebetweenlist[#1]#2%
   {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][command][command={#2}]}}
 
-\def\writedatatolist
+\unexpanded\def\writedatatolist
   {\dodoubleargument\dowritedatatolist}
 
 \def\dowritedatatolist[#1][#2]%
   {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][userdata][#2]}}
 
-\def\writetolist[#1]#2#3%
+\unexpanded\def\writetolist[#1]#2#3%
   {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][simple][first={#2},second={#3}]}}
 
 \installstructurelistprocessor{simple}
@@ -362,11 +366,11 @@
    \endgroup
    \dosetlistmode}
 
-\def\dosetlistmode % utilitydone will disappear
+\def\dosetlistmode
   {\ifcase\structurelistsize\relax
-     \utilitydonefalse \resetsystemmode\v!list
+     \resetsystemmode\v!list
    \else
-     \utilitydonetrue  \setsystemmode  \v!list
+     \setsystemmode  \v!list
    \fi}
 
 \unexpanded\def\systemsuppliedchapter {\getvalue{\v!chapter}} % brrr
@@ -379,7 +383,7 @@
 \def\docompletelist[#1][#2]%
   {\dodocompletelist[#1][#1][#2]}
 
-\def\completelist
+\unexpanded\def\completelist
   {\dodoubleempty\docompletelist}
 
 \def\listelements        {}   % list of page breaks
@@ -390,7 +394,7 @@
 \def\doassigndimen#1#2#3%
   {\doifinsetelse{#2}{\v!fit,\v!broad}{#1=#3}{#1=#2}\relax}
 
-\def\listsymbol[#1]#2%
+\unexpanded\def\listsymbol[#1]#2%
   {\begingroup
    \edef\currentlist{#1}%
    \edef\currentlistnumber{#2}%
@@ -539,8 +543,7 @@
    \endgroup
    \dontcomplain
   %\setfullsectionnumber{\??li\currentlist}% todo
-   \dosomelistelement{#1}{#2}{#3}{#4}{#5}{#6}%
-   \global\utilitydonetrue} % ?
+   \dosomelistelement{#1}{#2}{#3}{#4}{#5}{#6}}
 
 \def\dodocommandlistelement#1#2#3#4#5#6%
   {\doifdefinedelse{\??li#1\c!command}
@@ -829,7 +832,7 @@
    \endgroup
    \dosetlistmode}
 
-\def\determinelistcharacteristics
+\unexpanded\def\determinelistcharacteristics
   {\dodoubleempty\dodeterminelistcharacteristics}
 
 \def\combinedlistparameter#1{\csname\??ih\currentcombinedlist#1\endcsname}

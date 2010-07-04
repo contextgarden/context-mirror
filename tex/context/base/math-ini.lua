@@ -15,6 +15,8 @@ local texsprint, format, utfchar, utfbyte = tex.sprint, string.format, utf.char,
 
 local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
+local report_math = logs.new("mathematics")
+
 mathematics = mathematics or { }
 
 mathematics.extrabase   = 0xFE000 -- here we push some virtuals
@@ -154,11 +156,11 @@ end
 local function report(class,family,unicode,name)
     local nametype = type(name)
     if nametype == "string" then
-        logs.report("mathematics","%s:%s %s U+%05X (%s) => %s",classname,class,family,unicode,utfchar(unicode),name)
+        report_math("%s:%s %s U+%05X (%s) => %s",classname,class,family,unicode,utfchar(unicode),name)
     elseif nametype == "number" then
-        logs.report("mathematics","%s:%s %s U+%05X (%s) => U+%05X",classname,class,family,unicode,utfchar(unicode),name)
+        report_math("%s:%s %s U+%05X (%s) => U+%05X",classname,class,family,unicode,utfchar(unicode),name)
     else
-        logs.report("mathematics","%s:%s %s U+%05X (%s)", classname,class,family,unicode,utfchar(unicode))
+        report_math("%s:%s %s U+%05X (%s)", classname,class,family,unicode,utfchar(unicode))
     end
 end
 

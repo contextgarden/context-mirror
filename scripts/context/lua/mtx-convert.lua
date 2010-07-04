@@ -119,7 +119,7 @@ function scripts.convert.convertgiven()
 end
 
 
-logs.extendbanner("ConTeXT Graphic Conversion Helpers 0.10",true)
+logs.extendbanner("ConTeXT Graphic Conversion Helpers 0.10")
 
 messages.help = [[
 --convertall          convert all graphics on path

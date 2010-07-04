@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['font-otd'] = {
     license   = "see context related readme files"
 }
 
-local trace_dynamics  = false  trackers.register("otf.dynamics",     function(v) trace_dynamics     = v end)
+local trace_dynamics = false  trackers.register("otf.dynamics", function(v) trace_dynamics     = v end)
+
+local report_otf = logs.new("load otf")
 
 fonts     = fonts     or { }
 fonts.otf = fonts.otf or { }
@@ -24,7 +26,7 @@ local a_to_script   = { }  otf.a_to_script   = a_to_script
 local a_to_language = { }  otf.a_to_language = a_to_language
 
 function otf.set_dynamics(font,dynamics,attribute)
-    features = context_setups[context_numbers[attribute]] -- can be moved to caller
+    local features = context_setups[context_numbers[attribute]] -- can be moved to caller
     if features then
         local script   = features.script   or 'dflt'
         local language = features.language or 'dflt'
@@ -41,7 +43,7 @@ function otf.set_dynamics(font,dynamics,attribute)
         local dsla = dsl[attribute]
         if dsla then
         --  if trace_dynamics then
-        --      logs.report("otf define","using dynamics %s: attribute %s, script %s, language %s",context_numbers[attribute],attribute,script,language)
+        --      report_otf("using dynamics %s: attribute %s, script %s, language %s",context_numbers[attribute],attribute,script,language)
         --  end
             return dsla
         else
@@ -60,9 +62,10 @@ function otf.set_dynamics(font,dynamics,attribute)
             tfmdata.script   = script
             tfmdata.shared.features = { }
             -- end of save
-            dsla = otf.set_features(tfmdata,fonts.define.check(features,otf.features.default))
+            local set = fonts.define.check(features,otf.features.default)
+            dsla = otf.set_features(tfmdata,set)
             if trace_dynamics then
-                logs.report("otf define","setting dynamics %s: attribute %s, script %s, language %s",context_numbers[attribute],attribute,script,language)
+                report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",context_numbers[attribute],attribute,script,language,table.sequenced(set))
             end
             -- we need to restore some values
             tfmdata.script          = saved.script

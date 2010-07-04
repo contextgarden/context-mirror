@@ -144,6 +144,11 @@ scripts.update.platforms = {
     ["solaris"]        = "solaris-sparc",
 }
 
+scripts.update.selfscripts = {
+    "mtxrun",
+ -- "luatools",
+}
+
 -- the list is filled up later (when we know what modules to download)
 
 scripts.update.modules = {
@@ -197,6 +202,7 @@ function scripts.update.synchronize()
         dir.mkdirs(format("%s/%s", texroot, "texmf-cache"))
         dir.mkdirs(format("%s/%s", texroot, "texmf-local"))
         dir.mkdirs(format("%s/%s", texroot, "texmf-project"))
+        dir.mkdirs(format("%s/%s", texroot, "texmf-fonts"))
     end
 
     if ok or not force then
@@ -330,14 +336,12 @@ function scripts.update.synchronize()
                 end
             end
         end
-        if logs.verbose then
-            for k, v in next, combined do
-                logs.report("update", k)
-                for i=1,#v do
-                    logs.report("update", "  <= " .. v[i])
-                end
-            end
-        end
+        --~ for k, v in next, combined do
+        --~     logs.report("update", k)
+        --~     for i=1,#v do
+        --~         logs.report("update", "  <= " .. v[i])
+        --~     end
+        --~ end
         for destination, archive in next, combined do
             local archives, command = concat(archive," "), ""
         --  local normalflags, deleteflags = states.get("rsync.flags.normal"), states.get("rsync.flags.delete")
@@ -381,8 +385,9 @@ function scripts.update.synchronize()
         end
 
         for platform, _ in next, platforms do
-            update_script('luatools',platform)
-            update_script('mtxrun',platform)
+            for i=1, #scripts.update.selfscripts do
+                update_script(scripts.update.selfscripts[i],platform)
+            end
         end
 
     else
@@ -397,7 +402,7 @@ function scripts.update.synchronize()
     -- update filename database for pdftex/xetex
     scripts.update.run("mktexlsr")
     -- update filename database for luatex
-    scripts.update.run("luatools --generate")
+    scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
     logs.report("update","done")
 end
@@ -425,7 +430,7 @@ function scripts.update.make()
     resolvers.load_tree(texroot)
 
     scripts.update.run("mktexlsr")
-    scripts.update.run("luatools --generate")
+    scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
     local askedformats = formats
     local texformats = table.tohash(scripts.update.texformats)
@@ -444,7 +449,7 @@ function scripts.update.make()
     if formatlist ~= "" then
         for engine in next, engines do
             if engine == "luatex" then
-                scripts.update.run(format("context --make")) -- maybe also formatlist
+                scripts.update.run(format('mtxrun --tree="%s" --script context --autogenerate --make',texroot))
             else
                 -- todo: just handle make here or in mtxrun --script context --make
                 scripts.update.run(format("texexec --make --all --fast --%s %s",engine,formatlist))
@@ -459,11 +464,11 @@ function scripts.update.make()
         logs.report("make", "use --force to really make formats")
     end
     scripts.update.run("mktexlsr")
-    scripts.update.run("luatools --generate")
+    scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
     logs.report("make","done")
 end
 
-logs.extendbanner("ConTeXt Minimals Updater 0.21",true)
+logs.extendbanner("ConTeXt Minimals Updater 0.21")
 
 messages.help = [[
 --platform=string     platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)

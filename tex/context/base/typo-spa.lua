@@ -15,6 +15,8 @@ local utfchar = utf.char
 
 local trace_hspacing     = false  trackers.register("nodes.hspacing",      function(v) trace_hspacing      = v end)
 
+local report_spacing = logs.new("spacing")
+
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local insert_node_before = node.insert_before
@@ -73,7 +75,7 @@ function spacings.process(namespace,attribute,head)
                                     local somepenalty = nodes.somepenalty(prevprev,10000)
                                     if somepenalty then
                                         if trace_hspacing then
-                                            logs.report("spacing","removing penalty and space before %s", utfchar(start.char))
+                                            report_spacing("removing penalty and space before %s", utfchar(start.char))
                                         end
                                         head, _ = remove_node(head,prev,true)
                                         head, _ = remove_node(head,prevprev,true)
@@ -81,7 +83,7 @@ function spacings.process(namespace,attribute,head)
                                         local somespace = nodes.somespace(prev,true)
                                         if somespace then
                                             if trace_hspacing then
-                                                logs.report("spacing","removing space before %s", utfchar(start.char))
+                                                report_spacing("removing space before %s", utfchar(start.char))
                                             end
                                             head, _ = remove_node(head,prev,true)
                                         end
@@ -93,7 +95,7 @@ function spacings.process(namespace,attribute,head)
                             end
                             if ok then
                                 if trace_hspacing then
-                                    logs.report("spacing","inserting penalty and space before %s", utfchar(start.char))
+                                    report_spacing("inserting penalty and space before %s", utfchar(start.char))
                                 end
                                 insert_node_before(head,start,make_penalty_node(10000))
                                 insert_node_before(head,start,make_glue_node(tex.scale(quad,left)))
@@ -110,7 +112,7 @@ function spacings.process(namespace,attribute,head)
                                     local somespace = nodes.somespace(nextnext,true)
                                     if somespace then
                                         if trace_hspacing then
-                                            logs.report("spacing","removing penalty and space after %s", utfchar(start.char))
+                                            report_spacing("removing penalty and space after %s", utfchar(start.char))
                                         end
                                         head, _ = remove_node(head,next,true)
                                         head, _ = remove_node(head,nextnext,true)
@@ -119,7 +121,7 @@ function spacings.process(namespace,attribute,head)
                                     local somespace = nodes.somespace(next,true)
                                     if somespace then
                                         if trace_hspacing then
-                                            logs.report("spacing","removing space after %s", utfchar(start.char))
+                                            report_spacing("removing space after %s", utfchar(start.char))
                                         end
                                         head, _ = remove_node(head,next,true)
                                     end
@@ -130,7 +132,7 @@ function spacings.process(namespace,attribute,head)
                             end
                             if ok then
                                 if trace_hspacing then
-                                    logs.report("spacing","inserting penalty and space after %s", utfchar(start.char))
+                                    report_spacing("inserting penalty and space after %s", utfchar(start.char))
                                 end
                                 insert_node_after(head,start,make_glue_node(tex.scale(quad,right)))
                                 insert_node_after(head,start,make_penalty_node(10000))

@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['luat-exe'] = {
 local match, find = string.match, string.find
 local concat = table.concat
 
+local report_executer = logs.new("executer")
+
 if not executer then executer = { } end
 
 executer.permitted = { }
@@ -26,18 +28,20 @@ end
 function executer.finalize() -- todo: os.exec, todo: report ipv print
     local execute = os.execute
     function executer.execute(...)
-        local t, name, arguments = {...}, "", ""
+        -- todo: make more clever first split
+        local t, name, arguments = { ... }, "", ""
+        local one = t[1]
         if #t == 1 then
-            if type(t[1]) == 'table' then
-                name, arguments = t[1], concat(t," ",2,#t)
+            if type(one) == 'table' then
+                name, arguments = one, concat(t," ",2,#t)
             else
-                name, arguments = match(t[1],"^(.-)%s+(.+)$")
+                name, arguments = match(one,"^(.-)%s+(.+)$")
                 if not (name and arguments) then
-                    name, arguments = t[1], ""
+                    name, arguments = one, ""
                 end
             end
         else
-            name, arguments = t[1], concat(t," ",2,#t)
+            name, arguments = one, concat(t," ",2,#t)
         end
         local permitted = executer.permitted
         for k=1,#permitted do
@@ -46,16 +50,14 @@ function executer.finalize() -- todo: os.exec, todo: report ipv print
                 execute(name .. " " .. arguments)
             --  print("executed: " .. name .. " " .. arguments)
             else
-                print("not permitted: " .. name .. " " .. arguments)
+                report_executer("not permitted: %s %s",name,arguments)
             end
         end
     end
     function executer.finalize()
-        print("executer is already finalized")
+        report_executer("already finalized")
     end
-    function executer.register(name)
-        print("executer is already finalized")
-    end
+    executer.register = executer.finalize
     os.execute = executer.execute
 end
 
@@ -69,3 +71,20 @@ end
 --~ executer.execute("dir *.tex")
 --~ executer.execute("ls *.tex")
 --~ os.execute('ls')
+
+function executer.check()
+    local mode = resolvers.variable("command_mode")
+    local list = resolvers.variable("command_list")
+    if mode == "none" then
+        executer.finalize()
+    elseif mode == "list" and list ~= "" then
+        for s in string.gmatch("[^%s,]",list) do
+            executer.register(s)
+        end
+        executer.finalize()
+    else
+        -- all
+    end
+end
+
+--~ executer.check()

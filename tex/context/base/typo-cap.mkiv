@@ -51,10 +51,8 @@
 % test \word{test TEST \TeX} test
 % test \Word{test TEST \TeX} test
 
-\unexpanded\def\setcharactercasing
-  {\ctxlua{cases.enable()}%
-   \gdef\setcharactercasing[##1]{\attribute\caseattribute##1\relax}%
-   \setcharactercasing}
+\unexpanded\def\setcharactercasing[#1]%
+  {\ctxlua{typesetting.cases.set(\number#1)}}
 
 % todo: names casings
 

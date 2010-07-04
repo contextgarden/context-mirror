@@ -14,6 +14,8 @@ local copy_node_list = node.copy_list
 
 local trace_floats = false  trackers.register("graphics.floats", function(v) trace_floats = v end) -- name might change
 
+local report_floats = logs.new("floats")
+
 -- we use floatbox, floatwidth, floatheight
 -- text page leftpage rightpage (todo: top, bottom, margin, order)
 
@@ -83,22 +85,26 @@ end
 
 function floats.save(which,data)
     which = which or default
-    local stack = stacks[which]
-    noffloats = noffloats + 1
     local b = texbox.floatbox
-    local w, h, d = b.width, b.height, b.depth
-    local t = {
-        n    = noffloats,
-        data = data or { },
-        box  = copy_node_list(b),
-    }
-    texbox.floatbox = nil
-    insert(stack,t)
-    setcount("global","savednoffloats",#stacks[default])
-    if trace_floats then
-        logs.report("floats","saving %s float %s in slot %s (%i,%i,%i)",which,noffloats,#stack,w,h,d)
+    if b then
+        local stack = stacks[which]
+        noffloats = noffloats + 1
+        local w, h, d = b.width, b.height, b.depth
+        local t = {
+            n    = noffloats,
+            data = data or { },
+            box  = copy_node_list(b),
+        }
+        texbox.floatbox = nil
+        insert(stack,t)
+        setcount("global","savednoffloats",#stacks[default])
+        if trace_floats then
+            report_floats("saving %s float %s in slot %s (%i,%i,%i)",which,noffloats,#stack,w,h,d)
+        else
+            interfaces.showmessage("floatblocks",2,noffloats)
+        end
     else
-        interfaces.showmessage("floatblocks",2,noffloats)
+        report_floats("unable to save %s float %s (empty)",which,noffloats)
     end
 end
 
@@ -113,12 +119,12 @@ function floats.resave(which)
         insert(stack,1,last)
         setcount("global","savednoffloats",#stacks[default])
         if trace_floats then
-            logs.report("floats","resaving %s float %s in slot %s (%i,%i,%i)",which,noffloats,#stack,w,h,d)
+            report_floats("resaving %s float %s in slot %s (%i,%i,%i)",which,noffloats,#stack,w,h,d)
         else
             interfaces.showmessage("floatblocks",2,noffloats)
         end
     else
-        logs.report("floats","unable to resave float")
+        report_floats("unable to resave float")
     end
 end
 
@@ -129,14 +135,14 @@ function floats.flush(which,n)
     if t then
         local w, h, d = setdimensions(b)
         if trace_floats then
-            logs.report("floats","flushing %s float %s from slot %s (%i,%i,%i)",which,t.n,n,w,h,d)
+            report_floats("flushing %s float %s from slot %s (%i,%i,%i)",which,t.n,n,w,h,d)
         else
             interfaces.showmessage("floatblocks",3,t.n)
         end
         texbox.floatbox = b
         last = remove(stack,n)
         last.box = nil
-        setcount("global","savednoffloats",#stacks[default])
+        setcount("global","savednoffloats",#stacks[default]) -- default?
     else
         setdimensions()
     end
@@ -156,12 +162,12 @@ function floats.consult(which,n)
     if t then
         local w, h, d = setdimensions(b)
         if trace_floats then
-            logs.report("floats","consulting %s float %s in slot %s (%i,%i,%i)",which,t.n,n,w,h,d)
+            report_floats("consulting %s float %s in slot %s (%i,%i,%i)",which,t.n,n,w,h,d)
         end
         return t, b, n
     else
         if trace_floats then
-            logs.report("floats","nothing to consult")
+            report_floats("nothing to consult")
         end
         setdimensions()
     end

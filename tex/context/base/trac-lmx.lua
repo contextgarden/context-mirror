@@ -10,7 +10,9 @@ if not modules then modules = { } end modules ['trac-lmx'] = {
 
 local gsub, format, concat, byte = string.gsub, string.format, table.concat, string.byte
 
-lmx = lmx or { }
+local lmx = namespaces.private("lmx")
+
+lmx.variables = lmx.variables or { } -- global, shared
 
 local escapes = {
     ['&'] = '&amp;',
@@ -20,8 +22,6 @@ local escapes = {
 }
 
 -- variables
-
-lmx.variables = { } -- global, shared
 
 local lmxvariables = lmx.variables
 
@@ -67,7 +67,7 @@ local function do_urlescaped(str)
     return (gsub(str,"[^%a%d]",format("%%0x",byte("%1"))))
 end
 
-function do_type(str)
+local function do_type(str)
     if str then do_print("<tt>" .. do_escape(str) .. "</tt>") end
 end
 

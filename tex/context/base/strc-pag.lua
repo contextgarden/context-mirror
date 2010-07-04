@@ -13,6 +13,8 @@ local texsprint, texwrite = tex.sprint, tex.write
 
 local trace_pages = false  trackers.register("structure.pages", function(v) trace_pages = v end)
 
+local report_pages = logs.new("pages")
+
 structure.pages  = structure.pages      or { }
 
 local helpers    = structure.helpers    or { }
@@ -43,7 +45,7 @@ function pages.save(prefixdata,numberdata)
     local realpage, userpage = texcount.realpageno, texcount.userpageno
     if realpage > 0 then
         if trace_pages then
-            logs.report("pages","saving page %s.%s",realpage,userpage)
+            report_pages("saving page %s.%s",realpage,userpage)
         end
         local data = {
             number = userpage,
@@ -56,7 +58,7 @@ function pages.save(prefixdata,numberdata)
             collected[realpage] = data
         end
     elseif trace_pages then
-        logs.report("pages","not saving page %s.%s",realpage,userpage)
+        report_pages("not saving page %s.%s",realpage,userpage)
     end
 end
 
@@ -67,7 +69,7 @@ function structure.counters.specials.userpage()
         if t then
             t.number = texcount.userpageno
             if trace_pages then
-                logs.report("pages","forcing pagenumber of realpage %s to %s",r,t.number)
+                report_pages("forcing pagenumber of realpage %s to %s",r,t.number)
             end
         end
     end
@@ -108,7 +110,7 @@ function pages.number(realdata,pagespec)
         texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,userpage))
     else
         if conversionset == "" then conversionset = "default" end
-        local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+        local theconversion = sets.get("structure:conversions",block,conversionset,1,"numbers") -- to be checked: 1
         processors.sprint(ctxcatcodes,theconversion,convertnumber,userpage)
     end
     if stopper ~= "" then
@@ -205,7 +207,7 @@ function helpers.analyse(entry,specification)
     if not section then
         return entry, false, "no section"
     end
-    sectiondata = jobsections.collected[references.section]
+    local sectiondata = jobsections.collected[references.section]
     if not sectiondata then
         return entry, false, "no section data"
     end

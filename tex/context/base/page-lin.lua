@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['page-lin'] = {
 
 local trace_numbers = false  trackers.register("lines.numbers",  function(v) trace_numbers = v end)
 
+local report_lines = logs.new("lines")
+
 local format = string.format
 local texsprint, texwrite, texbox = tex.sprint, tex.write, tex.box
 
@@ -120,7 +122,7 @@ function nodes.lines.boxed.register(configuration)
     last = last + 1
     data[last] = configuration
     if trace_numbers then
-        logs.report("lines","registering setup %s",last)
+        report_lines("registering setup %s",last)
     end
     return last
 end
@@ -129,14 +131,14 @@ function nodes.lines.boxed.setup(n,configuration)
     local d = data[n]
     if d then
         if trace_numbers then
-            logs.report("lines","updating setup %s",n)
+            report_lines("updating setup %s",n)
         end
         for k,v in next, configuration do
             d[k] = v
         end
     else
         if trace_numbers then
-            logs.report("lines","registering setup %s (br)",n)
+            report_lines("registering setup %s (br)",n)
         end
         data[n] = configuration
     end
@@ -154,7 +156,7 @@ local function check_number(n,a,skip) -- move inline
             local tag = d.tag or ""
             texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}{%s}\\endgraf",tag,s,n.shift,n.width,the_left_margin(n.list),n.dir))
             if trace_numbers then
-                logs.report("numbers","making number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
+                report_lines("making number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
             end
         else
             texsprint(ctxcatcodes, "\\skipnumber\\endgraf")

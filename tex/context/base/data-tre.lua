@@ -8,14 +8,14 @@ if not modules then modules = { } end modules ['data-tre'] = {
 
 -- \input tree://oeps1/**/oeps.tex
 
-local find, gsub = string.find, string.gsub
+local find, gsub, format = string.find, string.gsub, string.format
 local unpack = unpack or table.unpack
 
-local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
+local report_resolvers = logs.new("resolvers")
 
-local done, found = { }, { }
+local done, found, notfound = { }, { }, resolvers.finders.notfound
 
-function finders.tree(specification,filetype)
+function resolvers.finders.tree(specification,filetype)
     local fnd = found[specification]
     if not fnd then
         local spec = resolvers.splitmethod(specification).path or ""
@@ -37,11 +37,45 @@ function finders.tree(specification,filetype)
                 end
             end
         end
-        fnd = unpack(finders.notfound)
+        fnd = unpack(notfound) -- unpack ? why not just notfound[1]
         found[specification] = fnd
     end
     return fnd
 end
 
-openers.tree = openers.generic
-loaders.tree = loaders.generic
+function resolvers.locators.tree(specification)
+    local spec = resolvers.splitmethod(specification)
+    local path = spec.path
+    if path ~= '' and lfs.isdir(path) then
+        if trace_locating then
+            report_resolvers("tree locator '%s' found (%s)",path,specification)
+        end
+        resolvers.append_hash('tree',specification,path,false) -- don't cache
+    elseif trace_locating then
+        report_resolvers("tree locator '%s' not found",path)
+    end
+end
+
+function resolvers.hashers.tree(tag,name)
+    if trace_locating then
+        report_resolvers("analysing tree '%s' as '%s'",name,tag)
+    end
+    -- todo: maybe share with done above
+    local spec = resolvers.splitmethod(tag)
+    local path = spec.path
+    resolvers.generators.tex(path,tag) -- we share this with the normal tree analyzer
+end
+
+function resolvers.generators.tree(tag)
+    local spec = resolvers.splitmethod(tag)
+    local path = spec.path
+    resolvers.generators.tex(path,tag) -- we share this with the normal tree analyzer
+end
+
+function resolvers.concatinators.tree(tag,path,name)
+    return file.join(tag,path,name)
+end
+
+resolvers.isreadable.tree    = file.isreadable
+resolvers.openers.tree       = resolvers.openers.generic
+resolvers.loaders.tree       = resolvers.loaders.generic

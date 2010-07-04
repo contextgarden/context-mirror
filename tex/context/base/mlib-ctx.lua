@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
 local format, join = string.format, table.concat
 local sprint = tex.sprint
 
+local report_mplib = logs.new("mplib")
+
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 metapost = metapost or {}
@@ -29,7 +31,7 @@ function metapost.getclippath(instance,mpsformat,data,initializations,preamble)
         local result = mpx:execute(format("%s;beginfig(1);%s;%s;endfig;",preamble or "",initializations or "",data))
         stoptiming(metapost.exectime)
         if result.status > 0 then
-            logs.report("metafun", "%s: %s", result.status, result.error or result.term or result.log)
+            report_mplib("%s: %s", result.status, result.error or result.term or result.log)
             result = nil
         else
             result = metapost.filterclippath(result)

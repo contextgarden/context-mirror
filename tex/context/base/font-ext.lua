@@ -14,6 +14,8 @@ local utfchar = utf.char
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
 
+local report_fonts = logs.new("fonts")
+
 commands = commands or { }
 
 --[[ldx--
@@ -168,7 +170,7 @@ function initializers.common.expansion(tfmdata,value)
             if vector then
                 local stretch, shrink, step, factor = class.stretch or 0, class.shrink or 0, class.step or 0, class.factor or 1
                 if trace_expansion then
-                    logs.report("fonts","set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",value,class_vector,factor,stretch,shrink,step)
+                    report_fonts("set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",value,class_vector,factor,stretch,shrink,step)
                 end
                 tfmdata.stretch, tfmdata.shrink, tfmdata.step, tfmdata.auto_expand = stretch * 10, shrink * 10, step * 10, true
                 local data = characters and characters.data
@@ -194,10 +196,10 @@ function initializers.common.expansion(tfmdata,value)
                     end
                 end
             elseif trace_expansion then
-                logs.report("fonts","unknown expansion vector '%s' in class '%s",class_vector,value)
+                report_fonts("unknown expansion vector '%s' in class '%s",class_vector,value)
             end
         elseif trace_expansion then
-            logs.report("fonts","unknown expansion class '%s'",value)
+            report_fonts("unknown expansion class '%s'",value)
         end
     end
 end
@@ -211,6 +213,8 @@ initializers.base.afm.expansion = initializers.common.expansion
 initializers.node.afm.expansion = initializers.common.expansion
 
 fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
+
+local report_opbd = logs.new("otf opbd")
 
 -- -- -- -- -- --
 -- protrusion
@@ -381,14 +385,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = singles[lookup]
                 if data then
                     if trace_protrusion then
-                        logs.report("fonts","set left protrusion using lfbd lookup '%s'",lookup)
+                        report_fonts("set left protrusion using lfbd lookup '%s'",lookup)
                     end
                     for k, v in next, data do
                     --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
                         local p = - (v[1] / 1000) * factor * left
                         characters[k].left_protruding = p
                         if trace_protrusion then
-                            logs.report("opbd","lfbd -> %s -> 0x%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
+                            report_protrusions("lfbd -> %s -> 0x%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
                         end
                     end
                     done = true
@@ -404,14 +408,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = singles[lookup]
                 if data then
                     if trace_protrusion then
-                        logs.report("fonts","set right protrusion using rtbd lookup '%s'",lookup)
+                        report_fonts("set right protrusion using rtbd lookup '%s'",lookup)
                     end
                     for k, v in next, data do
                     --  local p = v[3] / descriptions[k].width -- or 3
                         local p = (v[1] / 1000) * factor * right
                         characters[k].right_protruding = p
                         if trace_protrusion then
-                            logs.report("opbd","rtbd -> %s -> 0x%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
+                            report_protrusions("rtbd -> %s -> 0x%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
                         end
                     end
                 end
@@ -441,7 +445,7 @@ function initializers.common.protrusion(tfmdata,value)
                     local left   = class.left   or 1
                     local right  = class.right  or 1
                     if trace_protrusion then
-                        logs.report("fonts","set protrusion class %s, vector: %s, factor: %s, left: %s, right: %s",value,class_vector,factor,left,right)
+                        report_fonts("set protrusion class %s, vector: %s, factor: %s, left: %s, right: %s",value,class_vector,factor,left,right)
                     end
                     local data = characters.data
                     local emwidth = tfmdata.parameters.quad
@@ -476,10 +480,10 @@ function initializers.common.protrusion(tfmdata,value)
                         end
                     end
                 elseif trace_protrusion then
-                    logs.report("fonts","unknown protrusion vector '%s' in class '%s",class_vector,value)
+                    report_fonts("unknown protrusion vector '%s' in class '%s",class_vector,value)
                 end
             elseif trace_protrusion then
-                logs.report("fonts","unknown protrusion class '%s'",value)
+                report_fonts("unknown protrusion class '%s'",value)
             end
         end
     end

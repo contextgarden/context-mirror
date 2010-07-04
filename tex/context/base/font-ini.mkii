@@ -639,7 +639,7 @@
 % \def\normalmbox
 %   {\dowithnextboxcontent\mf\flushnextbox\normalhbox}
 
-\def\mbox
+\def\mbox % we cannot add \dontleavehmode ... else no \setbox0\mbox possible
   {\ifmmode\normalmbox\else\normalhbox\fi}
 
 \def\enablembox

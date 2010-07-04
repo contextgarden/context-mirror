@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['supp-fil'] = {
     license   = "see context related readme files"
 }
 
+-- This module will be redone !
+
 --[[ldx--
 <p>It's more convenient to manipulate filenames (paths) in
 <l n='lua'/> than in <l n='tex'/>. These methods have counterparts
@@ -17,10 +19,10 @@ local texsprint, texwrite, ctxcatcodes = tex.sprint, tex.write, tex.ctxcatcodes
 
 local trace_modules = false  trackers.register("modules.loading", function(v) trace_modules = v end)
 
+local report_modules = logs.new("modules")
+
 support     = support     or { }
 environment = environment or { }
-
-environment.outputfilename = environment.outputfilename or environment.jobname
 
 function support.checkfilename(str) -- "/whatever..." "c:..." "http://..."
     commands.chardef("kindoffile",boolean.tonumber(find(str,"^/") or find(str,"[%a]:")))
@@ -155,26 +157,26 @@ local prefixes  = { "m", "p", "s", "x", "t" }
 local suffixes  = { "tex", "mkiv" }
 local modstatus = { }
 
-local function usemodule(name,hassheme)
+local function usemodule(name,hasscheme)
     local foundname
     if hasscheme then
         -- no auto suffix as http will return a home page or error page
         -- so we only add one if missing
         local fullname = file.addsuffix(name,"tex")
         if trace_modules then
-            logs.report("modules","checking scheme driven file '%s'",fullname)
+            report_modules("checking scheme driven file '%s'",fullname)
         end
         foundname = resolvers.findtexfile(fullname) or ""
     elseif file.extname(name) ~= "" then
         if trace_modules then
-            logs.report("modules","checking suffix driven file '%s'",name)
+            report_modules("checking suffix driven file '%s'",name)
         end
         foundname = support.readfilename(name,false,true) or ""
     else
         for i=1,#suffixes do
             local fullname = file.addsuffix(name,suffixes[i])
             if trace_modules then
-                logs.report("modules","checking suffix driven file '%s'",fullname)
+                report_modules("checking suffix driven file '%s'",fullname)
             end
             foundname = support.readfilename(fullname,false,true) or ""
             if foundname ~= "" then
@@ -184,7 +186,7 @@ local function usemodule(name,hassheme)
     end
     if foundname ~= "" then
         if trace_modules then
-            logs.report("modules","loading '%s'",foundname)
+            report_modules("loading '%s'",foundname)
         end
         context.startreadingfile()
         context.input(foundname)
@@ -205,7 +207,7 @@ function support.usemodules(prefix,askedname,truename)
         status = status + 1
     else
         if trace_modules then
-            logs.report("modules","locating '%s'",truename)
+            report_modules("locating '%s'",truename)
         end
         local hasscheme = url.hasscheme(truename)
         if hasscheme then
@@ -241,7 +243,7 @@ function support.usemodules(prefix,askedname,truename)
     end
     if status == 0 then
         if trace_modules then
-            logs.report("modules","skipping '%s' (not found)",truename)
+            report_modules("skipping '%s' (not found)",truename)
         else
             interfaces.showmessage("systems",6,askedname)
         end
@@ -251,7 +253,7 @@ function support.usemodules(prefix,askedname,truename)
         end
     else
         if trace_modules then
-            logs.report("modules","skipping '%s' (already loaded)",truename)
+            report_modules("skipping '%s' (already loaded)",truename)
         else
             interfaces.showmessage("systems",7,askedname)
         end

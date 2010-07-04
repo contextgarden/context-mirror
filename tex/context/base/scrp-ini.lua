@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['scrp-ini'] = {
 local trace_analyzing  = false  trackers.register("scripts.analyzing",  function(v) trace_analyzing  = v end)
 local trace_injections = false  trackers.register("scripts.injections", function(v) trace_injections = v end)
 
+local report_preprocessing = logs.new("preprocessing")
+
 local set_attribute   = node.set_attribute
 local has_attribute   = node.has_attribute
 local first_character = node.first_character
@@ -257,9 +259,9 @@ end
 local function traced_process(head,first,last,process,a)
     if start ~= last then
         local f, l = first, last
-        logs.report("preprocess","before %s: %s",names[a] or "?",nodes.tosequence(f,l))
+        report_preprocessing("before %s: %s",names[a] or "?",nodes.tosequence(f,l))
         process(head,first,last)
-        logs.report("preprocess","after %s: %s", names[a] or "?",nodes.tosequence(f,l))
+        report_preprocessing("after %s: %s", names[a] or "?",nodes.tosequence(f,l))
     end
 end
 

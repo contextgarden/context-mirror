@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['node-rul'] = {
 
 -- this will go to an auxiliary module
 -- beware: rules now have a dir field
+--
+-- todo: make robust for layers ... order matters
 
 local glyph = node.id("glyph")
 local disc  = node.id("disc")
@@ -44,6 +46,8 @@ end
 -- todo: order and maybe other dimensions
 
 local trace_ruled = false  trackers.register("nodes.ruled", function(v) trace_ruled = v end)
+
+local report_ruled   = logs.new("ruled")
 
 local floor = math.floor
 local n_tostring, n_tosequence = nodes.ids_tostring, nodes.tosequence
@@ -86,6 +90,9 @@ local checkdir = true
 
 -- we assume {glyphruns} and no funny extra kerning, ok, maybe we need
 -- a dummy character as start and end; anyway we only collect glyphs
+--
+-- this one needs to take layers into account (i.e. we need a list of
+-- critical attributes)
 
 local function process_words(attribute,data,flush,head,parent) -- we have hlistdir and local dir
     local n = head
@@ -172,8 +179,14 @@ function nodes.rules.define(settings)
     texwrite(#data)
 end
 
+local a_viewerlayer = attributes.private("viewerlayer")
+
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
 -- check for f and l
+if f.id ~= glyph then
+    -- saveguard ... we need to deal with rules and so (math)
+    return head
+end
     local r, m
     if true then
         f, l = strip_range(f,l)
@@ -181,7 +194,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     local w = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,f,l.next)
     local method, offset, continue, dy, rulethickness, unit, order, max, ma, ca, ta =
         d.method, d.offset, d.continue, d.dy, d.rulethickness, d.unit, d.order, d.max, d.ma, d.ca, d.ta
-    local e = dimenfactor(unit,fontdata[f.font])
+    local e = dimenfactor(unit,fontdata[f.font]) -- what if no glyph node
     local colorspace   = (ma > 0 and ma) or has_attribute(f,a_colorspace) or 1
     local color        = (ca > 0 and ca) or has_attribute(f,a_color)
     local transparency = (ta > 0 and ta) or has_attribute(f,a_transparency)
@@ -200,6 +213,12 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         local ht =  (offset+(i-1)*dy+rulethickness)*e - m
         local dp = -(offset+(i-1)*dy-rulethickness)*e + m
         local r = new_rule(w,ht,dp)
+        local v = has_attribute(f,a_viewerlayer)
+-- quick hack
+if v then
+    set_attribute(r,a_viewerlayer,v)
+end
+--
         if color then
             set_attribute(r,a_colorspace,colorspace)
             set_attribute(r,a_color,color)
@@ -213,11 +232,11 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             insert_after(head,k,r)
             l = r
         else
-            head, _ = insert_before(head,f,r)
+            head = insert_before(head,f,r)
             insert_after(head,r,k)
         end
         if trace_ruled then
-            logs.report("ruled", "level: %s, width: %i, height: %i, depth: %i, nodes: %s, text: %s",
+            report_ruled("level: %s, width: %i, height: %i, depth: %i, nodes: %s, text: %s",
                 level,w,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
              -- level,r.width,r.height,r.depth,n_tostring(f,l),n_tosequence(f,l,true))
         end
@@ -239,6 +258,8 @@ end
 -- tasks.disableaction("shipouts",                "nodes.rules.process") -- only kick in when used
 
 local trace_shifted = false  trackers.register("nodes.shifted", function(v) trace_shifted = v end)
+
+local report_shifted = logs.new("shifted")
 
 local a_shifted = attributes.private('shifted')
 
@@ -274,7 +295,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     local raise = data.dy * dimenfactor(data.unit,fontdata[first.font])
     list.shift, list.height, list.depth = raise, height, depth
     if trace_shifted then
-        logs.report("shifted", "width: %s, nodes: %s, text: %s",width,n_tostring(first,last),n_tosequence(first,last,true))
+        report_shifted("width: %s, nodes: %s, text: %s",width,n_tostring(first,last),n_tosequence(first,last,true))
     end
     return head
 end

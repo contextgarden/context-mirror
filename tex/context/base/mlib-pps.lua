@@ -24,6 +24,8 @@ local ctxcatcodes = tex.ctxcatcodes
 
 local trace_textexts = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 
+local report_mplib = logs.new("mplib")
+
 colors = colors or { }
 
 local rgbtocmyk  = colors.rgbtocmyk   or function() return 0,0,0,1 end
@@ -117,11 +119,11 @@ function metapost.specials.register(str) -- only colors
             if cc then
                 cc[n] = data
             else
-                logs.report("mplib","problematic special: %s (no colordata class %s)", str or "?",class)
+                report_mplib("problematic special: %s (no colordata class %s)", str or "?",class)
             end
         else
          -- there is some bug to be solved, so we issue a message
-            logs.report("mplib","problematic special: %s", str or "?")
+            report_mplib("problematic special: %s", str or "?")
         end
     end
 --~     if match(str,"^%%%%MetaPostOption: multipass") then
@@ -248,7 +250,7 @@ function metapost.specials.ps(specification,object,result) -- positions
     local label = specification
     x = x - metapost.llx
     y = metapost.ury - y
- -- logs.report("mplib", "todo: position '%s' at (%s,%s) with (%s,%s)",label,x,y,w,h)
+ -- report_mplib( "todo: position '%s' at (%s,%s) with (%s,%s)",label,x,y,w,h)
     sprint(ctxcatcodes,format("\\dosavepositionwhd{%s}{0}{%sbp}{%sbp}{%sbp}{%sbp}{0pt}",label,x,y,w,h))
     return { }, nil, nil, nil
 end
@@ -472,8 +474,8 @@ function metapost.specials.tf(specification,object)
      --     metapost.textext_current = metapost.first_box + n - 1
      -- end
         if trace_textexts then
-         -- logs.report("metapost","first pass: order %s, box %s",n,metapost.textext_current)
-            logs.report("metapost","first pass: order %s",n)
+         -- report_mplib("first pass: order %s, box %s",n,metapost.textext_current)
+            report_mplib("first pass: order %s",n)
         end
      -- sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,str))
         sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",n,str))
@@ -488,8 +490,7 @@ function metapost.specials.ts(specification,object,result,flusher)
     if n and str then
         n = tonumber(n)
         if trace_textexts then
-         -- logs.report("metapost","second pass: order %s, box %s",n,metapost.textext_current)
-            logs.report("metapost","second pass: order %s",n)
+            report_mplib("second pass: order %s",n)
         end
         local op = object.path
         local first, second, fourth = op[1], op[2], op[4]
@@ -700,7 +701,7 @@ do
     local texmess   = (dquote/ditto + (1 - etex))^0
 
     local function ignore(s)
-        logs.report("mplib","ignoring verbatim tex: %s",s)
+        report_mplib("ignoring verbatim tex: %s",s)
         return ""
     end
 
@@ -755,7 +756,7 @@ function metapost.text_texts_data()
 --~         local box = texbox[i]
     for n, box in next, textexts do
         if trace_textexts then
-            logs.report("metapost","passed data: order %s, box %s",n,i)
+            report_mplib("passed data: order %s",n)
         end
         if box then
             t[#t+1] = format(text_data_template,n,box.width/factor,n,box.height/factor,n,box.depth/factor)

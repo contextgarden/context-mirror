@@ -14,19 +14,8 @@ scripts.metatex = scripts.metatex or { }
 -- metatex
 
 function scripts.metatex.make()
-    local command = "luatools --make --compile metatex"
-    logs.simple("running command: %s",command)
-    os.spawn(command)
+    environment.make_format("metatex")
 end
-
---~ function scripts.metatex.run()
---~     local name = environment.files[1] or ""
---~     if name ~= "" then
---~         local command = "luatools --fmt=metatex " .. name
---~         logs.simple("running command: %s",command)
---~         os.spawn(command)
---~     end
---~ end
 
 function scripts.metatex.run(ctxdata,filename)
     local filename = environment.files[1] or ""
@@ -49,7 +38,7 @@ function scripts.metatex.timed(action)
     statistics.timed(action)
 end
 
-logs.extendbanner("MetaTeX Process Management 0.10",true)
+logs.extendbanner("MetaTeX Process Management 0.10")
 
 messages.help = [[
 --run                 process (one or more) files (default action)

@@ -127,7 +127,7 @@ function scripts.checker.check(filename)
     end
 end
 
-logs.extendbanner("Basic ConTeXt Syntax Checking 0.10",true)
+logs.extendbanner("Basic ConTeXt Syntax Checking 0.10")
 
 messages.help = [[
 --convert             check tex file for errors

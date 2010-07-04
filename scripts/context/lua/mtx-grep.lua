@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['mtx-babel'] = {
 scripts      = scripts      or { }
 scripts.grep = scripts.grep or { }
 
-logs.extendbanner("Simple Grepper 0.10",true)
+logs.extendbanner("Simple Grepper 0.10")
 
 local find, format = string.find, string.format
 

@@ -11,28 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% \writestatus{loading}{ConTeXt Lua Macros / Basic Lua Libraries}
-
-%D This will move cq. become configurable. The XML like output is just
-%D an example.
-
-% todo \let\normaleverytoks\everytoks \newtoks\everytoke \normaleverytoks{\the\everytoks}
-
-\chardef\statuswidth=15
-\chardef\statuswrite=16
-
-\newtoks\everywritestring
-
-\def\writedirect  {\immediate\write\statuswrite}
-\def\writeline    {\writedirect{}}
-\def\writestring#1{\begingroup\the\everywritestring\writedirect{#1}\endgroup}
-
-\ifx\normalwritestatus\undefined \def\normalwritestatus#1#2{\writedirect{#1 : #2}} \fi
-
-% Because all libs are also on bytecodes we can start without stub. However,
-% some initializations need to take place before the \TEX\ engine itself
-% kicks in, especially memory settings and so. In due time we might make the
-% stub smaller and just create a configuration startup file.
+\writestatus{loading}{ConTeXt Lua Macros / Basic Lua Libraries}
 
 \registerctxluafile{l-string} {1.001}
 \registerctxluafile{l-lpeg}   {1.001}

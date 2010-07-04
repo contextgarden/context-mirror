@@ -25,6 +25,8 @@ local xmlfilter, xmltext = xml.filter, xml.text
 
 local trace_bibxml = false  trackers.register("publications.bibxml", function(v) trace_bibtex = v end)
 
+local report_publications = logs.new("publications")
+
 bibtex = bibtex or { }
 
 bibtex.size        = 0
@@ -139,9 +141,9 @@ function bibtex.load(session,filename)
     if filename ~= "" then
         local data = io.loaddata(filename) or ""
         if data == "" then
-            logs.report("publications","empty file '%s', no conversion to xml",filename)
+            report_publications("empty file '%s', no conversion to xml",filename)
         elseif trace_bibxml then
-            logs.report("publications","converting file '%s' to xml",filename)
+            report_publications("converting file '%s' to xml",filename)
         end
         bibtex.convert(session,data)
     end

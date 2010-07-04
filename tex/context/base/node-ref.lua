@@ -28,6 +28,8 @@ local trace_backend      = false  trackers.register("nodes.backend",      functi
 local trace_references   = false  trackers.register("nodes.references",   function(v) trace_references   = v end)
 local trace_destinations = false  trackers.register("nodes.destinations", function(v) trace_destinations = v end)
 
+local report_backends = logs.new("backends")
+
 local hlist   = node.id("hlist")
 local vlist   = node.id("vlist")
 local glue    = node.id("glue")
@@ -78,14 +80,14 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
     if result and resolved then
         if head == first then
             if trace_backend then
-                logs.report("backend","head: %04i %s %s %s => w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
+                report_backends("head: %04i %s %s %s => w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
             end
             result.next = first
             first.prev = result
             return result, last
         else
             if trace_backend then
-                logs.report("backend","middle: %04i %s %s => w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
+                report_backends("middle: %04i %s %s => w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
             end
             local prev = first.prev
             if prev then
@@ -156,7 +158,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
     local result, resolved = make(width,height,depth,reference)
     if result and resolved then
         if trace_backend then
-            logs.report("backend","box: %04i %s %s: w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",width,height,depth,resolved)
+            report_backends("box: %04i %s %s: w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",width,height,depth,resolved)
         end
         if not first then
             current.list = result
@@ -336,6 +338,7 @@ nodes.setreference = setreference
 local function makereference(width,height,depth,reference)
     local sr = stack[reference]
     if sr then
+        report_backends("resolving reference attribute %s",reference)
         local resolved, ht, dp, set = sr[1], sr[2], sr[3], sr[4]
         if ht then
             if height < ht then height = ht end
@@ -361,10 +364,10 @@ local function makereference(width,height,depth,reference)
             if cleanupreferences then stack[reference] = nil end
             return result, resolved
         else
-            logs.report("backends","unable to resolve reference annotation %s",reference)
+            report_backends("unable to resolve reference annotation %s",reference)
         end
     else
-        logs.report("backends","unable to resolve reference attribute %s",reference)
+        report_backends("unable to resolve reference attribute %s",reference)
     end
 end
 
@@ -399,6 +402,7 @@ nodes.setdestination = setdestination
 local function makedestination(width,height,depth,reference)
     local sr = stack[reference]
     if sr then
+        report_backends("resolving destination attribute %s",reference)
         local resolved, ht, dp, name, view = sr[1], sr[2], sr[3], sr[4], sr[5]
         if ht then
             if height < ht then height = ht end
@@ -440,7 +444,7 @@ local function makedestination(width,height,depth,reference)
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved
     else
-        logs.report("backends","unable to resolve destination attribute %s",reference)
+        report_backends("unable to resolve destination attribute %s",reference)
     end
 end
 

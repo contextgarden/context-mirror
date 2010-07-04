@@ -8,13 +8,16 @@ if not modules then modules = { } end modules ['typo-cap'] = {
 
 local next, type = next, type
 local format, insert = string.format, table.insert
+local div = math.div
 
-local trace_casing = false  trackers.register("nodes.casing", function(v) trace_casing = v end)
+local trace_casing = false  trackers.register("typesetting.casing", function(v) trace_casing = v end)
 
-local has_attribute      = node.has_attribute
-local unset_attribute    = node.unset_attribute
-local set_attribute      = node.set_attribute
-local traverse_id        = node.traverse_id
+local report_casing = logs.new("casing")
+
+local has_attribute   = node.has_attribute
+local unset_attribute = node.unset_attribute
+local set_attribute   = node.set_attribute
+local traverse_id     = node.traverse_id
 
 local glyph = node.id("glyph")
 local kern  = node.id("kern")
@@ -23,14 +26,28 @@ local fontdata = fonts.ids
 local fontchar = fonts.chr
 local chardata = characters.data
 
-cases           = cases or { }
+typesetting       = typesetting       or { }
+typesetting.cases = typesetting.cases or { }
+
+local cases = typesetting.cases
+
 cases.actions   = { }
-cases.attribute = attributes.private("case")
+cases.attribute = attributes.private("case") -- no longer needed
+
+local a_cases = cases.attribute
 
 local actions  = cases.actions
 local lastfont = nil
 
--- we use char0 as placeholder for the larger font
+-- we use char(0) as placeholder for the larger font, so we need to remove it
+-- before it can do further harm
+--
+-- we could do the whole glyph run here (till no more attributes match) but
+-- then we end up with more code .. maybe i will clean this up anyway as the
+-- lastfont hack is somewhat ugly .. on the other hand, we need to deal with
+-- cases like:
+--
+-- \WORD {far too \Word{many \WORD{more \word{pushed} in between} useless} words}
 
 local function helper(start, code, codes, special, attribute, once)
     local char = start.char
@@ -38,6 +55,7 @@ local function helper(start, code, codes, special, attribute, once)
     if dc then
         local fnt = start.font
         if special then
+            -- will become function
             if start.char == 0 then
                 lastfont = fnt
                 local prev, next = start.prev, start.next
@@ -51,7 +69,6 @@ local function helper(start, code, codes, special, attribute, once)
                 start.font = lastfont
             end
         end
-     -- local ifc = fontdata[fnt].characters
         local ifc = fontchar[fnt]
         local ucs = dc[codes]
         if ucs then
@@ -106,7 +123,7 @@ actions[2] = function(start,attribute)
     return helper(start,'lccode','lccodes')
 end
 
-actions[3] = function(start,attribute)
+actions[3] = function(start,attribute,attr)
     lastfont = nil
     local prev = start.prev
     if prev and prev.id == kern and prev.subtype == 0 then
@@ -115,10 +132,14 @@ actions[3] = function(start,attribute)
     if not prev or prev.id ~= glyph then
         --- only the first character is treated
         for n in traverse_id(glyph,start.next) do
-            if has_attribute(n,attribute) then
+            if has_attribute(n,attribute) == attr then
                 unset_attribute(n,attribute)
+            else
+             -- break -- we can have nested mess
             end
         end
+        -- we could return the last in the range and save some scanning
+        -- but why bother
         return helper(start,'uccode','uccodes')
     else
         return start, false
@@ -174,37 +195,67 @@ actions[8] = function(start)
                 end
             end
         end
-    else
-        return start, false
     end
+    return start, false
 end
 
 -- node.traverse_id_attr
 
-function cases.process(namespace,attribute,head) -- not real fast but also not used on much data
+local function process(namespace,attribute,head) -- not real fast but also not used on much data
     lastfont = nil
+    local lastattr = nil
     local done = false
-    for start in traverse_id(glyph,head) do
-        local attr = has_attribute(start,attribute)
-        if attr and attr > 0 then
-            unset_attribute(start,attribute)
-            local action = actions[attr]
-            if action then
-                local _, ok = action(start,attribute)
-                done = done and ok
+    local start = head
+    while start do -- while because start can jump ahead
+        local id = start.id
+        if id == glyph then
+            local attr = has_attribute(start,attribute)
+            if attr and attr > 0 then
+                if attr ~= lastattr then
+                    lastfont = nil
+                    lastattr = attr
+                end
+                unset_attribute(start,attribute)
+                local action = actions[attr%100] -- map back to low number
+                if action then
+                    start, ok = action(start,attribute,attr)
+                    done = done and ok
+                    if trace_casing then
+                        report_casing("case trigger %s, instance %s, result %s",attr%100,div(attr,100),tostring(ok))
+                    end
+                elseif trace_casing then
+                    report_casing("unknown case trigger %s",attr)
+                end
             end
+        end
+        if start then
+            start = start.next
         end
     end
     lastfont = nil
     return head, done
 end
 
-chars.handle_casing = nodes.install_attribute_handler {
-    name = "case",
-    namespace = cases,
-    processor = cases.process,
-}
+local m = 0 -- a trick to make neighbouring ranges work
 
-function cases.enable()
-    tasks.enableaction("processors","chars.handle_casing")
+function cases.set(n)
+    if trace_casing then
+        report_casing("enabling case handler")
+    end
+    tasks.enableaction("processors","typesetting.cases.handler")
+    function cases.set(n)
+        if m == 100 then
+            m = 1
+        else
+            m = m + 1
+        end
+        tex.attribute[a_cases] = m * 100 + n
+    end
+    cases.set(n)
 end
+
+cases.handler = nodes.install_attribute_handler {
+    name      = "case",
+    namespace = cases,
+    processor = process,
+}

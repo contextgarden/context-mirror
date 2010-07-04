@@ -19,6 +19,8 @@ local lpegmatch = lpeg.match
 
 local trace_lists = false  trackers.register("structure.lists", function(v) trace_lists = v end)
 
+local report_lists = logs.new("lists")
+
 local ctxcatcodes = tex.ctxcatcodes
 
 structure.lists     = structure.lists     or { }
@@ -38,6 +40,9 @@ lists.tobesaved = lists.tobesaved or { }
 lists.enhancers = lists.enhancers or { }
 lists.internals = lists.internals or { }
 lists.ordered   = lists.ordered   or { }
+lists.cached    = lists.cached    or { }
+
+local cached, pushed = lists.cached, { }
 
 local variables = interfaces.variables
 local matching_till_depth, number_at_depth = sections.matching_till_depth, sections.number_at_depth
@@ -81,8 +86,6 @@ if job then
     job.register('structure.lists.collected', structure.lists.tobesaved, initializer)
 end
 
-local cached, pushed = { }, { }
-
 function lists.push(t)
     local r = t.references
     local i = (r and r.internal) or 0 -- brrr
@@ -117,6 +120,7 @@ function lists.enhance(n)
         if enhancer then
             enhancer(l)
         end
+        return l
     end
 end
 
@@ -144,7 +148,7 @@ local function filter_collected(names, criterium, number, collected, nested)
     local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
     names, criterium = gsub(names," ",""), gsub(criterium," ","")
     if trace_lists then
-        logs.report("lists","filtering names: %s, criterium: %s, number: %s",names,criterium,number or "-")
+        report_lists("filtering names: %s, criterium: %s, number: %s",names,criterium,number or "-")
     end
     if not all then
         for s in gmatch(names,"[^, ]+") do -- sort of settings to hash
@@ -308,9 +312,9 @@ local function filter_collected(names, criterium, number, collected, nested)
     end
     if trace_lists then
         if detail then
-            logs.report("lists","criterium: %s, %s, found: %s",criterium,detail,#result)
+            report_lists("criterium: %s, %s, found: %s",criterium,detail,#result)
         else
-            logs.report("lists","criterium: %s, found: %s",criterium,#result)
+            report_lists("criterium: %s, found: %s",criterium,#result)
         end
     end
     return result

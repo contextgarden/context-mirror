@@ -8,6 +8,11 @@ if not modules then modules = { } end modules ['luat-ini'] = {
 
 --~ local ctxcatcodes = tex.ctxcatcodes
 
+local debug = require "debug"
+local string, table, lpeg, math, io, system = string, table, lpeg, math, io, system
+local next, setfenv = next, setfenv or debug.setfenv
+local format = string.format
+
 --[[ldx--
 <p>We cannot load anything yet. However what we will do us reserve a fewtables.
 These can be used for runtime user data or third party modules and will not be
@@ -17,8 +22,10 @@ cluttered by macro package code.</p>
 userdata      = userdata      or { } -- might be used
 thirddata     = thirddata     or { } -- might be used
 moduledata    = moduledata    or { } -- might be used
-document      = document      or { }
+documentdata  = documentdata  or { } -- might be used
 parametersets = parametersets or { } -- experimental
+
+document      = document      or { }
 
 --[[ldx--
 <p>These can be used/set by the caller program; <t>mtx-context.lua</t> does it.</p>
@@ -44,66 +51,79 @@ just a lightweight suggestive system, not a watertight
 one.</p>
 --ldx]]--
 
-local debug = require "debug"
-
-local string, table, lpeg, math, io, system = string, table, lpeg, math, io, system
-local next, setfenv = next, setfenv or debug.setfenv
-local format = string.format
+-- this will change when we move on to lua 5.2+
 
 local global = _G
 
 global.global = global
+--~ rawset(global,"global",global)
 
 local dummy = function() end
 
+-- another approach is to freeze tables by using a metatable, this will be
+-- implemented stepwise
+
 local protected = {
     -- global table
-    global     = global,
+    global       = global,
     -- user tables
-    userdata   = userdata,
-    moduledata = moduledata,
-    thirddata  = thirddata,
-    document   = document,
+ -- moduledata   = moduledata,
+    userdata     = userdata,
+    thirddata    = thirddata,
+    documentdata = documentdata,
     -- reserved
-    protect    = dummy,
-    unprotect  = dummy,
+    protect      = dummy,
+    unprotect    = dummy,
     -- luatex
-    tex        = tex,
+    tex          = tex,
     -- lua
-    string     = string,
-    table      = table,
-    lpeg       = lpeg,
-    math       = math,
-    io         = io,
-    system     = system,
+    string       = string,
+    table        = table,
+    lpeg         = lpeg,
+    math         = math,
+    io           = io,
+    --
+    -- maybe other l-*, xml etc
 }
 
-userdata, thirddata, moduledata = nil, nil, nil
+-- moduledata  : no need for protection (only for developers)
+-- isolatedata : full protection
+-- userdata    : protected
+-- thirddata   : protected
+
+userdata, thirddata = nil, nil
 
 if not setfenv then
     texio.write_nl("warning: we need to fix setfenv by using 'load in' or '_ENV'")
 end
 
-function protect(name)
-    if name == "isolateddata" then
-        local t = { }
+local function protect_full(name)
+    local t = { }
+    for k, v in next, protected do
+        t[k] = v
+    end
+    return t
+end
+
+local function protect_part(name)
+--~     local t = global[name]
+    local t = rawget(global,name)
+    if not t then
+        t = { }
         for k, v in next, protected do
             t[k] = v
         end
-        setfenv(2,t)
+--~         global[name] = t
+        rawset(global,name,t)
+    end
+    return t
+end
+
+function protect(name)
+    if name == "isolateddata" then
+        setfenv(2,protect_full(name))
     else
-        if not name then
-            name = "shareddata"
-        end
-        local t = global[name]
-        if not t then
-            t = { }
-            for k, v in next, protected do
-                t[k] = v
-            end
-            global[name] = t
-        end
-        setfenv(2,t)
+        setfenv(2,protect_part(name or "shareddata"))
     end
 end
 
@@ -119,6 +139,10 @@ function lua.registername(name,message)
     end
     lua.name[lnn] = message
     tex.write(lnn)
+    -- initialize once
+    if name ~= "isolateddata" then
+        protect_full(name or "shareddata")
+    end
 end
 
 --~ function lua.checknames()

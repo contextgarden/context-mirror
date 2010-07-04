@@ -16,6 +16,8 @@ local lpegmatch = lpeg.match
 
 local trace_patterns = false  trackers.register("languages.patterns",  function(v) trace_patterns = v end)
 
+local report_languages = logs.new("languages")
+
 languages                  = languages or {}
 languages.version          = 1.009
 languages.hyphenation      = languages.hyphenation        or { }
@@ -52,22 +54,22 @@ local command    = lpeg.P("\\patterns")
 local parser     = (1-command)^0 * command * content
 
 local function filterpatterns(filename)
-    if file.extname(filename) == "rpl" then
-        return io.loaddata(resolvers.find_file(filename)) or ""
-    else
+--~     if file.extname(filename) == "rpl" then
+--~         return io.loaddata(resolvers.find_file(filename)) or ""
+--~     else
         return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "")
-    end
+--~     end
 end
 
 local command = lpeg.P("\\hyphenation")
 local parser  = (1-command)^0 * command * content
 
 local function filterexceptions(filename)
-    if file.extname(filename) == "rhl" then
-        return io.loaddata(resolvers.find_file(filename)) or ""
-    else
-        return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or {}) -- "" ?
-    end
+--~     if file.extname(filename) == "rhl" then
+--~         return io.loaddata(resolvers.find_file(filename)) or ""
+--~     else
+        return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "") -- "" ?
+--~     end
 end
 
 local function record(tag)
@@ -100,12 +102,12 @@ local function loadthem(tag, filename, filter, target)
     local ok = fullname ~= ""
     if ok then
         if trace_patterns then
-            logs.report("languages","filtering %s for language '%s' from '%s'",target,tag,fullname)
+            report_languages("filtering %s for language '%s' from '%s'",target,tag,fullname)
         end
-        lang[target](data,filterpatterns(fullname))
+        lang[target](data,filter(fullname) or "")
     else
         if trace_patterns then
-            logs.report("languages","no %s for language '%s' in '%s'",target,tag,filename or "?")
+            report_languages("no %s for language '%s' in '%s'",target,tag,filename or "?")
         end
         lang[target](data,"")
     end
@@ -119,7 +121,35 @@ function languages.hyphenation.loadpatterns(tag, patterns)
 end
 
 function languages.hyphenation.loadexceptions(tag, exceptions)
-    return loadthem(tag, patterns, filterexceptions, "exceptions")
+    return loadthem(tag, exceptions, filterexceptions, "exceptions")
+end
+
+function languages.hyphenation.loaddefinitions(tag, definitions)
+    statistics.starttiming(languages)
+    local data = record(tag)
+    local fullname = (definitions and definitions ~= "" and resolvers.find_file(definitions)) or ""
+    local patterndata, exceptiondata, ok = "", "", fullname ~= ""
+    if ok then
+        if trace_patterns then
+            report_languages("loading definitions for language '%s' from '%s'",tag,fullname)
+        end
+        local defs = dofile(fullname) -- use regular loader instead
+        if defs then -- todo: version test
+            patterndata   = defs.patterns   and defs.patterns  .data or ""
+            exceptiondata = defs.exceptions and defs.exceptions.data or ""
+        else
+            report_languages("invalid definitions for language '%s' in '%s'",tag,filename or "?")
+        end
+    else
+        if trace_patterns then
+            report_languages("no definitions for language '%s' in '%s'",tag,filename or "?")
+        end
+    end
+    lang.patterns  (data,patterndata)
+    lang.exceptions(data,exceptiondata)
+    langdata[tag] = data
+    statistics.stoptiming(languages)
+    return ok
 end
 
 function languages.hyphenation.exceptions(tag, ...)
@@ -194,14 +224,18 @@ end
 
 languages.tolang = tolang
 
-function languages.register(tag,parent,patterns,exceptions)
+function languages.register(tag,parent,patterns,exceptions,definitions)
     parent = parent or tag
+    patterns    = patterns    or format("lang-%s.pat",parent)
+    exceptions  = exceptions  or format("lang-%s.hyp",parent)
+    definitions = definitions or format("lang-%s.lua",parent)
     registered[tag] = {
-        parent     = parent,
-        patterns   = patterns   or format("lang-%s.pat",parent),
-        exceptions = exceptions or format("lang-%s.hyp",parent),
-        loaded     = false,
-        number     = 0,
+        parent      = parent,
+        patterns    = patterns,
+        exceptions  = exceptions,
+        definitions = definitions,
+        loaded      = false,
+        number      = 0,
     }
 end
 
@@ -244,15 +278,22 @@ function languages.enable(tags)
                 if languages.share and number > 0 then
                     l.number = number
                 else
-                    -- we assume the same filenames
                     l.number = languages.hyphenation.define(tag)
-                    languages.hyphenation.loadpatterns(tag,l.patterns)
-                    languages.hyphenation.loadexceptions(tag,l.exceptions)
+                    local ok = l.definitions and languages.hyphenation.loaddefinitions(tag,l.definitions)
+                    if not ok then
+                        -- We will keep this for a while. The lua way is not faster but suits
+                        -- the current context mkiv approach a bit better. It's called progress.
+                        if trace_patterns then
+                            report_languages("falling back on tex files for language with tag %s",tag)
+                        end
+                        languages.hyphenation.loadpatterns(tag,l.patterns)
+                        languages.hyphenation.loadexceptions(tag,l.exceptions)
+                    end
                     numbers[l.number] = tag
                 end
                 l.loaded = true
                 if trace_patterns then
-                    logs.report("languages","assigning number %s",l.number)
+                    report_languages("assigning number %s",l.number)
                 end
             end
             if l.number > 0 then

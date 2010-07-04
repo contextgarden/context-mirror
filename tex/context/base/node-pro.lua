@@ -7,9 +7,12 @@ if not modules then modules = { } end modules ['node-pro'] = {
 }
 
 local utf = unicode.utf8
+local utfchar = utf.char
 local format, concat = string.format, table.concat
 
 local trace_callbacks = false  trackers.register("nodes.callbacks", function(v) trace_callbacks = v end)
+
+local report_nodes = logs.new("nodes")
 
 local glyph = node.id('glyph')
 
@@ -35,7 +38,7 @@ local function reconstruct(head)
     while h do
         local id = h.id
         if id == glyph then
-            t[#t+1] = utf.char(h.char)
+            t[#t+1] = utfchar(h.char)
         else
             t[#t+1] = "[]"
         end
@@ -52,11 +55,13 @@ local function tracer(what,state,head,groupcode,before,after,show)
     end
     n = n + 1
     if show then
-        logs.report("nodes","%s %s: %s, group: %s, nodes: %s -> %s, string: %s",what,n,state,groupcode,before,after,reconstruct(head))
+        report_nodes("%s %s: %s, group: %s, nodes: %s -> %s, string: %s",what,n,state,groupcode,before,after,reconstruct(head))
     else
-        logs.report("nodes","%s %s: %s, group: %s, nodes: %s -> %s",what,n,state,groupcode,before,after)
+        report_nodes("%s %s: %s, group: %s, nodes: %s -> %s",what,n,state,groupcode,before,after)
     end
 end
+
+nodes.processors.tracer = tracer
 
 nodes.processors.enabled = true -- thsi will become a proper state (like trackers)
 

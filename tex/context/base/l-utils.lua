@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['l-utils'] = {
 
 -- hm, quite unreadable
 
-local gsub = string.gsub
+local gsub, format = string.gsub, string.format
 local concat = table.concat
 local type, next = type, next
 
@@ -16,81 +16,79 @@ if not utils        then utils        = { } end
 if not utils.merger then utils.merger = { } end
 if not utils.lua    then utils.lua    = { } end
 
-utils.merger.m_begin = "begin library merge"
-utils.merger.m_end   = "end library merge"
-utils.merger.pattern =
+utils.report = utils.report or print
+
+local merger = utils.merger
+
+merger.strip_comment = true
+
+local m_begin_merge   = "begin library merge"
+local m_end_merge     = "end library merge"
+local m_begin_closure = "do -- create closure to overcome 200 locals limit"
+local m_end_closure   = "end -- of closure"
+
+local m_pattern =
     "%c+" ..
-    "%-%-%s+" .. utils.merger.m_begin ..
+    "%-%-%s+" .. m_begin_merge ..
     "%c+(.-)%c+" ..
-    "%-%-%s+" .. utils.merger.m_end ..
+    "%-%-%s+" .. m_end_merge ..
     "%c+"
 
-function utils.merger._self_fake_()
-    return
-        "-- " .. "created merged file" .. "\n\n" ..
-        "-- " .. utils.merger.m_begin  .. "\n\n" ..
-        "-- " .. utils.merger.m_end    .. "\n\n"
+local m_format =
+    "\n\n-- " .. m_begin_merge ..
+    "\n%s\n" ..
+    "-- " .. m_end_merge .. "\n\n"
+
+local m_faked =
+    "-- " .. "created merged file" .. "\n\n" ..
+    "-- " .. m_begin_merge .. "\n\n" ..
+    "-- " .. m_end_merge .. "\n\n"
+
+local function self_fake()
+    return m_faked
 end
 
-function utils.report(...)
-    print(...)
+local function self_nothing()
+    return ""
 end
 
-utils.merger.strip_comment = true
-
-function utils.merger._self_load_(name)
-    local f, data = io.open(name), ""
-    if f then
-        utils.report("reading merge from %s",name)
-        data = f:read("*all")
-        f:close()
+local function self_load(name)
+    local data = io.loaddata(name) or ""
+    if data == "" then
+        utils.report("merge: unknown file %s",name)
     else
-        utils.report("unknown file to merge %s",name)
-    end
-    if data and utils.merger.strip_comment then
-        -- saves some 20K
-        data = gsub(data,"%-%-~[^\n\r]*[\r\n]", "")
+        utils.report("merge: inserting %s",name)
     end
     return data or ""
 end
 
-function utils.merger._self_save_(name, data)
+local function self_save(name, data)
     if data ~= "" then
-        local f = io.open(name,'w')
-        if f then
-            utils.report("saving merge from %s",name)
-            f:write(data)
-            f:close()
+        if merger.strip_comment then
+            -- saves some 20K
+            local n = #data
+            data = gsub(data,"%-%-~[^\n\r]*[\r\n]","")
+            utils.report("merge: %s bytes of comment stripped, %s bytes of code left",n-#data,#data)
         end
+        io.savedata(name,data)
+        utils.report("merge: saving %s",name)
     end
 end
 
-function utils.merger._self_swap_(data,code)
-    if data ~= "" then
-        return (gsub(data,utils.merger.pattern, function(s)
-            return "\n\n" .. "-- "..utils.merger.m_begin .. "\n" .. code .. "\n" .. "-- "..utils.merger.m_end .. "\n\n"
-        end, 1))
-    else
-        return ""
-    end
+local function self_swap(data,code)
+    return data ~= "" and (gsub(data,m_pattern, function() return format(m_format,code) end, 1)) or ""
 end
 
---~ stripper:
---~
---~ data = gsub(data,"%-%-~[^\n]*\n","")
---~ data = gsub(data,"\n\n+","\n")
-
-function utils.merger._self_libs_(libs,list)
-    local result, f, frozen = { }, nil, false
+local function self_libs(libs,list)
+    local result, f, frozen, foundpath = { }, nil, false, nil
     result[#result+1] = "\n"
     if type(libs) == 'string' then libs = { libs } end
     if type(list) == 'string' then list = { list } end
-    local foundpath = nil
     for i=1,#libs do
         local lib = libs[i]
         for j=1,#list do
             local pth = gsub(list[j],"\\","/") -- file.clean_path
-            utils.report("checking library path %s",pth)
+            utils.report("merge: checking library path %s",pth)
             local name = pth .. "/" .. lib
             if lfs.isfile(name) then
                 foundpath = pth
@@ -99,76 +97,58 @@ function utils.merger._self_libs_(libs,list)
         if foundpath then break end
     end
     if foundpath then
-        utils.report("using library path %s",foundpath)
+        utils.report("merge: using library path %s",foundpath)
         local right, wrong = { }, { }
         for i=1,#libs do
             local lib = libs[i]
             local fullname = foundpath .. "/" .. lib
             if lfs.isfile(fullname) then
-            --  right[#right+1] = lib
-                utils.report("merging library %s",fullname)
-                result[#result+1] = "do -- create closure to overcome 200 locals limit"
+                utils.report("merge: using library %s",fullname)
+                right[#right+1] = lib
+                result[#result+1] = m_begin_closure
                 result[#result+1] = io.loaddata(fullname,true)
-                result[#result+1] = "end -- of closure"
+                result[#result+1] = m_end_closure
             else
-            --  wrong[#wrong+1] = lib
-                utils.report("no library %s",fullname)
+                utils.report("merge: skipping library %s",fullname)
+                wrong[#wrong+1] = lib
             end
         end
         if #right > 0 then
-            utils.report("merged libraries: %s",concat(right," "))
+            utils.report("merge: used libraries: %s",concat(right," "))
         end
         if #wrong > 0 then
-            utils.report("skipped libraries: %s",concat(wrong," "))
+            utils.report("merge: skipped libraries: %s",concat(wrong," "))
         end
     else
-        utils.report("no valid library path found")
+        utils.report("merge: no valid library path found")
     end
     return concat(result, "\n\n")
 end
 
-function utils.merger.selfcreate(libs,list,target)
+function merger.selfcreate(libs,list,target)
     if target then
-        utils.merger._self_save_(
-            target,
-            utils.merger._self_swap_(
-                utils.merger._self_fake_(),
-                utils.merger._self_libs_(libs,list)
-            )
-        )
+        self_save(target,self_swap(self_fake(),self_libs(libs,list)))
     end
 end
 
-function utils.merger.selfmerge(name,libs,list,target)
-    utils.merger._self_save_(
-        target or name,
-        utils.merger._self_swap_(
-            utils.merger._self_load_(name),
-            utils.merger._self_libs_(libs,list)
-        )
-    )
+function merger.selfmerge(name,libs,list,target)
+    self_save(target or name,self_swap(self_load(name),self_libs(libs,list)))
 end
 
-function utils.merger.selfclean(name)
-    utils.merger._self_save_(
-        name,
-        utils.merger._self_swap_(
-            utils.merger._self_load_(name),
-            ""
-        )
-    )
+function merger.selfclean(name)
+    self_save(name,self_swap(self_load(name),self_nothing()))
 end
 
-function utils.lua.compile(luafile, lucfile, cleanup, strip) -- defaults: cleanup=false strip=true
- -- utils.report("compiling",luafile,"into",lucfile)
+function utils.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
+    utils.report("lua: compiling %s into %s",luafile,lucfile)
     os.remove(lucfile)
     local command = "-o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
     if strip ~= false then
         command = "-s " .. command
     end
-    local done = (os.spawn("texluac " .. command) == 0) or (os.spawn("luac " .. command) == 0)
+    local done = os.spawn("texluac " .. command) == 0 or os.spawn("luac " .. command) == 0
     if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
-     -- utils.report("removing",luafile)
+        utils.report("lua: removing %s",luafile)
         os.remove(luafile)
     end
     return done

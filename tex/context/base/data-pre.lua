@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['data-res'] = {
+if not modules then modules = { } end modules ['data-pre'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -12,8 +12,10 @@ local upper, lower, gsub = string.upper, string.lower, string.gsub
 
 local prefixes = { }
 
-prefixes.environment = function(str)
-    return resolvers.clean_path(os.getenv(str) or os.getenv(upper(str)) or os.getenv(lower(str)) or "")
+local getenv = resolvers.getenv
+
+prefixes.environment = function(str) -- getenv is case insensitive anyway
+    return resolvers.clean_path(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
 end
 
 prefixes.relative = function(str,n)

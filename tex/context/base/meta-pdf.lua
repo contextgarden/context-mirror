@@ -15,6 +15,8 @@ local lpegmatch = lpeg.match
 local round = math.round
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
+local report_mptopdf = logs.new("mptopdf")
+
 local pdfrgbcode                = lpdf.rgbcode
 local pdfcmykcode               = lpdf.cmykcode
 local pdfgraycode               = lpdf.graycode
@@ -55,7 +57,7 @@ local function texcode(str)
     texsprint(ctxcatcodes,str)
 end
 
-function mpscode(str)
+local function mpscode(str)
     if ignore_path then
         pdfcode("h W n")
         if extra_path_code then
@@ -304,9 +306,9 @@ end
 
 -- not supported in mkiv , use mplib instead
 
-handlers[10] = function() logs.report("mptopdf","skipping special %s",10) end
-handlers[20] = function() logs.report("mptopdf","skipping special %s",20) end
-handlers[50] = function() logs.report("mptopdf","skipping special %s",50) end
+handlers[10] = function() report_mptopdf("skipping special %s",10) end
+handlers[20] = function() report_mptopdf("skipping special %s",20) end
+handlers[50] = function() report_mptopdf("skipping special %s",50) end
 
 --end of not supported
 
@@ -320,7 +322,7 @@ function mps.setrgbcolor(r,g,b) -- extra check
         if handler then
             handler(s)
         else
-            logs.report("mptopdf","unknown special handler %s (1)",h)
+            report_mptopdf("unknown special handler %s (1)",h)
         end
     elseif r == 0.123 and g < 0.1 then
         g, b = round(g*1000), round(b*1000)
@@ -330,7 +332,7 @@ function mps.setrgbcolor(r,g,b) -- extra check
         if handler then
             handler(s)
         else
-            logs.report("mptopdf","unknown special handler %s (2)",h)
+            report_mptopdf("unknown special handler %s (2)",h)
         end
     else
         pdfcode(pdffinishtransparencycode())

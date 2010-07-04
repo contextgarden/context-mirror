@@ -167,7 +167,7 @@ function document.showmathfont(id,slot)
                 if cnext then
                     report("\\mathfontlistentrynextlist{%s}",table.concat(cnext," => "))
                 end
-                if variants then
+                if cvariants then
                     report("\\mathfontlistentryvariantslist{%s}",table.concat(cvariants," "))
                 end
             end
@@ -179,16 +179,13 @@ end
 
 \endinput
 
-\startbuffer[mathtest]
-    \begingroup\mm\mr\showmathfontcharacters\endgroup
-\stopbuffer
-
 \starttext
-    \usetypescript[cambria]   \setupbodyfont[cambria,  12pt] \getbuffer[mathtest]
-    \usetypescript[lmvirtual] \setupbodyfont[lmvirtual,12pt] \getbuffer[mathtest]
-    \usetypescript[pxvirtual] \setupbodyfont[pxvirtual,12pt] \getbuffer[mathtest]
-    \usetypescript[txvirtual] \setupbodyfont[txvirtual,12pt] \getbuffer[mathtest]
-    \usetypescript[palatino]  \setupbodyfont[palatino, 10pt] \getbuffer[mathtest]
-    \usetypescript[mathtimes] \setupbodyfont[mathtimes,12pt] \getbuffer[mathtest]
+    \setupbodyfont[cambria,  12pt] \showmathfontcharacters
+    \setupbodyfont[lmvirtual,12pt] \showmathfontcharacters
+    \setupbodyfont[pxvirtual,12pt] \showmathfontcharacters
+    \setupbodyfont[txvirtual,12pt] \showmathfontcharacters
+    \setupbodyfont[palatino, 10pt] \showmathfontcharacters
+    \setupbodyfont[mathtimes,12pt] \showmathfontcharacters
+    \setupbodyfont[stix,     12pt] \showmathfontcharacters
 \stoptext
 

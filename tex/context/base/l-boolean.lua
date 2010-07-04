@@ -35,7 +35,7 @@ function toboolean(str,tolerant)
     end
 end
 
-function string.is_boolean(str)
+function string.is_boolean(str,default)
     if type(str) == "string" then
         if str == "true" or str == "yes" or str == "on" or str == "t" then
             return true
@@ -43,7 +43,7 @@ function string.is_boolean(str)
             return false
         end
     end
-    return nil
+    return default
 end
 
 function boolean.alwaystrue()

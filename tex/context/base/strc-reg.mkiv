@@ -770,8 +770,7 @@
 %    \setvalue{#1\s!entry }##1{\dosetpageregisterletter{#1}{##1}}}
 
 % \def\dosetlinkregisterentrya#1#2%
-%    {\global\utilitydonetrue
-%     \c!entryletter
+%    {\c!entryletter
 %     \iflocation
 %       \getalllistreferences{#1}{#2}%
 %       % no \endgraf
@@ -864,8 +863,7 @@
 %    \ifautoregisterhack
 %      \setvalue{#1\s!page}##1##2##3##4%
 %        {\doifreglevelelse[##3]
-%           {\global\utilitydonetrue
-%            \iffirstregisterpage
+%           {\iffirstregisterpage
 %              \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
 %                {\internallistreference::##4}%
 %            \else % catches errors in index
@@ -878,8 +876,7 @@
 %    \else
 %      \setvalue{#1\s!page}##1##2##3##4%
 %        {\doifreglevelelse[##3]
-%           {\global\utilitydonetrue
-%            \iffirstregisterpage
+%           {\iffirstregisterpage
 %              \global\firstregisterpagefalse
 %              \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
 %                {\internallistreference::##2-##4}%
@@ -1026,8 +1023,7 @@
 %    \setvalue{#1\s!entry }##1{\dosetpageregisterletter{#1}{##1}}}
 
 % \def\dosetautoregisterentrya#1#2%
-%   {\global\utilitydonetrue
-%    \c!entryletter
+%   {\c!entryletter
 %    \iflocation
 %      \getalllistreferences{#1}{#2}%
 %      \endgraf\hangindent1em\noindent\c!entryreference

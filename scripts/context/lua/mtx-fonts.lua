@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mtx-fonts'] = {
     license   = "see context related readme files"
 }
 
+-- todo: fc-cache -v en check dirs, or better is: fc-cat -v | grep Directory
+
 if not fontloader then fontloader = fontforge end
 
 dofile(resolvers.find_file("font-otp.lua","tex"))
@@ -14,6 +16,46 @@ dofile(resolvers.find_file("font-mis.lua","tex"))
 
 scripts       = scripts       or { }
 scripts.fonts = scripts.fonts or { }
+
+function fonts.names.statistics()
+    fonts.names.load()
+
+    local data = fonts.names.data
+    local statistics = data.statistics
+
+    local function counted(t)
+        local n = { }
+        for k, v in next, t do
+            n[k] = table.count(v)
+        end
+        return table.sequenced(n)
+    end
+
+    logs.simple("cache uuid      : %s", data.cache_uuid)
+    logs.simple("cache version   : %s", data.cache_version)
+    logs.simple("number of trees : %s", #data.data_state)
+    logs.simpleline()
+    logs.simple("number of fonts : %s", statistics.fonts or 0)
+    logs.simple("used files      : %s", statistics.readfiles or 0)
+    logs.simple("skipped files   : %s", statistics.skippedfiles or 0)
+    logs.simple("duplicate files : %s", statistics.duplicatefiles or 0)
+    logs.simple("specifications  : %s", #data.specifications)
+    logs.simple("families        : %s", table.count(data.families))
+    logs.simpleline()
+    logs.simple("mappings        : %s", counted(data.mappings))
+    logs.simple("fallbacks       : %s", counted(data.fallbacks))
+    logs.simpleline()
+    logs.simple("used styles     : %s", table.sequenced(statistics.used_styles))
+    logs.simple("used variants   : %s", table.sequenced(statistics.used_variants))
+    logs.simple("used weights    : %s", table.sequenced(statistics.used_weights))
+    logs.simple("used widths     : %s", table.sequenced(statistics.used_widths))
+    logs.simpleline()
+    logs.simple("found styles    : %s", table.sequenced(statistics.styles))
+    logs.simple("found variants  : %s", table.sequenced(statistics.variants))
+    logs.simple("found weights   : %s", table.sequenced(statistics.weights))
+    logs.simple("found widths    : %s", table.sequenced(statistics.widths))
+
+end
 
 function fonts.names.simple()
     local simpleversion = 1.001
@@ -151,7 +193,6 @@ local function list_specifications(t,info)
                     subfont(entry.subfont),
                     fontweight(entry.fontweight),
                 }
-                e[k] = entry
             end
             table.formatcolumns(s)
             for k=1,#s do
@@ -243,6 +284,9 @@ function scripts.fonts.list()
     elseif given then
         --~ mtxrun --script font --list somename
         list_matches(fonts.names.list(given,reload,all),info)
+    elseif all then
+        pattern = "*"
+        list_matches(fonts.names.list(string.topattern(pattern,true),reload,all),info)
     else
         logs.report("fontnames","not supported: --list <no specification>",name)
     end
@@ -290,7 +334,7 @@ function scripts.fonts.save()
     end
 end
 
-logs.extendbanner("ConTeXt Font Database Management 0.21",true)
+logs.extendbanner("ConTeXt Font Database Management 0.21")
 
 messages.help = [[
 --save                save open type font in raw table
@@ -307,6 +351,7 @@ messages.help = [[
 --all                 show all found instances
 --info                give more details
 --track=list          enable trackers
+--statistics          some info about the database
 
 examples of searches:
 
@@ -320,6 +365,7 @@ mtxrun --script font --list --spec somename-bold-italic
 mtxrun --script font --list --spec --pattern=*somename*
 mtxrun --script font --list --spec --filter="fontname=somename"
 mtxrun --script font --list --spec --filter="familyname=somename,weight=bold,style=italic,width=condensed"
+mtxrun --script font --list --spec --filter="familyname=crap*,weight=bold,style=italic"
 
 mtxrun --script font --list --file somename
 mtxrun --script font --list --file --pattern=*somename*
@@ -340,6 +386,8 @@ elseif environment.argument("reload") then
     scripts.fonts.reload()
 elseif environment.argument("save") then
     scripts.fonts.save()
+elseif environment.argument("statistics") then
+    fonts.names.statistics()
 else
     logs.help(messages.help)
 end

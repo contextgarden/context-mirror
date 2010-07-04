@@ -16,6 +16,8 @@ local format, match, concat, rep, utfchar = string.format, string.match, table.c
 
 local ctxcatcodes = tex.ctxcatcodes
 
+local report_nodes = logs.new("nodes")
+
 fonts     = fonts     or { }
 fonts.tfm = fonts.tfm or { }
 fonts.ids = fonts.ids or { }
@@ -380,13 +382,13 @@ end
 function nodes.report(t,done)
     if done then
         if status.output_active then
-            logs.report("nodes","output, changed, %s nodes",nodes.count(t))
+            report_nodes("output, changed, %s nodes",nodes.count(t))
         else
             texio.write("nodes","normal, changed, %s nodes",nodes.count(t))
         end
     else
         if status.output_active then
-            logs.report("nodes","output, unchanged, %s nodes",nodes.count(t))
+            report_nodes("output, unchanged, %s nodes",nodes.count(t))
         else
             texio.write("nodes","normal, unchanged, %s nodes",nodes.count(t))
         end

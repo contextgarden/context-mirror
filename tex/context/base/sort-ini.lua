@@ -20,6 +20,8 @@ local next, type, tonumber = next, type, tonumber
 
 local trace_tests = false  trackers.register("sorters.tests", function(v) trace_tests = v end)
 
+local report_sorters = logs.new("sorters")
+
 sorters              = { }
 sorters.comparers    = { }
 sorters.splitters    = { }
@@ -252,7 +254,7 @@ function sorters.sort(entries,cmp)
     if trace_tests then
         sort(entries,function(a,b)
             local r = cmp(a,b)
-            logs.report("sorter","%s %s %s",pack(a),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(b))
+            report_sorters("%s %s %s",pack(a),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(b))
             return r == -1
         end)
         local s
@@ -263,9 +265,9 @@ function sorters.sort(entries,cmp)
                 first = "  "
             else
                 s = first
-                logs.report("sorter",">> %s 0x%05X (%s 0x%05X)",first,utfbyte(first),letter,utfbyte(letter))
+                report_sorters(">> %s 0x%05X (%s 0x%05X)",first,utfbyte(first),letter,utfbyte(letter))
             end
-            logs.report("sorter","   %s",pack(entry))
+            report_sorters("   %s",pack(entry))
         end
     else
         sort(entries,function(a,b)

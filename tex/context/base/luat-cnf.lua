@@ -8,27 +8,37 @@ if not modules then modules = { } end modules ['luat-cnf'] = {
 
 local format, concat, find = string.format, table.concat, string.find
 
+texconfig.kpse_init    = false
+texconfig.shell_escape = 't'
+
 luatex = luatex or { }
 
 luatex.variablenames = {
-    'main_memory', 'extra_mem_bot', 'extra_mem_top',
-    'buf_size','expand_depth',
-    'font_max', 'font_mem_size',
-    'hash_extra', 'max_strings', 'pool_free', 'pool_size', 'string_vacancies',
-    'obj_tab_size', 'pdf_mem_size', 'dest_names_size',
-    'nest_size', 'param_size', 'save_size', 'stack_size','expand_depth',
-    'trie_size', 'hyph_size', 'max_in_open',
-    'ocp_stack_size', 'ocp_list_size', 'ocp_buf_size',
-    'max_print_line',
+    'buf_size',         --  3000
+    'dvi_buf_size',     -- 16384
+    'error_line',       --    79
+    'expand_depth',     -- 10000
+    'half_error_line',  --    50
+    'hash_extra',       --     0
+    'nest_size',        --    50
+    'max_in_open',      --    15
+    'max_print_line',   --    79
+    'max_strings',      -- 15000
+    'ocp_stack_size',   --  1000
+    'ocp_list_size',    --  1000
+    'ocp_buf_size',     --  1000
+    'param_size',       --    60
+    'pk_dpi',           --    72
+    'save_size',        --  4000
+    'stack_size',       --   300
+    'strings_free',     --   100
 }
 
 function luatex.variables()
-    local t, x = { }, nil
+    local t = { }
     for _,v in next, luatex.variablenames do
-        x = resolvers.var_value(v)
-        if x and find(x,"^%d+$") then
-            t[v] = tonumber(x)
-        end
+        local x = resolvers.var_value(v)
+        t[v] = tonumber(x) or x
     end
     return t
 end
@@ -48,7 +58,7 @@ luatex  = luatex  or { }
 
 -- we provide our own file handling
 
-texconfig.kpse_init = false
+texconfig.kpse_init    = false
 texconfig.shell_escape = 't'
 
 -- as soon as possible
@@ -61,12 +71,13 @@ function texconfig.init()
 
     -- shortcut and helper
 
-    local b = lua.bytecode
-
     local function init(start)
+        local b = lua.bytecode
         local i = start
         while b[i] do
-            b[i]() ; b[i] = nil ; i = i + 1
+            b[i]() ;
+            b[i] = nil ;
+            i = i + 1
          -- collectgarbage('step')
         end
         return i - start
@@ -89,27 +100,25 @@ end)
 -- done, from now on input and callbacks are internal
 ]]
 
-function luatex.dumpstate(name,firsttable)
-    if tex and tex.luatexversion < 38 then
-        os.remove(name)
-    elseif true then
-        local t = {
-            "-- this file is generated, don't change it\n",
-            "-- configuration (can be overloaded later)\n"
-        }
-        for _,v in next, luatex.variablenames do
-            local tv = texconfig[v]
-            if tv then
-                t[#t+1] = format("texconfig.%s=%s",v,tv)
-            end
+local function makestub()
+    name = name or (environment.jobname .. ".lui")
+    firsttable = firsttable or lua.firstbytecode
+    local t = {
+        "-- this file is generated, don't change it\n",
+        "-- configuration (can be overloaded later)\n"
+    }
+    for _,v in next, luatex.variablenames do
+        local tv = texconfig[v]
+        if tv and tv ~= "" then
+            t[#t+1] = format("texconfig.%s=%s",v,tv)
         end
-        io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable or 501)))
-    else
-        io.savedata(name,format(stub,firsttable or 501))
     end
+    io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable)))
 end
 
-texconfig.kpse_init = false
-texconfig.max_print_line = 100000
-texconfig.max_in_open    = 127
-texconfig.shell_escape   = 't'
+lua.registerfinalizer(makestub)
+
+-- to be moved here:
+--
+-- statistics.report_storage("log")
+-- statistics.save_fmt_status("\jobname","\contextversion","context.tex")

@@ -19,9 +19,9 @@ local remove_nodes  = nodes.remove
 
 local migrated = attributes.private("migrated")
 
-local trace_migrations = false
+local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)
 
-trackers.register("nodes.migrations", function(v) trace_migrations = v end)
+local report_nodes = logs.new("nodes")
 
 local migrate_inserts, migrate_marks
 
@@ -82,7 +82,7 @@ function nodes.migrate_outwards(head,where)
                 if first then
                     t_inserts, t_marks = t_inserts + ni, t_marks + nm
                     if trace_migrations and (ni > 0 or nm > 0) then
-                        logs.report("nodes","sweep %s, %s inserts and %s marks migrated outwards",t_sweeps,ni,nm)
+                        report_nodes("sweep %s, %s inserts and %s marks migrated outwards",t_sweeps,ni,nm)
                     end
                     -- inserts after head
                     local n = current.next

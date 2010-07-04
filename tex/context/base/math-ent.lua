@@ -5,6 +5,8 @@ if not modules then modules = { } end modules ['math-ent'] = {
     copyright = "derived from the mathml 2.0 specification",
 }
 
+-- this might go into char-def
+
 mathematics.entities={
     ["Aacute"]=0x000C1,
     ["aacute"]=0x000E1,

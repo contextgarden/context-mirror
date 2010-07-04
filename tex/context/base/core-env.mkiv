@@ -171,7 +171,7 @@
 \unexpanded\def\startsetups{} % to please dep checker
 \unexpanded\def\stopsetups {} % to please dep checker
 
-\expanded
+\expanded % will become obsolete
   {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
      {\begingroup\noexpand\doifnextoptionalelse
         {\noexpand\dostartsetupsA\@EA\noexpand\csname\e!stop\v!setups\endcsname}
@@ -215,38 +215,150 @@
 \let\directsetup\dosetups
 
 \def\doifsetupselse#1% to be done: grid
-  {\doifdefinedelse{\??su:#1}}
+  {\doifdefinedelse{\??su:#1}} % doto: ifcsname
 
-\chardef\setupseolmode\plusone
+% % % %
 
-\unexpanded\def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
-\unexpanded\def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
-\unexpanded\def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
-\unexpanded\def\startxmlsetups  {\xxstartsetups\plustwo  \stopxmlsetups  } \let\stopxmlsetups  \relax
+% \chardef\setupseolmode\plusone
+%
+% \unexpanded\def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
+% \unexpanded\def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
+% \unexpanded\def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
+% \unexpanded\def\startxmlsetups  {\xxstartsetups\plustwo  \stopxmlsetups  } \let\stopxmlsetups  \relax
+%
+% \def\xxstartsetups#1#2%
+%   {\begingroup\let\setupseolmode#1\doifnextoptionalelse{\dostartsetupsA#2}{\dostartsetupsB#2}}
+%
+% \def\dostartsetupsA#1% [ ] delimited
+%   {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
+%    \dotripleempty\dostartsetups[#1]}
+%
+% \def\dostartsetupsB#1#2 % space delimited
+%   {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
+%    \dodostartsetups#1\empty{#2}}
+%
+% \def\dostartsetupsC[#1][#2][#3]{\dodostartsetups#1{#2}{#3}}   % [..] [..]
+% \def\dostartsetupsD[#1][#2][#3]{\dodostartsetups#1\empty{#2}} % [..]
+%
+% \def\dostartsetups
+%   {\ifthirdargument\@EA\dostartsetupsC\else\@EA\dostartsetupsD\fi}
+%
+% \long\def\dodostartsetups#1#2#3% needs a speedup
+%   {\long\def\dododostartsetups##1#1%
+%      {\endgroup
+%       \dodoglobal % bah
+%       \long\expandafter\def\csname\??su#2:#3\expandafter\endcsname\expandafter####\expandafter1\expandafter{##1}}%
+%    \dododostartsetups\empty} % the empty trick prevents the { } in {arg} from being eaten up
 
-\def\xxstartsetups#1#2%
-  {\begingroup\let\setupseolmode#1\doifnextoptionalelse{\dostartsetupsA#2}{\dostartsetupsB#2}}
+% % % %
 
-\def\dostartsetupsA#1% [ ] delimited
-  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
-   \dotripleempty\dostartsetups[#1]}
+% \startluasetups oeps
+%     tex.print("DONE")
+%     a = 1
+%     b = 1
+% \stopluasetups
+%
+% \luasetup{oeps}
+%
+% \startsetups xxx
+%     ziezo
+% \stopsetups
+%
+% \directsetup{xxx}
+%
+% \startxmlsetups zzz
+%     [[#1]]
+% \stopxmlsetups
+%
+% \xmlsetup{123}{zzz}
+%
+% \startbuffer[what]
+%     tex.print("DONE")
+% \stopbuffer
+%
+% \startbuffer
+%     tex.print("MORE")
+% \stopbuffer
+%
+% \ctxluabuffer[what]
+%
+% \ctxluabuffer
 
-\def\dostartsetupsB#1#2 % space delimited
-  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
-   \dodostartsetups#1\empty{#2}}
+\newtoks\everydefinesetups      \appendtoks
+    \catcode`\^^M\@@ignore
+\to \everydefinesetups
 
-\def\dostartsetupsC[#1][#2][#3]{\dodostartsetups#1{#2}{#3}}   % [..] [..]
-\def\dostartsetupsD[#1][#2][#3]{\dodostartsetups#1\empty{#2}} % [..]
+\newtoks\everydefinelocalsetups \appendtoks
+    \catcode`\^^M\@@ignore
+\to \everydefinelocalsetups
 
-\def\dostartsetups
-  {\ifthirdargument\@EA\dostartsetupsC\else\@EA\dostartsetupsD\fi}
+\newtoks\everydefinerawsetups   \appendtoks
+    % nothing
+\to \everydefinerawsetups
 
-\long\def\dodostartsetups#1#2#3%
-  {\long\def\dododostartsetups##1#1%
-     {\endgroup
-      \dodoglobal % bah
-      \long\expandafter\def\csname\??su#2:#3\expandafter\endcsname\expandafter####\expandafter1\expandafter{##1}}%
-   \dododostartsetups\empty} % the empty trick prevents the { } in {arg} from being eaten up
+\newtoks\everydefinexmlsetups   \appendtoks
+    \catcode`\^^M\@@ignore
+    \catcode`\|\@@other
+\to \everydefinexmlsetups
+
+\newtoks\everydefineluasetups   \appendtoks
+    \obeylualines
+    \obeyluatokens
+\to \everydefineluasetups
+
+\unexpanded\def\startluasetups  {\begingroup\doifnextoptionalelse\dostartluasetupsA  \dostartluasetupsB  }
+\unexpanded\def\startxmlsetups  {\begingroup\doifnextoptionalelse\dostartxmlsetupsA  \dostartxmlsetupsB  }
+\unexpanded\def\startrawsetups  {\begingroup\doifnextoptionalelse\dostartrawsetupsA  \dostartrawsetupsB  }
+\unexpanded\def\startlocalsetups{\begingroup\doifnextoptionalelse\dostartlocalsetupsA\dostartlocalsetupsB}
+\unexpanded\def\startsetups     {\begingroup\doifnextoptionalelse\dostartsetupsA     \dostartsetupsB     }
+
+\let\stopluasetups              \relax
+\let\stopxmlsetups              \relax
+\let\stoprawsetups              \relax
+\let\stoplocalsetups            \relax
+\let\stopsetups                 \relax
+
+\def\dodostartluasetups   #1#2#3\stopluasetups  {\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartxmlsetups   #1#2#3\stopxmlsetups  {\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartrawsetups   #1#2#3\stoprawsetups  {\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartlocalsetups #1#2#3\stoplocalsetups{\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartsetups      #1#2#3\stopsetups     {\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+
+\def\dostartluasetups           {\ifsecondargument\@EA\dostartluasetupsC  \else\@EA\dostartluasetupsD  \fi}
+\def\dostartxmlsetups           {\ifsecondargument\@EA\dostartxmlsetupsC  \else\@EA\dostartxmlsetupsD  \fi}
+\def\dostartrawsetups           {\ifsecondargument\@EA\dostartrawsetupsC  \else\@EA\dostartrawsetupsD  \fi}
+\def\dostartlocalsetups         {\ifsecondargument\@EA\dostartlocalsetupsC\else\@EA\dostartlocalsetupsD\fi}
+\def\dostartsetups              {\ifsecondargument\@EA\dostartsetupsC     \else\@EA\dostartsetupsD     \fi}
+
+\def\dostartluasetupsA          {\the\everydefineluasetups  \dodoubleempty\dostartluasetups}    % [ ] delimited
+\def\dostartxmlsetupsA          {\the\everydefinexmlsetups  \dodoubleempty\dostartxmlsetups}    % [ ] delimited
+\def\dostartrawsetupsA          {\the\everydefinerawsetups  \dodoubleempty\dostartrawsetups}    % [ ] delimited
+\def\dostartlocalsetupsA        {\the\everydefinelocalsetups\dodoubleempty\dostartlocalsetups}  % [ ] delimited
+\def\dostartsetupsA             {\the\everydefinesetups     \dodoubleempty\dostartsetups}       % [ ] delimited
+
+        % empty preserves inner {} (is removed by the \@EA{#3})
+
+\def\dostartluasetupsB       #1 {\the\everydefineluasetups  \dodostartluasetups  \empty{#1}\empty}    % space delimited
+\def\dostartxmlsetupsB       #1 {\the\everydefinexmlsetups  \dodostartxmlsetups  \empty{#1}\empty}    % space delimited
+\def\dostartrawsetupsB       #1 {\the\everydefinerawsetups  \dodostartrawsetups  \empty{#1}\empty}    % space delimited
+\def\dostartlocalsetupsB     #1 {\the\everydefinelocalsetups\dodostartlocalsetups\empty{#1}\empty}    % space delimited
+\def\dostartsetupsB          #1 {\the\everydefinesetups     \dodostartsetups     \empty{#1}\empty}    % space delimited
+
+\def\dostartluasetupsC  [#1][#2]{\the\everydefineluasetups  \dodostartluasetups  {#1}{#2}\empty}      % [..] [..]
+\def\dostartxmlsetupsC  [#1][#2]{\the\everydefinexmlsetups  \dodostartxmlsetups  {#1}{#2}\empty}      % [..] [..]
+\def\dostartrawsetupsC  [#1][#2]{\the\everydefinerawsetups  \dodostartrawsetups  {#1}{#2}\empty}      % [..] [..]
+\def\dostartlocalsetupsC[#1][#2]{\the\everydefinelocalsetups\dodostartlocalsetups{#1}{#2}\empty}      % [..] [..]
+\def\dostartsetupsC     [#1][#2]{\the\everydefinesetups     \dodostartsetups     {#1}{#2}\empty}      % [..] [..]
+
+\def\dostartluasetupsD  [#1][#2]{\the\everydefineluasetups  \dodostartluasetups  \empty{#1}\empty}    % [..]
+\def\dostartxmlsetupsD  [#1][#2]{\the\everydefinexmlsetups  \dodostartxmlsetups  \empty{#1}\empty}    % [..]
+\def\dostartrawsetupsD  [#1][#2]{\the\everydefinerawsetups  \dodostartrawsetups  \empty{#1}\empty}    % [..]
+\def\dostartlocalsetupsD[#1][#2]{\the\everydefinelocalsetups\dodostartlocalsetups\empty{#1}\empty}    % [..]
+\def\dostartsetupsD     [#1][#2]{\the\everydefinesetups     \dodostartsetups     \empty{#1}\empty}    % [..]
+
+\def\luasetup#1{\ctxlua{\dosetups{#1}}}
+
+% % % %
 
 \def\systemsetupsprefix{*}
 

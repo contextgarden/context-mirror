@@ -38,6 +38,11 @@ local trace_page_vspacing    = false  trackers.register("nodes.page_vspacing",  
 local trace_collect_vspacing = false  trackers.register("nodes.collect_vspacing", function(v) trace_collect_vspacing = v end)
 local trace_vspacing         = false  trackers.register("nodes.vspacing",         function(v) trace_vspacing         = v end)
 local trace_vsnapping        = false  trackers.register("nodes.vsnapping",        function(v) trace_vsnapping        = v end)
+local trace_vpacking         = false  trackers.register("nodes.vpacking",         function(v) trace_vpacking         = v end)
+
+local report_vspacing  = logs.new("vspacing")
+local report_collapser = logs.new("collapser")
+local report_snapper   = logs.new("snapper")
 
 local skip_category = attributes.private('skip-category')
 local skip_penalty  = attributes.private('skip-penalty')
@@ -337,7 +342,7 @@ storage.register("vspacing/data/skip", vspacing.data.skip, "vspacing.data.skip")
 do -- todo: interface.variables
 
     local function logger(c,...)
-        logs.report("vspacing",concat {...})
+        report_vspacing(concat {...})
         texsprint(c,...)
     end
 
@@ -360,7 +365,7 @@ do -- todo: interface.variables
         for s in gmatch(str,"([^ ,]+)") do
             local amount, keyword, detail = lpegmatch(splitter,s)
             if not keyword then
-                logs.report("vspacing","unknown directive: %s",s)
+                report_vspacing("unknown directive: %s",s)
             else
                 local mk = map[keyword]
                 if mk then
@@ -513,13 +518,13 @@ local function show_tracing(head)
         for i=1,#trace_list do
             local tag, text = unpack(trace_list[i])
             if tag == "info" then
-                logs.report("collapse",text)
+                report_collapser(text)
             else
-                logs.report("collapse","  %s: %s",tag,text)
+                report_collapser("  %s: %s",tag,text)
             end
         end
-        logs.report("collapse","before: %s",before)
-        logs.report("collapse","after : %s",after)
+        report_collapser("before: %s",before)
+        report_collapser("after : %s",after)
     end
 end
 
@@ -582,13 +587,13 @@ function vspacing.snap_box(n,how)
             local s = has_attribute(list,snap_method)
             if s == 0 then
                 if trace_vsnapping then
-                --  logs.report("snapper", "hlist not snapped, already done")
+                --  report_snapper("hlist not snapped, already done")
                 end
             else
                 local h, d, ch, cd, lines = snap_hlist(box,sv,box.height,box.depth)
                 box.height, box.depth = ch, cd
                 if trace_vsnapping then
-                    logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,"direct",lines)
+                    report_snapper("hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,"direct",lines)
                 end
                 set_attribute(list,snap_method,0)
             end
@@ -609,7 +614,7 @@ local function forced_skip(head,current,width,where,trace)
         current = c
     end
     if trace then
-        logs.report("vspacing", "inserting forced skip of %s",width)
+        report_vspacing("inserting forced skip of %s",width)
     end
     return head, current
 end
@@ -629,16 +634,16 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         if penalty_data then
             local p = make_penalty_node(penalty_data)
             if trace then trace_done("flushed due to " .. why,p) end
-            head, _ = insert_node_before(head,current,p)
+            head = insert_node_before(head,current,p)
         end
         if glue_data then
             if force_glue then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
-                head, _ = forced_skip(head,current,glue_data.spec.width,"before",trace)
+                head = forced_skip(head,current,glue_data.spec.width,"before",trace)
                 free_glue_node(glue_data)
             elseif glue_data.spec.writable then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
-                head, _ = insert_node_before(head,current,glue_data)
+                head = insert_node_before(head,current,glue_data)
             else
                 free_glue_node(glue_data)
             end
@@ -649,7 +654,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
     end
     if trace_vsnapping then
-        logs.report("snapper", "global ht/dp = %s/%s, local ht/dp = %s/%s",
+        report_snapper("global ht/dp = %s/%s, local ht/dp = %s/%s",
             texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth,
             texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth)
     end
@@ -662,21 +667,21 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 local s = has_attribute(current,snap_method)
                 if not s then
                 --  if trace_vsnapping then
-                --      logs.report("snapper", "hlist not snapped")
+                --      report_snapper("hlist not snapped")
                 --  end
                 elseif s == 0 then
                     if trace_vsnapping then
-                    --  logs.report("snapper", "hlist not snapped, already done")
+                    --  report_snapper("hlist not snapped, already done")
                     end
                 else
                     local sv = snapmethods[s]
                     if sv then
                         local h, d, ch, cd, lines = snap_hlist(current,sv)
                         if trace_vsnapping then
-                            logs.report("snapper", "hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,where,lines)
+                            report_snapper("hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,where,lines)
                         end
                     elseif trace_vsnapping then
-                        logs.report("snapper", "hlist not snapped due to unknown snap specification")
+                        report_snapper("hlist not snapped due to unknown snap specification")
                     end
                     set_attribute(current,snap_method,0)
                 end
@@ -694,7 +699,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         elseif id == kern then
             if snap and trace_vsnapping and current.kern ~= 0 then
             --~ current.kern = 0
-                logs.report("snapper", "kern of %s (kept)",current.kern)
+                report_snapper("kern of %s (kept)",current.kern)
             end
             flush("kern")
             current = current.next
@@ -836,7 +841,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                         local spec = writable_spec(current)
                         spec.width = 0
                         if trace_vsnapping then
-                            logs.report("snapper", "lineskip set to zero")
+                            report_snapper("lineskip set to zero")
                         end
                     end
                 else
@@ -857,7 +862,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                         local spec = writable_spec(current)
                         spec.width = 0
                         if trace_vsnapping then
-                            logs.report("snapper", "baselineskip set to zero")
+                            report_snapper("baselineskip set to zero")
                         end
                     end
                 else
@@ -895,7 +900,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                     local sv = snapmethods[s]
                     local w, cw = snap_topskip(current,sv)
                     if trace_vsnapping then
-                        logs.report("snapper", "topskip snapped from %s to %s for '%s'",w,cw,where)
+                        report_snapper("topskip snapped from %s to %s for '%s'",w,cw,where)
                     end
                 else
                     if trace then trace_skip("topskip",sc,so,sp,current) end
@@ -932,7 +937,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             --
         else -- other glue
             if snap and trace_vsnapping and current.spec.writable and current.spec.width ~= 0 then
-                logs.report("snapper", "%s of %s (kept)",skips[subtype],current.spec.width)
+                report_snapper("%s of %s (kept)",skips[subtype],current.spec.width)
             --~ current.spec.width = 0
             end
             if trace then trace_skip(format("some glue (%s)",subtype),sc,so,sp,current) end
@@ -989,7 +994,7 @@ end
 local stackhead, stacktail, stackhack = nil, nil, false
 
 local function report(message,lst)
-    logs.report("vspacing",message,count_nodes(lst,true),node_ids_to_string(lst))
+    report_vspacing(message,count_nodes(lst,true),node_ids_to_string(lst))
 end
 
 function nodes.handle_page_spacing(newhead,where)
@@ -1144,14 +1149,14 @@ function nodes.builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direc
     local done = false
     if head then
         starttiming(builders)
-        if trace_callbacks then
+        if trace_vpacking then
             local before = nodes.count(head)
             head, done = actions(head,groupcode,size,packtype,maxdepth,direction)
             local after = nodes.count(head)
             if done then
-                tracer("vpack","changed",head,groupcode,before,after,true)
+                nodes.processors.tracer("vpack","changed",head,groupcode,before,after,true)
             else
-                tracer("vpack","unchanged",head,groupcode,before,after,true)
+                nodes.processors.tracer("vpack","unchanged",head,groupcode,before,after,true)
             end
             stoptiming(builders)
         else

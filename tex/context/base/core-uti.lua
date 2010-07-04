@@ -21,6 +21,8 @@ local sort, concat, format, match = table.sort, table.concat, string.format, str
 local next, type, tostring = next, type, tostring
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
+local report_jobcontrol = logs.new("jobcontrol")
+
 if not jobs then jobs         = { } end
 if not job  then jobs['main'] = { } end job = jobs['main']
 
@@ -42,7 +44,7 @@ job.comment(format("version: %1.2f",jobs.version))
 
 function job.initialize(loadname,savename)
     job.load(loadname)
-    main.register_stop_actions(function()
+    luatex.register_stop_actions(function()
         if not status.lasterrorstring or status.lasterrorstring == "" then
             job.save(savename)
         end
@@ -239,7 +241,7 @@ function job.load(filename)
     if data and data ~= "" then
         local version = tonumber(match(data,"^-- version: ([%d%.]+)"))
         if version ~= jobs.version then
-            logs.report("job","version mismatch with jobfile: %s <> %s", version or "?", jobs.version)
+            report_jobcontrol("version mismatch with jobfile: %s <> %s", version or "?", jobs.version)
         else
             local data = loadstring(data)
             if data then
@@ -262,7 +264,7 @@ end
 -- eventually this will end up in strc-ini
 
 statistics.register("startup time", function()
-    return statistics.elapsedseconds(ctx,"including runtime option file processing")
+    return statistics.elapsedseconds(statistics,"including runtime option file processing")
 end)
 
 statistics.register("jobdata time",function()

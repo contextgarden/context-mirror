@@ -13,6 +13,8 @@ local type, next = type, next
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
+local report_otf = logs.new("load otf")
+
 local otf = fonts.otf
 local tfm = fonts.tfm
 
@@ -186,7 +188,7 @@ fonts.otf.enhancers["enrich with features"] = function(data,filename)
             end
             if done > 0 then
                 if trace_loading then
-                    logs.report("load otf","enhance: registering %s feature (%s glyphs affected)",kind,done)
+                    report_otf("enhance: registering %s feature (%s glyphs affected)",kind,done)
                 end
             end
         end

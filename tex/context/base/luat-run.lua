@@ -8,18 +8,18 @@ if not modules then modules = { } end modules ['luat-run'] = {
 
 local format, rpadd = string.format, string.rpadd
 
-main = main or { }
+luatex = luatex or { }
 
 local start_actions = { }
 local stop_actions  = { }
 
-function main.register_start_actions(...) table.insert(start_actions, ...) end
-function main.register_stop_actions (...) table.insert(stop_actions,  ...) end
+function luatex.register_start_actions(...) table.insert(start_actions, ...) end
+function luatex.register_stop_actions (...) table.insert(stop_actions,  ...) end
 
-main.show_tex_stat = main.show_tex_stat or function() end
-main.show_job_stat = main.show_job_stat or statistics.show_job_stat
+luatex.show_tex_stat = luatex.show_tex_stat or function() end
+luatex.show_job_stat = luatex.show_job_stat or statistics.show_job_stat
 
-function main.start()
+function luatex.start_run()
     if logs.start_run then
         logs.start_run()
     end
@@ -28,14 +28,14 @@ function main.start()
     end
 end
 
-function main.stop()
+function luatex.stop_run()
     for _, action in next, stop_actions do
         action()
     end
-    if main.show_job_stat then
+    if luatex.show_job_stat then
         statistics.show(logs.report_job_stat)
     end
-    if main.show_tex_stat then
+    if luatex.show_tex_stat then
         for k,v in next, status.list() do
             logs.report_tex_stat(k,v)
         end
@@ -45,30 +45,30 @@ function main.stop()
     end
 end
 
-function main.start_shipout_page()
+function luatex.start_shipout_page()
     logs.start_page_number()
 end
 
-function main.stop_shipout_page()
+function luatex.stop_shipout_page()
     logs.stop_page_number()
 end
 
-function main.report_output_pages()
+function luatex.report_output_pages()
 end
 
-function main.report_output_log()
+function luatex.report_output_log()
 end
 
 -- this can be done later
 
-callbacks.register('start_run',             main.start, "actions performed at the beginning of a run")
-callbacks.register('stop_run',              main.stop, "actions performed at the end of a run")
+callbacks.register('start_run',             luatex.start_run,           "actions performed at the beginning of a run")
+callbacks.register('stop_run',              luatex.stop_run,            "actions performed at the end of a run")
 
-callbacks.register('report_output_pages',   main.report_output_pages, "actions performed when reporting pages")
-callbacks.register('report_output_log',     main.report_output_log, "actions performed when reporting log file")
+callbacks.register('report_output_pages',   luatex.report_output_pages, "actions performed when reporting pages")
+callbacks.register('report_output_log',     luatex.report_output_log,   "actions performed when reporting log file")
 
-callbacks.register('start_page_number',     main.start_shipout_page, "actions performed at the beginning of a shipout")
-callbacks.register('stop_page_number',      main.stop_shipout_page, "actions performed at the end of a shipout")
+callbacks.register('start_page_number',     luatex.start_shipout_page,  "actions performed at the beginning of a shipout")
+callbacks.register('stop_page_number',      luatex.stop_shipout_page,   "actions performed at the end of a shipout")
 
-callbacks.register('process_input_buffer',  false, "actions performed when reading data")
-callbacks.register('process_output_buffer', false, "actions performed when writing data")
+callbacks.register('process_input_buffer',  false,                      "actions performed when reading data")
+callbacks.register('process_output_buffer', false,                      "actions performed when writing data")

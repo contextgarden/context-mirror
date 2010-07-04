@@ -12,6 +12,8 @@ local lpegmatch = lpeg.match
 
 local trace_loading = false  trackers.register("otf.loading",      function(v) trace_loading      = v end)
 
+local report_otf = logs.new("load otf")
+
 fonts         = fonts         or { }
 fonts.cid     = fonts.cid     or { }
 fonts.cid.map = fonts.cid.map or { }
@@ -86,14 +88,14 @@ local function locate(registry,ordering,supplement)
     local cidmap = fonts.cid.map[hashname]
     if not cidmap then
         if trace_loading then
-            logs.report("load otf","checking cidmap, registry: %s, ordering: %s, supplement: %s, filename: %s",registry,ordering,supplement,filename)
+            report_otf("checking cidmap, registry: %s, ordering: %s, supplement: %s, filename: %s",registry,ordering,supplement,filename)
         end
         local fullname = resolvers.find_file(filename,'cid') or ""
         if fullname ~= "" then
             cidmap = fonts.cid.load(fullname)
             if cidmap then
                 if trace_loading then
-                    logs.report("load otf","using cidmap file %s",filename)
+                    report_otf("using cidmap file %s",filename)
                 end
                 fonts.cid.map[hashname] = cidmap
                 cidmap.usedname = file.basename(filename)
@@ -108,7 +110,7 @@ function fonts.cid.getmap(registry,ordering,supplement)
     -- cf Arthur R. we can safely scan upwards since cids are downward compatible
     local supplement = tonumber(supplement)
     if trace_loading then
-        logs.report("load otf","needed cidmap, registry: %s, ordering: %s, supplement: %s",registry,ordering,supplement)
+        report_otf("needed cidmap, registry: %s, ordering: %s, supplement: %s",registry,ordering,supplement)
     end
     local cidmap = locate(registry,ordering,supplement)
     if not cidmap then

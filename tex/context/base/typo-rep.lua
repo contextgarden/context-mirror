@@ -13,6 +13,8 @@ if not modules then modules = { } end modules ['typo-rep'] = {
 local trace_stripping = false  trackers.register("nodes.stripping",  function(v) trace_stripping = v end)
                                trackers.register("fonts.stripping",  function(v) trace_stripping = v end)
 
+local report_fonts = logs.new("fonts")
+
 local delete_node   = nodes.delete
 local replace_node  = nodes.replace
 local copy_node     = node.copy
@@ -43,20 +45,20 @@ end
 local function process(what,head,current,char)
     if what == true then
         if trace_stripping then
-            logs.report("fonts","deleting 0x%05X from text",char)
+            report_fonts("deleting 0x%05X from text",char)
         end
         head, current = delete_node(head,current)
     elseif type(what) == "function" then
         head, current = what(head,current)
         current = current.next
         if trace_stripping then
-            logs.report("fonts","processing 0x%05X in text",char)
+            report_fonts("processing 0x%05X in text",char)
         end
     elseif what then  -- assume node
         head, current = replace_node(head,current,copy_node(what))
         current = current.next
         if trace_stripping then
-            logs.report("fonts","replacing 0x%05X in text",char)
+            report_fonts("replacing 0x%05X in text",char)
         end
     end
     return head, current

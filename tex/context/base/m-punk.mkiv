@@ -92,7 +92,7 @@ do
         instances = instances or metapost.characters.instances or 10
         local fontname = file.removesuffix(file.basename(name))
         local hash  = file.robustname(string.format("%s %05i %03i", fontname, scalefactor*1000, instances))
-        local lists = containers.read(fonts.mp.cache(), hash)
+        local lists = containers.read(fonts.mp.cache, hash)
         if not lists then
             statistics.starttiming(flusher)
             -- we can use a format per font
@@ -137,7 +137,7 @@ do
                 }
             end
             metapost.reset(mpxformat) -- saves memory
-            lists = containers.write(fonts.mp.cache(), hash, lists)
+            lists = containers.write(fonts.mp.cache, hash, lists)
             statistics.stoptiming(flusher)
         end
         variants = variants + #lists

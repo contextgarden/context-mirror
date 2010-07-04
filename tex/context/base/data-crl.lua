@@ -6,32 +6,31 @@ if not modules then modules = { } end modules ['data-crl'] = {
     license   = "see context related readme files"
 }
 
-local gsub = string.gsub
+-- this one is replaced by data-sch.lua --
 
 curl = curl or { }
 
-curl.cached    = { }
-curl.cachepath = caches.definepath("curl")
-
+local gsub = string.gsub
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
-function curl.fetch(protocol, name)
-    local cachename = curl.cachepath() .. "/" .. gsub(name,"[^%a%d%.]+","-")
---  cachename = gsub(cachename,"[\\/]", io.fileseparator)
-    cachename = gsub(cachename,"[\\]", "/") -- cleanup
-    if not curl.cached[name] then
+local cached = { }
+
+function curl.fetch(protocol, name) -- todo: use socket library
+    local cleanname = gsub(name,"[^%a%d%.]+","-")
+    local cachename = caches.setfirstwritablefile(cleanname,"curl")
+    if not cached[name] then
         if not io.exists(cachename) then
-            curl.cached[name] = cachename
+            cached[name] = cachename
             local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name -- no protocol .. "://"
             os.spawn(command)
         end
         if io.exists(cachename) then
-            curl.cached[name] = cachename
+            cached[name] = cachename
         else
-            curl.cached[name] = ""
+            cached[name] = ""
         end
     end
-    return curl.cached[name]
+    return cached[name]
 end
 
 function finders.curl(protocol,filename)

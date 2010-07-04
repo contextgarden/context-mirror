@@ -15,14 +15,15 @@ tasks.appendaction("processors", "normalizers", "fonts.collections.process")    
 tasks.appendaction("processors", "normalizers", "fonts.checkers.missing")                    -- disabled
 
 tasks.appendaction("processors", "characters",  "chars.handle_mirroring")                    -- disabled
-tasks.appendaction("processors", "characters",  "chars.handle_casing")                       -- disabled
-tasks.appendaction("processors", "characters",  "chars.handle_digits")                       -- disabled
+tasks.appendaction("processors", "characters",  "typesetting.cases.handler")                 -- disabled
+--~ tasks.appendaction("processors", "characters",  "typesetting.digits.handler")                -- disabled
 tasks.appendaction("processors", "characters",  "chars.handle_breakpoints")                  -- disabled
 tasks.appendaction("processors", "characters",  "scripts.preprocess")
 
 tasks.appendaction("processors", "words",       "kernel.hyphenation")                        -- always on
 tasks.appendaction("processors", "words",       "languages.words.check")                     -- disabled
 
+tasks.appendaction("processors", "fonts",       "parbuilders.solutions.splitters.split")     -- experimental
 tasks.appendaction("processors", "fonts",       "nodes.process_characters")                  -- maybe todo
 tasks.appendaction("processors", "fonts",       "nodes.inject_kerns")                        -- maybe todo
 tasks.appendaction("processors", "fonts",       "nodes.protect_glyphs", nil, "nohead")       -- maybe todo
@@ -32,6 +33,8 @@ tasks.appendaction("processors", "fonts",       "nodes.stripping.process")      
 
 tasks.appendaction("processors", "lists",       "lists.handle_spacing")                      -- disabled
 tasks.appendaction("processors", "lists",       "lists.handle_kerning")                      -- disabled
+
+tasks.appendaction("processors", "lists",  "typesetting.digits.handler")                -- disabled
 
 tasks.appendaction("shipouts",   "normalizers", "nodes.cleanup_page")                        -- maybe todo
 tasks.appendaction("shipouts",   "normalizers", "nodes.add_references")                      -- disabled
@@ -55,6 +58,7 @@ tasks.appendaction("math",       "builders",    "noads.mlist_to_hlist")         
 -- quite experimental
 
 tasks.appendaction("finalizers", "lists",       "nodes.repackage_graphicvadjust")            -- todo
+tasks.appendaction("finalizers", "fonts",       "parbuilders.solutions.splitters.optimize")  -- experimental
 
 -- rather new
 
@@ -65,29 +69,32 @@ tasks.appendaction("vboxbuilders", "normalizers", "nodes.handle_vbox_spacing")
 
 -- speedup: only kick in when used
 
-tasks.disableaction("processors", "fonts.checkers.missing")
-tasks.disableaction("processors", "chars.handle_breakpoints")
-tasks.disableaction("processors", "chars.handle_casing")
-tasks.disableaction("processors", "chars.handle_digits")
-tasks.disableaction("processors", "chars.handle_mirroring")
-tasks.disableaction("processors", "languages.words.check")
-tasks.disableaction("processors", "lists.handle_spacing")
-tasks.disableaction("processors", "lists.handle_kerning")
-tasks.disableaction("processors", "nodes.stripping.process")
+tasks.disableaction("processors",  "fonts.checkers.missing")
+tasks.disableaction("processors",  "chars.handle_breakpoints")
+tasks.disableaction("processors",  "typesetting.cases.handler")
+tasks.disableaction("processors",  "typesetting.digits.handler")
+tasks.disableaction("processors",  "chars.handle_mirroring")
+tasks.disableaction("processors",  "languages.words.check")
+tasks.disableaction("processors",  "lists.handle_spacing")
+tasks.disableaction("processors",  "lists.handle_kerning")
+tasks.disableaction("processors",  "nodes.stripping.process")
 
-tasks.disableaction("shipouts",   "nodes.rules.process")
-tasks.disableaction("shipouts",   "nodes.shifts.process")
-tasks.disableaction("shipouts",   "shipouts.handle_color")
-tasks.disableaction("shipouts",   "shipouts.handle_transparency")
-tasks.disableaction("shipouts",   "shipouts.handle_colorintent")
-tasks.disableaction("shipouts",   "shipouts.handle_effect")
-tasks.disableaction("shipouts",   "shipouts.handle_negative")
-tasks.disableaction("shipouts",   "shipouts.handle_viewerlayer")
+tasks.disableaction("shipouts",    "nodes.rules.process")
+tasks.disableaction("shipouts",    "nodes.shifts.process")
+tasks.disableaction("shipouts",    "shipouts.handle_color")
+tasks.disableaction("shipouts",    "shipouts.handle_transparency")
+tasks.disableaction("shipouts",    "shipouts.handle_colorintent")
+tasks.disableaction("shipouts",    "shipouts.handle_effect")
+tasks.disableaction("shipouts",    "shipouts.handle_negative")
+tasks.disableaction("shipouts",    "shipouts.handle_viewerlayer")
 
-tasks.disableaction("shipouts",   "nodes.add_references")
-tasks.disableaction("shipouts",   "nodes.add_destinations")
+tasks.disableaction("shipouts",    "nodes.add_references")
+tasks.disableaction("shipouts",    "nodes.add_destinations")
 
 tasks.disableaction("mvlbuilders", "nodes.migrate_outwards")
+
+tasks.disableaction("processors",  "parbuilders.solutions.splitters.split")
+tasks.disableaction("finalizers",  "parbuilders.solutions.splitters.optimize")
 
 callbacks.freeze("find_.*_file", "find file using resolver")
 callbacks.freeze("read_.*_file", "read file at once")

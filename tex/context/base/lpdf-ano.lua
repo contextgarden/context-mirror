@@ -13,6 +13,10 @@ local trace_references   = false  trackers.register("references.references",   f
 local trace_destinations = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
 local trace_bookmarks    = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
 
+local report_references   = logs.new("references")
+local report_destinations = logs.new("destinations")
+local report_bookmarks    = logs.new("bookmarks")
+
 local variables = interfaces.variables
 local constants = interfaces.constants
 
@@ -231,22 +235,16 @@ end
 
 function nodeinjections.reference(width,height,depth,prerolled)
     if prerolled then
-        if swapdir then
-            width = - width
-        end
         if trace_references then
-            logs.report("references","w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+            report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
         end
         return pdfannotation(width,height,depth,prerolled)
     end
 end
 
 function nodeinjections.destination(width,height,depth,name,view)
-    if swapdir then
-        width = - width
-    end
     if trace_destinations then
-        logs.report("destinations","w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
+        report_destinations("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
     end
     return pdfdestination(width,height,depth,name,view)
 end
@@ -267,7 +265,7 @@ runners["inner"] = function(var,actions)
 end
 
 runners["inner with arguments"] = function(var,actions)
-    logs.report("references","todo: inner with arguments")
+    report_references("todo: inner with arguments")
     return false
 end
 
@@ -287,7 +285,7 @@ runners["special outer with operation"] = function(var,actions)
 end
 
 runners["special outer"] = function(var,actions)
-    logs.report("references","todo: special outer")
+    report_references("todo: special outer")
     return false
 end
 
@@ -297,22 +295,22 @@ runners["special"] = function(var,actions)
 end
 
 runners["outer with inner with arguments"] = function(var,actions)
-    logs.report("references","todo: outer with inner with arguments")
+    report_references("todo: outer with inner with arguments")
     return false
 end
 
 runners["outer with special and operation and arguments"] = function(var,actions)
-    logs.report("references","todo: outer with special and operation and arguments")
+    report_references("todo: outer with special and operation and arguments")
     return false
 end
 
 runners["outer with special"] = function(var,actions)
-    logs.report("references","todo: outer with special")
+    report_references("todo: outer with special")
     return false
 end
 
 runners["outer with special and operation"] = function(var,actions)
-    logs.report("references","todo: outer with special and operation")
+    report_references("todo: outer with special and operation")
     return false
 end
 
@@ -528,7 +526,7 @@ local function build(levels,start,parent,method)
         local level, title, reference, open = li[1], li[2], li[3], li[4]
         if level == startlevel then
             if trace_bookmarks then
-                logs.report("bookmark","%3i %s%s %s",reference.realpage,rep("  ",level-1),(open and "+") or "-",title)
+                report_bookmarks("%3i %s%s %s",reference.realpage,rep("  ",level-1),(open and "+") or "-",title)
             end
             local prev = child
             child = pdfreserveobject()

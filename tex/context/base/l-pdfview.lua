@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['l-pdfview'] = {
     license   = "see context related readme files"
 }
 
-local format, getenv = string.format, os.getenv
+local format, concat = string.format, table.concat
 
 pdfview = pdfview or { }
 
@@ -32,15 +32,15 @@ else
 end
 
 pdfview.METHOD = "MTX_PDFVIEW_METHOD"
-pdfview.method = getenv(pdfview.METHOD) or 'default'
+pdfview.method = resolvers.getenv(pdfview.METHOD) or 'default'
 pdfview.method = (opencalls[pdfview.method] and pdfview.method) or 'default'
 
 function pdfview.methods()
-    return table.concat(table.sortedkeys(opencalls), " ")
+    return concat(table.sortedkeys(opencalls), " ")
 end
 
 function pdfview.status()
-    return format("pdfview methods: %s, current method: %s, MTX_PDFVIEW_METHOD=%s",pdfview.methods(),pdfview.method,getenv(pdfview.METHOD) or "<unset>")
+    return format("pdfview methods: %s, current method: %s, MTX_PDFVIEW_METHOD=%s",pdfview.methods(),pdfview.method,resolvers.getenv(pdfview.METHOD) or "<unset>")
 end
 
 local openedfiles = { }

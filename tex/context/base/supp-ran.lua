@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['supp-ran'] = {
 -- We cannot ask for the current seed, so we need some messy hack
 -- here.
 
+local report_system = logs.new("system")
+
 commands = commands or { }
 
 local random, randomseed, round, seed, last = math.random, math.randomseed, math.round, false, 1
@@ -20,7 +22,7 @@ function math.setrandomseedi(n,comment)
     end
     n = round(n)
     if false then
-        logs.report("system","setting random seed to %s (%s)",n,comment or "normal")
+        report_system("setting random seed to %s (%s)",n,comment or "normal")
     end
     randomseed(n)
     last = random(0,1073741823) -- we need an initial value

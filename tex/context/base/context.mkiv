@@ -11,26 +11,29 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% syst-cat -> catc-ini + vectors
-% spec-*   -> special backends for luatex
-
 %D First we load the system modules. These implement a lot of
-%D manipulation macros. The first one loads \PLAIN\ \TEX, as
-%D minimal as possible.
+%D manipulation macros. We start with setting up some basic \TEX\
+%D machinery.
 
 \loadcorefile{syst-ini}
+
+%D We just quit if new functionality is expected.
 
 \ifnum\luatexversion<60 % also change message
     \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.60!}
     \expandafter\end
 \fi
 
-\newtoks\contextversiontoks \contextversiontoks\expandafter{\contextversion} % at the lua end
+%D There is only this way to pass the version info
+%D to \LUA\ (currently).
+
+\newtoks\contextversiontoks \contextversiontoks\expandafter{\contextversion}
+
+%D Now the more fundamnetal code gets defined.
 
 \loadcorefile{norm-ctx}
 \loadcorefile{syst-pln}
-
-\newif\ifCONTEXT \CONTEXTtrue % will disappear
+\loadmarkfile{syst-mes}
 
 \loadmarkfile{luat-cod}
 \loadmarkfile{luat-bas}
@@ -72,6 +75,8 @@
 
 \loadmarkfile{toks-ini}
 
+\loadmarkfile{attr-ini}
+
 \loadmarkfile{node-ini}
 \loadmarkfile{node-fin}
 \loadmarkfile{node-mig}
@@ -85,12 +90,11 @@
 \loadmarkfile{lpdf-pdx} % might be merged into lpdf-ini
 \loadmarkfile{back-pdf} % some day back-ini will load this
 
-\loadmarkfile{attr-ini}
+\loadmarkfile{attr-div} % code will move
 
 \loadmarkfile{core-env}
 
 \loadmarkfile{trac-tex}
-\loadmarkfile{trac-lmx}
 \loadmarkfile{trac-deb}
 
 \loadmarkfile{blob-ini} % not to be used, we only use a helper
@@ -314,6 +318,7 @@
 
 \loadmarkfile{core-fnt}
 \loadmarkfile{node-rul}
+\loadmarkfile{node-spl}
 
 \loadmarkfile{strc-not}
 \loadmarkfile{strc-lnt}
@@ -358,17 +363,12 @@
 \setupcurrentlanguage[\s!en]
 
 \prependtoks
-    \ctxlua{statistics.starttiming(ctx)}%
+    \ctxlua{statistics.starttiming(statistics)}%
 \to \everyjob
 
 \appendtoks
-    \ctxlua{statistics.stoptiming(ctx)}%
+    \ctxlua{statistics.stoptiming(statistics)}%
 \to \everyjob
-
-\appendtoks
-    \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}%
-    \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}%
-\to \everydump
 
 \appendtoks
     \ctxlua {

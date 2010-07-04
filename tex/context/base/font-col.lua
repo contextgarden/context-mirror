@@ -16,6 +16,8 @@ local ctxcatcodes = tex.ctxcatcodes
 
 local trace_collecting = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
 
+local report_fonts = logs.new("fonts")
+
 local fontdata = fonts.ids
 
 local glyph = node.id('glyph')
@@ -54,11 +56,11 @@ function collections.define(name,font,ranges,details)
     local d = definitions[name]
     if d then
         if name and trace_collecting then
-            logs.report("fonts","def: extending set %s using %s",name, font)
+            report_fonts("def: extending set %s using %s",name, font)
         end
     else
         if name and trace_collecting then
-            logs.report("fonts","def: defining set %s using %s",name, font)
+            report_fonts("def: defining set %s using %s",name, font)
         end
         d = { }
         definitions[name] = d
@@ -70,12 +72,12 @@ function collections.define(name,font,ranges,details)
         if start and stop then
             if trace_collecting then
                 if description then
-                    logs.report("fonts","def: using range %s (U+%04x-U+%04X, %s)",s,start,stop,description)
+                    report_fonts("def: using range %s (U+%04x-U+%04X, %s)",s,start,stop,description)
                 end
                 for i=1,#d do
                     local di = d[i]
                     if (start >= di.start and start <= di.stop) or (stop >= di.start and stop <= di.stop) then
-                        logs.report("fonts","def: overlapping ranges U+%04x-U+%04X and U+%04x-U+%04X",start,stop,di.start,di.stop)
+                        report_fonts("def: overlapping ranges U+%04x-U+%04X and U+%04x-U+%04X",start,stop,di.start,di.stop)
                     end
                 end
             end
@@ -88,7 +90,7 @@ end
 function collections.stage_1(name)
     local last = font.current()
     if trace_collecting then
-        logs.report("fonts","def: registering font %s with name %s",last,name)
+        report_fonts("def: registering font %s with name %s",last,name)
     end
     list[#list+1] = last
 end
@@ -98,14 +100,14 @@ function collections.stage_2(name)
     local d = definitions[name]
     local t = { }
     if trace_collecting then
-        logs.report("fonts","def: process collection %s",name)
+        report_fonts("def: process collection %s",name)
     end
     for i=1,#d do
         local f = d[i]
         local id = list[i]
         local start, stop = f.start, f.stop
         if trace_collecting then
-            logs.report("fonts","def: remapping font %s to %s for range U+%04X - U+%04X",current,id,start,stop)
+            report_fonts("def: remapping font %s to %s for range U+%04X - U+%04X",current,id,start,stop)
         end
         local check = toboolean(f.check or "false",true)
         local force = toboolean(f.force or "true",true)
@@ -138,7 +140,7 @@ function collections.stage_2(name)
     end
     vectors[current] = t
     if trace_collecting then
-        logs.report("fonts","def: activating collection %s for font %s",name,current)
+        report_fonts("def: activating collection %s for font %s",name,current)
     end
     active = true
     statistics.stoptiming(fonts)
@@ -159,7 +161,7 @@ function collections.prepare(name)
     if d then
         if trace_collecting then
             local filename = file.basename(fontdata[current].filename or "?")
-            logs.report("fonts","def: applying collection %s to %s (file: %s)",name,current,filename)
+            report_fonts("def: applying collection %s to %s (file: %s)",name,current,filename)
         end
         list = { }
         texsprint(ctxcatcodes,"\\dostartcloningfonts") -- move this to tex \dostart...
@@ -178,13 +180,13 @@ function collections.prepare(name)
         texsprint(ctxcatcodes,"\\dostopcloningfonts")
     elseif trace_collecting then
         local filename = file.basename(fontdata[current].filename or "?")
-        logs.report("fonts","def: error in applying collection %s to %s (file: %s)",name,current,filename)
+        report_fonts("def: error in applying collection %s to %s (file: %s)",name,current,filename)
     end
 end
 
 function collections.message(message)
     if trace_collecting then
-        logs.report("fonts","tex: %s",message)
+        report_fonts("tex: %s",message)
     end
 end
 
@@ -199,18 +201,20 @@ function collections.process(head)
                     if type(id) == "table" then
                         local newid, newchar = id[1], id[2]
                         if trace_collecting then
-                            logs.report("fonts","lst: remapping character %s in font %s to character %s in font %s",n.char,n.font,newchar,newid)
+                            report_fonts("lst: remapping character %s in font %s to character %s in font %s",n.char,n.font,newchar,newid)
                         end
                         n.font, n.char = newid, newchar
                     else
                         if trace_collecting then
-                            logs.report("fonts","lst: remapping font %s to %s for character %s",n.font,id,n.char)
+                            report_fonts("lst: remapping font %s to %s for character %s",n.font,id,n.char)
                         end
                         n.font = id
                     end
                 end
             end
         end
+        return head, done
+    else
+        return head, false
     end
-    return head, done
 end

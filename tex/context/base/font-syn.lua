@@ -20,6 +20,8 @@ local unpack = unpack or table.unpack
 local trace_names    = false  trackers.register("fonts.names",    function(v) trace_names    = v end)
 local trace_warnings = false  trackers.register("fonts.warnings", function(v) trace_warnings = v end)
 
+local report_names = logs.new("fontnames")
+
 --[[ldx--
 <p>This module implements a name to filename resolver. Names are resolved
 using a table that has keys filtered from the font related files.</p>
@@ -44,7 +46,7 @@ names.saved      = false
 names.loaded     = false
 names.be_clever  = true
 names.enabled    = true
-names.autoreload = toboolean(os.env['MTX.FONTS.AUTOLOAD'] or os.env['MTX_FONTS_AUTOLOAD'] or "no")
+names.autoreload = toboolean(os.getenv('MTX.FONTS.AUTOLOAD') or os.getenv('MTX_FONTS_AUTOLOAD') or "no")
 names.cache      = containers.define("fonts","data",names.version,true)
 
 --[[ldx--
@@ -123,13 +125,13 @@ function names.splitspec(askedname)
     width   = width   and lpegmatch(widths,  width)   or width
     variant = variant and lpegmatch(variants,variant) or variant
     if trace_names then
-        logs.report("fonts","requested name '%s' split in name '%s', weight '%s', style '%s', width '%s' and variant '%s'",
+        report_names("requested name '%s' split in name '%s', weight '%s', style '%s', width '%s' and variant '%s'",
             askedname,name or '',weight or '',style or '',width or '',variant or '')
     end
     if not weight or not weight or not width or not variant then
         weight, style, width, variant = weight or "normal", style or "normal", width or "normal", variant or "normal"
         if trace_names then
-            logs.report("fonts","request '%s' normalized to '%s-%s-%s-%s-%s'",
+            report_names("request '%s' normalized to '%s-%s-%s-%s-%s'",
                 askedname,name,weight,style,width,variant)
         end
     end
@@ -218,11 +220,12 @@ filters.names = { }
 
 function names.getpaths(trace)
     local hash, result = { }, { }
-    local function collect(t)
+    local function collect(t,where)
         for i=1, #t do
             local v = resolvers.clean_path(t[i])
-            v = gsub(v,"/+$","")
+            v = gsub(v,"/+$","") -- not needed any more
             local key = lower(v)
+            report_names("adding path from %s: %s",where,v)
             if not hash[key] then
                 hash[key], result[#result+1] = true, v
             end
@@ -230,13 +233,16 @@ function names.getpaths(trace)
     end
     local path = names.environment_path_variable or ""
     if path ~= "" then
-        collect(resolvers.expanded_path_list(path))
+        collect(resolvers.expanded_path_list(path),path)
     end
     if xml then
-        local confname = names.xml_configuration_file or ""
+        local confname = resolvers.getenv("FONTCONFIG_FILE") or ""
+        if confname == "" then
+            confname = names.xml_configuration_file or ""
+        end
         if confname ~= "" then
             -- first look in the tex tree
-            local name = resolvers.find_file(confname,"other")
+            local name = resolvers.find_file(confname,"fontconfig files") or ""
             if name == "" then
                 -- after all, fontconfig is a unix thing
                 name = file.join("/etc",confname)
@@ -246,7 +252,7 @@ function names.getpaths(trace)
             end
             if name ~= "" and lfs.isfile(name) then
                 if trace_names then
-                    logs.report("fontnames","loading fontconfig file: %s",name)
+                    report_names("loading fontconfig file: %s",name)
                 end
                 local xmldata = xml.load(name)
                 -- begin of untested mess
@@ -259,19 +265,19 @@ function names.getpaths(trace)
                     end
                     if lfs.isfile(incname) then
                         if trace_names then
-                            logs.report("fontnames","merging included fontconfig file: %s",incname)
+                            report_names("merging included fontconfig file: %s",incname)
                         end
                         return io.loaddata(incname)
                     elseif trace_names then
-                        logs.report("fontnames","ignoring included fontconfig file: %s",incname)
+                        report_names("ignoring included fontconfig file: %s",incname)
                     end
                 end)
                 -- end of untested mess
                 local fontdirs = xml.collect_texts(xmldata,"dir",true)
                 if trace_names then
-                    logs.report("fontnames","%s dirs found in fontconfig",#fontdirs)
+                    report_names("%s dirs found in fontconfig",#fontdirs)
                 end
-                collect(fontdirs)
+                collect(fontdirs,"fontconfig file")
             end
         end
     end
@@ -308,7 +314,7 @@ local function walk_tree(pathlist,suffix,identify)
             path = resolvers.clean_path(path .. "/")
             path = gsub(path,"/+","/")
             local pattern = path .. "**." .. suffix -- ** forces recurse
-            logs.report("fontnames", "globbing path %s",pattern)
+            report_names( "globbing path %s",pattern)
             local t = dir.glob(pattern)
             sort(t,sorter)
             for j=1,#t do
@@ -529,12 +535,12 @@ local function checkduplicate(where) -- fails on "Romantik" but that's a border 
         local nv = #v
         if nv > 1 then
             if trace_warnings then
-                logs.report("fontnames", "double lookup: %s => %s",k,concat(v," | "))
+                report_names( "double lookup: %s => %s",k,concat(v," | "))
             end
             n = n + nv
         end
     end
-    logs.report("fontnames", "%s double lookups in %s",n,where)
+    report_names( "%s double lookups in %s",n,where)
 end
 
 local function checkduplicates()
@@ -590,26 +596,43 @@ end
 
 local function analysefiles()
     local data = names.data
-    local done, totalnofread, totalnofskipped = { }, 0, 0
+    local done, totalnofread, totalnofskipped, totalnofduplicates, nofread, nofskipped, nofduplicates = { }, 0, 0, 0, 0, 0, 0
     local skip_paths, skip_names = filters.paths, filters.names
     local function identify(completename,name,suffix,storedname)
         local basename = file.basename(completename)
         local basepath = file.dirname(completename)
+        nofread = nofread + 1
         if done[name] then
             -- already done (avoid otf afm clash)
+            if trace_names then
+                report_names("%s font %s already done",suffix,completename)
+                logs.push()
+            end
+            nofduplicates = nofduplicates + 1
+            nofskipped = nofskipped + 1
         elseif not io.exists(completename) then
             -- weird error
+            if trace_names then
+                report_names("%s font %s does not really exist",suffix,completename)
+                logs.push()
+            end
+            nofskipped = nofskipped + 1
         elseif not file.is_qualified_path(completename) and resolvers.find_file(completename,suffix) == "" then
             -- not locateble by backend anyway
+            if trace_names then
+                report_names("%s font %s cannot be found by backend",suffix,completename)
+                logs.push()
+            end
+            nofskipped = nofskipped + 1
         else
-            nofread = nofread + 1
             if #skip_paths > 0 then
                 for i=1,#skip_paths do
                     if find(basepath,skip_paths[i]) then
                         if trace_names then
-                            logs.report("fontnames","rejecting path of %s font %s",suffix,completename)
+                            report_names("rejecting path of %s font %s",suffix,completename)
                             logs.push()
                         end
+                        nofskipped = nofskipped + 1
                         return
                     end
                 end
@@ -619,15 +642,16 @@ local function analysefiles()
                     if find(basename,skip_names[i]) then
                         done[name] = true
                         if trace_names then
-                            logs.report("fontnames","rejecting name of %s font %s",suffix,completename)
+                            report_names("rejecting name of %s font %s",suffix,completename)
                             logs.push()
                         end
+                        nofskipped = nofskipped + 1
                         return
                     end
                 end
             end
             if trace_names then
-                logs.report("fontnames","identifying %s font %s",suffix,completename)
+                report_names("identifying %s font %s",suffix,completename)
                 logs.push()
             end
             local result, message = filters[lower(suffix)](completename)
@@ -635,24 +659,25 @@ local function analysefiles()
                 logs.pop()
             end
             if result then
-                if not result[1] then
-                    local ok = check_name(data,result,storedname,suffix)
-                    if not ok then
-                        nofskipped = nofskipped + 1
-                    end
-                else
+                if result[1] then
                     for r=1,#result do
                         local ok = check_name(data,result[r],storedname,suffix,r-1) -- subfonts start at zero
-                        if not ok then
-                            nofskipped = nofskipped + 1
-                        end
+                     -- if not ok then
+                     --     nofskipped = nofskipped + 1
+                     -- end
                     end
+                else
+                    local ok = check_name(data,result,storedname,suffix)
+                 -- if not ok then
+                 --     nofskipped = nofskipped + 1
+                 -- end
                 end
                 if trace_warnings and message and message ~= "" then
-                    logs.report("fontnames","warning when identifying %s font %s: %s",suffix,completename,message)
+                    report_names("warning when identifying %s font %s: %s",suffix,completename,message)
                 end
             elseif trace_warnings then
-                logs.report("fontnames","error when identifying %s font %s: %s",suffix,completename,message or "unknown")
+                nofskipped = nofskipped + 1
+                report_names("error when identifying %s font %s: %s",suffix,completename,message or "unknown")
             end
             done[name] = true
         end
@@ -662,27 +687,32 @@ local function analysefiles()
         for n=1,#list do
             local suffix = list[n]
             local t = os.gettimeofday() -- use elapser
-            nofread, nofskipped = 0, 0
+            nofread, nofskipped, nofduplicates = 0, 0, 0
             suffix = lower(suffix)
-            logs.report("fontnames", "identifying %s font files with suffix %s",what,suffix)
+            report_names( "identifying %s font files with suffix %s",what,suffix)
             method(suffix)
             suffix = upper(suffix)
-            logs.report("fontnames", "identifying %s font files with suffix %s",what,suffix)
+            report_names( "identifying %s font files with suffix %s",what,suffix)
             method(suffix)
-            totalnofread, totalnofskipped = totalnofread + nofread, totalnofskipped + nofskipped
+            totalnofread, totalnofskipped, totalnofduplicates = totalnofread + nofread, totalnofskipped + nofskipped, totalnofduplicates + nofduplicates
             local elapsed = os.gettimeofday() - t
-            logs.report("fontnames", "%s %s files identified, %s hash entries added, runtime %0.3f seconds",nofread,what,nofread-nofskipped,elapsed)
+            report_names( "%s %s files identified, %s skipped, %s duplicates, %s hash entries added, runtime %0.3f seconds",nofread,what,nofskipped,nofduplicates,nofread-nofskipped,elapsed)
         end
     end
     if not trace_warnings then
-        logs.report("fontnames", "warnings are disabled (tracker 'fonts.warnings')")
+        report_names( "warnings are disabled (tracker 'fonts.warnings')")
     end
     traverse("tree", function(suffix) -- TEXTREE only
         resolvers.with_files(".*%." .. suffix .. "$", function(method,root,path,name)
-            if method == "file" then
+            if method == "file" or method == "tree" then
                 local completename = root .."/" .. path .. "/" .. name
-                identify(completename,name,suffix,name,name)
+                identify(completename,name,suffix,name)
+                return true
             end
+        end, function(blobtype,blobpath,pattern)
+            report_names( "scanning %s for %s files",blobpath,suffix)
+        end, function(blobtype,blobpath,pattern,total,checked,done)
+            report_names( "%s entries found, %s %s files checked, %s okay",total,checked,suffix,done)
         end)
     end)
     if texconfig.kpse_init then
@@ -697,7 +727,7 @@ local function analysefiles()
             walk_tree(names.getpaths(trace),suffix,identify)
         end)
     end
-    data.statistics.readfiles, data.statistics.skippedfiles = totalnofread, totalnofskipped
+    data.statistics.readfiles, data.statistics.skippedfiles, data.statistics.duplicatefiles = totalnofread, totalnofskipped, totalnofduplicates
 end
 
 local function rejectclashes() -- just to be sure, so no explicit afm will be found then
@@ -709,7 +739,7 @@ local function rejectclashes() -- just to be sure, so no explicit afm will be fo
             local fnd, fnm = used[f], s.filename
             if fnd then
                 if trace_warnings then
-                    logs.report("fontnames", "fontname '%s' clashes, rejecting '%s' in favor of '%s'",f,fnm,fnd)
+                    report_names( "fontname '%s' clashes, rejecting '%s' in favor of '%s'",f,fnm,fnd)
                 end
             else
                 used[f], okay[#okay+1] = fnm, s
@@ -720,7 +750,7 @@ local function rejectclashes() -- just to be sure, so no explicit afm will be fo
     end
     local d = #specifications - #okay
     if d > 0 then
-        logs.report("fontnames", "%s files rejected due to clashes",d)
+        report_names( "%s files rejected due to clashes",d)
     end
     names.data.specifications = okay
 end
@@ -754,13 +784,13 @@ function names.identify()
 end
 
 function names.is_permitted(name)
-    return containers.is_usable(names.cache(), name)
+    return containers.is_usable(names.cache, name)
 end
 function names.write_data(name,data)
-    containers.write(names.cache(),name,data)
+    containers.write(names.cache,name,data)
 end
 function names.read_data(name)
-    return containers.read(names.cache(),name)
+    return containers.read(names.cache,name)
 end
 
 function names.load(reload,verbose)
@@ -770,7 +800,7 @@ function names.load(reload,verbose)
                 names.identify(verbose)
                 names.write_data(names.basename,names.data)
             else
-                logs.report("font table", "unable to access database cache")
+                report_names("unable to access database cache")
             end
             names.saved = true
         end
@@ -783,7 +813,7 @@ function names.load(reload,verbose)
             names.saved = true
         end
         if not data then
-            logs.report("font table", "accessing the data table failed")
+            report_names("accessing the data table failed")
         else
             unpackreferences()
             sorthashes()
@@ -842,10 +872,10 @@ local function is_reloaded()
             local c_status = table.serialize(resolvers.data_state())
             local f_status = table.serialize(data.data_state)
             if c_status == f_status then
-             -- logs.report("fonts","font database matches configuration and file hashes")
+             -- report_names("font database matches configuration and file hashes")
                 return
             else
-                logs.report("fonts","font database does not match configuration and file hashes")
+                report_names("font database does not match configuration and file hashes")
             end
         end
         names.loaded = false
@@ -886,7 +916,7 @@ local function foundname(name,sub) -- sub is not used currently
         local found = mappings[l][name]
         if found then
             if trace_names then
-                logs.report("fonts","resolved via direct name match: '%s'",name)
+                report_names("resolved via direct name match: '%s'",name)
             end
             return found
         end
@@ -896,7 +926,7 @@ local function foundname(name,sub) -- sub is not used currently
         local found, fname = fuzzy(mappings[l],sorted_mappings[l],name,sub)
         if found then
             if trace_names then
-                logs.report("fonts","resolved via fuzzy name match: '%s' => '%s'",name,fname)
+                report_names("resolved via fuzzy name match: '%s' => '%s'",name,fname)
             end
             return found
         end
@@ -906,7 +936,7 @@ local function foundname(name,sub) -- sub is not used currently
         local found = fallbacks[l][name]
         if found then
             if trace_names then
-                logs.report("fonts","resolved via direct fallback match: '%s'",name)
+                report_names("resolved via direct fallback match: '%s'",name)
             end
             return found
         end
@@ -916,10 +946,13 @@ local function foundname(name,sub) -- sub is not used currently
         local found, fname = fuzzy(sorted_mappings[l],sorted_fallbacks[l],name,sub)
         if found then
             if trace_names then
-                logs.report("fonts","resolved via fuzzy fallback match: '%s' => '%s'",name,fname)
+                report_names("resolved via fuzzy fallback match: '%s' => '%s'",name,fname)
             end
             return found
         end
+    end
+    if trace_names then
+        report_names("font with name '%s' cannot be found",name)
     end
 end
 
@@ -1144,7 +1177,7 @@ local function collect(stage,found,done,name,weight,style,width,variant,all)
     strictname = "^".. name -- to be checked
     local family = families[name]
     if trace_names then
-        logs.report("fonts","resolving name '%s', weight '%s', style '%s', width '%s', variant '%s'",
+        report_names("resolving name '%s', weight '%s', style '%s', width '%s', variant '%s'",
             name or "?",tostring(weight),tostring(style),tostring(width),tostring(variant))
     end
     --~ print(name,table.serialize(family))
@@ -1153,27 +1186,27 @@ local function collect(stage,found,done,name,weight,style,width,variant,all)
             if width and width ~= "" then
                 if variant and variant ~= "" then
                     if trace_names then
-                        logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s', width '%s', variant '%s'",stage,name,weight,style,width,variant)
+                        report_names("resolving stage %s, name '%s', weight '%s', style '%s', width '%s', variant '%s'",stage,name,weight,style,width,variant)
                     end
                     s_collect_weight_style_width_variant(found,done,all,weight,style,width,variant,family)
                     m_collect_weight_style_width_variant(found,done,all,weight,style,width,variant,families,sorted,strictname)
                 else
                     if trace_names then
-                        logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s', width '%s'",stage,name,weight,style,width)
+                        report_names("resolving stage %s, name '%s', weight '%s', style '%s', width '%s'",stage,name,weight,style,width)
                     end
                     s_collect_weight_style_width(found,done,all,weight,style,width,family)
                     m_collect_weight_style_width(found,done,all,weight,style,width,families,sorted,strictname)
                 end
             else
                 if trace_names then
-                    logs.report("fonts","resolving stage %s, name '%s', weight '%s', style '%s'",stage,name,weight,style)
+                    report_names("resolving stage %s, name '%s', weight '%s', style '%s'",stage,name,weight,style)
                 end
                 s_collect_weight_style(found,done,all,weight,style,family)
                 m_collect_weight_style(found,done,all,weight,style,families,sorted,strictname)
             end
         else
             if trace_names then
-                logs.report("fonts","resolving stage %s, name '%s', weight '%s'",stage,name,weight)
+                report_names("resolving stage %s, name '%s', weight '%s'",stage,name,weight)
             end
             s_collect_weight(found,done,all,weight,family)
             m_collect_weight(found,done,all,weight,families,sorted,strictname)
@@ -1181,33 +1214,33 @@ local function collect(stage,found,done,name,weight,style,width,variant,all)
     elseif style and style ~= "" then
         if width and width ~= "" then
             if trace_names then
-                logs.report("fonts","resolving stage %s, name '%s', style '%s', width '%s'",stage,name,style,width)
+                report_names("resolving stage %s, name '%s', style '%s', width '%s'",stage,name,style,width)
             end
             s_collect_style_width(found,done,all,style,width,family)
             m_collect_style_width(found,done,all,style,width,families,sorted,strictname)
         else
             if trace_names then
-                logs.report("fonts","resolving stage %s, name '%s', style '%s'",stage,name,style)
+                report_names("resolving stage %s, name '%s', style '%s'",stage,name,style)
             end
             s_collect_style(found,done,all,style,family)
             m_collect_style(found,done,all,style,families,sorted,strictname)
         end
     elseif width and width ~= "" then
         if trace_names then
-            logs.report("fonts","resolving stage %s, name '%s', width '%s'",stage,name,width)
+            report_names("resolving stage %s, name '%s', width '%s'",stage,name,width)
         end
         s_collect_width(found,done,all,width,family)
         m_collect_width(found,done,all,width,families,sorted,strictname)
     else
         if trace_names then
-            logs.report("fonts","resolving stage %s, name '%s'",stage,name)
+            report_names("resolving stage %s, name '%s'",stage,name)
         end
         s_collect(found,done,all,family)
         m_collect(found,done,all,families,sorted,strictname)
     end
 end
 
-function heuristic(name,weight,style,width,variant,all) -- todo: fallbacks
+local function heuristic(name,weight,style,width,variant,all) -- todo: fallbacks
     local found, done = { }, { }
 --~ print(name,weight,style,width,variant)
     weight, style, width, variant = weight or "normal", style or "normal", width or "normal", variant or "normal"
@@ -1238,9 +1271,9 @@ function heuristic(name,weight,style,width,variant,all) -- todo: fallbacks
             for i=1,nf do
                 t[#t+1] = format("'%s'",found[i].fontname)
             end
-            logs.report("fonts","name '%s' resolved to %s instances: %s",name,nf,concat(t," "))
+            report_names("name '%s' resolved to %s instances: %s",name,nf,concat(t," "))
         else
-            logs.report("fonts","name '%s' unresolved",name)
+            report_names("name '%s' unresolved",name)
         end
     end
     if all then
@@ -1385,19 +1418,29 @@ function names.lookup(pattern,name,reload) -- todo: find
             lookups = families[pattern]
         end
         if trace_names then
-            logs.report("fonts","starting with %s lookups for '%s'",#lookups,pattern)
+            report_names("starting with %s lookups for '%s'",#lookups,pattern)
         end
         if lookups then
             for key, value in gmatch(pattern,"([^=,]+)=([^=,]+)") do
                 local t = { }
-                for i=1,#lookups do
-                    local s = lookups[i]
-                    if s[key] == value then
-                        t[#t+1] = lookups[i]
+                if find(value,"*") then
+                    value = string.topattern(value)
+                    for i=1,#lookups do
+                        local s = lookups[i]
+                        if find(s[key],value) then
+                            t[#t+1] = lookups[i]
+                        end
+                    end
+                else
+                    for i=1,#lookups do
+                        local s = lookups[i]
+                        if s[key] == value then
+                            t[#t+1] = lookups[i]
+                        end
                     end
                 end
                 if trace_names then
-                    logs.report("fonts","%s matches for key '%s' with value '%s'",#t,key,value)
+                    report_names("%s matches for key '%s' with value '%s'",#t,key,value)
                 end
                 lookups = t
             end

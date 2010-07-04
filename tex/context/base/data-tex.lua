@@ -13,8 +13,7 @@ local unpack = unpack or table.unpack
 
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local texiowrite_nl = (texio and texio.write_nl) or print
-local texiowrite    = (texio and texio.write) or print
+local report_resolvers = logs.new("resolvers")
 
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
@@ -22,12 +21,12 @@ function finders.generic(tag,filename,filetype)
     local foundname = resolvers.find_file(filename,filetype)
     if foundname and foundname ~= "" then
         if trace_locating then
-            logs.report("fileio","%s finder: file '%s' found",tag,filename)
+            report_resolvers("%s finder: file '%s' found",tag,filename)
         end
         return foundname
     else
         if trace_locating then
-            logs.report("fileio","%s finder: unknown file '%s'",tag,filename)
+            report_resolvers("%s finder: unknown file '%s'",tag,filename)
         end
         return unpack(finders.notfound)
     end
@@ -49,7 +48,7 @@ function openers.text_opener(filename,file_handle,tag)
     local t = { }
     if u > 0  then
         if trace_locating then
-            logs.report("fileio","%s opener, file '%s' opened using method '%s'",tag,filename,unicode.utfname[u])
+            report_resolvers("%s opener, file '%s' opened using method '%s'",tag,filename,unicode.utfname[u])
         end
         local l
         if u > 2 then
@@ -66,7 +65,7 @@ function openers.text_opener(filename,file_handle,tag)
             noflines = #l,
             close = function()
                 if trace_locating then
-                    logs.report("fileio","%s closer, file '%s' closed",tag,filename)
+                    report_resolvers("%s closer, file '%s' closed",tag,filename)
                 end
                 logs.show_close(filename)
                 t = nil
@@ -101,7 +100,7 @@ function openers.text_opener(filename,file_handle,tag)
         }
     else
         if trace_locating then
-            logs.report("fileio","%s opener, file '%s' opened",tag,filename)
+            report_resolvers("%s opener, file '%s' opened",tag,filename)
         end
         -- todo: file;name -> freeze / eerste regel scannen -> freeze
         --~ local data = lpegmatch(getlines,file_handle:read("*a"))
@@ -131,7 +130,7 @@ function openers.text_opener(filename,file_handle,tag)
             end,
             close = function()
                 if trace_locating then
-                    logs.report("fileio","%s closer, file '%s' closed",tag,filename)
+                    report_resolvers("%s closer, file '%s' closed",tag,filename)
                 end
                 logs.show_close(filename)
                 file_handle:close()
@@ -156,13 +155,13 @@ function openers.generic(tag,filename)
         if f then
             logs.show_open(filename) -- todo
             if trace_locating then
-                logs.report("fileio","%s opener, file '%s' opened",tag,filename)
+                report_resolvers("%s opener, file '%s' opened",tag,filename)
             end
             return openers.text_opener(filename,f,tag)
         end
     end
     if trace_locating then
-        logs.report("fileio","%s opener, file '%s' not found",tag,filename)
+        report_resolvers("%s opener, file '%s' not found",tag,filename)
     end
     return unpack(openers.notfound)
 end
@@ -173,7 +172,7 @@ function loaders.generic(tag,filename)
         if f then
             logs.show_load(filename)
             if trace_locating then
-                logs.report("fileio","%s loader, file '%s' loaded",tag,filename)
+                report_resolvers("%s loader, file '%s' loaded",tag,filename)
             end
             local s = f:read("*a")
             if garbagecollector and garbagecollector.check then garbagecollector.check(#s) end
@@ -184,7 +183,7 @@ function loaders.generic(tag,filename)
         end
     end
     if trace_locating then
-        logs.report("fileio","%s loader, file '%s' not found",tag,filename)
+        report_resolvers("%s loader, file '%s' not found",tag,filename)
     end
     return unpack(loaders.notfound)
 end

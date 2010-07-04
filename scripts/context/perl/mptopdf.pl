@@ -5,7 +5,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 
 #D \module
 #D   [       file=mptopdf.pl,
-#D        version=2000.05.29,
+#D        version=2010.05.28, %  2000.05.29
 #D          title=converting MP to PDF,
 #D       subtitle=\MPTOPDF,
 #D         author=Hans Hagen,
@@ -27,17 +27,20 @@ use File::Basename ;
 $Getopt::Long::passthrough = 1 ; # no error message
 $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
 
-my $Help = my $Latex = my $RawMP = my $MetaFun = 0 ;
+my $Help = 0;
+my $Latex = 0;
+my $RawMP = 1;
+my $MetaFun = 0 ;
 my $PassOn = '' ;
 
 &GetOptions
   ( "help"    => \$Help  ,
-    "rawmp"   => \$RawMP,
+    "rawmp"   => \$RawMP, # option is now default, but keep for compat
     "metafun" => \$MetaFun,
-    "passon"  => \$PassOn,
+    "passon"  => \$PassOn, # option is ignored, but keep for compat
     "latex"   => \$Latex ) ;
 
-my $program = "MPtoPDF 1.3.3" ;
+my $program = "MPtoPDF 1.4.0" ;
 my $pattern = "@ARGV" ; # was $ARGV[0]
 my $miktex  = 0 ;
 my $done    = 0 ;
@@ -82,22 +85,13 @@ if (($pattern eq '')||($Help)) {
         }
         close (INP) ;
     }
-    if ($RawMP) {
-        if ($Latex) {
-            $rest .= " $mplatexswitch" ;
-        }
-        if ($MetaFun) {
-            $mpbin = "mpost --progname=mpost --mem=metafun" ;
-        } else {
-            $mpbin = "mpost --mem=mpost" ;
-        }
+    if ($Latex) {
+      $rest .= " $mplatexswitch" ;
+    }
+    if ($MetaFun) {
+      $mpbin = "mpost --progname=mpost --mem=metafun" ;
     } else {
-        if ($Latex) {
-            $rest .= " $mplatexswitch" ;
-            $mpbin = "mpost --mem=mpost" ;
-        } else {
-            $mpbin = "texexec --mptex $PassOn " ;
-        }
+      $mpbin = "mpost --mem=mpost" ;
     }
     my $runner = "$mpbin $rest $pattern" ;
     print "\n$program : running '$runner'\n" ;

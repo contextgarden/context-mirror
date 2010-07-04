@@ -16,6 +16,8 @@ local utfchar = utf.char
 
 local trace_mirroring = false  trackers.register("nodes.mirroring", function(v) trace_mirroring = v end)
 
+local report_bidi = logs.new("bidi")
+
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local set_attribute      = node.set_attribute
@@ -330,7 +332,7 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
                     else
                         autodir = 1
                     end
-                    embeddded = autodir
+                    embedded = autodir
                     if trace_mirroring then
                         list[#list+1] = format("pardir %s",dir)
                     end
@@ -374,11 +376,11 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
         end
     end
     if trace_mirroring and glyphs then
-        logs.report("bidi","start log")
+        report_bidi("start log")
         for i=1,#list do
-            logs.report("bidi","%02i: %s",i,list[i])
+            report_bidi("%02i: %s",i,list[i])
         end
-        logs.report("bidi","stop log")
+        report_bidi("stop log")
     end
     if done and mirroring.strip then
         local n = #obsolete
@@ -386,7 +388,7 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
             for i=1,n do
                 remove_node(head,obsolete[i],true)
             end
-            logs.report("bidi","%s character nodes removed",n)
+            report_bidi("%s character nodes removed",n)
         end
     end
     return head, done

@@ -13,11 +13,14 @@ local match, gmatch, gsub = string.match, string.gmatch, string.gsub
 them in tables. But we may do so some day, for consistency.</p>
 --ldx]]--
 
-fonts.enc         = fonts.enc or { }
-fonts.enc.version = 1.03
-fonts.enc.cache   = containers.define("fonts", "enc", fonts.enc.version, true)
+fonts.enc = fonts.enc or { }
 
-fonts.enc.known = { -- sort of obsolete
+local enc = fonts.enc
+
+enc.version = 1.03
+enc.cache   = containers.define("fonts", "enc", fonts.enc.version, true)
+
+enc.known = { -- sort of obsolete
     texnansi = true,
     ec       = true,
     qx       = true,
@@ -28,8 +31,8 @@ fonts.enc.known = { -- sort of obsolete
     unicode  = true
 }
 
-function fonts.enc.is_known(encoding)
-    return containers.is_valid(fonts.enc.cache(),encoding)
+function enc.is_known(encoding)
+    return containers.is_valid(enc.cache,encoding)
 end
 
 --[[ldx--
@@ -51,14 +54,14 @@ Latin Modern or <l n='tex'> Gyre) come in OpenType variants too, so these
 will be used.</p>
 --ldx]]--
 
-function fonts.enc.load(filename)
+function enc.load(filename)
     local name = file.removesuffix(filename)
-    local data = containers.read(fonts.enc.cache(),name)
+    local data = containers.read(enc.cache,name)
     if data then
         return data
     end
     if name == "unicode" then
-        data = fonts.enc.make_unicode_vector() -- special case, no tex file for this
+        data = enc.make_unicode_vector() -- special case, no tex file for this
     end
     if data then
         return data
@@ -95,7 +98,7 @@ function fonts.enc.load(filename)
         hash=hash,
         unicodes=unicodes
     }
-    return containers.write(fonts.enc.cache(), name, data)
+    return containers.write(enc.cache, name, data)
 end
 
 --[[ldx--
@@ -105,7 +108,7 @@ one.</p>
 
 -- maybe make this a function:
 
-function fonts.enc.make_unicode_vector()
+function enc.make_unicode_vector()
     local vector, hash = { }, { }
     for code, v in next, characters.data do
         local name = v.adobename
@@ -118,5 +121,5 @@ function fonts.enc.make_unicode_vector()
     for name, code in next, characters.synonyms do
         vector[code], hash[name] = name, code
     end
-    return containers.write(fonts.enc.cache(), 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
+    return containers.write(enc.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
 end

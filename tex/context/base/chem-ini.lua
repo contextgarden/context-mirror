@@ -11,6 +11,8 @@ local lpegmatch = lpeg.match
 
 local trace_molecules = false  trackers.register("chemistry.molecules",  function(v) trace_molecules = v end)
 
+local report_chemistry = logs.new("chemistry")
+
 local ctxcatcodes = tex.ctxcatcodes
 
 chemicals = chemicals or { }
@@ -67,7 +69,7 @@ end
 function commands.molecule(str)
     if trace_molecules then
         local rep = lpegmatch(parser,str)
-        logs.report("chemistry", "molecule %s => %s",str,rep)
+        report_chemistry("molecule %s => %s",str,rep)
         texsprint(ctxcatcodes,rep)
     else
         texsprint(ctxcatcodes,lpegmatch(parser,str))

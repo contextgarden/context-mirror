@@ -15,6 +15,8 @@ parbuilders.attribute    = attributes.numbers['parbuilder'] or 999
 storage.register("parbuilders.names",   parbuilders.names,   "parbuilders.names")
 storage.register("parbuilders.numbers", parbuilders.numbers, "parbuilders.numbers")
 
+local report_parbuilders = logs.new("parbuilders")
+
 local constructors, names, numbers, p_attribute = parbuilders.constructors, parbuilders.names, parbuilders.numbers, parbuilders.attribute
 
 local has_attribute = node.has_attribute
@@ -49,7 +51,7 @@ function parbuilders.constructor(head,followed_by_display)
                 if handler then
                     return handler(head,followed_by_display)
                 else
-                    logs.report("parbuilders","handler '%s' is not defined",tostring(constructor))
+                    report_parbuilders("handler '%s' is not defined",tostring(constructor))
                     return true -- let tex break
                 end
             end

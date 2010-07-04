@@ -51,7 +51,7 @@ end
 function context.trace(intercept)
     local normalflush = flush
     flush = function(c,...)
-        logs.report("context",concat({...}))
+        trace_context(concat({...}))
         if not intercept then
             normalflush(c,...)
         end
@@ -61,6 +61,8 @@ end
 
 trackers.register("context.flush",     function(v) if v then context.trace()     end end)
 trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
+
+local trace_context = logs.new("context")
 
 local function writer(k,...)
     if k then
@@ -109,9 +111,9 @@ local function writer(k,...)
                     flush(ctxcatcodes,tostring(ti))
                 --  end
                 elseif typ == "thread" then
-                    logs.report("interfaces","coroutines not supported as we cannot yeild across boundaries")
+                    trace_context("coroutines not supported as we cannot yeild across boundaries")
                 else
-                    logs.report("interfaces","error: %s gets a weird argument %s",k,tostring(ti))
+                    trace_context("error: %s gets a weird argument %s",k,tostring(ti))
                 end
             end
         end

@@ -11,6 +11,8 @@ local trace_virtual = false trackers.register("math.virtual", function(v) trace_
 mathematics = mathematics or { }
 characters  = characters  or { }
 
+local report_math = logs.new("mathematics")
+
 mathematics.extras = mathematics.extras or { }
 characters.math    = characters.math    or { }
 
@@ -22,7 +24,7 @@ function mathematics.extras.add(unicode,t)
     if unicode >= min and unicode <= max then
         mathdata[unicode], chardata[unicode] = t, t
     else
-        logs.report("math extra","extra U+%04X should be in range U+%04X - U+%04X",unicode,min,max)
+        report_math("extra U+%04X should be in range U+%04X - U+%04X",unicode,min,max)
     end
 end
 
@@ -45,7 +47,7 @@ function mathematics.extras.copy(tfmdata)
                             local nextchar = characters[nextnext]
                             if nextchar then
                                 if trace_virtual then
-                                    logs.report("math extra","extra U+%04X in %s at %s maps on U+%04X (class: %s, name: %s)",unicode,file.basename(tfmdata.fullname),tfmdata.size,nextslot,extradesc.mathclass or "?",extradesc.mathname or "?")
+                                    report_math("extra U+%04X in %s at %s maps on U+%04X (class: %s, name: %s)",unicode,file.basename(tfmdata.fullname),tfmdata.size,nextslot,extradesc.mathclass or "?",extradesc.mathname or "?")
                                 end
                                 characters[unicode] = nextchar
                                 break
@@ -53,11 +55,12 @@ function mathematics.extras.copy(tfmdata)
                         end
                     end
                 end
-                if not characters[unicode] then
+                if not characters[unicode] then -- can be set in previous loop
                     for i=1,#nextinsize do
-                        local nextbase = characters[nextinsize[i]]
+                        local nextslot = nextinsize[i]
+                        local nextbase = characters[nextslot]
                         if nextbase then
-                            characters[unicode] = nextchar
+                            characters[unicode] = nextbase -- still ok?
                             break
                         end
                     end
@@ -124,6 +127,16 @@ mathematics.extras.add(0xFE323, {
     mathclass="relation",
     mathname="rhook",
     unicodeslot=0xFE323,
+} )
+
+mathematics.extras.add(0xFE324, {
+    category="sm",
+    description="MATHEMATICAL SHORT BAR MIRRORED",
+--  direction="on",
+--  linebreak="nu",
+    mathclass="relation",
+    mathname="mapsfromchar",
+    unicodeslot=0xFE324,
 } )
 
 --~ mathematics.extras.add(0xFE304, {

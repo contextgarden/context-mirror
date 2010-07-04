@@ -237,7 +237,7 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
     end
 end
 
-function registersomeindexcolor(name,noffractions,names,p,colorspace,range,funct)
+local function registersomeindexcolor(name,noffractions,names,p,colorspace,range,funct)
     noffractions = tonumber(noffractions) or 1 -- to be checked
     local cnames = pdfarray()
     local domain = pdfarray()
@@ -289,13 +289,11 @@ end
 
 local function delayindexcolor(name,names,func)
     local hash = (names ~= "" and names) or name
- -- logs.report("index colors","delaying '%s'",name)
     delayedindexcolors[hash] = func
 end
 
 local function indexcolorref(name) -- actually, names (parent) is the hash
     if not indexcolorhash[name] then
-     -- logs.report("index colors","registering '%s'",name)
         local delayedindexcolor = delayedindexcolors[name]
         if type(delayedindexcolor) == "function" then
             indexcolorhash[name] = delayedindexcolor()

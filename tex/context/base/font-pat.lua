@@ -10,6 +10,8 @@ local match, lower, find = string.match, string.lower, string.find
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
+local report_otf = logs.new("load otf")
+
 -- this will become a per font patch file
 --
 -- older versions of latin modern didn't have the designsize set
@@ -22,7 +24,7 @@ local function patch(data,filename)
         local ds = match(file.basename(lower(filename)),"(%d+)")
         if ds then
             if trace_loading then
-                logs.report("load otf","patching design size (%s)",ds)
+                report_otf("patching design size (%s)",ds)
             end
             data.design_size = tonumber(ds) * 10
         end
@@ -32,7 +34,7 @@ local function patch(data,filename)
         -- beware, this is a hack, features for latin often don't apply to greek
         -- but lm has not much features anyway (and only greek for math)
         if trace_loading then
-            logs.report("load otf","adding 13 greek capitals")
+            report_otf("adding 13 greek capitals")
         end
         uni_to_ind[0x391] = uni_to_ind[0x41]
         uni_to_ind[0x392] = uni_to_ind[0x42]
@@ -75,7 +77,7 @@ local function patch(data,filename)
             local v = gpos[k]
             if not v.features and v.type == "gpos_mark2mark" then
                 if trace_loading then
-                    logs.report("load otf","patching mkmk feature (name: %s)", v.name or "?")
+                    report_otf("patching mkmk feature (name: %s)", v.name or "?")
                 end
                 v.features = {
                     {
@@ -101,7 +103,7 @@ local function patch_domh(data,filename,threshold)
         local d = m.DisplayOperatorMinHeight or 0
         if d < threshold then
             if trace_loading then
-                logs.report("load otf","patching DisplayOperatorMinHeight(%s -> %s)",d,threshold)
+                report_otf("patching DisplayOperatorMinHeight(%s -> %s)",d,threshold)
             end
             m.DisplayOperatorMinHeight = threshold
         end
@@ -113,7 +115,7 @@ local function patch_domh(data,filename,threshold)
               local width, italic = g.width or 0, g.italic_correction or 0
               local newwidth = width - italic
               if trace_loading then
-                 logs.report("load otf","patching width of %s: %s (width) - %s (italic) = %s",name,width,italic,newwidth)
+                 report_otf("patching width of %s: %s (width) - %s (italic) = %s",name,width,italic,newwidth)
               end
               g.width = newwidth
            end

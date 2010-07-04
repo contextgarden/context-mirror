@@ -6,11 +6,14 @@ if not modules then modules = { } end modules ['luat-cbk'] = {
     license   = "see context related readme files"
 }
 
-local insert, remove, find = table.insert, table.remove, string.find
+local insert, remove, find, format = table.insert, table.remove, string.find, string.format
 local collectgarbage, type, next = collectgarbage, type, next
 local round = math.round
 
 local trace_checking = false  trackers.register("memory.checking", function(v) trace_checking = v end)
+
+local report_callbacks = logs.new("callbacks")
+local report_memory    = logs.new("memory")
 
 --[[ldx--
 <p>Callbacks are the real asset of <l n='luatex'/>. They permit you to hook
@@ -27,14 +30,64 @@ functions.</p>
 --ldx]]--
 
 local trace_callbacks = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
+local trace_calls     = false  -- only used when analyzing performance and initializations
 
-local register_callback, find_callback = callback.register, callback.find
-local frozen, stack = { }, { }
+local register_callback, find_callback, list_callbacks = callback.register, callback.find, callback.list
+local frozen, stack, list = { }, { }, callbacks.list
 
-callback.original_register_callback = register_callback
+if not callbacks.list then -- otherwise counters get reset
+
+    list = list_callbacks()
+
+    for k, _ in next, list do
+        list[k] = 0
+    end
+
+    callbacks.list = list
+
+end
+
+local delayed = table.tohash {
+    "buildpage_filter",
+}
+
+
+if not callback.original_register_callback then
+
+    callback.original_register_callback = register_callback
+
+    local original_register_callback = register_callback
+
+    if trace_calls then
+
+        local functions = { }
+
+        register_callback = function(name,func)
+            if type(func) == "function" then
+                if functions[name] then
+                    functions[name] = func
+                    return find_callback(name)
+                else
+                    functions[name] = func
+                    local cnuf = function(...)
+                        list[name] = list[name] + 1
+                        return functions[name](...)
+                    end
+                    return original_register_callback(name,cnuf)
+                end
+            else
+                return original_register_callback(name,func)
+            end
+        end
+
+    end
+
+end
+
+callback.register = register_callback
 
 local function frozen_message(what,name)
-    logs.report("callbacks","not %s frozen '%s' (%s)",what,name,frozen[name])
+    report_callbacks("not %s frozen '%s' (%s)",what,name,frozen[name])
 end
 
 local function frozen_callback(name)
@@ -52,14 +105,17 @@ local function state(name)
     end
 end
 
+function callbacks.known(name)
+    return list[name]
+end
+
 function callbacks.report()
-    local list = callback.list()
-    for name, func in table.sortedhash(list) do
+    for name, _ in table.sortedhash(list) do
         local str = frozen[name]
         if str then
-            logs.report("callbacks","%s: %s -> %s",state(name),name,str)
+            report_callbacks("%s: %s -> %s",state(name),name,str)
         else
-            logs.report("callbacks","%s: %s",state(name),name)
+            report_callbacks("%s: %s",state(name),name)
         end
     end
 end
@@ -67,7 +123,7 @@ end
 function callbacks.table()
     local NC, NR, verbatim = context.NC, context.NR, context.type
     context.starttabulate { "|l|l|p|" }
-    for name, func in table.sortedhash(callback.list()) do
+    for name, _ in table.sortedhash(list) do
         NC() verbatim(name) NC() verbatim(state(name)) NC() context(frozen[name] or "") NC() NR()
     end
     context.stoptabulate()
@@ -75,11 +131,9 @@ end
 
 function callbacks.freeze(name,freeze)
     freeze = type(freeze) == "string" and freeze
---~ print(name)
     if find(name,"%*") then
         local pattern = name -- string.simpleesc(name)
-        local list = callback.list()
-        for name, func in next, list do
+        for name, _ in next, list do
             if find(name,pattern) then
                 frozen[name] = freeze or frozen[name] or "frozen"
             end
@@ -97,6 +151,9 @@ function callbacks.register(name,func,freeze)
         return frozen_callback(name)
     elseif freeze then
         frozen[name] = (type(freeze) == "string" and freeze) or "registered"
+    end
+    if delayed[name] and environment.initex then
+        return nil
     end
     return register_callback(name,func)
 end
@@ -136,6 +193,18 @@ function callbacks.pop(name)
             register_callback(name, func)
         end
     end
+end
+
+if trace_calls then
+    statistics.register("callback details", function()
+        local t = { } -- todo: pass function to register and quit at nil
+        for name, n in table.sortedhash(list) do
+            if n > 0 then
+                t[#t+1] = format("%s -> %s",name,n)
+            end
+        end
+        return t
+    end)
 end
 
 --~ -- somehow crashes later on
@@ -238,7 +307,7 @@ function garbagecollector.check(size,criterium)
                 local b = collectgarbage("count")
                 collectgarbage("collect")
                 local a = collectgarbage("count")
-                logs.report("memory","forced sweep, collected: %s MB, used: %s MB",round((b-a)/1000),round(a/1000))
+                report_memory("forced sweep, collected: %s MB, used: %s MB",round((b-a)/1000),round(a/1000))
             else
                 collectgarbage("collect")
             end

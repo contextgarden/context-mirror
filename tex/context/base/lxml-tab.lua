@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
+local report_xml = logs.new("xml")
+
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
 handles comment and processing instructions, has a different structure, provides
@@ -150,7 +152,7 @@ local dcache, hcache, acache = { }, { }, { }
 
 local mt = { }
 
-function initialize_mt(root)
+local function initialize_mt(root)
     mt = { __index = root } -- will be redefined later
 end
 
@@ -254,7 +256,7 @@ local reported_attribute_errors = { }
 
 local function attribute_value_error(str)
     if not reported_attribute_errors[str] then
-        logs.report("xml","invalid attribute value: %q",str)
+        report_xml("invalid attribute value: %q",str)
         reported_attribute_errors[str] = true
         at._error_ = str
     end
@@ -262,7 +264,7 @@ local function attribute_value_error(str)
 end
 local function attribute_specification_error(str)
     if not reported_attribute_errors[str] then
-        logs.report("xml","invalid attribute specification: %q",str)
+        report_xml("invalid attribute specification: %q",str)
         reported_attribute_errors[str] = true
         at._error_ = str
     end
@@ -325,18 +327,18 @@ local function handle_hex_entity(str)
         h = unify_predefined and predefined_unified[n]
         if h then
             if trace_entities then
-                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,h)
+                report_xml("utfize, converting hex entity &#x%s; into %s",str,h)
             end
         elseif utfize then
             h = (n and utfchar(n)) or xml.unknown_hex_entity_format(str) or ""
             if not n then
-                logs.report("xml","utfize, ignoring hex entity &#x%s;",str)
+                report_xml("utfize, ignoring hex entity &#x%s;",str)
             elseif trace_entities then
-                logs.report("xml","utfize, converting hex entity &#x%s; into %s",str,h)
+                report_xml("utfize, converting hex entity &#x%s; into %s",str,h)
             end
         else
             if trace_entities then
-                logs.report("xml","found entity &#x%s;",str)
+                report_xml("found entity &#x%s;",str)
             end
             h = "&#x" .. str .. ";"
         end
@@ -352,18 +354,18 @@ local function handle_dec_entity(str)
         d = unify_predefined and predefined_unified[n]
         if d then
             if trace_entities then
-                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,d)
+                report_xml("utfize, converting dec entity &#%s; into %s",str,d)
             end
         elseif utfize then
             d = (n and utfchar(n)) or xml.unknown_dec_entity_format(str) or ""
             if not n then
-                logs.report("xml","utfize, ignoring dec entity &#%s;",str)
+                report_xml("utfize, ignoring dec entity &#%s;",str)
             elseif trace_entities then
-                logs.report("xml","utfize, converting dec entity &#%s; into %s",str,h)
+                report_xml("utfize, converting dec entity &#%s; into %s",str,h)
             end
         else
             if trace_entities then
-                logs.report("xml","found entity &#%s;",str)
+                report_xml("found entity &#%s;",str)
             end
             d = "&#" .. str .. ";"
         end
@@ -388,7 +390,7 @@ local function handle_any_entity(str)
             end
             if a then
                 if trace_entities then
-                    logs.report("xml","resolved entity &%s; -> %s (internal)",str,a)
+                    report_xml("resolved entity &%s; -> %s (internal)",str,a)
                 end
                 a = lpegmatch(parsedentity,a) or a
             else
@@ -397,11 +399,11 @@ local function handle_any_entity(str)
                 end
                 if a then
                     if trace_entities then
-                        logs.report("xml","resolved entity &%s; -> %s (external)",str,a)
+                        report_xml("resolved entity &%s; -> %s (external)",str,a)
                     end
                 else
                     if trace_entities then
-                        logs.report("xml","keeping entity &%s;",str)
+                        report_xml("keeping entity &%s;",str)
                     end
                     if str == "" then
                         a = "&error;"
@@ -413,7 +415,7 @@ local function handle_any_entity(str)
             acache[str] = a
         elseif trace_entities then
             if not acache[str] then
-                logs.report("xml","converting entity &%s; into %s",str,a)
+                report_xml("converting entity &%s; into %s",str,a)
                 acache[str] = a
             end
         end
@@ -422,7 +424,7 @@ local function handle_any_entity(str)
         local a = acache[str]
         if not a then
             if trace_entities then
-                logs.report("xml","found entity &%s;",str)
+                report_xml("found entity &%s;",str)
             end
             a = resolve_predefined and predefined_simplified[str]
             if a then
@@ -441,7 +443,7 @@ local function handle_any_entity(str)
 end
 
 local function handle_end_entity(chr)
-    logs.report("xml","error in entity, %q found instead of ';'",chr)
+    report_xml("error in entity, %q found instead of ';'",chr)
 end
 
 local space            = S(' \r\n\t')
@@ -576,7 +578,7 @@ local function xmlconvert(data, settings)
     resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
     unify_predefined = settings.unify_predefined_entities -- &#038; -> &amp;
     cleanup = settings.text_cleanup
-    stack, top, at, xmlns, errorstr, result, entities = { }, { }, { }, { }, nil, nil, settings.entities or { }
+    stack, top, at, xmlns, errorstr, entities = { }, { }, { }, { }, nil, settings.entities or { }
     acache, hcache, dcache = { }, { }, { } -- not stored
     reported_attribute_errors = { }
     if settings.parent_root then
@@ -604,6 +606,7 @@ local function xmlconvert(data, settings)
     else
         errorstr = "invalid xml file - no text at all"
     end
+    local result
     if errorstr and errorstr ~= "" then
         result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={ }, er = true } } }
         setmetatable(stack, mt)
@@ -784,7 +787,7 @@ local function verbose_element(e,handlers)
             ats[#ats+1] = format('%s=%q',k,v)
         end
     end
-    if ern and trace_remap and ern ~= ens then
+    if ern and trace_entities and ern ~= ens then
         ens = ern
     end
     if ens ~= "" then
@@ -915,7 +918,7 @@ local function newhandlers(settings)
     if settings then
         for k,v in next, settings do
             if type(v) == "table" then
-                tk = t[k] if not tk then tk = { } t[k] = tk end
+                local tk = t[k] if not tk then tk = { } t[k] = tk end
                 for kk,vv in next, v do
                     tk[kk] = vv
                 end
@@ -1026,7 +1029,7 @@ local function xmltext(root) -- inline
     return (root and xmltostring(root)) or ""
 end
 
-function initialize_mt(root)
+initialize_mt = function(root) -- redefinition
     mt = { __tostring = xmltext, __index = root }
 end
 

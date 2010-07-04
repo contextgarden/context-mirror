@@ -14,6 +14,8 @@ local ctxcatcodes = tex.ctxcatcodes
 
 local trace_notes = false  trackers.register("structure.notes", function(v) trace_notes = v end)
 
+local report_notes = logs.new("notes")
+
 structure              = structure          or { }
 structure.helpers      = structure.helpers  or { }
 structure.lists        = structure.lists    or { }
@@ -43,12 +45,12 @@ function notes.store(tag,n)
         nd = { }
         notedata[tag] = nd
     end
-    local nnd = #nd+1
+    local nnd = #nd + 1
     nd[nnd] = n
     local state = notestates[tag]
     if state.kind ~= "insert" then
         if trace_notes then
-            logs.report("notes","storing %s with state %s as %s",tag,state.kind,nnd)
+            report_notes("storing %s with state %s as %s",tag,state.kind,nnd)
         end
         state.start = state.start or nnd
     end
@@ -62,9 +64,11 @@ local function get(tag,n)
         nd = nd[n]
         if nd then
             if trace_notes then
-                logs.report("notes","getting %s of %s",n,tag)
+                report_notes("getting note %s of '%s'",n,tag)
             end
-            return structure.lists.collected[nd]
+            -- is this right?
+            local newdata = structure.lists.collected[nd]
+            return newdata
         end
     end
 end
@@ -92,7 +96,7 @@ function notes.save(tag,newkind)
     local state = notestates[tag]
     if state and not state.saved then
         if trace_notes then
-            logs.report("notes","saving state of %s: %s -> %s",tag,state.kind,newkind or state.kind)
+            report_notes("saving state of '%s': %s -> %s",tag,state.kind,newkind or state.kind)
         end
         state.saved = notedata[tag]
         state.savedkind = state.kind
@@ -105,7 +109,7 @@ function notes.restore(tag,forcedstate)
     local state = notestates[tag]
     if state and state.saved then
         if trace_notes then
-            logs.report("notes","restoring state of %s: %s -> %s",tag,state.kind,state.savedkind)
+            report_notes("restoring state of '%s': %s -> %s",tag,state.kind,state.savedkind)
         end
         state.saved = nil
         state.kind = forcedstate or state.savedkind
@@ -116,7 +120,7 @@ end
 function notes.setstate(tag,newkind)
     local state = notestates[tag]
     if trace_notes then
-        logs.report("notes","setting state of %s from %s to %s",tag,(state and state.kind) or "unset",newkind)
+        report_notes("setting state of '%s' from %s to %s",tag,(state and state.kind) or "unset",newkind)
     end
     if not state then
         state = {
@@ -236,7 +240,7 @@ end
 
 function notes.postpone()
     if trace_notes then
-        logs.report("notes","postponing all insert notes")
+        report_notes("postponing all insert notes")
     end
     for tag, state in next, notestates do
         if state.kind ~= "store" then
@@ -246,16 +250,21 @@ function notes.postpone()
 end
 
 function notes.setsymbolpage(tag,n)
-    local nd = get(tag,n)
-    if nd then
-        nd.metadata.symbolpage = texcount.realpageno
+    local l = notes.listindex(tag,n)
+    local p = texcount.realpageno
+    if trace_notes then
+        report_notes("note %s of '%s' with list index %s gets page %s",n,tag,l,p)
     end
+    lists.cached[l].references.symbolpage = p
 end
 
 function notes.getsymbolpage(tag,n)
     local nd = get(tag,n)
-    nd = nd and nd.metadata.symbolpage
-    texwrite(nd or 0)
+    local p = nd and nd.references.symbolpage or 0
+    if trace_notes then
+        report_notes("note %s of '%s' has page %s",n,tag,p)
+    end
+    texwrite(p)
 end
 
 function notes.getnumberpage(tag,n)
@@ -275,7 +284,7 @@ function notes.flush(tag,whatkind) -- store and postpone
         if kind == "postpone" then
             if nd and ns then
                 if trace_notes then
-                    logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+                    report_notes("flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
                 end
                 for i=ns,#nd do
                     texsprint(ctxcatcodes,format("\\handlenoteinsert{%s}{%s}",tag,i))
@@ -286,7 +295,7 @@ function notes.flush(tag,whatkind) -- store and postpone
         elseif kind == "store" then
             if nd and ns then
                 if trace_notes then
-                    logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+                    report_notes("flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
                 end
                 for i=ns,#nd do
                     texsprint(ctxcatcodes,format("\\handlenoteitself{%s}{%s}",tag,i))
@@ -296,21 +305,21 @@ function notes.flush(tag,whatkind) -- store and postpone
         elseif kind == "reset" then
             if nd and ns then
                 if trace_notes then
-                    logs.report("notes","flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+                    report_notes("flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
                 end
             end
             state.start = nil
         elseif trace_notes then
-            logs.report("notes","not flushing state %s of %s",whatkind,tag)
+            report_notes("not flushing state %s of %s",whatkind,tag)
         end
     elseif trace_notes then
-        logs.report("notes","not flushing state %s of %s",whatkind,tag)
+        report_notes("not flushing state %s of %s",whatkind,tag)
     end
 end
 
 function notes.flushpostponed()
     if trace_notes then
-        logs.report("notes","flushing all postponed notes")
+        report_notes("flushing all postponed notes")
     end
     for tag, _ in next, notestates do
         notes.flush(tag,"postpone")
@@ -319,7 +328,7 @@ end
 
 function notes.resetpostponed()
     if trace_notes then
-        logs.report("notes","resetting all postponed notes")
+        report_notes("resetting all postponed notes")
     end
     for tag, state in next, notestates do
         if state.kind == "postpone" then

@@ -71,7 +71,7 @@
 \def\dohandleitemreference % we will make a decent number helper
   {\ifx\currentitemreference \empty \else
      \setnextinternalreference
-     \ctxlua { jobreferences.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
+     \ctxlua {jobreferences.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
         {
             metadata = {
                 kind     = "item",% ?

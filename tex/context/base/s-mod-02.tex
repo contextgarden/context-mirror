@@ -37,15 +37,14 @@
    \determineregistercharacteristics
      [index]
      [criterium=section]
-   \ifutilitydone
-     \pagereference
-       [index]
-     \placeregister
-       [index]
-       [balance=yes,
-        indicator=no,
-        criterium=section]
-   \fi}
+   \doifmode{*register}
+     {\pagereference
+        [index]
+      \placeregister
+        [index]
+        [balance=yes,
+         indicator=no,
+         criterium=section]}}
 
 \let\ComposeLists=\relax
 

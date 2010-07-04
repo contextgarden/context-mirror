@@ -15,6 +15,10 @@
 
 \registerctxluafile{buff-ini}{1.001}
 
+% todo: move all to lua, also before and after, just context.beforebuffer()
+% todo: commalist to lua end
+% todo: jobname == "" so no need for testing
+
 % todo:
 %
 % \startluacode
@@ -351,5 +355,24 @@
 \unexpanded\def\savebuffer{\dodoubleempty\dosavebuffer}
 
 \def\dosavebuffer[#1][#2]{\ctxlua{commands.savebuffer("#1","#2")}}
+
+%D Experimental: no expansion of commands in buffer!
+
+% \startbuffer[what]
+%     tex.print("WHAT")
+% \stopbuffer
+% \startbuffer
+%     tex.print("JOBNAME")
+% \stopbuffer
+%
+% \ctxluabuffer[what] \ctxluabuffer
+
+\def\ctxluabuffer
+  {\dosingleempty\doctxluabuffer}
+
+\def\doctxluabuffer[#1]%
+  {\doifelsenothing{#1}
+     {\ctxlua{buffers.evaluate("\jobname")}}
+     {\ctxlua{buffers.evaluate("#1")}}}
 
 \protect \endinput

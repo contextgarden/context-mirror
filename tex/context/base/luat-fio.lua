@@ -11,13 +11,10 @@ local texiowrite    = (texio and texio.write) or print
 
 local format = string.format
 
-texconfig.kpse_init        = false
-texconfig.trace_file_names = true -- also influences pdf fonts reporting .. todo
-texconfig.max_print_line   = 100000
-
-kpse = { } setmetatable(kpse, { __index = function(k,v) return input[v] end } )
-
--- if still present, we overload kpse (put it off-line so to say)
+texconfig.kpse_init      = false
+texconfig.shell_escape   = 't'
+texconfig.max_in_open    = 127
+texconfig.max_print_line = 100000
 
 if not resolvers.instance then
 
@@ -27,52 +24,54 @@ if not resolvers.instance then
     resolvers.instance.engine     = 'luatex'
     resolvers.instance.validfile  = resolvers.validctxfile
 
+--~ trackers.enable("resolvers.*")
     resolvers.load()
+--~ trackers.disable("resolvers.*")
 
     if callback then
 
-        callback.register('find_read_file'      , function(id,name) return resolvers.findtexfile(name) end)
-        callback.register('open_read_file'      , function(   name) return resolvers.opentexfile(name) end)
+        callbacks.register('find_read_file'      , function(id,name) return resolvers.findtexfile(name)   end,  true)
+        callbacks.register('open_read_file'      , function(   name) return resolvers.opentexfile(name)   end,  true)
 
-        callback.register('find_data_file'      , function(name) return resolvers.findbinfile(name,"tex") end)
-        callback.register('find_enc_file'       , function(name) return resolvers.findbinfile(name,"enc") end)
-        callback.register('find_font_file'      , function(name) return resolvers.findbinfile(name,"tfm") end)
-        callback.register('find_format_file'    , function(name) return resolvers.findbinfile(name,"fmt") end)
-        callback.register('find_image_file'     , function(name) return resolvers.findbinfile(name,"tex") end)
-        callback.register('find_map_file'       , function(name) return resolvers.findbinfile(name,"map") end)
-        callback.register('find_ocp_file'       , function(name) return resolvers.findbinfile(name,"ocp") end)
-        callback.register('find_opentype_file'  , function(name) return resolvers.findbinfile(name,"otf") end)
-        callback.register('find_output_file'    , function(name) return name                              end)
-        callback.register('find_pk_file'        , function(name) return resolvers.findbinfile(name,"pk")  end)
-        callback.register('find_sfd_file'       , function(name) return resolvers.findbinfile(name,"sfd") end)
-        callback.register('find_truetype_file'  , function(name) return resolvers.findbinfile(name,"ttf") end)
-        callback.register('find_type1_file'     , function(name) return resolvers.findbinfile(name,"pfb") end)
-        callback.register('find_vf_file'        , function(name) return resolvers.findbinfile(name,"vf")  end)
+        callbacks.register('find_data_file'      , function(name) return resolvers.findbinfile(name,"tex") end, true)
+        callbacks.register('find_enc_file'       , function(name) return resolvers.findbinfile(name,"enc") end, true)
+        callbacks.register('find_font_file'      , function(name) return resolvers.findbinfile(name,"tfm") end, true)
+        callbacks.register('find_format_file'    , function(name) return resolvers.findbinfile(name,"fmt") end, true)
+        callbacks.register('find_image_file'     , function(name) return resolvers.findbinfile(name,"tex") end, true)
+        callbacks.register('find_map_file'       , function(name) return resolvers.findbinfile(name,"map") end, true)
+        callbacks.register('find_ocp_file'       , function(name) return resolvers.findbinfile(name,"ocp") end, true)
+        callbacks.register('find_opentype_file'  , function(name) return resolvers.findbinfile(name,"otf") end, true)
+        callbacks.register('find_output_file'    , function(name) return name                              end, true)
+        callbacks.register('find_pk_file'        , function(name) return resolvers.findbinfile(name,"pk")  end, true)
+        callbacks.register('find_sfd_file'       , function(name) return resolvers.findbinfile(name,"sfd") end, true)
+        callbacks.register('find_truetype_file'  , function(name) return resolvers.findbinfile(name,"ttf") end, true)
+        callbacks.register('find_type1_file'     , function(name) return resolvers.findbinfile(name,"pfb") end, true)
+        callbacks.register('find_vf_file'        , function(name) return resolvers.findbinfile(name,"vf")  end, true)
 
-        callback.register('read_data_file'      , function(file) return resolvers.loadbinfile(file,"tex") end)
-        callback.register('read_enc_file'       , function(file) return resolvers.loadbinfile(file,"enc") end)
-        callback.register('read_font_file'      , function(file) return resolvers.loadbinfile(file,"tfm") end)
+        callbacks.register('read_data_file'      , function(file) return resolvers.loadbinfile(file,"tex") end, true)
+        callbacks.register('read_enc_file'       , function(file) return resolvers.loadbinfile(file,"enc") end, true)
+        callbacks.register('read_font_file'      , function(file) return resolvers.loadbinfile(file,"tfm") end, true)
      -- format
      -- image
-        callback.register('read_map_file'       , function(file) return resolvers.loadbinfile(file,"map") end)
-        callback.register('read_ocp_file'       , function(file) return resolvers.loadbinfile(file,"ocp") end)
+        callbacks.register('read_map_file'       , function(file) return resolvers.loadbinfile(file,"map") end, true)
+        callbacks.register('read_ocp_file'       , function(file) return resolvers.loadbinfile(file,"ocp") end, true)
      -- output
-        callback.register('read_pk_file'        , function(file) return resolvers.loadbinfile(file,"pk")  end) -- 600dpi/manfnt.720pk
-        callback.register('read_sfd_file'       , function(file) return resolvers.loadbinfile(file,"sfd") end)
-        callback.register('read_vf_file'        , function(file) return resolvers.loadbinfile(file,"vf" ) end)
+        callbacks.register('read_pk_file'        , function(file) return resolvers.loadbinfile(file,"pk")  end, true) -- 600dpi/manfnt.720pk
+        callbacks.register('read_sfd_file'       , function(file) return resolvers.loadbinfile(file,"sfd") end, true)
+        callbacks.register('read_vf_file'        , function(file) return resolvers.loadbinfile(file,"vf" ) end, true)
 
-        callback.register('find_font_file'      , function(name) return resolvers.findbinfile(name,"ofm") end)
-        callback.register('find_vf_file'        , function(name) return resolvers.findbinfile(name,"ovf") end)
+        callbacks.register('find_font_file'      , function(name) return resolvers.findbinfile(name,"ofm") end, true)
+        callbacks.register('find_vf_file'        , function(name) return resolvers.findbinfile(name,"ovf") end, true)
 
-        callback.register('read_font_file'      , function(file) return resolvers.loadbinfile(file,"ofm") end)
-        callback.register('read_vf_file'        , function(file) return resolvers.loadbinfile(file,"ovf") end)
+        callbacks.register('read_font_file'      , function(file) return resolvers.loadbinfile(file,"ofm") end, true)
+        callbacks.register('read_vf_file'        , function(file) return resolvers.loadbinfile(file,"ovf") end, true)
 
-     -- callback.register('read_opentype_file'  , function(file) return resolvers.loadbinfile(file,"otf") end)
-     -- callback.register('read_truetype_file'  , function(file) return resolvers.loadbinfile(file,"ttf") end)
-     -- callback.register('read_type1_file'     , function(file) return resolvers.loadbinfile(file,"pfb") end)
+     -- callbacks.register('read_opentype_file'  , function(file) return resolvers.loadbinfile(file,"otf") end, true)
+     -- callbacks.register('read_truetype_file'  , function(file) return resolvers.loadbinfile(file,"ttf") end, true)
+     -- callbacks.register('read_type1_file'     , function(file) return resolvers.loadbinfile(file,"pfb") end, true)
 
-        callback.register('find_write_file'     , function(id,name) return name end)
-        callback.register('find_format_file'    , function(name)    return name end)
+        callbacks.register('find_write_file'     , function(id,name) return name end, true)
+        callbacks.register('find_format_file'    , function(name)    return name end, true)
 
     end
 

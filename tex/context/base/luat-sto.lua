@@ -17,6 +17,8 @@ storage.nofmodules = storage.nofmodules or 0
 storage.data       = { }
 storage.evaluators = { }
 
+local report_storage = logs.new("storage")
+
 local evaluators = storage.evaluators -- (evaluate,message,names)
 local data       = storage.data
 
@@ -30,7 +32,7 @@ function storage.evaluate(name)
     evaluators[#evaluators+1] = name
 end
 
-function storage.finalize() -- we can prepend the string with "evaluate:"
+local function finalize() -- we can prepend the string with "evaluate:"
     for i=1,#evaluators do
         local t = evaluators[i]
         for i, v in next, t do
@@ -50,7 +52,9 @@ function storage.finalize() -- we can prepend the string with "evaluate:"
     end
 end
 
-function storage.dump()
+lua.registerfinalizer(finalize)
+
+local function dump()
     for i=1,#data do
         local d = data[i]
         local message, original, target, evaluate = d[1], d[2] ,d[3] ,d[4]
@@ -68,10 +72,10 @@ function storage.dump()
         end
         storage.max = storage.max + 1
         if trace_storage then
-            logs.report('storage','saving %s in slot %s',message,storage.max)
+            report_storage('saving %s in slot %s',message,storage.max)
             code =
                 initialize ..
-                format("logs.report('storage','restoring %s from slot %s') ",message,storage.max) ..
+                format("report_storage('restoring %s from slot %s') ",message,storage.max) ..
                 table.serialize(original,name) ..
                 finalize
         else
@@ -82,20 +86,22 @@ function storage.dump()
     end
 end
 
+lua.registerfinalizer(dump)
+
 -- we also need to count at generation time (nicer for message)
 
-if lua.bytecode then -- from 0 upwards
-    local i, b = storage.min, lua.bytecode
-    while b[i] do
-        storage.noftables = i
-        b[i]()
-        b[i] = nil
-        i = i + 1
-    end
-end
+--~ if lua.bytecode then -- from 0 upwards
+--~     local i, b = storage.min, lua.bytecode
+--~     while b[i] do
+--~         storage.noftables = i
+--~         b[i]()
+--~         b[i] = nil
+--~         i = i + 1
+--~     end
+--~ end
 
 statistics.register("stored bytecode data", function()
-    local modules = (storage.nofmodules > 0 and storage.nofmodules) or (status.luabytecodes - 500)
+    local modules = (storage.nofmodules > 0 and storage.nofmodules) or (status.luabytecodes - lua.firstbytecode - 1)
     local dumps = (storage.noftables > 0 and storage.noftables) or storage.max-storage.min + 1
     return format("%s modules, %s tables, %s chunks",modules,dumps,modules+dumps)
 end)
@@ -103,8 +109,6 @@ end)
 if lua.bytedata then
     storage.register("lua/bytedata",lua.bytedata,"lua.bytedata")
 end
-
--- wrong place, kind of forward reference
 
 function statistics.report_storage(whereto)
     whereto = whereto or "term and log"

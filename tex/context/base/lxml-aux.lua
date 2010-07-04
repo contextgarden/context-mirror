@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
 
+local report_xml = logs.new("xml")
+
 local xmlparseapply, xmlconvert, xmlcopy, xmlname = xml.parse_apply, xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 
@@ -19,7 +21,7 @@ local insert, remove = table.insert, table.remove
 local gmatch, gsub = string.gmatch, string.gsub
 
 local function report(what,pattern,c,e)
-    logs.report("xml","%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
+    report_xml("%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
 end
 
 local function withelements(e,handle,depth)

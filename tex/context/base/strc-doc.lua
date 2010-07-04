@@ -24,10 +24,7 @@ local variables   = interfaces.variables
 local trace_sectioning = false  trackers.register("structure.sectioning", function(v) trace_sectioning = v end)
 local trace_detail     = false  trackers.register("structure.detail",     function(v) trace_detail     = v end)
 
-local function report(...)
---~ print(...)
-    logs.report("sectioning:",...)
-end
+local report_structure = logs.new("structure")
 
 structure            = structure            or { }
 structure.helpers    = structure.helpers    or { }
@@ -207,7 +204,7 @@ function sections.somelevel(given)
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)
     if trace_detail then
-        logs.report("structure","name '%s', mapped level '%s', old depth '%s', new depth '%s', reset set '%s'",givenname,mappedlevel,olddepth,newdepth,resetset)
+        report_structure("name '%s', mapped level '%s', old depth '%s', new depth '%s', reset set '%s'",givenname,mappedlevel,olddepth,newdepth,resetset)
     end
     local u = given.userdata
     if u then
@@ -223,7 +220,7 @@ function sections.somelevel(given)
         for i=olddepth+1,newdepth do
             local s = tonumber(sets.get("structure:resets",data.block,resetset,i))
             if trace_detail then
-                logs.report("structure","new>old (%s>%s), reset set '%s', reset value '%s', current '%s'",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
+                report_structure("new>old (%s>%s), reset set '%s', reset value '%s', current '%s'",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
             end
             if not s or s == 0 then
                 numbers[i] = numbers[i] or 0
@@ -238,7 +235,7 @@ function sections.somelevel(given)
         for i=olddepth,newdepth+1,-1 do
             local s = tonumber(sets.get("structure:resets",data.block,resetset,i))
             if trace_detail then
-                logs.report("structure","new<old (%s<%s), reset set '%s', reset value '%s', current '%s'",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
+                report_structure("new<old (%s<%s), reset set '%s', reset value '%s', current '%s'",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
             end
             if not s or s == 0 then
                 numbers[i] = numbers[i] or 0
@@ -270,12 +267,12 @@ function sections.somelevel(given)
             end
             forced[newdepth] = nil
             if trace_detail then
-                logs.report("structure","old depth '%s', new depth '%s, old n '%s', new n '%s', forced '%s'",olddepth,newdepth,oldn,newn,concat(fd,""))
+                report_structure("old depth '%s', new depth '%s, old n '%s', new n '%s', forced '%s'",olddepth,newdepth,oldn,newn,concat(fd,""))
             end
         elseif newn then
             newn = oldn + 1
             if trace_detail then
-                logs.report("structure","old depth '%s', new depth '%s, old n '%s', new n '%s', increment",olddepth,newdepth,oldn,newn)
+                report_structure("old depth '%s', new depth '%s, old n '%s', new n '%s', increment",olddepth,newdepth,oldn,newn)
             end
         else
             local s = tonumber(sets.get("structure:resets",data.block,resetset,newdepth))
@@ -287,7 +284,7 @@ function sections.somelevel(given)
                 newn = s - 1
             end
             if trace_detail then
-                logs.report("structure","old depth '%s', new depth '%s, old n '%s', new n '%s', reset",olddepth,newdepth,oldn,newn)
+                report_structure("old depth '%s', new depth '%s, old n '%s', new n '%s', reset",olddepth,newdepth,oldn,newn)
             end
         end
         numbers[newdepth] = newn
@@ -313,7 +310,7 @@ function sections.somelevel(given)
         numberdata.ownnumbers = table.fastcopy(ownnumbers)
     end
     if trace_detail then
-        logs.report("structure","name '%s', numbers '%s', own numbers '%s'",givenname,concat(numberdata.numbers, " "),concat(numberdata.ownnumbers, " "))
+        report_structure("name '%s', numbers '%s', own numbers '%s'",givenname,concat(numberdata.numbers, " "),concat(numberdata.ownnumbers, " "))
     end
     given.references.section = sections.save(given)
  -- given.numberdata = nil
@@ -644,7 +641,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 processors.sprint(ctxcatcodes,stopper)
             end
         else
-        --  report("error: no numbers")
+        --  report_structure("error: no numbers")
         end
     end
 end

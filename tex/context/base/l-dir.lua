@@ -307,7 +307,7 @@ else
         local str, pth, t = "", "", { ... }
         for i=1,#t do
             local s = t[i]
-            if s ~= "" then
+            if s and s ~= "" then -- we catch nil and false
                 if str ~= "" then
                     str = str .. "/" .. s
                 else

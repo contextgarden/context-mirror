@@ -35,7 +35,7 @@
 % \definefont[barcodefont][file:texgyreheros-regular]
 
 \startluacode
-plugins.barcodes = { }
+moduledata.barcodes = { }
 
 local function split(code)
     local t = { string.byte(code,1,#code) }
@@ -53,7 +53,7 @@ local function split(code)
     end
 end
 
-function plugins.barcodes.isbn_1(original)
+function moduledata.barcodes.isbn_1(original)
     local code = string.gsub(original,"%-","")
     local t, s, m, c = split(code)
     if t then
@@ -68,7 +68,7 @@ function plugins.barcodes.isbn_1(original)
     tex.sprint(code)
 end
 
-function plugins.barcodes.isbn_2(original)
+function moduledata.barcodes.isbn_2(original)
     local code = string.gsub(original,"%-","")
     local t, s, m, c = split(code)
     if t and #t == 12 then
@@ -85,13 +85,13 @@ end
             \vbox {
                 \hbox {
                     \hskip3.7mm
-                    \scale[width=34mm]{\barcodefont ISBN \ctxlua{plugins.barcodes.isbn_2("\getvariable{barcode}{code}")}}
+                    \scale[width=34mm]{\barcodefont ISBN \ctxlua{moduledata.barcodes.isbn_2("\getvariable{barcode}{code}")}}
                 }
                 \par
                 \normalexpanded { \noexpand \setPSTRICKS {
                     \noexpand \pspicture(-4mm,-1mm)(38mm,26mm)
                         \noexpand \psbarcode {
-                            \ctxlua{plugins.barcodes.isbn_1("\getvariable{barcode}{code}")}
+                            \ctxlua{moduledata.barcodes.isbn_1("\getvariable{barcode}{code}")}
                         } {
                             includetext guardwhitespace
                         } {

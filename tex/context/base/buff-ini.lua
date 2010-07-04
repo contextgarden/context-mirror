@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['buff-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: deal with jobname here, or actually, "" is valid as well
+
 -- ctx lua reference model / hooks and such
 -- to be optimized
 
@@ -22,6 +24,8 @@ buffers.visualizers = { }
 
 local trace_run       = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
 local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
+
+local report_buffers = logs.new("buffers")
 
 local utf = unicode.utf8
 
@@ -337,6 +341,15 @@ end
 
 buffers.content = content
 
+function buffers.evaluate(name)
+    local ok = loadstring(content(name))
+    if ok then
+        ok()
+    else
+        report_buffers("invalid lua code in buffer '%s'",name)
+    end
+end
+
 function buffers.collect(names,separator) -- no print
     -- maybe we should always store a buffer as table so
     -- that we can pass it directly
@@ -420,10 +433,10 @@ function buffers.loadvisualizer(name)
             hn = handlers[visualizers.defaultname]
             handlers[name] = hn
             if trace_visualize then
-                logs.report("buffers","mapping '%s' visualizer onto '%s'",name,visualizers.defaultname)
+                report_buffers("mapping '%s' visualizer onto '%s'",name,visualizers.defaultname)
             end
         elseif trace_visualize then
-            logs.report("buffers","loading '%s' visualizer",name)
+            report_buffers("loading '%s' visualizer",name)
         end
         return hn
     end
@@ -444,13 +457,13 @@ function buffers.setvisualizer(str)
     currenthandler = handlers[currentvisualizer]
     if currenthandler then
     --  if trace_visualize then
-    --      logs.report("buffers","enabling specific '%s' visualizer",currentvisualizer)
+    --      report_buffers("enabling specific '%s' visualizer",currentvisualizer)
     --  end
     else
         currentvisualizer = visualizers.defaultname
         currenthandler = handlers.default
     --  if trace_visualize then
-    --      logs.report("buffers","enabling default visualizer '%s'",currentvisualizer)
+    --      report_buffers("enabling default visualizer '%s'",currentvisualizer)
     --  end
     end
     if currenthandler.reset then
@@ -764,7 +777,7 @@ function buffers.set_escape(name,pair)
         if pair == variables.no then
             visualizer.flush_line = visualizer.normal_flush_line or visualizer.flush_line
             if trace_visualize then
-                logs.report("buffers","resetting escape range for visualizer '%s'",name)
+                report_buffers("resetting escape range for visualizer '%s'",name)
             end
         else
             local start, stop
@@ -785,10 +798,10 @@ function buffers.set_escape(name,pair)
                     flush_escaped_line(str,pattern,visualizer.normal_flush_line)
                 end
                 if trace_visualize then
-                    logs.report("buffers","setting escape range for visualizer '%s' to %s -> %s",name,start,stop)
+                    report_buffers("setting escape range for visualizer '%s' to %s -> %s",name,start,stop)
                 end
             elseif trace_visualize then
-                logs.report("buffers","problematic escape specification '%s' for visualizer '%s'",pair,name)
+                report_buffers("problematic escape specification '%s' for visualizer '%s'",pair,name)
             end
         end
     end

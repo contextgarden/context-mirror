@@ -14,6 +14,8 @@ local utfbyte = utf.byte
 local trace_loading    = false  trackers.register("otf.loading",    function(v) trace_loading    = v end)
 local trace_unimapping = false  trackers.register("otf.unimapping", function(v) trace_unimapping = v end)
 
+local report_otf = logs.new("load otf")
+
 local ctxcatcodes = tex and tex.ctxcatcodes
 
 --[[ldx--
@@ -30,7 +32,7 @@ local function load_lum_table(filename) -- will move to font goodies
     local lumfile = resolvers.find_file(lumname,"map") or ""
     if lumfile ~= "" and lfs.isfile(lumfile) then
         if trace_loading or trace_unimapping then
-            logs.report("load otf","enhance: loading %s ",lumfile)
+            report_otf("enhance: loading %s ",lumfile)
         end
         lumunic = dofile(lumfile)
         return lumunic, lumfile
@@ -255,14 +257,14 @@ fonts.map.add_to_unicode = function(data,filename)
         for index, glyph in table.sortedhash(data.glyphs) do
             local toun, name, unic = tounicode[index], glyph.name, glyph.unicode or -1 -- play safe
             if toun then
-                logs.report("load otf","internal: 0x%05X, name: %s, unicode: 0x%05X, tounicode: %s",index,name,unic,toun)
+                report_otf("internal: 0x%05X, name: %s, unicode: 0x%05X, tounicode: %s",index,name,unic,toun)
             else
-                logs.report("load otf","internal: 0x%05X, name: %s, unicode: 0x%05X",index,name,unic)
+                report_otf("internal: 0x%05X, name: %s, unicode: 0x%05X",index,name,unic)
             end
         end
     end
     if trace_loading and (ns > 0 or nl > 0) then
-        logs.report("load otf","enhance: %s tounicode entries added (%s ligatures)",nl+ns, ns)
+        report_otf("enhance: %s tounicode entries added (%s ligatures)",nl+ns, ns)
     end
 end
 

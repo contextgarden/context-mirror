@@ -325,51 +325,6 @@
    \box2\vfill\page
    \egroup}
 
-    %D Although one can put floats in a stream, it sometimes makes sense
-    %D to keep them apart and this is what local floats do.
-
-    \def\setuplocalfloats
-      {\getparameters[\??lf]}
-
-    \setuplocalfloats
-      [%before=\blank,
-       %after=\blank,
-       inbetween=\blank]
-
-    \installfloathandler \v!local \somelocalfloat
-
-    \initializeboxstack{localfloats}
-
-    \newcounter\noflocalfloats
-
-    \def\resetlocalfloats
-      {\doglobal\newcounter\noflocalfloats
-       \initializeboxstack{localfloats}}
-
-    \def\somelocalfloat[#1]%
-      {\doglobal\increment\noflocalfloats
-       \savebox{localfloats}{\noflocalfloats}{\box\floatbox}}
-
-    \def\getlocalfloats
-      {\dorecurse\noflocalfloats
-         {\ifnum\recurselevel=\plusone % 1\relax
-            \getvalue{\??lf\c!before}%
-          \else
-            \getvalue{\??lf\c!inbetween}%
-          \fi
-          \dontleavehmode\hbox{\foundbox{localfloats}\recurselevel}%
-          \ifnum\recurselevel=\noflocalfloats\relax
-            \getvalue{\??lf\c!after}%
-          \fi}}
-
-    \def\flushlocalfloats
-      {\getlocalfloats
-       \resetlocalfloats}
-
-    \def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
-
-    \def\forcelocalfloats{\let\forcedfloatmethod\v!local}
-
 %D Because many arrangements are possible, we will implement
 %D some examples in a runtime loadable module \type {m-streams}.
 

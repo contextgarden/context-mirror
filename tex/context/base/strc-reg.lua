@@ -14,6 +14,8 @@ local lpegmatch = lpeg.match
 
 local trace_registers = false  trackers.register("structure.registers", function(v) trace_registers = v end)
 
+local report_registers = logs.new("registers")
+
 local ctxcatcodes = tex.ctxcatcodes
 
 local variables = interfaces.variables
@@ -157,9 +159,9 @@ local function filter_collected(names,criterium,number,collected,prevmode)
     end
     if trace_registers then
         if detail then
-            logs.report("registers","criterium: %s, %s, found: %s",criterium,detail,#result)
+            report_registers("criterium: %s, %s, found: %s",criterium,detail,#result)
         else
-            logs.report("registers","criterium: %s, found: %s",criterium,#result)
+            report_registers("criterium: %s, found: %s",criterium,#result)
         end
     end
     return result
@@ -397,7 +399,7 @@ function jobregisters.finalize(data,options)
         local entry, tag = sorters.firstofsplit(v)
         if tag ~= lasttag then
             if trace_registers then
-                logs.report("registers","splitting at %s",tag)
+                report_registers("splitting at %s",tag)
             end
             d = { }
             s = { tag = tag, data = d }

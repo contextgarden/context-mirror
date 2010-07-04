@@ -13,29 +13,10 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Debugger}
 
+\registerctxluafile{trac-lmx}{1.001}
 \registerctxluafile{trac-deb}{1.001}
 
-\def\showdebuginfo{\ctxlua{tracers.showdebuginfo()}}
-\def\overloaderror{\ctxlua{tracers.overloaderror()}}
-
 \def\breakpoint{\showdebuginfo\wait}
-
-\appendtoks
-    \ctxlua {
-        if debugger.tracing() then
-            debugger.enable() ;
-        end
-    }%
-\to \everyjob
-
-\appendtoks
-    \ctxlua {
-        if debugger.tracing() then
-            debugger.disable() ;
-            debugger.savestats("\jobname-luacalls.log") ;
-        end
-    }%
-\to \everybye
 
 \def\showtrackers          {\ctxlua{trackers.show()}}
 \def\enabletrackers    [#1]{\ctxlua{trackers.enable("#1")}}
@@ -49,3 +30,6 @@
 \def\showexperiments       {\ctxlua{experiments.show()}}
 \def\enableexperiments [#1]{\ctxlua{experiments.enable("#1")}}
 \def\disableexperiments[#1]{\ctxlua{experiments.disable("#1")}}
+
+\def\showdebuginfo{\ctxlua{lmx.showdebuginfo()}}
+\def\overloaderror{\ctxlua{lmx.overloaderror()}} % \enabledirectives[system.showerror]

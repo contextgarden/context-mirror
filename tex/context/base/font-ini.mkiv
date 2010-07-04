@@ -55,6 +55,7 @@
 \writestatus{loading}{ConTeXt Font Macros / Initialization}
 
 \registerctxluafile{font-ini}{1.001}
+\registerctxluafile{font-clr}{1.001}
 \registerctxluafile{node-fnt}{1.001} % here
 \registerctxluafile{font-enc}{1.001}
 \registerctxluafile{font-map}{1.001}
@@ -1334,23 +1335,80 @@
 
 \newcount\@@fontdefhack % check if this is still needed
 
+% \def\@@beginfontdef
+%   {\ifcase\@@fontdefhack
+%      \let\k!savedtext     \k!text      \let\k!text      \s!text
+%      \let\k!saveddefault  \k!default   \let\k!default   \s!default
+%    \fi
+%    \advance\@@fontdefhack \plusone }
+
+% \def\@@endfontdef
+%   {\advance\@@fontdefhack \minusone
+%    \ifcase\@@fontdefhack
+%      \let\k!default  \k!saveddefault
+%      \let\k!text     \k!savedtext
+%    \fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The problem is that the key in a getparameters is resolved
+% to the underlying interface language (english). But values
+% are kept as they are. However, some of the keys in a font
+% definition are used as values later on.
+%
+% The only place where this happens (for historical reason mostly)
+% is in the bodyfont definitions and setup, so we can use a limited
+% case.
+%
+% \let \c!big          \v!big              : expansion time (user)
+% \let \c!small        \v!small            : expansion time (user)
+% \let \c!text         \s!text             : definition time
+%    % \c!script       \s!script           : definition time
+%    % \c!scriptscript \s!scriptscript     : definition time
+%    % \c!em                               : definition time
+%    % \c!interlineskip                    : definition time
+% \let \c!default      \s!default          : definition time
+% \let \k!default      \s!default          : definition time
+%
+% Doing the k! definitions local will save us 500 has entries.
+
+\letvalue{\k!prefix!\v!big    }\c!big
+\letvalue{\k!prefix!\v!small  }\c!small
+\letvalue{\k!prefix!\v!text   }\s!text
+\letvalue{\k!prefix!\v!default}\s!default
+
+\let\normalc!big     \c!big
+\let\normalc!small   \c!small
+\let\normalc!text    \c!text  % should not happen as we expect text
+\let\normalc!default \c!default
+\let\normalk!default \k!default
+
+\newtoks\everybeginfontdef
+\newtoks\everyendfontdef
+
+\appendtoks
+    \let\c!text   \s!text
+    \let\c!default\s!default
+\to \everybeginfontdef
+
+\appendtoks
+    \let\c!text   \normalc!text
+    \let\c!default\normalc!default
+\to \everyendfontdef
+
 \def\@@beginfontdef
   {\ifcase\@@fontdefhack
-     \let\k!savedtext     \k!text      \let\k!text      \s!text
-     \let\k!k!savedtext   \k!k!text    \let\k!k!text    \!!plusone
-     \let\k!saveddefault  \k!default   \let\k!default   \s!default
-     \let\k!k!saveddefault\k!k!default \let\k!k!default \!!plusone
+     \the\everybeginfontdef
    \fi
-   \advance\@@fontdefhack \plusone }
+   \advance\@@fontdefhack\plusone}
 
 \def\@@endfontdef
   {\advance\@@fontdefhack \minusone
    \ifcase\@@fontdefhack
-     \let\k!k!default\k!k!saveddefault
-     \let\k!default  \k!saveddefault
-     \let\k!k!text   \k!k!savedtext
-     \let\k!text     \k!savedtext
+     \the\everyendfontdef
    \fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
 
 \unexpanded\def\definebodyfontenvironment
   {\dotripleempty\dodefinebodyfontenvironment}
@@ -1375,7 +1433,7 @@
    \fi}
 
 \def\dododefinebodyfontenvironment[#1][#2][#3]% size class settings
-  {\@@beginfontdef % \s!text goes wrong in testing because the 12pt alternative will called when typesetting the test (or so)
+  {%\@@beginfontdef % \s!text goes wrong in testing because the 12pt alternative will called when typesetting the test (or so)
    \ifcsname\??ft#2#1\c!em\endcsname
       % we test for em as we assume it to be set
    \else
@@ -1389,7 +1447,7 @@
        [\c!interlinespace,\c!em]%
    \fi
    \getparameters[\??ft#2#1][#3]%
-   \@@endfontdef
+   %\@@endfontdef
    % new code, see remark
    \ifloadingfonts
      % only runtime
@@ -1705,9 +1763,10 @@
      \defineunknownfont{\csname\??ft#1#2\endcsname}%
    \fi}
 
+\let\c!savedtext\c!text
+
 \unexpanded\def\defineunknownfont#1%
-  {\let\c!savedtext\c!text
-   \let\c!text\s!text
+  {\let\c!text\s!text
    \donefalse
    \processcommacommand[\fontrelativesizelist]{\dodefineunknownfont{#1}}%
    \let\c!text\c!savedtext
@@ -2644,7 +2703,7 @@
   [liga=yes,kern=yes,compose=yes,tlig=yes,trep=yes]
 
 \definefontfeature
-  [arabic]
+  [arabic] % this will become obsolete
   [mode=node,language=dflt,script=arab,ccmp=yes,
    init=yes,medi=yes,fina=yes,isol=yes,
    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
@@ -2656,7 +2715,7 @@
 
 \definefontfeature
   [virtualmath]
-  [mode=base,liga=yes,kern=yes,tlig=yes,trep=yes]
+  [mode=base,liga=yes,kern=yes,tlig=yes,trep=yes,language=dflt,script=math]
 
 % for the moment here, this will change but we need it for mk.tex
 
