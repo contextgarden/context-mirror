@@ -1,0 +1,722 @@
+%D \module
+%D   [       file=regi-cyr,
+%D        version=2003.01.24,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Cyrillic,
+%D         author=...,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Here are additional input regimes for cyrillic encodings others than cp1251
+%D and iso-8859-5:
+%D
+%D \startitemize
+%D \item  two variants of dos
+%D \item  three variants of koi-8 for *nix: russian,
+%D       ukrainian and mixed
+%D \item  two variants for the mac
+%D \stopitemize
+%D
+%D Other, not so popular regimes, can be found in \type
+%D {regi-cy2}.
+
+\startregime[cp866]
+
+\defineactivetoken 128 {\cyrillicA}
+\defineactivetoken 129 {\cyrillicB}
+\defineactivetoken 130 {\cyrillicV}
+\defineactivetoken 131 {\cyrillicG}
+\defineactivetoken 132 {\cyrillicD}
+\defineactivetoken 133 {\cyrillicE}
+\defineactivetoken 134 {\cyrillicZH}
+\defineactivetoken 135 {\cyrillicZ}
+\defineactivetoken 136 {\cyrillicI}
+\defineactivetoken 137 {\cyrillicISHRT}
+\defineactivetoken 138 {\cyrillicK}
+\defineactivetoken 139 {\cyrillicL}
+\defineactivetoken 140 {\cyrillicM}
+\defineactivetoken 141 {\cyrillicN}
+\defineactivetoken 142 {\cyrillicO}
+\defineactivetoken 143 {\cyrillicP}
+\defineactivetoken 144 {\cyrillicR}
+\defineactivetoken 145 {\cyrillicS}
+\defineactivetoken 146 {\cyrillicT}
+\defineactivetoken 147 {\cyrillicU}
+\defineactivetoken 148 {\cyrillicF}
+\defineactivetoken 149 {\cyrillicH}
+\defineactivetoken 150 {\cyrillicC}
+\defineactivetoken 151 {\cyrillicCH}
+\defineactivetoken 152 {\cyrillicSH}
+\defineactivetoken 153 {\cyrillicSHCH}
+\defineactivetoken 154 {\cyrillicHRDSN}
+\defineactivetoken 155 {\cyrillicERY}
+\defineactivetoken 156 {\cyrillicSFTSN}
+\defineactivetoken 157 {\cyrillicEREV}
+\defineactivetoken 158 {\cyrillicYU}
+\defineactivetoken 159 {\cyrillicYA}
+\defineactivetoken 160 {\cyrillica}
+\defineactivetoken 161 {\cyrillicb}
+\defineactivetoken 162 {\cyrillicv}
+\defineactivetoken 163 {\cyrillicg}
+\defineactivetoken 164 {\cyrillicd}
+\defineactivetoken 165 {\cyrillice}
+\defineactivetoken 166 {\cyrilliczh}
+\defineactivetoken 167 {\cyrillicz}
+\defineactivetoken 168 {\cyrillici}
+\defineactivetoken 169 {\cyrillicishrt}
+\defineactivetoken 170 {\cyrillick}
+\defineactivetoken 171 {\cyrillicl}
+\defineactivetoken 172 {\cyrillicm}
+\defineactivetoken 173 {\cyrillicn}
+\defineactivetoken 174 {\cyrillico}
+\defineactivetoken 175 {\cyrillicp}
+\defineactivetoken 224 {\cyrillicr}
+\defineactivetoken 225 {\cyrillics}
+\defineactivetoken 226 {\cyrillict}
+\defineactivetoken 227 {\cyrillicu}
+\defineactivetoken 228 {\cyrillicf}
+\defineactivetoken 229 {\cyrillich}
+\defineactivetoken 230 {\cyrillicc}
+\defineactivetoken 231 {\cyrillicch}
+\defineactivetoken 232 {\cyrillicsh}
+\defineactivetoken 233 {\cyrillicshch}
+\defineactivetoken 234 {\cyrillichrdsn}
+\defineactivetoken 235 {\cyrillicery}
+\defineactivetoken 236 {\cyrillicsftsn}
+\defineactivetoken 237 {\cyrillicerev}
+\defineactivetoken 238 {\cyrillicyu}
+\defineactivetoken 239 {\cyrillicya}
+\defineactivetoken 240 {\cyrillicYO}
+\defineactivetoken 241 {\cyrillicyo}
+\defineactivetoken 242 {\cyrillicIE}
+\defineactivetoken 243 {\cyrillicie}
+\defineactivetoken 244 {\cyrillicYI}
+\defineactivetoken 245 {\cyrillicyi}
+\defineactivetoken 246 {\cyrillicUSHRT}
+\defineactivetoken 247 {\cyrillicushrt}
+\defineactivetoken 248 {\textdegree}
+\defineactivetoken 249 {\bullet}
+\defineactivetoken 250 {\periodcentered}
+\defineactivetoken 252 {\textnumero}
+\defineactivetoken 253 {\textcurrency}
+\defineactivetoken 254 {\textblacksquare}
+\defineactivetoken 255 {\nonbreakablespace}
+\defineactivetoken 251 {\textsurd}
+
+\stopregime
+
+\startregime[cp866nav]
+
+\defineactivetoken 128 {\cyrillicA}
+\defineactivetoken 129 {\cyrillicB}
+\defineactivetoken 130 {\cyrillicV}
+\defineactivetoken 131 {\cyrillicG}
+\defineactivetoken 132 {\cyrillicD}
+\defineactivetoken 133 {\cyrillicE}
+\defineactivetoken 134 {\cyrillicZH}
+\defineactivetoken 135 {\cyrillicZ}
+\defineactivetoken 136 {\cyrillicI}
+\defineactivetoken 137 {\cyrillicISHRT}
+\defineactivetoken 138 {\cyrillicK}
+\defineactivetoken 139 {\cyrillicL}
+\defineactivetoken 140 {\cyrillicM}
+\defineactivetoken 141 {\cyrillicN}
+\defineactivetoken 142 {\cyrillicO}
+\defineactivetoken 143 {\cyrillicP}
+\defineactivetoken 144 {\cyrillicR}
+\defineactivetoken 145 {\cyrillicS}
+\defineactivetoken 146 {\cyrillicT}
+\defineactivetoken 147 {\cyrillicU}
+\defineactivetoken 148 {\cyrillicF}
+\defineactivetoken 149 {\cyrillicH}
+\defineactivetoken 150 {\cyrillicC}
+\defineactivetoken 151 {\cyrillicCH}
+\defineactivetoken 152 {\cyrillicSH}
+\defineactivetoken 153 {\cyrillicSHCH}
+\defineactivetoken 154 {\cyrillicHRDSN}
+\defineactivetoken 155 {\cyrillicERY}
+\defineactivetoken 156 {\cyrillicSFTSN}
+\defineactivetoken 157 {\cyrillicEREV}
+\defineactivetoken 158 {\cyrillicYU}
+\defineactivetoken 159 {\cyrillicYA}
+\defineactivetoken 160 {\cyrillica}
+\defineactivetoken 161 {\cyrillicb}
+\defineactivetoken 162 {\cyrillicv}
+\defineactivetoken 163 {\cyrillicg}
+\defineactivetoken 164 {\cyrillicd}
+\defineactivetoken 165 {\cyrillice}
+\defineactivetoken 166 {\cyrilliczh}
+\defineactivetoken 167 {\cyrillicz}
+\defineactivetoken 168 {\cyrillici}
+\defineactivetoken 169 {\cyrillicishrt}
+\defineactivetoken 170 {\cyrillick}
+\defineactivetoken 171 {\cyrillicl}
+\defineactivetoken 172 {\cyrillicm}
+\defineactivetoken 173 {\cyrillicn}
+\defineactivetoken 174 {\cyrillico}
+\defineactivetoken 175 {\cyrillicp}
+\defineactivetoken 224 {\cyrillicr}
+\defineactivetoken 225 {\cyrillics}
+\defineactivetoken 226 {\cyrillict}
+\defineactivetoken 227 {\cyrillicu}
+\defineactivetoken 228 {\cyrillicf}
+\defineactivetoken 229 {\cyrillich}
+\defineactivetoken 230 {\cyrillicc}
+\defineactivetoken 231 {\cyrillicch}
+\defineactivetoken 232 {\cyrillicsh}
+\defineactivetoken 233 {\cyrillicshch}
+\defineactivetoken 234 {\cyrillichrdsn}
+\defineactivetoken 235 {\cyrillicery}
+\defineactivetoken 236 {\cyrillicsftsn}
+\defineactivetoken 237 {\cyrillicerev}
+\defineactivetoken 238 {\cyrillicyu}
+\defineactivetoken 239 {\cyrillicya}
+\defineactivetoken 240 {\cyrillicYO}
+\defineactivetoken 241 {\cyrillicyo}
+\defineactivetoken 242 {\cyrillicGUP}
+\defineactivetoken 243 {\cyrillicgup}
+\defineactivetoken 244 {\cyrillicIE}
+\defineactivetoken 245 {\cyrillicie}
+\defineactivetoken 246 {\cyrillicII}
+\defineactivetoken 247 {\cyrillicii}
+\defineactivetoken 248 {\cyrillicYI}
+\defineactivetoken 249 {\cyrillicyi}
+\defineactivetoken 250 {\cyrillicUSHRT}
+\defineactivetoken 251 {\cyrillicushrt}
+\defineactivetoken 252 {\textnumero}
+\defineactivetoken 253 {\leftguillemot}
+\defineactivetoken 254 {\rightguillemot}
+\defineactivetoken 255 {\nonbreakablespace}
+
+\stopregime
+
+\startregime[koi8-r]
+
+\defineactivetoken 225 {\cyrillicA}
+\defineactivetoken 226 {\cyrillicB}
+\defineactivetoken 247 {\cyrillicV}
+\defineactivetoken 231 {\cyrillicG}
+\defineactivetoken 228 {\cyrillicD}
+\defineactivetoken 229 {\cyrillicE}
+\defineactivetoken 179 {\cyrillicYO}
+\defineactivetoken 246 {\cyrillicZH}
+\defineactivetoken 250 {\cyrillicZ}
+\defineactivetoken 233 {\cyrillicI}
+\defineactivetoken 234 {\cyrillicISHRT}
+\defineactivetoken 235 {\cyrillicK}
+\defineactivetoken 236 {\cyrillicL}
+\defineactivetoken 237 {\cyrillicM}
+\defineactivetoken 238 {\cyrillicN}
+\defineactivetoken 239 {\cyrillicO}
+\defineactivetoken 240 {\cyrillicP}
+\defineactivetoken 242 {\cyrillicR}
+\defineactivetoken 243 {\cyrillicS}
+\defineactivetoken 244 {\cyrillicT}
+\defineactivetoken 245 {\cyrillicU}
+\defineactivetoken 230 {\cyrillicF}
+\defineactivetoken 232 {\cyrillicH}
+\defineactivetoken 227 {\cyrillicC}
+\defineactivetoken 254 {\cyrillicCH}
+\defineactivetoken 251 {\cyrillicSH}
+\defineactivetoken 253 {\cyrillicSHCH}
+\defineactivetoken 255 {\cyrillicHRDSN}
+\defineactivetoken 249 {\cyrillicERY}
+\defineactivetoken 248 {\cyrillicSFTSN}
+\defineactivetoken 252 {\cyrillicEREV}
+\defineactivetoken 224 {\cyrillicYU}
+\defineactivetoken 241 {\cyrillicYA}
+\defineactivetoken 193 {\cyrillica}
+\defineactivetoken 194 {\cyrillicb}
+\defineactivetoken 215 {\cyrillicv}
+\defineactivetoken 199 {\cyrillicg}
+\defineactivetoken 196 {\cyrillicd}
+\defineactivetoken 197 {\cyrillice}
+\defineactivetoken 163 {\cyrillicyo}
+\defineactivetoken 214 {\cyrilliczh}
+\defineactivetoken 218 {\cyrillicz}
+\defineactivetoken 201 {\cyrillici}
+\defineactivetoken 202 {\cyrillicishrt}
+\defineactivetoken 203 {\cyrillick}
+\defineactivetoken 204 {\cyrillicl}
+\defineactivetoken 205 {\cyrillicm}
+\defineactivetoken 206 {\cyrillicn}
+\defineactivetoken 207 {\cyrillico}
+\defineactivetoken 208 {\cyrillicp}
+\defineactivetoken 210 {\cyrillicr}
+\defineactivetoken 211 {\cyrillics}
+\defineactivetoken 212 {\cyrillict}
+\defineactivetoken 213 {\cyrillicu}
+\defineactivetoken 198 {\cyrillicf}
+\defineactivetoken 200 {\cyrillich}
+\defineactivetoken 195 {\cyrillicc}
+\defineactivetoken 222 {\cyrillicch}
+\defineactivetoken 219 {\cyrillicsh}
+\defineactivetoken 221 {\cyrillicshch}
+\defineactivetoken 223 {\cyrillichrdsn}
+\defineactivetoken 217 {\cyrillicery}
+\defineactivetoken 216 {\cyrillicsftsn}
+\defineactivetoken 220 {\cyrillicerev}
+\defineactivetoken 192 {\cyrillicyu}
+\defineactivetoken 209 {\cyrillicya}
+\defineactivetoken 148 {\textblacksquare}
+\defineactivetoken 149 {\textbullet}
+\defineactivetoken 154 {\nonbreakablespace}
+\defineactivetoken 156 {\textdegree}
+\defineactivetoken 158 {\periodcentered}
+\defineactivetoken 191 {\copyright}
+\defineactivetoken 150 {\textsurd}
+\defineactivetoken 151 {\mathematics\sim}
+\defineactivetoken 152 {\mathematics\leq}
+\defineactivetoken 153 {\mathematics\geq}
+\defineactivetoken 157 {\twosuperior}
+\defineactivetoken 159 {\textdiv}
+
+\stopregime
+
+\startregime[koi8-ru]
+
+\defineactivetoken 225 {\cyrillicA}
+\defineactivetoken 226 {\cyrillicB}
+\defineactivetoken 247 {\cyrillicV}
+\defineactivetoken 231 {\cyrillicG}
+\defineactivetoken 228 {\cyrillicD}
+\defineactivetoken 229 {\cyrillicE}
+\defineactivetoken 179 {\cyrillicYO}
+\defineactivetoken 246 {\cyrillicZH}
+\defineactivetoken 250 {\cyrillicZ}
+\defineactivetoken 233 {\cyrillicI}
+\defineactivetoken 234 {\cyrillicISHRT}
+\defineactivetoken 235 {\cyrillicK}
+\defineactivetoken 236 {\cyrillicL}
+\defineactivetoken 237 {\cyrillicM}
+\defineactivetoken 238 {\cyrillicN}
+\defineactivetoken 239 {\cyrillicO}
+\defineactivetoken 240 {\cyrillicP}
+\defineactivetoken 242 {\cyrillicR}
+\defineactivetoken 243 {\cyrillicS}
+\defineactivetoken 244 {\cyrillicT}
+\defineactivetoken 245 {\cyrillicU}
+\defineactivetoken 230 {\cyrillicF}
+\defineactivetoken 232 {\cyrillicH}
+\defineactivetoken 227 {\cyrillicC}
+\defineactivetoken 254 {\cyrillicCH}
+\defineactivetoken 251 {\cyrillicSH}
+\defineactivetoken 253 {\cyrillicSHCH}
+\defineactivetoken 255 {\cyrillicHRDSN}
+\defineactivetoken 249 {\cyrillicERY}
+\defineactivetoken 248 {\cyrillicSFTSN}
+\defineactivetoken 252 {\cyrillicEREV}
+\defineactivetoken 224 {\cyrillicYU}
+\defineactivetoken 241 {\cyrillicYA}
+\defineactivetoken 193 {\cyrillica}
+\defineactivetoken 194 {\cyrillicb}
+\defineactivetoken 215 {\cyrillicv}
+\defineactivetoken 199 {\cyrillicg}
+\defineactivetoken 196 {\cyrillicd}
+\defineactivetoken 197 {\cyrillice}
+\defineactivetoken 163 {\cyrillicyo}
+\defineactivetoken 214 {\cyrilliczh}
+\defineactivetoken 218 {\cyrillicz}
+\defineactivetoken 201 {\cyrillici}
+\defineactivetoken 202 {\cyrillicishrt}
+\defineactivetoken 203 {\cyrillick}
+\defineactivetoken 204 {\cyrillicl}
+\defineactivetoken 205 {\cyrillicm}
+\defineactivetoken 206 {\cyrillicn}
+\defineactivetoken 207 {\cyrillico}
+\defineactivetoken 208 {\cyrillicp}
+\defineactivetoken 210 {\cyrillicr}
+\defineactivetoken 211 {\cyrillics}
+\defineactivetoken 212 {\cyrillict}
+\defineactivetoken 213 {\cyrillicu}
+\defineactivetoken 198 {\cyrillicf}
+\defineactivetoken 200 {\cyrillich}
+\defineactivetoken 195 {\cyrillicc}
+\defineactivetoken 222 {\cyrillicch}
+\defineactivetoken 219 {\cyrillicsh}
+\defineactivetoken 221 {\cyrillicshch}
+\defineactivetoken 223 {\cyrillichrdsn}
+\defineactivetoken 217 {\cyrillicery}
+\defineactivetoken 216 {\cyrillicsftsn}
+\defineactivetoken 220 {\cyrillicerev}
+\defineactivetoken 192 {\cyrillicyu}
+\defineactivetoken 209 {\cyrillicya}
+\defineactivetoken 147 {\upperleftsinglesixquote}
+\defineactivetoken 148 {\textblacksquare}
+\defineactivetoken 149 {\textbullet}      % Changed by V.F. 07/02/2003 (was: \bullet)
+\defineactivetoken 150 {\upperrightdoubleninequote}
+\defineactivetoken 151 {\emdash}
+\defineactivetoken 152 {\textnumero}
+\defineactivetoken 153 {\trademark}       % Changed by V.F. 07/02/2003 (was: \texttrademark)
+\defineactivetoken 154 {\nonbreakablespace}
+\defineactivetoken 155 {\rightguillemot}
+\defineactivetoken 156 {\registered}
+\defineactivetoken 157 {\leftguillemot}
+\defineactivetoken 158 {\periodcentered}  % Changed by V.F. 07/02/2003 (was: \textperiodcentered)
+\defineactivetoken 159 {\textcurrency}
+\defineactivetoken 164 {\cyrillicie}
+\defineactivetoken 166 {\cyrillicii}
+\defineactivetoken 167 {\cyrillicyi}
+\defineactivetoken 173 {\cyrillicgup}
+\defineactivetoken 174 {\cyrillicushrt}
+\defineactivetoken 180 {\cyrillicIE}
+\defineactivetoken 182 {\cyrillicII}
+\defineactivetoken 183 {\cyrillicYI}
+\defineactivetoken 189 {\cyrillicGUP}
+\defineactivetoken 190 {\cyrillicUSHRT}
+\defineactivetoken 191 {\copyright}
+
+\stopregime
+
+\startregime[koi8-u]
+
+\defineactivetoken 225 {\cyrillicA}
+\defineactivetoken 226 {\cyrillicB}
+\defineactivetoken 247 {\cyrillicV}
+\defineactivetoken 231 {\cyrillicG}
+\defineactivetoken 228 {\cyrillicD}
+\defineactivetoken 229 {\cyrillicE}
+\defineactivetoken 179 {\cyrillicYO}
+\defineactivetoken 246 {\cyrillicZH}
+\defineactivetoken 250 {\cyrillicZ}
+\defineactivetoken 233 {\cyrillicI}
+\defineactivetoken 234 {\cyrillicISHRT}
+\defineactivetoken 235 {\cyrillicK}
+\defineactivetoken 236 {\cyrillicL}
+\defineactivetoken 237 {\cyrillicM}
+\defineactivetoken 238 {\cyrillicN}
+\defineactivetoken 239 {\cyrillicO}
+\defineactivetoken 240 {\cyrillicP}
+\defineactivetoken 242 {\cyrillicR}
+\defineactivetoken 243 {\cyrillicS}
+\defineactivetoken 244 {\cyrillicT}
+\defineactivetoken 245 {\cyrillicU}
+\defineactivetoken 230 {\cyrillicF}
+\defineactivetoken 232 {\cyrillicH}
+\defineactivetoken 227 {\cyrillicC}
+\defineactivetoken 254 {\cyrillicCH}
+\defineactivetoken 251 {\cyrillicSH}
+\defineactivetoken 253 {\cyrillicSHCH}
+\defineactivetoken 255 {\cyrillicHRDSN}
+\defineactivetoken 249 {\cyrillicERY}
+\defineactivetoken 248 {\cyrillicSFTSN}
+\defineactivetoken 252 {\cyrillicEREV}
+\defineactivetoken 224 {\cyrillicYU}
+\defineactivetoken 241 {\cyrillicYA}
+\defineactivetoken 193 {\cyrillica}
+\defineactivetoken 194 {\cyrillicb}
+\defineactivetoken 215 {\cyrillicv}
+\defineactivetoken 199 {\cyrillicg}
+\defineactivetoken 196 {\cyrillicd}
+\defineactivetoken 197 {\cyrillice}
+\defineactivetoken 163 {\cyrillicyo}
+\defineactivetoken 214 {\cyrilliczh}
+\defineactivetoken 218 {\cyrillicz}
+\defineactivetoken 201 {\cyrillici}
+\defineactivetoken 202 {\cyrillicishrt}
+\defineactivetoken 203 {\cyrillick}
+\defineactivetoken 204 {\cyrillicl}
+\defineactivetoken 205 {\cyrillicm}
+\defineactivetoken 206 {\cyrillicn}
+\defineactivetoken 207 {\cyrillico}
+\defineactivetoken 208 {\cyrillicp}
+\defineactivetoken 210 {\cyrillicr}
+\defineactivetoken 211 {\cyrillics}
+\defineactivetoken 212 {\cyrillict}
+\defineactivetoken 213 {\cyrillicu}
+\defineactivetoken 198 {\cyrillicf}
+\defineactivetoken 200 {\cyrillich}
+\defineactivetoken 195 {\cyrillicc}
+\defineactivetoken 222 {\cyrillicch}
+\defineactivetoken 219 {\cyrillicsh}
+\defineactivetoken 221 {\cyrillicshch}
+\defineactivetoken 223 {\cyrillichrdsn}
+\defineactivetoken 217 {\cyrillicery}
+\defineactivetoken 216 {\cyrillicsftsn}
+\defineactivetoken 220 {\cyrillicerev}
+\defineactivetoken 192 {\cyrillicyu}
+\defineactivetoken 209 {\cyrillicya}
+\defineactivetoken 164 {\cyrillicie}
+\defineactivetoken 166 {\cyrillicii}
+\defineactivetoken 167 {\cyrillicyi}
+\defineactivetoken 173 {\cyrillicgup}
+\defineactivetoken 180 {\cyrillicIE}
+\defineactivetoken 182 {\cyrillicII}
+\defineactivetoken 183 {\cyrillicYI}
+\defineactivetoken 189 {\cyrillicGUP}
+
+\stopregime
+
+\startregime[maccyr]
+
+\defineactivetoken 128 {\cyrillicA}
+\defineactivetoken 129 {\cyrillicB}
+\defineactivetoken 130 {\cyrillicV}
+\defineactivetoken 131 {\cyrillicG}
+\defineactivetoken 132 {\cyrillicD}
+\defineactivetoken 133 {\cyrillicE}
+\defineactivetoken 134 {\cyrillicZH}
+\defineactivetoken 135 {\cyrillicZ}
+\defineactivetoken 136 {\cyrillicI}
+\defineactivetoken 137 {\cyrillicISHRT}
+\defineactivetoken 138 {\cyrillicK}
+\defineactivetoken 139 {\cyrillicL}
+\defineactivetoken 140 {\cyrillicM}
+\defineactivetoken 141 {\cyrillicN}
+\defineactivetoken 142 {\cyrillicO}
+\defineactivetoken 143 {\cyrillicP}
+\defineactivetoken 144 {\cyrillicR}
+\defineactivetoken 145 {\cyrillicS}
+\defineactivetoken 146 {\cyrillicT}
+\defineactivetoken 147 {\cyrillicU}
+\defineactivetoken 148 {\cyrillicF}
+\defineactivetoken 149 {\cyrillicH}
+\defineactivetoken 150 {\cyrillicC}
+\defineactivetoken 151 {\cyrillicCH}
+\defineactivetoken 152 {\cyrillicSH}
+\defineactivetoken 153 {\cyrillicSHCH}
+\defineactivetoken 154 {\cyrillicHRDSN}
+\defineactivetoken 155 {\cyrillicERY}
+\defineactivetoken 156 {\cyrillicSFTSN}
+\defineactivetoken 157 {\cyrillicEREV}
+\defineactivetoken 158 {\cyrillicYU}
+\defineactivetoken 159 {\cyrillicYA}
+\defineactivetoken 160 {\textdag}        % Changed by V.F. 07/02/2003 (was: dag)
+\defineactivetoken 161 {\textdegree}
+\defineactivetoken 162 {\textcent}
+\defineactivetoken 163 {\textsterling}   % Changed by V.F. 07/02/2003 (was: \sterling)
+\defineactivetoken 164 {\sectionmark}    % Changed by V.F. 07/02/2003 (was: \S)
+\defineactivetoken 165 {\textbullet}     % Changed by V.F. 07/02/2003 (was: \bullet}
+\defineactivetoken 166 {\paragraphmark}  % Changed by V.F. 07/02/2003 (was: \P)
+\defineactivetoken 167 {\cyrillicII}
+\defineactivetoken 168 {\registered}
+\defineactivetoken 169 {\copyright}
+\defineactivetoken 170 {\trademark}      % Changed by V.F. 07/02/2003 (was: \texttrademark}
+\defineactivetoken 171 {\cyrillicDJE}
+\defineactivetoken 172 {\cyrillicdje}
+\defineactivetoken 174 {\'\cyrillicG}
+\defineactivetoken 175 {\'\cyrillicg}
+\defineactivetoken 180 {\cyrillicii}
+\defineactivetoken 183 {\cyrillicJE}
+\defineactivetoken 184 {\cyrillicIE}
+\defineactivetoken 185 {\cyrillicie}
+\defineactivetoken 186 {\cyrillicYI}
+\defineactivetoken 187 {\cyrillicyi}
+\defineactivetoken 188 {\cyrillicLJE}
+\defineactivetoken 189 {\cyrilliclje}
+\defineactivetoken 190 {\cyrillicNJE}
+\defineactivetoken 191 {\cyrillicnje}
+\defineactivetoken 192 {\cyrillicje}
+\defineactivetoken 193 {\cyrillicDZE}
+\defineactivetoken 196 {\textflorin}     % Changed by V.F. 07/02/2003 (was: \florijn)
+\defineactivetoken 199 {\leftguillemot}
+\defineactivetoken 200 {\rightguillemot}
+\defineactivetoken 201 {\textellipsis}   % Changed by V.F. 07/02/2003 (was: \dots)
+\defineactivetoken 202 {\nonbreakablespace}
+\defineactivetoken 203 {\cyrillicTSHE}
+\defineactivetoken 204 {\cyrillictshe}
+\defineactivetoken 205 {\'\cyrillicK}
+\defineactivetoken 206 {\'\cyrillick}
+\defineactivetoken 207 {\cyrillicdze}
+\defineactivetoken 208 {\endash}
+\defineactivetoken 209 {\emdash}
+\defineactivetoken 210 {\upperleftdoublesixquote} % Changed by V.F. 07/02/2003
+                                                  %  (was: \upperleftsinglesixquote)
+\defineactivetoken 211 {\upperrightdoubleninequote}
+\defineactivetoken 212 {\upperleftsinglesixquote}
+\defineactivetoken 213 {\upperrightsingleninequote}
+\defineactivetoken 215 {\lowerleftdoubleninequote}
+\defineactivetoken 216 {\cyrillicUSHRT}
+\defineactivetoken 217 {\cyrillicushrt}
+\defineactivetoken 218 {\cyrillicDZHE}
+\defineactivetoken 219 {\cyrillicdzhe}
+\defineactivetoken 220 {\textnumero}
+\defineactivetoken 221 {\cyrillicYO}
+\defineactivetoken 222 {\cyrillicyo}
+\defineactivetoken 223 {\cyrillicya}
+\defineactivetoken 224 {\cyrillica}
+\defineactivetoken 225 {\cyrillicb}
+\defineactivetoken 226 {\cyrillicv}
+\defineactivetoken 227 {\cyrillicg}
+\defineactivetoken 228 {\cyrillicd}
+\defineactivetoken 229 {\cyrillice}
+\defineactivetoken 230 {\cyrilliczh}
+\defineactivetoken 231 {\cyrillicz}
+\defineactivetoken 232 {\cyrillici}
+\defineactivetoken 233 {\cyrillicishrt}
+\defineactivetoken 234 {\cyrillick}
+\defineactivetoken 235 {\cyrillicl}
+\defineactivetoken 236 {\cyrillicm}
+\defineactivetoken 237 {\cyrillicn}
+\defineactivetoken 238 {\cyrillico}
+\defineactivetoken 239 {\cyrillicp}
+\defineactivetoken 240 {\cyrillicr}
+\defineactivetoken 241 {\cyrillics}
+\defineactivetoken 242 {\cyrillict}
+\defineactivetoken 243 {\cyrillicu}
+\defineactivetoken 244 {\cyrillicf}
+\defineactivetoken 245 {\cyrillich}
+\defineactivetoken 246 {\cyrillicc}
+\defineactivetoken 247 {\cyrillicch}
+\defineactivetoken 248 {\cyrillicsh}
+\defineactivetoken 249 {\cyrillicshch}
+\defineactivetoken 250 {\cyrillichrdsn}
+\defineactivetoken 251 {\cyrillicery}
+\defineactivetoken 252 {\cyrillicsftsn}
+\defineactivetoken 253 {\cyrillicerev}
+\defineactivetoken 254 {\cyrillicyu}
+\defineactivetoken 255 {\textcurrency}
+\defineactivetoken 173 {\mathematics{\neq}}     % Added by V.F. 07/02/2003
+\defineactivetoken 176 {\mathematics{\infty}}   % Added by V.F. 07/02/2003
+\defineactivetoken 177 {\textpm}                % Added by V.F. 07/02/2003
+\defineactivetoken 178 {\mathematics{\leq}}     % Added by V.F. 07/02/2003
+\defineactivetoken 179 {\mathematics{\geq}}     % Added by V.F. 07/02/2003
+\defineactivetoken 181 {\textmu}                % Added by V.F. 07/02/2003
+\defineactivetoken 182 {\mathematics{\partial}} % Added by V.F. 07/02/2003
+\defineactivetoken 194 {\textlognot}            % Added by V.F. 07/02/2003
+\defineactivetoken 195 {\textsurd}              % Added by V.F. 07/02/2003
+\defineactivetoken 197 {\mathematics{\approx}}  % Added by V.F. 07/02/2003
+\defineactivetoken 198 {\mathematics{\Delta}}   % Added by V.F. 07/02/2003
+\defineactivetoken 214 {\textdiv}               % Added by V.F. 07/02/2003
+
+\stopregime
+
+\startregime[macukr]
+
+\defineactivetoken 128 {\cyrillicA}
+\defineactivetoken 129 {\cyrillicB}
+\defineactivetoken 130 {\cyrillicV}
+\defineactivetoken 131 {\cyrillicG}
+\defineactivetoken 132 {\cyrillicD}
+\defineactivetoken 133 {\cyrillicE}
+\defineactivetoken 134 {\cyrillicZH}
+\defineactivetoken 135 {\cyrillicZ}
+\defineactivetoken 136 {\cyrillicI}
+\defineactivetoken 137 {\cyrillicISHRT}
+\defineactivetoken 138 {\cyrillicK}
+\defineactivetoken 139 {\cyrillicL}
+\defineactivetoken 140 {\cyrillicM}
+\defineactivetoken 141 {\cyrillicN}
+\defineactivetoken 142 {\cyrillicO}
+\defineactivetoken 143 {\cyrillicP}
+\defineactivetoken 144 {\cyrillicR}
+\defineactivetoken 145 {\cyrillicS}
+\defineactivetoken 146 {\cyrillicT}
+\defineactivetoken 147 {\cyrillicU}
+\defineactivetoken 148 {\cyrillicF}
+\defineactivetoken 149 {\cyrillicH}
+\defineactivetoken 150 {\cyrillicC}
+\defineactivetoken 151 {\cyrillicCH}
+\defineactivetoken 152 {\cyrillicSH}
+\defineactivetoken 153 {\cyrillicSHCH}
+\defineactivetoken 154 {\cyrillicHRDSN}
+\defineactivetoken 155 {\cyrillicERY}
+\defineactivetoken 156 {\cyrillicSFTSN}
+\defineactivetoken 157 {\cyrillicEREV}
+\defineactivetoken 158 {\cyrillicYU}
+\defineactivetoken 159 {\cyrillicYA}
+\defineactivetoken 160 {\textdag}        % Changed by V.F. 07/02/2003 (was: \dag)
+\defineactivetoken 161 {\textdegree}
+\defineactivetoken 162 {\cyrillicGUP}
+\defineactivetoken 163 {\textsterling}   % Changed by V.F. 07/02/2003 (was: \sterling)
+\defineactivetoken 164 {\sectionmark}    % Changed by V.F. 07/02/2003 (was: \S)
+\defineactivetoken 165 {\textbullet}     % Changed by V.F. 07/02/2003 (was: \bullet}
+\defineactivetoken 166 {\paragraphmark}  % Changed by V.F. 07/02/2003 (was: \P)
+\defineactivetoken 167 {\cyrillicII}
+\defineactivetoken 168 {\registered}
+\defineactivetoken 169 {\copyright}
+\defineactivetoken 170 {\trademark}      % Changed by V.F. 07/02/2003 (was: \texttrademark}
+\defineactivetoken 171 {\cyrillicDJE}
+\defineactivetoken 172 {\cyrillicdje}
+\defineactivetoken 174 {\'\cyrillicG}
+\defineactivetoken 175 {\'\cyrillicg}
+\defineactivetoken 180 {\cyrillicii}
+\defineactivetoken 182 {\cyrillicgup}
+\defineactivetoken 183 {\cyrillicJE}
+\defineactivetoken 184 {\cyrillicIE}
+\defineactivetoken 185 {\cyrillicie}
+\defineactivetoken 186 {\cyrillicYI}
+\defineactivetoken 187 {\cyrillicyi}
+\defineactivetoken 188 {\cyrillicLJE}
+\defineactivetoken 189 {\cyrilliclje}
+\defineactivetoken 190 {\cyrillicNJE}
+\defineactivetoken 191 {\cyrillicnje}
+\defineactivetoken 192 {\cyrillicje}
+\defineactivetoken 193 {\cyrillicDZE}
+\defineactivetoken 196 {\textflorin}     % Changed by V.F. 07/02/2003 (was: \florijn)
+\defineactivetoken 199 {\leftguillemot}
+\defineactivetoken 200 {\rightguillemot}
+\defineactivetoken 201 {\textellipsis}   % Changed by V.F. 07/02/2003 (was: \dots)
+\defineactivetoken 202 {\nonbreakablespace}
+\defineactivetoken 203 {\cyrillicTSHE}
+\defineactivetoken 204 {\cyrillictshe}
+\defineactivetoken 205 {\'\cyrillicK}
+\defineactivetoken 206 {\'\cyrillick}
+\defineactivetoken 207 {\cyrillicdze}
+\defineactivetoken 208 {\endash}
+\defineactivetoken 209 {\emdash}
+\defineactivetoken 210 {\upperleftdoublesixquote} % Changed by V.F. 07/02/2003
+                                                  %  (was: \upperleftsinglesixquote)
+\defineactivetoken 211 {\upperrightdoubleninequote}
+\defineactivetoken 212 {\upperleftsinglesixquote}
+\defineactivetoken 213 {\upperrightsingleninequote}
+\defineactivetoken 215 {\lowerleftdoubleninequote}
+\defineactivetoken 216 {\cyrillicUSHRT}
+\defineactivetoken 217 {\cyrillicushrt}
+\defineactivetoken 218 {\cyrillicDZHE}
+\defineactivetoken 219 {\cyrillicdzhe}
+\defineactivetoken 220 {\textnumero}
+\defineactivetoken 221 {\cyrillicYO}
+\defineactivetoken 222 {\cyrillicyo}
+\defineactivetoken 223 {\cyrillicya}
+\defineactivetoken 224 {\cyrillica}
+\defineactivetoken 225 {\cyrillicb}
+\defineactivetoken 226 {\cyrillicv}
+\defineactivetoken 227 {\cyrillicg}
+\defineactivetoken 228 {\cyrillicd}
+\defineactivetoken 229 {\cyrillice}
+\defineactivetoken 230 {\cyrilliczh}
+\defineactivetoken 231 {\cyrillicz}
+\defineactivetoken 232 {\cyrillici}
+\defineactivetoken 233 {\cyrillicishrt}
+\defineactivetoken 234 {\cyrillick}
+\defineactivetoken 235 {\cyrillicl}
+\defineactivetoken 236 {\cyrillicm}
+\defineactivetoken 237 {\cyrillicn}
+\defineactivetoken 238 {\cyrillico}
+\defineactivetoken 239 {\cyrillicp}
+\defineactivetoken 240 {\cyrillicr}
+\defineactivetoken 241 {\cyrillics}
+\defineactivetoken 242 {\cyrillict}
+\defineactivetoken 243 {\cyrillicu}
+\defineactivetoken 244 {\cyrillicf}
+\defineactivetoken 245 {\cyrillich}
+\defineactivetoken 246 {\cyrillicc}
+\defineactivetoken 247 {\cyrillicch}
+\defineactivetoken 248 {\cyrillicsh}
+\defineactivetoken 249 {\cyrillicshch}
+\defineactivetoken 250 {\cyrillichrdsn}
+\defineactivetoken 251 {\cyrillicery}
+\defineactivetoken 252 {\cyrillicsftsn}
+\defineactivetoken 253 {\cyrillicerev}
+\defineactivetoken 254 {\cyrillicyu}
+\defineactivetoken 255 {\textcurrency}
+\defineactivetoken 173 {\mathematics{\neq}}    % Added by V.F. 07/02/2003
+\defineactivetoken 176 {\mathematics{\infty}}  % Added by V.F. 07/02/2003
+\defineactivetoken 177 {\textpm}               % Added by V.F. 07/02/2003
+\defineactivetoken 178 {\mathematics{\leq}}    % Added by V.F. 07/02/2003
+\defineactivetoken 179 {\mathematics{\geq}}    % Added by V.F. 07/02/2003
+\defineactivetoken 181 {\textmu}               % Added by V.F. 07/02/2003
+\defineactivetoken 194 {\textlognot}           % Added by V.F. 07/02/2003
+\defineactivetoken 195 {\textsurd}             % Added by V.F. 07/02/2003
+\defineactivetoken 197 {\mathematics{\approx}} % Added by V.F. 07/02/2003
+\defineactivetoken 198 {\mathematics{\Delta}}  % Added by V.F. 07/02/2003
+\defineactivetoken 214 {\textdiv}              % Added by V.F. 07/02/2003
+
+\stopregime
+
+\endinput

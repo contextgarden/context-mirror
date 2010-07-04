@@ -1,0 +1,276 @@
+%D \module
+%D   [     file=enco-pol,
+%D      version=2000.05.07, % 1999.28.8,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Polish Mixed Encoding,
+%D       author={Taco Hoekwater \& Hans Hagen},
+%D         date=\currentdate,
+%D    copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This encoding will go but the regime will remain.
+
+%D Polish native encoding; normally polish users will use
+%D translate=cp1250pl in combination with ec encoding.
+
+\startmapping[pl0]
+
+\resetcaserange 128 to 255
+
+\definecaseswap 161 129 % a ogonek
+\definecaseswap 162 130 % c acute
+\definecaseswap 166 134 % e ogonek
+\definecaseswap 170 138 % l crossed
+\definecaseswap 171 139 % n acute
+\definecaseswap 177 145 % s acute
+\definecaseswap 185 153 % z acute
+\definecaseswap 187 155 % z dotaccent
+\definecaseswap 243 211 % o acute
+
+% \definecasemap 161 161 129 % a ogonek
+% \definecasemap 162 162 130 % c acute
+% \definecasemap 166 166 134 % e ogonek
+% \definecasemap 170 170 138 % l crossed
+% \definecasemap 171 171 139 % n acute
+% \definecasemap 177 177 145 % s acute
+% \definecasemap 185 185 153 % z acute
+% \definecasemap 187 187 155 % z dotaccent
+% \definecasemap 243 243 211 % o acute
+
+% \definecasemap 129 161 129  % A ogonek
+% \definecasemap 130 162 130  % C acute
+% \definecasemap 134 166 134  % E ogonek
+% \definecasemap 138 170 138  % L crossed
+% \definecasemap 139 171 139  % N acute
+% \definecasemap 145 177 145  % S acute
+% \definecasemap 153 185 153  % Z acute
+% \definecasemap 155 187 155  % Z dotaccent
+% \definecasemap 211 243 211  % O acute
+
+\stopmapping
+
+\startmapping[pl0]
+
+\definespacemap 129 999  % A ogonek
+\definespacemap 130 999  % C acute
+\definespacemap 134 999  % E ogonek
+\definespacemap 138 999  % L crossed
+\definespacemap 139 999  % N acute
+\definespacemap 211 999  % O acute
+\definespacemap 145 999  % S acute
+\definespacemap 153 999  % Z acute
+\definespacemap 155 999  % Z dot
+
+\stopmapping
+
+\startencoding[pl0][pl0]
+
+\definecharacter Aogonek    129
+\definecharacter Cacute     130
+\definecharacter Eogonek    134
+\definecharacter Lstroke    138
+\definecharacter Nacute     139
+\definecharacter Sacute     145
+\definecharacter Zacute     153
+\definecharacter Zdotaccent 155
+\definecharacter aogonek    161
+\definecharacter cacute     162
+\definecharacter eogonek    166
+\definecharacter lstroke    170
+\definecharacter nacute     171
+\definecharacter sacute     177
+\definecharacter zacute     185
+\definecharacter zdotaccent 187
+\definecharacter Oacute     211
+\definecharacter oacute     243
+
+\stopencoding
+
+\startencoding[pl0][pl0]
+
+\definecharacter leftguillemot   174
+\definecharacter rightguillemot  175
+\definecharacter guilsingleleft  174
+\definecharacter guilsingleright 175
+
+\stopencoding
+
+% obsolete
+%
+% \startencoding[pl0]
+%
+% \definesortkey {161} {a}{a}{\k a}   \definesortkey {129} {a}{a}{\k a}
+% \definesortkey {162} {c}{a}{\'c}    \definesortkey {130} {c}{a}{\'c}
+% \definesortkey {166} {e}{a}{\k e}   \definesortkey {134} {e}{a}{\k e}
+% \definesortkey {170} {l}{a}{\l }    \definesortkey {138} {l}{a}{\l }
+% \definesortkey {171} {n}{a}{\'n}    \definesortkey {139} {n}{a}{\'n}
+% \definesortkey {177} {s}{a}{\'s}    \definesortkey {145} {s}{a}{\'s}
+% \definesortkey {185} {z}{a}{\'z}    \definesortkey {153} {z}{a}{\'z}
+% \definesortkey {187} {z}{b}{\.z}    \definesortkey {155} {z}{b}{\.z}
+% \definesortkey {243} {o}{a}{\'o}    \definesortkey {211} {o}{a}{\'o}
+%
+% \definesortkey {\'c} {c}{a}{\'c}    \definesortkey {\'C} {c}{a}{\'c}
+% \definesortkey {\'n} {n}{a}{\'n}    \definesortkey {\'N} {n}{a}{\'n}
+% \definesortkey {\'o} {o}{a}{\'o}    \definesortkey {\'O} {o}{a}{\'o}
+% \definesortkey {\'s} {s}{a}{\'s}    \definesortkey {\'S} {s}{a}{\'s}
+% \definesortkey {\'z} {z}{a}{\'z}    \definesortkey {\'Z} {z}{a}{\'z}
+% \definesortkey {\.z} {z}{b}{\.z}    \definesortkey {\.Z} {z}{b}{\.z}
+% \definesortkey {\k a}{a}{a}{\k a}   \definesortkey {\k A}{a}{a}{\k a}
+% \definesortkey {\k e}{e}{a}{\k e}   \definesortkey {\k E}{e}{a}{\k e}
+% \definesortkey {\l } {l}{a}{\l}     \definesortkey {\L } {l}{a}{\l}
+%
+% \stopencoding
+
+%D Polish CP-1250 encoding.
+
+% \startmapping[pl1]
+%
+%
+% \resetcaserange 128 to 255
+%
+% \definecasemap 185 185 165  % a ogonek
+% \definecasemap 230 230 198  % c acute
+% \definecasemap 234 234 202  % e ogonek
+% \definecasemap 179 179 163  % l crossed
+% \definecasemap 241 241 209  % n acute
+% \definecasemap 243 243 211  % o acute
+% \definecasemap 156 156 140  % s acute
+% \definecasemap 159 159 143  % z acute
+% \definecasemap 191 191 175  % z dot
+%
+% \definecasemap 165 165 185  % A ogonek
+% \definecasemap 198 198 230  % C acute
+% \definecasemap 202 202 234  % E ogonek
+% \definecasemap 163 163 179  % L crossed
+% \definecasemap 209 209 241  % N acute
+% \definecasemap 211 211 243  % O acute
+% \definecasemap 140 140 156  % S acute
+% \definecasemap 143 143 159  % Z acute
+% \definecasemap 175 175 191  % Z dot
+%
+% \stopmapping
+%
+% \startmapping[pl1]
+%
+% \definespacemap 165 999  % A ogonek
+% \definespacemap 198 999  % C acute
+% \definespacemap 202 999  % E ogonek
+% \definespacemap 163 999  % L crossed
+% \definespacemap 209 999  % N acute
+% \definespacemap 211 999  % O acute
+% \definespacemap 140 999  % S acute
+% \definespacemap 143 999  % Z acute
+% \definespacemap 175 999  % Z dot
+%
+% \stopmapping
+%
+% \startencoding[pl1]
+%
+% \definecharacter Sacute     140
+% \definecharacter Zacute     143
+% \definecharacter sacute     156
+% \definecharacter zacute     159
+% \definecharacter Lstroke    163
+% \definecharacter Aogonek    165
+% \definecharacter Zdotaccent 175
+% \definecharacter lstroke    179
+% \definecharacter aogonek    185
+% \definecharacter zdotaccent 191
+% \definecharacter Cacute     198
+% \definecharacter Eogonek    202
+% \definecharacter Nacute     209
+% \definecharacter Oacute     211
+% \definecharacter cacute     230
+% \definecharacter eogonek    234
+% \definecharacter nacute     241
+% \definecharacter oacute     243
+%
+% \stopencoding
+%
+% \startencoding[pl1]
+%
+% \definecharacter leftguillemot   174
+% \definecharacter rightguillemot  175
+% \definecharacter guilsingleleft  174
+% \definecharacter guilsingleright 175
+%
+% \stopencoding
+
+%D Polish ISO-8859-2 encoding.
+
+% \startmapping[pl2]
+%
+% \resetcaserange 128 to 255
+%
+% \definecasemap 177 177 161  % a ogonek
+% \definecasemap 230 230 198  % c acute
+% \definecasemap 234 234 202  % e ogonek
+% \definecasemap 179 179 163  % l crossed
+% \definecasemap 241 241 209  % n acute
+% \definecasemap 243 243 211  % o acute
+% \definecasemap 182 182 166  % s acute
+% \definecasemap 188 188 172  % z acute
+% \definecasemap 191 191 175  % z dotaccent
+%
+% \definecasemap 161 161 177  % A ogonek
+% \definecasemap 198 198 230  % C acute
+% \definecasemap 202 202 234  % E ogonek
+% \definecasemap 163 163 179  % L crossed
+% \definecasemap 209 209 241  % N acute
+% \definecasemap 211 211 243  % O acute
+% \definecasemap 166 166 182  % S acute
+% \definecasemap 172 172 188  % Z acute
+% \definecasemap 175 175 191  % Z dotaccent
+%
+% \stopmapping
+%
+% \startmapping[pl2]
+%
+% \definespacemap 161 999  % A ogonek
+% \definespacemap 198 999  % C acute
+% \definespacemap 202 999  % E ogonek
+% \definespacemap 163 999  % L crossed
+% \definespacemap 209 999  % N acute
+% \definespacemap 211 999  % O acute
+% \definespacemap 166 999  % S acute
+% \definespacemap 172 999  % Z acute
+% \definespacemap 175 999  % Z dot
+%
+% \stopmapping
+%
+% \startencoding[pl2]
+%
+% \definecharacter Aogonek    161
+% \definecharacter Lstroke    163
+% \definecharacter Sacute     166
+% \definecharacter Zacute     172
+% \definecharacter Zdotaccent 175
+% \definecharacter aogonek    177
+% \definecharacter lstroke    179
+% \definecharacter sacute     182
+% \definecharacter zacute     188
+% \definecharacter zdotaccent 191
+% \definecharacter Cacute     198
+% \definecharacter Eogonek    202
+% \definecharacter Nacute     209
+% \definecharacter Oacute     211
+% \definecharacter cacute     230
+% \definecharacter eogonek    234
+% \definecharacter nacute     241
+% \definecharacter oacute     243
+%
+% \stopencoding
+%
+% \startencoding[pl2]
+%
+% \definecharacter leftguillemot   174
+% \definecharacter rightguillemot  175
+% \definecharacter guilsingleleft  174
+% \definecharacter guilsingleright 175
+%
+% \stopencoding
+
+\endinput

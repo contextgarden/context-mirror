@@ -1,0 +1,963 @@
+%D \module
+%D   [       file=strc-lst,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Lists,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Lists}
+
+\registerctxluafile{strc-lst}{1.001}
+
+\unprotect
+
+\def\currentstructurelistnumber{0}
+
+% nmstate -> no pagenumber if not start
+% autocrossdocument -> todo
+% expansion -> todo
+% auto refs to lists (chain)  -> todo (\dododowritetolist)
+% todo: \normalexpanded{\noexpand\everylistentry\emptytoks\the\everylistentry}% \emptytoks, else loop
+
+% interface to lua
+
+% we have to deal with compatible processing, i.e. list elements that have two
+% elements plus a pagenumber
+
+\let\listentry\gobblesixarguments
+
+\def\currentlist      {\s!unknown}
+\def\currentlistmethod{entry}
+\def\currentlistindex {0}
+
+\def\setlistparameter#1#2#3{\@EA\def\csname\??li#1#2\endcsname{#3}} % often
+%def\listparameter       #1{\ifcsname\??li\currentlist#1\endcsname\csname\??li\currentlist#1\endcsname\fi}
+
+% interface
+
+\def\listparameter       #1{\csname\dolistparameter{\??li\currentlist}#1\endcsname}
+\def\namedlistparameter#1#2{\csname\dolistparameter{\??li          #1}#2\endcsname}
+\def\listparameterhash   #1{\dolistparameterhash   {\??li\currentlist}#1}
+
+\def\dolistparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolistparentparameter    \csname#1\s!parent\endcsname#2\fi}
+\def\dolistparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dolistparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+
+\def\dolistparentparameter    #1#2{\ifx#1\relax\s!empty\else\dolistparameter    #1#2\fi}
+\def\dolistparentparameterhash#1#2{\ifx#1\relax        \else\dolistparameterhash#1#2\fi}
+
+\def\dosetlistattributes#1#2% style color
+  {\edef\fontattributehash {\listparameterhash#1}%
+   \edef\colorattributehash{\listparameterhash#2}%
+   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+\def\donestedlistattributes#1#2%
+  {\dosetlistattributes#1#2%
+   \ifx\colorattributehash\empty \else
+     \resetinteractionparameter\c!color
+     \resetinteractionparameter\c!contrastcolor
+   \fi}
+
+% handling
+
+% The next code injects data into the list at the current level.
+
+\def\structurelistinject{\dotripleempty\dostructurelistinject}
+
+\def\dostructurelistinject[#1][#2][#3]%
+  {\begingroup
+   \edef\currentlistname{#1}%
+   \setnextinternalreference
+   \edef\currentlistnumber{\ctxlua{structure.lists.push{
+         references = {
+            internal = \nextinternalreference,
+            section  = structure.sections.currentid(),
+        },
+        metadata = {
+            kind     = "#2",
+            name     = "\currentlistname",
+            level    = structure.sections.currentlevel(),
+            catcodes = \the\catcodetable,
+        },
+        userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+   }}}%
+   \expanded{\ctxlatelua{structure.lists.enhance(\currentlistnumber)}}%
+   \endgroup}
+
+\def\structurelistlocation
+  {\ctxlua{structure.lists.location(\currentlistindex)}}
+
+\def\structurelistpagenumber
+  {\ctxlua{structure.lists.prefixedpage(
+    "\currentlist",
+    \currentlistindex,
+    {
+     separatorset  = "\listparameter\c!pageprefixseparatorset",
+     conversionset = "\listparameter\c!pageprefixconversionset",
+     set           = "\listparameter\c!pageprefixset",
+     segments      = "\listparameter\c!pageprefixsegments",
+     connector     = \!!bs\listparameter\c!pageprefixconnector\!!es,
+    },
+    {
+     prefix        = "\listparameter\c!pageprefix",
+     conversionset = "\listparameter\c!pageconversionset",
+     starter       = \!!bs\listparameter\c!pagestarter\!!es,
+     stopper       = \!!bs\listparameter\c!pagestopper\!!es,
+     }
+   )}}
+
+\def\structurelistrealpagenumber
+  {\ctxlua{structure.lists.realpage("\currentlist",\currentlistindex)}}
+
+\def\structurelistfirst
+  {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"first")}}
+
+\def\structurelistsecond
+  {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"second")}}
+
+\def\structurelistuservariable#1%
+  {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"#1")}}
+
+% \appendtoks
+% \to \everystructurelist
+
+\unexpanded\def\placestructurelist#1#2#3% hm ... [][][]
+  {\ctxlua{structure.lists.process("#1","#2","#3")}}
+
+\def\analysestructurelist#1#2#3%
+  {\ctxlua{structure.lists.analyze("#1","#2","#3")}}
+
+\def\firststructureelementinlist#1%
+  {\ctxlua{commands.first_in_list("#1")}}
+
+\def\structurelistsize
+  {\ctxlua{structure.lists.size()}}
+
+\def\@@structurelistprocess{structurelist:process:}
+
+\def\installstructurelistprocessor#1#2%
+  {\expandafter\def\csname\@@structurelistprocess#1\endcsname{#2}}
+
+\def\usestructurelistprocessor#1%
+  {\csname\@@structurelistprocess#1\endcsname}
+
+\installstructurelistprocessor\s!default
+  {no list method}
+
+% push pop test:
+%
+% \starttext
+%   \placelist[chapter] [after={\placelist[section][criterium=local]}]
+%   \chapter{One} \section{Alpha} \section{Beta}
+%   \chapter{Two} \section{First} \section{Second}
+% \stoptext
+
+\def\processlistofstructure#1#2#3% name, method, n
+  {\ctxlua{structure.lists.pushnesting(#3)}%
+   \edef\currentlist      {#1}%
+   \edef\currentlistmethod{#2}%
+   \edef\currentlistindex {#3}%
+   \csname\@@structurelistprocess
+     \ifcsname\@@structurelistprocess\currentlist:\currentlistmethod\endcsname\currentlist:\currentlistmethod\else
+     \ifcsname\@@structurelistprocess\currentlistmethod             \endcsname\currentlistmethod             \else
+     \ifcsname\@@structurelistprocess\currentlist                   \endcsname\currentlist                   \else
+                                                                              \s!default                     \fi\fi\fi
+   \endcsname
+   \ctxlua{structure.lists.popnesting()}}
+
+% \installstructcurelistprocessor{pubs:userdata}
+%   {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"bibref")}}
+
+\installstructurelistprocessor{command}
+  {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"command")}}
+
+\installstructurelistprocessor{section}
+  {\dodolistelement
+     \currentlist
+     \structurelistlocation
+     \structurelistgenericnumber
+     \structurelistgenerictitle % hm, can end up in message (volkers test)
+     \structurelistpagenumber
+     \structurelistrealpagenumber}
+
+% so far (todo: also recursive)
+
+\def\listalternativeparameter#1%
+  {\ifcsname\??li\??li\listparameter\c!alternative#1\endcsname
+      \csname\??li\??li\listparameter\c!alternative#1\endcsname
+   \else
+       \listparameter{#1}%
+   \fi}
+
+\unexpanded\def\setuplistalternative[#1]%
+  {\dodoubleargument\getparameters[\??li\??li#1]}
+
+\def\listfill   {\listalternativeparameter\c!command }
+\def\listskip   {\listalternativeparameter\c!distance}
+\def\listwidth  {\listalternativeparameter\c!width   }
+\def\liststretch{\listalternativeparameter\c!stretch }
+
+% a : nr - tit - pag
+% b : nr - tit - fill - pag
+% c : nr - tit - dots - pag
+
+\setuplistalternative[a][\c!distance=0pt,\c!width=2em,\c!stretch=10em,\c!command=\hskip.25em\relax]
+\setuplistalternative[b][\c!distance=5em,\c!width=2em,\c!stretch=10em,\c!command=\hfill]
+\setuplistalternative[c][\c!distance=5em,\c!width=0pt,\c!stretch=10em,\c!command=\hskip.5em\listdots\hskip.5em\relax]
+
+\def\listdots{\leaders\hbox to .5em{\hss.\hss}\hfill}
+
+% \setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}} % ?
+% \getvalue{\??li\c!alternative} % ?
+
+\def\checklistexistence#1%
+  {\ifcsname\??li#1\s!parent\endcsname \else
+     \letvalue{\??li#1\s!parent}\??li
+   \fi}
+
+\def\dosetuplist[#1][#2]% slow -)
+  {\checklistexistence{#1}%
+   \def\docommand##1{\getparameters[\??li##1][#2]}%
+   \processcommalist[#1]\docommand}
+
+\unexpanded\def\setuplist
+  {\dodoubleargument\dosetuplist}
+
+\def\dodefinelist[#1][#2][#3]%
+  {\presetlocalframed[\??li#1]% still inefficient (will change when we redu core-rul)
+   \doifassignmentelse{#2}
+     {\getparameters[\??li#1][\s!parent=\??li,#2]}
+     {\doifelsenothing{#2}
+        {\getparameters[\??li#1][\s!parent=\??li]}
+        {\getparameters[\??li#1][\s!parent=\??li#2,#3]}}}
+
+\unexpanded\def\setuplists % new, but not for users (hardly handy)
+  {\dodoubleargument\getparameters[\??li]}
+
+\setuplists
+  [\c!height=\v!broad,
+   \c!depth=\v!broad,
+   \c!offset=0.25em,
+   \c!maxwidth=,
+   \c!state=\v!start,
+   \c!coupling=\v!off,
+   \c!criterium=\v!local,
+   \c!number=0,
+   \c!width=3em,
+   \c!alternative=\c!b,
+   \c!style=\v!normal,
+   \c!textstyle=\listparameter\c!style,
+   \c!numberstyle=\listparameter\c!style,
+   \c!pagestyle=\listparameter\c!style,
+  %\c!color=,
+   \c!textcolor=\listparameter\c!color,
+   \c!numbercolor=\listparameter\c!color,
+   \c!pagecolor=\listparameter\c!color,
+   \c!numbercommand=\listnumbercommand,
+   \c!textcommand=\listtextcommand,
+   \c!pagecommand=\listpagecommand,
+   \c!pagenumber=\v!yes,
+   \c!headnumber=\v!yes,
+   \c!pageboundaries=,
+   \c!margin=\!!zeropoint,
+   \c!aligntitle=,
+   \c!before=,
+   \c!after=,
+   \c!inbetween=,
+   \c!symbol=,
+   \c!interaction=\v!sectionnumber,
+   \c!label=\v!no,
+   \c!distance=\!!zeropoint,
+   \c!limittext=\@@kolimittext,
+  %\c!sectionseparatorset=,
+  %\c!sectionconversionset=,
+  %\c!sectionstarter=,
+  %\c!sectionstopper=,
+  %\c!sectionset=,
+  %\c!sectionsegments=,
+  %\c!prefix=\v!no,
+  %\c!prefixseparatorset=,
+  %\c!prefixconversionset=,
+  %\c!prefixstarter=.,
+  %\c!prefixstopper=.,
+  %\c!prefixset=,
+  %\c!prefixsegments=,
+  %\c!pageseparatorset=,
+  %\c!pageconversionset=,
+  %\c!pagestarter=,
+  %\c!pagestopper=,
+  %\c!expansion=,
+ % \c!prefixconnector=., % maybe inherit from setupheads
+ % \c!pageprefix=\v!no, % is unset, inherits
+ % \c!pageprefixconnector=\listparameter\c!prefixconnector,
+ ]%\c!pagesegments=2:2]
+
+\unexpanded\def\definelist
+  {\dotripleempty\dodefinelist}
+
+\unexpanded\def\placelist
+  {\dodoubleempty\doplacelist}
+
+\unexpanded\def\placerawlist
+  {\dodoubleempty\doplacerawlist}
+
+\def\dobeginoflist
+  {\begingroup
+   \startpacked[\v!blank]}
+
+\def\doendoflist
+  {\stoppacked
+   \endgroup}
+
+\def\doplacelist[#1][#2]%
+  {\dobeginoflist
+   \doplacerawlist[#1][#2]%
+   \doendoflist}
+
+\newtoks\everystructurelist
+
+% writing to lists
+
+\def\writetolist[#1]{\gobbletwoarguments}
+\let\dowritetolist  \gobblefourarguments
+\let\dodowritetolist\gobblefourarguments
+
+\def\writebetweenlist[#1]#2%
+  {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][command][command={#2}]}}
+
+\def\writedatatolist
+  {\dodoubleargument\dowritedatatolist}
+
+\def\dowritedatatolist[#1][#2]%
+  {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][userdata][#2]}}
+
+\def\writetolist[#1]#2#3%
+  {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][simple][first={#2},second={#3}]}}
+
+\installstructurelistprocessor{simple}
+  {\dodolistelement
+     \currentlist
+     \structurelistlocation
+     \structurelistfirst
+     \structurelistsecond
+     \structurelistpagenumber
+     \structurelistrealpagenumber}
+
+% % %
+
+\def\doplacerawlist[#1][#2]% listreferences will be redone
+  {\begingroup
+   \dosetuplist[#1][#2]%
+   \edef\currentlist{\firststructureelementinlist{#1}}%
+   \the\everystructurelist
+   \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#1}}%
+   \placestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
+   \stoplistreferences
+   \endgroup
+   \dosetlistmode}
+
+\def\dosetlistmode % utilitydone will disappear
+  {\ifcase\structurelistsize\relax
+     \utilitydonefalse \resetsystemmode\v!list
+   \else
+     \utilitydonetrue  \setsystemmode  \v!list
+   \fi}
+
+\unexpanded\def\systemsuppliedchapter {\getvalue{\v!chapter}} % brrr
+\unexpanded\def\systemsuppliedtitle   {\getvalue{\v!title}}   % brrr
+
+\def\dodocompletelist[#1][#2][#3]%  enkelvoud, meervoud, instellingen
+  {\normalexpanded{\systemsuppliedtitle[#2]{\noexpand\headtext{#2}}}% expansion needed for v! vs french !
+   \doplacelist[#1][#3]}
+
+\def\docompletelist[#1][#2]%
+  {\dodocompletelist[#1][#1][#2]}
+
+\def\completelist
+  {\dodoubleempty\docompletelist}
+
+\def\listelements        {}   % list of page breaks
+\def\listnumbercommand #1{#1} % no strut due to interactive version
+\def\listtextcommand   #1{\begstrut#1\endstrut}
+\def\listpagecommand   #1{\strut#1}
+
+\def\doassigndimen#1#2#3%
+  {\doifinsetelse{#2}{\v!fit,\v!broad}{#1=#3}{#1=#2}\relax}
+
+\def\listsymbol[#1]#2%
+  {\begingroup
+   \edef\currentlist{#1}%
+   \edef\currentlistnumber{#2}%
+   \currentlistsymbol
+   \endgroup}
+
+% Beware, the list symbol macro gets an argument passed, i.e. when this
+% argument is not picked up, the symbol becomes a kind of prefix.
+
+% for historical reasons we're stuck to symbols, so in order to generalize,
+% we have to hook it into the symbol handler; we need a beter clean up later
+%
+% < 2005
+%
+% \def\dosetlistsymbol % #1
+%   {\executeifdefined{listsymbol@\listparameter\c!symbol}\listsymbol@default} % {#1}
+%
+% >= 2005
+%
+% at this symbol level, we have access to the raw 'number' in
+% \currentlistnumber
+
+\definesymbol[\v!list][\v!none   ][\listsymbol@none   ]
+\definesymbol[\v!list][\v!one    ][\listsymbol@one    ]
+\definesymbol[\v!list][\v!two    ][\listsymbol@two    ]
+\definesymbol[\v!list][\v!three  ][\listsymbol@three  ]
+\definesymbol[\v!list][\s!default][\listsymbol@default]
+\definesymbol[\v!list][\s!unknown][\listsymbol@unknown]
+
+\def\currentlistsymbol
+  {\doifinsymbolsetelse\v!list{\listparameter\c!symbol}
+     {\directsymbol\v!list{\listparameter\c!symbol}}
+     {\directsymbol\v!list\s!default}}
+
+\def\listsymbol@none
+  {\doassigndimen\scratchdimen{\listparameter\c!width}{1.5em}%
+   \hbox to \scratchdimen{}}
+
+\def\listsymbol@one
+  {\strut$\bullet$}
+
+\def\listsymbol@two
+  {\vrule\!!width1em\!!height1ex\!!depth\zeropoint}
+
+\def\listsymbol@three
+  {\begingroup
+   \doassigndimen{\dimen0}{\listparameter\c!width }{1.5em}%
+   \doassigndimen{\dimen2}{\listparameter\c!height}{1ex}%
+   \doassigndimen{\dimen4}{\listparameter\c!depth }\zeropoint
+   \vrule\!!width\dimen0\!!height\dimen2\!!depth\dimen4%
+   \endgroup}
+
+\def\listsymbol@default
+  {% prefix = no, none, yes
+    \strut
+    \doif{\listparameter\c!label}\v!yes{\leftlabeltext\currentlist}% we can use the new command that does left and right
+    \listparameter\c!starter
+    \currentlistnumber
+    \listparameter\c!stopper
+    \doif{\listparameter\c!label}\v!yes{\rightlabeltext\currentlist}}
+
+\def\listsymbol@default
+  {% todo:
+   % prefix=no (first gone)|none (all gone)|yes
+   % number=no|yes
+   \strut
+   \doifelse{\listparameter\c!label}\v!yes
+     {\leftlabeltext\currentlist
+      \listparameter\c!starter
+      \currentlistnumber
+      \listparameter\c!stopper
+      \rightlabeltext\currentlist}
+     {\listparameter\c!starter
+      \currentlistnumber
+      \listparameter\c!stopper}}
+
+\def\listsymbol@unknown
+  {\listparameter\c!symbol}
+
+% so far for list symbols
+
+\def\@@dodolistelement{dodolistelement}
+
+\def\dosomelistelement#1#2#3{#1 #2 #3}
+
+\setvalue{\@@dodolistelement a}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\@@dodolistelement b}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\@@dodolistelement c}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\@@dodolistelement d}{\let\dosomelistelement\dodofixdlistelementD}
+\setvalue{\@@dodolistelement e}{\let\dosomelistelement\dodofixdlistelementE}
+\setvalue{\@@dodolistelement f}{\let\dosomelistelement\dodofixdlistelementF}
+\setvalue{\@@dodolistelement g}{\let\dosomelistelement\dodofixdlistelementG}
+
+\setvalue{\@@dodolistelement\v!none      }{\def\dosomelistelement{\dodofreevlistelement}}
+\setvalue{\@@dodolistelement\v!vertical  }{\def\dosomelistelement{\dodofreevlistelement}}
+\setvalue{\@@dodolistelement\v!horizontal}{\def\dosomelistelement{\dodofreehlistelement}}
+\setvalue{\@@dodolistelement\v!command   }{\let\dosomelistelement\dodocommandlistelement}
+
+% \setuplist
+%   [section]
+%   [alternative=MyListItem,
+%    after=\blank,
+%    before=\blank]
+%
+% \definelistplacement[MyListItem][none]#1#2#3%
+%   {(#1) (#2) (#3)}
+
+\unexpanded\def\definelistplacement
+  {\dodoubleempty\dodefinelistplacement}
+
+\def\dodefinelistplacement[#1][#2]%
+  {\setvalue{\@@dodolistelement#1}%
+     {\doifelsenothing{#2}
+        {\getvalue{\@@dodolistelement\v!command}}%
+        {\executeifdefined{\@@dodolistelement#2}{\getvalue{\@@dodolistelement\v!command}}}%
+      \setvalue{\??li\currentlist\c!command}{\getvalue{\@@dodolistelement::#1}}}%
+   \setvalue{\@@dodolistelement::#1}}
+
+% don't mess arround with endgraf/grouping else we loose leftskip
+
+% \strippedcsname\dodolistelement
+
+\def\newlineinlist{\space}
+
+\let\currentlist\s!unknown
+
+\def\docurrentlistalternative
+  {\edef\currentlistalternative{\listparameter\c!alternative}%
+   \ifx\currentlistalternative\empty
+     [unknown list alternative]%
+   \else
+     \executeifdefined{\@@dodolistelement\currentlistalternative}{[unknown list alternative: \currentlistalternative]}%
+   \fi}
+
+\def\dodolistelement#1#2#3#4#5#6%
+  {\edef\currentlist{#1}%
+   \edef\currentlistnumber{#3}%
+   \docurrentlistalternative
+   %\showcomposition
+   \let\@@iawidth\!!zeropoint  % moet boolean worden
+   \begingroup
+   \edef\listelements{\listparameter\c!pageboundaries}%
+   \normalexpanded{\noexpand\doifinset{#3}{\listelements}}
+     {\showmessage\m!systems{14}{#3}%
+      \page}%
+   \endgroup
+   \dontcomplain
+  %\setfullsectionnumber{\??li\currentlist}% todo
+   \dosomelistelement{#1}{#2}{#3}{#4}{#5}{#6}%
+   \global\utilitydonetrue} % ?
+
+\def\dodocommandlistelement#1#2#3#4#5#6%
+  {\doifdefinedelse{\??li#1\c!command}
+     {\listparameter\c!command{#3}{#4}{#5}}
+     {[\currentlist: #3 -- #4 -- #5]}}
+
+\def\domakelistelement#1#2#3#4% ref internal command data
+  {\dontleavehmode
+   \iflocation % we cannot tewak \iflocation as we nest
+     \doifelse{\listparameter\c!interaction}{#1}
+      {\directgoto{\setlocationcolor\??ia#4}[internal(#2)]}% was \directgotobox
+     {#3{#4}}%
+  \else
+     #3{#4}%
+  \fi}
+
+\def\dodofreelistelement#1#2#3#4#5#6#7#8%
+  {\listparameter\c!before% can be \hskip
+   \doifdefinedelse{\??li#1\c!command}
+     {\domakelistelement{\listparameter\c!interaction}{#2}\hbox
+        {\listparameter\c!command
+           {#3}% geen conversies etc
+           {#4}% geen conversies etc
+           {#5}}}% geen command
+     {#7%
+      \vbox
+        {\forgetall
+         \domakelistelement\v!all{#2}\hbox
+           {\doif{\listparameter\c!headnumber}\v!yes
+              {\domakelistelement\v!sectionnumber{#2}\hbox
+                 {\donestedlistattributes\c!numberstyle\c!numbercolor
+                    {\listparameter\c!numbercommand{\currentlistsymbol}}}}%
+            \domakelistelement\v!text{#2}\hbox
+              {\donestedlistattributes\c!textstyle\c!textcolor
+                 {\let\\=\newlineinlist
+                  \dontconvertfont
+                  \listparameter\c!textcommand{#4}}}%
+            \doif{\listparameter\c!pagenumber}\v!yes
+              {\doifsomething{#5}
+                 {\domakelistelement\v!pagenumber{#2}\hbox
+                    {\donestedlistattributes\c!pagestyle\c!pagecolor
+                       {\listparameter\c!pagecommand{#5}}}}}}}%
+      #8}%
+   \listparameter\c!after}
+
+\def\dodofreehlistelement#1#2#3#4#5#6%
+  {\dodofreelistelement{#1}{#2}{#3}{#4}{#5}{#6}
+     {\noindent}{}}
+
+\def\dodofreevlistelement#1#2#3#4#5#6%          % \nointerlineskip needed,
+  {\dodofreelistelement{#1}{#2}{#3}{#4}{#5}{#6} % otherwise wrong spacing
+     {\ifvmode\nointerlineskip\fi}              % at multi-line lists
+     {\ifvmode\nointerlineskip\fi\endgraf\allowbreak}} % test is saveguard
+
+% to be documented: align, hang
+
+\def\limitatedlistentry#1%
+  {\doifelsenothing{\listparameter\c!maxwidth}
+     {\listparameter\c!textcommand{#1}}
+     {\listparameter\c!textcommand
+        {\limitatetext
+           {#1}%
+           {\listparameter\c!maxwidth}%
+           {\splitsymbol{\listparameter\c!limittext}}}}}
+
+\def\dodofixdlistelementABC#1#2#3#4#5#6% weeden
+  {\endgraf
+   \leftskip\listparameter\c!margin% na de \endgraf !
+   \listparameter\c!before
+   \!!widthc\listparameter\c!distance
+   \doifelse{\listparameter\c!width}\v!fit
+     {\!!widtha\zeropoint}
+     {\doifelsenothing{#3}
+        {\doifelse{\listparameter\c!aligntitle}\v!yes
+           {\!!widtha\zeropoint
+            \!!widthc\zeropoint}
+           {\!!widtha\listparameter\c!width}}
+        {\!!widtha\listparameter\c!width}}%
+%    \getvalue{\??li\c!alternative\listparameter\c!alternative}% ?
+   \endgraf
+   \noindent
+   \domakelistelement\v!all{#2}\hbox
+     {\setlocalhsize
+      \hsize\localhsize
+      \hbox to \hsize
+        {\forgetall
+         \dosetlistattributes\c!style\c!color
+         \!!widthb\hsize
+         \doifelse{\listparameter\c!headnumber}\v!yes
+           {\setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
+              {\domakelistelement\v!sectionnumber{#2}\hbox
+                 {\donestedlistattributes\c!numberstyle\c!numbercolor
+                    {\listparameter\c!numbercommand{\currentlistsymbol}}%
+               \hfill}}}
+           {\!!widtha\zeropoint
+            \!!widthc\zeropoint
+            \setbox2\hbox{}}%
+         \setbox4\hbox
+           {\doif{\listparameter\c!pagenumber}\v!yes
+              {\doifsomething{#5}    % \listwidth is new ; temp hack
+                 {\hbox \ifdim\listwidth>\zeropoint to \listwidth\fi
+                    {\hfill
+                     \domakelistelement\v!pagenumber{#2}\hbox
+                       {\donestedlistattributes\c!pagestyle\c!pagecolor
+                          {\listparameter\c!pagecommand{#5}}}}}}}%
+         \vbox
+           {\hsize\!!widthb
+            \setupalign[\listparameter\c!align]%
+            \ifdim\!!widtha<\hsize
+              \hangindent\wd2
+              \dimen2=\!!widthc % \listparameter\c!distance
+              \advance\hangindent \dimen2
+              \hangafter\plusone
+              \doif{\listparameter\c!hang}\v!no{\hangafter\zerocount}%
+              \ifdim\wd4=\zeropoint % \ifvoid4
+                % we kunnen gewoon afbreken aan het eind
+              \else
+                \ifdim\listskip>\zeropoint\relax
+                  \rightskip\listskip\!!plus\liststretch\relax
+                  \parfillskip-\rightskip
+                \fi
+              \fi
+            \else
+              \dimen2\zeropoint
+            \fi
+            \parindent\zeropoint\relax
+            \leavevmode
+            \box2\relax
+            \hskip\dimen2
+\domakelistelement\v!text{#2}\firstofoneargument{%
+            \bgroup
+            \donestedlistattributes\c!textstyle\c!textcolor
+              {\let\\=\newlineinlist
+               \dontconvertfont
+              %\listparameter\c!textcommand{#4}}%
+               \limitatedlistentry{#4}}%
+              %\carryoverpar % new otherwise wrong linespacing
+            \egroup
+}%
+            \ifdim\wd4=\zeropoint\relax % \ifvoid4
+              % \ifdim\!!widtha<\hsize \hfill\strut \fi % spoils align
+            \else
+              \nobreak\listfill
+              \box4\relax
+              \relax
+            \fi}%
+         \hss}}% new
+   \endgraf % new, else problems with nointerlinespace and prevdepth
+   \nointerlineskip % anders verkeerde spatiering bij multi-line
+   \endgraf
+   \allowbreak
+   \listparameter\c!after}
+
+% % example from the context list
+%
+% \setuphead [part]    [page=right,placehead=yes]
+% \setuplist [chapter] [alternative=d,before=\blank,after=\blank]
+% \setuplist [part]    [before=\blank,after=\blank]
+%
+% \starttext
+%   \startnarrower[2*right] \placecontent \stopnarrower
+%   \blank[4*big]
+%   \startsetups chapter
+%     \blank \startnarrower[3*middle] \placecontent[criterium=local] \stopnarrower
+%   \stopsetups
+%   \placelist[part][criterium=text,after=\setups{chapter}]
+%
+%   \part{First part}       \chapter{Chapter one}  \chapter{Chapter two}
+%   \chapter{Chapter three} \chapter{Chapter four} \chapter{Chapter five}
+%   \part{Second part}      \chapter{Chapter one}  \chapter{Chapter two}
+%   \chapter{Chapter three} \chapter{Chapter four} \chapter{Chapter five}
+%   \part{Third part}       \chapter{Chapter one}  \chapter{Chapter two}
+%   \chapter{Chapter three} \chapter{Chapter four} \chapter{Chapter five}
+% \stoptext
+
+% overrulen interactie kan sneller, bv door hulpconstanten
+% te gebruiken en die te letten
+
+\def\dodofixdlistelementD#1#2#3#4#5#6%
+  {%\leftskip=\listparameter\c!margin
+   \ifvmode
+     \advance\leftskip\listparameter\c!margin%  AANGEPAST
+   \fi
+   \bgroup
+   \ifvmode
+     \noindent\leavevmode % leavevmode ? ? ?
+   \fi
+%% actually, the next can be supported now (will be enabled when I have time to test it)
+   \doif{\listparameter\c!interaction}\v!text % not supported
+     {\setlistparameter\currentlist\c!interaction\v!sectionnumber}%
+   \doif{\listparameter\c!interaction}\v!all % not supported
+     {\setlistparameter\currentlist\c!interaction\v!sectionnumber}%
+%%
+   \setbox4\hbox
+     {\doif{\listparameter\c!pagenumber}\v!yes
+        {\doifsomething{#5}
+           {\domakelistelement\v!pagenumber{#2}\hbox
+              {\donestedlistattributes\c!pagestyle\c!pagecolor
+                 {\listparameter\c!pagecommand{#5}}}}}}%
+%% \domakelistelement\v!all{#2}\firstofoneargument{%
+    \doif{\listparameter\c!headnumber}\v!yes
+     {\donetrue
+      \doifnothing{#3}{\doifnothing{\listparameter\c!symbol}\donefalse}%
+      % == \doifnothing{#3\listparameter\c!symbol}\donefalse
+      \ifdone
+        \hbox
+          {\listparameter\c!left
+           \domakelistelement\v!sectionnumber{#2}\hbox
+             {\donestedlistattributes\c!numberstyle\c!numbercolor
+                {\listparameter\c!numbercommand{\currentlistsymbol}}}%
+           \listparameter\c!right
+           \hskip.5em}%
+        \nobreak
+     \fi}%
+   \tolerance3500 % niet zomaar veranderen
+%% \domakelistelement\v!text{#2}\firstofoneargument{%
+   \donestedlistattributes\c!textstyle\c!textcolor
+     {\let\\=\newlineinlist
+      \dontconvertfont
+     %\listparameter\c!textcommand{#4}}%
+      \limitatedlistentry{#4}}%
+%% }%
+   \ifvoid4\else
+     \nobreak
+     \hskip.75em\relax
+     \nobreak
+     \box4
+   \fi
+%% }%
+   \dimen0=\listparameter\c!distance\relax
+   \ifdim\dimen0<1em\relax
+     \hskip1em\!!plus1em\!!minus.25em\relax
+   \else
+     \hskip\dimen0\!!plus.5\dimen0\!!minus.25\dimen0\relax
+   \fi
+   \egroup}
+
+\def\dodofixdlistelementE#1%
+  {\dodofixdlistelementEFG
+     {\setupinteraction[\c!strut=\v!no]}
+     {\localframed[\??li\currentlist][\c!depth=\!!zeropoint,\c!color=]}
+     {}}
+
+\def\dodofixdlistelementF#1%
+  {\dodofixdlistelementEFG
+     {}
+     {\dosetraggedhbox{\listparameter\c!align}\raggedbox}
+     {}}
+
+\def\dodofixdlistelementG#1%
+  {\dodofixdlistelementEFG
+     {}
+     \midaligned
+     {}}
+
+\def\dodofixdlistelementEFG#1#2#3#4#5#6#7#8%
+  {\noindent
+   \bgroup
+   \domakelistelement\v!no{#4}{#2}%
+     {\let\\=\newlineinlist
+      #1% in case E nils the strut (still needed?)
+      \dosetlistattributes\c!style\c!color
+      \ignorespaces\dontconvertfont\setstrut
+      \begstrut
+      \limitatedlistentry{#6}%
+      \endstrut}%
+   \egroup
+   \par
+   \listparameter\c!inbetween}
+
+\def\listlength{\utilitylistlength}
+\def\listwidth {\utilitylistwidth}
+\def\listheight{\utilitylistheight}
+
+\def\utilitylistlength {0}
+\def\utilitylistwidth  {0pt} % no longer supported
+\def\utilitylistheight {0pt} % no longer supported
+
+\def\dodeterminelistcharacteristics[#1][#2]%
+  {\begingroup
+   \dosetuplist[#1][#2]%
+   \edef\currentlist{\firststructureelementinlist{#1}}%
+   \the\everystructurelist
+   \analysestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
+   \xdef\utilitylistlength{\structurelistsize}%
+   \endgroup
+   \dosetlistmode}
+
+\def\determinelistcharacteristics
+  {\dodoubleempty\dodeterminelistcharacteristics}
+
+\def\combinedlistparameter#1{\csname\??ih\currentcombinedlist#1\endcsname}
+
+\unexpanded\def\setupcombinedlist
+  {\dodoubleargument\dosetupcombinedlist}
+
+\def\dosetupcombinedlist[#1][#2]%
+  {\getparameters[\??ih#1][#2]%
+   \edef\currentcombinedlist{#1}%
+   \normalexpanded{\noexpand\setuplist[\combinedlistparameter\c!list]}[#2]}
+
+\unexpanded\def\definecombinedlist
+  {\dotripleempty\dodefinecombinedlist}
+
+\def\dodefinecombinedlist[#1][#2][#3]%
+  {\getparameters
+     [\??ih#1]
+     [\c!criterium=\v!local,\c!number=0,\c!list={#2},#3]%
+   \setvalue{\e!setup#1\e!endsetup}{\dodoubleempty\dosetupcombinedlist[#1]}%
+   \setvalue{\e!place#1}{\dodoubleempty\doplacecombinedlist[#1]}%
+   \setvalue{\e!complete#1}{\dodoubleempty\docompletecombinedlist[#1]}}
+
+\unexpanded\def\placecombinedlist
+  {\dodoubleempty\doplacecombinedlist}
+
+\def\doplacecombinedlist[#1][#2]% we can move much of the analysis to lua
+  {\begingroup
+   % level is no longer supported
+   \def\currentcombinedlist{#1}%
+   \getparameters[\??ih#1][#2]%
+   \edef\combinedlist{\combinedlistparameter\c!list}%
+   \the\everystructurelist
+   \doif{\combinedlistparameter\c!coupling}\v!on{\startlistreferences{#1}}%
+   \dobeginoflist
+   \normalexpanded{\noexpand\dosetuplist[\combinedlist][#2]}%
+   \placestructurelist{\combinedlist}{\combinedlistparameter\c!criterium}{\combinedlistparameter\c!number}%
+   \doendoflist
+   \stoplistreferences
+   \endgroup
+   \dosetlistmode}
+
+\def\docompletecombinedlist[#1][#2]%
+  {\normalexpanded{\systemsuppliedtitle[#1]{\noexpand\headtext{#1}}}% expansion due to v! vs french !
+   \doplacecombinedlist[#1][#2]}
+
+% lists that have a number/title are kind of generic and can share code
+
+\installstructurelistprocessor{number+title}
+  {\dodolistelement
+     \currentlist
+     \structurelistlocation
+     \structurelistgenericnumber
+     \structurelistgenerictitle
+     \structurelistpagenumber
+     \structurelistrealpagenumber}
+
+\def\structurelistgenerictitle
+  {\ctxlua{structure.lists.title("\currentlist",\currentlistindex)}}
+
+\def\structurelistgenericnumber{\ctxlua{
+    structure.lists.prefixednumber("\currentlist",\currentlistindex, {
+        prefix        = "\listparameter\c!prefix",
+        separatorset  = "\listparameter\c!prefixseparatorset",
+        conversionset = "\listparameter\c!prefixconversionset",
+        starter       = \!!bs\listparameter\c!prefixstarter\!!es,
+        stopper       = \!!bs\listparameter\c!prefixstopper\!!es,
+        set           = "\listparameter\c!prefixset",
+        segments      = "\listparameter\c!prefixsegments",
+        connector     = \!!bs\listparameter\c!prefixconnector\!!es,
+    },
+    {
+        separatorset  = "\listparameter\c!numberseparatorset",
+        conversionset = "\listparameter\c!numberconversionset",
+        starter       = \!!bs\listparameter\c!numberstarter\!!es,
+        stopper       = \!!bs\listparameter\c!numberstopper\!!es,
+        segments      = "\listparameter\c!numbersegments",
+    } )}}
+
+% new and yet undocumented (used in cocoa qa), temporarily disabled in mkiv
+%
+% \setupremaininglistlength
+%   [left=\hss nog~,right=~ingangen]
+%
+% \resetremaininglistlength
+%   [section][settings]
+%
+% \placelist
+%   [section]
+%   [before=\showremaininglistlength]
+%
+% \dorecurse{100}{\section{hans}}
+%
+% \definesystemvariable {ll} % ListLength
+%
+% \unexpanded\def\setupremaininglistlength[#1]%
+%   {\getparameters[\??ll][#1]%
+%    \globallet\listlengthcounter\!!zerocount}
+%
+% \setupremaininglistlength
+%   [\c!left=\hss,\c!right=,\c!number=\v!yes,
+%    \c!before=\blank,\c!after=\page,
+%    \c!style=\v!smallnormal,\c!color=]
+%
+% \def\resetremaininglistlength
+%   {\dodoubleempty\doresetremaininglistlength}
+%
+% \def\doresetremaininglistlength[#1][#2]%
+%   {\determinelistcharacteristics[#1][#2]%
+%    \xdef\listlengthcounter{\number\utilitylistlength}}
+%
+% \def\showremaininglistlength
+%   {\bgroup
+%    \ifnum\listlengthcounter>\plusone
+%      \setbox\scratchbox\vbox
+%        {\@@llbefore\par\horizontalstrut\par\horizontalstrut\par\@@llafter}%
+%      \scratchdimen\pagetotal
+%      \advance\scratchdimen \ht\scratchbox
+%      \advance\scratchdimen \dp\scratchbox
+%      \ifdim\scratchdimen>\pagegoal
+%        \@@llbefore
+%        \nobreak\hbox to \hsize
+%          {\doifnot\@@llnumber\v!yes{\let\listlengthcounter\empty}%
+%           \doattributes\??ll\c!style\c!color{\@@llleft\listlengthcounter\@@llright}}
+%        \@@llafter
+%      \fi
+%    \fi
+%    \doglobal\decrement\listlengthcounter\relax
+%    \egroup}
+
+\protect \endinput

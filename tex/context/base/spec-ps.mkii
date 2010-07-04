@@ -1,0 +1,229 @@
+%D \module
+%D   [       file=spec-ps,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Adobe PostScript,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D \macros
+%D   {dostartgraymode,dostopgraymode,
+%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode,
+%D    dostartrotation,dostoprotation,
+%D    dostartscaling,dostopscaling,
+%D    dostartmirroring,dostopmirroring,
+%D    dostartnegative,dostopnegative,
+%D    dostartoverprint,dostopoverprint,
+%D    doselectfirstpaperbin,
+%D    doselectsecondpaperbin}
+%D
+%D This implementation is straightforward and can be used as
+%D a default with postscript||drivers. We use \type{ps:} as
+%D opening, because most drivers support this.
+
+\startspecials[postscript]
+
+\def\@@insertpostscriptliteral {ps: }
+\def\@@insertpostscriptretain  {" }
+
+\definespecial\dostartgraymode#1%
+  {\special
+     {\@@insertpostscriptliteral
+        #1\space setgray}}
+
+\definespecial\dostopgraymode
+  {\special
+     {\@@insertpostscriptliteral
+        0 setgray}}
+
+\definespecial\dostartrgbcolormode#1#2#3%
+  {\special
+     {\@@insertpostscriptliteral
+        #1\space #2\space #3\space setrgbcolor}}
+
+\definespecial\dostartcmykcolormode#1#2#3#4%
+  {\special
+     {\@@insertpostscriptliteral
+        #1\space #2\space #3\space #4\space setcmykcolor}}
+
+\definespecial\dostartgraycolormode#1%
+  {\special
+     {\@@insertpostscriptliteral
+        #1\space setgray}}
+
+\definespecial\dostopcolormode
+  {\special
+     {\@@insertpostscriptliteral
+        0 setgray}}
+
+\definespecial\doselectfirstpaperbin
+  {\special
+     {\@@insertpostscriptliteral
+        statusdict begin 1 setpapertray end}}  % checken
+
+\definespecial\doselectsecondpaperbin
+  {\special
+     {\@@insertpostscriptliteral
+        statusdict begin 0 setpapertray end}}  % checken
+
+\definespecial\dostartrotation#1% straight from the YandY manual
+  {\special
+     {\@@insertpostscriptliteral
+        gsave currentpoint currentpoint translate
+        \number#1\space\space rotate neg exch neg exch translate}}
+
+\definespecial\dostoprotation
+  {\special
+     {\@@insertpostscriptliteral
+        currentfont currentpoint grestore moveto setfont}}
+
+\definespecial\dostartscaling#1#2% conforming the YandY manual
+  {\special
+     {\@@insertpostscriptliteral
+        gsave currentpoint currentpoint translate
+        #1\space #2\space scale neg exch neg exch translate}}
+
+\definespecial\dostopscaling
+  {\special
+     {\@@insertpostscriptliteral
+        currentfont currentpoint grestore moveto setfont}}
+
+\definespecial\dostartmirroring % some translate and exch stuff from YandY
+  {\special
+     {\@@insertpostscriptliteral
+        gsave currentpoint currentpoint translate
+        [-1 0 0 1 0 0] concat neg exch neg exch translate}}
+
+\definespecial\dostopmirroring
+  {\special
+     {\@@insertpostscriptliteral
+        currentfont currentpoint grestore moveto setfont}}
+
+\definespecial\dostartnegative
+  {\special{\@@insertpostscriptliteral gsave {1 exch sub} settransfer}}
+
+\definespecial\dostopnegative
+  {\special{\@@insertpostscriptliteral grestore}}
+
+\definespecial\dostartoverprint
+  {\special{\@@insertpostscriptliteral true setoverprint}}
+
+\definespecial\dostopoverprint
+  {\special{\@@insertpostscriptliteral false setoverprint}}
+
+\definespecial\dostartgraphicgroup
+  {\special{\@@insertpostscriptliteral gsave}}
+
+\definespecial\dostopgraphicgroup
+  {\special{\@@insertpostscriptliteral grestore}}
+
+%D \macros
+%D   {doovalbox}
+%D
+%D This implementation is a mixture of several possible
+%D implementations. We use some constants that may not be
+%D changed. It took some time to find them, but these values
+%D offer quite accurate results. The macro calls for
+%D \type{\forgetall}, which resets indentation, skips and
+%D \type{\everypar}.
+%D
+%D Because a stroke follows the line, we correct for half of
+%D the linewidth. Furthermore we use scaling to overcome some
+%D limitations in the precision ($<1$~sp) and to prevent
+%D rounding errors. We also do some correction for large
+%D values. We let PostScript compare some arguments with
+%D \type{a b eq {action} fi}.
+%D
+%D The path is based on a macro of J.~Hefferon cs. We also
+%D tried the D.~Salomon implementation, but this did not work
+%D well, just like some other alternatives.
+
+% #1 = width            #2 = height           #3 = depth
+% #4 = linewidth        #5 = radius
+% #5 = stroke (ja,nee)  #7 = fill (ja,nee)
+
+\def\@@insertpostscriptliteral {ps: }
+\def\@@insertpostscriptretain  {postscript } % unknown
+
+\def\dosomeovalcalc#1#2#3%
+  {\dimen2=#1%
+   \advance\dimen2 #2%
+   \PointsToBigPoints{\dimen2}#3}
+
+\def\dosomeovalbox#1#2#3#4#5#6#7#8% variant not yet supported
+  {\bgroup
+   \dimen0=#4\divide\dimen0 2
+   \dosomeovalcalc{0pt}{+\dimen0}\xmin
+   \dosomeovalcalc{#1}{-\dimen0}\xmax
+   \dosomeovalcalc{#2}{-\dimen0}\ymax
+   \dosomeovalcalc{-#3}{+\dimen0}\ymin
+   \dosomeovalcalc{#4}{0pt}\stroke
+   \dosomeovalcalc{#5}{0pt}\radius
+   \edef\dostroke{#6}%
+   \edef\dofill{#7}%
+   \setbox\nextbox\hbox
+     {\ifnum\dostroke\dofill>0
+        \special
+          {\@@insertpostscriptretain
+             gsave
+               newpath
+               \xmin\space \radius\space add \ymin\space moveto
+               \xmax\space \ymin\space \xmax\space \ymax\space \radius\space arcto
+               \xmax\space \ymax\space \xmin\space \ymax\space \radius\space arcto
+               \xmin\space \ymax\space \xmin\space \ymin\space \radius\space arcto
+               \xmin\space \ymin\space \xmax\space \ymin\space \radius\space arcto
+               \xmin\space \radius\space add \ymin\space moveto
+               16 {pop} repeat
+               closepath
+               (\dostroke) (1) eq
+                 {\stroke\space 0 ne
+                   {gsave
+                     \stroke\space setlinewidth
+                      stroke
+                    grestore} if} if
+               (\dofill) (1) eq
+                 {fill} if
+             grestore}%
+      \fi}%
+   \nextboxwd#1%
+   \nextboxht#2%
+   \nextboxdp#3%
+   \flushnextbox
+   \egroup}
+
+%D The indirect call permits a (rather) dirty hack, needed
+%D for \DVIPS\ support.
+
+\definespecial\doovalbox
+  {\dosomeovalbox}
+
+%D \macros
+%D   {dostartclipping,dostopclipping}
+%D
+%D These two specials are not yet working as expected.
+
+\definespecial\dostartclipping#1#2#3%
+  {\PointsToBigPoints{#2}\width
+   \PointsToBigPoints{#3}\height
+   \grabMPclippath{#1}{0}{\width}{\height}
+     {0 0 moveto \width 0 lineto \width \height lineto 0 \height\space lineto}%
+   \special
+     {\@@insertpostscriptliteral\space
+      save newpath \MPclippath\space closepath clip}}
+
+\definespecial\dostopclipping
+  {\special{\@@insertpostscriptliteral\space restore}}
+
+%D Some MP stuff:
+
+\definespecial\doinsertMPfile#1%
+  {\doiffileelse{./#1}{\includeMPasEPS{./#1}}{\message{[MP #1]}}}
+
+\stopspecials
+
+\endinput

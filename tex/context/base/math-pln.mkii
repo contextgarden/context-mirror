@@ -1,0 +1,360 @@
+%D \module
+%D   [       file=math-pln,
+%D        version=2001.11.16,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Plain Helpers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \points should become \bodyfontsize
+
+%D This is a temporary module, some of this code will move to
+%D the other math modules.
+
+\writestatus{loading}{ConTeXt Math Macros / Plain Helpers}
+
+\unprotect
+
+\ifx\displ@y\undefined \let\displ@y\relax\fi
+
+\newbox\rootbox
+
+\def\root#1\of
+  {\setbox\rootbox\hbox{$\mathsurround\zeropoint\scriptscriptstyle{#1}$}%
+   \mathpalette\r@@t}
+
+\def\r@@t#1#2% will be overloaded
+  {\setbox\zerocount\hbox{$\mathsurround\zeropoint#1\sqrt{#2}$}\dimen@\ht\zerocount
+   \advance\dimen@-\dp\zerocount
+   \mkern5mu\raise.6\dimen@\copy\rootbox
+   \mkern-10mu\box\zerocount}
+
+\def\mathhexbox#1#2#3%
+  {\leavevmode
+   \hbox{$\mathsurround\zeropoint\mathchar"#1#2#3$}}
+
+\def\oalign#1%
+  {\leavevmode
+   \vtop
+     {\baselineskip\zeroskip \lineskip.25ex%
+      \ialign{##\crcr#1\crcr}}}
+
+\def\o@lign
+  {\lineskiplimit\zeropoint \oalign}
+
+\def\ooalign % chars over each other
+  {\lineskiplimit-\maxdimen
+   \oalign}
+
+\def\sh@ft#1% kern by #1 times the current slant
+  {\dimen@#1%
+   \kern\expandafter\withoutpt\the\slantperpoint
+   \dimen@}
+
+\def\dots
+  {\relax\ifmmode\ldots\else$\mathsurround\zeropoint\ldots\,$\fi}
+
+\def\hrulefill
+  {\leaders\hrule\hfill}
+
+\def\dotfill
+  {\cleaders\hbox{$\mathsurround\zeropoint \mkern1.5mu.\mkern1.5mu$}\hfill}
+
+\def\rightarrowfill
+  {$\mathsurround\zeropoint\smash-\mkern-7mu%
+   \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
+   \mkern-7mu\mathord\rightarrow$}
+
+\def\leftarrowfill
+  {$\mathsurround\zeropoint\mathord\leftarrow\mkern-7mu%
+   \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
+   \mkern-7mu\smash-$}
+
+% must go to math-tex
+
+\ifx\braceld\undefined
+    % mkii values
+    \mathchardef\braceld="37A
+    \mathchardef\bracerd="37B
+    \mathchardef\bracelu="37C
+    \mathchardef\braceru="37D
+\fi
+
+\def\downbracefill
+  {$\mathsurround\zeropoint\setbox\zerocount\hbox{$\braceld$}%
+   \braceld\leaders\vrule\!!height\ht\zerocount\!!depth\zeropoint\hfill\braceru
+   \bracelu\leaders\vrule\!!height\ht\zerocount\!!depth\zeropoint\hfill\bracerd$}
+
+\def\upbracefill
+  {$\mathsurround\zeropoint\setbox\zerocount\hbox{$\braceld$}%
+   \bracelu\leaders\vrule\!!height\ht\zerocount\!!depth\zeropoint\hfill\bracerd
+   \braceld\leaders\vrule\!!height\ht\zerocount\!!depth\zeropoint\hfill\braceru$}
+
+% hm, shouldn't that be \kern3\bodyfontsize
+
+\def\overbrace#1%
+  {\mathop{\vbox{\mathsurround\zeropoint\ialign{##\crcr\noalign{\kern3\points}
+   \downbracefill\crcr\noalign{\kern3\points\nointerlineskip}
+   $\hfil\displaystyle{#1}\hfil$\crcr}}}\limits}
+
+\def\underbrace#1%
+  {\mathop{\vtop{\mathsurround\zeropoint\ialign{##\crcr
+   $\hfil\displaystyle{#1}\hfil$\crcr\noalign{\kern3\points\nointerlineskip}
+   \upbracefill\crcr\noalign{\kern3\points}}}}\limits}
+
+\let\sp=^ % will become obsolete
+\let\sb=_ % will become obsolete
+
+\ifx\,\undefined \def\,{\mskip \thinmuskip } \fi
+\ifx\>\undefined \def\>{\mskip \medmuskip  } \fi
+\ifx\;\undefined \def\;{\mskip \thickmuskip} \fi
+\ifx\!\undefined \def\!{\mskip-\thinmuskip } \fi
+\ifx\*\undefined \def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}} \fi
+
+% {\catcode`\'=\active \gdef'{^\bgroup\prim@s}}
+
+\def\activemathquote{^\bgroup\prim@s}
+
+\def\prim@s
+ {\prime\futurelet\next\pr@m@s}
+
+\def\pr@m@s
+  {\ifx'\next
+     \@EA\pr@@@s
+   \else\ifx^\next
+     \@EAEAEA\pr@@@t
+   \else
+     \@EAEAEA\egroup
+   \fi\fi}
+
+\def\pr@@@s#1%
+  {\prim@s}
+
+\def\pr@@@t#1#2%
+  {#2\egroup}
+
+% {\catcode`\_=\active \global\let_=\_} % _ in math is either subscript or \_
+
+\let\activemathunderscore\_
+
+\def\relbar            {\mathrel{\smash-}} % - has the same height as +
+\def\Relbar            {\mathrel=}
+
+\def\Longrightarrow    {\Relbar\joinrel\Rightarrow}
+\def\longrightarrow    {\relbar\joinrel\rightarrow}
+\def\longleftarrow     {\leftarrow\joinrel\relbar}
+\def\Longleftarrow     {\Leftarrow\joinrel\Relbar}
+\def\longmapsto        {\mapstochar\longrightarrow}
+\def\longleftrightarrow{\leftarrow\joinrel\rightarrow}
+\def\Longleftrightarrow{\Leftarrow\joinrel\Rightarrow}
+
+\def\overrightarrow#1%
+  {\vbox{\mathsurround\zeropoint\ialign{##\crcr
+   \rightarrowfill\crcr\noalign{\kern-\onepoint\nointerlineskip}
+   $\hfil\displaystyle{#1}\hfil$\crcr}}}
+
+\def\overleftarrow#1%
+  {\vbox{\mathsurround\zeropoint\ialign{##\crcr
+   \leftarrowfill\crcr\noalign{\kern-\onepoint\nointerlineskip}
+   $\hfil\displaystyle{#1}\hfil$\crcr}}}
+
+\def\skew#1#2#3%
+  {{\muskip\zerocount#1mu\divide\muskip\zerocount\plustwo \mkern\muskip\zerocount
+    #2{\mkern-\muskip\zerocount{#3}\mkern\muskip\zerocount}\mkern-\muskip\zerocount}{}}
+
+\def\choose{\atopwithdelims()}
+\def\brack {\atopwithdelims[]}
+\def\brace {\atopwithdelims\{\}}
+
+\def\mathpalette#1#2%
+  {\mathchoice
+     {#1\displaystyle     {#2}}%
+     {#1\textstyle        {#2}}%
+     {#1\scriptstyle      {#2}}%
+     {#1\scriptscriptstyle{#2}}}
+
+\def\cong
+  {\mathrel{\mathpalette\@vereq\sim}} % congruence sign
+
+\def\@vereq#1#2%
+  {\lower.5\points\vbox{\lineskiplimit\maxdimen\lineskip-.5\points
+   \ialign{$\mathsurround\zeropoint#1\hfil##\hfil$\crcr#2\crcr=\crcr}}}
+
+\def\notin% can be mkiv'd
+  {\mathrel{\mathpalette\c@ncel\in}}
+
+\def\c@ncel#1#2%
+  {\mathsurround\zeropoint\ooalign{$\hfil#1\mkern1mu/\hfil$\crcr$#1#2$}}
+
+\def\rightleftharpoons%
+  {\mathrel{\mathpalette\rlh@{}}}
+
+\def\rlh@#1%
+  {\vcenter
+     {\mathsurround\zeropoint
+      \hbox
+        {\ooalign
+           {\raise2pt\hbox{$#1\rightharpoonup$}\crcr
+            $#1\leftharpoondown$}}}}
+
+\def\buildrel#1\over#2%
+  {\mathrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
+
+\def\doteq
+  {\buildrel\textstyle.\over=}
+
+\ifx\mfunction\undefined \def\mfunction#1{\mathbin{\rm#1}} \fi
+
+\def\bmod
+  {\nonscript
+   \mskip-\medmuskip
+   \mkern5mu
+   \mfunction{mod}%
+   \penalty900
+   \mkern5mu
+   \nonscript
+   \mskip-\medmuskip}
+
+\def\pmod#1%
+  {\allowbreak
+   \mkern18mu
+   (\mfunction{mod}\,\,#1)}
+
+\def\cases#1%
+  {\left\{%
+   \,%
+   \vcenter
+     {\normalbaselines
+      \mathsurround\zeropoint
+      \ialign{$##\hfil$&\quad##\hfil\crcr#1\crcr}}%
+   \right.}
+
+\def\matrix#1%
+  {\null
+   \,%
+   \vcenter
+     {\normalbaselines\mathsurround\zeropoint
+      \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
+      \mathstrut\crcr\noalign{\kern-\baselineskip}
+      #1\crcr\mathstrut\crcr\noalign{\kern-\baselineskip}}}%
+   \,}
+
+\def\pmatrix#1%
+  {\left(\matrix{#1}\right)}
+
+\newdimen\mathparentwd
+
+% \setbox0=\hbox{\tenex B} \mathparentwd=\wd0 % width of the big left (
+
+\def\bordermatrix#1%
+  {\begingroup
+   \mathsurround\zeropoint
+   \setbox\zerocount\vbox
+     {\def\cr{\crcr\noalign{\kern2\points\global\let\cr\endline}}%
+      \ialign{$##$\hfil\kern2\points\kern\mathparentwd&\thinspace\hfil$##$\hfil
+        &&\quad\hfil$##$\hfil\crcr
+        \omit\strut\hfil\crcr\noalign{\kern-\baselineskip}%
+        #1\crcr\omit\strut\cr}}%
+   \setbox\plustwo\vbox
+     {\unvcopy\zerocount\global\setbox\plusone\lastbox}%
+   \setbox\plustwo\hbox
+     {\unhbox\plusone\unskip\global\setbox\plusone\lastbox}%
+   \setbox\plustwo\hbox
+     {$\kern\wd\plusone\kern-\mathparentwd\left(\kern-\wd\plusone
+      \global\setbox\plusone\vbox{\box\plusone\kern2\points}%
+      \vcenter{\kern-\ht\plusone\unvbox\zerocount\kern-\baselineskip}\,\right)$}%
+   \null
+   \;%
+   \vbox{\kern\ht\plusone\box\plustwo}%
+   \endgroup}
+
+% \def\openup{\afterassignment\@penup\dimen@=}
+%
+% \def\@penup{\advance\lineskip\dimen@
+%   \advance\baselineskip\dimen@
+%   \advance\lineskiplimit\dimen@}
+
+\def\openup
+  {\afterassignment\doopenup\scratchdimen=}
+
+\def\doopenup
+  {\advance\lineskip     \scratchdimen
+   \advance\baselineskip \scratchdimen
+   \advance\lineskiplimit\scratchdimen}
+
+% \def\jot{.25\bodyfontsize} % plain tex: 3 pt (todo: better name and configurable)
+
+\def\displayopenupvalue{.25\bodyfontsize}
+
+\def\eqalign#1%
+  {\null
+   \,%
+   \vcenter
+     {\openup\displayopenupvalue % was \openup\jot
+      \mathsurround\zeropoint
+      \ialign
+        {\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##}$\hfil\crcr
+         #1\crcr}}%
+   \,}
+
+\def\@lign % restore inside \displ@y
+  {\tabskip\zeroskip
+   \everycr{}}
+
+\def\displaylines#1%
+  {\displ@y
+   \tabskip\zeroskip
+   \halign
+     {\hbox to \displaywidth{$\@lign\hfil\displaystyle##\hfil$}\crcr
+      #1\crcr}}
+
+\def\eqalignno#1%
+  {\displ@y
+   \tabskip\centering
+   \halign to \displaywidth
+     {\hfil$\@lign\displaystyle{##}$\tabskip\zeroskip
+      &$\@lign\displaystyle{{}##}$\hfil\tabskip\centering
+      &\llap{$\@lign##$}\tabskip\zeroskip\crcr
+      #1\crcr}}
+
+\def\leqalignno#1%
+  {\displ@y
+   \tabskip\centering
+   \halign to \displaywidth
+     {\hfil$\@lign\displaystyle{##}$\tabskip\zeroskip
+      &$\@lign\displaystyle{{}##}$\hfil\tabskip\centering
+      &\kern-\displaywidth\rlap{$\@lign##$}\tabskip\displaywidth\crcr
+      #1\crcr}}
+
+% temporary here
+
+% \startcatcodetable \mthcatcodes
+%     \setcatcodetable\ctxcatcodes
+%     \catcode`\_ = 13
+%     \catcode`\' = 13
+% \stopcatcodetable
+%
+% \letcatcodecommand \mthcatcodes `\_ \activemathunderscore
+% \letcatcodecommand \mthcatcodes `\' \activemathquote
+
+% \appendtoks \setcatcodetable\mthcatcodes \to \everymath : spoils xml
+
+% tricky, but some day we will reimplement math
+
+\bgroup
+    \catcode`\_ = 13
+    \catcode`\' = 13
+    \doglobal\appendtoks
+        \let_\activemathunderscore
+        \let'\activemathquote
+    \to \everymathematics
+\egroup
+
+% so far
+
+\protect \endinput

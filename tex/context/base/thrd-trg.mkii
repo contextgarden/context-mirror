@@ -1,0 +1,127 @@
+%D In order to support rotation over arbitrary angles, we need a sine
+%D and  cosine calculator. For this purpose we borrow a few macros by
+%D David  Carlisle (his trig package). Because local variables are
+%D used, I patched the macros a bit. Also, I used a few different names
+%D for variabels and macros and use existing auxiliary macros.
+
+\unprotect
+
+% compare: \number 0.5 \number -0.5 \number 1.5 \number -1.5
+%
+% so we need:
+
+\def\realnumber#1{\withoutpt\the\dimexpr#1\points\relax} % brrr
+
+\chardef     \@iv         =     4
+\chardef     \@xc         =    90 % was \nin@ty
+\chardef     \@clxx       =   180
+\chardef     \@lxxi       =    71
+\mathchardef \@mmmmlxviii =  4068
+\mathchardef \@xvi@k      = 16384
+
+\chardef     \tr@coeffz   =    72
+\chardef     \tr@coefb    =    42
+\mathchardef \tr@coefc    =   840
+\mathchardef \tr@coefd    =  5040
+
+\def\tg@series
+  {\!!dimena\@lxxi\!!dimena
+   \divide\!!dimena\@mmmmlxviii
+   \edef\!!stringa{\withoutpt\the\!!dimena}%
+   \!!dimena\!!stringa\!!dimena
+   \edef\!!stringb{\withoutpt\the\!!dimena}%
+   \divide\!!dimena\tr@coeffz
+   \advance\!!dimena\minusone\onepoint
+   \!!dimena\!!stringb\!!dimena
+   \advance\!!dimena \tr@coefb\onepoint
+   \!!dimena\!!stringb\!!dimena
+   \advance\!!dimena -\tr@coefc\onepoint
+   \!!dimena\!!stringb\!!dimena
+   \advance\!!dimena \tr@coefd\onepoint
+   \!!dimena\!!stringa\!!dimena
+   \divide\!!dimena \tr@coefd}
+
+\def\tg@reduce#1#2%
+  {\!!dimena#1#2\@xc\onepoint
+   \advance\!!dimena#2-\@clxx\onepoint
+   \!!dimena-\!!dimena
+   \tg@@sin}
+
+\def\tg@@sin
+  {\ifdim\tg@reduce>+\else\ifdim\tg@reduce<-\else
+     \tg@series
+   \fi\fi}
+
+%D Calculating a sine is a two step process: first a value is
+%D calculated, and afterwards it can be used. This saves redundant
+%D calculations.
+
+\def\calculatesin#1%
+  {{\expandafter\ifx\csname sin \realnumber{#1}\endcsname\relax
+      \!!dimena#1\onepoint
+      \tg@@sin
+      \expandafter\xdef\csname sin \realnumber{#1}\endcsname{\withoutpt\the\!!dimena}%
+    \fi}}
+
+\def\calculatecos#1%
+  {{\expandafter\ifx\csname cos \realnumber{#1}\endcsname\relax
+      \!!dimena\@xc\onepoint
+      \advance\!!dimena-#1\onepoint
+      \tg@@sin
+      \expandafter\xdef\csname cos \realnumber{#1}\endcsname{\withoutpt\the\!!dimena}%
+    \fi}}
+
+\def\calculatetan#1%
+  {{\expandafter\ifx\csname tan \realnumber{#1}\endcsname\relax
+      \calculatesin{#1}%
+      \calculatecos{#1}%
+      \!!dimena\calculatedcos{#1}\onepoint
+      \divide\!!dimena\@iv
+      \!!dimenb\calculatedsin{#1}\onepoint
+      \!!dimenb\@xvi@k\!!dimenb
+      \divide\!!dimenb\!!dimena
+      \expandafter\xdef\csname tan \realnumber{#1}\endcsname{\withoutpt\the\!!dimenb}%
+   \fi}}
+
+%D The results are accessed with:
+
+\def\calculatedsin#1{\csname sin \realnumber{#1}\endcsname}
+\def\calculatedcos#1{\csname cos \realnumber{#1}\endcsname}
+\def\calculatedtan#1{\csname tan \realnumber{#1}\endcsname}
+
+%D A more save implementation would be:
+
+\def\calculatedsin#1{\executeifdefined{sin \realnumber{#1}}\!!zerocount}
+\def\calculatedcos#1{\executeifdefined{cos \realnumber{#1}}\!!plusone  }
+\def\calculatedtan#1{\executeifdefined{tan \realnumber{#1}}\!!zerocount}
+
+%D The following permits cleaner overloading (\MKIV\ will only have
+%D these):
+
+\def\setcalculatedsin#1#2{\calculatesin{#2}\edef#1{\calculatedsin{#2}}}
+\def\setcalculatedcos#1#2{\calculatecos{#2}\edef#1{\calculatedcos{#2}}}
+\def\setcalculatedtan#1#2{\calculatetan{#2}\edef#1{\calculatedtan{#2}}}
+
+%D A few values are predefined, although, on todays systems there
+%D is no real reason for that. I've added the 270 ones and changed
+%D the -90 tan. Also, I prefer text (\type {\!!..} instead of
+%D counters \type {\..}.
+
+\expandafter\let\csname sin \realnumber{  0}\endcsname\!!zerocount
+\expandafter\let\csname cos \realnumber{  0}\endcsname\!!plusone
+\expandafter\let\csname sin \realnumber{ 90}\endcsname\!!plusone
+\expandafter\let\csname cos \realnumber{ 90}\endcsname\!!zerocount
+\expandafter\let\csname sin \realnumber{180}\endcsname\!!zerocount
+\expandafter\let\csname cos \realnumber{180}\endcsname\!!minusone
+\expandafter\let\csname sin \realnumber{270}\endcsname\!!minusone
+\expandafter\let\csname cos \realnumber{270}\endcsname\!!zerocount
+
+\expandafter\let\csname sin \realnumber{-90}\endcsname\!!minusone
+\expandafter\let\csname cos \realnumber{-90}\endcsname\!!zerocount
+
+\expandafter\def\csname tan \realnumber{ 90}\endcsname{\writestatus\m!systems{infinite tan +90}}
+\expandafter\def\csname tan \realnumber{-90}\endcsname{\writestatus\m!systems{infinite tan -90}}
+
+%D Usage: \type {\calculatesin{10}} and \type {\calculatedsin{10}}
+
+\protect \endinput

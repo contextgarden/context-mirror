@@ -1,0 +1,90 @@
+%D \module
+%D   [       file=spec-yy,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=\YandY's \DVIPSONE\ and \DVIWINDO,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D \macros
+%D   {dostartgraymode,dostopgraymode,
+%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode,
+%D    doinsertfile}
+%D
+%D We implement a nice and simple figure||insertion special
+%D and make use of \YandY's color specials. Otherwise \DVIWINDO\
+%D would not show colors.
+
+\startspecials[yandy]
+
+\def\@@insertpostscriptliteral {ps: }
+\def\@@insertpostscriptretain  {" } % this was: {postscript}
+
+\definespecial\dostartgraymode#1%
+  {\special{color gray #1}}
+
+\definespecial\dostopgraymode%
+  {\special{color gray 0}}
+
+\definespecial\dostartrgbcolormode#1#2#3%
+  {\special{color rgb #1 #2 #3}}
+
+\definespecial\dostartcmykcolormode#1#2#3#4%
+  {\special{color cmyk #1 #2 #3 #4}}
+
+\definespecial\dostartgraycolormode#1%
+  {\special{color gray #1}}
+
+\definespecial\dostopcolormode%
+  {\special{color gray 0}}
+
+% \definefileinsertion{yy}{eps}%
+%   {\PointsToBigPoints\@@DriverImageWidth \width
+%    \PointsToBigPoints\@@DriverImageHeight\height
+%    \special
+%      {psfile=\@@DriverImageFile\space
+%      %hscale=100\space
+%      %vscale=100\space
+%       hoffset=\width\space
+%       voffset=\height}}
+
+\definefileinsertion{tr}{eps}
+  {\bgroup
+   \PointsToWholeBigPoints\@@DriverImageWidth \width
+   \PointsToWholeBigPoints\@@DriverImageHeight\height
+   \special
+     {PSfile="\@@DriverImageFile"\space
+      llx=\EPSllx\space
+      lly=\EPSlly\space
+      urx=\EPSurx\space
+      ury=\EPSury\space
+      \ifdim\@@DriverImageWidth >\zeropoint rwi=\width 0\space\fi
+      \ifdim\@@DriverImageHeight>\zeropoint rhi=\height0      \fi}%
+   \egroup}
+
+\definefileinsertion{yy}{mps}
+  {\hbox
+     {\includeMPfonts \@@DriverImageFile
+      \convertMPcolors\@@DriverImageFile
+      \dofileinsertion{yy}{eps}}}
+
+\definefileinsertion{yy}{tif}
+  {\special{insertimage:
+     \@@DriverImageFile \space
+     \@@DriverImageWidth\space
+     \@@DriverImageHeight}}
+
+\definespecial\doinsertfile
+  {\dofileinsertion{yy}\@@DriverImageType}
+
+\def\MPprologues{1}
+\def\MPOSTdriver{dvipsone}
+
+\stopspecials
+
+\endinput

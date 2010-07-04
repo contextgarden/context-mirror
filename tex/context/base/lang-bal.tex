@@ -1,0 +1,118 @@
+%D \module
+%D   [       file=lang-bal,
+%D        version=2010.01.21,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Baltic Languages,
+%D         author=Marius Aleknevičius,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Language Macros / Baltic Languages}
+
+%D The framework of this module is set up by Hans Hagen while
+%D all the translations were done by Marius Aleknevičius. If
+%D you have suggestions, don't hesitate to send us an email.
+
+%D This file is in \UTF\ encoding and is meant for \MKIV.
+
+%  Lettish/Latvian, Lietuvių/Lithuanian
+
+\unprotect
+
+\installlanguage
+  [\s!lt]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftdoubleninequote,
+   \c!rightquote=\upperrightdoublesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!date={\v!year,~m.,\ ,\v!month,\ ,\v!day,~d.},
+   \s!patterns=\s!lt,
+   \s!encoding=l7x,
+   \s!mapping=l7x,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=2]
+
+\installlanguage [lithuanian] [\s!lt]
+
+\setupheadtext [\s!lt] [\v!content=Turinys]
+\setupheadtext [\s!lt] [\v!tables=Lentelės]
+\setupheadtext [\s!lt] [\v!figures=Iliustracijos]
+\setupheadtext [\s!lt] [\v!graphics=Graphics]         % TODO what is the difference between the "graphics" and the "figures"?
+\setupheadtext [\s!lt] [\v!intermezzi=Intermezzos]    % TODO what is the "intermezzi"?
+\setupheadtext [\s!lt] [\v!index=Rodyklė]
+\setupheadtext [\s!lt] [\v!abbreviations=Santrumpos]
+\setupheadtext [\s!lt] [\v!logos=Logos]               % TODO where it is used?
+\setupheadtext [\s!lt] [\v!units=Units]               % TODO where it is used?
+\setupheadtext [\s!lt] [pubs=Literatūra]
+
+\setuplabeltext [\s!lt] [\v!table={, lentelė.}]
+\setuplabeltext [\s!lt] [\v!figure={, pav.}]
+\setuplabeltext [\s!lt] [\v!intermezzo=Intermezzo ]   % TODO
+\setuplabeltext [\s!lt] [\v!graphic=Graphic ]         % TODO
+
+%\startlanguagespecifics[\s!lt]
+%    \setupheads[\c!sectionstopper=.] %TODO how do I set dots after section numbers?
+%\stoplanguagespecifics
+
+\setuplabeltext [\s!lt] [\v!chapter=]                 % Chapter
+\setuplabeltext [\s!lt] [\v!section=]
+\setuplabeltext [\s!lt] [\v!subsection=]
+\setuplabeltext [\s!lt] [\v!subsubsection=]
+\setuplabeltext [\s!lt] [\v!subsubsubsection=]
+\setuplabeltext [\s!lt] [\v!appendix=]               % Appendix
+\setuplabeltext [\s!lt] [\v!part={, dalis}]
+\setuplabeltext [\s!lt] [\v!line=line ]              % TODO where it is used?
+\setuplabeltext [\s!lt] [\v!lines=lines ]            % TODO where it is used?
+
+\setuplabeltext [\s!lt]   [\v!january=sausio]
+\setuplabeltext [\s!lt]  [\v!february=vasario]
+\setuplabeltext [\s!lt]     [\v!march=kovo]
+\setuplabeltext [\s!lt]     [\v!april=balandžio]
+\setuplabeltext [\s!lt]       [\v!may=gegužės]
+\setuplabeltext [\s!lt]      [\v!june=birželio]
+\setuplabeltext [\s!lt]      [\v!july=liepos]
+\setuplabeltext [\s!lt]    [\v!august=rugpjūčio]
+\setuplabeltext [\s!lt] [\v!september=rugsėjo]
+\setuplabeltext [\s!lt]   [\v!october=spalio]
+\setuplabeltext [\s!lt]  [\v!november=lapkričio]
+\setuplabeltext [\s!lt]  [\v!december=gruodžio]
+
+\setuplabeltext [\s!lt]    [\v!sunday=sekmadienis]
+\setuplabeltext [\s!lt]    [\v!monday=pirmadienis]
+\setuplabeltext [\s!lt]   [\v!tuesday=antradienis]
+\setuplabeltext [\s!lt] [\v!wednesday=trečiadienis]
+\setuplabeltext [\s!lt]  [\v!thursday=ketvirtadienis]
+\setuplabeltext [\s!lt]    [\v!friday=penktadienis]
+\setuplabeltext [\s!lt]  [\v!saturday=šeštadienis]
+
+\setuplabeltext [\s!lt]      [\v!page=puslapis ]              % TODO how to test?
+\setuplabeltext [\s!lt]    [\v!atpage=puslapyje ]             % TODO how to test?
+\setuplabeltext [\s!lt] [\v!hencefore=kaip parodyta aukščiau] % TODO how to test?
+\setuplabeltext [\s!lt] [\v!hereafter=kaip parodyta žemiau]   % TODO how to test?
+\setuplabeltext [\s!lt]       [\v!see=žiūrėti ]               % TODO how to test?
+
+\setuplabeltext [\s!lt] [\v!january  :\s!mnem=jan] % I think, there is no abbreviated versions of months in lithuanian
+\setuplabeltext [\s!lt] [\v!february :\s!mnem=feb]
+\setuplabeltext [\s!lt] [\v!march    :\s!mnem=mar]
+\setuplabeltext [\s!lt] [\v!april    :\s!mnem=apr]
+\setuplabeltext [\s!lt] [\v!may      :\s!mnem=may]
+\setuplabeltext [\s!lt] [\v!june     :\s!mnem=jun]
+\setuplabeltext [\s!lt] [\v!july     :\s!mnem=jul]
+\setuplabeltext [\s!lt] [\v!august   :\s!mnem=aug]
+\setuplabeltext [\s!lt] [\v!september:\s!mnem=sep]
+\setuplabeltext [\s!lt] [\v!october  :\s!mnem=oct]
+\setuplabeltext [\s!lt] [\v!november :\s!mnem=nov]
+\setuplabeltext [\s!lt] [\v!december :\s!mnem=dec]
+
+%D \ShowAllLanguageValues [\s!lt] [lithuanian]  {Lithuanian}  {doll} % What does this mean? Do I need it?
+
+\protect \endinput

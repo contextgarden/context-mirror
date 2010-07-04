@@ -1,0 +1,190 @@
+%D \module
+%D   [       file=enco-grk,
+%D        version=2003.03.01,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Greek,
+%D         author=Apostolos Syropoulos,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmapping[iso-8859-7]
+
+% Uppercase Greek letters
+
+\definecasemap 193 193 225 % greekAlpha
+\definecasemap 194 194 226 % greekBeta
+\definecasemap 195 195 227 % greekGamma
+\definecasemap 196 196 228 % greekDelta
+\definecasemap 197 197 229 % greekEpsilon
+\definecasemap 198 198 230 % greekZeta
+\definecasemap 199 199 213 % greekEta
+\definecasemap 200 200 232 % greekTheta
+\definecasemap 201 201 233 % greekIota
+\definecasemap 202 202 234 % greekKappa
+\definecasemap 203 203 235 % greekLambda
+\definecasemap 204 204 236 % greekMu
+\definecasemap 205 205 237 % greekNu
+\definecasemap 206 206 238 % greekXi
+\definecasemap 207 207 239 % greekOmicron
+\definecasemap 208 208 240 % greekPi
+\definecasemap 209 209 241 % greekRho
+\definecasemap 211 211 243 % greekSigma
+\definecasemap 212 212 244 % greekTau
+\definecasemap 213 213 245 % greekUpsilon
+\definecasemap 214 214 246 % greekPhi
+\definecasemap 215 215 247 % greekChi
+\definecasemap 216 216 248 % greekPsi
+\definecasemap 217 217 249 % greekOmega
+
+% Lowercase Greek letters
+
+\definecasemap 225 193 225 % greekalpha
+\definecasemap 226 194 226 % greekbeta
+\definecasemap 227 195 227 % greekgamma
+\definecasemap 228 196 228 % greekdelta
+\definecasemap 229 197 229 % greekepsilon
+\definecasemap 230 198 230 % greekzeta
+\definecasemap 213 199 213 % greeketa
+\definecasemap 232 200 232 % greektheta
+\definecasemap 233 201 233 % greekiota
+\definecasemap 234 202 234 % greekkappa
+\definecasemap 235 203 235 % greeklambda
+\definecasemap 236 204 236 % greekmu
+\definecasemap 237 205 237 % greeknu
+\definecasemap 238 206 238 % greekxi
+\definecasemap 239 207 239 % greekomicron
+\definecasemap 240 208 240 % greekpi
+\definecasemap 241 209 241 % greekrho
+\definecasemap 242 211 242 % greekfinalsigma
+\definecasemap 243 211 243 % greekSigma
+\definecasemap 244 212 244 % greekTau
+\definecasemap 245 213 245 % greekUpsilon
+\definecasemap 246 214 246 % greekPhi
+\definecasemap 247 215 247 % greekChi
+\definecasemap 248 216 248 % greekPsi
+\definecasemap 249 217 249 % greekOmega
+
+% Accented Uppercase Greek letters
+
+\definecasemap 182 193 220  % greekAlphatonos
+\definecasemap 184 197 221  % greekEpsilontonos
+\definecasemap 185 199 222  % greekEtatonos
+\definecasemap 186 201 223  % greekIotatonos
+\definecasemap 188 207 252  % greekOmicrontonos
+\definecasemap 190 213 253  % greekUpsilontonos
+\definecasemap 191 217 254  % greekOmegatonos
+\definecasemap 218 218 250  % greekIotadialytika
+\definecasemap 219 219 251  % greekUpsilondialytika
+
+% Accented Lowercase Greek letters
+
+\definecasemap 220 193 220  % greekalphatonos
+\definecasemap 221 197 221  % greekepsilontonos
+\definecasemap 222 199 222  % greeketatonos
+\definecasemap 223 201 223  % greekiotatonos
+\definecasemap 252 207 252  % greekomicrontonos
+\definecasemap 253 213 253  % greekupsilontonos
+\definecasemap 254 217 254  % greekomegatonos
+\definecasemap 250 218 250  % greekiotadialytika
+\definecasemap 251 219 251  % greekupsilondialytika
+\definecasemap 192 218 192  % greekiotadialytikatonos
+\definecasemap 224 219 224  % greekupsilondialytikatonos
+
+\stopmapping
+
+\startencoding[iso-8859-7]
+
+% Uppercase Greek letters
+
+\definecharacter greekAlpha        193
+\definecharacter greekBeta         194
+\definecharacter greekGamma        195
+\definecharacter greekDelta        196
+\definecharacter greekEpsilon      197
+\definecharacter greekZeta         198
+\definecharacter greekEta          199
+\definecharacter greekTheta        200
+\definecharacter greekIota         201
+\definecharacter greekKappa        202
+\definecharacter greekLambda       203
+\definecharacter greekMu           204
+\definecharacter greekNu           205
+\definecharacter greekXi           206
+\definecharacter greekOmicron      207
+\definecharacter greekPi           208
+\definecharacter greekRho          209
+\definecharacter greekSigma        211
+\definecharacter greekTau          212
+\definecharacter greekUpsilon      213
+\definecharacter greekPhi          214
+\definecharacter greekChi          215
+\definecharacter greekPsi          216
+\definecharacter greekOmega        217
+
+% Lowercase Greek letters
+
+\definecharacter greekalpha        225
+\definecharacter greekbeta         226
+\definecharacter greekgamma        227
+\definecharacter greekdelta        228
+\definecharacter greekepsilon      229
+\definecharacter greekzeta         230
+\definecharacter greeketa          231
+\definecharacter greektheta        232
+\definecharacter greekiota         233
+\definecharacter greekkappa        234
+\definecharacter greeklambda       235
+\definecharacter greekmu           236
+\definecharacter greeknu           237
+\definecharacter greekxi           238
+\definecharacter greekomicron      239
+\definecharacter greekpi           240
+\definecharacter greekrho          241
+\definecharacter greekfinalsigma   242
+\definecharacter greeksigma        243
+\definecharacter greektau          244
+\definecharacter greekupsilon      245
+\definecharacter greekphi          246
+\definecharacter greekchi          247
+\definecharacter greekpsi          248
+\definecharacter greekomega        249
+
+% Accented Uppercase Greek letters
+
+\definecharacter greekAlphatonos        182
+\definecharacter greekEpsilontonos      184
+\definecharacter greekEtatonos          185
+\definecharacter greekIotatonos         186
+\definecharacter greekOmicrontonos      188
+\definecharacter greekUpsilontonos      190
+\definecharacter greekOmegatonos        191
+\definecharacter greekIotadialytika     218
+\definecharacter greekUpsilondialytika  219
+
+% Accented Lowercase Greek letters
+
+\definecharacter greekalphatonos             220
+\definecharacter greekepsilontonos           221
+\definecharacter greeketatonos               222
+\definecharacter greekiotatonos              223
+\definecharacter greekomicrontonos           252
+\definecharacter greekupsilontonos           253
+\definecharacter greekomegatonos             254
+\definecharacter greekiotadialytika          250
+\definecharacter greekupsilondialytika       251
+\definecharacter greekiotadialytikatonos     192
+\definecharacter greekupsilondialytikatonos  224
+
+% Miscellaneous Greek symbols
+
+\definecharacter greekleftquot               171
+\definecharacter greekrightquot              187
+\definecharacter greektonos                  180
+\definecharacter greekdialytikatonos         181
+\definecharacter greekapostrophos            162
+
+\stopencoding

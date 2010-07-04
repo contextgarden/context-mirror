@@ -1,0 +1,319 @@
+%D \module
+%D   [      file=s-pre-22,
+%D        version=2000.08.07,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 22,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style was made on behalf of the \PDFTEX\ presentation
+%D at \TUG\ 2000. It cycled a summary of each talk, with name
+%D and title. When documenting this style, I changed
+%D reprocessing into pushing on layers. 
+%D 
+%D A \quote {problem} like this can be solved in several ways:
+%D 
+%D \startitemize
+%D \item writing a lot of semi||complex \TEX\ code as shown 
+%D \item keeping track of positions and draw everything on the 
+%D      page layer
+%D \item defining an overlay for each summary and changing the 
+%D      order when flushing 
+%D \item maintaining a so called field stack
+%D \stopitemize
+%D 
+%D We go for the first method. We assume that summaries are 
+%D simple text snippets. 
+
+\startmode[asintended] \setupbodyfont[lbr] \stopmode
+
+\setupbodyfont[14.4pt]
+
+%D We use the whole page area. 
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [topspace=0cm,
+   backspace=0cm,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+%D We define a couple of matching colors and gray scales. 
+%D Watch out, some are really meant to look dim. 
+
+\setupcolors
+  [state=start]
+
+\definecolor[PageColor] [s=.50]
+\definecolor[TextColor] [s=.80]
+\definecolor[DoneColor] [s=.65]
+
+\definecolor[TopColor] [r=.5,g=.6,b=.7]
+\definecolor[BotColor] [r=.6,g=.7,b=.5]
+\definecolor[DotColor] [r=.7,g=.5,b=.6]
+
+%D We will use foreground colors. Because these can interfere
+%D with the colors they overload, we can bets make sure that
+%D we don't have local colors. 
+
+\setupinteraction
+  [state=start,
+   color=,
+   contrastcolor=]
+
+%D The presentation is supposed to cycle automatically. 
+
+\setupinteractionscreen
+  [option=max,
+   delay=5]
+
+\setuppagetransitions
+
+%D We will use random positioning of objects. 
+
+\setupsystem
+  [random=medium] 
+
+%D We have two kind of graphics: the page background and
+%D the shape around the textual elements. 
+
+\defineoverlay [shape] [\uniqueMPgraphic{shape}]
+\defineoverlay [page]  [\reuseMPgraphic{page}]
+
+\startreusableMPgraphic{page}
+  StartPage ;
+    filldraw Page withcolor \MPcolor{PageColor} ;
+    pickup pencircle scaled .375cm ;
+    for i=1 upto 200 :
+      drawdot center Page randomized (PaperWidth,PaperHeight)
+        withcolor \MPcolor {DotColor} ;
+    endfor ;
+  StopPage ;
+\stopreusableMPgraphic
+
+\startuniqueMPgraphic{shape}
+  path p ;
+  p := unitsquare xyscaled(OverlayWidth,OverlayHeight) superellipsed .90 ;
+  draw p withpen pencircle scaled .50cm withcolor \MPcolor{PageColor} ;
+  fill p                                withcolor OverlayColor ;
+  draw p withpen pencircle scaled .25cm withcolor OverlayLineColor ;
+  currentpicture := currentpicture xysized(OverlayWidth,OverlayHeight) ; 
+\stopuniqueMPgraphic
+
+%D The resizing at the end is needed to get a nice inverted 
+%D hyperlink when we click on it in a browser. 
+
+%D Behind the page we put a forward button: 
+
+\defineoverlay [forward] [\overlaybutton{forward}]
+
+%D The content will be managed by means of two layers. 
+
+\definelayer [main] \defineoverlay [main] [\composedlayer{main}]
+\definelayer [temp] \defineoverlay [temp] [\composedlayer{temp}]
+
+%D The first layer will hold everything to be shown, while
+%D the second one gets the data we currently focus on. 
+%D Therefore the first layer will not be flushed each page. 
+
+\setuplayer
+  [main]
+  [state=repeat]
+
+%D All the overlays go onto the page area. 
+
+\setupbackgrounds
+  [page]
+  [background={page,forward,main,temp}]
+
+%D We have to collect all data before we typeset it. Each
+%D element will be typeset dim and bright. The dim
+%D alternatives will be collected on the main layer, but each
+%D bring one goes onto a box stack. 
+
+\initializeboxstack{Summary}
+\initializeboxstack{Subtext}
+
+%D The macros that take care of all this manipulations look 
+%D more complicated than they actually are. We use a 
+%D scratchbox to collect and inspect data. Also, because we 
+%D typeset each element twice, we need to make sure that we use 
+%D the same random seed for both. 
+
+\doglobal\newcounter\CurrentSummary
+
+\def\StartSummary% bottom bot-title top-title
+  {\dodoublegroupempty\doStartSummary}
+
+\def\doStartSummary#1#2%
+  {\doglobal\increment\CurrentSummary
+   \setbox\scratchbox=\hbox{\strut#1}
+   \getrandomseed\RandomSeed
+   \setlayer[main]               
+     {\RandomSubtextBox{DoneColor}{BotColor}{BotColor}}
+   \setrandomseed\RandomSeed
+   \savebox{Subtext}{\CurrentSummary}
+     {\RandomSubtextBox{TextColor}{BotColor}{black}}
+   \setbox\scratchbox=\hbox \bgroup 
+     \setbox\scratchbox=\hbox{\bfb\setstrut\strut\quad#2\quad}%
+     \SetAcceptableWidth
+     \framed [offset=0pt,width=fit,frame=off,align=middle,strut=no]
+       \bgroup \setupwhitespace[big]
+         \doifsomething{#2}{\noindent\box\scratchbox\blank}}
+
+\def\StopSummary
+  {\egroup \egroup 
+   \getrandomseed\RandomSeed
+   \setlayer[main]               
+     {\RandomSummaryBox{DoneColor}{TopColor}{TopColor}}
+   \setrandomseed\RandomSeed
+   \savebox{Summary}{\CurrentSummary}
+     {\RandomSummaryBox{TextColor}{TopColor}{black}}}
+
+%D A \type {\doStartSummary#1#2#3\StopSummary} could have been
+%D used too but this one is less sensitive for catcode changes
+%D (not that we expect problems like this in this kind of
+%D application). 
+
+%D The width is either derived from the width ot the title or 
+%D at random. The final width of the box is detemined by the
+%D content. 
+
+\def\SetAcceptableWidth
+  {\scratchdimen=.5\makeupwidth
+   \ifdim\wd\scratchbox>.5\makeupwidth
+     \getrandomdimen\hsize{\wd\scratchbox}{.8\makeupwidth}%
+   \else
+     \getrandomdimen\hsize{.5\makeupwidth}{.7\makeupwidth}%
+   \fi}
+
+%D The subtext box goes at the bottom, somewhere in the right 
+%D corner. 
+
+\def\RandomSubtextBox#1#2#3%
+  {\vbox to \makeupheight
+     {\vfill
+      \hbox to \makeupwidth
+        {\hfill
+         \button 
+           [offset=2ex,frame=off,background=shape,strut=no,
+            backgroundcolor=#1,framecolor=#2,foregroundcolor=#3]
+           {\copy\scratchbox}%
+           [previouspage]%
+         \getrandomdimen\scratchdimen{.5cm}{2.5cm}%
+         \hskip\scratchdimen}
+      \getrandomdimen\scratchdimen{.5cm}{1.5cm}
+      \vskip \scratchdimen}}
+
+%D The main text goes in the top half of the page, not to 
+%D far from the center. The last \type {\vskip} makes sure 
+%D that we don't clash with the subtexts.
+
+\definereference[thispage][page(\CurrentSummary)]
+
+\def\RandomSummaryBox#1#2#3%
+  {\vbox to \makeupheight
+     {\getrandomdimen\scratchdimen{.5cm}\makeupheight
+      \vskip 0pt plus \scratchdimen
+      \hbox to \makeupwidth
+        {\getrandomdimen\scratchdimen{.5cm}\makeupwidth
+         \hskip 0pt plus \scratchdimen
+         \button 
+           [offset=3ex,frame=off,background=shape,strut=no,
+            backgroundcolor=#1,framecolor=#2,foregroundcolor=#3]
+           {\copy\scratchbox}%
+           [thispage]%
+         \getrandomdimen\scratchdimen{.5cm}\makeupwidth
+         \hskip 0pt plus \scratchdimen}
+      \getrandomdimen\scratchdimen{.5cm}\makeupheight
+      \vskip 0pt plus \scratchdimen
+      \vskip.2\makeupheight}}
+
+%D Because we conly collect data, we hav eto make sure that at
+%D some moment it is processed and flushed. The following loop 
+%D does this. 
+
+\def\BuildPage
+  {\dorecurse{\CurrentSummary}
+     {\startstandardmakeup
+        \setlayer[temp]{\foundbox{Summary}\recurselevel}
+        \setlayer[temp]{\foundbox{Subtext}\recurselevel}
+      \stopstandardmakeup}}
+
+%D We hook this macro into the \type {\stoptext} macro. 
+
+\appendtoks \BuildPage \to \everystoptext
+
+%D We still need a title page. 
+
+\def\TitlePage%
+  {\dodoublegroupempty\doTitlePage}
+
+\long\def\doTitlePage#1#2%
+  {\ifsecondargument
+     \MakeTitlePage{#1}{#2}
+   \else\iffirstargument
+     \MakeTitlePage{\currentdate}{#1}
+   \else
+     \MakeTitlePage{\currentdate}{Welcome}
+   \fi\fi}
+
+\def\MakeTitlePage#1#2%
+  {\StartSummary{#1}{#2}\StopSummary}
+
+%D For old times sake: 
+
+\long\def\StartTopic#1\StopTopic{\StartSummary#1\StopSummary}
+
+\doifnotmode{demo}{\endinput}
+
+%D The demo text. 
+
+\starttext
+
+\TitlePage{Indeed}{The Title Page}
+
+\StartSummary{Alpha}{Title}
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+\StopSummary
+
+\StartSummary{Beta and Gamma}{Another Title}
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+\StopSummary
+
+\StartSummary{Delta}{Some Title}
+  A simple and not too long text just to show the topic.
+\StopSummary
+
+\StartSummary{Epsilon}{What A Title}
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+\StopSummary
+
+\StartSummary{Zeta, Eta and Theta}{Eh, A Title}
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+\StopSummary
+
+\StartSummary{Omega}
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+  A simple and not too long text just to show the topic.
+\StopSummary
+
+\stoptext

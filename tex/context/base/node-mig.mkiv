@@ -1,0 +1,60 @@
+%D \module
+%D   [       file=node-mig,
+%D        version=2010.01.19,
+%D          title=\CONTEXT\ Node Macros,
+%D       subtitle=Inserts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Node Support / Migrations}
+
+%D This is very experimental and although it is used in a
+%D real project it mostly serves a testbed for Taco and me so
+%D as prelude to extending the inserts mechanism.
+%D
+%D \starttyping
+%D \automigrateinserts
+%D
+%D \hbox{\vbox{x\footnote{1}x\footnote{2}x\footnote{3}x}}
+%D \vbox{x\footnote{4}x}
+%D \hbox{\vbox{x\footnote{5}x}}
+%D
+%D \hbox{x}
+%D \hbox{x\footnote{6}x}
+%D \hbox{x}
+%D
+%D \starttabulate
+%D \NC test \NC test \footnote{test} \input tufte \NC \NR
+%D \NC test \NC test \footnote{test} \input tufte \NC \NR
+%D \NC test \NC test \footnote{test} \input tufte \NC \NR
+%D \NC test \NC test \footnote{test} \input tufte \NC \NR
+%D \NC test \NC test \footnote{test} \input tufte \NC \NR
+%D \NC test \NC test \footnote{test} \input tufte \NC \NR
+%D \stoptabulate
+%D \stoptyping
+
+\unprotect
+
+\registerctxluafile{node-mig}{1.001}
+
+\newtoks \everyautomigratefootnotes
+\newtoks \everyautomigratemarks
+
+\def\automigrateinserts{\the\everyautomigratefootnotes}
+\def\automigratemarks  {\the\everyautomigratemarks}
+
+\appendtoks
+  \let\postponenotes\relax
+  \enableexperiments[inserts.migrate]%
+\to \everyautomigratefootnotes
+
+\appendtoks
+  \enableexperiments[marks.migrate]%
+\to \everyautomigratemarks
+
+\protect

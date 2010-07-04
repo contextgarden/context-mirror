@@ -1,0 +1,259 @@
+% This file is mostly the same as the one that ships with
+% texlive, but adapted for multiple trees as well as
+% development in a non tds tree (i.e. hh's machine). This
+% file is meant for context users.
+%
+% This file loads before texmf/web2c/texmf.cnf; beware :
+% the selfish auto parent can get in the way especially when
+% the binaries are located elsewhere. In case of multiple
+% trees, one can best set the following ones manually.
+
+progname = unsetprogname
+engine   = unsetengine
+backend  = unsetbackend
+
+TEXMFMAIN     = $SELFAUTOPARENT/texmf
+TEXMFLOCAL    = $SELFAUTOPARENT/texmf-local
+TEXMFFONTS    = $SELFAUTOPARENT/texmf-fonts
+TEXMFEXTRA    = $SELFAUTOPARENT/texmf-extra
+TEXMFPROJECT  = $SELFAUTOPARENT/texmf-project
+VARTEXMF      = $SELFAUTOPARENT/texmf-var
+HOMETEXMF     = /nonexist
+TEXMF         = {!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFEXTRA,!!$TEXMFMAIN}
+SYSTEXMF      = $TEXMF
+
+TEXMFCACHE    = $TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
+
+TEXMFCNF      = .;$TEXMF/texmf{-local,}/web2c
+TEXMFDBS      = $TEXMF;$VARTEXFONTS
+
+VARTEXFONTS   = $TEMPFONTPATH/varfonts
+
+% In the case of an multi-os setup, this one can be set
+% by the environment. watch out, lowercase engine !
+
+TEXFORMATS    = .;$TEXMF/web2c/{$engine,}
+MFBASES       = .;$TEXFORMATS
+MPMEMS        = .;$TEXFORMATS
+TEXPOOL       = .;$TEXFORMATS
+MFPOOL        = .;$TEXFORMATS
+MPPOOL        = .;$TEXFORMATS
+
+WEB2C         = $TEXMF/web2c
+
+% fonts, for the moment we also support the old enc/map locations
+
+OSFONTDIR =
+
+TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//
+
+TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/{data,map}/{dvipdfm,dvips,}//
+TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/{data,map}/{dvipdfm,pdftex,dvips,}//
+TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
+TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
+TEXFONTMAPS.luatex   = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
+TEXFONTMAPS.xetex    = .;$TEXMF/fonts/{data,map}/{xetex,pdftex,dvips,}//
+TEXFONTMAPS.dvips    = .;$TEXMF/fonts/{data,map}/{dvips,pdftex,}//
+
+# TEXFONTMAPS = .;$TEXMF/fonts/map/{$backend,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//
+TEXFONTMAPS   = .;$TEXMF/fonts/{data,map}/{$progname,$engine,pdftex,dvips,}//;$TEXMF/{$progname,$engine,pdftex,dvips}/{config,}//
+
+VFFONTS       = $TEXMF/fonts/{data,vf}//
+TFMFONTS      = $TEXMF/fonts/{data,tfm}//
+T1FONTS       = $TEXMF/fonts/{data,type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR;
+AFMFONTS      = $TEXMF/fonts/{data,afm}//;$OSFONTDIR;
+LIGFONTS      = $TEXMF/fonts/lig//
+TTFONTS       = $TEXMF/fonts/{data,truetype,ttf}//;$OSFONTDIR;
+TTF2TFMINPUTS = $TEXMF/ttf2pk//
+T42FONTS      = $TEXMF/fonts/type42//
+MISCFONTS     = $TEXMF/fonts/misc//
+% ENCFONTS    = $TEXMF/fonts/enc//
+ENCFONTS      = $TEXMF/{fonts/{data,enc},dvips,pdftex,dvipdfm}//
+CMAPFONTS     = $TEXMF/fonts/cmap//
+SFDFONTS      = $TEXMF/fonts/sfd//
+OPENTYPEFONTS = $TEXMF/fonts/{data,opentype}//;$OSFONTDIR
+
+FONTFEATURES  = $TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS
+FONTCIDMAPS   = $TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS
+
+OFMFONTS      = $TEXMF/fonts/{data,ofm,tfm}//
+OPLFONTS      = $TEXMF/fonts/opl//;
+OVFFONTS      = $TEXMF/fonts/{data,ovf,vf}//
+OVPFONTS      = $TEXMF/fonts/ovp//;
+OTPINPUTS     = $TEXMF/omega/otp//
+OCPINPUTS     = $TEXMF/omega/ocp//
+OTFFONTS      = $TEXMF/fonts/otf/{data,xetex,}//;$OSFONTDIR
+
+% configurations
+
+% resource paths, can be used in paranoid situations (can be env vars)
+
+TXRESOURCES=unset
+MPRESOURCES=$TXRESOURCES
+MFRESOURCES=$MPRESOURCES
+
+% some extra paths for development trees (can be env vars)
+
+CTXDEVTXPATH=unset
+CTXDEVMPPATH=unset
+CTXDEVMFPATH=unset
+
+TEXINPUTS         = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{$progname,plain,generic,}//
+TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain/base,generic}//
+MPINPUTS          = .;{$MFRESOURCES}//;{$CTXDEVMPPATH};$TEXMF/metapost/{context,base,}//
+MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH};$TEXMF/metafont/{context,base,}//;$TEXMF/fonts/source//
+BSTINPUTS         = .;{$TXRESOURCES}//;{$CTXDEVTXPATH};$TEXMF/bibtex/bst//
+
+TEXCONFIG     = $TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
+PDFTEXCONFIG  = $TEXMF/pdftex/{$progname,}//
+DVIPDFMINPUTS = $TEXMF/{fonts/{map,enc,lig}/dvipdfm,fonts/type1,dvips,pdftex,dvipdfmx,dvipdfm}//
+
+% this way we can hook in development paths
+
+CTXDEVPLPATH=unset
+CTXDEVPYPATH=unset
+CTXDEVRBPATH=unset
+CTXDEVJVPATH=unset
+
+% some old paths; we restrict the search to context paths; new ones as well as old ones
+
+PERLINPUTS     = .;$CTXDEVPLPATH;$TEXMF/scripts/context/perl
+PYTHONINPUTS   = .;$CTXDEVPYPATH;$TEXMF/scripts/context/python
+RUBYINPUTS     = .;$CTXDEVRBPATH;$TEXMF/scripts/context/ruby
+% LUAINPUTS    = .;$CTXDEVLUPATH;$TEXMF/scripts/context/lua
+JAVAINPUTS     = .;$CTXDEVJVPATH;$TEXMF/scripts/context/java
+
+% LUAINPUTS    = .;$TEXINPUTS;$TEXMFSCRIPTS
+LUAINPUTS      = .;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua//
+TEXMFSCRIPTS   = .;$CTXDEVLUPATH;$TEXINPUTS;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/scripts/context/{lua,ruby,perl}//
+
+% RUBYINPUTS   = .;$CTXDEVPLPATH;$TEXMF/scripts/{$progname,$engine,}/ruby
+% LUAINPUTS    = .;$CTXDEVPYPATH;$TEXMF/scripts/{$progname,$engine,}/lua
+% PYTHONINPUTS = .;$CTXDEVRBPATH;$TEXMF/scripts/{$progname,$engine,}/python
+% PERLINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/{$progname,$engine,}/perl
+% JAVAINPUTS   = .;$CTXDEVJVPATH;$TEXMF/scripts/{$progname,$engine,}/java
+
+CLUAINPUTS     = .;$SELFAUTOLOC/lib/{$progname,$engine,}/lua//
+
+% features
+
+shell_escape            = t
+%openout_any            = a
+openout_any             = p
+openin_any              = a
+parse_first_line        = f
+
+% allow_multiple_suffixes = f
+try_std_extension_first = f
+
+shell_escape.context          = t
+shell_escape_commands.context = mtxrun,luatools,texmfstart,texexec,mpost
+
+% auto generation
+
+MKTEXTEX = 0
+MKTEXPK  = 0
+MKTEXMF  = 0
+MKTEXTFM = 0
+MKOCP    = 0
+MKOFM    = 0
+
+% metapost
+
+MPXCOMMAND = texexec --batch --once --nomp --mptex
+TEX        = texexec --batch --once --nomp
+
+% These values are about the same as in the main
+% configuration file (dest_names_size added).
+
+buf_size                 = 1000000
+extra_mem_bot            = 1000000
+extra_mem_top            = 2000000
+font_max                 =    2500
+font_mem_size            = 1000000
+hash_extra               =   50000
+main_memory              = 2000000
+max_strings              =  150000
+nest_size                =     500
+pdf_mem_size             =  250000
+param_size               =   10000
+pool_free                =   47500
+pool_size                = 1000000
+save_size                =   10000
+stack_size               =    5000
+string_vacancies         =  100000
+trie_size                =  500000
+hyph_size                =    8191
+expand_depth             =   10000
+
+buf_size.context         = 1000000 % needed for omega bug
+extra_mem_bot.context    = 2000000
+extra_mem_top.context    = 4000000
+font_max.context         =    5000
+font_mem_size.context    = 2000000
+hash_extra.context       =  100000
+main_memory.context      = 2000000
+max_strings.context      =  300000
+nest_size.context        =     500
+pdf_mem_size.context     =  500000
+param_size.context       =   10000
+pool_free.context        =   47500
+pool_size.context        = 2000000
+save_size.context        =   50000
+stack_size.context       =   10000
+string_vacancies.context =  125000
+trie_size.context        =  500000
+hyph_size.context        =    8191 % prime
+expand_depth.context     =   10000
+
+obj_tab_size.context     =  300000 % obsolete in 1.40+
+dest_names_size.context  =  300000 % obsolete in 1.40+
+
+main_memory.mpost        = 3000000
+pool_size.mpost          = 3000000
+max_strings.mpost        =  200000
+path_size.mpost          =   10000
+nest_size.mpost          =     500
+param_size.mpost         =   10000
+save_size.mpost          =   50000
+stack_size.mpost         =    5000
+string_vacancies.mpost   =   90000
+
+main_memory.metafun      = 3000000
+pool_size.metafun        = 3000000
+max_strings.metafun      =  200000
+path_size.metafun        =   10000
+nest_size.metafun        =     500
+param_size.metafun       =   10000
+save_size.metafun        =   50000
+stack_size.metafun       =    5000
+string_vacancies.metafun =   90000
+
+buf_size                 =  400000
+
+mp_buf_size              =   30000
+mf_buf_size              =   30000
+mpost_buf_size           =   30000
+
+max_print_line.pdftex    =    255
+max_print_line.luatex    =    255
+max_print_line.xetex     =    255
+max_print_line.mpost     =    255
+max_print_line.metafun   =    255
+
+extra_mem_top.mptopdf    = 1000000
+extra_mem_bot.mptopdf    = 1000000
+
+% ocp_buf_size             =  500000
+% ocp_stack_size           =   10000
+% ocp_list_size            =    1000
+
+ocp_buf_size             =       1
+ocp_stack_size           =       1
+ocp_list_size            =       1
+
+% Just for xetex:
+
+FONTCONFIG_FILE = fonts.conf
+FONTCONFIG_PATH = $TEXMFLOCAL/fonts/conf
+FC_CACHEDIR     = $TEXMFLOCAL/fonts/cache

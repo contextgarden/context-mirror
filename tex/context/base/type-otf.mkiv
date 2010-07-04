@@ -1,0 +1,1796 @@
+%D \module
+%D   [       file=type-otf,
+%D        version=2007.07.30,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Opentype Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Actually, \LUATEX\ does not need all these definitions since it can
+%D consult its database. However, here we use the names that we used
+%D in good old \TEX, and these may differ a bit. Here we also see
+%D some oldstyle definitions which normally are done with features.
+
+
+% \starttypescriptcollection[myfonts]
+%
+%     \starttypescript [serif] [myserif] [name]
+%         \setups[font:fallback:serif]
+%         \definefontsynonym [Serif]           [file:myserif.ttf]           [features=default]
+%         \definefontsynonym [SerifBold]       [file:myserifbold.ttf]       [features=default]
+%         \definefontsynonym [SerifItalic]     [file:myserifitalic.ttf]     [features=default]
+%         \definefontsynonym [SerifBoldItalic] [file:myserifbolditalic.ttf] [features=default]
+%     \stoptypescript
+%
+%     \starttypescript[myfont]
+%         \definetypeface [myfont] [rm] [serif] [myserif] [default]
+%     \stoptypescript
+%
+% \stoptypescriptcollection
+%
+% \setupbodyfont[myfont]
+
+\starttypescriptcollection[fallback]
+
+\starttypescript [fallback]
+    \definetypeface [] [rm] [serif] [modern] [computer-modern]
+    \definetypeface [] [ss] [sans]  [modern] [computer-modern]
+    \definetypeface [] [tt] [mono]  [modern] [computer-modern]
+    \definetypeface [] [mm] [math]  [modern] [computer-modern]
+    \quittypescriptscanning
+\stoptypescript
+
+% faster
+%
+% \starttypescript [fallback]
+%     \definetypeface [] [rm] [serif] [modern] [default]
+%     \definetypeface [] [ss] [sans]  [modern] [default]
+%     \definetypeface [] [tt] [mono]  [modern] [default]
+%     \definetypeface [] [mm] [math]  [modern] [default]
+%     \quittypescriptscanning
+% \stoptypescript
+
+\stoptypescriptcollection
+
+% if a fontname equals the filename, then use
+%
+% \setupfontsynonym  [LMRoman10-DemiOblique]                                 [\s!features=\s!default] % file is lowercase, so fails
+% \definefontsynonym [LMRoman10-DemiOblique] [\s!name:LMRoman10-DemiOblique] [\s!features=\s!default]
+% \definefontsynonym [LMRoman10-DemiOblique] [lmroman10-demioblique]         [\s!features=\s!default]
+
+\unprotect
+
+% \starttypescript [math] [modern,computer-modern,latin-modern]
+%     \definefontsynonym[MathSymbol][MathSymbol-Regular@symbol-math]
+%     \loadfontgoodies[symbol-math]
+% \stoptypescript
+
+\starttypescriptcollection[latinmodern]
+
+    %D The names have changed (again) ... but I will not change the symbolic names
+    %D any more. Filename changes will be catched in luatex (fallbacks) but not in
+    %D other tex's.
+
+    \starttypescript [serif] [modern,latin-modern,computer-modern]
+        \definefontsynonym [LMRoman5-Regular]         [\s!file:lmroman5-regular]      [\s!features=\s!default]
+        \definefontsynonym [LMRoman6-Regular]         [\s!file:lmroman6-regular]      [\s!features=\s!default]
+        \definefontsynonym [LMRoman7-Regular]         [\s!file:lmroman7-regular]      [\s!features=\s!default]
+        \definefontsynonym [LMRoman8-Regular]         [\s!file:lmroman8-regular]      [\s!features=\s!default]
+        \definefontsynonym [LMRoman9-Regular]         [\s!file:lmroman9-regular]      [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-Regular]        [\s!file:lmroman10-regular]     [\s!features=\s!default]
+        \definefontsynonym [LMRoman12-Regular]        [\s!file:lmroman12-regular]     [\s!features=\s!default]
+        \definefontsynonym [LMRoman17-Regular]        [\s!file:lmroman17-regular]     [\s!features=\s!default]
+        \definefontsynonym [LMRoman5-Bold]            [\s!file:lmroman5-bold]         [\s!features=\s!default]
+        \definefontsynonym [LMRoman6-Bold]            [\s!file:lmroman6-bold]         [\s!features=\s!default]
+        \definefontsynonym [LMRoman7-Bold]            [\s!file:lmroman7-bold]         [\s!features=\s!default]
+        \definefontsynonym [LMRoman8-Bold]            [\s!file:lmroman8-bold]         [\s!features=\s!default]
+        \definefontsynonym [LMRoman9-Bold]            [\s!file:lmroman9-bold]         [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-Bold]           [\s!file:lmroman10-bold]        [\s!features=\s!default]
+        \definefontsynonym [LMRoman12-Bold]           [\s!file:lmroman12-bold]        [\s!features=\s!default]
+        \definefontsynonym [LMRoman7-Italic]          [\s!file:lmroman7-italic]       [\s!features=\s!default]
+        \definefontsynonym [LMRoman8-Italic]          [\s!file:lmroman8-italic]       [\s!features=\s!default]
+        \definefontsynonym [LMRoman9-Italic]          [\s!file:lmroman9-italic]       [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-Italic]         [\s!file:lmroman10-italic]      [\s!features=\s!default]
+        \definefontsynonym [LMRoman12-Italic]         [\s!file:lmroman12-italic]      [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-BoldItalic]     [\s!file:lmroman10-bolditalic]  [\s!features=\s!default]
+        \definefontsynonym [LMRoman8-Oblique]         [\s!file:lmromanslant8-regular] [\s!features=\s!default]
+        \definefontsynonym [LMRoman9-Oblique]         [\s!file:lmromanslant9-regular] [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-Oblique]        [\s!file:lmromanslant10-regular][\s!features=\s!default]
+        \definefontsynonym [LMRoman12-Oblique]        [\s!file:lmromanslant12-regular][\s!features=\s!default]
+        \definefontsynonym [LMRoman17-Oblique]        [\s!file:lmromanslant17-regular][\s!features=\s!default]
+        \definefontsynonym [LMRoman10-BoldOblique]    [\s!file:lmromanslant10-bold]   [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-Demi]           [\s!file:lmromandemi10-regular] [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-DemiOblique]    [\s!file:lmromandemi10-oblique] [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-CapsRegular]    [\s!file:lmromancaps10-regular] [\s!features=\s!default] % features=smallcaps?
+        \definefontsynonym [LMRoman10-CapsOblique]    [\s!file:lmromancaps10-oblique] [\s!features=\s!default]
+
+        \definefontsynonym [LMRoman10-Dunhill]        [\s!file:lmromandunh10-regular] [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-DunhillOblique] [\s!file:lmromandunh10-oblique] [\s!features=\s!default]
+        \definefontsynonym [LMRoman10-Unslanted]      [\s!file:lmromanunsl10-regular] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [sans] [modern,latin-modern,computer-modern]
+        \definefontsynonym [LMSans8-Regular]               [\s!file:lmsans8-regular]          [\s!features=\s!default]
+        \definefontsynonym [LMSans9-Regular]               [\s!file:lmsans9-regular]          [\s!features=\s!default]
+        \definefontsynonym [LMSans10-Regular]              [\s!file:lmsans10-regular]         [\s!features=\s!default]
+        \definefontsynonym [LMSans12-Regular]              [\s!file:lmsans12-regular]         [\s!features=\s!default]
+        \definefontsynonym [LMSans17-Regular]              [\s!file:lmsans17-regular]         [\s!features=\s!default]
+        \definefontsynonym [LMSans10-Bold]                 [\s!file:lmsans10-bold]            [\s!features=\s!default]
+        \definefontsynonym [LMSans8-Oblique]               [\s!file:lmsans8-oblique]          [\s!features=\s!default]
+        \definefontsynonym [LMSans9-Oblique]               [\s!file:lmsans9-oblique]          [\s!features=\s!default]
+        \definefontsynonym [LMSans10-Oblique]              [\s!file:lmsans10-oblique]         [\s!features=\s!default]
+        \definefontsynonym [LMSans12-Oblique]              [\s!file:lmsans12-oblique]         [\s!features=\s!default]
+        \definefontsynonym [LMSans17-Oblique]              [\s!file:lmsans17-oblique]         [\s!features=\s!default]
+        \definefontsynonym [LMSans10-BoldOblique]          [\s!file:lmsans10-boldoblique]     [\s!features=\s!default]
+
+        \definefontsynonym [LMSans10-DemiCondensed]        [\s!file:lmsansdemicond10-regular] [\s!features=\s!default]
+        \definefontsynonym [LMSans10-DemiCondensedOblique] [\s!file:lmsansdemicond10-oblique] [\s!features=\s!default]
+
+        \definefontsynonym [LMSansQuotation8-Regular]      [\s!file:lmsansquot8-regular]      [\s!features=\s!default]
+        \definefontsynonym [LMSansQuotation8-Bold]         [\s!file:lmsansquot8-bold]         [\s!features=\s!default]
+        \definefontsynonym [LMSansQuotation8-Oblique]      [\s!file:lmsansquot8-oblique]      [\s!features=\s!default]
+        \definefontsynonym [LMSansQuotation8-BoldOblique]  [\s!file:lmsansquot8-boldoblique]  [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [mono] [modern,modern-variable,modern-condensed,latin-modern,latin-modern-variable,latin-modern-condensed,computer-modern]
+
+        \definefontsynonym [LMTypewriter8-Regular]                [\s!file:lmmono8-regular]            [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter9-Regular]                [\s!file:lmmono9-regular]            [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter10-Regular]               [\s!file:lmmono10-regular]           [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter12-Regular]               [\s!file:lmmono12-regular]           [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter10-Italic]                [\s!file:lmmono10-italic]            [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter10-Oblique]               [\s!file:lmmonoslant10-regular]      [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter10-CapsRegular]           [\s!file:lmmonocaps10-regular]       [\s!features=\s!none] % features=smallcaps?
+        \definefontsynonym [LMTypewriter10-CapsOblique]           [\s!file:lmmonocaps10-oblique]       [\s!features=\s!none]
+
+        \definefontsynonym [LMTypewriter10-Light]                 [\s!file:lmmonolt10-regular]         [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter10-LightOblique]          [\s!file:lmmonolt10-oblique]         [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter10-LightCondensed]        [\s!file:lmmonoltcond10-regular]     [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter10-LightCondensedOblique] [\s!file:lmmonoltcond10-oblique]     [\s!features=\s!none]
+
+        \definefontsynonym [LMTypewriter10-Dark]                  [\s!file:lmmonolt10-bold]            [\s!features=\s!none]
+        \definefontsynonym [LMTypewriter10-DarkOblique]           [\s!file:lmmonolt10-boldoblique]     [\s!features=\s!none]
+
+        \definefontsynonym [LMTypewriterVarWd10-Regular]          [\s!file:lmmonoproplt10-regular]     [\s!features=\s!default]
+        \definefontsynonym [LMTypewriterVarWd10-Oblique]          [\s!file:lmmonoproplt10-oblique]     [\s!features=\s!default]
+        \definefontsynonym [LMTypewriterVarWd10-Light]            [\s!file:lmmonoprop10-regular]       [\s!features=\s!default]
+        \definefontsynonym [LMTypewriterVarWd10-LightOblique]     [\s!file:lmmonoprop10-oblique]       [\s!features=\s!default]
+        \definefontsynonym [LMTypewriterVarWd10-Dark]             [\s!file:lmmonoproplt10-bold]        [\s!features=\s!default]
+        \definefontsynonym [LMTypewriterVarWd10-DarkOblique]      [\s!file:lmmonoproplt10-boldoblique] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [math] [modern,latin-modern,computer-modern]
+        \definefontsynonym[LMMathRoman5-Regular] [LMMath5-Regular@lmroman5-math]
+        \definefontsynonym[LMMathRoman6-Regular] [LMMath6-Regular@lmroman6-math]
+        \definefontsynonym[LMMathRoman7-Regular] [LMMath7-Regular@lmroman7-math]
+        \definefontsynonym[LMMathRoman8-Regular] [LMMath8-Regular@lmroman8-math]
+        \definefontsynonym[LMMathRoman9-Regular] [LMMath9-Regular@lmroman9-math]
+        \definefontsynonym[LMMathRoman10-Regular][LMMath10-Regular@lmroman10-math]
+        \definefontsynonym[LMMathRoman12-Regular][LMMath12-Regular@lmroman12-math]
+        \definefontsynonym[LMMathRoman17-Regular][LMMath17-Regular@lmroman17-math]
+
+        \definefontsynonym[LMMathRoman5-Bold]    [LMMath10-Bold@lmroman10-boldmath]
+        \definefontsynonym[LMMathRoman6-Bold]    [LMMath10-Bold@lmroman10-boldmath]
+        \definefontsynonym[LMMathRoman7-Bold]    [LMMath10-Bold@lmroman10-boldmath]
+        \definefontsynonym[LMMathRoman8-Bold]    [LMMath10-Bold@lmroman10-boldmath]
+        \definefontsynonym[LMMathRoman9-Bold]    [LMMath10-Bold@lmroman10-boldmath]
+        \definefontsynonym[LMMathRoman10-Bold]   [LMMath10-Bold@lmroman10-boldmath]
+        \definefontsynonym[LMMathRoman12-Bold]   [LMMath10-Bold@lmroman10-boldmath]
+        \definefontsynonym[LMMathRoman17-Bold]   [LMMath10-Bold@lmroman10-boldmath]
+
+        % are these needed?
+        %
+        % \definefontsynonym[MathRoman][LMMath10-Regular@lmroman10-math]
+        % \definefontsynonym[MathBold] [LMMath10-Bold@lmroman10-boldmath]
+
+        \loadfontgoodies[lm-math]
+    \stoptypescript
+
+    \starttypescript [serif] [modern,latin-modern,computer-modern] [name]
+        \definefontsynonym [Serif]            [LMRoman-Regular]
+        \definefontsynonym [SerifBold]        [LMRoman-Bold]
+        \definefontsynonym [SerifItalic]      [LMRoman-Italic]
+        \definefontsynonym [SerifSlanted]     [LMRoman-Oblique]
+        \definefontsynonym [SerifBoldItalic]  [LMRoman-BoldItalic]
+        \definefontsynonym [SerifBoldSlanted] [LMRoman-BoldOblique]
+        \definefontsynonym [SerifCaps]        [LMRoman-CapsRegular]
+        \definefontsynonym [SerifCapsSlanted] [LMRoman-CapsOblique]
+    \stoptypescript
+
+    \starttypescript [sans] [modern,latin-modern,computer-modern] [name]
+        \definefontsynonym [Sans]             [LMSans-Regular]
+        \definefontsynonym [SansBold]         [LMSans-Bold]
+        \definefontsynonym [SansItalic]       [LMSans-Oblique]
+        \definefontsynonym [SansSlanted]      [LMSans-Oblique]
+        \definefontsynonym [SansBoldItalic]   [LMSans-BoldOblique]
+        \definefontsynonym [SansBoldSlanted]  [LMSans-BoldOblique]
+        \definefontsynonym [SansCaps]         [LMSans-Regular]
+        \definefontsynonym [SansCapsSlanted]  [LMSans-Oblique]
+    \stoptypescript
+
+    \starttypescript [mono] [modern,latin-modern,computer-modern] [name]
+        \definefontsynonym [Mono]             [LMTypewriter-Regular]
+        \definefontsynonym [MonoBold]         [LMTypewriter-Dark]
+        \definefontsynonym [MonoItalic]       [LMTypewriter-Italic]
+        \definefontsynonym [MonoSlanted]      [LMTypewriter-Oblique]
+        \definefontsynonym [MonoBoldItalic]   [LMTypewriter-DarkOblique]
+        \definefontsynonym [MonoBoldSlanted]  [LMTypewriter-DarkOblique]
+        \definefontsynonym [MonoCaps]         [LMTypewriter-CapsRegular]
+        \definefontsynonym [MonoCapsSlanted]  [LMTypewriter-CapsOblique]
+        \definefontsynonym [MonoVariable]     [LMTypewriterVarWd-Regular]
+    \stoptypescript
+
+    \starttypescript [math] [modern,latin-modern,computer-modern] [name]
+        \definefontsynonym [MathRoman]        [LMMathRoman-Regular]
+        %definefontsynonym [MathExtension]    [LMMathExtension-Regular]
+        %definefontsynonym [MathItalic]       [LMMathItalic-Italic]
+        %definefontsynonym [MathSymbol]       [LMMathSymbols-Italic]
+    \stoptypescript
+
+    \starttypescript [serif] [modern-variable,latin-modern-variable] [name]
+        \definefontsynonym [Serif]            [LMTypewriterVarWd-Regular]
+        \definefontsynonym [SerifBold]        [LMTypewriterVarWd-Oblique]
+        \definefontsynonym [SerifItalic]      [LMTypewriterVarWd-Oblique]
+        \definefontsynonym [SerifSlanted]     [LMTypewriterVarWd-Dark]
+        \definefontsynonym [SerifBoldItalic]  [LMTypewriterVarWd-DarkOblique]
+        \definefontsynonym [SerifBoldSlanted] [LMTypewriterVarWd-DarkOblique]
+        \definefontsynonym [SerifCaps]        [LMTypewriterVarWd-Regular]
+        \definefontsynonym [SerifCapsSlanted] [LMTypewriterVarWd-Oblique]
+    \stoptypescript
+
+    \starttypescript [mono] [modern-condensed,latin-modern-condensed,modern-light-condensed,latin-modern-light-condensed] [name]
+        \definefontsynonym [Mono]             [LMTypewriter-LightCondensed]
+        \definefontsynonym [MonoBold]         [LMTypewriter-LightCondensed]
+        \definefontsynonym [MonoItalic]       [LMTypewriter-LightCondensedOblique]
+        \definefontsynonym [MonoSlanted]      [LMTypewriter-LightCondensedOblique]
+        \definefontsynonym [MonoBoldItalic]   [LMTypewriter-LightCondensed]
+        \definefontsynonym [MonoBoldSlanted]  [LMTypewriter-LightCondensed]
+        \definefontsynonym [MonoCaps]         [LMTypewriter-LightCondensed]
+        \definefontsynonym [MonoCapsSlanted]  [LMTypewriter-LightCondensed]
+    \stoptypescript
+
+    \starttypescript [mono] [modern-light,latin-modern-light] [name]
+        \definefontsynonym [Mono]             [LMTypewriter-Light]
+        \definefontsynonym [MonoBold]         [LMTypewriter-Light]
+        \definefontsynonym [MonoItalic]       [LMTypewriter-LightOblique]
+        \definefontsynonym [MonoSlanted]      [LMTypewriter-LightOblique]
+        \definefontsynonym [MonoBoldItalic]   [LMTypewriter-Light]
+        \definefontsynonym [MonoBoldSlanted]  [LMTypewriter-Light]
+        \definefontsynonym [MonoCaps]         [LMTypewriter-Light]
+        \definefontsynonym [MonoCapsSlanted]  [LMTypewriter-Light]
+    \stoptypescript
+
+    % Later we will map the real fonts, here we just map synonyms.
+
+    \starttypescript [serif] [modern,latin-modern,computer-modern]
+        \definefontsynonym [LMRoman-DemiOblique] [LMRoman10-DemiOblique]
+        \definefontsynonym [LMRoman-Bold]        [LMRoman10-Bold]
+        \definefontsynonym [LMRoman-BoldItalic]  [LMRoman10-BoldItalic]
+        \definefontsynonym [LMRoman-BoldOblique] [LMRoman10-BoldOblique]
+        \definefontsynonym [LMRoman-CapsRegular] [LMRoman10-CapsRegular]
+        \definefontsynonym [LMRoman-CapsOblique] [LMRoman10-CapsOblique]
+        \definefontsynonym [LMRoman-Regular]     [LMRoman10-Regular]
+        \definefontsynonym [LMRoman-Italic]      [LMRoman10-Italic]
+        \definefontsynonym [LMRoman-Oblique]     [LMRoman10-Oblique]
+    \stoptypescript
+
+    \starttypescript [sans] [modern,latin-modern,computer-modern]
+        \definefontsynonym [LMSans-Regular]              [LMSans10-Regular]
+        \definefontsynonym [LMSans-BoldOblique]          [LMSans10-BoldOblique]
+        \definefontsynonym [LMSans-Bold]                 [LMSans10-Bold]
+        \definefontsynonym [LMSans-DemiCondensed]        [LMSans10-DemiCondensed]
+        \definefontsynonym [LMSans-DemiCondensedOblique] [LMSans10-DemiCondensedOblique]
+        \definefontsynonym [LMSans-Oblique]              [LMSans10-Oblique]
+    \stoptypescript
+
+    \starttypescript [mono] [modern,latin-modern,modern-variable,latin-modern-variable,modern-condensed,latin-modern-condensed]
+        \definefontsynonym [LMTypewriter-CapsRegular]           [LMTypewriter10-CapsRegular]
+        \definefontsynonym [LMTypewriter-CapsOblique]           [LMTypewriter10-CapsOblique]
+        \definefontsynonym [LMTypewriter-Light]                 [LMTypewriter10-Light]
+        \definefontsynonym [LMTypewriter-LightOblique]          [LMTypewriter10-LightOblique]
+        \definefontsynonym [LMTypewriter-LightCondensed]        [LMTypewriter10-LightCondensed]
+        \definefontsynonym [LMTypewriter-LightCondensedOblique] [LMTypewriter10-LightCondensedOblique]
+        \definefontsynonym [LMTypewriter-Dark]                  [LMTypewriter10-Dark]
+        \definefontsynonym [LMTypewriter-DarkOblique]           [LMTypewriter10-DarkOblique]
+        \definefontsynonym [LMTypewriter-Regular]               [LMTypewriter10-Regular]
+        \definefontsynonym [LMTypewriter-Italic]                [LMTypewriter10-Italic]
+        \definefontsynonym [LMTypewriter-Oblique]               [LMTypewriter10-Oblique]
+        \definefontsynonym [LMTypewriterVarWd-Regular]          [LMTypewriterVarWd10-Regular]
+        \definefontsynonym [LMTypewriterVarWd-Oblique]          [LMTypewriterVarWd10-Oblique]
+        \definefontsynonym [LMTypewriterVarWd-Light]            [LMTypewriterVarWd10-Light]
+        \definefontsynonym [LMTypewriterVarWd-LightOblique]     [LMTypewriterVarWd10-LightOblique]
+        \definefontsynonym [LMTypewriterVarWd-Dark]             [LMTypewriterVarWd10-Dark]
+        \definefontsynonym [LMTypewriterVarWd-DarkOblique]      [LMTypewriterVarWd10-DarkOblique]
+    \stoptypescript
+
+    \starttypescript [serif] [modern,latin-modern,computer-modern]
+        \definefontsynonym [ComputerModern]             [LMRoman-Regular]
+        \definefontsynonym [ComputerModern-Italic]      [LMRoman-Italic]
+        \definefontsynonym [ComputerModern-Slanted]     [LMRoman-Oblique]
+        \definefontsynonym [ComputerModern-Bold]        [LMRoman-Bold]
+        \definefontsynonym [ComputerModern-BoldItalic]  [LMRoman-BoldItalic]
+        \definefontsynonym [ComputerModern-BoldSlanted] [LMRoman-BoldOblique]
+        \definefontsynonym [ComputerModern-Caps]        [LMRoman-CapsRegular]
+        \definefontsynonym [ComputerModern-CapsSlanted] [LMRoman-CapsOblique]
+    \stoptypescript
+
+    \starttypescript [sans] [modern,latin-modern,computer-modern]
+        \definefontsynonym [ComputerModernSans]             [LMSans-Regular]
+        \definefontsynonym [ComputerModernSans-Italic]      [LMSans-Oblique]
+        \definefontsynonym [ComputerModernSans-Slanted]     [LMSans-Oblique]
+        \definefontsynonym [ComputerModernSans-Bold]        [LMSans-Bold]
+        \definefontsynonym [ComputerModernSans-BoldItalic]  [LMSans-BoldOblique]
+        \definefontsynonym [ComputerModernSans-BoldSlanted] [LMSans-BoldOblique]
+        \definefontsynonym [ComputerModernSans-Caps]        [LMSans-Regular]% [LMSans-CapsRegular]
+        \definefontsynonym [ComputerModernSans-CapsSlanted] [LMSans-Oblique]% [LMSans-CapsOblique]
+    \stoptypescript
+
+    \starttypescript [mono] [modern,latin-modern,computer-modern]
+        \definefontsynonym [ComputerModernMono]             [LMTypewriter-Regular]
+        \definefontsynonym [ComputerModernMono-Italic]      [LMTypewriter-Italic]
+        \definefontsynonym [ComputerModernMono-Slanted]     [LMTypewriter-Oblique]
+        \definefontsynonym [ComputerModernMono-Bold]        [LMTypewriter-Dark]
+        \definefontsynonym [ComputerModernMono-BoldItalic]  [LMTypewriter-DarkOblique]
+        \definefontsynonym [ComputerModernMono-BoldSlanted] [LMTypewriter-DarkOblique]
+        \definefontsynonym [ComputerModernMono-Caps]        [LMTypewriter-CapsRegular]
+        \definefontsynonym [ComputerModernMono-CapsSlanted] [LMTypewriter-CapsOblique]
+        \definefontsynonym [ComputerModernMono-Variable]    [LMTypewriterVarWd-Regular]
+    \stoptypescript
+
+    \starttypescript [mono] [modern-light,latin-modern-light]
+        \definefontsynonym [ComputerModernMono]             [LMTypewriter-Light]
+        \definefontsynonym [ComputerModernMono-Italic]      [LMTypewriter-LightOblique]
+        \definefontsynonym [ComputerModernMono-Slanted]     [LMTypewriter-LightOblique]
+        \definefontsynonym [ComputerModernMono-Bold]        [LMTypewriter-Dark]
+        \definefontsynonym [ComputerModernMono-BoldItalic]  [LMTypewriter-DarkOblique]
+        \definefontsynonym [ComputerModernMono-BoldSlanted] [LMTypewriter-DarkOblique]
+        \definefontsynonym [ComputerModernMono-Caps]        [LMTypewriter-Light]
+        \definefontsynonym [ComputerModernMono-CapsSlanted] [LMTypewriter-LightOblique]
+        \definefontsynonym [ComputerModernMono-Variable]    [LMTypewriterVarWd-Light]
+    \stoptypescript
+
+    \starttypescript [serif] [modern-variable,latin-modern-variable]
+        \definefontsynonym [ComputerModernVariable]             [LMTypewriterVarWd-Regular]
+        \definefontsynonym [ComputerModernVariable-Italic]      [LMTypewriterVarWd-Oblique]
+        \definefontsynonym [ComputerModernVariable-Slanted]     [LMTypewriterVarWd-Oblique]
+        \definefontsynonym [ComputerModernVariable-Bold]        [LMTypewriterVarWd-Dark]
+        \definefontsynonym [ComputerModernVariable-BoldItalic]  [LMTypewriterVarWd-DarkOblique]
+        \definefontsynonym [ComputerModernVariable-BoldSlanted] [LMTypewriterVarWd-DarkOblique]
+        \definefontsynonym [ComputerModernVariable-Caps]        [LMTypewriterVarWd-Regular]
+        \definefontsynonym [ComputerModernVariable-CapsSlanted] [LMTypewriterVarWd-Oblique]
+    \stoptypescript
+
+    \starttypescript [serif] [modern-variable-light,latin-modern-variable-light]
+        \definefontsynonym [ComputerModernVariable]             [LMTypewriterVarWd-Light]
+        \definefontsynonym [ComputerModernVariable-Italic]      [LMTypewriterVarWd-LightOblique]
+        \definefontsynonym [ComputerModernVariable-Slanted]     [LMTypewriterVarWd-LightOblique]
+        \definefontsynonym [ComputerModernVariable-Bold]        [LMTypewriterVarWd-Dark]
+        \definefontsynonym [ComputerModernVariable-BoldItalic]  [LMTypewriterVarWd-DarkOblique]
+        \definefontsynonym [ComputerModernVariable-BoldSlanted] [LMTypewriterVarWd-DarkOblique]
+        \definefontsynonym [ComputerModernVariable-Caps]        [LMTypewriterVarWd-Light]
+        \definefontsynonym [ComputerModernVariable-CapsSlanted] [LMTypewriterVarWd-LightOblique]
+    \stoptypescript
+
+    \starttypescript [math] [modern,latin-modern]
+        % isn't this obsolete now?
+        \definefontsynonym [LMMathRoman-Regular]       [LMMathRoman10-Regular]
+        \definefontsynonym [LMMathRoman-Bold]          [LMMathRoman10-Bold]
+        %definefontsynonym [LMMathSymbols-BoldItalic]  [LMMathSymbols10-BoldItalic]
+        %definefontsynonym [LMMathSymbols-Italic]      [LMMathSymbols10-Italic]
+        %definefontsynonym [LMMathExtension-Regular]   [LMMathExtension10-Regular]
+        %definefontsynonym [LMMathItalic-Italic]       [LMMathItalic10-Italic]
+        %definefontsynonym [LMMathItalic-BoldItalic]   [LMMathItalic10-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [modern]
+        \definetypeface [modern] [rm] [serif] [modern] [computer-modern]
+        \definetypeface [modern] [ss] [sans]  [modern] [computer-modern]
+        \definetypeface [modern] [tt] [mono]  [modern] [computer-modern]
+        \definetypeface [modern] [mm] [math]  [modern] [computer-modern]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modern-base]
+        \definetypeface [modern] [rm] [serif] [modern] [default]
+        \definetypeface [modern] [ss] [sans]  [modern] [default]
+        \definetypeface [modern] [tt] [mono]  [modern] [default]
+        \definetypeface [modern] [mm] [math]  [modern] [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modernvariable,modern-variable]
+        \definetypeface [modernvariable] [rm] [serif] [modern-variable] [default]
+        \definetypeface [modernvariable] [tt] [mono]  [modern-variable] [default]
+        \definetypeface [modernvariable] [mm] [math]  [modern]          [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modernvariablelight,modern-variable-light]
+        \definetypeface [modernvariable] [rm] [serif] [modern-variable-light] [default]
+        \definetypeface [modernvariable] [tt] [mono]  [modern-variable-light] [default]
+        \definetypeface [modernvariable] [mm] [math]  [modern]                [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modern-mono]
+        \definetypeface [modern] [rm] [serif] [modern]       [computer-modern]
+        \definetypeface [modern] [ss] [sans]  [modern]       [computer-modern]
+        \definetypeface [modern] [tt] [mono]  [modern-light] [computer-modern]
+        \definetypeface [modern] [mm] [math]  [modern]       [computer-modern]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modern-base-mono]
+        \definetypeface [modern] [rm] [serif] [modern]       [computer-modern] [default]
+        \definetypeface [modern] [ss] [sans]  [modern]       [computer-modern] [default]
+        \definetypeface [modern] [tt] [mono]  [modern-light] [computer-modern] [default]
+        \definetypeface [modern] [mm] [math]  [modern]       [computer-modern] [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [serif] [simple] [name] % bad, will be changed but in sycn with manuals that use it
+        \definefontsynonym [Simple] [cmvtt10]
+        %setupfontsynonym  [Simple] [handling=pure]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[texgyre]
+
+    \definetypescriptprefix [f:pagella] [pagella]   \definetypescriptprefix [f:palatino]   [pagella]
+    \definetypescriptprefix [f:termes]  [termes]    \definetypescriptprefix [f:times]      [termes]
+    \definetypescriptprefix [f:heros]   [heros]     \definetypescriptprefix [f:helvetica]  [heros]
+    \definetypescriptprefix [f:bonum]   [bonum]     \definetypescriptprefix [f:bookman]    [bonum]
+    \definetypescriptprefix [f:schola]  [schola]    \definetypescriptprefix [f:schoolbook] [schola]
+    \definetypescriptprefix [f:adventor][adventor]  %definetypescriptprefix [f:adventor]   [adventor]
+    \definetypescriptprefix [f:cursor]  [cursor]    \definetypescriptprefix [f:courier]    [cursor]
+    \definetypescriptprefix [f:chorus]  [chorus]    \definetypescriptprefix [f:chancery]   [chorus] % not the full set
+
+    \starttypescript [serif,sans,mono] [adventor,bonum,bookman,cursor,courier,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-regular]    [\s!features=\s!default]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-italic]     [\s!features=\s!default]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]           [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bold]       [\s!features=\s!default]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalic]     [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bolditalic] [\s!features=\s!default]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Caps]           [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-regular]    [\s!features=\s!smallcaps]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-ItalicCaps]     [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-italic]     [\s!features=\s!smallcaps]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldCaps]       [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bold]       [\s!features=\s!smallcaps]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps] [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bolditalic] [\s!features=\s!smallcaps]
+    \stoptypescript
+
+    \starttypescript [serif,calligraphy] [chorus,chancery]
+        \definefontsynonym [TeXGyreChorus-MediumItalic] [\s!file:texgyrechorus-mediumitalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \definetypescriptprefix [n:pagella]    [TeXGyrePagella]  \definetypescriptprefix [n:palatino]   [TeXGyrePagella]
+    \definetypescriptprefix [n:termes]     [TeXGyreTermes]   \definetypescriptprefix [n:times]      [TeXGyreTermes]
+    \definetypescriptprefix [n:heros]      [TeXGyreHeros]    \definetypescriptprefix [n:helvetica]  [TeXGyreHeros]
+    \definetypescriptprefix [n:bonum]      [TeXGyreBonum]    \definetypescriptprefix [n:bookman]    [TeXGyreBonum]
+    \definetypescriptprefix [n:schola]     [TeXGyreSchola]   \definetypescriptprefix [n:schoolbook] [TeXGyreSchola]
+    \definetypescriptprefix [n:adventor]   [TeXGyreAdventor] %definetypescriptprefix [n:adventor]   [TeXGyreAdventor]
+    \definetypescriptprefix [n:cursor]     [TeXGyreCursor]   \definetypescriptprefix [n:courier]    [TeXGyreCursor]
+    \definetypescriptprefix [n:chorus]     [TeXGyreChorus]   \definetypescriptprefix [n:chancery]   [TeXGyreChorus] % not the full set
+
+    \starttypescript [serif] [pagella,palatino,termes,times,bonum,bookman,schola,schoolbook] [name]
+        \definefontsynonym [Serif]                [\typescriptprefix{n:\typescripttwo}-Regular]
+        \definefontsynonym [SerifItalic]          [\typescriptprefix{n:\typescripttwo}-Italic]
+        \definefontsynonym [SerifBold]            [\typescriptprefix{n:\typescripttwo}-Bold]
+        \definefontsynonym [SerifBoldItalic]      [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+        \definefontsynonym [SerifSlanted]         [SerifItalic]
+        \definefontsynonym [SerifBoldSlanted]     [SerifBoldItalic]
+        \definefontsynonym [SerifCaps]            [\typescriptprefix{n:\typescripttwo}-Caps]
+
+        \definefontsynonym [SerifRegular]         [Serif]
+        \definefontsynonym [SerifRegularCaps]     [SerifCaps]
+        \definefontsynonym [SerifItalicCaps]      [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
+        \definefontsynonym [SerifBoldCaps]        [\typescriptprefix{n:\typescripttwo}-BoldCaps]
+        \definefontsynonym [SerifBoldItalicCaps]  [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
+        \definefontsynonym [SerifSlantedCaps]     [SerifItalicCaps]
+        \definefontsynonym [SerifBoldSlantedCaps] [SerifBoldItalicCaps]
+        \definefontsynonym [SerifCapsCaps]        [SerifCaps]
+    \stoptypescript
+
+    \starttypescript [serif] [chorus,chancery] [name]
+        \definefontsynonym [SerifMediumItalic] [TeXGyreChorus-MediumItalic]
+        \definefontsynonym [Serif]             [SerifMediumItalic]
+        \definefontsynonym [SerifItalic]       [SerifMediumItalic]
+        \definefontsynonym [SerifBold]         [SerifMediumItalic]
+        \definefontsynonym [SerifBoldItalic]   [SerifMediumItalic]
+        \definefontsynonym [SerifSlanted]      [SerifMediumItalic]
+        \definefontsynonym [SerifBoldSlanted]  [SerifMediumItalic]
+        \definefontsynonym [SerifCaps]         [SerifMediumItalic]
+    \stoptypescript
+
+    \starttypescript [calligraphy] [chorus,chancery] [name]
+        \definefontsynonym [Calligraphy] [TeXGyreChorus-MediumItalic]
+    \stoptypescript
+
+    \starttypescript [sans] [heros,helvetica,adventor] [name]
+        \definefontsynonym [Sans]                [\typescriptprefix{n:\typescripttwo}-Regular]
+        \definefontsynonym [SansItalic]          [\typescriptprefix{n:\typescripttwo}-Italic]
+        \definefontsynonym [SansBold]            [\typescriptprefix{n:\typescripttwo}-Bold]
+        \definefontsynonym [SansBoldItalic]      [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+        \definefontsynonym [SansSlanted]         [SansItalic]
+        \definefontsynonym [SansBoldSlanted]     [SansBoldItalic]
+        \definefontsynonym [SansCaps]            [\typescriptprefix{n:\typescripttwo}-Caps]
+
+        \definefontsynonym [SansRegular]         [Sans]
+        \definefontsynonym [SansRegularCaps]     [SansCaps]
+        \definefontsynonym [SansItalicCaps]      [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
+        \definefontsynonym [SansBoldCaps]        [\typescriptprefix{n:\typescripttwo}-BoldCaps]
+        \definefontsynonym [SansBoldItalicCaps]  [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
+        \definefontsynonym [SansSlantedCaps]     [SansItalicCaps]
+        \definefontsynonym [SansBoldSlantedCaps] [SansBoldItalicCaps]
+        \definefontsynonym [SansCapsCaps]        [SansCaps]
+    \stoptypescript
+
+    \starttypescript [mono] [cursor,courier] [name]
+        \definefontsynonym [Mono]                [\typescriptprefix{n:\typescripttwo}-Regular]
+        \definefontsynonym [MonoItalic]          [\typescriptprefix{n:\typescripttwo}-Italic]
+        \definefontsynonym [MonoBold]            [\typescriptprefix{n:\typescripttwo}-Bold]
+        \definefontsynonym [MonoBoldItalic]      [\typescriptprefix{n:\typescripttwo}-BoldItalic]
+        \definefontsynonym [MonoSlanted]         [MonoItalic]
+        \definefontsynonym [MonoBoldSlanted]     [MonoBoldItalic]
+
+        \definefontsynonym [MonoRegular]         [Mono]
+        \definefontsynonym [MonoRegularCaps]     [MonoCaps]
+        \definefontsynonym [MonoItalicCaps]      [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
+        \definefontsynonym [MonoBoldCaps]        [\typescriptprefix{n:\typescripttwo}-BoldCaps]
+        \definefontsynonym [MonoBoldItalicCaps]  [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
+        \definefontsynonym [MonoSlantedCaps]     [MonoItalicCaps]
+        \definefontsynonym [MonoBoldSlantedCaps] [MonoBoldItalicCaps]
+        \definefontsynonym [MonoCapsCaps]        [MonoCaps]
+    \stoptypescript
+
+    \starttypescript [times,termes]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+        \definetypeface [\typescriptone] [ss] [sans]  [helvetica]      [default] [rscale=0.9]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.05]
+        \definetypeface [\typescriptone] [mm] [math]  [times]          [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [palatino,pagella]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.075]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.075]
+        \definetypeface [\typescriptone] [mm] [math]  [palatino]       [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [schoolbook,schola]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.1]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.1]
+        \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.1]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [bookman,bonum]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.1]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.1]
+        \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.1]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [chancery,chorus]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default]
+        \definetypeface [\typescriptone] [mm] [math]  [modern]         [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [helvetica,heros]
+        \definetypeface [\typescriptone] [ss] [sans]  [\typescriptone] [default]
+        \definetypeface [\typescriptone] [rm] [serif] [modern]         [default] [rscale=1.15]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.15]
+        \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.15]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [avantgarde,adventor]
+        \definetypeface [\typescriptone] [ss] [sans]  [adventor] [default]
+        \definetypeface [\typescriptone] [rm] [serif] [modern]   [default] [rscale=1.15]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]   [default] [rscale=1.15]
+        \definetypeface [\typescriptone] [mm] [math]  [modern]   [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [courier,cursor]
+        \definetypeface [\typescriptone] [tt] [mono]  [\typescriptone] [default]
+        \definetypeface [\typescriptone] [rm] [serif] [modern]         [default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default]
+        \definetypeface [\typescriptone] [mm] [math]  [modern]         [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[xmath]
+
+    % Times Math (tx)
+
+    \starttypescript [math][times][all]
+        \loadfontgoodies[tx-math]
+        \definefontsynonym[MathRoman][txmath@tx-math]
+    \stoptypescript
+
+    % Palatino Math (px)
+
+    \starttypescript [math][palatino][all]
+        \loadfontgoodies[px-math]
+        \definefontsynonym[MathRoman][pxmath@px-math]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[antykwa]
+
+    % Antykwa Torunska (GUST)
+
+    \starttypescript [serif] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
+        \definefontsynonym [AntykwaTorunska-Regular]           [\s!file:AntykwaTorunska-Regular]          [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-Italic]            [\s!file:AntykwaTorunska-Italic]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-Bold]              [\s!file:AntykwaTorunska-Bold]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-BoldItalic]        [\s!file:AntykwaTorunska-BoldItalic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-Light]             [\s!file:AntykwaTorunskaLight-Regular]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-LightItalic]       [\s!file:AntykwaTorunskaLight-Italic]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-Medium]            [\s!file:AntykwaTorunskaMed-Regular]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-MedItalic]         [\s!file:AntykwaTorunskaMed-Italic]        [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondRegular]       [\s!file:AntykwaTorunskaCond-Regular]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondItalic]        [\s!file:AntykwaTorunskaCond-Italic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondBold]          [\s!file:AntykwaTorunskaCond-Bold]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondBoldItalic]    [\s!file:AntykwaTorunskaCond-BoldItalic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondLight]         [\s!file:AntykwaTorunskaCondLight-Regular] [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondLightItalic]   [\s!file:AntykwaTorunskaCondLight-Italic]  [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondMedium]        [\s!file:AntykwaTorunskaCondMed-Regular]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondMedItalic]     [\s!file:AntykwaTorunskaCondMed-Italic]    [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaTorunska-Cap]               [\s!file:AntykwaTorunska-Regular]          [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-ItalicCap]         [\s!file:AntykwaTorunska-Italic]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-BoldCap]           [\s!file:AntykwaTorunska-Bold]             [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-BoldItalicCap]     [\s!file:AntykwaTorunska-BoldItalic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-LightCap]          [\s!file:AntykwaTorunskaLight-Regular]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-LightItalicCap]    [\s!file:AntykwaTorunskaLight-Italic]      [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-MediumCap]         [\s!file:AntykwaTorunskaMed-Regular]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-MedItalicCap]      [\s!file:AntykwaTorunskaMed-Italic]        [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-CondCap]           [\s!file:AntykwaTorunskaCond-Regular]      [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-CondItalicCap]     [\s!file:AntykwaTorunskaCond-Italic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-CondBoldCap]       [\s!file:AntykwaTorunskaCond-Bold]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-CondBoldItalicCap] [\s!file:AntykwaTorunskaCond-BoldItalic]   [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-CondLightCap]      [\s!file:AntykwaTorunskaCondLight-Regular] [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-CondLightItalicCap][\s!file:AntykwaTorunskaCondLight-Italic]  [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-CondMediumCap]     [\s!file:AntykwaTorunskaCondMed-Regular]   [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaTorunska-CondMedItalicCap]  [\s!file:AntykwaTorunskaCondMed-Italic]    [\s!features=\s!smallcaps]
+    \stoptypescript
+
+    \starttypescript [math][antykwa-torunska][all]
+        \loadfontgoodies[antykwa-math]
+        \definefontsynonym[MathRoman][antykwamath@antykwa-math]
+    \stoptypescript
+
+    \starttypescript [math][antykwa-torunska-light][all]
+        \loadfontgoodies[antykwa-math]
+        \definefontsynonym[MathRoman][antykwalightmath@antykwa-light-math]
+    \stoptypescript
+
+    \starttypescript [math][antykwa-torunska-cond][all]
+        \loadfontgoodies[antykwa-math]
+        \definefontsynonym[MathRoman][antykwacondmath@antykwa-cond-math]
+    \stoptypescript
+
+    \starttypescript [math][antykwa-torunska-lightcond][all]
+        \loadfontgoodies[antykwa-math]
+        \definefontsynonym[MathRoman][antykwalightcondmath@antykwa-lightcond-math]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-torunska] [name]
+        \definefontsynonym [Serif]            [AntykwaTorunska-Regular]
+        \definefontsynonym [SerifBold]        [AntykwaTorunska-Bold]
+        \definefontsynonym [SerifItalic]      [AntykwaTorunska-Italic]
+        \definefontsynonym [SerifSlanted]     [AntykwaTorunska-Italic]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaTorunska-BoldItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaTorunska-BoldItalic]
+        \definefontsynonym [SerifCaps]        [AntykwaTorunska-Cap]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-torunska-light] [name]
+        \definefontsynonym [Serif]            [AntykwaTorunska-Light]
+        \definefontsynonym [SerifBold]        [AntykwaTorunska-Medium]
+        \definefontsynonym [SerifItalic]      [AntykwaTorunska-LightItalic]
+        \definefontsynonym [SerifSlanted]     [AntykwaTorunska-LightItalic]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaTorunska-MedItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaTorunska-MedItalic]
+        \definefontsynonym [SerifCaps]        [AntykwaTorunska-LightCap]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-torunska-cond] [name]
+        \definefontsynonym [Serif]            [AntykwaTorunska-CondRegular]
+        \definefontsynonym [SerifBold]        [AntykwaTorunska-CondBold]
+        \definefontsynonym [SerifItalic]      [AntykwaTorunska-CondItalic]
+        \definefontsynonym [SerifSlanted]     [AntykwaTorunska-CondItalic]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaTorunska-CondBoldItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaTorunska-CondBoldItalic]
+        \definefontsynonym [SerifCaps]        [AntykwaTorunska-CondCap]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-torunska-lightcond] [name]
+        \definefontsynonym [Serif]            [AntykwaTorunska-CondLight]
+        \definefontsynonym [SerifBold]        [AntykwaTorunska-CondMedium]
+        \definefontsynonym [SerifItalic]      [AntykwaTorunska-CondLightItalic]
+        \definefontsynonym [SerifSlanted]     [AntykwaTorunska-CondLightItalic]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaTorunska-CondMedItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaTorunska-CondMedItalic]
+        \definefontsynonym [SerifCaps]        [AntykwaTorunska-CondLightCap]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-torunska] [name]
+        \definefontsynonym [SerifRegular]         [Serif]
+        \definefontsynonym [SerifRegularCaps]     [AntykwaTorunska-Cap]
+        \definefontsynonym [SerifBoldCaps]        [AntykwaTorunska-BoldCap]
+        \definefontsynonym [SerifItalicCaps]      [AntykwaTorunska-ItalicCap]
+        \definefontsynonym [SerifSlantedCaps]     [AntykwaTorunska-ItalicCap]
+        \definefontsynonym [SerifBoldItalicCaps]  [AntykwaTorunska-BoldItalicCap]
+        \definefontsynonym [SerifBoldSlantedCaps] [AntykwaTorunska-BoldItalicCap]
+        \definefontsynonym [SerifCapsCaps]        [AntykwaTorunska-Cap]
+
+        \definefontsynonym [SerifRegularLight]     [AntykwaTorunska-Light]
+        \definefontsynonym [SerifBoldLight]        [AntykwaTorunska-Medium]
+        \definefontsynonym [SerifItalicLight]      [AntykwaTorunska-LightItalic]
+        \definefontsynonym [SerifSlantedLight]     [AntykwaTorunska-LightItalic]
+        \definefontsynonym [SerifBoldItalicLight]  [AntykwaTorunska-MedItalic]
+        \definefontsynonym [SerifBoldSlantedLight] [AntykwaTorunska-MedItalic]
+        \definefontsynonym [SerifCapsLight]        [AntykwaTorunska-LightCap]
+
+        \definefontsynonym [SerifRegularCond]     [AntykwaTorunska-CondRegular]
+        \definefontsynonym [SerifBoldCond]        [AntykwaTorunska-CondBold]
+        \definefontsynonym [SerifItalicCond]      [AntykwaTorunska-CondItalic]
+        \definefontsynonym [SerifSlantedCond]     [AntykwaTorunska-CondItalic]
+        \definefontsynonym [SerifBoldItalicCond]  [AntykwaTorunska-CondBoldItalic]
+        \definefontsynonym [SerifBoldSlantedCond] [AntykwaTorunska-CondBoldItalic]
+        \definefontsynonym [SerifCapsCond]        [AntykwaTorunska-CondCap]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-torunska-light] [name]
+        \definefontsynonym [SerifRegular]         [Serif]
+        \definefontsynonym [SerifRegularCaps]     [AntykwaTorunska-LightCap]
+        \definefontsynonym [SerifBoldCaps]        [AntykwaTorunska-MediumCap]
+        \definefontsynonym [SerifItalicCaps]      [AntykwaTorunska-LightItalicCap]
+        \definefontsynonym [SerifSlantedCaps]     [AntykwaTorunska-LightItalicCap]
+        \definefontsynonym [SerifBoldItalicCaps]  [AntykwaTorunska-MedItalicCap]
+        \definefontsynonym [SerifBoldSlantedCaps] [AntykwaTorunska-MedItalicCap]
+        \definefontsynonym [SerifCapsCaps]        [AntykwaTorunska-LightCap]
+
+        \definefontsynonym [SerifRegularDark]     [AntykwaTorunska-Regular]
+        \definefontsynonym [SerifBoldDark]        [AntykwaTorunska-Bold]
+        \definefontsynonym [SerifItalicDark]      [AntykwaTorunska-Italic]
+        \definefontsynonym [SerifSlantedDark]     [AntykwaTorunska-Italic]
+        \definefontsynonym [SerifBoldItalicDark]  [AntykwaTorunska-BoldItalic]
+        \definefontsynonym [SerifBoldSlantedDark] [AntykwaTorunska-BoldItalic]
+        \definefontsynonym [SerifCapsDark]        [AntykwaTorunska-Cap]
+
+        \definefontsynonym [SerifRegularCond]     [AntykwaTorunska-CondLight]
+        \definefontsynonym [SerifBoldCond]        [AntykwaTorunska-CondMedium]
+        \definefontsynonym [SerifItalicCond]      [AntykwaTorunska-CondLightItalic]
+        \definefontsynonym [SerifSlantedCond]     [AntykwaTorunska-CondLightItalic]
+        \definefontsynonym [SerifBoldItalicCond]  [AntykwaTorunska-CondMedItalic]
+        \definefontsynonym [SerifBoldSlantedCond] [AntykwaTorunska-CondMedItalic]
+        \definefontsynonym [SerifCapsCond]        [AntykwaTorunska-CondLightCap]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-torunska-cond] [name]
+        \definefontsynonym [SerifRegular]         [Serif]
+        \definefontsynonym [SerifRegularCaps]     [AntykwaTorunska-CondCap]
+        \definefontsynonym [SerifBoldCaps]        [AntykwaTorunska-CondBoldCap]
+        \definefontsynonym [SerifItalicCaps]      [AntykwaTorunska-CondItalicCap]
+        \definefontsynonym [SerifSlantedCaps]     [AntykwaTorunska-CondItalicCap]
+        \definefontsynonym [SerifBoldItalicCaps]  [AntykwaTorunska-CondBoldItalicCap]
+        \definefontsynonym [SerifBoldSlantedCaps] [AntykwaTorunska-CondBoldItalicCap]
+        \definefontsynonym [SerifCapsCaps]        [AntykwaTorunska-CondCap]
+
+        \definefontsynonym [SerifRegularLight]     [AntykwaTorunska-CondLight]
+        \definefontsynonym [SerifBoldLight]        [AntykwaTorunska-CondMedium]
+        \definefontsynonym [SerifItalicLight]      [AntykwaTorunska-CondLightItalic]
+        \definefontsynonym [SerifSlantedLight]     [AntykwaTorunska-CondLightItalic]
+        \definefontsynonym [SerifBoldItalicLight]  [AntykwaTorunska-CondMedItalic]
+        \definefontsynonym [SerifBoldSlantedLight] [AntykwaTorunska-CondMedItalic]
+        \definefontsynonym [SerifCapsLight]        [AntykwaTorunska-CondLightCap]
+
+        \definefontsynonym [SerifRegularExp]     [AntykwaTorunska-Regular]
+        \definefontsynonym [SerifBoldExp]        [AntykwaTorunska-Bold]
+        \definefontsynonym [SerifItalicExp]      [AntykwaTorunska-Italic]
+        \definefontsynonym [SerifSlantedExp]     [AntykwaTorunska-Italic]
+        \definefontsynonym [SerifBoldItalicExp]  [AntykwaTorunska-BoldItalic]
+        \definefontsynonym [SerifBoldSlantedExp] [AntykwaTorunska-BoldItalic]
+        \definefontsynonym [SerifCapsExp]        [AntykwaTorunska-Cap]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-torunska-lightcond] [name]
+        \definefontsynonym [SerifRegular]         [Serif]
+        \definefontsynonym [SerifRegularCaps]     [AntykwaTorunska-CondLightCap]
+        \definefontsynonym [SerifBoldCaps]        [AntykwaTorunska-CondMediumCap]
+        \definefontsynonym [SerifItalicCaps]      [AntykwaTorunska-CondLightItalicCap]
+        \definefontsynonym [SerifSlantedCaps]     [AntykwaTorunska-CondLightItalicCap]
+        \definefontsynonym [SerifBoldItalicCaps]  [AntykwaTorunska-CondMedItalicCap]
+        \definefontsynonym [SerifBoldSlantedCaps] [AntykwaTorunska-CondMedItalicCap]
+        \definefontsynonym [SerifCapsCaps]        [AntykwaTorunska-CondLightCap]
+
+        \definefontsynonym [SerifRegularDark]     [AntykwaTorunska-CondRegular]
+        \definefontsynonym [SerifBoldDark]        [AntykwaTorunska-CondBold]
+        \definefontsynonym [SerifItalicDark]      [AntykwaTorunska-CondItalic]
+        \definefontsynonym [SerifSlantedDark]     [AntykwaTorunska-CondItalic]
+        \definefontsynonym [SerifBoldItalicDark]  [AntykwaTorunska-CondBoldItalic]
+        \definefontsynonym [SerifBoldSlantedDark] [AntykwaTorunska-CondBoldItalic]
+        \definefontsynonym [SerifCapsDark]        [AntykwaTorunska-CondCap]
+
+        \definefontsynonym [SerifRegularExp]     [AntykwaTorunska-Light]
+        \definefontsynonym [SerifBoldExp]        [AntykwaTorunska-Medium]
+        \definefontsynonym [SerifItalicExp]      [AntykwaTorunska-LightItalic]
+        \definefontsynonym [SerifSlantedExp]     [AntykwaTorunska-LightItalic]
+        \definefontsynonym [SerifBoldItalicExp]  [AntykwaTorunska-MedItalic]
+        \definefontsynonym [SerifBoldSlantedExp] [AntykwaTorunska-MedItalic]
+        \definefontsynonym [SerifCapsExp]        [AntykwaTorunska-LightCap]
+    \stoptypescript
+
+    \starttypescript [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
+        \definetypeface[antykwa][rm][serif][\typescriptone] [default]
+        \definetypeface[antykwa][ss][sans] [modern]         [default] [rscale=1.05]
+        \definetypeface[antykwa][tt][mono] [modern]         [default] [rscale=1.05]
+        \definetypeface[antykwa][mm][math] [\typescriptone] [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    % Antykwa Poltawskiego (GUST)
+
+%     \starttypescript [serif] [antykwa-poltawskiego]
+%         \definefontsynonym [AntykwaPoltawskiego-Regular]    [antpr]
+%         \definefontsynonym [AntykwaPoltawskiego-Bold]       [antpb]
+%         \definefontsynonym [AntykwaPoltawskiego-Italic]     [antpri]
+%         \definefontsynonym [AntykwaPoltawskiego-BoldItalic] [antpbi]
+%     \stoptypescript
+
+%     \starttypescript [serif] [antykwa-poltawskiego] [name]
+%         \definefontsynonym [Serif]            [AntykwaPoltawskiego-Regular]
+%         \definefontsynonym [SerifBold]        [AntykwaPoltawskiego-Bold]
+%         \definefontsynonym [SerifItalic]      [AntykwaPoltawskiego-Italic]
+%         \definefontsynonym [SerifSlanted]     [AntykwaPoltawskiego-Italic]
+%         \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-Bold]
+%         \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-Bold]
+%         \definefontsynonym [SerifCaps]        [AntykwaPoltawskiego-Regular]
+%     \stoptypescript
+
+    % names of "Caps" may still change
+    \starttypescript [serif] [antykwa-poltawskiego,antykwa-poltawskiego-light]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Light]                [\s!file:AntPoltLtCond-Regular]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-LightItalic]          [\s!file:AntPoltLtCond-Italic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Regular]              [\s!file:AntPoltCond-Regular]        [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Italic]               [\s!file:AntPoltCond-Italic]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Medium]               [\s!file:AntPoltMdCond-Bold]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-MediumItalic]         [\s!file:AntPoltMdCond-BoldItalic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Bold]                 [\s!file:AntPoltCond-Bold]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-BoldItalic]           [\s!file:AntPoltCond-BoldItalic]     [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsLight]            [\s!file:AntPoltLtCond-Regular]      [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsLightItalic]      [\s!file:AntPoltLtCond-Italic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsRegular]          [\s!file:AntPoltCond-Regular]        [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsItalic]           [\s!file:AntPoltCond-Italic]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsMedium]           [\s!file:AntPoltMdCond-Bold]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsMediumItalic]     [\s!file:AntPoltMdCond-BoldItalic]   [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsBold]             [\s!file:AntPoltCond-Bold]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsBoldItalic]       [\s!file:AntPoltCond-BoldItalic]     [\s!features=\s!smallcaps]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Regular]          [\s!file:AntPoltLtSemiCond-Regular]  [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Italic]           [\s!file:AntPoltLtSemiCond-Italic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Regular]          [\s!file:AntPoltSemiCond-Regular]    [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Italic]           [\s!file:AntPoltSemiCond-Italic]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Medium]           [\s!file:AntPoltMdSemiCond-Bold]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-MediumItalic]     [\s!file:AntPoltMdSemiCond-BdItalic] [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Bold]             [\s!file:AntPoltSemiCond-Bold]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-BoldItalic]       [\s!file:AntPoltSemiCond-BoldItalic] [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsRegular]      [\s!file:AntPoltLtSemiCond-Regular]  [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsItalic]       [\s!file:AntPoltLtSemiCond-Italic]   [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsRegular]      [\s!file:AntPoltSemiCond-Regular]    [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsItalic]       [\s!file:AntPoltSemiCond-Italic]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsMedium]       [\s!file:AntPoltMdSemiCond-Bold]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsMediumItalic] [\s!file:AntPoltMdSemiCond-BdItalic] [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsBold]         [\s!file:AntPoltSemiCond-Bold]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsBoldItalic]   [\s!file:AntPoltSemiCond-BoldItalic] [\s!features=\s!smallcaps]
+
+        \definefontsynonym [AntykwaPoltawskiego-Light]                          [\s!file:AntPoltLt-Regular]          [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-LightItalic]                    [\s!file:AntPoltLt-Italic]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Regular]                        [\s!file:AntPolt-Regular]            [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Italic]                         [\s!file:AntPolt-Italic]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Medium]                         [\s!file:AntPoltMd-Bold]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-MediumItalic]                   [\s!file:AntPoltMd-BoldItalic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Bold]                           [\s!file:AntPolt-Bold]               [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-BoldItalic]                     [\s!file:AntPolt-BoldItalic]         [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-CapsLight]                      [\s!file:AntPoltLt-Regular]          [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsLightItalic]                [\s!file:AntPoltLt-Italic]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsRegular]                    [\s!file:AntPolt-Regular]            [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsItalic]                     [\s!file:AntPolt-Italic]             [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsMedium]                     [\s!file:AntPoltMd-Bold]             [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsMediumItalic]               [\s!file:AntPoltMd-BoldItalic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsBold]                       [\s!file:AntPolt-Bold]               [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsBoldItalic]                 [\s!file:AntPolt-BoldItalic]         [\s!features=\s!smallcaps]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Light]             [\s!file:AntPoltLtSemiExtd-Regular]  [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-LightItalic]       [\s!file:AntPoltLtSemiExtd-Italic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Regular]           [\s!file:AntPoltSemiExtd-Regular]    [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Italic]            [\s!file:AntPoltSemiExtd-Italic]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Medium]            [\s!file:AntPoltMdSemiExtd-Bold]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-MediumItalic]      [\s!file:AntPoltMdSemiExtd-BdItalic] [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-Bold]              [\s!file:AntPoltSemiExtd-Bold]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-BoldItalic]        [\s!file:AntPoltSemiExtd-BoldItalic] [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsLight]         [\s!file:AntPoltLtSemiExtd-Regular]  [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsLightItalic]   [\s!file:AntPoltLtSemiExtd-Italic]   [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsRegular]       [\s!file:AntPoltSemiExtd-Regular]    [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsItalic]        [\s!file:AntPoltSemiExtd-Italic]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsMedium]        [\s!file:AntPoltMdSemiExtd-Bold]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsMediumItalic]  [\s!file:AntPoltMdSemiExtd-BdItalic] [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsBold]          [\s!file:AntPoltSemiExtd-Bold]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExtended-CapsBoldItalic]    [\s!file:AntPoltSemiExtd-BoldItalic] [\s!features=\s!smallcaps]
+
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Light]                 [\s!file:AntPoltLtExtd-Regular]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-LightItalic]           [\s!file:AntPoltLtExtd-Italic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Regular]               [\s!file:AntPoltExtd-Regular]        [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Italic]                [\s!file:AntPoltExtd-Italic]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Medium]                [\s!file:AntPoltMdExtd-Bold]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-MediumItalic]          [\s!file:AntPoltMdExtd-BoldItalic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-Bold]                  [\s!file:AntPoltExtd-Bold]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-BoldItalic]            [\s!file:AntPoltExtd-BoldItalic]     [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsLight]             [\s!file:AntPoltLtExtd-Regular]      [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsLightItalic]       [\s!file:AntPoltLtExtd-Italic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsRegular]           [\s!file:AntPoltExtd-Regular]        [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsItalic]            [\s!file:AntPoltExtd-Italic]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsMedium]            [\s!file:AntPoltMdExtd-Bold]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsMediumItalic]      [\s!file:AntPoltMdExtd-BoldItalic]   [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsBold]              [\s!file:AntPoltExtd-Bold]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Extended-CapsBoldItalic]        [\s!file:AntPoltExtd-BoldItalic]     [\s!features=\s!smallcaps]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-poltawskiego] [name]
+        \definefontsynonym [Serif]            [AntykwaPoltawskiego-Regular]
+        \definefontsynonym [SerifBold]        [AntykwaPoltawskiego-Bold]
+        \definefontsynonym [SerifItalic]      [AntykwaPoltawskiego-Italic]
+        \definefontsynonym [SerifSlanted]     [AntykwaPoltawskiego-Italic]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-BoldItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-BoldItalic]
+        \definefontsynonym [SerifCaps]        [AntykwaPoltawskiego-CapsRegular]
+    \stoptypescript
+
+    \starttypescript [serif] [antykwa-poltawskiego-light] [name]
+        \definefontsynonym [Serif]            [AntykwaPoltawskiego-Light]
+        \definefontsynonym [SerifBold]        [AntykwaPoltawskiego-Medium]
+        \definefontsynonym [SerifItalic]      [AntykwaPoltawskiego-LightItalic]
+        \definefontsynonym [SerifSlanted]     [AntykwaPoltawskiego-LightItalic]
+        \definefontsynonym [SerifBoldItalic]  [AntykwaPoltawskiego-MediumItalic]
+        \definefontsynonym [SerifBoldSlanted] [AntykwaPoltawskiego-MediumItalic]
+        \definefontsynonym [SerifCaps]        [AntykwaPoltawskiego-CapsLight]
+    \stoptypescript
+
+    % condensed and extended variants are still missing
+
+    \starttypescript [antykwa-poltawskiego,antykwa-poltawskiego-light]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.05]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.05]
+        \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.05]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[iwona]
+
+    % maybe this will change in Iwona-Math-Letters and Iwona-Math-Letters-Italic
+
+    % These names are a depressing mess. They have changed over time and are
+    % still not consistent. I'd expect Bold-Regular and Bold-Italic.
+
+    \starttypescript [sans] [iwona-light,iwona,iwona-medium,iwona-heavy,iwona-light-cond,iwona-cond,iwona-medium-cond,iwona-heavy-cond]
+
+        \definefontsynonym [Iwona-Regular]               [\s!file:Iwona-Regular]                [\s!features=\s!default]
+        \definefontsynonym [Iwona-Italic]                [\s!file:Iwona-Italic]                 [\s!features=\s!default]
+        \definefontsynonym [Iwona-Bold]                  [\s!file:Iwona-Bold]                   [\s!features=\s!default]
+        \definefontsynonym [Iwona-BoldItalic]            [\s!file:Iwona-BoldItalic]             [\s!features=\s!default]
+        \definefontsynonym [Iwona-Light-Regular]         [\s!file:IwonaLight-Regular]           [\s!features=\s!default]
+        \definefontsynonym [Iwona-Light-Italic]          [\s!file:IwonaLight-Italic]            [\s!features=\s!default]
+        \definefontsynonym [Iwona-Medium-Regular]        [\s!file:IwonaMedium-Regular]          [\s!features=\s!default]
+        \definefontsynonym [Iwona-Medium-Italic]         [\s!file:IwonaMedium-Italic]           [\s!features=\s!default]
+        \definefontsynonym [Iwona-Heavy-Regular]         [\s!file:IwonaHeavy-Regular]           [\s!features=\s!default]
+        \definefontsynonym [Iwona-Heavy-Italic]          [\s!file:IwonaHeavy-Italic]            [\s!features=\s!default]
+
+        \definefontsynonym [Iwona-CapsRegular]           [\s!file:Iwona-Regular]                [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsItalic]            [\s!file:Iwona-Italic]                 [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsBold]              [\s!file:Iwona-Bold]                   [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsBoldItalic]        [\s!file:Iwona-BoldItalic]             [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsLight]             [\s!file:IwonaLight-Regular]           [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsLight-Italic]      [\s!file:IwonaLight-Italic]            [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsMedium]            [\s!file:IwonaMedium-Regular]          [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsMedium-Italic]     [\s!file:IwonaMedium-Italic]           [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsHeavy]             [\s!file:IwonaHeavy-Regular]           [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsHeavy-Italic]      [\s!file:IwonaHeavy-Italic]            [\s!features=\s!smallcaps]
+
+        \definefontsynonym [Iwona-CondRegular]           [\s!file:IwonaCond-Regular]            [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondItalic]            [\s!file:IwonaCond-Italic]             [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondBold]              [\s!file:IwonaCond-Bold]               [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondBoldItalic]        [\s!file:IwonaCond-BoldItalic]         [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondLight-Regular]     [\s!file:IwonaCondLight-Regular]       [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondLight-Italic]      [\s!file:IwonaCondLight-Italic]        [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondMedium-Regular]    [\s!file:IwonaCondMedium-Regular]      [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondMedium-Italic]     [\s!file:IwonaCondMedium-Italic]       [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondHeavy-Regular]     [\s!file:IwonaCondHeavy-Regular]       [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondHeavy-Italic]      [\s!file:IwonaCondHeavy-Italic]        [\s!features=\s!default]
+
+        \definefontsynonym [Iwona-CapsCondRegular]       [\s!file:IwonaCond-Regular]            [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondItalic]        [\s!file:IwonaCond-Italic]             [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondBold]          [\s!file:IwonaCond-Bold]               [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondBoldItalic]    [\s!file:IwonaCond-BoldItalic]         [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondLight-Regular] [\s!file:IwonaCondLight-Regular]       [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondLight-Italic]  [\s!file:IwonaCondLight-Italic]        [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondMedium-Regular][\s!file:IwonaCondMedium-Regular]      [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondMedium-Italic] [\s!file:IwonaCondMedium-Italic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondHeavy-Regular] [\s!file:IwonaCondHeavy-Regular]       [\s!features=\s!smallcaps]
+        \definefontsynonym [Iwona-CapsCondHeavy-Italic]  [\s!file:IwonaCondHeavy-Italic]        [\s!features=\s!smallcaps]
+
+    \stoptypescript
+
+    % [all] is redundant
+
+    \starttypescript [math][iwona][all]
+        \definefontsynonym[MathRoman][iwonamath@iwona-math]
+    \stoptypescript
+    \starttypescript [math][iwona-light][all]
+        \definefontsynonym[MathRoman][iwonalightmath@iwona-light-math]
+    \stoptypescript
+    \starttypescript [math][iwona-medium][all]
+        \definefontsynonym[MathRoman][iwonamediummath@iwona-medium-math]
+    \stoptypescript
+    \starttypescript [math][iwona-heavy][all]
+        \definefontsynonym[MathRoman][iwonaheavymath@iwona-heavy-math]
+    \stoptypescript
+
+    \starttypescript [math] [iwona,iwona-light,iwona-medium,iwona-heavy] [all]
+        \loadfontgoodies[iwona-math]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-light] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]               [Iwona-Light-Regular]
+        \definefontsynonym [SansItalic]         [Iwona-Light-Italic]
+        \definefontsynonym [SansBold]           [Iwona-Medium-Regular]
+        \definefontsynonym [SansBoldItalic]     [Iwona-Medium-Italic]
+        \definefontsynonym [SansCaps]           [Iwona-CapsLight]
+        \definefontsynonym [SansItalicCaps]     [Iwona-CapsLightItalic]
+        \definefontsynonym [SansBoldCaps]       [Iwona-CapsMedium]
+        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsMediumItalic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-light-caps] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Iwona-CapsLight-Regular]
+        \definefontsynonym [SansItalic]     [Iwona-CapsLight-Italic]
+        \definefontsynonym [SansBold]       [Iwona-CapsMedium-Regular]
+        \definefontsynonym [SansBoldItalic] [Iwona-CapsMedium-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]               [Iwona-Regular]
+        \definefontsynonym [SansItalic]         [Iwona-Italic]
+        \definefontsynonym [SansBold]           [Iwona-Bold]
+        \definefontsynonym [SansBoldItalic]     [Iwona-BoldItalic]
+        \definefontsynonym [SansCaps]           [Iwona-CapsRegular]
+        \definefontsynonym [SansItalicCaps]     [Iwona-CapsItalic]
+        \definefontsynonym [SansBoldCaps]       [Iwona-CapsBold]
+        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsBoldItalic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-caps] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Iwona-CapsRegular]
+        \definefontsynonym [SansItalic]     [Iwona-CapsItalic]
+        \definefontsynonym [SansBold]       [Iwona-CapsBold]
+        \definefontsynonym [SansBoldItalic] [Iwona-CapsBoldItalic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-medium] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]               [Iwona-Medium-Regular]
+        \definefontsynonym [SansItalic]         [Iwona-Medium-Italic]
+        \definefontsynonym [SansBold]           [Iwona-Heavy-Regular]
+        \definefontsynonym [SansBoldItalic]     [Iwona-Heavy-Italic]
+        \definefontsynonym [SansCaps]           [Iwona-CapsHeavy-Regular]
+        \definefontsynonym [SansItalicCaps]     [Iwona-CapsMedium-Italic]
+        \definefontsynonym [SansBoldCaps]       [Iwona-CapsHeavy-Regular]
+        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsHeavy-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-medium-caps] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Iwona-CapsHeavy-Regular]
+        \definefontsynonym [SansItalic]     [Iwona-CapsMedium-Italic]
+        \definefontsynonym [SansBold]       [Iwona-CapsHeavy-Regular]
+        \definefontsynonym [SansBoldItalic] [Iwona-CapsHeavy-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-heavy] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]               [Iwona-Heavy-Regular]
+        \definefontsynonym [SansItalic]         [Iwona-Heavy-Italic]
+        \definefontsynonym [SansBold]           [Iwona-Heavy-Regular]
+        \definefontsynonym [SansBoldItalic]     [Iwona-Heavy-Italic]
+        \definefontsynonym [SansCaps]           [Iwona-CapsHeavy-Regular]
+        \definefontsynonym [SansItalicCaps]     [Iwona-CapsHeavy-Italic]
+        \definefontsynonym [SansBoldCaps]       [Iwona-CapsHeavy-Regular]
+        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsHeavy-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-heavy-caps] [name]
+       \setups[font:fallback:sans]
+       \definefontsynonym [SansCaps]           [Iwona-CapsHeavy-Regular]
+       \definefontsynonym [SansItalicCaps]     [Iwona-CapsHeavy-Italic]
+       \definefontsynonym [SansBoldCaps]       [Iwona-CapsHeavy-Regular]
+       \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsHeavy-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-light-cond] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]               [Iwona-CondLight-Regular]
+        \definefontsynonym [SansItalic]         [Iwona-CondLight-Italic]
+        \definefontsynonym [SansBold]           [Iwona-CondMedium-Regular]
+        \definefontsynonym [SansBoldItalic]     [Iwona-CondMedium-Italic]
+        \definefontsynonym [SansCaps]           [Iwona-CapsCondLight-Regular]
+        \definefontsynonym [SansItalicCaps]     [Iwona-CapsCondLight-Italic]
+        \definefontsynonym [SansBoldCaps]       [Iwona-CapsCondMedium-Regular]
+        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsCondMedium-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-light-cond-caps,iwona-light-caps-cond] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Iwona-CapsCondLight-Regular]
+        \definefontsynonym [SansItalic]     [Iwona-CapsCondLight-Italic]
+        \definefontsynonym [SansBold]       [Iwona-CapsCondMedium-Regular]
+        \definefontsynonym [SansBoldItalic] [Iwona-CapsCondMedium-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-cond] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]               [Iwona-CondRegular]
+        \definefontsynonym [SansItalic]         [Iwona-CondItalic]
+        \definefontsynonym [SansBold]           [Iwona-CondBold]
+        \definefontsynonym [SansBoldItalic]     [Iwona-CondBoldItalic]
+        \definefontsynonym [SansCaps]           [Iwona-CapsCondRegular]
+        \definefontsynonym [SansItalicCaps]     [Iwona-CapsCondItalic]
+        \definefontsynonym [SansBoldCaps]       [Iwona-CapsCondBold]
+        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsCondBoldItalic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-cond-caps,iwona-caps-cond] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Iwona-CapsCondRegular]
+        \definefontsynonym [SansItalic]     [Iwona-CapsCondItalic]
+        \definefontsynonym [SansBold]       [Iwona-CapsCondBold]
+        \definefontsynonym [SansBoldItalic] [Iwona-CapsCondBoldItalic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-medium-cond] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]               [Iwona-CondMedium-Regular]
+        \definefontsynonym [SansItalic]         [Iwona-CondMedium-Italic]
+        \definefontsynonym [SansBold]           [Iwona-CondHeavy-Regular]
+        \definefontsynonym [SansBoldItalic]     [Iwona-CondHeavy-Italic]
+        \definefontsynonym [SansCaps]           [Iwona-CapsCondHeavy-Regular]
+        \definefontsynonym [SansItalicCaps]     [Iwona-CapsCondMedium-Italic]
+        \definefontsynonym [SansBoldCaps]       [Iwona-CapsCondHeavy-Regular]
+        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsCondHeavy-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [iwona-medium-cond-caps,iwona-medium-caps-cond] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Iwona-CapsCondHeavy-Regular]
+        \definefontsynonym [SansItalic]     [Iwona-CapsCondMedium-Italic]
+        \definefontsynonym [SansBold]       [Iwona-CapsCondHeavy-Regular]
+        \definefontsynonym [SansBoldItalic] [Iwona-CapsCondHeavy-Italic]
+    \stoptypescript
+
+    \starttypescript [iwona,iwona-light,iwona-heavy,iwona-medium]
+        \definetypeface[\typescriptone][ss][sans] [\typescriptone] [default]
+        \definetypeface[\typescriptone][rm][serif][modern]         [default]
+        \definetypeface[\typescriptone][tt][mono] [modern]         [default]
+        \definetypeface[\typescriptone][mm][math] [\typescriptone] [default][text=ss]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[kurier]
+
+    % Kurier (JMN) / no open type fonts yet so this should be in type-one.mkiv
+
+    \starttypescript [sans] [kurier-light,kurier,kurier-medium]
+        \definefontsynonym[Kurier-Light]         [kurierl]
+        \definefontsynonym[Kurier-Regular]       [kurierr]
+        \definefontsynonym[Kurier-Medium]        [kurierm]
+        \definefontsynonym[Kurier-Bold]          [kurierb]
+        \definefontsynonym[Kurier-Heavy]         [kurierh]
+        \definefontsynonym[Kurier-LightItalic]   [kurierli]
+        \definefontsynonym[Kurier-Italic]        [kurierri]
+        \definefontsynonym[Kurier-MediumItalic]  [kuriermi]
+        \definefontsynonym[Kurier-BoldItalic]    [kurierbi]
+        \definefontsynonym[Kurier-HeavyItalic]   [kurierhi]
+    \stoptypescript
+
+    \starttypescript [sans] [kurier-light] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Kurier-Light-Regular]
+        \definefontsynonym [SansItalic]     [Kurier-Light-Italic]
+        \definefontsynonym [SansBold]       [Kurier-Medium-Regular]
+        \definefontsynonym [SansBoldItalic] [Kurier-Medium-Italic]
+    \stoptypescript
+
+    \starttypescript [sans] [kurier] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Kurier-Regular]
+        \definefontsynonym [SansItalic]     [Kurier-Italic]
+        \definefontsynonym [SansBold]       [Kurier-Bold]
+        \definefontsynonym [SansBoldItalic] [Kurier-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [sans] [kurier-medium] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [Kurier-Medium-Regular]
+        \definefontsynonym [SansItalic]     [Kurier-Medium-Italic]
+        \definefontsynonym [SansBold]       [Kurier-Heavy-Regular]
+        \definefontsynonym [SansBoldItalic] [Kurier-Heavy-Italic]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[symbols]
+
+    \starttypescript
+        \definefontsynonym [ZapfDingbats]          [uzdr]
+        \definefontsynonym [RalfSmithFormalScript] [rsfs10]
+        \definefontsynonym [MartinVogel]           [fmvr8x]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[charter]
+
+    \starttypescript [serif] [charter]
+        \definefontsynonym [Charter-Roman]       [\s!name:CharterBT-Roman]        % or: [bchr8a]
+        \definefontsynonym [Charter-Italic]      [\s!name:CharterBT-Italic]       % or: [bchri8a]
+        \definefontsynonym [Charter-Bold]        [\s!name:CharterBT-Bold]         % or: [bchb8a]
+        \definefontsynonym [Charter-BoldItalic]  [\s!name:CharterBT-BoldItalic]   % or: [bchbi8a]
+        \definefontsynonym [Charter-Slanted]     [\s!name:CharterBT-Italic]       % or: [bchri8a]
+        \definefontsynonym [Charter-BoldSlanted] [\s!name:CharterBT-BoldItalic]   % or: [bchbi8a]
+        \definefontsynonym [Charter-Roman-Caps]  [Charter-Roman]                  % not present
+    \stoptypescript
+
+    \starttypescript [serif] [charter] [name]
+        \definefontsynonym [Serif]            [Charter-Roman]
+        \definefontsynonym [SerifItalic]      [Charter-Italic]
+        \definefontsynonym [SerifBold]        [Charter-Bold]
+        \definefontsynonym [SerifBoldItalic]  [Charter-BoldItalic]
+        \definefontsynonym [SerifSlanted]     [Charter-Slanted]
+        \definefontsynonym [SerifBoldSlanted] [Charter-BoldSlanted]
+        \definefontsynonym [SerifCaps]        [Charter-Roman-Caps]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[mathtimes]
+
+    \starttypescript [math] [mathtimes] [all]
+        \loadfontgoodies[mathtimes-math]
+        \definefontsynonym[MathRoman][mathtimes@mathtimes-math]
+    \stoptypescript
+
+    \starttypescript [mathtimes]
+        \definetypeface [mathtimes] [rm] [serif] [times]     [default]
+        \definetypeface [mathtimes] [ss] [sans]  [helvetica] [default] [rscale=0.9]
+        \definetypeface [mathtimes] [tt] [mono]  [modern]    [default] [rscale=1.05]
+        \definetypeface [mathtimes] [mm] [math]  [mathtimes] [default]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[lucida]
+
+    \starttypescript [serif] [lucida]
+        \definefontsynonym [LucidaBright]               [\s!name:LucidaBright]
+        \definefontsynonym [LucidaBright-Demi]          [\s!name:LucidaBright-Demi]
+        \definefontsynonym [LucidaBright-Italic]        [\s!name:LucidaBright-Italic]
+        \definefontsynonym [LucidaBright-DemiItalic]    [\s!name:LucidaBright-DemiItalic]
+        \definefontsynonym [LucidaBright-Oblique]       [\s!name:LucidaBright-Oblique]
+        \definefontsynonym [LucidaBrightSmallcaps]      [\s!name:LucidaBrightSmallcaps]
+        \definefontsynonym [LucidaBrightSmallcaps-Demi] [\s!name:LucidaBrightSmallcaps-Demi]
+    \stoptypescript
+
+    \starttypescript [sans] [lucida]
+        \definefontsynonym [LucidaSans]            [\s!name:LucidaSans]
+        \definefontsynonym [LucidaSans-Demi]       [\s!name:LucidaSans-Demi]
+        \definefontsynonym [LucidaSans-Bold]       [\s!name:LucidaSans-Bold]
+        \definefontsynonym [LucidaSans-Italic]     [\s!name:LucidaSans-Italic]
+        \definefontsynonym [LucidaSans-DemiItalic] [\s!name:LucidaSans-DemiItalic]
+        \definefontsynonym [LucidaSans-BoldItalic] [\s!name:LucidaSans-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [mono] [lucida]
+        \definefontsynonym [LucidaTypewriter]            [\s!name:LucidaTypewriter]
+        \definefontsynonym [LucidaTypewriterBold]        [\s!name:LucidaTypewriterBold]
+        \definefontsynonym [LucidaTypewriterOblique]     [\s!name:LucidaTypewriterOblique]
+        \definefontsynonym [LucidaTypewriterBoldOblique] [\s!name:LucidaTypewriterBoldOblique]
+    \stoptypescript
+
+    \starttypescript [mono] [lucida]
+        \definefontsynonym [LucidaSans-Typewriter]            [\s!name:LucidaSans-Typewriter]
+        \definefontsynonym [LucidaSans-TypewriterBold]        [\s!name:LucidaSans-TypewriterBold]
+        \definefontsynonym [LucidaSans-TypewriterOblique]     [\s!name:LucidaSans-TypewriterOblique]
+        \definefontsynonym [LucidaSans-TypewriterBoldOblique] [\s!name:LucidaSans-TypewriterBoldOblique]
+    \stoptypescript
+
+    \starttypescript [calligraphy] [lucida]
+        \definefontsynonym [LucidaCalligraphy-Italic] [\s!name:LucidaCalligraphy-Italic]
+    \stoptypescript
+
+    \starttypescript [casual] [lucida]
+        \definefontsynonym [LucidaCasual]        [\s!name:LucidaCasual]
+        \definefontsynonym [LucidaCasual-Italic] [\s!name:LucidaCasual-Italic]
+    \stoptypescript
+
+    \starttypescript [handwriting] [lucida]
+        \definefontsynonym [LucidaHandwriting-Italic] [\s!name:LucidaHandwriting-Italic]
+    \stoptypescript
+
+    \starttypescript [fax] [lucida]
+        \definefontsynonym [LucidaFax]            [\s!name:LucidaFax]
+        \definefontsynonym [LucidaFax-Demi]       [\s!name:LucidaFax-Demi]
+        \definefontsynonym [LucidaFax-Italic]     [\s!name:LucidaFax-Italic]
+        \definefontsynonym [LucidaFax-DemiItalic] [\s!name:LucidaFax-DemiItalic]
+    \stoptypescript
+
+    \starttypescript [blackletter] [lucida]
+        \definefontsynonym [LucidaBlackletter] [\s!name:LucidaBlackletter]
+    \stoptypescript
+
+    \starttypescript [math] [lucida]
+        \loadfontgoodies[lucida-math]
+        \definefontsynonym[MathRoman][lucidamath@lucida-math]
+    \stoptypescript
+
+    \starttypescript [serif] [lucida] [name]
+        \definefontsynonym [Serif]            [LucidaBright]
+        \definefontsynonym [SerifBold]        [LucidaBright-Demi]
+        \definefontsynonym [SerifItalic]      [LucidaBright-Italic]
+        \definefontsynonym [SerifBoldItalic]  [LucidaBright-DemiItalic]
+        \definefontsynonym [SerifSlanted]     [LucidaBright-Oblique]
+        \definefontsynonym [SerifBoldSlanted] [LucidaBright-DemiItalic]
+        \definefontsynonym [SerifCaps]        [LucidaBrightSmallcaps]
+        \definefontsynonym [SerifBoldCaps]    [LucidaBrightSmallcaps-Demi]
+    \stoptypescript
+
+    % Lucida Bright Sans
+
+    \starttypescript [sans] [lucida] [name]
+        \definefontsynonym [Sans]            [LucidaSans]
+        \definefontsynonym [SansBold]        [LucidaSans-Demi]
+        \definefontsynonym [SansItalic]      [LucidaSans-Italic]
+        \definefontsynonym [SansBoldItalic]  [LucidaSans-DemiItalic]
+        \definefontsynonym [SansSlanted]     [LucidaSans-Italic]
+        \definefontsynonym [SansBoldSlanted] [LucidaSans-DemiItalic]
+        \definefontsynonym [SansCaps]        [LucidaSans]
+    \stoptypescript
+
+    % Lucida Bright Typewriter
+
+    % only one family may be used as mono; sans used to be that since the beginning,
+    % so we keep using that as default
+
+    % \starttypescript [mono] [lucida] [name]
+    % 	\definefontsynonym [Mono]            [LucidaTypewriter]
+    % 	\definefontsynonym [MonoBold]        [LucidaTypewriterBold]
+    % 	\definefontsynonym [MonoItalic]      [LucidaTypewriterOblique]
+    % 	\definefontsynonym [MonoBoldItalic]  [LucidaTypewriterBoldOblique]
+    % 	\definefontsynonym [MonoSlanted]     [LucidaTypewriterOblique]
+    % 	\definefontsynonym [MonoBoldSlanted] [LucidaTypewriterBoldOblique]
+    % 	\definefontsynonym [MonoCaps]        [LucidaTypewriter]
+    % \stoptypescript
+
+    % Lucida Bright Sans Typewriter
+
+    \starttypescript [mono] [lucida] [name]
+        \definefontsynonym [Mono]            [LucidaSans-Typewriter]
+        \definefontsynonym [MonoBold]        [LucidaSans-TypewriterBold]
+        \definefontsynonym [MonoItalic]      [LucidaSans-TypewriterOblique]
+        \definefontsynonym [MonoBoldItalic]  [LucidaSans-TypewriterBoldOblique]
+        \definefontsynonym [MonoSlanted]     [LucidaSans-TypewriterOblique]
+        \definefontsynonym [MonoBoldSlanted] [LucidaSans-TypewriterBoldOblique]
+        \definefontsynonym [MonoCaps]        [LucidaSans-Typewriter]
+    \stoptypescript
+
+    %  Lucida Calligraphy
+
+    \starttypescript [calligraphy] [lucida] [name]
+        \definefontsynonym [Calligraphy] [LucidaCalligraphy-Italic]
+    \stoptypescript
+
+    % Lucida Casual
+
+    % \starttypescript [casual] [lucida] [name]
+    % 	% LucidaCasual
+    % 	% LucidaCasual-Italic
+    % \stoptypescript
+
+    % Lucida Handwriting
+
+    \starttypescript [handwriting] [lucida] [name]
+        \definefontsynonym [Handwriting] [LucidaHandwriting-Italic]
+    \stoptypescript
+
+    % Lucida Fax
+    %
+    % \starttypescript [fax] [lucida] [name]
+    % 	\definefontsynonym [FaksRegular]    [LucidaFax]
+    % 	\definefontsynonym [FaksBold]       [LucidaFax-Demi]
+    % 	\definefontsynonym [FaksItalic]     [LucidaFax-Italic]
+    % 	\definefontsynonym [FaksBoldItalic] [LucidaFax-DemiItalic]
+    % \stoptypescript
+
+    % Lucida Black Letter
+    %
+    % \starttypescript [blackletter] [lucida] [name]
+    % 	\definefontsynonym [Blackletter] [LucidaBlackletter]
+    % \stoptypescript
+
+    \starttypescript [lucida]
+        \definetypeface [lucida] [rm] [\s!serif]       [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [ss] [\s!sans]        [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [tt] [\s!mono]        [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [hw] [\s!handwriting] [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [cg] [\s!calligraphy] [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [mm] [\s!math]        [lucida] [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection [mathdesign]
+
+    \starttypescript [math] [charter,mathdesignch] [all]
+        \loadfontgoodies[charter-math]
+        \definefontsynonym[MathRoman][chartermath@charter-math]
+    \stoptypescript
+
+    \starttypescript [math] [garamond,mathdesigngm] [all]
+        \loadfontgoodies[garamond-math]
+        \definefontsynonym[MathRoman][garamondmath@garamond-math]
+    \stoptypescript
+
+    \starttypescript [math] [utopia,mathdesignut] [all]
+        \loadfontgoodies[utopia-math]
+        \definefontsynonym[MathRoman][utopiamath@utopia-math]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection [asanamath]
+
+    \starttypescript [math] [asana]
+        \definefontsynonym [AsanaMath] [\s!name:asanamath]
+    \stoptypescript
+
+    \starttypescript [math] [asana] [name]
+        \definefontsynonym [MathRoman] [AsanaMath] [\s!features=math\mathsizesuffix]
+    \stoptypescript
+
+    \starttypescript[asana]
+        \definetypeface [\typescriptone] [rm] [\s!serif] [palatino]       [\s!default]
+        \definetypeface [\typescriptone] [ss] [\s!sans]  [modern]         [\s!default] [rscale=1.075]
+        \definetypeface [\typescriptone] [tt] [\s!mono]  [modern]         [\s!default] [rscale=1.075]
+        \definetypeface [\typescriptone] [mm] [\s!math]  [\typescriptone] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[cleartype]
+
+    % microsoft: cambria.ttc cambriab.ttf cambriai.ttf cambriaz.ttf
+    % ascender : cambmath.ttf cambria.ttf cambriab.ttf cambriai.ttf cambriaz.ttf
+
+    \starttypescript [math,serif] [cambria,cambria-x,cambria-y]
+        % whatever matches
+        \definefontsynonym [CambriaMath]  [\s!name:cambriamath]
+        \definefontsynonym [CambriaSerif] [\s!name:cambria]
+    \stoptypescript
+    \starttypescript [math,serif] [cambria-m]
+        % microsoft cabria
+        \definefontsynonym [CambriaMath]  [\s!file:cambria.ttc(Cambria Math)]
+        \definefontsynonym [CambriaSerif] [\s!file:cambria.ttc(Cambria)]
+    \stoptypescript
+    \starttypescript [math,serif] [cambria-a]
+        % ascender cambria
+        \definefontsynonym [CambriaMath]  [\s!file:cambmath.ttf]
+        \definefontsynonym [CambriaSerif] [\s!file:cambria.ttf]
+    \stoptypescript
+
+    \starttypescript [math] [cambria,cambria-m,cambria-a] [name]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=math\mathsizesuffix]
+    \stoptypescript
+    \starttypescript [math] [cambria-x] [name]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=math]
+    \stoptypescript
+    \starttypescript [math] [cambria-y] [name]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=math-nostack\mathsizesuffix]
+    \stoptypescript
+
+    \starttypescript [serif] [cambria,cambria-m,cambria-a] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [CambriaSerif]              [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!name:cambriabold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!name:cambriaitalic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!name:cambriabolditalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [cambria,cambria-m,cambria-a]
+        % any
+        \definetypeface [cambria] [rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [cambria] [tt] [\s!mono]  [modern]         [\s!default]
+        \definetypeface [cambria] [mm] [\s!math]  [\typescriptone] [\s!default]
+    \stoptypescript
+    \starttypescript [cambria-x,cambria-y]
+        % test x
+        \definetypeface [\typescriptone] [rm] [\s!serif] [cambria]        [\s!default]
+        \definetypeface [\typescriptone] [tt] [\s!mono]  [modern]         [\s!default]
+        \definetypeface [\typescriptone] [mm] [\s!math]  [\typescriptone] [\s!default]
+    \stoptypescript
+
+    \starttypescript [sans] [candara] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:candara]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:candarab] [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:candarai] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:candaraz] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [sans] [consolas] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:consola]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:consolab] [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:consolai] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:consolaz] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [serif] [constantia] [name]
+        \setups[\s!font:\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:constan]  [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:constanb] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:constani] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:constanz] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [sans] [corbel] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:corbel]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:corbelb] [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:corbeli] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:corbelz] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [sans] [calibri] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:calibri]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:calibrib] [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:calibrii] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:calibriz] [\s!features=\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[mscore]
+
+    % .ttf not really needed but we want to force the originals
+
+    \starttypescript [serif] [mscoretimes] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:times.ttf]   [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:timesbd.ttf] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:timesi.ttf]  [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:timesbi.ttf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [sans] [mscorearial] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:arial.ttf]   [\s!features=default]
+        \definefontsynonym [\s!SansBold]       [\s!file:arialbd.ttf] [\s!features=default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:ariali.ttf]  [\s!features=default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:arialbi.ttf] [\s!features=default]
+    \stoptypescript
+
+    \starttypescript [mono] [mscorecourier] [name]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono]           [\s!file:cour.ttf]   [\s!features=\s!default]
+        \definefontsynonym [\s!MonoBold]       [\s!file:courbd.ttf] [\s!features=\s!default]
+        \definefontsynonym [\s!MonoItalic]     [\s!file:couri.ttf]  [\s!features=\s!default]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!file:courbi.ttf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [sans] [mscoreverdana] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:verdana.ttf]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:verdanab.ttf] [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:verdanai.ttf] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:verdanaz.ttf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript[mscore]
+        \definetypeface [mscore] [rm] [serif] [mscoretimes]   [default]
+        \definetypeface [mscore] [ss] [sans]  [mscorearial]   [default] [rscale=0.860]
+        \definetypeface [mscore] [tt] [mono]  [mscorecourier] [default] [rscale=1.065]
+        \definetypeface [mscore] [mm] [math]  [times]         [default] [rscale=1.020]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[liberation]
+
+    \starttypescript [serif] [liberationserif] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:liberationserif-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:liberationserif-bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:liberationserif-italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:liberationserif-bolditalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [sans] [liberationsans] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:liberationsans-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:liberationsans-bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:liberationsans-italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:liberationsans-bolditalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [mono] [liberationmono] [name]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono]           [\s!file:liberationmono-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!MonoBold]       [\s!file:liberationmono-bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!MonoItalic]     [\s!file:liberationmono-italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!file:liberationmono-bolditalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript[liberation]
+        \definetypeface [liberation] [rm] [serif] [liberationserif] [default]
+        \definetypeface [liberation] [ss] [sans]  [liberationsans]  [default] [rscale=0.870]
+        \definetypeface [liberation] [tt] [mono]  [liberationmono]  [default] [rscale=0.870]
+        \definetypeface [liberation] [mm] [math]  [times]           [default] [rscale=1.040]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+%D For some reason the libertine collection has not retained its
+%D original names. We force the \OPENTYPE\ variant. Once these fonts
+%D are stable we might switch to the by then hopefully cleaner internal
+%D names.
+
+\starttypescriptcollection[libertine]
+
+%     \starttypescript [serif] [libertine] [name]
+%         \setups[\s!font:\s!fallback:\s!serif]
+%         \definefontsynonym [\s!Serif]           [\s!file:fxlr.otf]  [\s!features=\s!default]
+%         \definefontsynonym [\s!SerifBold]       [\s!file:fxlb.otf]  [\s!features=\s!default]
+%         \definefontsynonym [\s!SerifItalic]     [\s!file:fxlri.otf] [\s!features=\s!default]
+%         \definefontsynonym [\s!SerifBoldItalic] [\s!file:fxlbi.otf] [\s!features=\s!default]
+%     \stoptypescript
+
+    \starttypescript [serif] [libertine]
+        \definefontsynonym [Libertine-Regular]    [\s!file:fxlr]
+        \definefontsynonym [Libertine-Italic]     [\s!file:fxlri]
+        \definefontsynonym [Libertine-Bold]       [\s!file:fxlb]
+        \definefontsynonym [Libertine-BoldItalic] [\s!file:fxlbi]
+        \definefontsynonym [Libertine-SmallCaps]  [file:fxlrc]
+    \stoptypescript
+
+    \starttypescript [serif] [libertine] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [Libertine-Regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [Libertine-Italic]     [\s!features=\s!default]
+      % \definefontsynonym [\s!SerifSlanted]    [Libertine-Italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [Libertine-Bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [Libertine-BoldItalic] [\s!features=\s!default]
+      % \definefontsynonym [\s!SerifBoldSlanted][Libertine-BoldItalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifCaps]       [Libertine-SmallCaps]  [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [libertine]
+        \definetypeface [libertine] [tt] [mono]  [default]   [default]
+        \definetypeface [libertine] [ss] [sans]  [default]   [default]
+        \definetypeface [libertine] [rm] [serif] [libertine] [default]
+    \stoptypescript
+
+    \starttypescript [sans] [biolinum] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:fxbr.otf]  [\s!features=\s!default]
+        %definefontsynonym [\s!SansBold]       [\s!file:fxbb.otf]  [\s!features=\s!default] % unfinished
+        %definefontsynonym [\s!SansItalic]     [\s!file:fxbri.otf] [\s!features=\s!default] % nonexistent
+        %definefontsynonym [\s!SansBoldItalic] [\s!file:fxbbi.otf] [\s!features=\s!default] % nonexistent
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[inconsolata]
+
+    \starttypescript [mono] [inconsolata]
+        \definefontsynonym [Inconsolata] [\s!file:inconsolata.otf]
+    \stoptypescript
+
+    \starttypescript [mono] [inconsolata] [name]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono] [Inconsolata]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[postscript]
+
+    \starttypescript [postscript]
+        \definetypeface [postscript] [rm] [\s!serif] [times]     [\s!default]
+        \definetypeface [postscript] [ss] [\s!sans]  [helvetica] [\s!default] [\s!rscale=0.9]
+        \definetypeface [postscript] [tt] [\s!mono]  [courier]   [\s!default] [\s!rscale=1.1]
+        \definetypeface [postscript] [mm] [\s!math]  [times]     [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[pagella-euler]
+
+    \starttypescript [math] [euler]
+        \definefontsynonym [EulerMath] [\s!file:euler.otf]
+    \stoptypescript
+
+    \starttypescript [math] [euler] [name]
+    %   \definefontsynonym [MathRoman] [EulerMath] [\s!features=math]
+        \definefontsynonym [MathRoman] [EulerMath] [\s!features=math\mathsizesuffix]
+    \stoptypescript
+
+    \starttypescript [pagella-euler]
+        \definetypeface [\typescriptone] [rm] [\s!serif] [pagella] [\s!default]
+    %   \definetypeface [\typescriptone] [ss] [\s!sans]  [pagella] [\s!default] [\s!rscale=auto]
+        \definetypeface [\typescriptone] [tt] [\s!mono]  [modern]  [\s!default] [\s!rscale=auto]
+        \definetypeface [\typescriptone] [mm] [\s!math]  [euler]   [\s!default] [\s!rscale=auto]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [serif] [euler] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [Serif] [\s!file:euler.otf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [euler]
+        \definetypeface [euler] [rm] [\s!serif] [euler]  [\s!default]
+        \definetypeface [euler] [tt] [\s!mono]  [modern] [\s!default] [\s!rscale=auto]
+        \definetypeface [euler] [mm] [\s!math]  [euler]  [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+% \starttypescript [math] [hvmath]
+%     \definefontsynonym[MathRoman][hvmath@hvmath-math]
+%     \loadfontgoodies[hvmath-math]
+% \stoptypescript
+
+\protect \endinput

@@ -1,0 +1,66 @@
+%D \module
+%D   [       file=spec-xtx,
+%D        version=2004.11.08,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=\XETEX\ support,
+%D         author={Adam Lindsay \& Hans Hagen \& \unknown},
+%D           date=\currentdate,
+%D      copyright={Adam Lindsay \& Hans Hagen}]
+
+\unprotect
+
+\definespecial\doinsertfile
+  {\dofileinsertion{xtx}\@@DriverImageType}
+
+\definefileinsertion{xtx}{jpg}{\xtxhandleotherimage}
+\definefileinsertion{xtx}{png}{\xtxhandleotherimage}
+\definefileinsertion{xtx}{gif}{\xtxhandleotherimage}
+\definefileinsertion{xtx}{tif}{\xtxhandleotherimage}
+\definefileinsertion{xtx}{pdf}{\xtxhandlepdfimage  }
+
+\def\checkpdfimagepagenumber
+  {\edef\pdfimagepagenumber
+     {\ifx\@@DriverImagePage\empty\else\ifnum\@@DriverImagePage>\zerocount
+        \space page\space\@@DriverImagePage\space
+      \fi\fi}}
+
+\def\xtxhandleotherimage
+  {\XeTeXpicfile "\@@DriverImageFile"
+     \ifdim\@@DriverImageWidth >\zeropoint \!!width  \@@DriverImageWidth \space\fi
+     \ifdim\@@DriverImageHeight>\zeropoint \!!height \@@DriverImageHeight      \fi
+   \relax}
+
+\def\xtxhandlepdfimage
+  {\checkpdfimagepagenumber
+   \XeTeXpdffile "\@@DriverImageFile"
+     \pdfimagepagenumber
+     \ifdim\@@DriverImageWidth >\zeropoint \!!width  \@@DriverImageWidth \space\fi
+     \ifdim\@@DriverImageHeight>\zeropoint \!!height \@@DriverImageHeight      \fi
+   \relax}
+
+\def\dogetXTXfiguresize
+  {\setbox\foundexternalfigure\vbox{\XeTeXpicfile "\@@DriverImageFile"\relax}%
+   \xdef\analyzedfigurewidth {\the\wd\foundexternalfigure}%
+   \xdef\analyzedfigureheight{\the\ht\foundexternalfigure}}
+
+\def\dogetXTXpdfsize
+  {\checkpdfimagepagenumber
+   \setbox\foundexternalfigure\vbox{\XeTeXpdffile "\@@DriverImageFile" \pdfimagepagenumber\relax}%
+   \xdef\analyzedfigurewidth {\the\wd\foundexternalfigure}%
+   \xdef\analyzedfigureheight{\the\ht\foundexternalfigure}}
+
+\definefilechecker{xtx}{png}{\dogetXTXfiguresize}
+\definefilechecker{xtx}{jpg}{\dogetXTXfiguresize}
+\definefilechecker{xtx}{gif}{\dogetXTXfiguresize}
+\definefilechecker{xtx}{tif}{\dogetXTXfiguresize}
+\definefilechecker{xtx}{pdf}{\dogetXTXpdfsize   }
+
+\definespecial\dogetfiguresize
+  {\dofilechecker{xtx}\@@DriverImageType}
+
+%D The figure object system caused no end of headaches. They all
+%D went away with this single line:
+
+\setupexternalfigures[\c!object=\v!no]
+
+\protect \endinput

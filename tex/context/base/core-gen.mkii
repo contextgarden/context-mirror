@@ -1,0 +1,166 @@
+%D \module
+%D   [       file=core-gen,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=General,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / General}
+
+\unprotect
+
+%D \macros
+%D   {assigndimension,assignalfadimension}
+%D
+%D Hieronder worden enkele commando's gedefinieerd rond
+%D toekenningen. Allereerst een commando om waarden aan
+%D een \DIMENSION\ toe te kennen:
+%D
+%D \starttyping
+%D \assigndimension
+%D   {<waarde>|klein|middel|groot|-klein|-middel|-groot|geen}
+%D   {\dimension}
+%D   {waarde klein}
+%D   {waarde middel}
+%D   {waarde groot}
+%D \stoptyping
+%D
+%D Hierbij krijgt de \DIMENSION\ \type{\dimension} een waarde
+%D afhankelijk van het meegegeven trefwoord.
+%D
+%D \startnarrower
+%D \startlines
+%D \type{(-)klein }\qquad (--) waarde klein
+%D \type{(-)middel}\qquad (--) waarde middel
+%D \type{(-)groot }\qquad (--) waarde groot
+%D \type{geen     }\qquad 0pt
+%D \type{waarde   }\qquad waarde
+%D \stoplines
+%D \stopnarrower
+%D
+%D Een trefwoord mag worden voorafgegaan door een \type{-}.
+%D Deze macro toont een voorbeeld van het gebruik van
+%D \type{\processaction} en constanten.
+%D
+%D Analoog aan het bovenstaande commando kennen we een
+%D commando om waarden toe te kennen aan een macro:
+%D
+%D \starttyping
+%D \assignalfadimension
+%D   {<waarde>|klein|middel|groot|geen}
+%D   {\macro}
+%D   {waarde klein}
+%D   {waarde middel}
+%D   {waarde groot}
+%D \stoptyping
+
+% The third (optimized) version:
+
+\def\@ad@{@ad@}
+
+\setvalue{\@ad@ \v!none  }{\zeropoint\gobblethreearguments}
+\setvalue{\@ad@ \v!big   }{\thirdofthreearguments}
+\setvalue{\@ad@ \v!medium}{\secondofthreearguments}
+\setvalue{\@ad@ \v!small }{\firstofthreearguments}
+\setvalue{\@ad@-\v!big   }{-\thirdofthreearguments}
+\setvalue{\@ad@-\v!medium}{-\secondofthreearguments}
+\setvalue{\@ad@-\v!small }{-\firstofthreearguments}
+
+\def\assigndimension#1#2% #3 #4 #5
+  {#2=\ifcsname\@ad@#1\endcsname
+     \csname\@ad@#1\expandafter\endcsname
+   \else
+     #1\expandafter\gobblethreearguments
+   \fi}
+
+\def\@aa@{@aa@}
+
+\setvalue{\@aa@\v!none  }{0\gobblethreearguments}
+\setvalue{\@aa@\v!big   }{\thirdofthreearguments}
+\setvalue{\@aa@\v!medium}{\secondofthreearguments}
+\setvalue{\@aa@\v!small }{\firstofthreearguments}
+
+\def\assignalfadimension#1#2#3#4#5% #3#4#5 are single digits
+  {\edef#2{\ifcsname\@aa@#1\endcsname
+     \csname\@aa@#1\expandafter\endcsname
+   \else
+     #1\expandafter\gobblethreearguments
+   \fi#3#4#5}}
+
+%D \macros
+%D   {assignvalue}
+%D
+%D Een variant hierop is het commando:
+%D
+%D \starttyping
+%D \assignvalue
+%D   {<waarde>|klein|middel|groot}
+%D   {\macro}
+%D   {waarde klein }
+%D   {waarde middel}
+%D   {waarde groot}
+%D \stoptyping
+%D
+%D Hierbij krijgt \type{\macro} een waarde afhankelijk van
+%D het meegegeven trefwoord:
+%D
+%D \startnarrower
+%D \startlines
+%D \type{klein }\qquad waarde klein
+%D \type{middel}\qquad waarde middel
+%D \type{groot }\qquad waarde groot
+%D \type{waarde}\qquad waarde
+%D \stoplines
+%D \stopnarrower
+%D
+%D Hier doet \type{geen} dus niet mee.
+
+\def\@av@{@av@}
+
+\letvalue{\@av@\v!big   }\thirdofthreearguments
+\letvalue{\@av@\v!medium}\secondofthreearguments
+\letvalue{\@av@\v!small }\firstofthreearguments
+
+\def\assignvalue#1#2#3#4#5%
+  {\edef#2{\ifcsname\@av@#1\endcsname
+     \csname\@av@#1\expandafter\endcsname
+   \else
+     #1\expandafter\gobblethreearguments
+   \fi{#3}{#4}{#5}}}
+
+%D \macros
+%D   {assignwidth}
+%D
+%D Een breedte van een opgegeven tekst kan worden berekend en
+%D toegekend aan een \DIMENSION\ met:
+%D
+%D \starttyping
+%D \assignwidth
+%D   {\dimension}
+%D   {<waarde>|passend|ruim}
+%D   {tekst}
+%D \stoptyping
+%D
+%D Dit commando sluit, evenals de bovenstaande
+%D \type{\assign}||commando's, aan op de wijze waarop
+%D in de andere \CONTEXT||modules toekenningen
+%D plaatsvinden. Bij \type{ruim} wordt de gemeten breedte
+%D met 1~em vermeerderd.
+
+\def\assignwidth#1#2#3#4%
+  {\doifelsenothing{#2}
+     {\setbox\scratchbox\hbox{#3}%
+      #1\wd\scratchbox}
+     {\doifinsetelse{#2}{\v!fit,\v!broad}
+        {\setbox\scratchbox\hbox{#3}%
+         #1\wd\scratchbox
+         \doif{#2}\v!broad{\advance#1 #4}}%
+        {#1=#2}}}%
+
+\protect \endinput

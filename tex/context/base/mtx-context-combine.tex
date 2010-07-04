@@ -1,0 +1,116 @@
+%D \module
+%D   [       file=mtx-context-combine,
+%D        version=2009.03.21,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Combine Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a \TEXEXEC\ features that has been moved to \MKIV.
+
+% begin help
+%
+% usage: context --extra=combine [options] list-of-files
+%
+% --sort                   : sort filenames first
+% --paperoffset=dimension  : left-top-offset
+% --nobanner               : no footer etc
+% --combination            : h*v or hxv
+% --paperformat=spec       : paper*print or paperxprint
+% --nobanner               : no footerlines
+% --bannerheight=dimension : height of banner
+% --bannerstring=dimension : height of bannerstring
+%
+% end help
+
+\input mtx-context-common.tex
+
+\doifdocumentargumentelse {paperoffset} {
+
+    \setuplayout
+      [topspace=\getdocumentargument{paperoffset},
+       backspace=\getdocumentargument{paperoffset}]
+
+} {
+
+    \setuplayout
+      [topspace=0pt,
+       backspace=0pt]
+
+}
+
+\setuplayout
+  [header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\setuppapersize
+  [\getdocumentargument{paperformat_paper}]
+  [\getdocumentargument{paperformat_print}]
+
+\doifnotdocumentargument {bannerheight} {
+    \setuplayout
+        [footer=1cm]
+}
+
+\doifelse {\getdocumentargument{nobanner}} {yes} {
+    \setuplayout
+      [footer=0cm]
+    \setupbackgrounds
+      [page]
+      [background=]
+} {
+    \definelayer
+      [page]
+      [width=\paperwidth,
+       height=\paperheight]
+
+    \setupbackgrounds
+      [page]
+      [background=page]
+}
+
+\setupexternalfigures
+  [directory=]
+
+\starttext
+
+\startluacode
+    local format = string.format
+
+    if #document.files > 0 then
+        if document.arguments["sort"] then
+            table.sort(document.files)
+        end
+        local dobanner = not document.arguments["nobanner"]
+        local bannerheight = document.arguments["bannerheight"]
+        local nx = document.arguments.combination_nx or 2
+        local ny = document.arguments.combination_ny or 2
+        for _, filename in ipairs(document.files) do
+            if not string.find(filename,"^mtx%-context%-") then
+                -- could be a macro
+                local bannerstring = format("\\tttf\\detokenize{%s}\\quad\\quad\\currentdate\\quad\\quad\\pagenumber",file.basename(filename))
+                if dobanner then
+                    if bannerheight then
+                        context("\\setuptexttexts[{\\setlayerframed[page][preset=middlebottom][frame=off,height=%s]{%s}}]",bannerheight,bannerstring)
+                    else
+                        context("\\setupfootertexts[{%s}]",bannerstring)
+                    end
+                end
+                context("\\combinepages[%s][nx=%s,ny=%s]",filename,nx,ny)
+                context("\\page")
+            end
+        end
+    else
+        context("no files given")
+    end
+\stopluacode
+
+\stoptext
+

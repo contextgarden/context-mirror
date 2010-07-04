@@ -1,0 +1,69 @@
+%D \module
+%D   [      file=x-fig-09,
+%D        version=2002.06.27,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Resource Reporting (2),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\usemodule[res-00]
+
+\defineXMLenvironment [rl:library] 
+  {\starttext}
+  {\stoptext}
+
+\defineXMLenvironment [rl:usage] 
+  {\bgroup} 
+  {\doifnot{\XMLflush{rl:file}}{dummy}{\setups[rl:usage]}%
+   \egroup}
+
+\defineXMLsave [rl:base]    % base
+\defineXMLsave [rl:type]    % figure
+\defineXMLsave [rl:state]   % found|missing
+\defineXMLsave [rl:label]   % label
+\defineXMLsave [rl:file]    % filename
+\defineXMLsave [rl:suffix]  % filesuffix
+\defineXMLsave [rl:comment] % text 
+\defineXMLsave [rl:width]   % width in pt
+\defineXMLsave [rl:height]  % height in pt
+\defineXMLsave [rl:page]    % page from file 
+
+\def\XMLbpentry#1%
+  {\PointsToWholeBigPoints{\XMLflush{#1}}\temp\temp bp}
+
+% \def\XMLrlentry#1#2#3%
+%   {\doiftextelse{\XMLflush{#2}}
+%      {\NC\bf#1\NC\XMLflush{#2}\doif{#3}{1}{ (\XMLbpentry{#2})}\NC\NR}
+%      {}}
+
+\def\XMLrlentry#1#2#3%
+  {\tableiftextelse{\XMLflush{#2}}
+     {\NC\bf#1\NC\XMLflush{#2}\doif{#3}{1}{ (\XMLbpentry{#2})}\NC\NR}{}}
+
+\startsetups[rl:usage]
+
+% by using a dedicated tabulation, we permit usage in dutch interface
+
+\definetabulate[XMLRLG][|lw(4.5em)|p|]
+
+\startXMLRLG
+  \XMLrlentry {base}   {rl:base}   {0}
+  \XMLrlentry {type}   {rl:type}   {0}
+  \XMLrlentry {state}  {rl:state}  {0}
+  \XMLrlentry {file}   {rl:file}   {0}
+  \XMLrlentry {label}  {rl:label}  {0}
+  \XMLrlentry {suffix} {rl:suffix} {0}
+  \XMLrlentry {page}   {rl:page}   {0}
+  \XMLrlentry {width}  {rl:width}  {1}
+  \XMLrlentry {height} {rl:height} {1}
+  \XMLrlentry {comment}{rl:comment}{0}
+\stopXMLRLG
+
+\stopsetups 
+
+\endinput 

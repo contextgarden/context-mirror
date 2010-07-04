@@ -1,0 +1,139 @@
+%D \module
+%D   [     file=enco-acc,
+%D      version=2000.20.12, % split from base file
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Composed Characters Commands,
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen \& Ton Otten]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Although it is technically possible to redefine the commands
+%D that are responsible for building composed characters, this
+%D is seldom needed, since they map onto named glyphs. The
+%D meaning of these names glyphs may change, although their
+%D visual appearance seldom will.
+
+\startencoding[default]
+
+\defineaccent ^ A {\Acircumflex}   \defineaccent ^ a {\acircumflex}
+\defineaccent ^ C {\Ccircumflex}   \defineaccent ^ c {\ccircumflex}
+\defineaccent ^ E {\Ecircumflex}   \defineaccent ^ e {\ecircumflex}
+\defineaccent ^ G {\Gcircumflex}   \defineaccent ^ g {\gcircumflex}
+\defineaccent ^ H {\Hcircumflex}   \defineaccent ^ h {\hcircumflex}
+\defineaccent ^ I {\Icircumflex}   \defineaccent ^ i {\icircumflex}  \defineaccent ^ {\i} {\icircumflex}
+\defineaccent ^ J {\Jcircumflex}   \defineaccent ^ j {\jcircumflex}  \defineaccent ^ {\j} {\jcircumflex}
+\defineaccent ^ O {\Ocircumflex}   \defineaccent ^ o {\ocircumflex}
+\defineaccent ^ S {\Scircumflex}   \defineaccent ^ s {\scircumflex}
+\defineaccent ^ U {\Ucircumflex}   \defineaccent ^ u {\ucircumflex}
+\defineaccent ^ W {\Wcircumflex}   \defineaccent ^ w {\wcircumflex}
+\defineaccent ^ Y {\Ycircumflex}   \defineaccent ^ y {\ycircumflex}
+
+\defineaccent ` A {\Agrave}        \defineaccent ` a {\agrave}
+\defineaccent ` E {\Egrave}        \defineaccent ` e {\egrave}
+\defineaccent ` I {\Igrave}        \defineaccent ` i {\igrave}       \defineaccent ` {\i} {\igrave}
+\defineaccent ` O {\Ograve}        \defineaccent ` o {\ograve}
+\defineaccent ` U {\Ugrave}        \defineaccent ` u {\ugrave}
+\defineaccent ` Y {\Ygrave}        \defineaccent ` y {\ygrave}
+
+\defineaccent ~ A {\Atilde}        \defineaccent ~ a {\atilde}
+\defineaccent ~ I {\Itilde}        \defineaccent ~ i {\itilde}       \defineaccent ~ {\i} {\itilde}
+\defineaccent ~ O {\Otilde}        \defineaccent ~ o {\otilde}
+\defineaccent ~ U {\Utilde}        \defineaccent ~ u {\utilde}
+
+\defineaccent " A {\Adiaeresis}    \defineaccent " a {\adiaeresis}
+\defineaccent " E {\Ediaeresis}    \defineaccent " e {\ediaeresis}
+\defineaccent " I {\Idiaeresis}    \defineaccent " i {\idiaeresis}   \defineaccent " {\i} {\idiaeresis}
+\defineaccent " O {\Odiaeresis}    \defineaccent " o {\odiaeresis}
+\defineaccent " U {\Udiaeresis}    \defineaccent " u {\udiaeresis}
+\defineaccent " Y {\Ydiaeresis}    \defineaccent " y {\ydiaeresis}
+
+\defineaccent ' A {\Aacute}        \defineaccent ' a {\aacute}
+\defineaccent ' C {\Cacute}        \defineaccent ' c {\cacute}
+\defineaccent ' E {\Eacute}        \defineaccent ' e {\eacute}
+\defineaccent ' I {\Iacute}        \defineaccent ' i {\iacute}       \defineaccent ' {\i} {\iacute}
+\defineaccent ' L {\Lacute}        \defineaccent ' l {\lacute}
+\defineaccent ' N {\Nacute}        \defineaccent ' n {\nacute}
+\defineaccent ' O {\Oacute}        \defineaccent ' o {\oacute}
+\defineaccent ' R {\Racute}        \defineaccent ' r {\racute}
+\defineaccent ' S {\Sacute}        \defineaccent ' s {\sacute}
+\defineaccent ' U {\Uacute}        \defineaccent ' u {\uacute}
+\defineaccent ' Y {\Yacute}        \defineaccent ' y {\yacute}
+\defineaccent ' Z {\Zacute}        \defineaccent ' z {\zacute}
+
+\defineaccent . C {\Cdotaccent}    \defineaccent . c {\cdotaccent}
+\defineaccent . E {\Edotaccent}    \defineaccent . e {\edotaccent}
+\defineaccent . G {\Gdotaccent}    \defineaccent . g {\gdotaccent}
+\defineaccent . I {\Idotaccent}    \defineaccent . i {\idotaccent}   \defineaccent . {\i} {\idotaccent}
+\defineaccent . Z {\Zdotaccent}    \defineaccent . z {\zdotaccent}
+
+\defineaccent = A {\Amacron}       \defineaccent = a {\amacron}
+\defineaccent = E {\Emacron}       \defineaccent = e {\emacron}
+\defineaccent = I {\Imacron}       \defineaccent = i {\imacron}      \defineaccent = {\i} {\imacron}
+\defineaccent = O {\Omacron}       \defineaccent = o {\omacron}
+\defineaccent = U {\Umacron}       \defineaccent = u {\umacron}
+
+\defineaccent c C {\Ccedilla}      \defineaccent c c {\ccedilla}
+\defineaccent c K {\Kcedilla}      \defineaccent c k {\kcedilla}
+\defineaccent c L {\Lcedilla}      \defineaccent c l {\lcedilla}
+\defineaccent c N {\Ncedilla}      \defineaccent c n {\ncedilla}
+\defineaccent c R {\Rcedilla}      \defineaccent c r {\rcedilla}
+\defineaccent c S {\Scedilla}      \defineaccent c s {\scedilla}
+\defineaccent c T {\Tcedilla}      \defineaccent c t {\tcedilla}
+
+\defineaccent H O {\Ohungarumlaut} \defineaccent H o {\ohungarumlaut}
+\defineaccent H u {\uhungarumlaut} \defineaccent H U {\Uhungarumlaut}
+
+\defineaccent k A {\Aogonek}       \defineaccent k a {\aogonek}
+\defineaccent k E {\Eogonek}       \defineaccent k e {\eogonek}
+\defineaccent k I {\Iogonek}       \defineaccent k i {\iogonek}
+\defineaccent k U {\Uogonek}       \defineaccent k u {\uogonek}
+
+\defineaccent r A {\Aring}         \defineaccent r a {\aring}
+\defineaccent r U {\Uring}         \defineaccent r u {\uring}
+
+\defineaccent u A {\Abreve}        \defineaccent u a {\abreve}
+\defineaccent u E {\Ebreve}        \defineaccent u e {\ebreve}
+\defineaccent u G {\Gbreve}        \defineaccent u g {\gbreve}
+\defineaccent u I {\Ibreve}        \defineaccent u i {\ibreve}       \defineaccent u {\i} {\ibreve}
+\defineaccent u O {\Obreve}        \defineaccent u o {\obreve}
+\defineaccent u U {\Ubreve}        \defineaccent u u {\ubreve}
+
+\defineaccent v C {\Ccaron}        \defineaccent v c {\ccaron}
+\defineaccent v D {\Dcaron}        \defineaccent v d {\dcaron}
+\defineaccent v E {\Ecaron}        \defineaccent v e {\ecaron}
+\defineaccent v L {\Lcaron}        \defineaccent v l {\lcaron}
+\defineaccent v N {\Ncaron}        \defineaccent v n {\ncaron}
+\defineaccent v R {\Rcaron}        \defineaccent v r {\rcaron}
+\defineaccent v S {\Scaron}        \defineaccent v s {\scaron}
+\defineaccent v T {\Tcaron}        \defineaccent v t {\tcaron}
+\defineaccent v Z {\Zcaron}        \defineaccent v z {\zcaron}
+
+\stopencoding
+
+\startencoding[default]
+
+% vietnamese: if needed, \useencoding[enco-vna]
+
+\stopencoding
+
+% For Tobias Burnus, who wants:
+%
+% \starttypen
+% \setupinteraction[state=start]
+% \setupinteractionscreen[option=bookmark]
+% \placebookmarks[chapter]
+%
+% \starttext \chapter{F\"ur Na\"ive und Na\"\i ve} \stoptext
+% \stoptypen
+
+\startencoding[default]
+
+  \defineaccent " {\i} {\idiaeresis}
+
+\stopencoding
+
+\endinput

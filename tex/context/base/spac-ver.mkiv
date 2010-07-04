@@ -1,0 +1,2078 @@
+%D \module
+%D   [       file=spac-ver,
+%D        version=2009.10.16, % 1997.03.31, was core-spa.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Vertical,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Vertical}
+
+\unprotect
+
+\registerctxluafile{spac-ver}{1.001}
+
+\newskip\blankskip          \blankskip=\bigskipamount
+
+\def\skipfactor    {.75}
+\def\skipgluefactor{.25}
+
+\def\normalskipamount
+  {\openlineheight
+     \ifgridsnapping \else \ifblankflexible
+       \!!plus \skipgluefactor\openlineheight
+       \!!minus\skipgluefactor\openlineheight
+     \fi \fi
+   \relax}
+
+\def\linedistance    {\normalskipamount}
+\def\appliedblankskip{\skipfactor\linedistance}
+\def\lastblankskip   {\blankskip}
+\def\currentblank    {\v!big}
+\def\oldprevdepth    {\prevdepth}
+\def\newprevdepth    {-1001pt}
+\def\mindimen        {1sp} % was: 0.00002pt
+
+%D There are two ways to influence the interline spacing. The
+%D most general and often most consistent way is using
+%D
+%D \showsetup{setupinterlinespace}
+%D
+%D For instance
+%D
+%D \starttyping
+%D \setupinterlinespace[line=2.8ex]
+%D \stoptyping
+%D
+%D This setting adapts itself to the bodyfontsize, while for
+%D instance saying
+%D
+%D \starttyping
+%D \setupinterlinespace[line=12pt]
+%D \stoptyping
+%D
+%D sets things fixed for all sizes, which is definitely not
+%D what we want. Therefore one can also say:
+%D
+%D \starttyping
+%D \definebodyfontenvironment[9pt][interlinespace=11pt]
+%D \stoptyping
+%D
+%D One can still use \type{\setupinterlinespace} (without
+%D arguments) to set the interline space according to the
+%D current font, e.g. a \type{\bfa}.
+
+\newif\iflocalinterlinespace
+
+% font-ini
+
+\ifx\bodyfontinterlinespecs\undefined
+
+  \let\bodyfontinterlinespecs\empty
+  \let\bodyfontinterlinespace\empty
+
+\fi
+
+% \def\presetnormallineheight
+%   {\edef\normallineheight{\@@itline}%
+%   %done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
+%    \iflocalinterlinespace \else
+%      \doifdefined\bodyfontinterlinespecs
+%        {\doifsomething\bodyfontinterlinespace
+%           {\edef\normallineheight{\bodyfontinterlinespace}}}%
+%    \fi}
+
+% \unexpanded\def\setupspecifiedinterlinespace[#1]%
+%   {\getparameters[\??it][#1]%
+%    \scratchdimen0\@@itheight\points
+%    \advance\scratchdimen 0\@@itdepth\points
+%    \ifdim\scratchdimen>\onepoint
+%      \showmessage\m!layouts{10}{\@@itheight,\@@itdepth}%
+%      \let\@@itheight\strutheightfactor
+%      \let\@@itdepth \strutdepthfactor
+%    \else
+%      \let\strutheightfactor\@@itheight
+%      \let\strutdepthfactor \@@itdepth
+%    \fi
+%    \let\minimumstrutheight \@@itminheight
+%    \let\minimumstrutdepth  \@@itmindepth
+%    \let\minimumlinedistance\@@itdistance
+%    \let\normallineheight   \@@itline % let ! ! ! ! ! ivm ex
+%    \doifelse\@@ittop\v!height % new, topskip does more bad than good
+%      {\let\topskipfactor   \@@itheight}
+%      {\let\topskipfactor   \@@ittop   }%
+%    \let\maxdepthfactor     \@@itbottom
+%    \let\baselinegluefactor \@@itstretch
+%    \setfontparameters % redundant, can be \setstrut, test first
+%    \updateraggedskips} % yes indeed
+
+\def\presetnormallineheight
+  {\edef\normallineheight{\interlinespaceparameter\c!line}%
+  %done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
+   \iflocalinterlinespace \else
+     \doifdefined\bodyfontinterlinespecs
+       {\doifsomething\bodyfontinterlinespace
+          {\edef\normallineheight{\bodyfontinterlinespace}}}%
+   \fi}
+
+\unexpanded\def\setupspecifiedinterlinespace[#1]%
+  {\getparameters[\??it\currentinterlinespace][#1]%
+   \dosetupspecifiedinterlinespaceindeed}
+
+\def\dosetupspecifiedinterlinespaceindeed
+  {\edef\strutheightfactor  {\interlinespaceparameter\c!height}%
+   \edef\strutdepthfactor   {\interlinespaceparameter\c!depth}%
+   \edef\minimumstrutheight {\interlinespaceparameter\c!minheight}%
+   \edef\minimumstrutdepth  {\interlinespaceparameter\c!mindepth}%
+   \edef\minimumlinedistance{\interlinespaceparameter\c!distance}%
+   \edef\normallineheight   {\interlinespaceparameter\c!line}%
+   \edef\topskipfactor      {\interlinespaceparameter\c!top}%
+   \edef\maxdepthfactor     {\interlinespaceparameter\c!bottom}%
+   \edef\baselinegluefactor {\interlinespaceparameter\c!stretch}%
+   % often topskip does more bad than good, so:
+   \ifx\topskipfactor\v!height
+     \let\topskipfactor\strutheightfactor
+   \fi
+   \setfontparameters % redundant, can be \setstrut, test first
+   \updateraggedskips} % yes indeed
+
+\let\currentrelativeinterlinespace\empty
+
+\setvalue{\??it::\v!on   }{\oninterlineskip}
+\setvalue{\??it::\v!off  }{\offinterlineskip}
+\setvalue{\??it::\v!reset}{\let\currentrelativeinterlinespace\empty
+                           \let\setrelativeinterlinespace\relax
+                           \setfontparameters}
+\setvalue{\??it::\v!auto }{\let\setrelativeinterlinespace\dosetrelativeinterlinespace}
+
+% \def\dosetspecifiedrelativeinterlinespace#1%
+%   {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+%    \spacing\currentrelativeinterlinespace}
+
+% \def\dosetspecifiedrelativeinterlinespace#1% fragile?
+%   {\doifdimensionelse{#1}
+%      {\setupspecifiedinterlinespace[\c!line=#1]}
+%      {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+%       \spacing\currentrelativeinterlinespace}}
+
+\def\dosetspecifiedrelativeinterlinespace#1% fragile?
+  {\doifdimenstringelse{#1}
+     {\setupspecifiedinterlinespace[\c!line=#1]}
+     {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
+      \spacing\currentrelativeinterlinespace}}
+
+\unexpanded\def\setuprelativeinterlinespace[#1]%
+  {\processcommalist[#1]\dosetuprelativeinterlinespace}
+
+\def\dosetuprelativeinterlinespace#1%
+  {\ifcsname\??it::#1\endcsname
+     \csname\??it::#1\endcsname
+   \else
+     \dosetspecifiedrelativeinterlinespace{#1}%
+   \fi}
+
+\def\dosetrelativeinterlinespace
+  {\ifx\currentrelativeinterlinespace\empty\else
+     \spacing\currentrelativeinterlinespace
+   \fi}
+
+\let\setrelativeinterlinespace\relax
+
+% \appendtoks \setrelativeinterlinespace \to \everybodyfont
+
+\newtoks \everysetupglobalinterlinespace
+\newtoks \everysetuplocalinterlinespace
+
+% \def\complexsetupinterlinespace[#1]% \commalistelement ipv #1
+%   {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
+%    \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
+
+\def\interlinespaceparameter          #1{\csname\dointerlinespaceparameter{\??it\currentinterlinespace}#1\endcsname}
+\def\dointerlinespaceparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dointerlinespaceparentparameter\csname#1\s!parent\endcsname#2\fi}
+\def\dointerlinespaceparentparameter#1#2{\ifx#1\relax\s!empty\else\dointerlinespaceparameter#1#2\fi}
+
+\newconditional\interlinespaceisset
+
+\let\currentinterlinespace\empty
+
+\unexpanded\def\defineinterlinespace
+  {\dodoubleempty\dodefineinterlinespace}
+
+\def\dodefineinterlinespace[#1][#2]%
+  {\getparameters[\??it#1][\s!parent=\??it,#2]}
+
+\unexpanded\def\setupinterlinespace
+  {\dodoubleempty\dosetupinterlinespace}
+
+\def\dosetupinterlinespace[#1][#2]%
+  {\settrue\interlinespaceisset % reset has to be done when needed
+   \ifsecondargument
+     \getparameters[\??it#1][#2]%
+   \else\iffirstargument
+     \edef\currentinterlinespace{\ifcsname\??it#1\s!parent\endcsname#1\fi}%
+     \ifx\currentinterlinespace\empty
+       \complexsetupinterlinespace[#1]%
+     \else
+       \dosetupspecifiedinterlinespaceindeed
+     \fi
+   \else
+     \let\currentinterlinespace\empty
+     \simplesetupinterlinespace
+   \fi\fi}
+
+\def\complexsetupinterlinespace[#1]% \commalistelement ipv #1
+  {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
+   \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
+
+\def\simplesetupinterlinespace % adapts to the font
+  {\localinterlinespacetrue
+   \setfontparameters
+   \updateraggedskips % funny one here
+   \the\everysetuplocalinterlinespace
+   \localinterlinespacefalse}
+
+% \def\dosetupcheckedinterlinespace#1% often a chain
+%   {\edef\askedinterlinespace{#1}%
+%    \ifx\askedinterlinespace\empty
+%      \simplesetupinterlinespace
+%    \else
+%      \normalexpanded{\noexpand\doifassignmentelse{\askedinterlinespace}%
+%        \noexpand\setupspecifiedinterlinespace
+%        \noexpand\setuprelativeinterlinespace[\askedinterlinespace]}%
+%      \iflocalinterlinespace
+%        \the\everysetuplocalinterlinespace
+%      \else
+%        \localinterlinespacetrue
+%        \the\everysetuplocalinterlinespace
+%        \localinterlinespacefalse
+%      \fi
+%    \fi}
+
+\def\dosetupcheckedinterlinespace#1% often a chain
+  {\edef\askedinterlinespace{#1}%
+   \ifx\askedinterlinespace\empty
+     \simplesetupinterlinespace
+   \else\ifcsname\??it\askedinterlinespace\s!parent\endcsname
+     \pushmacro\currentinterlinespace
+     \let\currentinterlinespace\askedinterlinespace
+     \dosetupspecifiedinterlinespaceindeed
+     \iflocalinterlinespace
+       \the\everysetuplocalinterlinespace
+     \else
+       \localinterlinespacetrue
+       \the\everysetuplocalinterlinespace
+       \localinterlinespacefalse
+     \fi
+     \popmacro\currentinterlinespace
+   \else
+     \normalexpanded{\noexpand\doifassignmentelse{\askedinterlinespace}%
+       \noexpand\setupspecifiedinterlinespace
+       \noexpand\setuprelativeinterlinespace[\askedinterlinespace]}%
+     \iflocalinterlinespace
+       \the\everysetuplocalinterlinespace
+     \else
+       \localinterlinespacetrue
+       \the\everysetuplocalinterlinespace
+       \localinterlinespacefalse
+     \fi
+   \fi\fi}
+
+% \unexpanded\def\setuplocalinterlinespace[#1]%
+%   {\localinterlinespacetrue
+%    \let\@@saveditheight   \@@itheight
+%    \let\@@saveditdepth    \@@itdepth
+%    \let\@@saveditline     \@@itline
+%    \let\@@saveditminheight\@@itminheight
+%    \let\@@saveditmindepth \@@itmindepth
+%    \let\@@saveditdistance \@@itdistance
+%    \let\@@savedittop      \@@ittop
+%    \let\@@saveditbottom   \@@itbottom
+%    \let\@@saveditstretch  \@@itstretch
+%    \setupinterlinespace[#1]%
+%    \let\@@itheight   \@@saveditheight
+%    \let\@@itdepth    \@@saveditdepth
+%    \let\@@itline     \@@saveditline
+%    \let\@@itminheight\@@saveditminheight
+%    \let\@@itmindepth \@@saveditmindepth
+%    \let\@@itdistance \@@saveditdistance
+%    \let\@@ittop      \@@savedittop
+%    \let\@@itbottom   \@@saveditbottom
+%    \let\@@itstretch  \@@saveditstretch
+%    \localinterlinespacefalse}
+
+\unexpanded\def\setuplocalinterlinespace[#1]%
+  {\localinterlinespacetrue
+   \pushmacro\currentinterlinespace
+   \setupinterlinespace[#1]%
+   \popmacro\currentinterlinespace
+   \localinterlinespacefalse}
+
+\let\switchtointerlinespace\setuplocalinterlinespace
+
+\definecomplexorsimple\setupinterlinespace
+
+\def\removelastskip % a redefinition of plain
+  {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
+
+\def\doifoutervmode#1%
+  {\ifvmode\ifinner\else#1\fi\fi}
+
+\def\dosomebreak#1%
+  {\doifoutervmode
+     {\scratchskip\lastskip
+      \removelastskip
+      %\leavevmode\type{#1}%
+      #1\relax
+      \ifdim\scratchskip=\zeropoint % else interference with footnotes
+      \else
+        \vskip\scratchskip
+      \fi}}
+
+\def\packed
+  {\nointerlineskip}
+
+\def\godown[#1]%
+  {\relax
+   \ifhmode\endgraf\fi
+   \ifvmode\nointerlineskip\vskip#1\relax\fi}
+
+\ifx\smallskip\undefined
+
+  \def\smallskip{\vskip\smallskipamount}
+  \def\medskip  {\vskip\medskipamount}
+  \def\bigskip  {\vskip\bigskipamount}
+
+\fi
+
+\ifx\allowbreak\undefined
+
+  \def\break     {\penalty\ifhmode-\plustenthousand\else\ejectpenalty\fi}
+  \def\nobreak   {\penalty \plustenthousand}
+  \def\allowbreak{\penalty \zeropoint}
+  \def\filbreak  {\par\vfil\penalty-200\vfilneg}
+  \def\goodbreak {\par\penalty-500 }
+
+\fi
+
+%D Made slightly more readable:
+
+\ifx\vglue\undefined
+
+  \def\vglue  {\afterassignment\dovglue\scratchskip=}
+  \def\hglue  {\afterassignment\dohglue\scratchskip=}
+  \def\topglue{\nointerlineskip\vglue-\topskip\vglue}
+
+  \def\dovglue
+    {\par
+     \scratchdimen\prevdepth
+     \hrule\!!height\zeropoint
+     \nobreak
+     \vskip\scratchskip
+     \prevdepth\scratchdimen}
+
+  \def\dohglue
+    {\dontleavehmode % \leavevmode
+     \scratchcounter\spacefactor
+     \vrule\!!width\zeropoint
+     \nobreak
+     \hskip\scratchskip
+     \spacefactor\scratchcounter}
+
+\fi
+
+\ifx\eject\undefined
+
+  \def\eject{\par\break}
+
+\fi
+
+\ifx\supereject\undefined
+
+  \def\supereject{\par\penalty\superpenalty}
+
+\fi
+
+\ifx\dosupereject\undefined
+
+  \def\dosupereject
+    {\ifnum\insertpenalties>\zerocount % something is being held over
+       \line{}
+       \kern-\topskip
+       \nobreak
+       \vfill\supereject
+     \fi}
+
+\fi
+
+%D We adapt plain's \type {\removelastskip} a bit:
+
+\ifx\removelastskip\undefined
+
+  \def\removelastskip
+    {\ifvmode \ifdim\lastskip=\zeropoint \else
+       \vskip-\lastskip
+     \fi \fi}
+
+\fi
+
+\ifx\smallbreak\undefined
+
+\def\smallbreak
+  {\par
+   \ifdim\lastskip<\smallskipamount
+     \removelastskip
+     \penalty-50
+     \smallskip
+   \fi}
+
+\def\medbreak
+  {\par
+   \ifdim\lastskip<\medskipamount
+     \removelastskip
+     \penalty-100
+     \medskip
+   \fi}
+
+\def\bigbreak
+  {\par
+   \ifdim\lastskip<\bigskipamount
+     \removelastskip
+     \penalty-200
+     \bigskip
+   \fi}
+
+\fi
+
+\newskip\ctxparskip \ctxparskip\zeropoint
+
+\newconditional \flexiblewhitespace \settrue\flexiblewhitespace
+
+\def\currentwhitespace {\zeropoint}
+
+\definecomplexorsimple\setupwhitespace
+
+\def\simplesetupwhitespace
+  {\doifnot\currentwhitespace\v!none\dosetupwhitespace}
+
+\def\complexsetupwhitespace[#1]%
+  {\edef\nextcurrentwhitespace{#1}%
+   \ifx\nextcurrentwhitespace\empty
+     \simplesetupwhitespace
+   \else
+     \let\currentwhitespace\nextcurrentwhitespace
+     \dosetupwhitespace
+   \fi}
+
+\def\dosetupwhitespace % quick test for no list
+  {\ifcsname\??ws\??ws\currentwhitespace\endcsname
+     \csname\??ws\??ws\currentwhitespace\endcsname
+   \else
+     \expandafter\processcommalist\expandafter[\currentwhitespace]\dowhitespacemethod % can be raw
+   \fi\relax
+   \ifgridsnapping
+     \setfalse\flexiblewhitespace
+     \ifdim\ctxparskip>\zeropoint
+       \ctxparskip
+       \ifcase\baselinegridmode
+         \baselineskip % normal ! ! ! ! !!
+       \or
+         \ifdim\scratchdimen=\baselineskip % maybe range
+           \baselineskip % normal ! ! ! ! !!
+         \else
+           \numexpr\ctxparskip/\dimexpr.5\lineheight\relax\relax\dimexpr.5\lineheight\relax
+         \fi
+       \else
+         \baselineskip % normal ! ! ! ! !!
+       \fi
+     \fi
+   \else
+     \ifconditional\flexiblewhitespace \else \ctxparskip1\ctxparskip \fi
+   \fi
+   \parskip\ctxparskip}
+
+\chardef\baselinegridmode=0 % option in layout / 1=permit_half_lines
+
+\def\dodosetupwhitespace
+  {\ifgridsnapping
+     \setfalse\flexiblewhitespace
+     \ctxparskip1\ctxparskip
+     \ifdim\ctxparskip>\zeropoint
+       \ifcase\baselinegridmode
+         \ctxparskip\baselineskip % normal ! ! ! ! !!
+       \or
+         \ifdim\scratchdimen=\baselineskip % maybe range
+           \ctxparskip\baselineskip % normal ! ! ! ! !!
+         \else
+           \ctxparskip\numexpr\ctxparskip/\dimexpr.5\lineheight\relax\relax\dimexpr.5\lineheight\relax
+         \fi
+       \else
+         \ctxparskip\baselineskip % normal ! ! ! ! !!
+       \fi
+     \fi
+   \else
+     \ifconditional\flexiblewhitespace \else \ctxparskip1\ctxparskip \fi
+   \fi
+   \parskip\ctxparskip}
+
+\definesystemvariable {ws} % whitespace
+
+\unexpanded\def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
+
+\definewhitespacemethod [\v!fix]      {}
+\definewhitespacemethod [\v!fixed]    {\setfalse\flexiblewhitespace}
+\definewhitespacemethod [\v!flexible] {\settrue\flexiblewhitespace}
+\definewhitespacemethod [\v!line]     {\ctxparskip  \baselineskip}
+\definewhitespacemethod [\v!halfline] {\ctxparskip.5\baselineskip}
+\definewhitespacemethod [\v!none]     {\ctxparskip  \zeropoint}
+\definewhitespacemethod [\v!big]      {\ctxparskip  \bigskipamount}
+\definewhitespacemethod [\v!medium]   {\ctxparskip  \medskipamount}
+\definewhitespacemethod [\v!small]    {\ctxparskip  \smallskipamount}
+
+\definewhitespacemethod [\s!default]  {\simplesetupwhitespace} % {\stelwitruimteopnieuwin}
+
+\def\dowhitespacemethod#1%
+  {\ifcsname\??ws\??ws#1\endcsname\csname\??ws\??ws#1\endcsname\else\ctxparskip#1\fi\relax}
+
+% \def\nowhitespace
+%   {\ifdim\parskip>\zeropoint\relax
+%      \ifdim\lastskip=-\parskip
+%      \else
+%        \vskip-\parskip
+%      \fi
+%    \fi}
+%
+% \def\nowhitespaceunlessskip
+%   {\ifdim\lastskip>\zeropoint \else
+%      \nowhitespace
+%    \fi}
+%
+% \def\whitespace
+%   {\par
+%    \ifdim\parskip>\zeropoint\relax
+%     %\ifdim\lastskip>\parskip \else
+%      % \removelastskip interferes with blanko blokkeer en klein
+%        \vskip\parskip
+%     %\fi
+%    \fi}
+
+\def\nowhitespace{\vspacing[\v!nowhite]}
+\def\whitespace  {\vspacing[\v!white]}
+
+% obsolete:
+%
+% \def\savedcurrentwhitespace{\currentwhitespace}
+% \def\savecurrentwhitespace   {\edef\savedcurrentwhitespace{\currentwhitespace}}
+% \def\restorecurrentwhitespace{\edef\currentwhitespace{\savedcurrentwhitespace}}
+
+% De onderstaande macro handelt ook de situatie dat er geen
+% tekst tussen \start ... \stop is geplaatst. Daartoe wordt de
+% laatste skip over de lege tekst heen gehaald. Dit komt goed
+% van pas bij het plaatsen van (mogelijk lege) lijsten.
+
+\newsignal \noparskipsignal % \def\noparskipsignal {0.00001pt}
+\def\lastdoneparskip {0pt}
+
+\newconditional\noblankinpacked
+\newcount\packeddepth
+
+\unexpanded\def\startpacked
+  {\dosingleempty\dostartpacked}
+
+\def\dostartpacked[#1]% nesting afvangen
+  {\global\advance\packeddepth\plusone
+   \par
+   \ifnum\packeddepth=\plusone \ifvmode
+     \bgroup
+     \whitespace % not combined
+     \blank[\v!disable]%
+     \doifelse{#1}\v!blank\setfalse\settrue\noblankinpacked
+     \setupwhitespace[\v!none]%
+   \fi \fi}
+
+\unexpanded\def\stoppacked
+  {\par
+   \ifnum\packeddepth=\plusone \ifvmode
+     \egroup
+   \fi \fi
+   \global\advance\packeddepth\minusone}
+
+\unexpanded\def\startunpacked
+  {\blank
+   \bgroup}
+
+\unexpanded\def\stopunpacked
+  {\egroup
+   \blank}
+
+% De onderstaande macro's moeten nog eens nader worden uitgewerkt.
+% Ze spelen een rol bij de spatiering rond omkaderde teksten
+% en/of boxen zonder diepte.
+
+% \prevdepth crosses pageboundaries!
+%
+% todo: a version that works ok inside a box
+
+\let\doaroundlinecorrection\relax
+
+\unexpanded\def\startlinecorrection
+  {\dodoubleempty\dostartlinecorrection}
+
+\def\dostartlinecorrection[#1][#2]% #2 gobbles spaces
+  {\bgroup
+   \processaction
+     [#1]
+     [  \v!blank=>\let\doaroundlinecorrection\blank,
+      \s!default=>\let\doaroundlinecorrection\relax,
+      \s!unknown=>{\def\doaroundlinecorrection{\blank[#1]}}]%
+   \doaroundlinecorrection
+   \startbaselinecorrection
+   \offbaselinecorrection
+   \ignorespaces}
+
+\unexpanded\def\stoplinecorrection
+  {\stopbaselinecorrection
+   \doaroundlinecorrection
+   \egroup}
+
+\def\correctwhitespace
+  {\dowithnextbox
+     {\startbaselinecorrection
+      \flushnextbox
+      \stopbaselinecorrection}%
+   \vbox}
+
+\def\verticalstrut  {\normalvbox{\hsize\zeropoint\forgetall\strut}}
+\def\horizontalstrut{\normalhbox                          {\strut}}
+
+% Hieronder volgen enkele instellingen en macro's ten behoeve
+% van de interlinie en \strut. De waarden 2.8, 0.07, 0.72 en
+% 0.28 zijn ooit eens ontleend aan INRS-TEX en moeten wellicht
+% nog eens instelbaar worden.
+%
+%   \lineheight        : de hoogte van een regel
+%   \spacing{getal}    : instellen interlinie
+%   \normalbaselines   : instellen regelafstend
+%
+%   \setstrut          : instellen \strut
+%   \setnostrut        : resetten \strut, \endstrut, \begstrut
+%
+%   \setteststrut      : instellen zichtbare struts
+%   \resetteststrut    : instellen onzichtbare struts
+%
+%   \setfontparameters : instellen na fontset
+%
+% De hoogte van een regel (\lineheight) is gelijk aan de
+% som van de hoogte (\ht) en diepte (\dp) van \strutbox.
+%
+%   \strut            : denkbeeldig blokje met hoogte en diepte
+%
+% Een \hbox kan als deze aan het begin van een regel staat
+% een breedte \hsize krijgen. Dit is soms te voorkomen met het
+% commando \leavevmode. Binnen een \vbox geeft dit echter
+% niet altijd het gewenste resultaat, vandaar het commando
+%
+%   \dontleavehmode
+
+% Pas op: niet zomaar \topskip en \baselineskip aanpassen
+% en zeker niet \widowpenalty. Dit kan ernstige gevolgen
+% hebben voor kolommen.
+%
+% Enige glue kan op zich geen kwaad, echter als blanko=vast,
+% dan moet ook de rek 0 zijn. Binnen kolommen is rek ook
+% niet bepaald mooi. Een hele kleine waarde (0.025) voldoet,
+% omdat een positieve glue eindeloos rekbaar is.
+
+\newdimen\strutdimen
+\newdimen\lineheight
+\newdimen\openlineheight
+\newdimen\openstrutheight
+\newdimen\openstrutdepth
+\newdimen\topskipgap
+\newdimen\struttotal
+
+\def\strutheightfactor      {.72}
+\def\strutdepthfactor       {.28}
+
+\def\baselinefactor         {2.8}
+\def\baselinegluefactor     {0}
+
+\def\minimumstrutheight     {0pt}
+\def\minimumstrutdepth      {0pt}
+
+\def\normallineheight       {\baselinefactor ex}
+\def\minimumlinedistance    {\lineskip}
+
+\def\strutheight            {0pt}
+\def\strutdepth             {0pt}
+\def\strutwidth             {0pt}
+
+\let\spacingfactor          \plusone
+
+\def\topskipfactor          {1.0}
+\def\maxdepthfactor         {0.5}
+
+\def\systemtopskipfactor    {\topskipfactor}
+\def\systemmaxdepthfactor   {\maxdepthfactor}
+
+\ifdefined\globalbodyfontsize\else
+  \newdimen\globalbodyfontsize
+  \globalbodyfontsize=12pt
+\fi
+
+\ifdefined\normalizedbodyfontsize\else
+  \def\normalizedbodyfontsize{12pt}
+\fi
+
+% door een \dimen. Dit is geen probleem omdat (1) de default
+% korpsgrootte 12pt is en (2) de fonts nog niet geladen zijn
+% en de instellingen bij het laden nogmaals plaatsvinden.
+
+\def\topskipcorrection
+  {\simpletopskipcorrection
+   \vskip-\struttotal
+   \verticalstrut}
+
+\def\simpletopskipcorrection
+  {\ifdim\topskip>\openstrutheight
+     % == \vskip\topskipgap
+     \vskip\topskip
+     \vskip-\openstrutheight
+   \fi}
+
+\def\settopskip % the extra test is needed for the lbr family
+  {\topskip\systemtopskipfactor\globalbodyfontsize
+   \ifgridsnapping \else
+     \ifr@ggedbottom\!!plus5\globalbodyfontsize\fi
+   \fi
+\ifgridsnapping
+    \topskip\zeropoint
+\fi
+   \relax % the skip
+   \topskipgap\topskip
+   \advance\topskipgap -\openstrutheight\relax
+   \ifdim\minimumstrutheight>\zeropoint
+     \ifdim\topskip<\minimumstrutheight
+       \topskip\minimumstrutheight\relax
+     \fi
+  \else
+     \ifdim\topskip<\strutheightfactor\openlineheight
+       \topskip\strutheightfactor\openlineheight\relax
+     \fi
+  \fi}
+
+\def\setmaxdepth
+  {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
+
+\def\normalbaselines
+  {\baselineskip \normalbaselineskip
+   \lineskip     \normallineskip
+   \lineskiplimit\normallineskiplimit}
+
+\def\setnormalbaselines
+  {\ifdim\normallineheight>\zeropoint
+     \lineheight\normallineheight
+   \fi
+   \openlineheight\spacingfactor\lineheight
+   \openstrutheight \ifdim\minimumstrutheight>\zeropoint
+     \minimumstrutheight % new
+   \else
+     \strutheightfactor\openlineheight
+   \fi
+   \openstrutdepth \ifdim\minimumstrutdepth>\zeropoint
+     \minimumstrutdepth % new
+   \else
+     \strutdepthfactor \openlineheight
+   \fi
+   \ifdim\dimexpr\minimumstrutdepth+\minimumstrutheight\relax>\zeropoint
+     \openlineheight\dimexpr\openstrutheight+\openstrutdepth\relax % new
+   \fi
+   \normalbaselineskip\openlineheight
+     \ifgridsnapping\else
+       \!!plus \baselinegluefactor\openlineheight
+       \!!minus\baselinegluefactor\openlineheight
+     \fi
+   \normallineskip\minimumlinedistance\relax % \onepoint\relax
+   \normallineskiplimit\zeropoint\relax
+   \normalbaselines
+  %\dosetupgridsnapping
+  }
+
+\def\spacing#1%
+  {\ifgridsnapping
+    %\ifdim#1\points=\onepoint\else\showmessage\m!layouts{11}{\withoutpt\the\dimexpr#1\points\relax}\fi
+     \let\spacingfactor\plusone
+   \else
+     \edef\spacingfactor{#1}%
+   \fi
+   \edef\systemtopskipfactor {\withoutpt\the\dimexpr#1\dimexpr\topskipfactor \points}%
+   \edef\systemmaxdepthfactor{\withoutpt\the\dimexpr#1\dimexpr\maxdepthfactor\points}%
+   \setnormalbaselines
+   \setstrut}
+
+%D Sometimes one needs to freeze the interlinespacing
+%D
+%D \starttyping
+%D \rm \saveinterlinespace .... {\ss \restoreinterlinespace .... \endgraf}
+%D \stoptyping
+
+\let\restoreinterlinespace\relax
+
+\def\saveinterlinespace
+  {\edef\restoreinterlinespace
+     {\lineheight         \the\lineheight
+      \openstrutheight    \the\openstrutheight
+      \openstrutdepth     \the\openstrutdepth
+      \openlineheight     \the\openlineheight
+      \normalbaselineskip \the\normalbaselineskip
+      \normallineskip     \the\normallineskip
+      \normallineskiplimit\the\normallineskiplimit
+      \noexpand\def\noexpand\normallineheight{\the\dimexpr\normallineheight}%
+      \noexpand\normalbaselines}}
+
+% plain definition:
+%
+% \def\strut{\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
+%
+% could be:
+%
+% \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
+
+\ifx\strutbox\undefined
+
+  \newbox\strutbox
+
+  \setbox\strutbox\normalhbox{\vrule height8.5pt depth3.5pt width\zeropoint}
+
+  \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
+
+\fi
+
+\let\normalstrut\strut
+
+% The double \hbox construction enables us to \backtrack
+% boxes.
+
+\let\strutht\undefined \newdimen\strutht
+\let\strutdp\undefined \newdimen\strutdp
+
+\unexpanded\def\setstrut
+  {\ifgridsnapping
+     \setstrutgridyes
+   \else
+     \setstrutgridnop
+   \fi}
+
+\unexpanded\def\setstrutgridyes
+  {\strutht\spacingfactor\dimexpr
+     \ifdim\minimumstrutheight>\zeropoint
+       \minimumstrutheight
+     \else
+       \strutheightfactor\dimexpr\normallineheight
+     \fi
+   \strutdp\dimexpr
+     \ifdim\minimumstrutdepth>\zeropoint
+       \minimumstrutdepth
+     \else
+       \normallineheight-\strutht
+     \fi
+   \dosetstrut}
+
+\unexpanded\def\setstrutgridnop
+  {\strutht\spacingfactor\dimexpr
+     \ifdim\minimumstrutheight>\zeropoint
+       \minimumstrutheight
+     \else
+       \strutheightfactor\dimexpr\normallineheight
+     \fi
+   \strutdp\spacingfactor\dimexpr
+       \ifdim\minimumstrutdepth>\zeropoint
+         \minimumstrutdepth
+       \else
+         \strutdepthfactor\dimexpr\normallineheight
+       \fi
+   \dosetstrut}
+
+\unexpanded\def\setcharstrut#1%
+  {\setbox\strutbox\normalhbox{#1}%
+   \strutht\ht\strutbox
+   \strutdp\dp\strutbox
+   \dosetstrut}
+
+\unexpanded\def\setfontstrut
+  {\setcharstrut{(gplQT}}
+
+\unexpanded\def\setcapstrut% could be M, but Q has descender
+  {\setcharstrut{Q}}
+
+%D Handy for math (used in mathml):
+
+\def\charhtstrut
+  {\begingroup
+   \setcharstrut{GJY}%
+   \vrule\!!width\zeropoint\!!depth\zeropoint\!!height\strutht
+   \endgroup}
+
+\def\chardpstrut
+  {\begingroup
+   \setcharstrut{gjy}%
+   \vrule\!!width\zeropoint\!!depth\strutdp\!!height\zeropoint
+   \endgroup}
+
+% because of all the callbacks in mkiv, we avoid unnecessary boxes ...
+% maybe use an attribute so that we can tag boxes that don't need a
+% treatment; tests with using an attribute so far have shown that
+% it's slower because testing the attribute takes time too
+
+\newdimen\tempstrutdimen
+
+\def\dosetstrut
+  {\let\strut\normalstrut
+   \tempstrutdimen\dimexpr\strutht+\strutdp-\lineheight\relax
+   \ifabsnum\tempstrutdimen<\plustwo
+      % compensate rounding error /- 1sp to avoid too many
+      % 1sp baselineskips in for instance verbatim
+      \strutht\dimexpr\strutht-\tempstrutdimen\relax
+   \fi
+   \edef\strutheight{\the\strutht}% maybe better \number\strutht sp
+   \edef\strutdepth {\the\strutdp}%
+   \ifdim\strutwidth=\zeropoint
+      \dosetstruthide
+   \else
+      \dosetstrutvide
+   \fi
+   \struttotal\dimexpr\strutht+\strutdp\relax}
+
+\def\dosetstruthide
+  {\setbox\strutbox\normalhbox
+     {\vrule
+        \!!width \zeropoint
+        \!!height\strutht
+        \!!depth \strutdp}}
+
+\def\dosetstrutvide
+  {\setbox\strutbox\normalhbox
+     {\normalhbox to \zeropoint
+        {% \hss % new, will be option
+         \vrule
+           \!!width \strutwidth
+           \!!height\strutht
+           \!!depth \strutdp
+         \hss}}}
+
+%D The dimen \type {\struttotal} holds the exact size of the
+%D strut; occasionally a one scaled point difference can show
+%D up with the lineheight.
+
+% experiment
+
+\newbox\emptystrutbox \setbox\emptystrutbox\hbox{}
+
+\def\dosetstruthide
+  {\setbox\strutbox\copy\emptystrutbox
+   \ht\strutbox\strutht
+   \dp\strutbox\strutdp}
+
+\def\strut{\relax\dontleavehmode\copy\strutbox} % still callbacks for \hbox{\strut}
+
+
+\let\normalstrut\strut
+
+%D Sometimes a capstrut comes in handy
+%D
+%D \starttabulate[|Tl|l|l|]
+%D \NC yes          \NC normal strut               \NC {\showstruts\setupstrut[yes]\strut}  \NC \NR
+%D \NC no           \NC no strut                   \NC {\showstruts\setupstrut[no]\strut}  \NC \NR
+%D \NC kap          \NC a capital strut (i.e. Q)   \NC {\showstruts\setupstrut[cap]\strut} \NC \NR
+%D \NC A B \unknown \NC a character strut (e.g. A) \NC {\showstruts\setupstrut[A]\strut}   \NC \NR
+%D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR
+%D \stoptabulate
+
+\unexpanded\def\setupstrut
+  {\dosingleempty\dosetupstrut}
+
+\def\dosetupstrut[#1]% yet undocumented, todo: fontstrut
+  {\processaction
+     [#1]
+     [    \v!yes=>\setstrut,
+         \v!auto=>\setautostrut,
+           \v!no=>\setnostrut,
+          \v!cap=>\setcapstrut,
+          \v!fit=>\setfontstrut,
+         \v!line=>\setstrut,
+      \s!default=>\setstrut,
+      \s!unknown=>\setcharstrut\commalistelement]}
+
+\def\showstruts
+  {\setteststrut
+   \settestcrlf}
+
+\def\setteststrut
+  {\def\strutwidth{.8pt}%
+   \setstrut}
+
+\def\autostrutfactor{1.1}
+
+\def\setautostrut
+  {\begingroup
+   \setbox\scratchbox\copy\strutbox
+   \setstrut
+   \ifdim\strutht>\autostrutfactor\ht\scratchbox
+     \endgroup \setstrut
+   \else\ifdim\strutdp>\autostrutfactor\dp\scratchbox
+     \endgroup \setstrut
+   \else
+     \endgroup
+   \fi\fi}
+
+% when enabled, sigstruts will remove themselves if nothing
+% goes inbetween
+
+\newsignal\strutsignal \setfalse\sigstruts
+
+\def\begstrut
+  {\relax\ifcase\strutht\else
+     \ifconditional\sigstruts
+       \noindent\horizontalstrut
+       \normalpenalty\plustenthousand
+       \normalhskip-\strutsignal
+       \normalhskip\strutsignal
+     \else
+       \strut
+       \normalpenalty\plustenthousand
+       \normalhskip\zeropoint
+     \fi
+     \expandafter \ignorespaces
+   \fi}
+
+\def\endstrut
+  {\relax\ifhmode\ifcase\strutht\else
+     \ifconditional\sigstruts
+       \ifdim\lastskip=\strutsignal
+         \unskip\unskip\unpenalty\setbox\scratchbox\lastbox
+       \else
+         \normalpenalty\plustenthousand
+         \normalhskip\zeropoint
+         \strut
+       \fi
+     \else
+       \removeunwantedspaces
+       \normalpenalty\plustenthousand
+       \normalhskip\zeropoint
+       \strut
+     \fi
+   \fi\fi}
+
+\newbox\nostrutbox \setbox\nostrutbox\normalhbox{} % {\normalhbox{}}
+
+\def\setnostrut
+  {\setbox\strutbox\copy\nostrutbox
+   \let\strut\empty
+   \let\endstrut\empty
+   \let\begstrut\empty
+   \let\crlfplaceholder\empty}
+
+% unsave:
+%
+% \def\pseudostrut
+%   {\bgroup
+%    \setnostrut
+%    \normalstrut
+%    \egroup}
+%
+% try:
+%
+% \startchemie
+%   \chemie[ONE,Z0,SB15,MOV1,SB15,Z0][C,C]
+% \stopchemie
+%
+% so:
+
+\def\pseudostrut
+  {\noindent} % better: \dontleavehmode
+
+\let\pseudobegstrut\pseudostrut
+
+\let\pseudoendstrut\removeunwantedspaces
+
+\def\resetteststrut
+  {\def\strutwidth{\zeropoint}% no let
+   \setstrut}
+
+\ifdefined\setfontparameters\else
+  % problems ! ! ! !
+  \def\setfontparameters{\the\everybodyfont}
+\fi
+
+%D Handy:
+
+\def\baselinedistance{\the\lineheight}
+
+%D We need \type{\normaloffinterlineskip} because the new
+%D definition contains an assignment, and |<|don't ask me
+%D why|>| this assignment gives troubles in for instance the
+%D visual debugger.
+
+%D The plain ones:
+
+% \def\offinterlineskip
+%   {\baselineskip-\thousandpoint
+%    \lineskip\zeropoint
+%    \lineskiplimit\maxdimen}
+
+\def\offinterlineskip
+  {\baselineskip-\thousandpoint
+   \lineskip\zeropoint
+   \lineskiplimit\maxdimen
+   % We also need this here now; thanks to taco for figuring that out!
+   \def\minimumlinedistance{\zeropoint}}
+
+\def\nointerlineskip
+  {\prevdepth-\thousandpoint}
+
+\let\normaloffinterlineskip=\offinterlineskip % knuth's original
+
+%D My own one:
+
+\def\dopushinterlineskip
+  {\edef\oninterlineskip
+     {\baselineskip\the\baselineskip
+      \lineskip\the\lineskip
+      \lineskiplimit\the\lineskiplimit
+      \noexpand\edef\noexpand\minimumlinedistance{\the\dimexpr\minimumlinedistance}%
+      \let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}}
+
+\def\nopushinterlineskip
+  {\let\oninterlineskip\setnormalbaselines}
+
+\def\offinterlineskip
+  {\ifdim\baselineskip>\zeropoint
+     \dopushinterlineskip
+   \else
+     \nopushinterlineskip
+   \fi
+   \normaloffinterlineskip}
+
+\let\oninterlineskip=\relax
+
+\def\leaveoutervmode
+  {\ifvmode\ifinner\else
+     \leavevmode
+   \fi\fi}
+
+% We stellen enkele penalties anders in dan Plain TEX:
+%
+% \widowpenalty=\defaultwidowpenalty\relax
+% \clubpenalty =\defaultclubpenalty \relax
+
+\def\resetpenalties#1%
+  {\ifdefined#1%
+     #1\minusone
+   \fi}
+
+\def\setpenalties#1#2#3%
+  {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
+     #1\numexpr#2+\plusone\relax\space\doexpandedrecurse{\the\numexpr#2\relax}{ #3}\zerocount\relax
+   \fi}
+
+\def\doexpandedrecurse#1#2%
+  {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr#1-1\relax}{#2}\fi}
+
+%D \macros
+%D   {keeplinestogether}
+%D
+%D Dirty hack, needed in margin content that can run of a page.
+
+% just before margintexts ... will eventually be done differently in mkiv using
+% attributes
+
+\newcount\nofkeeplinestogether
+\let\restoreinterlinepenalty\relax
+
+\def\dorestoreinterlinepenalty
+  {\global\let\restoreinterlinepenalty\relax
+   \global\resetpenalties\interlinepenalties
+   \global\nofkeeplinestogether\zerocount}
+
+\def\keeplinestogether#1%
+  {\ifnum#1>\nofkeeplinestogether
+     \global\nofkeeplinestogether#1%
+     \global\setpenalties\interlinepenalties\nofkeeplinestogether\plustenthousand
+     \global\let\restoreinterlinepenalty\dorestoreinterlinepenalty
+   \fi}
+
+\newif\ifgridsnapping % to be sure
+
+\def\defaultwidowpenalty         {2000} % was: 1000
+\def\defaultclubpenalty          {2000} % was:  800
+\def\defaultdisplaywidowpenalty    {50}
+\def\defaultbrokenpenalty         {100}
+
+\def\defaultgridwidowpenalty        {0}
+\def\defaultgridclubpenalty         {0}
+\def\defaultgriddisplaywidowpenalty {0}
+\def\defaultgridbrokenpenalty       {0}
+
+\def\nopenalties
+  {\widowpenalty        \zerocount
+   \clubpenalty         \zerocount
+   \brokenpenalty       \zerocount
+   \doublehyphendemerits\zerocount
+   \finalhyphendemerits \zerocount
+   \adjdemerits         \zerocount}
+
+\def\setdefaultpenalties
+  {\directsetup{\systemsetupsprefix\s!default}}
+
+\startsetups [\systemsetupsprefix\s!reset]
+  \resetpenalties\widowpenalties
+  \resetpenalties\clubpenalties
+  \resetpenalties\interlinepenalties
+\stopsetups
+
+% we use \directsetup because it's faster and we know there is no csl
+
+\startsetups [\systemsetupsprefix\s!default]
+
+  \directsetup{\systemsetupsprefix\s!reset}
+
+  \widowpenalty       \defaultwidowpenalty
+  \clubpenalty        \defaultclubpenalty
+  \displaywidowpenalty\defaultdisplaywidowpenalty
+  \brokenpenalty      \defaultbrokenpenalty
+
+\stopsetups
+
+\startsetups [\v!grid] [\systemsetupsprefix\s!default]
+
+  \directsetup{\systemsetupsprefix\s!reset}
+
+  \widowpenalty       \defaultgridwidowpenalty
+  \clubpenalty        \defaultgridclubpenalty
+  \displaywidowpenalty\defaultgriddisplaywidowpenalty
+  \brokenpenalty      \defaultgridbrokenpenalty
+
+\stopsetups
+
+% as an illustration:
+
+\startsetups [\systemsetupsprefix\v!strict]
+
+   \directsetup{\systemsetupsprefix\s!reset}
+
+   \setpenalties\widowpenalties2\maxdimen
+   \setpenalties\clubpenalties 2\maxdimen
+                \brokenpenalty  \maxdimen
+
+\stopsetups
+
+\setdefaultpenalties % will happen later in \setuplayout
+
+%D To be checked:
+
+\ifx\savedstrutbox\undefined \newbox\savedstrutbox \fi
+
+\def\savestrut {\setbox\savedstrutbox\copy\strutbox}
+\def\savedstrut{\copy  \savedstrutbox}
+
+%D Page spacing
+
+\chardef\bottomraggedness=0 % 0=ragged 1=normal/align 2=baseline
+
+\def\bottomalignlimit{3\lineheight}
+
+\newif\ifn@rmalbottom
+\newif\ifr@ggedbottom
+\newif\ifb@selinebottom
+
+\def\normalbottom
+  {% \topskip 10pt
+   \r@ggedbottomfalse}
+
+\def\raggedbottom
+  {\chardef\bottomraggedness\zerocount
+   \n@rmalbottomfalse
+   \r@ggedbottomtrue
+   \b@selinebottomfalse
+   \settopskip}
+
+\def\alignbottom
+  {\chardef\bottomraggedness\plusone
+   \n@rmalbottomtrue
+   \r@ggedbottomfalse
+   \b@selinebottomfalse
+   \settopskip}
+
+\def\baselinebottom
+  {\chardef\bottomraggedness\plustwo
+   \n@rmalbottomfalse
+   \r@ggedbottomfalse
+   \b@selinebottomtrue
+   \settopskip}
+
+\let\normalbottom=\alignbottom % downward compatible
+
+% so, the new one will be
+%
+% \chardef\bottomraggedness=0 % 0=ragged 1=normal/align 2=baseline
+%
+% \def\bottomalignlimit{3\lineheight} % will be settable
+%
+% \def\raggedbottom  {\chardef\bottomraggedness=0 \settopskip}
+% \def\alignbottom   {\chardef\bottomraggedness=1 \settopskip}
+% \def\baselinebottom{\chardef\bottomraggedness=2 \settopskip}
+%
+% \let\normalbottom  =\alignbottom
+
+%D Good old blank redone:
+
+\definesystemattribute[kern-chars]
+\definesystemattribute[skip-category]  \chardef\skipcategoryattribute  \dogetattributeid{skip-category}
+\definesystemattribute[skip-penalty]   \chardef\skippenaltyattribute   \dogetattributeid{skip-penalty}
+\definesystemattribute[skip-order]     \chardef\skiporderattribute     \dogetattributeid{skip-order}
+\definesystemattribute[display-math]   \chardef\displaymathattribute   \dogetattributeid{display-math}
+\definesystemattribute[snap-method]    \chardef\snapmethodattribute    \dogetattributeid{snap-method}
+\definesystemattribute[snap-done]      \chardef\snapdoneattribute      \dogetattributeid{snap-done}
+
+%definesystemattribute[snap-category]  \chardef\snapcategoryattribute  \dogetattributeid{snap-category}
+
+% TODO: NAMED SNAPPERS
+
+\newskip  \bodyfontlineheight
+\newdimen \bodyfontstrutheight
+\newdimen \bodyfontstrutdepth
+
+\newskip  \globalbodyfontlineheight
+\newdimen \globalbodyfontstrutheight
+\newdimen \globalbodyfontstrutdepth
+
+% \appendtoks
+%     \dosetupgridsnapping
+% \to \everysetupbodyfont
+
+\def\installsnapvalues#1#2% todo: a proper define
+  {\edef\currentsnapper{#1:#2}%
+   \ifcsname\currentsnapper\endcsname \else
+     \setevalue\currentsnapper{\ctxlua{vspacing.define_snap_method("#1","#2")}}%
+   \fi
+   \setevalue{\??gr:#1}{\attribute\snapmethodattribute\csname\currentsnapper\endcsname\space}}
+
+\unexpanded\def\definegridsnapping
+  {\dodoubleargument\dodefinegridsnapping}
+
+\def\dodefinegridsnapping[#1][#2]%
+  {\installsnapvalues{#1}{#2}}
+
+\edef\resetsnapvalue
+  {%\gridsnappingfalse
+   \attribute\snapmethodattribute\attributeunsetvalue}
+
+\def\setsnapvalue#1%
+  {%\gridsnappingtrue
+   \ifcsname\??gr:#1\endcsname\csname\??gr:#1\endcsname\fi}
+
+\def\autosetsnapvalue#1%
+  {\ifcsname\??gr:#1\endcsname
+     \csname\??gr:#1\endcsname
+   \else
+     \installsnapvalues\s!dummy{#1}%
+     \csname\??gr:\s!dummy\endcsname
+   \fi}
+
+% \installsnapvalues{loose} {\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut}
+% \installsnapvalues{normal}{\v!maxdepth:1.0,\v!maxheight:1.0,\v!strut}
+% \installsnapvalues{tight} {\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut}
+
+% none             don't enlarge
+% halfline         enlarge by halfline/halfline
+% line             enlarge by line/line
+% strut            enlarge by ht/dp (default)
+% first            align to top line
+% last             align to bottom line
+% mindepth         round depth down
+% maxdepth         round depth up
+% minheight        round height down
+% maxheight        round height up
+% local            use local interline space
+% shift:-3tp       vertical shift within box
+
+%D We're not downward compatible with \MKII !
+
+\definegridsnapping[\v!normal]   [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!standard] [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!yes]      [\v!maxheight,\v!maxdepth,\v!strut]
+
+\definegridsnapping[\v!strict]   [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
+\definegridsnapping[\v!tolerant] [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
+
+\definegridsnapping[\v!top]      [\v!minheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!bottom]   [\v!maxheight,\v!mindepth,\v!strut]
+\definegridsnapping[\v!both]     [\v!minheight,\v!mindepth,\v!strut]
+
+\definegridsnapping[\v!broad]    [\v!maxheight,\v!maxdepth,\v!strut,0.8] % maybe 0.85
+\definegridsnapping[\v!fit]      [\v!maxheight,\v!maxdepth,\v!strut,1.2] % tight 0.15
+
+\definegridsnapping[\v!first]    [\v!first]
+\definegridsnapping[\v!last]     [\v!last]
+\definegridsnapping[\v!high]     [\v!minheight,\v!maxdepth,\v!none]
+\definegridsnapping[\v!low]      [\v!maxheight,\v!mindepth,\v!none]
+\definegridsnapping[\v!line]     [\v!line]
+\definegridsnapping[\v!strut]    [\v!strut]
+
+\definegridsnapping[\v!max]      [\v!maxdepth,\v!maxheight,\v!strut]
+\definegridsnapping[\v!min]      [\v!mindepth,\v!minheight,\v!strut]
+
+\newtoks\everysetupgridsnapping % this only happens at the setuplayout level
+
+\def\dosetupgridsnapping{\the\everysetupgridsnapping} % not used !
+
+\def\synchronizelocallinespecs
+  {\bodyfontlineheight \normallineheight
+   \bodyfontstrutheight\strutheight
+   \bodyfontstrutdepth \strutdepth}
+
+\def\synchronizegloballinespecs
+  {\global\globalbodyfontlineheight \normallineheight
+   \global\globalbodyfontstrutheight\strutheight
+   \global\globalbodyfontstrutdepth \strutdepth}
+
+% \appendtoks
+%     \synchronizegloballinespecs
+%     \synchronizelocallinespecs
+% \to \everysetupgridsnapping
+
+\appendtoks
+    \synchronizegloballinespecs
+    \synchronizelocallinespecs
+\to \everysetupglobalinterlinespace
+
+\appendtoks
+    \synchronizelocallinespecs
+\to \everysetuplocalinterlinespace
+
+% \appendtoks
+%     \resetsnapvalues
+% \to \everyforgetall
+
+%D Snapping.
+
+\newif\ifgridsnapping
+
+\let\showgridsnapping\relax
+
+\def\snaptogrid {\dosingleempty\dosnaptogrid}
+\def\moveongrid {\dosingleempty\domoveongrid}
+\unexpanded\def\placeongrid{\dosingleempty\doplaceongrid}
+
+\def\dodomoveongrid[#1]%
+  {} % gone, unless we set an attribute
+
+\def\doplaceongrid[#1]%
+  {\snaptogrid[#1]\vbox}
+
+\def\dosnaptogrid[#1]% list or predefined
+  {\ifgridsnapping
+     \expandafter\dodosnaptogrid
+   \else
+     \expandafter\gobbleoneargument
+   \fi{#1}}
+
+\def\dodosnaptogrid#1%
+  {\bgroup
+   \resetsnapvalue
+   \dowithnextbox{\dododosnaptogrid{#1}}}
+
+% eventually there will always be a line snap
+
+\def\dododosnaptogrid#1%
+  {\ifvbox\nextbox
+     \ctxlua{nodes.collapse_vbox(\number\nextbox)}%
+   \fi
+   \doifelsenothing{#1}{\setsnapvalue\v!normal}{\autosetsnapvalue{#1}}%
+   \ctxlua{vspacing.snap_box(\number\nextbox,\number\attribute\snapmethodattribute)}%
+%    \ifzeropt\ht\nextbox
+%      \ifzeropt\dp\nextbox
+%        \box\nextbox % here, else empty and zero
+%        \kern-\bodyfontlineheight
+%      \else
+%        \box\nextbox
+%      \fi
+%    \else
+     \box\nextbox
+%    \fi
+   \egroup}
+
+\def\docheckgridsnapping
+  {\edef\askedgridmode{\layoutparameter\c!grid}% needs checking by WS
+   \doifelse\askedgridmode\v!no
+     {\gridsnappingfalse
+      \resetsystemmode\v!grid
+      \resetsnapvalue}
+     {\gridsnappingtrue
+      \setsystemmode\v!grid
+      \autosetsnapvalue\askedgridmode}}
+
+%D Visualization:
+
+\definepalet
+  [grid]
+  [  one=red,
+     two=green,
+   three=blue,
+    four=gray]
+
+\def\setgridtracebox#1[#2]% % maybe reverse the order
+  {\setbox\nextbox#1%
+     {\hbox
+        {\hbox to \zeropoint
+           {\setlayoutcomponentattribute\v!grid\v!test
+            \color[grid:#2]{\ruledhbox \layoutcomponentboxattribute {\fakebox\nextbox}}%
+            \hss}%
+         \flushnextbox}}}
+
+\chardef\gridboxlinenomode\plusone % 0:nothing 1:all 2:lines 3:frame 4:l/r
+\chardef\gridboxlinemode  \plusone
+
+\def\gridboxvbox {\ifcase\gridboxlinemode\vbox\or\ruledvbox\or\vbox\or\ruledvbox\else\ruledvbox\fi}
+\def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\testrulewidth}
+
+\def\setgridbox#1#2#3% maybe ifgridsnapping at outer level
+  {\setbox#1\gridboxvbox to #3 % given size
+     {\forgetall
+      \resetteststrut
+      \offinterlineskip
+      \hsize#2%
+      \baselinerulefalse
+      \ifnum\gridboxlinenomode=\plusthree
+        \chardef\gridboxlinenomode\ifodd\realpageno\plusone\else\plustwo\fi
+      \fi
+      \gridboxvbox % calculated size
+        {\getrawnoflines{#3}% \getnoflines{#3}%
+%          \ifgridsnapping \else
+%            \vskip\topskip
+%            \vskip-\strutht
+%          \fi
+         \scratchdimen#2\advance\scratchdimen \lineheight
+         \dorecurse\noflines
+           {\strut
+            \hskip-.5\lineheight
+            \ifcase\gridboxlinenomode\or
+              \rlap
+                {\hskip.2\bodyfontsize\hskip\scratchdimen
+                 \infofont\hbox to 1em{\hss\recurselevel}}%
+            \or
+              \llap
+                {\infofont\hbox to 1em{\hss\recurselevel}%
+                 \hskip.2\bodyfontsize}%
+            \fi
+            \vrule
+              \!!height \gridboxwidth
+              \!!depth  \gridboxwidth
+              \!!width  \scratchdimen
+            \par}}
+      \vfill}}
+
+%D This has become obsolete:
+
+\def\fuzzysnappedbox#1#2% \box<n> \unvbox<n>
+  {#1#2}
+
+% \def\moveboxontogrid#1#2#3% will become obsolete
+%   {\doif{#2}\v!top   {\setbox#1\hbox{\snaptogrid[\v!first]\box#1}}%
+%    \doif{#2}\v!bottom{\setbox#1\hbox{\snaptogrid[\v!last ]\box#1}}}
+
+\def\moveboxontogrid#1#2#3% will become obsolete
+  {}
+
+%D Helper:
+
+\def\doassignsomeskip#1\to#2% ook nog \v!halfline+fuzzysnap
+  {\doifelse{#1}\v!line
+     {#2\ifgridsnapping
+        \bodyfontlineheight
+      \else
+        \openlineheight
+      \fi}
+     {\ifgridsnapping
+        \assigndimension{#1}{#2}{.25\bodyfontlineheight}{.5\bodyfontlineheight}\bodyfontlineheight
+      \else
+        \assigndimension{#1}{#2}\smallskipamount\medskipamount\bigskipamount
+      \fi}%
+   \relax}
+
+% \start \dosetstretch{.25em} \setuptolerance[tolerant,stretch] \input tufte \endgraf \stop
+% \start \dosetstretch{.5em} effe flink doorfietsen \stop
+
+% \def\dosetupgridsnapping % calls too often, only needed in gridsnapping
+%   {\ctxlua{nodes.setsnapvalue(1,\number\openstrutheight,\number\openstrutdepth)}}
+%
+% \def\doenablegridsnapping
+%   {\attribute\snapcategoryattribute\plusone
+%    \topskip\strutht
+%    \offinterlineskip}
+%
+% \def\dodisablegridsnapping
+%   {\attribute\snapcategoryattribute\attributeunsetvalue
+%    % reset topskip
+%    \oninterlineskip}
+
+% experimental code, not yet interfaced:
+
+% category:
+% 0 == discard                             discard
+% 1 == only if larger                      largest
+% 2 == force even if smaller               force
+% 3 == only take penalty component         penalty
+% 4 == add to existing skip                add
+% 5 == disable (ignore following)          disable
+% 6 == kill whitespace                     nowhite
+% 7 == discard previous                    back
+%
+% penalty: larger wins
+% order: larger wins
+% category:2,order:5,penalty:10000,skip:value|kw
+%
+% \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
+
+% todo, in grid mode: vspacing.fixed = false
+
+\let\saveouterspacing   \relax % for old times sake
+\let\restoreouterspacing\relax % for old times sake
+
+\newtoks\everybeforeblankhandling
+\newtoks\everyafterblankhandling
+
+\newconditional\someblankdone
+
+\appendtoks
+    \blankskip\zeropoint
+    \attribute\skipcategoryattribute\plusone
+    \attribute\skippenaltyattribute \attributeunsetvalue
+    \attribute\skiporderattribute   \attributeunsetvalue
+    \ifgridsnapping % \ifblankflexible
+        \setfalse\blankisfixed
+    \else
+        \settrue\blankisfixed
+    \fi
+\to \everybeforeblankhandling
+
+\appendtoks
+    \ifconditional\blankisfixed
+        \blankskip1\blankskip
+    \else
+        \blankskip1\blankskip\!!plus\skipgluefactor\blankskip\!!minus\skipgluefactor\blankskip
+    \fi
+\to \everyafterblankhandling
+
+% \ifgridsnapping will go
+
+\appendtoks
+    \ifgridsnapping
+        \settrue\blankisfixed
+    \else
+        \setfalse\blankisfixed
+    \fi
+\to \everybeforeblankhandling
+
+\def\setblankcategory#1%
+  {\settrue\someblankdone
+   \attribute\skipcategoryattribute#1\relax}
+
+\def\setblankorder#1%
+  {\attribute\skiporderattribute#1\relax}
+
+\def\fixedblankskip
+  {\settrue\blankisfixed}
+
+\def\flexibleblankskip
+  {\setfalse\blankisfixed}
+
+\def\addblankskip#1#2#3%
+  {\settrue\someblankdone
+   \advance\blankskip#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
+
+\def\setblankpenalty #1%
+  {\flushblankhandling
+   \settrue\someblankdone
+   \attribute\skipcategoryattribute \plusthree
+   \attribute\skippenaltyattribute #1\relax
+   \flushblankhandling}
+
+\unexpanded\def\startblankhandling
+  {\par
+   \ifvmode
+     \expandafter\dostartblankhandling
+   \else
+     \expandafter\nostartblankhandling
+   \fi}
+
+\def\nostartblankhandling#1\stopblankhandling
+  {}
+
+\def\dostartblankhandling
+  {\begingroup
+   \setfalse\someblankdone
+   \the\everybeforeblankhandling}
+
+\unexpanded\def\stopblankhandling
+  {\the\everyafterblankhandling
+   \ifconditional\someblankdone
+     \vskip\blankskip
+   \fi
+   \endgroup}
+
+\def\flushblankhandling
+  {\the\everyafterblankhandling
+   \ifconditional\someblankdone
+     \vskip\blankskip
+   \fi
+   \setfalse\someblankdone
+   \the\everybeforeblankhandling}
+
+% % % % we can move much to lua once we can expand there % % % %
+
+\unexpanded\def\definevspacingamount
+  {\dotripleempty\dodefinevspacingamount}
+
+% \def\dodefinevspacingamount[#1][#2][#3]%
+%   {\ctxlua{vspacing.setskip("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+
+\def\dodefinevspacingamount[#1][#2][#3]% can be combined
+  {\setvalue{\??vs:#1}{\ifgridsnapping#3\else#2\fi}%
+   \ctxlua{vspacing.setskip("#1")}}
+
+\def\addpredefinedblankskip#1#2%
+  {\settrue\someblankdone
+   \advance\blankskip#1\dimexpr\csname\??vs:#2\endcsname\relax}
+
+\def\addaskedblankskip#1#2%
+  {\settrue\someblankdone
+   \advance\blankskip#1\dimexpr#2\relax}
+
+\unexpanded\def\definevspacing
+  {\dodoubleempty\dodefinevspacing}
+
+\def\dodefinevspacing[#1][#2]%
+  {\ctxlua{vspacing.setmap("#1","#2")}}
+
+\unexpanded\def\vspacing
+  {\dosingleempty\dovspacing}
+
+% todo: when packed blocks blank, we need to enable forced
+
+\def\dovspacing % blank also has a \flushnotes
+  {\ifinpagebody
+     \expandafter\dovspacingyes
+   \else\ifconditional\noblankinpacked % todo: better reset this conditional in pagebody
+     \expandafter\expandafter\expandafter\dovspacingnop
+   \else
+     \expandafter\expandafter\expandafter\dovspacingyes
+   \fi\fi}
+
+\def\dovspacingyes[#1]%
+  {\ifmmode\else\ctxlua{vspacing.analyse("\iffirstargument#1\else\s!default\fi")}\fi}
+
+\def\dovspacingnop[#1]%
+  {\ifmmode\else\par\fi}
+
+% todo: check them and make them faster:
+
+\definecomplexorsimple\setupvspacing
+
+\let\currentvspacing\empty
+
+\def\complexsetupvspacing[#1]%
+  {\edef\currentvspacing{#1}}
+
+\def\simplesetupvspacing
+  {\ifx\empty\currentvspacing\else
+     \let\currentvspacing\s!default
+   \fi
+   \simplesetupwhitespace}
+
+\def\restorestandardblank
+  {\let\currentvspacing\v!standard}
+
+% used both
+
+\def\doinhibitblank{\vspacing[\v!disable]} % can be made faster
+\def\inhibitblank  {\vspacing[\v!disable]} % can be made faster
+
+\let\setupblank      \setupvspacing
+\let\simplesetupblank\simplesetupvspacing
+\let\blank           \vspacing
+
+% category:4 is default
+
+% \definevspacingamount[\v!big]     [\bigskipamount]     [\openlineheight]
+% \definevspacingamount[\v!medium]  [\medskipamount]     [0.50\openlineheight]
+% \definevspacingamount[\v!small]   [\smallskipamount]   [0.25\openlineheight]
+% \definevspacingamount[\v!line]    [\openlineheight]    [\openlineheight]
+% \definevspacingamount[\v!halfline][0.50\openlineheight][0.50\openlineheight]
+% \definevspacingamount[\v!formula] [\medskipamount]     [0.50\openlineheight]
+% \definevspacingamount[\v!white]   [\parskip]           [\openlineheight]
+% \definevspacingamount[\v!height]  [\strutheight]       [\strutheight]
+% \definevspacingamount[\v!depth]   [\strutdepth]        [\strutdepth]
+
+\definevspacingamount[\v!none]    [\zeropoint]         [\zeropoint]
+\definevspacingamount[\v!big]     [\bigskipamount]     [\bodyfontlineheight]
+\definevspacingamount[\v!medium]  [\medskipamount]     [0.50\bodyfontlineheight]
+\definevspacingamount[\v!small]   [\smallskipamount]   [0.25\bodyfontlineheight]
+\definevspacingamount[\v!line]    [\openlineheight]    [\bodyfontlineheight]
+\definevspacingamount[\v!halfline][0.50\openlineheight][0.50\bodyfontlineheight]
+\definevspacingamount[\v!formula] [\medskipamount]     [0.50\bodyfontlineheight]
+\definevspacingamount[\v!white]   [\parskip]           [\bodyfontwhitespace]
+\definevspacingamount[\v!height]  [\strutheight]       [\bodyfontstrutheight]
+\definevspacingamount[\v!depth]   [\strutdepth]        [\bodyfontstrutdepth]
+
+\def\bodyfontwhitespace
+  {\dimexpr
+     \ifdim\parskip=\zeropoint
+       \zeropoint
+     \else\ifgridsnapping
+       \bodyfontlineheight
+     \else
+       \parskip
+     \fi\fi
+   \relax}
+
+\definevspacing[\v!preference][penalty:-500]  % goodbreak
+\definevspacing[\v!samepage]  [penalty:10000] % real strong
+\definevspacing[\v!max]       [category:1]
+\definevspacing[\v!force]     [category:2]
+\definevspacing[\v!disable]   [category:5]
+\definevspacing[\v!nowhite]   [category:6]
+\definevspacing[\v!back]      [category:7]
+\definevspacing[\v!always]    [category:0]
+\definevspacing[\v!weak]      [order:0]
+\definevspacing[\v!strong]    [order:100]
+
+\definevspacing[\s!default] [\v!white] % was big for a while
+
+\dorecurse{10} % todo: other values < 4000
+  {\expanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr4000+250*\recurselevel\relax]}}
+
+% \setfalse\vspacingenabled
+%
+% \newtoks\everyenablevspacing
+% \newtoks\everydisablevspacing
+%
+% \def\enablevspacing {\the\everyenablevspacing}
+% \def\disablevspacing{\the\everydisablevspacing}
+%
+% \appendtoks
+%     \writestatus\m!systems{! ! enabling vspacing ! !}%
+%     \settrue\vspacingenabled
+%     \ctxlua{vspacing.enable()}%
+% \to \everyenablevspacing
+%
+% \appendtoks
+%     \writestatus\m!systems{! ! disabling vspacing ! !}%
+%     \setfalse\vspacingenabled
+%     \ctxlua{vspacing.disable()}%
+% \to \everydisablevspacing
+
+\let\blank            \vspacing
+\let\defineblank      \definevspacing
+\let\defineblankmethod\definevspacingamount
+
+%D The following command is for Wolfgang. It has to be used with
+%D care as it does {\em not} work in tandem with the other spacing
+%D commands.
+
+\unexpanded\def\definevspace
+  {\dotripleempty\dodefinevspace}
+
+\def\dodefinevspace[#1][#2][#3]%
+  {\ifthirdargument
+     \setvalue{\??va#1:#2}{#3}%
+   \else
+     \setvalue{\??va:#1}{#2}%
+   \fi}
+
+\unexpanded\def\vspace
+  {\dodoubleempty\dovspace}
+
+\def\dovspace[#1][#2]%
+  {\ifsecondargument
+     \dodovspace[#1][#2]%
+   \else\iffirstargument
+     \vspace[][#1]%
+   \else
+     \vspace[][\s!default]%
+   \fi\fi}
+
+\def\dodovspace[#1][#2]%
+  {\par
+   \ifvmode
+     \removelastskip
+     \vskip\vspaceamount{#1}{#2}\relax
+   \fi}
+
+\def\vspaceamount#1#2%
+  {\executeifdefined{\??va#1:#2}{\executeifdefined{\??va:#2}\zeropoint}}
+
+%D When spacing is active we need to handle commands in
+%D a special way:
+%D
+%D \starttyping
+%D \setuplines[space=on]
+%D
+%D \startlines
+%D Let's talk about this{\ttsl\gobbleoneargument or}that.
+%D \stoplines
+%D
+%D \startlines
+%D Let's talk about this{\getvalue{ttsl}or}that.
+%D \stoplines
+%D \stoptyping
+%D
+%D One can indent in several ways:
+%D
+%D \starttyping
+%D \setupindenting[medium] \setuplines[indenting=odd] % no yes odd even
+%D
+%D \startlines
+%D first
+%D second
+%D third
+%D fourth
+%D \stoplines
+%D \stoptyping
+
+% \unexpanded\def\setuplines
+%   {\dodoubleargument\getparameters[\??rg]}
+%
+% \unexpanded\def\startlines
+%   {\@@rgbefore
+%    \pushmacro\checkindentation
+%    \whitespace
+%   %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
+%    \begingroup
+%    \setupindenting[\@@rgindenting]%
+%    \typesettinglinestrue
+%    \setupwhitespace[\v!none]%
+%    \obeylines
+%    \ignorespaces
+%    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
+%      {\gdef\afterfirstobeyedline
+%         {\nobreak
+%          \doifnot\@@rgoption\v!packed{\global\let\afterfirstobeyedline\relax}}}%
+%    \def\obeyedline
+%      {\par
+%       \futurelet\next\dobetweenthelines}%
+%    \activatespacehandler\@@rgspace
+%    \GotoPar}
+%
+% \unexpanded\def\stoplines
+%   {\endgroup
+%    \popmacro\checkindentation
+%    \@@rgafter}
+%
+% \def\dobetweenthelines
+%   {\doifmeaningelse\next\obeyedline
+%     {\@@rginbetween}
+%     {\afterfirstobeyedline}}
+%
+% \setuplines
+%   [\c!option=,
+%    \c!before=\blank,
+%    \c!after=\blank,
+%    \c!inbetween=\blank,
+%    \c!indenting=\v!no,
+%    \c!space=\v!default]
+
+%D Contrary to \MKII\ we can now define classes of lines (generalized by
+%D Wolfgang). I will probably rewrite bits in \LUA.
+
+\let\currentlines\empty
+
+\def\linesparameter    #1{\csname\dolinesparameter{\??rg\currentlines}#1\endcsname}
+\def\linesparameterhash#1{\dolinesparameterhash   {\??rg\currentlines}#1}
+
+\def\dolinesparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolinesparentparameter    \csname#1\s!parent\endcsname#2\fi}
+\def\dolinesparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dolinesparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+
+\def\dolinesparentparameter    #1#2{\ifx#1\relax\s!empty\else\dolinesparameter    #1#2\fi}
+\def\dolinesparentparameterhash#1#2{\ifx#1\relax        \else\dolinesparameterhash#1#2\fi}
+
+\def\dosetlinesattributes#1#2% style color
+  {\edef\fontattributehash {\linesparameterhash#1}%
+   \edef\colorattributehash{\linesparameterhash#2}%
+   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+\getparameters
+  [\??rg]
+  [\c!option=,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!inbetween=\blank,
+   \c!indenting=\v!no,
+   \c!space=\v!default]
+
+\unexpanded\def\definelines
+  {\dodoubleempty\dodefinelines}
+
+\def\dodefinelines[#1][#2]%
+  {\getparameters[\??rg#1][\s!parent=\??rg,#2]%
+   \setvalue{\e!start#1}{\dostartlines[#1]}%
+   \setvalue{\e!stop #1}{\dostoplines}}
+
+\unexpanded\def\setuplines
+  {\dodoubleempty\dosetuplines}
+
+\def\dosetuplines[#1][#2]%
+  {\doifelsenothing{#2}
+     {\getparameters[\??rg][#1]}
+     {\def\docommand##1{\getparameters[\??rg##1][#2]}%
+      \processcommacommand[#1]\docommand}}
+
+\def\dostartlines[#1]%
+  {\bgroup
+   \edef\currentlines{#1}%
+   \linesparameter\c!before
+   \pushmacro\checkindentation
+   \whitespace
+   \begingroup
+   \dosetlinesattributes\c!style\c!color
+   \setupindenting[\linesparameter\c!indenting]%
+   \setupalign[\linesparameter\c!align]%
+   \typesettinglinestrue
+   \setupwhitespace[\v!none]%
+   \obeylines
+   \ignorespaces
+   \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
+     {\gdef\afterfirstobeyedline
+        {\nobreak
+         \doifnot{\linesparameter\c!option}\v!packed{\global\let\afterfirstobeyedline\relax}}}%
+   \def\obeyedline
+     {\par
+      \futurelet\next\dobetweenthelines}%
+   \activatespacehandler{\linesparameter\c!space}%
+   \GotoPar}
+
+\def\dostoplines
+  {\endgroup
+   \popmacro\checkindentation
+   \linesparameter\c!after
+   \egroup}
+
+\def\dobetweenthelines
+  {\doifmeaningelse\next\obeyedline
+     {\linesparameter\c!inbetween}
+     {\afterfirstobeyedline}}
+
+\definelines[\v!lines]
+
+\def\emptylines
+  {\dosingleempty\doemptylines}
+
+\def\doemptylines[#1]%
+  {\endgraf\dorecurse{\iffirstargument#1\else3\fi}\crlf}
+
+\protect \endinput

@@ -1,0 +1,461 @@
+%D \module
+%D   [      file=x-fig-01,
+%D        version=2001.03.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Figure Base Generation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \readfile {x-res-01} \donothing \donothing \endinput
+
+%D See \type {x-fig-00.tex} for more information on how to use
+%D and generate figure databases. This file loads the file
+%D named \type {\jobfilename} (\TEXEXEC\ will set this
+%D variable). You can apply this style to a database by
+%D saying:
+%D
+%D \starttyping
+%D texexec --pdf --use=fig-make yourfile.xml
+%D \stoptyping
+%D
+%D The following modes are supported:
+%D
+%D \starttabulate[|lT|l|]
+%D \NC letter  \NC map the preview on letter size  \NC \NR
+%D \NC compact \NC use an alternative presentation \NC \NR
+%D \stoptabulate
+%D
+%D The resulting file has the following characteristics:
+%D
+%D \startitemize[packed]
+%D \item  the document is split into three sections: first each
+%D       figure is shown at its own page, then an overview of
+%D       figures is shown with some data alongside, and
+%D       finally an index and table of contents shows up
+%D \item  there is no title page, which means that one can
+%D       access a figure by page number without offset
+%D \item  the document is opened at the first overview page,
+%D       that is, when the viewer supports it
+%D \item  the graphic is shown 3~times: on a page of its own,
+%D       scaled to a fixed dimension, and relative to a4 or
+%D       letter paper size
+%D \item  the labels can be accessed in an index and list at
+%D       the end of the document
+%D \stopitemize
+%D
+%D We use named destinations, which means that one can
+%D access a figure by name from an external application.
+
+\usemodule[fig-00]
+
+\setupoutput[pdftex] \overcomePDFspacefalse
+
+\doifnothing  {\jobfilename}        {\end}
+\doiffileelse {\jobfilename.xml} {} {\end}
+
+\definesymbol     [attachment] [{\bf\color[darkred]{\jobname.xml}}]
+\setupattachments [symbol=attachment]
+\useattachment    [datafile] [\jobname.xml]
+
+\def\StartDescription
+  {\bgroup
+   \defineXMLpush[organization]
+   \defineXMLpush[project]
+   \defineXMLpush[product]
+   \defineXMLpush[comment]}
+
+\def\StopDescription
+  {\subject {Figure collection}
+   \starttabulate[|lBe|p|]
+   \doifXMLdataelse{organization}
+     {\NC organization \NC \XMLpop{organization} \NC \NR}{}
+   \doifXMLdataelse{project}
+     {\NC project      \NC \XMLpop{project}      \NC \NR}{}
+   \doifXMLdataelse{product}
+     {\NC product      \NC \XMLpop{product}      \NC \NR}{}
+   \doifXMLdataelse{comment}
+     {\NC comment      \NC \XMLpop{comment}      \NC \NR}{}
+   \NC specification \NC \attachment[datafile]   \NC \NR
+   \stoptabulate
+   \blank[2*big]
+   \egroup}
+
+\def\StartFigureA
+  {\bgroup
+   \defineXMLpush[file]
+   \XMLassign{file}{buffer}
+   \defineXMLpush[dummy]
+   \defineXMLpush[label]
+   \defineXMLpush[copyright]
+   \defineXMLpush[comment]
+   \defineXMLpush[status]}
+
+\defineoverlay[page][\overlaybutton{Description}]
+
+\startbuffer
+  \framed
+    [width=\XMLpar{dummy}{width}{12cm},
+     height=\XMLpar{dummy}{height}{8cm},
+     background=color,
+     backgroundcolor=gray,
+     foregroundcolor=darkred,
+     frame=off]
+    {\bf \XMLpop{dummy}}
+\stopbuffer
+
+\def\StopFigureA
+  {\doglobal\increment\CurrentPage
+   \setupbackgrounds[page][background=page]
+   \doifelsenothing{\XMLpop{label}}
+     {\expanded{\definereference[Description][about: \XMLpop{file}]}%
+      \pagereference[\XMLpop{file}]}
+     {\expanded{\definereference[Description][about: \XMLpop{label}]}%
+      \pagereference[\XMLpop{label}]}
+   \pagefigure[\XMLpop{file}]
+   \setupbackgrounds[page][background=]
+   \egroup}
+
+\def\StartFigureB
+  {\StartFigureA}
+
+\defineregister
+  [figureindex]
+  [figureindices]
+
+\setupregister
+  [figureindex]
+  [ownnumber=yes,
+   criterium=text,
+   interaction=text,
+   indicator=no]
+
+\definelist
+  [figurelist]
+
+\setuplist
+  [figurelist]
+  [criterium=text,
+   pagenumber=no,
+   width=2em,
+   interaction=all]
+
+\setupcolors
+  [state=start]
+
+\setuptolerance
+  [verytolerant]
+
+% Ugly:
+
+\startnotmode[previewpage-letter,previewpage-S6]
+  \enablemode[previewpage-A4]
+\stopnotmode
+
+\startmode[letter] % downward compatible
+  \enablemode[previewpage-letter]
+\stopmode
+
+%startbuffer[paper]
+\startsetups[paper]
+\startmode[previewpage-A4]
+  \framed
+    [width=210mm,height=297mm,offset=overlay,frame=off,
+     background=color,backgroundcolor=white]
+    {\externalfigure[\XMLpop{file}][reset=yes]}
+\stopmode
+\startmode[previewpage-letter]
+  \framed
+    [width=8.5in,height=11in,offset=overlay,frame=off,
+     background=color,backgroundcolor=white]
+    {\externalfigure[\XMLpop{file}][reset=yes]}
+\stopmode
+\startmode[previewpage-S6]
+  \framed
+    [width=600pt,height=450pt,offset=overlay,frame=off,
+     background=color,backgroundcolor=white]
+    {\externalfigure[\XMLpop{file}][reset=yes]}
+\stopmode
+\stopsetups
+%stopbuffer
+
+\setupbuttons
+  [offset=10pt,
+   width=broad,
+   strut=no,
+   rulethickness=1pt,
+   framecolor=darkred]
+
+\def\StopFigureB
+  {\par
+   \doglobal\increment\CurrentPage
+   \doifelsenothing{\XMLpop{label}}
+     {\expanded{\definereference[Figure][\XMLpop{file}]}%
+      \expanded{\definereference[GridPg][grid:\XMLpop{file}]}}
+     {\expanded{\definereference[Figure][\XMLpop{label}]}%
+      \expanded{\definereference[GridPg][grid:\XMLpop{label}]}}%
+   \button % content in setup
+     {\hbox to \hsize
+        {\forgetall \dontcomplain
+         \doifelsenothing{\XMLpop{label}}
+           {\pagereference[about: \XMLpop{file}]}
+           {\pagereference[about: \XMLpop{label}]}%
+         % moved here, because descriptions may be absent
+         \ifnum\CurrentPage=1 \pagereference[begin]\fi
+         %
+         \expanded{\writetolist[figurelist]{\CurrentPage}{\XMLpop{label}}}%
+         \expanded{\figureindex{\CurrentPage}{\XMLpop{label}}}%
+         \startnotmode[compact]%
+           \vbox to 100pt
+             {\hsize30pt
+              \vskip5pt
+              \hbox to \hsize{\hss\strut\bf\CurrentPage\hss}%
+              \vfill}%
+           \advance\hsize by -30pt
+         \stopnotmode
+         \startmode[compact]%
+           \advance\hsize by -10pt
+           \hskip10pt
+         \stopmode
+         \button % \framed
+           [width=150pt,height=100pt,offset=10pt,frame=off,
+            background=color,backgroundcolor=white,color=]
+           {\externalfigure
+              [\XMLpop{file}]
+              [maxheight=80pt,frame=off,maxwidth=130pt,factor=max]}%
+           [GridPg]%
+         \let\FigWid\figurenaturalwidth
+         \let\FigHei\figurenaturalheight
+         \advance\hsize by -150pt
+         \hskip10pt
+         \advance\hsize by -10pt
+         \vbox to 100pt
+           {\hsize40pt
+           %\externalfigure
+           %  [paper]
+           %  [type=buffer,frame=on,
+           %   framecolor=darkred,rulethickness=.5pt,
+           %   width=40pt,object=no]
+            \framed
+              [offset=overlay,
+               framecolor=darkred,
+               rulethickness=.5pt]
+              {\scale[width=40pt]{\setups[paper]}}% {\disableXML\getbuffer[paper]}}%
+            \startmode[compact]%
+              \vfill
+              \hbox to \hsize{\hss\strut\bf\CurrentPage\hss}%
+            \stopmode
+            \vfill}%
+         \advance\hsize by -40pt
+         \hskip10pt
+         \advance\hsize by -10pt
+         \vbox to 100pt
+           {\blank[disable]
+            \starttabulate[|Bel|p|]
+            \NC file \NC \XMLpop{file} \NC \NR
+            \doifXMLdata{label}
+              {\NC label \NC \XMLpop{label} \NC \NR}
+            \NC w$\times$h \NC \FigWid$\times$\FigHei \NC \NR
+            \doifXMLdata{copyright}
+              {\NC copyright \NC \XMLpop{copyright} \NC \NR}
+            \doifXMLdata{status}
+              {\doifelse{\XMLpop{status}}{obsolete}
+                 {\NC status \NC \bf\darkred\XMLpop{status} \NC \NR}
+                 {\NC status \NC \XMLpop{status} \NC \NR}}
+            \doifXMLdata{comment}
+              {\NC comment \NC \XMLpop{comment} \NC \NR}
+            \stoptabulate
+            \vfill}}}%
+      [Figure]
+   \vskip10pt
+   \egroup}
+
+\def\StartFigureC
+  {\StartFigureA}
+
+\def\StopFigureC
+  {\doglobal\increment\NumberOfFigures
+   \egroup}
+
+\setuplayout
+  [topspace=15pt,backspace=15pt,
+   header=0pt,footer=0pt,bottom=20pt,bottomdistance=10pt,
+   width=middle,height=fit]
+
+\setupbackgrounds
+  [page]
+  [background=,
+   backgroundcolor=gray]
+
+\setupinteractionscreen
+  [width=max,
+   height=max]
+
+\setupcolors
+  [state=start]
+
+\setupinteraction
+  [style=,
+   color=,
+   contrastcolor=,
+   state=start]
+
+\setuphead
+  [section]
+  [style=bfb]
+
+\setupbodyfont
+  [pos]
+
+\setupinteractionmenu
+  [bottom]
+  [left=\hfill,
+   middle=\hskip10pt,
+   frame=off,
+   style=bold,
+   background=color,
+   backgroundcolor=darkred,
+   foregroundcolor=white]
+
+\startinteractionmenu[bottom]
+  \but [begin]         begin   \\
+  \but [index]         index   \\
+  \but [list]          list    \\
+  \but [CloseDocument] close   \\
+  \but [PreviousJump]  go back \\
+\stopinteractionmenu
+
+\setupinteraction
+  [openaction=begin]
+
+\defineXMLenvironment [figurelibrary] \StartLibrary \StopLibrary
+
+\starttext
+
+\def\StartLibrary{\mainlanguage[\XMLpar{figurelibrary}{language}{en}]}
+\def\StopLibrary {}
+
+\defineXMLignore      [description]
+\defineXMLenvironment [figure]      \StartFigureC \StopFigureC
+
+\doglobal\newcounter\CurrentPage
+
+\processXMLfilegrouped{\jobfilename.xml}
+
+\increment\NumberOfFigures
+
+\defineXMLignore      [description]
+\defineXMLenvironment [figure]      \StartFigureA \StopFigureA
+
+\doglobal\newcounter\CurrentPage
+
+\processXMLfilegrouped{\jobfilename.xml}
+
+\setuppapersize
+  [S6][S6]
+
+\setupbackgrounds
+  [page]
+  [background=color]
+
+\setupinteraction
+  [menu=on]
+
+\defineXMLenvironment [description] \StartDescription \StopDescription
+\defineXMLenvironment [figure]      \StartFigureB     \StopFigureB
+
+\doglobal\newcounter\CurrentPage
+
+\processXMLfilegrouped{\jobfilename.xml} \page
+
+\subject [list] {List of figures}
+
+\placelist[figurelist] \page
+
+\subject [index] {Index of figures}
+
+\startcolumns
+\placeregister[figureindex]
+\stopcolumns
+
+\doifmodeelse{clipgrid-distance,clipgrid-steps}{\page}{\stoptext}
+
+\startuniqueMPgraphic{clipgrid}{dx,dy,nx,ny,type}
+  numeric gdx, gdy, lbx, lby ;
+  if \MPvar{type}=1 :
+    gdx := \MPvar{dy} ;
+    gdy := \MPvar{dx} ;
+  else :
+    gdx := OverlayWidth /\MPvar{nx} ;
+    gdy := OverlayHeight/\MPvar{ny} ;
+  fi ;
+  lbx := gdx ;
+  lby := gdy ;
+  defaultfont  := "\truefontname{Mono}" ;
+  defaultscale := .5 ;
+  numeric pen ; pen := .25pt ;
+  def MyGrid text t =
+    draw vlingrid (0,OverlayWidth ,gdy,OverlayWidth ,OverlayHeight) t ;
+    draw hlingrid (0,OverlayHeight,gdx,OverlayHeight,OverlayWidth ) t ;
+  enddef ;
+  pickup pencircle scaled pen ;
+  MyGrid withcolor white ;
+  MyGrid dashed evenly scaled pen ;
+  draw OverlayBox withcolor white ;
+  draw OverlayBox dashed evenly scaled pen ;
+  draw vlinlabel.bot(0,eps+OverlayWidth /lby,2,OverlayWidth ) ;
+  draw hlinlabel.lft(0,eps+OverlayHeight/lbx,2,OverlayHeight) ;
+  setbounds currentpicture to OverlayBox enlarged (2*EmWidth) ;
+\stopuniqueMPgraphic
+
+\presetMPvariable[clipgrid][dx=10pt]
+\presetMPvariable[clipgrid][dy=10pt]
+\presetMPvariable[clipgrid][nx=10]
+\presetMPvariable[clipgrid][ny=10]
+
+\startmode[clipgrid-distance]
+  \defineoverlay[grid][\uniqueMPgraphic{clipgrid}{type=1}]
+\stopmode
+
+\startmode[clipgrid-steps]
+  \defineoverlay[grid][\uniqueMPgraphic{clipgrid}{type=2}]
+\stopmode
+
+\setupexternalfigures
+  [background={color,foreground,grid},
+   backgroundcolor=white]
+
+\def\StartFigureD
+  {\StartFigureA}
+
+\def\StopFigureD
+  {\doglobal\increment\CurrentPage
+   \setupbackgrounds[page][background=page]
+   \startpagefigure[\XMLpop{file}][offset=20pt]%
+     \doifelsenothing{\XMLpop{label}}
+       {\expanded{\definereference[Description][about: \XMLpop{file}]}%
+        \pagereference[grid:\XMLpop{file}]}
+       {\expanded{\definereference[Description][about: \XMLpop{label}]}%
+        \pagereference[grid:\XMLpop{label}]}
+   \stoppagefigure
+  %\pagefigure[\XMLpop{file}][offset=20pt]
+   \setupbackgrounds[page][background=]
+   \egroup}
+
+\defineXMLignore
+  [description]
+
+\defineXMLenvironment
+  [figure]
+  \StartFigureD
+  \StopFigureD
+
+\doglobal\newcounter\CurrentPage
+
+\processXMLfilegrouped{\jobfilename.xml} \page
+
+\stoptext

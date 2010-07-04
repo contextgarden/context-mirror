@@ -1,0 +1,59 @@
+%D \module
+%D   [       file=colo-ext, % mostof thsi code used to be in colo-ini.tex
+%D        version=1997.04.01,
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=Extras,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Color Macros / Extras}
+
+\unprotect
+
+%D \macros
+%D   {negatecolorcomponent, negativecolorbox}
+%D
+%D Sometimes, especially when we deal with typesetting
+%D devices, we want to reverse the color scheme. Instead of
+%D recalculating all those colors, we use a quick and dirty
+%D approach:
+%D
+%D \starttyping
+%D \negativecolorbox0
+%D \stoptyping
+%D
+%D will negate the colors in box zero.
+
+\def\negatecolorbox#1%
+  {\setbox#1\hbox
+     {\dostartnegative
+      \localstartcolor[white]\vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1\localstopcolor
+      \hskip-\wd#1%
+      \box#1%
+      \dostopnegative}}
+
+%D There are in principle two ways to handle overprint: bound to colors
+%D or independent. For the moment we only support independent overprint
+%D handling. Here we deal with a per-document setting.
+
+\setupcolors
+  [\c!intent=\v!none]
+
+\def\starttextoverprint
+  {\doifelse\@@clintent\v!overprint
+     {\glet\stoptextoverprint \dostopoverprint
+      \glet\starttextoverprint\dostartoverprint
+      \dostartoverprint}
+     {\glet\stoptextoverprint\donothing}}
+
+\let\stoptextoverprint\donothing
+
+\appendtoks \starttextoverprint \to \everystarttextproperties
+\appendtoks \stoptextoverprint  \to \everystoptextproperties
+
+\protect \endinput

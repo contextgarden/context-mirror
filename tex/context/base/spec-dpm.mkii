@@ -1,0 +1,446 @@
+%D \module
+%D   [       file=spec-dpm,
+%D        version=1998.11.24,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=DVIPDFM support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D This driver is build on top of the general \PDF\ macros,
+%D as defined in \type{spec-fdf}, so we inherit that one. Remark:
+%D this driver is no longer actively maintained, use the dpx one
+%D instead!
+
+\startspecials[dpm][reset,fdf]
+
+%D \macros
+%D   {jobsuffix}
+%D
+%D Because no intermediate output format is used, we set the
+%D jobsuffix to \PDF.
+
+\setjobsuffix{pdf}
+
+%D Literal \PDF\ inclusion is implemented as:
+
+\def\PDFcode       #1{\special{pdf: content #1}}
+\def\PDFcontentcode#1{\special{pdf: content #1}}
+\def\PDFdirectcode #1{\special{pdf: literal #1}}
+
+%D \macros
+%D   {dosetuppaper}
+%D
+%D A simple one.
+
+\def\doDPMsetuppaper#1#2#3%
+  {\bgroup
+   \scratchdimen#2\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#3\edef\height{\the\scratchdimen\space}%
+   \special{pdf: pagesize width \width height \height}%
+   \global\let\doDPMsetuppaper\gobblethreearguments
+   \egroup}
+
+\definespecial\dosetuppaper#1#2#3%
+  {\doDPMsetuppaper{#1}{#2}{#3}}
+
+%D \macros
+%D   {doinsertfile}
+%D
+%D Only \METAPOST, \JPG\ and \PDF\ inclusion are supported.
+
+\definespecial\doinsertfile
+  {\dofileinsertion{dpm}\@@DriverImageType}
+
+\definefileinsertion{dpm}{mps}%
+  {\PointsToWholeBigPoints\@@DriverImageWidth \width
+   \PointsToWholeBigPoints\@@DriverImageHeight\height
+   \special
+     {PSfile="\@@DriverImageFile"\space
+      llx=\EPSllx\space lly=\EPSlly\space
+      urx=\EPSurx\space ury=\EPSury\space
+      rwi=\width0\space rhi=\height0}}
+
+\definefileinsertion{dpm}{pdf}%
+  {\special{pdf: epdf
+     width  \@@DriverImageWidth \space
+     height \@@DriverImageHeight\space
+     (\@@DriverImageFile)}}
+
+\definefileinsertion{dpm}{jpg}%
+  {\special{pdf: image
+     width  \@@DriverImageWidth \space
+     height \@@DriverImageHeight\space
+     (\@@DriverImageFile)}}
+
+\definefileinsertion{dpm}{mov}{\doPDFinsertmov}
+\definefileinsertion{dpm}{avi}{\doPDFinsertmov}
+
+%D \macros
+%D  {doinsertsoundtrack}
+%D
+%D Sounds are supported too.
+
+\definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
+
+%D \macros
+%D  {doovalbox}
+
+\definespecial\doovalbox{\doPDFovalbox}
+
+%D \macros
+%D   {dostartgraymode,dostopgraymode,
+%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,
+%D    dostopcolormode,
+%D    dostartrotation,dostoprotation,
+%D    dostartscaling,dostopscaling,
+%D    dostartmirroring,dostopmirroring,
+%D    dostartnegative,dostopnegative}
+%D
+%D Unfortunately the direct \PDF\ inclusion is not suited
+%D for the next macros, which means that we cannot use the
+%D \type {\doPDF..} alternatives. Since \CONTEXT\ maintains
+%D its own colorstack, we use the \DVIPS\ alternatives.
+
+\definespecial\dostartgraymode           #1{\special{color gray #1}}
+\definespecial\dostopgraymode              {\special{color gray 0}}
+\definespecial\dostartrgbcolormode   #1#2#3{\special{color rgb  #1 #2 #3}}
+\definespecial\dostartcmykcolormode#1#2#3#4{\special{color cmyk #1 #2 #3 #4}}
+\definespecial\dostartgraycolormode      #1{\special{color gray #1}}
+\definespecial\dostopcolormode             {\special{color gray 0}}
+\definespecial\dostartrotation           #1{\special{pdf: bt rotate #1}}
+\definespecial\dostoprotation              {\special{pdf: et}}
+\definespecial\dostartscaling          #1#2{\special{pdf: bt xscale #1 yscale #2}}
+\definespecial\dostopscaling               {\special{pdf: et}}
+\definespecial\dostartmirroring            {\special{pdf: bt xscale -1}} % ?
+\definespecial\dostopmirroring             {\special{pdf: et}}
+
+%D Negation is not (yet) supported:
+
+% \definespecial\dostartnegative      {}
+% \definespecial\dostopnegative       {}
+% \definespecial\dostarttransparency  {}
+% \definespecial\dostoptransparency   {}
+
+
+%D \macros
+%D   {dosetupinteraction,
+%D    dosetupopenaction,dosetupcloseaction}
+
+\definespecial\dosetupinteraction%
+  {\showmessage\m!interactions{21}{DVIPDFM}}
+
+\definespecial\dosetupopenaction {\doPDFsetupopenaction}
+\definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
+
+%D \macros
+%D   {doresetgotowhereever,
+%D    dostartthisisrealpage,dostartthisislocation,
+%D    dostartgotorealpage,dostartgotolocation,dostartgotoJS}
+
+\definespecial\doresetgotowhereever {\doPDFresetgotowhereever}
+\definespecial\dostartthisislocation{\doPDFstartthisislocation}
+
+\definespecial\dostartgotolocation{\doPDFstartgotolocation}
+\definespecial\dostartgotorealpage{\doPDFstartgotorealpage}
+\definespecial\dostartgotoJS      {\doPDFstartgotoJS}
+
+%D \macros
+%D   {doflushJSpreamble}
+
+\definespecial\doflushJSpreamble#1%
+  {\bgroup
+   \let\compositeJScode=\empty
+   \def\docommand##1%
+     {\edef\sanitizedJScode{\getJSpreamble{##1}}%
+      \@EA\doPSsanitizeJScode\sanitizedJScode\to\sanitizedJScode
+      \special{pdf: object @JS:#1 <</S /JavaScript /JS (\sanitizedJScode)>>}%
+      \edef\compositeJScode{\compositeJScode\space (##1) @JS:#1}}%
+   \processcommalist[#1]\docommand
+   \special{pdf: object @JS:JS <</Names [\compositeJScode]>>}%
+   \special{pdf: put @names <</JavaScript @JS:JS>>}%
+   \egroup}
+
+%D \macros
+%D   {dostarthide,dostophide}
+
+\definespecial\dostarthide{}
+\definespecial\dostophide {}
+
+%D \macros
+%D   {dosetupscreen}
+
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpaperheight}
+
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpaperheight}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpaperheight}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpaperheight}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpaperheight}
+
+%D \macros
+%D   {dostartexecutecommand}
+
+\definespecial\dostartexecutecommand{\doPDFstartexecutecommand}
+
+%D \macros
+%D   {dosetupidentity}
+
+\definespecial\dosetupidentity{\doPDFsetupidentity}
+
+%D \macros
+%D   {dostartrunprogam}
+
+\definespecial\dostartrunprogram{\doPDFstartrunprogram}
+
+%D \macros
+%D   {dostartgotoprofile, dostopgotoprofile,
+%D    dobeginofprofile, doendofprofile}
+
+\definespecial\dostartgotoprofile{\doPDFstartgotoprofile}
+
+\definespecial\dobeginofprofile#1#2#3#4%
+  {\bgroup
+   \setPDFdestination{#1}%
+   \scratchdimen#2\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#3\edef\height{\the\scratchdimen\space}%
+   \doifsomething{\PDFdestination}
+     {\special
+        {pdf: thread @ART::\PDFdestination\space
+              width \width height \height
+              <</Title (\PDFdestination)>>}}%
+   \egroup}
+
+\definespecial\doendofprofile%
+  {}
+
+%D \macros
+%D  {doinsertbookmark}
+
+\definespecial\doinsertbookmark{\doPDFinsertbookmark}
+
+%D \macros
+%D  {dostartobject,dostopobject,doinsertobject}
+
+% \definespecial\dostartobject#1#2#3#4#5%
+%   {\bgroup
+%    \setbox\nextbox=\hbox\bgroup
+%      \dosetobjectreference{#1}{#2}{#1::#2}%
+%      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+%      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+%      \special{pdf: bxobj @#1::#2 width \width height \height}}
+
+% \definespecial\dostopobject%
+%   {\special{pdf: exobj}%
+%    \egroup
+%    \smashbox\nextbox
+%    \flushatshipout{\box\nextbox}%
+%    \egroup}
+
+\definespecial\dostartobject#1#2#3#4#5%
+  {\bgroup
+   \dowithnextbox
+     {\dosetobjectreference{#1}{#2}{#1::#2}%
+      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+      \setbox\nextbox\vbox
+        {\special{pdf: bxobj @#1::#2 width \width height \height}%
+         % we need to compensate for the box offset (ugly, sigh)
+         \scratchdimen\nextboxht
+         \advance\scratchdimen\nextboxdp
+         \advance\scratchdimen-#4\relax
+         \nextboxdp\zeropoint
+         \nextboxht\zeropoint
+         \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
+         \special{pdf: exobj}%
+         \global\let\currentPDFresources\empty}%
+      \smashbox\nextbox
+      \flushatshipout{\box\nextbox}%
+      \egroup}%
+    \hbox\bgroup}
+
+\definespecial\dostopobject
+  {\egroup}
+
+
+\definespecial\doinsertobject#1#2%
+  {\hbox
+     {\dogetobjectreference{#1}{#2}\PDFobjectreference
+      \ifx\PDFobjectreference\empty \else
+        \special{pdf: usexobj @#1::#2}%
+      \fi}}
+
+%D \macros
+%D   {dosetpagetransition}
+
+\definespecial\dosetpagetransition{\doPDFsetpagetransition}
+
+%D \macros
+%D   {doinsertcomment, doflushcomments}
+
+\definespecial\doinsertcomment{\doPDFinsertcomment}
+\definespecial\doflushcomments{\doPDFflushcomments}
+
+%D \macros
+%D   {dopresetlinefield,dopresettextfield,
+%D    dopresetchoicefield,dopresetpopupfield,dopresetcombofield,
+%D    dopresetpushfield,dopresetcheckfield,
+%D    dopresetradiofield,dopresetradiorecord}
+
+\definespecial\dopresetlinefield  {\doFDFpresetlinefield}
+\definespecial\dopresettextfield  {\doFDFpresettextfield}
+\definespecial\dopresetchoicefield{\doFDFpresetchoicefield}
+\definespecial\dopresetpopupfield {\doFDFpresetpopupfield}
+\definespecial\dopresetcombofield {\doFDFpresetcombofield}
+\definespecial\dopresetpushfield  {\doFDFpresetpushfield}
+\definespecial\dopresetcheckfield {\doFDFpresetcheckfield}
+\definespecial\dopresetradiofield {\doFDFpresetradiofield}
+\definespecial\dopresetradiorecord{\doFDFpresetradiorecord}
+
+%D \macros
+%D   {dodefinefieldset,dogetfieldset,doiffieldset}
+
+\definespecial\dodefinefieldset{\doFDFdefinefieldset}
+\definespecial\dogetfieldset   {\doFDFgetfieldset}
+\definespecial\doiffieldset    {\doFDFiffieldset}
+
+%D \macros
+%D   {doregistercalculationset}
+
+\definespecial\doregistercalculationset{\doFDFregistercalculationset}
+
+%D \macros
+%D   {doPDFdestination}
+
+\def\doPDFdestination#1%
+  {\special{pdf: dest (#1) [@thispage /View [/Fit]]}}
+
+%D \macros
+%D   {doPDFaction,doPDFannotation,ifsharePDFactions}
+%D
+%D Sharing is not yet supported.
+
+\newif\ifsharePDFactions \sharePDFactionsfalse
+
+\def\dodoPDFaction#1#2#3#4%
+  {\ifcollectreferenceactions
+     \xdef\lastPDFaction{#4}%
+   \else
+     \bgroup
+    % this is yet untested
+    %\ifsharePDFactions
+    %  \ifcase\similarreference\relax
+    %    \xdef\lastPDFaction{<<#4>>}%
+    %  \or
+    %    \global\advance\nofPDFsimilar by 1
+    %    \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space<<#4>>}%
+    %    \xdef\lastPDFaction{@PDF::sim:\the\nofPDFsimilar}%
+    %  \else
+    %    % leave \lastPDFaction untouched
+    %  \fi
+    %\else
+       \xdef\lastPDFaction{<<#4>>}%
+    %\fi
+     \scratchdimen#2\edef\width {\the\scratchdimen\space}%
+     \scratchdimen#3\edef\height{\the\scratchdimen\space}%
+     \special{pdf: ann #1 width \width height \height
+       <</Subtype /Link /Border [0 0 0]
+         \ifhighlighthyperlinks \else /H /N \fi
+         /A \lastPDFaction\space>>}%
+     \egroup
+   \fi}
+
+\def\doPDFaction#1#2#3%
+  {\dodoPDFaction\empty{#1}{#2}{#3}}
+
+\def\doPDFannotation#1#2#3%
+  {\bgroup
+   \scratchdimen#1\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#2\edef\height{\the\scratchdimen\space}%
+   \special{pdf: ann width \width height \height
+     <</Subtype /Link /Border [0 0 0] /A <<#3>>}%
+   \egroup}
+
+%D \macros
+%D   {doPDFannotationobject,doPDFactionobject}
+
+\def\doPDFannotationobject#1#2#3#4#5%
+  {\bgroup
+   \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+   \special{pdf: ann @#1::#2 width \width height \height <<#5>>}%
+   \dosetobjectreference{#1}{#2}{@#1::#2}%
+   \egroup}
+
+\def\doPDFactionobject#1#2#3#4#5%
+  {\dodoPDFaction{@#1::#2}{#3}{#4}{#5}%
+   \dosetobjectreference{#1}{#2}{#1::#2}}
+
+%D \macros
+%D   {doPDFaddtocatalog,doPDFaddtoinfo,
+%D    doPDFpageattribute,doPDFpagesattribute}
+
+\def\doPDFaddtocatalog#1%
+  {\special{pdf: put @catalog <<#1>>}}
+
+\def\doPDFaddtoinfo#1% Is this auto appended? Not checked!
+  {\special{pdf: docinfo <<#1>>}} % put @docinfo <<#1>>}}
+
+\def\doPDFpageattribute#1%
+  {\special{pdf: put @thispage <<#1>>}}
+
+\def\doPDFpagesattribute#1%
+  {\special{pdf: put @pages <<#1>>}}
+
+\def\doPDFpageresource#1%
+  {\message{[skipping PDF resource]}}
+
+\let\doPDFresetpageresources \relax
+\let\doPDFresetpageattributes\relax
+
+%D \macros
+%D   {doPDFbookmark}
+
+\def\doPDFbookmark#1#2#3#4#5%
+  {\ifcase#2\else
+     \scratchcounter#4\advance\scratchcounter\minusone
+     \special{pdf: out \ifcase#5-\fi#2
+        % <</Page \the\scratchcounter\space /View [/Fit] /Title (#3)>>}%
+        % <</Title (#3) /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
+          <</Title \ifPDFunicode<#3>\else(#3)\fi\space /A <</S /GoTo /D [@page\number#4\space\PDFpageviewwrd]>> >>}%
+   \fi}
+
+%D \macros
+%D   {doPDFdictionaryobject,doPDFarrayobject}
+
+\def\doPDFdictionaryobject#1#2#3%
+  {\special{pdf: object @#1::#2 <<#3>>}}
+
+\def\doPDFarrayobject#1#2#3%
+  {\special{pdf: object @#1::#2 [#3]}}
+
+%D \macros
+%D   {defaultobjectreference,doPDFgetobjectreference}
+
+\def\defaultobjectreference#1#2{#1::#2}
+
+\def\doPDFgetobjectreference#1#2#3%
+  {\dogetobjectreference{#1}{#2}#3%
+   \ifx#3\empty\else\edef#3{{#3}}\fi}
+
+% \def\doPDFgetobjectpage         #1#2#3{..}
+% \def\doPDFgetobjectpagereference#1#2#3{..}
+
+\def\doPDFgetpagereference#1#2%
+  {\edef#2{@page#1}}
+
+%D Done.
+
+\stopspecials
+
+\protect \endinput

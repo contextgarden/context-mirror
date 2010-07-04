@@ -1,0 +1,312 @@
+%D \module
+%D   [       file=page-lin, % copied from main-001
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Line Numbering,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Line Numbering}
+
+\unprotect
+
+\newif\ifnumberinglines
+\newif\iftypesettinglines
+
+\newcount\linenumber
+\newcount\linestepper
+
+\chardef\linenumberlocation=0
+
+\newtoks\beforeeverylinenumbering
+\newtoks\aftereverylinenumbering
+
+% het gebruik van \setlocalreference scheelt een hash entry
+
+\def\dodoshowlinenumber % for use elsewhere, to be extended
+  {\doplacelinenumber
+   \global\advance\linenumber \plusone}
+
+\def\completelinenumber
+  {\@@rnleft\convertnumber\@@rnconversion\linenumber\@@rnright}
+
+\def\dosetuplinenumbering[#1]%
+  {\getparameters[\??rn][\c!start=1,\c!step=1,#1]%
+   \global\linenumber\plusone}
+
+\def\setuplinenumbering
+  {\dosingleargument\dosetuplinenumbering}
+
+\def\dostartnummerenLINE
+  {\EveryPar{\placelinenumber}} % why not append to everypar ? better
+
+\def\dostopnummerenLINE
+  {\the\aftereverylinenumbering
+   \egroup}
+
+\def\dostartnummerenVERB
+  {\EveryLine{\placelinenumber}}
+
+\def\dostopnummerenVERB
+  {\the\aftereverylinenumbering
+   \egroup}
+
+\newevery \everylinenumber \relax
+
+\def\dodoplacelinenumber
+  {% beware of em's, the font is already switched !
+   \setbox\scratchbox\hbox
+     {\setbox0\hbox{\@@rncommand{\completelinenumber}}\vsmashbox0%
+      \ifcase\linenumberlocation
+        \iftypesettinglines % hack
+          \expandafter\llap
+        \else
+          \expandafter\rlap
+        \fi{\hbox to \@@rnwidth{\box0\hss}}% was \llap, nog testen !!
+      \or
+        \inleftmargin
+          {\forgetall
+           \doifelse\@@rnwidth\v!margin
+             {\hsize\leftmarginwidth}{\hsize\@@rnwidth}%
+           \alignedline\@@rnalign\v!right{\box0\hskip\@@rndistance}}%
+      \else
+        \inrightmargin
+          {\forgetall
+           \doifelse\@@rnwidth\v!margin
+             {\hsize\rightmarginwidth}{\hsize\@@rnwidth}%
+           \alignedline\@@rnalign\v!left{\hskip\@@rndistance\box0}}%
+      \fi}%
+   \vsmashbox\scratchbox
+   \box\scratchbox
+   \the\everylinenumber}
+
+\def\complexstartlinenumbering[#1]%
+  {\doifnot{#1}\v!continue
+     {\doifnumberelse{#1}
+        {\global\linenumber#1\relax}
+        {\doifelsenothing\@@rnstart
+           {\global\linenumber\plusone}
+           {\global\linenumber\@@rnstart}}}%
+   \chardef\linenumberlocation\zerocount
+   \processaction
+     [\@@rnlocation]
+     [  \v!inmargin=>\chardef\linenumberlocation\plusone,
+          \v!inleft=>\chardef\linenumberlocation\plusone,
+         \v!inright=>\chardef\linenumberlocation\plustwo,
+          \v!margin=>\chardef\linenumberlocation\plusone]%
+       %   \v!text=>\chardef\linenumberlocation\zerocount,
+       %\s!unknown=>\chardef\linenumberlocation\zerocount,
+       %\s!default=>\chardef\linenumberlocation\zerocount]%
+   \doifnot\@@rnwidth\v!margin
+     {\freezedimenmacro\@@rnwidth
+      \ifcase\linenumberlocation % text
+        \advance\leftskip\@@rnwidth\relax
+      \fi}%
+   \freezedimenmacro\@@rndistance
+   \chardef\@@rn@@rnmethod
+     \ifprocessingverbatim\zerocount\else\iftypesettinglines\plusone\else\plustwo\fi\fi
+   \processaction
+     [\@@rnmethod]
+     [ \v!type=>\chardef\@@rn@@rnmethod\zerocount,
+       \v!line=>\chardef\@@rn@@rnmethod\plusone,
+       \v!text=>\chardef\@@rn@@rnmethod\plustwo,
+       \v!file=>\chardef\@@rn@@rnmethod\plusthree]%
+   \ifcase\@@rn@@rnmethod % verbatim, line by line
+     \typesettinglinestrue
+     \let\dostartnummeren\dostartnummerenVERB
+     \let\stoplinenumbering\dostopnummerenVERB
+     \def\placelinenumber
+       {\doplacelinenumber
+        \global\advance\linenumber \plusone}%
+   \or % text, line by line
+     \let\dostartnummeren\dostartnummerenLINE
+     \let\stoplinenumbering\dostopnummerenLINE
+     \def\placelinenumber
+       {\doplacelinenumber
+        \global\advance\linenumber \plusone}%
+   \or % text, whole lot
+     \let\dostartnummeren\dostartnummerenPAR
+     \let\stoplinenumbering\dostopnummerenPAR
+     \def\placelinenumber
+       {\global\advance\linenumber \minusone
+        \doplacelinenumber}%
+   \or % verbatim, selective line by line
+     \typesettinglinestrue
+     \let\dostartnummeren\dostartnummerenVERB
+     \let\stoplinenumbering\dostopnummerenVERB
+     \def\placelinenumber
+       {\global\linenumber\verbatimlinenumber
+        \global\advance\linenumber \minusone
+        \doplacelinenumber}%
+   \fi
+   \dostartnummeren}
+
+\def\startlinenumbering
+  {\bgroup
+   \the\beforeeverylinenumbering
+   \numberinglinestrue
+   \complexorsimpleempty\startlinenumbering}
+
+\def\donoplacelinenumber
+  {\the\everylinenumber}
+
+\def\doplacelinenumber
+  {\ifnum\linenumber<\@@rnstart\relax
+     \donoplacelinenumber
+   \else
+     \ifnum\numexpr(\linenumber/\@@rnstep)*\@@rnstep\relax=\linenumber
+       \doattributes\??rn\c!style\c!color\dodoplacelinenumber
+     \else
+       \donoplacelinenumber
+     \fi
+   \fi}
+
+\def\someline[#1]%
+  {\dolinereference0[#1]\ignorespaces}
+
+\def\startline[#1]%
+  {\dolinereference1[#1]\ignorespaces}
+
+\def\stopline[#1]%
+  {\removelastspace\dolinereference2[#1]}
+
+\def\inline#1[#2]%
+  {\doifelsenothing{#1}
+     {\doifinstringelse{--}\currenttextreference
+        {\in{\leftlabeltext\v!lines}{\rightlabeltext\v!lines}[\@@rnprefix#2]}
+        {\in{\leftlabeltext\v!line }{\rightlabeltext\v!line }[\@@rnprefix#2]}}
+     {\in{#1}[\@@rnprefix#2]}}
+
+\def\dostartnummerenPAR
+  {\beginofshapebox
+   \doglobal\newcounter\linereference}
+
+% localcrossref heroverwegen
+
+\def\setlinereference#1#2#3#4%
+  {\setxvalue{lrf:#1}{\noexpand\dogetlinereference{#2}{#3}{#4}}}
+
+\def\getlinereference#1%
+  {\getvalue{lrf:#1}}
+
+\def\dogetlinereference#1#2#3%
+  {\edef\linereferencename{#1}%
+   \edef\linereferenceline{#2}%
+   \edef\linereferenceplus{#3}}
+
+% 1 xxx xxx xxx xxx xxx xxx xxx
+% 2 xxx yyy yyy yyy yyy yyy yyy <= start y
+% 3 yyy yyy yyy yyy yyy yyy yyy
+% 4 yyy yyy yyy yyy yyy xxx xxx <= stop y
+% 5 xxx xxx xxx xxx xxx xxx xxx
+
+\def\dolinereference#1[#2]%
+  {\bgroup
+   \dimen0=\strutdp
+   \doif\@@rnreferencing\v!on
+     {\doglobal\increment\linereference
+      % start 1=>(n=y,l=0,p=1)
+      % stop  2=>(n=y,l=0,p=2)
+      \setlinereference{\linereference}{\@@rnprefix#2}{0}{#1}%
+      \advance\dimen0 \linereference sp}%
+   \prewordbreak
+   \vrule \!!width \zeropoint \!!depth \dimen0 \!!height \zeropoint
+   \prewordbreak
+   \egroup}
+
+\def\dostopnummerenPAR % dp's -> openstrutdepth
+  {\endofshapebox
+   \checkreferences
+   \linestepper\zerocount
+   \reshapebox{\global\advance\linestepper \plusone}%
+   \global\advance\linenumber \linestepper
+   \doifelse\@@rnreferencing\v!on
+     {\reshapebox % We are going back!
+        {\global\advance\linenumber \minusone
+         \dimen0=\dp\shapebox
+         \advance\dimen0 -\strutdp\relax
+         \ifdim\dimen0>\zeropoint
+           % 1=>4 | 2=>4 1=>2
+           % start 1=>(n=y,l=2,p=1)
+           % stop  2=>(n=y,l=4,p=2)
+           \dostepwiserecurse\plusone{\number\dimen0}\plusone
+             {\getlinereference\recurselevel
+              \setlinereference\recurselevel
+                {\linereferencename}{\the\linenumber}{\linereferenceplus}}%
+         \fi}%
+      \global\advance\linenumber \linestepper
+      \ifnum\linereference>\zerocount % anders vreemde loop in paragraphs+recurse
+        \dorecurse\linereference
+          {\getlinereference\recurselevel
+           \ifnum\linereferenceplus=2 % stop
+             % ref y: text = 4 / Kan dit buiten referentie mechanisme om?
+             \expanded{\setlocalcrossreference
+               {\referenceprefix\linereferencename}{}{}{\linereferenceline}}%
+           \fi}%
+        \dorecurse\linereference
+          {\getlinereference\recurselevel
+           \ifnum\linereferenceplus<2 % start / lone
+             \ifnum\linereferenceplus=1 % start
+               \getreferenceelements\linereferencename % text = 4
+               \ifnum\linereferenceline<0\currenttextreference\relax % 0 prevents error
+                 \edef\linereferenceline{\linereferenceline--\currenttextreference}%
+               \fi
+             \fi
+             \expanded{\setlocalcrossreference
+               {\referenceprefix\linereferencename}{}{}{\linereferenceline}}%
+           \fi}%
+        \global\let\scratchline\linenumber  % We are going back!
+        \reshapebox
+          {\doglobal\decrement\scratchline
+           \hbox
+             {\dorecurse\linereference
+                {\getlinereference\recurselevel
+                 \getreferenceelements\linereferencename
+                 \beforesplitstring\currenttextreference--\at--\to\firstline
+                 \ifnum\firstline=\scratchline\relax
+                   % beter een rawtextreference, i.e. expanded
+                   % \textreference[\linereferencename]{\currenttextreference}%
+                   \rawtextreference\s!lin\linereferencename\currenttextreference
+                   \expanded{\setlocalcrossreference
+                     {\referenceprefix\linereferencename}{}{}{0}}% ==done
+                 \fi}%
+              \dimen0\dp\shapebox
+              \advance\dimen0 -\strutdp\relax
+              \ifdim\dimen0>\zeropoint
+                \dp\shapebox\strutdp
+              \fi
+              \placelinenumber\box\shapebox}}% no \strut !
+      \else
+        \reshapebox{\hbox{\placelinenumber\box\shapebox}}% no \strut !
+      \fi}
+     {\reshapebox{\global\advance\linenumber \minusone}%
+      \global\advance\linenumber \linestepper
+      \reshapebox{\hbox{\placelinenumber\box\shapebox}}}% no \strut !
+   \global\advance\linenumber \linestepper
+   \flushshapebox
+   \the\aftereverylinenumbering
+   \egroup}
+
+\setuplinenumbering
+  [\c!method=,
+   \c!conversion=\v!numbers,
+   \c!start=1,
+   \c!step=1,
+   \c!location=\v!margin,
+   \c!style=,
+   \c!color=,
+   \c!prefix=,
+   \c!referencing=\v!on,
+   \c!width=\ifcase\linenumberlocation2em\else\v!margin\fi,
+   \c!left=,
+   \c!right=,
+   \c!command=,
+   \c!distance=\zeropoint,
+   \c!align=\ifcase\linenumberlocation\v!right\or\v!right\or\v!left\fi]
+
+\protect \endinput

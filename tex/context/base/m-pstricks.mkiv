@@ -1,0 +1,66 @@
+%D \module
+%D   [       file=m-pstricks,
+%D        version=2010.03.14,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\PSTRICKS\ Connections,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ctxloadluafile{m-pstricks}{}
+
+%D \startbuffer
+%D \usePSTRICKSmodule[pst-barcode]
+%D
+%D \startPSTRICKS
+%D     \pspicture(-4mm,-1mm)(38mm,26mm)
+%D         \psbarcode{9781860742712}{includetext guardwhitespace}{ean13}%
+%D     \endpspicture
+%D \stopPSTRICKS
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+\unprotect
+
+% best we can make a special colors module
+%
+% \let\@unused\plussixteen
+% \let\alloc@ \gobblefivearguments
+%
+% \def\loadpstrickscolors#1%
+%   {\pushmacro\dodefinecolor
+%    \pushmacro\dodefinepalet
+%    \pushmacro\dodefinecolorgroup
+%    \def\dodefinecolor[##1][##2]%
+%      {\doifassignmentelse{##2}
+%         {\getparameters[pstricks][r=0,g=0,b=0,##2]%
+%          \expanded{\newrgbcolor{##1}{{\pstricksr} {\pstricksg} {\pstricksb}}}}%
+%         {}}%
+%    \def\dodefinepalet     [##1][##2]{}%
+%    \def\dodefinecolorgroup[##1][##2][##3]{}%
+%    \writestatus{pstricks}{loading colors from #1}%
+%    \input #1 \relax
+%    \popmacro\dodefinecolorgroup
+%    \popmacro\dodefinepalet
+%    \popmacro\dodefinecolor}
+%
+% \input multido  \relax
+% \input pstricks \relax
+% \input pst-plot \relax
+%
+% \loadpstrickscolors{colo-rgb}
+
+\definebuffer[PSTRICKS]
+
+\unexpanded\def\processPSTRICKS      {\ctxlua{plugins.pstricks.process(\thebuffernumber{PSTRICKS})}}
+\unexpanded\def\usePSTRICKSmodule[#1]{\ctxlua{plugins.pstricks.usemodule("#1")}}
+\unexpanded\def\setPSTRICKS        #1{\setbuffer[def-\thebuffernumber{PSTRICKS}]#1\endbuffer}
+
+\let\stopPSTRICKS\processPSTRICKS
+
+\protect \endinput

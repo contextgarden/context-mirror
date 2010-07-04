@@ -1,0 +1,319 @@
+%D \module
+%D   [       file=xtag-run,
+%D        version=2001.01.10,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=Visualization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% TODO: make this mkiv compliant, catcode tables etc
+
+\writestatus{loading}{ConTeXt XML Macros / Visualization}
+
+\unprotect
+
+\bgroup
+
+\catcode`\.=\@@escape
+.catcode`.B=.@@begingroup
+.catcode`.E=.@@endgroup
+.catcode`.#=.@@active
+.catcode`.$=.@@active
+.catcode`.%=.@@active
+.catcode`.\=.@@active
+.catcode`.^=.@@active
+.catcode`._=.@@active
+.catcode`.{=.@@active
+.catcode`.}=.@@active
+.catcode`.|=.@@active
+.catcode`.~=.@@active
+
+.gdef.verbatimXML
+  B.catcode`.#=.@@active .let#.letterhash
+   .catcode`.$=.@@active .let$.dollar
+   .catcode`.%=.@@active .let%.percent
+   .catcode`.\=.@@active .let\.letterbackslash
+   .catcode`.^=.@@active .let^.letterhat
+   .catcode`._=.@@active .let_.letterunderscore
+   .catcode`.{=.@@active .let{.leftargument
+   .catcode`.}=.@@active .let}.rightargument
+   .catcode`.|=.@@active .let|.letterbar
+   .catcode`.~=.@@active .let~.lettertilde
+  E
+
+.egroup
+
+\gdef\@@XMLshow{\@@XML shw}
+
+\gdef\@XMLindent#1%
+  {\ifnum\XMLlevel>\plusone\advance\leftskip#11em\relax\fi}
+
+\gdef\@XMLlevel#1%
+  {\advance\XMLlevel#11\relax}
+
+\unexpanded\gdef\@XMLentity#1%
+  {\noindent\hbox{\localcolortrue\color[xtag:0]{\string&#1;}}}
+
+\bgroup
+
+\@EA\catcode\string`=\@@active
+\@EA\catcode\string`"\@@active
+\@EA\catcode\string``\@@active
+\@EA\catcode\string`&\@@active
+
+\gdef\doshowXMLargument#1#2#3#4%
+  {\hskip\zeropoint % or maybe \allowbreak
+   \string#1\color[xtag:#3]{#4}\string#2}%
+
+\gdef\showXMLarguments
+  {\hskip\zeropoint % or maybe \allowbreak
+   \ifshowXMLarguments
+     \bgroup
+     \@EA\catcode\string`=\@@active
+     \@EA\catcode\string`"\@@active
+     \@EA\catcode\string``\@@active
+     \@EA\catcode\string`&\@@active
+     \def={\color[xtag:7]{\string=}}%
+     \def"##1"{\doshowXMLargument""8{##1}}%
+     \def`##1`{\doshowXMLargument``8{##1}}%
+     \def&##1;{\doshowXMLargument&;7{##1}}%
+     \scantokens\@EA{\currentXMLarguments}%
+     \egroup
+   \else
+     \currentXMLarguments
+   \fi}
+
+\egroup
+
+\ifx\XMLprettycycle\undefined \gdef\XMLprettycycle{3} \fi
+
+\doglobal\newcounter\@XMLnofelements
+\doglobal\newif\ifXMLunspacepretty
+
+\gdef\@XMLelement#1%
+  {\ifnum\XMLlevel<\@@xflevel\relax
+     \ifnum\kindofXMLelement=2\else
+       \doglobal\increment\@XMLnofelements\relax
+       \ifcase\@XMLnofelements\else\@@xfinbetween\fi
+     \fi
+   \fi
+   % no, too fragile:
+% \ifnum\XMLlevel>1\hangindent2em\fi
+   \ifcase\kindofXMLelement\or\or
+     \getvalue{\@@XMLshow::\currentXMLelement}\relax
+   \fi
+   \dontleavehmode % \indent
+   \bgroup
+     % \localcolortrue
+     \advance\XMLlevel \minusone
+     \DoMod\XMLlevel by\XMLprettycycle to\scratchcounter
+     \advance\scratchcounter \plusone
+     \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
+       \ifXMLunspacepretty\unskip\fi
+       \string<%
+       \ifnum\kindofXMLelement=2\string/\fi
+       \currentXMLelement
+     \stopcolor
+     \ifcase#1\or
+       \cleanupXMLarguments % get rid of spurious end space and end /
+       \ifx\currentXMLarguments\empty\else
+         \setbox\scratchbox\hbox{\space}\hskip\wd\scratchbox % hm, slow
+         \startcolor[xtag:0]\showXMLarguments\unskip\stopcolor\unskip
+       \fi
+     \fi
+     \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
+     \ifnum\kindofXMLelement=3\string/\fi
+     \string>%
+     \stopcolor
+   \egroup
+   \ifcase\kindofXMLelement\or
+     \getvalue{\@@XMLshow::\currentXMLelement}\relax
+   \fi
+   \ifnum\XMLlevel<\@@xflevel\relax
+     \ifnum\kindofXMLelement=1\else
+       \doglobal\increment\@XMLnofelements\relax
+       \ifcase\@XMLnofelements\else\@@xfinbetween\fi
+     \fi
+   \fi
+   \ifXMLunspacepretty\ignorespaces\fi}
+
+\gdef\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par}
+\gdef\prevXMLtext{\par\@XMLelement0\par\@XMLlevel-\blank}
+\gdef\nextXMLpara{\nextXMLline\par}
+\gdef\prevXMLpara{\par\prevXMLline}
+\gdef\nextXMLline{\par\@XMLlevel+\@XMLindent+\@XMLelement1}
+\gdef\prevXMLline{\@XMLelement0\par\@XMLindent-\@XMLlevel-}
+\gdef\nextXMLword{\@XMLlevel+\@XMLelement1}
+\gdef\prevXMLword{\@XMLelement0\@XMLlevel-}
+
+\gdef\someXMLtext{\blank\@XMLlevel+\@XMLelement1\@XMLlevel-\blank}
+\gdef\someXMLpara{\someXMLline}
+\gdef\someXMLline{\par\@XMLlevel+\@XMLindent+\@XMLelement1\par\@XMLindent-\@XMLlevel-}
+\gdef\someXMLword{\@XMLlevel+\@XMLelement1\@XMLlevel-}
+
+\gdef\@XMLindent#1%
+  {\ifnum\XMLlevel>\zerocount
+     \advance\leftskip#11em\relax
+   \fi}
+
+\gdef\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par\@XMLindent+}
+\gdef\prevXMLtext{\par\@XMLindent-\@XMLelement0\par\@XMLlevel-\blank}
+\gdef\nextXMLpara{\nextXMLline\par\@XMLindent+}
+\gdef\prevXMLpara{\par\@XMLindent-\prevXMLline}
+\gdef\nextXMLline{\par\@XMLlevel+\@XMLelement1}
+\gdef\prevXMLline{\@XMLelement0\par\@XMLlevel-}
+
+\gdef\someXMLline{\par\@XMLlevel+\@XMLelement1\par\@XMLlevel-}
+
+\gdef\setXMLshow#1#2#3[#4]%
+  {\def\docommand##1{#1[##1]#2#3\letvalue{\@@XMLshow:##1}\empty}%
+   \processcommalist[#4]\docommand}
+
+\gdef\showXMLign[#1]%
+  {\setXMLshow\defineXMLignore     \relax\relax[#1]%
+   \setXMLshow\defineXMLsingular   \relax\relax[#1]}
+
+\gdef\showXMLnop[#1]%
+  {\setXMLshow\defineXMLenvironment\relax\relax[#1]%
+   \setXMLshow\defineXMLsingular   \relax\relax[#1]}
+
+\gdef\showXMLtxt[#1]%
+  {\setXMLshow\defineXMLenvironment\nextXMLtext\prevXMLtext[#1]%
+   \setXMLshow\defineXMLsingular   \someXMLtext\relax      [#1]}
+
+\gdef\showXMLpar[#1]%
+  {\setXMLshow\defineXMLenvironment\nextXMLpara\prevXMLpara[#1]%
+   \setXMLshow\defineXMLsingular   \someXMLline\relax      [#1]}
+
+\gdef\showXMLlin[#1]%
+  {\setXMLshow\defineXMLenvironment\nextXMLline\prevXMLline[#1]%
+   \setXMLshow\defineXMLsingular   \someXMLword\relax      [#1]}
+
+\gdef\showXMLwrd[#1]%
+  {\setXMLshow\defineXMLenvironment\nextXMLword\prevXMLword[#1]%
+   \setXMLshow\defineXMLsingular   \someXMLword\relax      [#1]}
+
+\gdef\showXMLemp[#1]%
+  {\setXMLshow\defineXMLsingular\someXMLword\relax[#1]}
+
+\gdef\showXMLbreak[#1]%
+  {\def\docommand##1{\setvalue{\@@XMLshow::##1}{\hskip\zeropoint}}%
+   \processcommalist[#1]\docommand}
+
+\gdef\doautoshowXMLelement
+  {\ifcase\kindofXMLelement
+     \or \nextXMLpara \or \prevXMLpara \or \someXMLline
+   \fi}
+
+\gdef\autoshowXMLelement
+  {\ifcsname\@@XMLshow:\currentXMLelement\endcsname
+     \expandafter\normalexecuteXMLelement
+   \else
+     \expandafter\doautoshowXMLelement
+   \fi}
+
+\global\let\normalexecuteXMLelement\executeXMLelement
+
+\gdef\showXMLfile#1%
+  {\bgroup
+   % temp hack, will be the normal definition
+   \long\def\docleanupXMLarguments##1/ ##2\relax{\def\currentXMLarguments{##1}}%
+   % so far for hack
+   \nohyphens
+   \dontcomplain
+   \XMLlevel\zerocount
+   \increment\@@xflevel % hack
+   \tttf
+   \startpacked[\v!blank]
+     \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
+     \let\executeXMLentity\@XMLentity
+     \enableXML\verbatimXML
+     \enableregime[utf]%
+     \chardef\utfunicodetracer8
+     \veryraggedright
+     \readfile{\truefilename{#1}}\donothing\donothing\endgraf
+     \removelastskip % really needed
+   \stoppacked
+   \egroup}
+
+\gdef\showXMLtext#1%
+  {\bgroup
+   % temp hack, will be the normal definition
+   \long\def\docleanupXMLarguments##1/ ##2\relax{\def\currentXMLarguments{##1}}%
+   % so far for hack
+   \dontcomplain
+   \XMLlevel\maxcard
+   \increment\@@xflevel % hack
+   \tttf
+   \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
+   \let\executeXMLentity\@XMLentity
+   \let\par\allowbreak\let\endgraf\par
+   \setbox\scratchbox\hbox
+     {\enableXML\verbatimXML\scantokens{#1}\removelastskip}%
+   \unhbox\scratchbox
+   \egroup}
+
+\gdef\showXMLbuffer
+  {\dosingleempty\doshowXMLbuffer}
+
+\gdef\doshowXMLbuffer[#1]%
+  {\doifelsenothing{#1}
+     {\doshowXMLbuffer[\jobname]}
+     {\bgroup
+      \def\dodoprocessXMLbuffer##1{\showXMLfile{\TEXbufferfile{##1}}}%
+      \processcommalist[#1]\dodoprocessXMLbuffer
+      \egroup}}
+
+%D
+
+\gdef\showXSDcomponent
+  {\dodoubleargument\doshowXSDcomponent}
+
+\gdef\doshowXSDcomponent[#1][#2]%
+  {\bgroup
+   \showXMLnop[xsd:schema]
+   \showXMLign[xsd:appInfo]
+   \showXMLign[xsd:annotation]
+   \videXMLcontextblock[#2]
+   \showXMLfile{#1}
+   \egroup}
+
+\gdef\showRNGcomponent
+  {\dodoubleargument\doshowRNGcomponent}
+
+\gdef\doshowRNGcomponent[#1][#2]%
+  {\bgroup
+   \videXMLcontextblock[#2]
+   \showXMLfile{#1}
+   \egroup}
+
+%D
+
+\gdef\tracebackXMLattribute#1%
+  {\bgroup
+   \doloop
+     {\ifcsname\@@XMLdepth:\recurselevel\endcsname
+        \edef\!!stringa{\csname\@@XMLdepth:\recurselevel\endcsname}%
+        \writestatus
+          {XML TRACE}
+          {[#1] [\recurselevel] [\!!stringa] [\XMLinh{#1}]}%
+      \else
+        \exitloop
+      \fi}%
+    \egroup}
+
+\gdef\showXMLinh[#1]%
+  {\doifsomething{#1}
+     {\bgroup\infofont[%
+      \dorecurse\XMLdepth
+%          {\csname\@@XMLvariable:\csname\@@XMLdepth:\recurselevel\endcsname:#1\endcsname
+         {\csname\@@XMLvariable:\recurselevel:#1\endcsname
+         \ifnum\recurselevel<\XMLdepth->\fi}%
+      ]\egroup}}
+
+\protect \endinput

@@ -1,0 +1,179 @@
+%D \module
+%D   [       file=supp-pat,
+%D        version=2005.02.12,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Patterns,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D We support:
+%D
+%D \starttyping
+%D \patterns {
+%D  ...[namedglyphs]...
+%D }
+%D \stoptyping
+%D
+%D as well as:
+%D
+%D \starttyping
+%D <patterns>
+%D  ...&namedglyphs;...
+%D </patterns>
+%D \stoptyping
+%D
+%D The \XML\ variant has very limited \XML\ parsing capabilities and
+%D is meant as an experiment.
+
+\ifx\writestatus\undefined \else
+
+    \writestatus{loading}{ConTeXt Support Macros / Patterns}
+
+\fi
+
+%D \CONTEXT:
+
+\ifx\startmapping\undefined \else \ifx\startencoding\undefined \else
+
+    \def\fetchpatterntoken#1{\csname#1\endcsname}
+
+\fi \fi
+
+%D First we define the \ETEX\ variant. We cannot do that inside
+%D the if statement because normal \TEX\ gets confused over the
+%D csname test (which it does not see as if but it does see the
+%D else's and fi's).
+
+\def\etexfetchpatterntoken#1%
+  {\csname
+     \ifcsname @pattok@#1\endcsname
+       @pattok@#1%
+     \else\ifcsname#1\endcsname
+       #1%
+     \else
+       @pattok@default%
+     \fi\fi
+  \endcsname}
+
+\ifx \fetchpatterntoken \undefined
+
+    \ifx \eTeXversion \undefined
+
+        \def\fetchpatterntoken#1%
+          {\csname
+             \expandafter\ifx\csname @pattok@#1\endcsname\relax
+               \expandafter\ifx\csname#1\endcsname\relax
+                 @pattok@default%
+               \else
+                 #1%
+               \fi
+             \else
+                @pattok@#1%
+             \fi
+          \endcsname}
+
+    \else
+
+        \let\fetchpatterntoken\etexfetchpatterntoken
+
+    \fi
+
+\fi
+
+\def\definepatterntoken #1 #2 %
+  {\expandafter\def\csname @pattok@#1\endcsname{#2}}
+
+%D \TEX\ based:
+
+\bgroup \catcode`\[=\active
+
+  \gdef\enablepatterntokens
+    {\catcode`\[=\active \let[\handlepatterntoken}
+
+\egroup
+
+\def\handlepatterntoken#1]%
+  {\fetchpatterntoken{#1}}
+
+%D \XML\ based:
+
+\bgroup \catcode`\<=\active \catcode`\&=\active
+
+  \gdef\enablepatternxml
+    {\catcode`\<=\active
+     \catcode`\&=\active
+     \let&\handlepatternentity
+     \let<\handlepatternxml}
+
+\egroup
+
+\def\handlepatternentity#1;%
+  {\fetchpatterntoken{#1}}
+
+%D We use a very simple \XML\ parser, and we only trigger on the first
+%D two characters of the tag name. Consider this feature a playground
+%D (and a bit of a joke).
+
+\def\handlepatternxml#1#2% we only distinguish the first two chars
+  {\csname @patxml@\ifcsname @patxml@#1#2\endcsname#1#2\else de\fi\endcsname}
+
+\def\definepatternxml #1#2#3 #4%
+  {\expandafter\def\csname @patxml@#1#2\endcsname{#4}}
+
+\def\fetchpatternxml#1#2>%
+  {\bgroup
+   \long\def\next##1>{\egroup}%
+   \catcode`\<=2 % \@@endgroup
+   \afterassignment\next
+   #1\bgroup}
+
+\def\gobblepatternxml
+  {\bgroup
+   \catcode`\%=11
+   \dogobblepatternxml}
+
+\long\def\dogobblepatternxml#1>%
+  {\egroup}
+
+%D Here are the default definitions. We don't catch empty elements.
+
+\definepatternxml patterns     {\fetchpatternxml\patterns}
+\definepatternxml hyphenations {\fetchpatternxml\hyphenation}
+\definepatternxml pattern      {\fetchpatternxml\patterns}
+\definepatternxml hyphenation  {\fetchpatternxml\hyphenation}
+\definepatternxml default      {\gobblepatternxml}
+
+\definepatterntoken default x
+
+\ifx\pattern     \undefined \let\pattern     \patterns    \fi
+\ifx\hyphenations\undefined \let\hyphenations\hyphenation \fi
+
+%D An example of usage in another format than \CONTEXT:
+%D
+%D \starttyping
+%D \bgroup
+%D
+%D   \lccode"E4="E4  \definepatterntoken adiaeresis ^^e4
+%D   \lccode"F6="F6  \definepatterntoken odiaeresis ^^f6
+%D   \lccode"FC="FC  \definepatterntoken ediaeresis ^^fc
+%D   \lccode"FF="FF  \definepatterntoken ssharp     ^^ff
+%D
+%D   \enablepatterntokens
+%D   \enablepatternxml
+%D
+%D   \input lang-de.pat
+%D   \input lang-de.hyp
+%D
+%D \egroup
+%D \stoptyping
+%D
+%D This is a minimal example for EC encoding, and of course
+%D a couple of more language related settings need to take
+%D place (like uc mappings).
+
+\endinput

@@ -1,0 +1,133 @@
+% output=pdftex modes=demo
+
+% nice example:
+%
+% \usemodule[s-fnt-02]
+%
+% \usetypescriptfile[type-ghz.tex]
+%
+% \usetypescript [sans] [optima,optima-nova] [texnansi]
+%
+% \setvariables
+%   [glyphs]
+%   [name-1=OptimaLT,
+%    name-2=OptimaNovaLT-Regular]
+%
+% \starttext
+%
+% \setups[show-glyphs]
+%
+% \stoptext
+%
+% see end, for other example (or run texexec s-fnt-02 --mode=demo)
+
+\setvariables
+  [glyphs]
+  [frame=on,
+   name-1=cmr10,
+   name-2=cmtt10,
+   map-1=,
+   map-2=]
+
+\setuppapersize[S4][S4]
+
+\setupcolors[state=start]
+
+\setuplayout[page]
+
+\definecolor[Gray]     [s=.2]
+\definecolor[ColorNone][s=1,t=.5,a=1]
+\definecolor[ColorOne] [r=1,t=.5,a=1]
+\definecolor[ColorTwo] [g=1,t=.5,a=1]
+\definecolor[BackOne]  [b=1,t=.5,a=1]
+\definecolor[BackTwo]  [r=1,g=1,t=.5,a=1]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=Gray]
+
+\startsetups[show-glyphs]
+
+  \doifnothing{\getvariable{glyphs}{name-1}}{\endinput}
+  \doifnothing{\getvariable{glyphs}{name-2}}{\endinput}
+
+  \doifsomething{\getvariable{glyphs}{map-1}}{\loadmapfile[\getvariable{glyphs}{map-1}]}
+  \doifsomething{\getvariable{glyphs}{map-2}}{\loadmapfile[\getvariable{glyphs}{map-2}]}
+
+  \definefont[FontOne][\getvariable{glyphs}{name-1} at 280pt]
+  \definefont[FontTwo][\getvariable{glyphs}{name-2} at 280pt]
+
+%   \dostepwiserecurse{0}{255}{1}
+%     {\doiffontcharelse{\getvariable{glyphs}{name-1}}{\recurselevel}
+%        {\doiffontcharelse{\getvariable{glyphs}{name-2}}{\recurselevel}
+%           {\startstandardmakeup
+%            \doifelse{\getvariable{glyphs}{frame}}{on} % too many box calculations when off, but who cares
+%              {\boxrulewidth=2pt}
+%              {\boxrulewidth=0pt}
+%            \setbox 0=\hbox{\white\ruledhbox{\FontOne \char\recurselevel}}
+%            \setbox 2=\hbox{\white\ruledhbox{\FontTwo \char\recurselevel}}
+%            \setbox 4=\hbox{\FontOne \ColorOne \char\recurselevel}
+%            \setbox 6=\hbox{\FontTwo \ColorTwo \char\recurselevel}
+%            \setbox 8=\hbox{\BackOne \ruledhbox{\FontOne \phantom{\char\recurselevel}}}
+%            \setbox10=\hbox{\BackTwo \ruledhbox{\FontTwo \phantom{\char\recurselevel}}}
+%            \vfill
+%            \hbox{\dostepwiserecurse{0}{10}{2}{\hbox to \hsize{\hss\box\recurselevel\hss}\hskip-\hsize}}
+%            \vfill
+%            \tttf
+%            \setstrut
+%            \hbox to \hsize{\strut\hss
+%              {\ColorOne \getvariable{glyphs}{name-1}}\quad
+%              {\ColorTwo \getvariable{glyphs}{name-2}}\quad
+%              {\ColorNone char \recurselevel        }\hss}
+%            \stopstandardmakeup}
+%           {}}
+%        {}}
+
+  \dostepwiserecurse{0}{255}{1}
+    {\donefalse
+     \doiffontcharelse{\getvariable{glyphs}{name-1}}{\recurselevel}{\donetrue}{}%
+     \doiffontcharelse{\getvariable{glyphs}{name-2}}{\recurselevel}{\donetrue}{}%
+     \ifdone
+        \startstandardmakeup
+           \doifelse{\getvariable{glyphs}{frame}}{on} % too many box calculations when off, but who cares
+             {\boxrulewidth=2pt}
+             {\boxrulewidth=0pt}
+           \setbox 0=\hbox{\white\ruledhbox{\FontOne \char\recurselevel}}
+           \setbox 2=\hbox{\white\ruledhbox{\FontTwo \char\recurselevel}}
+           \setbox 4=\hbox{\FontOne \ColorOne \char\recurselevel}
+           \setbox 6=\hbox{\FontTwo \ColorTwo \char\recurselevel}
+           \setbox 8=\hbox{\BackOne \ruledhbox{\FontOne \phantom{\char\recurselevel}}}
+           \setbox10=\hbox{\BackTwo \ruledhbox{\FontTwo \phantom{\char\recurselevel}}}
+           \vfill
+           \hbox{\dostepwiserecurse{0}{10}{2}{\hbox to \hsize{\hss\box\recurselevel\hss}\hskip-\hsize}}
+           \vfill
+           \tttf
+           \setstrut
+           \hbox to \hsize{\strut\hss
+             {\ColorOne \getvariable{glyphs}{name-1}}\quad
+             {\ColorTwo \getvariable{glyphs}{name-2}}\quad
+             {\ColorNone char \recurselevel        }\hss}
+        \stopstandardmakeup
+      \fi}
+
+\stopsetups
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+  \setupencoding[default=ec]
+
+  \loadmapline [=][aer10                  <cmr10.pfb]
+  \loadmapline [=][\defaultencoding-lmr10 <\defaultencoding.enc <lmr10.pfb]
+
+  \setvariables
+    [glyphs]
+    [frame=on,
+     name-1=aer10,
+     name-2=\defaultencoding-lmr10]
+
+  \setups[show-glyphs]
+
+\stoptext

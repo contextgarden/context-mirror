@@ -1,0 +1,244 @@
+%D \module
+%D   [     file=enco-t5,
+%D      version=2004.11.16,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=New Vietnamese Encoding,
+%D       author=Hans Hagen \& Adam Lindsay,
+%D         date=\currentdate,
+%D    copyright=PRAGMA \& Adam Lindsay]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is derived from the enco-x5 encoding, but now
+%D approaches the world with named glyphs.
+
+\startencoding[t5]
+
+\definecasemaps 128 to 159 lc +32 uc   0
+
+\definecasemaps 160 to 191 lc   0 uc -32
+
+\definecasemaps 192 to 223 lc +32 uc   0
+
+\definecasemaps 224 to 225 lc   0 uc -32
+
+\definecasemap 26 26 27 \definecasemap 27 26 27
+\definecasemap 28 28 29 \definecasemap 29 28 29
+\definecasemap 30 30 31 \definecasemap 31 30 31
+
+\definecharacter textgrave             0
+\definecharacter textacute             1
+\definecharacter textcircumflex        2
+\definecharacter texttilde             3
+\definecharacter textdiaeresis         4
+\definecharacter textbottomdot         5
+\definecharacter textring              6
+\definecharacter textcaron             7
+\definecharacter textbreve             8
+\definecharacter textmacron            9
+\definecharacter textdotaccent        10
+\definecharacter textcedilla          11
+\definecharacter texthookabove        12
+\definecharacter textogonek           {}
+
+\definecharacter quotesinglebase      13
+\definecharacter guilsingleleft       14
+\definecharacter guilsingleright      15
+\definecharacter quotedblleft         16
+\definecharacter quotedblright        17
+\definecharacter quotedblbase         18
+\definecharacter leftguillemot        19
+\definecharacter rightguillemot       20
+\definecharacter endash               21
+\definecharacter emdash               22
+
+\definecharacter cwm                  23
+\definecharacter zeroinferior         24
+\definecharacter Yhook                26
+\definecharacter yhook                27
+\definecharacter Ydotbelow            28
+\definecharacter ydotbelow            29
+\definecharacter Dstroke              30
+\definecharacter dstroke              31
+\definecharacter textvisiblespace     32
+
+\definecharacter dotlessi             25
+%definecharacter DJ                   30
+%definecharacter dj                   31
+\definecharacter Agrave              128
+\definecharacter Aacute              129
+\definecharacter Atilde              130
+\definecharacter Ahook               131
+\definecharacter Adotbelow           132
+\definecharacter Acircumflex         133
+\definecharacter Acircumflexgrave    134
+\definecharacter Acircumflexacute    135
+\definecharacter Acircumflextilde    136
+\definecharacter Acircumflexhook     137
+\definecharacter Acircumflexdotbelow 138
+\definecharacter Abreve              139
+\definecharacter Abrevegrave         140
+\definecharacter Abreveacute         141
+\definecharacter Abrevetilde         142
+\definecharacter Abrevehook          143
+\definecharacter Abrevedotbelow      144
+\definecharacter Egrave              145
+\definecharacter Eacute              146
+\definecharacter Etilde              147
+\definecharacter Ehook               148
+\definecharacter Edotbelow           149
+\definecharacter Ecircumflex         150
+\definecharacter Ecircumflexgrave    151
+\definecharacter Ecircumflexacute    152
+\definecharacter Ecircumflextilde    153
+\definecharacter Ecircumflexhook     154
+\definecharacter Ecircumflexdotbelow 155
+\definecharacter Igrave              156
+\definecharacter Iacute              157
+\definecharacter Itilde              158
+\definecharacter Ihook               159
+\definecharacter agrave              160
+\definecharacter aacute              161
+\definecharacter atilde              162
+\definecharacter ahook               163
+\definecharacter adotbelow           164
+\definecharacter acircumflex         165
+\definecharacter acircumflexgrave    166
+\definecharacter acircumflexacute    167
+\definecharacter acircumflextilde    168
+\definecharacter acircumflexhook     169
+\definecharacter acircumflexdotbelow 170
+\definecharacter abreve              171
+\definecharacter abrevegrave         172
+\definecharacter abreveacute         173
+\definecharacter abrevetilde         174
+\definecharacter abrevehook          175
+\definecharacter abrevedotbelow      176
+\definecharacter egrave              177
+\definecharacter eacute              178
+\definecharacter etilde              179
+\definecharacter ehook               180
+\definecharacter edotbelow           181
+\definecharacter ecircumflex         182
+\definecharacter ecircumflexgrave    183
+\definecharacter ecircumflexacute    184
+\definecharacter ecircumflextilde    185
+\definecharacter ecircumflexhook     186
+\definecharacter ecircumflexdotbelow 187
+\definecharacter igrave              188
+\definecharacter iacute              189
+\definecharacter itilde              190
+\definecharacter ihook               191
+\definecharacter Idotbelow           192
+\definecharacter Ograve              193
+\definecharacter Oacute              194
+\definecharacter Otilde              195
+\definecharacter Ohook               196
+\definecharacter Odotbelow           197
+\definecharacter Ocircumflex         198
+\definecharacter Ocircumflexgrave    199
+\definecharacter Ocircumflexacute    200
+\definecharacter Ocircumflextilde    201
+\definecharacter Ocircumflexhook     202
+\definecharacter Ocircumflexdotbelow 203
+\definecharacter Ohorn               204
+\definecharacter Ohorngrave          205
+\definecharacter Ohornacute          206
+\definecharacter Ohorntilde          207
+\definecharacter Ohornhook           208
+\definecharacter Ohorndotbelow       209
+\definecharacter Ugrave              210
+\definecharacter Uacute              211
+\definecharacter Utilde              212
+\definecharacter Uhook               213
+\definecharacter Udotbelow           214
+\definecharacter Uhorn               215
+\definecharacter Uhorngrave          216
+\definecharacter Uhornacute          217
+\definecharacter Uhorntilde          218
+\definecharacter Uhornhook           219
+\definecharacter Uhorndotbelow       220
+\definecharacter Ytilde              223
+\definecharacter idotbelow           224
+\definecharacter ograve              225
+\definecharacter oacute              226
+\definecharacter otilde              227
+\definecharacter ohook               228
+\definecharacter odotbelow           229
+\definecharacter ocircumflex         230
+\definecharacter ocircumflexgrave    231
+\definecharacter ocircumflexacute    232
+\definecharacter ocircumflextilde    233
+\definecharacter ocircumflexhook     234
+\definecharacter ocircumflexdotbelow 235
+\definecharacter ohorn               236
+\definecharacter ohorngrave          237
+\definecharacter ohornacute          238
+\definecharacter ohorntilde          239
+\definecharacter ohornhook           240
+\definecharacter ohorndotbelow       241
+\definecharacter ugrave              242
+\definecharacter uacute              243
+\definecharacter utilde              244
+\definecharacter uhook               245
+\definecharacter udotbelow           246
+\definecharacter uhorn               247
+\definecharacter uhorngrave          248
+\definecharacter uhornacute          249
+\definecharacter uhorntilde          250
+\definecharacter uhornhook           251
+\definecharacter uhorndotbelow       252
+\definecharacter ygrave              253
+\definecharacter yacute              254
+\definecharacter ytilde              255
+
+\stopencoding
+
+\endinput
+
+% \startencoding [x5]
+%
+% \definecharacter aa {\xfiveencodedaa}
+% \definecharacter AA {\xfiveencodedAA}
+%
+% \stopencoding
+%
+% \def\xfiveencodedaa%
+%   {\accent23a}
+%
+% \def\xfiveencodedAA%
+%   {\leavevmode
+%    \setbox\zerocount\hbox{h}%
+%    \dimen@\ht\zerocount
+%    \advance\dimen@ -1ex
+%    \rlap{\raise.67\dimen@\hbox{\char23}}A}
+
+% \quotesinglbase     13
+% \guilsinglleft      14
+% \guilsinglright     15
+% \textquotedblleft   16
+% \textquotedblright  17
+% \quotedblbase       18
+% \guillemotleft      19
+% \guillemotright     20
+% \textendash         21
+% \textemdash         22
+% \textcompwordmark   23
+% \textperthousand    \% \char 24
+% \textpertenthousand \%\char 24\char 24
+% \textvisiblespace   32
+% \textquotedbl       `\"
+% \textdollar         `\$
+% \textquoteright     `\'
+% \textless           `\<
+% \textgreater        `\>
+% \textbackslash      `\
+% \textasciicircum    `\^
+% \textunderscore     95
+% \textquoteleft      `\`
+% \textbraceleft      `\{
+% \textbar            `\|
+% \textbraceright     `\}
+% \textasciitilde     `\~

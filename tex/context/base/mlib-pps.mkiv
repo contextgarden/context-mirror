@@ -1,0 +1,70 @@
+%D \module
+%D   [       file=mlib-pps,
+%D        version=2008.03.25,
+%D          title=\METAPOST\ Integrated Graphics,
+%D       subtitle=Basics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\registerctxluafile{mlib-pps}{1.001}
+
+%D Todo: catch nested graphics like external figures with dummies.
+
+% \newtoks\everyMPLIBtext % not yet used
+
+% \appendtoks
+%     \let\handleuseMPgraphic     \thirdofthreearguments
+%     \let\handlereusableMPgraphic\thirdofthreearguments
+% \to \everyMPLIBtext
+
+% this will move !
+
+% Instead of preallocated boxes we now use a table of lists so that we
+% have no limitation. Typically an example of a next version solution
+% due to \LUATEX\ evolving.
+
+\newbox \MPtextbox
+\newtoks\everyMPLIBsettext
+
+\def\MPLIBfigure#1#2#3#4#5#6#7% todo: move Q q to lua
+  {\setbox\scratchbox\hbox{\externalfigure[#7]}%
+   \ctxlua{metapost.edefsxsy(\number\wd\scratchbox,\number\ht\scratchbox,0)}%
+   \pdfliteral direct{q #1 #2 #3 #4 #5 #6 cm}% no direct
+   \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[sx=\sx,sy=\sy]{\box\scratchbox}\hss}}%
+   \pdfliteral direct{Q}}
+
+\def\MPLIBsettext#1% #2%
+  {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
+
+\def\MPLIBgettextscaled#1#2#3%  why a copy
+  {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
+   \vbox to \zeropoint{\vss\hbox to \zeropoint{\black\scale[sx=#2,sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\hss}}}
+
+\def\MPLIBgraphictext#1%
+  {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
+
+\protect \endinput
+
+% \def\MPLIBsettext#1% #2% we could as well store in hlists at the lua end i.e. just one box
+% {\global\setbox#1\hbox}
+%
+% \def\MPLIBfreetext#1%
+%   {\global\setbox#1\emptybox}
+%
+% \def\MPLIBgettextscaled#1#2#3%  why a copy
+%   {\vbox to \zeropoint{\vss\hbox to \zeropoint{\black\scale[sx=#2,sy=#3]{\raise\dp#1\copy#1}\hss}}}
+%
+% \def\MPLIBallocate#1%
+%   {\newbox\MPLIBfirst
+%    \dorecurse{\numexpr#1-1\relax}{\let\MPLIBlast\relax\newbox\MPLIBlast}%
+%    \MPLIBregister}
+%
+% \def\MPLIBregister % after allocate!
+%   {\ctxlua{metapost.first_box, metapost.last_box = \number\MPLIBfirst, \number\MPLIBlast}}

@@ -1,0 +1,58 @@
+%D \module
+%D   [       file=page-par, % copied from page-lin
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Line Numbering,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Paragraph Numbering}
+
+\unprotect
+
+\newcount\internalparagraphnumber
+
+\unexpanded\def\setupparagraphnumbering
+  {\dosingleempty\dosetupparagraphnumbering}
+
+\def\dosetupparagraphnumbering[#1]%
+  {\getparameters
+     [\??ph][#1]%
+   \processaction
+     [\@@phstate]
+     [\v!start=>\let\showparagraphnumber\doshowparagraphnumberA,
+       \v!stop=>\let\showparagraphnumber\relax,
+       \v!line=>\let\showparagraphnumber\doshowparagraphnumberB,
+      \v!reset=>\global\internalparagraphnumber\zerocount
+                \let\showparagraphnumber\doshowparagraphnumberA]}
+
+\def\dodoshowparagraphnumber
+  {\global\advance\internalparagraphnumber \plusone
+   \inleftmargin % \tf normalizes em
+     {\tf{\doattributes\??ph\c!style\c!color{\the\internalparagraphnumber}}%
+      \kern\@@phdistance}}
+
+\def\doshowparagraphnumberA
+  {\ifprocessingverbatim
+     \iflinepar\dodoshowparagraphnumber\fi
+   \else
+     \dodoshowparagraphnumber
+   \fi}
+
+\def\doshowparagraphnumberB
+  {\ifnumberinglines
+     \doshowparagraphnumberA
+   \fi}
+
+\setupparagraphnumbering
+  [\c!state=\v!stop,
+   \c!style=,
+   \c!color=,
+   \c!distance=\ifcase\linenumberlocation2em\else\!!zeropoint\fi] % will change
+
+\protect \endinput

@@ -1,0 +1,431 @@
+%D \module
+%D   [       file=strc-syn,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Synonyms and Sorting,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Synonyms and Sorting}
+
+\registerctxluafile{strc-syn}{1.001}
+
+% todo: add 'define only' option to descriptions, then add sorting (also based on key)
+% and call to definition -> replaces this module
+
+\unprotect
+
+% general help, can be shared
+
+% simplifiedcommands -> flag in lua
+%
+% expansion
+% criterium -> when start, then flag in list
+% command-> wanneer?
+% state -> flagging enabled
+% conversion ?
+% todo: register xml mode etc
+
+% split but common in lua
+
+\def\preprocessexpansion#1#2#3#4%
+  {\ifx#1\s!xml
+     \xmlstartraw
+       \xdef#2{#4}%
+     \xmlstopraw
+     \globallet#3\s!xml
+   \else
+     \ifx#1\v!yes
+       \xdef#2{#4}%
+     \else
+       \xdef#2{\detokenize{#4}}%
+     \fi
+     \globallet#3\s!tex
+   \fi}
+
+\let\currentsynonym\empty
+
+\def\synonymparameter    #1{\csname\dosynonymparameter{\??sm\currentsynonym}#1\endcsname}
+\def\synonymparameterhash#1{\dosynonymparameterhash   {\??sm\currentsynonym}#1}
+
+\def\dosynonymparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dosynonymparentparameter    \csname#1\s!parent\endcsname#2\fi}
+\def\dosynonymparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dosynonymparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+
+\def\dosynonymparentparameter    #1#2{\ifx#1\relax\s!empty\else\dosynonymparameter    #1#2\fi}
+\def\dosynonymparentparameterhash#1#2{\ifx#1\relax        \else\dosynonymparameterhash#1#2\fi}
+
+\unexpanded\def\dosetsynonymattributes#1#2% style color
+  {\edef\fontattributehash {\synonymparameterhash#1}%
+   \edef\colorattributehash{\synonymparameterhash#2}%
+   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+\newtoks\everysetupsynonyms
+
+\unexpanded\def\setupsynonyms
+  {\dodoubleargument\dosetupsynonyms}
+
+\def\dosetupsynonyms[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??sm#1][#2]%
+   \else
+     \getparameters[\??sm][#1]%
+   \fi
+   \the\everysetupsynonyms}
+
+\setupsynonyms
+  [\c!state=\v!start,
+  %\c!synonymstyle=,
+  %\c!textstyle=,
+  %\c!headstyle=,
+  %\c!headcolor=,
+  %\c!criterium=,
+   \c!location=\v!left,
+   \c!width=5em,
+   \c!distance=0pt,
+  %\c!sample=,
+  %\c!hang=,
+  %\c!align=,
+  %\c!before=,
+  %\c!inbetween=,
+  %\c!after=,
+   \c!indentnext=\v!no,
+  %\c!expansion=,
+   \s!language=\currentmainlanguage]
+
+\unexpanded\def\definesynonyms
+  {\doquadrupleempty\dodefinesynonyms}
+
+\def\dodefinesynonyms[#1][#2][#3][#4]% name plural \meaning \use
+  {\iffourthargument
+     \unexpanded\def#4##1{\doinsertsynonym{#1}{##1}}% name tag
+     \ifthirdargument
+       \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
+     \fi
+     \setuvalue{#1}{\definesynonym[\v!no][#1]}% \name
+   \else
+     \ifthirdargument
+       \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
+     \fi
+     \setuvalue{#1}{\definesynonym[\v!yes][#1]}% \name
+   \fi
+   \getparameters[\??sm#1][\s!parent=\??sm,\s!multi={#2}]%
+   \presetheadtext[#2=\Word{#2}]% changes the \if...argument
+  %\ctxlua{joblists.define('#1')}%
+   \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
+   \setvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
+   \setvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}}
+
+\unexpanded\def\definesynonym
+  {\dotripleempty\dodefinesynonym}
+
+\def\dodefinesynonym[#1][#2][#3]#4#5%
+  {\begingroup
+   \edef\currentsynonym{#2}%
+   \edef\currentsynonymtag{#3}%
+   \ifx\currentsynonymtag\empty
+     \edef\currentsynonymtag{#4}%
+   \fi
+   \ifx\currentsynonymtag\empty
+     % todo: error message
+   \else
+     \edef\currentsynonymexpansion{\synonymparameter\c!expansion}%
+     \preprocessexpansion\currentsynonymexpansion\currentsynonymtext   \currentsynonymcoding{#4}%
+     \preprocessexpansion\currentsynonymexpansion\currentsynonymmeaning\currentsynonymcoding{#5}%
+     \ctxlua{joblists.register("\currentsynonym", "synonym", {
+        metadata = {
+            catcodes = \the\catcodetable,
+            coding   = "\currentsynonymcoding",
+            xmlroot  = \ifx\currentsynonymcoding\s!xml "\xmldocument" \else nil \fi,
+        },
+        definition = {
+            tag     = "\currentsynonymtag",
+            synonym = \!!bs\currentsynonymtext\!!es,
+            meaning = \!!bs\currentsynonymmeaning\!!es,
+            used    = false,
+        }
+     })}%
+     \doif{#1}\v!yes{\setuxvalue\currentsynonymtag{\noexpand\doinsertsynonym{\currentsynonym}{\currentsynonymtag}}}%
+   \fi
+   \endgroup}
+
+\def\registersynonym
+  {\dodoubleargument\doregistersynonym}
+
+\def\registersynonym[#1][#2]%
+  {\ctxlua{joblists.registerused("#1","#2")}}
+
+\unexpanded\def\doinsertsynonymmeaning#1#2% name tag
+  {\begingroup
+   \def\currentsynonym{#1}%
+   \dosetsynonymattributes\c!textstyle\c!textcolor
+   \synonymparameter\c!textcommand{\ctxlua{joblists.meaning("#1","#2")}}%
+   \endgroup}
+
+\unexpanded\def\doinsertsynonym#1#2% name tag
+  {\begingroup
+   \def\currentsynonym{#1}%
+   \dosetsynonymattributes\c!synonymstyle\c!synonymcolor
+   \synonymparameter\c!synonymcommand{\ctxlua{joblists.synonym("#1","#2")}}%
+   \normalexpanded{\endgroup\synonymparameter\c!next}}
+
+\unexpanded\def\placelistofsynonyms
+  {\dodoubleempty\doplacelistofsynonyms}
+
+\def\doplacelistofsynonyms[#1][#2]%
+  {\begingroup
+   \def\currentsynonym{#1}%
+   \definedescription  % todo, per class
+    [syndef]
+    [\c!location=\synonymparameter\c!location,
+     \c!width=\synonymparameter\c!width,
+     \c!distance=\synonymparameter\c!distance,
+     \c!sample=\synonymparameter\c!sample,
+     \c!hang=\synonymparameter\c!hang,
+     \c!align=\synonymparameter\c!align,
+     \c!before=\synonymparameter\c!before,
+     \c!inbetween=\synonymparameter\c!inbetween,
+     \c!after=\synonymparameter\c!after,
+     \c!indentnext=\synonymparameter\c!indentnext,
+%      \c!headstyle=\synonymparameter\c!headstyle,
+%      \c!headcolor=\synonymparameter\c!headcolor,
+     \c!headstyle=\synonymparameter\c!textstyle,
+     \c!headcolor=\synonymparameter\c!textcolor,
+     \c!style=,
+     \c!color=.
+     #2]%
+   \startpacked
+     \ctxlua{joblists.process('#1',{ criterium = "\synonymparameter\c!criterium" })}%
+   \stoppacked
+   \endgroup}
+
+\def\completelistofsynonyms
+  {\dodoubleempty\docompletelistofsynonyms}
+
+\def\docompletelistofsynonyms[#1][#2]% expansion needed to avoid v! (due to french active !)
+  {\normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{\synonymparameter\s!single}}}%
+   \doplacelistofsynonyms[#1][#2]%
+   \page[\v!yes]}
+
+\let\startsynonymoutput \relax
+\let\stopsynonymoutput  \relax
+\let\startsynonymsection\gobbleoneargument
+\let\stopsynonymsection \relax
+
+\unexpanded\def\synonymentry#1#2#3#4%
+%   {\syndef{\dosetsynonymattributes\c!textstyle\c!textcolor#2}#3\par}
+%   {\startsyndef{#2}#3\stopsyndef}
+  {\syndef{#3}#4\par}
+
+\let\currentsorting\empty
+
+% we can share if we also have synonymprefix = so
+
+\def\sortingparameter    #1{\csname\dosortingparameter{\??so\currentsorting}#1\endcsname}
+\def\sortingparameterhash#1{\dosortingparameterhash   {\??so\currentsorting}#1}
+
+\def\dosortingparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dosortingparentparameter    \csname#1\s!parent\endcsname#2\fi}
+\def\dosortingparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dosortingparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+
+\def\dosortingparentparameter    #1#2{\ifx#1\relax\s!empty\else\dosortingparameter    #1#2\fi}
+\def\dosortingparentparameterhash#1#2{\ifx#1\relax        \else\dosortingparameterhash#1#2\fi}
+
+\def\dosetsortingattributes#1#2% style color
+  {\edef\fontattributehash {\sortingparameterhash#1}%
+   \edef\colorattributehash{\sortingparameterhash#2}%
+   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+\newtoks\everysetupsorting
+
+\unexpanded\def\setupsorting
+  {\dodoubleargument\dosetupsorting}
+
+\def\dosetupsorting[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??so#1][#2]%
+   \else
+     \getparameters[\??so][#1]%
+   \fi
+   \the\everysetupsorting}
+
+\setupsorting
+  [\c!state=\v!start,
+  %\c!command=, % we test for defined !
+  %\c!criterium=,
+  %\c!style=,
+  %\c!before=,
+   \c!after=\endgraf,
+  %\c!expansion=,
+   \s!language=\currentmainlanguage]
+
+\unexpanded\def\definesorting
+  {\dotripleempty\dodefinesorting}
+
+% if #3=\relax or \v!none, then no command but still protected
+
+\def\dodefinesorting[#1][#2][#3]%
+  {\ifthirdargument
+     \doifnot{#3}\v!none
+       {\ifx#3\relax \else
+          \unexpanded\def#3##1{\doinsertsort{#1}{##1}}%
+        \fi}%
+     \setuvalue{#1}{\definesort[\v!no][#1]}%
+   \else
+     \setuvalue{#1}{\definesort[\v!yes][#1]}%
+   \fi
+   \getparameters[\??so#1][\s!parent=\??so,\s!multi={#2}]%
+   \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
+  %\ctxlua{joblists.define('#1')}%
+   \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??so#1]}% to be obsolete
+   \setvalue{\e!place   \e!listof#2}{\placelistofsorts[#1]}%
+   \setvalue{\e!complete\e!listof#2}{\completelistofsorts[#1]}}
+
+\unexpanded\def\definesort
+  {\dotripleempty\dodefinesort}
+
+\def\dodefinesort[#1][#2][#3]#4%
+  {\begingroup
+   \edef\currentsorting{#2}%
+   \edef\currentsortingtag{#3}%
+   \ifx\currentsortingtag\empty
+     \edef\currentsortingtag{#4}%
+   \fi
+   \ifx\currentsortingtag\empty
+     % todo: error message
+   \else
+     \edef\currentsortingexpansion{\sortingparameter\c!expansion}%
+     \preprocessexpansion\currentsortingexpansion\currentsortingtext\currentsortingcoding{#4}%
+     \ctxlua{joblists.register("\currentsorting", "sorting", {
+        metadata = {
+            catcodes = \the\catcodetable,
+            coding   = "\currentsortingcoding",
+            xmlroot  = \ifx\currentsortingcoding\s!xml "\xmldocument" \else nil \fi,
+        },
+        definition = {
+            tag     = "\currentsortingtag",
+            synonym = \!!bs\currentsortingtext\!!es,
+        %   used    = false,
+        }
+     })}%
+     \doif{#1}\v!yes{\setuxvalue\currentsortingtag{\noexpand\doinsertsort{\currentsorting}{\currentsortingtag}}}%
+   \fi
+   \endgroup}
+
+\unexpanded\def\doinsertsort#1#2% name tag
+  {\begingroup
+   % no kap currently, of .. we need to map cap onto WORD
+   \edef\currentsorting{#1}%
+   \dosetsynonymattributes\c!style\c!color
+   \ctxlua{joblists.synonym("#1","#2")}%
+   \normalexpanded{\endgroup\sortingparameter\c!next}}
+
+\def\registersort
+  {\dodoubleargument\doregistersort}
+
+\def\registersort[#1][#2]%
+  {\ctxlua{joblists.registerused("#1","#2")}}
+
+% before after
+%
+% maybe just 'commandset' and then combine
+
+\unexpanded\def\placelistofsorts
+  {\dodoubleempty\placelistofsorts}
+
+\unexpanded\def\placelistofsorts[#1][#2]% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
+  {\begingroup
+   \def\currentsorting{#1}%
+   \getparameters[\??so#1][#2]%
+   \startpacked
+     \ctxlua{joblists.process('#1',{ criterium = "\sortingparameter\c!criterium" })}%
+   \stoppacked
+   \endgroup}
+
+\def\completelistofsorts
+  {\dodoubleemptydocompletelistofsorts}
+
+\def\docompletelistofsorts[#1][#2]%
+  {\normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{#2}}}%
+   \doplacelistofsorts[#1][#2]%
+   \page[\v!yes]}
+
+\let\startsortingoutput \relax
+\let\stopsortingoutput  \relax
+\let\startsortingsection\gobbleoneargument
+\let\stopsortingsection \relax
+
+\def\sortingentry#1#2#3#4% #4 is meaning but empty here
+  {\doifelsenothing{\sortingparameter\c!command}
+     {\begingroup\dosetsortingattributes\c!style\c!color#3\endgroup\par} % todo
+     {\sortingparameter\c!command{#1}{#2}{#3}}}
+
+%D Here we define a support macro that can sort simple comma
+%D separated lists. It's a multi-list variant of a prototype
+%D written by Taco.
+
+% \def\mkloadsortedlist#1% class
+%   {\bgroup
+%    \getvalue{\s!set#1}%
+%    \ctxlua{joblists.process('#1')}%
+%    \getvalue{\s!reset#1}%
+%    \egroup}
+
+% \def\processlistofsorts[#1]%
+%   {\mkloadsortedlist{#1}}
+
+% \newcounter\nofsortedalphalists
+
+% \def\sortalphacommacommand#1%
+%   {\begingroup
+%    \doglobal\increment\nofsortedalphalists
+%    \edef\currentsortedalphalist{alpha:\nofsortedalphalists}%
+%    \definesorting[\currentsortedalphalist][\currentsortedalphalist]%
+%    \processcommacommand[#1]{\getvalue\currentsortedalphalist}%
+%    \global\let\sortedcommalist\empty
+%    \def\makesortedlist##1{\doglobal\appendtocommalist{##1}\sortedcommalist}%
+%    \setupsorting[\currentsortedalphalist][\c!criterium=\v!all,\c!command=\makesortedlist]%
+%    \processlistofsorts[\currentsortedalphalist]%
+%    \endgroup
+%    \dodoglobal\let#1\sortedcommalist}
+
+% \starttext
+%     \def\whatever{a,b,q,d,r,f}       \sortalphacommacommand\whatever \whatever \endgraf
+%     \def\whatever{ax,bx,qx,dx,rx,fx} \sortalphacommacommand\whatever \whatever \endgraf
+% \stoptext
+
+%D Presets.
+
+\definesynonyms
+  [\v!abbreviation]
+  [\v!abbreviations]
+  [\infull]
+
+\setupsynonyms
+  [\v!abbreviation]
+  [\c!textstyle=\v!capital]
+
+\definesorting
+  [\v!logo]
+  [\v!logos]
+  % no [\logogram]
+
+\definesynonyms
+  [\v!unit]
+  [\v!units]
+  [\unitmeaning]
+
+% \setupsynonyms
+%   [\v!unit]
+%   [\c!textstyle=\dimension]
+
+\setupsynonyms
+  [\v!unit]
+  [\c!synonymcommand=\dimension]
+
+\protect \endinput

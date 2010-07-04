@@ -1,0 +1,223 @@
+%D \module
+%D   [       file=meta-pag,
+%D        version=1999.07.10,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D These definitions used to be part of the old \type
+%D {core-mps} file, later changed into \type {meta-ini}, but
+%D keeping them separate is cleaner.
+
+\writestatus{loading}{MetaPost Graphics / Page Data Management}
+
+\unprotect
+
+\startMPextensions
+  if unknown context_page: input mp-page; fi;
+\stopMPextensions
+
+%D The next few macros tell \METAPOST\ how the \CONTEXT\
+%D pagebody looks.
+
+\startMPextensions
+  boolean PageStateAvailable,OnRightPage,InPageBody;
+  PageStateAvailable:=true;
+\stopMPextensions
+
+\startMPinitializations
+  OnRightPage:=true;
+  InPageBody:=\ifinpagebody true \else false \fi;
+\stopMPinitializations
+
+\startMPinitializations
+  def LoadPageState =
+    OnRightPage:=\MPonrightpage;
+    OnOddPage:=\MPonoddpage;
+    RealPageNumber:=\the\realpageno;
+    PageNumber:=\the\pageno;
+    NOfPages:=\lastpage;
+    PaperHeight:=\the\paperheight;
+    PaperWidth:=\the\paperwidth;
+    PrintPaperHeight:=\the\printpaperheight;
+    PrintPaperWidth:=\the\printpaperwidth;
+    TopSpace:=\the\topspace;
+    BottomSpace:=\the\bottomspace;
+    BackSpace:=\the\backspace;
+    CutSpace:=\the\cutspace;
+    MakeupHeight:=\the\makeupheight;
+    MakeupWidth:=\the\makeupwidth;
+    TopHeight:=\the\topheight;
+    TopDistance:=\the\topdistance;
+    HeaderHeight:=\the\headerheight;
+    HeaderDistance:=\the\headerdistance;
+    TextHeight:=\the\textheight;
+    FooterDistance:=\the\footerdistance;
+    FooterHeight:=\the\footerheight;
+    BottomDistance:=\the\bottomdistance;
+    BottomHeight:=\the\bottomheight;
+    LeftEdgeWidth:=\the\leftedgewidth;
+    LeftEdgeDistance:=\the\leftedgedistance;
+    LeftMarginWidth:=\the\leftmarginwidth;
+    LeftMarginDistance:=\the\leftmargindistance;
+    TextWidth:=\the\textwidth ;
+    RightMarginDistance:=\the\rightmargindistance;
+    RightMarginWidth:=\the\rightmarginwidth;
+    RightEdgeDistance:=\the\rightedgedistance;
+    RightEdgeWidth:=\the\rightedgewidth;
+    InnerMarginDistance:=\the\innermargindistance;
+    InnerMarginWidth:=\the\innermarginwidth;
+    OuterMarginDistance:=\the\outermargindistance;
+    OuterMarginWidth:=\the\outermarginwidth;
+    InnerEdgeDistance:=\the\inneredgedistance;
+    InnerEdgeWidth:=\the\inneredgewidth;
+    OuterEdgeDistance:=\the\outeredgedistance;
+    OuterEdgeWidth:=\the\outeredgewidth;
+    PageOffset:=\the\pageoffset;
+    PageDepth:=\the\pagedepth;
+    LayoutColumns:=\the\layoutcolumns;
+    LayoutColumnDistance:=\the\layoutcolumndistance;
+    LayoutColumnWidth:=\the\layoutcolumnwidth;
+  enddef;
+\stopMPinitializations
+
+\def\MPonrightpage{true}
+\def\MPonoddpage  {true}
+
+\def\freezeMPpagelayout
+  {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
+   \edef\MPonoddpage  {\doifoddpageelse     {tru}{fals}e}}
+
+\let\freezeMPlayout\relax % obsolete
+
+%D We need to freeze the pagelayout before the backgrounds
+%D are build, because the overlay will temporarily become
+%D zero (overlay).
+
+\appendtoks
+  \freezeMPpagelayout
+\to \everybeforepagebody
+
+%D By freezing these value every graphic, we can use layout
+%D variables that change halfways a page, whatever use that
+%D has.
+
+\prependtoks
+  \calculatereducedvsizes % this is really needed
+  \freezeMPpagelayout
+  \freezeMPlayout % to be used grouped
+\to \everyMPgraphic
+
+%D The next feature provides information about for instance
+%D column positions. This is an experimental feature,
+%D introduced when we needed backgrounds in columns (fill||in
+%D questions as implemented in a private module).
+%D
+%D See \type {mp-page.mp} for the definition of the macros:
+%D
+%D \starttabulate[|tl|l|p|]
+%D \NC ResetTextAreas        \NC no arguments \NC
+%D     reset areas on page                    \NC \NR
+%D \NC RegisterTextArea      \NC x, y, w, h   \NC
+%D     adds area to the list                  \NC \NR
+%D \NC TextAreaX,Y,W,H,XY,WH \NC x and/or y   \NC
+%D     reports offsets and dimensions         \NC \NR
+%D \stoptabulate
+%D
+%D The \type {TextArea*} macros can be used to determine
+%D overlap.
+
+\newcount\currentMPtextareadata
+
+\newtoks\MPsavedtextareadata
+\newtoks\MPtextareadata
+\newtoks\MPlocaltextareadata
+
+% optimaliseren voor herhaling
+
+\def\registerMPtextarea#1%
+  {\ifpositioning
+     \bgroup
+     \global\advance\currentMPtextareadata\plusone
+    %\hpos{gbd:\the\currentMPtextareadata}{#1}%
+     \hpos{gbd:\the\currentMPtextareadata}%
+       {\iftracetextareas\boxrulewidth1.5pt\ruledhbox\fi{#1}}%
+     \edef\!!stringa{gbd:\the\currentMPtextareadata}%
+     \edef\!!stringa{RegisterTextArea(%
+       \MPx\!!stringa,\MPy\!!stringa,%
+       \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
+     \@EA \doglobal \@EA \appendtoks \!!stringa \to \MPtextareadata
+     \egroup
+   \else
+     \hbox{#1}%
+   \fi}
+
+\def\registerMPlocaltextarea#1%
+  {\ifpositioning
+     \bgroup
+     \global\advance\currentMPtextareadata\plusone
+    %\hpos{gbd:\the\currentMPtextareadata}{#1}%
+     \hpos{gbd:\the\currentMPtextareadata}%
+       {\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
+     \edef\!!stringa{gbd:\the\currentMPtextareadata}%
+     \edef\!!stringa{RegisterLocalTextArea(%
+       \MPx\!!stringa,\MPy\!!stringa,%
+       \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
+     \global\MPlocaltextareadata\@EA{\!!stringa}%
+     \egroup
+   \else
+     \hbox{#1}%
+   \fi}
+
+% better, so that we can force a key and share with e.g. renumbering
+%
+% \let\namedtextarea\empty
+%
+% \def\registerMPlocaltextarea#1%
+%   {\ifpositioning
+%      \bgroup
+%      \ifx\namedtextarea\empty
+%        \global\advance\currentMPtextareadata\plusone
+%        \edef\namedtextarea{gbd:\the\currentMPtextareadata}%
+%      \fi
+%      \hpos\namedtextarea{\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
+%      \edef\ascii{RegisterLocalTextArea(%
+%        \MPx\namedtextarea,\MPy\namedtextarea,%
+%        \MPw\namedtextarea,\MPh\namedtextarea,\MPd\namedtextarea);}%
+%      \global\MPlocaltextareadata\@EA{\ascii}%
+%      \egroup
+%    \else
+%      \hbox{#1}%
+%    \fi}
+
+\def\resetMPlocaltextarea
+  {\global\MPlocaltextareadata\emptytoks}
+
+\startMPextensions
+   path PlainTextArea;
+\stopMPextensions
+
+\startMPinitializations
+  ResetTextAreas;
+  \the\MPsavedtextareadata;
+  SaveTextAreas;
+  ResetTextAreas;
+  \the\MPtextareadata;
+  \the\MPlocaltextareadata;
+  PlainTextArea:=boundingbox(\MPxy{text:\realfolio}--\MPxy{text:\realfolio}
+    shifted (\MPw{text:\realfolio},\MPh{text:\realfolio}));
+\stopMPinitializations
+
+\appendtoks
+  \global\MPsavedtextareadata\MPtextareadata
+  \global\MPtextareadata     \emptytoks
+  \global\MPlocaltextareadata\emptytoks
+\to \everyshipout
+
+\protect \endinput

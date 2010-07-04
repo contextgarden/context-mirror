@@ -1,0 +1,19 @@
+installation:
+
+-- download scite and install it (take the normal scite, not one that ships with ruby)
+-- copy the texmf-context\context\data\scite\*.properties to c:\users\<youraccount>
+-- copy the texmf-context\context\data\scite\*.lua to the place where scite has its own support files (wscite)
+-- add the line "import context" to your user properties file (entry under menu Options)
+
+running context:
+
+-- add texmf-mswin\bin to your path
+
+or
+
+-- start scite from a cmd that also calls setuptex
+
+spellchecking:
+
+-- create a path for spell files and put spell files there (these are files with just words)
+-- set the environment variable CTXSPELLPATH to this path

@@ -1,0 +1,593 @@
+%D \module
+%D   [       file=type-mac,
+%D        version=2009.03.10,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Mac OS X Definitions,
+%D         author=Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright=Wolfgang Schuster]
+%C
+%C This module is part of the \CONTEXT\ macro||package. See
+%C mreadme.pdf for details.
+
+\definetypescriptprefix [f:andalemono]      [andalemono]
+\definetypescriptprefix [f:chalkboard]      [chalkboard]
+\definetypescriptprefix [f:cochin]          [cochin]
+\definetypescriptprefix [f:comicsans]       [comicsansms]
+\definetypescriptprefix [f:couriernew]      [couriernew]
+\definetypescriptprefix [f:georgia]         [georgia]
+\definetypescriptprefix [f:lucidagrande]    [lucidagrande]
+\definetypescriptprefix [f:monaco]          [monaco]
+\definetypescriptprefix [f:tahoma]          [tahoma]
+\definetypescriptprefix [f:timesnewroman]   [timesnewroman]
+\definetypescriptprefix [f:trebuchet]       [trebuchetms]
+\definetypescriptprefix [f:verdana]         [verdana]
+
+\definetypescriptprefix [n:andalemono]      [AndaleMono]
+\definetypescriptprefix [n:chalkboard]      [Chalkboard]
+\definetypescriptprefix [n:cochin]          [Cochin]
+\definetypescriptprefix [n:comicsans]       [ComicSans]
+\definetypescriptprefix [n:couriernew]      [CourierNew]
+\definetypescriptprefix [n:georgia]         [Georgia]
+\definetypescriptprefix [n:lucidagrande]    [LucidaGrande]
+\definetypescriptprefix [n:monaco]          [Monaco]
+\definetypescriptprefix [n:tahoma]          [Tahoma]
+\definetypescriptprefix [n:timesnewroman]   [TimesNewRoman]
+\definetypescriptprefix [n:trebuchet]       [Trebuchet]
+\definetypescriptprefix [n:verdana]         [Verdana]
+
+\starttypescriptcollection [macosx]
+
+% American Typewriter
+
+\starttypescript [serif] [americantypewriter-light-condensed,americantypewriter-condensed,americantypewriter-light,americantypewriter]
+    \definefontsynonym [AmericanTypewriter-Light]     [name:americantypewriterlight]          [features=default]
+    \definefontsynonym [AmericanTypewriter-Regular]   [name:americantypewriter]               [features=default]
+    \definefontsynonym [AmericanTypewriter-Bold]      [name:americantypewriterbold]           [features=default]
+    \definefontsynonym [AmericanTypewriter-LightCond] [name:americantypewritercondensedlight] [features=default]
+    \definefontsynonym [AmericanTypewriter-Condensed] [name:americantypewritercondensed]      [features=default]
+    \definefontsynonym [AmericanTypewriter-BoldCond]  [name:americantypewritercondensedbold]  [features=default]
+\stoptypescript
+
+\starttypescript [serif] [americantypewriter-light-condensed]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]     [AmericanTypewriter-LightCond] [features=default]
+    \definefontsynonym [SerifBold] [AmericanTypewriter-Condensed] [features=default]
+\stoptypescript
+
+\starttypescript [serif] [americantypewriter-condensed]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]     [AmericanTypewriter-Condensed] [features=default]
+    \definefontsynonym [SerifBold] [AmericanTypewriter-BoldCond]  [features=default]
+\stoptypescript
+
+\starttypescript [serif] [americantypewriter-light]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]     [AmericanTypewriter-Light]     [features=default]
+    \definefontsynonym [SerifBold] [AmericanTypewriter-Regular]   [features=default]
+\stoptypescript
+
+\starttypescript [serif] [americantypewriter]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]     [AmericanTypewriter-Regular]   [features=default]
+    \definefontsynonym [SerifBold] [AmericanTypewriter-Bold]      [features=default]
+\stoptypescript
+
+\starttypescript [americantypewriter-light-condensed,americantypewriter-condensed,americantypewriter-light,americantypewriter]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% Arial / Arial Narrow / Arial Rounded / Arial Unicode
+
+\starttypescript [sans] [arial-narrow,arial-condensed,arial,arial-rounded,arial-unicode]
+    \definefontsynonym [Arial-Condensed]      [name:arialnarrow]           [features=default]
+    \definefontsynonym [Arial-ItalicCond]     [name:arialnarrowitalic]     [features=default]
+    \definefontsynonym [Arial-BoldCond]       [name:arialnarrowbold]       [features=default]
+    \definefontsynonym [Arial-BoldItalicCond] [name:arialnarrowbolditalic] [features=default]
+    \definefontsynonym [Arial-Regular]        [name:arial]                 [features=default]
+    \definefontsynonym [Arial-Italic]         [name:arialitalic]           [features=default]
+    \definefontsynonym [Arial-Bold]           [name:arialbold]             [features=default]
+    \definefontsynonym [Arial-BoldItalic]     [name:arialbolditalic]       [features=default]
+    \definefontsynonym [Arial-Black]          [name:arialblack]            [features=default]
+    \definefontsynonym [Arial-Unicode]        [name:arialunicodems]        [features=default]
+    \definefontsynonym [Arial-Rounded]        [name:arialroundedmtbold]    [features=default]
+\stoptypescript
+
+\starttypescript [sans] [arial-narrow,arial-condensed]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [Arial-Condensed]      [features=default]
+    \definefontsynonym [SansItalic]     [Arial-ItalicCond]     [features=default]
+    \definefontsynonym [SansBold]       [Arial-BoldCond]       [features=default]
+    \definefontsynonym [SansBoldItalic] [Arial-BoldItalicCond] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [arial]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [Arial-Regular]    [features=default]
+    \definefontsynonym [SansItalic]     [Arial-Italic]     [features=default]
+    \definefontsynonym [SansBold]       [Arial-Bold]       [features=default]
+    \definefontsynonym [SansBoldItalic] [Arial-BoldItalic] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [arial-rounded]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans] [Arial-Rounded] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [arial-unicode]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans] [Arial-Unicode] [features=default]
+\stoptypescript
+
+\starttypescript [arial-narrow,arial-condensed,arial,arial-rounded,arial-unicode]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Baskerville
+
+\starttypescript [serif] [baskerville]
+    \definefontsynonym [Baskerville-Regular]      [name:baskerville]               [features=default]
+    \definefontsynonym [Baskerville-Italic]       [name:baskervilleitalic]         [features=default]
+    \definefontsynonym [Baskerville-Medium]       [name:baskervillesemibold]       [features=default]
+    \definefontsynonym [Baskerville-MediumItalic] [name:baskervillesemibolditalic] [features=default]
+    \definefontsynonym [Baskerville-Bold]         [name:baskervillebold]           [features=default]
+    \definefontsynonym [Baskerville-BoldItalic]   [name:baskervillebolditalic]     [features=default]
+\stoptypescript
+
+\starttypescript [serif] [baskerville]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]           [Baskerville-Regular]      [features=default]
+    \definefontsynonym [SerifItalic]     [Baskerville-Italic]       [features=default]
+    \definefontsynonym [SerifBold]       [Baskerville-Medium]       [features=default]
+    \definefontsynonym [SerifBoldItalic] [Baskerville-MediumItalic] [features=default]
+\stoptypescript
+
+\starttypescript [baskerville]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% Big Caslon
+
+\starttypescript [serif] [caslon,bigcaslon]
+    \definefontsynonym [BigCaslon-Medium] [name:bigcaslonmedium] [features=default]
+\stoptypescript
+
+\starttypescript [serif] [caslon,bigcaslon]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif] [BigCaslon-Medium] [features=default]
+\stoptypescript
+
+\starttypescript [caslon,bigcaslon]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% Copperplate
+
+\starttypescript [sans] [copperplate-light,copperplate]
+    \definefontsynonym [Copperplate-Light]   [name:copperplatelight] [features=default]
+    \definefontsynonym [Copperplate-Regular] [name:copperplate]      [features=default]
+    \definefontsynonym [Copperplate-Bold]    [name:copperplatebold]  [features=default]
+\stoptypescript
+
+\starttypescript [sans] [copperplate-light]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [Copperplate-Light]   [features=default]
+    \definefontsynonym [SansBold] [Copperplate-Regular] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [copperplate]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [Copperplate-Regular] [features=default]
+    \definefontsynonym [SansBold] [Copperplate-Bold]    [features=default]
+\stoptypescript
+
+\starttypescript [copperplate-light,copperplate]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Futura
+
+\starttypescript [sans] [futura-condensed,futura]
+    \definefontsynonym [Futura-MediumCond]   [name:futuracondensedmedium]    [features=default]
+    \definefontsynonym [Futura-Medium]       [name:futuramedium]             [features=default]
+    \definefontsynonym [Futura-MediumItalic] [name:futuramediumitalic]       [features=default]
+    \definefontsynonym [Futura-BoldCond]     [name:futuracondensedextrabold] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [futura-condensed]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [Futura-MediumCond] [features=default]
+    \definefontsynonym [SansBold] [Futura-BoldCond]   [features=default]
+\stoptypescript
+
+\starttypescript [sans] [futura]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]       [Futura-Medium]       [features=default]
+    \definefontsynonym [SansItalic] [Futura-MediumItalic] [features=default]
+\stoptypescript
+
+\starttypescript [futura-condensed,futura]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Gill Sans
+
+\starttypescript [sans] [gillsans-light,gillsans]
+    \definefontsynonym [GillSans-Light]       [name:gillsanslight]       [features=default]
+    \definefontsynonym [GillSans-LightItalic] [name:gillsanslightitalic] [features=default]
+    \definefontsynonym [GillSans-Regular]     [name:gillsans]            [features=default]
+    \definefontsynonym [GillSans-Italic]      [name:gillsansitalic]      [features=default]
+    \definefontsynonym [GillSans-Bold]        [name:gillsansbold]        [features=default]
+    \definefontsynonym [GillSans-BoldItalic]  [name:gillsansbolditalic]  [features=default]
+\stoptypescript
+
+\starttypescript [sans] [gillsans-light]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [GillSans-Light]       [features=default]
+    \definefontsynonym [SansItalic]     [GillSans-LightItalic] [features=default]
+    \definefontsynonym [SansBold]       [GillSans-Regular]     [features=default]
+    \definefontsynonym [SansBoldItalic] [GillSans-Italic]      [features=default]
+\stoptypescript
+
+\starttypescript [sans] [gillsans]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [GillSans-Regular]    [features=default]
+    \definefontsynonym [SansItalic]     [GillSans-Italic]     [features=default]
+    \definefontsynonym [SansBold]       [GillSans-Bold]       [features=default]
+    \definefontsynonym [SansBoldItalic] [GillSans-BoldItalic] [features=default]
+\stoptypescript
+
+\starttypescript [gillsans-light,gillsans]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Helvetica Neuse
+
+\starttypescript [sans] [helvetica-neue-ultralight,helvetica-neue-light,helvetica-neue,helvetica-neue-boldcondensed]
+    \definefontsynonym [HelveticaNeue-UltraLight]       [name:helveticaneueultralight]       [features=default]
+    \definefontsynonym [HelveticaNeue-UltraLightItalic] [name:helveticaneueultralightitalic] [features=default]
+    \definefontsynonym [HelveticaNeue-Light]            [name:helveticaneuelight]            [features=default]
+    \definefontsynonym [HelveticaNeue-LightItalic]      [name:helveticaneuelightitalic]      [features=default]
+    \definefontsynonym [HelveticaNeue-Regular]          [name:helveticaneue]                 [features=default]
+    \definefontsynonym [HelveticaNeue-Italic]           [name:helveticaneueitalic]           [features=default]
+    \definefontsynonym [HelveticaNeue-Bold]             [name:helveticaneuebold]             [features=default]
+    \definefontsynonym [HelveticaNeue-BoldItalic]       [name:helveticaneuebolditalic]       [features=default]
+    \definefontsynonym [HelveticaNeue-BoldCond]         [name:helveticaneuecondensedbold]    [features=default]
+    \definefontsynonym [HelveticaNeue-BlackCond]        [name:helveticaneuecondensedblack]   [features=default]
+\stoptypescript
+
+\starttypescript [sans] [helvetica-neue-ultralight]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [HelveticaNeue-UltraLight]       [features=default]
+    \definefontsynonym [SansItalic]     [HelveticaNeue-UltraLightItalic] [features=default]
+    \definefontsynonym [SansBold]       [HelveticaNeue-Light]            [features=default]
+    \definefontsynonym [SansBoldItalic] [HelveticaNeue-LightItalic]      [features=default]
+\stoptypescript
+
+\starttypescript [sans] [helvetica-neue-light]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [HelveticaNeue-Light]       [features=default]
+    \definefontsynonym [SansItalic]     [HelveticaNeue-LightItalic] [features=default]
+    \definefontsynonym [SansBold]       [HelveticaNeue-Regular]     [features=default]
+    \definefontsynonym [SansBoldItalic] [HelveticaNeue-Italic]      [features=default]
+\stoptypescript
+
+\starttypescript [sans] [helvetica-neue]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [HelveticaNeue-Regular]    [features=default]
+    \definefontsynonym [SansItalic]     [HelveticaNeue-Italic]     [features=default]
+    \definefontsynonym [SansBold]       [HelveticaNeue-Bold]       [features=default]
+    \definefontsynonym [SansBoldItalic] [HelveticaNeue-BoldItalic] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [helvetica-neue-boldcondensed]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [HelveticaNeue-BoldCond]  [features=default]
+    \definefontsynonym [SansBold] [HelveticaNeue-BlackCond] [features=default]
+\stoptypescript
+
+\starttypescript [helvetica-neue-ultralight,helvetica-neue-light,helvetica-neue,helvetica-neue-boldcondensed]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Hiragino Mincho
+
+\starttypescript [serif] [hiragino-mincho]
+    \definefontsynonym [HiraginoMinchoPro-Regular]  [name:hiraminprow3]  [features=japanese]
+    \definefontsynonym [HiraginoMinchoPro-Bold]     [name:hiraminprow6]  [features=japanese]
+    \definefontsynonym [HiraginoMinchoProN-Regular] [name:hiraminpronw3] [features=japanese]
+    \definefontsynonym [HiraginoMinchoProN-Bold]    [name:hiraminpronw6] [features=japanese]
+\stoptypescript
+
+\starttypescript [serif] [hiragino-mincho]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]     [HiraginoMinchoPro-Regular] [features=japanese]
+    \definefontsynonym [SerifBold] [HiraginoMinchoPro-Bold]    [features=japanese]
+\stoptypescript
+
+% \starttypescript [serif] [hiragino-mincho]
+%     \setups[font:fallback:serif]
+%     \definefontsynonym [Serif]     [HiraginoMinchoProN-Regular] [features=japanese]
+%     \definefontsynonym [SerifBold] [HiraginoMinchoProN-Bold]    [features=japanese]
+% \stoptypescript
+
+\starttypescript [hiragino-mincho]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% Hiragino Maru
+
+\starttypescript [sans] [hiragino-maru]
+    \definefontsynonym [HiraginoMaruGothicPro-Regular]  [name:hiramaruprow4]  [features=japanese]
+    \definefontsynonym [HiraginoMaruGothicProN-Regular] [name:hiramarupronw4] [features=japanese]
+\stoptypescript
+
+\starttypescript [sans] [hiragino-maru]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans] [HiraginoMaruGothicPro-Regular] [features=japanese]
+\stoptypescript
+
+% \starttypescript [sans] [hiragino-maru]
+%     \setups[font:fallback:sans]
+%     \definefontsynonym [Sans] [HiraginoMaruGothicProN-Regular] [features=japanese]
+% \stoptypescript
+
+\starttypescript [hiragino-maru]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Hiragino Kaku
+
+\starttypescript [sans] [hiragino-kaku]
+    \definefontsynonym [HiraginoKakuGothicPro-Regular]  [name:hirakakuprow3]  [features=japanese]
+    \definefontsynonym [HiraginoKakuGothicPro-Bold]     [name:hirakakuprow6]  [features=japanese]
+    \definefontsynonym [HiraginoKakuGothicStd-Black]    [name:hirakakustdw8]  [features=japanese]
+    \definefontsynonym [HiraginoKakuGothicProN-Regular] [name:hirakakupronw3] [features=japanese]
+    \definefontsynonym [HiraginoKakuGothicProN-Bold]    [name:hirakakupronw6] [features=japanese]
+    \definefontsynonym [HiraginoKakuGothicStdN-Black]   [name:hirakakustdnw8] [features=japanese]
+\stoptypescript
+
+\starttypescript [sans] [hiragino-kaku]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [HiraginoKakuGothicPro-Regular] [features=japanese]
+    \definefontsynonym [SansBold] [HiraginoKakuGothicPro-Bold]    [features=japanese]
+\stoptypescript
+
+% \starttypescript [sans] [hiragino-kaku]
+%     \setups[font:fallback:sans]
+%     \definefontsynonym [Sans]     [HiraginoKakuGothicProN-Regular] [features=japanese]
+%     \definefontsynonym [SansBold] [HiraginoKakuGothicProN-Bold]    [features=japanese]
+% \stoptypescript
+
+\starttypescript [hiragino-kaku]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Hoefler Text
+
+\starttypescript [serif] [hoefler]
+    \definefontsynonym [HoeflerText-Regular]     [name:hoeflertext]            [features=default]
+    \definefontsynonym [HoeflerText-Italic]      [name:hoeflertextitalic]      [features=default]
+    \definefontsynonym [HoeflerText-Black]       [name:hoeflertextblack]       [features=default]
+    \definefontsynonym [HoeflerText-BlackItalic] [name:hoeflertextblackitalic] [features=default]
+    \definefontsynonym [HoeflerText-Ornaments]   [name:hoeflertextornaments]   [features=default]
+\stoptypescript
+
+\starttypescript [serif] [hoefler]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]           [HoeflerText-Regular]     [features=default]
+    \definefontsynonym [SerifItalic]     [HoeflerText-Italic]      [features=default]
+    \definefontsynonym [SerifBold]       [HoeflerText-Black]       [features=default]
+    \definefontsynonym [SerifBoldItalic] [HoeflerText-BlackItalic] [features=default]
+\stoptypescript
+
+\starttypescript [hoefler]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% Impact
+
+\starttypescript [sans] [impact]
+    \definefontsynonym [Impact-Regular] [name:impact] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [impact]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans] [Impact-Regular] [features=default]
+\stoptypescript
+
+\starttypescript [impact]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Andale Mono / Monaco
+
+\starttypescript [mono] [andalemono,monaco]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular] [name:\typescriptprefix{f:\typescripttwo}] [features=default]
+\stoptypescript
+
+\starttypescript [mono] [andalemono,monaco]
+    \setups[font:fallback:mono]
+    \definefontsynonym [Mono] [\typescriptprefix{n:\typescripttwo}-Regular] [features=default]
+\stoptypescript
+
+\starttypescript [andalemono,monaco]
+    \definetypeface [\typescriptone] [tt] [mono] [\typescriptone] [default]
+\stoptypescript
+
+% Optima
+
+\starttypescript [sans] [optima,optima-bold]
+    \definefontsynonym [Optima-Regular]    [name:optimaregular]    [features=default]
+    \definefontsynonym [Optima-Italic]     [name:optimaitalic]     [features=default]
+    \definefontsynonym [Optima-Bold]       [name:optimabold]       [features=default]
+    \definefontsynonym [Optima-BoldItalic] [name:optimabolditalic] [features=default]
+    \definefontsynonym [Optima-Black]      [name:optimaextrablack] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [optima]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [Optima-Regular]    [features=default]
+    \definefontsynonym [SansItalic]     [Optima-Italic]     [features=default]
+    \definefontsynonym [SansBold]       [Optima-Bold]       [features=default]
+    \definefontsynonym [SansBoldItalic] [Optima-BoldItalic] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [optima-bold]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]       [Optima-Bold]       [features=default]
+    \definefontsynonym [SansItalic] [Optima-BoldItalic] [features=default]
+    \definefontsynonym [SansBold]   [Optima-Black]      [features=default]
+\stoptypescript
+
+\starttypescript [optima,optima-bold]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Papyrus
+
+\starttypescript [sans] [papyrus]
+    \definefontsynonym [Papyrus-Regular]   [name:papyrus]          [features=default]
+    \definefontsynonym [Papyrus-Condensed] [name:papyruscondensed] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [papyrus]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans] [Papyrus-Regular] [features=default]
+\stoptypescript
+
+\starttypescript [papyrus]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% STFangsong
+
+\starttypescript [serif] [stfangsong]
+    \definefontsynonym [STFangsong-Regular] [name:stfangsong] [features=chinese]
+\stoptypescript
+
+\starttypescript [serif] [stfangsong]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Serif] [STFangsong-Regular] [features=chinese]
+\stoptypescript
+
+\starttypescript [stfangsong]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% STHeiti
+
+\starttypescript [sans] [stheiti]
+    \definefontsynonym [STXihei-Light]   [name:stxihei] [features=chinese]
+    \definefontsynonym [STHeiti-Regular] [name:stheiti] [features=chinese]
+\stoptypescript
+
+\starttypescript [sans] [stheiti]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [STXihei-Light]   [features=chinese]
+    \definefontsynonym [SansBold] [STKaiti-Regular] [features=chinese]
+\stoptypescript
+
+\starttypescript [stheiti]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% STKaiti
+
+\starttypescript [serif] [stkaiti]
+    \definefontsynonym [STKaiti-Regular] [name:stkaiti] [features=chinese]
+\stoptypescript
+
+\starttypescript [serif] [stkaiti]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Serif] [STKaiti-Regular] [features=chinese]
+\stoptypescript
+
+\starttypescript [stkaiti]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% STSong
+
+\starttypescript [serif] [stsong]
+    \definefontsynonym [STSong-Regular] [name:stsong] [features=chinese]
+\stoptypescript
+
+\starttypescript [serif] [stsong]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Serif] [STSong-Regular] [features=chinese]
+\stoptypescript
+
+\starttypescript [stsong]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% Chalkboard / Comic Sans / Tahoma
+
+\starttypescript [sans] [chalkboard,comicsans,tahoma]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular] [name:\typescriptprefix{f:\typescripttwo}]     [features=default]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]    [name:\typescriptprefix{f:\typescripttwo}bold] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [chalkboard,comicsans,lucidagrande,tahoma]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [\typescriptprefix{n:\typescripttwo}-Regular] [features=default]
+    \definefontsynonym [SansBold] [\typescriptprefix{n:\typescripttwo}-Bold]    [features=default]
+\stoptypescript
+
+\starttypescript [chalkboard,comicsans,tahoma]
+    \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+\stoptypescript
+
+% Cochin / Courier New / Georgia / Times New Roman / Trebuchet / Verdana
+
+\starttypescript [serif,sans,mono] [cochin,georgia,timesnewroman,trebuchet,verdana,couriernew]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]    [name:\typescriptprefix{f:\typescripttwo}]           [features=default]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]     [name:\typescriptprefix{f:\typescripttwo}italic]     [features=default]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]       [name:\typescriptprefix{f:\typescripttwo}bold]       [features=default]
+    \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalic] [name:\typescriptprefix{f:\typescripttwo}bolditalic] [features=default]
+\stoptypescript
+
+\starttypescript [serif] [cochin,georgia,timesnewroman]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]           [\typescriptprefix{n:\typescripttwo}-Regular]    [features=default]
+    \definefontsynonym [SerifItalic]     [\typescriptprefix{n:\typescripttwo}-Italic]     [features=default]
+    \definefontsynonym [SerifBold]       [\typescriptprefix{n:\typescripttwo}-Bold]       [features=default]
+    \definefontsynonym [SerifBoldItalic] [\typescriptprefix{n:\typescripttwo}-BoldItalic] [features=default]
+\stoptypescript
+
+\starttypescript [cochin,georgia,timesnewroman]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+\stoptypescript
+
+% Courier New
+
+% \starttypescript [mono] [couriernew]
+%     \setups[font:fallback:mono]
+%     \definefontsynonym [Mono]           [\typescriptprefix{n:\typescripttwo}-Regular]    [features=default]
+%     \definefontsynonym [MonoItalic]     [\typescriptprefix{n:\typescripttwo}-Italic]     [features=default]
+%     \definefontsynonym [MonoBold]       [\typescriptprefix{n:\typescripttwo}-Bold]       [features=default]
+%     \definefontsynonym [MonoBoldItalic] [\typescriptprefix{n:\typescripttwo}-BoldItalic] [features=default]
+% \stoptypescript
+
+% \starttypescript [couriernew]
+%     \definetypeface [\typescriptone] [tt] [mono] [\typescriptone] [default]
+% \stoptypescript
+
+% Trebuchet / Verdana
+
+% \starttypescript [sans] [trebuchet,verdana]
+%     \setups[font:fallback:sans]
+%     \definefontsynonym [Sans]           [\typescriptprefix{n:\typescripttwo}-Regular]    [features=default]
+%     \definefontsynonym [SansItalic]     [\typescriptprefix{n:\typescripttwo}-Italic]     [features=default]
+%     \definefontsynonym [SansBold]       [\typescriptprefix{n:\typescripttwo}-Bold]       [features=default]
+%     \definefontsynonym [SansBoldItalic] [\typescriptprefix{n:\typescripttwo}-BoldItalic] [features=default]
+% \stoptypescript
+
+% \starttypescript [trebuchet,verdana]
+%     \definetypeface [\typescriptone] [ss] [sans] [\typescriptone] [default]
+% \stoptypescript
+
+\stoptypescriptcollection
+
+\endinput

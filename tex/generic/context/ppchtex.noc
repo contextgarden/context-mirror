@@ -1,0 +1,212 @@
+%D \module
+%D   [       file=ppchtex (m-chemie),
+%D        version=1997.03.19,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\PPCHTEX\ (Plain Pictex Context cHemie \TEX),
+%D         author=Hans Hagen,
+%D           date=\huidigedatum,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten},
+%D    suggestions={Tobias Burnus, Dirk Kuypers \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+%D This module facilitates the use of \PPCHTEX\ in macro
+%D packages other than \CONTEXT. One of the features of
+%D \CONTEXT\ is that the user interface can be in any
+%D language. This language is defined at loading time.
+%D
+%D This module is indeed a surrogate one and is only a poor
+%D man's alternative to the more extensive \type{mult-***}
+%D modules of \CONTEXT. The extra overhead in terms of macros
+%D and functionality that these modules offer is only useful
+%D in \CONTEXT.
+%D
+%D Two interfaces are supported here, but others can easily be
+%D defined. This module expects the general system macros to be
+%D loaded as wel as a interface switch \type{\ifalternativeinterface}
+%D to be set.
+
+%D First we load some auxiliary macro's:
+
+\input supp-mis.mkii \let\writestatus\undefined
+\input syst-gen.mkii
+\input syst-fnt.mkii
+
+%D after which we can go on with:
+
+\unprotect
+
+%D 0 = english
+%D 1 = dutch
+%D 2 = german
+
+\ifx\interfacenumber\undefined
+  \chardef\interfacenumber=0
+\fi
+
+\def\definesystemvariable #1 %
+  {\setvalue{??#1}{@@#1}}
+
+\def\definesystemconstant #1 %
+  {\setvalue{s!#1}{#1}}
+
+\def\definevariable #1 #2 #3 % en nl de
+  {\ifcase\interfacenumber
+     \setvalue{v!#1}{#1}
+   \or
+     \setvalue{v!#1}{#2}
+   \or
+     \setvalue{v!#1}{#3}
+   \fi}
+
+\def\defineconstant #1 #2 #3 % en nl de
+  {\ifcase\interfacenumber
+     \setvalue{c!#1}{#1}
+     \setvalue{c!#2}{#1}
+   \or
+     \setvalue{c!#1}{#1}
+   \or
+     \setvalue{c!#1}{#1}
+     \setvalue{c!#3}{#1}
+   \fi}
+
+\def\definecommand #1 #2 #3 %
+  {\ifcase\interfacenumber
+     % core commands are english
+   \or
+     \doifnot{#1}{#2}{\setvalue{#2}{\getvalue{#1}}}
+   \or
+     \doifnot{#1}{#3}{\setvalue{#3}{\getvalue{#1}}}
+   \fi}
+
+\long\def\startcommands#1\stopcommands
+  {}
+
+\def\dosetvalue#1#2#3%
+  {\p!doifundefined{\c!prefix!#2}%
+     \let\donottest=\doprocesstest
+     \@EA\def\csname#1#2\endcsname{#3}%
+   \else
+     \let\donottest=\doprocesstest
+     \@EA\def\csname#1\csname\c!prefix!#2\endcsname\endcsname{#3}%
+   \fi}
+
+\def\dosetevalue#1#2#3%
+  {\p!doifundefined{\c!prefix!#2}%
+     \let\donottest=\doprocesstest
+     \@EA\edef\csname#1#2\endcsname{#3}%
+   \else
+     \let\donottest=\doprocesstest
+     \@EA\edef\csname#1\csname\c!prefix!#2\endcsname\endcsname{#3}%
+   \fi}
+
+\def\docopyvalue#1#2#3%
+  {\p!doifundefined{\c!prefix!#3}%
+     \let\donottest=\doprocesstest
+     \@EA\def\csname#1#3\endcsname%
+       {\csname#2#3\endcsname}%
+   \else
+     \let\donottest=\doprocesstest
+     \@EA\def\csname#1\csname\c!prefix!#3\endcsname\endcsname%
+       {\csname#2\csname\c!prefix!#3\endcsname\endcsname}%
+   \fi}
+
+\def\doresetvalue#1#2%
+  {\dosetvalue{#1}{#2}{}}
+
+\def\dogetvalue#1#2%
+  {\csname#1\csname\c!prefix!#2\endcsname\endcsname}
+
+\defineconstant axis            assenstelsel     achsen
+\defineconstant top             boven            oben
+\defineconstant width           breedte          breite
+\defineconstant size            formaat          groesse
+\defineconstant number          getal            nummer
+\defineconstant height          hoogte           hoehe
+\defineconstant factor          factor           faktor
+\defineconstant frame           kader            rahmen
+%defineconstant framecolor      kaderkleur       rahmenfarbe
+\defineconstant color           kleur            farbe
+\defineconstant bodyfont        korps            fliesstext
+\defineconstant style           letter           schriftstil
+\defineconstant rulethickness   lijndikte        liniendicke
+\defineconstant rulecolor       lijnkleur        linienfarbe
+\defineconstant left            links            links
+\defineconstant offset          offset           offset
+\defineconstant bottom          onder            unten
+\defineconstant option          optie            option
+\defineconstant location        plaats           platz
+\defineconstant right           rechts           rechts
+\defineconstant resolution      resolutie        aufloesung
+\defineconstant scale           schaal           format
+\defineconstant state           status           status
+\defineconstant text            tekst            text
+\defineconstant textcolor       tekstkleur       tekstfarbe
+\defineconstant textsize        tekstformaat     textgroesse
+\defineconstant alternative     variant          alternative
+\defineconstant x               x                x
+\defineconstant y               y                y
+
+\definevariable on              aan              an
+\definevariable big             groot            gross
+\definevariable intext          intekst          imtext
+\definevariable small           klein            klein
+\definevariable medium          middel           mittel
+\definevariable fit             passend          passend
+\definevariable start           start            start
+\definevariable stop            stop             stop
+\definevariable test            test             test
+\definevariable off             uit              aus
+
+\definecommand  definechemical  definieerchemie  definierechemie
+\definecommand  setupchemical   stelchemiein     stellechemieein
+\definecommand  chemical        chemie           chemie
+\definecommand  tochemical      naarchemie       zurchemie
+\definecommand  startchemical   startchemie      startchemie
+\definecommand  stopchemical    stopchemie       stopchemie
+\definecommand  toptext         boventekst       textueber
+\definecommand  bottext         ondertekst       textunter
+\definecommand  midtext         middentekst      textmitte
+
+\protect
+
+%D After those definitions we actually load \PPCHTEX:
+
+\input ppchtex.mkii
+
+%D We also change some setup values. Let's hope that the next
+%D setups forever suits \LATEX.
+
+\unprotect
+
+\ifx\bodyfontsize\undefined
+  \ifx\f@size\undefined
+    \ifx\@ptsize\undefined
+      \setupchemical[\c!bodyfont=11pt]
+    \else
+      \setupchemical[\c!bodyfont=1\@ptsize pt]
+    \fi
+  \else
+    \setupchemical[\c!bodyfont=\f@size pt]
+  \fi
+\else
+  \setupchemical[\c!bodyfont=\bodyfontsize]
+\fi
+
+\ifx\mathrm\undefined
+  \setupchemical[\c!style=\rm]
+\else
+  \setupchemical[\c!style=\mathrm]
+\fi
+
+\ifx\outputresolution\undefined
+  \setupchemical[\c!resolution=300]
+\else
+  \setupchemical[\c!resolution=\outputresolution]
+\fi
+
+\let\unexpanded\normalunexpanded
+
+\protect \endinput

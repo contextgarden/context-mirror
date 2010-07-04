@@ -1,0 +1,32 @@
+%D \module
+%D   [       file=unic-035,
+%D        version=2009.05.25,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 35,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+
+\unprotect
+
+\startunicodevector 35
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1\relax
+    \varnothing  \or % DIAMETER SIGN
+    \unknownchar \or % ELECTRIC ARROW
+    \unknownchar \or % HOUSE
+    \unknownchar \or % UP ARROWHEAD
+    \unknownchar \or % DOWN ARROWHEAD
+    \unknownchar \or % PROJECTIVE
+    \unknownchar \or % PERSPECTIVE
+    \unknownchar \or % WAVY LINE
+    \lceil       \or % LEFT CEILING
+    \rceil       \or % RIGHT CEILING
+    \lfloor      \or % LEFT FLOOR
+    \rfloor      \or % RIGHT FLOOR
+    \unknownchar \else
+    \unknownchar     %
+  \fi
+\stopunicodevector
+
+\protect \endinput

@@ -1,0 +1,720 @@
+%D \module
+%D   [       file=math-tex,
+%D        version=2001.04.12,
+%D       subtitle=Plain Specials,
+%D         author={Hans Hagen, Taco Hoekwater \& Aditya Mahajan},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% beware: in mkiv we will do it differently
+
+\unprotect
+
+\mathcode`\ ="8000 \mathcode`\_="8000 \mathcode`\'="8000
+
+\definefamilysynonym [default] [calligraphic] [sy]
+\definefamilysynonym [default] [oldstyle]     [mi]
+\definefamilysynonym [default] [blackboard]   [mr]
+\definefamilysynonym [default] [gothic]       [mr]
+\definefamilysynonym [default] [fraktur]      [mr]
+
+\definefamilysynonym [default] [lcgreek]      [mi]
+\definefamilysynonym [default] [ucgreek]      [mr]
+\definefamilysynonym [default] [vargreek]     [mi]
+
+
+%D \macros
+%D   {\setupmathematics}
+%D
+%D Configuration for integrals. (If needed we can speed this up and make it
+%D installable; no processaction is needed then).
+
+\chardef\intlimitcode\zerocount  % 0 nolimits 1 displaylimits 2 limits
+
+\def\intlimits
+  {\ifcase\intlimitcode \nolimits \or \displaylimits \or \limits \fi}
+
+\def\setupmathematics
+  {\dosingleargument\dosetupmathematics}
+
+\def\dosetupmathematics[#1]%
+  {\getparameters[\??mo][#1]
+   \processaction[\@@mointegral]
+      [ nolimits=>\chardef\intlimitcode\zerocount,
+   displaylimits=>\chardef\intlimitcode\plusone,
+          limits=>\chardef\intlimitcode\plustwo]}
+
+%D \startbuffer
+%D   $\int_a^b f(x) dx$ and also
+%D   $\iint_a^b f(x,y) dxdy$, $\iiint_a^b f(x,y) dxdy$,
+%D   $\iiiint_a^b f(x) dx$
+%D   \startformula
+%D     \int_a^b f(x) dx \quad
+%D     \iint_a^b f(x) dx \quad
+%D     \iiint_a^b f(x) dx \quad
+%D     \iiiint_a^b f(x) dx \quad
+%D   \stopformula
+%D \stopbuffer
+%D
+%D Default: \getbuffer
+%D
+%D Displaylimits: \setupmathematics[integral=displaylimits] \getbuffer
+%D
+%D Limits: \setupmathematics[integral=limits] \getbuffer
+
+\startmathcollection [default]
+
+\definemathsymbol [alpha]   [nothing] [lcgreek] ["0B]
+\definemathsymbol [beta]    [nothing] [lcgreek] ["0C]
+\definemathsymbol [gamma]   [nothing] [lcgreek] ["0D]
+\definemathsymbol [delta]   [nothing] [lcgreek] ["0E]
+\definemathsymbol [epsilon] [nothing] [lcgreek] ["0F]
+\definemathsymbol [zeta]    [nothing] [lcgreek] ["10]
+\definemathsymbol [eta]     [nothing] [lcgreek] ["11]
+\definemathsymbol [theta]   [nothing] [lcgreek] ["12]
+\definemathsymbol [iota]    [nothing] [lcgreek] ["13]
+\definemathsymbol [kappa]   [nothing] [lcgreek] ["14]
+\definemathsymbol [lambda]  [nothing] [lcgreek] ["15]
+\definemathsymbol [mu]      [nothing] [lcgreek] ["16]
+\definemathsymbol [nu]      [nothing] [lcgreek] ["17]
+\definemathsymbol [xi]      [nothing] [lcgreek] ["18]
+\definemathsymbol [omicron] [nothing] [lcgreek] ["6F]
+\definemathsymbol [pi]      [nothing] [lcgreek] ["19]
+\definemathsymbol [rho]     [nothing] [lcgreek] ["1A]
+\definemathsymbol [sigma]   [nothing] [lcgreek] ["1B]
+\definemathsymbol [tau]     [nothing] [lcgreek] ["1C]
+\definemathsymbol [upsilon] [nothing] [lcgreek] ["1D]
+\definemathsymbol [phi]     [nothing] [lcgreek] ["1E]
+\definemathsymbol [chi]     [nothing] [lcgreek] ["1F]
+\definemathsymbol [psi]     [nothing] [lcgreek] ["20]
+\definemathsymbol [omega]   [nothing] [lcgreek] ["21]
+
+\stopmathcollection
+
+\startmathcollection [default]
+
+\definemathsymbol [varepsilon] [nothing] [vargreek] ["22]
+\definemathsymbol [vartheta]   [nothing] [vargreek] ["23]
+\definemathsymbol [varpi]      [nothing] [vargreek] ["24]
+\definemathsymbol [varrho]     [nothing] [vargreek] ["25]
+\definemathsymbol [varsigma]   [nothing] [vargreek] ["26]
+\definemathsymbol [varphi]     [nothing] [vargreek] ["27]
+
+\stopmathcollection
+
+\startmathcollection [default]
+
+\definemathsymbol [Alpha]   [alpha] [ucgreek] ["41] % A
+\definemathsymbol [Beta]    [alpha] [ucgreek] ["42] % B
+\definemathsymbol [Gamma]   [alpha] [ucgreek] ["00]
+\definemathsymbol [Delta]   [alpha] [ucgreek] ["01]
+\definemathsymbol [Epsilon] [alpha] [ucgreek] ["45] % E
+\definemathsymbol [Zeta]    [alpha] [ucgreek] ["5A] % Z
+\definemathsymbol [Eta]     [alpha] [ucgreek] ["48] % H
+\definemathsymbol [Theta]   [alpha] [ucgreek] ["02]
+\definemathsymbol [Iota]    [alpha] [ucgreek] ["49] % I
+\definemathsymbol [Kappa]   [alpha] [ucgreek] ["4B] % K
+\definemathsymbol [Lambda]  [alpha] [ucgreek] ["03]
+\definemathsymbol [Mu]      [alpha] [ucgreek] ["4D] % M
+\definemathsymbol [Nu]      [alpha] [ucgreek] ["4E] % N
+\definemathsymbol [Xi]      [alpha] [ucgreek] ["04]
+\definemathsymbol [Omicron] [alpha] [ucgreek] ["4F] % O
+\definemathsymbol [Pi]      [alpha] [ucgreek] ["05]
+\definemathsymbol [Rho]     [alpha] [ucgreek] ["52] % R
+\definemathsymbol [Sigma]   [alpha] [ucgreek] ["06]
+\definemathsymbol [Tau]     [alpha] [ucgreek] ["54] % T
+\definemathsymbol [Upsilon] [alpha] [ucgreek] ["07]
+\definemathsymbol [Phi]     [alpha] [ucgreek] ["08]
+\definemathsymbol [Chi]     [alpha] [ucgreek] ["58] % X
+\definemathsymbol [Psi]     [alpha] [ucgreek] ["09]
+\definemathsymbol [Omega]   [alpha] [ucgreek] ["0A]
+
+\stopmathcollection
+
+% The \mfunction macro is an alternative for \hbox with a
+% controlable font switch.
+
+\startmathcollection[default]
+
+\definemathcommand [arccos]  [nolop] {\mfunction{arccos}}
+\definemathcommand [arcsin]  [nolop] {\mfunction{arcsin}}
+\definemathcommand [arctan]  [nolop] {\mfunction{arctan}}
+\definemathcommand [arg]     [nolop] {\mfunction{arg}}
+\definemathcommand [cosh]    [nolop] {\mfunction{cosh}}
+\definemathcommand [cos]     [nolop] {\mfunction{cos}}
+\definemathcommand [coth]    [nolop] {\mfunction{coth}}
+\definemathcommand [cot]     [nolop] {\mfunction{cot}}
+\definemathcommand [csc]     [nolop] {\mfunction{csc}}
+\definemathcommand [deg]     [nolop] {\mfunction{deg}}
+\definemathcommand [det]     [limop] {\mfunction{det}}
+\definemathcommand [dim]     [nolop] {\mfunction{dim}}
+\definemathcommand [exp]     [nolop] {\mfunction{exp}}
+\definemathcommand [gcd]     [limop] {\mfunction{gcd}}
+\definemathcommand [hom]     [nolop] {\mfunction{hom}}
+\definemathcommand [inf]     [limop] {\mfunction{inf}}
+\definemathcommand [injlim]  [limop] {\mfunction{inj\,lim}}
+\definemathcommand [ker]     [nolop] {\mfunction{ker}}
+\definemathcommand [lg]      [nolop] {\mfunction{lg}}
+\definemathcommand [liminf]  [limop] {\mfunction{lim\,inf}}
+\definemathcommand [limsup]  [limop] {\mfunction{lim\,sup}}
+\definemathcommand [lim]     [limop] {\mfunction{lim}}
+\definemathcommand [ln]      [nolop] {\mfunction{ln}}
+\definemathcommand [log]     [nolop] {\mfunction{log}}
+\definemathcommand [median]  [limop] {\mfunction{median}}
+\definemathcommand [max]     [limop] {\mfunction{max}}
+\definemathcommand [min]     [limop] {\mfunction{min}}
+\definemathcommand [mod]     [limop] {\mfunction{mod}}
+\definemathcommand [div]     [limop] {\mfunction{div}}
+\definemathcommand [projlim] [limop] {\mfunction{proj\,lim}}
+\definemathcommand [Pr]      [limop] {\mfunction{Pr}}
+\definemathcommand [sec]     [nolop] {\mfunction{sec}}
+\definemathcommand [sinh]    [nolop] {\mfunction{sinh}}
+\definemathcommand [sin]     [nolop] {\mfunction{sin}}
+\definemathcommand [sup]     [limop] {\mfunction{sup}}
+\definemathcommand [tanh]    [nolop] {\mfunction{tanh}}
+\definemathcommand [tan]     [nolop] {\mfunction{tan}}
+
+\stopmathcollection
+
+\let\normalmatharg\arg % todo: maybe automatically
+
+\startmathcollection[default]
+
+\definemathcommand [integers]       {\mfunction{Z}}
+\definemathcommand [reals]          {\mfunction{R}}
+\definemathcommand [rationals]      {\mfunction{Q}}
+\definemathcommand [naturalnumbers] {\mfunction{N}}
+\definemathcommand [complexes]      {\mfunction{C}}
+\definemathcommand [primes]         {\mfunction{P}}
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathcharacter [!]   [close] [mr] ["21]
+\definemathcharacter [(]   [open]  [mr] ["28]
+\definemathcharacter [)]   [close] [mr] ["29]
+\definemathcharacter [*]   [bin]   [sy] ["03]
+\definemathcharacter [+]   [bin]   [mr] ["2B]
+\definemathcharacter [,]   [punct] [mi] ["3B]
+\definemathcharacter [-]   [bin]   [sy] ["00]
+\definemathcharacter [.]   [ord]   [mi] ["3A]
+\definemathcharacter [/]   [ord]   [mi] ["3D]
+\definemathcharacter [:]   [rel]   [mr] ["3A]
+\definemathcharacter [;]   [punct] [mr] ["3B]
+\definemathcharacter [<]   [rel]   [mi] ["3C]
+\definemathcharacter [=]   [rel]   [mr] ["3D]
+\definemathcharacter [>]   [rel]   [mi] ["3E]
+\definemathcharacter [?]   [close] [mr] ["3F]
+\definemathcharacter [91]  [open]  [mr] ["5B] % [
+\definemathcharacter [92]  [ord]   [sy] ["6E] % \
+\definemathcharacter [93]  [close] [mr] ["5D] % ]
+\definemathcharacter [123] [open]  [sy] ["66] % {
+\definemathcharacter [124] [ord]   [sy] ["6A] % |
+\definemathcharacter [125] [close] [sy] ["67] % }
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathcharacter [(]   [nothing] [mr] ["28] [ex] ["00]
+\definemathcharacter [)]   [nothing] [mr] ["29] [ex] ["01]
+\definemathcharacter [91]  [nothing] [mr] ["5B] [ex] ["02] % [
+\definemathcharacter [93]  [nothing] [mr] ["5D] [ex] ["03] % ]
+\definemathcharacter [<]   [nothing] [sy] ["68] [ex] ["0A]
+\definemathcharacter [>]   [nothing] [sy] ["69] [ex] ["0B]
+\definemathcharacter [/]   [nothing] [mr] ["2F] [ex] ["0E]
+\definemathcharacter [124] [nothing] [sy] ["6A] [ex] ["0C] % |
+\definemathcharacter [92]  [nothing] [sy] ["6E] [ex] ["0F] % \
+
+\stopmathcollection
+
+\def\PLAINangle
+  {{\vbox{\ialign{$\mathsurround\zeropoint\scriptstyle##$\crcr
+    \not\mathrel{\mkern14mu}\crcr
+    \noalign{\nointerlineskip}
+    \mkern2.5mu\leaders\hrule height.34pt\hfill\mkern2.5mu\crcr}}}}
+
+\startmathcollection[default]
+
+\definemathsymbol [aleph]    [nothing] [sy] ["40]
+\definemathsymbol [imath]    [nothing] [mi] ["7B]
+\definemathsymbol [jmath]    [nothing] [mi] ["7C]
+\definemathsymbol [ell]      [nothing] [mi] ["60]
+\definemathsymbol [wp]       [nothing] [mi] ["7D]
+\definemathsymbol [Re]       [nothing] [sy] ["3C]
+\definemathsymbol [Im]       [nothing] [sy] ["3D]
+\definemathsymbol [partial]  [nothing] [mi] ["40]
+\definemathsymbol [infty]    [nothing] [sy] ["31]
+\definemathsymbol [prime]    [nothing] [sy] ["30]
+\definemathsymbol [emptyset] [nothing] [sy] ["3B]
+\definemathsymbol [nabla]    [nothing] [sy] ["72]
+\definemathsymbol [top]      [nothing] [sy] ["3E]
+\definemathsymbol [bot]      [nothing] [sy] ["3F]
+
+\definemathcommand [hbar]  {{\mathchar'26\mkern-9muh}}
+\definemathcommand [surd]  {{\mathchar"1270}}          % ?
+\definemathcommand [angle] {\PLAINangle}
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathsymbol [triangle]    [ord] [sy] ["34]
+\definemathsymbol [forall]      [ord] [sy] ["38]
+\definemathsymbol [exists]      [ord] [sy] ["39]
+\definemathsymbol [neg]         [ord] [sy] ["3A]
+\definemathsymbol [flat]        [ord] [mi] ["5B]
+\definemathsymbol [natural]     [ord] [mi] ["5C]
+\definemathsymbol [sharp]       [ord] [mi] ["5D]
+\definemathsymbol [clubsuit]    [ord] [sy] ["7C]
+\definemathsymbol [diamondsuit] [ord] [sy] ["7D]
+\definemathsymbol [heartsuit]   [ord] [sy] ["7E]
+\definemathsymbol [spadesuit]   [ord] [sy] ["7F]
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathcommand [square] {\hbox{\hsmash{$\sqcup$}$\sqcap$}}
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathsymbol [coprod]    [op]  [ex] ["60]
+\definemathsymbol [bigvee]    [op]  [ex] ["57]
+\definemathsymbol [bigwedge]  [op]  [ex] ["56]
+\definemathsymbol [biguplus]  [op]  [ex] ["55]
+\definemathsymbol [bigcap]    [op]  [ex] ["54]
+\definemathsymbol [bigcup]    [op]  [ex] ["53]
+\definemathsymbol [intop]     [op]  [ex] ["52]
+\definemathsymbol [prod]      [op]  [ex] ["51]
+\definemathsymbol [sum]       [op]  [ex] ["50]
+\definemathsymbol [bigotimes] [op]  [ex] ["4E]
+\definemathsymbol [bigoplus]  [op]  [ex] ["4C]
+\definemathsymbol [bigodot]   [op]  [ex] ["4A]
+\definemathsymbol [ointop]    [op]  [ex] ["48]
+\definemathsymbol [bigsqcup]  [op]  [ex] ["46]
+\definemathsymbol [smallint]  [op]  [sy] ["73]
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathsymbol [triangleleft]    [bin] [mi] ["2F]
+\definemathsymbol [triangleright]   [bin] [mi] ["2E]
+\definemathsymbol [bigtriangleup]   [bin] [sy] ["34]
+\definemathsymbol [bigtriangledown] [bin] [sy] ["35]
+\definemathsymbol [wedge]           [bin] [sy] ["5E]
+\definemathsymbol [vee]             [bin] [sy] ["5F]
+\definemathsymbol [cap]             [bin] [sy] ["5C]
+\definemathsymbol [cup]             [bin] [sy] ["5B]
+\definemathsymbol [ddagger]         [bin] [sy] ["7A]
+\definemathsymbol [dagger]          [bin] [sy] ["79]
+\definemathsymbol [sqcap]           [bin] [sy] ["75]
+\definemathsymbol [sqcup]           [bin] [sy] ["74]
+\definemathsymbol [uplus]           [bin] [sy] ["5D]
+\definemathsymbol [amalg]           [bin] [sy] ["71]
+\definemathsymbol [diamond]         [bin] [sy] ["05]
+\definemathsymbol [bullet]          [bin] [sy] ["0F]
+\definemathsymbol [wr]              [bin] [sy] ["6F]
+\definemathsymbol [div]             [bin] [sy] ["04]
+\definemathsymbol [odot]            [bin] [sy] ["0C]
+\definemathsymbol [oslash]          [bin] [sy] ["0B]
+\definemathsymbol [otimes]          [bin] [sy] ["0A]
+\definemathsymbol [ominus]          [bin] [sy] ["09]
+\definemathsymbol [oplus]           [bin] [sy] ["08]
+\definemathsymbol [mp]              [bin] [sy] ["07]
+\definemathsymbol [pm]              [bin] [sy] ["06]
+\definemathsymbol [circ]            [bin] [sy] ["0E]
+\definemathsymbol [bigcirc]         [bin] [sy] ["0D]
+\definemathsymbol [setminus]        [bin] [sy] ["6E]
+\definemathsymbol [cdot]            [bin] [sy] ["01]
+\definemathsymbol [ast]             [bin] [sy] ["03]
+\definemathsymbol [times]           [bin] [sy] ["02]
+\definemathsymbol [star]            [bin] [mi] ["3F]
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathsymbol [propto]         [rel] [sy] ["2F]
+\definemathsymbol [sqsubseteq]     [rel] [sy] ["76]
+\definemathsymbol [sqsupseteq]     [rel] [sy] ["77]
+\definemathsymbol [parallel]       [rel] [sy] ["6B]
+\definemathsymbol [mid]            [rel] [sy] ["6A]
+\definemathsymbol [dashv]          [rel] [sy] ["61]
+\definemathsymbol [vdash]          [rel] [sy] ["60]
+\definemathsymbol [nearrow]        [rel] [sy] ["25]
+\definemathsymbol [searrow]        [rel] [sy] ["26]
+\definemathsymbol [nwarrow]        [rel] [sy] ["2D]
+\definemathsymbol [swarrow]        [rel] [sy] ["2E]
+\definemathsymbol [Leftrightarrow] [rel] [sy] ["2C]
+\definemathsymbol [Leftarrow]      [rel] [sy] ["28]
+\definemathsymbol [Rightarrow]     [rel] [sy] ["29]
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathcommand [lnot]   {\neg}
+\definemathcommand [int]    {\intop \intlimits}
+\definemathcommand [oint]   {\ointop\intlimits}
+\definemathcommand [land]   {\wedge}
+\definemathcommand [lor]    {\vee}
+\definemathcommand [neq]    {\not=}
+\definemathcommand [ne]     {\neq}
+\definemathcommand [le]     {\leq}
+\definemathcommand [ge]     {\geq}
+\definemathcommand [eq]     {=}
+\definemathcommand [gt]     {>}
+\definemathcommand [lt]     {<}
+\definemathcommand [gets]   {\leftarrow}
+\definemathcommand [owns]   {\ni}
+\definemathcommand [to]     {\rightarrow}
+\definemathcommand [mapsto] {\mapstochar\rightarrow}
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathsymbol [leq]              [rel] [sy] ["14]
+\definemathsymbol [geq]              [rel] [sy] ["15]
+\definemathsymbol [succ]             [rel] [sy] ["1F]
+\definemathsymbol [prec]             [rel] [sy] ["1E]
+\definemathsymbol [approx]           [rel] [sy] ["19]
+\definemathsymbol [succeq]           [rel] [sy] ["17]
+\definemathsymbol [preceq]           [rel] [sy] ["16]
+\definemathsymbol [supset]           [rel] [sy] ["1B]
+\definemathsymbol [subset]           [rel] [sy] ["1A]
+\definemathsymbol [supseteq]         [rel] [sy] ["13]
+\definemathsymbol [subseteq]         [rel] [sy] ["12]
+\definemathsymbol [in]               [rel] [sy] ["32]
+\definemathsymbol [ni]               [rel] [sy] ["33]
+\definemathsymbol [gg]               [rel] [sy] ["1D]
+\definemathsymbol [ll]               [rel] [sy] ["1C]
+\definemathsymbol [not]              [rel] [sy] ["36]
+\definemathsymbol [leftrightarrow]   [rel] [sy] ["24]
+\definemathsymbol [leftarrow]        [rel] [sy] ["20]
+\definemathsymbol [rightarrow]       [rel] [sy] ["21]
+\definemathsymbol [mapstochar]       [rel] [sy] ["37]
+\definemathsymbol [sim]              [rel] [sy] ["18]
+\definemathsymbol [simeq]            [rel] [sy] ["27]
+\definemathsymbol [perp]             [rel] [sy] ["3F]
+\definemathsymbol [equiv]            [rel] [sy] ["11]
+\definemathsymbol [asymp]            [rel] [sy] ["10]
+\definemathsymbol [smile]            [rel] [mi] ["5E]
+\definemathsymbol [frown]            [rel] [mi] ["5F]
+\definemathsymbol [leftharpoonup]    [rel] [mi] ["28]
+\definemathsymbol [leftharpoondown]  [rel] [mi] ["29]
+\definemathsymbol [rightharpoonup]   [rel] [mi] ["2A]
+\definemathsymbol [rightharpoondown] [rel] [mi] ["2B]
+\definemathsymbol [lhook]            [rel] [mi] ["2C]
+\definemathsymbol [rhook]            [rel] [mi] ["2D]
+
+\stopmathcollection
+
+\def\PLAINldots
+  {\ldotp\ldotp\ldotp}
+
+\def\PLAINcdots
+  {\cdotp\cdotp\cdotp}
+
+\def\PLAINvdots
+  {\vbox{\baselineskip.4\bodyfontsize\lineskiplimit\zeropoint
+   \kern.6\bodyfontsize\hbox{.}\hbox{.}\hbox{.}}}
+
+\def\PLAINddots
+   {\mkern1mu\raise.7\bodyfontsize\vbox{\kern.7\bodyfontsize\hbox{.}}\mkern2mu
+    \raise.4\bodyfontsize\hbox{.}\mkern2mu\raise.1\bodyfontsize\hbox{.}\mkern1mu}
+
+\startmathcollection[default]
+
+\definemathcommand [hookrightarrow] {\lhook\joinrel\rightarrow}
+\definemathcommand [hookleftarrow]  {\leftarrow\joinrel\rhook}
+\definemathcommand [bowtie]         {\mathrel\triangleright\joinrel\mathrel\triangleleft}
+\definemathcommand [models]         {\mathrel|\joinrel=}
+\definemathcommand [iff]            {\;\Longleftrightarrow\;}
+
+\definemathsymbol [ldotp] [punct] [mi] ["3A]
+\definemathsymbol [cdotp] [punct] [sy] ["01]
+\definemathsymbol [colon] [punct] [mr] ["3A]
+
+\definemathcommand [ldots] [inner]   {\PLAINldots}
+\definemathcommand [cdots] [inner]   {\PLAINcdots}
+\definemathcommand [vdots] [nothing] {\PLAINvdots}
+\definemathcommand [ddots] [inner]   {\PLAINddots}
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathsymbol [acute]     [accent] [mr] ["13]
+\definemathsymbol [grave]     [accent] [mr] ["12]
+\definemathsymbol [ddot]      [accent] [mr] ["7F]
+\definemathsymbol [tilde]     [accent] [mr] ["7E]
+\definemathsymbol [mathring]  [accent] [mr] ["17]
+\definemathsymbol [bar]       [accent] [mr] ["16]
+\definemathsymbol [breve]     [accent] [mr] ["15]
+\definemathsymbol [check]     [accent] [mr] ["14]
+\definemathsymbol [hat]       [accent] [mr] ["5E]
+\definemathsymbol [vec]       [accent] [mi] ["7E] % [ord]
+\definemathsymbol [dot]       [accent] [mr] ["5F]
+\definemathsymbol [widetilde] [accent] [ex] ["65] % [ord]
+\definemathsymbol [widehat]   [accent] [ex] ["62] % [ord]
+
+\stopmathcollection
+
+\startmathcollection[default]
+
+\definemathsymbol [lmoustache]  [open]    [ex] ["7A] [ex] ["40]
+\definemathsymbol [rmoustache]  [close]   [ex] ["7B] [ex] ["41]
+\definemathsymbol [lgroup]      [open]    [mr] ["28] [ex] ["3A] % ?
+\definemathsymbol [rgroup]      [close]   [mr] ["29] [ex] ["3B] % ?
+\definemathsymbol [arrowvert]   [nothing] [sy] ["6A] [ex] ["3C]
+\definemathsymbol [Arrowvert]   [nothing] [sy] ["6B] [ex] ["3D]
+\definemathsymbol [bracevert]   [nothing] [ex] ["3E] % ?
+\definemathsymbol [Vert]        [nothing] [sy] ["6B] [ex] ["0D]
+\definemathsymbol [vert]        [nothing] [sy] ["6A] [ex] ["0C]
+\definemathsymbol [uparrow]     [rel]     [sy] ["22] [ex] ["78]
+\definemathsymbol [downarrow]   [rel]     [sy] ["23] [ex] ["79]
+\definemathsymbol [updownarrow] [rel]     [sy] ["6C] [ex] ["3F]
+\definemathsymbol [Uparrow]     [rel]     [sy] ["2A] [ex] ["7E]
+\definemathsymbol [Downarrow]   [rel]     [sy] ["2B] [ex] ["7F]
+\definemathsymbol [Updownarrow] [rel]     [sy] ["6D] [ex] ["77]
+\definemathsymbol [backslash]   [nothing] [sy] ["6E] [ex] ["0F]
+\definemathsymbol [langle]      [open]    [sy] ["68] [ex] ["0A]
+\definemathsymbol [rangle]      [close]   [sy] ["69] [ex] ["0B]
+\definemathsymbol [lbrace]      [open]    [sy] ["66] [ex] ["08]
+\definemathsymbol [rbrace]      [close]   [sy] ["67] [ex] ["09]
+\definemathsymbol [lceil]       [open]    [sy] ["64] [ex] ["06]
+\definemathsymbol [rceil]       [close]   [sy] ["65] [ex] ["07]
+\definemathsymbol [lfloor]      [open]    [sy] ["62] [ex] ["04]
+\definemathsymbol [rfloor]      [close]   [sy] ["63] [ex] ["05]
+
+\definemathsymbol [sqrt]        [radical] [sy] ["70] [ex] ["70]
+
+\stopmathcollection
+
+%D By request:
+
+\startmathcollection[default]
+
+\definemathsymbol [lvert] [open]  [sy] ["6A] [ex] ["0C]
+\definemathsymbol [rvert] [close] [sy] ["6A] [ex] ["0C]
+
+\definemathsymbol [lVert] [open]  [sy] ["6B] [ex] ["0D]
+\definemathsymbol [rVert] [close] [sy] ["6B] [ex] ["0D]
+
+\stopmathcollection
+
+%D For brooks:
+%D
+%D \starttyping
+%D $\sqrt[3]{10}$
+%D \stoptyping
+
+\ifx\normalsqrt\undefined  \let\normalsqrt\sqrt \fi      % just set to: \dohandlemathtoken {sqrt}
+
+\def\notsosqrt[#1]{\root#1\of}
+
+\unexpanded\def\sqrt{\doifnextoptionalelse\notsosqrt\normalsqrt}
+
+\def\PLAINbig {\@@dobig{0.85}}
+\def\PLAINBig {\@@dobig{1.15}}
+\def\PLAINbigg{\@@dobig{1.45}}
+\def\PLAINBigg{\@@dobig{1.75}}
+
+\startrawmathcollection [default]
+
+\definemathcommand [bigl]  [open]  [one] {\big}
+\definemathcommand [bigm]  [rel]   [one] {\big}
+\definemathcommand [bigr]  [close] [one] {\big}
+\definemathcommand [Bigl]  [open]  [one] {\Big}
+\definemathcommand [Bigm]  [rel]   [one] {\Big}
+\definemathcommand [Bigr]  [close] [one] {\Big}
+\definemathcommand [biggl] [open]  [one] {\bigg}
+\definemathcommand [biggm] [rel]   [one] {\bigg}
+\definemathcommand [biggr] [close] [one] {\bigg}
+\definemathcommand [Biggl] [open]  [one] {\Bigg}
+\definemathcommand [Biggm] [rel]   [one] {\Bigg}
+\definemathcommand [Biggr] [close] [one] {\Bigg}
+
+\definemathcommand [big]  {\PLAINbig}
+\definemathcommand [Big]  {\PLAINBig}
+\definemathcommand [bigg] {\PLAINbigg}
+\definemathcommand [Bigg] {\PLAINBigg}
+
+\stoprawmathcollection
+
+\startmathcollection[default]
+
+\definemathsymbol [dag]  [box] [sy] ["79]
+\definemathsymbol [ddag] [box] [sy] ["7A]
+\definemathsymbol [S]    [box] [sy] ["78]
+\definemathsymbol [P]    [box] [sy] ["7B]
+\definemathsymbol [Orb]  [box] [sy] ["0D]
+
+\stopmathcollection
+
+\def\PLAINroot#1#2%
+  {\setbox\zerocount\hbox{$\mathsurround\zeropoint#1\sqrt{#2}$}\dimen@\ht\zerocount
+   \advance\dimen@-\dp\zerocount
+   \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-10mu\box\zerocount}
+
+\def\PLAINmatrix#1%
+  {\null\,\vcenter{\normalbaselines\mathsurround\zeropoint
+   \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
+   \mathstrut\crcr\noalign{\kern-\baselineskip}
+   #1\crcr\mathstrut\crcr\noalign{\kern-\baselineskip}}}\,}
+
+\startrawmathcollection[default]
+
+\definemathcommand [mathstrut] {\vphantom{(}}
+\definemathcommand [joinrel]   {\mathrel{\mkern-3mu}}
+\definemathcommand [r@@t]      {\PLAINroot}
+\definemathcommand [matrix]    {\PLAINmatrix}
+
+\definemathcommand [over]      {\normalover} % hack, to do
+
+\stoprawmathcollection
+
+\def\{{\lbrace}
+\def\}{\rbrace}
+
+%def\bbd{\fam\purefamily{blackboard}}
+%def\cal{\fam\purefamily{calfamily}}
+
+\def\mit{\fam\purefamily{mitfamily}}
+
+\def\Bbb{\blackboard} % conforming amstex
+
+\startmathcollection[default]
+
+  \definemathsymbol [mathperiod] [ord]   [mi] ["3A]
+  \definemathsymbol [textperiod] [punct] [mi] ["3A]
+
+  \definemathsymbol [mathcomma]  [ord]   [mi] ["3B]
+  \definemathsymbol [textcomma]  [punct] [mi] ["3B]
+
+\stopmathcollection
+
+\definemathpunctuation . mathperiod textperiod
+\definemathpunctuation , mathcomma  textcomma
+
+%D The following colon related definitions are provided by Aditya
+%D Mahajan who derived them from \type {mathtools.sty} and \type
+%D {colonequals.sty}.
+
+%D \macros
+%D   {centercolon, colonminus, minuscolon, colonequals, equalscolon,
+%D    colonapprox, approxcolon, colonsim, simcolon, coloncolon,
+%D    coloncolonminus, minuscoloncolon, coloncolonequals,
+%D    equalscoloncolon, coloncolonapprox, approxcoloncolon,
+%D    colonsim, simcoloncolon}
+%D
+%D In $a := b$ the colon is not vertically centered with the equal
+%D to. Also the distance between colon and equal to is a bit large.
+%D So, we define a vertically centered colon \tex {centercolon} and
+%D a few macros for colon and double colon relation symbols.
+%D
+%D \startlines
+%D \formula {A \centercolon       B}
+%D \formula {A \colonminus        B}
+%D \formula {A \minuscolon        B}
+%D \formula {A \colonequals       B}
+%D \formula {A \equalscolon       B}
+%D \formula {A \colonapprox       B}
+%D \formula {A \approxcolon       B}
+%D \formula {A \colonsim          B}
+%D \formula {A \simcolon          B}
+%D \formula {A \coloncolon        B}
+%D \formula {A \coloncolonminus   B}
+%D \formula {A \minuscoloncolon   B}
+%D \formula {A \coloncolonequals  B}
+%D \formula {A \equalscoloncolon  B}
+%D \formula {A \coloncolonapprox  B}
+%D \formula {A \approxcoloncolon  B}
+%D \formula {A \colonsim          B}
+%D \formula {A \simcoloncolon     B}
+%D \stoplines
+
+%D The next macros take care of the space between the colon and the
+%D relation symbol.
+
+\definemathcommand  [colonsep]        {\mkern-1.2mu}
+\definemathcommand  [doublecolonsep]  {\mkern-0.9mu}
+
+%D The next macro vertically centeres its contents.
+
+\def\@center@math#1%
+  {\vcenter{\hbox{$\mathsurround\zeropoint#1$}}}
+
+\def\@center@colon
+  {\mathpalette\@center@math{\colon}}
+
+%D Now we define all the colon relations.
+
+\definemathcommand [centercolon]      [rel] {\@center@colon}
+\definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}
+\definemathcommand [minuscolon]       [rel] {\mathrel{-}\colonsep\centercolon}
+\definemathcommand [colonequals]      [rel] {\centercolon\colonsep=}
+\definemathcommand [equalscolon]      [rel] {=\centercolon\colonsep}
+\definemathcommand [colonapprox]      [rel] {\centercolon\colonsep\approx}
+\definemathcommand [approxcolon]      [rel] {\approx\centercolon\colonsep}
+\definemathcommand [colonsim]         [rel] {\centercolon\colonsep\sim}
+\definemathcommand [simcolon]         [rel] {\sim\centercolon\colonsep}
+
+\definemathcommand [coloncolon]       [rel] {\centercolon\doublecolonsep\centercolon}
+\definemathcommand [coloncolonminus]  [rel] {\coloncolon\colonsep\mathrel{-}}
+\definemathcommand [minuscoloncolon]  [rel] {\mathrel{-}\colonsep\coloncolon}
+\definemathcommand [coloncolonequals] [rel] {\coloncolon\colonsep=}
+\definemathcommand [equalscoloncolon] [rel] {=\coloncolon\colonsep}
+\definemathcommand [coloncolonapprox] [rel] {\coloncolon\colonsep\approx}
+\definemathcommand [approxcoloncolon] [rel] {\approx\coloncolon\colonsep}
+\definemathcommand [colonsim]         [rel] {\coloncolon\colonsep\sim}
+\definemathcommand [simcoloncolon]    [rel] {\sim\coloncolon\colonsep}
+
+%D More integrals (AM):
+
+\def\dointkern{\mkern-6mu\mathchoice{\mkern-3mu}{}{}{}}
+
+\definemathcommand [iint]   {\repeatintegral\plusone  }
+\definemathcommand [iiint]  {\repeatintegral\plustwo  }
+\definemathcommand [iiiint] {\repeatintegral\plusthree}
+
+\def\repeatintegral#1%
+  {\scratchtoks\emptytoks
+   \let\dointlimits\donothing
+   \let\dodointlimits\intlimits
+   \dorecurse{#1}{\appendtoks \intop \dointkern \to \scratchtoks}
+   \appendtoks \intop \dointlimits \dodointlimits \to \scratchtoks
+   \edef\dodorepeatintegral{\the\scratchtoks}%
+   \futurelet\next\dorepeatintegral}
+
+%D If the \type{\limits} option is used after \type{\iint}, use
+%D \type{\mathop} and fudge the left hand space a bit to make the
+%D subscript visually centered.
+
+\def\dorepeatintegral
+   {\ifx\next\limits          \dointlimitcorrection \else
+    \ifx\next\displaylimits   \dointlimitcorrection \else
+    \ifx\next\nolimits        \donothing            \else
+    \ifcase\intlimitcode\else \dointlimitcorrection \fi\fi\fi\fi
+    \dodorepeatintegral}
+
+\def\dointlimitcorrection
+  {\mkern-7mu\mathchoice{\mkern-2mu}{}{}{}%
+   \mathop\bgroup
+     \mkern7mu\mathchoice{\mkern2mu}{}{}{}%
+     \let\dointlimits\egroup}
+
+\setupmathematics
+  [integral=nolimits]
+
+\protect \endinput

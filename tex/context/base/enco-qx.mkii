@@ -1,0 +1,266 @@
+%D \module
+%D   [     file=enco-qx,
+%D      version=2004.04.03,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Polish QX Encoding,
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% to be done
+
+%  35          numbersign
+%  95           dotaccent
+% 132        greaterequal
+% 133         approxequal
+% 137           lessequal
+% 142                 ell
+% 156                  IJ
+% 173            infinity
+% 182 threequartersemdash
+% 188                  ij
+% 247            anglearc
+% 248            diameter
+
+\startmapping[qx] % to be done
+
+\resetcaserange 128 to 128
+\resetcaserange 131 to 133
+\resetcaserange 136 to 137
+\resetcaserange 140 to 144
+\resetcaserange 148 to 148
+\resetcaserange 150 to 150
+\resetcaserange 157 to 160
+\resetcaserange 163 to 165
+\resetcaserange 168 to 169
+\resetcaserange 172 to 176
+\resetcaserange 180 to 180
+\resetcaserange 182 to 182
+\resetcaserange 189 to 191
+\resetcaserange 198 to 198
+\resetcaserange 215 to 216
+\resetcaserange 223 to 223
+\resetcaserange 230 to 230
+\resetcaserange 247 to 248
+\resetcaserange 255 to 255
+
+\definecaseswap 161 129
+\definecaseswap 162 130
+
+\definecaseswap 166 134
+\definecaseswap 167 135
+
+\definecaseswap 170 138
+\definecaseswap 171 139
+
+\definecaseswap 177 145
+\definecaseswap 178 146
+\definecaseswap 179 147
+
+\definecaseswap 181 149
+
+\definecasemaps 151 to 156 lc +32 uc   0
+\definecasemaps 183 to 188 lc   0 uc -32
+
+\definecasemaps 192 to 197 lc +32 uc   0
+\definecasemaps 224 to 229 lc   0 uc -32
+
+\definecasemaps 199 to 214 lc +32 uc   0
+\definecasemaps 231 to 246 lc   0 uc -32
+
+\definecasemaps 217 to 222 lc +32 uc   0
+\definecasemaps 249 to 254 lc   0 uc -32
+
+\stopmapping
+
+\startencoding[qx]
+
+\definecharacter textacute         19
+\definecharacter textbreve         21
+\definecharacter textcaron         20
+\definecharacter textcedilla       24
+\definecharacter textcircumflex    94
+\definecharacter textdiaeresis    127
+\definecharacter textdotaccent     94
+\definecharacter textgrave         18
+\definecharacter texthungarumlaut 125
+\definecharacter textmacron        22
+\definecharacter textogonek       150
+\definecharacter textring          23
+\definecharacter texttilde        126
+
+\definecharacter dotlessi          16
+\definecharacter dotlessj          17
+
+\definecharacter endash           123
+\definecharacter emdash           124
+
+\definecharacter aeligature        26
+\definecharacter AEligature        29
+\definecharacter oeligature        27
+\definecharacter OEligature        30
+
+\definecharacter ssharp            25
+%definecharacter Ssharp            25
+
+\definecharacter thorn            254
+\definecharacter Thorn            222
+
+\definecharacter Dstroke          208 % also Eth, mapped into enco-def
+\definecharacter eth              240
+
+\definecharacter exclamdown        60
+\definecharacter questiondown      62
+
+\definecharacter sectionmark      159
+
+\definecharacter percent           37
+\definecharacter perthousand      216
+
+\definecharacter textasciicircum  141
+\definecharacter textasciitilde   140
+\definecharacter textbackslash    198
+\definecharacter textbraceleft    157
+\definecharacter textbraceright   158
+\definecharacter textunderscore   230
+
+\definecharacter textcurrency     215
+\definecharacter textdollar        36
+\definecharacter texteuro         128
+
+\definecharacter periodcentered   189
+\definecharacter textdag          143
+\definecharacter textddag         144
+\definecharacter textdegree       148
+\definecharacter textbullet       180
+
+\definecharacter paragraphmark    176
+
+\definecharacter copyright        164
+\definecharacter registered       163
+
+\definecharacter textbrokenbar    223
+\definecharacter textellipsis       8
+\definecharacter textslash         47
+\definecharacter textpm           172
+\definecharacter textdiv          165
+\definecharacter textminus        168
+\definecharacter textmultiply     169
+\definecharacter textmu             7
+
+\definecharacter quotedbl         190
+\definecharacter quotedblbase     255
+\definecharacter quotedblleft      92
+\definecharacter quotedblright     34
+
+\definecharacter quotesingle      191
+
+\definecharacter quoteleft         96
+\definecharacter quoteright        39
+
+\definecharacter leftguillemot    174
+\definecharacter rightguillemot   175
+
+\definecharacter aacute           225
+\definecharacter Aacute           193
+\definecharacter cacute           162
+\definecharacter Cacute           130
+\definecharacter eacute           233
+\definecharacter Eacute           201
+\definecharacter iacute           237
+\definecharacter Iacute           205
+\definecharacter Nacute           139
+\definecharacter Oacute           211
+\definecharacter nacute           171
+\definecharacter oacute           243
+\definecharacter sacute           177
+\definecharacter Sacute           145
+\definecharacter uacute           250
+\definecharacter Uacute           218
+\definecharacter yacute           253
+\definecharacter Yacute           221
+\definecharacter zacute           185
+\definecharacter Zacute           153
+
+\definecharacter scaron           178
+\definecharacter Scaron           146
+\definecharacter zcaron           186
+\definecharacter Zcaron           154
+
+\definecharacter ccedilla         231
+\definecharacter Ccedilla         199
+
+\definecharacter acircumflex      226
+\definecharacter Acircumflex      194
+\definecharacter ecircumflex      234
+\definecharacter Ecircumflex      202
+\definecharacter icircumflex      238
+\definecharacter Icircumflex      206
+\definecharacter ocircumflex      244
+\definecharacter Ocircumflex      212
+\definecharacter ucircumflex      251
+\definecharacter Ucircumflex      219
+
+\definecharacter adiaeresis       228
+\definecharacter Adiaeresis       196
+\definecharacter ediaeresis       235
+\definecharacter Ediaeresis       203
+\definecharacter idiaeresis       239
+\definecharacter Idiaeresis       207
+\definecharacter odiaeresis       246
+\definecharacter Odiaeresis       214
+\definecharacter udiaeresis       252
+\definecharacter Udiaeresis       220
+\definecharacter ydiaeresis       184
+\definecharacter Ydiaeresis       152
+
+\definecharacter zdotaccent       187
+\definecharacter Zdotaccent       155
+
+\definecharacter agrave           224
+\definecharacter Agrave           192
+\definecharacter egrave           232
+\definecharacter Egrave           200
+\definecharacter igrave           236
+\definecharacter Igrave           204
+\definecharacter ograve           242
+\definecharacter Ograve           210
+\definecharacter ugrave           249
+\definecharacter Ugrave           217
+
+\definecharacter aogonek          161
+\definecharacter Aogonek          129
+\definecharacter eogonek          166
+\definecharacter Eogonek          134
+\definecharacter iogonek          167
+\definecharacter Iogonek          135
+\definecharacter uogonek          183
+\definecharacter Uogonek          151
+
+\definecharacter aring            229
+\definecharacter Aring            197
+
+\definecharacter lstroke          170
+\definecharacter Lstroke          138
+\definecharacter ostroke           28
+\definecharacter Ostroke           31
+
+\definecharacter atilde           227
+\definecharacter Atilde           195
+\definecharacter ntilde           241
+\definecharacter Ntilde           209
+\definecharacter otilde           245
+\definecharacter Otilde           213
+
+\definecharacter scommaaccent     179
+\definecharacter Scommaaccent     147
+\definecharacter tcommaaccent     181
+\definecharacter Tcommaaccent     149
+
+\stopencoding
+
+\endinput

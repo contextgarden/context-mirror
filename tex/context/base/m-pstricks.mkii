@@ -1,0 +1,127 @@
+%D \module
+%D   [       file=m-pstricks,
+%D        version=1997.01.15,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\PSTRICKS\ Connections,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% pstricks is not supported in context mkii (it's no problem doing that
+% but as we also need to support latex it would become quite messy so for
+% context we use metapost and for latex pstricks)
+
+%M \usemodule[pstric]
+
+\letvalue{@unused}\plussixteen
+\letvalue{alloc@}\gobblefivearguments
+
+\chardef\oldbarcode\the\catcode`\|  \catcode`\|=12
+
+\def\loadpstrickscolors#1%
+  {\pushmacro\dodefinecolor
+   \pushmacro\dodefinepalet
+   \pushmacro\dodefinecolorgroup
+   \def\dodefinecolor[##1][##2]%
+     {\doifassignmentelse{##2}
+        {\getparameters[pstricks][r=0,g=0,b=0,##2]%
+         \expanded{\newrgbcolor{##1}{{\pstricksr} {\pstricksg} {\pstricksb}}}}%
+        {}}%
+   \def\dodefinepalet     [##1][##2]{}%
+   \def\dodefinecolorgroup[##1][##2][##3]{}%
+   \writestatus{pstricks}{loading colors from #1}%
+   \input #1 \relax
+   \popmacro\dodefinecolorgroup
+   \popmacro\dodefinepalet
+   \popmacro\dodefinecolor}
+
+\doifelse{\jobsuffix}{dvi}
+  {\input multido  \relax
+   \input pstricks \relax
+   \input pst-plot \relax
+   \loadpstrickscolors{colo-rgb}}
+  {\writestatus{pstricks}{using indirect method; enable write18}}
+
+\catcode`\|=\oldbarcode
+
+\def\loadpstricksmodule[#1]%
+  {\chardef\oldbarcode\the\catcode`\|
+   \catcode`\|=12
+   \readfile{#1}{}{}%
+   \catcode`\|=\oldbarcode}
+
+%D The next piece of code is for John Culleton who suggested to
+%D handle \PSTRICKS\ in a similar fashion as \METAPOST, i.e.\
+%D using a child process. For the moment there is no support
+%D for passing environments, so these should be called
+%D explicitly inside this environment.
+
+\unprotect
+
+%D \startPSTRICKS[offset=2pt] ... \stopPSTRICKS
+%D
+%D works in both dvi and pdf mode
+%D
+%D % \usemodule[pstric]
+%D
+%D \startPSTRICKS
+%D   \pspicture(0,0)(10,10)
+%D     \dorecurse{10}{\psline(0,0)(\recurselevel,10)}
+%D     \dorecurse{10}{\psline(0,0)(10,\recurselevel)}
+%D   \endpspicture
+%D \stopPSTRICKS
+
+\def\startPSTRICKS
+  {\dosingleempty\dostartPSTRICKS}
+
+% \ifx\startTEXapplication\undefined
+%
+% \long\def\dostartPSTRICKS[#1]#2\stopPSTRICKS
+%   {\doifelse{\jobsuffix}{dvi}
+%      {#2}
+%      {\bgroup
+%       \setbuffer[pstricks]%
+%         \usemodule[pstric]%
+%         \setbox\scratchbox\hbox{#2}%
+%         % There is probably a nicer way to handle this
+%         \immediate\openout\scratchwrite=\bufferprefix dim.tmp
+%         \immediate\write\scratchwrite{\dimen0=\the\ht\scratchbox}%
+%         \immediate\write\scratchwrite{\dimen2=\the\wd\scratchbox}%
+%         \immediate\closeout\scratchwrite
+%         % Quick and dirty
+%         \startTEXpage[#1]\box\scratchbox\stopTEXpage
+%       \endbuffer
+%       % Here we go!
+%       %\immediate\write18{texexec \bufferprefix pstricks.tmp --once --batch}%
+%       %\immediate\write18{dvips -G0 -Ppdf \bufferprefix pstricks -o}%
+%       %\immediate\write18{ps2pdf  \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
+%       \executesystemcommand{texexec \bufferprefix pstricks.tmp --once --batch}%
+%       \executesystemcommand{dvips -G0 -Ppdf \bufferprefix pstricks -o}%
+%       \executesystemcommand{texmfstart pstopdf \bufferprefix pstricks.ps \bufferprefix pstricks.pdf}%
+%       % We pick up the dimensions from the scratch file.
+%       \readlocfile{\bufferprefix pstricks-dim.tmp}{}{}%
+%       % Since the graphic is put on a page (sigh) by dvips/gs
+%       % we need to shift it around a bit.
+%       \setbox\scratchbox\hbox
+%         {\externalfigure[\bufferprefix pstricks.pdf][\c!object=\v!no]}%
+%       \setbox\scratchbox\hbox
+%         {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
+%       \wd\scratchbox\dimen0
+%       \ht\scratchbox\dimen2
+%       \dp\scratchbox\zeropoint
+%       \box\scratchbox
+%       \egroup}}
+%
+% \fi
+
+\long\def\dostartPSTRICKS[#1]#2\stopPSTRICKS
+  {\doifelse{\jobsuffix}{dvi} % will some day move to app as switch
+     {\hbox{#2}}
+%      {\startTEXapplication[#1]{\usemodule[pstric]}#2\stopTEXapplication}}
+     {\startTEXapplication[#1]{}#2\stopTEXapplication}}
+
+\protect \endinput

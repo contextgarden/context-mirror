@@ -1,0 +1,291 @@
+%D \module
+%D   [       file=unic-004,
+%D        version=2005.01.27,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 4,
+%D         author=Mikael Persson \& Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\startunicodevector 4
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1\relax
+    \cyrillicEgrave             \or % 04-00 \uchar0{200} aswell
+    \cyrillicYO                 \or % 04-01 Capital YO (or IO)
+    \cyrillicDJE                \or % 04-02
+    \cyrillicGJE                \or % 04-03 not in enco-uc.tex
+    \cyrillicIE                 \or % 04-04 Ukrainian IE
+    \cyrillicDZE                \or % 04-05
+    \cyrillicII                 \or % 04-06 Byelorussian-ukrainian I
+    \cyrillicYI                 \or % 04-07
+    \cyrillicJE                 \or % 04-08 same letter as latin J?
+    \cyrillicLJE                \or % 04-09
+    \cyrillicNJE                \or % 04-0A
+    \cyrillicTSHE               \or % 04-0B
+    \cyrillicKJE                \or % 04-0C
+    \cyrillicIgrave             \or % 04-0D I with grave
+    \cyrillicUSHRT              \or % 04-0E
+    \cyrillicDZHE               \or % 04-0F
+    \cyrillicA                  \or % 04-10
+    \cyrillicB                  \or
+    \cyrillicV                  \or
+    \cyrillicG                  \or
+    \cyrillicD                  \or
+    \cyrillicE                  \or
+    \cyrillicZH                 \or
+    \cyrillicZ                  \or
+    \cyrillicI                  \or
+    \cyrillicISHRT              \or
+    \cyrillicK                  \or
+    \cyrillicL                  \or
+    \cyrillicM                  \or
+    \cyrillicN                  \or
+    \cyrillicO                  \or
+    \cyrillicP                  \or
+    \cyrillicR                  \or
+    \cyrillicS                  \or
+    \cyrillicT                  \or
+    \cyrillicU                  \or
+    \cyrillicF                  \or
+    \cyrillicH                  \or
+    \cyrillicC                  \or
+    \cyrillicCH                 \or
+    \cyrillicSH                 \or
+    \cyrillicSHCH               \or
+    \cyrillicHRDSN              \or
+    \cyrillicERY                \or
+    \cyrillicSFTSN              \or
+    \cyrillicEREV               \or
+    \cyrillicYU                 \or
+    \cyrillicYA                 \or
+    \cyrillica                  \or % 04-30
+    \cyrillicb                  \or
+    \cyrillicv                  \or
+    \cyrillicg                  \or
+    \cyrillicd                  \or
+    \cyrillice                  \or
+    \cyrilliczh                 \or
+    \cyrillicz                  \or
+    \cyrillici                  \or
+    \cyrillicishrt              \or
+    \cyrillick                  \or
+    \cyrillicl                  \or
+    \cyrillicm                  \or
+    \cyrillicn                  \or
+    \cyrillico                  \or
+    \cyrillicp                  \or
+    \cyrillicr                  \or
+    \cyrillics                  \or
+    \cyrillict                  \or
+    \cyrillicu                  \or
+    \cyrillicf                  \or
+    \cyrillich                  \or
+    \cyrillicc                  \or
+    \cyrillicch                 \or
+    \cyrillicsh                 \or
+    \cyrillicshch               \or
+    \cyrillichrdsn              \or
+    \cyrillicery                \or
+    \cyrillicsftsn              \or
+    \cyrillicerev               \or
+    \cyrillicyu                 \or
+    \cyrillicya                 \or % 044F
+    \cyrillicegrave             \or % 0450 not i enco-uc.tex but same as \uchar0{232}
+    \cyrillicyo                 \or % 0451 small yo (or io)
+    \cyrillicdje                \or % 0452 serbian letter
+    \cyrillicgje                \or % 0453 macedonian letter not in enco-uc.tex
+    \cyrillicie                 \or % 0454 ukrainian ie
+    \cyrillicdze                \or % 0455 macedonian zelo
+    \cyrillicii                 \or % 0456 byelorussian-ukrainian i.
+    \cyrillicyi                 \or % 0457
+    \cyrillicje                 \or % 0458 not in enco-uc.tex same as latin j?
+    \cyrilliclje                \or % 0459
+    \cyrillicnje                \or % 045A
+    \cyrillictshe               \or % 045B
+    \cyrillickje                \or % 045C macedonian, not in enco-uc.tex
+    \cyrillicigrave             \or % 045D macedonian, cyr i with grave not in enco-uc.tex
+    \cyrillicushrt              \or % 045E
+    \cyrillicdzhe               \or % 045F
+    \cyrillicOMEGA              \or % 0460 Omega not in enco-uc.tex
+    \cyrillicomega              \or % 0461 omega not in enco-uc.tex
+    \cyrillicYAT                \or % 0462 Yat not in enco-uc.tex
+    \cyrillicyat                \or % 0463 Yat not in enco-uc.tex
+    \cyrillicEiotified          \or % 0464 iotified E not in enco-uc.tex
+    \cyrilliceiotified          \or % 0465 iotified e not in enco-uc.tex
+    \cyrillicLITTLEYUS          \or % 0466 Little Yus not in enco-enc.tex
+    \cyrilliclittleyus          \or % 0467 Little yus not in enco-enc.tex
+    \cyrillicLITTLEYUSiotified  \or % 0468 Little Yus iotified not in enco-enc.tex
+    \cyrilliclittleyusiotified  \or % 0469 Little yus iotified not in enco-enc.tex
+    \cyrillicBIGYUS             \or % 046A Big Yus not in enco-enc.tex
+    \cyrillicbigyus             \or % 046B Big yus not in enco-enc.tex
+    \cyrillicBIGYUSiotified     \or % 046C Big Yus iotified not in enco-enc.tex
+    \cyrillicbigyusiotified     \or % 046D Big yus iotified not in enco-enc.tex
+    \cyrillicKSI                \or % 046E Ksi not in enco-enc.tex
+    \cyrillicksi                \or % 046F ksi not in enco-enc.tex
+    \cyrillicPSI                \or % 0470 Psi not in enco-enc.tex
+    \cyrillicpsi                \or % 0471 psi not in enco-enc.tex
+    \cyrillicFITA               \or % 0472 Fita not in enco-enc.tex
+    \cyrillicfita               \or % 0473 fita not in enco-enc.tex
+    \cyrillicIZHITSA            \or % 0474 Izhitsa not in enco-enc.tex
+    \cyrillicizhitsa            \or % 0475 izhitsa not in enco-enc.tex
+    \cyrillicIZHITSAdoublegrave \or % 0476 Izhitsa double grave not in enco-enc.tex
+    \cyrillicizhitsadoublegrave \or % 0477 izhitsa double grave not in enco-enc.tex
+    \cyrillicUK                 \or % 0478 UK not in enco-enc.tex
+    \cyrillicuk                 \or % 0479 uk not in enco-enc.tex
+    \cyrillicOMEGAround         \or % 047A Round Omega not in enco-enc.tex
+    \cyrillicomegaround         \or % 047B Round omega not in enco-enc.tex
+    \cyrillicOMEGAtitlo         \or % 047C Omega with titlo not in enco-enc.tex
+    \cyrillicomegatitlo         \or % 047D omega with titlo not in enco-enc.tex
+    \cyrillicOT                 \or % 047E OT not in enco-enc.tex
+    \cyrillicot                 \or % 047F ot not in enco-enc.tex
+    \cyrillicKOPPA              \or % 0480 KOPPA not in enco-enc.tex
+    \cyrillickoppa              \or % 0481 koppa not in enco-enc.tex
+    \unknownchar                \or % 0482
+    \cyrillicTITLO              \or % 0483 TITLO not in enco-enc.tex
+    \cyrillicPALATALIZATION     \or % 0484 PALATALIZATION not in enco-enc.tex
+    \cyrillicDASIAPNEUMATA      \or % 0485 DASIA PNEUMATA not in enco-enc.tex
+    \cyrillicPSILIPNEUMATA      \or % 0486 PSILI PNEUMATA not in enco-enc.tex
+    \unknownchar                \or % 0487
+    \unknownchar                \or % 0488
+    \unknownchar                \or % 0489
+    \cyrillicISHRTtail          \or % 048A ISHRT with tail not in enco-enc.tex
+    \cyrillicishrttail          \or % 048B ishrt with tail not in enco-enc.tex
+    \cyrillicSEMISOFT           \or % 048C SEMISOFT not in enco-enc.tex
+    \cyrillicsemisoft           \or % 048D semisoft not in enco-enc.tex
+    \cyrillicERtick             \or % 048E ER with tick not in enco-enc.tex
+    \cyrillicertick             \or % 048F er with tick not in enco-enc.tex
+    \cyrillicGHEupturn          \or % 0490 GHE with upturn not in enco-enc.tex
+    \cyrillicgheupturn          \or % 0491 ghe with upturn not in enco-enc.tex
+    \cyrillicGHEstroke          \or % 0492 GHE with stroke not in enco-enc.tex
+    \cyrillicghestroke          \or % 0493 ghe with stroke not in enco-enc.tex
+    \cyrillicGHEmidhook         \or % 0494 GHE with middle hook
+    \cyrillicghemidhook         \or % 0495 ghe with middle hook
+    \cyrillicZHEdescender       \or % 0496 ZHE with descender
+    \cyrilliczhedescender       \or % 0497 zhe with descender
+    \cyrillicZDSC               \or % 0498 ZE with descender
+    \cyrilliczdsc               \or % 0499 ze with descender
+    \cyrillicKADC               \or % 049A KA with descender
+    \cyrillickadc               \or % 049B ka with descender
+    \cyrillicKAvertstroke       \or % 049C KA with vertical stroke
+    \cyrillickavertstroke       \or % 049D ka with vertical stroke
+    \cyrillicKAstroke           \or % 049E KA with stroke
+    \cyrillickastroke           \or % 049F ka with stroke
+    \cyrillicKAbashkir          \or % 04A0 KA bashkir
+    \cyrillickabashkir          \or % 04A1 ka bashkir
+    \cyrillicENDC               \or % 04A2 EN with descender
+    \cyrillicendc               \or % 04A3 en with descender
+    \cyrillicENGHE              \or % 04A4 EN GHE
+    \cyrillicenghe              \or % 04A5 en ghe
+    \cyrillicPEmidhook          \or % 04A6 PE with middle hook
+    \cyrillicpemidhook          \or % 04A7 pe with middle hook
+    \cyrillicHA                 \or % 04A8 Abkhasian HA
+    \cyrillicha                 \or % 04A9 Abkhasian ha
+    \cyrillicSDSC               \or % 04AA S with descender
+    \cyrilliccdsc               \or % 04AB s with descender
+    \cyrillicTEDC               \or % 04AC TE with descender
+    \cyrillictedc               \or % 04AD te with descender
+    \cyrillicYstr               \or % 04AE Y straight
+    \cyrillicystr               \or % 04AF y straight
+    \cyrillicYstrstroke         \or % 04B0 Y straight with stroke
+    \cyrillicystrstroke         \or % 04B1 y straight with stroke
+    \cyrillicHADC               \or % 04B2 HA with descender
+    \cyrillichadc               \or % 04B3 ha with descender
+    \cyrillicTETSE              \or % 04B4 TE TSE
+    \cyrillictetse              \or % 04B5 te tse
+    \cyrillicCHEDC              \or % 04B6 CHE with descender
+    \cyrillicchedc              \or % 04B7 che with descender
+    \cyrillicCHEvertstroke      \or % 04B8 CHE with vertical stroke
+    \cyrillicchevertstroke      \or % 04B9 che with vertical stroke
+    \cyrillicSHHA               \or % 04BA SHHA
+    \cyrillicshha               \or % 04BB
+    \cyrillicCHEabkhasian       \or % 04BC Abkhasian CHE
+    \cyrilliccheabkhasian       \or % 04BD Abkhasian che
+    \cyrillicCHEDCabkhasian     \or % 04BE Abkhasian CHE with descender
+    \cyrillicchedcabkhasian     \or % 04BF Abkhasian che with descender
+    \cyrillicPALOCHKA           \or % 04C0 PALOCHKA
+    \cyrillicZHEbreve           \or % 04C1 ZHE with breve
+    \cyrilliczhebreve           \or % 04C2 zhe with breve
+    \cyrillicKAhook             \or % 04C3 KA with hook
+    \cyrillickahook             \or % 04C4 ka with hook
+    \cyrillicELtail             \or % 04C5 EL with tail
+    \cyrilliceltail             \or % 04C6 el with tail
+    \cyrillicENhook             \or % 04C7 EN with hook
+    \cyrillicenhook             \or % 04C8 en with hook
+    \cyrillicENtail             \or % 04C9 EN with tail
+    \cyrillicentail             \or % 04CA en with tail
+    \cyrillicCHEkhakassian      \or % 04CB Khakassian CHE
+    \cyrillicchekhakassian      \or % 04CC Khakassian che
+    \cyrillicEMtail             \or % 04CD EM with tail
+    \cyrillicemtail             \or % 04CE em with tail
+    \unknownchar                \or % 04CF Added to fix off-by-1 error
+    \cyrillicAbreve             \or % 04D0 A with breve (\uchar1{2})
+    \cyrillicabreve             \or % 04D1 a with breve (\uchar1{3})
+    \cyrillicAdiaeresis         \or % 04D2 A with diaeresis (\uchar0{196})
+    \cyrillicadiaeresis         \or % 04D3 a with diaeresis (\uchar0{228})
+    \cyrillicAE                 \or % 04D4 AE (\uchar0{198})
+    \cyrillicae                 \or % 04D5 ae (\uchar0{230})
+    \cyrillicEbreve             \or % 04D6
+    \cyrillicebreve             \or % 04D7
+    \cyrillicSCHWA              \or % 04D8
+    \cyrillicschwa              \or % 04D9
+    \cyrillicSCHWAdiaeresis     \or % 04DA
+    \cyrillicschwadiaeresis     \or % 04DB
+    \cyrillicZHEdiaeresis       \or % 04DC
+    \cyrilliczhediaeresis       \or % 04DD
+    \cyrillicZEdiaeresis        \or % 04DE
+    \cyrilliczediaeresis        \or % 04DF
+    \cyrillicDZEabkhasian       \or % 04E0
+    \cyrillicdzeabkhasian       \or % 04E1
+    \cyrillicImacron            \or % 04E2
+    \cyrillicimacron            \or % 04E3
+    \cyrillicIdiaeresis         \or % 04E4
+    \cyrillicidiaeresis         \or % 04E5
+    \cyrillicOdiaeresis         \or % 04E6
+    \cyrillicodiaeresis         \or % 04E7
+    \cyrillicObarred            \or % 04E8
+    \cyrillicobarred            \or % 04E9
+    \cyrillicObarreddiaeresis   \or % 04EA
+    \cyrillicobarreddiaeresis   \or % 04EB
+    \cyrillicEdiaeresis         \or % 04EC
+    \cyrillicediaeresis         \or % 04ED
+    \cyrillicUmacron            \or % 04EE
+    \cyrillicumacron            \or % 04EF
+    \cyrillicUdiaeresis         \or % 04F0
+    \cyrillicudiaeresis         \or % 04F1
+    \cyrillicUdoubleacute       \or % 04F2
+    \cyrillicudoubleacute       \or % 04F3
+    \cyrillicCHEdiaeresis       \or % 04F4
+    \cyrillicchediaeresis       \or % 04F5
+    \unknownchar                \or % 04F6
+    \unknownchar                \or % 04F7
+    \cyrillicYERUdiaeresis      \or % 04F8
+    \cyrillicyerudiaeresis      \else
+    \unknownchar
+  \fi
+\stopunicodevector
+
+\protect \endinput
+
+% \enableregime[utf]
+%
+% \definetypeface [russian] [rm] [serif] [computer-modern] [default] [encoding=t2a]
+%
+% \setupbodyfont[russian]
+%
+% \starttext
+%
+% \startbuffer
+% Мама и Папа % Some russian characters
+% \stopbuffer
+%
+% \chardef\utfunicodetracer=0 \blank \getbuffer \blank
+% \chardef\utfunicodetracer=2 \blank \getbuffer \blank
+% \chardef\utfunicodetracer=7 \blank \getbuffer \blank
+%
+% \stoptext

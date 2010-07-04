@@ -1,0 +1,425 @@
+%D \module
+%D   [      file=x-res-50,
+%D        version=2004.02.18,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Multimedia Presentation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={\PRAGMA\ / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a preliminary module, using a preliminary xml media format that
+%D looks as follows (record is embedded in resource library element):
+%D
+%D \starttyping
+%D <rl:mediaclip label="sample 1">
+%D   <rl:name>Sample One</rl:name>
+%D   <rl:mime>application/x-shockwave-flash</rl:mime>
+%D   <rl:file>http://localhost/mb.swf</rl:file>
+%D   <rl:width>8cm</rl:width>
+%D   <rl:height>6cm</rl:height>
+%D   <rl:text>Nothing special to be said.</rl:text>
+%D   <rl:picture>cow.pdf</rl:picture>
+%D </rl:mediaclip>
+%D
+%D <rl:mediaclip label="sample 2">
+%D   <rl:name>Sample Two</rl:name>
+%D   <rl:mime>audio/mpeg</rl:mime>
+%D   <rl:file>mb.mp3</rl:file>
+%D   <rl:picture>mb.jpg</rl:picture>
+%D </rl:mediaclip>
+%D \stoptyping
+%D
+%D \starttyping
+%D texexec --pdf --use=med-show yourfile.xml
+%D \stoptyping
+%D
+%D Bonus:
+%D
+%D \starttyping
+%D --arg="url=http://localhost:8881/e:/media"
+%D \stoptyping
+
+% output=pdftex
+
+% bugs in recognizing embedded stream cq. player
+% bugs in layers + hide/vide
+% bugs in save javascripts
+% bugs all over the place
+
+% in principe kan menu overal hetzelfde zijn als we via JS per pagina de clip var zetten,
+% hoewel, misschien zal het menu gaan afhangen van de soort clip
+
+% property (eigenschap) aan framed en layer
+
+\usemodule[meta-dum] \usemodule[contml] \autoXMLnamespace [context]
+
+\doifelsevariable{environment}{url}
+  {\setvariables[mediaclip][url=\getvariable{environment}{url}/]}
+  {\setvariables[mediaclip][url=]}
+
+\startmode [silent]
+
+  \setvariables[mediaclip:option][start=]
+
+\stopmode
+
+\startnotmode [silent]
+
+  \setvariables[mediaclip:option][start=auto]
+
+\stopnotmode
+
+\chardef\XMLtokensreduction=1 \dontcomplain % \showframe \pdfcompresslevel=0
+
+\setuppapersize
+  [S6][S6]
+
+\definemeasure [GapSize]         [\dimexpr( 15pt)]
+\definemeasure [EdgeWidth]       [\dimexpr(100pt)]
+\definemeasure [TextWidth]       [\dimexpr(.5\textwidth)]
+\definemeasure [RenderingWidth]  [\dimexpr(\textwidth)]
+\definemeasure [RenderingHeight] [\dimexpr(\textheight)]
+
+% \XMLflush{rl:ratio}\dimexpr(.75\textwidth),
+
+\setuplayout
+  [backspace=\measure{GapSize},
+   topspace=\measure{GapSize},
+   header=0pt,
+   footer=0pt,
+   margin=0pt,
+   edgedistance=2\measure{GapSize},
+   rightedge=\measure{EdgeWidth},
+   bottomdistance=2\measure{GapSize},
+   bottom=2\measure{GapSize},
+   height=fit,
+   width=fit]
+
+\setupinteraction
+  [state=start,
+   color=lightgray,
+   contrastcolor=lightgray,
+   openaction=PresetFields,
+   closeaction=ForgetChanges,
+   menu=on,
+   click=no]
+
+\setupinteractionscreen
+  [option=max]
+
+\setupcolors
+  [state=start]
+
+\usetypescript
+  [palatino][texnansi]
+
+\setupbodyfont
+  [palatino]
+
+\definecolor[darkgray]  [s=.2]
+\definecolor[mediumgray][s=.5]
+\definecolor[lightgray] [s=.8]
+\definecolor[transgray] [s=1,t=.9,a=1]
+
+\setupbackgrounds
+  [page]
+  [backgroundoffset=\measure{GapSize},
+   background={color,pagebutton},
+   backgroundcolor=black]
+
+\definelayer
+  [main]
+  [width=\textwidth,
+   height=\textheight]
+
+\definelayer
+  [extra]
+  [width=\rightedgewidth,
+   height=\bottomheight]
+
+\setupbackgrounds
+  [text]
+  [backgroundoffset=0pt,
+   background=main]
+
+\setupbackgrounds
+  [bottom][rightedge]
+  [backgroundoffset=0pt,
+   background=extra]
+
+% java scripts
+
+\startJSpreamble {handy} used now
+
+  function ForgetChanges ()
+    { this.dirty = false }
+
+  function PresetFields ()
+    { this.syncAnnotScan() }
+
+\stopJSpreamble
+
+\definereference[PresetFields] [JS(PresetFields)]
+\definereference[ForgetChanges][JS(ForgetChanges)]
+
+% layers
+
+\defineproperty [menulayer] [layer] [title=menulayer]
+\defineproperty [textlayer] [layer] [title=textlayer,state=stop]
+\defineproperty [datalayer] [layer] [title=datalayer,state=stop]
+
+\setupfield
+  [rollbutton]
+  [fieldlayer=menulayer]
+
+\setupfield
+  [rollbutton]
+  [option=auto]
+
+\definepalet
+  [rollover]
+  [n=darkgray,
+   r=lightgray,
+   d=darkgray]
+
+% list
+
+\definelist
+  [clips]
+  [expansion=yes,
+   criterium=text,
+   alternative=f]
+
+% navigation
+
+\defineoverlay[pagebutton][\overlaybutton{HideLayer{textlayer},HideLayer{datalayer},ToggleLayer{menulayer}}]
+\defineoverlay[textbutton][\overlaybutton{HideLayer{textlayer},HideLayer{datalayer}}]
+\defineoverlay[databutton][\overlaybutton{HideLayer{textlayer},HideLayer{datalayer}}]
+
+% clips
+
+\defineXMLenvironment
+  [rl:mediaclip]
+  {\setups[mediaclip:start]}
+  {\setups[mediaclip:stop]}
+
+\newcounter\MediaClip
+
+\startsetups[mediaclip:start]
+
+  \bgroup \startXMLignore
+
+  % no \startstandardmakeup here since we need the dsta in the menuconstruction
+
+  \defineXMLsave [rl:name]
+  \defineXMLsave [rl:visualization]
+  \defineXMLsave [rl:file]
+  \defineXMLsave [rl:mime]
+  \defineXMLsave [rl:picture] [backgroundcolor=lightgray]
+
+  \defineXMLsavecontent [rl:text]   {No additional info.}
+  \defineXMLsavecontent [rl:width]  {\measure{RenderingWidth}}
+  \defineXMLsavecontent [rl:height] {\measure{RenderingHeight}}
+  \defineXMLsavecontent [rl:aspect] {1}
+
+\stopsetups
+
+\startsetups[mediaclip:stop]
+
+  \startstandardmakeup
+
+  \doifXMLdataelse{rl:file}
+    {\setups[mediaclip:file:yes]}
+    {}
+
+  \doifXMLdataelse{rl:picture}
+    {\doifelse{\XMLflush{rl:picture}}{self}
+       {\setups[mediaclip:picture:self]}
+       {\setups[mediaclip:picture:yes]}}
+    {\setups[mediaclip:picture:no]}
+
+  \doifXMLdata{rl:text}
+    {\setups[mediaclip:text]}
+
+  \setlayerframed
+    [extra]
+    [preset=rightbottom]
+    [frame=off,offset=overlay,width=fit,background=databutton,align=left]
+    {\startproperty[datalayer]\setups[mediaclip:data]\stopproperty}
+
+  \doifXMLdataelse{rl:name}
+    {\writetolist[clips]{}{\XMLflush{rl:name}}}
+    {\writetolist[clips]{}{\XMLpar{rl:mediaclip}{label}{unknown}}}
+
+  \stopstandardmakeup
+
+  \stopXMLignore \egroup
+
+\stopsetups
+
+\setuptabulate
+  [before=,
+   after=]
+
+\def\rlCleanupFileName#1%
+  {\bgroup
+   \def\cleanup##1##2{\ifnum##1##2=20 \space\else\char\octnumber{##1##2}\fi}%
+   \defineactivecharacter 37 {\cleanup}%
+   \scantokens{#1}%
+   \egroup}
+
+\startsetups[mediaclip:data]
+
+  \noindent \buttonframed
+    [framecolor=lightgray,
+     foregroundcolor=lightgray]
+    {\bf\expanded{\rlCleanupFileName{\XMLflush{rl:file}}}}
+
+  \vskip.75\measure{GapSize}
+
+  \noindent \buttonframed
+    [framecolor=lightgray,
+     foregroundcolor=lightgray]
+    {\bf\XMLflush{rl:mime}}
+
+\stopsetups
+
+\startsetups[mediaclip:picture:self]
+
+  \definerenderingwindow
+    [mediaclip]
+    [width=\XMLflush{rl:width},
+     height=\XMLflush{rl:height},
+     frame=off,
+     openpageaction=StartCurrentRendering,
+     closepageaction=StopCurrentRendering]
+
+  \setlayer
+    [main]
+    {\placerenderingwindow[mediaclip][mediaclip-\MediaClip]}
+
+\stopsetups
+
+\startsetups[mediaclip:picture:yes]
+
+  \setlayer
+    [main]
+    {\externalfigure
+       [\XMLflush{rl:picture}]
+       [background=color,
+        backgroundcolor=\XMLpar{rl:picture}{backgroundcolor}{lightgray},
+        factor=max,
+        width=\XMLflush{rl:width},
+        height=\XMLflush{rl:height}]}
+
+\stopsetups
+
+\startsetups[mediaclip:picture:no]
+
+  \setlayer
+    [main]
+    {\externalfigure
+       [dummy]
+       [width=\XMLflush{rl:width},
+        height=\XMLflush{rl:height}]}
+
+\stopsetups
+
+\startsetups[mediaclip:file:yes]
+
+  \doglobal\increment\MediaClip
+
+  \useexternalrendering
+    [mediaclip-\MediaClip]
+    [\XMLflush{rl:mime}]
+    [\getvariable{mediaclip}{url}\XMLflush{rl:file}]
+    [\getvariable{mediaclip:option}{start}]
+
+\stopsetups
+
+\defineinteractionmenu
+  [navigation] [right]
+
+\defineinteractionmenu
+  [control] [bottom]
+
+\setupinteractionmenu
+  [navigation,control]
+  [state=start,
+   frame=on,
+   middle=\hskip.5\measure{GapSize},
+   inbetween=\vskip.5\measure{GapSize}]
+
+\setupinteractionmenu
+  [right,bottom]
+  [distance=overlay]
+
+\startinteractionmenu [navigation]
+  \rob [HideLayer{textlayer},FirstPage]    First Page     \\
+  \rob [HideLayer{textlayer},PreviousPage] Previous Page  \\
+  \rob [HideLayer{textlayer},NextPage]     Next Page      \\
+  \rob [HideLayer{textlayer},LastPage]     Last Page      \\
+  \rob [HideLayer{textlayer},clips]        List Of Clips  \\
+  \rob [ForgetChanges,CloseDocument]       Close Document \\
+\stopinteractionmenu
+
+\startinteractionmenu [control]
+                        \rob [StartRendering{mediaclip-\MediaClip}]        Start  \\
+                        \rob [StopRendering{mediaclip-\MediaClip}]         Stop   \\
+                        \rob [PauseRendering{mediaclip-\MediaClip}]        Pause  \\
+                        \rob [ResumeRendering{mediaclip-\MediaClip}]       Resume \\
+                        \rob [ToggleLayer{datalayer}]                      Info   \\
+  \doifXMLdata{rl:text}{\rob [HideLayer{datalayer},ToggleLayer{textlayer}] Text   \\}
+\stopinteractionmenu
+
+\startsetups[mediaclip:text]
+
+  \setlayer
+    [extra]
+    [preset=rightbottom]
+    {\startproperty[textlayer]
+     \framed
+       [align=normal,
+        frame=off,
+        width=\measure{TextWidth},
+        foregroundcolor=darkgray,
+        background={color,textbutton},
+        backgroundcolor=lightgray]
+       {\XMLflush{rl:text}}
+     \stopproperty}
+
+\stopsetups
+
+\setupcolors[textcolor=lightgray]
+
+\startsetups [library:start]
+
+  \starttext
+
+  \setupinteractionmenu[control][state=stop]
+
+  \title[clips]{List of Media Clips}
+
+  \placelist[clips] \page
+
+  \setupinteractionmenu[control][state=start]
+
+\stopsetups
+
+\startsetups [library:stop]
+
+  \stoptext
+
+\stopsetups
+
+\defineXMLenvironment [rl:resourcelibrary]
+  {\setups[library:start]}
+  {\setups[library:stop]}
+
+\doifelsenothing{\inputfilename}
+  {\processXMLfile{mediaclient.xml}}
+  {\processXMLfile{\inputfilename}}

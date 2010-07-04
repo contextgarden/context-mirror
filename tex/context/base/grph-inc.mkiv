@@ -1,0 +1,433 @@
+%D \module
+%D   [       file=grph-inc, % moved from core-fig
+%D        version=2006.08.26, % overhaul of 1997.03.31
+%D          title=\CONTEXT\ Graphic Macros,
+%D       subtitle=Figure Inclusion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
+
+%D todo:
+%D
+%D - color conversion
+%D - alternative images
+%D - a few more obscure things
+
+\registerctxluafile{grph-inc}{1.001}
+\registerctxluafile{grph-fil}{1.001}
+\registerctxluafile{grph-u3d}{1.001} % this will change
+\registerctxluafile{grph-swf}{1.001} % this will change
+
+\unprotect
+
+%D The following registers are used (if only to be downward compatible).
+
+\newbox  \foundexternalfigure
+\newif   \ifskipexternalfigures
+\newtoks \everyexternalfigureresets
+\newtoks \everyexternalfigurechecks
+\newtoks \externalfigurepostprocessors
+
+\def\resetfigurevariables {\the\everyexternalfigureresets}
+\def\checkfigurevariables {\the\everyexternalfigurechecks}
+
+%D Historic feature:
+
+\appendtoks
+    \global\let\externalfigurelog\empty
+\to \everyexternalfigureresets
+
+\let\runutilityfiletrue    \relax \let\runutilityfilefalse    \relax
+\let\consultutilityfiletrue\relax \let\consultutilityfilefalse\relax
+
+%D You can register additional suffixes with the following command:
+%D
+%D \starttyping
+%D \definegraphictypesynonym[jbig] [jb2]
+%D \definegraphictypesynonym[jbig2][jb2]
+%D \definegraphictypesynonym[jbg]  [jb2]
+%D \stoptyping
+
+\unexpanded\def\definegraphictypesynonym
+  {\dodoubleargument\dodefinegraphictypesynonym}
+
+\def\dodefinegraphictypesynonym[#1][#2]%
+  {\ctxlua{figures.registersuffix("#1","#2")}}
+
+%D Additional paths can be installed with the regular setup command. The next
+%D macro picks up the list.
+
+\def\setfigurepathlist
+  {\ctxlua{figures.setpaths("\@@exlocation",\!!bs\@@exdirectory\!!es)}}
+
+%D Variables:
+
+\def\defaultfigurewidth  {8\lineheight}
+\def\defaultfigureheight {6\lineheight}
+
+\def\figurestatus        {\numexpr\ctxlua{figures.tprint("status","status",0)}\relax} % number: 0 = not found
+\def\figurewidth         {\ctxlua{figures.tprint("status","width",0)}sp}
+\def\figureheight        {\ctxlua{figures.tprint("status","height",0)}sp}
+\def\figurexscale        {\ctxlua{figures.tprint("status","xscale",1)}}
+\def\figureyscale        {\ctxlua{figures.tprint("status","yscale",1)}}
+
+\def\figurelabel         {\ctxlua{figures.tprint("request","label")}}
+\def\figurefileoriginal  {\ctxlua{figures.tprint("request","name")}}
+\def\figurefilepage      {\ctxlua{figures.tprint("request","page",1)}}
+\def\figurefileoptions   {\ctxlua{figures.tprint("request","options")}}
+\def\figurefileconversion{\ctxlua{figures.tprint("request","conversion")}}
+\def\figurefilecache     {\ctxlua{figures.tprint("request","cache")}}
+\def\figurefileprefix    {\ctxlua{figures.tprint("request","prefix")}}
+
+\def\figurenaturalwidth  {\ctxlua{figures.tprint("used","width", \number\dimexpr\defaultfigurewidth \relax)}sp}
+\def\figurenaturalheight {\ctxlua{figures.tprint("used","height",\number\dimexpr\defaultfigureheight\relax)}sp}
+
+\def\figurefilepath      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.dirname (figures.get("used","fullname")))}}
+\def\figurefilename      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.nameonly(figures.get("used","fullname")))}}
+\def\figurefiletype      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.extname (figures.get("used","fullname")))}}
+\def\figurefullname      {\ctxlua{figures.tprint("used","fullname")}}
+\def\noffigurepages      {\ctxlua{figures.tprint("used","pages",0)}}
+
+\let\naturalfigurewidth  \figurenaturalwidth
+\let\naturalfigureheight \figurenaturalheight
+
+\let\figurescalewidth    \figurewidth
+\let\figurescaleheight   \figureheight
+\let\figurescalexscale   \figurexscale
+\let\figurescaleyscale   \figureyscale
+
+\appendtoks
+    \ctxlua { % figures.defaultwidth .. why not dimen
+        figures.setpaths("\@@exlocation","\@@exdirectory") ;
+        figures.defaultwidth  = \number\dimexpr\defaultfigurewidth \relax ;
+        figures.defaultheight = \number\dimexpr\defaultfigureheight\relax ;
+        figures.boxnumber     = \number\foundexternalfigure ;
+    }%
+\to \everyexternalfigureresets
+
+%D In some situations we need to make sure that the figure related variables
+%D are reset. This is especially important when we are nesting. Is this still
+%D needed in \MKIV.
+
+\def\resetexternalfigures
+  {\let\@@efoption         \empty % \let\@@efprefix\empty
+   \let\@@efmaxwidth       \empty % \let\@@efcache \empty
+   \let\@@efmaxheight      \empty % \let\@@efframe \v!off
+   \let\@@efforegroundcolor\empty
+   \let\@@efcolor          \empty
+   \let\@@efconversion     \empty
+   \let\@@efbackground     \empty}
+
+\appendtoks \resetexternalfigures \to \everyoverlay
+\appendtoks \resetexternalfigures \to \everybeforepagebody % not really needed
+
+\def\resetfigureusersettings
+  {%
+   \let\@@efmethod    \empty
+   \let\@@eflabel     \empty
+   \let\@@efsize      \empty
+   \let\@@efconversion\@@exconversion
+   \let\@@efprefix    \@@exprefix
+   \let\@@efcache     \@@excache
+   \let\@@efpage      \!!zerocount
+   \let\@@efobject    \@@exobject
+   \let\@@efdisplay   \empty
+   %
+   \let\@@efpreset    \v!yes
+   \let\@@efsplit     \empty
+   \let\@@efcolor     \empty
+   %
+   \let\@@efsymbol    \v!no
+   %
+   \let\@@efcontrols  \v!no
+   \let\@@efpreview   \v!no
+   \let\@@efrepeat    \v!no
+   %
+   \let\@@efforegroundcolor\empty
+   %
+   \let\@@efhfactor   \empty
+   \let\@@efwfactor   \empty
+   \let\@@effactor    \empty
+   \let\@@efmaxwidth  \@@exmaxwidth
+   \let\@@efmaxheight \@@exmaxheight
+   \let\@@efxscale    \empty
+   \let\@@efyscale    \empty
+   \let\@@efscale     \empty
+   \let\@@efsx        \!!plusone
+   \let\@@efsy        \!!plusone
+   \let\@@efwidth     \empty
+   \let\@@efheight    \empty
+   \let\@@eflines     \empty
+   \let\@@efgrid      \empty}
+
+\resetfigureusersettings
+
+\appendtoks
+    \resetfigureusersettings
+\to \everyexternalfigureresets
+
+\def\checkfigureusersettings
+  {% old features
+   \doif\@@exoption\v!frame
+     {\let\@@efframe\v!on}%
+   \doif\@@exoption\v!empty
+     {\skipexternalfigurestrue
+      \let\@@efframe\v!off}%
+   \doifsomething\@@efwidth {\doifdimensionelse\@@efwidth {\edef\@@efwidth {\the\dimexpr\@@efwidth }}\donothing}%
+   \doifsomething\@@efheight{\doifdimensionelse\@@efheight{\edef\@@efheight{\the\dimexpr\@@efheight}}\donothing}%
+   % fake color in gray bitmaps, assumes that
+   % a transparent color is used
+   \doifsomething\@@efforegroundcolor
+     {\def\@@efbackground{\v!foreground,\v!color}%
+      \def\@@efbackgroundcolor{\@@efforegroundcolor}}}
+
+\appendtoks
+    \checkfigureusersettings
+\to \everyexternalfigurechecks
+
+%D Internal graphics are handled at the \TEX\ end:
+
+\def\doprocesstexlikefigure#1% retrofit into mkii
+  {\global\setbox\foundexternalfigure\vbox\framed
+     [\c!strut=\v!no,\c!align=\v!normal,\c!frame=\v!off,
+      \c!offset=\v!overlay,\c!width=\v!fit,\c!height=\v!fit]
+     {\blank[\v!disable]#1\endgraf\removelastskip}} % disable should stay here!
+
+\def\doprocessmpslikefigure#1% retrofit into mkii
+  {\global\setbox\foundexternalfigure\vbox{\convertMPtoPDF{#1}11}}
+
+\def\docheckfigurebuffer  #1{\doprocesstexlikefigure{\getbuffer[#1]}}
+\def\docheckfiguretex     #1{\doprocesstexlikefigure{\input#1\relax}}
+\def\docheckfiguremps     #1{\doprocessmpslikefigure{#1}}
+\def\docheckfiguremprun #1#2{\doprocesstexlikefigure{\useMPrun{#1}{#2}}}
+
+\def\doscalefigure
+  {\global\setbox\foundexternalfigure\vbox{\doscalebox\??ef{\dowithfigure{\box\foundexternalfigure}}}}
+
+\newconditional\testexternalfigureonly
+
+% \enabletrackers[figures.conversion]
+% \externalfigure[demo.svg]
+% \externalfigure[demo.svg][conversion=png]
+
+\def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]% \cmd label filename parent_id preset current
+  {\dontcomplain
+   \restorecatcodes
+   \forgetall
+   \resetfigurevariables
+   \dosetefparameters{#4}{#5}{#6}%
+   \checkfigurevariables
+%    \begingroup
+%    \color[\@@efcolor]{\xdef\globcolorattr{\internalspotcolorname}}
+%    \endgroup
+   \ctxlua{figures.push {
+        name="#3",
+        label="#2", % todo: \@eflabel
+        page="\@@efpage",
+        size="\@@efsize",
+        object="\@@efobject",
+        prefix="\@@efprefix",
+        cache="\@@efcache",
+        format="\@@efmethod",
+        preset="\@@efprefix",
+        controls="\@@efcontrols",
+        preview="\@@efpreview",
+        display="\@@efdisplay",
+        conversion="\@@efconversion",
+        color="\internalspotcolorparent\@@efcolor", % hack is needed
+        ["repeat"]="\@@efrepeat",
+        width="\@@efwidth", % can be crap
+        height="\@@efheight", % can be crap
+    } }%
+   \ctxlua{figures.identify()}%
+   \ifconditional\testexternalfigureonly
+      \ifcase\figurestatus \else
+        \ctxlua{figures.check()}%
+        \ctxlua{figures.dummy()}%
+        \ctxlua{figures.scale()}%
+        \ctxlua{figures.done()}%
+      \fi
+      \signalexternalfigure
+   \else
+      \ifcase\figurestatus
+        \ctxlua{figures.dummy()}%
+        \ctxlua{figures.scale()}%
+      \else
+        \ctxlua{figures.check()}%
+        \ctxlua{figures.include()}%
+        \ctxlua{figures.scale()}%
+      \fi
+      \ctxlua{figures.done()}%
+      \signalexternalfigure
+      \finishexternalfigure
+   \fi
+   \ctxlua{figures.pop()}}
+
+\def\relocateexternalfigure % easier here than in lua
+  {\global\setbox\foundexternalfigure\vbox to \ht\foundexternalfigure\bgroup
+     \vss
+     \ht\foundexternalfigure\zeropoint
+     \hbox to \wd\foundexternalfigure\bgroup
+        \box\foundexternalfigure
+        \hss
+     \egroup
+   \egroup}
+
+\def\signalexternalfigure % global
+  {\ifcase\figurestatus
+     \global\resetsystemmode\v!figure % todo, also: \v!resource
+   \else
+     \global\setsystemmode  \v!figure % todo, also: \v!resource
+   \fi}
+
+\unexpanded\def\startfoundexternalfigure#1#2% ht wd
+  {\global\setbox\foundexternalfigure\vbox to #2\bgroup\vss\hbox to #1\bgroup}
+
+\unexpanded\def\stopfoundexternalfigure
+  {\hss\egroup\egroup}
+
+\def\emptyfoundexternalfigure
+  {\startfoundexternalfigure\defaultfigurewidth\defaultfigureheight
+   \stopfoundexternalfigure}
+
+\def\finishexternalfigure % here we use \figurevariables
+  {\global\setbox\foundexternalfigure\vbox
+     {\ifcase\figurestatus
+        \let\@@efframe\v!on
+      \fi
+      \ifconditional\externalfigureflush
+        \ifconditional\externalfigurelevel % probably background
+          \ifskipexternalfigures
+            % nothing
+            \fakebox\foundexternalfigure
+          \else\ifcase\figurestatus
+            % nothing
+          \else
+            \the\externalfigurepostprocessors
+            \box\foundexternalfigure
+          \fi\fi
+        \else
+          \iftrialtypesetting \else \feedbackexternalfigure \fi
+          \settrue\externalfigurelevel
+          \ifskipexternalfigures
+            \ifcase\figurestatus
+              \externalfigurereplacement\figurelabel\figurefileoriginal{unknown}%
+            \else
+              \externalfigurereplacement\figurelabel\figurefullname{skipped}%
+            \fi
+          \else\ifcase\figurestatus
+            \externalfigurereplacement\figurelabel\figurefileoriginal{unknown}%
+          \else
+            \the\externalfigurepostprocessors
+            \doifelse\@@efreset\v!yes
+              {\wd\foundexternalfigure\figurewidth
+               \ht\foundexternalfigure\figureheight
+               \dp\foundexternalfigure\zeropoint
+               \box\foundexternalfigure}
+              {\localframed % should also be applied to high res !
+                 [\??ef]
+                 [\c!offset=\v!overlay,
+                  \c!width=\figurewidth,
+                  \c!height=\figureheight]
+                 {\vfilll\box\foundexternalfigure}}%
+          \fi\fi
+        \fi
+      \else
+        % maybe also \the\externalfigurepostprocessors
+        \iftrialtypesetting \else \feedbackexternalfigure \fi
+      \fi}}
+
+\ifx\externalfigurereplacement\undefined\let\externalfigurereplacement\gobblethreearguments\fi
+\ifx\externalfigureplaceholder\undefined\let\externalfigureplaceholder\gobblethreearguments\fi
+
+\let\feedbackexternalfigure\relax % \gobblefourarguments
+\let\dowithfigure          \relax
+
+\def\getfiguredimensions
+  {\dodoubleempty\dogetfiguredimensions}
+
+\def\dogetfiguredimensions[#1][#2]%
+  {\startnointerference
+     \settrue\testexternalfigureonly
+     \externalfigure[#1][#2,\c!display=,\c!object=\v!no]%
+   \stopnointerference}
+
+\let\getfiguredimensionsonly\getfiguredimensions
+
+\def\doiffigureelse#1%
+  {\getfiguredimensions[#1]% so data is available !
+   \ifdim\figurewidth=\zeropoint % todo: \figurestatus
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\registerexternalfigure % no placement, handy for preprocessing
+  {\dotripleempty\doregisterexternalfigure}
+
+\def\doregisterexternalfigure[#1][#2][#3]%
+  {\startnointerference
+     \testexternalfigureonly
+     \setfalse\externalfigureflush % == test ?
+     \externalfigure[#1][#2][#3]% or \doexternalfigure
+     \externalfigure[#1][#2,\c!display=,\c!object=\v!no]%
+   \stopnointerference}
+
+% figurebases
+
+\def\usefigurebase[#1]%
+  {\ctxlua{figures.bases.use("#1")}}
+
+\protect \endinput
+
+% \startbuffer
+% \definecolor [blue]   [c=1,m=.38,y=0,k=.64]
+% \definecolor [yellow] [c=0,m=.28,y=1,k=.06]
+%
+% \definespotcolor [blue-100]   [blue]   [p=1]
+% \definespotcolor [yellow-100] [yellow] [p=1]
+%
+% \definemultitonecolor [combicolor]   [blue=.12,yellow=.28] [c=.1,m=.1,y=.3,k=.1]
+%
+% \definemultitonecolor [combicolor-b] [blue=1]   [c=1,m=.38,y=0,k=.64] % force multitone
+% \definemultitonecolor [combicolor-y] [yellow=1] [c=0,m=.28,y=1,k=.06] % force multitone
+%
+% \useexternalfigure[demo-a][mill.png]     [object=no,width=.2\textwidth]
+% \useexternalfigure[demo-b][hacker-bw.jpg][object=no,width=.2\textwidth]
+%
+% \startbaselinecorrection \startcombination[4*1]
+%   {\externalfigure[demo-a]}                     {no color}
+%   {\externalfigure[demo-a][color=combicolor]}   {indexed duotone}
+%   {\externalfigure[demo-a][color=combicolor-b]} {spot color}
+%   {\externalfigure[demo-a][color=combicolor-y]} {spot color}
+% \stopcombination \stopbaselinecorrection
+%
+% \startbaselinecorrection \startcombination[4*1]
+%   {\externalfigure[demo-b]}                     {no color}
+%   {\externalfigure[demo-b][color=combicolor]}   {indexed duotone}
+%   {\externalfigure[demo-b][color=combicolor-b]} {spot color}
+%   {\externalfigure[demo-b][color=combicolor-y]} {spot color}
+% \stopcombination \stopbaselinecorrection
+%
+% \startbaselinecorrection \startcombination[4*1]
+%   {\externalfigure[demo-a]}                     {no color}
+%   {\externalfigure[demo-a][color=combicolor]}   {indexed duotone}
+%   {\externalfigure[demo-a][color=blue-100]}     {spot color}
+%   {\externalfigure[demo-a][color=yellow-100]}   {spot color}
+% \stopcombination \stopbaselinecorrection
+%
+% \startbaselinecorrection \startcombination[4*1]
+%   {\externalfigure[demo-b]}                     {no color}
+%   {\externalfigure[demo-b][color=combicolor]}   {indexed duotone}
+%   {\externalfigure[demo-b][color=blue-100]}     {spot color}
+%   {\externalfigure[demo-b][color=yellow-100]}   {spot color}
+% \stopcombination \stopbaselinecorrection
+% \stopbuffer
+%
+% \getbuffer \typebuffer

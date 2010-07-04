@@ -1,0 +1,92 @@
+%D \module
+%D   [       file=lang-vn,
+%D        version=2004.11.22, % 1999.12.12,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Vietnamese,
+%D         author={Han The Thanh \& Adam Lindsay \& Hans Hagen},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Language Macros / Vietnamese Language}
+
+%D The framework of this module is set up by Hans Hagen while
+%D many of the first translations were done by Tobias. Later
+%D on, corrections were made by users. If you have suggestions,
+%D or feel that your name missing here, don't hesitate to send
+%D us an email.
+%D
+%D \starttabulate[|lB|l|]
+%D \NC Vietnamese \NC \THANH\ \NC \NR
+%D \stoptabulate
+
+\unprotect
+
+\installlanguage
+  [\s!vi]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\quoteleft,
+   \c!rightquote=\quoteright,
+   \c!leftquotation=\quotedblleft,
+   \c!rightquotation=\quotedblright,
+   \c!date={{ },dd,{/},mm,{/},yy},
+   \s!mapping=t5,
+   \s!encoding=t5]
+
+\installlanguage [vietnamese] [\s!vi]
+
+\setupheadtext [\s!vi] [\v!content=M\udotbelow c l\udotbelow c]
+\setupheadtext [\s!vi] [\v!tables=Danh s\aacute ch b\ahook ng]
+\setupheadtext [\s!vi] [\v!figures=Danh s\aacute ch h\igrave nh v\etilde]
+\setupheadtext [\s!vi] [\v!graphics=\Dstroke\ocircumflexgrave\ th\idotbelow]
+\setupheadtext [\s!vi] [\v!intermezzi=Intermezzos]
+\setupheadtext [\s!vi] [\v!index=Ch\ihook\ s\ocircumflexacute]
+\setupheadtext [\s!vi] [\v!abbreviations=Ch\uhorntilde\ vi\ecircumflexacute t t\abreveacute t]
+\setupheadtext [\s!vi] [\v!logos=Bi\ecircumflexhook u t\uhorn \ohorndotbelow ng]
+\setupheadtext [\s!vi] [\v!units=\Dstroke\ohorn n v\idotbelow]
+
+\setuplabeltext [\s!vi] [\v!table=B\ahook ng ]
+\setuplabeltext [\s!vi] [\v!figure=H\igrave nh ]
+\setuplabeltext [\s!vi] [\v!intermezzo=intermezzo]
+\setuplabeltext [\s!vi] [\v!graphic=\Dstroke\ocircumflexgrave\ th\idotbelow]
+\setuplabeltext [\s!vi] [\v!chapter=Ch\uhorn \ohorn ng ]
+\setuplabeltext [\s!vi] [\v!section=] % not set
+\setuplabeltext [\s!vi] [\v!subsection=] % not set
+\setuplabeltext [\s!vi] [\v!subsubsection=] % not set
+\setuplabeltext [\s!vi] [\v!subsubsubsection=] % not set
+\setuplabeltext [\s!vi] [\v!appendix=] % not set
+\setuplabeltext [\s!vi] [\v!part=Ph\acircumflexgrave n ]
+\setuplabeltext [\s!vi] [\v!line=d\ograve ng ]
+\setuplabeltext [\s!vi] [\v!lines=d\ograve ng ]
+
+\setuplabeltext [\s!vi] [\v!sunday=ch\uhook\ nh\acircumflexdotbelow t]
+\setuplabeltext [\s!vi] [\v!monday=th\uhornacute\ hai]
+\setuplabeltext [\s!vi] [\v!tuesday=th\uhornacute\ ba]
+\setuplabeltext [\s!vi] [\v!wednesday=th\uhornacute\ t\uhorn]
+\setuplabeltext [\s!vi] [\v!thursday=th\uhornacute\ n\abreve m]
+\setuplabeltext [\s!vi] [\v!friday=th\uhornacute\ s\aacute u]
+\setuplabeltext [\s!vi] [\v!saturday=th\uhornacute\ b\ahook y]
+
+\setuplabeltext [\s!vi] [\v!january=th\aacute ng gi\ecircumflex ng]
+\setuplabeltext [\s!vi] [\v!february=th\aacute ng hai]
+\setuplabeltext [\s!vi] [\v!march=th\aacute ng ba]
+\setuplabeltext [\s!vi] [\v!april=th\aacute ng t\uhorn]
+\setuplabeltext [\s!vi] [\v!may=th\aacute ng n\abreve m]
+\setuplabeltext [\s!vi] [\v!june=th\aacute ng s\aacute u]
+\setuplabeltext [\s!vi] [\v!july=th\aacute ng b\ahook y]
+\setuplabeltext [\s!vi] [\v!august=th\aacute ng t\aacute m]
+\setuplabeltext [\s!vi] [\v!september=th\aacute ng ch\iacute n]
+\setuplabeltext [\s!vi] [\v!october=th\aacute ng m\uhorn\ohorngrave i]
+\setuplabeltext [\s!vi] [\v!november=th\aacute ng m\uhorn\ohorngrave i m\ocircumflexdotbelow t]
+\setuplabeltext [\s!vi] [\v!december=th\aacute ng m\uhorn\ohorngrave i hai]
+
+%D \ShowAllLanguageValues [\s!vi] [vietnamese] {Vietnamese} {water||puppets}
+
+\protect \endinput

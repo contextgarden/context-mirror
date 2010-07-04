@@ -1,0 +1,93 @@
+%D \module
+%D   [      file=s-faq-00,
+%D        version=1997.21.08,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=FAQ Common Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\usemodule[abr-01]
+
+\defineblock[question]
+\defineblock[answer]
+
+\def\ScreenFAQ     {fs-\TagOfFAQ-\LanguageOfFAQ}
+\def\PaperFAQ      {fp-\TagOfFAQ-\LanguageOfFAQ}
+\def\FileNameOfFAQ {fa-\TagOfFAQ-\LanguageOfFAQ}
+
+\language
+  [\HyphenationOfFAQ]
+
+\setupwhitespace
+  [big]
+
+\setupbodyfont
+  [ams]
+
+\setuptolerance
+  [tolerant]
+
+\setupregister
+  [index]
+  [indicator=no]
+
+\setupframedtexts
+  [width=\hsize]
+
+\setupblock
+  [question]
+  [before=\startframedtext,
+   after=\stopframedtext] 
+
+\setupblock
+  [answer]
+  [after=\EndAnswer]
+
+\def\EndAnswer   {}
+
+\def\AuthorOfFAQ {}
+\def\IndexOfFAQ  {}
+
+\def\FrequentlyAskedQuestion#1#2%
+  {\page
+   \doglobal\increment\CurrentNOfFAQ
+   \pagereference[faq:\CurrentNOfFAQ]
+   \gdef\IndexOfFAQ{#1}
+   \gdef\AuthorOfFAQ{#2}}
+
+\newcounter\CurrentNOfFAQ
+
+\setuplabeltext [nl] [FAQ=Vaak gestelde vragen]
+\setuplabeltext [du] [FAQ=Oft gestellte Fragen]
+\setuplabeltext [en] [FAQ=Frequently Asked Questions]
+
+\setuplabeltext [nl] [about=over]
+\setuplabeltext [du] [about=zu]
+\setuplabeltext [en] [about=about]
+
+\setuplabeltext [nl] [version=Versie]
+\setuplabeltext [du] [version=Version]
+\setuplabeltext [en] [version=Version]
+
+\setuplabeltext [nl] [goback=terug]
+\setuplabeltext [du] [goback=zur\"uck]
+\setuplabeltext [en] [goback=go back]
+
+\setuplabeltext [nl] [paper=papier]
+\setuplabeltext [du] [paper=Papier]
+\setuplabeltext [en] [paper=paper]
+
+\setuplabeltext [nl] [faqs=FAQ's]
+\setuplabeltext [du] [faqs=FAQs]
+\setuplabeltext [en] [faqs=FAQ's]
+
+\setuplabeltext [nl] [index=index]
+\setuplabeltext [du] [index=Index]
+\setuplabeltext [en] [index=index]
+
+\endinput

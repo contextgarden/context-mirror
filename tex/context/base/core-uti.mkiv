@@ -1,0 +1,66 @@
+%D \module
+%D   [       file=core-uti,
+%D        version=1997.03.31, % 2006.09.19 mkiv
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Utility File Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Utility File Handling}
+
+\unprotect
+
+\registerctxluafile{core-uti}{1.001}
+
+\def\savecurrentvalue#1#2%
+  {\ctxlua{jobvariables.save("\strippedcsname#1","#2")}}
+
+\appendtoks
+    \ctxlua{storage.dump()}% will move to lua
+\to \everydump
+
+\appendtoks
+    \ctxlua{storage.finalize()}% will move to lua
+\to \everyfinalizeluacode
+
+\appendtoks
+    \ctxlua{nodes.cleanup_reserved()}% will move to lua
+\to \everydump
+
+\appendtoks
+    \ctxlua {
+        job.comment("file: \jobname")
+        job.comment("format: \contextformat")
+        job.comment("stamp: \contextversion")
+        job.comment("escape: \!!bs\space...\space\!!es")
+        job.initialize("\jobname.tuc","\jobname.tua")
+    }%
+\to \everystarttext
+
+\def\notuccompression{\ctxlua{job.pack=false}}
+
+% cleaner, for the moment
+
+% \appendtoks
+%     \ctxlua {
+%         os.remove("\jobname.tui")
+%         os.remove("\jobname.tuo")
+%     }%
+% \to \everystarttext
+
+%D Some styles might use these use these commands:
+
+\newif \ifutilitydone
+\let   \checkutilities         \relax
+\let   \currentutilityfilename \jobname
+\def   \installprogram         {\dosingleempty\doinstallprogram}
+\def   \doinstallprogram   [#1]{\gobbleoneargument}
+\def   \installedprogram   [#1]{}
+\let   \installplugin          \gobblethreearguments
+
+\protect \endinput

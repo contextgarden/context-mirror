@@ -1,0 +1,1296 @@
+%D \module
+%D   [       file=math-ali,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Math Alignments,
+%D         author={Hans Hagen, Taco Hoekwater \& Aditya Mahajan},
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Math Alignments}
+
+\unprotect
+
+%D The code here has been moved from other files. Beware: the \MKII\ and
+%D \MKIV\ code is not gathered in files with the same name.
+
+%D \macros
+%D   {definemathalignment, setupmathalignment, startmathalignment}
+%D
+%D Modules may provide additional alignment features. The following
+%D mechanisms are provided by the core.
+
+% n>1 #### needed, strange # interaction in recurse
+
+\def\presetdisplaymath{\displ@y} % some day i will relocate the plain stuff
+
+\def\buildeqalign
+  {\scratchtoks\emptytoks
+   \dorecurse{\mathalignmentparameter\c!m}
+     {\ifnum\recurselevel>\plusone
+        \appendtoks
+          \tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint
+        \to\scratchtoks
+      \fi
+      \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
+      \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
+        {\normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}}
+
+\def\forgetalign
+  {\tabskip\zeropoint\everycr\emptytoks}
+
+\let\firstineqalign\empty
+\let\nextineqalign \empty
+\let\leftofeqalign \empty
+\let\rightofeqalign\empty
+
+\def\mathineqalign#1{$\forgetalign\displaystyle{{}#1{}}$}
+\def\textineqalign#1{$\forgetalign#1$}
+
+\def\eqalign#1% why no halign here, probably because of displaywidth
+  {\null\,\vcenter
+     {\openup.25\bodyfontsize% was: \openup\jot
+      \mathsurround\zeropoint
+      \ialign{\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##{}}$\hfil\crcr#1\crcr}%
+   }\,}
+
+% preamble is scanned for tabskips so we need the span to prevent an error message
+
+\chardef\eqalignmode\plusone
+
+\def\preparereqalignno
+  {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \ifnum\mathraggedstatus=\plusone
+     \!!toksc{\hfil&\span\textineqalign{##}\tabskip\zeropoint}%
+   \else\ifnum\mathraggedstatus=\plusthree
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\span\textineqalign{##}\tabskip\zeropoint}%
+   \else
+     \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
+   \fi\fi
+   \global\chardef\mathnumberstatus\zerocount
+   \buildeqalign
+   \presetdisplaymath
+   \tabskip\centering}
+
+\def\prepareleqalignno
+  {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+   % problem: number is handled after rest and so ends up in the margin
+   \ifnum\mathraggedstatus=\plusone
+     \!!toksc{\hfil&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \else\ifnum\mathraggedstatus=\plusthree
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\kern-\displaywidth\span\mrlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \else
+     \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+   \fi\fi
+   \global\chardef\mathnumberstatus\zerocount
+   \buildeqalign
+   \presetdisplaymath
+   \tabskip\centering}
+
+\def\dobotheqalignno#1#2%
+  {\ifmmode
+     \displ@y % \let\doplaceformulanumber\relax % strange hack
+     \vcenter\bgroup
+     \let\finishalignno\egroup
+   \else
+     \let\finishalignno\relax
+   \fi
+   #1%
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
+   \finishalignno}
+
+\def\dobothaligneqalignno#1%
+  {\ifmmode
+    \displ@y
+    \global\chardef\mathnumberstatus\plusone
+    \ifcase\mathraggedstatus
+       \def\finishalignno{\crcr\egroup}%
+    \else
+       % we're in a mathbox
+       \vcenter\bgroup
+       \def\finishalignno{\crcr\egroup\egroup}%
+    \fi
+   \fi
+   #1%
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+
+\def\mrlap#1%
+  {\setbox\scratchbox\hbox{#1}%
+   \ifdim\wd\scratchbox>\mathnumbercorrection
+     \xdef\mathnumbercorrection{\the\wd\scratchbox}%
+   \fi
+   \box\scratchbox
+   \global\chardef\mathnumberstatus\plustwo}
+
+% \def\dobothaligneqalignno#1%
+%   {\ifmmode
+%     \displ@y
+%     \global\chardef\mathnumberstatus\plusone
+%      we're in a mathbox
+%      \vcenter\bgroup
+%      \def\finishalignno{\crcr\egroup\egroup}%
+%    \else
+%      \def\finishalignno{\crcr\egroup}%
+%    \fi
+%    #1%
+%    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+
+\def\reqalignno     {\dobotheqalignno     \preparereqalignno}
+\def\leqalignno     {\dobotheqalignno     \prepareleqalignno}
+\def\alignreqalignno{\dobothaligneqalignno\preparereqalignno}
+\def\alignleqalignno{\dobothaligneqalignno\prepareleqalignno}
+\def\finishalignno  {\crcr\egroup}
+
+\let    \equalignno     \reqalignno
+\let\aligneqalignno\alignreqalignno
+
+%D Here we implement the user interface part.
+
+\unexpanded\def\setupmathalignment
+  {\dodoubleempty\dosetupmathalignment}
+
+\def\dosetupmathalignment[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??eq#1][#2]%
+   \else
+     \getparameters[\??eq][#1]%
+   \fi}
+
+\let\currentmathalignment\empty
+
+\def\mathalignmentparameter#1%
+  {\executeifdefined{\??eq\currentmathalignment#1}{\executeifdefined{\??eq#1}\empty}}
+
+\setupmathalignment
+  [\c!n=2,
+   \c!m=1,
+   \c!distance=1em]
+
+\def\numberedeqalign
+  {\doifelse{\formulaparameter\c!location}\v!left\alignleqalignno\alignreqalignno}
+
+\def\doxxdoubleempty#1#2%
+  {\ifx#2[\expandafter\dodoxxdoubleempty\else\expandafter\noxxdoubleempty\fi#1#2}
+
+\def\dodoxxdoubleempty#1[#2]#3%
+  {\ifx#3[\else\expandafter\nonoxxdoubleempty\fi#1[#2]#3}
+
+\def\noxxdoubleempty      #1{#1[][]}
+\def\nonoxxdoubleempty#1[#2]{#1[#2][]}
+
+\newcount\eqaligncolumn
+
+\def\firstineqalign{\global\eqaligncolumn\plusone}
+\def\nextineqalign {\global\advance\eqaligncolumn\plusone}
+\def\leftofeqalign {\getvalue{\??eq:\v!left :\number\eqaligncolumn}}
+\def\rightofeqalign{\getvalue{\??eq:\v!right:\number\eqaligncolumn}}
+
+\def\doseteqaligncolumn#1%
+  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\empty
+   \letvalue{\??eq:\v!right:\number\eqaligncolumn}\empty
+   \doif{#1}\v!left  {\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill}%
+   \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}%
+   \doif{#1}\v!middle{\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill
+                      \letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}}
+
+\def\dodoalignNC
+  {\gdef\doalignNC##1{&##1}}
+
+\def\doalignNR[#1][#2]%
+  {\donestedformulanumber{#1}{#2}\crcr}
+
+%D \starttyping
+%D \placeformula[eqn0]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn0]
+%D \placeformula[eqn1]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn1]
+%D \placeformula      \startformula \startalign[n=1] a\NR[eqn2] \stopalign \stopformula See \in[eqn2]
+%D \placeformula[eqn3]\startformula \startalign[n=1] a\NR[+]    \stopalign \stopformula See \in[eqn3]
+%D \stoptyping
+
+% todo: pop in cell
+
+\def\dostartmathalignment[#1][#2]%
+  {% \begingroup not permitted ($$...assignments...\halign... )
+   \pushmacro\doalignNC
+   \edef\currentmathalignment{#1}%
+   \doifassignmentelse{#2}{\setupmathalignment[#1][#2]}\donothing
+   \def\NC{\doalignNC}%
+   \global\let\doalignNC\dodoalignNC
+   \def\EQ{&=}%
+   \def\NR{&\global\let\doalignNC\dodoalignNC\doxxdoubleempty\doalignNR}%
+   % amstex compatibility mode: (ugly, will disappear)
+   \def\notag{\def\\{&\crcr}}%
+   \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
+   % end of compatibility mode
+   \eqaligncolumn\zerocount
+   \processcommacommand
+     [\mathalignmentparameter\c!align]
+     {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
+   % the real action
+   \global\eqaligncolumn\plusone
+   \numberedeqalign}
+
+\def\dostopmathalignment
+  {\finishalignno
+   \popmacro\doalignNC}
+
+\unexpanded\def\definemathalignment
+  {\dodoubleempty\dodefinemathalignment}
+
+\def\dodefinemathalignment[#1]% [#2]%
+  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathalignment[#1]}%
+   \setvalue{\e!stop #1}{\dostopmathalignment}%
+   \setupmathalignment[#1]}% [#2]
+
+%D For the moment we only provide english commands.
+
+\definemathalignment[align]            % default case (this is what amstex users expect)
+\definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
+
+%D \startbuffer
+%D \placeformula \startformula \eqalignno {
+%D  a &= b & \formulanumber \cr
+%D  c &= d \cr
+%D    &= e \cr
+%D    &= f & \formulanumber
+%D } \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC  a \EQ b \NR[+]
+%D \NC  c \EQ d \NR
+%D \NC    \EQ f \NR[for:demo-a-1]
+%D \NC    \EQ g \NR[for:demo-a-2][a]
+%D \NC    \EQ h \NR[for:demo-a-3][b]
+%D \NC    \EQ i \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC a \EQ b \NR[+]
+%D \NC c \EQ d \NR
+%D \NC   \EQ f \NR
+%D \NC   \EQ g \NR
+%D \NC   \EQ h \NR
+%D \NC   \EQ i \NR[+]
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D a &= b \\
+%D c &= d \notag \\
+%D   &= e \notag \\
+%D   &= f \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D \NC  a \NC \eq  b \NR[+]
+%D \NC  c \NC \neq d \NR
+%D \NC    \NC \neq f \NR[for:demo-b-1]
+%D \NC    \NC \geq g \NR[for:demo-b-2][a]
+%D \NC    \NC \leq h \NR[for:demo-b-3][b]
+%D \NC    \NC \neq i \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[*]
+%D a &= b \\
+%D c &= d \\
+%D   &= e \\
+%D   &= f \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign
+%D     x &= y \\
+%D     a &= b \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[m=3]
+%D     x &= y & x &= y & z &= t \\
+%D     a &= b & p &= q & w &= s \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[m=3,distance=0pt]
+%D     x &= y &= x &= y &= z &= t \\
+%D     a &= b &= p &= q &= w &= s \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=5,distance=0pt]
+%D     x &= yy &= xx &= yy &= zz \\
+%D     a &= b  &= p  &= q  &= w  \\
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={left,middle,right}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={right,middle,left}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startalign[n=3,align={middle,middle,middle}]
+%D \NC       l \NC = \NC r     \NR
+%D \NC    left \NC = \NC right \NR
+%D \stopalign \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformula
+%D     \startalign[n=3,align={middle,middle,middle}]
+%D         \NC a  \NC = \NC b  \NR[+]
+%D         \NC 2a \NC = \NC 2b \NR
+%D     \stopalign
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformulas
+%D     \setupmathalignment[n=3,align={middle,middle,middle}]%
+%D     \startformula
+%D         \startalign
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula
+%D     \startformula
+%D         \startalign
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula
+%D \stopformulas
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula
+%D \startformulas
+%D     \dorecurse{5}{\startformula
+%D         \startalign[n=3,align={middle,middle,middle}]
+%D             \NC a  \NC = \NC b  \NR[+]
+%D             \NC 2a \NC = \NC 2b \NR
+%D         \stopalign
+%D     \stopformula}
+%D \stopformulas
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {definemathcases, setupmathcases, startmathcases}
+%D
+%D Another wish \unknown
+
+\unexpanded\def\setupmathcases
+  {\dodoubleempty\dosetupmathcases}
+
+\def\dosetupmathcases[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??ce#1][#2]%
+   \else
+     \getparameters[\??ce][#1]%
+   \fi}
+
+\let\currentmathcases\empty
+
+\def\mathcasesparameter#1%
+  {\executeifdefined{\??ce\currentmathcases#1}{\executeifdefined{\??ce#1}\empty}}
+
+\setupmathcases
+  [\c!distance=1em,
+   \c!numberdistance=2.5em,
+   \c!left={\left\{\,},
+   \c!right={\right.}]
+
+\def\dodocasesNC
+  {\gdef\docasesNC{\endmath&}}
+
+\let\docasesNR\doalignNR
+
+\def\dostartmathcases[#1][#2]%
+  {\begingroup
+   \edef\currentmathcases{#1}%
+   \doifassignmentelse{#2}{\setupmathcases[#1][#2]}\donothing
+   \mathcasesparameter\c!left
+   \vcenter\bgroup
+   \pushmacro\docasesNC
+   \let\endmath\relax
+   \def\NC{\docasesNC}%
+   \def\MC{\docasesNC\ifmmode\else$\def\endmath{$}\fi}%
+   \global\let\docasesNC\dodocasesNC
+   \def\NR{\unskip\endmath&\global\let\docasesNC\dodocasesNC\doxxdoubleempty\docasesNR}%
+   \normalbaselines
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \tabskip\zeropoint
+   \global\eqaligncolumn\plusone
+   \halign\bgroup
+        $\mathcasesparameter\c!style##$\hfil
+       &\hskip\mathcasesparameter\c!distance\relax
+        \popmacro\docasesNC##\hfil
+       &\hskip\mathcasesparameter\c!numberdistance\relax
+        \let\formuladistance\!!zeropoint
+        \span\textineqalign{##}%
+     \crcr} % todo: number
+
+\def\dostopmathcases
+  {\crcr
+   \egroup
+   \popmacro\docasesNC
+   \egroup
+   \mathcasesparameter\c!right
+   \endgroup}
+
+\unexpanded\def\definemathcases
+  {\dodoubleempty\dodefinemathcases}
+
+\def\dodefinemathcases[#1]% [#2]%
+  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathcases[#1]}%
+   \setvalue{\e!stop #1}{\dostopmathcases}%
+   \setupmathcases[#1]}% [#2]
+
+\definemathcases[cases]
+\definemathcases[\v!mathcases]
+
+%D \startbuffer
+%D \placeformula \startformula \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR[+]
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula x \startcases
+%D \NC 2 \NC $ y > 0 $ \NR[+]
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \placeformula \startformula x \startcases
+%D \NC 2 \NC $ y > 0 $ \NR
+%D \NC 7 \NC $ x = 7 $ \NR
+%D \NC 4 \NC otherwise \NR
+%D \stopcases \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {definemathmatrix, setupmathmatrix, startmathmatrix}
+%D
+%D Yet another one \unknown
+
+\unexpanded\def\setupmathmatrix
+  {\dodoubleempty\dosetupmathmatrix}
+
+\def\dosetupmathmatrix[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??mx#1][#2]%
+   \else
+     \getparameters[\??mx][#1]%
+   \fi}
+
+\let\currentmathmatrix\empty
+
+\def\mathmatrixparameter#1%
+  {\executeifdefined{\??mx\currentmathmatrix#1}{\executeifdefined{\??mx#1}\empty}}
+
+\setupmathmatrix
+  [\c!distance=1em,
+   \c!left=,
+   \c!right=,
+   \c!align=\v!middle]
+
+\def\dosetmatrixcolumn#1% hh: todo: \definematrixalign
+  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+   \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil
+   \doif{#1}\v!left  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\relax
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil}%
+   \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\relax }%
+   \doif{#1}\v!middle{\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
+                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil}}
+
+\def\buildmathmatrix % beware: etex only
+  {\scratchtoks\emptytoks
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
+   \dorecurse{\numexpr\scratchcounter-\plusone\relax}
+     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc }}}
+
+\def\preparemathmatrix
+  {\!!toksa{\strut \firstineqalign\leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
+   \!!toksb{&\hskip\mathmatrixparameter\c!distance
+            \nextineqalign\leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
+   \!!toksc{&&\hskip\mathmatrixparameter\c!distance
+            \leftofeqalign \span
+            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
+   \buildmathmatrix
+   \halign \@EA \bgroup\the\scratchtoks \crcr}
+
+\unexpanded\def\definemathmatrix
+  {\dodoubleempty\dodefinemathmatrix}
+
+\def\dodefinemathmatrix[#1]% [#2]%
+  {\setuvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
+   \setuvalue{\e!stop #1}{\dostopmathmatrix}%
+   \setupmathmatrix[#1]}% [#2]
+
+\definemathmatrix[matrix]
+\definemathmatrix[\v!mathmatrix]
+
+\unexpanded\def\dodomatrixNC
+  {\gdef\domatrixNC{\endmath&}}
+
+\def\installmathmatrixhandler#1#2%
+  {\setvalue{\??mx:#1}{#2}}
+
+% First alternative:
+%
+% \def\processlowhighmathmatrix#1%
+%   {\def\mathmatrixleft
+%      {\setbox\nextbox}
+%    \def\mathmatrixright
+%      {#1.5\dimexpr\nextboxdp-\nextboxht\relax
+%       \hbox{$\mathmatrixparameter\c!left
+%             \vcenter{\unvbox\nextbox}%
+%             \mathmatrixparameter\c!right$}}%
+%     \let\mathmatrixbox\vbox}
+%
+% \installmathmatrixhandler\v!high  {\processlowhighmathmatrix\raise}
+% \installmathmatrixhandler\v!low   {\processlowhighmathmatrix\lower}
+%
+% \installmathmatrixhandler\v!top   {\processlowhighmathmatrix\raise}
+% \installmathmatrixhandler\v!bottom{\processlowhighmathmatrix\lower}
+%
+% \installmathmatrixhandler\v!lohi
+%   {\def\mathmatrixleft {\mathmatrixparameter\c!left}%
+%    \def\mathmatrixright{\mathmatrixparameter\c!right}%
+%    \let\mathmatrixbox\vcenter}
+%
+% An alternative
+%
+% \let\mathmatrixleft \empty
+% \let\mathmatrixright\empty
+%
+% \def\processlowhighmathmatrix#1%
+%   {\dowithnextbox
+%      {#1.5\dimexpr\nextboxdp-\nextboxht\relax
+%       \hbox{$\mathmatrixparameter\c!left
+%             \vcenter{\unvbox\nextbox}%
+%             \mathmatrixparameter\c!right$}}%
+%    \vbox}
+%
+% \def\processlohimathmatrix
+%   {\dowithnextbox
+%      {\mathmatrixparameter\c!left
+%       \vcenter{\unvbox\nextbox}%
+%       \mathmatrixparameter\c!right}%
+%    \vbox}
+%
+% \installmathmatrixhandler\v!high  {\def\mathmatrixbox{\processlowhighmathmatrix\raise}}
+% \installmathmatrixhandler\v!low   {\def\mathmatrixbox{\processlowhighmathmatrix\lower}}
+% \installmathmatrixhandler\v!top   {\def\mathmatrixbox{\processlowhighmathmatrix\raise}}
+% \installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\processlowhighmathmatrix\lower}}
+% \installmathmatrixhandler\v!lohi  {\let\mathmatrixbox \processlohimathmatrix}
+%
+% Final version
+
+\let\mathmatrixleft \empty % experimental hook
+\let\mathmatrixright\empty % experimental hook
+
+\def\processlowhighmathmatrix#1#2%
+  {\dowithnextbox
+     {\scratchdimen\dimexpr(\nextboxdp-\nextboxht)/2 \ifcase#2\or+\mathaxisheight\textfont2\fi\relax
+      \ifcase#1\relax\or\lower\scratchdimen\or\or\raise\scratchdimen\fi
+      \hbox{$\mathmatrixparameter\c!left
+            \vcenter{\unvbox\nextbox}%
+            \mathmatrixparameter\c!right$}}%
+   \vbox}
+
+\installmathmatrixhandler\v!top   {\def\mathmatrixbox{\processlowhighmathmatrix\plusthree\plusone  }}
+\installmathmatrixhandler\v!high  {\def\mathmatrixbox{\processlowhighmathmatrix\plusthree\zerocount}}
+\installmathmatrixhandler\v!lohi  {\def\mathmatrixbox{\processlowhighmathmatrix\plustwo  \zerocount}}
+\installmathmatrixhandler\v!low   {\def\mathmatrixbox{\processlowhighmathmatrix\plusone  \zerocount}}
+\installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\processlowhighmathmatrix\plusone  \plusone  }}
+
+\def\dostartmathmatrix[#1][#2]%
+  {\begingroup
+   \edef\currentmathmatrix{#1}%
+   \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
+   \null
+   \executeifdefined{\??mx:\mathmatrixparameter\c!location}{\getvalue{\??mx:\v!lohi}}%
+   \mathmatrixleft
+   \mathmatrixbox\bgroup
+   \pushmacro\domatrixNC
+   \let\endmath\relax
+   \def\NC{\domatrixNC}%
+   \def\MC{\domatrixNC\ifmmode\else$\def\endmath{$}\fi}%
+   \global\let\domatrixNC\dodomatrixNC
+   \def\NR{\endmath\global\let\domatrixNC\dodomatrixNC\crcr}%
+   \normalbaselines
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \tabskip\zeropoint
+   \eqaligncolumn\zerocount % could be \scratchcounter
+   \processcommacommand[\mathmatrixparameter\c!align]{\advance\eqaligncolumn\plusone\dosetmatrixcolumn}%
+   \scratchcounter=\ifnum\eqaligncolumn>\zerocount \eqaligncolumn \else \plusone \fi
+   \global\eqaligncolumn\plusone
+   \preparemathmatrix } % uses scratchcounter
+
+\def\dostopmathmatrix
+  {\crcr
+   \mathstrut\crcr
+   \noalign{\kern-\baselineskip}%
+   \egroup
+   \popmacro\domatrixNC
+   \egroup
+   \mathmatrixright
+   \endgroup}
+
+%D \startbuffer
+%D \placeformula \startformula[-] \startmatrix
+%D \NC 1 \NC x \NC a \NR
+%D \NC 2 \NC y \NC b \NR
+%D \NC 3 \NC z \NC c \NR
+%D \stopmatrix \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \definemathmatrix[bmatrix][left={\left[\,},right={\,\right]}]
+%D
+%D \startbuffer
+%D \placeformula \startformula[-] \startbmatrix
+%D \NC 1 \NC x \NC a \NR
+%D \NC 2 \NC y \NC b \NR
+%D \NC 3 \NC z \NC c \NR
+%D \stopbmatrix \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D Taco added some code (dedicated to Aditya Mahajan) that gives more
+%D control over aligments:
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix
+%D    \NC a + x \NC = \NC a + d \NR
+%D    \NC y     \NC = \NC d     \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix [distance=3pt,align={right,left}]
+%D    \NC a + x \NC = a + d \NR
+%D    \NC y     \NC = d     \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix [left=\left(,right=\right)]
+%D    \NC a + x \NR
+%D    \NC y    \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D A bit more complex code:
+%D
+%D \startbuffer
+%D \startformula
+%D    \text{Let }{\cal R} = \bigcup_{P_{X_1},P_{X_2}}
+%D    \left\{ (R_1, R_2) :
+%D    \startmatrix[distance=1em,align={left,left,right}]
+%D      \NC R_1        \NC < I(X_1 ; Y \mid X_2)      \NC R_1       \NR
+%D      \NC \hfill Q_2 \NC < I(X_2 ; Y \mid X_1)      \NC R_2       \NR
+%D      \NC R_1 + R_2  \NC < I(X_1 ; Y)               \NC R_1 + R_2 \NR
+%D    \stopmatrix
+%D    \right\}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D \macros
+%D   {startmatrices}
+%D
+%D Just a handy keystroke safer:
+
+\unexpanded\def\startmatrices
+  {\begingroup
+   \setupmathmatrix}
+
+\unexpanded\def\stopmatrices
+  {\endgroup}
+
+%D \startbuffer
+%D \startformula
+%D   \startmatrix[left={\left(},right={\right)}]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D   =
+%D   \startmatrix[left={\left(},right={\right)},location=low]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D   =
+%D   \startmatrix[left={\left(},right={\right)},location=high]
+%D     \NC A \NC B \NR \NC C \NC D \NR
+%D   \stopmatrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \startformula
+%D   \startmatrices[left={\left(},right={\right)}]
+%D     \startmatrix
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D     =
+%D     \startmatrix[location=bottom]
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D     =
+%D     \startmatrix[location=top]
+%D       \NC A \NC B \NR \NC C \NC D \NR
+%D     \stopmatrix
+%D   \stopmatrices
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer  % does not run well: \getbuffer
+
+%D \macros
+%D   {startintertext}
+%D
+%D Preliminary feature:
+%D
+%D {\em example code}
+
+\unexpanded\def\startintertext#1\stopintertext
+  {\noalign{\dointertext{#1}}}
+
+\def\intertext#1%
+  {\noalign{\dointertext{#1}}}
+
+\unexpanded\def\dointertext#1%
+  {\penalty\postdisplaypenalty
+   \afterdisplayspace
+   \vbox{\forgetall\noindent#1\par}%
+   \penalty\predisplaypenalty
+   \beforedisplayspace}
+
+% %D \macros
+% %D   {substack}
+% %D
+% %D Preliminary code:
+% %D
+% %D \starttyping
+% %D \startformula
+% %D    \sum_{%
+% %D      \startsubstack
+% %D       i = 1 \NR
+% %D       i \neq n \NR
+% %D       i \neq m
+% %D       \stopsubstack
+% %D     }a_i
+% %D \stopformula
+% %D \stoptyping
+
+% \unexpanded\def\startsubstack
+%    {\begingroup
+%     \null
+%     \vcenter\bgroup
+%     \pushmacro\domatrixNC
+%     \let\stopmathmode\relax
+%     \def\NC{\domatrixNC}%
+%     \def\MC{\domatrixNC\startmathmode}%
+%     \global\let\domatrixNC\dodomatrixNC
+%     \def\NR
+%       {\stopmathmode
+%        \global\let\domatrixNC\dodomatrixNC
+%        \crcr\noalign{\nointerlineskip}}%
+%     \mathsurround\zeropoint
+%     \everycr\emptytoks
+%     \halign\bgroup\hfil$\scriptstyle\mathstrut##$\hfil\crcr}
+
+% \unexpanded\def\stopsubstack
+%    {\crcr
+%     \egroup
+%     \popmacro\domatrixNC
+%     \egroup
+%     \endgroup}
+
+%D \macros
+%D   {substack}
+%D
+%D Preliminary code:
+%D
+%D \startbuffer
+%D \startformula
+%D    \sum_{%
+%D      \startsubstack
+%D       i = 1 \NR
+%D       i \neq n \NR
+%D       i \neq m
+%D       \stopsubstack
+%D     }a_i
+%D \stopformula
+%D \stopbuffer
+%D
+%D \getbuffer which was typed as \typebuffer
+%D
+%D Notice that these macros give the correct spacing for
+%D subscripts. Compare for example
+%D
+%D \startbuffer
+%D \startformula
+%D \sum_{\startsubstack a \NR b \NR \stopsubstack}
+%D \text{ and }
+%D \sum_{\scriptstyle a \atop \scriptstyle}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer which gives \getbuffer
+
+\unexpanded\def\startsubstack
+  {\begingroup
+   \vcenter\bgroup
+   \baselineskip\mathstacktotal
+   \lineskip\mathstackvgap
+   \lineskiplimit\lineskip
+   \let\stopmathmode\relax
+   \def\NC{\domatrixNC}%
+   \def\MC{\domatrixNC\startmathmode}%
+   \global\let\domatrixNC\dodomatrixNC
+   \def\NR
+     {\stopmathmode
+      \global\let\domatrixNC\dodomatrixNC
+      \crcr}%
+   \mathsurround\zeropoint
+   \everycr\emptytoks
+   \halign\bgroup\hfil$\scriptstyle##$\hfil\crcr}
+
+\unexpanded\def\stopsubstack
+  {\crcr
+   \egroup
+   \egroup
+   \endgroup}
+
+%D \macros
+%D   {bordermatrix}
+%D
+%D In \PLAIN\ \TEX\ the width of a parenthesis is stored in
+%D the \DIMENSION\ \type{\mathparentwd}. This value is derived from
+%D the width of \type{\tenrm B}, so let's take care of it now:
+
+\ifx\mathparentwd\undefined \newdimen\mathparentwd \fi
+
+\let\normalbordermatrix\bordermatrix
+
+\def\bordermatrix
+  {\begingroup
+   \setbox\scratchbox\hbox{\mr\char"239C}%
+   \global\mathparentwd\wd\scratchbox\relax
+   \endgroup
+   \normalbordermatrix}
+
+% to be tested
+%
+% \def\bordermatrix
+%   {\begingroup\mr\global\mathparentwd\fontcharwd\font"239C\relax\endgroup
+%    \normalbordermatrix}
+
+%D \macros{overset, underset}
+%D
+%D The macros \type{\overset} and \type{\underset} are provided by
+%D \AMS\ packages in \LATEX. These macro allows you to place a symbol
+%D above or below another symbol, irrespective of whether the other
+%D symbol is a relation or something else, and without influencing the
+%D spacing.  For most cases there is a better way to do such things
+%D (declaring a math command with limop option, or using accents), but
+%D occasionally these macros can be useful, for example:
+%D
+%D \startbuffer
+%D \startformula
+%D \overset{*}{X} \underset{*}{X}
+%D \stopformula
+%D \stopbuffer
+%D \typebuffer \getbuffer
+%D
+%D Use these macros sparingly. Remember, \TEX\ was designed for
+%D mathematics, so there is usually a proper method for typesetting
+%D common math notation.
+
+%D These macros are a clearer version of \type{\binrel@} and
+%D \type{\binrel@@} macros in \AMSTEX\ packages.
+
+\def\preparebinrel#1%
+  {\begingroup
+   \setbox\scratchbox\hbox
+     {\thinmuskip   0mu
+      \medmuskip   -1mu
+      \thickmuskip -1mu
+      \setbox\scratchbox\hbox{$#1\mathsurround\zeropoint$}%
+      \kern-\wd\scratchbox
+      ${}#1{}\mathsurround\zeropoint$}%
+   \normalexpanded
+     {\endgroup
+      \let\noexpand\currentbinrel
+      \ifdim\wd\scratchbox<\zeropoint
+        \mathbin
+      \else\ifdim\wd\scratchbox>\zeropoint
+        \mathrel
+      \else
+        \relax
+      \fi\fi}}
+
+\unexpanded\def\overset#1#2%
+  {\preparebinrel{#2}%
+   \currentbinrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
+
+\unexpanded\def\underset#1#2%
+  {\preparebinrel{#2}%
+   \currentbinrel{\mathop{\kern\zeropoint#2}\limits_{#1}}}
+
+%D The following code comes from \type {math-str.mkiv}.
+
+%D Here we implement a basic math alignment mechanism. Numbers
+%D are also handled. The macros \type {\startinnermath} and
+%D \type {\stopinnermath} can be overloaded in specialized
+%D modules.
+
+\unexpanded\def\startinnermath
+  {\getvalue{\e!start\??fm\formulaparameter\c!align}}
+
+\unexpanded\def\stopinnermath
+  {\getvalue{\e!stop \??fm\formulaparameter\c!align}}
+
+\def\mathinnerstrut
+  {\doif{\formulaparameter\c!strut}\v!yes\strut}
+
+\long\unexpanded\def\defineinnermathhandler#1#2#3%
+  {\setvalue{\e!start\??fm#1}{#2}%
+   \setvalue{\e!stop \??fm#1}{#3}}
+
+\newif\iftracemath
+
+\def\mathhbox
+  {\iftracemath\ruledhbox\else\hbox\fi}
+
+\chardef\mathraggedstatus=0 % normal left center  right
+\chardef\mathnumberstatus=0 % nothing normal shift_right
+\let\mathnumbercorrection\!!zeropoint
+
+\unexpanded\def\startmathbox#1%
+  {\hsize\displaywidth
+   \global\chardef\mathnumberstatus\plusone
+   \chardef\mathraggedstatus#1\relax
+   \let\mathnumbercorrection\!!zeropoint
+   \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
+   \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
+   % added
+   \let\normalreqno\eqno
+   \let\normalleqno\leqno
+   % added
+   \doplaceformulanumber
+   \setbox\scratchbox\mathhbox to \displaywidth\bgroup
+     \mathinnerstrut
+     $%
+     \displaystyle
+     \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
+
+\def\llappedmathno
+  {\ifcase\mathraggedstatus\or
+     \@eqno
+   \or
+     \llap{\@eqno}%
+   \or
+     \llap{\@eqno}%
+   \fi}
+
+\def\rlappedmathno
+  {\ifcase\mathraggedstatus\or
+     \rlap{\@leqno}%
+   \or
+     \rlap{\@leqno}%
+   \or
+     \@leqno
+   \fi}
+
+\unexpanded\def\stopmathbox
+  {$%
+   \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
+   \egroup
+   \setbox0\hbox{\unhcopy\scratchbox}%
+   \scratchdimen\wd0
+   \ifdim\scratchdimen>\displaywidth
+     \donetrue
+   \else
+     \donefalse
+   \fi
+   \hbox to \displaywidth\bgroup
+     \ifcase\mathnumberstatus
+       \box\scratchbox
+     \or
+       \ifx\@leqno\empty
+         \ifx\@eqno\empty
+           \box\scratchbox
+         \else
+           \ifdone
+             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\llappedmathno}}%
+           \else
+             \hss\box\scratchbox\llappedmathno % hss makes room for number
+           \fi
+         \fi
+       \else
+         \ifdone
+           \vbox{\hbox to \displaywidth{\rlappedmathno\hss}\box\scratchbox}%
+         \else
+           \rlappedmathno\box\scratchbox\hss % hss makes room for number
+         \fi
+       \fi
+     \or
+        \hskip\mathnumbercorrection
+        \box\scratchbox
+        \hss
+     \else
+        \box\scratchbox
+     \fi
+   \egroup}
+
+\defineinnermathhandler\v!left      {\startmathbox\plusone  }{\stopmathbox}
+\defineinnermathhandler\v!middle    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!right     {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!flushleft {\startmathbox\plusthree}{\stopmathbox}
+\defineinnermathhandler\v!center    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!flushright{\startmathbox\plusone  }{\stopmathbox}
+
+%D [The examples below are in english and don't process in the
+%D  documentation style, which will be english some day.]
+%D
+%D Normally a formula is centered, but in case you want to
+%D align it left or right, you can set up formulas to behave
+%D that way. Normally a formula will adapt is left indentation
+%D to the environment:
+%D
+%D \startbuffer
+%D \fakewords{20}{40}\epar
+%D \startitemize
+%D \item \fakewords{20}{40}\epar
+%D       \placeformula \startformula \fakeformula \stopformula
+%D \item \fakewords{20}{40}\epar
+%D \stopitemize
+%D \fakewords{20}{40}\epar
+%D \stopbuffer
+%D
+%D % \getbuffer
+%D
+%D In the next examples we explicitly align formulas to the
+%D left (\type {\raggedleft}), center and right (\type
+%D {\raggedright}):
+%D
+%D \startbuffer
+%D \setupformulas[align=left]
+%D \startformula\fakeformula\stopformula
+%D \setupformulas[align=middle]
+%D \startformula\fakeformula\stopformula
+%D \setupformulas[align=right]
+%D \startformula\fakeformula\stopformula
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Or in print:
+%D
+%D % {\getbuffer}
+%D
+%D With formula numbers these formulas look as follows:
+%D
+%D \startbuffer
+%D \setupformulas[align=left]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \setupformulas[align=middle]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \setupformulas[align=right]
+%D \placeformula \startformula\fakeformula\stopformula
+%D \stopbuffer
+%D
+%D % {\getbuffer}
+%D
+%D This was keyed in as:
+%D
+%D \typebuffer
+%D
+%D When tracing is turned on (\type {\tracemathtrue}) you can
+%D visualize the bounding box of the formula,
+%D
+%D % {\tracemathtrue\getbuffer}
+%D
+%D As you can see, the dimensions are the natural ones, but if
+%D needed you can force a normalized line:
+%D
+%D \startbuffer
+%D \setupformulas[strut=yes]
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This time we get a more spacy result.
+%D
+%D % {\tracemathtrue\getbuffer}
+%D
+%D We will now show a couple of more settings and combinations
+%D of settings. In centered formulas, the number takes no space
+%D
+%D \startbuffer
+%D \setupformulas[align=middle]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D You can influence the placement of the whole box with the
+%D parameters \type {leftmargin} and \type {rightmargin}.
+%D
+%D \startbuffer
+%D \setupformulas[align=right,leftmargin=3em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D
+%D \setupformulas[align=left,rightmargin=1em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D You can also inherit the margin from the environment.
+%D
+%D \startbuffer
+%D \setupformulas[align=right,margin=standard]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D
+%D The distance between the formula and the number is only
+%D applied when the formula is left or right aligned.
+%D
+%D \startbuffer
+%D \setupformulas[align=left,distance=2em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer % {\tracemathtrue\getbuffer}
+
+\protect \endinput
+
+% \placeformula \startformula[-] \startmatrix
+% \NC 1 \NC x \NC a \NR
+% \NC 2 \NC y \NC b \NR
+% \NC 3 \NC z \NC c \NR
+% \stopmatrix \stopformula
+
+% \definemathmatrix[bordermatrix][left={\left[\,},right={\,\right]}]
+
+% \placeformula \startformula[-] \startbordermatrix
+% \NC 1 \NC x \NC a \NR
+% \NC 2 \NC y \NC b \NR
+% \NC 3 \NC z \NC c \NR
+% \stopbordermatrix \stopformula

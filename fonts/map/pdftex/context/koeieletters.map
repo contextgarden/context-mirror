@@ -1,0 +1,8 @@
+koeieletters koeieletters " koeielettersEnc ReEncodeFont " <koeieletters.enc <koeieletters.pfb
+koeieletters-contour koeieletters-contour " koeielettersEnc ReEncodeFont " <koeieletters.enc <koeieletters-contour.pfb
+koeien-ex koeieletters " koeielettersEnc-ex ReEncodeFont " <koeieletters-ex.enc <koeieletters.pfb
+koeien-sy koeieletters " koeielettersEnc-sy ReEncodeFont " <koeieletters-sy.enc <koeieletters.pfb
+koeien-mi koeieletters " koeielettersEnc-mi ReEncodeFont " <koeieletters-mi.enc <koeieletters.pfb
+koeielogos koeielogos " koeielogosEnc ReEncodeFont " <koeielogos.enc <koeielogos.pfb
+koeielogos-contour koeielogos-contour " koeielogosEnc ReEncodeFont " <koeielogos.enc <koeielogos-contour.pfb
+

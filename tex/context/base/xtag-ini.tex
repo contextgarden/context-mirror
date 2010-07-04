@@ -1,0 +1,2999 @@
+%D \module
+%D   [       file=xtag-ini,
+%D        version=2000.12.20,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt XML Macros / Initialization}
+
+%D Beware: don't rely on \longempty things, since this may
+%D change!
+
+%D This module is highly optimized for speed, which sometimes
+%D leads to rather unreadable code. Sorry for this.
+
+\bgroup \obeylines
+
+\gdef\startXMLdefinitions% keep %
+  {\bgroup\obeylines\dostartXMLdefinitions}
+
+\gdef\dostartXMLdefinitions #1
+  {\egroup\doifsomething{#1}{\writestatus{XML}{loading #1 support}}}
+
+\global\let\stopXMLdefinitions\relax
+
+\egroup
+
+% todo: XMLfullsave == also attributes
+% csnames
+% XMLelse -> elseXML
+
+%D Remark: some hard coded character things will be replaced
+%D by named glyphs as soon as the upgraded encoding modules
+%D are released. At that moment, unicode support will be
+%D provided in accordance with the normal support in \CONTEXT.
+
+%D Like it or not, this module deals with angle bracketed
+%D input. Processing \XML\ alike input in \CONTEXT\ has been
+%D possible since 1995, and till 2000 several methods ran in
+%D parallel. These were implemented in modules like the semi
+%D public \type {m-sgml}.
+%D
+%D There is not one optimal solution for processing \XML\ data.
+%D The oldest method was based on a very simple preprocessor
+%D written in \MODULA\ and later \PERL: \type {<command>} was
+%D converted into \type {\begSGML[command]} and optional
+%D parameters were passed.
+%D
+%D A second method uses a \PERL\ or \XSL\ transformation
+%D script that produces \CONTEXT\ commands. This method is
+%D much slower, mainly because the whole document is read into
+%D memory and a document tree is to be build. The advantage is
+%D that processing of the resulting document is fast.
+%D
+%D The third method uses a basic parser written in the \TEX\
+%D language, and apart from a few pitfalls, this method is
+%D clean and efficient, but not always robust. Because errors
+%D in the input are not catched on forehand, processing in
+%D \TEX\ may fail due to errors. But, given that a document
+%D can be validated on forehand, this is no big problem.
+%D
+%D Each method has its advantage, but especially the third
+%D method puts some demands on \CONTEXT, since no interference
+%D between the parser and the core commands may occur. What
+%D method is used, depends on the situation.
+%D
+%D All three methods introduce some problems in interfacing to
+%D core \CONTEXT\ functionality. This is due to the fact that
+%D sometimes we want to typeset content directly, while in
+%D other cases we just want to pick up data for later usage,
+%D either or not using delimited arguments. And, when moving
+%D data around, there is always the expansion problem to deal
+%D with.
+%D
+%D As can be expected, we have to map begin and end tags onto
+%D \CONTEXT's start- and stopcommands. This is the easy part.
+%D When we have to pass the content of an element to a macro
+%D as argument, we need to do a delimited grab. Such mappings
+%D are not that hard to implement and were part of \type
+%D {m-sgml.tex} already. New in this core module is nested
+%D grabbing. Also new here is the support for namespaces and
+%D extensive attribute handling. On the other hand, recursive
+%D traceback of attributes is no longer supported. Because
+%D this feature was not really used, we can hereby safely we
+%D declare the \type {m-sgml.tex} module obsolete.
+%D
+%D In order to be able to incorporate \XML\ style definitions
+%D into basic \TEX\ styles, we will provide some basic
+%D functionality in the core itself. Some of the functionality
+%D can be set up with this general command. We use a token
+%D list register to handle post||setup actions. This permits
+%D us to extend this command.
+
+\unprotect
+
+\newtoks\aftersetupXMLprocessing
+
+\def\setupXMLprocessing
+  {\dosingleargument\dosetupXMLprocessing}
+
+\def\dosetupXMLprocessing[#1]%
+  {\getparameters[\??xp][#1]\the\aftersetupXMLprocessing}
+
+\def\XMLprocessingparameter#1%
+  {\csname\??xp#1\endcsname}
+
+\protect
+
+%D Formally an \XML\ file starts with an unique sequence
+%D \type {<?xml}, but in most of the unilities that come with
+%D \CONTEXT\ we will be more tolerant, and gobble preceding
+%D spaces.
+
+\def\XMLbanner#1{\string<\string ?xml version='1.0' #1\string ?\string>}
+
+%D We will be dealing with elements, which means that we have
+%D to take care of \type {<this>} and \type {</that>}, but
+%D also with \type {<such/>} and \type {<so />}. In some cases
+%D the upper and lowercase alternatives need to be dealt with,
+%D although this is not realy needed since XML is case
+%D sensitive.
+%D
+%D We also have to handle entities, like \type {&you;} and
+%D \type {&me;}. These are quite easy to deal with and need to
+%D be hooked into the encoding and abbreviation mechanisms.
+%D
+%D And then there are the parameters to be taken care of. Here
+%D we meet \type {key="value"} but also \type {key='eulav'}
+%D and even the spacy \typ {key = "value"}.
+%D
+%D Since we have to handlers for each element and entity, we
+%D will create a few namespaces. Special care has to be
+%D given to preformated code.
+%D
+%D There are two namespace mechanisms in place: one for
+%D \TEX, and one for \XML. The later mechanism permits
+%D remapping and ignoring.
+
+\unprotect
+
+\def \@@XML            {XML:}
+\edef\@@XMLentity      {\@@XML ent} % &crap;
+\edef\@@XMLelement     {\@@XML ele} % <this> </this> <that/>
+\edef\@@XMLvariable    {\@@XML var} % key="val"
+\edef\@@XMLvalue       {\@@XML val} % key="val"
+\edef\@@XMLpars        {\@@XML par} %
+\edef\@@XMLdata        {\@@XML dat} % mem buffer
+\edef\@@XMLcode        {\@@XML cod} % named mem buffers
+\edef\@@XMLinstruction {\@@XML ins} % <?
+\edef\@@XMLmap         {\@@XML map} % mapping on context attr
+\edef\@@XMLlist        {\@@XML lst} %
+\edef\@@XMLnamespace   {\@@XML nam} % namespace:element
+\edef\@@XMLurlspace    {\@@XML url} %
+\edef\@@XMLescape      {\@@XML esc} % <!
+\edef\@@XMLdepth       {\@@XML dep} % used to track nesting
+\edef\@@XMLdopth       {\@@XML dop} % used to track nesting
+\edef\@@XMLsave        {\@@XML sav} % namespace for saved elements
+
+\iffalse % slightly faster
+
+\edef\@@XML            {*}
+\edef\@@XMLentity      {\@@XML a} % &crap;
+\edef\@@XMLelement     {\@@XML b} % <this> </this> <that/>
+\edef\@@XMLvariable    {\@@XML c} % key="val"
+\edef\@@XMLvalue       {\@@XML d} % key="val"
+\edef\@@XMLpars        {\@@XML e} %
+\edef\@@XMLdata        {\@@XML f} % mem buffer
+\edef\@@XMLcode        {\@@XML g} % named mem buffers
+\edef\@@XMLinstruction {\@@XML h} % <?
+\edef\@@XMLmap         {\@@XML i} % mapping on context attr
+\edef\@@XMLlist        {\@@XML j} %
+\edef\@@XMLnamespace   {\@@XML k} % namespace:element
+\edef\@@XMLurlspace    {\@@XML l} %
+\edef\@@XMLescape      {\@@XML m} % <!
+\edef\@@XMLdepth       {\@@XML n} % used to track nesting
+\edef\@@XMLdopth       {\@@XML o} % used to track nesting
+\edef\@@XMLsave        {\@@XML p} % namespace for saved elements
+
+\fi
+
+\let\normal@@XMLelement\@@XMLelement % we may overload this one later inside a group
+
+\newtoks\XMLtoks
+\newtoks\XMLresetlist
+
+\newif\ifignoreXMLspaces
+\newif\iffixedXMLfont
+\newif\iftraceXMLelements
+%newif\ifprocessingXML
+
+\newcount\XMLlevel % scratchcounter
+\newcount\XMLdepth % used here
+
+\newtoks\everyenableXML
+
+%D We will implement the parser by making a few characters
+%D active. For that reason we also have to save their
+%D original meaning.
+
+%D \macros
+%D   {enableXML}
+%D
+%D The macro \type {\enableXML} will be used to turn on the
+%D parser. This means that after that, \TEX\ commands starting
+%D with a backslash will not longer be read as such. There is
+%D a way around this, but for convenience \TEXEXEC\ will take
+%D care of processing raw \XML\ files in a transparant way.
+
+% cmr -- best for tui and such
+%
+% \chardef\XMLtokensreduction\zerocount
+%
+% lmr -- best but problematic for tui file:
+
+\chardef\XMLtokensreduction\plustwo
+
+% \def\alwaysreduceXMLtokens   {\XMLtokensreduction\plusone}
+% \def\permanentreduceXMLtokens{\XMLtokensreduction\plustwo}
+
+% part of this should move to a low level module
+
+% we predefine some macros, just to satisfy the dep parser
+
+\let\enableXMLexpansion     \relax
+\let\disableXMLexpansion    \relax
+\let\enableXML              \relax
+\let\activateXMLescapetokens\relax
+\let\entitleXMLescapetokens \relax
+\let\reduceXMLescapetokens  \relax
+\let\ignoreXMLescapetokens  \relax
+\let\enableXMLelements      \relax
+\let\disableXMLelements     \relax
+
+% \bgroup
+% \catcode`\*=\@@comment
+% \catcode`\.=\@@escape
+% .catcode`.B=.@@begingroup
+% .catcode`.E=.@@endgroup
+% .catcode`.P=.@@parameter
+%
+% .catcode`.&=.@@active
+% .catcode`.<=.@@active
+%
+% .catcode`.#=.@@active
+% .catcode`.$=.@@active
+% .catcode`.%=.@@active
+% .catcode`.\=.@@active
+% .catcode`.^=.@@active
+% .catcode`._=.@@active
+% .catcode`.{=.@@active
+% .catcode`.}=.@@active
+% .catcode`.|=.@@active
+% .catcode`.~=.@@active
+%
+% .gdef.enableXMLexpansion
+%   B.def<B.doXMLelementE.let&=.doXMLentityE
+%
+% .gdef.disableXMLexpansion
+%   B.unexpanded.def<B.doXMLelementE.let&=.doXMLentityE
+%
+% * internally the # becomes two #'s (before expanding, during
+% * the parsing stage) which is why we let the first # gobble
+% * the second one
+% *
+% * since this only takes place when reading arguments, as in
+% * \startXMLdata ... cum, suis, we can take place of it
+% * there; this is needed because reading from file goes wrong
+% * (eating up argument)
+%
+% .unexpanded.gdef.enableXML
+%   B.catcode`.!=.@@other
+%    .catcode`.?=.@@other
+%    .catcode`.:=.@@other * active in french
+%    .catcode`.;=.@@other * active in french
+%    .catcode`.&=.@@active
+%    .catcode`.<=.@@active
+%    .catcode`.>=.@@other
+%    .catcode`."=.@@other
+%    .catcode`./=.@@other
+%    .catcode`.'=.@@other
+%    .catcode`.~=.@@other
+%    .catcode`.#=.@@other
+%    .let           &=.doXMLentity
+%    .unexpanded.def<B.doXMLelementE*
+%    .ifcase.XMLtokensreduction
+%      .entitleXMLescapetokens
+%    .or
+%      .reduceXMLescapetokens
+%    .else
+%      .ignoreXMLescapetokens
+%    .fi
+%    .processingXMLtrue
+%    .the.everyenableXML
+%   E
+%
+% .gdef.activateXMLescapetokens
+%   B.catcode`.$=.@@active
+%    .catcode`.%=.@@active
+%    .catcode`.\=.@@active
+%    .catcode`.^=.@@active
+%    .catcode`._=.@@active
+%    .catcode`.{=.@@active
+%    .catcode`.}=.@@active
+%    .catcode`.|=.@@active
+%   E
+%
+% .xdef.entitleXMLescapetokens
+%   B.noexpand.activateXMLescapetokens
+%    .noexpand.def.noexpand#B.noexpand&.string#035;E*
+%    .noexpand.def.noexpand$B.noexpand&.string#036;E*
+%    .noexpand.def.noexpand%B.noexpand&.string#037;E*
+%    .noexpand.def.noexpand\B.noexpand&.string#092;E*
+%    .noexpand.def.noexpand^B.noexpand&.string#094;E*
+%    .noexpand.def.noexpand_B.noexpand&.string#095;E*
+%    .noexpand.def.noexpand{B.noexpand&.string#123;E*
+%    .noexpand.def.noexpand}B.noexpand&.string#125;E*
+%    .noexpand.def.noexpand|B.noexpand&.string#124;E*
+%   E
+%
+% .gdef.reduceXMLescapetokens
+%   B.activateXMLescapetokens
+%    .def#B.string#E*
+%    .def$B.string$E*
+%    .def%B.string%E*
+%    .def\B.string\E*
+%    .def^B.string^E*
+%    .def_B.string_E*
+%    .def{B.string{E*
+%    .def}B.string}E*
+%    .def|B.string|E*
+%   E
+%
+% .gdef.ignoreXMLescapetokens
+%   B.catcode`.$=.@@other
+%    .catcode`.%=.@@other
+%    .catcode`.\=.@@other
+%    .catcode`.^=.@@other
+%    .catcode`._=.@@other
+%    .catcode`.{=.@@other
+%    .catcode`.}=.@@other
+%    .catcode`.|=.@@other
+%   E
+%
+% * The following macro can be invokes when reading from
+% * an auxiliary file.
+%
+% .unexpanded.gdef.enableXMLelements
+%   B.catcode60=.@@active * .catcode`.<=.@@active
+%    .catcode62=.@@other  * .catcode`.>=.@@other
+%    .unexpanded.def<B.doXMLelementE*
+%    .processingXMLtrue
+%   E
+%
+% .unexpanded.gdef.disableXMLelements
+%   B.catcode60=.@@active * .catcode`.<=.@@active
+%    .catcode62=.@@other  * .catcode`.>=.@@other
+%    .let<.relax * new
+%    .processingXMLfalse
+%   E
+%
+% .global.let<.relax * new
+% .global.let&.relax * new
+%
+% .egroup
+%
+% \def\disableXML
+%   {\setnormalcatcodes\processingXMLfalse}
+
+\defcatcodecommand\xmlcatcodese `\& \doXMLentity
+\defcatcodecommand\xmlcatcodese `\< \doXMLelement
+\defcatcodecommand\xmlcatcodesr `\& \doXMLentity
+\defcatcodecommand\xmlcatcodesr `\< \doXMLelement
+\defcatcodecommand\xmlcatcodesn `\& \doXMLentity
+\defcatcodecommand\xmlcatcodesn `\< \doXMLelement
+
+\letcatcodecommand\xmlcatcodesr `\# \letterhash
+\letcatcodecommand\xmlcatcodesr `\$ \letterdollar
+\letcatcodecommand\xmlcatcodesr `\% \letterpercent
+\letcatcodecommand\xmlcatcodesr `\\ \letterbackslash
+\letcatcodecommand\xmlcatcodesr `\^ \letterhat
+\letcatcodecommand\xmlcatcodesr `\_ \letterunderscore
+\letcatcodecommand\xmlcatcodesr `\{ \letterleftbrace
+\letcatcodecommand\xmlcatcodesr `\} \letterrightbrace
+\letcatcodecommand\xmlcatcodesr `\| \letterbar
+
+\bgroup \catcode`\&=13 \let&\relax
+
+\xdef\entityhash      {&\string#035;}
+\xdef\entitydollar    {&\string#036;}
+\xdef\entitypercent   {&\string#037;}
+\xdef\entitybackslash {&\string#092;}
+\xdef\entityhat       {&\string#094;}
+\xdef\entityunderscore{&\string#095;}
+\xdef\entityleftbrace {&\string#123;}
+\xdef\entityrightbrace{&\string#125;}
+\xdef\entitybar       {&\string#124;}
+
+\egroup
+
+\letcatcodecommand\xmlcatcodese `\# \entityhash
+\letcatcodecommand\xmlcatcodese `\$ \entitydollar
+\letcatcodecommand\xmlcatcodese `\% \entitypercent
+\letcatcodecommand\xmlcatcodese `\\ \entitybackslash
+\letcatcodecommand\xmlcatcodese `\^ \entityhat
+\letcatcodecommand\xmlcatcodese `\_ \entityunderscore
+\letcatcodecommand\xmlcatcodese `\{ \entityleftbrace
+\letcatcodecommand\xmlcatcodese `\} \entityrightbrace
+\letcatcodecommand\xmlcatcodese `\| \entitybar
+
+% we speed things up by explicitly setting the active char's < &
+
+\doifmodeelse {mkiv} {
+
+    \def\mksetXMLtokensreduction % mkiv
+      {\setcatcodetable\xmlcatcodesn}
+
+} {
+
+    \def\mksetXMLtokensreduction % mkii
+      {\ifcase\XMLtokensreduction
+         \setcatcodetable\xmlcatcodese \or
+         \setcatcodetable\xmlcatcodesr \else
+         \setcatcodetable\xmlcatcodesn
+       \fi}
+
+}
+
+\bgroup \catcode`\<=13 \catcode`\&=13
+
+\gdef\enableXML
+  {\mksetXMLtokensreduction
+   \let&\doXMLentity
+   \unexpanded\def<{\doXMLelement}%
+   \processingXMLtrue
+   \the\everyenableXML}
+
+\gdef\disableXML
+  {\setcatcodetable\ctxcatcodes % maybe \texcatcodes
+   \processingXMLfalse}
+
+\gdef\enableXMLexpansion
+  {\def<{\doXMLelement}%
+   \let&\doXMLentity}
+
+\gdef\disableXMLexpansion
+  {\unexpanded\def<{\doXMLelement}%
+   \let&\doXMLentity}
+
+\unexpanded\gdef\enableXMLelements
+  {\catcode60=\@@active
+   \catcode62=\@@other
+   \unexpanded\def<{\doXMLelement}%
+   \processingXMLtrue}
+
+\unexpanded\gdef\disableXMLelements
+  {\catcode60=\@@active
+   \catcode62=\@@other
+   \let<\relax
+   \processingXMLfalse}
+
+\global\let<\relax
+\global\let&\relax
+
+\egroup
+
+%D An element can be singular or paired. A singular element is
+%D called an empty element. The following definitions are
+%D equivalent:
+%D
+%D \starttyping
+%D <eerste></eerste>  <eerste/>  <eerste />
+%D \stoptyping
+%D
+%D Empty elements can have arguments too. Conforming the
+%D standard, each key must have a value. These are separated
+%D by an \type {=} sign and the value is delimited by either
+%D \type {"} or \type {'}. There may be spaces around the
+%D equal sign.
+%D
+%D \starttyping
+%D <eerste a= "b" c ="d" />  <eerste a = "b" c="d"/>
+%D \stoptyping
+%D
+%D Officially the following definition is not valid:
+%D
+%D \starttyping
+%D <eerste>some text</eerste>  <eerste/>  <eerste />
+%D \stoptyping
+%D
+%D Although we can handle both cases independently, this is
+%D seldom needed.
+%D
+%D Processing instructions are identified by a~\type {?} and are
+%D like empty elements.
+%D
+%D \starttyping
+%D <?doel a="b" c="d"?> <?doel a="b" c="d" ?>
+%D \stoptyping
+%D
+%D Comment is formatted as follows.
+%D
+%D \starttyping
+%D <!-- comment -->
+%D \stoptyping
+%D
+%D Verbatim code inits purest form is called \type {CDATA} and
+%D is embedded in the following ugly and therefore recognizable
+%D way:
+%D
+%D \starttyping
+%D <![CDATA[
+%D Dit is nogal verbatim !
+%D Dit is nogal verbatim !
+%D Dit is nogal verbatim !
+%D ]]>
+%D \stoptyping
+
+%D The parser is implemented as a multi||step macro. Because
+%D \type {!} and \type {?} should be picked up correctly, we
+%D need to define a few macros in unprotected mode!
+%D
+%D Because \XML\ is defined with some restrictions in mind,
+%D parsing the elements is not that complicated. First we have
+%D to determine if we're dealing with a comment or processing
+%D instruction. We need a bit of grouping because we have to
+%D mess up with catcodes. We probably have to treat a few
+%D more catcode and first character cases. We need to use
+%D \type {\begingroup} here, otherwise we get funny spaces in
+%D math.
+
+%D Maybe I will remove grouping here and introduce \type
+%D {\obeyXMLlines}.
+
+%D By using a few {\expandafter}'s we can avoid a \type {\next}
+%D construction. We could speed the first char test up a bit
+%D by using an installer and something \typ {\getvalue
+%D {#1doXMLelement}} (todo).
+
+\protect % we need an normal ! ?
+
+% \long\def\doXMLelement#1%
+%   {\if#1!\expandafter                         \xparseXMLescape  \else
+%    \if#1?\expandafter\expandafter\expandafter \xparseXMLprocess \else
+%          \expandafter\expandafter\expandafter \xparseXMLelement  \fi\fi
+%    #1}
+
+\def\expandthree{\expandafter\expandafter\expandafter}
+
+\long\def\doXMLelement#1%
+  {\if#1!\expandafter \xparseXMLescape  \else
+   \if#1?\expandthree \xparseXMLprocess \else
+         \expandthree \xparseXMLelement \fi\fi
+   #1}
+
+% does it end with ? or ?>
+
+\long\def\xparseXMLescape  !#1    {\parseXMLescape{#1}}
+\long\def\xparseXMLprocess ?#1 #2>{\parseXMLprocess{#1}{#2}}
+\long\def\xparseXMLelement     #1>{\parseXMLelement #1 >}
+
+%D The escape handler takes care of the fuzzy \type {<!}
+%D constructs. Unfortunately, we need to catch \type {<--text}
+%D too, so we need another handler:
+
+\long\def\xparseXMLescape !#1#2%
+  {\if#1-%
+     \if#2-%
+       \expandafter\expandafter\expandafter\xxparseXMLescape
+     \else
+       \expandafter\expandafter\expandafter\xyparseXMLescape
+     \fi
+   \else
+     \if#1[%
+       \expandafter\expandafter\expandafter\xzparseXMLescape
+     \else
+       \expandafter\expandafter\expandafter\xyparseXMLescape
+     \fi
+   \fi#1#2}
+
+\long\def\xxparseXMLescape--#1{\parseXMLescape{--}#1}
+\long\def\xyparseXMLescape#1  {\parseXMLescape{#1}}
+\long\def\xzparseXMLescape[#1[{\parseXMLescape{#1}}
+
+%D Now the real work can begin.
+
+\unprotect
+
+\def\defineXMLescape[#1]#2%
+  {\unspaceargument#1\to\ascii % get rid of {}, like in {CDATA[}
+   \long\setvalue{\@@XMLescape:\ascii}{#2}}
+
+\def\parseXMLescape#1% #2> parsing takes place in macros
+  {\executeifdefined{\@@XMLescape:#1}{\csname\@@XMLescape:\s!default\endcsname}}
+
+%D In our case, processing instructions are only needed if
+%D we want specific \CONTEXT\ support. This may be useful in
+%D applications where the data is generated by an
+%D application. We will implement a \CONTEXT\ code handler
+%D later.
+
+%D The processing instructions handler is implemented as
+%D follows.
+
+\long\def\defineXMLprocessor[#1]#2%
+  {\long\setvalue{\@@XMLinstruction:#1}{#2}}
+
+% \def\parseXMLprocess#1#2%
+%   {\executeifdefined{\@@XMLinstruction:#1}\gobbleoneargument{#2}}
+
+%D Because we support \type {.. ?>} as well as \type {.. >}
+%D end||of||pi situations, we need to clean up the ending
+%D \type {?}.
+
+\protect
+
+\long\def\cleanupXMLprocess#1%
+  {\docleanupXMLprocess#1 ? \relax}
+
+\long\def\docleanupXMLprocess#1? #2\relax
+  {\def\currentXMLprocess{#1}}
+
+\unprotect
+
+\def\parseXMLprocess#1#2%
+  {\cleanupXMLprocess{#2}%
+   \defconvertedcommand\ascii{#1}%
+  %\writestatus{xml-process}{\ascii}
+   \expanded
+     {\executeifdefined
+        {\@@XMLinstruction:\ascii}
+        \noexpand\gobbleoneargument
+        {\expandafter\noexpand\currentXMLprocess}}}
+
+%D One never knows:
+
+\let\normalparseXMLescape \parseXMLescape
+\let\normalparseXMLelement\parseXMLelement
+\let\normalparseXMLprocess\parseXMLprocess
+
+%D Next we will implement the normal element handler. This
+%D piece of code is complicated by the fact that we need to
+%D handle namespaces.
+
+\let\currentXMLarguments \empty
+\let\currentXMLelement   \empty % name
+\let\currentXMLidentifier\empty % name or name/
+\let\currentXMLnamespace \empty % the (remapped) namespace
+\let\originalXMLnamespace\empty % the unremapped namespace
+\let\rawXMLidentifier    \empty
+
+\def\rawXMLnamespace
+  {\ifx\currentXMLnamespace\empty\else\currentXMLnamespace:\fi}
+
+\def\rawXMLelement{\rawXMLnamespace\rawXMLidentifier}
+
+%D The following token list register provided the user a hook
+%D for extensions.
+
+\newtoks\everyXMLelement
+
+%D We try to keep track of the nature of an element. This
+%D flag can be used for special purposes (as in the pretty
+%D printing macros).
+
+\chardef\kindofXMLelement=0
+
+\chardef\beginXMLtag=1
+\chardef\endXMLtag  =2
+\chardef\emptyXMLtag=3
+
+%D We do a rather hard coded scan for the namespace attribute. This
+%D is needed because its value determines further namespace related
+%D actions.
+
+\def\openXMLargument{ /}
+
+\long\def\parseXMLelement#1#2 #3>%
+  {\def\currentXMLarguments{#3}% including end /
+   \if#1/%
+     \chardef\kindofXMLelement\endXMLtag
+     \def\currentXMLelement{#2}%
+   \else
+     \docleanupXMLelement#1#2/\empty\relax
+   \fi
+   \ifx\currentXMLarguments\openXMLargument
+     \chardef\kindofXMLelement\emptyXMLtag
+   \fi
+   \@EA\splitoffXMLnamespace\currentXMLelement::\relax
+   \ifcase\kindofXMLelement
+     % can't happen
+   \or
+     % begintag or emptytag with arguments or space before /
+     \the\everyXMLelement % only for begin/empty tag !
+     \ifx\currentXMLarguments\empty \else
+       \dogetXMLarguments\rawXMLelement#3>%
+     \fi
+   \or
+     % no arguments
+   \or
+     % empty element without arguments (but possible presets)
+     \the\everyXMLelement
+   \fi
+   \ifcase\kindofXMLelement\or
+     \let \currentXMLidentifier      \rawXMLidentifier
+     \edef\currentXMLfullidentifier {\rawXMLelement    }%
+   \or
+     \edef\currentXMLidentifier    {/\rawXMLidentifier }%
+     \edef\currentXMLfullidentifier{/\rawXMLelement    }%
+   \or
+     \edef\currentXMLidentifier     {\rawXMLidentifier/}%
+     \edef\currentXMLfullidentifier {\rawXMLelement   /}%
+   \fi
+   \iftraceXMLelements\traceXMLelement\fi
+   \executeXMLelement}
+
+\long\def\docleanupXMLelement#1/#2#3\relax
+  {\def\currentXMLelement{#1}% watch out: \empty == begin or empty tag
+   \chardef\kindofXMLelement\ifx#2\empty\beginXMLtag\else\emptyXMLtag\fi}
+
+\def\@@traceXMLelement
+  {\originalXMLfullidentifier
+   \ifx\originalXMLfullidentifier\currentXMLfullidentifier\else
+     \space=>\space\currentXMLfullidentifier
+   \fi
+   \ifx\currentXMLarguments\empty\else
+     \space\string|\space\currentXMLarguments
+   \fi}
+
+\long\def\traceXMLelement
+  {\edef\originalXMLfullidentifier{\someXMLelementID\currentXMLelement}%
+   \cleanupXMLarguments\writestatus{xml-element}{\@@traceXMLelement}}
+
+%D We split off the namespace part, construct the
+%D identifier, and remap the namespace if needed.
+
+\def\splitoffXMLnamespace#1:#2:#3\relax
+  {\def\rawXMLidentifier{#2}%
+   \ifx\rawXMLidentifier\empty
+     \let\currentXMLnamespace\empty
+     \edef\rawXMLidentifier{#1}%
+   \else
+     \edef\currentXMLnamespace{#1}%
+   \fi
+   \let\originalXMLnamespace\currentXMLnamespace
+   \checkXMLnamespace\rawXMLidentifier}
+
+\def\xsplitoffXMLnamespace% fast resplit
+  {\ifcsname\@@XMLnamespace:\currentXMLnamespace\endcsname
+     \csname\@@XMLnamespace:\currentXMLnamespace\endcsname
+   \fi}
+
+%D We will implement this macro later.
+
+\let\checkXMLnamespace\gobbleoneargument % see below
+
+%D The namespace attribute checking is part of the element
+%D parser, since the value of \type {xmlns} may influence other
+%D namespace mapping.
+
+\def\@@XMLns{xmlns}
+
+\def\checkXMLnamespaceattr#1% xmlns:\@@XMLname="\XMLns"
+  {\edef\XMLns{#1}%
+   \ifx\XMLns\empty \else
+     \ifcsname\@@XMLurlspace:\XMLns\endcsname
+       % get remapped namespace (from url)
+       % \edef\XMLns{\csname\@@XMLurlspace:\XMLns\endcsname}%
+       \@EA\let\@EA\XMLns\csname\@@XMLurlspace:\XMLns\endcsname
+       % remap this one
+       \ifx\@@XMLname\empty
+         % not watertight since no implicit grouping
+         \xautoXMLnamespace\XMLns
+       \else
+         \xremapXMLnamespace\@@XMLname\XMLns
+         % redo namespace remapping of self if needed
+         \ifx\XMLns\currentXMLnamespace
+           % i'm still not sure if this is ok
+         \else
+           \xsplitoffXMLnamespace
+         \fi
+       \fi
+     \fi
+   \fi}
+
+%D Although not really needed, we clean up the arguments.
+
+% \long\def\cleanupXMLarguments
+%   {\ifnum\kindofXMLelement=\emptyXMLtag
+%      \ifx\currentXMLarguments\empty \else
+%        \@EA\docleanupXMLarguments\currentXMLarguments/\empty
+%      \fi
+%    \fi}
+%
+% \long\def\docleanupXMLarguments#1/#2\empty
+%   {\edef\currentXMLarguments{#1}}
+%
+% we  need to be ...="/" .... /> safe
+
+\long\def\cleanupXMLarguments
+  {\ifnum\kindofXMLelement=\emptyXMLtag
+     \ifx\currentXMLarguments\empty \else
+       \@EA\docleanupXMLarguments\currentXMLarguments/ \relax
+     \fi
+   \else\ifnum\kindofXMLelement=\beginXMLtag
+     \ifx\currentXMLarguments\space
+       \let\currentXMLarguments\empty
+     \fi
+   \fi\fi}
+
+% \long\def\docleanupXMLarguments#1/ #2\relax % space added earlier
+%   {\edef\currentXMLarguments{#1}}
+%
+% \startbuffer
+% <xsl:value-of select="map[@att=$variable]/@att2"/>
+% \stopbuffer
+%
+% \showXMLbuffer
+%
+% No \type {\edef} in the following, else \showXMLbuffer fails:
+
+\long\def\docleanupXMLarguments#1/ #2\relax % space added earlier
+  {\def\currentXMLarguments{#1}} % no \edef, goes wrong in \showXML
+
+\def\executeXMLelementA % no fallback
+  {\ifcsname\@@XMLelement:\currentXMLfullidentifier\endcsname
+     \csname\@@XMLelement:\currentXMLfullidentifier\endcsname
+   \fi}
+
+\def\executeXMLelementB % default fallback
+  {\csname \@@XMLelement:%
+     \ifcsname\@@XMLelement:\currentXMLfullidentifier\endcsname
+       \currentXMLfullidentifier
+     \else
+       \defaultXMLelementID % was \s!default
+     \fi
+   \endcsname}
+
+\def\executeXMLelementC % no namespace of default fallback
+  {\csname \@@XMLelement:%
+     \ifcsname\@@XMLelement:\currentXMLfullidentifier\endcsname
+       \currentXMLfullidentifier
+     \else\ifcsname\@@XMLelement:\currentXMLidentifier\endcsname
+       \currentXMLidentifier
+     \else
+       \defaultXMLelementID % was \s!default
+     \fi\fi
+   \endcsname}
+
+\def\executeXMLelementD
+  {\csname
+     \ifcsname\@@XMLelement:\currentXMLfullidentifier\endcsname
+       \@@XMLelement:\currentXMLfullidentifier
+     \else\ifcsname\@@XMLelement:\currentXMLidentifier\endcsname
+       \@@XMLelement:\currentXMLidentifier
+     \else
+       \executeXMLelementDD % less skipping and thereby faster
+     \fi\fi
+   \endcsname}
+
+\def\executeXMLelementDD % now forget about tex mapping
+  {\ifcsname\normal@@XMLelement:\currentXMLfullidentifier\endcsname
+     \normal@@XMLelement:\currentXMLfullidentifier
+   \else\ifcsname\normal@@XMLelement:\currentXMLidentifier\endcsname
+     \normal@@XMLelement:\currentXMLidentifier
+   \else
+     \normal@@XMLelement:\defaultXMLelementID % was \@@XMLelement:\s!default
+   \fi\fi}
+
+\def\setXMLfallbackmode#1%
+  {\ifcase#1\relax
+     \let\executeXMLelement   \executeXMLelementA
+     \let\automateXMLnamespace\automateXMLnamespaceA
+   \or % 1
+     \let\executeXMLelement   \executeXMLelementB
+     \let\automateXMLnamespace\automateXMLnamespaceB
+   \or % 2
+     \let\executeXMLelement   \executeXMLelementC
+     \let\automateXMLnamespace\automateXMLnamespaceC
+   \or % 3
+     \let\executeXMLelement   \executeXMLelementD
+     \let\automateXMLnamespace\automateXMLnamespaceD
+   \fi}
+
+\setXMLfallbackmode3 % was 2
+
+%D An example of fall back modes is given below.
+
+%D The automated namespace stuff is new and yet undocumented
+%D (see resource libraries for usage).
+
+\def\xautoXMLnamespace#1% fast internal one
+  {\ifcsname\@@XMLnamespace-#1\endcsname\else
+     \@EA\appendtoks\csname\@@XMLnamespace-#1\endcsname\to\autoXMLnamespaces
+   \fi
+   \@EA\edef\csname\@@XMLnamespace-#1\endcsname
+     {\noexpand\edef\noexpand\@axmlns@{#1}% quicker #1 -> \#1
+      \noexpand\doautoXMLnamespace\noexpand\@axmlns@}}
+
+\def\doautoXMLnamespace#1% \done is set before list
+  {\ifdone\else\automateXMLnamespace#1\fi}
+
+\def\automateXMLnamespaceA#1%
+  {\ifcsname\@@XMLelement:#1:\checkedXMLnamespace\endcsname
+     \let\currentXMLnamespace#1%
+   \else\ifcsname\@@XMLelement:#1:\checkedXMLnamespace/\endcsname
+     \let\currentXMLnamespace#1%
+   \fi\fi}
+
+\let\automateXMLnamespaceB\automateXMLnamespaceA
+\let\automateXMLnamespaceC\automateXMLnamespaceA
+
+\def\automateXMLnamespaceD#1%
+  {\ifcsname\@@XMLelement:#1:\checkedXMLnamespace\endcsname
+     \let\currentXMLnamespace#1%
+   \else\ifcsname\normal@@XMLelement:#1:\checkedXMLnamespace\endcsname
+     \let\currentXMLnamespace#1%
+   \else
+     \automateXMLnamespaceDD#1%
+   \fi\fi}
+
+\def\automateXMLnamespaceDD#1%
+  {\ifcsname\@@XMLelement:#1:\checkedXMLnamespace/\endcsname
+     \let\currentXMLnamespace#1%
+   \else\ifcsname\normal@@XMLelement:#1:\checkedXMLnamespace/\endcsname
+     \let\currentXMLnamespace#1%
+   \fi\fi}
+
+%D Later we will implement the error handler, here we handle
+%D the default case.
+
+\def\someXMLelementID#1%
+  {\ifnum\kindofXMLelement=\endXMLtag  /\fi
+   #1%
+   \ifnum\kindofXMLelement=\emptyXMLtag/\fi}
+
+\def\defaultXMLelementID
+  {\someXMLelementID\s!default}
+
+%D It is possible to keep track of nesting automatically,
+%D but this would kind of prohibit things like \type
+%D {\ignorespaces}. In the future we may provide an
+%D automatic depth tracking as an alternative (exclusive)
+%D mode of operation combined with space grabbing.
+
+\def\beginXMLelement
+  {\global\advance\XMLdepth\plusone
+   \global\@EA\let\csname\@@XMLdepth:\the\XMLdepth\endcsname\currentXMLelement
+   }%\writestatus{XML TRACE}{[begin] [\the\XMLdepth] [\XMLself]}}
+
+\def\endXMLelement
+  {%\writestatus{XML TRACE}{[end] [\the\XMLdepth] [\XMLself]}%
+   \global\@EA\let\csname\@@XMLdepth:\the\XMLdepth\endcsname\undefined
+   \global\advance\XMLdepth\minusone}
+
+% 0 = nothing
+% 1 = unknown
+% 2 = current element
+
+\chardef\XMLancestormode=2 % never change this one globally
+
+% \def\XMLancestor#1%
+%   {\ifnum\numexpr(\XMLdepth-#1)>0
+%      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+%    \else
+%      \ifcase\XMLancestormode\or\s!unknown\or\currentXMLelement\fi
+%    \fi}
+
+\def\XMLancestor#1%
+  {\ifnum\numexpr\XMLdepth-#1\relax>\zerocount
+     \csname\@@XMLdepth:\the\numexpr\XMLdepth-#1\relax\endcsname
+   \else
+     \ifcase\XMLancestormode\or\s!unknown\or\currentXMLelement\fi
+   \fi}
+
+% \def\XMLpureancestor#1%
+%   {\ifnum\numexpr(\XMLdepth-#1)>0
+%      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+%    \fi}
+
+\def\XMLpureancestor#1%
+  {\ifcase\numexpr\XMLdepth-#1\relax\or
+     \csname\@@XMLdepth:\the\numexpr\XMLdepth-#1\relax\endcsname
+   \fi}
+
+\def\XMLparent    {\XMLancestor    \plusone  }
+\def\XMLself      {\XMLancestor    \zerocount}
+\def\XMLpureparent{\XMLpureancestor\plusone  }
+\def\XMLpureself  {\XMLpureancestor\zerocount}
+
+% \def\XMLpureancestor#1%
+%   {\csname
+%      \ifnum\numexpr(\XMLdepth-#1)>\zerocount
+%        \@@XMLdepth:\the\numexpr(\XMLdepth-#1)%
+%      \else
+%        \s!empty
+%      \fi
+%    \endcsname}
+
+\def\XMLpureparent
+  {\XMLpureancestor\plusone}
+
+% probleem: depth is vast en dus ook ancestor
+
+% \XMLinh{...} will backtrack definitions (given that the elements
+% use begin/end, the backtracking stops when a non-empty value is
+% encountered; maybe we will add some keyword (inherit) some day
+
+\def\XMLinhpar#1#2%
+  {\@EA\ifx\csname\@@XMLvariable:#1:#2\endcsname\empty
+     \@EA\pXMLinh
+   \else
+     \csname\@@XMLvariable:#1:#2\endcsname
+     \@EA\gobbletwoarguments
+   \fi\XMLdepth{#2}}
+
+\def\XMLinh
+  {\XMLinhpar\currentXMLelement}
+
+% \def\pXMLinh#1%
+%   {\@EA\ppXMLinh\@EA{\the\numexpr(#1-\plusone)}}
+
+\def\pXMLinh#1%
+  {\@EA\ppXMLinh\@EA{\the\numexpr#1-\plusone\relax}}
+
+\def\ppXMLinh#1#2%
+  {\@EA\ifx\csname\@@XMLvariable:#1:#2\endcsname\empty
+     \ifnum#1>\plusone
+       \@EAEAEA\pXMLinh
+     \else
+       \@EAEAEA\gobbletwoarguments
+     \fi
+   \else
+     \csname\@@XMLvariable:#1:#2\endcsname
+     \@EA\gobbletwoarguments
+   \fi{#1}{#2}}
+
+% better
+%
+% \def\XMLpureancestor#1%
+%   {\ifcsname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+%      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+%    \fi}
+
+% replaces macro in xtag-ini: ! ! !
+
+\def\edefXMLop#1#2% \macro{att}
+  {\edef#1%
+     {\csname\ifcsname\@@XMLvariable:\ownXMLelement:#2\endcsname
+        \@@XMLvariable:\ownXMLelement:#2\else\s!empty
+      \fi\endcsname}}
+
+\def\edefXMLinh#1#2% \macro{att}
+  {\edef#1{\XMLinh{#2}}}
+
+\def\edefXMLinhpar#1#2#3% \macro{tag}{att}
+  {\edef#1{\XMLinhpar{#2}{#3}}}
+
+% \def\doifXMLopdef#1#2% \macro{att}
+%   {\ifcsname\@@XMLvariable:\ownXMLelement:#1\endcsname
+%      \@EA\let\@EA#1\csname\@@XMLvariable:\ownXMLelement:#1\endcsname
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+
+\fetchruntimecommand \tracebackXMLattribute {\f!xtagprefix\s!run}
+\fetchruntimecommand \showXMLinh            {\f!xtagprefix\s!run}
+
+% \defineXMLenvironment[one]
+%   {\beginXMLelement}
+%   {\endXMLelement}
+%
+% \defineXMLenvironment[two]
+%   {\beginXMLelement
+%    \starttabulatie
+%    \NC ancestor 1 \NC \XMLancestor{1} \NC \NR
+%    \NC ancestor 2 \NC \XMLancestor{2} \NC \NR
+%    \NC ancestor 3 \NC \XMLancestor{3} \NC \NR
+%    \NC ancestor 4 \NC \XMLancestor{4} \NC \NR
+%    \stoptabulatie}
+%   {\endXMLelement}
+%
+% \startbuffer
+% <x:one> <x:two> <one> <two> </two> </one> </x:two> </x:one>
+% \stopbuffer
+%
+% {fallback A: \setXMLfallbackmode 0 \processXMLbuffer}\par
+% {fallback B: \setXMLfallbackmode 1 \processXMLbuffer}\par
+% {fallback C: \setXMLfallbackmode 2 \processXMLbuffer}\par
+
+% todo: split #1 into raws en reconstruct, set current etc, push and pop
+%
+% \def\beginXMLelement
+%   {\dosingleempty\dobeginXMLelement}
+%
+% \def\dobeginXMLelement[#1]%
+%   {\global\advance\XMLdepth 1
+%    \global\@EA\let\csname\@@XMLdepth:\the\XMLdepth\endcsname\currentXMLelement
+%    \global\@EA\edef\csname\@@XMLdopth:\the\XMLdepth\endcsname{\ownXMLelement}%
+%    \iffirstargument\edef\ownXMLelement{#1}\fi}
+%
+% \def\endXMLelement
+%   {\@EA\let\@EA\ownXMLelement\csname\@@XMLdopth:\the\XMLdepth\endcsname
+%    \global\advance\XMLdepth -1 }
+
+%D \defineXMLenvironment[one]
+%D   {\beginXMLelement}
+%D   {\endXMLelement}
+%D
+%D \defineXMLenvironment[two]
+%D   {\beginXMLelement
+%D    \starttabulate
+%D    \NC parent 1 \NC \XMLancestor{1} \NC \NR
+%D    \NC parent 2 \NC \XMLancestor{2} \NC \NR
+%D    \NC parent 3 \NC \XMLancestor{3} \NC \NR
+%D    \NC parent 4 \NC \XMLancestor{4} \NC \NR
+%D    \stoptabulate}
+%D   {\endXMLelement}
+%D
+%D   \startbuffer
+%D   <x:one> <x:two> <one> <two> </two> </one> </x:two> </x:one>
+%D   \stopbuffer
+%D
+%D   fallback A: \setXMLfallbackmode0 \processXMLbuffer
+%D   fallback B: \setXMLfallbackmode1 \processXMLbuffer
+%D   fallback C: \setXMLfallbackmode2 \processXMLbuffer
+
+%D Here we do the namespace (re)mapping. More examples are
+%D provided in the manual.
+%D
+%D \starttyping
+%D \supportXMLnamespace  [test] % needed to get a namespace working
+%D \skipXMLnamespace     [test] % slow
+%D \ignoreXMLnamespace   [test] % faster
+%D \defineXMLenvironment [rubish:itemize] {[} {]}
+%D \defineXMLenvironment [rubish:item]    {(} {)}
+%D \remapXMLnamespace    [crap] [rubish]
+%D \remapXMLnamespace    [con]  [context]
+%D \remapXMLurlspace     [http://www.pragma-ade.com/dtd/context]  [context]
+%D \autoXMLnamespace     [context] % fallback
+%D \autoXMLnamespace     [whatever] % second fall back
+%D \stoptyping
+
+\newtoks\autoXMLnamespaces
+
+%D The automatically mapped namespaces (the fallbacks so to
+%D day) are collected in a token list.
+
+\let\checkedXMLnamespace\empty
+
+\def\checkXMLnamespace#1%
+  {\edef\checkedXMLnamespace{#1}%
+   \ifcsname\@@XMLnamespace:\currentXMLnamespace\endcsname
+     \csname\@@XMLnamespace:\currentXMLnamespace\endcsname
+     % forced namespace
+   \else\ifcsname\@@XMLelement:\currentXMLelement\endcsname
+     % natural element
+   \else\ifcsname\@@XMLelement:\currentXMLelement/\endcsname
+     % natural element
+   \else
+     % locate fallback
+     \donefalse\the\autoXMLnamespaces
+   \fi\fi\fi}
+
+\def\skipXMLnamespace[#1]%
+  {\letvalue{\@@XMLnamespace:#1}\doXMLskipnamespace}
+
+\def\doXMLskipnamespace
+  {\long\@EA\def\csname\@@XMLelement:\checkedXMLnamespace\endcsname
+     {\getXMLgroupedignore\checkedXMLnamespace}}
+
+\def\hideXMLnamespace[#1]%
+  {\letvalue{\@@XMLnamespace:#1}\doXMLhidenamespace}
+
+\def\doXMLhidenamespace
+  {\long\@EA\def\csname\@@XMLelement:\checkedXMLnamespace\endcsname
+     {\redoXMLignore\checkedXMLnamespace}}
+
+\def\ignoreXMLnamespace[#1]%
+  {\letvalue{\@@XMLnamespace:#1}\doXMLignorenamespace}
+
+\def\doXMLignorenamespace % \let binnen def
+  {\long\@EA\def\csname\@@XMLelement:\checkedXMLnamespace\endcsname
+     {\@EA\redoXMLignore\@EA{\checkedXMLnamespace}}} % EA ?
+
+\def\remapXMLnamespace
+  {\dodoubleargument\doremapXMLnamespace}
+
+\def\doremapXMLnamespace[#1][#2]%
+  {\ifsecondargument
+     \setvalue{\@@XMLnamespace:#1}{\def\currentXMLnamespace{#2}}%
+   \else
+     \letvalue{\@@XMLnamespace:#1}\relax
+   \fi}
+
+\def\supportXMLnamespace%
+  {\dosingleargument\dosupportXMLnamespace}
+
+\def\dosupportXMLnamespace[#1]%
+  {\setvalue{\@@XMLnamespace:#1}{\def\currentXMLnamespace{#1}}}
+
+\def\xremapXMLnamespace#1#2% fast internal one
+  {\@EA\edef\csname\@@XMLnamespace:#1\endcsname
+     {\def\noexpand\currentXMLnamespace{#2}}}
+
+\def\autoXMLnamespace[#1]%
+  {\xautoXMLnamespace{#1}}
+
+\def\xautoXMLnamespace#1% fast internal one
+  {\ifcsname\@@XMLnamespace-#1\endcsname\else
+     \@EA\appendtoks\csname\@@XMLnamespace-#1\endcsname\to\autoXMLnamespaces
+   \fi
+   \@EA\edef\csname\@@XMLnamespace-#1\endcsname
+     {\noexpand\doautoXMLnamespace{#1}}}
+
+\def\doautoXMLnamespace#1% \done is set before list
+  {\ifdone\else
+     \ifcsname\@@XMLelement:#1:\checkedXMLnamespace\endcsname
+       \def\currentXMLnamespace{#1}%
+     \else\ifcsname\@@XMLelement:#1:\checkedXMLnamespace/\endcsname
+       \def\currentXMLnamespace{#1}%
+     \fi\fi
+   \fi}
+
+\def\resetXMLnamespace[#1]%
+  {\letvalue{\@@XMLnamespace-#1}\gobbleoneargument
+   \letvalue{\@@XMLnamespace:#1}\gobbleoneargument}
+
+\def\remapXMLurlspace
+  {\dodoubleargument\doremapXMLurlspace}
+
+\def\doremapXMLurlspace[#1][#2]%
+  {\setvalue{\@@XMLurlspace:#1}{#2}}
+
+%D Entities needs a bit more work, as well as a connection
+%D with the encoding handlers.
+
+% we need to be able to do:
+%
+% \defineXMLentity[amp] {\FunnyAmp} \def\FunnyAmp#1;{\getXMLentity{#1}}
+%
+% \defineXMLentity [pound] {(why not use euro's?)}
+%
+% \startXMLdata
+% test &amp;pound; test
+% \stopXMLdata
+%
+% so we need an ifless implementation
+%
+% also .. this should work:
+%
+% \defineXMLentity[ctx-var-textwidth] {\textwidth}
+%
+% \defineXMLcommand[test][width=\textwidth]
+%   {\the\dimexpr\XMLop{width}\relax}
+%
+% \startXMLdata
+% <test width=".45&ctx-var-textwidth;"/>
+% <test width="&ctx-var-textwidth;"/>
+% \stopXMLdata
+
+% \eacute -> simplified -> e (via raw encoding)
+%         -> raw        -> eacute (via handler)
+%
+% naming sucks
+
+\newif\ifXMLrawentities     % proper fallback
+\newif\ifXMLsimpleentities  % last resort
+
+\def\simpleXMLencoding{raw}
+
+\ifnum\texengine=\luatexengine
+    \def\simplifyXMLentities
+      {\XMLsimpleentitiestrue}
+\else
+    \def\simplifyXMLentities
+      {\fastenableencoding\simpleXMLencoding
+       \XMLsimpleentitiestrue}
+\fi
+
+\def\defineXMLentity
+  {\dodoubleempty\dodefineXMLentity}
+
+\def\dodefineXMLentity[#1][#2]#3%
+  {\ifsecondargument
+     \defineXMLentities[#1]{#2}{#3}%
+   \else
+     \dododefineXMLentity{#1}{#3}%
+   \fi}
+
+\def\defineXMLentities[#1]#2#3%
+  {\dododefineXMLentity{#1}{\ifXMLsimpleentities#2\else#3\fi}}
+
+\def\dododefineXMLentity#1#2%
+  {\unspaceargument#1\to\ascii % #1 can be {[} or so
+   \long\setvalue{\@@XMLentity:\@EA\firstofoneargument\ascii}{#2}}
+
+\def\setXMLentity#1% fast one
+  {\long\@EA\def\csname\@@XMLentity:#1\endcsname}
+
+%D May this wile become dodo (more in tune with rest);
+%D beware: also remapped in xtag-map.
+
+\def\doXMLentity#1#2;% interesting: # is now ##
+  {\if\string#1\letterhash
+     \@EA\parseXMLcharacter
+   \else\ifXMLrawentities
+     \@EAEAEA\firstofoneargument
+   \else
+     \@EAEAEA\executeXMLentity
+   \fi\fi{#1#2}}
+
+%D Here we need to get rid of the double hash and act upon the
+%D number. Proper hex/oct number support can be implemented by
+%D redefining \type {\executeXMLcharacter}.
+
+% \def\parseXMLcharacter#1% gobble the ##x
+%   {\@EA\executeXMLcharacter\@EA{\gobblethreearguments#1}}
+%
+% single hash now
+%
+% \def\parseXMLcharacter#1%
+%   {\@EA\executeXMLcharacter\@EA{\gobbleoneargument#1}}
+%
+% \def\executeXMLcharacter#1% can be overloaded
+%   {\ifnum"#1<256
+%      \@EA\getXMLcharacter
+%    \else\ifXMLrawentities
+%      \@EAEAEA\firstofoneargument
+%    \else
+%      \@EAEAEA\unknownXMLcharacter
+%    \fi\fi{\number"#1}}
+%
+% \unexpanded\def\getXMLcharacter#1{\rawcharacter{#1}}
+
+\def\parseXMLcharacter#1%
+  {\@EA\executeXMLcharacter\gobbleoneargument#1\empty\relax}
+
+\def\executeXMLcharacter#1#2\relax
+  {\if#1x%
+     \@EA\noexecuteXMLhexcharacter
+   \else
+     \@EA\doexecuteXMLdeccharacter
+   \fi#1#2\relax}
+
+\def\noexecuteXMLhexcharacter x#1\relax
+  {\uppercase{\doexecuteXMLhexcharacter#1\relax}}
+
+% \unexpanded\def\getXMLcharacter#1%
+%   {\ifXMLrawentities
+%      \@EA\firstofoneargument
+%    \else\ifcsname\@@XMLentity:#1\endcsname
+%      \@EAEAEA\getXMLentity
+%    \else
+%      \@EAEAEA\unicodechar % was: \rawcharacter
+%    \fi\fi{#1}}
+%
+% \def\doexecuteXMLhexcharacter#1\relax{\getXMLcharacter{"#1}}
+% \def\doexecuteXMLdeccharacter#1\relax{\getXMLcharacter {#1}}
+%
+% if we want to support x in entity overloading, we prefer:
+
+\unexpanded\def\getXMLdeccharacter#1%
+  {\ifXMLrawentities
+     \@EA\rawXMLdecentity
+   \else\ifcsname\@@XMLentity:#1\endcsname
+     \@EAEAEA\getXMLdecentity
+   \else
+     \@EAEAEA\unicodechar
+   \fi\fi{#1}}
+
+\unexpanded\def\getXMLhexcharacter#1%
+  {\ifXMLrawentities
+     \@EA\rawXMLhexentity
+   \else\ifcsname\@@XMLentity:x#1\endcsname
+     \@EAEAEA\getXMLhexentity
+   \else
+     \@EAEAEA\unicodehexchar
+   \fi\fi{#1}}
+
+\def\unicodehexchar#1{\unicodechar{"#1}}
+
+\let\getXMLcharacter\getXMLdeccharacter
+
+\def\getXMLdecentity#1{\getXMLentity {#1}}
+\def\getXMLhexentity#1{\getXMLentity{x#1}}
+
+\def\rawXMLdecentity#1{#1}
+\def\rawXMLhexentity#1{x#1}
+
+\def\doexecuteXMLhexcharacter#1\relax{\getXMLhexcharacter{#1}}
+\def\doexecuteXMLdeccharacter#1\relax{\getXMLdeccharacter{#1}}
+
+% \defineXMLentity[8218] {Adam}
+% \defineXMLentity[x007D]{Eve}
+%
+% \startbuffer
+% &#64; &#8216; &#8218; &#8220; &#8221; &#8222;&#8226;
+% &amp;
+% &#x0024; &#x007B; &#x007D; &#x00A0; &#x2026;
+% \stopbuffer
+%
+% \typebuffer \processXMLbuffer
+
+% left overs
+
+\def\unknownXMLcharacter#1{[#1]}
+
+\ifx\unicodechar\undefined\let\unicodechar\rawcharacter\fi  % brrrr
+
+% \useXMLfilter[ent]
+%
+% \defineXMLsingular[test]{{\simplifyXMLentities\XMLpar{test}{bla}{}}}
+%
+% \startXMLdata
+% <test bla="&#xD3;bla&eacute;bla&tex;and$and&#xFC;ziezo&#xF99;" />
+% \stopXMLdata
+%
+% \defineXMLentity[45]{|it works|} % {|-|}
+%
+% \startXMLdata
+% text&#045;&#046;text
+% text&#x045;&#x046;text
+% \stopXMLdata
+
+%D May be this will change a bit ...
+
+\def\executeXMLentity#1% named one
+  {\getXMLentity{#1}}
+
+%\def\expandedXMLentity#1%
+%  {\ifcsname\@@XMLentity:#1\endcsname\csname\@@XMLentity:#1\endcsname\fi}
+%
+%\unexpanded\def\getXMLentity#1%
+%  {\ifcsname\@@XMLentity:#1\endcsname\csname\@@XMLentity:#1\endcsname\fi}
+%
+%\def\expandedXMLentity#1%
+% {\csname\@@XMLentity:#1\endcsname}
+%
+%\unexpanded\def\getXMLentity#1%
+%  {\csname\@@XMLentity:#1\endcsname}
+
+\doifundefined{autoXMLentitiestrue}{\expandafter\newif\csname ifautoXMLentities\endcsname} % fall back on context commands
+
+\def\expandedXMLentity#1%
+  {\ifcsname\@@XMLentity:#1\endcsname \@EA     \execXMLentity
+   \else\ifautoXMLentities            \@EAEAEA \autoXMLentity
+   \else                              \@EAEAEA \crapXMLentity
+   \fi\fi{#1}}
+
+\def\execXMLentity#1{\csname\@@XMLentity:#1\endcsname}
+\def\crapXMLentity#1{\inframed[\c!offset=.1ex]{\tttf#1}}
+\def\autoXMLentity#1{\ifcsname#1\endcsname\csname#1\endcsname\fi}
+
+\unexpanded\def\getXMLentity{\expandedXMLentity}
+
+%\def\doifXMLentityelse#1#2#3%
+%  {\ifcsname\@@XMLentity:#1\endcsname#2\else#3\fi}
+
+\def\doifXMLentityelse#1%
+  {\ifcsname\@@XMLentity:#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+% \letvalue{1@2}\firstoftwoarguments
+% \letvalue{2@2}\secondoftwoarguments
+%
+% \def\doifXMLentityelse#1%
+%   {\csname\ifcsname\@@XMLentity:#1\endcsname1\else2\fi @2\endcsname}
+
+% see \defineXML... commands:
+%
+% [key=val]          => \presetXMLarguments{element} => default key/vals
+% [blabla]           => \theXMLarguments{blabla}     => user key/vals
+% [blabla] [key=val] => \presetXMLarguments{element} => default key/vals
+%                       \theXMLarguments{blabla}     => user key/vals
+%
+% <element key="val"> stored in case of [blabla] else set as \XMLpar
+%
+% see m-steps for an example of usage
+
+\let\@@XMLmapmap\empty
+\newif\ifXMLnamespace
+
+\long\def\getXMLarguments#1#2%
+  {\XMLnamespacefalse
+   \dogetXMLarguments{#1}#2>}
+
+\let\dosetXMLattributeA\gobbleoneargument
+
+\def\dosetXMLattributeB#1%
+  {\ifx\@@XMLspac\originalXMLnamespace
+     \@EA\def\csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname{#1}%
+     % maybe some day global handling here as well
+   \fi}
+
+\def\dosetXMLattributeC
+  {\@EA\def\csname\@@XMLvariable:\@@XMLclass\ifx\@@XMLspac
+     \originalXMLnamespace\else:\@@XMLspac\fi:\@@XMLname\endcsname}
+
+\def\dosetXMLattributeD
+  {\@EA\def\csname\@@XMLvariable:\@@XMLclass:\ifx\@@XMLspac
+     \originalXMLnamespace\currentXMLnamespace\else\@@XMLspac\fi:\@@XMLname\endcsname}
+
+\def\setXMLattributemode#1%
+  {\ifcase#1\relax
+     \let\dosetXMLattribute\dosetXMLattributeA
+   \or
+     \let\dosetXMLattribute\dosetXMLattributeB
+   \or
+     \let\dosetXMLattribute\dosetXMLattributeC
+   \or
+     \let\dosetXMLattribute\dosetXMLattributeD
+   \fi}
+
+\setXMLattributemode{2} % a reasonable default
+
+\let\@@XMLspac\empty % argumentnamespace
+
+\long\def\dogetXMLarguments#1%
+  {\XMLtoks\emptytoks
+   \ifcsname\@@XMLmap:#1\endcsname
+     \let\dodosetXMLargument\dodosetXMLargumentB
+   \else
+     \def\@@XMLclass{#1}%
+     \let\dodosetXMLargument\dodosetXMLargumentA
+   \fi
+   \let\dodoparseXMLarguments\doparseXMLarguments
+   \doparseXMLarguments}
+
+% \long\def\doparseXMLarguments#1% space goes ok
+%   {\if#1>%
+%      \let\dodoparseXMLarguments\empty
+%    \else\if#1=%
+%      \edef\@@XMLname{\the\XMLtoks}%
+%      \XMLtoks\emptytoks
+%    \else\if#1"%
+%      \let\dodoparseXMLarguments\dodoparseXMLargumentsD
+%    \else\if#1'%
+%      \let\dodoparseXMLarguments\dodoparseXMLargumentsS
+%    \else\if#1:%
+%      \XMLnamespacetrue
+%      \edef\@@XMLspac{\the\XMLtoks}%
+%      \XMLtoks\emptytoks
+%    \else\if#1/%
+%      \chardef\kindofXMLelement\emptyXMLtag
+%    \else
+%      \XMLtoks\@EA{\the\XMLtoks#1}%
+%    \fi\fi\fi\fi\fi\fi
+%    \dodoparseXMLarguments}
+%
+% The next speed optimization is suggested by Taco. Since we
+% are dealing with validated code, we can grab larger chunks.
+%
+% \long\def\doparseXMLarguments#1% space goes ok
+%   {\if#1>%
+%      \let\dodoparseXMLarguments\empty
+%    \else\if#1/%
+%      \chardef\kindofXMLelement\emptyXMLtag
+%    \else
+%      \XMLtoks{#1}%
+%      \let\dodoparseXMLarguments\dodoparseXMLargumentsX
+%    \fi\fi
+%    \dodoparseXMLarguments}
+%
+% we can get rid of one more assignment
+
+\long\def\doparseXMLarguments#1% space goes ok
+  {\if#1>%
+    %\let\dodoparseXMLarguments\empty
+     \expandafter\gobbleoneargument % speedup
+   \else\if#1/%
+     \chardef\kindofXMLelement\emptyXMLtag
+   \else
+     \XMLtoks{#1}%
+     \let\dodoparseXMLarguments\dodoparseXMLargumentsX
+   \fi\fi
+   \dodoparseXMLarguments}
+
+% slightly faster:
+%
+% \long\def\doparseXMLarguments#1% space goes ok
+%   {\if#1>%
+%      \@EA\gobbleoneargument
+%    \else\if#1/%
+%      \chardef\kindofXMLelement\emptyXMLtag
+%      \@EAEAEA\gobbletwoarguments
+%    \else
+%      \@EAEAEA\dodoparseXMLargumentsX
+%    \fi\fi#1}
+%
+% \def\dodoparseXMLargumentsX#1=#2%
+%   {\def\@@XMLname{#1}%
+%    \getXMLNSSSS#1:\relax
+%    \if#2"%
+%      \expandafter\dodoparseXMLargumentsD
+%    \else
+%      \expandafter\dodoparseXMLargumentsS
+%    \fi}
+
+\def\dodoparseXMLargumentsX#1=#2%
+  {\edef\@@XMLname{\the\XMLtoks#1}%
+   \@EA\getXMLNSSSS\@@XMLname:\relax
+   \XMLtoks\emptytoks
+   \if#2"%
+     \let\dodoparseXMLarguments\dodoparseXMLargumentsD
+   \else
+     \let\dodoparseXMLarguments\dodoparseXMLargumentsS
+   \fi
+   \dodoparseXMLarguments}
+
+\def\gobbleuntilcolon#1:{#1}
+
+\def\getXMLNSSSS#1:#2\relax
+  {\def\!!stringa{#2}%
+   \ifx\!!stringa\empty \else
+     \XMLnamespacetrue
+     \edef\@@XMLname{\gobbleuntilcolon#2}%
+     \edef\@@XMLspac{#1}%
+   \fi}
+
+% ok ?
+%
+% \def\dodoparseXMLargumentsX#1=#2%
+%   {\edef\@@XMLname{\the\XMLtoks#1}%
+%    \@EA\getXMLNSSSS\@@XMLname:\relax
+%    \XMLtoks\emptytoks
+%    \if#2"%
+%      \@EA\dodoparseXMLargumentsD
+%    \else
+%      \@EA\dodoparseXMLargumentsS
+%    \fi}
+
+% Storing \type {#1} in a macro in order to minimize the
+% amount of data passed as argument does not improve
+% performance, so we keep the readable form.
+
+\def\dodoparseXMLargumentsD#1"{\dosetXMLargument{#1}}
+\def\dodoparseXMLargumentsS#1'{\dosetXMLargument{#1}}
+
+% the readable version
+%
+% \def\dosetXMLargument#1%
+%   {\ifXMLnamespace
+%      \ifx\@@XMLspac\@@XMLns
+%        \checkXMLnamespaceattr{#1}% xmlns:\@@XMLname="#1"
+%      \else
+%        \dosetXMLattribute{#1}% some:\@@XMLname="#1"
+%      \fi
+%      \XMLnamespacefalse
+%    \else\ifx\@@XMLname\@@XMLns
+%      \checkXMLnamespaceattr{#1}% xmlns="#1"
+%    \else
+%      \dodosetXMLargument{#1}%
+%    \fi\fi
+%    \let\dodoparseXMLarguments\doparseXMLarguments
+%    \dodoparseXMLarguments}
+%
+% the ugly alternative
+
+% \def\dosetXMLargument#1% ugly alternative
+%   {\ifXMLnamespace
+%      \XMLnamespacefalse
+%      \ifx\@@XMLspac\@@XMLns
+%        \@EAEAEA\checkXMLnamespaceattr % xmlns:\@@XMLname="#1"
+%      \else
+%        \@EAEAEA\dosetXMLattribute % some:\@@XMLname="#1"
+%      \fi
+%    \else\ifx\@@XMLname\@@XMLns
+%      \@EAEAEA\checkXMLnamespaceattr % xmlns="#1"
+%    \else
+%      \@EAEAEA\dodosetXMLargument
+%    \fi\fi{#1}%
+%    \let\dodoparseXMLarguments\doparseXMLarguments
+%    \dodoparseXMLarguments}
+
+\def\dosetXMLargument#1% ugly alternative
+  {\ifXMLnamespace
+     \XMLnamespacefalse
+     \ifx\@@XMLspac\@@XMLns
+       \@EAEAEA\checkXMLnamespaceattr % xmlns:\@@XMLname="#1"
+     \else
+       \@EAEAEA\dosetXMLattribute % some:\@@XMLname="#1"
+     \fi
+   \else\ifx\@@XMLname\@@XMLns
+     \@EAEAEA\checkXMLnamespaceattr % xmlns="#1"
+   \else
+     \@EAEAEA\dodosetXMLargument
+   \fi\fi{#1}%
+   \dodocopyXMLargument
+   \let\dodoparseXMLarguments\doparseXMLarguments
+   \dodoparseXMLarguments}
+
+\let\dodocopyXMLargument\relax
+
+% \def\dododocopyXMLargument
+%   {\@EA\let\csname\@@XMLvariable:\the\numexpr(\XMLdepth+1):\@@XMLname\@EA\endcsname
+%      \csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname}
+
+\def\dododocopyXMLargument
+  {\@EA\let\csname\@@XMLvariable:\the\numexpr\XMLdepth+\plusone\relax:\@@XMLname\@EA\endcsname
+     \csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname}
+
+\def\copyXMLargumentindeed
+  {\let\dodocopyXMLargument\dododocopyXMLargument
+   \let\copyXMLargumentindeed\relax}
+
+\def\dodosetXMLargumentA
+  {\@EA\def\csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname}
+
+% \def\dodosetXMLargumentB#1%
+%   {\@EA\edef\csname\@@XMLmap:\@@XMLmapmap\endcsname
+%       {\@EA\ifx\csname\@@XMLmap:\@@XMLmapmap\endcsname\empty\else
+%          \csname\@@XMLmap:\@@XMLmapmap\endcsname,%
+%        \fi
+%        \@@XMLname=#1}}
+
+\def\dodosetXMLargumentB#1%
+  {\@EA\edef\csname\@@XMLmap:\@@XMLmapmap\endcsname
+      {\@EA\ifx\csname\@@XMLmap:\@@XMLmapmap\endcsname\empty\else
+         \csname\@@XMLmap:\@@XMLmapmap\endcsname,%
+       \fi
+       \@@XMLname={#1}}} % {} is needed for aa='bb,cc'
+
+\appendtoks
+  \resetXMLarguments{\rawXMLnamespace\rawXMLidentifier}%
+\to \everyXMLelement
+
+\def\resetXMLarguments#1%
+  {\ifcsname\@@XMLmap:#1\endcsname
+     \@EA\let\@EA\@@XMLmapmap\csname\@@XMLmap:#1\endcsname
+     \@EA\let\csname\@@XMLmap:\@@XMLmapmap\endcsname\empty
+   \fi}
+
+\def\theXMLarguments#1%
+  {\ifcsname\@@XMLmap:#1\endcsname\csname\@@XMLmap:#1\endcsname\fi}
+
+\def\doexpandXMLvalue#1#2%
+  {\ifcsname#2\endcsname
+     \bgroup
+     \enableXMLexpansion
+     \let\getXMLentity\expandedXMLentity
+     #1% simplify maps entities back to _ and alike
+     \expanded{\global\globalscratchtoks{\csname#2\endcsname}}%
+     \egroup
+     \@EA\edef\csname#2\endcsname{\the\globalscratchtoks}%
+   \fi}
+
+\def\expandXMLvalue  {\doexpandXMLvalue\relax}
+\def\simplifyXMLvalue{\doexpandXMLvalue\XMLsimpleentitiestrue}
+
+\def\expandTEXpar      #1#2{\expandXMLvalue{#1\interfaced{#2}}}
+\def\expandXMLpar      #1#2{\expandXMLvalue{\@@XMLvariable:#1:#2}}
+\def\expandXMLarguments  #1{\expandXMLvalue{\@@XMLmap:#1}}
+
+\def\simplifyTEXpar    #1#2{\simplifyXMLvalue{#1\interfaced{#2}}}
+\def\simplifyXMLpar    #1#2{\simplifyXMLvalue{\@@XMLvariable:#1:#2}}
+\def\simplifyXMLarguments#1{\simplifyXMLvalue{\@@XMLmap:#1}}
+
+%D \startbuffer[tex]
+%D \defineXMLsingular [fx:root]
+%D   {\XMLNSpar{fx:root}{xml}{lang}{}
+%D    \XMLpar{fx:root}{xml:lang}{}
+%D    \starttabulate[||||]
+%D    \HL
+%D    \NC \bf mode \NC \bf call \NC \bf result \NC\NR
+%D    \HL
+%D    \NC 0\NC\asciistr{\XMLpar   {fx:root} {crap} {}}       \NC dirt  \NC\NR
+%D    \NC  \NC\asciistr{\XMLpar   {fx:root} {junk} {}}       \NC       \NC\NR
+%D    \NC  \NC\asciistr{\XMLNSpar {fx:root} {fx}   {crap} {}}\NC       \NC\NR
+%D    \NC  \NC\asciistr{\XMLNSpar {fx:root} {xml}  {lang} {}}\NC       \NC\NR
+%D    \HL
+%D    \NC 1\NC\asciistr{\XMLpar   {fx:root} {crap} {}}       \NC dirt  \NC\NR
+%D    \NC  \NC\asciistr{\XMLpar   {fx:root} {junk} {}}       \NC junk  \NC\NR
+%D    \NC  \NC\asciistr{\XMLNSpar {fx:root} {fx}   {crap} {}}\NC       \NC\NR
+%D    \NC  \NC\asciistr{\XMLNSpar {fx:root} {xml}  {lang} {}}\NC       \NC\NR
+%D    \HL
+%D    \NC 2\NC\asciistr{\XMLpar   {fx:root} {crap} {}}       \NC dirt  \NC\NR
+%D    \NC  \NC\asciistr{\XMLpar   {fx:root} {junk} {}}       \NC junk  \NC\NR
+%D    \NC  \NC\asciistr{\XMLNSpar {fx:root} {fx}   {crap} {}}\NC       \NC\NR
+%D    \NC  \NC\asciistr{\XMLNSpar {fx:root} {xml}  {lang} {}}\NC en    \NC\NR
+%D    \HL
+%D    \NC 3\NC\asciistr{\XMLpar   {fx:root} {crap} {}}       \NC dirt  \NC\NR
+%D    \NC  \NC\asciistr{\XMLpar   {fx:root} {junk} {}}       \NC junk  \NC\NR
+%D    \NC  \NC\asciistr{\XMLNSpar {fx:root} {fx}   {crap} {}}\NC rubish\NC\NR
+%D    \NC  \NC\asciistr{\XMLNSpar {fx:root} {xml}  {lang} {}}\NC en    \NC\NR
+%D    \HL
+%D    \stoptabulate}
+%D
+%D \remapXMLurlspace [http://www.w3.org/1999/XSL/Format] [fx]
+%D \stopbuffer
+%D
+%D \startbuffer[xml]
+%D <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format"
+%D           fo:crap="rubish"
+%D           fo:junk="junk"
+%D          xml:lang="en"
+%D              crap="dirt" />
+%D \stopbuffer
+%D
+%D \typebuffer[tex] \processTEXbuffer[tex]
+%D \typebuffer[xml] \processXMLbuffer[xml]
+
+%D The previous macros were the basic parser and their working
+%D is left to the imagination of the reader. These macros
+%D will be improved over time. We use rather low level
+%D definitions so that the mappings will run as fast as
+%D possible.
+
+\bgroup \catcode`<=\@@active
+
+\long\gdef\dododefineXMLsingular#1#2%
+  {\long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2}}
+
+\long\gdef\dododefineXMLcommand#1#2%
+  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{#2}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2}}
+
+\long\gdef\dododefineXMLgrouped#1#2%
+  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{\groupedcommand{#2}\donothing\bgroup}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\egroup
+   \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
+
+\long\gdef\dododefineXMLargument#1#2% watch the {} around ##1
+  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{\redoXMLargument{#1}{#2}}
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2{}}}
+
+\long\gdef\redoXMLargument#1#2% potential optimization: globalnext
+  {\long\@EA\gdef\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>{#2{##1}}%
+   \next}
+
+\long\gdef\dododefineXMLignore#1%
+  {\@EA\def\csname\@@XMLelement:#1\endcsname{\redoXMLignore{#1}}
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
+
+\long\gdef\redoXMLignore#1%
+  {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>{}%
+   \next}
+
+\long\gdef\dododefineXMLpickup#1#2#3%
+  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{\redoXMLpickup{#1}{#2}{#3}}
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2#3}}
+
+\long\gdef\redoXMLpickup#1#2#3%
+  {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>{#2##1#3}%
+   \next}
+
+\long\gdef\dododefineXMLenvironment#1#2#3%
+  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{#2}%
+   \long\@EA\def\csname\@@XMLelement:/#1\endcsname{#3}%
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2#3}}
+
+\long\gdef\dododefineXMLsave#1%
+  {\@EA\let\csname\@@XMLdata:#1\endcsname\longempty
+   \long\@EA\def\csname\@@XMLelement:#1\endcsname {\redoXMLsave{#1}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{\@EA\let\csname\@@XMLdata:#1\endcsname\longempty}}
+
+\long\gdef\dododefineXMLsavecontent#1#2%
+  {\long\@EA\def\csname\@@XMLdata:#1\endcsname{#2}%
+   \long\@EA\def\csname\@@XMLelement:#1\endcsname{\redoXMLsave{#1}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{\@EA\let\csname\@@XMLdata:#1\endcsname\longempty}}
+
+\long\gdef\redoXMLsave#1%
+  {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>%
+     {\long\@EA\def\csname\@@XMLdata:#1\endcsname{##1}}%
+   \next}
+
+\long\gdef\dododefineXMLgsave#1%
+  {\global\@EA\let\csname\@@XMLdata:#1\endcsname\longempty
+   \long\@EA\def\csname\@@XMLelement:#1\endcsname{\redoXMLgsave{#1}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{\global\@EA\let\csname\@@XMLdata:#1\endcsname\longempty}}
+
+\long\gdef\dododefineXMLgsavecontent#1#2%
+  {\long\@EA\gdef\csname\@@XMLdata:#1\endcsname{#2}%
+   \long\@EA\def\csname\@@XMLelement:#1\endcsname{\redoXMLgsave{#1}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{\global\@EA\let\csname\@@XMLdata:#1\endcsname\longempty}}
+
+\long\gdef\redoXMLgsave#1%
+  {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>%
+     {\long\@EA\gdef\csname\@@XMLdata:#1\endcsname{##1}}%
+   \next}
+
+\long\gdef\dododefineXMLenvironmentsave#1#2#3%
+  {\@EA\let\csname\@@XMLdata:#1\endcsname\longempty
+   \long\@EA\def\csname\@@XMLelement:#1\endcsname{\redoXMLenvironmentsave{#1}{#2}{#3}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2\@EA\let\csname\@@XMLdata:#1\endcsname\longempty#3}}
+
+% maybe \globalnext
+
+\long\gdef\redoXMLenvironmentsave#1#2#3%
+  {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>%
+     {#2\long\@EA\def\csname\@@XMLdata:#1\endcsname{##1}#3}%
+   \next}
+
+\long\gdef\dododefineXMLenvironmentgsave#1#2#3%
+  {\global\@EA\let\csname\@@XMLdata:#1\endcsname\longempty
+   \long\@EA\def\csname\@@XMLelement:#1\endcsname{\redoXMLenvironmentgsave{#1}{#2}{#3}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2\global\@EA\let\csname\@@XMLdata:#1\endcsname\longempty#3}}
+
+\long\gdef\redoXMLenvironmentgsave#1#2#3%
+  {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>%
+     {#2\long\@EA\gdef\csname\@@XMLdata:#1\endcsname{##1}#3}%
+   \next}
+
+\long\gdef\dododefineXMLprocess#1%
+  {\@EA\let\csname\@@XMLelement:#1\endcsname\donothing
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
+
+\long\gdef\dododefineXMLnestedenvironment#1#2#3%
+  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{\getXMLgroupedenvironment{#1}{#2}{#3}}%
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2#3}}
+
+\long\gdef\dododefineXMLnestedargument#1#2%
+  {\long\@EA\def\csname\@@XMLelement:#1\endcsname{\getXMLgroupedargument{#1}{#2}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2{}}}
+
+\long\gdef\dododefineXMLnestedsave#1%
+  {\@EA\let\csname\@@XMLdata:#1\endcsname\longempty
+   \long\@EA\def\csname\@@XMLelement:#1\endcsname {\getXMLgroupednestedsave{#1}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{\@EA\let\csname\@@XMLdata:#1\endcsname\longempty}}
+
+\long\unexpanded\gdef\getXMLgroupednestedsave#1%
+  {\collectXMLgroupedtrue
+   \long\def\dodogetgrouped{\long\@EA\edef\csname\@@XMLdata:#1\endcsname{\the\groupedtoks}}%
+   \getXMLgrouped{#1}}
+
+\long\gdef\dododefineXMLnestedenvironmentsave#1#2#3%
+  {\@EA\let\csname\@@XMLdata:#1\endcsname\longempty
+   \long\@EA\def\csname\@@XMLelement:#1\endcsname {\getXMLgroupednestedenvironmentsave{#1}{#2}{#3}}%
+   \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+   \long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2\@EA\let\csname\@@XMLdata:#1\endcsname\longempty#3}}
+
+\long\unexpanded\gdef\getXMLgroupednestedenvironmentsave#1#2#3%
+  {\collectXMLgroupedtrue
+   \long\def\dodogetgrouped{#2\long\@EA\edef\csname\@@XMLdata:#1\endcsname{\the\groupedtoks}#3}%
+   \getXMLgrouped{#1}}
+
+\egroup
+
+%D The high level definition macros.
+
+\def\defineXMLsingular             {\dotripleempty\dodefineXMLsingular}
+\def\defineXMLcommand              {\dotripleempty\dodefineXMLcommand}
+\def\defineXMLgrouped              {\dotripleempty\dodefineXMLgrouped}
+\def\defineXMLargument             {\dotripleempty\dodefineXMLargument}
+\def\defineXMLignore               {\dotripleempty\dodefineXMLignore}
+\def\defineXMLpickup               {\dotripleempty\dodefineXMLpickup}
+\def\defineXMLenvironment          {\dotripleempty\dodefineXMLenvironment}
+\def\defineXMLsave                 {\dotripleempty\dodefineXMLsave}
+\def\defineXMLsavecontent          {\dotripleempty\dodefineXMLsavecontent}
+\def\defineXMLgsave                {\dotripleempty\dodefineXMLgsave}
+\def\defineXMLgsavecontent         {\dotripleempty\dodefineXMLgsavecontent}
+\def\defineXMLenvironmentsave      {\dotripleempty\dodefineXMLenvironmentsave}
+\def\defineXMLenvironmentgsave     {\dotripleempty\dodefineXMLenvironmentgsave}
+\def\defineXMLprocess              {\dotripleempty\dodefineXMLprocess}
+\def\defineXMLnested               {\dotripleempty\dodefineXMLnestedenvironment}
+\def\defineXMLnestedenvironment    {\dotripleempty\dodefineXMLnestedenvironment}
+\def\defineXMLnestedargument       {\dotripleempty\dodefineXMLnestedargument}
+\def\defineXMLnestedsave           {\dotripleempty\dodefineXMLnestedsave}
+\def\defineXMLnestedenvironmentsave{\dotripleempty\dodefineXMLnestedenvironmentsave}
+
+%D We can nill definitions with:
+
+\def\resetXMLelement[#1]{\dododefineXMLprocess{#1}}
+
+%D This is equivalent to:
+%D
+%D \starttyping
+%D \def\resetXMLelement[#1]% handy in case only singular
+%D   {\@EA\let\csname\@@XMLelement:#1\endcsname \donothing
+%D    \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+%D    \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
+%D \stoptyping
+
+% push is (not yet) a real push, so:
+
+\def\defineXMLpush           {\dotripleempty\dodefineXMLsave}
+\def\defineXMLenvironmentpush{\dotripleempty\dodefineXMLenvironmentsave}
+
+% goes for all types
+
+\long\def\dodefineXMLsingular[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLsingular{#1}{#2}{#3}{#4}{}}
+
+\long\def\dodefineXMLcommand[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLcommand{#1}{#2}{#3}{#4}{}}
+
+\long\def\dodefineXMLgrouped[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLgrouped{#1}{#2}{#3}{#4}{}}
+
+\long\def\dodefineXMLargument[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLargument{#1}{#2}{#3}{#4}{}}
+
+\long\def\dodefineXMLignore[#1][#2][#3]%
+  {\defineXMLmethod\dododefineXMLignore{#1}{#2}{#3}{}{}}
+
+\long\def\dodefineXMLpickup[#1][#2][#3]#4#5%
+  {\defineXMLmethod\dododefineXMLpickup{#1}{#2}{#3}{#4}{#5}}
+
+\long\def\dodefineXMLenvironment[#1][#2][#3]#4#5%
+  {\defineXMLmethod\dododefineXMLenvironment{#1}{#2}{#3}{#4}{#5}}
+
+\long\def\dodefineXMLsave[#1][#2][#3]%
+  {\defineXMLmethod\dododefineXMLsave{#1}{#2}{#3}{}{}}
+
+\long\def\dodefineXMLsavecontent[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLsavecontent{#1}{#2}{#3}{#4}{}}
+
+\long\def\dodefineXMLgsave[#1][#2][#3]%
+  {\defineXMLmethod\dododefineXMLgsave{#1}{#2}{#3}{}{}}
+
+\long\def\dodefineXMLgsavecontent[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLgsavecontent{#1}{#2}{#3}{#4}{}}
+
+\long\def\dodefineXMLenvironmentsave[#1][#2][#3]#4#5%
+  {\defineXMLmethod\dododefineXMLenvironmentsave{#1}{#2}{#3}{#4}{#5}}
+
+\long\def\dodefineXMLenvironmentgsave[#1][#2][#3]#4#5%
+  {\defineXMLmethod\dododefineXMLenvironmentgsave{#1}{#2}{#3}{#4}{#5}}
+
+\long\def\dodefineXMLprocess[#1][#2][#3]%
+  {\defineXMLmethod\dododefineXMLprocess{#1}{#2}{#3}{}{}}
+
+\long\def\dodefineXMLnestedenvironment[#1][#2][#3]#4#5%
+  {\defineXMLmethod\dododefineXMLnestedenvironment{#1}{#2}{#3}{#4}{#5}}
+
+\long\def\dodefineXMLnestedargument[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLnestedargument{#1}{#2}{#3}{#4}{}}
+
+\long\def\dodefineXMLnestedsave[#1][#2][#3]%
+  {\defineXMLmethod\dododefineXMLnestedsave{#1}{#2}{#3}{}{}}
+
+\long\def\dodefineXMLnestedenvironmentsave[#1][#2][#3]#4#5%
+  {\defineXMLmethod\dododefineXMLnestedenvironmentsave{#1}{#2}{#3}{#4}{#5}}
+
+% [key=val]          => \presetXMLarguments{element} => default key/vals
+% [blabla]           => \theXMLarguments{blabla}     => user key/vals
+% [blabla] [key=val] => \presetXMLarguments{element} => default key/vals
+%                       \theXMLarguments{blabla}     => user key/vals
+
+% command element [map] [parlst] begin end
+
+\long\def\defineXMLmethod#1#2#3#4#5#6%
+  {\ifsecondargument
+     \setXMLarguments{#2}{#3}{#4}%
+   \else
+     \resetXMLarguments{#2}% new
+   \fi
+   #1{#2}{#5}{#6}}
+
+%D Arguments (attributes) \unknown
+
+% \long\def\setXMLarguments#1#2#3% element [tag] settings
+%   {\doifassignmentelse{#2}
+%      {\long\setvalue{\@@XMLpars:#1}{\getrawparameters[\@@XMLvariable:#1:][#2]}}
+%      {\long\setvalue{\@@XMLmap :#1}{#2}% later we can init vars by this name
+%       \doifsomething{#3}{\long\setvalue{\@@XMLpars:#1}{\getrawparameters[#2][#3]}}}}
+
+\long\def\setXMLarguments#1#2#3% element [tag] settings
+  {\doifassignmentelse{#2}  % ROOM FOR OPTIMIZATION
+     {\letbeundefined{\@@XMLmap:#1}%
+      \long\setvalue{\@@XMLpars:#1}{\getrawparameters[\@@XMLvariable:#1:][#2]}}
+     {\long\setvalue{\@@XMLmap:#1}{#2}% later we can init vars by this name
+      \doifsomething{#3}{\long\setvalue{\@@XMLpars:#1}{\getrawparameters[#2][#3]}}}}
+
+\def\presetXMLarguments#1%
+  {\csname\@@XMLpars:\rawXMLnamespace#1\endcsname} % == \getvalue{}
+
+\prependtoks
+  \presetXMLarguments\rawXMLidentifier
+\to \everyXMLelement
+
+%D We now overload the previously defined argument setter by one
+%D that is faster when definitions are surrounded by
+%D
+%D \starttyping
+%D \startXMLcompiling ... \stopXMLcompiling
+%D \stoptyping
+%D
+%D This method is twice as fast on (for instance) 100K calls to
+%D an empty element with 10 arguments.
+
+% \long\def\prepareXMLargument#1#2#3%
+%   {\scratchtoks\expandafter{\the\scratchtoks\@EA\def\csname#1#2\endcsname{#3}}}
+
+% \long\def\prepareXMLargument#1#2#3%
+%   {\scratchtoks\@EA\@EA\@EA{\@EA\the\@EA\scratchtoks\@EA\def\csname\@@XMLvariable:#1:#2\endcsname{#3}}}
+
+% \let\@@globalprefix\empty
+
+% \long\def\prepareXMLargument#1#2#3%
+%   {\expanded{\scratchtoks
+%      {\the\scratchtoks
+%       \def\@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname{#3}%
+%       \noexpand\@EA\let\noexpand\csname\@@XMLvariable:\noexpand\the\numexpr(\XMLdepth+1):#2\endcsname
+%       \@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname}}}
+
+\long\def\prepareXMLargument#1#2#3%
+  {\expanded{\scratchtoks
+     {\the\scratchtoks
+      \def\@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname{#3}%
+      \noexpand\@EA\let\noexpand\csname\@@XMLvariable:\noexpand\the\numexpr\XMLdepth+\plusone\relax:#2\endcsname
+      \@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname}}}
+
+\long\def\setXMLargumentsN#1#2#3% element [tag] settings
+  {\doifassignmentelse{#2}
+     {\letbeundefined{\@@XMLmap:#1}%
+      \long\setvalue{\@@XMLpars:#1}{\getrawparameters[\@@XMLvariable:#1:][#2]}}
+     {\long\setvalue{\@@XMLmap:#1}{#2}% later we can init vars by this name
+      \doifsomething{#3}{\long\setvalue{\@@XMLpars:#1}{\getrawparameters[#2][#3]}}}}
+
+\long\def\setXMLargumentsP#1#2#3% element settings empty (we cannot test for assignment)
+  {\letbeundefined{\@@XMLmap:#1}%
+   \bgroup
+     %def\XMLinheritance{\noexpand\XMLinheritance}
+     \def\XMLop##1{\noexpand\XMLpar{#1}{##1}{}}%
+     \def\XMLpar{\noexpand\XMLpar}%
+     \def\XMLanc{\noexpand\XMLanc}%
+     \def\XMLinh{\noexpand\XMLinh}%
+     \xdef\!!XMLattr{[#1][#2]}%
+     \scratchtoks\emptytoks
+     \@EA\dogetparameters\@EA\prepareXMLargument\!!XMLattr
+     \xdef\globalnext{\the\scratchtoks}%
+   \egroup
+   \letvalue{\@@XMLpars:#1}\globalnext
+   \globallet\globalnext\relax}
+
+\def\defineXMLattributeset{\dodoubleargument\dodefineXMLattributeset}
+\def\extendXMLattributeset{\dodoubleargument\doextendXMLattributeset}
+
+\def\dodefineXMLattributeset[#1][#2]{\setvalue   {\@@XMLpars::#1}{#2}}
+\def\doextendXMLattributeset[#1][#2]{\appendvalue{\@@XMLpars::#1}{,#2}}
+
+\def\XMLattributeset  #1{\executeifdefined{\@@XMLpars::#1}\empty}
+%def\XMLinheritance   #1{\executeifdefined{\@@XMLpars:#1}\empty}
+\def\showXMLattributes#1{\showvalue{\@@XMLpars:#1}}
+
+\chardef\@@precompile\zerocount
+
+\def\setXMLarguments
+  {\ifcase\@@precompile
+     \expandafter\setXMLargumentsN
+   \else
+     \expandafter\setXMLargumentsP
+   \fi}
+
+\def\startXMLcompiling
+  {\dosingleargument\dostartXMLcompiling}
+
+% \def\dostartXMLcompiling[#1]%
+%   {\iffirstargument
+%      \copyXMLargumentindeed % when needed, from now on -)
+%      \def\@@globalprefix{#1}%
+%    \fi
+%    \chardef\@@precompile\plusone}
+
+\def\dostartXMLcompiling[#1]%
+  {\doif{#1}\v!inherit
+     \copyXMLargumentindeed
+   \chardef\@@precompile\plusone}
+
+\def\stopXMLcompiling
+  {\chardef\@@precompile\zerocount} % no \let\@@globalprefix\empty
+
+%D Interesting what kind of things are needed \unknown
+
+\appendtoks
+  \ifdefined\disablelanguagespecifics\disablelanguagespecifics\fi
+\to \everyenableXML
+
+\long\def\longempty{}
+\long\def\longspace{ }
+
+% \def\doifelseXMLdata#1% always empty at start [gets a long assignment]
+%   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\firstoftwoarguments
+%    \fi}
+%
+% \def\doifXMLdata#1% always empty at start [gets a long assignment]
+%   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%    \fi}
+%
+% \let\doifXMLdataelse\doifelseXMLdata
+
+\def\doifelseXMLdata#1% always empty at start [gets a long assignment]
+  {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\doifXMLdata#1% always empty at start [gets a long assignment]
+  {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\let\doifXMLdataelse\doifelseXMLdata
+
+\def\doifelseXMLempty#1%
+  {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
+     \expandafter\firstoftwoarguments
+   \else\@EA\ifx\csname\@@XMLdata:#1\endcsname\longspace
+     \expandthree\firstoftwoarguments
+   \else
+     \expandthree\secondoftwoarguments
+   \fi\fi}
+
+% test case:
+%
+% \defineXMLenvironmentsave[test]
+%    {}
+%    {\message{[\XMLflush{test}]}
+%     \message{\doifelseXMLdata {test}{}{no  }data}
+%     \message{/}
+%     \message{\doifelseXMLempty{test}{}{not }empty}
+%     \wait}
+%
+% \startXMLdata
+% <test>xxx</test>
+% <test></test>
+% <test> </test>
+% <test>   </test>
+% <test>       </test>
+% <test>   x    </test>
+% \stopXMLdata
+
+% \def\XMLflush#1% one level
+%   {\csname\@@XMLdata:#1\endcsname}
+
+% evt meer van dit gedoe en alle \longempty's vervangen
+
+\def\XMLflush#1% one level
+  {\csname\ifcsname\@@XMLdata:#1\endcsname\@@XMLdata:#1\else\s!empty\fi\endcsname}
+
+%D \starttyping
+%D \defineXMLenvironmentsave[formula]{}{$\XMLtexdata{formula}$}
+%D
+%D \startXMLdata
+%D <formula>t+3+x+t\neq m\alpha\frac\theta\hbar</formula>
+%D \stopXMLdata
+%D \stoptyping
+
+\def\XMLtexdata#1%
+  {\begingroup
+   \disableXML
+   \scantokens\@EA\@EA\@EA{\csname\@@XMLdata:#1\endcsname}%
+   \endgroup}
+
+\def\XMLflushdata#1% see m-steps for usage
+  {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty\else
+     %\@EAEAEA\XMLdata\@EA\@EA\@EA{\csname\@@XMLdata:#1\endcsname}%
+     \@EA\XMLdata\csname\@@XMLdata:#1\endcsname
+   \fi}
+
+\def\XMLflushasis#1%
+  {\detokenize\@EAEAEA{\csname\@@XMLdata:#1\endcsname}}
+
+\let\XMLpop    \XMLflush
+\let\XMLpopdata\XMLflushdata
+
+\def\XMLappend#1#2% let to empty expands to nothing -)
+  {\long\@EA\edef\csname\@@XMLdata:#1\endcsname{\csname\@@XMLdata:#1\endcsname#2}}
+
+\def\XMLprepend#1#2% let to empty expands to nothing -)
+  {\long\@EA\edef\csname\@@XMLdata:#1\endcsname{#2\csname\@@XMLdata:#1\endcsname}}
+
+\def\XMLerase#1%
+  {\@EA\let\csname\@@XMLdata:#1\endcsname\longempty}
+
+\def\XMLassign#1%
+  {\long\@EA\def\csname\@@XMLdata:#1\endcsname}
+
+\def\dontparseXMLelement#1>{}
+
+\def\simplifyXMLelements{\let\parseXMLelement\dontparseXMLelement}
+
+\def\defXMLstring#1#2%
+  {\bgroup
+   \enableXMLexpansion
+   \simplifyXMLelements
+   \let\getXMLentity\firstofoneargument
+   \XMLrawentitiestrue
+   \chardef\utfunicodetracer7% new
+   \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
+   \egroup
+   \defconvertedcommand#1\@@XML@@string}
+
+% this has to expand nicely:
+%
+% <!DOCTYPE XXX SYSTEM "xxx" [ <!ENTITY aaa "../www/"> <!ENTITY bbb SYSTEM "&aaa;mmm.eps"> ]>
+%
+% so keep the following as is!
+
+\def\defXMLclean#1#2%
+  {\bgroup
+   \enableXMLexpansion
+   \simplifyXMLelements
+   \simplifyXMLentities
+   \chardef\utfunicodetracer7% new
+   \let\getXMLentity\expandedXMLentity % should this go in \simplify ?
+   \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
+   \egroup
+   \defconvertedcommand#1\@@XML@@string}
+
+\def\defXMLpar#1#2#3% to be documented
+  {\@EA\def\@EA#1\csname\ifcsname\@@XMLvariable:#2:#3\endcsname\@@XMLvariable:#2:#3\else\s!empty\fi\endcsname}
+
+\def\setvalueXMLpar#1#2#3% to be documented
+  {\@EA\let\csname#1\@EA\endcsname\csname\ifcsname\@@XMLvariable:#2:#3\endcsname\@@XMLvariable:#2:#3\else\s!empty\fi\endcsname}
+
+\def\XMLshow#1%
+  {\showvalue{\@@XMLdata:#1}}
+
+\def\XMLunspace#1% kan sneller
+  {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty\else
+     \long\@EA\edef\csname\@@XMLdata:#1\endcsname
+       {\@EAEAEA\dounspaced\csname\@@XMLdata:#1\endcsname\end}%
+   \fi}
+
+\chardef\asciispacecode=32
+
+\def\defXMLlowerclean#1% lowercase ! evt tzt upper too
+  {\bgroup
+   \lccode`\#\asciispacecode
+   \lccode`\$\asciispacecode
+   \lccode`\%\asciispacecode
+   \lccode`\\\asciispacecode
+   \lccode`\^\asciispacecode
+   \lccode`\_\asciispacecode
+   \lccode`\{\asciispacecode
+   \lccode`\}\asciispacecode
+   \lccode`\|\asciispacecode
+   \lccode`\~\asciispacecode
+   \@EA\lowercase\@EA{\@EA\xdef\@EA#1\@EA{#1}}%
+   \egroup}
+
+\def\processXMLparelse#1#2#3#4%
+  {\processaction
+     [\XMLpar{#1}{#2}{}]
+     [#3,\s!unknown=>{#4},\s!default={#4}]}
+
+%D We can pick up key|/|value pairs, but we still need a way
+%D to process these.
+
+% bugged
+%
+% \def\mapXMLvalue#1#2#3% td align center -> middle
+%   {\setvalue{\@@XMLvalue:#1:#2:#3}}
+
+\def\mapXMLvalue#1#2#3% td:align center -> middle
+  {\setvalue{\@@XMLvalue:#1:#2}{#3}} % keep #3 to grab spaces
+
+\def\XMLvar#1#2#3% td align center
+  {\ifcsname\@@XMLvariable:#1:#2\endcsname
+     \XMLval{#1}{#2}{\csname\@@XMLvariable:#1:#2\endcsname}%
+   \else
+     \XMLval{#1}{#2}{#3}% evt inline code
+   \fi}
+
+% \def\XMLvar#1#2#3% td align center
+%   {\XMLval{#1}{#2}{\ifcsname\@@XMLvariable:#1:#2\endcsname
+%      \csname\@@XMLvariable:#1:#2\endcsname\else#3\fi}}
+
+% \def\XMLval#1#2#3% td:align value default
+%   {\ifcsname\@@XMLvalue:#1:#2\endcsname
+%      \csname\@@XMLvalue:#1:#2\endcsname
+%    \else
+%      #3%
+%    \fi}
+%
+% The next one permits commands instead of strings in #3
+
+\def\XMLval#1#2% #1=td:align #2=value #3=default
+  {\ifcsname\@@XMLvalue:#1:#2\endcsname
+     \@EA\firstoftwoarguments
+   \else
+     \@EA\secondoftwoarguments
+   \fi
+   {\csname\@@XMLvalue:#1:#2\endcsname}}
+
+\def\XMLpar#1#2#3%
+  {\ifcsname\@@XMLvariable:#1:#2\endcsname
+     \csname\@@XMLvariable:#1:#2\endcsname
+   \else
+     #3%
+   \fi}
+
+\def\XMLNSpar#1#2#3#4% element namespace name default
+  {\ifcsname\@@XMLvariable:#1:#2:#3\endcsname
+     \csname\@@XMLvariable:#1:#2:#3\endcsname
+   \else
+     #4%
+   \fi}
+
+% \def\setXMLpar#1#2%
+%   {\@EA\def\csname\@@XMLvariable:#1:#2\endcsname}
+
+\def\letXMLpar #1#2{\@EA \let\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLpar #1#2{\@EA \def\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLepar#1#2{\@EA\edef\csname\@@XMLvariable:#1:#2\endcsname}
+
+% ancestor arguments:
+%
+% \defineXMLenvironment
+%   [fo:root]
+%   [test=unset]
+%   {\beginXMLelement}
+%   {\endXMLelement}
+%
+% \defineXMLenvironment
+%   [fo:block-container]
+%   [test=oeps]
+%   {\beginXMLelement}
+%   {\endXMLelement}
+%
+% \defineXMLenvironment
+%   [fo:block]
+%   {\beginXMLelement
+%    \begingroup}
+%   {\endgroup
+%    \XMLanc{test}{}
+%    \endXMLelement}
+%
+% \startXMLdata
+% <fo:root>
+%     <fo:block-container test='first'><fo:block test='second'>second:</fo:block></fo:block-container>
+%     <fo:block>unset:</fo:block>
+%     <fo:block test='outer'><fo:block test='nested'><fo:block>deep:</fo:block>nested:</fo:block>outer:</fo:block>
+%     <fo:block test='last'>last:</fo:block>
+% </fo:root>
+% \stopXMLdata
+%
+% \startXMLdata
+% <fo:root>
+%     <fo:block-container test='first'><fo:block>second:</fo:block></fo:block-container>
+%     <fo:block>unset:</fo:block>
+%     <fo:block test='second'><fo:block><fo:block>deep:</fo:block>nested:</fo:block>outer:</fo:block>
+%     <fo:block>last:</fo:block>
+% </fo:root>
+% \stopXMLdata
+%
+% \startXMLdata
+% <fo:root>
+%     <fo:block-container test='first'><fo:block>second:</fo:block></fo:block-container>
+%     <fo:block>unset:</fo:block>
+%     <fo:block><fo:block><fo:block>deep:</fo:block>nested:</fo:block>outer:</fo:block>
+%     <fo:block>last:</fo:block>
+% </fo:root>
+% \stopXMLdata
+
+% dit werkt alleen ok in niet <a> <b> <b> ... situaties omdat anders
+% de laatste b de attributen van de vorige heeft:
+
+\def\XMLanc#1%
+  {\ifcsname\@@XMLvariable:\currentXMLelement:#1\endcsname % \ownXMLelement
+     \csname\@@XMLvariable:\currentXMLelement:#1\endcsname % \ownXMLelement
+     \@EA\gobblethreearguments
+   \else
+     \@EA\pXMLanc
+   \fi\XMLdepth{#1}}
+
+% \def\pXMLanc#1%
+%   {\@EA\ppXMLanc\@EA{\the\numexpr(#1-\plusone)}}
+
+\def\pXMLanc#1%
+  {\@EA\ppXMLanc\@EA{\the\numexpr#1-\plusone\relax}}
+
+\def\ppXMLanc#1#2#3%
+  {\ifcsname\@@XMLdepth:#1\endcsname % is er altijd dus redundant
+     \ifcsname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname
+       \csname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname
+       \@EAEAEA\gobblethreearguments
+     \else
+       \@EAEAEA\pppXMLanc
+     \fi
+   \else
+     \@EA\pppXMLanc
+   \fi{#1}{#2}{#3}}
+
+\def\pppXMLanc#1%
+  {\ifnum#1>\zerocount
+     \@EA\pXMLanc
+   \else
+     \@EA\thirdofthreearguments
+   \fi{#1}}
+
+%D Experimental (not sure if this will stay):
+%D
+%D \starttyping
+%D \startdefineXMLhandlers[one,two]
+%D
+%D   \defineXMLenvironment[a=b,c=\XMLop{a}]
+%D     {}{}
+%D
+%D \stopdefineXMLhandlers
+%D \stoptyping
+
+\long\def\startdefineXMLhandlers
+  {\bgroup\catcode`\^^M=\@@space
+   \dodoubleempty\dostartdefineXMLhandlers}
+
+\long\def\dostartdefineXMLhandlers[#1][#2]#3#4\stopdefineXMLhandlers % #2 is dummy
+  {\egroup
+   \long\def\dodefineXMLhandlers##1{#3[##1]#4}%
+   \processcommalist[#1]\dodefineXMLhandlers}
+
+\let\currentXMLhandler\s!unknown
+
+% \long\def\dostartdefineXMLhandlers[#1][#2]#3#4[#5]#6\stopdefineXMLhandlers % #2 is dummy
+%   {\egroup
+%    \pushmacro\XMLop
+%    \pushmacro\XMLpar
+%    \pushmacro\currentXMLhandler
+%    \long\def\dodefineXMLhandlers##1%
+%      {\edef\currentXMLhandler{##1}%
+%       \def\XMLop####1{\noexpand\XMLpar{##1}{####1}{}}%
+%       \def\XMLpar{\noexpand\XMLpar}%
+%       \def\XMLanc{\noexpand\XMLanc}%
+%       \edef\!!stringa{[##1][#5]}%
+%       \expandafter#3\!!stringa#6}%
+%    \processcommalist[#1]\dodefineXMLhandlers
+%    \popmacro\currentXMLhandler
+%    \popmacro\XMLpar
+%    \popmacro\XMLop}
+
+\long\def\dostartdefineXMLhandlers[#1][#2]#3#4[#5]#6\stopdefineXMLhandlers % #2 is dummy
+  {\egroup
+   \long\def\dodefineXMLhandlers##1%
+     {\bgroup
+        \edef\currentXMLhandler{##1}%
+        \def\XMLop####1{\noexpand\XMLpar{##1}{####1}{}}%
+        \def\XMLpar{\noexpand\XMLpar}%
+        \def\XMLanc{\noexpand\XMLanc}%
+        \def\XMLinh{\noexpand\XMLinh}%
+        \xdef\!!XMLattr{[##1][#5]}%
+      \egroup
+      \expandafter#3\!!XMLattr#6}%
+   \processcommalist[#1]\dodefineXMLhandlers}
+
+\def\XMLpav#1#2#3#4%
+  {\XMLval{#1}{\XMLpar{#2}{#3}{}}{#4}}
+
+%D A few weird ones:
+
+\def\TEXpar#1#2%
+  {\csname#1\interfaced{#2}\endcsname}
+
+\let\texXMLpar\TEXpar % soon obsolete
+
+\let\XMLtex\TEXpar
+
+% handy one
+
+\def\XMLtyp#1#2#3%
+  {\ifcsname\@@XMLvariable:#1:#2\endcsname
+     \@EA\defconvertedcommand\@EA\ascii\csname\@@XMLvariable:#1:#2\endcsname
+   \else
+     \defconvertedargument\ascii{#3}%
+   \fi
+   \ascii}
+
+\defineXMLsingular [begingroup]        {\begingroup}
+\defineXMLsingular [endgroup]          {\endgroup}
+\defineXMLsingular [gobblespacetokens] {\gobblespacetokens}
+\defineXMLsingular [disableXML]        {\disableXML}
+
+\long\def\XMLstr#1%
+  {{\enableXML\scantokens{#1}\unskip}}
+
+\long\def\XMLstr#1% test, does not work
+  {\ifprocessingXML
+   % \begingroup\enableXML\scantokens{#1<endgroup/><gobblespacetokens/>}%
+     \scantokens{#1<gobblespacetokens/>}%
+   \else
+     \begingroup\enableXML\scantokens{#1<endgroup/>\ignorespaces}%
+   \fi}
+
+\def\XMLgetvariable#1#2% hooks into generic \getvariable and setvariables
+  {\expanded{\XMLstr{\getvariable{#1}{#2}}}}
+
+\long\def\XMLstrpar#1#2#3% test
+  {\ifcsname\@@XMLvariable:#1:#2\endcsname
+     \scantokens\@EAEAEA{\@EA\begingroup\@EA\enableXML
+       \csname\@@XMLvariable:#1:#2\endcsname<endgroup/>}%
+   \else
+     \scantokens{\begingroup\enableXML#3<endgroup/>}%
+   \fi}
+
+\def\doifXMLvarelse#1#2% geen etex, \relax too
+  {\ifcsname\@@XMLvariable:#1:#2\endcsname
+     \expandafter\ifx\csname\@@XMLvariable:#1:#2\endcsname\empty
+       \@EAEAEA\secondoftwoarguments
+     \else
+       \@EAEAEA\firstoftwoarguments
+     \fi
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\def\doifXMLvar#1#2% geen etex, \relax too
+  {\ifcsname\@@XMLvariable:#1:#2\endcsname
+     \expandafter\ifx\csname\@@XMLvariable:#1:#2\endcsname\empty
+       \@EAEAEA\gobbleoneargument
+     \else
+       \@EAEAEA\firstofoneargument
+     \fi
+   \else
+     \@EA\gobbleoneargument
+   \fi}
+
+\def\doifXMLvalelse#1#2% geen etex, \relax too
+  {\ifcsname\@@XMLvalue:#1:#2\endcsname
+     \expandafter\ifx\csname\@@XMLvalue:#1:#2\endcsname\empty
+       \@EAEAEA\secondoftwoarguments
+     \else
+       \@EAEAEA\firstoftwoarguments
+     \fi
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\let\doifXMLparelse\doifXMLvarelse
+\let\doifXMLpar    \doifXMLvar
+
+%D Used in x-fo: I really need to document this!
+
+\bgroup \catcode`\<=\active
+
+% usage: \expanded{\rescanXMLatttributes{fo:table-cell}}
+
+\gdef\rescanXMLattributes  #1{\noexpand\dogetXMLarguments{#1}\currentXMLarguments>}
+\gdef\parseXMLattributes #1#2{\dogetXMLarguments{#1}#2>}
+
+\egroup
+
+\def\defXMLattributestring#1#2#3#4%
+  {\ifcsname\@@XMLvariable:#2:#3\endcsname
+     \@EA\defconvertedcommand\@EA#1\csname\@@XMLvariable:#2:#3\endcsname
+   \else
+     \defconvertedargument#1{#4}%
+   \fi}
+
+\def\XMLprocess#1%
+  {\begingroup\enableXML\XMLflush{#1}\endgroup}
+
+\bgroup \catcode`<=\@@active
+
+\long\gdef\ignoreuntilXMLelement#1<{<}
+\long\gdef\grabuntilXMLelement  #1<\to#2{\def#2{#1}<}
+
+\egroup
+
+%D Saves tokens and typing.
+
+\def\XMLownvar        {\XMLvar        {\rawXMLnamespace\rawXMLidentifier}}
+\def\XMLownval        {\XMLval        {\rawXMLnamespace\rawXMLidentifier}}
+\def\XMLownpar        {\XMLpar        {\rawXMLnamespace\rawXMLidentifier}}
+\def\XMLownstrpar     {\XMLstrpar     {\rawXMLnamespace\rawXMLidentifier}}
+\def\doifXMLownvarelse{\doifXMLvarelse{\rawXMLnamespace\rawXMLidentifier}}
+\def\doifXMLownvalelse{\doifXMLvalelse{\rawXMLnamespace\rawXMLidentifier}}
+\def\doifXMLownparelse{\doifXMLparelse{\rawXMLnamespace\rawXMLidentifier}}
+
+\def\letXMLpar #1#2{\@EA \let\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLpar #1#2{\@EA \def\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLepar#1#2{\@EA\edef\csname\@@XMLvariable:#1:#2\endcsname}
+
+\def\ownXMLelement{\rawXMLnamespace\rawXMLidentifier}
+
+\def\XMLop#1% ownpar
+  {\csname\ifcsname\@@XMLvariable:\ownXMLelement:#1\endcsname
+     \@@XMLvariable:\ownXMLelement:#1\else\s!empty
+   \fi\endcsname}
+
+\def\XMLtp#1% texpar
+  {\csname\ifcsname\@@XMLmapmap\interfaced{#1}\endcsname
+     \@@XMLmapmap\interfaced{#1}\else\s!empty
+   \fi\endcsname}
+
+\def\doifelseXMLop#1{\doifelse{\XMLop{#1}}}
+\def\doifXMLop    #1{\doif    {\XMLop{#1}}}
+\def\doifnotXMLop #1{\doifnot {\XMLop{#1}}}
+
+\def\doifelsenothingXMLop#1{\doifelsenothing{\XMLop{#1}}}
+\def\doifsomethingXMLop  #1{\doifsomething  {\XMLop{#1}}}
+\def\doifnothingXMLop    #1{\doifnothing    {\XMLop{#1}}}
+
+\def\doifelseXMLtp#1{\doifelse{\XMLtp{#1}}}
+\def\doifXMLtp    #1{\doif    {\XMLtp{#1}}}
+\def\doifnotXMLtp #1{\doifnot {\XMLtp{#1}}}
+
+\def\doifelsenothingXMLtp#1{\doifelsenothing{\XMLtp{#1}}}
+\def\doifsomethingXMLtp  #1{\doifsomething  {\XMLtp{#1}}}
+\def\doifnothingXMLtp    #1{\doifnothing    {\XMLtp{#1}}}
+
+\def\XMLflushself{\csname\@@XMLdata:\ownXMLelement\endcsname}
+
+\def\showXMLdata#1{\showvalue{\@@XMLdata:#1}}
+
+\def\XMLta      {\theXMLarguments\@@XMLmapmap}
+\def\getXMLta   {\expanded{\getparameters[\@@XMLmapmap][\XMLta]}}
+\def\expandXMLta{\expandXMLarguments\@@XMLmapmap}
+\def\expandXMLtp{\expandTEXpar\@@XMLmapmap} % #1
+
+\def\getXMLparameters[#1]% faster than \rawgetparameters[#1][\theXMLar..]
+  {\ifcsname\@@XMLmap:#1\endcsname
+     \expanded{\rawgetparameters[#1][\csname\@@XMLmap:#1\endcsname]}%
+   \fi}
+
+\def\defXMLop#1#2{\@EA\let\@EA#1\csname\@@XMLvariable:\ownXMLelement:#2\endcsname}
+\def\defXMLtp#1#2{\@EA\let\@EA#1\csname\@@XMLmapmap\interfaced{#2}\endcsname}
+
+%D ...
+
+\def\protectXMLdata
+  {\catcode`\^^I\@@space
+   \catcode`\^^M\@@space
+   \catcode`\^^L\@@space
+   \catcode`\#\@@other}
+
+\long\def\startXMLcode
+  {\begingroup
+   \protectXMLdata
+   \dostartXMLcode}
+
+\long\def\dostartXMLcode[#1] #2 \stopXMLcode
+  {\@EA\gdef\csname\@@XMLcode:#1\endcsname{\startXMLdata#2\stopXMLdata}%
+   \endgroup}
+
+\def\getXMLcode[#1]% \expandXMLcode
+  {\csname\@@XMLcode:#1\endcsname}
+
+% \long\def\startXMLdata#1\stopXMLdata%
+%   {\begingroup\enableXML\scantokens{#1}\endgroup}
+%
+% \defineXMLentity[tex-backslash] {\catchXMLpar}
+%
+% \def\catchXMLpar#1#2#3
+%   {\if#1p\if#2a\if#3r\ifmmode\else\endgraf\fi
+%    \else\texescape\fi\else\texescape\fi\else\texescape\fi}
+
+\long\def\startXMLdata
+  {\begingroup
+   \protectXMLdata
+   \dostartXMLdata}
+
+\long\def\dostartXMLdata#1\stopXMLdata % evt \everyeof{}
+  {\enableXML\scantokens{#1<gobblespacetokens/>}%
+   \endgroup
+   \ifhmode\unskip\unskip\fi}
+
+% suboptimal:
+%
+% \unexpanded\def\XMLdata#1% % \unexpanded added 22/5/2001
+%   {\begingroup
+%    \enableXML\scantokens{#1}\ifhmode\unskip\unskip\fi
+%    \endgroup}
+%
+% better but does not work in tables:
+%
+% \unexpanded\def\XMLdata#1% % grouping changed 20/5/2001
+%   {\scantokens{\begingroup\enableXML#1<endgroup/>\gobblespacetokens}}
+%
+% currently:
+
+\unexpanded\def\XMLdata % # safe
+  {\begingroup
+   \protectXMLdata
+   \doXMLdata}
+
+\def\doXMLdata#1%
+  {\enableXML
+   \scantokens{#1<gobblespacetokens/>}%
+   \endgroup}
+
+%D
+
+\def\bXMLs{\ifignoreXMLspaces\ignorespaces\fi}
+\def\eXMLs{\ifignoreXMLspaces\ifhmode\unskip\fi\fi}
+
+\protect
+
+% \defineXMLcommand{placeindex/}
+%   {\placeindex[criterium=all]}
+%
+% \defineXMLargument{index}
+%   {\index[\XMLvar{index}{key}{}]}
+
+%D Here we implement the handling of preformatted code.
+
+\unprotect
+
+\def\startXMLpreformatted#1%
+  {\startpacked
+   #1%
+   \fixedXMLfonttrue
+   \obeylines
+   \obeyspaces
+   \setbox\scratchbox=\hbox{x}%
+   \edef\obeyedspace{\noindent\noexpand\kern\the\wd\scratchbox}}
+
+\def\stopXMLpreformatted#1%
+  {\stoppacked}
+
+%D
+
+\def\XMLinput{\enableXML\input} \global\let\inputXML\XMLinput
+
+% options
+
+\def\processXMLfile       #1{\enableXML\processfile{#1}}
+\def\processXMLfilegrouped#1{{\enableXML\processfile{#1}\relax\ifmmode\else\par\fi}}
+
+%D \type
+%D   {processXMLbuffer}
+%D
+%D For illustrative purposes, we need to be able to reuse
+%D definitions, which is why we implement a buffer processor
+%D here. The macro \type {\processXMLbuffer} behaves like
+%D any buffer processor.
+
+\def\processXMLbuffer
+  {\dosingleempty\doprocessXMLbuffer}
+
+\def\doprocessXMLbuffer[#1]%
+  {\doifelsenothing{#1}
+     {\doprocessXMLbuffer[\jobname]}
+     {\begingroup
+      \enableXML
+      \def\dodoprocessXMLbuffer##1{\getbuffer[##1]}%
+      \processcommalist[#1]\dodoprocessXMLbuffer
+      \endgroup}}
+
+%D Loading specific modules takes place with \type
+%D {\useXMLfilters}.
+
+% todo: flag
+
+\def\useXMLfilter[#1]%
+  {\processcommalist[#1]\douseXMLfilter}
+
+\def\douseXMLfilter#1%
+  {\doifundefined{\c!file\f!xtagprefix#1}
+     {\letvalue{\c!file\f!xtagprefix#1}\empty
+      \makeshortfilename[\truefilename{\f!xtagprefix#1}]%
+      \startreadingfile
+        % will be \showmessage
+        \readsysfile\shortfilename{\writestatus{xml}{loading module #1}}\donothing
+      \stopreadingfile}}
+
+%D Temporarily here.
+
+\newtoks\groupedtoks
+\newif\ifcollectXMLgrouped
+
+\bgroup \catcode`\<=\@@active
+
+\newtoks\XMLgtoks
+
+\long\unexpanded\gdef\getXMLgroupedenvironment#1#2#3%
+  {\collectXMLgroupedtrue
+   \XMLgtoks{#2}%
+   \long\def\dodogetgrouped{\@EA\the\@EA\XMLgtoks\the\groupedtoks#3}%
+   \getXMLgrouped{#1}}
+
+\long\unexpanded\gdef\getXMLgroupedargument#1#2%
+  {\collectXMLgroupedtrue
+   \XMLgtoks{#2}%
+   \long\def\dodogetgrouped{\@EA\the\@EA\XMLgtoks\@EA{\the\groupedtoks}}%
+   \getXMLgrouped{#1}}
+
+\long\unexpanded\gdef\getXMLgroupedignore#1%
+  {\collectXMLgroupedfalse
+   \let\dodogetgrouped\relax
+   \getXMLgrouped{#1}}
+
+\long\gdef\docountXMLgrouped#1\end#2\end % 1 relax is enough since it's
+  {\long\def\dosplitXMLstring##1#1##2\relax\relax##3\end % another regime
+     {\def\ascii{##2}%
+      \ifx\ascii\empty \else
+        \advance\scratchcounter \plusone
+        \dosplitXMLstring##2\relax\relax#1\relax\relax\end
+      \fi}%
+   \dosplitXMLstring#2\relax\relax#1\relax\relax\end}
+
+\long\unexpanded\gdef\getXMLgrouped#1% #1 kan weg % klopt dit nu?
+  {\groupedtoks\emptytoks
+   \scratchcounter\zerocount
+   \edef\theXMLnamespace
+     {\ifx\originalXMLnamespace\empty\else\originalXMLnamespace:\fi
+      \currentXMLidentifier}%
+   \expanded{\long\noexpand\def\noexpand\dogetgrouped####1\noexpand</\currentXMLelement>}%
+     {\ifcollectXMLgrouped\appendtoks##1\to\groupedtoks\fi
+      \@EA\docountXMLgrouped\@EA<\theXMLnamespace>\end##1\end
+      \@EAEAEA\docountXMLgrouped\@EA\@EA\@EA<\@EA\theXMLnamespace\space \end##1\end
+      \ifcase\scratchcounter
+        \let\dogetgrouped\dodogetgrouped
+      \else
+        \advance\scratchcounter \minusone
+        \ifcollectXMLgrouped\@EA\appendtoks\@EA<\@EA/\currentXMLelement>\to\groupedtoks\fi
+      \fi
+      \dogetgrouped}%
+   \dogetgrouped}
+
+\egroup
+
+% interesting and fully expandable
+
+\def\XMLownifequalelse#1#2%
+  {\@EAEAEA\@@ifequal\csname\@@XMLvariable:\ownXMLelement:#1\endcsname\relax\@@and#2\relax\@@then}
+
+% \def\XMLifequalelse#1#2#3%
+%   {\@EAEAEA\@@ifequal\csname\@@XMLvariable:#1:#2\endcsname\relax\@@and#3\relax\@@then}
+
+\def\XMLifequalelse#1#2%
+  {\ifcsname\@@XMLvariable:#1:#2\endcsname
+   % \@EAEAEA\doXMLifequalelse\@EA\@EA\csname\@@XMLvariable:#1:#2\endcsname
+     \@EA\doXMLifequalelse\csname\@@XMLvariable:#1:#2\@EA\endcsname
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\def\doXMLifequalelse#1#2%
+  {\@EA\@@ifequal#1\relax\@@and#2\relax\@@then}
+
+%D \starttyping
+%D \defineXMLenvironment[test][a=1]
+%D   {\XMLownifequalelse{a}{2}{YES}{NO}}
+%D   {}
+%D
+%D \defineXMLenvironment[test][a=1]
+%D   {\XMLifequalelse{test}{a}{1}{YES}{NO}}
+%D   {}
+%D
+%D \startXMLdata
+%D <test a="1">test</test>
+%D \stopXMLdata
+%D \stoptyping
+
+\def\XMLyes#1{\XMLownifequalelse{#1}{yes}{#1}{}}
+
+%D The next macro will set the variable \type {\flattenedXMLcontent}
+%D to the content with elements removed and entity names.
+
+\bgroup
+
+\catcode`\<\active
+\catcode`\&\active
+
+\gdef\flattenXMLcontent#1% we need taco's 'over one group'
+  {\begingroup
+   \keeputfcharacters
+   \def<##1>{}%
+   \def&##1;{##1}%
+   \edef\flattenedXMLcontent{#1}%
+   \edef\flattenedXMLcontent{\expandafter\dounspaced\flattenedXMLcontent\end}%
+   \@EA\endgroup
+   \@EA\def\@EA\flattenedXMLcontent\@EA{\flattenedXMLcontent}}
+
+\egroup
+
+\def\defXMLexpanded#1#2%
+  {\begingroup
+   \let\getXMLentity\expandedXMLentity
+   \expanded{\endgroup\edef\noexpand#1{#2}}}
+
+\def\gdefXMLexpanded#1#2%
+  {\begingroup
+   \let\getXMLentity\expandedXMLentity
+   \expanded{\endgroup\xdef\noexpand#1{#2}}}
+
+\protect \endinput

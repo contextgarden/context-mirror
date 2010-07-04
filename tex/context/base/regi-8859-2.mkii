@@ -1,0 +1,152 @@
+%D \module
+%D   [       file=regi-8859-2,
+%D        version=2005.12.26,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=iso-8859-2 (East European),
+%D         author=script-generated,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Support for iso-8859-2/Latin2 input encoding (regime) for
+%D Central European languages, see also cp1250.
+%D
+%D Usage: \type{\enableregime[8859-2]} (see \type {regi-syn} for
+%D alternatives calls).
+
+\startregime[8859-2]
+
+\defineactivetoken 128 {\unknownchar}                % 0080 <control>
+\defineactivetoken 129 {\unknownchar}                % 0081 <control>
+\defineactivetoken 130 {\unknownchar}                % 0082 <control>
+\defineactivetoken 131 {\unknownchar}                % 0083 <control>
+\defineactivetoken 132 {\unknownchar}                % 0084 <control>
+\defineactivetoken 133 {\unknownchar}                % 0085 <control>
+\defineactivetoken 134 {\unknownchar}                % 0086 <control>
+\defineactivetoken 135 {\unknownchar}                % 0087 <control>
+\defineactivetoken 136 {\unknownchar}                % 0088 <control>
+\defineactivetoken 137 {\unknownchar}                % 0089 <control>
+\defineactivetoken 138 {\unknownchar}                % 008A <control>
+\defineactivetoken 139 {\unknownchar}                % 008B <control>
+\defineactivetoken 140 {\unknownchar}                % 008C <control>
+\defineactivetoken 141 {\unknownchar}                % 008D <control>
+\defineactivetoken 142 {\unknownchar}                % 008E <control>
+\defineactivetoken 143 {\unknownchar}                % 008F <control>
+\defineactivetoken 144 {\unknownchar}                % 0090 <control>
+\defineactivetoken 145 {\unknownchar}                % 0091 <control>
+\defineactivetoken 146 {\unknownchar}                % 0092 <control>
+\defineactivetoken 147 {\unknownchar}                % 0093 <control>
+\defineactivetoken 148 {\unknownchar}                % 0094 <control>
+\defineactivetoken 149 {\unknownchar}                % 0095 <control>
+\defineactivetoken 150 {\unknownchar}                % 0096 <control>
+\defineactivetoken 151 {\unknownchar}                % 0097 <control>
+\defineactivetoken 152 {\unknownchar}                % 0098 <control>
+\defineactivetoken 153 {\unknownchar}                % 0099 <control>
+\defineactivetoken 154 {\unknownchar}                % 009A <control>
+\defineactivetoken 155 {\unknownchar}                % 009B <control>
+\defineactivetoken 156 {\unknownchar}                % 009C <control>
+\defineactivetoken 157 {\unknownchar}                % 009D <control>
+\defineactivetoken 158 {\unknownchar}                % 009E <control>
+\defineactivetoken 159 {\unknownchar}                % 009F <control>
+\defineactivetoken 160 {\nonbreakablespace}          % 00A0 NO-BREAK SPACE
+\defineactivetoken 161 {\Aogonek}                    % 0104 LATIN CAPITAL LETTER A WITH OGONEK
+\defineactivetoken 162 {\textbreve}                  % 02D8 BREVE
+\defineactivetoken 163 {\Lstroke}                    % 0141 LATIN CAPITAL LETTER L WITH STROKE
+\defineactivetoken 164 {\textcurrency}               % 00A4 CURRENCY SIGN
+\defineactivetoken 165 {\Lcaron}                     % 013D LATIN CAPITAL LETTER L WITH CARON
+\defineactivetoken 166 {\Sacute}                     % 015A LATIN CAPITAL LETTER S WITH ACUTE
+\defineactivetoken 167 {\sectionmark}                % 00A7 SECTION SIGN
+\defineactivetoken 168 {\textdiaeresis}              % 00A8 DIAERESIS
+\defineactivetoken 169 {\Scaron}                     % 0160 LATIN CAPITAL LETTER S WITH CARON
+\defineactivetoken 170 {\Scedilla}                   % 015E LATIN CAPITAL LETTER S WITH CEDILLA
+\defineactivetoken 171 {\Tcaron}                     % 0164 LATIN CAPITAL LETTER T WITH CARON
+\defineactivetoken 172 {\Zacute}                     % 0179 LATIN CAPITAL LETTER Z WITH ACUTE
+\defineactivetoken 173 {\softhyphen}                 % 00AD SOFT HYPHEN
+\defineactivetoken 174 {\Zcaron}                     % 017D LATIN CAPITAL LETTER Z WITH CARON
+\defineactivetoken 175 {\Zdotaccent}                 % 017B LATIN CAPITAL LETTER Z WITH DOT ABOVE
+\defineactivetoken 176 {\textdegree}                 % 00B0 DEGREE SIGN
+\defineactivetoken 177 {\aogonek}                    % 0105 LATIN SMALL LETTER A WITH OGONEK
+\defineactivetoken 178 {\textogonek}                 % 02DB OGONEK
+\defineactivetoken 179 {\lstroke}                    % 0142 LATIN SMALL LETTER L WITH STROKE
+\defineactivetoken 180 {\textacute}                  % 00B4 ACUTE ACCENT
+\defineactivetoken 181 {\lcaron}                     % 013E LATIN SMALL LETTER L WITH CARON
+\defineactivetoken 182 {\sacute}                     % 015B LATIN SMALL LETTER S WITH ACUTE
+\defineactivetoken 183 {\textcaron}                  % 02C7 CARON
+\defineactivetoken 184 {\textcedilla}                % 00B8 CEDILLA
+\defineactivetoken 185 {\scaron}                     % 0161 LATIN SMALL LETTER S WITH CARON
+\defineactivetoken 186 {\scedilla}                   % 015F LATIN SMALL LETTER S WITH CEDILLA
+\defineactivetoken 187 {\tcaron}                     % 0165 LATIN SMALL LETTER T WITH CARON
+\defineactivetoken 188 {\zacute}                     % 017A LATIN SMALL LETTER Z WITH ACUTE
+\defineactivetoken 189 {\texthungarumlaut}           % 02DD DOUBLE ACUTE ACCENT
+\defineactivetoken 190 {\zcaron}                     % 017E LATIN SMALL LETTER Z WITH CARON
+\defineactivetoken 191 {\zdotaccent}                 % 017C LATIN SMALL LETTER Z WITH DOT ABOVE
+\defineactivetoken 192 {\Racute}                     % 0154 LATIN CAPITAL LETTER R WITH ACUTE
+\defineactivetoken 193 {\Aacute}                     % 00C1 LATIN CAPITAL LETTER A WITH ACUTE
+\defineactivetoken 194 {\Acircumflex}                % 00C2 LATIN CAPITAL LETTER A WITH CIRCUMFLEX
+\defineactivetoken 195 {\Abreve}                     % 0102 LATIN CAPITAL LETTER A WITH BREVE
+\defineactivetoken 196 {\Adiaeresis}                 % 00C4 LATIN CAPITAL LETTER A WITH DIAERESIS
+\defineactivetoken 197 {\Lacute}                     % 0139 LATIN CAPITAL LETTER L WITH ACUTE
+\defineactivetoken 198 {\Cacute}                     % 0106 LATIN CAPITAL LETTER C WITH ACUTE
+\defineactivetoken 199 {\Ccedilla}                   % 00C7 LATIN CAPITAL LETTER C WITH CEDILLA
+\defineactivetoken 200 {\Ccaron}                     % 010C LATIN CAPITAL LETTER C WITH CARON
+\defineactivetoken 201 {\Eacute}                     % 00C9 LATIN CAPITAL LETTER E WITH ACUTE
+\defineactivetoken 202 {\Eogonek}                    % 0118 LATIN CAPITAL LETTER E WITH OGONEK
+\defineactivetoken 203 {\Ediaeresis}                 % 00CB LATIN CAPITAL LETTER E WITH DIAERESIS
+\defineactivetoken 204 {\Ecaron}                     % 011A LATIN CAPITAL LETTER E WITH CARON
+\defineactivetoken 205 {\Iacute}                     % 00CD LATIN CAPITAL LETTER I WITH ACUTE
+\defineactivetoken 206 {\Icircumflex}                % 00CE LATIN CAPITAL LETTER I WITH CIRCUMFLEX
+\defineactivetoken 207 {\Dcaron}                     % 010E LATIN CAPITAL LETTER D WITH CARON
+\defineactivetoken 208 {\Dstroke}                    % 0110 LATIN CAPITAL LETTER D WITH STROKE
+\defineactivetoken 209 {\Nacute}                     % 0143 LATIN CAPITAL LETTER N WITH ACUTE
+\defineactivetoken 210 {\Ncaron}                     % 0147 LATIN CAPITAL LETTER N WITH CARON
+\defineactivetoken 211 {\Oacute}                     % 00D3 LATIN CAPITAL LETTER O WITH ACUTE
+\defineactivetoken 212 {\Ocircumflex}                % 00D4 LATIN CAPITAL LETTER O WITH CIRCUMFLEX
+\defineactivetoken 213 {\Ohungarumlaut}              % 0150 LATIN CAPITAL LETTER O WITH DOUBLE ACUTE
+\defineactivetoken 214 {\Odiaeresis}                 % 00D6 LATIN CAPITAL LETTER O WITH DIAERESIS
+\defineactivetoken 215 {\textmultiply}               % 00D7 MULTIPLICATION SIGN
+\defineactivetoken 216 {\Rcaron}                     % 0158 LATIN CAPITAL LETTER R WITH CARON
+\defineactivetoken 217 {\Uring}                      % 016E LATIN CAPITAL LETTER U WITH RING ABOVE
+\defineactivetoken 218 {\Uacute}                     % 00DA LATIN CAPITAL LETTER U WITH ACUTE
+\defineactivetoken 219 {\Uhungarumlaut}              % 0170 LATIN CAPITAL LETTER U WITH DOUBLE ACUTE
+\defineactivetoken 220 {\Udiaeresis}                 % 00DC LATIN CAPITAL LETTER U WITH DIAERESIS
+\defineactivetoken 221 {\Yacute}                     % 00DD LATIN CAPITAL LETTER Y WITH ACUTE
+\defineactivetoken 222 {\Tcedilla}                   % 0162 LATIN CAPITAL LETTER T WITH CEDILLA
+\defineactivetoken 223 {\ssharp}                     % 00DF LATIN SMALL LETTER SHARP S
+\defineactivetoken 224 {\racute}                     % 0155 LATIN SMALL LETTER R WITH ACUTE
+\defineactivetoken 225 {\aacute}                     % 00E1 LATIN SMALL LETTER A WITH ACUTE
+\defineactivetoken 226 {\acircumflex}                % 00E2 LATIN SMALL LETTER A WITH CIRCUMFLEX
+\defineactivetoken 227 {\abreve}                     % 0103 LATIN SMALL LETTER A WITH BREVE
+\defineactivetoken 228 {\adiaeresis}                 % 00E4 LATIN SMALL LETTER A WITH DIAERESIS
+\defineactivetoken 229 {\lacute}                     % 013A LATIN SMALL LETTER L WITH ACUTE
+\defineactivetoken 230 {\cacute}                     % 0107 LATIN SMALL LETTER C WITH ACUTE
+\defineactivetoken 231 {\ccedilla}                   % 00E7 LATIN SMALL LETTER C WITH CEDILLA
+\defineactivetoken 232 {\ccaron}                     % 010D LATIN SMALL LETTER C WITH CARON
+\defineactivetoken 233 {\eacute}                     % 00E9 LATIN SMALL LETTER E WITH ACUTE
+\defineactivetoken 234 {\eogonek}                    % 0119 LATIN SMALL LETTER E WITH OGONEK
+\defineactivetoken 235 {\ediaeresis}                 % 00EB LATIN SMALL LETTER E WITH DIAERESIS
+\defineactivetoken 236 {\ecaron}                     % 011B LATIN SMALL LETTER E WITH CARON
+\defineactivetoken 237 {\iacute}                     % 00ED LATIN SMALL LETTER I WITH ACUTE
+\defineactivetoken 238 {\icircumflex}                % 00EE LATIN SMALL LETTER I WITH CIRCUMFLEX
+\defineactivetoken 239 {\dcaron}                     % 010F LATIN SMALL LETTER D WITH CARON
+\defineactivetoken 240 {\dstroke}                    % 0111 LATIN SMALL LETTER D WITH STROKE
+\defineactivetoken 241 {\nacute}                     % 0144 LATIN SMALL LETTER N WITH ACUTE
+\defineactivetoken 242 {\ncaron}                     % 0148 LATIN SMALL LETTER N WITH CARON
+\defineactivetoken 243 {\oacute}                     % 00F3 LATIN SMALL LETTER O WITH ACUTE
+\defineactivetoken 244 {\ocircumflex}                % 00F4 LATIN SMALL LETTER O WITH CIRCUMFLEX
+\defineactivetoken 245 {\ohungarumlaut}              % 0151 LATIN SMALL LETTER O WITH DOUBLE ACUTE
+\defineactivetoken 246 {\odiaeresis}                 % 00F6 LATIN SMALL LETTER O WITH DIAERESIS
+\defineactivetoken 247 {\textdiv}                    % 00F7 DIVISION SIGN
+\defineactivetoken 248 {\rcaron}                     % 0159 LATIN SMALL LETTER R WITH CARON
+\defineactivetoken 249 {\uring}                      % 016F LATIN SMALL LETTER U WITH RING ABOVE
+\defineactivetoken 250 {\uacute}                     % 00FA LATIN SMALL LETTER U WITH ACUTE
+\defineactivetoken 251 {\uhungarumlaut}              % 0171 LATIN SMALL LETTER U WITH DOUBLE ACUTE
+\defineactivetoken 252 {\udiaeresis}                 % 00FC LATIN SMALL LETTER U WITH DIAERESIS
+\defineactivetoken 253 {\yacute}                     % 00FD LATIN SMALL LETTER Y WITH ACUTE
+\defineactivetoken 254 {\tcedilla}                   % 0163 LATIN SMALL LETTER T WITH CEDILLA
+\defineactivetoken 255 {\textdotaccent}              % 02D9 DOT ABOVE
+
+\stopregime
+

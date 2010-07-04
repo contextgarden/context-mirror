@@ -1,0 +1,202 @@
+%D \module
+%D   [      file=s-pre-00,
+%D        version=1997.07.22,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 0,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module provides some non core functionality that can
+%D be used in the presentations styles. This module contains
+%D experimental macros.
+%D
+%D The presentation environments are independent of each other.
+%D Although they have much in common, and in many cases can be
+%D exchanged, the common components are not collected in this
+%D file. That way they can serve as examples of style
+%D definitions.
+
+\unprotect
+
+\newbox     \presentationstack
+\newcounter \presentationcounter
+\newdimen   \presentationheight
+
+\appendtoks\doglobal\newcounter\presentationcounter\to\everyshipout
+
+\defineframedtext
+  [presentationshield]
+
+\setupframedtexts
+  [presentationshield]
+  [\c!background=\v!color,
+   \c!backgroundcolor=StepColor,
+   \c!offset=\v!overlay,
+   \c!frame=\v!off]
+
+\definecolor[StepColor][white]
+
+\def\enablepresentationstep%
+  {\let\enablepresentationstep\relax
+   \useJSpreamblenow{presentation}%
+   \setuptexttexts
+     [\vbox to \textheight
+        {\dopresentationstep1\box\presentationstack\vfill}]}
+
+\def\presentationstep
+  {\dopresentationstep0}
+
+\def\dopresentationstep#1% not ok yet
+  {\global\setbox\presentationstack=\vbox
+     {\ifnum\presentationcounter=0
+        \global\presentationheight=\!!zeropoint
+      \fi
+      \ifcase#1\relax
+        \scratchdimen=\pagetotal
+      \else
+        \scratchdimen=\textheight
+      \fi
+      \advance\scratchdimen by -\presentationheight
+      \edef\presentationstepheight{\the\scratchdimen}
+      \global\presentationheight=\pagetotal
+      \forgetall
+      \offinterlineskip
+      \dontcomplain
+      \box\presentationstack
+      \doglobal\increment\presentationcounter
+      \scratchcounter=\realpageno \multiply\scratchcounter by 100
+      \advance\scratchcounter by \presentationcounter
+      \edef\presentationtag{presentation:\the\scratchcounter}
+      \setupfield
+        [presentation]
+        [\c!width=\v!fit,\c!height=\v!fit,\c!offset=\v!overlay,
+         \c!strut=\v!no,\c!frame=\v!off,\c!option=\v!readonly]
+      \definesymbol
+        [\presentationtag]
+        [\presentationshade]
+      \def\presentationshade
+        {\presentationshield
+           [\c!width=\textwidth,\c!height=\presentationstepheight]{}}
+      \definefield[\presentationtag][check][presentation][\presentationtag,\v!none][\presentationtag]
+      \fitfield[\presentationtag]}}
+
+\startJSpreamble {presentation} used later
+  var presentation = new Array() ;
+  for (i=1;i<=\lastpage;i++)
+    { presentation[i] = 0 }
+  this.dirty = false ;
+  function NextPresentation (pagenumber)
+    { % ++presentation[pagenumber] ;
+      presentation[pagenumber] = presentation[pagenumber] + 1 ;
+      var dummy = 100*pagenumber + presentation[pagenumber] ;
+      var v = this.getField("presentation:"+dummy) ;
+      if (v)
+        { v.hidden = true }
+      % { v.display = display.hidden }
+      else
+        { ++pagenumber ;
+          if (pagenumber<=\lastpage)
+            { presentation[pagenumber] = presentation[pagenumber] + 1 ;
+              dummy = 100*(pagenumber) + presentation[pagenumber] ;
+              v = this.getField("presentation:"+dummy) ;
+              if (v) { v.hidden = true }
+            % if (v) { v.display = display.hidden }
+              ++this.pageNum } }
+      this.dirty = false }
+\stopJSpreamble
+
+\definereference[NextStep][JS(NextPresentation{\realfolio})]
+
+%D \macros
+%D   {presentationstep}
+%D
+%D The macro \type {\presentationstep} provides a basic slide
+%D show functionality. It sort of records pieces of the page
+%D that will show up stepwise. It can be used like:
+%D
+%D \starttyping
+%D \startitemize
+%D \item eerste
+%D \item tweede
+%D \stopitemize
+%D
+%D \presentationstep
+%D
+%D \startformula
+%D   ax^2+bx+c
+%D \stopformula
+%D
+%D \presentationstep
+%D \stoptyping
+%D
+%D When the document is opened, the two text fragments are
+%D covered by a shield. Each page has its own shield stack. The
+%D logical reference \type {NextStep} can be used to hide the
+%D shield.
+%D
+%D \starttyping
+%D \setupfootertexts[{\button{Show Up}[NextStep]}]
+%D \stoptyping
+%D
+%D In case of presentation style 2, you can say:
+%D
+%D \starttyping
+%D \definereference[Whatever][JS(NextPresentation{\realfolio})]
+%D \stoptyping
+%D
+%D Depending of the viewer, you need to reset the fields at
+%D startup:
+%D
+%D \starttyping
+%D \setupinteraction[openaction=ResetForm]
+%D \stoptyping
+%D
+%D Fixed spacing give you the best results:
+%D
+%D \starttyping
+%D \setupwhitespace[fixed]
+%D \setupblank[fixed]
+%D \stoptyping
+%D
+%D Sometimes you need to set the color of the background, as
+%D with style 2:
+%D
+%D \starttyping
+%D \definecolor[StepColor][Page]
+%D \stoptyping
+%D
+%D Special effects can be reached with:
+%D
+%D \starttyping
+%D \setupframedtexts
+%D   [presentationshield]
+%D   [background=color,backgroundcolor=red]
+%D \stoptyping
+%D
+%D There is also:
+%D
+%D \starttyping
+%D \autopresentationsteptrue
+%D \stoptyping
+%D
+%D One can enable this feature as \type {step} mode.
+
+\newif\ifautopresentationstep
+
+\appendtoks \ifautopresentationstep\presentationstep\fi \to \everypar
+
+\doifmode{step}                             {\enablepresentationstep}
+\doifmode{autostep}{\autopresentationsteptrue\enablepresentationstep}
+
+%D When in \type {comment} mode, embedded page comments are
+%D processed and put below the page. The default space of
+%D 5cm should be adequate but can of course be changed.
+
+\doifmode{comment}{\setuppagecomment[state=start,location=bottom]}
+
+\protect \endinput

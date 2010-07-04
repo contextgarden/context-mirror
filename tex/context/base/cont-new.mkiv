@@ -1,0 +1,40 @@
+%D \module
+%D   [       file=cont-new,
+%D        version=2006.10.04,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=New Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% potential new defaults:
+%
+% \setbreakpoints[compound]
+
+\unprotect
+
+\ctxlua{logs.report = commands.report} % this will become default
+
+\def\immediatemessage#1{\ctxlua{commands.writestatus("message","#1")}}
+
+% we need to figure this out (to be discussed)
+
+\unexpanded\def\textminus
+  {\char  \iffontchar\font"2012 "2012 % figuredash
+     \else\iffontchar\font"2013 "2013 % endash
+     \else\iffontchar\font"2212 "2212 % math minus
+                                "002D % hyphen
+     \fi\fi\fi}
+
+\unexpanded\def\textplus
+  {\char"002B } % plus
+
+% till we fixed all styles
+
+\let\\=\crlf
+
+\protect \endinput

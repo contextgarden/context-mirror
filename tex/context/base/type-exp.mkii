@@ -1,0 +1,95 @@
+%D \module
+%D   [       file=type-exp,
+%D        version=2007.01.28,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Experimental Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \usetypescript[palatino-light] [texnansi] \setupbodyfont[palatino-light]  \input zapf \par
+% \usetypescript[palatino-normal][texnansi] \setupbodyfont[palatino-normal] \input zapf \par
+% \usetypescript[palatino-medium][texnansi] \setupbodyfont[palatino-medium] \input zapf \par
+
+%D This file is used for \LUATEX\ experiments.
+
+\starttypescriptcollection[experiment]
+
+\starttypescript [sans] [palatino-sans-light] [name]
+
+  \definefontsynonym [Sans]            [PalatinoSans-Light]
+  \definefontsynonym [SansItalic]      [PalatinoSans-LightItalic]
+  \definefontsynonym [SansBold]        [PalatinoSans-Regular]
+  \definefontsynonym [SansBoldItalic]  [PalatinoSans-Italic]
+  \definefontsynonym [SansSlanted]     [PalatinoSans-Regular]
+  \definefontsynonym [SansBoldSlanted] [PalatinoSans-Italic]
+  \definefontsynonym [SansCaps]        [PalatinoSans-Light]
+
+\stoptypescript
+
+\starttypescript [sans] [palatino-sans-normal] [name]
+
+  \definefontsynonym [Sans]            [PalatinoSans-Regular]
+  \definefontsynonym [SansItalic]      [PalatinoSans-Italic]
+  \definefontsynonym [SansBold]        [PalatinoSans-Bold]
+  \definefontsynonym [SansBoldItalic]  [PalatinoSans-BoldItalic]
+  \definefontsynonym [SansSlanted]     [PalatinoSans-Italic]
+  \definefontsynonym [SansBoldSlanted] [PalatinoSans-BoldItalic]
+  \definefontsynonym [SansCaps]        [PalatinoSans-Regular]
+
+\stoptypescript
+
+\starttypescript [sans] [palatino-sans-medium] [name]
+
+  \definefontsynonym [Sans]            [PalatinoSans-Medium]
+  \definefontsynonym [SansItalic]      [PalatinoSans-MediumItalic]
+  \definefontsynonym [SansBold]        [PalatinoSans-Bold]
+  \definefontsynonym [SansBoldItalic]  [PalatinoSans-BoldItalic]
+  \definefontsynonym [SansSlanted]     [PalatinoSans-Bold]
+  \definefontsynonym [SansBoldSlanted] [PalatinoSans-BoldItalic]
+  \definefontsynonym [SansCaps]        [PalatinoSans-MediumSC]
+
+\stoptypescript
+
+\starttypescript [sans] [palatino-sans-light,palatino-sans-normal,palatino-sans-medium] [texnansi,ec,8r]
+
+  \definefontsynonym[PalatinoSans-Light]       [\typescriptthree-palatinosanscom-light]       [encoding=\typescriptthree]
+  \definefontsynonym[PalatinoSans-LightItalic] [\typescriptthree-palatinosanscom-lightitalic] [encoding=\typescriptthree]
+  \definefontsynonym[PalatinoSans-Regular]     [\typescriptthree-palatinosanscom-regular]     [encoding=\typescriptthree]
+  \definefontsynonym[PalatinoSans-Italic]      [\typescriptthree-palatinosanscom-italic]      [encoding=\typescriptthree]
+  \definefontsynonym[PalatinoSans-Medium]      [\typescriptthree-palatinosanscom-medium]      [encoding=\typescriptthree]
+  \definefontsynonym[PalatinoSans-MediumItalic][\typescriptthree-palatinosanscom-mediumitalic][encoding=\typescriptthree]
+  \definefontsynonym[PalatinoSans-Bold]        [\typescriptthree-palatinosanscom-bold]        [encoding=\typescriptthree]
+  \definefontsynonym[PalatinoSans-BoldItalic]  [\typescriptthree-palatinosanscom-bolditalic]  [encoding=\typescriptthree]
+
+\stoptypescript
+
+\starttypescript[palatino-normal][texnansi,ec]
+    \definetypeface[palatino-normal][ss][sans] [palatino-sans-normal] [default][encoding=\typescripttwo]
+    \definetypeface[palatino-normal][rm][serif][palatino-nova]        [default][encoding=\typescripttwo]
+    \definetypeface[palatino-normal][tt][mono] [latin-modern]         [default][encoding=\typescripttwo,rscale=1.1]
+    \definetypeface[palatino-normal][mm][math] [latin-modern]         [default][encoding=\typescripttwo,rscale=1.1]
+    \quittypescriptscanning
+\stoptypescript
+
+\starttypescript[palatino-medium][texnansi,ec]
+    \definetypeface[palatino-medium][ss][sans] [palatino-sans-medium] [default][encoding=\typescripttwo]
+    \definetypeface[palatino-medium][rm][serif][palatino-nova]        [default][encoding=\typescripttwo]
+    \definetypeface[palatino-medium][tt][mono] [latin-modern]         [default][encoding=\typescripttwo,rscale=1.1]
+    \definetypeface[palatino-medium][mm][math] [latin-modern]         [default][encoding=\typescripttwo,rscale=1.1]
+    \quittypescriptscanning
+\stoptypescript
+
+\starttypescript[palatino-light][texnansi,ec]
+    \definetypeface[palatino-light][ss][sans] [palatino-sans-light] [default][encoding=\typescripttwo]
+    \definetypeface[palatino-light][rm][serif][palatino-nova]       [default][encoding=\typescripttwo]
+    \definetypeface[palatino-light][tt][mono] [latin-modern]        [default][encoding=\typescripttwo,rscale=1.1]
+    \definetypeface[palatino-light][mm][math] [latin-modern]        [default][encoding=\typescripttwo,rscale=1.1]
+    \quittypescriptscanning
+\stoptypescript
+
+\stoptypescriptcollection

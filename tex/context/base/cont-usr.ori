@@ -1,0 +1,109 @@
+%D \module
+%D   [       file=cont-usr,
+%D        version=1997.10.05,
+%D          title=\CONTEXT\ User Format Specifications,
+%D       subtitle=System Specific Setups,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt User Settings}
+
+\unprotect
+
+%D Additional languages can be defined here. Beware of
+%D encoding incompatibilities. Please take a look at the
+%D \type {cont-en.tex}, \type {cont-nl.tex}, enz.\ files
+%D first. Normally you don't have to change a byte. If you
+%D want to play safe, use \typ {texexec --make --alone
+%D --all}.
+
+% \preloadallpatterns % will load them all
+
+% \installlanguage [\s!af] [\c!state=\v!start] % afrikaans
+% \installlanguage [\s!ca] [\c!state=\v!start] % catalan
+% \installlanguage [\s!cs] [\c!state=\v!start] % czech
+% \installlanguage [\s!da] [\c!state=\v!start] % danish
+% \installlanguage [\s!de] [\c!state=\v!start] % german
+% \installlanguage [\s!en] [\c!state=\v!start] % english us
+% \installlanguage [\s!es] [\c!state=\v!start] % spanish
+% \installlanguage [\s!fi] [\c!state=\v!start] % finnish
+% \installlanguage [\s!fr] [\c!state=\v!start] % french
+% \installlanguage [\s!hr] [\c!state=\v!start] % croatian
+% \installlanguage [\s!hu] [\c!state=\v!start] % hungarian
+% \installlanguage [\s!it] [\c!state=\v!start] % italian
+% \installlanguage [\s!la] [\c!state=\v!start] % latin
+% \installlanguage [\s!nl] [\c!state=\v!start] % dutch
+% \installlanguage [\s!nb] [\c!state=\v!start] % bokmal
+% \installlanguage [\s!nn] [\c!state=\v!start] % nynorsk
+% \installlanguage [\s!pl] [\c!state=\v!start] % polish
+% \installlanguage [\s!pt] [\c!state=\v!start] % portuguese
+% \installlanguage [\s!ro] [\c!state=\v!start] % romanian
+% \installlanguage [\s!ru] [\c!state=\v!start] % russian
+% \installlanguage [\s!sk] [\c!state=\v!start] % slovak
+% \installlanguage [\s!sl] [\c!state=\v!start] % slovenian
+% \installlanguage [\s!sv] [\c!state=\v!start] % swedish
+% \installlanguage [\s!tr] [\c!state=\v!start] % turkish
+% \installlanguage [\s!ua] [\c!state=\v!start] % ukrainian
+% \installlanguage [\s!gb] [\c!state=\v!start] % english uk
+% \installlanguage [\s!vn] [\c!state=\v!start] % vietnamese
+
+% \installlanguage [deo]   [\c!state=\v!start] % old german
+
+%D The next lines can be used for setting the language to be
+%D used at startup time.
+
+% \setupcurrentlanguage[\s!af]
+% \setupcurrentlanguage[\s!ca]
+% \setupcurrentlanguage[\s!cs]
+% \setupcurrentlanguage[\s!da]
+% \setupcurrentlanguage[\s!de]
+% \setupcurrentlanguage[\s!en]
+% \setupcurrentlanguage[\s!es]
+% \setupcurrentlanguage[\s!fi]
+% \setupcurrentlanguage[\s!fr]
+% \setupcurrentlanguage[\s!hr]
+% \setupcurrentlanguage[\s!hu]
+% \setupcurrentlanguage[\s!it]
+% \setupcurrentlanguage[\s!la]
+% \setupcurrentlanguage[\s!nl]
+% \setupcurrentlanguage[\s!nb]
+% \setupcurrentlanguage[\s!nn]
+% \setupcurrentlanguage[\s!pl]
+% \setupcurrentlanguage[\s!pt]
+% \setupcurrentlanguage[\s!ro]
+% \setupcurrentlanguage[\s!ru]
+% \setupcurrentlanguage[\s!sk]
+% \setupcurrentlanguage[\s!sl]
+% \setupcurrentlanguage[\s!sv]
+% \setupcurrentlanguage[\s!tr]
+% \setupcurrentlanguage[\s!ua]
+
+%D Local font settings can go here. Normally suitable
+%D defaults are already preloaded, almost certainly the
+%D Computer Modern Roman typefaces or some derivate. So, the
+%D next line is only meant as sample, take a look at the
+%D format related files first.
+
+% This is obsolete due to latin modern:
+%
+% \definefilesynonym [font-cmr] [font-csr] % czech & slovak
+% \definefilesynonym [font-cmr] [font-plr] % polish
+
+%D In some languages, compound characters, like \type {"e}
+%D are used to get accented and non latin characters.
+
+% Per 21/9/2006 one needs to explicitly enable this.
+
+% \useencoding[fde] % german
+% \useencoding[ffr] % french
+% \useencoding[fro] % romanian
+% \useencoding[fpl] % polish
+
+%D Don't remove the next few lines.
+
+\protect \endinput

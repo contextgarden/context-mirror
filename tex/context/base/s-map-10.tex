@@ -1,0 +1,488 @@
+%\module [
+%  file=s-map-se,
+%  version=2005.02.03,
+%  title=\CONTEXT\ Style File,
+%  subtitle=\MAPS\ basis stijl,
+%  author={Hans Hagen, Taco Hoekwater and Siep Kroonenberg},
+%  date=\currentdate,
+%  copyright={NTG / MAPS}%
+%]
+
+% This module re-implements the MAPS style for use with the Context
+% macro package. The original MAPS layout was designed and
+% implemented in LaTeX by Taco Hoekwater and Siep Kroonenberg.
+
+% This style will be cleaned up as soon as we have time for it.
+
+% - three layouts:
+%   1. two columns
+%   2. one column, with wide outer margins (option onecolumn)
+%   3. one column, with wide left margin (option asym)
+% - font sizes deviate from TeX's usual geometric progression
+% - use of sans-serif for headers and various details
+% - option realfonts uses Bitstream Charter, Euler Math and Latin Modern.
+%   This is used for final typesetting.
+%   The default font setup, intended for authors, uses Computer
+%   Modern.
+
+% A mode nosubsub defines only two levels of sectioning. If you
+% don't need more and use the two-column layout, then this option
+% will probably improve the looks of your paper.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% pdftex support
+
+\newif\ifMapsInColumns
+\doifmode{asym}{\enablemode[onecolumn]} % implies onecolumn
+\doifnotmode{onecolumn}{\MapsInColumnstrue}
+
+\enablemode[realfonts]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% fonts
+
+%%%%%%%%% first, font sizes
+\definebodyfontenvironment [7pt][% LaTeX: scriptsize
+   interlinespace=8pt,
+   big=8pt,
+   small=6pt%
+]
+
+\definebodyfontenvironment [8pt][% LaTeX: footnotesize
+   interlinespace=9pt,
+   big=9pt,
+   small=7pt,
+   x=6pt%
+]
+
+\definebodyfontenvironment [9pt][% LaTeX: small
+   interlinespace=10pt,
+   big=10pt,
+   small=7pt,%
+   x=7pt,%
+   script=7pt%
+]
+
+\definebodyfontenvironment [10pt][% LaTeX: normalsize
+   interlinespace=11pt,
+   big=11pt,
+   small=9pt,%
+   x=8pt,%
+   script=7pt%
+]
+
+\definebodyfontenvironment [11pt][% LaTeX: large
+   interlinespace=11pt,
+   big=11pt,
+   small=10pt,%
+   x=9pt,%
+   script=8pt%
+]
+
+\definebodyfontenvironment [14pt][%
+   interlinespace=14pt,
+   big=24pt,
+   small=11pt,
+   x=10pt%
+]
+
+\definebodyfontenvironment [24pt][%
+   interlinespace=24pt,
+   big=24pt,
+   small=14pt,
+   x=11pt%
+]
+
+%%% font families
+
+\starttypescript [map] [texnansi]
+
+  \definetypeface[map][ss][sans] [map]        [default][encoding=\typescripttwo]
+  \definetypeface[map][rm][serif][charter]    [default][encoding=\typescripttwo,rscale=0.95]
+  \definetypeface[map][tt][mono] [modern]     [default][encoding=\typescripttwo]
+  \definetypeface[map][mm][math] [euler]      [default][encoding=\typescripttwo]
+
+% \usemathcollection[eul]
+
+\stoptypescript
+
+% activate protruding
+
+\setupinterlinespace[line=11pt]
+
+\setupfontsynonym[handling=pure]
+
+\setupalign[hanging]
+
+\usetypescript[map][texnansi]
+
+\setupbodyfont [map,10pt]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% additional general typographic details
+
+\setupindenting [yes,next,11pt] % indenting after enumerations etc.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% 3 versions of layout with matching headers
+
+% I would like to move the entire layout slightly toward the spine,
+% but Context seems to provide no good handle for that.
+% So instead, I'll use a two-column layout centered on the page and
+% matching single-column layouts.
+
+% It is easy to do the shift toward the spine when assembling the
+% volume with LaTeX pdfpages.
+
+\definepapersize [maps][%
+   width=595.3bp, % 21cm
+   height=756bp% 10.5in
+]
+
+\setuppapersize [maps][maps]
+
+% parameters:
+% margin -> latex marginparwith
+
+\setuplayout[%
+   topspace=40pt,
+   height=692pt,
+   header=33pt,
+   margin=106pt,
+   leftmargindistance=11pt,
+   rightmargindistance=11pt%
+]
+
+
+\setupblank[5.5pt]
+
+\setuppagenumbering [location=]
+
+\definetyping [widetyping]
+
+\setupheader [style=\ss]
+\setupfooter [style=\ss]
+
+\def\AuHead{%
+  %\ifnum\pageno=\MapsPage \hbox{}\else
+  \MapsRunningAuthor%\fi
+}
+\def\TiHead{%
+  \ifnum\pageno=\MapsPage \relax \MapsRunningAuthor %\hbox{}
+  \else \MapsRunningTitle\fi}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% sectioning
+
+\setupheads[sectionnumber=no, align=right]
+
+\def\hfonti{\bfa}
+\def\hfontii{\bf}
+\def\hfontiii{\rm\bi}
+\def\runin#1#2{#2.}
+
+\doifmodeelse{nosubsub}{%
+\setuphead [section][%
+  style=\hfontii,
+  before={\blank[halfline]},
+  after={}%
+]
+\setuphead [subsection][%
+  style=\hfontiii,
+  command=\runin,
+  alternative=text,
+  before={\blank[halfline]}%
+]}{%
+\setuphead [section][%
+  style=\hfonti,
+  before={\blank[13pt]},
+  after={\blank[6pt]}%
+]
+\setuphead [subsection][%
+  style=\hfontii,
+  before={\blank[6pt]},
+  after={}%
+]
+\setuphead [subsubsection][%
+  style=\hfontiii,
+  command=\runin,
+  alternative=text,
+  before={\blank[halfline]}%
+]}
+
+\doifmodeelse{nosubsub}{%
+\setuphead [subject][%
+  style=\hfontii,
+  before={\blank[halfline]},
+  after={}%
+]
+\setuphead [subsubject][%
+  style=\hfontiii,
+  command=\runin,
+  alternative=text,
+  before={\blank[halfline]}%
+]}{%
+\setuphead [subject][%
+  style=\hfonti,
+  before={\blank},
+  after={\blank[halfline]}%
+]
+\setuphead [subsubject][%
+  style=\hfontii,
+  before={\blank[halfline]},
+  after={}%
+]
+\setuphead [subsubsubject][%
+  style=\hfontiii,
+  command=\runin,
+  alternative=text,
+  before={\blank[halfline]}%
+]}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% floats
+
+\setupfloats [location=left, before={\ss}]
+\setupcaptions [style={\ss},
+   stopper=.,
+   inbetween={\blank[halfline]}]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% various document elements
+
+%\startnotmode[realfonts]
+\def\ChkBox{%
+  \hbox {\boxrulewidth=.4pt \raise.2ex\ruledvbox
+        {\phantom{\vrule width .85ex height .85ex%
+}}}}
+%\stopnotmode
+%\startmode[realfonts]
+%\def\ChkBox{\raise.12ex\hbox{\ws \char50}}
+%\stopmode
+\definesymbol [1][\ChkBox]
+
+\setupitemize[1][packed]
+
+\setupitemize [each][%
+  indentnext=no,
+  align=right,
+  width=1em,
+  distance=0pt%
+]
+
+% an outer form of itemize that does not indent
+% the paragraph.
+
+\definecomplexorsimpleempty\startouteritemize
+\def\complexstartouteritemize[#1]{\begingroup
+  \startitemize[width=1sp,#1]
+  \let\doitem\item
+  \def\item{\doitem[]\hbox{}\kern12pt\rightskip=0pt}%
+}
+
+\def\stopouteritemize{\stopitemize\endgroup}
+
+
+\setupenumerations [indentnext=no]
+
+\setupdescriptions [indentnext=no]
+
+\unexpanded\def\smalltyping{%
+  \switchtobodyfont[tt,9pt]%
+  \setuplocalinterlinespace[line=11pt]%
+  \parindent=0pt
+}
+
+% typing:
+% - prettyverbatim is NOT the default
+% - smaller size
+
+\setuptyping [%
+  style={\smalltyping},
+  option=none,
+  indentnext=no%
+]
+
+\def\footnum#1{#1.}
+
+\setupfootnotes
+   [location=none,
+    width=\textwidth,
+    bodyfont=9pt,
+    before=,
+    numbercommand=\footnum]
+
+\setupfootnotedefinition
+   [location=serried,
+    before=,
+    after=,
+    distance=0.5em]
+
+\setuptabulate
+   [before=\blank,
+    inner=\ss,
+    after=\blank]
+
+\def\startIntroEntry#1%
+ {\blank[line]
+  \startbaselinecorrection
+  \bgroup
+  \setupalign[right]
+  \setuptolerance[verytolerant]
+  \setupindenting[no]
+  \switchtobodyfont[9pt]%
+  \hyphenpenalty10000
+  \parfillskip 0pt plus 1fill
+  \rightskip6pt plus 1fill
+  \ss
+  \bgroup\bf #1\par\egroup
+  \ignorespaces }
+
+\def\stopIntroEntry
+  {\par\egroup \stopbaselinecorrection}
+
+\def\defineIntroEntry[#1][#2][#3]%
+  {\setvalue{start#1}{\startIntroEntry{#2}}%
+   \setvalue {stop#1}{\stopIntroEntry#3}}
+
+\defineIntroEntry[Keywords][Keywords][]
+\defineIntroEntry[Abstract][Abstract][]
+
+% article parameters (other fields and defaults)
+\def\MapsBibData[#1]%
+  {\getparameters [Maps]
+	[SubTitle=,
+     RunningAuthor=,
+     RunningTitle=,
+     Email=,
+     Address=,
+     Page=1,
+     Title=No Title given,
+     Author=No Author given,
+	 Period=,
+ 	 Number=99,
+	 Year=2006,
+     #1]%
+  \doifnothing\MapsRunningAuthor
+    {\global\let\MapsRunningAuthor\MapsAuthor}%
+  \doifnothing\MapsRunningTitle
+    {\global\let\MapsRunningTitle\MapsTitle}}%
+
+\def\dostartArticle[#1]{%
+  \MapsBibData[#1]
+  \pageno=\MapsPage
+  \count0=\MapsPage
+  \setuppagenumber[number=\MapsPage]
+  \bgroup
+    \hsize = 457pt
+    \let\\\crlf
+    \blank[29pt,force]
+    \switchtobodyfont[rm,24pt]
+    \setupalign[right]
+    {\bf\noindent\MapsTitle\par\blank[6pt]}
+    \ifx\MapsSubTitle\empty \else
+      { \switchtobodyfont[ss,24pt]\sl\noindent
+        \advance \rightskip 0pt plus 2em
+        \MapsSubTitle\par}
+    \fi
+	\doifmodeelse{newstyle}
+         {\blank[22pt]}
+         {\blank[30pt]}
+  \egroup
+  \switchtobodyfont[rm,10pt]
+  \doifmode{newstyle}
+         {\noindent\MapsAuthor\blank[line]}
+  \setupalign[width]
+  \ifMapsInColumns
+    \startcolumns\hyphenpenalty1000
+  \else
+    \clubpenalty10000
+    \widowpenalty10000
+  \fi
+}
+
+\definecolumnset[mapsset][n=2,grid=on]
+
+\def\startArticle{\dosingleempty\dostartArticle}
+
+\def\stopArticle{%
+  {\blank\let\\\crlf
+  \noindent\switchtobodyfont[ss,9pt]%
+  \MapsAuthor
+  \doifsomething{\MapsAddress}{\\\MapsAddress}%
+  \doifsomething{\MapsEmail}{\\\MapsEmail}}%
+  \ifMapsInColumns \stopcolumns \fi
+  \page
+}
+
+\installpagebreakhandler{last}{}
+
+%%% `logos' %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\LATEX{La\TeX}
+\def\LaTeX{La\TeX}
+\def\TEX{\TeX}
+\def\CONTEXT{Con{\TeX}t}
+\def\ConTeXt{Con{\TeX}t}
+\def\METAFONT{Metafont}
+\def\METAPOST{MetaPost}
+\def\POSTSCRIPT{PostScript}
+
+
+%%%%%%%%%%%
+
+\doifmodeelse{onecolumn}{%
+  \setuplayout[width=340pt]
+  \doifmodeelse{asym}{% one col, asymmetric
+    \setuplayout[backspace=187.3pt]%
+    \setuptyping [widetyping][oddmargin=-117pt]
+    \setuppagenumbering [alternative={singlesided,doublesided}]
+    \setupheadertexts
+      [{\hbox{}\hskip-117pt\TiHead}]
+      [{{\tfx\MapsPeriod~}\MapsYear\quad\bf\pagenumber\hskip-30pt\hbox{}}]
+      [{\hbox{}\hskip-147pt{\bf\pagenumber}\quad {\tfx MAPS~}\MapsNumber}]
+      [\AuHead]
+    \setupfootertexts
+  }{% one col, symmetric
+    \setuplayout[backspace=70.3pt]
+    \setuppagenumbering [alternative=doublesided]
+    \setuptyping[blank=halfline]
+    \setupheadertexts
+      [\TiHead]
+      [{{\tfx\MapsPeriod~}\MapsYear\quad\bf\pagenumber\hskip-147pt\hbox{}}]
+      [{\hbox{}\hskip-147pt{\bf\pagenumber}\quad {\tfx MAPS~}\MapsNumber}]
+      [\AuHead]
+    \setupfootertexts
+}}{% two col
+  \setuplayout[width=457pt]
+  \setupcolumns[n=2,tolerance=verytolerant,distance=11pt]
+  \setuplayout[backspace=70.3pt,grid=yes]
+  \setuppagenumbering [alternative=doublesided]
+   \setuptyping[blank=halfline]
+   \setupheadertexts
+    [\TiHead]
+    [{{\tfx\MapsPeriod~}\MapsYear\quad\bf\pagenumber\hskip-30pt\hbox{}}]
+    [{\hbox{}\hskip-30pt{\bf\pagenumber}\quad {\tfx MAPS~}\MapsNumber}]
+    [\AuHead]
+  \setupfootertexts
+}
+
+%\MapsBibData
+%   []
+
+%\abovedisplayskip = 12pt
+%\abovedisplayshortskip = 6pt
+
+\newdimen\iabovedisplayskip
+\newdimen\iabovedisplayshortskip
+%\let\abovedisplayskip\iabovedisplayskip
+%\let\abovedisplayshortskip\iabovedisplayshortskip
+
+\setuplanguage
+   [nl]
+   [\c!leftquote=\upperleftsinglesixquote,
+    \c!leftquotation=\upperleftdoublesixquote]
+
+%\protect
+\endinput

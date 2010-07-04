@@ -1,0 +1,835 @@
+%D \module
+%D   [       file=m-steps,
+%D        version=2001.05.28,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Step Charts \& Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D When I need this module, I will reimplement it by using the new
+%D sometxt macro. Anyhow, it reflects the state of 2001.
+
+\unprotect
+
+% temp hack :
+
+% \ifx\v!kleinkorps\undefined \let\v!kleinkorps\setsmallbodyfont \fi
+
+% end of hack
+
+\definecolor [STEPlinecolor]       [s=.5]
+\definecolor [STEPframecolor]      [s=.7]
+\definecolor [STEPbackgroundcolor] [s=.9]
+
+\def\@@STPF{@@STPF} % frames
+
+\def\@@STPC{@@STPC} % charts
+\def\@@STPT{@@STPT} % tables
+
+\def\@@STEC{@@STEC} % cells
+\def\@@STET{@@STET} % tables
+\def\@@STEL{@@STEL} % lines
+
+\def\setupSTEPcharts{\dodoubleargument\getparameters[\@@STPC]}
+\def\setupSTEPtables{\dodoubleargument\getparameters[\@@STPT]}
+\def\setupSTEPcells {\dodoubleargument\getparameters[\@@STEC]}
+\def\setupSTEPtexts {\dodoubleargument\getparameters[\@@STET]}
+\def\setupSTEPlines {\dodoubleargument\getparameters[\@@STEL]}
+
+\setupSTEPcharts
+  [\c!before=\blank,
+   \c!after=\blank,
+  %\c!distance=.25em, % nvt
+   \c!hoffset=1em,
+   \c!voffset=1ex,
+   \c!method=1,
+   \c!height=2ex,
+   \c!offset=.15\bodyfontsize]
+
+\setupSTEPtables
+  [\c!before=\blank,
+   \c!after=\blank,
+   \c!distance=.25em,
+  %\c!hoffset=1em, % nvt
+   \c!voffset=1ex,
+   \c!method=1,
+   \c!width=4em,
+   \c!offset=.15\bodyfontsize]
+
+\setupSTEPcells
+  [\c!alternative=24,
+   \c!background=\v!color,
+   \c!backgroundcolor=STEPbackgroundcolor,
+   \c!rulethickness=.1\bodyfontsize,
+   \c!framecolor=STEPframecolor,
+   \c!offset=.25\bodyfontsize,
+   \c!style=,
+   \c!color=]
+
+\setupSTEPtexts
+  [\c!alternative=24,
+   \c!background=\v!color,
+   \c!backgroundcolor=STEPbackgroundcolor,
+   \c!rulethickness=.1\bodyfontsize,
+   \c!framecolor=STEPframecolor,
+   \c!offset=.25\bodyfontsize,
+   \c!style=\v!smallbodyfont,
+   \c!color=]
+
+\setupSTEPlines
+  [\c!alternative=1,
+   \c!rulethickness=.15\bodyfontsize,
+   \c!color=STEPlinecolor]
+
+\def\initializeSTEP
+  {\initializeSTET \initializeSTEC \initializeSTEL}
+
+\def\initializeSTPC
+  {\freezedimenmacro\@@STPCoffset
+   \startMPdrawing
+     line_v_offset := \@@STPCoffset  ;
+     line_method   := \@@STPCmethod ; % only charts
+   \stopMPdrawing}
+
+\def\initializeSTPT
+  {\freezedimenmacro\@@STPToffset
+   \startMPdrawing
+     line_h_offset := \@@STPToffset  ;
+     line_method   := \@@STPTmethod ; % only charts
+   \stopMPdrawing}
+
+\def\initializeSTET
+  {\freezedimenmacro\@@STETrulethickness
+   \freezedimenmacro\@@STEToffset}
+
+\def\initializeSTEC
+  {\freezedimenmacro\@@STECrulethickness
+   \freezedimenmacro\@@STECoffset}
+
+\def\initializeSTEL
+  {\freezedimenmacro\@@STELrulethickness}
+
+%D ...
+
+\presetlocalframed[\@@STPF]
+
+\def\@@stepcell#1%
+  {\doattributes\@@STEC\c!style\c!color
+     {\localframed
+         [\@@STPF][\c!offset=\@@STECoffset,\c!frame=\v!off]
+         {\ignorespaces#1\unskip}}}
+
+\def\@@stepfake#1%
+  {\doattributes\@@STEC\c!style\c!color
+     {\ignorespaces#1\unskip}}
+
+\def\@@steptext#1%
+  {\doattributes\@@STET\c!style\c!color
+     {\localframed
+         [\@@STPF][\c!offset=\@@STEToffset,\c!frame=\v!off]
+         {\ignorespaces#1\unskip}}}
+
+%D The first attempt was purely \METAPOST\ based and spawned
+%D the typesetting to the \METAFUN\ handler. This method
+%D collects the cells, and directly passes them on to
+%D \METAPOST. This method is the cleanest, but has the
+%D disadvantage that one cannot embed hyperlinks or document
+%D dependent definitions in the cells. The implementation
+%D roughly looks as follows:
+%D
+%D \starttyping
+%D \def\startSTEPchart%
+%D   {\bgroup
+%D    \startMPdrawing
+%D      input mp-step ; begin_step_chart ;
+%D    \stopMPdrawing
+%D    \initializeSTEP
+%D    \let\cells\stepchartcells \def\cell{\cells{}}%
+%D    \let\texts\stepcharttexts \def\text{\texts{}}}
+%D
+%D \def\stepchartcells#1#2%
+%D   {\setMPtext{tdummy}{\strut\ignorespaces#1\unskip}% beter etex/btex
+%D    \setMPtext{bdummy}{\strut\ignorespaces#2\unskip}% beter etex/btex
+%D    \startMPdrawing
+%D      set_step_chart_cells(\MPstring{tdummy},\MPstring{bdummy}) ;
+%D    \stopMPdrawing}
+%D
+%D \def\stepcharttexts#1#2%
+%D   {\setMPtext{tdummy}{\strut\ignorespaces#1\unskip}% beter etex/btex
+%D    \setMPtext{bdummy}{\strut\ignorespaces#2\unskip}% beter etex/btex
+%D    \startMPdrawing
+%D      set_step_chart_texts(\MPstring{tdummy},\MPstring{bdummy}) ;
+%D    \stopMPdrawing}
+%D
+%D \def\stopSTEPchart
+%D   {\startMPdrawing
+%D      end_step_chart ;
+%D    \stopMPdrawing
+%D    \MPdrawingdonetrue
+%D    \getMPdrawing
+%D    \resetMPdrawing
+%D    \egroup}
+%D \stoptyping
+%D
+%D This method has the advantage that it does the job in
+%D (virtually) one pass, while the next methods need multiple
+%D passes: one to build the table, another to synchronize the
+%D positions, and a third one beause the dimensions may have
+%D changed. The last pass is a result from the fact that
+%D positions are related to the page.
+%D
+%D The second attempt was based on tabulations and used the
+%D build in position tracking mechanism, which uses two
+%D position nodes per cell.
+%D
+%D This method collects the content in token list registers
+%D and build a table from them. In the collecting pass, the
+%D graphics are build stepwise. We need to collect because the
+%D order of definitions is not the same as the order of
+%D typesetting. We show this alternative too because it
+%D demonstrates how to apply backgrounds to table cells.
+%D
+%D \starttyping
+%D \newtoks\stepsonetop \newtoks\stepstwotop
+%D \newtoks\stepsonebot \newtoks\stepstwobot
+%D \stoptyping
+%D
+%D During the collecting phase, we temporarily have to
+%D increment the name space counter.
+%D
+%D \starttyping
+%D \def\startSTEPchart%
+%D   {\bgroup
+%D    \resetMPdrawing
+%D    \advance\noftabpositions\plusone % begin of preroll
+%D    \startMPdrawing
+%D      input mp-step ;
+%D      begin_step_chart ;
+%D    \stopMPdrawing
+%D    \initializeSTEP
+%D    \newcounter\cellcounter
+%D    \stepsonetop\emptytoks \chardef\somesteponetop=1
+%D    \stepsonebot\emptytoks \chardef\somesteponebot=1
+%D    \stepstwotop\emptytoks \chardef\somesteptwotop=1
+%D    \stepstwobot\emptytoks \chardef\somesteptwobot=1
+%D    \let\cells\stepchartcells \def\cell{\cells{}}%
+%D    \let\texts\stepcharttexts \def\text{\texts{}}}
+%D \stoptyping
+%D
+%D Now we collect the steps and texts, and in the process the
+%D graphic is built. Then we continue with building the table.
+%D
+%D Watch how we anchor the graphic to the main table box. This
+%D is needed since the graphic may be larger than the table
+%D itself. Actually, these small point took me the most time to
+%D digest, even with the right tools (anchors) already in
+%D place.
+%D
+%D \starttyping
+%D \def\stopSTEPchart
+%D   {\splittabulatefalse
+%D    \insidefloattrue
+%D    \startMPdrawing
+%D      nofcells := \cellcounter ;
+%D      end_step_chart ;
+%D      anchor_box(\MPpos{\tbPOSprefix origin}) ;
+%D    \stopMPdrawing
+%D    \MPdrawingdonetrue
+%D    \advance\noftabpositions\minusone % end of preroll
+%D    \setbox0=\vbox
+%D      {\getMPdrawing}
+%D    \resetMPdrawing
+%D    \increment(\cellcounter,\cellcounter)\decrement\cellcounter
+%D    \setbox2=\vbox
+%D      {\definetabulate[chart][|*{\cellcounter}{ck0|}] % k0 nills space
+%D       \startchart
+%D       \ifcase\somesteptwotop \the\stepstwotop \NC \NR \noalign{\kern2ex} \fi
+%D       \ifcase\somesteponetop \the\stepsonetop \NC \NR \noalign{\kern2ex} \fi
+%D       \ifcase\somesteponebot \the\stepsonebot \NC \NR \noalign{\kern2ex} \fi
+%D       \ifcase\somesteptwobot \the\stepstwobot \NC \NR \noalign{\kern2ex} \fi
+%D       \noalign{\kern-2ex}%
+%D       \stopchart}
+%D    \hbox
+%D      {\scratchdimen\wd0
+%D       \advance\scratchdimen \MPllx bp
+%D       \raise\MPlly bp\box0
+%D       \hskip-\scratchdimen
+%D       \hpos{\tbPOSprefix origin}{\box2}}
+%D    \egroup}
+%D \stoptyping
+%D
+%D The steps and texts fill the (at most 4) lines that make up
+%D the table. We also feed the (automatically registerd) cell
+%D dimensions to the graphic backend.
+%D
+%D \starttyping
+%D \newcounter\cellcounter
+%D \newcounter\textcounter
+%D
+%D \def\stepchartcells#1#2%
+%D   {\doloop
+%D     {\ifnum\cellcounter>\textcounter
+%D        \stepcharttexts{}{}%
+%D      \else
+%D        \exitloop
+%D      \fi}%
+%D    \increment\cellcounter
+%D    \doifelsenothing{#1}
+%D      {\startMPdrawing
+%D         cells[t][\cellcounter] := origin ;
+%D       \stopMPdrawing
+%D       \appendtoks\NC\NC\to\stepsonetop}
+%D      {\chardef\somesteponetop=0
+%D       \edef\stepidentifier{\cellcounter-t-c}%
+%D       \startMPdrawing
+%D         initialize_area(\MPpos{b:\tbPOSprefix\stepidentifier},
+%D                         \MPpos{e:\tbPOSprefix\stepidentifier}) ;
+%D         cells[t][\cellcounter] := pxy ;
+%D       \stopMPdrawing
+%D       \@EA\appendtoks\@EA\stepidentifierposition\@EA{\stepidentifier}#1\NC\to\stepsonetop}%
+%D    \doifelsenothing{#2}
+%D      {\startMPdrawing
+%D         cells[b][\cellcounter] := origin ;
+%D       \stopMPdrawing
+%D       \appendtoks\NC\NC\to\stepsonebot}
+%D      {\chardef\somesteponebot=0
+%D       \edef\stepidentifier{\cellcounter-b-c}%
+%D       \startMPdrawing
+%D         initialize_area(\MPpos{b:\tbPOSprefix\stepidentifier},
+%D                         \MPpos{e:\tbPOSprefix\stepidentifier}) ;
+%D         cells[b][\cellcounter] := pxy ;
+%D       \stopMPdrawing
+%D       \@EA\appendtoks\@EA\stepidentifierposition\@EA{\stepidentifier}#2\NC\to\stepsonebot}}
+%D
+%D \def\stepcharttexts#1#2% \cellcounter = nofcells
+%D   {\increment\textcounter
+%D    \doifelsenothing{#1}
+%D      {\startMPdrawing
+%D         texts[t][\cellcounter][\textcounter] := origin ;
+%D       \stopMPdrawing
+%D       \appendtoks\NC\NC\to\stepstwotop}
+%D      {\chardef\somesteptwotop=0
+%D       \edef\stepidentifier{\cellcounter-\textcounter-t-t}%
+%D       \startMPdrawing
+%D         initialize_area(\MPpos{b:\tbPOSprefix\stepidentifier},
+%D                         \MPpos{e:\tbPOSprefix\stepidentifier}) ;
+%D         texts[t][\cellcounter][\textcounter] := pxy ;
+%D       \stopMPdrawing
+%D       \@EA\appendtoks\@EA\NC\@EA\textcellposition\@EA{\stepidentifier}#1\to\stepstwotop}%
+%D    \doifelsenothing{#2}
+%D      {\startMPdrawing
+%D         texts[b][\cellcounter][\textcounter] := origin ;
+%D       \stopMPdrawing
+%D       \appendtoks\NC\NC\to\stepstwobot}
+%D      {\chardef\somesteptwobot=0
+%D       \edef\stepidentifier{\cellcounter-\textcounter-b-t}%
+%D       \startMPdrawing
+%D         initialize_area(\MPpos{b:\tbPOSprefix\stepidentifier},
+%D                         \MPpos{e:\tbPOSprefix\stepidentifier}) ;
+%D         texts[b][\cellcounter][\textcounter] := pxy ;
+%D       \stopMPdrawing
+%D       \@EA\appendtoks\@EA\NC\@EA\textcellposition\@EA{\stepidentifier}#2\to\stepstwobot}}
+%D \stoptyping
+%D
+%D Here are the hooks that take care of calculating the cell
+%D dimensions.
+%D
+%D \starttyping
+%D \def\textcellposition#1{\GSC[#1:text]}
+%D \def\stepidentifierposition#1{\GSC[#1:step]}
+%D \stoptyping
+%D
+%D We abandoned this method after some testing and went for
+%D a third one. It was this third method that evolved into the
+%D current mechanism.
+%D
+%D Since this method was not that efficient, a third one was
+%D implemented, which used one position per cell. So,
+%D
+%D \blank {\bf Here starts the real implementation!} \blank
+%D
+%D Because we want to build one graphic only we need to store
+%D the graphic directives. We also need to collect the cells,
+%D which are not defined in the order they show up. This
+%D solution uses multiple passes over the definitions. First
+%D the cells and texts are processed and the associated
+%D graphics are defined in the \METAPOST\ file. Next the
+%D lines are flushed. We need to do that in a second pass,
+%D because in order to determine the nature of the line,
+%D \METAPOST\ needs to know if the start and end cells exist.
+%D This need comes from the fact that we store the shapes
+%D and lines kind of directly with their associated colors and
+%D types, so that we can change the settings in between. So,
+%D changing for instance the line color, can take place
+%D locally.
+
+\newbox\stepboxone \newbox\stepboxtwo
+\newbox\textboxone \newbox\textboxtwo
+
+%D We need to define a dedicated name space counter.
+
+\newcounter\currentstepchart
+
+\def\stepchartprefix{@sc@-\currentstepchart-}
+
+%D Next we define the initialization part of the macros.
+
+\newcounter\cellcounter
+\newcounter\textcounter
+
+\def\startSTEPchart
+  {\dosingleempty\dostartSTEPchart}
+
+\long\def\dostartSTEPchart[#1]#2\stopSTEPchart
+  {\ifinsidefloat
+   \else
+     \whitespace
+     \@@STPCbefore
+     \startbaselinecorrection
+     \setlocalhsize
+     \noindent
+   \fi
+   \vbox\bgroup
+   \setupSTEPcharts[#1]%
+   \forgetall
+   \pushMPdrawing
+   \resetMPdrawing
+   \doglobal\increment\currentstepchart
+   \startMPdrawing
+     input mp-step ;
+     begin_step_chart ;
+   \stopMPdrawing
+   \initializeSTEP
+   \initializeSTPC
+   \global\chardef\somestepboxone\plusone
+   \global\chardef\sometextboxone\plusone
+   \global\chardef\somestepboxtwo\somestepboxone
+   \global\chardef\sometextboxtwo\sometextboxone
+   \def\startlines{\bgroup\setupSTEPlines}%
+   \def\stoplines {\egroup}%
+   \def\cells{\dosingleempty\dostepchartcells}
+   \def\texts{\dosingleempty\dostepcharttexts}
+   \def\cell {\dosingleempty\docell}%
+   \def\text {\dosingleempty\dotext}%
+   \def\docell[##1]{\dostepchartcells[##1]{}}%
+   \def\dotext[##1]{\dostepcharttexts[##1]{}}
+   \doglobal\newcounter\cellcounter
+   \doglobal\newcounter\textcounter
+   \let\dostepchartcells\doSTEPchartcellsA
+   \let\dostepcharttexts\doSTEPcharttextsA
+   {#2} % pass one: cells and texts {} keeps setting local
+   \startMPdrawing
+     nofcells := \cellcounter ;
+     analyze_step_chart ;
+   \stopMPdrawing
+   \doglobal\newcounter\cellcounter
+   \doglobal\newcounter\textcounter
+   \let\dostepchartcells\doSTEPchartcellsB
+   \let\dostepcharttexts\doSTEPcharttextsB
+   {#2} % pass two: lines
+   \startMPdrawing
+     end_step_chart ;
+     % if box_found(\MPpos{\stepchartprefix origin}) :
+     %   initialize_box(\MPpos{\stepchartprefix origin}) ;
+     %   draw pxy ;
+     % fi ;
+     anchor_box(\MPpos{\stepchartprefix origin}) ;
+   \stopMPdrawing
+   \MPdrawingdonetrue
+   \doifelse\@@STPCmethod{0}
+     {\setbox0\null}
+     {\setbox0\vbox{\MPstaticgraphictrue\getMPdrawing}}%
+   \resetMPdrawing
+   \setbox2\vbox
+     {\offinterlineskip
+      \scratchdimen\@@STPCheight
+      \advance\scratchdimen\@@STPCoffset
+      \advance\scratchdimen\@@STPCoffset
+      \ifcase\sometextboxone \box\textboxone \vskip\scratchdimen  \fi
+      \ifcase\somestepboxone \box\stepboxone \vskip\@@STPCvoffset \fi
+      \ifcase\somestepboxtwo \box\stepboxtwo \vskip\scratchdimen  \fi
+      \ifcase\sometextboxtwo \box\textboxtwo \vskip\@@STPCvoffset \fi
+      \global\resetbox\stepboxone \global\resetbox\stepboxtwo % needed indeed
+      \global\resetbox\textboxone \global\resetbox\textboxtwo % needed indeed
+     %\kern-\scratchdimen % no, instead:
+      \vskip-\lastskip}
+   \hbox
+     {\scratchdimen\wd0
+      \advance\scratchdimen \MPllx bp
+      \raise\MPlly bp\box0
+      \hskip-\scratchdimen
+      \hpos{\stepchartprefix origin}{\box2}}%
+   \popMPdrawing
+   \egroup
+   \ifinsidefloat \else \stopbaselinecorrection \@@STPCafter \fi}
+
+%D The next macro looks more complicated than it is. We collect
+%D the cells in boxes. Before adding a new step cell, we padd
+%D the text rows. After adding the step cells, we flush text
+%D cells that are defined but not yet processed.
+
+\def\doSTEPchartcellsA[#1]#2#3%
+  {% synchronize texts
+   \doSTEPchartcellsAB[#1]{#2}{#3}%
+   % package steps
+   \setbox0\hbox{\doifsomething{#2}{\@@stepcell{#2}}}%
+   \setbox2\hbox{\doifsomething{#3}{\@@stepcell{#3}}}%
+   \ifdim\wd0>\zeropoint \!!doneafalse \else \!!doneatrue \fi
+   \ifdim\wd2>\zeropoint \!!donebfalse \else \!!donebtrue \fi
+   \ifdim\wd0>\wd2
+     \setbox2\hbox to \wd0{\hss\box2\hss}%
+   \else
+     \setbox0\hbox to \wd2{\hss\box0\hss}%
+   \fi
+   \if!!donea
+     \startMPdrawing
+       cells[t][\cellcounter] := nullpicture ;
+     \stopMPdrawing
+   \else
+     \global\chardef\somestepboxone\zerocount
+     \edef\stepidentifier{\stepchartprefix\cellcounter-t-c}%
+     \setbox0\hbox{\hpos{\stepidentifier}{\box0}}%
+     \bgroup
+     \iffirstargument\setupSTEPcells[#1]\fi\initializeSTEC
+     \startMPdrawing
+       initialize_box(\MPpos{\stepidentifier}) ;
+       cells[t][\cellcounter] := \MPcellsgraphic ;
+     \stopMPdrawing
+     \egroup
+   \fi
+   \if!!doneb
+     \startMPdrawing
+       cells[b][\cellcounter] := nullpicture ;
+     \stopMPdrawing
+   \else
+     \global\chardef\somestepboxtwo\zerocount
+     \edef\stepidentifier{\stepchartprefix\cellcounter-b-c}%
+     \setbox2\hbox{\hpos{\stepidentifier}{\box2}}%
+     \bgroup
+     \iffirstargument\setupSTEPcells[#1]\fi\initializeSTEC
+     \startMPdrawing
+       initialize_box(\MPpos{\stepidentifier}) ;
+       cells[b][\cellcounter] := \MPcellsgraphic ;
+     \stopMPdrawing
+     \egroup
+   \fi
+   \global\setbox\stepboxone\hbox
+     {\ifdim\wd\stepboxone>\zeropoint
+        \box\stepboxone\hskip\@@STPChoffset\else
+      \fi\box0}%
+   \global\setbox\stepboxtwo\hbox
+     {\ifdim\wd\stepboxtwo>\zeropoint
+        \box\stepboxtwo\hskip\@@STPChoffset\else
+      \fi\box2}%
+   % flush saved texts
+   \doSTEPchartcellsBA}
+
+\def\doSTEPchartcellsB[#1]#2#3%
+  {\doSTEPchartcellsAB[#1]{#2}{#3}%
+   \doSTEPchartcellsBA}
+
+\def\doSTEPchartcellsAB[#1]#2#3%
+  {\doloop
+     {\ifnum\cellcounter>\textcounter
+        \texts{}{}\else\exitloop
+      \fi}%
+   \doglobal\increment\cellcounter}
+
+\def\doSTEPchartcellsBA
+  {\scratchtoks\stepchartbuffer
+   \stepchartbuffer\emptytoks
+   \the\scratchtoks}
+
+\def\MPcellsgraphic
+  {image ( drawshape (
+     \@@STECalternative, pxy enlarged (-.5*\@@STECoffset),
+     \@@STECrulethickness, \MPcolor{\@@STECframecolor},
+     \MPcolor{\@@STECbackgroundcolor} ) )}
+
+%D Although each step can have only one associated text, the
+%D place where the text is defined determines the starting
+%D point of the connecting arrow. Although several methods are
+%D possible, we've chosen a funny collector that flushes one
+%D step text at a time.
+
+\newtoks\stepchartbuffer
+
+\def\doSTEPcharttextsA[#1]% #2 #3
+  {\dodoSTEPcharttextsA{\cellcounter}{#1}}
+
+\def\dodoSTEPcharttextsA#1#2#3#4% #1=number #2=setup
+  {\dodoSTEPcharttextsAB{#1}{#2}{#3}{#4}\dodoSTEPcharttextsA
+   \ifnum\textcounter>\cellcounter\relax
+     \doglobal\decrement\textcounter\relax
+   \else
+     \setbox0\hbox{\doifsomething{#3}{\@@steptext{#3}}}%
+     \setbox2\hbox{\doifsomething{#4}{\@@steptext{#4}}}%
+     \ifdim\wd0>\zeropoint \!!doneafalse \else \!!doneatrue \fi
+     \ifdim\wd2>\zeropoint \!!donebfalse \else \!!donebtrue \fi
+     \if!!donea
+       \setbox0\hbox to \@@STPChoffset{\hss}%
+       \startMPdrawing
+         texts[t][#1][\textcounter] := nullpicture ;
+       \stopMPdrawing
+     \else
+       \global\chardef\sometextboxone\zerocount
+       \edef\stepidentifier{\stepchartprefix#1-\textcounter-t-t}%
+       \setbox0\hbox to \@@STPChoffset
+         {\hss\hpos{\stepidentifier}{\box0}\hss}%
+       \bgroup
+       \setupSTEPtexts[#2]\initializeSTET
+       \startMPdrawing
+         initialize_box(\MPpos{\stepidentifier}) ;
+         texts[t][#1][\textcounter] := \MPtextsgraphic ;
+       \stopMPdrawing
+       \egroup
+     \fi
+     \if!!doneb
+       \setbox2\hbox to \@@STPChoffset{\hss}%
+       \startMPdrawing
+         texts[b][#1][\textcounter] := nullpicture ;
+       \stopMPdrawing
+     \else
+       \global\chardef\sometextboxtwo\zerocount
+       \edef\stepidentifier{\stepchartprefix#1-\textcounter-b-t}%
+       \setbox2\hbox to \@@STPChoffset
+         {\hss\hpos{\stepidentifier}{\box2}\hss}%
+       \bgroup
+       \setupSTEPtexts[#2]\initializeSTET
+       \startMPdrawing
+         initialize_box(\MPpos{\stepidentifier}) ;
+         texts[b][#1][\textcounter] := \MPtextsgraphic ;
+       \stopMPdrawing
+       \egroup
+     \fi
+     \global\setbox\textboxone\hbox
+       {\hbox to \wd\stepboxone{\box\textboxone\hss}\box0}
+     \global\setbox\textboxtwo\hbox
+       {\hbox to \wd\stepboxtwo{\box\textboxtwo\hss}\box2}
+   \fi}
+
+\def\doSTEPcharttextsB[#1]% #2 #3
+  {\dodoSTEPcharttextsB{\cellcounter}{#1}}
+
+\def\dodoSTEPcharttextsB#1#2#3#4% #1=number #2=setup
+  {\dodoSTEPcharttextsAB{#1}{#2}{#3}{#4}\dodoSTEPcharttextsB
+   \ifnum\textcounter>\cellcounter\relax
+     \doglobal\decrement\textcounter\relax
+   \else
+     \bgroup
+     \initializeSTEL
+     \startMPdrawing
+       lines[t][#1][\textcounter] := \MPcharttoplinesgraphic{#1}\textcounter ;
+       lines[b][#1][\textcounter] := \MPchartbotlinesgraphic{#1}\textcounter ;
+     \stopMPdrawing
+     \egroup
+   \fi}
+
+\def\dodoSTEPcharttextsAB#1#2#3#4#5% #1=number #2=setup
+  {\doglobal\increment\textcounter\relax
+   \ifnum\textcounter>\cellcounter\relax
+     \@EA\appendtoks\@EA#5\@EA{#1}{#2}{#3}{#4}\to\stepchartbuffer
+   \fi}
+
+\def\MPtextsgraphic
+  {image(drawshape(
+     \@@STETalternative, pxy enlarged (-.5*\@@STEToffset),
+     \@@STETrulethickness, \MPcolor{\@@STETframecolor},
+     \MPcolor{\@@STETbackgroundcolor} ) )}
+
+\def\MPcharttoplinesgraphic#1#2%
+  {image(drawline(
+     \@@STELalternative, get_step_chart_top_line(#1,#2),
+     \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
+
+\def\MPchartbotlinesgraphic#1#2%
+  {image(drawline(
+     \@@STELalternative, get_step_chart_bot_line(#1,#2),
+     \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
+
+%D Step tables are the vertical counterpart of stepcharts.
+
+\newcounter\currentsteptable
+
+\def\steptableprefix{@st@-\currentsteptable-}
+
+\def\startSTEPtable
+  {\dosingleempty\dostartSTEPtable}
+
+\def\dostartSTEPtable[#1]#2\stopSTEPtable
+  {\dostartSTEPaligntable[0][#1]#2\stopSTEPaligntable}
+
+\def\startSTEPaligntable
+  {\dodoubleempty\dostartSTEPaligntable[1]}
+
+\def\dostartSTEPaligntable[#1][#2]#3\stopSTEPaligntable % flag settings data
+  {\ifinsidefloat
+   \else
+     \whitespace
+     \@@STPTbefore
+     \startbaselinecorrection
+     \setlocalhsize
+     \noindent
+   \fi
+   \vbox\bgroup
+   \setupSTEPtables[#2]%
+   \forgetall
+   \pushMPdrawing
+   \doglobal\increment\currentsteptable
+   \startMPdrawing
+     input mp-step ;
+     begin_step_table ;
+   \stopMPdrawing
+   \initializeSTEP
+   \initializeSTPT
+   \def\startlines{\bgroup\setupSTEPlines}%
+   \def\stoplines {\egroup}%
+   \def\prep##1{\ignorespaces##1\unskip\enspace\ignorespaces}%
+   \def\cell   {\dosingleempty\docell}%
+   \def\cells  {\dosingleempty\docells}%
+   \def\text   {\dosingleempty\dotext}%
+   % first graphic pass, also trial pass
+   \global\dimen1\zeropoint
+   \global\dimen3\zeropoint
+   \global\dimen5\zeropoint
+   \def\docell[##1]%
+     {\docells[##1]{}{}}%
+   \def\docells[##1]##2##3##4%
+     {\doglobal\increment\cellcounter
+      \bgroup
+      \iffirstargument\setupSTEPcells[##1]\fi
+      \initializeSTEC
+      \startMPdrawing
+        if box_found(\MPpos{\steptableprefix\cellcounter-c}) :
+          initialize_box(\MPpos{\steptableprefix\cellcounter-c}) ;
+          cells[\cellcounter] := \MPcellsgraphic ;
+        fi ;
+      \stopMPdrawing
+      \egroup
+      \def\do####1####2%
+        {\setbox\scratchbox\hbox{\@@stepfake{####2}}%
+         \ifdim\wd\scratchbox>\dimen####1\global\dimen####1=\wd\scratchbox\fi}%
+      \ifcase#1\else\do1{##2}\do3{##3}\fi\do5{##4}}%
+   \def\dotext[##1]##2%
+     {\bgroup
+      \iffirstargument\setupSTEPtexts[##1]\fi
+      \initializeSTET
+      \startMPdrawing
+        if box_found(\MPpos{\steptableprefix\cellcounter-t}) :
+          initialize_box(\MPpos{\steptableprefix\cellcounter-t}) ;
+          texts[\cellcounter] := \MPtextsgraphic ;
+        fi ;
+      \stopMPdrawing
+      \egroup}
+   \doglobal\newcounter\cellcounter#3
+   % second graphic pass pass, drawing lines
+   \def\docells[##1]##2##3##4%
+     {\doglobal\increment\cellcounter}
+   \def\dotext[##1]##2%
+     {\bgroup
+      \initializeSTEL
+      \startMPdrawing
+        lines[\cellcounter] := \MPtablelinesgraphic ;
+      \stopMPdrawing
+      \egroup}
+   \doglobal\newcounter\cellcounter#3
+   % finishing graphic touch
+   \startMPdrawing
+     nofcells := \cellcounter ;
+     end_step_table ;
+     anchor_box(\MPpos{\steptableprefix origin}) ;
+   \stopMPdrawing
+   \MPdrawingdonetrue
+   \doifelse\@@STPTmethod{0}
+     {\setbox0\null}
+     {\setbox0\vbox{\MPstaticgraphictrue\getMPdrawing}}%
+   \resetMPdrawing
+   % typesetting pass
+   \dimen6=\@@STPTdistance \dimen6=2\dimen6
+   % cell width
+   \dimen8=\dimen1
+   \advance\dimen8\dimen3
+   \advance\dimen8\dimen5
+   % offset width
+   \ifcase#1\else \advance\dimen8 \dimen6 \fi
+   % arrow width
+   \advance\dimen8 \@@STPTwidth
+   \advance\dimen8 \@@STPToffset
+   \advance\dimen8 \@@STPToffset
+   \def\docells[##1]##2##3##4%
+     {\doglobal\increment\cellcounter
+      \def\do####1####2####3####4% % strut really needed there !
+        {\hbox to \dimen####1{####2\@@stepfake{####3}\strut####4}}%
+      \setbox8\hbox
+        {\ifcase#1\else
+           \do1\hss{##2}\relax \hskip\@@STPTdistance
+           \do3\hss{##3}\hss   \hskip\@@STPTdistance
+         \fi
+         \do5\relax{##4}\hss}%
+     \hpos{\steptableprefix\cellcounter-c}{\@@stepcell{\box8}}
+     \endgraf
+     \nointerlineskip
+     \kern\@@STPTvoffset}
+   \def\dotext[##1]##2%
+     {\bgroup
+      \hskip\dimen8
+      \advance\hsize-\dimen8
+      \advance\hsize-\dimen6 % twice the offset
+      \setbox0\hbox{\@@steptext{##2}}%
+% to do
+%     \ifdim\wd0>\hsize
+%       \setbox0=\vbox{\@@steptext{##2}}%
+%     \fi
+% align
+      \hpos{\steptableprefix\cellcounter-t}{\box0}%
+      \endgraf
+      \egroup
+      \nointerlineskip
+      \kern\@@STPTvoffset}
+   \setbox2\vbox
+     {\doglobal\newcounter\cellcounter
+      #3\kern-\@@STPTvoffset}
+   \hbox
+     {\scratchdimen\wd0
+      \advance\scratchdimen \MPllx bp
+      \raise\MPlly bp\box0
+      \hskip-\scratchdimen
+      \hpos{\steptableprefix origin}{\box2}}
+  \popMPdrawing
+  \egroup
+  \ifinsidefloat \else \stopbaselinecorrection \@@STPTafter \fi}
+
+\def\MPtablelinesgraphic
+  {image ( drawline (
+     \@@STELalternative, get_step_table_line(\cellcounter),
+     \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
+
+\protect \endinput
+
+% A simple paragraph-flow test:
+
+\starttext
+
+\startbuffer
+\startSTEPchart
+\cells {A}     {B}
+\cells {one}   {five}  \texts{$+2$}{$-2$}
+\cells {two}   {four}  \texts{$+3$}{$-3$}
+\cells {three} {three} \texts{$+4$}{$-4$}
+\cells {four}  {two}   \texts{$+5$}{$-5$}
+\cells {five}  {one}
+\stopSTEPchart
+\stopbuffer
+
+\getbuffer
+
+\startnarrower \getbuffer \stopnarrower
+
+\placefigure[left]{}{} \getbuffer
+
+\stoptext

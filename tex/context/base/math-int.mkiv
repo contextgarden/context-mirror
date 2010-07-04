@@ -1,0 +1,90 @@
+%D \module
+%D   [       file=math-int,
+%D        version=2007.07.19,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Scripts,
+%D         author={Hans Hagen \& Taco Hoekwater \& Aditya Mahajan},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Integrals}
+
+\unprotect
+
+%D \startbuffer
+%D   $\int_a^b f(x) dx$ and also
+%D   $\iint_a^b f(x,y) dxdy$, $\iiint_a^b f(x,y) dxdy$,
+%D   $\iiiint_a^b f(x) dx$
+%D   \startformula
+%D     \int_a^b f(x) dx \quad
+%D     \iint_a^b f(x) dx \quad
+%D     \iiint_a^b f(x) dx \quad
+%D     \iiiint_a^b f(x) dx \quad
+%D   \stopformula
+%D \stopbuffer
+%D
+%D Default: \getbuffer
+%D
+%D Displaylimits: \setupmathematics[integral=displaylimits] \getbuffer
+%D
+%D Limits: \setupmathematics[integral=limits] \getbuffer
+
+\chardef\intlimitcode\zerocount  % 0 nolimits 1 displaylimits 2 limits
+
+\def\intlimits
+  {\ifcase\intlimitcode \nolimits \or \displaylimits \or \limits \fi}
+
+\ifx\v!integral\undefined \def\v!integral{integral} \fi
+
+\appendtoks
+   \processaction
+      [\mathematicsparameter\v!integral]
+      [     nolimits=>\chardef\intlimitcode\zerocount,
+       displaylimits=>\chardef\intlimitcode\plusone,
+              limits=>\chardef\intlimitcode\plustwo]%
+\to \everysetupmathematics
+
+\setupmathematics
+  [\v!integral=nolimits]
+
+%D More integrals (AM):
+
+\definemathcommand [iint]   {\repeatintegral\plusone  }
+\definemathcommand [iiint]  {\repeatintegral\plustwo  }
+\definemathcommand [iiiint] {\repeatintegral\plusthree}
+
+%def\integralrepeatsymbol{\intop}
+\def\integralrepeatsymbol{{\int}}
+
+\def\repeatintegral#1%
+  {\scratchtoks\emptytoks
+   \let\dointlimits\donothing
+   \let\dodointlimits\intlimits
+   \dorecurse{#1}{\appendtoks \integralrepeatsymbol \dointkern \to \scratchtoks}
+   \appendtoks \intop \dointlimits \dodointlimits \to \scratchtoks
+   \edef\dodorepeatintegral{\the\scratchtoks}%
+   \futurelet\next\dorepeatintegral}
+
+%D If the \type{\limits} option is used after \type{\iint}, use
+%D \type{\mathop} and fudge the left hand space a bit to make the
+%D subscript visually centered.
+
+\def\dointkern
+  {\mkern-6mu\mathchoice{\mkern-3mu}{}{}{}}
+
+\def\dorepeatintegral
+   {\ifx\next\limits          \dointlimitcorrection \else
+    \ifx\next\displaylimits   \dointlimitcorrection \else
+    \ifx\next\nolimits        \donothing            \else
+    \ifcase\intlimitcode\else \dointlimitcorrection \fi\fi\fi\fi
+    \dodorepeatintegral}
+
+\def\dointlimitcorrection
+  {\mkern-7mu\mathchoice{\mkern-2mu}{}{}{}%
+   \mathop\bgroup\mkern7mu\mathchoice{\mkern2mu}{}{}{}\let\dointlimits\egroup}
+
+\protect \endinput

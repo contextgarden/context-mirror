@@ -1,0 +1,220 @@
+%D \module
+%D   [       file=unic-001,
+%D        version=2002.12.03,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 1,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D Readable:
+%D
+%D \starttyping
+%D \startunicodevector 1
+%D   \ifcase#1\or
+%D     unknownchar\or Abreve\or abreve\or
+%D     ....
+%D     Zcaron\or zcaron\else unknownchar\fi
+%D \stopunicodevector
+%D
+%D \stoptyping
+%D But we can speed things up, watch how we avoid zero and \TEX's
+%D automatically added \type {\relax}.
+
+% remark:
+% - gcommaaccent, kcomaaccent, lcomaaccent, ncomaaccent, rcomaaccent
+% bear the name "WITH CEDILLA" in Unicode
+% - scomaaccent and tcomaaccent point to the "WITH CEDILLA" in the
+% Adobe Glyph List
+
+\startunicodevector 1
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1\relax
+    \Amacron       \or
+    \amacron       \or
+    \Abreve        \or
+    \abreve        \or
+    \Aogonek       \or
+    \aogonek       \or
+    \Cacute        \or
+    \cacute        \or
+    \Ccircumflex   \or
+    \ccircumflex   \or
+    \Cdotaccent    \or
+    \cdotaccent    \or
+    \Ccaron        \or
+    \ccaron        \or
+    \Dcaron        \or
+    \dcaron        \or
+    \Dstroke       \or
+    \dstroke       \or
+    \Emacron       \or
+    \emacron       \or
+    \Ebreve        \or
+    \ebreve        \or
+    \Edotaccent    \or
+    \edotaccent    \or
+    \Eogonek       \or
+    \eogonek       \or
+    \Ecaron        \or
+    \ecaron        \or
+    \Gcircumflex   \or
+    \gcircumflex   \or
+    \Gbreve        \or
+    \gbreve        \or
+    \Gdotaccent    \or
+    \gdotaccent    \or
+    \Gcommaaccent  \or % WITH CEDILLA
+    \gcommaaccent  \or % WITH CEDILLA
+    \Hcircumflex   \or
+    \hcircumflex   \or
+    \Hstroke       \or
+    \hstroke       \or
+    \Itilde        \or
+    \itilde        \or
+    \Imacron       \or
+    \imacron       \or
+    \Ibreve        \or
+    \ibreve        \or
+    \Iogonek       \or
+    \iogonek       \or
+    \Idotaccent    \or
+    \dotlessi      \or
+    \IJligature    \or
+    \ijligature    \or
+    \Jcircumflex   \or
+    \jcircumflex   \or
+    \Kcommaaccent  \or % WITH CEDILLA
+    \kcommaaccent  \or % WITH CEDILLA
+    \kkra          \or % \kkra \or
+    \Lacute        \or
+    \lacute        \or
+    \Lcommaaccent  \or % WITH CEDILLA
+    \lcommaaccent  \or % WITH CEDILLA
+    \Lcaron        \or
+    \lcaron        \or
+    \Ldotmiddle    \or % \Ldotmiddle \or
+    \ldotmiddle    \or % \ldotmiddle \or
+    \Lstroke       \or
+    \lstroke       \or
+    \Nacute        \or
+    \nacute        \or
+    \Ncommaaccent  \or % WITH CEDILLA
+    \ncommaaccent  \or % WITH CEDILLA
+    \Ncaron        \or
+    \ncaron        \or
+    \napostrophe   \or
+    \Neng          \or
+    \neng          \or
+    \Omacron       \or
+    \omacron       \or
+    \Obreve        \or
+    \obreve        \or
+    \Ohungarumlaut \or
+    \ohungarumlaut \or
+    \OEligature    \or
+    \oeligature    \or
+    \Racute        \or
+    \racute        \or
+    \Rcommaaccent  \or % WITH CEDILLA
+    \rcommaaccent  \or % WITH CEDILLA
+    \Rcaron        \or
+    \rcaron        \or
+    \Sacute        \or
+    \sacute        \or
+    \Scircumflex   \or
+    \scircumflex   \or
+    \Scedilla      \or
+    \scedilla      \or
+    \Scaron        \or
+    \scaron        \or
+    \Tcedilla      \or
+    \tcedilla      \or
+    \Tcaron        \or
+    \tcaron        \or
+    \Tstroke       \or
+    \tstroke       \or
+    \Utilde        \or
+    \utilde        \or
+    \Umacron       \or
+    \umacron       \or
+    \Ubreve        \or
+    \ubreve        \or
+    \Uring         \or
+    \uring         \or
+    \Uhungarumlaut \or
+    \uhungarumlaut \or
+    \Uogonek       \or
+    \uogonek       \or
+    \Wcircumflex   \or
+    \wcircumflex   \or
+    \Ycircumflex   \or
+    \ycircumflex   \or
+    \Ydiaeresis    \or
+    \Zacute        \or
+    \zacute        \or
+    \Zdotaccent    \or
+    \zdotaccent    \or
+    \Zcaron        \or
+    \zcaron        \or
+    \slong         \or % 127 \slong \else
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \textflorin    \or % 146
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \Ohorn         \or % 160
+    \ohorn         \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \unknownchar   \or
+    \Uhorn         \or % 175
+    \uhorn         \else
+    \unknownchar
+  \fi
+\stopunicodevector
+
+\protect \endinput

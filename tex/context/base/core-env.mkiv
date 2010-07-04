@@ -1,0 +1,388 @@
+%D \module
+%D   [       file=core-env, % was core-new
+%D        version=1995.01.01, % wrong
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=New ones,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Environments}
+
+\unprotect
+
+%D Modes:
+%D
+%D \starttyping
+%D \enablemode[screen,paper,bound]
+%D
+%D \doifmodeelse {paper}        {this} {that}
+%D \doifmode     {paper,screen} {this}
+%D \doifnotmode  {paper,bound}  {that}
+%D
+%D \startmode [list]
+%D \stopmode
+%D
+%D \startnotmode [list]
+%D \stopnotmode
+%D \stoptyping
+%D
+%D system modes have a * as prefix
+%D
+%D Sometimes, we want to prevent a mode for being set. Think
+%D of situations where a style enables a mode, but an outer
+%D level style does not want that. Preventing can be
+%D considered a permanent disabling on forehand.
+
+\def\@mode@{@md@}
+
+\def\systemmodeprefix{*}
+
+\def\disabledmode {0} % no chardefs
+\def\enabledmode  {1}
+\def\preventedmode{2}
+
+% fast internal ones
+
+\def\setmode  #1{\@EA\let\csname\@mode@#1\endcsname\enabledmode }
+\def\resetmode#1{\@EA\let\csname\@mode@#1\endcsname\disabledmode}
+
+\def\setsystemmode  #1{\@EA\let\csname\@mode@\systemmodeprefix#1\endcsname\enabledmode }
+\def\resetsystemmode#1{\@EA\let\csname\@mode@\systemmodeprefix#1\endcsname\disabledmode}
+
+% user ones
+
+\def\preventmode{\unprotect\dopreventmode}
+\def\enablemode {\unprotect\doenablemode }
+\def\disablemode{\unprotect\dodisablemode}
+
+\def\dopreventmode[#1]{\protect\rawprocesscommacommand[#1]\dodopreventmode}
+\def\doenablemode [#1]{\protect\rawprocesscommacommand[#1]\dodoenablemode }
+\def\dodisablemode[#1]{\protect\rawprocesscommacommand[#1]\dododisablemode}
+
+\def\dodopreventmode#1%
+  {\@EA\let\csname\@mode@#1\endcsname\preventedmode}
+
+\def\dodoenablemode#1% mode can be relax
+  {\ifcase0\csname\@mode@#1\endcsname\relax
+     \@EA\let\csname\@mode@#1\endcsname\enabledmode
+   \fi}
+
+\def\dododisablemode#1%
+  {\ifcase0\csname\@mode@#1\endcsname\or
+     \@EA\let\csname\@mode@#1\endcsname\disabledmode
+   \fi}
+
+% handy for mp
+
+\def\booleanmodevalue#1% can be \relax
+  {\expandafter\ifx\csname\@mode@#1\endcsname\relax
+     fals%
+   \else\ifnum0\csname\@mode@#1\endcsname=0
+     fals%
+   \else
+     tru%
+   \fi\fi e}
+
+% check macros
+
+\newif\ifcheckedmode
+
+\def\dodocheckformode#1%
+  {\ifcase0\csname\@mode@#1\endcsname\or\checkedmodetrue\fi}
+
+\def\docheckformode#1#2#3% will be sped up with a quit
+  {\protect\checkedmodefalse\rawprocesscommacommand[#3]\dodocheckformode
+   \ifcheckedmode\@EA#1\else\@EA#2\fi}
+
+\def\dodocheckforallmodes#1%
+  {\ifcase0\csname\@mode@#1\endcsname\relax\checkedmodefalse\or\or\checkedmodefalse\fi}
+
+\def\docheckforallmodes#1#2#3% will be sped up with a quit
+  {\protect\checkedmodetrue\rawprocesscommacommand[#3]\dodocheckforallmodes
+   \ifcheckedmode\@EA#1\else\@EA#2\fi}
+
+% simple ones
+
+\unexpanded\def\doifmodeelse{\unprotect\dodoifmodeelse}
+\unexpanded\def\doifmode    {\unprotect\dodoifmode}
+\unexpanded\def\doifnotmode {\unprotect\dodoifnotmode}
+\unexpanded\def\startmode   {\unprotect\dostartmode}
+\unexpanded\def\startnotmode{\unprotect\dostartnotmode}
+
+\def\dodoifmodeelse
+  {\docheckformode\firstoftwoarguments\secondoftwoarguments}
+
+\def\dodoifmode
+  {\docheckformode\firstofoneargument\gobbleoneargument}
+
+\def\dodoifnotmode
+  {\docheckformode\gobbleoneargument\firstofoneargument}
+
+\long\unexpanded\def\dostartmode[#1]%
+  {\docheckformode\donothing\dostopmode{#1}}
+
+\long\def\dostartnotmode[#1]%
+  {\docheckformode\dostopnotmode\donothing{#1}}
+
+\unexpanded\def\stopmode   {} % no relax
+\unexpanded\def\stopnotmode{} % no relax
+
+\long\def\dostopmode   #1\stopmode   {}
+\long\def\dostopnotmode#1\stopnotmode{}
+
+\unexpanded\def\doifallmodeselse{\unprotect\dodoifallmodeselse}
+\unexpanded\def\doifallmodes    {\unprotect\dodoifallmodes}
+\unexpanded\def\doifnotallmodes {\unprotect\dodoifnotallmodes}
+\unexpanded\def\startallmodes   {\unprotect\dostartallmodes}
+\unexpanded\def\startnotallmodes{\unprotect\dostartnotallmodes}
+
+\def\dodoifallmodeselse
+  {\docheckforallmodes\firstoftwoarguments\secondoftwoarguments}
+
+\def\dodoifallmodes
+  {\docheckforallmodes\firstofoneargument\gobbleoneargument}
+
+\def\dodoifnotallmodes
+  {\docheckforallmodes\gobbleoneargument\firstofoneargument}
+
+\long\def\dostartallmodes[#1]%
+  {\docheckforallmodes\donothing\dostopallmodes{#1}}
+
+\long\def\dostartnotallmodes[#1]%
+  {\docheckforallmodes\dostopnotallmodes\donothing{#1}}
+
+\unexpanded\def\stopallmodes   {} % no relax
+\unexpanded\def\stopnotallmodes{} % no relax
+
+\long\def\dostopallmodes   #1\stopallmodes   {}
+\long\def\dostopnotallmodes#1\stopnotallmodes{}
+
+%D Lets now set a mode:
+
+\enablemode[mkiv] \setsystemmode{mkiv}
+
+%D Setups:
+
+\unexpanded\def\startsetups{} % to please dep checker
+\unexpanded\def\stopsetups {} % to please dep checker
+
+\expanded
+  {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
+     {\begingroup\noexpand\doifnextoptionalelse
+        {\noexpand\dostartsetupsA\@EA\noexpand\csname\e!stop\v!setups\endcsname}
+        {\noexpand\dostartsetupsB\@EA\noexpand\csname\e!stop\v!setups\endcsname}}}
+
+\letvalue{\e!stop\v!setups}\relax
+
+\unexpanded\def\setups{\doifnextbgroupelse\dosetupsA\dosetupsB} % {..} or [..]
+\unexpanded\def\setup {\doifnextbgroupelse\dosetups \dosetupsC} % {..} or [..]
+
+\def\dosetupsA  #1{\processcommacommand[#1]\dosetups} % {..}
+\def\dosetupsB[#1]{\processcommacommand[#1]\dosetups} % [..]
+\def\dosetupsC[#1]{\dosetups{#1}} % [..]
+
+\letvalue{\??su:\letterpercent}\gobbleoneargument
+
+\def\dosetups#1% the grid option will be extended to other main modes
+  {\csname\??su
+     \ifgridsnapping
+       \ifcsname\??su\v!grid:#1\endcsname\v!grid:#1\else\ifcsname\??su:#1\endcsname:#1\else:\letterpercent\fi\fi
+     \else
+                                                        \ifcsname\??su:#1\endcsname:#1\else:\letterpercent\fi
+     \fi
+   \endcsname\empty} % takes one argument
+
+% the next one is meant for \c!setups situations, hence the check for
+% a shortcut
+
+\def\doprocesslocalsetups#1%
+  {\edef\tobeprocessedsetups{#1}%
+   \ifx\tobeprocessedsetups\empty\else
+     \dodoprocesslocalsetups
+   \fi}
+
+\def\dodoprocesslocalsetups
+  {\@EA\processcommalist\@EA[\tobeprocessedsetups]\dosetups}
+
+\edef\setupwithargument#1% saves a few expansions
+  {\noexpand\csname\??su:\noexpand\ifcsname\??su:#1\endcsname#1\noexpand\else\letterpercent\noexpand\fi\endcsname}
+
+\let\directsetup\dosetups
+
+\def\doifsetupselse#1% to be done: grid
+  {\doifdefinedelse{\??su:#1}}
+
+\chardef\setupseolmode\plusone
+
+\unexpanded\def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
+\unexpanded\def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
+\unexpanded\def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
+\unexpanded\def\startxmlsetups  {\xxstartsetups\plustwo  \stopxmlsetups  } \let\stopxmlsetups  \relax
+
+\def\xxstartsetups#1#2%
+  {\begingroup\let\setupseolmode#1\doifnextoptionalelse{\dostartsetupsA#2}{\dostartsetupsB#2}}
+
+\def\dostartsetupsA#1% [ ] delimited
+  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
+   \dotripleempty\dostartsetups[#1]}
+
+\def\dostartsetupsB#1#2 % space delimited
+  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
+   \dodostartsetups#1\empty{#2}}
+
+\def\dostartsetupsC[#1][#2][#3]{\dodostartsetups#1{#2}{#3}}   % [..] [..]
+\def\dostartsetupsD[#1][#2][#3]{\dodostartsetups#1\empty{#2}} % [..]
+
+\def\dostartsetups
+  {\ifthirdargument\@EA\dostartsetupsC\else\@EA\dostartsetupsD\fi}
+
+\long\def\dodostartsetups#1#2#3%
+  {\long\def\dododostartsetups##1#1%
+     {\endgroup
+      \dodoglobal % bah
+      \long\expandafter\def\csname\??su#2:#3\expandafter\endcsname\expandafter####\expandafter1\expandafter{##1}}%
+   \dododostartsetups\empty} % the empty trick prevents the { } in {arg} from being eaten up
+
+\def\systemsetupsprefix{*}
+
+\def\systemsetups#1{\dosetups{\systemsetupsprefix#1}}
+
+\def\resetsetups[#1]% see x-fo for usage
+  {\ifcsname\??su\ifgridsnapping\v!grid\fi:#1\endcsname
+     \dodoglobal\letbeundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
+   \else
+     \dodoglobal\letbeundefined{\??su:#1}%
+   \fi}
+
+%D \macros
+%D   {setvariables,getvariable,getvariabledefault}
+%D
+%D \starttyping
+%D \setvariables[xx][title=]
+%D \setvariables[xx][title=test test]
+%D \setvariables[xx][title=test $x=1$ test]   % fatal error reported
+%D \setvariables[xx][title=test {$x=1$} test]
+%D \setvariables[xx][title]                   % fatal error reported
+%D \setvariables[xx][titletitel=e]
+%D \stoptyping
+
+\def\??vars{@@vars}
+
+\def\setvariables {\dotripleargument\dosetvariables[\getrawparameters ]}
+\def\setevariables{\dotripleargument\dosetvariables[\getraweparameters]}
+\def\setgvariables{\dotripleargument\dosetvariables[\getrawgparameters]}
+\def\setxvariables{\dotripleargument\dosetvariables[\getrawxparameters]}
+
+\def\globalsetvariables % obsolete
+  {\dotripleargument\dosetvariables[\globalgetrawparameters]}
+
+\long\def\dosetvariables[#1][#2][#3]% tricky, test on s-pre-60
+  {\errorisfataltrue
+   \doifelse{#2}\currentvariableclass
+     {#1[\??vars:#2:][#3]}%
+     {\pushmacro\currentvariableclass
+      \def\currentvariableclass{#2}%
+      \getvariable{#2}\s!reset
+      #1[\??vars:#2:][#3]%
+      \getvariable{#2}\s!set
+      \popmacro\currentvariableclass}%
+   \errorisfatalfalse}
+
+\long\def\setvariable #1#2#3{\long\expandafter\def \csname\??vars:#1:#2\endcsname{#3}}
+\long\def\setevariable#1#2#3{\long\expandafter\edef\csname\??vars:#1:#2\endcsname{#3}}
+\long\def\setgvariable#1#2#3{\long\expandafter\gdef\csname\??vars:#1:#2\endcsname{#3}}
+\long\def\setxvariable#1#2#3{\long\expandafter\xdef\csname\??vars:#1:#2\endcsname{#3}}
+
+\def\getvariable#1#2%
+  {\csname
+     \ifcsname\??vars:#1:#2\endcsname\??vars:#1:#2\else\s!empty\fi
+   \endcsname}
+
+\def\showvariable#1#2%
+  {\showvalue{\ifcsname\??vars:#1:#2\endcsname\??vars:#1:#2\else\s!empty\fi}}
+
+\let\currentvariableclass\empty
+
+%D \macros
+%D   {checkvariables}
+%D
+%D I'll probably forget that this on exists.
+
+\def\checkvariables
+  {\dodoubleargument\docheckvariables}
+
+\def\docheckvariables
+  {\dogetparameters\docheckrawvalue}
+
+\long\def\docheckrawvalue#1#2#3%
+  {\ifcsname\??vars:#1:#2\endcsname
+     \edef\checkedrawvalue{\csname\??vars:#1:#2\endcsname}%
+     \ifx\checkedrawvalue\empty
+       \long\expandafter\def\csname\??vars:#1:#2\endcsname{#3}%
+     \fi
+   \else
+     \long\expandafter\def\csname\??vars:#1:#2\endcsname{#3}%
+   \fi}
+
+%D \macros
+%D   {doifelsevariable,doifvariable,doifnotvariable}
+%D
+%D A few trivial macros:
+
+\def\doifelsevariable#1#2%
+  {\ifcsname\??vars:#1:#2\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\doifvariable#1#2%
+  {\ifcsname\??vars:#1:#2\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\doifnotvariable#1#2%
+  {\ifcsname\??vars:#1:#2\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\getvariabledefault#1#2% #3% can be command, so no ifcsname here
+  {\executeifdefined{\??vars:#1:#2}}% {#3}
+
+% \unexpanded\def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
+%
+% \def\doifenvelse#1{\doifdefinedelse{\??en#1}} % speed up
+% \def\doifenv    #1{\doifdefined    {\??en#1}} % speed up
+% \def\doifnotenv #1{\doifundefined  {\??en#1}} % speed up
+%
+% \def\env#1{\csname\??en#1\endcsname}
+%
+% \def\envvar#1#2%
+%   {\ifcsname\??en#1\endcsname
+%      \csname\??en#1\endcsname\else#2%
+%    \fi}
+%
+% low level change, now also accessible as \getvariable
+% {environment}{...}; the next macros will become obsolete
+% some day in favor of normal variables in the environment
+% namespace
+
+\def\s!environment{environment}
+
+\unexpanded\def\setupenv   {\dotripleargument\dosetvariables[\getrawparameters][\s!environment]}
+\def\doifenvelse{\doifelsevariable  \s!environment}
+\def\doifenv    {\doifvariable      \s!environment}
+\def\doifnotenv {\doifnotvariable   \s!environment}
+\def\env        {\getvariable       \s!environment}
+\def\envvar     {\getvariabledefault\s!environment}
+
+\protect \endinput

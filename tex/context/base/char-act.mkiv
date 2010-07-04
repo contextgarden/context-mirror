@@ -1,0 +1,138 @@
+%D \module
+%D   [       file=char-act,
+%D        version=2006.12.05,
+%D          title=\CONTEXT\ Character Support,
+%D       subtitle=Active,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Character Support / Active}
+
+\unprotect
+
+%D \macros
+%D   {processingverbatim}
+%D
+%D Typesetting a file in most cases results in more than one
+%D page. Because we don't want problems with files that are
+%D read in during the construction of the page, we set \type
+%D {\ifprocessingverbatim}, so the output routine can adapt
+%D its behavior. Originally we used \type {\scratchread}, but
+%D because we want to support nesting, we decided to use a
+%D separate input file.
+
+\newif\ifprocessingverbatim
+
+%D \macros
+%D   {obeyedspace, obeyedtab, obeyedline, obeyedpage}
+%D
+%D We have followed Knuth in naming macros that make \SPACE,
+%D \NEWLINE\ and \NEWPAGE\ active and assigning them
+%D \type{\obeysomething}, but first we set some default values.
+
+\def\obeyedspace {\ifprocessingverbatim\hbox{ }\else\space\fi}
+\def\obeyedtab   {\obeyedspace}
+\def\obeyedline  {\par}
+\def\obeyedpage  {\vfill\eject}
+
+%D \macros
+%D   {controlspace,setcontrolspaces}
+%D
+%D First we define \type{\obeyspaces}. When we want visible
+%D spaces (control spaces) we only have to adapt the definition
+%D of \type{\obeyedspace} to:
+
+\def\controlspace{\hbox{\char32}} % rather tex
+\def\normalspace { }
+\def\normalspaces{\catcode`\ =\@@space}
+
+\bgroup
+\catcode`\ =\@@active
+\gdef\obeyspaces{\catcode`\ =\@@active\def {\obeyedspace}}
+\gdef\setcontrolspaces{\catcode`\ =\@@active\def {\controlspace}}
+\egroup
+
+%D \macros
+%D   {obeytabs, obeylines, obeypages,ignoretabs, ignorelines, ignorepages}
+%D
+%D Next we take care of \NEWLINE\ and \NEWPAGE\ and because we
+%D want to be able to typeset listings that contain \TAB, we
+%D have to handle those too. Because we have to redefine the
+%D \NEWPAGE\ character locally, we redefine the meaning of
+%D this (often already) active character.
+
+\catcode`\^^L=\@@active \def^^L{\par}
+
+%D The following indirect definitions enable us to implement
+%D all kind of \type{\obeyed} handlers.
+
+\bgroup
+
+\catcode`\^^I=\@@active
+\catcode`\^^M=\@@active
+\catcode`\^^L=\@@active
+
+\gdef\obeytabs    {\catcode`\^^I=\@@active\def^^I{\obeyedtab}}
+\gdef\obeylines   {\catcode`\^^M=\@@active\def^^M{\obeyedline}}
+\gdef\obeypages   {\catcode`\^^L=\@@active\def^^L{\obeyedpage}}
+
+\gdef\ignoretabs  {\catcode`\^^I=\@@active\def^^I{\obeyedspace}}
+\gdef\ignorelines {\catcode`\^^M=\@@active\def^^M{\obeyedspace}}
+\gdef\ignorepages {\catcode`\^^L=\@@ignore}  % \@@active\def^^L{\obeyedline}}
+\gdef\ignoreeofs  {\catcode`\^^Z=\@@ignore}
+
+\egroup
+
+%D \macros
+%D   {naturaltextext}
+%D
+%D When one uses \ETEX, switching to normal \TEX\ is possible
+%D too. We also introduce a switch that can be used in the
+%D drivers and set in higher level shell macros.
+
+\def\naturaltextext#1\relax
+  {\bgroup
+   \def\ascii{#1}%
+   \setcatcodetable\ctxcatcodes
+   \prettynaturalfont{\scantextokens\expandafter{\ascii}\ifhmode\unskip\fi}%
+   \egroup}
+
+%D What-a-mess:
+
+% \def\normalspacecodes
+%   {\catcode`\^^I = 10
+%    \catcode`\^^M =  5
+%    \catcode`\^^L =  5
+%    \catcode`\    = 10
+%    \catcode`\^^Z =  9 }
+
+% \appendtoks
+%     \normalspacecodes
+% \to \everybeforeoutput
+
+\endinput \protect
+
+% obsolete (old hack for idris)
+
+%D This is a hack, and only meant for special situations. We don't
+%D support this in for instance verbatim. The active characters map
+%D onto the \CONTEXT\ names and font handling etc. is up to the user.
+
+%D This feature is obsolete.
+
+\registerctxluafile{char-act}{1.001}
+
+\def\enableactiveutf {\ctxlua{characters.active.enable()}}
+\def\disableactiveutf{\ctxlua{characters.active.disable()}}
+\def\testactiveutf #1{\ctxlua{characters.active.test("#1")}}
+
+%D Usage:
+%D
+%D \starttyping
+%D \enableactiveutf \testactiveutf{eacute}
+%D \stoptyping

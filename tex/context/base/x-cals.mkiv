@@ -1,0 +1,36 @@
+%D \module
+%D   [       file=x-cals,
+%D        version=2007.09.05,
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=Cals table renderer,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt XML Macros / Cals Tables}
+
+\startmodule [cals]
+
+\ctxloadluafile{x-cals}{}
+
+% \startxmlsetups xml:cals:process
+%     \xmlsetsetup {\xmldocument} {cals:table} {*}
+% \stopxmlsetups
+% \startxmlsetups cals:table
+%     \ctxlua{lxml.cals.table("#1")}
+% \stopxmlsetups
+% \xmlregistersetup{xml:cals:process}
+
+\startxmlsetups xml:cals:process
+    \xmlsetfunction {\xmldocument} {cals:table} {lxml.cals.table}
+\stopxmlsetups
+
+\xmlregistersetup{xml:cals:process}
+
+\xmlregisterns{cals}{cals}
+
+\stopmodule

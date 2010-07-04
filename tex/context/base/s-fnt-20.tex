@@ -1,0 +1,140 @@
+%D \module
+%D   [      file=s-fnt-20,
+%D        version=2009.01.10,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Tracing Feature Application (1),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This file is used by Idris and me in the process of getting the
+%D best arabic fonts getting rendered best. As such it might change.
+
+% \setvariables
+%   [otftracker]
+%   [title=Reverse Chaining,
+%    figure=test-003-volt.pdf,
+%    font=husayni,
+%    sample={ببب بببب ببببب بببببب}]
+
+\def\checkedfeature#1#2{\ifnum\featureattribute{#1}=\zerocount#2\else#1\fi}
+
+% we can consider adding a dir key to features
+
+\definefontfeature
+  [otftracker-default]
+  [default]
+  [mode=node]
+
+\definefontfeature
+  [otftracker-arabtype]
+  [mode=node,analyze=yes,
+   language=dflt,script=arab,ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes]
+
+% \definefontfeature
+%   [otftracker-husayni]
+%   [analyze=yes,mode=node,
+%    language=dflt,script=arab,ccmp=yes,
+%    init=yes,medi=yes,fina=yes,isol=yes,
+%    calt=yes,
+%    mark=yes,mkmk=yes,kern=yes,curs=yes]
+
+\definefontfeature
+  [otftracker-husayni]
+  [analyze=yes,mode=node,
+   language=dflt,script=arab,ccmp=no,
+   init=yes,medi=yes,fina=yes,
+   rlig=yes,
+   ccmp=yes,
+   ss01=yes, % full Allah, Muhammad, Allahumma
+   ss05=yes, % full Jiim stacking
+   ss09=yes, % full Haa stacking
+   ss10=yes, % partial dipped Miim
+   % ss11=yes, % full dipped Miim
+   ss13=yes, % full stacked Miim
+   ss15=yes, % full stacked Laam-on-Miim
+   ss17=yes, % full stacked Ayn-on-Miim
+   ss19=yes, % LM_im
+   ss24=yes,ss25=yes,ss26=yes, % BX, LH_im, full Yaa.final specials
+   ss27=yes, % partial thin Miim.final
+   ss31=yes, % partial Raa.final contexts
+   ss34=yes, % partial Raa.final contexts
+   ss35=yes, % full Kaaf contexts
+   ss36=yes, % full Laam contexts
+   ss37=yes, % Miim-Miim contexts
+   ss38=yes, % fancy thin Haa.medial-Miim.final
+   ss39=yes, % high and low Baa strings
+   ss40=yes, % diagonal entry
+   ss41=yes, % initial alternates
+   % js06=yes,js08=yes,js10=yes,js11=yes,js17=yes,
+   % ttwl=yes,
+   mark=yes,mkmk=yes,
+   kern=yes,curs=yes]
+
+\definefontfeature
+  [otftracker-simplenaskhi]
+  [analyze=yes,mode=node,
+   language=dflt,script=arab,
+   init=yes,medi=yes,fina=yes,calt=yes,
+   rlig=yes,liga=yes,dlig=yes,
+   mark=yes,mkmk=yes,curs=yes]
+
+\setvalue{otftracker-direction-arabtype}{-1}
+\setvalue{otftracker-direction-husayni}{-1}
+\setvalue{otftracker-direction-simplenaskhi}{-1}
+
+\setvariables
+  [otftracker]
+  [font=Serif,
+   features=\checkedfeature{otftracker-\getvariable{otftracker}{font}}{otftracker-default},
+   size=48pt,
+   figure=,
+   title=Feature Check,
+   sample=no sample,
+   direction=\executeifdefined{otftracker-direction-\getvariable{otftracker}{font}}{0},
+   set=\setups{otftracker}]
+
+\setuplayout
+  [topspace=1.5cm,
+   backspace=1.5cm,
+   width=middle,
+   height=middle,
+   header=1.5cm,
+   footer=1.5cm]
+
+\setuphead
+  [chapter]
+  [header=high,
+   number=no]
+
+\setupfootertexts
+  [chapter]
+
+\setupalign
+  [flushleft]
+
+\setupcolors
+  [state=start]
+
+\startsetups otftracker
+    \setupbodyfont[tt,10pt]
+    \starttext
+        \chapter{\getvariable{otftracker}{title}}
+        \doifsomething {\getvariable{otftracker}{figure}} {
+            \startlinecorrection
+                \externalfigure[\getvariable{otftracker}{figure}]
+            \stoplinecorrection
+        }
+        \showotfcomposition
+            {\getvariable{otftracker}{font}*\getvariable{otftracker}{features} at \getvariable{otftracker}{size}}
+            {\getvariable{otftracker}{direction}}
+            {\getvariable{otftracker}{sample}}
+    \stoptext
+\stopsetups

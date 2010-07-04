@@ -1,0 +1,30 @@
+%D \module
+%D   [       file=lang-sla,
+%D        version=1999.09.13, % 1997.09.03
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Slavic Languages,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\def\sloveniancharacter#1%
+  {\ifcase#1\unknowncharacter
+     \or a\or b\or c\or \ccaron\or d\or e\or f\or g\or h\or i\or j\or k\or l\or m%
+     \or n\or o\or p\or r\or s\or \scaron\or t\or u\or v\or z\or \zcaron
+   \else
+     \unknowncharacter
+   \fi}
+
+\def\slovenianCharacter#1%
+  {\ifcase#1\unknowncharacter
+     \or A\or B\or C\or \Ccaron\or D\or E\or F\or G\or H\or I\or J\or K\or L\or M%
+     \or N\or O\or P\or R\or S\or \Scaron\or T\or U\or V\or Z\or \Zcaron
+   \else
+     \unknowncharacter
+   \fi}
+
+\endinput

@@ -1,0 +1,579 @@
+%D \module
+%D   [       file=grph-fig,
+%D        version=2006.08.26, % overhaul/split of 1997.03.31 core-fig
+%D          title=\CONTEXT\ Graphic Macros,
+%D       subtitle=Transformations,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D It may be that some functionality got lost. If it concerns
+%D defined features, let me know and it will be sorted out.
+
+\writestatus{loading}{ConTeXt Graphic Macros / Transformations}
+
+\unprotect
+
+%D Scaling:
+
+\unexpanded\def\scale{\dodoubleempty\doscalenextbox[\??xy]}
+
+% probably too many dimens / the width calculations can go
+% since we may assume scaling is available (was not true
+% long ago which is why we also calculate the width)
+
+\newdimen\scaleboxwidth
+\newdimen\scaleboxheight
+\newdimen\scaleboxdepth
+
+\newdimen\scaleboxsizex
+\newdimen\scaleboxsizey
+\newdimen\scaleboxoffsetx
+\newdimen\scaleboxoffsety
+
+\newdimen\scaleboxhsize
+\newdimen\scaleboxvsize
+
+% global
+
+\newdimen\scaleboxdimx \let\figwid \scaleboxdimx
+\newdimen\scaleboxdimy \let\fighei \scaleboxdimy
+\newcount\scaleboxscax \let\figxsca\scaleboxscax
+\newcount\scaleboxscay \let\figysca\scaleboxscay
+
+\newdimen\scaleboxoutervsize % we cannot manipulate any global vsize !
+
+\let\finalscaleboxxscale \!!plusone
+\let\finalscaleboxyscale \!!plusone
+\let\finalscaleboxwidth  \!!zeropoint
+\let\finalscaleboxheight \!!zeropoint
+\let\finalscaleboxxfactor\!!hundred
+\let\finalscaleboxyfactor\!!hundred
+
+\newconditional\scaleboxdone
+
+\def\doscalenextbox[#1][#2]%
+  {\bgroup
+   \getparameters
+     [#1]
+     [\c!scale=,\c!xscale=,\c!yscale=,\c!width=,\c!height=,\c!lines=,
+      \c!factor=,\c!hfactor=,\c!wfactor=,\c!grid=,\c!sx=1,\c!sy=1,
+      \c!equalwidth=,\c!equalheight=,
+      \c!maxwidth=\scaleparameter\c!width,\c!maxheight=\scaleparameter\c!height,
+      #2]%
+   \dowithnextbox{\dodoscalenextbox{#1}\egroup}\hbox}
+
+\def\doscalebox#1%
+  {\bgroup\dowithnextbox{\dodoscalenextbox{#1}\egroup}\hbox}
+
+\let\currentscaletag\??xy
+
+\def\scaleparameter#1%
+  {\csname\currentscaletag#1\endcsname}
+
+\def\setscaleparameter#1#2%
+  {\setvalue{\currentscaletag#1}{#2}}
+
+\def\dodoscalenextbox#1%
+  {\edef\currentscaletag{#1}%
+   \doif{\scaleparameter\c!depth}\v!no{\setbox\nextbox\hbox{\raise\nextboxdp\box\nextbox}}% new
+   \forgetall
+   \dontshowcomposition
+   \dontcomplain
+   \doscaleboxcalculations
+   \doscaleboxindeed
+   \doscaleboxposition
+   \flushnextbox}
+
+\def\doscaleboxindeed
+   {\ifconditional\scaleboxdone
+      \scaleboxwidth \finalscaleboxxscale\nextboxwd
+      \scaleboxheight\finalscaleboxyscale\nextboxht
+      \scaleboxdepth \finalscaleboxyscale\nextboxdp
+      \setbox\nextbox\hbox
+        {\dostartscaling \finalscaleboxxscale \finalscaleboxyscale
+         \smashedbox\nextbox
+         \dostopscaling}%
+      \nextboxwd\scaleboxwidth
+      \nextboxht\scaleboxheight
+      \nextboxdp\scaleboxdepth
+    \fi}
+
+\def\doscaleboxcalculations
+  {\setfalse\scaleboxdone
+   % initial final value
+   \global\let\finalscaleboxxscale \!!plusone
+   \global\let\finalscaleboxyscale \!!plusone
+   \xdef      \finalscaleboxwidth {\the\nextboxwd}%
+   \xdef      \finalscaleboxheight{\the\nextboxht}%
+   \global\let\finalscaleboxxfactor\!!hundred
+   \global\let\finalscaleboxyfactor\!!hundred
+   \ifdim\nextboxht>\zeropoint \ifdim\nextboxwd>\zeropoint
+     \edef\scaleboxstampa % slow way [can be combined]
+       {\scaleparameter\c!scale \scaleparameter\c!xscale \scaleparameter\c!yscale
+        \scaleparameter\c!factor\scaleparameter\c!wfactor\scaleparameter\c!hfactor
+        \scaleparameter\c!lines \scaleparameter\c!width  \scaleparameter\c!height}%
+     \edef\scaleboxstampb % fast way [just sx/sy]
+       {\scaleparameter\c!sx
+        \scaleparameter\c!sy}%
+     \edef\scaleboxstampc
+       {11}%
+     \ifx\scaleboxstampa\empty
+       \ifx\scaleboxstampb\scaleboxstampc
+        % no scaling, but still check; new, gone again
+% wrong: scaled proportionally as side effect
+%         \doifsomething{\scaleparameter\c!maxwidth }{\letvalue{\currentscaletag\c!factor}\v!fit}%
+%         \doifsomething{\scaleparameter\c!maxheight}{\letvalue{\currentscaletag\c!factor}\v!fit}%
+        \insidefloattrue % trick
+        \dodoscaleboxcalculations
+       \else
+         \dosetscalboxsxsy
+         \nodoscaleboxcalculations
+       \fi
+     \else
+       \ifx\scaleboxstampb\empty
+         % no need to check further
+       \else
+         \dosetscalboxsxsy
+       \fi
+       \dodoscaleboxcalculations
+     \fi
+   \fi \fi}
+
+\def\dosetscalboxsxsy
+  {\ifdim\scaleparameter\c!sx\onepoint=\onepoint\else
+     \setevalue{\currentscaletag\c!width }{\the\dimexpr\scaleparameter\c!sx\wd\nextbox\relax}%
+   \fi
+   \ifdim\scaleparameter\c!sy\onepoint=\onepoint\else
+     \setevalue{\currentscaletag\c!height}{\the\dimexpr\scaleparameter\c!sy\ht\nextbox\relax}%
+   \fi}
+
+\def\doscaleboxrounding#1.#2\relax{#1}
+
+\def\scaleboxrounding#1%
+  {\@EA\@EA\@EA\doscaleboxrounding\@EA\WITHOUTPT\the\dimexpr#1\points*100+32768sp\relax.\relax}
+
+\def\nodoscaleboxcalculations
+  {\settrue\scaleboxdone
+   \xdef\finalscaleboxwidth  {\the\dimexpr\scaleparameter\c!sx\wd\nextbox\relax}%
+   \xdef\finalscaleboxheight {\the\dimexpr\scaleparameter\c!sy\ht\nextbox\relax}%
+   \xdef\finalscaleboxxscale {\scaleparameter\c!sx}%
+   \xdef\finalscaleboxyscale {\scaleparameter\c!sy}%
+   \ifx\finalscaleboxxscale\empty\let\finalscaleboxxscale\!!plusone\fi
+   \ifx\finalscaleboxyscale\empty\let\finalscaleboxyscale\!!plusone\fi
+   \xdef\finalscaleboxxfactor{\scaleboxrounding\finalscaleboxxscale}%
+   \xdef\finalscaleboxyfactor{\scaleboxrounding\finalscaleboxyscale}}
+
+\def\dodoscaleboxcalculations
+  {\settrue\scaleboxdone
+   % initial values
+   \scaleboxoffsetx\zeropoint
+   \scaleboxoffsety\zeropoint
+   \scaleboxsizex  \nextboxwd
+   \scaleboxsizey  \nextboxht % alleen ht wordt geschaald!
+   % final values
+   \global\scaleboxdimx \zeropoint % see note * (core-fig)
+   \global\scaleboxdimy \zeropoint % see note * (core-fig)
+   \scaleboxscax   \plusone        % see note * (core-fig)
+   \scaleboxscay   \plusone        % see note * (core-fig)
+   % preparations
+   \setfalse\scaleboxscalingdone
+   \checkscaleboxsettings
+   % calculators
+   % beware, they operate in sequence, and calculate missing dimensions / messy
+   %setscaleboxbynature % when? needed?
+   \ifconditional\scaleboxscalingdone\else\setscaleboxbyfactor   \fi
+   \ifconditional\scaleboxscalingdone\else\setscaleboxbyscale    \fi
+   \ifconditional\scaleboxscalingdone\else\setscaleboxbydimension\fi
+   % finalizers / to be done (no longer needed this way, clean up)
+   \convertscaleboxinsertscale\scaleboxhsize\figx\scaleboxscax\scax
+   \convertscaleboxinsertscale\scaleboxvsize\figy\scaleboxscay\scay
+   % used in actual scaling
+   \xdef\finalscaleboxwidth  {\the\scaleboxdimx}%
+   \xdef\finalscaleboxheight {\the\scaleboxdimy}%
+   \xdef\finalscaleboxxfactor{\the\scaleboxscax}%
+   \xdef\finalscaleboxyfactor{\the\scaleboxscay}%
+   \xdef\finalscaleboxxscale {\withoutpt\the\dimexpr\scax\points/\plushundred\relax}%
+   \xdef\finalscaleboxyscale {\withoutpt\the\dimexpr\scay\points/\plushundred\relax}}
+
+
+\setvalue{\??xy:\c!grid:\v!yes     }{\getnoflines   \fighei\setevalue{\currentscaletag\c!height}{\the\noflines\lineheight}}
+\setvalue{\??xy:\c!grid:\v!height  }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+\strutdepth\relax}}
+\setvalue{\??xy:\c!grid:\v!depth   }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight-\strutdepth\relax}}
+\setvalue{\??xy:\c!grid:\v!halfline}{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+.5\lineheight\relax}}
+\setvalue{\??xy:\c!grid:\v!fit     }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\noflines\lineheight}}
+\letvalue{\??xy:\c!grid:\empty     }\donothing
+
+\def\checkscaleboxsettings
+  {\doifsomething{\scaleparameter\c!maxwidth }% can be defined in itself
+     {\setevalue{\currentscaletag\c!maxwidth }{\the\dimexpr\scaleparameter\c!maxwidth \relax}}%
+   \doifsomething{\scaleparameter\c!maxheight}% can be defined in itself
+     {\setevalue{\currentscaletag\c!maxheight}{\the\dimexpr\scaleparameter\c!maxheight\relax}}%
+   \doifsomething{\scaleparameter\c!lines}
+     {\setevalue{\currentscaletag\c!height}{\the\dimexpr\scaleparameter\c!lines\lineheight\relax}}%
+   \getvalue{\??xy:\c!grid:\scaleparameter\c!grid}}
+
+\def\setscaleboxbynature % where ! ! ! ! !
+  {\doifsomething{\scaleparameter\c!width }{\global\scaleboxdimx\scaleparameter\c!width }%
+   \doifsomething{\scaleparameter\c!height}{\global\scaleboxdimy\scaleparameter\c!height}%
+   \doifsomething{\scaleparameter\c!scale }       {\scaleboxscax\scaleparameter\c!scale
+                                                   \scaleboxscay\scaleparameter\c!scale }%
+   \doifsomething{\scaleparameter\c!xscale}       {\scaleboxscax\scaleparameter\c!xscale}%
+   \doifsomething{\scaleparameter\c!yscale}       {\scaleboxscay\scaleparameter\c!yscale}} % oeps, was x
+
+% \defineexternalfigure[width-6][factor=auto,maxwidth=\textheight,maxheight=\textwidth]
+% \defineexternalfigure[width-7][factor=auto,maxwidth=\textwidth,maxheight=\textheight]
+% \placefigure{none}{\rotate[frame=on,offset=overlay]{\externalfigure[t:/sources/cow.pdf][width-6]}} \page
+% \placefigure{none}{\framed[frame=on,offset=overlay]{\externalfigure[t:/sources/cow.pdf][width-7]}}
+
+\def\setscaleboxbyfactor
+  {\doifinsetelse{\scaleparameter\c!factor}{\v!max,\v!fit,\v!broad,\v!auto}
+     {\doapplyscaleboxsize
+      \ifdim\scaleboxsizex>\scaleboxsizey
+        \docalculatescaleboxnorm  \scaleboxdimx\c!factor\c!maxwidth\hsize\scaleboxhsize
+        \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
+      \else
+        \docalculatescaleboxnorm  \scaleboxdimy\c!factor\c!maxheight\scaleboxoutervsize\scaleboxvsize
+        \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
+      \fi
+      \donetrue}
+     {\doifinsetelse{\scaleparameter\c!hfactor}{\v!max,\v!fit,\v!broad,\v!auto}
+        {\doapplyscaleboxsize
+         \docalculatescaleboxnorm  \scaleboxdimy\c!hfactor\c!maxheight\scaleboxoutervsize\scaleboxvsize
+         \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
+         \donetrue}
+        {\doifinsetelse{\scaleparameter\c!wfactor}{\v!max,\v!fit,\v!broad,\v!auto}
+           {\doapplyscaleboxsize
+            \docalculatescaleboxnorm  \scaleboxdimx\c!wfactor\c!maxwidth\hsize\scaleboxhsize
+            \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
+            \donetrue}
+           {\docalculatescaleboxnorm\scaleboxdimy\c!factor \c!height \textheight\scaleboxvsize
+            \docalculatescaleboxnorm\scaleboxdimy\c!hfactor\c!height \textheight\scaleboxvsize
+            \docalculatescaleboxnorm\scaleboxdimx\c!wfactor\c!width  \hsize     \hsize
+            \donefalse}}}%
+   \ifdone
+     \settrue\scaleboxscalingdone
+     \ifdim\scaleboxdimx>\scaleboxhsize
+       \global\scaleboxdimy\zeropoint \global\scaleboxdimx\scaleboxhsize
+     \else\ifdim\scaleboxdimy>\scaleboxvsize
+       \global\scaleboxdimx\zeropoint \global\scaleboxdimy\scaleboxvsize
+     \fi\fi
+     \setscaleboxbydimension
+   \fi}
+
+\def\setscaleboxbyscale
+  {\doifsomething{\scaleparameter\c!scale\scaleparameter\c!xscale\scaleparameter\c!yscale}
+     {\doapplyscaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax\c!xscale
+      \doapplyscaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay\c!yscale
+      \global\scaleboxdimx\zeropoint
+      \global\scaleboxdimy\zeropoint
+      \doifelsenothing{\scaleparameter\c!maxwidth}
+        {\doifsomething{\scaleparameter\c!maxheight}
+           {\ifdim\scaleboxsizey>\scaleparameter\c!maxheight\relax
+              \global\scaleboxdimy\scaleparameter\c!maxheight
+            \fi}}
+        {\ifdim\scaleboxsizex>\scaleparameter\c!maxwidth\relax
+           \global\scaleboxdimx\scaleparameter\c!maxwidth
+         \fi}}}
+
+\def\setscaleboxbydimension
+  {\ifdim\scaleboxdimx>\zeropoint
+     \ifdim\scaleboxdimy>\zeropoint
+       \dosetdimensionscaleboxsize
+         {\docalculatescaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay
+          \docalculatescaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax}%
+         {\docalculatescaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay
+          \docalculatescaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax}%
+         {\docalculatescaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay
+          \docalculatescaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax}%
+     \else
+       \dosetdimensionscaleboxsize
+         {\docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey}%
+         {\docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey}%
+         {\docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey}%
+     \fi
+   \else
+     \ifdim\scaleboxdimy>\zeropoint
+       \dosetdimensionscaleboxsize
+         {\docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex}%
+         {\docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex}%
+         {\docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex}%
+     \else
+       \dosetdimensionscaleboxsize
+         {\doapplyscaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax\c!xscale
+          \doapplyscaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay\c!yscale}%
+         {\docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey}%
+         {\docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex}%
+     \fi
+   \fi}
+
+\def\dosetdimensionscaleboxsize#1#2#3%
+  {#1\relax
+   \doifsomething{\scaleparameter\c!maxwidth}
+     {\ifdim\scaleboxdimx>\scaleparameter\c!maxwidth\relax
+        \global\scaleboxdimx\scaleparameter\c!maxwidth
+        #2\relax
+      \fi}%
+   \doifsomething{\scaleparameter\c!maxheight}
+     {\ifdim\scaleboxdimy>\scaleparameter\c!maxheight\relax
+        \global\scaleboxdimy\scaleparameter\c!maxheight
+         #3\relax
+      \fi}}
+
+\def\docalculatescaleboxnorm#1#2#3#4#5% 2 3 parameters (dodo:speedup)
+  {\processaction
+      [\scaleparameter#2]
+      [     \v!max=>\global#1\dimexpr#4\relax,
+            \v!fit=>\global#1\dimexpr#5\relax,
+          \v!broad=>\global#1\dimexpr#5-4\@@exbodyfont\relax,
+           \v!auto=>\doifsomething{\scaleparameter#3}{\global#1\dimexpr\scaleparameter#3\relax},
+        \s!default=>\doifsomething{\scaleparameter#3}{\global#1\dimexpr\scaleparameter#3\relax},
+        \s!unknown=>\global#1\dimexpr\scaleparameter#2\dimexpr\@@exbodyfont/10\relax\relax]}
+
+\def\docalculatescaleboxscales#1#2#3#4%
+  {\scratchdimen\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax
+   \scaleboxscax\scratchdimen
+   \scaleboxscay\scratchdimen
+   #3\dimexpr\scaleboxscax\dimexpr#4/\plusthousand\relax\relax}
+
+\def\docalculatescaleboxscale#1#2#3%
+  {#3\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax}
+
+\def\doapplyscaleboxscale#1#2#3#4% $4 = parameter / scale can be empty
+  {\ifcase0\scaleparameter#4\relax
+     \ifcase0\scaleparameter\c!scale\relax
+       #3=\plusthousand
+     \else
+       #3=\scaleparameter\c!scale
+     \fi
+   \else
+     #3=\scaleparameter#4%
+   \fi
+   \relax % important ! still ?
+   \global#1\ifnum#3=\plusthousand#2\else\dimexpr#3\dimexpr#2/\plusthousand\relax\relax\fi
+   \relax}
+
+\def\doapplyscaleboxsize
+  {\doifelsenothing{\scaleparameter\c!maxheight}
+     {\scaleboxoutervsize\textheight
+      \ifinner
+        \scaleboxoutervsize \vsize % \textheight =\vsize
+        \scratchdimen\vsize % \scratchdimen=\textheight
+      \else\ifinsidefloat
+        \scaleboxoutervsize \vsize % \textheight =\vsize
+        \scratchdimen\vsize % \scratchdimen=\textheight
+      \else\ifinpagebody
+        \scaleboxoutervsize \vsize % \textheight =\vsize
+        \scratchdimen\vsize % \scratchdimen=\textheight
+      \else % hm, there should be an option to force this
+        \ifdim\pagegoal<\maxdimen
+          \ifdim\pagetotal<\pagegoal
+            \scratchdimen\pagegoal
+            \advance\scratchdimen -\pagetotal
+          \else
+            \scratchdimen\scaleboxoutervsize % \textheight
+          \fi
+        \else
+          \scratchdimen\scaleboxoutervsize % \textheight
+        \fi
+      \fi\fi\fi}
+     {\scratchdimen\scaleparameter\c!maxheight
+      \scaleboxoutervsize\scratchdimen}%
+   \doifelsenothing{\scaleparameter\c!height}
+     {\scaleboxvsize\scratchdimen}
+     {\scaleboxvsize\scaleparameter\c!height}%
+   \doifelsenothing{\scaleparameter\c!width}
+     {\scaleboxhsize\hsize}
+     {\scaleboxhsize\scaleparameter\c!width}}
+
+\def\convertscaleboxinsertscale#1#2#3#4%
+  {\scratchdimen#1\relax
+   \ifnum#3=\plusthousand
+     % == scale 1
+   \else
+     % better 1000 100 10 ranges, evt round 2sp
+     \divide\scratchdimen \plusthousand
+     \multiply\scratchdimen #3\relax
+   \fi
+   \scratchdimen-\scratchdimen  % beter hier - dan in driver
+   \edef#2{\the\scratchdimen}%
+   \scratchcounter#3\relax
+   \ifnum\scratchcounter>\plustenthousand
+     \divide\scratchcounter\!!ten \scratchdimen\the\scratchcounter\points
+   \else
+     \scratchdimen\the\scratchcounter\points \divide\scratchdimen\!!ten
+   \fi
+   \edef#4{\withoutpt\the\scratchdimen}}
+
+% \startcombination
+%     {\externalfigure[cow.pdf] [frame=on,height=3cm,equalwidth=6cm]} {}
+%     {\externalfigure[mill.png][frame=on,height=3cm,equalwidth=6cm]} {}
+% \stopcombination
+
+\def\doscaleboxposition
+   {\doifsomething{\scaleparameter\c!equalwidth}
+      {\scratchdimen\scaleparameter\c!equalwidth\relax
+       \ifdim\wd\nextbox<\scratchdimen
+         \setbox\nextbox\hbox to \scratchdimen{\hss\box\nextbox\hss}%
+       \fi}%
+    \doifsomething{\scaleparameter\c!equalheight}
+      {\scratchdimen\scaleparameter\c!equalheight\relax
+       \ifdim\ht\nextbox<\scratchdimen
+         \setbox\nextbox\vbox to \scratchdimen{\vss\box\nextbox\vss}%
+       \fi}}
+
+%D \macros
+%D   {clip, setupclipping}
+%D
+%D Although related to figures, clipping can be applied to
+%D arbitrary content. We can use \METAPOST\ to provide a non
+%D rectangular clipping path.
+%D
+%D \starttyping
+%D \startMPclip{fun}
+%D   clip currentpicture to fullcircle
+%D     shifted (.5,.5) xscaled \width yscaled \height ;
+%D \stopMPclip
+%D \stoptyping
+%D
+%D We get a rectangular piece of the figure when we say:
+%D
+%D \starttyping
+%D \clip[x=2,y=1]{\externalfigure[photo]}
+%D \stoptyping
+%D
+%D When we want to clip to the oval we defined a few lines ago,
+%D we say:
+%D
+%D \starttyping
+%D \clip[nx=1,ny=1,x=1,y=1,mp=fun]{\externalfigure[photo]}
+%D \stoptyping
+%D
+%D The general characteristics of clipping can be set up with
+%D
+%D \showsetup{setupclipping}
+
+\def\setupclipping
+  {\dodoubleargument\getparameters[\??cp]}
+
+\def\clip
+  {\dosingleempty\doclip}
+
+\def\doclip[#1]% nb top->bottom left->right
+  {\bgroup
+   \getparameters[\??cp][#1]%
+   \doifelse\@@cpstate\v!start\dodoclip{\egroup\hbox}}
+
+\def\dodoclip
+  {\dowithnextbox
+     {\ifdim\@@cpwidth>\zeropoint
+        \!!dimena\@@cpwidth
+        \!!dimenc\@@cphoffset
+      \else
+        \!!dimena\nextboxwd
+        \divide\!!dimena \@@cpnx
+        \!!dimenc\@@cpx\!!dimena
+        \advance\!!dimenc -\!!dimena
+        \!!dimena\@@cpsx\!!dimena
+      \fi
+      \relax % sure
+      \ifdim\@@cpheight>\zeropoint
+        \!!dimenb\@@cpheight
+        \!!dimend\nextboxht
+        \advance\!!dimend -\@@cpvoffset
+        \advance\!!dimend -\!!dimenb
+      \else
+        \!!dimenb\nextboxht
+        \divide\!!dimenb \@@cpny
+        \!!dimend-\@@cpy\!!dimenb
+        \advance\!!dimend -\@@cpsy\!!dimenb
+        \advance\!!dimend \!!dimenb
+        \!!dimenb\@@cpsy\!!dimenb
+        \advance\!!dimend \nextboxht % dimend !
+      \fi
+      \setbox\nextbox\hbox                            % old
+        {\advance\!!dimenc -\@@cpleftoffset           % new !
+         \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
+         \hskip-\!!dimenc\lower\!!dimend\flushnextbox}% old
+      \nextboxwd\zeropoint
+      \nextboxht\zeropoint
+      \nextboxdp\zeropoint
+      \setbox\nextbox\hbox
+        {\advance\!!dimena \@@cpleftoffset         % new !
+         \advance\!!dimena \@@cprightoffset        % new !
+         \advance\!!dimenb \@@cpbottomoffset       % new !
+         \advance\!!dimenb \@@cptopoffset          % new !
+         \dostartclipping\@@cpmp\!!dimena\!!dimenb % old
+           \flushnextbox
+         \dostopclipping}%
+      \setbox\nextbox\hbox                       % new !
+        {\!!dimena-\@@cpleftoffset               % new !
+         \!!dimenb \@@cpbottomoffset             % new ! % - removed
+         \hskip\!!dimena\lower\!!dimenb\flushnextbox}% new !
+      \nextboxwd\!!dimena
+      \nextboxht\!!dimenb
+      \nextboxdp\zeropoint
+      \flushnextbox
+      \egroup}%
+   \hbox}
+
+\setupclipping
+  [\c!state=\v!start,
+   \c!n=1, % was 2
+   \c!nx=\@@cpn,\c!x=1,\c!sx=1,
+   \c!ny=\@@cpn,\c!y=1,\c!sy=1,
+   \c!width=\!!zeropoint,
+   \c!height=\!!zeropoint,
+   \c!hoffset=\!!zeropoint,
+   \c!voffset=\!!zeropoint,
+   \c!offset=\zeropoint,
+   \c!leftoffset=\@@cpoffset,  % \zeropoint,
+   \c!rightoffset=\@@cpoffset, % \zeropoint,
+   \c!topoffset=\@@cpoffset,   % \zeropoint,
+   \c!bottomoffset=\@@cpoffset,% \zeropoint,
+   \c!mp=]
+
+%D \startbuffer
+%D \startuseMPgraphic{test}
+%D   path p ; p := fullcircle scaled 4cm ;
+%D   draw p withpen pencircle scaled 1cm ;
+%D   setbounds currentpicture to boundingbox p ;
+%D \stopuseMPgraphic
+%D
+%D \hbox to \hsize \bgroup
+%D   \hss
+%D   \ruledhbox{\useMPgraphic{test}}%
+%D   \hss
+%D   \ruledhbox{\clip{\useMPgraphic{test}}}%
+%D   \hss
+%D \egroup
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D Mirroring.
+
+\def\domirrorbox % \hbox/\vbox/\vtop
+  {\bgroup
+   \dowithnextbox
+     {\dontshowcomposition
+      \scratchdimen\nextboxwd
+      % better use an hbox (if no \forgetall, leftskip etc may creep in)
+     %\setbox\nextbox\vbox{\forgetall\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
+      \setbox\nextbox\hbox{\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
+      \nextboxwd\scratchdimen
+      \flushnextbox
+      \egroup}}
+
+\unexpanded\def\mirror
+  {\domirrorbox\hbox}
+
+% \setbox0=\hbox{gans}
+% \ruledhbox{\copy0 \schaal[sx=2,sy=2]{\copy0}}
+% \mirror{\ruledhbox{\copy0 \schaal{\box0}}}
+
+\protect \endinput

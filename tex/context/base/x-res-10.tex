@@ -1,0 +1,75 @@
+%D \module
+%D   [      file=x-fig-10,
+%D        version=2003.08.02,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Resource Dummy Generation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\usemodule[res-00]
+
+\defineXMLenvironment [rl:library] 
+  {\starttext}
+  {\stoptext}
+
+\defineXMLenvironment [rl:usage] 
+  {\bgroup} 
+  {\doif{\XMLflush{rl:type}-\XMLflush{rl:state}}{figure-missing}
+     {\doifnot{\XMLflush{rl:file}}{dummy}{\setups[rl:usage]}}
+   \egroup}
+
+\defineXMLsave [rl:type]  % figure
+\defineXMLsave [rl:state] % found|missing
+\defineXMLsave [rl:file]  % filename
+
+\defineXMLsavecontent [rl:width]  {12cm} % width in pt
+\defineXMLsavecontent [rl:height]  {9cm} % height in pt
+
+\useMPlibrary
+  [dum]
+
+\setupcolors
+  [state=start]
+
+\defineoverlay
+  [rl:banner]
+  [\setups{rl:banner}]
+
+\startsetups[rl:banner]
+
+  \framed [frame=off,offset=none,align={lohi,middle}]
+    \bgroup
+      \tt \white \XMLflush{rl:file}
+    \egroup
+
+\stopsetups
+
+\startsetups[rl:usage]
+
+  \startTEXpage 
+ 
+    % \externalfigure
+    %   [\XMLflush{rl:file}] % goes wrong when file present 
+    %   [object=no,
+    %    backgroundcolor=green,background={foreground,color,rl:banner},
+    %    width=\XMLflush{rl:width},
+    %    height=\XMLflush{rl:height}]
+
+   \def\figurewidth {\XMLflush{rl:width}}
+   \def\figureheight{\XMLflush{rl:height}}
+
+   \externalfigurereplacement
+     {\XMLflush{rl:file}}
+     {\XMLflush{rl:file}}
+     {\XMLflush{rl:state}}
+ 
+   \stopTEXpage 
+
+\stopsetups 
+
+\endinput 

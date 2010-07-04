@@ -1,0 +1,777 @@
+%D \module
+%D   [       file=unic-ini,
+%D        version=2002.12.03,
+%D          title=\CONTEXT\ \UNICODE\ Support,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Unicode Support / Initialization}
+
+%D Sorry, we only support his in \ETEX.
+
+\unprotect
+
+% ÀÁÂÃÄÅàáâãäå
+% ÆÇæç
+% ÈÉÊËèéêë
+% ÌÍÎÏÞìíîïþ
+% Ðð
+% Ññ
+% ÒÓÔÕÖòóôõö
+% Øø
+% ÙÚÛÜùúû
+% Ýýÿ
+% ß
+
+%D This module deals with unicode, and in particular with
+%D \UTF-8 conversion. The prelude to this module was \type
+%D {xtag-utf}, which is now replaced by a one||liner. The
+%D macros below deal with conversions. Thanks to Taco for
+%D providing the following conversion rules.
+%D
+%D \starttabulate[|c|c|c|c|c|]
+%D \NC  $b_1$  \NC  $b_2$  \NC  $b_3$  \NC  $b_4$  \NC     unicode     \NC \NR
+%D \NC192---223\NC128---191\NC         \NC         \NC   0x80---0x7FF  \NC \NR
+%D \NC224---239\NC128---191\NC128---191\NC         \NC  0x800---0xFFFF \NC \NR
+%D \NC240---247\NC128---191\NC128---191\NC128---191\NC0x10000---0x1FFFF\NC \NR
+%D \stoptabulate
+%D
+%D In \UTF-8 the characters in the range 128---191 are illegal
+%D as first characters. The characters 254 and 255 are
+%D completely illegal and should not appear at all (they are
+%D related to UTF-16).
+%D
+%D The unicode number for an \UTF-8 sequence can be calculated
+%D as follows:
+%D
+%D \starttabulate[|mc|m|mc|m|mc|m|mc|m|]
+%D \NC       b_1     \NC \NC             \NC \NC           \NC \NC         \NC if     b_1<=127\NC \NR
+%D \NC    64(b_1-192)\NC+\NC    (b_2-128)\NC \NC           \NC \NC         \NC if 192<=b1<=223\NC \NR
+%D \NC  4096(b_1-224)\NC+\NC  64(b_2-128)\NC+\NC  (b_3-128)\NC \NC         \NC if 224<=b1<=239\NC \NR
+%D \NC262144(b_1-240)\NC+\NC4096(b_2-128)\NC+\NC64(b_3-128)\NC+\NC(b_4-128)\NC if 240<=b1<=247\NC \NR
+%D \stoptabulate
+%D
+%D A lot of information about unicode can be found on the
+%D web (search for Markus Kuhn and unicode and you'll
+%D probably end up at the right place).
+
+%D In \ETEX\ vocabulary such a conversion looks as follows.
+%D We need the \type {`} in order to turn a character into a
+%D number.
+%D
+%D \starttyping
+%D \def\utftwounicode#1#2%
+%D   {\number\numexpr    (64*(\numexpr (#1-192))+%
+%D                           (\numexpr(`#2-128)))}
+%D
+%D \def\utfthreeunicode#1#2#3%
+%D   {\number\numexpr  (4096*(\numexpr (#1-224))+
+%D                        64*(\numexpr(`#2-128))+%
+%D                           (\numexpr(`#3-128)))}
+%D
+%D \def\utffourunicode#1#2#3#4%
+%D   {\number\numexpr(262144*(\numexpr (#1-240))+
+%D                      4096*(\numexpr(`#1-128))+
+%D                        64*(\numexpr(`#2-128))+%
+%D                           (\numexpr(`#3-128)))}
+%D \stoptyping
+%D
+%D When we map the unicode number on one of the 256 char wide
+%D unicode tables, we need to do a bit of div and mod. Watch
+%D out: an \ETEX\ \type {/} is not the same as \TEX's \type
+%D {\divide}. The former rounds, while the later truncates, so
+%D we need to trucate ourselves. In case you wonder why we
+%D use \type {\numexpr}: this is not only more convenient, but
+%D also makes it possible to avoid scratch counters, so that we
+%D get fast and fully expandable conversions.
+%D
+%D \starttyping
+%D \def\utfdiv#1{\number\numexpr((#1-128)/256)}
+%D \def\utfmod#1{\number\numexpr((#1)-(256*(\utfdiv{#1})))}
+%D \stoptyping
+%D
+%D So far for the readable alternatives. When using \type
+%D {\numexpr} you should be aware of rather unexpected look
+%D ahead effects. The next implementation uses registers,
+%D which saves tokens and is faster. In this case we gain
+%D some 10\% time.
+
+\chardef       \utf@a=    64
+\mathchardef   \utf@b=  4096
+\newcount\utf@c\utf@c=262144
+\chardef       \utf@d=   192
+\chardef       \utf@e=   224
+\chardef       \utf@f=   240
+\chardef       \utf@g=   128
+\mathchardef   \utf@h=   256
+\chardef       \utf@i=   127
+\mathchardef   \utf@j=  2048
+
+%D The definitions now become:
+%D
+%D \starttyping
+%D \def\utftwounicode#1#2%
+%D   {\number\numexpr(\utf@a*(\numexpr (#1-\utf@d))+%
+%D                           (\numexpr(`#2-\utf@g)))}
+%D
+%D \def\utfthreeunicode#1#2#3%
+%D   {\number\numexpr(\utf@b*(\numexpr (#1-\utf@e))+
+%D                    \utf@a*(\numexpr(`#2-\utf@g))+%
+%D                           (\numexpr(`#3-\utf@g)))}
+%D
+%D \def\utffourunicode#1#2#3#4%
+%D   {\number\numexpr(\utf@c*(\numexpr (#1-\utf@f))+
+%D                    \utf@b*(\numexpr(`#2-\utf@g))+
+%D                    \utf@a*(\numexpr(`#3-\utf@g))+%
+%D                           (\numexpr(`#4-\utf@g)))}
+%D \stoptyping
+%D
+%D And:
+%D
+%D \starttyping
+%D \def\utfdiv#1{\number\numexpr((#1-\utf@g)/\utf@h)}
+%D \def\utfmod#1{\number\numexpr((#1)-(\utf@h*(\utfdiv{#1})))}
+%D \stoptyping
+%D
+%D Depending on the usage, you can rely on parenthesis only:
+%D
+%D \starttyping
+%D \def\utftwounicode#1#2%
+%D   {\numexpr(\utf@a*(#1-\utf@d)+%
+%D                    `#2-\utf@g)}
+%D
+%D \def\utfthreeunicode#1#2#3%
+%D   {\numexpr(\utf@b*(#1-\utf@e)+%
+%D            \utf@a*(`#2-\utf@g)+%
+%D                    `#3-\utf@g)}
+%D
+%D \def\utffourunicode#1#2#3#4%
+%D   {\numexpr(\utf@c*(#1-\utf@f)+%
+%D            \utf@b*(`#2-\utf@g)+%
+%D            \utf@a*(`#3-\utf@g)+%
+%D                    `#4-\utf@g)}
+%D \stoptyping
+
+% beware, unless surrounded by \numexpr .. \relax, a division
+% results in a float until the final result is calculated
+
+\def\utfdiv#1{\the\numexpr           (#1-\utf@g)/\utf@h \relax}
+\def\utfmod#1{\the\numexpr#1-\utf@h*((#1-\utf@g)/\utf@h)\relax}
+
+%D The next one also handles the zero case well: (not really utf specific btw)
+
+\def\utfdiv#1{\the\numexpr\ifcase\numexpr#1\relax0\else           (#1-\utf@g)/\utf@h \fi\relax}
+\def\utfmod#1{\the\numexpr\ifcase\numexpr#1\relax0\else#1-\utf@h*((#1-\utf@g)/\utf@h)\fi\relax}
+
+% or
+%
+% \def\utfdiv#1{\ifcase\numexpr#1\relax0\else\the\numexpr(#1-\utf@g)/\utf@h\relax\fi}
+% \def\utfmod#1{\ifcase\numexpr#1\relax0\else\the\numexpr#1-\utf@h*((#1-\utf@g)/\utf@h)\relax\fi}
+
+%D When tracing we also need:
+
+\def\utfvid#1{\the\numexpr(#1-\medcard)/\maxcard\relax}
+
+%D Using the three conversion macros, we can now implement
+%D a few handlers. They all call the general \type
+%D {\unicodechar} conversion macro.
+%D
+%D \starttyping
+%D \def\utftwouniglph#1#2%
+%D   {\unicodechar{\utftwounicode  {#1}{#2}}}
+%D
+%D \def\utfthreeuniglph#1#2#3%
+%D   {\unicodechar{\utfthreeunicode{#1}{#2}{#3}}}
+%D
+%D \def\utffouruniglph#1#2#3#4%
+%D   {\unicodechar{\utffourunicode {#1}{#2}{#3}{#4}}}
+%D \stoptyping
+%D
+%D Because the unicode number is used a few times per
+%D conversion, we can expand it once (\type {\the} and \type
+%D {\number} make sure of this). This saves us another 10\%.
+%D
+%D \starttyping
+%D \def\utftwouniglph#1#2%
+%D   {\@EA\unicodechar\@EA{\the\utftwounicode{#1}{#2}}}
+%D
+%D \def\utfthreeuniglph#1#2#3%
+%D   {\@EA\unicodechar\@EA{\the\utfthreeunicode{#1}{#2}{#3}}}
+%D
+%D \def\utffouruniglph#1#2#3#4%
+%D   {\@EA\unicodechar\@EA{\the\utffourunicode{#1}{#2}{#3}{#4}}}
+%D \stoptyping
+%D
+%D We can rewrite these macros to faster alternatives: the
+%D less arguments we pass, the faster the conversion will be,
+%D but at the price of readability. So we have:
+%D
+%D \starttyping
+%D \def\utftwouniglph#1#2%
+%D   {\@EA\unicodechar\@EA{\the\numexpr(\utf@a*(#1-\utf@d)+%
+%D      `#2-\utf@g)}}
+%D
+%D \def\utfthreeuniglph#1#2#3%
+%D   {\@EA\unicodechar\@EA{\the\numexpr(\utf@b*(#1-\utf@e)+%
+%D      \utf@a*(`#2-\utf@g)+`#3-\utf@g)}}
+%D
+%D \def\utffouruniglph#1#2#3#4%
+%D   {\@EA\unicodechar\@EA{\the\numexpr(\utf@c*(#1-\utf@f)+%
+%D       \utf@b*(`#2-\utf@g)+\utf@a*(`#3-\utf@g)+`#4-\utf@g)}}
+%D \stoptyping
+%D
+%D Less parsing, and therefore faster:
+
+% beware, this may change: #1 rawchar (=> `#1 and such, saves tokens)
+
+\def\utftwouniglph#1#2%
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@a*(#1-\utf@d)+`#2-\utf@g\relax}}
+
+\def\utfthreeuniglph#1#2#3%
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@b*(#1-\utf@e)+\utf@a*(`#2-\utf@g)+`#3-\utf@g\relax}}
+
+\def\utffouruniglph#1#2#3#4%
+  {\@EA\unicodechar\@EA{\the\numexpr\utf@c*(#1-\utf@f)+\utf@b*(`#2-\utf@g)+\utf@a*(`#3-\utf@g)+`#4-\utf@g\relax}}
+
+% \def\keeputfcharacters
+%   {\def\utftwouniglph        ##1##2{\rawcharacter{##1}\string##2}%
+%    \def\utfthreeuniglph   ##1##2##3{\rawcharacter{##1}\string##2\string##3}%
+%    \def\utffouruniglph ##1##2##3##4{\rawcharacter{##1}\string##2\string##3\string##4}}
+
+\def\keeputfcharacters
+  {\let\utftwouniglph  \rawcharacter
+   \let\utfthreeuniglph\rawcharacter
+   \let\utffouruniglph \rawcharacter}
+
+\appendtoks \keeputfcharacters \to \everywritestring
+
+% \bgroup
+% \keeputfcharacters
+% \expanded{\index{\XMLflush{whatever}}}
+% \egroup
+
+%D Now we come to the unicode handler itself. We will use a few
+%D constants, which saves us (at least at the time of writing
+%D and testing these macros) another 10\%.
+
+\def\@@univector  {univ}
+\def\@@unicommand {unic}
+\def\@@unknownchar{unknownchar}
+
+%D Now comes the nice part: turning codes into glyphs. The
+%D actual conversion does not take place here, but is done by
+%D macros in \type{unic-nnn} files. There we map a range onto
+%D named glyphs, so that they fit well into the rest of
+%D \CONTEXT.
+
+%D \macros
+%D   {utfunicodetracer}
+%D
+%D By default, the converter produces a character representation,
+%D but for tracing purposes, you can set a trace option.
+
+\chardef\utfunicodetracer=0
+
+%D \def\TraceUnic#1%
+%D   {\chardef\utfunicodetracer#1\relax\enableregime[utf]Ű}
+%D
+%D \starttabulate[|c|c|c|c|c|c|]
+%D \NC option   \NC number\NC mapping\NC glyph\NC string\NC example    \NC \NR
+%D \NC 0        \NC       \NC        \NC \star\NC       \NC \TraceUnic0\NC \NR
+%D \NC 1        \NC \star \NC        \NC      \NC       \NC \TraceUnic1\NC \NR
+%D \NC 2        \NC       \NC \star  \NC      \NC       \NC \TraceUnic2\NC \NR
+%D \NC 3        \NC \star \NC \star  \NC      \NC       \NC \TraceUnic3\NC \NR
+%D \NC 4        \NC \star \NC        \NC \star\NC       \NC \TraceUnic4\NC \NR
+%D \NC 5        \NC       \NC \star  \NC \star\NC       \NC \TraceUnic5\NC \NR
+%D \NC 6        \NC \star \NC \star  \NC \star\NC       \NC \TraceUnic6\NC \NR
+%D \NC 7        \NC       \NC        \NC      \NC \star \NC \TraceUnic7\NC \NR
+%D \NC 8        \NC \star \NC        \NC      \NC       \NC \TraceUnic8\NC \NR
+%D \NC otherwise\NC       \NC        \NC \star\NC       \NC \TraceUnic9\NC \NR
+%D \stoptabulate
+
+%D \macros
+%D   {unicodechar}
+%D
+%D Next we implement the character handler:
+
+\def\unicodechar
+  {\ifcase\utfunicodetracer
+     \expandafter\utfunihash      \or
+     \expandafter\utfunichar      \or
+     \expandafter\utfunisplit     \or
+     \expandafter\utfuniboth      \or
+     \expandafter\utfunihashchar  \or
+     \expandafter\utfunihashsplit \or
+     \expandafter\utfunihashboth  \or
+     \expandafter\utfuniglyphname \or
+     \expandafter\utfunientity    \else
+     \expandafter\utfunihash
+  \fi}
+
+%D \startbuffer
+%D \enableregime[utf] \dostepwiserecurse{0}{8}{1}
+%D   {\recurselevel:
+%D    \chardef\utfunicodetracer=\recurselevel aap‒noot coördinatie – één
+%D    \crlf}
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+
+%D \macros
+%D   {unicodehexnumber}
+%D
+%D A few auxiliary macros, producing the range||char pair:
+
+\def\unicodepair#1%
+  {\utfdiv{#1}:\utfmod{#1}}
+
+\def\unicodenumber#1{\number#1}
+
+\def\unicodehexnumber#1%
+  {\ifnum#1>\maxcard
+     \expanded{\uchexnumbers{\utfvid{#1}}}%
+     \expanded{\uchexnumbers{\utfdiv{\utfdiv{#1}}}}%
+   \else
+     00%
+     \expanded{\uchexnumbers{\utfdiv{#1}}}%
+   \fi
+   \expanded{\uchexnumbers{\utfmod{#1}}}}
+
+%D The following macros visualize the unicode character. The
+%D \type {\relax} in front of the \type {-} prevents lookahead
+%D problems; somehow \type {\numexpr} cannot look beyond this
+%D sign, and expects a number.
+
+\ifx\tttf\undefined \let\tttf\relax \fi
+
+\def\utfunichar   #1{{\tttf U\low{\tx\unicodenumber{#1}}}}
+\def\utfunisplit  #1{{\tttf U\low{\tx\unicodepair{#1}}}}
+\def\utfuniboth   #1{{\tttf U\low{\tx\unicodenumber{#1}->\unicodepair{#1}}}}
+\def\utfunientity #1{{\tttf\&\#x\unicodehexnumber{#1};}}
+
+%D The character itself is accessed and typeset by:
+%D
+%D \starttyping
+%D \def\utfunihash#1%
+%D   {\executeifdefined{\@@univector\utfdiv{#1}}%
+%D      \gobbleoneargument{\utfmod{#1}}}
+%D \stoptyping
+%D
+%D Again, we can provide a faster alternative, because inside
+%D the conditional executer, the argument is expanded twice,
+%D and therefore the calculation done once more than needed.
+%D So, we make sure that the argument is expansion on
+%D forehand. Just to remind you: \type {#1} is the \UNICODE\
+%D number.
+%D
+%D \starttyping
+%D \def\utfunihash#1%
+%D   {\@EA\executeifdefined\@EA{\@EA\@@univector\number\utfdiv{#1}}%
+%D      {\unknownchar\gobbleoneargument}{\utfmod{#1}}}
+%D \stoptyping
+%D
+%D In order to save calculation time, I decided to change
+%D this definition into:
+
+%D \starttyping
+%D \def\utfunihash#1%
+%D   {\@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}}
+%D
+%D \def\doutfunihash#1#2%
+%D   {\ifcsname\@@univector\number#1\endcsname
+%D      \csname\csname\@@univector#1\endcsname{\utfmod{#2}}\endcsname
+%D    \else
+%D      \unknownchar
+%D    \fi}
+%D \stoptyping
+%D
+%D Or leaner and meaner:
+%D
+%D \starttyping
+%D \def\doutfunihash#1#2%
+%D   {\csname
+%D      \ifcsname\@@univector\number#1\endcsname
+%D        \csname\@@univector#1\endcsname{\utfmod{#2}}%
+%D      \else
+%D        \@@unknownchar
+%D      \fi
+%D    \endcsname}
+%D \stoptyping
+%D
+%D And finaly it became:
+
+\def\doutfunihash#1#2%
+  {\ifcsname\@@univector\number#1\endcsname
+     \csname\@@univector#1\endcsname{\utfmod{#2}}%
+   \else
+     \@@unknownchar
+   \fi}
+
+\def\utfunihashglyph#1%
+  {\csname\@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}\endcsname}
+
+\def\utfunihashcommand
+  {\@EAEAEA\string\utfunihashglyph}
+
+%D For practical purposes, we handle the normal \ASCII\
+%D characters here:
+
+\def\utfunihashglyph#1%
+  {\csname
+     \ifnum#1<\utf@i
+       \strippedcsname\unicodeasciicharacter\endcsname{#1}%
+     \else
+       \@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}\endcsname
+     \fi}
+
+%D Well, we also want a plug-in mechanism, so we en dup with
+%D a messy:
+
+\def\utfunihashglyph#1%
+  {\@EA\doutfunihashglyph\@EA{\number\numexpr\utfdiv{#1}\@EA\relax\@EA}\@EA{\number\utfmod{#1}}{#1}}
+
+% \def\doutfunihashglyph#1#2#3% div mod raw
+%   {\csname
+%      \ifnum#3<\utf@i
+%        \strippedcsname\unicodeasciicharacter\endcsname{#2}%
+%      \else\ifcsname\@@unicommand#1\endcsname
+%        \@@unicommand#1\endcsname{#2}%
+%      \else\ifcsname\@@univector#1\endcsname
+%        \csname\@@univector#1\endcsname{#2}\endcsname % watch the nested csname; it's a speed up
+%      \else
+%        \strippedcsname\unicodeunknowncharacter\endcsname{#2}%
+%      \fi\fi\fi}
+%
+% \def\unicodeunknowncharacter#1%
+%   {\unknownchar}
+%
+% The next one permits lookahead
+
+\def\doutfunihashglyph#1#2#3% div mod raw
+  {\csname utf!\ifnum#3<\utf@i                   1\else
+               \ifcsname\@@unicommand#1\endcsname2\else
+               \ifcsname\@@univector #1\endcsname3\else
+                                                 4\fi\fi\fi !\endcsname{#1}{#2}}
+
+\setvalue{utf!1!}#1{\unicodeasciicharacter} % {#2}
+\setvalue{utf!2!}#1{\csname\@@unicommand#1\endcsname} % {#2}
+\setvalue{utf!3!}#1#2{\csname\csname\@@univector#1\endcsname{#2}\endcsname} % watch the nested csname; it's a speed up
+\setvalue{utf!4!}#1#2{\unicodeunknowncharacter}
+
+\def\unicodeunknowncharacter
+  {\unknownchar}
+
+%D With:
+
+\let\unicodeasciicharacter\rawcharacter
+
+%D Commands are defined with:
+
+\def\defineunicodecommand #1 #2% #2{range number}{char number}
+  {\setvalue{\@@unicommand#1}##1{#2{#1}{##1}}}
+
+%D For instance:
+%D
+%D \starttyping
+%D \defineutfcommand 81 {\uchar}
+%D \stoptyping
+
+%D Now we can also say:
+
+\let\utfunihash\utfunihashglyph
+
+%D We also need:
+
+\def\utfuniglyphname#1%
+  {{\tttf
+    \ifnum#1<\utf@i
+      \unicodeasciicharacter{#1}%
+    \else
+      \expandafter\string\csname\doutfunihash{\number\utfdiv{#1}}{#1}\endcsname
+    \fi}}
+
+%D The combined presentation is implemented by:
+
+\def\utfunihashchar #1%
+  {\utfunihash{#1}\low{\infofont\unicodenumber{#1}}}
+
+\def\utfunihashsplit#1%
+  {\utfunihash{#1}\low{\infofont\unicodepair{#1}}}
+
+\def\utfunihashboth #1%
+  {\utfunihash{#1}\low{\infofont\unicodenumber{#1}->\unicodepair{#1}}}
+
+%D Unknown characters get a placeholder.
+
+\unexpanded\def\unknownchar % {} prevents problems with arguments
+  {{\hbox{\vrule\!!width.5em\!!height1ex\!!depth\zeropoint}}}
+
+%D So far for the conversion macros. The optimizations we
+%D did, brought down the runtime some 50\%, which, given that
+%D the majority of characters will be normal \ASCII\
+%D characters, the penalty of conversion is not that large.
+
+%D \macros
+%D   {useunicodevector}
+%D
+%D Since we end up with many encodings, it starts making
+%D sense to postpone loading, so let's start doing this
+%D with \UNICODE.
+
+\def\doifunicodevector#1%
+  {\doifdefined{\@@univector#1}}
+
+\def\useunicodevector[#1]%
+  {\processcommalist[#1]\douseunicodevector}
+
+\def\douseunicodevector#1%
+  {\ifundefined{\@@univector#1}%
+   % \readsysfile{\f!unicprefix\threedigits{#1}}
+     \readsysfile{\f!unicprefix\doifnumberelse{#1}{\threedigits{#1}}{#1}.mkii}
+       {\writestatus{unicode}{loading vector #1}}
+       {\writestatus{unicode}{unknown vector #1}}%
+   \fi}
+
+%D \macros
+%D   {startunicodevector}
+%D
+%D A vector roughly looks as follows. By putting the text
+%D inside the name constructor, we prevent problems with
+%D partial expansion in macros and special cases.
+%D
+%D \starttyping
+%D \startunicodevector 0
+%D   \ifcase\numexpr(#1-159)\or
+%D     \@@unknownchar\or % NO-BREAK SPACE
+%D     exclamdown\or
+%D     textcent\or
+%D     ....\else
+%D     \@@unknowncharacter
+%D   \fi
+%D \stopunicodevector
+%D \stoptyping
+%D
+%D In vector \type {unix-000} you will find another
+%D optimizations. By using as less tokens as possible, we limit
+%D the time skipping branches in the test, and save upto 20\%
+%D runtime.
+
+\def\startunicodevector #1 #2\stopunicodevector
+  {\setgvalue{\@@univector#1}##1{#2}}
+
+%D We define (as a practical example) the utf signal FEFF:
+
+\ifx\zwnbsp\undefined
+  \let\zwnbsp\relax % zerowidthnonbreakablespace
+\fi
+
+\startunicodevector 254
+  \expandafter\strippedcsname\ifnum#1<255 \unknownchar\else\zwnbsp\fi
+\stopunicodevector
+
+%D Here we provide another auxiliary macro:
+%D
+%D \startbuffer
+%D \unicodeinfoline{196}{Ä}{LATIN CAPITAL LETTER A WITH DIAERESIS}
+%D \unicodeinfoline{197}{Å}{LATIN CAPITAL LETTER A WITH RING ABOVE}
+%D \unicodeinfoline{198}{Æ}{LATIN CAPITAL LETTER AE}
+%D \unicodeinfoline{199}{Ç}{LATIN CAPITAL LETTER C WITH CEDILLA}
+%D \unicodeinfoline{200}{È}{LATIN CAPITAL LETTER E WITH GRAVE}
+%D \unicodeinfoline{201}{É}{LATIN CAPITAL LETTER E WITH ACUTE}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \start \enableregime[utf]\getbuffer \stop
+
+\def\unicodeinfoline#1#2#3%
+  {\ifnum#1>\utf@g % 128
+     \noindent \hbox
+       {\hbox to 4em{\tttf\unicodehexnumber{#1}\hss}\quad
+        \hbox to 1em{#2\hss}\quad
+        \hbox to 9em{\tttf\unicodenumber{#1}->\unicodepair{#1}\hss}\quad
+        \hbox to 9em{\tttf\let\utfunihash\utfunihashcommand#2\hss}\quad % tricky
+        \lowercase  {\tttf#3}}\par
+   \fi}
+
+%D The next code permits utf code in hyperlinks:
+
+\def\cleanunicodechar#1{.#1.}
+
+\appendtoks \let\unicodechar\cleanunicodechar \to \everycleanupfeatures
+
+%D We will now hook this mechanism in the existing font
+%D handler. More documentation will follow. Probably, some
+%D features in \type {font-uni.tex} will be generalized
+%D and moved here.
+
+\def\unidiv{0} \def\unimod{0}
+
+\chardef\utfunihashmode=0 % 0=hash glyph / 1=font glyph
+
+\def\utfunifontglyph#1%
+  {\xdef\unidiv{\number\utfdiv{#1}}%
+   \xdef\unimod{\number\utfmod{#1}}%
+   \ifnum#1<\utf@i
+     \char\unimod % \unicodeascii\unimod
+   \else\ifcsname\@@univector\unidiv\endcsname
+     \csname\doutfunihash{\unidiv}{#1}\endcsname
+   \else % so, these can be different fonts !
+     \unicodeglyph\unidiv\unimod % no \uchar (yet)
+   \fi\fi}
+
+\chardef\utfunicommandmode=0 % 1 = hex
+
+\def\unicodecommandchar#1#2%
+  {\string\char
+   \ifcase\utfunicommandmode
+     #1:#2\else\lchexnumbers#1:\lchexnumbers#2%
+   \fi}
+
+\def\utfunifontcommand#1%
+  {\xdef\unidiv{\number\utfdiv{#1}}%
+   \xdef\unimod{\number\utfmod{#1}}%
+   \ifnum#1<\utf@i
+     \unicodecommandchar\unidiv\unimod
+   \else\ifcsname\@@univector\unidiv\endcsname
+     \@EA\string\csname\doutfunihash{\unidiv}{#1}\endcsname
+   \else
+     \unicodecommandchar\unidiv\unimod
+   \fi\fi}
+
+\def\utfunihash
+  {\ifcase\utfunihashmode
+     \@EA\utfunihashglyph
+   \else
+     \@EA\utfunifontglyph
+   \fi}
+
+\def\utfunihushcommand
+  {\@EAEAEA\string\utfunihashglyph}
+
+\def\utfunihashcommand
+  {\ifcase\utfunihashmode
+     \@EA\utfunihushcommand
+   \else
+     \@EA\utfunifontcommand
+   \fi}
+
+%D We can convert from a number to some UTF code with the folowing
+%D conversion macro.
+
+% The first, na\"ive version:
+%
+% \def\numbertoutf#1%
+%   {\ifnum#1<128
+%      \rawcharacter{#1}%
+%    \else\ifnum#1<2048
+%      \rawcharacter{\the\numexpr192+#1/64\relax}%
+%      \rawcharacter{\the\numexpr128+#1-(#1/64)*64\relax}%
+%    \else               % 3 bytes
+%      \rawcharacter{\the\numexpr224+#1/4096\relax}%
+%      \rawcharacter{\the\numexpr128+(#1-(#1/4096)*4096)/128\relax}%
+%      \rawcharacter{\the\numexpr128+(#1-(#1/4096)*4096)+(#1-(#1/4096)*4096)/128\relax}%
+%    \fi\fi}
+
+% We have to compensate for etex's rounding (thanks to Taco and
+% Nanning) for pointing/sorting this out:
+
+\chardef       \utf@a=    64
+\mathchardef   \utf@b=  4096
+\newcount\utf@c\utf@c=262144
+\chardef       \utf@d=   192
+\chardef       \utf@e=   224
+\chardef       \utf@f=   240
+\chardef       \utf@g=   128
+\mathchardef   \utf@h=   256
+\chardef       \utf@i=   127
+\mathchardef   \utf@j=  2048
+\chardef       \utf@k=    32
+
+% div: \numexp#1/#2\relax
+% mod: \numexp#1-(#1/#2)*#2\relax
+
+% \def\numbertoutf#1%
+%   {\ifnum#1<\utf@g
+%      \rawcharacter{#1}%
+%    \else\ifnum#1<2048
+%      \rawcharacter{\numexpr192+(#1/64)\relax}%                         192 + (ud div 64)
+%      \rawcharacter{\numexpr128+(#1-(#1/64)*64)\relax}%                 128 + (ud mod 64)
+%    \else\ifnum#1<2097152
+%      \rawcharacter{\numexpr224+(#1-(#1/4096)\relax}%                   224 + (ud div 4096)
+%      \rawcharacter{\numexpr128+(#1-((#1/64)-((#1/64)/64)*64)\relax}%   128 + ((ud div 64) mod 64)
+%      \rawcharacter{\numexpr128+(#1-(#1-(#1/64)*64)\relax}%             128 + (ud mod 64)
+%    \else
+%      % todo
+%    \fi\fi}
+
+\def\numbertoutf#1% okay?
+  {\ifnum#1<\utf@g
+     \rawcharacter{#1}%
+   \else\ifnum#1<\utf@j
+     \rawcharacter{\the\numexpr\utf@d+(#1-\utf@k)/\utf@a\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-((#1-\utf@k)/\utf@a)*\utf@a)\relax}%
+   \else
+     \rawcharacter{\the\numexpr\utf@e+(#1-\utf@j)/\utf@b\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a\relax}%
+     \rawcharacter{\the\numexpr\utf@g+(#1-(((#1-\utf@j)/\utf@b)*\utf@b)-((#1-(((#1-\utf@j)/\utf@b)*\utf@b)-\utf@k)/\utf@a)*\utf@a)\relax}%
+   \fi\fi}
+
+\def\numbertohexstring#1{0x\uchexnumbers{\utfdiv{#1}}\uchexnumbers{\utfmod{#1}}}
+
+\ifnum\texengine=\xetexengine
+    \let\numbertoutf\numbertohexstring
+\fi
+
+\def\uchartoutf#1#2%
+  {\expandafter\numbertoutf\expandafter{\the\numexpr#1*\utf@h+#2\relax}}
+
+%D Here is a mapping trick. By mapping the tex specific characters to
+%D private ones, we can prevent problems with utility files.
+
+\defineunicodecommand{240} {\doprivateunicodechar}
+
+\def\doprivateunicodechar#1#2{\char#2\relax}
+
+\def\registerprivateunicodechar#1 {\letvalue{puc::\number#1}\relax}
+
+\registerprivateunicodechar `\%
+\registerprivateunicodechar `\$
+\registerprivateunicodechar `\{
+\registerprivateunicodechar `\}
+\registerprivateunicodechar `\~
+\registerprivateunicodechar `\_
+\registerprivateunicodechar `\^
+\registerprivateunicodechar `\#
+
+\def\numbertoutp#1{\numbertoutf{\the\numexpr#1\ifcsname puc::\number#1\endcsname+"F000\fi\relax}}
+
+%D In the \XML\ expander we will do:
+%D
+%D \starttyping
+%D \def\getXMLhexcharacter##1{\numbertoutp{"##1}}%
+%D \def\getXMLdeccharacter##1{\numbertoutp {##1}}%
+%D \stoptyping
+
+%D Goodies:
+
+\fetchruntimecommand \showunicodevector {\f!unicprefix\s!run.mkii}
+\fetchruntimecommand \showunicodetable  {\f!unicprefix\s!run.mkii}
+
+%D Well, let's at least preload a few familiar ones. Here we
+%D also load the \UTF\ regime.
+
+\useunicodevector[0,1,2,3,4,5,30,31,32,33,34,35,37,39,251]
+\useunicodevector[cjk]
+
+\useregime[utf]
+
+% 31, text mem usage first
+
+\protect  \endinput

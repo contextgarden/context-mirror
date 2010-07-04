@@ -1,0 +1,992 @@
+%D \module
+%D   [       file=cont-new,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=New Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\newcontextversion{2010.05.24 13:05}
+
+%D This file is loaded at runtime, thereby providing an
+%D excellent place for hacks, patches, extensions and new
+%D features.
+
+\unprotect
+
+% it's about time to clean up this file ...
+
+\writestatus\m!systems{beware: some patches loaded from cont-new.tex}
+
+% \ifx\pdfmapfile \undefined \else \pdfmapfile{ } \fi
+
+% \font\f=dummyfont  \rpcode\f0=500 \hbox{..}\char0
+% todo: mp-new
+% caption: grid=top|bottom in xml defs
+
+\def\fastscale#1%
+  {\begingroup
+   \ifnum#1=1000\relax
+     \setfalse\scaleboxdone
+   \else
+     \settrue\scaleboxdone
+     \edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1pt/1000\relax}%
+     \let\finalscaleboxyscale\finalscaleboxxscale
+   \fi
+   \dowithnextbox{\doscaleboxindeed\flushnextbox\endgroup}\hbox}
+
+% \setupcaption [figure]   [align=flushleft]
+% \setupcaption [figure-1] [align=flushleft,leftmargin=10mm]
+% \setupcaption [figure-2] [align=flushleft,leftmargin=10mm,rightmargin=-10mm,width=\textwidth]
+%
+% \startsetups somefigure
+%     \ifdim\floatsetupwidth>\textwidth
+%         \placesetupfloat[figure-2]
+%     \else
+%         \placesetupfloat[figure-1]
+%     \fi
+% \stopsetups
+%
+% \placefloatwithsetups[somefigure]{}{\externalfigure[dummy][width=5cm,height=2cm]}
+
+\def\placefloatwithsetups
+  {\dotripleempty\doplacefloatwithsetups}
+
+\long\def\doplacefloatwithsetups[#1][#2][#3]#4%
+  {\def\floatsetupcaption   {#4}%
+   \def\floatsetupcontent   {\copy\nextbox}%
+   \def\floatsetupwidth     {\wd\nextbox}%
+   \def\floatsetupheight    {\ht\nextbox}%
+   \def\placesetupfloat[##1]{\placefloat[##1][#2][#3]{#4}{\floatsetupcontent}}% #4 and not \floatsetupcaption (unexpanded)
+   \dowithnextbox{\setups[#1]}\vbox}
+
+\def\dividedsize#1#2#3% size gap n
+  {\dimexpr
+     \ifnum\dimexpr#1\relax>\plusone
+       (\dimexpr#1\relax-\numexpr#3-1\relax\dimexpr#2\relax)/#3\else#1%
+     \fi
+   \relax}
+
+% \setuplabeltext[\s!itemcount1={{I(},{)}}]
+% \def\labeledcountervalue#1{\labeltexts{#1}{\countervalue{#1}}}
+
+\def\singlewidened     #1{\hbox spread 1em{\hss#1\hss}}
+\def\complexwidened[#1]#2{\hbox spread  #1{\hss#2\hss}}
+
+\definecomplexorsimple\widened
+
+% todo
+%
+% \def\definelocation{\dodoubleargument\dodefinelocation}
+% \def\dodefinelocation[#1][#2]{\setvalue{loc:#1}{#2}}
+%
+% \definelocation[lt]           [\v!left\v!top]
+% \definelocation[tl]           [\v!left\v!top]
+% \definelocation[\v!top\v!left][\v!left\v!top]
+%
+% \def\getlocation#1{\executeifdefined{loc:#1}{#1}}
+
+% just in case we load something from a file (pdfr-ec for instance)
+
+\prependtoks \restoreendofline \to \everybeforeshipout
+
+\let\cs\getvalue
+
+% experimental so this may change
+
+\def\startdescriptions
+  {\dosingleempty\dostartdescriptions}
+
+\def\dostartdescriptions[#1]%
+  {\begingroup
+   \def\item{\getvalue{#1}}%
+   \let\dostoppairdescription \donothing
+   \let\@@description         \dostartpairdescription
+   \let\@@startsomedescription\dostartsomedescription}
+
+\def\stopdescriptions
+  {\dostoppairdescription
+   \endgroup}
+
+\def\dostartpairdescription[#1][#2]%
+  {\dostoppairdescription
+   \def\dostoppairdescription{\@@stopdescription{#1}}%
+   \bgroup
+   \def\currentdescription{#1}%
+   \doifelse{\descriptionparameter{\s!do\c!state}}\v!start
+     {\@@makedescription{#1}[#2]{}}
+     {\@@makedescription{#1}[#2]}}
+
+\def\dostartsomedescription% #1[#2]#3%
+  {\bgroup
+   \@@makedescription} % {#1}[#2]{#3}}
+
+% \starttext
+%
+% \definedescription[test]
+%
+% \startdescriptions
+% \test{Foo} Bar bar bar
+% \test{Foo} Bar bar bar
+% \test{Foo} Bar bar bar
+% \stopdescriptions
+%
+% \startdescriptions[test]
+% \item{Foo} Bar bar bar
+% \item{Foo} Bar bar bar
+% \item{Foo} Bar bar bar
+% \stopdescriptions
+%
+% \startdescriptions
+% \starttest{Foo} Bar bar bar \stoptest
+% \starttest{Foo} Bar bar bar \stoptest
+% \starttest{Foo} Bar bar bar \stoptest
+% \stopdescriptions
+%
+% \startdescriptions[test]
+% \item{Foo} Bar bar bar
+% \item{Foo} Bar bar bar
+% \item{Foo} Bar bar bar
+% \stopdescriptions
+%
+% \stoptext
+
+% to do:
+%
+% \def\defineshapesynonym
+%   {\dodoubleargument\dodefineshapesynonym}
+%
+% \def\dodefineshapesynonym[#1][#2]%
+%   {\setvalue{shsy:#1}{#2}}
+%
+% \def\shapesynonym#1%
+%   {\ifcsname shsy:#1\endcsname
+%      \expandafter\shapesynonym\csname shsy:#1\endcsname\else#1%
+%    \fi}
+%
+%\defineshapesynonym[eacute] [e]
+%\defineshapesynonym[egrave] [e]
+%\defineshapesynonym[eumlaut [e]
+%\defineshapesynonym[eogonek][e]
+%
+% more reduction
+%
+%\defineshapesynonym[e][o]
+%\defineshapesynonym[w][v]
+%\defineshapesynonym[m][n]
+%
+% \shapesynonym{eacute}
+
+% this will be activated when
+
+% \newinsert\thispageinsert % <- installinsertion
+
+% \def\flushatthispage
+%   {\bgroup
+%    \dowithnextbox{\insert\thispageinsert{\box\nextbox}\egroup}%
+%    \hbox}
+
+% \appendtoks
+%     \ifvoid\thispageinsert\else\hbox{\smashedbox\thispageinsert}\fi
+% \to \everyshipout
+
+% \definemarkedpage[nobackgrounds]
+% \markpage[nobackgrounds]
+% \doifmarkedpageelse{nobackgrounds}
+
+\newcounter\nofmarkedpages
+
+\def\definemarkedpage[#1]%
+  {\definetwopasslist{\v!page:#1}}
+
+\def\markpage[#1]% looks very much like domarginreference
+  {\iftrialtypesetting\else
+     \doglobal\increment\nofmarkedpages\relax
+     \lazysavetwopassdata{\v!page:#1}{\nofmarkedpages}{\noexpand\realfolio}%
+   \fi}
+
+\def\doifmarkedpageelse#1%
+  {\gettwopassdatalist{\v!page:#1}%
+   \expanded{\doifinsetelse{\realfolio}{\twopassdatalist}}}
+
+% Just a simple and fast hanger, for usage in macros.
+
+\def\setuphanging
+  {\dodoubleempty\getparameters[\??ha]}
+
+\setuphanging
+  [\c!distance=.5em]
+
+\def\starthanging
+  {\noindent\bgroup
+   \dowithnextbox
+     {\setbox\nextbox\hbox{\flushnextbox\hskip\@@hadistance}%
+      \hangindent\nextboxwd
+      \hangafter\plusone
+      \flushnextbox\ignorespaces}
+   \hbox}
+
+\def\stophanging
+  {\endgraf
+   \egroup}
+
+% experimental
+
+\def\stophangaround
+  {\endgraf
+   \egroup}
+
+\def\starthangaround
+  {\noindent\bgroup
+   \dowithnextbox
+     {\ifdim\nextboxht>\strutht\setbox\nextbox\tbox{\flushnextbox}\fi
+      \setbox\nextbox\hbox{\flushnextbox\hskip\@@hadistance}%
+      \getboxheight\scratchdimen\of\box\nextbox
+      \getnoflines\scratchdimen
+      \nextboxht\strutht
+      \nextboxdp\strutdp
+      \hangindent\nextboxwd
+      \hangafter-\noflines
+      \llap{\flushnextbox}\ignorespaces}
+   \hbox}
+
+\def\modevalue#1#2#3%
+  {\@EA\ifx\csname\@mode@\systemmodeprefix#1\endcsname\endcsname\enabledmode#2\else#2\fi}
+
+\def\systemmodevalue#1%
+  {\modevalue{\systemmodeprefix#1}}
+
+% \getmulticolumnlines -> now in cont-loc, to be tested and really needed
+
+% \tracefonthandlingtrue
+
+% new, still to be improved
+%
+% \dorecurse{10}
+%   {\input thuan
+%    \placefigure{}{\framed[height=1.5cm]{test}}
+%    \placefloatplaceholder}
+
+\def\placefloatplaceholder
+  {\ifroomforfloat \else
+     \scratchdimen\pagegoal
+     \advance\scratchdimen-\pagetotal
+     \advance\scratchdimen-3\lineheight
+     \ifdim\scratchdimen>\zeropoint
+       \startlinecorrection[blank]
+       \mhbox{\inframed{\labeltexts{placeholder}{\lastcaptiontag}}}%
+       \stoplinecorrection
+     \else
+       \allowbreak
+     \fi
+   \fi}
+
+\setuplabeltext
+  [placeholder={, moved}]
+
+% etex only, of course we could just parse (scan for \% in string)
+
+\newif\ifpercentdimendone
+
+\bgroup % usage: \setpercentdimen\somedimen{% or dimen} todo: pct
+\catcode124=\@@comment
+\catcode 37=\@@active
+\gdef\setpercentdimen#1#2|
+  {\xdef\@@expanded{#2}|
+   \ifx\@@expanded\empty\else
+     \bgroup
+     \global\percentdimendonefalse
+     \def\%{\dimexpr#1/100\relax\global\percentdimendonetrue\ignorespaces}| scantokens add's a space
+     \catcode`%=\@@active
+     \catcode`\\=\@@escape
+     \let%\%|
+     \scratchdimen#1|
+     \xdef\@@expanded{\@@expanded\scratchdimen\!!zeropoint}| trick: when 1.2 => .2\scratchdimen and 0pt typeset
+     \startnointerference
+     \global\globalscratchdimen\scantokens\@EA{\@@expanded}| i'm lazy and use etex
+     \stopnointerference
+     \egroup
+     #1\globalscratchdimen
+   \fi}
+\egroup
+
+% TEX alternative, in principle accurate enough and also a bit faster
+
+% \bgroup
+%
+% \catcode`\%=\@@other
+% \catcode`\|=\@@comment
+%
+% \gdef\setpercentdimen#1#2|
+%   {\beforesplitstring#2\at%\to\ascii
+%    \doifelse\ascii{#2}
+%     {#1=#2}
+%     {\divide#1by100\relax#1=\ascii#1\relax}} | or: {#1=\ascii#1\divide#1by100\relax}}
+%
+% \egroup
+%
+% \dimen0=1000pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+% \dimen0= 100pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+% \dimen0=  95pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+% \dimen0=  10pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+% \dimen0=   1pt \setpercentdimen{\dimen0}{10%} \the\dimen0
+
+\bgroup
+
+\obeylines % don't remove %'s !
+
+\gdef\collapsedspace#1%
+  {\ifx#1^^M%
+     \expandafter\collapsedspace
+   \else
+     \space
+     \expandafter#1%
+   \fi}
+
+\gdef\collapsespaces
+  {\prependtoksonce\relax\to\everyeof%
+   \ignorelines%
+   \ignoretabs%
+   \let\obeyedspace\collapsedspace%
+   \obeyspaces}
+
+\egroup
+
+\def\inlinedbox
+  {\bgroup
+   \dowithnextbox
+     {\scratchdimen\nextboxht
+      \advance\scratchdimen\nextboxdp
+      \advance\scratchdimen-\lineheight
+      \divide\scratchdimen\plustwo
+      \advance\scratchdimen\strutdepth
+      \setbox\nextbox\hbox{\lower\scratchdimen\flushnextbox}%
+      \nextboxht\strutht
+      \nextboxdp\strutdp
+      \flushnextbox
+      \egroup}%
+     \hbox}
+
+% \readfile{cont-exp}\donothing\donothing % speed up (5-20%)
+
+\def\dimenratio#1#2% etex only
+  {\withoutpt\the\dimexpr2\dimexpr(#1)/\dimexpr(#2)/32768\relax\relax}
+
+\def\doxprecurse#1#2%
+  {\ifnum#1=\zerocount % no \ifcase
+     \expandafter\gobblethreearguments
+   \else
+     #2\expandafter\expandafter\expandafter\doxprecurse\expandafter
+   \fi\expandafter{\the\numexpr#1-1\relax}{#2}}
+
+\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
+
+\unexpanded\def\asciistr#1{\dontleavehmode{\defconvertedargument\ascii{#1}\verbatimfont\ascii}}
+
+\def\shapefill{\vskip\zeropoint\!!plus\lineheight\!!minus\lineheight\relax}
+
+\let\normaltype\type
+
+\ifx\scantextokens\undefined
+    \ifx\scantokens\undefined
+        \unexpanded\def\retype#1{\dontleavehmode{\defconvertedargument\ascii{#1}\@EA\normaltype\@EA{\ascii}}}
+    \else
+        \unexpanded\def\retype#1{\dontleavehmode\scantokens{\normaltype{#1}\ignorespaces}\relax}
+    \fi
+\else
+  \unexpanded\def\retype#1{\dontleavehmode\scantextokens{\normaltype{#1}}}
+\fi
+
+\def\simplifytype{\let\type\retype}
+
+% \ruledhbox
+%   {\startignorespaces
+%      \def\oeps{a}
+%      \startignorespaces
+%        \def\oeps{a}
+%      \stopignorespaces
+%      \def\oeps{a}
+%    \stopignorespaces
+%    \oeps}
+
+\newsignal\boissignal
+\newcount \boislevel
+
+\long\def\startignorespaces
+  {\advance\boislevel\plusone
+   \ifcase\boislevel\or \ifhmode
+     \hskip\boissignal
+   \fi \fi
+   \ignorespaces}
+
+\long\def\stopignorespaces
+  {\ifcase\boislevel\or \ifhmode
+    \doloop
+      {\ifdim\lastskip=\zeropoint
+         \exitloop
+       \else\ifdim\lastskip=\boissignal
+         \unskip
+         \exitloop
+       \else
+         \unskip
+       \fi\fi}%
+   \fi \fi
+   \advance\boislevel\minusone}
+
+\def\minimalhbox#1#%
+  {\dowithnextbox
+     {\bgroup
+      \setbox\scratchbox\hbox#1{\hss}%
+      \ifdim\nextboxwd<\wd\scratchbox\nextboxwd\wd\scratchbox\fi
+      \flushnextbox
+      \egroup}
+     \hbox}
+
+% \def\dodimchoice#1#2#3%
+%   {\ifx#3\relax
+%      #1\@EA\gobbleuntilrelax
+%    \else\ifdim#1#2%
+%      #3\@EAEAEA\gobbleuntilrelax
+%    \else
+%      \@EAEAEA\dodimchoice
+%    \fi\fi{#1}}
+
+% \def\donumchoice#1#2#3%
+%   {\ifx#3\relax
+%      #1\@EA\gobbleuntilrelax
+%    \else\ifnum#1#2%
+%      #3\@EAEAEA\gobbleuntilrelax
+%    \else
+%      \@EAEAEA\dodimchoice
+%    \fi\fi{#1}}
+
+% \def\dimchoice#1#2{\dodimchoice{#1}#2\empty\relax}
+% \def\numchoice#1#2{\donumchoice{#1}#2\empty\relax}
+
+\def\gobbleuntilempty#1\empty{}
+
+\def\dodimchoice#1#2#3%
+  {\ifdim#1#2%
+     #3\@EA\gobbleuntilempty
+   \else
+     \@EA\dodimchoice
+   \fi{#1}}
+
+\def\donumchoice#1#2#3%
+  {\ifnum#1#2%
+     #3\@EA\gobbleuntilempty
+   \else
+     \@EA\dodimchoice
+   \fi{#1}}
+
+\def\dimchoice#1#2{\dodimchoice{#1}#2{=#1}{#1}\empty}
+\def\numchoice#1#2{\donumchoice{#1}#2{=#1}{#1}\empty}
+
+% \the\dimexpr(\dimchoice {7pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+% \the\dimexpr(\dimchoice{11pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+% \the\dimexpr(\dimchoice{14pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+
+\def\showsetupsdefinition[#1]{\showvalue{\??su:#1}} % temp hack for debugging
+
+% documentation : \setupregister[alternative=a|b|A|B]
+\unprotected \def\traceposstring#1#2#3%
+  {\iftracepositions
+     \smashedhbox%
+       {#1{\infofont#2#3}%
+        \scratchdimen.5\points
+        \kern-2\scratchdimen
+        \vrule\!!width4\scratchdimen\!!height\scratchdimen\!!depth\scratchdimen}%
+   \fi}
+
+% will be a MyWay
+%
+% \setuplayout[grid=yes] \setupcaption[figure][inbetween=] \useMPlibrary[dum] \setupcolors[state=start]
+%
+% \starttext \showgrid \showstruts
+%
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=yes]}
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=fit]}
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=height]}
+% \input ward
+% \page
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=yes]}
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=fit]}
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=height]}
+% \input ward
+% \page
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=yes]}
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=fit]}
+% \input ward \placefigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=height]}
+% \input ward
+% \page
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=yes]}
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=fit]}
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=height]}
+% \input ward
+% \page
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=yes]}
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=fit]}
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=height]}
+% \input ward
+% \page
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=yes]}
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=fit]}
+% \input ward \placefigure[none]{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=height]}
+% \input ward
+%
+% \stoptext
+
+% funny, as field action with e.g. dissolve ... only the field dissolves, bug?
+
+\setglobalsystemreference\rt!exec{Transition}{transition}
+
+%def\PDFexecutetransition {/Trans /Trans <</Type /Trans \executeifdefined{PDFpage\argumentA}\PDFpagereplace>>}
+\def\PDFexecutetransition {/Trans /Trans <<\executeifdefined{PDFpage\argumentA}\PDFpagereplace>>}
+
+% new, continuous blocks, \som \par \startdoorlopendblok ...
+
+% \startitemize
+%   \item                                      bagger
+%   \item                                      bagger
+%   \item          \startdoorlopendblok        bagger \stopdoorlopendblok
+%   \item \endgraf \startdoorlopendblok        bagger \stopdoorlopendblok
+%   \item \endgraf \startdoorlopendblok \strut bagger \stopdoorlopendblok
+%   \item \startdoorlopendblok
+%         \starttabulate
+%         \NC test \NC test \NC \NR
+%         \NC test \NC test \NC \NR
+%         \NC test \NC test \NC \NR
+%         \stoptabulate
+%         \stopdoorlopendblok
+%   \item test
+% \stopitemize
+
+\def\startdoorlopendblok % for special cases, don't change it too much and don't rely on it
+  {\ifhmode\endgraf\nobreak\fi % don't remove the \nobreak
+   \dowithnextboxcontent
+     {\setlocalhsize \hsize\localhsize \forgetall}
+     {\bgroup
+      \forgeteverypar
+      \forgetparskip
+      \scratchdimen\nextboxht
+      \advance\scratchdimen\nextboxdp
+      \getnoflines\scratchdimen
+      \advance\scratchdimen-\strutheight
+      \setbox\nextbox\hbox{\lower\scratchdimen\box\nextbox}%
+      \ht\nextbox\strutheight
+      \dp\nextbox\strutdepth
+      \setbox\nextbox\vbox
+        {\indent\box\nextbox
+         \endgraf
+         \nobreak
+         \advance\noflines\minusone
+         \dorecurse\noflines{\crlf\nobreak}}%
+      \verticalstrut
+      \endgraf
+      \nobreak
+      \offinterlineskip
+      \kern-2\lineheight % 2\lineheight when no vertical struts in main \vbox
+      \nobreak
+      \unvbox\nextbox
+      \prevdepth\strutdepth
+      % evt (eerst testen) een signal zodat een direct volgend blok goed gaat)
+      \egroup}
+     \vbox\bgroup
+       \vskip-\lineheight \verticalstrut\endgraf
+       \insidefloattrue
+       \doinhibitblank} % beware, no \inhibitblank ! ! ! ! ! !
+
+\def\stopdoorlopendblok
+  {\endgraf\verticalstrut\endgraf\kern-2\lineheight
+   \egroup}
+
+\def\tabulaterule % to be redone, not correct
+  {\dotabulaterule
+     {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
+      \doifvalue{\??tt\currenttabulate\c!distance}\v!grid
+        {\kern-\scratchdimen}}} % experimental tm-prikkels
+
+% experimental: \synchronizegrid bla bla bla
+
+\newcounter\currentgridsync
+
+\def\gridsynctag{grs:\currentgridsync}
+
+\def\synchronizegrid
+  {\doglobal\increment\currentgridsync
+   \par\prevdepth\zeropoint
+   \nointerlineskip
+   \hpos\gridsynctag{\strut}\par
+   \vskip-\lineheight
+   \nointerlineskip
+   % top of text
+   \scratchdimen\MPy{\v!text:\MPp\gridsynctag}%
+   \advance\scratchdimen\MPh{\v!text:\MPp\gridsynctag}%
+   % move to first baseline
+   \advance\scratchdimen-\topskip
+   % subtract wrong baseline
+   \advance\scratchdimen-\MPy\gridsynctag
+   % get minimal number of lines
+   \advance\scratchdimen\lineheight
+   \getnoflines\scratchdimen
+   % calculate difference
+   \advance\scratchdimen-\noflines\lineheight\relax
+   \scratchdimen-\scratchdimen\relax
+   \ifdim\scratchdimen>\zeropoint
+     \nointerlineskip
+     \advance\scratchdimen-\lineheight
+     \vskip\scratchdimen \dontleavehmode \quad \strut
+     \par
+  %\else
+  %  \message{no grid correction: \the\scratchdimen}\wait
+   \fi}
+
+% needed for extreme (will go away)
+
+\definesystemvariable{ie}
+
+\def\definetest
+  {\dodoubleempty\dodefinetest}
+
+\def\dodefinetest[#1][#2]#3%
+  {\setgvalue{\??ie#1}{#3}%
+   \ifsecondargument
+      \processaction
+        [#2]
+        [% first test true, rest depends
+            \v!next=>\setgvalue{\??ie#1}{\setgvalue{\??ie#1}{#3}\firstoftwoarguments},
+         % rest true if first true
+         % \v!first=>\setgvalue{\??ie#1}{#3{\letgvalue{\??ie#1}%
+         %           \firstoftwoarguments\firstoftwoarguments}%
+         %           \secondoftwoarguments},
+         % always true
+             \v!yes=>\letgvalue{\??ie#1}\firstoftwoarguments,
+         % always false
+              \v!no=>\letgvalue{\??ie#1}\secondoftwoarguments]%
+   \fi}
+
+\def\doperformtest#1%
+  {\executeifdefined{\??ie#1}\secondoftwoarguments}
+
+\def\definecolumnsethsize#1#2#3#4% will be improved/speed up
+  {\bgroup
+   \def\OTRSETidentifier{#1}%
+   \ifcase\columnsetlevel\relax
+     \mofcolumns\plusone
+     \OTRSETinitializecolumns
+     \OTRSETassignwidths
+     \OTRSETsethsize
+   \fi
+   \!!counta#2\!!countb#3\docalculatecolumnsetspan
+   \expandafter\egroup\expandafter\edef\expandafter
+     #4\expandafter{\the\!!widtha}}
+
+% so far
+
+% between alignment lines certain rules apply, and even a
+% simple test can mess up a table, which is why we have a
+% special test facility
+%
+% \ruledvbox
+%   {\starttabulate[|l|p|]
+%    \NC 1test \NC test \NC \NR
+%    \tableifelse{\doifelse{a}{a}}{\NC Xtest \NC test \NC \NR}{}%
+%    \stoptabulate}
+
+\long\def\tableifelse#1%
+  {\TABLEnoalign{#1%
+     {\aftergroup \firstoftwoarguments}%
+     {\aftergroup\secondoftwoarguments}}}
+
+\long \def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
+
+% experiment, not yet to be used
+
+\def\displaybreak
+  {\ifhmode
+     \removeunwantedspaces
+     \ifcase\raggedstatus\hfill\fi
+     \strut\penalty-9999 % \break fails on case (3)
+   \fi}
+
+\def\startdisplay{\displaybreak\ignorespaces\startpacked}
+\def\stopdisplay {\stoppacked\displaybreak\ignorespaces}
+
+\def\tightvbox{\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\vbox}
+\def\tightvtop{\dowithnextbox{\nextboxht\zeropoint\flushnextbox}\vtop}
+
+% what is this stupid macro meant for:
+
+\def\hyphenationpoint
+  {\hskip\zeropoint}
+
+\def\hyphenated#1%
+  {\bgroup
+   \!!counta\zerocount
+   \def\hyphenated##1{\advance\!!counta\plusone}%
+   \handletokens#1\with\hyphenated
+   \!!countb\plusone
+   \def\hyphenated##1%
+     {##1%
+      \advance\!!countb\plusone\relax
+      \ifnum\!!countb>2 \ifnum\!!countb<\!!counta
+        \hyphenationpoint
+      \fi\fi}%
+   \handletokens#1\with\hyphenated
+   \egroup}
+
+\def\obeysupersubletters
+  {\let\super\normalsuper
+   \let\suber\normalsuber
+   \let\normalsuper\letterhat
+   \let\normalsuber\letterunderscore
+   \enablesupersub}
+
+\def\obeysupersubmath
+  {\let\normalsuper\letterhat
+   \let\normalsuber\letterunderscore
+   \enablesupersub}
+
+%\let\normaltype\type
+%
+%\def\type#1%
+%  {\expanded{\normaltype{\detokenize{#1}}}}
+
+% {x123 \os x123} {\tfa x123 \os x123} {x123 \tx x123 \os x123}
+% \definefontsynonym[OldStyle][Serif]
+% {x123 \os x123} {\tfa x123 \os x123} {x123 \tx x123 \os x123}
+
+% testen :
+%
+% \appendtoks
+%   \let\registerparoptions\relax
+% \to \everyforgetall
+
+\def\startgridcorrection
+  {\dosingleempty\dostartgridcorrection}
+
+\def\dostartgridcorrection[#1]%
+  {\ifgridsnapping
+     \iffirstargument\doifsomething{#1}{\moveongrid[#1]}\fi
+     \snaptogrid\vbox\bgroup
+   \else
+     \startbaselinecorrection
+   \fi}
+
+\def\stopgridcorrection
+  {\ifgridsnapping
+     \egroup
+   \else
+     \stopbaselinecorrection
+   \fi}
+
+\def\checkgridsnapping
+  {\lineskip\ifgridsnapping\zeropoint\else\normallineskip\fi}
+
+\def\startplaatsen
+  {\dosingleempty\dostartplaatsen}
+
+\def\dostartplaatsen[#1]% tzt n*links etc
+  {\endgraf
+   \noindent\bgroup
+   \setlocalhsize
+   \hbox to \localhsize\bgroup
+     \doifnot{#1}\v!left\hss
+     \def\stopplaatsen
+       {\unskip\unskip\unskip
+        \doifnot{#1}\v!right\hss
+        \egroup
+        \egroup
+        \endgraf}%
+     \gobblespacetokens}
+
+% \startplaatsen[links] bla \stopplaatsen
+
+% we don't register the paragraph characteristics, only the
+% width
+
+\appendtoks
+  \setinnerparpositions % see "techniek" for application
+\to \everytabulate
+
+\def\fontclassname#1#2%
+  {\ifcsname\??ff#1#2\endcsname
+     \fontclassname{#1}{\csname\??ff#1#2\endcsname}%
+   \else\ifcsname\??ff#2\endcsname
+     \fontclassname{#1}{\csname\??ff#2\endcsname}%
+   \else
+     #2%
+   \fi\fi}
+
+\def\defineclassfontsynonym
+  {\dotripleargument\dodefineclassfontsynonym}
+
+\def\dodefineclassfontsynonym[#1][#2][#3]%
+  {\definefontsynonym[#1][\fontclassname{#2}{#3}]}
+
+%\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
+%
+%\defineclassfontsynonym [KopFont] [officina] [SerifBold]
+
+\def\startcolumnmakeup % don't change
+  {\bgroup
+   \getrawnoflines\textheight % teksthoogte kan topskip hebben, dus raw
+   \scratchdimen\noflines\lineheight
+   \advance\scratchdimen-\lineheight
+   \advance\scratchdimen\topskip
+   \setbox\scratchbox
+   \ifcase\showgridstate\vbox\else\ruledvbox\fi to \scratchdimen\bgroup
+   \forgetall} % ! don't change
+
+\def\stopcolumnmakeup
+  {\egroup
+   \dp\scratchbox\zeropoint
+   \wd\scratchbox\textwidth
+   \box\scratchbox
+   \egroup
+   \synchronizehsize}
+
+\long\def\startexternalfigure
+  {\dotripleempty\dostartexternalfigure}
+
+\long\def\dostartexternalfigure[#1][#2][#3]#4\stopexternalfigure
+  {\gdef\figuredescription{#4}%
+   \externalfigure[#1][#2][#3]%
+   \globallet\figuredescription\empty}
+
+\let\figuredescription\empty
+
+%% where does this come from, old code probably
+%%
+%%
+%% \newif\ifpagechanged \let\lastchangedpage\empty
+%%
+%% \def\checkpagechange#1%
+%%   {\gettwopassdata\s!paragraph
+%%    \pagechangedfalse
+%%    \iftwopassdatafound
+%%      \ifnum\twopassdata>0\getvalue{\s!paragraph:p:#1}\relax
+%%        \pagechangedtrue
+%%      \fi
+%%    \fi
+%%    \ifpagechanged
+%%      \letgvalue{\s!paragraph:p:#1}\twopassdata
+%%      \globallet\lastchangedpage\twopassdata
+%%    \else
+%%      \globallet\lastchangedpage\realfolio
+%%    \fi
+%%    \doparagraphreference}
+%%
+%% \def\changedpage#1%
+%%   {\getvalue{\s!paragraph:p:#1}}
+
+\newcount\nofprofiled
+
+\def\profilemacro#1%
+  {\nofprofiled\zerocount
+   \letvalue{\string#1\string#1}#1%
+   \appendtoks
+     \normalwritestatus\m!systems{profile \string#1: \number\nofprofiled}%
+   \to \everystoptext
+   \unexpanded\def#1%
+     {\global\advance\nofprofiled\plusone
+      \csname\string#1\string#1\endcsname}}
+
+% incomplete, will be a special case of float placement
+
+\def\startfixed{\dosingleempty\dostartfixed}
+
+\def\dostartfixed[#1]%
+  {\expanded{\dowithnextbox{\noexpand\dodofixed{\ifhmode0\else1\fi}{#1}}}%
+   \vbox\bgroup
+   \setlocalhsize}
+
+\def\stopfixed
+  {\egroup}
+
+\def\dodofixed#1#2%
+  {\ifcase#1\relax
+     \processaction
+       [#2]
+       [   \v!high=>\bbox   {\flushnextbox},
+           \v!low=>\tbox    {\flushnextbox},
+         \v!middle=>\vcenter{\flushnextbox},
+           \v!lohi=>\vcenter{\flushnextbox},
+        \s!unknown=>\tbox   {\flushnextbox},
+        \s!default=>\tbox   {\flushnextbox}]%
+   \else
+     \startbaselinecorrection
+       \noindent\flushnextbox
+     \stopbaselinecorrection
+   \fi}
+
+% \startitemize
+%
+% \item \externalfigure[koe][height=2cm]
+% \item \externalfigure[koe][height=2cm]
+% \item \externalfigure[koe][height=2cm]
+% \item \externalfigure[koe][height=2cm]
+%
+% \page
+%
+% \item \startfixed      \externalfigure[koe][height=2cm]\stopfixed
+% \item \startfixed[high]\externalfigure[koe][height=2cm]\stopfixed
+% \item \startfixed[low] \externalfigure[koe][height=2cm]\stopfixed
+% \item \startfixed[lohi]\externalfigure[koe][height=2cm]\stopfixed
+%
+% \page
+%
+% \item test \startfixed      \externalfigure[koe][height=2cm]\stopfixed
+% \item test \startfixed[high]\externalfigure[koe][height=2cm]\stopfixed
+% \item test \startfixed[low] \externalfigure[koe][height=2cm]\stopfixed
+% \item test \startfixed[lohi]\externalfigure[koe][height=2cm]\stopfixed
+%
+% \page
+%
+% \item test \par \startfixed      \externalfigure[koe][height=2cm]\stopfixed
+% \item test \par \startfixed[high]\externalfigure[koe][height=2cm]\stopfixed
+% \item test \par \startfixed[low] \externalfigure[koe][height=2cm]\stopfixed
+% \item test \par \startfixed[lohi]\externalfigure[koe][height=2cm]\stopfixed
+%
+% \stopitemize
+
+\def\obeyfollowingtoken{{}}  % end \cs scanning
+
+% \def\comparedimension#1#2%
+%   {\chardef\compresult
+%      \ifdim#1<#2%
+%        \zerocount
+%      \else\ifdim#1<#2%
+%        \plusone
+%      \else
+%        \plustwo
+%      \fi\fi}
+% \newdimen\roundingeps \roundingeps=10sp
+% \def\comparedimensioneps#1#2%
+%   {\chardef\compresult
+%      \ifdim\dimexpr(#1-#2)<\roudingeps
+%        \zerocount
+%      \else\ifdim\dimexpr(#2-#1)<\roudingeps
+%        \zerocount
+%      \else\ifdim#1<#2%
+%        \plusone
+%      \else
+%        \plustwo
+%      \fi\fi\fi}
+
+%D Next we load a few local optimizations and new features. They
+%D live on on my machine and are not distributed, but they may end
+%D up in the distributed files.
+
+\loadmarkfile{cont-new}
+
+\readsysfile {cont-loc} {} {} % local improvements, patches, new features
+\readsysfile {cont-exp} {} {} % experimental features (e.g. local speed-ups)
+%readsysfile {cont-mtx} {} {} % experimental metatex features
+
+\protect \endinput

@@ -1,0 +1,210 @@
+%D \module
+%D   [       file=x-newmmo,
+%D        version=2006.05.17,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=MathML Renderer/Open Math Extensions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Strange things, why not mapped onto normal content MathML and/or
+%D onto processing instructions.
+
+\unprotect
+
+%D \startbuffer
+%D <math xmlns="http://www.w3.org/1998/Math/MathML">
+%D     <vector>
+%D         <apply>
+%D             <csymbol definitionURL="http://www.openmath.org/cd/nums1#rational"/>
+%D             <ci>a</ci>
+%D             <cn type="integer">2</cn>
+%D         </apply>
+%D         <ci>a</ci>
+%D     </vector>
+%D </math>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/nums1\letterhash rational
+    \MMLcreset
+    \getXMLstackdata\plustwo/\getXMLstackdata\plusthree
+\stopsetups
+
+%D \startbuffer
+%D <math xmlns="http://www.w3.org/1998/Math/MathML">
+%D     <apply>
+%D         <csymbol definitionURL="http://www.openmath.org/cd/math4all#diffquot"/>
+%D         <ci>y</ci>
+%D         <ci>x</ci>
+%D     </apply>
+%D </math>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash diffquot
+    \MMLcreset
+    \frac {
+        \Delta\getXMLstackdata\plustwo
+    } {
+        \Delta\getXMLstackdata\plusthree
+    }
+\stopsetups
+
+%D \startbuffer
+%D <math xmlns="http://www.w3.org/1998/Math/MathML">
+%D     <apply>
+%D         <csymbol definitionURL="http://www.openmath.org/cd/math4all#difference"/>
+%D         <ci>y</ci>
+%D     </apply>
+%D </math>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D \startbuffer
+%D <math xmlns="http://www.w3.org/1998/Math/MathML">
+%D     <apply>
+%D         <csymbol definitionURL="http://www.openmath.org/cd/math4all#difference"/>
+%D         <apply>
+%D             <eq/>
+%D             <ci>y</ci>
+%D             <apply>
+%D                 <minus/>
+%D                 <apply>
+%D                     <ci>f</ci>
+%D                     <ci>x</ci>
+%D                 </apply>
+%D                 <apply>
+%D                     <ci>f</ci>
+%D                 <apply>
+%D                     <minus/>
+%D                     <ci>x</ci>
+%D                     <cn type="integer">1</cn>
+%D                 </apply>
+%D             </apply>
+%D         </apply>
+%D     </apply>
+%D </apply>
+%D </math>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash difference
+    \MMLcreset
+    \Delta\getXMLstackdata\plustwo
+\stopsetups
+
+%D \startbuffer
+%D <math xmlns="http://www.w3.org/1998/Math/MathML">
+%D     <apply>
+%D         <csymbol definitionURL="http://www.openmath.org/cd/math4all#diff"/>
+%D         <ci>s</ci>
+%D         <ci>t</ci>
+%D     </apply>
+%D </math>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash diff
+    \MMLcreset
+    \frac {
+        \mfunction{\getXMLentity{mathematicald}}\getXMLstackdata\plustwo
+    } {
+        \mfunction{\getXMLentity{mathematicald}}\getXMLstackdata\plusthree
+    }
+\stopsetups
+
+%D A unit mess.
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@second        {\mr s}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@minute        {\mr m}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@hour          {\mr h}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@day           {\mr d}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@week          {\mr w}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@month         {\mr m}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@year          {\mr y}\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@meter       {\mr m}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@gram        {\mr g}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@liter       {\mr l}\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@watt        {\mr W}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@pascal      {\mr P}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@kelvin      {\mr K}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@celsius     {\mr C}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@newton      {\mr N}\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@byte        {\mr B}\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@pico  {\mr p}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@micro     \mu\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@milli {\mr m}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@centi {\mr c}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@deci  {\mr d}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@deca  {\mr d}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@hecto {\mr h}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@kilo  {\mr k}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@mega  {\mr m}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@giga  {\mr g}\getXMLstackdata\plustwo\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_siprefix1@tera  {\mr t}\getXMLstackdata\plustwo\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash procent   \procent\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash promille \promille\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash degree      ^\circ\stopsetups
+
+% whatever
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash triangle
+    \Delta\,
+\stopsetups
+
+% crap
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@degree_celsius
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@celsius}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@degree_kelvin
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@kelvin}
+\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@metre
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@meter}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@gramme
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@gram}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@litre
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_metric1@liter}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@calendar_month
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@month}
+\stopsetups
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@calendar_year
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash units_time1@year}
+\stopsetups
+
+\startsetups mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash degree_angle
+    \directsetup{mmc:csymbol:http://www.openmath.org/cd/mathadore\letterhash degree}
+\stopsetups
+
+\defineXMLargument
+    [ci]
+    {\checkMMLciSYMBOL}
+
+\def\checkMMLciSYMBOL#1%
+   {\defconvertedargument\ascii{#1}%
+    \executeifdefined{ci:symbol:crap:\ascii}{#1}}
+
+\setvalue{ci:symbol:crap:alpha}{\alpha}
+\setvalue{ci:symbol:crap:beta}{\beta}
+\setvalue{ci:symbol:crap:gamma}{\gamma}
+
+\protect \endinput

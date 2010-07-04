@@ -1,0 +1,107 @@
+%D \module
+%D   [       file=page-flw,
+%D        version=2003.04.19, % from test-002 (1997) profile experiment
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Text Flows,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Text Flows}
+
+%D This is high experimental and especially flushing may change (proper
+%D spacing is the driving force here).
+
+\unprotect
+
+\unexpanded\def\definetextflow
+  {\dodoubleempty\dodefinetextflow}
+
+\def\dodefinetextflow[#1][#2]% flow settings
+  {\iffirstargument
+     \doiftextflowcollectorelse{#1}
+       {\setbox\textflowcollector{#1}\emptybox}
+       {\@EA\newbox\csname\??tx:c:#1\endcsname}%
+     \getparameters[\??tx:p:#1]
+       [\c!width=\hsize,\c!style=,#2]%
+   \fi}
+
+\def\textflowparameter#1#2{\csname\??tx:p:#1#2\endcsname}
+\def\textflowcollector  #1{\csname\??tx:c:#1\endcsname}
+
+\def\doiftextflowcollectorelse#1{\doifdefinedelse{\??tx:c:#1}}
+
+\def\doiftextflowelse#1%
+  {\doiftextflowcollectorelse{#1}
+     {\ifvoid\textflowcollector{#1}%
+        \expandafter\secondoftwoarguments
+      \else
+        \expandafter\firstoftwoarguments
+      \fi}
+     {\secondoftwoarguments}}
+
+\def\doiftextflow#1%
+  {\doiftextflowelse{#1}\firstofoneargument\gobbleoneargument}
+
+\unexpanded\def\starttextflow[#1]%
+  {\doiftextflowcollectorelse{#1}
+     {\global\setbox\textflowcollector{#1}\vbox
+        \bgroup
+        \unvbox\textflowcollector{#1}%
+        \hsize\textflowparameter{#1}\c!width
+        \doifsomething{\textflowparameter{#1}\c!style}%
+          {\doconvertfont{\textflowparameter{#1}\c!style}}%
+        \unexpanded\def\stoptextflow{\endgraf\egroup}}
+     {\let\stoptextflow\relax}}
+
+\def\flushtextflow#1%
+  {\doiftextflow{#1}
+     {\ifdim\ht\textflowcollector{#1}>\vsize
+        \setbox\scratchbox\vsplit\textflowcollector{#1} to \vsize
+        \unvbox\scratchbox
+      \else
+        \unvbox\textflowcollector{#1}%
+      \fi}}
+
+\protect \endinput
+
+% Example (dutch)
+%
+% \stelpapierformaatin [S6]
+% \steltolerantiein    [soepel,rek]
+% \stelkleurenin       [status=start]
+% \stelvoetin          [strut=nee]
+% \stelwitruimtein     [groot]
+%
+% \stellayoutin
+%   [rechterrand=5cm,breedte=passend,marge=0pt,randafstand=1cm,
+%    voet=4cm,voetafstand=1cm,hoofd=0cm]
+%
+% \stelteksttekstenin[rand][][\vbox{\flushtextflow{alpha}}]
+% \stelvoettekstenin [rand][][\vbox{\flushtextflow{beta}}]
+% \stelvoettekstenin         [\vbox{\flushtextflow{gamma}}][]
+%
+% \definetextflow [alfa]  [breedte=\rechterrandbreedte]
+% \definetextflow [beta]  [breedte=\rechterrandbreedte]
+% \definetextflow [gamma] [breedte=\voethoogte]
+%
+% \starttekst
+%
+% \dorecurse{50}
+%   {\getrandomnumber{\funny}{0}{8}
+%    \ifcase\funny \starttextflow[alfa]  \input tufte.tex   \stoptextflow
+%    \or           \starttextflow[beta]  \input knuth.tex   \stoptextflow
+%    \or           \starttextflow[gamma] \input materie.tex \stoptextflow
+%    \or          {\bf   TUFTE}\quad \input tufte   \par
+%    \or          {\bf   TUFTE}\quad \input tufte   \par
+%    \or          {\bf   KNUTH}\quad \input knuth   \par
+%    \or          {\bf   KNUTH}\quad \input knuth   \par
+%    \or          {\bf MATERIE}\quad \input materie \par
+%    \else        {\bf MATERIE}\quad \input materie \par
+%    \fi}
+%
+% \stoptekst

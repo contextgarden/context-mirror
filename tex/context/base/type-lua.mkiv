@@ -1,0 +1,88 @@
+%D \module
+%D   [       file=type-lua,
+%D        version=2009.11.27,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=\MKIV\ goodies,
+%D         author=Hans Hagen \& Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\starttypescriptcollection [luatex]
+
+\starttypescript [specserif] [all] [name]
+    \definefontsynonym [Serif]            [spec:\cleanfontname\typescripttwo-\s!normal-\s!normal] [\s!features=\s!default]
+    \definefontsynonym [SerifItalic]      [spec:\cleanfontname\typescripttwo-\s!normal-\s!italic] [\s!features=\s!default]
+    \definefontsynonym [SerifSlanted]     [spec:\cleanfontname\typescripttwo-\s!normal-\s!italic] [\s!features=\s!default]
+    \definefontsynonym [SerifBold]        [spec:\cleanfontname\typescripttwo-\s!bold  -\s!normal] [\s!features=\s!default]
+    \definefontsynonym [SerifBoldItalic]  [spec:\cleanfontname\typescripttwo-\s!bold  -\s!italic] [\s!features=\s!default]
+    \definefontsynonym [SerifBoldSlanted] [spec:\cleanfontname\typescripttwo-\s!bold  -\s!italic] [\s!features=\s!default]
+    \definefontsynonym [SerifCaps]        [spec:\cleanfontname\typescripttwo-\s!normal-\s!normal] [\s!features=\s!smallcaps]
+\stoptypescript
+
+\starttypescript [specsans] [all] [name]
+    \definefontsynonym [Sans]            [spec:\cleanfontname\typescripttwo-\s!normal-\s!normal] [\s!features=\s!default]
+    \definefontsynonym [SansItalic]      [spec:\cleanfontname\typescripttwo-\s!normal-\s!italic] [\s!features=\s!default]
+    \definefontsynonym [SansSlanted]     [spec:\cleanfontname\typescripttwo-\s!normal-\s!italic] [\s!features=\s!default]
+    \definefontsynonym [SansBold]        [spec:\cleanfontname\typescripttwo-\s!bold  -\s!normal] [\s!features=\s!default]
+    \definefontsynonym [SansBoldItalic]  [spec:\cleanfontname\typescripttwo-\s!bold  -\s!italic] [\s!features=\s!default]
+    \definefontsynonym [SansBoldSlanted] [spec:\cleanfontname\typescripttwo-\s!bold  -\s!italic] [\s!features=\s!default]
+    \definefontsynonym [SansCaps]        [spec:\cleanfontname\typescripttwo-\s!normal-\s!normal] [\s!features=\s!smallcaps]
+\stoptypescript
+
+\starttypescript [specmono] [all] [name]
+    \definefontsynonym [Mono]            [spec:\cleanfontname\typescripttwo-\s!normal-\s!normal] [\s!features=\s!default]
+    \definefontsynonym [MonoItalic]      [spec:\cleanfontname\typescripttwo-\s!normal-\s!italic] [\s!features=\s!default]
+    \definefontsynonym [MonoSlanted]     [spec:\cleanfontname\typescripttwo-\s!normal-\s!italic] [\s!features=\s!default]
+    \definefontsynonym [MonoBold]        [spec:\cleanfontname\typescripttwo-\s!bold  -\s!normal] [\s!features=\s!default]
+    \definefontsynonym [MonoBoldItalic]  [spec:\cleanfontname\typescripttwo-\s!bold  -\s!italic] [\s!features=\s!default]
+    \definefontsynonym [MonoBoldSlanted] [spec:\cleanfontname\typescripttwo-\s!bold  -\s!italic] [\s!features=\s!default]
+    \definefontsynonym [MonoCaps]        [spec:\cleanfontname\typescripttwo-\s!normal-\s!normal] [\s!features=\s!smallcaps]
+\stoptypescript
+
+% we could combine these in the normal serif settings
+
+\starttypescript [specserif] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt] [rm]
+    [\s!default]
+\stoptypescript
+
+\starttypescript [specsans] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [ss] [\s!default]
+\stoptypescript
+
+\starttypescript [specmono] [default] [size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [tt] [\s!default]
+\stoptypescript
+
+\starttypescript [specserif] [dtp] [size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [rm] [\s!default]
+\stoptypescript
+
+\starttypescript [specsans] [dtp] [size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [ss] [\s!default]
+\stoptypescript
+
+\starttypescript [specmono] [dtp] [size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [tt] [\s!default]
+\stoptypescript
+
+\stoptypescriptcollection
+
+\protect \endinput

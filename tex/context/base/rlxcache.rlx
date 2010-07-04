@@ -1,0 +1,71 @@
+<?xml version='1.0 standalone='yes'?>
+
+<rl:manipulators>
+
+    <rl:manipulator name='pdf' suffix='eps'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.eps</rl:old>
+        <rl:new><rl:value name='cache' default='rlxcache'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath="<rl:value name='path'/>"
+            --outputpath="<rl:value name='cache' default='.'/>"
+            "<rl:value name='file' method='nosuffix'/>.eps"
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='svg'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.svg</rl:old>
+        <rl:new><rl:value name='cache' default='rlxcache'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath="<rl:value name='path'/>"
+            --outputpath="<rl:value name='cache' default='.'/>"
+            "<rl:value name='file' method='nosuffix'/>.svg"
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='svgz'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.svgz</rl:old>
+        <rl:new><rl:value name='cache' default='rlxcache'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath="<rl:value name='path'/>"
+            --outputpath="<rl:value name='cache' default='.'/>"
+            "<rl:value name='file' method='nosuffix'/>.svgz"
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='gif'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.gif</rl:old>
+        <rl:new><rl:value name='cache' default='rlxcache'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath="<rl:value name='path'/>"
+            --outputpath="<rl:value name='cache' default='.'/>"
+            "<rl:value name='file' method='nosuffix'/>.gif"
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='tif'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.tif</rl:old>
+        <rl:new><rl:value name='cache' default='rlxcache'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath="<rl:value name='path'/>"
+            --outputpath="<rl:value name='cache' default='.'/>"
+            "<rl:value name='file' method='nosuffix'/>.tif"
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='tiff'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.tiff</rl:old>
+        <rl:new><rl:value name='cache' default='rlxcache'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath="<rl:value name='path'/>"
+            --outputpath="<rl:value name='cache' default='.'/>"
+            "<rl:value name='file' method='nosuffix'/>.tiff"
+        </rl:step>
+    </rl:manipulator>
+
+</rl:manipulators>

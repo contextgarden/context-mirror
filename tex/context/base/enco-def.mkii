@@ -1,0 +1,922 @@
+%D \module
+%D   [     file=enco-def,
+%D      version=2000.05.07, % 2000.20.12, % split from less verbose base file
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Default Character Definitions,
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Instead of overloading plain \TEX\ macros (and keeping them
+%D available as an escape), we now use the more verbose
+%D definitions in this file. Since memory is less a problem
+%D these days, this verbosity has only a small price, but we
+%D gain readability. The following definitions are based on
+%D usage of the the original \TEX\ fonts, where composed
+%D characters were not part of the design. So, occasionally
+%D we have to revert to hacks. Thanks to all those users who
+%D helped me to fill in the details.
+
+\startencoding[default]
+
+\definecharacter textcomma         ,
+\definecharacter textperiod        .
+
+\definecharacter textacute         19
+\definecharacter textbottomdot     46
+\definecharacter textbreve         21
+\definecharacter textcaron         20
+\definecharacter textcedilla       24
+\definecharacter textcircumflex    94
+\definecharacter textdiaeresis    127
+\definecharacter textdotaccent     95
+\definecharacter textgrave         18
+\definecharacter texthungarumlaut 125
+\definecharacter textmacron        22
+\definecharacter textogonek        24 % fake
+\definecharacter textring          23
+\definecharacter texttilde        126
+
+\definecharacter textat            64 % for mojca
+
+\definecharacter textbottomcomma  {\hbox{\lower.35ex\hbox{\tx,}}} % for mojca
+
+\definecharacter dotlessi         {\char"10 }
+\definecharacter dotlessj         {\char"11 }
+\definecharacter dotlessI         {I}
+\definecharacter dotlessJ         {J}
+
+\definecharacter endash           123
+\definecharacter emdash           124
+
+\definecharacter aeligature       {\char26 } % "1A
+\definecharacter AEligature       {\char29 } % "1D
+\definecharacter ijligature       {ij}
+\definecharacter IJligature       {IJ}
+\definecharacter oeligature       {\char27 } % "1B
+\definecharacter OEligature       {\char30 } % "1E
+
+\definecharacter ssharp           {\char25 } % "19
+\definecharacter Ssharp           {SS}
+
+\definecharacter thorn            {\unknownchar}
+\definecharacter Thorn            {\unknownchar}
+
+\definecharacter eth              {\unknownchar} % mojca prefers this (was \dstroke)
+%definecharacter Eth              {\unknownchar}
+\definecharacter Eth              {\Dstroke}     % mojca prefers this too
+
+\definecharacter exclamdown        60
+\definecharacter questiondown      62
+
+\definecharacter copyright        {\encircled{\txx C}}
+\definecharacter registered       {\encircled{\txx R}}
+\definecharacter trademark        {\high{\txx TM}}
+
+\definecharacter sectionmark      {\mathematics{\mathhexbox278}}
+\definecharacter paragraphmark    {\mathematics{\mathhexbox27B}}
+
+\definecharacter onequarter       {\vulgarfraction{1}{4}}
+\definecharacter onehalf          {\vulgarfraction{1}{2}}
+\definecharacter threequarter     {\vulgarfraction{3}{4}}
+
+\definecharacter onesuperior      {\high{1}}
+\definecharacter twosuperior      {\high{2}}
+\definecharacter threesuperior    {\high{3}}
+
+\definecharacter textcent         {c}
+\definecharacter textcurrency     {\unknownchar}
+\definecharacter textdollar       {\fakedollar}
+\definecharacter texteuro         {E}
+\definecharacter textflorin       {\fakeflorin}
+\definecharacter textsterling     {\fakesterling}
+\definecharacter textyen          {Y}
+
+\definecharacter ordfeminine      {\high{\txx a}}
+\definecharacter ordmasculine     {\high{\txx o}}
+
+\definecharacter percent          {\fakepercent}
+\definecharacter perthousand      {\fakeperthousand}
+
+\definecharacter softhyphen        45
+\definecharacter periodcentered   {\hbox{\mathematics\cdot}}
+\definecharacter compoundwordmark  23
+
+\definecharacter textasciicircum   94
+\definecharacter textasciitilde   126
+\definecharacter textslash         47
+\definecharacter textbackslash    {\tex{}} % todo
+\definecharacter textbraceleft    {\mathematics\{}
+\definecharacter textbraceright   {\mathematics\}}
+\definecharacter textunderscore   {\fakeunderscore}
+\definecharacter textvisiblespace {\fakevisiblespace}
+
+\definecharacter textbrokenbar    {\mathematics\vert}
+\definecharacter textbullet       {\mathematics\bullet}
+\definecharacter textdag          {\mathematics\dag}
+\definecharacter textddag         {\mathematics\ddag}
+\definecharacter textdegree       {\mathematics{{}^{\circ}}}
+\definecharacter textdiv          {\mathematics\div}
+\definecharacter textellipsis     {\mathematics\cdots}
+\definecharacter textfraction     {\mathematics/}
+\definecharacter textlognot       {\mathematics\neg}
+\definecharacter textminus        {\mathematics-}
+\definecharacter textmu           {\mathematics\mu}
+\definecharacter textmultiply     {\mathematics\times}
+\definecharacter textpm           {\mathematics\pm}
+
+\definecharacter quotedbl         {"}
+\definecharacter quotedblbase     {,,}
+\definecharacter quotedblleft     {``}
+\definecharacter quotedblright    {''}
+
+\definecharacter quotesingle      {`}
+\definecharacter quotesinglebase  {,}
+
+\definecharacter quoteleft        {`}
+\definecharacter quoteright       {'}
+
+\definecharacter guilsingleleft   {\fakeleftsubguillemot }
+\definecharacter guilsingleright  {\fakerightsubguillemot}
+
+\definecharacter leftguillemot    {\fakeleftguillemot }
+\definecharacter rightguillemot   {\fakerightguillemot}
+
+\definecharacter Acircumflex      {\buildtextaccent\textcircumflex A}
+\definecharacter acircumflex      {\buildtextaccent\textcircumflex a}
+\definecharacter Ccircumflex      {\buildtextaccent\textcircumflex C}
+\definecharacter ccircumflex      {\buildtextaccent\textcircumflex c}
+\definecharacter Ecircumflex      {\buildtextaccent\textcircumflex E}
+\definecharacter ecircumflex      {\buildtextaccent\textcircumflex e}
+\definecharacter Gcircumflex      {\buildtextaccent\textcircumflex G}
+\definecharacter gcircumflex      {\buildtextaccent\textcircumflex g}
+\definecharacter Hcircumflex      {\buildtextaccent\textcircumflex H}
+\definecharacter hcircumflex      {\buildtextaccent\textcircumflex h}
+\definecharacter Icircumflex      {\buildtextaccent\textcircumflex \dotlessI}
+\definecharacter icircumflex      {\buildtextaccent\textcircumflex \dotlessi}
+\definecharacter Jcircumflex      {\buildtextaccent\textcircumflex \dotlessJ}
+\definecharacter jcircumflex      {\buildtextaccent\textcircumflex \dotlessj}
+\definecharacter Ocircumflex      {\buildtextaccent\textcircumflex O}
+\definecharacter ocircumflex      {\buildtextaccent\textcircumflex o}
+\definecharacter Scircumflex      {\buildtextaccent\textcircumflex S}
+\definecharacter scircumflex      {\buildtextaccent\textcircumflex s}
+\definecharacter Ucircumflex      {\buildtextaccent\textcircumflex U}
+\definecharacter ucircumflex      {\buildtextaccent\textcircumflex u}
+\definecharacter Wcircumflex      {\buildtextaccent\textcircumflex W}
+\definecharacter wcircumflex      {\buildtextaccent\textcircumflex w}
+\definecharacter Ycircumflex      {\buildtextaccent\textcircumflex Y}
+\definecharacter ycircumflex      {\buildtextaccent\textcircumflex y}
+
+\definecharacter Agrave           {\buildtextaccent\textgrave A}
+\definecharacter agrave           {\buildtextaccent\textgrave a}
+\definecharacter Egrave           {\buildtextaccent\textgrave E}
+\definecharacter egrave           {\buildtextaccent\textgrave e}
+\definecharacter Igrave           {\buildtextaccent\textgrave \dotlessI}
+\definecharacter igrave           {\buildtextaccent\textgrave \dotlessi}
+\definecharacter Ograve           {\buildtextaccent\textgrave O}
+\definecharacter ograve           {\buildtextaccent\textgrave o}
+\definecharacter Ugrave           {\buildtextaccent\textgrave U}
+\definecharacter ugrave           {\buildtextaccent\textgrave u}
+\definecharacter Ygrave           {\buildtextaccent\textgrave Y}
+\definecharacter ygrave           {\buildtextaccent\textgrave y}
+
+\definecharacter Atilde           {\buildtextaccent\texttilde A}
+\definecharacter atilde           {\buildtextaccent\texttilde a}
+\definecharacter Itilde           {\buildtextaccent\texttilde \dotlessI}
+\definecharacter itilde           {\buildtextaccent\texttilde \dotlessi}
+\definecharacter Ntilde           {\buildtextaccent\texttilde N}
+\definecharacter ntilde           {\buildtextaccent\texttilde n}
+\definecharacter Otilde           {\buildtextaccent\texttilde O}
+\definecharacter otilde           {\buildtextaccent\texttilde o}
+\definecharacter Utilde           {\buildtextaccent\texttilde U}
+\definecharacter utilde           {\buildtextaccent\texttilde u}
+\definecharacter Ytilde           {\buildtextaccent\texttilde Y}
+\definecharacter ytilde           {\buildtextaccent\texttilde y}
+
+\definecharacter Adiaeresis       {\buildtextaccent\textdiaeresis A}
+\definecharacter adiaeresis       {\buildtextaccent\textdiaeresis a}
+\definecharacter Ediaeresis       {\buildtextaccent\textdiaeresis E}
+\definecharacter ediaeresis       {\buildtextaccent\textdiaeresis e}
+\definecharacter Idiaeresis       {\buildtextaccent\textdiaeresis \dotlessI}
+\definecharacter idiaeresis       {\buildtextaccent\textdiaeresis \dotlessi}
+\definecharacter Odiaeresis       {\buildtextaccent\textdiaeresis O}
+\definecharacter odiaeresis       {\buildtextaccent\textdiaeresis o}
+\definecharacter Udiaeresis       {\buildtextaccent\textdiaeresis U}
+\definecharacter udiaeresis       {\buildtextaccent\textdiaeresis u}
+\definecharacter Ydiaeresis       {\buildtextaccent\textdiaeresis Y}
+\definecharacter ydiaeresis       {\buildtextaccent\textdiaeresis y}
+
+\definecharacter Aacute           {\buildtextaccent\textacute A}
+\definecharacter aacute           {\buildtextaccent\textacute a}
+\definecharacter Cacute           {\buildtextaccent\textacute C}
+\definecharacter cacute           {\buildtextaccent\textacute c}
+\definecharacter Eacute           {\buildtextaccent\textacute E}
+\definecharacter eacute           {\buildtextaccent\textacute e}
+\definecharacter Iacute           {\buildtextaccent\textacute \dotlessI}
+\definecharacter iacute           {\buildtextaccent\textacute \dotlessi}
+\definecharacter Lacute           {\buildtextaccent\textacute L}
+\definecharacter lacute           {\buildtextaccent\textacute l}
+\definecharacter Nacute           {\buildtextaccent\textacute N}
+\definecharacter nacute           {\buildtextaccent\textacute n}
+\definecharacter Oacute           {\buildtextaccent\textacute O}
+\definecharacter oacute           {\buildtextaccent\textacute o}
+\definecharacter Racute           {\buildtextaccent\textacute R}
+\definecharacter racute           {\buildtextaccent\textacute r}
+\definecharacter Sacute           {\buildtextaccent\textacute S}
+\definecharacter sacute           {\buildtextaccent\textacute s}
+\definecharacter Uacute           {\buildtextaccent\textacute U}
+\definecharacter uacute           {\buildtextaccent\textacute u}
+\definecharacter Yacute           {\buildtextaccent\textacute Y}
+\definecharacter yacute           {\buildtextaccent\textacute y}
+\definecharacter Zacute           {\buildtextaccent\textacute Z}
+\definecharacter zacute           {\buildtextaccent\textacute z}
+
+%definecharacter Dstroke          {D}
+%definecharacter dstroke          {d}
+
+\definecharacter dstroke          {\pseudoencodeddj}
+\definecharacter Dstroke          {\pseudoencodedDJ}
+\definecharacter Hstroke          {H}
+\definecharacter hstroke          {h}
+\definecharacter Tstroke          {T}
+\definecharacter tstroke          {t}
+
+\definecharacter Cdotaccent       {\buildtextaccent\textdotaccent C}
+\definecharacter cdotaccent       {\buildtextaccent\textdotaccent c}
+\definecharacter Edotaccent       {\buildtextaccent\textdotaccent E}
+\definecharacter edotaccent       {\buildtextaccent\textdotaccent e}
+\definecharacter Gdotaccent       {\buildtextaccent\textdotaccent G}
+\definecharacter gdotaccent       {\buildtextaccent\textdotaccent g}
+\definecharacter Idotaccent       {\buildtextaccent\textdotaccent \dotlessI}
+\definecharacter idotaccent       {\buildtextaccent\textdotaccent \dotlessi}
+\definecharacter Zdotaccent       {\buildtextaccent\textdotaccent Z}
+\definecharacter zdotaccent       {\buildtextaccent\textdotaccent z}
+
+\definecharacter Amacron          {\buildtextaccent\textmacron A}
+\definecharacter amacron          {\buildtextaccent\textmacron a}
+\definecharacter Emacron          {\buildtextaccent\textmacron E}
+\definecharacter emacron          {\buildtextaccent\textmacron e}
+\definecharacter Imacron          {\buildtextaccent\textmacron \dotlessI}
+\definecharacter imacron          {\buildtextaccent\textmacron \dotlessi}
+\definecharacter Omacron          {\buildtextaccent\textmacron O}
+\definecharacter omacron          {\buildtextaccent\textmacron o}
+\definecharacter Umacron          {\buildtextaccent\textmacron U}
+\definecharacter umacron          {\buildtextaccent\textmacron u}
+
+\definecharacter Ccedilla         {\buildtextcedilla C}
+\definecharacter ccedilla         {\buildtextcedilla c}
+\definecharacter Kcedilla         {\buildtextcedilla K}
+\definecharacter kcedilla         {\buildtextcedilla k}
+\definecharacter Lcedilla         {\buildtextcedilla L}
+\definecharacter lcedilla         {\buildtextcedilla l}
+\definecharacter Ncedilla         {\buildtextcedilla N}
+\definecharacter ncedilla         {\buildtextcedilla n}
+\definecharacter Rcedilla         {\buildtextcedilla R}
+\definecharacter rcedilla         {\buildtextcedilla r}
+\definecharacter Scedilla         {\buildtextcedilla S}
+\definecharacter scedilla         {\buildtextcedilla s}
+\definecharacter Tcedilla         {\buildtextcedilla T}
+\definecharacter tcedilla         {\buildtextcedilla t}
+
+\definecharacter Ohungarumlaut    {\buildtextaccent\texthungarumlaut O}
+\definecharacter ohungarumlaut    {\buildtextaccent\texthungarumlaut o}
+\definecharacter Uhungarumlaut    {\buildtextaccent\texthungarumlaut U}
+\definecharacter uhungarumlaut    {\buildtextaccent\texthungarumlaut u}
+
+\definecharacter Aogonek          {\buildtextogonek A}
+\definecharacter aogonek          {\buildtextogonek a}
+\definecharacter Eogonek          {\buildtextogonek E}
+\definecharacter eogonek          {\buildtextogonek e}
+\definecharacter Iogonek          {\buildtextogonek I}
+\definecharacter iogonek          {\buildtextogonek i}
+\definecharacter Uogonek          {\buildtextogonek U}
+\definecharacter uogonek          {\buildtextogonek u}
+
+\definecharacter Aring            {\buildtextaccent\textring A}
+\definecharacter aring            {\buildtextaccent\textring a}
+\definecharacter Uring            {\buildtextaccent\textring U}
+\definecharacter uring            {\buildtextaccent\textring u}
+
+\definecharacter Abreve           {\buildtextaccent\textbreve A}
+\definecharacter abreve           {\buildtextaccent\textbreve a}
+\definecharacter Ebreve           {\buildtextaccent\textbreve E}
+\definecharacter ebreve           {\buildtextaccent\textbreve e}
+\definecharacter Gbreve           {\buildtextaccent\textbreve G}
+\definecharacter gbreve           {\buildtextaccent\textbreve g}
+\definecharacter Ibreve           {\buildtextaccent\textbreve \dotlessI}
+\definecharacter ibreve           {\buildtextaccent\textbreve \dotlessi}
+\definecharacter Obreve           {\buildtextaccent\textbreve O}
+\definecharacter obreve           {\buildtextaccent\textbreve o}
+\definecharacter Ubreve           {\buildtextaccent\textbreve U}
+\definecharacter ubreve           {\buildtextaccent\textbreve u}
+
+\definecharacter Ccaron           {\buildtextaccent\textcaron C}
+\definecharacter ccaron           {\buildtextaccent\textcaron c}
+\definecharacter Dcaron           {\buildtextaccent\textcaron D}
+\definecharacter dcaron           {\buildtextaccent\textcaron d}
+\definecharacter Ecaron           {\buildtextaccent\textcaron E}
+\definecharacter ecaron           {\buildtextaccent\textcaron e}
+\definecharacter Lcaron           {\buildtextaccent\textcaron L}
+\definecharacter lcaron           {\buildtextaccent\textcaron l}
+\definecharacter Ncaron           {\buildtextaccent\textcaron N}
+\definecharacter ncaron           {\buildtextaccent\textcaron n}
+\definecharacter Rcaron           {\buildtextaccent\textcaron R}
+\definecharacter rcaron           {\buildtextaccent\textcaron r}
+\definecharacter Scaron           {\buildtextaccent\textcaron S}
+\definecharacter scaron           {\buildtextaccent\textcaron s}
+\definecharacter Tcaron           {\buildtextaccent\textcaron T}
+\definecharacter tcaron           {\buildtextaccent\textcaron t}
+\definecharacter Ycaron           {\buildtextaccent\textcaron Y}
+\definecharacter ycaron           {\buildtextaccent\textcaron y}
+\definecharacter Zcaron           {\buildtextaccent\textcaron Z}
+\definecharacter zcaron           {\buildtextaccent\textcaron z}
+
+\definecharacter Lstroke          {\hsmash{\char32}L}
+\definecharacter lstroke          {\hsmash{\char32}l}
+\definecharacter Ostroke          {\char31 } % "1F
+\definecharacter ostroke          {\char28 } % "1C
+
+\definecharacter aumlaut          {\moveaccent{-.1ex}\adiaeresis}
+\definecharacter eumlaut          {\moveaccent{-.1ex}\ediaeresis}
+\definecharacter iumlaut          {\moveaccent{-.1ex}\idiaeresis}
+\definecharacter oumlaut          {\moveaccent{-.1ex}\odiaeresis}
+\definecharacter uumlaut          {\moveaccent{-.1ex}\udiaeresis}
+
+\definecharacter Aumlaut          {\smashaccent\Adiaeresis}
+\definecharacter Eumlaut          {\smashaccent\Ediaeresis}
+\definecharacter Iumlaut          {\smashaccent\Idiaeresis}
+\definecharacter Oumlaut          {\smashaccent\Odiaeresis}
+\definecharacter Uumlaut          {\smashaccent\Udiaeresis}
+
+\definecharacter scommaaccent     {\buildtextbottomcomma s}
+\definecharacter Scommaaccent     {\buildtextbottomcomma S}
+\definecharacter tcommaaccent     {\buildtextbottomcomma t}
+\definecharacter Tcommaaccent     {\buildtextbottomcomma T}
+\definecharacter lcommaaccent     {\buildtextbottomcomma l}
+\definecharacter Lcommaaccent     {\buildtextbottomcomma L}
+
+\definecharacter Etilde           {\buildtextaccent\texttilde E}
+\definecharacter etilde           {\buildtextaccent\texttilde e}
+
+\definecharacter Ahook               {A}
+\definecharacter ahook               {a}
+\definecharacter Ehook               {E}
+\definecharacter ehook               {e}
+\definecharacter Ihook               {I}
+\definecharacter ihook               {i}
+\definecharacter Ohook               {O}
+\definecharacter ohook               {o}
+\definecharacter Uhook               {U}
+\definecharacter uhook               {u}
+\definecharacter Yhook               {Y}
+\definecharacter yhook               {y}
+
+\definecharacter Acircumflexgrave    {\Acircumflex}
+\definecharacter Acircumflexacute    {\Acircumflex}
+\definecharacter Acircumflextilde    {\Acircumflex}
+\definecharacter Acircumflexhook     {\Acircumflex}
+\definecharacter acircumflexgrave    {\acircumflex}
+\definecharacter acircumflexacute    {\acircumflex}
+\definecharacter acircumflextilde    {\acircumflex}
+\definecharacter acircumflexhook     {\acircumflex}
+\definecharacter Ecircumflexgrave    {\Ecircumflex}
+\definecharacter Ecircumflexacute    {\Ecircumflex}
+\definecharacter Ecircumflextilde    {\Ecircumflex}
+\definecharacter Ecircumflexhook     {\Ecircumflex}
+\definecharacter ecircumflexgrave    {\ecircumflex}
+\definecharacter ecircumflexacute    {\ecircumflex}
+\definecharacter ecircumflextilde    {\ecircumflex}
+\definecharacter ecircumflexhook     {\ecircumflex}
+\definecharacter Ocircumflexgrave    {\Ocircumflex}
+\definecharacter Ocircumflexacute    {\Ocircumflex}
+\definecharacter Ocircumflextilde    {\Ocircumflex}
+\definecharacter Ocircumflexhook     {\Ocircumflex}
+\definecharacter ocircumflexgrave    {\ocircumflex}
+\definecharacter ocircumflexacute    {\ocircumflex}
+\definecharacter ocircumflextilde    {\ocircumflex}
+\definecharacter ocircumflexhook     {\ocircumflex}
+
+\definecharacter Abrevegrave         {\Abreve}
+\definecharacter Abreveacute         {\Abreve}
+\definecharacter Abrevetilde         {\Abreve}
+\definecharacter Abrevehook          {\Abreve}
+\definecharacter abrevegrave         {\abreve}
+\definecharacter abreveacute         {\abreve}
+\definecharacter abrevetilde         {\abreve}
+\definecharacter abrevehook          {\abreve}
+
+\definecharacter Adotbelow           {\buildtextbottomdot A}
+\definecharacter adotbelow           {\buildtextbottomdot a}
+\definecharacter Edotbelow           {\buildtextbottomdot E}
+\definecharacter edotbelow           {\buildtextbottomdot e}
+\definecharacter Idotbelow           {\buildtextbottomdot I}
+\definecharacter idotbelow           {\buildtextbottomdot i}
+\definecharacter Odotbelow           {\buildtextbottomdot O}
+\definecharacter odotbelow           {\buildtextbottomdot o}
+\definecharacter Udotbelow           {\buildtextbottomdot U}
+\definecharacter udotbelow           {\buildtextbottomdot u}
+\definecharacter Ydotbelow           {\buildtextbottomdot Y}
+\definecharacter ydotbelow           {\buildtextbottomdot y}
+
+\definecharacter Ohorndotbelow       {\buildtextbottomdot\Ohorn}
+\definecharacter ohorndotbelow       {\buildtextbottomdot\ohorn}
+\definecharacter Uhorndotbelow       {\buildtextbottomdot\Uhorn}
+\definecharacter uhorndotbelow       {\buildtextbottomdot\uhorn}
+
+\definecharacter Acircumflexdotbelow {\buildtextbottomdot\Acircumflex}
+\definecharacter acircumflexdotbelow {\buildtextbottomdot\acircumflex}
+\definecharacter Ecircumflexdotbelow {\buildtextbottomdot\Ecircumflex}
+\definecharacter ecircumflexdotbelow {\buildtextbottomdot\ecircumflex}
+\definecharacter Ocircumflexdotbelow {\buildtextbottomdot\Ocircumflex}
+\definecharacter ocircumflexdotbelow {\buildtextbottomdot\ocircumflex}
+\definecharacter Abrevedotbelow      {\buildtextbottomdot\Abreve}
+\definecharacter abrevedotbelow      {\buildtextbottomdot\abreve}
+
+\definecharacter Ohorn               {O}
+\definecharacter Ohorngrave          {\Ograve}
+\definecharacter Ohornacute          {\Oacute}
+\definecharacter Ohorntilde          {\Otilde}
+\definecharacter Ohornhook           {O}
+\definecharacter ohorn               {o}
+\definecharacter ohorngrave          {\ograve}
+\definecharacter ohornacute          {\oacute}
+\definecharacter ohorntilde          {\otilde}
+\definecharacter ohornhook           {o}
+\definecharacter Uhorn               {U}
+\definecharacter Uhorngrave          {\Ugrave}
+\definecharacter Uhornacute          {\Uacute}
+\definecharacter Uhorntilde          {\Utilde}
+\definecharacter Uhornhook           {U}
+\definecharacter uhorn               {u}
+\definecharacter uhorngrave          {\ugrave}
+\definecharacter uhornacute          {\uacute}
+\definecharacter uhorntilde          {\utilde}
+\definecharacter uhornhook           {u}
+
+\stopencoding
+
+%D Needed for transliterated chinese (provided by Tobias Burnus).
+
+\startencoding[default]
+
+\definecharacter acaron {\buildtextaccent\textcaron a}         % U+01CE
+\definecharacter icaron {\buildtextaccent\textcaron \dotlessi} % U+01D0
+\definecharacter ocaron {\buildtextaccent\textcaron o}         % U+01D2
+\definecharacter ucaron {\buildtextaccent\textcaron u}         % U+01D4
+
+\stopencoding
+
+%D Greek (moved to here):
+
+\startencoding[default]
+
+% Uppercase Greek letters
+
+\definecharacter greekAlpha   {\Alpha}
+\definecharacter greekBeta    {\Beta}
+\definecharacter greekGamma   {\Gamma}
+\definecharacter greekDelta   {\Delta}
+\definecharacter greekEpsilon {\Epsilon}
+\definecharacter greekZeta    {\Zeta}
+\definecharacter greekEta     {\Eta}
+\definecharacter greekTheta   {\Theta}
+\definecharacter greekIota    {\Iota}
+\definecharacter greekKappa   {\Kappa}
+\definecharacter greekLambda  {\Lambda}
+\definecharacter greekMu      {\Mu}
+\definecharacter greekNu      {\Nu}
+\definecharacter greekXi      {\Xi}
+\definecharacter greekOmicron {\Omicron}
+\definecharacter greekPi      {\Pi}
+\definecharacter greekRho     {\Rho}
+\definecharacter greekSigma   {\Sigma}
+\definecharacter greekTau     {\Tau}
+\definecharacter greekUpsilon {\Upsilon}
+\definecharacter greekPhi     {\Phi}
+\definecharacter greekChi     {\Chi}
+\definecharacter greekPsi     {\Psi}
+\definecharacter greekOmega   {\Omega}
+
+% Lowercase Greek letters
+
+\definecharacter greekalpha      {\alpha}
+\definecharacter greekbeta       {\beta}
+\definecharacter greekgamma      {\gamma}
+\definecharacter greekdelta      {\delta}
+\definecharacter greekepsilon    {\varepsilon}
+\definecharacter greekepsilonalt {\epsilon}
+\definecharacter greekzeta       {\zeta}
+\definecharacter greeketa        {\eta}
+\definecharacter greektheta      {\theta}
+\definecharacter greekthetaalt   {\vartheta}
+\definecharacter greekiota       {\iota}
+\definecharacter greekkappa      {\kappa}
+\definecharacter greeklambda     {\lambda}
+\definecharacter greekmu         {\mu}
+\definecharacter greeknu         {\nu}
+\definecharacter greekxi         {\xi}
+\definecharacter greekomicron    {\omicron}
+\definecharacter greekpi         {\pi}
+\definecharacter greekrho        {\rho}
+\definecharacter greeksigma      {\sigma}
+\definecharacter greekfinalsigma {\varsigma}
+\definecharacter greektau        {\tau}
+\definecharacter greekupsilon    {\upsilon}
+\definecharacter greekphi        {\varphi}
+\definecharacter greekphialt     {\phi}
+\definecharacter greekchi        {\chi}
+\definecharacter greekpsi        {\psi}
+\definecharacter greekomega      {\omega}
+
+% Accented Uppercase Greek letters
+
+\definecharacter greekAlphatonos       {'A}
+\definecharacter greekEpsilontonos     {'E}
+\definecharacter greekEtatonos         {'H}
+\definecharacter greekIotatonos        {'I}
+\definecharacter greekOmicrontonos     {'O}
+\definecharacter greekUpsilontonos     {'U}
+\definecharacter greekOmegatonos       {'W}
+\definecharacter greekIotadialytika    {"I}
+\definecharacter greekUpsilondialytika {"U}
+
+% Accented Lowercase Greek letters
+
+\definecharacter greekalphatonos            {'a}
+\definecharacter greekepsilontonos          {'e}
+\definecharacter greeketatonos              {'h}
+\definecharacter greekiotatonos             {'i}
+\definecharacter greekomicrontonos          {'o}
+\definecharacter greekupsilontonos          {'u}
+\definecharacter greekomegatonos            {'w}
+\definecharacter greekiotadialytika         {"i}
+\definecharacter greekupsilondialytika      {"u}
+\definecharacter greekiotadialytikatonos    {'"i}
+\definecharacter greekupsilondialytikatonos {'"u}
+
+% Miscellaneous Greek symbols
+
+\definecharacter greekleftquot       {((}
+\definecharacter greekrightquot      {))}
+\definecharacter greektonos          {'}
+\definecharacter greekdialytikatonos {'"}
+\definecharacter greekapostrophos    {''}
+
+\stopencoding
+
+%D Cyrillic (moved to here):
+
+\startencoding[default]
+
+\definecharacter cyrillicA      {A}
+\definecharacter cyrillicB      {B}
+\definecharacter cyrillicV      {V}
+\definecharacter cyrillicG      {G}
+\definecharacter cyrillicD      {D}
+\definecharacter cyrillicE      {E}
+\definecharacter cyrillicZH     {ZH}
+\definecharacter cyrillicZ      {Z}
+\definecharacter cyrillicI      {I}
+\definecharacter cyrillicISHRT  {ISHRT}
+\definecharacter cyrillicK      {K}
+\definecharacter cyrillicL      {L}
+\definecharacter cyrillicM      {M}
+\definecharacter cyrillicN      {N}
+\definecharacter cyrillicO      {O}
+\definecharacter cyrillicP      {P}
+\definecharacter cyrillicR      {R}
+\definecharacter cyrillicS      {S}
+\definecharacter cyrillicT      {T}
+\definecharacter cyrillicU      {U}
+\definecharacter cyrillicF      {F}
+\definecharacter cyrillicH      {H}
+\definecharacter cyrillicC      {C}
+\definecharacter cyrillicCH     {CH}
+\definecharacter cyrillicSH     {SH}
+\definecharacter cyrillicSHCH   {SHCH}
+\definecharacter cyrillicHRDSN  {HRDSN}
+\definecharacter cyrillicERY    {ERY}
+\definecharacter cyrillicSFTSN  {SFTSN}
+\definecharacter cyrillicEREV   {EREV}
+\definecharacter cyrillicYU     {YU}
+\definecharacter cyrillicYA     {YA}
+\definecharacter cyrillicGUP    {GUP}
+\definecharacter cyrillicGHCRS  {GHCRS}
+\definecharacter cyrillicDJE    {DJE}
+\definecharacter cyrillicTSHE   {TSHE}
+\definecharacter cyrillicSHHA   {SHHA}
+\definecharacter cyrillicZHDSC  {ZHDSC}
+\definecharacter cyrillicZDSC   {ZDSC}
+\definecharacter cyrillicLJE    {LJE}
+\definecharacter cyrillicYI     {YI}
+\definecharacter cyrillicKDSC   {KDSC}
+\definecharacter cyrillicKBEAK  {KBEAK}
+\definecharacter cyrillicKVCRS  {KVCRS}
+\definecharacter cyrillicAE     {AE}
+\definecharacter cyrillicNDSC   {NDSC}
+\definecharacter cyrillicNG     {NG}
+\definecharacter cyrillicDZE    {DZE}
+\definecharacter cyrillicOTLD   {OTLD}
+\definecharacter cyrillicSDSC   {SDSC}
+\definecharacter cyrillicUSHRT  {USHRT}
+\definecharacter cyrillicY      {Y}
+\definecharacter cyrillicYHCRS  {YHCRS}
+\definecharacter cyrillicHDSC   {HDSC}
+\definecharacter cyrillicDZHE   {DZHE}
+\definecharacter cyrillicCHVCRS {CHVCRS}
+\definecharacter cyrillicCHRDSC {CHRDSC}
+\definecharacter cyrillicIE     {IE}
+\definecharacter cyrillicSCHWA  {SCHWA}
+\definecharacter cyrillicNJE    {NJE}
+\definecharacter cyrillicYO     {YO}
+\definecharacter cyrillicII     {II}
+\definecharacter cyrillicJE     {JE}
+\definecharacter cyrillicQ      {Q}
+\definecharacter cyrillicW      {W}
+
+\definecharacter cyrillica      {a}
+\definecharacter cyrillicb      {b}
+\definecharacter cyrillicv      {v}
+\definecharacter cyrillicg      {g}
+\definecharacter cyrillicd      {d}
+\definecharacter cyrillice      {e}
+\definecharacter cyrilliczh     {zh}
+\definecharacter cyrillicz      {z}
+\definecharacter cyrillici      {i}
+\definecharacter cyrillicishrt  {ishrt}
+\definecharacter cyrillick      {k}
+\definecharacter cyrillicl      {l}
+\definecharacter cyrillicm      {m}
+\definecharacter cyrillicn      {n}
+\definecharacter cyrillico      {o}
+\definecharacter cyrillicp      {p}
+\definecharacter cyrillicr      {r}
+\definecharacter cyrillics      {s}
+\definecharacter cyrillict      {t}
+\definecharacter cyrillicu      {u}
+\definecharacter cyrillicf      {f}
+\definecharacter cyrillich      {h}
+\definecharacter cyrillicc      {c}
+\definecharacter cyrillicch     {ch}
+\definecharacter cyrillicsh     {sh}
+\definecharacter cyrillicshch   {shch}
+\definecharacter cyrillichrdsn  {hrdsn}
+\definecharacter cyrillicery    {ery}
+\definecharacter cyrillicsftsn  {sftsn}
+\definecharacter cyrillicerev   {erev}
+\definecharacter cyrillicyu     {yu}
+\definecharacter cyrillicya     {ya}
+\definecharacter cyrillicgup    {gup}
+\definecharacter cyrillicghcrs  {ghcrs}
+\definecharacter cyrillicdje    {dje}
+\definecharacter cyrillictshe   {tshe}
+\definecharacter cyrillicshha   {shha}
+\definecharacter cyrilliczhdsc  {zhdsc}
+\definecharacter cyrilliczdsc   {zdsc}
+\definecharacter cyrilliclje    {lje}
+\definecharacter cyrillicyi     {yi}
+\definecharacter cyrillickdsc   {kdsc}
+\definecharacter cyrillickbeak  {kbeak}
+\definecharacter cyrillickvcrs  {kvcrs}
+\definecharacter cyrillicae     {ae}
+\definecharacter cyrillicndsc   {ndsc}
+\definecharacter cyrillicng     {ng}
+\definecharacter cyrillicdze    {dze}
+\definecharacter cyrillicotld   {otld}
+\definecharacter cyrillicsdsc   {sdsc}
+\definecharacter cyrillicushrt  {ushrt}
+\definecharacter cyrillicy      {y}
+\definecharacter cyrillicyhcrs  {yhcrs}
+\definecharacter cyrillichdsc   {hdsc}
+\definecharacter cyrillicdzhe   {dzhe}
+\definecharacter cyrillicchvcrs {chvcrs}
+\definecharacter cyrillicchrdsc {chrdsc}
+\definecharacter cyrillicie     {ie}
+\definecharacter cyrillicschwa  {schwa}
+\definecharacter cyrillicnje    {nje}
+\definecharacter cyrillicyo     {yo}
+\definecharacter cyrillicii     {ii}
+\definecharacter cyrillicje     {je}
+\definecharacter cyrillicq      {q}
+\definecharacter cyrillicw      {w}
+
+\definecharacter cyrillicGJE      {\'\cyrillicG}
+\definecharacter cyrillicgje      {\'\cyrillicg}
+\definecharacter cyrillicKJE      {\'\cyrillicK}
+\definecharacter cyrillickje      {\'\cyrillick}
+
+\stopencoding
+
+\def\cyrillicio{\cyrillicyo}
+\def\cyrillicIO{\cyrillicYO}
+
+%D Hebrew:
+
+\startencoding[default]
+
+\definecharacter hebrewAlef       {'}
+\definecharacter hebrewBet        {b}
+\definecharacter hebrewGimel      {g}
+\definecharacter hebrewDalet      {d}
+\definecharacter hebrewHe         {h}
+\definecharacter hebrewVav        {w}
+\definecharacter hebrewZayin      {z}
+\definecharacter hebrewHet        {\hstroke}
+\definecharacter hebrewTet        {\tcedilla}
+\definecharacter hebrewYod        {y}
+\definecharacter hebrewKaffinal   {k}
+\definecharacter hebrewKaf        {k}
+\definecharacter hebrewLamed      {l}
+\definecharacter hebrewMemfinal   {m}
+\definecharacter hebrewMem        {m}
+\definecharacter hebrewNunfinal   {n}
+\definecharacter hebrewNun        {n}
+\definecharacter hebrewSamekh     {s}
+\definecharacter hebrewAyin       {\gdotaccent}
+\definecharacter hebrewPefinal    {p}
+\definecharacter hebrewPe         {p}
+\definecharacter hebrewTsadifinal {\scedilla}
+\definecharacter hebrewTsadi      {\scedilla}
+\definecharacter hebrewQof        {q}
+\definecharacter hebrewResh       {r}
+\definecharacter hebrewShin       {\scaron}
+\definecharacter hebrewTav        {th}
+
+\stopencoding
+
+%D A few goodies:
+
+\def\eszett{\ssharp}
+\def\Eszett{\Ssharp}
+
+\def\lslash{\lstroke}
+\def\Lslash{\Lstroke}
+\def\dslash{\dstroke}
+\def\Dslash{\Dstroke}
+\def\oslash{\ostroke}
+\def\Oslash{\Ostroke}
+
+\def\dcroat{\dstroke}
+\def\Dcroat{\Dstroke}
+
+% \startencoding [default]
+%
+% \definecharacter scommaaccent {\scedilla}
+% \definecharacter Scommaaccent {\Scedilla}
+% \definecharacter tcommaaccent {\tcedilla}
+% \definecharacter Tcommaaccent {\Tcedilla}
+%
+% \stopencoding
+
+% for plain tex's sake
+
+\def\S       {\sectionmark  }
+\def\P       {\paragraphmark}
+
+% for latex users sake
+
+\def\textS   {\sectionmark  }
+\def\textP   {\paragraphmark}
+
+% for old times sake
+
+\def\florin  {\textflorin  }  \def\florijn{\textflorin}
+\def\dollar  {\textdollar  }
+\def\pound   {\textsterling}
+\def\sterling{\textsterling}
+
+% idem
+
+\def\promille{\perthousand}
+\def\permille{\perthousand}
+\def\procent {\percent }
+\def\permine {\fakepermine}
+
+% some more
+
+\def\hyphen            {\softhyphen}
+\def\cwm               {\compoundwordmark}
+\def\nonbreakinghyphen {\hyphen}
+\def\breakinghyphen    {\hyphen\prewordbreak}
+
+% quotes
+
+\def\lowerleftsingleninequote  {\quotesinglebase}
+\def\lowerleftdoubleninequote  {\quotedblbase}
+\def\lowerrightsingleninequote {\quotesinglebase}
+\def\lowerrightdoubleninequote {\quotedblbase}
+
+\def\upperleftsingleninequote  {\quoteright}
+\def\upperleftdoubleninequote  {\quotedblright}
+\def\upperrightsingleninequote {\quoteright}
+\def\upperrightdoubleninequote {\quotedblright}
+
+\def\upperleftsinglesixquote   {\quoteleft}
+\def\upperleftdoublesixquote   {\quotedblleft}
+\def\upperrightsinglesixquote  {\quoteleft}
+\def\upperrightdoublesixquote  {\quotedblleft}
+
+\def\leftsubguillemot          {\guilsingleleft}
+\def\rightsubguillemot         {\guilsingleright}
+
+%D A couple of fallbacks suggestion by users, slightly
+%D adapted and obscured by memory saving hacks.
+
+\unprotect
+
+\startencoding[default]
+
+\definecharacter textcent        {c\rlap{\hskip-.2\s!em
+  \vrule\!!width.2\s!pt\!!height1.2\s!ex\!!depth.2\s!ex}}
+
+\definecharacter texteuro        {C\rlap{\hskip-.75\s!em
+  \vrule\!!width.4\s!em\!!height.85\s!ex\!!depth-.8\s!ex}}
+
+\definecharacter textblacksquare {\dontleavehmode\hbox{%
+  \vrule\!!width.3\s!em\!!height.4\s!em\!!depth-.1\s!em}}
+
+\definecharacter textbrokenbar   {\dontleavehmode\hbox{\kern.05\s!em
+  \vrule\!!width.4\s!pt\!!height1.8\s!ex\!!depth-.85\s!ex
+                                  \llap{%
+  \vrule\!!width.4\s!pt\!!height.35\s!ex\!!depth.6\s!ex}%
+                                  \kern.05\s!em}}
+
+\stopencoding
+
+\protect
+
+%D We also use symbolic names for math accents.
+
+\startencoding[default]
+
+\definecharacter mathacute      "7013
+\definecharacter mathgrave      "7012
+\definecharacter mathddot       "707F
+\definecharacter mathtilde      "707E
+\definecharacter mathbar        "7016
+\definecharacter mathbreve      "7015
+\definecharacter mathcheck      "7014
+\definecharacter mathhat        "705E
+\definecharacter mathvec        "017E
+\definecharacter mathdot        "705F
+\definecharacter mathwidetilde  "0365
+\definecharacter mathwidehat    "0362
+
+\stopencoding
+
+% \startencoding [default]
+
+% \definecommand prime       {\mathematics{'}}
+% \definecommand doubleprime {\mathematics{''}}
+% \definecommand tripleprime {\mathematics{'''}}
+
+% \stopencoding
+
+\ifx\zdot\undefined \def\zdot{\zdotaccent} \fi
+\ifx\Zdot\undefined \def\Zdot{\Zdotaccent} \fi
+
+\ifx\greeklamda\undefined \def\greeklamda{\greeklambda} \fi
+\ifx\greekLamda\undefined \def\greekLamda{\greekLambda} \fi
+
+\ifx\leftguillemet \undefined \def\leftguillemet {\leftguillemot } \fi
+\ifx\rightguillemet\undefined \def\rightguillemet{\rightguillemot} \fi
+
+%D New:
+
+\startencoding[\s!default]
+
+\definecharacter schwa      {\hbox{\rotate[\c!rotation=180,\c!location=\v!high]{\hbox{e}}}}
+\definecharacter schwagrave {\buildtextgrave\schwa}
+
+\stopencoding
+
+%D Also new, from Taco, for Mojca, who wanted another 8~regimes.
+
+\startencoding[\s!default]
+
+\definecharacter texthorizontalbar {{\endash\kern\zeropoint\endash}}
+\definecharacter textdong          {\underbar{\dstroke}}
+
+\stopencoding
+
+%D Goodie (makes more sense):
+
+\def\normalcontrolspace
+  {\getglyph{ComputerModernMono}{\char32}}
+
+\def\fakedcontrolspace % can be virtual in luatex
+  {\dontleavehmode\hbox
+     {\scratchdimen.1ex%
+      \kern\scratchdimen
+      \vrule \!!width\scratchdimen \!!height5.5\scratchdimen \!!depth3\scratchdimen
+      \vrule \!!width\dimexpr.5em-4\scratchdimen\relax \!!height-2\scratchdimen \!!depth3\scratchdimen
+      \vrule \!!width\scratchdimen \!!height5.5\scratchdimen \!!depth3\scratchdimen
+      \kern\scratchdimen}}
+
+\def\fakecontrolspace{\let\normalcontrolspace\fakedcontrolspace}
+
+\endinput

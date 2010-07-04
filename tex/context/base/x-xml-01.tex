@@ -1,0 +1,91 @@
+%D \module
+%D   [      file=x-xml-01,
+%D        version=2001.10.10,
+%D          title=\CONTEXT\ XML Style File,
+%D       subtitle=Formatting X?? files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% texexec --use=xml-format yourfile.x** [--mode=packed,wide]
+%
+% pdftotext yourfile.pdf yournewfile.x**
+
+\doifnothing  {\inputfilename}    {\end}
+\doiffileelse {\inputfilename} {} {\end}
+
+% The following makes pdftotext too slow:
+%
+% \definepapersize
+%   [mine]
+%   [height=.99\maxdimen,
+%    width=200cm]
+%
+% \setuppapersize
+%   [mine]
+%   [mine]
+%
+% \setupbodyfont
+%   [0.4pt,tt]
+%
+% this is faster
+%
+% \setuppapersize
+%   [A0][A0]
+%
+% but normal A4 combined with 1 pt font size is the best
+%
+% An alternative is to use a small size, but this leads to
+% too many messages
+%
+% \setupbodyfont
+%   [1pt,tt]
+%
+% so we stick to a more normal alternive.
+
+\unprotect
+
+\setuplayout
+  [\c!backspace=0cm,
+   \c!topspace=0cm,
+  %\c!width=40em,
+   \c!width=\v!middle,
+   \c!height=\v!middle,
+   \c!header=0cm,
+   \c!footer=0cm]
+
+\setupbodyfont  [tt,10pt]
+\setuptolerance [\v!verytolerant]
+\setupalign     [\v!broad,\v!right]
+\setupXMLfile   [\c!level=2]
+
+\startmode[wide]
+
+  \setuplayout [\c!width=250cm]
+
+\stopmode
+
+\startmode[packed]
+
+% \setupXMLfile [inbetween=]
+  \setupXMLfile [\c!tussen=]
+
+\stopmode
+
+\protect
+
+% The main text:
+
+\def\XMLbannerprocessor#1{\string<\string ?xml #1\string ?\string>\endgraf}
+
+\defineXMLprocessor [xml] {\XMLbannerprocessor}
+
+\starttext
+
+  \dontcomplain \showXMLfile{\inputfilename}
+
+\stoptext

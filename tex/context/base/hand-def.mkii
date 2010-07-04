@@ -1,0 +1,577 @@
+%D \module
+%D   [     file=hand-def, % was enco-pro
+%D      version=2000.29.09,
+%D        title=\CONTEXT\ Handling Macros,
+%D     subtitle=Default Protruding Factors,
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is an experimental definition file. The protruding
+%D values we use here are those found from \THANH's thesis.
+
+\startfonthandling [pure]
+
+  \defineprotrudefactor , 0 1
+  \defineprotrudefactor . 0 1
+  \defineprotrudefactor : 0 1
+  \defineprotrudefactor ; 0 1
+  \defineprotrudefactor - 0 1
+
+  \defineprotrudefactor hyphen 0 1
+  \defineprotrudefactor endash 0 .5
+  \defineprotrudefactor emdash 0 .33 % .5
+
+\stopfonthandling
+
+\startfonthandling [punctuation]
+
+  \defineprotrudefactor !  0  .2
+  \defineprotrudefactor '  0  .7
+  \defineprotrudefactor ` .7   0
+  \defineprotrudefactor ( .05  0
+  \defineprotrudefactor )  0  .05
+  \defineprotrudefactor [ .05  0
+  \defineprotrudefactor ]  0  .05
+  \defineprotrudefactor ,  0  .7
+  \defineprotrudefactor -  0  .7
+  \defineprotrudefactor .  0  .7
+  \defineprotrudefactor :  0  .5
+  \defineprotrudefactor ;  0  .5
+
+  \defineprotrudefactor rightupperninequote  0 .5
+  \defineprotrudefactor leftupperninequote  .5  0
+  \defineprotrudefactor endash               0 .3
+  \defineprotrudefactor emdash               0 .2
+
+  \defineprotrudefactor hyphen               0 .7
+
+\stopfonthandling
+
+\startfonthandling [alpha]
+
+  \defineprotrudefactor A .05 .05
+  \defineprotrudefactor F  0  .05
+  \defineprotrudefactor J .05   0
+  \defineprotrudefactor K  0  .05
+  \defineprotrudefactor L  0  .05
+  \defineprotrudefactor T .05 .05
+  \defineprotrudefactor V .05 .05
+  \defineprotrudefactor W .05 .05
+  \defineprotrudefactor X .05 .05
+  \defineprotrudefactor Y .05 .05
+
+  \defineprotrudefactor k  0  .05
+  \defineprotrudefactor r  0  .05
+  \defineprotrudefactor t  0  .05
+  \defineprotrudefactor v .05 .05
+  \defineprotrudefactor w .05 .05
+  \defineprotrudefactor x .05 .05
+  \defineprotrudefactor y .05 .05
+
+\stopfonthandling
+
+% ogoneks may need another treatment
+
+\startfonthandling [extended]
+
+  \inherithandling Acircumflex A
+  \inherithandling acircumflex a
+  \inherithandling Ccircumflex C
+  \inherithandling ccircumflex c
+  \inherithandling Ecircumflex E
+  \inherithandling ecircumflex e
+  \inherithandling Gcircumflex G
+  \inherithandling gcircumflex g
+  \inherithandling Hcircumflex H
+  \inherithandling hcircumflex h
+  \inherithandling Icircumflex I
+  \inherithandling icircumflex i
+  \inherithandling Jcircumflex J
+  \inherithandling jcircumflex j
+  \inherithandling Ocircumflex O
+  \inherithandling ocircumflex o
+  \inherithandling Scircumflex S
+  \inherithandling scircumflex s
+  \inherithandling Ucircumflex U
+  \inherithandling ucircumflex u
+  \inherithandling Wcircumflex W
+  \inherithandling wcircumflex w
+  \inherithandling Ycircumflex Y
+  \inherithandling ycircumflex y
+
+  \inherithandling Agrave A
+  \inherithandling agrave a
+  \inherithandling Egrave E
+  \inherithandling egrave e
+  \inherithandling Igrave I
+  \inherithandling igrave i
+  \inherithandling Ograve O
+  \inherithandling ograve o
+  \inherithandling Ugrave U
+  \inherithandling ugrave u
+  \inherithandling Ygrave Y
+  \inherithandling ygrave y
+
+  \inherithandling Atilde A
+  \inherithandling atilde a
+  \inherithandling Itilde I
+  \inherithandling itilde i
+  \inherithandling Ntilde N
+  \inherithandling ntilde n
+  \inherithandling Otilde O
+  \inherithandling otilde o
+  \inherithandling Utilde U
+  \inherithandling utilde u
+
+  \inherithandling Adiaeresis A
+  \inherithandling adiaeresis a
+  \inherithandling Ediaeresis E
+  \inherithandling ediaeresis e
+  \inherithandling Idiaeresis I
+  \inherithandling idiaeresis i
+  \inherithandling Odiaeresis O
+  \inherithandling odiaeresis o
+  \inherithandling Udiaeresis U
+  \inherithandling udiaeresis u
+  \inherithandling Ydiaeresis Y
+  \inherithandling ydiaeresis y
+
+  \inherithandling Aacute A
+  \inherithandling aacute a
+  \inherithandling Cacute C
+  \inherithandling cacute c
+  \inherithandling Eacute E
+  \inherithandling eacute e
+  \inherithandling Iacute I
+  \inherithandling iacute i
+  \inherithandling Lacute L
+  \inherithandling lacute l
+  \inherithandling Nacute N
+  \inherithandling nacute n
+  \inherithandling Oacute O
+  \inherithandling oacute o
+  \inherithandling Racute R
+  \inherithandling racute r
+  \inherithandling Sacute s
+  \inherithandling sacute s
+  \inherithandling Uacute U
+  \inherithandling uacute u
+  \inherithandling Yacute Y
+  \inherithandling yacute y
+  \inherithandling Zacute Z
+  \inherithandling zacute z
+
+  \inherithandling Dstroke D
+  \inherithandling dstroke d
+  \inherithandling Hstroke H
+  \inherithandling hstroke h
+  \inherithandling Tstroke T
+  \inherithandling tstroke t
+
+  \inherithandling Cdotaccent C
+  \inherithandling cdotaccent c
+  \inherithandling Edotaccent E
+  \inherithandling edotaccent e
+  \inherithandling Gdotaccent G
+  \inherithandling gdotaccent g
+  \inherithandling Idotaccent I
+  \inherithandling idotaccent i
+  \inherithandling Zdotaccent Z
+  \inherithandling zdotaccent z
+
+  \inherithandling Amacron A
+  \inherithandling amacron a
+  \inherithandling Emacron E
+  \inherithandling emacron e
+  \inherithandling Imacron I
+  \inherithandling imacron i
+  \inherithandling Omacron O
+  \inherithandling omacron o
+  \inherithandling Umacron U
+  \inherithandling umacron u
+
+  \inherithandling Ccedilla C
+  \inherithandling ccedilla c
+  \inherithandling Kcedilla K
+  \inherithandling kcedilla k
+  \inherithandling Lcedilla L
+  \inherithandling lcedilla l
+  \inherithandling Ncedilla N
+  \inherithandling ncedilla n
+  \inherithandling Rcedilla R
+  \inherithandling rcedilla r
+  \inherithandling Scedilla S
+  \inherithandling scedilla s
+  \inherithandling Tcedilla T
+  \inherithandling tcedilla t
+
+  \inherithandling Ohungarumlaut O
+  \inherithandling ohungarumlaut o
+  \inherithandling Uhungarumlaut U
+  \inherithandling uhungarumlaut u
+
+  \inherithandling Aogonek A
+  \inherithandling aogonek a
+  \inherithandling Eogonek E
+  \inherithandling eogonek e
+  \inherithandling Iogonek I
+  \inherithandling iogonek i
+  \inherithandling Uogonek U
+  \inherithandling uogonek u
+
+  \inherithandling Aring A
+  \inherithandling aring a
+  \inherithandling Uring U
+  \inherithandling uring u
+
+  \inherithandling Abreve A
+  \inherithandling abreve a
+  \inherithandling Ebreve E
+  \inherithandling ebreve e
+  \inherithandling Gbreve G
+  \inherithandling gbreve g
+  \inherithandling Ibreve I
+  \inherithandling ibreve i
+  \inherithandling Obreve O
+  \inherithandling obreve o
+  \inherithandling Ubreve U
+  \inherithandling ubreve u
+
+  \inherithandling Ccaron C
+  \inherithandling ccaron c
+  \inherithandling Dcaron D
+  \inherithandling dcaron d
+  \inherithandling Ecaron E
+  \inherithandling ecaron e
+  \inherithandling Lcaron L
+  \inherithandling lcaron l
+  \inherithandling Ncaron N
+  \inherithandling ncaron n
+  \inherithandling Rcaron R
+  \inherithandling rcaron r
+  \inherithandling Scaron S
+  \inherithandling scaron s
+  \inherithandling Tcaron T
+  \inherithandling tcaron t
+  \inherithandling Ycaron Y
+  \inherithandling ycaron y
+  \inherithandling Zcaron Z
+  \inherithandling zcaron z
+
+  \inherithandling AEligature E
+  \inherithandling aeligature e
+  \inherithandling Lstroke    I
+  \inherithandling lstroke    o
+  \inherithandling Ostroke    O
+  \inherithandling ostroke    o
+  \inherithandling OEligature O
+  \inherithandling oeligature o
+
+  \inherithandling Ssharp     S
+  \inherithandling ssharp     s
+  \inherithandling IJligature J
+  \inherithandling ijligature j
+
+  \inherithandling aumlaut a
+  \inherithandling eumlaut e
+  \inherithandling iumlaut i
+  \inherithandling oumlaut o
+  \inherithandling uumlaut u
+
+  \inherithandling Aumlaut A
+  \inherithandling Eumlaut E
+  \inherithandling Iumlaut I
+  \inherithandling Oumlaut O
+  \inherithandling Uumlaut U
+
+  \inherithandling Lslash L
+  \inherithandling lslash l
+  \inherithandling Dslash D
+  \inherithandling dslash d
+  \inherithandling Oslash O
+  \inherithandling oslash o
+
+  \inherithandling Eszett S
+  \inherithandling eszett s
+
+  \inherithandling Thorn P
+  \inherithandling thorn p
+
+  % vietnamese
+
+  \inherithandling Ahook A
+  \inherithandling ahook a
+  \inherithandling Ehook E
+  \inherithandling ehook e
+  \inherithandling Ihook I
+  \inherithandling ihook i
+  \inherithandling Ohook O
+  \inherithandling ohook o
+  \inherithandling Uhook U
+  \inherithandling uhook u
+  \inherithandling Yhook Y
+  \inherithandling yhook y
+
+  \inherithandling Acircumflexgrave A
+  \inherithandling Acircumflexacute A
+  \inherithandling Acircumflextilde A
+  \inherithandling Acircumflexhook  A
+  \inherithandling acircumflexgrave a
+  \inherithandling acircumflexacute a
+  \inherithandling acircumflextilde a
+  \inherithandling acircumflexhook  a
+  \inherithandling Ecircumflexgrave E
+  \inherithandling Ecircumflexacute E
+  \inherithandling Ecircumflextilde E
+  \inherithandling Ecircumflexhook  E
+  \inherithandling ecircumflexgrave e
+  \inherithandling ecircumflexacute e
+  \inherithandling ecircumflextilde e
+  \inherithandling ecircumflexhook  e
+  \inherithandling Ocircumflexgrave O
+  \inherithandling Ocircumflexacute O
+  \inherithandling Ocircumflextilde O
+  \inherithandling Ocircumflexhook  O
+  \inherithandling ocircumflexgrave o
+  \inherithandling ocircumflexacute o
+  \inherithandling ocircumflextilde o
+  \inherithandling ocircumflexhook  o
+
+  \inherithandling Abrevegrave A
+  \inherithandling Abreveacute A
+  \inherithandling Abrevetilde A
+  \inherithandling Abrevehook  A
+  \inherithandling abrevegrave a
+  \inherithandling abreveacute a
+  \inherithandling abrevetilde a
+  \inherithandling abrevehook  a
+
+  \inherithandling Adotbelow A
+  \inherithandling adotbelow a
+  \inherithandling Edotbelow E
+  \inherithandling edotbelow e
+  \inherithandling Idotbelow I
+  \inherithandling idotbelow i
+  \inherithandling Odotbelow O
+  \inherithandling odotbelow o
+  \inherithandling Udotbelow U
+  \inherithandling udotbelow u
+  \inherithandling Ydotbelow Y
+  \inherithandling ydotbelow y
+
+  \inherithandling Ohorndotbelow O
+  \inherithandling ohorndotbelow o
+  \inherithandling Uhorndotbelow U
+  \inherithandling uhorndotbelow u
+
+  \inherithandling Acircumflexdotbelow A
+  \inherithandling acircumflexdotbelow a
+  \inherithandling Ecircumflexdotbelow E
+  \inherithandling ecircumflexdotbelow e
+  \inherithandling Ocircumflexdotbelow O
+  \inherithandling ocircumflexdotbelow o
+
+  \inherithandling Abrevedotbelow A
+  \inherithandling abrevedotbelow a
+
+  \inherithandling Ohorn      O
+  \inherithandling Ohorngrave O
+  \inherithandling Ohornacute O
+  \inherithandling Ohorntilde O
+  \inherithandling Ohornhook  O
+  \inherithandling ohorn      o
+  \inherithandling ohorngrave o
+  \inherithandling ohornacute o
+  \inherithandling ohorntilde o
+  \inherithandling ohornhook  o
+  \inherithandling Uhorn      U
+  \inherithandling Uhorngrave U
+  \inherithandling Uhornacute U
+  \inherithandling Uhorntilde U
+  \inherithandling Uhornhook  U
+  \inherithandling uhorn      u
+  \inherithandling uhorngrave u
+  \inherithandling uhornacute u
+  \inherithandling uhorntilde u
+  \inherithandling uhornhook  u
+
+  \inherithandling Ytilde Y
+  \inherithandling ytilde y
+  \inherithandling Etilde E
+  \inherithandling etilde e
+
+\stopfonthandling
+
+\startfonthandling [hz]
+
+    \defineadjustfactor A .5
+    \defineadjustfactor B .7
+    \defineadjustfactor C .7
+    \defineadjustfactor D .5
+    \defineadjustfactor E .7
+    \defineadjustfactor F .7
+    \defineadjustfactor G .5
+    \defineadjustfactor H .7
+    \defineadjustfactor K .7
+    \defineadjustfactor M .7
+    \defineadjustfactor N .7
+    \defineadjustfactor O .5
+    \defineadjustfactor P .7
+    \defineadjustfactor Q .5
+    \defineadjustfactor R .7
+    \defineadjustfactor S .7
+    \defineadjustfactor U .7
+    \defineadjustfactor W .7
+    \defineadjustfactor Z .7
+
+    \defineadjustfactor a .7
+    \defineadjustfactor b .7
+    \defineadjustfactor c .7
+    \defineadjustfactor d .7
+    \defineadjustfactor e .7
+    \defineadjustfactor g .7
+    \defineadjustfactor h .7
+    \defineadjustfactor k .7
+    \defineadjustfactor m .7
+    \defineadjustfactor n .7
+    \defineadjustfactor o .7
+    \defineadjustfactor p .7
+    \defineadjustfactor q .7
+    \defineadjustfactor s .7
+    \defineadjustfactor u .7
+    \defineadjustfactor w .7
+    \defineadjustfactor z .7
+
+    \defineadjustfactor 2 .7
+    \defineadjustfactor 3 .7
+    \defineadjustfactor 6 .7
+    \defineadjustfactor 8 .7
+    \defineadjustfactor 9 .7
+
+%     \defineadjustfactor hyphen ?
+%     \defineadjustfactor endash ?
+%     \defineadjustfactor emdash ?
+
+\stopfonthandling
+
+% no ligs other than fi fl etc, no --- and ''
+
+\startfonthandling[noligs]
+
+    \settagcode - {\notagcode}
+    \settagcode ' {\notagcode}
+    \settagcode ` {\notagcode}
+    \settagcode ? {\notagcode}
+    \settagcode ! {\notagcode}
+
+\stopfonthandling
+
+% \startfonthandling[noligs]
+%   \dostepwiserecurse{0}{255}{1}{\expanded{\settagcode \recurselevel\space\notagcode\space}}
+% \stopfonthandling
+
+% \definefonthandling [noligs] [noligs] [type=tag]
+    % \setupfontsynonym[Serif][handling=noligs]
+% \definefont[test][Serif at 12.34pt]
+%
+% {``fi--ffl---ffi'' \test ``fi--ffl---ffi''}
+
+\unprotect
+
+% beware: extended extends the preceding vector (both protruding and
+% adjusting) but as long as the normal ascii characters are not set
+% beforehand, they default to normal
+
+% protruding variants -- slanted/italic is yet incomplete
+
+\definefonthandling [pure]              [pure]                       [\c!type=\v!hanging]
+\definefonthandling [purebold]          [pure]                       [\c!type=\v!hanging]
+\definefonthandling [pureslanted]       [pure]                       [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [pureitalic]        [pure]                       [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [pureboldslanted]   [pure]                       [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [purebolditalic]    [pure]                       [\c!type=\v!hanging,\c!right=1.5]
+
+\definefonthandling [normal]            [punctuation,alpha,extended] [\c!type=\v!hanging]
+\definefonthandling [normalbold]        [punctuation,alpha,extended] [\c!type=\v!hanging]
+\definefonthandling [normalslanted]     [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [normalitalic]      [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [normalboldslanted] [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [normalbolditalic]  [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+
+% for old times sake
+
+\definefonthandling [bold]              [punctuation,alpha,extended] [\c!type=\v!hanging]
+\definefonthandling [slanted]           [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [italic]            [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [boldslanted]       [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+\definefonthandling [bolditalic]        [punctuation,alpha,extended] [\c!type=\v!hanging,\c!right=1.5]
+
+% hz variants
+
+\definefonthandling [hz]              [hz,extended]                [\c!type=\v!hz] % min=20 max=20 step=5
+
+% combined variants
+
+\definefonthandling [quality]         [hz,pure]
+\definefonthandling [highquality]     [hz,normal]
+
+% noligs (xml) : \definefonthandling [default] [noligs]
+
+\definefonthandling [noligs]          [noligs]                     [\c!type=tag]
+
+% experimental values !
+%
+% \definefontsynonym[myfont][Serif][handling=prespacing]
+% \definefont[whatever][myfont sa 1]
+% \setupalign[spacing]
+%
+% \whatever look at this: we now have a proper spacing feature and, hurray,
+% get rid of active punctuation!
+
+\startfonthandling [flexspacing]
+
+  \definespacefactor  : 0 1.25 .25 .25
+
+  \definespacefactor  , 0 1 .25 .25
+  \inheritspacefactor ; ,
+
+  \definespacefactor  . 0 1.5 .25 .25
+  \inheritspacefactor ! .
+  \inheritspacefactor ? .
+
+\stopfonthandling
+
+\definefonthandling[flexspacing][flexspacing][\c!type=\v!spacing]
+
+\startfonthandling [prespacing] % better name needed
+
+  \definespacefactor  : .25 .25 0 0
+  \inheritspacefactor ; :
+  \inheritspacefactor ! :
+  \inheritspacefactor ? :
+
+\stopfonthandling
+
+\definefonthandling[prespacing][prespacing][\c!type=\v!spacing] % factor=.5
+
+% A special case of guillemots, beware: when used ungrouped,
+% it overloads all successive (current) encoding vector
+% instances! Will be obsolete soon.
+
+\startfonthandling [glm]
+
+  \overloadcharacter guilsingleleft  {\defaultcharacter\guilsingleleft }
+  \overloadcharacter guilsingleright {\defaultcharacter\guilsingleright}
+  \overloadcharacter leftguillemot   {\defaultcharacter\leftguillemot  }
+  \overloadcharacter rightguillemot  {\defaultcharacter\rightguillemot }
+
+\stopfonthandling
+
+\definefonthandling [glm] [glm]
+
+\protect \endinput

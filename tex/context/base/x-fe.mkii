@@ -1,0 +1,143 @@
+%D \module
+%D   [      file=x-fe,
+%D        version=2004.03.12, % based on earlier experiments
+%D          title=\FOXET,
+%D       subtitle=Simple Extensions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Extensions: fe:definecolor
+
+% menus
+% extra areas
+% protruding and hz
+% compound
+% title container
+% more float placements
+
+\unprotect
+
+% \XMLattributes{aural},
+
+\defineXMLnested
+  [fe:table-next]
+  [id=,
+   \XMLattributes{accessibility},
+   \XMLattributes{border-padding-background},
+   \XMLattributes{relative-position},
+   border-after-precedence=,
+   border-before-precedence=,
+   border-end-precedence=,
+   border-start-precedence=,
+   visibility=]
+  {\bTABLEnext}
+  {\eTABLEnext}
+
+% definitions
+
+\defineXMLcommand
+  [fe:definecolor]
+  [name=,r=,g=,b=,c=,m=,y=,k=,s=,p=,a=,t=]
+  {\expanded{\definecolor[\XMLop{name}]
+     [r=\XMLop r,g=\XMLop g,b=\XMLop b,
+      c=\XMLop c,m=\XMLop m,y=\XMLop y,k=\XMLop k,
+      s=\XMLop s,p=\XMLop p,a=\XMLop a,t=\XMLop t]}}
+
+\defineXMLcommand
+  [fe:definefontsynonym]
+  [name=,file=,encoding=]
+  {\doifelsenothing{\XMLop{encoding}}
+     {\expanded{\definefontsynonym[\XMLop{name}][\XMLop{file}][encoding=\XMLop{encoding}]}}
+     {\expanded{\definefontsynonym[\XMLop{name}][\XMLop{file}]}}}
+
+%D Extensions: fe:include
+
+\defineXMLsingular
+  [fe:include]
+  [url=,n=1]
+  {\doifelse{\XMLop{n}}{1}
+     {\readfile{\XMLpar{fe:include}{url}{}}{}{}}
+     {\dorecurse{\XMLop{n}}{\readfile{\XMLpar{fe:include}{url}{}}{}{}\endgraf}}}
+
+%D Extensions: fe:sample
+
+\defineXMLenvironment
+  [fe:sample]
+  [origin=unknown]
+  {\removeunwantedspaces\ignorespaces}
+  {\removeunwantedspaces}
+
+%D Extensions: fe:
+
+% \defineXMLenvironmentsave
+%   [fe:loop]
+%   [n=1]
+%   {}
+%   {\dorecurse{\XMLop{n}}{\XMLflush{fe:loop}}}
+
+\defineXMLargument
+  [fe:loop]
+  [n=1]
+  {\dorecurse{\XMLop{n}}}
+
+%D Extensions: fe:compound
+
+\defineXMLsingular
+  [fe:compound]
+  [character=-]
+  {\prewordbreak\XMLop{character}\prewordbreak}
+
+%D Extensions: fe:message
+
+\defineXMLargument
+  [fe:message]
+  [category=XML-FO]
+  {\expanded{\writestatus{\XMLop{category}}}}
+
+%D Handy
+
+\defineXMLargument
+  [fe:trace]
+  [attribute=,option=]
+  {\showXMLinh[\XMLop{attribute}]%
+   \XMLval{fe:trace}{\XMLop{option}}{}}
+
+\mapXMLvalue
+  {fe:trace}
+  {font}
+  {\hbox\bgroup\infofont[%
+   \xFOfont/\xFOfontsize/\xFOfontsizeadjust/\xFOfontfamily/\xFOfontweight/\xFOfontstyle/\xFOfontvariant:\FOfontdefinition
+   ]\egroup}
+
+%D Extensions:
+
+\startsetups fe:page:option:fit:start
+  \startTEXpage[margin=page]
+\stopsetups
+
+\startsetups fe:page:option:fit:stop
+  \stopTEXpage
+\stopsetups
+
+\useMPlibrary[pre]
+
+\mapXMLvalue {fe:tracing}  {true}  {\tracingFOtrue}
+\mapXMLvalue {fe:tracing}  {false} {\tracingFOfalse}
+\mapXMLvalue {fe:testgrid} {true}  {\setupbackgrounds[page][background=pagegrid]}
+
+\startsetups fe:setup
+  \XMLval{fe:tracing} {\XMLop{fe:tracing}} {}
+  \XMLval{fe:testgrid}{\XMLop{fe:testgrid}}{}
+\stopsetups
+
+%D Private (testing)
+
+\defineXMLcommand[fe:synchronizeoutput]{\synchronizeoutput}
+
+
+\protect \endinput

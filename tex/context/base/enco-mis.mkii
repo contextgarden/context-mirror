@@ -1,0 +1,188 @@
+%D \module
+%D   [       file=enco-mis,
+%D        version=2000.05.07, % 1999.11.11,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Missing Glyphs,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In this file we collect some definitions that construct
+%D pseudo characters. Some day we will move some definitions
+%D from \type {plain.tex} to this file. Some definitions are
+%D derived from definitions in the \LATEX\ distribution,
+%D especially Johannes Braams' Babel system.
+
+\startmapping[\s!default]
+
+\defineuppercasecom \dj  \DJ
+\defineuppercasecom \Dj  \dj
+\defineuppercasecom \DJ  \dj
+
+\definecharacter dstroke {\pseudoencodeddj}
+\definecharacter Dstroke {\pseudoencodedDJ}
+
+\stopmapping
+
+%D We need proper names like in enco-com.tex!
+
+\definecharacter dj {\dstroke} % {\pseudoencodeddj}
+\definecharacter Dj {\Dstroke} % {\pseudoencodedDJ}
+\definecharacter DJ {\Dstroke} % {\pseudoencodedDJ}
+
+\unprotect
+
+\def\pseudoencodeddj % like in babel, but safer
+  {\dontleavehmode\hbox\bgroup
+   \setbox\scratchbox\hbox{d}%
+   \scratchdimen\ht\scratchbox
+   \advance\scratchdimen 1ex
+   \scratchdimen.45\scratchdimen
+   \dimen2=\withoutpt\the\slantperpoint\dimen0
+   \advance\dimen2 .5ex
+   \hbox to \wd\scratchbox
+     {\box\scratchbox\hss
+      \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
+   \egroup}
+
+\def\pseudoencodedDJ % design: taco; quality assurance: mojca; cleanup: hans
+  {\dontleavehmode
+   \hbox\bgroup
+   \setbox\scratchbox\hbox{D}%
+   \dimen2=1.1ex
+   \dimen2=\withoutpt\the\slantperpoint\dimen2
+   \hbox to \wd\scratchbox
+     {\rlap
+        {\raise.52\ht\scratchbox
+         \hbox
+           {\kern\dimen2
+            \vbox{\hrule\!!height.04ex\!!depth.04ex\!!width.4\wd\scratchbox}}}%
+     \box\scratchbox}%
+   \egroup}
+
+% currency
+
+\def\fakedollar % pretty cmr dependent
+  {\bgroup
+   \ifnum\fam=\itfam
+     \sl
+   \else\ifnum\fam=\bifam
+     \bs
+   \fi\fi
+   \$%
+   \egroup}
+
+\def\fakesterling % pretty cmr dependent
+  {\bgroup
+   \ifnum\fam=\bffam
+     \bi
+   \else\ifnum\fam=\bifam
+     \bi
+   \else\ifnum\fam=\bsfam
+     \bi
+   \else
+     \it
+   \fi\fi\fi
+   \$%
+   \egroup}
+
+\def\fakeflorin
+  {\bgroup
+   \ifnum\fam=\bffam
+     \bi
+   \else\ifnum\fam=\bifam
+     \bi
+   \else\ifnum\fam=\bsfam
+     \bi
+   \else
+     \it
+   \fi\fi\fi
+   f%
+   \egroup}
+
+% perthings
+
+\def\fakepercent
+  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle0}}}
+
+\def\fakeperthousand
+  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle00}}}
+
+\def\fakepermine
+  {\dontleavehmode
+   \bgroup
+   \setbox\scratchbox\hbox
+     {\mathematics{+}}%
+   \hbox to \wd\scratchbox
+     {\hss
+      \mathematics{^{\scriptscriptstyle-}\kern-.4em/\kern-.3em_{\scriptscriptstyle-}}%
+      \hss}%
+   \egroup}
+
+% guillemots
+
+%D Yes I know, they are ugly:
+
+\def\fakeleftguillemot
+  {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle\ll$}}}
+
+\def\fakerightguillemot
+  {\hbox{\raise.25ex\hbox{$\scriptscriptstyle\gg$}}}
+
+\def\fakeleftsubguillemot
+  {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle<$}}}
+
+\def\fakerightsubguillemot
+  {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
+
+%D Needed:
+
+\def\fakevisiblespace
+  {\leavevmode\hbox
+     {\setbox\scratchbox\hbox{(}%
+      \scratchdimen.1\dp\scratchbox
+      \setbox\scratchbox\hbox{\space}%
+      \hbox to \wd\scratchbox
+        {\vrule
+           \!!depth  5\scratchdimen
+           \!!width   \scratchdimen
+           \!!height  \zeropoint
+         \hss
+         \vrule
+           \!!depth  5\scratchdimen
+           \!!width   \wd\scratchbox
+           \!!height-4\scratchdimen
+         \hss
+         \vrule
+           \!!depth  5\scratchdimen
+           \!!width   \scratchdimen
+           \!!height  \zeropoint}}}
+
+%\def\fakeunderscore{\leavevmode\kern.06em\vbox{\hrule\!!width.3em}}
+
+\def\fakeunderscore
+  {\leavevmode\hbox
+     {\setbox\scratchbox\hbox{(}%
+      \scratchdimen.2\dp\scratchbox
+      \setbox\scratchbox\hbox{\space}%
+      \vrule
+        \!!depth \scratchdimen
+        \!!width \wd\scratchbox
+        \!!height\zeropoint}}
+
+\ifx\mathunderscore\undefined \let\mathunderscore\fakeunderscore \fi
+\ifx\textunderscore\undefined \let\textunderscore\fakeunderscore \fi
+
+\unexpanded\def\normalunderscore{\ifmmode\mathunderscore\else\textunderscore\fi}
+
+\let\_\normalunderscore
+
+% Handy but obsolete, replaced by \unknownchar:
+%
+% \def\missingglyph{\ruledhbox{?}}
+
+\protect \endinput

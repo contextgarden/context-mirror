@@ -1,0 +1,57 @@
+local msam = { name = "msam10.tfm", vector = "tex-ma" }
+local msbm = { name = "msbm10.tfm", vector = "tex-mb" }
+
+return {
+    name = "antykwa-math",
+    version = "1.00",
+    comment = "Goodies that complement antykwa math.",
+    author = "Hans, Mojca, Aditya",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "antt-rm.map",
+            "antt-mi.map",
+            "antt-sy.map",
+            "antt-ex.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["antykwa-math"] = {
+                { name = "file:AntykwaTorunska-Regular", features = "virtualmath", main = true },
+                { name = "mi-anttri.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-anttri.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+                { name = "ex-anttr.tfm", vector = "tex-ex", extension = true } ,
+                msam,
+                msbm,
+            },
+            ["antykwa-light-math"] = {
+                { name = "file:AntykwaTorunskaLight-Regular", features = "virtualmath", main = true },
+                { name = "mi-anttli.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-anttli.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+                { name = "ex-anttl.tfm", vector = "tex-ex", extension = true } ,
+                msam,
+                msbm,
+            },
+            ["antykwa-cond-math"] = {
+                { name = "file:AntykwaTorunskaCond-Regular", features = "virtualmath", main = true },
+                { name = "mi-anttcri.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-anttcri.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+                { name = "ex-anttcr.tfm", vector = "tex-ex", extension = true } ,
+                msam,
+                msbm,
+            },
+            ["antykwa-lightcond-math"] = {
+                { name = "file:AntykwaTorunskaCondLight-Regular", features = "virtualmath", main = true },
+                { name = "mi-anttcli.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-anttcli.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+                { name = "ex-anttcl.tfm", vector = "tex-ex", extension = true } ,
+                msam,
+                msbm,
+            }
+        }
+    }
+}

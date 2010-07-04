@@ -1,0 +1,210 @@
+%D \module
+%D   [      file=s-pre-20,
+%D        version=2000.08.07,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 20,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\setupbodyfont
+  [lbr,14.4pt]
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [topspace=0cm,
+   backspace=0cm,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\setupcolors
+  [state=start]
+
+\setupinteraction
+  [state=start,
+   click=no,
+   display=new,
+   color=LineColor,
+   contrastcolor=LineColor]
+
+\setupinteractionscreen
+  [option=max]
+
+\setupsystem
+  [random=big] % once per hour
+
+\startreusableMPgraphic{page}
+  StartPage ;
+    filldraw Page withcolor \MPcolor{PageColor} ;
+    pickup pencircle scaled (.25cm+uniformdeviate.25cm) ;
+    for i=1 upto 200 :
+      drawdot
+       (uniformdeviate PaperWidth,uniformdeviate PaperHeight)
+       withcolor \MPcolor {LineColor} ;
+    endfor ;
+  StopPage ;
+\stopreusableMPgraphic
+
+\startuseMPgraphic{idea}
+  StartPage ;
+    path p ;
+    p := unitsquare xyscaled(\MPw{idea:\realfolio},\MPh{idea:\realfolio}) superellipsed .90 ;
+    p := p shifted \MPxy{idea:\realfolio} ;
+    draw p withpen pencircle scaled .500cm withcolor \MPcolor{PageColor} ;
+    fill p                                 withcolor \MPcolor{\overlaycolor} ;
+    draw p withpen pencircle scaled .250cm withcolor \MPcolor{LineColor} ;
+    p := unitsquare xyscaled(\MPw{title:\realfolio},\MPh{title:\realfolio}) superellipsed .90 ;
+    p := p shifted \MPxy{title:\realfolio} ;
+    draw p withpen pencircle scaled .250cm withcolor \MPcolor{PageColor} ;
+    fill p                                 withcolor \MPcolor{\overlaycolor} ;
+    draw p withpen pencircle scaled .125cm withcolor \MPcolor{LineColor} ;
+  StopPage ;
+\stopuseMPgraphic
+
+\definecolor[PageColor][s=.50]
+\definecolor[TextColor][s=.80]
+\definecolor[DoneColor][s=.65]
+\definecolor[LineColor][r=.7,g=.6,b=.5]
+
+\defineoverlay [idea] [\useMPgraphic  {idea}]
+\defineoverlay [page] [\reuseMPgraphic{page}]
+
+\setupbackgrounds
+  [page]
+  [background={page,forward}]
+
+\defineoverlay[forward][\overlaybutton{forward}]
+
+% alternatief: buffer en ander regime, zodat lokale kleuren
+% kunnen worden genilled. Pos gebruiken om te positioneren.
+
+\definereference[thispage][page(\realfolio)]
+
+\newbox\firstideabox  \setbox\firstideabox =\null
+\newbox\secondideabox \setbox\secondideabox=\null
+\newbox\thirdideabox  \setbox\thirdideabox =\null
+
+\def\StartTopic% bottom title, top title
+  {\dodoublegroupempty\doStartTopic}
+
+\def\doStartTopic#1#2% the positions end up at each page -)
+  {\setbox\firstideabox=
+     \vbox to \makeupheight
+       \bgroup
+         \getrandomdimen\scratchdimen{.5cm}\makeupheight
+         \vskip 0cm plus \scratchdimen
+         \hbox to \makeupwidth
+           \bgroup
+             \getrandomdimen\scratchdimen{.5cm}\makeupwidth
+             \hskip 0cm plus \scratchdimen
+             \setbox\scratchbox=\hbox\bgroup\hpos{idea:\realfolio}
+               \bgroup
+                 \getrandomdimen\hsize{.5\makeupwidth}{.7\makeupwidth}%
+                 \framed
+                   [offset=3ex,align=middle,strut=no,frame=off,
+                    before=,after=]
+                   \bgroup
+                     \setupwhitespace[big]%
+                     \doifsomething{#2}{\Title{#2}}%
+                     \def\StopTopic{%
+                   \egroup
+               \egroup
+             \egroup
+             \gotobox{\box\scratchbox}[thispage]%
+             \getrandomdimen\scratchdimen{.5cm}\makeupwidth
+             \hskip 0cm plus \scratchdimen
+           \egroup
+         \getrandomdimen\scratchdimen{.5cm}\makeupheight
+         \vskip 0cm plus \scratchdimen
+         \hbox to \makeupwidth
+           \bgroup
+             \hfill
+             \hpos{title:\realfolio}
+               {\button[offset=1.5ex,frame=off]{#1}[backward]}%
+             \getrandomdimen\scratchdimen{.5cm}{2.5cm}%
+             \hskip \scratchdimen
+           \egroup
+         \getrandomdimen\scratchdimen{.5cm}{1.5cm}
+         \vskip \scratchdimen
+       \egroup
+   \setbox\secondideabox=\vbox
+     {\framed
+        [offset=overlay,frame=off,background=idea,backgroundcolor=TextColor]
+        {\copy\firstideabox}}
+   \setbox\firstideabox=\vbox
+     {\framed
+        [offset=overlay,frame=off,background=idea,backgroundcolor=DoneColor]
+        {\LineColor\copy\firstideabox}}
+   \startstandardmakeup
+     \startoverlay
+       {\copy\thirdideabox }
+       {\copy\secondideabox}
+     \stopoverlay
+   \stopstandardmakeup
+   \setbox\thirdideabox=\vbox
+     {\startoverlay
+        {\copy\thirdideabox }
+        {\copy\firstideabox}
+      \stopoverlay}}}
+
+\long\def\TitlePage#1#2%
+  {\bgroup
+   \switchtobodyfont[32pt]
+   \StartTopic{#1}#2\StopTopic
+   \egroup}
+
+\def\Title#1{\midaligned{\bfb#1}\blank}
+
+\doifnotmode{demo}{\endinput}
+
+% \usemodule[pre-super] % super ellipse as well as superpositioned
+
+\starttext
+
+\setupoutput[pdftex]
+
+\TitlePage{August 2000}{Something Very Important}
+
+\StartTopic{Alpha}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopTopic
+
+\StartTopic{Beta and Gamma}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopTopic
+
+\StartTopic{Delta}
+  A simple and not too long text just to show the idea.
+\StopTopic
+
+\StartTopic{Epsilon}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopTopic
+
+\StartTopic{Zeta, Eta and Theta}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopTopic
+
+\StartTopic{Omega}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopTopic
+
+\stoptext

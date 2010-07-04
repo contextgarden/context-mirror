@@ -1,0 +1,128 @@
+%D \module
+%D   [     file=enco-fde,
+%D      version=2000.08.20,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=German Input Filter,
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\doifmode{mkiv}{\endinput}
+
+\unprotect
+
+\installactivecharacter "
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "a {\aumlaut\midworddiscretionary}
+  \installcompoundcharacter "e {\eumlaut\midworddiscretionary}
+  \installcompoundcharacter "i {\iumlaut\midworddiscretionary}
+  \installcompoundcharacter "o {\oumlaut\midworddiscretionary}
+  \installcompoundcharacter "u {\uumlaut\midworddiscretionary}
+  \installcompoundcharacter "s {\ssharp}
+  \installcompoundcharacter "z {\ssharp}
+
+  \installcompoundcharacter "A {\Aumlaut}
+  \installcompoundcharacter "E {\Eumlaut}
+  \installcompoundcharacter "I {\Iumlaut}
+  \installcompoundcharacter "O {\Oumlaut}
+  \installcompoundcharacter "U {\Uumlaut}
+  \installcompoundcharacter "Z {SZ}
+  \installcompoundcharacter "S {SS}
+
+\stoplanguagespecifics
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
+  \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
+  \installcompoundcharacter "ll {\discretionary{ll-}{l}{ll}}
+  \installcompoundcharacter "mm {\discretionary{mm-}{m}{mm}}
+  \installcompoundcharacter "nn {\discretionary{nn-}{n}{nn}}
+  \installcompoundcharacter "pp {\discretionary{pp-}{p}{pp}}
+  \installcompoundcharacter "rr {\discretionary{rr-}{r}{rr}}
+  \installcompoundcharacter "tt {\discretionary{tt-}{t}{tt}}
+
+  \installcompoundcharacter "CK {\discretionary {K-}{K}{CK}}
+  \installcompoundcharacter "FF {\discretionary{FF-}{F}{FF}}
+  \installcompoundcharacter "LL {\discretionary{LL-}{L}{LL}}
+  \installcompoundcharacter "MM {\discretionary{MM-}{M}{MM}}
+  \installcompoundcharacter "NN {\discretionary{NN-}{N}{NN}}
+  \installcompoundcharacter "PP {\discretionary{PP-}{P}{PP}}
+  \installcompoundcharacter "RR {\discretionary{RR-}{R}{RR}}
+  \installcompoundcharacter "TT {\discretionary{TT-}{T}{TT}}
+
+\stoplanguagespecifics
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "` {\startdelimitedtext[\v!quotation]}
+  \installcompoundcharacter "' {\stopdelimitedtext}
+  \installcompoundcharacter ". {\kern.1em\ignorespaces}
+
+  %installcompoundcharacter "` {\languageparameter\c!leftquotation }
+  %installcompoundcharacter "' {\languageparameter\c!rightquotation}
+
+  \def\setupDElanguage
+    {\setuplanguage
+       [\s!de]
+       [\c!leftsentence=\leftguillemot,
+        \c!rightsentence=\rightguillemot,
+        \c!leftsubsentence=\leftsubguillemot,
+        \c!rightsubsentence=\rightsubguillemot]}
+
+  \installcompoundcharacter "< {{\setupDElanguage|<|}}
+  \installcompoundcharacter "> {{\setupDElanguage|>|}}
+  \installcompoundcharacter "| {|*|}
+
+\stoplanguagespecifics
+
+% \hyphenatedword{hinauff|*|liegen}
+% \hyphenatedword{hinauff"|liegen}
+
+%D An experimental hack:
+
+% no {\simplifiedcompoundcharacter"}
+
+% \startencoding[pdfdoc]
+%   \startlanguagespecifics[\s!de]% hm, a % is needed
+%     \defineactivecharacter " {\"}
+%   \stoplanguagespecifics
+% \stopencoding
+
+\startencoding[ec]
+  \startlanguagespecifics[\s!de]%
+    \installcompoundcharacter "a {\adiaeresis}
+    \installcompoundcharacter "e {\ediaeresis}
+    \installcompoundcharacter "i {\idiaeresis}
+    \installcompoundcharacter "o {\odiaeresis}
+    \installcompoundcharacter "u {\udiaeresis}
+    \installcompoundcharacter "A {\Adiaeresis}
+    \installcompoundcharacter "E {\Ediaeresis}
+    \installcompoundcharacter "I {\Idiaeresis}
+    \installcompoundcharacter "O {\Odiaeresis}
+    \installcompoundcharacter "U {\Udiaeresis}
+  \stoplanguagespecifics
+\stopencoding
+
+\startencoding[texnansi]
+  \startlanguagespecifics[\s!de]%
+    \installcompoundcharacter "a {\adiaeresis}
+    \installcompoundcharacter "e {\ediaeresis}
+    \installcompoundcharacter "i {\idiaeresis}
+    \installcompoundcharacter "o {\odiaeresis}
+    \installcompoundcharacter "u {\udiaeresis}
+    \installcompoundcharacter "A {\Adiaeresis}
+    \installcompoundcharacter "E {\Ediaeresis}
+    \installcompoundcharacter "I {\Idiaeresis}
+    \installcompoundcharacter "O {\Odiaeresis}
+    \installcompoundcharacter "U {\Udiaeresis}
+  \stoplanguagespecifics
+\stopencoding
+
+\protect \endinput

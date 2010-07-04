@@ -1,0 +1,657 @@
+%D \module
+%D   [       file=math-ini,
+%D        version=2008.01.02,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Initializations,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Initializations}
+
+%D This module provides namespaces for math fonts, thereby
+%D permitting mixed usage of math fonts. Although not strictly
+%D needed, we also provide a family name mapping mechanism as
+%D used in the (original) AMS math definition files, but here
+%D these names can recursively be remapped and if needed,
+%D dynamically be changed. We've tried to minimize the number
+%D of definition commands and use plain \TEX\ definitions as
+%D fallback. We've tried to follow a couple of conventions
+%D from plain and AMS math in order to achieve backward
+%D compatinility. We also kept an eye on future usage of these
+%D modules in the perspective of MathML and unicode fonts.
+
+\unprotect
+
+\ifx\v!compact\undefined \def\v!compact{compact} \fi
+
+%D New:
+
+\let\startimath\Ustartmath         \let\stopimath \Ustopmath
+\let\startdmath\Ustartdisplaymath  \let\stopdmath \Ustopmath
+
+%D We move these definitions into the format:
+
+% test [[\char948 \ctxlua{tex.sprint(utf.char(948))}]]
+% test $[[\char948 \ctxlua{tex.sprint(utf.char(948))}]]$
+
+\registerctxluafile{math-ini}{1.001}
+\registerctxluafile{math-dim}{1.001}
+\registerctxluafile{math-ent}{1.001}
+\registerctxluafile{math-ext}{1.001}
+\registerctxluafile{math-vfu}{1.001}
+\registerctxluafile{math-map}{1.001}
+\registerctxluafile{math-noa}{1.001}
+
+\definesystemattribute[mathalphabet]        \chardef\mathalphabetattribute    \dogetattributeid{mathalphabet}
+\definesystemattribute[mathsize]            \chardef\mathsizeattribute        \dogetattributeid{mathsize}
+\definesystemattribute[mathpunctuation]     \chardef\mathpunctuationattribute \dogetattributeid{mathpunctuation}
+\definesystemattribute[mathgreek]           \chardef\mathgreekattribute       \dogetattributeid{mathgreek}
+
+% todo: only in mmode
+
+\unexpanded\def\mathgreekupright{\attribute\mathgreekattribute11 }
+\unexpanded\def\mathgreekitalic {\attribute\mathgreekattribute22 }
+\unexpanded\def\mathgreekdefault{\attribute\mathgreekattribute\attributeunsetvalue}
+
+\let\mathgreeknormal\mathgreekupright
+\let\mathgreeknone  \mathgreekdefault
+
+\def\setmathattribute#1#2{\ifmmode\ctxlua{mathematics.sync_a_both ("#1","#2")}\fi}
+\def\setmathalphabet   #1{\ifmmode\ctxlua{mathematics.sync_a_name ("#1")}\fi}
+\def\setmathstyle      #1{\ifmmode\ctxlua{mathematics.sync_a_style("#1")}\fi}
+
+\unexpanded\def\mr            {\setmathattribute{regular}{tf}}
+
+\unexpanded\def\mathdefault   {\setmathattribute{regular}{it}}
+\unexpanded\def\mathscript    {\setmathalphabet{script}}
+\unexpanded\def\mathfraktur   {\setmathalphabet{fraktur}}
+\unexpanded\def\mathblackboard{\setmathalphabet{blackboard}}
+
+\unexpanded\def\mathrm{\setmathattribute{rm}{tf}}
+\unexpanded\def\mathss{\setmathattribute{ss}{tf}}
+\unexpanded\def\mathtt{\setmathattribute{tt}{tf}}
+
+\unexpanded\def\mathtf{\setmathstyle{tf}}
+\unexpanded\def\mathbf{\setmathstyle{bf}}
+\unexpanded\def\mathsl{\setmathstyle{sl}}
+\unexpanded\def\mathit{\setmathstyle{it}}
+\unexpanded\def\mathbs{\setmathstyle{bs}}
+\unexpanded\def\mathbi{\setmathstyle{bi}}
+
+\let\tfmath\mathtf % maybe a grouped command
+\let\bfmath\mathbf
+\let\slmath\mathsl
+\let\itmath\mathit
+\let\bsmath\mathbs
+\let\bimath\mathbi
+
+\let\Bbb\mathblackboard
+
+\unexpanded\def\frak      {\ifmmode\expandafter\mathfraktur   \fi}
+\unexpanded\def\cal       {\ifmmode\expandafter\mathscript    \fi}
+\unexpanded\def\bbd       {\ifmmode\expandafter\mathblackboard\fi}
+\unexpanded\def\blackboard{\ifmmode\expandafter\mathblackboard\fi}
+\unexpanded\def\fraktur   {\ifmmode\expandafter\mathfraktur   \fi}
+\unexpanded\def\gothic    {\ifmmode\expandafter\mathfraktur   \fi}
+
+\unexpanded\def\mathcal #1{{\mathscript    #1}}  % for AMS compatibility
+\unexpanded\def\mathfrak#1{{\mathfraktur   #1}}  % for AMS compatibility
+\unexpanded\def\mathbb  #1{{\mathblackboard#1}}  % for AMS compatibility
+
+\let\normalmr\mr
+
+% \prependtoks
+%     \let\mr\normalmr
+%     \let\rm\mathrm \let\ss\mathss \let\tt\mathtt
+%     \let\tf\mathtf \let\bf\mathbf \let\it\mathit \let\sl\mathsl \let\bi\mathbi \let\bs\mathbs
+%     \let\frak\mathfraktur \let\cal\mathscript \let\bbd\mathblackboard
+%     \mathdefault
+% \to \everymathematics
+
+\let\normaltf\tf \unexpanded\def\tf{\ifmmode\mathtf\else\normaltf\fi}
+\let\normalbf\bf \unexpanded\def\bf{\ifmmode\mathbf\else\normalbf\fi}
+\let\normalit\it \unexpanded\def\it{\ifmmode\mathit\else\normalit\fi}
+\let\normalsl\sl \unexpanded\def\sl{\ifmmode\mathsl\else\normalsl\fi}
+\let\normalbi\bi \unexpanded\def\bi{\ifmmode\mathbi\else\normalbi\fi}
+\let\normalbs\bs \unexpanded\def\bs{\ifmmode\mathbs\else\normalbs\fi}
+
+\let\normalrm\rm \unexpanded\def\rm{\ifmmode\mathrm\else\normalrm\fi}
+\let\normalss\ss \unexpanded\def\ss{\ifmmode\mathss\else\normalss\fi}
+\let\normaltt\tt \unexpanded\def\tt{\ifmmode\mathtt\else\normaltt\fi}
+                 \unexpanded\def\mr{\ifmmode            \normalmr\fi}
+
+\prependtoks
+%     \let\mr\normalmr
+%     \let\rm\mathrm \let\ss\mathss \let\tt\mathtt
+%     \let\tf\mathtf \let\bf\mathbf \let\it\mathit \let\sl\mathsl \let\bi\mathbi \let\bs\mathbs
+%     \let\frak\mathfraktur \let\cal\mathscript \let\bbd\mathblackboard
+    \mathdefault
+\to \everymathematics
+
+%D \macros
+%D   {boldsymbol}
+%D
+%D To be done.
+
+\let\mathboldsymbol\relax % yet unsupported, will be
+
+\def\boldsymbol
+  {\mathortext\mathboldsymbol\bold}
+
+%D Helpers:
+
+\def\utfmathclass  #1{\ctxlua{tex.sprint(mathematics.utfmathclass  ("#1"))}}
+\def\utfmathstretch#1{\ctxlua{tex.sprint(mathematics.utfmathstretch("#1"))}}
+\def\utfmathcommand#1{\ctxlua{tex.sprint(mathematics.utfmathcommand("#1"))}}
+\def\utfmathfiller #1{\ctxlua{tex.sprint(mathematics.utfmathfiller ("#1"))}}
+
+% \def\utfmathclassdefault  #1#2{\ctxlua{
+%     tex.sprint(mathematics.utfmathclass("#1","#2"))
+% }}
+%
+% \def\utfmathcommanddefault#1#2#3{\ctxlua{
+%     local cmd = mathematics.utfmathcommand("#1","") or ""
+%     if cmd == "" then
+%         commands.cs("#2","#3")
+%     else
+%         commands.cs(cmd)
+%     end}}
+
+% % %
+
+\def\@@mathlimopcomm #1{\mathop{#1}} %no \limits
+\def\@@mathnolopcomm #1{\mathop{#1}\nolimits}
+\def\@@mathboxcomm   #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
+\def\@@mathchoicecomm#1{[todo #1]}
+
+\chardef\mathordcode    = 0  \let\mathordcomm     \mathord
+\chardef\mathopcode     = 1  \let\mathopcomm      \mathop
+\chardef\mathbincode    = 2  \let\mathbincomm     \mathbin
+\chardef\mathrelcode    = 3  \let\mathrelcomm     \mathrel
+\chardef\mathopencode   = 4  \let\mathopencomm    \mathopen
+\chardef\mathclosecode  = 5  \let\mathclosecomm   \mathclose
+\chardef\mathpunctcode  = 6  \let\mathpunctcomm   \mathpunct
+\chardef\mathalphacode  = 7  \let\mathalphacomm   \firstofoneargument
+\chardef\mathinnercode  = 0  \let\mathinnercomm   \mathinner
+\chardef\mathnothingcode= 0  \let\mathnothingcomm \firstofoneargument
+\chardef\mathlimopcode  = 1  \let\mathlimopcomm   \@@mathlimopcomm
+\chardef\mathnolopcode  = 1  \let\mathnolopcomm   \@@mathnolopcomm
+\chardef\mathchoicecode = 0  \let\mathchoicecomm  \@@mathchoicecomm
+\chardef\mathboxcode    = 0  \let\mathboxcomm     \@@mathboxcomm
+
+\chardef\mathaccentcode = 8
+\chardef\mathradicalcode= 9
+
+\def\puremathcode#1{\the\csname math#1code\endcsname}
+\def\puremathcomm#1{\csname     math#1comm\endcsname}
+
+% \startlines
+% $\mathopnolimits{\rm d}x$
+% $\mathopnolimits{\kern\zeropoint \rm d}x$
+% $\puremathcomm{nolop}{\rm d}x$
+% $\puremathcomm{nolop}{\kern\zeropoint\rm d}x$
+% \blank
+% $\puremathcomm{nolop}{\mr d}x$
+% $\puremathcomm{nolop}{\kern\zeropoint\mr d}x$
+% $\mathop{\kern\zeropoint\mr d}x$
+% $\mathopnolimits{\kern\zeropoint d}x$
+% \stoplines
+
+% this will be sorted out:
+
+\let\mathcharacter           \getvalue
+\let\textcharacter           \getvalue
+\unexpanded\def\definefamilysynonym     {\dotripleempty\dodefinefamilysynonym}
+\def\dodefinefamilysynonym   [#1][#2][#3]{}
+\unexpanded\def\definemathsymbol        {\dosixtupleempty\dodefinemathsymbol}
+\def\dodefinemathsymbol      [#1][#2][#3][#4][#5][#6]{}
+\unexpanded\def\definemathcharacter     {\dosixtupleempty\dodefinemathcharacter}
+\def\dodefinemathcharacter   [#1][#2][#3][#4][#5][#6]{}
+
+\unexpanded\def\definemathcommand
+  {\dotripleempty\dodefinemathcommand}
+
+\def\dodefinemathcommand[#1][#2][#3]#4% command class args meaning
+  {\ifthirdargument
+     \processaction
+       [#3]
+       [one=>\setuvalue{#1}##1{\puremathcomm{#2}{#4{##1}}},
+        two=>\setuvalue{#1}##1##2{\puremathcomm{#2}{#4{##1}{##2}}}]%
+   \else\ifsecondargument
+     \setuvalue{#1}{\puremathcomm{#2}{#4}}%
+   \else
+     \setuvalue{#1}{\puremathcomm{nothing}{#4}}%
+   \fi\fi}
+
+%D Moved from font-ini.mkiv:
+%D
+%D \macros
+%D   {mf,mbox,enablembox,mathop}
+%D
+%D Todo:
+
+\unexpanded\def\mf
+  {\csname\fontalternative\endcsname}
+
+\let\normalmathop\mathop
+
+\unexpanded\def\mathop
+  {\normalmathop
+   \bgroup
+   \let\rm\mf
+   \let\next=}
+
+\def\normalmbox
+  {\normalhbox\bgroup\mf
+   \dowithnextbox{\flushnextbox\egroup}\normalhbox}
+
+\def\mbox
+  {\ifmmode\normalmbox\else\normalhbox\fi}
+
+\def\enablembox
+  {\appendtoks
+     \ifx\normalhbox\undefined\let\normalhbox\hbox\fi
+     \let\hbox\mbox
+   \to\everymathematics}
+
+%D needed for sin, cos etc
+
+\let\mathfunction\firstofoneargument
+
+\def\mfunction         #1{{\mr#1}}
+\def\mfunctionlabeltext#1{{\mr\mathlabeltext{#1}}}
+
+% \def\mlimitsfunction  #1{\mathlimopcomm{{\mr#1}}
+% \def\mnolimitsfunction#1{\mathnolopcomm{{\mr#1}}
+
+%D Taco posted this solution as response to a mail by Olivier, so
+%D let's integrate it here.
+
+\def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
+
+\unexpanded\def\do@mathopnolimits    #1{\mathop{\mscaledtext{#1}}\nolimits}
+\unexpanded\def\do@mfunction         #1{\mscaledtext{#1}}
+\unexpanded\def\do@mfunctionlabeltext#1{\mscaledtext{\mathlabeltext{#1}}}
+
+\def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
+  {\doifsomething{#1}
+     {\def\currentmscaledstyle{#1}%
+      \let\mathopnolimits    \do@mathopnolimits
+      \let\mfunction         \do@mfunction
+      \let\mfunctionlabeltext\do@mfunctionlabeltext}}
+
+\def\mscaledtext#1%
+  {\mathchoice
+     {\hbox{\csname\currentmscaledstyle\endcsname\tf  #1}}
+     {\hbox{\csname\currentmscaledstyle\endcsname\tf  #1}}
+     {\hbox{\csname\currentmscaledstyle\endcsname\tfx #1}}
+     {\hbox{\csname\currentmscaledstyle\endcsname\tfxx#1}}}
+
+%D We can force the way functions are typeset by manipulating the text
+%D option:
+%D
+%D \starttyping
+%D \definetypeface[iwona][ss][sans][iwona][default][encoding=texnansi]
+%D \definetypeface[iwona][mm][math][iwona][default][encoding=texnansi,text=ss]
+%D \stoptyping
+%D
+%D This hooks into the math handler with:
+
+% no longer supported this way, has to be done with \setupmathematics
+%
+% \appendtoks
+%     \setmathfunctionstyle\currentmathtextstyle
+% \to \everybodyfont
+
+%D Usage:
+%D
+%D \starttyping
+%D \setmathfunctionstyle\fontstyle % or {rm} or {ss} or ..
+%D \rm test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
+%D \ss test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
+%D \tt test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
+%D \stoptyping
+
+%D Some goodies:
+
+\def\Angstrom{\nomathematics{\Aring}}
+
+%D \macros
+%D   {nonknuthmode, donknuthmode}
+%D
+%D The underscore is frequently used in manuals but unfortunately \TEX\ prefers
+%D it to be a math specific character. And since computer modern fonts didn't
+%D have an underscore, one had to use commands to fake one. Nowadays we do
+%D have underscores in latin modern, and since all other fonts have them, we
+%D decided to get away from the restriction to use the underscore character in
+%D text mode.
+%D
+%D \starttyping
+%D \def\test#1{#1}
+%D
+%D \nonknuthmode $x_2$ x_2 \test{$x_2$} \test{x_2}
+%D
+%D \donknuthmode $x_2$ x_2 \test{$x_2$} \test{x_2}
+%D \stoptyping
+%D
+%D The result is as expected: the first line typesets ok, while the second
+%D one triggers an error message.
+
+\newtoks\everydonknuthmode
+\newtoks\everynonknuthmode
+
+\def\nonknuthmode{\the\everynonknuthmode\let\nonknuthmode\relax}
+\def\donknuthmode{\the\everydonknuthmode}
+
+\ifdefined\normalsuber\else \def\normalsuber{_} \fi
+\ifdefined\normalsuper\else \def\normalsuper{^} \fi
+\ifdefined\normalaltab\else \def\normalaltab{&} \fi
+
+\bgroup
+
+    \catcode`_=\active
+    \catcode`^=\active
+    \catcode`&=\active
+
+    \global \everynonknuthmode {\appendtoks
+        \let_\normalsuber
+        \let^\normalsuper
+        \let&\normalaltab
+    \to \everymathematics}
+
+\egroup
+
+\appendtoks
+    \mathcode`_="8000
+    \mathcode`^="8000
+    \mathcode`&="8000
+    \catcode`_=\@@other
+    \catcode`^=\@@other
+    \catcode`&=\@@other
+\to \everynonknuthmode
+
+\appendtoks
+    \catcode`_=\@@subscript
+    \catcode`^=\@@superscript
+    \catcode`&=\@@alignment
+\to \everydonknuthmode
+
+\appendtoks
+    \startextendcatcodetable\ctxcatcodes
+        \catcode`_=\@@other
+        \catcode`^=\@@other
+        \catcode`&=\@@other
+    \stopextendcatcodetable
+\to \everynonknuthmode
+
+\appendtoks
+    \startextendcatcodetable\ctxcatcodes
+        \catcode`_=\@@subscript
+        \catcode`^=\@@superscript
+        \catcode`&=\@@alignment
+    \stopextendcatcodetable
+\to \everydonknuthmode
+
+%D Needed for unicode:
+
+\def\nulloperator{\mathortext{\mathop{\null}}{\null}}
+
+%D To be dealt with ...
+
+\mathcode`\ ="8000 % \space
+\mathcode`\'="8000 % ^\prime
+\mathcode`\_="8000 % \_
+
+%D \macros
+%D   {setupmathematics}
+%D
+%D Configuration for integrals. (If needed we can speed this up and make it
+%D installable; no processaction is needed then).
+
+\newtoks\everysetupmathematics
+
+\unexpanded\def\setupmathematics
+  {\dosingleargument\dosetupmathematics}
+
+\def\dosetupmathematics[#1]%
+  {\getparameters[\??mo][#1]%
+   \the\everysetupmathematics}
+
+\def\mathematicsparameter#1{\ifcsname\??mo#1\endcsname\csname\??mo#1\endcsname\fi}
+
+%D Memory saver:
+
+\appendtoks
+   \doifelse{\mathematicsparameter\v!compact}\v!yes
+     {\ctxlua{fonts.vf.math.optional=true}}
+     {\ctxlua{fonts.vf.math.optional=false}}%
+\to \everysetupmathematics
+
+\setupmathematics
+  [\v!compact=no]
+
+%D Delayed: greek.
+%D
+%D \starttyping
+%D \usetypescript[cambria]\setupbodyfont[cambria]
+%D \startTEXpage
+%D     $\alpha \mathgreekupright \alpha \mathgreekitalic \alpha$
+%D \stopTEXpage
+%D \stoptyping
+
+% [lc uc] normal (upright) = 2, italic = 3, none = 0/1
+
+\setevalue{\??mo:greek:\v!normal :\v!normal}{\attribute\mathgreekattribute22 }
+\setevalue{\??mo:greek:\v!normal :\v!italic}{\attribute\mathgreekattribute23 }
+\setevalue{\??mo:greek:\v!normal :\v!none  }{\attribute\mathgreekattribute21 }
+
+\setevalue{\??mo:greek:\v!italic :\v!normal}{\attribute\mathgreekattribute32 }
+\setevalue{\??mo:greek:\v!italic :\v!italic}{\attribute\mathgreekattribute33 }
+\setevalue{\??mo:greek:\v!italic :\v!none  }{\attribute\mathgreekattribute31 }
+
+\setevalue{\??mo:greek:\v!none   :\v!normal}{\attribute\mathgreekattribute12 }
+\setevalue{\??mo:greek:\v!none   :\v!italic}{\attribute\mathgreekattribute13 }
+\setevalue{\??mo:greek:\v!none   :\v!none  }{\attribute\mathgreekattribute\attributeunsetvalue}
+
+\appendtoks
+    \csname\??mo:greek:\@@molcgreek:\@@moucgreek\endcsname
+\to \everymathematics
+
+\setupmathematics
+  [lcgreek=\v!italic,
+   ucgreek=\v!normal] % was: none
+
+%D \macros
+%D   {enablemathpunctuation,disablemathpunctuation}
+%D
+%D \startbuffer
+%D \enablemathpunctuation$(1,2) (1, 2) (1{,}2) \hbox{foo, not bar}$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \blank{\getbuffer}\blank
+
+\setfalse \automathpunctuation
+
+\def\enablemathpunctuation {\settrue \automathpunctuation}
+\def\disablemathpunctuation{\setfalse\automathpunctuation}
+
+\ifx\v!autopunctuation\undefined \def\v!autopunctuation{autopunctuation} \fi
+
+\appendtoks
+    \doifelse{\mathematicsparameter\v!autopunctuation}\v!yes\enablemathpunctuation\disablemathpunctuation
+\to \everysetupmathematics
+
+\appendtoks
+    \ifconditional\automathpunctuation\attribute\mathpunctuationattribute\plusone\fi
+\to \everymathematics
+
+\setupmathematics
+  [\v!autopunctuation=\v!no]
+
+%D \macros
+%D   {mathstyle}
+%D
+%D If one want to be sure that something is typeset in the
+%D appropriate style, \type {\mathstyle} can be used:
+%D
+%D \starttyping
+%D \mathstyle{something}
+%D \stoptyping
+
+% \def\mathstyle#1%
+%   {\mathchoice
+%      {\displaystyle     #1}%
+%      {\textstyle        #1}%
+%      {\scriptstyle      #1}%
+%      {\scriptscriptstyle#1}}
+%
+% We now have a primitive operation for this. As the
+% macro overloads a new primitive introduced in \LUATEX,
+% we need to use \type {\normalmathstyle} when we consult
+% the current math style.
+%
+% \let \mathstyle \Ustack % spoils cramped
+%
+% \let \mathstyle \firstofoneargument
+%
+% 0 = display
+% 1 = crampeddisplay
+% 2 = text
+% 3 = crampedtext
+% 4 = script
+% 5 = crampedscript
+% 6 = scriptscript
+% 7 = crampedscriptscript
+
+\def\uncramped#1%
+  {{\ifcase\normalmathstyle
+    \or \displaystyle      \or
+    \or \textstyle         \or
+    \or \scriptstyle       \or
+    \or \scriptscriptstyle \fi
+    #1}}
+
+\def\cramped#1%
+  {{\ifcase\normalmathstyle
+    \crampeddisplaystyle      \or \or % 0 -> 1
+    \crampedtextstyle         \or \or % 2 -> 3
+    \crampedscriptstyle       \or \or % 4 -> 5
+    \crampedscriptscriptstyle \fi     % 6 -> 7
+    #1}}
+
+\def\triggermathstyle#1% #1 is number
+  {\ifcase#1\relax
+     \displaystyle             \or
+     \crampeddisplaystyle      \or
+     \textstyle                \or
+     \crampedtextstyle         \or
+     \scriptstyle              \or
+     \crampedscriptstyle       \or
+     \scriptscriptstyle        \or
+     \crampedscriptscriptstyle \else
+     % error
+   \fi}
+
+\def\cramped#1%
+  {{\ifcase\normalmathstyle
+    \crampeddisplaystyle      \or \or % 0 -> 1
+    \crampedtextstyle         \or \or % 2 -> 3
+    \crampedscriptstyle       \or \or % 4 -> 5
+    \crampedscriptscriptstyle \fi     % 6 -> 7
+    #1}}
+
+\def\mathstylefont#1% #1 is number (\normalmathstyle)
+  {\ifcase#1\relax
+     \textfont         \or
+     \textfont         \or
+     \textfont         \or
+     \textfont         \or
+     \scriptfont       \or
+     \scriptfont       \or
+     \scriptscriptfont \or
+     \scriptscriptfont \else
+     \textfont
+   \fi\zerocount}
+
+%D Something similar can be used in the (re|)|definition
+%D of \type {\text}. This version is a variation on the one
+%D in the math module (see \type{m-math} and|/|or \type
+%D {m-newmat}).
+
+\unexpanded\def\mathtext
+  {\mathortext\domathtext\hbox}
+
+\def\domathtext#1%
+  {\mathchoice
+     {\dodomathtext\displaystyle\textface        {#1}}%
+     {\dodomathtext\textstyle   \textface        {#1}}%
+     {\dodomathtext\textstyle   \scriptface      {#1}}%
+     {\dodomathtext\textstyle   \scriptscriptface{#1}}}
+
+\def\dodomathtext#1#2#3% no \everymath !
+ %{\hbox{\everymath{#1}\switchtobodyfont  [#2]#3}} % 15 sec
+  {\hbox{\everymath{#1}\setcurrentfontbody{#2}#3}} %  3 sec (no math)
+
+%D Safeguard against redefinitions:
+
+\appendtoks
+    \let\_\normalunderscore % is textunderscore or fakeunderscore
+\to \everymathematics
+
+%D Because we may overload \type {\text} in other (structuring)
+%D macros, we say:
+
+\appendtoks \let\text\mathtext \to \everymathematics
+
+%D The next code is derived from plain \TEX.
+
+\newcount\interdisplaylinepenalty \interdisplaylinepenalty=100
+
+\newif\ifdt@p
+
+\def\displ@y
+  {\global\dt@ptrue
+   \openup\displayopenupvalue % was \openup\jot
+   \everycr
+     {\noalign
+        {\ifdt@p
+           \global\dt@pfalse
+           \ifdim\prevdepth>-\thousandpoint
+             \vskip-\lineskiplimit
+             \vskip\normallineskiplimit
+           \fi
+         \else
+           \penalty\interdisplaylinepenalty
+         \fi}}}
+
+\let\normaldispl@y\displ@y
+
+\def\displ@y{\resetdisplaymatheq\normaldispl@y}
+
+\def\m@th{\mathsurround\zeropoint} % obsolete
+
+%D Text in math:
+
+\def\mathortext
+  {\ifmmode
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+% \defineactivecharacter _ {\mathortext{_}{\_}} text_text  $a^2$
+
+% force text mode, will be overloaded later
+
+\ifx\text\undefined \let\text\hbox \fi
+
+\def\mathoptext#1{\mathop{\text{#1}}}
+
+\protect \endinput

@@ -1,0 +1,222 @@
+%D \module
+%D   [       file=verb-jv,
+%D        version=2002.02.27,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty \JAVA\ Verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty Java Verbatim}
+
+%D This module differs from the \JAVASCRIPT\ driver in its
+%D handling of comments. We also need a few more handlers: one
+%D for \type {//} and \type {/*} and one for \type {*/} as
+%D well as the \JAVA doc trigger \type {/**}.
+
+%D We build this driver on top of the \PERL\ one. Since this
+%D driver looks much like the \JAVASCRIPT\ one, we don't
+%D comment it extensively.
+
+\ifdefined\setupprettyPLtype \else \loadmarkfile{verb-pl} \fi
+
+\unprotect
+
+\newcount\JVcommentlevel
+
+\gdef\JVsetspecials
+  {\PLsetspecials
+   \setpretty`\#=32
+   \setpretty`\%=41
+   \setpretty`\-=45
+   \setpretty`\/=43
+   \setpretty`\*=44 }
+
+\gdef\JVsethandlers
+  {\PLsethandlers
+   \installprettyhandler 43 \JVtypefourthree
+   \installprettyhandler 44 \JVtypefourfour
+   \installprettyhandler 45 \JVtypefourfive }
+
+\gdef\JVsetcontrols
+  {\PLsetcontrols
+   \def\flushrestofverbatimline
+     {\endPLtypesix
+      \ifcase\JVcommentlevel \inPLcommentfalse \fi
+      \PLverbosefalse
+      \PLverboseskipped=0}}
+
+\gdef\JVsetvariables
+  {\PLsetvariables
+   \global\JVcommentlevel=0 }
+
+\gdef\setupprettyJVtype
+  {\def\prettyidentifier{JV}%
+   \let\PLidentifiers\JVidentifiers
+   \let\PLvariables\JVvariables
+   \JVsetvariables
+   \JVsetcontrols
+   \JVsethandlers
+   \JVsetspecials
+   \PLsetdiagnostics}
+
+\gdef\JVtypefourthree
+  {\handlenextnextpretty\doJVtypefourthree\PLtypefourtwo}
+
+\gdef\doJVtypefourthree#1#2#3%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=43
+     \let\next\dodoJVtypefourthree
+   \else\ifnum\prettytype=44
+     \global\advance\JVcommentlevel 1
+     \global\inPLcommenttrue
+     \PLverbosecorrection
+     \getprettydata{#3}%
+     \ifnum\prettytype=44
+       \inPLdoctrue
+     \fi
+     \let\next\JVtogglecomment
+   \else
+     \let\next\PLtypefourtwo
+   \fi\fi
+   \next{#1}#2#3}
+
+\gdef\JVtogglecomment#1#2%
+  {\ifnum\JVcommentlevel=1
+     \beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty
+   \else
+     \getpretties{#1}{#2}%
+   \fi}
+
+\gdef\dodoJVtypefourthree
+  {\endPLtypesix
+   \handlenextnextpretty\dododoJVtypefourthree\dodododoPLtypefourthree}
+
+\gdef\dododoJVtypefourthree
+  {\ifnewpretty\expandafter\handlenewpretty\fi\dodododoJVtypefourthree}
+
+\gdef\dodododoJVtypefourthree#1#2%
+  {\ifinPLcomment
+     \getpretties{#1}{#2}%
+   \else
+     \global\inPLcommenttrue
+     \PLverbosecorrection
+     \ifnaturaltextext
+       \let\next\naturaltextext
+     \else
+       \def\next{\beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty}%
+     \fi
+     \expandafter\next
+   \fi}
+
+\gdef\JVtypefourfour
+  {\ifinPLdoc
+     \@EA\noJVtypefourfour
+   \else
+     \@EA\handlenextnextpretty\@EA\doJVtypefourfour\@EA\PLtypefourtwo
+   \fi}
+
+\gdef\noJVtypefourfour#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=43
+     \JVtogglecomment{#1}#2%
+     \inPLdocfalse
+     \global\advance\JVcommentlevel -1
+     \ifcase\JVcommentlevel \global\inPLcommentfalse \fi
+   \else
+     \ifPLdocdone
+       \getpretty{#1}%
+     \else
+       \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+       \PLdocdonetrue
+     \fi
+     \expandafter#2%
+   \fi}
+
+\gdef\doJVtypefourfour#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=43
+     \JVtogglecomment{#1}#2%
+     \inPLdocfalse
+     \global\advance\JVcommentlevel -1
+     \ifcase\JVcommentlevel \global\inPLcommentfalse \fi
+   \else
+     \endPLtypesix
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+     \expandafter#2%
+   \fi}
+
+\gdef\JVtypefourfive % permit - in javadoc @tags
+  {\ifinPLdoc
+     \@EA\PLtypesixtwo
+   \else
+     \@EA\PLtypefourone
+   \fi}
+
+\useprettyidentifiers \JVidentifiers \JVsetspecials
+  abstract assert boolean break byte case catch char class const
+  continue default do double else extends false final
+  finally float for goto if implements import instanceof
+  int interface long native new null package private protected
+  public return short static strictfp super switch synchronized
+  this throw throws transient true try void volatile while
+
+\useprettyidentifiers \JVvariables \JVsetspecials
+  @author @docRoot @deprecated @exception @inheritDoc @link
+  @linkplain @param @return @see @serial @serialData @serialField
+  @since @throws @value @version
+
+%D The \JAVA doc feature was requested by Robert F.~Beeger,
+%D who also provided this test class:
+%D
+%D \startJV
+%D package de.jwamalpha.handling.web.rbdipl;
+%D
+%D import java.io.IOException;
+%D import java.io.PrintWriter;
+%D import javax.servlet.http.HttpServlet;
+%D import javax.servlet.http.HttpServletRequest;
+%D import javax.servlet.http.HttpServletResponse;
+%D import javax.servlet.ServletException;
+%D
+%D /**
+%D  * The simple login servlet
+%D  *
+%D  * @author Robert F. Beeger
+%D  * @version 1.0
+%D  */
+%D
+%D public class LoginServlet extends HttpServlet
+%D {
+%D   //
+%D   // public interface
+%D   //
+%D   /**
+%D    * Process the get-request.
+%D    *
+%D    * @param request the request
+%D    * @param response the response.
+%D    */
+%D   protected void doGet (HttpServletRequest request, HttpServletResponse response)
+%D      throws ServletException, IOException
+%D   {
+%D     response.setContentType("text/html");
+%D     PrintWriter writer = response.getWriter();
+%D     writer.println("<html>");
+%D     writer.println("  <head>");
+%D     writer.println("    <title>Login</title>");
+%D     writer.println("  </head>");
+%D     writer.println("  <body>");
+%D     writer.println("    Hallo, Benutzer " + request.getParameter("username") + "!");
+%D     writer.println("  </body>");
+%D     writer.println("</html>");
+%D     writer.flush();
+%D   }
+%D }
+%D \stopJV
+
+\protect \endinput

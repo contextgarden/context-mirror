@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+    filename : context-error.lmx
+    comment  : companion to context.tex
+    author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+    copyright: PRAGMA ADE / ConTeXt Development Team
+    license  : see context related readme files
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <script type='text/javascript'>
+            <!--
+                window.focus();
+            -->
+        </script>
+        <title><?lua pv('title')?></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style type="text/css">
+            <!--
+                <?lmx-include context.css ?>
+            -->
+        </style>
+    </head>
+    <body>
+        <div id="top"><div id="top-one"><div id="top-two">
+            <?lua pv('title')?>
+        </div></div></div>
+        <div id="left"><div id="left-one"><div id="left-two">
+            <!-- empty -->
+        </div></div></div>
+        <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five">
+            <!-- empty -->
+            <br/>
+                <a href="<?lua pv('filename')?>">edit</a>
+            <br/>
+        </div></div></div></div></div></div></div>
+        <div id="main"><div id="main-settings">
+            <table>
+                <tr><td>Error</td><td>&nbsp;&nbsp;&nbsp;<?lua tv('errormessage')?></td></tr>
+                <tr><td>File </td><td>&nbsp;&nbsp;&nbsp;<?lua tv('filename')    ?></td></tr>
+                <tr><td>Line </td><td>&nbsp;&nbsp;&nbsp;<?lua tv('linenumber')  ?></td></tr>
+            </table>
+            <br/>
+            <pre>
+            <?lua pv('errorcontext')?>
+            </pre>
+        </div></div>
+        <div id="bottom"><div id="bottom-one"><div id="bottom-two">
+            Job Name: <?lua p(environment.jobname) ?> &nbsp;&nbsp;&nbsp;
+            ConTeXt Version: <?lua p(environment.version) ?> &nbsp;&nbsp;&nbsp;
+            Real Page: <?lua p(tracers.cs('c:realpageno')) ?> &nbsp;&nbsp;&nbsp;
+            Page: <?lua p(tracers.cs('c:pageno')) ?> &nbsp;&nbsp;&nbsp;
+        </div></div></div>
+    </body>
+</html>

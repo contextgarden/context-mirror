@@ -1,0 +1,79 @@
+%D \module
+%D   [       file=typo-krn,
+%D        version=2009.03.27, % code moved from core-spa.mkiv
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Spacing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Kerning}
+
+\unprotect
+
+\registerctxluafile{typo-krn}{1.001}
+
+\definesystemattribute[kern] \chardef\kernattribute\dogetattributeid{kern}
+
+% more
+%
+% {\setcharacterkerning[extrakerning]\input davis\relax}
+
+\unexpanded\def\definecharacterkerning
+  {\dodoubleargument\dodefinecharacterkerning}
+
+\def\dodefinecharacterkerning[#1][#2]%
+  {\getparameters[\??ck#1][\c!factor=0.125,#2]%
+   \setgvalue{\??ck:#1}{\ctxlua{kerns.setspacing(\csname\??ck#1\c!factor\endcsname)}}}
+
+\unexpanded\def\setupcharacterkerning
+  {\dodoubleargument\dosetupcharacterkerning}
+
+\def\dosetupcharacterkerning[#1][#2]%
+  {\ifcsname\??ck:#1\endcsname
+     \getparameters[\??ck#1][#2]%
+   \else
+     \dodefinecharacterkerning[#1][#2]% bonus
+   \fi}
+
+\unexpanded\def\setcharacterkerning
+  {\ctxlua{kerns.enable()}%
+   \unexpanded\gdef\setcharacterkerning[##1]{\csname\??ck:##1\endcsname}%
+   \setcharacterkerning}
+
+\letvalue{\??ck:\s!reset}\attributeunsetvalue
+
+\definecharacterkerning [extrakerning] [\c!factor=.125] % used in manuals
+
+%D Added after discussion on list (posted by WS, adapted abit by HH)
+%D \unknown\ this needs to be interfaced (\type {\v!kerncharacters}).
+%D
+%D \starttyping
+%D \setuphead[section][style=\sca,textstyle={\kerncharacters[.5]}] \section{Section}
+%D \stoptyping
+%D
+%D We could combine this with the previous definition command but
+%D then we alwasy would get a command defined which is not beforehand
+%D a good idea.
+
+\def\v!kerncharacters{kerncharacters} % no time now for translations
+
+\definecharacterkerning [\v!kerncharacters] [\c!factor=.125]
+
+\unexpanded\def\kerncharacters
+  {\dosingleempty\dokerncharacters}
+
+\def\dokerncharacters[#1]%
+  {\groupedcommand{\dodokerncharacters{#1}}\donothing}
+
+\def\dodokerncharacters#1%
+  {\iffirstargument
+     \setupcharacterkerning[\v!kerncharacters][\c!factor=#1]%
+   \fi
+   \setcharacterkerning[\v!kerncharacters]}
+
+\protect \endinput

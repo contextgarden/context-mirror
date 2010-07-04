@@ -1,0 +1,42 @@
+# TeXworks: Patterns for syntax coloring
+
+# Each entry consists of three whitespace-separated fields:
+# <color> <spell?> <regex>
+
+# <color> is a color name from the list defined in the SVG standard;
+# see http://www.w3.org/TR/SVG/types.html#ColorKeywords
+
+# <spell> is a flag controlling whether this style is subject to spell-checking;
+# "Y" or "y" for yes, "N" (or anything else, actually) for no.
+
+# <regex> is the regular expression to match.
+
+# Note that order of rules may be important if several rules could match at the same position;
+# this is why the generic "control sequence" rule comes AFTER the specific \begin/\end one.
+
+[ConTeXt TeX]
+
+darkred		N	[\$\{\}]
+
+darkblue	N	[\<\>\"\'\[\]\=\#]
+goldenrod  	N	[\~\`\%\^\&\-\+\|]
+darkgreen	N	\\(?:[\w\@\?\!]+|.)
+darkgray    N	%.*
+
+[ConTeXt XML]
+
+# todo: attributes
+
+darkred      N   \<\?xml.*\?\>
+darkblue     N   \<\!\-\-.*\-\-\>
+darkblue     N   [\"\']
+goldenrod    N   \<\?.*\?\>
+darkgreen    N   \<\/*[a-zA-Z\_\-]*\:*[a-zA-Z\_\-]+
+darkgreen    N   \/\>
+darkgreen    N   \>
+darkred      N   \&[a-zA-Z\_\-]+\;
+
+# other possibilities to be added....
+# [BibTeX]
+# [Metapost]
+# etc

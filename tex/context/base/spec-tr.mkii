@@ -1,0 +1,107 @@
+%D \module
+%D   [       file=spec-tr,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Thomas Rokicki's \DVIPS,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Especially the rotation proved to be incompatible with
+%D the default \POSTSCRIPT\ special driver. Many thanks to
+%D Gilbert van den Dobbelsteen for testing and hacking the
+%D \DVIPS\ source and pinpointing the problem.
+
+%D \macros
+%D   {doinsertfile}
+%D
+%D We overrule the figure||insertion special. Things should
+%D be more accurate, but maybe someday \unknown
+
+\startspecials[rokicki]
+
+\def\@@insertpostscriptliteral {ps: }
+\def\@@insertpostscriptretain  {" }
+
+%D Ugly but useful:
+
+\definefileinsertion{tr}{eps}
+  {\bgroup
+   \PointsToWholeBigPoints\@@DriverImageWidth \width
+   \PointsToWholeBigPoints\@@DriverImageHeight\height
+   \special
+     {PSfile="\@@DriverImageFile"\space
+      llx=\EPSllx\space
+      lly=\EPSlly\space
+      urx=\EPSurx\space
+      ury=\EPSury\space
+      \ifdim\@@DriverImageWidth >\zeropoint rwi=\width 0\space\fi
+      \ifdim\@@DriverImageHeight>\zeropoint rhi=\height0      \fi}%
+   \egroup}
+
+\definefileinsertion{tr}{mps}
+  {\hbox
+     {\convertMPcolors\@@DriverImageFile
+      \dofileinsertion{tr}{eps}}}
+
+\definespecial\doinsertfile
+  {\dofileinsertion{tr}\@@DriverImageType}
+
+%D Some MP stuff:
+
+\definespecial\doinsertMPfile#1%
+  {\doiffileelse{./#1}{\includeMPasEPS{./#1}}{\message{[MP #1]}}}
+
+%D \macros
+%D   {dostartrotation}
+%D
+%D Because \DVIPS\ uses a reverse rotation scheme, we have
+%D to add an extra \type{neg} to the default \POSTSCRIPT\
+%D rotation definition:
+
+\definespecial\dostartrotation#1% straight from the YandY manual / 1st neg added
+  {\special
+     {\@@insertpostscriptliteral
+        gsave currentpoint currentpoint translate
+        \number#1\space\space neg rotate neg exch neg exch translate}}
+
+\definespecial\dostoprotation
+  {\special
+     {\@@insertpostscriptliteral
+        currentfont currentpoint grestore moveto setfont}}
+
+%D Drawing ovals in \DVIPS\ is complicated by the fact that
+%D the colors get reset. Therefore we need a more literal
+%D approach and therefore scale to local units. By redefining
+%D the retain constant into a macro, we can use the already
+%D present \POSTSCRIPT\ definition (see \type{spec-ps}).
+
+\definespecial\doovalbox#1#2#3#4#5#6#7#8% variant not yet supported
+  {\bgroup
+   \edef\@@insertpostscriptretain gsave%
+     {\@@insertpostscriptliteral
+        gsave
+          Resolution 72 div
+          VResolution 72 div neg scale currentpoint translate}%
+   \dosomeovalbox{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}%
+   \egroup}
+
+%D \macros
+%D   {dosetuppaper}
+%D
+%D Relatively new:
+
+\definespecial\dosetuppaper#1#2#3%
+  {\begingroup
+   \!!dimena#2%
+   \!!dimenb#3%
+   \special{papersize=\the\!!dimena,\the\!!dimenb}%
+   \endgroup}
+
+\stopspecials
+
+\endinput

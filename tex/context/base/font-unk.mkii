@@ -1,0 +1,187 @@
+%D \module
+%D   [       file=font-unk,
+%D        version=1998.09.10,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Unknown Defaults,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is rather important, because it enables us to
+%D define and call for not yet defined fonts in a way
+%D completely independant of real font names. First we map
+%D some meaningful names onto unknown filenames.
+
+\unprotect
+
+\definefontsynonym [Serif]              [unknown]
+\definefontsynonym [SerifBold]          [unknown]
+\definefontsynonym [SerifItalic]        [unknown]
+\definefontsynonym [SerifSlanted]       [unknown]
+\definefontsynonym [SerifBoldItalic]    [unknown]
+\definefontsynonym [SerifBoldSlanted]   [unknown]
+\definefontsynonym [SerifCaps]          [unknown]
+
+\definefontsynonym [Sans]               [unknown]
+\definefontsynonym [SansBold]           [unknown]
+\definefontsynonym [SansItalic]         [unknown]
+\definefontsynonym [SansSlanted]        [unknown]
+\definefontsynonym [SansBoldItalic]     [unknown]
+\definefontsynonym [SansBoldSlanted]    [unknown]
+\definefontsynonym [SansCaps]           [unknown]
+
+\definefontsynonym [Mono]               [unknown]
+\definefontsynonym [MonoBold]           [unknown]
+\definefontsynonym [MonoItalic]         [unknown]
+\definefontsynonym [MonoSlanted]        [unknown]
+\definefontsynonym [MonoBoldItalic]     [unknown]
+\definefontsynonym [MonoBoldSlanted]    [unknown]
+\definefontsynonym [MonoCaps]           [unknown]
+
+\definefontsynonym [MathRoman]          [unknown]
+\definefontsynonym [MathExtension]      [unknown]
+\definefontsynonym [MathItalic]         [unknown]
+\definefontsynonym [MathSymbol]         [unknown]
+
+\definefontsynonym [MathNoName]         [unknown]
+
+\definefontsynonym [MathAlpha]          [unknown]
+\definefontsynonym [MathBeta]           [unknown]
+\definefontsynonym [MathGamma]          [unknown]
+\definefontsynonym [MathDelta]          [unknown]
+
+\definefontsynonym [MathRomanBold]      [MathRoman]
+\definefontsynonym [MathExtensionBold]  [MathExtension]
+\definefontsynonym [MathItalicBold]     [MathItalic]
+\definefontsynonym [MathSymbolBold]     [MathSymbol]
+\definefontsynonym [MathAlphaBold]      [MathAlpha]
+\definefontsynonym [MathBetaBold]       [MathBeta]
+\definefontsynonym [MathGammaBold]      [MathGamma]
+\definefontsynonym [MathDeltaBold]      [MathDelta]
+
+\definefontsynonym [Handwriting]        [unknown]
+\definefontsynonym [Calligraphic]       [unknown]
+
+%D This permit us to define (use) fonts that refer to the default
+%D style (so, Bold may expand to SansBold or SerifBold, depending
+%D on the default style in the typeface).
+
+% \def\setfontsynonym[#1]#2[#3]{\setvalue{\??ff\fontclass#1}{#3}}
+%
+% \setfontsynonym[\s!Normal]     [\fontstringD]
+% \setfontsynonym[\s!Bold]       [\fontstringD\s!Bold]
+% \setfontsynonym[\s!Italic]     [\fontstringD\s!Italic]
+% \setfontsynonym[\s!Slanted]    [\fontstringD\s!Slanted]
+% \setfontsynonym[\s!BoldItalic] [\fontstringD\s!BoldItalic]
+% \setfontsynonym[\s!BoldSlanted][\fontstringD\s!BoldSlanted]
+% \setfontsynonym[\s!Caps]       [\fontstringD\s!Caps]
+
+\definefontsynonym[\s!Normal]     [\noexpand\fontstringD]
+\definefontsynonym[\s!Bold]       [\noexpand\fontstringD\noexpand\s!Bold]
+\definefontsynonym[\s!Italic]     [\noexpand\fontstringD\noexpand\s!Italic]
+\definefontsynonym[\s!Slanted]    [\noexpand\fontstringD\noexpand\s!Slanted]
+\definefontsynonym[\s!BoldItalic] [\noexpand\fontstringD\noexpand\s!BoldItalic]
+\definefontsynonym[\s!BoldSlanted][\noexpand\fontstringD\noexpand\s!BoldSlanted]
+\definefontsynonym[\s!Caps]       [\noexpand\fontstringD\noexpand\s!Caps]
+
+%D Also handy:
+
+\definefontsynonym [Regular]            [Serif]
+\definefontsynonym [RegularBold]        [SerifBold]
+\definefontsynonym [RegularItalic]      [SerifItalic]
+\definefontsynonym [RegularSlanted]     [SerifSlanted]
+\definefontsynonym [RegularBoldItalic]  [SerifBoldItalic]
+\definefontsynonym [RegularBoldSlanted] [SerifBoldSlanted]
+\definefontsynonym [RegularCaps]        [SerifCaps]
+
+\definefontsynonym [Support]            [Sans]
+\definefontsynonym [SupportBold]        [SansBold]
+\definefontsynonym [SupportItalic]      [SansItalic]
+\definefontsynonym [SupportSlanted]     [SansSlanted]
+\definefontsynonym [SupportBoldItalic]  [SansBoldItalic]
+\definefontsynonym [SupportBoldSlanted] [SansBoldSlanted]
+\definefontsynonym [SupportCaps]        [SansCaps]
+
+%D Well, not that good an idea:
+
+\definefontsynonym [Roman]              [Serif]
+\definefontsynonym [RomanBold]          [SerifBold]
+\definefontsynonym [RomanItalic]        [SerifItalic]
+\definefontsynonym [RomanSlanted]       [SerifSlanted]
+\definefontsynonym [RomanBoldItalic]    [SerifBoldItalic]
+\definefontsynonym [RomanBoldSlanted]   [SerifBoldSlanted]
+\definefontsynonym [RomanCaps]          [SerifCaps]
+
+\definefontsynonym [Type]               [Mono]
+\definefontsynonym [TypeBold]           [MonoBold]
+\definefontsynonym [TypeItalic]         [MonoItalic]
+\definefontsynonym [TypeSlanted]        [MonoSlanted]
+\definefontsynonym [TypeBoldItalic]     [MonoBoldItalic]
+\definefontsynonym [TypeBoldSlanted]    [MonoBoldSlanted]
+\definefontsynonym [TypeCaps]           [MonoCaps]
+
+%D Next we define roman, sans and monospaced font sets.
+
+\definebodyfont [default] [rm]
+  [tf=Serif sa 1,
+   bf=SerifBold sa 1,
+   it=SerifItalic sa 1,
+   sl=SerifSlanted sa 1,
+   bi=SerifBoldItalic sa 1,
+   bs=SerifBoldSlanted sa 1,
+   sc=SerifCaps sa 1]
+
+\definebodyfont [default] [ss]
+  [tf=Sans sa 1,
+   bf=SansBold sa 1,
+   it=SansItalic sa 1,
+   sl=SansSlanted sa 1,
+   bi=SansBoldItalic sa 1,
+   bs=SansBoldSlanted sa 1,
+   sc=SansCaps sa 1]
+
+\definebodyfont [default] [tt]
+  [tf=Mono sa 1,
+   bf=MonoBold sa 1,
+   it=MonoItalic sa 1,
+   sl=MonoSlanted sa 1,
+   bi=MonoBoldItalic sa 1,
+   bs=MonoBoldSlanted sa 1,
+   sc=MonoCaps sa 1]
+
+\definebodyfont [default] [mm]
+  [mr=MathRoman mo 1,
+   ex=MathExtension mo 1,
+   mi=MathItalic mo 1,
+   sy=MathSymbol mo 1,
+   nn=MathNoName mo 1,
+   ma=MathAlpha mo 1,
+   mb=MathBeta mo 1,
+   mc=MathGamma mo 1,
+   md=MathDelta mo 1]
+
+\definebodyfont [bfmath] [mm]
+  [mrbf=MathRomanBold mo 1,
+   exbf=MathExtensionBold mo 1,
+   mibf=MathItalicBold mo 1,
+   sybf=MathSymbolBold mo 1,
+   mabf=MathAlphaBold mo 1,
+   mbbf=MathBetaBold mo 1,
+   mcbf=MathGammaBold mo 1,
+   mdbf=MathDeltaBold mo 1]
+
+\definebodyfont [default] [hw]
+  [tf=Handwriting sa 1]
+
+\definebodyfont [default] [cg]
+  [tf=Calligraphy sa 1]
+
+%D These definitions come into action as soon as names are
+%D mapped onto real file names (or names that themselves are
+%D mapped).
+
+\protect \endinput

@@ -1,0 +1,272 @@
+%D \module
+%D   [     file=enco-el,
+%D      version=2005.08.24,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=EuroLetter,
+%D       author={Several Users},
+%D         date=\currentdate,
+%D    copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This EuroLetter encoding vector, also known as Dense Encoding is
+%D the result of discussion among users, most noticably Adam Lindsay,
+%D Mojka Miklavec, Patrick Gundlach, Taco Hoekwater and \unknown.
+%D It was a follow up of a thread started long ago where we
+%D discussed an encoding without the weird, never used symbols, but
+%D with as many characters as possible in order to support the utf-8
+%D input regime.
+
+\startencoding[el]
+
+\definecasemaps   1 to  15 lc +16 uc   0
+\definecasemaps  17 to  31 lc   0 uc -16
+
+\definecasemaps 128 to 159 lc +32 uc   0
+\definecasemaps 160 to 191 lc   0 uc -32
+
+\definecasemaps 192 to 223 lc +32 uc   0
+\definecasemaps 224 to 255 lc   0 uc -32
+
+\definecasemap   92  92 124
+\definecasemap   92 124  92
+
+\definecharacter dotlessi         160
+\definecharacter endash            32
+\definecharacter emdash            16
+
+\definecharacter aeligature       230
+\definecharacter AEligature       198
+\definecharacter oeligature       247
+\definecharacter OEligature       215
+
+\definecharacter ssharp            38
+
+\definecharacter thorn            254
+\definecharacter Thorn            222
+
+\definecharacter eth              240
+\definecharacter Eth              208
+
+\definecharacter exclamdown        42
+\definecharacter questiondown      43
+
+\definecharacter quotedbl          35
+\definecharacter quotedblbase      36
+\definecharacter quotedblleft      34
+\definecharacter quotedblright     35
+
+\definecharacter quotesingle       39
+\definecharacter quotesinglebase    0
+
+\definecharacter quoteleft         96
+\definecharacter quoteright        39
+
+\definecharacter guilsingleleft    60
+\definecharacter guilsingleright   62
+
+\definecharacter leftguillemot    123
+\definecharacter rightguillemot   125
+
+\definecharacter Acircumflex      194
+\definecharacter acircumflex      226
+%definecharacter Ccircumflex      {\buildtextaccent\textcircumflex C}
+%definecharacter ccircumflex      {\buildtextaccent\textcircumflex c}
+\definecharacter Ecircumflex      202
+\definecharacter ecircumflex      234
+%definecharacter Gcircumflex      {\buildtextaccent\textcircumflex G}
+%definecharacter gcircumflex      {\buildtextaccent\textcircumflex g}
+%definecharacter Hcircumflex      {\buildtextaccent\textcircumflex H}
+%definecharacter hcircumflex      {\buildtextaccent\textcircumflex h}
+\definecharacter Icircumflex      206
+\definecharacter icircumflex      238
+%definecharacter Jcircumflex      {\buildtextaccent\textcircumflex \dotlessJ}
+%definecharacter jcircumflex      {\buildtextaccent\textcircumflex \dotlessj}
+\definecharacter Ocircumflex      212
+\definecharacter ocircumflex      244
+%definecharacter Scircumflex      {\buildtextaccent\textcircumflex S}
+%definecharacter scircumflex      {\buildtextaccent\textcircumflex s}
+\definecharacter Ucircumflex      219
+\definecharacter ucircumflex      251
+\definecharacter Wcircumflex      154
+\definecharacter wcircumflex      186
+\definecharacter Ycircumflex      156
+\definecharacter ycircumflex      188
+
+\definecharacter Agrave           192
+\definecharacter agrave           224
+\definecharacter Egrave           200
+\definecharacter egrave           232
+\definecharacter Igrave           204
+\definecharacter igrave           236
+\definecharacter Ograve           210
+\definecharacter ograve           242
+\definecharacter Ugrave           217
+\definecharacter ugrave           249
+\definecharacter Ygrave           155
+\definecharacter ygrave           187
+
+\definecharacter Atilde           195
+\definecharacter atilde           227
+%definecharacter Itilde           {\buildtextaccent\texttilde \dotlessI}
+%definecharacter itilde           {\buildtextaccent\texttilde \dotlessi}
+\definecharacter Ntilde           209
+\definecharacter ntilde           241
+\definecharacter Otilde           213
+\definecharacter otilde           245
+%definecharacter Utilde           {\buildtextaccent\texttilde U}
+%definecharacter utilde           {\buildtextaccent\texttilde u}
+%definecharacter Ytilde           {\buildtextaccent\texttilde Y}
+%definecharacter ytilde           {\buildtextaccent\texttilde y}
+
+\definecharacter Adiaeresis       196
+\definecharacter adiaeresis       228
+\definecharacter Ediaeresis       203
+\definecharacter ediaeresis       235
+\definecharacter Idiaeresis       207
+\definecharacter idiaeresis       239
+\definecharacter Odiaeresis       214
+\definecharacter odiaeresis       246
+\definecharacter Udiaeresis       220
+\definecharacter udiaeresis       252
+\definecharacter Ydiaeresis       223
+\definecharacter ydiaeresis       255
+
+\definecharacter Aacute           193
+\definecharacter aacute           225
+\definecharacter Cacute             4
+\definecharacter cacute            20
+\definecharacter Eacute           201
+\definecharacter eacute           233
+\definecharacter Iacute           205
+\definecharacter iacute           237
+\definecharacter Lacute           132
+\definecharacter lacute           164
+\definecharacter Nacute           136
+\definecharacter nacute           168
+\definecharacter Oacute           211
+\definecharacter oacute           243
+\definecharacter Racute           141
+\definecharacter racute           173
+\definecharacter Sacute           144
+\definecharacter sacute           176
+\definecharacter Uacute           218
+\definecharacter uacute           250
+\definecharacter Yacute           221
+\definecharacter yacute           253
+\definecharacter Zacute           157
+\definecharacter zacute           189
+
+\definecharacter Dstroke            8
+\definecharacter dstroke           24
+\definecharacter Hstroke           92
+\definecharacter hstroke          124
+%definecharacter Tstroke          {T}
+%definecharacter tstroke          {t}
+
+\definecharacter Cdotaccent         6
+\definecharacter cdotaccent        22
+\definecharacter Edotaccent        10
+\definecharacter edotaccent        26
+\definecharacter Gdotaccent        15
+\definecharacter gdotaccent        31
+\definecharacter Idotaccent       128
+%definecharacter idotaccent       {\buildtextaccent\textdotaccent \dotlessi}
+\definecharacter Zdotaccent       159
+\definecharacter zdotaccent       191
+
+\definecharacter Amacron            2
+\definecharacter amacron           18
+\definecharacter Emacron           11
+\definecharacter emacron           27
+\definecharacter Imacron          129
+\definecharacter imacron          161
+\definecharacter Omacron          140
+\definecharacter omacron          172
+\definecharacter Umacron          152
+\definecharacter umacron          184
+
+\definecharacter Ccedilla         199
+\definecharacter ccedilla         231
+\definecharacter Scedilla         146
+\definecharacter scedilla         178
+
+\definecharacter Gcommaaccent      14
+\definecharacter gcommaaccent      30
+\definecharacter Kcommaaccent     131
+\definecharacter kcommaaccent     163
+\definecharacter Lcommaaccent     135
+\definecharacter lcommaaccent     167
+\definecharacter Ncommaaccent     138
+\definecharacter ncommaaccent     170
+\definecharacter Rcommaaccent     143
+\definecharacter rcommaaccent     175
+%definecharacter Tcedilla         149 % there is no tcedilla in encoding
+%definecharacter tcedilla         181
+
+\definecharacter Scommaaccent     147
+\definecharacter scommaaccent     179
+\definecharacter Tcommaaccent     149
+\definecharacter tcommaaccent     181
+
+\definecharacter Ohungarumlaut    139
+\definecharacter ohungarumlaut    171
+\definecharacter Uhungarumlaut    150
+\definecharacter uhungarumlaut    182
+
+\definecharacter Aogonek            3
+\definecharacter aogonek           19
+\definecharacter Eogonek           12
+\definecharacter eogonek           28
+\definecharacter Iogonek          130
+\definecharacter iogonek          162
+\definecharacter Uogonek          153
+\definecharacter uogonek          185
+
+\definecharacter Aring            197
+\definecharacter aring            229
+\definecharacter Uring            151
+\definecharacter uring            183
+
+\definecharacter Abreve            1
+\definecharacter abreve            17
+%definecharacter Ebreve           {\buildtextaccent\textbreve E}
+%definecharacter ebreve           {\buildtextaccent\textbreve e}
+\definecharacter Gbreve            13
+\definecharacter gbreve            29
+%definecharacter Ibreve           {\buildtextaccent\textbreve \dotlessI}
+%definecharacter ibreve           {\buildtextaccent\textbreve \dotlessi}
+%definecharacter Obreve           {\buildtextaccent\textbreve O}
+%definecharacter obreve           {\buildtextaccent\textbreve o}
+%definecharacter Ubreve           {\buildtextaccent\textbreve U}
+%definecharacter ubreve           {\buildtextaccent\textbreve u}
+
+\definecharacter Ccaron             5
+\definecharacter ccaron            21
+\definecharacter Dcaron             7
+\definecharacter dcaron            23
+\definecharacter Ecaron             9
+\definecharacter ecaron            25
+\definecharacter Lcaron           133
+\definecharacter lcaron           165
+\definecharacter Ncaron           137
+\definecharacter ncaron           169
+\definecharacter Rcaron           142
+\definecharacter rcaron           174
+\definecharacter Scaron           145
+\definecharacter scaron           177
+\definecharacter Tcaron           148
+\definecharacter tcaron           180
+%definecharacter Ycaron           {\buildtextaccent\textcaron Y}
+%definecharacter ycaron           {\buildtextaccent\textcaron y}
+\definecharacter Zcaron           158
+\definecharacter zcaron           190
+
+\definecharacter Lstroke          134
+\definecharacter lstroke          166
+\definecharacter Ostroke          216
+\definecharacter ostroke          248
+
+\stopencoding

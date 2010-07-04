@@ -1,0 +1,484 @@
+%D \module
+%D   [       file=spec-pdf,
+%D        version=1997.09.20,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Adobe \ACROBAT\ version 2.1,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% funny things: mail to yeny: "please geen auto-crlf in special"
+
+\unprotect
+
+%D This driver is build on top of the general \PDF\ macros,
+%D as defined in \type{spec-fdf}, so we inherit that one.
+
+\startspecials[pdf][fdf]
+
+%D \macros
+%D   {dosetupinteraction,
+%D    doPDFsetopenaction,doPDFsetcloseaction}
+%D
+%D Instead of a prolog, we can put the code in the file
+%D ourselve.
+%D
+%D \starttyping
+%D \definespecial\dosetupinteraction%
+%D   {\special
+%D      {\@@insertpostscriptretain
+%D         /pdfmark where
+%D           {pop}
+%D           {userdict /pdfmark /cleartomark load put}
+%D         ifelse}}
+%D \stoptyping
+%D
+%D We decided to use a prolog file. The following code has to
+%D be put somewhere, e.g.\ in the startup directory of
+%D \DISTILLER. To overcome problems, we always embed the fonts,
+%D but copyrights force us always to make subsets.
+%D
+%D \starttyping
+%D /currentdistillerparams where
+%D   { pop } { userdict /currentdistillerparams { 1 dict } put } ifelse
+%D
+%D /setdistillerparams     where
+%D   { pop } { userdict /setdistillerparams { pop } put } ifelse
+%D
+%D << /AntiAliasColorImages   true
+%D    /AntiAliasGrayImages    true
+%D    /AntiAliasMonoImages    true
+%D    /ConvertCMYKImagesToRGB true
+%D    /MaxSubsetPct           99
+%D    /EmbedAllFonts          true
+%D    /SubSetFonts            true >> setdistillerparams
+%D \stoptyping
+%D
+%D Beware, this is the PostScript Level 2 way of doing things.
+
+\definespecial\dosetupinteraction
+  {\showmessage\m!interactions{21}{acrobat}}
+
+\definespecial\dosetupopenaction {\doPDFsetupopenaction}
+\definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
+
+%D \macros
+%D   {dostartthisislocation}
+%D
+%D We share a lot of macros with the \PDFTEX\ driver. First
+%D the one that handles named destinations.
+
+\definespecial\dostartthisislocation {\doPDFstartthisislocation}
+
+%D \macros
+%D   {doresetgotowhereever,
+%D    dostartgotolocation,dostartgotorealpage,dostartgotoJS,
+%D    dostartexecutecommand,dostartrunprogram,dostartgotoprofile}
+%D
+%D The next specials are responsible for handling references.
+%D Each goto handler can handle multiple references.
+
+\definespecial\doresetgotowhereever {\doPDFresetgotowhereever}
+\definespecial\dostartgotolocation  {\doPDFstartgotolocation}
+\definespecial\dostartgotorealpage  {\doPDFstartgotorealpage}
+\definespecial\dostartgotoJS        {\doPDFstartgotoJS}
+\definespecial\dostartexecutecommand{\doPDFstartexecutecommand}
+\definespecial\dostartrunprogram    {\doPDFstartrunprogram}
+\definespecial\dostartgotoprofile   {\doPDFstartgotoprofile}
+
+%D \macros
+%D   {doflushJSpreamble}
+%D
+%D Thanks to the fact that \DISTILLER\ cannot handle multiple
+%D names entries in the document catalog, for the moment we
+%D have to misuse the page attributes. Beware, the preambles
+%D must be packed.
+
+\definespecial\doflushJSpreamble#1%
+  {\bgroup
+   \ifoneJSpreamble
+     \edef\sanitizedJScode{\getJSpreamble{#1}}%
+     \expandafter\doPSsanitizeJScode\sanitizedJScode\to\sanitizedJScode
+     \special % nota bene, the page starts at 1
+       {\@@insertpostscriptretain
+          [ /_objdef{JS:#1} /type /dict /OBJ pdfmark
+          [ {JS:#1} << /S /JavaScript /JS (\sanitizedJScode) >> /PUT pdfmark
+          [ {Page1} << /AA << /O {JS:#1} >> >> /PUT pdfmark}%
+   \else % temporary message
+     \writestatus{\m!specials}{Acrobat workaround needed: please pack JS preambles}%
+   \fi
+   \egroup}
+
+%D \macros
+%D   {dostarthide,dostophide}
+%D
+%D Hopefully some day hiding navigational things when
+%D printing \PDF\ files will be supported properly.
+
+\definespecial\dostarthide%
+  {\special
+     {\@@insertpostscriptretain
+        [ /DataSource (false \iftrue\string{\else}\fi)
+          /PS
+        pdfmark}}
+
+\definespecial\dostophide%
+  {\special
+     {\@@insertpostscriptretain
+        [ /DataSource (\iffalse{\else\string}\fi if)
+          /PS
+        pdfmark}}
+
+%D \macros
+%D   {dosetupscreen,
+%D    dosetupidentity}
+%D
+%D We can set up the page dimensions, full screen start up
+%D mode and identify the file with:
+
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpaperheight}
+
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpaperheight}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpaperheight}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpaperheight}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpaperheight}
+
+\definespecial\dosetupidentity{\doPDFsetupidentity}
+
+%D \macros
+%D   {dobeginofprofile,doendofprofile}
+%D
+%D Profile support is still far from perfect. This is
+%D especially due to the fact that the specification of
+%D threads are sort of fuzzy and depend on the viewer.
+
+\definespecial\dobeginofprofile#1#2#3#4% label width height page
+  {\bgroup
+   \setPDFdestination{#1}%
+   \doifsomething{\PDFdestination}
+     {\PointsToBigPoints{#2}\width
+      \PointsToBigPoints{#3}\height
+      \special
+        {\@@insertpostscriptretain
+           [ /Title (\PDFdestination)
+             /Rect [0 0 \width\space\height]
+             /ARTICLE
+           pdfmark}}%
+   \egroup}
+
+\definespecial\doendofprofile%
+  {}
+
+%D Apart from movies, graphic inclusion is handled in the
+%D \POSTSCRIPT\ drivers. We just link the movie annotation
+%D handled to the file inclusion system.
+
+\definefileinsertion{yy}{mov}{\doPDFinsertmov}
+\definefileinsertion{tr}{mov}{\doPDFinsertmov}
+
+\definefileinsertion{yy}{avi}{\doPDFinsertmov}
+\definefileinsertion{tr}{avi}{\doPDFinsertmov}
+
+%D \macros
+%D   {doinsertsoundtrack}
+%D
+%D Sounds look much like movies:
+
+\definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
+
+%D \macros
+%D   {dostartobject,dostopobject,
+%D    doinsertobject}
+%D
+%D Objects, those nice reusable pieces of text and graphics,
+%D are handled by three specials:
+
+\definespecial\dostartobject#1#2#3#4#5%
+  {\bgroup
+   \setbox\nextbox=\hbox\bgroup
+     \bgroup
+     \PointsToBigPoints{#3}\width
+     \PointsToBigPoints{#4}\height
+     \PointsToBigPoints{#5}\depth
+     \dosetobjectreference{#1}{#2}{#1::#2}%
+     \special
+       {\@@insertpostscriptretain
+          [ /BBox [0 -\depth\space \width\space \height]
+            /_objdef {#1::#2}
+            /BP
+          pdfmark}%
+     \egroup}
+
+\definespecial\dostopobject%
+  {\special
+      {\@@insertpostscriptretain
+         [ /EP
+         pdfmark}%
+   \egroup
+   \smashbox\nextbox
+   \flushatshipout{\box\nextbox}%
+   \egroup}
+
+\definespecial\doinsertobject#1#2%
+  {\hbox
+     {\dogetobjectreference{#1}{#2}\PDFobjectreference
+      \ifx\PDFobjectreference\empty \else
+        \special
+          {\@@insertpostscriptretain
+             [ {\PDFobjectreference}
+               /SP
+             pdfmark}%
+      \fi}}
+
+%D \macros
+%D   {doinsertbookmark}
+%D
+%D Although personally I never use bookmarks, \CONTEXT\ does
+%D support them, due to user requests.
+
+\definespecial\doinsertbookmark {\doPDFinsertbookmark}
+
+%D \macros
+%D   {dosetpagetransition}
+%D
+%D Page transitions, again a user wish, is taken care of by:
+
+\definespecial\dosetpagetransition{\doPDFsetpagetransition}
+
+%D \macros
+%D   {doinsertcomment, doflushcomments}
+%D
+%D I never needed (and used) one until now, but here is the
+%D text annotation special:
+
+\definespecial\doinsertcomment{\doPDFinsertcomment}
+\definespecial\doflushcomments{\doPDFflushcomments}
+
+%D \macros
+%D   {dopresetlinefield,dopresettextfield,
+%D    dopresetchoicefield,dopresetpopupfield,dopresetcombofield,
+%D    dopresetpushfield,dopresetcheckfield,
+%D    dopresetradiofield,dopresetradiorecord}
+%D
+%D There is nothing enervating to the next few mappings.
+
+\definespecial\dopresetlinefield  {\doFDFpresetlinefield}
+\definespecial\dopresettextfield  {\doFDFpresettextfield}
+\definespecial\dopresetchoicefield{\doFDFpresetchoicefield}
+\definespecial\dopresetpopupfield {\doFDFpresetpopupfield}
+\definespecial\dopresetcombofield {\doFDFpresetcombofield}
+\definespecial\dopresetpushfield  {\doFDFpresetpushfield}
+\definespecial\dopresetcheckfield {\doFDFpresetcheckfield}
+\definespecial\dopresetradiofield {\doFDFpresetradiofield}
+\definespecial\dopresetradiorecord{\doFDFpresetradiorecord}
+
+%D \macros
+%D   {dodefinefieldset,dogetfieldset,doiffieldset}
+%D
+%D Field sets, used in resetting and submitting, are handled
+%D by:
+
+\definespecial\dodefinefieldset{\doFDFdefinefieldset}
+\definespecial\dogetfieldset   {\doFDFgetfieldset}
+\definespecial\doiffieldset    {\doFDFiffieldset}
+
+%D \macros
+%D   {doregistercalculationset}
+%D
+%D The calculation order is defined using:
+
+\definespecial\doregistercalculationset{\doFDFregistercalculationset}
+
+%D \macros
+%D   {doPDFdestination}
+%D
+%D Last we implement the low level pdfmark macros. The
+%D definitions are rather verbose. First the destination
+%D macro.
+
+\def\doPDFdestination#1%
+  {\special
+     {\@@insertpostscriptretain
+        [ /Dest /#1\space
+          \PDFpageview
+          /DEST
+        pdfmark}}
+
+%D \macros
+%D   {doPDFaction,doPDFannotation,doPDFannotationobject,
+%D    ifsharePDFactions}
+%D
+%D We have three alternative annotation macros. The first
+%D handles the goto ones, the second takes care of for instance
+%D movies and the third is used in fields.
+
+\newcount\nofPDFsimilar
+
+\newif\ifsharePDFactions \sharePDFactionstrue
+
+\def\dodoPDFaction#1#2#3#4%
+  {\ifcollectreferenceactions
+     \xdef\lastPDFaction{#4}%
+   \else
+     \bgroup
+    % does not work well with distiller 4
+    %\ifsharePDFactions
+    %  \ifcase\similarreference\relax
+    %    \xdef\lastPDFaction{<<#4>>}%
+    %  \or
+    %    \global\advance\nofPDFsimilar by 1
+    %    \special
+    %      {\@@insertpostscriptretain
+    %         [ /_objdef {PDF::sim:\the\nofPDFsimilar} /type /dict /OBJ pdfmark
+    %         [ {PDF::sim:\the\nofPDFsimilar} <<#4>>\space /PUT pdfmark}%
+    %    \xdef\lastPDFaction{{PDF::sim:\the\nofPDFsimilar}}%
+    %  \else
+    %    % leave \lastPDFaction untouched
+    %  \fi
+    %\else
+       \xdef\lastPDFaction{<<#4>>}%
+    %\fi
+     \PointsToBigPoints{#2}\width
+     \PointsToBigPoints{#1}\height
+     \special
+       {\@@insertpostscriptretain
+          [ #1
+            /Action \lastPDFaction\space
+            /Rect [0 0 \width\space \height]
+            /Border [0 0 0]
+            \ifhighlighthyperlinks \else /H /N \fi
+            /Subtype /Link
+            /ANN
+          pdfmark}%
+     \egroup
+   \fi}
+
+\def\doPDFaction#1#2#3%
+  {\dodoPDFaction\empty{#1}{#2}{#3}}
+
+\def\doPDFannotation#1#2#3%
+  {\bgroup
+   \PointsToBigPoints{#1}\width
+   \PointsToBigPoints{#2}\height
+   \special
+     {\@@insertpostscriptretain
+        [ /Rect [0 0 \width\space \height] #3
+          /ANN
+        pdfmark}%
+   \egroup}
+
+\def\doPDFannotationobject#1#2#3#4#5%
+  {\bgroup
+   \PointsToBigPoints{#3}\width
+   \PointsToBigPoints{#4}\height
+   \special
+     {\@@insertpostscriptretain
+        [ /_objdef {#1::#2}
+          /Rect [0 0 \width\space \height] #5
+          /ANN
+        pdfmark}%
+   \egroup
+   \dosetobjectreference{#1}{#2}{#1::#2}}
+
+\def\doPDFactionobject#1#2#3#4#5%
+  {\dodoPDFaction{/_objdef {#1::#2}}{#3}{#4}{#5}%
+   \dosetobjectreference{#1}{#2}{#1::#2}}
+
+%D \macros
+%D   {doPDFdictionaryobject,doPDFarrayobject}
+%D
+%D These two macros are used to build low level objects.
+
+\def\doPDFdictionaryobject#1#2#3%
+  {\special
+     {\@@insertpostscriptretain
+        [ /_objdef {#1::#2} /type /dict /OBJ pdfmark
+        [ {#1::#2} << #3 >> /PUT pdfmark}%
+   \dosetobjectreference{#1}{#2}{#1::#2}}
+
+\def\doPDFarrayobject#1#2#3%
+  {\special
+     {\@@insertpostscriptretain
+        [ /_objdef {#1::#2} /type /array /OBJ pdfmark
+        [ {#1::#2} 0 [#3] /PUTINTERVAL pdfmark}%
+   \dosetobjectreference{#1}{#2}{#1::#2}}
+
+%D \macros
+%D   {doPDFaddtocatalog,doPDFaddtoinfo,
+%D    doPDFpageattribute,doPDFpagesattribute}
+%D
+%D Next come our housekeeping macros.
+
+\def\doPDFaddtocatalog#1%
+  {\doifsomething{#1}
+     {\special
+        {\@@insertpostscriptretain
+           [ {Catalog} << #1 >> /PUT pdfmark}}}
+
+\def\doPDFaddtoinfo#1% unchecked
+  {\special
+     {\@@insertpostscriptretain
+        [ #1 /DOCINFO pdfmark}} % [ {DocInfo} << #1 >> /PUT pdfmark}}
+
+\def\doPDFpageattribute#1%
+  {\doifsomething{#1}
+     {\special
+        {\@@insertpostscriptretain
+           [ {ThisPage} << #1 >> /PUT pdfmark}}}
+
+\def\doPDFpageresource#1%
+  {\message{[skipping PDF resource]}}
+
+\def\doPDFpagesattribute#1%
+  {\doifsomething{#1}
+     {\special
+        {\@@insertpostscriptretain
+           [ #1 /PAGES pdfmark}}}
+
+\let\doPDFresetpageresources \relax
+\let\doPDFresetpageattributes\relax
+
+%D \macros
+%D   {doPDFbookmark}
+%D
+%D This is how we force bookmarks entries in the file.
+
+\def\doPDFbookmark#1#2#3#4#5%
+  {\scratchcounter#4\advance\scratchcounter\minusone
+   \special
+     {\@@insertpostscriptretain
+        [ /Page \the\scratchcounter\space
+          \ifcase#2 \else/Count \ifcase#5-\fi#2 \fi
+          \PDFpageview
+          /Title (#3)
+          /OUT
+        pdfmark}}
+
+%D \macros
+%D   {defaultobjectreference,doPDFgetobjectreference}
+%D
+%D The object references are \type{{named}}, that is, no hard
+%D coded numbers are needed (opposite to \PDFTEX).
+
+\def\defaultobjectreference#1#2{#1::#2}
+
+\def\doPDFgetobjectreference#1#2#3%
+  {\dogetobjectreference{#1}{#2}#3%
+   \ifx#3\empty\else\edef#3{{#3}}\fi}
+   %\edef#3{\ifx#3\empty null\else{#3}\fi}}
+
+% \def\doPDFgetobjectpage         #1#2#3{..}
+% \def\doPDFgetobjectpagereference#1#2#3{..}
+
+\def\doPDFgetpagereference#1#2%
+  {\edef#2{{page#1}}}
+
+%D Done.
+
+\stopspecials
+
+\protect \endinput

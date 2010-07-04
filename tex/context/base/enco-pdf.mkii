@@ -1,0 +1,278 @@
+%D \module
+%D   [     file=enco-pdf,
+%D      version=1995.01.01,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=\YandY\ texnansi Encoding,
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is the \PDF\ document encoding.
+
+\startencoding[pdfdoc] % \rawcharacter{number}
+
+\definecharacter oeligature        ^^9c
+
+\definecharacter leftguillemot     ^^ab
+\definecharacter rightguillemot    ^^bb
+
+\definecharacter Agrave            ^^c0
+\definecharacter Aacute            ^^c1
+\definecharacter Acircumflex       ^^c2
+\definecharacter Atilde            ^^c3
+\definecharacter Adiaeresis        ^^c4
+\definecharacter OAligature        ^^c5
+\definecharacter AEligature        ^^c6
+\definecharacter Ccedilla          ^^c7
+\definecharacter Egrave            ^^c8
+\definecharacter Eacute            ^^c9
+\definecharacter Ecircumflex       ^^ca
+\definecharacter Ediaeresis        ^^cb
+\definecharacter Igrave            ^^cc
+\definecharacter Iacute            ^^cd
+\definecharacter Icircumflex       ^^ce
+\definecharacter Idiaeresis        ^^cf
+
+\definecharacter Ntilde            ^^d1
+\definecharacter Ograve            ^^d2
+\definecharacter Oacute            ^^d3
+\definecharacter Ocircumflex       ^^d4
+\definecharacter Otilde            ^^d5
+\definecharacter Odiaeresis        ^^d6
+
+\definecharacter Ugrave            ^^d9
+\definecharacter Uacute            ^^da
+\definecharacter Ucircumflex       ^^db
+\definecharacter Udiaeresis        ^^dc
+\definecharacter Yacute            ^^dd
+
+\definecharacter ssharp            ^^df
+\definecharacter agrave            ^^e0
+\definecharacter aacute            ^^e1
+\definecharacter acircumflex       ^^e2
+\definecharacter atilde            ^^e3
+\definecharacter adiaeresis        ^^e4
+\definecharacter oaligature        ^^e5
+\definecharacter aeligature        ^^e6
+\definecharacter ccedilla          ^^e7
+\definecharacter egrave            ^^e8
+\definecharacter eacute            ^^e9
+\definecharacter ecircumflex       ^^ea
+\definecharacter ediaeresis        ^^eb
+\definecharacter igrave            ^^ec
+\definecharacter iacute            ^^ed
+\definecharacter icircumflex       ^^ee
+\definecharacter idiaeresis        ^^ef
+
+\definecharacter ntilde            ^^f1
+\definecharacter ograve            ^^f2
+\definecharacter oacute            ^^f3
+\definecharacter ocircumflex       ^^f4
+\definecharacter otilde            ^^f5
+\definecharacter odiaeresis        ^^f6
+
+\definecharacter ugrave            ^^f9
+\definecharacter uacute            ^^fa
+\definecharacter ucircumflex       ^^fb
+\definecharacter udiaeresis        ^^fc
+\definecharacter yacute            ^^fd
+
+\definecharacter ydiaeresis        ^^ff
+
+\definecharacter leftsubguillemot  {\leftguillemot}
+\definecharacter rightsubguillemot {\rightguillemot}
+
+\definecharacter Uhungarumlaut     {\Ucircumflex}
+\definecharacter uhungarumlaut     {\ucircumflex}
+\definecharacter Ohungarumlaut     {\Ocircumflex}
+\definecharacter ohungarumlaut     {\ocircumflex}
+
+\definecharacter Aogonek           {A}
+\definecharacter aogonek           {a}
+\definecharacter Eogonek           {E}
+\definecharacter eogonek           {e}
+\definecharacter Iogonek           {I}
+\definecharacter iogonek           {i}
+\definecharacter Uogonek           {U}
+\definecharacter uogonek           {u}
+
+\definecharacter Aring             {A}
+\definecharacter aring             {a}
+\definecharacter Uring             {U}
+\definecharacter uring             {u}
+
+\definecharacter Abreve            {A}
+\definecharacter abreve            {a}
+\definecharacter Ebreve            {E}
+\definecharacter ebreve            {e}
+\definecharacter Gbreve            {G}
+\definecharacter gbreve            {g}
+\definecharacter Ibreve            {I}
+\definecharacter ibreve            {i}
+\definecharacter Obreve            {O}
+\definecharacter obreve            {o}
+\definecharacter Ubreve            {U}
+\definecharacter ubreve            {u}
+
+\definecharacter Ccaron            {C}
+\definecharacter ccaron            {c}
+\definecharacter Dcaron            {D}
+\definecharacter dcaron            {d}
+\definecharacter Ecaron            {E}
+\definecharacter ecaron            {e}
+\definecharacter Lcaron            {L}
+\definecharacter lcaron            {l}
+\definecharacter Ncaron            {N}
+\definecharacter ncaron            {n}
+\definecharacter Rcaron            {R}
+\definecharacter rcaron            {r}
+\definecharacter Scaron            {S}
+\definecharacter scaron            {s}
+\definecharacter Tcaron            {T}
+\definecharacter tcaron            {t}
+\definecharacter Ycaron            {Y}
+\definecharacter ycaron            {y}
+\definecharacter Zcaron            {Z}
+\definecharacter zcaron            {z}
+
+\definecharacter Lstroke           {L}
+\definecharacter lstroke           {l}
+\definecharacter Ostroke           {O}
+\definecharacter ostroke           {o}
+
+\definecharacter aumlaut           {\adiaeresis}
+\definecharacter eumlaut           {\ediaeresis}
+\definecharacter iumlaut           {\idiaeresis}
+\definecharacter oumlaut           {\odiaeresis}
+\definecharacter uumlaut           {\udiaeresis}
+
+\definecharacter Aumlaut           {\Adiaeresis}
+\definecharacter Eumlaut           {\Ediaeresis}
+\definecharacter Iumlaut           {\Idiaeresis}
+\definecharacter Oumlaut           {\Odiaeresis}
+\definecharacter Uumlaut           {\Udiaeresis}
+
+\definecharacter scommaaccent      {s}
+\definecharacter Scommaaccent      {S}
+\definecharacter tcommaaccent      {t}
+\definecharacter Tcommaaccent      {T}
+
+\definecharacter Etilde            {E}
+\definecharacter etilde            {e}
+
+\definecharacter Ahook             {A}
+\definecharacter ahook             {a}
+\definecharacter Ehook             {E}
+\definecharacter ehook             {e}
+\definecharacter Ihook             {I}
+\definecharacter ihook             {i}
+\definecharacter Ohook             {O}
+\definecharacter ohook             {o}
+\definecharacter Uhook             {U}
+\definecharacter uhook             {u}
+\definecharacter Yhook             {Y}
+\definecharacter yhook             {y}
+
+\definecharacter Acircumflexgrave  {\Acircumflex}
+\definecharacter Acircumflexacute  {\Acircumflex}
+\definecharacter Acircumflextilde  {\Acircumflex}
+\definecharacter Acircumflexhook   {\Acircumflex}
+\definecharacter acircumflexgrave  {\acircumflex}
+\definecharacter acircumflexacute  {\acircumflex}
+\definecharacter acircumflextilde  {\acircumflex}
+\definecharacter acircumflexhook   {\acircumflex}
+\definecharacter Ecircumflexgrave  {\Ecircumflex}
+\definecharacter Ecircumflexacute  {\Ecircumflex}
+\definecharacter Ecircumflextilde  {\Ecircumflex}
+\definecharacter Ecircumflexhook   {\Ecircumflex}
+\definecharacter ecircumflexgrave  {\ecircumflex}
+\definecharacter ecircumflexacute  {\ecircumflex}
+\definecharacter ecircumflextilde  {\ecircumflex}
+\definecharacter ecircumflexhook   {\ecircumflex}
+\definecharacter Ocircumflexgrave  {\Ocircumflex}
+\definecharacter Ocircumflexacute  {\Ocircumflex}
+\definecharacter Ocircumflextilde  {\Ocircumflex}
+\definecharacter Ocircumflexhook   {\Ocircumflex}
+\definecharacter ocircumflexgrave  {\ocircumflex}
+\definecharacter ocircumflexacute  {\ocircumflex}
+\definecharacter ocircumflextilde  {\ocircumflex}
+\definecharacter ocircumflexhook   {\ocircumflex}
+
+\definecharacter Abrevegrave       {A}
+\definecharacter Abreveacute       {A}
+\definecharacter Abrevetilde       {A}
+\definecharacter Abrevehook        {A}
+\definecharacter abrevegrave       {a}
+\definecharacter abreveacute       {a}
+\definecharacter abrevetilde       {a}
+\definecharacter abrevehook        {a}
+
+\definecharacter Adotbelow         {A}
+\definecharacter adotbelow         {a}
+\definecharacter Edotbelow         {E}
+\definecharacter edotbelow         {e}
+\definecharacter Idotbelow         {I}
+\definecharacter idotbelow         {i}
+\definecharacter Odotbelow         {O}
+\definecharacter odotbelow         {o}
+\definecharacter Udotbelow         {U}
+\definecharacter udotbelow         {u}
+\definecharacter Ydotbelow         {Y}
+\definecharacter ydotbelow         {y}
+\definecharacter Ohorndotbelow     {O}
+\definecharacter ohorndotbelow     {o}
+\definecharacter Uhorndotbelow     {U}
+\definecharacter uhorndotbelow     {u}
+
+\definecharacter Acircumflexdotbelow {\Acircumflex}
+\definecharacter acircumflexdotbelow {\acircumflex}
+\definecharacter Ecircumflexdotbelow {\Ecircumflex}
+\definecharacter ecircumflexdotbelow {\ecircumflex}
+\definecharacter Ocircumflexdotbelow {\Ocircumflex}
+\definecharacter ocircumflexdotbelow {\ocircumflex}
+\definecharacter Abrevedotbelow      {\Abreve}
+\definecharacter abrevedotbelow      {\abreve}
+
+\definecharacter Ohorn               {O}
+\definecharacter Ohorngrave          {O}
+\definecharacter Ohornacute          {O}
+\definecharacter Ohorntilde          {O}
+\definecharacter Ohornhook           {O}
+
+\definecharacter ohorn               {o}
+\definecharacter ohorngrave          {o}
+\definecharacter ohornacute          {o}
+\definecharacter ohorntilde          {o}
+\definecharacter ohornhook           {o}
+
+\definecharacter Uhorn               {U}
+\definecharacter Uhorngrave          {U}
+\definecharacter Uhornacute          {U}
+\definecharacter Uhorntilde          {U}
+\definecharacter Uhornhook           {U}
+
+\definecharacter uhorn               {u}
+\definecharacter uhorngrave          {u}
+\definecharacter uhornacute          {u}
+\definecharacter uhorntilde          {u}
+\definecharacter uhornhook           {u}
+
+\definecharacter Utilde              {U}
+\definecharacter utilde              {u}
+\definecharacter Itilde              {I}
+\definecharacter itilde              {i}
+\definecharacter Ygrave	    	     {Y}
+\definecharacter ygrave		         {y}
+\definecharacter Ytilde              {Y}
+\definecharacter ytilde              {y}
+
+\definecharacter dstroke             {d}
+\definecharacter Dstroke             {D}
+
+\stopencoding
+
+\endinput

@@ -1,0 +1,293 @@
+%D \module
+%D   [       file=supp-mat,
+%D        version=1998.09.10,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D For practical reasons, I decided to move some math things to
+%D a support module. There is nothing spectacular here. It may move
+%D back to math-ini.
+
+\writestatus{loading}{ConTeXt Support Macros / Math}
+
+\unprotect
+
+%D \macros
+%D   {mathematics, math, nomathematics, startmathmode}
+%D
+%D The \type{$} can be both an begin and end math character.
+%D This can lead to confusing and errorprone situations when
+%D macros insert \type{$}. When for instance we have defined:
+%D
+%D \starttyping
+%D \def\MyPlus{$\,+\,$}
+%D \stoptyping
+%D
+%D the sequence \type{$x^2 \MyPlus y^2 = r^2$} will expand to:
+%D
+%D \starttyping
+%D $x^2 $\,+\,$ y^2 = r^2$
+%D \stoptyping
+%D
+%D Here the \type{\,} are given outside math mode and \TEX\ will
+%D definitely complain about this. A more save definition would
+%D have been:
+%D
+%D \starttyping
+%D \def\MyPlus{\mathematics{\,+\,}}
+%D \stoptyping
+%D
+%D Which is implemented as:
+
+\long\def\mathematics#1{\relax         \ifmmode#1\else\Ustartmath       #1\Ustopmath       \fi}
+\long\def\displaymath#1{\noindent      \ifmmode#1\else\Ustartdisplaymath#1\Ustopdisplaymath\fi}
+\long\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\Ustartmath       #1\Ustopmath       \fi}
+
+\let\stopmathmode\relax
+
+\unexpanded\def\startmathmode % cannot be used nested
+  {\relax\ifmmode
+     \let\stopmathmode\relax
+   \else
+     \Ustartmath\let\stopmathmode\Ustopmath
+   \fi}
+
+\unexpanded\def\startmathmode % nested variant
+  {\relax\ifmmode
+     \begingroup\let\stopmathmode\endgroup
+   \else
+     \Ustartmath\let\stopmathmode\Ustopmath
+   \fi}
+
+\def\nomathematics#1%
+  {\relax\ifmmode\hbox{#1}\else#1\fi}
+
+\let\math\mathematics
+
+%D \macros
+%D   {displaymathematics,inlinemathematics,automathematics}
+%D
+%D An example of usage of the following can be found in the MathML module:
+
+\long\def\displaymathematics#1{\relax\ifmmode#1\else\dostartformula{}#1\dostopformula\fi}
+     \def\inlinemathematics   {\dontleavehmode\mathematics}
+     \def\automathematics     {\relax\ifhmode\@EA\inlinemathematics\else\@EA\displaymathematics\fi}
+
+% better, esp when used in bTABLE ... eTABLE
+
+\def\automathematics
+  {\relax
+   \ifhmode
+     \expandafter\inlinemathematics
+   \else\ifintable
+     \expandafter\expandafter\expandafter\inlinemathematics
+   \else
+     \expandafter\expandafter\expandafter\displaymathematics
+   \fi\fi}
+
+%D \macros
+%D   {dimension, nodimension}
+%D
+%D The next few macros are used for typesetting dimensions in
+%D such a way that spacing is acceptable. I won't spend much
+%D words on these macros, because they will be overloaded in
+%D the units module.
+
+\newsignal\dimensionsignal
+
+\def\dimensiontypeface  {\tf}
+\def\dimensionhalfspace {\,}
+
+\unexpanded\def\dimension#1%
+  {\def\dodimensionsignal{\kern\dimensionsignal}%
+   \ifdim\lastskip=\zeropoint\relax
+     \ifdim\lastkern=\zeropoint\relax
+       \ifmmode
+         \mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+       \else
+         \mathematics{\dimensiontypeface#1}%
+       \fi
+     \else\ifdim\lastkern=\dimensionsignal
+       \mathematics{\dimensionhalfspace\dimensiontypeface#1}%
+     \else
+       \unkern\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+     \fi\fi
+   \else
+     \unskip\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+   \fi
+   \dodimensionsignal}
+
+\unexpanded\def\nodimension#1%
+  {\unskip#1\global\let\dodimensionsignal\relax}
+
+%D \macros
+%D   {super, suber}
+%D
+%D \TEX\ uses \type{^} and \type{_} for entering super- and
+%D subscript mode. We want however a bit more control than
+%D normally provided, and therefore provide \type {\super}
+%D and \type{\suber} (\type {\sub} is already taken).
+
+\global\let\normalsuper=^
+\global\let\normalsuber=_
+
+\newcount\supersubmode
+
+\newevery\everysupersub \EverySuperSub
+
+\appendtoks \advance\supersubmode 1\relax \to \everysupersub
+
+% \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
+% \def\dodosuber#1{\normalsuber{\the\everysupersub#1}}
+%
+% \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
+% \def\dosuber{\ifx\next\bgroup\expandafter\dodosuber\else\normalsuber\fi}
+%
+% \def\super{\futurelet\next\dosuper}
+% \def\suber{\futurelet\next\dosuber}
+
+\def\super#1{\normalsuper{\the\everysupersub#1}}
+\def\suber#1{\normalsuber{\the\everysupersub#1}}
+
+%D \macros
+%D   {enablesupsub}
+%D
+%D We can let \type {^} and \type {_} act like \type {\super}
+%D and \type {\suber} by saying \type {\enablesupsub}.
+
+\bgroup
+\catcode`\^=\@@active
+\catcode`\_=\@@active
+\gdef\enablesupsub
+  {\catcode`\^=\@@active
+   \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
+   \catcode`\_=\@@active
+   \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
+\egroup
+
+%D \macros
+%D   {restoremathstyle}
+%D
+%D We can pick up the current math style by calling \type
+%D {\restoremathstyle}.
+
+\def\restoremathstyle
+  {\ifmmode
+     \ifcase\supsubmode
+       \textstyle
+     \or
+       \scriptstyle
+     \else
+       \scriptscriptstyle
+     \fi
+   \fi}
+
+%D \macros
+%D   {cramped}
+%D
+%D \TEX provides no primitive to force in cramped math mode. Here is
+%D a macro that does so. It is based on a solution by Don Knuth (\useurl
+%D {http://www.ctan.org/tex-archive/digests/tex-implementors/042}).
+%D
+%D \startbuffer
+%D \ruledhbox{$\left\{{x^2\over y^2}\right\}$}
+%D \ruledhbox{$\cramped{\left\{ {x^2\over y^2}\right\}}$}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\cramped
+  {\mathpalette\docramped}
+
+%D We force a cramped style by issuing a non||existing radical (box).
+%D After that we make sure the height is correct. (Comment taken from
+%D Morten Høgholm's mathtools package.) Macro suggested by AM and
+%D cleaned up a bit by HH.
+
+% original
+%
+% \def\docramped#1#2%
+%   {\setbox\scratchbox\hbox
+%     {\nulldelimiterspace\zeropoint
+%      $\mathsurround\zeropoint#1\radical\zerocount{#2}$}%
+%    \ifx#1\displaystyle
+%       \scratchdimen\fontdimen8\textfont3
+%       \advance\scratchdimen .25\fontdimen5\textfont2
+%    \else
+%       \scratchdimen1.25\fontdimen8
+%       \ifx#1\textstyle\textfont
+%       \else
+%         \ifx#1\scriptstyle\scriptfont\else\scriptscriptfont\fi
+%       \fi
+%       3
+%     \fi
+%     \advance\scratchdimen-\ht\scratchbox
+%     \ht\scratchbox-\scratchdimen
+%     \box\scratchbox}
+
+\def\docramped#1#2%
+  {\begingroup % added HH, made even more cramped
+   \setbox\scratchbox\hbox
+     {\nulldelimiterspace\zeropoint
+      \Ustartmath\mathsurround\zeropoint#1\radical\zerocount{#2}\Ustopmath}%
+   \ht\scratchbox-\dimexpr
+     \ifx#1\displaystyle
+       \fontdimen8\textfont3
+       +.25\fontdimen5\textfont2
+     \else
+        1.25\fontdimen8
+          \ifx#1\textstyle
+            \textfont
+          \else\ifx#1\scriptstyle
+            \scriptfont
+          \else
+            \scriptscriptfont
+          \fi \fi
+          \plusthree
+     \fi
+     -\ht\scratchbox
+   \relax
+   \box\scratchbox
+   \endgroup}
+
+%D \macros
+%D    {cramedllap, crampedrlap, crampedclap}
+%D
+%D In many cases, one wants to use the \tex {clap} macro in
+%D math mode while using subscripts. Normally, subscripts are
+%D in cramped mode, and these macros allow you to go to
+%D cramped mode. For example:
+%D
+%D \startbuffer
+%D \startformula
+%D   \sum_{a^2 < b^2 < c^2} \quad
+%D   \sum_{\clap{a^2 < b^2 < c^2}} \quad
+%D   \sum_{\crampedclap{a^2 < b^2 < c^2}}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \start
+%D   \typebuffer
+%D   \switchtobodyfont[24pt]
+%D   \getbuffer
+%D \stop
+%D
+%D Notice that \type {\clap{\cramped ... }} would also work,
+%D but it requires \TEX\ to typeset it arguments 16 times.
+
+\def\docrampedllap#1#2{{}\dollap{\docramped #1{#2}}}
+\def\docrampedrlap#1#2{{}\dorlap{\docramped #1{#2}}}
+\def\docrampedclap#1#2{{}\doclap{\docramped #1{#2}}}
+
+\def\crampedllap{\mathpalette\docrampedllap}
+\def\crampedrlap{\mathpalette\docrampedrlap}
+\def\crampedclap{\mathpalette\docrampedclap}
+
+\protect \endinput

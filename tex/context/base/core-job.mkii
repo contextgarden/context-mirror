@@ -1,0 +1,415 @@
+%D \module
+%D   [       file=core-job, % copied from main-001,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Job Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is still to be split and documented.
+
+\writestatus{loading}{ConTeXt Core Macros / Job Handling}
+
+\unprotect
+
+\let \currentproject     \empty
+\let \currentproduct     \empty
+\let \currentenvironment \empty
+\let \currentcomponent   \empty
+
+\let \loadedfiles        \empty
+\let \processedfiles     \empty
+
+\let \nomorefiles        \relax
+
+\let \allinputpaths      \empty
+\let \locatedfilepath    \empty
+
+\newcount\textlevel
+\newcount\fileprocesslevel
+
+\setvalue{\c!file::0}{\jobname}
+
+\def\processedfile % is used in styles, don't change !
+  {\getvalue{\c!file::\number\fileprocesslevel}}
+
+\def\dostarttextfile#1%
+  {\global\advance\fileprocesslevel\plusone
+   \setxvalue{\c!file::\number\fileprocesslevel}{#1}%
+   \@EA\doglobal\@EA\addtocommalist\@EA{#1}\processedfiles}
+
+\def\dostoptextfile
+  {\global\advance\fileprocesslevel\minusone}
+
+\def\processlocalfile#1#2%
+  {#1{#2}\donothing{\readfile{#2}\donothing\donothing}}
+
+\def\processfile#1%
+  {\ifx\allinputpaths\empty
+     \def\next{\processlocalfile\readlocfile}%
+   \else
+     \let\filepath\empty
+     \def\docommand##1%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\filepath{##1}}\donefalse
+        \ifdone\expandafter\quitcommalist\fi}%
+     \doifparentfileelse{#1} % new
+       {\processcommacommand  [\allinputpaths]\docommand}
+       {\processcommacommand[.,\allinputpaths]\docommand}%
+     \ifx\filepath\empty
+       \def\next{\processlocalfile\readlocfile}% fall back ../../..
+     \else
+       \def\next{\processlocalfile{\readsetfile\filepath}}% file found
+     \fi
+   \fi
+   \next{#1}}
+
+\def\doifinputfileelse#1% rarely used
+  {\ifx\allinputpaths\empty
+     \@EA\secondoftwoarguments
+   \else
+     \let\filepath\empty
+     \def\docommand##1%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\filepath{##1}}\donefalse
+        \ifdone\expandafter\quitcommalist\fi}%
+     \processcommacommand[.,\allinputpaths]\docommand
+     \ifx\filepath\empty
+       \@EAEAEA\secondoftwoarguments
+     \else
+       \@EAEAEA\firstoftwoarguments
+     \fi
+   \fi}
+
+\let\locatedfilepath\empty
+
+\def\locatefilepath#1%
+  {\let\locatedfilepath\empty
+   \ifx\allinputpaths\empty \else
+     \def\docommand##1%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\locatedfilepath{##1}}\donefalse
+        \ifdone\expandafter\quitcommalist\fi}%
+     \doifparentfileelse{#1} % new
+       {\processcommacommand  [\allinputpaths]\docommand}
+       {\processcommacommand[.,\allinputpaths]\docommand}%
+   \fi}
+
+\def\usepath[#1]%
+  {\def\docommand##1%
+     {\doifelse{##1}\v!reset
+        {\let\allinputpaths\empty}
+        {\sanitizefilename#1\to\ascii
+         \defconvertedcommand\ascii\ascii
+         \addtocommalist\ascii\allinputpaths}}%
+   \processcommalist[#1]\docommand}
+
+\def\usesubpath[#1]% test for a real long time, permits ../{name} i.e. braces
+  {\ifx\allinputpaths\empty
+     \sanitizefilename#1\to\allinputpaths
+   \else
+     \def\docommand##1%
+       {\def\dodocommand####1%
+          {\sanitizefilename####1\to\ascii
+           \defconvertedcommand\ascii\ascii
+           \addtocommalist{##1/\ascii}\allinputpaths}%
+        \processcommalist[#1]\dodocommand}%
+     \processcommacommand[\allinputpaths]\docommand
+   \fi}
+
+\def\registerfileinfo[#1#2]#3% geen \showmessage ?
+  {\writestatus\m!systems{#1#2 file #3 at line \the\inputlineno}%
+   \immediatewriteutility{f #1 {#3}}}
+
+\ifx\preloadfonts   \undefined \let\preloadfonts   \relax \fi
+\ifx\preloadspecials\undefined \let\preloadspecials\relax \fi
+
+\def\loadallsystemfiles#1#2%
+  {\ifx\@@svdirectory\empty
+     \readsysfile{#1}{\showmessage\m!systems2{#1}}{#2}%
+   \else% yet undocumented
+     \def\doloadsystemfile##1%
+       {\readsetfile{##1}{#1}{\showmessage\m!systems2{#1}}{#2}}%
+     \processcommacommand[\@@svdirectory]\doloadsystemfile
+   \fi}
+
+\ifx\disableXML\undefined \let\disableXML\relax \fi
+
+\def\loadsystemfiles
+  {\reportprotectionstate
+   \readsysfile\f!newfilename{\showmessage\m!systems2\f!newfilename}\donothing
+  %\readsysfile\f!oldfilename{\showmessage\m!systems2\f!oldfilename}\donothing
+   \loadallsystemfiles\f!filfilename
+     \donothing
+   \loadallsystemfiles\f!sysfilename
+     {\loadallsystemfiles{\f!sysfilename.rme}\donothing % new, fall back
+      \doglobal\appendtoks % brrr better \setcatcodetable\ctxcatcodes % % test
+        \bgroup\disableXML\loadallsystemfiles\f!errfilename\donothing\egroup
+      \to\everygoodbye}}
+
+%D Loading of \type {cont-usr.tex} (edited by the user)
+%D and \type {cont-fmt.tex} (generated by texexec).
+
+\def\loaduserspecifications
+  {% this used to be the file where users can tune their system, especially patterns
+   \readsysfile\f!usrfilename{\showmessage\m!systems2\f!usrfilename}\donothing
+   % this one took care of user preferences (fonts, messages) but lm made this obsolete
+   \readjobfile\f!fmtfilename{\showmessage\m!systems2\f!fmtfilename}\donothing
+   % from now on we preload all patterns (only in mkii)
+   \preloadallpatterns}
+
+\let\loaduserspecifications\relax
+
+%D We don't want multiple jobfiles to interfere.
+
+\def\loadoptionfile
+  {\readjobfile{\jobname.\f!optionextension}
+     {\showmessage\m!systems2{\jobname.\f!optionextension}}%
+     {\writestatus\m!systems {no \jobname.\f!optionextension}}}
+
+% Most natural ...
+%
+% \def\doateverystarttext
+%   {\the\everystarttext
+%    \global\let\doateverystarttext\relax}
+%
+% ... most practical, since we can load env's in a
+% something.run file (nested \starttext's; see for
+% instance x-res-08, where we definitely want to
+% open the file!).
+
+\def\doateverystarttext
+  {\the\everystarttext
+   \global\everystarttext\emptytoks}
+
+\def\starttext
+  {\doateverystarttext
+   \ifcase\textlevel
+     \registerfileinfo[begin]\jobname
+     \expandafter\startcopyingblocks
+   \fi
+   \global\advance\textlevel\plusone}
+
+\def\stoptext
+  {\global\advance\textlevel\minusone
+   \ifnum\textlevel>\zerocount \else
+     \page[\v!last]\page % new, moved from everybye to here; flushes headers, colors etc etc etc
+     \the\everystoptext
+    %\the\everybye            %
+    %\the\everygoodbye        % == \end (new)
+    %\expandafter\normalend   %
+     \expandafter\finalend
+   \fi}
+
+\def\forcequitjob#1%
+  {\writestatus\m!systems{forcing quit: #1}%
+   \batchmode
+   \dorecurse\textlevel\stoptext
+   \normalend}
+
+\let\autostoptext\relax
+
+\def\autostarttext
+  {\ifcase\textlevel
+     \starttext
+     \writestatus\m!systems{auto \string\starttext..\string\stoptext}%
+     \let\autostoptext\stoptext
+   \fi}
+
+\def\finalend
+  {\ifnum\textlevel>\zerocount \else
+     \the\everybye
+     \the\everygoodbye
+     \doifsometokselse\everynotabene{\writeline\the\everynotabene\writeline}\donothing
+     \global\everybye    \emptytoks % rather unneeded
+     \global\everygoodbye\emptytoks % but for sure
+     \expandafter\normalend
+   \fi}
+
+\let\end\finalend
+
+\def\emergencyend
+  {\writestatus\m!systems{invalid \@EA\string\csname\e!start\v!text\endcsname...\@EA\string\csname\e!stop\v!text\endcsname\space structure}%
+   \stoptext}
+
+\def\currentfile{\inputfilename}
+
+\def\doexecutefileonce#1%
+  {\beforesplitstring#1\at.\to\currentfile
+   \fullexpandtwoargsafter\doifnotinset\currentfile\loadedfiles
+     {\fullexpandoneargafter\addtocommalist\currentfile\loadedfiles
+      \doexecutefile{#1}}}
+
+\def\doexecutefile#1%
+  {\registerfileinfo[begin]{#1}%
+   \dostarttextfile{#1}%
+   \processfile{#1}%
+   \dostoptextfile
+   \registerfileinfo[end]{#1}}
+
+\def\donotexecutefile#1%
+  {}
+
+\def\verwerkfile#1 %
+  {\doexecutefile{#1}}
+
+\def\useenvironment[#1]% maybe commalist
+  {\environment #1 \relax}
+
+\def\environment #1 % at outermost level only (load only once)
+  {\pushmacro\startenvironment
+   \pushmacro\stopenvironment
+   \def\startenvironment ##1 {}%
+   \let\stopenvironment\relax
+   \startreadingfile
+   \doexecutefileonce{#1}
+   \stopreadingfile
+   \popmacro\stopenvironment
+   \popmacro\startenvironment}
+
+\def\component #1 % at outermost level only
+  {\dostarttextfile{#1}%
+   \processfile{#1}%
+   \dostoptextfile}
+
+\newcount\filelevel
+
+\let\currentcomponent    \v!text
+\let\currentcomponentpath\f!currentpath
+
+\def\donextlevel#1#2#3#4#5#6#7\\%
+  {\pushmacro\currentcomponent
+   \pushmacro\currentcomponentpath
+   \let\currentcomponent#1%
+   \setsystemmode\currentcomponent
+   \splitfilename{#1}%
+   \ifx\splitoffpath\empty
+     \let\currentcomponentpath\f!currentpath
+   \else
+     \let\currentcomponentpath\splitoffpath
+   \fi
+   \beforesplitstring#7\at.\to#2\relax % can become path + base
+   \ifcase\filelevel\relax
+     \starttext
+     \def\project     ##1 {#3{##1}}%
+     \def\environment ##1 {#4{##1}}%
+     \def\product     ##1 {#5{##1}}%
+     \def\component   ##1 {#6{##1}}%
+   \fi
+   \advance\filelevel\plusone
+   \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
+
+\def\doprevlevel
+  {\popmacro\currentcomponentpath
+   \popmacro\currentcomponent
+   \setsystemmode\currentcomponent
+   \ifnum\filelevel=\plusone
+     \expandafter\stoptext
+   \else
+     \advance\filelevel\minusone
+     \expandafter\endinput
+   \fi}
+
+\def\startproject #1 %
+  {\donextlevel\v!project\currentproject
+     \donotexecutefile\doexecutefileonce
+     \doexecutefileonce\doexecutefile#1\\}
+
+\def\startproduct #1 %
+  {\doateverystarttext
+   \donextlevel\v!product\currentproduct
+     \doexecutefileonce\doexecutefileonce
+     \donotexecutefile\doexecutefile#1\\}
+
+\def\startcomponent #1 %
+  {\doateverystarttext
+   \donextlevel\v!component\currentcomponent
+     \doexecutefileonce\doexecutefileonce
+     \donotexecutefile\doexecutefile#1\\}
+
+\def\startenvironment #1 %
+  {\donextlevel\v!environment\currentenvironment
+     \donotexecutefile\doexecutefileonce
+     \donotexecutefile\donotexecutefile#1\\}
+
+% \startproject test
+%     1: \startmode[*project] project \stopmode \endgraf
+%     2: \startmode[*product] product \stopmode \endgraf
+% \stopproject
+
+\def\stopproject    {\doprevlevel}
+\def\stopproduct    {\doprevlevel}
+\def\stopcomponent  {\doprevlevel}
+\def\stopenvironment{\doprevlevel}
+
+% more or less replaced by modes
+
+\setvalue{\e!start\v!localenvironment}[#1]%
+  {\let\loadedlocalenvironments\empty
+   \def\docommand##1%
+     {\beforesplitstring##1\at.\to\someevironment
+      \fullexpandoneargafter\addtocommalist\someevironment\loadedlocalenvironments}%
+   \processcommalist[#1]\docommand
+   \fullexpandtwoargsafter\doifcommonelse % no longer next needed
+       {\currentproject,\currentproduct,%
+        \currentcomponent,\currentenvironment}
+       {\loadedlocalenvironments}
+     {\letvalue{\e!stop\v!localenvironment}\relax}
+     {\grabuntil{\e!stop\v!localenvironment}\gobbleoneargument}} % TH: fixed, was \relax
+
+\setvalue{\v!localenvironment}#1 {\doexecutefileonce{#1}}
+
+% NOT TOEVOEGEN: \the\everytrace
+
+\neverypar=\emptytoks
+
+% \appendtoks \flushnotes                     \to \everypar
+% \appendtoks \synchronizesidefloats          \to \everypar
+% \appendtoks \checkindentation               \to \everypar
+% \appendtoks \showparagraphnumber            \to \everypar
+% \appendtoks \flushmargincontents            \to \everypar
+% \appendtoks \flushcommentanchors            \to \everypar
+% \appendtoks \synchronizenotes               \to \everypar
+
+% \appendtoks \flushnotes                     \to \everydisplay
+% \appendtoks \adjustsidefloatdisplaylines    \to \everydisplay
+
+% soon, when pdftex 1.22 is out in the field:
+
+\chardef\systemcommandmode\zerocount % 0=unknown 1=disabled 2=enabled
+
+\def\checksystemcommandmode
+  {\ifx\pdfshellescape\undefined \else
+     \chardef\systemcommandmode \ifcase\pdfshellescape \plusone \else \plustwo \fi
+   \fi
+   \global\let\checksystemcommandmode\relax}
+
+\def\reportsystemcommandmode
+  {\ifcase\systemcommandmode
+   \or
+     \writestatus\m!systems{system commands are disabled}%
+   \or
+     \writestatus\m!systems{system commands are enabled}%
+   \fi}
+
+% \ifx\etexversion\undefined \else \ifnum\etexversion<202
+%   \prependtoks
+%      \writestatus\m!systems{eTeX version \number\etexversion\space -> too old (bugs)}%
+%      \writeline
+%   \to \everyjob
+% \fi \fi
+
+% \ifx\pdftexversion\undefined \else \ifnum\number\pdftexversion<120
+%   \prependtoks
+%      \writestatus\m!systems{pdfTeX version \number\pdftexversion\space -> please update}%
+%      \writeline
+%   \to \everyjob
+% \fi \fi
+
+% Default-instellingen (verborgen)
+
+\resetutilities
+
+\protect \endinput

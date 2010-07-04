@@ -1,0 +1,159 @@
+%D \module
+%D   [      file=s-pre-60,
+%D        version=2004.03.15,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 60,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmode[paper,print]
+    \let\StartSteps\relax
+    \let\StopSteps \relax
+    \let\FlushStep \relax
+    \let\ResetStep \relax
+    \let\StartBusy\relax
+    \let\StopBusy \relax
+    \endinput
+\stopmode
+
+\newcounter\StepCounter
+\newcounter\StepMaximum
+
+\useJSscripts[stp]
+
+\startsetups[set-stepper]
+
+    \ifnum\getvariable{stepper}{nofsteps}>\StepMaximum
+
+        \dostepwiserecurse {\numexpr(\StepMaximum+1)} {\getvariable{stepper}{nofsteps}} {1}
+          {\doifnotmode{nosteps,nostep}
+             {\expanded{\defineproperty[step:\recurselevel][layer][state=stop,global=yes]}}}
+
+        \xdef\StepMaximum{\getvariable{stepper}{nofsteps}}
+
+    \fi
+
+\stopsetups
+
+\setvariables
+  [stepper]
+  [set=\setups{set-stepper},
+   nofsteps=50]
+
+\defineproperty[step:busy][layer][state=start,global=no]
+
+\definereference [SetupStepper]  [JS(SetupStepper{step,\StepMaximum})]
+\definereference [ResetStepper]  [JS(ResetStepper)]
+\definereference [CheckStepper]  [JS(CheckStepper{\StepCounter})]
+\definereference [InvokeStepper] [JS(InvokeStepper)]
+
+\def\ResetStep {\doglobal\newcounter\StepCounter}
+\def\NextStep  {\doglobal\increment \StepCounter}
+\def\PrevStep  {\doglobal\decrement \StepCounter}
+
+% todo: roll back blank
+
+\def\StepLayer     {step:\StepCounter}
+\def\NextStepLayer {step:\the\numexpr\StepCounter+1\relax}
+\def\FirstStepLayer{step:1}
+
+\startmode[mkiv]
+
+    \def\StartStep
+      {\startproperty[\StepLayer]%
+       \ignorespaces}
+
+    \def\StopStep
+      {\removeunwantedspaces
+       \stopproperty}
+
+\stopmode
+
+\startnotmode[mkiv]
+
+    \def\StartStep
+      {\ifvmode
+         \scratchskip\lastskip
+         \vskip-\scratchskip
+         \startproperty[\StepLayer]%
+         \vskip\scratchskip
+       \else
+         \startproperty[\StepLayer]%
+       \fi
+       \ignorespaces}
+
+    \def\StopStep
+      {\removeunwantedspaces
+       \stopproperty}
+
+\stopnotmode
+
+\def\StartSteps{\iftrialtypesetting\else\ResetStep\NextStep\StartStep\fi}
+\def\StopSteps {\iftrialtypesetting\else\StopStep \PrevStep          \fi}
+\def\FlushStep {\iftrialtypesetting\else\StopStep \NextStep\StartStep\fi}
+
+\appendtoks
+  \ResetStep
+\to \everyaftershipout
+
+\def\StartBusy{\startproperty[step:busy]\ignorespaces}
+\def\StopBusy {\removeunwantedspaces\stopproperty}
+
+\setupinteraction
+  [%openaction=SetupStepper,
+   closeaction=ResetStepper,
+   openpageaction=CheckStepper,
+   closepageaction=ResetStepper]
+
+\defineoverlay[invoke][\overlaybutton{InvokeStepper}]
+
+\setupbackgrounds
+  [text]
+  [background=invoke]
+
+% bonus
+
+\useMPlibrary[nav]
+
+\definepalet
+  [navplus]
+  [attach=interactioncolor,
+   comment=interactioncolor]
+
+\setupcomment
+  [symbol={comment-normal,comment-down},
+   textlayer=\StepLayer,
+   option=buffer,
+   height=\textheight,
+   width=\textwidth,
+   margin=0pt]
+
+\setupattachments
+  [symbol={attach-normal,attach-down},
+   textlayer=\StepLayer]
+
+%D Handy:
+
+\def\StartLocalSteps{\ResetStep}
+\def\StopLocalSteps {}
+
+\def\StartLocalStep {\NextStep\StartStep}
+\def\StopLocalStep  {\StopStep}
+
+%D used as (given some definitions):
+%D
+%D \starttyping
+%D \StartLocalSteps
+%D     \startcombination[both]
+%D         {\StartLocalStep\placestreamlayer[left]\StopLocalStep}  {}
+%D         {\StartLocalStep\placestreamlayer[right]\StopLocalStep} {}
+%D     \stopcombination
+%D \StopLocalSteps
+%D \stoptyping
+
+\endinput

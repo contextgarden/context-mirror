@@ -1,0 +1,371 @@
+%D \module
+%D   [       file=math-tim,
+%D        version=2001.04.12,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Mathtime Specials,
+%D         author={Hans Hagen \& Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\endinput % i will clean this up after taco has gone over it
+
+%D With thanks to Berthold Horn from YandY for providing me
+%D evaluation copies of the MathTimePlus fonts.
+
+% version 0 : Michael Spivak
+% version 1 : Taco Hoekwater
+% version 2 : Hans Hagen
+% version 3 : etc etc etc
+
+\unprotect
+
+%D We use the predefined spare families \type {\mcfam} and
+%D \type {\mdfam}.
+
+\let\cafam\mcfam \let\hexcafam\hexmcfam
+\let\gbfam\mdfam \let\hexgbfam\hexmdfam
+\let\gkfam\mdfam \let\hexgkfam\hexmdfam
+
+% Why is this needed?
+
+% \font\tenmd  =mtgu at 10pt
+% \font\sevenmd=mtgu at 7.6pt
+% \font\fivemd =mtgu at 6pt
+% \font\tenmc  =mtms at 10pt
+% \font\sevenmc=mtms at 7.6pt
+% \font\fivemc =mtms at 6pt
+%
+% \textfont        \mcfam\tenmc   \textfont        \mdfam\tenmd
+% \scriptfont      \mcfam\sevenmc \scriptfont      \mdfam\sevenmd
+% \scriptscriptfont\mcfam\fivemc  \scriptscriptfont\mdfam\fivemd
+
+% \addtocommalist{gk}\familylist
+% \addtocommalist{gb}\familylist
+%
+% \defineinterfaceconstant {ca} {ca} % boohoo!
+% \defineinterfaceconstant {gk} {gk} % boohoo!
+% \defineinterfaceconstant {gb} {gb} % boohoo!
+
+% \definealternativestyle[script]   [\ca][\ca]
+% \definealternativestyle[greek]    [\gk][\gk]
+% \definealternativestyle[boldgreek][\gb][\gb]
+
+% \definebodyfont
+%   [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt] [rm]
+%   [ca=mtms  sa 1,
+%    gk=mtgu  sa 1,
+%    gb=mtgub sa 1]
+
+%D Since a font size is a rather fuzzy thing, it will be no
+%D surprise that the Math Times fonts have different specs
+%D than the Computer Modern Roman fonts.
+%D
+%D \starttabulate[|Bl|c|c|c|c|c|c|c|c|c|c|]
+%D \NC Computer Modern\NC
+%D     5  \NC6  \NC7  \NC8  \NC9  \NC10  \NC11  \NC12  \NC14  \NC18\NC\NR
+%D \NC Math Times     \NC
+%D     6.0\NC6.8\NC7.6\NC8.4\NC9.2\NC10.0\NC10.8\NC11.6\NC13.2\NC--\NC\NR
+%D \stoptabulate
+%D
+%D The following definitions presume the existence of \type
+%D {tio} and \type {tibio} font alternatives. Definitions for
+%D \type {\tf.} etc and \type {\sc} are left as they are.
+
+%D moved code
+
+%D The next lines set up coding dependant versions of math
+%D accents (for \type {texnansi} of course). These are needed
+%D in commands like \type {\bf} and \type {\it} (which use the
+%D text font encoding) a opposed to \type {_no spec_} and
+%D \type {mi} that use the math font encoding. This stuff
+%D should be made more general!
+
+% \daghex, \ddaghex and \dothex were wrong in my version of mtmacs
+
+\def\daghex  {86}  % to do
+\def\ddaghex {87}
+\def\Shex    {A7}
+\def\Phex    {B6}
+\def\barhex  {16}
+\def\gravehex{12}
+\def\acutehex{13}
+\def\checkhex{14}
+\def\brevehex{15}
+\def\hathex  {5E}
+\def\dothex  {05}
+\def\tildehex{7E}
+\def\ddothex {7F}
+
+%D The \type {mtex} fonts need a recalculation of \type
+%D {\p@renwd}, which in \CONTEXT\ is done automatically.
+
+%D The following definitions are mostly copied from the file
+%D \type {mtmacs.tex}, which banner said:
+%D
+%D \starttyping
+%D MTMACS.TEX VERSION 1.1.1 (1996 Dec 8)
+%D COPYRIGHT (C) 1992, 1993, 1996 BY THE TEXPLORATORS CORPORATION
+%D ALL RIGHTS RESERVED
+%D \stoptyping
+%D
+%D We reformatted the macros and changed a few bits and
+%D pieces. A further cleanup with regards to the scratch
+%D registers will be done later.
+
+\mathchardef\Gamma         = "0130
+\mathchardef\Delta         = "0131
+\mathchardef\Theta         = "0132
+\mathchardef\Lambda        = "0133
+\mathchardef\Xi            = "0134
+\mathchardef\Pi            = "0135
+\mathchardef\Sigma         = "0136
+\mathchardef\Upsilon       = "0137
+\mathchardef\Phi           = "0138
+\mathchardef\Psi           = "0139
+\mathchardef\Omega         = "017F
+\mathchardef\varGamma      = "0100
+\mathchardef\varDelta      = "0101
+\mathchardef\varTheta      = "0102
+\mathchardef\varLambda     = "0103
+\mathchardef\varXi         = "0104
+\mathchardef\varPi         = "0105
+\mathchardef\varSigma      = "0106
+\mathchardef\varUpsilon    = "0107
+\mathchardef\varPhi        = "0108
+\mathchardef\varPsi        = "0109
+\mathchardef\varOmega      = "010A
+\mathchardef\varkappa      = "017E
+
+\mathchardef\ldotp         = "613A
+
+\mathchardef\triangleleft  = "2247
+\mathchardef\triangleright = "2246
+\mathchardef\comp          = "2242
+
+\mathchardef\Relbar        = "3248
+\mathchardef\dagger        = "20\daghex    % to do
+\mathchardef\ddagger       = "20\ddaghex   % to do
+\mathchardef\dotacc        = "0250
+
+\mathcode`\( = "412E
+\mathcode`\) = "512F
+\mathcode`\. = "013A
+\mathcode`\, = "613B
+\mathcode`\+ = "2243
+\mathcode`\= = "3244
+\mathcode`\; = "6249
+
+\delcode `\( = "12E300
+\delcode `\) = "12F301
+
+\let\mit=\undefined % to do
+
+\def\vec{\mathaccent"0245 }
+\def\t#1{{\edef\next{\the\font}\the\textfont2\accent"41\next#1}}
+
+% fam equals -1 unless the user has said something
+% like \rm (cf. the texbook page 290)
+
+\def\ifdefaultfamelse#1#2%
+  {\ifnum\fam=\minusone\mathaccent#1\else\mathaccent#2\fi}
+
+\let\noaccents@\relax
+
+\def\grave  {\ifdefaultfamelse{"024A}{"70\gravehex}}
+\def\acute  {\ifdefaultfamelse{"024B}{"70\acutehex}}
+\def\check  {\ifdefaultfamelse{"024C}{"70\checkhex}}
+\def\breve  {\ifdefaultfamelse{"024D}{"70\brevehex}}
+\def\bar    {\ifdefaultfamelse{"024E}{"70\barhex  }}
+\def\hat    {\ifdefaultfamelse{"024F}{"70\hathex  }}
+\def\dot    {\ifdefaultfamelse{"0250}{"70\dothex  }}
+\def\tilde  {\ifdefaultfamelse{"0251}{"70\tildehex}}
+\def\ddot   {\ifdefaultfamelse{"0252}{"70\ddothex }}
+
+\def\widebar{\mathaccent"0253 }
+
+\def\mathhexbox@#1#2#3%
+  {\relax
+   \ifmmode
+     \mathpalette{}{\mathsurround\zeropoint\rm\mathchar"#1#2#3}%
+   \else
+     \leavevmode
+     \hbox{$\mathsurround\zeropoint\rm\mathchar"#1#2#3$}%
+   \fi}
+
+\def\dag {\edef\next@{0\daghex }\expandafter\mathhexbox@\next@}
+\def\ddag{\edef\next@{0\ddaghex}\expandafter\mathhexbox@\next@}
+
+\def\S{\edef\next@{0\Shex}\expandafter\mathhexbox@\next@}
+\def\P{\edef\next@{0\Phex}\expandafter\mathhexbox@\next@}
+
+\def\vdots%
+  {\vbox
+     {\baselineskip4\points
+      \lineskiplimit\zeropoint
+      \kern6\points\hbox{$\mathsurround\zeropoint.$}\hbox{$\mathsurround\zeropoint.$}\hbox{$\mathsurround\zeropoint.$}}}
+
+\def\ddots%
+  {\mathinner
+     {\mkern1mu
+      \raise7\points\vbox{\kern 7\points\hbox{$\mathsurround\zeropoint.$}}\mkern2mu
+      \raise4\points\hbox{$\mathsurround\zeropoint.$}\mkern2mu
+      \raise \points\hbox{$\mathsurround\zeropoint.$}\mkern1mu}}
+
+\def\hbar
+  {{\mathchoice
+      {\hbox{\lower.07em \hbox{$\mathchar"\barhex$}}}
+      {\hbox{\lower.07em \hbox{$\mathchar"\barhex$}}}
+      {\hbox{\lower.049em\hbox{$\scriptstyle\mathchar"\barhex$}}}
+      {\hbox{\lower.035em\hbox{$\scriptscriptstyle\mathchar"\barhex$}}}%
+  \mkern-6.3muh}}
+
+\def\angle%
+  {{\vbox{\ialign{$\mathsurround\zeropoint\scriptstyle##$\crcr
+      \not\mathrel{\mkern14mu}\crcr
+      \noalign{\nointerlineskip}
+      \mkern2.5mu\leaders\hrule height.48\points\hfill\mkern2.5mu\crcr}}}}
+
+\newdimen\amstexex
+
+\amstexex = .2326ex
+
+\def\varinjlim%
+  {\mathop{\vtop{\ialign{##\crcr
+     \hfil\the\textfont\zerocount lim\hfil\crcr
+     \noalign{\nointerlineskip}\rightarrowfill\crcr
+     \noalign{\nointerlineskip\kern-\amstexex}\crcr}}}}
+
+\def\varprojlim%
+  {\mathop{\vtop{\ialign{##\crcr
+     \hfil\the\textfont\zerocount lim\hfil\crcr
+     \noalign{\nointerlineskip}\leftarrowfill\crcr
+     \noalign{\nointerlineskip\kern-\amstexex}\crcr}}}}
+
+\def\varliminf{\mathop{\underbar  {lim}}} % context-ified
+\def\varlimsup{\mathop{\overstrike{lim}}} % context-ified
+
+\def\spdot   {^{\hbox{\raise\amstexex\hbox{\the\textfont\zerocount   .}}}}
+\def\spddot  {^{\hbox{\raise\amstexex\hbox{\the\textfont\zerocount  ..}}}}
+\def\spdddot {^{\hbox{\raise\amstexex\hbox{\the\textfont\zerocount ...}}}}
+\def\spddddot{^{\hbox{\raise\amstexex\hbox{\the\textfont\zerocount....}}}}
+
+%D Here some code is merged in order to save strings.
+
+\def\domultidot#1#2%
+  {\setbox0\hbox{$#1#2$}%
+   \setbox2\hbox{$#1\infty$}%
+   \dimen0\ht2
+   \ifdim\ht0<\dimen0 \dimen0\ht0 \fi
+   \setbox2\hbox{$#1#2\mathchar"012D$}%
+   \dimen2\wd2
+   \advance\dimen2-\wd0
+   \setbox0\hbox{$#1\rhook$}%
+   \advance\dimen2-\wd0
+   \vbox
+     {\offinterlineskip
+      \ialign{\hfil$#1##$\hfil\cr
+        \kern\dimen2\dotacc\mkern-2.5mu\dotacc\mkern-2.5mu\dotacc\thirddot\cr
+        \noalign{\vskip-\dimen0}%
+        #2\cr}}}
+
+\def\dddot%
+  {\def\thirddot{}%
+   \mathpalette\domultidot}
+
+\def\ddddot%
+  {\def\thirddot{\mkern-2.5mu\dotacc}%
+   \mathpalette\domultidot}
+
+\newcount\uproot@
+\newcount\leftroot@
+
+\def\nonmatherr#1%
+  {\errmessage{\noexpand#1allowed only in math mode}}
+
+\def\uproot#1%
+  {\relax
+   \ifmmode
+     \uproot@#1\relax
+   \else
+     \nonmatherr\uproot
+   \fi}
+
+\def\leftroot#1%
+  {\relax
+   \ifmmode
+     \leftroot@#1\relax
+   \else
+     \nonmatherr\leftroot
+   \fi}
+
+\def\root#1\of#2%
+  {\setbox\rootbox=\hbox{$\mathsurround\zeropoint\scriptscriptstyle{#1}$}%
+   \mathpalette\r@@t{#2}}
+
+\def\r@@t#1#2%
+  {\setbox\zerocount\hbox{$\uproot@\zerocount\leftroot\zerocount\mathsurround\zeropoint#1\sqrt{#2}$}%
+   \dimen@\ht\zerocount\advance\dimen@-\dp\zerocount
+   \dimen@ii\dimen@
+   \ifdim\dimen@>30\points \advance\dimen@ii-16\points \else
+   \ifdim\dimen@>24\points \advance\dimen@ii -8\points \else
+   \ifdim\dimen@>18\points \advance\dimen@ii -6\points \else
+   \ifdim\dimen@>12\points \advance\dimen@ii -4\points \else
+   \ifdim\dimen@>10\points \advance\dimen@ii -2\points \fi\fi\fi\fi\fi
+   \setbox\plustwo=\hbox{$\mathsurround\zeropoint#1\mskip\uproot@ mu$}%
+   \advance\dimen@ii by1.667\wd\plustwo
+   \mkern-\leftroot@ mu\mkern5mu\raise.6\dimen@ii\copy\rootbox
+   \mkern-8mu\mkern\leftroot@ mu\box\zerocount\leftroot\zerocount\uproot\zerocount}
+
+\def\space@.{\futurelet\space@\relax} \space@. % really needed ?
+
+\def\jadjust%
+  {\mkern-\plustwo mu}
+
+%D For the moment the following code is left unchanged. It is
+%D not used anyway.
+
+\newif\ifsubscriptcorrection \subscriptcorrectionfalse
+
+\ifsubscriptcorrection
+
+  \expandafter\let\csname subscript character \string_\endcsname_
+
+  \catcode`\_=\active
+
+  \def_%
+    {\ifmmode
+       \expandafter\sb@
+     \else
+       \expandafter\csname subscript character \string_\endcsname
+     \fi}
+
+  \let\sb_
+
+  \ifnum\catcode`\^^A=8 \catcode`\^^A\active\let^^A_\fi
+
+  \def\sb@#1%
+    {\csname subscript character \string_\endcsname
+     {\futurelet\next\sb@@#1}}
+
+  \def\sb@@%
+    {\ifx\next\space@
+       \def\next@. %
+         {\futurelet\next\sb@@}%
+     \else
+       \def\next@.%
+         {\ifx\next j%
+            \mkern-\plustwo mu\else
+          \ifx\next f%
+            \mkern-\plustwo mu\else
+          \ifx\next p%
+            \mkern-\plusone mu\fi\fi\fi}%
+     \fi
+     \next@.}
+
+\fi
+
+\protect

@@ -1,0 +1,325 @@
+%D \module
+%D   [      file=s-pre-06,
+%D        version=1999.04.28,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 6,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D I wrote this sixth presentation style on behalf of a
+%D presentation at Bachotek~'99. The joke in this style is
+%D (ab)using the Antikwa Torunska, a rather Polish font. When I
+%D was first confronted with this font, the backward slant
+%D stoke me as very characteristic.
+%D
+%D Each page has a slightly different background consisting of
+%D three O's. Although \TEX\ could do the randomization,
+%D scaling and placement, I prefered to use \METAPOST. The
+%D backward slant is also reflected in the stepwise increasing
+%D left margin. Due to this characteristic and the trick used,
+%D this style is only suited for simple presentations, using
+%D itemizations.
+
+\usemodule[pre-general]
+
+%D \macros
+%D   {setupbodyfont}
+%D
+%D As said, we will use the Antikwa Torunska, and because we
+%D want it to show up well, we use it large.
+
+\setupbodyfont
+  [ant,14.4pt]
+
+%D \macros
+%D   {definecolor, setupcolors}
+%D
+%D Thus style only uses gray scales, but nevertheless we turn
+%D on color. We only use a few logical color names.
+
+\setupcolors
+  [state=start]
+
+\definecolor [BackgroundColor]  [s=.8]
+\definecolor [ContrastColor]    [s=.9]
+\definecolor [InteractionColor] [s=.6]
+
+%D \macros
+%D   {setuppapersize}
+%D
+%D As (nearly) always, we use a 600 pt times 450 pt screen
+%D width, mapped on ditto paper dimensions.
+
+\setuppapersize
+  [S6][S6]
+
+%D \macros
+%D   {setuplayout}
+%D
+%D The layout is rather symmetrical. We don't use headers and
+%D footers, and thereby automatically turn off the page
+%D numbering: no room, no number. We use the bottom to present
+%D a rather trivial menu.
+
+\setuplayout
+  [backspace=2cm,
+   topspace=2cm,
+   width=middle,
+   header=0pt,
+   height=middle,
+   footer=0pt,
+   bottomdistance=.5cm,
+   bottom=1cm]
+
+%D \macros
+%D   {setupinteractionmenu,startinteractionmenu}
+%D
+%D This menu is slighly moved to the right because that looks
+%D better. The menu itself has one goto (\type {\got}) entry,
+%D which is forced to the right.
+
+\setupinteractionmenu
+  [bottom]
+  [rightoffset=-1cm]
+
+\startinteractionmenu[bottom]
+  \hfill \got [CloseDocument] \bfd Quit \\
+\stopinteractionmenu
+
+%D \macros
+%D   {setupbackgrounds}
+%D
+%D Page background are calculated at each page, opposite to the
+%D other backgrounds, that are reused and only calculated when
+%D \CONTEXT\ is explictly told to do so. There are three
+%D overlays: a gray fill, the graphic, and a button that
+%D circulates the pages.
+
+\setupbackgrounds
+  [page]
+  [background={color,Joke,GoAround},
+   backgroundcolor=BackgroundColor]
+
+%D \macros
+%D  {defineoverlay}
+%D
+%D The \type {forward} reference action circulates over the
+%D pages, so, at the last page, we are led back to the first.
+
+\defineoverlay [GoAround] [\overlaybutton{forward}]
+
+%D The joke is a simple \METAPOST\ routine. The picture is
+%D actually larger than the screen, but is clipped of when
+%D included.
+
+\defineoverlay [Joke] [\useMPgraphic{background}]
+
+\startuseMPgraphic{background}
+  input mp-tool ;
+  width  := \overlaywidth ;
+  height := \overlayheight ;
+  picture p ; p := char 79 infont "\truefontname{Regular}" scaled 1 ;
+  pwidth  := xpart urcorner bbox p - xpart llcorner bbox p ;
+  pheight := ypart urcorner bbox p - ypart llcorner bbox p ;
+  def do (expr r) =
+    addto currentpicture also p shifted - center p scaled r
+      xscaled (width/pwidth) yscaled (height/pheight)
+      withcolor \MPcolor{ContrastColor} ;
+  enddef ;
+  do (0.9+uniformdeviate0.1) ;
+  do (1.4+uniformdeviate0.1) ;
+  do (1.9+uniformdeviate0.1) ;
+\stopuseMPgraphic
+
+%D \macros
+%D   {setupinteraction,setupinteractionscreen}
+%D
+%D We did not yet turn on the interaction, so let's do that
+%D now. When opened, the document will fil the screen.
+
+\setupinteraction
+  [state=start,
+   color=InteractionColor,
+   contrastcolor=InteractionColor,
+   menu=on]
+
+\setupinteractionscreen
+  [option=max]
+
+%D \macros
+%D   {TitlePage, Topics, Topic}
+%D
+%D A presentation normally consists of a title page, a list of
+%D topics, and the content itself. In this style, a further
+%D subdivision does not make sense, but because we want to be
+%D compatible with the other styles, they are added. A
+%D presentation looks like:
+%D
+%D \starttyping
+%D \usemodule[pre-antikwa]
+%D
+%D \startext
+%D
+%D \TitlePage{The Title}
+%D
+%D \Topics{Contents}
+%D
+%D \Topic{Some Topic}
+%D
+%D \startitemize
+%D \item first
+%D \item second
+%D \stopitemize
+%D
+%D \Topic{Some Topic}
+%D
+%D ...
+%D
+%D \stoptext
+%D \stoptyping
+
+%D \macros
+%D   {definehead, Topic, Subject}
+%D
+%D We use dedicated sectioning commands.
+
+\definehead [Topic]   [chapter]
+\definehead [Subject] [section]
+
+\definehead [Nopic]   [title]
+
+%D \macros
+%D   {setuphead}
+%D
+%D We turn of numbering. The assignment to \type {after} takes
+%D care of the increasing indentation. This indentation is the
+%D only low level \TEX\ code needed. Including this
+%D functionality in the core of \CONTEXT\ is not that useful
+%D and I would forget about this feature being present anyway.
+
+\setuphead
+  [Topic, Nopic, Subject]
+  [number=no,
+   after={\blank[2*big]\ToTheLeft\everypar{\ToTheRight}}]
+
+%D After section titles we set the \type {\leftskip} to a value
+%D that suits the Antikwa slant.
+
+\def\ToTheLeft%
+  {\gdef\LeftSkip{30}%
+   \rightskip0pt\relax
+   \leftskip30pt\relax}
+
+%D Each new paragraph adds to the \type {\leftskip}.
+
+\def\ToTheRight%
+  {\doglobal\increment(\LeftSkip,20)%
+   \leftskip=\LeftSkip pt\relax}
+
+%D \macros
+%D   {Topics}
+%D
+%D The \type {\Topics} command uses a bot of low level
+%D \CONTEXT. We could have done with:
+%D
+%D \starttyping
+%D \def\Topics#1%
+%D   {\Nopic[Topics]{#1}
+%D    \placelist[Topic][criteriumcriterium=all]}
+%D \stoptyping
+%D
+%D but the next alternative sort of ignores this command when
+%D no list is found.
+
+\def\Topics#1%
+  {\determinelistcharacteristics[Topic]
+   \ifcase\utilitylistlength\else
+     \Nopic[Topics]{#1}
+     \placelist[Topic][criterium=all]
+   \fi}
+
+%D \macros
+%D   {setuplist}
+%D
+%D We use the single item command to achieve a result similar
+%D to the itemizations.
+
+\setuplist
+  [Topic]
+  [alternative=command,
+   command=\TopicListCommand]
+
+\def\TopicListCommand#1#2#3%
+  {\item#2\par}
+
+%D A dummy command, needed to be compatible with the other
+%D presentation styles.
+
+\def\Subjects%
+  {}
+
+%D \macros
+%D   {StartTitlePage}
+%D
+%D We use a nested \type {\everypar}; everything in there
+%D will be put in front of each paragraph. The nesting prevents
+%D the first paragraph from indenting. The struts give the
+%D lines a decent height, which looks better inrelation to the
+%D next pages.
+
+\def\StartTitlePage%
+  {\startstandardmakeup
+   \bfd\setupinterlinespace
+   \everypar{\everypar{\advance\leftskip30pt\relax}}
+   \let\\=\blank
+   \begstrut}
+
+\def\StopTitlePage%
+  {\endstrut
+   \vfill
+   \stopstandardmakeup}
+
+%D \macros
+%D   {TitlePage}
+%D
+%D The title page can be generated with one command:
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+\doifnotmode{demo}{\endinput}
+
+%D The (rather silly) demo section.
+
+\usemodule[pre-antikwa]
+
+\starttext
+
+\TitlePage{Title Page\\pre-polish}
+
+\Topics{Some Nice Lists}
+
+\Topic{Some Lists}
+
+\Subject{A list}
+
+\startitemize
+\item first
+\item second
+\stopitemize
+
+\Subject{A bigger list}
+
+\startitemize
+\item first
+\item second
+\item third
+\item fourth
+\stopitemize
+
+\stoptext

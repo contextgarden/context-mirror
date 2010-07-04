@@ -1,0 +1,117 @@
+%D \module
+%D   [       file=lang-url,
+%D        version=2008.01.22, % used to be lang-mis
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Language Options,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{lang-url}{1.001}
+
+\unprotect
+
+%D \macros
+%D   {hyphenatedurl}
+%D
+%D For those who want to put full \URL's in a text, we offer
+%D
+%D \startbuffer
+%D \hyphenatedurl{http://optimist.optimist/optimist/optimist.optimist#optimist}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D which breaks at the appropriate places. Watch the \type{#}
+%D hack.
+%D
+%D When passed as argument, like in \type {\goto}, one needs
+%D to substitute a \type {\\} for each \type{#}.
+%D
+%D \startbuffer
+%D \hyphenatedurl{http://this.is.a.rather/strange/reference#indeed}
+%D \stopbuffer
+%D
+%D \typebuffer
+
+\ifx\urlsplitmode\undefined \chardef\urlsplitmode\zerocount \fi % not supported in mkiv
+
+\newtoks\everyhyphenatedurl
+
+\appendtoks
+   \let\&\letterampersand
+   \let\#\letterhash
+   \let\~\lettertilde
+   \let\\\letterbackslash
+   \let\$\letterdollar
+   \let\^\letterhat
+   \let\_\letterunderscore
+   \let\{\letterleftbrace
+   \let\}\letterrightbrace
+   \let\|\letterbar
+   \let~=\lettertilde
+   \let|=\letterbar
+\to \everyhyphenatedurl
+
+\def\hyphenatedurlseparator{} % \periodcentered
+
+\def\dohyphenatedurlafter #1{\char#1\discretionary{}{\hyphenatedurlseparator}{}}%
+\def\dohyphenatedurlbefore#1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}%
+\def\dohyphenatedurlnormal#1{\char#1\relax}%
+\def\dohyphenatedurldisc  #1{\discretionary{}{}{}}
+
+\def\sethyphenatedurlnormal #1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}}
+\def\sethyphenatedurlbefore #1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}}
+\def\sethyphenatedurlafter  #1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}}
+
+\def\hyphenatedurldiscretionary{}
+
+% \sethyphenatedurlafter{ABCDEF}
+
+\chardef\hyphenatedurllefthyphenmin  = 3
+\chardef\hyphenatedurlrighthyphenmin = 3
+
+\unexpanded \def\hyphenatedurl#1%
+  {\dontleavehmode
+   \begingroup
+   \the\everyhyphenatedurl
+   \let\n\dohyphenatedurlnormal
+   \let\b\dohyphenatedurlbefore
+   \let\a\dohyphenatedurlafter
+   \let\d\dohyphenatedurldisc
+   \normalexpanded{\noexpand\ctxlua{commands.hyphenatedurl.action(
+        \!!bs\noexpand\detokenize{#1}\!!es,
+        \number\hyphenatedurllefthyphenmin,
+        \number\hyphenatedurlrighthyphenmin,
+        "\hyphenatedurldiscretionary"
+    )}}%
+   \endgroup}
+
+%D \macros
+%D   {hyphenatedfilename}
+%D
+%D For the moment we treat filenames in a similar way,
+%D
+%D \starttyping
+%D \hyphenatedfilename{here/there/filename.suffix}
+%D \stoptyping
+
+\ifx\hyphenatedfilename\undefined \let\hyphenatedfilename\hyphenatedurl \fi
+
+% \def\test#1%
+%   {\dontleavehmode
+%    \begingroup
+%    \tttf
+%    \hyphenatedurl {%
+%      \letterampersand #1\letterampersand #1\letterampersand #1\letterampersand #1\letterampersand
+%      \letterhash      #1\letterhash      #1\letterpercent   #1\letterslash     #1\letterampersand
+%    }%
+%    \endgroup}
+
+% \dorecurse{100}{\test{a} \test{ab} \test{abc} \test{abcd} \test{abcde} \test{abcdef}}
+
+\protect \endinput

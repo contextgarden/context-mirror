@@ -1,0 +1,178 @@
+%D \module
+%D   [       file=back-pdf,
+%D        version=2009.04.15,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=\PDF,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Backend Macros / PDF}
+
+\registerctxluafile{back-pdf}{1.001} % this will change
+
+\unprotect
+
+%D We will minimize the number of calls to \PDF\ specific primitives
+%D and delegate all management and injection of code to the backend.
+%D
+%D Here we initialize some internal quantities.
+
+\pdfoutput              =   1
+\pdfhorigin             =   1 true in
+\pdfvorigin             =   1 true in
+\pdfimageresolution     = 300
+\pdfpkresolution        = 600
+\pdfdecimaldigits       =  10
+\pdfinclusionerrorlevel =   0
+\pdfminorversion        =   6 % maybe even 7
+%pdfuniqueresname       =   1
+
+%D This one can be consulted by users although the suffix is also
+%D a system mode.
+
+\setjobsuffix{pdf}
+
+%D For the moment we keep these.
+
+\newtoks \pdfbackendeveryximage
+\newtoks \pdfbackendeveryxform
+
+%D These are the only official methods to add stuff to the resources.
+
+\def\pdfbackendsetcatalog       #1#2{\ctxlua{lpdf.addtocatalog        ("#1",\!!bs#2\!!es)}}
+\def\pdfbackendsetinfo          #1#2{\ctxlua{lpdf.addtoinfo           ("#1",\!!bs#2\!!es)}}
+\def\pdfbackendsetname          #1#2{\ctxlua{lpdf.addtonames          ("#1",\!!bs#2\!!es)}}
+
+\def\pdfbackendsetpageattribute #1#2{\ctxlua{lpdf.addtopageattributes ("#1",\!!bs#2\!!es)}}
+\def\pdfbackendsetpagesattribute#1#2{\ctxlua{lpdf.addtopagesattributes("#1",\!!bs#2\!!es)}}
+\def\pdfbackendsetpageresource  #1#2{\ctxlua{lpdf.addtopageresources  ("#1",\!!bs#2\!!es)}}
+
+\def\pdfbackendsetextgstate     #1#2{\ctxlua{lpdf.adddocumentextgstate ("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\def\pdfbackendsetcolorspace    #1#2{\ctxlua{lpdf.adddocumentcolorspace("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\def\pdfbackendsetpattern       #1#2{\ctxlua{lpdf.adddocumentpattern   ("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\def\pdfbackendsetshade         #1#2{\ctxlua{lpdf.adddocumentshade     ("#1",lpdf.verbose(\!!bs#2\!!es))}}
+
+\def\pdfbackendcurrentresources     {\ctxlua{lpdf.collectedresources()}}
+
+%D Let's block these:
+
+\let\pdfcatalog      \relax  \newtoks\pdfcatalog
+\let\pdfinfo         \relax  \newtoks\pdfinfo
+\let\pdfnames        \relax  \newtoks\pdfnames
+\let\pdfpageresources\relax  \newtoks\pdfpageresources
+\let\pdfpageattr     \relax  \newtoks\pdfpageattr
+\let\pdfpagesattr    \relax  \newtoks\pdfpagesattr
+
+%D An example of usage is:
+
+\appendtoks
+    \pdfbackendsetinfo{ConTeXt.Version}{\contextversion}%
+    \pdfbackendsetinfo{ConTeXt.Time}   {\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute}%
+    \pdfbackendsetinfo{ConTeXt.Jobname}{\jobname}%
+    \pdfbackendsetinfo{ConTeXt.Url}    {www.pragma-ade.com}%
+\to \everylastbackendshipout
+
+%D Unfortunately this is still needed (also for  \METAPOST\ to
+%D \PDF\ converter):
+
+% \def\doresetmapfilelist
+%   {\global\let\doresetmapfilelist\relax
+%    \pdfmapfile{original-empty.map}}
+%
+% \appendtoksonce \loadallfontmapfiles \to \pdfbackendeveryxform
+% \appendtoksonce \loadallfontmapfiles \to \pdfbackendeveryximage
+
+%D Transformations. Some day we will use primitives (once they're fixed).
+
+\def\dostartrotation#1% grouped
+  {\forcecolorhack
+   \pdfliteral{q \ctxlua{lpdf.rotationcm(#1)}}}
+
+\def\dostoprotation
+  {\pdfliteral{Q}}
+
+\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
+  {\forcecolorhack
+   \pdfliteral{q \ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
+                 \ifdim#2\points=\zeropoint.0001\else#2\fi\space 0 0 cm}}
+
+\def\dostopscaling
+  {\pdfliteral{Q}}
+
+\def\dostartmirroring{\pdfliteral{-1 0 0 1 0 0 cm}}
+\def\dostopmirroring {\pdfliteral{-1 0 0 1 0 0 cm}}
+
+\def\dostartclipping#1#2#3% todo (still needed?)
+  {\PointsToBigPoints{#2}\width
+   \PointsToBigPoints{#3}\height
+   \grabMPclippath{#1}{1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
+   \pdfliteral{q 0 w \MPclippath\space W n}}
+
+\def\dostopclipping
+  {\pdfliteral{Q n}}
+
+%D The following will move to the backend \LUA\ code:
+
+\appendtoks \ctxlua{backends.codeinjections.finalizepage    ()}\to \everybackendshipout       % is immediate
+\appendtoks \ctxlua{backends.codeinjections.finalizedocument()}\to \everylastbackendshipout   % is immediate
+
+%D Temporary hack, will be removed or improved or default.
+
+\def\TransparencyHack{\ctxlua{backends.codeinjections.addtransparencygroup()}}
+
+%D \macros
+%D  {dostartobject,dostopobject,doinsertobject}
+
+%D This will change:
+
+\newbox\objectbox
+
+\def\dostartobject#1#2#3#4#5%
+  {\bgroup
+   \setbox\objectbox\vbox\bgroup
+   \def\dodostopobject{\egroup\doregisterobject{#1}{#2}}}
+
+\def\dostopobject
+  {\dodostopobject
+   \egroup}
+
+\def\doregisterobject#1#2%
+  {\the\pdfbackendeveryxform
+   \finalizeobjectbox\objectbox
+   \immediate\pdfxform resources {\pdfbackendcurrentresources}\objectbox
+   \dosetobjectreference{#1}{#2}{\the\pdflastxform}}
+
+\def\doresetobjects
+  {}
+
+\def\doinsertobject#1#2%
+  {\begingroup
+   \doifobjectreferencefoundelse{#1}{#2}
+     {\dogetobjectreference{#1}{#2}\PDFobjectreference\pdfrefxform\PDFobjectreference}%
+     \donothing
+   \endgroup}
+
+\def\doPDFgetobjectpage#1#2#3%
+  {\dogetobjectreferencepage{#1}{#2}#3%
+   \ifx#3\empty\def#3{\realfolio}\fi}
+
+\def\doPDFgetobjectpagereference#1#2#3%
+  {\dogetobjectreferencepage{#1}{#2}#3%
+   \doPDFgetpagereference{\ifx#3\empty\realfolio\else#3\fi}#3}
+
+\let\lastpredefinedsymbol\empty % some day we can do more at the lua end
+
+\def\predefinesymbol[#1]%
+  {\begingroup
+   \xdef\lastpredefinedsymbol{#1}%
+   \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
+   \dogetobjectreference{SYM}{#1}\lastref
+   \ctxlua{backends.codeinjections.registersymbol("#1",\lastref)}%
+   \endgroup}
+
+\protect \endinput

@@ -1,0 +1,225 @@
+%D \module
+%D   [       file=context,
+%D        version=1995.10.10,
+%D          title=\CONTEXT,
+%D       subtitle=\CONTEXT\ Format Generation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\catcode`\{=1 \catcode`\}=2 \catcode`\#=6
+
+%D From the next string (which is set by the script that assembles the
+%D distribution) later on we will calculate a number that can be used
+%D by use modules to identify the feature level. Starting with version
+%D 2004.8.30 the low level interface is english. Watch out and adapt
+%D your styles an modules.
+
+\edef\contextformat {\jobname}
+\edef\contextversion{2010.05.24 13:05}
+
+%D For those who want to use this:
+
+\let\fmtname   \contextformat
+\let\fmtversion\contextversion
+
+\let\showcontextbanner\relax
+
+%D Here we will test for what branch of source files we will take. The
+%D file suffix depends on the maintream engine: either lua enhanced,
+%D or traditional:
+%D
+%D \starttyping
+%D mki  : low level dutch
+%D mkii : low level english
+%D mkiv : lua enhanced
+%D \stoptyping
+%D
+%D There is no \type {mkiii} unless you want to tag the transition
+%D version that way (going completely etex, code cleanup and such).
+
+\ifx\normalinput\undefined \let\normalinput\input \fi
+
+%D We have two versions, one for \PDFTEX\ and \XETEX, and one for
+%D \LUATEX.
+
+\chardef\contextmarkmode = \ifx\directlua\undefined 2 \else 4 \fi
+
+\def\loadcorefile#1{\normalinput#1\relax}
+\def\loadmarkfile#1{\normalinput#1.\mksuffix\relax}
+
+\ifnum\contextmarkmode=4
+  \def\loadmarkiifile#1{} \let\loadmarkivfile\loadcorefile \edef\mksuffix {mkiv} \edef\contextmark{MKIV}
+\else
+  \def\loadmarkivfile#1{} \let\loadmarkiifile\loadcorefile \edef\mksuffix {mkii} \edef\contextmark{MKII}
+\fi
+
+\let\loadmkiifile\loadmarkiifile
+\let\loadmkivfile\loadmarkivfile
+\let\loadmkfile  \loadmarkfile
+
+%D Welcome to the main module. When this module is ran through
+%D \type{initex} or \type {tex -i} or \type {whatevertex} using
+%D \type{whatever switch}, the \CONTEXT\ format file is
+%D generated. During this process the user is asked for an
+%D interface language. Supplying \type{dutch} will generate a
+%D dutch version of \CONTEXT, supplying \type {english} will of
+%D course end op in a english version.
+%D
+%D Another option is to use \TEXEXEC\ (for \MKII):
+%D
+%D \starttyping
+%D texexec --make [--alone] [--engine] [--all]
+%D texexec --make [--alone] [--engine] en nl ... metafun mptopdf
+%D \stoptyping
+%D
+%D More information can be found in the \TEXEXEC\ manual.
+%D
+%D For \MKIV\ you have to do:
+%D
+%D \starttyping
+%D luatools --generate
+%D context --make en nl ...
+%D \stoptyping
+
+%D When you write modules (or extensions) you should avoid
+%D conflicts with existing macro names and mechanisms. If you are
+%D coming from another macro package, don't assume that macros
+%D with the same name are doing the same! \CONTEXT\ was written
+%D from scratch and therefore similarities are often a coincidence
+%D (to some extent one always ends up with the same names for
+%D similar concepts). The underlying models for elementary subsystems
+%D that deal with encodings, languages and fonts probably differ.
+%D
+%D Time has learned that users coming from \LATEX\ should not fall
+%D into thinking that macros like \type {\protect} represent the
+%D same functionality in both systems; actually, due to the way
+%D \CONTEXT\ is set up, some of those macros do complete different
+%D things. Macro packages evolve independent of each other, which
+%D means that code written for one system will not work in another
+%D system, unless it's real generic code.
+%D
+%D An API will become available soon (keep an eye on the ConTeXt
+%D Wiki www.contextgarden.org) and or listen in to the context
+%D mailing list (ntg-context@ntg.nl). Much additional information
+%D can be found at the PRAGMA website (www.pragma-ade.com).
+
+%D We now go either the \MKII\ or \MKIV\ route:
+
+\loadmarkfile{context}
+
+%D Let's quit this file when doing a \type {cont-..} generation.
+
+\doifparentfileelse{context}{\donothing}{\endinput}
+
+%D Unless we're generating a \type {cont-..} format, we also
+%D do the following.
+
+%D Except from english, no hyphenation patterns are loaded
+%D yet. Users can specify their needs in the next module:
+
+\loaduserspecifications
+
+%D Next we default to the same language as the interface.
+
+\unprotect
+
+\installlanguage [\s!us] [\c!state=\v!start]
+
+\startinterface english
+  \installlanguage [\s!gb] [\c!state=\v!start]
+\stopinterface
+
+\appendtoks \language     [\s!us] \to \everyjob
+\appendtoks \mainlanguage [\s!us] \to \everyjob
+
+\startinterface german
+
+  \installlanguage [\s!de] [\c!state=\v!start]
+
+  \appendtoks \language     [\s!de] \to \everyjob
+  \appendtoks \mainlanguage [\s!de] \to \everyjob
+
+\stopinterface
+
+\startinterface dutch
+
+  \installlanguage [\s!nl] [\c!state=\v!start]
+
+  \appendtoks \language     [\s!nl] \to \everyjob
+  \appendtoks \mainlanguage [\s!nl] \to \everyjob
+
+\stopinterface
+
+\startinterface czech
+
+  \installlanguage [\s!cs] [\c!state=\v!start]
+
+  \appendtoks \language     [\s!cs] \to \everyjob
+  \appendtoks \mainlanguage [\s!cs] \to \everyjob
+
+\stopinterface
+
+\startinterface italian
+
+  \installlanguage [\s!it] [\c!state=\v!start]
+
+  \appendtoks \language     [\s!it] \to \everyjob
+  \appendtoks \mainlanguage [\s!it] \to \everyjob
+
+\stopinterface
+
+\startinterface romanian
+
+  \installlanguage [\s!ro] [\c!state=\v!start]
+
+  \appendtoks \language     [\s!ro] \to \everyjob
+  \appendtoks \mainlanguage [\s!ro] \to \everyjob
+
+\stopinterface
+
+\startinterface french
+
+  \installlanguage [\s!fr] [\c!state=\v!start]
+
+  \appendtoks \language     [\s!fr] \to \everyjob
+  \appendtoks \mainlanguage [\s!fr] \to \everyjob
+
+\stopinterface
+
+\startinterface persian
+
+  \installlanguage [\s!pe] [\c!state=\v!start]
+
+  \appendtoks \language     [\s!pe] \to \everyjob
+  \appendtoks \mainlanguage [\s!pe] \to \everyjob
+
+\stopinterface
+
+\protect
+
+%D Finally we (pre)load some fonts.
+
+\setupencoding[default=ec]
+
+\usetypescript[fallback][\defaultencoding]
+
+\setupbodyfont[rm,12pt]
+
+%D The next hook can be used to generate a local (extended)
+%D format. This file is only searched for at the current
+%D path.
+
+% \readlocfile{cont-def.tex}
+%   {\writestatus{loading}{adding extensions from cont-def}}
+%   {}
+
+%D Now dumping the format is all that's left to be done.
+
+\errorstopmode \dump
+
+\endinput

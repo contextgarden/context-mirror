@@ -1,0 +1,78 @@
+# Gudrun and Hermann Zapf Collection
+
+# linotype alcuin
+
+# linotype aldus
+
+# linotype ams-euler
+
+# linotype ariadne
+
+# linotype aurelia
+
+# linotype carmina
+
+# linotype colombine
+
+# linotype diotima
+
+# linotype edison
+
+# linotype itc-zapf-book
+
+# linotype itc-zapf-chancery
+
+# linotype itc-zapf-dingbats
+
+# linotype itc-zapf-international-lt
+
+# linotype kompakt
+
+# linotype zapfino
+
+--en=? --ve=linotype --co=zapfino --re
+--en=? --ve=linotype --co=zapfino --so=ghz/linotype-zapfino --ma --in
+
+# linotype marconi
+
+# linotype medici-script
+
+# linotype melior
+
+--en=? --ve=linotype --co=melior --re
+--en=? --ve=linotype --co=melior --so=ghz/melior --ma --in
+
+# linotype noris
+
+# linotype optima
+
+--en=? --ve=linotype --co=optima --re
+--en=? --ve=linotype --co=optima --so=ghz/optima --ma --in
+
+# linotype optima-nova
+
+--en=? --ve=linotype --co=optima-nova --re
+--en=? --ve=linotype --co=optima-nova --so=linotype/optima-nova --ma --in
+
+# linotype orion
+
+# linotype palatino
+
+--en=? --ve=linotype --co=palatino --re
+--en=? --ve=linotype --co=palatino --so=ghz/palatino --ma --in
+
+# linotype saphir
+
+# linotype shakespeare
+
+# linotype sistina
+
+# linotype smaragd
+
+# linotype vario
+
+# linotype venture-script
+
+# linotype zapf-essentials-lt
+
+# linotype zapf-renaissance-antiqua

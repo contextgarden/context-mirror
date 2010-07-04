@@ -1,0 +1,275 @@
+%D \module
+%D   [       file=unic-033,
+%D        version=2006.03.29,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 33,
+%D         author={Nikolai Weibull \& Hans Hagen \& Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Nikolai Weibull}]
+
+\unprotect
+
+\startunicodevector 33
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1\relax
+    \unic@accountof                 \or % 2100	ACCOUNT OF
+    \unic@addressedtothesubject     \or % 2101	ADDRESSED TO THE SUBJECT
+    \unic@doublestruckC             \or % 2102	DOUBLE-STRUCK CAPITAL C
+    \unic@degreecelsius             \or % 2103	DEGREE CELSIUS
+    \unic@centrelinesymbol          \or % 2104	CENTRE LINE SYMBOL
+    \unic@careof                    \or % 2105	CARE OF
+    \unic@cadauna                   \or % 2106	CADA UNA
+    \unic@eulerconstant             \or % 2107	EULER CONSTANT
+    \unic@scruple                   \or % 2108	SCRUPLE
+    \unic@degreefahrenheit          \or % 2109	DEGREE FAHRENHEIT
+    \unic@scriptg                   \or % 210A	SCRIPT SMALL G
+    \unic@scriptH                   \or % 210B	SCRIPT CAPITAL H
+    \unic@blackletterH              \or % 210C	BLACK-LETTER CAPITAL H
+    \unic@doublestruckH             \or % 210D	DOUBLE-STRUCK CAPITAL H
+    \unic@planckconstant            \or % 210E	PLANCK CONSTANT
+    \unic@planckconstantovertwopi   \or % 210F	PLANCK CONSTANT OVER TWO PI
+    \unic@scriptI                   \or % 2110	SCRIPT CAPITAL I
+    \unic@blackletterI              \or % 2111	BLACK-LETTER CAPITAL I
+    \unic@scriptL                   \or % 2112	SCRIPT CAPITAL L
+    \unic@scriptl                   \or % 2113	SCRIPT SMALL L
+    \unic@lbbarsymbol               \or % 2114	L B BAR SYMBOL
+    \unic@doublestruckN             \or % 2115	DOUBLE-STRUCK CAPITAL N
+    \unic@numerosign                \or % 2116	NUMERO SIGN
+    \unic@soundrecordingcopyright   \or % 2117	SOUND RECORDING COPYRIGHT
+    \unic@scriptP                   \or % 2118	SCRIPT CAPITAL P
+    \unic@doublestruckP             \or % 2119	DOUBLE-STRUCK CAPITAL P
+    \unic@doublestruckQ             \or % 211A	DOUBLE-STRUCK CAPITAL Q
+    \unic@scriptR                   \or % 211B	SCRIPT CAPITAL R
+    \unic@blackletterR              \or % 211C	BLACK-LETTER CAPITAL R
+    \unic@doublestruckR             \or % 211D	DOUBLE-STRUCK CAPITAL R
+    \unic@prescriptiontake          \or % 211E	PRESCRIPTION TAKE
+    \unic@response                  \or % 211F	RESPONSE
+    \unic@servicemark               \or % 2120	SERVICE MARK
+    \unic@telephonesign             \or % 2121	TELEPHONE SIGN
+    \unic@trademarksign             \or % 2122	TRADE MARK SIGN
+    \unic@versickle                 \or % 2123	VERSICLE
+    \unic@doublestruckZ             \or % 2124	DOUBLE-STRUCK CAPITAL Z
+    \unic@ouncesign                 \or % 2125	OUNCE SIGN
+    \unic@ohmsign                   \or % 2126	OHM SIGN
+    \unic@invertedohmsign           \or % 2127	INVERTED OHM SIGN
+    \unic@blackletterZ              \or % 2128	BLACK-LETTER CAPITAL Z
+    \unic@turnedgreekletteriota     \or % 2129	TURNED GREEK SMALL LETTER IOTA
+    \unic@kelvinsign                \or % 212A	KELVIN SIGN
+    \unic@angstromsign              \or % 212B	ANGSTROM SIGN
+    \unic@scriptB                   \or % 212C	SCRIPT CAPITAL B
+    \unic@blackletterC              \or % 212D	BLACK-LETTER CAPITAL C
+    \unic@estimatedsymbol           \or % 212E	ESTIMATED SYMBOL
+    \unic@scripte                   \or % 212F	SCRIPT SMALL E
+    \unic@scriptE                   \or % 2130	SCRIPT CAPITAL E
+    \unic@scriptF                   \or % 2131	SCRIPT CAPITAL F
+    \unic@turnedF                   \or % 2132	TURNED CAPITAL F
+    \unic@scriptM                   \or % 2133	SCRIPT CAPITAL M
+    \unic@scripto                   \or % 2134	SCRIPT SMALL O
+    \aleph                          \or % 2135	ALEF SYMBOL
+    \beth                           \or % 2136	BET SYMBOL
+    \gimel                          \or % 2137	GIMEL SYMBOL
+    \daleth                         \or % 2138	DALET SYMBOL
+    \unic@informationsource         \or % 2139	INFORMATION SOURCE
+    \unic@rotatedQ                  \or % 213A	ROTATED CAPITAL Q
+    \unic@facsimilesign             \or % 213B	FACSIMILE SIGN
+    \unic@doublestruckpi            \or % 213C	DOUBLE-STRUCK SMALL PI
+    \unic@doublestruckgamma         \or % 213D	DOUBLE-STRUCK SMALL GAMMA
+    \unic@doublestruckGamma         \or % 213E	DOUBLE-STRUCK CAPITAL GAMMA
+    \unic@doublestruckPi            \or % 213F	DOUBLE-STRUCK CAPITAL PI
+    \unic@doublestrucknarysummation \or % 2140	DOUBLE-STRUCK N-ARY SUMMATION
+    \unic@turnedsansserifG          \or % 2141	TURNED SANS-SERIF CAPITAL G
+    \unic@turnedsansserifL          \or % 2142	TURNED SANS-SERIF CAPITAL L
+    \unic@reversedsansserifL        \or % 2143	REVERSED SANS-SERIF CAPITAL L
+    \unic@turnedsansserifY          \or % 2144	TURNED SANS-SERIF CAPITAL Y
+    \unic@doublestruckitalicD       \or % 2145	DOUBLE-STRUCK ITALIC CAPITAL D
+    \unic@doublestruckitalicd       \or % 2146	DOUBLE-STRUCK ITALIC SMALL D
+    \unic@doublestruckitalice       \or % 2147	DOUBLE-STRUCK ITALIC SMALL E
+    \unic@doublestruckitalici       \or % 2148	DOUBLE-STRUCK ITALIC SMALL I
+    \unic@doublestruckitalicj       \or % 2149	DOUBLE-STRUCK ITALIC SMALL J
+    \unic@propertyline              \or % 214A	PROPERTY LINE
+    \unic@turnedampersand           \or % 214B	TURNED AMPERSAND
+    \unic@persign                   \or % 214C	PER SIGN
+    \unknownchar               \or % 214D
+    \unknownchar               \or % 214E
+    \unknownchar               \or % 214F
+    \unknownchar               \or % 2150	
+    \unknownchar               \or % 2151
+    \unknownchar               \or % 2152
+    \unic@fractiononethird          \or % 2153	VULGAR FRACTION ONE THIRD
+    \unic@fractiontwothirds         \or % 2154	VULGAR FRACTION TWO THIRDS
+    \unic@fractiononefifth          \or % 2155	VULGAR FRACTION ONE FIFTH
+    \unic@fractiontwofifths         \or % 2156	VULGAR FRACTION TWO FIFTHS
+    \unic@fractionthreefifths       \or % 2157	VULGAR FRACTION THREE FIFTHS
+    \unic@fractionfourfifths        \or % 2158	VULGAR FRACTION FOUR FIFTHS
+    \unic@fractiononesixth          \or % 2159	VULGAR FRACTION ONE SIXTH
+    \unic@fractionfivesixths        \or % 215A	VULGAR FRACTION FIVE SIXTHS
+    \unic@fractiononeeighth         \or % 215B	VULGAR FRACTION ONE EIGHTH
+    \unic@fractionthreeeighths      \or % 215C	VULGAR FRACTION THREE EIGHTHS
+    \unic@fractionfiveeighths       \or % 215D	VULGAR FRACTION FIVE EIGHTHS
+    \unic@fractionseveneighths      \or % 215E	VULGAR FRACTION SEVEN EIGHTHS
+    \unic@fractionnumeratorone      \or % 215F	FRACTION NUMERATOR ONE
+    \unic@romannumeralOne           \or % 2160	ROMAN NUMERAL ONE
+    \unic@romannumeralTwo           \or % 2161	ROMAN NUMERAL TWO
+    \unic@romannumeralThree         \or % 2162	ROMAN NUMERAL THREE
+    \unic@romannumeralFour          \or % 2163	ROMAN NUMERAL FOUR
+    \unic@romannumeralFive          \or % 2164	ROMAN NUMERAL FIVE
+    \unic@romannumeralSix           \or % 2165	ROMAN NUMERAL SIX
+    \unic@romannumeralSeven         \or % 2166	ROMAN NUMERAL SEVEN
+    \unic@romannumeralEight         \or % 2167	ROMAN NUMERAL EIGHT
+    \unic@romannumeralNine          \or % 2168	ROMAN NUMERAL NINE
+    \unic@romannumeralTen           \or % 2169	ROMAN NUMERAL TEN
+    \unic@romannumeralEleven        \or % 216A	ROMAN NUMERAL ELEVEN
+    \unic@romannumeralTwelve        \or % 216B	ROMAN NUMERAL TWELVE
+    \unic@romannumeralFifty         \or % 216C	ROMAN NUMERAL FIFTY
+    \unic@romannumeralOnehundred    \or % 216D	ROMAN NUMERAL ONE HUNDRED
+    \unic@romannumeralFivehundred   \or % 216E	ROMAN NUMERAL FIVE HUNDRED
+    \unic@romannumeralOnethousand   \or % 216F	ROMAN NUMERAL ONE THOUSAND
+    \unic@romannumeralone           \or % 2170	SMALL ROMAN NUMERAL ONE
+    \unic@romannumeraltwo           \or % 2171	SMALL ROMAN NUMERAL TWO
+    \unic@romannumeralthree         \or % 2172	SMALL ROMAN NUMERAL THREE
+    \unic@romannumeralfour          \or % 2173	SMALL ROMAN NUMERAL FOUR
+    \unic@romannumeralfive          \or % 2174	SMALL ROMAN NUMERAL FIVE
+    \unic@romannumeralsix           \or % 2175	SMALL ROMAN NUMERAL SIX
+    \unic@romannumeralseven         \or % 2176	SMALL ROMAN NUMERAL SEVEN
+    \unic@romannumeraleight         \or % 2177	SMALL ROMAN NUMERAL EIGHT
+    \unic@romannumeralnine          \or % 2178	SMALL ROMAN NUMERAL NINE
+    \unic@romannumeralten           \or % 2179	SMALL ROMAN NUMERAL TEN
+    \unic@romannumeraleleven        \or % 217A	SMALL ROMAN NUMERAL ELEVEN
+    \unic@romannumeraltwelve        \or % 217B	SMALL ROMAN NUMERAL TWELVE
+    \unic@romannumeralfifty         \or % 217C	SMALL ROMAN NUMERAL FIFTY
+    \unic@romannumeralonehundred    \or % 217D	SMALL ROMAN NUMERAL ONE HUNDRED
+    \unic@romannumeralfivehundred   \or % 217E	SMALL ROMAN NUMERAL FIVE HUNDRED
+    \unic@romannumeralonethousand   \or % 217F	SMALL ROMAN NUMERAL ONE THOUSAND
+    \unic@romannumeralonethousandCD \or % 2180	ROMAN NUMERAL ONE THOUSAND C D
+    \unic@romannumeralfivethousand  \or % 2181	ROMAN NUMERAL FIVE THOUSAND
+    \unic@romannumeraltenthousand   \or % 2182	ROMAN NUMERAL TEN THOUSAND
+    \unic@romannumeralreversedonehundred\or % 2183	ROMAN NUMERAL REVERSED ONE HUNDRED 
+    \unknownchar               \or % 2184
+    \unknownchar               \or % 2185
+    \unknownchar               \or % 2186
+    \unknownchar               \or % 2187
+    \unknownchar               \or % 2188
+    \unknownchar               \or % 2189
+    \unknownchar               \or % 218A
+    \unknownchar               \or % 218B
+    \unknownchar               \or % 218C
+    \unknownchar               \or % 218D
+    \unknownchar               \or % 218E
+    \unknownchar               \or % 218F
+    \leftarrow                 \or % LEFTWARDS ARROW
+    \uparrow                   \or % UPWARDS ARROW
+    \rightarrow                \or % RIGHTWARDS ARROW
+    \downarrow                 \or % DOWNWARDS ARROW
+    \leftrightarrow            \or % LEFT RIGHT ARROW
+    \updownarrow               \or % UP DOWN ARROW
+    \nwarrow                   \or % NORTH WEST ARROW
+    \nearrow                   \or % NORTH EAST ARROW
+    \searrow                   \or % SOUTH EAST ARROW
+    \swarrow                   \or % SOUTH WEST ARROW
+    \nleftarrow                \or % LEFTWARDS ARROW WITH STROKE
+    \nrightarrow               \or % RIGHTWARDS ARROW WITH STROKE
+    \unknownchar               \or % LEFTWARDS WAVE ARROW
+    \unknownchar               \or % RIGHTWARDS WAVE ARROW
+    \twoheadedleftarrow        \or % LEFTWARDS TWO HEADED ARROW
+    \unknownchar               \or % UPWARDS TWO HEADED ARROW
+    \twoheadedrightarrow       \or % RIGHTWARDS TWO HEADED ARROW
+    \unknownchar               \or % DOWNWARDS TWO HEADED ARROW
+    \leftarrowtail             \or % LEFTWARDS ARROW WITH TAIL
+    \rightarrowtail            \or % RIGHTWARDS ARROW WITH TAIL
+    \mapsfrom                  \or % LEFTWARDS ARROW FROM BAR
+    \unknownchar               \or % UPWARDS ARROW FROM BAR
+    \mapsto                    \or % RIGHTWARDS ARROW FROM BAR
+    \unknownchar               \or % DOWNWARDS ARROW FROM BAR
+    \unknownchar               \or % UP DOWN ARROW WITH BASE
+    \hookleftarrow             \or % LEFTWARDS ARROW WITH HOOK
+    \hookrightarrow            \or % RIGHTWARDS ARROW WITH HOOK
+    \loopleftarrow             \or % LEFTWARDS ARROW WITH LOOP
+    \looprightarrow            \or % RIGHTWARDS ARROW WITH LOOP
+    \unknownchar               \or % LEFT RIGHT WAVE ARROW
+    \nleftrightarrow           \or % LEFT RIGHT ARROW WITH STROKE
+    \lightning                 \or % DOWNWARDS ZIGZAG ARROW
+    \Lsh                       \or % UPWARDS ARROW WITH TIP LEFTWARDS
+    \Rsh                       \or % UPWARDS ARROW WITH TIP RIGHTWARDS
+    \unknownchar               \or % DOWNWARDS ARROW WITH TIP LEFTWARDS
+    \unknownchar               \or % DOWNWARDS ARROW WITH TIP RIGHTWARDS
+    \unknownchar               \or % RIGHTWARDS ARROW WITH CORNER DOWNWARDS
+    \unknownchar               \or % DOWNWARDS ARROW WITH CORNER LEFTWARDS
+    \curveleftarrow            \or % ANTICLOCKWISE TOP SEMICIRCLE ARROW
+    \curverightarrow           \or % CLOCKWISE TOP SEMICIRCLE ARROW
+    \unknownchar               \or % NORTH WEST ARROW TO LONG BAR
+    \unknownchar               \or % LEFTWARDS ARROW TO BAR OVER RIGHTWARDS ARROW TO BAR
+    \circlearrowleft           \or % ANTICLOCKWISE OPEN CIRCLE ARROW
+    \circlearrowright          \or % CLOCKWISE OPEN CIRCLE ARROW
+    \leftharpoonup             \or % LEFTWARDS HARPOON WITH BARB UPWARDS
+    \leftharpoondown           \or % LEFTWARDS HARPOON WITH BARB DOWNWARDS
+    \upharpoonright            \or % UPWARDS HARPOON WITH BARB RIGHTWARDS
+    \upharpoonleft             \or % UPWARDS HARPOON WITH BARB LEFTWARDS
+    \rightharpoonup            \or % RIGHTWARDS HARPOON WITH BARB UPWARDS
+    \rightharpoondown          \or % RIGHTWARDS HARPOON WITH BARB DOWNWARDS
+    \downharpoonright          \or % DOWNWARDS HARPOON WITH BARB RIGHTWARDS
+    \downharpoonleft           \or % DOWNWARDS HARPOON WITH BARB LEFTWARDS
+    \rightleftarrows           \or % RIGHTWARDS ARROW OVER LEFTWARDS ARROW
+    \unknownchar               \or % UPWARDS ARROW LEFTWARDS OF DOWNWARDS ARROW
+    \leftrightarrows           \or % LEFTWARDS ARROW OVER RIGHTWARDS ARROW
+    \leftleftarrows            \or % LEFTWARDS PAIRED ARROWS
+    \upuparrows                \or % UPWARDS PAIRED ARROWS
+    \rightrightarrows          \or % RIGHTWARDS PAIRED ARROWS
+    \downdownarrows            \or % DOWNWARDS PAIRED ARROWS
+    \leftrightharpoons         \or % LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
+    \rightleftharpoons         \or % RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON
+    \nLeftarrow                \or % LEFTWARDS DOUBLE ARROW WITH STROKE
+    \nLeftrightarrow           \or % LEFT RIGHT DOUBLE ARROW WITH STROKE
+    \nRightarrow               \or % RIGHTWARDS DOUBLE ARROW WITH STROKE
+    \Leftarrow                 \or % LEFTWARDS DOUBLE ARROW
+    \Uparrow                   \or % UPWARDS DOUBLE ARROW
+    \Rightarrow                \or % RIGHTWARDS DOUBLE ARROW
+    \Downarrow                 \or % DOWNWARDS DOUBLE ARROW
+    \Leftrightarrow            \or % LEFT RIGHT DOUBLE ARROW
+    \Updownarrow               \or % UP DOWN DOUBLE ARROW
+    \unknownchar               \or % NORTH WEST DOUBLE ARROW
+    \unknownchar               \or % NORTH EAST DOUBLE ARROW
+    \unknownchar               \or % SOUTH EAST DOUBLE ARROW
+    \unknownchar               \or % SOUTH WEST DOUBLE ARROW
+    \Lleftarrow                \or % LEFTWARDS TRIPLE ARROW
+    \unknownchar               \or % RIGHTWARDS TRIPLE ARROW
+    \leftsquidarrow            \or % LEFTWARDS SQUIGGLE ARROW
+    \rightsquidarrow           \or % RIGHTWARDS SQUIGGLE ARROW
+    \unknownchar               \or % UPWARDS ARROW WITH DOUBLE STROKE
+    \unknownchar               \or % DOWNWARDS ARROW WITH DOUBLE STROKE
+    \dashleftarrow             \or % LEFTWARDS DASHED ARROW
+    \unknownchar               \or % UPWARDS DASHED ARROW
+    \dashrightarrow            \or % RIGHTWARDS DASHED ARROW
+    \unknownchar               \or % DOWNWARDS DASHED ARROW
+    \unic@leftarrowtobar       \or % LEFTWARDS ARROW TO BAR
+    \unknownchar               \or % RIGHTWARDS ARROW TO BAR
+    \unknownchar               \or % LEFTWARDS WHITE ARROW
+    \unknownchar               \or % UPWARDS WHITE ARROW
+    \unknownchar               \or % RIGHTWARDS WHITE ARROW
+    \unknownchar               \or % DOWNWARDS WHITE ARROW
+    \unknownchar               \or % UPWARDS WHITE ARROW FROM BAR
+    \unknownchar               \or % UPWARDS WHITE ARROW ON PEDESTAL
+    \unknownchar               \or % UPWARDS WHITE ARROW ON PEDESTAL WITH HORIZONTAL BAR
+    \unknownchar               \or % UPWARDS WHITE ARROW ON PEDESTAL WITH VERTICAL BAR
+    \unknownchar               \or % UPWARDS WHITE DOUBLE ARROW
+    \unknownchar               \or % UPWARDS WHITE DOUBLE ARROW ON PEDESTAL
+    \unknownchar               \or % RIGHTWARDS WHITE ARROW FROM WALL
+    \unknownchar               \or % NORTH WEST ARROW TO CORNER
+    \unknownchar               \or % SOUTH EAST ARROW TO CORNER
+    \unknownchar               \or % UP DOWN WHITE ARROW
+    \unknownchar               \or % RIGHT ARROW WITH SMALL CIRCLE
+    \unknownchar               \or % DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW
+    \unknownchar               \or % THREE RIGHTWARDS ARROWS
+    \unknownchar               \or % LEFTWARDS ARROW WITH VERTICAL STROKE
+    \unknownchar               \or % RIGHTWARDS ARROW WITH VERTICAL STROKE
+    \unknownchar               \or % LEFT RIGHT ARROW WITH VERTICAL STROKE
+    \unknownchar               \or % LEFTWARDS ARROW WITH DOUBLE VERTICAL STROKE
+    \unknownchar               \or % RIGHTWARDS ARROW WITH DOUBLE VERTICAL STROKE
+    \unknownchar               \or % LEFT RIGHT ARROW WITH DOUBLE VERTICAL STROKE
+    \leftarrowtriangle         \or % LEFTWARDS OPEN-HEADED ARROW
+    \rightarrowtriangle        \or % RIGHTWARDS OPEN-HEADED ARROW
+    \leftrightarrowtriangle  \else % LEFT RIGHT OPEN-HEADED ARROW
+    \unknowncharacter
+  \fi
+\stopunicodevector
+
+\protect \endinput

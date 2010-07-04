@@ -1,0 +1,168 @@
+%D \module
+%D   [       file=back-ini,
+%D        version=2009.04.15,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Most will go away here as it is replaced by \LUA\ calls to
+%D backend functions.
+
+\writestatus{loading}{ConTeXt Backend Macros / Initialization}
+
+\registerctxluafile{back-ini}{1.001}
+
+%D We currently have a curious mix between tex and lua backend
+%D handling but eventually most will move to lua.
+
+\unprotect
+
+\ifdefined\everybackendshipout     \else \newtoks\everybackendshipout     \fi
+\ifdefined\everylastbackendshipout \else \newtoks\everylastbackendshipout \fi
+
+%D Right from the start \CONTEXT\ had a backend system based on
+%D runtime pluggable code. As most backend issues involved specials
+%D and since postprocessors had not that much in common, we ended up
+%D with a system where we could switch backend as well as output code
+%D for multiple backends at the same time.
+%D
+%D Because \LUATEX\ has the backend built in, and since some backend
+%D issues have been moved to the frontend I decided to provide new
+%D backend code for \MKIV, starting with what was actually used.
+%D
+%D At this moment \DVI\ is no longer used for advanced document
+%D output and we therefore dropped support for this format. Future
+%D versions might support more backends again, but this has a low
+%D priority.
+%D
+%D The big question is: what is to be considered a backend issue and
+%D what not. For the moment we treat image inclusion, object reuse,
+%D position tracking and color as frontend issues, if only because we
+%D deal with them via \LUA\ code and as such we don't depend too much
+%D on macro calls that need to inject code for the backend.
+%D
+%D Not everything here makes sense and the content of this file will
+%D definitely change.
+
+\let \dostartrotation  \gobbleoneargument
+\let \dostoprotation   \donothing
+\let \dostartscaling   \gobbletwoarguments
+\let \dostopscaling    \donothing
+\let \dostartmirroring \donothing
+\let \dostopmirroring  \donothing
+
+%D \macros
+%D   {doovalbox}
+%D
+%D When we look at the implementation, this is a complicated
+%D one. There are seven arguments.
+%D
+%D \starttyping
+%D \doovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill} {variant}
+%D \stoptyping
+%D
+%D This command has to return a \type{\vbox} which can be used
+%D to lay over another one (with text). The radius is in
+%D degrees, the stroke and fill are~\type{1} (true) of~\type{0}
+%D (false).
+
+\let \doovalbox \gobbleeightarguments
+
+%D \macros
+%D   {dostartclipping,dostopclipping}
+%D
+%D Clipping is implemented in such a way that an arbitrary code
+%D can be fed.
+%D
+%D \starttyping
+%D \dostartclipping {pathname} {width} {height}
+%D \dostopclipping
+%D \stoptyping
+
+\let \dostartclipping \gobblethreearguments
+\let \dostopclipping  \donothing
+
+%D \macros
+%D   {dostartobject,
+%D    dostopobject,
+%D    doresetobjects,
+%D    doinsertobject}
+%D
+%D Reuse of object can reduce the output filesize
+%D considerably. Reusable objects are implemented with:
+%D
+%D \starttyping
+%D \dostartobject{class}{name}{width}{height}{depth}
+%D some typeset material
+%D \dostopobject
+%D \stoptyping
+%D
+%D \starttyping
+%D \doinsertobject{class}{name}
+%D \stoptyping
+%D
+%D The savings can be huge in interactive texts. The next macro needs
+%D to be called after a graphic is inserted (in order to clean up
+%D global references).
+%D
+%D \starttyping
+%D \doresetobjects
+%D \stoptyping
+
+\let \dostartobject   \gobblefourarguments
+\let \dostopobject    \donothing
+\let \doinsertobject  \gobbletwoarguments
+\let \doresetobjects  \donothing
+
+%D From now on, mapfile loading is also a special; we assume the
+%D more or less standard dvips syntax.
+
+\let \doresetmapfilelist \donothing
+\let \doloadmapfile      \gobbletwoarguments % + - = | filename
+\let \doloadmapline      \gobbletwoarguments % + - = | fileline
+
+%D \macros
+%D   {ifusepagedestinations}
+%D
+%D In \PDF\ version 1.0 only page references were supported,
+%D while in \DVIWINDO\ 1.N only named references were accepted.
+%D Therefore \CONTEXT\ supports both methods of referencing. In
+%D \PDF\ version 1.1 named destinations arrived. Lack of
+%D continuous support of version 1.1 viewers for \MSDOS\
+%D therefore sometimes forces us to prefer page references. As
+%D a bonus, they are faster too and have no limitations. How
+%D fortunate we were having both mechanisms available when the
+%D version 3.0 (\PDF\ version 1.2) viewers proved to be too
+%D bugged to support named destinations.
+
+\newif\ifusepagedestinations % not yet interfaced in mkiv
+
+%D \macros
+%D   {jobsuffix}
+%D
+%D By default, \TEX\ produces \DVI\ files which can be
+%D converted to other filetypes. Sometimes it is handy to
+%D know what the target file will be. In other driver
+%D modules we wil set \type {\jobsuffix} to \type {pdf}.
+
+\def\jobsuffix{pdf}
+
+\ifdefined\resetsystemmode \else
+    \let\setsystemmode  \gobbleoneargument
+    \let\resetsystemmode\gobbleoneargument
+\fi
+
+\def\setjobsuffix#1%
+  {\resetsystemmode\jobsuffix
+   \edef\jobsuffix{#1}%
+   \setsystemmode\jobsuffix}
+
+\unexpanded\def\setupoutput[#1]{} % will be command line switch
+
+\protect \endinput

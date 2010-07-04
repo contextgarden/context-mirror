@@ -1,0 +1,57 @@
+local msam = { name = "msam10.tfm", vector = "tex-ma" }
+local msbm = { name = "msbm10.tfm", vector = "tex-mb" }
+
+return {
+    name = "iwona-math",
+    version = "1.00",
+    comment = "Goodies that complement iwona math.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "iwona-rm.map",
+            "iwona-mi.map",
+            "iwona-sy.map",
+            "iwona-ex.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["iwona-math"] = {
+                { name = "file:Iwona-Regular", features = "virtualmath", main = true },
+                { name = "mi-iwonari.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-iwonari.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "sy-iwonarz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+                { name = "ex-iwonar.tfm", vector = "tex-ex", extension = true } ,
+                msam,
+                msbm,
+            },
+            ["iwona-light-math"] = {
+                { name = "file:IwonaLight-Regular", features = "virtualmath", main = true },
+                { name = "mi-iwonali.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-iwonali.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "sy-iwonalz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+                { name = "ex-iwonal.tfm", vector = "tex-ex", extension = true } ,
+                msam,
+                msbm,
+            },
+            ["iwona-medium-math"] = {
+                { name = "file:IwonaMedium-Regular", features = "virtualmath", main = true },
+                { name = "mi-iwonami.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-iwonami.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "sy-iwonamz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+                { name = "ex-iwonam.tfm", vector = "tex-ex", extension = true } ,
+                msam,
+                msbm,
+            },
+            ["iwona-heavy-math"] = {
+                { name = "file:IwonaHeavy-Regular", features = "virtualmath", main = true },
+                { name = "mi-iwonahi.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-iwonahi.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "sy-iwonahz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+                { name = "ex-iwonah.tfm", vector = "tex-ex", extension = true } ,
+                msam,
+                msbm,
+            }
+        }
+    }
+}

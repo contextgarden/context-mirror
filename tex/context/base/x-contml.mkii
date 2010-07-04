@@ -1,0 +1,491 @@
+%M \usemodule [contml] \autoXMLnamespace [context]
+%M \definefilesynonym [context] [x-contml.xsd]
+
+%D \module
+%D   [       file=x-contml,
+%D        version=mid 2001,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Basic \CONTEXT\ commands,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This module provides some basic \XML\ elements. These definitions
+% are highly experimental and serve as a playground for interface
+% development.
+
+\unprotect
+
+%D \elements {include}
+%D
+%D \startbuffer
+%D You can include another file in the current document with the
+%D <element>include</element> element. When including the file, &context;
+%D will look at the suffix, in order to decide how to include the file.
+%D
+%D <verbatim>
+%D <line><include name="mine"/></line>
+%D <line><include name="mine" type="txt"/></line>
+%D <line><include name="mine" type="tex"/></line>
+%D </verbatim>
+%D \stopbuffer
+%D
+%D \showelements [context] [include]
+
+\defineXMLsingular [context:include] [name=,type=xml]
+  {\doifsomethingXMLop{name}
+     {\processaction
+         [\XMLop{type}]
+         [xml=>\readfile{\XMLop{name}}\donothing\donothing,
+          tex=>{{\disableXML\readfile{\XMLop{name}}\donothing\donothing}},
+          txt=>{{\disableXML\typefile{\XMLop{name}}}}]}}
+
+% or, nicer:
+%
+% \defineXMLsingular [context:include] [name=unknown,type=txt]
+%   {\XMLval{include:type}{\XMLop{type}}{}}
+%
+% \mapXMLvalue {include:type} {xml}             {\readfile{\XMLop{name}}\donothing\donothing}
+% \mapXMLvalue {include:type} {tex} {{\disableXML\readfile{\XMLop{name}}\donothing\donothing}}
+% \mapXMLvalue {include:type} {txt} {{\disableXML\typefile{\XMLop{name}}}}
+
+%D \elements {compound}
+%D
+%D \startbuffer
+%D Instead of using hard coded compound tokens, you should use the
+%D <element>compound</element> element, as in high<compound token="/" />low.
+%D The overhead in keying is rewarded with proper symbols and hyphenation.
+%D \stopbuffer
+%D
+%D \showelements [context] [compound]
+
+\ifx\normalcompound\undefined \let\normalcompound=| \fi
+
+% \defineXMLsingular [context:compound] [token=]
+%   {\expanded{\normalcompound\XMLop{token}}|}
+
+% \defineXMLsingular [context:compound] [token=]
+%   {\ifmmode
+%      \doifXMLop{token}{\XMLop{token}}{\compoundhyphen}%
+%    \else
+%      \expanded{\normalcompound\XMLop{token}}|%
+%    \fi}
+
+\defineXMLsingular [context:compound] [token=]
+  {\mathortext % disc comm looks ahead, so \relax
+     {\doifXMLop{token}{\XMLop{token}}\compoundhyphen}%
+     {\expanded{\directdiscretionary{\XMLop{token}}}\relax}}
+
+\defineXMLenvironmentsave [context:cp]
+  {}
+  {\expanded{\directdiscretionary{\XMLflush{cp}}}\relax}
+
+%D \elements {p}
+%D
+%D \startbuffer
+%D <p>Although for &tex; it is often enough to mark the end of a paragraph,
+%D in &xml; we want to add a bit more structure. <p/> This permits a more
+%D robust implementation of begin<compound/>of<compound/>par actions</p>
+%D \stopbuffer
+%D
+%D \showelements [context] [p]
+
+\defineXMLenvironment [context:p] {} \endgraf
+\defineXMLsingular    [context:p]    \endgraf
+
+%D \elements {pageref,textref,lineref}
+%D
+%D \startbuffer
+%D You can ask for a page (<pageref label="lastpage">the last pagenumber
+%D is</pageref> aka page <pageref label="lastpage"/>), text or line reference
+%D with the following three elements. The label may be any valid &context;
+%D reference label.
+%D \stopbuffer
+%D
+%D \showelements [context] [references]
+
+\defineXMLpickup [context:pageref] [label=] {\at}     {[\XMLop{label}]}
+\defineXMLpickup [context:textref] [label=] {\in}     {[\XMLop{label}]}
+\defineXMLpickup [context:lineref] [label=] {\inline} {[\XMLop{label}]}
+
+%D \elements{text}
+%D
+%D \startbuffer
+%D If you have a self contained &xml; file, you need to signal &context; the
+%D begin and end of the document. The following elements can be used for
+%D that purpose:
+%D
+%D <verbatim>
+%D <line><text></line>
+%D <line>  ...</line>
+%D <line></text></line>
+%D </verbatim>
+%D \stopbuffer
+%D
+%D \showelements [context] [text]
+
+\defineXMLenvironment [context:text] \starttext \stoptext
+
+%D \elements {em}
+%D
+%D \startbuffer
+%D Authors often want some control over the way a text is typeset, which is
+%D why we provide the <element>em</element> element. We may only hope that
+%D the author is <em>consistent</em> in his decisions on what to emphasize.
+%D \stopbuffer
+%D
+%D \showelements [context] [em]
+
+\defineXMLgrouped [context:em] \em
+
+%D \elements {b}
+%D
+%D \startbuffer
+%D Bold is not always <b>beautiful</b> but if you really want it, you can
+%D get it by using this element.
+%D \stopbuffer
+%D
+%D \showelements [context] [b]
+
+\defineXMLgrouped [context:b] \bf
+
+%D \elements {verbatim,typing,line,verb,type}
+%D
+%D \startbuffer
+%D Although the following method can be used to typeset a piece of code
+%D verbatim
+%D
+%D <![CDATA[
+%D Dit \is nogal verbatim !
+%D Dit is {nogal} verbatim !
+%D Dit is <nogal> verbatim !
+%D ]]>
+%D
+%D we prefer the more structured:
+%D
+%D <verbatim>
+%D <line>Dit \is nogal verbatim !</line>
+%D <line>Dit is {nogal} verbatim !</line>
+%D <line>Dit is <nogal> verbatim !</line>
+%D </verbatim>
+%D \stopbuffer
+%D
+%D The element to tag in<compound/>line verbatim is <type><verb></type>.
+%D
+%D \showelements [context] [verbatim]
+
+\defineXMLenvironment [context:verbatim]
+  {\startpacked
+   \defineXMLargument[context:line]{\endgraf\type}}
+  {\stoppacked}
+
+\defineXMLenvironment [context:typing]
+  {\startpacked\defineXMLargument[context:line]{\endgraf\type}}
+  {\stoppacked}
+
+\defineXMLargument [context:verb] \type
+\defineXMLargument [context:type] \type
+
+%D \elements {itemize,item}
+%D
+%D \startbuffer
+%D Itemized lists are quite common in documents, al least in the ones that
+%D we produce. For the moment we only provide a few options, later we will
+%D hook it into the &context; attribute handler.
+%D
+%D <itemize type="a">
+%D   <item label="bla"> test </item>
+%D   <item> test </item>
+%D </itemize>
+%D
+%D <itemize packed="yes">
+%D   <item label="more bla"> test </item>
+%D   <item> test <em>what?</em></item>
+%D </itemize>
+%D \stopbuffer
+%D
+%D \showelements [context] [itemize]
+
+\defineXMLenvironment [context:itemize] [type=,packed=]
+  {\let\XMLoptions\empty
+   \doifsomethingXMLop{type}{\addtocommalist{\XMLop{type}}\XMLoptions}%
+   \doifXMLop{packed}{yes}{\addtocommalist{packed}\XMLoptions}%
+   \expanded{\startitemize[\XMLoptions]}}
+  {\stopitemize}
+
+\defineXMLenvironment [context:item] [label=]
+  {\expanded{\item[\XMLop{label}]}}
+  {\endgraf}
+
+%D \elements {externalfigure}
+%D
+%D \startbuffer
+%D The previous examples already demonstrated how we can include a graphic:
+%D
+%D <verbatim>
+%D <line><externalfigure file="cow" width="5cm" /></line>
+%D </verbatim>
+%D \stopbuffer
+%D
+%D \showelements [context] [externalfigure]
+
+\defineXMLsingular [context:externalfigure] [\??ef] [base=,label=,file=]
+  {\bgroup % \getXMLta \expandXMLta \expandXMLtp{file}%
+   \expandXMLta
+   \getXMLta % expand entities first
+   \doifelsenothing{\XMLtp{label}}
+     {\expanded{\externalfigure[\XMLtp{file}][\XMLta]}}
+     {\doifsomething{\XMLtp{base}}{\usefigurebase[\XMLtp{base}]}%
+      \expanded{\externalfigure[\XMLtp{label}][\XMLta]}}
+   \egroup}
+
+%D \elements {fixed}
+%D \setupexternalfigures[directory={../sample}]
+%D \startbuffer
+%D Something fixed will end up at the place where it defined in the input
+%D stream. The main idea behind this element is that it gives you control
+%D over the placement.
+%D
+%D <itemize>
+%D   <item>
+%D     <fixed align="high">
+%D       <content>
+%D         <externalfigure file="cow" frame="on" height="1cm" />
+%D       </content>
+%D     </fixed>
+%D   </item>
+%D </itemize>
+%D \stopbuffer
+%D
+%D \showelements [context] [fixed]
+
+\defineXMLenvironment [context:fixed] [type=figure,location=,label=]
+  {\bgroup
+   \defineXMLsave[context:caption]
+   \defineXMLsave[context:content]}
+  {\expanded{\startfixed[\XMLop{location}]}%
+     \doifXMLdataelse{context:caption}
+       {\startcombination[1*1]
+          {\XMLflush{context:content}} {\XMLflush{context:caption}}
+        \stopcombination}
+       {\XMLflush{context:content}}%
+   \stopfixed
+   \egroup}
+
+%D \elements {float}
+%D \setupexternalfigures[directory={../sample}]
+%D \startbuffer
+%D A floating body will be placed at the first location available, unless
+%D a location is specified. As with the <element>fixed</element> element,
+%D you can provide a caption.
+%D
+%D <float type="figure">
+%D   <content>
+%D     <externalfigure file="cow" frame="on" height="3cm" />
+%D   </content>
+%D   <caption>This is a cow!</caption>
+%D </float>
+%D \stopbuffer
+%D
+%D \showelements [context] [float]
+
+\defineXMLenvironment [context:float] [type=figure,location=here,label=]
+  {\bgroup
+   \defineXMLsave[context:caption]
+   \defineXMLsave[context:content]}
+  {\expanded
+     {\placefloat
+        [\XMLop{type}] [\XMLop{location}] [\XMLop{label}]
+        {\XMLflush{context:caption}} {\XMLflush{context:content}}}
+   \egroup}
+
+%D \elements {quotation,quote}
+%D
+%D \startbuffer
+%D There is a (not so) subtle difference between a display
+%D <quotation>quotation</quotation> and an <quote>in<compound/>line</quote>
+%D one.
+%D \stopbuffer
+%D
+%D \showelements [context] [table]
+
+\defineXMLgrouped [context:quote]     \quote
+\defineXMLgrouped [context:quotation] \quotation
+
+%D \elements {table,tr,td}
+%D
+%D \startbuffer
+%D There are (currently) three table mechanisms in &context;. One of them
+%D resembles the well known &html; tables.
+%D
+%D <?context-command \startlinecorrection[blank] ?>
+%D <table>
+%D <tr> <td>one</td> <td>a</td> <td>first </td> </tr>
+%D <tr> <td>two</td> <td>b</td> <td>second</td> </tr>
+%D </table>
+%D <?context-command \stoplinecorrection ?>
+%D
+%D As you can see here, we use a similar syntax but stick to the &context;
+%D attributes (which provide quite advanced control over the layout).
+%D
+%D <?context-command \startlinecorrection[blank] ?>
+%D <table frame="off" background="color" color="white">
+%D <tr backgroundcolor="red">   <td>xx</td> <td>xx</td> </tr>
+%D <tr backgroundcolor="green"> <td>xx</td> <td>xx</td> </tr>
+%D </table>
+%D <?context-command \stoplinecorrection ?>
+%D \stopbuffer
+%D
+%D \showelements [context] [table]
+
+\defineXMLenvironment [context:table] [\@@tbl\@@tbl]
+  {\bgroup
+   \defineXMLnested [context:tr] [\@@tbl] {\expanded{\bTR[\theXMLarguments{\@@tbl}}]} \eTR
+   \defineXMLnested [context:td] [\@@tbl] {\expanded{\bTD[\theXMLarguments{\@@tbl}}]} \eTD
+   \expanded{\bTABLE[\theXMLarguments{\@@tbl\@@tbl}]}}
+  {\eTABLE
+   \egroup}
+
+%D \elements {tabulate,tspec,thead,tbody,ttail,trule,tr,td}
+%D
+%D \startbuffer
+%D The second mechanism that we support is tabulation. The advantage of this
+%D mechanism is that it it well tuned for tables that have much text in the
+%D cells and cross page boundaires.
+%D
+%D <tabulate>
+%D   <tspec>
+%D     <tcell align="left"/> <tcell align="middle"/> <tcell align="right"/>
+%D   </tspec>
+%D   <thead>
+%D     <trule/>
+%D     <tr> <td> bagger </td> <td> bagger </td> <td> bagger </td> </tr>
+%D     <trule/>
+%D   </thead>
+%D   <ttail>
+%D     <trule/>
+%D   </ttail>
+%D   <tbody>
+%D     <tr> <td> bagger </td> <td> bagger </td> <td> bagger </td> </tr>
+%D     <tr> <td> bagg   </td> <td> ger    </td> <td> gr     </td> </tr>
+%D     <tr> <td> bag    </td> <td> er     </td> <td> gger   </td> </tr>
+%D   </tbody>
+%D </tabulate>
+%D \stopbuffer
+%D
+%D \showelements [context] [tabulate]
+
+\newtoks\XMLtabtoks
+
+\defineXMLgrouped [context:tabulate] {\XMLtabtoks{|l|p|}}
+
+\defineXMLpickup [context:tbody]
+  {\expanded{\definetabulate[dummy][\the\XMLtabtoks]}
+   \startdummy\XMLflush{context:thead}}
+  {\XMLflush{context:ttail}\stopdummy}
+
+\defineXMLsave [context:thead]
+\defineXMLsave [context:ttail]
+
+\defineXMLenvironment[context:tspec]
+  {\XMLtabtoks\emptytoks}
+  {\appendtoks|\to\XMLtabtoks}
+
+\defineXMLsingular [context:trule] % verrrry ugly
+  {\crcr\noalign{\kern-\lineheight}\HL}
+
+\defineXMLsingular [context:tcell] [align=]
+  {\appendtoks|\to\XMLtabtoks
+   \expanded{\processallactionsinset
+     [\XMLop{align}]}
+     [  paragraph=>\appendtoks p\to\XMLtabtoks,
+             left=>\appendtoks l\to\XMLtabtoks,
+            right=>\appendtoks r\to\XMLtabtoks,
+           center=>\appendtoks c\to\XMLtabtoks,
+           middle=>\appendtoks c\to\XMLtabtoks]}
+
+\defineXMLenvironment [context:tr] {\ignorespaces} {\NC\NR}
+\defineXMLenvironment [context:td] {\NC}           {\ignorespaces}
+
+%D \elements {hide}
+%D
+%D \startbuffer
+%D This is the way to [<hide>this is gone</hide>] something for the
+%D typesetting engine. Normally this element is only used for testing
+%D purposes.
+%D \stopbuffer
+%D
+%D \showelements [context] [tabulate]
+
+\defineXMLignore[context:hide]
+
+%D \elements {unknown}
+%D
+%D \startbuffer
+%D We can go on and on and <unknown/> with defining elements that map onto
+%D &context; commands, but why not just use &tex; input syntax then?
+%D \stopbuffer
+%D
+%D \showelements [context] [unknown]
+
+\defineXMLsingular [context:unknown] \unknown
+
+%D A (for the moment) private one.
+
+\defineXMLargument [context:element] \type
+
+%D The following common schema definitions apply:
+%D
+%D {\setupcolors[state=stop]\showXSDcomponent[context][definitions]}
+
+\defineXMLargument [context:chapter] [label=] {\chapter[\XMLop{label}]}
+\defineXMLargument [context:section] [label=] {\section[\XMLop{label}]}
+\defineXMLargument [context:subsection] [label=] {\subsection[\XMLop{label}]}
+\defineXMLargument [context:subsubsection] [label=] {\subsubsection[\XMLop{label}]}
+\defineXMLargument [context:subsubsubsection] [label=] {\subsubsubsection[\XMLop{label}]}
+
+\defineXMLargument [context:title] [label=] {\title[\XMLop{label}]}
+\defineXMLargument [context:subject] [label=] {\subject[\XMLop{label}]}
+\defineXMLargument [context:subsubject] [label=] {\subsubject[\XMLop{label}]}
+\defineXMLargument [context:subsubsubject] [label=] {\subsubsubject[\XMLop{label}]}
+\defineXMLargument [context:subsubsubsubject] [label=] {\subsubsubsubject[\XMLop{label}]}
+
+\defineXMLenvironment [context:frontmatter] \startfrontmatter \stopfrontmatter
+\defineXMLenvironment [context:bodymatter]  \startbodymatter  \stopbodymatter
+\defineXMLenvironment [context:backmatter]  \startbackmatter  \stopbackmatter
+\defineXMLenvironment [context:appendices]  \startappendices  \stopappendices
+
+\defineXMLargument [context:index] [key=]
+  {\doifelsenothingXMLop{key}{\index}{\expanded{\index[\XMLop{key}]}}}
+
+% \enableXMLfiledata
+
+% Needed for example (stickers and so):
+
+\defineXMLenvironment [context:makeup]
+  \startstandardmakeup \stopstandardmakeup
+
+\protect \endinput
+
+% TO DO
+
+\defineXMLenvironment [combination] [columns=2,rows=1]
+  {\scratchtoks\emptytoks
+   \expanded{\appendtoks \noexpand \startcombination
+     [\XMLop{columns}*\XMLop{rows}]}\to \scratchtoks}
+  {\appendtoks \stopcombination \to \scratchtoks
+   \the\scratchtoks}
+
+\defineXMLprocess[combinationentry]
+
+\defineXMLpickup [combinationitem]
+  {\appendtoks\bgroup}{\egroup\to\scratchtoks}
+
+\defineXMLpickup [combinationcaption]
+  {\appendtoks\bgroup}{\egroup\to\scratchtoks}
+
+\endinput

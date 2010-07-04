@@ -1,0 +1,131 @@
+%D \module
+%D   [      file=x-fig-08,
+%D        version=2002.06.27,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Resource Reporting,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D TODO: make rlxtools callable from texexec (class), speeds up things.
+
+%D Experimental module!
+%D
+%D \starttyping
+%D <rl:library>
+%D   <rl:usage>
+%D     <rl:type>figure</rl:type>
+%D     <rl:state>found|missing</rl:state>
+%D     <rl:name>filename</rl:name>
+%D     <rl:suffix>filesuffix</rl:suffix>
+%D     <rl:width>width in pt</rl:width>
+%D     <rl:height>height in pt</rl:height>
+%D     <rl:comment>text</rl:comment>
+%D   </rl:usage>
+%D </rl:library>
+%D \stoptyping
+
+\doifnotmode{\systemmodeprefix\v!first}{\endinput}
+
+\unprotect
+
+\def\XMLrlprefix{rl:}
+
+\newwrite\XMLrllog
+
+\def\openXMLresourcelog
+  {\immediate\openout\XMLrllog\jobname.rlg\relax
+   \immediate\write\XMLrllog{\XMLbanner{standalone='yes'}}%
+   \immediate\write\XMLrllog{\writtenXMLstart{\XMLrlprefix library}}}
+
+\def\closeXMLresourcelog
+  {\immediate\write\XMLrllog{\writtenXMLend{\XMLrlprefix library}}%
+   \immediate\closeout\XMLrllog}
+
+\let\figurefilelabel     \empty
+\let\figurefileoriginal  \empty
+\let\figurefilefile      \empty
+\let\figurefilepath      \empty
+\let\figurefileconversion\empty
+\let\figurefileprefix    \empty
+
+\def\XMLfeedbackresource#1#2%
+  {\begingroup
+   \defconvertedcommand\currentresourcecomment\currentresourcecomment
+   \doifnothing\figurefilefile{\edef\figurefilefile{\figurefilename.\figurefiletype}}%
+   \immediate\write\XMLrllog
+     {\writtenXMLelement{\XMLrlprefix usage}%
+        {\writtenXMLelement{\XMLrlprefix         type}{#2}% 'figure' not the type in \extenalfigure
+         \writtenXMLelement{\XMLrlprefix        state}{#1}% 'missing' 'found' etc
+         \ifx\figurefilelabel\empty
+           \ifx\figurelabel\s!dummy \else % otherwise label equals filename
+             \writtenXMLelementcs{\XMLrlprefix  label}\figurelabel
+           \fi
+           \writtenXMLelementcs{\XMLrlprefix     file}\figurefilefile % complete name
+           \writtenXMLelementcs{\XMLrlprefix     name}\figurefilename % no suffix
+           \writtenXMLelementcs{\XMLrlprefix   suffix}\figurefiletype
+         \else
+           % \figurefilelabel is set in x-res-04 and since
+           % we fetch from this base using the normal
+           % \externalfigure macro, the label becomes the
+           % name of the figurebase
+           \writtenXMLelementcs{\XMLrlprefix     base}\figurefilename
+           \writtenXMLelementcs{\XMLrlprefix    label}\figurefilelabel
+           \writtenXMLelementcs{\XMLrlprefix     file}\figurefilefile
+         \fi
+         \writtenXMLelementcs{\XMLrlprefix       path}\figurefilepath
+         \writtenXMLelementcs{\XMLrlprefix   original}\figurefileoriginal
+         \writtenXMLelementcs{\XMLrlprefix conversion}\figurefileconversion
+         \writtenXMLelementcs{\XMLrlprefix     prefix}\figurefileprefix
+         \writtenXMLelementcs{\XMLrlprefix      cache}\figurefilecache
+         \ifnum\figurefilepage>\zerocount
+           \writtenXMLelement{\XMLrlprefix       page}\figurefilepage
+         \fi
+         \writtenXMLelementcs{\XMLrlprefix    comment}\currentresourcecomment
+         \ifconditional\externalfigureflush
+           \writtenXMLelementcs{\XMLrlprefix    width}\figurewidth
+           \writtenXMLelementcs{\XMLrlprefix   height}\figureheight
+         \fi}}%
+   \endgroup}
+
+\def\XMLfeedbackexternalfigure
+  {\doifmodeelse{*\v!figure}%
+     {\XMLfeedbackresource{found}}%
+     {\XMLfeedbackresource{\ifconditional\externalfigureflush missing\else registered\fi}}%
+     {figure}}
+
+\setvariables
+  [rl:manipulate]
+  [file=rlxtools.rlx]
+
+% \startsetups[rl:manipulate]
+%   \doiflocfileelse{\jobname.rlx}
+%     {\installprogram{texmfstart rlxtools --manipulate kpse:\jobname.rlx \jobname.rlg}}
+%     {\installprogram{texmfstart rlxtools --manipulate kpse:\getvariabledefault{rl:manipulate}{file}{rlxtools.rlx} \jobname.rlg}}
+% \stopsetups
+%
+% no longer need for \setups[rl:manipulate]
+
+\ifx\nofconversionfigures\undefined \chardef\nofconversionfigures\plusone \fi
+
+\appendtoks
+  \ifcase\nofconversionfigures
+    \writestatus\m!systems{not registering rlxtools (manipulator)}%
+  \else
+    \writestatus\m!systems{registering rlxtools (manipulator)}%
+    \doiflocfileelse{\jobname.rlx}
+      {\installprogram{texmfstart rlxtools --manipulate "kpse:\jobname.rlx" "\jobname.rlg"}}
+      {\installprogram{texmfstart rlxtools --manipulate "kpse:\getvariabledefault{rl:manipulate}{file}{rlxtools.rlx}" "\jobname.rlg"}}%
+  \fi
+\to \everybye % \everylastshipout
+
+\appendtoks \openXMLresourcelog  \to \everystarttext
+\appendtoks \closeXMLresourcelog \to \everystoptext
+
+\let \feedbackexternalfigure \XMLfeedbackexternalfigure
+
+\protect \endinput

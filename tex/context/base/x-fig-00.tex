@@ -1,0 +1,252 @@
+%D \module
+%D   [      file=x-fig-00,
+%D        version=2001.03.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Figure Base Loading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \readfile{x-res-04} \donothing \donothing \endinput
+
+% naast label, ook fig als ref en dan naar fig ref springen
+
+%D This module implements an interface to a figure database
+%D and file. The database is formatted in \XML\ conforming
+%D the following \DTD:
+%D
+%D \typefile{x-fig-00.dtd}
+%D
+%D A figure base coded this way looks like:
+%D
+%D \starttyping
+%D <!-- texexec --pdf --use=fig-01 figtest.xml -->
+%D
+%D <figurelibrary language="nl">
+%D
+%D   <description>
+%D     <organization>PRAGMA Advanced Document Engineering</organization>
+%D     <project>Manuals</project>
+%D     <product>Beginners Manual</product>
+%D     <comment>A bunch of figures.</comment>
+%D   </description>
+%D
+%D   <figure>
+%D     <file>koe.pdf</file>
+%D     <label>a dutch cow</label>
+%D     <copyright>Corel Draw Suite</copyright>
+%D     <comment>I bet that you've seen this cow before.</comment>
+%D   </figure>
+%D
+%D   <figure>
+%D     <dummy width="4cm" height="3cm">non existent</dummy>
+%D     <label>a european cow</label>
+%D     <copyright>Nobody</copyright>
+%D     <comment>When will we talk about European cows?</comment>
+%D   </figure>
+%D
+%D </figurelibrary>
+%D \stoptyping
+%D
+%D You can convert this base into a \PDF\ file using
+%D \TEXEXEC\ and another module in this suite.
+%D
+%D \starttyping
+%D texexec --pdf --use=fig-make yourfile.xml
+%D \stoptyping
+%D
+%D You can now select a graphic from this file using the
+%D
+%D \starttyping
+%D \externalfigure[a dutch cow][width=4cm]
+%D \stoptyping
+%D
+%D This module overloads this command so that a figure is
+%D it first searched in the list of databases.
+%D
+%D \starttyping
+%D \usemodule     [fig-base]
+%D \usefigurebases[yourfile]
+%D \stoptyping
+%D
+%D The special keyword \type {reset} can be used to reset
+%D this list.
+
+%D We park some mkiv code here. Eventually we will hook this into mkiv
+%D searching differently (just a standard feature, no need for loading
+%D modules because we need less code). Actually, what we do here is more
+%D like res-*: we load the xml file once.
+
+% \startluacode
+%
+%     document.figurebases = { }
+%     document.figurebases.data = { }
+%     document.figurebases.found = { }
+%
+%     function document.figurebases.find(basename,askedlabel)
+%         document.figurebases.found = { }
+%         local base = document.figurebases.data[basename]
+%         local page = 0
+%         if not base then
+%             base = xml.load(basename)
+%             document.figurebases.data[basename] = base
+%         end
+%         for e, d, k in xml.elements(base,"figurelibrary/figure/label") do
+%             page = page + 1
+%             if xml.content(d[k]) == askedlabel then
+%                 document.figurebases.found = {
+%                     name = xml.filters.text(e,"file"),
+%                     page = page,
+%                 }
+%                 return true
+%             end
+%         end
+%         return false
+%     end
+%
+%     function commands.findfigurefilenameinbase(basename,askedlabel)
+%         if document.figurebases.find(basename,askedlabel) then
+%             commands.xdef("figurefilename",document.figurebases.found.name or "")
+%             commands.xdef("figurefilepage",document.figurebases.found.page or "")
+%         end
+%     end
+%
+% \stopluacode
+%
+% \def\findfigurefilenameinbase#1#2%
+%   {\ctxlua{commands.findfigurefilenameinbase("#1","\askedlabel")}}
+
+\startcommands      dutch                            english
+                    german                           czech
+                    italian                          romanian
+
+     usefigurebase: gebruikfiguurbestand             usefigurebase
+                    usefigurebase                    usefigurebase
+                    usefigurebase                    usefigurebase
+
+\stopcommands
+
+\unprotect
+
+\consultutilityfilefalse
+
+\startXMLmapping [-] [figbase]
+
+\defineXMLprocess     [figurelibrary]
+\defineXMLignore      [description]
+\defineXMLignore      [copyright]
+\defineXMLignore      [comment]
+\defineXMLignore      [status]
+\defineXMLpush        [file]
+\defineXMLpush        [label]
+\defineXMLpush        [dummy]
+\defineXMLenvironment [figure] \figbase@StartFigure \figbase@StopFigure
+
+\stopXMLmapping
+
+\newcounter\figurefilepage
+
+\def\figbase@StartFigure
+  {\bgroup}
+
+\def\figbase@StopFigure
+  {\doglobal\increment\figurefilepage
+   \doif\askedlabel{\XMLpop{label}}
+     {\doglobal\settrue\figurefiledone
+      \xdef\figurefilename{\XMLpop{file}}\endinput}%
+   \egroup}
+
+\def\findfigurefilenameinbase#1#2% sets \figurefilename and \figurefilepage
+  {\processXMLfilegrouped{#1}}
+
+\def\getfigurefilename#1#2%
+  {\startnointerference
+     \traceXMLelementsfalse
+     \startXMLmapping[-][figbase]
+       \resetfigurefilebase
+       \XMLerase{file}
+       \XMLerase{dummy}
+       \XMLerase{label}
+       \xdef\figurefilebase{#1}%
+       \doglobal\newcounter\figurefilepage
+       \def\askedlabel{#2}
+       \processcommacommand[\figurepathlist]\dogetfigurefilename
+     \stopXMLmapping
+   \stopnointerference}
+
+\globalletempty\figurebasepath
+
+\def\dogetfigurefilename#1%
+  {\ifx\figurefilename\empty
+     \bgroup
+     \xdef\figurefilebasepath{#1}%
+     \assignfullfilename{#1}{\figurefilebase}\to\filename
+     \doiffileelse{\filename.xml}
+       {\doshowfigurestate{base file : \filename}%
+        \expanded{\findfigurefilenameinbase{\filename.xml}{\askedlabel}}}
+       \donothing
+     \ifx\figurefilename\empty\else
+%        \globallet\figurefilebase\figurefilebase
+       \globallet\figurefilebase\filename % hm, bad omen that this is needed
+     \fi
+     \egroup
+   \fi}
+
+\def\resetfigurefilebase
+  {\globalletempty\figurefilebase
+   \globalletempty\figurefilename
+   \globalletempty\figurefilebasepath
+   \globalletempty\figurefilepage}
+
+\def\doanalyzefiguredimensionsfromfile
+  {\ifcase\figurestatus \ifx\figurebaselist\empty \else
+     \resetfigurefilebase
+     \doshowfigurestate{base list : \figurebaselist}%
+     \processcommacommand[\figurebaselist]\dodoanalyzefiguredimensionsfromfile
+     \ifx\figurefilename\empty
+       \doshowfigurestate{base warning : no matching name found}%
+     \else
+       \doiffileelse{\figurefilebase.pdf}
+         {\doshowfigurestate{base file : \figurefilebase.pdf}%
+          \doshowfigurestate{base page : \figurefilepage}%
+          \let\figurepathlist\figurefilebasepath
+          \analyzefigurefilename{\figurefilebase.pdf}\wantedfigurelabel
+          \let\wantedfigurepage\figurefilepage}
+         {\doshowfigurestate{base missing : \figurefilebase.pdf}}
+     \fi
+     \ifcase\figurestatus
+       \analyzefigurefilename\expandedfigurename\wantedfigurelabel
+     \fi
+   \fi \fi}
+
+\def\dodoanalyzefiguredimensionsfromfile#1%
+  {\doshowfigurestate{base check : \wantedfigurename\space in #1}%
+   \getfigurefilename{#1}\wantedfigurename
+   \ifx\figurefilename\empty\else
+     \quitcommalist
+   \fi}
+
+\def\usefigurebase[#1]%
+  {\doifelse{#1}\v!reset
+     {\let\figurebaselist\empty}
+     {\addtocommalist{#1}\figurebaselist}}
+
+\let\figurebaselist\empty
+
+\resetfigurefilebase
+
+\protect \endinput
+
+\usefigurebase[figtest]
+
+\externalfigure[koetje]             [width=3cm]
+\externalfigure[de molen op de dijk][width=3cm]
+\externalfigure[de molen op de dijk][width=2cm]
+\externalfigure[weet ik veel]       [width=3cm]
+\externalfigure[weet ik veel]       [width=2cm]
+\externalfigure[weet ik wat]        [width=2cm]
+\externalfigure[koe]                [width=2cm]

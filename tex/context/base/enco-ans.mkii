@@ -1,0 +1,237 @@
+%D \module
+%D   [     file=enco-ans,
+%D      version=2000.05.07, % 1995.01.01,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=\YandY\ texnansi Encoding,
+%D       author={Patrick Gundlach, Hans Hagen},
+%D         date=\currentdate,
+%D    copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is \YandY's texnansi encoding vector, which combines
+%D the best of the ansi encoding vector (prebuilt accented
+%D characters etc.) and some of \TEX's vectors.
+
+\startmapping[texnansi]
+
+\resetcaserange 128 to 158
+\resetcaserange 160 to 191
+\resetcaserange 215 to 215
+\resetcaserange 247 to 247
+
+\definecasemaps 192 to 214 lc +32 uc   0
+\definecasemaps 224 to 246 lc   0 uc -32
+\definecasemaps 216 to 222 lc +32 uc   0
+\definecasemaps 248 to 254 lc   0 uc -32
+
+\definecaseself 223
+\definecaseswap 156 140
+\definecaseswap 255 159
+
+% needed by some patterns:
+
+% \definecaseself  34 % quotedbl
+% \definecaseself 132 % quotedblbase
+% \definecaseself 147 % quotedblleft
+% \definecaseself 148 % quotedblright
+% \definecaseself 129 % quotesingle
+% \definecaseself 130 % quotesinglebase
+% \definecaseself 145 % quoteleft
+% \definecaseself 146 % quoteright
+
+\stopmapping
+
+\startencoding[texnansi]
+
+\definecharacter textacute         19
+\definecharacter textbreve         21
+\definecharacter textcaron         20
+\definecharacter textcedilla      184
+\definecharacter textcircumflex    94 % 136
+\definecharacter textdiaeresis    168
+\definecharacter textdotaccent      5
+\definecharacter textgrave         18
+\definecharacter texthungarumlaut   6
+\definecharacter textmacron       175
+\definecharacter textogonek         7
+\definecharacter textring          23
+\definecharacter texttilde        152
+
+\definecharacter dotlessi          16 % 105
+\definecharacter dotlessj          17
+
+\definecharacter endash           150 % lig
+\definecharacter emdash           151 % lig
+
+\definecharacter aeligature       230
+\definecharacter AEligature       198
+\definecharacter oeligature       156
+\definecharacter OEligature       140
+
+\definecharacter ssharp           223
+
+\definecharacter thorn            254
+\definecharacter Thorn            222
+
+\definecharacter Dstroke          208 % also Eth, mapped in enco-def
+\definecharacter eth              240
+
+\definecharacter exclamdown       161
+\definecharacter questiondown     191
+
+\definecharacter copyright        169
+\definecharacter registered       174
+\definecharacter trademark        153
+
+\definecharacter sectionmark      167
+\definecharacter paragraphmark    182
+
+\definecharacter onequarter       188
+\definecharacter onehalf          189
+\definecharacter threequarter     190
+
+\definecharacter onesuperior      185
+\definecharacter twosuperior      178
+\definecharacter threesuperior    179
+
+\definecharacter textcent         162 % ?
+\definecharacter textcurrency     164
+\definecharacter texteuro           1
+\definecharacter textflorin       131
+\definecharacter textsterling     163
+\definecharacter textyen          165
+
+\definecharacter percent           37
+\definecharacter perthousand      137
+
+\definecharacter softhyphen        45
+\definecharacter periodcentered   183
+
+\definecharacter textasciicircum  142
+\definecharacter textasciitilde   158
+\definecharacter textbackslash     92
+\definecharacter textbraceleft    123
+\definecharacter textbar          124
+\definecharacter textbraceright   125
+\definecharacter textunderscore    95
+
+\definecharacter textbrokenbar    166
+\definecharacter textbullet       149
+\definecharacter textdag          134
+\definecharacter textddag         135
+\definecharacter textdegree       176
+\definecharacter textdiv          247
+\definecharacter textellipsis     133
+\definecharacter textfraction       4
+\definecharacter textlognot       172
+\definecharacter textminus        143
+\definecharacter textmu           181
+\definecharacter textmultiply     215
+\definecharacter textpm           177
+
+\definecharacter quotedbl          34
+\definecharacter quotedblbase     132
+\definecharacter quotedblleft     147
+\definecharacter quotedblright    148
+
+\definecharacter quotesingle      129
+\definecharacter quotesinglebase  130
+
+\definecharacter quoteleft        145
+\definecharacter quoteright       146
+
+\definecharacter guilsingleleft   139
+\definecharacter guilsingleright  155
+\definecharacter leftguillemot    171
+\definecharacter rightguillemot   187
+
+\definecharacter aacute           225
+\definecharacter Aacute           193
+\definecharacter eacute           233
+\definecharacter Eacute           201
+\definecharacter iacute           237
+\definecharacter Iacute           205
+\definecharacter oacute           243
+\definecharacter Oacute           211
+\definecharacter uacute           250
+\definecharacter Uacute           218
+\definecharacter yacute           253
+\definecharacter Yacute           221
+
+\definecharacter scaron           154
+\definecharacter Scaron           138
+\definecharacter zcaron           157
+\definecharacter Zcaron           141
+
+\definecharacter ccedilla         231
+\definecharacter Ccedilla         199
+
+\definecharacter acircumflex      226
+\definecharacter Acircumflex      194
+\definecharacter ecircumflex      234
+\definecharacter Ecircumflex      202
+\definecharacter icircumflex      238
+\definecharacter Icircumflex      206
+\definecharacter ocircumflex      244
+\definecharacter Ocircumflex      212
+\definecharacter ucircumflex      251
+\definecharacter Ucircumflex      219
+
+\definecharacter adiaeresis       228
+\definecharacter Adiaeresis       196
+\definecharacter ediaeresis       235
+\definecharacter Ediaeresis       203
+\definecharacter idiaeresis       239
+\definecharacter Idiaeresis       207
+\definecharacter odiaeresis       246
+\definecharacter Odiaeresis       214
+\definecharacter udiaeresis       252
+\definecharacter Udiaeresis       220
+\definecharacter ydiaeresis       255
+\definecharacter Ydiaeresis       159
+
+\definecharacter agrave           224
+\definecharacter Agrave           192
+\definecharacter egrave           232
+\definecharacter Egrave           200
+\definecharacter igrave           236
+\definecharacter Igrave           204
+\definecharacter ograve           242
+\definecharacter Ograve           210
+\definecharacter ugrave           249
+\definecharacter Ugrave           217
+
+\definecharacter aring            229
+\definecharacter Aring            197
+
+\definecharacter Lstroke          128
+\definecharacter lstroke          144
+\definecharacter ostroke          248
+\definecharacter Ostoke           216
+
+\definecharacter atilde           227
+\definecharacter Atilde           195
+\definecharacter ntilde           241
+\definecharacter Ntilde           209
+\definecharacter otilde           245
+\definecharacter Otilde           213
+
+\stopencoding
+
+% will be replaced by math collection, fails anyway
+
+\startencoding[texnansi]
+
+\definecharacter mathgrave       "7060
+\definecharacter mathacute       "70B4
+\definecharacter mathhat         "7088
+\definecharacter mathtilde       "7098
+\definecharacter mathddot        "70A8
+\definecharacter mathbar         "70AF
+
+\stopencoding
+
+\endinput

@@ -1,0 +1,35 @@
+%D \module
+%D   [     file=enco-fro,
+%D      version=2000.08.20,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Romanian Input Filter,
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D These definitions used to be part of lang-ita.tex.
+
+\unprotect
+
+\installactivecharacter "
+
+\startlanguagespecifics[\s!ro]
+
+  \installcompoundcharacter "a {\acircumflex}
+  \installcompoundcharacter "i {\icircumflex}
+  \installcompoundcharacter "s {\scedilla}
+  \installcompoundcharacter "t {\tcedilla}
+  \installcompoundcharacter "A {\Acircumflex}
+  \installcompoundcharacter "I {\Icircumflex}
+  \installcompoundcharacter "S {\Scedilla}
+  \installcompoundcharacter "T {\Tcedilla}
+  \installcompoundcharacter "` {\startdelimitedtext[\v!quotation]}
+  \installcompoundcharacter "' {\stopdelimitedtext}
+
+\stoplanguagespecifics
+
+\protect \endinput

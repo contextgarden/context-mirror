@@ -1,0 +1,77 @@
+%D \module
+%D   [      file=s-grk-00,
+%D        version=2004.08.23,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=CB Greek Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D    suggestions=Giuseppe Bilotta,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\usetypescriptfile[type-cbg]
+
+\usetypescript [all] [cbgreek-medium]
+
+\startsetups [cbgreek]
+
+  \catcode`~=\other
+  \catcode`|=\other
+
+  \language[greek]
+  \switchtobodyfont[cbgreek]
+
+\stopsetups
+
+\definestartstop
+  [greek]
+  [commands=\directsetup{cbgreek}]
+
+\doifnotmode{demo}{\endinput}
+
+% The following sample file was submitted to the \CONTEXT\
+% mailing list by Giuseppe Bilotta, along with the right
+% typescripts.
+
+% already loaded: \usemodule[greek]
+
+\mainlanguage[english]
+
+\starttext
+
+We can easily use plain English for normal text, and then switch
+to greek when we want; as a first try we type the lower and
+upper case 26 letters of the latin alphabet and see how they come
+out in greek:
+
+\startgreek
+a b c d e f g h i j k l m n o p q r s t u v w x y z \par
+A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+\stopgreek
+
+As it can be observed, some uppercase letters have strange
+outcomes; also, j gives \greek{j} and c gives the
+end-of-word sigma \greek{c}; interestingly, s gives either the
+normal sigma or the end-of-word one, depending on whether it's at
+the end of the word or not: \greek{satrapws}.
+
+Of course we can use the various diacritical signs: accents
+(\greek{`a, 'a, ~a}), breathings (\greek{<r, >w, a"}) and
+subscribed iotas (\greek{a|, h|, w|}) (these last are pretty ugly in my
+opinion); observe how they automatically get the correct position
+with uppercase letters: (\greek{`A, 'A, ~A, <A, >A, A|}).
+
+Can the thing be used for serious work?
+
+\startgreek
+>>'Andra moi >'ennepe, Mo~usa, pol'utropon, >'os m'ala poll`a\hfill\break
+pl'agqjh, >epe`i Tro'ihs <er`on ptol'iejron >'eperse;\hfill\break
+poll~wn d" >anjr'wpwn >'iden >'astea ka`i n'oon >'egnw,\hfill\break
+poll`a d" <'o g" >en p'ontw| p'ajen >'algea <`on kat`a jum'on,\hfill\break
+>>arn'umenos <'hn te yuq`hn ka`i n'oston <eta'irwn.
+\stopgreek
+
+\stoptext

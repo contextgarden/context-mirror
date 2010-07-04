@@ -1,0 +1,211 @@
+%D \module
+%D   [       file=verb-eif,
+%D        version=2000.08.23,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty Eiffel Verbatim,
+%D         author={Berend de Boer \& Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={Berend de Boer \& Hans Hagen}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This module will be cleaned up a bit in the process of more
+% flexible verbatim options.
+
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty EIFFEL Verbatim}
+
+%D \startbuffer
+%D \startEIFFEL
+%D class TEST
+%D
+%D creation
+%D   make
+%D
+%D feature -- creation
+%D
+%D   make is
+%D     do
+%D       print ("hello world")
+%D     end
+%D
+%D end
+%D \stopEIFFEL
+%D \stopbuffer
+%D
+%D
+%D If a variable in a comment is quoted with `..', it is typeset
+%D as a variable (common Eiffel convention for pretty typesetters):
+%D
+%D \startbuffer
+%D \startEIFFEL
+%D class TEST
+%D
+%D feature
+%D
+%D   say (something: STRING) is
+%D      -- say `something' to stdout
+%D     do
+%D       print (something)
+%D     end
+%D
+%D end -- class TEST
+%D \stopEIFFEL
+%D \stopbuffer
+%D
+%D
+%D Recommended, OOSC2 style setting is:
+%D
+%D \setuptyping
+%D   [EIFFEL]
+%D   [margin=1em,palet=,color=blue,style=\it,icommand=\bf,ccommand=\tf]
+%D
+
+%D We borrow most of the macros from the \PERL\ driver.
+
+\ifdefined\setupprettyPLtype \else \loadmarkfile{verb-pl} \fi
+
+\unprotect
+
+%D \EIFFEL\ has only the one line comment sequence \type{--}.
+
+\gdef\EIFsetspecials%
+  {\PLsetspecials
+   \setpretty`\#=32
+   \setpretty`\{=33 \setpretty`\}=33
+   \setpretty`\[=33 \setpretty`\]=33 \setpretty`\(=33 \setpretty`\)=33
+   \setpretty`\;=33 \setpretty`\:=33
+   \setpretty`\!=33 \setpretty`\?=33
+   \setpretty`\==33 \setpretty`\~=33 \setpretty`\<=33 \setpretty`\>=33
+   \setpretty`\-=33 \setpretty`\+=33 \setpretty`\/=33 \setpretty`\*=33
+   \setpretty`\^=33
+   \setpretty`\%=41 \setpretty`\-=45
+   \setpretty`\`=81 \setpretty`\'=82 }
+
+\gdef\EIFsethandlers%
+  {\PLsethandlers
+   \installprettyhandler 33 \EIFtypesymbol
+   \installprettyhandler 45 \EIFtypefourfive
+   \installprettyhandler 81 \EIFtypeeightone
+   \installprettyhandler 82 \EIFtypeeighttwo
+   \installprettyhandler 90 \EIFtypenine }
+
+\gdef\EIFsetcontrols%
+  {\PLsetcontrols
+   \def\flushrestofverbatimline%
+     {\endPLtypesix
+      \inPLcommentfalse
+      \verbatimfont
+      \PLverbosefalse
+      \PLverboseskipped=0}}
+
+\gdef\EIFsetvariables
+  {\PLsetvariables}
+
+\gdef\setupprettyEIFtype%
+  {\def\prettyidentifier{EIF}%
+   \let\PLidentifiers=\EIFidentifiers
+   \let\PLvariables=\EIFvariables
+   \EIFsetvariables
+   \EIFsetcontrols
+   \EIFsethandlers
+   \EIFsetspecials
+   \PLsetdiagnostics}
+
+% symbols should appear in roman
+
+\gdef\EIFtypesymbol#1%
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else
+     {\prettynaturalfont\/%
+      \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty}%
+   \fi}
+
+% recognize comments
+
+\gdef\EIFtypefourfive%
+  {\handlenextnextpretty\doEIFtypefourfive\PLtypefourtwo}
+
+\gdef\doEIFtypefourfive#1#2%
+  {\endPLtypesix
+   \getprettydata{#2}%
+   \ifnum\prettytype=45
+     \let\next=\dodoEIFtypefourfive
+   \else
+     \let\next=\PLtypefourtwo
+   \fi
+   \next{#1}#2}
+
+\gdef\dodoEIFtypefourfive% #1%
+  {\endPLtypesix
+   \handlenextnextpretty\dododoEIFtypefourfive\dodododoPLtypefourfive}
+
+\gdef\dododoEIFtypefourfive%
+  {\ifnewpretty\expandafter\handlenewpretty\fi\dodododoEIFtypefourfive}
+
+\gdef\dodododoEIFtypefourfive#1#2%
+  {\ifinPLcomment
+     \getpretties{#1}{#2}%
+   \else
+     \ifinPLdouble
+       \getpretties{#1}{#2}%
+     \else
+       \global\inPLcommenttrue
+       \PLverbosecorrection
+       \def\next{\beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty\prettynaturalfont}%
+       \expandafter\next
+     \fi
+   \fi}
+
+% recognize `name' in comments and format them like variables
+
+\gdef\EIFtypeeightone#1%
+  {\endPLtypesix
+   \ifinPLcomment
+     \verbatimfont
+   \else
+     \getpretty{#1}%
+   \fi}
+
+\gdef\EIFtypeeighttwo#1%
+  {\endPLtypesix
+   \ifinPLcomment
+     \prettynaturalfont
+   \else
+     {\prettynaturalfont\/%
+      \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty}%
+   \fi}
+
+% double quote
+
+\gdef\EIFtypenine#1%
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else\ifinPLsingle
+     \getpretty{#1}%
+   \else\ifinPLdouble
+     \global\inPLdoublefalse
+     {\prettynaturalfont\/%
+      \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty}%
+   \else
+     \global\inPLdoubletrue
+     {\prettynaturalfont
+      \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty}%
+   \fi\fi\fi}
+
+\useprettyidentifiers \EIFidentifiers \EIFsetspecials
+  alias all and as check class create creation debug deferred do else
+  elseif end ensure expanded export external false feature from frozen
+  if implies indexing infix inherit inspect invariant is like local
+  loop not obsolete old once or prefix redefine rename require rescue
+  precursor retry select separate strip then true undefine unique
+  until variant when xor
+
+\useprettyidentifiers \EIFvariables \EIFsetspecials
+  not-yet-defined
+
+\protect \endinput

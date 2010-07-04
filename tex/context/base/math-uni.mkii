@@ -1,0 +1,237 @@
+%D \module
+%D   [       file=math-uni,
+%D        version=2005.06.11,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=unicode support,
+%D         author={Nikolai Weibull \& Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+
+\unprotect
+
+% needed for unic-032 % TH
+
+\startmathcollection[default]
+
+  \definemathcommand [unic@doubleverticalline]      {\mathord{\parallel}}
+  \definemathcommand [unic@doublelowline]           {\underline{\textunderscore}}
+
+  \definemathcommand [unic@doubleprime]             {''}
+  \definemathcommand [unic@tripleprime]             {'''}
+
+  \definemathcommand [unic@reverseddoubleprime]     {\mathord{\backprime\backprime}}
+  \definemathcommand [unic@reversedtripleprime]     {\mathord{\backprime\backprime\backprime}}
+
+  \definemathcommand [unic@fractionslash]           {\vulgarfraction{}{}}
+  \definemathcommand [unic@lowasterisk]             {\mathord{\lower-.2em\hbox{$\ast$}}}
+
+  \definemathcommand [unic@functionapplication]     {\mathop{}}
+  \definemathcommand [unic@invisibletimes]          {\mathbin{}}
+  \definemathcommand [unic@invisibleseparator]      {\mathpunct{}}
+
+\stopmathcollection
+
+% needed for unic-033 % TH
+
+\def\unic@vulgarfraction#1#2%
+  {\hbox
+     {\high{{\tfx\it #1}\kern -.2em}%
+      \symbol[vulgarfraction]%
+      \kern -.2em\low{{\tfx\it #2}}}}
+
+\startmathcollection[default]
+
+  \definemathcommand [unic@accountof]                 {\unic@vulgarfraction{a}{c}}
+  \definemathcommand [unic@addressedtothesubject]     {\unic@vulgarfraction{a}{s}}
+  \definemathcommand [unic@doublestruckC]             {{\Bbb C}}
+  \definemathcommand [unic@degreecelsius]             {{\textdegree \tf C}}
+  \definemathcommand [unic@centrelinesymbol]          {\unknownchar}
+  \definemathcommand [unic@careof]                    {\unic@vulgarfraction{c}{o}}
+  \definemathcommand [unic@cadauna]                   {\unic@vulgarfraction{c}{u}}
+  \definemathcommand [unic@eulerconstant]             {{\rm e}}
+  \definemathcommand [unic@scruple]                   {\unknownchar}
+  \definemathcommand [unic@degreefahrenheit]          {{\textdegree \tf F}}
+  \definemathcommand [unic@scriptg]                   {\unknownchar}
+  \definemathcommand [unic@scriptH]                   {{\cal H}}
+  \definemathcommand [unic@blackletterH]              {{\fraktur H}}
+  \definemathcommand [unic@doublestruckH]             {{\Bbb H}}
+  \definemathcommand [unic@planckconstant]            {h}
+  \definemathcommand [unic@planckconstantovertwopi]   {\hslash}
+  \definemathcommand [unic@scriptI]                   {{\cal I}}
+  \definemathcommand [unic@blackletterI]              {{\fraktur I}}
+  \definemathcommand [unic@scriptL]                   {{\cal L}}
+  \definemathcommand [unic@scriptl]                   {\ell}
+  \definemathcommand [unic@lbbarsymbol]               {\unknownchar}
+  \definemathcommand [unic@doublestruckN]             {{\Bbb N}}
+  \definemathcommand [unic@numerosign]                {\hbox{\symbol[numero]}}
+  \definemathcommand [unic@soundrecordingcopyright]   {\encircled{{\tfx P}}}
+  \definemathcommand [unic@scriptP]                   {{\cal P}}
+  \definemathcommand [unic@doublestruckP]             {{\Bbb P}}
+  \definemathcommand [unic@doublestruckQ]             {{\Bbb Q}}
+  \definemathcommand [unic@scriptR]                   {{\cal R}}
+  \definemathcommand [unic@blackletterR]              {{\fraktur R}}
+  \definemathcommand [unic@doublestruckR]             {{\Bbb R}}
+  \definemathcommand [unic@prescriptiontake]          {\unknownchar}
+  \definemathcommand [unic@response]                  {\unknownchar}
+  \definemathcommand [unic@servicemark]               {\high{\txx SM}}
+  \definemathcommand [unic@telephonesign]             {\high{\txx TEL}}
+  \definemathcommand [unic@trademarksign]             {\trademark}
+  \definemathcommand [unic@versickle]                 {\unknownchar}
+  \definemathcommand [unic@doublestruckZ]             {{\Bbb Z}}
+  \definemathcommand [unic@ouncesign]                 {\unknownchar}
+  \definemathcommand [unic@ohmsign]                   {\Omega}
+  \definemathcommand [unic@invertedohmsign]           {\rotate[\c!rotation=180]{\Omega}}
+  \definemathcommand [unic@blackletterZ]              {{\fraktur Z}}
+  \definemathcommand [unic@turnedgreekletteriota]     {\rotate[\c!rotation=180]{\iota}}
+  \definemathcommand [unic@kelvinsign]                {{\tf K}}
+  \definemathcommand [unic@angstromsign]              {\Angstrom}
+  \definemathcommand [unic@scriptB]                   {{\cal B}}
+  \definemathcommand [unic@blackletterC]              {{\fraktur C}}
+  \definemathcommand [unic@estimatedsymbol]           {\unknownchar}
+  \definemathcommand [unic@scripte]                   {\unknownchar}
+  \definemathcommand [unic@scriptE]                   {{\cal E}}
+  \definemathcommand [unic@scriptF]                   {{\cal F}}
+  \definemathcommand [unic@turnedF]                   {\rotate[\c!rotation=180]{{\tf F}}}
+  \definemathcommand [unic@scriptM]                   {{\cal M}}
+  \definemathcommand [unic@scripto]                   {\unknownchar}
+
+  \definemathcommand [unic@informationsource]         {{\bf i}}
+  \definemathcommand [unic@rotatedQ]                  {\rotate[\c!rotation=90]{{\tf Q}}}
+  \definemathcommand [unic@facsimilesign]             {\unknownchar}
+  \definemathcommand [unic@doublestruckpi]            {\pi}%{\unknownchar}
+  \definemathcommand [unic@doublestruckgamma]         {\gamma}%{\unknownchar}
+  \definemathcommand [unic@doublestruckGamma]         {\Gamma}%{\unknownchar}
+  \definemathcommand [unic@doublestruckPi]            {\Pi}%{\unknownchar}
+  \definemathcommand [unic@doublestrucknarysummation] {\unknownchar}
+  \definemathcommand [unic@turnedsansserifG]          {\rotate[\c!rotation=180]{{\ss G}}}
+  \definemathcommand [unic@turnedsansserifL]          {\rotate[\c!rotation=180]{{\ss L}}}
+  \definemathcommand [unic@reversedsansserifL]        {\mirror{{\ss L}}}
+  \definemathcommand [unic@turnedsansserifY]          {\rotate[\c!rotation=180]{{\ss Y}}}
+  \definemathcommand [unic@doublestruckitalicD]       {D}%{\unknownchar}
+  \definemathcommand [unic@doublestruckitalicd]       {d}%{\unknownchar}
+  \definemathcommand [unic@doublestruckitalice]       {e}%{\unknownchar}
+  \definemathcommand [unic@doublestruckitalici]       {i}%{\unknownchar}
+  \definemathcommand [unic@doublestruckitalicj]       {j}%{\unknownchar}
+  \definemathcommand [unic@propertyline]              {\unknownchar}
+  \definemathcommand [unic@turnedampersand]           {\rotate[\c!rotation=180]{\&}}
+  \definemathcommand [unic@persign]                   {\unknownchar}
+
+  \definemathcommand [unic@fractiononethird]          {\vulgarfraction{1}{3}}
+  \definemathcommand [unic@fractiontwothirds]         {\vulgarfraction{2}{3}}
+  \definemathcommand [unic@fractiononefifth]          {\vulgarfraction{1}{5}}
+  \definemathcommand [unic@fractiontwofifths]         {\vulgarfraction{2}{5}}
+  \definemathcommand [unic@fractionthreefifths]       {\vulgarfraction{3}{5}}
+  \definemathcommand [unic@fractionfourfifths]        {\vulgarfraction{4}{5}}
+  \definemathcommand [unic@fractiononesixth]          {\vulgarfraction{1}{6}}
+  \definemathcommand [unic@fractionfivesixths]        {\vulgarfraction{5}{6}}
+  \definemathcommand [unic@fractiononeeighth]         {\vulgarfraction{1}{8}}
+  \definemathcommand [unic@fractionthreeeighths]      {\vulgarfraction{3}{8}}
+  \definemathcommand [unic@fractionfiveeighths]       {\vulgarfraction{5}{8}}
+  \definemathcommand [unic@fractionseveneighths]      {\vulgarfraction{7}{8}}
+  \definemathcommand [unic@fractionnumeratorone]      {\vulgarfraction{1}{}}
+  \definemathcommand [unic@romannumeralOne]           {{\tf I}}
+  \definemathcommand [unic@romannumeralTwo]           {{\tf II}}
+  \definemathcommand [unic@romannumeralThree]         {{\tf III}}
+  \definemathcommand [unic@romannumeralFour]          {{\tf IV}}
+  \definemathcommand [unic@romannumeralFive]          {{\tf V}}
+  \definemathcommand [unic@romannumeralSix]           {{\tf VI}}
+  \definemathcommand [unic@romannumeralSeven]         {{\tf VII}}
+  \definemathcommand [unic@romannumeralEight]         {{\tf VIII}}
+  \definemathcommand [unic@romannumeralNine]          {{\tf IX}}
+  \definemathcommand [unic@romannumeralTen]           {{\tf X}}
+  \definemathcommand [unic@romannumeralEleven]        {{\tf XI}}
+  \definemathcommand [unic@romannumeralTwelve]        {{\tf XII}}
+  \definemathcommand [unic@romannumeralFifty]         {{\tf L}}
+  \definemathcommand [unic@romannumeralOnehundred]    {{\tf C}}
+  \definemathcommand [unic@romannumeralFivehundred]   {{\tf D}}
+  \definemathcommand [unic@romannumeralOnethousand]   {{\tf M}}
+  \definemathcommand [unic@romannumeralone]           {{\tf i}}
+  \definemathcommand [unic@romannumeraltwo]           {{\tf ii}}
+  \definemathcommand [unic@romannumeralthree]         {{\tf iii}}
+  \definemathcommand [unic@romannumeralfour]          {{\tf iv}}
+  \definemathcommand [unic@romannumeralfive]          {{\tf v}}
+  \definemathcommand [unic@romannumeralsix]           {{\tf vi}}
+  \definemathcommand [unic@romannumeralseven]         {{\tf vii}}
+  \definemathcommand [unic@romannumeraleight]         {{\tf viii}}
+  \definemathcommand [unic@romannumeralnine]          {{\tf ix}}
+  \definemathcommand [unic@romannumeralten]           {{\tf x}}
+  \definemathcommand [unic@romannumeraleleven]        {{\tf xi}}
+  \definemathcommand [unic@romannumeraltwelve]        {{\tf xii}}
+  \definemathcommand [unic@romannumeralfifty]         {{\tf l}}
+  \definemathcommand [unic@romannumeralonehundred]    {{\tf c}}
+  \definemathcommand [unic@romannumeralfivehundred]   {{\tf d}}
+  \definemathcommand [unic@romannumeralonethousand]   {{\tf m}}
+  \definemathcommand [unic@romannumeralonethousandCD] {\unknownchar}
+  \definemathcommand [unic@romannumeralfivethousand]  {\unknownchar}
+  \definemathcommand [unic@romannumeraltenthousand]   {\unknownchar}
+  \definemathcommand [unic@romannumeralreversedonehundred] {\mirror{C}}
+
+\stopmathcollection
+
+% needed for unic-033 % NW
+
+\startmathcollection[default]
+
+  \definemathcommand [unic@leftarrowtobar]            {\mapstochar\leftarrow}
+
+\stopmathcollection
+
+% needed for unic-034 % NW
+
+\startmathcollection[default]
+
+  \definemathcommand [unic@in]                    {\in}
+  \definemathcommand [unic@nin]                   {\not\in}
+  \definemathcommand [unic@nni]                   {\not\ni}
+  \definemathcommand [unic@minus]                 {-}
+  \definemathcommand [unic@divisionslash]         {/}
+  \definemathcommand [unic@sqrt]                  {\sqrt{}}
+  \definemathcommand [unic@cubesqrt]              {\root 3 \of {}}
+  \definemathcommand [unic@fourthsqrt]            {\root 4 \of {}}
+  \definemathcommand [unic@divides]       [op]    {|} % TODO
+  \definemathcommand [unic@ndivides]      [rel]   {\mathop{\not|}} % TODO: horrible
+  \definemathcommand [unic@cap]                   {\cap}
+  \definemathcommand [unic@dblint]                {\int\!\!\!\int}
+  \definemathcommand [unic@triint]                {\int\!\!\!\int\!\!\!\int}
+  \definemathcommand [unic@ratio]         [rel]   {:}
+  \definemathcommand [unic@proportion]    [rel]   {::}
+  \definemathcommand [unic@excess]        [op]    {-\!\!:}
+  \definemathcommand [unic@geomprop]      [op]    {:\!\!\!-\!\!\!:}
+  \definemathcommand [unic@homothetic]    [op]    {\sim\!\!\!:}
+  \definemathcommand [unic@nsimeq]                {\not\simeq}
+  \definemathcommand [unic@cong]                  {\cong}
+  \definemathcommand [unic@napproxeq]             {\not\approxeq}
+  \definemathcommand [unic@napprox]               {\not\approx}
+  \definemathcommand [unic@doteq]                 {\doteq}
+  \definemathcommand [unic@correspondsto]         {\buildrel \frown \over =}
+  \definemathcommand [unic@estimates]             {\buildrel \wedge \over =}
+  \definemathcommand [unic@equiangularto]         {\buildrel \vee \over =}
+  \definemathcommand [unic@stareq]                {\buildrel \star \over =}
+  \definemathcommand [unic@eqbydef]               {\buildrel \rm def \over =}
+  \definemathcommand [unic@measuredby]            {\buildrel \rm m \over =}
+  \definemathcommand [unic@questionedeq]          {\buildrel \rm ? \over =}
+  \definemathcommand [unic@nequiv]                {\not\equiv}
+  \definemathcommand [unic@nasymp]                {\not\asymp}
+  \definemathcommand [unic@nlesssim]              {\not\lesssim}
+  \definemathcommand [unic@ngtrsim]               {\not\gtrsim}
+  \definemathcommand [unic@nlessgtr]              {\not\lessgtr}
+  \definemathcommand [unic@ngtrless]              {\not\gtrless}
+  \definemathcommand [unic@nsubset]               {\not\subset}
+  \definemathcommand [unic@nsupset]               {\not\supset}
+  \definemathcommand [unic@nsqsubseteq]           {\not\sqsubseteq}
+  \definemathcommand [unic@nsqsupseteq]           {\not\sqsupseteq}
+
+\stopmathcollection
+
+% needed for unic-039 % NW
+
+\startmathcollection[default]
+
+  \definemathcommand [unic@Lbracket]  [open]  {[\![}
+  \definemathcommand [unic@Rbracket]  [close] {]\!]}
+  \definemathcommand [unic@Langle]    [open]  {\langle\!\langle}
+  \definemathcommand [unic@Rangle]    [close] {\rangle\!\rangle}
+
+\stopmathcollection
+
+\protect \endinput

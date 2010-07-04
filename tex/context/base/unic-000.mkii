@@ -1,0 +1,135 @@
+%D \module
+%D   [       file=unic-000,
+%D        version=2002.12.03,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 0,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+% \startunicodevector 0
+%   \ifcase\numexpr(#1-159)
+%     \@@unknownchar\or
+%     \@@unknownchar\or
+%         exclamdown\or
+%           textcent\or
+%       textsterling\or
+%       textcurrency\or
+%         ydiaeresis\else
+%     \@@unknownchar
+%   \fi
+% \stopunicodevector
+%
+% 20\% faster:
+
+\startunicodevector 0
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1-159\relax
+    \unknownchar       \or
+    \nonbreakablespace \or
+    \exclamdown        \or
+    \textcent          \or
+    \textsterling      \or
+    \textcurrency      \or
+    \textyen           \or
+    \textbrokenbar     \or
+    \sectionmark       \or
+    \textdiaeresis     \or
+    \copyright         \or
+    \ordfeminine       \or %  FEMININE ORDINAL INDICATOR
+    \leftguillemot     \or %  LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+    \textlognot        \or
+    \softhyphen        \or
+    \registered        \or
+    \textmacron        \or
+    \textdegree        \or
+    \textpm            \or
+    \twosuperior       \or
+    \threesuperior     \or
+    \textacute         \or
+    \textmu            \or %  MICRO SIGN
+    \paragraphmark     \or %  PILCROW SIGN
+    \periodcentered    \or
+    \textcedilla       \or
+    \onesuperior       \or
+    \ordmasculine      \or %  MASCULINE ORDINAL INDICATOR
+    \rightguillemot    \or %  RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+    \onequarter        \or
+    \onehalf           \or
+    \threequarter      \or
+    \questiondown      \or
+    \Agrave            \or
+    \Aacute            \or
+    \Acircumflex       \or
+    \Atilde            \or
+    \Adiaeresis        \or
+    \Aring             \or
+    \AEligature        \or
+    \Ccedilla          \or
+    \Egrave            \or
+    \Eacute            \or
+    \Ecircumflex       \or
+    \Ediaeresis        \or
+    \Igrave            \or
+    \Iacute            \or
+    \Icircumflex       \or
+    \Idiaeresis        \or
+    \Eth               \or % \Eth \or
+    \Ntilde            \or
+    \Ograve            \or
+    \Oacute            \or
+    \Ocircumflex       \or
+    \Otilde            \or
+    \Odiaeresis        \or
+    \textmultiply      \or
+    \Ostroke           \or
+    \Ugrave            \or
+    \Uacute            \or
+    \Ucircumflex       \or
+    \Udiaeresis        \or
+    \Yacute            \or
+    \Thorn             \or
+    \ssharp            \or
+    \agrave            \or
+    \aacute            \or
+    \acircumflex       \or
+    \atilde            \or
+    \adiaeresis        \or
+    \aring             \or
+    \aeligature        \or
+    \ccedilla          \or
+    \egrave            \or
+    \eacute            \or
+    \ecircumflex       \or
+    \ediaeresis        \or
+    \igrave            \or
+    \iacute            \or
+    \icircumflex       \or
+    \idiaeresis        \or
+    \eth               \or % \eth \or
+    \ntilde            \or
+    \ograve            \or
+    \oacute            \or
+    \ocircumflex       \or
+    \otilde            \or
+    \odiaeresis        \or
+    \textdiv           \or
+    \ostroke           \or
+    \ugrave            \or
+    \uacute            \or
+    \ucircumflex       \or
+    \udiaeresis        \or
+    \yacute            \or
+    \thorn             \or
+    \ydiaeresis        \else
+    \unknownchar
+  \fi
+\stopunicodevector
+
+\protect \endinput

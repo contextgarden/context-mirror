@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<xsd:annotation>
+  <xsd:documentation xml:lang="en">
+    This schema covers (basic presentational) Physics
+    markup. It combines the power of MathML and the ConTeXt 
+    units engine. 
+
+    author: Hans Hagen, copyright: PRAGMA-ADE / Hasselt NL
+  </xsd:documentation>
+</xsd:annotation>
+
+<xsd:complexType name="unit.power.type">
+  <xsd:element name="Inverse" minOccurs="0" maxOccurs="1" />
+  <xsd:choice>
+    <xsd:element name="Linear" />
+    <xsd:element name="Square" />
+    <xsd:element name="Cubic"  />
+  </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="unit.prefix.type">
+  <xsd:choice>
+    <xsd:element name="Atto" />
+    <xsd:element name="Femto" />
+    <xsd:element name="Pico" />
+    <xsd:element name="Nano" />
+    <xsd:element name="Micro" />
+    <xsd:element name="Milli" />
+    <xsd:element name="Centi" />
+    <xsd:element name="Deci" />
+    <xsd:element name="Hecto" />
+    <xsd:element name="Kilo" />
+    <xsd:element name="Mega" />
+    <xsd:element name="Giga" />
+    <xsd:element name="Terra" />
+    <xsd:element name="Peta" />
+    <xsd:element name="Exa" />
+
+    <xsd:element name="NoUnit" />
+  </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="unit.midfix.type">
+  <xsd:choice>
+    <xsd:element name="Per" />
+    <xsd:element name="Times" />
+    <xsd:element name="Solidus" />
+    <xsd:element name="OutOf" />
+  </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="unit.suffix.type">
+  <xsd:choice>
+    <xsd:element name="Ampere" />
+    <xsd:element name="Angstrom" />
+    <xsd:element name="At" />
+    <xsd:element name="Atm" />
+    <xsd:element name="Atom" />
+    <xsd:element name="Bar" />
+    <xsd:element name="Baud" />
+    <xsd:element name="Bell" />
+    <xsd:element name="Bequerel" />
+    <xsd:element name="Bit" />
+    <xsd:element name="Byte" />
+    <xsd:element name="Cal" />
+    <xsd:element name="Candela" />
+    <xsd:element name="Celsius" />
+    <xsd:element name="Coulomb" />
+    <xsd:element name="Day" />
+    <xsd:element name="Deg" />
+    <xsd:element name="Degrees" />
+    <xsd:element name="Equivalent" />
+    <xsd:element name="EVolt" />
+    <xsd:element name="eVolt" />
+    <xsd:element name="Fahrenheit" />
+    <xsd:element name="Farad" />
+    <xsd:element name="Foot" />
+    <xsd:element name="Force" />
+    <xsd:element name="Gauss" />
+    <xsd:element name="Gram" />
+    <xsd:element name="Gray" />
+    <xsd:element name="Henry" />
+    <xsd:element name="Hertz" />
+    <xsd:element name="Hour" />
+    <xsd:element name="Inch" />
+    <xsd:element name="Joule" />
+    <xsd:element name="Kelvin" />
+    <xsd:element name="Liter" />
+    <xsd:element name="Lux" />
+    <xsd:element name="Meter" />
+    <xsd:element name="Min" />
+    <xsd:element name="Mol" />
+    <xsd:element name="Molair" />
+    <xsd:element name="Month" />
+    <xsd:element name="Newton" />
+    <xsd:element name="Ohm" />
+    <xsd:element name="Pascal" />
+    <xsd:element name="Rad" />
+    <xsd:element name="RevPerMin" />
+    <xsd:element name="RevPerSec" />
+    <xsd:element name="Sec" />
+    <xsd:element name="Second" />
+    <xsd:element name="Siemens" />
+    <xsd:element name="Sievert" />
+    <xsd:element name="Sterant" />
+    <xsd:element name="Tesla" />
+    <xsd:element name="Volt" />
+    <xsd:element name="VoltAC" />
+    <xsd:element name="VoltDC" />
+    <xsd:element name="Watt" />
+    <xsd:element name="Weber" />
+    <xsd:element name="Week" />
+    <xsd:element name="Year" />
+
+    <xsd:element name="Unit" />
+  </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="unit.component.type">
+  <xsd:sequence>
+    <xsd:element ref="unit.power.type"  minOccurs="0" maxOccurs="1" />
+    <xsd:element ref="unit.prefix.type" minOccurs="0" maxOccurs="1" />
+    <xsd:element ref="unit.suffix.type" minOccurs="0" maxOccurs="1" />
+  </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="unit.type">
+  <xsd:choice>
+    <xsd:sequence>
+      <xsd:element ref="unit.component.type"  minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:sequence>
+      <xsd:element ref="unit.component.type"  minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="unit.midfix.type"     minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="unit.component.type"  minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:choice>
+</xsd:complexType>
+
+<xsd:element name="unit" type="unit.type" />
+
+<xsd:element name="physics.type">
+  <choice>
+    <xsd:element name="apply">
+      <xsd:sequence>
+        <xsd:element name="unit" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="some kind of mml result" minOccurs="0" maxOccurs="1" />
+        <choice>
+          <xsd:element name="cu"      type=unit.type minOccurs="0" maxOccurs="1" />
+          <xsd:element name="cunseq"  type=unit.type minOccurs="0" maxOccurs="1" />
+          <xsd:element name="csymbol" type=unit.type minOccurs="0" maxOccurs="1" />
+        </choice>
+      </xsd:sequence>
+    </xsd:element>
+    <xsd:sequence>
+      <choice>
+        <xsd:element name="cn" minOccurs="0" maxOccurs="1" />
+        <xsd:element name="ci" minOccurs="0" maxOccurs="1" />
+      </choice>
+      <xsd:element name="cu" type="unit.type" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </choice>
+</xsd:element>
+
+<xsd:element name="phys"  type="physics.type" />
+<xsd:element name="iphys" type="physics.type" />
+<xsd:element name="dphys" type="physics.type" />
+
+</xsd:schema>

@@ -1,0 +1,67 @@
+%D \module
+%D   [       file=mp-txts.mp,
+%D        version=2006.06.08,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=more text support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+if unknown context_tool :    input mp-tool ; fi ;
+if   known context_txts : endinput         ; fi ;
+
+boolean context_txts ; context_txts := true ;
+
+%D The real code:
+
+string  txtfile  ; txtfile  := "" ;
+string  txtfont  ; txtfont  := defaultfont ;
+string  txtpref  ; txtpref  := "00001::::" ;
+numeric txtnext  ; txtnext  := 0 ;
+numeric txtdepth ; txtdepth := 0 ;
+
+vardef nexttxt =
+   txtnext := txtnext + 1 ;
+   txtnext
+enddef ;
+
+picture savedtxts[] ;
+numeric depthtxts[] ;
+
+vardef zerofilled(expr fd) =
+    if fd<10: "0000" else :
+    if fd<100: "000" else :
+    if fd<1000: "00" else :
+    if fd<10000: "0" else :
+    fi fi fi fi & decimal fd
+enddef;
+
+vardef savetxt(expr n,w,h,d) text t =
+    depthtxts[n] := d ;
+    savedtxts[n] := ((txtpref & zerofilled(n)) infont txtfont) xysized(w,h+d) t
+enddef ;
+
+vardef sometxt(expr n) =
+    if known savedtxts[n] :
+        txtdepth := depthtxts[n] ; savedtxts[n]
+    else :
+        txtdepth := 0 ; nullpicture
+    fi
+enddef ;
+
+def loadtxts =
+    if txtfile <> "" :
+        readfile(txtfile) ;
+    fi ;
+enddef ;
+
+def StartTexts =
+    loadtxts ;
+enddef ;
+
+def StopTexts =
+enddef ;

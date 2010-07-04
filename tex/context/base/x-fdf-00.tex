@@ -1,0 +1,41 @@
+% <xfdf>
+%   <fields>
+%     <field name="one">
+%       <value>first</value>
+%     </field>
+%     <field name="two">
+%       <value>second</value>
+%     </field>
+%   </fields>
+% </xfdf>
+% 
+% previous method:
+%
+% object 
+% data 
+% fields 
+% field 
+
+\defineXMLprocess[fdf:xfdf] 
+\defineXMLprocess[fdf:fields]
+\defineXMLignore [fdf:f] 
+\defineXMLpush   [fdf:value]
+
+\defineXMLenvironment [fdf:field] [name=,value=]
+  {\XMLerase{fdf:value}} 
+  {\gsaveXMLdata{fdf:\XMLop{name}}{fdf:value}}
+
+\defineXMLsingular [fdf:field] [name=,value=]
+  {\gsaveXMLasdata{fdf:\XMLop{name}}{\XMLop{value}}}
+
+\def\doifelseFDFfield#1{\doifelseXMLelement{fdf:#1}}
+\def\flushFDFfield   #1{\flushXMLelement   {fdf:#1}}
+\def\processFDFfield #1{\processXMLelement {fdf:#1}}   
+   
+\def\loadFDFfile#1%
+  {\bgroup
+   \autoXMLnamespace[fdf]%
+   \processXMLfilegrouped{#1}%
+   \egroup}
+
+\endinput 

@@ -1,0 +1,91 @@
+%D The following bunch of macros come from plain \TEX\ by
+%D Don Knuth and deal with basic alignment. We just include
+%D them here so that they can be used if needed. Normally,
+%D \CONTEXT\ users will fall back on one of the three table
+%D environments.
+%D
+%D The hidden names are somewhat adapted and we use other
+%D local variables.
+
+\writestatus{loading}{ConTeXt Table Macros / Plain Tabular}
+
+\unprotect
+
+\newif    \if@@plnusetab
+\newif    \if@@plncr
+\newbox   \@@plntabs
+\newbox   \@@plntabsyet
+\newbox   \@@plntabsdone
+\newdimen \@@plntabdimen
+
+\def\cleartabs % visible
+  {\global\setbox\@@plntabsyet\null
+   \setbox\@@plntabs\null}
+
+\def\settabs % visible
+  {\setbox\@@plntabs\null
+   \futurelet\next\@@plnsettabs}
+
+\def\tabalign % visible
+  {\@@plnusetabtrue\@@plnmaketabbox}
+
+\let\+\tabalign % no outer here (can be overloaded)
+
+\def\@@plnsettabs
+  {\ifx\next\+%
+     \def\nxt{\afterassignment\@@plnsettab\let\nxt}%
+   \else
+     \let\nxt\@@plnsetcols
+   \fi
+   \let\next\relax
+   \nxt}
+
+\def\@@plnsettab
+  {\let\nxt\relax
+   \@@plnusetabfalse\@@plnmaketabbox}
+
+\def\@@plnsetcols#1\columns
+  {\scratchcounter#1%
+   \@@plntabdimen\hsize
+   \loop
+     \ifnum\scratchcounter>\zerocount \@nother
+   \repeat}
+
+\def\@nother
+  {\scratchdimen\@@plntabdimen
+   \divide\scratchdimen\scratchcounter
+   \setbox\@@plntabs\hbox{\hbox to\scratchdimen{}\unhbox\@@plntabs}%
+   \advance\@@plntabdimen-\scratchdimen
+   \advance\scratchcounter\minusone}
+
+\def\@@plnmaketabbox
+  {\begingroup
+   \global\setbox\@@plntabsyet\copy\@@plntabs
+   \global\setbox\@@plntabsdone\null
+   \def\cr
+     {\@@plncrtrue\crcr\egroup\egroup
+      \if@@plnusetab\unvbox\zerocount\lastbox\fi\endgroup
+      \setbox\@@plntabs\hbox{\unhbox\@@plntabsyet\unhbox\@@plntabsdone}}%
+   \setbox\zerocount\vbox\bgroup\@@plncrfalse
+   \ialign\bgroup&\@@plnbegintabbox##\@@plnendtabbox\crcr}
+
+\def\@@plnbegintabbox
+  {\setbox\zerocount\hbox\bgroup}
+
+\def\@@plnendtabbox
+  {\if@@plncr
+     \egroup % now \box\zerocount holds the column
+   \else
+     \hss\egroup
+     \global\setbox\@@plntabsyet\hbox
+       {\unhbox\@@plntabsyet\global\setbox\plusone\lastbox}% now \box\plusone holds its size
+    \ifvoid\plusone
+      \global\setbox\plusone\hbox to\wd\zerocount{}%
+    \else
+      \setbox\zerocount\hbox to\wd\plusone{\unhbox\zerocount}%
+    \fi
+    \global\setbox\@@plntabsdone\hbox{\box\plusone\unhbox\@@plntabsdone}%
+  \fi
+  \box\zerocount}
+
+\protect \endinput

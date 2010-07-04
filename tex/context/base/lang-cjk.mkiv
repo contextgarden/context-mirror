@@ -1,0 +1,328 @@
+%D \module
+%D   [       file=lang-chi,
+%D        version=2009.03.02,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Chinese,
+%D         author={Hans Hagen \& Wang Lei},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Derived from \MKII\ files.
+
+\writestatus{loading}{ConTeXt Language Macros / CJK}
+
+\definesystemconstant {chinese}  \definesystemconstant {cn}
+\definesystemconstant {japanese} \definesystemconstant {ja}
+\definesystemconstant {korean}   \definesystemconstant {kr}
+
+\unprotect
+
+% Chinese
+
+\installlanguage
+  [\s!cn]
+  [\c!leftsentence=——,
+   \c!rightsentence=——,
+   \c!leftsubsentence=——,
+   \c!rightsubsentence=——,
+   \c!leftquote=‘,
+   \c!rightquote=’,
+   \c!leftquotation=“,
+   \c!rightquotation=”,
+   \c!date={\v!year,年,\ ,\v!month,\v!day,日}]
+
+\setupheadtext [\s!cn]       [\v!content=目录]
+\setupheadtext [\s!cn]        [\v!tables=表格]
+\setupheadtext [\s!cn]       [\v!figures=图形]
+\setupheadtext [\s!cn]      [\v!graphics=图]
+\setupheadtext [\s!cn]    [\v!intermezzi=퉣]
+\setupheadtext [\s!cn]         [\v!index=索引]
+\setupheadtext [\s!cn] [\v!abbreviations=缩略语]
+\setupheadtext [\s!cn]         [\v!logos=徽贬]
+\setupheadtext [\s!cn]         [\v!units=计量单位]
+
+\setuplabeltext [\s!cn]        [\v!table=表]
+\setuplabeltext [\s!cn]       [\v!figure=图]
+\setuplabeltext [\s!cn]   [\v!intermezzo=퉣]
+\setuplabeltext [\s!cn]      [\v!graphic=插图]
+\setuplabeltext [\s!cn]     [\v!appendix=附录]
+\setuplabeltext [\s!cn]         [\v!part={第,部分}]
+\setuplabeltext [\s!cn]      [\v!chapter={第,章}]
+\setuplabeltext [\s!cn]      [\v!section={第,节}]
+\setuplabeltext [\s!cn]         [\v!line=行]
+\setuplabeltext [\s!cn]        [\v!lines=行]
+
+\setuplabeltext [\s!cn]       [\v!subsection=]
+\setuplabeltext [\s!cn]    [\v!subsubsection=]
+\setuplabeltext [\s!cn] [\v!subsubsubsection=]
+
+\setuplabeltext [\s!cn]   [\v!january=一月]
+\setuplabeltext [\s!cn]  [\v!february=二月]
+\setuplabeltext [\s!cn]     [\v!march=三月]
+\setuplabeltext [\s!cn]     [\v!april=四月]
+\setuplabeltext [\s!cn]       [\v!may=五月]
+\setuplabeltext [\s!cn]      [\v!june=六月]
+\setuplabeltext [\s!cn]      [\v!july=七月]
+\setuplabeltext [\s!cn]    [\v!august=八月]
+\setuplabeltext [\s!cn] [\v!september=九月]
+\setuplabeltext [\s!cn]   [\v!october=十月]
+\setuplabeltext [\s!cn]  [\v!november=十一月]
+\setuplabeltext [\s!cn]  [\v!december=十二月]
+
+\setuplabeltext [\s!cn]    [\v!sunday=星期日]
+\setuplabeltext [\s!cn]    [\v!monday=星期一]
+\setuplabeltext [\s!cn]   [\v!tuesday=星期二]
+\setuplabeltext [\s!cn] [\v!wednesday=星期三]
+\setuplabeltext [\s!cn]  [\v!thursday=星期四]
+\setuplabeltext [\s!cn]    [\v!friday=星期五]
+\setuplabeltext [\s!cn]  [\v!saturday=星期六]
+
+%D Japanese
+
+\installlanguage
+  [\s!ja]
+  [\c!leftsentence=——,
+   \c!rightsentence=——,
+   \c!leftsubsentence=——,
+   \c!rightsubsentence=——,
+   \c!leftquote=‘,
+   \c!rightquote=’,
+   \c!leftquotation=「,
+   \c!rightquotation=」,
+   \c!date={西暦,\v!year,年,\v!month,月,\v!day,日}]
+
+\setupheadtext [\s!ja]       [\v!content=目次]
+\setupheadtext [\s!ja]        [\v!tables=机]
+\setupheadtext [\s!ja]       [\v!figures=図]
+\setupheadtext [\s!ja]      [\v!graphics=グラフ]
+\setupheadtext [\s!ja]    [\v!intermezzi=間奏曲]
+\setupheadtext [\s!ja]         [\v!index=目次]
+\setupheadtext [\s!ja] [\v!abbreviations=略語]
+\setupheadtext [\s!ja]         [\v!logos=理性]
+\setupheadtext [\s!ja]         [\v!units=ユニッツ]
+
+\setuplabeltext [\s!ja]        [\v!table=表]
+\setuplabeltext [\s!ja]       [\v!figure=図]
+\setuplabeltext [\s!ja]   [\v!intermezzo=間奏曲]
+\setuplabeltext [\s!ja]      [\v!graphic=イラスト]
+\setuplabeltext [\s!ja]     [\v!appendix=付録]
+\setuplabeltext [\s!ja]         [\v!part={第,パート}]
+\setuplabeltext [\s!ja]      [\v!chapter={第,章}]
+\setuplabeltext [\s!ja]      [\v!section={第,項}]
+\setuplabeltext [\s!ja]         [\v!line=線]
+\setuplabeltext [\s!ja]        [\v!lines=線]
+
+\setuplabeltext [\s!ja]       [\v!subsection=]
+\setuplabeltext [\s!ja]    [\v!subsubsection=]
+\setuplabeltext [\s!ja] [\v!subsubsubsection=]
+
+\setuplabeltext [\s!ja]   [\v!january=1]
+\setuplabeltext [\s!ja]  [\v!february=2]
+\setuplabeltext [\s!ja]     [\v!march=3]
+\setuplabeltext [\s!ja]     [\v!april=4]
+\setuplabeltext [\s!ja]       [\v!may=5]
+\setuplabeltext [\s!ja]      [\v!june=6]
+\setuplabeltext [\s!ja]      [\v!july=7]
+\setuplabeltext [\s!ja]    [\v!august=8]
+\setuplabeltext [\s!ja] [\v!september=9]
+\setuplabeltext [\s!ja]   [\v!october=10]
+\setuplabeltext [\s!ja]  [\v!november=11]
+\setuplabeltext [\s!ja]  [\v!december=12]
+
+\setuplabeltext [\s!ja]    [\v!monday=月曜日]
+\setuplabeltext [\s!ja]   [\v!tuesday=火曜日]
+\setuplabeltext [\s!ja] [\v!wednesday=水曜日]
+\setuplabeltext [\s!ja]  [\v!thursday=木曜日]
+\setuplabeltext [\s!ja]    [\v!friday=金曜日]
+\setuplabeltext [\s!ja]  [\v!saturday=土曜日]
+\setuplabeltext [\s!ja]    [\v!sunday=日曜日]
+
+%D Korean
+
+% todo
+
+\protect \endinput
+
+cn={
+ ["abbreviations"]="缩略语",
+ ["appendix"]="附录",
+ ["april"]="四月",
+ ["august"]="八月",
+ ["chapter"]="章",
+ ["contents"]="目录",
+ ["day"]="日",
+ ["december"]="十二月",
+ ["febrary"]="二月",
+ ["figure"]="图",
+ ["figures"]="图形",
+ ["friday"]="星期五",
+ ["graphics"]="图",
+ ["illustration"]="插图",
+ ["index"]="索引",
+ ["intermezzo"]="퉣",
+ ["intro"]="第",
+ ["january"]="一月",
+ ["july"]="七月",
+ ["june"]="六月",
+ ["leftsentence"]="——",
+ ["leftsubsentence"]="——",
+ ["line"]="行",
+ ["logos"]="徽贬",
+ ["march"]="三月",
+ ["may"]="五月",
+ ["monday"]="星期一",
+ ["month"]="月",
+ ["november"]="十一月",
+ ["october"]="十月",
+ ["part"]="部分",
+ ["rightsentence"]="——",
+ ["rightsubsentence"]="——",
+ ["saturday"]="星期六",
+ ["section"]="节",
+ ["september"]="九月",
+ ["sunday"]="星期日",
+ ["table"]="表",
+ ["tables"]="表格",
+ ["thursday"]="星期四",
+ ["tuesday"]="星期二",
+ ["units"]="计量单位",
+ ["upperleftdoublequote"]="“",
+ ["upperleftdoublequote-v"]="『",
+ ["upperleftsinglequote"]="‘",
+ ["upperleftsinglequote-v"]="「",
+ ["upperrightdoublequote"]="”",
+ ["upperrightdoublequote-v"]="』",
+ ["upperrightsinglequote"]="’",
+ ["upperrightsinglequote-v"]="」",
+ ["wednesday"]="星期三",
+ ["year"]="年",
+}
+
+ja={
+ ["abbreviations"]="略語",
+ ["abstract"]="概要",
+ ["and"]="、",
+ ["answer"]="答：",
+ ["appendix"]="付録",
+ ["april"]="四月",
+ ["article"]="項目",
+ ["august"]="八月",
+ ["bibliography"]="参考文献",
+ ["book"]="ブック",
+ ["bridgehead"]="項",
+ ["bullet"]="●",
+ ["by"]="：",
+ ["caution"]="注意",
+ ["chapter"]="章",
+ ["christiandate"]="西暦",
+ ["colophon"]="奥付",
+ ["copyright"]="製作著作",
+ ["day"]="日",
+ ["december"]="十二月",
+ ["dedication"]="謝辞",
+ ["edited"]="編者",
+ ["editedby"]="編者：",
+ ["edition"]="編集",
+ ["endquote"]="」",
+ ["equation"]="式",
+ ["example"]="例",
+ ["february"]="二月",
+ ["figure"]="図",
+ ["figures"]="図",
+ ["friday"]="土曜日",
+ ["glossary"]="用語集",
+ ["glosssee"]="参照",
+ ["glossseealso"]="参照",
+ ["graphics"]="グラフ",
+ ["illustration"]="イラスト",
+ ["important"]="重要項目",
+ ["index"]="目次",
+ ["indexsymbols"]="シンボル",
+ ["intermezzo"]="間奏曲",
+ ["intermezzos"]="間奏曲",
+ ["intro"]="第",
+ ["january"]="一月",
+ ["july"]="七月",
+ ["june"]="六月",
+ ["leftsentence"]="——",
+ ["leftsubsentence"]="——",
+ ["line"]="線",
+ ["lines"]="線",
+ ["listofequations"]="式目次",
+ ["listofexamples"]="例目次",
+ ["listoffigures"]="図目次",
+ ["listoftables"]="表目次",
+ ["listofunknown"]="不明目次",
+ ["logos"]="理性",
+ ["march"]="三月",
+ ["may"]="五月",
+ ["monday"]="火曜日",
+ ["month"]="月",
+ ["msgaud"]="対象者",
+ ["msglevel"]="レベル",
+ ["msgorig"]="発信元",
+ ["navhome"]="ホーム",
+ ["navnext"]="次のページ",
+ ["navnextsibling"]="早送り",
+ ["navprev"]="前のページ",
+ ["navprevsibling"]="巻戻し",
+ ["navup"]="上に戻る",
+ ["nestedendquote"]="』",
+ ["nestedstartquote"]="『",
+ ["nonexistantelement"]="要素が存在しません",
+ ["note"]="注意",
+ ["notes"]="注意",
+ ["november"]="十一月",
+ ["october"]="十月",
+ ["pages"]="偧献",
+ ["part"]="パート",
+ ["preface"]="序文",
+ ["procedure"]="手順",
+ ["procedureformal"]="手順",
+ ["productionset"]="プロダクション",
+ ["productionsetformal"]="プロダクション",
+ ["published"]="発行",
+ ["qandadiv"]="問：、答：",
+ ["qandaentry"]="問：",
+ ["question"]="問：",
+ ["reference"]="参照",
+ ["refname"]="名前",
+ ["refsection"]="項",
+ ["refsynopsisdiv"]="概要",
+ ["revhistory"]="改訂履歴",
+ ["revision"]="改訂",
+ ["rightsentence"]="——",
+ ["rightsubsentence"]="——",
+ ["saturday"]="日曜日",
+ ["section"]="項",
+ ["see"]="参照",
+ ["seealso"]="参照",
+ ["separator"]="、",
+ ["september"]="九月",
+ ["set"]="設定",
+ ["setindex"]="目次設定",
+ ["sidebar"]="サイドバー",
+ ["simplesect"]="項",
+ ["singleendquote"]="’",
+ ["singlestartquote"]="‘",
+ ["startquote"]="「",
+ ["step"]="ステップ",
+ ["sunday"]="月曜日",
+ ["table"]="表",
+ ["tablenotes"]="注意",
+ ["tableofcontents"]="目次",
+ ["tables"]="机",
+ ["thursday"]="金曜日",
+ ["tip"]="ティップ",
+ ["tuesday"]="水曜日",
+ ["unexpectedelementname"]="不明な要素名",
+ ["units"]="ユニッツ",
+ ["unsupported"]="サポートしません",
+ ["warning"]="警告",
+ ["wednesday"]="木曜日",
+ ["year"]="年",
+}

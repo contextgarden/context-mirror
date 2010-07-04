@@ -1,0 +1,613 @@
+%D \module
+%D   [       file=bxml-apa,
+%D        version=2010.05.14, % based on bibl-apa.tex
+%D          title=APA bibliography style,
+%D       subtitle=Publications,
+%D         author={Taco Hoekwater \& Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={Hans Hagen \& Taco Hoekwater}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+% helpers (todo)
+
+\let\maybeyear\firstofoneargument
+\let\etalchar \firstofoneargument
+
+\setupbibtexcitationvariants
+   [author,year]
+   [\c!andtext={ and },
+    \c!otherstext={ et al.},
+    \c!pubsep={, },
+    \c!lastpubsep={ and },
+    \c!compress=\v!no,
+    \c!inbetween={ },
+    \c!left={(},
+    \c!right={)}]
+
+\setupbibtexcitationvariants
+   [authoryear]
+   [\c!andtext={ and },
+    \c!otherstext={ et al.},
+    \c!pubsep={, },
+    \c!lastpubsep={ and },
+    \c!compress=\v!yes,
+    \c!inbetween={ },
+    \c!left={(},
+    \c!right={)}]
+
+\setupbibtexcitationvariants
+   [authoryears]
+   [\c!andtext={ and },
+    \c!otherstext={ et al.},
+    \c!pubsep={, },
+    \c!lastpubsep={ and },
+    \c!compress=\v!yes,
+    \c!inbetween={, },
+    \c!left={(},
+    \c!right={)}]
+
+\setupbibtexcitationvariants
+   [key,serial,authornum,page,short,type,doi,url]
+   [\c!andtext={ and },
+    \c!otherstext={ et al.},
+    \c!pubsep={, },
+    \c!lastpubsep={ and },
+    \c!compress=\v!no,
+    \c!inbetween={ },
+    \c!left={[},
+    \c!right={]}]
+
+\setupbibtexcitationvariants
+   [num]
+   [\c!andtext={ and },
+    \c!otherstext={ et al.},
+    \c!pubsep={, },
+    \c!lastpubsep={ and },
+    \c!compress=\v!yes,
+    \c!inbetween={--},
+    \c!left={[},
+    \c!right={]}]
+
+\setupbibtexpublications
+   [\c!sorttype=,
+    \c!criterium=,
+    \c!refcommand=authoryears,
+    \c!numbering=\v!no,
+    \c!autohang=\v!no]
+
+\setupbibtexpublications
+   [\c!width=2em, % 24pt,
+    \c!artauthor=invertedshort,
+    \c!editor=invertedshort,
+    \c!author=invertedshort,
+    \c!namesep={, },
+    \c!lastnamesep={ and },
+    \c!finalnamesep={ and },
+    \c!firstnamesep={, },
+    \c!juniorsep={ },
+    \c!vonsep={ },
+    \c!surnamesep={, },
+    \c!authoretallimit=5,
+    \c!editoretallimit=5,
+    \c!artauthoretallimit=5,
+    \c!authoretaldisplay=5,
+    \c!editoretaldisplay=5,
+    \c!artauthoretaldisplay=5,
+    \c!authoretaltext={ et al.},
+    \c!editoretaltext={ et al.},
+    \c!artauthoretaltext={ et al.}]
+
+% common
+
+\startxmlsetups bibtex:apa:common:wherefrom
+    \bibxmldoifelse {address} {
+        \getvariable{bibtex:temp}{left}
+        \bibxmldoifelse {country} {
+            \bibxmldoifelse {\getvariable{bibtex:temp}{label}} {
+                \bibxmlflush{address}\bibtexcomma\bibxmlflush{country}: \bibxmlflush{\getvariable{bibtex:temp}{label}}
+            } {
+                \bibxmlflush{address}\bibtexcomma\bibxmlflush{country}
+            }
+        } {
+            \bibxmldoifelse {\getvariable{bibtex:temp}{label}} {
+                \bibxmlflush{address}\bibtexcomma\bibxmlflush{\getvariable{bibtex:temp}{label}}
+            } {
+                \bibxmlflush{address}
+            }
+        }
+        \getvariable{bibtex:temp}{right}
+    } {
+        \bibxmldoifelse {country} {
+            \getvariable{bibtex:temp}{left}
+            \bibxmldoifelse {\getvariable{bibtex:temp}{label}} {
+                \bibxmlflush{country}: \bibxmlflush{\getvariable{bibtex:temp}{label}}
+            } {
+                \bibxmlflush{country}
+            }
+            \getvariable{bibtex:temp}{right}
+        } {
+            \bibxmldoifelse {\getvariable{bibtex:temp}{label}} {
+                \getvariable{bibtex:temp}{left}
+                \bibxmlflush{\getvariable{bibtex:temp}{label}}
+                \getvariable{bibtex:temp}{right}
+            } {
+                \getvariable{bibtex:temp}{otherwise}
+            }
+        }
+    }
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:publisher
+    \setvariables[bibtex:temp][label=publisher,left=,right=,otherwise=]\relax
+    \bibxmlsetup{bibtex:apa:common:wherefrom}
+\stopxmlsetups
+\startxmlsetups bibtex:apa:common:organization
+    \setvariables[bibtex:temp][label=organization,left=,right=,otherwise=]\relax
+    \bibxmlsetup{bibtex:apa:common:wherefrom}
+\stopxmlsetups
+\startxmlsetups bibtex:apa:common:school
+    \setvariables[bibtex:temp][label=school,left=,right=,otherwise=]\relax
+    \bibxmlsetup{bibtex:apa:common:wherefrom}
+\stopxmlsetups
+\startxmlsetups bibtex:apa:common:institution
+    \setvariables[bibtex:temp][label=institution,left=,right=,otherwise=]\relax
+    \bibxmlsetup{bibtex:apa:common:wherefrom}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:school:subsentence
+    \setvariables[bibtex:temp][label=school,left=\bibtexcomma,right=\bibtexperiod,otherwise=\bibtexperiod]\relax
+    \bibxmlsetup{bibtex:apa:common:wherefrom}
+\stopxmlsetups
+\startxmlsetups bibtex:apa:common:institution:subsentence
+    \setvariables[bibtex:temp][label=institution,left=\bibtexcomma,right=\bibtexperiod,otherwise=\bibtexperiod]\relax
+    \bibxmlsetup{bibtex:apa:common:wherefrom}
+\stopxmlsetups
+\startxmlsetups bibtex:apa:common:publisher:sentence
+    \setvariables[bibtex:temp][label=publisher,left=\bibtexspace,right=\bibtexperiod,otherwise=]\relax
+    \bibxmlsetup{bibtex:apa:common:wherefrom}
+\stopxmlsetups
+\startxmlsetups bibtex:apa:common:organization:sentence
+    \setvariables[bibtex:temp][label=organization,left=\bibtexspace,right=\bibtexperiod,otherwise=]\relax
+    \bibxmlsetup{bibtex:apa:common:wherefrom}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:title-and-series
+    \bibxmldoif {title} {
+        \bibxmlflush{title}
+        \bibxmldoif {series} {
+            \bibtexlparent\bibxmlflush{series}\bibtexrparent
+        }
+        \bibtexperiod
+    }
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:title-it-and-series
+    \bibxmldoif {title} {
+        \bgroup\it\bibxmlflush{title}\/\egroup
+        \bibxmldoif {series} {
+            \bibtexlparent\bibxmlflush{series}\bibtexrparent
+        }
+        \bibtexperiod
+    }
+\stopxmlsetups
+
+\disablemode[bibtex:apa:edited-book]
+
+\startxmlsetups bibtex:apa:common:author-and-year
+    \bibxmldoif {author} {
+        \bibxmlsetup{bibtex:format:author}
+    }
+    \bibxmldoif {year} {
+        \bibtexlparent\bibxmlflush{year}\bibtexrparent
+    }
+    \bibtexperiod
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:author-or-key-and-year
+    \bibxmldoifelse {author} {
+        \bibxmlsetup{bibtex:format:author}
+    } {
+        \bibxmldoif {key} {
+            \bibtexlbracket\bibxmlsetup{bibtex:format:key}\bibtexrbracket
+        }
+    }
+    \bibxmldoif {year} {
+        \bibtexlparent\bibxmlflush{year}\bibtexrparent
+    }
+    \bibtexperiod
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:author-editors-crossref-year
+    \bibxmldoif {author} {
+        \bibxmlsetup{bibtex:format:author}
+    } {
+        \bibxmldoifelse {editor} {
+            \enablemode[bibtex:apa:edited-book]
+            \xmlsetup{#1}{bibtex:format:editor}
+            \bibtexcomma\bibtexsingularplural{editor}{editors}
+        } {
+            % weird period
+            \bibxmldoif {crossref} {
+                \bibtexlbracket\bibxmlsetup{bibtex:format:crossref}\bibtexrbracket\bibtexperiod
+            }
+        }
+    }
+    \bibxmldoif {year} {
+        \bibtexlparent\bibxmlflush{year}\bibtexrparent
+    }
+    \bibtexperiod
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:editor-or-key-and-year
+    \bibxmldoifelse {editor} {
+        \enablemode[bibtex:apa:edited-book]
+        \xmlsetup{#1}{bibtex:format:editor}
+        \bibtexcomma\bibtexsingularplural{editor}{editors}
+    } {
+        \bibxmldoif {key} {
+            \bibtexlbracket\bibxmlsetup{bibtex:format:key}\bibtexrbracket
+        }
+    }
+    \bibtexspace
+    \bibxmldoif {year} {
+        \bibtexlparent\bibxmlflush{year}\bibtexrparent
+    }
+    \bibtexperiod
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:note
+    \bibxmldoif {note} {
+        \bibtexspace\bibxmlflush{note}\bibtexperiod
+    }
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:comment
+    \bibxmldoif {comment} {
+        \bibtexspace\bibxmlflush{comment}\bibtexperiod
+    }
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:pages:p
+    \bibxmldoif {pages} {
+        \bibtexspace\bibxmlflush{pages}\bibtexspace p\bibtexperiod
+    }
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:pages:pp
+    \bibxmldoif {pages} {
+        \bibtexspace\bibxmlflush{pages}\bibtexspace pp\bibtexperiod
+    }
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:pages:pages
+    \bibxmldoif {pages} {
+        \bibtexcomma pages~\bibxmlflush{pages}
+    }
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:edition:sentense
+    \bibxmldoif {edition} {
+        \bibtexspace\bibxmlflush{edition}\bibtexspace edition\bibtexperiod
+    }
+\stopxmlsetups
+
+% check ewhen the next is used (no period)
+
+% \startxmlsetups bibtex:apa:common:edition
+%     \bibxmldoif {edition} {
+%         \bibtexspace\bibxmlflush{edition}\bibtexspace edition
+%     }
+% \stopxmlsetups
+
+% we can share more, todo
+
+% specific
+
+\startxmlsetups bibtex:apa:article
+    \bibxmlsetup{bibtex:apa:common:author-or-key-and-year}
+    \bibxmldoif {title} {
+        \bibxmlflush{title}\bibtexperiod
+    }
+    \bibxmldoifelse {journal} {
+        \bgroup\it\bibxmlflush{journal}\/\egroup
+    } {
+        \bibxmldoif {crossref} {
+            In\bibtexspace\bibxmlflush{crossref}
+        }
+    }
+    \bibxmldoifelse {volume} {
+        \bibtexcomma\bgroup\it\bibxmlflush{volume}\/\egroup
+        \bibxmldoif {issue} {
+            \bibtexlparent\bibxmlflush{issue}\bibtexlparent
+        }
+        \bibxmldoif {pages} {
+            \bibtexcomma\bibxmlflush{pages}
+        }
+        \bibtexperiod
+    } {
+        \bibxmlsetup{bibtex:apa:common:pages:pp}
+    }
+    \bibxmlsetup{bibtex:apa:common:note}
+    \bibxmlsetup{bibtex:apa:common:comment}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:book
+    \bibxmlsetup{bibtex:apa:common:author-editors-crossref-year}
+    \bibxmldoif {title} {
+        \bgroup\it\bibxmlflush{title}\/\egroup
+        \doifmodeelse {bibtex:apa:edited-book} {
+            \bibxmldoifelse {volume} {
+                \bibtexspace Number\nonbreakablespace\bibxmlflush{volume}
+                \bibxmldoifelse {series} {
+                    \bibtexspace in\nonbreakablespace\bibxmlflush{series}\bibtexperiod
+                } {
+                    \bibxmldoifelse {crossref} {
+                        \bibtexspace in\bibtexlbracket\bibxmlsetup{bibtex:format:crossref}\bibtexrbracket
+                    } {
+                        \bibtexperiod
+                    }
+                }
+            } {
+                \bibxmldoif {series} {
+                    \bibtexspace\bibxmlflush{series}
+                }
+                \bibtexperiod
+            }
+        } {
+            \bibxmldoifelse {crossref} {
+                \bibxmldoif {chapter} {
+                   \bibtexcomma\bibxmlflush{chapter}
+                }
+                \bibxmlsetup{bibtex:apa:common:pages:pages}
+                \bibtexperiod
+                \bibxmldoif {volume} {
+                    Volume\nonbreakablespace\bibxmlflush{volume}\bibtexspace of\nonbreakablespace
+                }
+            } {
+                \bibxmldoif {volume} {
+                    \bibtexcomma volume\nonbreakablespace\bibxmlflush{volume}
+                    \bibxmldoif {series} {
+                        \bibtexspace of\nonbreakablespace\bgroup\it\bibxmlflush{series}\/\egroup
+                    }
+                    \bibxmldoif {chapter} {
+                       \bibtexcomma\bibxmlflush{chapter}
+                    }
+                    \bibxmlsetup{bibtex:apa:common:pages:pages}
+                    \bibtexperiod
+                }
+            }
+        }
+    }
+    \bibxmlsetup{bibtex:apa:common:edition:sentence}
+    \bibxmlsetup{bibtex:apa:common:publisher:sentence}
+    \bibxmlsetup{bibtex:apa:common:pages:p}% twice?
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:inbook
+    \bibxmlsetup{bibtex:apa:common:author-editors-crossref-year}
+    \bibxmldoifelse {title} {
+        \bgroup\it\bibxmlflush{title}\/\egroup
+    } {
+        \doifmodeelse {bibtex:apa:edited-book} {
+            \bibxmldoifelse {volume} {
+                \bibtexspace number\nonbreakablespace\bibxmlflush{volume}
+                \bibxmldoifelse {series} {
+                    \bibtexspace in\nonbreakablespace\bibxmlflush{series}\bibtexperiod
+                } {
+                    \bibxmldoifelse {crossref} {
+                        \bibtexspace in\bibtexlbracket\bibxmlsetup{bibtex:format:crossref}\bibtexrbracket
+                    } {
+                        \bibtexperiod
+                    }
+                }
+            } {
+                \bibxmldoif {series} {
+                    \bibtexspace\bibxmlflush{series}\bibtexperiod
+                }
+            }
+        } {
+            \bibxmldoifelse {crossref} {
+                \bibxmldoif {chapter} {
+                    \bibtexcomma\bibxmlflush{chapter}
+                }
+                \bibxmlsetup{bibtex:apa:common:pages:pages}
+                \bibxmldoif {volume} {
+                    Volume\nonbreakablespace\bibxmlflush{volume}\bibtexspace of\nonbreakablespace
+                }
+                \bibxmldoif {crossref} {
+                    \bibtexlbracket\bibxmlsetup{bibtex:format:crossref}\bibtexrbracket
+                }
+            } {
+                \bibxmldoif {volume} {
+                    \bibtexcomma volume\nonbreakablespace\bibxmlflush{volume}
+                    \bibxmldoif {series} {
+                        \bibtexspace of\nonbreakablespace\bgroup\it\bibxmlflush{series}\/\egroup
+                    }
+                    \bibxmldoif {chapter} {
+                        \bibtexcomma\bibxmlflush{chapter}
+                    }
+                    \bibxmlsetup{bibtex:apa:common:pages:pages}
+                    \bibtexperiod
+                }
+            }
+        }
+    }
+    \bibtexspace
+    \bibxmlsetup{bibtex:apa:common:edition:sentence}
+    \bibxmlsetup{bibtex:apa:common:publisher}
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:booklet
+    \bibxmlsetup{bibtex:apa:common:author-or-key-and-year}
+    \bibxmlsetup{bibtex:apa:common:title-it-and-series}
+    \bibxmlsetup{bibtex:apa:common:edition:sentence}
+    \bibxmlsetup{bibtex:apa:common:publication:sentence}
+    \bibxmlsetup{bibtex:apa:common:pages:p}
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:manual
+    \bibxmlsetup{bibtex:apa:common:author-or-key-and-year}
+    \bibxmlsetup{bibtex:apa:common:title-it-and-series}
+    \bibxmlsetup{bibtex:apa:common:edition:sentence}
+    \bibxmlsetup{bibtex:apa:common:organization:sentence}
+    \bibxmlsetup{bibtex:apa:common:pages:p}
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:incollection
+    \bibxmlsetup{bibtex:apa:common:author-and-year}
+    \bibxmldoif {arttitle} {
+        \bibxmlflush{arttitle}\bibtexperiod
+    }
+    In\bibtexspace
+    \bibxmldoifelse {title} {
+        \bibxmlsetup{bibtex:format:editors}\bibtexcomma
+        \bgroup\it\bibxmlflush{title}\/\egroup
+        \bibxmldoif {series} {
+            \bibxmldoif {volume} {
+                \bibtexcomma number\bibtexspace\bibxmlflush{volume}\bibtexspace in
+            }
+            \bibtexspace\bibxmlflush{series}
+        }
+        \bibxmldoif {chapter} {
+            \bibtexcomma\bibxmlflush{chapter}\bibtexspace
+        }
+        \bibxmlsetup{bibtex:apa:common:pages:pages}
+        \bibxmldoif {edition} {
+            \bibtexspace\bibxmlflush{edition}\bibtexspace edition
+        }
+        \bibxmlsetup{bibtex:apa:common:publisher:sentence}
+    } {
+        \bibxmldoif {crossref} {
+            \bibtexlbracket\bibxmlsetup{bibtex:format:crossref}\bibtexrbracket
+        }
+        \bibxmldoif {chapter} {
+            \bibtexcomma\bibxmlflush{chapter}
+        }
+        \bibtexspace
+        \bibxmlsetup{bibtex:apa:common:pages:pages}
+    }
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:inproceedings
+    \bibxmlsetup{bibtex:apa:common:author-and-year}
+    \bibxmldoif {arttitle} {
+        \bibxmlflush{arttitle}\bibtexperiod
+    }
+    In\bibtexspace
+    \bibxmldoifelse {title} {
+        \bibxmldoif {editors} {
+            \bibxmlflush{bibtex:apa:format:editors}
+            \bibtexcomma\bibtexsingularplural{editor}{editors}\bibtexcomma
+        }
+        \bgroup\it\bibxmlflush{title}\/\egroup
+        \bibxmldoif {series} {
+            \bibxmldoif {volume} {
+                \bibtexcomma number~\bibxmlflush{volume} in
+            }
+            \bibtexspace
+            \bibxmlflush{series}
+        }
+        \bibxmldoif {chapter} {
+            \bibtexcomma\bibxmlflush{chapter}\bibtexspace
+        }
+        \bibxmlsetup{bibtex:apa:common:pages:pages}
+        \bibtexperiod
+        \bibxmlsetup{bibtex:apa:common:organization:sentence}
+    } {
+        \bibxmldoif {crossref} {
+            \bibtexlbracket\bibxmlsetup{bibtex:format:crossref}\bibtexrbracket
+        }
+        \bibxmldoif {chapter} {
+            \bibtexcomma\bibxmlflush{chapter}\bibtexspace
+        }
+        \bibxmlsetup{bibtex:apa:common:pages:pages}
+        \bibtexperiod
+    }
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:proceedings
+    \bibxmlsetup{bibtex:apa:common:editor-or-key-and-year}
+    \bibxmldoif {title} {
+        \bgroup\it\bibxmlflush{title}\/\egroup
+        \bibxmldoif {volume} {
+            \bibtexcomma number\bibtexspace\bibxmlflush{volume}\bibtexspace in\bibtexspace
+        }
+        \bibxmldoif {chapter} {
+            \bibtexcomma\bibxmlflush{chapter}\bibtexspace
+        }
+        \bibxmlsetup{bibtex:apa:common:pages:pages}
+        \bibtexperiod
+        \bibxmlsetup{bibtex:apa:common:organization:sentence}
+    }
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:common:thesis
+    \bibxmlsetup{bibtex:apa:common:author-and-year}
+    \bibxmlsetup{bibtex:apa:common:title-it-and-series}
+    \bibxmldoifelse {type} {
+        \bibxmlflush{type}
+    } {
+        \getvariable{bibtex:temp}{label}
+    }
+    \bibxmlsetup{bibtex:apa:common:school:subsentence}
+    \bibxmlsetup{bibtex:apa:common:pages:p}
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:mastersthesis
+    \setvariables[bibtex:temp][label=Master's thesis]
+    \bibxmlsetup{bibtex:apa:common:thesis}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:phdthesis
+    \setvariables[bibtex:temp][label=PhD thesis]
+    \bibxmlsetup{bibtex:apa:common:thesis}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:techreport
+    \bibxmlsetup{bibtex:apa:common:author-and-year}
+    \bibxmlsetup{bibtex:apa:common:title-and-series}
+    \bibxmldoifelse {type} {
+        \bibxmlflush{type}
+        \bibxmldoif {volume} {
+            \bibtexspace\bibxmlflush{volume}
+        }
+    } {
+        \bibtexspace Technical Report
+    }
+    \bibxmlsetup{bibtex:apa:common:institution:subsentence}
+    \bibxmlsetup{bibtex:apa:common:pages:p}
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:misc
+    \bibxmlsetup{bibtex:apa:common:author-and-year}
+    \bibxmlsetup{bibtex:apa:common:title-and-series}
+    \bibxmlsetup{bibtex:apa:common:publisher:sentence}
+    \bibxmlsetup{bibtex:apa:common:pages:p}
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\startxmlsetups bibtex:apa:unpublished
+    \bibxmlsetup{bibtex:apa:common:author-and-year}
+    \bibxmlsetup{bibtex:apa:common:title-and-series}
+    \bibxmlsetup{bibtex:apa:common:pages:p}
+    \bibxmldoif {type} {
+        \bibtexlparent\bibxmlflush{type}\bibtexrparent
+    }
+    \bibxmlsetup{bibtex:apa:common:note}
+\stopxmlsetups
+
+\protect \endinput

@@ -1,0 +1,130 @@
+%D \module
+%D   [       file=unic-run,
+%D        version=2005.06.22,
+%D          title=\CONTEXT\ \UNICODE\ Support,
+%D       subtitle=Goodies,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D \macros
+%D   {showunicodevector}
+%D
+%D Original version by Nikolai Weibull. Adapted a bit (no local count
+%D definitions, stepwiserecurse instead of -1 calculations, a bit less
+%D code and such). BTW, this is kind of tricky and somehow we don't
+%D have align interference.
+
+\gdef\doshowunicodevectorrow#1#2%
+  {\NC
+   \ttx\uchexnumber{#2}%
+   \VL
+   \dostepwiserecurse{0}{15}{1}{\unicodechar{\numexpr#1*256+#2+\recurselevel*16\relax}\VL}%
+   \AR}
+
+\gdef\showunicodevector[#1]%
+  {\starttable[|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|]
+     \NC\NC\dostepwiserecurse{0}{15}{1}{\ttx\uchexnumber\recurselevel\NC}\AR
+     \DC\DL[16]\DR
+     \dostepwiserecurse{0}{15}{1}
+       {\expanded{\doshowunicodevectorrow{#1}{\recurselevel}}%
+        \DC\DL[16]\DR}
+     \NC \use{17}{\hfill \ttx unicode table hex:\uchexnumbers{#1} dec:\threedigits{#1}\kern-.25em}\NC \AR
+   \stoptable}
+
+%D \starttyping
+%D \chardef\utfunicodetracer=0
+%D \chardef\utfunicodetracer=7
+%D
+%D \showunicodevector[000]
+%D \showunicodevector[001]
+%D \showunicodevector[002]
+%D \showunicodevector[003]
+%D \showunicodevector[004]
+%D \showunicodevector[005]
+%D \showunicodevector[030]
+%D \showunicodevector[031]
+%D \showunicodevector[032]
+%D \showunicodevector[033]
+%D \showunicodevector[034]
+%D \stoptyping
+
+%D \macros
+%D   {showunicodetable}
+%D
+%D A more verbose variant:
+
+\gdef\doshowunicodetablerow#1#2%
+  {\bTR
+   \bTD\uchexnumber{#2}\eTD
+   \dostepwiserecurse{0}{15}{1}
+     {\bTD
+      \edef\entrypoint{\the\numexpr#1*256+#2+##1*16\relax}%
+      \chardef\utfunicodetracer0{\dontleavehmode    \strut\unicodechar\entrypoint\endgraf}%
+      \tt
+      \chardef\utfunicodetracer7{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
+      \chardef\utfunicodetracer3{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
+      \chardef\utfunicodetracer8{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
+      \eTD}%
+   \bTD\uchexnumber{#2}\eTD
+   \eTR}
+
+\gdef\showunicodetable[#1]%
+  {\vbox\bgroup
+   \setupcolors[\c!state=\v!start]%
+   \setupTABLE[\c!background=\v!screen,\c!backgroundscreen=.90,\c!frame=\v!off,\c!frameoffset=0pt,\c!width=8em,\c!height=6em]%
+   \setupTABLE[c]     [\v!each] [\c!align={middle,lohi}]%
+   \setupTABLE[c]     [\v!first][\c!background=\v!screen,\c!backgroundscreen=.85,\c!style=\tt\tfa]%
+   \setupTABLE[c]     [\v!last] [\c!background=\v!screen,\c!backgroundscreen=.85,\c!style=\tt\tfa]%
+   \setupTABLE[r]     [\v!first][\c!background=\v!screen,\c!backgroundscreen=.85,\c!style=\tt\tfa]%
+   \setupTABLE[r]     [\v!last] [\c!background=\v!screen,\c!backgroundscreen=.85,\c!style=\tt\tfa]%
+   \setupTABLE[r]     [\v!odd]  [\c!background=\v!screen,\c!backgroundscreen=.80]%
+   \setupTABLE[c]     [\v!odd]  [\c!background=\v!screen,\c!backgroundscreen=.80]%
+   \setupTABLE[\v!odd][\v!odd]  [\c!background=\v!screen,\c!backgroundscreen=.90]%
+   \bTABLE
+     \bTR
+       \bTD dec: \numbers{#1}\endgraf hex: \uchexnumbers{#1}\eTD
+       \dostepwiserecurse{0}{15}{1}{\bTD\uchexnumber{##1}\eTD}%
+       \bTD dec: \numbers{#1}\endgraf hex: \uchexnumbers{#1}\eTD
+     \eTR
+     \dostepwiserecurse{0}{15}{1}{\doshowunicodetablerow{#1}{##1}}%
+     \bTR
+       \bTD dec: \numbers{#1}\endgraf hex: \uchexnumbers{#1}\eTD
+       \dostepwiserecurse{0}{15}{1}{\bTD\uchexnumber{##1}\eTD}%
+       \bTD dec: \numbers{#1}\endgraf hex: \uchexnumbers{#1}\eTD
+     \eTR
+   \eTABLE
+   \egroup}
+
+\protect \endinput
+
+% alternative
+%
+% \gdef\doshowunicodevectorrowa#1#2#3#4%
+%   {\NC
+%    \ttx\uchexnumber{#2}%
+%    \VL
+%    \dostepwiserecurse{#3}{#4}{1}{\unicodechar{\numexpr#1*256+#2+\recurselevel*16\relax}\VL}%
+%    \AR}
+%
+% \gdef\doshowunicodevectorrowb#1#2#3#4%
+%   {\NC
+%    \relax
+%    \VL
+%    \dostepwiserecurse{#3}{#4}{1}{\unicodechar{\numexpr#1*256+#2+\recurselevel*16\relax}\VL}%
+%    \AR}
+%
+% \gdef\showunicodevector#1%
+%   {\starttable[|c|c|c|c|c|c|c|c|c|]
+%      \NC\NC\dostepwiserecurse{0}{7}{1}{\ttx\uchexnumber\recurselevel/\uchexnumber{\the\numexpr2*\recurselevel\relax}\NC}\AR\DC\DL[8]\DR
+%      \dostepwiserecurse{0}{15}{1}
+%        {\expanded{\doshowunicodevectorrowa{#1}{\recurselevel}{0} {7}}\DC\DL[8]\DR%
+%         \expanded{\doshowunicodevectorrowb{#1}{\recurselevel}{8}{15}}\DC\DL[8]\DR}%
+%      \NC \use{9}{\hfill \ttx unicode table hex:\uchexnumbers{#1} dec:\threedigits{#1}\kern-.25em}\NC \AR
+%    \stoptable}

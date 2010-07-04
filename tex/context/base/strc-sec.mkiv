@@ -1,0 +1,792 @@
+%D \module
+%D   [       file=strc-sec,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Sectioning,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Sectioning}
+
+\unprotect
+
+% compatibility issue:
+%
+% \def\setfullsectionnumber #1{}
+% \def\preparefullnumber    #1{}
+% \def\fullsectionnumber    {1--1--1}
+% \def\makesectionnumber    [#1]{}
+% \def\makesectionformat    {}
+% \def\sectionformat        {1--1-1-1-1-1-1}
+% \def\composedsectionnumber{}
+% \def\@@kolist{}
+
+% \setuphead[section]   [separator=\separatorlist{?,!,*}]
+% \setuphead[subsection][separator=\separatorlist{??,!!,**}]
+%
+% \let\spr\separatorlist % this will enable this feature
+%
+% \setuphead[section]   [separator={?,!,*}]
+% \setuphead[subsection][separator={??,!!,**}]
+%
+% \setupheads[separator={A,B,C,D,E,F}]
+% \chapter{test}
+% \section{test} \subsection{test} \subsection{test}
+% \section{test} \subsection{test} \subsection{test}
+
+% lua interface / names and interface might change
+
+\def\setstructurelevel         #1#2{\ctxlua{structure.sections.setlevel("#1","#2")}}  % name, level|parent
+\def\getstructurelevel           #1{\ctxlua{structure.sections.getcurrentlevel("#1")}}% name
+\def\setstructurenumber        #1#2{\ctxlua{structure.sections.setnumber(#1,"#2")}}   % level, number (+/-)
+\def\getstructurenumber          #1{\ctxlua{structure.sections.getnumber(#1)}}        % level
+\def\getsomestructurenumber    #1#2{\ctxlua{structure.sections.getnumber(#1,"#2")}}   % level, what
+\def\getfullstructurenumber      #1{\ctxlua{structure.sections.fullnumber(#1)}}       % level
+\def\getsomefullstructurenumber#1#2{\ctxlua{structure.sections.fullnumber(#1,"#2")}}
+\def\getspecificstructuretitle   #1{\ctxlua{structure.sections.structuredata(#1,"titledata.title",nil,"\structureheadparameter\s!catcodes")}}%
+
+% interface
+
+\def\structureheadparameter    #1{\csname\dostructureheadparameter{\??nh\currentstructurehead}#1\endcsname}
+\def\structureheadparameterhash#1{\dostructureheadparameterhash   {\??nh\currentstructurehead}#1}
+
+\def\dostructureheadparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dostructureheadparentparameter    \csname#1\s!parent\endcsname#2\fi}
+\def\dostructureheadparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dostructureheadparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+
+\def\dostructureheadparentparameter    #1#2{\ifx#1\relax\s!empty\else\dostructureheadparameter    #1#2\fi}
+\def\dostructureheadparentparameterhash#1#2{\ifx#1\relax        \else\dostructureheadparameterhash#1#2\fi}
+
+\def\structureheadparameterstrict#1{\csname\ifcsname\??nh\currentstructurehead#1\endcsname\??nh\currentstructurehead#1\else\s!empty\fi\endcsname}
+
+\def\dosetstructureheadattributes#1#2% style color
+  {\edef\fontattributehash {\structureheadparameterhash#1}%
+   \edef\colorattributehash{\structureheadparameterhash#2}%
+   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+% so far
+
+\newcount\maxstructuredepth
+
+\let\laststructuresectionname\empty
+
+\unexpanded\def\definestructuresection[#1]%
+  {\doifundefined{\??nh#1}
+     {\global\advance\maxstructuredepth\plusone
+      \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
+      \setstructurelevel{#1}{\the\maxstructuredepth}%
+%     \letvalue{\??nh#1\c!marking}\empty % ?
+     %\writestatus{structure}{#1\ifx\laststructuresectionname\empty\else\space->\space\laststructuresectionname\fi}%
+      \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\laststructuresectionname]}%
+      % this is a rather practical default that we don't want to be part of the parent chain
+      % lookup mechanism; it's also mkii compativle; this might become \everystructureheaddefine
+      \getparameters[\??nh#1]
+        [  \c!textstyle=\structureheadparameterstrict\c!style,
+           \c!textcolor=\structureheadparameterstrict\c!color,
+         \c!numberstyle=\structureheadparameterstrict\c!style,
+         \c!numbercolor=\structureheadparameterstrict\c!color]%
+      % so far for these default inheritances
+      \definemarking[#1]%
+      \ifnum\maxstructuredepth>\plusone
+%       \normalexpanded{\noexpand\couplemarking[#1][\laststructuresectionname]}% so, the child inherits settings from the parent
+        \normalexpanded{\noexpand\relatemarking[#1][\laststructuresectionname]}% so, the parent will reset the child
+      \fi
+      \xdef\laststructuresectionname{#1}}}
+
+\unexpanded\def\setupstructuresection
+  {\dotripleempty\dosetupstructuresection}
+
+\def\dosetupstructuresection[#1]%
+  {\doifdefinedelse{\??nh#1}
+     {\dodosetupstructuresection[#1]}
+     {\dodosetupstructuresection[\structuresectionheadsection{#1}]}}
+
+\def\dodosetupstructuresection[#1][#2][#3]%
+  {\ifthirdargument
+     \getparameters[\??nh#1#2][#3]% ? probably sectionblock
+   \else
+     \getparameters[\??nh#1][#2]%
+   \fi}
+
+\def\structuresectionlevel#1%
+  {\executeifdefined{\??nh#1\c!level}{-1}}
+
+\setvalue{\??nh block\c!level}{0} % -1 == manual
+
+% head -> structurehead
+
+\let\currentstructurehead\empty
+\newtoks\everystructureheadsetup
+
+\unexpanded\def\setupstructureheads{\dosingleargument\dosetupstructureheads}
+\unexpanded\def\setupstructurehead {\dodoubleempty\dosetupstructurehead}
+\unexpanded\def\definestructurehead{\dodoubleempty\dodefinestructurehead}
+
+\newif\ifsectionnumber % maybe conditional
+
+\def\dosetupstructureheads[#1]%
+  {\getparameters[\??nh][#1]%
+   \doifelse{\structureheadparameter\c!sectionnumber}\v!yes\sectionnumbertrue\sectionnumberfalse}
+
+\def\dosetupstructurehead[#1][#2]% we move the test for command being nothing elsewhere (needed, else hard to trace)
+  {\processcommalist[#1]{\dodosetupstructurehead{#2}}}
+
+\def\dodosetupstructurehead#1#2%
+  {\edef\currentstructurehead{#2}%
+   \getparameters[\??nh#2][#1]%
+   \the\everystructureheadsetup}
+
+\def\dodefinestructurehead[#1][#2]%
+  {\processcommalist[#1]{\dododefinestructurehead{#2}}}
+
+\def\dododefinestructurehead#1#2% #1: parameters|parent, #2: self
+  {\doifsomethingelse{#2}
+     {\doifassignmentelse{#1}
+        \dodefineuniquestructurehead
+        {\doifdefinedelse{\??nh#1\s!parent} % just a check
+           \dodefineclonedstructurehead
+           \dodefineerrorstructurehead}}
+     \dodefineerrorstructurehead
+   {#2}{#1}}
+
+\def\dodefineerrorstructurehead#1#2%
+  {\setvalue{#1}{\par error: #1 is undefined\par}}
+
+% deeptextcommand and deepnumbercommand are left undefined !
+
+\def\dodefineuniquestructurehead#1#2% class, parent
+  {\def\currentstructurehead{#1}%
+   \presetlabeltext[#1=]%
+   \getparameters[\??nh#1][\c!label=#1,#2]%
+   \edef\currentstructureheaddefault{\structureheadparameter\c!default}%
+   \edef\currentstructureheadsection{\structureheadparameter\c!section}%
+   \edef\currentstructureheadparent
+     {\??nh
+      \ifx\currentstructurehead\currentstructureheaddefault
+        \currentstructureheadsection
+      \else\ifx\currentstructureheaddefault\empty
+        \currentstructureheadsection
+      \else
+        \currentstructureheaddefault
+      \fi\fi}%
+   \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\currentstructureheadparent]}% \setevalue{\??nh#1\s!parent}{\currentstructureheadparent}%
+   \ifx\currentstructureheadsection\empty
+     %\writestatus{structure}{#1->\currentstructureheadparent}%
+   \else
+     %\writestatus{structure}{#1->\currentstructureheadparent\space(\currentstructureheadsection)}%
+     % todo: filtercommand
+     \definemarking[#1][\currentstructureheadsection]%
+     \definemarking[#1\v!number][#1]%
+     \setupmarking[#1][\c!filtercommand=\sectionheadmarkingtitle{#1}]%
+     \setupmarking[#1\c!number][\c!filtercommand=\sectionheadmarkingnumber{#1}]%
+   \fi
+   \doifundefined{\??li#1}{\definelist[#1][\c!prefix=\v!no]}% definestructurelist ?
+   \the\everystructureheadsetup}
+
+\def\sectionheadmarkingtitle #1#2{\ctxlua{structure.marks.title("#1","#2")}}
+\def\sectionheadmarkingnumber#1#2{\ctxlua{structure.marks.number("#1","#2")}}
+
+\def\dodefineclonedstructurehead#1#2% class parent
+  {\def\currentstructurehead{#1}%
+   \presetlabeltext[#1=]%
+   \doifelse{#1}{#2}
+     {\getparameters[\??nh#1][\c!label=#1]%
+      \doifundefined{\??li#1}{\definelist[#1][\c!prefix=\v!no]}}%  definestructurelist ?
+     {\getparameters[\??nh#1][\s!parent=\??nh#2,\c!label=#1,\c!coupling=#2]%
+      \definemarking[#1][#2]%
+      \definemarking[#1\v!number][#2\c!number]%
+      \doifundefined{\??li#1}{\definelist[#1][#2][\c!prefix=\v!no]}}% definestructurelist ?
+   \the\everystructureheadsetup}
+
+\appendtoks
+%    \setstructurelevel\currentstructurehead{\structuresectionheadsection{\structuresectionheadcoupling\currentstructurehead}}%
+   \setstructurelevel\currentstructurehead{\thenamedstructureheadlevel\currentstructurehead}%
+   \doifelse{\structureheadparameter\c!ownnumber}\v!yes
+     {\setevalue\currentstructurehead{\noexpand\dohandlestructureheadown[\currentstructurehead]}}
+     {\setevalue\currentstructurehead{\noexpand\dohandlestructureheadnop[\currentstructurehead]}}%
+   \setevalue{\e!next \currentstructurehead}{\noexpand\donextstructurehead [\currentstructurehead]}%
+   \setevalue{\e!start\currentstructurehead}{\noexpand\dostartstructurehead[\currentstructurehead]}%
+   \setevalue{\e!stop \currentstructurehead}{\noexpand\dostopstructurehead [\currentstructurehead]}%
+\to \everystructureheadsetup
+
+% todo, check if section is defined
+
+\def\structuresectionheadcoupling#1%
+  {\ifcsname\??nh#1\c!coupling\endcsname
+     \expandafter\structuresectionheadcoupling\csname\??nh#1\c!coupling\endcsname\else#1%
+   \fi}
+
+\def\structuresectionheadsection#1%
+  {\ifcsname\??nh#1\c!section\endcsname
+     \expandafter\structuresectionheadcoupling\csname\??nh#1\c!section\endcsname\else#1%
+   \fi}
+
+% head construction
+
+\def\dohandlestructureheadown{\dodoubleempty\dodohandlestructureheadown} % [ref] {nr} {title}
+\def\dohandlestructureheadnop{\dodoubleempty\dodohandlestructureheadnop} % [ref] {title}
+\def\dostartstructurehead    {\dotripleempty\dodostartstructurehead}     % [settings] [userdata]
+
+\newconditional\currentstructureown
+
+\def\dodohandlestructureheadown[#1][#2]#3#4%
+  {\settrue\currentstructureown
+   \dohandlestructurehead{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
+
+\def\dodohandlestructureheadnop[#1][#2]#3%
+  {\setfalse\currentstructureown
+   \dohandlestructurehead{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
+
+\newtoks\everybeforestructurehead % hook, todo: before/after keys
+\newtoks\everyafterstructurehead  % hook, todo: before/after keys
+
+\def\dodostartstructurehead[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
+  {\setfalse\currentstructureown
+  %\globalpushmacro\currentstructurehead
+   \xdef\currentstructurehead{#1}%
+   \the\everybeforestructurehead
+   \dohandlestructurehead{#1}{#2}{#3}} % name -- -- -- userdata
+
+\def\dostopstructurehead[#1]%
+  {%\globalpopmacro\currentstructurehead
+   \xdef\currentstructurehead{#1}% recover
+   \the\everyafterstructurehead}
+
+\def\donextstructurehead[#1][#2][#3]%
+  {\setfalse\currentstructureown
+   \xdef\currentstructurehead{#1}%
+   \dohandlestructurehead{#1}{#2}{#3}} % name -- -- -- userdata
+
+% \newconditional\structurereversesectionnumbers  % todo: key/val
+
+\newconditional\structureheadtolist
+\newconditional\structureheaddoincrement
+\newconditional\structureheaddoplace
+\newconditional\structureheadleaveempty
+\newconditional\structureheadhidden
+\newconditional\structureheadshownumber
+\newconditional\structureheadisdisplay
+
+\let\structureheadprefix\empty \def\structureheadprefixplus{+}
+
+% When do we reset the referenceprefix? This needs to be checked. Does it work
+% at all?
+
+\def\setstructureheadreference#1% reference
+  {\edef\structureheadreference{#1}%
+   \edef\structureheadreferenceprefix{\structureheadparameter\c!prefix}%
+   \ifx\structureheadreferenceprefix\empty
+     \setupreferenceprefix[]% yes or no?
+   \else\ifx\structureheadreferenceprefix\structureheadreferenceprefixplus
+     \ifx\structureheadreference\empty
+        \setupreferenceprefix[\structureheadreferenceprefixplus]
+     \else
+        \setupreferenceprefix[#1]% we assume just one reference
+     \fi
+   \else
+     \setupreferenceprefix[\structureheadreferenceprefix]%
+   \fi\fi}
+
+\setvalue{\??nh:\c!incrementnumber:\v!yes  }{\settrue \structureheaddoincrement\settrue \structureheadtolist}
+\setvalue{\??nh:\c!incrementnumber:\v!no   }{\setfalse\structureheaddoincrement\setfalse\structureheadtolist}
+\setvalue{\??nh:\c!incrementnumber:\v!list }{\setfalse\structureheaddoincrement\settrue \structureheadtolist}
+\setvalue{\??nh:\c!incrementnumber:\s!empty}{\settrue \structureheaddoincrement\settrue \structureheadtolist}
+
+\def\setstructureheadincrement
+  {\edef\currentstructureheadincrement{\structureheadparameter\c!incrementnumber}%
+   \ifcsname\??nh:\c!incrementnumber:\currentstructureheadincrement\endcsname
+     \csname\??nh:\c!incrementnumber:\currentstructureheadincrement\endcsname
+   \else
+     \settrue \structureheaddoincrement\settrue \structureheadtolist
+     % \filterstructureheadnumber
+   \fi}
+
+\def\filterstructureheadnumber
+  {\settrue\structureheaddoincrement
+   \settrue\structureheadtolist
+   \ifx\currentproduct\empty
+     % todo : filter from other toc (number, file, title)
+     % use  : \currentstructureheadincrement as spec
+   \fi}
+
+\def\setstructureheadplacement
+  {\settrue\structureheaddoplace
+   \setfalse\structureheadleaveempty
+   \setfalse\structureheadhidden
+   \processaction
+     [\structureheadparameter\c!placehead]
+     [  \v!yes=>,
+      \v!empty=>\settrue\structureheadleaveempty,
+         \v!no=>\settrue\structureheadleaveempty\setfalse\structureheaddoplace,
+     \v!hidden=>\settrue\structureheadhidden\settrue\structureheadleaveempty\setfalse\structureheaddoplace]}
+
+\def\setstructureheaddisplay
+  {\doifelsevalue{\??nh:\structureheadparameter\c!alternative}\v!horizontal
+     {\setfalse\structureheadisdisplay}
+     {\settrue \structureheadisdisplay}}
+
+\def\dosettructureheadnumbercontent
+  {\setsystemmode  \v!sectionnumber
+   \settrue\structureheadshownumber}
+
+\def\doresettructureheadnumbercontent
+  {\resetsystemmode\v!sectionnumber
+   \setfalse\structureheadshownumber}
+
+\def\setstructureheadnumber
+  {\ifsectionnumber
+     \doifelse{\structureblockparameter\c!number}\v!yes % todo
+       {\doifelse{\structureheadparameter\c!number}\v!yes
+         {\settrue\structureheadshownumber}
+         {\setfalse\structureheadshownumber}}
+       {\setfalse\structureheadshownumber}%
+   \else
+     \setfalse\structureheadshownumber
+   \fi}
+
+\unexpanded\def\thestructureheadsynchonization
+  {\pagetype[\currentstructureheadcoupling]% hm also number
+   \normalexpanded{\noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}}%
+   \currentstructuresynchronize}
+
+\unexpanded\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
+
+% \def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
+% \unexpanded\def\fullstructureheadtitle{\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}
+
+\unexpanded\def\fullstructureheadtitle{\ctxlua{structure.sections.title()}}
+
+\let\currentstructurehead        \empty
+\let\currentstructureheadcoupling\empty
+\let\currentstructureheadsection \empty
+\let\currentstructureheadlevel   \!!zerocount
+\let\currentstructureheadcounter \!!zerocount
+
+\def\doregisterstructurehead#1#2#3% name data userdata
+  {\structurecomponent
+     [\c!label={\structureheadparameter\c!label},
+      \c!incrementnumber=\ifconditional\structureheaddoincrement\v!yes\else\v!no\fi, % not that needed
+      \c!saveinlist=\ifconditional\structureheadtolist\v!yes\else\v!no\fi,
+      \c!level=\currentstructureheadlevel,
+      \c!name=#1,
+      \c!number=\ifconditional\structureheaddoincrement\ifconditional\structureheadshownumber\v!yes\else\v!no\fi\else\v!no\fi,
+      \c!bookmark=,
+      \c!marking=,
+      \c!list=,
+      \c!expansion=\structureheadparameter\c!expansion,
+      \c!xmlsetup=\structureheadparameter\c!xmlsetup,
+      \s!catcodes=\structureheadparameter\s!catcodes,
+      \c!sectionresetset=\structureheadparameter\c!sectionresetset,
+      \c!sectionseparatorset=\structureheadparameter\c!sectionseparatorset,
+      \c!sectionconversionset=\structureheadparameter\c!sectionconversionset,
+      \c!sectionconversion=\structureheadparameter\c!conversion, % just for compatibility
+      \c!sectionstarter=\structureheadparameter\c!sectionstarter,
+      \c!sectionstopper=\structureheadparameter\c!sectionstopper,
+      \c!sectionset=\structureheadparameter\c!sectionset,
+      \c!sectionsegments=\structureheadparameter\c!sectionsegments,
+      \c!reference=\structureheadreference,
+      \c!referenceprefix=\structureheadreferenceprefix,
+      \c!command=,
+      #2]%
+     [#3]%
+     \reportcurrentstructure}
+
+\unexpanded\def\placeheadtext  {\dosingleempty\doplaceheadtext  } % use with care
+\unexpanded\def\placeheadnumber{\dosingleempty\doplaceheadnumber} % use with care
+
+\ifdefined\setupheadcomponentfont \else
+
+    \unexpanded\def\setupheadcomponentfont#1#2%
+      {\dosetstructureheadattributes\c!style\c!color
+       \dosetstructureheadattributes#1#2%
+       \dontconvertfont
+       \setupinterlinespace}
+
+\fi
+
+\def\doplaceheadtext[#1]%
+  {\dontleavehmode
+   \begingroup
+   \edef\currentstructurehead{#1}%
+   \setupheadcomponentfont\c!textstyle\c!textcolor
+   \relax
+   \getspecificstructuretitle{\thenamedstructureheadlevel{#1}}%
+   \endgraf
+   \endgroup}
+
+\def\doplaceheadnumber[#1]%
+  {\dontleavehmode
+   \begingroup
+   \edef\currentstructurehead{#1}%
+   \setupheadcomponentfont\c!numberstyle\c!numbercolor
+   \relax
+   \getfullstructurenumber{\thenamedstructureheadlevel{#1}}%
+   \endgraf
+   \endgroup}
+
+\ifdefined \else \let\presetnumberheadalternative\relax \fi
+
+\def\dohandlestructurehead#1#2#3% name data userdata
+  {\xdef\currentstructurehead        {#1}%
+   \xdef\currentstructureheadcoupling{\structuresectionheadcoupling\currentstructurehead}%
+   \xdef\currentstructureheadsection {\structuresectionheadsection \currentstructureheadcoupling}%
+   \xdef\currentstructureheadlevel   {\structuresectionlevel       \currentstructureheadsection}%
+   %writestatus\m!systems{setup: \currentstructurehead,\currentstructureheadcoupling,\currentstructureheadsection,\currentstructureheadlevel}%
+   %
+   \setstructureheadreference{#3}% will change
+   \setstructureheadincrement
+   \setstructureheadplacement
+   \setstructureheaddisplay
+   \setstructureheadnumber
+   %
+   \unexpanded\def\\{\space}%
+   \flushingcolumnfloatsfalse
+   %
+   % todo: also mark (for header)
+   %
+   % we might remove the lower level
+   %
+   % not here, after optional \page: \doregisterstructurehead{#1}{#2}{#3}%
+   %
+%    \xdef\currentstructureheadcounter{\currentstructurecounter}% lua call
+   %
+   % \currentstructuresynchronize % will move
+   %
+   \edef\numberheaddistance   {\structureheadparameter\c!distance   }% compatibility
+   \edef\numberheadalternative{\structureheadparameter\c!alternative}% compatibility
+   \presetnumberheadalternative
+   %
+   \let\getstructureheadnumber\empty
+   \let\getstructureheadtitle \empty
+   \let\getstructureheadsyncs \empty
+   \ifconditional\structureheaddoincrement
+     \ifconditional\structureheaddoplace
+       \dostructureheadspacingbeforeyes
+       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \let\getstructureheadsyncs\thestructureheadsynchonization
+       \let\getstructureheadtitle\fullstructureheadtitle
+       \ifconditional\structureheadshownumber
+         \let\getstructureheadnumber\fullstructureheadnumber
+         \placestructureheadnumbertext
+       \else
+         \placestructureheadtext
+       \fi
+       \dostructureheadspacingafteryes
+     \else\ifconditional\structureheadhidden
+       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \let\getstructureheadsyncs\thestructureheadsynchonization
+       \placestructureheadhidden % only something when tracing
+     \else
+       \dostructureheadspacingbeforenop % toegevoegd ivm subpaginanr / tug sheets
+       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \let\getstructureheadsyncs\thestructureheadsynchonization
+       \placestructureheadempty % just flush 'm
+       \dostructureheadspacingafternop
+     \fi\fi
+   \else
+     \ifconditional\structureheaddoplace
+       \dostructureheadspacingbeforeyes
+       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \let\getstructureheadsyncs\thestructureheadsynchonization
+       \let\getstructureheadtitle\fullstructureheadtitle
+       \placestructureheadtext
+       \dostructureheadspacingafteryes
+     \else\ifconditional\structureheadhidden
+       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \let\getstructureheadsyncs\thestructureheadsynchonization
+       \placestructureheadhidden % only something when tracing
+     \else
+       % do nothing / should be vbox to 0pt
+       \dostructureheadspacingbeforenop
+       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \let\getstructureheadsyncs\thestructureheadsynchonization
+       \placestructureheadempty % just flush 'm
+       \dostructureheadspacingafternop
+     \fi\fi
+   \fi
+   \flushingcolumnfloatstrue
+   \setfalse\ignorehandlepagebreak
+   % ignorespaces prevents spaces creeping in when after=\dontleavehmode
+   \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     \ignorespaces
+   \else
+     \expandafter\GotoPar
+   \fi}
+
+% typesetting
+
+\unexpanded\def\placestructureheadnumbertext % dummy, will be overloaded
+  {\getstructureheadnumber/\getstructureheadtitle
+   \getstructureheadsyncs}
+
+\unexpanded\def\placestructureheadtext % dummy, will be overloaded
+  {\getstructureheadtitle
+   \getstructureheadsyncs}
+
+\unexpanded\def\placestructureheadempty % dummy, will be overloaded
+  {\getstructureheadsyncs}
+
+\unexpanded\def\placestructureheadhidden
+  {\setxvalue{\currentstructurehead:sync}%
+     {\noexpand\pagetype[\currentstructureheadcoupling]% hm also number
+      \noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}%
+      \currentstructuresynchronize}}
+
+\def\synchronizestructurehead#1%
+  {\getvalue{#1:sync}}
+
+\unexpanded\def\placerawheaddata  [#1]{\synchronizestructurehead {#1}}
+\unexpanded\def\placerawheadtext  [#1]{\getspecificstructuretitle{\thenamedstructureheadlevel{#1}}}
+\unexpanded\def\placerawheadnumber[#1]{\getfullstructurenumber   {\thenamedstructureheadlevel{#1}}}
+
+% \setuphead[chapter][placehead=hidden]
+% \chapter {test}
+%
+% %(\synchronizestructurehead{chapter}) % \getstructureheadsyncs
+% %(\getfullstructurenumber{\thenamedstructureheadlevel{chapter}})
+% %(\getspecificstructuretitle{\thenamedstructureheadlevel{chapter}})
+%
+% (\placerawheaddata  [chapter])
+% (\placerawheadnumber[chapter])
+% (\placerawheadtext  [chapter])
+
+% pagebreaks
+
+\newcount\precedingstructurelevel \precedingstructurelevel\plusone
+\newconditional\ignorehandlepagebreak
+
+\def\dostructureheadspacingbeforeyes
+  {\docheckstructureheadbefore
+   \dohandlestructureheadpagebreak
+   \structureheadparameter\c!inbetween}
+
+\def\dostructureheadspacingbeforenop
+  {\docheckstructureheadbefore
+   \docheckstructureheadlayout
+   \structureheadparameter\c!inbetween}
+
+% \def\emptystructureheadcorrection
+%   {\ifconditional\structureheadleaveempty % inlined \emptyheadcorrection (with after=\blank)
+%      \vskip-\lineheight
+%      \dosomebreak\nobreak % \penalty10000 in vspacing
+%      \kern\zeropoint
+%      \prevdepth\strutdepth
+%    \fi}
+
+\def\emptystructureheadcorrection
+  {\ifconditional\structureheadleaveempty % inlined \emptyheadcorrection (with after=\blank)
+     \penalty10000 % first ... we need to adapt this all to vspacing
+     \vskip-\lineheight
+     \kern\zeropoint
+     \prevdepth\strutdepth
+   \fi}
+
+\def\dostructureheadspacingafteryes
+  {\ifconditional\structureheadisdisplay
+     \dosomebreak\nobreak % needs to be adapted to vspacing
+     \emptystructureheadcorrection
+     \structureheadparameter\c!after
+   \fi}
+
+\def\dostructureheadspacingafternop
+  {}
+
+\newsignal\continuousstructureheadsignal
+
+\def\docheckstructureheadbefore#1%
+  {\ifhmode
+     \scratchcounter\lastpenalty\unpenalty % no beauty in this
+     \ifdim\lastskip=\continuousstructureheadsignal
+       % no page break
+       \ifconditional\ignorehandlepagebreak
+         \setfalse\ignorehandlepagebreak
+       \else
+         \global\precedingstructurelevel\currentstructureheadlevel
+         \nobreak
+       \fi
+       \global\settrue\continuoussectionhead
+     \else
+       \penalty\scratchcounter
+       \global\setfalse\continuoussectionhead
+       #1%
+     \fi
+   \else
+     \global\setfalse\continuoussectionhead
+     #1%
+   \fi}
+
+\def\dodocheckstructureheadlayout#1#2%
+  {\doifelselayouttextline{#1}
+     {\doifsomething{\structureheadparameter#2}{\expanded{\setuplayouttext[#1][\c!state=\structureheadparameter#2]}}}
+     \donothing}
+
+\def\docheckstructureheadlayout
+  {\doifsomething{\structureheadparameter\c!page}
+     {\page[\structureheadparameter\c!page]%
+      \dodocheckstructureheadlayout\v!header\c!header
+      \dodocheckstructureheadlayout\v!text  \c!text
+      \dodocheckstructureheadlayout\v!footer\c!footer}}
+
+\def\currentstructurecounter {\ctxlua{structure.sections.depthnumber(\thenamedstructureheadlevel\currentstructurehead)}}
+\def\previousstructurecounter{\ctxlua{structure.sections.depthnumber(\thenamedstructureheadlevel\currentstructurehead-1)}}
+
+\def\dohandlestructureheadpagebreak
+  {%[[\currentstructurehead @\thenamedstructureheadlevel\currentstructurehead/prev:\previousstructurecounter/curr:\currentstructurecounter]]
+   \ifconditional\ignorehandlepagebreak
+     \setfalse\ignorehandlepagebreak
+   \else
+     \ifnum\lastpenalty>\zerocount
+%        \global\pagebreakdisabledtrue
+     \fi
+     % beware, these numbers are not yet know here
+     \doifelse{\structureheadparameter\c!continue}\v!yes
+       {\ifnum\previousstructurecounter=\zerocount
+          \docheckstructureheadlayout
+        \else\ifnum\currentstructurecounter>\zerocount
+          \docheckstructureheadlayout
+        \fi\fi}%
+       {\docheckstructureheadlayout}%
+     \doifnot{\structureheadparameter\c!aligntitle}\v!float\flushsidefloats
+     \structureheadparameter\c!before
+     \relax
+%      \ifpagebreakdisabled
+%        \global\pagebreakdisabledfalse
+%      \else
+       \dopreventbreakafterstructureheadauto
+%      \fi
+     \doif{\structureheadparameter\c!aligntitle}\v!float\indent
+     \global\precedingstructurelevel\currentstructureheadlevel
+   \fi}
+
+% the next one was: \somebreakmethod
+
+% \chardef\somestructureheadbreakmethod\plusone  % 0=nothing, 1=weighted, 2=strict, 3=vspacing
+\chardef\somestructureheadbreakmethod\plusthree
+
+% \def\dopreventbreakafterstructureheadauto % used after \c!before
+%   {\ifcase\somestructureheadbreakmethod
+%      % 0 = nothing
+%    \or
+%      % 1 = old weighted version
+%      \ifnum\currentstructureheadlevel>\precedingstructurelevel
+%        \dosomebreak{\penalty\numexpr20000+500*\currentstructureheadlevel\relax}%
+%      \else
+%        \dosomebreak\allowbreak % brr
+%      \fi
+%    \or
+%       % 2 = strict version
+%      \dosomebreak{\penalty\maxdimen}%
+%    \or
+%       % 3 = vspacing
+%       \vspacing[\v!samepage]% if preceded by ! then a loop
+%    \else
+%       % nothing
+%    \fi}
+%
+% \def\dopreventbreakafterstructureheadspec#1% see enumerations etc
+%   {\ifcase\somestructureheadbreakmethod
+%      % 0 = nothing
+%    \or
+%      % 1 = old weighted version
+%      \dosomebreak{\penalty\numexpr20000+500*(\currentstructureheadlevel+#1)\relax}%
+%    \or
+%      % 2 = strict version
+%      \dosomebreak{\penalty\maxdimen}%
+%    \or
+%       % 3 = vspacing
+%       \vspacing[\v!samepage]%
+%    \else
+%      % nothing
+%    \fi}
+%
+% todo: \vspacing[category:8] == keep_together
+
+\def\dopreventbreakafterstructureheadauto % used after \c!before
+  {\ifcase\somestructureheadbreakmethod
+     % 0 = nothing
+   \else
+      \vspacing[\v!samepage-\currentstructureheadlevel]%
+   \fi}
+
+\def\dopreventbreakafterstructureheadspec#1% see enumerations etc
+  {\ifcase\somestructureheadbreakmethod
+     % 0 = nothing
+   \else
+      \vspacing[\v!samepage-\the\numexpr\currentstructureheadlevel+1\relax]% todo #1
+   \fi}
+
+\def\dohandlepagebreakX{\dopreventbreakafterstructureheadspec} % no \let so we can redefind
+
+% we do support negative numbers but it can have side effects that we won't
+% catch
+%
+% \chapter{some} \setupheadnumber[chapter][3] \chapter{more}
+% \setupheadnumber[section][8] \section{b} \section{c} \setupheadnumber[section][-1] \section{d}
+
+% \def\thecurrentstructureheadlevel#1%
+%   {\getcurrentstructurelevel{#1}}
+
+\def\thenamedstructureheadlevel#1%
+  {\structuresectionlevel{\structuresectionheadsection{\structuresectionheadcoupling{#1}}}}
+
+\unexpanded\def\setupheadnumber
+  {\dodoubleargument\dosetupheadnumber}
+
+\def\dosetupheadnumber[#1][#2]% todo: reset if at other level
+  {\setstructurenumber{\thenamedstructureheadlevel{#1}}{#2}}
+
+\def\currentstructureheadnumber{0} % ==> \currentheadnumber
+
+\unexpanded\def\determineheadnumber[#1]%
+  {\xdef\currentstructureheadnumber{\getstructurenumber{\thenamedstructureheadlevel{#1}}}}
+
+% The previous macro is been replaced by the expandable:
+
+\def\namedheadnumber      #1{\getstructurenumber    {\thenamedstructureheadlevel{#1}}}
+\def\somenamedheadnumber#1#2{\getsomestructurenumber{\thenamedstructureheadlevel{#1}}{#2}}
+
+\unexpanded\def\structureheadnumber
+  {\dodoubleempty\dostructureheadnumber}
+
+\def\dostructureheadnumber[#1][#2]% simple case is just a number
+  {\getsomefullstructurenumber{\iffirstargument\thenamedstructureheadlevel{#1}\fi}{#2}}
+
+\def\somestructureheadnumber
+  {\dodoubleempty\dosomestructureheadnumber}
+
+\def\dosomestructureheadnumber[#1][#2]%
+  {\dontleavehmode
+   \begingroup
+   \edef\currentstructurehead{#1}%
+   \getsomefullstructurenumber{\thenamedstructureheadlevel{#1}}{#2}%
+   \endgroup}
+
+% compatibility code (after all, we might offer different structure handlers as well
+% but we might as well remove the 'structure' substring at some point (we needed it
+% in order to test the old and new methods alongside)
+
+\let\definesectionblock \definestructureblock
+\let\definesection      \definestructuresection
+\let\setupsection       \setupstructuresection
+\let\setupheads         \setupstructureheads
+\let\definehead         \definestructurehead
+\let\setuphead          \setupstructurehead
+\let\headnumber         \structureheadnumber
+\let\setupsectionblock  \setupstructureblock
+
+\let\sectioncountervalue\structurevalue
+
+\def\currentheadnumber  {\currentstructureheadnumber}
+\def\currentheadtext    {obsolete, use marks}
+
+% list references, will be redone in lua when we need it
+
+\let\startlistreferences\relax
+\let\stoplistreferences \relax
+
+\protect \endinput

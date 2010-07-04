@@ -1,0 +1,145 @@
+%D \module
+%D   [      file=x-dir-01,
+%D        version=2003.05.10, % around that time -)
+%D          title=\CONTEXT\ Directory Handling,
+%D       subtitle=Overview (1),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   backspace=12pt,
+   topspace=12pt,
+   bottomspace=32pt,
+   header=0pt,
+   footer=0pt,
+   bottomdistance=9pt,
+   bottom=18pt]
+
+\setupinteractionmenu
+  [bottom]
+  [state=start,
+   frame=off,
+   rightoffset=-3pt,
+   background=color,
+   backgroundcolor=TextColor,
+   middle=\hskip4pt,
+   left=\hfill]
+
+\startinteractionmenu[bottom]
+  \but [PreviousJump] Previous Jump \\
+  \but [previouspage] Previous Page \\
+  \but [nextpage]     Next Page \\
+\stopinteractionmenu
+
+\setupbackgrounds
+  [page]
+  [backgroundoffset=3pt,
+   background=color,
+   backgroundcolor=PageColor]
+
+\setupbackgrounds
+  [text]
+  [background=color,
+   backgroundcolor=TextColor]
+
+\definecolor [PageColor] [r=.6,g=.7,b=.8]
+\definecolor [TextColor] [r=.7,g=.8,b=.9]
+\definecolor [DoneColor] [s=.5]
+
+\startmode[colorscheme-red]
+
+  \definecolor [PageColor] [r=.9,g=.7,b=.6]
+  \definecolor [TextColor] [r=.9,g=.8,b=.7]
+
+\stopmode
+
+\startmode[colorscheme-green]
+
+  \definecolor [PageColor] [r=.6,g=.8,b=.7]
+  \definecolor [TextColor] [r=.7,g=.9,b=.8]
+
+\stopmode
+
+\setupcolors
+  [state=start]
+
+\setupinteraction
+  [state=start,
+   menu=on,
+   color=,
+   display=new,
+   contrastcolor=DoneColor,
+   style=]
+
+\definehead
+  [directory]
+  [subject]
+
+\setuphead
+  [directory]
+  [style=\tfc]
+
+\setupbodyfont
+  [tt]
+
+\defineXMLenvironment [files] [url=]
+  {\doifelsenothing{\XMLop{url}}
+     {\xdef\XMLDIRurl{}}
+     {\xdef\XMLDIRurl{\XMLop{url}/}}
+   \startXMLignore}
+  {\stopXMLignore}
+
+\newcounter\NOfEntries
+
+\startsetups[xmldir:file]
+
+  \doglobal\increment\NOfEntries
+
+  \goto {\hbox to \hsize \bgroup
+
+    \XMLflush{base}
+    \hss
+    \hbox to  2em{\XMLflush{type}\hss}
+    \quad
+    \quad
+    \hbox to  5em{\hss\XMLflush{size}}
+    \quad
+    \quad
+   \XMLflush{date}
+
+  \egroup} [url(\XMLDIRurl\XMLop{name})]% [program(\XMLDIRurl\XMLop{name})]
+
+\stopsetups
+
+\defineXMLenvironment [directory] [name=]
+  {\directory{Path \XMLop{name}}}
+  {}
+
+\defineXMLenvironment [file] [name=]
+  {\bgroup}
+  {\setups[xmldir:file]
+   \endgraf
+   \egroup}
+
+\defineXMLsave[base]
+\defineXMLsave[type]
+\defineXMLsave[size]
+\defineXMLsave[date]
+
+\starttext
+
+  \processXMLfilegrouped{\inputfilename}
+
+  \ifnum\NOfEntries=0 There are no files found that match the pattern. \fi
+
+\stoptext

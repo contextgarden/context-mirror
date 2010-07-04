@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+    filename : context-fonttest.lmx
+    comment  : companion to mtx-server-ctx-fonttest.tex
+    author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+    copyright: PRAGMA ADE / ConTeXt Development Team
+    license  : see context related readme files
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <script type='text/javascript'>
+            <!--
+                window.focus() ;
+                <?lua pv('javascripts')?> ;
+                <?lua pv('javascriptdata')?> ;
+            -->
+        </script>
+        <title><?lua pv('title')?></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style type="text/css">
+            <?lmx-include context.css ?>
+        </style>
+    </head>
+    <body onLoad="<?lua pv('javascriptinit')?>">
+        <form action="<?lua pv('formaction')?>" name="main-form">
+            <div id="top"><div id="top-one"><div id="top-two">
+                <?lua pv('title')?>
+            </div></div></div>
+            <div id="left"><div id="left-one"><div id="left-two">
+                <?lua pv('status')?>
+            </div></div></div>
+            <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five">
+                <!-- empty -->
+            </div></div></div></div></div></div></div>
+            <div id="main"><div id="main-settings">
+                <?lua pv('maintext')?>
+            </div></div>
+            <div id="bottom"><div id="bottom-one"><div id="bottom-two">
+                <?lua pv('menu')?>
+            </div></div></div>
+        </form>
+    </body>
+</html>

@@ -1,0 +1,64 @@
+%D \module
+%D   [       file=symb-eur,
+%D        version=2000.06.22,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Adobe Euro Symbols,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\loadmapfile [original-adobe-euro.map]
+
+\definefontsynonym [EuroSerif]            [eurose]
+\definefontsynonym [EuroSerifBold]        [euroseb]
+\definefontsynonym [EuroSerifItalic]      [eurosei]
+\definefontsynonym [EuroSerifSlanted]     [eurosei]
+\definefontsynonym [EuroSerifBoldItalic]  [eurosebi]
+\definefontsynonym [EuroSerifBoldSlanted] [eurosebi]
+
+\definefontsynonym [EuroSans]             [eurosa]
+\definefontsynonym [EuroSansBold]         [eurosab]
+\definefontsynonym [EuroSansItalic]       [eurosai]
+\definefontsynonym [EuroSansSlanted]      [eurosai]
+\definefontsynonym [EuroSansBoldItalic]   [eurosabi]
+\definefontsynonym [EuroSansBoldSlanted]  [eurosabi]
+
+\definefontsynonym [EuroMono]             [euromo]
+\definefontsynonym [EuroMonoBold]         [euromob]
+\definefontsynonym [EuroMonoSlanted]      [euromoi]
+\definefontsynonym [EuroMonoItalic]       [euromoi]
+\definefontsynonym [EuroMonoBoldItalic]   [euromobi]
+\definefontsynonym [EuroMonoBoldSlanted]  [euromobi]
+
+\definesymbol [euro] [\getglyph{Euro}{\char160}]
+
+\startencoding[default]
+  \definecharacter texteuro {\symbol[euro]}
+\stopencoding
+
+\unexpanded\def\euro{\doiftextelse\texteuro\texteuro{\symbol[euro]}}
+
+% ok for one font series, but not for mixed sets
+%
+% \unexpanded\def\euro
+%   {\doiftextelse \texteuro \texteuro
+%      {\unexpanded\def\euro{\symbol[euro]}\euro}
+
+%D The next table shows the complete set of symbols:
+%D
+%D \starttabulate[|l|c|c|c|c|c|c|]
+%D \NC           \NC \tex{tf}    \NC \tex{bf}    \NC \tex{sl}
+%D               \NC \tex{it}    \NC \tex{bs}    \NC \tex{bi}    \NC\NR
+%D \NC \rm Serif \NC \rm\tf\euro \NC \rm\bf\euro \NC \rm\sl\euro
+%D               \NC \rm\it\euro \NC \rm\bs\euro \NC \rm\bi\euro \NC\NR
+%D \NC \ss Sans  \NC \ss\tf\euro \NC \ss\bf\euro \NC \ss\sl\euro
+%D               \NC \ss\it\euro \NC \ss\bs\euro \NC \ss\bi\euro \NC\NR
+%D \NC \tt Mono  \NC \tt\tf\euro \NC \tt\bf\euro \NC \tt\sl\euro
+%D               \NC \tt\it\euro \NC \tt\bs\euro \NC \tt\bi\euro \NC\NR
+%D \stoptabulate
+
+\endinput

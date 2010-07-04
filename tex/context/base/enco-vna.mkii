@@ -1,0 +1,145 @@
+%D \module
+%D   [     file=enco-vna,
+%D      version=1999.12.12,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Vietnamese Accents,
+%D       author=Han The Thanh & Adam Lindsay & Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is originally derived from the some files Han The Thanh
+%D prepared for \LATEX. The dual accent support is still preliminary,
+%D but works ok. It's now adapted to named glyphs, and is activated by
+%D \type {\useencoding[thisfile]}.
+
+%D This was apparently buggy from the start: there is nothing to
+%D disambiguate \type {\ohorn} from \type {\ohook}. Both are entered
+%D with \type {\h{o}} (AL)!
+
+%D Once stable, this code will move to \type {enco-acc.tex}.
+
+\startencoding[default]
+
+\defineaccent h  A       {\Ahook}
+\defineaccent d  A       {\Adotbelow}
+\defineaccent ` ^A       {\Acircumflexgrave}
+\defineaccent ' ^A       {\Acircumflexacute}
+\defineaccent ~ ^A       {\Acircumflextilde}
+\defineaccent h ^A       {\Acircumflexhook}
+\defineaccent d ^A       {\Acircumflexdotbelow}
+\defineaccent ` uA       {\Abrevegrave}
+\defineaccent ' uA       {\Abreveacute}
+\defineaccent ~ uA       {\Abrevetilde}
+\defineaccent h uA       {\Abrevehook}
+\defineaccent d uA       {\Abrevedotbelow}
+\defineaccent h  E       {\Ehook}
+\defineaccent d  E       {\Edotbelow}
+\defineaccent ` ^E       {\Ecircumflexgrave}
+\defineaccent ' ^E       {\Ecircumflexacute}
+\defineaccent ~ ^E       {\Ecircumflextilde}
+\defineaccent h ^E       {\Ecircumflexhook}
+\defineaccent d ^E       {\Ecircumflexdotbelow}
+\defineaccent h  I       {\Ihook}
+\defineaccent d  I       {\Idotbelow}
+\defineaccent h  O       {\Ohook}
+\defineaccent d  O       {\Odotbelow}
+\defineaccent ` ^O       {\Ocircumflexgrave}
+\defineaccent ' ^O       {\Ocircumflexacute}
+\defineaccent ~ ^O       {\Ocircumflextilde}
+\defineaccent h ^O       {\Ocircumflexhook}
+\defineaccent d ^O       {\Ocircumflexdotbelow}
+%defineaccent h  O       {\Ohorn}                % !!! conflict with \Ohook!
+\defineaccent ` hO       {\Ohorngrave}
+\defineaccent ` {\Ohorn} {\Ohorngrave}
+\defineaccent ' hO       {\Ohornacute}
+\defineaccent ' {\Ohorn} {\Ohornacute}
+\defineaccent ~ hO       {\Ohorntilde}
+\defineaccent ~ {\Ohorn} {\Ohorntilde}
+\defineaccent h hO       {\Ohornhook}
+\defineaccent h {\Ohorn} {\Ohornhook}
+\defineaccent d hO       {\Ohorndotbelow}
+\defineaccent d {\Ohorn} {\Ohorndotbelow}
+\defineaccent h  U       {\Uhook}
+\defineaccent d  U       {\Udotbelow}
+%defineaccent h  U       {\Uhorn}                % !!! conflict with \Uhook! honestly, people!
+\defineaccent ` hU       {\Uhorngrave}
+\defineaccent ` {\Uhorn} {\Uhorngrave}
+\defineaccent ' hU       {\Uhornacute}
+\defineaccent ' {\Uhorn} {\Uhornacute}
+\defineaccent ~ hU       {\Uhorntilde}
+\defineaccent ~ {\Uhorn} {\Uhorntilde}
+\defineaccent h hU       {\Uhornhook}
+\defineaccent h {\Uhorn} {\Uhornhook}
+\defineaccent d hU       {\Uhorndotbelow}
+\defineaccent d {\Uhorn} {\Uhorndotbelow}
+\defineaccent `  Y       {\Ygrave}
+\defineaccent '  Y       {\Yacute}
+\defineaccent ~  Y       {\Ytilde}
+\defineaccent h  Y       {\Yhook}
+\defineaccent d  Y       {\Ydotbelow}
+\defineaccent h  a       {\ahook}
+\defineaccent d  a       {\adotbelow}
+\defineaccent ` ^a       {\acircumflexgrave}
+\defineaccent ' ^a       {\acircumflexacute}
+\defineaccent ~ ^a       {\acircumflextilde}
+\defineaccent h ^a       {\acircumflexhook}
+\defineaccent d ^a       {\acircumflexdotbelow}
+\defineaccent ` ua       {\abrevegrave}
+\defineaccent ' ua       {\abreveacute}
+\defineaccent ~ ua       {\abrevetilde}
+\defineaccent h ua       {\abrevehook}
+\defineaccent d ua       {\abrevedotbelow}
+\defineaccent h  e       {\ehook}
+\defineaccent d  e       {\edotbelow}
+\defineaccent ` ^e       {\ecircumflexgrave}
+\defineaccent ' ^e       {\ecircumflexacute}
+\defineaccent ~ ^e       {\ecircumflextilde}
+\defineaccent h ^e       {\ecircumflexhook}
+\defineaccent d ^e       {\ecircumflexdotbelow}
+\defineaccent h  i       {\ihook}
+\defineaccent d  i       {\idotbelow}
+\defineaccent h  o       {\ohook}
+\defineaccent d  o       {\odotbelow}
+\defineaccent ^  o       {\ocircumflex}
+\defineaccent ` ^o       {\ocircumflexgrave}
+\defineaccent ' ^o       {\ocircumflexacute}
+\defineaccent ~ ^o       {\ocircumflextilde}
+\defineaccent h ^o       {\ocircumflexhook}
+\defineaccent d ^o       {\ocircumflexdotbelow}
+%defineaccent h  o       {\ohorn}                % !!!
+\defineaccent ` ho       {\ohorngrave}
+\defineaccent ' ho       {\ohornacute}
+\defineaccent ~ ho       {\ohorntilde}
+\defineaccent h ho       {\ohornhook}
+\defineaccent d ho       {\ohorndotbelow}
+\defineaccent ` {\ohorn} {\ohorngrave}
+\defineaccent ' {\ohorn} {\ohornacute}
+\defineaccent ~ {\ohorn} {\ohorntilde}
+\defineaccent h {\ohorn} {\ohornhook}
+\defineaccent d {\ohorn} {\ohorndotbelow}
+\defineaccent h  u       {\uhook}
+\defineaccent d  u       {\udotbelow}
+%defineaccent h  u       {\uhorn}                % !!!
+\defineaccent ` hu       {\uhorngrave}
+\defineaccent ' hu       {\uhornacute}
+\defineaccent ~ hu       {\uhorntilde}
+\defineaccent h hu       {\uhornhook}
+\defineaccent d hu       {\uhorndotbelow}
+\defineaccent ` {\uhorn} {\uhorngrave}
+\defineaccent ' {\uhorn} {\uhornacute}
+\defineaccent ~ {\uhorn} {\uhorntilde}
+\defineaccent h {\uhorn} {\uhornhook}
+\defineaccent d {\uhorn} {\uhorndotbelow}
+\defineaccent `  y       {\ygrave}
+\defineaccent '  y       {\yacute}
+\defineaccent ~  y       {\ytilde}
+\defineaccent h  y       {\yhook}
+\defineaccent d  y       {\ydotbelow}
+
+\stopencoding
+
+\endinput

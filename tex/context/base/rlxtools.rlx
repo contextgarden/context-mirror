@@ -1,0 +1,136 @@
+<?xml version='1.0 standalone='yes'?>
+
+<rl:manipulators>
+
+    <!-- normally the file tag will also have a suffix! -->
+
+    <!-- pstopdf will be made independent of the example framework -->
+
+    <!-- rl:manipulator name='pdf' suffix='svg'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file'/></rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            inkscape
+            --without-gui
+            --print="&gt;<rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.ps"
+            <rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.svg
+        </rl:step>
+        <rl:step>
+            texmfstart pstopdf
+            <rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.ps
+            <rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.pdf
+        </rl:step>
+    </rl:manipulator -->
+
+    <!-- rl:manipulator name='pdf' suffix='svgz'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file'/></rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            inkscape
+            --without-gui
+            --print="&gt;<rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.ps"
+            <rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.svgz
+        </rl:step>
+        <rl:step>
+            texmfstart pstopdf
+            <rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.ps
+            <rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.pdf
+        </rl:step>
+    </rl:manipulator -->
+
+    <rl:manipulator name='pdf' suffix='eps'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.eps</rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            <rl:value name='old'/>
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='svg'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.svg</rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            <rl:value name='old'/>
+            <rl:value name='new'/>
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='svgz'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.svgz</rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            <rl:value name='old'/>
+            <rl:value name='new'/>
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='lowres' suffix='pdf'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file'/></rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file'/></rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert --method=4
+            --inputpath=<rl:value name='path'/>
+            --outputpath=<rl:value name='path'/>/<rl:value name='prefix'/>
+            <rl:value name='file'/>
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='medres' suffix='pdf'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file'/></rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file'/></rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert  --method=4
+            --inputpath=<rl:value name='path'/>
+            --outputpath=<rl:value name='path'/>/<rl:value name='prefix'/>
+            <rl:value name='file'/>
+        </rl:step>
+   </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='gif'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.gif</rl:old>
+        <rl:new><rl:value name='cache' default='.'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath=<rl:value name='path'/>
+            --outputpath=<rl:value name='cache' default='.'/>
+            <rl:value name='file' method='nosuffix'/>.gif
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='tif'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.tif</rl:old>
+        <rl:new><rl:value name='cache' default='.'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath=<rl:value name='path'/>
+            --outputpath=<rl:value name='cache' default='.'/>
+            <rl:value name='file' method='nosuffix'/>.tif
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='pdf' suffix='tiff'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file' method='nosuffix'/>.tiff</rl:old>
+        <rl:new><rl:value name='cache' default='.'/>/<rl:value name='file' method='nosuffix'/>.pdf</rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert
+            --inputpath=<rl:value name='path'/>
+            --outputpath=<rl:value name='cache' default='.'/>
+            <rl:value name='file' method='nosuffix'/>.tiff
+        </rl:step>
+    </rl:manipulator>
+
+    <rl:manipulator name='cropped' suffix='pdf'>
+        <rl:old><rl:value name='path'/>/<rl:value name='file'/></rl:old>
+        <rl:new><rl:value name='path'/>/<rl:value name='prefix'/><rl:value name='file'/></rl:new>
+        <rl:step>
+            texmfstart pstopdf --convert --method=3
+            --inputpath=<rl:value name='path'/>
+            --outputpath=<rl:value name='path'/>/<rl:value name='prefix'/>
+            <rl:value name='file'/>
+        </rl:step>
+    </rl:manipulator>
+
+</rl:manipulators>

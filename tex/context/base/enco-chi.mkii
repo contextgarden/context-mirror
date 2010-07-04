@@ -1,0 +1,371 @@
+%D \module
+%D   [     file=enco-chi,
+%D      version=1999.12.02,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Traditional and Simplified Chinese,
+%D       author={Wang Lei \& Hans Hagen},
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% actually this is also a filter -> enco-fcn.tex
+
+%D This is an experimental definition. Since we are dealing
+%D with unicode's, the registered values are not saved, so
+%D actually we're dealing with an pseudo encoding. The digits
+%D on the other hand are encoding specific.
+
+% chinese classes: left=1|right=2|center=3
+
+% untested, probably wrong
+
+\startencoding[cjk-uni]
+
+\defineuclass 1  32 24
+\defineuclass 1  32 28
+\defineuclass 1  48 20
+\defineuclass 1  48  8
+\defineuclass 1  48 10
+\defineuclass 1  48 12
+\defineuclass 1  48 14
+\defineuclass 1  48 22
+\defineuclass 1  48 16
+\defineuclass 1 255  8
+\defineuclass 1 255 59
+\defineuclass 1 255 64
+\defineuclass 1 255 91
+
+\defineuclass 3   0 183
+\defineuclass 3   0 168
+\defineuclass 3  32  38
+\defineuclass 3 255  30
+
+\defineuclass 2  48   1
+\defineuclass 2  48   2
+\defineuclass 2  32  20
+\defineuclass 2 255  94
+\defineuclass 2  32  25
+\defineuclass 2  32  29
+\defineuclass 2  48  21
+\defineuclass 2  48   9
+\defineuclass 2  48  11
+\defineuclass 2  48  13
+\defineuclass 2  48  15
+\defineuclass 2  48  23
+\defineuclass 2  48  17
+\defineuclass 2  34  55
+\defineuclass 2   0 176
+\defineuclass 2  32  50
+\defineuclass 2  32  51
+\defineuclass 2 255   1
+\defineuclass 2 255   2
+\defineuclass 2 255   7
+\defineuclass 2 255   9
+\defineuclass 2 255  12
+\defineuclass 2 255  14
+\defineuclass 2 255  26
+\defineuclass 2 255  27
+\defineuclass 2 255  31
+\defineuclass 2 255  61
+\defineuclass 2 255  93
+
+\defineudigit         0   37 203
+\defineudigit         1   78   0
+\defineudigit         2   78 140
+\defineudigit         3   78   9
+\defineudigit         4   86 219
+\defineudigit         5   78 148
+\defineudigit         6   81 109
+\defineudigit         7   78   3
+\defineudigit         8   81 107
+\defineudigit         9   78  93
+\defineudigit        10   83  65
+\defineudigit       100  118 126
+\defineudigit      1000   83  67
+\defineudigit     10000   78   7
+\defineudigit 100000000   78 191
+
+\defineudigit         0* 150 246
+\defineudigit         1*  88 249
+\defineudigit         2* 141  48
+\defineudigit         3*  83 193
+\defineudigit         4* 128 134
+\defineudigit         5*  79  13
+\defineudigit         6* 150  70
+\defineudigit         7* 103 210
+\defineudigit         8*  99  76
+\defineudigit         9* 115 150
+\defineudigit        10*  98 254
+\defineudigit       100*  79 112
+\defineudigit      1000*  78 223
+\defineudigit     10000* 132  44
+\defineudigit 100000000*  78 191
+
+\defineudigit 20 94 255
+\defineudigit 21 78   0
+\defineudigit 22 78 140
+\defineudigit 23 78   9
+\defineudigit 24 86 219
+\defineudigit 25 78 148
+\defineudigit 26 81 109
+\defineudigit 27 78   3
+\defineudigit 28 81 107
+\defineudigit 29 78  93
+
+\defineudigit 30 83  69
+\defineudigit 31 78   0
+\defineudigit 32 78 140
+\defineudigit 33 78   9
+\defineudigit 34 86 219
+\defineudigit 35 78 148
+\defineudigit 36 81 109
+\defineudigit 37 78   3
+\defineudigit 38 81 107
+\defineudigit 39 78  93
+
+\stopencoding
+
+% \doif \currentregime {utf} \endinput
+
+\startencoding[big5]
+
+\defineuclass 1 161  93
+\defineuclass 1 161  95
+\defineuclass 1 161  97
+\defineuclass 1 161  99
+\defineuclass 1 161 101
+\defineuclass 1 161 103
+\defineuclass 1 161 105
+\defineuclass 1 161 107
+\defineuclass 1 161 111
+\defineuclass 1 161 111
+\defineuclass 1 161 113
+\defineuclass 1 161 115
+\defineuclass 1 161 117
+\defineuclass 1 161 119
+\defineuclass 1 161 121
+\defineuclass 1 161 123
+\defineuclass 1 161 125
+\defineuclass 1 161 161
+\defineuclass 1 161 163
+\defineuclass 1 161 165
+\defineuclass 1 161 167
+\defineuclass 1 161 169
+\defineuclass 1 161 171
+
+\defineuclass 3 161  69
+\defineuclass 3 161  75
+\defineuclass 3 161  76
+
+\defineuclass 2 161  65
+\defineuclass 2 161  66
+\defineuclass 2 161  67
+\defineuclass 2 161  68
+\defineuclass 2 161  70
+\defineuclass 2 161  71
+\defineuclass 2 161  72
+\defineuclass 2 161  73
+\defineuclass 2 161  74
+\defineuclass 2 161  77
+\defineuclass 2 161  78
+\defineuclass 2 161  79
+\defineuclass 2 161  80
+\defineuclass 2 161  81
+\defineuclass 2 161  82
+\defineuclass 2 161  83
+\defineuclass 2 161  84
+\defineuclass 2 161  88
+\defineuclass 2 161  94
+\defineuclass 2 161  96
+\defineuclass 2 161  98
+\defineuclass 2 161 100
+\defineuclass 2 161 102
+\defineuclass 2 161 104
+\defineuclass 2 161 106
+\defineuclass 2 161 108
+\defineuclass 2 161 110
+\defineuclass 2 161 112
+\defineuclass 2 161 114
+\defineuclass 2 161 116
+\defineuclass 2 161 118
+\defineuclass 2 161 120
+\defineuclass 2 161 122
+\defineuclass 2 161 124
+\defineuclass 2 161 126
+\defineuclass 2 161 162
+\defineuclass 2 161 164
+\defineuclass 2 161 166
+\defineuclass 2 161 168
+\defineuclass 2 161 170
+\defineuclass 2 161 172
+\defineuclass 2 161 196
+\defineuclass 2 161 227
+\defineuclass 2 162  88
+\defineuclass 2 163 223
+
+\defineudigit         0  162 179
+\defineudigit         1  164  64
+\defineudigit         2  164  71
+\defineudigit         3  164  84
+\defineudigit         4  165 124
+\defineudigit         5  164 173
+\defineudigit         6  164 187
+\defineudigit         7  164  67
+\defineudigit         8  164  75
+\defineudigit         9  164  69
+\defineudigit        10  164  81
+\defineudigit       100  166 202
+\defineudigit      1000  164 100
+\defineudigit     10000  201  69
+\defineudigit 100000000  187 245
+
+\defineudigit         0* 185 115
+\defineudigit         1* 179 252
+\defineudigit         2* 182  76
+\defineudigit         3* 176 209
+\defineudigit         4* 184 118
+\defineudigit         5* 165 238
+\defineudigit         6* 179 176
+\defineudigit         7* 172 110
+\defineudigit         8* 174 195
+\defineudigit         9* 168 104
+\defineudigit        10* 172  66
+\defineudigit       100* 168 213
+\defineudigit      1000* 165  97
+\defineudigit     10000* 184  85
+\defineudigit 100000000* 187 245
+
+\defineudigit        20  164 220
+\defineudigit        21  164  64
+\defineudigit        22  164  71
+\defineudigit        23  164  84
+\defineudigit        24  165 124
+\defineudigit        25  164 173
+\defineudigit        26  164 187
+\defineudigit        27  164  67
+\defineudigit        28  164  75
+\defineudigit        29  164  69
+
+\defineudigit        30  164 202
+\defineudigit        31  164  64
+\defineudigit        32  164  71
+\defineudigit        33  164  84
+\defineudigit        34  165 124
+\defineudigit        35  164 173
+\defineudigit        36  164 187
+\defineudigit        37  164  67
+\defineudigit        38  164  75
+\defineudigit        39  164  69
+
+\stopencoding
+
+\startencoding[gbk]
+
+\defineuclass 1 161 174
+\defineuclass 1 161 176
+\defineuclass 1 161 178
+\defineuclass 1 161 180
+\defineuclass 1 161 182
+\defineuclass 1 161 184
+\defineuclass 1 161 186
+\defineuclass 1 161 188
+\defineuclass 1 161 190
+\defineuclass 1 163 168
+\defineuclass 1 163 219
+\defineuclass 1 163 224
+\defineuclass 1 163 251
+
+\defineuclass 3 161 164
+\defineuclass 3 161 167
+\defineuclass 3 161 173
+\defineuclass 3 163 190
+
+\defineuclass 2 161 162
+\defineuclass 2 161 163
+\defineuclass 2 161 170
+\defineuclass 2 161 171
+\defineuclass 2 161 175
+\defineuclass 2 161 177
+\defineuclass 2 161 179
+\defineuclass 2 161 181
+\defineuclass 2 161 183
+\defineuclass 2 161 185
+\defineuclass 2 161 187
+\defineuclass 2 161 189
+\defineuclass 2 161 191
+\defineuclass 2 161 203
+\defineuclass 2 161 227
+\defineuclass 2 161 228
+\defineuclass 2 161 229
+\defineuclass 2 163 161
+\defineuclass 2 163 162
+\defineuclass 2 163 167
+\defineuclass 2 163 169
+\defineuclass 2 163 172
+\defineuclass 2 163 174
+\defineuclass 2 163 186
+\defineuclass 2 163 187
+\defineuclass 2 163 191
+\defineuclass 2 163 221
+\defineuclass 2 163 253
+
+\defineudigit         0  161 240
+\defineudigit         1  210 187
+\defineudigit         2  182 254
+\defineudigit         3  200 253
+\defineudigit         4  203 196
+\defineudigit         5  206 229
+\defineudigit         6  193 249
+\defineudigit         7  198 223
+\defineudigit         8  176 203
+\defineudigit         9  190 197
+\defineudigit        10  202 174
+\defineudigit       100  176 217
+\defineudigit      1000  199 167
+\defineudigit     10000  205 242
+\defineudigit 100000000  210 218
+
+\defineudigit         0* 193 227
+\defineudigit         1* 210 188
+\defineudigit         2* 183 161
+\defineudigit         3* 200 254
+\defineudigit         4* 203 193
+\defineudigit         5* 206 233
+\defineudigit         6* 194 189
+\defineudigit         7* 198 226
+\defineudigit         8* 176 198
+\defineudigit         9* 190 193
+\defineudigit        10* 202 176
+\defineudigit       100* 176 219
+\defineudigit      1000* 199 170
+\defineudigit     10000* 200 102
+\defineudigit 100000000* 210 218
+
+\defineudigit        20  216 165
+\defineudigit        21  210 187
+\defineudigit        22  182 254
+\defineudigit        23  200 253
+\defineudigit        24  203 196
+\defineudigit        25  206 229
+\defineudigit        26  193 249
+\defineudigit        27  198 223
+\defineudigit        28  176 203
+\defineudigit        29  190 197
+
+\defineudigit        30  216 166
+\defineudigit        31  210 187
+\defineudigit        32  182 254
+\defineudigit        33  200 253
+\defineudigit        34  203 196
+\defineudigit        35  206 229
+\defineudigit        36  193 249
+\defineudigit        37  198 223
+\defineudigit        38  176 203
+\defineudigit        39  190 197
+
+\stopencoding
+
+\endinput

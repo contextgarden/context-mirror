@@ -1,0 +1,217 @@
+%D \module
+%D   [       file=symb-mvs,
+%D        version=2000.03.30,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Martin Vogels Symbole,
+%D         author=Tobias Burnus \& Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module implements the Martin Vogel Symbole font
+%D (marvosym). The names are derived from the \LATEX\ package
+%D \type {marvosym} of Thomas Henlich. The symbols are
+%D available as Type~1 font and are included in \TETEX\ and
+%D \FPTEX\ distributions.
+%D
+%D This symbol font offers the signs of the zodiac, four
+%D alternative the euro signs, some general office signs and
+%D some more.
+%D
+%D The font was designed by Martin Vogel who can be reached at
+%D \hyphenatedurl {martin.vogel@fh-bochum.de}. More information
+%D can be found at \hyphenatedurl
+%D {http://www.fh-bochum.de/fb1/vogel/marvosym.html}. The
+%D conversion to Type~1 font was done by Thomas Henlich, who
+%D can be reached at \hyphenatedurl
+%D {thenlich@rcs.urz.tu-dresden.de}.
+%D
+%D This module is based on the current \CTAN\ version (as of
+%D March 30, 2000) and is older than the TrueType version at
+%D Martin Vogel's Homepage. The definitions in this module
+%D reflect the \CTAN\ version. The font conversion was done by
+%D Thomas Henlich using \type {ttf2pt1}, a program that can be
+%D found at \hyphenatedurl
+%D {http://www.netspace.net.au/~mheath/ttf2pt1/}.
+%D
+%D Using the new version of \type {marvosymb}, the MVzero will
+%D has a slash and the FHBOLOGO, (wo)manface, and (wo)manfront
+%D are replaced by other symbols.
+
+\loadmapfile[original-base.map] % \loadmapfile[original-vogel-symbol]
+
+\definefontsynonym [MartinVogel] [fmvr8x]
+
+\def\MartinVogelSymbol#1{\getglyph{MartinVogel}{\char#1}}
+
+% Astro signs and signs of the zodiac
+
+\startsymbolset [astronomic]
+
+  \definesymbol [Sun]     [\MartinVogelSymbol{192}]
+  \definesymbol [Moon]    [\MartinVogelSymbol{193}]
+  \definesymbol [Mercury] [\MartinVogelSymbol{194}]
+  \definesymbol [Venus]   [\MartinVogelSymbol{195}]
+  \definesymbol [Mars]    [\MartinVogelSymbol{196}]
+  \definesymbol [Jupiter] [\MartinVogelSymbol{197}]
+  \definesymbol [Saturn]  [\MartinVogelSymbol{198}]
+  \definesymbol [Uranus]  [\MartinVogelSymbol{199}]
+  \definesymbol [Neptune] [\MartinVogelSymbol{200}]
+  \definesymbol [Pluto]   [\MartinVogelSymbol{201}]
+
+\stopsymbolset
+
+\startsymbolset [zodiac]
+
+  \definesymbol [Aries]       [\MartinVogelSymbol{224}]
+  \definesymbol [Taurus]      [\MartinVogelSymbol{225}]
+  \definesymbol [Gemini]      [\MartinVogelSymbol{226}]
+  \definesymbol [Cancer]      [\MartinVogelSymbol{227}]
+  \definesymbol [Leo]         [\MartinVogelSymbol{228}]
+  \definesymbol [Virgo]       [\MartinVogelSymbol{229}]
+  \definesymbol [Libra]       [\MartinVogelSymbol{230}]
+  \definesymbol [Scorpio]     [\MartinVogelSymbol{231}]
+  \definesymbol [Sagittarius] [\MartinVogelSymbol{232}]
+  \definesymbol [Capricorn]   [\MartinVogelSymbol{233}]
+  \definesymbol [Aquarius]    [\MartinVogelSymbol{234}]
+  \definesymbol [Pisces]      [\MartinVogelSymbol{235}]
+
+\stopsymbolset
+
+% Euro signs and CE
+
+\startsymbolset [europe]
+
+  \definesymbol [EUR]    [\MartinVogelSymbol{164}]
+  \definesymbol [EURhv]  [\MartinVogelSymbol {99}]
+  \definesymbol [EURcr]  [\MartinVogelSymbol{100}]
+  \definesymbol [EURtm]  [\MartinVogelSymbol{101}]
+  \definesymbol [CEsign] [\MartinVogelSymbol {67}]
+
+\stopsymbolset
+
+\startencoding[default]
+
+  \definecharacter texteuro {\symbol[europe][EUR]}
+
+\stopencoding
+
+\unexpanded\def\euro{\doiftextelse{\texteuro}{\texteuro}{\symbol[europe][EUR]}}
+
+% Numbers 0 to 9, @, A and p
+
+% taco: are these more general, like also in zapf dingbats?
+
+\startsymbolset [martinvogel 1]
+
+  \definesymbol [MVZero]  [\MartinVogelSymbol {48}]
+  \definesymbol [MVOne]   [\MartinVogelSymbol {49}]
+  \definesymbol [MVTwo]   [\MartinVogelSymbol {50}]
+  \definesymbol [MVThree] [\MartinVogelSymbol {51}]
+  \definesymbol [MVFour]  [\MartinVogelSymbol {52}]
+  \definesymbol [MVFive]  [\MartinVogelSymbol {53}]
+  \definesymbol [MVSix]   [\MartinVogelSymbol {54}]
+  \definesymbol [MVSeven] [\MartinVogelSymbol {55}]
+  \definesymbol [MVEight] [\MartinVogelSymbol {56}]
+  \definesymbol [MVNine]  [\MartinVogelSymbol {57}]
+  \definesymbol [MVAt]    [\MartinVogelSymbol {64}]
+  \definesymbol [MVA]     [\MartinVogelSymbol{240}]
+  \definesymbol [MVp]     [\MartinVogelSymbol{241}]
+
+\stopsymbolset
+
+% Office signs, crosses, circles, arrows
+
+\startsymbolset [martinvogel 2]
+
+  \definesymbol [CheckedBox]      [\MartinVogelSymbol {86}]
+  \definesymbol [CrossedBox]      [\MartinVogelSymbol {88}]
+  \definesymbol [PointingHand]    [\MartinVogelSymbol {90}]
+  \definesymbol [WritingHand]     [\MartinVogelSymbol {98}]
+  \definesymbol [Heart]           [\MartinVogelSymbol{140}]
+  \definesymbol [FlatSteel]       [\MartinVogelSymbol{150}]
+  \definesymbol [Squarepipe]      [\MartinVogelSymbol{151}]
+  \definesymbol [Rectpipe]        [\MartinVogelSymbol{152}]
+  \definesymbol [Lsteel]          [\MartinVogelSymbol{153}]
+  \definesymbol [TTsteel]         [\MartinVogelSymbol{154}]
+  \definesymbol [Circpipe]        [\MartinVogelSymbol{155}]
+  \definesymbol [Tsteel]          [\MartinVogelSymbol{156}]
+
+  \definesymbol [Stopsign]        [\MartinVogelSymbol {33}]
+  \definesymbol [Beam]            [\MartinVogelSymbol {34}]
+  \definesymbol [Bearing]         [\MartinVogelSymbol {35}]
+  \definesymbol [Loosebearing]    [\MartinVogelSymbol {36}]
+  \definesymbol [Fixedbearing]    [\MartinVogelSymbol {37}]
+  \definesymbol [Lefttorque]      [\MartinVogelSymbol {38}]
+  \definesymbol [Righttorque]     [\MartinVogelSymbol {39}]
+  \definesymbol [Force]           [\MartinVogelSymbol {40}]
+  \definesymbol [Lineload]        [\MartinVogelSymbol {41}]
+  \definesymbol [Circles]         [\MartinVogelSymbol {46}]
+  \definesymbol [Squaredot]       [\MartinVogelSymbol{247}]
+
+  \definesymbol [Correspondes]    [\MartinVogelSymbol {61}]
+  \definesymbol [Vectorarrowhigh] [\MartinVogelSymbol {80}]
+  \definesymbol [Vectorarrow]     [\MartinVogelSymbol{112}]
+  \definesymbol [Rightarrow]      [\MartinVogelSymbol {62}]
+  \definesymbol [Lightning]       [\MartinVogelSymbol {69}]
+
+  \definesymbol [Snowflake]       [\MartinVogelSymbol {42}]
+  \definesymbol [Kross]           [\MartinVogelSymbol {43}]
+  \definesymbol [Cross]           [\MartinVogelSymbol{134}]
+  \definesymbol [Celtcross]       [\MartinVogelSymbol{135}]
+  \definesymbol [Ankh]            [\MartinVogelSymbol{136}]
+  \definesymbol [Yingyang]        [\MartinVogelSymbol {77}]
+
+  \definesymbol [Pickup]          [\MartinVogelSymbol  {0}]  % ?
+  \definesymbol [Letter]          [\MartinVogelSymbol {66}]  % ?
+  \definesymbol [Mobilephone]     [\MartinVogelSymbol {72}]
+  \definesymbol [Telephone]       [\MartinVogelSymbol {84}]
+  \definesymbol [fax]             [\MartinVogelSymbol{116}]
+  \definesymbol [FAX]             [\MartinVogelSymbol{117}]
+  \definesymbol [Faxmachine]      [\MartinVogelSymbol{118}]
+
+  \definesymbol [Clocklogo]       [\MartinVogelSymbol {85}]
+  \definesymbol [Industry]        [\MartinVogelSymbol {73}]
+  \definesymbol [Coffeecup]       [\MartinVogelSymbol {75}]
+  \definesymbol [Info]            [\MartinVogelSymbol{105}]
+  \definesymbol [Football]        [\MartinVogelSymbol{111}]
+  \definesymbol [Frowny]          [\MartinVogelSymbol{167}]
+  \definesymbol [Smiley]          [\MartinVogelSymbol{169}]
+  \definesymbol [Bicycle]         [\MartinVogelSymbol{174}]
+
+  \definesymbol [Rightscissors]   [\MartinVogelSymbol {81}]
+  \definesymbol [Leftscissors]    [\MartinVogelSymbol {83}]
+  \definesymbol [Cutright]        [\MartinVogelSymbol{113}]
+  \definesymbol [Cutleft]         [\MartinVogelSymbol{115}]
+  \definesymbol [Kutline]         [\MartinVogelSymbol {82}] % K ?
+  \definesymbol [Cutline]         [\MartinVogelSymbol{114}]
+
+\stopsymbolset
+
+% FHBO (Fachhochschule Bochum), face, humans, bat
+
+\startsymbolset [martinvogel 3]
+
+  \definesymbol [FHBOlogo]    [\MartinVogelSymbol {70}]
+  \definesymbol [FHBOLOGO]    [\MartinVogelSymbol{102}]
+  \definesymbol [Womanside]   [\MartinVogelSymbol{204}]
+  \definesymbol [Manside]     [\MartinVogelSymbol{205}]
+  \definesymbol [Womanfront]  [\MartinVogelSymbol{206}]
+  \definesymbol [Manfront]    [\MartinVogelSymbol{207}]
+  \definesymbol [Bat]         [\MartinVogelSymbol{253}]
+  \definesymbol [Womanface]   [\MartinVogelSymbol{254}]
+  \definesymbol [MartinVogel] [\MartinVogelSymbol{255}]
+
+\stopsymbolset
+
+%D \showsymbolset[astronomic]
+%D \showsymbolset[zodiac]
+%D \showsymbolset[europe]
+%D \showsymbolset[martinvogel 1]
+%D \showsymbolset[martinvogel 2]
+%D \showsymbolset[martinvogel 3]
+
+\endinput

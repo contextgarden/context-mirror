@@ -1,0 +1,282 @@
+%D \module
+%D   [       file=java-fld,
+%D        version=1998.05.20,
+%D          title=\CONTEXT\ JavaScript Macros,
+%D       subtitle=Field Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% will be simplified, since we now parse functions
+
+% nu nog alles geladen, moet dus anders
+
+\startJSpreamble {Sanitize_TeX_Input} used later
+
+  function Sanitized_TeX_String (value)
+    { var v = value ;
+      v = v.replace(  /\\\\oe/g,"\\234") ;
+      v = v.replace(  /\\\\<</g,"\\253") ;
+      v = v.replace(  /\\\\>>/g,"\\273") ;
+      v = v.replace(  /\\\\`A/g,"\\300") ;
+      v = v.replace(  /\\\\'A/g,"\\301") ;
+      v = v.replace(  /\\\\^A/g,"\\302") ;
+      v = v.replace(  /\\\\~A/g,"\\303") ;
+      v = v.replace(  /\\\\"A/g,"\\304") ;
+      v = v.replace(  /\\\\oA/g,"\\305") ;
+      v = v.replace(  /\\\\AE/g,"\\306") ;
+      v = v.replace(  /\\\\,C/g,"\\307") ;
+      v = v.replace(  /\\\\`E/g,"\\310") ;
+      v = v.replace(  /\\\\'E/g,"\\311") ;
+      v = v.replace(  /\\\\^E/g,"\\312") ;
+      v = v.replace(  /\\\\"E/g,"\\313") ;
+      v = v.replace(  /\\\\`I/g,"\\314") ;
+      v = v.replace(  /\\\\'I/g,"\\315") ;
+      v = v.replace(  /\\\\^I/g,"\\316") ;
+      v = v.replace(  /\\\\"I/g,"\\317") ;
+      v = v.replace(  /\\\\~N/g,"\\321") ;
+      v = v.replace(  /\\\\`O/g,"\\322") ;
+      v = v.replace(  /\\\\'O/g,"\\323") ;
+      v = v.replace(  /\\\\^O/g,"\\324") ;
+      v = v.replace(  /\\\\~O/g,"\\325") ;
+      v = v.replace(  /\\\\"O/g,"\\326") ;
+      v = v.replace(  /\\\\`U/g,"\\331") ;
+      v = v.replace(  /\\\\'U/g,"\\332") ;
+      v = v.replace(  /\\\\^U/g,"\\333") ;
+      v = v.replace(  /\\\\"U/g,"\\334") ;
+      v = v.replace(  /\\\\'Y/g,"\\335") ;
+      v = v.replace(  /\\\\ss/g,"\\337") ;
+      v = v.replace(  /\\\\`a/g,"\\340") ;
+      v = v.replace(  /\\\\'a/g,"\\341") ;
+      v = v.replace(  /\\\\^a/g,"\\342") ;
+      v = v.replace(  /\\\\~a/g,"\\343") ;
+      v = v.replace(  /\\\\"a/g,"\\344") ;
+      v = v.replace(  /\\\\oa/g,"\\345") ;
+      v = v.replace(  /\\\\ae/g,"\\346") ;
+      v = v.replace(  /\\\\,c/g,"\\347") ;
+      v = v.replace(  /\\\\`e/g,"\\350") ;
+      v = v.replace(  /\\\\'e/g,"\\351") ;
+      v = v.replace(  /\\\\^e/g,"\\352") ;
+      v = v.replace(  /\\\\"e/g,"\\353") ;
+      v = v.replace(  /\\\\`i/g,"\\354") ;
+      v = v.replace(  /\\\\'i/g,"\\355") ;
+      v = v.replace(  /\\\\^i/g,"\\356") ;
+      v = v.replace(  /\\\\"i/g,"\\357") ;
+      v = v.replace(  /\\\\~n/g,"\\361") ;
+      v = v.replace(  /\\\\`o/g,"\\362") ;
+      v = v.replace(  /\\\\'o/g,"\\363") ;
+      v = v.replace(  /\\\\^o/g,"\\364") ;
+      v = v.replace(  /\\\\~o/g,"\\365") ;
+      v = v.replace(  /\\\\"o/g,"\\366") ;
+      v = v.replace(  /\\\\`u/g,"\\371") ;
+      v = v.replace(  /\\\\'u/g,"\\372") ;
+      v = v.replace(  /\\\\^u/g,"\\373") ;
+      v = v.replace(  /\\\\"u/g,"\\374") ;
+      v = v.replace(  /\\\\'y/g,"\\375") ;
+      v = v.replace(  /\\\\"y/g,"\\377") ;
+      return(v) }
+
+  var TeX_Key_Mode = 0 ;
+
+  function Initialize_TeX_Keystroke ()
+    { TeX_Key_Char = "" ;
+      TeX_Key_Mode = 0 }
+
+  function Sanitized_TeX_Keystroke (change)
+    { if (change=="\\\\")
+        { TeX_Key_Mode = 1 ;
+          return("") }
+      else if (TeX_Key_Mode==1)
+        { TeX_Key_Mode = 2 ;
+          TeX_Key_Char = change ;
+          return("") }
+      else if (TeX_Key_Mode==2)
+        { TeX_Key_Mode = 0 ;
+          TeX_Key_Char = "\\\\"+TeX_Key_Char+change ;
+          return(Sanitized_TeX_String(TeX_Key_Char)) }
+      else
+        { TeX_Key_Mode = 0 ;
+          return(change) } }
+
+\stopJSpreamble
+
+\startJScode {Initialize_TeX_Key} uses {Sanitize_TeX_Input}
+  Initialize_TeX_Keystroke() ;
+\stopJScode
+
+\startJScode {Convert_TeX_Key} uses {Sanitize_TeX_Input}
+  if (!event.willCommit)
+    { event.change = Sanitized_TeX_Keystroke(event.change) }
+\stopJScode
+
+\startJScode{Convert_TeX_String} uses {Sanitize_TeX_Input}
+  event.value = Sanitized_TeX_String(event.value) ;
+\stopJScode
+
+\startJSpreamble fields_1 used now
+
+var visible_field  = new Array() ;
+var visible_fields = 0 ;
+
+function PresetFields ( )
+  { this.syncAnnotScan() }
+
+function Preset_Fields ( )
+  { this.syncAnnotScan() }
+
+function Hide_When_Down ( )
+  { event.target.hidden = true }
+
+function Hide_Field ( Name )
+  { var v = this.getField(Name) ;
+    if (v)
+      { v.hidden = true ;
+        v.readonly = true ;
+        this.dirty = false } }
+
+function Do_Vide_Field ( Name, Closable )
+  { var v = this.getField(Name) ;
+    if (v)
+      { ++visible_fields ;
+        visible_field[visible_fields] = Name ;
+        v.hidden = false ;
+        if (Closable)
+          { v.readonly = false ;
+            v.value = "On" }
+        this.dirty = false } }
+
+function Vide_Field ( Name )
+  { Do_Vide_Field(Name,false) }
+
+function Vide_Hide_Field ( Name )
+  { Do_Vide_Field(Name,true) }
+
+function Hide_Fields ()
+  { while (visible_fields>0)
+      { Hide_Field(visible_field[visible_fields]) ;
+        --visible_fields } }
+
+function Vide_Fields ( Name )
+  { Hide_Fields () ;
+    Vide_Field ( Name) }
+
+function Vide_Hide_Fields ( Name )
+  { Hide_Fields () ;
+    Vide_Hide_Field ( Name) }
+
+function Toggle_Hide ( Name )
+  { var v = this.getField(Name) ;
+    if (v)
+      { v.hidden = !v.hidden ;
+        this.dirty = false } }
+
+function Field_On ( Name )
+  { v = this.getField(Name) ;
+    if (v) { v.value = "On" ; this.dirty = false } }
+
+function Field_Off ( Name )
+  { var v = this.getField(Name) ;
+    if (v) { v.value = "Off" ; this.dirty = false } }
+
+function Toggle_Value ( Name )
+  { var v = this.getField(Name) ;
+    if (v)
+      { if (v.value=="On")
+          { v.value = "Off" }
+        else
+          { v.value = "On" } }
+   this.dirty = false }
+
+function Toggle_Read ( Name )
+  { var v = this.getField(Name);
+    if (v) { v.readonly = !v.readonly } }
+
+function Flip_Fields ( Name )
+  { var Names = Name.split(",") ;
+    for (var i=0;i<Names.length;i++)
+      { v = this.getField(Names[i]) ;
+        if (v)
+          { v.hidden = !v.hidden ;
+            v.value = "On" } } }
+
+function Forget_Changes ()
+  { this.dirty = false }
+
+function ForgetChanges ()
+  { this.dirty = false }
+\stopJSpreamble
+
+%\startJScode{Hide_When_Down}  Hide_When_Down()     \stopJScode
+%\startJScode{Hide_Field}      Hide_Field(JS_S_1)   \stopJScode
+%\startJScode{Vide_Field}      Vide_Field(JS_S_1)   \stopJScode
+%\startJScode{Toggle_Hide}     Toggle_Hide(JS_S_1)  \stopJScode
+%\startJScode{Field_On}        Field_On(JS_S_1)     \stopJScode
+%\startJScode{Field_Off}       Field_Off(JS_S_1)    \stopJScode
+%\startJScode{Toggle_Value}    Toggle_Value(JS_S_1) \stopJScode
+%\startJScode{Toggle_Read}     Toggle_Read(JS_S_1)  \stopJScode
+%\startJScode{Flip_Fields}     Flip_Fields(JS_S_1)  \stopJScode
+%
+%\startJScode{Forget_Changes}  this.dirty = false   \stopJScode
+
+\definereference[ForgetChanges][JS(Forget_Changes)]
+
+% This can be done more efficient, by keeping track of the
+% current top of the stack.
+
+\startJSpreamble FieldStack used later
+
+function Reset_Fields ( FieldSet )
+  { var i = 1 ;
+    while (true)
+      { v = this.getField(FieldSet+":"+i) ;
+        if (!v)
+          { break }
+        else
+          { v.value = "Off" }
+        i++ } }
+
+function Set_Fields ( FieldSet )
+  { var i = 1 ;
+    while (true)
+      { v = this.getField(FieldSet+":"+i) ;
+        if (!v)
+          { break }
+        else
+          { v.value = "On" }
+        i++ } }
+
+function Set_Field ( FieldSet, FieldName )
+  { Reset_Fields(FieldSet) ;
+    v = this.getField(FieldSet+":"+FieldName) ;
+    if (v) { v.value = "On" } }
+
+function Reset_Field ( FieldSet, FieldName )
+  { Set_Fields(FieldSet) ;
+    v = this.getField(FieldSet+":"+FieldName) ;
+    if (v) { v.value = "Off" } }
+
+function Walk_Field ( FieldSet )
+  { var i = 1 ;
+    while (true)
+      { v = this.getField(FieldSet+":"+i) ;
+        if (v)
+          { if (v.value=="On")
+              { v.value = "Off" ;
+                var ii = i ; ii++ ;
+                v = this.getField(FieldSet+":"+ii) ;
+                if (!v)
+                  { v = this.getField(FieldSet+":"+1) }
+                if (v)
+                  { v.value = "On" }
+                break }
+            i++ }
+        else
+          { break } } }
+
+\stopJSpreamble
+
+\endinput

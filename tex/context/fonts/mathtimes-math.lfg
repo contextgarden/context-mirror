@@ -1,0 +1,24 @@
+return {
+    name = "mathtimes-math",
+    version = "1.00",
+    comment = "Goodies that complement mathtimes math.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mathtime.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["mathtimes-math"] = {
+                { name = "file:texgyretermes-regular.otf", features = "virtualmath", main = true },
+                { name = "mtmiz.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mtmiz.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "mtsyn.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "mtex.tfm", vector = "tex-ex", extension = true },
+                { name = "msam10.tfm", vector = "tex-ma" },
+                { name = "msbm10.tfm", vector = "tex-mb" },
+            }
+        }
+    }
+}

@@ -1,0 +1,1091 @@
+%D \module
+%D   [     file=enco-uc,
+%D      version=2000.xx.xx, % and later
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Unicode (backwards mapping),
+%D       author={Adam Lindsay \& Hans Hagen},
+%D         date=\currentdate,
+%D    copyright=PRAGMA ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D An alternative approach would be to misuse the utf vectors, but they
+%D don't carry enough info around.
+
+% todo : \defineucharacter hebrewAlef 5 "D0
+
+\startencoding[uc]
+
+\definecharacter Agrave        {\uchar0{192}}
+\definecharacter Aacute        {\uchar0{193}}
+\definecharacter Acircumflex   {\uchar0{194}}
+\definecharacter Atilde        {\uchar0{195}}
+\definecharacter Adiaeresis    {\uchar0{196}}
+\definecharacter Aring         {\uchar0{197}}
+\definecharacter AEligature    {\uchar0{198}}
+\definecharacter Ccedilla      {\uchar0{199}}
+\definecharacter Egrave        {\uchar0{200}}
+\definecharacter Eacute        {\uchar0{201}}
+\definecharacter Ediaeresis    {\uchar0{203}}
+\definecharacter Igrave        {\uchar0{204}}
+\definecharacter Iacute        {\uchar0{205}}
+\definecharacter Icircumflex   {\uchar0{206}}
+\definecharacter Idiaeresis    {\uchar0{207}}
+\definecharacter Eth           {\uchar0{208}}
+\definecharacter Ntilde        {\uchar0{209}}
+\definecharacter Ograve        {\uchar0{210}}
+\definecharacter Oacute        {\uchar0{211}}
+\definecharacter Ocircumflex   {\uchar0{212}}
+\definecharacter Otilde        {\uchar0{213}}
+\definecharacter Odiaeresis    {\uchar0{214}}
+
+\definecharacter Ostroke       {\uchar0{216}}
+\definecharacter Ugrave        {\uchar0{217}}
+\definecharacter Uacute        {\uchar0{218}}
+\definecharacter Uhungarumlaut {\uchar0{219}}
+\definecharacter Udiaeresis    {\uchar0{220}}
+\definecharacter Yacute        {\uchar0{221}}
+\definecharacter Thorn         {\uchar0{222}}
+\definecharacter ssharp        {\uchar0{223}}
+\definecharacter agrave        {\uchar0{224}}
+\definecharacter aacute        {\uchar0{225}}
+\definecharacter acircumflex   {\uchar0{226}}
+\definecharacter atilde        {\uchar0{227}}
+\definecharacter adiaeresis    {\uchar0{228}}
+\definecharacter aring         {\uchar0{229}}
+\definecharacter aeligature    {\uchar0{230}}
+\definecharacter ccedilla      {\uchar0{231}}
+\definecharacter egrave        {\uchar0{232}}
+\definecharacter eacute        {\uchar0{233}}
+\definecharacter ecircumflex   {\uchar0{234}}
+\definecharacter ediaeresis    {\uchar0{235}}
+\definecharacter igrave        {\uchar0{236}}
+\definecharacter iacute        {\uchar0{237}}
+\definecharacter icircumflex   {\uchar0{238}}
+\definecharacter idiaeresis    {\uchar0{239}}
+\definecharacter eth           {\uchar0{240}}
+\definecharacter ntilde        {\uchar0{241}}
+\definecharacter ograve        {\uchar0{242}}
+\definecharacter oacute        {\uchar0{243}}
+\definecharacter ocircumflex   {\uchar0{244}}
+\definecharacter otilde        {\uchar0{245}}
+\definecharacter odiaeresis    {\uchar0{246}}
+
+\definecharacter ostroke       {\uchar0{248}}
+\definecharacter ugrave        {\uchar0{249}}
+\definecharacter uacute        {\uchar0{250}}
+\definecharacter ucircumflex   {\uchar0{251}}
+\definecharacter udiaeresis    {\uchar0{252}}
+\definecharacter yacute        {\uchar0{253}}
+\definecharacter thorn         {\uchar0{254}}
+\definecharacter ydiaeresis    {\uchar0{255}}
+
+\definecharacter Amacron       {\uchar1{0}}
+\definecharacter amacron       {\uchar1{1}}
+\definecharacter Abreve        {\uchar1{2}}
+\definecharacter abreve        {\uchar1{3}}
+\definecharacter Aogonek       {\uchar1{4}}
+\definecharacter aogonek       {\uchar1{5}}
+\definecharacter Cacute        {\uchar1{6}}
+\definecharacter cacute        {\uchar1{7}}
+\definecharacter Ccircumflex   {\uchar1{8}}
+\definecharacter ccircumflex   {\uchar1{9}}
+\definecharacter Cdotaccent    {\uchar1{10}}
+\definecharacter cdotaccent    {\uchar1{11}}
+\definecharacter Ccaron        {\uchar1{12}}
+\definecharacter ccaron        {\uchar1{13}}
+\definecharacter Dcaron        {\uchar1{14}}
+\definecharacter dcaron        {\uchar1{15}}
+\definecharacter Dstroke       {\uchar1{16}}
+\definecharacter dstroke       {\uchar1{17}}
+\definecharacter Emacron       {\uchar1{18}}
+\definecharacter emacron       {\uchar1{19}}
+\definecharacter Ebreve        {\uchar1{20}}
+\definecharacter ebreve        {\uchar1{21}}
+\definecharacter Edotaccent    {\uchar1{22}}
+\definecharacter edotaccent    {\uchar1{23}}
+\definecharacter Eogonek       {\uchar1{24}}
+\definecharacter eogonek       {\uchar1{25}}
+\definecharacter Ecaron        {\uchar1{26}}
+\definecharacter ecaron        {\uchar1{27}}
+\definecharacter Gcircumflex   {\uchar1{28}}
+\definecharacter gcircumflex   {\uchar1{29}}
+\definecharacter Gbreve        {\uchar1{30}}
+\definecharacter gbreve        {\uchar1{31}}
+\definecharacter Gdotaccent    {\uchar1{32}}
+\definecharacter gdotaccent    {\uchar1{33}}
+\definecharacter Gcommaaccent  {\uchar1{34}}
+\definecharacter gcommaaccent  {\uchar1{35}}
+\definecharacter Hcircumflex   {\uchar1{36}}
+\definecharacter hcircumflex   {\uchar1{37}}
+\definecharacter Hstroke       {\uchar1{38}}
+\definecharacter hstroke       {\uchar1{39}}
+\definecharacter Itilde        {\uchar1{40}}
+\definecharacter itilde        {\uchar1{41}}
+\definecharacter Imacron       {\uchar1{42}}
+\definecharacter imacron       {\uchar1{43}}
+\definecharacter Ibreve        {\uchar1{44}}
+\definecharacter ibreve        {\uchar1{45}}
+\definecharacter Iogonek       {\uchar1{46}}
+\definecharacter iogonek       {\uchar1{47}}
+\definecharacter Idotaccent    {\uchar1{48}}
+\definecharacter dotlessi      {\uchar1{49}}
+\definecharacter IJligature    {\uchar1{50}}
+\definecharacter ijligature    {\uchar1{51}}
+\definecharacter Jcircumflex   {\uchar1{52}}
+\definecharacter jcircumflex   {\uchar1{53}}
+\definecharacter Kcommaaccent  {\uchar1{54}}
+\definecharacter kcommaaccent  {\uchar1{55}}
+\definecharacter kkra          {\uchar1{56}}
+\definecharacter Lacute        {\uchar1{57}}
+\definecharacter lacute        {\uchar1{58}}
+\definecharacter Lcommaaccent  {\uchar1{59}}
+\definecharacter lcommaaccent  {\uchar1{60}}
+\definecharacter Lcaron        {\uchar1{61}}
+\definecharacter lcaron        {\uchar1{62}}
+\definecharacter Ldotmiddle    {\uchar1{63}}
+\definecharacter ldotmiddle    {\uchar1{64}}
+\definecharacter Lstroke       {\uchar1{65}}
+\definecharacter lstroke       {\uchar1{66}}
+\definecharacter Nacute        {\uchar1{67}}
+\definecharacter nacute        {\uchar1{68}}
+\definecharacter Ncommaaccent  {\uchar1{69}}
+\definecharacter ncommaaccent  {\uchar1{70}}
+\definecharacter Ncaron        {\uchar1{71}}
+\definecharacter ncaron        {\uchar1{72}}
+\definecharacter napostrophe   {\uchar1{73}}
+\definecharacter Neng          {\uchar1{74}}
+\definecharacter neng          {\uchar1{75}}
+\definecharacter Omacron       {\uchar1{76}}
+\definecharacter omacron       {\uchar1{77}}
+\definecharacter Obreve        {\uchar1{78}}
+\definecharacter obreve        {\uchar1{79}}
+\definecharacter Ohungarumlaut {\uchar1{80}}
+\definecharacter ohungarumlaut {\uchar1{81}}
+\definecharacter OEligature    {\uchar1{82}}
+\definecharacter oeligature    {\uchar1{83}}
+\definecharacter Racute        {\uchar1{84}}
+\definecharacter racute        {\uchar1{85}}
+\definecharacter Rcommaaccent  {\uchar1{86}}
+\definecharacter rcommaaccent  {\uchar1{87}}
+\definecharacter Rcaron        {\uchar1{88}}
+\definecharacter rcaron        {\uchar1{89}}
+\definecharacter Sacute        {\uchar1{90}}
+\definecharacter sacute        {\uchar1{91}}
+\definecharacter Scircumflex   {\uchar1{92}}
+\definecharacter scircumflex   {\uchar1{93}}
+\definecharacter Scedilla      {\uchar1{94}}
+\definecharacter scedilla      {\uchar1{95}}
+\definecharacter Scaron        {\uchar1{96}}
+\definecharacter scaron        {\uchar1{97}}
+\definecharacter Tcedilla      {\uchar1{98}}
+\definecharacter tcedilla      {\uchar1{99}}
+\definecharacter Tcaron        {\uchar1{100}}
+\definecharacter tcaron        {\uchar1{101}}
+\definecharacter Tstroke       {\uchar1{102}}
+\definecharacter tstroke       {\uchar1{103}}
+\definecharacter Utilde        {\uchar1{104}}
+\definecharacter utilde        {\uchar1{105}}
+\definecharacter Umacron       {\uchar1{106}}
+\definecharacter umacron       {\uchar1{107}}
+\definecharacter Ubreve        {\uchar1{108}}
+\definecharacter ubreve        {\uchar1{109}}
+\definecharacter Uring         {\uchar1{110}}
+\definecharacter uring         {\uchar1{111}}
+\definecharacter Uhungarumlaut {\uchar1{112}}
+\definecharacter uhungarumlaut {\uchar1{113}}
+\definecharacter Uogonek       {\uchar1{114}}
+\definecharacter uogonek       {\uchar1{115}}
+\definecharacter Wcircumflex   {\uchar1{116}}
+\definecharacter wcircumflex   {\uchar1{117}}
+\definecharacter Ycircumflex   {\uchar1{118}}
+\definecharacter ycircumflex   {\uchar1{119}}
+\definecharacter Ydiaeresis    {\uchar1{120}}
+\definecharacter Zacute        {\uchar1{121}}
+\definecharacter zacute        {\uchar1{122}}
+\definecharacter Zdotaccent    {\uchar1{123}}
+\definecharacter zdotaccent    {\uchar1{124}}
+\definecharacter Zcaron        {\uchar1{125}}
+\definecharacter zcaron        {\uchar1{126}}
+\definecharacter slong         {\uchar1{127}}
+
+\stopencoding
+
+\startencoding[uc]
+
+\definecharacter endash          {\uchar{32}{19}}
+\definecharacter emdash          {\uchar{32}{20}}
+\definecharacter quoteleft       {\uchar{32}{24}}
+\definecharacter quoteright      {\uchar{32}{25}}
+\definecharacter quotesinglebase {\uchar{32}{26}}
+
+\definecharacter quotedblleft    {\uchar{32}{28}}
+\definecharacter quotedblright   {\uchar{32}{29}}
+\definecharacter quotedblbase    {\uchar{32}{30}}
+
+\definecharacter leftguillemot   {\uchar0{171}}
+\definecharacter rightguillemot  {\uchar0{187}}
+
+\definecharacter guilsingleleft  {\uchar{32}{57}}
+\definecharacter guilsingleright {\uchar{32}{58}}
+
+\stopencoding
+
+%D Adam Lindsay's additions
+
+\startencoding[uc]
+
+\definecharacter exclamdown       {\uchar0{161}}
+\definecharacter textcent         {\uchar0{162}}
+\definecharacter textsterling     {\uchar0{163}}
+\definecharacter textcurrency     {\uchar0{164}}
+\definecharacter textyen          {\uchar0{165}}
+\definecharacter textbrokenbar    {\uchar0{166}}
+\definecharacter sectionmark      {\uchar0{167}}
+\definecharacter textdiaresis     {\uchar0{168}}
+\definecharacter copyright        {\uchar0{169}}
+
+\definecharacter textlognot       {\uchar0{172}}
+\definecharacter softhyphen       {\uchar0{173}}
+\definecharacter registered       {\uchar0{174}}
+\definecharacter textmacron       {\uchar0{175}}
+\definecharacter textdegree       {\uchar0{176}}
+\definecharacter textpm           {\uchar0{177}}
+\definecharacter twosuperior      {\uchar0{178}}
+\definecharacter threesuperior    {\uchar0{179}}
+\definecharacter textacute        {\uchar0{180}}
+\definecharacter textmu           {\uchar0{181}}
+\definecharacter paragraphmark    {\uchar0{182}}
+\definecharacter periodcentered   {\uchar0{183}}
+\definecharacter textcedilla      {\uchar0{184}}
+\definecharacter onesuperior      {\uchar0{185}}
+
+\definecharacter textgrave        {\uchar3{0}}
+\definecharacter textacute        {\uchar3{1}}
+\definecharacter textcircumflex   {\uchar3{2}}
+\definecharacter texttilde        {\uchar3{3}}
+\definecharacter textmacron       {\uchar3{4}}
+\definecharacter textbreve        {\uchar3{6}}
+\definecharacter textdotaccent    {\uchar3{7}}
+\definecharacter textdiaeresis    {\uchar3{8}}
+\definecharacter textring         {\uchar3{10}}
+\definecharacter texthungarumlaut {\uchar3{11}}
+\definecharacter textcaron        {\uchar3{12}}
+\definecharacter textogonek       {\uchar3{40}}
+
+\definecharacter percent          {\uchar0{37}}
+\definecharacter textunderscore   {\uchar0{95}}
+
+\definecharacter ordfeminine      {\uchar0{170}}
+\definecharacter ordmasculine     {\uchar0{186}}
+\definecharacter onequarter       {\uchar0{188}}
+\definecharacter onehalf          {\uchar0{189}}
+\definecharacter threequarter     {\uchar0{190}}
+\definecharacter questiondown     {\uchar0{191}}
+
+\definecharacter textmultiply     {\uchar0{215}}
+\definecharacter textdiv          {\uchar0{247}}
+
+\definecharacter textminus        {\uchar{32}{18}}
+\definecharacter textdag          {\uchar{32}{32}}
+\definecharacter textddag         {\uchar{32}{33}}
+\definecharacter textbullet       {\uchar{32}{34}}
+\definecharacter textellipsis     {\uchar{32}{38}}
+\definecharacter perthousand      {\uchar{32}{48}}
+
+%new:
+\definecharacter Scommaaccent     {\uchar2{24}}
+\definecharacter scommaaccent     {\uchar2{25}}
+\definecharacter Tcommaaccent     {\uchar2{26}}
+\definecharacter tcommaaccent     {\uchar2{27}}
+
+\stopencoding
+
+%D Mojca's and Taco's additions:
+
+\startencoding[uc]
+
+\definecharacter textasciicircum  {\uchar{0}{94}}  % 5e
+\definecharacter textgrave        {\uchar{0}{96}}  % 60
+\definecharacter textdiaeresis    {\uchar{0}{168}} % a8
+%definecharacter textmacron       {\uchar{0}{175}} % af
+%definecharacter textacute        {\uchar{0}{180}} % b4
+%definecharacter textcedilla      {\uchar{0}{184}} % b8
+\definecharacter textcircumflex   {\uchar{2}{198}} % c6
+\definecharacter textcaron        {\uchar{2}{199}} % c7
+\definecharacter textbreve        {\uchar{2}{216}} % d8
+\definecharacter textdotaccent    {\uchar{2}{217}} % d9
+\definecharacter textring         {\uchar{2}{218}} % da
+\definecharacter textogonek       {\uchar{2}{219}} % db
+\definecharacter texttilde        {\uchar{2}{220}} % dc
+\definecharacter texthungarumlaut {\uchar{2}{221}} % dd
+
+\stopencoding
+
+%D Vietnamese:
+
+\startencoding[uc]
+
+\definecharacter   Ohorn                {\uchar1{160}}
+\definecharacter   ohorn                {\uchar1{161}}
+\definecharacter   Uhorn                {\uchar1{175}}
+\definecharacter   uhorn                {\uchar1{176}}
+
+\definecharacter   Yhook                {\uchar{30}{246}}
+\definecharacter   yhook                {\uchar{30}{247}}
+\definecharacter   Ydotbelow            {\uchar{30}{244}}
+\definecharacter   ydotbelow            {\uchar{30}{245}}
+\definecharacter   Ahook                {\uchar{30}{162}}
+\definecharacter   Adotbelow            {\uchar{30}{160}}
+\definecharacter   Acircumflexgrave     {\uchar{30}{166}}
+\definecharacter   Acircumflexacute     {\uchar{30}{164}}
+\definecharacter   Acircumflextilde     {\uchar{30}{170}}
+\definecharacter   Acircumflexhook      {\uchar{30}{168}}
+\definecharacter   Acircumflexdotbelow  {\uchar{30}{172}}
+\definecharacter   Abrevegrave          {\uchar{30}{176}}
+\definecharacter   Abreveacute          {\uchar{30}{174}}
+\definecharacter   Abrevetilde          {\uchar{30}{180}}
+\definecharacter   Abrevehook           {\uchar{30}{178}}
+\definecharacter   Abrevedotbelow       {\uchar{30}{182}}
+\definecharacter   Ehook                {\uchar{30}{186}}
+\definecharacter   Edotbelow            {\uchar{30}{184}}
+\definecharacter   Ecircumflexgrave     {\uchar{30}{192}}
+\definecharacter   Ecircumflexacute     {\uchar{30}{190}}
+\definecharacter   Ecircumflextilde     {\uchar{30}{196}}
+\definecharacter   Ecircumflexhook      {\uchar{30}{194}}
+\definecharacter   Ecircumflexdotbelow  {\uchar{30}{198}}
+\definecharacter   Ihook                {\uchar{30}{200}}
+\definecharacter   ahook                {\uchar{30}{163}}
+\definecharacter   adotbelow            {\uchar{30}{161}}
+\definecharacter   acircumflexgrave     {\uchar{30}{167}}
+\definecharacter   acircumflexacute     {\uchar{30}{165}}
+\definecharacter   acircumflextilde     {\uchar{30}{171}}
+\definecharacter   acircumflexhook      {\uchar{30}{169}}
+\definecharacter   acircumflexdotbelow  {\uchar{30}{173}}
+\definecharacter   abrevegrave          {\uchar{30}{177}}
+\definecharacter   abreveacute          {\uchar{30}{175}}
+\definecharacter   abrevetilde          {\uchar{30}{181}}
+\definecharacter   abrevehook           {\uchar{30}{179}}
+\definecharacter   abrevedotbelow       {\uchar{30}{183}}
+\definecharacter   ehook                {\uchar{30}{187}}
+\definecharacter   edotbelow            {\uchar{30}{185}}
+\definecharacter   ecircumflexgrave     {\uchar{30}{193}}
+\definecharacter   ecircumflexacute     {\uchar{30}{191}}
+\definecharacter   ecircumflextilde     {\uchar{30}{197}}
+\definecharacter   ecircumflexhook      {\uchar{30}{195}}
+\definecharacter   ecircumflexdotbelow  {\uchar{30}{199}}
+\definecharacter   ihook                {\uchar{30}{201}}
+\definecharacter   Idotbelow            {\uchar{30}{202}}
+\definecharacter   Ohook                {\uchar{30}{206}}
+\definecharacter   Odotbelow            {\uchar{30}{204}}
+\definecharacter   Ocircumflexgrave     {\uchar{30}{210}}
+\definecharacter   Ocircumflexacute     {\uchar{30}{208}}
+\definecharacter   Ocircumflextilde     {\uchar{30}{214}}
+\definecharacter   Ocircumflexhook      {\uchar{30}{212}}
+\definecharacter   Ocircumflexdotbelow  {\uchar{30}{216}}
+\definecharacter   Ohorngrave           {\uchar{30}{220}}
+\definecharacter   Ohornacute           {\uchar{30}{218}}
+\definecharacter   Ohorntilde           {\uchar{30}{224}}
+\definecharacter   Ohornhook            {\uchar{30}{222}}
+\definecharacter   Ohorndotbelow        {\uchar{30}{226}}
+\definecharacter   Uhook                {\uchar{30}{230}}
+\definecharacter   Udotbelow            {\uchar{30}{228}}
+\definecharacter   Uhorngrave           {\uchar{30}{234}}
+\definecharacter   Uhornacute           {\uchar{30}{232}}
+\definecharacter   Uhorntilde           {\uchar{30}{238}}
+\definecharacter   Uhornhook            {\uchar{30}{236}}
+\definecharacter   Uhorndotbelow        {\uchar{30}{240}}
+\definecharacter   Ytilde               {\uchar{30}{248}}
+\definecharacter   idotbelow            {\uchar{30}{203}}
+\definecharacter   ohook                {\uchar{30}{207}}
+\definecharacter   odotbelow            {\uchar{30}{205}}
+\definecharacter   ocircumflexgrave     {\uchar{30}{211}}
+\definecharacter   ocircumflexacute     {\uchar{30}{209}}
+\definecharacter   ocircumflextilde     {\uchar{30}{215}}
+\definecharacter   ocircumflexhook      {\uchar{30}{213}}
+\definecharacter   ocircumflexdotbelow  {\uchar{30}{217}}
+\definecharacter   ohorngrave           {\uchar{30}{221}}
+\definecharacter   ohornacute           {\uchar{30}{219}}
+\definecharacter   ohorntilde           {\uchar{30}{225}}
+\definecharacter   ohornhook            {\uchar{30}{223}}
+\definecharacter   ohorndotbelow        {\uchar{30}{227}}
+\definecharacter   uhook                {\uchar{30}{231}}
+\definecharacter   udotbelow            {\uchar{30}{229}}
+\definecharacter   uhorngrave           {\uchar{30}{235}}
+\definecharacter   uhornacute           {\uchar{30}{233}}
+\definecharacter   uhorntilde           {\uchar{30}{239}}
+\definecharacter   uhornhook            {\uchar{30}{237}}
+\definecharacter   uhorndotbelow        {\uchar{30}{241}}
+\definecharacter   ytilde               {\uchar{30}{249}}
+
+\definecharacter   Etilde               {\uchar{30}{188}}
+\definecharacter   etilde               {\uchar{30}{189}}
+\definecharacter   Ygrave               {\uchar{30}{242}}
+\definecharacter   ygrave               {\uchar{30}{243}}
+
+\stopencoding
+
+% Greek:
+
+\startencoding[uc]
+
+\definecharacter greekAlphatonos         {\uchar3{134}}
+\definecharacter greekEpsilontonos       {\uchar3{136}}
+\definecharacter greekEtatonos           {\uchar3{137}}
+\definecharacter greekIotatonos          {\uchar3{138}}
+\definecharacter greekOmicrontonos       {\uchar3{140}}
+\definecharacter greekUpsilontonos       {\uchar3{142}}
+\definecharacter greekOmegatonos         {\uchar3{143}}
+\definecharacter greekiotadialytikatonos {\uchar3{144}}
+\definecharacter greekAlpha              {\uchar3{145}}
+\definecharacter greekBeta               {\uchar3{146}}
+\definecharacter greekGamma              {\uchar3{147}}
+\definecharacter greekDelta              {\uchar3{148}}
+\definecharacter greekEpsilon            {\uchar3{149}}
+\definecharacter greekZeta               {\uchar3{150}}
+\definecharacter greekEta                {\uchar3{151}}
+\definecharacter greekTheta              {\uchar3{152}}
+\definecharacter greekIota               {\uchar3{153}}
+\definecharacter greekKappa              {\uchar3{154}}
+\definecharacter greekLambda             {\uchar3{155}}
+\definecharacter greekMu                 {\uchar3{156}}
+\definecharacter greekNu                 {\uchar3{157}}
+\definecharacter greekXi                 {\uchar3{158}}
+\definecharacter greekOmicron            {\uchar3{159}}
+\definecharacter greekPi                 {\uchar3{160}}
+\definecharacter greekRho                {\uchar3{161}}
+\definecharacter greekSigma              {\uchar3{163}}
+\definecharacter greekTau                {\uchar3{164}}
+\definecharacter greekUpsilon            {\uchar3{165}}
+\definecharacter greekPhi                {\uchar3{166}}
+\definecharacter greekChi                {\uchar3{167}}
+\definecharacter greekPsi                {\uchar3{168}}
+\definecharacter greekOmega              {\uchar3{169}}
+
+\definecharacter greekalpha              {\uchar3{177}}
+\definecharacter greekbeta               {\uchar3{178}}
+\definecharacter greekgamma              {\uchar3{179}}
+\definecharacter greekdelta              {\uchar3{180}}
+\definecharacter greekepsilon            {\uchar3{181}}
+\definecharacter greekzeta               {\uchar3{182}}
+\definecharacter greeketa                {\uchar3{183}}
+\definecharacter greektheta              {\uchar3{184}}
+\definecharacter greekiota               {\uchar3{185}}
+\definecharacter greekkappa              {\uchar3{186}}
+\definecharacter greeklambda             {\uchar3{187}}
+\definecharacter greekmu                 {\uchar3{188}}
+\definecharacter greeknu                 {\uchar3{189}}
+\definecharacter greekxi                 {\uchar3{190}}
+\definecharacter greekomicron            {\uchar3{191}}
+\definecharacter greekpi                 {\uchar3{192}}
+\definecharacter greekrho                {\uchar3{193}}
+\definecharacter greekfinalsigma         {\uchar3{194}}
+\definecharacter greeksigma              {\uchar3{195}}
+\definecharacter greektau                {\uchar3{196}}
+\definecharacter greekupsilon            {\uchar3{197}}
+\definecharacter greekphi                {\uchar3{198}}
+\definecharacter greekchi                {\uchar3{199}}
+\definecharacter greekpsi                {\uchar3{200}}
+\definecharacter greekomega              {\uchar3{201}}
+\definecharacter greekiotadialytika      {\uchar3{202}}
+\definecharacter greekupsilondialytika   {\uchar3{203}}
+\definecharacter greekomicrontonos       {\uchar3{204}}
+\definecharacter greekupsilontonos       {\uchar3{205}}
+\definecharacter greekomegatonos         {\uchar3{206}}
+
+\definecharacter greekIotadialytika          {\uchar3{170}}
+\definecharacter greekUpsilondialytika       {\uchar3{171}}
+
+\definecharacter greekalphatonos             {\uchar3{172}}
+\definecharacter greekepsilontonos           {\uchar3{173}}
+\definecharacter greeketatonos               {\uchar3{174}}
+\definecharacter greekiotatonos              {\uchar3{175}}
+\definecharacter greekupsilondialytikatonos  {\uchar3{176}}
+
+% new:
+\definecharacter greekthetaalt               {\uchar3{209}}
+\definecharacter greekphialt                 {\uchar3{213}}
+\definecharacter greekpialt                  {\uchar3{214}}
+\definecharacter greekrhoalt                 {\uchar3{241}}
+\definecharacter greekepsilonalt             {\uchar3{245}}
+
+\stopencoding
+
+% Cyrillic:
+
+\startencoding[uc]
+
+\definecharacter cyrillicA     {\uchar4{16}}
+\definecharacter cyrillicB     {\uchar4{17}}
+\definecharacter cyrillicV     {\uchar4{18}}
+\definecharacter cyrillicG     {\uchar4{19}}
+\definecharacter cyrillicD     {\uchar4{20}}
+\definecharacter cyrillicE     {\uchar4{21}}
+\definecharacter cyrillicZH    {\uchar4{22}}
+\definecharacter cyrillicZ     {\uchar4{23}}
+\definecharacter cyrillicI     {\uchar4{24}}
+\definecharacter cyrillicISHRT {\uchar4{25}}
+\definecharacter cyrillicK     {\uchar4{26}}
+\definecharacter cyrillicL     {\uchar4{27}}
+\definecharacter cyrillicM     {\uchar4{28}}
+\definecharacter cyrillicN     {\uchar4{29}}
+\definecharacter cyrillicO     {\uchar4{30}}
+\definecharacter cyrillicP     {\uchar4{31}}
+\definecharacter cyrillicR     {\uchar4{32}}
+\definecharacter cyrillicS     {\uchar4{33}}
+\definecharacter cyrillicT     {\uchar4{34}}
+\definecharacter cyrillicU     {\uchar4{35}}
+\definecharacter cyrillicF     {\uchar4{36}}
+\definecharacter cyrillicH     {\uchar4{37}}
+\definecharacter cyrillicC     {\uchar4{38}}
+\definecharacter cyrillicCH    {\uchar4{39}}
+\definecharacter cyrillicSH    {\uchar4{40}}
+\definecharacter cyrillicSHCH  {\uchar4{41}}
+\definecharacter cyrillicHRDSN {\uchar4{42}}
+\definecharacter cyrillicERY   {\uchar4{43}}
+\definecharacter cyrillicSFTSN {\uchar4{44}}
+\definecharacter cyrillicEREV  {\uchar4{45}}
+\definecharacter cyrillicYU    {\uchar4{46}}
+\definecharacter cyrillicYA    {\uchar4{47}}
+
+\definecharacter cyrillica     {\uchar4{48}}
+\definecharacter cyrillicb     {\uchar4{49}}
+\definecharacter cyrillicv     {\uchar4{50}}
+\definecharacter cyrillicg     {\uchar4{51}}
+\definecharacter cyrillicd     {\uchar4{52}}
+\definecharacter cyrillice     {\uchar4{53}}
+\definecharacter cyrilliczh    {\uchar4{54}}
+\definecharacter cyrillicz     {\uchar4{55}}
+\definecharacter cyrillici     {\uchar4{56}}
+\definecharacter cyrillicishrt {\uchar4{57}}
+\definecharacter cyrillick     {\uchar4{58}}
+\definecharacter cyrillicl     {\uchar4{59}}
+\definecharacter cyrillicm     {\uchar4{60}}
+\definecharacter cyrillicn     {\uchar4{61}}
+\definecharacter cyrillico     {\uchar4{62}}
+\definecharacter cyrillicp     {\uchar4{63}}
+\definecharacter cyrillicr     {\uchar4{64}}
+\definecharacter cyrillics     {\uchar4{65}}
+\definecharacter cyrillict     {\uchar4{66}}
+\definecharacter cyrillicu     {\uchar4{67}}
+\definecharacter cyrillicf     {\uchar4{68}}
+\definecharacter cyrillich     {\uchar4{69}}
+\definecharacter cyrillicc     {\uchar4{70}}
+\definecharacter cyrillicch    {\uchar4{71}}
+\definecharacter cyrillicsh    {\uchar4{72}}
+\definecharacter cyrillicshch  {\uchar4{73}}
+\definecharacter cyrillichrdsn {\uchar4{74}}
+\definecharacter cyrillicery   {\uchar4{75}}
+\definecharacter cyrillicsftsn {\uchar4{76}}
+\definecharacter cyrillicerev  {\uchar4{77}}
+\definecharacter cyrillicyu    {\uchar4{78}}
+\definecharacter cyrillicya    {\uchar4{79}}
+
+%D I tried to figure out what these were, but the unicode
+%D tables suggested they were the same as cyrillici, which was
+%D already defined! So, a temporary definition:
+
+% \def\cyrillicII{\cyrillicI}
+% \def\cyrillicii{\cyrillici}
+
+%D a guess derived from looking at enco-cyr suggests that this is
+%D identical to the Roman I/i pair. To me, that sounds like
+%D CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I in the UC tables!
+
+\definecharacter cyrillicII    {\uchar4{6}}
+\definecharacter cyrillicii    {\uchar4{86}}
+
+%D Guessing that tlir6a corresponds with t2a encoding as advertised,
+%D here are some more, cos I had some spare time: (AL)
+
+\definecharacter cyrillicDJE    {\uchar4{2}}
+\definecharacter cyrillicTSHE   {\uchar4{11}}
+%definecharacter cyrillicSHHA   132
+%definecharacter cyrillicZHDSC  133
+\definecharacter cyrillicZDSC   {\uchar4{152}}
+\definecharacter cyrillicLJE    {\uchar4{9}}
+\definecharacter cyrillicYI     {\uchar4{7}}
+\definecharacter cyrillicAE     {\uchar4{212}}
+%definecharacter cyrillicNDSC   141
+%definecharacter cyrillicNG     142
+\definecharacter cyrillicDZE    {\uchar4{5}}
+%definecharacter cyrillicOTLD   144
+\definecharacter cyrillicSDSC   {\uchar4{170}}
+\definecharacter cyrillicUSHRT  {\uchar4{14}}
+%definecharacter cyrillicY      147
+%definecharacter cyrillicYHCRS  148
+%definecharacter cyrillicHDSC   149
+\definecharacter cyrillicDZHE   {\uchar4{15}}
+\definecharacter cyrillicIE     {\uchar4{4}}
+\definecharacter cyrillicNJE    {\uchar4{10}}
+\definecharacter cyrillicYO     {\uchar4{1}}
+
+\definecharacter cyrillicdje    {\uchar4{82}}
+\definecharacter cyrillictshe   {\uchar4{91}}
+%definecharacter cyrillicshha   164
+%definecharacter cyrilliczhdsc  165
+\definecharacter cyrilliczdsc   {\uchar4{153}}
+\definecharacter cyrilliclje    {\uchar4{89}}
+\definecharacter cyrillicyi     {\uchar4{87}}
+\definecharacter cyrillicae     {\uchar4{213}}
+%definecharacter cyrillicndsc   173
+%definecharacter cyrillicng     174
+\definecharacter cyrillicdze    {\uchar4{85}}
+%definecharacter cyrillicotld   176
+\definecharacter cyrillicsdsc   {\uchar4{171}}
+\definecharacter cyrillicushrt  {\uchar4{94}}
+%definecharacter cyrillicy      179
+%definecharacter cyrillicyhcrs  180
+%definecharacter cyrillichdsc   181
+\definecharacter cyrillicdzhe   {\uchar4{95}}
+\definecharacter cyrillicie     {\uchar4{84}}
+\definecharacter cyrillicnje    {\uchar4{90}}
+\definecharacter cyrillicyo     {\uchar4{81}}
+
+% is there overlap with the above definitions
+
+\definecharacter cyrillicEgrave             {\uchar4{0}}
+\definecharacter cyrillicGJE                {\uchar4{3}}
+\definecharacter cyrillicJE                 {\uchar4{8}}
+\definecharacter cyrillicKJE                {\uchar4{12}}
+\definecharacter cyrillicIgrave             {\uchar4{13}}
+\definecharacter cyrillicegrave             {\uchar4{80}}
+\definecharacter cyrillicgje                {\uchar4{83}}
+\definecharacter cyrillicje                 {\uchar4{88}}
+\definecharacter cyrillickje                {\uchar4{92}}
+\definecharacter cyrillicigrave             {\uchar4{93}}
+\definecharacter cyrillicOMEGA              {\uchar4{96}}
+\definecharacter cyrillicomega              {\uchar4{97}}
+\definecharacter cyrillicYAT                {\uchar4{98}}
+\definecharacter cyrillicyat                {\uchar4{99}}
+\definecharacter cyrillicEiotified          {\uchar4{100}}
+\definecharacter cyrilliceiotified          {\uchar4{101}}
+\definecharacter cyrillicLITTLEYUS          {\uchar4{102}}
+\definecharacter cyrilliclittleyus          {\uchar4{103}}
+\definecharacter cyrillicLITTLEYUSiotified  {\uchar4{104}}
+\definecharacter cyrilliclittleyusiotified  {\uchar4{105}}
+\definecharacter cyrillicBIGYUS             {\uchar4{106}}
+\definecharacter cyrillicbigyus             {\uchar4{107}}
+\definecharacter cyrillicBIGYUSiotified     {\uchar4{108}}
+\definecharacter cyrillicbigyusiotified     {\uchar4{109}}
+\definecharacter cyrillicKSI                {\uchar4{110}}
+\definecharacter cyrillicksi                {\uchar4{111}}
+\definecharacter cyrillicPSI                {\uchar4{112}}
+\definecharacter cyrillicpsi                {\uchar4{113}}
+\definecharacter cyrillicFITA               {\uchar4{114}}
+\definecharacter cyrillicfita               {\uchar4{115}}
+\definecharacter cyrillicIZHITSA            {\uchar4{116}}
+\definecharacter cyrillicizhitsa            {\uchar4{117}}
+\definecharacter cyrillicIZHITSAdoublegrave {\uchar4{118}}
+\definecharacter cyrillicizhitsadoublegrave {\uchar4{119}}
+\definecharacter cyrillicUK                 {\uchar4{120}}
+\definecharacter cyrillicuk                 {\uchar4{121}}
+\definecharacter cyrillicOMEGAround         {\uchar4{122}}
+\definecharacter cyrillicomegaround         {\uchar4{123}}
+\definecharacter cyrillicOMEGAtitlo         {\uchar4{124}}
+\definecharacter cyrillicomegatitlo         {\uchar4{125}}
+\definecharacter cyrillicOT                 {\uchar4{126}}
+\definecharacter cyrillicot                 {\uchar4{127}}
+\definecharacter cyrillicKOPPA              {\uchar4{128}}
+\definecharacter cyrillickoppa              {\uchar4{129}}
+\definecharacter cyrillicTITLO              {\uchar4{131}}
+\definecharacter cyrillicPALATALIZATION     {\uchar4{132}}
+\definecharacter cyrillicDASIAPNEUMATA      {\uchar4{133}}
+\definecharacter cyrillicPSILIPNEUMATA      {\uchar4{134}}
+\definecharacter cyrillicISHRTtail          {\uchar4{138}}
+\definecharacter cyrillicishrttail          {\uchar4{139}}
+\definecharacter cyrillicSEMISOFT           {\uchar4{140}}
+\definecharacter cyrillicsemisoft           {\uchar4{141}}
+\definecharacter cyrillicERtick             {\uchar4{142}}
+\definecharacter cyrillicertick             {\uchar4{143}}
+\definecharacter cyrillicGHEupturn          {\uchar4{144}}
+\definecharacter cyrillicgheupturn          {\uchar4{145}}
+\definecharacter cyrillicGHEstroke          {\uchar4{146}}
+\definecharacter cyrillicghestroke          {\uchar4{147}}
+\definecharacter cyrillicGHEmidhook         {\uchar4{148}}
+\definecharacter cyrillicghemidhook         {\uchar4{149}}
+\definecharacter cyrillicZHEdescender       {\uchar4{150}}
+\definecharacter cyrilliczhedescender       {\uchar4{151}}
+\definecharacter cyrillicZDSC               {\uchar4{152}}
+\definecharacter cyrilliczdsc               {\uchar4{153}}
+\definecharacter cyrillicKADC               {\uchar4{154}}
+\definecharacter cyrillickadc               {\uchar4{155}}
+\definecharacter cyrillicKAvertstroke       {\uchar4{156}}
+\definecharacter cyrillickavertstroke       {\uchar4{157}}
+\definecharacter cyrillicKAstroke           {\uchar4{158}}
+\definecharacter cyrillickastroke           {\uchar4{159}}
+\definecharacter cyrillicKAbashkir          {\uchar4{160}}
+\definecharacter cyrillickabashkir          {\uchar4{161}}
+\definecharacter cyrillicENDC               {\uchar4{162}}
+\definecharacter cyrillicendc               {\uchar4{163}}
+\definecharacter cyrillicENGHE              {\uchar4{164}}
+\definecharacter cyrillicenghe              {\uchar4{165}}
+\definecharacter cyrillicPEmidhook          {\uchar4{166}}
+\definecharacter cyrillicpemidhook          {\uchar4{167}}
+\definecharacter cyrillicHA                 {\uchar4{168}}
+\definecharacter cyrillicha                 {\uchar4{169}}
+%definecharacter cyrillicSDSC               {\uchar4{170}} % already defined
+%definecharacter cyrilliccdsc               {\uchar4{171}} % already defined
+\definecharacter cyrillicTEDC               {\uchar4{172}}
+\definecharacter cyrillictedc               {\uchar4{173}}
+\definecharacter cyrillicYstr               {\uchar4{174}}
+\definecharacter cyrillicystr               {\uchar4{175}}
+\definecharacter cyrillicYstrstroke         {\uchar4{176}}
+\definecharacter cyrillicystrstroke         {\uchar4{177}}
+\definecharacter cyrillicHADC               {\uchar4{178}}
+\definecharacter cyrillichadc               {\uchar4{179}}
+\definecharacter cyrillicTETSE              {\uchar4{180}}
+\definecharacter cyrillictetse              {\uchar4{181}}
+\definecharacter cyrillicCHEDC              {\uchar4{182}}
+\definecharacter cyrillicchedc              {\uchar4{183}}
+\definecharacter cyrillicCHEvertstroke      {\uchar4{184}}
+\definecharacter cyrillicchevertstroke      {\uchar4{185}}
+\definecharacter cyrillicSHHA               {\uchar4{186}}
+\definecharacter cyrillicshha               {\uchar4{187}}
+\definecharacter cyrillicCHEabkhasian       {\uchar4{188}}
+\definecharacter cyrilliccheabkhasian       {\uchar4{189}}
+\definecharacter cyrillicCHEDCabkhasian     {\uchar4{190}}
+\definecharacter cyrillicchedcabkhasian     {\uchar4{191}}
+\definecharacter cyrillicPALOCHKA           {\uchar4{192}}
+\definecharacter cyrillicZHEbreve           {\uchar4{193}}
+\definecharacter cyrilliczhebreve           {\uchar4{194}}
+\definecharacter cyrillicKAhook             {\uchar4{195}}
+\definecharacter cyrillickahook             {\uchar4{196}}
+\definecharacter cyrillicELtail             {\uchar4{197}}
+\definecharacter cyrilliceltail             {\uchar4{198}}
+\definecharacter cyrillicENhook             {\uchar4{199}}
+\definecharacter cyrillicenhook             {\uchar4{200}}
+\definecharacter cyrillicENtail             {\uchar4{201}}
+\definecharacter cyrillicentail             {\uchar4{202}}
+\definecharacter cyrillicCHEkhakassian      {\uchar4{203}}
+\definecharacter cyrillicchekhakassian      {\uchar4{204}}
+\definecharacter cyrillicEMtail             {\uchar4{205}}
+\definecharacter cyrillicemtail             {\uchar4{206}}
+\definecharacter cyrillicAbreve             {\uchar4{208}}
+\definecharacter cyrillicabreve             {\uchar4{209}}
+\definecharacter cyrillicAdiaeresis         {\uchar4{210}}
+\definecharacter cyrillicadiaeresis         {\uchar4{211}}
+%definecharacter cyrillicAE                 {\uchar4{212}} % already defined
+%definecharacter cyrillicae                 {\uchar4{213}} % already defined
+\definecharacter cyrillicEbreve             {\uchar4{214}}
+\definecharacter cyrillicebreve             {\uchar4{215}}
+\definecharacter cyrillicSCHWA              {\uchar4{216}}
+\definecharacter cyrillicschwa              {\uchar4{217}}
+\definecharacter cyrillicSCHWAdiaeresis     {\uchar4{218}}
+\definecharacter cyrillicschwadiaeresis     {\uchar4{219}}
+\definecharacter cyrillicZHEdiaeresis       {\uchar4{220}}
+\definecharacter cyrilliczhediaeresis       {\uchar4{221}}
+\definecharacter cyrillicZEdiaeresis        {\uchar4{222}}
+\definecharacter cyrilliczediaeresis        {\uchar4{223}}
+\definecharacter cyrillicDZEabkhasian       {\uchar4{224}}
+\definecharacter cyrillicdzeabkhasian       {\uchar4{225}}
+\definecharacter cyrillicImacron            {\uchar4{226}}
+\definecharacter cyrillicimacron            {\uchar4{227}}
+\definecharacter cyrillicIdiaeresis         {\uchar4{228}}
+\definecharacter cyrillicidiaeresis         {\uchar4{229}}
+\definecharacter cyrillicOdiaeresis         {\uchar4{230}}
+\definecharacter cyrillicodiaeresis         {\uchar4{231}}
+\definecharacter cyrillicObarred            {\uchar4{232}}
+\definecharacter cyrillicobarred            {\uchar4{233}}
+\definecharacter cyrillicObarreddiaeresis   {\uchar4{234}}
+\definecharacter cyrillicobarreddiaeresis   {\uchar4{235}}
+\definecharacter cyrillicEdiaeresis         {\uchar4{236}}
+\definecharacter cyrillicediaeresis         {\uchar4{237}}
+\definecharacter cyrillicUmacron            {\uchar4{238}}
+\definecharacter cyrillicumacron            {\uchar4{239}}
+\definecharacter cyrillicUdiaeresis         {\uchar4{240}}
+\definecharacter cyrillicudiaeresis         {\uchar4{241}}
+\definecharacter cyrillicUdoubleacute       {\uchar4{242}}
+\definecharacter cyrillicudoubleacute       {\uchar4{243}}
+\definecharacter cyrillicCHEdiaeresis       {\uchar4{244}}
+\definecharacter cyrillicchediaeresis       {\uchar4{245}}
+\definecharacter cyrillicYERUdiaeresis      {\uchar4{248}}
+\definecharacter cyrillicyerudiaeresis      {\uchar4{249}}
+
+\stopencoding
+
+% Greek Extended
+
+\startencoding[uc]
+
+\definecharacter greekalphapsili                     {\uchar{31}{0}}
+\definecharacter greekalphadasia                     {\uchar{31}{1}}
+\definecharacter greekalphapsilivaria                {\uchar{31}{2}}
+\definecharacter greekalphadasiavaria                {\uchar{31}{3}}
+\definecharacter greekalphapsilitonos                {\uchar{31}{4}}
+\definecharacter greekalphadasiatonos                {\uchar{31}{5}}
+\definecharacter greekalphapsiliperispomeni          {\uchar{31}{6}}
+\definecharacter greekalphadasiaperispomeni          {\uchar{31}{7}}
+\definecharacter greekAlphapsili                     {\uchar{31}{8}}
+\definecharacter greekAlphadasia                     {\uchar{31}{9}}
+\definecharacter greekAlphapsilivaria                {\uchar{31}{10}}
+\definecharacter greekAlphadasiavaria                {\uchar{31}{11}}
+\definecharacter greekAlphapsilitonos                {\uchar{31}{12}}
+\definecharacter greekAlphadasiatonos                {\uchar{31}{13}}
+\definecharacter greekAlphapsiliperispomeni          {\uchar{31}{14}}
+\definecharacter greekAlphadasiaperispomeni          {\uchar{31}{15}}
+\definecharacter greekepsilonpsili                   {\uchar{31}{16}} % 1f10
+\definecharacter greekepsilondasia                   {\uchar{31}{17}}
+\definecharacter greekepsilonpsilivaria              {\uchar{31}{18}}
+\definecharacter greekepsilondasiavaria              {\uchar{31}{19}}
+\definecharacter greekepsilonpsilitonos              {\uchar{31}{20}}
+\definecharacter greekepsilondasiatonos              {\uchar{31}{21}}
+\definecharacter greekEpsilonpsili                   {\uchar{31}{24}}
+\definecharacter greekEpsilondasia                   {\uchar{31}{25}}
+\definecharacter greekEpsilonpsilivaria              {\uchar{31}{26}}
+\definecharacter greekEpsilondasiavaria              {\uchar{31}{27}}
+\definecharacter greekEpsilonpsilitonos              {\uchar{31}{28}}
+\definecharacter greekEpsilondasiatonos              {\uchar{31}{29}}
+\definecharacter greeketapsili                       {\uchar{31}{32}} % 1f20
+\definecharacter greeketadasia                       {\uchar{31}{33}}
+\definecharacter greeketapsilivaria                  {\uchar{31}{34}}
+\definecharacter greeketadasiavaria                  {\uchar{31}{35}}
+\definecharacter greeketapsilitonos                  {\uchar{31}{36}}
+\definecharacter greeketadasiatonos                  {\uchar{31}{37}}
+\definecharacter greeketapsiliperispomeni            {\uchar{31}{38}}
+\definecharacter greeketadasiaperispomeni            {\uchar{31}{39}}
+\definecharacter greekEtapsili                       {\uchar{31}{40}}
+\definecharacter greekEtadasia                       {\uchar{31}{41}}
+\definecharacter greekEtapsilivaria                  {\uchar{31}{42}}
+\definecharacter greekEtadasiavaria                  {\uchar{31}{43}}
+\definecharacter greekEtapsilitonos                  {\uchar{31}{44}}
+\definecharacter greekEtadasiatonos                  {\uchar{31}{45}}
+\definecharacter greekEtapsiliperispomeni            {\uchar{31}{46}}
+\definecharacter greekEtadasiaperispomeni            {\uchar{31}{47}}
+\definecharacter greekiotapsili                      {\uchar{31}{48}} % 1f30
+\definecharacter greekiotadasia                      {\uchar{31}{49}}
+\definecharacter greekiotapsilivaria                 {\uchar{31}{50}}
+\definecharacter greekiotadasiavaria                 {\uchar{31}{51}}
+\definecharacter greekiotapsilitonos                 {\uchar{31}{52}}
+\definecharacter greekiotadasiatonos                 {\uchar{31}{53}}
+\definecharacter greekiotapsiliperispomeni           {\uchar{31}{54}}
+\definecharacter greekiotadasiaperispomeni           {\uchar{31}{55}}
+\definecharacter greekIotapsili                      {\uchar{31}{56}}
+\definecharacter greekIotadasia                      {\uchar{31}{57}}
+\definecharacter greekIotapsilivaria                 {\uchar{31}{58}}
+\definecharacter greekIotadasiavaria                 {\uchar{31}{59}}
+\definecharacter greekIotapsilitonos                 {\uchar{31}{60}}
+\definecharacter greekIotadasiatonos                 {\uchar{31}{61}}
+\definecharacter greekIotapsiliperispomeni           {\uchar{31}{62}}
+\definecharacter greekIotadasiaperispomeni           {\uchar{31}{63}}
+\definecharacter greekomicronpsili                   {\uchar{31}{64}} % 1f40
+\definecharacter greekomicrondasia                   {\uchar{31}{65}}
+\definecharacter greekomicronpsilivaria              {\uchar{31}{66}}
+\definecharacter greekomicrondasiavaria              {\uchar{31}{67}}
+\definecharacter greekomicronpsilitonos              {\uchar{31}{68}}
+\definecharacter greekomicrondasiatonos              {\uchar{31}{69}}
+\definecharacter greekOmicronpsili                   {\uchar{31}{72}}
+\definecharacter greekOmicrondasia                   {\uchar{31}{73}}
+\definecharacter greekOmicronpsilivaria              {\uchar{31}{74}}
+\definecharacter greekOmicrondasiavaria              {\uchar{31}{75}}
+\definecharacter greekOmicronpsilitonos              {\uchar{31}{76}}
+\definecharacter greekOmicrondasiatonos              {\uchar{31}{77}}
+\definecharacter greekupsilonpsili                   {\uchar{31}{80}} % 1f50
+\definecharacter greekupsilondasia                   {\uchar{31}{81}}
+\definecharacter greekupsilonpsilivaria              {\uchar{31}{82}}
+\definecharacter greekupsilondasiavaria              {\uchar{31}{83}}
+\definecharacter greekupsilonpsilitonos              {\uchar{31}{84}}
+\definecharacter greekupsilondasiatonos              {\uchar{31}{85}}
+\definecharacter greekupsilonpsiliperispomeni        {\uchar{31}{86}}
+\definecharacter greekupsilondasiaperispomeni        {\uchar{31}{87}}
+\definecharacter greekUpsilondasia                   {\uchar{31}{89}}
+\definecharacter greekUpsilondasiavaria              {\uchar{31}{91}}
+\definecharacter greekUpsilondasiatonos              {\uchar{31}{93}}
+\definecharacter greekUpsilondasiaperispomeni        {\uchar{31}{95}}
+\definecharacter greekomegapsili                     {\uchar{31}{96}} % 1f60
+\definecharacter greekomegadasia                     {\uchar{31}{97}}
+\definecharacter greekomegapsilivaria                {\uchar{31}{98}}
+\definecharacter greekomegadasiavaria                {\uchar{31}{99}}
+\definecharacter greekomegapsilitonos                {\uchar{31}{100}}
+\definecharacter greekomegadasiatonos                {\uchar{31}{101}}
+\definecharacter greekomegapsiliperispomeni          {\uchar{31}{102}}
+\definecharacter greekomegadasiaperispomeni          {\uchar{31}{103}}
+\definecharacter greekOmegapsili                     {\uchar{31}{104}}
+\definecharacter greekOmegadasia                     {\uchar{31}{105}}
+\definecharacter greekOmegapsilivaria                {\uchar{31}{106}}
+\definecharacter greekOmegadasiavaria                {\uchar{31}{107}}
+\definecharacter greekOmegapsilitonos                {\uchar{31}{108}}
+\definecharacter greekOmegadasiatonos                {\uchar{31}{109}}
+\definecharacter greekOmegapsiliperispomeni          {\uchar{31}{110}}
+\definecharacter greekOmegadasiaperispomeni          {\uchar{31}{111}}
+\definecharacter greekalphavaria                     {\uchar{31}{112}} % 1f70
+\definecharacter greekalphaoxia                      {\uchar{31}{113}}
+\definecharacter greekepsilonvaria                   {\uchar{31}{114}}
+\definecharacter greekepsilonoxia                    {\uchar{31}{115}}
+\definecharacter greeketavaria                       {\uchar{31}{116}}
+\definecharacter greeketaoxia                        {\uchar{31}{117}}
+\definecharacter greekiotavaria                      {\uchar{31}{118}}
+\definecharacter greekiotaoxia                       {\uchar{31}{119}}
+\definecharacter greekomicronvaria                   {\uchar{31}{120}}
+\definecharacter greekomicronoxia                    {\uchar{31}{121}}
+\definecharacter greekupsilonvaria                   {\uchar{31}{122}}
+\definecharacter greekupsilonoxia                    {\uchar{31}{123}}
+\definecharacter greekomegavaria                     {\uchar{31}{124}}
+\definecharacter greekomegaoxia                      {\uchar{31}{125}}
+\definecharacter greekalphaiotasubpsili              {\uchar{31}{128}} % 1f80
+\definecharacter greekalphaiotasubdasia              {\uchar{31}{129}}
+\definecharacter greekalphaiotasubpsilivaria         {\uchar{31}{130}}
+\definecharacter greekalphaiotasubdasiavaria         {\uchar{31}{131}}
+\definecharacter greekalphaiotasubpsilitonos         {\uchar{31}{132}}
+\definecharacter greekalphaiotasubdasiatonos         {\uchar{31}{133}}
+\definecharacter greekalphaiotasubpsiliperispomeni   {\uchar{31}{134}}
+\definecharacter greekalphaiotasubdasiaperispomeni   {\uchar{31}{135}}
+\definecharacter greekAlphaiotasubpsili              {\uchar{31}{136}}
+\definecharacter greekAlphaiotasubdasia              {\uchar{31}{137}}
+\definecharacter greekAlphaiotasubpsilivaria         {\uchar{31}{138}}
+\definecharacter greekAlphaiotasubdasiavaria         {\uchar{31}{139}}
+\definecharacter greekAlphaiotasubpsilitonos         {\uchar{31}{140}}
+\definecharacter greekAlphaiotasubdasiatonos         {\uchar{31}{141}}
+\definecharacter greekAlphaiotasubpsiliperispomeni   {\uchar{31}{142}}
+\definecharacter greekAlphaiotasubdasiaperispomeni   {\uchar{31}{143}}
+\definecharacter greeketaiotasubpsili                {\uchar{31}{144}} % 1f90
+\definecharacter greeketaiotasubdasia                {\uchar{31}{145}}
+\definecharacter greeketaiotasubpsilivaria           {\uchar{31}{146}}
+\definecharacter greeketaiotasubdasiavaria           {\uchar{31}{147}}
+\definecharacter greeketaiotasubpsilitonos           {\uchar{31}{148}}
+\definecharacter greeketaiotasubdasiatonos           {\uchar{31}{149}}
+\definecharacter greeketaiotasubpsiliperispomeni     {\uchar{31}{150}}
+\definecharacter greeketaiotasubdasiaperispomeni     {\uchar{31}{151}}
+\definecharacter greekEtaiotasubpsili                {\uchar{31}{152}}
+\definecharacter greekEtaiotasubdasia                {\uchar{31}{153}}
+\definecharacter greekEtaiotasubpsilivaria           {\uchar{31}{154}}
+\definecharacter greekEtaiotasubdasiavaria           {\uchar{31}{155}}
+\definecharacter greekEtaiotasubpsilitonos           {\uchar{31}{156}}
+\definecharacter greekEtaiotasubdasiatonos           {\uchar{31}{157}}
+\definecharacter greekEtaiotasubpsiliperispomeni     {\uchar{31}{158}}
+\definecharacter greekEtaiotasubdasiaperispomeni     {\uchar{31}{159}}
+\definecharacter greekomegaiotasubpsili              {\uchar{31}{160}} % 1fa0
+\definecharacter greekomegaiotasubdasia              {\uchar{31}{161}}
+\definecharacter greekomegaiotasubpsilivaria         {\uchar{31}{162}}
+\definecharacter greekomegaiotasubdasiavaria         {\uchar{31}{163}}
+\definecharacter greekomegaiotasubpsilitonos         {\uchar{31}{164}}
+\definecharacter greekomegaiotasubdasiatonos         {\uchar{31}{165}}
+\definecharacter greekomegaiotasubpsiliperispomeni   {\uchar{31}{166}}
+\definecharacter greekomegaiotasubdasiaperispomeni   {\uchar{31}{167}}
+\definecharacter greekOmegaiotasubpsili              {\uchar{31}{168}}
+\definecharacter greekOmegaiotasubdasia              {\uchar{31}{169}}
+\definecharacter greekOmegaiotasubpsilivaria         {\uchar{31}{170}}
+\definecharacter greekOmegaiotasubdasiavaria         {\uchar{31}{171}}
+\definecharacter greekOmegaiotasubpsilitonos         {\uchar{31}{172}}
+\definecharacter greekOmegaiotasubdasiatonos         {\uchar{31}{173}}
+\definecharacter greekOmegaiotasubpsiliperispomeni   {\uchar{31}{174}}
+\definecharacter greekOmegaiotasubdasiaperispomeni   {\uchar{31}{175}}
+\definecharacter greekalphavrachy                    {\uchar{31}{176}} % 1fb0
+\definecharacter greekalphamacron                    {\uchar{31}{177}}
+\definecharacter greekalphaiotasubvaria              {\uchar{31}{178}}
+\definecharacter greekalphaiotasub                   {\uchar{31}{179}}
+\definecharacter greekalphaiotasubtonos              {\uchar{31}{180}}
+\definecharacter greekalphaperispomeni               {\uchar{31}{182}}
+\definecharacter greekalphaiotasubperispomeni        {\uchar{31}{183}}
+\definecharacter greekAlphavrachy                    {\uchar{31}{184}}
+\definecharacter greekAlphamacron                    {\uchar{31}{185}}
+\definecharacter greekAlphavaria                     {\uchar{31}{186}}
+\definecharacter greekAlphatonos                     {\uchar{31}{187}}
+\definecharacter greekAlphaiotasub                   {\uchar{31}{188}}
+\definecharacter greekCoronis                        {\uchar{31}{189}}
+\definecharacter greekprosgegrammeni                 {\uchar{31}{190}}
+\definecharacter greekpsili                          {\uchar{31}{191}}
+\definecharacter greekperispomeni                    {\uchar{31}{192}} % 1fc0
+\definecharacter greekdialytikaperispomeni           {\uchar{31}{193}}
+\definecharacter greeketaiotasubvaria                {\uchar{31}{194}}
+\definecharacter greeketaiotasub                     {\uchar{31}{195}}
+\definecharacter greeketaiotasubtonos                {\uchar{31}{196}}
+\definecharacter greeketaperispomeni                 {\uchar{31}{198}}
+\definecharacter greeketaiotasubperispomeni          {\uchar{31}{199}}
+\definecharacter greekEpsilonvaria                   {\uchar{31}{200}}
+\definecharacter greekEpsilontonos                   {\uchar{31}{201}}
+\definecharacter greekEtavaria                       {\uchar{31}{202}}
+\definecharacter greekEtatonos                       {\uchar{31}{203}}
+\definecharacter greekEtaiotasub                     {\uchar{31}{204}}
+\definecharacter greekpsilivaria                     {\uchar{31}{205}}
+\definecharacter greekpsilitonos                     {\uchar{31}{206}}
+\definecharacter greekpsiliperispomeni               {\uchar{31}{207}}
+\definecharacter greekiotavrachy                     {\uchar{31}{208}} % 1fd0
+\definecharacter greekiotamacron                     {\uchar{31}{209}}
+\definecharacter greekiotadialytikavaria             {\uchar{31}{210}}
+\definecharacter greekiotadialytikatonos             {\uchar{31}{211}}
+\definecharacter greekiotaperispomeni                {\uchar{31}{214}}
+\definecharacter greekiotadialytikaperispomeni       {\uchar{31}{215}}
+\definecharacter greekIotavrachy                     {\uchar{31}{216}}
+\definecharacter greekIotamacron                     {\uchar{31}{217}}
+\definecharacter greekIotavaria                      {\uchar{31}{218}}
+\definecharacter greekIotatonos                      {\uchar{31}{219}}
+\definecharacter greekdasiavaria                     {\uchar{31}{221}}
+\definecharacter greekdasiatonos                     {\uchar{31}{222}}
+\definecharacter greekdasiaperispomeni               {\uchar{31}{223}}
+\definecharacter greekupsilonvrachy                  {\uchar{31}{224}} % 1fe0
+\definecharacter greekupsilonmacron                  {\uchar{31}{225}}
+\definecharacter greekupsilondialytikavaria          {\uchar{31}{226}}
+\definecharacter greekupsilondialytikatonos          {\uchar{31}{227}}
+\definecharacter greekrhopsili                       {\uchar{31}{228}}
+\definecharacter greekrhodasia                       {\uchar{31}{229}}
+\definecharacter greekupsilonperispomeni             {\uchar{31}{230}}
+\definecharacter greekupsilondialytikaperispomeni    {\uchar{31}{231}}
+\definecharacter greekUpsilonvrachy                  {\uchar{31}{232}}
+\definecharacter greekUpsilonmacron                  {\uchar{31}{233}}
+\definecharacter greekUpsilonvaria                   {\uchar{31}{234}}
+\definecharacter greekUpsilontonos                   {\uchar{31}{235}}
+\definecharacter greekRhodasia                       {\uchar{31}{236}}
+\definecharacter greekdialytikavaria                 {\uchar{31}{237}}
+\definecharacter greekdialytikatonos                 {\uchar{31}{238}}
+\definecharacter greekvaria                          {\uchar{31}{239}}
+\definecharacter greekomegaiotasubvaria              {\uchar{31}{242}}
+\definecharacter greekomegaiotasub                   {\uchar{31}{243}}
+\definecharacter greekomegaiotasubtonos              {\uchar{31}{244}}
+\definecharacter greekomegaperispomeni               {\uchar{31}{246}}
+\definecharacter greekomegaiotasubperispomeni        {\uchar{31}{247}}
+\definecharacter greekOmicronvaria                   {\uchar{31}{248}}
+\definecharacter greekOmicrontonos                   {\uchar{31}{249}}
+\definecharacter greekOmegavaria                     {\uchar{31}{250}}
+\definecharacter greekOmegatonos                     {\uchar{31}{251}}
+\definecharacter greekOmegaiotasub                   {\uchar{31}{252}}
+\definecharacter greekoxia                           {\uchar{31}{253}}
+\definecharacter greekdasia                          {\uchar{31}{254}}
+\definecharacter greeksigmalunate                    {\uchar3{242}}
+\definecharacter greekSigmalunate                    {\uchar3{249}}
+\definecharacter greeksampi                          {\uchar3{225}}
+\definecharacter greekdigamma                        {\uchar3{221}}
+\definecharacter greekstigma                         {\uchar3{219}}
+\definecharacter greeknumkoppa                       {\uchar3{223}}
+\definecharacter greekkoppa                          {\uchar3{217}}
+\definecharacter greekupsilondiaeresis               {\uchar3{203}}
+
+\stopencoding
+
+% Hebrew:
+
+\startencoding[uc]
+
+\definecharacter hebrewAlef          {\uchar5{208}} %  05D0
+\definecharacter hebrewBet           {\uchar5{209}}
+\definecharacter hebrewGimel         {\uchar5{210}}
+\definecharacter hebrewDalet         {\uchar5{211}}
+\definecharacter hebrewHe            {\uchar5{212}}
+\definecharacter hebrewVav           {\uchar5{213}}
+\definecharacter hebrewZayin         {\uchar5{214}}
+\definecharacter hebrewHet           {\uchar5{215}}
+\definecharacter hebrewTet           {\uchar5{216}}
+\definecharacter hebrewYod           {\uchar5{217}}
+\definecharacter hebrewKaffinal      {\uchar5{218}}
+\definecharacter hebrewKaf           {\uchar5{219}}
+\definecharacter hebrewLamed         {\uchar5{220}}
+\definecharacter hebrewMemfinal      {\uchar5{221}}
+\definecharacter hebrewMem           {\uchar5{222}}
+\definecharacter hebrewNunfinal      {\uchar5{223}}
+\definecharacter hebrewNun           {\uchar5{224}}
+\definecharacter hebrewSamekh        {\uchar5{225}}
+\definecharacter hebrewAyin          {\uchar5{226}}
+\definecharacter hebrewPefinal       {\uchar5{227}}
+\definecharacter hebrewPe            {\uchar5{228}}
+\definecharacter hebrewTsadifinal    {\uchar5{229}}
+\definecharacter hebrewTsadi         {\uchar5{230}}
+\definecharacter hebrewQof           {\uchar5{231}}
+\definecharacter hebrewResh          {\uchar5{232}}
+\definecharacter hebrewShin          {\uchar5{233}}
+\definecharacter hebrewTav           {\uchar5{234}} % 05EA
+
+\stopencoding
+
+\endinput

@@ -1,0 +1,1156 @@
+%D \module
+%D   [       file=font-chi,
+%D        version=1999.10.10,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Chinese,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D    suggestions=Wang Lei,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifx\handlechineseunicodeglyph\undefined \else \endinput \fi
+
+% NOT YET ADAPTED TO THE NEW FONT MACROS
+
+%D The first implementation (most of which is here) is based on
+%D the specific font layout. This is because not all glyphs are
+%D available in uniciode, which means that we cannot use
+%D unicode codepoints (yet); if it were possible we could use
+%D just one table per input encoding.
+
+\writestatus{loading}{ConTeXt Font Macros / Chinese}
+
+% much will to typo-chi.tex
+
+%D Still to be implemented:
+%D
+%D \startitemize
+%D \item columns left right touch
+%D \item distance = (hsize-n*bodyfontsize)/(n-1)
+%D \item char grids
+%D \item char tables
+%D \item all kind of rotated combinations
+%D \item hanging puctuation
+%D \item a few more encodings
+%D \item rotation list
+%D \stopitemize
+
+%M \setupbodyfont[chi]
+%M
+%M \def\WangLei{\purechinese{\uchar{205}{245}\uchar{192}{218}}}
+
+\useencoding[chi]
+
+%D When \WangLei\ sent me a mail asking if \CONTEXT\ was able
+%D to support Chinese, I wasn't sure if the answer could be
+%D yes. I knew that those languages, rich of glyphs, were
+%D typeset by \TEX, so in principle it should be possible. I
+%D asked or some more input and was told that there were
+%D \LATEX\ styles regarding those languages. When I unzipped
+%D the accompanying files, it became clear that I had to
+%D implement support for Chinese from scratch. There was a
+%D multitude of font, with rather unfamiliar encodings, a
+%D large collection of files with |<|at least for me|>|
+%D unknown purposes, and worse, the documentation was mainly
+%D in Chinese.
+%D
+%D So, \WangLei\ and I started exchanging some emails and it
+%D soon became clear that supporting Chinese was not that
+%D complicated at all. It mostly came to dealing with handling
+%D \UNICODE\ fonts. It also became clear that everything
+%D Chinese took place in the upper region of the eight bit
+%D character set. I wrote some macros that could process the
+%D small \type {Hello World} file \WangLei\ had send me, and
+%D after some bug fixes real Chinese came out. I started to
+%D like the look and fel of Chinese glyphs, so on we went.
+%D
+%D The first comments concerned spacing. The mix of English
+%D and Chinese demands some rather deliberate handling of
+%D spacing. Breaking lines was not so much a problem, and
+%D could be solved by adding some glue between Chinese glyphs.
+%D
+%D In the meantime had asked \WangLei\ for some language bound
+%D labels and texts, and implementing these was rather
+%D straightforward. But, there were still some issues to deal
+%D with: conversion of numbers, date handling and index
+%D sorting.
+%D
+%D I consider(ed) writing Chinese support to be a nice puzzle,
+%D since I have to act on chinese \CONTEXT\ code, where I only
+%D understand the \CONTEXT\ part. The drawings \WangLei\ made
+%D me (in drawing packages) were of great help. Since I write
+%D these modules from scratch, although I fall back on some
+%D basic encoding and font modules, I consider them to be
+%D rather clean. This cannot be said of all \CONTEXT\ font
+%D modules \type {-)}.
+
+\unprotect
+
+%D Because Chinese glyphs have more height than the average
+%D Latin glyph, and at the same time don't have much depth,
+%D we adapt the scale.
+%D
+%D Before and after the glyph we have to deal with Chinese
+%D spacing. Special attention is given to punctuation.
+%D
+%D \starttyping
+%D [some short nice chinese text with () and english]
+%D \stoptyping
+%D
+%D We insert a bit of stretch and introduce a signal to
+%D keep track of previous characters. We use a similar
+%D method in the units module, which may be a nice
+%D introduction to using signals.
+
+%D \macros
+%D   {chineseunicodescale, chineseinterglyphskip,
+%D    chineseunicodeheight, chineseunicodedepth, chinesespace}
+%D
+%D There are a few variables, that can be (re|)|set
+%D depending on the current font. They default to:
+
+% hm, why don't we use the normal unicodestrut mechanism?
+
+\def\chineseunicodescale  {1.00} % not smaller than .85
+\def\chineseunicodeheight {1.00}
+\def\chineseunicodedepth  {1.00}
+\def\chineseinterglyphskip{0pt   \!!plus .05em \!!minus .01em}
+\def\chinesesurroundskip  {.25em \!!plus .15em \!!minus .05em}
+
+%D We define a few signals. As said, another example of
+%D using signals can be found in the module \type {m-units}.
+
+\newsignal\chineseLsignal % left boundary character
+\newsignal\chineseRsignal % right boundary character
+\newsignal\chineseSsignal % any other character (symbol)
+
+\chardef\chineseBstatus=0 % 0=unknown 1=left 2=right 3=chinese 4=nospace
+\chardef\chineseAstatus=0 % 0=unknown 1=left 2=right 3=space
+\chardef\chineseSstatus=0 % 0=unknown 1=left 2=right
+
+\sfcode`(=2000  % a temporary hack
+
+\def\chinesenobreak
+ {\relax
+  \iftracechinese
+    \nobreak
+    \kern-.5pt\color[red]{\vrule\!!width1pt}\kern-.5pt
+    \nobreak
+  \else
+    \nobreak
+  \fi}
+
+\newif\ifcorrectchineseboundarychars
+
+\def\chineseunskip
+  {\unskip\unskip\unskip\unskip}
+
+\def\insertchineseglyph
+  {\iftracechinese\tracedchineseglyph\else\insertunicodeglyph\fi}
+
+\newif\ifverticalchinese
+
+\def\handlechineseunicodeglyph
+  {\ifinpagebody
+     \horizontalchineseunicodeglyph
+   \else\ifverticalchinese
+     \verticalchineseunicodeglyph
+   \else
+     \horizontalchineseunicodeglyph
+   \fi\fi}
+
+% chinese classes: left=1|right=2|center=3
+
+\chardef\plusfour=4
+
+\def\analyzechineseunicodeglyph % beware, no zerocount !
+  {\chardef\chineseSstatus0\getvalue{uc\number\unicodeposition}\relax}
+
+\def\analyzechineseunicodeenviroment
+  {% left
+   \ifx (\nextutoken              \chardef\chineseAstatus\plusone   \else
+   \ifx [\nextutoken              \chardef\chineseAstatus\plusone   \else
+   % right
+   \ifx ,\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx .\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx ?\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx ;\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx :\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx !\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx )\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   \ifx ]\nextutoken              \chardef\chineseAstatus\plustwo   \else
+   % space
+   \ifx\nextutoken\blankspace     \chardef\chineseAstatus\plusthree \else
+   \ifx\nextutoken\space          \chardef\chineseAstatus\plusthree \else
+                                  \chardef\chineseAstatus\zerocount
+   % unknown
+   \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi
+   % maybe save the last skip?
+   \chardef\chineseBstatus\ifdim\lastskip=\zeropoint\plusfour\else\zerocount\fi
+   \ifdim\lastskip=\chineseLsignal \chardef\chineseBstatus\plusone   \else
+   \ifdim\lastskip=\chineseRsignal \chardef\chineseBstatus\plustwo   \else
+   \ifdim\lastskip=\chineseSsignal \chardef\chineseBstatus\plusthree \else
+     \scratchskip=\lastskip \unskip
+     \ifdim\lastskip=\chineseLsignal \chardef\chineseBstatus\plusone   \else
+     \ifdim\lastskip=\chineseRsignal \chardef\chineseBstatus\plustwo   \else
+     \ifdim\lastskip=\chineseSsignal \chardef\chineseBstatus\plusthree \else
+       \space\scratchskip=\lastskip \unskip
+       \setbox\scratchbox=\hbox\bgroup
+         (\space
+         \ifdim\lastskip=\scratchskip
+           \egroup \chardef\chineseBstatus\plusone
+         \else
+           \egroup
+           \ifdim\scratchskip=\zeropoint \chardef\chineseBstatus\plusfour \fi
+         \fi
+     \fi\fi\fi
+   \fi\fi\fi}
+
+\def\horizontalchineseunicodeglyph
+  {\relax
+   \ifhmode\else\dontleavehmode\fi % added
+   \setunicodescale\chineseunicodescale % redundant
+   \setunicodestrut\chineseunicodeheight\chineseunicodedepth % redundant
+   \ifprocessingverbatim
+     \iftracechinese
+       \ruledhbox{\insertunicodeglyph}%
+     \else
+       \insertunicodeglyph
+     \fi
+   \else\ifx\nextutoken\relax
+       \insertunicodeglyph
+   \else
+     \analyzechineseunicodeglyph
+     \analyzechineseunicodeenviroment
+     \ifcase\chineseSstatus\relax
+       \ifcase\chineseBstatus\relax
+         \chineseunskip
+         \hskip\chinesesurroundskip      % unknown
+       \or
+         \chineseunskip
+         \chinesenobreak                 % left
+       \or
+         \ifcorrectchineseboundarychars\else\chineseunskip\fi
+         \hskip\chineseinterglyphskip    % right
+       \or
+         \chineseunskip
+         \hskip\chineseinterglyphskip    % chinese
+       \or
+                                         % whatever
+       \fi
+       \insertchineseglyph
+       \ifcase\chineseAstatus\relax
+         \hskip\chineseinterglyphskip    % unknown
+         \hskip\chinesesurroundskip
+         \ifcase\chineseSstatus
+           \hskip\chineseSsignal
+         \or
+           \hskip\chineseLsignal
+         \else
+           \hskip\chineseRsignal
+         \fi
+       \or
+         \hskip\chineseinterglyphskip    % left
+         \chinesenobreak
+         \hskip\chineseLsignal
+       \or
+         \chinesenobreak                 % right
+         \hskip\chineseinterglyphskip
+         \chinesenobreak
+         \hskip\chineseRsignal
+       \or
+         \hskip\chineseinterglyphskip    % space
+         \hskip\chinesesurroundskip
+         \hskip\chineseSsignal
+       \fi
+     \or % left
+       \ifcorrectchineseboundarychars
+         \let\unicodecharcommand\chineseleftcharcommand
+       \fi
+       \chineseunskip
+       \insertchineseglyph
+       \chinesenobreak
+       \hskip\chineseLsignal
+     \or % right
+       \ifcorrectchineseboundarychars
+         \let\unicodecharcommand\chineserightcharcommand
+       \fi
+       \chineseunskip
+       \chinesenobreak
+       \insertchineseglyph
+       \hskip\chineseRsignal
+     \else % center
+       \chineseunskip
+       \chinesenobreak
+       \insertchineseglyph
+       \hskip\chineseinterglyphskip
+       \hskip\chineseRsignal
+     \fi\fi
+     \aftergroup\ignorespaces            % watch this
+   \fi}
+
+\def\verticalchineseunicodeglyph
+  {\relax
+   \ifprocessingverbatim % to do
+     \horizontalchineseunicodeglyph
+   \else
+     \setunicodescale\chineseunicodescale % redundant
+     \setunicodestrut\chineseunicodeheight\chineseunicodedepth % redundant
+     \ifx\nextutoken\relax
+       \insertchineseglyph
+       \ifvmode % catches \hbox{...}, actually \hbox should be \vbox -)
+         \nointerlineskip
+       \fi
+       \allowbreak
+     \else
+       \analyzechineseunicodeglyph
+       \setbox\scratchbox\hbox to \hsize
+         {\hss
+          \ifcase\chineseSstatus\relax
+            \insertchineseglyph
+          \else % left / right
+            \setbox\scratchbox\hbox{\insertchineseglyph}%
+            \rotate[\c!rotation=270]{\box\scratchbox}%
+          \fi
+          \hss}%
+       \ht\scratchbox\unicodeheight\strutht
+       \dp\scratchbox\unicodedepth \strutdp
+       \ifvmode % catches \hbox{...}, actually \hbox should be \vbox -)
+         \nointerlineskip
+       \fi
+       \ifcase\prevchineseSstatus\relax
+         \ifnum\chineseSstatus=\plustwo \par\nobreak\else\allowbreak\fi
+       \or % left
+         \par\nobreak
+       \or % right
+         \ifnum\chineseSstatus=\plustwo \par\nobreak\else\allowbreak\fi
+       \fi
+       \global\chardef\prevchineseSstatus\chineseSstatus % pagebody ...
+       \box\scratchbox\par
+     \fi
+     \aftergroup\ignorespaces                           % watch this
+   \fi}
+
+%D \macros
+%D   {setupchinese,startvertical,nochinese}
+%D
+%D The previous macros implement horizontal as well as
+%D vertical typesetting. Vertical typesetting is implemented
+%D on top of the multi||column routines.
+
+\def\setupchinese
+  {\dodoubleargument\getparameters[\??vt]}
+
+\def\startvertical
+  {\dosingleempty\dostartvertical}
+
+\def\dostartvertical[#1]%
+  {\bgroup
+   \def\maxnofcolumns{25}%
+   \verticalchinesetrue
+   \global\chardef\prevchineseSstatus\zerocount
+   \let\nochinese\nochineseinvertical
+   \doif\@@vtn\v!fit
+     {\dimen0=\textwidth    \advance\dimen0 \@@vtdistance
+      \dimen2=\bodyfontsize \advance\dimen2 \@@vtdistance
+      \divide\dimen0 \number\dimen2
+      \edef\@@vtn{\number\dimen0}}%
+   \startcolumns
+     [\c!direction=\@@vtdirection,
+      \c!balance=\@@vtbalance,
+      \c!distance=\@@vtdistance,
+      \c!n=\@@vtn,
+      #1]}
+
+\def\stopvertical
+  {\stopcolumns
+   \egroup}
+
+\setupchinese
+  [\c!direction=\v!left,
+   \c!balance=\v!no,
+   \c!n=\v!fit,
+   \c!distance=1.5\bodyfontsize]
+
+%D We can set up vertical typesetting with \type
+%D {\setupchinese}.
+
+%D \macros
+%D   {nochineseinvertical}
+%D
+%D English (non chinese) text is typeset rotated:
+
+\def\nochineseinvertical#1%
+  {\par
+   \setbox\scratchbox\hbox{\strut#1}
+   \getnoflines{\wd\scratchbox}
+   \setbox\scratchbox\hbox to \noflines\openlineheight
+     {\hss\box\scratchbox\hss}
+   \hbox to \hsize
+     {\hss
+      \rotate
+        [\c!rotation=270]
+        {\vbox to \ht\scratchbox{\vss\box\scratchbox\vss}}%
+      \hss}
+   \par}
+
+%D \macros
+%D   {correctchineseboundarychars}
+%D
+%D Careful reading of the previous macro learns that we
+%D treat left and right glyphs differently. When we say
+%D
+%D \starttyping
+%D \correctchineseboundarycharstrue
+%D \stoptyping
+%D
+%D For the moment correction in on by default.
+
+\correctchineseboundarycharstrue
+
+\def\chineserightcharcommand#1%
+  {\iftracechinese\ruledhbox\else\hbox\fi \!!to .5em{#1\hss}%
+   \hskip.25em\!!plus .25em\relax}%
+
+\def\chineseleftcharcommand#1%
+  {\ifnum\chineseBstatus<4 \hskip.25em \!!plus .25em\relax\fi
+   \iftracechinese\ruledhbox\else\hbox\fi \!!to .5em{\hss#1}}%
+
+% \def\chineserightcharcommand#1%
+%   {\setbox\scratchbox=\hbox{#1}%
+%    \scratchdimen=.5em
+%    \ifdim\wd\scratchbox>\scratchdimen
+%      \iftracechinese\ruledhbox\else\hbox\fi \!!to \scratchdimen
+%        {\box\scratchbox\hss}%
+%      \hskip.5\scratchdimen\!!plus.5\scratchdimen\relax
+%    \else
+%      \box\scratchbox
+%    \fi}
+
+% \def\chineseleftcharcommand#1%
+%   {\setbox\scratchbox=\hbox{#1}%
+%    \scratchdimen=.5em
+%    \ifdim\wd\scratchbox>\scratchdimen
+%      \ifnum\chineseBstatus<4
+%        \hskip.5\scratchdimen\!!plus.5\scratchdimen\relax
+%      \fi
+%      \iftracechinese\ruledhbox\else\hbox\fi \!!to \scratchdimen
+%        {\hss\box\scratchbox}%
+%    \else
+%      \box\scratchbox
+%    \fi}
+
+%D The long list of numbers in the previous macro identify the
+%D characters where special care is needed for breaking lines.
+%D A linebreak is not permitted before:
+%D
+%D \def\DoIt #1 #2 %
+%D   {\hbox{\hbox to 2em{\uchar{#1}{#2}\hss}#1 #2}\par}
+%D
+%D \startcolumns[n=5]
+%D \DoIt 161 162 \DoIt 161 163 \DoIt 161 164 \DoIt 161 167 \DoIt 161 173
+%D \DoIt 161 175 \DoIt 161 177 \DoIt 161 179 \DoIt 161 181 \DoIt 161 183
+%D \DoIt 161 185 \DoIt 161 187 \DoIt 161 189 \DoIt 161 191 \DoIt 161 227
+%D \DoIt 161 228 \DoIt 161 229 \DoIt 163 161 \DoIt 163 162 \DoIt 163 167
+%D \DoIt 163 169 \DoIt 163 172 \DoIt 163 174 \DoIt 163 186 \DoIt 163 187
+%D \DoIt 163 190 \DoIt 163 191 \DoIt 163 221 \DoIt 163 253
+%D \stopcolumns
+%D
+%D A linebreak is not permitted after the following glyphs:
+%D
+%D \startcolumns[n=5]
+%D \DoIt 161 174 \DoIt 161 176 \DoIt 161 178 \DoIt 161 180 \DoIt 161 182
+%D \DoIt 161 184 \DoIt 161 186 \DoIt 161 188 \DoIt 161 190 \DoIt 163 168
+%D \DoIt 163 219 \DoIt 163 224 \DoIt 163 251
+%D \stopcolumns
+
+%D \macros
+%D   {tracechinesetrue, showchinesetracelegend}
+%D
+%D When we say \type {\tracechinesetrue}, we get some
+%D insight in the way \CONTEXT\ handles the Chinese glyphs.
+%D The symbols and color used represent:
+%D
+%D \showchinesetracelegend
+
+\newif\iftracechinese
+
+\def\showchinesetracelegend
+  {\definetabulate[\s!dummy][|c|l|l|l|]%
+   \startdummy
+     \HL
+     \NC \bf key \NC \bf meaning        \NC \bf glyph              \NC \bf keys  \NC\NR
+     \HL
+     \NC u \NC unknown character type   \NC \color[green]{current} \NC u l r     \NC\NR
+     \NC l \NC left boundary character  \NC \color[red]{previous}  \NC u l r c n \NC\NR
+     \NC r \NC right boundary character \NC \color[blue]{next}     \NC u l r s   \NC\NR
+     \NC c \NC chinese character        \NC                        \NC           \NC\NR
+     \NC s \NC following space          \NC                        \NC           \NC\NR
+     \NC n \NC no preceding space       \NC                        \NC           \NC\NR
+     \HL
+   \stopdummy}
+
+\def\tracedchineseglyph
+  {\dontleavehmode
+   \ruledhbox
+     {\setbox\scratchbox\hbox{\insertunicodeglyph}%
+      \hbox to \wd\scratchbox
+        {\localcolortrue
+         \copy\scratchbox
+         \infofont
+         \hskip-\wd\scratchbox
+         \hbox to \wd\scratchbox
+           {\hss
+            \color[green]{\ifcase\chineseSstatus\relax u\or l\or r\fi}%
+            \hss}%
+         \hskip-\wd\scratchbox
+         \lower\dp\scratchbox\hbox to \wd\scratchbox
+           {\hss
+            \color[red]{\ifcase\chineseBstatus\relax u\or l\or r\or c\or n\fi}%
+            \hss
+            \color[blue]{\ifcase\chineseAstatus\relax u\or l\or r\or s\fi}%
+            \hss}}}}
+
+%D The following example shows how tracing works.
+%D
+%D \start \tracechinesetrue
+%D 在这一次更新中我们将介绍对中文的支持。当本文的中文译者王磊
+%D 询问我 \nochinese{\CONTEXT} 是否能处理汉语时，他已经尝试过
+%D 运行现有的宏集，但是没有得到结果。这意味着对中文的支持还没
+%D 有实现。
+%D
+%D 在这一(次更新)中我们 (将介) 绍对中文的支持。当本文的中文译,
+%D 者王磊询问我\nochinese{\CONTEXT}是否能处理汉语时，他已经尝
+%D 试过运行现有的宏集，但是没有得到结果。这意味着对中文的支持
+%D 还没有实现。.
+%D \stop
+
+%D Because fonts are defined each time a \UNICODE\ is
+%D encountered |<|which is less inefficient than one would
+%D imagine, because \TEX\ is optimized quite well in this
+%D repect|>| we can define macros like this to take care of
+%D font switches. When available, one can add definitions
+%D for italic, slanted, bold fonts and combinations of these.
+
+%D \macros
+%D   {chinesenumber}
+%D
+%D The chinese numbering systems rather straightforward. First
+%D there are the digits:
+%D
+%D \starttabulate[|c|c|c|c|c|c|c|c|c|c|]
+%D \NC 0 \NC 1 \NC 2 \NC 3 \NC 4 \NC 5 \NC 6 \NC 7 \NC 8 \NC 9 \NC\NR
+%D \NC \chinesenumber{0} \NC \chinesenumber{1} \NC \chinesenumber{2}
+%D \NC \chinesenumber{3} \NC \chinesenumber{4} \NC \chinesenumber{5}
+%D \NC \chinesenumber{6} \NC \chinesenumber{7} \NC \chinesenumber{8}
+%D \NC \chinesenumber{9} \NC\NR
+%D \stoptabulate
+%D
+%D Apart from these numbers, we have dedicated representations
+%D of some powers of~$10$.
+%D
+%D \starttabulate[|c|c|c|c|c|]
+%D \NC 10 \NC 100 \NC 1000 \NC 10000 \NC 100000000 \NC\NR
+%D \NC \chinesenumber{10} \NC \chinesenumber{100}
+%D \NC \chinesenumber{1000} \NC \chinesenumber{10000}
+%D \NC \chinesenumber{100000000} \NC\NR
+%D \stoptabulate
+%D
+%D The number~12 is a combination of $1\times10+2$, or:
+%D \chinesenumber {12}, while~22 becomes \chinesenumber {22}.
+%D The numbers below 20 are treated a bit different, just like
+%D numbers with series of $0$'s. So $2\times10$ comes out as
+%D two glyphs, but $1\times10$ as one, because in the latter
+%D case the~$1$ is redundant. The same is true for the powers
+%D of~10.
+%D
+%D \starttabulate[|r|r|r|r|r|r|]
+%D \NC     1 \NC \chinesenumber     {1} \NC
+%D         9 \NC \chinesenumber     {9} \NC
+%D         4 \NC \chinesenumber     {4} \NC\NR
+%D \NC    11 \NC \chinesenumber    {11} \NC
+%D        99 \NC \chinesenumber    {99} \NC
+%D        16 \NC \chinesenumber    {16} \NC\NR
+%D \NC   111 \NC \chinesenumber   {111} \NC
+%D       999 \NC \chinesenumber   {999} \NC
+%D       256 \NC \chinesenumber   {256} \NC\NR
+%D \NC  1111 \NC \chinesenumber  {1111} \NC
+%D      9999 \NC \chinesenumber  {9999} \NC
+%D     65536 \NC \chinesenumber {65536} \NC\NR
+%D \stoptabulate
+%D
+%D The implementation is rather simple. For internal purposes,
+%D we let zero expand to~0. The digits $0-9$ and numbers $10$,
+%D $100$, $1000$, $10000$ and $100000000$ are hard coded.
+
+% This was the first implementation, before \WangLei\ asked
+% me to look into Big Five encoding, so, like everthing in
+% \TEX, things become a bit more complicated, but also more
+% versatile.
+%
+% \starttypen
+% \def\chinesedigit#1%
+%   {\ifnum      #1=100000000 \uchar{210}{218}% 100000000
+%    \else\ifnum #1=10000     \uchar{205}{242}% 10000
+%    \else\ifnum #1=1000      \uchar{199}{167}% 1000
+%    \else\ifnum #1=100       \uchar{176}{217}% 100
+%    \else\ifnum #1=10        \uchar{202}{174}% 10
+%    \else\ifcase#1           \uchar{193}{227}% 0
+%    \or                      \uchar{210}{187}% 1
+%    \or                      \uchar{182}{254}% 2
+%    \or                      \uchar{200}{253}% 3
+%    \or                      \uchar{203}{196}% 4
+%    \or                      \uchar{206}{229}% 5
+%    \or                      \uchar{193}{249}% 6
+%    \or                      \uchar{198}{223}% 7
+%    \or                      \uchar{176}{203}% 8
+%    \or                      \uchar{190}{197}% 9
+%    \fi\fi\fi\fi\fi\fi}
+% \stoptypen
+
+%D We will implement four methods, the one described earlier,
+%D a derived one with capitalized characters, an extended
+%D version of the first method, and a rather Arabic method.
+%D
+%D \starttabulate[|l|l|]
+%D \HL
+%D \NC \bf command                      \NC \bf number 39                 \NC\NR
+%D \HL
+%D \NC \type{\normalchinesenumber}      \NC \normalchinesenumber     {39} \NC\NR
+%D \NC \type{\capitalizedchinesenumber} \NC \capitalizedchinesenumber{39} \NC\NR
+%D \NC \type{\arabicchinesenumber}      \NC \arabicchinesenumber     {39} \NC\NR
+%D \NC \type{\extendedchinesenumber}    \NC \extendedchinesenumber   {39} \NC\NR
+%D \HL
+%D \stoptabulate
+%D
+%D We use a dirty trick to enable Chinese Capital Digits. In
+%D the encoding vectors, we define these by appending a suffix
+%D \type {*} to the digit, which in the following macro is
+%D appended or not (by passing \type {\empty}).
+
+\def\chinesedigit#1#2% #2: suffix, here * or \empty
+  {\udigit{\chineseencoding}{\number#1#2}}
+
+% Normal Chinese Number
+
+\def\normalchinesenumber#1%
+  {\expandafter\dochinesenumber\number#1\relax\empty}
+
+\def\dochinesenumber#1#2\relax#3%
+  {\ifnum#1#2<10 % 1-10
+     \chinesedigit{#1}#3%
+   \else\ifnum#1#2<20 % 11-99
+     \chinesedigit{10}#3%
+     \dodochinesenumberA#2\relax#3%
+   \else
+     \dodochinesenumber#1#2\relax#3%
+   \fi\fi}
+
+\def\dodochinesenumber#1#2\relax#3%
+  {\ifnum#1=0
+     \chinesedigit{0}#3%
+     \dododochinesenumber0#2\relax#3%
+   \else\ifnum#1#2<10 % 1-10
+     \chinesedigit{#1#2}#3%
+     \dodochinesenumberA#2\relax#3%
+   \else\ifnum#1#2<100 % 11-99
+     \dodochinesenumber#1\relax#3%
+     \chinesedigit{10}#3%
+     \dodochinesenumberA#2\relax#3%
+   \else\ifnum#1#2<1000 % 100-999
+     \dodochinesenumber#1\relax#3%
+     \chinesedigit{100}#3%
+     \dodochinesenumberA#2\relax#3%
+   \else\ifnum#1#2<10000 % 1000-9999
+     \dodochinesenumber#1\relax#3%
+     \chinesedigit{1000}#3%
+     \dodochinesenumberA#2\relax#3%
+   \else\ifnum#1#2<100000 % 10000-99999
+     \dodochinesenumber#1\relax#3%
+     \chinesedigit{10000}#3%
+     \dodochinesenumberA#2\relax#3%
+   \else\ifnum#1#2<1000000 % 100000-999999
+     \dodochinesenumberB#1#2\relax#3%
+   \else\ifnum#1#2<10000000 % 1000000-9999999
+     \dodochinesenumberC#1#2\relax#3%
+   \else\ifnum#1#2<100000000 % 10000000-99999999
+     \dodochinesenumberD#1#2\relax#3%
+   \else\ifnum#1#2<1000000000 % 10000000-99999999
+     \dochinesenumber#1\relax#3%
+     \chinesedigit{100000000}#3%
+     \dododochinesenumber#2\relax#3%
+   \else
+     \dodochinesenumberE#1#2\relax#3%
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+
+\def\dododochinesenumber#1#2\relax#3%
+  {\ifnum#1=0
+     \ifnum0#2>0 \dododochinesenumber#2\relax#3\fi
+   \else
+     \dodochinesenumber#1#2\relax#3%
+   \fi}
+
+\def\dodochinesenumberA#1\relax#2%
+  {\ifcase0#1 \else\dodochinesenumber#1\relax#2\fi}
+
+\def\dodochinesenumberB#1#2#3\relax#4%
+  {\dochinesenumber#1#2\relax#4%
+   \chinesedigit{10000}#4%
+   \dododochinesenumber#3\relax#4}
+
+\def\dodochinesenumberC#1#2#3#4\relax#5%
+  {\dochinesenumber#1#2#3\relax#5%
+   \chinesedigit{10000}#5%
+   \dododochinesenumber#4\relax#5}
+
+\def\dodochinesenumberD#1#2#3#4#5\relax#6%
+  {\dochinesenumber#1#2#3#4\relax#6%
+   \chinesedigit{10000}#6%
+   \dododochinesenumber#5\relax#6}
+
+\def\dodochinesenumberE#1#2#3\relax#4%
+  {\dochinesenumber#1#2\relax#4%
+   \chinesedigit{100000000}#4%
+   \dododochinesenumber#3\relax#4}
+
+% Capitalized Chinese Number
+
+\def\capitalizedchinesenumber#1%
+  {\expandafter\dochinesenumber\number#1\relax*}
+
+% Extended Chinese Number
+
+\def\extendedchinesenumber#1%
+  {\expandafter\doextendedchinesenumber\number#1\relax}
+
+\def\doextendedchinesenumber#1#2\relax%
+  {\ifnum     #1#2<20 %  0-19
+     \dochinesenumber#1#2\relax\empty
+   \else\ifnum#1#2<30 % 20-29
+     \chinesedigit{20}\empty
+     \ifcase#2\else\chinesedigit{2#2}\fi
+   \else\ifnum#1#2<40 % 30-39
+     \chinesedigit{30}\empty
+     \ifcase#2\else\chinesedigit{3#2}\fi
+   \else
+     \dochinesenumber#1#2\relax\empty
+   \fi\fi\fi}
+
+% Arabic Chinese Number
+
+\def\arabicchinesenumber#1%
+  {\expandafter\doarabicchinesenumber\number#1@\relax}
+
+\def\doarabicchinesenumber#1#2\relax
+  {\if#1@\else
+     \chinesedigit{#1}\empty
+     \doarabicchinesenumber#2\relax
+   \fi}
+
+% The short call:
+
+\def\chinesenumber{\normalchinesenumber}
+
+% \dorecurse{40}
+%   {\hbox
+%      {\processingverbatimtrue
+%       \hbox to 1cm{\hss\recurselevel}\quad
+%       \hbox to 3cm{\hss\strut\normalchinesenumber     {\recurselevel}}\quad
+%       \hbox to 3cm{\hss\strut\capitalizedchinesenumber{\recurselevel}}\quad
+%       \hbox to 3cm{\hss\strut\arabicchinesenumber     {\recurselevel}}\quad
+%       \hbox to 3cm{\hss\strut\extendedchinesenumber   {\recurselevel}}\crlf}}
+
+%D The next table demonstates the correctness of the
+%D conversion macro.
+%D
+%D \startbuffer
+%D \starttable[|l|l|l|l|l|l|]
+%D \HL
+%D \NC number     \NC converter                  \NC hard coded \NC
+%D     number     \NC converter                  \NC hard coded\NC \SR
+%D \HL
+%D \NC 1          \NC \chinesenumber{1}          \NC 一 \NC
+%D     0          \NC \chinesenumber{0}          \NC 零 \NC\FR
+%D \NC 11         \NC \chinesenumber{11}         \NC 十一 \NC
+%D     10         \NC \chinesenumber{10}         \NC 十  \NC\MR
+%D \NC 111        \NC \chinesenumber{111}        \NC 一百一十一 \NC
+%D     100        \NC \chinesenumber{100}        \NC 一百 \NC\MR
+%D \NC 101        \NC \chinesenumber{101}        \NC 一百零一 \NC
+%D     120        \NC \chinesenumber{120}        \NC 一百二十 \NC\MR
+%D \NC 1111       \NC \chinesenumber{1111}       \NC 一千一百一十一 \NC
+%D     1000       \NC \chinesenumber{1000}       \NC 一千 \NC\MR
+%D \NC 1001       \NC \chinesenumber{1001}       \NC 一千零一 \NC
+%D     1020       \NC \chinesenumber{1020}       \NC 一千零二十 \NC\MR
+%D \NC 11111      \NC \chinesenumber{11111}      \NC 一万一千一百一十一 \NC
+%D     10000      \NC \chinesenumber{10000}      \NC 一万 \NC\MR
+%D \NC 10001      \NC \chinesenumber{10001}      \NC 一万零一 \NC
+%D     10200      \NC \chinesenumber{10200}      \NC 一万零二百 \NC\LR
+%D \HL
+%D \NC 111111     \NC \chinesenumber{111111}     \NC 十一万一千一百一十一 \NC
+%D     100000     \NC \chinesenumber{100000}     \NC 十万 \NC\FR
+%D \NC 1111111    \NC \chinesenumber{1111111}    \NC 一百一十一万一千一百一十一 \NC
+%D     1000000    \NC \chinesenumber{1000000}    \NC 一百万 \NC\MR
+%D \NC 11111111   \NC \chinesenumber{11111111}   \NC 一千一百一十一万一千一百一十一 \NC
+%D     10000000   \NC \chinesenumber{10000000}   \NC 一千万 \NC\MR
+%D \NC 111111111  \NC \chinesenumber{111111111}  \NC 一亿一千一百一十一万一千一百一十一 \NC
+%D     100000000  \NC \chinesenumber{100000000}  \NC 一亿 \NC\MR
+%D \NC 1111111111 \NC \chinesenumber{1111111111} \NC 十一亿一千一百一十一万一千一百一十一 \NC
+%D     1000000000 \NC \chinesenumber{1000000000} \NC 十亿 \NC\LR
+%D \HL
+%D \stoptable
+%D \stopbuffer
+%D
+%D \placetable{Some Chinese number examples.}{\getbuffer}
+
+%D Although the conversion can be hooked into most commands
+%D that deal with numbers |<|those familiar with \TEX\ macro
+%D programming will notice that the macro if fully
+%D expandable|>| in many cases Chinese documents use western
+%D digits. So, in practice, the change that the next example
+%D shows up, is minimal.
+%D
+%D \starttabulate[|r|r|c|]
+%D \NC  2546 \NC \chinesenumber  {2546} \NC     \NC\NR
+%D \NC  9258 \NC \chinesenumber  {9258} \NC $+$ \NC\NR
+%D \HL
+%D \NC 11804 \NC \chinesenumber {11804} \NC     \NC\NR
+%D \stoptabulate
+%D
+%D While in arabic arithmics addition leads to more digits, in
+%D Chinese the number of glyphs can (temporary) decrease.
+%D Given that the number of people dealing with Chinese is
+%D considerably larger than the number of latin speaking
+%D people, a successor of \TEX\ definitely must provide a
+%D \type {\chinesenumeral} primitive.
+
+\defineconversion [c]                  [\normalchinesenumber]
+\defineconversion [chinese]            [\normalchinesenumber]
+\defineconversion [nc]                 [\normalchinesenumber]
+\defineconversion [normalchinese]      [\normalchinesenumber]
+\defineconversion [cc]                 [\capitalizedchinesenumber]
+\defineconversion [capitalizedchinese] [\capitalizedchinesenumber]
+\defineconversion [ec]                 [\extendedchinesenumber]
+\defineconversion [extendedchinese]    [\extendedchinesenumber]
+\defineconversion [ac]                 [\arabicchinesenumber]
+\defineconversion [arabicchinese]      [\arabicchinesenumber]
+
+%D Date conversion:
+
+\defineconversion [cn] [\v!day]   [\chinesenumber]
+\defineconversion [cn] [\v!month] [\chinesenumber]
+\defineconversion [cn] [\v!year]  [\chinesenumber]
+
+%D \macros
+%D   {SimChi, TraChi}
+%D
+%D These components enable us to construct dedicated Chinese
+%D font switches, like:
+
+\setupunicodefont
+  [chinese]
+  [       \c!scale=\chineseunicodescale,
+         \c!height=\chineseunicodeheight,
+          \c!depth=\chineseunicodedepth,
+          \c!strut=\v!yes,
+ \c!interlinespace=\v!yes,
+     \c!conversion=\chinesenumber,
+       \c!commands=\setchineseencoding, % needed for digits
+        \c!command=\handlechineseunicodeglyph]
+
+%D For the moment, this encoding is implemented rather ugly. The
+%D trick is to move the encoding value from the current font
+%D definition to the \type {\chineseencoding} macro.
+
+\let\chineseencoding\empty
+
+\def\setchineseencoding % normally SomeChineseRegular
+  {\getfontfileparameters\unicodestyle
+   \ifx\currentfontfileencoding\undefined \else
+     \let\chineseencoding\currentfontfileencoding
+   \fi}
+
+%D We could have said:
+%D
+%D \starttyping
+%D \defineunicodefont
+%D   [SimChi]
+%D   [SimplifiedChinese]
+%D   [\c!scale=\chineseunicodescale,
+%D    \c!height=\chineseunicodeheight,
+%D    \c!depth=\chineseunicodedepth,
+%D    \c!conversion=\chinesenumber,
+%D    \c!commands=\setchineseencoding, % needed for digits
+%D    \c!command=\handlechineseunicodeglyph]
+%D \stoptyping
+%D
+%D However, the former definitions is more general. Next we
+%D map a few fonts:
+
+\definefontsynonym [SimplifiedChineseRegular]      [gbsong]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSlanted]      [gbsongsl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseItalic]       [gbsongsl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseBold]         [gbhei]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseBoldSlanted]  [gbheisl]  [encoding=gbk]
+\definefontsynonym [SimplifiedChineseBoldItalic]   [gbheisl]  [encoding=gbk]
+
+\definefontsynonym [TraditionalChineseRegular]     [b5song]   [encoding=big5]
+\definefontsynonym [TraditionalChineseSlanted]     [b5songsl] [encoding=big5]
+\definefontsynonym [TraditionalChineseItalic]      [b5songsl] [encoding=big5]
+\definefontsynonym [TraditionalChineseBold]        [b5hei]    [encoding=big5]
+\definefontsynonym [TraditionalChineseBoldSlanted] [b5heisl]  [encoding=big5]
+\definefontsynonym [TraditionalChineseBoldItalic]  [b5heisl]  [encoding=big5]
+
+% we need to move this to typescripts
+
+\doifelse \currentregime {utf} {
+
+    \definefontsynonym [SimplifiedChineseRegular]     [ChineseRegular]
+    \definefontsynonym [SimplifiedChineseSlanted]     [ChineseSlanted]
+    \definefontsynonym [SimplifiedChineseItalic]      [ChineseItalic]
+    \definefontsynonym [SimplifiedChineseBold]        [ChineseBold]
+    \definefontsynonym [SimplifiedChineseBoldSlanted] [ChineseBoldSlanted]
+    \definefontsynonym [SimplifiedChineseBoldItalic]  [ChineseBoldItalic]
+
+    \definefontsynonym [TraditionalChineseRegular]    [ChineseRegular]
+    \definefontsynonym [TraditionalChineseSlanted]    [ChineseSlanted]
+    \definefontsynonym [TraditionalChineseItalic]     [ChineseItalic]
+    \definefontsynonym [TraditionalChineseBold]       [ChineseBold]
+    \definefontsynonym [TraditionalChineseBoldSlanted][ChineseBoldSlanted]
+    \definefontsynonym [TraditionalChineseBoldItalic] [ChineseBoldItalic]
+
+    \definefontsynonym [ChineseRegular]    [uni-htsong-][encoding=cjk-uni]
+    \definefontsynonym [ChineseSlanted]    [uni-htsong-][encoding=cjk-uni]
+    \definefontsynonym [ChineseItalic]     [uni-htsong-][encoding=cjk-uni]
+    \definefontsynonym [ChineseBold]       [uni-hthei-] [encoding=cjk-uni]
+    \definefontsynonym [ChineseBoldSlanted][uni-hthei-] [encoding=cjk-uni]
+    \definefontsynonym [ChineseBoldItalic] [uni-hthei-] [encoding=cjk-uni]
+
+    \loadmapfile[uni-htsong.map]
+    \loadmapfile[uni-htfs.map]
+    \loadmapfile[uni-hthei.map]
+    \loadmapfile[uni-htkai.map]
+
+} {
+
+    \loadmapfile[gbk]
+
+}
+
+\defineunicodefont [SimChi] [SimplifiedChinese]  [chinese]
+\defineunicodefont [TraChi] [TraditionalChinese] [chinese]
+
+%D We default to these so called Simplified Chinese fonts.
+
+\SimChi
+
+%D In addition to these fonts, we (pre|)|define some commonly
+%D used fonts:
+
+\definefontsynonym [SimplifiedChineseSongTiRegular]        [gbsong]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiSlanted]        [gbsongsl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiBold]           [gbsong]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiBoldSlanted]    [gbsongsl] [encoding=gbk]
+
+\definefontsynonym [TraditionalChineseSongTiRegular]       [b5song]   [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiSlanted]       [b5songsl] [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiBold]          [b5song]   [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiBoldSlanted]   [b5songsl] [encoding=big5]
+
+\definefontsynonym [SimplifiedChineseHeiTiRegular]         [gbhei]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiSlanted]         [gbheisl]  [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiBold]            [gbhei]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiBoldSlanted]     [gbheisl]  [encoding=gbk]
+
+\definefontsynonym [TraditionalChineseHeiTiRegular]        [b5hei]    [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiSlanted]        [b5heisl]  [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiBold]           [b5hei]    [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiBoldSlanted]    [b5heisl]  [encoding=big5]
+
+\definefontsynonym [SimplifiedChineseKaiTiRegular]         [gbkai]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiSlanted]         [gbkaisl]  [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiBold]            [gbkai]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiBoldSlanted]     [gbkaisl]  [encoding=gbk]
+
+\definefontsynonym [TraditionalChineseKaiTiRegular]        [b5kai]    [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiSlanted]        [b5kaisl]  [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiBold]           [b5kai]    [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiBoldSlanted]    [b5kaisl]  [encoding=big5]
+
+\definefontsynonym [SimplifiedChineseFangSongRegular]      [gbfs]     [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongSlanted]      [gbfssl]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongBold]         [gbfs]     [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongBoldSlanted]  [gbfssl]   [encoding=gbk]
+
+\definefontsynonym [TraditionalChineseFangSongRegular]     [b5fs]     [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongSlanted]     [b5fssl]   [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongBold]        [b5fs]     [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongBoldSlanted] [b5fssl]   [encoding=big5]
+
+\definefontsynonym [SimplifiedChineseLiShuRegular]         [gbli]     [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuSlanted]         [gblisl]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuBold]            [gbli]     [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuBoldSlanted]     [gblisl]   [encoding=gbk]
+
+\definefontsynonym [TraditionalChineseLiShuRegular]        [b5li]     [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuSlanted]        [b5lisl]   [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuBold]           [b5li]     [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuBoldSlanted]    [b5lisl]   [encoding=big5]
+
+%D The following definitions provide us the commands to switch
+%D to these fonts.
+
+\defineunicodefont [SimSongTi]   [SimplifiedChineseSongTi]    [chinese]
+\defineunicodefont [TraSongTi]   [TraditionalChineseSongTi]   [chinese]
+
+\defineunicodefont [SimHeiTi]    [SimplifiedChineseHeiTi]     [chinese]
+\defineunicodefont [TraHeiTi]    [TraditionalChineseHeiTi]    [chinese]
+
+\defineunicodefont [SimKaiTi]    [SimplifiedChineseKaiTi]     [chinese]
+\defineunicodefont [TraKaiTi]    [TraditionalChineseKaiTi]    [chinese]
+
+\defineunicodefont [SimFangSong] [SimplifiedChineseFangSong]  [chinese]
+\defineunicodefont [TraFangSong] [TraditionalChineseFangSong] [chinese]
+
+\defineunicodefont [SimLiShu]    [SimplifiedChineseLiShu]     [chinese]
+\defineunicodefont [TraLiShu]    [TraditionalChineseLiShu]    [chinese]
+
+% \definealternativestyle [ChineseTitleFont] [\bfd\SimKaiTi] []
+
+%D \macros
+%D   {purechinese}
+%D
+%D Use this macro to suppress spacing around Chinese text.
+
+\def\purechinese#1% evt geen rek
+  {\hskip\chineseSsignal\relax
+   #1\unskip\unskip\unskip
+   \hskip\chineseSsignal\relax}
+
+%D \macros
+%D   {stillchinese}
+%D
+%D Use the next macro when you want the next item to be put
+%D tight to the previous chinese character.
+
+\def\stillchinese
+  {\hskip\chineseSsignal\relax}
+
+%D \macros
+%D   {nochinese}
+%D
+%D When we want to be sure of non||Chinese inline text,
+%D we can package the for instance english text in \type
+%D {\nochinese}.
+
+\def\nochinese#1%
+  {\unskip\unskip\unskip
+   \hskip\chinesesurroundskip
+   \hskip\chineseinterglyphskip\relax
+   #1%
+   \hskip\chineseinterglyphskip\relax
+   \hskip\chinesesurroundskip
+   \ignorespaces}
+
+%D \macros
+%D   {chisize}
+%D
+%D Chinese font sizes are specified in a different way,
+%D using positive and negative numbers:
+
+\def\chisize#1%
+  {\ifnum#11<0 % a trick to catch -0
+     \ifcase#1\space36\or24\or18\or15\or12\or9\or\else6.5\fi
+   \else
+     \ifcase#1\space42\or26\or22\or16\or14\or10.5\or7.5\or5.5\else5\fi
+   \fi pt}
+
+%D So:
+%D
+%D \startbuffer
+%D [\chisize{-1}] [\chisize{7}] [\chisize{+4}]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D gives:
+%D
+%D \getbuffer
+%D
+%D The full range of sizes is:
+%D
+%D \starttabulate[|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|]
+%D \NC          8 \NC         7 \NC         -6 \NC         6 \NC
+%D             -5 \NC         5 \NC         -4 \NC         4 \NC
+%D             -3 \NC         3 \NC         -2 \NC         2 \NC
+%D             -1 \NC         1 \NC         -0 \NC         0 \NC\NR
+%D \NC\chisize {8}\NC\chisize{7}\NC\chisize{-6}\NC\chisize{6}\NC
+%D    \chisize{-5}\NC\chisize{5}\NC\chisize{-4}\NC\chisize{4}\NC
+%D    \chisize{-3}\NC\chisize{3}\NC\chisize{-2}\NC\chisize{2}\NC
+%D    \chisize{-1}\NC\chisize{1}\NC\chisize{-0}\NC\chisize{0}\NC\NR
+%D \stoptabulate
+
+%D Now it's time for some real Chinese. This example
+%D also shows that font switching is supported.
+%D
+%D \startnarrower
+%D \midaligned{\tfd 水调歌头}
+%D \blank
+%D \midaligned{\tfb 丙辰中秋，欢饮达旦，大醉作此篇，兼怀子由。}
+%D \blank
+%D \midaligned{\tfb 苏轼}
+%D \blank
+%D 明月几时有？把酒问青天。不知天上宫阙，今夕是何年？我欲乘风归去
+%D ，又恐琼楼玉宇，高处不胜寒。起舞弄清影，何似在人间？
+%D \blank
+%D 转朱阁，低户，照无眠。不应有恨，何事偏向别时圆？人有悲欢离合，
+%D 月有阴晴圆缺，此事古难全。但愿人长久，千里共婵娟。
+%D \stopnarrower
+%D
+%D The english translation is:
+%D
+%D \startnarrower
+%D \midaligned{\tfd Tune: Prelude to the Melody of Water}
+%D \blank
+%D \midaligned{\tfb On the night of the Mid||Autumn Festival of
+%D 1076, I drank happily till dawn and wrote this in my cups
+%D while thinking of Zi||you.}
+%D \blank
+%D \midaligned{\tfb Su Shi}
+%D \blank
+%D How long will the bright moon appear? Wine||cup in hand, I
+%D ask the sky. I do not know waht time of year it would be
+%D tonight in the palace on high. Riding the wind, there I
+%D would fly, yet I fear the crystal palace would be far too
+%D high and cold for me. I rise and dance, with my shadow I
+%D play. On high as on earth, would it be as gay?
+%D \blank
+%D The moon goes round the mansion red though gauze||draped
+%D windows soft to shed her light upon the sleepless bed.
+%D Against man she should have no spite. Why then when people
+%D part is she oft full and bright? Men have sorrow and joy,
+%D they part or meet again; The moon may be bright or dim, she
+%D may wax or wane. There has been nothing perfect since the
+%D olden days. So let us wish that man will live long as he
+%D can! Though miles apart, we'll share the beauty she
+%D displays.
+%D \stopnarrower
+
+%D This package is written in the city of Hasselt, a pretty
+%D small town in the |<|compared to China real small|>|
+%D Netherlands. Like most dutch cities, even this small one
+%D has a chinese restaurant, run by chinese, speaking chinese,
+%D and |<|indeed|>| writing chinese. Eating there will never
+%D be the same, since now I can at least pretend to know the
+%D glyphs all around the place. The numbers should pose me no
+%D problems, but I fear I will never manage to recognize those
+%D scribles they draw on their pads when thay take your order.
+
+%D To make our lives more easy, we put it here (too):
+
+\setuptyping[\c!tab=\v!no]
+
+\protect \endinput

@@ -1,0 +1,215 @@
+%D \module
+%D   [      file=s-faq-01,
+%D        version=1997.21.08,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=FAQ Interactive Version,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\usemodule[faq-00]
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [topspace=.5cm,
+   backspace=.5cm,
+   margin=0pt,
+   height=fit,
+   header=0pt,
+   width=fit,
+   footer=0pt,
+   bottomdistance=12pt,
+   bottom=18pt] 
+
+\setupinteractionscreen
+  [width=fit,
+   height=fit,
+   option=max]
+
+\setupinteraction
+  [state=start,
+   page=yes,
+   color=darkred,
+   contrastcolor=black,
+   menu=on]
+
+\setupcolors
+  [state=start]
+
+\setupbackgrounds
+  [state=repeat]
+
+\setupbackgrounds
+  [page]
+  [offset=3pt]
+
+\setupbackgrounds
+  [text]
+  [text]
+  [background={screen,go-on}]
+
+\setupbackgrounds
+  [bottom]
+  [text]
+  [background=screen]
+
+\setupframedtexts
+  [background=MyFrame,
+   backgroundcolor=white,
+   framecolor=darkred,
+   frame=overlay]
+
+\defineoverlay[go-on][\overlaybutton{forward}]
+
+\useexternaldocument
+  [paperfaq]
+  [\PaperFAQ]
+  []
+
+\setupregister
+  [index]
+  [coupling=yes,
+   unknownreference=none,
+   interaction=text]
+
+\coupleregister
+  [index]
+
+\defineinteractionmenu [bottom 1] [bottom] [state=stop]
+\defineinteractionmenu [bottom 2] [bottom] [state=stop]
+
+\setupinteractionmenu
+  [bottom, bottom 1, bottom 2]
+  [background=MyFrame,
+   backgroundcolor=white,
+   color=black,
+   contrastcolor=black,
+   frame=overlay,
+   framecolor=darkred,
+   dummy=yes,
+   middle=\hskip1em,
+   height=\bottomheight,
+   distance=overlay]
+
+\setupinteractionmenu
+  [bottom 1]
+  [{\hfill},
+   {\labeltext{paper}[paperfaq::]},
+   {\labeltext{goback}[PreviousJump]},
+   {\labeltext{faqs}[faqs]},
+   {\labeltext{index}[index]},
+   {\gobackwardcharacter[previouspage]},
+   {\goforwardcharacter[nextpage]}]
+
+\setupinteractionmenu
+  [bottom 2]
+  [{\CurrentIndexOfFAQ},
+   {\hfill},
+   {\labeltext{paper}[paperfaq::faq:\CurrentNOfFAQ]},
+   {\labeltext{goback}[PreviousJump]},
+   {\labeltext{faqs}[faqs]},
+   {\labeltext{index}[index]},
+   {\gobackwardcharacter[previouspage]},
+   {\goforwardcharacter[nextpage]}]
+
+\def\CurrentIndexOfFAQ%
+  {\bgroup
+   \setupinteraction[color=]%
+   \menubox[bottom]%
+     {\hskip-.5em\def\index{\hskip.5em\coupledindex}\IndexOfFAQ}%
+   \egroup}
+
+\setupinteractionmenu
+  [bottom 1]
+  [state=start]
+
+\def\EndAnswer
+  {\vfill
+   \bgroup
+   \tfx\setstrut
+   \framed
+     [frame=overlay,
+      framecolor=darkred,
+      background=MyFrame,
+      backgroundcolor=white]
+     {\AuthorOfFAQ}
+    \egroup}
+
+\def\TitlePage
+  {\startstandardmakeup
+   \blank[3*big]
+   \midaligned{\bfd \labeltext{FAQ}}
+   \blank[3*big]
+   \midaligned{\bfd \labeltext{about} \NameOfFAQ}
+   \blank[3*big]
+   \midaligned{\bfb \labeltext{version}: \currentdate}
+   \blank[3*big]
+   \midaligned{\tta \ListOfFAQ}
+   \vfill
+   \midaligned{\tta pragma@wxs.nl}
+   \blank[3*big]
+   \stopstandardmakeup}
+
+\def\StartReadingFAQ
+  {\setupinteractionmenu[bottom 1][state=stop]
+   \setupinteractionmenu[bottom 2][state=start]
+   \page}
+
+\def\StopReadingFAQ
+  {\page
+   \setupinteractionmenu[bottom 2][state=stop]
+   \setupinteractionmenu[bottom 1][state=start]}
+
+\def\FileWithFAQs
+  {\StartReadingFAQ
+   \input \FileNameOfFAQ \relax
+   \StopReadingFAQ}
+
+\def\IndexPage
+  {\page
+   \def\CurrentIndexOfFAQ{}
+   \def\NameOfFAQ{}
+   \pagereference[index]
+   \placeregister[index]
+   \page}
+
+\def\BeginFAQ
+  {\doglobal\increment\CurrentNOfFAQ
+   \setbox0=\vbox\bgroup
+   \setupframedtexts[before=,after=,linecorrection=off]
+   \startframedtext}
+
+\def\EndFAQ
+  {\stopframedtext
+   \egroup 
+   \button
+     [color=,contrastcolor=,frame=overlay,offset=overlay]
+     {\copy0}
+     [faq:\CurrentNOfFAQ]
+   \vskip6pt}
+
+\def\AllFAQs
+  {\page
+   \def\CurrentIndexOfFAQ{}
+   \def\NameOfFAQ{}
+   \newcounter\CurrentNOfFAQ
+   \setupblock[question][before=\BeginFAQ,after=\EndFAQ]
+   \pagereference[faqs]
+   \useblocks[question]}
+
+\startuniqueMPgraphic{Frame}
+  path p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+  pickup pencircle scaled 2pt ; 
+  fill p withcolor \MPcolor{\overlaycolor} ;
+  draw p withcolor \MPcolor{\overlaylinecolor} ;
+\stopuniqueMPgraphic
+
+\defineoverlay[MyFrame][\uniqueMPgraphic{Frame}]
+
+\endinput

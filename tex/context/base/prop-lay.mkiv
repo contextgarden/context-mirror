@@ -1,0 +1,140 @@
+%D \module
+%D   [       file=prop-lay,
+%D        version=2003.04.20,
+%D          title=\CONTEXT\ Property Macros,
+%D       subtitle=Layers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Property Macros / Layers}
+
+%D Highly experimental, will probably change/evolve. Also, quite certainly
+%D we will no longer share code between mkii and mkiv.
+
+% test, nesting is somewhat special with layers
+%
+% \defineproperty[hans][layer]
+% \defineproperty[ton] [layer]
+% \setupheadertexts[no layer]
+% 1\startproperty[hans]2\startproperty[ton]3\stopproperty4\stopproperty5
+
+\unprotect
+
+% will be redone ... no longer using property mechanism (less clashes)
+
+\let\currentviewerlayer\empty
+
+\appendtoks
+    \let\currentviewerlayer\empty
+\to \everypagebody
+
+\unexpanded\def\startlayerproperty
+  {\pushmacro\currentviewerlayer % grouped (used in interaction)
+   \let\currentlayerproperty\currentproperty % can be cross group
+   \dotriggerviewerlayer\currentlayerproperty}
+
+\unexpanded\def\stoplayerproperty
+  {\popmacro\currentviewerlayer % grouped (used in interaction)
+   \let\currentlayerproperty\previousproperty % can be cross group
+   \dotriggerviewerlayer\currentlayerproperty}
+
+\def\checklayerproperty % could be made more clever
+  {\registerviewerlayer\currentproperty\currentproperty
+   \ctxlua{backends.codeinjections.defineviewerlayer{
+     tag       = "\currentproperty",
+     title     = "\checkedpropertyparameter\c!title\currentproperty",
+     visible   = "\checkedpropertyparameter\c!state\v!start",
+     kind      = 0, % 1 == frozen
+     printable = "\checkedpropertyparameter\v!printable\v!yes"  % v! looks wrong
+   }}}
+
+%D \starttext
+%D
+%D \setuppapersize[S4][S4]
+%D \setuplayout[middle]
+%D \setupcolors[state=start]
+%D \setupinteraction[state=start,color=,contrastcolor=]
+%D
+%D \defineproperty [L1] [layer] [title=layer 1]
+%D \defineproperty [L2] [layer] [title=layer 2]
+%D
+%D \button{HIDE   L1}[HideLayer{L1}]
+%D \button{VIDE   L1}[VideLayer{L1}]
+%D \button{TOGGLE L1}[ToggleLayer{L1}]
+%D
+%D \button{HIDE L2}[HideLayer{L2}]
+%D \button{VIDE L2}[VideLayer{L2}]
+%D \button{TOGGLE L2}[ToggleLayer{L2}]
+%D
+%D \noheaderandfooterlines \centerbox{\startoverlay
+%D   {\definedfont[Mono at 150pt]%
+%D    \startproperty[L1]\red   TEST\stopproperty}
+%D   {\definedfont[Mono at 150pt]%
+%D    \startproperty[L2]\green TEST\stopproperty}
+%D \stopoverlay} \page
+%D
+%D \noheaderandfooterlines \centerbox{\startoverlay
+%D   {\definedfont[Mono at 15pt]%
+%D    \goto{\startproperty[L1]\red   TEST\stopproperty}[CloseDocument]}
+%D   {\definedfont[Mono at 15pt]%
+%D    \goto{\startproperty[L2]\green TEST\stopproperty}[CloseDocument]}
+%D \stopoverlay} \page
+%D
+%D \startproperty[L1]
+%D   level 1 \startproperty[L2]level 2 \stopproperty level 1
+%D \stopproperty
+%D
+%D \startproperty[L1]
+%D   level 1 \page \startproperty[L2]level 2 \stopproperty level 1
+%D \stopproperty
+%D
+%D \stoptext
+
+\def\doinitializelayoutcomponent#1#2%
+  {\ctxlua{backends.codeinjections.defineviewerlayer{% this will move to the lua end i.e be merged with register
+     tag       = "#1:#2",
+     title     = "#1 #2",
+     visible   = "\v!start",
+     kind      = 0, % 1 == frozen
+     printable = "\v!yes"
+   }}%
+   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \ctxlua{tex.write(viewerlayers.register('#1:#2',true))}\relax}%
+   \expandafter\glet\csname\??ly>#1:#2\endcsname\layoutcomponentboxattribute}
+
+\def\dosetlayoutcomponentattribute#1#2% make this faster
+  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??ly>#1:#2\endcsname
+   \ifx\layoutcomponentboxattribute\relax
+     \doinitializelayoutcomponent{#1}{#2}% get rid of { }
+   \fi}
+
+\def\doresetlayoutcomponentattribute
+  {\let\layoutcomponentboxattribute\empty}
+
+\let\setlayoutcomponentattribute  \gobbletwoarguments
+\let\resetlayoutcomponentattribute\relax
+\let\layoutcomponentboxattribute  \empty
+
+\def\showlayoutcomponents
+  {\ctxlua{viewerlayers.enable()}%
+   \let\setlayoutcomponentattribute  \dosetlayoutcomponentattribute
+   \let\resetlayoutcomponentattribute\doresetlayoutcomponentattribute}
+
+\protect \endinput
+
+% \starttext
+% \showlayoutcomponents
+% \setupinteraction[state=start]
+% \setupheadertexts[{\goto{page 1}[page(2)]}]
+% test \setlayoutcomponentattribute{test}{aap}\hbox \layoutcomponentboxattribute \bgroup aap
+%     \setlayoutcomponentattribute{test}{noot}\hbox \layoutcomponentboxattribute \bgroup noot
+%     \setlayoutcomponentattribute{test}{mies}\hbox \layoutcomponentboxattribute \bgroup mies
+%     \egroup noot \egroup aap \egroup
+% test \setlayoutcomponentattribute{test}{hans}\hbox \layoutcomponentboxattribute \bgroup aap \hbox{!} aap\egroup
+% test \page test \page
+% \stoptext
+

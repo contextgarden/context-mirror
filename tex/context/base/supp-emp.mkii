@@ -1,0 +1,398 @@
+%D \module
+%D   [       file=supp-emp,
+%D        version=2000.08.09,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=\EMTEX\ specials to \PDF\ conversion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%M \input supp-emp
+
+%D When \THANH, the author of \PDFTEX, and I were exchanging
+%D some emails on \PDFTEX\ functionality, positional
+%D information popped up as potential extension. Actually, it
+%D did not take that much time to cook up the basic
+%D functionality and the author had implemented it before I
+%D could even start to think about real advanced applications.
+%D
+%D I'm sure that \TEX\ programmers can spend many days on how
+%D and what kind of information is needed if you want to have
+%D access to positions, but since high level macros will
+%D probably be used anyway, even things like multiple reference
+%D points have proved to be rather unimportant at the system
+%D level.
+%D
+%D Therefore, \PDFTEX\ provides just these three primitives:
+%D
+%D \starttabulate[|l|l|]
+%D \NC \type {\pdfsavepos}  \NC marks the current position          \NC \NR
+%D \NC \type {\pdflastxpos} \NC the last marked horizontal position \NC \NR
+%D \NC \type {\pdflastypos} \NC the last marked vertical position   \NC \NR
+%D \stoptabulate
+%D
+%D Based on these three primitives, very advanced systems can
+%D be build, and for some time now, \CONTEXT\ has such a
+%D system in its core. However, not everyone uses \CONTEXT, so
+%D we will demonstrate position tracking in generic applications.
+%D
+%D Because \PDFTEX\ produces its output directly, many of those
+%D nice tricks provided by back||ends by means of \type
+%D {\special} fail when producing \PDF\ code directly. Take for
+%D instance \EMTEX\ specials. When someone sent me a mail
+%D asking if \PDFTEX\ did support those specials, the original
+%D answer was \quotation {no}, but in the last few years I have learned
+%D that you must never underestimate \TEX's capabilities.
+%D
+%D I must admit that I never use those specials myself, but
+%D from the way they were used in the macros I was sent, I
+%D learned that they depend on the back||end's capability to
+%D access the current position. For those who know \TEX\ this
+%D may be bad news, since pure \TEX\ does not provide any
+%D positional information. So in order to use those specials,
+%D you must be sure that they are supported by every driver you
+%D use. However, the good news is that \PDFTEX\ does support
+%D position tracking, so here is our generic example.
+%D
+%D The two \EMTEX\ specials we need to implement are packaged
+%D into the macros \type {\EMmoveto} and \type {\EMlineto},
+%D like:
+%D
+%D \starttyping
+%D \def\EMmoveto{\special{em:moveto}}
+%D \def\EMlineto{\special{em:lineto}}
+%D \stoptyping
+%D
+%D They are used in macro packages to draw lines, and the
+%D results are often boxes with content like the following:
+%D
+%D \startbuffer
+%D \vbox to 2cm
+%D   {\offinterlineskip \EMmoveto
+%D    \hskip 7cm        \EMlineto
+%D    \vskip 2cm        \EMlineto
+%D    \vskip-2cm        \EMlineto}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This box will contain a triangle, and when typeset, it should
+%D look like:
+%D
+%D \startlinecorrection[blank]
+%D \getbuffer
+%D \stoplinecorrection
+
+\def\EMlinewd{.4}
+
+\ifx\dosetpositionpt\undefined % non context part
+
+%D These two macros can be implemented as follows. When moving
+%D to a position, we only have to register the new coordinates.
+%D Once they are known, we use them to draw a line and
+%D afterwards we save these end coordinates as starting point
+%D for the next line segment. So, at each point specified by
+%D \type {\EMlineto} we need to know the coordinates.
+
+\def\EMmoveto
+  {\EMgetposition\EMlastmovex\EMlastmovey}
+
+%D The primitives \type {\pdflastxpos} and \type
+%D {\pdflastypos} return a number, representing the $x$ and
+%D $y$ coordinate in scaled points, \TEX's smallest unit of
+%D length. We need to convert this number into base points as
+%D used by \POSTSCRIPT\ and \PDF. When done, we insert some
+%D literal \PDF\ code into the text using \type {\pdfliteral}.
+%D Here, the \type {m} means \quote {moveto}, the \type {l}
+%D means \quote {lineto} and the \type {S} operator \quote
+%D {strokes} (draws) the line. The macro \type {\EMlinewd}
+%D holds the linewidth in basepoints.
+
+\def\EMlineto
+  {\bgroup
+   \EMgetposition\EMlastlinex\EMlastliney
+   \count0=\EMlastmovex \advance\count0 -\EMlastlinex
+   \count2=\EMlastmovey \advance\count2 -\EMlastliney
+   \divide\count0 65536
+   \divide\count2 65536
+   \PDFcode{\EMlinewd\space w 0 0 m \the\count0 \space\the\count2 \space l S}%
+   \global\let\EMlastmovex\EMlastlinex
+   \global\let\EMlastmovey\EMlastliney
+   \egroup}
+
+%D We need a fresh start, so we first set the current position
+%D to zero.
+
+\def\resetEMspecials
+  {\gdef\EMlastmovex{0}\gdef\EMlastmovey{0}}
+
+%D Next comes the macro that keeps track of the position. The
+%D current position is marked with \type {\pdfsavepos} and its
+%D coordinates are written to a file whenever the page is
+%D shipped out, since \type {\write} postpones its action
+%D until that moment. The file has entries like:
+%D
+%D \starttyping
+%D \EMsetpos 1 4661756 46651918
+%D \EMsetpos 2 5000359 46990521
+%D \EMsetpos 3 4661756 46313315
+%D \EMsetpos 4 5338962 46990521
+%D \EMsetpos 5 4661756 45974712
+%D \stoptyping
+%D
+%D These lines are written with the command:
+%D
+%D \starttyping
+%D \write\EMfile
+%D   {\EMsetpos\number\EMcounter
+%D    \space\number\pdflastxpos\space\number\pdflastypos}%
+%D \stoptyping
+%D
+%D In reality the argument to \type {\write} looks slightly
+%D more complicated, because we have to make sure that the
+%D number of the current position is frozen and \type
+%D {\EMsetpos} is not expanded. We do so by explicitly
+%D expanding the number beforehand and preventing expansion of
+%D \type {\EMsetpos}.
+
+\def\EMgetposition#1#2%
+  {\bgroup
+   \pdfsavepos
+   \global\advance\EMcounter 1
+   \expandafter\write\expandafter\EMfile\expandafter
+     {\expandafter\noexpand\expandafter\EMsetpos\number\EMcounter
+      \space\number\pdflastxpos\space\number\pdflastypos}%
+   \EMsetcounters
+   \xdef#1{\the\count0}%
+   \xdef#2{\the\count2}%
+   \egroup}
+
+%D The counter mentioned a few lines ago needs to be
+%D declared before it can be used.
+
+\newcount\EMcounter
+
+%D We also need a dedicated file slot.
+
+\newwrite\EMfile
+
+%D Before we open the file for writing, we read in the data
+%D written in the previous pass, but only if the file is
+%D present.
+
+\def\EMfilename{\jobname.emp}
+
+\def\startEMspecials%
+  {\resetEMspecials
+   \openin\scratchread=\EMfilename \relax
+   \ifeof\scratchread\else \input \EMfilename \relax \fi
+   \closein\scratchread
+   \immediate\openout\EMfile=\EMfilename\relax}
+
+\def\stopEMspecials
+  {\closeout\EMfile}
+
+%D Just to be sure, we test if \type {\scratchread} is defined,
+%D and if not, we allocate a slot.
+
+\ifx\undefined\scratchread \newread\scratchread \fi
+
+%D This leaves us two commands. The \type {\EMsetpos} command
+%D that ends up in the file stores each position in a macro.
+%D When this macro is expanded, it assigns the coordinates to
+%D two scratch counters.
+
+\def\EMsetpos#1 #2 #3 % number x y
+  {\expandafter\xdef\csname EM:#1\endcsname{\count0=#2 \count2=#3}}
+
+%D This position is recalled with its companion macro. First we
+%D set the counters to zero. When the position is unknown,
+%D nothing happens since the \type {\csname...} will expand to
+%D \type {\relax}.
+
+\def\EMsetcounters
+  {\count0=0 \count2=0
+   \csname EM:\the\EMcounter\endcsname}
+
+%D These macros are rather independent of the macro package you
+%D use. For instance, in \CONTEXT\ the following works well:
+%D
+%D \startbuffer[pos-en]
+%D \setuppositioning[unit=ex]
+%D \startpositioning
+%D   \dostepwiserecurse{-10}{10}{1}
+%D     {\position(0,\recurselevel){\EMmoveto}
+%D      \position(\recurselevel,0){\EMlineto}}
+%D \stoppositioning
+%D \stopbuffer
+%D
+%D \startbuffer[pos-nl]
+%D \setuppositioning[uniteenheid=ex]
+%D \startpositioning
+%D   \dostepwiserecurse{-10}{10}{1}
+%D     {\position(0,\recurselevel){\EMmoveto}
+%D      \position(\recurselevel,0){\EMlineto}}
+%D \stoppositioning
+%D \stopbuffer
+%D
+%D \typebuffer[pos-en]
+%D
+%D Here, we hook the \EMTEX\ macros into an existing text
+%D positioning mechanism, which positions the commands
+%D using \TEX's skips and kerns.
+%D
+%D \startlinecorrection[blank]
+%D \getbuffer[pos-nl]
+%D \stoplinecorrection
+%D
+%D Of course one should start and end the file with:
+%D
+%D \starttyping
+%D \startEMspecials
+%D \stopEMspecials
+%D \stoptyping
+%D
+%D and, if needed, reset the begin position at each page using:
+%D
+%D \starttyping
+%D \resetEMspecials
+%D \stoptyping
+
+\fi % end of non context part
+
+\ifx\dosetpositionpt\undefined \else % context part
+
+% \edef\EMlinewd{\withoutpt\the\linewidth}
+
+%D A few pages ago, we mentioned that \CONTEXT\ has built||in
+%D position tracking. This means that when we want to implement
+%D this kind of trickery in this macro package, we can fall
+%D back on existing functionality. In the following alternative
+%D we will also use a few skips. This keeps the source readable
+%D and \CONTEXT\ has plenty of unused registers to accomodate
+%D this strategy.
+
+\newcount\EMcounter \def\EMvariable{EM:\the\EMcounter}
+
+\newskip \EMlastmovex \newskip \EMlastmovey
+\newskip \EMlastlinex \newskip \EMlastliney
+
+\def\resetEMspecials
+  {\global\EMlastmovex=0pt \global\EMlastmovey=\EMlastmovex}
+
+\resetEMspecials \appendtoks\resetEMspecials\to\everyshipout
+
+%D Watch how we reset the specials after a page is flushed. We
+%D don't have to bother about files here, because saving and
+%D recalling is already implemented. Although not needed, we
+%D define the start||stop macros, so that \CONTEXT\ users who
+%D key them in are not confronted with error messages.
+
+\let\startEMspecials\relax \let\stopEMspecials\relax
+
+\def\EMgetposition#1#2%
+  {\global\advance\EMcounter 1
+   \setposition\EMvariable
+   \global#1=\POSx\EMvariable
+   \global#2=\POSy\EMvariable}
+
+\def\EMmoveto
+  {\EMgetposition\EMlastmovex\EMlastmovey}
+
+\def\EMlineto
+  {\EMgetposition\EMlastlinex\EMlastliney
+   \global\advance\EMlastmovex -\EMlastlinex
+   \global\advance\EMlastmovey -\EMlastliney
+   \ScaledPointsToBigPoints{\number\EMlastmovex}\EMx
+   \ScaledPointsToBigPoints{\number\EMlastmovey}\EMy
+   \PDFcode{\EMlinewd\space w 0 0 m \EMx \space \EMy \space l S}%
+   \global\EMlastmovex\EMlastlinex
+   \global\EMlastmovey\EMlastliney}
+
+%D The command \type {\setposition} registers a position by
+%D name (here \type {\EMvariable}), while \type {\POSx} and
+%D \type {\POSy} give you access to the coordinates.
+%D
+%D These three commands are containes in a suite of low level
+%D commands that can be used to register and get access to
+%D positional information. The current mechanism is not yet
+%D complete, but already provides enough hooks for advanced
+%D embedded graphics. Its functionality is a natural extension
+%D to the \METAPOST\ support already present in \CONTEXT.
+%D Therefore, more advanced examples can be found in the
+%D \METAFUN\ manual, since they fall beyond the scope of this
+%D module.
+
+\fi % end of context part
+
+%D As a bonus, I will now provide a few macros that will make
+%D this mechanism transparant to \DVI\ as well as \PDF\
+%D output. We will use \type {\pdfiteral} as trigger.
+
+\ifx\PDFcode\undefined
+  \ifx\pdfliteral\undefined
+    \def\PDFcode#1{\special{PDF: #1}}
+  \else
+    \let\PDFcode\pdfliteral
+  \fi
+\fi
+
+\ifx\PDFcode\undefined
+  \def\EMpdfordvi#1#2{#2}
+\else\ifx\pdfoutput\undefined
+  \def\EMpdfordvi#1#2{#2}
+\else
+  \def\EMpdfordvi#1#2{\ifcase\pdfoutput#2\else#1\fi}
+\fi\fi
+
+
+%D We save some of the macros we defined previously:
+
+\let\pdfEMmoveto\EMmoveto \let\pdfstartEMspecials\startEMspecials
+\let\pdfEMlineto\EMlineto \let\pdfstopEMspecials \stopEMspecials
+
+%D We now redefine them to support \DVI\ and \PDF.
+
+\def\EMmoveto{\EMpdfordvi\pdfEMmoveto{\special{em:moveto}}}
+\def\EMlineto{\EMpdfordvi\pdfEMlineto{\special{em:lineto}}}
+
+\def\startEMspecials{\EMpdfordvi\pdfstartEMspecials\relax}
+\def\stopEMspecials {\EMpdfordvi\pdfstopEMspecials \relax}
+
+%D If there is any real demand for this in \CONTEXT, I will
+%D hook these macros in the special drivers, so that their
+%D support becomes more natural.
+
+%D You may want to change the default linewidth. The following
+%D macro does the job. Beware of the fact that \type
+%D {\special}'s may interfere with the typesetting process.
+%D
+%D \starttyping
+%D \setEMlinewidth{1pt}
+%D \stoptyping
+
+\def\setEMlinewidth#1% this could be done more efficient for
+  {\bgroup           % context alone, but it's a hack anyway
+   \dimen0=#1\relax
+   \count0=\dimen0
+   \divide\count0 65536
+   \pdfordvi\relax{\special{em:linewidth \the\dimen0}}%
+   \xdef\EMlinewd{\the\count0}%
+   \egroup}
+
+%D You may wonder to what extent positional tracking is
+%D \PDFTEX\ specific. In \CONTEXT, we also support position
+%D tracking in \DVI\ by using specials and analyzing the \DVI\
+%D file afterwards using \DVIPOS. Since many of the advanced
+%D \TEX\ features depend on some kind of back||end, we don't
+%D consider it to be a disadvantage. Of course, the \PDFTEX\
+%D way is not only cleaner, but also faster. It was more out
+%D of curiosity than out of need that we provided the \DVI\
+%D methods as well. Also, it is always good to have more roads
+%D to reach the same goal.
+
+\endinput

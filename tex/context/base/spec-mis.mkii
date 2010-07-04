@@ -1,0 +1,286 @@
+%D \module
+%D   [       file=spec-mis,
+%D        version=1997.04.01,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Miscellaneous Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Quite some modules in this group are dedicated to supporting
+%D \PDF\ directly by means of \PDFTEX or indirectly by using
+%D Acrobat Distiller. This module implements some common
+%D features.
+
+\writestatus{loading}{ConTeXt Special Macros / Miscellaneous Macros}
+
+\unprotect
+
+%D \macros
+%D   {URLhash}
+%D
+%D A rather trivial macro:
+
+\expandafter\def\expandafter\URLhash\expandafter{\string#}
+
+%D \macros
+%D   {ifusepagedestinations}
+%D
+%D In \PDF\ version 1.0 only page references were supported,
+%D while in \DVIWINDO\ 1.N only named references were accepted.
+%D Therefore \CONTEXT\ supports both methods of referencing. In
+%D \PDF\ version 1.1 named destinations arrived. Lack of
+%D continuous support of version 1.1 viewers for \MSDOS\
+%D therefore sometimes forces us to prefer page references. As
+%D a bonus, they are faster too and have no limitations. How
+%D fortunate we were having both mechanisms available when the
+%D version 3.0 (\PDF\ version 1.2) viewers proved to be too
+%D bugged to support named destinations.
+
+\newif\ifusepagedestinations
+
+%D \macros
+%D   {ifhighlighthyperlinks}
+%D
+%D The next switch can be used to make user hyperlinks are
+%D not highlighted when clicked on.
+
+\newif\ifhighlighthyperlinks
+
+%D \macros
+%D   {ifgotonewwindow}
+%D
+%D To make the {\em goto previous jump} feature more
+%D convenient when using more than one file, it makes sense
+%D to force the viewer to open a new window for each file
+%D opened.
+
+\newif\ifgotonewwindow
+
+%D \macros
+%D   {ifPDFstrokecolor}
+%D
+%D We can reduce the filesize a bit by setting the next switch
+%D to false. The amount of reduction depends on the use of
+%D color, but don't expect more than a few percent. Zip
+%D compression is already rather efficient in itself.
+
+\newif\ifPDFstrokecolor \PDFstrokecolortrue
+
+%D \macros
+%D   {dofileinsertion,definefileinsertion,doiffileinsertionsupported}
+%D
+%D File insertion depend on the driver or \TEX\ variant used.
+%D All driver modules use the same scheme for file insertion,
+%D and therefore have the next macro in common (stupified
+%D per august 2006):
+
+\let\supportedfileinsertions\empty
+\let\supportedfilecheckers  \empty
+
+\def\definefileinsertion#1#2#3%
+  {\addtocommalist{#2}\supportedfileinsertions
+   \setvalue{do#1insert#2}{#3}}
+
+\def\definefilechecker#1#2#3%
+  {\addtocommalist{#2}\supportedfilecheckers
+   \setvalue{do#1check#2}{#3}}
+
+\def\dofileinsertion#1#2{\executeifdefined{do#1insert#2}\donothing}
+\def\dofilechecker  #1#2{\executeifdefined{do#1check#2} \donothing}
+
+\appendtoks \let\supportedfileinsertions\empty \to \everyresetspecials
+\appendtoks \let\supportedfilecheckers  \empty \to \everyresetspecials
+
+% \def\doiffileinsertionsupportedelse#1%
+%   {\expanded{\doifinstringelse{#1}{\c!tex,\c!tmp,\supportedfileinsertions}}}
+
+\def\doiffileinsertionsupportedelse#1% lowercasing happens at tex end
+  {\expanded{\doifinstringelse{\truegraphictype{#1}}{\c!tex,\c!tmp,\supportedfileinsertions}}}
+
+%D This macro is called with 10 arguments, where the first
+%D one specifies the driver, like \type{yy} or \type{tr}. The
+%D second argument is a \type{{type,method}} pair and the
+%D third the filename.
+
+%D Just in case this one is undefined (which can happen if
+%D this module is used outside \CONTEXT):
+
+\ifx\setreferencefilename\undefined
+
+  \def\setreferencefilename#1\to#2{\edef#2{#1}}
+
+\fi
+
+%D When submitting forms, we need to communicate the format.
+
+\chardef\submitoutputformat=0 % 0=unknown 1=HTML 2=FDF 3=XML
+
+\def\setsubmitoutputformat#1%
+  {\doifinsetelse{#1}{FDF,fdf}
+     {\chardef\submitoutputformat2}
+     {\doifinsetelse{#1}{XML,xml}
+        {\chardef\submitoutputformat3}
+        {\chardef\submitoutputformat1}}%
+   \relax}
+
+%D \macros
+%D   {escapePSstring}
+%D
+%D \starttyping
+%D \escapePSstring(t\e\1st)))))\to\crap \crap
+%D \stoptyping
+
+% testcase: webschrift met lege regels en unbalanced ()
+
+\bgroup
+
+\catcode`\*=\@@escape
+\catcode`\\=\@@letter
+
+*long*gdef*escapedPSstring#1%
+  {*aftergroup*string
+   *ifnum`#1=12
+    *aftergroup*n%
+   *else*ifnum`#1=13
+    *aftergroup*n%
+   *else*if#1(%
+     *aftergroup*(%
+   *else*if#1)%
+     *aftergroup*)%
+   *else*if#1\%
+     *aftergroup*\%
+   *else
+     *aftergroup#1%
+   *fi*fi*fi*fi*fi}
+
+*egroup
+
+\long\def\escapePSstring#1\to#2%
+  {\defconvertedargument#2{#1}%
+   \bgroup
+   \ifx#2\empty \else
+     \setverbosecscharacters
+     \aftergroup\edef
+     \aftergroup#2%
+     \aftergroup{%
+     \expandafter\handletokens#2\with\escapedPSstring
+     \aftergroup}%
+   \fi
+   \egroup}
+
+% \long\def\preservePSpar#1\to#2%
+%   {\bgroup
+%    \def\par{\rawcharacter{12}}%
+%    \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
+
+\long\def\preservePSpar#1\to#2%
+  {\bgroup
+   \def\par{\rawcharacter{12}\rawcharacter{12}}% hm, should be one 13 but 12 ff is platform safe
+   \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
+
+%D \macros
+%D   {ifPDFunicode}
+%D
+%D We can use this switch to signal that content streams has
+%D to be unicoded.
+
+\newif\ifPDFunicode
+
+%D \macros
+%D   {makeMPintoPDFobject, handleMPfshow, setMPPDFobject, getMPPDFobject}
+%D
+%D \METAPOST\ support.
+
+\appendtoks
+  \chardef\makeMPintoPDFobject\zerocount
+  \def\setMPPDFobject#1#2{\def\getMPPDFobject{\box#2}}%
+\to \everyresetspecials
+
+\appendtoks
+  \let\handleMPfshow\dohandleMPfshow
+\to \everyresetspecials
+
+%D
+
+%D \macros
+%D   {dosetposition, dosetpositionwdh, dosetpositionplus}
+%D
+%D Opposite to its \DVI\ counterpart, the \PDFTEX\ backend
+%D can provide positional information directly. Since
+%D \CONTEXT\ only uses relative positions, the origin is of
+%D less importance. Nowadays \XETEX\ also supports this
+%D feature.
+
+\ifx\pdfsavepos\undefined
+
+    % only for ancient pdftex, less old xetex and current aleph
+
+    \def\dosetposition            #1{\special{pos:pxy     "#1"}}
+    \def\dosetpositionwhd   #1#2#3#4{\special{pos:pxywhd  "#1" #2 #3 #4}}
+    \def\dosetpositionplus#1#2#3#4#5{\special{pos:pxyplus "#1" #2 #3 #4 #5}}
+
+    \let\flushDVIpositionpapersize\relax
+
+    \def\dosetpositionpapersize#1#2%
+      {\xdef\flushDVIpositionpapersize
+         {\special{pos:papersize \number#1 \number#2}%
+          \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
+          \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+
+    % kind of obsolete since nowadays xetex supports \pdfsavepos as well
+
+    \ifnum\texengine=\xetexengine
+
+        \def\dosetpositionpapersize#1#2%
+          {\xdef\flushDVIpositionpapersize
+             {\special{pos:papersize \number#1 \number#2}%
+              \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.xdv }%
+              \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+
+    \fi
+
+    \prependtoksonce \flushDVIpositionpapersize \to \everyshipout
+
+\else
+
+    \def\dosetposition#1%
+      {\pdfsavepos
+       \dolazysaveposition
+         {#1}%
+         {\noexpand\realfolio}%
+         {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+         {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}}%
+
+    \def\dosetpositionwhd#1#2#3#4%
+      {\pdfsavepos
+       \dolazysavepositionwhd
+         {#1}%
+         {\noexpand\realfolio}%
+         {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+         {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
+         {#2}{#3}{#4}}
+
+    \def\dosetpositionplus#1#2#3#4#5%
+      {\pdfsavepos
+       \dolazysavepositionplus
+         {#1}%
+         {\noexpand\realfolio}%
+         {\noexpand\the\dimexpr\pdflastxpos\scaledpoint\relax}%
+         {\noexpand\the\dimexpr\pdflastypos\scaledpoint\relax}%
+         {#2}{#3}{#4}{#5}}
+
+    \let\dosetpositionpapersize\gobbletwoarguments
+
+\fi
+
+%D Handy to have this available asap:
+
+\ifdefined\everyPDFxform  \newtoks\everyPDFxform  \fi
+\ifdefined\everyPDFximage \newtoks\everyPDFximage \fi
+
+\protect \endinput

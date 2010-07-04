@@ -1,0 +1,271 @@
+/koeielettersEnc-sy [
+ /minus                % 0x00
+ /periodcentered
+ /multiply 
+ /asteriskmath
+ /.notdef	
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef                % 0x10
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /similar
+ /equivalence
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /arrowleft		% 0x20
+ /arrowright
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /minute		% 0x30
+ /infinity
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /slash
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef            % 0x40
+ /A
+ /B
+ /C
+ /D
+ /E
+ /F
+ /G
+ /H
+ /I
+ /J
+ /K
+ /L
+ /M
+ /N
+ /O
+ /P		% 0x50
+ /Q
+ /R
+ /S
+ /T
+ /U
+ /V
+ /W
+ /X
+ /Y
+ /Z
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0x60
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /braceleft
+ /braceright
+ /.notdef
+ /.notdef
+ /bar
+ /.notdef
+ /.notdef
+ /.notdef
+ /backslash
+ /.notdef
+ /radical.alt		% 0x70
+ /.notdef
+ /.notdef
+ /integral
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef  
+ /minus.alt           % 0x80
+ /arrowleft.lft % this was start of braces
+ /arrowleft.rt
+ /arrowright.lft
+ /arrowright.rt
+ /arrow.mid
+ /.notdef           
+ /.notdef           
+ /.notdef           
+ /.notdef           
+ /.notdef           
+ /.notdef           
+ /.notdef           
+ /.notdef 
+ /.notdef 
+ /.notdef     
+ /.notdef     		% 0x90
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef     
+ /.notdef 
+ /.notdef 
+ /.notdef  
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef     % 0xa0
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef 
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xb0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xc0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xd0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xe0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef		% 0xf0
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+ /.notdef
+] def
+
+
+
+
+
+
+
+
+
+
+
+
+

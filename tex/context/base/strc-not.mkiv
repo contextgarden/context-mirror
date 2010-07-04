@@ -1,0 +1,1280 @@
+%D \module
+%D   [       file=strc-not,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Note Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Note Handling}
+
+\registerctxluafile{strc-not}{1.001}
+
+\unprotect
+
+% this needs a further cleanup ...
+%
+% -- set breakpoin in descriptions
+% -- reset after trialtypesetting
+% -- that way we can trick the symbol space
+
+% obsolete
+
+\let\autopostponenotes\relax
+
+% removed:
+%
+% \pushsomestates
+%
+% core-ins -> obsolete
+%
+% saveinsertiondata
+% restoreinsertiondata
+% saveinsertionbox
+% eraseinsertionbackup
+% restoreinsertionbackup
+%
+% \def\doprocessnotescs#1#2% #1 == \cs that takes arg
+%   {\def\currentnote{#2}\@EA#1\csname\??vn:\currentnote\endcsname}
+% \def\processnotescs#1{\processcommacommand[\noteinsertions]{\doprocessnotescs#1}}
+% \def\noteinsertion     #1{\csname\??vn:#1\endcsname}
+
+\def\savenotedata      {\writestatus{todo}{save    note data}}
+\def\restorenotedata   {\writestatus{todo}{restore note data}}
+\def\savenotecontent   {\writestatus{todo}{save    note content}}
+\def\restorenotecontent{\writestatus{todo}{restore note content}}
+\def\erasenotebackup   {\writestatus{todo}{erase   note backup}}
+
+% page-set:
+
+\def\enablenotes    {\writestatus{todo}{enable  notes}}
+\def\disablenotes   {\writestatus{todo}{disable notes}}
+\def\savenotes      {\writestatus{todo}{save    notes}}
+\def\flushsavednotes{\writestatus{todo}{flush   notes}}
+
+% experiment: (compare scope=text and scope=page)
+%
+% \definenote[mynote][way=bytext,location=text,width=\leftmarginwidth,scope=page,rule=,before=,after=,factor=0]
+% \setuptexttexts[margin][\vbox to \textheight{\placenotes[mynote]\vfill}][]
+
+%D Footnotes are can be characterized by three components:
+%D
+%D \startitemize[packed]
+%D \item a small number \footnote {a footnote number} or
+%D      symbol {\setupfootnotes [conversion=set 2]\footnote
+%D      {a footnote}}
+%D \item and a similar mark at the bottom of the page
+%D \item followed by some additional text
+%D \stopitemize
+%D
+%D Because footnotes are declared at the location of their
+%D reference they can be seen as a special kind of
+%D floating bodies. Their placement is postponed but has to be
+%D taken into account in the pagebreak calculations. This kind
+%D of calculations are forced by using \type{\insert}s and dealing
+%D with all cases is not trivial.
+
+%D \macros
+%D   {notesenabled}
+%D
+%D We need a couple of states because at some moments we don't want
+%D to mess around with inserts at all. Take for instance a table
+%D of contents. And so we can temporary disable footnotes by saying
+%D
+%D \starttyping
+%D \notesenabledfalse
+%D \stoptyping
+
+\newif\ifnotesenabled \notesenabledtrue
+
+% better mark a note .. once flushed no more flushing
+
+%appendtoks \notesenabledfalse \to \everymarking
+\appendtoks \notesenabledfalse \to \everypagebody
+\appendtoks \notesenabledfalse \to \everystructurelist % quick hack
+
+%D Often we need to process the whole set of notes and to make that
+%D fast, we use a token register:
+
+\newtoks\tobeprocessednotes
+
+\unexpanded\def\processnotes#1% #1: \macro that uses \currentnote
+  {\def\doprocesssomenote##1{\edef\currentnote{##1}\let\currentdescription\currentnote#1}%
+   \the\tobeprocessednotes}
+
+%D Notes have their own paremater handlers. The complication here
+%D is that we use descriptions to typeset the note, so we have several
+%D resolvers.
+
+\let\currentnote\v!footnote
+
+\def\noteparameter    #1{\csname\donoteparameter{\??vn\currentnote}#1\endcsname}
+\def\noteparameterhash#1{\donoteparameterhash   {\??vn\currentnote}#1}
+
+\def\namednoteparameter#1#2{\csname\donoteparameter{\??vn#1}#2\endcsname}
+
+\def\donoteparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\donoteparentparameter    \csname#1\s!parent\endcsname#2\fi}
+\def\donoteparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\donoteparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+
+\def\donoteparentparameter    #1#2{\ifx#1\relax\s!empty\else\donoteparameter    #1#2\fi}
+\def\donoteparentparameterhash#1#2{\ifx#1\relax        \else\donoteparameterhash#1#2\fi}
+
+\def\detokenizednoteparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??vn#1\endcsname}}
+
+\def\dosetnoteattributes#1#2% style color
+  {\edef\fontattributehash {\noteparameterhash#1}%
+   \edef\colorattributehash{\noteparameterhash#2}%
+   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+%D \macros
+%D   {setupnote,setupnotedefinition}
+%D
+%D We can influence footnote typesetting with the setup
+%D command:
+%D
+%D \showsetup{setupnotes}
+%D \showsetup{setupnote}
+%D
+%D The definition command indicate that we can frame the footnote
+%D area. The footnotes themselves are treated as descriptions.
+%D
+%D \showsetup{definenote}
+%D
+%D It's sort of a custom to precede footnotes by a horizontal
+%D rule and although fancy rules like
+%D
+%D \starttyping
+%D \hbox to 10em{\hskip-3em\dotfill}
+%D \stoptyping
+%D
+%D Are quite ligitimate, we default to a simple one 20\% of the
+%D text width.
+
+\unexpanded\def\setupnotes
+  {\dodoubleargument\getparameters[\??vn]}
+
+\setupnotes
+  [\c!location=\v!page,
+   \c!way=\v!by\v!part,
+  %\c!conversion=,
+   \c!rule=\v!on,
+   \c!before=\blank,
+   \c!bodyfont=\v!small,
+  %\c!style=,
+  %\c!color=,
+  %\c!after=,
+  %\c!rulecolor=,
+   \c!rulethickness=\linewidth,
+   \c!frame=\v!off,
+   \c!margindistance=.5em,
+   \c!columndistance=1em,
+   \c!distance=.125em,
+   \c!align=\v!normal,
+   \c!tolerance=\v!tolerant,
+   \c!split=\v!tolerant,
+  %\c!width=\makeupwidth,
+  %\c!width=\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi,
+   \c!width=\defaultnotewidth,
+   \c!height=\textheight,
+   \c!numbercommand=\high,
+   \c!command=\noteparameter\c!numbercommand, % downward compatible
+   \c!separator=,% \@@koseparator,
+   \c!textcommand=\high,
+   \c!textstyle=\tx,
+  %\c!textcolor=,
+   \c!interaction=\v!yes,
+  %\c!factor=,
+  %\c!scope=, % \v!text \v!page
+   \c!prefixconnector=.,
+  %\c!next=\autoinsertnextspace
+   \c!prefix=\v!no,
+  %\c!continue=\v!no,
+   \c!n=1]
+
+\setupnotes
+  [\c!expansion=\v!no,
+   \c!xmlsetup=,
+   \s!catcodes=,
+   \c!saveinlist=\v!yes]
+
+\def\@@defaultnotedefloc{\v!inleft}
+\def\@@defaultnotedefdis{\!!zeropoint}
+
+\unexpanded\def\startnotedef{\resetdescriptions\csname\e!start\??vn\??vn\currentnote\endcsname}
+\unexpanded\def\stopnotedef                   {\csname\e!stop \??vn\??vn\currentnote\endcsname}
+
+\def\currentnoteins{\csname\??vn:\currentnote\endcsname}
+
+\newtoks \everysetupnote
+
+\unexpanded\def\definenote
+  {\dodoubleempty\dodefinenote}
+
+\def\dodefinenote[#1][#2]%
+  {\edef\currentnote{#1}%
+   \ifcsname\??vn:\currentnote\endcsname\else
+     \@EA\installinsertion\csname\??vn:\currentnote\endcsname\relax
+     \appendtoks\doprocesssomenote{#1}\to\tobeprocessednotes
+   \fi
+   \defineenumeration % description
+     [\currentnote]
+     [\c!location=\@@defaultnotedefloc,
+      \c!distance=\@@defaultnotedefdis,
+      \c!width=\v!fit,
+      \c!headstyle=\noteparameter\c!style, % hm
+      \c!headcolor=\noteparameter\c!color, % hm
+      \s!handler=\v!note,
+      \c!text=,
+      \c!before=,
+      \c!after=]%
+   \doredefinenotecommands\currentnote
+   \setupenumerations
+     [\currentnote]
+     [\s!parent=\??vn\currentnote,
+      \c!number=\v!yes] % no inheritance from decriptions which is okay
+   \presetlocalframed
+     [\??vn\currentnote]%
+   \getparameters
+     [\??vn\currentnote]
+     [\s!parent=\??vn,#2]%
+%    \definestructurecounter
+%      [\currentnote]%
+   \ctxlua{structure.notes.define("\currentnote","insert",\number\csname\??vn:\currentnote\endcsname)}%
+   \the\everysetupnote
+   \dochecknote}
+
+% \starttext
+%     text \startfootnote Test.\stopfootnote
+%     test \footnote{xxxx} \subfootnote{xxxx}
+%     test \footnote{xxxx} \subfootnote{xxxx}
+% \stoptext
+
+\def\dodoredefinenotecommands#1#2#3%
+  {\unexpanded\expandafter\def\csname\e!start#3#1\expandafter\endcsname\expandafter
+     {\expandafter\dosingleempty\csname\s!do\e!start#3#1\endcsname}%
+   \unexpanded\expandafter\def\csname\s!do\e!start#3#1\expandafter\endcsname
+        \expandafter[\expandafter##\expandafter1\expandafter]\expandafter##\expandafter2\csname\e!stop#3#1\endcsname
+     {\begingroup
+      \doenumerationinit{#1}{#2}{#3}%
+      \@@notemakedescription[##1]{}{##2}%
+      \endgroup}}
+
+\def\doredefinenotecommands#1%
+  {\normalexpanded{\noexpand\dodoredefinenotecommands{#1}{1}{}}%
+   \let\@@subslevel\empty
+   \dostepwiserecurse{2}{\descriptionparameter\c!levels}{1}
+     {\normalexpanded{\noexpand\dodoredefinenotecommands{#1}{\recurselevel}{\@@subslevel\v!sub}}%
+      \edef\@@subslevel{\@@subslevel\v!sub}}}
+
+\let\setupnotedefinition\setupenumerations
+
+\appendtoks
+    \setupenumerations[\currentnote][]%
+\to \everysetupnote
+
+% \appendtoks
+%     \dochecknote
+% \to \everysetupnote
+
+\unexpanded\def\setupnote
+  {\dodoubleempty\dosetupnote}
+
+\def\dosetupnote[#1][#2]%
+  {\edef\currentnote{#1}%
+   \ifsecondargument
+     \getparameters[\??vn\currentnote][#2]%
+     \the\everysetupnote
+   \fi
+   \dochecknote}
+
+\appendtoks
+  \setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule}% hm
+  \letvalue{\??vn\c!rule:a:\currentnote}\v!left
+\to \everysetupnote
+
+\appendtoks
+  \expanded{\processallactionsinset
+    [\noteparameter\c!rule]}
+    [     \v!on=>\setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule}, % no let as it can be changed afterwards
+      \v!normal=>\setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule},
+        \v!left=>\setvalue{\??vn\c!rule:a:\currentnote}{l2r},
+       \v!right=>\setvalue{\??vn\c!rule:a:\currentnote}{r2l},
+         \v!off=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,
+     \s!default=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,
+     \s!unknown=>\setvalue{\??vn\c!rule:c:\currentnote}{\noteparameter\c!rule}]%
+\to \everysetupnote
+
+\appendtoks
+  \processaction % todo
+    [\noteparameter\c!split]
+    [  \v!tolerant=>\notepenalty\zeropoint,
+         \v!strict=>\notepenalty9999,
+     \v!verystrict=>\notepenalty\maxdimen,
+        \s!default=>\notepenalty\zeropoint,
+        \s!unknown=>\notepenalty\commalistelement]%
+\to \everysetupnote
+
+%D The following switch can be used to disable limiting the
+%D height of the footnote area, something that is needed in
+%D multi column balancing. Use this switch with care.
+
+\newif\ifnotelimit \notelimittrue % shared
+
+% bottomnotes endnotes
+% clevernotes
+
+\appendtoks
+  \doifsomething{\noteparameter\c!factor}
+    {\ifnum\noteparameter\c!factor<\zerocount\else
+       \count\currentnoteins\noteparameter\c!factor
+     \fi}%
+\to \everysetupnote
+
+% compatibility (will go away)
+
+\newif\ifendnotes
+\newif\ifbottomnotes
+
+% locations:
+
+\def\s!noteloc{nodeloc} % 1=page 2=columns 3=lastcolumn 4=firstcolumn 5=none
+\def\s!notepos{nodepos} % 0=nothing 1=high 2=bottom
+\def\s!notefmt{nodefmt} % 1 text
+\def\s!notecol{nodecol}
+
+\def\clevernotes % compatibility hack, will be redone
+  {\numexpr\ifcase\namednoteparameter\v!footnote\s!noteloc\or0\or2\or2\or1\else0\fi\relax}
+
+\def\setnotelocation  #1{\expandafter\chardef\csname\??vn\currentnote\s!noteloc\endcsname#1\relax}
+\def\setnoteposition  #1{\expandafter\chardef\csname\??vn\currentnote\s!notepos\endcsname#1\relax}
+\def\setnoteformatting#1{\expandafter\chardef\csname\??vn\currentnote\s!notefmt\endcsname#1\relax}
+\def\setnotecolumns   #1{\expandafter\chardef\csname\??vn\currentnote\s!notecol\endcsname#1\relax}
+
+\def\currentnofcolumns{\@@kln}
+
+\setvalue{\??vn @\v!page       }{\setnotelocation\plusone}
+\setvalue{\??vn @\v!columns    }{\setnotelocation\plustwo}
+\setvalue{\??vn @\v!lastcolumn }{\setnotelocation\plusthree}
+\setvalue{\??vn @\v!firstcolumn}{\setnotelocation\plusfour}
+\setvalue{\??vn @\v!none       }{\setnotelocation\plusfive}
+\setvalue{\??vn @\v!text       }{\setnotelocation\plusfive \setnoteformatting\plusone} % test
+\setvalue{\??vn @\v!high       }{\setnoteposition\plusone}
+\setvalue{\??vn @\v!bottom     }{\setnoteposition\plustwo}
+
+\def\dosetcheckednote#1{\csname\??vn @#1\endcsname}
+
+\def\dochecknote
+  {% node states
+   \setnotelocation\plusone
+   \setnoteposition\plustwo
+   \normalexpanded{\noexpand\rawprocesscommalist[\noteparameter\c!location]}\dosetcheckednote
+   % compatibility hack
+   \ifnum\noteparameter\s!noteloc=\plusfive \endnotestrue    \else \endnotesfalse    \fi
+   \ifnum\noteparameter\s!notepos=\plustwo  \bottomnotestrue \else \bottomnotesfalse \fi
+   % set column multiplier
+   \edef\currentnotenofcolumns{\noteparameter\c!n}%
+   \ifx\currentnotenofcolumns\empty
+     \let\currentnotenofcolumns\!!plusone
+   \fi
+   \ifcase\noteparameter\s!noteloc\or
+     % page
+     \scratchcounter \currentnotenofcolumns
+   \or
+     % columns
+     \scratchcounter\ifnum\currentnofcolumns=\zerocount \plusone \else \currentnotenofcolumns \fi \relax
+   \or
+     % firstcolumn
+     \scratchcounter\plusone
+   \or
+     % lastcolumn
+     \scratchcounter\plusone
+   \or
+     % text
+     \scratchcounter\currentnotenofcolumns
+   \fi
+   % column factor
+   \global\count\currentnoteins\plusthousand
+   \global\count\currentnoteins\numexpr\plusthousand/\scratchcounter\relax
+   % maximize height
+   \ifnotelimit
+     \global\dimen\currentnoteins\dimexpr\noteparameter\c!height*\scratchcounter\relax
+   \fi
+   % distance -> tricky as this might depend on a font switch so we need a fast checker
+   \dosetnotedistance
+   % play safe
+   \ifnum\noteparameter\s!noteloc=\plusfive
+     \ctxlua{structure.notes.setstate("\currentnote","store")}%
+     % text notes (e.g. end notes) but we don't use inserts anyway
+     \global\dimen\currentnoteins\maxdimen
+     \global\count\currentnoteins\zerocount
+     \global\skip \currentnoteins\zeropoint
+   \fi}
+
+\def\dosetnotedistance
+  {\begingroup
+   \setbox\scratchbox\vbox
+     {\forgetall
+      \dontcomplain
+      \noteparameter\c!before
+      \placenoterule
+      \noteparameter\c!after}%
+   \global\skip\currentnoteins\ht\scratchbox
+   \endgroup}
+
+% \def\checknotes % no longer needed
+%   {\processnotes\dochecknote}
+%
+% \def\checknotedistances
+%   {\processnotes\dosetnotedistance}
+%
+% fails but not that much needed anyway:
+%
+% \appendtoks
+%     \checknotedistances
+% \to \everyglobalbodyfont
+
+% D When \type{n} exceeds~1, footnotes are typeset in
+% D multi||columns, using the algoritm presented on page~397
+% D of \TEX book. Footnotes can be places on a per page basis
+% D or whereever suitable. When we set~\type{n} to~0, we get a
+% D rearanged paragraph, typeset by the algoritms on pages 398
+% D and~389 (at least in \MKII). We definitely did not reinvent
+% D that wheel.
+
+% Example of using factor:
+%
+% \definenote[mynote][way=bypage,location=text,width=\marginwidth,rule=,before=,factor=0]
+% \setuplayout[backspace=5cm,margin=3cm,margindistance=.5cm,width=middle]
+% \setuptexttexts[margin][\vbox to \textheight{\placenotes[mynote]\vfill}][]
+% \starttext
+% \dorecurse{10}{test \mynote{one one one one one one} \input zapf \mynote{one one one one one one} }
+% \stoptext
+
+%D The noterule can be a graphic and therefore calling this
+%D setup macro at every skipswitch is tricky (many many MP
+%D runs). Let's just reserve a few points, that probably match
+%D those of the stretch component.
+
+%D A bit messy:
+
+\unexpanded\def\placenoterule
+  {\bgroup
+   \setupalign[\getvalue{\??vn\c!rule:a:\currentnote}]%
+   \righttoleft
+   \getvalue{\??vn\c!rule:c:\currentnote}%
+   \par
+   \egroup}
+
+\unexpanded\def\normalnoterule
+  {\ifvmode
+     \dontleavehmode \blackrule
+       [ \c!color=\noteparameter\c!rulecolor,
+         \c!width=.2\hsize,
+        \c!height=\noteparameter\c!rulethickness,
+        \c!depth=\zeropoint]%
+     \endgraf
+     \kern\strutdepth
+   \fi}
+
+\ifx\setnotehsize\undefined
+
+  \unexpanded\def\setnotehsize{\hsize\noteparameter\c!width\relax} % can be overloaded
+
+\fi
+
+%D The formatting depends on the width of the table, so we
+%D have to set \type {n} to zero.
+%D
+%D \starttyping
+%D \startbuffer
+%D \bTABLE
+%D \bTR \bTD one \footnote{\dorecurse{10}{abcd }} \eTD \bTD two \eTD \eTR
+%D \bTR \bTD three fout five six seven eight nine \eTD \bTD ten \eTD \eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \startlocalfootnotes[n=0,location={text,none}]
+%D \placelegend[n=2]{\getbuffer}{\placelocalfootnotes}
+%D \stoplocalfootnotes
+%D \stoptyping
+
+%D \macros
+%D   {footnote}
+%D
+%D A footnote can have a reference as optional argument and
+%D therefore its formal specification looks like:
+%D
+%D \showsetup{footnote}
+%D
+%D This command has one optional command: the reference. By
+%D saying \type{[-]} the number is omitted. The footnote
+%D command is not that sensitive to spacing, so it's quite
+%D legal to say:
+%D
+%D \startbuffer
+%D Users of \CONTEXT\ must keep both feet \footnote{Given they
+%D have two.} on the ground and not get confused \footnote{Or
+%D even crazy.} by all those obscure \footnote{But fortunately
+%D readable.} parameters.
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D When setting the \type{conversion} to \type{set 2} we get
+%D something like:
+%D
+%D \bgroup
+%D \startnarrower
+%D \setupfootnotes[conversion=set 1]
+%D \getbuffer
+%D \stopnarrower
+%D \egroup
+%D
+%D Typesetting footnotes is, at least for the moment, disabled
+%D when reshaping boxes.
+%D
+%D The additional macro \type {\footnotetext} and the
+%D associated \type {\note} macro were implemented at
+%D request of users on the mailing list and a suggestion by
+%D taco to split of the symbol placement. I decided to
+%D merge this functionality with the existing \type {\note}
+%D functionality.
+
+%D The next implementation runs on top of enumerations (only in \MKIV).
+%D
+%D \starttyping
+%D \setupenumerations
+%D   [footnote]
+%D   [     style=\type{(es)},
+%D     headstyle=\type{(hs)}]
+%D
+%D \setupnote
+%D   [footnote]
+%D   [        style=\type{(s)},
+%D          command=\type{(c)},
+%D      textcommand=\type{(tc)},
+%D        textstyle=\type{(ts)},
+%D      numberstyle=\type{(ns)},
+%D    numbercommand=\type{(nc)}]
+%D
+%D \setuplayout[backspace=6cm,marginwidth=cm,width=middle]
+%D
+%D \starttext
+%D     \dorecurse{9}{This\footnote{Hello World #1} is a test.\par }
+%D \stoptext
+%D \stoptyping
+
+% TODO: \ifnotesenabled
+
+\newif\ifnotesymbol \notesymboltrue
+
+\newconditional\skipnoteplacement
+
+\unexpanded\def\setnote    [#1]{\getvalue{#1}}
+\unexpanded\def\setnotetext[#1]{\global\settrue\skipnoteplacement\getvalue{#1}}
+
+\def\domovednote#1#2#3#4%
+  {\ifcase\ctxlua{structure.notes.deltapage("#1",#2)}\or\symbol[#3]\or\symbol[#4]\fi}
+
+\setvalue{\??dd:\v!note:\s!handler:\s!text  }{\@@donotetext}
+\setvalue{\??dd:\v!note:\s!handler:\s!number}{\@@donotenumber}
+\setvalue{\??dd:\v!note:\s!handler          }{\@@donotehandler}
+\setvalue{\??dd:\v!note:\s!handler:\s!do    }{\@@somenotedescription}
+\setvalue{\??dd:\v!note:\s!handler:\s!start }{\@@startsomenotedescription}
+
+\let\@@donotehandler\@@dodescriptionhandler
+
+\def\@@somenotedescription     {\@@notemakedescription}
+\def\@@startsomenotedescription{\@@notemakedescription}
+
+\def\@@notemakedescription[#1]#2#3%
+  {\ifnotesenabled
+     \edef\currentdescriptionreference{#1}%
+     \iftrialtypesetting
+        \doenumerationcheckconditions
+        \let\currentnote\currentdescriptionmain
+        \typesetdummynotesymbol
+     \else
+       \begingroup
+       \doenumerationcheckconditions
+       \let\currentnote\currentdescriptionmain
+       \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#3},\c!list=,\c!bookmark=,][]%
+       \xdef\currentnotenumber{\ctxlua{structure.notes.store("\currentnote",\currentdescriptionnumberentry)}}%
+       \settrue\processingnote
+       \ifconditional\skipnoteplacement
+         \globallet\lastnotesymbol\dolastnotesymbol
+       \else
+         \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
+           \ignorelines % makes footnotes work in \startlines ... \stoplines
+         \fi
+         \ifnotesymbol
+           \dolastnotesymbol
+         \else
+           \unskip\unskip
+           \globallet\lastnotesymbol\dolastnotesymbol
+         \fi
+       \fi
+       \ifconditional\postponingnotes % todo: per note class
+         \global\settrue\postponednote
+       \else\ifconditional\inlocalnotes % todo: per note class
+         \global\settrue\postponednote
+       \else
+         \handlenoteinsert\currentnote\currentnotenumber
+       \fi\fi
+       \endgroup
+     \fi
+   \fi
+   \ifconditional\skipnoteplacement
+     \global\setfalse\skipnoteplacement
+   \else
+     \kern\notesignal\relax % \relax is needed to honor spaces
+   \fi}
+
+\def\dolastnotesymbol
+  {\typesetsomenotesymbol\currentnote\currentnotenumber}
+
+\def\dotypesetsomenotesymbol#1#2% running text
+  {\dodonotesymbol
+     {\synchronizesomenotesymbol{#1}{#2}%
+      \ctxlua{structure.notes.number("\currentnote",\currentnotenumber)}% \currentdescriptionnumberentry
+      \domovednote{#1}{#2}\v!previouspage\v!nextpage}}
+
+\unexpanded\def\typesetsomenotesymbol#1#2% running text
+  {\removeunwantedspaces
+   \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
+   \ifdim\lastkern=\notesignal
+     \dodonotesymbol{\kern\noteparameter\c!distance}% gets the font right, hack !
+   \fi
+   \nobreak
+   \doifelse{\noteparameter\c!interaction}\v!no
+     {\dotypesetsomenotesymbol{#1}{#2}}
+     {\directgotobox{\dotypesetsomenotesymbol{#1}{#2}}[page(\ctxlua{structure.notes.getnumberpage("#1",\number#2)})]}% f:
+   \globallet\lastnotesymbol\relax}
+
+\unexpanded\def\typesetdummynotesymbol % temp hack
+  {\removeunwantedspaces
+   \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
+   \ifdim\lastkern=\notesignal
+     \dodonotesymbol{\kern\noteparameter\c!distance}% gets the font right, hack !
+   \fi
+   \nobreak
+   \hbox to .5em{}%
+   \globallet\lastnotesymbol\relax}
+
+\def\currentnotedescriptiontext % todo: can be other number
+  {\ctxlua{structure.notes.title("\currentnote",\currentdescriptionnumberentry)}}
+
+\def\@@donotetext
+  {\ifconditional\enumerationnumberenabled
+     \iftrialtypesetting
+       \doenumerationfullnumber\showdntext
+       \doenumerationcouplingsymbol
+     \else
+       \doenumerationregistercoupling
+       \doenumerationfullnumber\showdntext
+       \doenumerationcouplingsymbol
+     \fi
+   \else
+     \doenumerationfullnumber\showdnpuretext
+   \fi}
+
+% \def\currentnoteenumerationfullnumber
+\def\@@donotenumber
+  {\doifelse{\noteparameter\c!interaction}\v!no
+     {\docurrentnoteenumerationfullnumber}%
+     {\directgotobox
+        {\docurrentnoteenumerationfullnumber}%
+        [page(\ctxlua{structure.notes.getsymbolpage("\currentnote",\currentdescriptionnumberentry)})]}}
+
+\def\docurrentnoteenumerationfullnumber
+  {\noteparameter\c!numbercommand
+     {\dosetnoteattributes\c!numberstyle\c!numbercolor
+      \ctxlua{structure.notes.number("\currentnote",\currentdescriptionnumberentry)}%
+      \domovednote\currentdescription\currentdescriptionnumberentry\v!nextpage\v!previouspage}}
+
+\def\synchronizesomenotesymbol#1#2% called more often than needed
+  {\expanded{\noexpand\ctxlatelua{structure.notes.setsymbolpage("#1",#2)}}}
+
+\def\handlenoteinsert#1#2%
+  {\begingroup
+   \edef\currentnote{#1}%
+   \the\everybeforenoteinsert
+   \insert\currentnoteins\bgroup
+     \the\everyinsidenoteinsert
+     \doprocesslocalsetups{\noteparameter\c!setups}% experimental
+     \handlenoteitself{#1}{#2}%
+   \egroup
+   \the\everyafternoteinsert
+   \endgroup}
+
+\def\handlenoteitself#1#2% tg, id
+  {\edef\currentdescription{#1}%
+   \edef\currentnote{#1}%
+   \edef\currentdescriptionnumberentry{#2}%
+   \edef\currentdescriptionlistentry{\ctxlua{tex.write(structure.notes.listindex("#1",#2))}}%
+   % as we can have collected notes (e.g. in tables) we need to recover
+   % \currentdescriptionattribute and \currentdescriptionsynchronize
+   \reinstatedescriptionnumberentry\currentdescriptionlistentry % we could store the number in the entry
+   %
+   \dontcomplain % should be done in startstoreddescription instead
+   \dostartstoreddescription\begstrut\currentnotedescriptiontext\endstrut\dostopstoreddescription}
+
+\def\dostartstoreddescription
+  {\bgroup\@@dostartdescriptionindeed}
+
+\def\dostopstoreddescription
+  {\@@stopdescription}
+
+%D The main typesetting routine is more or less the same as the
+%D \PLAIN\ \TEX\ one, except that we only handle one type while
+%D \PLAIN\ also has something \type{\v...}. In most cases
+%D footnotes can be handled by a straight insert, but we do so
+%D by using an indirect call to the \type{\insert} primitive.
+
+%D Making footnote numbers active is not always that logical,
+%D Making footnote numbers active is not always that logical,
+%D especially when we keep the reference and text at one page.
+%D On the other hand we need interactivity when we refer to
+%D previous notes or use end notes. Therefore we support
+%D interactive footnote numbers in two ways \footnote{This
+%D feature was implemented years after we were able to do so,
+%D mainly because endnotes had to be supported.} that is,
+%D automatically (vise versa) and by user supplied reference.
+
+\newcount\internalnotereference
+
+\let\startpushnote=\relax
+\let\stoppushnote =\relax
+
+\newsignal\notesignal
+\newcount \notepenalty
+
+\notepenalty=0 % needed in order to split in otrset
+
+\newconditional\processingnote
+\newconditional\postponednote
+
+\newtoks\everybeforenoteinsert
+\newtoks\everyinsidenoteinsert
+\newtoks\everyafternoteinsert
+
+\appendtoks
+   \let\flushnotes\relax
+   \let\postponenotes\relax
+   \forgetall
+\to \everybeforenoteinsert
+
+\appendtoks
+  \doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
+  \penalty\notepenalty
+  \forgetall
+  \setnotebodyfont
+  \redoconvertfont % to undo \undo calls in in headings etc
+  \splittopskip\strutht  % not actually needed here
+  \splitmaxdepth\strutdp % not actually needed here
+  \leftmargindistance\noteparameter\c!margindistance
+  \rightmargindistance\leftmargindistance
+  \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
+    \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
+  \fi
+\to \everyinsidenoteinsert
+
+% not: \appendtoks \setnotehsize \to \everyinsidenoteinsert (spoils columns)
+
+\let\lastnotesymbol\relax
+
+%D \macros
+%D   {note}
+%D
+%D Refering to a note is accomplished by the rather short
+%D command:
+%D
+%D \showsetup{note}
+%D
+%D This command is implemented rather straightforward as:
+
+\unexpanded\def\notesymbol
+  {\dodoubleempty\donotesymbol}
+
+\def\donotesymbol[#1][#2]%
+  {\bgroup
+   \ifnotesenabled
+     \edef\currentnote{#1}%
+     \ifsecondargument
+       \unskip
+       \dodonotesymbol{\in[#2]}%
+     \else
+       \dodonotesymbol\lastnotesymbol
+     \fi
+   \fi
+   \egroup}
+
+\def\dodonotesymbol#1%
+  {\noteparameter\c!textcommand{\dosetnoteattributes\c!textstyle\c!textcolor#1}}
+
+%D Normally footnotes are saved as inserts that are called upon
+%D as soon as the pagebody is constructed. The footnote
+%D insertion routine looks just like the \PLAIN\ \TEX\ one,
+%D except that we check for the end note state.
+
+% testcase for split bottom alignment see (a) below
+%
+% \dorecurse{6}{\input tufte\footnote{\input ward \input tufte \relax}}
+
+\unexpanded\def\placenoteinserts
+  {\processnotes\doplacenoteinserts}
+
+\unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi}
+\unexpanded\def\unvcopied{\ifvmode\unvcopy\else\copy\fi}
+
+\def\doplacenoteinserts
+  {\relax\ifdim\ht\currentnoteins>\zeropoint\relax
+     \ifnum\noteparameter\s!noteloc=\plusfive
+     \else
+       \endgraf
+       \ifvmode
+         \whitespace
+         \noteparameter\c!before
+       \fi
+%        \bgroup
+%        \setupalign[\noteparameter\c!align]%
+       \placenoterule  % alleen in ..mode
+%        \par
+%        \egroup
+       \bgroup
+       \setnotebodyfont
+       \setbox\scratchbox\hbox
+         {% this should be checked, smells like a mix-up
+          % does not split: \ifcase\noteparameter\c!n\unvbox\else\box\fi\currentnoteins
+          \ifcase\noteparameter\c!n\relax
+            \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins % is this needed?
+          \or
+            \iftrialtypesetting\copy\else\box\fi\currentnoteins
+            \obeydepth % (a) added , since split footnotes will not align properly
+          \else
+            \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins
+          \fi}%
+       \setbox\scratchbox\hbox
+         {\localframed
+            [\??vn\currentnote]
+            [\c!width=\v!fit,
+             \c!height=\v!fit,
+             \c!strut=\v!no,
+             \c!offset=\v!overlay]
+            {\ifdim\dp\scratchbox=\zeropoint         % this hack is needed because \vadjust
+               \hbox{\lower\strutdp\box\scratchbox}% % in margin number placement
+             \else                                   % hides the (always) present depth
+               \box\scratchbox
+             \fi}}%
+       \setbox\scratchbox\hbox{\lower\strutdepth\box\scratchbox}%
+       \dp\scratchbox\strutdepth % so we know that it has the note bodyfont depth
+       \box\scratchbox
+       \egroup
+       \endgraf
+       \ifvmode
+         \noteparameter\c!after
+       \fi
+     \fi
+   \fi}
+
+%D Supporting end notes is surprisingly easy. Even better, we
+%D can combine this feature with solving the common \TEX\
+%D problem of disappearing inserts when they're called for in
+%D deeply nested boxes. The general case looks like:
+%D
+%D \starttyping
+%D \postponenotes
+%D \.box{whatever we want with footnotes}
+%D \flushnotes
+%D \stoptyping
+%D
+%D This alternative can be used in headings, captions, tables
+%D etc. The latter one sometimes calls for notes local to
+%D the table, which can be realized by saying
+%D
+%D \starttyping
+%D \setlocalfootnotes
+%D some kind of table with local footnotes
+%D \placelocalfootnotes
+%D \stoptyping
+%D
+%D Postponing is accomplished by simply redefining the (local)
+%D insert operation. A not too robust method uses the
+%D \type{\insert} primitive when possible. This method fails in
+%D situations where it's not entirely clear in what mode \TEX\
+%D is. Therefore the auto method can is to be overruled when
+%D needed.
+
+\newconditional\postponingnotes
+
+% we need a proper state: normal, postponing, flushing
+
+\def\postponenotes
+  {\ifconditional\postponingnotes\else
+     \global\settrue\postponingnotes
+     \global\let\flushnotes\doflushnotes
+     \ctxlua{structure.notes.postpone()}%
+   \fi}
+
+\let\flushnotes\relax
+
+\def\doflushnotes
+  {\ifconditional\postponingnotes
+     \begingroup
+     \let\flushnotes   \relax
+     \let\postponenotes\relax
+     \ctxlua{structure.notes.flushpostponed()}% this also resets the states !
+     \global\setfalse\postponednote
+     \global\setfalse\postponingnotes
+     \global\let\flushnotes\relax
+     \endgroup
+   \fi}
+
+%D \macros
+%D   {startlocalfootnotes,placelocalfootnotes}
+%D
+%D The next two macros can be used in for instance tables, as
+%D we'll demonstrate later on.
+%D
+%D \showsetup{startlocalfootnotes}
+%D \showsetup{placelocalfootnotes}
+
+% todo: compatibility mode: when first arg is assignment or missing, then all
+
+\newtoks\everyplacelocalnotes
+
+\appendtoks
+    \let\flushnotes   \relax
+    \let\postponenotes\relax
+\to \everyplacelocalnotes
+
+\def\defaultnotewidth{\makeupwidth} % {\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}
+
+\newconditional\inlocalnotes
+
+\unexpanded\def\startlocalnotes
+  {\dosingleempty\dostartlocalnotes}
+
+\def\dostartlocalnotes[#1]%
+  {\def\localnoteslist{#1}%
+   \settrue\inlocalnotes
+   \processcommacommand[\localnoteslist]\dodostartlocalnotes}
+
+\unexpanded\def\stoplocalnotes
+  {\processcommacommand[\localnoteslist]\dodostoplocalnotes
+   \setfalse\inlocalnotes}
+
+\def\dodostartlocalnotes#1%
+  {\doifnot{\noteparameter\c!continue}\v!yes
+     {\savestructurecounter[#1]%
+      \resetstructurecounter[#1]}%
+   \ctxlua{structure.notes.save("#1","store")}}
+
+\def\dodostoplocalnotes#1%
+  {\doifnot{\noteparameter\c!continue}\v!yes
+     {\restorestructurecounter[#1]}%
+   \ctxlua{structure.notes.restore("#1")}}
+
+\unexpanded\def\placelocalnotes
+  {\dodoubleempty\doplacelocalnotes}
+
+\def\doplacelocalnotes[#1][#2]%
+  {\doif{\ctxlua{structure.notes.getstate("#1")}}{store}{\dodoplacelocalnotes{#2}{#1}}}
+
+\def\dodoplacelocalnotes#1#2% settings note
+  {\begingroup
+   \the\everyplacelocalnotes
+   % beware, we cannot trust setting \currentnote here
+   \getparameters[\??vn#2][\c!width=\v!fit,\c!height=\v!fit,\c!strut=\v!no,\c!offset=\v!overlay,#1]% we only need a selective one
+   \donotealternative{#2}%
+   \endgroup
+   \dochecknote} % we need to restore the old state
+
+%D These commands can be used like:
+%D
+%D \startbuffer
+%D \startlocalnotes[width=.3\hsize,n=0]
+%D   \placetable
+%D     {Some Table}
+%D     \placeontopofeachother
+%D       {\starttable[|l|r|]
+%D        \HL
+%D        \VL Nota\footnote{Bene} \VL Bene\footnote{Nota} \VL\SR
+%D        \VL Bene\footnote{Nota} \VL Nota\footnote{Bene} \VL\SR
+%D        \HL
+%D        \stoptable}
+%D       {\placelocalnotes}
+%D \stoplocalnotes
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Because this table placement macro expect box content, and
+%D thanks to the grouping of the local footnotes, we don't need
+%D additional braces.
+%D
+%D \getbuffer
+
+%D \macros
+%D   {placefootnotes}
+%D
+%D We still have no decent command for placing footnotes
+%D somewhere else than at the bottom of the page (for which no
+%D user action is needed). Footnotes (endnotes) can be
+%D placed by using
+%D
+%D \showsetup{placefootnotes}
+
+\unexpanded\def\placebottomnotes
+  {\processnotes\placenoteinserts}
+
+\unexpanded\def\placenotes
+  {\dodoubleempty\doplacenotes}
+
+\def\doplacenotes[#1][#2]%
+  {\processcommalist[#1]{\dodoplacenotes{#2}}}
+
+\def\dodoplacenotes#1#2% settings note
+  {\edef\currentnote{#2}%
+   \doifelse{\ctxlua{structure.notes.getstate("#2")}}{store}
+     \dodoplacelocalnotes
+     \dodoplaceglobalnotes
+       {#1}{#2}}
+
+\def\dodoplaceglobalnotes#1#2%
+  {\begingroup
+   \setupnote[#2][#1]%
+   \doplacenoteinserts
+   \endgroup
+   \the\everysetupnote} % to be checkes
+
+%D Placement
+
+\long\def\installnotealternative#1#2%
+  {\setvalue{\??vn:\c!alternative:#1}{#2}}
+
+\def\doifnotescollected#1%
+  {\ctxlua{structure.notes.doifcontent("#1")}}
+
+\def\donotealternative#1%
+  {\edef\currentnote{#1}%
+   \doifnotescollected\currentnote
+     {\endgraf
+      \ifvmode
+        \whitespace
+        \noteparameter\c!before
+      \fi
+      \begingroup
+      \setnotebodyfont
+      \getvalue{\??vn:\c!alternative:\noteparameter\c!alternative}%
+      \endgroup
+      \ifvmode
+        \noteparameter\c!after
+      \fi}}
+
+\setvalue{\??vn:\c!alternative:}{\getvalue{\??vn:\c!alternative:\v!none}}
+
+%D A stupid alternative is also provided:
+%D
+%D \starttyping
+%D \setupfootnotes[location=text,alternative=none]
+%D \stoptyping
+
+\def\flushlocalnotes#1{\ctxlua{structure.notes.flush("#1","store")}}
+
+\installnotealternative \v!none
+  {\flushlocalnotes\currentnote}
+
+\installnotealternative \v!grid % test if n > 0
+  {\snaptogrid\hbox
+    {\localframed
+       [\??vn\currentnote]
+       {\flushlocalnotes\currentnote}}}
+
+\installnotealternative \v!fixed % test if n > 0
+  {\localframed
+     [\??vn\currentnote]
+     {\flushlocalnotes\currentnote}}
+
+\installnotealternative \v!columns % redundant
+  {\localframed
+     [\??vn\currentnote]
+     {\edef\currentnotewidth{\noteparameter\c!width}%
+      \doifdimensionelse\currentnotewidth\donothing
+        {\edef\currentnotewidth{\the\hsize}}%
+%       \setupinmargin[\c!align=\v!left]%
+      \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\currentnotewidth]%
+        \flushlocalnotes\currentnote
+      \stopsimplecolumns}}
+
+%D \macros
+%D   {fakenotes}
+
+    % is this ok? endnotes and such
+
+    \unexpanded\def\fakenotes
+      {\ifhmode\endgraf\fi\ifvmode
+         \calculatetotalclevernoteheight
+         \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
+       \fi}
+
+    \unexpanded\def\fakepagenotes
+      {\ifhmode\endgraf\fi\ifvmode
+         \calculatetotalpagenoteheight
+         \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
+       \fi}
+
+    \newdimen\totalnoteheight
+
+    \def\doaddtototalnoteheight#1%
+      {\ifdim\ht#1>\zeropoint
+         \ifcase\count#1\else
+           % todo: divide by count
+           \advance\totalnoteheight\ht  #1%
+           \advance\totalnoteheight\skip#1%
+         \fi
+       \fi}
+
+    \def\docalculatetotalnoteheight
+      {\ifcase\clevernotes % tricky here ! ! ! to be sorted out ! ! !
+         \doaddtototalnoteheight\currentnoteins
+       \else
+%        \doaddtototalnoteheight\currentbackupnoteins
+       \fi}
+
+    \def\docalculatetotalclevernoteheight
+      {\ifcase\clevernotes \else % tricky here ! ! ! to be sorted out ! ! !
+         \doaddtototalnoteheight\currentnoteins
+       \fi}
+
+    \def\docalculatetotalpagenoteheight
+      {\doaddtototalnoteheight\currentnoteins}
+
+    \def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\processnotes\docalculatetotalnoteheight}
+    \def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\processnotes\docalculatetotalclevernoteheight}
+    \def\calculatetotalpagenoteheight  {\totalnoteheight\zeropoint\processnotes\docalculatetotalpagenoteheight}
+
+    \newif\ifnotespresent
+
+    \def\dochecknotepresence
+      {\ifdim\ht\currentnoteins>\zeropoint
+         \notespresenttrue
+       \fi}
+
+    \def\checknotepresence
+      {\notespresentfalse
+       \processnotes\dochecknotepresence}
+
+%D Now how can this mechanism be hooked into \CONTEXT\ without
+%D explictly postponing footnotes? The solution turned out to
+%D be rather simple:
+%D
+%D \starttyping
+%D \everypar  {...\flushnotes...}
+%D \neverypar {...\postponenotes}
+%D \stoptyping
+%D
+%D and
+%D
+%D \starttyping
+%D \def\ejectinsert%
+%D   {...
+%D    \flushnotes
+%D    ...}
+%D \stoptyping
+%D
+%D We can use \type{\neverypar} because in most commands
+%D sensitive to footnote gobbling we disable \type{\everypar}
+%D in favor for \type{\neverypar}. In fact, this footnote
+%D implementation is the first to use this scheme.
+
+%D This is a nasty and new secondary footnote flusher. It
+%D can be hooked into \type {\everypar} like:
+%D
+%D \starttyping
+%D \appendtoks \synchronizenotes \to \everypar
+%D \stoptyping
+
+    % \def\dosynchronizenotes
+    %   {\ifvoid\currentnoteins\else\insert\currentnoteins{\unvbox\currentnoteins}\fi}
+    %
+    % \def\synchronizenotes
+    %   {\processnotes\dosynchronizenotes}
+
+\let\synchronizenotes\relax
+
+%D When typesetting footnotes, we have to return to the
+%D footnote specific bodyfont size, which is in most cases derived
+%D from the global document bodyfont size. In the previous macros
+%D we already used a footnote specific font setting macro.
+
+\def\setnotebodyfont
+  {\let\setnotebodyfont\relax
+   \restoreglobalbodyfont
+   \switchtobodyfont[\noteparameter\c!bodyfont]%
+   \setuptolerance[\noteparameter\c!tolerance]%
+   \setupalign[\noteparameter\c!align]}
+
+%D The footnote mechanism defaults to a traditional one
+%D column way of showing them. By default we precede them by
+%D a small line.
+
+\ifx\v!endnote\undefined \def\v!endnote{endnote} \fi
+
+\definenote [\v!footnote]
+\definenote [\v!endnote ] [\c!location=\v!none] % else no break
+
+%D Compatibility macros:
+
+\unexpanded\def\setupfootnotedefinition{\setupnotedefinition                [\v!footnote]}
+\unexpanded\def\setupfootnotes         {\setupnote                          [\v!footnote]}
+%unexpanded\def\footnote               {\setnote                            [\v!footnote]}
+\def\footnotetext           {\setnotetext                        [\v!footnote]}
+%unexpanded\def\note                   {\dodoubleempty\notesymbol           [\v!footnote]} %  alleen footnote
+\unexpanded\def\placefootnotes         {\dodoubleempty\doplacefootnotes     [\v!footnote]}
+\unexpanded\def\placelocalfootnotes    {\dodoubleempty\doplacelocalfootnotes[\v!footnote]}
+\unexpanded\def\startlocalfootnotes    {\startlocalnotes                    [\v!footnote]} %  alleen footnote
+\unexpanded\def\stoplocalfootnotes     {\stoplocalnotes }
+
+\def\doplacefootnotes     [#1][#2]{\ifsecondargument\placenotes     [#1][#2,\c!height=\textheight]\else\placenotes     [#1]\fi}
+\def\doplacelocalfootnotes[#1][#2]{\ifsecondargument\placelocalnotes[#1][#2,\c!height=\textheight]\else\placelocalnotes[#1]\fi}
+
+\unexpanded\def\note{\dodoubleempty\donote}
+
+\def\donote[#1][#2]{\ifsecondargument\donotesymbol[#1][#2]\else\secondargumenttrue\donotesymbol[\v!footnote][#1]\fi}
+
+%D Goodies:
+%D
+%D \starttyping
+%D \dorecurse {100} {
+%D     test \footnote{\doifnoteonsamepageelse[footnote]{ibidem}{aaa}}
+%D }
+%D \stoptyping
+
+\def\doifnoteonsamepageelse[#1]{\ctxlua{structure.notes.doifonsamepageasprevious("#1")}}
+
+%D New trickery:
+
+\def\ownnotesymbol#1% #1 gets number passed
+  {\executeifdefined{\??vn::\currentnote}\empty}
+
+\unexpanded\def\setnotesymbol[#1]#2#3%
+  {\prewordbreak % prevent lookback
+   \setgvalue{\??vn::#1}{#3}
+   \dolastnotesymbol}
+
+\unexpanded\def\ownnote[#1]#2#3#4%
+  {\setnotesymbol[#1]{#2}{#3}%
+   \setnotetext  [#1]{#4}}
+
+\defineconversion
+  [ownnote]
+  [\ownnotesymbol]
+
+\protect \endinput

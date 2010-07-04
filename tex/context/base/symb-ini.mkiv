@@ -1,0 +1,281 @@
+%D \module
+%D   [       file=symb-ini,
+%D        version=1998.07.20,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Basic Symbols Commands,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The macros described here used to be part of the \type
+%D {core-con} module. I decided to move them here when
+%D symbolsets saw the light. Let their light shine.
+
+\writestatus{loading}{ConTeXt Symbol Libraries / Initialization}
+
+\unprotect
+
+%D \macros
+%D   {definesymbol, symbol}
+%D
+%D Converting numbers or levels into a character, romannumeral,
+%D symbol or something else, is supported by many \CONTEXT\
+%D commands. Therefore we need a mechanism for linking such
+%D numbers to their counterparts.
+%D
+%D First we take care of symbols. These are for instance used
+%D in enumerations and itemizations. We have:
+%D
+%D \showsetup{definesymbol}
+%D \showsetup{symbol}
+%D
+%D Symbols are simply linked to a tag. Such tags can be numbers
+%D or strings.
+%D
+%D \starttyping
+%D \definesymbol [1]       [$\bullet$]
+%D \definesymbol [level 5] [$\star$]
+%D \stoptyping
+
+% ss:tag     -> symbol
+% ss:set:tag -> symbol out of set
+% sstag      -> list of symbols in set
+
+\unexpanded\def\definesymbol
+  {\dotripleempty\dodefinesymbol}
+
+% \def\dodefinesymbol[#1][#2][#3]% class name meaning
+%   {\ifthirdargument
+%      \setvalue{\??ss:#1:#2}{#3}%
+%      \doifsomething{#1}{\addvalue{\??ss*#1}{#2}}%
+%    \else
+%      \setvalue{\??ss:\currentsymboldef:#1}{#2}%
+%    \fi}
+
+\def\dodefinesymbol[#1][#2][#3]% class name meaning
+  {\ifthirdargument
+     \setvalue{\??ss:#1:#2}{#3}%
+     \doifsomething{#1}{\addvalue{\??ss*#1}{#2}}%
+   \else
+     \setvalue{\??ss:\currentsymboldef:#1}{#2}%
+     \addvalue{\??ss*\currentsymboldef}{#1}%
+   \fi}
+
+\def\doifinsymbolsetelse#1#2{\doifdefinedelse{\??ss:#1:#2}}
+\def\doifinsymbolset    #1#2{\doifdefined    {\??ss:#1:#2}}
+\def\doifsymbolsetelse    #1{\doifdefinedelse{\??ss*#1}}
+
+\def\symbolset#1{\executeifdefined{\??ss*#1}\empty} % no [#1], to be used in commalists etc
+
+%D Since symbols are used frequently in interactive
+%D documents, we speed up this one. Well, that was history,
+%D since now we simplified things a bit, because the low
+%D level macros have been sped up now and then.
+
+\unexpanded\def\symbol       % This one always gobbles spaces,
+  {\dodoubleempty\dosymbol}  % so never change it again!
+
+\newif\ifnosymbol \newtoks\everysymbol
+
+\def\dodosymbol#1#2% \relax's prevent lookahead problems
+  {\nosymbolfalse{\the\everysymbol\csname\??ss:#1:#2\endcsname\relax}\relax}
+
+\def\directsymbol#1#2% no \relax, there can be an argument, see lists
+  {\executeifdefined{\??ss:#1:#2}\firstofoneargument}
+
+% We support both:
+%
+% Test test \symbol[whatever]\ test \symbol[whatever].
+% Test test \symbol{whatever}  test \symbol{whatever}.
+
+\def\dosymbol        % so we also handle \symbol{name}
+  {\iffirstargument  % which is nicer with following spaces
+     \expandafter\donormalsymbol
+   \else
+     \expandafter\dospecialsymbol
+   \fi}
+
+\def\dospecialsymbol[#1][#2]#3%
+  {\firstargumenttrue
+   \secondargumentfalse
+   \donormalsymbol[#3][]}
+
+\def\donormalsymbol[#1][#2]%
+  {\nosymboltrue
+   \ifsecondargument
+     \edef\currentsymbol{#2}%
+     \doifinsymbolset{#1}{#2}{\dodosymbol{#1}{#2}}%
+   \else
+     \edef\currentsymbol{#1}%
+   \fi
+   \ifnosymbol
+     \the\symbolsetups
+     \ifnosymbol
+       \redosymbol\currentsymbol
+     \fi
+   \fi}
+
+\def\fetchsymbol#1%
+  {\ifnosymbol
+     \doifinsymbolset{#1}\currentsymbol{\dodosymbol{#1}\currentsymbol}%
+   \fi}
+
+\def\redosymbol#1%
+% {\doifinsymbolsetelse\empty{#1}{\dodosymbol\empty{#1}}{#1}} % more efficient:
+  {\doifinsymbolsetelse\empty{#1}{\dodosymbol\empty}\firstofoneargument{#1}}
+
+% % % % %
+% this should go in symb-fig, to be loaded after core-fig
+
+%D \macros
+%D   {definefiguresymbol}
+%D
+%D To simplify defining figure symbols, we offer:
+%D
+%D \showsetup{definefiguresymbol}
+%D
+%D By default, such symbols scale along the current bodyfont
+%D size or running font size (which is better).
+
+\def\defaultsymbolfactor{10}
+\def\defaultsymbolheight{1.25ex}
+
+\def\figuresymbol
+  {\dodoubleempty\dofiguresymbol}
+
+\ifx\externalfigure      \undefined \def\externalfigure[#1][#2]{#1} \fi
+\ifx\resetexternalfigures\undefined \let\resetexternalfigures\relax \fi
+
+\def\dofiguresymbol[#1][% #2]%
+  {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,}% #2]}
+
+\appendtoks \resetexternalfigures \to \everysymbol
+
+\unexpanded\def\definefiguresymbol
+  {\dotripleempty\dodefinefiguresymbol}
+
+\def\dodefinefiguresymbol[#1][#2][#3]%
+  {\ifsecondargument
+     \definesymbol[#1][{\dofiguresymbol[#2][#3]}]%
+   \fi}
+
+% but for the moment we keep it here
+% % % % % %
+
+%\def\objectsymbol[#1]%
+%  {\dopresetfieldsymbol{#1}\dogetfieldsymbol{#1}}
+
+%D \macros
+%D   {doifsymboldefinedelse}
+%D
+%D A handy private one:
+
+% a bit messy
+
+\def\xfetchsymbol#1%
+  {\ifnosymbol
+     \doifinsymbolset{#1}\currentsymbol\nosymbolfalse
+   \fi}
+
+\def\xredosymbol#1%
+  {\doifinsymbolset\empty\currentsymbol\nosymbolfalse}
+
+\def\doifsymboldefinedelse#1%
+  {\bgroup
+   \edef\currentsymbol{#1}%
+   \let\fetchsymbol\xfetchsymbol
+   \nosymboltrue
+   \the\symbolsetups
+   \ifnosymbol
+     \xredosymbol\currentsymbol
+     \ifnosymbol
+       \egroup\@EAEAEA\secondoftwoarguments
+     \else
+       \egroup\@EAEAEA\firstoftwoarguments
+     \fi
+   \else
+     \egroup\@EA\firstoftwoarguments
+   \fi}
+
+%D \macros
+%D   {setupsymbolset,startsymbolset}
+%D
+%D From these macro definitions one can deduce that symbols can
+%D be grouped in symbol sets:
+%D
+%D \starttyping
+%D \startsymbolset [navigation 1]
+%D   \definefiguresymbol [Next] [mp-symb.1]
+%D   \definefiguresymbol [Prev] [mp-symb.2]
+%D \stopsymbolset
+%D \stoptyping
+%D
+%D Such a symbol can be typeset with:
+%D
+%D \starttyping
+%D \setupsymbolset[navigation 1]\symbol[Next]
+%D \stoptyping
+%D
+%D or simply:
+%D
+%D \starttyping
+%D \symbol[navigation 1][Next]
+%D \stoptyping
+%D
+%D Formally:
+%D
+%D \showsetup{setupsymbolset}
+%D \showsetup{startsymbolset}
+
+\let\currentsymboldef\empty
+
+\unexpanded\def\startsymbolset[#1]
+  {\def\currentsymboldef{#1}}
+
+\unexpanded\def\stopsymbolset
+  {\let\currentsymboldef\empty}
+
+\newtoks\symbolsetups
+
+\unexpanded\def\setupsymbolset[#1]%
+  {\prependtoksonce\fetchsymbol{#1}\to\symbolsetups}
+
+\def\resetsymbolset
+  {\symbolsetups\emptytoks}
+
+\def\forcesymbolset[#1]%
+  {\symbolsetups{\fetchsymbol{#1}}}
+
+%D \macros
+%D   {showsymbolset}
+%D
+%D \showsetup{showsymbolset}
+
+\fetchruntimecommand \showsymbolset {\f!symbolprefix\s!run.mkiv}
+
+%D \macros
+%D   {usesymbols}
+%D
+%D \showsetup{usesymbols}
+
+\def\dousesymbols#1%
+  {\makeshortfilename[\truefilename{\f!symbolprefix#1}]%
+   \startreadingfile
+     \readsysfile\shortfilename
+       {\showmessage\m!symbols1{#1}}
+       \donothing
+   \stopreadingfile}
+
+\def\usesymbols[#1]%
+  {\processcommalist[#1]\dousesymbols}
+
+%D As longs as symbols are linked to levels or numbers, we can
+%D also use the conversion mechanism, but in for instance the
+%D itemization macros, we prefer symbols because they can more
+%D easier be (partially) redefined.
+
+\protect \endinput

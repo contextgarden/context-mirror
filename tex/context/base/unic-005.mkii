@@ -1,0 +1,50 @@
+%D \module
+%D   [       file=unic-005,
+%D        version=2005.01.27,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 5,
+%D         author=Adam Lindsay,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\startunicodevector 5
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1-208\relax % Was 224 - changed to fix off-by-16 error
+    \hebrewAlef       \or % 05D0
+    \hebrewBet        \or
+    \hebrewGimel      \or
+    \hebrewDalet      \or
+    \hebrewHe         \or
+    \hebrewVav        \or
+    \hebrewZayin      \or
+    \hebrewHet        \or
+    \hebrewTet        \or
+    \hebrewYod        \or
+    \hebrewKaffinal   \or
+    \hebrewKaf        \or
+    \hebrewLamed      \or
+    \hebrewMemfinal   \or
+    \hebrewMem        \or
+    \hebrewNunfinal   \or
+    \hebrewNun        \or
+    \hebrewSamekh     \or
+    \hebrewAyin       \or
+    \hebrewPefinal    \or
+    \hebrewPe         \or
+    \hebrewTsadifinal \or
+    \hebrewTsadi      \or
+    \hebrewQof        \or
+    \hebrewResh       \or
+    \hebrewShin       \or
+    \hebrewTav        \else % 05EA
+    \unknownchar
+  \fi
+\stopunicodevector
+
+\protect \endinput

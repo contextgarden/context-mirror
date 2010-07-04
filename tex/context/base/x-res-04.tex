@@ -1,0 +1,336 @@
+%D \module
+%D   [      file=x-fig-04,
+%D        version=2001.03.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Figure Base Loading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% hele base laden
+
+\setXMLfallbackmode3
+
+% icon        : preview
+% caption     : \figurebasevariable{caption}
+% background  : rgb cmyk gray name
+% dimensions  : width height offset (l,r,t,b) area
+% alternative : tag label / evt list
+%
+% movie
+% sound
+% applet
+% application
+
+\usemodule[res-00] % basic element definitions
+
+%D This module implements an interface to a figure database
+%D and file. The database is formatted in \XML\ conforming
+%D the following \DTD:
+%D
+%D \typefile{x-fig-00.dtd}
+%D
+%D A figure base coded this way looks like:
+%D
+%D \starttyping
+%D <!-- texexec --pdf --use=fig-01 figtest.xml -->
+%D
+%D <?xml version='1.0'?>
+%D
+%D <rl:library language="nl">
+%D
+%D   <rl:description>
+%D     <organization>PRAGMA Advanced Document Engineering</rl:organization>
+%D     <project>Manuals</rl:project>
+%D     <product>Beginners Manual</rl:product>
+%D     <comment>A bunch of figures.</rl:comment>
+%D   </rl:description>
+%D
+%D   <rl:figure>
+%D     <rl:file>koe.pdf</rl:file>
+%D     <rl:label>a dutch cow</rl:label>
+%D     <rl:copyright>Corel Draw Suite</rl:copyright>
+%D     <rl:comment>I bet that you've seen this cow before.</rl:comment>
+%D   </rl:figure>
+%D
+%D   <rl:figure>
+%D     <rl:dummy width="4cm" height="3cm">non existent</rl:dummy>
+%D     <rl:label>a european cow</rl:label>
+%D     <rl:copyright>Nobody</rl:copyright>
+%D     <rl:comment>When will we talk about European cows?</rl:comment>
+%D   </rl:figure>
+%D
+%D </rl:library>
+%D \stoptyping
+%D
+%D You can convert this base into a \PDF\ file using
+%D \TEXEXEC\ and another module in this suite.
+%D
+%D \starttyping
+%D texexec --pdf --use=fig-make yourfile.xml
+%D \stoptyping
+%D
+%D You can now select a graphic from this file using the
+%D
+%D \starttyping
+%D \externalfigure[a dutch cow][width=4cm]
+%D \stoptyping
+%D
+%D This module overloads this command so that a figure is
+%D it first searched in the list of databases.
+%D
+%D \starttyping
+%D \usemodule     [fig-base]
+%D \usefigurebases[yourfile]
+%D \stoptyping
+%D
+%D The special keyword \type {reset} can be used to reset
+%D this list.
+
+\startcommands      dutch                 english
+                    german                czech
+                    italian               romanian
+
+     usefigurebase: gebruikfiguurbestand  usefigurebase
+                    usefigurebase         usefigurebase
+                    usefigurebase         usefigurebase
+
+\stopcommands
+
+\unprotect
+
+\consultutilityfilefalse
+
+% 0 = no loading
+% 1 = selective loading
+% 2 = full loading
+
+\chardef\figurebasemode=1 % 2
+
+\newcounter\figurefilepage
+
+% loading a complete figure base
+
+\startXMLmapping[rl:load]
+
+\defineXMLenvironmentsave [rl:figure]
+  {\bgroup}
+  {\XMLflush{rl:figure}
+   \doglobal\increment\figurefilepage
+   \figbase@savedata{\XMLflush{rl:label}}\figurefilepage
+   \egroup}
+
+\stopXMLmapping
+
+\def\loadfigurebase#1%
+  {\doifnotflagged{rl:#1}
+     {\writestatus{figbase}{loading #1 into memory}%
+      \startnointerference
+        \autoXMLnamespace[rl]
+        \startXMLmapping[rl:load]
+          \doglobal\newcounter\figurefilepage
+          \processXMLfilegrouped{#1.xml}
+        \stopXMLmapping
+        \doglobal\setflag{rl:#1}
+      \stopnointerference}}
+
+\def\figbase@savedata#1#2%
+  {%\writestatus{figbase}{data of #1 loaded}%
+   \doglobal\saveXMLdatastructure{rl:rl:#1}{record}{page="#2"}{}{rl:figure}{}}
+
+% locating and if needed loading one figure record
+
+\startXMLmapping[rl:find]
+
+\defineXMLenvironment[rl:instance]
+  {\bgroup}
+  {\doif\askedlabel{\XMLflush{rl:label}}
+     {\doglobal\saveXMLdata{rl:g:manipulation}{rl:manipulation}%
+      \doifXMLdata{rl:original}
+        {\xdef\askedlabel{\XMLflush{rl:original}}}}%
+   \egroup}
+
+\defineXMLenvironmentsave [rl:figure]
+  {\bgroup}
+  {\XMLflush{rl:figure}
+   \doglobal\increment\figurefilepage
+   %\doshowfigurestate{base : comparing \askedlabel\space with \XMLflush{rl:label}}%
+   \doif\askedlabel{\XMLflush{rl:label}}
+     {\doshowfigurestate{base label : found \askedlabel}%
+      \ifnum\figurebasemode=\plusone % load used ones
+        \figbase@savedata\askedlabel\figurefilepage
+      \fi
+      \doglobal\saveXMLdata{rl:l:manipulation}{rl:manipulation}%
+      \xdef\figurefilelabel   {\XMLflush{rl:label}}%
+      \xdef\figurefilefile    {\XMLflush{rl:file}}%
+      \xdef\figurefileoriginal{\XMLflush{rl:original}}%
+      \xdef\figurefilename    {\XMLflush{rl:file}}
+      \endinput}%
+   \egroup}
+
+\defineXMLenvironment [rl:record]
+  {}
+  {\xdef\figurefilename{\XMLpop{rl:file}}
+   \xdef\figurefilepage{\XMLop {page}}}
+
+\stopXMLmapping
+
+\def\getfigurefilename#1#2%
+  {\ifnum\figurebasemode=\plustwo \loadfigurebase{#1} \fi
+   \startnointerference
+     \traceXMLelementsfalse
+     \resetfigurefilebase
+     \doglobal\newcounter\figurefilepage
+     \autoXMLnamespace[rl]
+     \startXMLmapping[rl:find]
+       \xdef\figurefilebase{#1}%
+       \def\askedlabel{#2}%
+       \doifelseXMLelement{rl:rl:\askedlabel}
+         {\enableXMLelements\flushXMLelement{rl:rl:\askedlabel}}
+         {\doshowfigurestate{base path : \figurepathlist}%
+          \processcommacommand[\figurepathlist]\dogetfigurefilename}%
+     \stopXMLmapping
+   \stopnointerference}
+
+% todo: niet toegekende naam doorgeven aan calculate en pad
+% in padstring
+
+\def\dogetfigurefilename#1%
+  {\ifx\figurefilename\empty
+     \bgroup
+     \doglobal\newcounter\figurefilepage
+     \globalletempty\figurefilelabel
+     \globalletempty\figurefileoriginal
+     \globalletempty\figurefilefile
+     \xdef\figurefilebasepath{#1}%
+     \assignfullfilename{#1}{\figurefilebase}\to\filename
+     \doiffileelse{\filename.xml}
+       {\doshowfigurestate{base file : \filename}%
+        \expanded{\processXMLfilegrouped{\filename.xml}}}
+       \donothing
+     \ifx\figurefilename\empty \else
+%        \global\let\figurefilebase\figurefilebase
+       \globallet\figurefilebase\filename % hm, bad omen that this is needed
+     \fi
+     \egroup
+   \fi}
+
+\newtoks\figurebaseresets
+
+\appendtoks
+  \globalletempty\figurefilebase
+  \globalletempty\figurefilename
+  \globalletempty\figurefilebasepath
+  \globalletempty\figurefilepage
+  \globalletempty\figurefilelabel
+ %\globalletempty\figurefileoriginal
+ %\globalletempty\figurefilefile
+\to\figurebaseresets
+
+\def\resetfigurefilebase
+  {\the\figurebaseresets}
+
+\ifx\doshowfigurestate\undefined \let\doshowfigurestate\gobbleoneargument \fi
+
+\def\doanalyzefiguredimensionsfromfile
+  {\ifcase\figurestatus \ifx\figurebaselist\empty \else
+     \resetfigurefilebase
+     \doshowfigurestate{base list : \figurebaselist}%
+     \processcommacommand[\figurebaselist]\dodoanalyzefiguredimensionsfromfile
+     \ifx\figurefilename\empty
+       \doshowfigurestate{base warning : no matching name found}%
+     \else
+       \doiffileelse{\figurefilebase.pdf}
+         {\doshowfigurestate{base file : \figurefilebase.pdf}%
+          \doshowfigurestate{base page : \figurefilepage}%
+          \let\figurepathlist\figurefilebasepath
+          \analyzefigurefilename{\figurefilebase.pdf}\wantedfigurelabel
+          \let\wantedfigurepage\figurefilepage}
+         {\doshowfigurestate{base missing : \figurefilebase.pdf}}
+     \fi
+     \ifcase\figurestatus
+       \analyzefigurefilename\expandedfigurename\wantedfigurelabel
+     \fi
+   \fi \fi}
+
+\def\dodoanalyzefiguredimensionsfromfile#1%
+  {\doshowfigurestate{base check : \wantedfigurename\space in #1}%
+   \getfigurefilename{#1}\wantedfigurename
+   \ifx\figurefilename\empty\else
+     \quitcommalist
+   \fi}
+
+% management
+
+% will become \useresourcelibrary
+
+\def\usefigurebase[#1]%
+  {\doifelse{#1}\v!reset
+     {\let\figurebaselist\empty}
+     {\addtocommalist{#1}\figurebaselist}}
+
+\let\figurebaselist\empty
+
+\resetfigurefilebase
+
+% manipulations / todo: fixed order
+
+\defineXMLsave [rl:manipulation]
+
+\defineXMLsingular [rl:background] [r=0,g=0,b=0,s=0,c=0,m=0,y=0,k=0]
+  {\global\setbox\foundexternalfigure\vbox
+     {\definecolor
+        [XMLRLcolor]
+        [r=\XMLop{r},g=\XMLop{g},b=\XMLop{b},s=\XMLop{s},%
+         c=\XMLop{c},m=\XMLop{m},y=\XMLop{y},k=\XMLop{k}]%
+       \framed
+         [\c!frame=\v!off,\c!offset=\v!overlay,
+          \c!background=\v!color,\c!backgroundcolor=XMLRLcolor]
+         {\box\foundexternalfigure}}}
+
+\defineXMLsingular [rl:viewport] [\??cp] % []
+  {\global\setbox\foundexternalfigure\vbox
+     {\expandXMLta \getXMLta
+      \clip
+        [\XMLta]
+        {\box\foundexternalfigure}}%
+   \global\setbox\foundexternalfigure\vbox
+     {\scale
+        [\c!width=\figurewidth,\c!height=\figureheight]
+        {\box\foundexternalfigure}}}
+
+\defineXMLsingular [rl:dimensions] [width=,height=]
+  {}
+
+\defineXMLsingular [rl:position] [offset=,width=,height=,hoffset=,voffset=]
+  {}
+
+\appendtoks
+  \doglobal\eraseXMLelement{rl:l:manipulation}%
+  \doglobal\eraseXMLelement{rl:g:manipulation}%
+\to \figurebaseresets
+
+\appendtoks
+  \startnointerference
+    \processXMLelement{rl:l:manipulation}%
+    \processXMLelement{rl:g:manipulation}%
+  \stopnointerference
+\to \externalfigurepostprocessors
+
+\protect \doifnotmode{demo}{\endinput}
+
+\starttext
+
+\setupcolors[state=start]
+
+\usefigurebase[d-fig-01]
+
+\externalfigure[part of a dutch cow][width=3cm,frame=on]
+\externalfigure[a simple dutch cow][width=5cm,frame=on]
+\externalfigure[another simple dutch cow][width=5cm,frame=on]
+
+\stoptext

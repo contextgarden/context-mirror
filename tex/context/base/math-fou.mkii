@@ -1,0 +1,196 @@
+%D \module
+%D   [       file=math-fou,
+%D        version=2001.04.12,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Fourier Specials,
+%D         author={Michel Biovani \& Hans Hagen},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% see end of file for todo
+
+\unprotect
+
+\startmathcollection [fou]
+
+  \definemathsymbol [Gamma]   [alpha] [mi] ["00]
+  \definemathsymbol [Delta]   [alpha] [mi] ["01]
+  \definemathsymbol [Theta]   [alpha] [mi] ["02]
+  \definemathsymbol [Lambda]  [alpha] [mi] ["03]
+  \definemathsymbol [Xi]      [alpha] [mi] ["04]
+  \definemathsymbol [Pi]      [alpha] [mi] ["05]
+  \definemathsymbol [Sigma]   [alpha] [mi] ["06]
+  \definemathsymbol [Upsilon] [alpha] [mi] ["07]
+  \definemathsymbol [Phi]     [alpha] [mi] ["08]
+  \definemathsymbol [Psi]     [alpha] [mi] ["09]
+  \definemathsymbol [Omega]   [alpha] [mi] ["0A]
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathcharacter [+] [bin] [sy] ["80]
+  \definemathcharacter [=] [rel] [sy] ["81]
+  \definemathcharacter [<] [rel] [sy] ["82]
+  \definemathcharacter [>] [rel] [sy] ["83]
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathsymbol [leqslant]           [rel] [sy] ["84]
+  \definemathsymbol [geqslant]           [rel] [sy] ["85]
+  \definemathsymbol [parallelslant]      [rel] [sy] ["86]
+  \definemathsymbol [thething]           [ord] [sy] ["87]
+  \definemathsymbol [vDash]              [rel] [sy] ["88]
+  \definemathsymbol [blacktriangleleft]  [rel] [sy] ["89]
+  \definemathsymbol [blacktriangleright] [rel] [sy] ["8A]
+  \definemathsymbol [nleqslant]          [rel] [sy] ["8B]
+  \definemathsymbol [ngeqslant]          [rel] [sy] ["8C]
+  \definemathsymbol [parallel]           [rel] [sy] ["8D]
+  \definemathsymbol [nparallel]          [rel] [sy] ["8E]
+  \definemathsymbol [nparallelslant]     [rel] [sy] ["8F]
+  \definemathsymbol [nvDash]             [rel] [sy] ["90]
+  \definemathsymbol [intercal]           [bin] [sy] ["91]
+  \definemathsymbol [hslash]             [ord] [sy] ["92]
+  \definemathsymbol [nexists]            [ord] [sy] ["93]
+  \definemathsymbol [varsubsetneq]       [rel] [sy] ["93]
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathcharacter [(]   [nothing] [mr] ["28] [ex] ["A1]
+  \definemathcharacter [)]   [nothing] [mr] ["29] [ex] ["A2]
+  \definemathcharacter [91]  [nothing] [mr] ["5B] [ex] ["A3] % [
+  \definemathcharacter [93]  [nothing] [mr] ["5D] [ex] ["A4] % ]
+  \definemathcharacter [/]   [nothing] [mr] ["2F] [ex] ["B1]
+
+  \definemathcharacter [124] [nothing] [sy] ["6A] [ex] ["AF] % |
+  \definemathcharacter [92]  [nothing] [sy] ["6E] [ex] ["B2] % \
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathsymbol [Vert]          [nothing] [sy] ["6B] [ex] ["B0]
+  \definemathsymbol [vert]          [nothing] [sy] ["6A] [ex] ["AF]
+  \definemathsymbol [VERT]          [nothing] [sy] ["98] [ex] ["93]
+  \definemathsymbol [Downarrow]     [rel]     [sy] ["2B] [ex] ["C4]
+  \definemathsymbol [backslash]     [nothing] [sy] ["6E] [ex] ["B2]
+  \definemathsymbol [rangle]        [close]   [sy] ["69] [ex] ["AE]
+  \definemathsymbol [langle]        [open]    [sy] ["68] [ex] ["AD]
+  \definemathsymbol [rbrace]        [close]   [sy] ["67] [ex] ["AA]
+  \definemathsymbol [lbrace]        [open]    [sy] ["66] [ex] ["A9]
+  \definemathsymbol [rceil]         [close]   [sy] ["65] [ex] ["A8]
+  \definemathsymbol [lceil]         [open]    [sy] ["64] [ex] ["A7]
+  \definemathsymbol [rfloor]        [close]   [sy] ["63] [ex] ["A6]
+  \definemathsymbol [lfloor]        [open]    [sy] ["62] [ex] ["A5]
+  \definemathsymbol [dblbrackleft]  [open]    [sy] ["99] [ex] ["85]
+  \definemathsymbol [dblbrackright] [close]   [sy] ["9A] [ex] ["86]
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathsymbol [varkappa]      [ord] [mi] ["80] % check this
+  \definemathsymbol [varvarrho]     [ord] [mi] ["81] % check this
+  \definemathsymbol [xswordsup]     [ord] [sy] ["96]
+  \definemathsymbol [xswordsdown]   [ord] [sy] ["97]
+  \definemathsymbol [notowns]       [rel] [sy] ["9C]
+  \definemathsymbol [hbar]          [ord] [sy] ["9D]
+  \definemathsymbol [smallsetminus] [bin] [sy] ["9E]
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathsymbol [notin] [rel] [sy] ["9B]
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathsymbol [iintop]     [op] [ex] ["CE]
+  \definemathsymbol [iiintop]    [op] [ex] ["D0]
+  \definemathsymbol [oiintop]    [op] [ex] ["D2]
+  \definemathsymbol [oiiintop]   [op] [ex] ["D4]
+  \definemathsymbol [slashintop] [op] [ex] ["D6]
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathcommand [iint]     {\iintop    \nolimits}
+  \definemathcommand [iiint]    {\iiintop   \nolimits}
+  \definemathcommand [oiint]    {\oiintop   \nolimits}
+  \definemathcommand [oiiint]   {\oiiintop  \nolimits}
+  \definemathcommand [slashint] {\slashintop\nolimits}
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathsymbol [acute]    [accent] [mr] ["1]
+  \definemathsymbol [grave]    [accent] [mr] ["0]
+  \definemathsymbol [ddot]     [accent] [mr] ["4]
+  \definemathsymbol [tilde]    [accent] [mr] ["3]
+  \definemathsymbol [bar]      [accent] [mr] ["9]
+  \definemathsymbol [breve]    [accent] [mr] ["8]
+  \definemathsymbol [check]    [accent] [mr] ["7]
+  \definemathsymbol [hat]      [accent] [mr] ["2]
+  \definemathsymbol [dot]      [accent] [mr] ["A]
+  \definemathsymbol [mathring] [accent] [mr] ["6]
+
+\stopmathcollection
+
+\startmathcollection [fou]
+
+  \definemathsymbol [otheralpha]   [ord] [mi] ["0B]
+  \definemathsymbol [otherbeta]    [ord] [mi] ["0C]
+  \definemathsymbol [othergamma]   [ord] [mi] ["0D]
+  \definemathsymbol [otherdelta]   [ord] [mi] ["0E]
+  \definemathsymbol [otherepsilon] [ord] [mi] ["0F]
+  \definemathsymbol [otherzeta]    [ord] [mi] ["10]
+
+\stopmathcollection
+
+\protect \endinput
+
+% from a mail of Michel B / todo
+
+% \definemathsymbol [acute]    [accent] [operators] ["1]
+% \definemathsymbol [grave]    [accent] [operators] ["0]
+% \definemathsymbol [ddot]     [accent] [operators] ["4]
+% \definemathsymbol [tilde]    [accent] [operators] ["3]
+% \definemathsymbol [bar]      [accent] [operators] ["9]
+% \definemathsymbol [breve]    [accent] [operators] ["8]
+% \definemathsymbol [check]    [accent] [operators] ["7]
+% \definemathsymbol [hat]      [accent] [operators] ["2]
+% \definemathsymbol [dot]      [accent] [operators] ["A]
+% \definemathsymbol [mathring] [accent] [operators] ["6]
+
+% \definemathsymbol [wideparen] [ord]    [largesymbols] ["94]
+% \definemathsymbol [widearc]   [accent] [largesymbols] ["D8]
+
+% check for definition of \overset (ams)
+
+% \def\FOUwidering#1%
+%   {\overset{\smash{\vbox to .2ex{\hbox{$\mathring{}$}}}}{\wideparen{#1}}}
+
+% \startmathcollection [default] % [ams]
+%
+% \definemathcommand [widering]  {\FOUwidering}
+%
+% \stopmathcollection
+
+% \definemathsymbol [otheralpha]   [ord] [otherletters] ["0B]
+% \definemathsymbol [otherbeta]    [ord] [otherletters] ["0C]
+% \definemathsymbol [othergamma]   [ord] [otherletters] ["0D]
+% \definemathsymbol [otherdelta]   [ord] [otherletters] ["0E]
+% \definemathsymbol [otherepsilon] [ord] [otherletters] ["0F]
+% \definemathsymbol [otherzeta]    [ord] [otherletters] ["10]

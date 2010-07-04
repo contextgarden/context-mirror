@@ -1,0 +1,52 @@
+%D \module
+%D   [       file=m-mkivhacks,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Temporary Compatilibility Hacks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\doifnotmode{mkiv}{\endinput}
+
+%D For Aditya, who needed it for his thesis.
+
+\startluacode
+    -- -- a lot or work
+    --
+    -- mathematics.slots.euler = {
+    --     [0x03B1] = { "mr", 0x0B }, -- alpha
+    -- }
+    --
+    -- mathematics.slots.euler = table.merge(mathematics.slots.traditional,mathematics.slots.euler)
+    --
+    -- versus a quick hack
+
+    document.hacks = document.hacks or { }
+
+    function document.hacks()
+        mathematics.families.lcgreek   = mathematics.families.mr
+        mathematics.families.ucgreek   = mathematics.families.mr
+        mathematics.families.vargreek  = mathematics.families.mr
+
+        mathematics.define(mathematics.slots.euler)
+    end
+\stopluacode
+
+% \usemodule[mkivhacks] \setups{eulermath}
+% \definetypeface[modern][mm][math][euler][default]
+% \usemathcollection[eul]
+% \switchtobodyfont[modern,11pt]
+% \starttext
+%     $\alpha$
+% \stoptext
+
+\startsetups eulermath
+    \ctxlua{document.hacks()}
+\stopsetups
+
+\endinput

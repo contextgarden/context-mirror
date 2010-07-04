@@ -1,0 +1,1335 @@
+%D \module
+%D   [       file=strc-itm, % updated
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=itemgroups,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% new: text + lefttext=(,righttext=)
+%      start=
+
+\writestatus{loading}{ConTeXt Structure Macros / Itemgroups}
+
+\unprotect
+
+% - instellingen in macro
+% - [0] voor start op 0
+% - start=2
+
+\newconditional\sublistitem       \setfalse\sublistitem
+\newconditional\symbollistitem    \setfalse\symbollistitem
+\newconditional\headlistitem      \setfalse\headlistitem
+\newconditional\introlistitem     \setfalse\introlistitem
+\newconditional\randomizeitems    \setfalse\randomizeitems
+\newconditional\autointrolistitem \setfalse\autointrolistitem
+\newconditional\optimizelistitem  \settrue \optimizelistitem
+\newconditional\packlistitem      \setfalse\packlistitem
+\newconditional\paragraphlistitem \setfalse\paragraphlistitem
+\newconditional\textlistitem      \setfalse\textlistitem
+\newconditional\firstlistitem     \setfalse\firstlistitem
+\newconditional\beforelistitem    \setfalse\beforelistitem
+\newconditional\afterlistitem     \setfalse\afterlistitem
+\newconditional\nowhitelistitem   \setfalse\nowhitelistitem
+\newconditional\joinedlistitem    \setfalse\joinedwhitelistitem
+\newconditional\reverselistitem   \setfalse\reverselistitem
+\newconditional\continuelistitems \setfalse\continuelistitems
+\newconditional\fittinglistitems  \setfalse\fittinglistitems
+
+\newcount\noflists
+\newcount\currentnoflists
+\newcount\itemcolumndepth
+\newcount\itemdepth
+\newcount\maxitemdepth
+
+\definetwopasslist\s!list
+
+\let\currentitemlevel  \!!zerocount
+\let\currentitemgroup  \empty
+\let\currentnofitems   \!!zerocount
+\let\currentmaxnofitems\!!zerocount
+\let\currentminnofitems\!!zerocount
+\let\currentitemoffset \!!zerocount
+\def\currentitemnumber{\countervalue{\@@itemcounter\currentitemlevel}}
+
+% tricky ... we cannot use trialtypesetting here because there can be
+% multiple itemizes in e.g. a table, so we need something more advanced
+% where counters etc are reset to pre-outertrial values
+
+\def\dolistreference
+  {\ifconditional\continuelistitems
+     \savetaggedtwopassdata\s!list{\number\currentnoflists}{\number\currentnoflists}%
+        {\currentitemlevel:\noflistelements:c:\getitemparameter\currentitemlevel\c!maxwidth}%
+   \else
+     \savetaggedtwopassdata\s!list{\number\currentnoflists}{\number\currentnoflists}%
+        {\currentitemlevel:\noflistelements:n:\getitemparameter\currentitemlevel\c!maxwidth}%
+   \fi}
+
+\def\splititemtwopassdata#1%
+   {\expanded{\findtwopassdata{\s!list}{\number#1}}%
+    \expandafter\dosplititemtwopassdata\twopassdata:0:0:0:0:0\relax}
+
+\def\dosplititemtwopassdata#1:#2:#3:#4:#5\relax
+  {\edef\itemdatal{#1}\edef\itemdatan{#2}\edef\itemdatat{#3}\edef\itemdataw{#4}}
+
+\def\checkcurrentnofitems
+  {\splititemtwopassdata\currentnoflists
+   \iftwopassdatafound
+     \ifcase\itemdatan\relax % \scratchcounter
+       \let\currentnofitems   \!!zerocount
+       \let\currentminnofitems\!!plusone
+       \let\currentmaxnofitems\!!zerocount
+     \else
+       \scratchcounter\itemdatan\relax
+       \edef\currentnofitems{\the\scratchcounter}%
+       \let\currentitemtag\itemdatat
+       \doloop
+         {\splititemtwopassdata{\numexpr\currentnoflists+\recurselevel\relax}%
+          \iftwopassdatafound
+            \ifnum\itemdatal=\currentitemlevel\relax
+              \doifelse{c}\itemdatat
+                {\advance\scratchcounter\itemdatan\relax}
+                {\exitloop}%
+            \fi
+          \else
+            \exitloop
+          \fi}%
+       \edef\currentmaxnofitems{\the\scratchcounter}%
+       \scratchcounter\zerocount
+       \doif{c}\currentitemtag
+         {\doloop
+            {\splititemtwopassdata{\numexpr\currentnoflists-\recurselevel\relax}%
+             \iftwopassdatafound
+               \ifnum\itemdatal=\currentitemlevel\relax
+                 \doifelse{c}\itemdatat
+                   {\advance\scratchcounter\itemdatan\relax}
+                   {\advance\scratchcounter\itemdatan\exitloop}%
+               \fi
+             \else
+               \exitloop
+             \fi}}%
+       \advance\scratchcounter\plusone
+       \edef\currentminnofitems{\the\scratchcounter}%
+     % [[\currentnofitems,\currentminnofitems,\currentmaxnofitems]]
+     \fi
+   \else % new, when no tuo yet
+     \let\currentnofitems   \!!zerocount
+     \let\currentminnofitems\!!plusone
+     \let\currentmaxnofitems\!!zerocount
+   \fi} % [[\currentnofitems,\currentminnofitems,\currentmaxnofitems]]
+
+% \startitemize[n,packed]
+% \item test \item test \item test
+% \stopitemize
+%
+% \startitemize[n,packed,reverse]
+% \item test \item test \item test
+% \stopitemize
+%
+% \startitemize[n,packed,reverse] \item test \item test \stopitemize
+% \startitemize[continue]
+% \item test \startitemize[n,packed] \item test \item test \stopitemize
+% \item test
+% \item test
+% \stopitemize
+% \startitemize[continue] \item test \stopitemize
+%
+% \startitemize[n,packed] \item test \item test \stopitemize
+% \startitemize[continue] \item test            \stopitemize
+% \startitemize[continue] \item test            \stopitemize
+
+\def\unknownitemreference{0} \let\itemreferences\unknownitemreference
+
+% #1=level #2=parameter
+
+\def\getitemparameter #1#2{\csname\??op\currentitemgroup#1#2\endcsname}
+\def\setitemparameter #1#2{\@EA\def\csname\??op\currentitemgroup#1#2\endcsname} % #3 -> {#3}
+\def\letitemparameter #1#2{\@EA\let\csname\??op\currentitemgroup#1#2\endcsname}
+
+% works ok but not needed (also possible compatibility problem)
+%
+% \def\getitemparameter#1#2%
+%   {\executeifdefined{\??op\currentitemgroup#1#2}%
+%   {\executeifdefined{\??op\currentitemgroup  #2}%
+%   {\executeifdefined{\??oo                   #2}%
+%   {}}}}
+
+% test this: saves hash entries and is also faster
+%
+% \let\doinitializeitemgrouplevel\gobbleoneargument % todo ! ! !
+
+\def\getitemparameter#1#2%
+  {\executeifdefined{\??op\currentitemgroup#1#2}%
+  {\executeifdefined{\??op\currentitemgroup  #2}%
+  {\executeifdefined{\??oo                   #2}%
+  {}}}}
+
+\def\doitemattributes   #1{\doattributes{\??op\currentitemgroup#1}}
+
+\def\@@globalitemsymbol #1{\??op\currentitemgroup\c!symbol\s!global#1}
+\def\@@localitemsymbol  #1{\??op\currentitemgroup\c!symbol\s!local #1}
+\def\@@currentitemsymbol#1{\??op\currentitemgroup\c!symbol         #1}
+
+\def\@@itemcounter{\s!itemcount\currentitemgroup}
+
+% \def\doitembreak#1{\ifconditional\textlistitem\else\dosomebreak#1\fi}
+%
+% s-pre-61 / pre-dis, test extensively, 2004/5
+
+\def\doitembreak#1{\ifconditional\optimizelistitem\ifconditional\textlistitem\else\dosomebreak#1\fi\fi}
+
+\def\initializeitemgroupslevel#1%
+  {\ifundefined{\@@globalitemsymbol{#1}}%
+     \edef\itemreferences{\itemreferences,#1}%
+     \makecounter{\@@itemcounter#1}%
+     \setevalue{\@@globalitemsymbol{#1}}{#1}%
+   \fi}
+
+\def\initializeitemgrouplevel#1% safeguard
+  {\ifundefined{\??op\currentitemgroup#1\c!width}%
+     \doinitializeitemgrouplevel{#1}%
+   \fi}
+
+\def\doinitializeitemgrouplevel#1%
+  {\copyparameters
+     [\??op\currentitemgroup#1][\??oo]
+     [\c!width,\c!factor,\c!distance,\c!align,\c!symalign,\c!option,%
+      \c!style,\c!marstyle,\c!symstyle,\c!headstyle,%
+      \c!color,\c!marcolor,\c!symcolor,\c!headcolor,%
+      \c!beforehead,\c!afterhead,\c!before,\c!inbetween,\c!after,%
+      \c!stopper,\c!placestopper,\c!indenting,%
+      \c!n,\c!inner,\c!symbol,\c!margin,\c!items,%
+      \c!leftmargin,\c!rightmargin,\c!indentnext,%
+      \c!command,%
+      \c!start,\c!lefttext,\c!righttext]}
+
+\def\setupitemgroups
+  {\dosingleargument\dosetupitemgroups}
+
+\def\dosetupitemgroups[#1]% still undocumented
+  {\getparameters[\??oo][\c!levels=4,#1]%
+   % will change (remove)
+   \ifnum\@@oolevels>\maxitemdepth
+     \maxitemdepth\@@oolevels\relax
+     \dorecurse\maxitemdepth{\initializeitemgroupslevel\recurselevel}%
+   \fi}
+
+\def\doitemreference#1,#2,#3\\%
+  {\ifnum\currentitemlevel>#1\relax
+     \ifnum#1>\zerocount \tempsymbol \fi
+     \getvalue{\@@currentitemsymbol{#2}}%
+     \doitemreference#2,#3\\%
+   \fi}
+
+\def\itemreference
+  {\expandafter\doitemreference\itemreferences,,\\}
+
+\def\packitems
+  {\ifcase\currentitemlevel \else \settrue\packlistitem \fi}
+
+\def\dosetupitemgroupvariable[#1]% [#2]%  niveau instellingen
+  {\doifelsenothing{#1}
+     {\getparameters[\??op\currentitemgroup\currentitemlevel]}% [#2]}%
+     {\getparameters[\??op\currentitemgroup#1]}}%        [#2]}}
+
+\newconditional\inlinelistitem \setfalse\inlinelistitem
+
+\def\dododosetupitemgroupconstant[#1][#2#3#4]% * permits [2]
+  {\global\setitemparameter\currentitemlevel\c!maxwidth{0}%
+   \processaction
+     [#2#3#4]
+     [   \v!packed*=>\packitems,
+          \v!intro*=>\settrue\introlistitem, % here? not set to false
+% no:    \v!random*=>\settrue\randomizeitems,% here? not set to false
+      \v!autointro*=>\settrue\autointrolistitem,
+          \v!broad*=>\setitemparameter{#1}\c!factor{1},
+     #2#3*\v!broad*=>\setitemparameter{#1}\c!factor{#2#3},
+       #2*\v!broad*=>\setitemparameter{#1}\c!factor{#2},
+           \v!text*=>\settrue\textlistitem
+                     \settrue\inlinelistitem
+                     \settrue\joinedlistitem % \dosetuppackeditemgroup{#1}%
+                     \packitems,
+        \v!columns*=>\packitems,
+         \v!before*=>\settrue\beforelistitem,
+          \v!after*=>\settrue\afterlistitem,
+        \v!nowhite*=>\settrue\nowhitelistitem, % \def\packeditemspacing{\nowhitespace},
+         \v!margin*=>\setitemparameter{#1}\c!width{-2em}, % signal
+       \v!inmargin*=>\setitemparameter{#1}\c!width{-2em}, % signal
+       \v!atmargin*=>\doifnot{#1}{1}{\setitemparameter{#1}\c!width{0em}}, % signal
+         \v!intext*=>\settrue\inlinelistitem, % new
+          \v!loose*=>\setfalse\optimizelistitem,
+            \v!fit*=>\settrue\fittinglistitems,
+          \v!nofit*=>\setfalse\fittinglistitems,
+      \v!paragraph*=>\settrue\paragraphlistitem
+                     \packitems,
+       \v!joinedup*=>\settrue\joinedlistitem % \dosetuppackeditemgroup{#1}%
+                     \packitems,
+        \v!serried*=>\setitemparameter{#1}\c!factor{-1},
+   #2#3*\v!serried*=>\setitemparameter{#1}\c!factor{-#2#3},
+     #2*\v!serried*=>\setitemparameter{#1}\c!factor{-#2},
+        \v!stopper*=>\setitemparameter{#1}\c!placestopper{\v!yes}, % keep {}
+       \v!unpacked*=>\setfalse\packlistitem,
+         \v!repeat*=>\settrue\repeatlistitem, % new
+        \v!reverse*=>\settrue\reverselistitem,
+       \v!standard*=>\dosetupstandarditemgroup{#1}]}
+
+\def\dosetupstandarditemgroup#1%
+  {\getparameters
+     [\??op\currentitemgroup#1]
+     [\c!width=1.5em,
+      \c!factor=0,
+      \c!distance=.5em,
+      \c!beforehead=,
+      \c!afterhead=\blank,
+      \c!before=\blank,
+      \c!inbetween=\blank,
+      \c!after=\blank,
+      \c!inner=]}
+
+% \def\packeditemspacing{\empty}
+
+% \setupwhitespace[big]
+% \starttext
+%     test \startitemize[joinedup]                \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite]        \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite,before] \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite,after]  \item test \item test \stopitemize test \par
+% \stoptext
+
+\def\itembeforecommand
+  {\ifconditional\nowhitelistitem
+     \ifconditional\beforelistitem
+       \ifcase\currentitemlevel\or\getitemparameter\currentitemlevel\c!before\fi
+     \else
+        \nowhitespace
+     \fi
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\currentitemlevel\c!before
+   \fi\fi}
+
+\def\itemaftercommand
+  {\ifconditional\nowhitelistitem
+     \ifconditional\afterlistitem
+       \ifcase\currentitemlevel\or\getitemparameter\currentitemlevel\c!after\fi
+     \else
+        \nowhitespace
+     \fi
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\currentitemlevel\c!after
+   \fi\fi}
+
+\def\iteminbetweencommand
+  {\ifconditional\nowhitelistitem
+     \nowhitespace
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\currentitemlevel\c!inbetween
+   \fi\fi}
+
+\def\itembeforeheadcommand
+  {\ifconditional\nowhitelistitem
+     \nowhitespace
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\currentitemlevel\c!beforehead
+   \fi\fi}
+
+\def\itemafterheadcommand
+  {\ifconditional\nowhitelistitem
+     \nowhitespace
+   \else\ifconditional\joinedlistitem
+     % \empty
+   \else
+     \getitemparameter\currentitemlevel\c!afterhead
+   \fi\fi}
+
+% \def\dosetuppackeditemgroup#1%
+%   {\setitemparameter{#1}\c!beforehead{\packeditemspacing}%
+%    \setitemparameter{#1}\c!afterhead {\packeditemspacing}%
+%    \setitemparameter{#1}\c!before    {\packeditemspacing}%
+%    \setitemparameter{#1}\c!after     {\packeditemspacing}%
+%    \setitemparameter{#1}\c!inbetween {\packeditemspacing}}
+
+\def\dosetupitemgroupconstant[#1][#2]%
+  {\def\dodosetupitemgroupconstant##1% catches empty in [a,b,] handy for xml
+     {\doifsomething{##1}{\dododosetupitemgroupconstant[#1][##1*]}}%
+   \processcommacommand[#2]\dodosetupitemgroupconstant} % expansion of #2 is handy for xml
+
+\def\dododododosetupitemgroup[#1][#2]%
+  {\doifassignmentelse{#2}%
+     {\dosetupitemgroupvariable[#1][#2]}%
+     {\setitemparameter{#1}\c!option{#2}}}%
+
+\def\dodododosetupitemgroup[#1][#2]%
+  {\ConvertToConstant\doifnot{#2}{}
+     {\doifelse{#1}\v!each
+        {\dorecurse\maxitemdepth{\ExpandFirstAfter\dododododosetupitemgroup[\recurselevel][#2]}}
+        {\ExpandFirstAfter\dododododosetupitemgroup[#1][#2]}}}
+
+\def\dododosetupitemgroup[#1][#2]%
+  {\ConvertToConstant\doifelse{#2}{}
+     {\ifcase\currentitemlevel\relax
+        \dodododosetupitemgroup[\v!each][#1]%
+      \else
+        \dodododosetupitemgroup[\currentitemlevel][#1]%
+      \fi}
+     {\doifelsenothing{#1}
+        {\dodododosetupitemgroup[\currentitemlevel][#2]}
+        {\dodododosetupitemgroup[#1][#2]}}}
+
+\def\dodosetupitemgroup[#1][#2][#3][#4]%
+  {\pushmacro\currentitemgroup
+   \def\currentitemgroup{#1}%
+   \dododosetupitemgroup[#2][#3]%
+   \ConvertToConstant\doifnot{#4}{}  % anders wordt #2 overruled
+     {\dododosetupitemgroup[#2][#4]}%
+   \popmacro\currentitemgroup}
+
+\def\dosetupitemgroup[#1][#2][#3][#4]%
+  {\def\docommand##1{\dodosetupitemgroup[##1][#2][#3][#4]}%
+   \processcommalist[#1]\docommand}
+
+\def\setupitemgroup
+  {\doquadrupleempty\dosetupitemgroup}
+
+\def\doadvanceitem
+  {\ifconditional\sublistitem\else\ifconditional\symbollistitem\else
+     \pluscounter{\@@itemcounter\currentitemlevel}%
+   \fi\fi}
+
+\def\setitemlevel#1%
+ {\ifnum\currentitemlevel>\zerocount
+    \settrue\firstlistitem
+    % \expanded{\setitemparameter{\currentitemlevel}{\c!start}{1}}% ***
+    \doifinset{0}{#1}{\setitemparameter\currentitemlevel\c!start{0}}% ***
+    \setcounter{\@@itemcounter\currentitemlevel}{\the\numexpr\getitemparameter\currentitemlevel\c!start-1\relax}% ***
+    \doifelsenothing{\getitemparameter\currentitemlevel\c!start}
+      {\def\currentitemoffset{1}}
+      {\def\currentitemoffset{\getitemparameter\currentitemlevel\c!start}%
+       \letitemparameter\currentitemlevel\c!start\empty}%
+    \def\tempnumber
+      {\countervalue{\@@itemcounter\currentitemlevel}}%
+    \doifelse{\getitemparameter\currentitemlevel\c!placestopper}\v!yes
+      {\def\tempsymbol{\getitemparameter\currentitemlevel\c!stopper}}
+      {\let\tempsymbol\empty}%
+  \fi}
+
+
+\def\actualitemnumber
+  {\ifconditional\reverselistitem
+     \convertnumber\currentitemsymbol{\numexpr\currentmaxnofitems+\currentitemoffset-\currentitemnumber+1\relax}%
+   \else
+     \convertnumber\currentitemsymbol{\numexpr\currentminnofitems+\currentitemoffset+\currentitemnumber-1\relax}%
+    \fi}
+
+% PAS OP: ook 'opelkaar' en zo worden getest, nog eens afvangen!
+
+\def\unknownitemsymbol{?}
+
+\def\setitemmark#1% % en pas op: resets \docommand
+  {\doifsymboldefinedelse{#1}
+     {\edef\currentitemsymbol{#1}%
+      \setxvalue{\@@globalitemsymbol\currentitemlevel}{\currentitemsymbol}%
+      \setgvalue{\@@localitemsymbol \currentitemlevel}{\unknownitemsymbol}%
+      \def\listitem{\symbol[\currentitemsymbol]}%
+      \let\@@opsymbol\empty}% \let\docommand\gobbleoneargument}
+     {\doifconversiondefinedelse{#1}
+        {\edef\currentitemsymbol{#1}%
+         \setxvalue{\@@globalitemsymbol\currentitemlevel}{\currentitemsymbol}%
+         \setgvalue{\@@localitemsymbol\currentitemlevel }{\actualitemnumber }%
+         \ifconditional\textlistitem
+           \doifsomething{\getitemparameter\currentitemlevel\c!lefttext}
+             {\let\tempsymbol\empty}%
+         \fi
+         \def\listitem
+           {\getitemparameter\currentitemlevel
+              {\ifconditional\textlistitem\c!lefttext\else\c!left\fi}%
+            \getvalue{\@@localitemsymbol\currentitemlevel}\tempsymbol
+            \getitemparameter\currentitemlevel
+              {\ifconditional\textlistitem\c!righttext\else\c!right\fi}}%
+        \let\@@opsymbol\empty}%\let\docommand\gobbleoneargument}
+       {}}}
+
+\def\calculatelistwidth#1#2% distance deals with 'broad'
+  {#2=\getitemparameter{#1}\c!distance\relax
+   \ifnum\getitemparameter{#1}\c!factor>\zerocount
+     \ifdim#2=\zeropoint #2=.5em\fi
+   \fi
+   \multiply#2 \getitemparameter{#1}\c!factor
+   \advance #2 \getitemparameter{#1}\c!width\relax}
+
+% The next conditionals deal with \item \startitemgroup. It
+% looks like a hack to skip back, but that way we preserve
+% the indentation and bullet placement. It's a rather
+% untested feature.
+
+\newconditional\concatnextitem     \setfalse\concatnextitem
+\newconditional\autoconcatnextitem \settrue \autoconcatnextitem
+\newsignal     \itemsignal
+
+\def\startitemgroup
+  {\dotripleempty\dostartitemgroup}
+
+% \def\dostartitemgroup[#1][#2][#3]%
+%   {\bgroup
+%    \def\currentitemgroup{#1}%
+%    \ifthirdargument
+%      \dodostartitemgroup[#2][#3]%
+%    \else
+%      \doifassignmentelse{#2}
+%        {\dodostartitemgroup[][#2]}
+%        {\dodostartitemgroup[#2][]}%
+%    \fi}
+
+\def\dostartitemgroup[#1][#2][#3]%
+  {\bgroup
+   \ifnum\currentitemlevel=\zerocount
+     \def\currentitemgroup{#1}% no nested mixing of itemgroups
+   \fi
+   \ifthirdargument
+     \dodostartitemgroup[#2][#3]%
+   \else
+     \doifassignmentelse{#2}
+       {\dodostartitemgroup[][#2]}
+       {\dodostartitemgroup[#2][]}%
+   \fi}
+
+\def\dodostartitemgroup[#1]% [#2]%
+  {\relax % prevents lookahead
+   \ifnum\currentitemlevel=\maxitemdepth\relax
+     \showmessage\m!layouts9{\number\maxitemdepth}%
+     \let\itemincrement\zerocount
+   \else
+     \let\itemincrement\plusone
+   \fi
+   \global\advance\itemdepth\itemincrement
+   \xdef\currentitemlevel{\number\itemdepth}%
+   \initializeitemgrouplevel\currentitemlevel % safeguard
+   \edef\itemgroupoptions{\getitemparameter\currentitemlevel\c!option}%
+   \ifx\itemgroupoptions\empty
+     \edef\itemgroupoptions{#1}%
+   \else
+     \doifsomething{#1}{\edef\itemgroupoptions{\itemgroupoptions,#1}}%
+   \fi
+   \expanded{\redostartitemgroup[\itemgroupoptions]}}% [#2]
+
+\let\startcollectitems\relax
+\let\stopcollectitems \relax
+
+%D A nice example of a plugin:
+%D
+%D \startbuffer
+%D \startitemize[a,random,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D
+%D \startitemize[a,random,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D
+%D \startitemize[a,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% better collectitems als conditional and a real plugin mechanism (some day)
+
+\@EA\long\@EA\def\@EA\collectitemgroupitem\@EA#\@EA1\csname\e!stop\v!item\endcsname
+  {\increment\itemcollectcounter
+   \long\setvalue{\v!item*\itemcollectcounter}{\item#1\par}}
+
+\def\flushcollecteditems
+  {\ifconditional\randomizeitems
+     \getrandomnumber\itemcollectcounternow\plusone\itemcollectcounter
+   \else
+     \increment\itemcollectcounternow
+   \fi
+   \doifdefined{\v!item*\itemcollectcounternow}
+     {\getvalue{\v!item*\itemcollectcounternow}%
+      \letbeundefined{\v!item*\itemcollectcounternow}%
+      \increment\itemcollectcounterdone}%
+   \ifnum\itemcollectcounterdone<\itemcollectcounter\relax
+     \expandafter\flushcollecteditems
+   \fi}
+
+\def\stopcollectitems
+  {\ifconditional\randomizeitems
+     \newcounter\itemcollectcounterdone
+     \ifnum\itemcollectcounter>\zerocount
+       \@EAEAEA\flushcollecteditems
+     \fi
+   \fi}
+
+\def\startcollectitems
+  {\ifconditional\randomizeitems
+     \newcounter\itemcollectcounter
+     \letvalue{\e!start\v!item}\collectitemgroupitem
+   \fi}
+
+%D End of plugin.
+
+\ifx\startcolumns\undefined \def\startcolumns[#1]{} \fi
+\ifx\stopcolumns \undefined \let\stopcolumns\relax  \fi
+
+\def\dosetsymalign#1% hm, we should use one of the core-spa macros or make a helper
+  {\processaction
+      [#1]
+      [ \v!flushleft=>\let\symalignleft\relax,
+            \v!right=>\let\symalignleft\relax,
+       \v!flushright=>\let\symalignleft\hfill,
+             \v!left=>\let\symalignleft\hfill,
+           \v!middle=>\let\symalignleft\hfil,
+           \v!center=>\let\symalignleft\hfil]}
+
+\def\redostartitemgroup[#1][#2]%
+  {\setfalse\inlinelistitem % new, no indent (leftskip)
+   \setfalse\concatnextitem % new, concat
+   \setfalse\txtlistitem
+   \ifhmode
+     \ifconditional\autoconcatnextitem % new, concat
+       \ifdim\lastskip=\itemsignal     % new, concat
+         \settrue\concatnextitem       % new, concat
+       \fi                             % new, concat
+     \fi                               % new, concat
+     \ifconditional\textlistitem\else\doifnotinset\v!text{#1}\par\fi % suboptimal
+   \fi
+   \begingroup
+   % new where, ok or not / we should integrate random, intro, continue here
+   % beware, the following no longer inherit from the previous level, is this ok?
+   \setfalse\reverselistitem
+   \setfalse\introlistitem
+   \setfalse\autointrolistitem
+   \setfalse\beforelistitem
+   \setfalse\afterlistitem
+   \setfalse\nowhitelistitem
+   \setfalse\randomizeitems
+   %
+   \doifinsetelse\v!intro   {#1}{\settrue\introlistitem    }{\setfalse\introlistitem    }%
+   \doifinsetelse\v!random  {#1}{\settrue\randomizeitems   }{\setfalse\randomizeitems   }%
+   \doifinsetelse\v!continue{#1}{\settrue\continuelistitems}{\setfalse\continuelistitems}%
+   % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
+   \global\advance\noflists\plusone
+   \currentnoflists=\noflists
+   \newcounter\noflistelements
+   \setfalse\headlistitem
+   \setfalse\sublistitem
+   \setfalse\symbollistitem
+   \let\marsymbol\relax
+   \globallet\doitemdestination\empty
+   \let\symsymbol\empty
+   \let\symalignleft\relax
+   \the\itemgroupcommands
+\checkcurrentnofitems
+   % \getitemparameter\currentitemlevel\empty
+   \let\listitem\empty % ** start value
+   \doifelsenothing{#1} % iffirstargument
+     {\edef\@@opsymbol{\getitemparameter\currentitemlevel\c!symbol}%
+      \letgvalueempty{\@@globalitemsymbol\currentitemlevel}%
+      \global\letitemparameter\currentitemlevel\v!continue\empty
+    % \setitemmark\@@opsymbol % ** default value
+      \dosetupitemgroupvariable[\currentitemlevel][#2]}
+     {\dosetupitemgroupconstant[\currentitemlevel][#1]%
+      \dosetupitemgroupvariable[\currentitemlevel][#2]%
+      \doifinsetelse\v!continue{#1}% \noexpand, else problems in non-etex with chinese
+        {\edef\@@opsymbol{\noexpand\getvalue{\@@globalitemsymbol\currentitemlevel}}%
+         \getitemparameter\currentitemlevel\v!continue}
+        {\edef\@@opsymbol{\noexpand\getitemparameter{\currentitemlevel}{\c!symbol}}%
+         \global\setitemparameter\currentitemlevel\v!continue
+           {\dosetupitemgroupconstant[\currentitemlevel][#1]%
+            \dosetupitemgroupvariable[\currentitemlevel][#2]}}%
+      \def\docommand##1% \setitemmark resets \docommand
+        {\doifnot{##1}{0}{\setitemmark{##1}}}%
+    % \processcommalist[#1,\@@opsymbol]\docommand
+      \processcommalist[#1]\docommand}% ** preset sequence or provided sequence
+   % moved to here, after settings
+   \ifnum\currentitemlevel=\plusone % NIEUW
+     \doadaptleftskip {\getitemparameter1\c!margin}%
+     \doadaptleftskip {\getitemparameter1\c!leftmargin}%
+     \doadaptrightskip{\getitemparameter1\c!rightmargin}%
+   \fi
+   \dosetraggedcommand{\getitemparameter\currentitemlevel\c!align}\raggedcommand
+   \dosetsymalign{\getitemparameter\currentitemlevel\c!symalign}%
+   \doifsomething{\getitemparameter\currentitemlevel\c!indenting}
+     {% is \expanded needed?
+      \expanded{\setupindenting[\getitemparameter\currentitemlevel\c!indenting]}}%
+   %
+   \setitemlevel{#1}% moved to here
+   \ifx\listitem\empty
+     \setitemmark\@@opsymbol % ** default value
+     \ifx\listitem\empty
+       \edef\currentitemsymbol{\currentitemlevel}% ** fall back
+     \fi
+   \fi
+   \ifconditional\autointrolistitem\ifnum\prevgraf<3
+     \settrue\introlistitem
+   \fi\fi
+   \ifconditional\paragraphlistitem
+     \ifnum\currentitemlevel>\plusone
+       \letitemparameter\currentitemlevel\c!inbetween\empty
+     \fi
+   \fi
+   \ifconditional\packlistitem
+     \letitemparameter\currentitemlevel\c!inbetween\empty
+   \fi
+   \doifinset\v!columns{#1}%
+     {\ifinsidecolumns\else\ifcase\itemcolumndepth
+        \global\itemcolumndepth\currentitemlevel\relax
+        \itembeforecommand
+        \processfirstactioninset
+          [#1]
+          [  \v!one=>\!!counta1\relax,
+             \v!two=>\!!counta2\relax,
+           \v!three=>\!!counta3\relax,
+            \v!four=>\!!counta4\relax,
+            \v!five=>\!!counta5\relax,
+         \s!unknown=>\@EA\!!counta\getitemparameter\currentitemlevel\c!n]%
+        \startcolumns
+          [\c!n=\!!counta, % netter \??op\currentitemlevel\c!n
+           \c!height=,
+           \c!rule=\v!off,
+           \c!balance=\v!yes,
+           \c!align=\v!no]%
+      \fi\fi}%
+\ifconditional\fittinglistitems
+    \splititemtwopassdata\currentnoflists
+    \ifdim\itemdataw sp>\zeropoint
+      \expanded{\setitemparameter{\currentitemlevel}{\c!width}{\itemdataw sp}}%
+    \fi
+\fi
+   \calculatelistwidth\currentitemlevel{\dimen0}%
+   \ifdim\dimen0>\zeropoint\relax
+     \ifconditional\inlinelistitem\else
+       \advance\leftskip \dimen0\relax
+     \fi
+   \fi
+   \startcollectitems}
+
+% test / example
+%
+% \startnarrower[left] \startcolumns[n=3] \startitemize
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \stopcolumns\stopnarrower \blank
+%
+% \startnarrower[left] \startitemize[columns,three]
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \stopnarrower \blank
+%
+% \setupitemize[leftmargin=1.5em] \startitemize[columns,three]
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \blank
+
+\def\stopitemgroup
+  {\stopcollectitems
+   \ifconditional\textlistitem
+     \removeunwantedspaces\space\ignorespaces
+   \else
+     \par
+   \fi
+   \dolistreference
+   \ifconditional\firstlistitem \else \endgroup \fi % toegevoegd, eerste \som opent groep
+   \ifnum\itemcolumndepth=\currentitemlevel\relax
+     \stopcolumns
+     \global\itemcolumndepth\zerocount
+     \itemaftercommand
+     \dontrechecknextindentation
+   \else
+     \ifnum\currentitemlevel=\plusone
+       \doitembreak\allowbreak           % toegevoegd
+       \itemaftercommand % \getitemparameter\currentitemlevel\c!after
+       % was: \dochecknextindentation\??oo, is now:
+       \dochecknextindentation{\??op\currentitemgroup\currentitemlevel}%
+     \else
+       % nieuw, not yet nobreak handling
+       \ifcase\autoitemgroupspacing
+         \itemaftercommand
+       \or
+         \itemaftercommand
+       \fi
+       \dontrechecknextindentation
+     \fi
+   \fi
+   % new test, needed in sidefloats (surfaced in volker's proceedings)
+   \ifconditional\textlistitem % else forgotten
+     \endgroup
+     \global\advance\itemdepth-\itemincrement
+     \xdef\currentitemlevel{\number\itemdepth}%
+     \egroup
+   \else
+     \endgroup
+     \global\advance\itemdepth-\itemincrement
+     \xdef\currentitemlevel{\number\itemdepth}%
+     \egroup
+     \par
+   \fi
+   \dorechecknextindentation}
+
+\newtoks\itemgroupcommands
+
+\def\itemgroupitem
+  {\doitemgroupitem}
+
+\def\itemgroupnoitem
+  {\doitemgroupnoitem}
+
+\def\itemgroupbutton[#1]%
+  {\gdef\doitemdestination{#1}%
+   \itemgroupitem}
+
+\def\itemgroupdummy
+  {\itemgroupsymbol{\strut}\strut}
+
+\def\itemgroupsubitem
+  {\settrue\sublistitem
+   \itemgroupitem}
+
+\def\itemgroupsymbol#1%
+  {\def\symsymbol{\doitemattributes\currentitemlevel\c!symstyle\c!symcolor{#1}}%
+   \settrue\symbollistitem
+   \itemgroupitem}
+
+\def\itemgroupedge#1%
+  {\itemgroupsymbol
+     {\calculatelistwidth\currentitemlevel{\dimen0}%
+      \hbox to \dimen0
+        {#1\hskip\getitemparameter\currentitemlevel\c!distance}}}
+
+\def\itemgrouphead
+  {\settrue\headlistitem\doitemgrouphead}
+
+\def\itemgroupitems
+  {\dosingleempty\doitemgroupitems}
+
+\def\doitemgroupitems[#1]%
+  {\itemgroupedge
+     {\dorecurse{0\getitemparameter\currentitemlevel\c!items}{\listitem\hss}%
+      \unskip}}
+
+\def\itemgroupmargin#1%
+  {\def\marsymbol
+     {\llap
+        {\doitemattributes\currentitemlevel\c!marstyle\c!marcolor{#1}%
+         \hskip\leftskip\hskip\leftmargindistance}}%
+   \itemgroupitem}
+
+\appendtoks \let\item        \itemgroupitem    \to \itemgroupcommands
+\appendtoks \let\noitem      \itemgroupnoitem  \to \itemgroupcommands
+\appendtoks \letvalue\v!item \itemgroupitem    \to \itemgroupcommands
+\appendtoks \let\itm         \itemgroupitem    \to \itemgroupcommands
+\appendtoks \let\but         \itemgroupbutton  \to \itemgroupcommands
+\appendtoks \let\nop         \itemgroupdummy   \to \itemgroupcommands
+\appendtoks \letvalue\v!sub  \itemgroupsubitem \to \itemgroupcommands
+\appendtoks \letvalue\v!sym  \itemgroupsymbol  \to \itemgroupcommands
+\appendtoks \letvalue\v!ran  \itemgroupedge    \to \itemgroupcommands
+\appendtoks \letvalue\v!head \itemgrouphead    \to \itemgroupcommands
+\appendtoks \letvalue\v!its  \itemgroupitems   \to \itemgroupcommands
+\appendtoks \letvalue\v!mar  \itemgroupmargin  \to \itemgroupcommands
+
+% todo : \startitem .. \stopitem
+
+\appendtoks
+  \letvalue{\e!start\v!item}\itemgroupitem
+  \letvalue{\e!stop \v!item}\endgraf
+\to \itemgroupcommands
+
+\appendtoks
+  \setvalue{\e!start\v!head}#1{\itemgrouphead#1\par}%
+  \letvalue{\e!stop \v!head}\endgraf
+\to \itemgroupcommands
+
+% \startitemize
+%   \starthead {xx} test \stophead
+%   \startitem test \stopitem
+%   \startitem test \stopitem
+% \stopitemize
+
+% Sometimes the user demands get pretty weird:
+%
+% \startitemize
+%   \item test
+%   \item test
+%   \headsym{xx} test \par test
+% \stopitemize
+
+% aligned items
+%
+% \startitemize[n,fit,broad][itemalign=flushright]
+%      \dorecurse{100}{\item The first item.}
+% \stopitemize
+%
+% \setupitemgroup[itemize][each][fit]
+% \setupitemgroup[itemize][each][distance=.5em,factor=1,itemalign=flushright]
+%
+% \startitemize[n]
+%      \dorecurse{100}{\item The first item.}
+% \stopitemize
+
+\appendtoks \let\headsym    \itemgroupheadsym \to \itemgroupcommands
+
+\def\itemgroupheadsym#1%
+  {\def\symsymbol{\doitemattributes\currentitemlevel\c!symstyle\c!symcolor{#1}}%
+   \settrue\symbollistitem
+   \settrue\headlistitem
+   \doitemgrouphead}
+
+% \defineitemgroup[gbitemize]
+% \setupitemgroup[gbitemize][each][headstyle=bold]
+
+% \startgbitemize
+% \txt{italian} some italians like this kind of cross||breed between
+%   an itemize and a description
+% \txt{sicilians} i wonder how many sicilian mathematicians do a thesis
+%   on the math involved in predicting the next big bang of the vulcano
+% \stopgbitemize
+
+\appendtoks \letvalue\v!txt  \itemgrouptext  \to \itemgroupcommands
+
+\newconditional\txtlistitem \setfalse\txtlistitem
+
+\def\itemgrouptext#1%
+  {\def\symsymbol{\doitemattributes\currentitemlevel\c!headstyle\c!headcolor{#1}}%
+   \settrue\symbollistitem
+   \settrue\txtlistitem
+   \itemgroupitem}
+
+\def\itembreak   % -10
+  {\flushnotes\penalty-5\relax}
+
+\def\itemnobreak %  +5
+  {\flushnotes\penalty+5\ifinsidecolumns\else00\fi\relax}
+
+\def\dodotxtitem
+  {\scratchdimen\wd8
+   \advance \scratchdimen \getitemparameter\currentitemlevel\c!distance\relax
+   \ifdim\scratchdimen>\dimen0
+     \advance\scratchdimen -\dimen0
+   \else
+     \scratchdimen\zeropoint
+   \fi
+   \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hss}}% was: \hfill
+   \hskip\scratchdimen}
+
+\def\optimizelistitemsbreak
+  {\ifcase\itemcolumndepth \ifconditional\optimizelistitem
+     \ifcase \currentnofitems \else
+       \ifnum\currentnofitems=\plusthree
+         \ifnum\noflistelements>\plusone
+           \doitembreak\itemnobreak
+         \fi
+       \else\ifnum\currentnofitems>\plusthree
+         \ifnum\noflistelements=\plustwo
+           \ifconditional\introlistitem
+             \doitembreak\nobreak
+           \else
+             \doitembreak\itemnobreak
+           \fi
+         \else\ifnum\currentnofitems=\noflistelements\relax
+           \doitembreak\itemnobreak
+         \else\ifnum\noflistelements>\plustwo
+           \doitembreak\itembreak
+         \else
+           \ifconditional\introlistitem\else\doitembreak\itembreak\fi
+         \fi\fi\fi
+       \fi\fi
+     \fi
+   \fi\fi}
+
+\def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
+  {\ifconditional\textlistitem
+    % begin of item
+   \else
+     \par
+   \fi
+%    \ignorespaces
+   \increment\noflistelements
+   \optimizelistitemsbreak
+   \noindent
+   \setbox8\hbox
+     {\ifconditional\headlistitem
+        \ifconditional\symbollistitem
+          \symsymbol
+        \else
+          \doitemattributes\currentitemlevel\c!headstyle\c!headcolor{\listitem}%
+        \fi
+      \else
+        \ifconditional\symbollistitem
+          \symsymbol % no attributes, why?
+        \else
+          \doitemattributes\currentitemlevel\c!style\c!color{\listitem}%
+        \fi
+      \fi}%
+\ifconditional\fittinglistitems
+    \ifdim\wd8>\getitemparameter\currentitemlevel\c!maxwidth sp\relax
+      \expanded{\global\noexpand\setitemparameter{\currentitemlevel}{\c!maxwidth}{\number\wd8}}%
+    \fi
+    \splititemtwopassdata\currentnoflists
+    \ifdim\itemdataw sp>\zeropoint
+       \setbox8\simplealignedbox{\getitemparameter\currentitemlevel\c!itemalign}{\itemdataw sp}{\box8}%
+    \fi
+\fi
+   \doifsomething\doitemdestination
+     {\setbox8\hbox{\goto{\box8}[\doitemdestination]}}%
+   \globallet\doitemdestination\empty
+   \dimen2=\getitemparameter\currentitemlevel\c!width\relax
+   % new, prevents loops when symbol is (not yet found) graphic
+   \ht8=\strutheight
+   \dp8=\strutdepth
+   % so that content differs per run (esp mp graphics afterwards)
+   \checkforrepeatedlistitem
+   \ifdim\dimen2<\zeropoint\relax
+     \llap{\ifconditional\sublistitem\llap{+}\fi\box8\hskip\leftmargindistance}%
+   \else
+     \ifdim\dimen2=\zeropoint\relax
+       \calculatelistwidth1{\dimen0}%
+     \else
+       \calculatelistwidth\currentitemlevel{\dimen0}%
+     \fi
+     \ifconditional\textlistitem
+       \hbox{\ifconditional\sublistitem+\fi\box8\hskip\interwordspace}\nobreak
+     \else\ifconditional\inlinelistitem
+       \hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hss}% was: \hfill
+     \else\ifconditional\txtlistitem
+       \dodotxtitem
+     \else
+       % todo: align+marge binnen de hbox
+%        \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi\box8\hfill}}%
+       \llap{\hbox to \dimen0{\ifconditional\sublistitem\llap{+}\fi
+                              \symalignleft
+                              \box8\hfil
+                              \hskip\getitemparameter\currentitemlevel\c!distance% T h
+                              }}%
+     \fi\fi\fi
+   \fi
+   \forceunexpanded % needed for m conversion (\os) / i need to look into this
+   \setevalue{\@@currentitemsymbol\currentitemlevel}%
+     {\getvalue{\@@localitemsymbol\currentitemlevel}}% still problems with \uchar ?
+    %{\noexpand\getvalue{\@@localitemsymbol\currentitemlevel}}% no, spoils subrefs
+   \resetunexpanded
+   \setfalse\headlistitem
+   \setfalse\sublistitem
+   \setfalse\symbollistitem
+   \EveryPar{\ignorespaces}% needed ?
+   \ignorespaces}
+
+% For Wolfgang Schuster
+
+% \startitemize[n,repeat]
+%     \noitem \startitemize[a] \item Item 1.a. \item Item 1.b. \stopitemize
+%     \noitem \startitemize[a] \item Item 2.a. \item Item 2.b. \stopitemize
+% \stopitemize
+
+\def\donolistitem % reduced \dolistitem
+  {\increment\noflistelements
+   \setbox8\hbox
+     {\doitemattributes\currentitemlevel\c!style\c!color{\listitem}}%
+   \checkforrepeatedlistitem
+   \ignorespaces}
+
+\def\doitemgroupnoitem
+  {\doadvanceitem\donolistitem}
+
+% For Frank Grieshaber and Mojca Miklavec:
+
+\newconditional\repeatlistitem
+
+\def\checkforrepeatedlistitem
+  {\ifnum\currentitemlevel=\plusone
+     \initializeboxstack{item}%
+   \fi
+   \ifconditional\repeatlistitem
+      \savebox{item}{\currentitemlevel}{\hbox{\copy8}}%
+      \setbox8\hbox to \wd8
+       {\setbox\scratchbox\hbox
+          {\scratchcounter\currentitemlevel
+           \advance\scratchcounter\minusone
+           \dorecurse\scratchcounter{\foundbox{item}{\recurselevel}}}%
+        \ifnum\currentitemlevel>\plusone
+          \ifdim\wd\scratchbox>\zeropoint
+            \hskip-\dimen2
+            \box\scratchbox
+          \fi
+        \fi
+        \box8 }%
+   \fi}
+
+% \startbuffer
+% \item
+%   \startitemize[n]
+%   \item item 1.1
+%   \item item 1.2
+%   \startitemize[n] \item item 1.2.1 \item item 1.2.2 \stopitemize
+%   \item item 1.3
+%   \stopitemize
+% \item
+%   \startitemize[n] \item item 2.1 \item item 2.2 \stopitemize
+% \item item 3
+%   \startitemize[n] \item item 3.1 \item item 3.2 \stopitemize
+% \item
+%   \startitemize[n] \item item 4.1 \item item 4.2 \stopitemize
+% \stopbuffer
+%
+% \startitemize[n,repeat,6*broad,packed] \getbuffer \stopitemize \blank[3*big]
+% \startitemize[n,repeat,packed]         \getbuffer \stopitemize \blank[3*big]
+% \setupitemize[each][atmargin][width=3em]
+% \startitemize[n,repeat,packed]         \getbuffer \stopitemize
+
+\chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
+
+\def\complexdoitemgroupitem[#1]%
+  {\ifconditional\textlistitem
+     % begin of item
+   \else
+     \par
+   \fi
+%    \ignorespaces
+   \ifconditional\concatnextitem % new, concat
+     \doitembreak\nobreak        % new, concat
+   \fi                           % new, concat
+   \doadvanceitem
+   \ifcase\itemcolumndepth \ifnum\noflistelements>0\relax
+     % wrong, but why was this here in the first place, probably some
+     % mistaken change when cleaning up: \doitembreak\nobreak
+   \fi\fi
+   \ifconditional\firstlistitem
+     \setfalse\firstlistitem
+     \begingroup
+     \ifcase\currentitemlevel
+     \or % 1
+       \ifcase\itemcolumndepth
+         \ifconditional\introlistitem\doitembreak\nobreak\fi
+         \itembeforecommand % \getitemparameter\currentitemlevel\c!before
+         \ifconditional\introlistitem\doitembreak\nobreak\fi
+       \fi
+     \else % 2 en hoger
+       \ifconditional\paragraphlistitem \else
+         \let\previtemlevel\currentitemlevel
+         \decrement\previtemlevel
+         \ifcase\autoitemgroupspacing\relax % nieuw
+           \itembeforecommand
+         \or
+            \doifelsenothing{\itembeforecommand}
+              {\itembeforecommand}
+              {\getitemparameter\previtemlevel\c!inbetween}%
+         \else
+           \getitemparameter\previtemlevel\c!inbetween % == itemlevel-1
+         \fi
+       \fi
+     \fi
+   \else
+\ifconditional\textlistitem % was bugged: \inlinelistitem
+%     \removeunwantedspaces\hskip\interwordspace\!!plus\emwidth\relax % new per 2006/10/20
+    \removeunwantedspaces\hskip\emwidth\!!plus\interwordstretch\!!minus\interwordshrink\relax % new per 2006/10/20
+\else
+     \iteminbetweencommand
+\fi
+   \fi
+   \ifconditional\concatnextitem % new, concat
+     \vskip-\lastskip            % new, concat
+     \vskip-\lineheight          % new, concat
+     \nobreak                    % new, concat
+   \fi                           % new, concat
+%    \ignorespaces
+   \dolistitem
+   \relax
+   \ifconditional\packlistitem
+     \setupwhitespace[\v!none]%
+   \fi
+   \getitemparameter\currentitemlevel\c!inner
+   \marsymbol
+   \let\marsymbol\relax
+   \doifsomething{#1}
+     {\doifnot\itemreference\unknownitemreference
+        {\bgroup
+         \protectconversion
+         \rawreference\s!lst{#1}\itemreference
+         \egroup}}%
+   \strut % added 11-08-99
+   \setfalse\concatnextitem % new, concat
+   \nobreak % else problems with intext items
+   \hskip\itemsignal        % new, concat
+   \getitemparameter\currentitemlevel\c!command} % \defaultitemcommand
+
+\def\defaultitemcommand
+  {\EveryPar{\ignorespaces}% needed ?
+   \ignorespaces}
+
+% For Giuseppe "Oblomov" Bilotta, inspired on a suggestion by Taco
+% Hoekwater.
+%
+% \def\MyItemCommand#1{{\bf#1}\quad}
+% \setupitemgroup[itemize][command=\MyItemCommand]
+%
+% \startitemize
+% \item {test} is this okay?
+% \item {test} is this okay?
+% \item {test} is this okay?
+% \stopitemize
+
+\def\complexitem[#1]#2\par % todo: no two pass data
+  {\startitemgroup[#1]%
+   \complexdoitemgroupitem[]\begstrut#2\endstrut\par
+   \stopitemgroup}
+
+\definecomplexorsimpleempty\item
+\definecomplexorsimpleempty\doitemgroupitem
+
+\def\complexhead[#1]#2\par#3\par
+  {\startitemgroup[#1]%
+   \complexdoitemgrouphead[]\begstrut#2\endstrut\par\begstrut#3\endstrut\par
+   \stopitemgroup}
+
+% \def\complexdoitemgrouphead[#1]#2\par% % beter in \complexdosom hangen met een if
+%   {\ifconditional\firstlistitem\else\doitembreak\allowbreak\fi
+%    \ifconditional\packlistitem\else\itembeforeheadcommand\fi
+%    \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\currentitemlevel % incr in \complexdosom
+%       \doitembreak\allowbreak
+%    \fi\fi\fi
+%    \complexdoitemgroupitem[#1]{\doitemattributes\currentitemlevel\c!headstyle\c!headcolor
+%      {\ignorespaces#2}}%
+%    \ifconditional\textlistitem
+%      \removeunwantedspaces\space\ignorespaces
+%    \else
+%      \par
+%    \fi
+%    \doitembreak\nobreak
+%    \ifconditional\packlistitem\else\itemafterheadcommand\fi
+%    \doitembreak\nobreak
+%    \noindentation}
+%
+% the next solution accepts \head test \type{x{x}x} test ...
+
+\def\dostartitemattributes#1{\dostartattributes{\??op\currentitemgroup#1}}
+\def\dostopitemattributes   {\dostopattributes}
+
+\def\complexdoitemgrouphead[#1]% beter in \complexdosom hangen met een if
+  {\ifconditional\firstlistitem\else\doitembreak\allowbreak\fi
+   \ifconditional\packlistitem\else\itembeforeheadcommand\fi
+   \ifconditional\firstlistitem\ifconditional\introlistitem\else\ifcase\currentitemlevel % incr in \complexdosom
+     \doitembreak\allowbreak
+   \fi\fi\fi
+   \complexdoitemgroupitem[#1]%
+     \bgroup
+     \dostartitemattributes\currentitemlevel\c!headstyle\c!headcolor\empty
+     \ignorespaces
+     \let\par\enditemhead} % brrrr but simple anyway
+
+\def\enditemhead
+  {\removeunwantedspaces
+   \dostopitemattributes
+   \egroup
+   \ifconditional\textlistitem
+     \space\ignorespaces
+   \else
+     \par
+   \fi
+   \doitembreak\nobreak
+   \ifconditional\packlistitem\else\itemafterheadcommand\fi
+   \doitembreak\nobreak
+   \noindentation}
+
+\definecomplexorsimpleempty\head
+\definecomplexorsimpleempty\doitemgrouphead
+
+% \def\sym#1%
+%   {\noindent
+%    \begingroup
+%    \setbox\scratchbox\hbox{\trialtypesettingtrue#1}%
+%    \setbox\scratchbox\hbox
+%      \ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#1\hfil}%
+%    \hangindent\wd\scratchbox
+%    \box\scratchbox
+%    \endgroup
+%    \ignorespaces}
+
+\def\sym#1%
+  {\noindent
+   \begingroup
+   \setbox\scratchbox\hbox{\trialtypesettingtrue#1}%
+   \setbox\scratchbox\hbox
+     \ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#1\hfil}%
+   \expanded{\box\scratchbox\endgroup\hangindent\the\wd\scratchbox}%
+   \ignorespaces}
+
+\setupitemgroups % undocumented
+  [\c!levels=6,
+   \c!margin=\zeropoint,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint,
+   \c!indentnext=\v!yes,
+   \c!width=1.5em,
+   \c!factor=0,
+   \c!distance=.5em,
+  %\c!align=\v!normal, % definitely not \v!normal, see mails and
+   \c!align=, % debug reports of David A & Patrick G on context list
+   \c!symalign=,
+   \c!color=,
+   \c!indenting=, % untouched if empty
+   \c!color=,
+   \c!style=, % kan tzt weg
+   \c!marstyle=\c!type,  % \c! ???
+   \c!symstyle=,
+   \c!headstyle=,
+   \c!marcolor=,
+   \c!symcolor=,
+   \c!headcolor=,
+   \c!beforehead=,
+   \c!afterhead=\blank,
+   \c!before=\blank,
+   \c!inbetween=\blank,
+   \c!after=\blank,
+   \c!stopper=.,
+   \c!placestopper=\v!yes,
+   \c!inner=,
+   \c!n=2,
+   \c!items=4,
+   \c!lefttext=(,
+   \c!righttext=),
+   \c!start=1,
+   \c!option=,
+   \c!command=\defaultitemcommand,
+   \c!symbol=\currentitemlevel] % \v!niveau
+
+\def\defineitemgroup
+  {\dodoubleempty\dodefineitemgroup}
+
+\def\dodefineitemgroup[#1][#2]%
+  {\doifsomething{#1}
+     {\pushmacro\currentitemgroup
+      \def\currentitemgroup{#1}%
+      \setvalue{\e!start#1}{\startitemgroup[#1]}%
+      \setvalue{\e!stop#1}{\stopitemgroup}%
+      \setvalue{\e!setup#1\e!endsetup}{\setupitemgroup[#1]}%
+      \getparameters[\??ig#1][\c!levels=3,#2]%
+      \ifnum\getvalue{\??ig#1\c!levels}<\maxitemdepth\relax
+        \setevalue{\??ig#1\c!levels}{\number\maxitemdepth}%
+      \fi
+      \dorecurse{\getvalue{\??ig#1\c!levels}}{\initializeitemgrouplevel\recurselevel}%
+      \popmacro\currentitemgroup}}
+
+% efficient default itemize as well as upward compatible
+% definition:
+
+\defineitemgroup [\v!itemize] [\c!levels=6]
+
+% keep these, needed for styles:
+
+% \def\startitemize {\startitemgroup[\v!itemize]}
+% \def\stopitemize  {\stopitemgroup}
+% \def\setupitemize {\setupitemgroup[\v!itemize]}
+
+\protect \endinput

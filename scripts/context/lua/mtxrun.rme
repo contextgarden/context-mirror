@@ -1,0 +1,18 @@
+On MSWindows the mtxrun.lua script is called with
+mtxrun.exe. On Unix you can either rename mtxrun.lua
+to mtxrun, or use a symlink.
+
+You can create additional stubs, like
+
+copy mtxrun.exe luatools.exe
+copy mtxrun.exe texexec.exe
+copy mtxrun.exe context.exe
+copy mtxrun.exe mtx-server.exe
+
+The mtxrun.exe program is rather dump and only
+intercepts mtxrun, luatools and texmfstart (for
+old times sake) and passes the buck to mtxrun.lua
+which happens to know enough of mkii to deal
+with kpse based lookups and therefore acts like
+texmfstart but when used with mkiv it behaves
+more clever and looks for more.

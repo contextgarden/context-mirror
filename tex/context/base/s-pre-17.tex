@@ -1,0 +1,399 @@
+%D \module
+%D   [      file=s-pre-17,
+%D        version=1999.08.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 17,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\setupbodyfont
+  [12pt,ss]
+
+\setupcolors
+  [state=start]
+
+\setupsystem
+  [random=medium]
+
+\setupbackgrounds
+  [state=repeat]
+
+\setupbackgrounds
+  [page]
+  [background={page,forward}]
+
+\setupbackgrounds
+  [text][text]
+  [background=blowup]
+
+\setupinteraction
+  [state=start,
+  %click=off,
+   color=TitleColor,
+   contrastcolor=TitleColor]
+
+\setupinteractionscreen
+  [option=max]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\definecolor [BackColor]  [s=.30]
+\definecolor [PageColor]  [g=1]
+\definecolor [FrameColor] [r=1]
+\definecolor [TitleColor] [y=1]
+\definecolor [ArrowColor] [b=1]
+
+\defineoverlay [title]   [\useMPgraphic{title}]
+\defineoverlay [page]    [\useMPgraphic{page}]
+\defineoverlay [blowup]  [\overlaybutton{page(\realfolio)}]
+\defineoverlay [forward] [\overlaybutton{forward}]
+
+\startMPpositiongraphic{mppos:connection}
+  path pa, pb, pc ; pair ca, cb ;
+  initialize_box(\MPpos{\MPvar{self}}) ; pa := pxy ; ca := cxy ;
+  initialize_box(\MPpos{\MPvar{prev}}) ; pb := pxy ; cb := cxy ;
+  pickup pencircle scaled .5pt ;
+  pa := pa enlarged 10pt ;
+  pb := pb enlarged 10pt ;
+  for i=1 upto 10 :
+    draw pa randomized 20pt withcolor \MPcolor{FrameColor} ;
+  endfor ;
+  if \MPp{\MPvar{prev}}>0 :
+  pair a, b, c, d ;
+    for i=1 upto 25 :
+      a := .5[ulcorner pa,urcorner pa] randomized (10pt,10pt) ;
+      b := .5[llcorner pb,lrcorner pb] randomized (20pt,10pt) ;
+      c := .5[a,b] rotatedaround(a,-25) randomized (5pt,5pt) ;
+      d := .5[a,b] rotatedaround(a,+25) randomized (5pt,5pt) ;
+      draw (a--b) withcolor \MPcolor{ArrowColor} ;
+      draw (d--a--c) withcolor \MPcolor{ArrowColor} ;
+    endfor ;
+  fi ;
+  anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+\startuseMPgraphic{title}
+  pickup pencircle scaled .5pt ;
+  for i=1 upto 10 :
+    draw
+     fullsquare xyscaled(OverlayWidth,OverlayHeight)
+       enlarged 10pt randomized 20pt
+       withcolor \MPcolor{TitleColor} ;
+  endfor ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{page}
+  StartPage ;
+  pickup pencircle scaled .5pt ;
+  fill Page withcolor \MPcolor{BackColor} ;
+  for i=1 upto 20 :
+    draw Page enlarged -50pt randomized 50pt withcolor \MPcolor{PageColor} ;
+  endfor ;
+  StopPage ;
+\stopuseMPgraphic
+
+\def\StartText%
+  {\bgroup
+   \getrandomdimen\scratchdimen{250pt}{350pt}%
+   \edef\TextWidth{\the\scratchdimen}%
+   \setbox\scratchbox=\hbox\bgroup
+     \hsize\TextWidth
+     \setupframedtexts
+        [before=,after=,
+         width=fit,align=right, % normal,
+         frame=off,foregroundcolor=white]%
+     \framedtext\bgroup}
+
+\def\BlowX{450pt} % \def\BlowX{600pt}
+\def\BlowY{300pt} % \def\BlowY{450pt}
+\def\BlowV {50pt} % \def\BlowV{100pt}
+\def\BlowH {75pt} % \def\BlowH{100pt}
+\def\BackO {50pt} % \def\BackO {50pt}
+
+\def\StopText%
+  {\egroup\egroup
+   \doglobal\increment\CurrentBlaBla
+   \let\PrevBlaBla\CurrentBlaBla \doglobal\decrement\PrevBlaBla
+   \let\NextBlaBla\CurrentBlaBla \doglobal\increment\NextBlaBla
+   \setMPpositiongraphic
+     {connection:\CurrentBlaBla}%
+     {mppos:connection}%
+     {seed=\CurrentBlaBla,
+      prev=connection:\PrevBlaBla,
+      next=connection:\NextBlaBla}%
+   \SetBlowUp{connection:\CurrentBlaBla}\BlowX\BlowY\BlowH\BlowV
+   \hbox to 600pt
+%     {\getrandomdimen\scratchdimen{50pt}{100pt}%
+     {\getrandomdimen\scratchdimen{50pt}{75pt}%
+      \hskip0pt plus \scratchdimen minus \scratchdimen
+      \hpos{connection:\CurrentBlaBla}%
+        {\framed
+           [frame=off,
+            offset=overlay,
+            backgroundoffset=\BackO,
+            background=blowup]
+           {\box\scratchbox}}%
+%      \getrandomdimen\scratchdimen{50pt}{100pt}%
+      \getrandomdimen\scratchdimen{50pt}{75pt}%
+      \hskip0pt plus \scratchdimen minus \scratchdimen}%
+%   \getrandomdimen\scratchdimen{100pt}{150pt}%
+   \getrandomdimen\scratchdimen{75pt}{125pt}%
+   \vskip\scratchdimen
+   \egroup}
+
+\def\xStartText
+  {\bgroup
+   \setbox\scratchbox=\hbox\bgroup
+     \framed
+       [frame=off,foregroundcolor=white]
+       \bgroup}
+
+\def\xStopText{\StopText}
+
+\def\SetBlowUp#1#2#3#4#5% tag width height hoffset voffset
+  {\scratchdimen=\MPw{#1}%
+   \advance\scratchdimen-#2 %
+   \divide\scratchdimen by 2
+   \advance\scratchdimen by \MPx{#1}\relax
+   \ifdim\scratchdimen<0pt \scratchdimen=0pt \fi
+   \ScaledPointsToBigPoints{\number\scratchdimen}\TextX
+   \advance\scratchdimen by #2 %
+   \ScaledPointsToBigPoints{\number\scratchdimen}\TextW
+   %
+   \scratchdimen=\MPh{#1}%
+   \advance\scratchdimen-#3 %
+   \divide\scratchdimen by 2
+   \advance\scratchdimen\MPy{#1}\relax
+   \ifdim\scratchdimen<0pt \scratchdimen=0pt \fi
+   \ScaledPointsToBigPoints{\number\scratchdimen}\TextY
+   \advance\scratchdimen by #3
+   \ScaledPointsToBigPoints{\number\scratchdimen}\TextH
+   %
+   \def\PDFpageviewkey{  fitr \TextX\space\TextY\space\TextW\space\TextH}%
+   \def\PDFpageviewwrd{ /FitR \TextX\space\TextY\space\TextW\space\TextH}%
+   \edef\PDFpageview{/View [\PDFpageviewwrd]}}
+
+\def\xSetBlowUp#1#2#3#4#5% tag width height hoffset voffset
+  {\scratchdimen\MPx{#1}\relax
+   \ifdim\scratchdimen<#4
+     \ScaledPointsToBigPoints{0}\TextX
+     \multiply\scratchdimen 2
+   \else
+     \advance\scratchdimen-#4
+     \ScaledPointsToBigPoints{\number\scratchdimen}\TextX
+     \advance\scratchdimen#4
+     \advance\scratchdimen#4
+   \fi
+   \advance\scratchdimen\MPw{#1}%
+   \ScaledPointsToBigPoints{\number\scratchdimen}\TextW
+   %
+   \scratchdimen\MPy{#1}\relax
+   \ifdim\scratchdimen<#5
+     \ScaledPointsToBigPoints{0}\TextY
+     \multiply\scratchdimen 2
+   \else
+     \advance\scratchdimen-#5
+     \ScaledPointsToBigPoints{\number\scratchdimen}\TextY
+     \advance\scratchdimen#5
+     \advance\scratchdimen#5
+   \fi
+   \advance\scratchdimen\MPh{#1}%
+   \ScaledPointsToBigPoints{\number\scratchdimen}\TextH
+   %
+   \def\PDFpageviewkey{  fitr \TextX\space\TextY\space\TextW\space\TextH}%
+   \def\PDFpageviewwrd{ /FitR \TextX\space\TextY\space\TextW\space\TextH}%
+   \edef\PDFpageview{/View [\PDFpageviewwrd]}}
+
+\dontcomplain
+
+\def\StartPage#1%
+  {\doStartPage{1}{#1}}
+
+\def\doStartPage#1#2%
+  {\def\StopPage{\doStopPage{#1}{#2}}%
+   \setbox\scratchbox=\hbox\bgroup
+     \valign\bgroup\ignorespaces##\vss\cr}
+
+\def\doStopPage#1#2%
+  {\cr
+   \egroup
+   \egroup
+   \setbox\scratchbox=\vbox
+     {\vskip100pt
+      \hbox \ifcase#1 spread 200pt \else to \wd\scratchbox \fi
+        {\hss
+         \switchtobodyfont[big]%
+         \bfd\setupinterlinespace
+         \ifcase#1\else \SetBlowUp{title:\realfolio}\BlowX\BlowY\BlowH\BlowV \fi
+         \hpos{title:\realfolio}
+           {\framed
+              [frame=off,align=middle,
+               foregroundcolor=white,
+               background={title,blowup}]
+              {#2}}%
+         \hss}
+      \vskip100pt
+      \box\scratchbox}
+   \doFlushPage}
+
+\def\doFlushPage
+  {\scratchdimen=\ht\scratchbox
+   \advance\scratchdimen \dp\scratchbox
+   \advance\scratchdimen 100pt
+   \edef\height{\the\scratchdimen}
+   \scratchdimen=\wd\scratchbox
+   \advance\scratchdimen 100pt
+   \edef\width {\the\scratchdimen}
+   \expanded{\definepapersize[MASTER][width=\width,height=\height]}
+   \setuppapersize
+     [MASTER][MASTER]
+   \setuplayout
+     [topspace=25pt,backspace=25pt,
+      width=middle,header=0pt,footer=0pt,height=middle]
+   \centerbox{\box\scratchbox}
+   \page}
+
+\def\StartTopic#1%
+  {\unskip\unskip\cr
+   \doglobal\increment(\CurrentBlaBla,100)%
+   \vbox\bgroup
+   \vskip100pt
+   \bgroup
+   \definecolor[FrameColor][TitleColor]
+   \switchtobodyfont[big]
+   \bfd\setupinterlinespace
+   \xStartText#1\xStopText
+   \vskip25pt
+   \egroup}
+
+\def\StopTopic%
+  {\vskip-\lastskip
+   \vskip100pt
+   \egroup
+   \ignorespaces}
+
+\def\TitlePage#1%
+  {\doStartPage{0}{\def\\{\vskip1ex\bfc\def\\{\vskip1ex\bfb}}#1}
+   \StopPage}
+
+\doifnotmode{demo}{\endinput}
+
+\setupoutput[pdftex]
+
+\starttext
+
+\TitlePage{About Text\\Today's Talk\\Hans Hagen}
+
+\StartPage{The First Page}
+
+\StartTopic{Some Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input knuth \StopText
+\StopTopic
+
+\StartTopic{Another Text}
+  \StartText \input tufte \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input knuth \StopText
+\StopTopic
+
+\StartTopic{Some More Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input tufte \StopText
+\StopTopic
+
+\StartTopic{Some Text Agian}
+  \StartText \input tufte \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input knuth \StopText
+  \StartText \input tufte \StopText
+\StopTopic
+
+\StopPage
+
+\StartPage{The Second Page}
+
+\StartTopic{Some Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+\StopTopic
+
+\StartTopic{Another Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+\StopTopic
+
+\StartTopic{Some Nice Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input tufte \StopText
+  \StartText \input tufte \StopText
+\StopTopic
+
+\StartTopic{Some Funny Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+\StopTopic
+
+\StartTopic{Quite Some Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+\StopTopic
+
+\StartTopic{Even More Text}
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+\StopTopic
+
+\StopPage
+
+\StartPage{The Third Page}
+
+\StartTopic{Some Short Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+\StopTopic
+
+\StartTopic{Some Minimal Text}
+  \StartText \input tufte \StopText
+  \StartText \input zapf  \StopText
+\StopTopic
+
+\StartTopic{Some More Text}
+  \StartText \input tufte \StopText
+  \StartText \input knuth \StopText
+  \StartText \input zapf  \StopText
+  \StartText \input tufte \StopText
+  \StartText \input tufte \StopText
+\StopTopic
+
+\StopPage
+
+\stoptext

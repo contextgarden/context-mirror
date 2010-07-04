@@ -1,0 +1,271 @@
+%D \module
+%D   [      file=s-pre-08,
+%D        version=1999.09.01,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 8,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is one of the 6 styles made for the \NTS\ presentation
+%D at \EUROTEX\ 1999. The idea was to demonstrate a couple of
+%D nasty things that one can do with \PDFTEX, being an example
+%D of an extension. Afterwards it was provded that this could
+%D also be done using traditional \TEX.
+%D
+%D This version is nearly the same as the original, although
+%D since then the \METAPOST\ related macro have become more
+%D smooth. The original used a couple of boxes, skipt and
+%D fills, while this version uses the layer mechanism that
+%D came available in fall 2000. This style is actually more a
+%D demonstration gimmick than a real useful one.
+
+%D You may want to turn on layer tracing:
+%D
+%D \starttyping
+%D \tracelayerstrue
+%D \stoptyping
+
+\setuppapersize
+  [S6][S6]
+
+\setupbodyfont
+  [pos,10pt]
+
+%D We use the whole page and have no margins.
+
+\setuplayout
+  [topspace=0cm,
+   backspace=0cm,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\setupcolors
+  [state=start]
+
+\definecolor[TextColor][s=.9]
+\definecolor[PageColor][r=.5,g=.4,b=.3]
+\definecolor[LineColor][r=.7,g=.6,b=.5]
+
+\definecolor[ColorPage][r=.5,g=.6,b=.7]
+\definecolor[ColorLine][r=.3,g=.4,b=.5]
+
+\setupinteraction
+  [state=start,
+   display=new]
+
+\setupinteractionscreen
+  [option=max]
+
+%D The page, sample text and pagenumber will have a background 
+%D graphic. 
+
+\defineoverlay [page]         [\uniqueMPgraphic{page}]
+\defineoverlay [graphic]      [\uniqueMPgraphic{graphic}]
+\defineoverlay [number]       [\uniqueMPgraphic{number}]
+
+%D Each element will also be a button. 
+
+\defineoverlay [nextpage]     [\overlaybutton{nextpage}]
+\defineoverlay [previouspage] [\overlaybutton{previouspage}]
+\defineoverlay [forward]      [\overlaybutton{forward}]
+
+%D We are going to put all three elements on a layer. 
+
+\definelayer   [main]
+\defineoverlay [main] [\composedlayer{main}]
+
+%D The page backgrounds are as follows: 
+
+\setupbackgrounds
+  [page]
+  [background={previouspage,page}]
+
+%D We could have put the main layer on the page overlay, but
+%D the next solution makes us independent of the back and top
+%D margins. The \type {idea} layer is for user purposes. 
+
+\setupbackgrounds
+  [text]
+  [background={main,idea}]
+
+%D The page number, sample text and explanation all have 
+%D associated framed texts. The two overlays \type {sample} 
+%D and \type {text} and there for special (user) purposes. 
+
+\defineframedtext
+  [PageText]
+  [width=fit,offset=.5cm,
+   before=,after=,frame=off,background={number,forward}]
+
+\defineframedtext
+  [SampleText]
+  [width=.6\makeupwidth,height=fit,offset=2cm,align=middle,
+   before=,after=,frame=off,background={graphic,sample,nextpage}]
+
+\defineframedtext
+  [TextText]
+  [width=.6\makeupwidth,height=fit,offset=2cm,align=middle,
+   before=,after=,frame=off,background={text,nextpage}]
+
+%D Nothing goes on the page directly, since we use layers. The
+%D \type {\null} command makes sure that at least something is
+%D on the page so that the page is flushed. Here we also take 
+%D care of placing the page number. 
+
+\def\StartIdea
+  {\null \dontcomplain}
+
+\def\StopIdea
+  {\setlayer
+     [main]
+     [x=\makeupwidth,y=.5cm,hoffset=-.5cm,location=lb]
+     {\PageText{\pagenumber}}
+   \page}
+
+%D Both texts get their position registered. 
+
+\def\StartSample
+  {\setlayer
+     [main]
+     [hoffset=.75cm,voffset=.75cm]
+     \bgroup \hpos {SampText:\realfolio} \bgroup \startSampleText [none]}
+
+\def\StopSample
+  {\stopSampleText \egroup \egroup}
+
+%D Here the position of the sample text and explanationary 
+%D text are passed on to the graphic that concerns the latter. 
+
+% use setlayertext instead 
+
+\def\StartText
+  {\setMPpositiongraphic
+     {TextText:\realfolio}{text}{other=SampText:\realfolio} 
+   \setlayer
+     [main]
+     [x=\makeupwidth,y=\makeupheight,
+      hoffset=-.75cm,voffset=-.75cm,
+      location=lt]
+     \bgroup \noindent \hpos {TextText:\realfolio} \bgroup \startTextText [none]}
+
+\def\StopText
+  {\stopTextText \egroup \egroup}
+
+%D The graphics that encircle the two texts are related to
+%D their position. This is because when they overlay, a shine
+%D through is shown. This only shows up when there is enough
+%D text to make them overlap.
+
+\startuniqueMPgraphic{page}
+  StartPage ; 
+    pickup pencircle scaled .5cm ;
+    fill Page withcolor \MPcolor{PageColor} ;
+    draw Page withcolor \MPcolor{LineColor} ;
+  StopPage ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{number}
+  path p ; p := fullcircle xscaled OverlayWidth yscaled OverlayHeight;
+  pickup pencircle scaled .25cm ;
+  fill p withcolor \MPcolor{TextColor} ;
+  draw p withcolor (white-\MPcolor{PageColor}) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{graphic}
+  path p ; p := fullcircle xscaled OverlayWidth yscaled OverlayHeight;
+  pickup pencircle scaled .5cm ;
+  fill p withcolor \MPcolor{TextColor} ;
+  draw p withcolor \MPcolor{LineColor} ;
+\stopuniqueMPgraphic
+
+%D This graphic is calculated when a position is flushed that 
+%D has this graphics as attached. The \type {self} reference 
+%D is provided by \CONTEXT\ itself. 
+
+\startMPpositiongraphic{text}
+  initialize_box(\MPpos{\MPvar{other}}) ;
+  path p ; p := fullcircle xscaled wxy yscaled hxy shifted cxy ;
+  initialize_box(\MPpos{\MPvar{self}}) ;
+  path q ; q := fullcircle xscaled wxy yscaled hxy shifted cxy ;
+  pickup pencircle scaled .5cm ;
+  fill q withcolor \MPcolor{TextColor} ;
+  draw p withcolor (white-\MPcolor{PageColor}) ;
+  clip currentpicture to q ;
+  draw q withcolor \MPcolor{LineColor} ;
+  anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+%D In order to be complete, we also define a title page. 
+%D Here suddenly the text background shows up. 
+
+\def\StartTitlePage
+  {\startstandardmakeup
+   \dontcomplain
+   \setupframedtexts[TextText][width=fit]
+   \StartText
+   \bfd\setupinterlinespace
+   \def\\{\blank\bfc\setupinterlinespace\def\\{\blank}}}
+
+\def\StopTitlePage
+  {\StopText
+   \stopstandardmakeup}
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+%D For this purpose, we redefine the position graphic to 
+%D handle a text only case: 
+
+\startMPpositiongraphic{text}
+  if box_found(\MPpos{\MPvar{other}}) :   
+    initialize_box(\MPpos{\MPvar{other}}) ;
+    path p ; p := fullcircle xscaled wxy yscaled hxy shifted cxy ;
+  fi ; 
+  initialize_box(\MPpos{\MPvar{self}}) ;
+  path q ; q := fullcircle xscaled wxy yscaled hxy shifted cxy ;
+  pickup pencircle scaled .5cm ;
+  fill q withcolor \MPcolor{TextColor} ;
+  if box_found(\MPpos{\MPvar{other}}) :   
+    draw p withcolor (white-\MPcolor{PageColor}) ;
+    clip currentpicture to q ;
+    draw q withcolor \MPcolor{LineColor} ;
+  else : 
+    draw q withcolor (white-\MPcolor{PageColor}) ;
+  fi ; 
+  anchor_box(\MPanchor{\MPvar{self}}) ;
+% setbounds currentpicture to boundingbox origin ;
+\stopMPpositiongraphic
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+\TitlePage 
+  {Fancy Styles:\\layers}
+
+\StartIdea
+  \StartSample
+    \input tufte
+  \StopSample
+  \StartText
+    \input reich
+  \StopText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \input knuth
+  \StopSample
+  \StartText
+    \input reich
+  \StopText
+\StopIdea
+
+\stoptext

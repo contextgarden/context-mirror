@@ -1,0 +1,350 @@
+%D \module
+%D   [       file=meta-tex,
+%D        version=2006.06.07,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=\METAPOST\ fast text insertion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Many thanks to Fabrice Popineau and Taco Hoekwater in helping me
+%D figure out some aspects of the text inclusion method implemented
+%D here. The following code is derived from a more advanced (and to
+%D be used) mechanism where \TEX, \METAPOST\ and \LUA\ play together.
+
+%D Much of this mechanism was written with running live DVD's of
+%D the Dave Matthews band in the background (or the corner of my
+%D screen).
+
+% todo: testmacro for empty pic
+
+\unprotect
+
+\newwrite\TeXtextwrite
+
+\def\openTeXtexts {\immediate\openout \TeXtextwrite\currentTeXtext.mpb\relax}
+\def\closeTeXtexts{\immediate\closeout\TeXtextwrite}
+
+\def\currentTeXtext {\jobname-mpgraph}
+\def\currentTeXstack{mpgtxt}
+
+\initializeboxstack\currentTeXstack
+
+\newtoks\collectedmptexts
+\newtoks\everyTeXtexts
+
+\chardef\TeXtextsmode\zerocount % no inheritance
+
+\long\def\startTeXtexts#1\stopTeXtexts
+  {\global\collectedmptexts\expandafter{\the\collectedmptexts#1}}
+
+\def\dostartTeXtexts
+  {\global\setfalse\TeXtextdone
+   \startnointerference
+   \openTeXtexts
+   \ifcase\TeXtextsmode
+     % normally there is no need for this (faster anyway)
+   \or
+     \scantokens\expandafter{\the\everyMPTEXgraphic}% brr
+   \or
+     \the\everyTeXtexts
+   \fi
+   \ifrunMPgraphics
+     \initializeboxstack\currentTeXstack
+   \else
+     \global\let\openTeXtexts\relax
+     \global\let\finishTeXtexts\closeTeXtexts
+   \fi}
+
+\def\dostopTeXtexts
+  {\ifrunMPgraphics
+      \closeTeXtexts
+   \fi
+   \stopnointerference}
+
+\let\finishTeXtexts\relax
+
+\appendtoks
+  \finishTeXtexts
+\to \everystoptext
+
+\newconditional\TeXtextdone
+
+% \long\def\TeXtext#1%
+%   {\dowithnextboxcontent
+%      {\setnormalcatcodes}
+%      {\global\settrue\TeXtextdone
+%       \immediate\write\TeXtextwrite{savetxt(#1,\the\wd\nextbox,\the\ht\nextbox,\the\dp\nextbox);}%
+%       \savebox\currentTeXstack{#1}{\box\nextbox}}
+%     \hbox}
+
+\long\def\TeXtext
+  {\dosingleempty\doTeXtext}
+
+% currently, colors in the converter don't use the color stack
+%
+% 0 = nothing, withcolor works ok, but nested colors fail
+% 1 = local color stack ok
+% 2 = obey color stack (not yet supported)
+
+\chardef\TeXtextcolormode\plusone
+
+\def\definetextext[#1]#2{\setvalue{textext@@#1}{#2}}
+
+% \definetextext[framed]{\framed}
+%
+% \startMPcode
+%     draw \sometxt[framed]{black} rotated 45 ;
+% \stopMPcode
+
+\long\def\doTeXtext[#1]#2#3%
+  {\begingroup
+   \setnormalcatcodes
+   \chardef\activecharactermode\plusone % compensates ** in meta-ini.mkii
+   \endlinechar\minusone
+   \everyeof\emptytoks
+   %\def\ascii{#3}\scantokens\expandafter{\ascii}}%
+   \setbox\nextbox\hbox
+     {\ifcase\TeXtextcolormode
+        \scantokens{\executeifdefined{textext@@#1}\firstofoneargument{#3}}%
+      \else
+        \localcolortrue
+        \startcurrentcolor
+        \scantokens{\executeifdefined{textext@@#1}\firstofoneargument{#3}}%
+        \stopcurrentcolor
+      \fi}%
+   \global\settrue\TeXtextdone
+   \edef\currenttextxt{\number#2}%
+   \executeifdefined{textext::#1}{\getvalue{textext::depth}}%
+   \savebox\currentTeXstack\currenttextxt{\box\nextbox}%
+   \endgroup}
+
+\setvalue{textext::depth}{\immediate\write\TeXtextwrite{savetxt(\currenttextxt,\the\nextboxwd,\the\nextboxht,\the\nextboxdp) shifted (0,-\the\nextboxdp);}}
+\setvalue{textext::nodepth}{\immediate\write\TeXtextwrite{savetxt(\currenttextxt,\the\nextboxwd,\the\nextboxht,\the\nextboxdp);}}
+
+\setvalue{textext::d}{\getvalue{textext::depth}}
+\setvalue{textext::n}{\getvalue{textext::nodepth}}
+
+\newbox\mptextbox
+
+% \loadmapfile[lm-texnansi.map] % the font is not really used, i.e. nothing ends up in the file
+\definefontsynonym[MPtxtfont][texnansi-lmtt10]
+\definefont[localMPtxtfont][MPtxtfont at 10bp]
+
+\ifx\getTeXtext\undefined
+
+    % this took a while to figure out
+
+   \let\MPtextdata\empty
+
+   \def\getTeXtext
+     {\ifx\MPtextdata\empty\else
+        \localMPtxtfont
+        \setbox\mptextbox\hbox{\foundbox\currentTeXstack{\number\nofTeXtexts}}%
+        \setbox\scratchbox\hbox{\MPtextdata}% set in meta-pdf.mkii/mkiv
+        \edef\mpwd{\the\dimexpr\MPtextsize\dimexpr\wd\scratchbox/10\relax\relax}%
+        \edef\mpht{\the\dimexpr\MPtextsize\dimexpr\ht\scratchbox/10\relax\relax}%
+        \setbox\mptextbox\hbox{\raise\dp\mptextbox\box\mptextbox}%
+        \dp\mptextbox\zeropoint
+        \scale[\c!width=\mpwd,\c!height=\mpht]{\box\mptextbox}%
+      \fi}
+
+\fi
+
+\let\nofTeXtexts\!!zerocount
+
+\setvalue{handleMPtext00001}% only height in tag (00001)
+  {\setbox\scratchbox\hbox
+     {\obeyMPspecials
+      \edef\nofTeXtexts{\number\MPtextnumber}%
+      \getTeXtext}%
+   \setbox\scratchbox\hbox
+     {\hskip\lastMPmoveX\onebasepoint\raise\lastMPmoveY\onebasepoint
+      \box\scratchbox}%
+   \ht\scratchbox\zeropoint
+   \dp\scratchbox\zeropoint
+   \wd\scratchbox\zeropoint
+   \box\scratchbox}
+
+\startMPextensions
+    string txtfile ; txtfile := "\currentTeXtext.mpb" ;
+    string txtfont ; txtfont := "\truefontname{MPtxtfont}" ;
+    string txtpref ; txtpref := "00001::::" ;
+\stopMPextensions
+
+\newcount\metatxtcounter
+
+\long\def\dodofiltersometxt#1#2#3%
+  {\ifx#2\empty
+   \else
+     \advance\metatxtcounter\plusone
+     \TeXtext{\the\metatxtcounter}{#1}%
+     \expandafter\filtersometxt
+   \fi#2#3}
+
+\long\def\redofiltersometxt[#1]#2%
+  {\advance\metatxtcounter\plusone
+   \TeXtext[#1]{\the\metatxtcounter}{#2}%
+   \filtersometxt}
+
+\long\def\filtersometxt#1\sometxt
+  {\doifnextoptionalelse\redofiltersometxt\dodofiltersometxt}
+
+% cleaner in mkiv
+%
+% \filtersometxt abc\sometxt{def};hij\sometxt{klm};\sometxt{}\empty\relax
+
+\long\def\flushTeXtexts#1%
+  {\metatxtcounter\zerocount
+   \dostartTeXtexts
+     \the\collectedmptexts
+     \filtersometxt#1\sometxt{}\empty\relax
+   \dostopTeXtexts
+   \ifconditional\TeXtextdone
+     \immediate\write\MPwrite{loadtxts ; txtnext := 0 ;}%
+     \global\collectedmptexts\emptytoks
+   \fi
+   \metatxtcounter\zerocount}
+
+% \long\def\sometxt#1{sometxt(nexttxt)} % to be used in mp definitions, no ; here
+
+\long\def\sometxt #1#{\dosometxt}       % grab optional [args]
+\long\def\dosometxt#1{sometxt(nexttxt)} % to be used in mp definitions, no ; here
+
+% we redefine the writer:
+
+\long\def\writecheckedMPgraphic#1%
+  {\ifforceMPTEXgraphic
+     \global\MPTEXgraphictrue
+   \else
+     \global\MPTEXgraphicfalse
+     \edef\ascii{#1}\defconvertedcommand\MPascii\ascii
+     \the\MPTEXgraphicchecks\relax % \relax is end condition!
+   \fi
+   \flushMPTEXgraphic% % verbatimtex etc
+   \flushTeXtexts{#1}% added
+   \writeMPgraphic{#1}} % potential optimization: pass \ascii
+
+\protect \endinput
+
+% torture test (will move)
+
+\startMPpage
+    numeric a_b_c ;
+    picture p ; pickup pencircle scaled .1pt ;
+    p := \sometxt{Just a \color[blue]{simple} example text.} ;
+    p := image(draw p; draw boundingbox p withcolor red; ) ;
+    p := p rotatedaround(center p,  360*(5/100)) ;
+    draw p ; draw boundingbox p withcolor blue ;
+    currentpicture := currentpicture scaled 20 ;
+    draw boundingbox currentpicture  withcolor .5white ;
+    setbounds currentpicture to boundingbox currentpicture enlarged 10pt ;
+\stopMPpage
+
+\startMPpage
+    picture p ;
+    p := \sometxt{\framed[width=fit,align=middle]{\input tufte\relax}} ;
+    draw p rotatedaround(center p, 30) ;
+\stopMPpage
+
+\startMPpage
+    picture p ;
+    p := \sometxt{\framed[width=fit,align=middle]{\input tufte\relax}} ;
+    draw p slanted .5 ;
+\stopMPpage
+
+\dorecurse{10} {
+    \startTeXtexts
+        \TeXtext{\recurselevel}{\ruledhbox{I must be {\green crazy} to implement this}}
+    \stopTeXtexts
+    \startMPpage
+        picture p ; pickup pencircle scaled .1pt ;
+        numeric i ; i := \recurselevel ;
+        p := sometxt(i) ;
+        p := p rotatedaround(center p,  360*(i*5/100)) ;
+        draw p ; draw boundingbox p withcolor blue ;
+        currentpicture := currentpicture scaled 20 ;
+        draw boundingbox currentpicture  withcolor .5white ;
+    \stopMPpage
+}
+
+\startTeXtexts
+  \dorecurse{100}{\TeXtext{\recurselevel}{\ruledhbox{\strut interesting \recurselevel}}}
+\stopTeXtexts
+
+\startMPpage
+    picture p ; pickup pencircle scaled .1pt ;
+    for i = 1 upto 100:
+        p := sometxt(i) ;
+        p := p rotatedaround(center p,  360*(i*5/100)) ;
+        draw p ; draw boundingbox p withcolor blue ;
+    endfor ;
+    currentpicture := currentpicture scaled 20 ;
+    draw boundingbox currentpicture  withcolor .5white ;
+\stopMPpage
+
+\startTeXtexts
+    \dorecurse{100}{\TeXtext{\recurselevel}{\ruledhbox{\strut interesting \recurselevel}}}
+\stopTeXtexts
+
+\startMPpage
+    picture p ; pickup pencircle scaled .1pt ;
+    for i = 1 step 5 until 100 :
+        p := sometxt(i) ;
+        p := p rotatedaround(center p,  360*(i/100)) ;
+        draw p ; draw boundingbox p withcolor blue ;
+    endfor ;
+    currentpicture := currentpicture scaled 20 ;
+    draw boundingbox currentpicture  withcolor .5white ;
+\stopMPpage
+
+\startTeXtexts
+    \dorecurse{20}{\TeXtext{\recurselevel}{\externalfigure[t:/sources/cow.pdf][width=1cm]}}
+\stopTeXtexts
+
+\startMPpage
+    picture p ; pickup pencircle scaled .1pt ;
+    for i = 1 upto 20 :
+        p := sometxt(i) ;
+        p := p shifted (2.5cm,0) rotated (360*(i/20)) ;
+        draw p ; draw boundingbox p withcolor blue  ;
+    endfor ;
+    currentpicture := currentpicture scaled 10 ;
+    draw boundingbox currentpicture  withcolor .5white ;
+\stopMPpage
+
+\startTeXtexts
+    \dorecurse{200}{\TeXtext{\recurselevel}{\ruledhbox{\strut I must be {\green crazy} \recurselevel}}}
+\stopTeXtexts
+
+\startMPpage
+    picture p ; pickup pencircle scaled .1pt ;
+    numeric i ; i := 100 ;
+    p := sometxt(i) ;
+    p := p rotatedaround(center p,  360*(i*36/100)) ;
+    draw p ; draw boundingbox p withcolor blue  ;
+    currentpicture := currentpicture scaled 20 ;
+    draw boundingbox currentpicture  withcolor .5white ;
+\stopMPpage
+
+\dorecurse{10}{
+    \startTeXtexts
+        \dorecurse{200}{\TeXtext{\recurselevel}{\ruledhbox{\strut I must be {\green crazy} \recurselevel}}}
+    \stopTeXtexts
+    \startMPpage
+        picture p ; pickup pencircle scaled .1pt ;
+        j := 10*\recurselevel-9;
+        k := 10*\recurselevel;
+        for i = j upto k:
+            p := sometxt(i) ;
+            p := p rotatedaround(center p,  360*(i/100)) ;
+            draw p ; draw boundingbox p withcolor blue ;
+        endfor ;
+        currentpicture := currentpicture scaled 20 ;
+        draw boundingbox currentpicture  withcolor red ;
+    \stopMPpage
+}

@@ -1,0 +1,146 @@
+# itc officina
+
+--en=? --ve=itc --co=officina --re
+--en=? --ve=itc --co=officina --so=itc/officina --ma --in
+
+--en=? --ve=itc --co=officina --so=itc/officina --ca=* --pattern=ovbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* --pattern=ovbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* --pattern=ovb_*
+
+--en=? --ve=itc --co=officina --so=itc/officina --ca=* --pattern=owbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* --pattern=owbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* --pattern=owb_*
+
+# bh lucida
+
+--en=? --ve=bh --co=lucida --re
+--en=? --ve=bh --co=lucida --so=bh/lucida --ma --in --expert
+
+# fontfont meta
+
+--en=? --ve=fontfont --co=meta --re
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --ma --in --expert
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-2 --ma --in --expert
+
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* --pattern=mtbk_*
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* --pattern=mtbd_*
+
+# lucas sun
+
+--en=? --ve=lucas --co=sun --re
+--en=? --ve=lucas --co=sun --so=lucas/sun --ma --in
+
+# lucas antiqua
+
+--en=? --ve=lucas --co=antiqua --re
+--en=? --ve=lucas --co=antiqua --so=lucas/antiqua --ma --in
+
+# lucas thesans
+
+--en=? --ve=lucas --co=thesans --re
+--en=? --ve=lucas --co=thesans --so=lucas/thesans --ma --in
+--en=? --ve=lucas --co=thesans --so=lucas/thesans --ma --in --expert
+
+# creative arcadia
+
+--en=? --ve=creative --co=arcadia   --re
+--en=? --ve=creative --co=arcadia   --so=creative/arcadia   --ma --in
+
+# creative industria
+
+--en=? --ve=creative --co=industria --re
+--en=? --ve=creative --co=industria --so=creative/industria --ma --in
+
+# creative insignia
+
+--en=? --ve=creative --co=insignia  --re
+--en=? --ve=creative --co=insignia  --so=creative/insignia  --ma --in
+
+# fontfont din
+
+--en=? --ve=fontfont --co=din --re
+--en=? --ve=fontfont --co=din --so=fontfont/din --ma --in
+
+# adobe myriad
+
+--en=? --so=adobe/myriad --weight=400 --width=600 MyriadMM
+--en=? --so=adobe/myriad --weight=700 --width=600 MyriadMM
+--en=? --so=adobe/myriad --weight=400 --width=600 MyriadMM-It
+--en=? --so=adobe/myriad --weight=700 --width=600 MyriadMM-It
+
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in --pattern=MyriadMM-we*
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in --pattern=MyriadMM-It-we*
+
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --sl=* --pattern=MyriadMM-we*
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ca=* --pattern=MyriadMM-we*
+
+# adobe frutiger
+
+--en=? --ve=adobe --co=frutiger --re
+--en=? --ve=adobe --co=frutiger --so=adobe/frutiger --ma --in
+
+# itc mendoza
+
+--en=? --ve=itc --co=mendoza --re
+--en=? --ve=itc --co=mendoza --so=itc/mendoza --ma --in
+
+# linotype univers
+
+--en=? --ve=linotype --co=univers --re
+--en=? --ve=linotype --co=univers --so=linotype/univers --ma --in
+
+# linotype linoletter
+
+--en=? --ve=linotype --co=linoletter --re
+--en=? --ve=linotype --co=linoletter --so=linotype/linoletter --ma --in
+
+# adobe utopia
+#
+# --en=? --ve=adobe --co=utopia --re
+# --en=? --ve=adobe --co=utopia --so=adobe/utopia --ma --in
+
+# itc kabel
+
+--en=? --ve=itc --co=kabel --re
+--en=? --ve=itc --co=kabel --so=itc/kabel --ma --in
+
+# monotype sabon
+
+--en=? --ve=monotype --co=sabon --re
+--en=? --ve=monotype --co=sabon --so=monotype/sabon --ma --in
+
+# linotype industria
+
+--en=? --ve=linotype --co=industria --re
+--en=? --ve=linotype --co=industria --so=linotype/industria --ma --in
+
+# itc stone
+
+--en=? --ve=itc --co=stone --re
+--en=? --ve=itc --co=stone --so=itc/stone --ma --in
+
+# itc bauhaus
+
+--en=? --ve=itc --co=bauhaus --re
+--en=? --ve=itc --co=bauhaus --so=itc/bauhaus --ma --in
+--en=? --ve=itc --co=bauhaus --so=itc/bauhaus --sl=* --pattern=bh*
+
+# ef swift
+
+--en=? --ve=ef --co=swift --re
+--en=? --ve=ef --co=swift --so=ef/swift --ma --in --pattern=sw*
+
+# linotype optima-nova
+
+--en=? --ve=linotype --co=optima-nova --re
+--en=? --ve=linotype --co=optima-nova --so=linotype/optima-nova --ma --in
+
+# linotype palatino-nova
+
+--en=? --ve=linotype --co=palatino-nova --re
+--en=? --ve=linotype --co=palatino-nova --so=linotype/palatino-nova --ma --in
+
+# linotype syntax
+
+--en=? --ve=linotype --co=syntax --re
+--en=? --ve=linotype --co=syntax --so=linotype/syntax --ma --in

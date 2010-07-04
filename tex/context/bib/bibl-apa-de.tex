@@ -1,0 +1,386 @@
+%D \module
+%D   [       file=bibl-apa-de,
+%D        version=2006.9.12,
+%D          title=APA bibliography style,
+%D       subtitle=Publications,
+%D         author={Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright={Public Domain}]
+%C
+%C Donated to the public domain. Use at your own risk
+
+\unprotect
+
+\setupcite
+       [author,year]
+       [\c!andtext={ und },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ und },
+        \c!compress=\v!no,
+        \c!inbetween={ },
+        \c!left={(},
+        \c!right={)}]
+
+\setupcite
+       [authoryear]
+       [\c!andtext={ und },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ und },
+        \c!compress=\v!yes,
+        \c!inbetween={ },
+        \c!left={(},
+        \c!right={)}]
+
+\setupcite
+       [authoryears]
+       [\c!andtext={ und },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ und },
+        \c!compress=\v!yes,
+        \c!inbetween={, },
+        \c!left={(},
+        \c!right={)}]
+
+\setupcite
+       [key,serial,authornum,page,short,type,doi,url]
+       [\c!andtext={ und },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ und },
+        \c!compress=\v!no,
+        \c!inbetween={ },
+        \c!left={[},
+        \c!right={]}]
+
+\setupcite
+       [num]
+       [\c!andtext={ und },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ und },
+        \c!compress=\v!yes,
+        \c!inbetween={--},
+        \c!left={[},
+        \c!right={]}]
+
+\setuppublications[%
+    \c!sorttype=,
+    \c!criterium=,
+    \c!refcommand=authoryears,
+    \c!numbering=\v!no,
+    \c!autohang=\v!no]
+
+\setuppublicationlist
+   [\c!width=24pt,
+    \c!artauthor=\invertedshortauthor,
+    \c!editor=\invertedshortauthor,
+    \c!author=\invertedshortauthor,
+    \c!namesep={, },
+    \c!lastnamesep={ und },
+    \c!finalnamesep={ und },
+    \c!firstnamesep={, },
+    \c!juniorsep={ },
+    \c!vonsep={ },
+    \c!surnamesep={, },
+    \c!authoretallimit=5,
+    \c!editoretallimit=5,
+    \c!artauthoretallimit=5,
+    \c!authoretaldisplay=5,
+    \c!editoretaldisplay=5,
+    \c!artauthoretaldisplay=5,
+    \c!authoretaltext={ et al.},
+    \c!editoretaltext={ et al.},
+    \c!artauthoretaltext={ et al.},
+]
+
+\def\maybeyear#1{#1}
+
+\def\etalchar#1{#1}
+
+%D \macros{insertchapter,insertpublisher}
+
+%D Some shortcuts.
+
+% ((#1(type\ |)chapter#2)|#3)
+ 
+\def\insertchap#1#2#3%
+  {\insertchapter
+    {#1\insertbibtype{}{\ }{Kapitel\ }}{#2}%
+    {#3}}
+
+\def\insertpublisher#1#2#3%
+   {\insertpubname
+       {#1}{\insertcity
+            {, }
+            {\insertcountry{, }{}{#2}}%
+            {\insertcountry{, }{}{#2}}}%
+       {\insertcity
+         {}{\insertcountry{, }{}{#2}}%
+         {\insertcountry{#1}{#2}{#3}}}%
+    }
+
+
+\setuppublicationlayout[article]{%
+   \insertartauthors{}{ }{\insertthekey{}{ }{}}%
+   \insertpubyear{(}{). }{\unskip.}%
+   \insertarttitle{\bgroup }{\egroup. }{}%
+   \insertjournal{\bgroup \it}{\egroup}
+    {\insertcrossref{In }{}{}}%
+   \insertvolume
+    {, }
+    {\insertissue{(}{)}{}\insertpages{:}{.}{.}}
+    {\insertpages{, Seiten }{.}{.}}%
+   \insertnote{ }{.}{}%
+   \insertcomment{}{.}{}%
+}
+
+\newif\ifeditedbook
+\setuppublicationlayout[book]{%
+   \insertauthors{}{ }{\inserteditors{}{, Herausgeber%
+                             \ \global\editedbooktrue 
+                     }{\insertthekey{}{. }{}}}%
+   \insertpubyear{(}{). }{\unskip.}%
+   \inserttitle
+        {\bgroup\it }%
+        {\/\egroup 
+    \ifeditedbook
+           \global\editedbookfalse
+       \insertvolume
+        { Nummer~}%
+                {\insertseries
+                    { in~\bgroup}%
+                    {\egroup. }%
+                    {\insertcrossref{ in~}{}{. }}}%
+                {\insertseries{ }{.}{} }%
+        \else
+       \insertcrossref
+        {\insertchap{, }{}{}%
+         \insertpages{, Seiten }{. }{. }%
+         \insertvolume{Band~}{ von~}{}%
+         }%
+        {}%
+        {\insertvolume
+                   {, Band~}%
+                   {\insertseries
+                      { von~\bgroup\it}%
+                      {\egroup}
+                      {}}
+                   {}%
+                   \insertchap{, }{}{}%
+                   \insertpages{, Seiten }{.}{.}%
+                }%
+        \fi}%
+        {}%
+   \insertpublisher
+    { }%
+    {\insertedition{, }{ Auflage.}{.}}%
+    {\insertedition{, }{ Auflage.}{}}%
+   \insertpages{ }{S. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[inbook]{%
+   \insertauthors{}{ }{\inserteditors{}{, Herausgeber%
+                             \ \global\editedbooktrue 
+                     }{\insertthekey{}{. }{}}}%
+   \insertpubyear{(}{). }{\unskip.}%
+   \inserttitle
+        {\bgroup\it }%
+        {\/\egroup
+    \ifeditedbook
+           \global\editedbookfalse
+       \insertvolume
+        { Nummer~}%
+                {\insertseries
+                    { in~\bgroup}%
+                    {\egroup. }%
+                    {\insertcrossref{ in~}{}{. }}}%
+                {\insertseries{ }{.}{} }%
+        \else
+           \insertcrossref
+        {\insertchap{, }{}{}%
+                 \insertpages{, Seiten }{. }{. }%
+                 \insertvolume{Band~}{ Von~}{}%
+                }%
+                {}%
+        {\insertvolume
+                   {, Band~}%
+                   {\insertseries
+                      { von~\bgroup\it}%
+                      {\egroup}
+                      {}}
+                   {}%
+                   \insertchap{, }{}{}%
+                   \insertpages{, Seiten }{. }{. }%
+                }%
+        \fi}%
+        { }%
+   \insertpublisher
+    {}%
+    {\insertedition{, }{ Auflage. }{. }}%
+    {\insertedition{, }{ Auflage. }{}}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[booklet]{%
+   \insertauthors{}{ }{\insertthekey{}{. }{}}%
+   \insertpubyear{(}{). }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertpublisher
+    {}%
+    {\insertedition{, }{ Auflage. }{. }}%
+    {\insertedition{, }{ Auflage. }{}}%
+   \insertpages{}{S. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[manual]{%
+   \insertauthors{}{ }{\insertthekey{}{. }{}}%
+   \insertpubyear{(}{). }{}%
+   \inserttitle{\bgroup \it }{\/\egroup \insertseries{ (}{)}{}. }{}%
+   \insertorganization
+        {}%
+        {\insertcity{, }%
+            {\insertedition{, }{ Auflage. }{. }}%
+                {\insertedition{, }{ Auflage. }{. }}}%
+        {\insertedition{, }{ Auflage. }{}}%
+   \insertpages{}{S. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[incollection]{%
+   \insertartauthors{}{ }{\insertthekey{}{. }{}}%
+   \insertpubyear{(}{). }{}%
+   \insertarttitle{\bgroup }{\egroup. }{}%
+   \inserttitle
+    {In \inserteditors{}%
+        {, Herausgeber, }%
+        {}%
+    \bgroup\it}%
+    {\egroup 
+         \insertseries
+              {\insertvolume{, Nummer }{~in }{ }}%
+              {}%
+              {}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages{\unskip, Seiten~}{. }{\unskip. }% 
+         \insertpublisher
+         {}%
+         {\insertedition{, }{ Auflage. }{. }}%
+         {\insertedition{, }{ Auflage. }{}}%
+        }%
+        {In \insertcrossref{}{}{}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages{\unskip, Seiten~}{. }{\unskip. }% 
+        }%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[inproceedings]{%
+   \insertauthors{}{ }{}%
+   \insertpubyear{(}{). }{}%
+   \insertarttitle{\bgroup }{\egroup. }{}%%
+   \inserttitle
+    {In \inserteditors{}%
+        {, Herausgeber, }%
+        {}%
+    \bgroup\it}%
+    {\egroup 
+         \insertseries
+              {\insertvolume{, Nummer }{~in }{ }}%
+              {}%
+              {}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages
+                {\unskip, Seiten~}
+	            {\insertcity{, }{. }{. }}
+                {\unskip. }% 
+         \insertorganization
+         {}%
+         {\insertpubname{, }{. }{. }}%
+         {\insertpubname{}{. }{}}% was {, }{. }{}
+        }%
+        {In \insertcrossref{}{}{}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages{\unskip, Seiten~}{. }{\unskip. }% 
+        }%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[proceedings]{%
+   \inserteditors{}{, Herausgeber%
+                             \ \global\editedbooktrue 
+                     }{\insertthekey{}{ }{}}%
+   \insertpubyear{(}{). }{}%
+   \inserttitle
+    {\bgroup\it}%
+    {\egroup 
+         \insertseries
+              {\insertvolume{, Nummer }{~in }{ }}%
+              {}%
+              {}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages{\unskip, Seiten~}{\insertcity{, }{. }{. }}
+        {\unskip\insertcity{, }{. }{. }}% 
+         \insertorganization
+         {}%
+         {\insertpubname{, }{. }{. }}%
+         {\insertpubname{, }{. }{}}%
+        }%
+        {}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[mastersthesis]{%
+   \insertauthors{}{ }{}%
+   \insertpubyear{(}{). }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertbibtype{}{, }{Masterarbeit, }%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{S. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[phdthesis]{%
+   \insertauthors{}{ }{}%
+   \insertpubyear{(}{). }{}%
+   \inserttitle{\bgroup\it }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertbibtype{}{, }{Dissertation, }%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{S. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[misc]{%
+   \insertauthors{}{ }{\insertthekey{}{. }{}}%
+   \insertpubyear{(}{). }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}. }{}%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{S. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[techreport]{%
+   \insertauthors{}{ }{}%
+   \insertpubyear{(}{). }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertbibtype{}{\insertvolume{ }{, }{, }}{Technischer Bericht, }%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{S. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[unpublished]{%
+   \insertauthors{}{ }{}%
+   \insertpubyear{(}{). }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{S. }{}%
+   \insertbibtype{(}{)}{}%
+   \insertnote{ }{.}{}%
+}
+
+\protect

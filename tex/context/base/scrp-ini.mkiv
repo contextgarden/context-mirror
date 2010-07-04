@@ -1,0 +1,91 @@
+%D \module
+%D   [       file=scrp-ini,
+%D        version=2009.02.06,
+%D          title=\CONTEXT\ Script Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA / Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% here we collect code from other places (was organized differently)
+
+\registerctxluafile{scrp-ini}{1.001}
+\registerctxluafile{scrp-cjk}{1.001}
+
+\definesystemattribute[preproc] \chardef\preprocattribute \dogetattributeid{preproc}
+\definesystemattribute[prestat] \chardef\prestatattribute \dogetattributeid{prestat}
+
+%D Since scripts need specific \LUA\ code we use hard coded attribute
+%D values, but we might have more tricks at some time, so we use a
+%D proper define macro too.
+
+\unprotect
+
+\def\s!attribute{attribute}
+
+\def\namedscriptparameter#1#2%
+  {\csname\doscriptparameter{\??ls#1}#2\endcsname}
+
+\def\scriptparameter#1%
+  {\csname\doscriptparameter{\??ls\currentscript}#1\endcsname}
+
+\def\doscriptparameter#1#2%
+  {\ifcsname#1#2\endcsname#1#2\else\expandafter\doscriptparentparameter\csname#1\s!parent\endcsname#2\fi}
+
+\def\doscriptparentparameter#1#2%
+  {\ifx#1\relax\s!empty\else\doscriptparameter#1#2\fi}
+
+% \def\scriptparameterhash#1%
+%   {\doscriptparameterhash{\??ls\currentscript}#1}
+%
+% \def\doscriptparameterhash#1#2%
+%   {\ifcsname#1#2\endcsname#1\else\expandafter\doscriptparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+%
+% \def\doscriptparentparameterhash#1#2%
+%   {\ifx#1\relax\else\doscriptparameterhash#1#2\fi}
+
+% when #2 == string, then only synonym, no settings
+
+\unexpanded\def\definescript
+  {\dodoubleargument\dodefinescript}
+
+\def\dodefinescript[#1][#2]%
+  {\doifassignmentelse{#2}
+     {\getparameters[\??ls#1][\c!method=,\s!parent=,#2]%
+      \doifelsenothing{\namedscriptparameter{#1}\c!method}
+        {\letvalue {\??ls#1\s!attribute}\attributeunsetvalue}%
+        {\setevalue{\??ls#1\s!attribute}{\ctxlua{scripts.define("\namedscriptparameter{#1}\c!method")}}}}%
+     {\getparameters[\??ls#1][\s!parent=#2]}%
+   \setvalue{#1}{\dosetscript{#1}}}
+
+\unexpanded\def\setupscript
+  {\dodoubleargument\dosetupscript}
+
+\def\dosetupscript[#1][#2]%
+  {\getparameters[\??ls#1][#2]}
+
+\def\dosetscript#1%
+  {\def\currentscript{#1}%
+   \edef\currentscriptattribute{\scriptparameter\s!attribute}%
+   \ifx\currentscriptattribute\empty
+     \let\currentscript\empty
+     \attribute\preprocattribute\attributeunsetvalue
+   \else
+     \attribute\preprocattribute\currentscriptattribute\relax % we can speed this up by storing the attribute in ??ls:a:#1
+   \fi}
+
+\def\setscript  [#1]{\dosetscript{#1}}
+\unexpanded\def\startscript[#1]{\begingroup\dosetscript{#1}}
+\unexpanded\def\stopscript     {\endgroup}
+
+% \setscript[hangul] \hangul \startscript[hangul]
+
+\definescript[latin] [\c!method=]        %  resets the attribute
+\definescript[hangul][\c!method=hangul]
+\definescript[hanzi] [\c!method=hanzi]
+
+\protect \endinput

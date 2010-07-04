@@ -1,0 +1,61 @@
+% engine=luatex
+
+%D \module
+%D   [      file=s-sys-01,
+%D        version=2008.03.32,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Generate List of Math Symbol,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startluacode
+function showmath()
+    local slots  = mathematics.slots.traditional
+    local escape = characters.filters.utf.private.escape
+    local data   = characters.data
+    tex.sprint(tex.ctxcatcodes,"\\starttabulate[|T|c|T|T|T|T||||]")
+    local texsprint =  tex.sprint
+%  -- function texsprint(a,b) print(b) end
+    for _, v in ipairs(table.sortedkeys(slots)) do
+        local t, d, u = slots[v], data[v], escape(utf.char(v))
+        local class, name, description = d.mathclass or "", d.mathname or "" , d.description or ""
+        if class == "accent" then
+            u = ""
+        end
+        if t[3] and t[4] then
+            texsprint(tex.ctxcatcodes,string.format(
+                "\\NC 0x%04X\\NC $%s$\\NC %s\\NC 0x%04X\\NC %s\\NC 0x%04X\\NC %s\\NC %s\\NC %s\\NC\\NR",
+                v,u,t[1],t[2],t[3],t[4],class,name,description))
+        else
+            texsprint(tex.ctxcatcodes,string.format(
+                "\\NC 0x%04X\\NC $%s$\\NC %s\\NC 0x%04X\\NC\\NC\\NC %s\\NC %s\\NC %s\\NC\\NR",
+                v,u,t[1],t[2],class,name,description))
+        end
+    end
+    tex.sprint(tex.ctxcatcodes,"\\stoptabulate")
+end
+\stopluacode
+
+\setuplayout
+  [backspace=1cm,
+   topspace=1cm,
+   footer=1cm,
+   header=0cm,
+   height=middle,
+   width=middle]
+
+\setupbodyfont
+  [9pt]
+
+\setupfootertexts
+  []
+  [math characters -- \pagenumber]
+
+\starttext
+\ctxlua{showmath()}
+\stoptext

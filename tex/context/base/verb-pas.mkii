@@ -1,0 +1,266 @@
+%D \module
+%D   [       file=verb-pas,
+%D        version=1999.12.09,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty \PASCAL\ and \MODULA\ Verbatim,
+%D         author=Berend de Boer,
+%D           date=\currentdate,
+%D      copyright={Berend de Boer \& Hans Hagen}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This module will be cleaned up a bit in the process of more
+% flexible verbatim options.
+
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty PASCAL Verbatim}
+
+%D Typeset Pascal(-like) code:
+%D
+%D \startbuffer
+%D \startPAS
+%D program Hello;
+%D
+%D begin
+%D   writeln('hello world.');
+%D end.
+%D \stopPAS
+%D \stopbuffer
+%D
+%D Berend's preferences:
+%D
+%D \startbuffer[setup]
+%D \setuptyping
+%D   [DELPHI]
+%D   [palet=,icommand=\bf,vcommand=,ccommand=\it]
+%D \stopbuffer
+
+\ifdefined\setupprettyPLtype \else \loadmarkfile{verb-pl} \fi
+
+\unprotect
+
+\doglobal\newif\ifinPASbracketcomment
+\doglobal\newif\ifinPASslashstarcomment
+\doglobal\newif\ifinPASslashslashcomment
+
+
+\gdef\PASsetspecials%
+  {\PLsetspecials
+   \setpretty`\#=32
+   \setpretty`\%=41
+   \setpretty`\:=41
+   \setpretty`\/=43
+   \setpretty`\*=44
+   \setpretty`\{=45 \setpretty`\}=46 }
+
+\gdef\PASsethandlers%
+  {\PLsethandlers
+   \installprettyhandler 43 \PAStypefourthree
+   \installprettyhandler 44 \PAStypefourfour
+   \installprettyhandler 45 \PAStypefourfive
+   \installprettyhandler 46 \PAStypefoursix }
+
+\gdef\PASsetcontrols%
+  {\PLsetcontrols
+   \def\flushrestofverbatimline%
+     {\endPLtypesix
+      \ifinPASslashslashcomment
+        \PASstopslashslashcomment
+      \fi
+      \PLverbosefalse
+      \PLverboseskipped=0}}
+
+\gdef\PASsetvariables
+  {\PLsetvariables
+   \global\inPASbracketcommentfalse
+   \global\inPASslashstarcommentfalse
+   \global\inPASslashslashcommentfalse}
+
+\gdef\setupprettyPAStype%
+  {\def\prettyidentifier{PAS}%
+   \let\PLidentifiers=\PASidentifiers
+   \let\PLvariables=\PASvariables
+   \PASsetvariables
+   \PASsetcontrols
+   \PASsethandlers
+   \PASsetspecials
+   \PLsetdiagnostics}
+
+% the // and /* comments
+
+\gdef\PAStypefourthree%
+  {\handlenextnextpretty\doPAStypefourthree\PLtypefourtwo}
+
+\gdef\doPAStypefourthree#1#2%
+  {\endPLtypesix
+   \ifinPLcomment
+     \let\next=\PLtypefourtwo
+   \else
+     \ifinPLsingle
+       \let\next=\PLtypefourtwo
+     \else
+       \getprettydata{#2}%
+       \ifnum\prettytype=43
+         \PLverbosecorrection
+         \let\next=\PASstartslashslashcomment
+       \else\ifnum\prettytype=44
+         \PLverbosecorrection
+         \let\next=\PASstartslashstarcomment
+       \else
+         \let\next=\PLtypefourtwo
+       \fi\fi
+     \fi
+   \fi
+   \next{#1}#2}
+
+\gdef\PASstartslashstarcomment#1#2%
+  {\global\inPLcommenttrue
+   \global\inPASslashstarcommenttrue
+   \prettynaturalfont
+   \beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty}
+
+\gdef\PASstopslashstarcomment#1#2%
+  {\beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty
+   \verbatimfont
+   \global\inPLcommentfalse
+   \global\inPASslashstarcommentfalse}
+
+\gdef\PASstartslashslashcomment#1#2%
+  {\global\inPLcommenttrue
+   \global\inPASslashslashcommenttrue
+   \prettynaturalfont
+   \beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty}
+
+\gdef\PASstopslashslashcomment%
+  {\verbatimfont
+   \inPLcommentfalse
+   \inPASslashslashcommentfalse}
+
+% \gdef\dodoPAStypefourthree% #1%
+%   {\endPLtypesix
+%    \handlenextnextpretty\dododoPAStypefourthree\dodododoPLtypefourthree}
+
+% \gdef\dododoPAStypefourthree%
+%   {\ifnewpretty\expandafter\handlenewpretty\fi\dodododoPAStypefourthree}
+
+% \gdef\dodododoPAStypefourthree#1#2%
+%   {\ifinPLcomment
+%      \getpretties{#1}{#2}%
+%    \else
+%      \global\inPLcommenttrue
+%      \PLverbosecorrection
+%      \beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty
+%    \fi}
+
+\gdef\PAStypefourfour%
+  {\handlenextnextpretty\doPAStypefourfour\PLtypefourtwo}
+
+\gdef\doPAStypefourfour#1#2%
+  {\ifinPASslashstarcomment
+     \getprettydata{#2}%
+     \ifnum\prettytype=43
+       \PASstopslashstarcomment{#1}#2%
+     \else
+       \endPLtypesix
+       \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+       \expandafter#2%
+     \fi
+   \else
+     \endPLtypesix
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+     \expandafter#2%
+   \fi}
+
+
+% the { and } comments
+% we assume { is closed by } and do not follow the braindead Standard
+% Pascal standard in this respect
+% Note: brackets are not output correctly if natural font is \tf.
+% Therefore natural font is default to \tttf now (Hans is this ok??)
+% You have to use postscript fonts it seems to get brackets in that case.
+
+\gdef\PAStypefourfive#1%
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else
+     \ifinPLsingle
+       \getpretty{#1}%
+     \else
+       \global\inPLcommenttrue
+       \global\inPASbracketcommenttrue
+       \prettynaturalfont
+       \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+     \fi
+   \fi}
+
+\gdef\PAStypefoursix#1%
+  {\endPLtypesix
+   \ifinPASbracketcomment
+     \prettynaturalfont\beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+     \verbatimfont
+     \global\inPLcommentfalse
+     \global\inPASbracketcommentfalse
+   \else
+     \getpretty{#1}%
+   \fi}
+
+
+% Standard Pascal keywords (ISO/IEC 7185)
+
+\useprettyidentifiers \PASidentifiers \PASsetspecials
+  and array begin case const div do downto else end file
+  for function goto if in label mod nil not of or packed
+  procedure program record repeat set then to type until
+  var while with
+
+% Standard Pascal directives (ISO/IEC 7185)
+
+\useprettyidentifiers \PASidentifiers \PASsetspecials
+  forward
+
+% Extended Pascal keywords (ISO/IEC 10206)
+
+\useprettyidentifiers \PASidentifiers \PASsetspecials
+  and_then bindable export import module only or_else
+  otherwise pow protected qualified restricted
+
+% Extended Pascal directives (ISO/IEC 10206)
+
+\useprettyidentifiers \PASidentifiers \PASsetspecials
+  implementation interface
+
+% Object Pascal keywords (draft September 20, 1993)
+
+\useprettyidentifiers \PASidentifiers \PASsetspecials
+  abstract class constructor destructor inherited is
+  property view
+
+% Object Pascal directives (draft September 20, 1993)
+
+\useprettyidentifiers \PASidentifiers \PASsetspecials
+  override
+
+% Delphi keywords
+
+\useprettyidentifiers \PASidentifiers \PASsetspecials
+  as asm dispinterface except exports finalization finally
+  initialization inline library object out raise resourcestring
+  shl shr string threadvar try unit uses xor
+
+% Delphi directives
+% the read and write directive have been skipped
+% as they're pretty common procedure calls too
+
+\useprettyidentifiers \PASidentifiers \PASsetspecials
+  absolute assembler automated cdecl contains default dispid
+  dynamic external far implements index message name near
+  nodefault overload override package pascal private protected
+  public published readonly register reintroduce requires
+  resident safecall stdcall stored virtual writeonly
+
+\useprettyidentifiers \PASvariables \PASsetspecials
+  not-yet-defined
+
+\protect \endinput

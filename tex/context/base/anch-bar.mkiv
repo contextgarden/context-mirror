@@ -1,0 +1,179 @@
+%D \module
+%D   [       file=anch-bar,
+%D        version=2003.03.16,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Margin Bars and alike,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Margin Bars}
+
+\unprotect
+
+%D We will implement a sidebar mechanism using the
+%D functionality from \type {core-pos}.
+%D
+%D \starttyping
+%D \definesidebar[whow][rulecolor=green,distance=]
+%D
+%D \input tufte \par
+%D \startsidebar
+%D   \input tufte \par
+%D   \input tufte \par
+%D   \startsidebar[whow]
+%D     \input tufte \par
+%D     \input tufte \par
+%D     \input tufte
+%D   \stopsidebar \par
+%D   \input tufte \par
+%D   \input tufte
+%D \stopsidebar \par
+%D \input tufte \par
+%D \input tufte \par
+%D \startsidebar
+%D   \input tufte \par
+%D   \input tufte \par
+%D   \input tufte \par
+%D   \input tufte \par
+%D   \input tufte
+%D \stopsidebar \par
+%D \input tufte \par
+%D \input tufte \par
+%D \startsidebar
+%D   \input tufte
+%D   \input tufte
+%D   \input tufte
+%D   \input tufte
+%D   \input tufte
+%D \stopsidebar
+%D \stoptyping
+
+\newcount\currentsidebar
+\newdimen\sidebardistance
+
+\unexpanded\def\setupsidebars
+  {\dodoubleargument\dosetupsidebars}
+
+\def\dosetupsidebars[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??br#1][#2]%
+   \else
+     \getparameters[\??br][#1]%
+   \fi}
+
+% \setupMPvariables
+%   [mpos:bar]
+%   [linecolor=red,
+%    linewidth=2pt,
+%    distance=5pt]
+
+\setupsidebars
+  [\c!rulethickness=2pt,
+   \c!rulecolor=red,
+   \c!distance=.5\bodyfontsize]
+
+\unexpanded\def\definesidebar
+  {\dodoubleempty\dodefinesidebar}
+
+\def\dodefinesidebar[#1][#2]%
+  {\copyparameters
+     [\??br#1][\??br]
+     [\c!rulethickness,\c!rulecolor,\c!distance]%
+   \getparameters
+     [\??br#1][#2]}
+
+\unexpanded\def\startsidebar
+  {\dosingleempty\dostartsidebar}
+
+\def\dostartsidebar[#1]%
+  {\bgroup
+   \dontleavehmode
+   \checktextbackgrounds
+   \global\advance\currentsidebar\plusone
+   \doifelsenothing{#1}
+     {\advance\sidebardistance\@@brdistance}
+     {\doifelsevaluenothing{\??br#1\c!distance}
+        {\advance\sidebardistance\@@brdistance}
+        {\sidebardistance\getvalue{\??br#1\c!distance}}}%
+   \startpositionoverlay{text-1}%
+     \expanded{\setMPpositiongraphicrange
+       {b:side:\the\currentsidebar}%
+       {e:side:\the\currentsidebar}%
+       {mpos:bar}%
+       {self=side:\the\currentsidebar,
+        linewidth=\getvalue{\??br#1\c!rulethickness},
+        linecolor=\getvalue{\??br#1\c!rulecolor},
+        distance=\the\sidebardistance}}%
+   \stoppositionoverlay
+   \bpos{side:\the\currentsidebar}\ignorespaces}
+
+% \def\dostopsidebar#1%
+%   {\removelastspace\tpos{side:#1}\carryoverpar\egroup}
+
+\unexpanded\def\stopsidebar
+  {\removelastspace\tpos{side:\the\currentsidebar}\carryoverpar\egroup}
+
+\startMPpositionmethod{mpos:bar}
+    \startMPpositiongraphic{mpos:bar}{linecolor,linewidth,distance}%
+        position_anchor_bar (
+            \MPp\MPbself, \MPp\MPeself,
+            \MPy\MPbself, \MPy\MPeself,
+            \MPh\MPbself, \MPd\MPeself,
+            \MPvar{distance}, \MPvar{linewidth}, \MPvar{linecolor}
+        ) ;
+    \stopMPpositiongraphic
+    \MPpositiongraphic{mpos:bar}{}%
+\stopMPpositionmethod
+
+%D We now reimplement the margin rules handler defined in
+%D \type {core-rul}:
+%D
+%D \setupmarginrules[level=5]
+%D
+%D \startmarginrule[1]
+%D First we set the level at~5. Next we typeset this first
+%D paragraph as a level~1 one. As expected no rule show up.
+%D \stopmarginrule
+%D
+%D \startmarginrule[5]
+%D The second paragraph is a level~5 one. As we can see here,
+%D the marginal rule gets a width according to its level.
+%D \stopmarginrule
+%D
+%D \startmarginrule[8]
+%D It will of course be no surprise that this third paragraph
+%D has a even thicker margin rule. This behavior can be
+%D overruled by specifying the width explictly.
+%D \stopmarginrule
+
+\definesidebar
+  [\v!margin]
+  [\c!rulecolor=\s!black,
+   \c!rulethickness=\@@karulethickness,
+   \c!distance=\dimexpr\leftmargindistance-\@@karulethickness/2\relax]
+
+\definecomplexorsimple\startmarginrule
+
+\def\simplestartmarginrule
+  {\complexstartmarginrule[1]}
+
+\def\complexstartmarginrule[#1]%
+  {\bgroup
+   \ifnum#1<\@@kalevel\relax
+     \let\stopmarginrule\egroup
+   \else
+     \def\@@kadefaultwidth{#1}%
+     \let\stopmarginrule\dostopmarginrule
+     \@EA\startsidebar\@EA[\@EA\v!margin\@EA]%
+   \fi}
+
+\def\dostopmarginrule
+  {\stopsidebar
+   \egroup}
+
+\protect \endinput

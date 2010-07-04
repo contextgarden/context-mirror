@@ -1,0 +1,55 @@
+%D \module
+%D   [       file=regi-ini,
+%D        version=2005.04.25,
+%D          title=\CONTEXT\ Regime Macros,
+%D       subtitle=Regime Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D First some initialization code:
+
+\registerctxluafile{regi-ini}{1.001}
+
+%D \macros
+%D   {currentregime}
+
+\def\currentregime{utf}
+
+%D \macros
+%D   {defineregimesynonym,trueregimename}
+
+\unexpanded\def\defineregimesynonym
+  {\dodoubleargument\dodefineregimesynonym}
+
+\def\dodefineregimesynonym[#1][#2]%
+  {\ctxlua{regimes.setsynonym("#1","#2")}}
+
+\def\trueregimename#1%
+  {\ctxlua{regimes.truename("#1")}}
+
+%D \macros
+%D   {useregime}
+
+\def\useregime[#1]%
+  {\processcommalist[#1]\douseregime}
+
+\def\douseregime#1%
+  {\ctxlua{regimes.load("#1")}}
+
+%D \macros
+%D   {enableregime,disableregime}
+
+\def\enableregime[#1]%
+  {\edef\currentregime{\ctxlua{regimes.load("#1") regimes.enable("#1") regimes.truename()}}}
+
+\def\disableregime
+  {\edef\currentregime{\ctxlua{regimes.disable()}}}
+
+\protect \endinput

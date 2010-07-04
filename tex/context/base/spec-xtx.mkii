@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=spec-xtx,
+%D        version=2004.11.08,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=\XETEX\ support,
+%D         author={Adam Lindsay \& Hans Hagen \& \unknown},
+%D           date=\currentdate,
+%D      copyright={Adam Lindsay \& Hans Hagen}]
+
+\unprotect
+
+\startspecials[xetex][reset,dpx]
+
+%D Actually, there's an intermediate ``\type{xdv}''
+%D output format, but by default, it's tranparently
+%D converted to \PDF\ by \XETEX.
+
+\setjobsuffix{pdf}
+
+%D Rotation looks fine.
+
+\definespecial\dostartrotation#1%
+  {\special{x:gsave}\special{x:rotate #1}}
+
+\definespecial\dostoprotation
+  {\special{x:grestore}}
+
+%D Scaling and mirroring are also fine.
+
+\definespecial\dostartscaling#1#2%
+  {\special{x:gsave}\special{x:scale #1 #2}}
+
+\definespecial\dostopscaling
+  {\special{x:grestore}}
+
+\definespecial\dostartmirroring
+  {\special{x:gsave}\special{x:scale -1 1}}
+
+\definespecial\dostopmirroring
+  {\special{x:grestore}}
+
+%D Colors are done with the \DVIPDFMX\ color model, which are
+%D inherited.
+
+%D Although hex colors were accommodated by Hans, we'll try the
+%D more familiar \DVIPDFMX\ ones. One good side-effect of the
+%D previous approach was that it kept track of the color state
+%D (transparency in XeTeX is accomplished setting the color to
+%D an RGBA quadruple, rather than an RGB triple). So transparency
+%D will need another plan.
+
+% \macros
+%   {dostarttransparency,dostoptransparency}
+%
+% \starttypen
+% \dostarttransparency{fraction}{type}
+% \dostoptransparency
+% \stoptypen
+%
+% Although in \CONTEXT\ transparency is closely integrated
+% in the color drivers, in the end it is an independent
+% feature.
+
+%\installspecial [\dostarttransparency] [or] [2]
+%\installspecial [\dostoptransparency]  [or] [0]
+
+%D \macros
+%D   {doloadmapfile,doloadmapline,doresetmapfilelist}
+%D
+%D \XETEX\ 0.91 allows map file additions, via a special.
+
+\definespecial\doresetmapfilelist{\special{x:fontmapfile original-empty.map}}
+\definespecial\doloadmapfile #1#2{\special{x:fontmapfile #1#2}}
+\definespecial\doloadmapline #1#2{\special{x:fontmapline #1#2}}
+
+%D \macros
+%D   {dosetuppaper}
+
+\ifx\pdfpagewidth\undefined \else
+    \definespecial\dosetuppaper#1#2#3%
+      {\global\pdfpagewidth #2\relax
+       \global\pdfpageheight#3\relax}
+\fi
+
+\stopspecials
+
+\protect \endinput

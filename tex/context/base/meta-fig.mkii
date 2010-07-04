@@ -1,0 +1,89 @@
+%D \module
+%D   [       file=meta-fig,
+%D        version=2000.09.07,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Stand Alone Graphics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{MetaPost Graphics / Stand Alone Graphics}
+
+\unprotect
+
+%D This module implements a method for defining
+%D stand||alone||graphics, that is, each graphic gets is own
+%D page. Because graphics are wrapped in a \type {\framed},
+%D you can add overlays to the graphic directly, and since the
+%D whole \CONTEXT\ machinery is available, you can also add
+%D page backgrounds.
+%D
+%D \starttyping
+%D \setupMPpage
+%D   [offset=1pt,
+%D    background=color,
+%D    backgroundcolor=green]
+%D
+%D \startMPpage
+%D   fill fullcircle scaled 10cm withcolor red ;
+%D \stopMPpage
+%D
+%D \startMPpage
+%D   fill fullsquare rotated 45 scaled 8cm withcolor blue ;
+%D \stopMPpage
+%D \stoptyping
+%D
+%D Although this is hardly of any use, you can mix these
+%D definitions with the text flow, since all settings are
+%D kept local. The page is clipped to the image size.
+
+\presetlocalframed[\??mg]
+
+\def\setupMPpage
+  {\dodoubleargument\getparameters[\??mg]}
+
+\def\startMPpage
+  {\dodoubleempty\dostartMPpage}
+
+\long\def\dostartMPpage[#1][#2]% second arg gobbles space
+  {\dostartfittingpage[\??mg][#1]%
+   \obeyMPlines
+   \dodostartMPpage}
+
+\long\def\dodostartMPpage#1\stopMPpage
+  {\startuseMPgraphic{@@}#1\stopuseMPgraphic
+   \useMPgraphic{@@}%
+   \dostopfittingpage}
+
+\let\stopMPpage \relax % so that we can use it in \expanded
+
+\setupMPpage
+  [\c!scale=1000,
+   \c!strut=\v!no,
+   \c!align=,
+   \c!offset=\v!overlay,
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!frame=\v!off]
+
+%D \macros
+%D  {MPfigure}
+%D
+%D A bit out of place, here but nevertheless:
+
+\def\MPfigure#1#2% test for dup figure
+  {\bgroup
+   \getfiguredimensionsonly[#1]% [\c!object=\v!no] already set
+   \startMPcode
+     externalfigure "#1"
+       xscaled \figurewidth\space
+       yscaled \figureheight\space
+       #2 ;
+   \stopMPcode
+   \egroup}
+
+\protect \endinput

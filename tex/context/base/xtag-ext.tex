@@ -1,0 +1,439 @@
+%D \module
+%D   [       file=xtag-ext,
+%D        version=2001.03.21,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=Extra Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt XML Macros / Extras}
+
+\unprotect
+
+%D \macros
+%D  {startXMLmapping}
+%D
+%D You can define macros within a namespace, so that they
+%D will not conflict (don't confuse this with \XML\
+%D namespaces.)
+%D
+%D \starttyping
+%D \startXMLmapping [tag] | [-] [tag] | [+] [tag]
+%D   definitions
+%D \stopXMLmapping
+%D \stoptyping
+%D
+%D When a \type {[+]} is specified, the mappings will
+%D nest.
+
+\def\resetXMLmapping
+  {\let\@@XMLelement\normal@@XMLelement
+   \let\@@XMLmapping\empty}
+
+\resetXMLmapping
+
+\def\startXMLmapping
+  {\dodoubleempty\dostartXMLmapping}
+
+% \def\dostartXMLmapping[#1][#2]% sneller maken
+%   {\pushmacro\@@XMLelement
+%    \pushmacro\@@XMLmapping
+%    \ifsecondargument
+%      \doifelse{#1}{-}
+%        {\donostartXMLmapping{#2}}
+%        {\doifelse{#1}{+}
+%           {\dodostartXMLmapping{#2}}
+%           {\donostartXMLmapping{#2}}}%
+%    \else
+%      \donostartXMLmapping{#1}%
+%    \fi
+%    \unprotect}
+
+\def\dostartXMLmapping[#1#2][#3]%
+  {\pushmacro\@@XMLelement
+   \pushmacro\@@XMLmapping
+   \ifsecondargument
+     \if\noexpand#1-%
+       \@EA\donostartXMLmapping
+     \else\if\noexpand#1+%
+       \@EAEAEA\dodostartXMLmapping
+     \else
+       \@EAEAEA\donostartXMLmapping
+     \fi\fi{#3}%
+   \else
+     \donostartXMLmapping{#1#2}%
+   \fi
+   \unprotect}
+
+\def\donostartXMLmapping#1%
+  {\let\@@XMLprevelement\@@XMLelement
+   \edef\@@XMLmapping{#1}%
+   \edef\@@XMLelement{\normal@@XMLelement+#1}}
+
+\def\dodostartXMLmapping#1%
+  {\let\@@XMLprevelement\@@XMLelement
+   \edef\@@XMLmapping{\@@XMLmapping+#1}%
+   \edef\@@XMLelement{\@@XMLelement+#1}}
+
+\def\stopXMLmapping
+  {\protect
+   \popmacro\@@XMLmapping
+   \popmacro\@@XMLelement}
+
+%D \macros
+%D  {startXMLmappinggroup}
+%D
+%D Imagine something:
+%D
+%D \starttyping
+%D \defineXMLenvironment [something]
+%D   {\startXMLmapping[whatever]}
+%D   {\stopXMLmapping}
+%D \stoptyping
+%D
+%D Here the \type {\stopXMLmapping} will never be reached
+%D because we are in a mapping. Therefore we need:
+
+\def\startXMLmappinggroup
+  {\dodoubleempty\dostartXMLmappinggroup}
+
+\def\dostartXMLmappinggroup[#1][#2]%
+  {\bgroup
+   \letcscsname\savedXMLmeaning\csname\@@XMLelement:/\currentXMLelement\endcsname
+   \dostartXMLmapping[#1][#2]% do ! else wrong !
+   \letcsnamecs\csname\@@XMLelement:/\currentXMLelement\endcsname\savedXMLmeaning}
+
+\def\stopXMLmappinggroup
+  {\stopXMLmapping
+   \egroup}
+
+%D Context Directives:
+
+\def\@@CTXML{@@CTXML}
+
+\def\defineXMLdirective
+  {\dodoubleempty\dodefineXMLdirective}
+
+\long\def\dodefineXMLdirective[#1][#2]#3%
+  {\defineXMLprocessor[context-#1-directive]{\dohandleXMLdirective{#1}{#3}}%
+   \ifsecondargument
+     \long\setvalue{\@@CTXML-#1-#2}{#3}%
+   \fi}
+
+\def\dohandleXMLdirective#1#2#3%
+  {\dodohandleXMLdirective#3 @ @ @\end{#1}{#2}}
+
+%\def\dodohandleXMLdirective#1 #2 #3 #4\end#5#6%
+%  {\doifdefinedelse{\@@CTXML-#5-#1}
+%     {\getvalue{\@@CTXML-#5-#1}[#2=#3]}
+%     {#6[#1][#2=#3]}}
+
+\def\dodohandleXMLdirective#1 #2 #3 #4\end#5#6%
+  {\executeifdefined{\@@CTXML-#5-#1}{#6[#1]}[#2=#3]}
+
+% \defineXMLdirective [mathml] \setupMMLappearance % [#1][#2=#3]
+% \defineXMLdirective [flowchart] [shapes] \setupFLOWshapes % [#2=#3]
+% \defineXMLdirective [flowchart] [lines] \setupFLOWlines % [#2=#3]
+
+\defineXMLprocessor [context-begin-group] {\bgroup\gobbleoneargument}
+\defineXMLprocessor [context-end-group]   {\egroup\gobbleoneargument}
+
+% \def\XMLnspart#1:#2\empty{#1} % call ...:\empty\empty
+% \def\XMLidpart#1:#2#3\empty{\ifx#2\empty#1\else\XMLidpart#2#3\empty\empty\fi}
+
+% trial macros (used in setupx), to be sped up !
+
+\bgroup \catcode`\<=\active
+
+\gdef\saveXMLasdata#1#2% name raw data
+  {\dodoglobal\setevalue{\@@XMLsave:#1}{#2}} % \edef!
+
+\gdef\saveXMLdata#1#2% name data-name ; definitely no \edef
+  {\dodoglobal\copycsname\@@XMLsave:#1\endcsname\csname\@@XMLdata:#2\endcsname}
+
+% \gdef\saveXMLdatainelement#1#2#3% name element data
+%   {\dodoglobal\setevalue{\@@XMLsave:#1}% todo: one level expansion
+%      {<#2 \currentXMLarguments>\XMLflush{#3}</#2>}}
+%
+% \gdef\saveXMLdatastructure#1#2#3#4#5#6% name element args before data after
+%   {\dodoglobal\setevalue{\@@XMLsave:#1}% todo: one level expansion
+%      {<#2 #3 \currentXMLarguments>#4\XMLflush{#5}#6</#2>}}
+%
+% better (no expansion):
+
+\newtoks\XMLdatatoks
+
+\gdef\saveXMLdatainelement#1#2#3% name element data
+  {\XMLdatatoks\@EAEAEA{\csname\@@XMLdata:#3\endcsname}% no check
+   \dodoglobal\setevalue{\@@XMLsave:#1}{<#2 \currentXMLarguments>\the\XMLdatatoks</#2>}}
+
+\gdef\saveXMLdatastructure#1#2#3#4#5#6% name element args before data after
+  {\XMLdatatoks\@EAEAEA{\csname\@@XMLdata:#5\endcsname}% no check
+   \dodoglobal\setevalue{\@@XMLsave:#1}{<#2 #3 \currentXMLarguments>#4\the\XMLdatatoks#6</#2>}}
+
+\gdef\gsaveXMLasdata       {\doglobal\saveXMLasdata}
+\gdef\gsaveXMLdata         {\doglobal\saveXMLdata}
+\gdef\gsaveXMLdatainelement{\doglobal\saveXMLdatainelement}
+\gdef\gsaveXMLdatastructure{\doglobal\saveXMLdatastructure}
+
+\gdef\doifelseXMLelement#1%
+  {\doifdefinedelse{\@@XMLsave:#1}}
+
+\gdef\doifelseXMLelementcontent#1%
+  {\ifcsname\@@XMLsave:#1\endcsname
+     \bgroup
+     \@EA\defconvertedcommand\@EA\ascii\csname\@@XMLsave:#1\endcsname
+     \setbox\scratchbox\hbox{\ignorespaces\ascii\unskip\unskip\unskip}%
+     \ifdim\wd\scratchbox>\zeropoint
+       \egroup\@EAEAEA\firstoftwoarguments
+     \else
+       \egroup\@EAEAEA\secondoftwoarguments
+     \fi
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\gdef\doifelseXMLelementequals#1#2%
+  {\ifcsname\@@XMLsave:#1\endcsname
+     \bgroup
+     \@EA\defconvertedcommand\@EA\asciia\csname\@@XMLsave:#1\endcsname
+     \defconvertedargument\asciib{#2}%
+     \ifx\asciia\asciib
+       \egroup\@EAEAEA\firstoftwoarguments
+     \else
+       \egroup\@EAEAEA\secondoftwoarguments
+     \fi
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\gdef\doifXMLtextelse#1% new
+  {\doiftextelse{\simplifyXMLelements#1}}
+
+\gdef\doifXMLtext#1#2% new
+  {\doiftextelse{\simplifyXMLelements#1}{#2}\donothing}
+
+\gdef\convertXMLelement#1\to#2%
+  {\ifcsname\@@XMLsave:#1\endcsname
+     \@EA\defconvertedcommand\@EA#2\csname\@@XMLsave:#1\endcsname
+   \else
+     \let#2\ascii
+   \fi}
+
+\gdef\flushXMLelement#1%
+  {\csname
+     \@@XMLsave:\ifcsname\@@XMLsave:#1\endcsname#1\else\@@XMLsave\fi
+   \endcsname}
+
+\gdef\defXMLelement#1#2%
+  {\@EA\let\@EA#1\csname
+     \@@XMLsave:\ifcsname\@@XMLsave:#2\endcsname#2\else\@@XMLsave\fi
+   \endcsname}
+
+\letgvalueempty{\@@XMLsave:\@@XMLsave}
+
+\gdef\showXMLelement#1%
+  {\showvalue{\@@XMLsave:#1}}
+
+\gdef\eraseXMLelement#1%
+  {\dodoglobal\letbeundefined{\@@XMLsave:#1}}
+
+\gdef\geraseXMLelement
+  {\doglobal\eraseXMLelement}
+
+\gdef\processXMLelement#1%
+  {\bgroup
+   \enableXMLelements
+   \getvalue{\@@XMLsave:#1}%
+   \egroup}
+
+\gdef\texXMLelement#1%
+  {\begingroup
+%    \setnormalcatcodes
+   \disableXML
+   \scantokens\@EA\@EA\@EA{\csname\@@XMLsave:#1\endcsname}%
+   \endgroup}
+
+\gdef\reduceXMLescapeentities
+  {\setXMLentity{amp}{\string&}%
+   \setXMLentity{lt}{\string<}%
+   \setXMLentity{gt}{\string>}%
+   \setXMLentity{quot}{\string'}%
+   \setXMLentity{dquot}{\string"}}
+
+\gdef\reduceXMLelement#1\to#2%
+  {\ifcsname\@@XMLsave:#1\endcsname
+     \bgroup
+     \reduceXMLescapetokens
+     \reduceXMLescapeentities
+     \expanded{\egroup\noexpand\def\noexpand#2{\csname\@@XMLsave:#1\endcsname}}%
+   \else
+     \let#2\empty
+   \fi}
+
+\egroup
+
+% \defineXMLcommand
+%   [whatever]
+%   [test=unknown]
+%   {\XMLop{test}}
+%
+% \startXMLdata
+% <whatever test="{\bf test}"/>
+% \stopXMLdata
+%
+% \defineXMLcommand
+%   [whatever]
+%   [test=unknown]
+%   {\defXMLtex\SomethingTex{\XMLop{test}}%
+%    \SomethingTex}
+%
+% \startXMLdata
+% <whatever test="{\bf test}"/>
+% \stopXMLdata
+
+\def\defXMLtex#1#2% the appended space will go away when
+  {\begingroup    % \scantokens is fixed
+   \disableXML
+   \everyeof{\noexpand}% br's hack
+   \edef\ascii{#2}%
+   \edef\ascii{\scantokens\expandafter{\ascii}}% space appended
+   \expandafter\endgroup\expandafter\def\expandafter#1\expandafter{\ascii}}
+
+\def\potentialXMLentity#1%
+  {\doifXMLentityelse{#1}{\getXMLentity{#1}}{#1}}
+
+% \def\XMLnoschema{standalone='yes'}
+
+\def\writtenXMLelement  #1#2{<#1>#2</#1>}
+\def\writtenXMLstart      #1{<#1>}
+\def\writtenXMLend        #1{</#1>}
+\def\writtenXMLempty      #1{<#1/>}
+\def\writtenXMLelementcs#1#2{\ifx#2\empty\else<#1>#2</#1>\fi}
+\def\writtenXMLemptycs  #1#2{\ifx#2\empty<#1/>\else<#1>#2</#1>\fi}
+
+%D This one can be used to get sound tuo files.
+%D
+%D \starttyping
+%D \setuphead[chapter][expansion=xml]
+%D % \setuplist[chapter][textcommand=\enableXML]
+%D
+%D \enableregime[utf] \autoXMLentitiestrue
+%D \stoptyping
+%D
+%D with:
+%D
+%D \starttyping
+%D <chapter>test &#xEB; test &ediaeresis; test <e>ediaeresis</e></chapter>
+%D \stoptyping
+%D
+%D This gives:
+%D
+%D \starttyping
+%D test ë test</b> <e>ediaeresis</e> test <e>ediaeresis</e>
+%D \stoptyping
+
+\def\XMLprocessingparameter#1%
+  {\csname\??xp#1\endcsname}
+
+\appendtoks
+  \defineXMLargument[\XMLprocessingparameter\c!escape]\getXMLentity
+\to \aftersetupXMLprocessing
+
+\setupXMLprocessing
+  [\c!escape=e]
+
+\bgroup \catcode`\<=\active
+
+\long\gdef\defexpandedxmlargument#1#2#3%
+  {\begingroup
+   \let\uppercase\firstofoneargument
+   \def\getXMLhexcharacter##1{\numbertoutp{"##1}}% maps to private if needed
+   \def\getXMLdeccharacter##1{\numbertoutp {##1}}% maps to private if needed
+   \def\getXMLentity##1{<e>##1</e>}%
+   \def<{\noexpand<}%
+   \ifcase\xmlexpandmode
+   \or
+      % 1 = default
+   \or
+      % 2 = keep utf
+      \keeputfcharacters % new, needed for chinese and such
+   \fi
+   \let\uchar\relax
+   \let\unicodechar\relax
+   \xdef\@@globalexpanded{#3}%
+   \endgroup
+   #1#2\@@globalexpanded}
+
+\egroup
+
+% test.xml: <test>test % test</test>
+%
+% \starttext
+%     \enableregime[utf] \chardef\XMLtokensreduction=0
+%     \setuphead[chapter][expansion=xml]
+%     \defineXMLargument[test]{\chapter}
+%     \placelist[chapter][criterium=text]
+%     \processXMLfilegrouped{test.xml}
+% \stoptext
+
+% obsolete in mkiv
+
+\chardef\xmlexpandmode\plusone
+
+\def\defexpandedxmlargumentcmd {\chardef\xmlexpandmode\plusone\defexpandedxmlargument\defconvertedcommand}
+\def\defexpandedxmlargumentutf {\chardef\xmlexpandmode\plustwo\defexpandedxmlargument\defconvertedcommand}
+\def\gdefexpandedxmlargumentcmd{\chardef\xmlexpandmode\plusone\defexpandedxmlargument\gdefconvertedcommand}
+\def\gdefexpandedxmlargumentutf{\chardef\xmlexpandmode\plustwo\defexpandedxmlargument\gdefconvertedcommand}
+
+\installexpander {xml}     \defexpandedxmlargumentcmd \gdefexpandedxmlargumentcmd
+\installexpander {xml:cmd} \defexpandedxmlargumentcmd \gdefexpandedxmlargumentcmd
+\installexpander {xml:utf} \defexpandedxmlargumentutf \gdefexpandedxmlargumentutf
+
+\def\XMLtexmath#1{\begingroup\setnormalcatcodes\scantokens{\mathematics{#1}\ignorespaces}\endgroup}
+
+% \defineXMLargument[tm]{\XMLtexmath}
+%
+% \startbuffer[test]
+% Sometimes it makes sense to use simple math, as in: <tm>e=mc^2</tm>.
+% \stopbuffer
+%
+% \processXMLbuffer[test]
+
+%D Undocumented ...
+
+\def\defineXMLstore {\doquadrupleargument\dodefineXMLstore[\saveXMLasdata]}
+\def\defineXMLgstore{\doquadrupleargument\dodefineXMLstore[\gsaveXMLasdata]}
+
+\def\dodefineXMLstore[#1][#2][#3][#4]% element attribute prefix % will become faster
+  {\defineXMLargument[#2][#3=\s!dummy]{#1{#4:\XMLop{#3}}}}
+
+\def\countXMLchildren[#1]#2%
+  {\startnointerference
+     \doglobal\newcounter\nofXMLchildren
+     \defineXMLargument[#1]{\doglobal\increment\nofXMLchildren}%
+     \startXMLignore
+       #2%
+     \stopXMLignore
+   \stopnointerference}
+
+% Typical \MKII. We will not explore this route any further as in \MKIV\ we
+% have better ways.
+
+\prependtoks \setnormalcatcodes  \to \everyTEXinputmode
+\appendtoks  \processingXMLfalse \to \everyTEXinputmode
+
+\let\normalenableXML\enableXML % some day we move the normal \enableXML into the toks
+
+\prependtoks \normalenableXML    \to \everyXMLinputmode
+\appendtoks  \processingXMLtrue  \to \everyXMLinputmode
+
+\unexpanded\def\enableXML {\setinputmode[XML]} % \enableXML is used in edef's and marks
+\unexpanded\def\disableXML{\setinputmode[TEX]}
+
+\protect \endinput

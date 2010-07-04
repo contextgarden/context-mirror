@@ -1,0 +1,78 @@
+%D \module
+%D   [      file=x-fig-02,
+%D        version=2001.03.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Figure Base Inclusion (I),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \readfile {x-res-02} \donothing \donothing \endinput 
+
+%D This module enables non||\ConTeXt\  users to access the 
+%D database. For this, you need to run  
+%D 
+%D \starttyping
+%D texexec --pdf --use=fig-fake yourfile.xml
+%D \stoptyping
+%D 
+%D The resulting file, \type {yourfile.fig}, can be loaded 
+%D in the normal way. The figures can be accessed with: 
+%D
+%D \starttyping
+%D \getfigurefile{label} 
+%D \getfigurepage{label} 
+%D \stoptyping
+%D
+%D A a bonus, the following macro is defined: 
+%D
+%D \starttyping
+%D \includefigurefile width 10cm {label}
+%D \stoptyping
+
+\usemodule[fig-00]
+
+\doifnothing  {\jobfilename}        {\end}
+\doiffileelse {\jobfilename.xml} {} {\end}
+
+\defineXMLenvironment [figurelibrary] \StartLibrary \StopLibrary
+\defineXMLignore      [description]
+\defineXMLenvironment [figure]        \StartFigure \StopFigure
+
+\def\StartLibrary
+  {\immediate\openout \scratchwrite=\jobfilename.fig 
+   \immediate\write\scratchwrite{\string\input\space x-fig-03.tex \string\relax}
+   \immediate\write\scratchwrite{}}
+
+\def\StopLibrary
+  {\immediate\write\scratchwrite{}
+   \immediate\write\scratchwrite{\string\endinput}
+   \immediate\closeout\scratchwrite}
+
+\def\StartFigure
+  {\defineXMLpush[file]
+   \defineXMLpush[dummy]
+   \defineXMLpush[label]
+   \defineXMLpush[copyright]
+   \defineXMLpush[comment]
+   \defineXMLpush[status]}
+
+\def\StopFigure
+  {\doglobal\increment\CurrentPage
+   \immediate\write\scratchwrite
+     {\string\setfiguredata\space
+        {\XMLpop{label}}
+        {\jobfilename}
+        {\CurrentPage}}}
+
+\doglobal\newcounter\CurrentPage
+
+\starttext
+
+\processXMLfilegrouped{\jobfilename.xml}
+
+\stoptext

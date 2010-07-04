@@ -1,0 +1,103 @@
+%D \module
+%D   [       file=page-spr,
+%D        version=2002.11.11,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Spreading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Spreading}
+
+% This module is experimental and not yet official!
+
+\unprotect
+
+\newbox\spreadbox
+\newif \ifinspread
+
+\chardef\showspreadmode\plusone
+
+% beware, ugly overload, to be redone
+
+\def\normalsettextpagecontent#1#2#3% #2 and #3 will disappear
+  {\setbox#1\hbox
+     {\setlayoutcomponentattribute\v!page\v!text
+      \vbox \layoutcomponentboxattribute to \textheight
+        {\offinterlineskip
+         \freezetextwidth
+         \hsize\textwidth   % local variant of \sethsize
+         \boxmaxdepth\maxdepth
+         \noindent             % content can be < \hsize
+         \dopagecontents#2#3}}%
+   \dp#1\zeropoint
+   \setbox#1\hbox to \makeupwidth
+     {\ifinspread
+        \ifvoid\spreadbox
+          \global\setbox\spreadbox\box#1%
+          \copy\spreadbox\hss % left page
+        \else
+          % prevent duplicate writes in normal run
+          \ifarrangingpages \else \ifcase\showspreadmode
+            \global\setbox\spreadbox\null
+            \wd\spreadbox\makeupwidth
+            \ht\spreadbox\textheight
+          \fi \fi
+          \hss\box\spreadbox % right page
+        \fi
+      \else
+        \hss\box#1\hss % never change the \hss's
+      \fi}}
+
+\def\doflushspread
+  {\ifinspread \ifvoid\spreadbox\else
+     % this page will be discarded later
+     \null \page
+   \fi \fi }
+
+\unexpanded\def\startspread
+  {\bgroup
+   \ifdoublesided
+     \page[\v!left]%
+    %\setsystemmode{spread}%
+     \inspreadtrue
+     \expanded{\setuplayout[\c!textwidth=\the\dimexpr2\textwidth+2\backspace\relax]}%
+     \unexpanded\def\startspread{\bgroup\let\stopspread\egroup}%
+     \let\stopspread\dostopspread
+   \else
+     \let\stopspread\egroup
+   \fi}
+
+\let\stopspread\relax
+
+\def\dostopspread
+  {\kern\zeropoint\page
+   \inspreadfalse
+   \setuplayout[\c!textwidth=\textwidth]
+   \page[\v!left]
+   \egroup}
+
+\protect \endinput
+
+% texexec --arr --pdf test
+%
+% \setuplayout[width=middle]
+% \setuppapersize[A4][A3,landscape]
+% \setuppagenumbering[alternative=doublesided]
+% \setuparranging[2UP]
+%
+% \starttext
+%
+% \dorecurse{3}{\input tufte }
+%
+% \startspread
+%   \dorecurse{10}{\input tufte }
+% \stopspread
+%
+% \dorecurse{3}{\input tufte }
+%
+% \stoptext

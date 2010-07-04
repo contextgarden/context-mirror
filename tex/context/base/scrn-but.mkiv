@@ -1,0 +1,127 @@
+%D \module
+%D   [       file=scrn-but, % moved code
+%D        version=1995.01.01,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Interaction,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Screen Macros / Buttons}
+
+\unprotect
+
+%D Buttons are just what their names says: things that can be
+%D clicked (pushed) on. They are similar to \type{\goto},
+%D except that the text argument is not interpreted.
+%D Furthermore one can apply anything to them that can be done
+%D with \type{\framed}.
+%D
+%D \startbuffer
+%D \button[width=3cm,height=1.5cm]{Exit}[ExitViewer]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D gives
+%D
+%D \getbuffer
+%D
+%D This command is formally specified as:
+%D
+%D \showsetup{button}
+%D
+%D The characteristics can be set with:
+%D
+%D \showsetup{setupbuttons}
+
+\unexpanded\def\setupbuttons
+  {\dodoubleargument\getparameters[\??bt]}
+
+\definecomplexorsimpleempty\button
+
+\def\complexbutton
+  {\docomplexbutton\??bt}
+
+\presetlocalframed[\??bt]
+
+\def\buttonparameter#1{\csname\??bt#1\endcsname} % simple version
+
+\long\def\docomplexbutton#1[#2]#3#4% get rid of possible space before [#4]
+  {\dodocomplexbutton#1[#2]{#3}#4} % #4 == [
+
+\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
+
+% #3=none is obsolete, just use empty=yes
+
+\long\def\dodocomplexbutton#1[#2]#3[#4]% #3 can contain [] -> {#3} later
+  {\begingroup
+   \let\menuparameter\buttonparameter
+   \doif{\buttonparameter\c!state}\v!stop\locationfalse
+   \iflocation
+     \setlocationboxyes#1[#2]{#3}[#4]%
+   \fi
+   \endgroup}
+
+%D \macros
+%D   {overlaybutton}
+%D
+%D For converience we provide:
+%D
+%D \starttyping
+%D \overlaybutton[reference]
+%D \stoptyping
+%D
+%D This command can be used to define overlays an/or can be
+%D used in the whatevertext areas, like:
+%D
+%D \starttyping
+%D \defineoverlay[PrevPage][\overlaybutton{PrevPage}]
+%D \setupbackgrounds[page][background=PrevPage]
+%D \setuptexttexts[\overlaybutton{NextPage}]
+%D \stoptyping
+%D
+%D For practical reasons, this macro accepts square brackets
+%D as well as braces.
+
+\definecomplexorsimple\overlaybutton
+
+\def\simpleoverlaybutton#1%
+  {\complexoverlaybutton[#1]}
+
+\def\complexoverlaybutton[#1]%
+  {\iflocation
+     \gotobox{\overlayfakebox}[#1]%
+   \fi}
+
+\def\overlayfakebox
+  {\hbox
+     {\setbox\scratchbox\null
+      \wd\scratchbox\overlaywidth
+      \ht\scratchbox\overlayheight
+      \box\scratchbox}}
+
+%D Done.
+
+\setupbuttons
+  [\c!state=\v!start,
+   \c!width=\v!fit,
+   \c!height=\v!broad,
+   \c!offset=0.25em,
+   \c!frame=\v!on,
+   \c!background=,
+   \c!backgroundcolor=,
+   \c!foregroundstyle=\buttonparameter\c!style,
+   \c!foregroundcolor=\buttonparameter\c!color,
+   \c!style=\@@iastyle,
+   \c!color=\@@iacolor,
+   \c!contrastcolor=\@@iacontrastcolor,
+   \c!samepage=\v!yes,
+   \c!unknownreference=\v!yes,
+   \c!distance=\zeropoint] % for menubuttons
+
+\protect \endinput

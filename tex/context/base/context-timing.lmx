@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+    filename : context-timing.xml
+    comment  : companion to mtx-timing.tex
+    author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+    copyright: PRAGMA ADE / ConTeXt Development Team
+    license  : see context related readme files
+-->
+
+<!--
+    beware: xhtml, so no comment around css
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <script type='text/javascript'>
+            <!--
+                window.focus();
+            -->
+        </script>
+        <title><?lua pv('title')?></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style type="text/css">
+            <?lmx-include context.css ?>
+        </style>
+    </head>
+    <body>
+        <div id="top"><div id="top-one"><div id="top-two">
+            <?lua pv('title')?>
+        </div></div></div>
+        <div id="left"><div id="left-one"><div id="left-two">
+            <!-- empty -->
+        </div></div></div>
+        <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five">
+            <!-- empty -->
+        </div></div></div></div></div></div></div>
+        <div id="main"><div id="main-settings">
+            <?lua pv('graphics')?>
+        </div></div>
+        <div id="bottom"><div id="bottom-one"><div id="bottom-two">
+            <small>
+            <br/> <br/>
+            <?lua pv('parametersmenu')?>
+            <br/>
+            <?lua pv('nodesmenu')?>
+            </small>
+        </div></div></div>
+    </body>
+</html>

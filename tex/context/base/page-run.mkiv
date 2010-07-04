@@ -1,0 +1,382 @@
+%D \module
+%D   [       file=page-run,
+%D        version=2000.10.20,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Runtime Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Runtime Macros}
+
+\unprotect
+
+\gdef\doshowprint[#1][#2][#3]%
+  {\framed
+     [\c!offset=\v!overlay,
+      \c!strut=\v!no]
+     {\forgetall
+      \dontcomplain
+      \globaldefs\minusone
+      \dimen0\pagegoal
+      \definepapersize[X][\c!width=4em, \c!height=6em]%
+      \definepapersize[Y][\c!width=12em,\c!height=14em]%
+      \setuppapersize[#1,X][#2,Y]%
+      \setuplayout[#3]%
+      \setbox0\vbox
+        {\framed
+          [\c!offset=\v!overlay,\c!strut=\v!no,
+           \c!width=\paperwidth,\c!height=\paperheight]
+          {\ss ABC\par DEF}}%
+      \doublesidedfalse
+      \def\cutmarklength{.5em}%
+      \addpagecutmarks0%
+      \replicatepagebox0%
+      \scalepagebox0%
+      \mirrorpaperbox0%
+      \orientpaperbox0%
+      \centerpagebox0%
+      \mirrorprintbox0%
+      \orientprintbox0%
+      \offsetprintbox0%
+      \pagegoal\dimen0
+      \box0}}
+
+\gdef\showprint
+  {\dotripleempty\doshowprint}
+
+% \switchnaarkorps[8pt]
+%
+% \startcombinatie[4*4]
+%   {\toonprint}                                       {\strut}
+%   {\toonprint[][][plaats=midden]}                    {\type{plaats=midden}}
+%   {\toonprint[][][plaats=midden,markering=aan]}      {\type{markering=aan}\break
+%                                                      \type{plaats=midden}}
+%   {\toonprint[][][plaats=midden,markering=aan,nx=2]} {\type{markering=aan}\break
+%                                                      \type{plaats=midden}\break
+%                                                      \type{nx=2}}
+%   {\toonprint[][][plaats=links]}                     {\type{plaats=links}}
+%   {\toonprint[][][plaats=rechts]}                    {\type{plaats=rechts}}
+%   {\toonprint[][][plaats={links,onder}]}             {\type{plaats={links,onder}}}
+%   {\toonprint[][][plaats={rechts,onder}]}            {\type{plaats={rechts,onder}}}
+%   {\toonprint[][][nx=2,ny=1]}                        {\type{nx=2,ny=1}}
+%   {\toonprint[][][nx=1,ny=2]}                        {\type{nx=1,ny=2}}
+%   {\toonprint[][][nx=2,ny=2]}                        {\type{nx=2,ny=2}}
+%   {\toonprint[][][nx=2,ny=2,plaats=midden]}          {\type{nx=2,ny=2}\break
+%                                                       \type{plaats=midden}}
+%   {\toonprint[][][rugoffset=3pt]}                    {\type{rugoffset=.5cm}}
+%   {\toonprint[][][kopoffset=3pt]}                    {\type{kopoffset=.5cm}}
+%   {\toonprint[][][schaal=1.5]}                       {\type{schaal=1.5}}
+%   {\toonprint[][][schaal=0.8]}                       {\type{schaal=0.8}}
+% \stopcombinatie
+%
+% \startcombinatie[3*4]
+%   {\toonprint[liggend][][plaats=midden]}              {\type{liggend}}
+%   {\toonprint[][liggend][plaats=midden]}              {\strut\break\type{liggend}}
+%   {\toonprint[liggend][liggend][plaats=midden]}       {\type{liggend}\break\type{liggend}}
+%   {\toonprint[90][][plaats=midden]}                   {\type{90}}
+%   {\toonprint[][90][plaats=midden]}                   {\strut\break\type{90}}
+%   {\toonprint[90][90][plaats=midden]}                 {\type{90}\break\type{90}}
+%   {\toonprint[180][][plaats=midden]}                  {\type{180}}
+%   {\toonprint[][180][plaats=midden]}                  {\strut\break\type{180}}
+%   {\toonprint[180][180][plaats=midden]}               {\type{180}\break\type{180}}
+%   {\toonprint[gespiegeld][][plaats=midden]}           {\type{gespiegeld}}
+%   {\toonprint[][gespiegeld][plaats=midden]}           {\strut\break\type{gespiegeld}}
+%   {\toonprint[gespiegeld][gespiegeld][plaats=midden]} {\type{gespiegeld}\break\type{gespiegeld}}
+% \stopcombinatie
+
+\gdef\doshowframe[#1][#2]%
+  {\ifsecondargument
+     \setupbackgrounds
+       [\v!page]
+       [\c!frame=\v!on,
+        \c!corner=\v!rectangular,
+        \c!frameoffset=\!!zeropoint,
+        \c!framedepth=\!!zeropoint,
+        \c!framecolor=layout:page]
+     \setupbackgrounds
+       [#1][#2]
+       [\c!background=,
+        \c!frame=\v!on,
+        \c!corner=\v!rectangular,
+        \c!frameoffset=\!!zeropoint,
+        \c!framedepth=\!!zeropoint,
+        \c!framecolor=]
+   \else\iffirstargument
+     \showframe
+       [\v!header,\v!text,\v!footer]
+       [#1]
+   \else
+     \showframe
+       [\v!header,\v!text,\v!footer]
+       [\v!leftedge,\v!leftmargin,
+        \v!text,
+        \v!rightmargin,\v!rightedge]
+   \fi\fi
+   \setupbackgrounds
+     [\c!state=\v!repeat]}
+
+\gdef\showframe{\dodoubleempty\doshowframe}
+
+\gdef\showsetupA#1#2%
+  {#1&\PtToCm{\the#2}&\the#2&\tttf\string#2\cr}
+
+\gdef\showsetupB#1#2#3%
+  {#1&&#2#3&\tttf\string#3\cr}
+
+% \startinterface english % english is fallback
+
+\gdef\showsetups
+  {\noindent
+   \vbox
+     {\forgetall
+      \dontcomplain
+      \switchtobodyfont[\v!small]
+      \tabskip\zeropoint
+      \halign
+        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
+         \showsetupA{paperheight}        \paperheight
+         \showsetupA{paperwidth}         \paperwidth
+         \showsetupA{printpaperheight}   \printpaperheight
+         \showsetupA{printpaperwidth}    \printpaperwidth
+         \showsetupA{topspace}           \topspace
+         \showsetupA{backspace}          \backspace
+         \showsetupA{height}             \makeupheight
+         \showsetupA{width}              \makeupwidth
+         \showsetupA{top}                \topheight
+         \showsetupA{topdistance}        \topdistance
+         \showsetupA{header}             \headerheight
+         \showsetupA{headerdistance}     \headerdistance
+         \showsetupA{textheight}         \textheight
+         \showsetupA{footerdistance}     \footerdistance
+         \showsetupA{footer}             \footerheight
+         \showsetupA{bottomdistance}     \bottomdistance
+         \showsetupA{bottom}             \bottomheight
+         \showsetupA{leftedge}           \leftedgewidth
+         \showsetupA{leftedgedistance}   \leftedgedistance
+         \showsetupA{leftmargin}         \leftmarginwidth
+         \showsetupA{leftmargindistance} \leftmargindistance
+         \showsetupA{textwidth}          \textwidth
+         \showsetupA{rightmargindistance}\rightmargindistance
+         \showsetupA{rightmargin}        \rightmarginwidth
+         \showsetupA{rightedgedistance}  \rightedgedistance
+         \showsetupA{rightedge}          \rightedgewidth
+         \showsetupB{bodyfontsize}       \the   \globalbodyfontsize
+         \showsetupB{line}               \relax \normallineheight
+         \showsetupB{height}             \relax \strutheightfactor
+         \showsetupB{depth}              \relax \strutdepthfactor
+         \showsetupB{topskip}            \relax \topskipfactor
+         \showsetupB{maxdepth}           \relax \maxdepthfactor}}}
+
+% \stopinterface
+
+\startinterface dutch
+
+\gdef\showsetups
+  {\noindent
+   \vbox
+     {\forgetall
+      \dontcomplain
+      \switchtobodyfont[\v!small]
+      \tabskip\zeropoint
+      \halign
+        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
+         \showsetupA{papierhoogte}       \papierhoogte
+         \showsetupA{papierbreedte}      \papierbreedte
+         \showsetupA{printpapierhoogte}  \printpapierhoogte
+         \showsetupA{printpapierbreedte} \printpapierbreedte
+         \showsetupA{kopwit}             \kopwit
+         \showsetupA{rugwit}             \rugwit
+         \showsetupA{snijwit}            \snijwit
+         \showsetupA{hoogte}             \zethoogte
+         \showsetupA{breedte}            \zetbreedte
+         \showsetupA{boven}              \bovenhoogte
+         \showsetupA{bovenafstand}       \bovenafstand
+         \showsetupA{hoofd}              \hoofdhoogte
+         \showsetupA{hoofdafstand}       \hoofdafstand
+         \showsetupA{teksthoogte}        \teksthoogte
+         \showsetupA{voetafstand}        \voetafstand
+         \showsetupA{voet}               \voethoogte
+         \showsetupA{onderafstand}       \onderafstand
+         \showsetupA{onder}              \onderhoogte
+         \showsetupA{linkerrand}         \linkerrandbreedte
+         \showsetupA{linkerrandafstand}  \linkerrandafstand
+         \showsetupA{linkermarge}        \linkermargebreedte
+         \showsetupA{linkermargeafstand} \linkermargeafstand
+         \showsetupA{tekstbreedte}       \tekstbreedte
+         \showsetupA{rechtermargeafstand}\rechtermargeafstand
+         \showsetupA{rechtermarge}       \rechtermargebreedte
+         \showsetupA{rechterrandafstand} \rechterrandafstand
+         \showsetupA{rechterrand}        \rechterrandbreedte
+         \showsetupB{korps}              \the   \globalbodyfontsize
+         \showsetupB{regel}              \relax \normallineheight
+         \showsetupB{hoogte}             \relax \strutheightfactor
+         \showsetupB{diepte}             \relax \strutdepthfactor
+         \showsetupB{boven}              \relax \topskipfactor
+         \showsetupB{onder}              \relax \maxdepthfactor}}}
+
+\stopinterface
+
+% todo: \showsetupA{rugwit} \rugwit
+
+\startinterface german
+
+\gdef\showsetups%
+  {\noindent
+   \vbox
+     {\forgetall
+      \dontcomplain
+      \switchtobodyfont[\v!small]
+      \tabskip\zeropoint
+      \halign
+        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
+         \showsetupA{papierhoehe}          \papierhoehe
+         \showsetupA{papierbreite}         \papierbreite
+         \showsetupA{printpapierhoehe}     \printpapierhoehe
+         \showsetupA{printpapierbreite}    \printpapierbreite
+         \showsetupA{kopfweite}            \kopfweite
+         \showsetupA{rumpfweite}           \rumpfweite
+         \showsetupA{hoehe}                \satzhoehe
+         \showsetupA{breite}               \satzbreite
+         \showsetupA{oben}                 \hoeheoben
+         \showsetupA{abstandoben}          \abstandoben
+         \showsetupA{kopfzeile}            \kopfzeilenhoehe
+         \showsetupA{kopfzeilenabstand}    \kopfzeilenabstand
+         \showsetupA{texthoehe}            \texthoehe
+         \showsetupA{fusszeileabstand}     \fusszeileabstand
+         \showsetupA{fusszeilen}           \fusszeilenhoehe
+         \showsetupA{abstandunten}         \abstandunten
+         \showsetupA{hoeheunten}           \hoeheunten
+         \showsetupA{linkerrand}           \breitelinkerrand
+         \showsetupA{abstandlinkerrand}    \abstandlinkerrand
+         \showsetupA{linkemarginal}        \linkemarginalbreite
+         \showsetupA{linkemarginalafstand} \linkemarginalafstand
+         \showsetupA{textbreite}           \textbreite
+         \showsetupA{rechtemarginalafstand}\rechtemarginalafstand
+         \showsetupA{rechtemarginal}       \rechtemarginalbreite
+         \showsetupA{abstandrechterrand}   \abstandrechterrand
+         \showsetupA{rechterrand}          \breiterechterrand
+         \showsetupB{fliesstext}           \the   \globalbodyfontsize
+         \showsetupB{linie}                \relax \normallineheight
+         \showsetupB{hoehe}                \relax \strutheightfactor
+         \showsetupB{tiefe}                \relax \strutdepthfactor
+         \showsetupB{topskip}              \relax \topskipfactor
+         \showsetupB{maxdepth}             \relax \maxdepthfactor}}}
+
+\stopinterface
+
+\startinterface czech
+
+\gdef\showsetups%
+  {\noindent
+   \vbox
+     {\forgetall
+      \dontcomplain
+      \switchtobodyfont[\v!small]
+      \tabskip\zeropoint
+      \halign
+        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
+         \showsetupA{vyskapapiru}              \vyskapapiru
+         \showsetupA{sirkapapiru}              \sirkapapiru
+         \showsetupA{vyskatiskpapiru}          \vyskatiskpapiru
+         \showsetupA{sirkatiskpapiru}          \sirkatiskpapiru
+         \showsetupA{hornimezera}              \hornimezera
+         \showsetupA{spodnimezera}             \spodnimezera
+         \showsetupA{vyska}                    \vyskasazby
+         \showsetupA{breite}                   \sirkasazby
+         \showsetupA{vyskatextu}               \vyskatextu
+         \showsetupA{sirkatextu}               \sirkatextu
+         \showsetupA{horejsek}                 \vyskahorejsku
+         \showsetupA{vzdalenosthorejsku}       \vzdalenosthorejsku
+         \showsetupA{zahlavi}                  \vyskazahlavi
+         \showsetupA{vzdalenostzahlavi}        \vzdalenostzahlavi
+         \showsetupA{fusszeileabstand}         \vzdalenostupati
+         \showsetupA{upati}                    \vyskaupati
+         \showsetupA{vzdalenostspodku}         \vzdalenostspodku
+         \showsetupA{spodek}                   \vyakaspodku
+         \showsetupA{levyokraj}                \sirkalevehookraje
+         \showsetupA{vzdalenostlevehookraje}   \vzdalenostlevehookraje
+         \showsetupA{levamarginalie}           \sirkalevemarginalie
+         \showsetupA{vzdalenostlevemarginalie} \vzdalenostlevemarginalie
+         \showsetupA{vzdalenostpravemarginalie}\vzdalenostpravemarginalie
+         \showsetupA{pravamarginalie}          \sirkapravemarginalie
+         \showsetupA{vzdalenostpravehookraje}  \vzdalenostpravehookraje
+         \showsetupA{pravyokraj}               \sirkapravehookraje
+         \showsetupB{zakladnivelikost}         \the   \globalbodyfontsize
+         \showsetupB{linka}                    \relax \normallineheight
+         \showsetupB{vyska}                    \relax \strutheightfactor
+         \showsetupB{hloubka}                  \relax \strutdepthfactor
+         \showsetupB{topskip}                  \relax \topskipfactor
+         \showsetupB{maxdepth}                 \relax \maxdepthfactor}}}
+
+\stopinterface
+
+\startinterface romanian
+
+\gdef\showsetups%
+  {\noindent
+   \vbox
+     {\forgetall
+      \dontcomplain
+      \switchtobodyfont[\v!small]
+      \tabskip\zeropoint
+      \halign
+        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
+         \showsetupA{paperheight}        \paperheight
+         \showsetupA{paperwidth}         \paperwidth
+         \showsetupA{printpaperheight}   \printpaperheight
+         \showsetupA{printpaperwidth}    \printpaperwidth
+         \showsetupA{topspace}           \topspace
+         \showsetupA{backspace}          \backspace
+         \showsetupA{height}             \makeupheight
+         \showsetupA{width}              \makeupwidth
+         \showsetupA{top}                \topheight
+         \showsetupA{topdistance}        \topdistance
+         \showsetupA{header}             \headerheight
+         \showsetupA{headerdistance}     \headerdistance
+         \showsetupA{textheight}         \textheight
+         \showsetupA{footerdistance}     \footerdistance
+         \showsetupA{footer}             \footerheight
+         \showsetupA{bottomdistance}     \bottomdistance
+         \showsetupA{bottom}             \bottomheight
+         \showsetupA{leftedge}           \leftedgewidth
+         \showsetupA{leftedgedistance}   \leftedgedistance
+         \showsetupA{leftmargin}         \leftmarginwidth
+         \showsetupA{leftmargindistance} \leftmargindistance
+         \showsetupA{textwidth}          \textwidth
+         \showsetupA{rightmargindistance}\rightmargindistance
+         \showsetupA{rightmargin}        \rightmarginwidth
+         \showsetupA{rightedgedistance}  \rightedgedistance
+         \showsetupA{rightedge}          \rightedgewidth
+         \showsetupB{bodyfontsize}       \the   \globalbodyfontsize
+         \showsetupB{line}               \relax \normallineheight
+         \showsetupB{height}             \relax \strutheightfactor
+         \showsetupB{depth}              \relax \strutdepthfactor
+         \showsetupB{topskip}            \relax \topskipfactor
+         \showsetupB{maxdepth}           \relax \maxdepthfactor}}}
+
+\stopinterface
+
+\gdef\showlayout % interfereert lelijk met een \typefile er na
+  {\bgroup
+   \page
+   \showframe
+   \setuplayout[\c!marking=\v!on]
+   \dorecurse{4}{\showsetups\page}
+   \egroup}
+
+\gdef\showmargins
+  {\starttabulate
+   \NC asynchrone   \NC \doifoddpageelse     {odd}   {even} \NC \NR
+   \NC synchrone    \NC \doifrightpageelse   {right} {left} \NC \NR
+   \NC right margin \NC \the\rightmarginwidth               \NC \NR
+   \NC left margin  \NC \the\leftmarginwidth                \NC \NR
+   \NC outer margin \NC \the\outermarginwidth               \NC \NR
+   \NC inner margin \NC \the\innermarginwidth               \NC \NR
+   \stoptabulate}
+
+\protect \endinput

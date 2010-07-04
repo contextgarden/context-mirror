@@ -1,0 +1,212 @@
+%D \module
+%D   [       file=m-chemml,
+%D        version=2001.09.12,
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=Loading CHEMML Filters,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\useXMLfilter[cml]
+
+%D Structural formulas are codes in a \PPCHTEX\ way; this
+%D will change -)
+%D
+%D \startbuffer
+%D <dchem>
+%D   <structure>
+%D     <component>
+%D       <graphic>SIX,B</graphic>
+%D       <graphic>R135</graphic>
+%D     </component>
+%D     <component>
+%D       <graphic>R246</graphic>
+%D     </component>
+%D     <component>
+%D       <graphic>RZ</graphic>
+%D       <text>A,B,C,D,E,F</text>
+%D     </component>
+%D     <component>
+%D       <graphic>Z</graphic>
+%D       <oxidation n="3">A</oxidation>
+%D       <text>A</text>
+%D       <annotation location="t">
+%D         <text>B</text>
+%D         <caption>x<context:b>x<context:compound token="*"/>x</context:b>x</caption>
+%D       </annotation>
+%D       <oxidation n="3" sign="+">B</oxidation>
+%D       <text>C,D,E,F</text>
+%D     </component>
+%D   </structure>
+%D   <structure>
+%D     <component>
+%D       <graphic>SIX,B</graphic>
+%D       <graphic>r135</graphic>
+%D     </component>
+%D     <component>
+%D       <graphic>R246</graphic>
+%D     </component>
+%D     <component>
+%D       <graphic>RZ</graphic>
+%D       <text>A,B,C,D,E,F</text>
+%D     </component>
+%D   </structure>
+%D </dchem>
+%D \stopbuffer
+%D
+%D \typebuffer
+
+% \ifx\XMLgtoks\undefined \newtoks\XMLgtoks \fi
+% \ifx\XMLttoks\undefined \newtoks\XMLttoks \fi
+%
+% \defineXMLenvironment [structure]
+%   {\startchemical\ignorespaces}
+%   {\relax\stopchemical}
+%
+% \def\chemicalXMLg#1% \defineXMLcollect [graphic] \XMLgtoks
+%   {\doifelsenothing{\the\XMLgtoks}
+%      {\doglobal\appendtoks #1\to\XMLgtoks\ignorespaces}
+%      {\doglobal\appendtoks,#1\to\XMLgtoks\ignorespaces}}
+%
+% \def\chemicalXMLt#1%
+%   {\doifelsenothing{\the\XMLttoks}
+%      {\doglobal\appendtoks #1\to\XMLttoks\ignorespaces}
+%      {\doglobal\appendtoks,#1\to\XMLttoks\ignorespaces}}
+%
+% \defineXMLenvironment [component] [type=]
+%   {\global\XMLgtoks\emptytoks
+%    \global\XMLttoks\emptytoks
+%    \defineXMLargument[graphic]\chemicalXMLg
+%    \defineXMLargument[text]\chemicalXMLt
+%    \ignorespaces}
+%   {\expanded{\chemical[\the\XMLgtoks][\the\XMLttoks]}%
+%    \ignorespaces}
+%
+% \defineXMLargument [oxidation] [sign=,n=1] \chemicalXMLo % +/- 1..7
+%
+% \def\chemicalXMLo#1%
+%   {\expanded{\chemicalXMLt
+%      {\noexpand\chemicaloxidation{\XMLop{sign}}{\XMLop{n}}{#1}}}%
+%    \ignorespaces}
+%
+% \defineXMLenvironment [annotation] [location=]
+%   {\bgroup
+%    \defineXMLenvironmentsave[text]{\ignorespaces}{\ignorespaces}%
+%    \defineXMLenvironmentsave[caption]{\ignorespaces}{\ignorespaces}%
+%    \ignorespaces}
+%   {\scratchtoks{\chemicalright}%
+%    \processaction
+%      [\XMLop{location}]
+%      [ t=>\scratchtoks{\chemicaltop},
+%        b=>\scratchtoks{\chemicalbottom},
+%        l=>\scratchtoks{\chemicalleft},
+%        r=>\scratchtoks{\chemicalright},
+%       lc=>\scratchtoks{\chemicalleftcentered},
+%       rc=>\scratchtoks{\chemicalrightcentered},
+%       tl=>\scratchtoks{\chemicaltopleft},
+%       bl=>\scratchtoks{\chemicalbottomleft},
+%       tr=>\scratchtoks{\chemicaltopright},
+%       br=>\scratchtoks{\chemicalbottomright},
+%       lt=>\scratchtoks{\chemicallefttop},
+%       lb=>\scratchtoks{\chemicalleftbottom},
+%       rt=>\scratchtoks{\chemicalrighttop},
+%       rb=>\scratchtoks{\chemicalrightbottom},
+%        x=>\scratchtoks{\chemicaltighttext},
+%       sl=>\scratchtoks{\chemicalsmashedleft},
+%       sm=>\scratchtoks{\chemicalsmashedmiddle},
+%       sr=>\scratchtoks{\chemicalsmashedright}]%
+%     \expanded{\chemicalXMLt
+%       {\the\scratchtoks{\XMLflush{text}}{\XMLflush{caption}}}}%
+%    \egroup
+%    \ignorespaces}
+%
+% \defineXMLenvironment [forever]
+%   {\chemicalXMLt{\[}\ignorespaces}
+%   {\chemicalXMLt{\]}\ignorespaces}
+
+\ifx\XMLgtoks\undefined \newtoks\XMLgtoks \fi
+\ifx\XMLttoks\undefined \newtoks\XMLttoks \fi
+
+\startXMLmapping [cml]
+
+% this will be a more natural method; this also triggers it
+
+\installXMLunknownremapping
+
+% extensions
+
+\remapXMLsequence [structure] [CPA] \doCMLstructure
+\remapXMLsequence [component] [CPA] \doCMLcomponent
+\remapXMLsequence [graphic]   [CPA] \doCMLgraphic
+\remapXMLsequence [text]      [CPA] \doCMLtext
+
+\remapXMLsequence [caption]   [CPA] \doCMLcaption
+\remapXMLsequence [oxidation] [CPA] \doCMLoxidation
+\remapXMLsequence [annotation][CPA] \doCMLannotation
+\remapXMLsequence [forever]   [CPA] \doCMLforever
+
+\def\doCMLstructure#1#2%
+  {\startchemical\ignorespaces#2\unskip\stopchemical}
+
+\def\doCMLgraphic#1#2%
+  {\doifelsenothing{\the\XMLgtoks}
+     {\uppercase{\doglobal\appendtoks #2\to\XMLgtoks\ignorespaces}}
+     {\uppercase{\doglobal\appendtoks,#2\to\XMLgtoks\ignorespaces}}%
+   \ignorespaces}
+
+\def\doCMLtext#1#2%
+  {\doifelsenothing{\the\XMLttoks}
+     {\doglobal\appendtoks #2\to\XMLttoks\ignorespaces}
+     {\doglobal\appendtoks,#2\to\XMLttoks\ignorespaces}%
+   \ignorespaces}
+
+\def\doCMLcomponent#1#2%
+  {\global\XMLgtoks\emptytoks
+   \global\XMLttoks\emptytoks
+   \ignorespaces#2\unskip
+   \expanded{\chemical[\the\XMLgtoks][\the\XMLttoks]}%
+   \ignorespaces}
+
+\def\doCMLannotation#1#2%
+  {\getXMLarguments{cml}{location="" #1}%
+   \def\dodoCMLannotation##1%
+     {\doCMLtext\empty{##1%
+        {\let\doCMLtext   \secondoftwoarguments\processXMLRchild{text}{#2}}%
+        {\let\doCMLcaption\unmapXMLdata        \processXMLRchild{caption}{#2}}}}%
+   \processaction
+     [\XMLpar{cml}{location}{r}]
+     [ t=>\dodoCMLannotation\chemicaltop,
+       b=>\dodoCMLannotation\chemicalbottom,
+       l=>\dodoCMLannotation\chemicalleft,
+       r=>\dodoCMLannotation\chemicalright,
+      lc=>\dodoCMLannotation\chemicalleftcentered,
+      rc=>\dodoCMLannotation\chemicalrightcentered,
+      tl=>\dodoCMLannotation\chemicaltopleft,
+      bl=>\dodoCMLannotation\chemicalbottomleft,
+      tr=>\dodoCMLannotation\chemicaltopright,
+      br=>\dodoCMLannotation\chemicalbottomright,
+      lt=>\dodoCMLannotation\chemicallefttop,
+      lb=>\dodoCMLannotation\chemicalleftbottom,
+      rt=>\dodoCMLannotation\chemicalrighttop,
+      rb=>\dodoCMLannotation\chemicalrightbottom,
+       x=>\dodoCMLannotation\chemicaltighttext,
+      sl=>\dodoCMLannotation\chemicalsmashedleft,
+      sm=>\dodoCMLannotation\chemicalsmashedmiddle,
+      sr=>\dodoCMLannotation\chemicalsmashedright]%
+   \ignorespaces}
+
+\def\doCMLoxidation#1#2%
+  {\getXMLarguments{cml}{sign="" n="1" #1}%
+   \expanded{\doCMLtext{}%
+     {\noexpand\chemicaloxidation{\XMLpar{cml}{sign}{}}{\XMLpar{cml}{n}{}}{#2}}}%
+   \ignorespaces}
+
+\def\doCMLforever#1#2{\[#2\]}
+
+\stopXMLmapping
+
+\endinput

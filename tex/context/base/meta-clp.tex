@@ -1,0 +1,164 @@
+%D \module
+%D   [       file=meta-clp,
+%D        version=2000.07.06,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Clipping,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In this library, we define a bunch of clipping paths that
+%D can be fed to \type {\clip}.
+
+\startMPclip{ellipse}
+  clip currentpicture to unitcircle
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{negellipse}
+  clip currentpicture to (unitcircle peepholed unitsquare)
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{urellipse}
+  clip currentpicture to urcircle scaled 2
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{ulellipse}
+  clip currentpicture to ulcircle scaled 2 shifted (1,0)
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{llellipse}
+  clip currentpicture to llcircle scaled 2 shifted (1,1)
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{lrellipse}
+  clip currentpicture to lrcircle scaled 2 shifted (0,1)
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{tellipse}
+  clip currentpicture to tcircle shifted (.5,0) yscaled 2
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{bellipse}
+  clip currentpicture to bcircle shifted (.5,.5) yscaled 2
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{lellipse}
+  clip currentpicture to lcircle shifted (.5,.5) xscaled 2
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{rellipse}
+  clip currentpicture to rcircle shifted (0,.5) xscaled 2
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{diamond}
+  clip currentpicture to unitdiamond
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{negdiamond}
+  clip currentpicture to (unitdiamond peepholed unitsquare)
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{urtriangle}
+  clip currentpicture to urtriangle scaled 2
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{ultriangle}
+  clip currentpicture to ultriangle scaled 2 shifted (1,0)
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{lltriangle}
+  clip currentpicture to lltriangle scaled 2 shifted (1,1)
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+\startMPclip{lrtriangle}
+  clip currentpicture to lrtriangle scaled 2 shifted (0,1)
+    xscaled \width yscaled \height ;
+\stopMPclip
+
+% More efficient:
+%
+% \def\dosimpleMPclip#1
+%   {clip currentpicture to (#1) xscaled \width yscaled \height ;}
+%
+% \def\simpleMPclip#1#2%
+%   {\startMPclip{#1}\dosimpleMPclip{#2}\stopMPclip}
+%
+% \simpleMPclip {ellipse}    {unitcircle}
+% \simpleMPclip {diamond}    {unitdiamond}
+%
+% \simpleMPclip {negellipse} {unitcircle  peepholed unitsquare}
+% \simpleMPclip {negdiamond} {unitdiamond peepholed unitsquare}
+%
+% \simpleMPclip {urellipse}  {urcircle scaled 2 shifted (0,0)}
+% \simpleMPclip {ulellipse}  {ulcircle scaled 2 shifted (1,0)}
+% \simpleMPclip {llellipse}  {llcircle scaled 2 shifted (1,1)}
+% \simpleMPclip {lrellipse}  {lrcircle scaled 2 shifted (0,1)}
+%
+% \simpleMPclip {tellipse}   {tcircle shifted (.5,0)  yscaled 2}
+% \simpleMPclip {bellipse}   {bcircle shifted (.5,.5) yscaled 2}
+% \simpleMPclip {lellipse}   {lcircle shifted (.5,.5) xscaled 2}
+% \simpleMPclip {rellipse}   {rcircle shifted (0,.5)  xscaled 2}
+%
+% \simpleMPclip {urtriangle} {urtriangle scaled 2 shifted (0,0)}
+% \simpleMPclip {ultriangle} {ultriangle scaled 2 shifted (1,0)}
+% \simpleMPclip {lltriangle} {lltriangle scaled 2 shifted (1,1)}
+% \simpleMPclip {lrtriangle} {lrtriangle scaled 2 shifted (0,1)}
+
+%D \in {Figure} [fig:clipping paths] shows which paths are
+%D predefined. When applied to a whole picture, their usage
+%D is:
+%D
+%D \starttyping
+%D \clip[nx=1,ny=1,mp=ellipse]{some clippable content}
+%D \stoptyping
+%D
+%D \startbuffer
+%D \setupclipping  [nx=1,ny=1,x=1,y=1]
+%D \setupblackrules[width=2cm,height=1cm]
+%D \startcombination[6*3] % \startcombination[6*3]
+%D   {\clip[mp=urellipse] {\blackrule}} {urellipse}
+%D   {\clip[mp=ulellipse] {\blackrule}} {ulellipse}
+%D   {\clip[mp=llellipse] {\blackrule}} {llellipse}
+%D   {\clip[mp=lrellipse] {\blackrule}} {lrellipse}
+%D   {\clip[mp=ellipse]   {\blackrule}} {ellipse}
+%D   {\clip[mp=negellipse]{\blackrule}} {negellipse}
+%D   {\clip[mp=tellipse]  {\blackrule}} {tellipse}
+%D   {\clip[mp=bellipse]  {\blackrule}} {bellipse}
+%D   {\clip[mp=lellipse]  {\blackrule}} {lellipse}
+%D   {\clip[mp=rellipse]  {\blackrule}} {rellipse}
+%D   {}                                 {}
+%D   {}                                 {}
+%D   {\clip[mp=urtriangle]{\blackrule}} {urtriangle}
+%D   {\clip[mp=ultriangle]{\blackrule}} {ultriangle}
+%D   {\clip[mp=lltriangle]{\blackrule}} {lltriangle}
+%D   {\clip[mp=lrtriangle]{\blackrule}} {lrtriangle}
+%D   {\clip[mp=diamond]   {\blackrule}} {diamond}
+%D   {\clip[mp=negdiamond]{\blackrule}} {negdiamond}
+%D \stopcombination % \stopcombination
+%D \stopbuffer
+%D
+%D \placefigure % \placefigure
+%D   [here][fig:clipping paths]
+%D   {The predefined clipping paths.}
+%D   {\getbuffer} % {\getbuffer}
+
+\endinput

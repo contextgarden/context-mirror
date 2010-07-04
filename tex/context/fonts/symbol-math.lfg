@@ -1,0 +1,17 @@
+return {
+    name = "symbol-math",
+    version = "1.00",
+    comment = "Goodies that complement symbol math.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["symbol-math"] = {
+                { name = "rsfs10", features = "virtualmath", main = true }, -- tfm name needed
+            },
+        }
+    }
+}

@@ -1,0 +1,82 @@
+%D \module
+%D   [       file=unic-exp,
+%D        version=2002.12.05,
+%D          title=\CONTEXT\ \UNICODE\ Support,
+%D       subtitle=Expansion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Unicode Support / Expansion)}
+
+%D \macros
+%D   {expandunivector}
+%D
+%D The \type {\expandunivector} macro can be used to expand
+%D vectors, which leads to a faster run in case of documents
+%D with lots of \UTF-8 code.
+
+\unprotect
+
+\def\expandunivector[#1]%
+  {\processcommalist[#1]\doexpandunivector}
+
+\def\doexpandunivector#1%
+  {\ifcsname\@@univector#1\endcsname
+     \ifcsname\@@univector\@@univector#1\endcsname\else
+       \writestatus{unicode}{expanding vector #1}%
+       \setvalue{\@@univector\@@univector#1}{\expandedunivector{#1}}%
+       \dorecurse{255}
+         {\@EA\ifx\csname\csname\@@univector#1\endcsname\recurselevel\endcsname\unknownchar
+            % skip
+          \else
+            \@EA\let\csname\@@univector\@@univector#1:\recurselevel\@EA\endcsname
+              \csname\csname\@@univector#1\endcsname\recurselevel\endcsname
+          \fi}%
+       \letbeundefined{\@@univector#1}%
+     \fi
+   \fi}
+
+\def\expandedunivector#1#2%
+  {\ifcsname\@@univector\@@univector#1:\number#2\endcsname
+     \@@univector\@@univector#1:\number#2%
+   \else
+     \@@unknownchar
+   \fi}
+
+%D For this purpose, we need to redefine the resolver.
+
+\def\doutfunihash#1#2%
+  {\csname \@@univector
+     \ifcsname\@@univector\@@univector#1\endcsname \@@univector#1\else
+     \ifcsname\@@univector            #1\endcsname             #1\else
+                                                       \s!unknown\fi\fi
+   \endcsname{\utfmod{#2}}}
+
+\setvalue{\@@univector\s!unknown}#1%
+  {\@@unknownchar}
+
+\def\doutfunihashglyph#1#2#3% div mod raw
+  {\csname                     utf!\ifnum#3<\utf@i1\else
+                \ifcsname\@@unicommand#1\endcsname2\else
+     \ifcsname\@@univector\@@univector#1\endcsname3\else
+                \ifcsname\@@univector #1\endcsname4\else
+                                                  5\fi\fi\fi\fi !\endcsname{#1}{#2}}
+
+\setvalue{utf!1!}#1{\unicodeasciicharacter} % {#2}
+\setvalue{utf!2!}#1{\csname\@@unicommand#1\endcsname} % {#2}
+\setvalue{utf!3!}#1#2{\csname\csname\@@univector\@@univector#1\endcsname{#2}\endcsname} % watch the nested csname; it's a speed up
+\setvalue{utf!4!}#1#2{\csname\csname\@@univector#1\endcsname{#2}\endcsname} % watch the nested csname; it's a speed up
+\setvalue{utf!5!}#1#2{\unicodeunknowncharacter}
+
+% \let\utfunihash\utfunihashglyph
+
+%D Let's use it:
+
+\expandunivector[0,1,2,3,4,5,30,31,32,33,34,37,39]
+
+\protect \endinput

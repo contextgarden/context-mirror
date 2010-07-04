@@ -1,0 +1,29 @@
+%D \module
+%D   [       file=mult-chk,
+%D        version=2009.04.13,
+%D          title=\CONTEXT\ Multilingual Macros,
+%D       subtitle=Checking,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Multilingual Macros / Checking}
+
+%D No checking in \MKII.
+
+\def\gobbleparameters{\doquadrupleempty\dogobbleparameters} % todo: 1,2,3,4 case
+\def\dogobbleparameters[#1][#2][#3][#4]{}
+
+\def\setvalidparameterkeys{\gobbleparameters} % forward reference, so no \let
+\def\addvalidparameterkeys{\gobbleparameters} % forward reference, so no \let
+
+\let\enablecheckparameters \relax
+\let\disablecheckparameters\relax
+
+\def\getcheckedparameters[#1]{\getparameters} % just ignore the checking
+
+\endinput

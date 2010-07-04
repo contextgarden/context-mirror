@@ -1,0 +1,230 @@
+%D \module
+%D   [       file=xtag-exp,
+%D        version=2006.01.19,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=Stacking Data,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt XML Macros / Stacks}
+
+%D This module is experimental. Don't use it (yet). It needs a
+%D clean-up. The stack handler is used in the third MathML renderer.
+
+\unprotect
+
+\ifx\XMLRtoks     \undefined \newtoks \XMLRtoks      \fi
+\ifx\XMLstacklevel\undefined \newcount\XMLstacklevel \fi
+
+\def\@@xmlstack{xmlstack}
+
+\let\XMLstackid\empty
+
+\def\resetXMLelements
+  {\XMLstacklevel\zerocount}
+
+\def\startsavingXMLelements % maybe something with \ignorespaces \\removeunwantedspaces
+  {\XMLstacklevel\zerocount
+   \let\normalexecuteXMLelement\executeXMLelement
+   \def\executeXMLelement{\csname\@@XMLelement:\@@xmlstack\ifcase\kindofXMLelement\or\or\or/\fi\endcsname}}
+
+\def\stopsavingXMLelements
+  {\let\executeXMLelement\normalexecuteXMLelement}
+
+\defineXMLnestedenvironmentsave
+  [\@@xmlstack]
+  {}
+  {\pushXMLdataonstack}
+
+\startXMLmapping[xmlstack:test]
+
+    \defineXMLnestedenvironmentsave
+      [\@@xmlstack]
+      {}
+      {\pushXMLnameonstack}
+
+  % in mathml handler:
+  %
+  % \defineXMLnested
+  %   [apply]
+  %   {\startsavingXMLelements}
+  %   {\stopsavingXMLelements}
+
+\stopXMLmapping
+
+\def\pushXMLdataonstack
+  {\advance\XMLstacklevel\plusone
+   \letvalue            {\@@xmlstack:n:\XMLstackid:\number\XMLstacklevel}\currentXMLelement
+   \saveXMLdata         {\@@xmlstack:t:\XMLstackid:\number\XMLstacklevel}                  \@@xmlstack
+   \saveXMLdatainelement{\@@xmlstack:d:\XMLstackid:\number\XMLstacklevel}\currentXMLelement\@@xmlstack}
+
+\def\pushXMLnameonstack
+  {\advance\XMLstacklevel\plusone
+   \letvalue            {\@@xmlstack:n:\XMLstackid:\number\XMLstacklevel}\currentXMLelement}
+
+\def\eraseXMLdataonstack#1%
+  {\letvalue{\@@xmlstack:n:\XMLstackid:\number#1}\empty
+   \XMLerase{\@@xmlstack:t:\XMLstackid:\number#1}%
+   \XMLerase{\@@xmlstack:d:\XMLstackid:\number#1}}
+
+\def\getXMLstackdata{\getXMLstackiddata\XMLstackid}
+\def\getXMLstackname{\getXMLstackidname\XMLstackid}
+\def\getXMLstacktext{\getXMLstackidtext\XMLstackid}
+
+\def\getXMLstackiddata#1#2{\flushXMLelement{\@@xmlstack:d:#1:\ifnum#2>\XMLstacklevel\else\number#2\fi}}
+\def\getXMLstackidname#1#2{\getvalue       {\@@xmlstack:n:#1:\ifnum#2>\XMLstacklevel\else\number#2\fi}}
+\def\getXMLstackidtext#1#2{\flushXMLelement{\@@xmlstack:t:#1:\ifnum#2>\XMLstacklevel\else\number#2\fi}}
+
+\def\rawXMLstackdata{\rawXMLstackiddata\XMLstackid}
+\def\rawXMLstackname{\rawXMLstackidname\XMLstackid}
+\def\rawXMLstacktext{\rawXMLstackidtext\XMLstackid}
+
+\def\rawXMLstackiddata#1#2{\flushXMLelement{\@@xmlstack:d:#1:\number#2}}
+\def\rawXMLstackidname#1#2{\getvalue       {\@@xmlstack:n:#1:\number#2}}
+\def\rawXMLstackidtext#1#2{\flushXMLelement{\@@xmlstack:t:#1:\number#2}}
+
+\def\defXMLstackiddata#1#2#3%
+  {\defXMLelement#1{\@@xmlstack:d:#2:\ifnum#3>\XMLstacklevel\else\number#3\fi}}
+
+\def\defXMLstackdata#1% #2
+  {\defXMLstackiddata#1\XMLstackid}
+
+\def\showXMLstacknames
+  {\hbox{[\space\dorecurse\XMLstacklevel{\recurselevel:\getXMLstackname\recurselevel\space}]}}
+
+\def\flushXMLstackfrom#1%
+  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+     {\getXMLstackdata\recurselevel}}
+
+\def\flushXMLstackwith#1#2%
+  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+     {\relax\ifnum\recurselevel>#1\relax#2\fi
+      \getXMLstackdata\recurselevel}}
+
+\def\flushXMLnamedstackwith#1#2#3%
+  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#2}}
+        {\ifnum\recurselevel>#1\relax#3\fi
+         \getXMLstackdata\recurselevel}}}
+
+\def\countXMLnamedstack#1% todo: \nofXMLchildren ! ! ! ! !
+  {\scratchcounter\zerocount
+   \dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\advance\scratchcounter\plusone}}}
+
+\def\collectXMLstack#1%
+  {\XMLRtoks\emptytoks
+   \dorecurse\XMLstacklevel
+     {\ifnum\recurselevel>\plusone\appendtoks#1\to\XMLRtoks\fi
+      \expandafter\appendtoks\expandafter\getXMLstackdata\expandafter{\recurselevel}\to\XMLRtoks}}
+
+\def\collectXMLstackrows#1#2%
+  {\XMLRtoks\emptytoks
+   \dostepwiserecurse{#1}\XMLstacklevel\plusone
+     {\ifnum\recurselevel>#1\appendtoks#2\to\XMLRtoks\fi
+      \expandafter\appendtoks\expandafter\getXMLstackdata\expandafter{\recurselevel}\to\XMLRtoks}}
+
+\def\collectXMLnamedstack#1#2%
+  {\XMLRtoks\emptytoks
+   \dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\ifnum\recurselevel>\plusone\appendtoks#2\to\XMLRtoks\fi
+         \expandafter\appendtoks\expandafter\getXMLstackdata\expandafter{\recurselevel}\to\XMLRtoks}}}
+
+\def\collectXMLnamedstacknamed#1#2#3% names, inbetween, nestednames (maddness, this macro)
+  {\XMLRtoks\emptytoks
+   \!!doneafalse
+   \let\globalascii\empty
+   \dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\begingroup
+         \startsavingXMLelements
+         \rawXMLstacktext\recurselevel % still on stack, raw does not test
+         \stopsavingXMLelements
+         \let\globalascii\empty
+         \dorecurse\XMLstacklevel
+           {\expanded{\doifinset{\getXMLstackname\recurselevel}{#2}}
+              {\xdef\globalascii{\getXMLstackdata\recurselevel}}}%
+         \endgroup
+         \ifx\globalascii\empty\else
+             \if!!donea\appendtoks#3\to\XMLRtoks\fi
+             \expandafter\appendtoks\globalascii\to\XMLRtoks
+             \!!doneatrue
+         \fi}}}
+
+\def\XMLcopydata#1#2% to from
+  {\@EA\let\csname\@@XMLdata:#1\@EA\endcsname\csname\@@XMLdata:#2\endcsname}
+\def\XMLcopysave#1#2% to from
+  {\@EA\let\csname\@@XMLsave:#1\@EA\endcsname\csname\@@XMLsave:#2\endcsname}
+
+\def\removeXMLdatafromstack#1%
+  {\dorecurse\XMLstacklevel
+     {\doif{\getXMLstackname\recurselevel}{#1}
+        {\dostepwiserecurse\recurselevel{\numexpr\XMLstacklevel+\minusone}\plusone
+           {\scratchcounter\numexpr\recurselevel+\plusone\relax
+            \@EA\let\csname\@@xmlstack:n:\XMLstackid:\recurselevel\@EA\endcsname\csname\@@xmlstack:n:\XMLstackid:\number\scratchcounter\endcsname
+            \XMLcopysave{\@@xmlstack:t:\XMLstackid:\recurselevel}{\@@xmlstack:t:\XMLstackid:\number\scratchcounter}%
+            \XMLcopysave{\@@xmlstack:d:\XMLstackid:\recurselevel}{\@@xmlstack:d:\XMLstackid:\number\scratchcounter}}%
+         \advance\XMLstacklevel\minusone
+         \exitloop}}}
+
+%D BEWARE: these names may change (get stack in the name)
+
+\def\XMLallnamed#1%
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\getXMLstackdata\recurselevel}}}
+
+\def\defXMLfirstnamed#1#2% \cs list
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#2}}
+        {\defXMLstackdata#1\recurselevel\exitloop}}}
+
+\def\defXMLfirstnamedtext#1#2% \cs list
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#2}}
+        {\edef#1{\getXMLstacktext\recurselevel}\exitloop}}}
+
+\def\XMLfirstnamed#1%
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\getXMLstackdata\recurselevel\exitloop}}}
+
+\def\XMLnotnamed#1%
+  {\dorecurse\XMLstacklevel
+     {\expanded{\doifnotinset{\getXMLstackname\recurselevel}{#1}}
+        {\getXMLstackdata\recurselevel\exitloop}}}
+
+\let\XMLstackposition\!!zerocount
+
+\def\XMLdoifonstackelse#1% was \XMLdoifelsefound
+  {\!!doneafalse
+   \let\XMLstackposition\!!zerocount
+   \dorecurse\XMLstacklevel
+     {\expanded{\doifinset{\getXMLstackname\recurselevel}{#1}}
+        {\let\XMLstackposition\recurselevel\!!doneatrue\exitloop}}%
+   \if!!donea
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+%D Handy:
+
+\def\pushXMLmeaning#1% or [#1]
+  {\@EA\pushmacro\csname\@@XMLelement:#1/\endcsname
+   \@EA\pushmacro\csname\@@XMLelement:#1\endcsname
+   \@EA\pushmacro\csname\@@XMLelement:/#1\endcsname}
+
+\def\popXMLmeaning#1% or [#1]
+  {\@EA\popmacro\csname\@@XMLelement:#1/\endcsname
+   \@EA\popmacro\csname\@@XMLelement:#1\endcsname
+   \@EA\popmacro\csname\@@XMLelement:/#1\endcsname}
+
+\protect \endinput

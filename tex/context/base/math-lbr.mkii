@@ -1,0 +1,481 @@
+%D \module
+%D   [       file=math-lbr,
+%D        version=2001.04.12,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Lucida Specials,
+%D         author={Hans Hagen \& Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\definefamilysynonym [lbr] [calligraphy] [sy]
+\definefamilysynonym [lbr] [oldstyle]    [mi]
+
+\definefamilysynonym [lbr] [blackboard]  [ma]
+\definefamilysynonym [lbr] [ucgreek]     [mb]
+\definefamilysynonym [lbr] [vargreek]    [mi]
+
+\startmathcollection[lbr]
+
+\definemathsymbol [boxdot]              [bin]   [sy] ["ED]
+\definemathsymbol [boxplus]             [bin]   [sy] ["EA]
+\definemathsymbol [boxtimes]            [bin]   [sy] ["EC]
+\definemathsymbol [square]              [ord]   [ma] ["02]
+\definemathsymbol [Box]                 [ord]   [ma] ["02] % square
+\definemathsymbol [blacksquare]         [ord]   [ma] ["03]
+\definemathsymbol [centerdot]           [bin]   [ma] ["E1] % [sy] ["01]
+\definemathsymbol [Diamond]             [ord]   [sy] ["05]
+\definemathsymbol [lozenge]             [ord]   [sy] ["05] % Diamond
+\definemathsymbol [blacklozenge]        [ord]   [ma] ["09]
+\definemathsymbol [circlearrowright]    [rel]   [ma] ["8C]
+\definemathsymbol [circlearrowleft]     [rel]   [ma] ["8B]
+\definemathsymbol [rightleftharpoons]   [rel]   [sy] ["8E]
+\definemathsymbol [leftrightharpoons]   [rel]   [sy] ["8D]
+\definemathsymbol [boxminus]            [bin]   [sy] ["EB]
+\definemathsymbol [Vdash]               [rel]   [sy] ["F0]
+\definemathsymbol [Vvdash]              [rel]   [mb] ["D3]
+\definemathsymbol [vDash]               [rel]   [mb] ["D6]
+\definemathsymbol [twoheadrightarrow]   [rel]   [ma] ["25]
+\definemathsymbol [twoheadleftarrow]    [rel]   [ma] ["23]
+\definemathsymbol [leftleftarrows]      [rel]   [ma] ["71]
+\definemathsymbol [rightrightarrows]    [rel]   [ma] ["73]
+\definemathsymbol [upuparrows]          [rel]   [ma] ["72]
+\definemathsymbol [downdownarrows]      [rel]   [ma] ["74]
+\definemathsymbol [upharpoonright]      [rel]   [ma] ["75]
+\definemathsymbol [restriction]         [rel]   [ma] ["77]
+\definemathsymbol [downharpoonright]    [rel]   [ma] ["77]
+\definemathsymbol [upharpoonleft]       [rel]   [ma] ["76]
+\definemathsymbol [downharpoonleft]     [rel]   [ma] ["78]
+\definemathsymbol [rightarrowtail]      [rel]   [ma] ["29]
+\definemathsymbol [leftarrowtail]       [rel]   [ma] ["28]
+\definemathsymbol [leftrightarrows]     [rel]   [ma] ["6E]
+\definemathsymbol [rightleftarrows]     [rel]   [ma] ["6D]
+\definemathsymbol [Lsh]                 [rel]   [ma] ["7B]
+\definemathsymbol [Rsh]                 [rel]   [ma] ["7D]
+\definemathsymbol [rightsquigarrow]     [rel]   [ma] ["8E]
+\definemathsymbol [leadsto]             [rel]   [ma] ["8E] % rightsquigarrow
+\definemathsymbol [leftrightsquigarrow] [rel]   [ma] ["91]
+\definemathsymbol [looparrowleft]       [rel]   [ma] ["3F]
+\definemathsymbol [looparrowright]      [rel]   [ma] ["40]
+\definemathsymbol [circeq]              [rel]   [sy] ["D0]
+\definemathsymbol [succsim]             [rel]   [sy] ["E1]
+\definemathsymbol [gtrsim]              [rel]   [sy] ["DD]
+\definemathsymbol [gtrapprox]           [rel]   [mb] ["DB]
+\definemathsymbol [multimap]            [rel]   [mb] ["C7]
+\definemathsymbol [therefore]           [rel]   [sy] ["90]
+\definemathsymbol [because]             [rel]   [sy] ["91]
+\definemathsymbol [doteqdot]            [rel]   [sy] ["CA]
+\definemathsymbol [Doteq]               [rel]   [sy] ["CA] % doteqdot
+\definemathsymbol [triangleq]           [rel]   [sy] ["D5]
+\definemathsymbol [precsim]             [rel]   [sy] ["E0]
+\definemathsymbol [lesssim]             [rel]   [sy] ["DC]
+\definemathsymbol [lessapprox]          [rel]   [mb] ["DA]
+\definemathsymbol [eqslantless]         [rel]   [mb] ["E2]
+\definemathsymbol [eqslantgtr]          [rel]   [mb] ["E3]
+\definemathsymbol [curlyeqprec]         [rel]   [mb] ["E6]
+\definemathsymbol [curlyeqsucc]         [rel]   [mb] ["E7]
+\definemathsymbol [preccurlyeq]         [rel]   [mb] ["E4]
+\definemathsymbol [leqq]                [rel]   [sy] ["DA]
+\definemathsymbol [leqslant]            [rel]   [mb] ["E0]
+\definemathsymbol [lessgtr]             [rel]   [sy] ["DE]
+\definemathsymbol [backprime]           [ord]   [mb] ["C8]
+\definemathsymbol [dabar@]              [ord]   [ma] ["03] % !! @
+\definemathsymbol [risingdotseq]        [rel]   [sy] ["CC]
+\definemathsymbol [fallingdotseq]       [rel]   [sy] ["CB]
+\definemathsymbol [succcurlyeq]         [rel]   [mb] ["E5]
+\definemathsymbol [geqq]                [rel]   [sy] ["DB]
+\definemathsymbol [geqslant]            [rel]   [mb] ["E1]
+\definemathsymbol [gtrless]             [rel]   [sy] ["DF]
+\definemathsymbol [sqsubset]            [rel]   [sy] ["E4]
+\definemathsymbol [sqsupset]            [rel]   [sy] ["E5]
+\definemathsymbol [vartriangleright]    [rel]   [mb] ["2E]
+\definemathsymbol [rhd]                 [bin]   [mb] ["2E]
+\definemathsymbol [lhd]                 [bin]   [mb] ["2F]
+\definemathsymbol [vartriangleleft]     [rel]   [mb] ["2F]
+\definemathsymbol [trianglerighteq]     [rel]   [sy] ["F5]
+\definemathsymbol [unrhd]               [bin]   [sy] ["F5] % trianglerighteq
+\definemathsymbol [trianglelefteq]      [rel]   [sy] ["F4]
+\definemathsymbol [unlhd]               [bin]   [sy] ["F4] % trianglelefteq
+\definemathsymbol [bigstar]             [ord]   [ma] ["AB]
+\definemathsymbol [between]             [rel]   [mb] ["F2]
+\definemathsymbol [blacktriangledown]   [ord]   [ma] ["07]
+\definemathsymbol [blacktriangleright]  [rel]   [mb] ["F1]
+\definemathsymbol [blacktriangleleft]   [rel]   [mb] ["F0]
+\definemathsymbol [vartriangle]         [rel]   [ma] ["04]
+\definemathsymbol [triangleup]          [ord]   [ma] ["04] % vartriangle
+\definemathsymbol [blacktriangle]       [ord]   [ma] ["05]
+\definemathsymbol [triangledown]        [ord]   [ma] ["06]
+\definemathsymbol [eqcirc]              [rel]   [sy] ["CF]
+\definemathsymbol [lesseqgtr]           [rel]   [mb] ["E8]
+\definemathsymbol [gtreqless]           [rel]   [mb] ["E9]
+\definemathsymbol [lesseqqgtr]          [rel]   [mb] ["EA]
+\definemathsymbol [gtreqqless]          [rel]   [mb] ["EB]
+\definemathsymbol [Rrightarrow]         [rel]   [ma] ["6C]
+\definemathsymbol [Lleftarrow]          [rel]   [ma] ["6A]
+\definemathsymbol [veebar]              [bin]   [mb] ["D2]
+\definemathsymbol [barwedge]            [bin]   [sy] ["F6]
+\definemathsymbol [doublebarwedge]      [bin]   [sy] ["D4]
+\definemathsymbol [angle]               [ord]   [sy] ["8B]
+\definemathsymbol [measuredangle]       [ord]   [sy] ["8C]
+\definemathsymbol [sphericalangle]      [ord]   [sy] ["8D]
+\definemathsymbol [varpropto]           [rel]   [sy] ["2F]
+\definemathsymbol [smallsmile]          [rel]   [mb] ["5E]
+\definemathsymbol [smallfrown]          [rel]   [mb] ["5F]
+\definemathsymbol [Subset]              [rel]   [sy] ["F8]
+\definemathsymbol [Supset]              [rel]   [sy] ["F9]
+\definemathsymbol [Cup]                 [bin]   [sy] ["FA]
+\definemathsymbol [doublecup]           [bin]   [sy] ["FA] % Cup
+\definemathsymbol [Cap]                 [bin]   [sy] ["FB]
+\definemathsymbol [doublecap]           [bin]   [sy] ["FB]
+\definemathsymbol [curlywedge]          [bin]   [sy] ["84]
+\definemathsymbol [curlyvee]            [bin]   [sy] ["85]
+\definemathsymbol [leftthreetimes]      [bin]   [mb] ["D0]
+\definemathsymbol [rightthreetimes]     [bin]   [mb] ["D1]
+\definemathsymbol [subseteqq]           [rel]   [mb] ["EE]
+\definemathsymbol [supseteqq]           [rel]   [mb] ["EF]
+\definemathsymbol [bumpeq]              [rel]   [sy] ["C8]
+\definemathsymbol [Bumpeq]              [rel]   [sy] ["C7]
+\definemathsymbol [llless]              [rel]   [mb] ["DE]
+\definemathsymbol [lll]                 [rel]   [mb] ["DE] % llless
+\definemathsymbol [gggtr]               [rel]   [mb] ["DF]
+\definemathsymbol [ggg]                 [rel]   [mb] ["DF] % gggtr
+\definemathsymbol [ulcorner]            [open]  [ma] ["5B] [ma] ["5B]
+\definemathsymbol [urcorner]            [close] [ma] ["5C] [ma] ["5C]
+\definemathsymbol [circledS]            [ord]   [mb] ["CA]
+\definemathsymbol [pitchfork]           [rel]   [ma] ["F3]
+\definemathsymbol [dotplus]             [bin]   [sy] ["89]
+\definemathsymbol [backsim]             [rel]   [sy] ["24]
+\definemathsymbol [backsimeq]           [rel]   [sy] ["27]
+\definemathsymbol [llcorner]            [open]  [ma] ["5D] [ma] ["5D]
+\definemathsymbol [lrcorner]            [close] [ma] ["5E] [ma] ["5E]
+\definemathsymbol [complement]          [ord]   [mb] ["94]
+\definemathsymbol [intercal]            [bin]   [ma] ["03] % !!
+\definemathsymbol [circledcirc]         [bin]   [sy] ["E6]
+\definemathsymbol [circledast]          [bin]   [sy] ["E7]
+\definemathsymbol [circleddash]         [bin]   [mb] ["CC]
+
+\stopmathcollection
+
+\startmathcollection [lbr]
+
+\definemathsymbol [lvertneqq]           [rel]   [ma] ["DE]
+\definemathsymbol [gvertneqq]           [rel]   [ma] ["DE]
+\definemathsymbol [nleq]                [rel]   [ma] ["9C]
+\definemathsymbol [ngeq]                [rel]   [ma] ["9D]
+\definemathsymbol [nless]               [rel]   [ma] ["9A]
+\definemathsymbol [ngtr]                [rel]   [ma] ["9B]
+\definemathsymbol [nprec]               [rel]   [ma] ["E5]
+\definemathsymbol [nsucc]               [rel]   [ma] ["E6]
+\definemathsymbol [lneqq]               [rel]   [ma] ["DC]
+\definemathsymbol [gneqq]               [rel]   [ma] ["DE]
+\definemathsymbol [nleqslant]           [rel]   [ma] ["D6]
+\definemathsymbol [ngeqslant]           [rel]   [ma] ["D7]
+\definemathsymbol [lneq]                [rel]   [ma] ["DA]
+\definemathsymbol [gneq]                [rel]   [ma] ["DB]
+\definemathsymbol [npreceq]             [rel]   [ma] ["E7]
+\definemathsymbol [nsucceq]             [rel]   [ma] ["E8]
+\definemathsymbol [precnsim]            [rel]   [ma] ["EB]
+\definemathsymbol [succnsim]            [rel]   [ma] ["EC]
+\definemathsymbol [lnsim]               [rel]   [ma] ["E0]
+\definemathsymbol [gnsim]               [rel]   [ma] ["E2]
+\definemathsymbol [nleqq]               [rel]   [ma] ["D8]
+\definemathsymbol [ngeqq]               [rel]   [ma] ["D9]
+\definemathsymbol [precneqq]            [rel]   [ma] ["E9]
+\definemathsymbol [succneqq]            [rel]   [ma] ["EA]
+\definemathsymbol [precnapprox]         [rel]   [ma] ["ED]
+\definemathsymbol [succnapprox]         [rel]   [ma] ["EE]
+\definemathsymbol [lnapprox]            [rel]   [ma] ["E4]
+\definemathsymbol [gnapprox]            [rel]   [ma] ["E3]
+\definemathsymbol [nsim]                [rel]   [ma] ["96]
+\definemathsymbol [ncong]               [rel]   [ma] ["99]
+\definemathsymbol [diagup]              [ord]   [mb] ["CD]
+\definemathsymbol [diagdown]            [ord]   [mb] ["D8]
+\definemathsymbol [varsubsetneq]        [rel]   [ma] ["D0]
+\definemathsymbol [varsupsetneq]        [rel]   [ma] ["D1]
+\definemathsymbol [nsubseteqq]          [rel]   [ma] ["CA]
+\definemathsymbol [nsupseteqq]          [rel]   [ma] ["CB]
+\definemathsymbol [subsetneqq]          [rel]   [ma] ["CE]
+\definemathsymbol [supsetneqq]          [rel]   [ma] ["CF]
+\definemathsymbol [varsubsetneqq]       [rel]   [ma] ["D2]
+\definemathsymbol [varsupsetneqq]       [rel]   [ma] ["D3]
+\definemathsymbol [subsetneq]           [rel]   [ma] ["CC]
+\definemathsymbol [supsetneq]           [rel]   [ma] ["CD]
+\definemathsymbol [nsubseteq]           [rel]   [ma] ["C8]
+\definemathsymbol [nsupseteq]           [rel]   [ma] ["C9]
+\definemathsymbol [nparallel]           [rel]   [ma] ["F7]
+\definemathsymbol [nmid]                [rel]   [ma] ["F6]
+\definemathsymbol [nshortmid]           [rel]   [ma] ["F4]
+\definemathsymbol [nshortparallel]      [rel]   [ma] ["F5]
+\definemathsymbol [nvdash]              [rel]   [ma] ["F8]
+\definemathsymbol [nVdash]              [rel]   [ma] ["F9]
+\definemathsymbol [nvDash]              [rel]   [ma] ["FA]
+\definemathsymbol [nVDash]              [rel]   [ma] ["FB]
+\definemathsymbol [ntrianglerighteq]    [rel]   [ma] ["F2]
+\definemathsymbol [ntrianglelefteq]     [rel]   [ma] ["F1]
+\definemathsymbol [ntriangleleft]       [rel]   [ma] ["EF]
+\definemathsymbol [ntriangleright]      [rel]   [ma] ["F0]
+\definemathsymbol [nleftarrow]          [rel]   [ma] ["32]
+\definemathsymbol [nrightarrow]         [rel]   [ma] ["33]
+\definemathsymbol [nLeftarrow]          [rel]   [ma] ["66]
+\definemathsymbol [nRightarrow]         [rel]   [ma] ["68]
+\definemathsymbol [nLeftrightarrow]     [rel]   [ma] ["67]
+\definemathsymbol [nleftrightarrow]     [rel]   [ma] ["34]
+\definemathsymbol [divideontimes]       [bin]   [mb] ["F7]
+\definemathsymbol [varnothing]          [ord]   [sy] ["53]
+\definemathsymbol [nexists]             [ord]   [ma] ["20]
+\definemathsymbol [Finv]                [ord]   [mb] ["90]
+\definemathsymbol [Game]                [ord]   [mb] ["91]
+\definemathsymbol [mho]                 [ord]   [mb] ["92]
+\definemathsymbol [eth]                 [ord]   [ma] ["03] % !!
+\definemathsymbol [eqsim]               [rel]   [sy] ["99]
+\definemathsymbol [beth]                [ord]   [mb] ["95]
+\definemathsymbol [gimel]               [ord]   [mb] ["96]
+\definemathsymbol [daleth]              [ord]   [mb] ["97]
+\definemathsymbol [lessdot]             [bin]   [mb] ["DC]
+\definemathsymbol [gtrdot]              [bin]   [mb] ["DD]
+\definemathsymbol [ltimes]              [bin]   [mb] ["CF]
+\definemathsymbol [rtimes]              [bin]   [mb] ["CE]
+\definemathsymbol [shortmid]            [rel]   [mb] ["F4]
+\definemathsymbol [shortparallel]       [rel]   [mb] ["F5]
+\definemathsymbol [smallsetminus]       [bin]   [mb] ["D8]
+\definemathsymbol [thicksim]            [rel]   [sy] ["18] % not that thick
+\definemathsymbol [thickapprox]         [rel]   [sy] ["19] % not that thick
+\definemathsymbol [approxeq]            [rel]   [sy] ["9D]
+\definemathsymbol [succapprox]          [rel]   [mb] ["ED]
+\definemathsymbol [precapprox]          [rel]   [mb] ["EC]
+\definemathsymbol [curvearrowleft]      [rel]   [ma] ["87]
+\definemathsymbol [curvearrowright]     [rel]   [ma] ["88]
+\definemathsymbol [digamma]             [ord]   [ma] ["03] % !!
+\definemathsymbol [varkappa]            [ord]   [mb] ["9B]
+\definemathsymbol [Bbbk]                [ord]   [ma] ["6B]
+\definemathsymbol [hslash]              [ord]   [mb] ["9D]
+\definemathsymbol [hbar]                [ord]   [ma] ["1B]
+\definemathsymbol [backepsilon]         [rel]   [ma] ["03] % !!
+
+\stopmathcollection
+
+\startmathcollection [lbr]
+
+\definemathsymbol [yen]               [nothing] [ma] ["03] % !!
+\definemathsymbol [checkmark]         [nothing] [ma] ["AC]
+\definemathsymbol [circledR]          [nothing] [mb] ["C9]
+\definemathsymbol [maltese]           [nothing] [mb] ["CB]
+
+\stopmathcollection
+
+\startmathcollection [lbr]
+
+\definemathsymbol  [dashrightarrow] [rel] [ma] ["3A]
+\definemathsymbol  [dashleftarrow]  [rel] [ma] ["38]
+\definemathcommand [dasharrow]      [rel] {\dashleftarrow\mkern-15.8mu\dashrightarrow}
+%definemathcommand [Join]           [rel] {\mathchar"0D6F\mkern-15.8mu\mathchar"0D6E} % !!
+
+\stopmathcollection
+
+\startmathcollection[lbr]
+
+\definemathcharacter [91] [open]    [mi] ["86]
+\definemathcharacter [93] [close]   [mi] ["87]
+\definemathcharacter [(]  [open]    [mi] ["84]
+\definemathcharacter [)]  [close]   [mi] ["85]
+\definemathcharacter [/]  [nothing] [mi] ["3D]
+\definemathcharacter [=]  [rel]     [sy] ["83]
+\definemathcharacter [+]  [bin]     [sy] ["82]
+
+\definemathcharacter [91] [nothing] [mi] ["86] [ex] ["02]
+\definemathcharacter [93] [nothing] [mi] ["87] [ex] ["03]
+\definemathcharacter [(]  [nothing] [mi] ["84] [ex] ["00]
+\definemathcharacter [)]  [nothing] [mi] ["85] [ex] ["01]
+\definemathcharacter [/]  [nothing] [mi] ["3D] [ex] ["0E]
+
+\stopmathcollection
+
+% \startmathcollection[lbr]
+%
+% \definemathcharacter [:]  [punct] [tf] ["3A] % unbelievable
+% \definemathcharacter [;]  [punct] [tf] ["3B] % unbelievable
+%
+% \stopmathcollection
+
+\startmathcollection[lbr]
+
+\definemathsymbol [ldbrack]      [open]  [mi] ["82] [ex] ["82]
+\definemathsymbol [rdbrack]      [close] [mi] ["83] [ex] ["83]
+\definemathsymbol [surfintop]    [op]    [ex] ["90]
+\definemathsymbol [midintop]     [op]    [ex] ["92]
+\definemathsymbol [midointop]    [op]    [ex] ["93]
+\definemathsymbol [midsurfintop] [op]    [ex] ["94]
+\definemathsymbol [largeint]     [op]    [ex] ["5A] [ex] ["95]
+
+% \definemathcommand [surfint]    [nolop] {\surfintop}
+% \definemathcommand [midint]     [nolop] {\midintop}
+% \definemathcommand [midoint]    [nolop] {\midointop}
+% \definemathcommand [midsurfint] [nolop] {\midsurfintop}
+
+\definemathsymbol [surfint]    [nolop] [ex] ["90]
+\definemathsymbol [midint]     [nolop] [ex] ["92]
+\definemathsymbol [midoint]    [nolop] [ex] ["93]
+\definemathsymbol [midsurfint] [nolop] [ex] ["94]
+
+\definemathsymbol [dblint]            [ord] [mi] ["88]
+\definemathsymbol [trplint]           [ord] [mi] ["89]
+\definemathsymbol [contint]           [ord] [mi] ["8A]
+\definemathsymbol [surfint]           [ord] [mi] ["8B]
+\definemathsymbol [volint]            [ord] [mi] ["8C]
+\definemathsymbol [clwint]            [ord] [mi] ["8D]
+\definemathsymbol [cclwcint]          [ord] [mi] ["8E]
+\definemathsymbol [clwcint]           [ord] [mi] ["8F]
+\definemathsymbol [bowtie]            [rel] [mi] ["F6]
+\definemathsymbol [models]            [rel] [sy] ["EE]
+\definemathsymbol [doteq]             [rel] [sy] ["C9]
+\definemathsymbol [cong]              [rel] [sy] ["9B]
+\definemathsymbol [hbar]              [ord] [mi] ["9D]
+\definemathsymbol [neq]               [rel] [ma] ["94]
+\definemathsymbol [rightleftharpoons] [rel] [ma] ["7A]
+\definemathsymbol [leftrightharpoons] [rel] [ma] ["79]
+\definemathsymbol [hookleftarrow]     [rel] [ma] ["3C]
+\definemathsymbol [hookrightarrow]    [rel] [ma] ["3E]
+\definemathsymbol [mapsto]            [rel] [ma] ["2C]
+
+\definemathcommand [longmapsto] {\mapstochar\longrightarrow}
+
+\stopmathcollection
+
+\startmathcollection[lbr]
+
+\definemathsymbol [Gamma]   [alpha] [ucgreek] ["00]
+\definemathsymbol [Delta]   [alpha] [ucgreek] ["01]
+\definemathsymbol [Theta]   [alpha] [ucgreek] ["02]
+\definemathsymbol [Lambda]  [alpha] [ucgreek] ["03]
+\definemathsymbol [Xi]      [alpha] [ucgreek] ["04]
+\definemathsymbol [Pi]      [alpha] [ucgreek] ["05]
+\definemathsymbol [Sigma]   [alpha] [ucgreek] ["06]
+\definemathsymbol [Upsilon] [alpha] [ucgreek] ["07]
+\definemathsymbol [Phi]     [alpha] [ucgreek] ["08]
+\definemathsymbol [Psi]     [alpha] [ucgreek] ["09]
+\definemathsymbol [Omega]   [alpha] [ucgreek] ["0A]
+
+\definemathsymbol [varGamma]   [ord] [vargreek] ["00]
+\definemathsymbol [varDelta]   [ord] [vargreek] ["01]
+\definemathsymbol [varTheta]   [ord] [vargreek] ["02]
+\definemathsymbol [varLambda]  [ord] [vargreek] ["03]
+\definemathsymbol [varXi]      [ord] [vargreek] ["04]
+\definemathsymbol [varPi]      [ord] [vargreek] ["05]
+\definemathsymbol [varSigma]   [ord] [vargreek] ["06]
+\definemathsymbol [varUpsilon] [ord] [vargreek] ["07]
+\definemathsymbol [varPhi]     [ord] [vargreek] ["08]
+\definemathsymbol [varPsi]     [ord] [vargreek] ["09]
+\definemathsymbol [varOmega]   [ord] [vargreek] ["0A]
+
+\stopmathcollection
+
+% we define the whole lot, although only a few differ (esp dot)
+
+% \startmathcollection[lbr]
+% 
+% \definemathsymbol [acute]     [accent] [tf] ["13] % mr -> tf
+% \definemathsymbol [grave]     [accent] [tf] ["12] % mr -> tf
+% \definemathsymbol [ddot]      [accent] [tf] ["7F] % mr -> tf
+% \definemathsymbol [tilde]     [accent] [tf] ["7E] % mr -> tf
+% \definemathsymbol [bar]       [accent] [tf] ["16] % mr -> tf
+% \definemathsymbol [breve]     [accent] [tf] ["15] % mr -> tf
+% \definemathsymbol [check]     [accent] [tf] ["14] % mr -> tf
+% \definemathsymbol [hat]       [accent] [tf] ["5E] % mr -> tf
+% \definemathsymbol [vec]       [accent] [mi] ["7E] % [ord]
+% \definemathsymbol [dot]       [accent] [tf] ["05] % mr -> tf, 5F -> 05
+% \definemathsymbol [widetilde] [accent] [ex] ["65] % [ord]
+% \definemathsymbol [widehat]   [accent] [ex] ["62] % [ord]
+% 
+% \stopmathcollection
+
+\startmathcollection[lbr:texnansi]
+	\definemathsymbol [acute]    [accent] [tf] ["13]
+	\definemathsymbol [grave]    [accent] [tf] ["12]
+	\definemathsymbol [ddot]     [accent] [tf] ["7F]
+	%definemathsymbol [ddot]     [accent] [tf] ["A8] % both is OK
+	\definemathsymbol [tilde]    [accent] [tf] ["7E]
+	%definemathsymbol [tilde]    [accent] [tf] ["98] % both is OK
+	\definemathsymbol [bar]      [accent] [tf] ["16]
+	\definemathsymbol [breve]    [accent] [tf] ["15]
+	\definemathsymbol [check]    [accent] [tf] ["14]
+	\definemathsymbol [hat]      [accent] [tf] ["5E]
+	%definemathsymbol [hat]      [accent] [tf] ["88] % both is OK
+	\definemathsymbol [dot]      [accent] [tf] ["05]
+	% Why is mathring not defined??
+	\definemathsymbol [mathring] [accent] [tf] ["17]
+\stopmathcollection
+
+\startmathcollection[lbr:ec]
+	\definemathsymbol [acute]    [accent] [tf] ["01]
+	\definemathsymbol [grave]    [accent] [tf] ["00]
+	\definemathsymbol [ddot]     [accent] [tf] ["04]
+	\definemathsymbol [tilde]    [accent] [tf] ["03]
+	\definemathsymbol [bar]      [accent] [tf] ["09]
+	\definemathsymbol [breve]    [accent] [tf] ["08]
+	\definemathsymbol [check]    [accent] [tf] ["07]
+	\definemathsymbol [hat]      [accent] [tf] ["02]
+	\definemathsymbol [dot]      [accent] [tf] ["0A]
+	% Why is mathring not defined??
+	\definemathsymbol [mathring] [accent] [tf] ["06]
+\stopmathcollection
+
+\def\LBRroot#1#2%
+  {\setbox\zerocount\hbox{$\mathsurround\zeropoint#1\sqrt{#2}$}
+   \dimen@\ht\zerocount \advance\dimen@-\dp\zerocount
+   \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-7.5mu \box\zerocount}
+
+\def\LBRmatrix#1%
+  {\null\,\vcenter{\normalbaselines\mathsurround\zeropoint
+   \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
+   \mathstrut\crcr\noalign{\kern-0.9\baselineskip}
+   #1\crcr\mathstrut\crcr\noalign{\kern-0.9\baselineskip}}}\,}
+
+\startrawmathcollection[lbr]
+
+\definemathcommand [mathstrut] {\vphantom{f}}
+\definemathcommand [joinrel]   {\mathrel{\mkern-4mu}}
+\definemathcommand [r@@t]      {\LBRroot}
+\definemathcommand [matrix]    {\LBRmatrix}
+
+\stoprawmathcollection
+
+\def\LBRbig  {\@@dobig{8.20}}
+\def\LBRBig  {\@@dobig{10.80}}
+\def\LBRbigg {\@@dobig{13.42}}
+\def\LBRBigg {\@@dobig{16.03}}
+\def\LBRbiggg{\@@dobig{17.72}}
+\def\LBRBiggg{\@@dobig{21.25}}
+
+% \def\LBRbig  {\@@dobig{0.820}}
+% \def\LBRBig  {\@@dobig{1.080}}
+% \def\LBRbigg {\@@dobig{1.342}}
+% \def\LBRBigg {\@@dobig{1.603}}
+% \def\LBRbiggg{\@@dobig{1.772}}
+% \def\LBRBiggg{\@@dobig{2.125}}
+
+\startrawmathcollection[lbr]
+
+\definemathcommand [big]   {\LBRbig}
+\definemathcommand [Big]   {\LBRBig}
+\definemathcommand [bigg]  {\LBRbigg}
+\definemathcommand [Bigg]  {\LBRBigg}
+\definemathcommand [biggg] {\LBRbiggg}
+\definemathcommand [Biggg] {\LBRBiggg}
+
+\stoprawmathcollection
+
+\startrawmathcollection[lbr]
+
+\definemathcommand [bigggl] [open]  {\biggg}
+\definemathcommand [bigggr] [close] {\biggg}
+\definemathcommand [Bigggl] [open]  {\Biggg}
+\definemathcommand [Bigggr] [close] {\Biggg}
+
+\stoprawmathcollection
+
+\protect \endinput

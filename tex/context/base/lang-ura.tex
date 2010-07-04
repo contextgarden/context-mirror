@@ -1,0 +1,158 @@
+%D \module
+%D   [       file=lang-sla,
+%D        version=1997.09.03,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Uralic Languages,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% Todo: replace \'.. by \namedglyph
+
+\writestatus{loading}{ConTeXt Language Macros / Uralic Languages}
+
+%D The framework of this module is set up by Hans Hagen while
+%D many of the first translations were done by Tobias. Later
+%D on, corrections were made by users. If you have suggestions,
+%D or feel that your name missing here, don't hesitate to send
+%D us an email.
+%D
+%D \starttabulate[|lB|l|]
+%D \NC Finnish    \NC             \NC \NR
+%D \NC Hungarian  \NC Balazs Nagy \NC \NR
+%D \stoptabulate
+
+%  Cheremiss, Estonian, Finnish, Karelian, Laap, Mordvinian,
+%  Permian tongues, Hungarian, Ostyak, Vogul, Samoyed
+
+\unprotect
+
+\installlanguage
+  [\s!fi]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day}]
+
+\installlanguage
+  [\s!hu]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,.,\ ,\v!month,\ ,\v!day,.},
+   \s!mapping=ec,
+   \s!encoding=ec]
+
+\installlanguage [finish]    [\s!fi]
+\installlanguage [hungarian] [\s!hu]
+
+\setupheadtext  [\s!fi] [\v!content=Sis\"allys]
+\setupheadtext  [\s!fi] [\v!tables=Taulukkoj]
+\setupheadtext  [\s!fi] [\v!figures=Kuvi]
+\setupheadtext  [\s!fi] [\v!graphics=Grafiikkaoi]
+\setupheadtext  [\s!fi] [\v!intermezzi=Intermezzos]
+\setupheadtext  [\s!fi] [\v!index=Indeksiluku]
+\setupheadtext  [\s!fi] [\v!abbreviations=Lyhennyksi]
+\setupheadtext  [\s!fi] [\v!logos=Vertauskuva]
+\setupheadtext  [\s!fi] [\v!units=Yksik\"ot]
+
+\setupheadtext  [\s!hu] [\v!content=Tartalom]
+\setupheadtext  [\s!hu] [\v!tables=T\'abl\'azatok]
+\setupheadtext  [\s!hu] [\v!figures=\'Abr\'ak]
+\setupheadtext  [\s!hu] [\v!graphics=Grafik\'ak]
+\setupheadtext  [\s!hu] [\v!intermezzi=Intermezzok]
+\setupheadtext  [\s!hu] [\v!index=Index]
+\setupheadtext  [\s!hu] [\v!abbreviations=R\"ovid\'it\'esek]
+\setupheadtext  [\s!hu] [\v!logos=Fejl\'ecek]
+\setupheadtext  [\s!hu] [\v!units=M\'ert\'ekegys\'egek]
+
+\setuplabeltext [\s!fi] [\v!table=Taulukko ]
+\setuplabeltext [\s!fi] [\v!figure=Kuva ]
+\setuplabeltext [\s!fi] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!fi] [\v!graphic=Grafiikka ]
+\setuplabeltext [\s!fi] [\v!chapter=]
+\setuplabeltext [\s!fi] [\v!section=]
+\setuplabeltext [\s!fi] [\v!subsection=]
+\setuplabeltext [\s!fi] [\v!subsubsection=]
+\setuplabeltext [\s!fi] [\v!subsubsubsection=]
+\setuplabeltext [\s!fi] [\v!appendix=]
+\setuplabeltext [\s!fi] [\v!part=Osa ]
+\setuplabeltext [\s!fi] [\v!line=rivi ]
+\setuplabeltext [\s!fi] [\v!lines=rivie ]
+
+\setuplabeltext [\s!hu] [\v!table={,.~t\'abl\'azat:}]
+\setuplabeltext [\s!hu] [\v!figure={,.~\'abra:}]
+\setuplabeltext [\s!hu] [\v!intermezzo={,.~intermezzo:}]
+\setuplabeltext [\s!hu] [\v!graphic={,.~k\'ep:}]
+\setuplabeltext [\s!hu] [\v!chapter={,.~fejezet:}]
+\setuplabeltext [\s!hu] [\v!section={,.}]
+\setuplabeltext [\s!hu] [\v!subsection={,.}]
+\setuplabeltext [\s!hu] [\v!subsubsection={,.}]
+\setuplabeltext [\s!hu] [\v!subsubsubsection={,.}]
+\setuplabeltext [\s!hu] [\v!appendix=]
+\setuplabeltext [\s!hu] [\v!part={,.~r\'esz:}]
+\setuplabeltext [\s!hu] [\v!line={,.~sor:}]
+\setuplabeltext [\s!hu] [\v!lines=sorok]
+
+\setuplabeltext [\s!fi]   [\v!january=tammikuu]
+\setuplabeltext [\s!fi]  [\v!february=helmikuu]
+\setuplabeltext [\s!fi]     [\v!march=maaliskuu]
+\setuplabeltext [\s!fi]     [\v!april=huhtikuu]
+\setuplabeltext [\s!fi]       [\v!may=toukokuu]
+\setuplabeltext [\s!fi]      [\v!june=kes\"akuu]
+\setuplabeltext [\s!fi]      [\v!july=hein\"akuu]
+\setuplabeltext [\s!fi]    [\v!august=elokuu]
+\setuplabeltext [\s!fi] [\v!september=syyskuu]
+\setuplabeltext [\s!fi]   [\v!october=lokakuu]
+\setuplabeltext [\s!fi]  [\v!november=marraskuu]
+\setuplabeltext [\s!fi]  [\v!december=joulukuu]
+
+\setuplabeltext [\s!hu]   [\v!january=janu\'ar]
+\setuplabeltext [\s!hu]  [\v!february=febru\'ar]
+\setuplabeltext [\s!hu]     [\v!march=m\'arcius]
+\setuplabeltext [\s!hu]     [\v!april=\'aprilis]
+\setuplabeltext [\s!hu]       [\v!may=m\'ajus]
+\setuplabeltext [\s!hu]      [\v!june=j\'unius]
+\setuplabeltext [\s!hu]      [\v!july=j\'ulius]
+\setuplabeltext [\s!hu]    [\v!august=augusztus]
+\setuplabeltext [\s!hu] [\v!september=szeptember]
+\setuplabeltext [\s!hu]   [\v!october=okt\'ober]
+\setuplabeltext [\s!hu]  [\v!november=november]
+\setuplabeltext [\s!hu]  [\v!december=december]
+
+\setuplabeltext [\s!fi]    [\v!sunday=sunnuntai]
+\setuplabeltext [\s!fi]    [\v!monday=maanantai]
+\setuplabeltext [\s!fi]   [\v!tuesday=tiistai]
+\setuplabeltext [\s!fi] [\v!wednesday=keskiviikko]
+\setuplabeltext [\s!fi]  [\v!thursday=torstai]
+\setuplabeltext [\s!fi]    [\v!friday=perjantai]
+\setuplabeltext [\s!fi]  [\v!saturday=lauantai]
+
+\setuplabeltext [\s!hu]    [\v!sunday=vas\'arnap]
+\setuplabeltext [\s!hu]    [\v!monday=h\'etf\H{o}]
+\setuplabeltext [\s!hu]   [\v!tuesday=kedd]
+\setuplabeltext [\s!hu] [\v!wednesday=szerda]
+\setuplabeltext [\s!hu]  [\v!thursday=cs\"ut\"ort\"ok]
+\setuplabeltext [\s!hu]    [\v!friday=p\'entek]
+\setuplabeltext [\s!hu]  [\v!saturday=szombat]
+
+%D \ShowAllLanguageValues [\s!fi] [finnish]   {Finnish}   {phone}
+%D \ShowAllLanguageValues [\s!hu] [hungarian] {Hungarian} {rhapsody}
+
+\protect \endinput

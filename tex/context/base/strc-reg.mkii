@@ -1,0 +1,1243 @@
+%D \module
+%D   [       file=strc-reg,
+%D        version=1999.12.27,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Register Management,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Register Management}
+
+\newif \ifautoregisterhack % for the moment a private hack
+
+% new: eigennummer=ja => eerste {} ipv pag nummer
+
+\unprotect
+
+%D Isolated but still indocumented.
+
+%  Formaat tex-utility-input-file <jobname.tui>:
+%
+%    i e {tag} {loc} {pure} {entry+..} {p:c:p:sp:ssp=>page} {realpage}
+%    i s {tag} {loc} {pure} {entry+..} {other entry}
+%
+%  In plaats van + kan een & worden gebruikt. Ook kan als
+%  eerste karakter worden opgegeven wat de scheider is.
+%
+%  \index                {entry}
+%  \index[key]           {entry}
+%  \index[pageclass::]   {entry}
+%  \index[pageclass::key]{entry}
+%  \index                {textclass::entry}
+%  \index[key]           {textclass::entry}
+%  \index[pageclass::]   {textclass::entry}
+%  \index[pageclass::key]{textclass::entry}
+%
+%  Deze file wordt met het Perl script TeXUtil omgezet in
+%  een in te lezen file met de commando's:
+%
+%    \registerentrya {tag} {ingang}
+%    \registerentryb {tag} {subingang}
+%    \registerentryc {tag} {subsubingang}
+%
+%    \registerpage   {tag} {pag,txt} {volgnummer} {paginanummer} {volgnummer}
+%
+%    \registersee    {tag} {pag,txt} {andere ingang}
+%
+%    \registerentry  {tag} {letter}
+
+\def\dosetupregister[#1][#2][#3]%
+  {\ifthirdargument
+     \def\dodosetupregister##1%
+       {\getparameters[\??id##1#2][#3]%
+        \preparepageprefix{\??id##1}}%
+   \else
+     \def\dodosetupregister##1%
+       {\getparameters[\??id##1][#2]%
+        \doifvalue{\??id##1\c!coupling}\v!yes
+          {\appendtoks\coupleregister[##1][#2]\to\everystarttext}%
+        \preparepageprefix{\??id##1}}%
+   \fi
+   \processcommalist[#1]\dodosetupregister}
+
+\def\setupregister
+  {\dotripleempty\dosetupregister}
+
+\def\getlastregisterentry#1%
+  {\def\docommand##1{\def\!!stringa{##1}}%
+   \processseparatedlist[#1][+]\docommand
+   \!!stringa}
+
+\def\registerparameter#1{\csname\??id\currentregister#1\endcsname}
+
+% \enableregime[windows] \setupregister[index][keyexpansion=strict]
+%
+% \index[Ätsch]{Ätsch} test \index{QÄtsch} test \index[ratsch]{RÄtsch} test
+
+\newif\ifwritetoregister \writetoregistertrue
+
+\chardef\registerpagestatus\zerocount
+
+\def\doprocesspageregister[#1]#2#3% key altnum entry
+  {\ifwritetoregister
+     \begingroup
+     \thisisnextinternal\s!ind
+     \ifduplicate\getlastregisterentry{#3}\fi
+     \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#1}%
+     \defconvertexpanded\asciiregisterentryB{\registerparameter\c!expansion   }{#3}%
+     \doifsomething{\registerparameter\c!keyexpansion}
+       {\ifx\asciiregisterentryA\empty
+         \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#3}%
+        \fi}%
+     \makesectionformat
+     \doifelse{\registerparameter\c!ownnumber}\v!yes
+       \donetrue\donefalse
+     \expanded{\writeutility{r % spaces are essential
+       \ifcase\registerpagestatus\space\or e\or f\or t\fi\space
+       {\currentregister} %
+       {\nextinternalreference} %
+       {\asciiregisterentryA} %
+       {\asciiregisterentryB} %
+       {\sectionformat\sectionseparator\sectionseparator\ifdone#2\else\noexpand\pagenumber\fi} %
+       {\noexpand\realfolio}}}%
+     \getfirstcharacter\currentregister
+     \registerinfo{> \firstcharacter}{#3}%
+     \endgroup
+   \fi}
+
+\def\doregister#1%
+  {\chardef\registerpagestatus\plusone
+   \def\currentregister{#1}%
+   \doifelse{\registerparameter\c!ownnumber}\v!yes
+     {\dosingleempty\dodoregister}
+     {\dosingleempty\donoregister}}
+
+\def\donoregister[#1]%
+  {\dodoregister[#1]{}}
+
+% \long\def\doflushatpar#1%
+%  %{\dogotopar{#1}}
+%  %{\dogotopar{\dontleavehmode#1}}   % this one can introduce empty lines
+%   {\dogotopar{#1\ifvmode\nobreak\fi}} % while this one can mess up vertical space
+%
+% fails when [text] \index{test} [empty line] [text] so we now have
+% Taco's test based solution:
+
+\def\doflushatpar
+   {\ifvmode
+      \expandafter\dogotopar
+    \else
+      \expandafter\firstofoneargument
+    \fi}
+
+\def\dodoregister[#1]#2#3%
+  {\doflushatpar{\doprocesspageregister[#1]{#2}{#3}}}
+
+\def\writetoregister[#1]% to be documented
+  {\doregister{#1}}
+
+% \def\startregister
+%   {\dotripleempty\dostartregister}
+
+% \def\dostartregister[#1][#2][#3]#4%
+%   {\chardef\registerpagestatus\plustwo
+%    \def\currentregister{#1}%
+%    \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#3]{#4}}%
+%    \dodoregister[#3]{}{#4}}
+
+\def\startregister
+   {\doquadrupleempty\dostartregister}
+
+\def\dostartregister[#1][#2][#3][#4]#5%  % 3 args:  #3 is sortkey
+   {\chardef\registerpagestatus\plustwo  % 4 args:  #3 is type, #4 is sortkey
+    \def\currentregister{#1}%
+    \iffourthargument
+      \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#4]{#5}}%
+      \dodoregister[#4]{#3}{#5}%
+    \else
+      \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#3]{#5}}%
+      \dodoregister[#3]{}{#5}%
+    \fi}
+
+\def\stopregister
+  {\dodoubleargument\dostopregister}
+
+\def\dostopregister[#1][#2]%
+  {\getvalue{\??id#1\??id#2}\letgvalue{\??id#1\??id#2}\relax}
+
+\def\dodostopregister[#1][#2]#3%
+  {\chardef\registerpagestatus\plusthree
+   \def\currentregister{#1}%
+   \dodoregister[#2]{}{#3}} % key altnum entry
+
+\def\doprocessseeregister[#1]#2#3%
+  {\ifwritetoregister
+     \begingroup
+     \thisisnextinternal\s!ind
+     \ifduplicate\getlastregisterentry{#2}\fi
+     \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#1}%
+     \defconvertexpanded\asciiregisterentryB{\registerparameter\c!expansion   }{#2}%
+     \defconvertexpanded\asciiregisterentryC{\registerparameter\c!expansion   }{#3}%
+     \doifsomething{\registerparameter\c!keyexpansion}
+       {\ifx\asciiregisterentryA\empty
+          \defconvertexpanded\asciiregisterentryA{\registerparameter\c!keyexpansion}{#2}%
+        \fi}%
+     \makesectionformat
+     \expanded{\writeutility{r s %
+       {\currentregister} %
+       {\nextinternalreference} %
+       {\asciiregisterentryA} %
+       {\asciiregisterentryB} %
+       {\asciiregisterentryC} %
+       {\sectionformat}}}%
+     \endgroup
+     \registerinfo{> see}{#2}%
+   \fi}
+
+\def\complexdoseeregister[#1]#2#3%
+  {\doflushatpar{\doprocessseeregister[#1]{#2}{#3}}}
+
+\def\doseeregister#1%
+  {\def\currentregister{#1}%
+   \complexorsimpleempty\doseeregister} % = \dosingleempty\doseeregister
+
+\def\dowritetoregister[#1]%   % de twee-traps-aanroep is nodig
+  {\edef\currentregister{#1}% % om gebruik van \ExpandBothAfter
+   \doprocesspageregister}    % mogelijk te maken
+
+\def\writetoregister
+  {\dodoubleempty\dowritetoregister}
+
+\def\ifregistergeplaatst{\ifutilitydone}
+
+\newif\iffirstregisterpage
+\newif\iffirstregisterentry
+
+\let\c!entrya\empty
+\let\c!entryb\empty
+\let\c!entryc\empty
+\let\c!entryd\empty
+
+\def\nextregisterpage
+  {\iffirstregisterpage
+     \doglobal\newcounter\registerpagenumber
+   \fi
+   \doglobal\increment\registerpagenumber}
+
+\def\doregisterpagelocation#1#2%
+  {\nextregisterpage
+   \hbox to 1em{\hss\doregisterpagehowto{#1}{#2}\hss}}
+
+% todo: \installregisterpagehandler
+
+\def\setregisterpage#1% todo: currentregister gebruiken
+  {\let\registerpageseparator\empty
+   \processaction
+     [\getvalue{\??id#1\c!symbol}]
+     [      \c!n=>{\def\doregisterpage##1[##2]%
+                     {\doregisterpagelocation{#1}{\registerpagenumber}\/}},
+            \c!a=>{\def\doregisterpage##1[##2]%
+                     {\doregisterpagelocation{#1}{\character{\registerpagenumber}\/}}},
+               1=>{\def\doregisterpage##1[##2]%
+                     {\doregisterpagelocation{#1}{$\bullet$}}},
+               2=>{\def\doregisterpage##1[##2]%
+                     {\doregisterpagelocation{#1}{\vrule\!!width1em\!!height1ex\!!depth\zeropoint}}},
+         \v!none=>{\def\doregisterpage##1[##2]{}},%
+      \s!unknown=>{\def\registerpagesymbol{\getvalue{\??id#1\c!symbol}}%
+                   \def\doregisterpage##1[##2]%
+                     {\doregisterpagelocation{#1}{\registerpagesymbol}}},
+      \s!default=>{\def\registerpageseparator{,}%
+                   \let\doregisterpage\doregisterpagedefault}]}
+
+\def\doregisterpagedefault#1[#2]%
+  {\doregisterpagehowto{#1}{\strut\pageprefix{\??id#1}[#2]\translatednumber[#2]}}
+
+% test case
+%
+% \starttext
+%     \placelist[section][criterium=all] \blank[2*big]
+%     \placeregister[index][compress=no] \blank[2*big]
+%     \placeregister[index][compress=no,sectionnumber=yes] \blank[2*big]
+%     \placeregister[index][compress=yes] \page
+%     test text \index{test index}
+%     \section{heading}
+%     more test text \index{test index}
+%     \section{heading}
+%     more test text \index{test index}
+%     \page
+%     \section{heading text \index{test index}}
+%     more test text \index{test index}
+%     \page
+%     test text \index{test index}
+%     \section{heading text \index{test index}}
+%     more test text \index{test index}
+% \stoptext
+
+\let\registerpagehowto\empty
+\let\registertexthowto\empty
+
+\def\setregisterhowto[#1,#2]%
+  {\def\registerpagehowto{#1}%
+   \def\registertexthowto{#2}}%
+
+\def\doregistertexthowto#1#2%
+  {\dostartattributes{\??id#1\registertexthowto}\c!textstyle\c!textcolor\empty
+   \getvalue{\??id#1\c!textcommand}{#2}%
+   \dostopattributes}
+
+\def\doregisterpagehowto#1#2%
+  {\dostartattributes{\??id#1\registerpagehowto}\c!pagestyle\c!pagecolor\empty
+   \getvalue{\??id#1\c!pagecommand}{#2}%
+   \dostopattributes}
+
+\def\registerentry #1{\executeifdefined{#1\s!entry }\gobbleoneargument   }
+\def\registerentrya#1{\executeifdefined{#1\s!entrya}\gobbleoneargument   }
+\def\registerentryb#1{\executeifdefined{#1\s!entryb}\gobbleoneargument   }
+\def\registerentryc#1{\executeifdefined{#1\s!entryc}\gobbleoneargument   }
+\def\registerentryd#1{\executeifdefined{#1\s!entryd}\gobbleoneargument   }
+\def\registersee   #1{\executeifdefined{#1\s!see   }\gobblethreearguments}
+\def\registerpage  #1{\executeifdefined{#1\s!page  }\gobblefourarguments }
+\def\registerfrom  #1{\executeifdefined{#1\s!from  }\gobblefourarguments }
+\def\registerto    #1{\executeifdefined{#1\s!to    }\gobblefourarguments }
+
+\def\doresetregister#1%
+  {\letvalue{#1\s!entrya}\gobbleoneargument
+   \letvalue{#1\s!entryb}\gobbleoneargument
+   \letvalue{#1\s!entryc}\gobbleoneargument
+   \letvalue{#1\s!entryd}\gobbleoneargument
+   \letvalue{#1\s!see   }\gobblethreearguments
+   \letvalue{#1\s!page  }\gobblefourarguments
+   \letvalue{#1\s!from  }\gobblefourarguments
+   \letvalue{#1\s!to    }\gobblefourarguments
+   \letvalue{#1\s!entry }\gobbleoneargument}
+
+\newif\iffirstsubentry
+\newif\iffirstsubsubentry
+
+\newcounter\currententrylevel
+
+\let\c!entryletter   =\empty
+\let\c!entryreference=\empty
+\let\c!entrya        =\relax
+\let\c!entryb        =\relax
+\let\c!entryc        =\relax
+\let\c!entryd        =\relax
+
+\def\limitedregisterentry#1#2%
+  {\getvalue{\??id#1\c!textcommand}%
+     {\doifelsenothing{\??id#1\c!maxwidth}
+        {#2}
+        {\limitatetext{#2}{\getvalue{\??id#1\c!maxwidth}}{\unknown}}}}
+
+\def\dosetpageregisterpage#1#2#3#4#5#6%
+  {\doifreglevelelse[#5]{\dodosetpageregisterpage{#1}{#2}{#3}{#4}{#5}{#6}}{}}
+
+\def\dodosetpageregisterpageA#1#2#3#4#5#6%
+   {\global\utilitydonetrue
+    \c!entryletter
+    \setregisterhowto[#3]%
+    \def\dohandleregisterentry##1%
+      {\bgroup
+       \if!!donea % \strut nieuw
+         \hhboxindent\hangindent % maybe also left and right skip
+         \setbox0\hbox{\doregistertexthowto{#2}{\strut\limitedregisterentry{#2}{##1}}}%
+         \unhhbox0\with{\gotonextinternal\s!ind{#4}{#6}{\box\hhbox}}%
+       \else
+         \doregistertexthowto{#2}{##1}%
+       \fi
+       \egroup
+       \!!doneafalse}%
+    \!!doneafalse
+    \doifelsevalue{\??id#2\c!interaction}\v!text
+      {\ifcase\currententrylevel                 \or
+         \!!doneatrue\c!entrya\c!entryb\c!entryc\c!entryd \or
+         \c!entrya\!!doneatrue\c!entryb\c!entryc\c!entryd \or
+         \c!entrya\c!entryb\!!doneatrue\c!entryc\c!entryd \or
+         \c!entrya\c!entryb\c!entryc\!!doneatrue\c!entryd \fi}
+      {\c!entrya\c!entryb\c!entryc\c!entryd}%
+    \global\let\c!entrya\relax
+    \global\let\c!entryb\relax
+    \global\let\c!entryc\relax
+    \global\let\c!entryd\relax
+    \global\let\c!entryletter\relax
+    \global\let\c!entryreference\relax}
+
+% \def\dodosetpageregisterpageB#1#2#3#4#5#6%
+%   {\iffirstregisterpage
+%      \expandafter\hskip\getvalue{\??id#2\c!distance}\relax
+%    \else\ifnum#1=3
+%      \strut|--|\relax % -- !
+%    \else
+%      % \relax after space needed because | looks ahead
+%      \strut\registerpageseparator|\space|\relax
+%    \fi\fi
+%    \iftrue % \iftrue ...\fi to preserve indentation, can be folded out
+%      \begingroup
+%      %
+%      \doifelsevalue{\??id#2\c!prefix}\v!none % default v!both
+%        {\chardef\pageprefixmode\zerocount}%
+%        {\doifvalue{\??id#2\c!prefix}\v!first % only first in range (1.2-4)
+%           {\ifnum#1=3 \chardef\pageprefixmode\zerocount \fi}}%
+%      %
+%      \doifelsevalue{\??id#2\c!interaction}\v!pagenumber
+%        {\bgroup
+%         \setbox0\hbox{\showlocation{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+%         \gotonextinternal{\s!ind}{#4}{#6}{\box0}%{\copy0}%
+%         \egroup}
+%        {\hbox{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+%      \endgroup
+%      \ignorespaces
+%      \relax
+%    \fi
+%    \global\firstregisterpagefalse}
+
+\def\dodosetpageregisterpageB#1#2#3#4#5#6%
+  {\iffirstregisterpage
+     \expandafter\hskip\getvalue{\??id#2\c!distance}\relax
+   \else\ifnum#1=3
+     \strut|--|\relax % -- !
+   \else
+     % \relax after space needed because | looks ahead
+% TH: next line replaced
+%    \strut\registerpageseparator|\space|\relax
+     \strut \registerpageseparator{ }%
+% /TH
+   \fi\fi
+   \iftrue % \iftrue ...\fi to preserve indentation, can be folded out
+     \begingroup
+     %
+     \doifelsevalue{\??id#2\c!prefix}\v!none % default v!both
+       {\chardef\pageprefixmode\zerocount}%
+       {\doifvalue{\??id#2\c!prefix}\v!first %
+          {\ifnum#1=3 \chardef\pageprefixmode\zerocount \fi}}%
+     %
+     \doifelsevalue{\??id#2\c!interaction}\v!pagenumber
+       {\bgroup
+        \setbox0
+          \hbox{\showlocation{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+        \gotonextinternal{\s!ind}{#4}{#6}{\box0}%{\copy0}%
+        \egroup}
+       {\hbox{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+     \endgroup
+     \ignorespaces
+     \relax
+   \fi
+   \global\firstregisterpagefalse}
+
+\def\resetseenregisterpage
+  {\global\let\firstseenregisterreal  \relax
+   \global\let\currentseenregisterreal\relax
+   \global\let\lastseenregisterreal   \relax
+   \global\let\firstseenregisterpage  \relax
+   \global\let\currentseenregisterpage\relax
+   \global\let\lastseenregisterpage   \relax}
+
+\resetseenregisterpage
+
+\def\dodosetpageregisterpageC#1#2#3#4#5#6%
+  {\xdef\currentseenregisterpage{#5}%
+   \xdef\currentseenregisterreal{#6}%
+   \ifx\firstseenregisterreal\relax
+     % no range yet
+     \global\let\firstseenregisterreal\currentseenregisterreal
+     \global\let\firstseenregisterpage\currentseenregisterpage
+     \global\let\lastseenregisterreal \currentseenregisterreal
+     \global\let\lastseenregisterpage \currentseenregisterpage
+   \else\ifnum\lastseenregisterreal=\currentseenregisterreal\relax
+     % same page (catch error)
+   \else\ifnum\numexpr\lastseenregisterreal+\plusone\relax=\currentseenregisterreal\relax
+     \global\let\lastseenregisterreal \currentseenregisterreal
+     \global\let\lastseenregisterpage \currentseenregisterpage
+   \else
+     \global\let\savedcurrentseenregisterreal\currentseenregisterreal
+     \global\let\savedcurrentseenregisterpage\currentseenregisterpage
+     \flushseenregisterpage
+     \global\let\firstseenregisterreal\savedcurrentseenregisterreal
+     \global\let\firstseenregisterpage\savedcurrentseenregisterpage
+     \global\let\lastseenregisterreal \savedcurrentseenregisterreal
+     \global\let\lastseenregisterpage \savedcurrentseenregisterpage
+   \fi\fi\fi
+   \gdef\flushseenregisterpage{\doflushseenregisterpage{#1}{#2}{#3}{#4}}}
+
+% \def\dodosetpageregisterpageC#1#2#3#4#5#6%
+%   {\xdef\currentseenregisterpage{#5}%
+%    \xdef\currentseenregisterreal{#6}%
+%    \firstregisterpagefalse
+%    \gdef\flushseenregisterpage{\doflushseenregisterpage{#1}{#2}{#3}{#4}}%
+%    \ifx\firstseenregisterreal\relax
+%      % no range yet
+%      \global\let\firstseenregisterreal\currentseenregisterreal
+%      \global\let\firstseenregisterpage\currentseenregisterpage
+%      \global\let\lastseenregisterreal \currentseenregisterreal
+%      \global\let\lastseenregisterpage \currentseenregisterpage
+%    \else\ifnum\firstseenregisterreal=\currentseenregisterreal\relax
+%      \global\let\firstseenregisterreal\currentseenregisterreal
+%      \global\let\firstseenregisterpage\currentseenregisterpage
+%      \global\let\lastseenregisterreal \currentseenregisterreal
+%      \global\let\lastseenregisterpage \currentseenregisterpage
+%    \else\ifnum\lastseenregisterreal=\currentseenregisterreal\relax
+%      \global\let\lastseenregisterpage \currentseenregisterpage
+%    \else\ifnum\numexpr\lastseenregisterreal+\plusone\relax=\currentseenregisterreal\relax
+%      \global\let\lastseenregisterreal \currentseenregisterreal
+%      \global\let\lastseenregisterpage \currentseenregisterpage
+%    \else
+%      % back up, flush, go on
+%      \global\let\savedcurrentseenregisterreal\currentseenregisterreal
+%      \global\let\savedcurrentseenregisterpage\currentseenregisterpage
+%      \let\currentseenregisterpage\lastseenregisterpage
+%      \let\currentseenregisterreal\lastseenregisterreal
+%      \flushseenregisterpage
+%      \global\let\firstseenregisterreal\savedcurrentseenregisterreal
+%      \global\let\firstseenregisterpage\savedcurrentseenregisterpage
+%      \global\let\lastseenregisterreal \savedcurrentseenregisterreal
+%      \global\let\lastseenregisterpage \savedcurrentseenregisterpage
+%    \fi\fi\fi\fi}
+
+\def\doflushseenregisterpage#1#2#3#4%
+  {\global\let\flushseenregisterpage\relax
+   \ifx\firstseenregisterreal\relax
+     % nothing in the hold
+   \else\ifx\firstseenregisterreal\lastseenregisterreal
+     \expanded{\dodosetpageregisterpageB{1}{#2}{#3}{#4}{\lastseenregisterpage}{\lastseenregisterreal}}%
+   \else
+     \expanded{\dodosetpageregisterpageB{2}{#2}{#3}{#4}{\firstseenregisterpage}{\firstseenregisterreal}}%
+     \expanded{\dodosetpageregisterpageB{3}{#2}{#3}{#4}{\lastseenregisterpage }{\lastseenregisterreal }}%
+   \fi\fi
+   \resetseenregisterpage}
+
+\let\flushseenregisterpage\relax
+
+\chardef\collapseregisterpages\zerocount
+
+\def\dodosetpageregisterpage
+  {\ifcase\collapseregisterpages
+     \expandafter\dodosetpageregisterpagenormal
+   \else
+     \expandafter\dodosetpageregisterpagecollapsed
+   \fi}
+
+\def\dodosetpageregisterpagenormal#1#2#3#4#5#6%
+  {\dodosetpageregisterpageA{#1}{#2}{#3}{#4}{#5}{#6}%
+   \dodosetpageregisterpageB{#1}{#2}{#3}{#4}{#5}{#6}}
+
+% \def\dodosetpageregisterpagecollapsed#1#2#3#4#5#6%
+%   {\dodosetpageregisterpageA{#1}{#2}{#3}{#4}{#5}{#6}%
+%    \dodosetpageregisterpageC{#1}{#2}{#3}{#4}{#5}{#6}}
+
+\def\dodosetpageregisterpagecollapsed#1#2#3#4#5#6%
+  {\ifx\firstseenregisterreal\relax\flushseenregisterpage\fi
+   \dodosetpageregisterpageA{#1}{#2}{#3}{#4}{#5}{#6}%
+   \dodosetpageregisterpageC{#1}{#2}{#3}{#4}{#5}{#6}}
+
+% test case for collapsing (experimental, for Steffen Wolfrum)
+%
+% \starttext
+% \chardef\collapseregisterpages\zerocount \placeregister[index] \blank[2*big]
+% \chardef\collapseregisterpages\plusone   \placeregister[index] \page
+% \dorecurse{10}{test 1:!\index{test} test \page}
+% \dorecurse{5} {test 2:\recurselevel      \page}
+% \dorecurse{10}{test 3:!\index{test} test \page}
+% \dorecurse{5} {test 4:\recurselevel      \page}
+% \dorecurse{1} {test 5:!\index{test} test \page}
+% \dorecurse{5} {test 6:\recurselevel      \page}
+% \dorecurse{10}{test 7:!\index{test} test \page}
+% \dorecurse{5} {test 8:\recurselevel      \page}
+% oeps \index{oeps}
+% xxxx \index{xxxx}
+% todo \index{todo}
+% \stoptext
+
+\def\dosetpageregistersee#1#2#3#4% ugly separator hack
+  {\flushseenregisterpage
+   \expanded{\doifreglevelelse[#4\sectionseparator\sectionseparator0]}%
+     {{\global\utilitydonetrue
+       \setregisterhowto[#2]%
+       \def\dohandleregisterentry##1% dubbelop | \strut nieuw
+         {\doregistertexthowto{#1}{\strut\limitedregisterentry{#1}{##1}}}%
+       \getvalue
+         {#1\ifcase\currententrylevel\s!entrya\or\s!entryb\or\s!entryc\else\s!entryd\fi}%
+         {\doregisterpagehowto{#1}{\labeltexts\v!see{#3}}}%
+       \c!entryletter\c!entrya\c!entryb\c!entryc\c!entryd
+       \global\let\c!entrya\relax
+       \global\let\c!entryb\relax
+       \global\let\c!entryc\relax
+       \global\let\c!entryd\relax
+       \global\let\c!entryletter\relax
+       \global\let\c!entryreference\relax
+    %   \global\firstregisterentrytrue
+       \global\firstregisterpagetrue}}
+     {}}
+
+%D Extended with variant:
+
+\def\doregistercharacter[#1]#2%
+  {\global\firstregisterentrytrue
+   \doifsomething{#2}
+     {\doifelsevalue{\??id#1\c!indicator}\v!yes
+        {\executeifdefined
+           {\strippedcsname\doregistercharacter\getvalue{\??id#1\c!alternative}}%
+           \doregistercharactera
+           [#1]{#2}}
+        {\noregistercharacter[#1]{#2}}}}
+
+\def\noregistercharacter[#1]#2%
+  {\getvalue{\??id#1\c!before}%
+   \goodbreak}
+
+% a = <before> <goodbreak> <character> <par> <after> <nobreak>
+
+\def\doregistercharactera[#1]#2%
+  {\getvalue{\??id#1\c!before}%
+   \vskip\lineheight\goodbreak\vskip-\lineheight
+   \ifhmode\unskip\else\noindent\fi % brrr
+   \getvalue{\??id#1\c!command}{\doattributes{\??id#1}\c!style\c!color{\strut\ignorespaces#2}}%
+   \getvalue{\??id#1\c!after}%
+   \par\nobreak}
+
+% b = <goodbreak> <before> <character> <after> <nobreak>
+
+\def\doregistercharacterb[#1]#2% here no lineheight hackery ! ! !
+  {\getvalue{\??id#1\c!before}%
+   \ifhmode\unskip\else\noindent\fi % brrr
+   \getvalue{\??id#1\c!command}%
+     {\doattributes{\??id#1}\c!style\c!color{\strut\ignorespaces#2}}%
+   \getvalue{\??id#1\c!after}%
+   \nobreak}
+
+\def\doregistercharacterA[#1]#2{\doregistercharactera[#1]{\WORD{#2}}}
+\def\doregistercharacterB[#1]#2{\doregistercharacterb[#1]{\WORD{#2}}}
+
+%D Don't use \type{\string#2}; another hack is needed, since
+%D \type {#2} can be \type {\string} itself.
+
+% \def\doregisterreference[#1]#2%
+%   {\doifvalue{\??id#1\c!referencing}\v!on
+%      {\pagereference[#1:#2]}}
+
+\def\doregisterreference[#1]#2%
+  {\doifsomething{#2}
+     {\doifvalue{\??id#1\c!referencing}\v!on
+        {\pagereference[#1:\strippedcsname#2]}}}
+
+\def\dosetpageregisterletter#1#2%
+  {\flushseenregisterpage
+   \gdef\c!entryreference
+     {\global\let\c!entryreference\relax
+      \doregisterreference[#1]{#2}}%
+   \gdef\c!entryletter
+     {\global\utilitydonetrue
+      \global\let\c!entryletter\relax
+      \doregistercharacter[#1]{#2}}}
+
+% \def\HowUgly    #1{\doHowUgly#1\relax}
+% \def\doHowUgly#1#2\relax{\iffirstregisterentry{\bf#1}\else#1\fi#2} % unchecked
+%
+% \setupregister[index][indicator=no,deeptextcommand=\HowUgly]
+%
+% \starttext
+%     \chapter{First Chapter}
+%         Some text...\index{word}
+%         \section {First Section}
+%             Some text...\index{word}
+%             Some text...\index{another entry}
+%             Some text...\index{ansi}
+%             Some text...\index{another entry}
+%     \page[yes]
+%     \completeindex
+% \stoptext
+
+\def\dohandlepageregisterentry#1#2%
+  {\dohandleregisterentry{\executeifdefined{\??id#1\c!deeptextcommand}\firstofoneargument{#2}}}
+
+\def\dosetpageregisterentrya#1#2%
+  {\flushseenregisterpage
+   \edef\currententrylevel{1}%
+   \global\let\c!entryb\relax
+   \global\let\c!entryc\relax
+   \global\let\c!entryd\relax
+   \gdef\c!entrya
+     {\iffirstregisterentry\else\endgraf\fi % new
+      \global\firstregisterpagetrue
+      \hangindent1em\noindent\c!entryreference
+      \dohandlepageregisterentry{#1}{#2}%
+      \global\firstregisterentryfalse
+      \global\firstsubentrytrue
+      \global\firstsubsubentrytrue}}
+
+\def\dosetpageregisterentryb#1#2%
+  {\flushseenregisterpage % redundant
+   \edef\currententrylevel{2}%
+   \global\let\c!entryd\relax
+   \global\let\c!entryc\relax
+   \global\def\c!entryb
+     {\iffirstregisterentry\else\endgraf\fi % new
+      \global\firstregisterpagetrue
+      \global\let\c!entrya\relax
+      \iffirstsubentry\nobreak\fi
+      \hangindent2em\noindent\c!entryreference\hskip1em\relax
+      \dohandlepageregisterentry{#1}{#2}%
+      \global\firstregisterentryfalse
+      \global\firstsubentryfalse
+      \global\firstsubsubentrytrue}}
+
+\def\dosetpageregisterentryc#1#2%
+  {\flushseenregisterpage % redundant
+   \edef\currententrylevel{3}%
+   \gdef\c!entryc
+     {\iffirstregisterentry\else\endgraf\fi % new
+      \global\firstregisterpagetrue
+      \global\let\c!entrya\relax
+      \global\let\c!entryb\relax
+      \iffirstsubsubentry\nobreak\fi
+      \hangindent3em\noindent\c!entryreference\hskip2em\relax
+      \dohandlepageregisterentry{#1}{#2}%
+      \global\firstregisterentryfalse
+      \global\firstsubsubentryfalse}}
+
+\def\dosetpageregisterentryd#1#2%
+  {\flushseenregisterpage % redundant
+   \edef\currententrylevel{4}%
+   \gdef\c!entryd
+     {\iffirstregisterentry\else\endgraf\fi % new
+      \global\firstregisterpagetrue
+      \global\let\c!entrya\relax
+      \global\let\c!entryb\relax
+      \global\let\c!entryc\relax
+      \iffirstsubsubentry\nobreak\fi
+      \hangindent4em\noindent\c!entryreference\hskip3em\relax
+      \dohandlepageregisterentry{#1}{#2}%
+      \global\firstregisterentryfalse
+      \global\firstsubsubentryfalse}}
+
+\def\dosetpageregister#1% \currentregister gebruiken
+  {\dosetreglevel{#1}%
+   \global\let\currentregisterentry\empty
+   \global\firstsubentrytrue
+   \global\firstsubsubentrytrue
+   \setregisterpage{#1}%
+   \setvalue{#1\s!entrya}{\dosetpageregisterentrya {#1}}%
+   \setvalue{#1\s!entryb}{\dosetpageregisterentryb {#1}}%
+   \setvalue{#1\s!entryc}{\dosetpageregisterentryc {#1}}%
+   \setvalue{#1\s!entryd}{\dosetpageregisterentryd {#1}}%
+   \setvalue{#1\s!page  }{\dosetpageregisterpage{1}{#1}}%
+   \setvalue{#1\s!from  }{\dosetpageregisterpage{2}{#1}}%
+   \setvalue{#1\s!to    }{\dosetpageregisterpage{3}{#1}}%
+   \setvalue{#1\s!see   }{\dosetpageregistersee    {#1}}%
+   \setvalue{#1\s!entry }{\dosetpageregisterletter {#1}}}
+
+\def\dosetreglevel#1%
+  {\dosetfilterlevel{\getvalue{\??id#1\c!criterium}}\empty}
+
+\def\getalllistreferences#1#2%
+  {\gdefconvertexpanded\currentregisterentry{\getvalue{\??id#1\c!expansion}}{#2}%
+   \doifdefinedelse{\??id#1\??id\currentregisterentry}
+     {\edef\alllistreferences%
+        {\getvalue{\??id#1\??id\currentregisterentry}}%
+      \beforesplitstring\alllistreferences\at::\to\internallistreference
+      \aftersplitstring \alllistreferences\at::\to\alllistreferences}
+     {\let\alllistreferences\empty
+      \def\internallistreference{0}}}
+
+\def\dosetlinkregister#1% is die page reference echt nodig?
+  {\dosetreglevel{#1}%
+   \setregisterpage{#1}%
+   \global\let\currentregisterentry\empty
+   \global\firstsubentrytrue % not needed
+   \global\firstsubsubentrytrue % not needed too
+   \setvalue{#1\s!entrya}##1{\dosetlinkregisterentrya{#1}{##1}}%
+   \setvalue{#1\s!entry }##1{\dosetpageregisterletter{#1}{##1}}}
+
+\def\dosetlinkregisterentrya#1#2%
+   {\global\utilitydonetrue
+    \c!entryletter
+    \iflocation
+      \getalllistreferences{#1}{#2}%
+      % no \endgraf
+      \hangindent1em\noindent\c!entryreference
+      %
+      %\thisissomeinternal{\s!lin}{\internallistreference}%
+      %
+      \pagereference[-:\s!lin:\internallistreference]% -: added
+      %
+      \getcommacommandsize[\alllistreferences]%
+      \getfromcommacommand[\alllistreferences][1]%
+      \ifnum\commalistsize=1
+        \let\firstlistreference\empty
+        \let\midlistreference\commalistelement
+        \let\lastlistreference\empty
+      \else
+        \let\firstlistreference\commalistelement
+        \getfromcommacommand[\alllistreferences][\commalistsize]%
+        \let\lastlistreference\commalistelement
+        \ifnum\commalistsize=2
+          \let\midlistreference\empty
+        \else
+          \!!counta\commalistsize
+          \divide\!!counta 2
+          \getfromcommacommand[\alllistreferences][\!!counta]%
+          \let\midlistreference\commalistelement
+        \fi
+      \fi
+      % aangepast
+      \def\dodocommand[##1-##2]%
+        {\gotonextinternal{\s!ind}{##1}{##2}{\box0}}%
+      \doifelsevalue{\??id#1\c!interaction}\v!pagenumber
+        {\limitedregisterentry{#1}{#2}} % paginanummer
+        {{\setbox0\hbox{\limitedregisterentry{#1}{\begstrut#2}}%
+          \ifx\firstlistreference\empty  % tekst,alles
+            \ifx\midlistreference\empty
+              \box0
+            \else
+              \expandafter\dodocommand\expandafter[\midlistreference]%
+            \fi
+          \else
+            \expandafter\dodocommand\expandafter[\firstlistreference]%
+          \fi}}%
+      \doifvalue{\??id#1\c!number}\v!yes
+        {\hskip\getvalue{\??id#1\c!distance}(\commalistsize)}%
+      \doifnotvalue{\??id#1\c!interaction}\v!text % paginanummer,alles
+        {\def\docommand##1##2%
+           {{\setbox0\hbox{\showlocation{\hbox to 1em{\hss\symbol[##2]\hss}}}%
+             \ifx##1\empty
+               % \hskip\wd0 % (optioneel maken)
+             \else
+               \expandafter\dodocommand\expandafter[##1]%
+             \fi}}%
+         \hskip\getvalue{\??id#1\c!distance}%
+         \docommand\firstlistreference\v!previous
+         \docommand\midlistreference\v!somewhere
+         \docommand\lastlistreference\v!next}%
+      % tot hier
+    \else
+      % no \endgraf
+      \noindent\c!entryreference
+      \limitedregisterentry{#1}{#2}%
+    \fi
+\endgraf}
+
+\def\dosetregister#1%
+  {\doifelsevalue{\??id#1\c!coupling}\v!yes
+     {\ifautoregisterhack
+        \dosetautoregister{#1}%
+      \else
+        \dosetlinkregister{#1}%
+      \fi}
+     {\dosetpageregister{#1}}}
+
+\newcounter\internallistreference
+
+\def\doloadregisterlinks#1%
+  {\dosetreglevel{#1}%
+   \setregisterpage{#1}%
+   \global\let\currentregisterentry\empty
+   \global\firstregisterpagetrue
+   \setvalue{#1\s!entrya}##1%
+     {\global\firstregisterpagetrue
+      \gdefconvertedargument\currentregisterentry{##1}% global nodig?
+      \doglobal\increment\internallistreference}%
+   \setvalue{#1\s!from}%
+     {\getvalue{#1\s!page}}%
+   \ifautoregisterhack
+     \setvalue{#1\s!page}##1##2##3##4%
+       {\doifreglevelelse[##3]
+          {\global\utilitydonetrue
+           \iffirstregisterpage
+             \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+               {\internallistreference::##4}%
+           \else % catches errors in index
+             \ifcsname\??id#1\??id\currentregisterentry\endcsname
+               \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+                 {\csname\??id#1\??id\currentregisterentry\endcsname,##4}%
+             \fi
+           \fi}
+          {}}%
+   \else
+     \setvalue{#1\s!page}##1##2##3##4%
+       {\doifreglevelelse[##3]
+          {\global\utilitydonetrue
+           \iffirstregisterpage
+             \global\firstregisterpagefalse
+             \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+               {\internallistreference::##2-##4}%
+           \else % catches errors in index
+             \ifcsname\??id#1\??id\currentregisterentry\endcsname
+               \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+                 {\csname\??id#1\??id\currentregisterentry\endcsname,##2-##4}%
+             \fi
+           \fi}
+          {}}%
+   \fi}
+
+\def\docoupleregister[#1][#2]%
+  {\iflocation
+     \ifcase0\countervalue{autolink:#1}\relax % only once
+       \begingroup
+       \let\dosetregister\doloadregisterlinks
+       \def\currentregister{#1}%
+       \setupregister[#1][#2]%
+       \doutilities\currentregister{\registerparameter\c!file}\currentregister\dobeforeplaceregister\doafterplaceregister
+       \endgroup
+       \ifautoregisterhack
+         \doinitializeautoregister{#1}%
+       \else
+         \doinitializelinkregister{#1}%
+       \fi
+     \fi
+   \fi}
+
+\def\coupleregister
+  {\dodoubleempty\docoupleregister}
+
+\def\dodocommandprolinrefAA[#1-#2]%
+  {\def\lastlistreference{#1-#2}}
+
+\def\dodocommandprolinrefA[#1-#2]%
+  {\def\lastlistreference{#1-#2}%
+   \ifx\firstlistreference\empty
+     \let\firstlistreference\lastlistreference
+   \fi
+   \ifnum#1<\nextinternalreference\relax
+     \let\prevlistreference\lastlistreference
+   \else\ifnum#1>\nextinternalreference\relax
+     \let\nextlistreference\lastlistreference
+     \let\dodocommandprolinrefA\dodocommandprolinrefAA
+   \else
+     \let\selflistreference\lastlistreference
+   \fi\fi}
+
+\def\docommandprolinrefA#1%
+  {\dodocommandprolinrefA[#1]}
+
+\def\dodocommandprolinrefB[#1-#2]%
+  {\gotonextinternal{\s!ind}{#1}{#2}{\box0}}
+
+\def\docommandprolinrefB#1#2#3%
+  {\bgroup
+   \ifx#2\empty
+     \doifvalue{\??id#1\c!unknownreference}\v!empty{\hskip1em}%
+   \else
+     \setbox0\hbox to 1em{\hss\showlocation{\symbol[#3]}\hss}%
+     \expandafter\dodocommandprolinrefB\expandafter[#2]%
+   \fi
+   \egroup}
+
+\def\doprocesslinkregister[#1][#2]#3%
+  {\hbox
+     {\doprocesspageregister[#2]{}{#3}%
+      \let\firstlistreference\empty
+      \let\lastlistreference\empty
+      \let\selflistreference\empty
+      \let\prevlistreference\empty
+      \let\nextlistreference\empty
+      \getalllistreferences{#1}{#3}%
+      \ifx\alllistreferences\empty \else
+        \expanded{\rawprocesscommalist[\alllistreferences]}\docommandprolinrefA
+      \fi
+       \ifx\prevlistreference\empty
+         \let\prevlistreference\lastlistreference
+       \fi
+       \ifx\nextlistreference\empty
+         \let\nextlistreference\firstlistreference
+       \fi
+       \ifx\prevlistreference\selflistreference
+         \let\prevlistreference\empty
+         \let\nextlistreference\empty
+       \fi
+       \setalignmentswitch{\getvalue{\??id#1\c!location}}%
+       \ifcase\alignmentswitch
+         % links
+         \docommandprolinrefB{#1}\prevlistreference\v!previous
+         \docommandprolinrefB{#1}\nextlistreference\v!next
+       \or
+         % midden
+         \docommandprolinrefB{#1}\prevlistreference\v!previous
+       \or
+         % rechts
+       \fi
+       \doifreferencefoundelse{\s!lin:\internallistreference}
+         {\gotosomeinternal
+            \s!lin \internallistreference \currentrealreference
+            {\showlocation{\limitedregisterentry{#1}{#3}}}}
+         {\hbox{\limitedregisterentry{#1}{#3}}}%
+       \ifcase\alignmentswitch
+         % links
+       \or
+         % midden
+         \docommandprolinrefB{#1}\nextlistreference\v!next
+       \or
+         % rechts
+         \docommandprolinrefB{#1}\prevlistreference\v!previous
+         \docommandprolinrefB{#1}\nextlistreference\v!next
+       \fi}}
+
+\def\doprocesslinkedregister[#1][#2]#3% page auto link
+  {\bgroup
+   \chardef\registerpagestatus\plusone
+   \def\currentregister{#1}%
+   \iflocation % \next is not needed
+     \ifautoregisterhack
+       \def\next{\doprocessautoregister[#1][#2]}%
+     \else
+       \def\next{\doprocesslinkregister[#1][#2]}%
+     \fi
+   \else
+     \def\next{\doprocesspageregister[#2]{}}%
+   \fi
+   \next{#3}%
+   \egroup}
+
+\def\dodolinkedregister[#1][#2]#3% page auto link
+  {\doflushatpar{\doprocesslinkedregister[#1][#2]{#3}}}
+
+\def\dolinkedregister#1%
+  {\dodoubleempty\dodolinkedregister[#1]}
+
+\def\dosetautoregister#1%
+  {\makecounter{autolink:#1}%
+   \dosetreglevel{#1}%
+   \setregisterpage{#1}%
+   \global\let\currentregisterentry\empty
+   \global\firstsubentrytrue % not needed
+   \global\firstsubsubentrytrue % not needed too
+   \setvalue{#1\s!entrya}##1{\dosetautoregisterentrya{#1}{##1}}%
+   \setvalue{#1\s!entry }##1{\dosetpageregisterletter{#1}{##1}}}
+
+\def\dosetautoregisterentrya#1#2%
+  {\global\utilitydonetrue
+   \c!entryletter
+   \iflocation
+     \getalllistreferences{#1}{#2}%
+     \endgraf\hangindent1em\noindent\c!entryreference
+     \pagereference[-:\s!lin:\internallistreference]%
+     \pluscounter{autolink:#1}%
+     \bgroup
+    %\setupinteraction[\c!color=,\c!contrastcolor=,\c!style=]% kan sneller
+     \resetinteractionparameter\c!color
+     \resetinteractionparameter\c!contrastcolor
+     \resetinteractionparameter\c!style
+     \gotobox
+       {\limitedregisterentry{#1}{\begstrut#2}}%
+       [JS(SetRegisterEntry{\v!register,\countervalue{autolink:#1},#2,{\alllistreferences}})]%
+     \egroup
+   \else
+     \endgraf\noindent\c!entryreference
+     \limitedregisterentry{#1}{#2}%
+   \fi}
+
+\def\doprocessautoregister[#1][#2]#3%
+  {\hbox
+     {\doprocesspageregister[#2]{}{#3}%
+      \doifreferencefoundelse{\s!lin:\internallistreference}
+        {\gotosomeinternal \s!lin
+           {\internallistreference}{\currentrealreference}
+           {\showlocation{\limitedregisterentry{#1}{#3}}}}
+        {\hbox{\limitedregisterentry{#1}{#3}}}}}
+
+% \appendmacro aan openpaginaactie (in shipout)
+
+%D The first implementation used one main field with clones.
+%D In a 2500 page document this resulted in a rather (anoying)
+%D long start||up time. This \quote {every page its own field}
+%D solution, combined with a \quote {page open action}, works
+%D much faster, but is conceptually pretty weak.
+
+\def\complexregisterfield[#1]%
+  {\definefield[#1:\realfolio][line][\v!register]%
+   \field[#1:\realfolio]}
+
+\def\simpleregisterfield
+  {\complexregisterfield[\v!register]}
+
+\definecomplexorsimple\registerfield
+
+\setupfield
+  [\v!register]
+  [\c!width=10em,
+   \c!height=3ex,
+   \c!align=\v!middle,
+   \c!option=\v!readonly,
+   \c!location=\v!low]
+
+\def\doinitializeautoregister#1%
+  {\useJSscripts[reg]%
+   \useJSpreamblenow{LinkedRegisters}%
+   \setupinteraction[\c!openpageaction=JS(UpdateRegisterField{\v!register})]%
+   \definereference[\v!reset\v!register][JS(ResetRegisterEntry{\v!register})]%
+   \definereference[\v!first\v!register][JS(GotoFirstRegisterEntry{\v!register})]%
+   \definereference[\v!previous\v!register][JS(GotoPreviousRegisterEntry{\v!register})]%
+   \definereference[\v!next\v!register][JS(GotoNextRegisterEntry{\v!register})]%
+   \definereference[\v!last\v!register][JS(GotoLastRegisterEntry{\v!register})]}
+
+\def\doinitializelinkregister#1%
+  {}
+
+% todo ruwe register
+
+\def\placeregister
+  {\dodoubleempty\doplaceregister}
+
+\def\doplaceregister[#1][#2]%
+  {\iffirstargument
+     \begingroup
+     \edef\currentregister{#1}%
+     \setupregister[\currentregister][#2]%
+     \doifelse{\registerparameter\c!compress}\v!yes % new
+        {\chardef\collapseregisterpages\plusone}
+        {\chardef\collapseregisterpages\zerocount}%
+% TH: disable next line
+%     \raggedright
+% /TH
+     \startcolumns
+       [\c!n=\registerparameter\c!n,
+        \c!balance=\registerparameter\c!balance,
+        \c!align=\registerparameter\c!align,
+        tolerance=stretch]%
+     \dontcomplain
+     \startpacked[\v!blank]%
+     \doutilities\currentregister{\registerparameter\c!file}\currentregister\dobeforeplaceregister\doafterplaceregister
+     \stoppacked
+     \stopcolumns
+     \endgroup
+   \fi}
+\def\dobeforeplaceregister
+  {\resetseenregisterpage
+   \relax}
+
+\def\doafterplaceregister
+  {\flushseenregisterpage
+   \par}
+
+\def\completeregister
+  {\dodoubleempty\docompleteregister}
+
+\def\docompleteregister[#1][#2]%
+  {\iffirstargument
+     \begingroup
+     \edef\currentregister{#1}%
+     % the expansion is needed because we don't want \v!'s in the tuo file (french)
+     \expanded{\systemsuppliedchapter[\currentregister]{\noexpand\headtext{\currentregister}}}%
+     \placeregister[\currentregister][#2]%
+     \page[\v!yes]%
+     \endgroup
+   \fi}
+
+\def\doregisterregisterlanguage#1%
+  {\savesortlanguage{\getvalue{\??id#1\s!language}}%
+   \expanded{\immediatewriteutility{r l {#1} {\getvalue{\??id#1\s!language}}}}}
+
+\def\dodefineregister[#1][#2]%
+  {\setupregister[#1]%
+     [\c!n=2,
+      \c!balance=\v!yes,  % \v!no komt niet zo vaak voor
+      \c!align=\v!flushleft,
+      \c!before=\blank,      % binnen kolommen: \blank[\v!line]
+      \c!after=,
+      \c!symbol=,
+      \c!compress=\v!no,
+      \c!interaction=\v!pagenumber,
+      \c!alternative=\v!a,
+      \c!distance=1em,
+      \c!style=\v!bold,
+      \c!pagestyle=\v!slanted,
+      \c!indicator=\v!yes,
+      \v!part\v!number=\v!yes, % v
+      \v!chapter\c!number=\v!no,
+      \c!criterium=\v!all,
+      \c!command=,
+      \c!referencing=\v!on,
+      \c!location=\v!middle,
+      \c!maxwidth=,
+      \c!number=\v!no,
+      \c!unknownreference=\v!empty,
+      \c!prefix=\v!both,
+      \c!expansion=,
+      \c!keyexpansion=,
+      \c!file=\jobname,
+     %\c!deeptextcommand=, % undefined by default !
+      \s!language=\currentmainlanguage]%
+   \doglobal\appendtoksonce
+     \doregisterregisterlanguage{#1}%
+   \to \everysavesortkeys
+   \presetheadtext[#1=\Word{#1}]%
+   \addutilityreset{#1}%
+   \setvalue{#1}{\doregister{#1}}%
+   \setvalue{\e!coupled#1}{\dolinkedregister{#1}}%
+   \setvalue{\s!set#1}{\dosetregister{#1}}%
+   \setvalue{\s!reset#1}{\doresetregister{#1}}%
+   \setvalue{\e!see#1}{\doseeregister{#1}}%
+   \setvalue{\e!place#1}{\placeregister[#1]}%
+   \setvalue{\e!complete#1}{\completeregister[#1]}%
+   \setvalue{\e!setup#1\e!endsetup}[##1]{\getparameters[\??id#1][##1]}}
+
+\def\defineregister
+  {\dodoubleargument\dodefineregister}
+
+\def\registerlengte{\utilityregisterlength}
+
+\def\utilityregisterlength{0}
+
+\def\dodetermineregistercharacteristics[#1][#2]%
+  {\begingroup
+   \def\currentregister{#1}%
+   \setupregister[#1][#2]%
+   \dosetreglevel{#1}%
+   \setvalue{#1\s!from}%
+     {\getvalue{#1\s!page}}%
+   \setvalue{#1\s!page}##1##2##3##4%
+     {\doifreglevelelse[##3]
+        {\doglobal\increment\utilitylistlength
+         \global\utilitydonetrue}
+        {}}%
+   \doglobal\newcounter\utilityregisterlength
+   \setbox0\vbox{\doutilities\currentregister{\registerparameter\c!file}\currentregister\dobeforeplaceregister\doafterplaceregister}%
+   \endgroup
+   \ifregistergeplaatst
+     \setsystemmode  \v!register
+   \else
+     \resetsystemmode\v!register
+   \fi}
+
+\def\determineregistercharacteristics
+  {\dodoubleempty\dodetermineregistercharacteristics}
+
+%D Default index:
+
+\defineregister
+  [\v!index]
+  [\v!indices]
+
+% \setupregister[index][koppeling=ja]
+%
+% \stelveldenin
+%   [register][achtergrond=raster,kader=uit]
+%
+% \stelvoettekstenin
+%   [{\field[index]}]
+%
+% \stelhoofdtekstenin
+%   [{\naar   {first}[eersteindex]\quad
+%     \naar{previous}[vorigeindex]\quad
+%     \naar    {next}[volgendeindex]\quad
+%     \naar    {last}[laatsteindex]\quad\quad
+%     \naar   {index}[index]}]
+%
+% \starttekst
+%
+% oeps~~~\gekoppeldeindex{oeps} \blanko
+% flop~~~\gekoppeldeindex{flop} \blanko
+% test~~~\gekoppeldeindex{test} \pagina
+% flop~~~\gekoppeldeindex{flop} \blanko
+% test~~~\gekoppeldeindex{test} \pagina
+% oeps~~~\gekoppeldeindex{oeps} \blanko
+% test~~~\gekoppeldeindex{test} \pagina
+% flop~~~\gekoppeldeindex{flop} \blanko
+% oeps~~~\gekoppeldeindex{oeps} \pagina
+%
+% \volledigeindex
+
+\protect \endinput

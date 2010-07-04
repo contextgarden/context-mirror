@@ -1,0 +1,145 @@
+%D \module
+%D   [       file=syst-con,
+%D        version=2006.09.16, % real old stuff ... 2000.12.10
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Conversions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{syst-con}{1.001}
+
+\unprotect
+
+%D When the number of conversions grew, it did no longer make
+%D sense to spread them over multiple files. So, instead of
+%D defining these in \type {font-ini}, we now have a dedicated
+%D module.
+
+%D \macros
+%D   {lchexnumber,uchexnumber,lchexnumbers,uchexnumbers}
+%D
+%D In addition to the uppercase hex conversion, as needed in
+%D math families, we occasionally need a lowercase one, for
+%D instance when we want to compose gbsong fontnames.
+%D
+%D The ugly indirectness is needed to get rid of \TEX\
+%D induced spaces and \type {\relax}'s.
+%D
+%D \starttyping
+%D [\uchexnumber{0}]
+%D [\uchexnumber\scratchcounter]
+%D [\uchexnumber\zerocount]
+%D [\uchexnumber{\number0}]
+%D [\uchexnumber{\number\scratchcounter}]
+%D [\uchexnumber{\number\zerocount}]
+%D [\uchexnumber{\the\scratchcounter}]
+%D [\uchexnumber{\the\zerocount}]
+%D [\expandafter\uchexnumber\expandafter{\number0}]
+%D [\expandafter\uchexnumber\expandafter{\number\scratchcounter}]
+%D [\expandafter\uchexnumber\expandafter{\number\zerocount}]
+%D [\expandafter\uchexnumber\expandafter{\the\scratchcounter}]
+%D [\expandafter\uchexnumber\expandafter{\the\zerocount}]
+%D \stoptyping
+
+\def\lchexnumber #1{\ctxlua{converters.lchexnumber(\number#1)}}
+\def\uchexnumber #1{\ctxlua{converters.uchexnumber(\number#1)}}
+\def\lchexnumbers#1{\ctxlua{converters.lchexnumbers(\number#1)}}
+\def\uchexnumbers#1{\ctxlua{converters.uchexnumbers(\number#1)}}
+
+\let\hexnumber\uchexnumber
+
+%D \macros
+%D   {octnumber}
+%D
+%D For unicode remapping purposes, we need octal numbers.
+
+\def\octnumber#1{\ctxlua{converters.octnumber(\number#1)}}
+
+%D \macros
+%D   {hexstringtonumber,octstringtonumber}
+%D
+%D This macro converts a two character hexadecimal number into
+%D a decimal number, thereby taking care of lowercase characters
+%D as well.
+
+\def\hexstringtonumber#1{\ctxlua{converters.hexstringtonumber("#1")}}
+\def\octstringtonumber#1{\ctxlua{converters.octstringtonumber("#1")}}
+
+%D \macros
+%D   {rawcharacter}
+%D
+%D This macro can be used to produce proper 8 bit characters
+%D that we sometimes need in backends and round||trips.
+
+\def\rawcharacter#1{\ctxlua{converters.rawcharacter(\number#1)}}
+
+%D \macros
+%D   {twodigits, threedigits}
+%D
+%D These macros provides two or three digits always:
+
+\def\twodigits  #1{\ifnum             #1<10     0\fi\number#1}
+\def\threedigits#1{\ifnum#1<100 \ifnum#1<10 0\fi0\fi\number#1}
+
+%D \macros{modulonumber}
+%D
+%D In the conversion macros described in \type {core-con} we
+%D need a wrap||around method. The following solution is
+%D provided by Taco.
+%D
+%D The \type {modulonumber} macro expands to the mathematical
+%D modulo of a positive integer. It is crucial for it's
+%D application that this macro is fully exandable.
+%D
+%D The expression inside the \type {\numexpr} itself is
+%D somewhat bizarre because \ETEX\ uses a rounding
+%D division instead of truncation. If \ETEX's division
+%D would have behaved like \TEX's normal\type{\divide}, then
+%D the expression could have been somewhat simpler, like
+%D \type {#2-(#2/#1)*#1}. This works just as well, but a bit
+%D more complex.
+
+\def\modulonumber#1#2%
+  {\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+
+%D \macros{modulatednumber}
+%D
+%D Modulo numbers run from zero to one less than the limit,
+%D but for conversion sets, we need a value between 1 and the
+%D limit. The \type{\modulatednumber} arranges that. This
+%D macro also needs to be fully expandable, resulting in
+%D two \type{\numexpr}s.
+
+\def\modulatednumber#1#2%
+  {\ifnum\the\numexpr\modulonumber{#1}{#2}\relax=0 #1%
+   \else \the\numexpr\modulonumber{#1}{#2}\relax  \fi}
+
+%D \macros
+%D    {realnumber} % used?
+
+\def\realnumber#1{\withoutpt\the\dimexpr#1\s!pt\relax} % brrr
+
+%D \macros
+%D    {setcalculatedsin,setcalculatedcos,setcalculatedtan}
+%D
+%D This saves some 2K in the format. At some point we will redo the
+%D code that calls this. Beware: in \MKII\ this is a separate module.
+
+% \let\calculatesin\gobbleoneargument
+% \let\calculatecos\gobbleoneargument
+% \let\calculatetan\gobbleoneargument
+
+% \def\calculatedsin#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.sin(#1))}}
+% \def\calculatedcos#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.cos(#1))}}
+% \def\calculatedtan#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.tan(#1))}}
+
+\def\setcalculatedsin#1#2{\edef#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.sind(#2))}}}
+\def\setcalculatedcos#1#2{\edef#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.cosd(#2))}}}
+\def\setcalculatedtan#1#2{\edef#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.tand(#2))}}}
+
+\protect \endinput

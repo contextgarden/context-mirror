@@ -1,0 +1,75 @@
+# You can process this file as follows, using texfont.pl:
+#
+#   texfont --encoding=ec --batch texfont.dat
+#
+# where 'ec' can be replaced by 'texnansi', '8r' or otherwise.
+#
+# The TEXMFTE and TEXMFGW paths are used by gwtex.
+
+
+# public antp
+
+--en=? --ve=public --co=antp --so=auto --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# no longer needed, public antt
+#
+# --en=? --ve=public --co=antt --so=auto --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# urw helvetica
+
+--en=? --ve=urw --co=helvetica --so=auto --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# urw courier
+
+--en=? --ve=urw --co=courier --so=auto --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# urw zapfchan
+
+--en=? --ve=urw --co=zapfchan --so=auto --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# urw times
+
+--en=? --ve=urw --co=times --so=auto               --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=times --so=auto --ca=* utmr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=times --so=auto --sl=* utmr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=times --so=auto --sl=* utmb8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# urw palatino
+
+--en=? --ve=urw --co=palatino --so=auto               --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=palatino --so=auto --ca=* uplr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=palatino --so=auto --sl=* uplr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=palatino --so=auto --sl=* uplb8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# adobe utopia
+
+--en=? --ve=adobe --co=utopia --so=auto               --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=adobe --co=utopia --so=auto --ca=* putr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=adobe --co=utopia --so=auto --sl=* putr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=adobe --co=utopia --so=auto --sl=* putb8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+--en=? --ve=adobe --co=utopia --so=auto               --ro=TEXMFMAIN,TEXMFEXTRA,TEXMFTE,TEXMFGW
+--en=? --ve=adobe --co=utopia --so=auto --ca=* putr8a --ro=TEXMFMAIN,TEXMFEXTRA,TEXMFTE,TEXMFGW
+--en=? --ve=adobe --co=utopia --so=auto --sl=* putr8a --ro=TEXMFMAIN,TEXMFEXTRA,TEXMFTE,TEXMFGW
+--en=? --ve=adobe --co=utopia --so=auto --sl=* putb8a --ro=TEXMFMAIN,TEXMFEXTRA,TEXMFTE,TEXMFGW
+
+# bitstream charter
+
+--en=? --ve=bitstrea --co=charter --so=auto               --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=bitstrea --co=charter --so=auto --ca=* bchr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=bitstrea --co=charter --so=auto --sl=* bchr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=bitstrea --co=charter --so=auto --sl=* bchb8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# uwr bookman
+
+--en=? --ve=urw --co=bookman --so=auto               --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=bookman --so=auto --ca=* ubkl8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=bookman --so=auto --sl=* ubkl8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=bookman --so=auto --sl=* ubkd8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+
+# uwr schoolbook
+
+--en=? --ve=urw --co=ncntrsbk --so=auto               --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=ncntrsbk --so=auto --ca=* uncr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=ncntrsbk --so=auto --sl=* uncr8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW
+--en=? --ve=urw --co=ncntrsbk --so=auto --sl=* uncb8a --ro=TEXMFMAIN,TEXMFTE,TEXMFGW

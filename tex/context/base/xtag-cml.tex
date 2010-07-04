@@ -1,0 +1,228 @@
+% see mathml, == \defineXMLdirective [mathml] \setupMMLappearance
+
+% will be rewritten avoiding the mapper
+
+\useXMLfilter[map]
+
+\unprotect
+
+\def\setupCMLappearance[#1]{\dodoubleargument\getparameters[@@CML#1]}
+
+\defineXMLdirective [chemml] \setupCMLappearance
+
+\defineXMLargument [chem]  \doXMLchem
+\defineXMLargument [ichem] \doXMLichem
+\defineXMLargument [dchem] \doXMLdchem
+
+\unexpanded\def\doXMLchem {\ifhmode\@EA\doXMLichem\else\@EA\doXMLdchem\fi}
+\unexpanded\def\doXMLichem{\XMLremapdata[cml]{$\rm}{$}}
+\unexpanded\def\doXMLdchem{\XMLremapdata[cml]{\dostartformula{}\rm}{\dostopformula}}
+
+\startXMLmapping [cml]
+
+\remapXMLsequence [molecule] [CPA] \doCMLmolecule
+\remapXMLsequence [ion]      [CPA] \doCMLion
+\remapXMLsequence [atom]     [CPA] \doCMLatom
+
+\setupCMLappearance [ion] [\c!alternative=\v!a]
+
+\let\CMLtopcaption\empty
+\let\CMLbotcaption\empty
+
+\def\someCMLtext#1%
+  {\ifx\CMLtopcaption\empty
+     \setbox0\null
+   \else
+     \setbox0\hbox{\txx\setstrut\strut\ignorespaces\CMLtopcaption\unskip}%
+   \fi
+   \setbox2\hbox{\ignorespaces\strut#1\unskip}%
+   \ifx\CMLbotcaption\empty
+     \setbox4\null
+   \else
+     \setbox4\hbox{\txx\setstrut\strut\ignorespaces\CMLbotcaption\unskip}%
+   \fi
+   \scratchdimen=\wd2\advance\scratchdimen-.5em
+   \ifdim\wd0>\scratchdimen
+     \setbox0\hbox spread .5em{\hss\box0\hss}%
+   \fi
+   \ifdim\wd4>\scratchdimen
+     \setbox4\hbox spread .5em{\hss\box4\hss}%
+   \fi
+   \setbox6=\vbox
+     {\offinterlineskip\halign{\hss##\hss\cr\copy0\cr\copy2\cr\copy4\cr}}%
+   \hbox{\lower\ht4\hbox{\lower\dp2\box6}}}
+
+\def\CMLscript#1%
+  {$\scriptscriptstyle\ignorespaces#1\unskip$}
+
+\def\doifnotXMLzero#1#2#3%
+  {\ifcase\XMLpar{#1}{#2}{0}\else#3{\XMLpar{#1}{#2}{0}}\fi}
+
+\newcounter\currentCMLatom
+\newcounter\nofCMLatoms
+
+\def\doCMLmolecule#1#2%
+  {\resetCMLcaption
+   \processXMLRchild{caption}{#2}%
+   \someCMLtext
+     {\bgroup
+      \newcounter\currentCMLatom
+      \newcounter\nofCMLatoms
+      \getXMLarguments{cml-m}{n="0" #1}%
+      \doifnotXMLzero{cml-m}{n}\firstofoneargument
+      \ignorespaces
+      \processXMLRchild{atom,ion,bond/,singlebond/,doublebond/,triplebond/}{#2}%
+      \unskip
+      \egroup}%
+   \ignorespaces}
+
+\def\doCMLion#1#2%
+  {\resetCMLcaption
+   \processXMLRchild{caption}{#2}%
+   \someCMLtext
+     {\bgroup
+      \newcounter\currentCMLatom
+      \newcounter\nofCMLatoms
+      \getXMLarguments{cml-i}{n="0" charge="0" #1}%
+      \doifnotXMLzero{cml-i}{n}\firstofoneargument
+      \doifelse\@@CMLionalternative\v!b
+        {[\ignorespaces
+          \processXMLRchild{atom,bond/,singlebond/,doublebond/,triplebond/}{#2}%
+          \unskip]%
+         \high{\doifnotXMLzero{cml-i}{charge}\CMLscript}}
+        {\countXMLRchild{atom}{\ignorespaces#2\unskip}%
+         \let\nofCMLatoms\nofXMLRchildren
+         \ignorespaces
+         \processXMLRchild{atom,bond/,singlebond/,doublebond/,triplebond/}{#2}%
+         \unskip}%
+      \egroup}%
+   \ignorespaces}
+
+\def\doCMLatom#1#2%
+  {\getXMLarguments{cml-a}{n="0" weight="0" protons="0" charge="0" #1}%
+   \increment\currentCMLatom
+   \resetCMLcaption
+   \someCMLtext
+     {\bgroup
+      \lohi
+        {\doifnotXMLzero{cml-a}{protons}\CMLscript}
+        {\doifnotXMLzero{cml-a}{weight}\CMLscript}%
+      \ignorespaces#2\unskip
+      \lohi
+        {\doifnotXMLzero{cml-a}{n}\CMLscript}
+        {\ifnum\nofCMLatoms=\currentCMLatom\relax
+           \doifnotXMLzero{cml-i}{charge}\CMLscript
+         \else
+           \doifnotXMLzero{cml-a}{charge}\CMLscript
+         \fi}%
+      \egroup}%
+   \ignorespaces}
+
+\remapXMLsequence [reaction] [CPA] \doCMLreaction
+
+\let\someCMLsymbol\gobbleoneargument
+\let\someCMLarrow \gobblethreearguments
+
+\def\doCMLreaction#1#2%
+  {\begingroup
+   \let\someCMLsymbol\dosomeCMLsymbol
+   \let\someCMLarrow \dosomeCMLarrow
+   #2%
+   \endgroup}
+
+\remapXMLsequence [plus]  [CPA] \doCMLplus
+\remapXMLsingular [plus]  [CPA] \doCMLplus
+\remapXMLsequence [minus] [CPA] \doCMLminus
+\remapXMLsingular [minus] [CPA] \doCMLminus
+\remapXMLsequence [equal] [CPA] \doCMLequal
+\remapXMLsingular [equal] [CPA] \doCMLequal
+
+\def\doCMLplus #1#2{\someCMLsymbol{+}}
+\def\doCMLminus#1#2{\someCMLsymbol{-}}
+\def\doCMLequal#1#2{\someCMLsymbol{=}}
+
+\def\dosomeCMLsymbol#1%
+  {\quad\mathop{#1}\quad}
+
+\remapXMLsequence [gives]       [CPA] \doCMLgives
+\remapXMLsingular [gives]       [CPA] \doCMLgives
+\remapXMLsequence [equilibrium] [CPA] \doCMLequilibrium
+\remapXMLsingular [equilibrium] [CPA] \doCMLequilibrium
+\remapXMLsequence [mesomeric]   [CPA] \doCMLmesomeric
+\remapXMLsingular [mesomeric]   [CPA] \doCMLmesomeric
+
+\def\doCMLgives      #1#2{\resetCMLcaption#2\someCMLgives      }
+\def\doCMLequilibrium#1#2{\resetCMLcaption#2\someCMLequilibrium}
+\def\doCMLmesomeric  #1#2{\resetCMLcaption#2\someCMLmesomeric  }
+
+\def\dosomeCMLarrow#1%
+  {\quad
+   \someCMLtext
+     {$\vcenter{\offinterlineskip\halign{##\cr\hskip3em\cr#1\cr}}$}%
+   \quad}
+
+\def\someCMLgives
+  {\someCMLarrow{\rightarrowfill}}
+
+\def\someCMLequilibrium
+  {\someCMLarrow{\rightarrowfill\cr\noalign{\nointerlineskip}\leftarrowfill}}
+
+\def\someCMLmesomeric
+  {\someCMLarrow{$\leftarrow\hskip-1em$\rightarrowfill}}
+
+\remapXMLsequence [cml] [caption] [CPA] \doCMLcaption
+
+\let\CMLtopcaption\empty
+\let\CMLbotcaption\empty
+
+\def\dodoCMLcaption#1#2%
+  {\def\CMLbotcaption{#2}%
+   \def\doCMLcaption##1##2%
+     {\def\CMLtopcaption{##2}%
+      \let\doCMLcaption\gobbletwoarguments}}
+
+\def\resetCMLcaption
+  {\let\CMLtopcaption\empty
+   \let\CMLbotcaption\empty
+   \let\doCMLcaption\dodoCMLcaption}
+
+\resetCMLcaption
+
+\remapXMLsingular [bond]       [CPA] \doCMLbond
+\remapXMLsingular [singlebond] [CPA] \doCMLsinglebond
+\remapXMLsingular [doublebond] [CPA] \doCMLdoublebond
+\remapXMLsingular [triplebond] [CPA] \doCMLtriplebond
+
+\def\doCMLbond#1#2%
+  {\getXMLarguments{cml-b}{n="0" #1}%
+   \ifcase\XMLpar{cml-b}{n}{0}\relax
+     \doCMLsinglebond
+   \or
+     \doCMLdoublebond
+   \or
+     \doCMLtriplebond
+   \fi}
+
+\def\someCMLbond
+  {\hrule \!!width \hsize \!!height .1ex} % .4pt
+
+\def\dosomeCMLbond#1#2#3%
+  {{\setbox\scratchbox=\hbox{$M$}%
+    \vbox to \ht\scratchbox
+      {\hsize\wd\scratchbox
+       \vskip.1\wd\scratchbox
+       #1\vfill#2\vfill#3%
+       \vskip.1\wd\scratchbox}}}
+
+\def\doCMLsinglebond
+  {\dosomeCMLbond\relax\someCMLbond\relax}
+
+\def\doCMLdoublebond
+  {\dosomeCMLbond\someCMLbond\relax\someCMLbond}
+
+\def\doCMLtriplebond
+  {\dosomeCMLbond\someCMLbond\someCMLbond\someCMLbond}
+
+\stopXMLmapping
+
+\protect \endinput

@@ -1,0 +1,486 @@
+%D \module
+%D   [       file=bibl-apa, 
+%D        version=2004.7.16,
+%D          title=APA bibliography style,
+%D       subtitle=Publications,
+%D         author={Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright={Public Domain}]
+%C
+%C (Slightly modified to SSA-like 2005.3.24, David Wooten)
+%C Donated to the public domain. Use at your own risk
+
+\unprotect
+
+\setupcite
+       [author,year]
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ and },
+        \c!compress=\v!no,
+        \c!inbetween={ },
+        \c!left={(},
+        \c!right={)}]
+
+\setupcite
+       [authoryear]
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ and },
+        \c!compress=\v!yes,
+        \c!inbetween={ },
+        \c!left={(},
+        \c!right={)}]
+
+\setupcite
+       [authoryears]
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ and },
+        \c!compress=\v!yes,
+        \c!inbetween={, },
+        \c!left={(},
+        \c!right={)}]
+
+\setupcite
+       [key,serial,authornum,page,short,type,doi,url]
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ and },
+        \c!compress=\v!no,
+        \c!inbetween={ },
+        \c!left={[},
+        \c!right={]}]
+
+\setupcite
+       [num]
+       [\c!andtext={ and },
+        \c!otherstext={ et al.},
+        \c!pubsep={, },
+        \c!lastpubsep={ and },
+        \c!compress=\v!yes,
+        \c!inbetween={--},
+        \c!left={[},
+        \c!right={]}]
+
+\setuppublications[%
+    \c!sorttype=,
+    \c!criterium=,
+    \c!refcommand=authoryears,
+    \c!numbering=\v!no,
+    \c!autohang=\v!no]
+
+\setuppublicationlist
+   [\c!width=24pt,
+    \c!artauthor=\toggledauthor, %TH
+    \c!editor=\toggledauthor,
+    \c!author=\toggledauthor,
+    \c!namesep={, },
+    \c!lastnamesep={ and },
+    \c!finalnamesep={ and },
+    \c!firstnamesep={, },
+    \c!juniorsep={ },
+    \c!vonsep={ },
+    \c!surnamesep={, },
+    \c!authoretallimit=5,
+    \c!editoretallimit=5,
+    \c!artauthoretallimit=5,
+    \c!authoretaldisplay=5,
+    \c!editoretaldisplay=5,
+    \c!artauthoretaldisplay=5,
+    \c!authoretaltext={ et al.},
+    \c!editoretaltext={ et al.},
+    \c!artauthoretaltext={ et al.},
+]
+
+\def\maybeyear#1{#1}
+
+\def\etalchar#1{#1}
+
+%D \macros {invertedauthor,normalauthor,toggledauthor}
+%D
+%D These are redefinitions of the core versions.
+
+\def\invertedauthor#1#2#3#4#5%
+  {\bibdoif{#2}{#2\bibalternative\c!vonsep}%
+   \uppercased{#3}\bibalternative\c!surnamesep
+   \bibdoif{#5}{#5\bibalternative\c!juniorsep}%
+   \bibdoif{#1}{#1\unskip}}
+
+\def\normalauthor#1#2#3#4#5%
+  {\bibdoif{#1}{#1}\bibdoif{#2}{#2 } \uppercased{#3}%
+   \bibdoif{#5}{#5\unskip}}
+
+%TH
+%D The \type{\scratchcounter} is incremented by \specialbibinsert
+%D before each author/editor is typeset, so the only thing that needs 
+%D doing is testing its value to decide which of the two `standard'
+%D author formatting macros to call. 
+%D
+%D The \type{\normalauthor} definition above is a bit altered/stripped
+%D down, because the 'glue items' like \type{firstnamesep} got in the
+%D way.
+
+\def\toggledauthor#1#2#3#4#5%
+ {\relax
+  \ifnum \scratchcounter > 1 
+    \normalauthor{#1}{#2}{#3}{#4}{#5}% 
+  \else
+    \invertedauthor{#1}{#2}{#3}{#4}{#5}% 
+  \fi  }
+
+%TH
+%D Below, each \type{\setuppublicationlayout} macro's body will
+%D start by setting a global toggle to true, that controls whether 
+%D or not the next \type{\insertartauthors},\type{\insertauthors}
+%D or \type{\inserteditors} has to store it's contents for comparison.
+%D All three are instances of the generic macro \type{\specialbibinsert}.
+%D The net result of this trick is that the first typeset block of
+%D names will be saved, regardless of whether they are book authors, 
+%D article authors, or editors.
+
+\newif\ifsetstoredauthor
+
+%D save the normal meaning, because it will be redefined
+\let\normalspecialbibinsert\specialbibinsert
+
+%D This is a typical call (use) of \type{\specialbibinsert}, for
+%D reference:
+%D \starttyping
+%D \specialbibinsert{author}{\author@num}{<before>}{<after>}{<not>}
+%D \stoptyping
+
+\def\specialbibinsert#1#2#3#4#5%
+  {\relax
+   \ifsetstoredauthor 
+     \global\setstoredauthorfalse % RESET
+     \putcurrentinallstuff{#1}{#2}%
+     \ifx\allstuff\oldstuff
+	% do nothing
+     \else
+       \normalspecialbibinsert{#1}{#2}{#3}{#4}{#5}% 
+     \fi
+     \global\let\oldstuff\allstuff
+   \else
+     \normalspecialbibinsert{#1}{#2}{#3}{#4}{#5}% 
+   \fi}
+
+%D initialize \type{\oldstuff}
+
+\def\oldstuff{}
+
+%D \#1 = authors
+%D \#2 = \type{\author@num}
+\def\putcurrentinallstuff#1#2%
+  {{\gdef\allstuff{}%
+   \def\tempx##1##2##3##4##5%
+     {\xdef\allstuff{\allstuff !!##1!##2!##3!##4!##5}}%
+   \@EA\dorecurse\@EA{#2}%
+      {\@EA\@EA\@EA\tempx \csname @@pb@#1\recurselevel\endcsname}%
+  }}
+
+%D \macros{insertchapter,insertpublisher}
+
+%D Some shortcuts.
+
+% ((#1(type\ |)chapter#2)|#3)
+
+ 
+\def\insertchap#1#2#3%
+  {\insertchapter
+    {#1\insertbibtype{}{\ }{chapter\ }}{#2}%
+    {#3}}
+
+\def\insertpublisher#1#2#3%
+   {\insertpubname
+       {#1}{\insertcity
+            {, }
+            {\insertcountry{, }{}{#2}}%
+            {\insertcountry{, }{}{#2}}}%
+       {\insertcity
+         {}{\insertcountry{, }{}{#2}}%
+         {\insertcountry{#1}{#2}{#3}}}%
+    }
+
+\setuppublicationlayout[article]{%
+   %TH all items below do this as well ...
+   \global\setstoredauthortrue
+   \insertartauthors{}{.}{\insertthekey{}{ }{}}\hfill\break%
+   \insertpubyear{}{. }{\unskip.}%
+   \insertarttitle{\bgroup ``}{\egroup'', }{ }%
+   \insertjournal{\bgroup in \it}{\egroup}
+    {\insertcrossref{in }{}{}}%
+   \insertvolume
+    {, }
+    {\insertissue{(}{)}{}\insertpages{:}{.}{.}}
+    {\insertpages{, pages }{.}{.}}%
+   \insertnote{ }{.}{}%
+   \insertcomment{}{.}{}%
+}
+
+\newif\ifeditedbook
+\setuppublicationlayout[book]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{.}{\inserteditors{}{, editor%
+                         \ifnum\getvalue{editor@num}> 1 s\fi
+                             \ \global\editedbooktrue 
+                     }{\insertthekey{}{. }{}}}\hfill\break%
+   \insertpubyear{}{. }{\unskip.}%
+   \inserttitle
+        {\bgroup\it }%
+        {\/\egroup 
+    \ifeditedbook
+           \global\editedbookfalse
+       \insertvolume
+        { Number~}%
+                {\insertseries
+                    { in~\bgroup}%
+                    {\egroup. }%
+                    {\insertcrossref{ in~}{}{. }}}%
+                {\insertseries{ }{.}{} }%
+        \else
+       \insertcrossref
+        {\insertchap{, }{}{}%
+         \insertpages{, pages }{. }{. }%
+         \insertvolume{Volume~}{ of~}{}%
+         }%
+        {}%
+        {\insertvolume
+                   {, volume~}%
+                   {\insertseries
+                      { of~\bgroup\it}%
+                      {\egroup}
+                      {}}
+                   {}%
+                   \insertchap{, }{}{}%
+                   \insertpages{, pages }{. }{. }%
+                }%
+        \fi}%
+        { }%
+   \insertpublisher
+    {}%
+    {\insertedition{, }{ edition. }{}}%
+    {\insertedition{, }{ edition. }{}}%
+   \insertpages{}{p. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[inbook]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{\inserteditors{}{, editor%
+                         \ifnum\getvalue{editor@num}> 1 s\fi
+                             \ \global\editedbooktrue 
+                     }{\insertthekey{}{. }{}}}\hfill\break%
+   \insertpubyear{}{. }{\unskip.}%
+   \inserttitle
+        {\bgroup\it }%
+        {\/\egroup
+    \ifeditedbook
+           \global\editedbookfalse
+       \insertvolume
+        { number~}%
+                {\insertseries
+                    { in~\bgroup}%
+                    {\egroup. }%
+                    {\insertcrossref{ in~}{}{. }}}%
+                {\insertseries{ }{.}{} }%
+        \else
+           \insertcrossref
+        {\insertchap{, }{}{}%
+                 \insertpages{, pages }{. }{. }%
+                 \insertvolume{Volume~}{ of~}{}%
+                }%
+                {}%
+        {\insertvolume
+                   {, volume~}%
+                   {\insertseries
+                      { of~\bgroup\it}%
+                      {\egroup}
+                      {}}
+                   {}%
+                   \insertchap{, }{}{}%
+                   \insertpages{, pages }{. }{. }%
+                }%
+        \fi}%
+        { }%
+   \insertpublisher
+    {}%
+    {\insertedition{, }{ edition. }{. }}%
+    {\insertedition{, }{ edition. }{}}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[booklet]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{\insertthekey{}{. }{}}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertpublisher
+    {}%
+    {\insertedition{, }{ edition. }{. }}%
+    {\insertedition{, }{ edition. }{}}%
+   \insertpages{}{p. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[manual]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{\insertthekey{}{. }{}}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \inserttitle{\bgroup \it }{\/\egroup \insertseries{ (}{)}{}. }{}%
+   \insertorganization
+        {}%
+        {\insertcity{, }%
+            {\insertedition{, }{ edition. }{. }}%
+                {\insertedition{, }{ edition. }{. }}}%
+        {\insertedition{, }{ edition. }{}}%
+   \insertpages{}{p. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[incollection]{%
+   \global\setstoredauthortrue
+   \insertartauthors{}{ }{\insertthekey{}{. }{}}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \insertarttitle{\bgroup }{\egroup. }{}%
+   \inserttitle
+    {In \inserteditors{}%
+        {, editor\ifnum\getvalue{editor@num}> 1 s\fi, }%
+        {}%
+    \bgroup\it}%
+    {\egroup 
+         \insertseries
+              {\insertvolume{, number }{~in }{ }}%
+              {}%
+              {}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+         \insertpublisher
+         {}%
+         {\insertedition{, }{ edition. }{. }}%
+         {\insertedition{, }{ edition. }{}}%
+        }%
+        {In \insertcrossref{}{}{}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+        }%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[inproceedings]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \insertarttitle{\bgroup }{\egroup. }{}%%
+   \inserttitle
+    {In \inserteditors{}%
+        {, editor\ifnum\getvalue{editor@num}> 1 s\fi, }%
+        {}%
+    \bgroup\it}%
+    {\egroup 
+         \insertseries
+              {\insertvolume{, number }{~in }{ }}%
+              {}%
+              {}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages
+                {\unskip, pages~}
+	            {\insertcity{, }{. }{. }}
+                {\unskip. }% 
+         \insertorganization
+         {}%
+         {\insertpubname{, }{. }{. }}%
+         {\insertpubname{}{. }{}}% was {, }{. }{}
+        }%
+        {In \insertcrossref{}{}{}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+        }%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[proceedings]{%
+   \global\setstoredauthortrue
+   \inserteditors{}{, editor%
+                         \ifnum\getvalue{editor@num}> 1 s\fi
+                             \ \global\editedbooktrue 
+                     }{\insertthekey{}{ }{}}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \inserttitle
+    {\bgroup\it}%
+    {\egroup 
+         \insertseries
+              {\insertvolume{, number }{~in }{ }}%
+              {}%
+              {}%
+         \insertchap{\unskip, }{ }{ }%
+         \insertpages{\unskip, pages~}{\insertcity{, }{. }{. }}
+        {\unskip\insertcity{, }{. }{. }}% 
+         \insertorganization
+         {}%
+         {\insertpubname{, }{. }{. }}%
+         {\insertpubname{, }{. }{}}%
+        }%
+        {}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[mastersthesis]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertbibtype{}{, }{Master's thesis, }%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{p. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[phdthesis]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \inserttitle{\bgroup\it }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertbibtype{}{, }{PhD thesis, }%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{p. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[misc]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{\insertthekey{}{. }{}}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}. }{}%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{p. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[techreport]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertbibtype{}{\insertvolume{ }{, }{, }}{Technical Report, }%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{p. }{}%
+   \insertnote{ }{.}{}%
+}
+
+\setuppublicationlayout[unpublished]{%
+   \global\setstoredauthortrue
+   \insertauthors{}{ }{}\hfill\break%
+   \insertpubyear{}{. }{}%
+   \inserttitle{\bgroup }{\egroup \insertseries{ (}{)}{}. }{}%
+   \insertpublisher{}{. }{}%
+   \insertpages{}{p. }{}%
+   \insertbibtype{(}{)}{}%
+   \insertnote{ }{.}{}%
+}
+
+\protect

@@ -1,0 +1,784 @@
+%D \module
+%D   [       file=anch-pos, % was core-pos
+%D        version=1999.08.01,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Positioning Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% needs a cleanup, things may change; we also need to move the mp
+% related code to meta-pos
+
+% shorter tags, ..:achtergrond:.. etc in pos actions
+
+% dubbele text- * pos's eruit
+
+% class pos -> als gelijk aan vorige, dan niet niet definieren
+% en erven, maw:
+%
+% 1 -> opslaan
+% 2 -> undef, dus == prev
+% 3 -> undef, dus == prev
+% 4 -> opslaan
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Positioning}
+
+% saveposition     : tag page x y
+% savepositionwhd  : tag page x y w h d
+% savepositionplus : tag page x y w h d list
+%
+% at some point (when we no longer share code) we will move to numbers
+% do that we have less garbage collection and hashing
+%
+% the global table ptbs is equivalent to jobpositions.tobesaved
+%
+% btw, using a function is more efficient than passing longer code
+% snippets to ctxlua
+
+\registerctxluafile{anch-pos}{1.001}
+
+% todo: topskip als optie voor eerste regel achtergrond
+% todo: build pos layers on top of layers
+% todo: positionlayer pos van text-1 etc delen
+
+%D Although \TEX\ has a rather powerful channel to the outside
+%D world, called \type {\special}, real communication with
+%D other programs is complicated by the fact that no positional
+%D information is available. Mid 1999, I discussed this with
+%D \THANH, the author of \PDFTEX, and after some experiments,
+%D \PDFTEX\ was extended with a simple but effective mechanism,
+%D that provided positional information. The interesting
+%D thought is that, although \TEX\ is frozen, similar
+%D functionality could have been achieved with \type
+%D {\specials} and an additional \DVI\ postprocessor.
+%D
+%D Since we want to be as compatible as can be, \CONTEXT\ will
+%D support both methods, although the development is primarily
+%D driven by the \PDFTEX\ way of doing things. Since the
+%D mechanism is basically not limited to one application, for
+%D the moment we stick to building the functionality around one
+%D \CONTEXT\ special command, but at the same time we keep our
+%D eyes open for extensions in other directions.
+%D
+%D A question that may arise when one reads this module, is to
+%D what extend these macros are generic, in the sense that they
+%D could be collected in a support module instead of a core
+%D module. Since the mechanism described here will closely
+%D cooperate with the \METAPOST\ support built in \CONTEXT,
+%D which in turn will be tightly integrated with the \CONTEXT\
+%D overlay mechanisms, I decided to write a core module instead
+%D of a support one. This makes even more sense, when one takes
+%D into account that this kind of support depends on special
+%D drivers.
+
+\unprotect
+
+%D The first application of positional information was embedded
+%D graphics. Since we are interacting with text, it made sense
+%D to take the current line height and depth into account too.
+%D This is why we have two basic position macros: one for
+%D simple positions, and one for boxes.
+%D
+%D We could have sticked to one special, and actually did so in
+%D earlier experiments, but for convenience, as well for
+%D clearness, we now have two alternatives. This approach will
+%D save us quite some bytes when storing large quantities of
+%D positional information. We save as less information as
+%D needed, that is, we save no dimensions, in a \METAPOST\
+%D friendly way.
+%D
+%D The three specials involved are:
+%D
+%D \starttyping
+%D \dosetposition          {identifier}
+%D \dosetpositionwhd       {identifier} {width} {height} {depth}
+%D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
+%D \dosetpositionpapersize {width} {height}
+%D \stoptyping
+%D
+%D Positions are either generated at a delayed write time
+%D (in \PDFTEX), or derived from the dvi file. The actual
+%D method is implemented in a special driver. If needed, the
+%D driver can fall back on the following macros.
+
+% are the next 6 still used?
+
+\def\dolazysaveposition            #1#2#3#4{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4"}}}}
+\def\dolazysavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4","#5","#6","#7"}}}}
+\def\dolazysavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlatelua{ptbs['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
+\def\dosaveposition                #1#2#3#4{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4"}}}}
+\def\dosavepositionwhd       #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4","#5","#6","#7"}}}}
+\def\dosavepositionplus    #1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {ptbs['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
+
+\def\lastsavedpositionx {\the\dimexpr\pdflastxpos\scaledpoint\relax}
+\def\lastsavedpositiony {\the\dimexpr\pdflastypos\scaledpoint\relax}
+\let\savecurrentposition\pdfsavepos
+
+\def\dosetposition#1%
+  {\savecurrentposition
+   \normalexpanded{\ctxlatelua{ptbs['#1']={%
+     \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony"}}}}
+
+\def\dosetpositionwhd#1#2#3#4%
+  {\savecurrentposition
+   \normalexpanded{\ctxlatelua{ptbs['#1']={%
+     \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4"}}}}
+
+\def\dosetpositionplus#1#2#3#4#5%
+  {\savecurrentposition
+   \normalexpanded{\ctxlatelua{ptbs['#1']={%
+     \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4","#5"}}}}
+
+\let\dosetpositionpapersize\gobbletwoarguments
+
+\newbox\positionbox
+\newif \ifpositioning
+
+\def\POSprefix{POS::}
+
+\let\setpospx     \gobblefourarguments  % suppress errors with mkii tuo file
+\let\setpospxywhd \gobblesevenarguments % suppress errors with mkii tuo file
+\let\setpospxyplus\gobbleeightarguments % suppress errors with mkii tuo file
+
+%D This is real tricky! The page anchor is applied to the
+%D page box and therefore flushed first. So, when present, it
+%D is applied to all positions except itself.
+
+\chardef\positionanchormode=0 % don't relocate page origin
+\chardef\positionanchormode=1 % relocate page origin once
+
+%D The core set macros.
+
+\let\pospxy    \gobblefourarguments
+\let\pospxywhd \gobblesevenarguments
+\let\pospxyplus\gobbleeightarguments
+
+%D Sometimes we want to trick the position handler a bit:
+
+\def\replacepospxywhd#1#2#3#4#5#6#7{\ctxlua{jobpositions.replace('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
+
+%D For postprocessing purposes, we save the number of
+%D positions.
+
+\newcount\currentpositions  % current number of positions
+
+%D The next switch can be used to communicate a special
+%D situation. Positioning and associated actions can be
+%D executed any time. However, in for instance backgrounds
+%D they can be collected in a layer, for instance the text
+%D layer (especially the hidden text layer). In the case of
+%D floats, we run into problems, since the page information is
+%D not applicable when the content floats indeed. In such
+%D situations one can treat positions and graphics local.
+
+\newif\iflocalpositioning
+
+%D Watch out: sometimes a pagebreak occurs inside a float
+%D placement, so there we need to disable local mode.
+
+\appendtoks
+  \localpositioningtrue
+\to \everyinsidefloat
+
+\appendtoks
+  \localpositioningfalse
+\to \everypagebody
+
+%D Since the positional values are to be fully expandable, we
+%D need to preload them as soon as possible, which is why we
+%D load the data when we start a text.
+
+% \appendtoks \checkpositions \to \everystarttext
+
+%D \macros
+%D   {MPp, MPx, MPy, MPw, MPh, MPd,
+%D    MPxy, MPll, MPlr, MPur, MPul, MPpos}
+%D
+%D Access to the positional information is provided by macros
+%D with short names that are clearly meant for \METAPOST.
+
+% \the\dimexpr\noexpand\lastsavedpositionx\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
+% \the\dimexpr\noexpand\lastsavedpositiony\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
+
+\def\MPp  #1{\ctxlua{jobpositions.MPp("#1")}}
+\def\MPx  #1{\ctxlua{jobpositions.MPx("#1")}}
+\def\MPy  #1{\ctxlua{jobpositions.MPy("#1")}}
+\def\MPw  #1{\ctxlua{jobpositions.MPw("#1")}}
+\def\MPh  #1{\ctxlua{jobpositions.MPh("#1")}}
+\def\MPd  #1{\ctxlua{jobpositions.MPd("#1")}}
+\def\MPxy #1{\ctxlua{jobpositions.MPxy("#1")}}
+\def\MPll #1{\ctxlua{jobpositions.MPll("#1")}}
+\def\MPlr #1{\ctxlua{jobpositions.MPlr("#1")}}
+\def\MPur #1{\ctxlua{jobpositions.MPur("#1")}}
+\def\MPul #1{\ctxlua{jobpositions.MPul("#1")}}
+\def\MPpos#1{\ctxlua{jobpositions.MPpos("#1")}}
+
+%D \macros
+%D  {MPplus, MPrest, MPv, MPvv}
+%D
+%D Since we will probably keep on extending, we provide a
+%D general extension macro. The plus alternative takes an
+%D extra argument, denoting what additional parameter to pick
+%D up. So, the third extra is fetched with,
+%D
+%D \starttyping
+%D \MPplus{identifier}{3}{default}
+%D \stoptyping
+%D
+%D All extras (comma separated) are fetched with:
+%D
+%D \starttyping
+%D \MPrest{identifier}
+%D \stoptyping
+%D
+%D The extra parameters are not treated.
+
+\def\MPplus#1#2#3{\ctxlua{jobpositions.MPplus("#1",#2,"#3")}}  \let\MPv \MPplus
+\def\MPrest  #1#2{\ctxlua{jobpositions.MPrest("#1","#2")}}     \let\MPvv\MPrest
+
+%D \macros
+%D   {MPanchor}
+%D
+%D For readability we define a few synonyms:
+
+\def\MPanchor{\MPpos}
+
+%D \macros
+%D   {POSp, POSx, POSy, POSh, POSd, POSw}
+%D
+%D and:
+
+\def\POSp{\MPp} \def\POSx{\MPx} \def\POSy{\MPy}
+\def\POSh{\MPh} \def\POSd{\MPd} \def\POSw{\MPw}
+
+%D There are two low level positioning macros. Both store the
+%D position as well as execute an action associated with that
+%D position.
+
+\def\initializenextposition
+  {\ifpositioning \else
+     \global\positioningtrue
+     \dosetpositionpapersize
+       {\printpaperwidth }%
+       {\printpaperheight}%
+   \fi
+   \global\advance\currentpositions\plusone}
+
+\def\setpositiononly#1%
+  {\iftrialtypesetting
+      % nothing
+   \else
+     \initializenextposition
+     \def\currentposition{#1}%
+     \dosetposition\currentposition
+   \fi}
+
+\def\setposition#1%
+  {\iftrialtypesetting
+      % nothing
+   \else
+     \initializenextposition
+     \def\currentposition{#1}%
+     \dosetposition\currentposition
+     \traceposstring\llap\green{\currentposition>}%
+     \dopositionaction\currentposition
+   \fi}
+
+\def\setpositiondata#1#2#3#4%
+  {\iftrialtypesetting \else
+     \initializenextposition
+     \hbox
+       {\def\currentposition{#1}%
+        \dosetpositionwhd\currentposition
+          {\the\dimexpr#2\relax}%
+          {\the\dimexpr#3\relax}%
+          {\the\dimexpr#4\relax}%
+        \traceposstring\llap\green{\currentposition>}%
+        \dopositionaction\currentposition
+        \hss}%
+   \fi}
+
+\def\setpositionbox#1%
+  {\dowithnextbox
+     {\iftrialtypesetting
+        \flushnextbox
+      \else
+        \initializenextposition
+        \hbox to \nextboxwd
+          {\edef\currentposition{#1}%
+           \dosetpositionwhd\currentposition
+             {\the\nextboxwd}%
+             {\the\nextboxht}%
+             {\the\nextboxdp}%
+           \traceposstring\llap\green{\currentposition>}%
+           \setbox\positionbox\flushnextbox
+           \dopositionaction\currentposition
+           \box\positionbox
+           \hss}%
+      \fi}}
+
+\def\setpositiondataplus#1#2#3#4#5%
+  {\iftrialtypesetting \else
+     \initializenextposition
+     \hbox % bug: to \nextboxwd
+       {\edef\currentposition{#1}%
+        \dosetpositionplus\currentposition
+          {\the\dimexpr#2\relax}%
+          {\the\dimexpr#3\relax}%
+          {\the\dimexpr#4\relax}%
+          {#5}%
+        \traceposstring\rlap\magenta{<\currentposition}%
+        \dopositionaction\currentposition
+        \hss}%
+   \fi}
+
+\def\setpositionplus#1#2%
+  {\dowithnextbox
+     {\iftrialtypesetting
+        \flushnextbox
+      \else
+        \initializenextposition
+        \hbox to \nextboxwd
+          {\edef\currentposition{#1}%
+           \dosetpositionplus\currentposition
+             {\the\nextboxwd}%
+             {\the\nextboxht}%
+             {\the\nextboxdp}%
+             {#2}%
+           \traceposstring\rlap\magenta{<\currentposition}%
+           \setbox\positionbox\flushnextbox
+           \dopositionaction\currentposition
+           \box\positionbox
+           \hss}%
+      \fi}}
+
+\let\currentposition\s!unknown
+
+%D A few more low level macros take care of defining and
+%D recalling actions. We could save this information in the
+%D position containers themselves, this would save hash
+%D entries, but at the cost of much more time consuming
+%D expansion. Actions are saved globally!
+
+\newtoks\everypositionaction
+
+\let\POSactionprefix\POSprefix
+
+\def\dosetpositionaction#1%
+  {\setgvalue{\POSactionprefix#1::}}
+
+%D The lists can become quite long (also because there can
+%D be lots of parameters passed on) so we provide a hook
+%D to clean up the list afterwards.
+
+\let\cleanuppositionaction\gobbleoneargument
+
+\def\doifpositionaction#1%
+  {\ifcsname\POSactionprefix#1::\endcsname
+     \@EA\firstofoneargument
+   \else
+     \@EA\gobbleoneargument
+   \fi}
+
+\def\doifpositionactionelse#1%
+  {\ifcsname\POSactionprefix#1::\endcsname
+     \@EA\firstoftwoarguments
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+%D We can copy a position with:
+%D
+%D \starttyping
+%D \copyposition {to} {from}
+%D \stoptyping
+%D
+%D Again, this is a global action.
+
+\def\copyposition#1#2{\ctxlua{jobpositions.copy('#1','#2')}}
+
+%D The fact that handling positions is a two pass operation, is
+%D one of the reasons why we need to be able to test for
+%D existence, using:
+%D
+%D \starttyping
+%D \doifpositionelse {identifier} {found action} {not found action}
+%D \stoptyping
+
+\def\doifpositionelse#1{\ctxlua{jobpositions.doifelse('#1')}}
+
+%D We have now arrived at a few macros that would make sense as
+%D support macros, but ended up in the core.
+
+%D \macros
+%D   {xypos}
+%D
+%D We have several macros available to save positions. Later
+%D we will see applications.
+%D
+%D \starttabulate[|l|l||]
+%D \NC \type {\xypos} \NC    \NC simple position with no dimensions \NC \NR
+%D \NC \type {\hpos}  \NC    \NC position and characteristics of a \type {\hbox}                    \NC \NR
+%D \NC \type {\vpos}  \NC    \NC position and characteristics of a \type {\vbox}                    \NC \NR
+%D \NC \type {\bpos}  \NC b: \NC begin point in a line \NC \NR
+%D \NC \type {\epos}  \NC e: \NC end point in a line \NC \NR
+%D \NC \type {\fpos}  \NC f: \NC begin point in a paragraph \NC \NR
+%D \NC \type {\tpos}  \NC t: \NC end point in a paragraph \NC \NR
+%D \stoptabulate
+%D
+%D Each macro takes an identifier as argument, and the \type
+%D {\hpos} and \type {\vpos} also expect box content.
+
+% \def\xypos{\initializenextposition\dosetposition}
+
+\let\xypos\setpositiononly
+
+\def\hpos#1{\dontleavehmode\setpositionbox{#1}\hbox}
+\def\vpos#1{\setpositionbox{#1}\vbox}
+
+\def\bpos#1{\hpos{b:#1}{\strut}\ignorespaces}
+\def\epos#1{\removelastspace\hpos{e:#1}{\strut}}
+
+\def\fpos#1%
+  {\setpositionplus{b:#1}{\number\parposcounter}\horizontalstrut
+   \ignorespaces}
+
+\def\tpos#1%
+  {\removelastspace
+   \setpositionplus{e:#1}{\number\parposcounter}\horizontalstrut}
+
+\def\ffpos#1%
+  {\setpositionplus{b:#1}{\number\parposcounter}\horizontalstrut\wpos{#1}%
+   \ignorespaces}
+
+\def\ttpos#1%
+  {\removelastspace
+   \setpositionplus{e:#1}{\number\parposcounter}\horizontalstrut}
+
+\def\wpos#1%
+  {\dontleavehmode\vadjust % may disappear if buried
+     {\setbox0\hbox{\raise\strutdp\hbox{\rawwpos{#1}}}%
+      \rlap{\smashedbox0}}}
+
+\def\wwpos#1% \hsmashed{\llap{\rawwpos{#1}}}
+  {\rlap
+     {\setbox0\hbox{\rawwpos{#1}}%
+      \smashedbox0}}
+
+\def\rawwpos#1%
+  {\hpos{w:#1}
+     {\strut
+      \hskip-\leftskip
+      \hskip\hsize
+      \hskip-\rightskip}}
+
+% the next macro disables par positions (in inner boxes) and
+% only registers the width
+
+\def\setinnerparpositions
+  {\let\fpos\ffpos
+   \let\tpos\ttpos
+   \let\wpos\wwpos}
+
+% example of usage: (see for application "techniek")
+%
+% \appendtoks
+%   \setinnerparpositions
+% \to \everytabulate
+
+%D When we want to calculate more complex backgrounds, we
+%D need to know what the current indentation scheme is. At
+%D the cost of many positions and memory, we can keep track
+%D of them. This mechanism is activated automatically
+%D based on information collected in the previous pass.
+
+\newcount\parposcounter
+\newif   \ifpositioningpar
+\chardef \parposstrut = 1 % 0 => no strut data, so fall backs used
+\newif   \iftracepositions
+
+% we can check for used entries, and if not, then not add one
+
+\def\enableparpositions % global
+  {\global\let\registerparoptions\doregisterparoptions
+   \global\positioningtrue
+   \global\positioningpartrue}
+
+\def\disableparpositions % local
+  {\positioningparfalse}
+
+\let\registerparoptions\relax
+
+\def\doregisterparoptions
+  {\ifpositioningpar \ifpositioning \iftrialtypesetting \else
+     \ifinpagebody \else \ifmmode \else \ifinformula \else
+       \ifprocessingverbatim
+         \iflinepar \dodoregisterparoptions \fi
+       \else
+         \dodoregisterparoptions
+       \fi
+     \fi \fi \fi
+   \fi \fi \fi}
+
+\def\dodoregisterparoptions
+  {\global\advance\parposcounter\plusone
+   \setpositiondataplus
+     {p:\number\parposcounter}% identifier
+     {\the\zeropoint}%
+     {\the\strutht}%
+     {\the\strutdp}%
+     {\the\hsize,\the\dimexpr\leftskip\relax,\the\dimexpr\rightskip\relax,\the\hangindent,\the\hangafter,\the\parindent}%
+  %\normalhbox{\registerparsymbol}%
+   \iftracepositions\registerparsymbol\fi}
+
+\def\traceposstring#1#2#3%
+  {\iftracepositions\smashedhbox{#1{\infofont#2#3}}\fi}
+
+\def\registerparsymbol
+  {\iftracepositions
+     \smashedhbox to \zeropoint
+       {\hss
+        \startcolor[blue]%
+        \llap{\infofont\number\parposcounter}%
+        \scratchdimen\onepoint
+        \vrule
+          \!!width 4\scratchdimen
+          \!!height2\scratchdimen
+          \!!depth 2\scratchdimen
+        \stopcolor
+        \hss}%
+   \fi}
+
+% \appendtoks \registerparoptions \to \everypar
+
+%D Eperimental code, don't use this yet: (must be sped up anyway)
+
+\def\@@noden{node:n:}
+\def\@@nodeo{node:o:}
+\def\@@nodep{node:p:}
+
+\def\doifelsenodelocation#1%
+  {\ifcsname\@@noden#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\nextnodelocation#1%
+  {\ifcsname\@@noden#1\endcsname\pluscounter{\@@noden#1}\fi}
+
+\def\newnodelocation#1%
+  {\ifcsname\@@noden#1\endcsname
+     \setcounter{\@@noden#1}\zerocount
+     \letgvalue {\@@nodeo#1}\!!zerocount
+   \fi}
+
+\def\tagnodelocation#1%
+  {\ifcsname\@@noden#1\endcsname\xypos{\@@nodep#1:\countervalue{\@@noden#1}}\fi}
+
+\def\getnodelocationp#1{\MPp{\@@nodep#1:\countervalue{\@@noden#1}}}
+\def\getnodelocationx#1{\MPx{\@@nodep#1:\countervalue{\@@noden#1}}}
+\def\getnodelocationy#1{\MPy{\@@nodep#1:\countervalue{\@@noden#1}}}
+
+\def\numnodelocationp#1#2{\MPp{\@@nodep#1:\number#2}}
+\def\numnodelocationx#1#2{\MPx{\@@nodep#1:\number#2}}
+\def\numnodelocationy#1#2{\MPy{\@@nodep#1:\number#2}}
+
+\def\getnodelocationn#1{\countervalue{\@@noden#1}}
+\def\getnodelocationo#1{\getvalue    {\@@nodeo#1}}
+
+\chardef\nodelocationmode\plusone
+
+\def\analyzenodelocation#1%
+  {\ifcsname\@@noden#1\endcsname
+     \doanalyzenodelocation{#1}{\getnodelocationn{#1}}\zerocount
+   \fi}
+
+\def\doanalyzenodelocation#1#2#3% class n default
+  {\begingroup
+   \donefalse
+   \ifcase\nodelocationmode
+     % do nothing
+   \else
+     \edef\nodelocationselfn{#2}%
+     \edef\nodelocationselfp{\numnodelocationp{#1}\nodelocationselfn}%
+     \edef\nodelocationselfx{\numnodelocationx{#1}\nodelocationselfn}%
+     \edef\nodelocationselfy{\numnodelocationy{#1}\nodelocationselfn}%
+     \scratchcounter\plusone
+     \doloop
+       {\ifnum\recurselevel=\nodelocationselfn\relax
+          \donetrue
+        \else
+          \edef\nodelocationotherp{\numnodelocationp{#1}\recurselevel}%
+          \edef\nodelocationotherx{\numnodelocationx{#1}\recurselevel}%
+          \edef\nodelocationothery{\numnodelocationy{#1}\recurselevel}%
+          \ifcase\nodelocationmode
+          \or
+            % ok for single column
+            \ifcase\nodelocationotherp\relax
+              \exitloop
+            \else\ifnum\nodelocationotherp<\nodelocationselfp\relax
+              \donetrue \advance\scratchcounter\plusone
+            \else\ifnum\nodelocationotherp>\nodelocationselfp\relax
+              % skip
+            \else\ifdim\nodelocationothery>\nodelocationselfy\relax
+              \donetrue \advance\scratchcounter\plusone
+            \else\ifdim\nodelocationothery<\nodelocationselfy\relax
+              % skip
+            \else\ifdim\nodelocationotherx<\nodelocationselfx\relax
+              \donetrue \advance\scratchcounter\plusone
+            \fi\fi\fi\fi\fi\fi
+          \or
+            % acceptable for double column
+            \ifcase\nodelocationotherp\relax
+              \exitloop
+            \else\ifnum\nodelocationotherp<\nodelocationselfp\relax
+              \donetrue \advance\scratchcounter\plusone
+            \else\ifnum\nodelocationotherp>\nodelocationselfp\relax
+              % skip
+            \else\ifnum\recurselevel>\nodelocationselfn\relax
+              \donetrue \exitloop
+            \else
+              \donetrue \advance\scratchcounter\plusone
+            \fi\fi\fi\fi
+        \else
+          \exitloop
+        \fi
+        \fi}%
+   \fi
+   \ifdone \else
+     \scratchcounter#3\relax
+   \fi
+   \setxvalue{\@@nodeo#1}{\the\scratchcounter}%
+   \endgroup}
+
+\unexpanded\def\shownodelocation#1%
+  {\ifcsname\@@noden#1\endcsname
+    \analyzenodelocation{#1}%
+     (#1,%
+      n:\getnodelocationn{#1},%
+      p:\getnodelocationp{#1},%
+      x:\getnodelocationx{#1},%
+      y:\getnodelocationy{#1},%
+      o:\getnodelocationo{#1})%
+   \fi}
+
+%D \macros
+%D   {doifoverlappingelse}
+%D
+%D A first application of positional information, is to
+%D determine if two boxes do overlap:
+%D
+%D \starttyping
+%D \doifoverlappingelse{point a}{point b}
+%D   {action when overlapping}
+%D   {action when not overlapping}
+%D \stoptyping
+
+\def\overlappingmargin{-2\scaledpoint}
+
+\def\overlappingcheckone#1#2%
+  {\ifdim#1<\!!dimena \else \ifdim#1>\!!dimenb \else
+     \ifdim#2<\!!dimenc \else \ifdim#2>\!!dimend \else
+       \donetrue
+     \fi\fi
+   \fi\fi}
+
+\def\overlappingchecktwo#1#2%
+  {\ifdim#1<\!!dimene \else \ifdim#1>\!!dimenf \else
+     \ifdim#2<\!!dimeng \else \ifdim#2>\!!dimenh \else
+       \donetrue
+     \fi\fi
+   \fi\fi}
+
+\def\doifoverlappingelse#1#2% maybe do this in lua
+  {\begingroup
+   \donefalse
+   \edef\!!stringa{#1}\edef\!!stringb{#2}%
+   \ifnum\MPp\!!stringa=\MPp\!!stringb\relax
+     \!!dimena\MPx\!!stringa
+     \!!dimenb\dimexpr\MPx\!!stringa+\MPw\!!stringa\relax
+     \!!dimenc\dimexpr\MPy\!!stringa-\MPd\!!stringa\relax
+     \!!dimend\dimexpr\MPy\!!stringa+\MPh\!!stringa\relax
+     \!!dimene\MPx\!!stringb
+     \!!dimenf\dimexpr\MPx\!!stringb+\MPw\!!stringb\relax
+     \!!dimeng\dimexpr\MPy\!!stringb-\MPd\!!stringb\relax
+     \!!dimenh\dimexpr\MPy\!!stringb+\MPh\!!stringb\relax
+     \ifdim\overlappingmargin=\zeropoint\else
+       \advance\!!dimena-\overlappingmargin
+       \advance\!!dimenb+\overlappingmargin
+       \advance\!!dimenc-\overlappingmargin
+       \advance\!!dimend+\overlappingmargin
+       \advance\!!dimene-\overlappingmargin
+       \advance\!!dimenf+\overlappingmargin
+       \advance\!!dimeng-\overlappingmargin
+       \advance\!!dimenh+\overlappingmargin
+     \fi
+     % more often eh fb eg fg
+     \overlappingcheckone\!!dimene\!!dimeng \ifdone \else
+     \overlappingcheckone\!!dimene\!!dimenh \ifdone \else
+     \overlappingcheckone\!!dimenf\!!dimeng \ifdone \else
+     \overlappingcheckone\!!dimenf\!!dimenh \ifdone \else
+     \overlappingchecktwo\!!dimena\!!dimenc \ifdone \else
+     \overlappingchecktwo\!!dimena\!!dimend \ifdone \else
+     \overlappingchecktwo\!!dimenb\!!dimene \ifdone \else
+     \overlappingchecktwo\!!dimenb\!!dimenc \fi \fi \fi \fi \fi \fi \fi
+   \fi
+   \ifdone
+     \endgroup\expandafter\firstoftwoarguments
+   \else
+     \endgroup\expandafter\secondoftwoarguments
+   \fi}
+
+%D \macros
+%D   {doifpositionsonsamepageelse,
+%D    doifpositionsonthispageelse}
+%D
+%D Instead of letting the user handle fuzzy expansion, we
+%D provide a simple test on positione being on the same page.
+%D
+%D \starttyping
+%D \doifpositionsonsamepageelse{point a}{point b}
+%D   {action when on same page}
+%D   {action when not on same page}
+%D \doifpositionsonthispageelse{point a}{point b}
+%D   {action when on this page}
+%D   {action when not on this page}
+%D \stoptyping
+
+\def\dododoifpositionsonsamepageelse#1%
+  {\ifcase\scratchcounter
+     \scratchcounter\MPp{##}\donetrue
+   \else
+     \ifnum\scratchcounter=\MPp{#1}\relax\else\donefalse\fi
+   \fi}%
+
+\def\dodoifpositionsonsamepageelse#1#2%
+  {\begingroup
+   \scratchcounter#1\donefalse
+   \rawprocesscommalist[#2]\dododoifpositionsonsamepageelse
+   \ifdone
+     \endgroup\expandafter\firstoftwoarguments
+   \else
+     \endgroup\expandafter\secondoftwoarguments
+   \fi}
+
+\def\doifpositionsonsamepageelse{\dodoifpositionsonsamepageelse\!!zerocount}
+\def\doifpositionsonthispageelse{\dodoifpositionsonsamepageelse\realfolio  }
+
+%D Plugins:
+
+\let\MPv \MPplus
+\let\MPvv\MPrest
+
+\let\MPanchor\MPpos
+
+\let\POSp\MPp \let\POSx\MPx \let\POSy\MPy
+\let\POSh\MPh \let\POSd\MPd \let\POSw\MPw
+
+\protect \endinput

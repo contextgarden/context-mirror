@@ -1,0 +1,320 @@
+fonts.enc.math["lbr-ma"] = {
+    [0x025CB] = 0x00, -- circle
+    [0x025CF] = 0x01, -- blackcircle
+    [0x025A1] = 0x02, -- square
+    [0x025A0] = 0x03, -- blacksquare
+    [0x025B3] = 0x04, -- triangleup
+    [0x025B2] = 0x05, -- blacktriangleup
+    [0x025BD] = 0x06, -- triangledown
+    [0x025BC] = 0x07, -- blacktriangledown
+    [0x02B28] = 0x08, -- lozenge
+    [0x02B27] = 0x09, -- blacklozenge
+    [0x02B29] = 0x0A, -- blackdiamond
+    [0x02571] = 0x0B, -- upright
+    [0x02572] = 0x0C, -- downright
+    [0x022E4] = 0x0D, -- squareimageofnoteq
+    [0x022E5] = 0x0E, -- squareoriginalofnoteq
+    [0x02A4F] = 0x0F, -- dblsquareunion
+    [0x02A4E] = 0x10, -- dblsquareintersection
+    [0x02A64] = 0x11, -- zdomainantirestriction
+    [0x02A65] = 0x12, -- zrangeantirestriction
+    [0x022EE] = 0x13, -- verticalellipsis
+    [0x022EF] = 0x14, -- ellipsis
+    [0x022F0] = 0x15, -- uprightellipsis
+    [0x022F1] = 0x16, -- downrightellipsis
+    [0x022D5] = 0x17, -- equalparallel
+
+    [0x0225B] = 0x1A, -- stareq
+    [0x00127] = 0x1B, -- hbar
+    [0x022F6] = 0x1C, -- barelementof
+    [0x02209] = 0x1D, -- notelementof
+    [0x022FD] = 0x1E, -- barcontains
+    [0x0220C] = 0x1F, -- notcontain
+    [0x02204] = 0x20, -- nexists
+    [0x02194] = 0x21, -- leftrightarrow
+    [0x02195] = 0x22, -- updownarrow
+    [0x0219E] = 0x23, -- leftleftarrow
+    [0x0219F] = 0x24, -- upuparrow
+    [0x021A0] = 0x25, -- rightrightarrow
+--  [0x00026] = 0x26, -- amperand
+    [0x021A1] = 0x27, -- downdownarrow
+    [0x021A2] = 0x28, -- leftarrowtail
+    [0x021A3] = 0x29, -- rightarrowtail
+    [0x021A4] = 0x2A, -- leftarrowbar
+    [0x021A6] = 0x2B, -- rightarrowbar
+    [0x021A5] = 0x2C, -- uparrowbar
+--  [0x02212] = 0x2D, -- minus
+--  [0x0002D] = 0x2D, -- minus
+    [0x021A7] = 0x2E, -- downarrowbar
+    [0x021E4] = 0x2F, -- barleftarrow
+    [0x021E5] = 0x30, -- barrightarrow
+
+    [0x021E0] = 0x38, -- dashleftarrow
+    [0x021E1] = 0x39, -- dashuparrow
+    [0x021E2] = 0x3A, -- dashrightarrow
+    [0x021E3] = 0x3B, -- dashdownarrow
+    [0x021A9] = 0x3C, -- hookleftarrow
+--  [0x0003D] = 0x3D, -- equalto
+    [0x021AA] = 0x3E, -- hookrightarrow
+    [0x021AB] = 0x3F, -- looparrowleft
+    [0x021AC] = 0x40, -- looparrowright
+    [0x1D538] = 0x41, -- A                     (blackboard A)
+    [0x1D539] = 0x42, -- B
+    [0x02102] = 0x43, -- C
+    [0x1D53B] = 0x44, -- D
+    [0x1D53C] = 0x45, -- E
+    [0x1D53D] = 0x46, -- F
+    [0x1D53E] = 0x47, -- G
+    [0x0210D] = 0x48, -- H
+    [0x1D540] = 0x49, -- I
+    [0x1D541] = 0x4A, -- J
+    [0x1D542] = 0x4B, -- K
+    [0x1D543] = 0x4C, -- L
+    [0x1D544] = 0x4D, -- M
+    [0x02115] = 0x4E, -- N
+    [0x1D546] = 0x4F, -- O
+    [0x02119] = 0x50, -- P
+    [0x0211A] = 0x51, -- Q
+    [0x0211D] = 0x52, -- R
+    [0x1D54A] = 0x53, -- S
+    [0x1D54B] = 0x54, -- T
+    [0x1D54C] = 0x55, -- U
+    [0x1D54D] = 0x56, -- V
+    [0x1D54E] = 0x57, -- W
+    [0x1D54F] = 0x58, -- X
+    [0x1D550] = 0x59, -- Y
+    [0x02124] = 0x5A, -- Z                     (blackboard Z)
+    [0x0231C] = 0x5B, -- ulcorner
+    [0x0231D] = 0x5C, -- urcorner
+    [0x0231E] = 0x5D, -- llcorner
+    [0x0231F] = 0x5E, -- lrcorner
+    [0x02225] = 0x5F, -- parallel, Vert, lVert, rVert, arrowvert
+    [0x021D5] = 0x60, -- Updownarrow
+    [0x021D4] = 0x61, -- Leftrightarrow
+    [0x021D6] = 0x62, -- Upleftarrow
+    [0x021D7] = 0x63, -- Uprightarrow
+    [0x021D9] = 0x64, -- Downleftarrow
+    [0x021D8] = 0x65, -- Downrightarrow
+    [0x021CD] = 0x66, -- nLeftarrow
+    [0x021CE] = 0x67, -- nLeftrightarrow
+    [0x021CF] = 0x68, -- nRightarrow
+--  [0x021CE] = 0x69, -- nLeftrightarrow -- what's the difference between this and 0x0067[0x021CE]
+    [0x021DA] = 0x6A, -- Lleftarrow
+    [0x1D55C] = 0x6B, -- k                     \Bbbk (blackboard k)
+    [0x021DB] = 0x6C, -- Rrightarrow
+    [0x021C4] = 0x6D, -- rlarrow
+    [0x021C6] = 0x6E, -- lrarrow
+    [0x021C5] = 0x6F, -- udarrow
+--  [0x021C5] = 0x70, -- duarrow
+    [0x021C7] = 0x71, -- llarrow
+    [0x021C8] = 0x72, -- uuarrow
+    [0x021C9] = 0x73, -- rrarrow
+    [0x021CA] = 0x74, -- ddarrow
+    [0x021BE] = 0x75, -- rupharpoon
+    [0x021BF] = 0x76, -- lupharpoon
+    [0x021C2] = 0x77, -- rdownharpoon
+    [0x021C3] = 0x78, -- ldownharpoon
+    [0x021CB] = 0x79, -- lrharpoon
+    [0x021CC] = 0x7A, -- rlharpoon
+    [0x021B0] = 0x7B, -- upthenleftarrow
+--  [0x00000] = 0x7C, -- part
+    [0x021B1] = 0x7D, -- upthenrightarrow
+--  [0x00000] = 0x7E, -- part
+    [0x02276] = 0x7F, -- ltgt
+    [0x021B2] = 0x81, -- downthenleftarrow
+    [0x021B3] = 0x82, -- downthenrightarrow
+    [0x02B0E] = 0x83, -- rightthendownarrow
+    [0x02B10] = 0x84, -- leftthendownarrow
+    [0x02B0F] = 0x85, -- rightthenuparrow
+    [0x02B11] = 0x86, -- leftthenuparrow
+    [0x021B6] = 0x87, -- leftarcarrow
+    [0x021B7] = 0x88, -- rightarcarrow
+    [0x0293D] = 0x89, -- leftarcarrowplus
+    [0x0293C] = 0x8A, -- rightarcarrowminus
+    [0x021BA] = 0x8B, -- anticlockwise
+    [0x021BB] = 0x8C, -- clockwise
+
+    [0x02260] = 0x94, -- noteq
+    [0x02262] = 0x95, -- notidentical
+    [0x02241] = 0x96, -- nottilde
+    [0x02244] = 0x97, -- notasymptoticallyequal
+    [0x02249] = 0x98, -- notalmostequal
+    [0x02247] = 0x99, -- notapproximatelyeq
+    [0x0226E] = 0x9A, -- nless
+    [0x0226F] = 0x9B, -- ngtr
+    [0x02270] = 0x9C, -- nleq
+    [0x02271] = 0x9D, -- ngeq
+    [0x022E6] = 0x9E, -- lnsim
+    [0x022E7] = 0x9F, -- gnsim
+    [0x02605] = 0xAB, -- black star
+    [0x02713] = 0xAC, -- check
+    [0x02277] = 0xC5, -- gtlt
+    [0x02284] = 0xC6, -- nsubsetof
+    [0x02285] = 0xC7, -- nsupsetof
+    [0x02288] = 0xC8, -- nsubseteq
+    [0x02289] = 0xC9, -- nsupseteq
+
+    [0x0228A] = 0xCC, -- subsetneq
+    [0x0228B] = 0xCD, -- supsetneq
+
+--  [0x0228A] = 0xD0, -- subsetneq
+--  [0x0228B] = 0xD1, -- supsetneq
+
+    [0x02270] = 0xD6, -- nleq
+    [0x02271] = 0xD7, -- ngeq
+
+    [0x02268] = 0xDC, -- lneqq
+    [0x02269] = 0xDD, -- gneqq
+
+    [0x022E6] = 0xE0, -- lnsim
+    [0x02219] = 0xE1, -- bullet
+    [0x022E7] = 0xE2, -- gnsim
+
+    [0x02280] = 0xE5, -- nprec
+    [0x02281] = 0xE6, -- nsucc
+
+    [0x022E8] = 0xEB, -- precnsim
+    [0x022E9] = 0xEC, -- succnsim
+
+    [0x022EA] = 0xEF, -- nnormalsub
+    [0x022EB] = 0xF0, -- ncontainnormalsub
+    [0x022EC] = 0xF1, -- nnormalsubeq
+    [0x022ED] = 0xF2, -- ncontainnormalsubeq
+
+    [0x02226] = 0xF7, -- nparallel
+    [0x022AC] = 0xF8, -- nvdash
+    [0x022AE] = 0xF9, -- nVdash
+    [0x022AD] = 0xFA, -- nvDash
+    [0x022AF] = 0xFB, -- nVDash
+}
+
+fonts.enc.math["lbr-mb"] = {
+    [0x00393] = 0x00, -- Gamma
+    [0x00394] = 0x01, -- Delta
+    [0x00398] = 0x02, -- Theta
+    [0x0039B] = 0x03, -- Lambda
+    [0x0039E] = 0x04, -- Xi
+    [0x003A0] = 0x05, -- Pi
+    [0x003A3] = 0x06, -- Sigma
+    [0x003A5] = 0x07, -- Upsilon
+    [0x003A6] = 0x08, -- Phi
+    [0x003A8] = 0x09, -- Psi
+    [0x003A9] = 0x0A, -- Omega
+    [0x0210F] = 0x9D, -- hslash
+    [0x02127] = 0x92, -- mho
+    [0x02132] = 0x90, -- Finv
+    [0x02136] = 0x95, -- beth
+    [0x02137] = 0x96, -- gimel
+    [0x02138] = 0x97, -- daleth
+    [0x02141] = 0x91, -- Game
+    [0x02201] = 0x94, -- complement
+    [0x0226C] = 0xF2, -- between
+    [0x0227C] = 0xE4, -- preccurlyeq
+    [0x0227D] = 0xE5, -- succcurlyeq
+    [0x0229D] = 0xCC, -- circleddash
+    [0x022A8] = 0xD6, -- vDash
+    [0x022AA] = 0xD3, -- Vvdash
+    [0x022B8] = 0xC7, -- multimap
+    [0x022BB] = 0xD2, -- veebar
+    [0x022C7] = 0xF7, -- divideontimes
+    [0x022C9] = 0xCF, -- ltimes
+    [0x022CA] = 0xCE, -- rtimes
+    [0x022CB] = 0xD0, -- leftthreetimes
+    [0x022CC] = 0xD1, -- rightthreetimes
+    [0x022D6] = 0xDC, -- lessdot
+    [0x022D7] = 0xDD, -- gtrdot
+    [0x022DA] = 0xE8, -- lesseqgtr
+    [0x022DB] = 0xE9, -- gtreqless
+    [0x022DE] = 0xE6, -- curlyeqprec
+    [0x022DF] = 0xE7, -- curlyeqsucc
+    [0x024C7] = 0xC9, -- circledR
+    [0x024C8] = 0xCA, -- circledS
+    [0x025B6] = 0xF1, -- blacktriangleright
+    [0x025B8] = 0xF0, -- blacktriangleleft
+    [0x02720] = 0xCB, -- maltese
+    [0x02A7D] = 0xE0, -- leqslant
+    [0x02A7E] = 0xE1, -- geqslant
+    [0x02A85] = 0xDA, -- lessapprox
+    [0x02A86] = 0xDB, -- gtrapprox
+    [0x02A8B] = 0xEA, -- lesseqqgtr
+    [0x02A8C] = 0xEB, -- gtreqqless
+    [0x02A95] = 0xE2, -- eqslantless
+    [0x02A96] = 0xE3, -- eqslantgtr
+    [0x02AB7] = 0xEC, -- precapprox
+    [0x02AB8] = 0xED, -- succapprox
+    [0x02AC5] = 0xEE, -- subseteqq
+    [0x02AC6] = 0xEF, -- supseteqq
+    [0x12035] = 0xC8, -- backprime
+    [0x1D718] = 0x9B, -- varkappa
+}
+
+fonts.enc.math["lbr-sy"] = {
+    [0x021CB] = 0x8D, -- leftrightharpoons
+    [0x021CC] = 0x8E, -- rightleftharpoons
+    [0x02214] = 0x89, -- dotplus
+    [0x02220] = 0x8B, -- angle
+    [0x02221] = 0x8C, -- measuredangle
+    [0x02222] = 0x8D, -- sphericalangle
+    [0x02234] = 0x90, -- therefore
+    [0x02235] = 0x91, -- because
+    [0x0223D] = 0x24, -- backsim
+    [0x02242] = 0x99, -- eqsim
+    [0x0224A] = 0x9D, -- approxeq
+    [0x0224E] = 0xC7, -- Bumpeq
+    [0x02252] = 0xCB, -- fallingdotseq
+    [0x02253] = 0xCC, -- risingdotseq
+    [0x02256] = 0xCF, -- eqcirc
+    [0x02257] = 0xD0, -- circeq
+    [0x0225C] = 0xD5, -- triangleq
+    [0x02266] = 0xDA, -- leqq
+    [0x02267] = 0xDB, -- geqq
+    [0x02272] = 0xDC, -- lesssim
+    [0x02273] = 0xDD, -- gtrsim
+    [0x02276] = 0xDE, -- lessgtr
+    [0x02277] = 0xDF, -- gtrless
+    [0x0227E] = 0xE0, -- precsim
+    [0x0227F] = 0xE1, -- succsim
+    [0x0228F] = 0xE4, -- sqsubset
+    [0x02290] = 0xE5, -- sqsupset
+    [0x0229A] = 0xE6, -- circledcirc
+    [0x0229B] = 0xE7, -- circledast
+    [0x0229E] = 0xEA, -- boxplus
+    [0x0229F] = 0xEB, -- boxminus
+    [0x022A0] = 0xEC, -- boxtimes
+    [0x022A1] = 0xED, -- boxdot
+    [0x022A7] = 0xEE, -- models
+    [0x022A9] = 0xF0, -- Vdash
+    [0x022BC] = 0xF6, -- barwedge
+    [0x022CE] = 0x85, -- curlyvee
+    [0x022CF] = 0x84, -- curlywedge
+    [0x022D0] = 0xF8, -- Subset
+    [0x022D1] = 0xF9, -- Supset
+    [0x02300] = 0x53, -- varnothing
+    [0x025CA] = 0x05, -- lozenge
+}
+
+fonts.enc.math["lbr-sy"] = table.merged(fonts.enc.math["tex-sy"],fonts.enc.math["lbr-sy"])
+
+return {
+    name = "lucida-math",
+    version = "1.00",
+    comment = "Goodies that complement lucida math.",
+    author = "Aditya, Hans, Mojca",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "lucida.map",
+        },
+        virtuals = {
+            ["lucida-math"] = {
+                { name = "file:lbr.afm", features = "virtualmath", main = true },
+                { name = "hlcrim.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "hlcrim.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "hlcry.tfm", vector = "lbr-sy", skewchar=0x30, parameters = true },
+                { name = "hlcrv.tfm", vector = "tex-ex", extension = true },
+                { name = "hlcra.tfm", vector = "lbr-ma" },
+                { name = "hlcrm.tfm", vector = "lbr-mb" },
+            }
+        }
+    }
+}

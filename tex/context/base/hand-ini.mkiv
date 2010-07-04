@@ -1,0 +1,74 @@
+%D \module
+%D   [       file=hand-ini,
+%D        version=2008.02.12,
+%D          title=\CONTEXT\ Handling Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Handling is implemented differently in \MKIV. Maybe I'll cook up
+%D some compatibility hack.
+
+% \definefontfeature[demo][default][mode=node,expansion=quality]
+% \definefontfeature[demo][default][mode=node,protrusion=pure]
+
+% experimental setup:
+%
+%  \showframe \setupalign[hanging] \enabletrackers[fonts.protrusion]
+%
+%  \definefontfeature[default] [default][mode=node,script=latn]
+%  %definefontfeature[whatever][default][mode=node,lfbd=yes,rtbd=yes,script=latn]
+%  \definefontfeature[whatever][default][mode=node,protrusion=quality]
+%  \definefontfeature[whocares][default][mode=node,protrusion=yes,opbd=yes,script=latn] % left|right|yes
+%
+%  \definedfont[fxlbi.otf*default]  \input tufte 0123456789 \par \dorecurse{15}{1 2 3 4 5 6 7 8 9 0 } \par
+%  \definedfont[fxlbi.otf*whatever] \input tufte 0123456789 \par \dorecurse{15}{1 2 3 4 5 6 7 8 9 0 } \par
+%  \definedfont[fxlbi.otf*whocares] \input tufte 0123456789 \par \dorecurse{15}{1 2 3 4 5 6 7 8 9 0 } \par
+%
+%  %definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn,featurefile=texgyrepagella-regularxx.fea]
+%  \definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn]
+%
+%  \definedfont[texgyrepagella-regularxx.otf*whocares] \input tufte
+
+\unprotect
+
+%D New stuff.
+
+\unexpanded\def\setupfontexpansion {\dodoubleargument\dosetupfontexpansion }
+\unexpanded\def\setupfontprotrusion{\dodoubleargument\dosetupfontprotrusion}
+
+\def\dosetupfontexpansion [#1][#2]{\ctxlua{commands.setupfontexpansion ("#1","#2")}}
+\def\dosetupfontprotrusion[#1][#2]{\ctxlua{commands.setupfontprotrusion("#1","#2")}}
+
+% \setupfontprotrusion[quality-upright][vector=quality]
+% \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]
+
+%D Old stuff.
+
+\def\fonthandlingerror{\writestatus\m!fonts{font handling is replaced by features in mkiv}}
+
+\def\enableadjusting  {\pdfadjustspacing\plustwo  }  \let\enableexpansion \enableadjusting
+\def\disableadjusting {\pdfadjustspacing\zerocount}  \let\disableexpansion\disableadjusting
+\def\enableprotruding {\pdfprotrudechars\plustwo  }
+\def\disableprotruding{\pdfprotrudechars\zerocount}
+
+\appendtoks \disableadjusting  \to \everyforgetall % Here or not here?
+\appendtoks \disableprotruding \to \everyforgetall % Here or not here?
+
+\unexpanded\def\startfonthandling             #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
+\unexpanded\def\definefonthandling              {\dotripleempty\dodefinefonthandling}
+\unexpanded\def\setupfonthandling               {\dodoubleempty\dosetupfonthandling }
+\def\dodefinefonthandling[#1][#2][#3]{\fonthandlingerror}
+\def\dosetupfonthandling     [#1][#2]{\fonthandlingerror}
+\def\usehandling                 [#1]{\fonthandlingerror}
+
+%D Just to be sure, maybe users use it:
+
+\let\fonthandling\empty
+
+\protect \endinput

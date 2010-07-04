@@ -1,0 +1,136 @@
+%D \module
+%D   [       file=x-corres,
+%D        version=2003.12.15, % replaces keep-02a cum suis
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=Handling Correspondence Base,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The selection spec:
+
+\setvariables
+  [contacts]
+  [selection=,
+   file=x-corres.xml] % fall back
+
+%D First we define the group expansion pass:
+
+\startsetups[contacts:collect]
+
+  \defineXMLprocess  [contacts]
+
+  \defineXMLignore   [contact]
+
+  \defineXMLargument [contactfile]
+    \processfile
+
+  \defineXMLenvironmentsave [contactgroup] [label=]
+    {\startXMLmappinggroup[contacts]}
+    {\XMLaddcontactgrouptoselection
+     \stopXMLmappinggroup}
+
+\stopsetups
+
+%D Next we define the main processing pass:
+
+\startsetups[contacts:process]
+
+  \defineXMLprocess[contacts]
+
+  \defineXMLignore [contactgroup]
+
+  \defineXMLargument [contactfile]
+    \processfile
+
+  \defineXMLenvironmentsave[contact] [label=]
+    {\startXMLmappinggroup[contacts]}
+    {\XMLselectcontact
+     \stopXMLmappinggroup}
+
+\stopsetups
+
+\startXMLmapping[contacts]
+
+  \defineXMLsave [initials]
+  \defineXMLsave [formalname]
+  \defineXMLsave [informalname]
+  \defineXMLsave [title]
+  \defineXMLsave [prefix]
+  \defineXMLsave [suffix]
+  \defineXMLsave [telephone]
+  \defineXMLsave [mobiletelephone]
+  \defineXMLsave [telefax]
+  \defineXMLsave [email]
+  \defineXMLsave [address]
+  \defineXMLsave [information]
+
+  \defineXMLenvironment [p] \endgraf \endgraf
+
+  \defineXMLargument [member] \XMLaddcontacttoselection
+
+\stopXMLmapping
+
+%D The selection macros: we expand groups and replace them
+%D by contact labels in the selection spec.
+
+\def\XMLaddcontactgrouptoselection
+  {\edef\XMLcontactlist{\getvariable{contacts}{selection}}%
+   \edef\XMLgrouplabel {\XMLop{label}}%
+   \expanded{\doifinset{\XMLgrouplabel}{\XMLcontactlist}}
+     {\let\XMLgrouplist\empty
+      \XMLflush{contactgroup}%
+      \substituteincommalist\XMLgrouplabel\XMLgrouplist\XMLcontactlist
+      \expanded
+        {\globalsetvariables
+           [contacts]
+           [selection={\XMLcontactlist}]}}}
+
+\def\XMLaddcontacttoselection#1%
+  {\addtocommalist{#1}\XMLgrouplist}
+
+%D The main selector:
+
+\def\XMLselectcontact
+  {\edef\XMLcontactlist {\getvariable{contacts}{selection}}%
+   \edef\XMLcontactlabel{\XMLop{label}}%
+   \doifelsenothing{\XMLcontactlist}
+     {\donetrue}
+     {\expanded{\doifinsetelse{\XMLcontactlabel}{\XMLcontactlist}}
+        {\donetrue}
+        {\donefalse}}%
+   \ifdone
+     \XMLflush{contact}%
+     \setups[contact:handle]%
+   \fi}
+
+%D The default:
+
+\startsetups[contact:handle]
+
+  \XMLflush{address}
+
+\stopsetups
+
+\setups[contacts:process]
+
+%D Handy:
+
+\def\XMLprocesscontacts
+  {\dosingleempty\XMLprocesscontacts}
+
+\def\XMLprocesscontacts[#1]%
+  {\bgroup
+   \doifelsenothing{#1}
+     {\XMLprocesscontacts[\getvariable{contacts}{file}]}
+     {\setups[contacts:collect]%
+      \processcommacommand[#1]\processXMLfile
+      \setups[contacts:process]%
+      \processcommacommand[#1]\processXMLfile}%
+   \egroup}
+
+\endinput

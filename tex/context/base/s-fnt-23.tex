@@ -1,0 +1,272 @@
+%D \module
+%D   [      file=s-fnt-23,
+%D        version=2009.03.04,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Tracing Feature Application (3),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startluacode
+    local last_data = nil
+    local format = string.format
+    local function tpf(...)
+--     print("!!!!",...)
+        tex.print(tex.ctxcatcodes,format(...))
+    end
+    function fonts.otf.show_shape(n)
+        local tfmdata = fonts.ids[font.current()]
+        lastdata = tfmdata
+        local charnum = tonumber(n)
+        if not charnum then
+            charnum = tfmdata.unicodes[n]
+        end
+        local c = tfmdata.characters[charnum]
+        local d = tfmdata.descriptions[charnum]
+        if d then
+            local factor = (tfmdata.size/tfmdata.units)*((7200/7227)/65536)
+            local llx, lly, urx, ury = unpack(d.boundingbox)
+            llx, lly, urx, ury = llx*factor, lly*factor, urx*factor, ury*factor
+            local width, italic = (d.width or 0)*factor, (d.italic or 0)*factor
+            local top_accent, bot_accent = (d.top_accent or 0)*factor, (d.bot_accent or 0)*factor
+            local anchors, math = d.anchors, d.math
+            tpf("\\startMPcode")
+            tpf("pickup pencircle scaled .25bp ; ")
+            tpf('picture p ; p := image(draw textext.drt("\\gray\\char%s");); draw p ;',charnum)
+            tpf('draw (%s,%s)--(%s,%s)--(%s,%s)--(%s,%s)--cycle withcolor green ;',llx,lly,urx,lly,urx,ury,llx,ury)
+            tpf('draw (%s,%s)--(%s,%s) withcolor green ;',llx,0,urx,0)
+            tpf('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
+            tpf("defaultscale := 0.05 ; ")
+            -- inefficient but non critical
+            local function slant_1(v,dx,dy,txt,xsign,ysign,loc,labloc)
+                if #v > 0 then
+                    local l = { }
+                    for kk, vv in ipairs(v) do
+                        local h, k = vv.height, vv.kern
+                        if h and k then
+                            l[#l+1] = format("((%s,%s) shifted (%s,%s))",xsign*k*factor,ysign*h*factor,dx,dy)
+                        end
+                    end
+                    tpf("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled .25) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
+                    tpf("draw laddered (%s) withcolor .5white ;",table.concat(l,".."))
+                    tpf("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled .25) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
+                    for k, v in ipairs(l) do
+                        tpf("draw %s withcolor blue  withpen pencircle scaled 1bp;",v)
+                    end
+                end
+            end
+            local function slant_2(v,dx,dy,txt,xsign,ysign,loc,labloc)
+                if #v > 0 then
+                    local l = { }
+                    for kk, vv in ipairs(v) do
+                        local h, k = vv.height, vv.kern
+                        if h and k then
+                            l[#l+1] = format("((%s,%s) shifted (%s,%s))",xsign*k*factor,ysign*h*factor,dx,dy)
+                        end
+                    end
+                    if loc == "top" then
+                        tpf('label.%s("\\type{%s}",%s shifted (0,-1bp)) ;',loc,txt,l[#l])
+                    else
+                        tpf('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
+                    end
+                    for kk, vv in ipairs(v) do
+                        local h, k = vv.height, vv.kern
+                        if h and k then
+                            tpf('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[kk])
+                        end
+                    end
+                end
+            end
+            if math then
+                local kerns = math.kerns
+                if kerns then
+                    for _, slant in ipairs { slant_1, slant_2 } do
+                        for k,v in pairs(kerns) do
+                            if k == "top_right" then
+                                slant(v,width+italic,0,k,1,1,"top","ulft")
+                            elseif k == "bottom_right" then
+                                slant(v,width,0,k,1,1,"bot","lrt")
+                            elseif k == "top_left" then
+                                slant(v,0,0,k,-1,1,"top","ulft")
+                            elseif k == "bottom_left" then
+                                slant(v,0,0,k,-1,1,"bot","lrt")
+                            end
+                        end
+                    end
+                end
+            end
+            local function show(x,y,txt)
+                local xx, yy = x*factor, y*factor
+                tpf("draw (%s,%s) withcolor blue withpen pencircle scaled 1bp;",xx,yy)
+                tpf('label.top("\\type{%s}",(%s,%s-2bp)) ;',txt,xx,yy)
+                tpf('label.bot("(%s,%s)",(%s,%s+2bp)) ;',x,y,xx,yy)
+            end
+            if anchors then
+                local a = anchors.baselig
+                if a then
+                    for k, v in pairs(a) do
+                        for kk, vv in ipairs(v) do
+                            show(vv[1],vv[2],k .. ":" .. kk)
+                        end
+                    end
+                end
+                local a = anchors.mark
+                if a then
+                    for k, v in pairs(a) do
+                        show(v[1],v[2],k)
+                    end
+                end
+                local a = anchors.basechar
+                if a then
+                    for k, v in pairs(a) do
+                        show(v[1],v[2],k)
+                    end
+                end
+                local ba = anchors.centry
+                if a then
+                    for k, v in pairs(a) do
+                        show(v[1],v[2],k)
+                    end
+                end
+                local a = anchors.cexit
+                if a then
+                    for k, v in pairs(a) do
+                        show(v[1],v[2],k)
+                    end
+                end
+            end
+            if italic ~= 0 then
+                tpf('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width,ury,width,ury)
+                tpf('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width+italic,ury,width+italic,ury)
+                tpf('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue;',width,ury,width+italic,ury)
+                tpf('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,ury)
+                tpf('label.rt("%s",(%s-2bp,%s-1bp));',d.italic,width+italic,ury)
+            end
+            if top_accent ~= 0 then
+                tpf('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',top_accent,ury,top_accent,ury)
+                tpf('label.bot("\\type{%s}",(%s,%s+1bp));',"top_accent",top_accent,ury)
+                tpf('label.top("%s",(%s,%s-1bp));',d.top_accent,top_accent,ury)
+            end
+            if bot_accent ~= 0 then
+                tpf('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',bot_accent,lly,bot_accent,lly)
+                tpf('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,ury)
+                tpf('label.bot("%s",(%s,%s+1bp));',d.bot_accent,bot_accent,lly)
+            end
+            tpf('draw origin withcolor red withpen pencircle scaled 1bp;')
+            tpf("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
+            tpf("currentpicture := currentpicture scaled 8 ;")
+            tpf("\\stopMPcode")
+        elseif c then
+            local factor = (7200/7227)/65536
+            tpf("\\startMPcode")
+            tpf("pickup pencircle scaled .25bp ; ")
+            tpf('picture p ; p := image(draw textext.drt("\\gray\\char%s");); draw p ;',charnum)
+            tpf('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
+            tpf("defaultscale := 0.05 ; ")
+            local italic, top_accent, bot_accent = (c.italic or 0)*factor, (c.top_accent or 0)*factor, (c.bot_accent or 0)*factor
+            local width, height, depth = (c.width or 0)*factor, (c.height or 0)*factor, (c.depth or 0)*factor
+            local ury = height
+            if italic ~= 0 then
+                tpf('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width,ury,width,ury)
+                tpf('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width+italic,ury,width+italic,ury)
+                tpf('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue;',width,ury,width+italic,height)
+                tpf('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,height)
+                tpf('label.rt("%6.3f bp",(%s-2bp,%s-1bp));',italic,width+italic,height)
+            end
+            if top_accent ~= 0 then
+                tpf('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',top_accent,ury,top_accent,height)
+                tpf('label.bot("\\type{%s}",(%s,%s+1bp));',"top_accent",top_accent,height)
+                tpf('label.top("%6.3f bp",(%s,%s-1bp));',top_accent,top_accent,height)
+            end
+            if bot_accent ~= 0 then
+                tpf('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',bot_accent,lly,bot_accent,height)
+                tpf('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,height)
+                tpf('label.bot("%6.3f bp",(%s,%s+1bp));',bot_accent,bot_accent,height)
+            end
+            tpf('draw origin withcolor red withpen pencircle scaled 1bp;')
+            tpf("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
+            tpf("currentpicture := currentpicture scaled 8 ;")
+            tpf("\\stopMPcode")
+        else
+            tpf("no such shape: %s",n)
+        end
+    end
+    function fonts.otf.show_all_shapes(start,stop)
+        local tfmdata = fonts.ids[font.current()]
+        lastdata = tfmdata
+        start, stop = start or "\\startTEXpage\\gobbleoneargument", stop or "\\stopTEXpage"
+        local unicodes, indices, descriptions = tfmdata.unicodes, tfmdata.indices, tfmdata.descriptions
+        for _, unicode in next, table.sortedkeys(descriptions) do
+            local d = descriptions[unicode]
+            local name = d.name
+            tpf("%s{%s}%%",start,unicode)
+            tpf("\\writestatus{glyph}{U+%04X -> %s}%%",unicode,name)
+            fonts.otf.show_shape(unicode)
+            tpf(stop)
+        end
+    end
+    function fonts.otf.show_shape_field(unicode,name)
+        local tfmdata = lastdata or fonts.ids[font.current()]
+        local d = tfmdata.descriptions[unicode]
+        if d then
+            if name == "unicode" then
+                tpf("U+%04X",unicode)
+            else
+                d = d[name]
+                if d then
+                    tpf(d)
+                end
+            end
+        end
+    end
+\stopluacode
+
+\setupcolors
+  [state=start]
+
+\def\GetGlyphField#1#2%
+  {\ctxlua{fonts.otf.show_shape_field(#1,"#2")}}
+
+\def\StartShowGlyphShape#1%
+  {\startTEXpage
+   \nonknuthmode
+   \def\GlyphUnicode{#1}}
+
+\def\StopShowGlyphShape
+  {\par
+   \midaligned{\tttf\setstrut\strut\GetGlyphField\GlyphUnicode{unicode}: \GetGlyphField\GlyphUnicode{name}}%
+   \stopTEXpage}
+
+\def\ShowGlyphShape#1#2#3% name size glyph
+  {\begingroup
+   \definedfont[#1 at #2]%
+   \obeyMPboxdepth
+   \ctxlua{fonts.otf.show_shape("#3")}%
+   \endgroup}
+
+\def\ShowAllGlyphShapes#1#2% name size
+  {\begingroup
+   \nonknuthmode
+   \definedfont[#1 at #2]%
+   \ctxlua{fonts.otf.show_all_shapes("\\StartShowGlyphShape","\\StopShowGlyphShape")}%
+   \endgroup}
+
+\setupcolors
+  [state=start]
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+\startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0x62A}       \stopTEXpage
+\startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0x2004}      \stopTEXpage
+\startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0xF0299}     \stopTEXpage
+\startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{NameMe.1190} \stopTEXpage
+
+\ShowAllGlyphShapes{simplenaskhi}{100bp}
+
+\stoptext

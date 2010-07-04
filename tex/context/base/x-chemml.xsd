@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<xsd:annotation>
+  <xsd:documentation xml:lang="en">
+    <p>This schema covers (basic presentational) Chemical
+    markup. We will extend this schema with names and
+    predefined components.</p> 
+    <p>author: Hans Hagen, copyright: PRAGMA-ADE / Hasselt NL</p>  
+  </xsd:documentation>
+</xsd:annotation>
+
+<xsd:element type="chemType"> 
+  <xsd:sequence>
+    <xsd:element ref="chemicalComponentType" />
+    <xsd:choice>
+      <xsd:element ref="chemicalActionType" />
+      <xsd:element ref="chemicalBondType" />
+    </xsd:choice>
+  </xsd:sequence>
+</xsd:element>
+
+<xsd:element name="chem"  type="chemType" /> 
+<xsd:element name="ichem" type="chemType" /> 
+<xsd:element name="dchem" type="chemType" /> 
+
+<xsd:element name="molecule"> 
+  <xsd:complexType>
+    <xsd:sequence>
+      <xsd:choice>
+        <xsd:element name="ion" />
+        <xsd:element name="atom" />
+      </xsd:choice>  
+      <xsd:element name="caption" type="chemicalCaptionType" />
+    </xsd:sequence>
+    <xsd:attribute name="n" type="xsd:positiveInteger" /> 
+  </xsd:complexType>
+</xsd:element> 
+
+<xsd:element name="ion"> 
+  <xsd:complexType>
+    <xsd:sequence>
+      <xsd:element name="atom" />
+    </xsd:sequence>
+    <xsd:attribute name="n" type="xsd:positiveInteger" /> 
+    <xsd:attribute name="charge" type="xsd:integer" /> 
+  </xsd:complexType>
+</xsd:element> 
+
+<xsd:element name="atom" type="xsd:string"> 
+  <xsd:complexType>
+    <xsd:attribute name="n"       type="xsd:positiveInteger"/> 
+    <xsd:attribute name="charge"  type="xsd:integer" /> 
+    <xsd:attribute name="protons" type="xsd:positiveInteger" /> 
+    <xsd:attribute name="weight"  type="xsd:positiveInteger" /> 
+  </xsd:complexType>
+</xsd:element> 
+
+<xsd:complexType name="chemicalActionType">
+  <xsd:choice>
+    <xsd:element name="plus"        type="chemicalCaptionType" />
+    <xsd:element name="minus"       type="chemicalCaptionType" />
+    <xsd:element name="equal"       type="chemicalCaptionType" />
+    <xsd:element name="gives"       type="chemicalCaptionType" />
+    <xsd:element name="equilibrium" type="chemicalCaptionType" />
+    <xsd:element name="mesomeric"   type="chemicalCaptionType" />
+  </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="chemicalBondType">
+  <xsd:choice>
+    <xsd:element name="singlebond" />
+    <xsd:element name="doublebond" />
+    <xsd:element name="triplebond" />
+  </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="chemicalComponentType">
+  <xsd:choice>
+    <xsd:element ref="molecule" />
+    <xsd:element ref="ion" />
+    <xsd:element ref="atom" />
+  </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="chemicalCaptionType" minOccurs="0" maxOccurs="2">
+  <xsd:sequence>    
+    <xsd:element name="caption" type="xsd:string" minOccurs="0" maxOccurs="2" /> 
+  </xsd:sequence>    
+</xsd:complexType>
+
+</xsd:schema>

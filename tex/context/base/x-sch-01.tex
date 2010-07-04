@@ -1,0 +1,122 @@
+%D \module
+%D   [      file=x-sch-01,
+%D        version=2001.10.04,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=XML Schema Presentation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D This style wraps around the core schema visualizer, 
+%D implemented in \type {x-sch-00}. This is an experimental 
+%D style, more will follow. 
+%D 
+%D \starttyping 
+%D texexec --use=sch-01 x-fig-00.xsd --pdf
+%D \stoptyping 
+
+\doifnothing  {\jobfilename}        {\end} 
+\doiffileelse {\jobfilename.xsd} {} {\end} 
+
+\usemodule[sch-00,con-01] 
+
+\remapXMLnamespace [xs] [xsd]
+
+\setuplayout
+  [backspace=1.5cm,
+   topspace=1.5cm,
+   bottomspace=1cm,
+   width=middle,
+   height=middle,
+   header=1.5cm,
+   footer=1.5cm]
+
+\setupcolors
+  [state=start]
+
+\setupbackgrounds
+  [page]
+  [background=goback]
+
+\setupbackgrounds
+  [text]
+  [background=gonext]
+
+\defineoverlay
+  [goback]
+  [\overlaybutton{PreviousJump}]
+
+\defineoverlay
+  [gonext]
+  [\overlaybutton{nextpage}]
+
+\setuppagenumbering
+  [location=footer]
+
+\usetypescript
+  [palatino]
+  [\defaultencoding]
+
+\setupbodyfont
+  [palatino,10pt]
+
+%\setupinteraction
+%  [state=start,
+%   color=,
+%   contrastcolor=,
+%   style=]
+
+\setuplist    
+  [xsd:names]
+  [interaction=all,
+   width=0pt,
+   alternative=c]
+
+\setupregister
+  [xsd:index]
+  [interaction=text,
+   symbol=none]
+
+\setuphead
+  [chapter]
+  [style=\bfd,
+   header=high]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\lowercasestring \jobfilename \to \lcjobfilename
+
+\setupheadertexts
+  [\lcjobfilename]
+
+\starttext
+
+\title{Schema \quote{\lcjobfilename.xsd}}
+
+\subject{Names in order of definition}
+
+\startcolumns[n=3]
+  \placelist[xsd:names][criterium=current]
+\stopcolumns
+
+\subject{Names in alphabetic order}
+
+\startcolumns[n=3]
+  \placeregister[xsd:index][criterium=current]
+\stopcolumns
+
+\subject{Meaning of background colors}
+
+\placeXSDlegenda 
+ 
+\subject{Schema components}
+
+\processXMLfilegrouped{\jobfilename.xsd}
+
+\stoptext

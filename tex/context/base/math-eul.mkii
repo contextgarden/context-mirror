@@ -1,0 +1,277 @@
+%D \module
+%D   [       file=math-eul,
+%D        version=2003.02.03,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Virtual Euler Specials,
+%D         author={Hans Hagen \& Taco Hoekwater \& Adam Lindsay},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details. Further modified by Adam Lindsay.
+
+\unprotect
+
+%D We follow the following mappings from type-eul:
+%D
+%D  mr [MathRoman]      [Euler-Roman]     [zeurm10]
+
+%D  mi [MathItalic]     [Euler-Italic]    [eufm10]
+
+%D  ex [MathExtension]  [Euler-Extension] [zeuex10]
+%D  sy [MathSymbol]     [Euler-Symbol]    [zeusm10]
+
+%D  mb [MathBeta]       [Charter-Roman]   [bchr8r] XXX
+%D  mc [MathGamma]      [Euler-Fraktur]   [eufm10] XXX
+%D
+%D The inclusion of Bitstream Charter was originally for the text accents.
+%D Obviously, it's not a proper ``MathBeta'' font.
+
+%D The varrho and varsigma characters don't exist in eulervm,
+%D so we point at the normal types.
+
+\definefamilysynonym [eul]     [calligraphic] [sy]
+\definefamilysynonym [eul]     [oldstyle]     [mi]
+\definefamilysynonym [eul]     [gothic]       [mi]
+\definefamilysynonym [eul]     [fraktur]      [mi]
+
+\definefamilysynonym [eul]     [lcgreek]      [mr]
+\definefamilysynonym [eul]     [ucgreek]      [mr]
+\definefamilysynonym [eul]     [vargreek]     [mr]
+
+%% Well, you don't know until you try!
+%\definefamilysynonym [eul]     [accents]      [Serif]
+
+\startmathcollection [eul]
+
+\definemathsymbol [varrho]   [nothing] [vargreek] ["1A]
+\definemathsymbol [varsigma] [nothing] [vargreek] ["1B]
+
+%D Changes necessitated by collapsing mr \& mi into one:
+\definemathsymbol [imath]    [nothing] [mr] ["7B]
+\definemathsymbol [jmath]    [nothing] [mr] ["7C]
+\definemathsymbol [ell]      [nothing] [mr] ["60]
+\definemathsymbol [wp]       [nothing] [mr] ["7D]
+\definemathsymbol [partial]  [nothing] [mr] ["40]
+
+\definemathsymbol [flat]         [ord] [mr] ["5B]
+\definemathsymbol [natural]      [ord] [mr] ["5C]
+\definemathsymbol [sharp]        [ord] [mr] ["5D]
+
+\definemathsymbol [triangleleft] [bin] [mr] ["2F]
+\definemathsymbol [triangleright][bin] [mr] ["2E]
+
+\definemathsymbol [star]         [bin] [mr] ["3F]
+
+\definemathsymbol [smile]            [rel] [mr] ["5E]
+\definemathsymbol [frown]            [rel] [mr] ["5F]
+\definemathsymbol [leftharpoonup]    [rel] [mr] ["28]
+\definemathsymbol [leftharpoondown]  [rel] [mr] ["29]
+\definemathsymbol [rightharpoonup]   [rel] [mr] ["2A]
+\definemathsymbol [rightharpoondown] [rel] [mr] ["2B]
+\definemathsymbol [lhook]            [rel] [mr] ["2C]
+\definemathsymbol [rhook]            [rel] [mr] ["2D]
+
+\definemathsymbol [mathperiod] [ord]   [mr] ["3A]
+\definemathsymbol [textperiod] [punct] [mr] ["3A]
+
+\definemathsymbol [mathcomma]  [ord]   [mr] ["3B]
+\definemathsymbol [textcomma]  [punct] [mr] ["3B]
+
+\definemathsymbol [ldotp] [punct] [mr] ["3A]
+
+% extras from AMS:
+\definemathsymbol [hslash]   [ord]   [mr] ["80] %beauty over truth
+
+\stopmathcollection
+
+\startmathcollection [eul]
+% Ugh. no way around this to keep it compact in the font defs.
+
+\definemathcharacter [a]   [alpha] [mr] ["61]
+\definemathcharacter [b]   [alpha] [mr] ["62]
+\definemathcharacter [c]   [alpha] [mr] ["63]
+\definemathcharacter [d]   [alpha] [mr] ["64]
+\definemathcharacter [e]   [alpha] [mr] ["65]
+\definemathcharacter [f]   [alpha] [mr] ["66]
+\definemathcharacter [g]   [alpha] [mr] ["67]
+\definemathcharacter [h]   [alpha] [mr] ["68]
+\definemathcharacter [i]   [alpha] [mr] ["69]
+\definemathcharacter [j]   [alpha] [mr] ["6A]
+\definemathcharacter [k]   [alpha] [mr] ["6B]
+\definemathcharacter [l]   [alpha] [mr] ["6C]
+\definemathcharacter [m]   [alpha] [mr] ["6D]
+\definemathcharacter [n]   [alpha] [mr] ["6E]
+\definemathcharacter [o]   [alpha] [mr] ["6F]
+\definemathcharacter [p]   [alpha] [mr] ["70]
+\definemathcharacter [q]   [alpha] [mr] ["71]
+\definemathcharacter [r]   [alpha] [mr] ["72]
+\definemathcharacter [s]   [alpha] [mr] ["73]
+\definemathcharacter [t]   [alpha] [mr] ["74]
+\definemathcharacter [u]   [alpha] [mr] ["75]
+\definemathcharacter [v]   [alpha] [mr] ["76]
+\definemathcharacter [w]   [alpha] [mr] ["77]
+\definemathcharacter [x]   [alpha] [mr] ["78]
+\definemathcharacter [y]   [alpha] [mr] ["79]
+\definemathcharacter [z]   [alpha] [mr] ["7A]
+
+\definemathcharacter [A]   [alpha] [mr] ["41]
+\definemathcharacter [B]   [alpha] [mr] ["42]
+\definemathcharacter [C]   [alpha] [mr] ["43]
+\definemathcharacter [D]   [alpha] [mr] ["44]
+\definemathcharacter [E]   [alpha] [mr] ["45]
+\definemathcharacter [F]   [alpha] [mr] ["46]
+\definemathcharacter [G]   [alpha] [mr] ["47]
+\definemathcharacter [H]   [alpha] [mr] ["48]
+\definemathcharacter [I]   [alpha] [mr] ["49]
+\definemathcharacter [J]   [alpha] [mr] ["4A]
+\definemathcharacter [K]   [alpha] [mr] ["4B]
+\definemathcharacter [L]   [alpha] [mr] ["4C]
+\definemathcharacter [M]   [alpha] [mr] ["4D]
+\definemathcharacter [N]   [alpha] [mr] ["4E]
+\definemathcharacter [O]   [alpha] [mr] ["4F]
+\definemathcharacter [P]   [alpha] [mr] ["50]
+\definemathcharacter [Q]   [alpha] [mr] ["51]
+\definemathcharacter [R]   [alpha] [mr] ["52]
+\definemathcharacter [S]   [alpha] [mr] ["53]
+\definemathcharacter [T]   [alpha] [mr] ["54]
+\definemathcharacter [U]   [alpha] [mr] ["55]
+\definemathcharacter [V]   [alpha] [mr] ["56]
+\definemathcharacter [W]   [alpha] [mr] ["57]
+\definemathcharacter [X]   [alpha] [mr] ["58]
+\definemathcharacter [Y]   [alpha] [mr] ["59]
+\definemathcharacter [Z]   [alpha] [mr] ["5A]
+
+\stopmathcollection
+
+\startmathcollection [eul]
+
+\definemathcharacter [!]   [close] [sy] ["A1]
+\definemathcharacter [(]   [open]  [sy] ["A8]
+\definemathcharacter [)]   [close] [sy] ["A9]
+\definemathcharacter [+]   [bin]   [sy] ["AB]
+\definemathcharacter [:]   [rel]   [sy] ["BA]
+\definemathcharacter [;]   [punct] [sy] ["BB]
+\definemathcharacter [=]   [rel]   [sy] ["BD]
+\definemathcharacter [?]   [close] [sy] ["BF]
+\definemathcharacter [91]  [open]  [sy] ["DB] % [
+\definemathcharacter [93]  [close] [sy] ["DD] % ]
+
+\definemathcharacter [,]   [punct] [mr] ["3B]
+\definemathcharacter [.]   [ord]   [mr] ["3A]
+\definemathcharacter [/]   [ord]   [mr] ["3D]
+\definemathcharacter [<]   [rel]   [mr] ["3C]
+\definemathcharacter [>]   [rel]   [mr] ["3E]
+
+\stopmathcollection
+
+\startmathcollection [eul]
+
+\definemathcharacter [(]   [nothing] [sy] ["A8] [ex] ["00]
+\definemathcharacter [)]   [nothing] [sy] ["A9] [ex] ["01]
+\definemathcharacter [91]  [nothing] [sy] ["DB] [ex] ["02] % [
+\definemathcharacter [93]  [nothing] [sy] ["DD] [ex] ["03] % ]
+\definemathcharacter [/]   [nothing] [mr] ["3D] [ex] ["0E]
+
+\stopmathcollection
+
+\startmathcollection [eul]
+
+\definemathsymbol [hbar]   [nothing] [mr] ["80]
+
+\stopmathcollection
+
+\startmathcollection [eul]
+
+\definemathsymbol [ddagger] [bin] [sy] ["7A]
+\definemathsymbol [dagger]  [bin] [sy] ["79]
+
+\stopmathcollection
+
+\startmathcollection [eul]
+
+\definemathsymbol [colon] [punct] [sy] ["BA]
+
+\stopmathcollection
+
+%D This used to be very hackish; it brought in text
+%D accents from the well-matched Bitstream Charter.
+
+%D But now, these characters don't exist. I would prefer to pull
+%D them from the text font, but  I don't know how.
+%D Instead, I'm just pointing to null characters!
+
+\startmathcollection [eul]
+
+\definemathsymbol [acute] [accent] [mr] ["90]
+\definemathsymbol [grave] [accent] [mr] ["91]
+\definemathsymbol [ddot]  [accent] [mr] ["92]
+\definemathsymbol [tilde] [accent] [mr] ["93]
+\definemathsymbol [bar]   [accent] [mr] ["94]
+\definemathsymbol [breve] [accent] [mr] ["95]
+\definemathsymbol [check] [accent] [mr] ["96]
+\definemathsymbol [hat]   [accent] [mr] ["97]
+\definemathsymbol [dot]   [accent] [mr] ["98]
+%\definemathsymbol [acute] [accent] [accents] ["B4]
+%\definemathsymbol [grave] [accent] [accents] ["1E]
+%\definemathsymbol [ddot]  [accent] [accents] ["A8]
+%\definemathsymbol [tilde] [accent] [accents] ["98]
+%\definemathsymbol [bar]   [accent] [accents] ["AF]
+%\definemathsymbol [breve] [accent] [accents] ["0B]
+%\definemathsymbol [check] [accent] [accents] ["10]
+%\definemathsymbol [hat]   [accent] [accents] ["5E]
+%\definemathsymbol [dot]   [accent] [accents] ["01]
+
+\definemathsymbol [vec]   [accent] [mr] ["7E] % [ord]
+\definemathsymbol [hat]   [accent] [sy] ["DE]
+
+\stopmathcollection
+
+\startmathcollection [eul]
+
+\definemathsymbol [lgroup] [open]  [sy] ["A8] [ex] ["3A] % ?
+\definemathsymbol [rgroup] [close] [sy] ["A9] [ex] ["3B] % ?
+
+\stopmathcollection
+
+\startmathcollection [eul]
+
+\definemathsymbol [dag]  [box] [sy] ["79]
+\definemathsymbol [ddag] [box] [sy] ["7A]
+\definemathsymbol [S]    [box] [sy] ["78]
+\definemathsymbol [P]    [box] [sy] ["7B]
+
+\stopmathcollection
+
+%D Aditya's additionl definitions:
+
+\startmathcollection[eul:texnansi]
+   \definemathsymbol [acute]    [accent] [tf] ["13]
+   \definemathsymbol [grave]    [accent] [tf] ["12]
+   \definemathsymbol [ddot]     [accent] [tf] ["A8]
+   \definemathsymbol [tilde]    [accent] [tf] ["98]
+   \definemathsymbol [bar]      [accent] [tf] ["16]
+   \definemathsymbol [breve]    [accent] [tf] ["15]
+   \definemathsymbol [check]    [accent] [tf] ["14]
+   \definemathsymbol [hat]      [accent] [tf] ["88]
+   \definemathsymbol [dot]      [accent] [tf] ["5]
+   % Why is mathring not defined??
+   \definemathsymbol [mathring] [accent] [tf] ["17]
+\stopmathcollection
+
+\startmathcollection[eul:ec]
+   \definemathsymbol [acute]    [accent] [tf] ["1]
+   \definemathsymbol [grave]    [accent] [tf] ["0]
+   \definemathsymbol [ddot]     [accent] [tf] ["4]
+   \definemathsymbol [tilde]    [accent] [tf] ["3]
+   \definemathsymbol [bar]      [accent] [tf] ["9]
+   \definemathsymbol [breve]    [accent] [tf] ["8]
+   \definemathsymbol [check]    [accent] [tf] ["7]
+   \definemathsymbol [hat]      [accent] [tf] ["2]
+   \definemathsymbol [dot]      [accent] [tf] ["A]
+   % Why is mathring not defined??
+   \definemathsymbol [mathring] [accent] [tf] ["6]
+\stopmathcollection
+
+\protect \endinput

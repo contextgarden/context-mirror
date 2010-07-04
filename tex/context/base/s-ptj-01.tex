@@ -1,0 +1,425 @@
+%D \module
+%D   [      file=s-ptj-01,
+%D        version=2009.12.18,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=PracTeX Journal Style,
+%D         author=Aditya Mahajan,
+%D          email=adityam at umich dot edu,
+%D           date=\currentdate,
+%D      copyright=2009 Aditya Mahajan]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%M % These macros are needed to compile the documentation.
+%M \def\PracTeX      {Prac\kern-0.07em\TeX}
+%M \def\PRACTEX      {\PracTeX}
+%M \def\pracjourn    {The \PRACTEX\ Journal}
+%M \useurl[pracjourn][http://www.tug.org/pracjourn/][][\pracjourn]
+%M \useurl[texgyre]  [http://www.gust.org.pl/projects/e-foundry/tex-gyre/]
+
+\writestatus  {loading}   {Context Module for the PracTeX Journal}
+
+%D This module is for producing acticles for \from[pracjourn]. It merely copies the
+%D layout of the the \LATEX\ class \filename{pracjourn.cls} available from
+%D \pracjourn\ website (\url[pracjourn]).  This module has a filename synonym
+%D \filename{pracjourn}. So to use this module, you can write:
+%D \starttyping
+%D \usemodule[pracjourn]
+%D \stoptyping
+%D A sample document is given at the end of this file. The typeset sample can
+%D be obtained by
+%D \starttyping
+%D texmfstart texexec --mode=demo s-ptj-01.tex
+%D \stoptyping
+%D The documentation is written as comments. If you want to see a \PDF\ copy
+%D \starttyping
+%D texmfstart texexec --module s-ptj-01.tex
+%D \stoptyping
+
+\startmodule[pracjourn]
+
+\unprotect
+
+%D First let's setup the paper size and layout for \pracjourn. I am actually not
+%D sure about the \quote{official} layout requirement for \pracjourn\ and have
+%D reverse engineered the layout from the typeset \LATEX\ examples. If you
+%D feel that anything is wrong here, please let me know.
+
+\setuppapersize
+  [letter][letter]
+
+\setuplayout
+  [              width=middle,
+                height=middle,
+              location=middle,
+              topspace=1.25in,
+           bottomspace=1in,
+             backspace=1in,
+              cutspace=1in,
+            leftmargin=0.25in,
+           rightmargin=0.25in,
+    leftmargindistance=0in,
+   rightmargindistance=0in,
+                header=1in,
+                footer=.5in,
+         headerdistace=0in,
+        footerdistance=.25in,
+  ]
+
+%D Next we do the font setup. \pracjourn\ uses mathpazo for roman and math faces and
+%D uses latin modern for sans serif and monotype. For the main face, 12pt is
+%D used with a 15.5pt baseline skip. Font protrusion is enabled, but font
+%D expansion is not. We follow these conventions. \CONTEXT\ uses Pagella fonts
+%D from \TEX{gyre} project, so we use them instead. 
+
+\usetypescript  [serif,sans,mono] [hanging] [pure]
+\setupalign     [hanging]
+\usetypescript  [palatino][encoding=texnansi]
+\setupbodyfont  [palatino,12pt]
+
+\definefont [titlefont]  [Regular at 20pt]
+\definefont [authorfont] [Regular at 14pt]
+
+\setupbodyfontenvironment
+  [12pt]
+  [interlinespace=15.5pt,em=italic]
+
+\setupbodyfontenvironment
+  [11pt]
+  [interlinespace=13.6pt,em=italic]
+
+%D The variables for the article are stored in the \mono{pracjourn} namespace.
+%D To initialize these variables use
+%D \starttyping
+%D \setvariables
+%D  [pracjourn]
+%D  [    title=Tile of the Article,
+%D      author=Name of Author,
+%D     address=Write your Address,
+%D    revision={d=14,m=11,y=2006},
+%D   copyright=Whatever you want,
+%D  ]
+%D \stoptyping
+%D \mono{title} and \mono{author} should always be entered (even though this
+%D module does not make them mandatory, it makes little sense to have an
+%D article without a title or author. Other variables are optional. If a
+%D revision is not written, current date will be used to show the revision.
+%D Other variables for the article are the author's email address and website
+%D url. Due to catcode problems, it is not always possible to reliably enter
+%D these using the variable mechanism. To enter these use \type|\useURL|
+%D \starttyping
+%D \useURL[email][mailto:address@whatever.com][][address@whatever.com]
+%D \useURL[website][link to your homepage]
+%D \stoptyping
+%D If either of these \URL's are not present, they will be silently ignored
+%D while generating the title.
+
+\setvariables [pracjourn] [    title=]
+\setvariables [pracjourn] [   author=]
+\setvariables [pracjourn] [  address=]
+\setvariables [pracjourn] [copyright=]
+\setvariables [pracjourn] [ revision=]
+
+%D We use the buffer \filename{abstract} for the abstract. So to enter the
+%D abstract, write
+%D \starttyping
+%D \startbuffer[abstract]
+%D Write your abstract
+%D \stopbuffer
+%D \stoptyping
+%D Right now, there is no mechanism to inhibt abstracts. In case someone
+%D requires it, such a mechanism is easy to implement.
+
+\startbuffer[abstract]
+\stopbuffer
+
+%D The actual title with the additional information is typset by calling
+%D \starttyping
+%D \setups{title}
+%D \stoptyping
+%D Remember that the \type|\setvariables[pracjourn][...]| step must be done
+%D before \type|\setups{title}|.
+
+\setuphead
+  [title]
+  [style=\titlefont,
+   after={\blank[big]}]
+
+%D Next we define internal frames to take care of the layout of the extra
+%D material in the title. 
+
+\defineframed
+  [pracjourninfotitle]
+  [   frame=off,
+      strut=yes,
+      width=0.1\textwidth,
+     height=fit,
+      align=left,
+   location=hanging,
+  ]
+
+\defineframed
+  [pracjourninfodetails]
+  [   frame=off,
+      strut=yes,
+      width=0.85\textwidth,
+     height=fit,
+      align=normal,
+   location=hanging,
+  ]
+
+\newif\ifpracjourntitleskipdone
+
+\def\pracjourninfo#1#2%
+  {\pracjourntitleskipdonetrue
+    \hbox to \textwidth
+   \bgroup
+    \hfill \pracjourninfotitle{#1}
+    \hfill \pracjourninfodetails{#2}
+   \egroup\endgraf}
+
+%D Now we take care of the actual layout of the title. Most of this is
+%D heuristic, as I was trying to get the same visual effect as the
+%D \filename{pracjourn.cls} class. If something does not match, please let me
+%D know. The information is typeset as
+%D \starttyping
+%D \hfill <box of .1\textwidth> \hfill <box of .85\textwidth>
+%D \stoptyping
+%D at 11pt size. We also add the title and author information in the \PDF\
+%D metadata.
+
+\startsetups [title]
+% Place the tile and the author
+  \title{\getvariable{pracjourn}{title}}
+  \blank[medium]
+  \bgroup\authorfont\setupinterlinespace
+  \getvariable{pracjourn}{author} \endgraf\egroup
+  \blank[2*big]
+% Place the additional information
+  \bgroup\switchtobodyfont[11pt]
+  \setupindenting[no]
+  \doifurldefinedelse{email}
+    {\pracjourninfo{Email}{\tttf\from[email]\relax}}
+    \empty
+  \doifurldefinedelse{website}
+    {\pracjourninfo{Website}{\from[website]\relax}}
+    \empty
+  \doifsomething{\getvariable{pracjourn}{address}}
+    {\pracjourninfo{Address}{\getvariable{pracjourn}{address}}}
+  \ifpracjourntitleskipdone  \blank[big] \fi
+  \pracjourninfo{Abstract}
+    {\setupindenting[yes]
+     \setupinterlinespace
+     \getbuffer[abstract]
+     \endgraf}
+  \egroup
+  \blank[big]
+  \setups{pracjourndate}
+  % Add information to pdfmetadata
+  \setupinteraction
+    [title={\getvariable{pracjourn}{title}},
+    author={\getvariable{pracjourn}{author}},
+  subtitle={The PracTeX Journal Article}]
+\stopsetups
+  
+% If revision number is present, write it to \filename{_rev.tex}
+% FIXME: Do we need to ensure that the dates and month are two digits?
+\startrawsetups [pracjourndate]
+  \doifsomething{\getvariable{pracjourn}{revision}}
+  {\expanded{\setvariables[pracjourn:date][y=,m=,d=,\getvariable{pracjourn}{revision}]}
+   \immediate\openout \scratchwrite _rev.tex
+   \immediate\write   \scratchwrite
+   {\getvariable{pracjourn:date}{y}/\getvariable{pracjourn:date}{m}/\getvariable{pracjourn:date}{d}}
+   \immediate\closeout\scratchwrite}
+\stoprawsetups
+
+%D Next we setup the header and footer for the first page. \pracjourn\ formats the
+%D header as
+%D \startlines
+%D The PracTeX Journal, year, No. number
+%D Article revision year/mm/dd
+%D \stoplines
+%D If a copyright notice is present, it is printed right aligned on the bottom
+%D of first page. Otherwise the footer on the first page is empty.
+
+\startsetups [pracjourntitleheader]
+  \framed[frame=off,width=\textwidth,align=normal,location=low]
+  {\small\setupinterlinespace
+   \doifelsenothing{\pracjournissue}
+      {For submission to \pracjourn}
+      {\pracjournissue}
+   \endgraf
+   \doifelsenothing{\getvariable{pracjourn}{revision}}
+     {Draft of \currentdate[year,/,mm,/,dd]}
+     {Article revision\space
+      \expanded{\date[\getvariable{pracjourn}{revision}][year,/,mm,/,dd]}}
+   \endgraf}
+\stopsetups
+
+\startsetups [pracjourntitlefooter]
+  \framed[frame=off,width=\textwidth,align=flushright,location=low]
+  {\small\setupinterlinespace \getvariable{pracjourn}{copyright}\endgraf}
+\stopsetups
+
+\definetext [pracjourntitleheader] [header]  [\setups{pracjourntitleheader}][]
+\definetext [pracjourntitlefooter] [footer]  [\setups{pracjourntitlefooter}]
+
+\setuphead  
+  [title]           
+  [header=pracjourntitleheader,
+   footer=pracjourntitlefooter]
+
+%D For rest of the pages, page number is printed on the middle of the footer.
+
+\setuppagenumbering [location={footer,middle}, style=mediaeval]
+
+%D Next we setup the formating for the sections.  \pracjourn\ wants font sizes of
+%D 17pt, 14pt, and 12pt respectively for section, subsection, and
+%D subsubsection. By default, \tex{tfa} is 1.2, \tex{tfb} is 1.4, so the sizes
+%D come out close to what is required. The section number is typset in
+%D oldstyle fonts.
+
+\setuphead
+  [section,subject]
+  [      style=\tfb,
+   numberstyle=mediaeval,
+        before={\blank[2*big]},
+         after={\blank[big]},
+  ]
+
+\setuphead
+  [subsection,subsubject]
+  [      style=\tfa,
+   numberstyle=mediaeval,
+        before={\blank[big]},
+         after={\blank[medium]},
+  ]
+
+\setuphead
+  [subsubsection,subsubsubject]
+  [      style=\tf,
+   numberstyle=mediaeval,
+        before={\blank[medium]},
+         after={\blank},
+  ]
+
+%D Now we setup the captions. The captions head are set in normal font, and
+%D the caption number is set in oldstlyle.
+
+\setupcaptions  [headstyle=normal,stopper=:,conversion=mediaeval]
+
+%D Footnotes are placed in a box with a width of 1.5em. The footnote numeral
+%D are set in oldstyle font.
+
+\setupnote
+  [footnote]
+  [margindistance=0em,
+       conversion=mediaeval,
+          command=\pracjournfootnote,
+  ]
+
+\setupnotedefinition  [footnote]  [location=left,hang=1]
+
+\def\pracjournfootnote#1{\hbox to 1.5em{#1.}}
+
+%D \pracjourn\ uses dash as the first level of itemize and text period as the second
+%D level. The third level is left unspecified.
+
+\definesymbol [1]     [{\symbol[dash]}]
+\definesymbol [2]     [\periodcentered]
+
+\setupitemize [each]  [packed]
+\setupitemize [1]     [packed,autointro]  [margin=1em]
+
+%D We enable colors, interaction and bookmarks.
+
+\setupinteraction [state=start,color=darkred,style=normal]
+\setupurl         [color=darkred]
+\setupcolors      [state=start]
+\placebookmarks   [section,subsection]  [section]
+
+%D We setup medium indenting, whitespace and blanks.
+
+\setupindenting   [medium,yes]
+\setupwhitespace  [medium]
+\setupblank       [medium]
+
+%D We define logos for \PRACTEX\ and \pracjourn. These definitions are copied from
+%D \filename{pracjourn.cls} and can be accessed by \type|\PracTeX|,
+%D \type|\PRACTEX| and \type|\pracjourn|.
+
+\def\PracTeX{Prac\kern-0.07em\TeX}
+\def\PRACTEX{\PracTeX}
+\def\pracjourn    {The \PRACTEX\ Journal}
+
+%D \filename{pracjourn.cls} provides two macros \type|\ctanfile| and
+%D \type|\ctanloc|. I am not sure what is the advantage of these macors. If
+%D you want to use these macros, you can use the \type|\useURL| mechanism of
+%D \CONTEXT. For example
+%D \starttyping
+%D \useURL[pracjourn][http://ctan.org/get?fn=/macros/contrib/latex/pracjourn][][\mono{CTAN:macros/contrib/latex/pracjourn}]
+%D The \LATEX\ style files for \pracjourn\ is localed at \from[pracjourn]
+%D \stoptyping
+
+%D For the final version of the paper, the string \quotation{The PracTeX
+%D Journal year, No x} is written on the header. This only happens when the
+%D current directory contains a file \filename{_iss.tex} which contains string
+%D like \quotation{pracjourn 2006 No 04, 2006-11-15}. This step is usually taken in
+%D the final production of the article. If this file is absent, \quotation{For
+%D submission to the PracTeX Journal} is written instead. The next macros are
+%D used to parse this file.
+
+\let\pracjournissue\empty
+
+\def\parse@iss pracjourn #1 No #2, #3-#4-#5\@nil%
+  {\!!counta#2\relax
+  \edef\pracjournissue{\pracjourn, #1, No.\,\the\!!counta}}
+
+%D Read the \filename{_iss.tex} file, if present to determine the current
+%D issue.
+
+\immediate\openin\scratchread _iss.tex
+\ifeof\scratchread\else
+  \read \scratchread to \!!stringa
+  \expandafter\parse@iss\!!stringa\@nil
+\fi
+\immediate\closein\scratchread
+
+\protect
+
+\stopmodule
+
+\doifnotmode{demo}{\endinput}
+
+\usemodule[pracjourn]
+
+\setvariables
+  [pracjourn]
+  [    title=\PRACTEX\ Article in \CONTEXT,
+      author=Aditya Mahajan,
+     address={Ann Arbor,\\ Michigan, USA.},
+    revision={y=2006,m=11,d=14},
+   copyright={Copyright \copyright\ 2006 Aditya Mahajan.}
+  ]
+
+\useURL[website][http://www.eecs.umich.edu/~adityam]
+\useURL[email][mailto:adityam@umich.edu][][adityam@umich.edu]
+
+%D If any of the above information is not provided, the corresponding entry
+%D will not apprear in the title.
+
+\startbuffer[abstract]
+Write abstract here
+\stopbuffer
+
+\starttext  \setups[title]
+
+\section{Introduction}
+
+Write your article \unknown
+
+\stoptext
+
+\endinput

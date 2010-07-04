@@ -1,0 +1,274 @@
+%D \module
+%D   [       file=unic-034,
+%D        version=2005.06.11,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 34,
+%D         author=Nikolai Weibull,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Nikolai Weibull}]
+
+\unprotect
+
+\startunicodevector 34
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1\relax
+    \forall             \or % FOR ALL
+    \complement         \or % COMPLEMENT
+    \partial            \or % PARTIAL DIFFERENTIAL
+    \exists             \or % THERE EXISTS
+    \nexists            \or % THERE DOES NOT EXIST
+    \emptyset           \or % EMPTY SET
+    \vartriangle        \or % INCREMENT
+    \nabla              \or % NABLA
+    \unic@in            \or % ELEMENT OF
+    \unic@nin           \or % NOT AN ELEMENT OF
+    \unknownchar        \or % SMALL ELEMENT OF
+    \ni                 \or % CONTAINS AS MEMBER
+    \unic@nni           \or % DOES NOT CONTAIN AS MEMBER
+    \unknownchar        \or % SMALL CONTAINS AS MEMBER
+    \QED                \or % END OF PROOF
+    \prod               \or % N-ARY PRODUCT
+    \coprod             \or % N-ARY COPRODUCT
+    \sum                \or % N-ARY SUMMATION
+    \unic@minus         \or % MINUS SIGN
+    \mp                 \or % MINUS-OR-PLUS SIGN
+    \dotplus            \or % DOT PLUS
+    \unic@divisionslash \or % DIVISION SLASH
+    \setminus           \or % SET MINUS
+    \ast                \or % ASTERISK OPERATOR
+    \circ               \or % RING OPERATOR
+    \bullet             \or % BULLET OPERATOR
+    \unic@sqrt          \or % SQUARE ROOT
+    \unic@cubesqrt      \or % CUBE ROOT
+    \unic@fourthsqrt    \or % FOURTH ROOT
+    \propto             \or % PROPORTIONAL TO
+    \infty              \or % INFINITY
+    \unknownchar        \or % RIGHT ANGLE
+    \angle              \or % ANGLE
+    \measuredangle      \or % MEASURED ANGLE
+    \sphericalangle     \or % SPHERICAL ANGLE
+    \unic@divides       \or % DIVIDES
+    \unic@ndivides      \or % DOES NOT DIVIDE
+    \parallel           \or % PARALLEL TO
+    \nparallel          \or % NOT PARALLEL TO
+    \land               \or % LOGICAL AND
+    \lor                \or % LOGICAL OR
+    \unic@cap           \or % INTERSECTION
+    \cup                \or % UNION
+    \int                \or % INTEGRAL
+    \unic@dblint        \or % DOUBLE INTEGRAL
+    \unic@triint        \or % TRIPLE INTEGRAL
+    \oint               \or % CONTOUR INTEGRAL
+    \unknownchar        \or % SURFACE INTEGRAL
+    \unknownchar        \or % VOLUME INTEGRAL
+    \unknownchar        \or % CLOCKWISE INTEGRAL
+    \unknownchar        \or % CLOCKWISE CONTOUR INTEGRAL
+    \unknownchar        \or % ANTICLOCKWISE CONTOUR INTEGRAL
+    \therefore          \or % THEREFORE
+    \because            \or % BECAUSE
+    \unic@ratio         \or % RATIO
+    \unic@proportion    \or % PROPORTION
+    \unknownchar        \or % DOT MINUS
+    \unic@excess        \or % EXCESS
+    \unic@geompropr     \or % GEOMETRIC PROPORTION
+    \unic@homothetic    \or % HOMOTHETIC
+    \sim                \or % TILDE OPERATOR
+    \backsim            \or % REVERSED TILDE
+    \unknownchar        \or % INVERTED LAZY S
+    \unknownchar        \or % SINE WAVE
+    \wr                 \or % WREATH PRODUCT
+    \nsim               \or % NOT TILDE
+    \eqsim              \or % MINUS TILDE
+    \simeq              \or % ASYMPTOTICALLY EQUAL TO
+    \nsimeq             \or % NOT ASYMPTOTICALLY EQUAL TO
+    \approxeq           \or % APPROXIMATELY EQUAL TO
+    \unic@cong          \or % APPROXIMATELY BUT NOT ACTUALLY EQUAL TO
+    \unic@napproxeq     \or % NEITHER APPROXIMATELY NOR ACTUALLY EQUAL TO
+    \approx             \or % ALMOST EQUAL TO
+    \unic@napprox       \or % NOT ALMOST EQUAL TO
+    \approxeq           \or % ALMOST EQUAL OR EQUAL TO
+    \unknownchar        \or % TRIPLE TILDE
+    \unknownchar        \or % ALL EQUAL TO
+    \asymp              \or % EQUIVALENT TO
+    \Bumpeq             \or % GEOMETRICALLY EQUIVALENT TO
+    \bumpeq             \or % DIFFERENCE BETWEEN
+    \unic@doteq         \or % APPROACHES THE LIMIT
+    \doteqdot           \or % GEOMETRICALLY EQUAL TO
+    \fallingdotseq      \or % APPROXIMATELY EQUAL TO OR THE IMAGE OF
+    \risingdotseq       \or % IMAGE OF OR APPROXIMATELY EQUAL TO
+    \unknownchar        \or % COLON EQUALS
+    \unknownchar        \or % EQUALS COLON
+    \eqcirc             \or % RING IN EQUAL TO
+    \circeq             \or % RING EQUAL TO
+    \unic@correspondsto \or % CORRESPONDS TO
+    \unic@estimates     \or % ESTIMATES
+    \unic@equiangularto \or % EQUIANGULAR TO
+    \unic@stareq        \or % STAR EQUALS
+    \unic@triangleq     \or % DELTA EQUAL TO
+    \unic@eqbydef       \or % EQUAL TO BY DEFINITION
+    \unic@measuredby    \or % MEASURED BY
+    \unic@questionedeq  \or % QUESTIONED EQUAL TO
+    \neq                \or % NOT EQUAL TO
+    \equiv              \or % IDENTICAL TO
+    \unic@nequiv        \or % NOT IDENTICAL TO
+    \unknownchar        \or % STRICTLY EQUIVALENT TO
+    \leq                \or % LESS-THAN OR EQUAL TO
+    \geq                \or % GREATER-THAN OR EQUAL TO
+    \leqq               \or % LESS-THAN OVER EQUAL TO
+    \geqq               \or % GREATER-THAN OVER EQUAL TO
+    \lneqq              \or % LESS-THAN BUT NOT EQUAL TO
+    \gneqq              \or % GREATER-THAN BUT NOT EQUAL TO
+    \ll                 \or % MUCH LESS-THAN
+    \gg                 \or % MUCH GREATER-THAN
+    \between            \or % BETWEEN
+    \nasymp             \or % NOT EQUIVALENT TO
+    \nless              \or % NOT LESS-THAN
+    \ngtr               \or % NOT GREATER-THAN
+    \nleq               \or % NEITHER LESS-THAN NOR EQUAL TO
+    \ngeq               \or % NEITHER GREATER-THAN NOR EQUAL TO
+    \lesssim            \or % LESS-THAN OR EQUIVALENT TO
+    \gtrsim             \or % GREATER-THAN OR EQUIVALENT TO
+    \unic@nlesssim      \or % NEITHER LESS-THAN NOR EQUIVALENT TO
+    \unic@ngtrsim       \or % NEITHER GREATER-THAN NOR EQUIVALENT TO
+    \lessgtr            \or % LESS-THAN OR GREATER-THAN
+    \gtrless            \or % GREATER-THAN OR LESS-THAN
+    \unic@nlessgtr      \or % NEITHER LESS-THAN NOR GREATER-THAN
+    \unic@ngtrless      \or % NEITHER GREATER-THAN NOR LESS-THAN
+    \prec               \or % PRECEDES
+    \succ               \or % SUCCEEDS
+    \preceq             \or % PRECEDES OR EQUAL TO
+    \succeq             \or % SUCCEEDS OR EQUAL TO
+    \precsim            \or % PRECEDES OR EQUIVALENT TO
+    \succsim            \or % SUCCEEDS OR EQUIVALENT TO
+    \nprec              \or % DOES NOT PRECEDE
+    \nsucc              \or % DOES NOT SUCCEED
+    \subset             \or % SUBSET OF
+    \supset             \or % SUPERSET OF
+    \unic@nsubset       \or % NOT A SUBSET OF
+    \unic@nsupset       \or % NOT A SUPERSET OF
+    \subseteq           \or % SUBSET OF OR EQUAL TO
+    \supseteq           \or % SUPERSET OF OR EQUAL TO
+    \nsubseteq          \or % NEITHER A SUBSET OF NOR EQUAL TO
+    \nsupseteq          \or % NEITHER A SUPERSET OF NOR EQUAL TO
+    \subsetneq          \or % SUBSET OF WITH NOT EQUAL TO
+    \supsetneq          \or % SUPERSET OF WITH NOT EQUAL TO
+    \unknownchar        \or % MULTISET
+    \unknownchar        \or % MULTISET MULTIPLICATION
+    \biguplus           \or % MULTISET UNION
+    \sqsubset           \or % SQUARE IMAGE OF
+    \sqsupset           \or % SQUARE ORIGINAL OF
+    \sqsubseteq         \or % SQUARE IMAGE OF OR EQUAL TO
+    \sqsupseteq         \or % SQUARE ORIGINAL OF OR EQUAL TO
+    \sqcap              \or % SQUARE CAP
+    \sqcup              \or % SQUARE CUP
+    \oplus              \or % CIRCLED PLUS
+    \ominus             \or % CIRCLED MINUS
+    \otimes             \or % CIRCLED TIMES
+    \oslash             \or % CIRCLED DIVISION SLASH
+    \odot               \or % CIRCLED DOT OPERATOR
+    \circledcirc        \or % CIRCLED RING OPERATOR
+    \circledast         \or % CIRCLED ASTERISK OPERATOR
+    \unknownchar        \or % CIRCLED EQUALS
+    \circleddash        \or % CIRCLED DASH
+    \boxplus            \or % SQUARED PLUS
+    \boxminus           \or % SQUARED MINUS
+    \boxtimes           \or % SQUARED TIMES
+    \boxdot             \or % SQUARED DOT OPERATOR
+    \vdash              \or % RIGHT TACK
+    \dashv              \or % LEFT TACK
+    \top                \or % DOWN TACK
+    \bot                \or % UP TACK
+    \unknownchar        \or % ASSERTION
+    \models             \or % MODELS
+    \vDash              \or % TRUE
+    \unknownchar        \or % FORCES
+    \Vvdash             \or % TRIPLE VERTICAL BAR RIGHT TURNSTILE
+    \unknownchar        \or % DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE
+    \nvdash             \or % DOES NOT PROVE
+    \nvDash             \or % NOT TRUE
+    \unknownchar        \or % DOES NOT FORCE
+    \unknownchar        \or % NEGATED DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE
+    \unknownchar        \or % PRECEDES UNDER RELATION
+    \unknownchar        \or % SUCCEEDS UNDER RELATION
+    \lhd                \or % NORMAL SUBGROUP OF
+    \rhd                \or % CONTAINS AS NORMAL SUBGROUP
+    \unlhd              \or % NORMAL SUBGROUP OF OR EQUAL TO
+    \unrhd              \or % CONTAINS AS NORMAL SUBGROUP OR EQUAL TO
+    \unknownchar        \or % ORIGINAL OF
+    \unknownchar        \or % IMAGE OF
+    \unknownchar        \or % MULTIMAP
+    \unknownchar        \or % HERMITIAN CONJUGATE MATRIX
+    \unknownchar        \or % INTERCALATE
+    \veebar             \or % XOR
+    \barwedge           \or % NAND
+    \unknownchar        \or % NOR
+    \unknownchar        \or % RIGHT ANGLE WITH ARC
+    \unknownchar        \or % RIGHT TRIANGLE
+    \bigwedge           \or % N-ARY LOGICAL AND
+    \bigvee             \or % N-ARY LOGICAL OR
+    \bigcap             \or % N-ARY INTERSECTION
+    \bigcup             \or % N-ARY UNION
+    \diamond            \or % DIAMOND OPERATOR
+    \cdot               \or % DOT OPERATOR
+    \star               \or % STAR OPERATOR
+    \divideontimes      \or % DIVISION TIMES
+    \bowtie             \or % BOWTIE
+    \ltimes             \or % LEFT NORMAL FACTOR SEMIDIRECT PRODUCT
+    \rtimes             \or % RIGHT NORMAL FACTOR SEMIDIRECT PRODUCT
+    \leftthreetimes     \or % LEFT SEMIDIRECT PRODUCT
+    \rightthreetimes    \or % RIGHT SEMIDIRECT PRODUCT
+    \backsimeq          \or % REVERSED TILDE EQUALS
+    \unknownchar        \or % CURLY LOGICAL OR
+    \unknownchar        \or % CURLY LOGICAL AND
+    \Subset             \or % DOUBLE SUBSET
+    \Supset             \or % DOUBLE SUPERSET
+    \Cap                \or % DOUBLE INTERSECTION
+    \Cup                \or % DOUBLE UNION
+    \pitchfork          \or % PITCHFORK
+    \unknownchar        \or % EQUAL AND PARALLEL TO
+    \unknownchar        \or % LESS-THAN WITH DOT
+    \unknownchar        \or % GREATER-THAN WITH DOT
+    \lll                \or % VERY MUCH LESS-THAN
+    \ggg                \or % VERY MUCH GREATER-THAN
+    \lesseqgtr          \or % LESS-THAN EQUAL TO OR GREATER-THAN
+    \gtreqless          \or % GREATER-THAN EQUAL TO OR LESS-THAN
+    \unknownchar        \or % EQUAL TO OR LESS-THAN
+    \unknownchar        \or % EQUAL TO OR GREATER-THAN
+    \curlyeqprec        \or % EQUAL TO OR PRECEDES
+    \curlyeqsucc        \or % EQUAL TO OR SUCCEEDS
+    \npreceq            \or % DOES NOT PRECEDE OR EQUAL
+    \nsucceq            \or % DOES NOT SUCCEED OR EQUAL
+    \unic@nsqsubseteq   \or % NOT SQUARE IMAGE OF OR EQUAL TO
+    \unic@nsqsupseteq   \or % NOT SQUARE ORIGINAL OF OR EQUAL TO
+    \unknownchar        \or % SQUARE IMAGE OF OR NOT EQUAL TO
+    \unknownchar        \or % SQUARE ORIGINAL OF OR NOT EQUAL TO
+    \lnsim              \or % LESS-THAN BUT NOT EQUIVALENT TO
+    \gnsim              \or % GREATER-THAN BUT NOT EQUIVALENT TO
+    \precnsim           \or % PRECEDES BUT NOT EQUIVALENT TO
+    \succnsim           \or % SUCCEEDS BUT NOT EQUIVALENT TO
+    \ntriangleleft      \or % NOT NORMAL SUBGROUP OF
+    \ntriangleright     \or % DOES NOT CONTAIN AS NORMAL SUBGROUP
+    \ntrianglelefteq    \or % NOT NORMAL SUBGROUP OF OR EQUAL TO
+    \ntrianglerighteq   \or % DOES NOT CONTAIN AS NORMAL SUBGROUP OR EQUAL
+    \vdots              \or % VERTICAL ELLIPSIS
+    \cdots              \or % MIDLINE HORIZONTAL ELLIPSIS
+    \unknownchar        \or % UP RIGHT DIAGONAL ELLIPSIS
+    \ddots              \or % DOWN RIGHT DIAGONAL ELLIPSIS
+    \unknownchar        \or % ELEMENT OF WITH LONG HORIZONTAL STROKE
+    \unknownchar        \or % ELEMENT OF WITH VERTICAL BAR AT END OF HORIZONTAL STROKE
+    \unknownchar        \or % SMALL ELEMENT OF WITH VERTICAL BAR AT END OF HORIZONTAL STROKE
+    \unknownchar        \or % ELEMENT OF WITH DOT ABOVE
+    \unknownchar        \or % ELEMENT OF WITH OVERBAR
+    \unknownchar        \or % SMALL ELEMENT OF WITH OVERBAR
+    \unknownchar        \or % ELEMENT OF WITH UNDERBAR
+    \unknownchar        \or % ELEMENT OF WITH TWO HORIZONTAL STROKES
+    \unknownchar        \or % CONTAINS WITH LONG HORIZONTAL STROKE
+    \unknownchar        \or % CONTAINS WITH VERTICAL BAR AT END OF HORIZONTAL STROKE
+    \unknownchar        \or % SMALL CONTAINS WITH VERTICAL BAR AT END OF HORIZONTAL STROKE
+    \unknownchar        \or % CONTAINS WITH OVERBAR
+    \unknownchar        \else % SMALL CONTAINS WITH OVERBAR
+    \unknownchar            % Z NOTATION BAG MEMBERSHIP
+  \fi
+\stopunicodevector
+
+\protect \endinput

@@ -1,0 +1,364 @@
+%D \module
+%D   [       file=verb-mp,
+%D        version=1997.12.22,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty \METAPOST\ Verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty METAPOST Verbatim}
+
+% bug: in mp-char.mp the char should not be highlighted
+
+% can be simplified
+
+%D This module was first used when I documented our new
+%D company logo. This interpreter is modeled after the \PERL\
+%D one.
+%D
+%D \startMP
+%D beginfig(1);
+%D   z1 = (0,0);
+%D   z2 = (100,0);
+%D   z3 = (0,100);
+%D   draw z1--z2--z3--cycle;
+%D endfig;
+%D \stopMP
+%D
+%D Of course we cannot (yet) provide a nice layout, so some
+%D formatting is still needed.
+
+\unprotect
+
+%D \macros
+%D   {prettyMPvariables}
+%D
+%D Identifiers and system variables are typeset in a different
+%D style. One can turn of this mechanism for the variables by
+%D setting th enext boolean.
+%D
+
+\doglobal\newif\ifprettyMPvariables
+
+\global\prettyMPvariablestrue
+
+%D We support \METAFONT\ as well as \METAPOST.
+
+\gdef\MPsetcontrols
+  {\saveprettycontrols
+   \everyprettyend
+     {\endMPtypesix}%
+   \def\obeyedspace%
+     {\endMPtypesix
+      \oldobeyedspace}%
+   \def\flushrestofverbatimline%
+     {\endMPtypesix}%
+   \let\obeytabs=\ignoretabs}
+
+\gdef\setupprettyMPtype
+  {\def\prettyidentifier{MP}%
+   \global\inMPtexmodefalse
+   \MPsetvariables
+   \MPsetcontrols
+   \MPsethandlers
+   \MPsetspecials}
+
+\doglobal\newif\ifinMPtexmode
+
+\gdef\MPsetvariables
+  {\global\inMPtexmodefalse
+   \global\let\MPsequence=\empty}
+
+\gdef\MPsetspecials
+  {\setpretty`\;=11 \setpretty`\$=12 \setpretty`\@=12 \setpretty`\#=12
+   \setpretty`\%=20
+   \setpretty`\[=31 \setpretty`\]=31 \setpretty`\(=32 \setpretty`\)=32
+   \setpretty`\:=33 \setpretty`\==34 \setpretty`\<=34 \setpretty`\>=34
+   \setpretty`\-=41 \setpretty`\+=41 \setpretty`\/=41 \setpretty`\*=41
+   \setpretty`\|=41 \setpretty`\`=41 \setpretty`\!=41 \setpretty`\?=41
+   \setpretty`\^=41 \setpretty`\&=42
+   \setpretty`\\=50
+   \setpretty`\1=61 \setpretty`\2=61 \setpretty`\3=61 \setpretty`\4=61
+   \setpretty`\5=61 \setpretty`\6=61 \setpretty`\7=61 \setpretty`\8=61
+   \setpretty`\9=61 \setpretty`\0=61
+   \setpretty`\A=62 \setpretty`\B=62 \setpretty`\C=62 \setpretty`\D=62 \setpretty`\E=62
+   \setpretty`\F=62 \setpretty`\G=62 \setpretty`\H=62 \setpretty`\I=62 \setpretty`\J=62
+   \setpretty`\K=62 \setpretty`\L=62 \setpretty`\M=62 \setpretty`\N=62 \setpretty`\O=62
+   \setpretty`\P=62 \setpretty`\Q=62 \setpretty`\R=62 \setpretty`\S=62 \setpretty`\T=62
+   \setpretty`\U=62 \setpretty`\V=62 \setpretty`\W=62 \setpretty`\X=62 \setpretty`\Y=62
+   \setpretty`\Z=62
+   \setpretty`\a=62 \setpretty`\b=62 \setpretty`\c=62 \setpretty`\d=62 \setpretty`\e=62
+   \setpretty`\f=62 \setpretty`\g=62 \setpretty`\h=62 \setpretty`\i=62 \setpretty`\j=62
+   \setpretty`\k=62 \setpretty`\l=62 \setpretty`\m=62 \setpretty`\n=62 \setpretty`\o=62
+   \setpretty`\p=62 \setpretty`\q=62 \setpretty`\r=62 \setpretty`\s=62 \setpretty`\t=62
+   \setpretty`\u=62 \setpretty`\v=62 \setpretty`\w=62 \setpretty`\x=62 \setpretty`\y=62
+   \setpretty`\z=62
+   \setpretty`\_=62
+   \setpretty`\,=70 \setpretty`\.=70
+   \setpretty`\'=81 \setpretty`\"=82
+   \setpretty`\{=90 \setpretty`\}=90 }
+
+\gdef\MPsethandlers
+  {\installprettyhandler 11 \MPtypeone
+   \installprettyhandler 12 \MPtypeone
+   \installprettyhandler 20 \MPtypetwo
+   \installprettyhandler 31 \MPtypethreeA
+   \installprettyhandler 32 \MPtypethreeA
+   \installprettyhandler 33 \MPtypethreeB
+   \installprettyhandler 34 \MPtypethreeB
+   \installprettyhandler 41 \MPtypefour
+   \installprettyhandler 42 \MPtypefour
+   \installprettyhandler 50 \MPtypefive
+   \installprettyhandler 61 \MPtypesixone
+   \installprettyhandler 62 \MPtypesixtwo
+   \installprettyhandler 70 \MPtypeseven
+   \installprettyhandler 81 \MPtypeeightone
+   \installprettyhandler 82 \MPtypeeighttwo
+   \installprettyhandler 90 \MPtypenine }
+
+\gdef\MPtypeone#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty%
+   \fi}
+
+\gdef\doMPtypetwo#1%
+  {\ifnaturaltextext
+     \let\next\naturaltextext
+   \else
+     \disableprettytrue\disableprettyafterwards
+     \def\next{\beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty}%
+   \fi
+   \next}
+
+\gdef\MPtypetwo
+  {\endMPtypesix
+   \ifnewpretty\expandafter\handlenewpretty\fi\doMPtypetwo}
+
+\gdef\MPtypethreeA#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\MPtypethreeB#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\MPtypefour#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\MPtypefive#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\endMPtypesix
+  {\ifx\MPsequence\empty\else
+     \doifprettyidentifierelse{\MPsequence}{\MPidentifiers}
+       {\doifprettyidentifierelse{\MPsequence}{\MPbtex}
+          {\beginofpretty[\!!prettytwo]%
+             {\prettyidentifierfont\MPsequence}%
+           \endofpretty
+           \global\inMPtexmodetrue}
+          {\ifinMPtexmode
+             \doifprettyidentifierelse{\MPsequence}{\MPetex}
+               {\global\inMPtexmodefalse}{}%
+           \fi
+           \beginofpretty[\!!prettytwo]%
+             {\prettyidentifierfont\MPsequence}%
+           \endofpretty}}
+       {\ifprettyMPvariables
+          \doifprettyidentifierelse{\MPsequence}{\MPvariables}
+            {\beginofpretty[\!!prettytwo]%
+             {\prettyvariablefont\MPsequence}%
+             \endofpretty}
+            {\MPsequence}%
+        \else
+          \MPsequence
+        \fi}%
+     \global\let\MPsequence=\empty
+   \fi}
+
+\gdef\MPtypesixone
+  {\endMPtypesix
+   \getpretty}
+
+\gdef\MPtypesixtwo#1%
+  {\xdef\MPsequence{\MPsequence\getpretty{#1}}}
+
+\gdef\MPtypeseven#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\MPtypeeightone#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\MPtypeeighttwo#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\MPtypenine#1%
+  {\endMPtypesix
+   \ifinMPtexmode
+     \getpretty{#1}%
+   \else
+     \getpretty{#1}%
+   \fi}
+
+%D \METAPOST\ \TEX||ies:
+
+\useprettyidentifiers \MPbtex \MPsetspecials
+  btex verbatimtex
+
+\useprettyidentifiers \MPetex \MPsetspecials
+  etex
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  btex etex verbatimtex
+
+%D \METAPOST\ internal variables \& predefined variables:
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  charcode day linecap linejoin miterlimit month pausing
+  prologues showstopping time tracingcapsules tracingchoices mpprocset
+  tracingcommands tracingequations tracinglostchars
+  tracingmacros tracingonline tracingoutput tracingrestores
+  tracingspecs tracingstats tracingtitles truecorners
+  warningcheck year
+
+\useprettyidentifiers \MPvariables \MPsetspecials
+  ahangle ahlength bboxmargin defaultpen defaultscale
+  labeloffset background currentpen currentpicture cuttings
+  defaultfont extra_beginfig extra_endfig
+
+%D \METAPOST\ predefined constants:
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  false nullpicture pencircle true
+
+\useprettyidentifiers \MPvariables \MPsetspecials
+  beveled black blue bp butt cc cm dd ditto down epsilon
+  evenly fullcircle green halfcircle identity in infinity left
+  mitered mm origin pensquare pt quartercircle red right
+  rounded squared unitsquare up white withdots
+
+%D \METAPOST\ operators:
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  and angle arclength arctime ASCII bluepart boolean bot
+  char color cosd cycle decimal directiontime floor fontsize
+  greenpart hex infont intersectiontimes known length llcorner
+  lrcorner makepath makepen mexp mlog normaldeviate not
+  numeric oct odd or path pair pen penoffset picture point
+  postcontrol precontrol redpart reverse rotated scaled
+  shifted sind slanted sqrt str string subpath substring
+  transform transformed ulcorner uniformdeviate unknown
+  urcorner xpart xscaled xxpart xypart ypart yscaled yxpart
+  yypart zscaled
+
+\useprettyidentifiers \MPvariables \MPsetspecials
+  abs bbox ceiling center cutafter cutbefore dir
+  directionpoint div dotprod intersectionpoint inverse mod lft
+  round rt unitvector whatever
+
+%D \METAPOST\ commands:
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  addto clip input interim let newinternal save setbounds
+  shipout show showdependencies showtoken showvariable
+  special
+
+\useprettyidentifiers \MPvariables \MPsetspecials
+  cutdraw draw drawarrow drawdblarrow fill filldraw
+  loggingall pickup tracingall tracingnone undraw unfill
+  unfilldraw drawdot
+
+%D \METAPOST\ macro||like functions:
+
+\useprettyidentifiers \MPvariables \MPsetspecials
+  buildcycle dashpattern decr dotlabel dotlabels drawoptions
+  incr label labels max min thelabel z
+
+%D More \METAPOST:
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  begingroup endgroup of curl tension and controls
+  reflectedabout rotatedaround interpath on off beginfig
+  endfig def vardef enddef epxr suffix text primary secondary
+  tertiary primarydef secondarydef tertiarydef top bottom
+  ulft urt llft lrt randomseed also contour doublepath
+  withcolor withpen dashed if else elseif fi for endfor
+  forsuffixes forever downto upto step until end
+
+%D \METAFONT\ stuff:
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  charlist extensible fontdimen headerbyte kern ligtable
+  boundarychar chardp charext charht charic charwd designsize
+  fontmaking charexists
+
+\useprettyidentifiers \MPvariables \MPsetspecials
+  beginchar blacker capsule_end change_width
+  define_blacker_pixels define_corrected_pixels
+  define_good_x_pixels define_good_y_pixels
+  define_horizontal_corrected_pixels define_pixels
+  define_whole_blacker_pixels define_whole_pixels
+  define_whole_vertical_blacker_pixels
+  define_whole_vertical_pixels endchar extra_beginchar
+  extra_endchar extra_setup font_coding_scheme
+  font_extra_space
+
+%D \METAFONT\ no||op stuff:
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  cullit currenttransform gfcorners grayfont hround
+  imagerules lowres_fix nodisplays notransforms openit
+  displaying currentwindow screen_rows screen_cols
+  pixels_per_inch cull display openwindow numspecial
+  totalweight autorounding fillin proofing tracingpens
+  xoffset chardx granularity smoothing turningcheck yoffset
+  chardy hppp tracingedges vppp
+
+%D \METAPOST\ goodies:
+
+\useprettyidentifiers \MPidentifiers \MPsetspecials
+  extra_beginfig extra_endfig mpxbreak
+
+\protect
+
+\endinput

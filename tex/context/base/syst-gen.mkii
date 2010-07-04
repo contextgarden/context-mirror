@@ -1,0 +1,4454 @@
+%D \module
+%D   [       file=syst-gen,
+%D        version=1996.03.20,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=General,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% nagaan : \ifinstringelse in syst-ext.tex
+% do => p! dodo pp! dododo ppp!
+% todo: \donetrue etc local maken
+
+%D The following macros are responsible for the interaction
+%D with \CONTEXT. These macros have proven their use. These
+%D macros are optimized as far as possible within of course,
+%D the know how of the author.
+%D
+%D In this module we also show some of the optimizations,
+%D mainly because we don't want to forget them and start doing
+%D things over and over again. If showing them has a learing
+%D effect for others too, we've surved another purpose too.
+
+%D \macros
+%D   {abortinputifdefined}
+%D
+%D Because this module can be used in a different context, we
+%D want to prevent it being loaded more than once. This can be
+%D done using:
+%D
+%D \starttyping
+%D \abortinputifdefined\command
+%D \stoptyping
+%D
+%D where \type{\command} is a command defined in the module
+%D to be loaded only once.
+%D
+%D \starttyping
+%D \def\abortinputifdefined#1%
+%D   {\ifx#1\undefined
+%D      \let\next=\relax
+%D    \else
+%D      \let\next=\endinput
+%D    \fi
+%D    \next}
+%D \stoptyping
+%D
+%D This macro can be speed up in terms of speed as well as
+%D memory. Because this is a nice example of a bit strange
+%D command (\type{\endinput}), we spend some more lines on this.
+%D
+%D If we perform such actions directly, we can say:
+%D
+%D \starttyping
+%D \ifx\somecommand\undefined
+%D   \let\next=\relax
+%D \else
+%D   \let\next=\endinput
+%D \fi
+%D \next
+%D \stoptyping
+%D
+%D We need the \type{\next} because we need to end the
+%D \type{\fi}. The efficient one is:
+%D
+%D \starttyping
+%D \ifx\somecommand\undefined
+%D \else
+%D   \expandafter\endinput
+%D \fi
+%D \stoptyping
+%D
+%D Because \type{\endinput} comes into action after the current
+%D line, we can also say:
+%D
+%D \starttyping
+%D \ifx\somecommand\undefined \else \endinput \fi
+%D \stoptyping
+%D
+%D When we define a macro, we tend to use a format which
+%D shows as besat as can how things are done. \TEX\ however
+%D stores the definitions as a sequence of tokens, so in fact
+%D we can use a formatted definition:
+
+\def\abortinputifdefined#1%
+  {\ifx#1\undefined \else
+     \endinput
+   \fi}
+
+%D which also works. Keep in mind that this is entirely due to
+%D the fact that \type{\endinput} after the line, i.e. at the
+%D end of the macro. We therefore can burry this primitive quite
+%D deep in code.
+
+%D And because this module implements \type{\writestatus}, we
+%D just say:
+
+% \abortinputifdefined\writestatus
+
+%D \macros
+%D   {overloaded, superseded, forwarded, predefined}
+%D
+%D This prefix is used as signal for the \CONTEXT\ dependency
+%D checking features. The first four prefixes don't do anything
+%D useful, apart from signaling parsers.
+
+\def\overloaded{} % local change at the macro  level
+\def\superseded{} % global change at the module level, replaces previous definitions
+\def\predefined{} % defined (first) here, but may be redefined anytime (no need for \overloaded)
+\def\forwarded {} % definition at the module level, only done when undefined
+
+\def\forwarded#1#2{\ifx#2\undefined\else\expandafter\gobbleforwarded\fi#1#2}
+
+\def\gobbleforwarded#1
+    {}
+
+%D Normally we tell the users what module is being loaded.
+%D However, the command that is needed for this is not yet
+%D defined.
+%D
+%D \starttyping
+%D \writestatus{laden}{Context Systeem Macros (a)}
+%D \stoptyping
+
+%D The next few macros are needed in case this module is
+%D used outside \CONTEXT.
+
+\ifx\beginTEX\undefined
+  \let\beginTEX\relax\let\endTEX\relax
+  \long\def\beginETEX  #1\endETEX {}
+\fi
+
+%D \macros
+%D   [protecting]
+%D   {protect,unprotect}
+%D
+%D We can shield macros from users by using some special
+%D characters in their names. Some characters that are normally
+%D no letters and therefore often used are: \type{@}, \type{!}
+%D and \type{?}. Before and after the definition of protected
+%D macros, we have to change the \CATCODE\ of these characters.
+%D This is done by \type{\unprotect} and \type{\protect}, for
+%D instance:
+%D
+%D \starttyping
+%D \unprotect
+%D \def\!test{test}
+%D \protect
+%D \stoptyping
+%D
+%D The defined command \type{\!test} can of course only be
+%D called upon when we are in the \type{\unprotect}'ed state,
+%D otherwise \TEX\ reads \type{\!} and probably complains
+%D loudly about not being in math mode.
+%D
+%D Both commands can be used nested, but only the \CATCODE\
+%D of the outermost level is saved. We make use of
+%D an auxilary macro \type{\doprotect} to prevent us from
+%D conflicts with existing macro's \type{\protect}. When
+%D nesting deeper than one level, the system shows the
+%D protection level.
+
+\ifx\protectionlevel\undefined \newcount\protectionlevel \fi
+
+\ifx\protect\undefined
+  \def\protect{\writestatus{protection}{too much protection}}
+\else
+  % a simple version is already defined
+\fi
+
+\let\normalprotect\protect % only for latex
+
+%D Although we don't need the \type{%} after commands that
+%D don't take arguments, unless lines are obeyed, I decided
+%D to put it there as a reminder. I only mention this once.
+
+\ifx\unprotect\undefined
+
+    \chardef\protectionthreshold=10
+
+    \def\saveprotectedcharacters
+      {\edef\doprotectcharacters
+         {\catcode`\noexpand @\the\catcode`@
+          \catcode`\noexpand !\the\catcode`!
+          \catcode`\noexpand ?\the\catcode`? }}
+
+    \def\setprotectedcharacters
+      {\catcode`@=11
+       \catcode`!=11
+       \catcode`?=11 }
+
+    \def\unprotect
+      {\ifcase\protectionlevel
+         \saveprotectedcharacters
+         \let\protect\doprotect
+       \fi
+       \setprotectedcharacters
+       \advance\protectionlevel 1
+       \ifnum\protectionlevel>\protectionthreshold
+         \reportunprotection
+       \fi}
+
+    \def\doprotect
+      {\ifcase\protectionlevel\or
+         \doprotectcharacters
+         \let\doprotectcharacters\relax
+         \let\protect\normalprotect
+       \fi
+       \ifnum\protectionlevel>\protectionthreshold
+         \reportprotection
+       \fi
+       \advance\protectionlevel -1 }
+
+    \def\reportunprotection   {\writestatus{protection}{unprotect \protectionstate}}
+    \def\reportprotection     {\writestatus{protection}{protect   \protectionstate}}
+    \def\reportprotectionstate{\writestatus{protection}{state     \protectionstate}}
+
+    \def\protectionstate
+      {\the\protectionlevel
+       \ifcase\protectionthreshold
+         :\space
+         @=\the\catcode`@\space\space
+         !=\the\catcode`!\space\space
+         ?=\the\catcode`?%
+       \fi}
+
+    \ifx\everyeof\undefined
+        \let\checkprotection\relax
+    \else
+        \def\checkprotection{\everyeof{\writestatus{protection}{state: \protectionstate}}}
+    \fi
+
+\else
+
+    \let\reportprotectionstate\relax
+
+\fi
+
+%D Now it is defined, we can make use of this very useful
+%D macro.
+
+\unprotect
+
+%D \macros
+%D   {@@escape,@@begingroup,@@endgroup,@@mathshift,@@alignment,
+%D    @@endofline,@@parameter,@@superscript,@@subscript,
+%D    @@ignore,@@space,@@letter,@@other,@@active,@@comment}
+%D
+%D In \CONTEXT\ we sometimes manipulate the \CATCODES\ of
+%D certain characters. Because we are not that good at numbers,
+%D we introduce some symbolic names.
+
+\chardef\@@escape      =  0
+\chardef\@@begingroup  =  1
+\chardef\@@endgroup    =  2
+\chardef\@@mathshift   =  3
+\chardef\@@alignment   =  4
+\chardef\@@endofline   =  5
+\chardef\@@parameter   =  6
+\chardef\@@superscript =  7
+\chardef\@@subscript   =  8
+\chardef\@@ignore      =  9
+\chardef\@@space       = 10
+\chardef\@@letter      = 11
+\chardef\@@other       = 12   \chardef\other  = 12
+\chardef\@@active      = 13   \chardef\active = 13
+\chardef\@@comment     = 14
+
+%D \macros
+%D   {normalspace}
+%D
+%D We often need a space as defined in \PLAIN\ \TEX. Because
+%D we cannot be sure of \type{\space} is redefined, we define:
+
+\def\normalspace{ }
+
+%D \macros
+%D   {scratchcounter,
+%D    scratchdimen,scratchskip,scratchmuskip,
+%D    scratchbox,
+%D    scratchtoks}
+%D
+%D Because we often need counters on a temporary basis, we
+%D define the \COUNTER\ \type{\scratchcounter}. This is a
+%D real \COUNTER, and not a pseudo one, as we will meet
+%D further on. We also define some other scratch registers.
+
+\chardef\newabovelimit=20
+
+\def\stripnewabove#1%
+  {\ifnum10<9#1 #1\else\expandafter\stripnewabove\fi}%
+
+\def\newabove#1#2% \dimen \name
+  {#1#2%
+   \ifnum\expandafter\stripnewabove\meaning#2>\newabovelimit\else
+     \expandafter\newabove\expandafter#1\expandafter#2%
+   \fi}
+
+\newabove \newcount   \scratchcounter   \newabove \newcount  \globalscratchcounter
+\newabove \newdimen   \scratchdimen     \newabove \newdimen  \globalscratchdimen
+\newabove \newskip    \scratchskip      \newabove \newskip   \globalscratchskip
+\newabove \newmuskip  \scratchmuskip    \newabove \newmuskip \globalscratchmuskip
+\newabove \newtoks    \scratchtoks      \newabove \newtoks   \globalscratchtoks
+          \newbox     \scratchbox                 \newbox    \globalscratchbox
+
+\newdimen\scratchdimenone \newbox\scratchboxone \newcount\scratchcounterone
+\newdimen\scratchdimentwo \newbox\scratchboxtwo \newcount\scratchcountertwo
+
+%D \macros
+%D   {ifdone}
+
+\newif\ifdone
+
+%D \macros
+%D   {ifCONTEXT}
+%D
+%D In the system and support modules we sometimes show examples
+%D that make use of core commands. We can skip those parts of
+%D the documentation when we use another macropackage. Of
+%D course we default to false.
+
+\newif \ifCONTEXT
+
+%D \macros
+%D   {!!count, !!toks, !!dimen, !!box,
+%D    !!width, !!height, !!depth, !!string, !!done}
+%D
+%D We define some more \COUNTERS\ and \DIMENSIONS. We also
+%D define some shortcuts to the local scatchregisters~0, 2, 4,
+%D 6 and~8.
+
+\newcount\!!counta \toksdef\!!toksa=0 \dimendef\!!dimena= 0 \chardef\!!boxa =0
+\newcount\!!countb \toksdef\!!toksb=2 \dimendef\!!dimenb= 2 \chardef\!!boxb =2
+\newcount\!!countc \toksdef\!!toksc=4 \dimendef\!!dimenc= 4 \chardef\!!boxc =4
+\newcount\!!countd \toksdef\!!toksd=6 \dimendef\!!dimend= 6 \chardef\!!boxd =6
+\newcount\!!counte \toksdef\!!tokse=8 \dimendef\!!dimene= 8 \chardef\!!boxe =8
+\newcount\!!countf                    \dimendef\!!dimenf=10 %skipdef\!!skipa=0
+                                      \dimendef\!!dimeng=12 %skipdef\!!skipb=2
+                                      \dimendef\!!dimenh=14 %skipdef\!!skipc=4
+                                      \dimendef\!!dimeni=16 %skipdef\!!skipd=6
+                                      \dimendef\!!dimenj=18 %skipdef\!!skipe=8
+                                      \dimendef\!!dimenk=20 %skipdef\!!skipf=10
+
+\let\!!stringa\empty \let\!!stringb\empty \let\!!stringc\empty
+\let\!!stringd\empty \let\!!stringe\empty \let\!!stringf\empty
+
+\newdimen\!!widtha \newdimen\!!heighta \newdimen\!!deptha
+\newdimen\!!widthb \newdimen\!!heightb \newdimen\!!depthb
+\newdimen\!!widthc \newdimen\!!heightc \newdimen\!!depthc
+
+\newif\if!!donea   \newif\if!!doneb    \newif\if!!donec
+\newif\if!!doned   \newif\if!!donee    \newif\if!!donef
+
+\ifx\data\undefined \else \let\data \relax \fi % dep checker
+
+%D Beware: we don't reuse plain counters, too dangerous
+%D when <= 20 (e.g. in supp-pdf this messed up things).
+
+\ifx\undefined\zeroskip           \newskip     \zeroskip                   \fi
+\ifx\undefined\zeropoint          \newdimen    \zeropoint                  \fi
+\ifx\undefined\zerocount          \newcount    \zerocount                  \fi
+\ifx\undefined\minusone           \newcount    \minusone                   \fi \minusone = -1
+\ifx\undefined\minustwo           \newcount    \minustwo                   \fi \minustwo = -2
+\ifx\undefined\plusone            \chardef     \plusone            =     1 \fi
+\ifx\undefined\plustwo            \chardef     \plustwo            =     2 \fi
+\ifx\undefined\plusthree          \chardef     \plusthree          =     3 \fi
+\ifx\undefined\plusfour           \chardef     \plusfour           =     4 \fi
+\ifx\undefined\plusfive           \chardef     \plusfive           =     5 \fi
+\ifx\undefined\plusten            \mathchardef \plusten            =    10 \fi
+\ifx\undefined\plushundred        \mathchardef \plushundred        =   100 \fi
+\ifx\undefined\plusthousand       \mathchardef \plusthousand       =  1000 \fi
+\ifx\undefined\plustenthousand    \mathchardef \plustenthousand    = 10000 \fi
+\ifx\undefined\plustwentythousand \mathchardef \plustwentythousand = 20000 \fi
+
+%D \macros
+%D   {s!,c!,e!,p!,v!,@@,??}
+%D
+%D To save memory, we use constants (sometimes called
+%D variables). Redefining these constants can have desastrous
+%D results.
+
+\def\v!prefix! {v!}           \def\c!prefix! {c!}
+\def\s!prefix! {s!}           \def\p!prefix! {p!}
+
+\def\s!next    {next}         \def\s!default {default}
+\def\s!dummy   {dummy}        \def\s!unknown {unknown}
+
+\def\s!do      {do}           \def\s!dodo    {dodo}
+
+\def\s!complex {complex}      \def\s!start   {start}
+\def\s!simple  {simple}       \def\s!stop    {stop}
+
+\def\s!empty   {empty}
+
+%D \macros
+%D   {@EA,@EAEA,@EAEAEA,@EAEAEAEAEAEA,expanded,startexpanded}
+%D
+%D When in unprotected mode, to be entered with
+%D \type{\unprotect}, one can use \type{\@EA} as equivalent
+%D of \type{\expandafter}.
+
+\let\@NX\noexpand
+\let\@EA\expandafter
+
+\def\@EAEA  {\expandafter\expandafter}
+\def\@EAEAEA{\expandafter\expandafter\expandafter}
+
+\def\@EAEAEAEAEAEA{\expandafter\@EAEAEA\expandafter}
+
+%D Sometimes we pass macros as arguments to commands that
+%D don't expand them before interpretation. Such commands can
+%D be enclosed with \type{\expanded}, like:
+%D
+%D \starttyping
+%D \expanded{\setupsomething[\alfa]}
+%D \stoptyping
+%D
+%D Such situations occur for instance when \type{\alfa} is a
+%D commalist or when data stored in macros is fed to index of
+%D list commands. If needed, one should use \type{\noexpand}
+%D inside the argument. Later on we will meet some more clever
+%D alternatives to this command.
+
+\long\def\@@expanded{} % always long; global (less restores)
+
+\long\def\expanded#1%
+  {\long\xdef\@@expanded{\noexpand#1}\@@expanded}
+
+%D Beware, the next one has no \type {\noexpand} before its
+%D argument.
+
+\long\def\startexpanded#1\stopexpanded % see x-fo for example
+  {\long\xdef\@@expanded{#1}\@@expanded}
+
+%D \macros
+%D   {safeexpanded,everysafeexpanded}
+%D
+%D In addition we provide:
+
+\newtoks\everysafeexpanded
+
+\long\def\safeexpanded#1% why the \noexpand
+  {\begingroup
+   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#1}%
+   \endgroup
+   \@@expanded}
+
+\def\safeedef#1#2%
+  {\begingroup
+   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#2}%
+   \endgroup
+   \let#1\@@expanded}
+
+\def\safexdef#1#2%
+  {\begingroup
+   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#2}%
+   \endgroup
+   \global\let#1\@@expanded}
+
+%D You can append protective measures to the token register if
+%D needed, as we will do later.
+
+%D \macros
+%D   {expandoneargafter,expandtwoargsafter}
+%D
+%D These two commands make macros more readable by hiding a
+%D lot of \type {\expandafter}'s. They expand the arguments
+%D after the first command.
+%D
+%D \starttyping
+%D \expandoneargafter \command{\abc}
+%D \expandtwoargsafter\command{\abc}{\def}
+%D \stoptyping
+%D
+%D These commands expect the arguments to be macros.
+
+\def\expandoneargafter   #1{\@EA#1\@EA}
+\def\expandtwoargsafter#1#2{\@EA\@EA\@EA#1\@EA\@EA\@EA{\@EA#2\@EA}\@EA}
+
+%D These two do a full expansion:
+
+\def\fullexpandoneargafter   #1#2{\long\xdef\@@expanded{\noexpand#1{#2}}\@@expanded}
+\def\fullexpandtwoargsafter#1#2#3{\long\xdef\@@expanded{\noexpand#1{#2}{#3}}\@@expanded}
+
+%D \macros
+%D   {gobbleoneargument,gobble...arguments}
+%D
+%D The next set of macros just do nothing, except that they
+%D get rid of a number of arguments.
+
+\long\def\gobbleoneargument    #1{}
+\long\def\gobbletwoarguments   #1#2{}
+\long\def\gobblethreearguments #1#2#3{}
+\long\def\gobblefourarguments  #1#2#3#4{}
+\long\def\gobblefivearguments  #1#2#3#4#5{}
+\long\def\gobblesixarguments   #1#2#3#4#5#6{}
+\long\def\gobblesevenarguments #1#2#3#4#5#6#7{}
+\long\def\gobbleeightarguments #1#2#3#4#5#6#7#8{}
+\long\def\gobbleninearguments  #1#2#3#4#5#6#7#8#9{}
+\long\def\gobbletenarguments   #1{\gobbleninearguments}
+
+%D \macros
+%D   {doifnextcharelse}
+%D
+%D When we started using \TEX\ in the late eighties, our
+%D first experiences with programming concerned a simple shell
+%D around \LATEX. The commands probably use most at \PRAGMA,
+%D are the itemizing ones. One of those few shell commands took
+%D care of an optional argument, that enabled us to specify
+%D what kind of item symbol we wanted. Without understanding
+%D anything we were able to locate a \LATEX\ macro that could
+%D be used to inspect the next character.
+%D
+%D It's this macro that the ancester of the next one presented
+%D here. It executes one of two actions, dependant of the next
+%D character. Disturbing spaces and line endings, which are
+%D normally interpreted as spaces too, are skipped.
+%D
+%D \starttyping
+%D \doifnextcharelse {karakter} {then ...} {else ...}
+%D \stoptyping
+%D
+%D This macro differs from the original in the use of \type
+%D {\localnext} because we don't want clashes with \type
+%D {\next}.
+
+\long\def\doifnextcharelse#1#2#3% #1 should not be {} !
+  {\let\charactertoken=#1% = needed here
+   \def\!!stringa{#2}%
+   \def\!!stringb{#3}%
+   \futurelet\nexttoken\inspectnextcharacter}
+
+\def\inspectnextcharacter
+  {\ifx\nexttoken\blankspace
+     \@EA\reinspectnextcharacter
+   \else\ifx\nexttoken\charactertoken
+     \@EAEAEA\!!stringa
+   \else
+     \@EAEAEA\!!stringb
+   \fi\fi}
+
+%D Because we will mostly use this macro for testing if the next
+%D character is \type {[}, we also make a slightly faster variant
+%D as it is not uncommon to have tens of thousands of calls to this
+%D test in a run. Of course it also is more convenient to read a
+%D trace then.
+
+\let\nextoptionalcharactertoken=[
+
+\long\def\doifnextoptionalelse#1#2%
+  {\def\nextoptionalcommandyes{#1}%
+   \def\nextoptionalcommandnop{#2}%
+   \futurelet\nexttoken\inspectnextoptionalcharacter}
+
+\def\inspectnextoptionalcharacter
+  {\ifx\nexttoken\blankspace
+     \@EA\reinspectnextoptionalcharacter
+   \else\ifx\nexttoken\nextoptionalcharactertoken
+     \@EAEAEA\nextoptionalcommandyes
+   \else
+     \@EAEAEA\nextoptionalcommandnop
+   \fi\fi}
+
+\let\nextbgroupcharactertoken\bgroup
+
+\long\def\doifnextbgroupelse#1#2%
+  {\def\nextbgroupcommandyes{#1}%
+   \def\nextbgroupcommandnop{#2}%
+   \futurelet\nexttoken\inspectnextbgroupcharacter}
+
+\def\inspectnextbgroupcharacter
+  {\ifx\nexttoken\blankspace
+     \@EA\reinspectnextbgroupcharacter
+   \else\ifx\nexttoken\nextbgroupcharactertoken
+     \@EAEAEA\nextbgroupcommandyes
+   \else
+     \@EAEAEA\nextbgroupcommandnop
+   \fi\fi}
+
+%D This macro uses some auxiliary macros. Although we were able
+%D to program quite complicated things, I only understood these
+%D after rereading the \TEX book. The trick is in using a
+%D command with a one character name. Such commands differ from
+%D the longer ones in the fact that trailing spaces are {\em
+%D not} skipped. This enables us to indirectly define a long
+%D named macro that gobbles a space.
+%D
+%D In the first line we define \type{\blankspace}. Next we
+%D make \type{\:} equivalent to \type{\reinspect...}. This
+%D one||character command is expanded before the next
+%D \type{\def} comes into action. This way the space after
+%D \type{\:} becomes a delimiter of the longer named
+%D \type{\reinspectnextcharacter}. The chain reaction is
+%D visually compatible with the next sequence:
+%D
+%D \starttyping
+%D \expandafter\def\reinspectnextcharacter %
+%D   {\futurelet\nexttoken\inspectnextcharacter}
+%D \stoptyping
+%D
+%D However complicated it may look, I'm still glad I stumbled
+%D into this construction. Saving and restoring \type {\:} is
+%D needed when we use \PPCHTEX\ in \LATEX.
+
+\let\next\:
+
+\def\:{\let\blankspace= }  \:
+
+\def\:{\reinspectnextcharacter}
+\expandafter\def\: {\futurelet\nexttoken\inspectnextcharacter}
+
+\def\:{\reinspectnextoptionalcharacter}
+\expandafter\def\: {\futurelet\nexttoken\inspectnextoptionalcharacter}
+
+\def\:{\reinspectnextbgroupcharacter}
+\expandafter\def\: {\futurelet\nexttoken\inspectnextbgroupcharacter}
+
+\let\:\next
+
+%D \macros
+%D   {setvalue,setgvalue,setevalue,setxvalue,
+%D    letvalue,
+%D    getvalue,
+%D    resetvalue}
+%D
+%D \TEX's primitive \type{\csname} can be used to construct
+%D all kind of commands that cannot be defined with
+%D \type{\def} and \type{\let}. Every macro programmer sooner
+%D or later wants macros like these.
+%D
+%D \starttyping
+%D \setvalue   {name}{...} = \def\name{...}
+%D \setgvalue  {name}{...} = \gdef\name{...}
+%D \setevalue  {name}{...} = \edef\name{...}
+%D \setxvalue  {name}{...} = \xdef\name{...}
+%D \letvalue   {name}=\... = \let\name=\...
+%D \letgvalue  {name}=\... = \global\let\name=\...
+%D \getvalue   {name}      = \name
+%D \resetvalue {name}      = \def\name{}
+%D \stoptyping
+%D
+%D As we will see, \CONTEXT\ uses these commands many times,
+%D which is mainly due to its object oriented and parameter
+%D driven character.
+
+\def\setvalue     #1{\expandafter \def\csname#1\endcsname}
+\def\setgvalue    #1{\expandafter\gdef\csname#1\endcsname}
+\def\setevalue    #1{\expandafter\edef\csname#1\endcsname}
+\def\setxvalue    #1{\expandafter\xdef\csname#1\endcsname}
+\def\getvalue     #1{\csname#1\endcsname}
+\def\letvalue     #1{\expandafter\let\csname#1\endcsname}
+\def\letgvalue    #1{\global\expandafter\let\csname#1\endcsname}
+\def\resetvalue   #1{\expandafter\let\csname#1\endcsname\empty}
+\def\ignorevalue#1#2{\expandafter\let\csname#1\endcsname\empty}
+
+%D \macros
+%D   {globallet,glet}
+%D
+%D In \CONTEXT\ of May 2000 using \type {\globallet}
+%D instead of the two tokens will save us some
+%D $300\times4=1200$ bytes of format file on a 32~bit
+%D system. So:
+
+\def\globallet{\global\let}  \let\glet\globallet
+
+%D \macros
+%D   {donottest,unexpanded}
+%D
+%D When expansion of a macro gives problems, we can precede it
+%D by \type{\donottest}. It seems that protection is one of the
+%D burdens of developers of packages, so maybe that's why in
+%D \ETEX\ protection is solved in a more robust way.
+%D
+%D Sometimes prefixing the macro with \type{\donottest} leads
+%D to defining an auxiliary macro, like
+%D
+%D \starttyping
+%D \def\dosomecommand {... ... ...}
+%D \def\somecommand   {\donottest\dosomecommand}
+%D \stoptyping
+%D
+%D This double definition can be made transparant by using
+%D \type{\unexpanded}, as in:
+%D
+%D \starttyping
+%D \unexpanded\def\somecommand{... ... ...}
+%D \stoptyping
+%D
+%D The protection mechanism uses:
+
+\beginTEX
+
+\def\dontprocesstest#1{==}
+\def\doprocesstest  #1{#1}
+
+\let\donottest=\doprocesstest
+
+\endTEX
+
+\beginETEX \detokenize
+
+\def\donottest#1{#1} % {\detokenize{#1}}
+
+\endETEX
+
+%D By the way, we use a placeholder because we don't want
+%D interference when testing on empty strings. Using a
+%D placeholder of 8~characters increases the processing time
+%D of simple \type{\doifelse} tests by about 10 \%. When we
+%D process the test, we have to remove the braces and
+%D therefore explictly gobble \type{#1}.
+
+%D \macros
+%D   {honorunexpanded,forceunexpanded}
+%D
+%D The fact that many macros have the same prefix, could have
+%D a negative impact on searching in the hash table. Because
+%D some simple testing does not show differences, we just use:
+%D
+%D \starttyping
+%D \def\unexpanded#1#2%
+%D   {\@EA#1\@EA#2\@EA{\@EA\donottest\csname\s!do\string#2\endcsname}%
+%D    \@EA#1\csname\s!do\string#2\endcsname}
+%D \stoptyping
+%D
+%D Well, in fact we use the bit more versatile alternative. The
+%D \type {\honorunexpanded} can be used to \type {\string}
+%D the protected command, which by the way is seldom needed
+%D in \CONTEXT.
+
+\beginTEX
+
+\def\dosetunexpanded#1#2%
+  {\@EA#1\@EA{\@EA#2\@EA}%
+     \@EA{\@EA\donottest\csname\s!do\@EA\string\csname#2\endcsname\endcsname}%
+   \@EA#1\@EA{\@EA\s!do\@EA\string\csname#2\endcsname}}
+
+\def\docomunexpanded#1#2%
+  {\@EA#1\@EA#2\@EA{\@EA\donottest\csname\s!do\string#2\endcsname}%
+   \@EA#1\csname\s!do\string#2\endcsname}
+
+\def\unexpanded#1%
+  {\def\dounexpanded
+     {\ifx\next\bgroup
+        \@EA\dosetunexpanded
+      \else
+        \@EA\docomunexpanded
+      \fi#1}%
+   \futurelet\next\dounexpanded}
+
+\def\honorunexpanded% for writing to a file or message
+  {\def\donottest##1{\expandafter\gobblethreearguments\string##1}}
+
+\def\forceunexpanded% for preventing expansion in \xdef
+  {\def\donottest##1%
+     {\expandafter\noexpand\csname\expandafter\gobblefourarguments\string##1\endcsname}}
+
+\def\resetunexpanded%
+  {\let\donottest\doprocesstest}
+
+\endTEX
+
+\beginETEX \protected
+
+\let \unexpanded      \normalprotected
+\let \honorunexpanded \empty % \relax
+\let \forceunexpanded \empty % \relax
+\let \resetunexpanded \empty % \relax
+
+\endETEX
+
+%D This one accepts the more direct \type{\def} and cousins
+%D as well as the \CONTEXT\ specific \type{\setvalue} ones.
+%D
+%D And so the definition in our example turns out to be:
+%D
+%D \starttyping
+%D \def\csname do\somecommand\endcsname{... ... ...}
+%D \def\somecommand{\donottest\csname do\somecommand\endcsname}
+%D \stoptyping
+%D
+%D In which \type{do\somecommand} is hidden from the user and
+%D cannot lead to confusion. It's still permitted to define
+%D auxiliary macros like \type{\dosomecommand}.
+%D
+%D When we are going to use e-\TEX, we'll probably end up
+%D redefining some commands, but we can probably keep the
+%D \type{\unexpanded} ones unchanged.
+
+%D \macros
+%D   {doifundefined,doifdefined,
+%D    doifundefinedelse,doifdefinedelse,
+%D    doifalldefinedelse}
+%D
+%D The standard way of testing if a macro is defined is
+%D comparing its meaning with another undefined one, usually
+%D \type{\undefined}. To garantee correct working of the next
+%D set of macros, \type{\undefined} may never be defined!
+%D
+%D \starttyping
+%D \doifundefined      {string}    {...}
+%D \doifdefined        {string}    {...}
+%D \doifundefinedelse  {string}    {then ...} {else ...}
+%D \doifdefinedelse    {string}    {then ...} {else ...}
+%D \doifalldefinedelse {commalist} {then ...} {else ...}
+%D \stoptyping
+%D
+%D Every macroname that \TEX\ builds gets an entry in the hash
+%D table, which is of limited size. It is expected that e-\TeX\
+%D will offer a less memory||consuming alternative.
+
+%D Although it will probably never be a big problem, it is good
+%D to be aware of the difference between testing on a macro
+%D name to be build by using \type{\csname} and
+%D \type{\endcsname} and testing the \type{\name} directly.
+%D
+%D \starttyping
+%D \expandafter\ifx\csname NameA\endcsname\relax ... \else ... \fi
+%D
+%D \ifx\NameB\undefined ... \else ... \fi
+%D \stoptyping
+%D
+%D I became aware of this when I mistakenly testen the first
+%D one against \type{\undefined}. When \TEX\ build a name using
+%D \type{\csname} it automatically sets it to \type{\relax},
+%D which is definitely not the same as \type{\undefined}. The
+%D quickest way to check these things is asking \TEX\ to show
+%D the meaning of the names:
+%D
+%D \starttyping
+%D \expandafter\show\csname NameA\endcsname
+%D
+%D \show\NameB
+%D \stoptyping
+%D
+%D The main reason why this never will be a big problem is that
+%D when one uses the \type{\csname} way, one probably has to do
+%D with some macroname that always is dealt with that way.
+%D Confusion can however arise when one applies both testing
+%D methods to the same macroname. By the way, the assignment
+%D of \type{\relax} obeys grouping.
+
+%D The first one gets rid of \type{#1}, but still expands to
+%D something and the second one expands to \type{#1}. Because
+%D we accept arguments between \type{{}}, we have to get rid
+%D of one level of braces.
+%D
+%D Our first implementation of \type{\ifundefined} was
+%D straightforward and readable:
+%D
+%D \starttyping
+%D \def\ifundefined#1%
+%D   {\expandafter\ifx\csname#1\endcsname\relax}%
+%D
+%D \def\doifundefinedelse#1#2#3%
+%D   {\let\donottest=\dontprocesstest
+%D    \ifundefined{#1}%
+%D      \let\donottest=\doprocesstest#2%
+%D    \else
+%D      \let\donottest=\doprocesstest#3%
+%D    \fi}
+%D
+%D \def\doifdefinedelse#1#2#3%
+%D   {\doifundefinedelse{#1}{#3}{#2}}
+%D
+%D \def\doifundefined#1#2%
+%D   {\doifundefinedelse{#1}{#2}{}}
+%D
+%D \def\doifdefined#1#2%
+%D   {\doifundefinedelse{#1}{}{#2}}
+%D
+%D \def\doifalldefinedelse#1#2#3%
+%D   {\begingroup
+%D    \donetrue
+%D    \def\checkcommand##1%
+%D      {\doifundefined{##1}{\donefalse}}%
+%D    \processcommalist[#1]\checkcommand
+%D    \ifdone
+%D      \endgroup#2%
+%D    \else
+%D      \endgroup#3%
+%D    \fi}
+%D \stoptyping
+%D
+%D When this module was optimized, timing showed that the
+%D next alternative can be upto twice as fast, especially when
+%D longer arguments are used. Watch how we reach over the
+%D \type {\else} and \type {\fi}: this way they cannot get
+%D into the way (and we can avoid those \type {\next}
+%D hacks); I started using this method after I did some
+%D speed optimization tests in the xtag modules; the
+%D efficiency of such hacks depends on the length of the
+%D argument etc. etc.)
+
+\beginTEX
+
+\def\ifundefined#1%
+  {\expandafter\ifx\csname#1\endcsname\relax}
+
+\def\p!doifundefined#1%
+  {\let\donottest\dontprocesstest
+   \expandafter\ifx\csname#1\endcsname\relax}
+
+\def\doifundefinedelse#1%
+  {\p!doifundefined{#1}%
+     \let\donottest\doprocesstest\@EA\firstoftwoarguments
+   \else
+     \let\donottest\doprocesstest\@EA\secondoftwoarguments
+   \fi}
+
+\def\doifdefinedelse#1%
+  {\p!doifundefined{#1}%
+     \let\donottest\doprocesstest\@EA\secondoftwoarguments
+   \else
+     \let\donottest\doprocesstest\@EA\firstoftwoarguments
+   \fi}
+
+\def\doifundefined#1%
+  {\p!doifundefined{#1}%
+     \let\donottest\doprocesstest\@EA\firstofoneargument
+   \else
+     \let\donottest\doprocesstest\@EA\gobbleoneargument
+   \fi}
+
+\def\doifdefined#1%
+  {\p!doifundefined{#1}%
+     \let\donottest\doprocesstest\@EA\gobbleoneargument
+   \else
+     \let\donottest\doprocesstest\@EA\firstofoneargument
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\ifundefined#1% ongelukkige naam
+  {\unless\ifcsname#1\endcsname}
+
+\def\p!doifundefined#1%
+  {\edef\p!defined{#1}%
+   \unless\ifcsname\detokenize\@EA{\p!defined}\endcsname}
+
+\def\doifundefinedelse#1%
+  {\edef\p!defined{#1}%
+   \ifcsname\detokenize\@EA{\p!defined}\endcsname
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\doifdefinedelse#1%
+  {\edef\p!defined{#1}%
+   \ifcsname\detokenize\@EA{\p!defined}\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\doifundefined#1%
+  {\edef\p!defined{#1}%
+   \ifcsname\detokenize\@EA{\p!defined}\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\doifdefined#1%
+  {\edef\p!defined{#1}%
+   \ifcsname\detokenize\@EA{\p!defined}\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\endETEX
+
+%D \macros
+%D   {letbeundefined}
+%D
+%D Testing for being undefined comes down to testing on \type
+%D {\relax} when we use \type {\csname}, but when using \type
+%D {\ifx}, we test on being \type {\undefined}! In \ETEX\ we
+%D have \type {\ifcsname} and that way of testing on existance
+%D is not the same as the one described here. Therefore we
+%D introduce:
+
+\beginTEX
+
+\def\letbeundefined#1%
+  {\expandafter\let\csname#1\endcsname\relax}
+
+\endTEX
+
+\beginETEX \undefined
+
+\def\letbeundefined#1% potential stack buildup when used \global
+  {\expandafter\let\csname#1\endcsname\undefined}
+
+\def\localundefine#1% conditional
+  {\ifcsname#1\endcsname\expandafter\let\csname#1\endcsname\undefined\fi}
+\def\globalundefine#1% conditional
+  {\ifcsname#1\endcsname\expandafter\global\let\csname#1\endcsname\undefined\fi}
+
+\endETEX
+
+%D Beware, being \type {\undefined} in \ETEX\ means that the macro
+%D {\em is} defined!
+
+%D Before we start using this variant, we used another one,
+%D which is even a bit faster. This one looked like:
+%D
+%D \starttyping
+%D \def\p!doifundefined%
+%D   {\begingroup
+%D    \let\donottest=\dontprocesstest
+%D    \ifundefined}
+%D
+%D \def\doifundefinedelse#1#2#3%
+%D   {\p!doifundefined{#1}%
+%D      \endgroup#2%
+%D    \else
+%D      \endgroup#3%
+%D    \fi}
+%D \stoptyping
+%D
+%D A even more previous version used \type{\bgroup} and
+%D \type {\egroup}. In math mode however, \type{$1{x}2$} differs
+%D from \type{$1x2$}. This can been seen when one compares the
+%D output of:
+%D
+%D \starttyping
+%D $\kern10pt\showthe\lastkern$
+%D $\kern10pt{\showthe\lastkern}$
+%D $\kern10pt\begingroup\showthe\lastkern\endgroup$
+%D \stoptyping
+%D
+%D Also in math mode, one can better use \type {\begingroup}
+%D and companion instead of \type {\bgroup}.
+%D
+%D When we were developing the scientific units module, we
+%D encountered different behavior in text and math mode, which
+%D was due to this grouping subtilities. We therefore decided
+%D to use \type{\begingroup} instead of \type{\bgroup}.
+%D Later, when we had optimized some macro's the grouped
+%D solution turned out to be unsafe when typesetting this
+%D documentation, especially when using \type{\globaldefs}.
+%D
+%D We still have to define \type{\doifalldefinedelse}. Watch
+%D the use of grouping, which garantees local use of the
+%D boolean \type{\ifdone}.
+
+\beginTEX
+
+\def\docheckonedefined#1%
+  {\ifundefined{#1}%
+     \donefalse
+   \fi}
+
+\def\doifalldefinedelse#1%
+  {\begingroup
+   \let\donottest\dontprocesstest
+   \donetrue
+   \processcommalist[#1]\docheckonedefined
+   \ifdone
+     \endgroup\let\donottest\doprocesstest
+     \expandafter\firstoftwoarguments
+   \else
+     \endgroup\let\donottest\doprocesstest
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\docheckonedefined#1%
+  {\unless\ifcsname#1\endcsname
+     \donefalse
+   \fi}
+
+\def\doifalldefinedelse#1%
+  {\begingroup
+   \donetrue \processcommalist[#1]\docheckonedefined
+   \ifdone
+     \endgroup\expandafter\firstoftwoarguments
+   \else
+     \endgroup\expandafter\secondoftwoarguments
+   \fi}
+
+\endETEX
+
+%D \macros
+%D   {doif,doifelse,doifnot,
+%D    donottest}
+%D
+%D Programming in \TEX\ differs from programming in procedural
+%D languages like \MODULA. This means that one --- well, let me
+%D speek for myself --- tries to do the things in the well
+%D known way. Therefore the next set of \type{\ifthenelse}
+%D commands were between the first ones we needed. A few years
+%D later, the opposite became true: when programming in
+%D \MODULA, I sometimes miss handy things like grouping,
+%D runtime redefinition, expansion etc. While \MODULA\ taught
+%D me to structure, \TEX\ taught me to think recursive.
+%D
+%D \starttyping
+%D \doif     {string1} {string2} {...}
+%D \doifnot  {string1} {string2} {...}
+%D \doifelse {string1} {string2} {then ...}{else ...}
+%D \stoptyping
+%D
+%D When expansion gives problems, we can precede the
+%D troublemaker with \type{\donottest}.
+%D
+%D This implementatie does not use the construction which is
+%D more robust for nested conditionals.
+%D
+%D \starttyping
+%D \ifx\!!stringa\!!stringb
+%D   \def\next{#3}%
+%D \else
+%D   \def\next{#4}%
+%D \fi
+%D \next
+%D \stoptyping
+%D
+%D In practice, this alternative is at least 20\% slower than
+%D the alternative used here. The few cases in which we
+%D really need the \type{\next} construction, often need some
+%D other precautions and or adaptions too.
+
+\beginTEX
+
+% \long\def\doif#1#2#3%
+%   {\let\donottest\dontprocesstest
+%    \edef\!!stringa{#1}%
+%    \edef\!!stringb{#2}%
+%    \let\donottest\doprocesstest
+%    \ifx\!!stringa\!!stringb
+%      #3%
+%    \fi}
+%
+% \long\def\doifnot#1#2#3%
+%   {\let\donottest\dontprocesstest
+%    \edef\!!stringa{#1}%
+%    \edef\!!stringb{#2}%
+%    \let\donottest\doprocesstest
+%    \ifx\!!stringa\!!stringb
+%    \else
+%      #3%
+%    \fi}
+%
+% \long\def\doifelse#1#2#3#4%
+%   {\let\donottest\dontprocesstest
+%    \edef\!!stringa{#1}%
+%    \edef\!!stringb{#2}%
+%    \let\donottest\doprocesstest
+%    \ifx\!!stringa\!!stringb
+%      #3%
+%    \else
+%      #4%
+%    \fi}
+
+%D Slightly faster on big arguments, as well as \type
+%D {\next} avoiding:
+
+\long\def\doif#1#2%
+  {\let\donottest\dontprocesstest
+   \edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
+   \let\donottest\doprocesstest
+   \ifx\!!stringa\!!stringb
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\long\def\doifnot#1#2%
+  {\let\donottest\dontprocesstest
+   \edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
+   \let\donottest\doprocesstest
+   \ifx\!!stringa\!!stringb
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+
+\long\def\doifelse#1#2%
+  {\let\donottest\dontprocesstest
+   \edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
+   \let\donottest\doprocesstest
+   \ifx\!!stringa\!!stringb
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\endTEX
+
+\beginETEX \protected
+
+% \long\def\doif#1#2#3%
+%   {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+%    \ifx\!!stringa\!!stringb#3\fi}
+%
+% \long\def\doifnot#1#2#3%
+%   {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+%    \unless\ifx\!!stringa\!!stringb#3\fi}
+%
+% \long\def\doifelse#1#2#3#4%
+%   {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+%    \ifx\!!stringa\!!stringb#3\else#4\fi}
+
+%D Slightly faster on big arguments, as well as \type
+%D {\next} avoiding:
+
+\long\def\doif#1#2%
+  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+   \ifx\!!stringa\!!stringb
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\long\def\doifnot#1#2%
+  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+   \ifx\!!stringa\!!stringb
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\long\def\doifelse#1#2%
+  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+   \ifx\!!stringa\!!stringb
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\endETEX
+
+%D One could wonder why we don't follow the the same approach
+%D as in \type{\doifdefined} c.s.\ and use \type{\begingroup}
+%D and \type{\endgroup}. In this case, this alternative is
+%D slower, which is probably due to the fact that more meanings
+%D need to be restored.
+%D
+%D The in terms of memory more efficient alternative using a
+%D auxiliary macro also proved to be slower, so we definitely
+%D did not choose for:
+%D
+%D \starttyping
+%D \def\p!doifelse#1#2%
+%D   {\let\donottest=\dontprocesstest
+%D    \edef\!!stringa{#1}%
+%D    \edef\!!stringb{#2}%
+%D    \let\donottest=\doprocesstest
+%D    \ifx\!!stringa\!!stringb}
+%D
+%D \long\def\doif#1#2#3%
+%D   {\p!doifelse{#1}{#2}#3\fi}
+%D
+%D \long\def\doifnot#1#2#3%
+%D   {\p!doifelse{#1}{#2}\else#3\fi}
+%D
+%D \long\def\doifelse#1#2#3#4%
+%D   {\p!doifelse{#1}{#2}#3\else#4\fi}
+%D \stoptyping
+%D
+%D Optimizations like this are related of course to the
+%D bottlenecks in \TEX. It seems that restoring saved meanings
+%D and passing arguments takes some time.
+
+%D \macros
+%D   {doifempty,doifemptyelse,doifnotempty}
+%D
+%D We complete our set of conditionals with:
+%D
+%D \starttyping
+%D \doifempty     {string} {...}
+%D \doifnotempty  {string} {...}
+%D \doifemptyelse {string} {then ...} {else ...}
+%D \stoptyping
+%D
+%D This time, the string is not expanded.
+
+\long\def\doifemptyelse#1%
+  {\def\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\long\def\doifempty#1%
+  {\def\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\long\def\doifnotempty#1%
+  {\def\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+%D \macros
+%D   {doifinset,doifnotinset,doifinsetelse}
+%D
+%D We can check if a string is present in a comma separated
+%D set of strings. Depending on the result, some action is
+%D taken.
+%D
+%D \starttyping
+%D \doifinset     {string} {string,...} {...}
+%D \doifnotinset  {string} {string,...} {...}
+%D \doifinsetelse {string} {string,...} {then ...} {else ...}
+%D \stoptyping
+%D
+%D The second argument is the comma separated set of strings.
+%D
+%D \starttyping
+%D \long\def\doifinsetelse#1#2#3#4%
+%D   {\doifelse{#1}{}
+%D      {#4}
+%D      {\donefalse
+%D       \def\p!checkiteminset##1%
+%D         {\doif{#1}{##1}
+%D            {\donetrue
+%D             \let\p!checkiteminset=\gobbleoneargument}}%
+%D       \processcommalist[#2]\p!checkiteminset
+%D       \ifdone
+%D         #3%
+%D       \else
+%D         #4%
+%D       \fi}}
+%D
+%D \long\def\doifinset#1#2#3%
+%D   {\doifinsetelse{#1}{#2}{#3}{}}
+%D
+%D \long\def\doifnotinset#1#2#3%
+%D   {\doifinsetelse{#1}{#2}{}{#3}}
+%D \stoptyping
+%D
+%D Because this macro is called quite often we've spent some
+%D time optimizing it. This time, the gain in speed is due to
+%D (1)~defining an external auxiliary macro, (2)~not calling
+%D any other macros and (3)~minimizing the passing of
+%D arguments. The gain in speed is impressive.
+
+% \def\p!dodocheckiteminset#1%
+%   {\edef\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \donetrue
+%      \let\p!docheckiteminset\gobbleoneargument
+%    \fi}
+%
+% \beginTEX
+%
+% \def\p!doifinsetelse#1#2%
+%   {\let\donottest\dontprocesstest
+%    \donefalse
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%    \else
+%      \let\p!docheckiteminset\p!dodocheckiteminset
+%      \processcommalist[#2]\p!docheckiteminset
+%    \fi
+%    \let\donottest\doprocesstest
+%    \ifdone}
+%
+% \endTEX
+%
+% \beginETEX \protected
+%
+% \def\p!doifinsetelse#1#2%
+%   {\donefalse
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%    \else
+%      \let\p!docheckiteminset\p!dodocheckiteminset
+%      \processcommalist[#2]\p!docheckiteminset
+%    \fi
+%    \ifdone}
+%
+% \endETEX
+
+% then we had:
+%
+% \def\p!docheckiteminset#1%
+%   {\edef\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \donetrue
+%      \expandafter\quitcommalist
+%    \fi}
+%
+% \beginTEX
+%
+% \def\p!doifinsetelse#1#2%
+%   {\let\donottest\dontprocesstest
+%    \donefalse
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%    \else
+%      \processcommalist[#2]\p!docheckiteminset
+%    \fi
+%    \let\donottest\doprocesstest
+%    \ifdone}
+%
+% \endTEX
+%
+% % can be sped up with processnext...
+%
+% \beginETEX \protected
+%
+% \def\p!doifinsetelse#1#2%
+%   {\donefalse
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%    \else
+%      \processcommalist[#2]\p!docheckiteminset
+%    \fi
+%    \ifdone}
+%
+% \endETEX
+%
+% \long\def\doifinsetelse#1#2%
+%   {\p!doifinsetelse{#1}{#2}%
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+%
+% \long\def\doifinset#1#2%
+%   {\p!doifinsetelse{#1}{#2}%
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+%
+% \long\def\doifnotinset#1#2%
+%   {\p!doifinsetelse{#1}{#2}%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%     \fi}
+%
+% now we have
+
+\def\p!docheckiteminset#1%
+  {\edef\!!stringb{#1}%
+   \ifx\!!stringa\!!stringb
+     \donetrue
+     \expandafter\quitcommalist
+   \fi}
+
+\beginTEX
+
+\def\p!doifinsetelse#1#2#3#4%
+  {\let\donottest\dontprocesstest
+   \donefalse
+   \edef\!!stringa{#3}%
+   \ifx\!!stringa\empty
+   \else
+     \processcommalist[#4]\p!docheckiteminset
+   \fi
+   \let\donottest\doprocesstest
+   \ifdone\expandafter#1\else\expandafter#2\fi}
+
+\endTEX
+
+\beginETEX \protected
+
+\def\p!doifinsetelse#1#2#3#4%
+  {\donefalse
+   \edef\!!stringa{#3}%
+   \ifx\!!stringa\empty
+   \else
+     \processcommalist[#4]\p!docheckiteminset
+   \fi
+   \ifdone\expandafter#1\else\expandafter#2\fi}
+
+\endETEX
+
+\long\def\doifinsetelse
+  {\p!doifinsetelse\firstoftwoarguments\secondoftwoarguments}
+
+\long\def\doifinset
+  {\p!doifinsetelse\firstofoneargument\gobbleoneargument}
+
+\long\def\doifnotinset
+  {\p!doifinsetelse\gobbleoneargument\firstofoneargument}
+
+%D \macros
+%D   {doifcommon,doifnotcommon,doifcommonelse}
+%D
+%D Probably the most time consuming tests are those that test
+%D for overlap in sets of strings.
+%D
+%D \starttyping
+%D \doifcommon     {string,...} {string,...} {...}
+%D \doifnotcommon  {string,...} {string,...} {...}
+%D \doifcommonelse {string,...} {string,...} {then ...} {else ...}
+%D \stoptyping
+%D
+%D We show the slower alternative first, because it shows us
+%D how things are done.
+%D
+%D \starttyping
+%D \long\def\doifcommonelse#1#2#3#4%
+%D   {\donefalse
+%D    \def\p!docommoncheck##1%
+%D      {\def\p!dodocommoncheck####1%
+%D         {\doif{####1}{##1}
+%D            {\donetrue
+%D             \def\commalistelement{##1}%
+%D             \let\p!docommoncheck=\gobbleoneargument
+%D             \let\p!dodocommoncheck=\gobbleoneargument}}%
+%D       \processcommalist[#2]\p!dodocommoncheck}%
+%D    \processcommalist[#1]\p!docommoncheck
+%D    \ifdone
+%D      #3%
+%D    \else
+%D      #4%
+%D    \fi}
+%D
+%D \long\def\doifcommon#1#2#3%
+%D   {\doifcommonelse{#1}{#2}{#3}{}}
+%D
+%D \long\def\doifnotcommon#1#2#3%
+%D   {\doifcommonelse{#1}{#2}{}{#3}}
+%D \stoptyping
+%D
+%D The processing time is shortened by getting the auxiliary
+%D macro to the outermost level and using less \type{\edef}'s.
+%D Sometimes it makes more sence to define local macro's not
+%D only because this way we can be sure that they are not
+%D redefined, but also because it shows the dependance. In
+%D compiled languages, this is no problem at all. It can even
+%D save us bytes and processing time. In interpreted languages
+%D like \TEX\ it nearly always slows down processing.
+
+% \def\p!dododocommoncheck#1%
+%   {\edef\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \donetrue
+%      \let\p!docommoncheck\gobbleoneargument
+%      \let\p!dodocommoncheck\gobbleoneargument
+%    \fi}
+%
+% \beginTEX
+%
+% \def\p!doifcommonelse#1#2%
+%   {\donefalse
+%    \let\donottest\dontprocesstest
+%    \let\p!dodocommoncheck\p!dododocommoncheck
+%    \def\p!docommoncheck##1%
+%      {\edef\!!stringa{##1}%
+%       \def\commalistelement{##1}%
+%       \processcommalist[#2]\p!dodocommoncheck}%
+%    \processcommalist[#1]\p!docommoncheck
+%    \let\donottest\doprocesstest
+%    \ifdone}
+%
+% \endTEX
+%
+% \beginETEX \protected
+%
+% \def\p!doifcommonelse#1#2%
+%   {\donefalse
+%    \let\p!dodocommoncheck\p!dododocommoncheck
+%    \def\p!docommoncheck##1%
+%      {\edef\!!stringa{##1}%
+%       \def\commalistelement{##1}%
+%       \processcommalist[#2]\p!dodocommoncheck}%
+%    \processcommalist[#1]\p!docommoncheck
+%    \ifdone}
+%
+% \endETEX
+
+% \def\p!dodocommoncheck#1%
+%   {\edef\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \donetrue
+%      \expandafter\quitprevcommalist
+%    \fi}
+%
+% \beginTEX
+%
+% \def\p!doifcommonelse#1#2%
+%   {\donefalse
+%    \let\donottest\dontprocesstest
+%    \def\p!docommoncheck##1%
+%      {\edef\!!stringa{##1}%
+%       \def\commalistelement{##1}% no let to stringa
+%       \processcommalist[#2]\p!dodocommoncheck}%
+%    \processcommalist[#1]\p!docommoncheck
+%    \let\donottest\doprocesstest
+%    \ifdone}
+%
+% \endTEX
+%
+% \beginETEX \protected
+%
+% \def\p!doifcommonelse#1#2%
+%   {\donefalse
+%    \def\p!docommoncheck##1%
+%      {\edef\!!stringa{##1}%
+%       \def\commalistelement{##1}%
+%       \processcommalist[#2]\p!dodocommoncheck}%
+%    \processcommalist[#1]\p!docommoncheck
+%    \ifdone}
+%
+% \endETEX
+%
+% \long\def\doifcommonelse#1#2%  % #3#4%
+%   {\p!doifcommonelse{#1}{#2}%  % #3\else#4\fi}
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+%
+% \long\def\doifcommon#1#2%
+%   {\p!doifcommonelse{#1}{#2}%
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+%
+% \long\def\doifnotcommon#1#2%
+%   {\p!doifcommonelse{#1}{#2}%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%    \fi}
+
+% todo: use dedicated done
+
+\def\p!dodocommoncheck#1%
+  {\edef\!!stringb{#1}%
+   \ifx\!!stringa\!!stringb
+     \donetrue
+     \expandafter\quitprevcommalist
+   \fi}
+
+\beginTEX
+
+\def\p!doifcommonelse#1#2#3#4%
+  {\donefalse
+   \let\donottest\dontprocesstest
+   \def\p!docommoncheck##1%
+     {\edef\!!stringa{##1}%
+      \def\commalistelement{##1}% no let to stringa
+      \processcommalist[#4]\p!dodocommoncheck}%
+   \processcommalist[#3]\p!docommoncheck
+   \let\donottest\doprocesstest
+   \ifdone\expandafter#1\else\expandafter#2\fi}
+
+\endTEX
+
+\beginETEX \protected
+
+\def\p!doifcommonelse#1#2#3#4%
+  {\donefalse
+   \def\p!docommoncheck##1%
+     {\edef\!!stringa{##1}%
+      \def\commalistelement{##1}%
+      \processcommalist[#4]\p!dodocommoncheck}%
+   \processcommalist[#3]\p!docommoncheck
+   \ifdone\expandafter#1\else\expandafter#2\fi}
+
+\endETEX
+
+\def\doifcommonelse
+  {\p!doifcommonelse\firstoftwoarguments\secondoftwoarguments}
+
+\def\doifcommon
+  {\p!doifcommonelse\firstofoneargument \gobbleoneargument}
+
+\def\doifnotcommon
+  {\p!doifcommonelse\gobbleoneargument  \firstofoneargument}
+
+%D \macros
+%D   {processcommalist,processcommacommand,quitcommalist,
+%D    processcommalistwithparameters}
+%D
+%D We've already seen some macros that take care of comma
+%D separated lists. Such list can be processed with
+%D
+%D \starttyping
+%D \processcommalist[string,string,...]\commando
+%D \stoptyping
+%D
+%D The user supplied command \type{\commando} receives one
+%D argument: the string. This command permits nesting and
+%D spaces after commas are skipped. Empty sets are no problem.
+%D
+%D \startbuffer
+%D \def\dosomething#1{(#1)}
+%D
+%D 1: \processcommalist [\hbox{$a,b,c,d,e,f$}] \dosomething \par
+%D 2: \processcommalist [{a,b,c,d,e,f}]        \dosomething \par
+%D 3: \processcommalist [{a,b,c},d,e,f]        \dosomething \par
+%D 4: \processcommalist [a,b,{c,d,e},f]        \dosomething \par
+%D 5: \processcommalist [a{b,c},d,e,f]         \dosomething \par
+%D 6: \processcommalist [{a,b}c,d,e,f]         \dosomething \par
+%D 7: \processcommalist []                     \dosomething \par
+%D 8: \processcommalist [{[}]                  \dosomething \par
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Before we show the result, we present the macro's:
+
+\newcount\commalevel
+
+\def\dododoprocesscommaitem
+  {\csname\s!next\the\commalevel\endcsname}
+
+%\def\dodoprocesscommaitem%
+%  {\ifx\nexttoken\blankspace
+%     \let\nextcommaitem\redoprocesscommaitem
+%   \else\ifx\nexttoken]%
+%     \let\nextcommaitem\gobbleoneargument
+%   \else
+%     \let\nextcommaitem\dododoprocesscommaitem
+%   \fi\fi
+%   \nextcommaitem}
+%
+% faster ?
+
+\def\dodoprocesscommaitem
+  {\ifx\nexttoken\blankspace
+     \@EA\redoprocesscommaitem
+   \else\ifx\nexttoken]%
+     \@EAEAEA\gobbleoneargument
+   \else
+     \@EAEAEA\dododoprocesscommaitem
+   \fi\fi}
+
+\def\doprocesscommaitem
+  {\futurelet\nexttoken\dodoprocesscommaitem}
+
+%D Empty arguments are not processed. Empty items (\type{,,})
+%D however are treated. We have to check for the special case
+%D \type{[{a,b,c}]}.
+%D
+%D \starttyping
+%D \def\processcommalist[%
+%D   {\futurelet\nexttoken\docheckcommaitem}
+%D
+%D \def\docheckcommaitem%
+%D   {\ifx\nexttoken]%
+%D      \let\nextcommaitem\gobbletwoarguments
+%D    \else\ifx\nexttoken\bgroup
+%D      \let\nextcommaitem\doprocesscommalistA
+%D    \else
+%D      \let\nextcommaitem\doprocesscommalistB
+%D    \fi\fi
+%D    \nextcommaitem}
+%D
+%D \def\doprocesscommalistA#1#2]#3%
+%D   {\global\advance\commalevel 1
+%D    \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
+%D      {#3{##1}\doprocesscommaitem}%
+%D    \doprocesscommaitem{#1}#2,]\relax
+%D    \global\advance\commalevel -1 }
+%D
+%D \def\doprocesscommalistB#1]#2%
+%D   {\global\advance\commalevel 1
+%D    \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
+%D      {#2{##1}\doprocesscommaitem}%
+%D    \doprocesscommaitem#1,]\relax
+%D    \global\advance\commalevel -1 }
+%D \stoptyping
+%D
+%D However, this is not a the most straightforward solution!
+%D We can misuse one of \TEX's hidden features, and prepend
+%D and remove a \type {\relax}. By the way, although it
+%D involves less testing, this cleaner alternative is not
+%D faster.
+
+\def\processcommalist[%
+  {\futurelet\nexttoken\docheckcommaitem}
+
+\def\docheckcommaitem
+  {\ifx\nexttoken]%
+     \expandafter\gobblethreearguments
+   \else
+     \expandafter\doprocesscommalist
+   \fi
+   \relax} % this one preserved the next {}
+
+\def\doprocesscommalist#1]#2%
+  {\global\advance\commalevel \plusone
+   \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
+     {#2{##1}\doprocesscommaitem}%
+   \@EA\dodoprocesscommaitem\gobbleoneargument#1,]\relax
+   \global\advance\commalevel \minusone }
+
+%D One way of quitting a commalist halfway is:
+
+\def\quitcommalist
+  {\begingroup\let\doprocesscommaitem\doquitcommalist}
+
+\def\doquitcommalist#1]%
+  {\endgroup}
+
+\def\quitprevcommalist
+  {\begingroup\let\doprocesscommaitem\doquitprevcommalist}
+
+\def\doquitprevcommalist#1]%
+  {\let\doprocesscommaitem\doquitcommalist}
+
+%D The hack we used for checking the next character
+%D \type {\doifnextcharelse} is also used here.
+
+\def\:{\redoprocesscommaitem}
+
+\expandafter\def\: {\futurelet\nexttoken\dodoprocesscommaitem}
+
+%D The previous examples lead to:
+%D
+%D \getbuffer
+
+%D When a list is saved in a macro, we can use a construction
+%D like:
+%D
+%D \starttyping
+%D \expandafter\processcommalist\expandafter[\list]\command
+%D \stoptyping
+%D
+%D Such solutions suit most situations, but we wanted a bit
+%D more.
+%D
+%D \starttyping
+%D \processcommacommand[string,\stringset,string]\commando
+%D \stoptyping
+%D
+%D where \type{\stringset} is a predefined set, like:
+%D
+%D \starttyping
+%D \def\first{aap,noot,mies}
+%D \def\second{laatste}
+%D
+%D \processcommacommand[\first]\message
+%D \processcommacommand[\first,second,third]\message
+%D \processcommacommand[\first,between,\second]\message
+%D \stoptyping
+%D
+%D Commands that are part of the list are expanded, so the
+%D use of this macro has its limits.
+
+\def\processcommacommand[#1]%
+  {\expanded{\processcommalist[#1]}}
+
+%D The argument to \type{\command} is not delimited. Because
+%D we often use \type{[]} as delimiters, we also have:
+%D
+%D \starttyping
+%D \processcommalistwithparameters[string,string,...]\command
+%D \stoptyping
+%D
+%D where \type{\command} looks like:
+%D
+%D \starttyping
+%D \def\command[#1]{... #1 ...}
+%D \stoptyping
+
+\def\processcommalistwithparameters[#1]#2%
+  {\def\docommand##1{#2[##1]}%
+   \processcommalist[#1]\docommand}
+
+%D \macros
+%D   {processaction,
+%D    processfirstactioninset,
+%D    processallactionsinset}
+%D
+%D \CONTEXT\ makes extensive use of a sort of case or switch
+%D command. Depending of the presence of one or more provided
+%D items, some actions is taken. These macros can be nested
+%D without problems.
+%D
+%D \starttyping
+%D \processaction           [x]     [a=>\a,b=>\b,c=>\c]
+%D \processfirstactioninset [x,y,z] [a=>\a,b=>\b,c=>\c]
+%D \processallactionsinset  [x,y,z] [a=>\a,b=>\b,c=>\c]
+%D \stoptyping
+%D
+%D We can supply both a \type{default} action and an action
+%D to be undertaken when an \type{unknown} value is met:
+%D
+%D \starttyping
+%D \processallactionsinset
+%D   [x,y,z]
+%D   [      a=>\a,
+%D          b=>\b,
+%D          c=>\c,
+%D    default=>\default,
+%D    unknown=>\unknown{... \commalistelement ...}]
+%D \stoptyping
+%D
+%D When \type{#1} is empty, this macro scans list \type{#2} for
+%D the keyword \type{default} and executed the related action
+%D if present. When \type{#1} is non empty and not in the list,
+%D the action related to \type{unknown} is executed. Both
+%D keywords must be at the end of list \type{#2}. Afterwards,
+%D the actually found keyword is available in
+%D \type{\commalistelement}. An advanced example of the use of
+%D this macro can be found in \PPCHTEX, where we completely
+%D rely on \TEX\ for interpreting user supplied keywords like
+%D \type{SB}, \type{SB1..6}, \type{SB125} etc.
+%D
+%D Even a quick glance at the macros below show some overlap,
+%D which means that more efficient alternatives are possible.
+%D Because these macro's are very sensitive to subtle changes,
+%D we've decided to present the readable originals first
+%D Maybe these these macros look complicated, but this is a
+%D direct result of the support of nesting. Protection is only
+%D applied in \type{\processaction}.
+%D
+%D \starttyping
+%D \newcount\processlevel
+%D
+%D \def\processaction[#1]#2[#3]%
+%D   {\doifelse{#1}{}
+%D      {\def\p!compareprocessaction[##1=>##2]%
+%D         {\edef\!!stringa{##1}%
+%D          \ifx\!!stringa\s!default
+%D            \def\commalistelement{#1}%
+%D            ##2%
+%D          \fi}}
+%D      {\let\donottest=\dontprocesstest
+%D       \edef\!!stringb{#1}%
+%D       \let\donottest=\doprocesstest
+%D       \def\p!compareprocessaction[##1=>##2]%
+%D         {\edef\!!stringa{##1}%
+%D          \ifx\!!stringa\!!stringb
+%D            \def\commalistelement{#1}%
+%D            ##2%
+%D            \let\p!doprocessaction=\gobbleoneargument
+%D          \else\ifx\!!stringa\s!unknown
+%D            \def\commalistelement{#1}%
+%D            ##2%
+%D          \fi\fi}}%
+%D    \def\p!doprocessaction##1%
+%D      {\p!compareprocessaction[##1]}%
+%D    \processcommalist[#3]\p!doprocessaction}
+%D
+%D \def\processfirstactioninset[#1]#2[#3]%
+%D   {\doifelse{#1}{}
+%D      {\processaction[][#3]}
+%D      {\def\p!compareprocessaction[##1=>##2][##3]%
+%D         {\edef\!!stringa{##1}%
+%D          \edef\!!stringb{##3}%
+%D          \ifx\!!stringa\!!stringb
+%D            \def\commalistelement{##3}%
+%D            ##2%
+%D            \let\p!doprocessaction=\gobbleoneargument
+%D            \let\p!dodoprocessaction=\gobbleoneargument
+%D          \else\ifx\!!stringa\s!unknown
+%D            \def\commalistelement{##3}%
+%D            ##2%
+%D          \fi\fi}%
+%D       \def\p!doprocessaction##1%
+%D         {\def\p!dodoprocessaction####1%
+%D            {\p!compareprocessaction[####1][##1]}%
+%D          \processcommalist[#3]\p!dodoprocessaction}%
+%D       \processcommalist[#1]\p!doprocessaction}}
+%D
+%D \def\processallactionsinset[#1]#2[#3]%
+%D   {\doifelse{#1}{}
+%D      {\processaction[][#3]}
+%D      {\advance\processlevel by 1
+%D       \def\p!compareprocessaction[##1=>##2][##3]%
+%D         {\edef\!!stringa{##1}%
+%D          \edef\!!stringb{##3}%
+%D          \ifx\!!stringa\!!stringb
+%D            \def\commalistelement{##3}%
+%D            ##2%
+%D            \let\p!dodoprocessaction=\gobbleoneargument
+%D          \else\ifx\!!stringa\s!unknown
+%D            \def\commalistelement{##3}%
+%D            ##2%
+%D          \fi\fi}%
+%D       \setvalue{\s!do\the\processlevel}##1%
+%D         {\def\p!dodoprocessaction####1%
+%D            {\p!compareprocessaction[####1][##1]}%
+%D          \processcommalist[#3]\p!dodoprocessaction}%
+%D       \processcommalist[#1]{\getvalue{\s!do\the\processlevel}}%
+%D       \advance\processlevel by -1 }}
+%D \stoptyping
+%D
+%D The gain of speed in the (again) next implementation is
+%D around 20\%, depending on the application.
+
+\newcount\processlevel
+
+\def\p!compareprocessactionA[#1=>#2][#3]%
+  {\edef\!!stringb{#1}%
+   \ifx\!!stringb\s!default
+     \let\commalistelement\empty
+     #2%
+   \fi}
+
+% \def\p!compareprocessactionB[#1=>#2][#3]%
+%   {\expandedaction\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \def\commalistelement{#3}%
+%      #2%
+%      \let\p!doprocessaction\gobbleoneargument
+%    \else
+%      \edef\!!stringb{#1}%
+%      \ifx\!!stringb\s!unknown
+%        \def\commalistelement{#3}% beware of loops
+%        #2%
+%      \fi
+%    \fi}
+
+% met \quitcommalist tot meer dan 25\% sneller
+
+\def\p!compareprocessactionB[#1=>#2][#3]%
+  {\expandedaction\!!stringb{#1}%
+   \ifx\!!stringa\!!stringb
+     \def\commalistelement{#3}%
+     #2%
+     \expandafter\quitcommalist
+   \else
+     \edef\!!stringb{#1}%
+     \ifx\!!stringb\s!unknown
+       \def\commalistelement{#3}% beware of loops
+       #2%
+     \fi
+   \fi}
+
+\beginTEX
+
+\def\processaction[#1]#2[#3]%
+  {\let\donottest\dontprocesstest
+   \expandedaction\!!stringa{#1}%
+   \let\donottest\doprocesstest
+   \ifx\!!stringa\empty
+     \let\p!compareprocessaction\p!compareprocessactionA
+   \else
+     \let\p!compareprocessaction\p!compareprocessactionB
+   \fi
+   \def\p!doprocessaction##1%
+     {\p!compareprocessaction[##1][#1]}%
+   \processcommalist[#3]\p!doprocessaction
+   \expandactions}
+
+\endTEX
+
+\beginETEX \protected
+
+\def\processaction[#1]#2[#3]% faster version follows
+  {\expandedaction\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \let\p!compareprocessaction\p!compareprocessactionA
+   \else
+     \let\p!compareprocessaction\p!compareprocessactionB
+   \fi
+   \def\p!doprocessaction##1%
+     {\p!compareprocessaction[##1][#1]}%
+   \processcommalist[#3]\p!doprocessaction
+   \expandactions}
+
+\endETEX
+
+% \def\p!compareprocessactionC[#1=>#2][#3]%
+%   {\expandedaction\!!stringa{#1}%
+%    \expandedaction\!!stringb{#3}%
+%    \ifx\!!stringa\!!stringb
+%      \def\commalistelement{#3}%
+%      #2%
+%      \let\p!doprocessaction\gobbleoneargument
+%      \let\p!dodoprocessaction\gobbleoneargument
+%    \else
+%      \edef\!!stringa{#1}%
+%      \ifx\!!stringa\s!unknown
+%        \def\commalistelement{#3}%
+%        #2%
+%      \fi
+%    \fi}
+
+\def\p!compareprocessactionC[#1=>#2][#3]%
+  {\expandedaction\!!stringa{#1}%
+   \expandedaction\!!stringb{#3}%
+   \ifx\!!stringa\!!stringb
+     \def\commalistelement{#3}%
+     #2%
+     \expandafter\quitprevcommalist
+   \else
+     \edef\!!stringa{#1}%
+     \ifx\!!stringa\s!unknown
+       \def\commalistelement{#3}%
+       #2%
+     \fi
+   \fi}
+
+\def\processfirstactioninset[#1]#2[#3]% faster version follows
+  {\expandedaction\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \processaction[][#3]%
+   \else
+     \def\p!doprocessaction##1%
+       {\def\p!dodoprocessaction####1%
+          {\p!compareprocessactionC[####1][##1]}%
+        \processcommalist[#3]\p!dodoprocessaction}%
+     \processcommalist[#1]\p!doprocessaction
+   \fi
+   \expandactions}
+
+% \def\p!compareprocessactionD[#1=>#2][#3]%
+%   {\expandedaction\!!stringa{#1}%
+%    \expandedaction\!!stringb{#3}%
+%    \ifx\!!stringa\!!stringb
+%      \def\commalistelement{#3}%
+%      #2%
+%      \let\p!dodoprocessaction\gobbleoneargument
+%    \else
+%      \edef\!!stringa{#1}%
+%      \ifx\!!stringa\s!unknown
+%        \def\commalistelement{#3}%
+%        #2%
+%      \fi
+%    \fi}
+
+\def\p!compareprocessactionD[#1=>#2][#3]%
+  {\expandedaction\!!stringa{#1}%
+   \expandedaction\!!stringb{#3}%
+   \ifx\!!stringa\!!stringb
+     \def\commalistelement{#3}%
+     #2%
+     \expandafter\quitcommalist
+   \else
+     \edef\!!stringa{#1}%
+     \ifx\!!stringa\s!unknown
+       \def\commalistelement{#3}%
+       #2%
+     \fi
+   \fi}
+
+\def\doprocessallactionsinset
+  {\csname\s!do\the\processlevel\endcsname}
+
+\def\processallactionsinset[#1]#2[#3]% faster version follows
+  {\expandedaction\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \processaction[][#3]%
+   \else
+     \advance\processlevel \plusone
+     \expandafter\def\csname\s!do\the\processlevel\endcsname##1%
+       {\def\p!dodoprocessaction####1%
+          {\p!compareprocessactionD[####1][##1]}%
+        \processcommalist[#3]\p!dodoprocessaction}%
+     \processcommalist[#1]\doprocessallactionsinset
+     \advance\processlevel \minusone
+   \fi
+   \expandactions}
+
+%D We can speed up these macros a bit when we use a dedicated
+%D commalist processor, one that avoids passing the (often)
+%D big action list.
+
+\beginTEX
+
+\def\processaction[#1]#2[%
+  {\let\donottest\dontprocesstest
+   \expandedaction\!!stringa{#1}%
+   \let\donottest\doprocesstest
+   \ifx\!!stringa\empty
+     \let\p!compareprocessaction\p!compareprocessactionA
+   \else
+     \let\p!compareprocessaction\p!compareprocessactionB
+   \fi
+   \def\p!doprocessaction##1%
+     {\p!compareprocessaction[##1][#1]}%
+   \processnextcommalist\relax\expandactions\p!doprocessaction[}
+
+\endTEX
+
+\beginETEX
+
+\def\processaction[#1]#2[%
+  {\expandedaction\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \let\p!compareprocessaction\p!compareprocessactionA
+   \else
+     \let\p!compareprocessaction\p!compareprocessactionB
+   \fi
+   \def\p!doprocessaction##1%
+     {\p!compareprocessaction[##1][#1]}%
+   \processnextcommalist\relax\expandactions\p!doprocessaction[}
+
+\endETEX
+
+\def\processfirstactionsinset[#1]%
+  {\expandedaction\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \expandafter\processaction
+   \else
+     \expandafter\processfirstactionsinsetindeed
+   \fi
+   [#1]}
+
+\def\processfirstactioninsetindeed[#1]#2[#3]%
+  {\def\p!doprocessaction##1%
+     {\def\p!dodoprocessaction####1%
+        {\p!compareprocessactionC[####1][##1]}%
+      \processcommalist[#3]\p!dodoprocessaction}%
+   \processcommalist[#1]\p!doprocessaction
+   \expandactions}
+
+\def\processallactionsinset[#1]%
+  {\expandedaction\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     \expandafter\processaction
+   \else
+     \expandafter\processallactionsinsetindeed
+   \fi
+   [#1]}
+
+\def\processallactionsinsetindeed[#1]#2[#3]%
+  {\advance\processlevel \plusone
+   \expandafter\def\csname\s!do\the\processlevel\endcsname##1%
+     {\def\p!dodoprocessaction####1%
+        {\p!compareprocessactionD[####1][##1]}%
+      \processcommalist[#3]\p!dodoprocessaction}%
+   \processcommalist[#1]\doprocessallactionsinset
+   \advance\processlevel \minusone
+   \expandactions}
+
+\def\processnextcommalist#1#2#3[#4#5]%
+  {#1%
+   \let\nexttoken#4%
+   \global\advance\commalevel \plusone
+   \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
+     {#3{##1}\doprocesscommaitem}%
+   \dodoprocesscommaitem#4#5,]\relax
+   \global\advance\commalevel \minusone
+   #2}
+
+%D I do have an even faster version (saving 3 sec on a 13
+%D sec run for 50K invocations, but normally we don't have
+%D that many calls and that alternative uses more macros and is
+%D even less readable. What we did add, was \type {\@EA}, so
+%D that we can pass a command.
+
+%D \macros
+%D   {unexpandedprocessaction,
+%D    unexpandedprocessfirstactioninset,
+%D    unexpandedprocessallactionsinset}
+%D
+%D Now what are those expansion commands doing there. Well,
+%D sometimes we want to compare actions that may consist off
+%D commands (i.e. are no constants). In such occasions we can
+%D use the a bit slower alternatives:
+
+\def\unexpandedprocessfirstactioninset{\dontexpandactions\processfirstactioninset}
+\def\unexpandedprocessaction          {\dontexpandactions\processaction}
+\def\unexpandedprocessallactionsinset {\dontexpandactions\processallactionsinset}
+
+%D By default we expand actions:
+
+\def\expandactions{\let\expandedaction\edef} \expandactions
+
+%D But when needed we convert the strings to meaningful
+%D sequences of characters.
+
+\def\unexpandedaction#1>{}
+
+\def\noexpandedaction#1#2%
+  {\def\@@convertedargument{#2}%
+   \@EA\edef\@EA#1\@EA{\@EA\unexpandedaction\meaning\@@convertedargument}}
+
+\def\dontexpandactions%
+  {\let\expandedaction\noexpandedaction}
+
+%D \macros
+%D   {getfirstcharacter, firstcharacter, remainingcharacters, doiffirstcharacter}
+%D
+%D Sometimes the action to be undertaken depends on the
+%D next character. This macro get this character and puts it in
+%D \type{\firstcharacter}.
+%D
+%D \starttyping
+%D \getfirstcharacter {string}
+%D \stoptyping
+%D
+%D A two step expansion is used to prevent problems with
+%D complicated arguments, for instance arguments that
+%D consist of two or more expandable tokens.
+
+\def\dogetfirstcharacter#1#2\relax
+  {\def\firstcharacter{#1}%
+   \def\remainingcharacters{#2}}
+
+\def\getfirstcharacter#1%
+  {\edef\!!stringa{#1}%
+   \expandafter\dogetfirstcharacter\!!stringa\relax}
+
+\def\doiffirstcharelse#1#2% char string
+% kort (maar onleesbaar)
+% {\expanded{\dogetfirstcharacter#2}\\\doifelse{#1}\firstcharacter}
+% korter (en begrijpelijk))
+  {\getfirstcharacter{#2}\doifelse{#1}\firstcharacter}
+% snel (maar zelden gebruikt, dus niet zo belangrijk)
+% {\getfirstcharacter{#2}%
+%  \edef\!!stringa{#1}%
+%  \ifx\!!stringa\firstcharacter
+%    \expandafter\firstoftwoarguments
+%  \else
+%    \expandafter\secondoftwoarguments
+%  \fi}
+
+%D \macros
+%D   {doifinstringelse, doifincsnameelse}
+%D
+%D We can check for the presence of a substring in a given
+%D sequence of characters.
+%D
+%D \starttyping
+%D \doifinsetelse {substring} {string} {then ...} {else ...}
+%D \stoptyping
+%D
+%D An application of this command can be found further on.
+%D Like before, we first show some alternatives, like the one
+%D we started with:
+%D
+%D \starttyping
+%D \long\def\p!doifinstringelse#1#2#3#4%
+%D   {\def\pp!doifinstringelse##1#1##2##3\war%
+%D      {\if##2@%
+%D         #4%
+%D       \else
+%D         #3%
+%D       \fi}%
+%D    \pp!doifinstringelse#2#1@@\war}
+%D
+%D \def\doifinstringelse%
+%D   {\ExpandBothAfter\p!doifinstringelse}
+%D \stoptyping
+%D
+%D After this we came to:
+%D
+%D \starttyping
+%D \def\p!doifinstringelse#1#2%
+%D   {\def\pp!doifinstringelse##1#1##2##3\war%
+%D      {\if##2@}%
+%D    \pp!doifinstringelse#2#1@@\war}
+%D
+%D \def\doifinstringelse#1#2#3#4%
+%D   {\ExpandBothAfter\p!doifinstringelse{#1}{#2}%
+%D      #4%
+%D    \else
+%D      #3%
+%D    \fi}
+%D \stoptyping
+%D
+%D Sometimes the second argument is passed as a macro. By
+%D postponing the expansion of this macro, we gain quite some
+%D run time, simply because the less tokens we pass, the faster
+%D \TEX\ runs. So finally the definition became:
+
+% \long\def\rawdoifinstringelse#1#2% ##2 can be {abc}
+%   {\long\def\pp!doifinstringelse##1#1##2##3\war{\if##2@}%
+%    \pp!doifinstringelse#2#1@@\war
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\firstoftwoarguments
+%    \fi}
+
+\long\def\doifinstringelse#1%
+  {\edef\@@@instring{#1}% expand #1 here
+   \ifx\@@@instring\empty
+     \@EA\thirdofthreearguments
+   \else
+     \@EA\dodoifinstringelse
+   \fi}
+
+\long\def\dodoifinstringelse#1%
+  {\p!doifinstringelse\@@@instring{#1}%
+     \@EA\firstoftwoarguments
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\long\def\doifinstring#1%%
+  {\edef\@@@instring{#1}% expand #1 here
+   \ifx\@@@instring\empty
+     \@EA\gobbletwoarguments
+   \else
+     \@EA\dodoifinstring
+   \fi}
+
+\long\def\dodoifinstring#1%
+  {\p!doifinstringelse\@@@instring{#1}%
+     \@EA\firstofoneargument
+   \else
+     \@EA\gobbleoneargument
+   \fi}
+
+\long\def\doifnotinstring#1%%
+  {\edef\@@@instring{#1}% expand #1 here
+   \ifx\@@@instring\empty
+     \@EA\gobbletwoarguments
+   \else
+     \@EA\dodoifnotinstring
+   \fi}
+
+\long\def\dodoifnotinstring#1%
+  {\p!doifinstringelse\@@@instring{#1}%
+     \@EA\gobbleoneargument
+   \else
+     \@EA\firstofoneargument
+   \fi}
+
+%D \starttyping
+%D \beginTEX
+%D
+%D \long\def\p!doifinstringelse#1#2%
+%D   {\long\def\pp!doifinstringelse##1#1##2##3\war%
+%D      {\csname if\if##2@fals\else tru\fi e\endcsname}%
+%D    \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+%D
+%D \endTEX
+%D
+%D \beginETEX \unless
+%D
+%D \long\def\p!doifinstringelse#1#2%
+%D   {\long\def\pp!doifinstringelse##1#1##2##3\war%
+%D      {\unless\if##2@}%
+%D    \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+%D
+%D \endETEX
+%D \stoptyping
+%D
+%D And then \unknown\ after a couple of years, we ran into a
+%D situation where \type {##2} was something \type {{bla}}. So
+%D finally we need to use an auxiliary macro, otherwise we get
+%D funny strings in the output.
+
+% \long\def\p!doifinstringelse#1#2% ##2 can be {abc}
+%   {\long\@EA\def\@EA\pp!doifinstringelse\@EA##\@EA1#1##2##3\war % expand #1 here
+%      {\ppp!doifinstringelse##2\war}%
+%    \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+%
+% \beginTEX
+%
+% \def\ppp!doifinstringelse#1#2\war%
+%   {\csname if\ifx#1@fals\else tru\fi e\endcsname}%
+%
+% \endTEX
+%
+% \beginETEX \unless
+%
+% \def\ppp!doifinstringelse#1#2\war%
+%   {\unless\ifx#1@}
+%
+% \endETEX
+
+\beginETEX
+
+\long\def\p!doifinstringelse#1#2% ##2 can be {abc}
+  {\long\@EA\def\@EA\pp!doifinstringelse\@EA##\@EA1#1##2##3\war % expand #1 here
+     {\unless\if##2@}%
+%  \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+   \expanded{\pp!doifinstringelse#2#1}@@\war} % expand #2 here
+
+\endETEX
+
+\beginTEX
+
+\long\def\p!doifinstringelse#1#2% ##2 can be {abc}
+  {\long\@EA\def\@EA\pp!doifinstringelse\@EA##\@EA1#1##2##3\war % expand #1 here
+     {\csname if\if##2@fals\else tru\fi e\endcsname}%
+  %\expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+   \expanded{\pp!doifinstringelse#2#1}@@\war} % expand #2 here
+
+\endTEX
+
+%D The next alternative proved to be upto twice as fast on
+%D tasks like checking reserved words in pretty verbatim
+%D typesetting! This is mainly due to the fact that passing
+%D (expanded) strings is much slower that passing a macro.
+%D
+%D \starttyping
+%D \doifincsnameelse {substring} {\string} {then ...} {else ...}
+%D \stoptyping
+%D
+%D Where \type{\doifinstringelse} does as much expansion as
+%D possible, the latter alternative does minimal (one level)
+%D expansion.
+
+\beginTEX
+
+\long\def\p!doifincsnameelse#1#2%
+  {\long\def\pp!doifincsnameelse##1#1##2##3\war
+     {\csname if\if##2@fals\else tru\fi e\endcsname}%
+   \@EA\pp!doifincsnameelse#2#1@@\war}
+
+\endTEX
+
+\beginETEX \unless
+
+\long\def\p!doifincsnameelse#1#2%
+  {\long\def\pp!doifincsnameelse##1#1##2##3\war
+     {\unless\if##2@}%
+   \@EA\pp!doifincsnameelse#2#1@@\war}
+
+\endETEX
+
+\long\def\doifincsnameelse#1#2%                   % #3#4%
+  {\edef\@@@instring{#1}%
+   \@EA\p!doifincsnameelse\@EA{\@@@instring}{#2}% % #3\else#4\fi}
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+%D \macros
+%D   {doifnumberelse}
+%D
+%D The next macro executes a command depending of the outcome
+%D of a test on numerals. This is probably one of the fastest
+%D test possible, exept from a less robust 10||step
+%D \type{\if}||ladder or some tricky \type{\lcode} checking.
+%D
+%D \starttyping
+%D \doifnumberelse {string} {then ...} {else ...}
+%D \stoptyping
+%D
+%D The macro accepts \type{123}, \type{abc}, \type{{}},
+%D \type{\getal} and \type{\the\count...}. This macro is a
+%D rather dirty one.
+%D
+%D \starttyping
+%D \long\def\doifnumberelse#1#2#3%
+%D   {\begingroup\donefalse
+%D    \ifcase1#1\or\or\or\or\or\or\or\or\or\else\donetrue\fi
+%D    \ifdone\endgroup#2\else\endgroup#3\fi}
+%D \stoptyping
+%D
+%D Or better:
+%D
+%D \starttyping
+%D \long\def\doifnumberelse#1%
+%D   {\begingroup\donefalse
+%D    \ifcase1#1\or\or\or\or\or\or\or\or\or\else\donetrue\fi
+%D    \ifdone
+%D      \endgroup\expandafter\firstoftwoarguments
+%D    \else
+%D      \endgroup\expandafter\secondoftwoarguments
+%D    \fi}
+%D \stoptyping
+%D
+%D A previous implementation was:
+%D
+%D \starttyping
+%D \long\def\doifnumberelse#1#2#3%
+%D   {\getfirstcharacter{#1}%
+%D    \@EA\p!doifinstringelse\@EA{\firstcharacter}{1234567890}%
+%D      #2%
+%D    \else
+%D      #3%
+%D    \fi}
+%D \stoptyping
+%D
+%D And before we had \type{\p!doifinstringelse} available, we
+%D used:
+%D
+%D \starttyping
+%D \def\doifnumberelse#1%
+%D   {\getfirstcharacter{#1}%
+%D    \rawdoifinsetelse{\firstcharacter}{1,2,3,4,5,6,7,8,9,0}}
+%D \stoptyping
+%D
+%D The implementation using \type {\ifcase} is much faster, but
+%D the next one is not, not even when testing milion calls.
+%D
+%D \starttyping
+%D \newif\ifitsanumber
+%D
+%D \long\def\isitanumber#1%
+%D   {\itsanumberfalse
+%D    \ifcase1#1\or\or\or\or\or\or\or\or\or\else\itsanumbertrue\fi}
+%D
+%D \long\def\doifnumberelse#1#2#3%
+%D   {\isitanumber{#1}\ifitsanumber#2\else#3\fi}
+%D \stoptyping
+%D
+%D After a while the next evolved and this one is the one we
+%D will use. This one is some 5\% faster than the group/done
+%D one (partly because it does not have to pass arguments).
+%D Even more important is that this alternative is fully
+%D expandable!
+
+\long\def\doifnumberelse#1% does not accept counters
+  {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+%D \macros
+%D   {makerawcommalist,
+%D    rawdoinsetelse,
+%D    rawprocesscommalist,
+%D    rawprocessaction}
+%D
+%D Some of the commands mentioned earlier are effective but
+%D slow. When one is desperately in need of faster alternatives
+%D and when the conditions are predictable safe, the \type{\raw}
+%D alternatives come into focus. A major drawback is that
+%D they do not take \type{\c!constants} into account, simply
+%D because no expansion is done. This is no problem with
+%D \type{\rawprocesscommalist}, because this macro does not
+%D compare anything. Expandable macros are permitted as search
+%D string.
+%D
+%D \starttyping
+%D \makerawcommalist[string,string,...]\stringlist
+%D \rawdoifinsetelse{string}{string,...}{...}{...}
+%D \rawprocesscommalist[string,string,...]\commando
+%D \rawprocessaction[x][a=>\a,b=>\b,c=>\c]
+%D \stoptyping
+%D
+%D Spaces embedded in the list, for instance after commas,
+%D spoil the search process. The gain in speed depends on the
+%D length of the argument (the longer the argument, the less
+%D we gain).
+%D
+%D The slow alternative looks like:
+%D
+%D \starttyping
+%D \def\makerawcommalist[#1]#2%
+%D   {\def\appendtocommalist##1%
+%D      {\doifelse{#2}{}
+%D         {\edef#2{##1}}
+%D         {\edef#2{#2,##1}}}%
+%D    \def#2{}%
+%D    \processcommalist[#1]\appendtocommalist}
+%D \stoptyping
+%D
+%D But we prefer:
+
+% \appendtocommalist is defined in syst-ext
+
+\def\makerawcommalist[#1]#2% use \processnext ... here
+  {\def\domakerawcommalist##1% we don't expand ##1
+     {\ifx#2\empty
+        \def#2{##1}%
+      \else
+        \@EA\def\@EA#2\@EA{#2,##1}%
+      \fi}%
+   \let#2\empty
+   \processcommalist[#1]\domakerawcommalist}
+
+\def\rawprocesscommaitem#1,#2% #2 eats up preceding space
+  {\if]#1\else
+     \csname\s!next\the\commalevel\endcsname{#1}%
+     \expandafter\rawprocesscommaitem
+   \fi#2}
+
+\def\rawprocesscommalist[#1]#2% accepteert ook [\cs]
+  {\global\advance\commalevel \plusone
+   \expandafter\let\csname\s!next\the\commalevel\endcsname#2%
+   \expandafter\rawprocesscommaitem#1,],% \relax
+   \global\advance\commalevel \minusone }
+
+\def\rawprocesscommacommand[#1]% not really needed
+  {\expanded{\rawprocesscommalist[#1]}}
+
+% \def\rawdoifinsetelse#1#2{\doifinstringelse{,#1,}{,#2,}}
+% \def\rawdoifinset    #1#2{\doifinstring    {,#1,}{,#2,}}
+
+\def\@@rawempty{,,}
+
+\long\def\rawdoifinsetelse#1%
+  {\edef\@@@instring{,#1,}% expand #1 here
+   \ifx\@@@instring\@@rawempty
+     \@EA\thirdofthreearguments
+   \else
+     \@EA\rawdodoifinsetelse
+   \fi}
+
+\long\def\rawdodoifinsetelse#1%
+  {\p!doifinstringelse\@@@instring{,#1,}%
+     \@EA\firstoftwoarguments
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+\long\def\rawdoifinset#1%
+  {\edef\@@@instring{,#1,}% expand #1 here
+   \ifx\@@@instring\@@rawempty
+     \@EA\gobbletwoarguments
+   \else
+     \@EA\rawdodoifinset
+   \fi}
+
+\long\def\rawdodoifinset#1%%
+  {\p!doifinstringelse\@@@instring{,#1,}%
+     \@EA\firstofoneargument
+   \else
+     \@EA\gobbleoneargument
+   \fi}
+
+%D Some more raw material:
+
+\def\p!rawprocessaction[#1][#2]%
+  {\def\pp!rawprocessaction##1,#1=>##2,##3\war%
+     {\if##3@\else
+        \def\!!processaction{##2}%
+      \fi}%
+   \pp!rawprocessaction,#2,#1=>,@\war}
+
+\def\rawprocessaction[#1]#2[#3]%
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{undefined}% better \!!undefined
+   \let\!!processaction\!!stringb
+   \ifx\!!stringa\empty
+     \@EA\p!rawprocessaction\@EA[\s!default][#3]%
+   \else
+      \expandafter\p!rawprocessaction\expandafter[\!!stringa][#3]%
+      \ifx\!!processaction\!!stringb
+        \@EA\p!rawprocessaction\@EA[\s!unknown][#3]%
+      \fi
+   \fi
+   \ifx\!!processaction\!!stringb
+   \else
+     \!!processaction
+   \fi}
+
+% not needed
+%
+% \def\rawprocessallactionsinset[#1]#2[#3]%
+%   {\def\docommand##1%
+%      {\rawprocessaction[##1][#3]}%
+%    \processcommalist[#1]\docommand}
+
+%D When we process the list \type{a,b,c,d,e}, the raw routine
+%D takes over 30\% less time, when we feed $20+$ character
+%D strings we gain about 20\%. Alternatives which use
+%D \type{\futurelet} perform worse. Part of the speedup is
+%D due to the \type{\let} and \type{\expandafter} in the test.
+
+% %D \macros
+% %D   {processunexpandedcommalist}
+% %D
+% %D When processing commalists, the arguments are expanded. The
+% %D main reason for doing so lays in the fact that these
+% %D macros are used for interfacing. The next alternative can be used
+% %D for
+% %D
+% %D \starttyping
+% %D \processunexpandedcommalist
+% %D   [\alfa\beta,\gamma,\delta\epsilon]
+% %D   \handleitem
+% %D \stoptyping
+% %D
+% %D This time nesting is not supported.
+%
+% %\def\processunexpandedcommaitem#1,%
+% %  {\if]\noexpand#1%
+% %     \let\nextcommaitem\relax
+% %   \else
+% %     \handleunexpandedcommaitem{#1}%
+% %     \let\nextcommaitem\processunexpandedcommaitem
+%   \fi
+%   \nextcommaitem}
+%
+% faster:
+%
+% \def\processunexpandedcommaitem#1,%
+%   {\if]\noexpand#1\else
+%      \handleunexpandedcommaitem{#1}%
+%      \expandafter\processunexpandedcommaitem
+%    \fi}
+%
+% \def\processunexpandedcommalist[#1]#2%
+%   {\def\handleunexpandedcommaitem{#2}%
+%    \processunexpandedcommaitem#1,],}% \relax}
+%
+% %D Or faster:
+%
+% \def\processunexpandedcommaitem#1,%
+%   {\if]\noexpand#1\else
+%      \handleunexpandedcommaitem{#1}%
+%      \expandafter\processunexpandedcommaitem
+%    \fi}
+
+%D \macros
+%D   {dosetvalue,dosetevalue,dosetgvalue,docopyvalue,doresetvalue,
+%D    dogetvalue}
+%D
+%D When we are going to do assignments, we have to take
+%D multi||linguality into account. For the moment we keep
+%D things simple and single||lingual.
+%D
+%D \starttyping
+%D \dosetvalue   {label}    {variable}   {value}
+%D \dosetevalue  {label}    {variable}   {value}
+%D \dosetgvalue  {label}    {variable}   {value}
+%D \docopyvalue  {to label} {from label} {variable}
+%D \doresetvalue {label}    {variable}
+%D \stoptyping
+%D
+%D These macros are in fact auxiliary ones and are not meant
+%D for use outside the assignment macros.
+
+\def\dosetvalue#1#2% #3
+  {\@EA\def\csname#1#2\endcsname} % {#3}}
+
+\def\dosetevalue#1#2% #3
+  {\@EA\edef\csname#1#2\endcsname} % {#3}}
+
+\def\dosetgvalue#1#2% #3
+  {\@EA\gdef\csname#1#2\endcsname} % {#3}}
+
+\def\doresetvalue#1#2%
+  {\@EA\let\csname#1#2\endcsname\empty}
+
+\def\doignorevalue#1#2#3%
+  {\@EA\let\csname#1#2\endcsname\empty}
+
+\def\docopyvalue#1#2#3%
+  {\@EA\def\csname#1#3\endcsname{\csname#2#3\endcsname}}
+
+%D \macros
+%D   {doassign,undoassign,doassignempty}
+%D
+%D Assignments are the backbone of \CONTEXT. Abhorred by the
+%D concept of style file hacking, we took a considerable effort
+%D in building a parameterized system. Unfortunately there is a
+%D price to pay in terms of speed. Compared to other packages
+%D and taking the functionality of \CONTEXT\ into account, the
+%D total size of the format file is still very acceptable. Now
+%D how are these assignments done.
+%D
+%D Assignments can be realized with:
+%D
+%D \starttyping
+%D \doassign[label][variable=value]
+%D \undoassign[label][variable=value]
+%D \stoptyping
+%D
+%D and:
+%D
+%D \starttyping
+%D \doassignempty[label][variable=value]
+%D \stoptyping
+%D
+%D Assignments like \type{\doassign} are compatible with:
+%D
+%D \starttyping
+%D \def\labelvariable{value}
+%D \stoptyping
+%D
+%D We do check for the presence of an \type{=} and loudly
+%D complain of it's missed. We will redefine this macro later
+%D on, when a more advanced message mechanism is implemented.
+
+\newif\iferrorisfatal
+
+\def\waitonfatalerror
+  {\iferrorisfatal\wait\fi}
+
+\def\showassignerror#1#2%
+  {\writestatus{setup}{missing or ungrouped '=' after '#1' in line #2}%
+   \waitonfatalerror}
+
+%\def\p!doassign#1[#2][#3=#4=#5]%
+%  {\let\donottest\dontprocesstest
+%   \edef\!!stringa{#5}%
+%   \let\!!stringb\relax
+%   \let\donottest\doprocesstest
+%   \ifx\!!stringa\!!stringb
+%     \showassignerror{#3}%
+%   \else
+%     #1{#2}{#3}{#4}%
+%   \fi}
+
+\def\p!doassign#1[#2][#3=#4=#5]%
+  {\ifx\empty#3\else  % and definitely not \ifx#3\empty
+     \ifx\relax#5%
+       \showassignerror{#3}{\the\inputlineno\space(#2)}%
+     \else
+       #1{#2}{#3}{#4}%
+     \fi
+   \fi}
+
+\def\doassign  [#1][#2]{\p!doassign\dosetvalue  [#1][#2==\relax]}
+\def\doeassign [#1][#2]{\p!doassign\dosetevalue [#1][#2==\relax]}
+\def\undoassign[#1][#2]{\p!doassign\doresetvalue[#1][#2==\relax]}
+
+\def\doassignempty[#1][#2=#3]%
+  {\ifundefined{#1#2}\dosetvalue{#1}{#2}{#3}\fi}
+
+%D \macros
+%D   {processassignmentlist,processassignmentcommand,
+%D    startprocessassignmentlist,startprocessassignmentcommand}
+%D
+%D For Wolfgang:
+%D
+%D \starttyping
+%D \def\showpair#1#2{key:#1, value:#2\par}
+%D \processassignmentlist[a=1,b=2]\showpair
+%D \stoptyping
+
+\def\processassignmentlist[#1]#2% #2 == \command{key}{value]
+  {\def\doprocessassignmententry##1{#2}% {##2}{##3} % namespace is ignored
+   \dogetparameters\doprocessassignmententry[][#1]}
+
+\def\processassignmentcommand[#1]%
+  {\normalexpanded{\noexpand\processassignmentlist[#1]}}
+
+\long\def\startprocessassignmentlist[#1]#2\stopprocessassignmentlist
+  {\long\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
+   \processassignmentlist[#1]\currentassignmentlistcommand}
+
+\long\def\startprocessassignmentcommand[#1]#2\stopprocessassignmentcommand
+  {\long\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
+   \normalexpanded{\noexpand\processassignmentlist[#1]}\currentassignmentlistcommand}
+
+%D \macros
+%D   {getparameters,geteparameters,getgparameters,
+%D    forgetparameters}
+%D
+%D Using the assignment commands directly is not our
+%D ideal of user friendly interfacing, so we take some further
+%D steps.
+%D
+%D \starttyping
+%D \getparameters    [label] [...=...,...=...]
+% %D \forgetparameters [label] [...=...,...=...]
+%D \stoptyping
+%D
+%D Again, the label identifies the category a variable
+%D belongs to. The second argument can be a comma separated
+%D list of assignments.
+%D
+%D \starttyping
+%D \getparameters
+%D   [demo]
+%D   [alfa=1,
+%D    beta=2]
+%D \stoptyping
+%D
+%D is equivalent to
+%D
+%D \starttyping
+%D \def\demoalfa{1}
+%D \def\demobeta{2}
+%D \stoptyping
+%D
+%D
+%D In the pre||multi||lingual stadium \CONTEXT\ took the next
+%D approach. With
+%D
+%D \starttyping
+%D \def\??demo {@@demo}
+%D \def\!!alfa {alfa}
+%D \def\!!beta {beta}
+%D \stoptyping
+%D
+%D calling
+%D
+%D \starttyping
+%D \getparameters
+%D   [\??demo]
+%D   [\!!alfa=1,
+%D    \!!beta=2]
+%D \stoptyping
+%D
+%D lead to:
+%D
+%D \starttyping
+%D \def\@@demoalfa{1}
+%D \def\@@demobeta{2}
+%D \stoptyping
+%D
+%D Because we want to be able to distinguish the \type{!!}
+%D pre||tagged user supplied variables from internal
+%D counterparts, we will introduce a slightly different tag in
+%D the multi||lingual modules. There we will use \type{c!} or
+%D \type{v!}, depending on the context.
+%D
+%D By calling \type{\p!doassign} directly, we save ourselves
+%D some argument passing and gain some speed. Whatever
+%D optimizations we do, this  command will always be one of the
+%D bigger bottlenecks.
+%D
+%D The alternative \type{\geteparameters} --- it's funny to
+%D see that this alternative saw the light so lately --- can be
+%D used to do expanded assigments.
+
+\def\dogetparameters#1[#2]#3[#4]%
+  {\def\p!dogetparameter##1%
+     {\p!doassign#1[#2][##1==\relax]}%
+   \processcommalist[#4]\p!dogetparameter}
+
+\def\getparameters   {\dogetparameters\dosetvalue}
+\def\geteparameters  {\dogetparameters\dosetevalue}
+\def\getgparameters  {\dogetparameters\dosetgvalue}
+\def\forgetparameters{\dogetparameters\doignorevalue}
+
+\let\getexpandedparameters=\geteparameters
+
+%D This one is slightly faster:
+
+\def\dogetparameters#1[#2]#3[#4%
+  {\if\noexpand#4]%
+     \expandafter\gobbleoneargument
+   \else
+     \def\p!dogetparameter##1{\p!doassign#1[#2][##1==\relax]}%
+     \expandafter\xdogetparameters
+   \fi#4}
+
+\def\xdogetparameters#1]%
+  {\processcommalist[#1]\p!dogetparameter}
+
+%D The next alternative is much faster but also uglier. Because
+%D in \XML\ processing we will probably set much more parameters
+%D than normally we need this faster one.
+
+\def\dogetparameters#1[#2]#3[#4%
+  {\if\noexpand#4]%
+     \expandafter\gobbleoneargument
+   \else
+     \def\p!dogetparameter{\p!doassign#1#2}%
+     \expandafter\xdogetparameters
+   \fi#4}
+
+\def\xdogetparameters#1]%
+  {\xprocesscommaitem#1,],\@relax@}
+
+% \long\def\xprocesscommaitem#1,#2% #2 takes space before ,
+%   {\if]#1%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \p!dogetparameter\@relax@#1==\@relax@
+%      \expandafter\xprocesscommaitem
+%    \fi#2}
+
+\long\def\xprocesscommaitem#1,#2% #2 takes space before ,
+  {\if,#1,% dirty trick for testing #1=empty
+     \@EA\xprocesscommaitem
+   \else\if]#1%
+     \@EAEAEA\gobbleoneargument
+   \else
+     \p!dogetparameter\@relax@#1==\empty\@relax@
+     \@EAEAEA\xprocesscommaitem
+   \fi\fi#2}
+
+%D Here we use a slightly different assignment macro:
+
+% \def\p!doassign#1#2\@relax@#3=#4=#5\@relax@
+%   {\ifx\@relax@#5\@EA\xshowassignerror\else\@EA#1\fi{#2}{#3}{#4}}
+
+% \def\p!doassign#1#2\@relax@#3=#4=#5\@relax@
+%   {\ifx#5\empty\@EA\xshowassignerror\else\@EA#1\fi{#2}{#3}{#4}}
+
+\def\p!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+  {\ifx#5\empty
+     \@EA\xshowassignerror
+   \else\ifx#5=%
+     \@EAEAEA#1%
+   \else
+     \@EAEAEA\xshowassignerror
+   \fi\fi
+   {#2}{#3}{#4}}
+
+\def\xshowassignerror#1#2#3%
+  {\showassignerror{#2}{\the\inputlineno\space(#1)}}
+
+%D Now we also have to change the other macros that depend
+%D on this low level one.
+
+% \def\doassign  [#1][#2]{\p!doassign\dosetvalue  #1\@relax@#2==\@relax@}
+% \def\doeassign [#1][#2]{\p!doassign\dosetevalue #1\@relax@#2==\@relax@}
+% \def\undoassign[#1][#2]{\p!doassign\doresetvalue#1\@relax@#2==\@relax@}
+
+\def\doassign  [#1][#2]{\p!doassign\dosetvalue  #1\@relax@#2==\empty\@relax@}
+\def\doeassign [#1][#2]{\p!doassign\dosetevalue #1\@relax@#2==\empty\@relax@}
+\def\undoassign[#1][#2]{\p!doassign\doresetvalue#1\@relax@#2==\empty\@relax@}
+
+%D When someone asked on the mailing list if it's possible to
+%D use the current value of a parameter, Taco posted a small module. His
+%D method had the disadvantage of making all assignments expanded and thereby
+%D fragile. The following alternative uses a prefix.
+
+%D \macros{currentvalue}
+%D
+%D Just in case a \type{\getparameter} argument itself ends up
+%D inside a \type{\write} or other expandable location, our
+%D new macro needs a default value.
+
+\let\currentvalue\empty
+
+% \def\p!n!doassign#1#2\@relax@#3=#4=#5#6\@relax@% normal
+%   {\ifx#5\empty
+%      \@EA\xshowassignerror
+%    \else\ifx#5=%
+%      \@EAEAEA#1%
+%    \else
+%      \@EAEAEA\xshowassignerror
+%    \fi\fi
+%    {#2}{#3}{#4}}
+
+\def\p!n!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+  {\ifx\empty#3\empty
+     \@EA\xshowassignerror
+   \else\ifx#5\empty
+     \@EAEAEA\xshowassignerror
+   \else
+     \@EAEAEA#1%
+   \fi\fi
+   {#2}{#3}{#4}}
+
+\beginTEX
+
+% \def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+%   {\ifx#5\empty
+%      \@EA\xshowassignerror
+%    \else\ifx#5=%
+%      \@EA\ifx\csname#2#3\endcsname\relax
+%        \let\currentvalue\empty
+%      \else
+%        \@EA\let\@EA\currentvalue\csname#2#3\endcsname
+%      \fi
+%      \@EAEAEA#1%
+%    \else
+%      \@EAEAEA\xshowassignerror
+%    \fi\fi
+%    {#2}{#3}{#4}}
+
+\def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+  {\ifx\empty#3\empty
+     \@EA\xshowassignerror
+   \else\ifx#5\empty
+     \@EAEAEA\xshowassignerror
+   \else
+     \@EA\ifx\csname#2#3\endcsname\relax
+       \let\currentvalue\empty
+     \else
+       \@EA\let\@EA\currentvalue\csname#2#3\endcsname
+     \fi
+     \@EAEAEA#1%
+   \fi\fi
+   {#2}{#3}{#4}}
+
+\endTEX
+
+\beginETEX
+
+% \def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+%   {\ifx#5\empty
+%      \@EA\xshowassignerror
+%    \else\ifx#5=%
+%      \ifcsname#2#3\endcsname
+%        \@EA\let\@EA\currentvalue\csname#2#3\endcsname
+%      \else
+%        \let\currentvalue\empty
+%      \fi
+%      \@EAEAEA#1%
+%    \else
+%      \@EAEAEA\xshowassignerror
+%    \fi\fi
+%    {#2}{#3}{#4}}
+
+\def\p!e!doassign#1#2\@relax@#3=#4=#5#6\@relax@
+  {\ifx\empty#3\empty
+     \@EA\xshowassignerror
+   \else\ifx#5\empty
+     \@EAEAEA\xshowassignerror
+   \else
+     \ifcsname#2#3\endcsname
+       \@EA\let\@EA\currentvalue\csname#2#3\endcsname
+     \else
+       \let\currentvalue\empty
+     \fi
+     \@EAEAEA#1%
+   \fi\fi
+   {#2}{#3}{#4}}
+
+\endETEX
+
+%D We default to:
+
+\let\p!doassign\p!n!doassign
+
+%D And set:
+
+\let\currentvalue\empty
+
+%D \macros {expandparameters}
+%D
+%D Example usage:
+%D
+%D \startbuffer
+%D \getparameters[taco][name=taco]
+%D \convertcommand\taconame\to\ascii \ascii
+%D \expandparameters \getparameters[taco][name=\currentvalue\space hoekwater]
+%D \convertcommand\taconame\to\ascii \ascii
+%D \getparameters[taco][name=\currentvalue\space hoekwater]
+%D \convertcommand\taconame\to\ascii \ascii
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+%D Here we hook in the code (beware, this is the optimized get **):
+
+\def\xdoget@n@parameters#1]%
+  {\xprocesscommaitem#1,],\@relax@}
+
+\def\xdoget@e@parameters#1]%
+  {\let\dosetnvalue\dosetvalue
+   \let\dosetvalue\dosetevalue
+   \let\p!doassign\p!e!doassign
+   \xprocesscommaitem#1,],\@relax@
+   \let\p!doassign\p!n!doassign
+   \let\dosetvalue\dosetnvalue
+   \let\xdogetparameters\xdoget@n@parameters
+   \let\currentvalue\empty}
+
+\let\xdogetparameters\xdoget@n@parameters % **
+
+\def\expandparameters{\let\xdogetparameters\xdoget@e@parameters}
+
+%D \macros
+%D   {getemptyparameters}
+%D
+%D Sometimes we explicitly want variables to default to an
+%D empty string, so we welcome:
+%D
+%D \starttyping
+%D \getemptyparameters [label] [...=...,...=...]
+%D \stoptyping
+
+\def\getemptyparameters[#1]#2[#3]%
+  {\def\p!dogetemptyparameter##1%
+     {\doassignempty[#1][##1]}%
+   \processcommalist[#3]\p!dogetemptyparameter}
+
+%D \macros
+%D   {copyparameters}
+%D
+%D Some \CONTEXT\ commands take their default setups from
+%D others. All commands that are able to provide backgounds
+%D or rules around some content, for instance default to the
+%D standard command for ruled boxes. Is situations like this
+%D we can use:
+%D
+%D \starttyping
+%D \copyparameters [to-label] [from-label] [name1,name2,...]
+%D \stoptyping
+%D
+%D For instance
+%D
+%D \starttyping
+%D \copyparameters
+%D   [internal][external]
+%D   [alfa,beta]
+%D \stoptyping
+%D
+%D Leads to:
+%D
+%D \starttyping
+%D \def\internalalfa {\externalalfa}
+%D \def\internalbeta {\externalbeta}
+%D \stoptyping
+%D
+%D By using \type{\docopyvalue} we've prepared this command
+%D for use in a multi||lingual environment.
+
+\def\copyparameters[#1]#2[#3]#4[#5]%
+  {\doifnot{#1}{#3}
+     {\def\docopyparameter{\docopyvalue{#1}{#3}}%
+     %\def\docopyparameter##1{\docopyvalue{#1}{#3}{##1}}%
+      \processcommalist[#5]\docopyparameter}}
+
+%D \macros
+%D   {ifparameters,checkparameters}
+%D
+%D A slightly different one is \type{\checkparameters}, which
+%D also checks on the presence of a~\type{=}.
+%D
+%D The boolean \type{\ifparameters} can be used afterwards.
+%D Combining both in one \type{\if}||macro would lead to
+%D problems with nested \type{\if}'s.
+%D
+%D \starttyping
+%D \checkparameters[argument]
+%D \stoptyping
+
+\newif\ifparameters
+
+\def\p!checkparameters#1=#2#3\war%
+  {\if#2@\parametersfalse\else\parameterstrue\fi}
+
+\def\checkparameters[#1]%
+  {\p!checkparameters#1=@@\war}
+
+%D \macros
+%D   {getfromcommalist,getfromcommacommand,
+%D    commalistelement,
+%D    getcommalistsize,getcommacommandsize}
+%D
+%D It's possible to get an element from a commalist or a
+%D command representing a commalist.
+%D
+%D \starttyping
+%D \getfromcommalist    [string] [n]
+%D \getfromcommacommand [string,\strings,string,...] [n]
+%D \stoptyping
+%D
+%D The difference betwee the two of them is the same as the
+%D difference between \type{\processcomma...}. The found string
+%D is stored in \type{\commalistelement}.
+%D
+%D We can calculate the size of a comma separated list by
+%D using:
+%D
+%D \starttyping
+%D \getcommalistsize    [string,string,...]
+%D \getcommacommandsize [string,\strings,string,...]
+%D \stoptyping
+%D
+%D Afterwards, the length is available in the macro
+%D \type{\commalistsize} (not a \COUNTER).
+
+\newcount\commalistcounter
+
+\def\commalistsize{0}
+
+\def\p!dogetcommalistsize#1%
+  {\advance\commalistcounter\plusone}
+
+\def\getcommalistsize#1]% don't loose [{#1}]
+  {\commalistcounter\zerocount
+   \processcommalist#1]\p!dogetcommalistsize   % was [{#1}]
+   \edef\commalistsize{\the\commalistcounter}}
+
+\def\getcommacommandsize[#1]%
+  {\edef\commacommand{#1}%
+   \scratchtoks\expandafter{\expandafter[\commacommand]}%
+   \expandafter\getcommalistsize\the\scratchtoks }
+
+% to be tested first
+%
+% \def\getcommacommandsize[#1]%
+%   {\expanded{\getcommalistsize[#1]}}
+
+% \def\p!dogetfromcommalist#1%
+%   {\advance\commalistcounter \minusone
+%    \ifcase\commalistcounter
+%      \def\commalistelement{#1}%
+%      \begingroup\def\doprocesscommaitem##1]{\endgroup}%
+%    \fi}
+
+\def\p!dogetfromcommalist#1%
+  {\advance\commalistcounter \minusone
+   \ifcase\commalistcounter
+     \def\commalistelement{#1}%
+     \expandafter\quitcommalist
+   \fi}
+
+\def\getfromcommalist[#1]#2[#3]%
+  {\let\commalistelement\empty
+   \commalistcounter#3\relax
+   \processcommalist[#1]\p!dogetfromcommalist}
+
+% \def\getfromcommacommand[#1]% why so complicated, still needed?
+%   {\edef\commacommand{#1}%
+%    \toks0=\expandafter{\expandafter[\commacommand]}%
+%    \expandafter\getfromcommalist\the\toks0 }
+
+\def\getfromcommacommand[#1]%
+  {\expanded{\getfromcommalist[#1]}}
+
+%D Because 0, 1 and~2 are often asked for, we optimize this
+%D macro for those cases. The indirect call however slows
+%D down the other cases.
+%D
+%D \starttyping
+%D \def\p!dogetfirstfromcommalist    [#1,#2]{\def\commalistelement{#1}}
+%D \def\p!dogetsecondfromcommalist[#1,#2,#3]{\def\commalistelement{#2}}
+%D \let\p!dogetotherfromcommalist=\getfromcommalist
+%D
+%D \def\getfromcommalist[#1]#2[#3]% optimized for 0,1,2
+%D   {\ifcase#3\relax
+%D      \let\commalistelement\empty
+%D    \or
+%D      \p!dogetfirstfromcommalist[#1,]%
+%D    \or
+%D      \p!dogetsecondfromcommalist[#1,,]%
+%D    \else
+%D      \p!dogetotherfromcommalist[#1][#3]%
+%D    \fi}
+%D \stoptyping
+%D
+%D Even worse, this alternative does not strip preceding
+%D spaces, which is what we want. So, we stick to the slow
+%D alternative.
+
+%D Watertight (and efficient) solutions are hard to find, due
+%D to the handling of braces during parameters passing and
+%D scanning. Nevertheless:
+%D
+%D \startbuffer
+%D \def\dosomething#1{(#1=\commalistsize) }
+%D
+%D \getcommalistsize [\hbox{$a,b,c,d,e,f$}] \dosomething 1
+%D \getcommalistsize [{a,b,c,d,e,f}]        \dosomething 1
+%D \getcommalistsize [{a,b,c},d,e,f]        \dosomething 4
+%D \getcommalistsize [a,b,{c,d,e},f]        \dosomething 4
+%D \getcommalistsize [a{b,c},d,e,f]         \dosomething 4
+%D \getcommalistsize [{a,b}c,d,e,f]         \dosomething 4
+%D \getcommalistsize []                     \dosomething 0
+%D \getcommalistsize [{[}]                  \dosomething 1
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D reports:
+%D
+%D \getbuffer
+
+%D \macros
+%D   {dogetcommalistelement,dogetcommacommandelement}
+%D
+%D For low level (fast) purposes, we can also use the next
+%D alternative, which can handle 8~elements at most.
+%D
+%D \starttyping
+%D \dogetcommalistelement1\from a,b,c\to\commalistelement
+%D \stoptyping
+
+\def\dodogetcommalistelement#1\from#2,#3,#4,#5,#6,#7,#8\to#9%
+  {\edef#9{\ifcase#1\relax\or#2\or#3\or#4\or#5\or#6\or#7\or#8\fi}}
+
+% maybe better:
+%
+%  {\@EA\edef\@EA#9\@EA{\ifcase#1\relax\or#2\or#3\or#4\or#5\or#6\or#7\or#8\fi}}
+
+\def\dogetcommalistelement#1\from#2\to%
+  {\dodogetcommalistelement#1\from#2,,,,,,\to}
+
+% check sources
+
+\def\dogetcommacommandelement#1\from#2\to%
+  {\@EA\dodogetcommalistelement\@EA#1\@EA\from#2,,,,,,\to}
+
+%D \macros
+%D   {dosingleargument,dodoubleargument,dotripleargument,
+%D    doquadrupleargument,doquintupleargument,dosixtupleargument,
+%D    doseventupleargument}
+%D
+%D When working with delimited arguments, spaces and
+%D lineendings can interfere. The next set of macros uses
+%D \TEX' internal scanner for grabbing everything between
+%D arguments. Forgive me the funny names.
+%D
+%D \starttyping
+%D \dosingleargument\commando    = \commando[#1]
+%D \dodoubleargument\commando    = \commando[#1][#2]
+%D \dotripleargument\commando    = \commando[#1][#2][#3]
+%D \doquadrupleargument\commando = \commando[#1][#2][#3][#4]
+%D \doquintupleargument\commando = \commando[#1][#2][#3][#4][#5]
+%D \dosixtupleargument\commando  = \commando[#1][#2][#3][#4][#5][#6]
+%D \doseventupleargument\command= \commando[#1][#2][#3][#4][#5][#6][#7]
+%D \stoptyping
+%D
+%D These macros are used in the following way:
+%D
+%D \starttyping
+%D \def\dosetupsomething[#1][#2]%
+%D   {... #1 ... #2 ...}
+%D
+%D \def\setupsomething%
+%D   {\dodoubleargument\dosetupsomething}
+%D \stoptyping
+%D
+%D The implementation can be surprisingly simple and needs no
+%D further explanation, like:
+%D
+%D \starttyping
+%D \def\dosingleargument#1[#2]%
+%D   {#1[#2]}
+%D \def\dotripleargument#1[#2]#3[#4]#5[#6]%
+%D   {#1[#2][#4][#6]}
+%D \def\doquintupleargument#1%
+%D   {\def\dodoquintupleargument[##1]##2[##3]##4[##5]##6[##7]##8[##9]%
+%D      {#1[##1][##3][##5][##7][##9]}%
+%D    \dodoquintupleargument}
+%D \stoptyping
+%D
+%D Because \TEX\ accepts 9~arguments at most, we have to use
+%D two||step solution when getting five or more arguments.
+%D
+%D When developing more and more of the real \CONTEXT, we
+%D started using some alternatives that provided empty
+%D arguments (in fact optional ones) whenever the user failed
+%D to supply them. Because this more complicated macros enable
+%D us to do some checking, we reimplemented the non||empty
+%D ones.
+
+\def\dosingleargument    {\chardef\expectedarguments 1 \dosingleempty    }
+\def\dodoubleargument    {\chardef\expectedarguments 2 \dodoubleempty    }
+\def\dotripleargument    {\chardef\expectedarguments 3 \dotripleempty    }
+\def\doquadrupleargument {\chardef\expectedarguments 4 \doquadrupleempty }
+\def\doquintupleargument {\chardef\expectedarguments 5 \doquintupleempty }
+\def\dosixtupleargument  {\chardef\expectedarguments 6 \dosixtupleempty  }
+\def\doseventupleargument{\chardef\expectedarguments 7 \doseventupleempty}
+
+%D \macros
+%D   {iffirstagument,ifsecondargument,ifthirdargument,
+%D    iffourthargument,iffifthargument,ifsixthargument,
+%D    ifseventhargument}
+%D
+%D We use some signals for telling the calling macros if all
+%D wanted arguments are indeed supplied by the user.
+
+\newif\iffirstargument
+\newif\ifsecondargument
+\newif\ifthirdargument
+\newif\iffourthargument
+\newif\iffifthargument
+\newif\ifsixthargument
+\newif\ifseventhargument
+
+%D \macros
+%D   {dosingleempty,dodoubleempty,dotripleempty,
+%D    doquadrupleempty,doquintupleempty,dosixtupeempty,
+%D    doseventupleempty}
+%D
+%D The empty argument supplying macros mentioned before, look
+%D like:
+%D
+%D \starttyping
+%D \dosingleempty    \command
+%D \dodoubleempty    \command
+%D \dotripleempty    \command
+%D \doquadrupleempty \command
+%D \doquintupleempty \command
+%D \dosixtupleempty  \command
+%D \doseventupleempty\command
+%D \stoptyping
+%D
+%D So \type{\dodoubleempty} leades to:
+%D
+%D \starttyping
+%D \command[#1][#2]
+%D \command[#1][]
+%D \command[][]
+%D \stoptyping
+%D
+%D Depending of the generousity of the user. Afterwards one can
+%D use the \type{\if...argument} boolean. For novice: watch
+%D the stepwise doubling of \type{#}'s
+
+% idea: \ignorespaces afterwards
+
+\chardef\noexpectedarguments=0
+\chardef\expectedarguments  =0
+
+\def\showargumenterror#1#2%
+  {\writestatus{systems}{#1 argument(s) expected in line #2}}
+
+% \long\def\dogetargument#1#2#3#4% redefined in mult-ini
+%   {\doifnextcharelse{#1}
+%      {\let\expectedarguments\noexpectedarguments
+%       #3\dodogetargument}
+%      {\ifnum\expectedarguments>\noexpectedarguments
+%         \showargumenterror{\expectedarguments}
+%       \fi
+%       \let\expectedarguments\noexpectedarguments
+%       #4\dodogetargument#1#2}}
+%
+% less to pass
+
+\def\doshowargumenterror
+  {\ifnum\expectedarguments>\noexpectedarguments
+     \showargumenterror{\number\expectedarguments}{\number\inputlineno}%
+   \fi
+   \noshowargumenterror}
+
+\def\noshowargumenterror
+  {\let\expectedarguments\noexpectedarguments}
+
+% \long\def\dogetargument#1#2#3#4%
+%  {\doifnextcharelse#1%
+%     {\noshowargumenterror#3\dodogetargument}
+%     {\doshowargumenterror#4\dodogetargument#1#2}}
+%
+% faster ?
+
+\long\def\dogetargument#1#2#3#4%
+  {\let\charactertoken=#1%
+   \def\!!stringa{\noshowargumenterror#3\dodogetargument}%
+   \def\!!stringb{\doshowargumenterror#4\dodogetargument#1#2}%
+   \futurelet\nexttoken\inspectnextcharacter}
+
+\def\getsingleempty#1#2#3%
+  {\def\dodogetargument%
+     {#3}%
+   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
+\def\getdoubleempty#1#2#3%
+  {\def\dodogetargument#1##1#2%
+     {\def\dodogetargument%
+        {#3#1{##1}#2}%
+      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
+\def\gettripleempty#1#2#3%
+  {\def\dodogetargument#1##1#2%
+     {\def\dodogetargument#1####1#2%
+        {\def\dodogetargument%
+           {#3#1{##1}#2%
+              #1{####1}#2}%
+         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
+\def\getquadrupleempty#1#2#3%
+  {\def\dodogetargument#1##1#2%
+     {\def\dodogetargument#1####1#2%
+        {\def\dodogetargument#1########1#2%
+           {\def\dodogetargument%
+              {#3#1{##1}#2%
+                 #1{####1}#2%
+                 #1{########1}#2}%
+            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
+\def\getquintupleempty#1#2#3%
+  {\def\dodogetargument#1##1#2%
+     {\def\dodogetargument#1####1#2%
+        {\def\dodogetargument#1########1#2%
+           {\def\dodogetargument#1################1#2%
+              {\def\dodogetargument%
+                 {#3#1{##1}#2%
+                    #1{####1}#2%
+                    #1{########1}#2%
+                    #1{################1}#2}%
+               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
+\def\getsixtupleempty#1#2#3%
+  {\def\dodogetargument#1##1#2%
+     {\def\dodogetargument#1####1#2%
+        {\def\dodogetargument#1########1#2%
+           {\def\dodogetargument#1################1#2%
+              {\def\dodogetargument#1################################1#2%
+                 {\def\dodogetargument%
+                    {#3#1{##1}#2%
+                       #1{####1}#2%
+                       #1{########1}#2%
+                       #1{################1}#2%
+                       #1{################################1}#2}%
+                 \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
+               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
+\def\getseventupleempty#1#2#3%
+  {\def\dodogetargument#1##1#2%
+     {\def\dodogetargument#1####1#2%
+        {\def\dodogetargument#1########1#2%
+           {\def\dodogetargument#1################1#2%
+              {\def\dodogetargument#1################################1#2%
+                 {\def\dodogetargument#1################################%
+                                        ################################1#2%
+                    {\def\dodogetargument%
+                       {#3#1{##1}#2%
+                          #1{####1}#2%
+                          #1{########1}#2%
+                          #1{################1}#2%
+                          #1{################################1}#2%
+                          #1{################################%
+                             ################################1}#2}%
+                   \dogetargument#1#2\seventhargumenttrue\seventhargumentfalse}%
+                 \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
+               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+
+\def\dosingleempty    {\getsingleempty    []}
+\def\dodoubleempty    {\getdoubleempty    []}
+\def\dotripleempty    {\gettripleempty    []}
+\def\doquadrupleempty {\getquadrupleempty []}
+\def\doquintupleempty {\getquintupleempty []}
+\def\dosixtupleempty  {\getsixtupleempty  []}
+\def\doseventupleempty{\getseventupleempty[]}
+
+%D Because some of these are called quite often, we will now
+%D replace the more general version by alternatives tuned for
+%D speed.
+
+\def\dosingleempty#1%
+  {\noshowargumenterror % \relax % prevents lookahead, brr
+   \doifnextoptionalelse
+     {\firstargumenttrue#1}
+     {\dosinglefakeempty#1}}
+
+\def\dodoubleempty#1%
+  {\noshowargumenterror % \relax % prevents lookahead, brr
+   \doifnextoptionalelse
+     {\dodoubletestempty#1}
+     {\dodoublefakeempty#1}}
+
+\def\dotripleempty#1%
+  {\noshowargumenterror % \relax % prevents lookahead, brr
+   \doifnextoptionalelse
+     {\dotripletestempty#1}
+     {\dotriplefakeempty#1}}
+
+\def\dosinglefakeempty#1%
+  {\firstargumentfalse#1[]}
+
+\def\dodoublefakeempty#1%
+  {\firstargumentfalse\secondargumentfalse#1[][]}
+
+\def\dotriplefakeempty#1%
+  {\firstargumentfalse\secondargumentfalse\thirdargumentfalse#1[][][]}
+
+\long\def\dodoubletestempty#1[#2]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\secondargumenttrue #1[{#2}]}
+     {\secondargumentfalse#1[{#2}][]}}
+
+\long\def\dotripletestempty#1[#2]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\dotripletestemptyx #1[{#2}]}
+     {\secondargumentfalse
+      \thirdargumentfalse #1[{#2}][][]}}
+
+\long\def\dotripletestemptyx#1[#2][#3]%
+  {\secondargumenttrue
+   \doifnextoptionalelse
+     {\thirdargumenttrue #1[{#2}][{#3}]}
+     {\thirdargumentfalse#1[{#2}][{#3}][]}}
+
+%D \macros
+%D   {strippedcsname}
+%D
+%D The next macro can be very useful when using \type{\csname}
+%D like in:
+%D
+%D \starttyping
+%D \csname if\strippedcsname\something\endcsname
+%D \stoptyping
+%D
+%D This expands to \type{\ifsomething}.
+
+\def\strippedcsname%
+  {\expandafter\gobbleoneargument\string}
+
+%D \macros
+%D   {complexorsimple,complexorsimpleempty}
+%D
+%D Setups can be optional. A command expecting a setup is
+%D prefixed by \type{\complex}, a command without one gets the
+%D prefix \type{\simple}. Commands like this can be defined by:
+%D
+%D \starttyping
+%D \complexorsimple\command
+%D \stoptyping
+%D
+%D When \type{\command} is followed by a \type{[setup]}, then
+%D
+%D \starttyping
+%D \complexcommand [setup]
+%D \stoptyping
+%D
+%D executes, else we get
+%D
+%D \starttyping
+%D \simplecommand
+%D \stoptyping
+%D
+%D An alternative for \type{\complexorsimple} is:
+%D
+%D \starttyping
+%D \complexorsimpleempty {command}
+%D \stoptyping
+%D
+%D Depending on the presence of \type{[setup]}, this one
+%D leads to one of:
+%D
+%D \starttyping
+%D \complexcommando [setup]
+%D \complexcommando []
+%D \stoptyping
+%D
+%D Many \CONTEXT\ commands started as complex or simple ones,
+%D but changed into more versatile (more object oriented) ones
+%D using the \type{\get..argument} commands.
+
+% This method is needed when traditional tex is used with
+% the efficient definition (marked **) below.
+
+% an old one:
+%
+% \def\setnameofcommand#1% handles {abc} as well as \abc
+%   {\begingroup
+%    \escapechar=-1
+%    \globaldefs=0 % pretty important!
+%    \xdef\nameofcommand{\string#1}%
+%    \endgroup}
+%
+% \def\complexorsimple#1%
+%   {\setnameofcommand{#1}%
+%    \doifnextcharelse{[}
+%      {\firstargumenttrue \getvalue{\s!complex\nameofcommand}}
+%      {\firstargumentfalse\getvalue{\s!simple \nameofcommand}}}
+%
+% \def\complexorsimpleempty#1%
+%   {\setnameofcommand{#1}%
+%    \doifnextcharelse{[}
+%      {\firstargumenttrue \getvalue{\s!complex\nameofcommand}}
+%      {\firstargumentfalse\getvalue{\s!complex\nameofcommand}[]}}
+%
+% a newer one:
+
+\def\complexorsimple#1%
+  {% \relax % prevents lookahead, brrr
+   \doifnextoptionalelse
+     {\firstargumenttrue \csname\s!complex\strippedcsname#1\endcsname}
+     {\firstargumentfalse\csname\s!simple \strippedcsname#1\endcsname}}
+
+\def\complexorsimpleempty#1%
+  {% \relax % prevents lookahead, brrr
+   \doifnextoptionalelse
+     {\firstargumenttrue \csname\s!complex\strippedcsname#1\endcsname}
+     {\firstargumentfalse\csname\s!complex\strippedcsname#1\endcsname[]}}
+
+%D \macros
+%D   {definecomplexorsimple,definecomplexorsimpleempty}
+%D
+%D The previous commands are used that often that we found it
+%D worthwile to offer two more alternatives. Watch the build
+%D in protection.
+
+% See earlier. Because we don't want \type {\simple..} and
+% \type {\complex..} commands to show up in expansions, we need
+% to pass them as \type {simple..} and \type {complex..}.
+
+% \beginTEX
+%
+% \def\definewithnameofcommand#1#2%
+%   {\setnameofcommand{#2}%
+%    \@EA\def\@EA#2\@EA{\@EA\donottest\@EA#1\@EA{\nameofcommand}}}
+%
+% \def\definecomplexorsimple%
+%   {\definewithnameofcommand\complexorsimple}
+%
+% \def\definecomplexorsimpleempty%
+%   {\definewithnameofcommand\complexorsimpleempty}
+%
+% \endTEX
+%
+% \beginETEX \protected
+%
+% \def\definecomplexorsimple#1%
+%   {\normalprotected\def#1{\complexorsimple#1}}
+%
+% \def\definecomplexorsimpleempty#1%
+%   {\normalprotected\def#1{\complexorsimpleempty#1}}
+%
+% \endETEX
+
+% However, since this one uses an idirect method, things go
+% okay (at the cost of extra macros).
+
+% \def\definecomplexorsimple#1%
+%   {\unexpanded\def#1{\complexorsimple#1}}
+%
+% \def\definecomplexorsimpleempty#1%
+%   {\unexpanded\def#1{\complexorsimpleempty#1}}
+%
+% faster, since no \strippedcsname needed in call, but more spacy
+
+\def\docomplexorsimple#1#2%
+  {\doifnextoptionalelse{\firstargumenttrue#1}{\firstargumentfalse#2}}
+
+\def\docomplexorsimpleempty#1%
+  {\doifnextoptionalelse{\firstargumenttrue#1}{\firstargumentfalse#1[]}}
+
+\def\definecomplexorsimple#1%
+  {\unexpanded\edef#1%
+     {\noexpand\docomplexorsimple
+        \@EA\noexpand\csname\s!complex\strippedcsname#1\endcsname
+        \@EA\noexpand\csname\s!simple \strippedcsname#1\endcsname}}
+
+\def\definecomplexorsimpleempty#1%
+  {\unexpanded\edef#1%
+     {\noexpand\docomplexorsimpleempty
+        \@EA\noexpand\csname\s!complex\strippedcsname#1\endcsname}}
+
+%D These commands are called as:
+%D
+%D \starttyping
+%D \definecomplexorsimple\command
+%D \stoptyping
+%D
+%D Of course, we must have available
+%D
+%D \starttyping
+%D \def\complexcommand[#1]{...}
+%D \def\simplecommand     {...}
+%D \stoptyping
+%D
+%D Using this construction saves a few string now and then.
+
+%D \macros
+%D   {definestartstopcommand}
+%D
+%D Those who get the creeps of expansion may skip the next
+%D one. It's one of the most recent additions and concerns
+%D \type{\start}||\type{\stop} pairs with complicated
+%D arguments.
+%D
+%D We won't go into details here, but the general form of
+%D this using this command is:
+%D
+%D \starttyping
+%D \definestartstopcommand\somecommand\e!specifier{arg}{arg}%
+%D   {do something with arg}
+%D \stoptyping
+%D
+%D This expands to something like:
+%D
+%D \starttyping
+%D \def\somecommand arg \startspecifier arg \stopspecifier%
+%D   {do something with arg}
+%D \stoptyping
+%D
+%D The arguments can be anything reasonable, but double
+%D \type{#}'s are needed in the specification part, like:
+%D
+%D \starttyping
+%D \definestartstopcommand\somecommand\e!specifier{[##1][##2]}{##3}%
+%D   {do #1 something #2 with #3 arg}
+%D \stoptyping
+%D
+%D which becomes:
+%D
+%D \starttyping
+%D \def\somecommand[#1][#2]\startspecifier#3\stopspecifier%
+%D   {do #1 something #2 with #3 arg}
+%D \stoptyping
+%D
+%D We will see some real applications of this command in the
+%D core modules.
+
+\def\definestartstopcommand#1#2#3#4% can be done with \expanded ot better, toks
+  {\def\!stringa{#3}%              % but let's keep this unused one crappy
+   \def\!stringb{\e!start#2}%
+   \def\!stringc{#4}%
+   \def\!stringd{\e!stop#2}%
+   \@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA
+   \def\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA\@EA
+   #1\@EA\@EA\@EA\@EA\@EA\@EA\@EA
+   \!stringa\@EA\@EA\@EA
+   \csname\@EA\@EA\@EA\!stringb\@EA\@EA\@EA\endcsname\@EA
+   \!stringc
+   \csname\!stringd\endcsname}
+
+%D \macros
+%D   {dosinglegroupempty,dodoublegroupempty,dotriplegroupempty,
+%D    doquadruplegroupempty, doquintuplegroupempty}
+%D
+%D We've already seen some commands that take care of
+%D optional arguments between \type{[]}. The next two commands
+%D handle the ones with \type{{}}. They are called as:
+%D
+%D \starttyping
+%D \dosinglegroupempty    \ineedONEargument
+%D \dodoublegroupempty    \ineedTWOarguments
+%D \dotriplegroupempty    \ineedTHREEarguments
+%D \doquadruplegroupempty \ineedFOURarguments
+%D \doquintuplegroupempty \ineedFIVEarguments
+%D \stoptyping
+%D
+%D where \type{\ineedONEargument} takes one and the others
+%D two and three arguments. These macro's were first needed in
+%D \PPCHTEX.
+%D
+%D \starttyping
+%D \def\dogetgroupargument#1#2% redefined in mult-ini
+%D   {\def\nextnextargument%
+%D      {\ifx\nextargument\bgroup
+%D         \let\expectedarguments\noexpectedarguments
+%D         \def\nextargument{#1\dodogetargument}%
+%D       %\else\ifx\nextargument\lineending % this can be an option
+%D       %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
+%D       %\else\ifx\nextargument\blankspace % but it may never be default
+%D       %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
+%D       \else
+%D         \ifnum\expectedarguments>\noexpectedarguments
+%D           \writestatus
+%D              {setup}
+%D              {\the\expectedarguments\space argument(s) expected
+%D               in line \the\inputlineno\space}%
+%D         \fi
+%D         \let\expectedarguments\noexpectedarguments
+%D         \def\nextargument{#2\dodogetargument{}}%
+%D       \fi%\fi\fi                 % so let's get rid of it
+%D       \nextargument}%
+%D    \futurelet\nextargument\nextnextargument}
+%D \stoptyping
+%D
+%D In order to catch \type {\nextargument}'s that expand to
+%D \type {\if} and friends, in practice we will use a
+%D slightly more complicated macro.
+
+\newtoks \everyrobusttest
+
+\everyrobusttest
+  {\let\if         \relax
+   \let\ifcat      \relax
+   \let\ifnum      \relax
+   \let\ifdim      \relax
+   \let\ifodd      \relax
+   \let\ifvmode    \relax
+   \let\ifhmode    \relax
+   \let\ifmmode    \relax
+   \let\ifinner    \relax
+   \let\ifvoid     \relax
+   \let\ifhbox     \relax
+   \let\ifvbox     \relax
+   \let\ifx        \relax
+   \let\ifeof      \relax
+   \let\iftrue     \relax
+   \let\iffalse    \relax
+   \let\ifcase     \relax
+   \let\ifdefined  \relax
+   \let\ifcsname   \relax
+   \let\iffontchar \relax
+   \let\ifincsname \relax
+   \let\ifprimitive\relax
+   \let\ifabsnum   \relax
+   \let\ifabsdim   \relax
+   \let\else       \relax
+   \let\or         \relax
+   \let\fi         \relax}
+
+\def\beginrobusttest
+  {\begingroup
+   \the\everyrobusttest}
+
+\let\endrobusttest\endgroup
+
+%D We can add additional definitions later when we have defined
+%D \type {\appendtoks}.
+
+\def    \permitspacesbetweengroups{\chardef\@@permitspacesbetweengroups=0 }
+\def\dontpermitspacesbetweengroups{\chardef\@@permitspacesbetweengroups=1 }
+
+\dontpermitspacesbetweengroups
+
+% \def\dogetgroupargument#1#2%
+%   {\def\nextnextargument%
+%      {\normalifx\nextargument\bgroup
+%         \endrobusttest
+%         \noshowargumenterror
+%         \def\nextargument{#1\dodogetargument}%
+%       \normalelse
+%         \normalifcase\@@permitspacesbetweengroups
+%           \normalifx\nextargument\lineending
+%             \endrobusttest
+%             \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
+%           \normalelse\normalifx\nextargument\blankspace
+%             \endrobusttest
+%             \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
+%           \normalelse
+%             \endrobusttest
+%             \doshowargumenterror
+%             \def\nextargument{#2\dodogetargument{}}%
+%           \normalfi\normalfi
+%         \normalelse
+%           \endrobusttest
+%           \doshowargumenterror
+%           \def\nextargument{#2\dodogetargument{}}%
+%         \normalfi
+%       \normalfi
+%       \nextargument}%
+%    \beginrobusttest
+%    \futurelet\nextargument\nextnextargument}
+
+\def\dodogetgroupargument
+  {\normalifx\nextargument\bgroup
+     \endrobusttest
+     \noshowargumenterror
+     \def\nextargument{\dogroupargumentyes\dodogetargument}%
+   \normalelse
+     \normalifcase\@@permitspacesbetweengroups
+       \normalifx\nextargument\lineending
+         \endrobusttest
+         \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument\dogroupargumentyes\dogroupargumentnop}\\}%
+       \normalelse\normalifx\nextargument\blankspace
+         \endrobusttest
+         \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument\dogroupargumentyes\dogroupargumentnop}\\}%
+       \normalelse
+         \endrobusttest
+         \doshowargumenterror
+         \def\nextargument{\dogroupargumentnop\dodogetargument{}}%
+       \normalfi\normalfi
+     \normalelse
+       \endrobusttest
+       \doshowargumenterror
+       \def\nextargument{\dogroupargumentnop\dodogetargument{}}%
+     \normalfi
+   \normalfi
+   \nextargument}%
+
+\def\dogetgroupargument#1#2%
+  {\let\dogroupargumentyes#1%
+   \let\dogroupargumentnop#2%
+   \beginrobusttest\futurelet\nextargument\dodogetgroupargument}
+
+\def\dosinglegroupempty#1%
+  {\def\dodogetargument%
+     {\dontpermitspacesbetweengroups
+      #1}%
+   \dogetgroupargument\firstargumenttrue\firstargumentfalse}
+
+\def\dodoublegroupempty#1%
+  {\def\dodogetargument##1%
+     {\def\dodogetargument%
+        {\dontpermitspacesbetweengroups
+         #1{##1}}%
+      \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
+   \dogetgroupargument\firstargumenttrue\firstargumentfalse}
+
+\def\dotriplegroupempty#1%
+  {\def\dodogetargument##1%
+     {\def\dodogetargument####1%
+        {\def\dodogetargument%
+           {\dontpermitspacesbetweengroups
+            #1{##1}{####1}}%
+         \dogetgroupargument\thirdargumenttrue\thirdargumentfalse}%
+      \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
+   \dogetgroupargument\firstargumenttrue\firstargumentfalse}
+
+\def\doquadruplegroupempty#1%
+  {\def\dodogetargument##1%
+     {\def\dodogetargument####1%
+        {\def\dodogetargument########1%
+           {\def\dodogetargument%
+              {\dontpermitspacesbetweengroups
+               #1{##1}{####1}{########1}}%
+            \dogetgroupargument\fourthargumenttrue\fourthargumentfalse}%
+         \dogetgroupargument\thirdargumenttrue\thirdargumentfalse}%
+      \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
+   \dogetgroupargument\firstargumenttrue\firstargumentfalse}
+
+\def\doquintuplegroupempty#1%
+  {\def\dodogetargument##1%
+     {\def\dodogetargument####1%
+        {\def\dodogetargument########1%
+           {\def\dodogetargument################1%
+             {\def\dodogetargument%
+                {\dontpermitspacesbetweengroups
+                 #1{##1}{####1}{########1}{################1}}%
+              \dogetgroupargument\fifthargumenttrue\fifthargumentfalse}%
+            \dogetgroupargument\fourthargumenttrue\fourthargumentfalse}%
+         \dogetgroupargument\thirdargumenttrue\thirdargumentfalse}%
+      \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
+   \dogetgroupargument\firstargumenttrue\firstargumentfalse}
+
+%D These macros can explictly take care of spaces, which means
+%D that the next definition and calls are valid:
+%D
+%D \starttyping
+%D \def\test#1#2#3{[#1#2#3]}
+%D
+%D \dotriplegroupempty\test {a}{b}{c}
+%D \dotriplegroupempty\test {a}{b}
+%D \dotriplegroupempty\test {a}
+%D \dotriplegroupempty\test
+%D \dotriplegroupempty\test {a} {b} {c}
+%D \dotriplegroupempty\test {a} {b}
+%D \dotriplegroupempty\test
+%D   {a}
+%D   {b}
+%D \stoptyping
+%D
+%D And alike.
+
+%D \macros
+%D   {firstofoneargument, firstoftwoarguments, firstofthreearguments
+%D    secondoftwoarguments, secondofthreearguments,
+%D    thirdofthreearguments}
+%D
+%D The next six macros (dedicated to Taco) can conveniently
+%D used to select arguments. Their names explain their
+%D functionality.
+
+\long\def\firstofoneargument#1{#1}
+
+\long\def\firstoftwoarguments #1#2{#1}
+\long\def\secondoftwoarguments#1#2{#2}
+
+\long\def\firstofthreearguments #1#2#3{#1}
+\long\def\secondofthreearguments#1#2#3{#2}
+\long\def\thirdofthreearguments #1#2#3{#3}
+
+\long\def\firstoffourarguments #1#2#3#4{#1}
+\long\def\secondoffourarguments#1#2#3#4{#2}
+\long\def\thirdoffourarguments #1#2#3#4{#3}
+\long\def\fourthoffourarguments#1#2#3#4{#4}
+
+\long\def\firstoffivearguments #1#2#3#4#5{#1}
+\long\def\secondoffivearguments#1#2#3#4#5{#2}
+\long\def\thirdoffivearguments #1#2#3#4#5{#3}
+\long\def\fourthoffivearguments#1#2#3#4#5{#4}
+\long\def\fifthoffivearguments #1#2#3#4#5{#5}
+
+\long\def\firstofsixarguments #1#2#3#4#5#6{#1}
+\long\def\secondofsixarguments#1#2#3#4#5#6{#2}
+\long\def\thirdofsixarguments #1#2#3#4#5#6{#3}
+\long\def\fourthofsixarguments#1#2#3#4#5#6{#4}
+\long\def\fifthofsixarguments #1#2#3#4#5#6{#5}
+\long\def\sixthofsixarguments #1#2#3#4#5#6{#6}
+
+%D \macros
+%D   {globalletempty,letempty,letvalueempty,letgvalueempty}
+%D
+%D Trivial:
+
+\def\letempty             #1{\let#1\empty}
+\def\globalletempty#1{\global\let#1\empty}
+
+\def\letvalueempty        #1{\expandafter\let\csname#1\endcsname\empty}
+\def\letgvalueempty#1{\global\expandafter\let\csname#1\endcsname\empty}
+
+%D \macros
+%D   {wait}
+%D
+%D The next macro hardly needs explanation. Because no
+%D nesting is to be expected, we can reuse \type{\wait} within
+%D \type{\wait} itself.
+
+\def\wait
+  {\begingroup
+   \read16 to \wait
+   \endgroup}
+
+%D \macros
+%D   {writestring,writeline,writebanner,
+%D    writestatus,statuswidth,normalwritestatus}
+%D
+%D Maybe one didn't notice, but we've already introduced a
+%D macro for showing messages. In the multi||lingual modules,
+%D we will also introduce a mechanism for message passing. For
+%D the moment we stick to the core macros:
+%D
+%D \starttyping
+%D \writestring {string}
+%D \writeline
+%D \writestatus {category} {message}
+%D \stoptyping
+%D
+%D Messages are formatted. One can provide the maximum with
+%D of the identification string with the macro \type
+%D {\statuswidth}.
+
+\chardef\statuswidth=15
+\chardef\statuswrite=16
+
+\ifx\writestring\undefined
+
+    \newtoks\everywritestring
+
+    \def\writedirect  {\immediate\write\statuswrite}
+    \def\writeline    {\writedirect{}}
+    \def\writestring#1{\begingroup\the\everywritestring\writedirect{#1}\endgroup}
+
+\fi
+
+%D First we present the normal \TEX\ variant, later we will
+%D show the \ETEX-way.
+
+
+\beginTEX
+
+    \newcount\statuscounter
+
+    \def\dosplitstatus#1%
+      {\advance\statuscounter \minusone
+       \ifcase\statuscounter
+         \expandafter\nosplitstatus
+       \else
+         \scratchtoks\@EA{\the\scratchtoks#1}%
+         \expandafter\dosplitstatus
+       \fi}
+
+    \def\nosplitstatus#1\end
+      {}
+
+    \def\writestatus#1#2%
+      {\begingroup
+       \scratchtoks\emptytoks
+       \statuscounter\statuswidth
+       \expandafter\dosplitstatus#1%
+         \space\space\space\space\space\space\space
+         \space\space\space\space\space\space\space
+         \space\space\space\space\space\space\end
+       \@EA\writestring\@EA{\the\scratchtoks\space:\space#2}%
+       \endgroup}
+
+\endTEX
+
+%D Because we're grouped, we could have initialized at forehand:
+%D
+%D \starttyping
+%D \statuscounter\statuswidth
+%D \stoptyping
+%D
+%D The next implementation saves only some 10 words of format
+%D memory, but we hardly gain any speed.
+%D
+%D \starttyping
+%D \def\dosplitstatus#1#2#3#4#5#6#7#8#9%
+%D   {#1#2#3#4#5#6#7#8#9\dodosplitstatus}
+%D
+%D \def\dodosplitstatus#1#2#3#4#5#6\end
+%D   {#1#2#3#4#5}
+%D
+%D \def\writestatus#1#2%
+%D   {\writestring
+%D      {\expandafter\dosplitstatus#1%
+%D         \space\space\space\space\space
+%D         \space\space\space\space\space
+%D         \space\space\space\space\space\end
+%D         \space:\space#2}}
+%D \stoptyping
+
+%D Okay then, more obscure but slightly faster: no split grabs
+%D the do split part and skipping the else branch has to happen
+%D anyway, so:
+
+\beginTEX
+
+    \def\dosplitstatus#1%
+      {\advance\statuscounter \minusone
+       \ifcase\statuscounter
+         \expandafter\nosplitstatus
+       \fi
+       \scratchtoks\@EA{\the\scratchtoks#1}%
+       \dosplitstatus}
+
+\endTEX
+
+%D The next (\ETEX\ specific) variant is twice as fast in 5/40
+%D situations, only gains some speed when multiple runs of large docs
+%D are done; fully expandable, no statuscounter needed, no restore (due
+%D to grouping) needed etc.
+
+\beginETEX \numexpr
+
+    \def\normalwritestatus#1#2%
+      {\writestring{\expandafter\dosplitstatus\expandafter\statuswidth#1%
+         \space\space\space\space\space\space\space
+         \space\space\space\space\space\space\space
+         \space\space\space\space\space\space\end
+         \space:\space#2}}
+
+    \def\dosplitstatus#1#2%
+      {\ifcase#1 \expandafter\nosplitstatus\fi#2%
+       \expandafter\dosplitstatus\expandafter{\the\numexpr#1+\minusone\relax}}
+
+    \def\nosplitstatus#1\end
+      {}
+
+\endETEX
+
+%D \macros
+%D   {emptytoks}
+%D
+%D For this we need an empty token register, analogous
+%D to \type {\empty}.
+
+\newtoks\emptytoks
+
+%D \macros
+%D   {debuggerinfo}
+%D
+%D For debugging purposes we can enhance macros with the
+%D next alternative. Here \type{debuggerinfo} stands for both
+%D a macro accepting two arguments and a boolean (in fact a
+%D few macro's too).
+
+\newif\ifdebuggerinfo
+
+\def\debuggerinfo#1#2%
+  {\ifdebuggerinfo
+     \writestatus{debugger}{#1:: #2}%
+   \fi}
+
+%D Finally we do what from now on will be done at the top of
+%D the files: we tell the user what we are loading.
+
+% \ifx\writestatus\undefined \let\writestatus\normalwritestatus \fi
+% \ifx\writebanner\undefined \def\writebanner{\writestring}     \fi
+
+\ifx\normalwritestatus\undefined
+    % for use within latex
+    \ifx\writestatus\undefined
+        \def\writestatus#1#2{\immediate\write16{#1 : #2}}
+    \fi
+\else
+    \let\writestatus\normalwritestatus
+\fi
+
+\def\writebanner{\writestring}
+
+\writestatus{loading}{ConTeXt System Macros / General}
+
+%D Well, the real final command is the one that resets the
+%D unprotected characters \type{@}, \type{?} and \type{!}.
+
+\protect \endinput

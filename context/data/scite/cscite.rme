@@ -1,0 +1,50 @@
+Files:
+
+cont-nl-scite.properties : keywords for the dutch user interface
+cont-en-scite.properties : keywords for the english user interface
+cont-de-scite.properties : keywords for the german user interface
+cont-cz-scite.properties : keywords for the czech user interface
+cont-it-scite.properties : keywords for the italian user interface
+cont-ro-scite.properties : keywords for the romanian user interface
+cont-xx-scite.properties : additional keywords
+metafun-scite.properties : keywords for the metafun collection
+
+context.properties       : a configuration suitable for context
+
+
+Method 1:
+
+Copy the property files to the path where your local "SciTEUser.properties"
+file lives. Add the following entries to "SciTEUser.properties":
+
+import cont-nl-scite
+import cont-en-scite
+import cont-de-scite
+import cont-cz-scite
+import cont-it-scite
+import cont-ro-scite
+import cont-xx-scite
+import metafun-scite
+
+import context
+
+If you want latex syntax higlighting as well, you should also import the file
+"latex-scite.properties" (no suffix needed).
+
+
+Method 2:
+
+Copy the property files to the path where your local "SciTEGlobal.properties"
+file lives.
+
+Copy the files "context.properties to the path where "SciTEUser.properties"
+lives. Add the following entries to "SciTEUser.properties":
+
+import context
+
+
+Info:
+
+Hans Hagen
+PRAGMA ADE, Hasselt NL
+http://www.pragma-ade.com

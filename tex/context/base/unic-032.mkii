@@ -1,0 +1,278 @@
+%D \module
+%D   [       file=unic-032,
+%D        version=2006.03.30,
+%D          title=\CONTEXT\ \UNICODE\ Macros,
+%D       subtitle=Vector 32,
+%D         author={Hans Hagen \& Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\startunicodevector 32
+  \expandafter\strippedcsname
+  \ifcase\numexpr#1\relax
+    \enspace                    \or   % U+2000 EN QUAD
+    \emspace                    \or   % U+2001 EM QUAD
+    \enspace                    \or   % U+2002 EN SPACE
+    \emspace                    \or   % U+2003 EM SPACE
+    \unic@threeperemspace       \or   % U+2004 THREE-PER-EM SPACE
+    \unic@fourperemspace        \or   % U+2005 FOUR-PER-EM SPACE
+    \unic@sixperemspace         \or   % U+2006 SIX-PER-EM SPACE
+    \unic@figurespace           \or   % U+2007 FIGURE SPACE
+    \unmic@punctiationspace     \or   % U+2008 PUNCTUATION SPACE
+    \thinspace                  \or   % U+2009 THIN SPACE
+    \unic@hairspace             \or   % U+200A HAIR SPACE
+    \unic@zerowidthspace        \or   % U+200B ZERO WIDTH SPACE
+    \unic@zerowidthnonjoiner    \or   % U+200C ZERO WIDTH NON-JOINER
+    \unic@zerowidthjoiner       \or   % U+200D ZERO WIDTH JOINER
+    \unknownchar                \or   % U+200E LEFT-TO-RIGHT MARK
+    \unknownchar                \or   % U+200F RIGHT-TO-LEFT MARK
+    \breakinghyphen             \or   % U+2010 HYPHEN
+    \nonbreakinghyphen          \or   % U+2011 NON-BREAKING HYPHEN
+    \endash                     \or   % U+2012 FIGURE DASH
+    \endash                     \or   % U+2013 EN DASH
+    \emdash                     \or   % U+2014 EM DASH
+    \emdash                     \or   % U+2015 HORIZONTAL BAR
+    \unic@doubleverticalline    \or   % U+2016 DOUBLE VERTICAL LINE
+    \unic@doublelowline         \or   % U+2017 DOUBLE LOW LINE
+    \quoteleft                  \or   % U+2018 LEFT SINGLE QUOTATION MARK
+    \quoteright                 \or   % U+2019 RIGHT SINGLE QUOTATION MARK
+    \quotesinglebase            \or   % U+201A SINGLE LOW-9 QUOTATION MARK
+    \unic@quoteleftreversed     \or   % U+201B SINGLE HIGH-REVERSED-9 QUOTATION MARK
+    \quotedblleft               \or   % U+201C LEFT DOUBLE QUOTATION MARK
+    \quotedblright              \or   % U+201D RIGHT DOUBLE QUOTATION MARK
+    \quotedblbase               \or   % U+201E DOUBLE LOW-9 QUOTATION MARK
+    \unic@quotedblleftreversed  \or   % U+201F DOUBLE HIGH-REVERSED-9 QUOTATION MARK
+    \textdag                    \or   % U+2020 DAGGER
+    \textddag                   \or   % U+2021 DOUBLE DAGGER
+    \textbullet                 \or   % U+2022 BULLET
+    \blacktriangleright         \or   % U+2023 TRIANGULAR BULLET
+    \unic@onedotleader          \or   % U+2024 ONE DOT LEADER
+    \unic@twodotleader          \or   % U+2025 TWO DOT LEADER
+    \periods                    \or   % U+2026 HORIZONTAL ELLIPSIS % was: \textellipsis
+    \unic@hyphenationpoint      \or   % U+2027 HYPHENATION POINT
+    \crlf                       \or   % U+2028 LINE SEPARATOR
+    \endgraf                    \or   % U+2029 PARAGRAPH SEPARATOR
+    \unknownchar                \or   % U+202A LEFT-TO-RIGHT EMBEDDING
+    \unknownchar                \or   % U+202B RIGHT-TO-LEFT EMBEDDING
+    \unknownchar                \or   % U+202C POP DIRECTIONAL FORMATTING
+    \unknownchar                \or   % U+202D LEFT-TO-RIGHT OVERRIDE
+    \unknownchar                \or   % U+202E RIGHT-TO-LEFT OVERRIDE
+    \                           \or   % U+202F NARROW NO-BREAK SPACE
+    \perthousand                \or   % U+2030 PER MILLE SIGN
+    \unknownchar                \or   % U+2031 PER TEN THOUSAND SIGN
+    \prime                      \or   % U+2032 PRIME
+    \unic@doubleprime           \or   % U+2033 DOUBLE PRIME
+    \unic@tripleprime           \or   % U+2034 TRIPLE PRIME
+    \backprime                  \or   % U+2035 REVERSED PRIME
+    \unic@reverseddoubleprime   \or   % U+2036 REVERSED DOUBLE PRIME
+    \unic@reversedtripleprime   \or   % U+2037 REVERSED TRIPLE PRIME
+    \unknownchar                \or   % U+2038 CARET
+    \guilsingleleft             \or   % U+2039 SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+    \guilsingleright            \or   % U+203A SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+    \unknownchar                \or   % U+203B REFERENCE MARK
+    \unic@doubleexclamationmark \or   % U+203C DOUBLE EXCLAMATION MARK
+    \unknownchar                \or   % U+203D INTERROBANG
+    \unknownchar                \or   % U+203E OVERLINE
+    \unknownchar                \or   % U+203F UNDERTIE
+    \unknownchar                \or   % U+2040 CHARACTER TIE
+    \unknownchar                \or   % U+2041 CARET INSERTION POINT
+    \unknownchar                \or   % U+2042 ASTERISM
+    \unknownchar                \or   % U+2043 HYPHEN BULLET
+    \unic@fractionslash         \or   % U+2044 FRACTION SLASH
+    \unknownchar                \or   % U+2045 LEFT SQUARE BRACKET WITH QUILL
+    \unknownchar                \or   % U+2046 RIGHT SQUARE BRACKET WITH QUILL
+    \unic@doublequestionmark    \or   % U+2047 DOUBLE QUESTION MARK
+    \unic@exclamationquestionmark\or   % U+2048 QUESTION EXCLAMATION MARK
+    \unic@questionexclamationmark\or   % U+2049 EXCLAMATION QUESTION MARK
+    \unknownchar                \or   % U+204A TIRONIAN SIGN ET
+    \unic@reversedpilcrowsign   \or   % U+204B REVERSED PILCROW SIGN
+    \unknownchar                \or   % U+204C BLACK LEFTWARDS BULLET
+    \unknownchar                \or   % U+204D BLACK RIGHTWARDS BULLET
+    \unic@lowasterisk           \or   % U+204E LOW ASTERISK
+    \unic@reversedsemicolon     \or   % U+204F REVERSED SEMICOLON
+    \unknownchar                \or   % U+2050 CLOSE UP
+    \unknownchar                \or   % U+2051 TWO ASTERISKS ALIGNED VERTICALLY
+    \unknownchar                \or   % U+2052 COMMERCIAL MINUS SIGN
+    \unknownchar                \or   % U+2053 SWUNG DASH
+    \unknownchar                \or   % U+2054 INVERTED UNDERTIE
+    \unknownchar                \or   % U+2055 FLOWER PUNCTUATION MARK 
+    \unknownchar                \or   % U+2056 THREE DOT PUNCTUATION 
+    \unknownchar                \or   % U+2057 QUADRUPLE PRIME
+    \unknownchar                \or   % U+2058 FOUR DOT PUNCTUATION
+    \unknownchar                \or   % U+2059 FIVE DOT PUNCTUATION
+    \unknownchar                \or   % U+205A TWO DOT PUNCTUATION
+    \unknownchar                \or   % U+205B FOUR DOT MARK
+    \unknownchar                \or   % U+205C DOTTED CROSS
+    \unknownchar                \or   % U+205D TRICOLON
+    \unknownchar                \or   % U+205E VERTICAL FOUR DOTS
+    \thickspace                 \or   % U+205F MEDIUM MATHEMATICAL SPACE
+    \relax                      \or   % U+2060 WORD JOINER
+    \unic@functionapplication   \or   % U+2061 FUNCTION APPLICATION
+    \unic@invisibletimes        \or   % U+2062 INVISIBLE TIMES
+    \unic@invisibleseparator    \or   % U+2063 INVISIBLE SEPARATOR (COMMA)
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \relax                      \or   % U+206A INHIBIT SYMMETRIC SWAPPING
+    \relax                      \or   % U+206B ACTIVATE SYMMETRIC SWAPPING
+    \relax                      \or   % U+206C INHIBIT ARABIC FORM SHAPING
+    \relax                      \or   % U+206D ACTIVATE ARABIC FORM SHAPING
+    \relax                      \or   % U+206E NATIONAL DIGIT SHAPES
+    \relax                      \or   % U+206F NOMINAL DIGIT SHAPES
+    \unic@superscriptzero       \or   % U+2070	SUPERSCRIPT ZERO
+    \unic@superscripti          \or   % U+2071	SUPERSCRIPT LATIN SMALL LETTER I
+    \unknownchar                \or   % U+2072	<reserved>
+    \unknownchar                \or   % U+2073	<reserved>
+    \unic@superscriptfour       \or   % U+2074	SUPERSCRIPT FOUR
+    \unic@superscriptfive       \or   % U+2075	SUPERSCRIPT FIVE
+    \unic@superscriptsix        \or   % U+2076	SUPERSCRIPT SIX
+    \unic@superscriptseven      \or   % U+2077	SUPERSCRIPT SEVEN
+    \unic@superscripteight      \or   % U+2078	SUPERSCRIPT EIGHT
+    \unic@superscriptnine       \or   % U+2079	SUPERSCRIPT NINE
+    \unic@superscriptplus       \or   % U+207A	SUPERSCRIPT PLUS SIGN
+    \unic@superscriptminus      \or   % U+207B	SUPERSCRIPT MINUS
+    \unic@superscriptequals     \or   % U+207C	SUPERSCRIPT EQUALS SIGN
+    \unic@superscriptleft       \or   % U+207D	SUPERSCRIPT LEFT PARENTHESIS
+    \unic@superscriptright      \or   % U+207E	SUPERSCRIPT RIGHT PARENTHESIS
+    \unic@superscriptn          \or   % U+207F	SUBSCRIPT LATIN SMALL LETTER N
+    \unic@subscriptzero         \or   % U+2080	SUBSCRIPT ZERO
+    \unic@subscriptone          \or   % U+2081	SUBSCRIPT ONE
+    \unic@subscripttwo          \or   % U+2082	SUBSCRIPT TWO
+    \unic@subscriptthree        \or   % U+2083	SUBSCRIPT THREE
+    \unic@subscriptfour         \or   % U+2084	SUBSCRIPT FOUR
+    \unic@subscriptfive         \or   % U+2085	SUBSCRIPT FIVE
+    \unic@subscriptsix          \or   % U+2086	SUBSCRIPT SIX
+    \unic@subscriptseven        \or   % U+2087	SUBSCRIPT SEVEN
+    \unic@subscripteight        \or   % U+2088	SUBSCRIPT EIGHT
+    \unic@subscriptnine         \or   % U+2089	SUBSCRIPT NINE
+    \unic@subscriptplus         \or   % U+208A	SUBSCRIPT PLUS SIGN
+    \unic@subscriptminus        \or   % U+208B	SUBSCRIPT MINUS
+    \unic@subscriptequals       \or   % U+208C	SUBSCRIPT EQUALS SIGN
+    \unic@subscriptleft         \or   % U+208D	SUBSCRIPT LEFT PARENTHESIS
+    \unic@subscriptright        \or   % U+208E	SUBSCRIPT RIGHT PARENTHESIS
+    \unknownchar                \or   %
+    \unic@subscripta            \or   % U+2090	LATIN SUBSCRIPT SMALL LETTER A
+    \unic@subscripte            \or   % U+2091	LATIN SUBSCRIPT SMALL LETTER E
+    \unic@subscripto            \or   % U+2092	LATIN SUBSCRIPT SMALL LETTER O
+    \unic@subscriptx            \or   % U+2093	LATIN SUBSCRIPT SMALL LETTER X
+    \unic@subscriptschwa        \or   % U+2094	LATIN SUBSCRIPT SMALL LETTER SCHWA
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   % U+20A0	EURO-CURRENCY SIGN
+    \unknownchar                \or   % U+20A1	COLON SIGN
+    \unknownchar                \or   % U+20A2	CRUZEIRO SIGN
+    \unknownchar                \or   % U+20A3	FRENCH FRANC SIGN
+    \unknownchar                \or   % U+20A4	LIRA SIGN
+    \unknownchar                \or   % U+20A5	MILL SIGN
+    \unknownchar                \or   % U+20A6	NAIRA SIGN
+    \unknownchar                \or   % U+20A7	PESETA SIGN
+    \unknownchar                \or   % U+20A8	RUPEE SIGN
+    \unknownchar                \or   % U+20A9	WON SIGN
+    \unknownchar                \or   % U+20AA	NEW SHEQEL SIGN
+    \textdong                   \or   % U+20AB	DONG SIGN
+    \texteuro                   \or   % U+20AC	EURO SIGN
+    \unknownchar                \or   % U+20AD	KIP SIGN
+    \unknownchar                \or   % U+20AE	TUGRIK SIGN
+    \unknownchar                \or   % U+20AF	DRACHMA SIGN
+    \unknownchar                \or   % U+20B0	GERMAN PENNY SIGN
+    \unknownchar                \or   % U+20B1	PESO SIGN
+    \unknownchar                \or   % U+20B2	GUARANI SIGN
+    \unknownchar                \or   % U+20B3	AUSTRAL SIGN
+    \unknownchar                \or   % U+20B4	HRYVNIA SIGN
+    \unknownchar                \or   % U+20B5	CEDI SIGN
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   % U+20D0	COMBINING LEFT HARPOON ABOVE
+    \unknownchar                \or   % U+20D1	COMBINING RIGHT HARPOON ABOVE
+    \unknownchar                \or   % U+20D2	COMBINING LONG VERTICAL LINE OVERLAY
+    \unknownchar                \or   % U+20D3	COMBINING SHORT VERTICAL LINE OVERLAY
+    \unknownchar                \or   % U+20D4	COMBINING ANTICLOCKWISE ARROW ABOVE
+    \unknownchar                \or   % U+20D5	COMBINING CLOCKWISE ARROW ABOVE
+    \unknownchar                \or   % U+20D6	COMBINING LEFT ARROW ABOVE
+    \unknownchar                \or   % U+20D7	COMBINING RIGHT ARROW ABOVE
+    \unknownchar                \or   % U+20D8	COMBINING RING OVERLAY
+    \unknownchar                \or   % U+20D9	COMBINING CLOCKWISE RING OVERLAY
+    \unknownchar                \or   % U+20DA	COMBINING ANTICLOCKWISE RING OVERLAY
+    \unknownchar                \or   % U+20DB	COMBINING THREE DOTS ABOVE
+    \unknownchar                \or   % U+20DC	COMBINING FOUR DOTS ABOVE
+    \unknownchar                \or   % U+20DD	COMBINING ENCLOSING CIRCLE
+    \unknownchar                \or   % U+20DE	COMBINING ENCLOSING SQUARE
+    \unknownchar                \or   % U+20DF	COMBINING ENCLOSING DIAMOND
+    \unknownchar                \or   % U+20E0	COMBINING ENCLOSING CIRCLE BACKSLASH
+    \unknownchar                \or   % U+20E1	COMBINING LEFT RIGHT ARROW ABOVE
+    \unknownchar                \or   % U+20E2	COMBINING ENCLOSING SCREEN
+    \unknownchar                \or   % U+20E3	COMBINING ENCLOSING KEYCAP
+    \unknownchar                \or   % U+20E4	COMBINING ENCLOSING UPWARD POINTING TRIANGLE
+    \unknownchar                \or   % U+20E5	COMBINING REVERSE SOLIDUS OVERLAY
+    \unknownchar                \or   % U+20E6	COMBINING DOUBLE VERTICAL STROKE OVERLAY
+    \unknownchar                \or   % U+20E7	COMBINING ANNUITY SYMBOL
+    \unknownchar                \or   % U+20E8	COMBINING TRIPLE UNDERDOT
+    \unknownchar                \or   % U+20E9	COMBINING WIDE BRIDGE ABOVE
+    \unknownchar                \or   % U+20EA	COMBINING LEFTWARDS ARROW OVERLAY
+    \unknownchar                \or   % U+20EB	COMBINING LONG DOUBLE SOLIDUS OVERLAY
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \or   %
+    \unknownchar                \else %
+    \unknownchar                \fi
+\stopunicodevector
+
+\protect \endinput

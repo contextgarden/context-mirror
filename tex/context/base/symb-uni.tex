@@ -1,0 +1,1123 @@
+%D \module
+%D   [       file=symb-uni,
+%D        version=2004.11.15,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Unicode Symbols,
+%D         author=Adam T. Lindsay,
+%D           date=\currentdate,
+%D      copyright={Adam T. Lindsay / PRAGMA}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C prepared by Adam T. Lindsay.
+
+%D The content of this file originates from the Unicode standard, via some
+%D original XSLT scripts and some hand-editing. This file is open for use
+%D with the ConTeXt typesetting system.
+%D
+%D Adam considers the symbol names and categories to be stable, as they're
+%D directly derived from the Unicode standard.
+%D
+%D \startitemize[packed]
+%D \item Originated 2004-01-05 by Adam T. Lindsay
+%D \item Updated 2004-01-16 with Unicode vector 0x27xx and some in
+%D       215x and 246x
+%D \item Updated 2004-11-15 to include default fonts for MacOSX and
+%D       \XETEX.
+%D \stopitemize
+%D
+%D The following macros adapt to default fonts (that contain the characters)
+%D in MacOSX. The font selection mechanism is likely to change once \XETEX\
+%D correctly supports \type{\doiffontcharelse}.
+
+\doifundefinedelse{XeTeXversion}
+  {\let\USymbChar    \uchar
+   \let\USymbCharTwo \uchar
+   \let\USymbCharZapf\uchar}
+  {\def\USymbChar    #1#2{\bgroup\UnicodeSymbolFont    \uchar{#1}{#2}\relax\egroup}
+   \def\USymbCharTwo #1#2{\bgroup\UnicodeSymbolFontTwo \uchar{#1}{#2}\relax\egroup}
+   \def\USymbCharZapf#1#2{\bgroup\UnicodeSymbolFontZapf\uchar{#1}{#2}\relax\egroup}
+   \doifundefined{UnicodeSymbolFont}    {\definefont[UnicodeSymbolFont]    ["Apple Symbols" sa *]}
+   \doifundefined{UnicodeSymbolFontTwo} {\definefont[UnicodeSymbolFontTwo] ["Lucida Grande" sa *]}
+   \doifundefined{UnicodeSymbolFontZapf}{\definefont[UnicodeSymbolFontZapf]["Zapf Dingbats" sa *]}}
+
+\startsymbolset[Unicode Additional Punctuation] % 0x2000: Requires UnicodeRegular20
+
+   \definesymbol[Caret][\USymbChar{32}{56}] % CARET
+   \definesymbol[ReferenceMark][\USymbChar{32}{59}] % REFERENCE MARK
+   \definesymbol[DoubleExclamationMark][\USymbChar{32}{60}] % DOUBLE EXCLAMATION MARK
+   \definesymbol[Interrobang][\USymbChar{32}{61}] % INTERROBANG
+   \definesymbol[Overline][\USymbChar{32}{62}] % OVERLINE
+   \definesymbol[Undertie][\USymbChar{32}{63}] % UNDERTIE
+   \definesymbol[CharacterTie][\USymbChar{32}{64}] % CHARACTER TIE
+   \definesymbol[CaretInsertionPoint][\USymbChar{32}{65}] % CARET INSERTION POINT
+   \definesymbol[Asterism][\USymbChar{32}{66}] % ASTERISM
+   \definesymbol[HyphenBullet][\USymbChar{32}{67}] % HYPHEN BULLET
+   \definesymbol[FractionSlash][\USymbChar{32}{68}] % FRACTION SLASH
+   \definesymbol[LeftSquareBracketWithQuill][\USymbChar{32}{69}] % LEFT SQUARE BRACKET WITH QUILL
+   \definesymbol[RightSquareBracketWithQuill][\USymbChar{32}{70}] % RIGHT SQUARE BRACKET WITH QUILL
+   \definesymbol[QuestionExclamationMark][\USymbChar{32}{72}] % QUESTION EXCLAMATION MARK
+   \definesymbol[ExclamationQuestionMark][\USymbChar{32}{73}] % EXCLAMATION QUESTION MARK
+   \definesymbol[TironianSignEt][\USymbChar{32}{74}] % TIRONIAN SIGN ET
+   \definesymbol[ReversedPilcrowSign][\USymbChar{32}{75}] % REVERSED PILCROW SIGN
+   \definesymbol[BlackLeftwardsBullet][\USymbChar{32}{76}] % BLACK LEFTWARDS BULLET
+   \definesymbol[BlackRightwardsBullet][\USymbChar{32}{77}] % BLACK RIGHTWARDS BULLET
+
+\stopsymbolset
+
+\startsymbolset[Unicode Currency] % 0x20A0: Requires UnicodeRegular20
+
+   \definesymbol[Euro-currencySign][\USymbChar{32}{160}] % EURO-CURRENCY SIGN
+   \definesymbol[ColonSign][\USymbChar{32}{161}] % COLON SIGN
+   \definesymbol[CruzeiroSign][\USymbChar{32}{162}] % CRUZEIRO SIGN
+   \definesymbol[FrenchFrancSign][\USymbChar{32}{163}] % FRENCH FRANC SIGN
+   \definesymbol[LiraSign][\USymbChar{32}{164}] % LIRA SIGN
+   \definesymbol[MillSign][\USymbChar{32}{165}] % MILL SIGN
+   \definesymbol[NairaSign][\USymbChar{32}{166}] % NAIRA SIGN
+   \definesymbol[PesetaSign][\USymbChar{32}{167}] % PESETA SIGN
+   \definesymbol[RupeeSign][\USymbChar{32}{168}] % RUPEE SIGN
+   \definesymbol[WonSign][\USymbChar{32}{169}] % WON SIGN
+   \definesymbol[NewSheqelSign][\USymbChar{32}{170}] % NEW SHEQEL SIGN
+   \definesymbol[DongSign][\USymbChar{32}{171}] % DONG SIGN
+   \definesymbol[EuroSign][\USymbChar{32}{172}] % EURO SIGN
+   \definesymbol[KipSign][\USymbChar{32}{173}] % KIP SIGN
+   \definesymbol[TugrikSign][\USymbChar{32}{174}] % TUGRIK SIGN
+   \definesymbol[DrachmaSign][\USymbChar{32}{175}] % DRACHMA SIGN
+   \definesymbol[GermanPennySign][\USymbChar{32}{176}] % [Unassigned U+20B0]
+   \definesymbol[PfennigSign][\USymbChar{32}{176}] % Unofficial duplicate
+   \definesymbol[PesoSign][\USymbChar{32}{177}] % [Unassigned U+20B1]
+
+\stopsymbolset
+
+
+\startsymbolset[Unicode Letterlike] % 0x2100: Requires UnicodeRegular21
+
+   \definesymbol[DegreeCelsius][\USymbChar{33}{3}] % DEGREE CELSIUS
+   \definesymbol[EulerConstant][\USymbChar{33}{7}] % EULER CONSTANT
+   \definesymbol[Scruple][\USymbChar{33}{8}] % SCRUPLE
+   \definesymbol[DegreeFahrenheit][\USymbChar{33}{9}] % DEGREE FAHRENHEIT
+   \definesymbol[PlanckConstant][\USymbChar{33}{14}] % PLANCK CONSTANT
+   \definesymbol[PlanckConstantOverTwoPi][\USymbChar{33}{15}] % PLANCK CONSTANT OVER TWO PI
+   \definesymbol[LBBarSymbol][\USymbChar{33}{20}] % L B BAR SYMBOL
+   \definesymbol[Versicle][\USymbChar{33}{35}] % VERSICLE
+   \definesymbol[OunceSign][\USymbChar{33}{37}] % OUNCE SIGN
+   \definesymbol[OhmSign][\USymbChar{33}{38}] % OHM SIGN
+   \definesymbol[InvertedOhmSign][\USymbChar{33}{39}] % INVERTED OHM SIGN
+   \definesymbol[KelvinSign][\USymbChar{33}{42}] % KELVIN SIGN
+   \definesymbol[AngstromSign][\USymbChar{33}{43}] % ANGSTROM SIGN
+   \definesymbol[EstimatedSymbol][\USymbChar{33}{46}] % ESTIMATED SYMBOL
+
+\stopsymbolset
+
+\startsymbolset[Unicode Letterlike Additional] % 0x2100: Requires UnicodeRegular21
+
+   \definesymbol[AccountOf][\USymbChar{33}{0}] % ACCOUNT OF
+   \definesymbol[AddressedToTheSubject][\USymbChar{33}{1}] % ADDRESSED TO THE SUBJECT
+   \definesymbol[CareOf][\USymbChar{33}{5}] % CARE OF
+   \definesymbol[CadaUna][\USymbChar{33}{6}] % CADA UNA
+   \definesymbol[CentreLineSymbol][\USymbChar{33}{4}] % CENTRE LINE SYMBOL
+   \definesymbol[NumeroSign][\USymbChar{33}{22}] % NUMERO SIGN
+   \definesymbol[SoundRecordingCopyright][\USymbChar{33}{23}] % SOUND RECORDING COPYRIGHT
+   \definesymbol[PrescriptionTake][\USymbChar{33}{30}] % PRESCRIPTION TAKE
+   \definesymbol[Response][\USymbChar{33}{31}] % RESPONSE
+   \definesymbol[ServiceMark][\USymbChar{33}{32}] % SERVICE MARK
+   \definesymbol[TelephoneSign][\USymbChar{33}{33}] % TELEPHONE SIGN
+   \definesymbol[TradeMarkSign][\USymbChar{33}{34}] % TRADE MARK SIGN
+   \definesymbol[InformationSource][\USymbChar{33}{57}] % INFORMATION SOURCE
+   \definesymbol[PropertyLine][\USymbChar{33}{74}] % [Unassigned U+214A]
+
+\stopsymbolset
+
+\startsymbolset[Unicode Script Letterlike] % 0x2100: Requires UnicodeRegular21
+
+   \definesymbol[ScriptSmallG][\USymbChar{33}{10}] % SCRIPT SMALL G
+   \definesymbol[ScriptCapitalH][\USymbChar{33}{11}] % SCRIPT CAPITAL H
+   \definesymbol[ScriptCapitalI][\USymbChar{33}{16}] % SCRIPT CAPITAL I
+   \definesymbol[ScriptCapitalL][\USymbChar{33}{18}] % SCRIPT CAPITAL L
+   \definesymbol[ScriptSmallL][\USymbChar{33}{19}] % SCRIPT SMALL L
+   \definesymbol[ScriptCapitalP][\USymbChar{33}{24}] % SCRIPT CAPITAL P
+   \definesymbol[ScriptCapitalR][\USymbChar{33}{27}] % SCRIPT CAPITAL R
+   \definesymbol[ScriptSmallE][\USymbChar{33}{47}] % SCRIPT SMALL E
+   \definesymbol[ScriptCapitalE][\USymbChar{33}{48}] % SCRIPT CAPITAL E
+   \definesymbol[ScriptCapitalF][\USymbChar{33}{49}] % SCRIPT CAPITAL F
+   \definesymbol[ScriptCapitalB][\USymbChar{33}{44}] % SCRIPT CAPITAL B
+   \definesymbol[ScriptCapitalM][\USymbChar{33}{51}] % SCRIPT CAPITAL M
+   \definesymbol[ScriptSmallO][\USymbChar{33}{52}] % SCRIPT SMALL O
+
+\stopsymbolset
+
+\startsymbolset[Unicode Hebrew Letterlike] % 0x2100: Requires UnicodeRegular21
+
+   \definesymbol[AlefSymbol][\USymbChar{33}{53}] % ALEF SYMBOL
+   \definesymbol[BetSymbol][\USymbChar{33}{54}] % BET SYMBOL
+   \definesymbol[GimelSymbol][\USymbChar{33}{55}] % GIMEL SYMBOL
+   \definesymbol[DaletSymbol][\USymbChar{33}{56}] % DALET SYMBOL
+
+\stopsymbolset
+
+\startsymbolset[Unicode Turned Letterlike] % 0x2100: Requires UnicodeRegular21
+
+   \definesymbol[RotatedCapitalQ][\USymbChar{33}{58}] % ROTATED CAPITAL Q
+   \definesymbol[TurnedSansSerifCapitalG][\USymbChar{33}{65}] % [Unassigned U+2141]
+   \definesymbol[TurnedSansSerifCapitalL][\USymbChar{33}{66}] % [Unassigned U+2142]
+   \definesymbol[ReversedSansSerifCapitalL][\USymbChar{33}{67}] % [Unassigned U+2143]
+   \definesymbol[TurnedSansSerifCapitalY][\USymbChar{33}{68}] % [Unassigned U+2144]
+   \definesymbol[TurnedAmpersand][\USymbChar{33}{75}] % [Unassigned U+214B]
+   \definesymbol[TurnedGreekSmallLetterIota][\USymbChar{33}{41}] % TURNED GREEK SMALL LETTER IOTA
+   \definesymbol[TurnedCapitalF][\USymbChar{33}{50}] % TURNED CAPITAL F
+
+\stopsymbolset
+
+\startsymbolset[Unicode Black-letter Letterlike] % 0x2100: Requires UnicodeRegular21
+
+   \definesymbol[BlackLetterCapitalH][\USymbChar{33}{12}] % BLACK-LETTER CAPITAL H
+   \definesymbol[BlackLetterCapitalI][\USymbChar{33}{17}] % BLACK-LETTER CAPITAL I
+   \definesymbol[BlackLetterCapitalR][\USymbChar{33}{28}] % BLACK-LETTER CAPITAL R
+   \definesymbol[BlackLetterCapitalZ][\USymbChar{33}{40}] % BLACK-LETTER CAPITAL Z
+   \definesymbol[BlackLetterCapitalC][\USymbChar{33}{45}] % BLACK-LETTER CAPITAL C
+
+\stopsymbolset
+
+\startsymbolset[Unicode Double-struck Letterlike Math] % 0x2100: Requires UnicodeRegular21
+
+   \definesymbol[DoubleStruckCapitalC][\USymbChar{33}{2}] % DOUBLE-STRUCK CAPITAL C
+   \definesymbol[DoubleStruckCapitalH][\USymbChar{33}{13}] % DOUBLE-STRUCK CAPITAL H
+   \definesymbol[DoubleStruckCapitalN][\USymbChar{33}{21}] % DOUBLE-STRUCK CAPITAL N
+   \definesymbol[DoubleStruckCapitalP][\USymbChar{33}{25}] % DOUBLE-STRUCK CAPITAL P
+   \definesymbol[DoubleStruckCapitalQ][\USymbChar{33}{26}] % DOUBLE-STRUCK CAPITAL Q
+   \definesymbol[DoubleStruckCapitalR][\USymbChar{33}{29}] % DOUBLE-STRUCK CAPITAL R
+   \definesymbol[DoubleStruckCapitalZ][\USymbChar{33}{36}] % DOUBLE-STRUCK CAPITAL Z
+   \definesymbol[DoubleStruckSmallGamma][\USymbChar{33}{61}] % [Unassigned U+213D]
+   \definesymbol[DoubleStruckCapitalGamma][\USymbChar{33}{62}] % [Unassigned U+213E]
+   \definesymbol[DoubleStruckCapitalPi][\USymbChar{33}{63}] % [Unassigned U+213F]
+   \definesymbol[DoubleStruckNArySummation][\USymbChar{33}{64}] % [Unassigned U+2140]
+   \definesymbol[DoubleStruckItalicCapitalD][\USymbChar{33}{69}] % [Unassigned U+2145]
+   \definesymbol[DoubleStruckItalicSmallD][\USymbChar{33}{70}] % [Unassigned U+2146]
+   \definesymbol[DoubleStruckItalicSmallE][\USymbChar{33}{71}] % [Unassigned U+2147]
+   \definesymbol[DoubleStruckItalicSmallI][\USymbChar{33}{72}] % [Unassigned U+2148]
+   \definesymbol[DoubleStruckItalicSmallJ][\USymbChar{33}{73}] % [Unassigned U+2149]
+
+\stopsymbolset
+
+\startsymbolset[Unicode Roman Numerals] % 0x2150: Requires UnicodeRegular21
+
+   \definesymbol[RomanNumeralOne][\USymbCharTwo{33}{96}] % ROMAN NUMERAL ONE
+   \definesymbol[RomanNumeralTwo][\USymbCharTwo{33}{97}] % ROMAN NUMERAL TWO
+   \definesymbol[RomanNumeralThree][\USymbCharTwo{33}{98}] % ROMAN NUMERAL THREE
+   \definesymbol[RomanNumeralFour][\USymbCharTwo{33}{99}] % ROMAN NUMERAL FOUR
+   \definesymbol[RomanNumeralFive][\USymbCharTwo{33}{100}] % ROMAN NUMERAL FIVE
+   \definesymbol[RomanNumeralSix][\USymbCharTwo{33}{101}] % ROMAN NUMERAL SIX
+   \definesymbol[RomanNumeralSeven][\USymbCharTwo{33}{102}] % ROMAN NUMERAL SEVEN
+   \definesymbol[RomanNumeralEight][\USymbCharTwo{33}{103}] % ROMAN NUMERAL EIGHT
+   \definesymbol[RomanNumeralNine][\USymbCharTwo{33}{104}] % ROMAN NUMERAL NINE
+   \definesymbol[RomanNumeralTen][\USymbCharTwo{33}{105}] % ROMAN NUMERAL TEN
+   \definesymbol[RomanNumeralEleven][\USymbCharTwo{33}{106}] % ROMAN NUMERAL ELEVEN
+   \definesymbol[RomanNumeralTwelve][\USymbCharTwo{33}{107}] % ROMAN NUMERAL TWELVE
+   \definesymbol[RomanNumeralFifty][\USymbCharTwo{33}{108}] % ROMAN NUMERAL FIFTY
+   \definesymbol[RomanNumeralOneHundred][\USymbCharTwo{33}{109}] % ROMAN NUMERAL ONE HUNDRED
+   \definesymbol[RomanNumeralFiveHundred][\USymbCharTwo{33}{110}] % ROMAN NUMERAL FIVE HUNDRED
+   \definesymbol[RomanNumeralOneThousand][\USymbCharTwo{33}{111}] % ROMAN NUMERAL ONE THOUSAND
+   \definesymbol[RomanNumeralOneThousandCD][\USymbCharTwo{33}{128}] % ROMAN NUMERAL ONE THOUSAND C D
+   \definesymbol[RomanNumeralFiveThousand][\USymbCharTwo{33}{129}] % ROMAN NUMERAL FIVE THOUSAND
+   \definesymbol[RomanNumeralTenThousand][\USymbCharTwo{33}{130}] % ROMAN NUMERAL TEN THOUSAND
+   \definesymbol[RomanNumeralReversedOneHundred][\USymbCharTwo{33}{131}] % ROMAN NUMERAL REVERSED ONE HUNDRED
+
+\stopsymbolset
+
+\startsymbolset[Unicode Small Roman Numerals] % 0x2150: Requires UnicodeRegular21
+
+   \definesymbol[SmallRomanNumeralOne][\USymbCharTwo{33}{112}] % SMALL ROMAN NUMERAL ONE
+   \definesymbol[SmallRomanNumeralTwo][\USymbCharTwo{33}{113}] % SMALL ROMAN NUMERAL TWO
+   \definesymbol[SmallRomanNumeralThree][\USymbCharTwo{33}{114}] % SMALL ROMAN NUMERAL THREE
+   \definesymbol[SmallRomanNumeralFour][\USymbCharTwo{33}{115}] % SMALL ROMAN NUMERAL FOUR
+   \definesymbol[SmallRomanNumeralFive][\USymbCharTwo{33}{116}] % SMALL ROMAN NUMERAL FIVE
+   \definesymbol[SmallRomanNumeralSix][\USymbCharTwo{33}{117}] % SMALL ROMAN NUMERAL SIX
+   \definesymbol[SmallRomanNumeralSeven][\USymbCharTwo{33}{118}] % SMALL ROMAN NUMERAL SEVEN
+   \definesymbol[SmallRomanNumeralEight][\USymbCharTwo{33}{119}] % SMALL ROMAN NUMERAL EIGHT
+   \definesymbol[SmallRomanNumeralNine][\USymbCharTwo{33}{120}] % SMALL ROMAN NUMERAL NINE
+   \definesymbol[SmallRomanNumeralTen][\USymbCharTwo{33}{121}] % SMALL ROMAN NUMERAL TEN
+   \definesymbol[SmallRomanNumeralEleven][\USymbCharTwo{33}{122}] % SMALL ROMAN NUMERAL ELEVEN
+   \definesymbol[SmallRomanNumeralTwelve][\USymbCharTwo{33}{123}] % SMALL ROMAN NUMERAL TWELVE
+   \definesymbol[SmallRomanNumeralFifty][\USymbCharTwo{33}{124}] % SMALL ROMAN NUMERAL FIFTY
+   \definesymbol[SmallRomanNumeralOneHundred][\USymbCharTwo{33}{125}] % SMALL ROMAN NUMERAL ONE HUNDRED
+   \definesymbol[SmallRomanNumeralFiveHundred][\USymbCharTwo{33}{126}] % SMALL ROMAN NUMERAL FIVE HUNDRED
+   \definesymbol[SmallRomanNumeralOneThousand][\USymbCharTwo{33}{127}] % SMALL ROMAN NUMERAL ONE THOUSAND
+
+\stopsymbolset
+
+\startsymbolset[Unicode Arrows] % 0x2190: Requires UnicodeRegular21
+
+   \definesymbol[LeftwardsArrow][\USymbChar{33}{144}] % LEFTWARDS ARROW
+   \definesymbol[UpwardsArrow][\USymbChar{33}{145}] % UPWARDS ARROW
+   \definesymbol[RightwardsArrow][\USymbChar{33}{146}] % RIGHTWARDS ARROW
+   \definesymbol[DownwardsArrow][\USymbChar{33}{147}] % DOWNWARDS ARROW
+   \definesymbol[LeftRightArrow][\USymbChar{33}{148}] % LEFT RIGHT ARROW
+   \definesymbol[UpDownArrow][\USymbChar{33}{149}] % UP DOWN ARROW
+   \definesymbol[NorthWestArrow][\USymbChar{33}{150}] % NORTH WEST ARROW
+   \definesymbol[NorthEastArrow][\USymbChar{33}{151}] % NORTH EAST ARROW
+   \definesymbol[SouthEastArrow][\USymbChar{33}{152}] % SOUTH EAST ARROW
+   \definesymbol[SouthWestArrow][\USymbChar{33}{153}] % SOUTH WEST ARROW
+   \definesymbol[LeftwardsArrowWithStroke][\USymbChar{33}{154}] % LEFTWARDS ARROW WITH STROKE
+   \definesymbol[RightwardsArrowWithStroke][\USymbChar{33}{155}] % RIGHTWARDS ARROW WITH STROKE
+   \definesymbol[LeftwardsWaveArrow][\USymbChar{33}{156}] % LEFTWARDS WAVE ARROW
+   \definesymbol[RightwardsWaveArrow][\USymbChar{33}{157}] % RIGHTWARDS WAVE ARROW
+   \definesymbol[LeftwardsTwoHeadedArrow][\USymbChar{33}{158}] % LEFTWARDS TWO HEADED ARROW
+   \definesymbol[UpwardsTwoHeadedArrow][\USymbChar{33}{159}] % UPWARDS TWO HEADED ARROW
+   \definesymbol[RightwardsTwoHeadedArrow][\USymbChar{33}{160}] % RIGHTWARDS TWO HEADED ARROW
+   \definesymbol[DownwardsTwoHeadedArrow][\USymbChar{33}{161}] % DOWNWARDS TWO HEADED ARROW
+   \definesymbol[LeftwardsArrowWithTail][\USymbChar{33}{162}] % LEFTWARDS ARROW WITH TAIL
+   \definesymbol[RightwardsArrowWithTail][\USymbChar{33}{163}] % RIGHTWARDS ARROW WITH TAIL
+   \definesymbol[LeftwardsArrowFromBar][\USymbChar{33}{164}] % LEFTWARDS ARROW FROM BAR
+   \definesymbol[UpwardsArrowFromBar][\USymbChar{33}{165}] % UPWARDS ARROW FROM BAR
+   \definesymbol[RightwardsArrowFromBar][\USymbChar{33}{166}] % RIGHTWARDS ARROW FROM BAR
+   \definesymbol[DownwardsArrowFromBar][\USymbChar{33}{167}] % DOWNWARDS ARROW FROM BAR
+   \definesymbol[UpDownArrowWithBase][\USymbChar{33}{168}] % UP DOWN ARROW WITH BASE
+   \definesymbol[LeftwardsArrowWithHook][\USymbChar{33}{169}] % LEFTWARDS ARROW WITH HOOK
+   \definesymbol[RightwardsArrowWithHook][\USymbChar{33}{170}] % RIGHTWARDS ARROW WITH HOOK
+   \definesymbol[LeftwardsArrowWithLoop][\USymbChar{33}{171}] % LEFTWARDS ARROW WITH LOOP
+   \definesymbol[RightwardsArrowWithLoop][\USymbChar{33}{172}] % RIGHTWARDS ARROW WITH LOOP
+   \definesymbol[LeftRightWaveArrow][\USymbChar{33}{173}] % LEFT RIGHT WAVE ARROW
+   \definesymbol[LeftRightArrowWithStroke][\USymbChar{33}{174}] % LEFT RIGHT ARROW WITH STROKE
+   \definesymbol[DownwardsZigzagArrow][\USymbChar{33}{175}] % DOWNWARDS ZIGZAG ARROW
+   \definesymbol[UpwardsArrowWithTipLeftwards][\USymbChar{33}{176}] % UPWARDS ARROW WITH TIP LEFTWARDS
+   \definesymbol[UpwardsArrowWithTipRightwards][\USymbChar{33}{177}] % UPWARDS ARROW WITH TIP RIGHTWARDS
+   \definesymbol[DownwardsArrowWithTipLeftwards][\USymbChar{33}{178}] % DOWNWARDS ARROW WITH TIP LEFTWARDS
+   \definesymbol[DownwardsArrowWithTipRightwards][\USymbChar{33}{179}] % DOWNWARDS ARROW WITH TIP RIGHTWARDS
+   \definesymbol[RightwardsArrowWithCornerDownwards][\USymbChar{33}{180}] % RIGHTWARDS ARROW WITH CORNER DOWNWARDS
+   \definesymbol[DownwardsArrowWithCornerLeftwards][\USymbChar{33}{181}] % DOWNWARDS ARROW WITH CORNER LEFTWARDS
+   \definesymbol[AnticlockwiseTopSemicircleArrow][\USymbChar{33}{182}] % ANTICLOCKWISE TOP SEMICIRCLE ARROW
+   \definesymbol[ClockwiseTopSemicircleArrow][\USymbChar{33}{183}] % CLOCKWISE TOP SEMICIRCLE ARROW
+   \definesymbol[NorthWestArrowToLongBar][\USymbChar{33}{184}] % NORTH WEST ARROW TO LONG BAR
+   \definesymbol[AnticlockwiseOpenCircleArrow][\USymbChar{33}{186}] % ANTICLOCKWISE OPEN CIRCLE ARROW
+   \definesymbol[ClockwiseOpenCircleArrow][\USymbChar{33}{187}] % CLOCKWISE OPEN CIRCLE ARROW
+   \definesymbol[LeftwardsHarpoonWithBarbUpwards][\USymbChar{33}{188}] % LEFTWARDS HARPOON WITH BARB UPWARDS
+   \definesymbol[LeftwardsHarpoonWithBarbDownwards][\USymbChar{33}{189}] % LEFTWARDS HARPOON WITH BARB DOWNWARDS
+   \definesymbol[UpwardsHarpoonWithBarbRightwards][\USymbChar{33}{190}] % UPWARDS HARPOON WITH BARB RIGHTWARDS
+   \definesymbol[UpwardsHarpoonWithBarbLeftwards][\USymbChar{33}{191}] % UPWARDS HARPOON WITH BARB LEFTWARDS
+   \definesymbol[RightwardsHarpoonWithBarbUpwards][\USymbChar{33}{192}] % RIGHTWARDS HARPOON WITH BARB UPWARDS
+   \definesymbol[RightwardsHarpoonWithBarbDownwards][\USymbChar{33}{193}] % RIGHTWARDS HARPOON WITH BARB DOWNWARDS
+   \definesymbol[DownwardsHarpoonWithBarbRightwards][\USymbChar{33}{194}] % DOWNWARDS HARPOON WITH BARB RIGHTWARDS
+   \definesymbol[DownwardsHarpoonWithBarbLeftwards][\USymbChar{33}{195}] % DOWNWARDS HARPOON WITH BARB LEFTWARDS
+   \definesymbol[LeftwardsSquiggleArrow][\USymbChar{33}{220}] % LEFTWARDS SQUIGGLE ARROW
+   \definesymbol[RightwardsSquiggleArrow][\USymbChar{33}{221}] % RIGHTWARDS SQUIGGLE ARROW
+   \definesymbol[UpwardsArrowWithDoubleStroke][\USymbChar{33}{222}] % UPWARDS ARROW WITH DOUBLE STROKE
+   \definesymbol[DownwardsArrowWithDoubleStroke][\USymbChar{33}{223}] % DOWNWARDS ARROW WITH DOUBLE STROKE
+   \definesymbol[LeftwardsDashedArrow][\USymbChar{33}{224}] % LEFTWARDS DASHED ARROW
+   \definesymbol[UpwardsDashedArrow][\USymbChar{33}{225}] % UPWARDS DASHED ARROW
+   \definesymbol[RightwardsDashedArrow][\USymbChar{33}{226}] % RIGHTWARDS DASHED ARROW
+   \definesymbol[DownwardsDashedArrow][\USymbChar{33}{227}] % DOWNWARDS DASHED ARROW
+   \definesymbol[LeftwardsArrowToBar][\USymbChar{33}{228}] % LEFTWARDS ARROW TO BAR
+   \definesymbol[RightwardsArrowToBar][\USymbChar{33}{229}] % RIGHTWARDS ARROW TO BAR
+   \definesymbol[LeftwardsWhiteArrow][\USymbChar{33}{230}] % LEFTWARDS WHITE ARROW
+   \definesymbol[UpwardsWhiteArrow][\USymbChar{33}{231}] % UPWARDS WHITE ARROW
+   \definesymbol[RightwardsWhiteArrow][\USymbChar{33}{232}] % RIGHTWARDS WHITE ARROW
+   \definesymbol[DownwardsWhiteArrow][\USymbChar{33}{233}] % DOWNWARDS WHITE ARROW
+   \definesymbol[UpwardsWhiteArrowFromBar][\USymbChar{33}{234}] % UPWARDS WHITE ARROW FROM BAR
+   \definesymbol[UpwardsWhiteArrowOnPedestal][\USymbChar{33}{235}] % UPWARDS WHITE ARROW ON PEDESTAL
+   \definesymbol[UpwardsWhiteArrowOnPedestalWithHorizontalBar][\USymbChar{33}{236}] % UPWARDS WHITE ARROW ON PEDESTAL WITH HORIZONTAL BAR
+   \definesymbol[UpwardsWhiteArrowOnPedestalWithVerticalBar][\USymbChar{33}{237}] % UPWARDS WHITE ARROW ON PEDESTAL WITH VERTICAL BAR
+   \definesymbol[RightwardsWhiteArrowFromWall][\USymbChar{33}{240}] % RIGHTWARDS WHITE ARROW FROM WALL
+   \definesymbol[NorthWestArrowToCorner][\USymbChar{33}{241}] % NORTH WEST ARROW TO CORNER
+   \definesymbol[SouthEastArrowToCorner][\USymbChar{33}{242}] % SOUTH EAST ARROW TO CORNER
+   \definesymbol[UpDownWhiteArrow][\USymbChar{33}{243}] % UP DOWN WHITE ARROW
+
+\stopsymbolset
+
+\startsymbolset[Unicode Multi Arrows] % 0x2190: Requires UnicodeRegular21
+
+   \definesymbol[LeftwardsArrowToBarOverRightwardsArrowToBar][\USymbChar{33}{185}] % LEFTWARDS ARROW TO BAR OVER RIGHTWARDS ARROW TO BAR
+   \definesymbol[RightwardsArrowOverLeftwardsArrow][\USymbChar{33}{196}] % RIGHTWARDS ARROW OVER LEFTWARDS ARROW
+   \definesymbol[UpwardsArrowLeftwardsOfDownwardsArrow][\USymbChar{33}{197}] % UPWARDS ARROW LEFTWARDS OF DOWNWARDS ARROW
+   \definesymbol[LeftwardsArrowOverRightwardsArrow][\USymbChar{33}{198}] % LEFTWARDS ARROW OVER RIGHTWARDS ARROW
+   \definesymbol[LeftwardsPairedArrows][\USymbChar{33}{199}] % LEFTWARDS PAIRED ARROWS
+   \definesymbol[UpwardsPairedArrows][\USymbChar{33}{200}] % UPWARDS PAIRED ARROWS
+   \definesymbol[RightwardsPairedArrows][\USymbChar{33}{201}] % RIGHTWARDS PAIRED ARROWS
+   \definesymbol[DownwardsPairedArrows][\USymbChar{33}{202}] % DOWNWARDS PAIRED ARROWS
+   \definesymbol[LeftwardsHarpoonOverRightwardsHarpoon][\USymbChar{33}{203}] % LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
+   \definesymbol[RightwardsHarpoonOverLeftwardsHarpoon][\USymbChar{33}{204}] % RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON
+   \definesymbol[LeftwardsDoubleArrowWithStroke][\USymbChar{33}{205}] % LEFTWARDS DOUBLE ARROW WITH STROKE
+   \definesymbol[LeftRightDoubleArrowWithStroke][\USymbChar{33}{206}] % LEFT RIGHT DOUBLE ARROW WITH STROKE
+   \definesymbol[RightwardsDoubleArrowWithStroke][\USymbChar{33}{207}] % RIGHTWARDS DOUBLE ARROW WITH STROKE
+   \definesymbol[LeftwardsDoubleArrow][\USymbChar{33}{208}] % LEFTWARDS DOUBLE ARROW
+   \definesymbol[UpwardsDoubleArrow][\USymbChar{33}{209}] % UPWARDS DOUBLE ARROW
+   \definesymbol[RightwardsDoubleArrow][\USymbChar{33}{210}] % RIGHTWARDS DOUBLE ARROW
+   \definesymbol[DownwardsDoubleArrow][\USymbChar{33}{211}] % DOWNWARDS DOUBLE ARROW
+   \definesymbol[LeftRightDoubleArrow][\USymbChar{33}{212}] % LEFT RIGHT DOUBLE ARROW
+   \definesymbol[UpDownDoubleArrow][\USymbChar{33}{213}] % UP DOWN DOUBLE ARROW
+   \definesymbol[NorthWestDoubleArrow][\USymbChar{33}{214}] % NORTH WEST DOUBLE ARROW
+   \definesymbol[NorthEastDoubleArrow][\USymbChar{33}{215}] % NORTH EAST DOUBLE ARROW
+   \definesymbol[SouthEastDoubleArrow][\USymbChar{33}{216}] % SOUTH EAST DOUBLE ARROW
+   \definesymbol[SouthWestDoubleArrow][\USymbChar{33}{217}] % SOUTH WEST DOUBLE ARROW
+   \definesymbol[LeftwardsTripleArrow][\USymbChar{33}{218}] % LEFTWARDS TRIPLE ARROW
+   \definesymbol[RightwardsTripleArrow][\USymbChar{33}{219}] % RIGHTWARDS TRIPLE ARROW
+   \definesymbol[UpwardsWhiteDoubleArrow][\USymbChar{33}{238}] % UPWARDS WHITE DOUBLE ARROW
+   \definesymbol[UpwardsWhiteDoubleArrowOnPedestal][\USymbChar{33}{239}] % UPWARDS WHITE DOUBLE ARROW ON PEDESTAL
+
+\stopsymbolset
+
+
+\startsymbolset[Unicode Optical Character Recognition] % 0x2440: Requires UnicodeRegular24
+
+   \definesymbol[OcrHook][\USymbChar{36}{64}] % OCR HOOK
+   \definesymbol[OcrChair][\USymbChar{36}{65}] % OCR CHAIR
+   \definesymbol[OcrFork][\USymbChar{36}{66}] % OCR FORK
+   \definesymbol[OcrInvertedFork][\USymbChar{36}{67}] % OCR INVERTED FORK
+   \definesymbol[OcrBeltBuckle][\USymbChar{36}{68}] % OCR BELT BUCKLE
+   \definesymbol[OcrBowTie][\USymbChar{36}{69}] % OCR BOW TIE
+   \definesymbol[OcrBranchBankIdentification][\USymbChar{36}{70}] % OCR BRANCH BANK IDENTIFICATION
+   \definesymbol[OcrAmountOfCheck][\USymbChar{36}{71}] % OCR AMOUNT OF CHECK
+   \definesymbol[OcrDash][\USymbChar{36}{72}] % OCR DASH
+   \definesymbol[OcrCustomerAccountNumber][\USymbChar{36}{73}] % OCR CUSTOMER ACCOUNT NUMBER
+   \definesymbol[OcrDoubleBackslash][\USymbChar{36}{74}] % OCR DOUBLE BACKSLASH
+
+\stopsymbolset
+
+
+\startsymbolset[Unicode Box Drawing] % 0x2500: Requires UnicodeRegular25
+
+   \definesymbol[LightHorizontal][\USymbChar{37}{0}] % BOX DRAWINGS LIGHT HORIZONTAL
+   \definesymbol[HeavyHorizontal][\USymbChar{37}{1}] % BOX DRAWINGS HEAVY HORIZONTAL
+   \definesymbol[LightVertical][\USymbChar{37}{2}] % BOX DRAWINGS LIGHT VERTICAL
+   \definesymbol[HeavyVertical][\USymbChar{37}{3}] % BOX DRAWINGS HEAVY VERTICAL
+   \definesymbol[LightTripleDashHorizontal][\USymbChar{37}{4}] % BOX DRAWINGS LIGHT TRIPLE DASH HORIZONTAL
+   \definesymbol[HeavyTripleDashHorizontal][\USymbChar{37}{5}] % BOX DRAWINGS HEAVY TRIPLE DASH HORIZONTAL
+   \definesymbol[LightTripleDashVertical][\USymbChar{37}{6}] % BOX DRAWINGS LIGHT TRIPLE DASH VERTICAL
+   \definesymbol[HeavyTripleDashVertical][\USymbChar{37}{7}] % BOX DRAWINGS HEAVY TRIPLE DASH VERTICAL
+   \definesymbol[LightQuadrupleDashHorizontal][\USymbChar{37}{8}] % BOX DRAWINGS LIGHT QUADRUPLE DASH HORIZONTAL
+   \definesymbol[HeavyQuadrupleDashHorizontal][\USymbChar{37}{9}] % BOX DRAWINGS HEAVY QUADRUPLE DASH HORIZONTAL
+   \definesymbol[LightQuadrupleDashVertical][\USymbChar{37}{10}] % BOX DRAWINGS LIGHT QUADRUPLE DASH VERTICAL
+   \definesymbol[HeavyQuadrupleDashVertical][\USymbChar{37}{11}] % BOX DRAWINGS HEAVY QUADRUPLE DASH VERTICAL
+   \definesymbol[LightDownAndRight][\USymbChar{37}{12}] % BOX DRAWINGS LIGHT DOWN AND RIGHT
+   \definesymbol[DownLightAndRightHeavy][\USymbChar{37}{13}] % BOX DRAWINGS DOWN LIGHT AND RIGHT HEAVY
+   \definesymbol[DownHeavyAndRightLight][\USymbChar{37}{14}] % BOX DRAWINGS DOWN HEAVY AND RIGHT LIGHT
+   \definesymbol[HeavyDownAndRight][\USymbChar{37}{15}] % BOX DRAWINGS HEAVY DOWN AND RIGHT
+   \definesymbol[LightDownAndLeft][\USymbChar{37}{16}] % BOX DRAWINGS LIGHT DOWN AND LEFT
+   \definesymbol[DownLightAndLeftHeavy][\USymbChar{37}{17}] % BOX DRAWINGS DOWN LIGHT AND LEFT HEAVY
+   \definesymbol[DownHeavyAndLeftLight][\USymbChar{37}{18}] % BOX DRAWINGS DOWN HEAVY AND LEFT LIGHT
+   \definesymbol[HeavyDownAndLeft][\USymbChar{37}{19}] % BOX DRAWINGS HEAVY DOWN AND LEFT
+   \definesymbol[LightUpAndRight][\USymbChar{37}{20}] % BOX DRAWINGS LIGHT UP AND RIGHT
+   \definesymbol[UpLightAndRightHeavy][\USymbChar{37}{21}] % BOX DRAWINGS UP LIGHT AND RIGHT HEAVY
+   \definesymbol[UpHeavyAndRightLight][\USymbChar{37}{22}] % BOX DRAWINGS UP HEAVY AND RIGHT LIGHT
+   \definesymbol[HeavyUpAndRight][\USymbChar{37}{23}] % BOX DRAWINGS HEAVY UP AND RIGHT
+   \definesymbol[LightUpAndLeft][\USymbChar{37}{24}] % BOX DRAWINGS LIGHT UP AND LEFT
+   \definesymbol[UpLightAndLeftHeavy][\USymbChar{37}{25}] % BOX DRAWINGS UP LIGHT AND LEFT HEAVY
+   \definesymbol[UpHeavyAndLeftLight][\USymbChar{37}{26}] % BOX DRAWINGS UP HEAVY AND LEFT LIGHT
+   \definesymbol[HeavyUpAndLeft][\USymbChar{37}{27}] % BOX DRAWINGS HEAVY UP AND LEFT
+   \definesymbol[LightVerticalAndRight][\USymbChar{37}{28}] % BOX DRAWINGS LIGHT VERTICAL AND RIGHT
+   \definesymbol[VerticalLightAndRightHeavy][\USymbChar{37}{29}] % BOX DRAWINGS VERTICAL LIGHT AND RIGHT HEAVY
+   \definesymbol[UpHeavyAndRightDownLight][\USymbChar{37}{30}] % BOX DRAWINGS UP HEAVY AND RIGHT DOWN LIGHT
+   \definesymbol[DownHeavyAndRightUpLight][\USymbChar{37}{31}] % BOX DRAWINGS DOWN HEAVY AND RIGHT UP LIGHT
+   \definesymbol[VerticalHeavyAndRightLight][\USymbChar{37}{32}] % BOX DRAWINGS VERTICAL HEAVY AND RIGHT LIGHT
+   \definesymbol[DownLightAndRightUpHeavy][\USymbChar{37}{33}] % BOX DRAWINGS DOWN LIGHT AND RIGHT UP HEAVY
+   \definesymbol[UpLightAndRightDownHeavy][\USymbChar{37}{34}] % BOX DRAWINGS UP LIGHT AND RIGHT DOWN HEAVY
+   \definesymbol[HeavyVerticalAndRight][\USymbChar{37}{35}] % BOX DRAWINGS HEAVY VERTICAL AND RIGHT
+   \definesymbol[LightVerticalAndLeft][\USymbChar{37}{36}] % BOX DRAWINGS LIGHT VERTICAL AND LEFT
+   \definesymbol[VerticalLightAndLeftHeavy][\USymbChar{37}{37}] % BOX DRAWINGS VERTICAL LIGHT AND LEFT HEAVY
+   \definesymbol[UpHeavyAndLeftDownLight][\USymbChar{37}{38}] % BOX DRAWINGS UP HEAVY AND LEFT DOWN LIGHT
+   \definesymbol[DownHeavyAndLeftUpLight][\USymbChar{37}{39}] % BOX DRAWINGS DOWN HEAVY AND LEFT UP LIGHT
+   \definesymbol[VerticalHeavyAndLeftLight][\USymbChar{37}{40}] % BOX DRAWINGS VERTICAL HEAVY AND LEFT LIGHT
+   \definesymbol[DownLightAndLeftUpHeavy][\USymbChar{37}{41}] % BOX DRAWINGS DOWN LIGHT AND LEFT UP HEAVY
+   \definesymbol[UpLightAndLeftDownHeavy][\USymbChar{37}{42}] % BOX DRAWINGS UP LIGHT AND LEFT DOWN HEAVY
+   \definesymbol[HeavyVerticalAndLeft][\USymbChar{37}{43}] % BOX DRAWINGS HEAVY VERTICAL AND LEFT
+   \definesymbol[LightDownAndHorizontal][\USymbChar{37}{44}] % BOX DRAWINGS LIGHT DOWN AND HORIZONTAL
+   \definesymbol[LeftHeavyAndRightDownLight][\USymbChar{37}{45}] % BOX DRAWINGS LEFT HEAVY AND RIGHT DOWN LIGHT
+   \definesymbol[RightHeavyAndLeftDownLight][\USymbChar{37}{46}] % BOX DRAWINGS RIGHT HEAVY AND LEFT DOWN LIGHT
+   \definesymbol[DownLightAndHorizontalHeavy][\USymbChar{37}{47}] % BOX DRAWINGS DOWN LIGHT AND HORIZONTAL HEAVY
+   \definesymbol[DownHeavyAndHorizontalLight][\USymbChar{37}{48}] % BOX DRAWINGS DOWN HEAVY AND HORIZONTAL LIGHT
+   \definesymbol[RightLightAndLeftDownHeavy][\USymbChar{37}{49}] % BOX DRAWINGS RIGHT LIGHT AND LEFT DOWN HEAVY
+   \definesymbol[LeftLightAndRightDownHeavy][\USymbChar{37}{50}] % BOX DRAWINGS LEFT LIGHT AND RIGHT DOWN HEAVY
+   \definesymbol[HeavyDownAndHorizontal][\USymbChar{37}{51}] % BOX DRAWINGS HEAVY DOWN AND HORIZONTAL
+   \definesymbol[LightUpAndHorizontal][\USymbChar{37}{52}] % BOX DRAWINGS LIGHT UP AND HORIZONTAL
+   \definesymbol[LeftHeavyAndRightUpLight][\USymbChar{37}{53}] % BOX DRAWINGS LEFT HEAVY AND RIGHT UP LIGHT
+   \definesymbol[RightHeavyAndLeftUpLight][\USymbChar{37}{54}] % BOX DRAWINGS RIGHT HEAVY AND LEFT UP LIGHT
+   \definesymbol[UpLightAndHorizontalHeavy][\USymbChar{37}{55}] % BOX DRAWINGS UP LIGHT AND HORIZONTAL HEAVY
+   \definesymbol[UpHeavyAndHorizontalLight][\USymbChar{37}{56}] % BOX DRAWINGS UP HEAVY AND HORIZONTAL LIGHT
+   \definesymbol[RightLightAndLeftUpHeavy][\USymbChar{37}{57}] % BOX DRAWINGS RIGHT LIGHT AND LEFT UP HEAVY
+   \definesymbol[LeftLightAndRightUpHeavy][\USymbChar{37}{58}] % BOX DRAWINGS LEFT LIGHT AND RIGHT UP HEAVY
+   \definesymbol[HeavyUpAndHorizontal][\USymbChar{37}{59}] % BOX DRAWINGS HEAVY UP AND HORIZONTAL
+   \definesymbol[LightVerticalAndHorizontal][\USymbChar{37}{60}] % BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL
+   \definesymbol[LeftHeavyAndRightVerticalLight][\USymbChar{37}{61}] % BOX DRAWINGS LEFT HEAVY AND RIGHT VERTICAL LIGHT
+   \definesymbol[RightHeavyAndLeftVerticalLight][\USymbChar{37}{62}] % BOX DRAWINGS RIGHT HEAVY AND LEFT VERTICAL LIGHT
+   \definesymbol[VerticalLightAndHorizontalHeavy][\USymbChar{37}{63}] % BOX DRAWINGS VERTICAL LIGHT AND HORIZONTAL HEAVY
+   \definesymbol[UpHeavyAndDownHorizontalLight][\USymbChar{37}{64}] % BOX DRAWINGS UP HEAVY AND DOWN HORIZONTAL LIGHT
+   \definesymbol[DownHeavyAndUpHorizontalLight][\USymbChar{37}{65}] % BOX DRAWINGS DOWN HEAVY AND UP HORIZONTAL LIGHT
+   \definesymbol[VerticalHeavyAndHorizontalLight][\USymbChar{37}{66}] % BOX DRAWINGS VERTICAL HEAVY AND HORIZONTAL LIGHT
+   \definesymbol[LeftUpHeavyAndRightDownLight][\USymbChar{37}{67}] % BOX DRAWINGS LEFT UP HEAVY AND RIGHT DOWN LIGHT
+   \definesymbol[RightUpHeavyAndLeftDownLight][\USymbChar{37}{68}] % BOX DRAWINGS RIGHT UP HEAVY AND LEFT DOWN LIGHT
+   \definesymbol[LeftDownHeavyAndRightUpLight][\USymbChar{37}{69}] % BOX DRAWINGS LEFT DOWN HEAVY AND RIGHT UP LIGHT
+   \definesymbol[RightDownHeavyAndLeftUpLight][\USymbChar{37}{70}] % BOX DRAWINGS RIGHT DOWN HEAVY AND LEFT UP LIGHT
+   \definesymbol[DownLightAndUpHorizontalHeavy][\USymbChar{37}{71}] % BOX DRAWINGS DOWN LIGHT AND UP HORIZONTAL HEAVY
+   \definesymbol[UpLightAndDownHorizontalHeavy][\USymbChar{37}{72}] % BOX DRAWINGS UP LIGHT AND DOWN HORIZONTAL HEAVY
+   \definesymbol[RightLightAndLeftVerticalHeavy][\USymbChar{37}{73}] % BOX DRAWINGS RIGHT LIGHT AND LEFT VERTICAL HEAVY
+   \definesymbol[LeftLightAndRightVerticalHeavy][\USymbChar{37}{74}] % BOX DRAWINGS LEFT LIGHT AND RIGHT VERTICAL HEAVY
+   \definesymbol[HeavyVerticalAndHorizontal][\USymbChar{37}{75}] % BOX DRAWINGS HEAVY VERTICAL AND HORIZONTAL
+   \definesymbol[LightArcDownAndRight][\USymbChar{37}{109}] % BOX DRAWINGS LIGHT ARC DOWN AND RIGHT
+   \definesymbol[LightArcDownAndLeft][\USymbChar{37}{110}] % BOX DRAWINGS LIGHT ARC DOWN AND LEFT
+   \definesymbol[LightArcUpAndLeft][\USymbChar{37}{111}] % BOX DRAWINGS LIGHT ARC UP AND LEFT
+   \definesymbol[LightArcUpAndRight][\USymbChar{37}{112}] % BOX DRAWINGS LIGHT ARC UP AND RIGHT
+   \definesymbol[LightDiagonalUpperRightToLowerLeft][\USymbChar{37}{113}] % BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT
+   \definesymbol[LightDiagonalUpperLeftToLowerRight][\USymbChar{37}{114}] % BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT
+   \definesymbol[LightDiagonalCross][\USymbChar{37}{115}] % BOX DRAWINGS LIGHT DIAGONAL CROSS
+   \definesymbol[LightLeft][\USymbChar{37}{116}] % BOX DRAWINGS LIGHT LEFT
+   \definesymbol[LightUp][\USymbChar{37}{117}] % BOX DRAWINGS LIGHT UP
+   \definesymbol[LightRight][\USymbChar{37}{118}] % BOX DRAWINGS LIGHT RIGHT
+   \definesymbol[LightDown][\USymbChar{37}{119}] % BOX DRAWINGS LIGHT DOWN
+   \definesymbol[HeavyLeft][\USymbChar{37}{120}] % BOX DRAWINGS HEAVY LEFT
+   \definesymbol[HeavyUp][\USymbChar{37}{121}] % BOX DRAWINGS HEAVY UP
+   \definesymbol[HeavyRight][\USymbChar{37}{122}] % BOX DRAWINGS HEAVY RIGHT
+   \definesymbol[HeavyDown][\USymbChar{37}{123}] % BOX DRAWINGS HEAVY DOWN
+   \definesymbol[LightLeftAndHeavyRight][\USymbChar{37}{124}] % BOX DRAWINGS LIGHT LEFT AND HEAVY RIGHT
+   \definesymbol[LightUpAndHeavyDown][\USymbChar{37}{125}] % BOX DRAWINGS LIGHT UP AND HEAVY DOWN
+   \definesymbol[HeavyLeftAndLightRight][\USymbChar{37}{126}] % BOX DRAWINGS HEAVY LEFT AND LIGHT RIGHT
+   \definesymbol[HeavyUpAndLightDown][\USymbChar{37}{127}] % BOX DRAWINGS HEAVY UP AND LIGHT DOWN
+
+\stopsymbolset
+
+\startsymbolset[Unicode Circled Digits] % 0x2460: Requires UnicodeRegular24
+
+   \definesymbol[CircledOne][\USymbCharZapf{36}{96}] % CIRCLED DIGIT ONE
+   \definesymbol[CircledTwo][\USymbCharZapf{36}{97}] % CIRCLED DIGIT TWO
+   \definesymbol[CircledThree][\USymbCharZapf{36}{98}] % CIRCLED DIGIT THREE
+   \definesymbol[CircledFour][\USymbCharZapf{36}{99}] % CIRCLED DIGIT FOUR
+   \definesymbol[CircledFive][\USymbCharZapf{36}{100}] % CIRCLED DIGIT FIVE
+   \definesymbol[CircledSix][\USymbCharZapf{36}{101}] % CIRCLED DIGIT SIX
+   \definesymbol[CircledSeven][\USymbCharZapf{36}{102}] % CIRCLED DIGIT SEVEN
+   \definesymbol[CircledEight][\USymbCharZapf{36}{103}] % CIRCLED DIGIT EIGHT
+   \definesymbol[CircledNine][\USymbCharZapf{36}{104}] % CIRCLED DIGIT NINE
+   \definesymbol[CircledTen][\USymbCharZapf{36}{105}] % CIRCLED NUMBER TEN
+
+\stopsymbolset
+
+\startsymbolset[Unicode Double Box Drawing] % 0x2500: Requires UnicodeRegular25
+
+   \definesymbol[LightDoubleDashHorizontal][\USymbChar{37}{76}] % BOX DRAWINGS LIGHT DOUBLE DASH HORIZONTAL
+   \definesymbol[HeavyDoubleDashHorizontal][\USymbChar{37}{77}] % BOX DRAWINGS HEAVY DOUBLE DASH HORIZONTAL
+   \definesymbol[LightDoubleDashVertical][\USymbChar{37}{78}] % BOX DRAWINGS LIGHT DOUBLE DASH VERTICAL
+   \definesymbol[HeavyDoubleDashVertical][\USymbChar{37}{79}] % BOX DRAWINGS HEAVY DOUBLE DASH VERTICAL
+   \definesymbol[DoubleHorizontal][\USymbChar{37}{80}] % BOX DRAWINGS DOUBLE HORIZONTAL
+   \definesymbol[DoubleVertical][\USymbChar{37}{81}] % BOX DRAWINGS DOUBLE VERTICAL
+   \definesymbol[DownSingleAndRightDouble][\USymbChar{37}{82}] % BOX DRAWINGS DOWN SINGLE AND RIGHT DOUBLE
+   \definesymbol[DownDoubleAndRightSingle][\USymbChar{37}{83}] % BOX DRAWINGS DOWN DOUBLE AND RIGHT SINGLE
+   \definesymbol[DoubleDownAndRight][\USymbChar{37}{84}] % BOX DRAWINGS DOUBLE DOWN AND RIGHT
+   \definesymbol[DownSingleAndLeftDouble][\USymbChar{37}{85}] % BOX DRAWINGS DOWN SINGLE AND LEFT DOUBLE
+   \definesymbol[DownDoubleAndLeftSingle][\USymbChar{37}{86}] % BOX DRAWINGS DOWN DOUBLE AND LEFT SINGLE
+   \definesymbol[DoubleDownAndLeft][\USymbChar{37}{87}] % BOX DRAWINGS DOUBLE DOWN AND LEFT
+   \definesymbol[UpSingleAndRightDouble][\USymbChar{37}{88}] % BOX DRAWINGS UP SINGLE AND RIGHT DOUBLE
+   \definesymbol[UpDoubleAndRightSingle][\USymbChar{37}{89}] % BOX DRAWINGS UP DOUBLE AND RIGHT SINGLE
+   \definesymbol[DoubleUpAndRight][\USymbChar{37}{90}] % BOX DRAWINGS DOUBLE UP AND RIGHT
+   \definesymbol[UpSingleAndLeftDouble][\USymbChar{37}{91}] % BOX DRAWINGS UP SINGLE AND LEFT DOUBLE
+   \definesymbol[UpDoubleAndLeftSingle][\USymbChar{37}{92}] % BOX DRAWINGS UP DOUBLE AND LEFT SINGLE
+   \definesymbol[DoubleUpAndLeft][\USymbChar{37}{93}] % BOX DRAWINGS DOUBLE UP AND LEFT
+   \definesymbol[VerticalSingleAndRightDouble][\USymbChar{37}{94}] % BOX DRAWINGS VERTICAL SINGLE AND RIGHT DOUBLE
+   \definesymbol[VerticalDoubleAndRightSingle][\USymbChar{37}{95}] % BOX DRAWINGS VERTICAL DOUBLE AND RIGHT SINGLE
+   \definesymbol[DoubleVerticalAndRight][\USymbChar{37}{96}] % BOX DRAWINGS DOUBLE VERTICAL AND RIGHT
+   \definesymbol[VerticalSingleAndLeftDouble][\USymbChar{37}{97}] % BOX DRAWINGS VERTICAL SINGLE AND LEFT DOUBLE
+   \definesymbol[VerticalDoubleAndLeftSingle][\USymbChar{37}{98}] % BOX DRAWINGS VERTICAL DOUBLE AND LEFT SINGLE
+   \definesymbol[DoubleVerticalAndLeft][\USymbChar{37}{99}] % BOX DRAWINGS DOUBLE VERTICAL AND LEFT
+   \definesymbol[DownSingleAndHorizontalDouble][\USymbChar{37}{100}] % BOX DRAWINGS DOWN SINGLE AND HORIZONTAL DOUBLE
+   \definesymbol[DownDoubleAndHorizontalSingle][\USymbChar{37}{101}] % BOX DRAWINGS DOWN DOUBLE AND HORIZONTAL SINGLE
+   \definesymbol[DoubleDownAndHorizontal][\USymbChar{37}{102}] % BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL
+   \definesymbol[UpSingleAndHorizontalDouble][\USymbChar{37}{103}] % BOX DRAWINGS UP SINGLE AND HORIZONTAL DOUBLE
+   \definesymbol[UpDoubleAndHorizontalSingle][\USymbChar{37}{104}] % BOX DRAWINGS UP DOUBLE AND HORIZONTAL SINGLE
+   \definesymbol[DoubleUpAndHorizontal][\USymbChar{37}{105}] % BOX DRAWINGS DOUBLE UP AND HORIZONTAL
+   \definesymbol[VerticalSingleAndHorizontalDouble][\USymbChar{37}{106}] % BOX DRAWINGS VERTICAL SINGLE AND HORIZONTAL DOUBLE
+   \definesymbol[VerticalDoubleAndHorizontalSingle][\USymbChar{37}{107}] % BOX DRAWINGS VERTICAL DOUBLE AND HORIZONTAL SINGLE
+   \definesymbol[DoubleVerticalAndHorizontal][\USymbChar{37}{108}] % BOX DRAWINGS DOUBLE VERTICAL AND HORIZONTAL
+
+\stopsymbolset
+
+\startsymbolset[Unicode Block Elements] % 0x2580: Requires UnicodeRegular25
+
+   \definesymbol[UpperHalfBlock][\USymbChar{37}{128}] % UPPER HALF BLOCK
+   \definesymbol[LowerOneEighthBlock][\USymbChar{37}{129}] % LOWER ONE EIGHTH BLOCK
+   \definesymbol[LowerOneQuarterBlock][\USymbChar{37}{130}] % LOWER ONE QUARTER BLOCK
+   \definesymbol[LowerThreeEighthsBlock][\USymbChar{37}{131}] % LOWER THREE EIGHTHS BLOCK
+   \definesymbol[LowerHalfBlock][\USymbChar{37}{132}] % LOWER HALF BLOCK
+   \definesymbol[LowerFiveEighthsBlock][\USymbChar{37}{133}] % LOWER FIVE EIGHTHS BLOCK
+   \definesymbol[LowerThreeQuartersBlock][\USymbChar{37}{134}] % LOWER THREE QUARTERS BLOCK
+   \definesymbol[LowerSevenEighthsBlock][\USymbChar{37}{135}] % LOWER SEVEN EIGHTHS BLOCK
+   \definesymbol[FullBlock][\USymbChar{37}{136}] % FULL BLOCK
+   \definesymbol[LeftSevenEighthsBlock][\USymbChar{37}{137}] % LEFT SEVEN EIGHTHS BLOCK
+   \definesymbol[LeftThreeQuartersBlock][\USymbChar{37}{138}] % LEFT THREE QUARTERS BLOCK
+   \definesymbol[LeftFiveEighthsBlock][\USymbChar{37}{139}] % LEFT FIVE EIGHTHS BLOCK
+   \definesymbol[LeftHalfBlock][\USymbChar{37}{140}] % LEFT HALF BLOCK
+   \definesymbol[LeftThreeEighthsBlock][\USymbChar{37}{141}] % LEFT THREE EIGHTHS BLOCK
+   \definesymbol[LeftOneQuarterBlock][\USymbChar{37}{142}] % LEFT ONE QUARTER BLOCK
+   \definesymbol[LeftOneEighthBlock][\USymbChar{37}{143}] % LEFT ONE EIGHTH BLOCK
+   \definesymbol[RightHalfBlock][\USymbChar{37}{144}] % RIGHT HALF BLOCK
+   \definesymbol[UpperOneEighthBlock][\USymbChar{37}{148}] % UPPER ONE EIGHTH BLOCK
+   \definesymbol[RightOneEighthBlock][\USymbChar{37}{149}] % RIGHT ONE EIGHTH BLOCK
+
+\stopsymbolset
+
+\startsymbolset[Unicode Shade Characters] % 0x2580: Requires UnicodeRegular25
+
+   \definesymbol[LightShade][\USymbChar{37}{145}] % LIGHT SHADE
+   \definesymbol[MediumShade][\USymbChar{37}{146}] % MEDIUM SHADE
+   \definesymbol[DarkShade][\USymbChar{37}{147}] % DARK SHADE
+
+\stopsymbolset
+
+\startsymbolset[Unicode Terminal Graphics] % 0x2580: Requires UnicodeRegular25
+
+   \definesymbol[QuadrantLowerLeft][\USymbChar{37}{150}] % [Unassigned U+2596]
+   \definesymbol[QuadrantLowerRight][\USymbChar{37}{151}] % [Unassigned U+2597]
+   \definesymbol[QuadrantUpperLeft][\USymbChar{37}{152}] % [Unassigned U+2598]
+   \definesymbol[QuadrantUpperLeftAndLowerLeftAndLowerRight][\USymbChar{37}{153}] % [Unassigned U+2599]
+   \definesymbol[QuadrantUpperLeftAndLowerRight][\USymbChar{37}{154}] % [Unassigned U+259A]
+   \definesymbol[QuadrantUpperLeftAndUpperRightandLowerLeft][\USymbChar{37}{155}] % [Unassigned U+259B]
+   \definesymbol[QuadrantUpperLeftAndUpperRightAndLowerRight][\USymbChar{37}{156}] % [Unassigned U+259C]
+   \definesymbol[QuadrantUpperRight][\USymbChar{37}{157}] % [Unassigned U+259D]
+   \definesymbol[QuadrantUpperRightAndLowerLeft][\USymbChar{37}{158}] % [Unassigned U+259E]
+   \definesymbol[QuadrantUpperRightAndLowerLeftAndLowerRight][\USymbChar{37}{159}] % [Unassigned U+259F]
+
+\stopsymbolset
+
+\startsymbolset[Unicode Geometric Shapes] % 0x25A0: Requires UnicodeRegular25
+
+   \definesymbol[BlackSquare][\USymbChar{37}{160}] % BLACK SQUARE
+   \definesymbol[WhiteSquare][\USymbChar{37}{161}] % WHITE SQUARE
+   \definesymbol[WhiteSquareWithRoundedCorners][\USymbChar{37}{162}] % WHITE SQUARE WITH ROUNDED CORNERS
+   \definesymbol[WhiteSquareContainingBlackSmallSquare][\USymbChar{37}{163}] % WHITE SQUARE CONTAINING BLACK SMALL SQUARE
+   \definesymbol[SquareWithHorizontalFill][\USymbChar{37}{164}] % SQUARE WITH HORIZONTAL FILL
+   \definesymbol[SquareWithVerticalFill][\USymbChar{37}{165}] % SQUARE WITH VERTICAL FILL
+   \definesymbol[SquareWithOrthogonalCrosshatchFill][\USymbChar{37}{166}] % SQUARE WITH ORTHOGONAL CROSSHATCH FILL
+   \definesymbol[SquareWithUpperLeftToLowerRightFill][\USymbChar{37}{167}] % SQUARE WITH UPPER LEFT TO LOWER RIGHT FILL
+   \definesymbol[SquareWithUpperRightToLowerLeftFill][\USymbChar{37}{168}] % SQUARE WITH UPPER RIGHT TO LOWER LEFT FILL
+   \definesymbol[SquareWithDiagonalCrosshatchFill][\USymbChar{37}{169}] % SQUARE WITH DIAGONAL CROSSHATCH FILL
+   \definesymbol[BlackSmallSquare][\USymbChar{37}{170}] % BLACK SMALL SQUARE
+   \definesymbol[WhiteSmallSquare][\USymbChar{37}{171}] % WHITE SMALL SQUARE
+   \definesymbol[BlackRectangle][\USymbChar{37}{172}] % BLACK RECTANGLE
+   \definesymbol[WhiteRectangle][\USymbChar{37}{173}] % WHITE RECTANGLE
+   \definesymbol[BlackVerticalRectangle][\USymbChar{37}{174}] % BLACK VERTICAL RECTANGLE
+   \definesymbol[WhiteVerticalRectangle][\USymbChar{37}{175}] % WHITE VERTICAL RECTANGLE
+   \definesymbol[BlackParallelogram][\USymbChar{37}{176}] % BLACK PARALLELOGRAM
+   \definesymbol[WhiteParallelogram][\USymbChar{37}{177}] % WHITE PARALLELOGRAM
+   \definesymbol[BlackUpPointingTriangle][\USymbChar{37}{178}] % BLACK UP-POINTING TRIANGLE
+   \definesymbol[WhiteUpPointingTriangle][\USymbChar{37}{179}] % WHITE UP-POINTING TRIANGLE
+   \definesymbol[BlackUpPointingSmallTriangle][\USymbChar{37}{180}] % BLACK UP-POINTING SMALL TRIANGLE
+   \definesymbol[WhiteUpPointingSmallTriangle][\USymbChar{37}{181}] % WHITE UP-POINTING SMALL TRIANGLE
+   \definesymbol[BlackRightPointingTriangle][\USymbChar{37}{182}] % BLACK RIGHT-POINTING TRIANGLE
+   \definesymbol[WhiteRightPointingTriangle][\USymbChar{37}{183}] % WHITE RIGHT-POINTING TRIANGLE
+   \definesymbol[BlackRightPointingSmallTriangle][\USymbChar{37}{184}] % BLACK RIGHT-POINTING SMALL TRIANGLE
+   \definesymbol[WhiteRightPointingSmallTriangle][\USymbChar{37}{185}] % WHITE RIGHT-POINTING SMALL TRIANGLE
+   \definesymbol[BlackRightPointingPointer][\USymbChar{37}{186}] % BLACK RIGHT-POINTING POINTER
+   \definesymbol[WhiteRightPointingPointer][\USymbChar{37}{187}] % WHITE RIGHT-POINTING POINTER
+   \definesymbol[BlackDownPointingTriangle][\USymbChar{37}{188}] % BLACK DOWN-POINTING TRIANGLE
+   \definesymbol[WhiteDownPointingTriangle][\USymbChar{37}{189}] % WHITE DOWN-POINTING TRIANGLE
+   \definesymbol[BlackDownPointingSmallTriangle][\USymbChar{37}{190}] % BLACK DOWN-POINTING SMALL TRIANGLE
+   \definesymbol[WhiteDownPointingSmallTriangle][\USymbChar{37}{191}] % WHITE DOWN-POINTING SMALL TRIANGLE
+   \definesymbol[BlackLeftPointingTriangle][\USymbChar{37}{192}] % BLACK LEFT-POINTING TRIANGLE
+   \definesymbol[WhiteLeftPointingTriangle][\USymbChar{37}{193}] % WHITE LEFT-POINTING TRIANGLE
+   \definesymbol[BlackLeftPointingSmallTriangle][\USymbChar{37}{194}] % BLACK LEFT-POINTING SMALL TRIANGLE
+   \definesymbol[WhiteLeftPointingSmallTriangle][\USymbChar{37}{195}] % WHITE LEFT-POINTING SMALL TRIANGLE
+   \definesymbol[BlackLeftPointingPointer][\USymbChar{37}{196}] % BLACK LEFT-POINTING POINTER
+   \definesymbol[WhiteLeftPointingPointer][\USymbChar{37}{197}] % WHITE LEFT-POINTING POINTER
+   \definesymbol[BlackDiamond][\USymbChar{37}{198}] % BLACK DIAMOND
+   \definesymbol[WhiteDiamond][\USymbChar{37}{199}] % WHITE DIAMOND
+   \definesymbol[WhiteDiamondContainingBlackSmallDiamond][\USymbChar{37}{200}] % WHITE DIAMOND CONTAINING BLACK SMALL DIAMOND
+   \definesymbol[Fisheye][\USymbChar{37}{201}] % FISHEYE
+   \definesymbol[Lozenge][\USymbChar{37}{202}] % LOZENGE
+   \definesymbol[WhiteCircle][\USymbChar{37}{203}] % WHITE CIRCLE
+   \definesymbol[DottedCircle][\USymbChar{37}{204}] % DOTTED CIRCLE
+   \definesymbol[CircleWithVerticalFill][\USymbChar{37}{205}] % CIRCLE WITH VERTICAL FILL
+   \definesymbol[Bullseye][\USymbChar{37}{206}] % BULLSEYE
+   \definesymbol[BlackCircle][\USymbChar{37}{207}] % BLACK CIRCLE
+   \definesymbol[CircleWithLeftHalfBlack][\USymbChar{37}{208}] % CIRCLE WITH LEFT HALF BLACK
+   \definesymbol[CircleWithRightHalfBlack][\USymbChar{37}{209}] % CIRCLE WITH RIGHT HALF BLACK
+   \definesymbol[CircleWithLowerHalfBlack][\USymbChar{37}{210}] % CIRCLE WITH LOWER HALF BLACK
+   \definesymbol[CircleWithUpperHalfBlack][\USymbChar{37}{211}] % CIRCLE WITH UPPER HALF BLACK
+   \definesymbol[CircleWithUpperRightQuadrantBlack][\USymbChar{37}{212}] % CIRCLE WITH UPPER RIGHT QUADRANT BLACK
+   \definesymbol[CircleWithAllButUpperLeftQuadrantBlack][\USymbChar{37}{213}] % CIRCLE WITH ALL BUT UPPER LEFT QUADRANT BLACK
+   \definesymbol[LeftHalfBlackCircle][\USymbChar{37}{214}] % LEFT HALF BLACK CIRCLE
+   \definesymbol[RightHalfBlackCircle][\USymbChar{37}{215}] % RIGHT HALF BLACK CIRCLE
+   \definesymbol[InverseBullet][\USymbChar{37}{216}] % INVERSE BULLET
+   \definesymbol[InverseWhiteCircle][\USymbChar{37}{217}] % INVERSE WHITE CIRCLE
+   \definesymbol[UpperHalfInverseWhiteCircle][\USymbChar{37}{218}] % UPPER HALF INVERSE WHITE CIRCLE
+   \definesymbol[LowerHalfInverseWhiteCircle][\USymbChar{37}{219}] % LOWER HALF INVERSE WHITE CIRCLE
+   \definesymbol[UpperLeftQuadrantCircularArc][\USymbChar{37}{220}] % UPPER LEFT QUADRANT CIRCULAR ARC
+   \definesymbol[UpperRightQuadrantCircularArc][\USymbChar{37}{221}] % UPPER RIGHT QUADRANT CIRCULAR ARC
+   \definesymbol[LowerRightQuadrantCircularArc][\USymbChar{37}{222}] % LOWER RIGHT QUADRANT CIRCULAR ARC
+   \definesymbol[LowerLeftQuadrantCircularArc][\USymbChar{37}{223}] % LOWER LEFT QUADRANT CIRCULAR ARC
+   \definesymbol[LowerHalfCircle][\USymbChar{37}{225}] % LOWER HALF CIRCLE
+   \definesymbol[BlackLowerRightTriangle][\USymbChar{37}{226}] % BLACK LOWER RIGHT TRIANGLE
+   \definesymbol[BlackLowerLeftTriangle][\USymbChar{37}{227}] % BLACK LOWER LEFT TRIANGLE
+   \definesymbol[BlackUpperLeftTriangle][\USymbChar{37}{228}] % BLACK UPPER LEFT TRIANGLE
+   \definesymbol[BlackUpperRightTriangle][\USymbChar{37}{229}] % BLACK UPPER RIGHT TRIANGLE
+   \definesymbol[WhiteBullet][\USymbChar{37}{230}] % WHITE BULLET
+   \definesymbol[SquareWithLeftHalfBlack][\USymbChar{37}{231}] % SQUARE WITH LEFT HALF BLACK
+   \definesymbol[SquareWithRightHalfBlack][\USymbChar{37}{232}] % SQUARE WITH RIGHT HALF BLACK
+   \definesymbol[SquareWithUpperLeftDiagonalHalfBlack][\USymbChar{37}{233}] % SQUARE WITH UPPER LEFT DIAGONAL HALF BLACK
+   \definesymbol[SquareWithLowerRightDiagonalHalfBlack][\USymbChar{37}{234}] % SQUARE WITH LOWER RIGHT DIAGONAL HALF BLACK
+   \definesymbol[WhiteSquareWithVerticalBisectingLine][\USymbChar{37}{235}] % WHITE SQUARE WITH VERTICAL BISECTING LINE
+   \definesymbol[WhiteUpPointingTriangleWithDot][\USymbChar{37}{236}] % WHITE UP-POINTING TRIANGLE WITH DOT
+   \definesymbol[UpPointingTriangleWithLeftHalfBlack][\USymbChar{37}{237}] % UP-POINTING TRIANGLE WITH LEFT HALF BLACK
+   \definesymbol[UpPointingTriangleWithRightHalfBlack][\USymbChar{37}{238}] % UP-POINTING TRIANGLE WITH RIGHT HALF BLACK
+   \definesymbol[LargeCircle][\USymbChar{37}{239}] % LARGE CIRCLE
+   \definesymbol[UpperLeftTriangle][\USymbChar{37}{248}] % [Unassigned U+25F8]
+   \definesymbol[UpperRightTriangle][\USymbChar{37}{249}] % [Unassigned U+25F9]
+   \definesymbol[LowerLeftTriangle][\USymbChar{37}{250}] % [Unassigned U+25FA]
+   \definesymbol[WhiteMediumSquare][\USymbChar{37}{251}] % [Unassigned U+25FB]
+   \definesymbol[BlackMediumSquare][\USymbChar{37}{252}] % [Unassigned U+25FC]
+   \definesymbol[WhiteMediumSmallSquare][\USymbChar{37}{253}] % [Unassigned U+25FD]
+   \definesymbol[BlackMediumSmallSquare][\USymbChar{37}{254}] % [Unassigned U+25FE]
+   \definesymbol[LowerRightTriangle][\USymbChar{37}{255}] % [Unassigned U+25FF]
+
+\stopsymbolset
+
+\startsymbolset[Unicode Control Code Graphics] % 0x25A0: Requires UnicodeRegular25
+
+   \definesymbol[WhiteSquareWithUpperLeftQuadrant][\USymbChar{37}{240}] % WHITE SQUARE WITH UPPER LEFT QUADRANT
+   \definesymbol[WhiteSquareWithLowerLeftQuadrant][\USymbChar{37}{241}] % WHITE SQUARE WITH LOWER LEFT QUADRANT
+   \definesymbol[WhiteSquareWithLowerRightQuadrant][\USymbChar{37}{242}] % WHITE SQUARE WITH LOWER RIGHT QUADRANT
+   \definesymbol[WhiteSquareWithUpperRightQuadrant][\USymbChar{37}{243}] % WHITE SQUARE WITH UPPER RIGHT QUADRANT
+   \definesymbol[WhiteCircleWithUpperLeftQuadrant][\USymbChar{37}{244}] % WHITE CIRCLE WITH UPPER LEFT QUADRANT
+   \definesymbol[WhiteCircleWithLowerLeftQuadrant][\USymbChar{37}{245}] % WHITE CIRCLE WITH LOWER LEFT QUADRANT
+   \definesymbol[WhiteCircleWithLowerRightQuadrant][\USymbChar{37}{246}] % WHITE CIRCLE WITH LOWER RIGHT QUADRANT
+   \definesymbol[WhiteCircleWithUpperRightQuadrant][\USymbChar{37}{247}] % WHITE CIRCLE WITH UPPER RIGHT QUADRANT
+
+\stopsymbolset
+
+\startsymbolset[Unicode Weather and Astrological] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[BlackSunWithRays][\USymbChar{38}{0}] % BLACK SUN WITH RAYS
+   \definesymbol[Cloud][\USymbChar{38}{1}] % CLOUD
+   \definesymbol[Umbrella][\USymbChar{38}{2}] % UMBRELLA
+   \definesymbol[Snowman][\USymbChar{38}{3}] % SNOWMAN
+   \definesymbol[Comet][\USymbChar{38}{4}] % COMET
+   \definesymbol[BlackStar][\USymbChar{38}{5}] % BLACK STAR
+   \definesymbol[WhiteStar][\USymbChar{38}{6}] % WHITE STAR
+   \definesymbol[Lightning][\USymbChar{38}{7}] % LIGHTNING
+   \definesymbol[Thunderstorm][\USymbChar{38}{8}] % THUNDERSTORM
+   \definesymbol[Sun][\USymbChar{38}{9}] % SUN
+   \definesymbol[AscendingNode][\USymbChar{38}{10}] % ASCENDING NODE
+   \definesymbol[DescendingNode][\USymbChar{38}{11}] % DESCENDING NODE
+   \definesymbol[Conjunction][\USymbChar{38}{12}] % CONJUNCTION
+   \definesymbol[Opposition][\USymbChar{38}{13}] % OPPOSITION
+   \definesymbol[FirstQuarterMoon][\USymbChar{38}{61}] % FIRST QUARTER MOON
+   \definesymbol[LastQuarterMoon][\USymbChar{38}{62}] % LAST QUARTER MOON
+   \definesymbol[Mercury][\USymbChar{38}{63}] % MERCURY
+   \definesymbol[FemaleSign][\USymbChar{38}{64}] % FEMALE SIGN
+   \definesymbol[Earth][\USymbChar{38}{65}] % EARTH
+   \definesymbol[MaleSign][\USymbChar{38}{66}] % MALE SIGN
+   \definesymbol[Jupiter][\USymbChar{38}{67}] % JUPITER
+   \definesymbol[Saturn][\USymbChar{38}{68}] % SATURN
+   \definesymbol[Uranus][\USymbChar{38}{69}] % URANUS
+   \definesymbol[Neptune][\USymbChar{38}{70}] % NEPTUNE
+   \definesymbol[Pluto][\USymbChar{38}{71}] % PLUTO
+
+\stopsymbolset
+
+\startsymbolset[Unicode Miscellaneous] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[BlackTelephone][\USymbChar{38}{14}] % BLACK TELEPHONE
+   \definesymbol[WhiteTelephone][\USymbChar{38}{15}] % WHITE TELEPHONE
+   \definesymbol[BallotBox][\USymbChar{38}{16}] % BALLOT BOX
+   \definesymbol[BallotBoxWithCheck][\USymbChar{38}{17}] % BALLOT BOX WITH CHECK
+   \definesymbol[BallotBoxWithX][\USymbChar{38}{18}] % BALLOT BOX WITH X
+   \definesymbol[Saltire][\USymbChar{38}{19}] % SALTIRE
+   \definesymbol[ReversedRotatedFloralHeartBullet][\USymbChar{38}{25}] % REVERSED ROTATED FLORAL HEART BULLET
+   \definesymbol[WheelOfDharma][\USymbChar{38}{56}] % WHEEL OF DHARMA
+   \definesymbol[WhiteFrowningFace][\USymbChar{38}{57}] % WHITE FROWNING FACE
+   \definesymbol[WhiteSmilingFace][\USymbChar{38}{58}] % WHITE SMILING FACE
+   \definesymbol[BlackSmilingFace][\USymbChar{38}{59}] % BLACK SMILING FACE
+   \definesymbol[WhiteSunWithRays][\USymbChar{38}{60}] % WHITE SUN WITH RAYS
+   \definesymbol[HotSprings][\USymbChar{38}{104}] % HOT SPRINGS
+
+\stopsymbolset
+
+\startsymbolset[Unicode Japanese Chess] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[WhiteShogiPiece][\USymbChar{38}{22}] % [Unassigned U+2616]
+   \definesymbol[BlackShogiPiece][\USymbChar{38}{23}] % [Unassigned U+2617]
+
+\stopsymbolset
+
+\startsymbolset[Unicode Pointing Hand] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[BlackLeftPointingIndex][\USymbChar{38}{26}] % BLACK LEFT POINTING INDEX
+   \definesymbol[BlackRightPointingIndex][\USymbChar{38}{27}] % BLACK RIGHT POINTING INDEX
+   \definesymbol[WhiteLeftPointingIndex][\USymbChar{38}{28}] % WHITE LEFT POINTING INDEX
+   \definesymbol[WhiteUpPointingIndex][\USymbChar{38}{29}] % WHITE UP POINTING INDEX
+   \definesymbol[WhiteRightPointingIndex][\USymbChar{38}{30}] % WHITE RIGHT POINTING INDEX
+   \definesymbol[WhiteDownPointingIndex][\USymbChar{38}{31}] % WHITE DOWN POINTING INDEX
+
+\stopsymbolset
+
+\startsymbolset[Unicode Warning Signs] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[SkullAndCrossbones][\USymbChar{38}{32}] % SKULL AND CROSSBONES
+   \definesymbol[CautionSign][\USymbChar{38}{33}] % CAUTION SIGN
+   \definesymbol[RadioactiveSign][\USymbChar{38}{34}] % RADIOACTIVE SIGN
+   \definesymbol[BiohazardSign][\USymbChar{38}{35}] % BIOHAZARD SIGN
+
+\stopsymbolset
+
+\startsymbolset[Unicode Healing Signs] % 0x2600: Requires UnicodeRegular26
+   \definesymbol[Caduceus][\USymbChar{38}{36}] % CADUCEUS
+   \definesymbol[Ankh][\USymbChar{38}{37}] % ANKH
+\stopsymbolset
+
+\startsymbolset[Unicode Religious and Political] % 0x2600: Requires UnicodeRegular26 and 27
+
+   \definesymbol[OrthodoxCross][\USymbChar{38}{38}] % ORTHODOX CROSS
+   \definesymbol[ChiRho][\USymbChar{38}{39}] % CHI RHO
+   \definesymbol[CrossOfLorraine][\USymbChar{38}{40}] % CROSS OF LORRAINE
+   \definesymbol[CrossOfJerusalem][\USymbChar{38}{41}] % CROSS OF JERUSALEM
+   \definesymbol[StarAndCrescent][\USymbChar{38}{42}] % STAR AND CRESCENT
+   \definesymbol[FarsiSymbol][\USymbChar{38}{43}] % FARSI SYMBOL
+   \definesymbol[AdiShakti][\USymbChar{38}{44}] % ADI SHAKTI
+   \definesymbol[HammerAndSickle][\USymbChar{38}{45}] % HAMMER AND SICKLE
+   \definesymbol[PeaceSymbol][\USymbChar{38}{46}] % PEACE SYMBOL
+   \definesymbol[YinYang][\USymbChar{38}{47}] % YIN YANG
+   \definesymbol[WestSyriacCross][\USymbChar{38}{112}] % WEST SYRIAC CROSS
+   \definesymbol[EastSyriacCross][\USymbChar{38}{113}] % EAST SYRIAC CROSS
+% 27xx starts here
+   \definesymbol[OutlinedGreekCross][\USymbCharZapf{39}{25}] % OUTLINED GREEK CROSS
+   \definesymbol[HeavyGreekCross][\USymbCharZapf{39}{26}] % HEAVY GREEK CROSS
+   \definesymbol[OpenCentreCross][\USymbCharZapf{39}{27}] % OPEN CENTRE CROSS
+   \definesymbol[HeavyOpenCentreCross][\USymbCharZapf{39}{28}] % HEAVY OPEN CENTRE CROSS
+   \definesymbol[LatinCross][\USymbCharZapf{39}{29}] % LATIN CROSS
+   \definesymbol[ShadowedWhiteLatinCross][\USymbCharZapf{39}{30}] % SHADOWED WHITE LATIN CROSS
+   \definesymbol[OutlinedLatinCross][\USymbCharZapf{39}{31}] % OUTLINED LATIN CROSS
+   \definesymbol[MalteseCross][\USymbCharZapf{39}{32}] % MALTESE CROSS
+   \definesymbol[StarOfDavid][\USymbCharZapf{39}{33}] % STAR OF DAVID
+
+
+\stopsymbolset
+
+\startsymbolset[Unicode Trigram] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[TrigramForHeaven][\USymbChar{38}{48}] % TRIGRAM FOR HEAVEN
+   \definesymbol[TrigramForLake][\USymbChar{38}{49}] % TRIGRAM FOR LAKE
+   \definesymbol[TrigramForFire][\USymbChar{38}{50}] % TRIGRAM FOR FIRE
+   \definesymbol[TrigramForThunder][\USymbChar{38}{51}] % TRIGRAM FOR THUNDER
+   \definesymbol[TrigramForWind][\USymbChar{38}{52}] % TRIGRAM FOR WIND
+   \definesymbol[TrigramForWater][\USymbChar{38}{53}] % TRIGRAM FOR WATER
+   \definesymbol[TrigramForMountain][\USymbChar{38}{54}] % TRIGRAM FOR MOUNTAIN
+   \definesymbol[TrigramForEarth][\USymbChar{38}{55}] % TRIGRAM FOR EARTH
+
+\stopsymbolset
+
+\startsymbolset[Unicode Zodiac] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[Aries][\USymbChar{38}{72}] % ARIES
+   \definesymbol[Taurus][\USymbChar{38}{73}] % TAURUS
+   \definesymbol[Gemini][\USymbChar{38}{74}] % GEMINI
+   \definesymbol[Cancer][\USymbChar{38}{75}] % CANCER
+   \definesymbol[Leo][\USymbChar{38}{76}] % LEO
+   \definesymbol[Virgo][\USymbChar{38}{77}] % VIRGO
+   \definesymbol[Libra][\USymbChar{38}{78}] % LIBRA
+   \definesymbol[Scorpius][\USymbChar{38}{79}] % SCORPIUS
+   \definesymbol[Sagittarius][\USymbChar{38}{80}] % SAGITTARIUS
+   \definesymbol[Capricorn][\USymbChar{38}{81}] % CAPRICORN
+   \definesymbol[Aquarius][\USymbChar{38}{82}] % AQUARIUS
+   \definesymbol[Pisces][\USymbChar{38}{83}] % PISCES
+
+\stopsymbolset
+
+\startsymbolset[Unicode Chess] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[WhiteChessKing][\USymbChar{38}{84}] % WHITE CHESS KING
+   \definesymbol[WhiteChessQueen][\USymbChar{38}{85}] % WHITE CHESS QUEEN
+   \definesymbol[WhiteChessRook][\USymbChar{38}{86}] % WHITE CHESS ROOK
+   \definesymbol[WhiteChessBishop][\USymbChar{38}{87}] % WHITE CHESS BISHOP
+   \definesymbol[WhiteChessKnight][\USymbChar{38}{88}] % WHITE CHESS KNIGHT
+   \definesymbol[WhiteChessPawn][\USymbChar{38}{89}] % WHITE CHESS PAWN
+   \definesymbol[BlackChessKing][\USymbChar{38}{90}] % BLACK CHESS KING
+   \definesymbol[BlackChessQueen][\USymbChar{38}{91}] % BLACK CHESS QUEEN
+   \definesymbol[BlackChessRook][\USymbChar{38}{92}] % BLACK CHESS ROOK
+   \definesymbol[BlackChessBishop][\USymbChar{38}{93}] % BLACK CHESS BISHOP
+   \definesymbol[BlackChessKnight][\USymbChar{38}{94}] % BLACK CHESS KNIGHT
+   \definesymbol[BlackChessPawn][\USymbChar{38}{95}] % BLACK CHESS PAWN
+
+\stopsymbolset
+
+\startsymbolset[Unicode Playing Card] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[BlackSpadeSuit][\USymbChar{38}{96}] % BLACK SPADE SUIT
+   \definesymbol[WhiteHeartSuit][\USymbChar{38}{97}] % WHITE HEART SUIT
+   \definesymbol[WhiteDiamondSuit][\USymbChar{38}{98}] % WHITE DIAMOND SUIT
+   \definesymbol[BlackClubSuit][\USymbChar{38}{99}] % BLACK CLUB SUIT
+   \definesymbol[WhiteSpadeSuit][\USymbChar{38}{100}] % WHITE SPADE SUIT
+   \definesymbol[BlackHeartSuit][\USymbChar{38}{101}] % BLACK HEART SUIT
+   \definesymbol[BlackDiamondSuit][\USymbChar{38}{102}] % BLACK DIAMOND SUIT
+   \definesymbol[WhiteClubSuit][\USymbChar{38}{103}] % WHITE CLUB SUIT
+
+\stopsymbolset
+
+\startsymbolset[Unicode Musical] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[QuarterNote][\USymbChar{38}{105}] % QUARTER NOTE
+   \definesymbol[EighthNote][\USymbChar{38}{106}] % EIGHTH NOTE
+   \definesymbol[BeamedEighthNotes][\USymbChar{38}{107}] % BEAMED EIGHTH NOTES
+   \definesymbol[BeamedSixteenthNotes][\USymbChar{38}{108}] % BEAMED SIXTEENTH NOTES
+   \definesymbol[MusicFlatSign][\USymbChar{38}{109}] % MUSIC FLAT SIGN
+   \definesymbol[MusicNaturalSign][\USymbChar{38}{110}] % MUSIC NATURAL SIGN
+   \definesymbol[MusicSharpSign][\USymbChar{38}{111}] % MUSIC SHARP SIGN
+
+\stopsymbolset
+
+\startsymbolset[Unicode Recycling] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[UniversalRecycling][\USymbChar{38}{114}] % [Unassigned U+2672]
+   \definesymbol[Type1Plastics][\USymbChar{38}{115}] % [Unassigned U+2673]
+   \definesymbol[Type2Plastics][\USymbChar{38}{116}] % [Unassigned U+2674]
+   \definesymbol[Type3Plastics][\USymbChar{38}{117}] % [Unassigned U+2675]
+   \definesymbol[Type4Plastics][\USymbChar{38}{118}] % [Unassigned U+2676]
+   \definesymbol[Type5Plastics][\USymbChar{38}{119}] % [Unassigned U+2677]
+   \definesymbol[Type6Plastics][\USymbChar{38}{120}] % [Unassigned U+2678]
+   \definesymbol[Type7Plastics][\USymbChar{38}{121}] % [Unassigned U+2679]
+   \definesymbol[GenericMaterials][\USymbChar{38}{122}] % [Unassigned U+267A]
+   \definesymbol[BlackUniversalRecycling][\USymbChar{38}{123}] % [Unassigned U+267B]
+   \definesymbol[RecycledPaper][\USymbChar{38}{124}] % [Unassigned U+267C]
+   \definesymbol[PartiallyRecycledPaper][\USymbChar{38}{125}] % [Unassigned U+267D]
+
+\stopsymbolset
+
+\startsymbolset[Unicode Dice] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[DieFace1][\USymbChar{38}{128}] % [Unassigned U+2680]
+   \definesymbol[DieFace2][\USymbChar{38}{129}] % [Unassigned U+2681]
+   \definesymbol[DieFace3][\USymbChar{38}{130}] % [Unassigned U+2682]
+   \definesymbol[DieFace4][\USymbChar{38}{131}] % [Unassigned U+2683]
+   \definesymbol[DieFace5][\USymbChar{38}{132}] % [Unassigned U+2684]
+   \definesymbol[DieFace6][\USymbChar{38}{133}] % [Unassigned U+2685]
+
+\stopsymbolset
+
+\startsymbolset[Unicode Go Markers] % 0x2600: Requires UnicodeRegular26
+
+   \definesymbol[WhiteCircleWithDotRight][\USymbChar{38}{134}] % [Unassigned U+2686]
+   \definesymbol[WhiteCircleWithTwoDots][\USymbChar{38}{135}] % [Unassigned U+2687]
+   \definesymbol[BlackCircleWithWhiteDotRight][\USymbChar{38}{136}] % [Unassigned U+2688]
+   \definesymbol[BlackCircleWithTwoWhiteDots][\USymbChar{38}{137}] % [Unassigned U+2689]
+
+\stopsymbolset
+
+\startsymbolset[Unicode Scissors] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[UpperBladeScissors][\USymbCharZapf{39}{1}] % UPPER BLADE SCISSORS
+   \definesymbol[BlackScissors][\USymbCharZapf{39}{2}] % BLACK SCISSORS
+   \definesymbol[LowerBladeScissors][\USymbCharZapf{39}{3}] % LOWER BLADE SCISSORS
+   \definesymbol[WhiteScissors][\USymbCharZapf{39}{4}] % WHITE SCISSORS
+
+\stopsymbolset
+
+\startsymbolset[Unicode Dingbats] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[TelephoneLocationSign][\USymbCharZapf{39}{6}] % TELEPHONE LOCATION SIGN
+   \definesymbol[TapeDrive][\USymbCharZapf{39}{7}] % TAPE DRIVE
+   \definesymbol[Airplane][\USymbCharZapf{39}{8}] % AIRPLANE
+   \definesymbol[Envelope][\USymbCharZapf{39}{9}] % ENVELOPE
+   \definesymbol[VictoryHand][\USymbCharZapf{39}{12}] % VICTORY HAND
+   \definesymbol[WritingHand][\USymbCharZapf{39}{13}] % WRITING HAND
+   \definesymbol[LowerRightPencil][\USymbCharZapf{39}{14}] % LOWER RIGHT PENCIL
+   \definesymbol[Pencil][\USymbCharZapf{39}{15}] % PENCIL
+   \definesymbol[UpperRightPencil][\USymbCharZapf{39}{16}] % UPPER RIGHT PENCIL
+   \definesymbol[WhiteNib][\USymbCharZapf{39}{17}] % WHITE NIB
+   \definesymbol[BlackNib][\USymbCharZapf{39}{18}] % BLACK NIB
+   \definesymbol[BlackDiamondMinusWhiteX][\USymbCharZapf{39}{86}] % BLACK DIAMOND MINUS WHITE X
+
+\stopsymbolset
+
+\startsymbolset[Unicode Checks and Xs] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[CheckMark][\USymbCharZapf{39}{19}] % CHECK MARK
+   \definesymbol[HeavyCheckMark][\USymbCharZapf{39}{20}] % HEAVY CHECK MARK
+   \definesymbol[MultiplicationX][\USymbCharZapf{39}{21}] % MULTIPLICATION X
+   \definesymbol[HeavyMultiplicationX][\USymbCharZapf{39}{22}] % HEAVY MULTIPLICATION X
+   \definesymbol[BallotX][\USymbCharZapf{39}{23}] % BALLOT X
+   \definesymbol[HeavyBallotX][\USymbCharZapf{39}{24}] % HEAVY BALLOT X
+
+\stopsymbolset
+
+\startsymbolset[Unicode Stars] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[FourTeardropSpokedAsterisk][\USymbCharZapf{39}{34}] % FOUR TEARDROP-SPOKED ASTERISK
+   \definesymbol[FourBalloonSpokedAsterisk][\USymbCharZapf{39}{35}] % FOUR BALLOON-SPOKED ASTERISK
+   \definesymbol[HeavyFourBalloonSpokedAsterisk][\USymbCharZapf{39}{36}] % HEAVY FOUR BALLOON-SPOKED ASTERISK
+   \definesymbol[FourClubSpokedAsterisk][\USymbCharZapf{39}{37}] % FOUR CLUB-SPOKED ASTERISK
+   \definesymbol[BlackFourPointedStar][\USymbCharZapf{39}{38}] % BLACK FOUR POINTED STAR
+   \definesymbol[WhiteFourPointedStar][\USymbCharZapf{39}{39}] % WHITE FOUR POINTED STAR
+   \definesymbol[StressOutlinedWhiteStar][\USymbCharZapf{39}{41}] % STRESS OUTLINED WHITE STAR
+   \definesymbol[CircledWhiteStar][\USymbCharZapf{39}{42}] % CIRCLED WHITE STAR
+   \definesymbol[OpenCentreBlackStar][\USymbCharZapf{39}{43}] % OPEN CENTRE BLACK STAR
+   \definesymbol[BlackCentreWhiteStar][\USymbCharZapf{39}{44}] % BLACK CENTRE WHITE STAR
+   \definesymbol[OutlinedBlackStar][\USymbCharZapf{39}{45}] % OUTLINED BLACK STAR
+   \definesymbol[HeavyOutlinedBlackStar][\USymbCharZapf{39}{46}] % HEAVY OUTLINED BLACK STAR
+   \definesymbol[PinwheelStar][\USymbCharZapf{39}{47}] % PINWHEEL STAR
+   \definesymbol[ShadowedWhiteStar][\USymbCharZapf{39}{48}] % SHADOWED WHITE STAR
+   \definesymbol[HeavyAsterisk][\USymbCharZapf{39}{49}] % HEAVY ASTERISK
+   \definesymbol[OpenCentreAsterisk][\USymbCharZapf{39}{50}] % OPEN CENTRE ASTERISK
+   \definesymbol[EightSpokedAsterisk][\USymbCharZapf{39}{51}] % EIGHT SPOKED ASTERISK
+   \definesymbol[EightPointedBlackStar][\USymbCharZapf{39}{52}] % EIGHT POINTED BLACK STAR
+   \definesymbol[EightPointedPinwheelStar][\USymbCharZapf{39}{53}] % EIGHT POINTED PINWHEEL STAR
+   \definesymbol[SixPointedBlackStar][\USymbCharZapf{39}{54}] % SIX POINTED BLACK STAR
+   \definesymbol[EightPointedRectilinearBlackStar][\USymbCharZapf{39}{55}] % EIGHT POINTED RECTILINEAR BLACK STAR
+   \definesymbol[HeavyEightPointedRectilinearBlackStar][\USymbCharZapf{39}{56}] % HEAVY EIGHT POINTED RECTILINEAR BLACK STAR
+   \definesymbol[TwelvePointedBlackStar][\USymbCharZapf{39}{57}] % TWELVE POINTED BLACK STAR
+   \definesymbol[SixteenPointedAsterisk][\USymbCharZapf{39}{58}] % SIXTEEN POINTED ASTERISK
+   \definesymbol[TeardropSpokedAsterisk][\USymbCharZapf{39}{59}] % TEARDROP-SPOKED ASTERISK
+   \definesymbol[OpenCentreTeardropSpokedAsterisk][\USymbCharZapf{39}{60}] % OPEN CENTRE TEARDROP-SPOKED ASTERISK
+   \definesymbol[HeavyTeardropSpokedAsterisk][\USymbCharZapf{39}{61}] % HEAVY TEARDROP-SPOKED ASTERISK
+   \definesymbol[SixPetalledBlackAndWhiteFlorette][\USymbCharZapf{39}{62}] % SIX PETALLED BLACK AND WHITE FLORETTE
+   \definesymbol[BlackFlorette][\USymbCharZapf{39}{63}] % BLACK FLORETTE
+   \definesymbol[WhiteFlorette][\USymbCharZapf{39}{64}] % WHITE FLORETTE
+   \definesymbol[EightPetalledOutlinedBlackFlorette][\USymbCharZapf{39}{65}] % EIGHT PETALLED OUTLINED BLACK FLORETTE
+   \definesymbol[CircledOpenCentreEightPointedStar][\USymbCharZapf{39}{66}] % CIRCLED OPEN CENTRE EIGHT POINTED STAR
+   \definesymbol[HeavyTeardropSpokedPinwheelAsterisk][\USymbCharZapf{39}{67}] % HEAVY TEARDROP-SPOKED PINWHEEL ASTERISK
+   \definesymbol[Sparkle][\USymbCharZapf{39}{71}] % SPARKLE
+   \definesymbol[HeavySparkle][\USymbCharZapf{39}{72}] % HEAVY SPARKLE
+   \definesymbol[Balloon-spokedAsterisk][\USymbCharZapf{39}{73}] % BALLOON-SPOKED ASTERISK
+   \definesymbol[EightTeardrop-spokedPropellerAsterisk][\USymbCharZapf{39}{74}] % EIGHT TEARDROP-SPOKED PROPELLER ASTERISK
+   \definesymbol[HeavyEightTeardrop-spokedPropellerAsterisk][\USymbCharZapf{39}{75}] % HEAVY EIGHT TEARDROP-SPOKED PROPELLER ASTERISK
+
+\stopsymbolset
+
+\startsymbolset[Unicode Snowflakes] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[Snowflake][\USymbCharZapf{39}{68}] % SNOWFLAKE
+   \definesymbol[TightTrifoliateSnowflake][\USymbCharZapf{39}{69}] % TIGHT TRIFOLIATE SNOWFLAKE
+   \definesymbol[HeavyChevronSnowflake][\USymbCharZapf{39}{70}] % HEAVY CHEVRON SNOWFLAKE
+
+\stopsymbolset
+
+\startsymbolset[Unicode Shadowed Shapes] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[ShadowedWhiteCircle][\USymbCharZapf{39}{77}] % SHADOWED WHITE CIRCLE
+   \definesymbol[LowerRightDrop-shadowedWhiteSquare][\USymbCharZapf{39}{79}] % LOWER RIGHT DROP-SHADOWED WHITE SQUARE
+   \definesymbol[UpperRightDrop-shadowedWhiteSquare][\USymbCharZapf{39}{80}] % UPPER RIGHT DROP-SHADOWED WHITE SQUARE
+   \definesymbol[LowerRightShadowedWhiteSquare][\USymbCharZapf{39}{81}] % LOWER RIGHT SHADOWED WHITE SQUARE
+   \definesymbol[UpperRightShadowedWhiteSquare][\USymbCharZapf{39}{82}] % UPPER RIGHT SHADOWED WHITE SQUARE
+
+\stopsymbolset
+
+\startsymbolset[Unicode Bars] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[LightVerticalBar][\USymbCharZapf{39}{88}] % LIGHT VERTICAL BAR
+   \definesymbol[MediumVerticalBar][\USymbCharZapf{39}{89}] % MEDIUM VERTICAL BAR
+   \definesymbol[HeavyVerticalBar][\USymbCharZapf{39}{90}] % HEAVY VERTICAL BAR
+
+\stopsymbolset
+
+\startsymbolset[Unicode Dingbat Punctuation] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[HeavySingleTurnedCommaQuotationMark][\USymbCharZapf{39}{91}] % HEAVY SINGLE TURNED COMMA QUOTATION MARK ORNAMENT
+   \definesymbol[HeavySingleCommaQuotationMark][\USymbCharZapf{39}{92}] % HEAVY SINGLE COMMA QUOTATION MARK ORNAMENT
+   \definesymbol[HeavyDoubleTurnedCommaQuotationMark][\USymbCharZapf{39}{93}] % HEAVY DOUBLE TURNED COMMA QUOTATION MARK ORNAMENT
+   \definesymbol[HeavyDoubleCommaQuotationMark][\USymbCharZapf{39}{94}] % HEAVY DOUBLE COMMA QUOTATION MARK ORNAMENT
+   \definesymbol[CurvedStemParagraphSign][\USymbCharZapf{39}{97}] % CURVED STEM PARAGRAPH SIGN ORNAMENT
+   \definesymbol[HeavyExclamationMark][\USymbCharZapf{39}{98}] % HEAVY EXCLAMATION MARK ORNAMENT
+   \definesymbol[HeavyHeartExclamationMark][\USymbCharZapf{39}{99}] % HEAVY HEART EXCLAMATION MARK ORNAMENT
+
+\stopsymbolset
+
+\startsymbolset[Unicode Hearts] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[HeavyBlackHeart][\USymbCharZapf{39}{100}] % HEAVY BLACK HEART
+   \definesymbol[RotatedHeavyBlackHeartBullet][\USymbCharZapf{39}{101}] % ROTATED HEAVY BLACK HEART BULLET
+   \definesymbol[FloralHeart][\USymbCharZapf{39}{102}] % FLORAL HEART
+   \definesymbol[RotatedFloralHeartBullet][\USymbCharZapf{39}{103}] % ROTATED FLORAL HEART BULLET
+
+\stopsymbolset
+
+\startsymbolset[Unicode Negative Circled Digits] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[CircledOne][\USymbCharZapf{39}{118}] % DINGBAT NEGATIVE CIRCLED DIGIT ONE
+   \definesymbol[CircledTwo][\USymbCharZapf{39}{119}] % DINGBAT NEGATIVE CIRCLED DIGIT TWO
+   \definesymbol[CircledThree][\USymbCharZapf{39}{120}] % DINGBAT NEGATIVE CIRCLED DIGIT THREE
+   \definesymbol[CircledFour][\USymbCharZapf{39}{121}] % DINGBAT NEGATIVE CIRCLED DIGIT FOUR
+   \definesymbol[CircledFive][\USymbCharZapf{39}{122}] % DINGBAT NEGATIVE CIRCLED DIGIT FIVE
+   \definesymbol[CircledSix][\USymbCharZapf{39}{123}] % DINGBAT NEGATIVE CIRCLED DIGIT SIX
+   \definesymbol[CircledSeven][\USymbCharZapf{39}{124}] % DINGBAT NEGATIVE CIRCLED DIGIT SEVEN
+   \definesymbol[CircledEight][\USymbCharZapf{39}{125}] % DINGBAT NEGATIVE CIRCLED DIGIT EIGHT
+   \definesymbol[CircledNine][\USymbCharZapf{39}{126}] % DINGBAT NEGATIVE CIRCLED DIGIT NINE
+   \definesymbol[CircledTen][\USymbCharZapf{39}{127}] % DINGBAT NEGATIVE CIRCLED NUMBER TEN
+
+\stopsymbolset
+
+\startsymbolset[Unicode Circled Sans-serif Digits] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[CircledOne][\USymbCharZapf{39}{128}] % DINGBAT CIRCLED SANS-SERIF DIGIT ONE
+   \definesymbol[CircledTwo][\USymbCharZapf{39}{129}] % DINGBAT CIRCLED SANS-SERIF DIGIT TWO
+   \definesymbol[CircledThree][\USymbCharZapf{39}{130}] % DINGBAT CIRCLED SANS-SERIF DIGIT THREE
+   \definesymbol[CircledFour][\USymbCharZapf{39}{131}] % DINGBAT CIRCLED SANS-SERIF DIGIT FOUR
+   \definesymbol[CircledFive][\USymbCharZapf{39}{132}] % DINGBAT CIRCLED SANS-SERIF DIGIT FIVE
+   \definesymbol[CircledSix][\USymbCharZapf{39}{133}] % DINGBAT CIRCLED SANS-SERIF DIGIT SIX
+   \definesymbol[CircledSeven][\USymbCharZapf{39}{134}] % DINGBAT CIRCLED SANS-SERIF DIGIT SEVEN
+   \definesymbol[CircledEight][\USymbCharZapf{39}{135}] % DINGBAT CIRCLED SANS-SERIF DIGIT EIGHT
+   \definesymbol[CircledNine][\USymbCharZapf{39}{136}] % DINGBAT CIRCLED SANS-SERIF DIGIT NINE
+   \definesymbol[CircledTen][\USymbCharZapf{39}{137}] % DINGBAT CIRCLED SANS-SERIF NUMBER TEN
+
+\stopsymbolset
+
+\startsymbolset[Unicode Negative Circled Sans-serif Digits] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[CircledOne][\USymbCharZapf{39}{138}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT ONE
+   \definesymbol[CircledTwo][\USymbCharZapf{39}{139}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT TWO
+   \definesymbol[CircledThree][\USymbCharZapf{39}{140}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT THREE
+   \definesymbol[CircledFour][\USymbCharZapf{39}{141}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT FOUR
+   \definesymbol[CircledFive][\USymbCharZapf{39}{142}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT FIVE
+   \definesymbol[CircledSix][\USymbCharZapf{39}{143}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT SIX
+   \definesymbol[CircledSeven][\USymbCharZapf{39}{144}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT SEVEN
+   \definesymbol[CircledEight][\USymbCharZapf{39}{145}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT EIGHT
+   \definesymbol[CircledNine][\USymbCharZapf{39}{146}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT NINE
+   \definesymbol[CircledTen][\USymbCharZapf{39}{147}] % DINGBAT NEGATIVE CIRCLED SANS-SERIF NUMBER TEN
+
+\stopsymbolset
+
+\startsymbolset[Unicode Dingbat Arrows] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[HeavyWideHeadedRightwardsArrow][\USymbCharZapf{39}{148}] % HEAVY WIDE-HEADED RIGHTWARDS ARROW
+   \definesymbol[HeavySouthEastArrow][\USymbCharZapf{39}{152}] % HEAVY SOUTH EAST ARROW
+   \definesymbol[HeavyRightwardsArrow][\USymbCharZapf{39}{153}] % HEAVY RIGHTWARDS ARROW
+   \definesymbol[HeavyNorthEastArrow][\USymbCharZapf{39}{154}] % HEAVY NORTH EAST ARROW
+   \definesymbol[DraftingPointRightwardsArrow][\USymbCharZapf{39}{155}] % DRAFTING POINT RIGHTWARDS ARROW
+   \definesymbol[HeavyRoundTippedRightwardsArrow][\USymbCharZapf{39}{156}] % HEAVY ROUND-TIPPED RIGHTWARDS ARROW
+   \definesymbol[TriangleHeadedRightwardsArrow][\USymbCharZapf{39}{157}] % TRIANGLE-HEADED RIGHTWARDS ARROW
+   \definesymbol[HeavyTriangleHeadedRightwardsArrow][\USymbCharZapf{39}{158}] % HEAVY TRIANGLE-HEADED RIGHTWARDS ARROW
+   \definesymbol[DashedTriangleHeadedRightwardsArrow][\USymbCharZapf{39}{159}] % DASHED TRIANGLE-HEADED RIGHTWARDS ARROW
+   \definesymbol[HeavyDashedTriangleHeadedRightwardsArrow][\USymbCharZapf{39}{160}] % HEAVY DASHED TRIANGLE-HEADED RIGHTWARDS ARROW
+   \definesymbol[BlackRightwardsArrow][\USymbCharZapf{39}{161}] % BLACK RIGHTWARDS ARROW
+   \definesymbol[3DTopLightedRightwardsArrowhead][\USymbCharZapf{39}{162}] % THREE-D TOP-LIGHTED RIGHTWARDS ARROWHEAD
+   \definesymbol[3DBottomLightedRightwardsArrowhead][\USymbCharZapf{39}{163}] % THREE-D BOTTOM-LIGHTED RIGHTWARDS ARROWHEAD
+   \definesymbol[BlackRightwardsArrowhead][\USymbCharZapf{39}{164}] % BLACK RIGHTWARDS ARROWHEAD
+   \definesymbol[HeavyBlackCurvedDownwardsAndRightwardsArrow][\USymbCharZapf{39}{165}] % HEAVY BLACK CURVED DOWNWARDS AND RIGHTWARDS ARROW
+   \definesymbol[HeavyBlackCurvedUpwardsAndRightwardsArrow][\USymbCharZapf{39}{166}] % HEAVY BLACK CURVED UPWARDS AND RIGHTWARDS ARROW
+   \definesymbol[SquatBlackRightwardsArrow][\USymbCharZapf{39}{167}] % SQUAT BLACK RIGHTWARDS ARROW
+   \definesymbol[HeavyConcavePointedBlackRightwardsArrow][\USymbCharZapf{39}{168}] % HEAVY CONCAVE-POINTED BLACK RIGHTWARDS ARROW
+   \definesymbol[CircledHeavyWhiteRightwardsArrow][\USymbCharZapf{39}{178}] % CIRCLED HEAVY WHITE RIGHTWARDS ARROW
+   \definesymbol[OpenOutlinedRightwardsArrow][\USymbCharZapf{39}{190}] % OPEN-OUTLINED RIGHTWARDS ARROW
+
+\stopsymbolset
+
+\startsymbolset[Unicode Shadowed Arrows] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[RightShadedWhiteRightwardsArrow][\USymbCharZapf{39}{169}] % RIGHT-SHADED WHITE RIGHTWARDS ARROW
+   \definesymbol[LeftShadedWhiteRightwardsArrow][\USymbCharZapf{39}{170}] % LEFT-SHADED WHITE RIGHTWARDS ARROW
+   \definesymbol[BackTiltedShadowedWhiteRightwardsArrow][\USymbCharZapf{39}{171}] % BACK-TILTED SHADOWED WHITE RIGHTWARDS ARROW
+   \definesymbol[FrontTiltedShadowedWhiteRightwardsArrow][\USymbCharZapf{39}{172}] % FRONT-TILTED SHADOWED WHITE RIGHTWARDS ARROW
+   \definesymbol[HeavyLowerRightShadowedWhiteRightwardsArrow][\USymbCharZapf{39}{173}] % HEAVY LOWER RIGHT-SHADOWED WHITE RIGHTWARDS ARROW
+   \definesymbol[HeavyUpperRightShadowedWhiteRightwardsArrow][\USymbCharZapf{39}{174}] % HEAVY UPPER RIGHT-SHADOWED WHITE RIGHTWARDS ARROW
+   \definesymbol[NotchedLowerRightShadowedWhiteRightwardsArrow][\USymbCharZapf{39}{175}] % NOTCHED LOWER RIGHT-SHADOWED WHITE RIGHTWARDS ARROW
+   \definesymbol[NotchedUpperRightShadowedWhiteRightwardsArrow][\USymbCharZapf{39}{177}] % NOTCHED UPPER RIGHT-SHADOWED WHITE RIGHTWARDS ARROW
+
+\stopsymbolset
+
+\startsymbolset[Unicode Tailed Arrows] % 0x2700: Requires UnicodeRegular27
+
+   \definesymbol[WhiteFeatheredRightwardsArrow][\USymbCharZapf{39}{179}] % WHITE-FEATHERED RIGHTWARDS ARROW
+   \definesymbol[BlackFeatheredSouthEastArrow][\USymbCharZapf{39}{180}] % BLACK-FEATHERED SOUTH EAST ARROW
+   \definesymbol[BlackFeatheredRightwardsArrow][\USymbCharZapf{39}{181}] % BLACK-FEATHERED RIGHTWARDS ARROW
+   \definesymbol[BlackFeatheredNorthEastArrow][\USymbCharZapf{39}{182}] % BLACK-FEATHERED NORTH EAST ARROW
+   \definesymbol[HeavyBlack-featheredSouthEastArrow][\USymbCharZapf{39}{183}] % HEAVY BLACK-FEATHERED SOUTH EAST ARROW
+   \definesymbol[HeavyBlackFeatheredRightwardsArrow][\USymbCharZapf{39}{184}] % HEAVY BLACK-FEATHERED RIGHTWARDS ARROW
+   \definesymbol[HeavyBlackFeatheredNorthEastArrow][\USymbCharZapf{39}{185}] % HEAVY BLACK-FEATHERED NORTH EAST ARROW
+   \definesymbol[TeardropBarbedRightwardsArrow][\USymbCharZapf{39}{186}] % TEARDROP-BARBED RIGHTWARDS ARROW
+   \definesymbol[HeavyTeardropShankedRightwardsArrow][\USymbCharZapf{39}{187}] % HEAVY TEARDROP-SHANKED RIGHTWARDS ARROW
+   \definesymbol[WedgeTailedRightwardsArrow][\USymbCharZapf{39}{188}] % WEDGE-TAILED RIGHTWARDS ARROW
+   \definesymbol[HeavyWedgeTailedRightwardsArrow][\USymbCharZapf{39}{189}] % HEAVY WEDGE-TAILED RIGHTWARDS ARROW
+
+\stopsymbolset
+
+\endinput

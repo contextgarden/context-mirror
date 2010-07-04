@@ -1,0 +1,236 @@
+%D \module
+%D   [     file=enco-l7x,
+%D      version=2010.01.22,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=\LATEX\ L7x Encoding,
+%D       author={Hans Hagen \& Mojca Miklavec},
+%D         date=\currentdate,
+%D    copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Encoding vector to support Latvian and Lithuanian. The first
+%D part is taken from EC encoding, the rest has not been tested
+%D extensively.
+
+\startmapping[l7x]
+
+\definecaseswap  25 `I  % dotless i (TODO - probably wrong; maybe use \defineuppercasecom)
+\definecaseswap 156 140 % oeligature
+\definecaseswap 184 168 % ostroke
+\definecaseswap 186 170 % rcommaaccent
+\definecaseswap 191 175 % aeligature
+\definecaseself 223     % ssharp (this is wrong, but no better way)
+
+\definecasemaps 192 to 222 lc +32 uc   0
+\definecasemaps 224 to 254 lc   0 uc -32
+\resetcaserange 215 to 215 % textmultiply
+\resetcaserange 247 to 247 % textdiv
+
+\stopmapping
+
+\startencoding[l7x]
+
+\definecharacter textgrave         0
+\definecharacter textacute         1
+\definecharacter textcircumflex    2
+\definecharacter texttilde         3
+\definecharacter textdiaeresis     4
+\definecharacter texthungarumlaut  5
+\definecharacter textring          6
+\definecharacter textcaron         7
+\definecharacter textbreve         8
+\definecharacter textmacron        9
+\definecharacter textdotaccent    10
+\definecharacter textcedilla      11
+\definecharacter textogonek       12
+\definecharacter quotesinglebase  13
+\definecharacter guilsingleleft   14
+\definecharacter guilsingleright  15
+\definecharacter quotedblleft     16
+\definecharacter quotedblright    17
+\definecharacter quotedblbase     18
+\definecharacter leftguillemot    19
+\definecharacter rightguillemot   20
+\definecharacter endash           21
+\definecharacter emdash           22
+%definecharacter compoundwordmark 23
+%definecharacter perthousand      24
+\definecharacter dotlessi         25 % or when missing: {j}
+\definecharacter dotlessj         26
+% ff                              27
+% fi                              28
+% fl                              29
+% ffi                             30
+% ffl                             31
+%definecharacter textvisiblespace 32
+% exclam         !                33
+\definecharacter quotedbl         34
+% numbersign     #                35
+% dollar         $                36
+\definecharacter percent          37
+% ampersand      &                38
+%definecharacter quotesingle      39 % fake 'm TODO:enco-def!!!!
+\definecharacter quoteright       39
+% parenleft      (                40
+% parenright     )                41
+% asterisk       *                42
+% plus           +                43
+% comma          ,                44
+\definecharacter softhyphen       45
+% period         .                46
+% slash          /                47
+% 0-9                          48-57
+% colon          :                58
+% semicolon      ;                59
+% less           <                60
+% equal          =                61
+% greater        >                62
+% question       ?                63
+% at             @                64
+% A-Z                          65-90
+% bracketleft    [                91
+\definecharacter textbackslash    92
+% bracketright   ]                93
+\definecharacter textasciicircum  94
+\definecharacter textunderscore   95
+\definecharacter quoteleft        96
+% a-z                         97-122
+\definecharacter textbraceleft   123
+\definecharacter textbraceright  125
+\definecharacter textasciitilde  126
+% .notdef                        127
+\definecharacter texteuro        128
+% .notdef                        129
+\definecharacter quotesinglebase 130
+\definecharacter textflorin      131 \definecharacter fhook           131
+\definecharacter quotedblbase    132
+\definecharacter textellipsis    133
+\definecharacter textdag         134
+\definecharacter textddag        135
+% .notdef                        136
+\definecharacter perthousand     137
+% .notdef                        138
+\definecharacter guilsingleleft  139
+\definecharacter OEligature      140 % TODO: also \OE???
+\definecharacter textdiaeresis   141
+\definecharacter textcaron       142
+\definecharacter textcedilla     143
+% .notdef                        144
+\definecharacter quoteleft       145
+\definecharacter quoteright      146
+\definecharacter quotedblleft    147
+\definecharacter quotedblright   148
+\definecharacter textbullet      149
+\definecharacter endash          150
+\definecharacter emdash          151
+% .notdef                        152
+\definecharacter trademark       153
+% .notdef                        154
+\definecharacter guilsingleright 155
+\definecharacter oeligature      156
+\definecharacter textmacron      157
+\definecharacter textogonek      158
+% .notdef                        159
+%definecharacter space           160 % TODO!!!
+\definecharacter quotedblright   161
+\definecharacter textcent        162
+\definecharacter textsterling    163
+\definecharacter textcurrency    164
+\definecharacter quotedblbase    165
+\definecharacter textbrokenbar   166
+\definecharacter sectionmark     167
+\definecharacter Ostroke         168
+\definecharacter copyright       169
+\definecharacter Rcommaaccent    170
+\definecharacter leftguillemot   171
+\definecharacter textlognot      172
+%definecharacter softhyphen      173 % -> 45 (TODO!!!)
+\definecharacter registered      174
+\definecharacter AEligature      175
+\definecharacter textdegree      176
+\definecharacter textpm          177
+\definecharacter twosuperior     178
+\definecharacter threesuperior   179
+\definecharacter quotedblleft    180
+\definecharacter textmu          181
+\definecharacter paragraphmark   182
+\definecharacter periodcentered  183
+\definecharacter ostroke         184
+\definecharacter onesuperior     185
+\definecharacter rcommaaccent    186
+\definecharacter rightguillemot  187
+\definecharacter onequarter      188
+\definecharacter onehalf         189
+\definecharacter threequarter    190
+\definecharacter aeligature      191
+\definecharacter Aogonek         192
+\definecharacter Iogonek         193
+\definecharacter Amacron         194
+\definecharacter Cacute          195
+\definecharacter Adiaeresis      196
+\definecharacter Aring           197
+\definecharacter Eogonek         198
+\definecharacter Emacron         199
+\definecharacter Ccaron          200
+\definecharacter Eacute          201
+\definecharacter Zacute          202
+\definecharacter Edotaccent      203
+\definecharacter Gcommaaccent    204
+\definecharacter Kcommaaccent    205
+\definecharacter Imacron         206
+\definecharacter Lcommaaccent    207
+\definecharacter Scaron          208
+\definecharacter Nacute          209
+\definecharacter Ncommaaccent    210
+\definecharacter Oacute          211
+\definecharacter Omacron         212
+\definecharacter Otilde          213
+\definecharacter Odiaeresis      214
+\definecharacter textmultiply    215
+\definecharacter Uogonek         216
+\definecharacter Lstroke         217
+\definecharacter Sacute          218
+\definecharacter Umacron         219
+\definecharacter Udiaeresis      220
+\definecharacter Zdotaccent      221
+\definecharacter Zcaron          222
+\definecharacter ssharp          223
+\definecharacter aogonek         224
+\definecharacter iogonek         225
+\definecharacter amacron         226
+\definecharacter cacute          227
+\definecharacter adiaeresis      228
+\definecharacter aring           229
+\definecharacter eogonek         230
+\definecharacter emacron         231
+\definecharacter ccaron          232
+\definecharacter eacute          233
+\definecharacter zacute          234
+\definecharacter edotaccent      235
+\definecharacter gcommaaccent    236
+\definecharacter kcommaaccent    237
+\definecharacter imacron         238
+\definecharacter lcommaaccent    239
+\definecharacter scaron          240
+\definecharacter nacute          241
+\definecharacter ncommaaccent    242
+\definecharacter oacute          243
+\definecharacter omacron         244
+\definecharacter otilde          245
+\definecharacter odiaeresis      246
+\definecharacter textdiv         247
+\definecharacter uogonek         248
+\definecharacter lstroke         249
+\definecharacter sacute          250
+\definecharacter umacron         251
+\definecharacter udiaeresis      252
+\definecharacter zdotaccent      253
+\definecharacter zcaron          254
+\definecharacter quoteright      255
+
+\stopencoding
+
+\endinput

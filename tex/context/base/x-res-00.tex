@@ -1,0 +1,67 @@
+%D \module
+%D   [      file=x-res-00,
+%D        version=2001.03.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Resource Libraries,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+% \defineXMLcommandpush [rl:instance] (todo)
+% \rawframed == [frame=off,offset=overlay]
+
+% resource library
+
+\defineXMLprocess [rl:figurelibrary] % not to be used any longer
+\defineXMLprocess [rl:library]
+
+% resource library description
+
+\defineXMLignore [rl:description]
+
+\defineXMLpush [rl:organization]
+\defineXMLpush [rl:product]
+\defineXMLpush [rl:project]
+\defineXMLpush [rl:collection]
+
+% resource library entries (better use XMLignore)
+
+\defineXMLignore [rl:applet]
+\defineXMLignore [rl:application]
+\defineXMLignore [rl:figure]
+\defineXMLignore [rl:movie]
+\defineXMLignore [rl:sound]
+
+\defineXMLpush [rl:type]
+\defineXMLpush [rl:state]
+\defineXMLpush [rl:width]
+\defineXMLpush [rl:height]
+\defineXMLpush [rl:file]
+\defineXMLpush [rl:label]
+\defineXMLpush [rl:original]
+\defineXMLpush [rl:title]
+\defineXMLpush [rl:alternative]
+\defineXMLpush [rl:dummy]
+\defineXMLpush [rl:icon]
+\defineXMLpush [rl:copyright]
+\defineXMLpush [rl:comment]
+\defineXMLpush [rl:status]
+\defineXMLpush [rl:original]
+\defineXMLpush [rl:manipulation]
+
+% instances
+
+\defineXMLignore [rl:instance]
+
+\defineXMLpush [rl:background]
+\defineXMLpush [rl:viewport]
+\defineXMLpush [rl:dimension]
+\defineXMLpush [rl:position]
+
+\protect \endinput

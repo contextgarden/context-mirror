@@ -1,0 +1,380 @@
+%D \module
+%D   [       file=context,
+%D        version=2008.28.10, % 1995.10.10,
+%D          title=\CONTEXT,
+%D       subtitle=\CONTEXT\ Format Generation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% syst-cat -> catc-ini + vectors
+% spec-*   -> special backends for luatex
+
+%D First we load the system modules. These implement a lot of
+%D manipulation macros. The first one loads \PLAIN\ \TEX, as
+%D minimal as possible.
+
+\loadcorefile{syst-ini}
+
+\ifnum\luatexversion<60 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.60!}
+    \expandafter\end
+\fi
+
+\newtoks\contextversiontoks \contextversiontoks\expandafter{\contextversion} % at the lua end
+
+\loadcorefile{norm-ctx}
+\loadcorefile{syst-pln}
+
+\newif\ifCONTEXT \CONTEXTtrue % will disappear
+
+\loadmarkfile{luat-cod}
+\loadmarkfile{luat-bas}
+\loadmarkfile{luat-lib}
+
+\loadmarkfile{catc-ini}
+\loadcorefile{catc-act}
+\loadcorefile{catc-def}
+\loadcorefile{catc-ctx}
+\loadcorefile{catc-sym}
+
+% From here on we have \unexpanded being \normalprotected, as we
+% already had \unexpanded long before etex came around.
+
+\loadmarkfile{syst-aux}
+\loadmarkfile{syst-lua}
+\loadmarkfile{syst-con}
+\loadcorefile{syst-ltx}
+
+\loadmarkfile{syst-fnt}
+\loadmarkfile{syst-str}
+\loadmarkfile{syst-rtp}
+
+\loadmarkfile{supp-fil}
+\loadmarkfile{supp-dir}
+
+\loadmarkfile{char-ini}
+\loadmarkfile{char-utf}
+\loadmarkfile{char-act}
+
+\loadmarkfile{mult-ini}
+\loadcorefile{mult-fst}
+\loadcorefile{mult-sys}
+\loadcorefile{mult-def}
+\loadmarkfile{mult-chk}
+\loadmarkfile{mult-cld}
+
+\loadmarkfile{luat-ini}
+
+\loadmarkfile{toks-ini}
+
+\loadmarkfile{node-ini}
+\loadmarkfile{node-fin}
+\loadmarkfile{node-mig}
+\loadmarkfile{node-par}
+%loadmarkfile{node-pag}
+
+\loadmarkfile{core-var}
+
+\loadmarkfile{back-ini}
+\loadmarkfile{lpdf-ini} % some day back-ini will load this
+\loadmarkfile{lpdf-pdx} % might be merged into lpdf-ini
+\loadmarkfile{back-pdf} % some day back-ini will load this
+
+\loadmarkfile{attr-ini}
+
+\loadmarkfile{core-env}
+
+\loadmarkfile{trac-tex}
+\loadmarkfile{trac-lmx}
+\loadmarkfile{trac-deb}
+
+\loadmarkfile{blob-ini} % not to be used, we only use a helper
+
+\loadcorefile{supp-box}
+
+\loadcorefile{supp-vis}
+\loadcorefile{supp-fun}
+
+\loadmarkfile{supp-ran}
+\loadmarkfile{supp-mat}
+\loadcorefile{supp-ali}
+\loadcorefile{supp-num}
+
+\loadmarkfile{typo-ini}
+
+\loadmarkfile{page-ins}
+\loadmarkfile{core-fil}
+\loadmarkfile{core-con}
+
+\loadcorefile{cont-fil}
+
+\loadmarkfile{regi-ini}
+\loadcorefile{regi-syn}
+\loadmarkfile{enco-ini}
+\loadmarkfile{hand-ini}
+
+\loadmarkfile{lang-ini}
+\loadmarkfile{lang-lab}
+\loadmarkfile{lang-wrd}
+
+\loadmarkfile{unic-ini}
+
+\loadmarkfile{core-gen}
+\loadmarkfile{core-uti}
+\loadmarkfile{core-two}
+
+\loadmarkfile{colo-ini}
+\loadmarkfile{colo-ext}
+
+\loadmarkfile{trac-vis}
+
+\loadmarkfile{lang-mis}
+\loadmarkfile{lang-url}
+
+\loadcorefile{lang-ger}
+\loadcorefile{lang-ita}
+\loadcorefile{lang-sla}
+\loadcorefile{lang-alt}
+\loadcorefile{lang-ana}
+\loadcorefile{lang-art}
+\loadcorefile{lang-bal}
+\loadcorefile{lang-cel}
+\loadcorefile{lang-grk}
+\loadcorefile{lang-ind}
+\loadcorefile{lang-ura}
+\loadcorefile{lang-vn}
+\loadcorefile{lang-cyr}
+
+\loadmarkfile{lang-ara}
+\loadmarkfile{lang-cjk}
+
+\loadmarkfile{symb-ini}
+
+\loadmarkfile{sort-ini}
+
+\loadmarkfile{pack-rul}
+
+\loadmarkfile{lxml-ini}
+\loadmarkfile{lxml-sor}
+
+\loadmarkfile{strc-ini}
+\loadmarkfile{strc-doc}
+\loadmarkfile{strc-mar}
+\loadmarkfile{strc-prc}
+\loadmarkfile{strc-sbe}
+\loadmarkfile{strc-lst}
+\loadmarkfile{strc-sec}
+\loadmarkfile{strc-num}
+\loadmarkfile{strc-ren}
+\loadmarkfile{strc-xml}
+\loadmarkfile{strc-pag} % hm, depends on core-num
+\loadmarkfile{strc-def} % might happen later
+\loadmarkfile{strc-ref}
+\loadmarkfile{strc-reg}
+
+\loadmarkfile{spac-hor}
+\loadmarkfile{spac-ver}
+\loadmarkfile{spac-ali}
+\loadmarkfile{spac-pag}
+\loadmarkfile{spac-fnt}
+\loadmarkfile{spac-par}
+\loadmarkfile{spac-def}
+\loadmarkfile{spac-grd}
+
+\loadmarkfile{anch-pos}
+
+\loadmarkfile{scrn-nav}
+\loadmarkfile{pack-obj}
+
+\loadmarkfile{strc-itm}
+\loadmarkfile{strc-des}
+\loadmarkfile{strc-syn}
+
+\loadmarkfile{core-sys}
+
+\loadmarkfile{page-ini}
+\loadmarkfile{page-flt}
+\loadmarkfile{page-bck}
+\loadmarkfile{page-not}
+\loadmarkfile{page-one}
+\loadmarkfile{page-lay}
+\loadmarkfile{page-txt}
+\loadmarkfile{page-sid}
+
+\loadmarkfile{strc-flt}
+
+\loadmarkfile{page-mis}
+\loadmarkfile{page-mul}
+\loadmarkfile{page-set}
+\loadmarkfile{pack-lyr}
+\loadmarkfile{page-mak}
+
+\loadmarkfile{page-lin}
+\loadmarkfile{page-par}
+\loadmarkfile{page-mar}
+
+\loadmarkfile{core-job} % why so late?
+
+\loadmarkfile{buff-ini}
+\loadmarkfile{buff-ver}
+
+\loadmarkfile{strc-blk}
+
+\loadmarkfile{page-imp}
+
+\loadmarkfile{scrn-int}
+\loadmarkfile{scrn-men}
+\loadmarkfile{scrn-but}
+\loadmarkfile{scrn-bar}
+\loadmarkfile{strc-bkm} % bookmarks
+
+\loadmarkfile{tabl-com}
+\loadmarkfile{tabl-pln}
+\loadcorefile{thrd-tab}
+\loadmarkfile{tabl-tab}
+\loadmarkfile{tabl-tbl}
+\loadmarkfile{tabl-ntb}
+\loadmarkfile{tabl-nte}
+\loadmarkfile{tabl-ltb}
+\loadmarkfile{tabl-tsp}
+
+\loadmarkfile{java-ini}
+
+\loadmarkfile{scrn-fld}
+\loadmarkfile{scrn-hlp}
+
+\loadmarkfile{char-enc}
+\loadmarkfile{font-ini}
+\loadmarkfile{font-unk}
+\loadmarkfile{font-tra}
+\loadmarkfile{font-uni}
+\loadmarkfile{font-col}
+\loadmarkfile{font-gds}
+
+\loadmarkfile{typo-spa}
+\loadmarkfile{typo-krn}
+\loadmarkfile{typo-mir}
+\loadmarkfile{typo-brk}
+\loadmarkfile{typo-cap}
+\loadmarkfile{typo-dig}
+\loadmarkfile{typo-rep}
+
+\loadmarkfile{type-ini}
+\loadmarkfile{type-set}
+
+\loadmarkfile{scrp-ini}
+
+\loadmarkfile{prop-ini}
+\loadmarkfile{prop-lay}
+\loadmarkfile{prop-mis}
+
+\loadmarkfile{mlib-ctx}
+\loadmarkfile{mlib-pdf}
+\loadmarkfile{mlib-pps}
+
+\loadmarkfile{meta-ini}
+\loadmarkfile{meta-tex}
+\loadmarkfile{meta-pdf}
+\loadmarkfile{meta-fun}
+
+\loadmarkfile{meta-pag}
+
+\loadmarkfile{page-flw}
+\loadmarkfile{page-spr}
+\loadmarkfile{page-plg}
+\loadmarkfile{page-str}
+
+\loadmarkfile{anch-pgr} % overloads tabl-tbl
+\loadmarkfile{anch-bar}
+\loadmarkfile{anch-snc}
+
+\loadmarkfile{math-ini}
+\loadmarkfile{math-pln}
+\loadmarkfile{math-for}
+\loadmarkfile{math-def}
+\loadmarkfile{math-ali}
+\loadmarkfile{math-arr}
+\loadmarkfile{math-frc}
+\loadmarkfile{math-scr}
+\loadmarkfile{math-int}
+\loadmarkfile{math-del}
+\loadmarkfile{math-inl}
+\loadmarkfile{math-dis}
+\loadmarkfile{math-lan}
+
+\loadmarkfile{strc-mat}
+
+\loadmarkfile{chem-ini}
+\loadmarkfile{chem-str}
+
+\loadmarkfile{core-fnt}
+\loadmarkfile{node-rul}
+
+\loadmarkfile{strc-not}
+\loadmarkfile{strc-lnt}
+
+\loadmarkfile{core-mis}
+
+\loadmarkfile{grph-trf}
+\loadmarkfile{grph-inc}
+\loadmarkfile{grph-fig}
+
+\loadmarkfile{pack-box}
+\loadmarkfile{pack-bar}
+\loadmarkfile{page-app}
+\loadmarkfile{meta-fig}
+
+\loadmarkfile{node-bck} %  overloads anch-pgr (experimental and undocumented)
+
+\loadcorefile{lang-spa}
+
+\loadmarkfile{bibl-bib}
+\loadmarkfile{bibl-tra}
+
+\loadmarkfile{x-xtag}  % at some point this will not be preloaded
+
+\loadcorefile{meta-xml}
+
+\loadcorefile{cont-log}
+
+\loadmarkfile{task-ini}
+
+\loadmarkfile{core-ctx}
+
+\loadmarkfile{core-ini}
+\loadmarkfile{core-def}
+
+%usemodule[x][res-04] % xml resource libraries
+%usemodule[x][res-08] % rlx runtime conversion
+%usemodule[x][res-12] % rli external indentification
+
+\unprotect
+
+\setupcurrentlanguage[\s!en]
+
+\prependtoks
+    \ctxlua{statistics.starttiming(ctx)}%
+\to \everyjob
+
+\appendtoks
+    \ctxlua{statistics.stoptiming(ctx)}%
+\to \everyjob
+
+\appendtoks
+    \writestatus\m!lua{used config path - \ctxlua{tex.print(caches.configpath())}}%
+    \writestatus\m!lua{used cache path  - \ctxlua{tex.print(caches.path)}}%
+\to \everydump
+
+\appendtoks
+    \ctxlua {
+        statistics.report_storage("log")
+        statistics.save_fmt_status("\jobname","\contextversion","context.tex")
+    }%
+\to \everydump
+
+\protect \errorstopmode \dump \endinput

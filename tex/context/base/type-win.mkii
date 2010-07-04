@@ -1,0 +1,69 @@
+%D \module
+%D   [       file=type-msw,
+%D        version=2005.02.04,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Microsoft Windows Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \usetypescriptfile[type-msw]
+%
+% \definetypeface[verdana][ss][sans] [verdana] [default][encoding=texnansi]
+% \definetypeface[verdana][rm][serif][palatino][default][encoding=texnansi,rscale=1.1]
+% \definetypeface[verdana][mm][math] [palatino][default][encoding=texnansi,rscale=1.1]
+% \definetypeface[verdana][tt][mono] [modern]  [default][encoding=texnansi,rscale=1.25]
+%
+% \setupbodyfont[verdana] \showfontstrip
+%
+% \startlines
+% {\rm test {\sl test} {\it test} {\bf test} {\bs test} {\bi test}}
+% {\ss test {\sl test} {\it test} {\bf test} {\bs test} {\bi test}}
+% {\tt test {\sl test} {\it test} {\bf test} {\bs test} {\bi test}}
+% \stoplines
+
+\starttypescriptcollection[windows]
+
+% verdana
+
+\starttypescript [sans] [verdana] [name]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [Verdana]
+    \definefontsynonym [SansBold]       [Verdana-Bold]
+    \definefontsynonym [SansItalic]     [Verdana-Italic]
+    \definefontsynonym [SansBoldItalic] [Verdana-BoldItalic]
+\stoptypescript
+
+\starttypescript [sans] [verdana] [texnansi,ec,qx]
+    \definefontsynonym [Verdana]            [\typescriptthree-verdana]  [encoding=\typescriptthree]
+    \definefontsynonym [Verdana-Bold]       [\typescriptthree-verdanab] [encoding=\typescriptthree]
+    \definefontsynonym [Verdana-Italic]     [\typescriptthree-verdanai] [encoding=\typescriptthree]
+    \definefontsynonym [Verdana-BoldItalic] [\typescriptthree-verdanaz] [encoding=\typescriptthree]
+    \loadmapfile[\typescriptthree-microsoft-verdana.map]
+\stoptypescript
+
+% arial
+
+\starttypescript [sans] [arial] [name]
+  \setups[font:fallback:sans]
+  \definefontsynonym [Sans]           [ArialMT]
+  \definefontsynonym [SansBold]       [Arial-BoldMT]
+  \definefontsynonym [SansItalic]     [Arial-ItalicMT]
+  \definefontsynonym [SansBoldItalic] [Arial-BoldItalicMT]
+\stoptypescript
+
+\starttypescript [sans] [arial] [texnansi,ec,qx]
+    \definefontsynonym [ArialMT]            [\typescriptthree-arial]   [encoding=\typescriptthree]
+    \definefontsynonym [Arial-BoldMT]       [\typescriptthree-arialbd] [encoding=\typescriptthree]
+    \definefontsynonym [Arial-ItalicMT]     [\typescriptthree-ariali]  [encoding=\typescriptthree]
+    \definefontsynonym [Arial-BoldItalicMT] [\typescriptthree-arialbi] [encoding=\typescriptthree]
+    \loadmapfile[\typescriptthree-microsoft-arial.map]
+\stoptypescript
+
+\stoptypescriptcollection
+
+\endinput

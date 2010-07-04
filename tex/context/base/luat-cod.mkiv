@@ -1,0 +1,161 @@
+%D \module
+%D   [       file=luat-cod,
+%D        version=2005.05.26,
+%D          title=\CONTEXT\ Lua Macros,
+%D       subtitle=Code,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \writestatus{loading}{ConTeXt Lua Macros / Code}
+
+%D Originally we compiled the lua files externally and loaded
+%D then at runtime, but when the amount grew, we realized that
+%D we needed away to store them in the format, which is what
+%D bytecode arrays do. And so the following is obsolete:
+%D
+%D \starttyping
+%D \chardef\ctxluaembeddingmode \plusone
+%D
+%D 0 = external compilation and loading
+%D 1 = runtime compilation and embedding
+%D \stoptyping
+%D
+%D Allocation of \LUA\ engines has changed too. The original idea
+%D was to have multiple \LUA\ instances and it worked that way for
+%D several years. Hoewver in practice we used only one engine because
+%D scripts need to share data anyway. So eventually \LUATEX\ got only
+%D one instance. Because each call is reentrant there is not much
+%D danger for crashes.
+
+\def\ctxdirectlua{\directlua\zerocount}
+\def\ctxlatelua  {\latelua  \zerocount}
+
+%D Take your choice \unknown
+
+\let\ctxlua       \ctxdirectlua
+\let\luacode      \ctxdirectlua
+\let\lateluacode  \ctxlatelua
+\let\directluacode\ctxdirectlua
+
+%D Reporting the version of \LUA\ that we use is done as follows:
+
+\edef\luaversion{\ctxlua{tex.print(_VERSION)}}
+
+%D We want to define \LUA\ related things in the format but
+%D need to reload code because \LUA\ instances themselves are
+%D not dumped into the format.
+
+\newtoks\everyloadluacode
+\newtoks\everyfinalizeluacode
+
+\normaleveryjob{\the\everyloadluacode\the\everyfinalizeluacode\the\everyjob}
+
+\newif\ifproductionrun
+
+%D Here we operate in the \TEX\ catcode regime as we haven't yet defined
+%D catcode regimes. A chicken or egg problem.
+
+\normalprotected\long\def\startruntimeluacode#1\stopruntimeluacode % only simple code (load +init)
+  {\ifproductionrun
+     \global\let\startruntimeluacode\relax
+     \global\let\stopruntimeluacode \relax
+   \else
+     \global\everyloadluacode\expandafter{\the\everyloadluacode#1}%
+   \fi
+   #1} % maybe no interference
+
+\normalprotected\long\def\startruntimectxluacode#1\stopruntimectxluacode
+  {\startruntimeluacode\ctxlua{#1}\stopruntimeluacode}
+
+%D Next we load the initialization code.
+
+\startruntimectxluacode
+    environment = environment or { }
+    environment.jobname = "\jobname"                            % tex.jobname
+    environment.initex  = \ifproductionrun false \else true \fi % tex.formatname == ""
+    environment.version = "\fmtversion"
+\stopruntimectxluacode
+
+% we start at 500, below this, we store predefined data (dumps)
+
+\newcount\luabytecodecounter \luabytecodecounter=500
+
+\startruntimectxluacode
+    lua.bytedata = lua.bytedata or { }
+\stopruntimectxluacode
+
+%D Handy when we expand:
+
+\let\stopruntimeluacode   \relax
+\let\stopruntimectxluacode\relax
+
+\long\def\lastexpanded{} % todo: elsewhere we use \@@expanded
+
+\long\def\expanded#1{\long\xdef\lastexpanded{\noexpand#1}\lastexpanded}
+
+%D More code:
+
+% \def\ctxluabytecode#1% executes an already loaded chunk
+%   {\ctxlua {
+%       local str = ''
+%       if lua.bytedata[#1] then
+%           str = " from file " .. lua.bytedata[#1][1] .. " version " .. lua.bytedata[#1][2]
+%       end
+%       if lua.bytecode[#1] then
+%           if environment.initex then
+%               texio.write_nl("bytecode: executing blob " .. "#1" .. str)
+%               assert(lua.bytecode[#1])()
+%           else
+%               texio.write_nl("bytecode: initializing blob " .. "#1" .. str)
+%               assert(lua.bytecode[#1])()
+%               lua.bytecode[#1] = nil
+%           end
+%       else
+%          texio.write_nl("bytecode: invalid blob " .. "#1" .. str)
+%       end
+%   }}
+
+\def\ctxluabytecode#1% executes an already loaded chunk
+  {\ctxlua {
+      local lbc = lua.bytecode
+      if lbc[#1] then
+          assert(lbc[#1])()
+          if not environment.initex then
+              lbc[#1] = nil
+          end
+      end
+  }}
+
+\def\ctxluabyteload#1#2% registers and compiles chunk
+  {\global\advance\luabytecodecounter \plusone
+   \normalexpanded{\startruntimectxluacode
+     lua.bytedata[\the\luabytecodecounter] = { "#1", "#2" }
+   \stopruntimectxluacode}%
+   \ctxlua {
+     lua.bytedata[\the\luabytecodecounter] = { "#1", "#2" }
+     lua.bytecode[\the\luabytecodecounter] = environment.luafilechunk("#1")
+    }}
+
+\def\ctxloadluafile#1#2% load a (either not compiled) chunk at runtime
+  {\doifelsenothing{#2}
+     {\ctxlua{environment.loadluafile("#1")}}
+     {\ctxlua{environment.loadluafile("#1",#2)}}}
+
+\def\registerctxluafile#1#2% name version (modules and core code)
+  {\ifproductionrun
+     \ctxloadluafile{#1}{#2}%
+   \else
+     \ctxluabyteload{#1}{#2}% can go away
+   \fi
+   \global\everyloadluacode\expandafter\expandafter\expandafter{\expandafter\the\expandafter\everyloadluacode
+      \expandafter\ctxluabytecode\expandafter{\the\luabytecodecounter}}%
+   \ctxluabytecode{\the\luabytecodecounter}}
+
+\everydump\expandafter{\the\everydump\ctxlua{luatex.dumpstate(environment.jobname..".lui",501)}}
+
+\endinput

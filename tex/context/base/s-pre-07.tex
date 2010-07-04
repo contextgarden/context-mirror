@@ -1,0 +1,212 @@
+%D \module
+%D   [      file=s-pre-07,
+%D        version=1999.08.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 7,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style was made for the \NTS\ presentation at
+%D \EUROTEX\ 1999. It's a wink to programming in a webbed way.
+%D This is just one way of implementing such a style. Today
+%D we have more \METAPOST\ interfacing available, and
+%D thereby moore tools and alternative ways to reach such a
+%D goal. I must admit that the main macro looks fuzzy. On
+%D the other hand, the presentation can look quite structured.
+%D
+%D \starttyping
+%D \Topics{...}
+%D
+%D \StartIdeas
+%D   \Topic{...}
+%D   \StartIdea ... \StopIdea
+%D   \StartIdea ... \StopIdea
+%D \StopIdeas
+%D \stoptyping
+
+\startmode[asintended] \setupbodyfont[lbr] \stopmode
+
+\setupbodyfont[14.4pt]
+
+\usemodule
+  [abr-02]
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [topspace=0cm,
+   backspace=0cm,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\setupinteractionscreen
+  [option=max]
+
+%D In order to prevent loops due to random placement, we
+%D keep the random seed reasonable constant.
+
+\setupsystem
+  [random=big]
+
+\setupcolors
+  [state=start]
+
+\definecolor[gray]     [s=.4]
+\definecolor[lightgray][s=.9]
+
+\definecolor[red]  [r=.4] \definecolor[cyan]   [g=.4,b=.4]
+\definecolor[green][g=.4] \definecolor[magenta][r=.4,b=.4]
+\definecolor[blue] [b=.4] \definecolor[yellow] [r=.4,g=.4]
+
+\definecolor[PageColor][gray]
+\definecolor[TextColor][lightgray]
+\definecolor[LineColor][yellow]
+
+\definecolor[linecolor 1][red]   \definecolor[linecolor 5][cyan]
+\definecolor[linecolor 2][green] \definecolor[linecolor 6][magenta]
+\definecolor[linecolor 3][blue]  \definecolor[linecolor 4][yellow]
+
+\setupinteraction
+  [state=start,
+   display=new,
+   color=LineColor,
+   contrastcolor=LineColor]
+
+\startuseMPgraphic{shape}
+  path p ; color c, w ; numeric width, height ;
+  c := \MPcolor{LineColor} ; w := \MPcolor{TextColor} ;
+  width  := \overlaywidth ; height := \overlayheight ;
+  pickup pencircle scaled .5cm ;
+  p := unitcircle
+    xscaled \MPw{\Idea} yscaled \MPh{\Idea}
+    shifted \MPxy{\Idea}  ;
+  for z = (0,.5height), (width,.5height), (.5width,0), (.5width,height),
+          (0,0),        (width,height),   (0,height),  (width,0) :
+    draw center p -- z withcolor c ;
+  endfor ;
+  fill p withcolor w ;
+  draw p withcolor c ;
+  p := unitcircle
+    xscaled \MPw{\Page} yscaled \MPh{\Page}
+    shifted \MPxy{\Page}  ;
+  pickup pencircle scaled .25cm ;
+  fill p withcolor w ;
+  draw p withcolor c ;
+  draw unitsquare xscaled width yscaled height withcolor c ;
+\stopuseMPgraphic
+
+\defineoverlay [shape]        [\useMPgraphic{shape}]
+\defineoverlay [nextpage]     [\overlaybutton{nextpage}]
+\defineoverlay [previouspage] [\overlaybutton{previouspage}]
+\defineoverlay [content]      [\overlaybutton{content}]
+\defineoverlay [forward]      [\overlaybutton{forward}]
+
+\setupbackgrounds
+  [page]
+  [background={color,previouspage,shape},
+   backgroundcolor=PageColor]
+
+\def\StartIdea%
+  {\xdef\Idea{idea:\realfolio}
+   \xdef\Page{page:\realfolio}
+   \startstandardmakeup
+     \dontcomplain
+     \vbox to \makeupheight \bgroup
+       \getrandomdimen\scratchdimen{75pt}{600pt}\vskip 0pt plus \scratchdimen
+       \hbox to \makeupwidth \bgroup
+         \getrandomdimen\scratchdimen{75pt}{600pt}\hskip 0pt plus \scratchdimen
+         \hpos{idea:\realfolio} \bgroup
+           \framed
+             [width=.6\hsize,height=fit,offset=2cm,align=middle,
+              frame=off,strut=no,background=forward]
+             \bgroup
+             \setupwhitespace[big]}
+
+\def\StopIdea%
+            {\egroup
+         \egroup
+         \getrandomdimen\scratchdimen{75pt}{600pt}\hskip 0pt plus \scratchdimen
+       \egroup
+       \getrandomdimen\scratchdimen{75pt}{600pt}\vskip 0pt plus \scratchdimen
+     \egroup
+     \ifx\CurrentTopic\empty \else
+       \vskip-\makeupheight
+       \vbox to \makeupheight
+         {\vfill
+          \ifx\CurrentListTopic\empty\else
+            \writetolist[Topic]{}{\CurrentListTopic}
+          \fi
+          \hbox to \makeupwidth
+            {\hfill
+             \hpos{page:\realfolio}
+               {\framed
+                  [offset=.5cm,frame=off,background=content]
+                  {\bf\ignorespaces\CurrentTopic\unskip}}%
+             \hskip.5cm}
+          \vskip.5cm}
+     \fi
+   \stopstandardmakeup
+   \let\CurrentListTopic\empty}
+
+\definelist
+  [Topic]
+
+\setuplist
+  [Topic]
+  [alternative=f,
+   expansion=command]
+
+\let\CurrentTopic\empty
+\let\CurrentListTopic\empty
+
+\long\def\StartTopic#1\StopTopic
+  {\long\def\CurrentTopic{#1}
+   \let\CurrentListTopic\CurrentTopic}
+
+\def\Topic#1%
+  {\StartTopic#1\StopTopic}
+
+\def\Topics#1%
+  {\StartIdeas
+     \def\CurrentTopic{#1}
+     \StartIdea
+       \pagereference[content]
+       \placelist[Topic][criterium=all]
+     \StopIdea
+   \StopIdeas}
+
+\newcounter\CurrentIdeas
+
+\def\StartIdeas%
+  {\ifnum\CurrentIdeas=6 \doglobal\newcounter\CurrentIdeas \fi
+   \doglobal\increment\CurrentIdeas
+   \definecolor[LineColor][linecolor \CurrentIdeas]}
+
+\def\StopIdeas%
+  {}
+
+\doifnotmode{demo}{\endinput}
+
+%D The (rather silly) demo section.
+
+\starttext
+
+\Topics{This is about \unknown}
+
+\StartIdeas
+    \Topic{Some topic}
+    \StartIdea An idea \unknown \StopIdea
+    \StartIdea \unknown\ and another \StopIdea
+\StopIdeas
+
+\stoptext
+
+

@@ -1,0 +1,259 @@
+%D \module
+%D   [       file=spac-grd,
+%D        version=2009.10.16, % 1998.03.10, was core-grd.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Grid Snapping,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module will be merged intio spac-ver.mkiv.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Grid Snapping}
+
+% buff-ver.mkiv: halfline spacing
+% strc-mat.mkiv: configure math grid (new code needed)
+% page-one.mkiv: to be checked
+% page-mul.mkiv: to be checked and redone
+% page-sid.mkiv: to be checked
+% page-set.mkiv: to be checked
+% strc-not.mkiv: to be checked
+% strc-ren.mkiv: to be checked
+% strc-flt.mkiv: to be checked (captions, probably top/bottom)
+% core-mis.mkiv: to be checked (placement, probbaly harmless)
+
+\unprotect
+
+%D Helpers:
+
+\let\poplastnode\relax
+
+\def\pushlastnode
+  {\ifdim\lastskip=\zeropoint
+     \ifnum\lastpenalty=\zerocount
+       \ifnum\lastkern=\zerocount
+         \let\poplastnode\relax
+       \else
+         \edef\poplastnode{\kern\the\lastkern\relax}\kern-\lastkern % untested
+       \fi
+     \else
+       \edef\poplastnode{\penalty\the\lastpenalty\relax}\nobreak % untested
+     \fi
+   \else
+     \edef\poplastnode{\vskip\the\lastskip\relax}\vskip-\lastskip % \removelastskip
+   \fi}
+
+%D Moved from supp-box:
+
+%D \macros
+%D  {startbaselinecorrection,baselinecorrection,
+%D   showbaselinecorrection,offbaselinecorrection}
+%D
+%D Spacing around ruled boxes can get pretty messed up. The
+%D next macro tries as good as possible to fix this.
+%D
+%D \startbuffer[1]
+%D \startbaselinecorrection
+%D \ruledhbox{Rule Brittanica}
+%D \stopbaselinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer[1]
+%D
+%D The macros put some white space around the box:
+%D
+%D \getbuffer[1]
+%D
+%D A simple alternative is \type {\baselinecorrection}, which
+%D only looks at the previous line.
+%D
+%D \startbuffer[2]
+%D \baselinecorrection
+%D \ruledhbox{Rule Brittanica}
+%D \baselinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer[2]
+%D
+%D This time the last preceding line gets a correction,%
+%D dependant on the depth.
+%D
+%D \getbuffer[2]
+%D
+%D One can make the correction visible by saying \type
+%D {\showbaselinecorrection}. Part of the correction is
+%D calculated from the dimensions of a~(. One can disble the
+%D correction by calling \type {\offbaselinecorrection}.
+%D
+%D When visualize the first example looks like:
+%D
+%D {\showbaselinecorrection\getbuffer[1]}
+%D
+%D and the second one comes out as:
+%D
+%D {\showbaselinecorrection\getbuffer[2]}
+
+% \definecolor[GridLineColor][red]
+% \definecolor[GridTextColor][blue]
+
+\let\thetopbaselinecorrection   \!!zeropoint
+\let\thebotbaselinecorrection   \!!zeropoint
+\let\thenegtopbaselinecorrection\!!zeropoint
+\let\thenegbotbaselinecorrection\!!zeropoint
+
+\def\setbaselinecorrections
+  {\setbox0\hbox{\setstrut\strut}%
+   \setbox2\hbox{(}%
+   \dimen0\ht0\advance\dimen0 -\ht2
+   \ifdim\dimen0<\zeropoint\dimen0\zeropoint\fi
+   \dimen2\dp0\advance\dimen2 -\dp2
+   \ifdim\dimen2<\zeropoint\dimen2\zeropoint\fi
+   \edef\thetopbaselinecorrection   {\the\dimen0}\dimen0-\dimen0
+   \edef\thebotbaselinecorrection   {\the\dimen2}\dimen2-\dimen2
+   \edef\thenegtopbaselinecorrection{\the\dimen0}%
+   \edef\thenegbotbaselinecorrection{\the\dimen2}}
+
+\def\dotopbaselinecorrection   {\kern\thetopbaselinecorrection}
+\def\dobotbaselinecorrection   {\kern\thebotbaselinecorrection}
+\def\donegtopbaselinecorrection{\kern\thenegtopbaselinecorrection}
+\def\donegbotbaselinecorrection{\kern\thenegbotbaselinecorrection}
+
+\def\showbaselinecorrection
+  {\def\dobaselinecorrection % visualization is not watertight!
+     {\bgroup
+\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
+      \setbox0\null
+      \wd0\hsize
+      \dp0\strutdp
+      \nointerlineskip
+      \forgetall
+      \ruledvbox{\box0}%
+      \egroup
+      \prevdepth\strutdp}%
+   \def\dotopbaselinecorrection
+     {\hrule\!!height\thetopbaselinecorrection}%
+   \def\dobotbaselinecorrection
+     {\hrule\!!height\thebotbaselinecorrection}}
+
+\def\dobaselinecorrection
+  {\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
+   \kern\strutdp
+   \prevdepth\strutdp}
+
+\def\baselinecorrection
+  {\endgraf
+   \ifvmode
+     \ifdim\prevdepth<\maxdimen
+       \ifdim\prevdepth<\zeropoint \else
+         \ifdim\prevdepth<\strutdepth \relax
+           \pushlastnode
+           \dobaselinecorrection
+           \poplastnode
+         \fi
+       \fi
+     \fi
+   \fi}
+
+\def\pagebaselinecorrection
+  {\ifdim\pagegoal<\maxdimen
+     \ifdim\pagetotal>\lineheight % or \topskip
+       \scratchdimen\pagetotal
+       \advance\scratchdimen\lineheight
+       \ifdim\scratchdimen<\pagegoal
+         \baselinecorrection
+       \fi
+     \fi
+   \fi}
+
+\unexpanded\def\startbaselinecorrection
+  {\bgroup
+   \let\stopbaselinecorrection\egroup
+   \ifcase\baselinecorrectionmode
+   \or % normal
+     \baselinecorrection
+     \ifvmode
+       \setbox\scratchbox\vbox\bgroup\ignorespaces
+       \let\stopbaselinecorrection\donormalstopbaselinecorrection
+     \fi
+   \or % off
+   \or % force
+     \baselinecorrection
+     \ifvmode
+       \setbox\scratchbox\vbox\bgroup\ignorespaces
+       \let\stopbaselinecorrection\doforcedstopbaselinecorrection
+     \fi
+   \fi}
+
+\let\stopbaselinecorrection\relax
+
+\def\donormalstopbaselinecorrection % I have to check columns yet.
+  {\egroup
+   \topbaselinecorrection
+   \box\scratchbox
+   \botbaselinecorrection
+   \egroup}
+
+\def\doforcedstopbaselinecorrection % I have to check columns yet.
+  {\egroup
+   \forcedtopbaselinecorrection
+   \box\scratchbox
+   \forcedbotbaselinecorrection
+   \egroup}
+
+%D We do a bit more checking than needed. The pageborder check
+%D is not needed, but I want to look the visualization as good
+%D as possible too.
+
+\chardef\baselinecorrectionmode\plusone
+
+\def\onbaselinecorrection   {\chardef\baselinecorrectionmode\plusone  }
+\def\offbaselinecorrection  {\chardef\baselinecorrectionmode\plustwo  }
+\def\forcebaselinecorrection{\chardef\baselinecorrectionmode\plusthree}
+
+%D \macros
+%D  {topbaselinecorrection,botbaselinecorrection}
+%D
+%D The actual top and bottom corrections are implemented as:
+
+\def\topbaselinecorrection
+  {\ifvmode \ifdim\pagegoal<\maxdimen
+     \forcedtopbaselinecorrection
+   \fi \fi}
+
+\def\forcedtopbaselinecorrection
+  {\ifvmode
+     \bgroup
+     \setbaselinecorrections
+     \whitespace
+     \nointerlineskip
+     \dotopbaselinecorrection
+     \egroup
+   \fi}
+
+\def\botbaselinecorrection
+  {\ifvmode
+     \bgroup
+     \setbaselinecorrections
+     \dobotbaselinecorrection
+     \allowbreak % new, otherwise problems when many in a row
+     \prevdepth\strutdp
+     \egroup
+   \fi}
+
+\let\forcedbotbaselinecorrection\botbaselinecorrection
+
+\let\normalstartbaselinecorrection\startbaselinecorrection
+
+\unexpanded\def\startbaselinecorrection
+  {\ifgridsnapping
+     \snaptogrid[v!normal]\vbox\bgroup
+     \let\stopbaselinecorrection\egroup
+   \else
+     \normalstartbaselinecorrection
+   \fi}
+
+\protect \endinput

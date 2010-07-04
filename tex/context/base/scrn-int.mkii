@@ -1,0 +1,2311 @@
+%D \module
+%D   [       file=scrn-int,
+%D        version=1995.01.01,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Interaction,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% evt interactionbaren runtime laden (scheelt 8K)
+
+%D Still to be done properly.
+
+\writestatus{loading}{ConTeXt Screen Macros / Interaction}
+
+\unprotect
+
+% \expand vs \expanded
+
+% linked registers implementeren als een koppeling == mooier
+
+\presetlocalframed[\??lk]
+
+\newcounter\numberoflinks
+
+\def\stelkoppelingenin
+  {\dodoubleargument\getparameters[\??lk]}
+
+\def\definieerkoppeling[#1]%  % local loading !
+  {\doifundefined{\s!link:#1:\s!list}
+     {\expanded{\definetwopasslist{\s!link:#1}}%      \expanded{\doloadtwopassdata{\s!link:#1}}%
+      \getfirsttwopassdata{\s!link:#1}%
+      \let\firstlink\twopassdata
+      \getlasttwopassdata{\s!link:#1}%
+      \let\lastlink\twopassdata
+      \let\noflinks\noftwopassitems
+      \gettwopassdata{\s!link:#1}%
+      \let\currentlink\twopassdata
+      \let\nextlink\twopassdata
+      \setxvalue{\s!link:#1:}{\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}}}
+
+\def\koppeling[#1]#2%
+  {\bgroup
+   \definieerkoppeling[#1]%
+   \doglobal\increment\numberoflinks
+   \gettwopassdata{\s!link:#1}%
+   \def\next[##1:##2:##3:##4:##5]%
+     {\edef\firstlink  {0##1}%
+      \edef\lastlink   {0##2}%
+      \edef\noflinks   {0##3}%
+      \edef\prevlink   {0##4}%
+      \edef\currentlink{0##5}}%
+   \expanded{\next[\getvalue{\s!link:#1:}]}%
+   \edef\nextlink{0\iftwopassdatafound\twopassdata\else\lastlink\fi}%
+   \setxvalue{\s!link:#1:}{\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}%
+   \lazysavetwopassdata{\s!link:#1}{\numberoflinks}{\noexpand\realfolio}%
+   \ifnum\noflinks<\plustwo
+     \locationfalse
+   \fi
+   \iflocation
+     \hbox
+       {\setinteractionparameter\c!width\!!zeropoint
+        #2\relax
+        \hskip\@@lkdistance
+        \dogotosomepage\??lk\gotobegincharacter\firstlink\hss
+        \ifnum\noflinks>\plustwo
+          \dogotosomepage\??lk\gobackwardcharacter\prevlink\hss
+        \fi
+        \ifnum\noflinks>\plustwo
+          \dogotosomepage\??lk\goforwardcharacter\nextlink\hss
+          \hskip\@@lkdistance
+        \fi
+        \dogotosomepage\??lk\gotoendcharacter\lastlink}%
+   \else
+     \hbox{#2}%
+   \fi
+   \egroup}
+
+\let\setupinteractionscreens\empty
+
+\def\docalculateinteractionscreen
+  {\doifelse\@@scwidth\v!fit
+     {\!!widtha\leftcombitotal
+      \ifdim\backspace>\!!widtha\ifdim\backspace>\zeropoint\relax
+        \advance\backspace -\!!widtha
+      \fi\fi
+      \advance\!!widtha\rightcombitotal
+      \advance\!!widtha 2\dimexpr\@@scbackspace+\@@schoroffset\relax}
+     {\doifelse\@@scwidth\v!max
+        {\!!widtha\printpaperwidth}
+        {\!!widtha\@@scwidth}}%
+   \doifelse\@@scheight\v!fit
+     {\!!heighta\dimexpr\topheight+\topdistance\relax
+      \ifdim\topspace>\!!heighta\ifdim\topspace>\zeropoint\relax
+        \advance\topspace -\!!heighta
+      \fi\fi
+      \advance\!!heighta  \dimexpr\makeupheight+\bottomdistance+\bottomheight\relax
+      \advance\!!heighta 2\dimexpr\@@sctopspace+\@@scveroffset\relax}
+     {\doifelse\@@scheight\v!max
+        {\!!heighta\printpaperheight}
+        {\!!heighta\@@scheight}}%
+   \doif\@@scdelay\v!none{\let\@@scdelay\zerocountervalue}}
+
+% The macro is not to be changed; only the \@@ia-variables
+% may be set! ConTeXt is the producer but we no longer
+% mention the pragma site, since we don't want to be bothered
+% with remarks about third party documents and/or associated
+% with documents produced outside our control.
+
+\def\doprepareidentity        % beware, we need to construct
+  {\let\!!stringa\@@iakeyword % an unexpanded space separated
+   \let\@@iakeyword\empty     % list of keywords from a comma
+   \def\doprepareidentity##1% % separated one
+     {\ifx\@@iakeyword\empty
+        \appended\def\@@iakeyword{##1}%
+      \else
+        \appended\def\@@iakeyword{ ##1}%
+      \fi}%
+   \@EA\processcommalist\@EA[\!!stringa]\doprepareidentity
+   \global\let\doprepareidentity\relax}
+
+%D The Creator field is changed per 12/04/2006 due to user presure. This
+%D means that I need to put my own status info someplace else.
+
+\def\initializeidentity
+  {\doprepareidentity
+   \dosetupidentity % no \expanded{..} will be done in special (else no pdfdoc)
+     {\@@iatitle}{\@@iasubtitle}{\@@iaauthor}%
+     {ConTeXt - \contextversion}%
+     {\@@iadate}{\@@iakeyword}%
+   \global\let\initializeidentity\relax}
+
+\appendtoks \initializeidentity \to \everyshipout
+
+\def\initializepaper
+  {\bgroup
+   \ifx\@@ppleft \empty
+   \ifx\@@ppright\empty
+   \ifx\@@pptop \empty
+   \ifx\@@ppbottom \empty
+   \ifx\@@pcstate\v!start
+     \locationfalse\fi\else
+     \locationfalse\fi\else
+     \locationfalse\fi\else
+     \locationfalse\fi\else
+     \locationfalse\fi
+   \iflocation % without screen settings
+     \egroup
+     \dosetuppaper\papersize\paperwidth\paperheight
+   \else
+     \egroup
+     \dosetuppaper\printpapersize\printpaperwidth\printpaperheight
+   \fi}
+
+\appendtoks \initializepaper \to \everyshipout
+
+\def\doinitializepaper
+  {\bgroup
+   \docalculateinteractionscreen
+   \ifdim\!!widtha>\paperwidth\ifdim\!!widtha>\zeropoint
+     \paperwidth\!!widtha
+   \fi\fi
+   \ifdim\!!heighta>\paperheight\ifdim\!!heighta>\zeropoint
+     \paperheight\!!heighta
+   \fi\fi
+   \dosetuppaper
+     {\printpapersize}
+     {\the\paperwidth}
+     {\the\paperheight}%
+   \egroup}
+
+\let\@@pcscreendata\empty
+
+\def\dosetupinteractionscreens % met a, b en \number
+  {\doifnot\@@pcstate\v!start\dodosetupinteractionscreens}
+
+\setvalue{\??sc\c!option\v!max        }{1} % tzt share with driver
+\setvalue{\??sc\c!option\v!bookmark   }{2} % tzt share with driver
+\setvalue{\??sc\c!option\v!fit        }{3} % tzt share with driver
+\setvalue{\??sc\c!option\v!doublesided}{4} % tzt share with driver
+
+\def\dodosetupinteractionscreens % met a, b en \number
+  {\bgroup
+   \docalculateinteractionscreen
+   \!!counte=0\getvalue{\??sc\c!option\@@scoption}\relax
+   % niet waterdicht
+   \doifnot{\the\!!widtha\the\!!heighta}\@@pcscreendata
+     {\xdef\@@pcscreendata{\the\!!widtha\the\!!heighta}%
+      \showmessage\m!interactions1{\withoutpt\the\!!widtha,\withoutpt\the\!!heighta}}%
+   % needs to be split: dimensions for each page
+   % and mode per document and only once !
+   \dosetupscreen \backoffset\topoffset\!!widtha\!!heighta{\the\!!counte}%
+   \dosetupcropbox\backoffset\topoffset\!!widtha\!!heighta
+   \egroup}
+
+\def\dosetupinteractionscreen[#1]%
+  {\getparameters[\??sc][#1]%
+   \ifproductionrun
+     \let\initializepaper\doinitializepaper
+     \let\setupinteractionscreens\dosetupinteractionscreens
+   \fi}
+
+\appendtoks \setupinteractionscreens \to \everyfirstshipout % needed to get option=max etc working
+\appendtoks \setupinteractionscreens \to \everyshipout      % needed for page/screen dimensions
+
+\def\setupinteractionscreen
+  {\dosingleempty\dosetupinteractionscreen}
+
+%D Due to requests I finally decided to support bookmarks, a
+%D driver dependant way of showing tables of content. The most
+%D simple way of support is hooking bookmark generation into
+%D the existing list mechanisms. That way users can generate
+%D bookmarks automatically, although its entirely valid to add
+%D bookmarks by defining alternative ones. These will be added
+%D at the appropriate place in the list.
+
+% \hoofdstuk{het eerste hoofdstuk}
+%
+% \bookmark {de eerste bookmark} % optional overruled hoofdstuk
+%
+% .... text ....
+%
+% \placebookmarks [hoofdstuk,paragraaf,subparagraaf,subsubparagraaf,mylist]
+%                 [open list]
+%
+% \bookmark[mylist]{whatever}
+
+\def\@@bookmark {bm::}
+\def\@@booklevel{bl::}
+\def\@@bookcount{bc::}
+
+\definelist[\@@bookmark]
+
+\newtoks\postponedbookmarks
+
+\def\flushpostponedbookmark
+  {\the\postponedbookmarks
+   \global\postponedbookmarks\emptytoks}
+
+\def\simplebookmark#1%
+  {\doglobal\prependtoks
+     \writetolist[\@@bookmark]{}{#1}%
+   \to\postponedbookmarks}
+
+\def\complexbookmark[#1]#2%
+  {\doglobal\appendtoks\writetolist[#1]{}{#2}\to\postponedbookmarks}
+
+\definecomplexorsimple\bookmark
+
+\newif\iftracebookmarks \tracebookmarksfalse
+
+\let\tracebookmarks\tracebookmarkstrue
+
+\def\placebookmarks
+  {\dodoubleempty\doplacebookmarks}
+
+\def\doplacebookmarks[#1][#2]%
+  {\iflocation
+     \iffirstargument
+       \bgroup
+       \ifsecondargument
+         \doifelse{#2}\v!all
+           {\edef\openbookmarklist{#1}}
+           {\edef\openbookmarklist{#2}}%
+       \else
+         \let\openbookmarklist\empty
+       \fi
+       \xdef\doplacebookmarksindeed{\noexpand\dodoplacebookmarksindeed[#1][\openbookmarklist]}
+       \egroup
+     \else
+       \expanded{\placebookmarks\@EA[\getvalue{\??ih\v!content\c!list}]}%
+     \fi
+   \fi}
+
+\def\dodoplacebookmarksindeed[#1][#2]%
+  {\bgroup
+   \edef\openbookmarklist{#2}%
+   \global\let\bookmarklevellist\empty
+   \def\bookmarklevelcount{0}%
+   \doprocessbookmarks[#1]\dogetbookmarkelement
+   \dolistelement{}{}{}{}{}{}% needed to finish the first pass
+   \doprocessbookmarks[#1]\doputbookmarkelement
+   \flushbookmark
+   \egroup}
+
+\let\doplacebookmarksindeed\relax
+
+\prependtoks
+    \doplacebookmarksindeed % new, now postponed so that halfway defined commands work out ok
+\to \everystoptext
+
+\def\doprocessbookmarks[#1]#2%
+  {\let\dolistelement#2\relax
+   \scratchcounter\zerocount
+   \def\docommand##1%
+     {\advance\scratchcounter \plusone
+      \getlistlevel[##1]\listlevel{\the\scratchcounter}%
+      \setxvalue{\@@bookcount\the\scratchcounter}{1}%
+      \setxvalue{\@@booklevel##1}{\listlevel}}%
+   \processcommalist[#1]\docommand
+   \setxvalue{\@@bookcount0}{1}%
+   \global\chardef\currentbookmarklevel\zerocount
+   \global\chardef\previousbookmarklevel\zerocount
+   \doutilities{listentries,#1,\@@bookmark}\jobname{#1}\relax\relax}
+
+\def\dodogetbookmarkelement#1#2#3#4#5#6%
+  {\doifelsenothing{#1}
+     {\global\chardef\currentbookmarklevel\zerocount}
+     {\global\chardef\currentbookmarklevel\getvalue{\@@booklevel#1}\relax}%
+   \ifnum\currentbookmarklevel>\previousbookmarklevel
+     \setxvalue{\@@bookcount\the\currentbookmarklevel}{1}%
+   \else\ifnum\currentbookmarklevel<\previousbookmarklevel
+     \bgroup
+     \!!counta\previousbookmarklevel
+     \doloop
+       {\let\bookmarktag\empty
+        \!!countb\!!counta
+        \advance\!!countb \minusone
+        \dorecurse\!!countb
+          {\edef\bookmarktag
+             {\bookmarktag\getvalue{\@@bookcount\recurselevel}:}}%
+        \edef\bookmarklevelcount
+          {\getvalue{\@@bookcount\the\!!counta}}%
+        \xdef\bookmarklevellist
+          {\bookmarklevellist/\bookmarktag:\bookmarklevelcount/}%
+        \advance\!!counta \minusone
+        \ifnum\!!counta=\currentbookmarklevel
+          \exitloop
+        \fi}%
+     \egroup
+     \@EA\doglobal\@EA\increment\csname \@@bookcount\the\currentbookmarklevel\endcsname\relax
+   \else
+     \@EA\doglobal\@EA\increment\csname \@@bookcount\the\previousbookmarklevel\endcsname\relax
+   \fi\fi
+   \global\utilitydonetrue
+   \global\chardef\previousbookmarklevel\currentbookmarklevel}
+
+\def\getbookmarklevelcount
+  {\@EA\def\@EA\docommand\@EA[\@EA##\@EA1\@EA/\bookmarktag:##2/##3]%
+     {\def\bookmarklevelcount{##2}}%
+   \@EA\@EA\@EA\docommand\@EA\@EA\@EA[\@EA\bookmarklevellist\@EA/\bookmarktag:0/]}
+
+\def\dodoputbookmarkelement#1#2#3#4#5#6%
+  {\doifelsenothing{#1}
+     {\global\chardef\currentbookmarklevel\zerocount}
+     {\global\chardef\currentbookmarklevel\getvalue{\@@booklevel#1}\relax}%
+   \ifnum\currentbookmarklevel>\previousbookmarklevel
+     \setxvalue{\@@bookcount\the\currentbookmarklevel}{1}%
+   \else\ifnum\currentbookmarklevel<\previousbookmarklevel
+     \@EA\doglobal\@EA\increment\csname \@@bookcount\the\currentbookmarklevel\endcsname\relax
+   \else
+     \@EA\doglobal\@EA\increment\csname \@@bookcount\the\previousbookmarklevel\endcsname\relax
+   \fi\fi
+   \let\bookmarktag\empty
+   \!!countb\currentbookmarklevel
+   \dorecurse\!!countb
+     {\edef\bookmarktag
+        {\bookmarktag\getvalue{\@@bookcount\recurselevel}:}}%
+   \getbookmarklevelcount
+   \iftracebookmarks
+     \bgroup
+     \par
+     \bookmarktag\quad
+     \dorecurse\currentbookmarklevel{\quad}\unskip#1\quad
+     (\bookmarklevelcount)\quad
+     \egroup
+   \fi
+   \global\chardef\previousbookmarklevel\currentbookmarklevel
+   \global\utilitydonetrue
+   \insertsomebookmark{#1}{\the\currentbookmarklevel}{\bookmarklevelcount}{#4}{#6}}
+
+\def\dogetbookmarkelement#1#2#3#4#5#6%
+  {\doifnot{#1}\@@bookmark
+     {\dodogetbookmarkelement{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+\def\doputbookmarkelement#1#2#3#4#5#6%
+  {\doifelse{#1}\@@bookmark
+     {\localbookmark{#4}}
+     {\flushbookmark
+      \dodoputbookmarkelement{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+\let\flushbookmark\relax
+\let\localbookmark\gobbleoneargument
+
+\def\insertsomebookmark#1#2#3#4#5%
+  {\gdef\flushbookmark
+     {\doinsertsomebookmark{#1}{#2}{#3}{#4}{#5}{g}}%
+   \gdef\localbookmark##1%
+     {\doinsertsomebookmark{#1}{#2}{#3}{##1}{#5}{l}}}
+
+\def\doinsertsomebookmark#1#2#3#4#5#6%
+  {\global\utilitydonetrue
+   \global\let\localbookmark\gobbleoneargument
+   \global\let\flushbookmark\relax
+   \doifinstringelse{#1}\openbookmarklist
+     {\chardef\openbookmark\plusone}
+     {\chardef\openbookmark\zerocount}%
+   \iftracebookmarks(#6: #4)\quad(\the\openbookmark)\par\fi
+   \doinsertbookmark{#2}{#3}{#4}{#5}{\openbookmark}}
+
+% \startinteractionmenu[rechts]
+%   \but [eerste]  eerste  \\
+%   \txt hello world       \\
+%   \but [tweede]  tweede  \\
+%   \nop                   \\
+%   \but [tweede]  tweede  \\
+%   \rul whow              \\
+%   \but [tweede]  tweede  \\
+%   \raw hello world       \\
+%   \but [tweede]  tweede  \\
+%   \com \vfill            \\
+%   \but [derde]   derde   \\
+% \stopinteractionmenu
+
+\newif\iflocationmenupermitted
+
+\def\testinteractionmenu#1%
+   {\iflocation
+      \doifelse\@@iamenu\v!on
+        {\doifelsevalue{\??am#1\c!state}\v!start
+           {\global\locationmenupermittedtrue}
+           {\global\locationmenupermittedfalse}}
+        {\global\locationmenupermittedfalse}%
+    \else
+      \global\locationmenupermittedfalse
+    \fi}
+
+\def\dodisableinteractionmenu[#1][#2][#3]%
+  {\def\dododisableinteractionmenu##1%
+     {\doifelse{#3}{}
+        {\letvalue{\??am##1\c!obstruction}\empty}
+        {\edef\interactieblokkade{\getvalue{\??am##1\c!obstruction}}
+         \def\docommand####1{#1{####1}{\interactieblokkade}}% #1 = \remove or \add
+         \processcommalist[#3]\docommand
+         \setevalue{\??am##1\c!obstruction}{\interactieblokkade}}}%
+   \processcommalist[#2]\dododisableinteractionmenu}
+
+\def\disableinteractionmenu
+  {\dotripleempty\dodisableinteractionmenu[\addtocommalist]}
+
+\def\enableinteractionmenu
+  {\dotripleempty\dodisableinteractionmenu[\removefromcommalist]}
+
+% ja   : kader/achtergrond met tekst
+% leeg : kader/achtergrond maar geen tekst
+% nee  : alleen ruimte reserveren
+% geen : helemaal weglaten
+
+\newif\iflocationdummy
+\newif\ifskippedmenuitem
+
+\newif\iflocationempty
+\newif\iflocationclick
+
+% ja   : kader/achtergrond met tekst
+% leeg : kader/achtergrond maar geen tekst
+% nee  : alleen ruimte reserveren
+% geen : helemaal weglaten
+%
+% \setupinteractionmenu[right][samepage=yes,  unknownreference=yes]
+% \setupinteractionmenu[right][samepage=empty,unknownreference=empty]
+% \setupinteractionmenu[right][samepage=no,   unknownreference=no]
+% \setupinteractionmenu[right][samepage=none, unknownreference=none]
+%
+% \startinteractionmenu[right]
+% \but [firstpage] first \\
+% \but [lastpage] last \\
+% \but [somepage] crap \\
+% \stopinteractionmenu
+
+\def\dosetlocationboxcontent#1[#2]#3[#4]%
+  {\global\skippedmenuitemfalse
+   \setbox\locationbox\hbox
+     {\resetgoto % anders cyclische aanroep !
+      \localframed[#1][#2]{\dolocationattributes{#1}\c!style\c!color{#3}}}%
+   \iflocationclick
+     \hbox{\gotolocation{#4}{\box\locationbox}}%
+   \else
+     \hbox{\box\locationbox}%
+   \fi}
+
+\let\dosetlocationboxyes\dosetlocationboxcontent
+
+\def\dosetlocationboxempty#1[%
+  {\dosetlocationboxcontent{#1}[\c!empty=\v!yes,}
+
+\def\dosetlocationboxno#1[%
+  {\dosetlocationboxcontent{#1}[\c!empty=\v!yes,\c!frame=,\c!background=,}
+
+\def\dosetlocationboxnone#1[#2]#3[#4]%
+  {\global\skippedmenuitemtrue}
+
+\def\setlocationboxyes#1[#2]#3[#4]%
+  {\locationclicktrue
+   \setbox\locationbox\hbox
+     {\resetgoto % anders cyclische aanroep !
+      \global\skippedmenuitemfalse
+      \gotolocation
+        {#4}% % needed
+        {\ifrealreferencepage
+           \ifcase\csname\??am\??am\csname#1\c!samepage\endcsname\endcsname\relax
+             \copycsname#1\c!color\endcsname\csname#1\c!contrastcolor\endcsname
+             \localframed[#1][#2]{\dolocationattributes{#1}\c!style\c!color{#3}}%
+           \or
+             \localframed[#1][\c!empty=\v!yes,#2]{\dolocationattributes{#1}\c!style\c!color{#3}}%
+           \or
+             \localframed[#1][\c!empty=\v!yes,\c!frame=,\c!background=,#2]{\dolocationattributes{#1}\c!style\c!color{#3}}%
+           \or
+             \global\skippedmenuitemtrue
+           \fi
+         \else
+           \localframed[#1][#2]{\dolocationattributes{#1}\c!style\c!color{#3}}%
+         \fi}}%
+   \ifskippedmenuitem\else\box\locationbox\fi}
+
+\def\setlocationboxnop#1[#2]#3[#4]% inefficient as text can be outside box
+  {\locationclickfalse
+   \setbox\locationbox\hbox
+     {\resetgoto % anders cyclische aanroep !
+      \global\skippedmenuitemfalse
+      \ifcase\csname\??am\??am\csname#1\c!unknownreference\endcsname\endcsname\relax
+        \localframed[#1][#2]{\dolocationattributes{#1}\c!style\c!color{#3}}%
+      \or
+        \localframed[#1][\c!empty=\v!yes,#2]{\dolocationattributes{#1}\c!style\c!color{#3}}%
+      \or
+        \localframed[#1][\c!empty=\v!yes,\c!frame=,\c!background=,#2]{\dolocationattributes{#1}\c!style\c!color{#3}}%
+      \or
+        \global\skippedmenuitemtrue
+      \fi}%
+   \ifskippedmenuitem\else\box\locationbox\fi}
+
+\def\setlocationboxraw#1[#2]#3[#4]%
+  {\localframed[#1][#2]{\dolocationattributes{#1}\c!style\c!color{#3}}}
+
+\def\setlocationbox#1[#2]#3[#4]%
+  {\bgroup % really needed !
+   \edef\permittedreferences{\csname#1\c!obstruction\endcsname}%
+   \doifreferencepermittedelse{#4}%
+     {\setlocationboxyes{#1}[#2]{#3}[#4]}%
+     {\setlocationboxnop{#1}[#2]{#3}[#4]}%
+   \egroup}
+
+\def\setlocationnop#1[#2]#3%
+  {\localframed[#1][#2]{#3}}
+
+\def\executeamboxcommands#1#2#3#4#5%
+  {%\processaction
+   %  [\getvalue{\??am#1\c!dummy}]
+   %  [  \v!yes=>\chardef\handleunknownmenuitem=0\relax,
+   %   \v!empty=>\chardef\handleunknownmenuitem=1\relax,
+   %      \v!no=>\chardef\handleunknownmenuitem=2\relax]%
+   \getvalue{\??am#1#3}\relax
+   \setamboxcommands{#1}{#4}%
+   \ignorespaces#2\unskip
+   \getvalue{\??am#1#5}}
+
+\newcounter\currentamposition
+
+\newtoks\everysetmenucommands
+
+\def\setamboxcommands#1#2%
+  {\def\currentmenu{#1}%    % kan nog eerder
+   \def\currentsubmenu{#2}% % ? ?
+   \doglobal\newcounter\currentamposition
+   \the\everysetmenucommands}
+
+\def\menu@@amboxcommand#1\\%
+  {\dontleavehmode
+   \bgroup
+   \ignorespaces#1\unskip\relax
+   \ifskippedmenuitem \else
+     \getvalue{\??am\currentmenu\currentsubmenu}%
+   \fi
+   \egroup
+   \ignorespaces}
+
+\appendtoks
+  \let\@@amboxcommand\menu@@amboxcommand
+\to \everysetmenucommands
+
+\def\menu@raw[#1]#2\\%
+  {\@@amboxcommand\gotobox{\ignorespaces#2\unskip}[#1]\\}%
+
+\def\menu@but[#1]#2\\%
+  {\@@amboxcommand\do@@amposition\currentmenu{#1}{\setlocationbox{\??am\currentmenu}[]{\ignorespaces#2\unskip}[#1]}\\}%
+
+\def\menu@got[#1]#2\\% pas op! offset
+  {\@@amboxcommand\setlocationbox{\??am\currentmenu}[\c!frame=\v!off,\c!background=]{\ignorespaces#2\unskip}[#1]\\}%
+
+\def\menu@nop#1\\%
+  {\@@amboxcommand\setlocationboxraw{\??am\currentmenu}[\c!frame=\v!off,\c!background=,\c!empty=\v!yes]{\ignorespaces#1\unskip}[]\\}%
+
+\def\menu@txt#1\\%
+  {\@@amboxcommand\localframed[\??am\currentmenu][\c!frame=\v!off,\c!background=]{\ignorespaces#1\unskip}\\}%
+
+\def\menu@rul#1\\% ook \do@@amposition !
+  {\@@amboxcommand\localframed[\??am\currentmenu][]{\ignorespaces#1\unskip}\\}%
+
+\def\menu@com#1\\%
+  {\ignorespaces#1\unskip\ignorespaces}%
+
+\appendtoks
+  \let\raw\menu@raw
+  \let\but\menu@but
+  \let\got\menu@got
+  \let\nop\menu@nop
+  \let\txt\menu@txt
+  \let\rul\menu@rul
+  \let\com\menu@com
+\to \everysetmenucommands
+
+\ifx\do@@amposition\undefined
+  \let\do@@amposition\gobbletwoarguments % hook for positional thingies
+\fi
+
+\let\currentmenu\empty
+
+% beware : never change the concept of pbgoffset
+
+\def\menuparameter#1{\csname\??am\currentmenu#1\endcsname}
+
+\def\@@amhbox#1#2#3#4%
+  {\def\currentmenu{#3}%
+   \testinteractionmenu{#3}%
+   \iflocationmenupermitted
+     \bgroup
+     \showcomposition
+     \scratchdimen\dimexpr
+        \makeupwidth
+       +\pagebackgroundhoffset
+       +\pagebackgroundhoffset
+       -\menuparameter\c!leftoffset
+       -\menuparameter\c!rightoffset
+     \relax
+     \setbox\scratchbox\hbox to \scratchdimen
+       {\forgetall\executeamboxcommands{#3}{#4}\c!left\c!middle\c!right}%
+     \setbox\scratchbox\hbox{\do@@ammenuposition{#3}{\box\scratchbox}}%
+     \wd\scratchbox\makeupwidth % geen \ht=#2 setting (yet)
+     \hskip\dimexpr-\pagebackgroundhoffset+\menuparameter\c!leftoffset\relax
+     \box\scratchbox
+     \egroup
+   \else
+     #1\relax
+   \fi}
+
+\def\@@amvbox#1#2#3#4% don't change skipping, this one works!
+  {\def\currentmenu{#3}%
+   \testinteractionmenu{#3}%
+   \iflocationmenupermitted
+     \bgroup
+     \showcomposition
+     \scratchdimen\dimexpr
+        \textheight
+       +\pagebackgroundvoffset
+       +\pagebackgroundvoffset
+       +\pagebackgrounddepth
+       -\menuparameter\c!topoffset
+       -\menuparameter\c!bottomoffset
+     \relax
+     \setbox\scratchbox\vbox to \scratchdimen
+       {\forgetall                  % Voor't geval de afstand
+       %\setupblank[\v!standard]%   % (tijdelijk) is aangepast.
+        \restorestandardblank
+        \hsize#2\relax
+        \executeamboxcommands{#3}{#4}\c!before\c!inbetween\c!after}%
+     \setbox\scratchbox\vbox{\hbox{\do@@ammenuposition{#3}{\box\scratchbox}}}%
+     \setbox\scratchbox\vbox
+       {\ht\scratchbox\zeropoint
+        \vskip\dimexpr-\pagebackgroundvoffset+\menuparameter\c!topoffset\relax
+        \box\scratchbox
+        \vskip\pagebackgroundvoffset}% overbodig
+     \ht\scratchbox\textheight
+     \wd\scratchbox#2\relax
+     \box\scratchbox
+     \egroup
+   \else
+     #1\relax
+   \fi}
+
+\ifx\do@@ammenuposition\undefined
+  \let\do@@ammenuposition\gobbleoneargument % hook for positional thingies
+\fi
+
+\setvalue{\??am\s!do\v!right }{\@@amvbox{\dodummypageskip\v!right }\rightedgewidth}
+\setvalue{\??am\s!do\v!left  }{\@@amvbox{\dodummypageskip\v!left  }\leftedgewidth }
+\setvalue{\??am\s!do\v!top   }{\@@amhbox{\dodummypageskip\v!top   }\topheight     }
+\setvalue{\??am\s!do\v!bottom}{\@@amhbox{\dodummypageskip\v!bottom}\bottomheight  }
+
+\def\dointeractionmenu#1#2%
+  {\getvalue{\??am\s!do\getvalue{\??am#1\c!location}}{#1}{#2}}
+
+\unexpanded\def\interactionmenu[#1]%
+  {\getvalue{\??am\c!menu#1}}
+
+\def\horizontalinteractionmenu#1#2#3#4%
+  {\ifdim#2>\zeropoint % new
+     \scratchdimen\zeropoint
+     \setbox\scratchbox\hbox
+       {\def\docommand##1%
+          {\doifnotvalue{\??am##1\c!state}\v!none
+             {\hskip\scratchdimen
+              \setbox2\hbox to #2
+                {\getvalue{\??am##1#3}\interactionmenu[##1]\getvalue{\??am##1#4}}%
+              \doifelsevalue{\??am##1\c!distance}\v!overlay
+                {\scratchdimen\zeropoint
+                 \wd2\zeropoint}%
+                {\scratchdimen\getvalue{\??am##1\c!distance}}%
+              \box2}}%
+       \startinteraction
+       \processcommacommand[\getvalue{\??am#1}]\docommand
+       \stopinteraction}%
+     \wd\scratchbox#2\relax
+     \box\scratchbox
+   \fi}
+
+\def\verticalinteractionmenu#1#2#3#4%
+  {\ifdim#2>\zeropoint % new
+     \scratchdimen\zeropoint
+     \setbox\scratchbox\vbox
+       {\def\docommand##1%
+          {\doifnotvalue{\??am##1\c!state}\v!none
+             {\vskip\scratchdimen
+              \setbox2\vbox to #2
+                {\getvalue{\??am##1#3}\interactionmenu[##1]\getvalue{\??am##1#4}}%
+              \doifelsevalue{\??am##1\c!distance}\v!overlay
+                {\scratchdimen\zeropoint
+                 \offinterlineskip
+                 \dp2\zeropoint
+                 \ht2\zeropoint}%
+                {\scratchdimen\getvalue{\??am##1\c!distance}}%
+              \box2}}%
+        \startinteraction
+        \processcommacommand[\getvalue{\??am#1}]\docommand
+        \stopinteraction}%
+     \ht\scratchbox#2\relax
+     \dp\scratchbox\zeropoint
+     \box\scratchbox
+   \fi}
+
+\letvalue{\??am\v!left }\empty
+\letvalue{\??am\v!right}\empty
+\letvalue{\??am\v!top }\empty
+\letvalue{\??am\v!bottom }\empty
+
+% todo : \defineinteractionmenuclass
+
+\def\interactionmenus[#1]%
+  {\iflocation
+     \getvalue{\??am\??am\c!menu#1}%
+   \else
+     \dodummypageskip{#1}%
+   \fi}
+
+\setvalue{\??am\??am\c!menu\v!left  }{\horizontalinteractionmenu\v!left  \leftedgewidth \c!left  \c!right}
+\setvalue{\??am\??am\c!menu\v!right }{\horizontalinteractionmenu\v!right \rightedgewidth\c!left  \c!right}
+\setvalue{\??am\??am\c!menu\v!top   }{\verticalinteractionmenu  \v!top   \topheight     \c!before\c!after}
+\setvalue{\??am\??am\c!menu\v!bottom}{\verticalinteractionmenu  \v!bottom\bottomheight  \c!before\c!after}
+
+% this can be implemented with the following command (which
+% is new, undocumented, experimental, untested, etc etc)
+
+\def\defineinteractionmenuclass
+  {\dodoubleargument\dodefineinteractionmenuclass}
+
+\def\dodefineinteractionmenuclass[#1][#2]% tag hori|veri
+  {\doifelse{#2}\v!vertical
+     {\setvalue{\??am\??am\c!menu#1}{\verticalinteractionmenu  {#1}{\getvalue{\??am#1\c!width }}\c!before\c!after}}
+     {\setvalue{\??am\??am\c!menu#1}{\horizontalinteractionmenu{#1}{\getvalue{\??am#1\c!height}}\c!left\c!right  }}}
+
+% \setupinteraction[menu=on,state=start]
+%
+% \defineinteractionmenuclass[test]   [vertical]
+% \defineinteractionmenuclass[another][horizontal]
+%
+% \defineinteractionmenu[test]   [left][state=start,width=4cm]
+% \defineinteractionmenu[another][top] [state=start,height=1cm]
+%
+% \startinteractionmenu[test]
+%   \but [firstpage] test-a \\
+%   \but [nextpage]  test-b \\
+% \stopinteractionmenu
+%
+% \startinteractionmenu[another]
+%   \but [firstpage] test-a \\
+%   \but [nextpage]  test-b \\
+% \stopinteractionmenu
+%
+% \setupheadertexts[{\interactionmenu[another]}]
+%
+% \starttext
+%
+% test \interactionmenu[test] \page
+% test \interactionmenu[test] \page
+%
+% \stoptext
+
+%D This can save complicated menu macros when one want to
+%D keep control over parts of a menu (i.e.\ turn them on and
+%D off). We could have achieved something similar with modes.
+
+\def\local@@ambox#1#2#3#4% don't change skipping, this one works!
+  {\bgroup
+   \testinteractionmenu{#3}%
+   \iflocationmenupermitted
+     \executeamboxcommands{#3}{#4}\c!before\c!inbetween\c!after
+   \else
+     #1\relax
+   \fi
+   \egroup}
+
+\def\includemenu[#1]%
+  {\doifvalue{\??am#1\c!state}\v!local
+     {\bgroup
+      \letvalue{\??am#1\c!state}\v!start
+      \let\@@amvbox\local@@ambox
+      \let\@@amhbox\local@@ambox
+      \getvalue{\??am\c!menu#1}%
+      \egroup}}
+
+%D We also need an explicit position control some day. I'll
+%D do that when I need it. [The stacking order.]
+
+\newif\ifextendedmenu
+
+% [name] [location]
+% [name] [location] [pars]
+
+\def\defineinteractionmenu
+  {\dotripleempty\dodefineinteractionmenu}
+
+\def\dodefineinteractionmenu[#1][#2][#3]%
+  {% main settings
+   \letvalue{\??am\c!menu#1}\empty
+   \setvalue{\@@dodolistelement#1}{\def\dosomelistelement{\dodomenulistelement{#1}}}%
+   \presetlocalframed[\??am#1]%
+   % register location
+   \expanded{\addtocommalist{#1}\@EA\noexpand\csname\??am#2\endcsname}%
+   % inherit settings
+   \doifnot{#1}{#2}
+     {\copyparameters[\??am#1][\??am#2]
+        [\c!left,\c!middle,\c!right,\c!before,\c!after,\c!inbetween,%
+         \c!width,\c!height,\c!distance,\c!offset,%
+         \c!frame,\c!framecolor,\c!rulethickness,%
+         \c!background,\c!backgroundcolor,\c!backgroundscreen,%
+         \c!style,\c!color,\c!contrastcolor,\c!samepage,\c!unknownreference,%
+         \c!leftoffset,\c!rightoffset,\c!topoffset,\c!bottomoffset]}%
+   % additional settings
+   \getparameters[\??am#1][\c!location=#2,\c!obstruction=,#3]}
+
+\def\setupinteractionmenu
+  {\dodoubleargument\dosetupinteractionmenu}
+
+\def\dosetupinteractionmenu[#1][#2]%
+  {\def\docommand##1{\getparameters[\??am##1][#2]}%
+   \processcommalist[#1]\docommand}
+
+\expandafter\chardef\csname\??am\??am\v!yes  \endcsname\zerocount
+\expandafter\chardef\csname\??am\??am\v!empty\endcsname\plusone
+\expandafter\chardef\csname\??am\??am\v!no   \endcsname\plustwo
+\expandafter\chardef\csname\??am\??am\v!none \endcsname\plusthree
+\expandafter\chardef\csname\??am\??am        \endcsname\plusone % default
+
+\processbetween{\v!interactionmenu}\dostartinteractionmenu
+
+\def\dostartinteractionmenu#1%
+  {\dodostartinteractionmenu#1\dodostopinteractionmenu}
+
+\def\dodostartinteractionmenu[#1]#2\dodostopinteractionmenu
+  {\setvalue{\??am\c!menu#1}{\extendedmenutrue\dointeractionmenu{#1}{#2}}}
+
+\def\resetinteractionmenu[#1]%
+  {\letvalue{\??am\c!menu#1}\empty}
+
+\def\dodomenulistelement#1#2#3#4#5#6#7%
+  {\setbox0=\hbox
+     {\let\gotolocation\gobbleoneargument % hack to catch last []
+     %\locationclickfalse % ipv ^
+      \docheckrealreferencepage{#7}%
+      \setlocationboxyes
+        {\??am#1}% % needed !
+        []% no settings
+        {\limitatetext{#5}{\getvalue{\??li#2\c!maxwidth}}{\unknown}}% % needed !
+        []}% normally the destination, catch by gobble
+   \@@amboxcommand\do@@amposition{#1}{#7}% beware, we pass the pagenumber
+     {\ignorespaces\linklisttoelement{#3}{#6}{#7}{\box0}\unskip}\\}
+
+% \scherm moet worden als \page
+
+\def\screen
+  {\dosingleempty\doscreen}
+
+\def\doscreen[#1]%
+  {\iflocation\page[#1]\fi}
+
+\unexpanded\def\menubutton
+  {\dodoubleempty\domenubutton}
+
+\def\domenubutton[#1]%
+  {\iffirstargument
+     \ifsecondargument
+       \@EAEAEA\domenubuttonB
+     \else
+       \doifassignmentelse{#1}
+         {\@EAEAEA\domenubuttonC}
+         {\@EAEAEA\domenubuttonD}%
+     \fi
+   \else
+     \@EA\domenubuttonA
+   \fi[#1]}
+
+\def\domenubuttonA[#1][#2]#3[#4]% normal button, no parameters
+  {\bgroup
+  %\locationdummytrue
+   \setlocationbox\??bt[]{#3}[#4]%
+   \egroup}
+
+\def\domenubuttonB[#1][#2]#3[#4]% menu button, with parameters
+  {\bgroup
+  %\locationdummytrue
+   \setlocationbox{\??am#1}[#2]{#3}[#4]%
+   \egroup}
+
+\def\domenubuttonC[#1][#2]#3[#4]% normal button, with parameters
+  {\bgroup
+  %\locationdummytrue
+   \setlocationbox\??bt[#1]{#3}[#4]%
+   \egroup}
+
+\def\domenubuttonD[#1][#2]#3[#4]% menu button, no parameters
+  {\bgroup
+  %\locationdummytrue
+   \setlocationbox{\??am#1}[]{#3}[#4]%
+   \egroup}
+
+\def\menubox
+  {\dodoubleempty\domenubox}
+
+\def\domenubox[#1][#2]#3%
+  {\bgroup
+   \let\setlocationbox\setlocationboxraw
+   \domenubutton[#1][#2]#3[]%
+   \egroup}
+
+% Hier volgen de synchronisatiemacro's:
+
+\def\syncprefix{sync}
+
+%def\syncmarker{syncmark}
+%\definemarking[\syncmarker]
+%\setupmarking[\syncmarker][\c!expansie=\v!ja]
+
+\newmark\syncmarker
+
+\newcounter\synccounter
+
+\newif\ifsynchronisation
+
+\def\startsynchronization%
+  {\iflocation\ifsynchronisation
+     \doglobal\increment\synccounter
+   \fi\fi}
+
+\def\stopsynchronization%
+  {\iflocation\ifsynchronisation
+     %\thisisdestination{\syncprefix:\synccounter}%
+     \pagereference[\syncprefix:\synccounter]%
+     \ifvmode
+       \@EA\setmark\@EA\syncmarker\@EA{\synccounter} % \marking[\syncmarker]{\synccounter}%
+     \else
+       \showmessage\m!interactions4\synccounter
+     \fi
+   \fi\fi}
+
+\def\synchronize%
+  {\startsynchronization
+   \stopsynchronization}
+
+\def\dosetupsynchronization[#1]%
+  {\getparameters[\??sy][#1]%
+   \doifelse\@@systate\v!start
+     \synchronisationtrue
+     \synchronisationfalse}
+
+\def\setupsynchronization
+  {\dosingleargument\dosetupsynchronization}
+
+\def\definesynchronization
+  {\dosingleargument\dodefinesynchronization}
+
+\def\setupsynchronizationbar
+  {\dodoubleargument\getparameters[\??ba]}
+
+\presetlocalframed[\??ba]
+
+\setvalue{synchronisatie\v!page}[#1]%
+  {\bgroup
+  %\setupinteraction[\c!width=\!!zeropoint]%
+   \setinteractionparameter\c!width\!!zeropoint
+   \setbox0\hbox
+     {\localframed[\??ba][]{\dolocationattributes\??ba\c!style\c!color{\strut\@@batext}}}%
+   \dontcomplain
+   \def\atthebottom
+     {\leaders\hrule\!!depth1ex\!!height-.5ex\hfil}%
+   \def\atthetop##1##2##3%
+     {\dimen0=\wd0
+      \divide\dimen0 3
+      \multiply\dimen0 ##2\relax
+      \dimen2=.25em % brrr
+      \advance\dimen0 -##3\dimen2
+      %\gotodestination
+      %  {}{#1}{\syncprefix:##1}{}
+      %  {\hbox to \dimen0{\color[\locationcolor\@@bacolor]{\atthebottom}}}}%
+      \gotobox
+        {\hbox to \dimen0{\color[\locationcolor\@@bacolor]{\atthebottom}}}%
+        [#1::\syncprefix:##1]}%
+   \hbox
+     {\def\check##1##2%
+        {\edef##2{0##1\syncmarker}%
+         \ifnum0##2=0 \def##2{1}\fi}%
+      \check\gettopmark\top
+      \check\getfirstmark\first
+      \check\getbotmark\bot
+      \setbox2\hbox to \wd0
+        {\ifnum\top=\first\relax
+           \ifnum\first=\bot\relax
+             \atthetop\first30\relax
+           \else
+             \atthetop\first21\hss\atthetop\bot11\relax
+           \fi
+         \else
+           \ifnum\first=\bot\relax
+             \atthetop\top11\hss\atthetop\first21\relax
+           \else
+             \atthetop\top11\hss\atthetop\first11\hss\atthetop\bot11\relax
+           \fi
+         \fi}%
+      \wd2=\zeropoint\box2
+      \box0\relax}%
+   \egroup}
+
+\setvalue{synchronisatie\v!local}[#1]%
+  {\bgroup
+  %\setupinteraction[\c!width=\!!zeropoint]%
+   \setinteractionparameter\c!width\!!zeropoint
+   \def\blackrule{\hbox{\vrule\!!height.5em\!!width.5em}}%
+   %\gotodestination
+   %   {}{##1}{\syncprefix:#1}{0}
+   %   {\color[\locationcolor\@@bacolor]{\blackrule}}%
+   \gotobox %
+     {\color[\locationcolor\@@bacolor]{\blackrule}}%
+     [#1::\syncprefix:\synccounter]%
+   \egroup}
+
+\def\synchronizationbar[#1][#2]%
+  {\iflocation\ifsynchronisation
+     \bgroup
+     \setupsynchronizationbar
+       [\c!text=\getvalue{doc:des:#1},#2]%
+     \getvalue{synchronisatie\@@baalternative}[#1]%
+     \egroup
+   \fi\fi}
+
+% A nice application of glue. All this code will be rewritten and
+% generalized.
+
+\newbox\interactionbarbox
+
+\newif\ifbarsymbol
+
+\def\dogotosomepage#1#2#3% nog checken !
+  {\checkreferences  % nodig ??
+   \hbox
+     {\iflocation
+        \ifnum#3=\realpageno
+          #2%
+       \else
+         \gotorealpage\empty\empty{#3}{\doifsomething{#1}{\dolocationattributes{#1}\c!style\c!color}{#2}}%
+       \fi
+     \else
+       #2%
+     \fi}}
+
+\def\dogotosomecontrastpage#1#2#3% nog checken, may replace previous
+  {\checkreferences  % nodig ??
+   \hbox
+     {\iflocation
+        \ifnum#3=\realpageno
+          \gotorealpage\empty\empty{#3}{\doifsomething{#1}{\dolocationattributes{#1}\c!style\c!contrastcolor}{#2}}%
+        \else
+          \gotorealpage\empty\empty{#3}{\doifsomething{#1}{\dolocationattributes{#1}\c!style\c!color}{#2}}%
+        \fi
+      \else
+        #2%
+      \fi}}
+
+\presetlocalframed[\??ib]
+
+\def\interactionbara % we need better control over contrastcolor
+  {\iflocation       % maybe just use gotopage and set colors
+     \bgroup
+     \setinteractionparameter\c!width\zeropoint
+     \setupblackrules[\c!height=\v!max,\c!depth=\v!max]%
+     \!!widthb\dimexpr\@@ibwidth-2.75\emwidth\relax
+     \!!widtha\dimexpr\!!widthb/\lastpage\relax
+     \bgroup
+       \advance\realpageno\minusone
+       \ifvoid\interactionbarbox
+         \bgroup
+         \processaction
+           [\@@ibstep]
+           [   \v!small=>\scratchdimen.25\emwidth,
+              \v!medium=>\scratchdimen.5\emwidth,
+                 \v!big=>\scratchdimen\emwidth,
+             \s!unknown=>\scratchdimen\!!widtha]%
+         \ifdim\!!widtha<\scratchdimen\relax
+           \!!counta\numexpr\scratchdimen/\!!widtha\relax
+         \else
+           \!!counta\@@ibstep\relax
+         \fi
+         \!!widtha\!!counta\!!widtha
+         \setbox\scratchbox\hbox{\blackrule[\c!width=\!!widtha,\c!color=middlegray]}% color here, else no mkiv
+         \global\setbox\interactionbarbox\hbox to \!!widthb
+           {\hss
+            \dostepwiserecurse\plusone\lastpage\!!counta
+              {\gotorealpage\empty\empty\recurselevel{\copy\scratchbox}}%
+            \hss}%
+         \global\wd\interactionbarbox\zeropoint
+         \egroup
+       \fi
+     \egroup
+     \noindent
+     \strut
+     \hbox to \@@ibwidth
+       {\dontcomplain
+        \setupblackrules[\c!width=\emwidth]%
+        \dogotosomecontrastpage\??ib\blackrule\firstpage
+        \hss
+        \copy\interactionbarbox
+        \hbox to \!!widthb
+          {\ifdim\!!widtha<\emwidth
+             \!!widtha\emwidth
+           \fi
+           \setupblackrules[\c!width=\!!widtha]%
+           \ifnum\realpageno>\plusone
+             \!!counta\numexpr\realpageno-\plustwo\relax
+             \hskip\zeropoint\!!plus\!!counta \s!sp\relax % cm gives overflow
+             \dogotosomepage\??ib\blackrule\prevpage
+           \fi
+           \dogotosomecontrastpage\??ib{\blackrule[\c!width=.5em]}\realpageno
+           \ifnum\realpageno<\lastpage\relax
+             \dogotosomepage\??ib\blackrule\nextpage
+             \!!counta\numexpr\lastpage-\realpageno-\plusone\relax
+             \hskip\zeropoint\!!plus\!!counta \s!sp\relax % cm gives overflow
+           \fi}%
+        \hss
+        \dogotosomecontrastpage\??ib\blackrule\lastpage}%
+     \egroup
+   \fi}
+
+\def\interactionbarb
+  {\ifnum\lastpage>\firstpage\relax
+     \interactionbuttons[\v!firstpage,\v!previouspage,\v!nextpage,\v!lastpage]%
+   \fi}
+
+\def\interactionbarc
+  {\iflocation
+     \ifnum\lastpage>\plusone
+       \hbox to \@@ibwidth
+         {\setupblackrules[\c!height=\@@ibheight,\c!depth=\@@ibdepth]%
+          \scratchdimen\dimexpr(\@@ibwidth-4\emwidth)/\numexpr\lastpage+\minusone\relax\relax
+          \!!widtha\numexpr\realpageno+\minusone\relax\scratchdimen
+          \!!widthb\numexpr\lastpage-\realpageno\relax\scratchdimen
+          \startcolor[\locationcolor\@@ibcolor]%
+          \dogotosomepage\empty{\blackrule[\c!width=\emwidth]}\firstpage
+          \hss
+          \dogotosomepage\empty{\blackrule[\c!width=\!!widtha]}\prevpage
+          \color[\@@ibcontrastcolor]{\blackrule[\c!width=\emwidth]}%
+          \dogotosomepage\empty{\blackrule[\c!width=\!!widthb]}\nextpage
+          \hss
+          \dogotosomepage\empty{\blackrule[\c!width=\emwidth]}\lastpage
+          \stopcolor}%
+     \fi
+   \fi}
+
+\def\interactionbard
+  {\iflocation\ifshowingsubpage
+     \ifnum\nofsubpages>\plusone
+       \hbox \bgroup
+         \setinteractionparameter\c!width\!!zeropoint
+         \ifbarsymbol
+           \setupsymbolset[\@@iasymbolset]%
+           \def\dogotox##1%
+             {\hbox{\symbol[\ifcase##1 \v!previous\or\v!somewhere\or\v!next\fi]}}%
+         \else
+           \def\dogotox##1%
+             {\hbox{\vrule\!!height\@@ibheight\!!depth \@@ibdepth\!!width \@@ibwidth}}%
+         \fi
+         \dostepwiserecurse\plusone\nofsubpages\plusone
+           {\bgroup
+            \scratchcounter\numexpr\recurselevel+\firstsubpage+\minusone\relax
+            \ifnum\scratchcounter<\realpageno\relax
+              \dogotosomecontrastpage\??ib{\dogotox0}\scratchcounter
+            \else\ifnum\scratchcounter=\realpageno\relax
+              \dogotosomecontrastpage\??ib{\dogotox1}\scratchcounter
+            \else
+              \dogotosomecontrastpage\??ib{\dogotox2}\scratchcounter
+            \fi\fi
+            \egroup
+            \hskip\@@ibdistance}%
+         \unskip % not needed
+       \egroup
+     \fi
+   \fi\fi}
+
+\def\interactionbare%  KAN WORDEN GECOMBINEERD MET D
+  {\iflocation\ifshowingsubpage
+     \ifnum\nofsubpages>\plusone
+       \bgroup
+       \!!widthb\dimexpr\nofsubpages\dimexpr\@@ibdistance\relax-\@@ibdistance\relax % (n-1)
+       \!!widtha\dimexpr(\@@ibwidth-\!!widthb)/\nofsubpages\relax
+       \ifdim\!!widtha<\@@ibdistance\relax
+         \interactionbarf
+       \else
+         \setinteractionparameter\c!width\!!zeropoint
+         \noindent
+         \hbox to \@@ibwidth
+           \bgroup
+             \ifbarsymbol
+               \setupsymbolset[\@@iasymbolset]%
+               \def\dogotox##1%
+                 {\hbox{\symbol[\ifcase##1 \v!previous\or\v!somewhere\or\v!next\fi}}%
+             \else
+               \def\dogotox##1%
+                 {\hbox{\vrule\!!height\@@ibheight\!!depth\@@ibdepth\!!width\!!widtha}}%
+             \fi
+             \dostepwiserecurse\plusone\nofsubpages\plusone
+               {\bgroup
+                \scratchcounter\numexpr\recurselevel+\firstsubpage+\minusone\relax
+                \ifnum\scratchcounter<\realpageno\relax
+                  \dogotosomecontrastpage\??ib{\dogotox0}\scratchcounter
+                \else\ifnum\scratchcounter=\realpageno\relax
+                  \dogotosomecontrastpage\??ib{\dogotox1}\scratchcounter
+                \else
+                  \dogotosomecontrastpage\??ib{\dogotox2}\scratchcounter
+                \fi\fi
+                \egroup
+                \hss}%
+             \unskip
+           \egroup
+       \fi
+       \egroup
+     \fi
+   \fi\fi}
+
+\def\interactionbarf % !! KAN WORDEN GECOMBINEERD MET D !!
+  {\iflocation\ifshowingsubpage
+     \ifnum\nofsubpages>\plusone
+       \setinteractionparameter\c!width\!!zeropoint
+       \noindent
+       \hbox to \@@ibwidth
+       \bgroup
+       \!!countb\zerocount
+       \loop % todo: \doloop
+         \advance\!!countb \plusone
+        %\!!countc\nofsubpages \divide\!!countc \!!countb \advance\!!countc \plusone
+         \!!countc\numexpr(\nofsubpages/\!!countb)+\plusone\relax % rounding
+         \!!widthb\@@ibdistance
+         \multiply\!!widthb \!!countc
+         \advance\!!widthb -\@@ibdistance
+         \!!widtha\@@ibwidth
+         \advance\!!widtha -\!!widthb
+         \divide\!!widtha \!!countc
+         \ifdim\!!widtha<\@@ibdistance\relax
+       \repeat
+       \ifnum\!!countc>\plusone
+         % this is not that well tested
+         \advance\!!countc \minustwo
+         \!!widtha-\@@ibdistance
+         \!!widtha\!!countc\!!widtha
+         \advance\!!widtha \@@ibwidth
+         \advance\!!countc \plusone
+         \divide\!!widtha \!!countc
+       \fi
+       \ifbarsymbol
+         \setupsymbolset[\@@iasymbolset]%
+         \def\dogotox##1%
+           {\hbox{\symbol[\ifcase##1 \v!previous\or\v!somewhere\or\v!somewhere\or\v!somewhere\or\v!next\fi}}%
+       \else
+         \def\dogotox##1%
+           {\hbox
+              {\!!heighta\@@ibheight
+               \!!deptha\@@ibdepth
+               \ifcase##1\relax
+                 \vrule\!!height  \!!heighta\!!depth  \!!deptha\!!width\!!widtha
+               \or
+                 \vrule\!!height.5\!!heighta\!!depth.5\!!deptha\!!width\!!widtha
+               \or
+                 \vrule\!!height  \!!heighta\!!depth  \!!deptha\!!width\!!widtha
+               \or
+                 \vrule\!!height.5\!!heighta\!!depth.5\!!deptha\!!width\!!widtha
+               \or
+                 \vrule\!!height  \!!heighta\!!depth  \!!deptha\!!width\!!widtha
+               \fi}}%
+       \fi
+       \!!countc\numexpr\realpageno-\plustwo\relax
+       \!!countd\numexpr\realpageno+\plustwo\relax
+       \ifnum\!!countc<\plusone \!!countc\plusone \fi
+       \!!countf\zerocount
+       \dostepwiserecurse\firstsubpage\lastsubpage\plusone
+         {\!!doneafalse
+          \advance\!!countf \plusone
+          \ifnum\recurselevel=\firstsubpage\relax \!!doneatrue \fi
+          \ifnum\recurselevel=\lastsubpage\relax  \!!doneatrue \fi
+          \if!!donea
+            \ifnum\recurselevel<\realpageno
+              \dogotosomecontrastpage\??ib{\dogotox0}\recurselevel
+            \else\ifnum\recurselevel>\realpageno
+              \dogotosomecontrastpage\??ib{\dogotox2}\recurselevel
+            \else
+              \dogotosomecontrastpage\??ib{\dogotox4}\recurselevel
+            \fi\fi
+            \hss
+            \!!countf\zerocount
+          \else\ifnum\!!countf=\!!countb
+            \ifnum\recurselevel<\realpageno
+              \dogotosomecontrastpage\??ib{\dogotox1}\recurselevel
+            \else\ifnum\recurselevel>\realpageno
+              \dogotosomecontrastpage\??ib{\dogotox3}\recurselevel
+            \else
+              \dogotosomecontrastpage\??ib{\dogotox2}\recurselevel
+            \fi\fi
+            \hss
+            \!!countf\zerocount
+          \fi\fi}%
+       \unskip
+       \egroup
+     \fi
+   \fi\fi}
+
+\def\interactionbarg
+  {\ifnum\lastsubpage>\firstsubpage\relax
+     \interactionbuttons[\v!firstsubpage,\v!previoussubpage,\v!nextsubpage,\v!lastsubpage]%
+   \fi}
+
+\def\checkinteractionbar#1#2#3%
+  {\ifdim\@@ibwidth=\zeropoint\def\@@ibwidth{#1}\fi
+   \doifnothing\@@ibheight{\def\@@ibheight{#2}}%
+   \doifnothing\@@ibdepth{\def\@@ibdepth{#3}}}
+
+\def\complexinteractionbar[#1]%
+  {\doifelse{#1}\v!reset
+    {\global\setbox\interactionbarbox\emptybox}%
+    {\bgroup
+       \iflocation
+         \checksubpages % goes wrong / loads \numberofpages too
+         \getparameters[\??ib][#1]%
+         \doif\@@ibstate\v!start
+           {\startinteraction
+            \processaction % breedte defaults !
+              [\@@ibalternative]
+              [         c=>\checkinteractionbar{10em}\v!max \v!max,
+                        d=>\checkinteractionbar{.5em}{.5em} \!!zeropoint,
+                        e=>\checkinteractionbar{10em}{.5em} \!!zeropoint,
+                        f=>\checkinteractionbar{10em}{.5em} \!!zeropoint,
+               \s!default=>\checkinteractionbar{10em}\v!broad\!!zeropoint,
+               \s!unknown=>\checkinteractionbar{10em}\v!broad\!!zeropoint]%
+            \doifelse\@@ibsymbol\v!yes
+              \barsymboltrue\barsymbolfalse
+            \getvalue{interactionbar\@@ibalternative}%
+            \stopinteraction}%
+       \fi
+     \egroup}}
+
+\definecomplexorsimpleempty\interactionbar
+
+\def\setupinteractionbar
+  {\dodoubleargument\getparameters[\??ib]}
+
+% Er wordt vooralsnog uitgegaan van een symmetrische
+% start-stop situatie.
+
+\def\c!profiel!! {profiel:}  % brrr
+\def\c!versie!!  {versie:}
+
+\def\dodefineprofile[#1][#2]%
+  {\iflocation
+     \def\dododefineprofile##1%
+       {\def\dodododefineprofile####1%
+          {\doifdefinedelse{\c!profiel!!####1}%
+             {\edef\!!stringa{\getvalue{\c!profiel!!####1}}%
+              \setevalue{\c!profiel!!####1}{\!!stringa,##1}}%
+             {\setevalue{\c!profiel!!####1}{##1}}}%
+        \processcommalist[#2]\dodododefineprofile}%
+     \processcommalist[#1]\dododefineprofile
+   \fi}
+
+\def\defineprofile%
+  {\dodoubleargument\dodefineprofile}
+
+% Als met \getpar wordt gewerkt, dan moet \next worden toegepast.
+
+% TZT initialisatie!
+
+\def\profilepage{}
+
+\let\dosetprofilepage\relax
+\let\dogetprofilepage\relax
+
+\def\processprofile#1[#2]%
+  {\iflocation
+     \par % needed for pdftex
+     \bgroup
+     \dosetprofilepage
+     \dogetprofilepage
+     \def\processoneprofile##1##2%
+       {\ExpandBothAfter\doifinsetelse{##2}{\processedprofiles}%
+          {\doifsomething{##1}{(##1)}}%
+          {\addtocommalist{##2}\processedprofiles
+            ##1\relax
+            \ifcase#1\relax
+              \dobeginofprofile{##2}\paperwidth\paperheight\profilepage
+            \else
+              \doendofprofile
+            \fi}}%
+     \let\processedprofiles\empty
+     \def\doprocessprofile##1%
+       {\doifelse{\@@pfoption}{\v!test}%
+          {\goodbreak\blank\nobreak\tt[\space
+           \ifcase#1\v!start\else\v!stop\fi profiel\space ##1:\space
+           \doifdefinedelse{\c!profiel!!##1}%
+             {\def\dodoprocessprofile####1%
+                {\processoneprofile
+                   {\goto{####1}[\c!profiel!!####1]}%
+                   {####1}%
+                 \space}%
+              \processcommacommand
+                [\getvalue{\c!profiel!!##1}]\dodoprocessprofile}%
+             {- }%
+           ]\nobreak\blank}%
+          {\doifdefined{\c!profiel!!##1}%
+             {\def\dodoprocessprofile####1%
+                {\processoneprofile{}{####1}}%
+              \processcommacommand
+                 [\getvalue{\c!profiel!!##1}]\dodoprocessprofile}}}%
+     \processcommalist[#2]\doprocessprofile
+     \egroup
+     \par % needed for pdftex
+   \fi}
+
+\def\startprofile[#1]%
+  {\iflocation
+     \bgroup
+     \addtocommalist{#1}\actualprofile
+     \def\stopprofile%
+       {\processprofile1[#1]%
+        \egroup}%
+     \def\next{\processprofile0[#1]}% % \DoAfterFi \processprofile0[#1]%
+   \else                              % ^^^^^^^^^^ will be obsolete
+     \let\next\relax                  % since ugly and never used
+   \fi
+   \next}
+
+\let\stopprofile\relax
+
+\def\dofollowprofile#1[#2]%
+  {\iflocation
+     \hbox
+       {\dohandlegoto
+          {\dolocationattributes\??ia\c!style\c!color{#1\presetgoto}}%
+          {\dostartgotoprofile\buttonwidth\buttonheight{#2}}%
+          {\dostopgotoprofile}}%
+   \else
+     {#1}%
+   \fi}
+
+\def\followprofile#1[#2]%
+  {\iflocation
+     \doif\@@pfoption\v!test{\pagereference[\c!profiel!!#2]}%
+     \dofollowprofile{#1}[#2]%
+   \fi}
+
+\def\setupprofiles%
+  {\dodoubleargument\getparameters[\??pf]}
+
+% Als er nog geen tekst op de pagina staat, dan heeft het
+% profiel betrekking op het bovenstaande, dus soms een vorige
+% pagina! Vreemd, omdat PDF paginagewijs werkt. Gelukkig
+% biedt /page een oplossing. Echter: expansie van een
+% \special kan niet worden uitgesteld, zodat alleen een
+% two-pass een oplossing vormt. Het onderstaande kan komen
+% te vervallen als Acrobat dit ondervangt. Het scheelt een
+% pass en een lijst.
+%
+% Er kunnen eventueel twee lijsten worden gebruikt. Een voor
+% het begin (start) en een voor het eind (stop). Nu staat
+% alles in een lijst.
+
+\definetwopasslist\s!profile
+
+\newcounter\currentprofile
+
+\def\dosetprofilepage%
+  {\doglobal\increment\currentprofile
+   \lazysavetwopassdata{\s!profile}{\currentprofile}{\noexpand\realfolio}}
+
+\def\dogetprofilepage%
+  {\gettwopassdata{\s!profile}%
+   \let\profilepage=\twopassdata}
+
+% is this stuff used at all
+
+\newcounter\versionlevel
+\newcounter\versionorder
+
+\newif\ifrecentversion
+
+\let\oldatcharacter=@
+
+\def\minimumversion{0}
+\def\actualversion{0}
+
+\def\dosetupversions[#1]%
+  {\getparameters[\??ve][#1]
+   \stripcharacter.\from\@@venumber\to\minimumversion}
+
+\def\setupversions
+  {\dosingleargument\dosetupversions}
+
+\definetwopasslist\s!versionbegin
+\definetwopasslist\s!versionend
+
+\let\actualprofile\empty
+
+\def\doresetpageversion
+  {\lazysavetwopassdata{\s!versionend}{\versionorder}{\noexpand\realfolio}}
+
+\def\dosetpageversion#1%
+  {\recentversiontrue
+   \doglobal\increment\versionorder\relax
+   \lazysavetwopassdata{\s!versionbegin}{\versionorder}{\noexpand\realfolio}%
+   \let\resetpageversion\doresetpageversion}
+
+\def\recentcontributions{}
+
+\def\checkrecentcontributions%
+  {\gettwopassdata{\s!versionbegin}%
+   \iftwopassdatafound
+     \!!counta\twopassdata\relax
+     \gettwopassdata{\s!versionend}%
+     \iftwopassdatafound
+       \!!countb\twopassdata\relax
+       \doglobal\increment\versionorder\relax
+       \savetwopassdata{\s!versionbegin}{\versionorder}{\the\!!counta}%
+       \savetwopassdata{\s!versionend  }{\versionorder}{\the\!!countb}%
+       \dostepwiserecurse\!!counta\!!countb\plusone
+         {\@EA\doglobal\@EA\addtocommalist\@EA{\recurselevel}{\recentcontributions}}%
+       \let\next\checkrecentcontributions
+     \else
+       \let\next\relax
+     \fi
+   \else
+     \let\next\relax
+   \fi
+   \next}
+
+\def\docheckpageversion
+  {\ExpandBothAfter\doifinsetelse{\realfolio}{\recentcontributions}
+     {\pageselectedtrue}%
+     {\pageselectedfalse}}
+
+\let\setpageversion   \gobbleoneargument
+\let\resetpageversion \relax
+\let\checkpageversion \relax
+
+\def\complexstartversion[#1]%
+  {\bgroup
+   \doifelsenothing\actualprofile
+     {\startprofile[#1]}%
+     {\startprofile[#1,\actualprofile]}%
+   \def\docomplexstartversie##1%
+     {\stripcharacter.\from##1\to\actualversion
+      \ifnum\versionlevel>\zerocount\relax
+        \ifnum\actualversion=\zerocount
+          \setpageversion\actualversion   % unknown version
+        \else
+          \ifnum\actualversion<\minimumversion\relax
+            \relax                        % old version
+          \else
+            \setpageversion\actualversion % new version
+          \fi
+        \fi
+      \fi}%
+   \doglobal\increment\versionlevel\relax
+   \doifelsenothing{#1}
+     {\docomplexstartversie{0}}%
+     {\processcommalist[#1]\docomplexstartversie}}
+
+\definecomplexorsimpleempty\startversion
+
+\def\stopversion
+  {\stopprofile
+   \doglobal\decrement\versionlevel
+   \ifnum\versionlevel<\zerocount
+     \showmessage\m!versions1\empty
+   \else
+     \resetpageversion
+     \egroup
+   \fi}
+
+\def\markversion
+  {\showmessage\m!versions2\empty
+   \let\setpageversion\dosetpageversion
+   \let\resetpageversion\relax
+   \let\checkpageversion\relax}
+
+\def\selectversion
+  {\checkrecentcontributions
+   \showmessage\m!versions3\recentcontributions
+   \let\setpageversio\gobbleoneargument
+   \let\resetpageversion\relax
+   \let\checkpageversion\docheckpageversion}
+
+\def\dodefineversion[#1][#2]%
+  {\setvalue{\c!versie!!#1}{#2}%
+   \defineprofile[#1][#2]}
+
+\def\defineversion
+  {\dodoubleargument\dodefineversion}
+
+\def\followversion
+  {\followprofile}
+
+\def\followprofileversion#1[#2][#3]%
+  {\def\docommand##1%
+     {\defineprofile[#2#3][##1]}%
+   \processcommacommand[\getvalue{\c!versie!!#3}]\docommand
+   \followprofile#1[#2#3]}
+
+\newcounter\currentpagetransition
+
+\newif\ifrandomtransitions
+
+\def\setuppagetransitions%
+  {\dosingleempty\dosetuppagetransitions}
+
+\def\dosetuppagetransitions[#1]%
+  {\doifelsenothing{#1}
+     {\doifnot\@@scdelay\v!none
+        {\let\setpagetransition\setsomepagedelay}}
+     {\doifelse{#1}\v!start
+        {\doifnot\@@scdelay\v!none
+           {\let\setpagetransition\setsomepagedelay}}
+        {\doglobal\newcounter\currentpagetransition
+         \doifinsetelse{#1}{\v!reset,\v!stop}
+           {\let\setpagetransition\relax}
+           {\let\setpagetransition\setsomepagetransition
+            \doifinsetelse\v!random{#1}
+              {\randomtransitionstrue}{\randomtransitionsfalse}%
+            \edef\userpagetransitions{#1}%
+            \@EA\removefromcommalist\@EA{\v!random}\userpagetransitions
+            \ifx\userpagetransitions\empty
+              \let\userpagetransitions\pagetransitions
+            \fi}}}}
+
+\def\setsomepagedelay
+  {\expanded{\dosetpagetransition{0}{\@@scdelay}}}
+
+\def\setsomepagetransition
+  {\iflocation
+     \ifrandomtransitions
+       \expanded{\getcommalistsize[\userpagetransitions]}%
+       \getrandomnumber\currentpagetransition1\commalistsize
+     \else
+       \doglobal\increment\currentpagetransition
+     \fi
+     \expanded{\getfromcommalist[\userpagetransitions][\currentpagetransition]}%
+     \doifnumberelse\commalistelement
+       {\expanded{\getfromcommalist[\pagetransitions][\commalistelement]}}
+       {}%
+     \ifx\commalistelement\empty
+       \doglobal\newcounter\currentpagetransition
+       \setsomepagetransition
+     \else
+       \doifelse\@@scdelay\v!none
+         {\expanded{\dosetpagetransition{\commalistelement}{0}}}
+         {\expanded{\dosetpagetransition{\commalistelement}{\@@scdelay}}}%
+     \fi
+   \fi}
+
+\prependtoks \setpagetransition \to \everyshipout
+
+% temporary here
+
+%D \startbuffer
+%D \dorecurse{10}
+%D   {\horizontalpositionbar
+%D      \pos\recurselevel \min1 \max10
+%D      \token\framed{\recurselevel}%
+%D    \\}
+%D
+%D \hbox to 15em
+%D   {\hss
+%D    \dorecurse{10}
+%D      {\verticalpositionbar\pos\recurselevel\min1\max10\token\blackrule\\
+%D       \hss}}
+%D \stopbuffer
+
+\def\horizontalpositionbar\pos#1\min#2\max#3\token#4\\%
+  {\hbox to \hsize
+     {\hskip\zeropoint\!!plus #1\!!fill
+      \hskip\zeropoint\!!plus-#2\!!fill
+      #4\relax
+      \hskip\zeropoint\!!plus #3\!!fill
+      \hskip\zeropoint\!!plus-#1\!!fill}}
+
+\def\verticalpositionbar\pos#1\min#2\max#3\token#4\\%
+  {\vbox to \vsize
+     {\vskip\zeropoint\!!plus #1\!!fill
+      \vskip\zeropoint\!!plus-#2\!!fill
+      \hbox{#4}\relax
+      \vskip\zeropoint\!!plus #3\!!fill
+      \vskip\zeropoint\!!plus-#1\!!fill}}
+
+\def\horizontalgrowingbar\pos#1\min#2\max#3\height#4\depth#5\\%
+  {\hbox to \hsize
+     {\scratchcounter#1%
+      \advance\scratchcounter -#2%
+      \advance\scratchcounter \plusone
+      \leaders\vrule\hskip\zeropoint\!!plus \scratchcounter\!!fill
+      \vrule\!!width\zeropoint\!!height#4\!!depth#5%
+      \hskip\zeropoint\!!plus #3\!!fill
+      \hskip\zeropoint\!!plus-#1\!!fill}}
+
+\def\verticalgrowingbar\pos#1\min#2\max#3\width#4\\%
+  {\vbox to \vsize
+     {\scratchcounter#1%
+      \advance\scratchcounter -#2%
+      \advance\scratchcounter \plusone
+      \leaders\hrule\vskip\zeropoint\!!plus\scratchcounter\!!fill
+      \hrule\!!width#4\!!height\zeropoint\!!depth\zeropoint
+      \vskip\zeropoint\!!plus #3\!!fill
+      \vskip\zeropoint\!!plus-#1\!!fill}}
+
+\newbox\commentbox
+
+\def\doflushcommentanchors
+   {\let\next\relax % new
+    \processaction
+      [\@@cclocation]
+      [%      \v!text=>\let\next\relax, % new
+            \v!inmargin=>\let\next\inmargin, % brr not the same as inleft|rightmargin
+         \v!leftedge=>\let\next\inleftedge,
+        \v!rightedge=>\let\next\inrightedge,
+        \v!leftmargin=>\let\next\inleftmargin,
+       \v!rightmargin=>\let\next\inrightmargin]%
+    \next{\hbox{\raise\strutht\box\commentbox}}}
+
+\def\flushcommentanchors % in everypar so indirect
+  {\ifvoid\commentbox\else \doflushcommentanchors \fi}
+
+\def\setupcomment
+  {\dodoubleargument\getparameters[\??cc]}
+
+\setvalue{\e!start\v!comment}% the dummy triple gobbles trailing spaces
+  {\dotripleempty\dostartcommentaar}
+
+\def\comment
+  {\dodoubleempty\docomment}
+
+\def\dodocomment#1%
+  {\!!widtha\@@ccwidth
+   \!!heighta\@@ccheight
+   \doifelse\@@ccoption\v!max
+     {\let\@@ccopen   \!!plusone}{\let\@@ccopen   \!!zerocount}%
+   \doifelse\@@ccoption\v!buffer
+     {\let\@@cccollect\!!plusone}{\let\@@cccollect\!!zerocount}%
+   \preparecommentvariables
+   \doinsertcomment
+     \@@cctitle\!!widtha\!!heighta
+     \@@cccolor\@@ccopen\@@ccsymbol
+     \@@cccollect{#1}}
+
+\def\preparecommentvariables % more will move here as with fields
+  {\let\@@DriverCommentLayer\@@cctextlayer}
+
+\def\dopreparecommentaar#1#2%
+  {\doifassignmentelse{#1}
+     {\getparameters[\??cc][#1]}
+     {\getparameters[\??cc][\c!title=#1,#2]}%
+   \obeylines
+   \doif\@@ccspace\v!yes\obeyspaces}
+
+\def\dostartcommentaar[#1][#2][#3]%
+  {\bgroup
+   \doifelse\@@ccstate\v!start
+     {\dopreparecommentaar{#1}{#2}%
+      \long\def\docommand##1%
+        {\global\setbox\commentbox\frozenhbox
+           {\hbox to \zeropoint
+              {\struttedbox{\tbox{\dodocomment{##1}}}\hss}%
+            \hskip\ifvoid\commentbox\@@ccmargin\else\@@ccdistance\fi
+            \box\commentbox}%
+         \egroup}}%
+     {\long\def\docommand##1%
+        {\egroup}}%
+   \grabuntil{\e!stop\v!comment}\docommand}
+
+\letvalue{\e!stop\v!comment}\relax % handy for \expanded{...}
+
+\def\docomment[#1][#2]#3%
+  {\doif\@@ccstate\v!start
+     {\hbox to \zeropoint
+        {\dopreparecommentaar{#1}{#2}%
+         \hskip-\@@ccmargin
+         \struttedbox{\tbox{\dodocomment{#3}}\hss}}}%
+   \ignorespaces}
+
+% \startcomment
+%   hello beautiful\\world
+% \stopcomment
+%
+% \startcomment[hello]
+%   hello << \'e\'erste >>
+%   beautiful
+%   world
+% \stopcomment
+%
+% \startcomment[hello][color=green,width=4cm,height=3cm]
+%   hello \leftguillemot\ \'e\'erste \rightguillemot\
+%   beautiful
+%   world
+% \stopcommentaar
+%
+% \startcomment[hello][color=green,width=4cm,height=3cm]
+%   hello \leftguillemot\ \'e\'erste \rightguillemot\ test
+%
+%   beautiful
+%
+%   world
+% \stopcomment
+%
+% \startcomment[symbol=Balloon]
+%   Do we want this kind of rubish? And, why isn't this and
+%   some more features related to text annotations so poorly
+%   (actually not) documented? Anyhow, by providing this
+%   functionality we demonstrate that \pdfTeX\ can do it. By
+%   the way, it's funny that when in Acrobat we scale up the
+%   text, the symbols scale down.
+% \stopcomment
+
+% \definesymbol [comment-normal][{\externalfigure[cow.pdf]}]
+% \definesymbol [comment-down]  [{\externalfigure[cow.pdf]}]
+%
+% \def\CowSymbol#1#2%
+%  {\scale
+%     [\c!height=#1]
+%     {\startMPcode
+%        loadfigure "koe.mp" number 1 ;
+%        refill currentpicture withcolor #2 ;
+%      \stopMPcode}}
+%
+% \definesymbol [comment-normal]
+%   [\CowSymbol{4ex}{red}]
+%
+% \definesymbol [comment-down]
+%   [\CowSymbol{4ex}{green}]
+%
+% \setupcomment
+%   [\c!symbol={comment-normal,comment-down},
+%    \c!option=\v!buffer]
+%
+% \setupfootertexts[\placecomments]
+
+\def\placecomments
+  {\doflushcomments}
+
+% \setupinteraction[state=start]
+%
+% \useattachment[test.tex]
+% \useattachment[whatever][test.tex]
+% \useattachment[whatever][newname][test.tex]
+% \useattachment[whatever][title][newname][test.tex]
+%
+% % \setupattachments[\c!symbol={symbol-normal,symbol-down}]
+%
+% \starttext \attachment[whatever] \stoptext
+
+
+\def\useattachment
+  {\doquadrupleempty\douseattachment}
+
+\def\douseattachment[#1][#2][#3][#4]% tag title newname filename
+  {\iffourthargument
+     \setgvalue{\??at:#1}{{#2}{#3}{#4}}% tooltip kind of case
+   \else\ifthirdargument
+     \setgvalue{\??at:#1}{{#2}{#2}{#3}}% full path case
+   \else\ifsecondargument
+     \setgvalue{\??at:#1}{{#2}{#2}{#2}}% obvious case
+   \else
+     \setgvalue{\??at:#1}{{#1}{#1}{#1}}% worst case
+   \fi\fi\fi}
+
+\let\attachmenttitle\empty
+\let\attachmentname \empty
+\let\attachmentfile \empty
+
+\def\getattachmentdata[#1]%
+  {\edef\attachmenttitle{\filterfromvalue{\??at:#1}31}% description
+   \edef\attachmentname {\filterfromvalue{\??at:#1}32}% new name
+   \edef\attachmentfile {\filterfromvalue{\??at:#1}33}% original
+   \expandafter\splitstring\attachmentname\at.\to\!!stringa\and\!!stringb
+   \ifx\!!stringb\empty % no suffix, so we need to inherit it
+     \expandafter\splitstring\attachmentfile\at.\to\!!stringc\and\!!stringd
+     \edef\attachmentname{\attachmentname.\!!stringd}%
+   \fi}
+
+\def\attachment
+  {\dodoubleempty\doattachment}
+
+\def\doattachment[#1][#2]% currently title equals newname
+  {\iflocation
+     \ifsecondargument
+       \doifundefined{\??at:#2}
+         {\showmessage\m!interactions6{#2}%
+          \useattachment[#2]}%
+       \doif\@@atstate\v!start
+         {\bgroup
+          \getattachmentdata[#2]%
+          \doiffileelse\attachmentfile
+            {\setupattachments[#1]%
+             \presetattachmentvariables
+\struttedbox{\tbox{%
+             \doattachfile
+               \attachmenttitle
+               {1em}\strutheight\strutdepth\@@atcolor\@@atsymbol
+               \attachmentname
+               \attachmentfile}%
+}}%
+            {\showmessage\m!interactions5\attachmentfile}%
+          \egroup}%
+     \else\iffirstargument
+        \attachment[][#1]%
+     \fi\fi
+   \fi}
+
+\def\presetattachmentvariables
+  {\let\@@DriverAttachmentLayer\@@attextlayer}
+
+\def\setupattachments
+  {\dodoubleempty\getparameters[\??at]}
+
+\setupattachments
+  [\c!state=\v!start,
+   \c!color=\@@iacolor,
+   \c!textlayer=,
+   \c!symbol=]
+
+% jammer, tussen/midden had erin gemoeten; \c!commando toevoegen
+
+\def\registermenucommand#1%
+  {{\textonly\noindent#1\space}} % no math switching
+
+\def\doregistermenubuttons[#1][#2]% [menu id] [register]
+  {\bgroup
+   \ifsecondargument
+     \setupinteractionmenu
+       [#1][\c!unknownreference=\v!yes,\c!samepage=\v!yes]%
+     \def\docommand##1%
+       {\registermenucommand{\menubutton[#1]{##1}[#2:##1]}}%
+   \else
+     \def\docommand##1%
+       {\registermenucommand
+          {\button
+             [\c!unknownreference=\v!yes,\c!samepage=\v!yes]
+             {##1}[#1:##1]}}%
+   \fi
+   \handletokens abcdefghijklmnopqrstuvwxyz\with\docommand % moet anders
+   \egroup}
+
+\def\registermenubuttons
+  {\dodoubleempty\doregistermenubuttons}
+
+% It took quite a while to figure this out (using the preliminary 1.5
+% spec). There are still a lot of things to be implemented. This is
+% the third alternative.
+
+% todo: multiple instances, dus indirect
+
+\let\currentrendering\empty
+
+\definereference[StartCurrentRendering] [\v!StartRendering {\currentrendering}]
+\definereference[StopCurrentRendering]  [\v!StopRendering  {\currentrendering}]
+\definereference[PauseCurrentRendering] [\v!PauseRendering {\currentrendering}]
+\definereference[ResumeCurrentRendering][\v!ResumeRendering{\currentrendering}]
+
+\newcounter\nofexternalrenderings
+
+\def\useexternalrendering{\doquadrupleempty\douseexternalrendering}
+\def\setinternalrendering{\dodoubleempty   \dosetinternalrendering}
+
+\def\douseexternalrendering[#1][#2][#3][#4]% tag mime file options
+  {\setgvalue{\??rd:#1}{\plusone{#1}{#2}{#3}{#4}}}
+
+\def\dosetinternalrendering[#1][#2]% tag options {content}
+  {\bgroup
+   \dowithnextbox
+     {\setgvalue{\??rd:#1}{\plustwo{#1}{IRO}{#1}{#2}}%
+      \let\objectoffset\zeropoint
+      \setobject{IRO}{#1}\hbox{\box\nextbox}%
+      \egroup}%
+     \hbox}
+
+\def\checkrendering#1% let's hope that \next is not used
+  {\iflocation
+    \doifsomething{#1}%
+      {\doifdefined{\??rd:#1}%
+         {\expanded{\getvalue{\??rd::\number\renderingtype{#1}}%
+            {\filterfromvalue{\??rd:#1}52}{\filterfromvalue{\??rd:#1}53}%
+            {\filterfromvalue{\??rd:#1}54}{\filterfromvalue{\??rd:#1}55}}}}%
+   \fi}
+
+\setvalue{\??rd::1}{\doinsertrendering}
+\setvalue{\??rd::2}{\doinsertrenderingobject}
+
+\def\renderingtype   #1{\filterfromvalue{\??rd:#1}51}
+\def\renderingoptions#1{\filterfromvalue{\??rd:#1}55}
+
+\setexecutecommandcheck {startrendering}  \checkrendering
+\setexecutecommandcheck {stoprendering}   \checkrendering
+\setexecutecommandcheck {pauserendering}  \checkrendering
+\setexecutecommandcheck {resumerendering} \checkrendering
+
+% by using a nice trick (used in other places of context as well) we
+% can easily overload the default size to match the opbject size
+
+\def\renderingwidth {8cm}
+\def\renderingheight{6cm}
+
+\def\definerenderingwindow
+  {\dodoubleempty\dodefinerenderingwindow}
+
+\def\dodefinerenderingwindow[#1][#2]%
+  {\presetlocalframed[\??rw#1]%
+   \getparameters%
+     [\??rw#1]%
+     [\c!openpageaction=,\c!closepageaction=,%
+      \c!width=\renderingwidth,\c!height=\renderingheight,%
+      #2]}
+
+\def\setuprenderingwindow
+  {\dodoubleargument\dosetuprenderingwindow}
+
+\def\dosetuprenderingwindow[#1]%
+  {\getparameters[\??rw#1]}
+
+\def\placerenderingwindow
+  {\dodoubleempty\doplacerenderingwindow}
+
+\def\doplacerenderingwindow[#1][#2]%
+  {\bgroup
+   \edef\currentrendering{\ifsecondargument#2\else#1\fi}%
+   \ifcase\renderingtype\currentrendering\or
+     % a file
+   \or
+     % an object
+     \getobjectdimensions{IRO}\currentrendering
+     \scratchdimen\objectheight
+     \advance\scratchdimen\objectdepth
+     \edef\renderingheight{\the\scratchdimen}%
+     \edef\renderingwidth{\objectwidth}%
+   \fi
+   % create fall back if needed
+   \doifdefinedelse{\??rw#1\c!width}
+     {\def\currentrenderingwindow{#1}}
+     {\let\currentrenderingwindow\s!default
+      \definerenderingwindow[\currentrenderingwindow]}%
+   \checkrendering\currentrendering
+   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!openpageaction }}\dosetuprenderingopenpageaction
+   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!closepageaction}}\dosetuprenderingclosepageaction
+   \localframed
+     [\??rw\currentrenderingwindow][\c!offset=\v!overlay]%
+     {\expanded{\doinsertrenderingwindow
+        \noexpand\currentrendering\hsize\vsize{\renderingoptions\currentrendering}}}%
+   \egroup}
+
+% todo:
+%
+% \setinternalrendering[example-1][options]{}
+
+% test file:
+%
+% \definerenderingwindow
+%   [example]
+%   [width=320pt,height=150pt,frame=off,
+%    background=color,backgroundcolor=gray,
+%    openpageaction=StartCurrentRendering,
+%    closepageaction=NextPage]% StopCurrentRendering]
+%
+% \useexternalrendering[example-1][audio/mpeg]                   [eldorado.mp3]
+% \useexternalrendering[example-2][audio/mpeg]                   [myst-12.mp3]
+% \useexternalrendering[example-3][application/x-shockwave-flash][http://localhost/mb.swf] [auto]
+% \useexternalrendering[example-4][application/x-shockwave-flash][celebration.swf]
+% \useexternalrendering[example-5][video/quicktime]              [p1000726.mov]
+% \useexternalrendering[example-6][application/smil]             [quadratic_map.smi]
+%
+% \def\renderingmenu[#1]%
+%   {\hbox
+%      {\setupbuttons[width=2.5em]%
+%       \button{\symbol[StartRendering]} [StartRendering{#1}]\enspace
+%       \button{\symbol[StopRendering]}  [StopRendering{#1}]\enspace
+%       \button{\symbol[PauseRendering]} [PauseRendering{#1}]\enspace
+%       \button{\symbol[ResumeRendering]}[ResumeRendering{#1}]}}
+%
+% \renderingmenu[example-1]\blank
+% \renderingmenu[example-2]\blank
+% \renderingmenu[example-3]\blank
+% \renderingmenu[example-4] \placefigure{A ShockWave}{\placerenderingwindow[example][example-4]} \page
+% \renderingmenu[example-5] \placefigure{A Movie}{\placerenderingwindow[example][example-5]} \page
+% \renderingmenu[example-6] \placefigure{A Smile}{\placerenderingwindow[example][example-6]}
+
+\stelkoppelingenin
+  [\c!distance=.25em,
+   \c!width=\v!fit,
+   \c!location=\v!low,
+   \c!color=\@@iacolor,
+   \c!frame=\v!off,
+   \c!background=,
+   \c!backgroundscreen=\@@rsscreen,
+   \c!backgroundcolor=]
+
+\defineinteractionmenu
+  [\v!right]
+  [\v!right]
+  [\c!before=,
+   \c!after=\vfil,
+   \c!inbetween=\blank,
+   \c!distance=\bodyfontsize, % 12pt
+   \c!left=\hss,
+   \c!right=\hss,
+   \c!width=\rightedgewidth,
+   \c!height=\v!broad]
+
+\defineinteractionmenu
+  [\v!left]
+  [\v!left]
+  [\c!before=,
+   \c!after=\vfil,
+   \c!inbetween=\blank,
+   \c!distance=\bodyfontsize, % 12pt
+   \c!left=\hss,
+   \c!right=\hss,
+   \c!width=\leftedgewidth,
+   \c!height=\v!broad]
+
+\defineinteractionmenu
+  [\v!bottom]
+  [\v!bottom]
+  [\c!before=\vss,
+   \c!after=\vss,
+   \c!middle=\hfil,
+   \c!distance=\bodyfontsize, % 12pt
+   \c!width=\v!fit,
+   \c!height=\v!broad]
+
+\defineinteractionmenu
+  [\v!top]
+  [\v!top]
+  [\c!before=\vss,
+   \c!after=\vss,
+   \c!middle=\hfil,
+   \c!distance=\bodyfontsize, % 12pt
+   \c!width=\v!fit,
+   \c!height=\v!broad]
+
+\setupinteractionmenu
+  [\v!left,\v!right,\v!top,\v!bottom]
+  [\c!offset=.25em,
+   \c!position=\v!no,
+   \c!frame=\v!on,
+   \c!background=,
+   \c!backgroundcolor=,
+   \c!backgroundscreen=\@@rsscreen,
+   \c!style=\@@iastyle,
+   \c!color=\@@iacolor,
+   \c!contrastcolor=\@@iacontrastcolor,
+   \c!state=\v!start,
+   \c!samepage=\v!yes,
+   \c!unknownreference=\v!empty,
+   \c!topoffset=\!!zeropoint,
+   \c!bottomoffset=\!!zeropoint,
+   \c!leftoffset=\!!zeropoint,
+   \c!rightoffset=\!!zeropoint]
+
+\def\placeleftedgetextblock % Is \hss/\hsize really needed here?
+  {\hbox to \leftedgewidth  % (check outer level and settings)
+     {\hsize\leftedgewidth\hss\interactionmenus[\v!left]}}
+
+\def\placerightedgetextblock % Is \hss/\hsize really needed here?
+  {\hbox to \rightedgewidth  % (check outer level and settings)
+     {\hsize\rightedgewidth\interactionmenus[\v!right]\hss}}
+
+\def\placetoptextblock
+  {\vbox to \topheight
+     {\vsize\topheight
+      \csname\??tk\v!top\c!before\endcsname
+      \interactionmenus[\v!top]%
+      \csname\??tk\v!top\c!after\endcsname
+      \kern\zeropoint}}
+
+\def\placebottomtextblock
+  {\vbox to \bottomheight
+     {\vsize\bottomheight
+      \csname\??tk\v!bottom\c!before\endcsname
+      \interactionmenus[\v!bottom]%
+      \csname\??tk\v!bottom\c!after\endcsname
+      \kern\zeropoint}}
+
+\ifx\leftedgetextcontent\undefined \else
+
+  \appendtoks \placeleftedgetextblock  \hskip-\leftedgewidth  \to \leftedgetextcontent
+  \appendtoks \placerightedgetextblock \hskip-\rightedgewidth \to \rightedgetextcontent
+  \appendtoks \placetoptextblock       \vskip-\topheight      \to \toptextcontent
+  \appendtoks \placebottomtextblock    \vskip-\bottomheight   \to \bottomtextcontent
+
+\fi
+
+\setupinteractionscreen
+  [\c!width=\printpaperwidth,
+   \c!height=\printpaperheight,
+   \c!horoffset=\!!zeropoint,
+   \c!veroffset=\!!zeropoint,
+   \c!backspace=\backspace,
+   \c!topspace=\topspace,
+   \c!option=\v!min,
+   \c!delay=\v!none]
+
+\setupbuttons
+  [\c!state=\v!start,
+   \c!width=\v!fit,
+   \c!height=\v!broad,
+   \c!offset=0.25em,
+   \c!frame=\v!on,
+   \c!background=,
+   \c!backgroundscreen=\@@rsscreen,
+   \c!backgroundcolor=,
+   \c!style=\@@iastyle,
+   \c!color=\@@iacolor,
+   \c!contrastcolor=\@@iacontrastcolor,
+   \c!samepage=\v!yes,
+   \c!unknownreference=\v!yes]
+
+\setupinteractionbar
+  [\c!state=\v!start,
+   \c!alternative=a,
+   \c!symbol=\v!no,
+   \c!width=\rightedgewidth,
+   \c!height=, % these are taken care
+   \c!depth=, % of at calling time
+   \c!distance=.5em, % beter relateren aan breedte
+   \c!step=1,
+   \c!color=\@@iacolor,
+   \c!contrastcolor=\@@iacontrastcolor,
+   \c!frame=\v!on,
+   \c!background=,
+   \c!backgroundscreen=\@@rsscreen,
+   \c!backgroundcolor=,
+   \c!samepage=\v!yes,
+   \c!unknownreference=\v!yes]
+
+\setupsynchronizationbar
+  [\c!alternative=\v!page,
+   \c!width=\rightedgewidth,
+   \c!style=\@@iastyle,
+   \c!color=\@@iacolor,
+   \c!background=,
+   \c!backgroundscreen=\@@rsscreen,
+   \c!backgroundcolor=]
+
+\setupsynchronization
+  [\c!state=\v!stop]
+
+\setupprofiles
+  [\c!option=]
+
+\setuppagetransitions
+  [\v!reset]
+
+\setupcomment
+  [\c!state=\v!start,
+   \c!margin=2.5em,
+   \c!distance=1em,
+   \c!width=.3\textwidth,
+   \c!height=.2\textheight,
+   \c!color=\@@iacolor,
+   \c!title=,
+   \c!space=\v!no,
+   \c!symbol=\v!normal,
+   \c!location=\v!inmargin,
+   \c!option=,
+   \c!textlayer=]
+
+\setupversions    % beware, @ is made active here,
+  [\c!number=1,   % therefore we set this one at the end
+   \c!style=\ss,
+   \c!color=]
+
+\protect \endinput

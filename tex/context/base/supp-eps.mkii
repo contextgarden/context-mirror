@@ -1,0 +1,202 @@
+%D \module
+%D   [       file=supp-eps,
+%D        version=1998.05.06,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=\EPS\ tools,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifx \undefined \writestatus \input supp-mis.tex \relax \fi
+
+%D The macros in this module are rather old and were originally
+%D part of the figure inclusion macros. When \PDFTEX\ started
+%D to support \PDF\ inclusion, where some accompanying macros
+%D were put in \type{supp-pdf}, I considered it more suitable
+%D to give the \EPS\ macros their own module.
+
+\writestatus{loading}{ConTeXt Support Macros / EPS}
+
+%D \macros
+%D   {dogetEPSboundingbox}
+%D
+%D The predecessors of the following macro's are derived from
+%D Thomas Rockicky's macro's. They are rewritten to a more
+%D compact form, made a bit more robust and also handle the
+%D \type{HiResBoundingBox} and \type{ExactBoundingBox} that
+%D are sometimes present.
+%D
+%D A bounding box has the form:
+%D
+%D \starttyping
+%D %%BoundingBox: llx lly urx ury
+%D \stoptyping
+%D
+%D Before we scan the file, we have to reset special
+%D characters and set some others. The percentage symbol also
+%D needs special treatment. When a bounding box is
+%D encountered, we keep on scanning until no more directives
+%D are found, i.e. a line is found that does not start with a
+%D percentage symbol. We also abort scanning after finding a
+%D high resolution bounding box.
+%D
+%D This method also works inside verbatim mode (like when we
+%D are typesetting sources and putting eps coded logos into
+%D a heading. Temporary restoring the \CATCODES\ is done in
+%D the calling routine.
+%D
+%D The creator as well as external support for specials are
+%D analyzed as well and their status is available in \type
+%D {\EPScreator} and \type {\EPSshading}. The boundingbox
+%D components are available in \type {\EPSllx} etc.
+
+\unprotect
+
+\def\EPSllx{0} \let\MPllx\EPSllx % just in case these
+\def\EPSlly{0} \let\MPlly\EPSlly % are used while running
+\def\EPSurx{0} \let\MPurx\EPSurx % in fast mode we set
+\def\EPSury{0} \let\MPury\EPSury % them to 0.
+
+\chardef\EPSfound  =0
+\chardef\EPScreator=0
+\chardef\EPSspecial=0
+\chardef\EPSstatus =0
+
+\let\EPScreatorstring\empty
+
+\newtoks\extraEPSpreambleresets
+\newtoks\extraEPSpreambleparsers
+
+\def\dofinishEPSfile{\dofinishfile} % no \let, can be overloaded
+
+\def\dogetEPSboundingbox#1#2#3#4#5%
+  {\bgroup
+   \global\chardef\EPSfound  \zerocount
+   \global\chardef\EPScreator\zerocount
+   \global\chardef\EPSspecial\zerocount
+   \global\chardef\EPSstatus \zerocount
+   \global\let\EPScreatorstring\empty
+   \the\extraEPSpreambleresets
+   \uncatcodespecials
+   \catcode`\^^M=\@@ignore
+   \def\doprocessEPSline
+     {\advance\scratchcounter\plusone
+      \expandafter\checkEPSboundingbox\fileline\empty\empty:.:.\end}%
+   \scratchcounter\zerocount
+   \doprocessfile\scratchread{#1}\doprocessEPSline
+   \egroup
+   % Using \EPSllx bp instead of \dimen0=1bp and \EPSllx\dimen0 is more accurate (.005pt).
+   \ifnum\EPSfound>\zerocount
+     #2\dimexpr\EPSllx\onebasepoint   \relax
+     #3\dimexpr\EPSlly\onebasepoint   \relax
+     #4\dimexpr\EPSurx\onebasepoint-#2\relax
+     #5\dimexpr\EPSury\onebasepoint-#3\relax
+   \else
+     #2\zeropoint
+     #3\zeropoint
+     #4\zeropoint
+     #5\zeropoint
+   \fi
+  %\message{[bbox #1: \EPSllx\space\EPSurx\space\EPSlly\space\EPSury]}\wait
+   \global\let\MPllx\EPSllx \global\let\MPlly\EPSlly
+   \global\let\MPurx\EPSurx \global\let\MPury\EPSury}
+
+\bgroup \catcode`\%=\@@other \xdef\letterpercent{\string%} \egroup
+
+\def\EPSboundingboxtag     {BoundingBox}
+\def\EPShiresboundingboxtag{HiResBoundingBox}
+\def\EPSexactboundingboxtag{ExactBoundingBox}
+\def\EPScreatortag         {Creator}
+\def\EPSmetaposttag        {MetaPost}
+\def\EPSmetapostspecialtag {MetaPostSpecial}
+\def\EPSmetapostspecialstag{MetaPostSpecials}
+\def\EPSpagetag            {Page}
+
+\let\EPSspecialstring \empty
+\let\EPSspecialcontent\empty
+
+% new metapost construct (hires bb followed by creator + version)
+%
+%!PS
+%%BoundingBox: -71 -1 651 496
+%%HiResBoundingBox: -70.9945 -0.5 650.5 495.24907
+%%Creator: MetaPost 0.901
+%%CreationDate: 2005.06.02:1633
+%%Pages: 1
+
+\long\def\checkEPSboundingbox#1#2#3:#4:.#5\end
+  {\if\string#1\letterpercent
+     \if\string#2\letterpercent
+       \edef\EPSspecialstring{#3}%
+       \edef\EPSspecialcontent{#4}%
+       \ifx\EPSspecialstring\EPScreatortag
+         \getEPScreatorspec
+       \else\ifx\EPSspecialstring\EPSboundingboxtag
+         \getEPSboundingboxspec
+         \global\chardef\EPSfound\plusone
+       \else\ifx\EPSspecialstring\EPShiresboundingboxtag
+         \getEPSboundingboxspec
+         \global\chardef\EPSfound\plustwo
+          \scratchcounter\zerocount
+       \else\ifx\EPSspecialstring\EPSexactboundingboxtag
+         \getEPSboundingboxspec
+         \global\chardef\EPSfound\plustwo
+         \scratchcounter\zerocount
+       \else\ifx\EPSspecialstring\EPSmetapostspecialtag % only before finish!
+         \global\chardef\EPSspecial\plusone % ah, we've met some MP extensions
+       \else\ifx\EPSspecialstring\EPSmetapostspecialstag % only before finish!
+         \global\chardef\EPSspecial\plusone % ah, we've met some MP extensions
+       \else\ifx\EPSspecialstring\EPSpagetag
+         \global\chardef\EPSstatus \plusone % we passed MP font defs
+       \else
+         \the\extraEPSpreambleparsers
+       \fi\fi\fi\fi\fi\fi\fi
+     \fi
+   \else\ifnum\EPSfound>\zerocount
+     % bb found
+     \ifnum\EPScreator=\plusone % that is, we are dealing with MP output
+       \ifcase\EPSstatus
+         % we've run into MP fontdefs
+       \or
+         \dofinishEPSfile
+       \fi
+     \else\ifnum\scratchcounter>\plusthree
+       % too late for mps creator (we don't want to run into crap data)
+       \dofinishEPSfile
+     \else
+     \fi\fi
+   \fi\fi}
+
+\def\getEPSboundingboxspec
+  {\edef\EPSspecialstring{\EPSspecialcontent\space . . . . }%
+   \expandafter\dogetEPSboundingboxspec\EPSspecialstring\end}
+
+\def\dogetEPSboundingboxspec#1 #2 #3 #4 #5\end
+  {\gdef\EPSllx{#1}%
+   \ifx\EPSllx\empty
+     \dogetEPSboundingboxspec#2 #3 #4 #5\end
+   \else
+     \gdef\EPSlly{#2}%
+     \gdef\EPSurx{#3}%
+     \gdef\EPSury{#4}%
+  \fi}
+
+\def\getEPScreatorspec
+  {\edef\EPSspecialstring{\EPSspecialcontent\space . .}%
+   \expandafter\dogetEPScreatorspec\EPSspecialstring\end}
+
+\def\dogetEPScreatorspec#1#2 #3\end
+  {\edef\EPScreatorstring{#1#2}%
+   \global\chardef\EPScreator\ifx\EPScreatorstring\EPSmetaposttag\plusone\else\zerocount\fi\relax}
+
+\def\dogetEPSpreambledata#1% can be combined with \extraEPSpreambleparsers
+  {\bgroup
+   \let\dofinishEPSfile\relax % dirty trick, read past all bboxes
+   \dogetEPSboundingbox{#1}\!!widtha\!!heighta\!!widthb\!!heightb
+   \egroup}
+
+\protect \endinput

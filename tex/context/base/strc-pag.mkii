@@ -1,0 +1,534 @@
+%D \module
+%D   [       file=strc-num, % moved here from main-001
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Numbering,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Numbering}
+
+% todo: {}{}{} ipv ...--...-...-...--... in pag ref
+
+\unprotect
+
+% \gotonextsubpage  : voor de pagebody
+% \subpaginanummer  : alleen in de voet/kopregels
+% \aantalsubpaginas : alleen in de voet/kopregels
+
+% \firstsubpage     : eerste \realpageno, voor interne doeleinden
+% \prevsubpage      : vorige \realpageno, voor interne doeleinden
+% \nextsubpage      : volgende \realpageno, voor interne doeleinden
+% \lastsubpage      : laatste \realpageno, voor interne doeleinden
+% \nofsubpages      : laatste subpage (in berekeningen)
+% \subpageno        : huidige subpage (in berekeningen)
+
+\newif\ifsubpaging
+\newif\ifshowingsubpage
+
+\definenumber
+  [\s!subpage]
+
+\setupnumber
+  [\s!subpage]
+  [\c!way=\@@snway]
+
+% hard to sync
+%
+% \def\resetsubpagenumber
+%   {\resetnumber[\s!subpage]%
+%    \global\subpageno=\rawnumber[\s!subpage]}
+%
+% better sync
+
+\newif\ifresettingsubpagenumber
+
+\def\resetsubpagenumber
+  {\global\resettingsubpagenumbertrue}
+
+% so far for sync, see \gotonext...
+
+\def\dosetupsubpagenumber[#1]%
+  {\doifelse{#1}\v!reset
+     \resetsubpagenumber % \resetnumber[\s!subpage]
+     {\getparameters[\??sn][#1]%
+      \processaction
+        [\@@snstate]
+        [  \v!stop=>\ifsubpaging
+                      \resetsubpagenumber % new, see sync
+                    \else
+                      \subpagingfalse
+                    \fi
+                    \showingsubpagefalse,
+          \v!start=>\subpagingtrue
+                    \showingsubpagetrue,
+           \v!none=>\subpagingtrue
+                    \showingsubpagefalse]}}
+
+\def\numberofsubpages
+  {\ifshowingsubpage\nofsubpages\else0\fi}
+
+\def\subpagenumber
+  {\ifshowingsubpage\the\subpageno\else0\fi}
+
+\def\setupsubpagenumber
+  {\dosingleargument\dosetupsubpagenumber}
+
+\def\newnofsubpages{0}
+\def\nofsubpages   {0}
+\def\firstsubpage  {1}
+\def\prevsubpage   {1}
+\def\nextsubpage   {1}
+\def\lastsubpage   {1}
+
+\def\nextpage      {1}
+\def\prevpage      {1}
+
+\definetwopasslist\s!subpage
+
+\def\savenofsubpages
+  {\ifsubpaging
+     \showmessage\m!layouts6{\newnofsubpages,\the\subpageno}%
+     \immediatesavetwopassdata{\s!subpage}{\newnofsubpages}{\the\subpageno}%
+   \fi}
+
+\def\setsubpagenumbers
+  {\iftwopassdatafound
+     \bgroup
+     \xdef   \nofsubpages  {\twopassdata}%
+     \xdef   \firstsubpage {\realfolio}%
+     \advance\realpageno    \nofsubpages
+     \advance\realpageno    \minusone
+     \xdef   \lastsubpage  {\realfolio}%
+     \egroup
+   \else
+     \xdef   \nofsubpages{0}%
+   \fi}
+
+\def\gotonextsubpage % overlapt behoorlijk met realpage macro
+  {\global\let\checksubpages\relax
+   \ifresettingsubpagenumber
+     \resetnumber[\s!subpage]%
+     \global\resettingsubpagenumberfalse
+   \fi
+   \ifsubpaging
+     \xdef\oldsubpage{\the\subpageno}%
+     \incrementnumber[\s!subpage]%
+     \global\subpageno\rawnumber[\s!subpage]\relax
+     \ifnum\subpageno=\plusone
+       \gettwopassdata\s!subpage
+       \setsubpagenumbers
+       \ifnum\oldsubpage>\zerocount
+         \showmessage\m!layouts6{\newnofsubpages,\oldsubpage}%
+         \savetwopassdata{\s!subpage}{\newnofsubpages}{\oldsubpage}%
+       \fi
+       \doglobal\increment\newnofsubpages\relax
+     \fi
+     \setglobalsystemreference\rt!page\v!firstsubpage\firstsubpage
+     \setglobalsystemreference\rt!page\v!lastsubpage\lastsubpage
+     \bgroup
+     \ifnum\realpageno=\firstsubpage\relax
+       \global\let\prevsubpage\firstsubpage
+       \setglobalsystemreference\rt!page\v!subbackward\lastsubpage
+     \else
+       \xdef\prevsubpage{\realfolio}%
+       \doglobal\decrement\prevsubpage
+       \setglobalsystemreference\rt!page\v!subbackward\prevsubpage
+     \fi
+     \setglobalsystemreference\rt!page\v!previoussubpage\prevsubpage
+     \ifnum\realpageno=\lastsubpage\relax
+       \global\let\nextsubpage\lastsubpage
+       \setglobalsystemreference\rt!page\v!subforward\firstsubpage
+     \else
+       \xdef\nextsubpage{\realfolio}%
+       \doglobal\increment\nextsubpage
+       \setglobalsystemreference\rt!page\v!subforward\nextsubpage
+     \fi
+     \setglobalsystemreference\rt!page\v!nextsubpage\nextsubpage
+     \egroup
+   \fi}
+
+\def\checksubpages
+  {\getfromtwopassdata\s!subpage1%
+   \setsubpagenumbers
+   \global\let\checksubpages\relax}
+
+% Omdat \gotonextrealpage gebruik maakt van de hulpfile,
+% moet het initialiseren van \realpageno plaatsvinden in
+% een later stadium, namelijk zodra referenties worden
+% gebruikt (anders gaat het mis op nog niet gedefinieerde
+% lijstcommando's e.d.). De eerst aanroep vindt dan ook
+% plaats vlak nadat de hulpfile voor de eerste maal is
+% ingelezen.
+
+\countdef\realpageno = 0   \realpageno = 1
+\countdef\userpageno = 1   \userpageno = 1
+\countdef\subpageno  = 2   \subpageno  = 0 % !!
+\countdef\arrangeno  = 3   \arrangeno  = 0 % !!
+
+\let\pageno\userpageno
+
+% we don't want conflicts when \pageno is used by other
+% packages, like CWEB, so we redefine \pageno
+
+\newcount\pageno           \pageno     = 1
+
+\def\setuserpageno#1%
+  {\global\userpageno#1\relax
+   \global\pageno\userpageno}
+
+\def\realfolio     {\the\realpageno}
+\def\folio         {\the\userpageno}
+\def\firstpage     {1}
+\def\lastpage      {1}
+\def\currentpage   {\the\realpageno}
+\def\lastpagenumber{1}
+
+\def\gotonextrealpage
+  {\global\advance\realpageno \plusone\relax
+   \ifnum\realpageno>\lastpage
+     \xdef\lastpage{\realfolio}%
+   \fi
+   \setglobalsystemreference\rt!page\v!firstpage \firstpage
+   \setglobalsystemreference\rt!page\v!lastpage\lastpage
+   \bgroup
+   \ifnum\realpageno>\plusone
+     \advance\realpageno \minusone
+     \xdef\prevpage{\realfolio}%
+     \setglobalsystemreference\rt!page\v!backward\prevpage
+   \else
+     \global\let\prevpage\firstpage
+     \setglobalsystemreference\rt!page\v!backward\lastpage
+   \fi
+   \setglobalsystemreference\rt!page\v!previouspage\prevpage
+   \egroup
+   \bgroup
+   \ifnum\realpageno<\lastpage\relax
+     \advance\realpageno \plusone
+     \xdef\nextpage{\realfolio}%
+     \setglobalsystemreference\rt!page\v!page\nextpage
+     \setglobalsystemreference\rt!page\v!forward\nextpage
+     \bgroup
+     \xdef\nextnextpage{\realfolio}%
+     \ifodd\realpageno
+       \setglobalsystemreference\rt!page\v!nextoddpage\nextnextpage
+     \else
+       \setglobalsystemreference\rt!page\v!nextevenpage\nextnextpage
+     \fi
+     \advance\realpageno \plusone
+     \xdef\nextnextpage{\realfolio}%
+     \ifnum\realpageno>\lastpage\relax
+      %\ifodd\realpageno
+      %  \setglobalsystemreference\rt!page\v!nextoddpage\lastpage
+      %\else
+      %  \setglobalsystemreference\rt!page\v!nextevenpage\lastpage
+      %\fi
+     \else
+       \ifodd\realpageno
+         \setglobalsystemreference\rt!page\v!nextoddpage\nextnextpage
+       \else
+         \setglobalsystemreference\rt!page\v!nextevenpage\nextnextpage
+       \fi
+     \fi
+     \egroup
+   \else
+     \global\let\nextpage\lastpage
+     \setglobalsystemreference\rt!page\v!page\firstpage
+     \setglobalsystemreference\rt!page\v!forward\firstpage
+     \setglobalsystemreference\rt!page\v!nextoddpage\lastpage
+     \setglobalsystemreference\rt!page\v!nextevenpage\lastpage
+   \fi
+   \setglobalsystemreference\rt!page\v!nextpage\realfolio
+   \egroup}
+
+\def\checkrealpage
+  {\global\realpageno\zerocount
+   \gotonextrealpage
+   \global\let\checkrealpage\relax}
+
+\def\savenofpages
+  {\bgroup
+   \advance\realpageno \minusone
+   \savecurrentvalue\lastpage\realfolio
+   \advance\userpageno \minusone
+   \savecurrentvalue\lastpagenumber\folio
+   \egroup}
+
+\def\totalnumberofpages
+  {\lastpage}
+
+\def\setpagecounters
+  {\setuserpageno{\rawnumber[\s!page]}%
+   \doifelse\@@snstate\v!stop
+     {\global\subpageno\zerocount}
+     {\global\subpageno\rawnumber[\s!subpage]}\relax}
+
+% Standaard is \count0 in Plain TeX de paginateller. Omwille
+% van de afhandeling van lokaal nummeren, definieren we
+% echter een eigen nummer.
+
+\definenumber
+  [\s!page]
+  [\c!conversion=\@@nmconversion,
+   \c!way=\@@nmway,
+   \c!state=\@@nmstate,
+   \c!start=1]
+
+% \@@pnstatus global, but \@@nmstatus local and only start/stop
+
+\global\let\@@pnstate\@@pnstate % brrr
+
+\def\pushpagestate{\globalpushmacro\@@pnstate}
+\def\poppagestate {\globalpopmacro \@@pnstate}
+
+\def\dosetuppagenumber[#1]%
+  {\getparameters[\??pn][\c!number=,#1]%
+   \global\let\@@pnstate\@@pnstate
+   \doifsomething\@@pnnumber
+     {\setnumber[\s!page]{\@@pnnumber}%
+      \setuserpageno{\rawnumber[\s!page]}}%
+   % this makes starting at an even page possible
+   \ifnum\realpageno=1 \ifodd\pageno \else
+     \global\shiftedrealpagenotrue
+   \fi \fi}
+
+\def\setuppagenumber
+  {\dosingleargument\dosetuppagenumber}
+
+\def\dodecrementpagenumber
+  {\decrementnumber[\s!page]\setuserpageno{\rawnumber[\s!page]}}
+
+\def\doincrementpagenumber
+  {\incrementnumber[\s!page]\setuserpageno{\rawnumber[\s!page]}}
+
+\def\dosynchronizepagenumber
+  {\global\let\@@pnstate\v!start}
+
+\def\decrementpagenumber{\getvalue{\??pn-\@@pnstate}}
+\def\incrementpagenumber{\getvalue{\??pn+\@@pnstate}}
+
+\letvalue{\??pn-\v!start}\dodecrementpagenumber
+\letvalue{\??pn-\v!none }\dodecrementpagenumber
+\letvalue{\??pn-\v!empty}\dodecrementpagenumber
+
+\letvalue{\??pn+\v!start}\doincrementpagenumber
+\letvalue{\??pn+\v!none }\doincrementpagenumber
+\setvalue{\??pn+\v!empty}{\doincrementpagenumber\dosynchronizepagenumber}
+\letvalue{\??pn+\v!keep }\dosynchronizepagenumber
+
+% so far
+
+\def\checkpagecounter
+  {\checknumber[\s!page]}
+
+% \getpagestatus
+% \ifrightpage als odd/singlesided
+
+\newif\ifrightpage \rightpagetrue
+
+\newcounter \nofpagesets
+
+\definetwopasslist\s!page
+
+\def\dopagesetreference
+  {\doglobal\increment\nofpagesets\relax
+   \lazysavetwopassdata{\s!page}{\nofpagesets}{\noexpand\realfolio}}
+
+\def\getpagestatus % hierboven gebruiken
+  {\ifdoublesided
+     \gettwopassdata\s!page
+     \iftwopassdatafound \else
+       \let\twopassdata\realpageno
+     \fi
+     \ifodd\twopassdata
+       \global\rightpagetrue
+     \else
+       \global\rightpagefalse
+     \fi
+     \dopagesetreference
+   \else
+     \global\rightpagetrue
+   \fi}
+
+\def\@@nmin       {} % kan vervallen  (upward compatibility)
+\def\@@nmlocation {} % mag {plaats, in} zijn
+
+\newcounter\@@pagenumberlocation
+
+\def\do@@plaatspaginanummer#1%
+  {\ifnum#1=\@@pagenumberlocation\@@plaatspaginanummer\fi}
+
+\def\dodosetpagenumberlocation#1% tricky because of ...texts
+  {\increment\@@pagenumberlocation
+   \ifx\@@nmlocation\empty\else
+     \def\dododosetpagenumberlocation##1%
+       {\donetrue
+        \setevalue{\??tk#1##1}{\noexpand\do@@plaatspaginanummer{\@@pagenumberlocation}}}%
+     \donefalse
+     \ExpandFirstAfter\processallactionsinset
+       [\@@nmlocation]
+       [    \v!middle=>\dododosetpagenumberlocation{\v!text\c!middletext},
+              \v!left=>\dododosetpagenumberlocation{\v!text\c!lefttext},
+             \v!right=>\dododosetpagenumberlocation{\v!text\c!righttext},
+            \v!inleft=>\dododosetpagenumberlocation{\v!margin\c!lefttext},
+           \v!inright=>\dododosetpagenumberlocation{\v!margin\c!righttext},
+          \v!inmargin=>\dododosetpagenumberlocation{\v!margin\ifdoublesided\c!margintext\else\c!righttext\fi},
+            \v!margin=>\dododosetpagenumberlocation{\v!margin\ifdoublesided\c!margintext\else\c!righttext\fi},
+          \v!atmargin=>\dododosetpagenumberlocation{\v!text\c!marginedgetext},
+        \v!marginedge=>\dododosetpagenumberlocation{\v!text\c!marginedgetext}]%
+     \ifdone \else
+       \dododosetpagenumberlocation{\v!text\c!middletext}% default
+     \fi
+   \fi}
+
+\def\dosetpagenumberlocation
+  {\ExpandBothAfter\doifinsetelse\v!header{\@@nmlocation,\@@nmin}
+     {\dodosetpagenumberlocation\v!header}
+     {\dodosetpagenumberlocation\v!footer }}
+
+\def\dosetuppagenumbering[#1]%
+  {\getparameters[\??nm][#1]%
+   \preparepageprefix\??nm
+   \singlesidedfalse
+   \doublesidedfalse
+   \ExpandFirstAfter\processallactionsinset
+     [\@@nmalternative]
+     [ \v!singlesided=>\singlesidedtrue,
+       \v!doublesided=>\doublesidedtrue]%
+   \ifx\trackingmarginnotestrue\undefined\else
+     \ifdoublesided
+       \trackingmarginnotestrue
+     \else
+       \trackingmarginnotesfalse
+     \fi
+   \fi
+   \dosetpagenumberlocation
+   \recalculatebackgrounds
+   \recalculatelogos}
+
+\def\setuppagenumbering
+  {\dosingleempty\dosetuppagenumbering}
+
+\let\stelnummeringin\setuppagenumbering
+
+% wrong
+%
+% \def\preparepageprefix#1%
+%   {\def\dopreparepageprefix##1%
+%      {\doifvalue{#1##1\c!number}{\v!yes}
+%         {\setvalue{#1\getvalue{\??by##1}\c!nummer}{\v!yes}}}%
+%    \processcommacommand[\@@kolijst]\dopreparepageprefix}
+%
+% more wrong
+%
+% \def\preparepageprefix#1%
+%   {\def\dopreparepageprefix##1%
+%      {\doifelsevalue{#1##1\v!number}{\v!yes}                  % v
+%         {\setvalue{#1\getvalue{\??by##1}\v!nummer}{\v!yes}}   % v
+%         {\setvalue{#1\getvalue{\??by##1}\v!nummer}{\v!no}}}%  % v
+%    \processcommacommand[\@@kolijst]\dopreparepageprefix}
+%
+% best, beware, chapter (yes) can be followed by title (no)
+
+\def\preparepageprefix#1%
+  {\def\dopreparepageprefix##1%
+     {\ifcsname\??by##1\endcsname\letvalue{#1\csname\??by##1\endcsname\v!number}\v!no\fi}%  %v
+   \rawprocesscommalist[\@@kolist]\dopreparepageprefix
+   \def\dopreparepageprefix##1%
+     {\doifvalue{#1##1\v!number}\v!yes                    %v
+        {\ifcsname\??by##1\endcsname\letvalue{#1\csname\??by##1\endcsname\v!number}\v!yes\fi}}%
+   \rawprocesscommalist[\@@kolist]\dopreparepageprefix}
+
+\def\dodopageprefix#1% uti seperator --
+  {\let\normaluchar\uchar \let\uchar\relax % ugly but needed
+   \doifelsevalue{\pageprefixtype#1\v!number}\v!yes % \v! and no \c!
+     {\edef\preprefix {\@@filterheadpart[\postprefix]}%
+      \edef\postprefix{\@@filtertailpart[\postprefix]}%
+      \let\uchar\normaluchar % ugly but needed
+      \ifx\preprefix\empty \else
+        \ifx\preprefix\zerocountervalue\else
+          \preprefix\@@nmnumberseparator
+        \fi
+      \fi}
+     {\edef\postprefix{\@@filtertailpart[\postprefix]}%
+      \let\uchar\normaluchar}} % ugly but needed
+
+\def\dopageprefix#1%
+  {\dodopageprefix{#1}%
+   \donexttracklevel{#1}}
+
+\chardef\pageprefixmode\plusone
+
+\def\pageprefix#1[#2]%
+  {\ifcase\pageprefixmode
+      % skip
+   \or
+     \bgroup
+     \edef\pageprefixtype{#1}%
+     \edef\postprefix{\@@filternumberpart[#2]}%
+     \let\donexttrackcommando\dopageprefix
+     \donexttrackcommando\firstsection
+     \egroup
+   \fi}
+
+%D It was Marco Kuhlmann who uncovered the missing strut. This
+%D was a pretty old bug kind of covered up by the fact that non
+%D oldstyle numbers are about as high as strutheight. Rather
+%D interesting that it went unnoticed for so long.
+
+\unexpanded\def\@@plaatspaginanummer % called in empty tests
+  {\doif{\@@nmstate\@@pnstate}{\v!start\v!start}
+     {{\doif\@@nmstrut\v!yes\strut
+       \@@nmcommand{\doattributes\??nm\c!style\c!color{\completepagenumber}}}}}
+
+\def\userfolio {\convertednumber[\s!page]}  %  naast realfolio
+\def\pagenumber{\userfolio}
+
+\def\pageprefixes
+  {\let\donexttrackcommando\dopageprefixes
+   \donexttrackcommando\firstsection}
+
+\def\dopageprefixes#1%
+  {\doifvalue{\??nm#1\v!number}\v!yes  % v
+     {\ifnum\countervalue{\??se#1}>\zerocount
+        \getvalue{#1\c!number}\@@nmnumberseparator
+      \fi}%
+   \doifsomething\@@nmtext{\@@nmtext\@@nmnumberseparator}% strange option, what was the purpose of text?
+   \donexttracklevel{#1}}
+
+\unexpanded\def\completepagenumber
+  {\doif{\@@nmstate\@@pnstate}{\v!start\v!start}
+     {\@@nmleft\labeltexts\v!pagenumber{\pageprefixes\pagenumber}\@@nmright}}
+
+\unexpanded\def\placepagenumber
+  {\doif{\@@nmstate\@@pnstate}{\v!start\v!start}
+     {\labeltexts\v!pagenumber{\pagenumber}}}
+
+% Nog een variant; wat is een goeie naam?
+
+% \unexpanded\def\placexxpagenumber
+%   {\@@plaatspaginanummer}
+
+% \def\translatednumber[#1::#2::#3]{#3}
+
+\def\translatednumber{\@@filterpagepart}
+
+\unexpanded\def\referencepagenumber[#1]%
+  {\doifelsenothing{#1}{?}%
+     {\preparepageprefix\??rf
+      \pageprefix\??rf[#1]\translatednumber[#1]}}
+
+\setuppagenumber
+  [\c!state=\v!start,
+   \c!number=1]
+
+\setupsubpagenumber
+  [\c!way=\v!by\v!part,
+   \c!state=\v!stop]
+
+\protect \endinput

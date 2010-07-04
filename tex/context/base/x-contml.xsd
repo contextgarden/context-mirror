@@ -1,0 +1,375 @@
+<?xml version="1.0"?>
+
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+
+<xsd:annotation>
+  <xsd:documentation xml:lang="en">
+    This schema describes a class of presentations. The structure is 
+    (normally) reflected in the design. 
+    
+    author: Hans Hagen, copyright: PRAGMA-ADE / Hasselt NL
+  </xsd:documentation>
+</xsd:annotation>
+
+
+<?context-block begin definitions ?>
+
+  <xsd:complexType name="filename.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value='[a-zA-Z0-9\-\:\.]*' />
+    </xsd:restriction>
+  </xsd:complexType>
+
+  <xsd:complexType name="filetype.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="tex" />
+      <xsd:enumeration value="xml" />
+      <xsd:enumeration value="txt" />
+    </xsd:restriction>
+  </xsd:complexType>
+
+  <xsd:complexType name="confirmation.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="yes" />
+      <xsd:enumeration value="no" />
+    </xsd:restriction>
+  </xsd:complexType>
+  
+  <xsd:complexType name="conversion.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value='(a|A|n|g|G|r|R|1|2|3|4)' />
+    </xsd:restriction>
+  </xsd:complexType>
+  
+  <xsd:complexType name="reference.label.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value='([a-zA-Z0-9\-\:]*' />
+    </xsd:restriction>
+  </xsd:complexType>
+  
+<?context-block end definitions ?>
+
+
+<?context-block begin text ?> 
+
+  <xsd:element name="presentation" mixed="true" />
+
+<?context-block end text ?> 
+
+
+<?context-block begin p ?> 
+
+  <xsd:element name="p" mixed="true" />
+
+<?context-block end p ?> 
+
+
+<?context-block begin hide ?> 
+
+  <xsd:element name="hide" mixed="true" />
+
+<?context-block end hide ?> 
+
+
+<?context-block begin em ?> 
+
+  <xsd:element name="em" mixed="true" />
+
+<?context-block end em ?> 
+
+
+<?context-block begin b ?> 
+
+  <xsd:element name="b" mixed="true" />
+
+<?context-block end b ?> 
+
+
+<?context-block begin quote ?> 
+
+  <xsd:element name="quote" mixed="true" />
+  <xsd:element name="quotation" mixed="true" />
+
+<?context-block end quote ?> 
+
+
+<?context-block begin include ?> 
+
+  <xsd:attributeGroup name="include.attributes"> 
+    <xsd:attribute name="file" type="filename.value" use="required" />
+    <xsd:attribute name="type" type="filetype.value" />
+  </xsd:attributeGroup>
+
+  <xsd:complexType type="include.type">
+    <xsd:attributeGroup ref="include.attributes" />
+  </xsd:complexType>
+
+  <xsd:element name="include" type="include.type" /> 
+
+<?context-block end include ?> 
+
+
+<?context-block begin compound ?> 
+
+  <xsd:attributeGroup name="compound.attributes"> 
+    <xsd:attribute name="token" type="xsd:string" />
+  </xsd:attributeGroup>
+
+  <xsd:complexType type="compound.type">
+    <xsd:attributeGroup ref="compound.attributes" />
+  </xsd:complexType>
+
+  <xsd:element name="compound" type="compound.type" /> 
+
+<?context-block end compound ?> 
+
+
+<?context-block begin references ?> 
+
+  <xsd:attributeGroup name="reference.attributes"> 
+    <xsd:attribute name="label" type="reference.label.value" />
+  </xsd:attributeGroup>
+
+  <xsd:complexType type="reference.type">
+    <xsd:attributeGroup ref="reference.attributes" />
+  </xsd:complexType>
+
+  <xsd:element name="lineref" type="reference.type" />
+  <xsd:element name="pageref" type="reference.type" />
+  <xsd:element name="textref" type="reference.type" />
+
+<?context-block end references ?> 
+
+
+<?context-block begin unknown ?>
+
+  <xsd:element name="unknown"/>
+
+<?context-block end unknown ?>
+
+
+<?context-block begin verbatim ?> <!-- string or anyType -->
+
+  <xsd:complexType name="verbatim.verbatim">
+    <xsd:sequence maxOccurs="unbounded" >
+      <xsd:element name="line" type="xsd:string" /> 
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:element name="verbatim" type="verbatim.verbatim" />
+  <xsd:element name="typing"   type="verbatim.verbatim" />
+
+  <xsd:element name="verb" type="xsd:string" />
+  <xsd:element name="type" type="xsd:string" />
+
+<?context-block end verbatim ?>
+
+
+<?context-block begin itemize ?>
+
+  <xsd:attributeGroup name="itemize.attributes"> 
+    <xsd:attribute name="type"   type="conversion.value" />
+    <xsd:attribute name="packed" type="confirmation.value" />
+    <xsd:attribute name="label"  type="reference.label.value" />
+  </xsd:attributeGroup> 
+
+  <xsd:attributeGroup name="item.attributes"> 
+    <xsd:attribute name="label" type="reference.label.value" />
+  </xsd:attributeGroup> 
+
+  <xsd:complexType name="item.type" mixed="true">
+    <xsd:attributeGroup ref="item.attributes" /> 
+  </xsd:complexType>
+
+  <xsd:complexType name="itemize.type"> 
+    <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+      <xml:element name="item" type="item.type" />
+    </xsd:sequence> 
+    <xsd:attributeGroup ref="itemize.attributes" /> 
+  </xsd:complexType>
+
+  <xsd:element name="itemize" type="itemize.type" />
+
+<?context-block end itemize ?>
+
+
+<?context-block begin fixed ?>
+  
+  <xsd:complexType name="fixed.type.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="figure" />
+      <xsd:enumeration value="table" />
+    </xsd:restriction>
+  </xsd:complexType>
+
+  <xsd:complexType name="fixed.location.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="high" />
+      <xsd:enumeration value="low"  />
+      <xsd:enumeration value="lohi" />
+    </xsd:restriction>
+  </xsd:complexType>
+
+  <xsd:attributeGroup name="fixed.attributes"> 
+    <xsd:attribute name="type"     type="fixed.type.value" /> 
+    <xsd:attribute name="location" type="fixed.location.value" /> 
+    <xsd:attribute name="label"    type="reference.label.value" /> 
+  </xsd:attributeGroup>
+
+  <xsd:complexType name="fixed.type">
+    <xsd:all>
+      <xsd:element name="caption" mixed="true" />
+      <xsd:element name="content" mixed="true" />
+    </xsd:all>
+    <xsd:attributeGroup ref="fixed.attributes" /> 
+  </xsd:complexType>
+
+  <xsd:element name="fixed" type="fixed.type" />
+
+<?context-block end fixed ?>
+
+
+<?context-block begin float ?>
+
+  <xsd:complexType name="float.type.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="figure" />
+      <xsd:enumeration value="table" />
+    </xsd:restriction>
+  </xsd:complexType>
+
+  <xsd:complexType name="float.location.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="high" />
+      <xsd:enumeration value="low" />
+      <xsd:enumeration value="lohi" />
+    </xsd:restriction>
+  </xsd:complexType>
+  
+  <xsd:attributeGroup name="float.attributes"> 
+    <xsd:attribute name="type"     type="float.type.value" /> 
+    <xsd:attribute name="location" type="float.location.value" /> 
+    <xsd:attribute name="label"    type="reference.label.value" /> 
+  </xsd:attributeGroup>
+
+  <xsd:complexType name="float.type">
+    <xsd:all>
+      <xsd:element name="caption" mixed="true" />
+      <xsd:element name="content" mixed="true" />
+    </xsd:all>
+    <xsd:attributeGroup ref="float.attributes" /> 
+  </xsd:complexType>
+
+  <xsd:element name="float" type="float.type" />
+
+<?context-block end float ?>
+
+
+<?context-block begin externalfigure ?>
+
+  <xsd:attributeGroup name="externalfigure.attributes"> 
+    <xsd:extension base="context.kernel.externalfigure.attributes"> 
+      <xsd:attribute name="base"  type="filename.value"/> 
+      <xsd:attribute name="file"  type="filename.value"/> 
+      <xsd:attribute name="label" type="reference.label.value"/> 
+    </xsd:extension>
+  </xsd:attributeGroup>
+
+  <xsd:complexType name="externalfigure.type">
+    <xsd:attributeGroup ref="externalfigure.attributes" /> 
+  </xsd:complexType> 
+
+  <xsd:element name="externalfigure" type="externalfigure.type" />
+
+<?context-block end externalfigure ?>
+
+
+<?context-block begin table ?>
+
+  <xsd:attributeGroup name="table.attributes">
+    <!-- these elements inherit ConTeXt TABLE parameters -->
+    <xsd:extension base="context.kernel.table.attributes" /> 
+  </xsd:attributeGroup>
+
+  <xsd:complexType name="table.td.type" mixed="true">
+    <xsd:attributeGroup name="table.attributes" />
+  </xsd:complexType> 
+
+  <xsd:complexType name="table.tr.type">
+    <xsd:sequence maxOccurs="unbounded">
+      <xsd:element name="td" type="table.td.type" />
+    </xsd:sequence>
+    <xsd:attributeGroup name="table.attributes" />
+  </xsd:complexType> 
+
+  <xsd:complexType name="table.type">
+    <xsd:sequence maxOccurs="unbounded">
+      <xsd:element name="tr" type="table.tr.type" />
+    </xsd:sequence>
+    <xsd:attributeGroup name="table.attributes" />
+  </xsd:complexType> 
+
+  <xsd:element name="table" type="table.type" />
+
+<?context-block end table ?>
+
+
+<?context-block begin tabulate ?>
+
+  <xsd:complexType name="tabulate.td.type" mixed="true">
+  </xsd:complexType> 
+
+  <xsd:complexType name="tabulate.tr.type">
+    <xsd:sequence maxOccurs="unbounded">
+      <xsd:element name="td" type="tabulate.td.type" />
+    </xsd:sequence>
+  </xsd:complexType> 
+
+  <xsd:complexType name="tabulate.base.type">
+    <xsd:sequence maxOccurs="unbounded">
+      <xsd:element name="tr" type="tabulate.tr.type" />
+    </xsd:sequence>
+  </xsd:complexType> 
+
+  <xsd:complexType name="tabulate.align.value">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="high" />
+      <xsd:enumeration value="low"  />
+      <xsd:enumeration value="lohi" />
+    </xsd:restriction>
+  </xsd:complexType>
+
+  <xsd:attributeGroup name="tabulate.tcell.attributes">
+    <xsd:attribute name="align" type="tabulate.align.value" />
+  </xsd:attributeGroup>
+
+  <xsd:complexType name="tabulate.tcell.type" mixed="true">
+    <xsd:attributeGroup ref="tabulate.tcell.attributes" />
+  </xsd:complexType> 
+
+  <xsd:complexType name="tabulate.tcell.type">
+  </xsd:complexType> 
+
+  <xsd:complexType name="tabulate.tcells.type">
+    <xsd:sequence maxOccurs="unbounded">
+      <xsd:element name="tcell" type="tabulate.tcell.type" />
+    </xsd:sequence>
+  </xsd:complexType> 
+
+  <xsd:complexType name="tabulate.type">
+    <xsd:sequence>
+      <xsd:element name="tcells" type="tabulate.tcells.type" />
+      <xsd:element name="thead" type="tabulate.base.type" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="ttail" type="tabulate.base.type" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="tbody" type="tabulate.base.type" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType> 
+
+  <xsd:element name="tabulate" type="tabulate.type" />
+
+<?context-block end tabulate ?>
+
+
+</xsd:schema>

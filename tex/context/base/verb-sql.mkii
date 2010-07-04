@@ -1,0 +1,230 @@
+%D \module
+%D   [       file=verb-sql,
+%D        version=2000.05.09,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty \SQL\ Verbatim,
+%D         author={Berend de Boer \& Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={Berend de Boer \& Hans Hagen}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Verbatim Macros / Pretty SQL Verbatim}
+
+%D \quotation {He, I want pretty pretting too!}, Berend cried out
+%D one day, \quotation {But now for \SQL.}. This query language
+%D shows code like:
+%D
+%D \startbuffer
+%D \startSQL
+%D select *       -- some comment
+%D   from tableA
+%D   where 1 = 2
+%D \stopSQL
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D and this should become something pretty like:
+%D
+%D \getbuffer
+%D
+%D or, with Berend's preferences:
+%D
+%D \startbuffer[setup]
+%D \setuptyping
+%D   [SQL]
+%D   [text=yes,palet=,icommand=\bf,vcommand=,ccommand=\it]
+%D \stopbuffer
+%D
+%D \getbuffer[setup]
+%D \getbuffer
+%D
+%D This kind of pretty printing is accomplished by:
+%D
+%D \typebuffer
+
+%D Like we did with the \JAVASCRIPT\ driver, we will borrow
+%D most of the macros from the \PERL\ driver.
+
+\ifdefined\setupprettyPLtype \else \loadmarkfile{verb-pl} \fi
+
+\unprotect
+
+%D \SQL\ has the one line comment sequence \type{--} and the
+%D multi line comment delimiters \type{/*} and \type{*/}. The
+%D next counter keeps track of multi line comment nesting.
+
+\newcount\SQLcommentlevel
+
+%D We need to handle \type{%}, \type{#} and \type{-} a bit
+%D different than in the \PERL\ driver. Compared to the
+%D \JAVASCRIPT\ driver |<|we copied most of the code from
+%D that one|>|, we now also have type~45.
+
+\gdef\SQLsetspecials%
+  {\PLsetspecials
+   \setpretty`\#=32
+   \setpretty`\:=41
+   \setpretty`\%=41
+   \setpretty`\/=43
+   \setpretty`\*=44
+   \setpretty`\-=45 }
+
+%D We need three additional handlers:
+
+\gdef\SQLsethandlers%
+  {\PLsethandlers
+   \installprettyhandler 43 \SQLtypefourthree
+   \installprettyhandler 44 \SQLtypefourfour
+   \installprettyhandler 45 \SQLtypefourfive }
+
+%D Next we have to do some general housekeeping.
+
+\gdef\SQLsetcontrols%
+  {\PLsetcontrols
+   \def\flushrestofverbatimline%
+     {\endPLtypesix
+      \ifcase\SQLcommentlevel
+        \inPLcommentfalse
+        \verbatimfont
+      \fi
+      \PLverbosefalse
+      \PLverboseskipped=0}}
+
+\gdef\SQLsetvariables
+  {\PLsetvariables
+   \global\SQLcommentlevel=0 }
+
+\gdef\setupprettySQLtype%
+  {\def\prettyidentifier{SQL}%
+   \let\PLidentifiers=\SQLidentifiers
+   \let\PLvariables=\SQLvariables
+   \SQLsetvariables
+   \SQLsetcontrols
+   \SQLsethandlers
+   \SQLsetspecials
+   \PLsetdiagnostics}
+
+%D We have to look upto four characters ahead. If you don't
+%D grab the picture, just skip reading these macros.
+
+\gdef\SQLtypefourthree%
+  {\handlenextnextpretty\doSQLtypefourthree\PLtypefourtwo}
+
+\gdef\doSQLtypefourthree#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=43
+     \let\next=\dodoSQLtypefourthree
+   \else\ifnum\prettytype=44
+     \global\advance\SQLcommentlevel by 1
+     \global\inPLcommenttrue
+     \PLverbosecorrection
+     \let\next=\SQLtogglecomment
+   \else
+     \let\next=\PLtypefourtwo
+   \fi\fi
+   \next{#1}#2}
+
+\gdef\SQLtogglecomment#1#2%
+  {\ifnum\SQLcommentlevel=1
+     \prettynaturalfont
+     \beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty
+   \else
+     \getpretties{#1}{#2}%
+   \fi}
+
+\gdef\dodoSQLtypefourthree% #1%
+  {\endPLtypesix
+   \handlenextnextpretty\dododoSQLtypefourthree\dodododoPLtypefourthree}
+
+\gdef\dododoSQLtypefourthree%
+  {\ifnewpretty\expandafter\handlenewpretty\fi\dodododoSQLtypefourthree}
+
+\gdef\dodododoSQLtypefourthree#1#2%
+  {\ifinPLcomment
+     \getpretties{#1}{#2}%
+   \else
+     \global\inPLcommenttrue
+     \PLverbosecorrection
+     \beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty
+   \fi}
+
+\gdef\SQLtypefourfour%
+  {\handlenextnextpretty\doSQLtypefourfour\PLtypefourtwo}
+
+\gdef\doSQLtypefourfour#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=43
+     \SQLtogglecomment{#1}#2%
+     \global\advance\SQLcommentlevel by -1
+     \ifcase\SQLcommentlevel
+       \global\inPLcommentfalse
+       \prettyverbatimfont
+     \fi
+   \else
+     \endPLtypesix
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+     \expandafter#2%
+   \fi}
+
+%D Much of the indirect calls (\type {dodo..}) is due to
+%D looking ahead as well as midway pretty print changing.
+
+\gdef\SQLtypefourfive%
+  {\handlenextnextpretty\doSQLtypefourfive\PLtypefourtwo}
+
+\gdef\doSQLtypefourfive#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=45
+     \let\next=\dodoSQLtypefourfive
+   \else
+     \let\next=\PLtypefourtwo
+   \fi
+   \next{#1}#2}
+
+\gdef\dodoSQLtypefourfive% #1%
+  {\endPLtypesix
+   \handlenextnextpretty\dododoSQLtypefourfive\dodododoPLtypefourfive}
+
+\gdef\dododoSQLtypefourfive%
+  {\ifnewpretty\expandafter\handlenewpretty\fi\dodododoSQLtypefourfive}
+
+\gdef\dodododoSQLtypefourfive#1#2%
+  {\ifinPLcomment
+     \getpretties{#1}{#2}%
+   \else
+     \global\inPLcommenttrue
+     \PLverbosecorrection
+     \ifnaturaltextext
+       \let\next\naturaltextext
+     \else
+       \prettynaturalfont
+       \def\next{\beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty}%
+     \fi
+     \expandafter\next
+   \fi}
+
+%D We need a different list of reserved words. This list
+%D replaces the \PERL\ one.
+
+\useprettyidentifiers \SQLidentifiers \SQLsetspecials
+  add all alter and any as asc avg begin between break
+  browse bulk by cascade case check close clustered coalesce
+  column commit constraint contains count create cross
+  cursor database default delete desc distinct drop else end
+  exec execute exists exit fetch for foreign from grant
+  group having if in index inner insert into is join key
+  left like max min nocheck nonclustered not null of on open
+  or order outer over plan prepare proc procedure public
+  references return revoce right rollback rule select set
+  sum table then to tran transaction trigger truncate
+  uncommited union unique update use values varying view
+  when where while with work primary
+
+\useprettyidentifiers \SQLvariables \SQLsetspecials
+  not-yet-defined
+
+\protect \endinput

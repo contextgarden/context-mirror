@@ -1,0 +1,68 @@
+%D \module
+%D   [       file=meta-pre,
+%D        version=2001.03.21,
+%D          title=\METAPOST\ Graphics, 
+%D       subtitle=Predefined Goodies, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D In this library, we define a couple of handy graphics. 
+
+% todo: use the predefine grid macros, mp code will move to 
+% mp-* file 
+
+\startuseMPgraphic{pagegrid} 
+  StartPage ; 
+    drawoptions(withcolor .8white) ; 
+    fill Field[Text][Text] ; 
+    drawoptions(withcolor .65white) ; 
+    fill Field[Footer][Text] ; 
+    fill Field[Header][Text] ; 
+    fill Field[LeftMargin][Text] ; 
+    fill Field[RightMargin][Text] ; 
+    drawoptions(withcolor .65yellow) ; 
+    fill Field[LeftEdge][Text] ; 
+    fill Field[RightEdge][Text] ; 
+    fill Field[Bottom][Text] ; 
+    fill Field[Top][Text] ; 
+    drawoptions(withpen pencircle scaled .3pt withcolor .65white) ; 
+    for i=-3cm step 1cm until PaperWidth+3cm : 
+      draw (i,-3cm)--(i,PaperHeight+3cm) ;
+    endfor ; 
+    for i=PaperHeight+3cm step -1cm until -3cm : 
+      draw (-3cm,i)--(PaperWidth+3cm,i) ;
+    endfor ; 
+    drawoptions(withpen pencircle scaled .15pt) ; 
+    for i=.5cm-3cm step 1cm until PaperWidth+3cm : 
+      draw (i,-3cm)--(i,PaperHeight+3cm) ;
+    endfor ; 
+    for i=PaperHeight-.5cm+3cm step -1cm until -3cm : 
+      draw (-3cm,i)--(PaperWidth+3cm,i) ;
+    endfor ; 
+    drawoptions(withpen pencircle scaled .3pt withcolor .65red) ; 
+    for i=0 step 1cm until PaperWidth : 
+      draw (i,0)--(i,PaperHeight) ;
+    endfor ; 
+    for i=PaperHeight step -1cm until 0 : 
+      draw (0,i)--(PaperWidth,i) ;
+    endfor ; 
+    drawoptions(withpen pencircle scaled .15pt withcolor .65red) ; 
+    for i=.5cm step 1cm until PaperWidth : 
+      draw (i,0)--(i,PaperHeight) ;
+    endfor ; 
+    for i=PaperHeight-.5cm step -1cm until 0 : 
+      draw (0,i)--(PaperWidth,i) ;
+    endfor ; 
+    drawoptions(withpen pencircle scaled 5pt withcolor .65red) ; 
+    draw ulcorner Page ; 
+  StopPage ;  
+\stopuseMPgraphic
+
+\defineoverlay[pagegrid][\useMPgraphic{pagegrid}]
+
+\endinput 

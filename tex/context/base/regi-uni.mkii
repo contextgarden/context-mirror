@@ -1,0 +1,24 @@
+%D \module
+%D   [       file=enco-uni,
+%D        version=1998.10.18,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Unicode,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module activates all characters in the upper range
+%D and sets them to the basic unicodehandler. Beware, this is
+%D a special purpose handler (esp for chinese encodings).
+
+\startregime[unicode]
+
+\defineactivedecimals 128 to 255 as {\handleunicodeflowglyph}
+
+\stopregime
+
+\endinput

@@ -1,0 +1,3041 @@
+%D \module
+%D   [       file=strc-ref,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Cross Referencing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% we will merge mkii code back in here
+
+\writestatus{loading}{ConTeXt Structure Macros / Cross Referencing}
+
+% todo : unknown/illegal reference no arg
+% todo : +n pages check on 'samepage' (contrastcolor)
+
+% Makes more sense to build action data first, especially now
+% openaction etc are supported.
+%
+% \definespecial\doexecuteactionchain w h
+% \definespecial\dosetgotolocation
+% \definespecial\dosetexecuteJScode
+% ...
+%
+% complication: what when direct? Two calls!
+
+% I considered to change / simplify
+%
+% rt!page -> \definereference
+% rt!list -> \definereference
+% rt!exec -> \definereference
+%
+% but for the moment will not do so, if only because
+% the current implementation permits us to determine
+% the page state and is also more efficient
+
+% the code is rather fuzzy (and will be redone some day); this is
+% due to the chaining (collect secondary and then hook that into
+% the primary etc
+
+\unprotect
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+% messages moved
+
+%D This module deals with referencing. In \CONTEXT\ referencing
+%D is one of the core features, although at a first glance
+%D probably nobody will notice. This is good, because
+%D referencing should be as hidden as possible.
+%D
+%D In paper documents, referencing comes down to cross
+%D referencing, but in their interactive counterparts, is also
+%D involves navigation. Many features implemented here are
+%D therefore closely related to navigation.
+%D
+%D Many \CONTEXT\ commands can optionally be fed with a
+%D reference. Such a reference, when called upon, returns the
+%D number of a figure, table, chapter etc, a piece of text, or
+%D a pagenumber.
+%D
+%D There are three ways of defining a reference:
+%D
+%D \starttyping
+%D \pagereference[here]
+%D \textreference[here]{some text}
+%D \stoptyping
+%D
+%D the third alternative combines them in:
+%D
+%D \starttyping
+%D \reference[here]{some text}
+%D \stoptyping
+
+\def\textreference {\dosingleargument\dotextreference}
+\def\pagereference {\dosingleargument\dopagereference}
+\def\reference     {\dosingleargument\doreference    }
+
+%D These are implemented in a low level form as:
+%D
+%D \starttyping
+%D \def\dotextreference[#1]{\rawtextreference\s!txt{#1}} % #2
+%D \def\dopagereference[#1]{\rawpagereference\s!pag{#1}}
+%D \def\doreference    [#1]{\rawreference    \s!ref{#1}} % #2
+%D \stoptyping
+%D
+%D or without expansion problems:
+
+\def\dotextreference[#1]#2%
+  {\bgroup
+   \def\asciia{#1}%
+   \defconvertexpanded\asciib\@@rfexpansion{#2}%
+   \@EA\rawtextreference\@EA\s!txt\@EA\asciia\@EA{\asciib}%
+   \egroup}
+
+\def\dopagereference[#1]%
+  {\rawpagereference\s!pag{#1}}
+
+\def\doreference[#1]#2%
+  {\bgroup
+   \def\asciia{#1}%
+   \defconvertexpanded\asciib\@@rfexpansion{#2}%
+   \@EA\rawreference\@EA\s!ref\@EA\asciia\@EA{\asciib}%
+   \egroup}
+
+%D Actually there is not much difference between a text and a
+%D full reference, but it's the concept that counts. The low
+%D level implementation is:
+
+\def\rawreference#1#2#3%
+  {\bgroup
+   \the\everyreference
+   \makesectionformat
+   \writereference{#2}
+     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}%
+     {\noexpand\realfolio}%
+     {#3}%
+   \egroup}
+
+\def\rawpagereference#1#2%
+  {\bgroup
+   \the\everyreference
+   \makesectionformat
+   \writereference{#2}
+     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}%
+     {\noexpand\realfolio}%
+     {}%
+   \egroup}
+
+\def\rawtextreference#1#2#3%
+  {\bgroup
+   \the\everyreference
+   \writereference{#2}
+     {}%
+     {\noexpand\realfolio}%
+     {#3}%
+   \egroup}
+
+%D The last reference is saved in a macro named \type
+%D {\lastreference} (indeed). To keep track of the order of
+%D references, later we will see for what purpose, we maintain
+%D a counter.
+
+\newcount\crossreferencenumber \crossreferencenumber\plusone
+
+\let\lastreference\empty
+
+\def\writereference#1#2#3#4%
+  {\ifreferencing
+     \edef\!!stringa{#1}%
+     \ifx\!!stringa\empty \else
+       \def\dowritereference##1%
+         {\xdef\lastreference{##1}%
+          \@EA\dodowritereference\lastreference\empty\empty\end{#2}{#3}{#4}}%
+       \rawprocesscommalist[\!!stringa]\dowritereference
+     \fi
+   \fi}
+
+%D Beware: \type {#2} gobbles space in references so that
+%D \typ {a nice ref} becomes \typ {anice ref}.
+
+\def\dodowritereference#1#2#3\end#4#5#6%
+  {\bgroup
+   \global\advance\crossreferencenumber \plusone\relax
+   \if#1-\if#2:%
+     \let\referenceprefix\empty
+     \xdef\lastreference{#3}%
+   \else
+     % \xdef\lastreference{#1#2#3}% here we loose the space
+   \fi\else
+     % \xdef\lastreference{#1#2#3}% here we loose the space
+   \fi
+   \ifx\lastreference\empty \else
+     \doiffirstreferenceoccurance\lastreference
+       {\thisisdestination{\referenceprefix\lastreference}}%
+     \referenceinfo>\lastreference
+     \expanded{\writeutilitycommand{\noexpand\mainreference{\referenceprefix}{\lastreference}{#4}{#5}{#6}}}%
+   \fi
+   \egroup}
+
+%D We will implement \type {\doiffirstreferenceoccurance}
+%D later on.
+
+%D These macros depend on three other ones,
+%D \type {\makesectionformat}, that generated \type
+%D {\sectionformat}, \type {\pagenumber}. The not yet used
+%D argument \type{#1} is a tag that specifies the type of
+%D reference.
+
+%D \macros
+%D   {everyreference}
+%D
+%D For rather tricky purposes, one can assign sanitizing
+%D macros to \type{\everyreference}.
+
+\newevery \everyreference \relax
+
+%D This is really needed, since for instance Polish has a
+%D different alphabet and needs accented entries in registers.
+
+\appendtoks
+  \cleanupfeatures
+\to \everyreference
+
+%D Why do we have to write down references? \TEX, and therefore
+%D \CONTEXT\ is a batch processing system. During the
+%D typesetting process, pages are shipped out, which means that
+%D especially forward references are not yet known when the
+%D page is typeset. That's why we always need a second (and
+%D sometimes even a third) pass to get the cross references
+%D right. The same goes for lists and other pagenumber
+%D dependant data.
+%D
+%D Therefore, during a pass, \CONTEXT\ writes the references to
+%D a the utility file. The next macro does the job and
+%D generates entries like: (for mkii)
+%D
+%D \starttyping
+%D \mainreference{prefix}{reference}{page}{realpage}{text}
+%D \stoptyping
+%D
+%D We did not yet discuss prefixing. Especially in interactive
+%D documents, it's not always easy to keep track of duplicate
+%D references. The prefix mechanism, which we will describe
+%D later on, solves this problem. By (automatically) adding a
+%D prefix one keeps references local, but the global ones in
+%D view. To enable this feature, we explictly split the prefix
+%D from the reference.
+%D
+%D A former implementation used \type{\removesubstring} to get
+%D rid of the don't||use||a||prefix signal (\type{-:}), but the
+%D next one proved to be more than twice as fast.
+
+\let\referenceprefix=\empty
+\let\lastreference  =\empty
+
+%D When (during a second pass over the document) references are
+%D loaded, they are saved in a macro, one for each reference.
+%D In practice this comes to giving \type {\mainreference} a
+%D appropriate meaning and loading the utility file.
+
+%D For a long time the only way to access an external file was
+%D to use the file prefix (\type {somefile::}. However, when
+%D you split up a document, redefining the references may be
+%D such a pain, that another approach is feasible. By setting
+%D the \type {autofile} variable to \type {yes} or \type
+%D {page}, you can access the reference directly. The latter
+%D case nills the prefix method, thereby saving some memory.
+%D
+%D \starttabulate[||||]
+%D \NC filename::tag \NC page(filename::pnum) \NC tag     \NC\NR
+%D \NC   $\star$     \NC                      \NC         \NC\NR
+%D \NC   $\star$     \NC $\star$              \NC $\star$ \NC\NR
+%D \NC               \NC $\star$              \NC         \NC\NR
+%D \stoptabulate
+
+\chardef\autocrossfilereferences=0
+
+\def\setreferences% some day, filename will be stored in ref record
+  {\the\everyreference % we're grouped anyway
+   \def\mainreference##1##2##3##4##5% can be made faster by indirect calls
+     {\ifcsname\r!cross\fileprefix##1##2\endcsname
+        \ifcase0##4\else
+          \showmessage\m!references2{[##1][##2],##4 (\currentutilityfilename)}%
+        \fi
+      \else
+        \ifcase\autocrossfilereferences
+          \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
+        \or
+          \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
+          \ifcsname\r!cross##1##2\endcsname
+            \showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}%
+          \else
+            \expanded{\definereference[##1##2][\fileprefix##1##2]}%
+          \fi
+        \or
+          \ifcsname\r!cross##1##2\endcsname
+            \showmessage\m!references2{[##1][##2],##4 (auto \currentutilityfilename)}%
+          \else
+            \expanded{\definereference[##1##2][\noexpand\v!page(\fileprefix##4)]}%
+          \fi
+        \fi
+      \fi}}
+
+\def\resetreferences
+  {\let\mainreference\gobblefivearguments}
+
+\resetreferences
+
+%D Here we see another kind of prefix surface: \type
+%D {\fileprefix}. This prefix enables us to use references from
+%D different files in one document. This is no really useful in
+%D paper documents, but many interactive ones cannot do
+%D without.
+
+\let\fileprefix=\empty
+
+%D Loading references is done using the normal utility file
+%D handling macros. The \type{\hbox} trick prevents spaces
+%D creeping in (references are set globally anyway).
+
+\newtoks\everycheckreferences
+
+%D When we load references, the file name is stored in a
+%D list.
+
+\let\loadedreferences\empty
+
+%D We only load references ones.
+
+\newconditional\jobreferencesloaded
+
+%D This token list is expanded after the references are loaded.
+%D This hook can be used to initialize mechanisms that depend
+%D on the reference mechsnism. An example can be found in the
+%D field module.
+
+\def\checkreferences
+  {\bgroup
+   \let\fileprefix\empty
+   \global\let\checkreferences\relax
+   \usereferences[\jobname]%
+   \checkrealpage
+   \egroup
+   \the\everycheckreferences}
+
+\def\usereferences[#1]%
+  {\startnointerference
+   \checkreferences
+   \doifparentfileelse{#1}
+     {\ifconditional\jobreferencesloaded\else
+        \doutilities{references}{#1}\empty\relax\relax
+        \global\settrue\jobreferencesloaded
+      \fi}
+     {\ExpandBothAfter\doifnotinset{#1}{\loadedreferences}
+        {\doutilities{references}{#1}\empty\relax\relax
+         \ifx\fileprefix\empty\else
+           \doglobal\addtocommalist{#1}\loadedreferences
+         \fi}}
+   \stopnointerference}
+
+%D As mentioned we will also use the cross reference mechanism
+%D for navigational purposes. The main reason for this is that
+%D we want to treat both categories alike:
+%D
+%D \starttyping
+%D \goto{go back}[PreviousJump]
+%D \goto{colofon}[colofon page]
+%D \stoptyping
+%D
+%D Here \type{PreviousJump} is handled by the viewer, while the
+%D \type{colofon page} reference is, apart from hyperlinking, a
+%D rather normal reference.
+%D
+%D We already saw that cross refences are written to and read
+%D from a file. The pure navigational ones don't need to be
+%D written to file, but both for fast processing and
+%D transparant integration, they are saved internally as a sort
+%D of reference. We can easily distinguish such system
+%D references from real cross reference ones by their tag:
+
+\chardef\rt!cross=0  % even means possible page reference
+\chardef\rt!done =1
+\chardef\rt!page =2  % and is used in \checkrealreferencepage
+\chardef\rt!exec =3
+\chardef\rt!list =4  % to determine the page state
+
+%D We also use the odd/even characteristic to determine the
+%D page state.
+
+%D Here the \type{\rt!exec} tags a viewer specific navigational
+%D reference, while for instance \type{\rt!page} gives fast
+%D access to for instance the previous or next page. The
+%D counter serves a purpose to be explained later. We use a
+%D token register to prevent expansion of the text component,
+%D which can contain all kind of \TEX\ commands.
+
+\newcount\crossreferenceorder
+
+% these are used often so we sped them up
+
+\def\setlocalcrossreference#1#2#3#4%
+  {\scratchtoks{#4}%
+   \@EA\edef\csname\r!cross\fileprefix#1\endcsname
+     {\rt!cross{#2}{#3}{\the\scratchtoks}{0}}}
+
+\def\setglobalcrossreference#1#2#3#4%
+  {\scratchtoks{#4}%
+   \global\advance\crossreferenceorder \plusone
+   \@EA\xdef\csname\r!cross\fileprefix#1\endcsname
+     {\rt!cross{#2}{#3}{\the\scratchtoks}{\the\crossreferenceorder}}}
+
+\def\setlocalsystemreference#1#2#3%
+  {\@EA\edef\csname\r!cross\fileprefix#2\endcsname{#1{#3}}}
+
+\def\setglobalsystemreference#1#2#3%
+  {\@EA\xdef\csname\r!cross\fileprefix#2\endcsname{#1{#3}}}
+
+\def\copycrossreference#1#2#3% file from to / slow
+  {\bgroup
+   \doifelse{#1}{}
+     {\let\fileprefix\empty}
+     {\def\fileprefix{#1::}}%
+   \def\rt!cross##1##2##3##4%
+     {\setxvalue{\r!cross\fileprefix#3}%
+        {\noexpand\rt!cross{##1}{##2}{##3}{##4}}}%
+   \getvalue{\r!cross\fileprefix#2}%
+   \egroup}
+
+%D References from other files are defined globally without
+%D ordering data. The first definition, the one without
+%D \type{#1}, is used as a signal that references are defined.
+
+\def\setoutercrossreference#1#2#3#4%
+  {\toks0={#4}%
+   \@EA\xdef\csname\r!cross\fileprefix  \endcsname{\rt!cross{}{}{1}{0}}%
+   \@EA\xdef\csname\r!cross\fileprefix#1\endcsname{\rt!cross{#2}{#3}{\the\toks0}{0}}}
+
+%D In practice accessing a reference comes down to:
+%D
+%D \startitemize[packed]
+%D \item  checking the validity
+%D \item  determining the type
+%D \item  filtering the content
+%D \stopitemize
+%D
+%D We'll deal with the last two steps first. References are
+%D saved in the general format:
+%D
+%D \starttyping
+%D {\referenceclass{realpage}{page}{text}}
+%D {\referenceclass{type}{data}}
+%D \stoptyping
+%D
+%D When we filter the content, next macros are set when we
+%D meet a normal cross reference:
+
+\let\currentrealreference      =\empty
+\let\currentpagereference      =\empty
+\let\currenttextreference      =\empty
+\let\currentsubtextreference   =\empty
+\let\currentsubsubtextreference=\empty
+
+%D System references only have one component:
+
+\let\currentdatareference=\empty
+
+%D Because internally a reference comes in two disguises, one
+%D with four arguments and one with only two, we need a two
+%D step filter.
+
+\def\getreferenceelements#1% only one level expansion permitted!
+  {\@EA\@EA\@EA\dogetreferenceelements\csname\r!cross\referenceprefix#1\endcsname\empty\empty\empty\empty}
+
+%D In the following step, the \type{\ifx#1} test is needed
+%D because we can access this macro directly, and therefore
+%D \type{#1} can be an undefined reference (in fact, this hack
+%D was needed for the line numbering mechanism).
+%D
+%D We already introduced a few counters. Here we see why we
+%D need those. The discrepancy between the cross reference
+%D definition order (determined by the utility file) and the
+%D moment the reference is defined in the text, is a measure
+%D for it's forward character. This enables references like
+%D {\em as we will see later on}.
+
+\chardef\currentreferencetype=0
+
+\newif\ifforwardreference
+
+\newif\ifrealreferencepage
+
+\def\docheckrealreferencepage#1%
+  {\doifnumberelse{#1}
+     {\ifnum#1=\realpageno
+        \realreferencepagetrue
+      \else
+        \realreferencepagefalse
+      \fi}
+     {\realreferencepagefalse}}
+
+\def\currentfolioreference{0}
+
+\let\currentlocationreference\empty
+
+\def\dogetreferenceelements#1#2#3#4#5%
+  {\chardef\currentreferencetype=\ifx#1\relax0\else#1\fi\relax
+   \ifnum\currentreferencetype<\plustwo
+     \edef\currentpagereference{#2}%
+     \let \currentdatareference\empty
+     \edef\currentlocationreference{#2}%
+     \ifx\currentpagereference   \empty
+       \let\currentfolioreference\folio
+     \else
+       \def \currentpagereference {\referencepagenumber[#2]}%
+       \edef\currentfolioreference{\dosplitofffoliopart[#2]}%
+     \fi
+     \edef\currentrealreference{#3}%
+     \settextreferences#4\end
+     \ifnum0#5<\crossreferencenumber
+       \forwardreferencetrue
+     \else
+       \forwardreferencefalse
+     \fi
+   \else
+     \let \currentlocationreference\empty
+     \edef\currentrealreference {#3}%
+     \def \currentdatareference {#2}%
+     \let \currentfolioreference\folio
+     \settextreferences#4\end
+     \forwardreferencefalse
+   \fi
+   \ifodd\currentreferencetype
+     \realreferencepagefalse
+   \else
+     \docheckrealreferencepage\currentrealreference
+     \ifrealreferencepage \else
+       \docheckrealreferencepage\currentdatareference
+     \fi
+   \fi}
+
+\ifx\referencepagenumber\undefined
+
+  \def\referencepagenumber[#1]{?}
+
+\fi
+
+%D Text references can contain more than one entry and
+%D therefore we check for
+%D
+%D \starttyping
+%D {entry}
+%D \stoptyping
+%D
+%D or
+%D
+%D \starttyping
+%D {{entry}{entry}{entry}}
+%D \stoptyping
+%D
+%D and split accordingly.
+
+\def\settextreferences
+  {\futurelet\next\dosettextreferences}
+
+\def\dosettextreferences
+  {\ifx\next\bgroup
+     \expandafter\dotriplegroupempty\expandafter\dodosettextreferences
+   \else
+     \expandafter\donosettextreferences
+   \fi}
+
+\def\donosettextreferences#1\end
+  {\def\currenttextreference{#1}%
+   \let\currentsubtextreference\empty
+   \let\currentsubsubtextreference\empty}
+
+\def\dodosettextreferences#1#2#3#4\end
+  {\def\currenttextreference{#1}%
+   \def\currentsubtextreference{#2}%
+   \def\currentsubsubtextreference{#3}}
+
+%D When inside this testing macro we can savely use:
+
+\def\doifforwardreferenceelse#1#2%
+  {\ifforwardreference#1\else#2\fi}
+
+%D Duplicate references are reported while loading the utility
+%D file. To prevent problems with document viewers cq.
+%D preprocessors, one can enable a (bit time consuming) check.
+
+\newif\ifcheckduplicatereferences
+
+%D The next rather dirty trick is needed to preserve the
+%D meaning of the original cross reference. In fact,
+%D \type{\rt!cross} is toggled to \type{\rt!done}.
+
+\def\rt!crossdone#1#2#3#4{\rt!done{#1}{#2}{#3}{#4}}
+
+\def\dohandleduplicatereference#1%
+  {\bgroup
+   \let\rt!cross\rt!crossdone
+   \@EA\xdef\csname\r!cross\referenceprefix#1\endcsname % no let !
+     {\csname\r!cross\referenceprefix#1\endcsname}%
+   \egroup}
+
+\def\checkfirstreferenceoccurance#1#2% etex
+  {\@EA\ifx\csname\r!cross\referenceprefix#1\endcsname\relax % no ifcsname needed here
+     \predefinereference{#1}%
+     #2%
+   \else
+     \getreferenceelements{#1}%
+     \ifnum\currentreferencetype=\rt!cross
+       \dohandleduplicatereference{#1}%
+       #2%
+     \fi
+   \fi}
+
+\def\doiffirstreferenceoccurance
+  {\ifcheckduplicatereferences
+     \@EA\checkfirstreferenceoccurance
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
+%D We still have to test for the existence of a reference, but
+%D before we come to that, we first look into the way a
+%D reference can be accessed. It will be no surprise that
+%D references can come in several forms.
+%D
+%D Cross references appear as numbers (figure~1.1, chapter~2)
+%D or pagenumbers (page~2, page 3--2), and are called with
+%D \type{\in} and \type{\at}. In interactive documents we also
+%D have \type{\goto}, \type{\button} and alike. These are more
+%D versatile and look like:
+%D
+%D \starttyping
+%D \goto[reference]
+%D \goto[outer reference::]
+%D \goto[outer reference::inner reference]
+%D \goto[operation(argument)]
+%D \goto[operation(action{argument,argument})]
+%D \goto[action]
+%D \goto[action{argument}]
+%D \stoptyping
+%D
+%D The first one is a normal reference, the second and third
+%D are references to a file or \URL. The brace delimited
+%D references for instance refer to a \JAVASCRIPT. The last
+%D example shows that we can pass arguments to the actions.
+%D
+%D When we split off the components of such a reference, the
+%D results are available in:
+%D
+%D \starttyping
+%D \currentreferencespecial
+%D \currentreferenceoperation
+%D \currentreferencearguments
+%D \currentinnerreference
+%D \currentouterreference
+%D \currentfullreference
+%D \stoptyping
+%D
+%D Splitting a reference is done by:
+%D
+%D \starttyping
+%D \splitofffullreference {reference}
+%D \splitoffreference     {reference}
+%D \stoptyping
+%D
+%D The second alternative can be used in a second stage
+%D splitoff and only handles \type{::}.
+
+\newif\ifreferencefound
+
+\let\currentfullreference     \empty
+\let\currentreferencespecial  \empty
+\let\currentreferenceoperation\empty
+\let\currentreferencearguments\empty
+\let\currentouterreference    \empty
+\let\currentinnerreference    \empty
+
+\def\setreferencevariables#1#2#3#4#5%
+  {\def\currentreferencespecial  {#1}%
+   \def\currentreferenceoperation{#2}%
+   \def\currentreferencearguments{#3}%
+   \def\currentouterreference    {#4}%
+   \def\currentinnerreference    {#5}}
+
+\def\splitofffullreference#1%
+  {\edef\currentfullreference{#1}%
+   \@EA\dosplitofffullreference\currentfullreference\empty(\relax)\empty\end}
+
+\def\dosplitofffullreference#1(#2#3)#4#5\end
+  {\ifx#2)%
+     \let\currentreferenceoperation\empty
+     \let\currentreferencearguments\empty
+     \let\currentinnerreference    \empty
+     \dodosplitofffullreferenceA#1::::\empty\end
+       \currentouterreference\currentreferencespecial
+   \else\ifx#2\relax
+     \let\currentreferencespecial  \empty
+     \let\currentreferenceoperation\empty
+     \let\currentreferencearguments\empty
+     \dodosplitofffullreferenceA#1::::\empty\end
+       \currentouterreference\currentinnerreference
+   \else
+     \dosplitoffreferenceoperation#2#3{}\end
+     \let\currentinnerreference\empty
+     \dodosplitofffullreferenceB#1::::\empty\end
+       \currentouterreference\currentreferencespecial
+   \fi\fi}
+
+\def\dosplitoffreferenceoperation#1#%
+  {\def\currentreferenceoperation{#1}%
+   \dodosplitoffreferenceoperation}
+
+\def\dodosplitoffreferenceoperation#1#2\end
+  {\def\currentreferencearguments{#1}}
+
+\def\dodosplitofffullreferenceA#1::#2::#3#4\end#5#6%
+  {\if#3:%
+     \dosetfullreferenceA#5#1{}\edef#6{#2}%
+   \else
+     \dosetfullreferenceA#6#1{}\let#5\empty
+   \fi}
+
+\def\dosetfullreferenceA#1#2#%
+  {\edef#1{#2}%
+   \def\currentreferencearguments}
+
+\def\dodosplitofffullreferenceB#1::#2::#3#4\end#5#6%
+  {\if#3:%
+     \edef#5{#1}\edef#6{#2}%
+   \else
+     \let#5\empty\edef#6{#1}%
+   \fi}
+
+\def\splitoffreference#1%
+  {\expandafter\dodosplitofffullreferenceB#1::::\empty\end
+     \currentouterreference\currentinnerreference}
+
+%D Although the previous split macros have a multistep
+%D character, there performance is quite reasonable.
+%D
+%D For debugging purposes we provide a showcase macro:
+
+\long\def\dodoshowcurrentreference#1\from#2\with#3%
+  {\defconvertedcommand\ascii{#2}%
+   \edef\currentreferenceshow{\currentreferenceshow/#1/\ascii/#3/}}
+
+\long\def\doshowcurrentreference#1%
+  {\edef\currentreferenceshow{/\ifreferencefound+\else-\fi/#1}%
+   \dodoshowcurrentreference ful\from\currentfullreference     \with#1%
+   \dodoshowcurrentreference spe\from\currentreferencespecial  \with#1%
+   \dodoshowcurrentreference ope\from\currentreferenceoperation\with#1%
+   \dodoshowcurrentreference arg\from\currentreferencearguments\with#1%
+   \dodoshowcurrentreference out\from\currentouterreference    \with#1%
+   \dodoshowcurrentreference inn\from\currentinnerreference    \with#1}
+
+\def\showcurrentreference%
+  {\bgroup\tttf\doshowcurrentreference\par\currentreferenceshow\egroup}
+
+%D We use this visualizer to demonstrate the way references are
+%D split.
+%D
+%D \hbox{\splitofffullreference{rr}\showcurrentreference}
+%D \hbox{\splitofffullreference{pp{rr}}\showcurrentreference}
+%D \hbox{\splitofffullreference{pp(qq)}\showcurrentreference}
+%D \hbox{\splitofffullreference{pp(qq{aa,bb})}\showcurrentreference}
+%D \hbox{\splitofffullreference{ff::}\showcurrentreference}
+%D \hbox{\splitofffullreference{ff::rr}\showcurrentreference}
+%D \hbox{\splitofffullreference{ff::pp()}\showcurrentreference}
+%D \hbox{\splitofffullreference{ff::pp(qq)}\showcurrentreference}
+%D \hbox{\splitofffullreference{ff::pp(qq{aa})}\showcurrentreference}
+
+%D Now we've come to the promissed testing step. As we can
+%D see, this macro does bit more than testing: it also resolves
+%D the reference. This means that whenever we test for the
+%D existance of a reference at an outer level, we have all the
+%D relevant properties of that reference avaliable inside the
+%D true branche~(\type{#2}).
+%D
+%D The prefix has to do with localizing references. When a
+%D prefix is set, looking for a reference comes to looking for
+%D the prefixed one, and when not found, looking for the non
+%D prefixed one. Consider for instance the prefix set to
+%D \type{sidetrack}.
+%D
+%D \starttyping
+%D \pagereference[important]
+%D \pagereference[unimportant]
+%D \setupreferencing[prefixprefix=sidetrack]
+%D \pagereference[important]
+%D \stoptyping
+%D
+%D results in saving (writing) the references
+%D
+%D \starttyping
+%D ...{}{important}
+%D ...{}{unimportant}
+%D ...{sidetrack}{important}...
+%D \stoptyping
+%D
+%D Now when we call for \type{unimportant}, we will indeed get
+%D the pagenumber associated to this reference. But when we
+%D call for \type{important}, while the prefix is still set, we
+%D will get the pagenumber bound to the prefixed one.
+%D
+%D {\em Some day, when processing time and memory are no longer
+%D performance factors, we will introduce multi||level
+%D prefixes.}
+%D
+%D Before we start analyzing, I introduce a general
+%D definition macro. Consider:
+%D
+%D \starttyping
+%D \goto{do}[JS(My_Script{"test",123}),titlepage]
+%D \stoptyping
+%D
+%D This can also be achieved by:
+%D
+%D \starttyping
+%D \definereference[startup][JS(My_Script{"test",123}),titlepage]
+%D \goto{do}[REF(startup)]
+%D \stoptyping
+%D
+%D Now is this is a handy feature or not?
+%D
+%D \showsetup{definereference}
+%D
+%D We can trace references by setting the next switch to
+%D true.
+
+\newif\iftracereferences
+
+\let\tracereferences\tracereferencestrue
+
+\def\specialREFidentifier{REF}
+
+\def\dodefinereference[#1][#2]%
+  {\ifsecondargument
+     \doifelsenothing{#2}
+       {\resetreference[#1]}%
+       {\@EA\gdef\csname\specialREFidentifier#1\endcsname{#2}}%
+   \else\iffirstargument
+     \resetreference[#1]%
+   \fi\fi}
+
+\def\definereference%
+  {\dodoubleempty\dodefinereference}
+
+\def\resetreference[#1]%
+  {\global\letbeundefined{\specialREFidentifier#1}}
+
+\newcount\nofexpandedreferences
+
+\def\dodoexpandreferences#1REF(#2#3)#4\relax
+  {\ifx#2\relax
+     \ifcsname\specialREFidentifier#1\endcsname
+       \edef\expandedreference{\csname\specialREFidentifier#1\endcsname,}%
+     \else
+       \global\advance\nofexpandedreferences \plusone
+       \@EA\xdef\csname REF::\number\nofexpandedreferences\endcsname{#1}%
+     \fi
+   \else
+     \ifcsname\specialREFidentifier#2#3\endcsname
+       \edef\expandedreference{\csname\specialREFidentifier#2#3\endcsname,}%
+     \else
+       % not set
+     \fi
+   \fi}
+
+\def\doexpandreferences#1,%
+  {\if]#1\else
+     \let\expandedreference\empty
+     \dodoexpandreferences#1REF(\relax)\relax
+     \@EAEAEA\doexpandreferences\@EA\expandedreference
+   \fi}
+
+\def\expandreferences#1%
+  {\global\nofexpandedreferences\zerocount
+   \doexpandreferences#1,],}
+
+\def\dodoifreferencefoundelse#1%
+  {\@EA\splitofffullreference\@EA{#1}%
+   \ifx\currentreferencespecial\empty
+     \ifx\currentouterreference\empty
+       \docheckinnerreference
+       \ifreferencefound \else
+         \checkglobalfilereferences
+       \fi
+     \else
+       \docheckouterreference
+     \fi
+     \ifreferencefound
+       \ifx\currentreferencearguments\empty
+         \getreferenceelements\currentfullreference
+       \else
+         \getreferenceelements\currentinnerreference
+       \fi
+     \fi
+   \else
+     \docheckspecialreference
+   \fi
+   \iftracereferences
+     \doshowcurrentreference\space
+     \writestatus\m!references\currentreferenceshow
+   \fi}
+
+%D Although this can be considered a hack, we provide the
+%D option to locate unknown references in other (loaded) files.
+%D This can be dangerous, since there can be conflicting
+%D definitions.
+
+\newconditional\autoglobalfilereferences
+
+\def\checkglobalfilereferences% sloooow
+  {\ifconditional\autoglobalfilereferences
+%     \processcommacommand[\loadedreferences]\docheckglobalfilereference
+      \rawprocesscommalist[\loadedreferences]\docheckglobalfilereference
+   \fi}
+
+\def\docheckglobalfilereference#1%
+  {\ifcsname\r!cross#1::\currentinnerreference\endcsname
+     \def\currentouterreference{#1}%
+     \edef\currentfullreference%
+       {\currentouterreference::\currentinnerreference}%
+     \global\referencefoundtrue
+     \quitcommalist
+   \fi}
+
+%D For most situations, we could use:
+%D
+%D \starttyping
+%D \let\doifreferencefoundelse=\dodoifreferencefoundelse
+%D \stoptyping
+%D
+%D But when we also want to support chained references, we need
+%D some more. Such a chained reference is defined as:
+%D
+%D \starttyping
+%D \goto{somewhere}[JS(somescript),nextpage,JS(anotherscript)]
+%D \stoptyping
+%D
+%D Actually supporting chains is up to the special driver. Here
+%D we only provide the hooks.
+
+%D \macros
+%D   {ifenablereferencechains}
+%D
+%D First we provide a switch to turn this mechanism off:
+
+\newif\ifenablereferencechains \enablereferencechainstrue
+
+%D We don't use the general commalist processing macros,
+%D because we don't want to pay a speed penalty.
+
+\newif\ifsecondaryreference
+\newcount\nofsecondaryreferences
+
+% Aanpassen: eerst alle refs scannen en componenten opslaan in
+% lijst, dan de chain doorlopen. Momenteel mag alleen laatste
+% laatste undefined zijn, eigenlijk moet dat overal kunnen met
+% 'geen' zonder melding. Is wel trager. Dus niet.
+
+\def\doifreferencefoundelse#1#2#3% REF \cs / never more than one group (else \aftergroup usage problems)
+  {\checkreferences
+   % first we collect the secondary ones
+   \bgroup
+     \the\everyreference
+     \let\referenceprefix\empty
+     \expandreferences{#1}%
+   \egroup
+   \doresetgotowhereever
+   \global\nofsecondaryreferences \zerocount
+   \ifcase\nofexpandedreferences\relax % #1 can be number -)
+     % no ref
+   \or
+     % one ref
+   \or
+     % two refs
+     \ifenablereferencechains \iflocation
+       \global\secondaryreferencetrue
+       \xdef\secondaryreference{\csname REF::2\endcsname}%
+       % test: \global\letcscsname\secondaryreference\csname REF::2\endcsname
+       \bgroup
+         %%\let\doifreferencefoundelse\localdoifreferencefoundelse
+         \let\unharmedreferenceprefix\referenceprefix
+         \dodoifreferencefoundelse\secondaryreference
+         \ifreferencefound
+           \global\nofsecondaryreferences \plusone
+           #2%
+         \else
+           \dohandlenoto{#3}%
+         \fi
+       \egroup
+     \fi \fi
+   \else
+     % more than two refs
+     \ifenablereferencechains \iflocation
+       \global\secondaryreferencetrue
+       \scratchcounter\plustwo
+       \loop
+         \xdef\secondaryreference{\csname REF::\number\scratchcounter\endcsname}%
+         % test: \global\letcscsname\secondaryreference\csname REF::\number\scratchcounter\endcsname
+         \bgroup
+           %%\let\doifreferencefoundelse\localdoifreferencefoundelse
+           \let\unharmedreferenceprefix\referenceprefix
+           \dodoifreferencefoundelse\secondaryreference
+           \ifreferencefound
+             \global\advance\nofsecondaryreferences \plusone
+             #2%
+           \else
+             \dohandlenoto{#3}%
+           \fi
+         \egroup
+         \ifnum\scratchcounter<\nofexpandedreferences\relax
+           \advance\scratchcounter \plusone
+       \repeat
+     \fi \fi
+   \fi
+   \global\secondaryreferencefalse
+   \xdef\primaryreference{\csname REF::1\endcsname}%
+   % test: \global\letcscsname\secondaryreference\csname REF::1\endcsname
+   \bgroup
+     % now we handle the primary one
+     %%\let\doifreferencefoundelse\localdoifreferencefoundelse
+     \let\unharmedreferenceprefix\referenceprefix
+     \dodoifreferencefoundelse\primaryreference
+     \ifreferencefound#2\else#3\fi
+   \egroup
+   \doresetgotowhereever} % to prevent problems with direct goto's
+
+%D The following local redefinition permits the usage of
+%D nested \type {\doifreferencefoundelse}; see for an
+%D example the local test for file|/|url references. This is
+%D a fuzzy part of this mechanism and a result of the choice
+%D to let speed prevail over beauty in resolving chained
+%D references with symbolic (defined) references.
+
+\def\localdoifreferencefoundelse#1%
+  {\dodoifreferencefoundelse{#1}%
+   \ifreferencefound\@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
+
+%D Somewhere else we will properly define \type {\dohandlegoto};
+%D the noto alternative takes care of undefined references in
+%D a sequence
+
+\ifx\dohandlenoto\undefined
+
+  \def\dohandlenoto#1%
+    {\ifsecondaryreference\else{#1}\fi}
+
+\fi
+
+\ifx\dohandlegoto\undefined
+
+  \def\dohandlegoto#1#2#3%
+    {\ifsecondaryreference\else{#1}\fi}
+
+\fi
+
+%D As one can see, while processing the references, the first
+%D one is handled last. While scanning the second and following
+%D ones, we increment a counter and set a boolean to true.
+
+%D The next fast one permits rather raw references with
+%D \type{()}'s and is used in the object reference mechanism.
+
+\def\doifrawreferencefoundelse#1#2#3%
+  {\checkreferences
+   \bgroup
+   \edef\currentfullreference{#1}%
+   \ifcsname\r!cross\currentfullreference\endcsname
+     \getreferenceelements\currentfullreference
+     \global\referencefoundtrue#2%
+   \else
+     \global\referencefoundfalse#3%
+   \fi
+   \egroup}
+
+%D The inner case is simple. Only two cases have to be taken
+%D care of:
+%D
+%D \starttyping
+%D \goto{some text}[reference]
+%D \goto{some text}[prefix:reference]
+%D \stoptyping
+
+\def\docheckinnerreference
+  {\global\let\predefinedreference\currentinnerreference
+   \ifx\currentreferencearguments\empty
+     \ifcsname\r!cross\referenceprefix\currentfullreference\endcsname
+       \global\referencefoundtrue
+     \else
+       \let\referenceprefix\empty
+       \ifcsname\r!cross\currentfullreference\endcsname
+         \global\referencefoundtrue
+       \else
+         \global\referencefoundfalse
+       \fi
+     \fi
+   \else % [SomeThing{with,me}]
+     \let\referenceprefix\empty
+     \ifcsname\r!cross\currentinnerreference\endcsname
+       \global\referencefoundtrue
+     \else
+       \global\referencefoundfalse
+     \fi
+   \fi
+   \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
+
+%D References to other files however are treated strict or
+%D tolerant, depending on their loading and availability:
+%D
+%D \starttyping
+%D \useexternaldocument[somefile][filename][a nice description]
+%D
+%D \goto{checked   reference}[somefile::reference]
+%D \goto{unchecked reference}[somefile::]
+%D \goto{unchecked reference}[anotherfile::reference]
+%D \stoptyping
+%D
+%D Here we use the dummy reference \type{somefile::} set in
+%D \type{\setouterreference} as a signal that indeed references
+%D are defined for the outer file.
+
+\newif\ifstrictouterreferences \strictouterreferencesfalse
+
+\def\dodocheckouterreference
+  {\ifcsname\specialREFidentifier\currentfullreference\endcsname
+     \@EA\@EA\@EA\splitofffullreference\@EA\@EA\@EA % 1 level
+        {\csname\specialREFidentifier\currentfullreference\endcsname}%
+     \docheckouterreference
+   \else\ifstrictouterreferences
+     \global\referencefoundfalse
+   \else
+     % already \global\referencefoundtrue % no checking done
+   \fi\fi}
+
+\def\docheckouterreference
+  {\let\referenceprefix\empty
+   \let\unharmedreferenceprefix\empty
+   \xdef\predefinedreference
+     {\currentouterreference::\currentinnerreference}%
+   \ifx\innerreference\empty
+     \global\referencefoundtrue % no checking done
+   \else
+     \ifcsname\r!cross\currentouterreference::\endcsname
+       \ifcsname\r!cross\currentfullreference\endcsname
+         \global\referencefoundtrue
+       \else
+         \dodocheckouterreference
+       \fi
+     \else
+       \ifstrictouterreferences
+         \global\referencefoundfalse
+       \else
+         \global\referencefoundtrue % no checking done
+       \fi
+     \fi
+   \fi
+   \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
+
+%D Special references are only tested when some test routine is
+%D defined.
+
+\def\docheckspecialreference
+  {\let\referenceprefix\empty
+   \let\unharmedreferenceprefix\empty
+   \xdef\predefinedreference
+     {\currentreferencespecial::\currentreferenceoperation}%
+   \executeifdefined{\s!do:\v!test:\currentreferencespecial}%
+     {\global\referencefoundtrue\gobbletwoarguments}%
+     {\global\referencefoundtrue}{\global\referencefoundfalse}%
+   \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
+
+%D An unknown reference is reported on the screen, in the log
+%D file and, when enabled, in the left margin of the text.
+
+\def\reportreferenceerror#1#2%
+  {\bgroup
+   \the\everyreference % cleanup : etc in french
+   \ifinpagebody\else
+     \doifconcepttracing
+       {\doifsomething{#2}
+          {\inleft
+             {\infofont
+              \scratchdimen\leftmarginwidth
+              \advance\scratchdimen -2em
+              \doboundtext{#2}\scratchdimen{..}->}}}%
+   \fi
+   \doifpredefinedreferenceelse
+     \donothing
+     {\predefinereference\predefinedreference
+      \showmessage\m!references{#1}{[\unharmedreferenceprefix][#2]}}%
+   \egroup}
+
+\def\unknownreference{\reportreferenceerror1}
+\def\illegalreference{\reportreferenceerror4}
+
+%D Although not actually needed, we default the unharmed
+%D reference prefix to the normal one.
+
+\def\unharmedreferenceprefix{\referenceprefix}
+
+%D When a reference is not found, we typeset a placeholder
+%D (two glyphs are often enough to represent the reference
+%D text).
+
+\def\dummyreference{{\tttf ??}}
+
+%D To prevent repetitive messages concerning a reference
+%D being defined, we set such an unknown reference to an empty
+%D one after the first encounter.
+
+\let\predefinedreference\s!unknown
+
+% we need to predefine in order to make dup checking possible (when no ref
+% is defined yet)
+
+\def\predefinereference#1% takes now an argument
+  {\global\@EA\let\csname\r!cross                        #1\endcsname\dummypredefinedreference
+   \global\@EA\let\csname\r!cross\unharmedreferenceprefix#1\endcsname\dummypredefinedreference}
+
+\def\dummypredefinedreference{\rt!done{}{}{}{}}
+
+%D Testing on existance then becomes:
+
+\def\doifpredefinedreferenceelse % \referenceprefix added
+  {\@EA\ifx\csname\r!cross\referenceprefix\predefinedreference\endcsname\dummypredefinedreference
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+%D Sometimes we want to temporary put a reference out of
+%D order. An example can be found in the menu macros.
+%D
+%D \starttyping
+%D \doifreferencepermittedelse{reference}{set}{true}{false}
+%D \stoptyping
+%D
+%D The second argument can be a comma seperated list.
+
+\let\permittedreferences\empty
+
+\def\doifreferencepermittedelse#1#2#3% ref found notfound
+  {\doifreferencefoundelse{#1}
+     {\donetrue
+      \ifx\permittedreferences\empty \else
+        \docheckifreferencepermitted{#1}%
+      \fi
+      \ifdone#2\else#3\fi}
+     {#3\unknownreference{#1}}}
+
+\def\docheckifreferencepermitted#1%
+  {\ifx\currentinnerreference\empty
+     \ifx\currentouterreference\empty \else
+       \doifinstring{\currentouterreference::}\permittedreferences\donefalse
+     \fi
+   \else\ifx\currentouterreference\empty
+     \doifinstring{\currentinnerreference}\permittedreferences\donefalse
+   \else
+     \doifinstring{\currentouterreference::\currentinnerreference}\permittedreferences\donefalse
+   \fi\fi}
+
+%D Apart from cross references supplied by the user, \CONTEXT\
+%D generates cross references itself. Most of them are not
+%D saved as a reference, but stored with their source, for
+%D instance a list or an index entry. Such automatically
+%D generated, for the user invisible, references are called
+%D {\em internal references}. The user supplied ones are
+%D labeled as {\em external references}.
+%D
+%D A second important characteristic is that when we want to
+%D support different backends (viewers), we need to support
+%D named destinations as well as page numbers. I invite readers
+%D to take a glance at the special driver modules to understand
+%D the fine points of this. As a result we will deal with {\em
+%D locations} as well as {\em real page numbers}. We explictly
+%D call this pagenumber a real one, because it is independant
+%D of the page numbering scheme used in the document.
+%D
+%D One of the reasons for \CONTEXT\ being the first \TEX\ base
+%D macropackage to support sophisticated interactive \PDF\
+%D files, lays in the mere fact that real page numbers are
+%D available in most two pass data, like references, list data
+%D and index entries.
+%D
+%D We will speak of \type{thisis...} when we are marking a
+%D location, and \type{goto...} when we point to such a
+%D location. The latter one can be seen as a hyperlink to the
+%D former one. In the next macros one we use constructs like:
+%D
+%D \starttyping
+%D \dostart...
+%D \dostop...
+%D \stoptyping
+%D
+%D Such macros are used to invoke the relevant specials from
+%D the special driver modules (see \type{spec-ini}). The flag
+%D \type{\iflocation} signals if we're in interactive mode.
+
+\def\thisisdestination#1% destination
+  {\iflocation \ifusepagedestinations \else
+     \dostartthisislocation{#1}\dostopthisislocation
+   \fi \fi}
+
+\def\thisisrealpage#1% pagenumber
+  {\iflocation
+     \dostartthisisrealpage{#1}\dostopthisisrealpage
+   \fi}
+
+%D The previous tho macros were easy ones, opposite to their
+%D counterparts. A common component in these is:
+%D
+%D \starttyping
+%D \dohandlegoto{..}{..}{..}
+%D \stoptyping
+%D
+%D Here data can be whatever needs highlighting, e.g. {\em
+%D figure 2.4}, and the start and stop entries handle the
+%D specials. The two \DIMENSIONS\ \type{\buttonwidth} and
+%D \type{\buttonheight} have to be set when handling the
+%D data~(\type{#2}).
+
+\ifx\buttonheight\undefined \newdimen\buttonheight \fi
+\ifx\buttonwidth \undefined \newdimen\buttonwidth  \fi
+
+\def\gotodestination#1#2#3#4#5% url file destination page data
+  {\iflocation
+     \ifusepagedestinations
+       \gotorealpage{#1}{#2}{\number#4}{#5}%
+     \else
+       \dohandlegoto
+         {#5}%
+         {\the\everyreference\dostartgotolocation\buttonwidth\buttonheight{#1}{#2}{#3}{\number#4}}%
+         {\dostopgotolocation}%
+     \fi
+   \else
+     {#5}%
+   \fi}
+
+\def\gotorealpage#1#2#3#4% url file page data
+  {\iflocation
+     \dohandlegoto
+       {#4}%
+       {\dostartgotorealpage\buttonwidth\buttonheight{#1}{#2}{\number#3}}%
+       {\dostopgotorealpage}%
+   \else
+     {#4}%
+   \fi}
+
+%D \macros
+%D   {setreferencefilename}
+%D
+%D This command can be used in the special drivers to
+%D uppercase filenames. This is needed when one wants to
+%D produce \CDROM's conforming to ISO9660. We consider is the
+%D savest to enable this feature by default. We cannot handle
+%D uppercase here, since the suffix is handled in the special
+%D driver. Conversion is taken care of by:
+%D
+%D \starttyping
+%D \setreferencefilename somefilename\to\SomeFileName
+%D \stoptyping
+
+% \def\setreferencefilename#1\to#2%
+%   {\doifelse{\@@converteerfile}{\v!ja} % boolean is sneller
+%      {\uppercasestring#1\to#2}
+%      {\edef#2{#1}}}
+
+\chardef\referencefilecase=0
+
+\def\setreferencefilename#1\to#2%
+  {\ifcase\referencefilecase
+     \edef#2{#1}%
+   \or
+     \uppercasestring#1\to#2%
+   \or
+     \lowercasestring#1\to#2%
+   \else
+     \edef#2{#1}%
+   \fi}
+
+%D Internal references can best be set using the next few
+%D macros. Setting such references to unique values is
+%D completely up to the macros that call them.
+%D
+%D \starttyping
+%D \thisissomeinternal{tag}{identifier}
+%D \gotosomeinternal  {tag}{identifier}{pagenumber}{text}
+%D \stoptyping
+
+\def\thisissomeinternal#1#2%  tag reference
+  {\doifsomething{#2}{\thisisdestination{#1:#2}}}
+
+\def\gotosomeinternal#1#2% #3#4
+  {\gotodestination\empty\empty{#1:#2}}
+
+%D An automatic mechanism is provided too:
+%D
+%D \starttyping
+%D \thisisnextinternal{tag}
+%D \gotonextinternal  {tag}{number}{pagenumber}{text}
+%D \stoptyping
+%D
+%D The first macro increments a counter. The value of this
+%D counter is available in the macro \type{\nextinternalreference}
+%D and should be saved somewhere (for instance in a file) for
+%D future reference. The second argument of
+%D \type {\gotonextinternal} takes such a saved number. One can
+%D turn on tracing these references, in which case the
+%D references are a bit more verbose.
+
+\newcount\locationcount
+
+\newif\iftraceinternalreferences
+\newif\ifinternalnamedreferences \internalnamedreferencestrue
+
+\def\nextinternalreference
+  {\the\locationcount}
+
+\def\thisisnextinternal#1%
+  {\global\advance\locationcount \plusone
+   \ifinternalnamedreferences
+     \thisisdestination{\s!aut\iftraceinternalreferences:#1\fi:\nextinternalreference}%
+   \fi}
+
+% beter:
+%
+% \def\thisisnextinternal#1%
+%   {\iftrialtypesetting\else
+%      \global\advance\locationcount \plusone
+%      \ifinternalnamedreferences
+%        \thisisdestination{\s!aut\iftraceinternalreferences:#1\fi:\nextinternalreference}%
+%      \fi
+%    \fi}
+
+\def\gotonextinternal#1#2#3#4%
+  {\ifinternalnamedreferences
+     \gotodestination\empty\empty{\s!aut\iftraceinternalreferences:#1\fi:#2}{#3}{#4}%
+   \else
+     \gotorealpage\empty\empty{#3}{#4}%
+   \fi}
+
+%D We already went through a lot of problems to sort out what
+%D kind of reference we're dealing with. Sorting out the user
+%D supplied cross references (show/goto this or that) as well
+%D as user supplied system references (invoke this or that) is
+%D already taken care of in the test routine, but we still have
+%D to direct the request to the right (first) routine.
+
+\def\gotolocation% #1#2%
+  {\ifx\currentreferencespecial\empty
+     \ifx\currentouterreference\empty
+       \ifnum\currentreferencetype<2
+         \@EA\@EAEAEA\@EA\gotoinnerlocation
+       \else
+         \@EA\@EAEAEA\@EA\gotosystemlocation
+       \fi
+     \else
+       \@EAEAEA\gotoouterlocation
+     \fi
+   \else
+     \@EA\gotospeciallocation
+   \fi} % {#1}{#2}
+
+%D An inner reference refers to some place in the document
+%D itself.
+
+\def\gotoinnerlocation#1% #2%
+  {\gotodestination\empty\empty
+     {\referenceprefix\currentinnerreference}\currentrealreference} % {#2}
+
+%D The outer location refers to another document, specified as
+%D file or \URL.
+
+\def\gotoouterlocation#1#2% % page checken!
+  {\bgroup
+   \let\referenceprefix\empty
+   \setouterlocation\currentouterreference
+   \ifx\currentinnerreference\empty
+     \gotorealpage
+       \otherURL\otherfile1{#2}%
+   \else
+     \gotodestination
+       \otherURL\otherfile\currentinnerreference\currentrealreference{#2}%
+   \fi
+   \egroup}
+
+%D Special locations are those that are accessed by saying
+%D things like:
+%D
+%D \starttyping
+%D \goto{calculate total}[JS(summarize{10,23,56}]
+%D \stoptyping
+%D
+%D After several intermediate steps this finally arrives at
+%D the next macro and expands into (simplified):
+%D
+%D \starttyping
+%D \gotoJSlocation{total{summarize{10,23,56}}}{calculate total}
+%D \stoptyping
+%D
+%D The first argument is the full reference, the second one
+%D is the text, in some kind of manipulated form. In practice
+%D we split references, so we get:
+%D
+%D \starttyping
+%D \gotoJSlocation{summarize{10,23,56}}{calculate}
+%D \gotoJSlocation{summarize{10,23,56}}{total}
+%D \stoptyping
+%D
+%D where \type{calculate} and \type{total} are colored, boxed
+%D or whatever \type{\goto} is told to do.
+%D
+%D The macro \type{\gotoJSlocation} can use \type
+%D {\currentreferenceoperation} (in our example
+%D \type{summarize}) and \type{\currentreference} (here
+%D being \type {10,23,56}) to perform its task.
+
+\def\gotospeciallocation
+  {\executeifdefined{goto\currentreferencespecial location}\gobbleoneargument}
+
+%D Such special macros can be defined by:
+
+\def\definespeciallocation#1%
+  {\setvalue{goto#1location}}
+
+%D The associated test is to be defined by:
+
+\def\definespecialtest#1%
+  {\setvalue{\s!do:\v!test:#1}}
+
+%D This \type{\def} alike macro is to be used as:
+%D
+%D \starttyping
+%D \definespeciallocation{JS}#1#2{... #1 ... #2 ...}
+%D \stoptyping
+%D
+%D In module \type {java-ini} one can see that \type
+%D {\gotoJSlocation} looks much like the previous goto
+%D definitions.
+
+%D A system location is not always a location, but for the
+%D consistency we also consider actions as such.
+
+\def\gotosystemlocation
+  {\csname\r!syst\the\currentreferencetype\endcsname}
+
+\def\definesystemreferencehandler#1#2%
+  {\setgvalue{\r!syst\the#1}{#2}}
+
+%D In this module we define three system references: one for
+%D handling navigational, viewer specific, commands, another
+%D for jumping to special pages, like the first or last one,
+%D and a third reference for linking tree like lists, like
+%D tables of contents. The latter two adapt themselves to the
+%D current state.
+
+\definesystemreferencehandler \rt!exec \handleexecreference
+\definesystemreferencehandler \rt!page \handlepagereference
+\definesystemreferencehandler \rt!list \handlelistreference
+
+\def\handleexecreference#1%
+  {\checkexecutecommand\currentdatareference\currentreferencearguments
+   \executecommand\currentdatareference\currentreferencearguments}
+
+\def\handlepagereference#1%
+  {\gotorealpage\empty\empty\currentdatareference}
+
+\def\handlelistreference#1% is deze nog echt nodig?
+  {\gotodestination\empty\empty\currentdatareference{\getvalue{\currentdatareference}}}
+
+%D \macros
+%D   {setexecutecommandcheck}
+%D
+%D In case a command action needs to do some checking in
+%D advance, one can assign an check function by:
+%D
+%D \starttyping
+%D \setexecutecommandcheck{startsound}\checksoundtrack
+%D \stoptyping
+
+\def\setexecutecommandcheck#1#2% #2 permits \first \second
+  {\setvalue{\s!do:\s!do:#1}{#2}}
+
+\def\checkexecutecommand#1#2% evt geen #1 en #2
+  {\ifx#2\empty \else \ifcsname\s!do:\s!do:#1\endcsname
+     \@EA\let\@EA\docheckexecutecommand\csname\s!do:\s!do:#1\endcsname
+     \rawprocesscommalist[#2]\docheckexecutecommand
+   \fi \fi }
+
+%D Command references (in dutch, english, german of
+%D whatever interface language) are translated into a bit
+%D shorter reference (\type{close}) and passed to the
+%D special driver (using \type{\executecommand}).
+
+% better: [action(name)] and \definereference[name][action(name)]
+
+\setglobalsystemreference \rt!exec \v!CloseDocument    {close}
+\setglobalsystemreference \rt!exec \v!ExitViewer       {exit}
+\setglobalsystemreference \rt!exec \v!FirstPage        {first}
+\setglobalsystemreference \rt!exec \v!LastPage         {last}
+\setglobalsystemreference \rt!exec \v!NextJump         {forward}
+\setglobalsystemreference \rt!exec \v!NextPage         {next}
+\setglobalsystemreference \rt!exec \v!PauseMovie       {pausemovie}
+\setglobalsystemreference \rt!exec \v!PauseSound       {pausesound}
+\setglobalsystemreference \rt!exec \v!PauseRendering   {pauserendering}
+\setglobalsystemreference \rt!exec \v!PreviousJump     {backward}
+\setglobalsystemreference \rt!exec \v!PreviousPage     {previous}
+\setglobalsystemreference \rt!exec \v!PrintDocument    {print}
+\setglobalsystemreference \rt!exec \v!SaveForm         {exportform}
+\setglobalsystemreference \rt!exec \v!LoadForm         {importform}
+\setglobalsystemreference \rt!exec \v!ResetForm        {resetform}
+\setglobalsystemreference \rt!exec \v!ResumeMovie      {resumemovie}
+\setglobalsystemreference \rt!exec \v!ResumeSound      {resumesound}
+\setglobalsystemreference \rt!exec \v!ResumeRendering  {resumerendering}
+\setglobalsystemreference \rt!exec \v!SaveDocument     {save}
+\setglobalsystemreference \rt!exec \v!SaveNamedDocument{savenamed}
+\setglobalsystemreference \rt!exec \v!OpenNamedDocument{opennamed}
+\setglobalsystemreference \rt!exec \v!SearchDocument   {search}
+\setglobalsystemreference \rt!exec \v!SearchAgain      {searchagain}
+\setglobalsystemreference \rt!exec \v!StartMovie       {startmovie}
+\setglobalsystemreference \rt!exec \v!StartSound       {startsound}
+\setglobalsystemreference \rt!exec \v!StartRendering   {startrendering}
+\setglobalsystemreference \rt!exec \v!StopMovie        {stopmovie}
+\setglobalsystemreference \rt!exec \v!StopSound        {stopsound}
+\setglobalsystemreference \rt!exec \v!StopRendering    {stoprendering}
+\setglobalsystemreference \rt!exec \v!SubmitForm       {submitform}
+\setglobalsystemreference \rt!exec \v!ToggleViewer     {toggle}
+\setglobalsystemreference \rt!exec \v!ViewerHelp       {help}
+\setglobalsystemreference \rt!exec \v!HideField        {hide}
+\setglobalsystemreference \rt!exec \v!ShowField        {show}
+\setglobalsystemreference \rt!exec \v!GotoPage         {gotopage}
+\setglobalsystemreference \rt!exec \v!GotoPage         {gotopage}
+\setglobalsystemreference \rt!exec \v!Query            {query}
+\setglobalsystemreference \rt!exec \v!QueryAgain       {queryagain}
+\setglobalsystemreference \rt!exec \v!FitWidth         {fitwidth}
+\setglobalsystemreference \rt!exec \v!FitHeight        {fitheight}
+
+\setglobalsystemreference \rt!exec \v!ShowThumbs       {thumbnails}
+\setglobalsystemreference \rt!exec \v!ShowBookmarks    {bookmarks}
+
+%D Executing the command looks alike the previous goto macros.
+
+\def\executecommand#1#2#3%
+  {\iflocation
+     \dohandlegoto
+       {#3}%
+       {\dostartexecutecommand\buttonwidth\buttonheight{#1}{#2}}%
+       {\dostopexecutecommand}%
+   \else
+     {#3}%
+   \fi}
+
+%D We could have done without the short tags and thereby saving
+%D some tokens, but the current approach leaves room for future
+%D extensions.
+
+%D It is possible to disable the writing of references to the
+%D utility file by setting:
+
+\newif\ifreferencing \referencingtrue
+
+%D One can also activate an automatic prefix mechanism. By
+%D setting the \type{\prefix} variable to \type{+}, the prefix
+%D is incremented, when set to \type{-} or empty, the prefix is
+%D reset. Other values become the prefix.
+
+\newcount\prefixcounter
+
+%D These settings are accomplished by:
+%D
+%D \showsetup{setupreferencing}
+%D
+%D In interactive documents verbose references don't always
+%D make sense (what is a page number in an unnumbered
+%D document). By setting the \type{interaction} variable, one
+%D can influences the way interactive references are set.
+
+% \newif\ifreferencestrut % some day an option
+
+\def\setupreferencing
+  {\dosingleargument\dosetupreferencing}
+
+\def\dosetupreferencing[#1]%
+  {\getparameters
+     [\??rf]
+     [\c!prefix=\s!unknown,#1]%
+   \processaction
+     [\@@rfstate]
+     [  \v!stop=>\referencingfalse,
+       \v!start=>\referencingtrue]%
+   \processaction
+     [\@@rfinteraction]
+     [   \v!all=>\let\dowantedreference\docompletereference,
+       \v!label=>\let\dowantedreference\dolabelonlyreference,
+        \v!text=>\let\dowantedreference\dotextonlyreference,
+      \v!symbol=>\let\dowantedreference\dosymbolreference]%
+   \chardef\autocrossfilereferences\zerocount
+   \processaction
+     [\@@rfautofile]
+     [  \v!yes=>\chardef\autocrossfilereferences\plusone,
+       \v!page=>\chardef\autocrossfilereferences\plustwo]%
+   \chardef\referencefilecase\zerocount
+   \processaction[\@@rfconvertfile]
+     [  \v!yes=>\chardef\referencefilecase\plusone,
+        \v!big=>\chardef\referencefilecase\plusone,
+      \v!small=>\chardef\referencefilecase\plustwo]%
+  %\doifelse\@@rfstrut\v!yes % some day an option
+  %  \referencetruttrue\referencestrutfalse
+   \setupreferenceprefix[\@@rfprefix]%
+   \doifelse\@@rfglobal\v!yes
+     {\settrue \autoglobalfilereferences}
+     {\setfalse\autoglobalfilereferences}}
+
+\def\incrementreferenceprefix{+}
+\def\decrementreferenceprefix{-}
+
+\def\setupreferenceprefix[#1]%
+  {\edef\@@rfprefix{#1}%
+   \ifx\@@rfprefix\empty
+     \let\referenceprefix\empty
+   \else\ifx\@@rfprefix\incrementreferenceprefix
+     \advance\prefixcounter \plusone % should be global
+     \edef\referenceprefix{\the\prefixcounter:}%
+     \let\@@rfprefix\s!unknown
+   \else\ifx\@@rfprefix\decrementreferenceprefix
+     \let\referenceprefix\empty
+     \let\@@rfprefix\s!unknown
+   \else\ifx\@@rfprefix\s!unknown
+     % forget about it
+   \else
+     \edef\referenceprefix{\@@rfprefix:}%
+   \fi\fi\fi\fi}
+
+%D \macros
+%D   {handlereferenceactions,
+%D    collectreferenceactions}
+%D
+%D Sometimes we need to pass the actions connected to
+%D references to variables instead of rectangular areas on
+%D which one can click. The next macro collects the actions
+%D and passes them to a handle. This is a rather dreadfull
+%D hack!
+%D
+%D \starttyping
+%D \handlereferenceactions{references}\handle
+%D \stoptyping
+%D
+%D So, \type {\handle} does the final job, which in for
+%D instance the \PDF\ drivers comes down to doing something
+%D with \type {\lastPDFaction}.
+
+\newif\ifcollectreferenceactions
+
+\def\handlereferenceactions#1#2%
+  {\doifsomething{#1}
+     {\bgroup
+      \collectreferenceactionstrue
+      \@EA\doifreferencefoundelse\@EA{#1}
+        {\gotolocation{#1}{}\ifsecondaryreference\else#2\fi}
+        {\unknownreference{#1}}%
+      \egroup}}
+
+%D The most straightforward way of retrieving references is
+%D using \type{\ref}. Consider the reference:
+%D
+%D \startbuffer
+%D \reference[my ref]{{Look}{Here}{I am}}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+%D
+%D We can ask for upto five reference components:
+%D
+%D \startbuffer
+%D user page reference:  \ref[p][my ref]
+%D text reference:       \ref[t][my ref]
+%D real page reference:  \ref[r][my ref]
+%D sub text reference:   \ref[s][my ref]
+%D extra text reference: \ref[e][my ref]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D And get back:
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+\def\ref{\dodoubleargument\doref}
+
+\def\reftypep{\currentpagereference}
+\def\reftypet{\currenttextreference}
+\def\reftyper{\currentrealreference}
+\def\reftypes{\currentsubtextreference}
+\def\reftypee{\currentsubsubtextreference}
+
+\def\doref[#1][#2]%
+  {\ifsecondargument
+     \doifreferencefoundelse{#2}
+       {\executeifdefined{reftype#1}\reftypep}
+       {\unknownreference{#2}\dummyreference}%
+   \else
+     \dummyreference
+   \fi}
+
+%D We can typeset a reference using \type{\in}, \type{\at} and
+%D \type{\about} and goto specific locations using
+%D \type{\goto}. The last one does not make that much sense in
+%D a paper document. To complicate things, \PLAIN\ \TEX\ also
+%D implements an \type {\in} but fortunately that one only
+%D makes sense in math mode.
+
+%D --- VANAF HIER NOG VERENGELSEN ---
+
+%\let\donormalin  =\in
+%\let\donormalover=\over % about/oppassen beter nederlands dan engels!
+%
+%\def\in%
+%  {\ifmmode
+%     \expandafter\donormalin
+%   \else
+%     \expandafter\doinatreference\expandafter\currenttextreference
+%   \fi}
+
+% we need to bypass math tokens
+
+% \let\normalover \over
+
+\definecommand in    {\dospecialin}
+\definecommand at    {\dospecialat}
+\definecommand about {\dospecialabout}
+\definecommand from  {\dospecialfrom}
+\definecommand over  {\dospecialabout} % needed here, else math problems
+
+\unexpanded\def\dospecialin{\doinatreference\currenttextreference}
+\unexpanded\def\dospecialat{\doinatreference\currentpagereference}
+
+\unexpanded\def\dospecialabout[#1]%
+  {\dontleavehmode
+   \bgroup
+   \def\thecurrentsubtextreference
+     {\limitatetext\currentsubtextreference\@@rfwidth\unknown}%
+  %\leaveoutervmode % no
+   \@@rfleft
+   \doifreferencefoundelse{#1}
+     {\let\crlf\space
+      \let\\\space
+      \let\dogotofixed\dogotospace
+      \dogotospace{\thecurrentsubtextreference}[#1]}
+     {\unknownreference{#1}\dummyreference}%
+   \@@rfright
+   \referenceinfo{<}{#1}%
+   \egroup}
+
+%D Typesetting the reference is a bit more complicated than one
+%D would at first sight expect. This is due to the fact that we
+%D distinguish three (five) alternative calls:
+%D
+%D \placefigure
+%D   [here][three calls]
+%D   {Three alternatives reference calls.}
+%D   {\startcombination[1*3]
+%D      {\framed{\type{ \in }}} {a}
+%D      {\framed{\type{ \at }}} {b}
+%D      {\framed{\type{\goto}}} {c}
+%D    \stopcombination}
+%D
+%D \startbuffer
+%D \in figure[fig:three calls]
+%D \in{figure}[fig:three calls]
+%D \in figure a[fig:three calls]
+%D \in{figure}{a}[fig:three calls]
+%D figure~\in[fig:three calls]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This turns up as:
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D
+%D The dual \type{{}} results in a split reference. In a
+%D document meant for paper, one is tempted to use the last
+%D (most straightforward) alternative. When a document is also
+%D meant voor electronic distribution, the former alternatives
+%D have preference, because everything between the \type{\in}
+%D and~\type{[} becomes active (and when asked for, typeset
+%D in a different color and typeface).
+
+\def\doinatreference#1%
+  {\doifnextoptionalelse{\dodoinatreference{#1}{}}{\dodoinatreference{#1}}}
+
+\def\dodoinatreference#1%
+  {\def\dododoinatreference{\dodododoinatreference{#1}}%
+   \futurelet\next\dododoinatreference}
+
+% overloaded
+%
+% \def\dodododoinatreference#1#2#3[#4]%
+%   {\ifx\next\bgroup
+%      \dododododoinatreference{#1\ignorespaces#3}{#2}[#4]%
+%    \else
+%      \dododododoinatreference{#1}{#2#3}[#4]%
+%    \fi}
+
+%D We arrived at the last step. Before we do the typesetting,
+%D we forget all previous (paragraph bound) settings and make
+%D sure that we remain in horizontal mode. Next we choose
+%D among the several representations.
+
+% overloaded
+%
+% \def\dododododoinatreference#1#2[#3]%
+%   {\dontleavehmode
+%    \bgroup
+%    \forgetall
+%   %\leaveoutervmode
+%    \doifreferencefoundelse{#3}
+%      {\bgroup
+%       \let\ignorespaces\empty % rather dirty but ok
+%       \doifelsenothing{#1}
+%         {\egroup\dosymbolreference{#1}{#2}[#3]}
+%         {\egroup\dowantedreference{#1}{#2}[#3]}}
+%      {\dounknownreference{#1}{#2}[#3]}%
+%    \referenceinfo{<}{#3}%
+%    \egroup}
+
+%D The previously discussed setup macro lets us specify the
+%D representation of references. A symbol reference does not
+%D show the specific data, like the number of a figure, but
+%D shows one of: \hbox {$^\goforwardcharacter$
+%D $^\gobackwardcharacter$ $^\gonowherecharacter$}, depending
+%D on the direction to go.
+
+\def\dosymbolreference#1#2[#3]%
+  {\bgroup
+   \setupsymbolset[\@@iasymbolset]%
+   \removelastskip
+   \ifx\currentreferencespecial\empty
+     \ifx\currentouterreference\empty
+       \ifnum0\currentrealreference=\zerocount
+         \ifhmode\strut\high{\symbol[\v!nowhere]}\fi
+       \else\ifnum0\currentrealreference>\realpageno
+         \dodosymbolreference{#2}{\high{\symbol[\v!next]}}%
+       \else\ifnum0\currentrealreference<\realpageno
+         \dodosymbolreference{#2}{\high{\symbol[\v!previous]}}%
+       \else
+         \ifhmode\strut\high{\symbol[\v!nowhere]}\fi
+       \fi\fi\fi
+     \else
+       \gotoouterlocation{#3}{\showlocation{\high{\symbol[\v!somewhere]}}}%
+     \fi
+   \else
+     \gotospeciallocation{#3}{\showlocation{\high{\symbol[\v!somewhere]}}}%
+   \fi
+   \egroup}
+
+\def\dodosymbolreference#1#2%
+  {#1\hbox{\gotorealpage\empty\empty\currentrealreference
+    {\dolocationattributes\??ia\c!style\c!color{#2}}}}
+
+%D The other alternatives just conform their names: only the
+%D label, only the text, or the label and the text.
+
+\def\dounknownreference#1#2[#3]%
+  {\unknownreference{#3}\dotextprefix{#2}\dummyreference}%
+
+\def\docompletereference#1#2[#3]%
+  {\iflocationsplit
+     \doifsomespaceelse{#2}\dogotospace\dogotofixed{\dotextprefix{#2}#1}[#3]%
+   \else
+     \dogotofixed{\dotextprefix{#2}#1}[#3]%
+   \fi}
+
+\def\dolabelonlyreference#1#2[#3]%
+  {\doifsomespaceelse{#2}
+     {\doifsomething{#2}{\dogotospace{#2}[#3]}}
+     {\dogotofixed{\dotextprefix{#2}}[#3]}}
+
+\def\dotextonlyreference#1#2[#3]%
+  {\dotextprefix{#2}\dogotofixed{#1}[#3]}
+
+\let\dowantedreference=\docompletereference
+
+%D \macros
+%D   {definereferenceformat}
+%D
+%D The next few macros were made for for David Arnold and Taco
+%D Hoekwater. They can be used for predefining reference
+%D texts, and thereby stimulate efficiency.
+%D
+%D [more documentation will be added]
+%D
+%D \starttyping
+%D \definereferenceformat[informula]  [left=(,right=),text=formula]
+%D \definereferenceformat[informulas] [left=(,right=),text=formulas]
+%D \definereferenceformat[andformula] [left=(,right=),text=and]
+%D \definereferenceformat[andformulas][left=(,right=),text=and]
+%D
+%D \informula [b] and \informula [for:c]
+%D the \informula {formulas}[b] \informula {and} [for:c]
+%D the \informulas {formulas}[b] \informula {and} [for:c]
+%D the \informulas [b] \informula {en} [for:c]
+%D the \informulas [b] \andformula [for:c]
+%D \stoptyping
+%D
+%D Instead of a text, one can specify a label, which should
+%D be defined with \type {\setuplabeltext}.
+
+\def\definereferenceformat%
+  {\dodoubleargument\dodefinereferenceformat}
+
+\def\dodefinereferenceformat[#1][#2]%
+  {\iffirstargument
+     \getparameters[\??rf#1]
+       [\c!left=,  % of the number
+        \c!right=, % of the number
+        \c!text=,  % before the number
+        \c!label=,  % can be {left}{right}
+        \c!command=\in,
+        #2]%
+     \unexpanded\setvalue{#1}%
+       {\dontleavehmode\doexecutereferenceformat{#1}}%
+   \fi}
+
+\def\noexecutelabelreferenceformat#1%
+  {\doifvaluesomething{\??rf#1\c!text}
+     {\gdef\textofreference{\csname\??rf#1\c!text\endcsname}}%
+   \csname\??rf#1\c!command\endcsname}
+
+\def\doexecutelabelreferenceformat#1%
+  {\csname\??rf#1\c!command\endcsname
+     {\leftlabeltext {\csname\??rf#1\c!label\endcsname}}%
+     {\rightlabeltext{\csname\??rf#1\c!label\endcsname}}}
+
+\def\doexecutereferenceformat#1%
+  {\gdef\leftofreference {\csname\??rf#1\c!left \endcsname}%
+   \gdef\rightofreference{\csname\??rf#1\c!right\endcsname}%
+   \global\let\textofreference\empty % otherwise ~ added
+   \doifelsevaluenothing{\??rf#1\c!label}
+     \noexecutelabelreferenceformat\doexecutelabelreferenceformat{#1}}
+
+\let\leftofreference \relax
+\let\rightofreference\relax
+\let\textofreference \relax
+
+\def\dodododoinatreference#1#2#3[#4]% \removeunwantedspaces added june 2004
+  {\ifx\next\bgroup                 % but removed later, fails on metafun
+     \dododododoinatreference
+      % fails on metafun  {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
+       {\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
+   \else
+     \dododododoinatreference
+       {\leftofreference#1\rightofreference}{#2#3}[#4]%
+   \fi}
+
+\def\dododododoinatreference#1#2[#3]%
+  {\dontleavehmode   % replaces \leaveoutervmode
+   \bgroup
+   \forgetall
+   \postponenotes
+   %\leaveoutervmode % replaced by \dontleavehmode
+   \doifreferencefoundelse{#3}
+     {\bgroup
+      \let\ignorespaces    \empty % rather dirty trick, but ok
+      \let\leftofreference \empty % the same, again ok
+      \let\rightofreference\empty % and once more
+      \def\textofreference {#2}%  % temporary value
+      \ifx\textofreference\empty  % simple expansion
+       %\doifelsenothing{#1}
+       %  {\egroup\dosymbolreference{#1}{\textofreference}[#3]}
+       %  {\egroup\dowantedreference{#1}{\textofreference}[#3]}%
+        \doifelsenothing{#1}%
+          {\egroup\dosymbolreference}%
+          {\egroup\dowantedreference}%
+          {#1}{\textofreference}[#3]%
+      \else
+       %\doifelsenothing{#1}
+       %  {\egroup\dosymbolreference{#1}{#2}[#3]}
+       %  {\egroup\dowantedreference{#1}{#2}[#3]}%
+        \doifelsenothing{#1}%
+          {\egroup\dosymbolreference}%
+          {\egroup\dowantedreference}%
+          {#1}{#2}[#3]%
+      \fi}
+     {\dounknownreference{#1}{#2}[#3]}%
+   \referenceinfo<{#3}%
+   \global\let\leftofreference \empty
+   \global\let\rightofreference\empty
+   \global\let\textofreference \empty
+   \egroup}
+
+%D In interactive documents going to a specific location is not
+%D bound to cross references. The \type{\goto} commands can be
+%D used to let users access another part of the document. In
+%D this respect, interactive tables of contents and registers
+%D can be considered goto's. Because in fact a \type{\goto} is
+%D just a reference without reference specific data, the
+%D previous macros are implemented using the goto
+%D functionality.
+%D
+%D \showsetup{goto}
+%D
+%D One important chaacteristic is that the first argument of
+%D \type{\goto} (and therefore \type{\at} and \type{\in} is
+%D split at spaces. This means that, although hyphenation is
+%D prevented, long references can cross line endings.
+
+
+\def\dogoto#1[#2]%
+  {\dontleavehmode
+   \bgroup
+   \postponenotes
+   \doifreferencefoundelse{#2}
+     {\doifelsenothing{#1}
+        {\dosymbolreference{}{}[#2]}
+        {\dogotospace{#1}[#2]}}
+     {\unknownreference{#2}#1\relax}% \relax catches lookahead
+   \egroup
+   \referenceinfo{<}{#2}}
+
+\unexpanded\def\goto#1#2%
+  {\dogoto{#1}#2}
+
+\newif\ifsharesimilarreferences \sharesimilarreferencestrue
+\newcount\similarreference % 0=noppes 1=create/refer 2,3,..=refer
+
+\def\dogotospace#1[#2]%
+  {\iflocationsplit
+     \ifsecondaryreference\setbox0\hbox\fi % due to space insertion
+       {\let\dogotospace\dogotofixed
+        \iflocation
+          \def\processisolatedword##1%
+            {\ifisolatedwords\ifsharesimilarreferences
+               \global\advance\similarreference \plusone
+             \fi\fi
+             \hbox{\gotolocation{#2}{##1\presetgoto}}}%
+          \doattributes\??ia\c!style\c!color
+            {\processisolatedwords{#1}\processisolatedword}%
+        \else
+          #1\relax % \relax prevents #1's next macros from gobbling \fi
+        \fi}%
+   \else
+     \iflocation
+       \doattributes\??ia\c!style\c!color
+         {\gotolocation{#2}{#1\presetgoto}}%
+     \else
+       #1\relax % \relax prevents #1's next macros from gobbling \fi
+     \fi
+   \fi
+   \global\similarreference\zerocount}
+
+\def\dogotofixed#1[#2]%
+  {{\iflocation
+      \hbox{\gotolocation{#2}{\doattributes\??ia\c!style\c!color
+        {#1\presetgoto}}}%
+    \else
+      #1%
+    \fi}}
+
+%D In case the auto split feature is not needed or even not
+%D even wanted, \type{\gotobox} can be used.
+
+%D --- NOG IN HANDLEIDING ---
+
+\unexpanded\def\gotobox#1[#2]%
+  {\dontleavehmode
+   \bgroup
+   \locationstrutfalse
+  %\leaveoutervmode
+   \doifreferencefoundelse{#2}
+     {\dogotofixed{#1}[#2]}
+     {\hbox{\unknownreference{#2}#1}}%
+   \referenceinfo{<}{#2}%
+   \egroup}
+
+%D An reference to another document can be specified as a file
+%D or as an \URL. Both are handled by the same mechanism and
+%D can be issued by saying something like:
+%D
+%D \starttyping
+%D \goto[dictionary::the letter a]
+%D \stoptyping
+%D
+%D The macros that are responsible for handling these
+%D references, use the next six variables:
+
+\let\otherlabel   = \empty
+\let\fileprefix   = \empty
+\def\otherfile      {\jobname}
+\let\otherURL     = \empty
+\let\otherprefix  = \empty
+\let\dowithdocdes = \empty
+
+%D One can imagine that many references to such a dictionary
+%D are made, so in most cases such a document reference in an
+%D indirect one.
+%D
+%D \showsetup{useexternaldocument}
+%D
+%D For example:
+%D
+%D \starttyping
+%D \useexternaldocument
+%D   [dictionary][engldict]
+%D   [The Famous English Dictionary]
+%D \stoptyping
+%D
+%D The next macro implements these relations, and also take
+%D care of loading the document specific references.
+
+\def\useexternaldocument%
+  {\dotripleargument\douseexternaldocument}
+
+\def\douseexternaldocument[#1][#2][#3]%
+  {\bgroup
+   \ifsecondargument
+     \doifelsenothing{#1}
+       {\douseexternaldocument[#2][#2][#3]}
+       {\doifelsenothing{#3}
+          {\douseexternaldocument[#1][#2][#2]}
+          {\doifsomething{#2}
+             {\setgvalue{\v!file:::#1}{\doexternaldocument{}{#2}{#3}}% just \do
+              \doif\@@rfstate\v!start
+                {\doifparentfileelse{#2}
+                   {\showmessage\m!references{21}{#2}}
+                   {\dodouseexternaldocument{#1}{#2}}}}}}%
+   \else
+     \dodouseexternaldocument{#1}{#1}%
+   \fi
+   \egroup}
+
+\def\dodouseexternaldocument#1#2%
+  {\bgroup % prevents wrong loading of \jobname
+     \def\fileprefix{#1::}%
+     \let\setglobalcrossreference\setoutercrossreference
+     \usereferences[#2]%
+   \egroup % when called nested
+   \showmessage\m!references{21}{#2}}
+
+%D The \URL\ alternative takes four arguments:
+%D
+%D \showsetup{useURL}
+%D
+%D like:
+%D
+%D \starttyping
+%D \useURL
+%D   [dictionary][http://www.publisher.com/public][engldict]
+%D   [The Famous English Dictionary]
+%D \stoptyping
+%D
+%D Several specifications are possible:
+%D
+%D \starttyping
+%D \useURL [id] [url] [file] [description]
+%D \useURL [id] [url] [file]
+%D \useURL [id] [url]
+%D \stoptyping
+%D
+%D This time we don't load the references when no file is
+%D specified. This is logical when one keeps in mind that a
+%D valid \URL\ can also be a mail address.
+
+\def\useURL
+  {\bgroup
+   \protectlabels
+   \catcode`\#=\@@other\catcode`\%=\@@other\catcode`\/=\@@other
+   \catcode`\_=\@@other\catcode`\~=\@@other\catcode`\:=\@@other
+   \dodoubleempty\douseURL}
+
+\def\douseURL[#1][#2]%
+  {\egroup\doquadrupleempty\dodouseURL[#1][#2]}
+
+\let\useurl\useURL
+
+\def\dodouseURL[#1][#2][#3][#4]% to be redone: not too tricky redefs ad reuse
+  {\iffirstargument
+     \iffourthargument\setgvalue{\v!file:::#1}{\doexternaldocument{#2}{#3}{#4}}\else
+     \ifthirdargument \setgvalue{\v!file:::#1}{\doexternalurl     {#2}{#3}{#1}}\else
+     \ifsecondargument\setgvalue{\v!file:::#1}{\doexternalurl     {#2}{}  {#1}}\fi\fi\fi
+   \fi}
+
+\def\doexternalurl#1#2#3%
+  {\bgroup
+   \doifsomething\@@urstyle{\let\@@iastyle\@@urstyle\let\@@urstyle\empty}%
+   \doifsomething\@@urcolor{\let\@@iacolor\@@urcolor\let\@@urcolor\empty}%
+   \doexternaldocument{#1}{#2}{\url[#3]}%
+   \egroup}
+
+\def\doifurldefinedelse #1{\doifdefinedelse{\v!file:::#1}}
+\def\doiffiledefinedelse#1{\doifdefinedelse{\v!file:::#1}}
+
+%D \macros
+%D   {url,setupurl}
+%D
+%D We also have: \type{\url} for directly calling the
+%D description. So we can say:
+%D
+%D \starttyping
+%D \useURL [one] [http://www.test.nl]
+%D \useURL [two] [http://www.test.nl] [] [Some Site]
+%D
+%D \url[one] or \from[two] or \goto{Whatever Site}[URL(two)]
+%D \stoptyping
+%D
+%D An \URL\ can be set up with
+%D
+%D \showsetup{setupurl}
+
+\def\setupurl
+  {\dodoubleargument\getparameters[\??ur]}
+
+\unexpanded\def\url[#1]% slow
+  {\bgroup
+   \processaction
+     [\@@uralternative]
+     [  \v!none=>\chardef\urlsplitmode\zerocount,
+        \v!both=>\chardef\urlsplitmode\plusone,
+       \v!after=>\chardef\urlsplitmode\plustwo,
+      \v!before=>\chardef\urlsplitmode\plusthree]%
+   \doifelse\@@urspace\v!yes
+     {\setbetweenisolatedwords{\scratchskip\currentspaceskip\hskip\zeropoint\!!plus.2\scratchskip}}
+     {\setbetweenisolatedwords\allowbreak}%
+   \def\doexternaldocument##1##2##3{\hyphenatedurl{##1}}% awful hack
+   \dostartattributes\??ur\c!style\c!color{}%
+   \getvalue{\v!file:::#1}%
+   \dostopattributes
+   \egroup}
+
+%D This macro is hooked into a support macro, and thereby
+%D \URL's break ok, according to the setting of a switch,
+%D
+%D \startbuffer
+%D \useURL
+%D   [test]
+%D   [sentence_sentence%sentence#sentence~sentence/sentence//sentence:sentence.sentence]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Such an \URL\ is, depending on the settings, hyphenated as:
+%D
+%D \getbuffer
+%D
+%D \startlinecorrection
+%D \hbox to \hsize
+%D   {\hss\en
+%D    \setupreferencing[urlalternative=both]%
+%D    \vbox{\hsize.25cm\hbox{\bf both}\prewordbreak\url[test]}%
+%D    \hss
+%D    \setupreferencing[urlalternative=before]%
+%D    \vbox{\hsize.25cm\hbox{\bf before}\prewordbreak\url[test]}%
+%D    \hss
+%D    \setupreferencing[urlalternative=after]%
+%D    \vbox{\hsize.25cm\hbox{\bf after}\prewordbreak\url[test]}%
+%D    \hss}
+%D \stoplinecorrection
+%D
+%D By setting \type{urlspace=yes} one can get slightly better
+%D spacing when using very long \URL's.
+
+%D Many macro definitions ago we called for the auxiliary macro
+%D \type {\setouterlocation} and now is the time to define this
+%D one.
+
+\newconditional\forceURLlocation
+
+\def\setouterfilelocation#1#2#3%
+  {\edef\otherURL{#1}%
+   \edef\otherfile{#2}}%
+
+\def\setouterlocation#1%
+  {\ifcsname\v!file:::#1\endcsname
+     \let\doexternaldocument\setouterfilelocation % will change
+     \let\doexternalurl     \setouterfilelocation % will change
+     \csname\v!file:::#1\endcsname
+   \else
+     \ifconditional\forceURLlocation
+       \edef\otherURL{#1}%
+       \let\otherfile\empty
+     \else
+       \let\otherURL\empty
+       \edef\otherfile{#1}%
+     \fi
+   \fi
+   \setfalse\forceURLlocation
+   \doifparentfileelse\otherfile
+     {\let\otherURL\empty
+      \let\otherfile\empty
+      \global\let\otherlabel\empty
+      \let\otherprefix\empty}
+     {\xdef\otherlabel{#1}%
+      \edef\otherprefix{#1::}}}
+
+%D When defining the external source of information, one can
+%D also specify a suitable name (the last argument). This name
+%D can be called upon with:
+%D
+%D \showsetup{from}
+%D
+%D As can be expected, this macro used \type{\goto} to
+%D perform its task.
+
+\def\dospecialfrom % retest this one !
+  {\dosingleempty\dodospecialfrom}
+
+\def\dodospecialfrom[#1]%
+  {\dontleavehmode % added, but probably not needed
+   \bgroup
+   \protectlabels % needed for active french :'s
+   \iffirstargument
+     \edef\!!stringa{#1}%
+     \doifincsnameelse{::}\!!stringa\donothing{\edef\!!stringa{#1::}}%
+     \expanded{\redospecialfrom[\!!stringa]}%
+   \else
+     \expanded{\nodospecialfrom[\otherlabel]}%
+   \fi
+   \egroup}
+
+\def\redospecialfrom[#1::#2]%
+  {\ifcsname\v!file:::#1\endcsname
+     \def\doexternaldocument##1##2##3{\goto{##3}[#1::#2]}%
+     \csname\v!file:::#1\endcsname
+   \else
+     \tttf[#1]%
+   \fi}
+
+\def\nodospecialfrom[#1]%
+  {\ifcsname\v!file:::#1\endcsname
+     \def\doexternaldocument##1##2##3{##3}% different than ^
+     \csname\v!file:::#1\endcsname
+   \else
+     \tttf[#1]%
+   \fi}
+
+%D We also support:
+%D
+%D \starttyping
+%D \goto{some text}[file(identifier{location}]
+%D \stoptyping
+%D
+%D which is completely equivalent with
+%D
+%D \starttyping
+%D \goto{some text}[identifier::location]
+%D \stoptyping
+%D
+%D The fastest implementation would be:
+
+\definespecialtest\v!file    {\setfalse\forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!URL     {\settrue \forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!url     {\settrue \forceURLlocation\handlespecialFILEandURL}
+
+\definespeciallocation\v!file{\setfalse\forceURLlocation\handlespecialallocationFILEandURL}
+\definespeciallocation\v!URL {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
+\definespeciallocation\v!url {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
+
+\def\handlespecialFILEandURL
+  {\localdoifreferencefoundelse
+     {\currentreferenceoperation::\currentreferencearguments}}
+
+\def\handlespecialallocationFILEandURL
+  {\let\currentouterreference\currentreferenceoperation
+   \let\currentinnerreference\currentreferencearguments
+   \let\currentreferenceoperation\empty
+   \let\currentreferencearguments\empty
+   \gotoouterlocation}
+
+%D Now we have file references as special ones, it's rather
+%D logical to have the viewer specific ones available in a dual
+%D way too. At first glance we could do with:
+%D
+%D \starttyping
+%D \definespeciallocation\v!action
+%D   {\getreferenceelements\currentreferenceoperation
+%D    \handleexecreference}
+%D \stoptyping
+%D
+%D An better alternative, slower but error aware, is
+
+% \definespecialtest\v!actie
+%   {\localdoifreferencefoundelse\currentreferenceoperation}
+
+\definespecialtest\v!action % rather ugly action(whatever{argument})
+  {\expanded{\localdoifreferencefoundelse{\currentreferenceoperation
+     \ifx\currentreferencearguments\empty\else{\currentreferencearguments}\fi}}}
+
+\definespeciallocation\v!action
+  {\handleexecreference}
+
+%D So now we can say:
+%D
+%D \starttyping
+%D \goto{some action}[PreviousJump]
+%D \stoptyping
+%D
+%D as well as:
+%D
+%D \starttyping
+%D \goto{some text}[action(PreviousJump]
+%D \stoptyping
+
+%D A special case of references are those to programs. These,
+%D very system dependant references are implemented by abusing
+%D some of the previous macros.
+%D
+%D \showsetup{setupprograms}
+%D \showsetup{defineprogram}
+%D \showsetup{program}
+%D
+%D The latter gives access to the description of the program,
+%D being the last argument to the definition command.
+
+\def\setupprograms
+  {\dodoubleargument\getparameters[\??pr]}
+
+\def\dodefineprogram[#1][#2][#3]%
+  {\setgvalue{\v!program:::#1}{\doprogram{#2}{#3}}}
+
+\def\defineprogram
+  {\dotripleargument\dodefineprogram}
+
+\def\program#1[#2]%
+  {\bgroup
+   \ifcsname\v!program:::#2\endcsname
+     \def\doprogram##1##2{\goto{\doifelsenothing{#1}{##2}{#1}}[\v!program(#2)]}%
+     \csname\v!program:::#2\endcsname
+   \else
+     {\tttf[#2]}%
+   \fi
+   \egroup}
+
+% needs an update: program(abc{arg})
+
+\definespeciallocation\v!program#1#2%
+  {\bgroup
+   \iflocation
+     \ifcsname\v!program:::\currentreferenceoperation\endcsname
+       \def\doprogram##1##2{\def\@@programfile{##1}}%
+       \getvalue{\v!program:::\currentreferenceoperation}%
+     \else
+       \let\@@programfile\currentreferenceoperation
+     \fi
+     \defconvertedcommand\ascii\@@programfile
+     \dohandlegoto
+       {#2}%
+       {\dostartrunprogram\buttonwidth\buttonheight{\@@prdirectory\ascii}\currentreferencearguments}%
+       {\dostoprunprogram}%
+   \else
+     {#2}%
+   \fi
+   \egroup}
+
+%D As we can see, we directly use the special reference
+%D mechanism, which means that
+%D
+%D \starttyping
+%D \goto{some text}[program(name{args})]
+%D \stoptyping
+%D
+%D is valid.
+
+%D The next macro provides access to the actual pagenumbers.
+%D When documenting and sanitizing the original reference
+%D macros, I decided to keep the present meaning as well as to
+%D make this meaning available as a special reference method.
+%D So now one can use:
+%D
+%D \starttyping
+%D \gotopage{some text}[location]
+%D \gotopage{some text}[number]
+%D \gotopage{some text}[file::number]
+%D \stoptyping
+%D
+%D as well as:
+%D
+%D \starttyping
+%D \goto{some text}[page(location)]
+%D \goto{some text}[page(number)]
+%D \goto{some text}[file::page(number)]
+%D \stoptyping
+%D
+%D Here location is a keyword like \type{nextpage}.
+%D
+%D \showsetup{gotopage}
+
+\def\dodefinepage[#1][#2]%
+  {\setvalue{\v!page:::#1}{#2}}
+
+\def\definepage
+  {\dodoubleargument\dodefinepage}
+
+\definepage [\v!firstpage]      [\firstpage]
+\definepage [\v!previouspage]      [\prevpage]
+\definepage [\v!nextpage]    [\nextpage]
+\definepage [\v!lastpage]     [\lastpage]
+\definepage [\v!firstsubpage]   [\firstsubpage]
+\definepage [\v!previoussubpage]   [\prevsubpage]
+\definepage [\v!nextsubpage] [\nextsubpage]
+\definepage [\v!lastsubpage]  [\lastsubpage]
+\definepage [\v!first]            [\firstpage]
+\definepage [\v!previous]            [\prevpage]
+\definepage [\v!next]          [\nextpage]
+\definepage [\v!last]           [\lastpage]
+\definepage [\v!first\v!sub]      [\firstsubpage]
+\definepage [\v!previous\v!sub]      [\prevsubpage]
+\definepage [\v!next\v!sub]    [\nextsubpage]
+\definepage [\v!last\v!sub]     [\lastsubpage]
+
+%D Because we combine both methods, we have to take care of
+%D the \type{file::page(n)} as well as \type{page(file::n)}.
+
+\definespeciallocation\v!page#1#2% page(n) page(+n) page(-n)
+  {\iflocation
+     \ifx\currentouterreference\empty
+       \splitoffreference\currentreferenceoperation
+     \else
+       \let\currentinnerreference\currentreferenceoperation
+     \fi
+     \ifx\currentouterreference\empty
+       \doifinstringelse+\currentinnerreference{\edef\currentinnerreference{\the\numexpr\realpageno\currentinnerreference}}
+      {\doifinstring    -\currentinnerreference{\edef\currentinnerreference{\the\numexpr\realpageno\currentinnerreference}}}%
+       \doifnonzeropositiveelse\currentinnerreference\donothing{\edef\currentinnerreference{1}}%
+       \docheckrealreferencepage\currentinnerreference % new
+       \let\currentrealreference\currentinnerreference % handy to have this available
+       \gotorealpage\empty\empty\currentinnerreference{#2}%
+     \else
+       \setouterlocation\currentouterreference
+       \doifnonzeropositiveelse\currentinnerreference\donothing{\edef\currentinnerreference{\executeifdefined{\v!page:::\currentinnerreference}1}}%
+       \gotorealpage\otherURL\otherfile\currentinnerreference{#2}%
+     \fi
+   \else
+     {#2}%
+   \fi}
+
+\def\gotopage#1[#2]%
+  {\goto{#1}[\v!page(#2)]}
+
+%D A still very rudimentary|/|experimental forward|/|backward
+%D reference mechanism is provided by the macro \type{\atpage}:
+%D
+%D \starttyping
+%D ... \somewhere{backward text}{forward text}[someref] ...
+%D ... \atpage[someref] ...
+%D \stoptyping
+%D
+%D In future versions there will be more sophisticated
+
+%D support, also suitable for references to floating bodies.
+
+\unexpanded\def\somewhere#1#2#3[#4]% #3 gobbles space around #2
+  {\dontleavehmode
+  %\leaveoutervmode
+   \doifreferencefoundelse{#4}
+     {\ifforwardreference
+        \doifelsenothing{#1}
+          {\dosymbolreference{}{}[#4]}
+          {\dogotospace{#1}[#4]}%
+      \else
+        \doifelsenothing{#2}
+          {\dosymbolreference{}{}[#4]}
+          {\dogotospace{#2}[#4]}%
+      \fi}
+     {\unknownreference{#4}#1/#2}%
+   \referenceinfo{<}{#4}}
+
+\unexpanded\def\atpage[#1]%
+  {\dontleavehmode
+  %\leaveoutervmode
+   \doifreferencefoundelse{#1}
+     {\ifrealreferencepage
+        \ifforwardreference
+          \dogotofixed{\labeltext\v!hencefore}[#1]%
+        \else
+          \dogotofixed{\labeltext\v!hereafter}[#1]%
+        \fi
+      \else
+        \dogotofixed{\labeltexts\v!atpage\currentpagereference}[#1]%
+      \fi}
+     {\unknownreference{#1}%
+      \labeltexts\v!page\dummyreference}%
+   \referenceinfo{<}{#1}}
+
+%D We can cross link documents by using:
+%D
+%D \showsetup{coupledocument}
+%D
+%D like:
+%D
+%D \starttyping
+%D \coupledocument[print][somefile][chapter,section]
+%D \stoptyping
+%D
+%D After which when applicable, we have available the
+%D references:
+%D
+%D \starttyping
+%D \goto{print version}[print::chapter]
+%D \stoptyping
+%D
+%D and alike. The title placement definition macros have a
+%D key \type{file}, which is interpreted as the file to jump
+%D to, that is, when one clicks on the title.
+
+\let\crossdocumentreferences\empty
+\let\crossdocumentelements\empty
+
+\newif\ifautocrossdocument
+
+\def\docoupledocument[#1][#2][#3][#4]% is this :/- safe ?
+  {\ifthirdargument
+     \begingroup
+     \def\dolistelement##1##2##3##4##5##6% 2=aut 6=pag / 2 goes into text ref slot
+       {\global\utilitydonetrue %{Watch the braces here below!}
+        \setglobalcrossreference{{##1::\@@filterblocknumberpart[##5]}}{}{##6}{##2}}%
+     \def\usereferences[##1]%
+      %{\setbox0\vbox{\doutilities{#3}{##1}{#3}\relax\relax}}%
+       {\startnointerference
+        \doutilities{#3}{##1}{#3}\relax\relax
+        \stopnointerference}%
+     \douseexternaldocument[#1][#2][#4]%
+     \doglobal\addtocommalist{#1}\crossdocumentreferences
+     \def\docommand##1%
+       {\letgvalue{\??rf##1\c!state}\v!start % for fast checking
+        \doglobal\addtocommalist{##1}\crossdocumentelements}%
+     \processcommalist[#3]\docommand
+     \ifutilitydone
+       \global\autocrossdocumenttrue
+     \fi
+     \endgroup
+   \fi}
+
+\def\coupledocument
+  {\doquadrupleempty\docoupledocument}
+
+%D --- STRANGE HERE, BETTER IN CORE-NAV ---
+
+\def\checkcontrastreference#1%
+  {\ifnum\currentreferencetype=\rt!page\ifnum\currentdatareference=\realpageno
+     \doifdefined{#1\c!contrastcolor}{\setevalue{#1\c!color}{\getvalue{#1\c!contrastcolor}}}%
+   \fi\fi}
+
+\def\checkcontrastreference#1%
+  {\ifnum\currentreferencetype=\rt!page\relax\ifnum\currentdatareference=\realpageno
+     \copycsname#1\c!color\endcsname\csname#1\c!contrastcolor\endcsname
+   \fi\fi}
+
+%D Buttons are just what their names says: things that can be
+%D clicked (pushed) on. They are similar to \type{\goto},
+%D except that the text argument is not interpreted.
+%D Furthermore one can apply anything to them that can be done
+%D with \type{\framed}.
+%D
+%D \startbuffer
+%D \button[width=3cm,height=1.5cm]{Exit}[ExitViewer]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D gives
+%D
+%D \getbuffer
+%D
+%D This command is formally specified as:
+%D
+%D \showsetup{button}
+%D
+%D The characteristics can be set with:
+%D
+%D \showsetup{setupbuttons}
+
+\def\setupbuttons
+  {\dodoubleargument\getparameters[\??bt]}
+
+\definecomplexorsimpleempty\button
+
+\def\complexbutton
+  {\docomplexbutton\??bt}
+
+\presetlocalframed[\??bt]
+
+\long\def\docomplexbutton#1[#2]#3#4% get rid of possible space before [#4]
+  {\dodocomplexbutton#1[#2]{#3}#4} % #4 == [
+
+\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
+
+\long\def\dodocomplexbutton#1[#2]#3[#4]% #3 can contain [] -> {#3} later
+  {\bgroup
+   \doifvalue{#1\c!state}\v!stop\locationfalse
+   \iflocation
+     \resetgoto
+     \ConvertConstantAfter\doifelse{#3}\v!none\hphantom\hbox
+       {\doifelsenothing{#4}
+          {\setlocationboxnop#1[#2]{#3}[#4]}
+          {\doifreferencefoundelse{#4}
+             {\setlocationboxyes#1[#2]{#3}[#4]}
+             {\unknownreference{#4}%
+              \setlocationboxnop#1[#2]{#3}[#4]}}}%
+   \fi
+   \egroup}
+
+%D Interaction buttons, in fact a row of tiny buttons, are
+%D typically only used for navigational purposed. The next
+%D macro builds such a row based on a specification list.
+%D
+%D \startbuffer
+%D \interactionbuttons
+%D   [width=\hsize][page,PreviousJump,ExitViewer]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D gives
+%D
+%D \getbuffer
+%D
+%D Apart from individual entries, one can use \type{page} and
+%D \type {subpage} as shortcuts to their four associated buttons.
+%D The symbols are derived from the symbols linked to the
+%D entries.
+
+% does not work well with for instance SomeRef{whatever}
+
+\def\interactionbuttons
+  {\dodoubleempty\dointeractionbuttons}
+
+\def\dointeractionbuttons[#1][#2]% er is een verdeel macro \horizontalfractions
+  {\iflocation
+     % BUG: fails when frame=off; best is to rewrite this macro
+     \bgroup
+     \doif\@@ibstate\v!stop\locationfalse
+     \iflocation
+       \ifsecondargument
+         \setupinteractionbar[#1]%
+         \checkinteractionbar{1.5em}\v!broad\!!zeropoint % brrrrr
+         \setbox2\hbox
+           {\localframed[\??ib][\c!background=]{\symbol[\@@iasymbolset][\v!previouspage]}}%
+         \!!heighta\ht2 % needed because we default to nothing
+         \setupinteractionbar[\c!strut=\v!no]%
+         \setinteractionparameter\c!width\!!zeropoint
+         \!!counta\zerocount % new, was 1
+         \processallactionsinset
+           [#2]
+           [   \v!page=>\advance\!!counta 4,
+            \v!subpage=>\advance\!!counta 4,
+            \s!unknown=>\advance\!!counta 1]%
+         \ifdim\@@ibwidth=\zeropoint
+           \!!widtha2em
+           \advance\!!widtha \@@ibdistance  % new
+           \!!widthb\!!counta\!!widtha
+           \advance\!!widthb -\@@ibdistance % new
+         \else
+           \!!widtha\@@ibwidth
+           \!!widthb\@@ibdistance           % new
+           \multiply\!!widthb \!!counta     % new
+           \advance\!!widthb -\@@ibdistance % new
+           \advance\!!widtha -\!!widthb     % new
+           \divide\!!widtha \!!counta
+           \!!widthb\@@ibwidth
+         \fi
+         \def\goto##1% clash ?
+           {\setnostrut
+            \edef\localreference{##1}%
+            \expanded{\dodocomplexbutton\??ib[\c!height=\the\!!heighta,\c!width=\the\!!widtha]}%
+              {\dontleavehmode\symbol[\@@iasymbolset][\localreference]}%
+              [\localreference]%
+            \hss}%
+         \hbox to \!!widthb
+           {\processallactionsinset
+              [#2]
+              [      \v!page=>\goto\v!firstpage
+                              \goto\v!nextpage
+                              \goto\v!previouspage
+                              \goto\v!lastpage,
+                  \v!subpage=>\goto\v!firstsubpage
+                              \goto\v!nextsubpage
+                              \goto\v!previoussubpage
+                              \goto\v!lastsubpage,
+                  \s!unknown=>\goto\commalistelement]%
+            \unskip}%
+       \else
+         \interactionbuttons[][#1]%
+       \fi
+     \fi
+     \egroup
+   \fi}
+
+%D \macros
+%D   {overlaybutton}
+%D
+%D For converience we provide:
+%D
+%D \starttyping
+%D \overlaybutton[reference]
+%D \stoptyping
+%D
+%D This command can be used to define overlays an/or can be
+%D used in the whatevertext areas, like:
+%D
+%D \starttyping
+%D \defineoverlay[PrevPage][\overlaybutton{PrevPage}]
+%D \setupbackgrounds[page][background=PrevPage]
+%D \setuptexttexts[\overlaybutton{NextPage}]
+%D \stoptyping
+%D
+%D For practical reasons, this macro accepts square brackets
+%D as well as braces.
+
+\definecomplexorsimple\overlaybutton
+
+\def\simpleoverlaybutton#1%
+  {\complexoverlaybutton[#1]}
+
+\def\complexoverlaybutton[#1]%
+  {\iflocation
+     \doifreferencefoundelse{#1}
+       {\overlayfakebox  {#1}}
+       {\unknownreference{#1}}%
+   \fi}
+
+\def\overlayfakebox#1%
+  {\hbox
+     {\setbox\scratchbox\null
+      \wd\scratchbox\overlaywidth
+      \ht\scratchbox\overlayheight
+      \locationstrutfalse
+      \gotolocation{#1}{\box\scratchbox\presetgoto}}}
+
+%D \macros
+%D   {dotextprefix}
+%D
+%D In previous macros we used \type {\dotextprefix} to
+%D generate a space between a label and a number.
+%D
+%D \starttyping
+%D \dotextprefix{text}
+%D \stoptyping
+%D
+%D Only when \type {text} is not empty, a space is inserted.
+
+\def\dotextprefix#1%
+  {\bgroup
+   \global\labeltextdonefalse  % this is an ugly dependancy,
+   \setbox\scratchbox\hbox{#1}% to be solved some day
+   \ifdim\wd\scratchbox>\zeropoint
+     \unhbox\scratchbox
+     \iflabeltextdone\else\@@rfseparator\fi
+   \else
+     \unhbox\scratchbox
+   \fi
+   \egroup}
+
+%D Plugin code:
+
+%D In the next settings we see some variables that were not
+%D used here and that concern the way the pagenumbers refered
+%D to are typeset.
+
+\setupreferencing
+  [\c!state=\v!start,
+   \c!autofile=\v!no,
+   \v!part\c!number=\v!yes,
+   \v!chapter\c!number=\v!no,
+   \c!interaction=\v!all,
+  %\c!urlalternative=\v!both,
+  %\c!urlspace=\v!no,
+  %\c!urlletter=,
+  %\c!urlkleur=,
+   \c!convertfile=\v!no,
+  %\c!strut=\v!no, % some day an option
+   \c!prefix=,
+   \c!width=.75\makeupwidth,
+   \c!left=\quotation\bgroup,
+   \c!right=\egroup,
+   \c!global=\v!no,
+   \c!expansion=\v!no,
+   \c!separator=\nonbreakablespace]
+
+\setupurl
+  [\c!alternative=\v!both,
+   \c!space=\v!no,
+   \c!style=\v!type,
+   \c!color=]
+
+\setupprograms
+  [\c!directory=]
+
+%D We cannot set up buttons (not yet, this one calls a menu macro):
+
+% under consideration:
+%
+% \setupinteraction[state=start]
+%
+% \unprotect
+%
+% \chardef\rt!extern=5
+%
+% \definesystemreferencehandler \rt!extern \handleexecreference
+%
+% \definespecialtest\v!extern
+%   {\expanded{\localdoifreferencefoundelse{\currentreferenceoperation
+%      \ifx\currentreferencearguments\empty\else{\currentreferencearguments}\fi}}}
+%
+% \definespeciallocation\v!extern
+%   {\handleexecreference}
+%
+% \def\defineexternalreference[#1]%
+%   {\setglobalsystemreference\rt!extern{#1}{#1}}
+%
+% \protect
+%
+% \defineexternalreference[NewOne]
+%
+% \def\PDFexecuteNewOne{/SomeNewAction /SomeParameter (\argumentA)}
+%
+% \starttext
+%
+%   \goto{test}[AVDP{../../nach-dateipfad.pdf}]
+%   \blank
+%   \goto{test}[external(AVDP{../../nach-dateipfad.pdf})]
+%   \blank
+%   \goto{test}[AVDP{../../nach-dateipfad.pdf}]
+%   \blank
+%   \goto{test}[external(AVDP{../../nach-dateipfad.pdf})]
+%   \blank
+%   \goto{test}[CloseDocument]
+%   \blank
+%   \goto{test}[action(CloseDocument)]
+%
+% \stoptext
+
+\protect \endinput

@@ -1,0 +1,118 @@
+%D \module
+%D   [       file=spec-dvi,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Generic \TEX\ Solutions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D \macros
+%D   {dostartobject,
+%D    dostopobject,
+%D    doinsertobject}
+%D
+%D Reuse of object is not supported by the \DVI\ format. We
+%D therefore just duplicate them using boxes.
+
+\setjobsuffix{dvi} % can be overloaded in other spec's
+
+\startspecials[tex]
+
+\newbox\DVIobjects \newcounter\DVIobjectcounter
+
+\definespecial\dostartobject#1#2#3#4#5%
+  {\setbox\nextbox\vbox\bgroup
+     \def\dodostopobject
+       {\egroup
+        \doglobal\increment\DVIobjectcounter
+        \global\setbox\DVIobjects\vbox
+          {\offinterlineskip
+           \forgetall
+           \unvbox\DVIobjects
+           \setbox\nextbox\hbox{\box\nextbox}%
+           \wd\nextbox\zeropoint
+           \dp\nextbox\zeropoint
+           \ht\nextbox\onepoint
+           \allowbreak
+           \box\nextbox}%
+        \dosetobjectreference{#1}{#2}{\DVIobjectcounter}}}
+
+\definespecial\dostopobject
+  {\dodostopobject}
+
+\definespecial\doinsertobject#1#2%
+  {\bgroup
+   \dogetobjectreference{#1}{#2}\DVIobjectreference
+   \splittopskip\zeropoint
+   \setbox0=\copy\DVIobjects
+   \dimen0=\DVIobjectreference\onepoint
+   \advance\dimen0 -\onepoint
+   \setbox2\vsplit0 to \dimen0
+   \ifdim\ht0>\onepoint
+     \setbox0\vsplit0 to \onepoint
+   \fi
+   \unvbox0
+   \setbox0\lastbox
+   \hbox{\unhbox0}% the \hbox is really needed!
+   \egroup}
+
+%D \macros
+%D   {dosetposition,
+%D    dosetpositionwhd,
+%D    dosetpositionplus}
+%D
+%D The next specials only identify a position. It is up to
+%D a \DVI\ postprocessing utility to merge the right commands
+%D into the utility file. Since in \CONTEXT, we only deal
+%D with relative positions, the reference point is not so
+%D important.
+%D
+%D The postprocessor should translate the specials into
+%D commands and append these to \type {jobname.tuo} using the
+%D format:
+%D
+%D \starttyping
+%D \pospxy    {identifier}{page}{x}{y}
+%D \pospxywhd {identifier}{page}{x}{y}{w}{h}{d}
+%D \pospxyplus{identifier}{page}{x}{y}{w}{h}{d}{list}
+%D \stoptyping
+%D
+%D The postprocessor should, of course, provide the \type
+%D {page}, \type {x}, and \type {y} values.
+
+%D Now in spec-mis.tex:
+
+% \definespecial\dosetposition#1%
+%   {\special{pos:pxy "#1"}}
+%
+% \definespecial\dosetpositionwhd#1#2#3#4%
+%   {\special{pos:pxywhd "#1" #2 #3 #4}}
+%
+% \definespecial\dosetpositionplus#1#2#3#4#5%
+%   {\special{pos:pxyplus "#1" #2 #3 #4 #5}}
+
+%D The next special tells the position postprocessor what
+%D page dimensions were used.
+
+%D Also in spec-mis.tex:
+
+% \let\flushDVIpositionpapersize\relax
+%
+% \definespecial\dosetpositionpapersize#1#2%
+%   {\xdef\flushDVIpositionpapersize%
+%      {\special{pos:papersize \number#1 \number#2}%
+%       \noexpand\installprogram{dvipos -o \jobname.tuo \jobname.dvi }%
+%       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
+%
+% \prependtoksonce \flushDVIpositionpapersize \to \everyshipout
+
+\stopspecials
+
+\protect \endinput

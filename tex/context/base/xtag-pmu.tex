@@ -1,0 +1,188 @@
+%D \module
+%D   [       file=xtag-pmu,
+%D        version=2001.06.10,
+%D          title=\CONTEXT\ XML Macros,
+%D       subtitle=Units,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt XML Macros / Units}
+
+%D Quick and dirty in||line units:
+%D
+%D \startbuffer
+%D <phys>
+%D   <cn> 10 </cn>
+%D   <cu> <Newton/> <Square/> <Meter/> <Per/> <Sec/> </cu>
+%D </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D A more \MATHML||like unit application:
+%D
+%D \startbuffer
+%D <phys> <apply> <unit/>
+%D   <cn> 10 </cn>
+%D   <csymbol> <Square/> <Meter/> <Per/> <Sec/> </csymbol>
+%D </apply> </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D A bit more compact:
+%D
+%D \startbuffer
+%D <phys> <apply> <unit/>
+%D   <cn> 10 </cn>
+%D   <cu> <Square/> <Meter/> <Per/> <Sec/> </cu>
+%D </apply> </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D A bit more complicated:
+%D
+%D \startbuffer
+%D <phys> <apply> <unit/>
+%D   <apply> <divide/> <ci> a </ci> <cn> 10 </cn> </apply>
+%D   <cu> <Square/> <Meter/> <Per/> <Sec/> </cu>
+%D </apply> </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+%D
+%D An alternative (equivalent) for \type {</cu>}:
+%D
+%D \startbuffer
+%D <phys> <apply> <unit/>
+%D   <cn> 10 </cn> <cunseq> <Square/> <Meter/> <Per/> <Sec/> </cunseq>
+%D </apply> </phys>
+%D \stopbuffer
+%D
+%D \typebuffer \processXMLbuffer
+
+\defineXMLsingular [unitmeaning] [label=] \doPMLunitmeaning
+
+\def\doPMLunitmeaning
+  {\expanded{\unitmeaning{\XMLop{label}}}}
+
+\startXMLmapping [mml]
+
+\remapXMLsequence [unit]   [CPA] \doPMLuseq
+\remapXMLsingular [unit]   [CPA] \doPMLunit % #2\empty
+\remapXMLsequence [cunseq] [CPA] \doPMLuseq % #2
+\remapXMLsequence [cu]     [CPA] \doPMLuseq % #2
+
+\newif\ifPMLunit \PMLunittrue
+
+\def\doPMLuseq#1#2{\PMLunittrue\ignorespaces#2\unskip\PMLunitfalse}
+\def\doPMLunit#1#2\empty{\ignorespaces#2\unskip}
+
+\def\handlePMLunit#1{\ifPMLunit\ignorespaces#1\fi\ignorespaces}
+
+%D All unit commands are remapped in a similar way.
+
+\remapXMLsingular [Atto]       [C] {\handlePMLunit\Atto}
+\remapXMLsingular [Femto]      [C] {\handlePMLunit\Femto}
+\remapXMLsingular [Pico]       [C] {\handlePMLunit\Pico}
+\remapXMLsingular [Nano]       [C] {\handlePMLunit\Nano}
+\remapXMLsingular [Micro]      [C] {\handlePMLunit\Micro}
+\remapXMLsingular [Milli]      [C] {\handlePMLunit\Milli}
+\remapXMLsingular [Centi]      [C] {\handlePMLunit\Centi}
+\remapXMLsingular [Deci]       [C] {\handlePMLunit\Deci}
+\remapXMLsingular [Hecto]      [C] {\handlePMLunit\Hecto}
+\remapXMLsingular [Kilo]       [C] {\handlePMLunit\Kilo}
+\remapXMLsingular [Mega]       [C] {\handlePMLunit\Mega}
+\remapXMLsingular [Giga]       [C] {\handlePMLunit\Giga}
+\remapXMLsingular [Terra]      [C] {\handlePMLunit\Terra}
+\remapXMLsingular [Peta]       [C] {\handlePMLunit\Peta}
+\remapXMLsingular [Exa]        [C] {\handlePMLunit\Exa}
+
+\remapXMLsingular [Times]      [C] {\handlePMLunit\Times}
+\remapXMLsingular [Solidus]    [C] {\handlePMLunit\Solidus}
+\remapXMLsingular [Per]        [C] {\handlePMLunit\Per}
+\remapXMLsingular [OutOf]      [C] {\handlePMLunit\OutOf}
+
+\remapXMLsingular [Linear]     [C] {\handlePMLunit\Linear}
+\remapXMLsingular [Square]     [C] {\handlePMLunit\Square}
+\remapXMLsingular [Cubic]      [C] {\handlePMLunit\Cubic}
+
+\remapXMLsingular [Inverse]    [C] {\handlePMLunit\Inverse}
+
+\remapXMLsingular [Degrees]    [C] {\handlePMLunit\Degrees}
+\remapXMLsingular [Meter]      [C] {\handlePMLunit\Meter}
+\remapXMLsingular [Liter]      [C] {\handlePMLunit\Liter}
+\remapXMLsingular [Sec]        [C] {\handlePMLunit\Sec}
+\remapXMLsingular [Year]       [C] {\handlePMLunit\Year}
+\remapXMLsingular [Month]      [C] {\handlePMLunit\Month}
+\remapXMLsingular [Week]       [C] {\handlePMLunit\Week}
+\remapXMLsingular [Day]        [C] {\handlePMLunit\Day}
+\remapXMLsingular [Hour]       [C] {\handlePMLunit\Hour}
+\remapXMLsingular [Min]        [C] {\handlePMLunit\Min}
+\remapXMLsingular [Second]     [C] {\handlePMLunit\Sec}
+\remapXMLsingular [Rad]        [C] {\handlePMLunit\Rad}
+\remapXMLsingular [Deg]        [C] {\handlePMLunit\Deg}
+\remapXMLsingular [Hertz]      [C] {\handlePMLunit\Hertz}
+\remapXMLsingular [RevPerSec]  [C] {\handlePMLunit\RevPerSec}
+\remapXMLsingular [RevPerMin]  [C] {\handlePMLunit\RevPerMin}
+\remapXMLsingular [Gram]       [C] {\handlePMLunit\Gram}
+\remapXMLsingular [Atom]       [C] {\handlePMLunit\Atom}
+\remapXMLsingular [Newton]     [C] {\handlePMLunit\Newton}
+\remapXMLsingular [Pascal]     [C] {\handlePMLunit\Pascal}
+\remapXMLsingular [Joule]      [C] {\handlePMLunit\Joule}
+\remapXMLsingular [Watt]       [C] {\handlePMLunit\Watt}
+\remapXMLsingular [Celsius]    [C] {\handlePMLunit\Celsius}
+\remapXMLsingular [Kelvin]     [C] {\handlePMLunit\Kelvin}
+\remapXMLsingular [Fahrenheit] [C] {\handlePMLunit\Fahrenheit}
+\remapXMLsingular [Mol]        [C] {\handlePMLunit\Mol}
+\remapXMLsingular [Molair]     [C] {\handlePMLunit\Molair}
+\remapXMLsingular [Equivalent] [C] {\handlePMLunit\Equivalent}
+\remapXMLsingular [Farad]      [C] {\handlePMLunit\Farad}
+\remapXMLsingular [Ohm]        [C] {\handlePMLunit\Ohm}
+\remapXMLsingular [Siemens]    [C] {\handlePMLunit\Siemens}
+\remapXMLsingular [Ampere]     [C] {\handlePMLunit\Ampere}
+\remapXMLsingular [Coulomb]    [C] {\handlePMLunit\Coulomb}
+\remapXMLsingular [Volt]       [C] {\handlePMLunit\Volt}
+\remapXMLsingular [eVolt]      [C] {\handlePMLunit\eVolt}
+\remapXMLsingular [Tesla]      [C] {\handlePMLunit\Tesla}
+\remapXMLsingular [VoltAC]     [C] {\handlePMLunit\VoltAC}
+\remapXMLsingular [VoltDC]     [C] {\handlePMLunit\VoltDC}
+\remapXMLsingular [Baud]       [C] {\handlePMLunit\Baud}
+\remapXMLsingular [Bit]        [C] {\handlePMLunit\Bit}
+\remapXMLsingular [Byte]       [C] {\handlePMLunit\Byte}
+\remapXMLsingular [Bequerel]   [C] {\handlePMLunit\Bequerel}
+\remapXMLsingular [Sievert]    [C] {\handlePMLunit\Sievert}
+\remapXMLsingular [Candela]    [C] {\handlePMLunit\Candela}
+\remapXMLsingular [Bell]       [C] {\handlePMLunit\Bell}
+\remapXMLsingular [At]         [C] {\handlePMLunit\At}
+\remapXMLsingular [Atm]        [C] {\handlePMLunit\Atm}
+\remapXMLsingular [Bar]        [C] {\handlePMLunit\Bar}
+\remapXMLsingular [EVolt]      [C] {\handlePMLunit\EVolt}
+\remapXMLsingular [Foot]       [C] {\handlePMLunit\Foot}
+\remapXMLsingular [Inch]       [C] {\handlePMLunit\Inch}
+\remapXMLsingular [Cal]        [C] {\handlePMLunit\Cal}
+\remapXMLsingular [Force]      [C] {\handlePMLunit\Force}
+\remapXMLsingular [Lux]        [C] {\handlePMLunit\Lux}
+\remapXMLsingular [Gray]       [C] {\handlePMLunit\Gray}
+\remapXMLsingular [Weber]      [C] {\handlePMLunit\Weber}
+\remapXMLsingular [Henry]      [C] {\handlePMLunit\Henry}
+\remapXMLsingular [Sterant]    [C] {\handlePMLunit\Sterant}
+\remapXMLsingular [Angstrom]   [C] {\handlePMLunit\Angstrom}
+\remapXMLsingular [Gauss]      [C] {\handlePMLunit\Gauss}
+
+\remapXMLsingular [Percent]    [C] {\handlePMLunit\Percent}
+\remapXMLsingular [Promille]   [C] {\handlePMLunit\Promille}
+\remapXMLsingular [Permille]   [C] {\handlePMLunit\Permille}
+
+\remapXMLsingular [Unit]       [C] {\handlePMLunit\Unit}
+\remapXMLsingular [NoUnit]     [C] {\handlePMLunit\NoUnit}
+
+\stopXMLmapping
+
+\endinput
