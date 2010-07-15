@@ -612,9 +612,14 @@ local function extender(viewerlayers,key)
 end
 
 local function reviver(data,n)
-    local d = nodeinjections.startlayer(values[n])
-    data[n] = d
-    return d
+    local v = values[n]
+    if v then
+        local d = nodeinjections.startlayer(v)
+        data[n] = d
+        return d
+    else
+        logs.report("viewerlayers","error, unknown reference '%s'",tostring(n))
+    end
 end
 
 setmetatable(viewerlayers,      { __index = extender })

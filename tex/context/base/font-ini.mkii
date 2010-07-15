@@ -1157,8 +1157,6 @@
 
 \let\fontfile\s!unknown
 
-\ifx\checkfontfilename\undefined \let\checkfontfilename\relax \fi
-
 % \definefontsynonym
 %     [blabla]
 %     [name:Latin Modern Something]
@@ -1193,88 +1191,6 @@
    \else
       \edef\checkedfontfile{\!!stringb}%
    \fi\fi\fi}
-
-% \definefontfeature[default]     [liga=yes,texligatures=yes,texquotes=yes]
-% \definefontfeature[default-caps][liga=yes,texligatures=yes,texquotes=yes,smcp=yes,script=latn]
-%
-% \starttypescript [serif] [palatino-nova-regular] [name]
-%     \definefontsynonym[Serif]    [palatinonova-regular][features=default]
-%     \definefontsynonym[SerifCaps][palatinonova-regular][features=default-caps] % also sets Serif
-% \stoptypescript
-%
-% \starttypescript [serif] [palatino-nova-regular] [name]
-%     \definefontsynonym[Serif]          [palatinonova-regular*default]
-%     \definefontsynonym[SerifCaps]      [palatinonova-regular*default-caps]
-% \stoptypescript
-
-% \definetypeface[mainface][rm][serif][palatino-nova-regular][default] \setupbodyfont[mainface]
-%
-% \starttext
-%   ``Test'' -- --- ff fi fl \sc ``Test'' -- --- ff fi fl
-% \stoptext
-
-% \starttext
-%     \definefont
-%         [blabla]
-%         [name:Latin Modern Something]
-%     \definefont
-%         [blabla]
-%         [file:texnansi-lmr10]
-%     \blabla test
-%     \definefont
-%         [blabla]
-%         [texnansi-lmtt10]
-%     \blabla test
-% \stoptext
-
-% \starttext
-%
-% \setupcolors[state=start]
-%
-% \definefontfeature
-%   [default-base]
-%   [script=latn,language=dflt,liga=yes,kern=yes,tlig=yes,trep=yes]
-% \definefontfeature
-%   [default-node]
-%   [script=latn,language=dflt,liga=yes,kern=yes,tlig=yes,trep=yes,mode=node]
-% \definefontfeature
-%   [default-none]
-%   [script=latn,language=dflt,liga=yes,kern=no, tlig=yes,trep=yes]
-%
-% \startoverlay
-%     {\vtop{\color[red]  {\font\test=name:lmroman12regular*default-node \test \input ward \input zapf \input linden }}}
-%     {\vtop{\color[green]{\font\test=name:lmroman12regular*default-base \test \input ward \input zapf \input linden }}}
-%     {\vtop{\color[blue] {\font\test=name:lmroman12regular*default-none \test \input ward \input zapf \input linden }}}
-% \stopoverlay
-%
-% \blank
-%
-% \startoverlay
-%     {\vtop{\color[red]  {\font\test=name:texgyrepagella*default-node \test \input ward \input zapf \input linden }}}
-%     {\vtop{\color[green]{\font\test=name:texgyrepagella*default-base \test \input ward \input zapf \input linden }}}
-%     {\vtop{\color[blue] {\font\test=name:texgyrepagella*default-none \test \input ward \input zapf \input linden }}}
-% \stopoverlay
-%
-% \blank
-%
-% \startoverlay
-%     {\vtop{\color[red]  {\font\test=name:palatinonovaregular*default-node \test \input ward \input zapf \input linden }}}
-%     {\vtop{\color[green]{\font\test=name:palatinonovaregular*default-base \test \input ward \input zapf \input linden }}}
-%     {\vtop{\color[blue] {\font\test=name:palatinonovaregular*default-none \test \input ward \input zapf \input linden }}}
-% \stopoverlay
-%
-% \startoverlay
-%     {\vtop{\color[red]  {\font\test=name:OfficinaSerifBookITC*default-node \test \input ward \input zapf \input linden }}}
-%     {\vtop{\color[green]{\font\test=name:OfficinaSerifBookITC*default-base \test \input ward \input zapf \input linden }}}
-%     {\vtop{\color[blue] {\font\test=name:OfficinaSerifBookITC*default-none \test \input ward \input zapf \input linden }}}
-% \stopoverlay
-%
-% \definefontfeature[superdefault][default][compose=yes]
-%
-% {\font\oeps=name:lmroman10regular*default      at 30pt \oeps test \char7683}
-% {\font\oeps=name:lmroman10regular*superdefault at 30pt \oeps test \char7683}
-%
-% \stoptext
 
 \let\doshowcheckedfontfeatures\relax
 
@@ -1546,18 +1462,11 @@
 %D \def\currentfontfileencoding{texnansi}
 %D \stoptyping
 
-% \def\@@currentfontfile{currentfontfile}
-%
-% \def\getfontfileparameters#1%
-%   {\edef\fontdata{\truefontdata{\truefontname{#1}}}%
-%    \expanded{\getparameters[\@@currentfontfile][\fontdata]}}
-
-\def\getfontfileparameters#1% can be simpler for mkii
+\def\getfontfileparameters#1% can be simpler for mkii (no features)
   {\edef\@@truefontname{\truefontname{#1}}%
    \edef\currentfontfileencoding{\truefontdata\@@truefontname\s!encoding}%
    \edef\currentfontfilemapping {\truefontdata\@@truefontname\s!mapping }%
-   \edef\currentfontfilehandling{\truefontdata\@@truefontname\s!handling}%
-   \edef\currentfontfilefeatures{\truefontdata\@@truefontname\s!features}}
+   \edef\currentfontfilehandling{\truefontdata\@@truefontname\s!handling}}
 
 %D \macros
 %D   {definefont}
@@ -3129,7 +3038,6 @@
   {\edef\@@fontencoding{\truefontdata\fontfile    \s!encoding}%
    \edef\@@fontmapping {\truefontdata\fontfile    \s!mapping }%
    \edef\@@fonthandling{\truefontdata\somefontname\s!handling}%
-   \edef\@@fontfeatures{\truefontdata\fontfile    \s!features}%
    \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
 
 \def\setfontcharacteristics
@@ -3158,43 +3066,14 @@
     \def\synchronizepatternswithfont{\synchronizepatterns}
 \fi
 
-%D Experimental:
+%D Experimental: (should move to font-xtx)
 
-\def\definefontfeature
-  {\dotripleargument\dodefinefontfeature}
+\ifdefined \definefontfeature \else
 
-\def\dododefinefontfeature#1%
-  {\edef\!!stringa{\ifx\!!stringa\empty\else\!!stringa,\fi\executeifdefined{\??fa#1}\empty}}
+    \def\definefontfeature              {\dotripleargument\dodefinefontfeature}
+    \def\dodefinefontfeature[#1][#2][#3]{}
 
-\def\dodefinefontfeature[#1][#2][#3]%
-  {\doifassignmentelse{#2}
-     {\setevalue{\??fa#1}{#2}}
-     {\let\!!stringa\empty
-      \processcommalist[#2]\dododefinefontfeature
-      \setevalue{\??fa#1}{\ifx\!!stringa\empty\else\!!stringa,\fi#3}}}
-
-\definefontfeature
-  [default]
-  [liga=yes,kern=yes,tlig=yes,trep=yes] % texligatures=yes,texquotes=yes
-
-\definefontfeature
-  [smallcaps]
-  [liga=yes,kern=yes,tlig=yes,trep=yes,smcp=yes] % texligatures=yes,texquotes=yes
-
-\definefontfeature
-  [oldstyle]
-  [liga=yes,kern=yes,tlig=yes,trep=yes,onum=yes] % texligatures=yes,texquotes=yes
-
-\definefontfeature % no calt
-  [arabic]
-  [language=dflt,script=arab,
-   init=yes,medi=yes,fina=yes,isol=yes,
-   liga=yes,dlig=yes,rlig=yes,clig=yes,
-   mark=yes,mkmk=yes,kern=yes,curs=yes]
-
-\definefontfeature
-  [none]
-  [features=no]
+\fi
 
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.

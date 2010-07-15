@@ -51,6 +51,7 @@ function sorters.setlanguage(lang)
     currentreplacements = replacements[language] or replacements[defaultlanguage] or dummy
     currentmappings     = mappings    [language] or mappings    [defaultlanguage] or dummy
     currententries      = entries     [language] or entries     [defaultlanguage] or dummy
+    report_sorters("setting language '%s'",language)
     return currentreplacements, currentmappings, currententries
 end
 

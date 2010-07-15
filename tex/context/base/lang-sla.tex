@@ -28,7 +28,7 @@
 %D \stoptabulate
 
 %  Belarussian, Russian, Ukrainian, Bulgarian, Macedonian,
-%  Serbo-Croatian, Slovenian, Czech, Kushubian,
+%  Serbian, Croatian, Slovenian, Czech, Kushubian,
 %  Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian,
 %  Illyrian, Armenian
 
@@ -82,7 +82,7 @@
 
 \installlanguage
   [\s!cs]
-  [\c!spacing=\v!packed,   
+  [\c!spacing=\v!packed,
    \c!leftsentence=\thickglue--\thickglue\penalty-20\relax, % hh, \relax added
    \c!rightsentence=\thickglue--\thickglue\penalty-20\relax,
    \c!leftsubsentence=~---~\penalty-20\relax,
@@ -117,9 +117,9 @@
    \c!rightsentence=---,
    \c!leftsubsentence=---,
    \c!rightsubsentence=---,
-   \c!leftquote=\upperleftsinglesixquote,
+   \c!leftquote=\lowerleftsingleninequote,
    \c!rightquote=\upperrightsingleninequote,
-   \c!leftquotation=\upperleftdoublesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!day,\ ,\v!month,\ ,\v!year},
    \s!mapping=ec,
@@ -144,7 +144,7 @@
 %D
 %D If you disagree with the change, please send an email to Mojca, but
 %D best use some pretty strong arguments because she loves S{\sl love}nia
-%D to much to comprimise on this.
+%D too much to compromise on this.
 %D
 %D German faces approximately the same problem. I (MM) would prefer to
 %D have something like:
@@ -213,7 +213,7 @@
 \setupheadtext [\s!pl] [\v!intermezzi=Intermezza]
 \setupheadtext [\s!cs] [\v!intermezzi=Intermezza]
 \setupheadtext [\s!sk] [\v!intermezzi=Intermezz\aacute]
-\setupheadtext [\s!hr] [\v!intermezzi=Intermezza]
+\setupheadtext [\s!hr] [\v!intermezzi=Intermeci]
 \setupheadtext [\s!sl] [\v!intermezzi=Intermezzi]
 
 \setupheadtext [\s!pl] [\v!index=Indeks]
@@ -237,19 +237,19 @@
 \setupheadtext [\s!pl] [\v!units=Jednostki]
 \setupheadtext [\s!cs] [\v!units=Jednotky]
 \setupheadtext [\s!sk] [\v!units=Jednotky]
-\setupheadtext [\s!hr] [\v!units=Jednostki]
+\setupheadtext [\s!hr] [\v!units=Jedinice]
 \setupheadtext [\s!sl] [\v!units=Enote]
 
 %setupheadtext [\s!pl] [pubs=?]
 \setupheadtext [\s!cs] [pubs=Literatura]
 %setupheadtext [\s!sk] [pubs=?]
-%setupheadtext [\s!hr] [pubs=?]
+\setupheadtext [\s!hr] [pubs=Literatura]
 \setupheadtext [\s!sl] [pubs=Literatura]
 
 \setuplabeltext [\s!pl] [\v!table=Tabela ]
 \setuplabeltext [\s!cs] [\v!table=Tabulka ]
 \setuplabeltext [\s!sk] [\v!table=Tabu\lcaron ka ]
-\setuplabeltext [\s!hr] [\v!table=T\aacute bl\aacute zat ] % [\v!table=Tablica ]
+\setuplabeltext [\s!hr] [\v!table=Tablica ]
 \setuplabeltext [\s!sl] [\v!table=Tabela ]
 
 \setuplabeltext [\s!pl] [\v!figure=Ilustracja ]
@@ -261,7 +261,7 @@
 \setuplabeltext [\s!pl] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!cs] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!sk] [\v!intermezzo=Intermezzo ]
-\setuplabeltext [\s!hr] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!hr] [\v!intermezzo=Intermeco ]
 \setuplabeltext [\s!sl] [\v!intermezzo=Intermezzo ]
 
 \setuplabeltext [\s!pl] [\v!graphic=Grafika ]
@@ -273,38 +273,38 @@
 \setuplabeltext [\s!pl] [\v!chapter=] % Rozdzia\l
 \setuplabeltext [\s!cs] [\v!chapter=] % Kapitola
 \setuplabeltext [\s!sk] [\v!chapter=] % Kapitola
-\setuplabeltext [\s!hr] [\v!chapter=] % Rozdzia\l
+\setuplabeltext [\s!hr] [\v!chapter=] % Poglavlje
 \setuplabeltext [\s!sl] [\v!chapter=] % Poglavje
 
 \setuplabeltext [\s!pl] [\v!section=] % Podrozdzia\l
 \setuplabeltext [\s!cs] [\v!section=] % Sekce
 \setuplabeltext [\s!sk] [\v!section=] % Sekcia
-\setuplabeltext [\s!hr] [\v!section=] % Podrozdzia\l
+\setuplabeltext [\s!hr] [\v!section=] % Odjeljak
 \setuplabeltext [\s!sl] [\v!section=]
 
 \setuplabeltext [\s!pl] [\v!subsection=]
 \setuplabeltext [\s!cs] [\v!subsection=] % Podsekce
 \setuplabeltext [\s!sk] [\v!subsection=] % Podsekcia
-\setuplabeltext [\s!hr] [\v!subsection=]
+\setuplabeltext [\s!hr] [\v!subsection=] % Pododjeljak
 \setuplabeltext [\s!sl] [\v!subsection=]
 
 \setuplabeltext [\s!pl] [\v!subsubsection=]
 \setuplabeltext [\s!cs] [\v!subsubsection=] % Podpodsekce
 \setuplabeltext [\s!sk] [\v!subsubsection=] % Podpodsekcia
-\setuplabeltext [\s!hr] [\v!subsubsection=]
+\setuplabeltext [\s!hr] [\v!subsubsection=] % Podpododjeljak
 \setuplabeltext [\s!sl] [\v!subsubsection=]
 
 \setuplabeltext [\s!pl] [\v!subsubsubsection=]
 \setuplabeltext [\s!cs] [\v!subsubsubsection=] % Podpodpodsekce
 \setuplabeltext [\s!sk] [\v!subsubsubsection=] % Podpodpodsekcia
-\setuplabeltext [\s!hr] [\v!subsubsubsection=]
+\setuplabeltext [\s!hr] [\v!subsubsubsection=] % Podpodpododjeljak
 \setuplabeltext [\s!sl] [\v!subsubsubsection=]
 
 \setuplabeltext [\s!pl] [\v!appendix=] % Dodatek
-\setuplabeltext [\s!cs] [\v!appendix=P\rcaron\iacute loha ]
-\setuplabeltext [\s!sk] [\v!appendix=Pr\iacute loha ]
-\setuplabeltext [\s!hr] [\v!appendix=Dodatak ]
-\setuplabeltext [\s!sl] [\v!appendix=Dodatek ]
+\setuplabeltext [\s!cs] [\v!appendix=] % P\rcaron\iacute loha
+\setuplabeltext [\s!sk] [\v!appendix=] % Pr\iacute loha
+\setuplabeltext [\s!hr] [\v!appendix=] % Dodatak
+\setuplabeltext [\s!sl] [\v!appendix=] % Dodatek
 
 \setuplabeltext [\s!pl] [\v!part=Ust\eogonek p ]
 \setuplabeltext [\s!cs] [\v!part=\Ccaron \aacute st ]
@@ -315,13 +315,13 @@
 \setuplabeltext [\s!pl] [\v!line=wiersz ]
 \setuplabeltext [\s!cs] [\v!line=\rcaron\aacute dek ]
 \setuplabeltext [\s!sk] [\v!line=riadok ]
-\setuplabeltext [\s!hr] [\v!line=red ]
+\setuplabeltext [\s!hr] [\v!line=redak ]
 \setuplabeltext [\s!sl] [\v!line=vrstica ]
 
 \setuplabeltext [\s!pl] [\v!lines=wiersze ]
 \setuplabeltext [\s!cs] [\v!lines=\rcaron\aacute dky ]
 \setuplabeltext [\s!sk] [\v!lines=riadky ]
-\setuplabeltext [\s!hr] [\v!lines=redovi ]
+\setuplabeltext [\s!hr] [\v!lines=retci ]
 \setuplabeltext [\s!sl] [\v!lines=vrstice ]
 
 \setuplabeltext [\s!pl]   [\v!january=stycznia]
@@ -397,7 +397,6 @@
 \setuplabeltext [\s!pl]    [\v!friday=pi\aogonek tek]
 \setuplabeltext [\s!pl]  [\v!saturday=sobota]
 
-% new
 \setuplabeltext [\s!cs]    [\v!sunday=ned\ecaron le]
 \setuplabeltext [\s!cs]    [\v!monday=pond\ecaron l\iacute]
 \setuplabeltext [\s!cs]   [\v!tuesday=\uacute ter\yacute]
@@ -405,6 +404,8 @@
 \setuplabeltext [\s!cs]  [\v!thursday=\ccaron tvrtek]
 \setuplabeltext [\s!cs]    [\v!friday=p\aacute tek]
 \setuplabeltext [\s!cs]  [\v!saturday=sobota]
+
+% Slovakian missing
 
 \setuplabeltext [\s!hr]    [\v!sunday=nedjelja]
 \setuplabeltext [\s!hr]    [\v!monday=ponedjeljak]
@@ -436,18 +437,27 @@
 %   \c!rightquotation=\upperrightdoublesixquote,
 %   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
 
-\setuplabeltext [\s!sl]    [\v!page=stran ]
-\setuplabeltext [\s!sl]  [\v!atpage=na strani ]
-\setuplabeltext [\s!sl] [\v!hencefore=glej zgoraj]
-\setuplabeltext [\s!sl] [\v!hereafter=glej spodaj]
-\setuplabeltext [\s!sl]       [\v!see=glej ]
+% Polish missing
 
-% new
 \setuplabeltext [\s!cs]    [\v!page=strana ]
 \setuplabeltext [\s!cs]  [\v!atpage=na stran\ecaron\ ]
 \setuplabeltext [\s!cs] [\v!hencefore=viz v\yacute\scaron e ]
 \setuplabeltext [\s!cs] [\v!hereafter=viz n\iacute\zcaron e ]
 \setuplabeltext [\s!cs]       [\v!see=viz ]
+
+% Slovakian missing
+
+\setuplabeltext [\s!hr]      [\v!page=stranica ]
+\setuplabeltext [\s!hr]    [\v!atpage=na stranici ]
+\setuplabeltext [\s!hr] [\v!hencefore=vidi gore ]
+\setuplabeltext [\s!hr] [\v!hereafter=vidi ispod ]
+\setuplabeltext [\s!hr]       [\v!see=vidi ]
+
+\setuplabeltext [\s!sl]    [\v!page=stran ]
+\setuplabeltext [\s!sl]  [\v!atpage=na strani ]
+\setuplabeltext [\s!sl] [\v!hencefore=glej zgoraj ]
+\setuplabeltext [\s!sl] [\v!hereafter=glej spodaj ]
+\setuplabeltext [\s!sl]       [\v!see=glej ]
 
 %D \ShowAllLanguageValues [\s!pl] [polish]    {Polish}    {furniture}
 %D \ShowAllLanguageValues [\s!cs] [czech]     {Czech}     {mate}

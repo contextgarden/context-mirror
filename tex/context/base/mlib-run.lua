@@ -33,14 +33,19 @@ local trace_graphics = false  trackers.register("metapost.graphics", function(v)
 
 local report_mplib = logs.new("mplib")
 
+local texerrormessage = tracers.texerrormessage
+
 local format, gsub, match = string.format, string.gsub, string.match
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 metapost = metapost or { }
 
-metapost.showlog = false
-metapost.lastlog = ""
+metapost.showlog   = false
+metapost.lastlog   = ""
+metapost.texerrors = false
+
+directives.register("mplib.texerrors", function(v) metapost.texerrors = v end)
 
 function metapost.resetlastlog()
     metapost.lastlog = ""
@@ -127,10 +132,10 @@ function metapost.reporterror(result)
     elseif result.status > 0 then
         local t, e, l = result.term, result.error, result.log
         if t and t ~= "" then
-            report_mplib("mp terminal: %s",t)
+            (metapost.texerrors and texerrormessage or report_mplib)("mp terminal: %s",t)
         end
         if e then
-            report_mplib("mp error: %s",(e=="" and "?") or e)
+            (metapost.texerrors and texerrormessage or report_mplib)("mp error: %s",(e=="" and "?") or e)
         end
         if not t and not e and l then
             metapost.lastlog = metapost.lastlog .. "\n" .. l

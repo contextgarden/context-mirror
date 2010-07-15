@@ -33,7 +33,7 @@
 \def\dodefinebreakpoints[#1]%
   {\ifcsname\??bp:#1\endcsname \else
      \global\advance\maxbreakpointsid\plusone
-     \setxvalue{\??bp:#1}{\the\maxbreakpointsid}%
+     \setxvalue{\??bp:#1}{\number\maxbreakpointsid}%
    \fi}
 
 \def\installbreakpoint
@@ -49,7 +49,7 @@
   {\ifcsname\??bp:#1\endcsname
      \begingroup
      \getparameters[\??bp][\c!type=1,\c!nleft=3,\c!nright=3,\s!language=,\c!left=,\c!right=,\c!middle=,#3]%
-     \ctxlua{breakpoints.setreplacement(\csname\??bp:#1\endcsname, "#2", "\@@bplanguage", {
+     \ctxlua{typesetting.breakpoints.setreplacement(\csname\??bp:#1\endcsname, "#2", "\reallanguagetag\@@bplanguage", {
             kind =  \@@bptype,
            nleft = "\@@bpnleft",
           nright = "\@@bpnright",
@@ -60,10 +60,8 @@
      \endgroup
    \fi}
 
-\def\setbreakpoints
-  {\ctxlua{breakpoints.enable()}%
-   \gdef\setbreakpoints[##1]{\attribute\breakpointattribute\csname\??bp:##1\endcsname\relax}%
-   \setbreakpoints}
+\unexpanded\def\setbreakpoints[#1]%
+  {\ctxlua{typesetting.breakpoints.set(\number\csname\??bp:#1\endcsname)}}
 
 \letvalue{\??bp:\s!reset}\attributeunsetvalue
 

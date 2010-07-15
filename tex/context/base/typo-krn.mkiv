@@ -28,7 +28,7 @@
 
 \def\dodefinecharacterkerning[#1][#2]%
   {\getparameters[\??ck#1][\c!factor=0.125,#2]%
-   \setgvalue{\??ck:#1}{\ctxlua{kerns.setspacing(\csname\??ck#1\c!factor\endcsname)}}}
+   \setuvalue{\??ck:#1}{\dosetcharacterkerning{#1}}}
 
 \unexpanded\def\setupcharacterkerning
   {\dodoubleargument\dosetupcharacterkerning}
@@ -40,12 +40,20 @@
      \dodefinecharacterkerning[#1][#2]% bonus
    \fi}
 
-\unexpanded\def\setcharacterkerning
-  {\ctxlua{kerns.enable()}%
-   \unexpanded\gdef\setcharacterkerning[##1]{\csname\??ck:##1\endcsname}%
-   \setcharacterkerning}
+\unexpanded\def\dosetcharacterkerning#1%
+  {\ctxlua{typesetting.kerns.set(\csname\??ck#1\c!factor\endcsname)}}
 
-\letvalue{\??ck:\s!reset}\attributeunsetvalue
+\unexpanded\def\setcharacterkerning[#1]%
+  {\csname\??ck:#1\endcsname}
+
+\unexpanded\def\resetcharacterkerning % fast one
+  {\attribute\kernattribute\attributeunsetvalue}
+
+\letvalue{\??ck\s!reset\c!factor}\attributeunsetvalue % trick
+
+\appendtoks
+    \resetcharacterkerning
+\to \everyresettypesetting
 
 \definecharacterkerning [extrakerning] [\c!factor=.125] % used in manuals
 

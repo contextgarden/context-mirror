@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/23/10 12:45:11
+-- merge date  : 07/15/10 15:01:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -790,7 +790,7 @@ function table.prepend(t, list)
 end
 
 function table.merge(t, ...) -- first one is target
-    t = t or {}
+    t = t or { }
     local lst = {...}
     for i=1,#lst do
         for k, v in next, lst[i] do
@@ -2277,6 +2277,10 @@ do
     local cachepaths = kpse.expand_path('$TEXMFCACHE') or ""
 
     if cachepaths == "" then
+        cachepaths = kpse.expand_path('$TEXMFVAR')
+    end
+
+    if cachepaths == "" then
         cachepaths = kpse.expand_path('$VARTEXMF')
     end
 
@@ -3394,7 +3398,7 @@ local charactercache = { }
 -- a virtual font has italic correction make sure to set the
 -- has_italic flag. Some more flags will be added in the future.
 
-function tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
+function tfm.calculate_scale(tfmtable, scaledpoints)
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
@@ -3442,12 +3446,13 @@ function tfm.do_scale(tfmtable, scaledpoints, relativeid)
     t.characters = { }
     t.MathConstants = { }
     -- fast access
+    t.unscaled = tfmtable -- the original unscaled one (temp)
     t.unicodes = tfmtable.unicodes
     t.indices = tfmtable.indices
     t.marks = tfmtable.marks
-t.goodies = tfmtable.goodies
-t.colorscheme = tfmtable.colorscheme
---~ t.embedding = tfmtable.embedding
+    t.goodies = tfmtable.goodies
+    t.colorscheme = tfmtable.colorscheme
+ -- t.embedding = tfmtable.embedding
     t.descriptions = descriptions
     if tfmtable.fonts then
         t.fonts = table.fastcopy(tfmtable.fonts) -- hm  also at the end

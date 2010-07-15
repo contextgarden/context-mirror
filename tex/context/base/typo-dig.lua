@@ -25,6 +25,8 @@ local traverse_id        = node.traverse_id
 local insert_before      = node.insert_before
 local insert_after       = node.insert_after
 
+local texattribute = tex.attribute
+
 local glyph = node.id("glyph")
 local kern  = node.id("kern")
 
@@ -113,22 +115,22 @@ local function process(namespace,attribute,head)
     return head, done
 end
 
-local m = 0 -- a trick to make neighbouring ranges work
+local m, enabled = 0, false -- a trick to make neighbouring ranges work
 
 function digits.set(n)
-    if trace_digits then
-        report_digits("enabling digit handler")
-    end
-    tasks.enableaction("processors","typesetting.digits.handler")
-    function digits.set(n)
-        if m == 100 then
-            m = 1
-        else
-            m = m + 1
+    if not enabled then
+        tasks.enableaction("processors","typesetting.digits.handler")
+        if trace_digits then
+            report_digits("enabling digit handler")
         end
-        tex.attribute[a_digits] = m * 100 + n
+        enabled = true
     end
-    digits.set(n)
+    if m == 100 then
+        m = 1
+    else
+        m = m + 1
+    end
+    texattribute[a_digits] = m * 100 + n
 end
 
 digits.handler = nodes.install_attribute_handler {

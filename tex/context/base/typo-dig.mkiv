@@ -41,7 +41,18 @@
 \unexpanded\def\setdigitsmanipulation[#1]%
   {\ctxlua{typesetting.digits.set(\number#1)}}
 
+\unexpanded\def\resetdigitsmanipulation
+  {\attribute\digitsattribute\attributeunsetvalue}
+
+\appendtoks
+    \resetdigitsmanipulation
+\to \everyresettypesetting
+
 \unexpanded\def\equaldigits{\groupedcommand{\setdigitsmanipulation[\plusone]}{}}
 \unexpanded\def\dummydigit {\hphantom{\setdigitsmanipulation[\plusone]0}}
+
+\appendtoks
+    \resetcharacterspacing
+\to \everyinitializeverbatim
 
 \protect \endinput

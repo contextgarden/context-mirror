@@ -127,9 +127,12 @@ elseif environment.arguments["expansions"] or environment.arguments["show-expans
     resolvers.listers.expansions(false,instance.pattern)
 elseif environment.arguments["configurations"] or environment.arguments["show-configurations"] then
     resolvers.load("nofiles")
-    resolvers.listers.configurations(false,instance.pattern)
+    resolvers.listers.configurations()
 elseif environment.arguments["help"] or (environment.files[1]=='help') or (#environment.files==0) then
     logs.help(messages.help)
+elseif environment.files[1]=='texmfcnf.lua' then
+    resolvers.load("nofiles")
+    resolvers.listers.configurations()
 else
     resolvers.load()
     resolvers.for_files(resolvers.find_files, environment.files, instance.my_format)

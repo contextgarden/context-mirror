@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\startmodule[cdr-01]
+
+\setupmodule[cdr-01][option=]
+
 \def\PDFMPformoffset{20cm}
 
 \definepapersize
@@ -57,39 +61,47 @@
 \defineoverlay[leftcover] [\useMPgraphic{leftcover}]
 \defineoverlay[rightcover][\useMPgraphic{rightcover}]
 
+\definecolor  [cd-color]    [s=0]
+\definemeasure[cd-linewidth][.4pt]
+
+\doif {\moduleparameter{cdr-01}{option}} {light} {
+    \definecolor  [cd-color]    [s=.85]
+    \definemeasure[cd-linewidth][.2pt]
+}
+
 \startuseMPgraphic{leftcover}
   StartPage ;
-    pickup pencircle scaled .5pt ;
+    pickup pencircle scaled \measure{cd-linewidth} ;
     draw
       bottomboundary Page &
       rightboundary  Page &
-      topboundary    Page ;
+      topboundary    Page withcolor \MPcolor{cd-color} ;
     draw
       bottomboundary (Page enlarged 3mm) &
       rightboundary  (Page enlarged 3mm) &
-      topboundary    (Page enlarged 3mm) dashed evenly ;
+      topboundary    (Page enlarged 3mm) dashed evenly withcolor \MPcolor{cd-color} ;
   StopPage ;
 \stopuseMPgraphic
 
 \startuseMPgraphic{rightcover}
   StartPage ;
-    pickup pencircle scaled .5pt ;
+    pickup pencircle scaled \measure{cd-linewidth} ;
     draw
       topboundary    Page &
       leftboundary   Page &
-      bottomboundary Page ;
+      bottomboundary Page withcolor \MPcolor{cd-color} ;
     draw
       topboundary    (Page enlarged 3mm) &
       leftboundary   (Page enlarged 3mm) &
-      bottomboundary (Page enlarged 3mm) dashed evenly ;
+      bottomboundary (Page enlarged 3mm) dashed evenly withcolor \MPcolor{cd-color} ;
     draw
       bottomboundary Page --
       lrcorner Page shifted (-5mm,-1cm) --
-      llcorner Page shifted ( 5mm,-1cm) -- cycle ;
+      llcorner Page shifted ( 5mm,-1cm) -- cycle withcolor \MPcolor{cd-color} ;
     draw
       topboundary Page --
       ulcorner Page shifted ( 5mm, 1cm) --
-      urcorner Page shifted (-5mm, 1cm) -- cycle ;
+      urcorner Page shifted (-5mm, 1cm) -- cycle withcolor \MPcolor{cd-color} ;
   StopPage ;
   setbounds currentpicture to Page ;
 \stopuseMPgraphic
@@ -117,6 +129,8 @@
    strut=no,
    height=fit,
    width=\textheight]
+
+\stopmodule
 
 \doifnotmode{demo}{\endinput}
 

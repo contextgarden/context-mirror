@@ -329,7 +329,7 @@ vectors['alpha'] = {
 
 }
 
-vectors['quality'] = table.merge( {},
+vectors['quality'] = table.merged(
     vectors['punctuation'],
     vectors['alpha']
 )

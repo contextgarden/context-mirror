@@ -581,15 +581,16 @@
   {\dododefinetypeface[#1][#2]%
    \iffifthargument % sixth is optional
      % we need to expand since in #6 there can be a \typescripttwo
-     \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,\s!features=,\s!fallbacks=,\s!text=,#6]}% \geteparameters
+%      \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,\s!features=,\s!fallbacks=,\s!text=,#6]}% \geteparameters
+     \expanded{\getparameters[\??ts][\s!rscale=\plusone,\s!encoding=\defaultencoding,\s!features=,\s!text=,#6]}% \geteparameters
      \pushmacro\relativefontsize
      \pushmacro\typefaceencoding
      \pushmacro\fontclass
      \let\relativefontsize\@@tsrscale
      \let\typefaceencoding\@@tsencoding
      \setcurrentfontclass{#1}%
-     \letvalue{\fontclass\s!features }\@@tsfeatures  % new per 16/6/2007
-     \letvalue{\fontclass\s!fallbacks}\@@tsfallbacks % new per 12/10/2008
+%      \letvalue{\fontclass\s!features }\@@tsfeatures  % new per 16/6/2007
+%      \letvalue{\fontclass\s!fallbacks}\@@tsfallbacks % new per 12/10/2008
      \saverelativefontsize{#2}\relativefontsize % fall back
      \savemathtextstyle\@@tstext % math text style (new per 28/4/2006)
      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4] / \typefaceencoding}\fi

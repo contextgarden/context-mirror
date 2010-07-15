@@ -20,7 +20,7 @@ if not modules then modules = { } end modules ['math-map'] = {
 -- maybe: script/scriptscript dynamic,
 
 local type, next = type, next
-local floor = math.floor
+local floor, div = math.floor, math.div
 
 local texattribute = tex.attribute
 
@@ -305,9 +305,9 @@ alphabets.monospaced.it         = alphabets.sansserif.tf
 alphabets.monospaced.bf         = alphabets.sansserif.tf
 alphabets.monospaced.bi         = alphabets.sansserif.bf
 
-alphabets.blackboard.tf.symbols = table.merge(alphabets.regular.tf.symbols, alphabets.blackboard.tf.symbols)
-alphabets.blackboard.tf.lcgreek = table.merge(alphabets.regular.tf.lcgreek, alphabets.blackboard.tf.lcgreek)
-alphabets.blackboard.tf.ucgreek = table.merge(alphabets.regular.tf.ucgreek, alphabets.blackboard.tf.ucgreek)
+alphabets.blackboard.tf.symbols = table.merged(alphabets.regular.tf.symbols, alphabets.blackboard.tf.symbols)
+alphabets.blackboard.tf.lcgreek = table.merged(alphabets.regular.tf.lcgreek, alphabets.blackboard.tf.lcgreek)
+alphabets.blackboard.tf.ucgreek = table.merged(alphabets.regular.tf.ucgreek, alphabets.blackboard.tf.ucgreek)
 
 alphabets.blackboard.it         = alphabets.blackboard.tf
 alphabets.blackboard.bf         = alphabets.blackboard.tf

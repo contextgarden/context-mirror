@@ -19,9 +19,9 @@
 \starttypescriptcollection[fallback]
 
 \starttypescript [fallback]
-    \definetypeface [] [rm] [serif] [modern] [computer-modern]
-    \definetypeface [] [ss] [sans]  [modern] [computer-modern]
-    \definetypeface [] [tt] [mono]  [modern] [computer-modern]
+    \definetypeface [] [rm] [serif] [modern] [computer-modern] [features=default]
+    \definetypeface [] [ss] [sans]  [modern] [computer-modern] [features=default]
+    \definetypeface [] [tt] [mono]  [modern] [computer-modern] [features=default]
     \definetypeface [] [mm] [math]  [modern] [computer-modern]
     \quittypescriptscanning
 \stoptypescript
@@ -29,9 +29,9 @@
 % faster
 %
 % \starttypescript [fallback]
-%     \definetypeface [] [rm] [serif] [modern] [default]
-%     \definetypeface [] [ss] [sans]  [modern] [default]
-%     \definetypeface [] [tt] [mono]  [modern] [default]
+%     \definetypeface [] [rm] [serif] [modern] [default] [features=default]
+%     \definetypeface [] [ss] [sans]  [modern] [default] [features=default]
+%     \definetypeface [] [tt] [mono]  [modern] [default] [features=default]
 %     \definetypeface [] [mm] [math]  [modern] [default]
 %     \quittypescriptscanning
 % \stoptypescript
@@ -511,25 +511,25 @@
     \stoptypescript
 
     \starttypescript [modern]
-        \definetypeface [modern] [rm] [serif] [modern] [computer-modern]
-        \definetypeface [modern] [ss] [sans]  [modern] [computer-modern]
-        \definetypeface [modern] [tt] [mono]  [modern] [computer-modern]
+        \definetypeface [modern] [rm] [serif] [modern] [computer-modern] [features=default]
+        \definetypeface [modern] [ss] [sans]  [modern] [computer-modern] [features=default]
+        \definetypeface [modern] [tt] [mono]  [modern] [computer-modern] [features=default]
         \definetypeface [modern] [mm] [math]  [modern] [computer-modern]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [modern-base]
-        \definetypeface [modern] [rm] [serif] [modern] [default]
-        \definetypeface [modern] [ss] [sans]  [modern] [default]
-        \definetypeface [modern] [tt] [mono]  [modern] [default]
+        \definetypeface [modern] [rm] [serif] [modern] [default] [features=default]
+        \definetypeface [modern] [ss] [sans]  [modern] [default] [features=default]
+        \definetypeface [modern] [tt] [mono]  [modern] [default] [features=default]
         \definetypeface [modern] [mm] [math]  [modern] [default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [modernvariable]
-        \definetypeface [modernvariable] [rm] [serif] [simple] [default]
-        \definetypeface [modernvariable] [ss] [sans]  [modern] [default]
-        \definetypeface [modernvariable] [tt] [mono]  [modern] [default]
+        \definetypeface [modernvariable] [rm] [serif] [simple] [default] [features=default]
+        \definetypeface [modernvariable] [ss] [sans]  [modern] [default] [features=default]
+        \definetypeface [modernvariable] [tt] [mono]  [modern] [default] [features=default]
         \definetypeface [modernvariable] [mm] [math]  [modern] [default]
         \quittypescriptscanning
     \stoptypescript
@@ -751,65 +751,65 @@
     \stoptypescript
 
     \starttypescript [times,termes]
-        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-        \definetypeface [\typescriptone] [ss] [sans]  [helvetica]      [default] [rscale=0.9]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.05]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=default]
+        \definetypeface [\typescriptone] [ss] [sans]  [helvetica]      [default] [features=default,rscale=0.9]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [features=default,rscale=1.05]
         \definetypeface [\typescriptone] [mm] [math]  [times]          [default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [palatino,pagella]
-        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.075]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.075]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [features=default,rscale=1.075]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [features=default,rscale=1.075]
         \definetypeface [\typescriptone] [mm] [math]  [palatino]       [default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [schoolbook,schola]
-        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.1]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.1]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [features=default,rscale=1.1]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [features=default,rscale=1.1]
         \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.1]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [bookman,bonum]
-        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.1]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.1]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [features=default,rscale=1.1]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [features=default,rscale=1.1]
         \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.1]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [chancery,chorus]
-        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [features=default]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [features=default]
         \definetypeface [\typescriptone] [mm] [math]  [modern]         [default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [helvetica,heros]
-        \definetypeface [\typescriptone] [ss] [sans]  [\typescriptone] [default]
-        \definetypeface [\typescriptone] [rm] [serif] [modern]         [default] [rscale=1.15]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.15]
+        \definetypeface [\typescriptone] [ss] [sans]  [\typescriptone] [default] [features=default]
+        \definetypeface [\typescriptone] [rm] [serif] [modern]         [default] [features=default,rscale=1.15]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [features=default,rscale=1.15]
         \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.15]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [avantgarde,adventor]
-        \definetypeface [\typescriptone] [ss] [sans]  [adventor] [default]
-        \definetypeface [\typescriptone] [rm] [serif] [modern]   [default] [rscale=1.15]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]   [default] [rscale=1.15]
+        \definetypeface [\typescriptone] [ss] [sans]  [adventor] [default] [features=default]
+        \definetypeface [\typescriptone] [rm] [serif] [modern]   [default] [features=default,rscale=1.15]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]   [default] [features=default,rscale=1.15]
         \definetypeface [\typescriptone] [mm] [math]  [modern]   [default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [courier,cursor]
-        \definetypeface [\typescriptone] [tt] [mono]  [\typescriptone] [default]
-        \definetypeface [\typescriptone] [rm] [serif] [modern]         [default]
-        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default]
+        \definetypeface [\typescriptone] [tt] [mono]  [\typescriptone] [default] [features=default]
+        \definetypeface [\typescriptone] [rm] [serif] [modern]         [default] [features=default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [features=default]
         \definetypeface [\typescriptone] [mm] [math]  [modern]         [default]
         \quittypescriptscanning
     \stoptypescript
@@ -939,9 +939,9 @@
     \stoptypescript
 
     \starttypescript [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
-        \definetypeface[antykwa][rm][serif][\typescriptone] [default]
-        \definetypeface[antykwa][ss][sans] [modern]         [default,rscale=1.05]
-        \definetypeface[antykwa][tt][mono] [modern]         [default,rscale=1.05]
+        \definetypeface[antykwa][rm][serif][\typescriptone] [default] [features=default]
+        \definetypeface[antykwa][ss][sans] [modern]         [default] [features=default,rscale=1.05]
+        \definetypeface[antykwa][tt][mono] [modern]         [default] [features=default,rscale=1.05]
         \definetypeface[antykwa][mm][math] [\typescriptone] [default]
         \quittypescriptscanning
     \stoptypescript
@@ -1290,9 +1290,9 @@
     % condensed and extended variants are still missing
 
     \starttypescript [antykwa-poltawskiego,antykwa-poltawskiego-light]
-        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
-        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [rscale=1.05]
-        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [rscale=1.05]
+        \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=default]
+        \definetypeface [\typescriptone] [ss] [sans]  [modern]         [default] [features=default,rscale=1.05]
+        \definetypeface [\typescriptone] [tt] [mono]  [modern]         [default] [features=default,rscale=1.05]
         \definetypeface [\typescriptone] [mm] [math]  [modern]         [default] [rscale=1.05]
         \quittypescriptscanning
     \stoptypescript
@@ -1559,10 +1559,10 @@
     \stoptypescript
 
     \starttypescript [iwona,iwona-light,iwona-heavy,iwona-medium]
-        \definetypeface[\typescriptone][ss][sans] [\typescriptone] [default]
-        \definetypeface[\typescriptone][rm][serif][modern]         [default]
-        \definetypeface[\typescriptone][tt][mono] [modern]         [default]
-        \definetypeface[\typescriptone][mm][math] [\typescriptone] [default][text=ss]
+        \definetypeface[\typescriptone][ss][sans] [\typescriptone] [default] [features=default]
+        \definetypeface[\typescriptone][rm][serif][modern]         [default] [features=default]
+        \definetypeface[\typescriptone][tt][mono] [modern]         [default] [features=default]
+        \definetypeface[\typescriptone][mm][math] [\typescriptone] [default] [features=default,text=ss]
         \quittypescriptscanning
     \stoptypescript
 
@@ -1687,345 +1687,11 @@
 \starttypescriptcollection[postscript]
 
     \starttypescript [postscript]
-        \definetypeface [postscript] [rm] [serif] [times]     [default]
-        \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=0.9]
-        \definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1]
+        \definetypeface [postscript] [rm] [serif] [times]     [default] [features=default]
+        \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [features=default,rscale=0.9]
+        \definetypeface [postscript] [tt] [mono]  [courier]   [default] [features=default,rscale=1.1]
         \definetypeface [postscript] [mm] [math]  [times]     [default]
         \quittypescriptscanning
-    \stoptypescript
-
-\stoptypescriptcollection
-
-\starttypescriptcollection[lucida]
-
-    \definetypescriptprefix [e:ec]       [8t]
-    \definetypescriptprefix [e:texnansi] [8y]
-    \definetypescriptprefix [e:8r]       [8r]
-
-    % Lucida Bright
-
-    \starttypescript [serif] [lucida] [ec,texnansi,8r]
-        \definefontsynonym [\typescriptthree-lbr]    [hlhr\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaBright
-        \definefontsynonym [\typescriptthree-lbd]    [hlhb\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaBright-Demi
-        \definefontsynonym [\typescriptthree-lbi]   [hlhri\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaBright-Italic
-        \definefontsynonym [\typescriptthree-lbdi]  [hlhbi\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaBright-DemiItalic
-        \definefontsynonym [\typescriptthree-lbsl]  [hlhro\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaBright-Oblique
-        \definefontsynonym [\typescriptthree-lbrsc] [hlhrc\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaBrightSmallcaps
-        \definefontsynonym [\typescriptthree-lbdsc] [hlhbc\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaBrightSmallcaps-Demi
-
-        \definefontsynonym [LucidaBright]               [\typescriptthree-lbr]   [encoding=\typescriptthree]
-        \definefontsynonym [LucidaBright-Demi]          [\typescriptthree-lbd]   [encoding=\typescriptthree]
-        \definefontsynonym [LucidaBright-Italic]        [\typescriptthree-lbi]   [encoding=\typescriptthree]
-        \definefontsynonym [LucidaBright-DemiItalic]    [\typescriptthree-lbdi]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaBright-Oblique]       [\typescriptthree-lbsl]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaBrightSmallcaps]      [\typescriptthree-lbrsc] [encoding=\typescriptthree]
-        \definefontsynonym [LucidaBrightSmallcaps-Demi] [\typescriptthree-lbdsc] [encoding=\typescriptthree]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    % Lucida Bright Sans
-
-    \starttypescript [sans] [lucida] [ec,texnansi,8r]
-        \definefontsynonym [\typescriptthree-lsr]   [hlsr\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans
-        \definefontsynonym [\typescriptthree-lsd]   [hlsb\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-Demi
-        \definefontsynonym [\typescriptthree-lsb]   [hlsu\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-Bold
-        \definefontsynonym [\typescriptthree-lsi]  [hlsri\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-Italic
-        \definefontsynonym [\typescriptthree-lsdi] [hlsbi\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-DemiItalic
-        \definefontsynonym [\typescriptthree-lsbi] [hlsui\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-BoldItalic
-
-        \definefontsynonym [LucidaSans]            [\typescriptthree-lsr]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaSans-Demi]       [\typescriptthree-lsd]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaSans-Bold]       [\typescriptthree-lsb]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaSans-Italic]     [\typescriptthree-lsi]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaSans-DemiItalic] [\typescriptthree-lsdi] [encoding=\typescriptthree]
-        \definefontsynonym [LucidaSans-BoldItalic] [\typescriptthree-lsbi] [encoding=\typescriptthree]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    % Lucida Bright Typewriter
-
-    \starttypescript [mono] [lucida] [ec,texnansi,8r]
-        \definefontsynonym [\typescriptthree-lbtr]   [hlcrt\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaTypewriter
-        \definefontsynonym [\typescriptthree-lbtb]   [hlcbt\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaTypewriterBold
-        \definefontsynonym [\typescriptthree-lbto]  [hlcrot\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaTypewriterOblique
-        \definefontsynonym [\typescriptthree-lbtbo] [hlcbot\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaTypewriterBoldOblique
-
-        \definefontsynonym [LucidaTypewriter]            [\typescriptthree-lbtr]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaTypewriterBold]        [\typescriptthree-lbtb]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaTypewriterOblique]     [\typescriptthree-lbto]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaTypewriterBoldOblique] [\typescriptthree-lbtbo] [encoding=\typescriptthree]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    % Lucida Bright Sans Typewriter
-
-    \starttypescript [mono] [lucida] [ec,texnansi,8r]
-        \definefontsynonym [\typescriptthree-lstr]   [hlsrt\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-Typewriter
-        \definefontsynonym [\typescriptthree-lstb]   [hlsbt\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-TypewriterBold
-        \definefontsynonym [\typescriptthree-lsto]  [hlsrot\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-TypewriterOblique
-        \definefontsynonym [\typescriptthree-lstbo] [hlsbot\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaSans-TypewriterBoldOblique
-
-        \definefontsynonym [LucidaSans-Typewriter]            [\typescriptthree-lstr]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaSans-TypewriterBold]        [\typescriptthree-lstb]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaSans-TypewriterOblique]     [\typescriptthree-lsto]  [encoding=\typescriptthree]
-        \definefontsynonym [LucidaSans-TypewriterBoldOblique] [\typescriptthree-lstbo] [encoding=\typescriptthree]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    %  Lucida Calligraphy
-
-    \starttypescript [calligraphy] [lucida] [texnansi,ec,8r]
-        \definefontsynonym [\typescriptthree-lbc] [hlcrie\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaCalligraphy-Italic
-
-        \definefontsynonym [LucidaCalligraphy-Italic] [\typescriptthree-lbc] [encoding=\typescriptthree]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    % Lucida Casual
-
-    \starttypescript [casual] [lucida] [texnansi,ec,8r]
-        \definefontsynonym [\typescriptthree-lbkr]  [hlcrn\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaCasual
-        \definefontsynonym [\typescriptthree-lbki] [hlcrin\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaCasual-Italic
-
-        \definefontsynonym [LucidaCasual]        [\typescriptthree-lbkr] [encoding=\typescriptthree]
-        \definefontsynonym [LucidaCasual-Italic] [\typescriptthree-lbki] [encoding=\typescriptthree]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    % Lucida Handwriting
-
-    \starttypescript [handwriting] [lucida] [texnansi,ec,8r]
-        \definefontsynonym [\typescriptthree-lbh] [hlcriw\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaHandwriting-Italic
-
-        \definefontsynonym [LucidaHandwriting-Italic] [\typescriptthree-lbh] [encoding=\typescriptthree]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    % Lucida Fax
-
-    \starttypescript [fax] [lucida] [texnansi,ec,8r]
-        \definefontsynonym [\typescriptthree-lfr]    [hlxr\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaFax
-        \definefontsynonym [\typescriptthree-lfd]    [hlxb\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaFax-Demi
-        \definefontsynonym [\typescriptthree-lfi]   [hlxri\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaFax-Italic
-        \definefontsynonym [\typescriptthree-lfdi]  [hlxbi\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaFax-DemiItalic
-
-        \definefontsynonym [LucidaFax]            [\typescriptthree-lfr]  [encoding=\typescriptthree] % LucidaFax
-        \definefontsynonym [LucidaFax-Demi]       [\typescriptthree-lfd]  [encoding=\typescriptthree] % LucidaFax-Demi
-        \definefontsynonym [LucidaFax-Italic]     [\typescriptthree-lfi]  [encoding=\typescriptthree] % LucidaFax-Italic
-        \definefontsynonym [LucidaFax-DemiItalic] [\typescriptthree-lfdi] [encoding=\typescriptthree] % LucidaFax-DemiItalic
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    \starttypescript [blackletter] [lucida] [texnansi,ec,8r]
-        \definefontsynonym [\typescriptthree-lbl] [hlcrf\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree] % LucidaBlackletter
-
-        \definefontsynonym [LucidaBlackletter] [\typescriptthree-lbl] [encoding=\typescriptthree]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    \starttypescript [lucida,lucidabfm,lucidaboldmath] [texnansi,ec,8r]
-        \definetypeface [lucida] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucida] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucida] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucida] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucida] [cg] [calligraphy] [lucida] [default] [encoding=\typescripttwo]
-
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    \starttypescript [math] [lucida] [texnansi,ec,8r]
-        \definefontsynonym [LucidaBright]                [hlcrm]    % [encoding=\typescriptthree]
-        \definefontsynonym [LucidaNewMath-AltItalic]     [hlcrima]
-        \definefontsynonym [LucidaNewMath-Arrows]        [hlcra]
-        \definefontsynonym [LucidaNewMath-Extension]     [hlcrv]
-        \definefontsynonym [LucidaNewMath-Roman]         [hlcrm]
-        \definefontsynonym [LucidaNewMath-Italic]        [hlcrim]
-        \definefontsynonym [LucidaNewMath-Symbol]        [hlcry]
-        \definefontsynonym [LucidaBlackletter]           [hlcrf8y] % what a mess
-        \loadmapfile [lucida.map]
-    \stoptypescript
-
-    \starttypescript [boldmath,bfmath] [lucida] [texnansi,ec,8r]
-        \definefontsynonym [LucidaNewMath-AltDemiItalic] [hlcdima]
-        \definefontsynonym [LucidaNewMath-Arrows-Demi]   [hlcda]
-        \definefontsynonym [LucidaNewMath-Extension]     [hlcrv]
-        \definefontsynonym [LucidaNewMath-Demi]          [hlcdm]
-        \definefontsynonym [LucidaNewMath-DemiItalic]    [hlcdim]
-        \definefontsynonym [LucidaNewMath-Symbol-Demi]   [hlcdy]
-        \loadmapfile [lucida.map]
-    \stoptypescript
-
-    % Lucida Bright
-
-    \starttypescript [serif] [lucida] [name]
-        \definefontsynonym [Serif]            [LucidaBright]
-        \definefontsynonym [SerifBold]        [LucidaBright-Demi]
-        \definefontsynonym [SerifItalic]      [LucidaBright-Italic]
-        \definefontsynonym [SerifBoldItalic]  [LucidaBright-DemiItalic]
-        \definefontsynonym [SerifSlanted]     [LucidaBright-Oblique]
-        \definefontsynonym [SerifBoldSlanted] [LucidaBright-DemiItalic]
-        \definefontsynonym [SerifCaps]        [LucidaBrightSmallcaps]
-        \definefontsynonym [SerifBoldCaps]    [LucidaBrightSmallcaps-Demi]
-    \stoptypescript
-
-    % Lucida Bright Sans
-
-    \starttypescript [sans] [lucida] [name]
-        \definefontsynonym [Sans]            [LucidaSans]
-        \definefontsynonym [SansBold]        [LucidaSans-Demi]
-        \definefontsynonym [SansItalic]      [LucidaSans-Italic]
-        \definefontsynonym [SansBoldItalic]  [LucidaSans-DemiItalic]
-        \definefontsynonym [SansSlanted]     [LucidaSans-Italic]
-        \definefontsynonym [SansBoldSlanted] [LucidaSans-DemiItalic]
-        \definefontsynonym [SansCaps]        [LucidaSans]
-    \stoptypescript
-
-    % Lucida Bright Typewriter
-
-    % only one family may be used as mono; sans used to be that since the beginning,
-    % so we keep using that as default
-
-    % \starttypescript [mono] [lucida] [name]
-    % 	\definefontsynonym [Mono]            [LucidaTypewriter]
-    % 	\definefontsynonym [MonoBold]        [LucidaTypewriterBold]
-    % 	\definefontsynonym [MonoItalic]      [LucidaTypewriterOblique]
-    % 	\definefontsynonym [MonoBoldItalic]  [LucidaTypewriterBoldOblique]
-    % 	\definefontsynonym [MonoSlanted]     [LucidaTypewriterOblique]
-    % 	\definefontsynonym [MonoBoldSlanted] [LucidaTypewriterBoldOblique]
-    % 	\definefontsynonym [MonoCaps]        [LucidaTypewriter]
-    % \stoptypescript
-
-    % Lucida Bright Sans Typewriter
-
-    \starttypescript [mono] [lucida] [name]
-        \definefontsynonym [Mono]            [LucidaSans-Typewriter]
-        \definefontsynonym [MonoBold]        [LucidaSans-TypewriterBold]
-        \definefontsynonym [MonoItalic]      [LucidaSans-TypewriterOblique]
-        \definefontsynonym [MonoBoldItalic]  [LucidaSans-TypewriterBoldOblique]
-        \definefontsynonym [MonoSlanted]     [LucidaSans-TypewriterOblique]
-        \definefontsynonym [MonoBoldSlanted] [LucidaSans-TypewriterBoldOblique]
-        \definefontsynonym [MonoCaps]        [LucidaSans-Typewriter]
-    \stoptypescript
-
-    %  Lucida Calligraphy
-
-    \starttypescript [calligraphy] [lucida] [name]
-        \definefontsynonym [Calligraphy] [LucidaCalligraphy-Italic]
-    \stoptypescript
-
-    % Lucida Casual
-
-    % \starttypescript [casual] [lucida] [name]
-    % 	% LucidaCasual
-    % 	% LucidaCasual-Italic
-    % \stoptypescript
-
-    % Lucida Handwriting
-
-    \starttypescript [handwriting] [lucida] [name]
-        \definefontsynonym [Handwriting] [LucidaHandwriting-Italic]
-    \stoptypescript
-
-    % Lucida Fax
-    %
-    % \starttypescript [fax] [lucida] [name]
-    % 	\definefontsynonym [FaksRegular]    [LucidaFax]
-    % 	\definefontsynonym [FaksBold]       [LucidaFax-Demi]
-    % 	\definefontsynonym [FaksItalic]     [LucidaFax-Italic]
-    % 	\definefontsynonym [FaksBoldItalic] [LucidaFax-DemiItalic]
-    % \stoptypescript
-
-    % Lucida Black Letter
-    %
-    % \starttypescript [blackletter] [lucida] [name]
-    % 	\definefontsynonym [Blackletter] [LucidaBlackletter]
-    % \stoptypescript
-
-    % Lucida Math
-
-    \starttypescript [math] [lucida] [name]
-        \definefontsynonym [MathRoman]     [LucidaBright]
-        \definefontsynonym [MathExtension] [LucidaNewMath-Extension]
-        \definefontsynonym [MathItalic]    [LucidaNewMath-AltItalic]
-        \definefontsynonym [MathSymbol]    [LucidaNewMath-Symbol]
-        \definefontsynonym [MathAlpha]     [LucidaNewMath-Arrows]
-        \definefontsynonym [MathBeta]      [LucidaNewMath-Roman]
-    \stoptypescript
-
-    \starttypescript [math] [lucida] [name]
-        \definefontsynonym [OldStyle]     [MathItalic]
-        \definefontsynonym [Fraktur]      [eufm10]
-        \definefontsynonym [Blackboard]   [MathAlpha]
-        \definefontsynonym [Gothic]       [eufm10]
-        \definefontsynonym [Calligraphic] [MathSymbol] % math caligraphic !
-    \stoptypescript
-
-    \starttypescript [boldmath] [lucida] [name]
-        \definefontsynonym [MathRoman]     [LucidaBright-Demi]
-        \definefontsynonym [MathExtension] [LucidaNewMath-Extension]
-        \definefontsynonym [MathItalic]    [LucidaNewMath-AltDemiItalic]
-        \definefontsynonym [MathSymbol]    [LucidaNewMath-Symbol-Demi]
-        \definefontsynonym [MathAlpha]     [LucidaNewMath-Arrows-Demi]
-        \definefontsynonym [MathBeta]      [LucidaNewMath-Demi]
-    \stoptypescript
-
-    \starttypescript [bfmath] [lucida] [name]
-        \definefontsynonym [MathRomanBold]     [LucidaNewMath-Demi]
-        \definefontsynonym [MathExtensionBold] [LucidaNewMath-Extension]
-        \definefontsynonym [MathItalicBold]    [LucidaNewMath-AltDemiItalic]
-        \definefontsynonym [MathSymbolBold]    [LucidaNewMath-Symbol-Demi]
-        \definefontsynonym [MathAlphaBold]     [LucidaNewMath-Arrows-Demi]
-        \definefontsynonym [MathBetaBold]      [LucidaNewMath-Demi]
-    \stoptypescript
-
-    \starttypescript [lucida,lucidabfm,lucidaboldmath] [texnansi,ec,8r,uc]
-        \definetypeface [lucida] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucida] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucida] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucida] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucida] [cg] [calligraphy] [lucida] [default] [encoding=\typescripttwo]
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    \starttypescript [lucida] [texnansi,ec,8r]
-        \definetypeface [lucida]         [mm] [math] [lucida] [default] [encoding=\typescripttwo]
-    \stoptypescript
-
-    \starttypescript [lucidabfm] [texnansi,ec,8r]
-        \definetypeface [lucida]         [mm] [bfmath] [lucida] [default] [encoding=\typescripttwo]
-    \stoptypescript
-
-    \starttypescript [lucidaboldmath] [texnansi,ec,8r]
-        \definetypeface [lucida]         [mm] [boldmath] [lucida] [default] [encoding=\typescripttwo]
-    \stoptypescript
-
-    \starttypescript [lucidabfm] [texnansi,ec,8r,uc]
-        \definetypeface [lucidabfm] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidabfm] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidabfm] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidabfm] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidabfm] [cg] [calligraphy] [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidabfm] [mm] [bfmath] [lucida] [default] [encoding=\typescripttwo]
-        \loadmapfile[lucida.map]
-    \stoptypescript
-
-    \starttypescript [lucidaboldmath] [texnansi,ec,8r,uc]
-        \definetypeface [lucidaboldmath] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidaboldmath] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidaboldmath] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidaboldmath] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidaboldmath] [cg] [calligraphy] [lucida] [default] [encoding=\typescripttwo]
-        \definetypeface [lucidaboldmath] [mm] [boldmath]    [lucida] [default] [encoding=\typescripttwo]
-        \loadmapfile[lucida.map]
     \stoptypescript
 
 \stoptypescriptcollection

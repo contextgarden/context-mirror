@@ -1774,7 +1774,8 @@
    \fi\fi}
 
 \def\dovspacingyes[#1]%
-  {\ifmmode\else\ctxlua{vspacing.analyse("\iffirstargument#1\else\s!default\fi")}\fi}
+ %{\ifmmode\else\ctxlua{vspacing.analyse("\iffirstargument#1\else\s!default\fi")}\fi}
+  {\ifmmode\else\ctxlua{vspacing.analyse("\iffirstargument#1\else\currentvspacing\fi")}\fi}
 
 \def\dovspacingnop[#1]%
   {\ifmmode\else\par\fi}
@@ -1783,7 +1784,7 @@
 
 \definecomplexorsimple\setupvspacing
 
-\let\currentvspacing\empty
+\let\currentvspacing\s!default
 
 \def\complexsetupvspacing[#1]%
   {\edef\currentvspacing{#1}}
@@ -1851,7 +1852,7 @@
 \definevspacing[\v!weak]      [order:0]
 \definevspacing[\v!strong]    [order:100]
 
-\definevspacing[\s!default] [\v!white] % was big for a while
+\definevspacing[\s!default]   [\v!white] % was big for a while
 
 \dorecurse{10} % todo: other values < 4000
   {\expanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr4000+250*\recurselevel\relax]}}
@@ -2009,6 +2010,7 @@
 \getparameters
   [\??rg]
   [\c!option=,
+   \c!command=,
    \c!before=\blank,
    \c!after=\blank,
    \c!inbetween=\blank,
@@ -2032,9 +2034,41 @@
      {\def\docommand##1{\getparameters[\??rg##1][#2]}%
       \processcommacommand[#1]\docommand}}
 
+% \def\dostartlines[#1]%
+%   {\bgroup
+%    \edef\currentlines{#1}%
+%    \linesparameter\c!before
+%    \pushmacro\checkindentation
+%    \whitespace
+%    \begingroup
+%    \dosetlinesattributes\c!style\c!color
+%    \setupindenting[\linesparameter\c!indenting]%
+%    \setupalign[\linesparameter\c!align]%
+%    \typesettinglinestrue
+%    \setupwhitespace[\v!none]%
+%    \obeylines
+%    \ignorespaces
+%    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
+%      {\gdef\afterfirstobeyedline
+%         {\nobreak
+%          \doifnot{\linesparameter\c!option}\v!packed{\global\let\afterfirstobeyedline\relax}}}%
+%    \def\obeyedline
+%      {\par
+%       \futurelet\next\dobetweenthelines}%
+%    \activatespacehandler{\linesparameter\c!space}%
+%    \GotoPar}
+
 \def\dostartlines[#1]%
   {\bgroup
    \edef\currentlines{#1}%
+   \obeylines
+   \dosingleempty\dodostartlines}
+
+\def\dodostartlines[#1]% new: optional second argument (WS)
+  {\iffirstargument
+     \getparameters[\??rg\currentlines][#1]%
+   \fi
+   \edef\linesoption{\linesparameter\c!option}%
    \linesparameter\c!before
    \pushmacro\checkindentation
    \whitespace
@@ -2044,12 +2078,13 @@
    \setupalign[\linesparameter\c!align]%
    \typesettinglinestrue
    \setupwhitespace[\v!none]%
-   \obeylines
+   %\obeylines % move upwards to keep spaces in the first line due to optional argument
    \ignorespaces
    \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
-     {\gdef\afterfirstobeyedline
-        {\nobreak
-         \doifnot{\linesparameter\c!option}\v!packed{\global\let\afterfirstobeyedline\relax}}}%
+     {\linesparameter\c!command
+      \gdef\afterfirstobeyedline
+        {\ifx\linesoption\v!packed\nobreak\fi
+         \linesparameter\c!command}}%
    \def\obeyedline
      {\par
       \futurelet\next\dobetweenthelines}%

@@ -508,6 +508,7 @@ class Commands
                     combination = @commandline.checkedoption('combination','2*2').split(/[\*x]/o)
                     paperformat = @commandline.checkedoption('paperformat', 'A4*A4').split(/[\*x]/o)
                     bannerheight = @commandline.checkedoption('bannerheight', '')
+                    pdftitle = @commandline.checkedoption('pdftitle', '')
                     nx, ny = combination[0] || '2', combination[1] || combination[0] || '2'
                     from, to = paperformat[0] || 'A4', paperformat[1] || paperformat[0] || 'A4'
                     f << "\\setuppapersize[#{from}][#{to}]\n"
@@ -525,8 +526,10 @@ class Commands
                         f << "\\setuplayout[footer=0cm]\n"
                         f << "\\setupbackgrounds[page][background=]\n"
                     end
-                    f << "\\setupexternalfigures\n"
-                    f << "  [directory=]\n"
+                    f << "\\setupexternalfigures[directory=]\n"
+                    if not pdftitle.empty? then
+                        f << "\\setupinteraction[state=start,title={#{pdftitle}}]\n"
+                    end
                     f << "\\starttext\n"
                     files.each do |filename|
                         result = @commandline.checkedoption('result','texexec')

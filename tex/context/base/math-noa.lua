@@ -27,7 +27,7 @@ local trace_remapping  = false  trackers.register("math.remapping",  function(v)
 local trace_processing = false  trackers.register("math.processing", function(v) trace_processing = v end)
 local trace_analyzing  = false  trackers.register("math.analyzing",  function(v) trace_analyzing  = v end)
 
-local report_noads = logs.new("noads")
+local report_noads = logs.new("mathematics")
 
 local noad_ord               =  0
 local noad_op_displaylimits  =  1

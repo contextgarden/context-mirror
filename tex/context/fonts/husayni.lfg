@@ -74,8 +74,12 @@ return {
     },
     solutions = { -- here we have references to featuresets, so we use strings!
         experimental = {
-            less = { "shrink" },
-            more = { "minimal_stretching", "medium_stretching", "maximal_stretching", "wide_all" },
+            less = {
+                "shrink"
+            },
+            more = {
+                "minimal_stretching", "medium_stretching", "maximal_stretching", "wide_all"
+            },
         },
     },
     stylistics = {
@@ -159,16 +163,34 @@ return {
     colorschemes = {
         default = {
             [1] = {
-				"Onedotabove", "Onedotbelow", "Twodotsabove", "Twodotsbelow", "Threedotsabove", "Twodotsabove.vrt", "Twodotsbelow.vrt", "Twodotsabove.KBA", "Threedotsabove.KBA", "Threedotsbelowinv", "Hamzahabove", "Hamzahbelow", "MaaddahHamzah.identity", "Waslah","Hamzah.initial_medial",
+                "Onedotabove", "Onedotbelow", "Twodotsabove", "Twodotsbelow", "Threedotsabove", "Twodotsabove.vrt",
+                "Twodotsbelow.vrt", "Twodotsabove.KBA", "Threedotsabove.KBA", "Threedotsbelowinv", "Hamzahabove",
+                "Hamzahbelow", "MaaddahHamzah.identity", "Waslah", "Hamzah.initial_medial",
             },
             [2] = {
-				"Fathah", "Dammah", "Kasrah", "FathahVertical", "DammahInverted", "KasrahVertical", "FathahVertical.alt1", "KasrahVertical.alt1", "FathahTanwiin", "DammahTanwiin", "KasrahTanwiin", "Shaddah", "Sukuun", "MaaddahHamzah", "Jazm", "Maaddah", "DammahTanwiin_alt2", "DammahTanwiin_alt1", "FathahTanwiin_alt1", "KasrahTanwiin_alt1", "Fathah.mkmk", "Dammah.mkmk", "Kasrah.mkmk", "FathahVertical.mkmk", "DammahInverted.mkmk", "KasrahVertical.mkmk", "FathahTanwiin.mkmk", "DammahTanwiin.mkmk", "KasrahTanwiin.mkmk", "DammahTanwiin_alt1.mkmk", "Waawsmall", "Yaasmall", "FathahVertical.alt2", "Waawsmall.isol", "Yaasmall.isol", "FathahVertical.isol", "Hamzah","Shaddah.lillaah","FathahVertical.alt1_mkmk","Sifr.empty","Maaddah.small","FathahVertical.alt2","Waawsmall.isol","Yaasmall.isol","FathahTanwiin.alt1_mkmk","KasrahTanwiin.alt1_mkmk",
+                "Fathah", "Dammah", "Kasrah", "FathahVertical", "DammahInverted", "KasrahVertical",
+                "FathahVertical.alt1", "KasrahVertical.alt1", "FathahTanwiin", "DammahTanwiin", "KasrahTanwiin",
+                "Shaddah", "Sukuun", "MaaddahHamzah", "Jazm", "Maaddah", "DammahTanwiin_alt2", "DammahTanwiin_alt1",
+                "FathahTanwiin_alt1",  "KasrahTanwiin_alt1", "Fathah.mkmk", "Dammah.mkmk", "Kasrah.mkmk",
+                "FathahVertical.mkmk", "DammahInverted.mkmk", "KasrahVertical.mkmk", "FathahTanwiin.mkmk",
+                "DammahTanwiin.mkmk", "KasrahTanwiin.mkmk", "DammahTanwiin_alt1.mkmk", "Waawsmall", "Yaasmall",
+                "FathahVertical.alt2", "Waawsmall.isol", "Yaasmall.isol", "FathahVertical.isol", "Hamzah",
+                "Shaddah.lillaah", "FathahVertical.alt1_mkmk", "Sifr.empty", "Maaddah.small", "FathahVertical.alt2",
+                "Waawsmall.isol", "Yaasmall.isol", "FathahTanwiin.alt1_mkmk", "KasrahTanwiin.alt1_mkmk",
             },
             [3] = {
-				"Ttaa.waqf", "SsLY.waqf", "QLY.waqf", "Miim.waqf", "LA.waqf", "Jiim.waqf", "Threedotsabove.waqf", "Siin.waqf", "Ssaad.waqf", "Qaaf.waqf", "SsL.waqf", "QF.waqf", "SKTH.waqf", "WQFH.waqf", "Kaaf.waqf", "Ayn.ruku", "Miim.nuun_high", "Siin.Ssaad", "Nuunsmall", "emptydot_low", "emptydot_high", "Sifr.fill", "Miim.nuun_low", "Nuun.tanwiin",
+                "Ttaa.waqf", "SsLY.waqf", "QLY.waqf", "Miim.waqf", "LA.waqf", "Jiim.waqf", "Threedotsabove.waqf",
+                "Siin.waqf", "Ssaad.waqf", "Qaaf.waqf", "SsL.waqf", "QF.waqf", "SKTH.waqf", "WQFH.waqf",
+                "Kaaf.waqf", "Ayn.ruku", "Miim.nuun_high", "Siin.Ssaad", "Nuunsmall", "emptydot_low",
+                "emptydot_high", "Sifr.fill", "Miim.nuun_low", "Nuun.tanwiin",
             },
             [4] = {
-                "ZeroArabic.ayah", "OneArabic.ayah", "TwoArabic.ayah", "ThreeArabic.ayah", "FourArabic.ayah", "FiveArabic.ayah", "SixArabic.ayah", "SevenArabic.ayah", "EightArabic.ayah", "NineArabic.ayah", "FourFarsi.ayah", "FiveFarsi.ayah", "SixFarsi.ayah", "FourFarsi.urdu_ayah", "SevenFarsi.urdu_ayah","ZeroArabic.ayah_small","OneArabic.ayah_small","TwoArabic.ayah_small","ThreeArabic.ayah_small","FourArabic.ayah.001","FiveArabic.ayah_small","SixArabic.ayah_small","SevenArabic.ayah_small","EightArabic.ayah_small","NineArabic.ayah_small",
+                "ZeroArabic.ayah", "OneArabic.ayah", "TwoArabic.ayah", "ThreeArabic.ayah", "FourArabic.ayah",
+                "FiveArabic.ayah", "SixArabic.ayah", "SevenArabic.ayah", "EightArabic.ayah", "NineArabic.ayah",
+                "FourFarsi.ayah", "FiveFarsi.ayah", "SixFarsi.ayah", "FourFarsi.urdu_ayah", "SevenFarsi.urdu_ayah",
+                "ZeroArabic.ayah_small", "OneArabic.ayah_small", "TwoArabic.ayah_small", "ThreeArabic.ayah_small",
+                "FourArabic.ayah.001", "FiveArabic.ayah_small", "SixArabic.ayah_small", "SevenArabic.ayah_small",
+                "EightArabic.ayah_small", "NineArabic.ayah_small",
             },
             [5] = {
                 "Ayah", "Ayah.alt1", "Ayah.alt2", "Ayah.alt3", "Ayah2",
