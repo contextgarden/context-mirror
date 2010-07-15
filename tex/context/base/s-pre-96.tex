@@ -1,0 +1,188 @@
+%D \module
+%D   [      file=s-pre-26,
+%D        version=1999.08.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 26,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\setuppapersize
+  [S44][S44]
+
+\definetypeface[main][rm][casual][informal][default]
+
+\setupbodyfont[main,13pt]
+
+\setuplayout
+  [backspace=0pt,
+   topspace=0pt,
+   header=0pt,
+   footer=0pt,
+   bottom=0pt,
+   width=middle,
+   height=fit]
+
+\setupbottom
+  [style=\ssbf,
+   color=white]
+
+\setupfooter
+  [style=\ssbfb,
+   color=white]
+
+\setupinteraction
+  [state=start,
+   click=no]
+
+\setupinteractionscreen
+  [option=max]
+
+\definecolor[white] [s=.8]
+\definecolor[red]   [r=.7]
+\definecolor[green] [g=.7]
+\definecolor[blue]  [b=.7]
+\definecolor[yellow][r=.7,g=.7]
+
+\setupcolors
+  [state=start]
+
+\defineoverlay [page]     [\reuseMPgraphic{page}]
+\defineoverlay [text]     [\useMPgraphic  {text}]
+\defineoverlay [continue] [\overlaybutton {nextpage}]
+
+\setupbackgrounds % otherwise in acrobat 5 rounding error
+  [paper]         % and one pixel white line
+  [background=page]
+
+\setupbackgrounds
+  [page]
+  [background={page,continue}]
+
+\definecolor [PageColor][black]
+
+\definecolor [TextColor 0][white]
+\definecolor [TextColor 1][red]
+\definecolor [TextColor 2][green]
+\definecolor [TextColor 3][blue]
+\definecolor [TextColor 4][yellow]
+
+\definecolor [TextColor] [TextColor 0]
+
+\defineframedtext
+  [TopicPage]
+
+\defineframedtext
+  [TopicText]
+
+\setupframedtexts
+  [TopicPage]
+  [width=\textwidth,
+   height=\textheight,
+   offset=overlay]
+
+\setupframedtexts
+  [TopicText]
+  [offset=10pt,
+   style=bold,
+   width=\TopicWidth,
+   background=text,
+   align=normal]
+
+\setupframedtexts
+  [TopicPage,TopicText]
+  [frame=off,
+   depthcorrection=off,
+   before=,
+   after=]
+
+\newbox    \TopicBox     % we stack old pages
+\newcounter\KindOfTopic  % and cycle through corners
+\newdimen  \TopicWidth   % with randomized widths
+
+\setupinteraction
+  [color=lightgray,
+   contrastcolor=lightgray,
+   style=]
+
+\def\StartTopic
+  {\definecolor[TextColor][TextColor \KindOfTopic]
+   \ifcase\KindOfTopic\relax
+     \TopicWidth=.7\textwidth
+   \else
+     \getrandomdimen\TopicWidth{.55\textwidth}{.7\textwidth}
+   \fi
+   \ifcase\KindOfTopic\relax
+     \setupframedtexts [TopicPage] [align={middle,lohi}] \or
+     \setupframedtexts [TopicPage] [align={right,high}]  \or
+     \setupframedtexts [TopicPage] [align={left,high}]   \or
+     \setupframedtexts [TopicPage] [align={left,low}]    \or
+     \setupframedtexts [TopicPage] [align={right,low}]   \fi
+   \setbox\scratchbox=\vbox \bgroup \dontcomplain
+     \noindent \startTopicPage [none]
+       \noindent \startTopicText [none] }
+
+\def\StopTopic%
+  {\stopTopicText
+   \stopTopicPage
+   \egroup
+   \global\setbox\TopicBox=\vbox
+     {\startoverlay
+        {\box\TopicBox} {\box\scratchbox}
+      \stopoverlay}
+   \copy\TopicBox
+   \ifnum\KindOfTopic=4
+     \def\KindOfTopic{1}
+   \else
+     \increment\KindOfTopic
+   \fi
+   \getrandomdimen\TopicWidth{.55\textwidth}{.7\textwidth}
+   \page}
+
+\startuseMPgraphic{text}
+  path p ; p := unitsquare xyscaled (OverlayWidth,OverlayHeight) ;
+  color c ; c := (.7+uniformdeviate.3)*\MPcolor{TextColor} ;
+  p := p enlarged -1.25pt ;
+  filldraw p withcolor c ;
+  draw p withpen pencircle scaled 2.5pt withcolor .75c ;
+\stopuseMPgraphic
+
+\startreusableMPgraphic{page}
+  path p ; p := unitsquare xyscaled (OverlayWidth,OverlayHeight) ;
+  color c ; c := \MPcolor{PageColor} ;
+  filldraw p enlarged 5pt withcolor c ; % bleeding
+  draw p withpen pencircle scaled 2.5pt withcolor c ;
+\stopreusableMPgraphic
+
+\def\StartNopic
+  {\def\KindOfTopic{0} % centered at the page
+   \StartTopic
+     \bfd\setupinterlinespace
+     \def\\{\blank\bfb\setupinterlinespace}
+     \raggedcenter}
+
+\def\StopNopic
+  {\StopTopic}
+
+\def\TitlePage#1%
+  {\StartNopic#1\StopNopic}
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+\StartNopic
+  a dull talk \\ \currentdate
+\StopNopic
+
+\dorecurse{10}{\StartTopic \input tufte \StopTopic}
+
+\StartNopic
+  that's it \\ goodbye
+\StopNopic
+
+\stoptext

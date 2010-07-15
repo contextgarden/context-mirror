@@ -87,12 +87,17 @@
         },
         userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
    }}}%
-   \expanded{\ctxlatelua{structure.lists.enhance(\currentlistnumber)}}%
-   % new from here
-   \xdef\currentstructurelistattribute{\ctxlua{tex.write(jobreferences.setinternalreference(nil,nil,\nextinternalreference))}}%
-   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
-   \begingroup\attribute\destinationattribute\currentdestinationattribute\hbox{}\endgroup % todo
-   % end of new
+   \edef\structurelistsynchronize{\getvalue{\??li::inject::#2::synchronize}}%
+   \ifx\structurelistsynchronize\v!yes
+     % this injects nodes !
+     \expanded{\ctxlatelua{structure.lists.enhance(\currentlistnumber)}}%
+     % new from here
+     \xdef\currentstructurelistattribute{\ctxlua{tex.write(jobreferences.setinternalreference(nil,nil,\nextinternalreference))}}%
+     \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+     %begingroup\attribute\destinationattribute\currentdestinationattribute\dontleavehmode\hbox{}\endgroup % todo
+     \dontleavehmode\hbox attr \destinationattribute \currentdestinationattribute{}% todo
+     % end of new
+   \fi
    \endgroup}
 
 \def\structurelistlocation
@@ -331,6 +336,12 @@
 
 \let\dowritetolist  \gobblefourarguments
 \let\dodowritetolist\gobblefourarguments
+
+% some day we will have \definestructurelistinjector or maybe just as key in #3
+
+\letvalue{\??li::inject::command::synchronize}\v!no
+\letvalue{\??li::inject::userdata::synchronize}\v!no
+\letvalue{\??li::inject::simple::synchronize}\v!yes
 
 \unexpanded\def\writebetweenlist[#1]#2%
   {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][command][command={#2}]}}

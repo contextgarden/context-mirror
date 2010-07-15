@@ -131,3 +131,31 @@
 
 \def\StopTitlePage
   {\stopstandardmakeup}
+
+\doifnotmode{demo} {\endinput}
+
+\starttext
+
+\StartTitlePage x\\y\\z \StopTitlePage
+
+\StartRemark{a}
+    a \FlushStep
+    a \FlushStep
+\StopRemark
+
+\StartRemark{b}
+    b \FlushStep
+    b \FlushStep
+    b \FlushStep
+\StopRemark
+
+\StartRemark{c}
+    c \FlushStep
+    c \FlushStep
+    c \FlushStep
+    c \FlushStep
+\StopRemark
+
+\stoptext
+
+

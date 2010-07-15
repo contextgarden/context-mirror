@@ -1637,10 +1637,17 @@
 
     \starttypescript[mscore]
         \definetypeface [mscore] [rm] [serif] [mscoretimes]   [default]
-        \definetypeface [mscore] [ss] [sans]  [mscorearial]   [default] [rscale=0.860]
-        \definetypeface [mscore] [tt] [mono]  [mscorecourier] [default] [rscale=1.065]
-        \definetypeface [mscore] [mm] [math]  [times]         [default] [rscale=1.020]
+        \definetypeface [mscore] [ss] [sans]  [mscorearial]   [default] [\s!rscale=0.860]
+        \definetypeface [mscore] [tt] [mono]  [mscorecourier] [default] [\s!rscale=1.065]
+        \definetypeface [mscore] [mm] [math]  [times]         [default] [\s!rscale=1.020]
     \stoptypescript
+
+  % \starttypescript[mscoress]
+  %     \definetypeface [mscoress] [ss] [sans]  [mscorearial]   [default]
+  %     \definetypeface [mscoress] [rm] [serif] [mscoretimes]   [default] [rscale=1.160]
+  %     \definetypeface [mscoress] [tt] [mono]  [mscorecourier] [default] [rscale=1.240]
+  %     \definetypeface [mscoress] [mm] [math]  [times]         [default] [rscale=1.185]
+  % \stoptypescript
 
 \stoptypescriptcollection
 
@@ -1672,9 +1679,9 @@
 
     \starttypescript[liberation]
         \definetypeface [liberation] [rm] [serif] [liberation] [default]
-        \definetypeface [liberation] [ss] [sans]  [liberation] [default] [rscale=0.870]
-        \definetypeface [liberation] [tt] [mono]  [liberation] [default] [rscale=0.870]
-        \definetypeface [liberation] [mm] [math]  [times]      [default] [rscale=1.040]
+        \definetypeface [liberation] [ss] [sans]  [liberation] [default] [\s!rscale=0.870]
+        \definetypeface [liberation] [tt] [mono]  [liberation] [default] [\s!rscale=0.870]
+        \definetypeface [liberation] [mm] [math]  [times]      [default] [\s!rscale=1.040]
     \stoptypescript
 
 \stoptypescriptcollection
@@ -1699,32 +1706,42 @@
         \definefontsynonym [Libertine-Italic]     [\s!file:fxlri]
         \definefontsynonym [Libertine-Bold]       [\s!file:fxlb]
         \definefontsynonym [Libertine-BoldItalic] [\s!file:fxlbi]
-        \definefontsynonym [Libertine-SmallCaps]  [file:fxlrc]
     \stoptypescript
 
     \starttypescript [serif] [libertine] [name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]           [Libertine-Regular]    [\s!features=\s!default]
         \definefontsynonym [\s!SerifItalic]     [Libertine-Italic]     [\s!features=\s!default]
-      % \definefontsynonym [\s!SerifSlanted]    [Libertine-Italic]     [\s!features=\s!default]
         \definefontsynonym [\s!SerifBold]       [Libertine-Bold]       [\s!features=\s!default]
         \definefontsynonym [\s!SerifBoldItalic] [Libertine-BoldItalic] [\s!features=\s!default]
-      % \definefontsynonym [\s!SerifBoldSlanted][Libertine-BoldItalic] [\s!features=\s!default]
-        \definefontsynonym [\s!SerifCaps]       [Libertine-SmallCaps]  [\s!features=\s!default]
+        \definefontsynonym [\s!SerifCaps]       [Libertine-Regular]    [\s!features=\s!smallcaps]
     \stoptypescript
 
-    \starttypescript [libertine]
-        \definetypeface [libertine] [tt] [mono]  [default]   [default]
-        \definetypeface [libertine] [ss] [sans]  [default]   [default]
-        \definetypeface [libertine] [rm] [serif] [libertine] [default]
+    \starttypescript [sans] [biolinum]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [Biolinum-Regular]    [\s!file:fxbr.otf]
+        \definefontsynonym [Biolinum-Bold]       [\s!file:fxbb.otf]
+        \definefontsynonym [Biolinum-Italic]     [\s!file:fxbri.otf]
+        \definefontsynonym [Biolinum-Slanted]    [\s!file:fxbro.otf]
+        \definefontsynonym [Biolinum-BoldItalic] [\s!file:fxbbo.otf]
     \stoptypescript
 
     \starttypescript [sans] [biolinum] [name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [\s!file:fxbr.otf]  [\s!features=\s!default]
-        %definefontsynonym [\s!SansBold]       [\s!file:fxbb.otf]  [\s!features=\s!default] % unfinished
-        %definefontsynonym [\s!SansItalic]     [\s!file:fxbri.otf] [\s!features=\s!default] % nonexistent
-        %definefontsynonym [\s!SansBoldItalic] [\s!file:fxbbi.otf] [\s!features=\s!default] % nonexistent
+        \definefontsynonym [\s!Sans]           [Biolinum-Regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [Biolinum-Bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [Biolinum-Italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansSlanted]    [Biolinum-Slanted]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [Biolinum-BoldItalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SansCaps]       [Biolinum-Regular]    [\s!features=\s!smallcaps]
+    \stoptypescript
+
+    \starttypescript [libertine]
+        \definetypeface [libertine] [rm] [serif] [libertine] [default]
+        \definetypeface [libertine] [ss] [sans]  [biolinum]  [default]
+        \definetypeface [libertine] [tt] [mono]  [default]   [default]
+        %definetypeface [libertine] [mm] [math]  [times]     [default]
+        \quittypescriptscanning
     \stoptypescript
 
 \stoptypescriptcollection
@@ -1767,9 +1784,9 @@
 
     \starttypescript [pagella-euler]
         \definetypeface [\typescriptone] [rm] [\s!serif] [pagella] [\s!default]
-    %   \definetypeface [\typescriptone] [ss] [\s!sans]  [pagella] [\s!default] [\s!rscale=auto]
-        \definetypeface [\typescriptone] [tt] [\s!mono]  [modern]  [\s!default] [\s!rscale=auto]
-        \definetypeface [\typescriptone] [mm] [\s!math]  [euler]   [\s!default] [\s!rscale=auto]
+    %   \definetypeface [\typescriptone] [ss] [\s!sans]  [pagella] [\s!default]
+        \definetypeface [\typescriptone] [tt] [\s!mono]  [modern]  [\s!default]
+        \definetypeface [\typescriptone] [mm] [\s!math]  [euler]   [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
@@ -1780,7 +1797,7 @@
 
     \starttypescript [euler]
         \definetypeface [euler] [rm] [\s!serif] [euler]  [\s!default]
-        \definetypeface [euler] [tt] [\s!mono]  [modern] [\s!default] [\s!rscale=auto]
+        \definetypeface [euler] [tt] [\s!mono]  [modern] [\s!default]
         \definetypeface [euler] [mm] [\s!math]  [euler]  [\s!default]
         \quittypescriptscanning
     \stoptypescript
@@ -1836,6 +1853,21 @@
         \definetypeface [xits] [ss] [\s!sans]  [heros]  [\s!default] [\s!rscale=0.9]
         \definetypeface [xits] [tt] [\s!mono]  [modern] [\s!default] [\s!rscale=1.05]
         \definetypeface [xits] [mm] [\s!math]  [xits]   [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[punk]
+
+    \definefontfeature[punknova][mode=node,script=latn,rand=yes,kern=yes,liga=yes,tlig=yes]
+
+    \starttypescript [serif] [punknova]
+        \setups[font:fallback:serif] % no style variants yet, actually it's a sans
+        \definefontsynonym [Serif] [file:punknova] [features=punknova]
+    \stoptypescript
+
+    \starttypescript [punknova]
+        \definetypeface [punknova] [rm] [serif] [punknova] [default]
     \stoptypescript
 
 \stoptypescriptcollection

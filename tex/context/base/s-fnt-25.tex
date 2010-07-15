@@ -92,86 +92,89 @@ function document.showmathfont(id,slot)
     end
     local round = math.round
 --  print(table.serialize(names))
+local limited = true
     for _, s in next, sorted do
-        local char = characters[s]
-        if char then
-            local info = data[s]
-            local cnext, cvert_variants, choriz_variants = char.next, char.vert_variants, char.horiz_variants
-            report("\\startmathfontlistentry")
-            report("\\mathfontlistentryhexdectit{U+%05X}{%s}{%s}",s,s,string.lower(info.description or "no description, private to font"))
-            report("\\mathfontlistentrywdhtdpic{%s}{%s}{%s}{%s}",round(char.width or 0),round(char.height or 0),round(char.depth or 0),round(char.italic or 0))
-            if virtual then
-                local commands = char.commands
-                if commands then
-                    local t = { }
-                    for i=1,#commands do
-                        local ci = commands[i]
-                        if ci[1] == "slot" then
-                            local fnt, idx = ci[2], ci[3]
-                            t[#t+1] = string.format("%s/%0X",names[fnt] or fnt,idx)
+        if not limited or s < 0xF0000 then
+            local char = characters[s]
+            if char then
+                local info = data[s]
+                local cnext, cvert_variants, choriz_variants = char.next, char.vert_variants, char.horiz_variants
+                report("\\startmathfontlistentry")
+                report("\\mathfontlistentryhexdectit{U+%05X}{%s}{%s}",s,s,string.lower(info.description or "no description, private to font"))
+                report("\\mathfontlistentrywdhtdpic{%s}{%s}{%s}{%s}",round(char.width or 0),round(char.height or 0),round(char.depth or 0),round(char.italic or 0))
+                if virtual then
+                    local commands = char.commands
+                    if commands then
+                        local t = { }
+                        for i=1,#commands do
+                            local ci = commands[i]
+                            if ci[1] == "slot" then
+                                local fnt, idx = ci[2], ci[3]
+                                t[#t+1] = string.format("%s/%0X",names[fnt] or fnt,idx)
+                            end
                         end
-                    end
-                    if #t > 0 then
-                        report("\\mathfontlistentryresource{%s}",table.concat(t,", "))
-                    end
-                end
-            end
-            if info.mathclass then
-                report("\\mathfontlistentryclassname{%s}{%s}",info.mathclass,info.mathname or "no name")
-            end
-            if info.mathspec then
-                for i=1,#info.mathspec do
-                    report("\\mathfontlistentryclassname{%s}{%s}",info.mathspec[i].class,info.mathspec[i].name or "no name")
-                end
-            end
-            if info.mathsymbol then
-                report("\\mathfontlistentrysymbol{U+%05X}{%s}",info.mathsymbol,info.mathsymbol)
-            end
-            if cnext then
-                local t, done = { }, { }
-                while cnext do
-                    if done[cnext] then
-                        t[#t+1] = "CYCLE"
-                        break
-                    else
-                        done[cnext] = true
-                        t[#t+1] = string.format("\\mathfontlistentrynext{U+%05X}{%s}",cnext,cnext)
-                        cnext = characters[cnext]
-                        cvert_variants = cnext.vert_variants or cvert_variants
-                        choriz_variants = cnext.horiz_variants or choriz_variants
-                        if cnext then
-                            cnext = cnext.next
+                        if #t > 0 then
+                            report("\\mathfontlistentryresource{%s}",table.concat(t,", "))
                         end
                     end
                 end
-                cnext = t
-            end
-            if cvert_variants then
-                local t = { }
-                for k, v in next, cvert_variants do
-                    t[#t+1] = string.format("\\fontlistentryvariants{U+%05X}{%s}",v.glyph,v.glyph)
+                if info.mathclass then
+                    report("\\mathfontlistentryclassname{%s}{%s}",info.mathclass,info.mathname or "no name")
                 end
-                cvert_variants = t
-            end
-            if choriz_variants then
-                local t = { }
-                for k, v in next, choriz_variants do
-                    t[#t+1] = string.format("\\fontlistentryvariants{U+%05X}{%s}",v.glyph,v.glyph)
+                if info.mathspec then
+                    for i=1,#info.mathspec do
+                        report("\\mathfontlistentryclassname{%s}{%s}",info.mathspec[i].class,info.mathspec[i].name or "no name")
+                    end
                 end
-                choriz_variants = t
-            end
-            local cvariants = choriz_variants or cvert_variants
-            if cvariants and cnext then
-                report("\\mathfontlistentrynextvariantslist{%s}{%s}",table.concat(cnext," => "),table.concat(cvariants," => "))
-            else
+                if info.mathsymbol then
+                    report("\\mathfontlistentrysymbol{U+%05X}{%s}",info.mathsymbol,info.mathsymbol)
+                end
                 if cnext then
-                    report("\\mathfontlistentrynextlist{%s}",table.concat(cnext," => "))
+                    local t, done = { }, { }
+                    while cnext do
+                        if done[cnext] then
+                            t[#t+1] = "CYCLE"
+                            break
+                        else
+                            done[cnext] = true
+                            t[#t+1] = string.format("\\mathfontlistentrynext{U+%05X}{%s}",cnext,cnext)
+                            cnext = characters[cnext]
+                            cvert_variants = cnext.vert_variants or cvert_variants
+                            choriz_variants = cnext.horiz_variants or choriz_variants
+                            if cnext then
+                                cnext = cnext.next
+                            end
+                        end
+                    end
+                    cnext = t
                 end
-                if cvariants then
-                    report("\\mathfontlistentryvariantslist{%s}",table.concat(cvariants," "))
+                if cvert_variants then
+                    local t = { }
+                    for k, v in next, cvert_variants do
+                        t[#t+1] = string.format("\\fontlistentryvariants{U+%05X}{%s}",v.glyph,v.glyph)
+                    end
+                    cvert_variants = t
                 end
+                if choriz_variants then
+                    local t = { }
+                    for k, v in next, choriz_variants do
+                        t[#t+1] = string.format("\\fontlistentryvariants{U+%05X}{%s}",v.glyph,v.glyph)
+                    end
+                    choriz_variants = t
+                end
+                local cvariants = choriz_variants or cvert_variants
+                if cvariants and cnext then
+                    report("\\mathfontlistentrynextvariantslist{%s}{%s}",table.concat(cnext," => "),table.concat(cvariants," => "))
+                else
+                    if cnext then
+                        report("\\mathfontlistentrynextlist{%s}",table.concat(cnext," => "))
+                    end
+                    if cvariants then
+                        report("\\mathfontlistentryvariantslist{%s}",table.concat(cvariants," "))
+                    end
+                end
+                report("\\stopmathfontlistentry")
             end
-            report("\\stopmathfontlistentry")
         end
     end
 end
@@ -187,5 +190,6 @@ end
     \setupbodyfont[palatino, 10pt] \showmathfontcharacters
     \setupbodyfont[mathtimes,12pt] \showmathfontcharacters
     \setupbodyfont[stix,     12pt] \showmathfontcharacters
+    \setupbodyfont[xits,     12pt] \showmathfontcharacters
 \stoptext
 

@@ -13,7 +13,7 @@ local utf = unicode.utf8
 local next, type = next, type
 local utfchar = utf.char
 
-local trace_hspacing     = false  trackers.register("nodes.hspacing",      function(v) trace_hspacing      = v end)
+local trace_spacing = false  trackers.register("typesetting.spacing", function(v) trace_spacing = v end)
 
 local report_spacing = logs.new("spacing")
 
@@ -29,27 +29,21 @@ local glyph              = node.id("glyph")
 local fontdata           = fonts.identifiers
 local quaddata           = fonts.quads
 
-spacings           = spacings         or { }
+local texattribute       = tex.attribute
+
+typesetting          = typesetting          or { }
+typesetting.spacings = typesetting.spacings or { }
+
+local spacings = typesetting.spacings
+
 spacings.mapping   = spacings.mapping or { }
 spacings.attribute = attributes.private("spacing")
 
-storage.register("spacings/mapping", spacings.mapping, "spacings.mapping")
+local a_spacings = spacings.attribute
 
-function spacings.setspacing(id,char,left,right,alternative)
-    local mapping = spacings.mapping[id]
-    if not mapping then
-        mapping = { }
-        spacings.mapping[id] = mapping
-    end
-    local map = mapping[char]
-    if not map then
-        map = { }
-        mapping[char] = map
-    end
-    map.left, map.right, map.alternative = left, right, alternative
-end
+storage.register("typesetting/spacings/mapping", spacings.mapping, "typesetting.spacings.mapping")
 
-function spacings.process(namespace,attribute,head)
+local function process(namespace,attribute,head)
     local done, mapping = false, spacings.mapping
     local start = head
     -- head is always begin of par (whatsit), so we have at least two prev nodes
@@ -74,19 +68,16 @@ function spacings.process(namespace,attribute,head)
                                     local prevprev = prev.prev
                                     local somepenalty = nodes.somepenalty(prevprev,10000)
                                     if somepenalty then
-                                        if trace_hspacing then
-                                            report_spacing("removing penalty and space before %s", utfchar(start.char))
+                                        if trace_spacing then
+                                            report_spacing("removing penalty and space before %s (left)", utfchar(start.char))
                                         end
                                         head, _ = remove_node(head,prev,true)
                                         head, _ = remove_node(head,prevprev,true)
                                     else
-                                        local somespace = nodes.somespace(prev,true)
-                                        if somespace then
-                                            if trace_hspacing then
-                                                report_spacing("removing space before %s", utfchar(start.char))
-                                            end
-                                            head, _ = remove_node(head,prev,true)
+                                        if trace_spacing then
+                                            report_spacing("removing space before %s (left)", utfchar(start.char))
                                         end
+                                        head, _ = remove_node(head,prev,true)
                                     end
                                 end
                                 ok = true
@@ -94,8 +85,8 @@ function spacings.process(namespace,attribute,head)
                                 ok = not (nodes.somespace(prev,true) and nodes.somepenalty(prev.prev,true)) or nodes.somespace(prev,true)
                             end
                             if ok then
-                                if trace_hspacing then
-                                    report_spacing("inserting penalty and space before %s", utfchar(start.char))
+                                if trace_spacing then
+                                    report_spacing("inserting penalty and space before %s (left)", utfchar(start.char))
                                 end
                                 insert_node_before(head,start,make_penalty_node(10000))
                                 insert_node_before(head,start,make_glue_node(tex.scale(quad,left)))
@@ -111,8 +102,8 @@ function spacings.process(namespace,attribute,head)
                                     local nextnext = next.next
                                     local somespace = nodes.somespace(nextnext,true)
                                     if somespace then
-                                        if trace_hspacing then
-                                            report_spacing("removing penalty and space after %s", utfchar(start.char))
+                                        if trace_spacing then
+                                            report_spacing("removing penalty and space after %s (right)", utfchar(start.char))
                                         end
                                         head, _ = remove_node(head,next,true)
                                         head, _ = remove_node(head,nextnext,true)
@@ -120,8 +111,8 @@ function spacings.process(namespace,attribute,head)
                                 else
                                     local somespace = nodes.somespace(next,true)
                                     if somespace then
-                                        if trace_hspacing then
-                                            report_spacing("removing space after %s", utfchar(start.char))
+                                        if trace_spacing then
+                                            report_spacing("removing space after %s (right)", utfchar(start.char))
                                         end
                                         head, _ = remove_node(head,next,true)
                                     end
@@ -131,8 +122,8 @@ function spacings.process(namespace,attribute,head)
                                 ok = not (nodes.somepenalty(next,10000) and nodes.somespace(next.next,true)) or nodes.somespace(next,true)
                             end
                             if ok then
-                                if trace_hspacing then
-                                    report_spacing("inserting penalty and space after %s", utfchar(start.char))
+                                if trace_spacing then
+                                    report_spacing("inserting penalty and space after %s (right)", utfchar(start.char))
                                 end
                                 insert_node_after(head,start,make_glue_node(tex.scale(quad,right)))
                                 insert_node_after(head,start,make_penalty_node(10000))
@@ -148,22 +139,32 @@ function spacings.process(namespace,attribute,head)
     return head, done
 end
 
-lists.handle_spacing = nodes.install_attribute_handler {
-    name      = "spacing",
-    namespace = spacings,
-    processor = spacings.process,
-}
+local enabled = false
 
-function spacings.enable()
-    tasks.enableaction("processors","lists.handle_spacing")
+function spacings.setup(id,char,left,right,alternative)
+    local mapping = spacings.mapping[id]
+    if not mapping then
+        mapping = { }
+        spacings.mapping[id] = mapping
+    end
+    local map = mapping[char]
+    if not map then
+        map = { }
+        mapping[char] = map
+    end
+    map.left, map.right, map.alternative = left, right, alternative
 end
 
---~ local data = {
---~     name      = "spacing",
---~     namespace = spacings,
---~     processor = spacings.process,
---~ }
---~ nodes.process_attribute = process_attribute
---~ function lists.handle_spacing(head)
---~     return process_attribute(head,data)
---~ end
+function spacings.set(id)
+    if not enabled then
+        tasks.enableaction("processors","typesetting.spacings.handler")
+        enabled = true
+    end
+    texattribute[a_spacings] = id
+end
+
+spacings.handler = nodes.install_attribute_handler {
+    name      = "spacing",
+    namespace = spacings,
+    processor = process,
+}

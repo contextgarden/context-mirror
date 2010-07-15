@@ -87,7 +87,7 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph)
         else
             n = new_glyph_node(fnt,s)
         end
-        if attr then -- normall false when template
+        if attr then -- normally false when template
             n.attr = copy_node_list(attr)
         end
         if head then
@@ -111,9 +111,13 @@ end
 function blobs.append(t,str)
     local kind = type(str)
     local dummy = nil
+    if kind == "number" then
+        str = tostring(str)
+        kind = "string"
+    end
+    local list = t.list
     if kind == "string" then
         local pars = lpegmatch(ctxtextcapture,str)
-        local list = t.list
         for p=1,#pars do
             local str = pars[p]
             if #str == 0 then

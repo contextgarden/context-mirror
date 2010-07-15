@@ -152,7 +152,7 @@ function table.prepend(t, list)
 end
 
 function table.merge(t, ...) -- first one is target
-    t = t or {}
+    t = t or { }
     local lst = {...}
     for i=1,#lst do
         for k, v in next, lst[i] do

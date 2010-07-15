@@ -26,10 +26,10 @@ local glyph     = node.id("glyph")
 local attribute = attributes.private("stripping")
 local fontdata  = fonts.ids
 
-nodes.stripping  = nodes.stripping or { }
-local stripping  = nodes.stripping
-stripping.glyphs = stripping.glyphs or { }
-local glyphs     = stripping.glyphs
+-- other namespace
+
+nodes.stripping  = nodes.stripping  or { } local stripping  = nodes.stripping
+stripping.glyphs = stripping.glyphs or { } local glyphs     = stripping.glyphs
 
 local function initialize()
     for k,v in next, chardata do

@@ -1,7 +1,7 @@
 if not modules then modules = { } end modules ['lpdf-pdx'] = {
     version   = 1.001,
     comment   = "companion to lpdf-ini.mkiv",
-    author    = "Peter Rold and Hans Hagen",
+    author    = "Peter Rolf and Hans Hagen",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files",
 }
@@ -87,7 +87,7 @@ end
 
 local function embedprofile(colorspace,filename)
     local colorspace = lower(colorspace)
-    local n = codeinjections.useinternaliccprofile(colorspace,filename)
+    local n = codeinjections.useinternalICCprofile(colorspace,filename)
     if n then
         local a = pdfarray {
             pdfconstant("ICCBased"),
@@ -124,8 +124,7 @@ function codeinjections.usePDFXoutputintent(id,name,reference,outputcondition,in
     else
         d["DestOutputProfile"] = pdfreference(icc)
     end
- -- intents[#intents+1] = pdfdictionary(d)
-    intents[#intents+1] = pdfreference(pdfflushobject(pdfdictionary(d))) -- nicer as separate object
+    intents[#intents+1] = pdfreference(pdfflushobject(pdfdictionary(d)))
 end
 
 local function flushoutputintents()

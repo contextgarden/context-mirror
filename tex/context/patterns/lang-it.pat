@@ -78,7 +78,6 @@ b2r
 2cz
 2chh
 c2h
-2ch.
 2chb
 ch2r
 2chn
@@ -160,7 +159,6 @@ k2r
 2l3f2
 2lg
 l2h
-l2j
 2lk
 2ll
 2lm

@@ -409,7 +409,7 @@ function string:todimen()
 end
 
 function number.toscaled(d)
-    return format("0.5f",d/2^16)
+    return format("%0.5f",d/2^16)
 end
 
 --[[ldx--

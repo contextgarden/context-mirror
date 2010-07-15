@@ -7,243 +7,158 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 }
 
 -- needs a cleanup (share locals)
-
-local utf = unicode.utf8
-local utfbyte = utf.byte
-local format = string.format
-local concat = table.concat
-local lpegmatch = lpeg.match
-
-local trace_patterns = false  trackers.register("languages.patterns",  function(v) trace_patterns = v end)
-
-local report_languages = logs.new("languages")
-
-languages                  = languages or {}
-languages.version          = 1.009
-languages.hyphenation      = languages.hyphenation        or { }
-languages.hyphenation.data = languages.hyphenation.data   or { }
-
-local langdata = languages.hyphenation.data
+-- discard language when redefined
 
 -- 002D : hyphen-minus (ascii)
 -- 2010 : hyphen
 -- 2011 : nonbreakable hyphen
 -- 2013 : endash (compound hyphen)
 
---~ lang:hyphenation(string)
---~ string  =lang:hyphenation()
---~ lang:clear_hyphenation()
+--~ lang:hyphenation(string) string = lang:hyphenation() lang:clear_hyphenation()
 
--- we can consider hiding data (faster access too)
+local utf = unicode.utf8
+local utfbyte = utf.byte
+local format, gsub = string.format, string.gsub
+local concat = table.concat
+local lpegmatch = lpeg.match
+local texwrite = tex.write
 
--- loading the 26 languages that we normally load in mkiv, the string based variant
--- takes .84 seconds (probably due to the sub's) while the lpeg variant takes .78
--- seconds
---
--- the following lpeg can probably be improved (it was one of the first I made)
+local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 
-local leftbrace  = lpeg.P("{")
-local rightbrace = lpeg.P("}")
-local spaces     = lpeg.S(" \r\n\t\f")
-local spacing    = spaces^0
-local validchar  = 1-(spaces+rightbrace+leftbrace)
-local validword  = validchar^1
-local content    = spacing * leftbrace * spacing * lpeg.C((spacing * validword)^0) * spacing * rightbrace * lpeg.P(true)
+local report_languages = logs.new("languages")
 
-local command    = lpeg.P("\\patterns")
-local parser     = (1-command)^0 * command * content
-
-local function filterpatterns(filename)
---~     if file.extname(filename) == "rpl" then
---~         return io.loaddata(resolvers.find_file(filename)) or ""
---~     else
-        return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "")
---~     end
-end
-
-local command = lpeg.P("\\hyphenation")
-local parser  = (1-command)^0 * command * content
-
-local function filterexceptions(filename)
---~     if file.extname(filename) == "rhl" then
---~         return io.loaddata(resolvers.find_file(filename)) or ""
---~     else
-        return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "") -- "" ?
---~     end
-end
-
-local function record(tag)
-    local data = langdata[tag]
-    if not data then
-         data = lang.new()
-         langdata[tag] = data or 0
-    end
-    return data
-end
-
-languages.hyphenation.record = record
-
-function languages.hyphenation.define(tag)
-    local data = record(tag)
-    return data:id()
-end
-
-function languages.hyphenation.number(tag)
-    local d = langdata[tag]
-    return (d and d:id()) or 0
-end
+local prehyphenchar, posthyphenchar = lang.prehyphenchar, lang.posthyphenchar -- global per language
+local lefthyphenmin, righthyphenmin = lang.lefthyphenmin, lang.righthyphenmin
 
 lang.exceptions = lang.hyphenation
 
-local function loadthem(tag, filename, filter, target)
-    statistics.starttiming(languages)
-    local data = record(tag)
-    local fullname = (filename and filename ~= "" and resolvers.find_file(filename)) or ""
-    local ok = fullname ~= ""
-    if ok then
-        if trace_patterns then
-            report_languages("filtering %s for language '%s' from '%s'",target,tag,fullname)
-        end
-        lang[target](data,filter(fullname) or "")
-    else
-        if trace_patterns then
-            report_languages("no %s for language '%s' in '%s'",target,tag,filename or "?")
-        end
-        lang[target](data,"")
-    end
-    langdata[tag] = data
-    statistics.stoptiming(languages)
-    return ok
-end
-
-function languages.hyphenation.loadpatterns(tag, patterns)
-    return loadthem(tag, patterns, filterpatterns, "patterns")
-end
-
-function languages.hyphenation.loadexceptions(tag, exceptions)
-    return loadthem(tag, exceptions, filterexceptions, "exceptions")
-end
-
-function languages.hyphenation.loaddefinitions(tag, definitions)
-    statistics.starttiming(languages)
-    local data = record(tag)
-    local fullname = (definitions and definitions ~= "" and resolvers.find_file(definitions)) or ""
-    local patterndata, exceptiondata, ok = "", "", fullname ~= ""
-    if ok then
-        if trace_patterns then
-            report_languages("loading definitions for language '%s' from '%s'",tag,fullname)
-        end
-        local defs = dofile(fullname) -- use regular loader instead
-        if defs then -- todo: version test
-            patterndata   = defs.patterns   and defs.patterns  .data or ""
-            exceptiondata = defs.exceptions and defs.exceptions.data or ""
-        else
-            report_languages("invalid definitions for language '%s' in '%s'",tag,filename or "?")
-        end
-    else
-        if trace_patterns then
-            report_languages("no definitions for language '%s' in '%s'",tag,filename or "?")
-        end
-    end
-    lang.patterns  (data,patterndata)
-    lang.exceptions(data,exceptiondata)
-    langdata[tag] = data
-    statistics.stoptiming(languages)
-    return ok
-end
-
-function languages.hyphenation.exceptions(tag, ...)
-    local data = record(tag)
-    data:hyphenation(...)
-end
-
-function languages.hyphenation.hyphenate(tag, str)
-    return lang.hyphenate(record(tag), str)
-end
-
-function languages.hyphenation.lefthyphenmin(tag, value)
-    local data = record(tag)
-    if value then data:lefthyphenmin(value) end
-    return data:lefthyphenmin()
-end
-function languages.hyphenation.righthyphenmin(tag, value)
-    local data = record(tag)
-    if value then data:righthyphenmin(value) end
-    return data:righthyphenmin()
-end
-
-function languages.hyphenation.n()
-    return table.count(langdata)
-end
-
+languages            = languages or {}
+languages.version    = 1.010
 languages.registered = languages.registered or { }
 languages.associated = languages.associated or { }
 languages.numbers    = languages.numbers    or { }
 
+storage.register("languages/numbers",   languages.numbers,   "languages.numbers")
 storage.register("languages/registered",languages.registered,"languages.registered")
 storage.register("languages/associated",languages.associated,"languages.associated")
 
 local numbers    = languages.numbers
 local registered = languages.registered
 local associated = languages.associated
+local nofloaded  = 0
 
--- we can speed this one up with locals if needed
+local function resolve(tag)
+    local data, instance = registered[tag], nil
+    if data then
+        instance = data.instance
+        if not instance then
+            instance = lang.new(data.number)
+            data.instance = instance
+        end
+    end
+    return data, instance
+end
 
-local function tolang(what)
-    local kind = type(what)
-    if kind == "number" then
-        local w = what >= 0 and what <= 0x7FFF and numbers[what]
-        return (w and langdata[w]) or 0
-    elseif kind == "string" then
-        return langdata[what]
-    else
-        return what
+local function tolang(what) -- returns lang object
+    local tag = numbers[what]
+    local data = tag and registered[tag] or registered[what]
+    if data then
+        local instance = data.lang
+        if not instance then
+            instance = lang.new(data.number)
+            data.instance = instance
+        end
+        return instance
     end
 end
 
-function languages.setup(what,settings)
-    what = languages.tolang(what or tex.language)
-    local lefthyphen  = settings.lefthyphen
-    local righthyphen = settings.righthyphen
-    lefthyphen  = lefthyphen  ~= "" and lefthyphen  or nil
-    righthyphen = righthyphen ~= "" and righthyphen or nil
-    lefthyphen  = lefthyphen  and utfbyte(lefthyphen)  or 0
-    righthyphen = righthyphen and utfbyte(righthyphen) or 0
-    lang.posthyphenchar(what,lefthyphen)
-    lang.prehyphenchar (what,righthyphen)
-    lang.postexhyphenchar(what,lefthyphen)
-    lang.preexhyphenchar (what,righthyphen)
+-- languages.tolang = tolang
+
+local function loaddefinitions(tag,specification)
+    statistics.starttiming(languages)
+    local data, instance = resolve(tag)
+    local definitions = aux.settings_to_array(specification.patterns or "")
+    if #definitions > 0 then
+        local dataused, ok = data.used, false
+        for i=1,#definitions do
+            local definition = definitions[i]
+            if definition ~= "" then
+                if definition == "reset" then -- interfaces.variables.reset
+                    if trace_patterns then
+                        report_languages("clearing patterns for language '%s'",tag)
+                    end
+                    instance:clear_patterns()
+                elseif not dataused[definition] then
+                    dataused[definition] = definition
+                    local filename = "lang-" .. definition .. ".lua"
+                    local fullname = resolvers.find_file(filename) or ""
+                    if fullname ~= "" then
+                        if trace_patterns then
+                            report_languages("loading definition '%s' for language '%s' from '%s'",definition,tag,fullname)
+                        end
+                        local defs = dofile(fullname) -- use regular loader instead
+                        if defs then -- todo: version test
+                            ok, nofloaded = true, nofloaded + 1
+                            instance:patterns   (defs.patterns   and defs.patterns.data   or "")
+                            instance:hyphenation(defs.exceptions and defs.exceptions.data or "")
+                        else
+                            report_languages("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
+                        end
+                    elseif trace_patterns then
+                        report_languages("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
+                    end
+                elseif trace_patterns then
+                    report_languages("definition '%s' for language '%s' already loaded",definition,tag)
+                end
+            end
+        end
+    elseif trace_patterns then
+        report_languages("no definitions for language '%s'",tag)
+    end
+    statistics.stoptiming(languages)
+    return ok
 end
 
-function languages.prehyphenchar(what)
-    return lang.prehyphenchar(tolang(what))
-end
-function languages.posthyphenchar(what)
-    return lang.posthyphenchar(tolang(what))
-end
+storage.shared.noflanguages = storage.shared.noflanguages or 0
 
-languages.tolang = tolang
+local noflanguages = storage.shared.noflanguages
 
-function languages.register(tag,parent,patterns,exceptions,definitions)
-    parent = parent or tag
-    patterns    = patterns    or format("lang-%s.pat",parent)
-    exceptions  = exceptions  or format("lang-%s.hyp",parent)
-    definitions = definitions or format("lang-%s.lua",parent)
+function languages.define(tag,parent)
+    noflanguages = noflanguages + 1
+    if trace_patterns then
+        report_languages("assigning number %s to %s",noflanguages,tag)
+    end
+    numbers[noflanguages] = tag
     registered[tag] = {
-        parent      = parent,
-        patterns    = patterns,
-        exceptions  = exceptions,
-        definitions = definitions,
-        loaded      = false,
-        number      = 0,
+        tag      = tag,
+        parent   = parent or "",
+        patterns = "",
+        loaded   = false,
+        used     = { },
+        dirty    = true,
+        number   = noflanguages,
+        instance = nil, -- luatex data structure
+        synonyms = { },
     }
+    storage.shared.noflanguages = noflanguages
 end
 
-function languages.associate(tag,script,language)
+function languages.synonym(synonym,tag) -- convenience function
+    local l = registered[tag]
+    if l then
+        l.synonyms[synonym] = true -- maybe some day more info
+    end
+end
+
+function languages.installed(separator)
+    tex.sprint(tex.ctxcatcodes,concat(table.sortedkeys(registered),separator or ","))
+end
+
+function languages.associate(tag,script,language) -- not yet used
     associated[tag] = { script, language }
 end
 
-function languages.association(tag)
+function languages.association(tag) -- not yet used
     if type(tag) == "number" then
         tag = numbers[tag]
     end
@@ -255,54 +170,82 @@ function languages.association(tag)
     end
 end
 
-function languages.loadable(tag)
-    local l = registered[tag]
-    if l and l.patterns and resolvers.find_file(patterns) then
+function languages.loadable(tag,defaultlanguage) -- hack
+    local l = registered[tag] -- no synonyms
+    if l and resolvers.find_file("lang-"..l.patterns..".lua") then
         return true
     else
         return false
     end
 end
 
-languages.share = false -- we don't share language numbers
+-- a bit messy, we will do all language setting in lua as we can now assign
+-- and 'patterns' will go away here.
 
-function languages.enable(tags)
-    -- beware: we cannot set tex.language, but need tex.normallanguage
-    for i=1,#tags do
-        local tag = tags[i]
+function languages.setdirty(tag)
+    local l = registered[tag]
+    if l then
+        l.dirty = true
+    end
+end
+
+if environment.initex then
+
+    function languages.getnumber(current,default)
+        texwrite(0)
+    end
+
+else
+
+    function languages.getnumber(tag,default,patterns)
         local l = registered[tag]
-        if l and l ~= "" then
-            if not l.loaded then
-                local tag = l.parent
-                local number = languages.hyphenation.number(tag)
-                if languages.share and number > 0 then
-                    l.number = number
-                else
-                    l.number = languages.hyphenation.define(tag)
-                    local ok = l.definitions and languages.hyphenation.loaddefinitions(tag,l.definitions)
-                    if not ok then
-                        -- We will keep this for a while. The lua way is not faster but suits
-                        -- the current context mkiv approach a bit better. It's called progress.
+        if l then
+            if l.dirty then
+                if trace_patterns then
+                    report_languages("checking patterns for %s (%s)",tag,default)
+                end
+                -- patterns is already resolved to parent patterns if applicable
+                if patterns ~= "" then
+                    if l.patterns ~= patterns then
+                        l.patterns = patterns
                         if trace_patterns then
-                            report_languages("falling back on tex files for language with tag %s",tag)
+                            report_languages("loading patterns for '%s' using specification '%s'",tag,patterns)
                         end
-                        languages.hyphenation.loadpatterns(tag,l.patterns)
-                        languages.hyphenation.loadexceptions(tag,l.exceptions)
+                        loaddefinitions(tag,l)
+                    else
+                        -- unchanged
                     end
-                    numbers[l.number] = tag
+                elseif l.patterns == "" then
+                    l.patterns = tag
+                    if trace_patterns then
+                        report_languages("loading patterns for '%s' using tag",tag)
+                    end
+                    local ok = loaddefinitions(tag,l)
+                    if not ok and tag ~= default then
+                        l.patterns = defaukt
+                        if trace_patterns then
+                            report_languages("loading patterns for '%s' using default",tag)
+                        end
+                        loaddefinitions(tag,l)
+                    end
                 end
                 l.loaded = true
-                if trace_patterns then
-                    report_languages("assigning number %s",l.number)
-                end
+                l.dirty = false
             end
-            if l.number > 0 then
-                return l.number
-            end
+            texwrite(l.number)
+        else
+            texwrite(0)
         end
     end
-    return 0
+
 end
+
+-- not that usefull, global values
+
+function languages.prehyphenchar (what) return prehyphenchar (tolang(what)) end
+function languages.posthyphenchar(what) return posthyphenchar(tolang(what)) end
+function languages.lefthyphenmin (what) return lefthyphenmin (tolang(what)) end
+function languages.righthyphenmin(what) return righthyphenmin(tolang(what)) end
 
 -- e['implementer']= 'imple{m}{-}{-}menter'
 -- e['manual'] = 'man{}{}{}'
@@ -310,20 +253,35 @@ end
 -- e['user-friendly'] = 'user=friend-ly'
 -- e['exceptionally-friendly'] = 'excep-tionally=friend-ly'
 
-function languages.hyphenation.loadwords(tag, filename)
-    local id = languages.hyphenation.number(tag)
-    if id > 0 then
-        local l = lang.new(id) or 0
+function languages.loadwords(tag,filename)
+    local data, instance = resolve(tag)
+    if data then
         statistics.starttiming(languages)
-        local data = io.loaddata(filename) or ""
-        l:hyphenation(data)
+        instance:hyphenation(io.loaddata(filename) or "")
         statistics.stoptiming(languages)
     end
 end
 
-languages.hyphenation.define        ("zerolanguage")
-languages.hyphenation.loadpatterns  ("zerolanguage") -- else bug
-languages.hyphenation.loadexceptions("zerolanguage") -- else bug
+function languages.exceptions(tag,str)
+    local data, instance = resolve(tag)
+    if data then
+        instance:hyphenation(string.strip(str)) -- we need to strip leading spaces
+    end
+end
+
+function languages.hyphenate(tag,str)
+    -- todo: does this still work?
+    local data, instance = resolve(tag)
+    if data then
+        return instance:hyphenate(str)
+    else
+        return str
+    end
+end
+
+--~ hyphenation.define        ("zerolanguage")
+--~ hyphenation.loadpatterns  ("zerolanguage") -- else bug
+--~ hyphenation.loadexceptions("zerolanguage") -- else bug
 
 languages.logger = languages.logger or { }
 
@@ -334,9 +292,7 @@ function languages.logger.report()
         local tag = sorted[i]
         local l = registered[tag]
         if l.loaded then
-            local p = (l.patterns   and "pat") or '-'
-            local e = (l.exceptions and "exc") or '-'
-            result[#result+1] = format("%s:%s:%s:%s:%s", tag, l.parent, p, e, l.number)
+            result[#result+1] = format("%s:%s:%s", tag, l.parent, l.number)
         end
     end
     return (#result > 0 and concat(result," ")) or "none"
@@ -358,5 +314,63 @@ statistics.register("loaded patterns", function()
 end)
 
 statistics.register("language load time", function()
-    return statistics.elapsedseconds(languages, format(", n=%s",languages.hyphenation.n()))
+    return statistics.elapsedseconds(languages, format(", nofpatterns: %s",nofloaded))
 end)
+
+--~ -- obsolete
+--~ --
+--~ -- loading the 26 languages that we normally load in mkiv, the string based variant
+--~ -- takes .84 seconds (probably due to the sub's) while the lpeg variant takes .78
+--~ -- seconds
+--~ --
+--~ -- the following lpeg can probably be improved (it was one of the first I made)
+
+--~ local leftbrace  = lpeg.P("{")
+--~ local rightbrace = lpeg.P("}")
+--~ local spaces     = lpeg.S(" \r\n\t\f")
+--~ local spacing    = spaces^0
+--~ local validchar  = 1-(spaces+rightbrace+leftbrace)
+--~ local validword  = validchar^1
+--~ local content    = spacing * leftbrace * spacing * lpeg.C((spacing * validword)^0) * spacing * rightbrace * lpeg.P(true)
+--~
+--~ local command    = lpeg.P("\\patterns")
+--~ local parser     = (1-command)^0 * command * content
+--~
+--~ local function filterpatterns(filename)
+--~     return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "")
+--~ end
+--~
+--~ local command = lpeg.P("\\hyphenation")
+--~ local parser  = (1-command)^0 * command * content
+--~
+--~ local function filterexceptions(filename)
+--~     return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "") -- "" ?
+--~ end
+--~
+--~ local function loadthem(tag, filename, filter, target)
+--~     statistics.starttiming(languages)
+--~     local data, instance = resolve(tag)
+--~     local fullname = (filename and filename ~= "" and resolvers.find_file(filename)) or ""
+--~     local ok = fullname ~= ""
+--~     if ok then
+--~         if trace_patterns then
+--~             report_languages("filtering %s for language '%s' from '%s'",target,tag,fullname)
+--~         end
+--~         lang[target](data,filter(fullname) or "")
+--~     else
+--~         if trace_patterns then
+--~             report_languages("no %s for language '%s' in '%s'",target,tag,filename or "?")
+--~         end
+--~         lang[target](instance,"")
+--~     end
+--~     statistics.stoptiming(languages)
+--~     return ok
+--~ end
+--~
+--~ function hyphenation.loadpatterns(tag, patterns)
+--~     return loadthem(tag, patterns, filterpatterns, "patterns")
+--~ end
+--~
+--~ function hyphenation.loadexceptions(tag, exceptions)
+--~     return loadthem(tag, exceptions, filterexceptions, "exceptions")
+--~ end

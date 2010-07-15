@@ -413,17 +413,23 @@ end)
 
 local calculate_scale = fonts.tfm.calculate_scale
 
+-- Not ok, we can best use a database for this. The problem is that we
+-- have delayed definitions and so we never know what style is taken
+-- as start.
+
 function fonts.tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
-    local scaledpoints, delta, units = calculate_scale(tfmtable, scaledpoints, relativeid)
-    if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
-        local relativedata = fontdata[relativeid]
-        local id_x_height = relativedata and relativedata.parameters and relativedata.parameters.x_height
-        local tf_x_height = id_x_height and tfmtable.parameters and tfmtable.parameters.x_height * delta
-        if tf_x_height then
-            scaledpoints = (id_x_height/tf_x_height) * scaledpoints
-            delta = scaledpoints/units
-        end
-    end
+    local scaledpoints, delta, units = calculate_scale(tfmtable,scaledpoints)
+--~     if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
+--~         local relativedata = fontdata[relativeid]
+--~         local rfmtable = relativedata and relativedata.unscaled and relativedata.unscaled
+--~         local id_x_height = rfmtable and rfmtable.parameters and rfmtable.parameters.x_height
+--~         local tf_x_height = tfmtable and tfmtable.parameters and tfmtable.parameters.x_height
+--~         if id_x_height and tf_x_height then
+--~             local rscale = id_x_height/tf_x_height
+--~             delta = rscale * delta
+--~             scaledpoints = rscale * scaledpoints
+--~         end
+--~     end
     return scaledpoints, delta, units
 end
 

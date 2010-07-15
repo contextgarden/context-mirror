@@ -73,6 +73,34 @@
 \let\currentlanguage    \empty
 \let\currentmainlanguage\empty
 
+%D \macros
+%D   {defaultlanguage,languageparameter,specificlanguageparameter}
+
+\def\defaultlanguage#1%
+  {\ifcsname\??la#1\s!default\endcsname
+     \expandafter\defaultlanguage\csname\??la#1\s!default\endcsname
+   \else
+     #1%
+   \fi}
+
+\def\languageparameter#1%
+  {\ifcsname\??la\currentlanguage#1\endcsname
+     \csname\??la\currentlanguage#1\endcsname
+   \else\ifcsname\??la\currentlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\csname\??la\currentlanguage\s!default\endcsname{#1}%
+   \else\ifcsname\??la\s!default#1\endcsname
+     \csname\??la\s!default#1\endcsname
+   \fi\fi\fi}
+
+\def\specificlanguageparameter#1#2%
+  {\ifcsname\??la#1#2\endcsname
+     \csname\??la#1#2\endcsname
+   \else\ifcsname\??la#1\s!default\endcsname
+     \expandafter\specificlanguageparameter\csname\??la#1\s!default\endcsname{#2}%
+   \else\ifcsname\??la\s!default#2\endcsname
+     \csname\??la\s!default#2\endcsname
+   \fi\fi\fi}
+
 \unexpanded\def\setupcurrentlanguage[#1]{\setcurrentlanguage\currentmainlanguage{#1}}
 
 \def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
@@ -123,10 +151,10 @@
 %D implementations support run time addition of patterns to a
 %D preloaded format).
 
-\def\dodoinstalllanguage#1#2% #2 added
-  {\expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
-   \ifcsname    #1\endcsname\else\setvalue  {#1}{\complexlanguage[#2]}\fi
-   \ifcsname\ascii\endcsname\else\setvalue\ascii{\complexlanguage[#2]}\fi}
+% move to lua end
+
+\def\dodoinstalllanguage#1#2%
+  {\ifcsname#1\endcsname\else\setuvalue{#1}{\complexlanguage[#2]}\fi}
 
 %D \macros
 %D   {preloadlanguages}
@@ -137,42 +165,25 @@
 %D reports which patterns are loaded and what hyphenmin
 %D values are set.
 
-\let\installedlanguages\empty
+\newtoks \everysetuplanguage
+
+\def\installedlanguages{\ctxlua{languages.installed()}}
 
 \def\doiflanguageelse#1{\doifdefinedelse{\??la#1\c!state}}
-
-\def\doloadpatterns#1#2%
-  {\ctxlua{languages.register(
-      "#1",
-      "#2",
-      "\truefilename{\f!languageprefix#2.\f!patternsextension}",
-      "\truefilename{\f!languageprefix#2.\f!hyphensextension}",
-      "\truefilename{\f!languageprefix#2.lua}")
-   }}
-
-\def\doloadlanguagefiles#1%
-  {\edef\languagesuffix{\specificlanguageparameter{#1}\s!patterns}%
-   \ifx\languagesuffix\empty
-     \edef\languagesuffix{\defaultlanguage{#1}}%
-   \else\ifx\languagesuffix\relax
-     \edef\languagesuffix{\defaultlanguage{#1}}%
-   \fi\fi
-   \ifx\languagesuffix\empty
-     \edef\languagesuffix{#1}%
-   \fi
-   \doloadpatterns{#1}\languagesuffix}
 
 \def\doinstalllanguage[#1][#2]%
   {\doifassignmentelse{#2}
      {\doiflanguageelse{#1}
         {\getparameters[\??la#1][#2]}
         {\setvalue{\l!prefix!#1}{#1}%
-         \addtocommalist{#1}\installedlanguages
          \dodoinstalllanguage{#1}{#1}%
          \getparameters[\??la#1][\c!state=\v!start,#2]}%
-      \doloadlanguagefiles{#1}}
+      \edef\currentsetuplanguage{#1}%
+      \ctxlua{languages.define("#1","\specificlanguageparameter{#1}\s!default")}%
+      \the\everysetuplanguage}
      {\setvalue{\l!prefix!#1}{#2}%
-      \getparameters[\??la#1][\s!default=#2]%
+      \ctxlua{languages.synonym("#1","#2")}%
+     %\getparameters[\??la#1][\s!default=#2]%
       \dodoinstalllanguage{#1}{#2}}}
 
 \def\reallanguagetag#1%
@@ -189,7 +200,13 @@
 %D conform a standard.
 
 \def\doifpatternselse#1%
-  {\ctxlua{cs.testcase(languages.loadable("#1"))}}
+  {\bgroup % will change
+   \language[#1]%
+   \ifnum\normallanguage>\zerocount
+     \bgroup\expandafter\firstoftwoarguments
+   \else
+     \bgroup\expandafter\secondoftwoarguments
+   \fi}
 
 %D \macros
 %D   {setuplanguage}
@@ -203,24 +220,35 @@
 \unexpanded\def\setuplanguage
   {\dodoubleempty\dosetuplanguage}
 
-\def\dosetuplanguage[#1][#2]% handy patch for testing
+\def\dosetuplanguage[#1][#2]%
   {\ifsecondargument
-     \getparameters[\??la#1][#2]%
-     \doif{#1}\currentlanguage\docomplexlanguage
+     \edef\currentsetuplanguage{\reallanguagetag{#1}}%
+     \getparameters[\??la\currentsetuplanguage][#2]%
+     \the\everysetuplanguage
+     \doif\currentsetuplanguage\currentlanguage\docomplexlanguage
    \else
-     \getparameters[\??la\currentlanguage][#1]%
+     \let\currentsetuplanguage\currentlanguage
+     \getparameters[\??la\currentsetuplanguage][#1]%
+     \the\everysetuplanguage
      \docomplexlanguage
    \fi}
 
+\appendtoks
+    \ctxlua{languages.setdirty("\currentsetuplanguage")}%
+\to \everysetuplanguage
+
 \setuplanguage
   [\s!default]
-  [\s!lefthyphenmin=2,
+  [\s!patterns=,
+   \s!lefthyphenmin=2,
    \s!righthyphenmin=2,
-   \s!patterns=,
-   \c!spacing=\v!packed,
+   \s!lefthyphenchar=-1,
+   \s!righthyphenchar=45,
+   % used in compound i.e. interfaced with c! and can be anything so no numbers
    \c!lefthyphen=,
    \c!righthyphen=-,
    \c!hyphen=-,
+   \c!spacing=\v!packed,
    \c!midsentence=---,
    \c!leftsentence=---,
    \c!rightsentence=---,
@@ -302,38 +330,30 @@
 %D We take care of local as well as standardized language
 %D switching (fr and fa, de and du, but nl and nl).
 
-\def\dosetnormallanguage#1#2% current default
-  {\edef\askedlanguagepatterns{\specificlanguageparameter{#1}\s!patterns}%
-   \normallanguage=\ctxlua{tex.sprint(languages.enable({"\askedlanguagepatterns","#1","#2"}))}%
-   \ifproductionrun
-     \setxvalue{\??la\??la#1#2}{\number\normallanguage}%
-   \fi}
-
-\def\setnormallanguage#1#2% current default / we can freeze the number here
-  {\ifcsname\??la\??la#1#2\endcsname
-     \normallanguage\csname\??la\??la#1#2\endcsname % todo: we can set language at the lua end now
-   \else
-     \dosetnormallanguage{#1}{#2}%
-   \fi}
-
 \newtoks \everylanguage
 
-\def\sethyphenationvariables % as we can have cloning we need to set it each time, unless we move all to lua
-  {\ctxlua{languages.setup(tex.language, {
-        lefthyphen  = "\languageparameter\c!lefthyphen",
-        righthyphen = "\languageparameter\c!righthyphen",
-    } )}%
-   \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
-   \righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax}
+\def\docomplexlanguage% assumes that \currentlanguage is set                   % % % use different name as complex
+  {\normallanguage\ctxlua{languages.getnumber(%
+     "\currentlanguage",%
+     "\defaultlanguage\currentlanguage",%
+     "\languageparameter\s!patterns"%
+   )}\relax
+   \the\everylanguage\relax}
 
-\def\docomplexlanguage% assumes that \currentlanguage is set
-  {\edef\currentdefaultlanguage{\defaultlanguage\currentlanguage}%
-   \setnormallanguage\currentlanguage\currentdefaultlanguage
-   \the\everylanguage
-   \sethyphenationvariables
-   \relax
-   % will be definable and move to core-spa !
-   \doifelse{\languageparameter\c!spacing}\v!broad\nonfrenchspacing\frenchspacing}
+\appendtoks
+    % these values are stored along with glyph nodes
+    \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
+    \righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax
+    % these values are stored with the language (global!)
+    \prehyphenchar \languageparameter\s!righthyphenchar\relax
+    \posthyphenchar\languageparameter\s!lefthyphenchar \relax
+\to \everylanguage
+
+% this will move to core-spa !
+
+\appendtoks
+   \doifelse{\languageparameter\c!spacing}\v!broad\nonfrenchspacing\frenchspacing
+\to \everylanguage
 
 % \mainlanguage[nl] \setuplanguage[nl][lefthyphen=,righthyphen=?]
 %
@@ -379,34 +399,6 @@
      \fi
    \fi}
 
-%D \macros
-%D   {defaultlanguage,languageparameter,specificlanguageparameter}
-
-\def\defaultlanguage#1%
-  {\ifcsname\??la#1\s!default\endcsname
-     \expandafter\defaultlanguage\csname\??la#1\s!default\endcsname
-   \else
-     #1%
-   \fi}
-
-\def\languageparameter#1%
-  {\ifcsname\??la\currentlanguage#1\endcsname
-     \csname\??la\currentlanguage#1\endcsname
-   \else\ifcsname\??la\currentlanguage\s!default\endcsname
-     \expandafter\specificlanguageparameter\csname\??la\currentlanguage\s!default\endcsname{#1}%
-   \else\ifcsname\??la\s!default#1\endcsname
-     \csname\??la\s!default#1\endcsname
-   \fi\fi\fi}
-
-\def\specificlanguageparameter#1#2%
-  {\ifcsname\??la#1#2\endcsname
-     \csname\??la#1#2\endcsname
-   \else\ifcsname\??la#1\s!default\endcsname
-     \expandafter\specificlanguageparameter\csname\??la#1\s!default\endcsname{#2}%
-   \else\ifcsname\??la\s!default#2\endcsname
-     \csname\??la\s!default#2\endcsname
-   \fi\fi\fi}
-
 %D New (see nomarking and nolist):
 
 \def\splitsequence#1#2%
@@ -423,19 +415,11 @@
 %D   {\blank
 %D    \startlinecorrection
 %D    \vbox\bgroup
-%D    \language[#1]%
-%D    \setbox0=\hbox to \hsize{\hss\bf#2 subsentence symbol and quotes\hss}
-%D    \dp0=0pt
-%D    \box0
-%D    \vskip.5em
-%D    \hrule
-%D    \vskip.5em
-%D    \let\normalbar=|
-%D    \hbox to \hsize
+%D    \language[#1]
+%D    \midaligned{\bf#2 subsentence symbol and quotes}
+%D    \framed[width=\hsize,frame=off,topframe=on,bottomframe=on,offset=.5ex]
 %D      {\hfil\quotation{#3 #4}\hfil\quote{#2}\hfil
-%D       \let|=\normalbar\strut|<||<|#3|>|#4|>|\hfil}
-%D    \vskip.5em
-%D    \hrule
+%D       \startsubsentence\startsubsentence#3\stopsubsentence#4\stopsubsentence\hfil}
 %D    \egroup
 %D    \stoplinecorrection
 %D    \blank}
@@ -532,9 +516,6 @@
 %D \stoptable
 %D \protect
 
-% \bgroup \normallanguage255 \patterns{} \egroup
-% \def\nopatterns{\normallanguage255 }
-
 \def\nopatterns{\normallanguage\minusone}
 
 %D We default to the language belonging to the interface. This
@@ -549,13 +530,25 @@
   {\mainlanguage[\currentlanguage]%
    \showmessage\m!linguals9\currentlanguage}
 
-%D Might be in use:
+%D New:
 
-\let\preloadallpatterns\relax % just for old times sake
-\let\preloadlanguages  \relax % just for old times sake
+\let\stopexceptions\relax
 
-\uchyph=1
+\unexpanded\def\startexceptions
+  {\dosingleempty\dostartexceptions}
 
+\long\def\dostartexceptions[#1]#2\stopexceptions % multilingual or not?
+  {\begingroup
+   \edef\askedlanguage{\reallanguagetag{#1}}%
+   \ifx\askedlanguage\empty
+     \let\askedlanguage\currentlanguage
+   \fi
+   \ctxlua{languages.exceptions("\askedlanguage",\!!bs#2\!!es)}%
+   \endgroup}
+
+%D For the moment here:
+
+\uchyph      = 1 % also treat uppercase
 \exhyphenchar=45 % to permit breaking at explicit hyphens
 
 \protect \endinput

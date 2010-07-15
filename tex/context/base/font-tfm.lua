@@ -209,7 +209,7 @@ local charactercache = { }
 -- a virtual font has italic correction make sure to set the
 -- has_italic flag. Some more flags will be added in the future.
 
-function tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
+function tfm.calculate_scale(tfmtable, scaledpoints)
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * tfmtable.designsize -- already in sp
     end
@@ -257,12 +257,13 @@ function tfm.do_scale(tfmtable, scaledpoints, relativeid)
     t.characters = { }
     t.MathConstants = { }
     -- fast access
+    t.unscaled = tfmtable -- the original unscaled one (temp)
     t.unicodes = tfmtable.unicodes
     t.indices = tfmtable.indices
     t.marks = tfmtable.marks
-t.goodies = tfmtable.goodies
-t.colorscheme = tfmtable.colorscheme
---~ t.embedding = tfmtable.embedding
+    t.goodies = tfmtable.goodies
+    t.colorscheme = tfmtable.colorscheme
+ -- t.embedding = tfmtable.embedding
     t.descriptions = descriptions
     if tfmtable.fonts then
         t.fonts = table.fastcopy(tfmtable.fonts) -- hm  also at the end

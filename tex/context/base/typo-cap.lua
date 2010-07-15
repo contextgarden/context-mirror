@@ -19,6 +19,8 @@ local unset_attribute = node.unset_attribute
 local set_attribute   = node.set_attribute
 local traverse_id     = node.traverse_id
 
+local texattribute = tex.attribute
+
 local glyph = node.id("glyph")
 local kern  = node.id("kern")
 
@@ -236,22 +238,22 @@ local function process(namespace,attribute,head) -- not real fast but also not u
     return head, done
 end
 
-local m = 0 -- a trick to make neighbouring ranges work
+local m, enabled = 0, false -- a trick to make neighbouring ranges work
 
 function cases.set(n)
-    if trace_casing then
-        report_casing("enabling case handler")
-    end
-    tasks.enableaction("processors","typesetting.cases.handler")
-    function cases.set(n)
-        if m == 100 then
-            m = 1
-        else
-            m = m + 1
+    if not enabled then
+        tasks.enableaction("processors","typesetting.cases.handler")
+        if trace_casing then
+            report_casing("enabling case handler")
         end
-        tex.attribute[a_cases] = m * 100 + n
+        enabled = true
     end
-    cases.set(n)
+    if m == 100 then
+        m = 1
+    else
+        m = m + 1
+    end
+    texattribute[a_cases] = m * 100 + n
 end
 
 cases.handler = nodes.install_attribute_handler {

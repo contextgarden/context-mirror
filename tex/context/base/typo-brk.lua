@@ -13,11 +13,16 @@ local next, type, tonumber = next, type, tonumber
 local utfbyte, utfchar = utf.byte, utf.char
 local format = string.format
 
+local trace_breakpoints = false  trackers.register("typesetting.breakpoints", function(v) trace_breakpoints = v end)
+
+local report_breakpoints = logs.new("breakpoints")
+
 local settings_to_array  = aux.settings_to_array
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local set_attribute      = node.set_attribute
 local copy_node          = node.copy
+local copy_nodelist      = node.copy_list
 local free_node          = node.free
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
@@ -31,12 +36,18 @@ local tonodes            = blobs.tonodes
 local glyph = node.id("glyph")
 local kern  = node.id("kern")
 
-breakpoints           = breakpoints         or { }
+typesetting             = typesetting             or {}
+typesetting.breakpoints = typesetting.breakpoints or {}
+
+local breakpoints = typesetting.breakpoints
+
 breakpoints.mapping   = breakpoints.mapping or { }
 breakpoints.methods   = breakpoints.methods or { }
 breakpoints.attribute = attributes.private("breakpoint")
 
-storage.register("breakpoints/mapping", breakpoints.mapping, "breakpoints.mapping")
+local a_breakpoints = breakpoints.attribute
+
+storage.register("typesetting/breakpoints/mapping", breakpoints.mapping, "typesetting.breakpoints.mapping")
 
 local mapping = breakpoints.mapping
 
@@ -76,11 +87,13 @@ breakpoints.methods[1] = function(head,start)
     end
     return head, start
 end
+
 breakpoints.methods[2] = function(head,start) -- ( => (-
     if start.prev and start.next then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,make_disc_node())
+        start.attr = copy_nodelist(tmp.attr) -- todo: critical only
         start.replace = tmp
         local tmp, hyphen = copy_node(tmp), copy_node(tmp)
         hyphen.char = languages.prehyphenchar(tmp.lang)
@@ -90,11 +103,13 @@ breakpoints.methods[2] = function(head,start) -- ( => (-
     end
     return head, start
 end
+
 breakpoints.methods[3] = function(head,start) -- ) => -)
     if start.prev and start.next then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,make_disc_node())
+        start.attr = copy_nodelist(tmp.attr) -- todo: critical only
         start.replace = tmp
         local tmp, hyphen = copy_node(tmp), copy_node(tmp)
         hyphen.char = languages.prehyphenchar(tmp.lang)
@@ -104,22 +119,27 @@ breakpoints.methods[3] = function(head,start) -- ) => -)
     end
     return head, start
 end
+
 breakpoints.methods[4] = function(head,start) -- - => - - -
     if start.prev and start.next then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,make_disc_node())
+        start.attr = copy_nodelist(tmp.attr) -- todo: critical only
         start.pre, start.post, start.replace = copy_node(tmp), copy_node(tmp), tmp
         insert_break(head,start,10000,10000)
     end
     return head, start
 end
+
 breakpoints.methods[5] = function(head,start,settings) -- x => p q r
     if start.prev and start.next then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,make_disc_node())
-        start.pre, start.post, start.replace = tonodes(settings.right,tmp), tonodes(settings.left,tmp), tonodes(settings.middle,tmp)
+        local attr = tmp.attr
+        start.attr = copy_nodelist(attr) -- todo: critical only
+        start.pre, start.post, start.replace = tonodes(settings.right,tmp,attr), tonodes(settings.left,tmp,attr), tonodes(settings.middle,tmp,attr)
         free_node(tmp)
         insert_break(head,start,10000,10000)
     end
@@ -128,7 +148,7 @@ end
 
 local methods = breakpoints.methods
 
-function breakpoints.process(namespace,attribute,head)
+local function process(namespace,attribute,head)
     local done, numbers = false,  languages.numbers
     local start, n = head, 0
     while start do
@@ -197,12 +217,23 @@ function breakpoints.process(namespace,attribute,head)
     return head, done
 end
 
-chars.handle_breakpoints = nodes.install_attribute_handler {
-    name = "breakpoint",
+function breakpoints.set(n)
+    if trace_breakpoints then
+        report_breakpoints("enabling breakpoints handler")
+    end
+    tasks.enableaction("processors","typesetting.breakpoints.handler")
+    function breakpoints.set(n)
+        tex.attribute[a_breakpoints] = n
+    end
+    breakpoints.set(n)
+end
+
+breakpoints.handler = nodes.install_attribute_handler {
+    name      = "breakpoint",
     namespace = breakpoints,
-    processor = breakpoints.process,
+    processor = process,
 }
 
 function breakpoints.enable()
-    tasks.enableaction("processors","chars.handle_breakpoints")
+    tasks.enableaction("processors","typesetting.breakpoints.handler")
 end

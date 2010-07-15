@@ -668,7 +668,7 @@ function table.prepend(t, list)
 end
 
 function table.merge(t, ...) -- first one is target
-    t = t or {}
+    t = t or { }
     local lst = {...}
     for i=1,#lst do
         for k, v in next, lst[i] do
@@ -12030,24 +12030,11 @@ end
 function resolvers.listers.variables (report,pattern) list(resolvers.instance.variables, report,pattern) end
 function resolvers.listers.expansions(report,pattern) list(resolvers.instance.expansions,report,pattern) end
 
-function resolvers.listers.configurations(report,pattern)
-    pattern = pattern and pattern ~= "" and upper(pattern) or ""
+function resolvers.listers.configurations(report)
+    local configurations = resolvers.instance.specification
     local report = report or texio.write_nl
-    local instance = resolvers.instance
-    local sorted = table.sortedkeys(instance.kpsevars)
-    for i=1,#sorted do
-        local key = sorted[i]
-        if pattern == "" or find(upper(key),pattern) then
-            report(format("%s\n",key))
-            local order = instance.order
-            for i=1,#order do
-                local str = order[i][key]
-                if str then
-                    report(format("\t%s\t%s",i,str))
-                end
-            end
-            report("")
-        end
+    for i=1,#configurations do
+        report(configurations[i])
     end
 end
 
@@ -12762,8 +12749,8 @@ function runners.report_location(result)
     end
 end
 
-function runners.edit_script(filename) -- we assume that vim is present on most systems
-    local editor = os.getenv("MTXRUN_EDITOR") or os.getenv("TEXMFSTART_EDITOR") or os.getenv("EDITOR") or 'vim'
+function runners.edit_script(filename) -- we assume that gvim is present on most systems (todo: also in cnf file)
+    local editor = os.getenv("MTXRUN_EDITOR") or os.getenv("TEXMFSTART_EDITOR") or os.getenv("EDITOR") or 'gvim'
     local rest = resolvers.resolve(filename)
     if rest ~= "" then
         local command = editor .. " " .. rest
@@ -13247,7 +13234,7 @@ elseif environment.argument("configurations") or environment.argument("show-conf
     -- luatools: runners.execute_ctx_script("mtx-base","--configurations",filename)
 
     resolvers.load("nofiles")
-    resolvers.listers.configurations(false,environment.argument("pattern"))
+    resolvers.listers.configurations()
 
 elseif environment.argument("find-file") then
 

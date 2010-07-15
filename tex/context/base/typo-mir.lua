@@ -63,8 +63,8 @@ mirroring           = mirroring or { }
 mirroring.strip     = false
 mirroring.attribute = attributes.private("mirroring")
 
-local state   = attributes.private('state')
-local mirrora = attributes.private('mirroring')
+local a_state     = attributes.private('state')
+local a_mirroring = attributes.private('mirroring')
 
 local directions = characters.directions -- maybe make a special mirror table
 
@@ -84,7 +84,7 @@ local function finish_auto_before()
     head, inserted = insert_node_before(head,current,nodes.textdir("-"..finish))
     finished, finidir = inserted, finish
     if trace_mirroring then
-        insert(list,#list,format("finish %s",finish))
+        insert(list,#list,format("auto finish inserted before: %s",finish))
         finipos = #list-1
     end
     finish, autodir, done = nil, 0, true
@@ -94,7 +94,7 @@ local function finish_auto_after()
     head, current = insert_node_after(head,current,nodes.textdir("-"..finish))
     finished, finidir = current, finish
     if trace_mirroring then
-        list[#list+1] = format("finish %s",finish)
+        list[#list+1] = format("auto finish inserted after: %s",finish)
         finipos = #list
     end
     finish, autodir, done = nil, 0, true
@@ -110,15 +110,15 @@ local function force_auto_left_before()
         finish, autodir, done = "TRT", -1, true
     end
     if finidir == finish then
-        remove_node(head,finished,true)
+        head = remove_node(head,finished,true)
         if trace_mirroring then
-            list[finipos] = list[finipos].." (deleted)"
-            insert(list,#list,format("start %s (deleted)",finish))
+            list[finipos] = list[finipos] .. " (deleted afterwards)"
+            insert(list,#list,format("start text dir %s (embedded: %s)",finish,embedded))
         end
     else
         head, inserted = insert_node_before(head,current,nodes.textdir("+"..finish))
         if trace_mirroring then
-            insert(list,#list,format("start %s",finish))
+            insert(list,#list,format("start text dir %s (embedded: %s)",finish,embedded))
         end
     end
 end
@@ -133,18 +133,20 @@ local function force_auto_right_before()
         finish, autodir, done = "TLT", 1, true
     end
     if finidir == finish then
-        remove_node(head,finished,true)
+        head = remove_node(head,finished,true)
         if trace_mirroring then
-            list[finipos] = list[finipos].." (deleted)"
-            insert(list,#list,format("start %s (deleted)",finish))
+            list[finipos] = list[finipos] .. " (deleted afterwards)"
+            insert(list,#list,format("start text dir %s (embedded: %s)",finish,embedded))
         end
     else
         head, inserted = insert_node_before(head,current,nodes.textdir("+"..finish))
         if trace_mirroring then
-            insert(list,#list,format("start %s",finish))
+            insert(list,#list,format("start text dir %s (embedded: %s)",finish,embedded))
         end
     end
 end
+
+-- todo: use new dir functions
 
 function mirroring.process(namespace,attribute,start) -- todo: make faster
     if not start.next then
@@ -219,7 +221,7 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
                         end
                     elseif lro or override < 0 then
                         if d == "r" or d == "al" then
-                            set_attribute(current,state,4) -- maybe better have a special bidi attr value -> override (9) -> todo
+                            set_attribute(current,a_state,4) -- maybe better have a special bidi attr value -> override (9) -> todo
                             if trace_mirroring then
                                 list[#list+1] = format("char %s (%s / U+%04X) of class %s overidden to l (bidi=%s) (state=isol)",utfchar(char),char,char,d,attr)
                             end
@@ -296,7 +298,7 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
                         end
                         top = top + 1
                         stack[top] = { override, embedded }
-                        embedded = 1
+                        embedded = -1 -- was 1
                         obsolete[#obsolete+1] = current
                     elseif d == "pdf" then -- Pop Directional Format
                     --  override = 0
@@ -332,7 +334,7 @@ function mirroring.process(namespace,attribute,start) -- todo: make faster
                     else
                         autodir = 1
                     end
-                    embedded = autodir
+                 -- embedded = autodir
                     if trace_mirroring then
                         list[#list+1] = format("pardir %s",dir)
                     end

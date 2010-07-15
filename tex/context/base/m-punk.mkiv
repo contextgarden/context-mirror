@@ -169,7 +169,7 @@ do
         { "metafont", "mfplain", "punkfont.mp", 10 },
     } )
 
-    cases.actions[99] = function(current)
+    typesetting.cases.actions[99] = function(current)
         local used = fontdata[current.font].variants
         if used then
             local f = math.random(1,#used)
@@ -217,16 +217,16 @@ end
     \definetypeface [punk] [rm] [serif] [punk] [default]
 \stoptypescript
 
-\definefontfeature[punknova][mode=node,script=latn,rand=yes,kern=yes,liga=yes,tlig=yes]
+% \definefontfeature[punknova][mode=node,script=latn,rand=yes,kern=yes,liga=yes,tlig=yes]
 
-\starttypescript [serif] [punknova]
-    \setups[font:fallback:serif] % no style variants yet, actually it's a sans
-    \definefontsynonym [Serif] [file:punknova] [features=punknova]
-\stoptypescript
+% \starttypescript [serif] [punknova]
+%     \setups[font:fallback:serif] % no style variants yet, actually it's a sans
+%     \definefontsynonym [Serif] [file:punknova] [features=punknova]
+% \stoptypescript
 
-\starttypescript [punknova]
-    \definetypeface [punknova] [rm] [serif] [punknova] [default]
-\stoptypescript
+% \starttypescript [punknova]
+%     \definetypeface [punknova] [rm] [serif] [punknova] [default]
+% \stoptypescript
 
 \endinput
 

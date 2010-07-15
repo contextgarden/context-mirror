@@ -38,19 +38,21 @@
   {\ifcsname\??ch:#1\endcsname
      \begingroup % for the moment we use modes, in ordere to avoid interface translation
      \getparameters[\??ch][\c!left=0,\c!right=0,\c!alternative=0,#3]%
-     \ctxlua{spacings.setspacing(\getvalue{\??ch:#1},\number#2,\@@chleft,\@@chright,\@@chalternative)}%
+     \ctxlua{typesetting.spacings.setup(\getvalue{\??ch:#1},\number#2,\@@chleft,\@@chright,\@@chalternative)}%
      \endgroup
    \fi}
 
-\def\setcharacterspacing
-  {\ctxlua{spacings.enable()}%
-   \gdef\setcharacterspacing[##1]{\attribute\spacingattribute\csname\??ch:##1\endcsname\relax}%
-   \setcharacterspacing}
+\unexpanded\def\setcharacterspacing[#1]%
+  {\ctxlua{typesetting.spacings.set(\number\csname\??ch:#1\endcsname)}}
 
-\def\resetcharacterspacing
+\unexpanded\def\resetcharacterspacing % fast one
   {\attribute\spacingattribute\attributeunsetvalue}
 
 \letvalue{\??ch:\s!reset}\attributeunsetvalue
+
+\appendtoks
+    \resetcharacterspacing
+\to \everyresettypesetting
 
 % \setcharacterspacing[frenchpunctuation]
 % «\type{bla}»\crlf « \type{bla}»\crlf

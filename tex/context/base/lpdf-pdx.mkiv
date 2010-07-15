@@ -30,9 +30,6 @@
 
 \registerctxluafile{lpdf-pdx}{1.001}
 
-% \def\embedICCprofile#1#2% colorspace, name
-%   {\ctxlua{backends.codeinjections.addiccprofile("#1","#2")}}
-
 \def\douseinternalICCprofile[#1]%
   {\getparameters[\??ic][colorspace=,filename=,#1]%
    \ctxlua{backends.codeinjections.useinternalICCprofile(
@@ -48,7 +45,7 @@
 
 % use an ICC profile as default colorspace for all device dependend colors;
 % all device based entries of the same CS are mapped to the defined ICCprofile then;
-% i.e. /DeviceRGB --> /ICCBased RGB profile always embed the profile!
+% i.e. /DeviceRGB --> /ICCBased RGB profile; always embed the profile!
 
 \def\douseICCdefaultprofile[#1]%
   {\getparameters[\??ic][colorspace=,filename=,#1]%
@@ -68,4 +65,3 @@
 \def\usePDFXoutputintent  {\dosingleempty\dousePDFXoutputintent  }
 
 \protect \endinput
-

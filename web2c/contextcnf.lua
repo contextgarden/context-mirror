@@ -103,13 +103,13 @@ return {
         -- like ['foo.bar'] so for convenience we also support 'foo_bar'.
 
         directives = {
-         --   system_checkglobals = "10",
-         --   system.nostatistics = "yes",
-              system_errorcontext = "10",
+         -- system_checkglobals = "10",
+         -- system.nostatistics = "yes",
+            system_errorcontext = "10",
         },
 
         experiments = {
-
+            fonts_autorscale = "yes",
         },
 
         trackers = {

@@ -16,8 +16,7 @@ tasks.appendaction("processors", "normalizers", "fonts.checkers.missing")       
 
 tasks.appendaction("processors", "characters",  "chars.handle_mirroring")                    -- disabled
 tasks.appendaction("processors", "characters",  "typesetting.cases.handler")                 -- disabled
---~ tasks.appendaction("processors", "characters",  "typesetting.digits.handler")                -- disabled
-tasks.appendaction("processors", "characters",  "chars.handle_breakpoints")                  -- disabled
+tasks.appendaction("processors", "characters",  "typesetting.breakpoints.handler")           -- disabled
 tasks.appendaction("processors", "characters",  "scripts.preprocess")
 
 tasks.appendaction("processors", "words",       "kernel.hyphenation")                        -- always on
@@ -31,10 +30,9 @@ tasks.appendaction("processors", "fonts",       "kernel.ligaturing")            
 tasks.appendaction("processors", "fonts",       "kernel.kerning")                            -- always on
 tasks.appendaction("processors", "fonts",       "nodes.stripping.process")                   -- disabled (might move)
 
-tasks.appendaction("processors", "lists",       "lists.handle_spacing")                      -- disabled
-tasks.appendaction("processors", "lists",       "lists.handle_kerning")                      -- disabled
-
-tasks.appendaction("processors", "lists",  "typesetting.digits.handler")                -- disabled
+tasks.appendaction("processors", "lists",       "typesetting.spacings.handler")              -- disabled
+tasks.appendaction("processors", "lists",       "typesetting.kerns.handler")                 -- disabled
+tasks.appendaction("processors", "lists",       "typesetting.digits.handler")                -- disabled (after otf handling)
 
 tasks.appendaction("shipouts",   "normalizers", "nodes.cleanup_page")                        -- maybe todo
 tasks.appendaction("shipouts",   "normalizers", "nodes.add_references")                      -- disabled
@@ -73,10 +71,11 @@ tasks.disableaction("processors",  "fonts.checkers.missing")
 tasks.disableaction("processors",  "chars.handle_breakpoints")
 tasks.disableaction("processors",  "typesetting.cases.handler")
 tasks.disableaction("processors",  "typesetting.digits.handler")
+tasks.disableaction("processors",  "typesetting.breakpoints.handler")
 tasks.disableaction("processors",  "chars.handle_mirroring")
 tasks.disableaction("processors",  "languages.words.check")
-tasks.disableaction("processors",  "lists.handle_spacing")
-tasks.disableaction("processors",  "lists.handle_kerning")
+tasks.disableaction("processors",  "typesetting.spacings.handler")
+tasks.disableaction("processors",  "typesetting.kerns.handler")
 tasks.disableaction("processors",  "nodes.stripping.process")
 
 tasks.disableaction("shipouts",    "nodes.rules.process")

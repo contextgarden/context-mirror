@@ -198,7 +198,7 @@ class TEX
         'filters', 'usemodules', 'environments', 'separation', 'setuppath',
         'arguments', 'input', 'output', 'randomseed', 'modes', 'mode', 'filename',
         'ctxfile', 'printformat', 'paperformat', 'paperoffset',
-        'timeout', 'passon'
+        'timeout', 'passon', 'pdftitle'
     ]
     @@mainstandardvars = [
         'mainlanguage', 'bodyfont', 'language'

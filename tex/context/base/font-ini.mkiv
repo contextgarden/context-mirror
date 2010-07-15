@@ -615,6 +615,10 @@
       \let\relativefontid\empty
    \fi}
 
+\def\checkrelativefontid % not yet supported as we then need to trigger \rm\tf or so first
+  {\let\relativefontsize\minusone
+   \let\relativefontsize\defaultrelativefontsize}
+
 \def\checkrelativefontsize#1%
   {\edef\relativefontsize
      {\ifcsname\fontclass#1\s!rscale\endcsname

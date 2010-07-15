@@ -198,6 +198,7 @@ function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent
         if settings then
             local r, g, b = settings.r, settings.g, settings.b
             if r or g or b then
+                -- we can consider a combined rgb cmyk s definition
                 definecolor(name, register_color(name,'rgb', tonumber(r) or 0, tonumber(g) or 0, tonumber(b) or 0), global)
             else
                 local c, m, y, k = settings.c, settings.m, settings.y, settings.k

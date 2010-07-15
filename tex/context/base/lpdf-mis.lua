@@ -28,20 +28,20 @@ local copy_node = node.copy
 
 local pdfliteral, register = nodes.pdfliteral, nodes.register
 
-local pdfdictionary  = lpdf.dictionary
-local pdfarray       = lpdf.array
-local pdfboolean     = lpdf.boolean
-local pdfconstant    = lpdf.constant
-local pdfreference   = lpdf.reference
-local pdfunicode     = lpdf.unicode
-local pdfverbose     = lpdf.verbose
-local pdfstring      = lpdf.string
-local pdfflushobject = lpdf.flushobject
+local pdfdictionary   = lpdf.dictionary
+local pdfarray        = lpdf.array
+local pdfboolean      = lpdf.boolean
+local pdfconstant     = lpdf.constant
+local pdfreference    = lpdf.reference
+local pdfunicode      = lpdf.unicode
+local pdfverbose      = lpdf.verbose
+local pdfstring       = lpdf.string
+local pdfflushobject  = lpdf.flushobject
 
 local pdfimmediateobj = pdf.immediateobj
 
 local tobasepoints = number.tobasepoints
-local variables = interfaces.variables
+local variables    = interfaces.variables
 
 --
 
@@ -58,7 +58,7 @@ local function initializenegative()
         Range        = a,
         Domain       = a,
     }
-    local negative = pdfdictionary { Type = g, TR = pdfreference(pdf.immediateobj("stream","1 exch sub",d())) }
+    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfimmediateobj("stream","1 exch sub",d())) }
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
     lpdf.adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
     lpdf.adddocumentextgstate("GSPositive", pdfreference(pdfflushobject(positive)))
@@ -290,3 +290,46 @@ end
 
 lpdf.registerpagefinalizer(pagespecification)
 lpdf.registerdocumentfinalizer(documentspecification)
+
+-- Page Label support ...
+--
+-- In principle we can also support /P (prefix) as we can just use the verbose form
+-- and we can then forget about the /St (start) as we don't care about those few
+-- extra bytes due to lack of collapsing. Anyhow, for that we need a stupid prefix
+-- variant and that's not on the agenda now.
+
+local map = {
+    numbers       = "D",
+    Romannumerals = "R",
+    romannumerals = "r",
+    Characters    = "A",
+    characters    = "a",
+}
+
+local function featurecreep()
+    local pages, lastconversion, list = jobpages.tobesaved, nil, pdfarray()
+    local getstructureset = structure.sets.get
+    for i=1,#pages do
+        local p = pages[i]
+        local numberdata = p.numberdata
+        if numberdata then
+            local conversionset = numberdata.conversionset
+            if conversionset then
+                local conversion = getstructureset("structure:conversions",p.block,conversionset,1,"numbers")
+                if conversion ~= lastconversion then
+                    lastconversion = conversion
+                    list[#list+1] = i - 1 -- pdf starts numbering at 0
+                    list[#list+1] = pdfdictionary { S = pdfconstant(map[conversion] or map.numbers) }
+                end
+            end
+        end
+        if not lastconversion then
+            lastconversion = "numbers"
+            list[#list+1] = i - 1 -- pdf starts numbering at 0
+            list[#list+1] = pdfdictionary { S = pdfconstant(map.numbers) }
+        end
+    end
+    lpdf.addtocatalog("PageLabels", pdfdictionary { Nums = list })
+end
+
+lpdf.registerdocumentfinalizer(featurecreep)

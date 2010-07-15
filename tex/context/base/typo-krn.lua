@@ -15,11 +15,15 @@ local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local find_node_tail     = node.tail or node.slide
 local free_node          = node.free
+local free_nodelist      = node.flush_list
 local copy_node          = node.copy
+local copy_nodelist      = node.copy_list
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local make_glue_spec     = nodes.glue_spec
 local make_kern_node     = nodes.kern
+
+local texattribute = tex.attribute
 
 local glyph = node.id("glyph")
 local kern  = node.id("kern")
@@ -32,26 +36,22 @@ local fontdata = fonts.identifiers
 local chardata = fonts.characters
 local quaddata = fonts.quads
 
-kerns           = kerns or { }
+typesetting       = typesetting       or { }
+typesetting.kerns = typesetting.kerns or { }
+
+local kerns = typesetting.kerns
+
 kerns.mapping   = kerns.mapping or { }
 kerns.factors   = kerns.factors or { }
 kerns.attribute = attributes.private("kern")
 
-storage.register("kerns/mapping", kerns.mapping, "kerns.mapping")
-storage.register("kerns/factors", kerns.factors, "kerns.factors")
+local a_kerns = kerns.attribute
+
+storage.register("typesetting/kerns/mapping", kerns.mapping, "typesetting.kerns.mapping")
+storage.register("typesetting/kerns/factors", kerns.factors, "typesetting.kerns.factors")
 
 local mapping = kerns.mapping
 local factors = kerns.factors
-
-function kerns.setspacing(factor)
-    local a = factors[factor]
-    if not a then
-        a = #mapping + 1
-        factors[factors], mapping[a] = a, factor
-    end
-    tex.attribute[kerns.attribute] = a
-    return a
-end
 
 -- one must use liga=no and mode=base and kern=yes
 -- use more helpers
@@ -59,8 +59,9 @@ end
 -- there will be a width adaptor field in nodes so this will change
 -- todo: interchar kerns / disc nodes / can be made faster
 
-local function process(namespace,attribute,head,force)
-    local scale = tex.scale -- will go
+local gluefactor = 4 -- assumes quad = .5 enspace
+
+local function do_process(namespace,attribute,head,force)
     local start, done, lastfont = head, false, nil
     while start do
         -- faster to test for attr first
@@ -74,23 +75,24 @@ local function process(namespace,attribute,head,force)
                     lastfont = start.font
                     local c = start.components
                     if c then
+                        c = do_process(namespace,attribute,c,attr)
                         local s = start
+                        local p, n = s.prev, s.next
                         local tail = find_node_tail(c)
-                        if s.prev then
-                            s.prev.next = c
-                            c.prev = s.prev
+                        if p then
+                            p.next = c
+                            c.prev = p
                         else
                             head = c
                         end
-                        if s.next then
-                            s.next.prev = tail
+                        if n then
+                            n.prev = tail
                         end
-                        tail.next = s.next
+                        tail.next = n
                         start = c
-                        start.attr = s.attr
-                        s.attr = nil
                         s.components = nil
-                        free_node(s)
+                        -- we now leak nodes !
+--~                         free_node(s)
                         done = true
                     end
                     local prev = start.prev
@@ -100,16 +102,16 @@ local function process(namespace,attribute,head,force)
                             -- nothing
                         elseif pid == kern and prev.subtype == 0 then
                             prev.subtype = 1
-                            prev.kern = prev.kern + scale(quaddata[lastfont],krn)
+                            prev.kern = prev.kern + quaddata[lastfont]*krn
                             done = true
                         elseif pid == glyph then
                             if prev.font == lastfont then
                                 local prevchar, lastchar = prev.char, start.char
                                 local kerns = chardata[lastfont][prevchar].kerns
                                 local kern = kerns and kerns[lastchar] or 0
-                                krn = scale(kern+quaddata[lastfont],krn)
+                                krn = kern + quaddata[lastfont]*krn
                             else
-                                krn = scale(quaddata[lastfont],krn)
+                                krn = quaddata[lastfont]*krn
                             end
                             insert_node_before(head,start,make_kern_node(krn))
                             done = true
@@ -125,7 +127,7 @@ local function process(namespace,attribute,head,force)
                                 pre.prev = before
                                 before.next = pre
                                 before.prev = nil
-                                pre = process(namespace,attribute,before,attr)
+                                pre = do_process(namespace,attribute,before,attr)
                                 pre = pre.next
                                 pre.prev = nil
                                 disc.pre = pre
@@ -137,7 +139,7 @@ local function process(namespace,attribute,head,force)
                                 tail.next = after
                                 after.prev = tail
                                 after.next = nil
-                                post = process(namespace,attribute,post,attr)
+                                post = do_process(namespace,attribute,post,attr)
                                 tail.next = nil
                                 disc.post = post
                                 free_node(after)
@@ -152,7 +154,7 @@ local function process(namespace,attribute,head,force)
                                 tail.next = after
                                 after.prev = tail
                                 after.next = nil
-                                replace = process(namespace,attribute,before,attr)
+                                replace = do_process(namespace,attribute,before,attr)
                                 replace = replace.next
                                 replace.prev = nil
                                 after.prev.next = nil
@@ -164,9 +166,9 @@ local function process(namespace,attribute,head,force)
                                     local prevchar, lastchar = prv.char, start.char
                                     local kerns = chardata[lastfont][prevchar].kerns
                                     local kern = kerns and kerns[lastchar] or 0
-                                    krn = scale(kern+quaddata[lastfont],krn)
+                                    krn = kern + quaddata[lastfont]*krn
                                 else
-                                    krn = scale(quaddata[lastfont],krn)
+                                    krn = quaddata[lastfont]*krn
                                 end
                                 disc.replace = make_kern_node(krn)
                             end
@@ -176,26 +178,25 @@ local function process(namespace,attribute,head,force)
                     local s = start.spec
                     local w = s.width
                     if w > 0 then
-                        local width, stretch, shrink = w+2*scale(w,krn), s.stretch, s.shrink
-                        start.spec = make_glue_spec(width,scale(stretch,width/w),scale(shrink,width/w))
-                    --  local width, stretch, shrink = w+2*w*krn, s.stretch, s.shrink
-                    --  start.spec = make_glue_spec(width,stretch*width/w,shrink*width/w))
+                        local width, stretch, shrink = w+gluefactor*w*krn, s.stretch, s.shrink
+                        start.spec = make_glue_spec(width,stretch*width/w,shrink*width/w)
                         done = true
                     end
                 elseif false and id == kern and start.subtype == 0 then -- handle with glyphs
                     local sk = start.kern
                     if sk > 0 then
-                    --  start.kern = scale(sk,krn)
                         start.kern = sk*krn
                         done = true
                     end
                 elseif lastfont and (id == hlist or id == vlist) then -- todo: lookahead
-                    if start.prev then
-                        insert_node_before(head,start,make_kern_node(scale(quaddata[lastfont],krn)))
+                    local p = start.prev
+                    if p and p.id ~= glue then
+                        insert_node_before(head,start,make_kern_node(quaddata[lastfont]*krn))
                         done = true
                     end
-                    if start.next then
-                        insert_node_after(head,start,make_kern_node(scale(quaddata[lastfont],krn)))
+                    local n = start.next
+                    if n and n.id ~= glue then
+                        insert_node_after(head,start,make_kern_node(quaddata[lastfont]*krn))
                         done = true
                     end
                 end
@@ -208,16 +209,31 @@ local function process(namespace,attribute,head,force)
     return head, done
 end
 
-kerns.process = function(namespace,attribute,head)
-    return process(namespace,attribute,head)  -- no direct map, because else fourth argument is tail == true
+local enabled = false
+
+function kerns.set(factor)
+    if not enabled then
+        tasks.enableaction("processors","typesetting.kerns.handler")
+        enabled = true
+    end
+    if factor > 0 then
+        local a = factors[factor]
+        if not a then
+            a = #mapping + 1
+            factors[factors], mapping[a] = a, factor
+        end
+        factor = a
+    end
+    texattribute[a_kerns] = factor
+    return factor
 end
 
-lists.handle_kerning = nodes.install_attribute_handler {
-    name = "kern",
+local function process(namespace,attribute,head)
+    return do_process(namespace,attribute,head)  -- no direct map, because else fourth argument is tail == true
+end
+
+kerns.handler = nodes.install_attribute_handler {
+    name     = "kern",
     namespace = kerns,
-    processor = kerns.process,
+    processor = process,
 }
-
-function kerns.enable()
-    tasks.enableaction("processors","lists.handle_kerning")
-end

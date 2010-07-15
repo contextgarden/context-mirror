@@ -122,6 +122,13 @@ function tracers.printerror(offset)
     end
 end
 
+function tracers.texerrormessage(...) -- for the moment we put this function here
+    local v = format(...)
+    tex.sprint(tex.ctxcatcodes,"\\errmessage{")
+    tex.sprint(tex.vrbcatcodes,v)
+    tex.print(tex.ctxcatcodes,"}")
+end
+
 directives.register("system.errorcontext", function(v)
     if v then
         callback.register('show_error_hook', function() tracers.printerror(v) end)

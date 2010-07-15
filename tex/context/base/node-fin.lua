@@ -14,6 +14,7 @@ local texsprint = tex.sprint
 local ctxcatcodes = tex.ctxcatcodes
 
 local glyph   = node.id('glyph')
+local disc    = node.id('disc')
 local glue    = node.id('glue')
 local rule    = node.id('rule')
 local whatsit = node.id('whatsit')
@@ -202,7 +203,8 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
         local id = stack.id
         -- we need to deal with literals too (reset as well as oval)
         -- if id == glyph or (id == whatsit and stack.subtype == 8) or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
-        if id == glyph or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
+        if id == glyph -- or id == disc
+                or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
             local c = has_attribute(stack,attribute)
             if c then
                 if default and c == inheritance then
@@ -287,7 +289,8 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
         local id = stack.id
         -- we need to deal with literals too (reset as well as oval)
         -- if id == glyph or (id == whatsit and stack.subtype == 8) or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
-        if id == glyph or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
+        if id == glyph -- or id == disc
+                or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
             local c = has_attribute(stack,attribute)
             if c then
                 if default and c == inheritance then
