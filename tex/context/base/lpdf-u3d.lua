@@ -16,19 +16,18 @@ if not modules then modules = { } end modules ['lpdf-u3d'] = {
 local format, find = string.format, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 
-local pdfconstant      = lpdf.constant
-local pdfboolean       = lpdf.boolean
-local pdfnumber        = lpdf.number
-local pdfunicode       = lpdf.unicode
-local pdfdictionary    = lpdf.dictionary
-local pdfarray         = lpdf.array
-local pdfnull          = lpdf.null
-local pdfreference     = lpdf.reference
+local pdfconstant         = lpdf.constant
+local pdfboolean          = lpdf.boolean
+local pdfnumber           = lpdf.number
+local pdfunicode          = lpdf.unicode
+local pdfdictionary       = lpdf.dictionary
+local pdfarray            = lpdf.array
+local pdfnull             = lpdf.null
+local pdfreference        = lpdf.reference
+local pdfimmediateobject  = lpdf.immediateobject
 
-local pdfimmediateobj  = pdf.immediateobj
-
-local checkedkey       = lpdf.checkedkey
-local limited          = lpdf.limited
+local checkedkey          = lpdf.checkedkey
+local limited             = lpdf.limited
 
 local schemes = table.tohash {
     "Artwork", "None", "White", "Day", "Night", "Hard",
@@ -388,12 +387,12 @@ function backends.pdf.helpers.insert3d(spec) -- width, height, factor, display, 
         if js then
             local jsref = stored_js[js]
             if not jsref then
-                jsref = pdfimmediateobj("streamfile",js)
+                jsref = pdfimmediateobject("streamfile",js)
                 stored_js[js] = jsref
             end
             attr.OnInstantiate = pdfreference(jsref)
         end
-        stored_3d[label] = pdfimmediateobj("streamfile",foundname,attr())
+        stored_3d[label] = pdfimmediateobject("streamfile",foundname,attr())
         stream = 1
     else
        stream = stream + 1
@@ -456,7 +455,7 @@ function backends.pdf.helpers.insert3d(spec) -- width, height, factor, display, 
                             },
                 ProcSet    = pdfarray { pdfconstant("PDF"), pdfconstant("ImageC") },
             }
-            local pwd = pdfimmediateobj(
+            local pwd = pdfimmediateobject(
                 "stream",
                 format("q /GS gs %s 0 0 %s 0 0 cm /IM Do Q",
                 factor*width,factor*height),

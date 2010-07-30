@@ -765,7 +765,7 @@ function scripts.context.run(ctxdata,filename)
                             resultname = nil
                         end
                         --
-                        if environment.argument("autopdf") then
+                        if environment.argument("autopdf") or environment.argument("closepdf") then
                             scripts.context.closepdf(filename)
                             if resultname then
                                 scripts.context.closepdf(resultname)

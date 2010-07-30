@@ -706,11 +706,13 @@
    \ifnum\subsentencelevel=\plusone
      \dontleavehmode % was \leaveoutervmode
    \fi
+   \dostarttagged\t!subsentence\empty
    \symbol[\ifodd\subsentencelevel\c!leftsentence\else\c!leftsubsentence\fi]%
   }%  \ignorespaces}
 
 \def\endofsubsentence % relax prevents space gobbling
   {\symbol[\ifodd\subsentencelevel\c!rightsentence\else\c!rightsubsentence\fi]%
+   \dostoptagged
    \global\advance\subsentencelevel\minusone
    \unskip
    \kern\subsentencesignal\relax
@@ -741,6 +743,7 @@
 
 \unexpanded\def\startsubsentence{\beginofsubsentence     \prewordbreak\beginofsubsentencespacing}
 \unexpanded\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+\unexpanded\def\subsentence     {\groupedcommand\startsubsentence\stopsubsentence}
 
 %D \defineXMLenvironment [subsentence]
 %D   {|<|}
@@ -885,6 +888,7 @@
 \unexpanded\def\startdelimitedtext[#1]%
   {\bgroup
    \pushdelimitedtext{#1}%
+   \dostarttagged\t!delimitedblock\currentdelimitedtext
    \doifelse{\delimitedtextparameter\c!method}\s!font
      {\def\dostopdelimitedtext
         {\removeunwantedspaces\ignoredelimitedtext\c!right}%
@@ -894,39 +898,6 @@
         {\let\dohandlerepeatdelimitedtext\relax}%
       \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
         {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}}
-
-% \def\dostartdelimitedtextpar[#1]%
-%    {\let\dostopdelimitedtext\dostopdelimitedtextpar
-%     \doifsomething{\delimitedtextparameter\c!spacebefore}
-%       {\blank[\delimitedtextparameter\c!spacebefore]}%
-%     \delimitedtextparameter\c!before
-%     % nicer:
-%     % \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
-%     % \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
-%     % backward compatible:
-%     \doifelsenothing{#1}
-%       {\endgraf
-%        \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
-%        \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
-%        \let\dodostopdelimitedtextpar\endgraf}
-%       {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%
-%     % so far
-%     % \dochecknextindentation{\??ci\currentdelimitedtext}% AM: not here
-%     \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
-%     \leftdelimitedtextmark
-%     \ignorespaces}
-
-% \def\dostopdelimitedtextpar
-%    {\removeunwantedspaces
-%     \removelastskip
-%     \rightdelimitedtextmark
-%     \dostopattributes
-%     \dodostopdelimitedtextpar
-%     \delimitedtextparameter\c!after
-%     \doifsomething{\delimitedtextparameter\c!spaceafter}
-%       {\blank[\delimitedtextparameter\c!spaceafter]}%
-%     \dochecknextindentation{\??ci\currentdelimitedtext}% AM: here
-%     \dorechecknextindentation}% AM: This was missing!
 
 \def\dostartdelimitedtextpar[#1]%
    {\let\dostopdelimitedtext\dostopdelimitedtextpar
@@ -978,6 +949,7 @@
 
 \unexpanded\def\stopdelimitedtext
   {\dostopdelimitedtext
+   \dostoptagged
    \popdelimitedtext
    \egroup}
 
@@ -1113,35 +1085,56 @@
 \def\handlerightdelimitedtext#1%
   {\dohandlerightdelimitedtext{#1}\relax}
 
+% \unexpanded\def\dodelimitedtextpar
+%   {\dohandleleftdelimitedtext\c!left\relax
+%    \groupedcommand
+%      \donothing
+%      {\dohandlerightdelimitedtext\c!right\removelastskip
+%       \popdelimitedtext}}
+
 \unexpanded\def\dodelimitedtextpar
-  {\dohandleleftdelimitedtext\c!left\relax
-   \groupedcommand
-     \donothing
+  {\groupedcommand
+     {\dostarttagged\t!delimited\currentdelimitedtext % block?
+      \dohandleleftdelimitedtext\c!left\relax}
      {\dohandlerightdelimitedtext\c!right\removelastskip
+      \dostoptagged
       \popdelimitedtext}}
 
 \unexpanded\def\dodelimitedtexttxt
   {\doifelse{\delimitedtextparameter\c!style}\v!normal
      \doquoteddelimited\doattributeddelimited}
 
+% \def\doquoteddelimited
+%   {\dohandleleftdelimitedtext\c!left\relax
+%    \groupedcommand
+%      \donothing
+%      {\dohandlerightdelimitedtext\c!right
+%       \removelastskip
+%       \popdelimitedtext}}
+
 \def\doquoteddelimited
-  {\dohandleleftdelimitedtext\c!left\relax
-   \groupedcommand
-     \donothing
+  {\groupedcommand
+     {\dostarttagged\t!delimited\currentdelimitedtext
+      \dohandleleftdelimitedtext\c!left\relax}
      {\dohandlerightdelimitedtext\c!right
       \removelastskip
+      \dostoptagged
       \popdelimitedtext}}
 
 \def\doattributeddelimited
   {\groupedcommand
-     {\dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color}
+     {\dostarttagged\t!delimited\currentdelimitedtext
+      \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color}
      {\dostopattributes
+      \dostoptagged
       \popdelimitedtext}}
 
 \def\dofontdrivendelimited
   {\simplegroupedcommand
-     {\languageparameter{\c!left\currentdelimitedtext}}
+     {\dostarttagged\t!delimited\currentdelimitedtext
+      \languageparameter{\c!left\currentdelimitedtext}}
      {\languageparameter{\c!right\currentdelimitedtext}%
+      \dostoptagged
       \popdelimitedtext}}
 
 % testcase for nesting:

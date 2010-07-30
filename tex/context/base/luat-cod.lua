@@ -51,15 +51,19 @@ end
 
 local finalizers = { }
 
-function lua.registerfinalizer(f)
+function lua.registerfinalizer(f,comment)
     if type(f) == "function"then
-        finalizers[#finalizers+1] = f
+        finalizers[#finalizers+1] = { action = f, comment = comment }
     end
 end
 
-function lua.finalize()
+function lua.finalize(logger)
     for i=1,#finalizers do
-        finalizers[i]()
+        local finalizer = finalizers[i]
+        finalizer.action()
+        if logger then
+            logger("finalizing lua", "action: %s",finalizer.comment)
+        end
     end
 end
 

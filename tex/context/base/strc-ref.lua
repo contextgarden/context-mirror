@@ -902,7 +902,7 @@ local function identify(prefix,reference)
         set[i] = var
     end
     jobreferences.currentset = set
---  print(bug,table.serialize(set))
+--~ print(bug,table.serialize(set))
     return set, bug
 end
 

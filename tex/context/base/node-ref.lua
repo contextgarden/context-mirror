@@ -338,7 +338,9 @@ nodes.setreference = setreference
 local function makereference(width,height,depth,reference)
     local sr = stack[reference]
     if sr then
-        report_backends("resolving reference attribute %s",reference)
+        if trace_references then
+            report_backends("resolving reference attribute %s",reference)
+        end
         local resolved, ht, dp, set = sr[1], sr[2], sr[3], sr[4]
         if ht then
             if height < ht then height = ht end
@@ -363,10 +365,10 @@ local function makereference(width,height,depth,reference)
             result.width, result.height, result.depth = 0, 0, 0
             if cleanupreferences then stack[reference] = nil end
             return result, resolved
-        else
+        elseif trace_references then
             report_backends("unable to resolve reference annotation %s",reference)
         end
-    else
+    elseif trace_references then
         report_backends("unable to resolve reference attribute %s",reference)
     end
 end
@@ -402,7 +404,9 @@ nodes.setdestination = setdestination
 local function makedestination(width,height,depth,reference)
     local sr = stack[reference]
     if sr then
-        report_backends("resolving destination attribute %s",reference)
+        if trace_destinations then
+            report_backends("resolving destination attribute %s",reference)
+        end
         local resolved, ht, dp, name, view = sr[1], sr[2], sr[3], sr[4], sr[5]
         if ht then
             if height < ht then height = ht end
@@ -443,7 +447,7 @@ local function makedestination(width,height,depth,reference)
         result.width, result.height, result.depth = 0, 0, 0
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved
-    else
+    elseif trace_destinations then
         report_backends("unable to resolve destination attribute %s",reference)
     end
 end

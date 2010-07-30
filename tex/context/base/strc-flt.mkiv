@@ -313,14 +313,18 @@
 \def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
      \ifx\currentfloatnumber\relax\else
+       \dostarttagged\t!floattag\empty
        \labeltexts\currentfloat{\ctxlua{structure.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}}%
+       \dostoptagged
      \fi
    \fi \fi}
 
 \def\thecurrentfloatcaption
   {\ifnofloatcaption \else
      \ifx\currentfloatnumber\relax\else
+       \dostarttagged\t!floattext\empty
        \ctxlua{structure.lists.savedtitle("\currentfloat",\currentfloatnumber)}%
+       \dostoptagged
      \fi
    \fi}
 
@@ -368,11 +372,11 @@
             \begingroup
               \dosetfloatcaptionattributes\c!style\c!color
               \begingroup
-              \dosetfloatcaptionattributes\c!headstyle\c!headcolor
+                \dosetfloatcaptionattributes\c!headstyle\c!headcolor
                 \labeltexts{#1}{\preparednumber}%
               \endgroup
               \begingroup
-              \dosetfloatcaptionattributes\c!textstyle\c!textcolor
+                \dosetfloatcaptionattributes\c!textstyle\c!textcolor
                 \dotfskip{\floatcaptionparameter\c!distance}#3%
               \endgroup
             \endgroup}%
@@ -611,6 +615,7 @@
    \fi
    \global\insidefloattrue
    \begingroup % **
+   \dostarttagged\t!float\currentfloat
    \ifmarginblocks
      \doifinset\v!margin{#2}{\hsize\@@mbwidth}%
    \fi
@@ -620,15 +625,17 @@
    \dowithnextboxcontent % better a \the\everyfloattoks
      {\setlocalfloathsize
       \floatparameter\c!inner
+      \dostarttagged\t!floatcontent\empty
+      \aftergroup\dostoptagged % tricky, never change \dowithnextboxcontent
       \postponenotes} % new
      {\doifsomething{\floatparameter\c!criterium}
         {\ifdim\wd\nextbox>\floatparameter\c!criterium\relax
            \edef\forcedfloatmethod{\floatvariable\c!fallback}%
            \ifx\forcedfloatmethod\empty\let\forcedfloatmethod\v!here\fi
          \fi}%
-       \xdocompletefloat{#1}{#3}{#2}{#4}% ** not yet done
-       % we need to carry over the par because of side floats
-      \doifnotinset\v!text{#2}{\carryoverpar\endgroup}%
+      \xdocompletefloat{#1}{#3}{#2}{#4}% ** not yet done
+      % we need to carry over the par because of side floats
+      \doifnotinset\v!text{#2}{\dostoptagged\carryoverpar\endgroup}% **
       \global\sidefloatdownshift \zeropoint
       \global\sidefloatextrashift\zeropoint
       \ifparfloat
@@ -799,6 +806,7 @@
    \egroup
    % place the float
    \dofloat{#3}{\thecurrentfloatnumber}{\thecurrentfloatcaption}%
+%    \dostoptagged % tricky here, we need an extra mechanism (add to previous or so)
    \global\insidefloatfalse}
 
 \def\setlocalfloathsize
@@ -1129,8 +1137,10 @@
    \doifnotinset\v!tall{#1}%
      {\dp\floatbox\openstrutdepth}% dp\strutbox}%      % toegevoegd
    \box\floatbox
+   \dostoptagged
    \blank[\floatsharedparameter\c!spaceafter]%
    \endgroup % **
+%    \dostoptagged
    \doinsertfloatinfo}
 
 \def\somefacefloat[#1]%  links, rechts, midden, hoog, midden, laag
@@ -1271,7 +1281,8 @@
       \locatefloat{\copy\tempfloatbox}}}
 
 \def\dopreparedocaption#1#2#3%
-  {\doifinsetelse{\floatcaptionparameter\c!location}{\v!top,\v!bottom}
+  {\dostarttagged\t!floatcaption\empty
+   \doifinsetelse{\floatcaptionparameter\c!location}{\v!top,\v!bottom}
      {\doifinsetelse{\floatcaptionparameter\c!width}{\v!fit,\v!max}
         {\doifelse{\floatcaptionparameter\c!minwidth}\v!fit
            {\doifelse{\floatcaptionparameter\c!width}\v!max
@@ -1287,7 +1298,8 @@
         {\dopreparesidewidthcaption{#1}{#2}{#3}}}% new, special effects (see icare)
      {\doifinsetelse{\floatcaptionparameter\c!width}{\v!fit,\v!max}
         {\dopreparesideautocaption{#1}{#2}{#3}}
-        {\dopreparesidewidthcaption{#1}{#2}{#3}}}}
+        {\dopreparesidewidthcaption{#1}{#2}{#3}}}%
+  \dostoptagged}
 
 % \def\dosettempcaptionbox
 %   {\dosetraggedvbox{\floatcaptionparameter\c!align}%

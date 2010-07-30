@@ -336,7 +336,8 @@ local n = 0
 
 -- we can also move rscale to here (more consistent)
 
-function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,mathsize,textsize,relativeid)
+function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
+        mathsize,textsize,relativeid,classgoodies,goodies)
     if trace_defining then
         report_define("memory usage before: %s",statistics.memused())
     end
@@ -355,6 +356,7 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
     specification.sub = (sub and sub ~= "" and sub) or specification.sub
     specification.mathsize = mathsize
     specification.textsize = textsize
+    specification.goodies = goodies
     if detail and detail ~= "" then
         specification.method, specification.detail = method or "*", detail
     elseif specification.detail and specification.detail ~= "" then
@@ -375,7 +377,8 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
         texsetcount("global","lastfontid",-1)
     elseif type(tfmdata) == "number" then
         if trace_defining then
-            report_define("reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+            report_define("reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s)",
+                name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies)
         end
         tex.definefont(global,cs,tfmdata)
         -- resolved (when designsize is used):

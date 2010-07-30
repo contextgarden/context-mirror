@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/15/10 15:01:32
+-- merge date  : 07/30/10 11:35:46
 
 do -- begin closure to overcome local limits and interference
 
@@ -3111,6 +3111,8 @@ fontloader.totable = fontloader.to_table
 -- fix comes last
 
 fonts     = fonts     or { }
+
+-- we will also have des and fam hashes
 
 fonts.ids = fonts.ids or { } fonts.identifiers = fonts.ids -- aka fontdata
 fonts.chr = fonts.chr or { } fonts.characters  = fonts.chr -- aka chardata
@@ -7535,7 +7537,7 @@ local function prepare_base_substitutions(tfmdata,kind,value) -- we can share so
                     if pv then
                         local upv = unicodes[pv]
                         if upv then
-                            if type(upv) == "table" then
+                            if type(upv) == "table" then -- zero change that table
                                 upv = upv[1]
                             end
                             if characters[upv] then
@@ -7563,7 +7565,7 @@ local function prepare_base_substitutions(tfmdata,kind,value) -- we can share so
                         if pc then
                             local upc = unicodes[pc]
                             if upc then
-                                if type(upc) == "table" then
+                                if type(upc) == "table" then -- zero change that table
                                     upc = upc[1]
                                 end
                                 if characters[upc] then
@@ -11257,6 +11259,15 @@ function define.resolve(specification)
     else
         specification.forced = specification.forced
     end
+    -- for the moment here (goodies eset outside features)
+    local goodies = specification.goodies
+    if goodies and goodies ~= "" then
+        local normalgoodies = specification.features.normal.goodies
+        if not normalgoodies or normalgoodies == "" then
+            specification.features.normal.goodies = goodies
+        end
+    end
+    --
     specification.hash = lower(specification.name .. ' @ ' .. tfm.hash_features(specification))
     if specification.sub and specification.sub ~= "" then
         specification.hash = specification.sub .. ' @ ' .. specification.hash

@@ -16,20 +16,20 @@ local registrations  = backends.pdf.registrations
 local executers = jobreferences.executers
 local variables = interfaces.variables
 
-local pdfconstant      = lpdf.constant
-local pdfdictionary    = lpdf.dictionary
-local pdfarray         = lpdf.array
-local pdfreference     = lpdf.reference
-local pdfunicode       = lpdf.unicode
-local pdfstring        = lpdf.string
-local pdfcolorspec     = lpdf.colorspec
-local pdfflushobject   = lpdf.flushobject
-local pdfreserveobject = lpdf.reserveobject
+local pdfconstant          = lpdf.constant
+local pdfdictionary        = lpdf.dictionary
+local pdfarray             = lpdf.array
+local pdfreference         = lpdf.reference
+local pdfunicode           = lpdf.unicode
+local pdfstring            = lpdf.string
+local pdfcolorspec         = lpdf.colorspec
+local pdfflushobject       = lpdf.flushobject
+local pdfreserveobject     = lpdf.reserveobject
+local pdfreserveannotation = lpdf.reserveobject
+local pdfimmediateobject   = lpdf.immediateobject
+local pdfpagereference     = lpdf.pagereference
 
-local pdfreserveobj   = pdf.reserveobj
-local pdfimmediateobj = pdf.immediateobj
-
-local pdfannotation   = nodes.pdfannotation
+local pdfannotation_node   = nodes.pdfannotation
 
 local hpack_node, write_node = node.hpack, node.write
 
@@ -135,10 +135,10 @@ function codeinjections.registercomment(specification)
             Parent  = pdfreference(nd),
         }
         d.Popup = pdfreference(nc)
-        texbox["commentboxone"] = hpack_node(pdfannotation(0,0,0,d(),nd)) -- current dir
-        texbox["commentboxtwo"] = hpack_node(pdfannotation(specification.width,specification.height,0,c(),nc)) -- current dir
+        texbox["commentboxone"] = hpack_node(pdfannotation_node(0,0,0,d(),nd)) -- current dir
+        texbox["commentboxtwo"] = hpack_node(pdfannotation_node(specification.width,specification.height,0,c(),nc)) -- current dir
     else
-        texbox["commentboxone"] = hpack_node(pdfannotation(0,0,0,d())) -- current dir
+        texbox["commentboxone"] = hpack_node(pdfannotation_node(0,0,0,d())) -- current dir
         texbox["commentboxtwo"] = nil
     end
 end
@@ -160,7 +160,7 @@ function codeinjections.embedfile(filename)
     else
         local basename = file.basename(filename)
         local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
-        local f = pdfimmediateobj("streamfile",filename,a())
+        local f = pdfimmediateobject("streamfile",filename,a())
         local d = pdfdictionary {
             Type = pdfconstant("Filespec"),
             F    = pdfstring(newname or basename),
@@ -211,7 +211,7 @@ function codeinjections.attachfile(specification)
     local width  = specification.width  or 0
     local height = specification.height or 0
     local depth  = specification.depth  or 0
-    write_node(pdfannotation(width,height,depth,d()))
+    write_node(pdfannotation_node(width,height,depth,d()))
 end
 
 function codeinjections.attachmentid(filename)
@@ -255,20 +255,20 @@ local function insertrenderingwindow(label,width,height,specification)
     local actions = nil
     if openpage or closepage then
         actions = pdfdictionary {
-            PO = (openpage  and lpdf.pdfaction(openpage )) or nil,
-            PC = (closepage and lpdf.pdfaction(closepage)) or nil,
+            PO = (openpage  and lpdf.action(openpage )) or nil,
+            PC = (closepage and lpdf.action(closepage)) or nil,
         }
     end
     local page = tonumber(specification.page) or texcount.realpageno
     local d = pdfdictionary {
         Subtype = pdfconstant("Screen"),
-        P       = pdfreference(tex.pdfpageref(page)),
+        P       = pdfreference(pdfpagereference(page)),
         A       = mf[label],
         Border  = pdfarray { 0, 0, 0 } ,
         AA      = actions,
     }
-    local r = pdfreserveobj("annot")
-    write_node(pdfannotation(width,height,0,d(),r)) -- save ref
+    local r = pdfreserveannotation()
+    write_node(pdfannotation_node(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
 

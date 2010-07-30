@@ -93,6 +93,7 @@
 		<cd:variable name='bib' value='bib'/>
 		<cd:variable name='big' value='grand'/>
 		<cd:variable name='bigbodyfont' value='grandepolicecorp'/>
+		<cd:variable name='bigger' value='bigger'/>
 		<cd:variable name='bigpreference' value='grandepreference'/>
 		<cd:variable name='blank' value='vide'/>
 		<cd:variable name='blockquote' value='blockquote'/>
@@ -367,6 +368,7 @@
 		<cd:variable name='random' value='aleatoire'/>
 		<cd:variable name='readonly' value='lectureseule'/>
 		<cd:variable name='rectangular' value='rectangulaire'/>
+		<cd:variable name='reference' value='reference'/>
 		<cd:variable name='referral' value='referral'/>
 		<cd:variable name='register' value='registre'/>
 		<cd:variable name='regular' value='regulier'/>
@@ -414,6 +416,7 @@
 		<cd:variable name='smallbolditalic' value='italiquegraspetit'/>
 		<cd:variable name='smallboldslanted' value='inclinegraspetit'/>
 		<cd:variable name='smallcaps' value='petitescapitales'/>
+		<cd:variable name='smaller' value='smaller'/>
 		<cd:variable name='smallitalic' value='italiquepetit'/>
 		<cd:variable name='smallitalicbold' value='grasitaliquepetit'/>
 		<cd:variable name='smallnormal' value='normalpetit'/>

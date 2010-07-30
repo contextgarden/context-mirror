@@ -26,9 +26,14 @@
         job.comment("format: \contextformat")
         job.comment("stamp: \contextversion")
         job.comment("escape: \!!bs\space...\space\!!es")
-        job.initialize("\jobname.tuc","\jobname.tua")
     }%
 \to \everystarttext
+
+\appendtoks
+    \ctxlua {
+        job.initialize("\jobname.tuc","\jobname.tua")
+    }%
+\to \everyjob
 
 \def\notuccompression{\ctxlua{job.pack=false}}
 

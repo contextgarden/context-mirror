@@ -41,9 +41,12 @@ local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 metapost = metapost or { }
 
-metapost.showlog   = false
-metapost.lastlog   = ""
-metapost.texerrors = false
+metapost.showlog      = false
+metapost.lastlog      = ""
+metapost.texerrors    = false
+metapost.exectime     = metapost.exectime or { } -- hack
+
+local mplibone = tonumber(mplib.version()) <= 1.50
 
 directives.register("mplib.texerrors", function(v) metapost.texerrors = v end)
 
@@ -62,69 +65,6 @@ local function finder(name, mode, ftype)
 end
 
 metapost.finder = finder
-
-metapost.parameters = {
-    hash_size = 100000,
-    main_memory = 4000000,
-    max_in_open = 50,
-    param_size = 100000,
-}
-
-metapost.exectime = metapost.exectime or { } -- hack
-
-local preamble = [[
-boolean mplib; string mp_parent_version;
-mplib := true;
-mp_parent_version := "%s";
-input %s ; dump ;
-]]
-
-function metapost.make(name, target, version)
-    starttiming(mplib)
-    target = file.replacesuffix(target or name, "mem")
-    local mpx = mplib.new ( table.merged (
-        metapost.parameters,
-        {
-            ini_version = true,
-            find_file = finder,
-            job_name = file.removesuffix(target),
-        }
-    ) )
-    if mpx then
-        starttiming(metapost.exectime)
-        local result = mpx:execute(format(preamble,version or "unknown",name))
-        stoptiming(metapost.exectime)
-        mpx:finish()
-    end
-    stoptiming(mplib)
-end
-
-function metapost.load(name)
-    starttiming(mplib)
-    local mpx = mplib.new ( table.merged (
-        metapost.parameters,
-        {
-            ini_version = false,
-            mem_name = file.replacesuffix(name,"mem"),
-            find_file = finder,
-         -- job_name = "mplib",
-        }
-    ) )
-    local result
-    if not mpx then
-        result = { status = 99, error = "out of memory"}
-    end
-    stoptiming(mplib)
-    return mpx, result
-end
-
-function metapost.unload(mpx)
-    starttiming(mplib)
-    if mpx then
-        mpx:finish()
-    end
-    stoptiming(mplib)
-end
 
 function metapost.reporterror(result)
     if not result then
@@ -149,90 +89,148 @@ function metapost.reporterror(result)
     return true
 end
 
---~ function metapost.checkformat(mpsinput)
---~     local mpsversion = environment.version or "unset version"
---~     local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
---~     local mpsformat  = file.removesuffix(file.basename(mpsformat or texconfig.formatname or (tex and tex.formatname) or mpsinput))
---~     local mpsbase    = file.removesuffix(file.basename(mpsinput))
---~     if mpsbase ~= mpsformat then
---~         mpsformat = mpsformat .. "-" .. mpsbase
---~     end
---~     mpsformat = file.addsuffix(mpsformat, "mem")
---~     local pth = file.dirname(texconfig.formatname or "") -- to be made dynamic
---~     if pth ~= "" then
---~         mpsformat = file.join(pth,mpsformat)
---~     end
---~     if lfs.isfile(mpsformat) then
---~         commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformat)
---~         local mpx, result = metapost.load(mpsformat)
---~         if mpx then
---~             local result = mpx:execute("show mp_parent_version ;")
---~             if not result.log then
---~                 metapost.reporterror(result)
---~             else
---~                 local version = match(result.log,">> *(.-)[\n\r]") or "unknown"
---~                 version = gsub(version,"[\'\"]","")
---~                 if version ~= mpsversion then
---~                     commands.writestatus("mplib","version mismatch: %s <> %s", version or "unknown", mpsversion)
---~                 else
---~                     return mpx
---~                 end
---~             end
---~         else
---~             commands.writestatus("mplib","error in loading '%s' from '%s'", mpsinput, mpsformat)
---~             metapost.reporterror(result)
---~         end
---~     end
---~     commands.writestatus("mplib","making '%s' into '%s'", mpsinput, mpsformat)
---~     metapost.make(mpsinput,mpsformat,mpsversion) -- somehow return ... fails here
---~     if lfs.isfile(mpsformat) then
---~         commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformat)
---~         return metapost.load(mpsformat)
---~     else
---~         commands.writestatus("mplib","problems with '%s' from '%s'", mpsinput, mpsformat)
---~     end
---~ end
+if mplibone then
 
-function metapost.checkformat(mpsinput)
-    local mpsversion = environment.version or "unset version"
-    local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
-    local mpsformat  = file.removesuffix(file.basename(texconfig.formatname or (tex and tex.formatname) or mpsinput))
-    local mpsbase    = file.removesuffix(file.basename(mpsinput))
-    if mpsbase ~= mpsformat then
-        mpsformat = mpsformat .. "-" .. mpsbase
-    end
-    mpsformat = file.addsuffix(mpsformat, "mem")
-    local mpsformatfullname = caches.getfirstreadablefile(mpsformat,"formats") or ""
-    if mpsformatfullname ~= "" then
-        commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformatfullname)
-        local mpx, result = metapost.load(mpsformatfullname)
+    local preamble = [[
+        boolean mplib ; mplib := true ;
+        string mp_parent_version ; mp_parent_version := "%s" ;
+        input %s ; dump ;
+    ]]
+
+    metapost.parameters = {
+        hash_size = 100000,
+        main_memory = 4000000,
+        max_in_open = 50,
+        param_size = 100000,
+    }
+
+    function metapost.make(name, target, version)
+        starttiming(mplib)
+        target = file.replacesuffix(target or name, "mem")
+        local mpx = mplib.new ( table.merged (
+            metapost.parameters,
+            {
+                ini_version = true,
+                find_file = finder,
+                job_name = file.removesuffix(target),
+            }
+        ) )
         if mpx then
-            local result = mpx:execute("show mp_parent_version ;")
-            if not result.log then
-                metapost.reporterror(result)
-            else
-                local version = match(result.log,">> *(.-)[\n\r]") or "unknown"
-                version = gsub(version,"[\'\"]","")
-                if version ~= mpsversion then
-                    commands.writestatus("mplib","version mismatch: %s <> %s", version or "unknown", mpsversion)
+            starttiming(metapost.exectime)
+            local result = mpx:execute(format(preamble,version or "unknown",name))
+            stoptiming(metapost.exectime)
+            mpx:finish()
+        end
+        stoptiming(mplib)
+    end
+
+    function metapost.load(name)
+        starttiming(mplib)
+        local mpx = mplib.new ( table.merged (
+            metapost.parameters,
+            {
+                ini_version = false,
+                mem_name = file.replacesuffix(name,"mem"),
+                find_file = finder,
+             -- job_name = "mplib",
+            }
+        ) )
+        local result
+        if not mpx then
+            result = { status = 99, error = "out of memory"}
+        end
+        stoptiming(mplib)
+        return mpx, result
+    end
+
+    function metapost.checkformat(mpsinput)
+        local mpsversion = environment.version or "unset version"
+        local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
+        local mpsformat  = file.removesuffix(file.basename(texconfig.formatname or (tex and tex.formatname) or mpsinput))
+        local mpsbase    = file.removesuffix(file.basename(mpsinput))
+        if mpsbase ~= mpsformat then
+            mpsformat = mpsformat .. "-" .. mpsbase
+        end
+        mpsformat = file.addsuffix(mpsformat, "mem")
+        local mpsformatfullname = caches.getfirstreadablefile(mpsformat,"formats") or ""
+        if mpsformatfullname ~= "" then
+            commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformatfullname)
+            local mpx, result = metapost.load(mpsformatfullname)
+            if mpx then
+                local result = mpx:execute("show mp_parent_version ;")
+                if not result.log then
+                    metapost.reporterror(result)
                 else
-                    return mpx
+                    local version = match(result.log,">> *(.-)[\n\r]") or "unknown"
+                    version = gsub(version,"[\'\"]","")
+                    if version ~= mpsversion then
+                        commands.writestatus("mplib","version mismatch: %s <> %s", version or "unknown", mpsversion)
+                    else
+                        return mpx
+                    end
                 end
+            else
+                commands.writestatus("mplib","error in loading '%s' from '%s'", mpsinput, mpsformatfullname)
+                metapost.reporterror(result)
             end
+        end
+        local mpsformatfullname = caches.setfirstwritablefile(mpsformat,"formats")
+        commands.writestatus("mplib","making '%s' into '%s'", mpsinput, mpsformatfullname)
+        metapost.make(mpsinput,mpsformatfullname,mpsversion) -- somehow return ... fails here
+        if lfs.isfile(mpsformatfullname) then
+            commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformatfullname)
+            return metapost.load(mpsformatfullname)
         else
-            commands.writestatus("mplib","error in loading '%s' from '%s'", mpsinput, mpsformatfullname)
+            commands.writestatus("mplib","problems with '%s' from '%s'", mpsinput, mpsformatfullname)
+        end
+    end
+
+else
+
+    local preamble = [[
+        boolean mplib ; mplib := true ;
+        let dump = endinput ;
+        input %s ;
+    ]]
+
+    function metapost.load(name)
+        starttiming(mplib)
+        local mpx = mplib.new {
+            ini_version = true,
+            find_file = finder,
+        }
+        local result
+        if not mpx then
+            result = { status = 99, error = "out of memory"}
+        else
+            result = mpx:execute(format(preamble, file.replacesuffix(name,"mp")))
+        end
+        stoptiming(mplib)
+        metapost.reporterror(result)
+        return mpx, result
+    end
+
+    function metapost.checkformat(mpsinput)
+        local mpsversion = environment.version or "unset version"
+        local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
+        commands.writestatus("mplib","loading '%s' (experimental metapost version two)",mpsinput)
+        local mpx, result = metapost.load(mpsinput)
+        if mpx then
+            return mpx
+        else
+            commands.writestatus("mplib","error in loading '%s'",mpsinput)
             metapost.reporterror(result)
         end
     end
-    local mpsformatfullname = caches.setfirstwritablefile(mpsformat,"formats")
-    commands.writestatus("mplib","making '%s' into '%s'", mpsinput, mpsformatfullname)
-    metapost.make(mpsinput,mpsformatfullname,mpsversion) -- somehow return ... fails here
-    if lfs.isfile(mpsformatfullname) then
-        commands.writestatus("mplib","loading '%s' from '%s'", mpsinput, mpsformatfullname)
-        return metapost.load(mpsformatfullname)
-    else
-        commands.writestatus("mplib","problems with '%s' from '%s'", mpsinput, mpsformatfullname)
+
+end
+
+function metapost.unload(mpx)
+    starttiming(mplib)
+    if mpx then
+        mpx:finish()
     end
+    stoptiming(mplib)
 end
 
 local mpxformats = { }

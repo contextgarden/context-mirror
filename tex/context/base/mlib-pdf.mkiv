@@ -26,7 +26,8 @@
    \xdef\MPheight{\the\dimexpr#4\onebasepoint-#2\onebasepoint\relax}}
 
 \def\startMPLIBtoPDF#1#2#3#4% watch the transparency reset
-  {\naturalhbox\bgroup
+  {\dostarttagged\t!mpgraphic\empty
+   \naturalhbox attr \imageattribute 1 \bgroup
    \doactivatecolor\s!black\forcecolorhack
    \MPLIBboundingbox{#1}{#2}{#3}{#4}%
   %\forgetall % done already elsewhere
@@ -52,7 +53,8 @@
    \wd\scratchbox\MPwidth
    \ht\scratchbox\MPheight
    \dopackageMPgraphic\scratchbox
-   \egroup}
+   \egroup
+   \dostoptagged}
 
 % \def\MPLIBtextext#1#2#3#4#5%
 %   {\begingroup

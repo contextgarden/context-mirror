@@ -14,6 +14,8 @@ local trace_xmp = false  trackers.register("backend.xmp", function(v) trace_xmp 
 
 local pdfdictionary = lpdf.dictionary
 local pdfconstant   = lpdf.constant
+local pdfreference  = lpdf.reference
+local pdfobject     = lpdf.object
 
 -- i wonder why this begin end is empty / w (no time now to look into it)
 
@@ -119,7 +121,6 @@ end
 local t = { } for i=1,24 do t[i] = random() end
 
 local function flushxmpinfo()
-
     commands.freezerandomseed(os.clock()) -- hack
 
     local t = { } for i=1,24 do t[i] = char(96 + random(26)) end
@@ -144,22 +145,25 @@ local function flushxmpinfo()
         texio.write("log","\n% ",(gsub(blob,"[\r\n]","\n%% ")),"\n")
     end
     blob = format(xpacket,packetid,blob)
-    if tex.pdfcompresslevel > 0 then
+    if not verbose and tex.pdfcompresslevel > 0 then
         blob = gsub(blob,">%s+<","><")
     end
-    local r = pdf.obj {
+    local r = pdfobject {
         immediate = true,
         compresslevel = 0,
         type = "stream",
         string = blob,
         attr = md(),
     }
-    lpdf.addtocatalog("Metadata",lpdf.reference(r))
+    lpdf.addtocatalog("Metadata",pdfreference(r))
 
     commands.defrostrandomseed() -- hack
-
 end
 
 --  his will be enabled when we can inhibit compression for a stream at the lua end
 
-lpdf.registerdocumentfinalizer(flushxmpinfo,1)
+lpdf.registerdocumentfinalizer(flushxmpinfo,1,"metadata")
+
+directives.register("backend.verbosexmp", function(v)
+    verbose = v
+end)

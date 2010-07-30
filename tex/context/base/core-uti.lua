@@ -72,8 +72,10 @@ local function initializer()
     if not r then
         r = math.random()
         math.setrandomseedi(r,"initialize")
+        report_jobcontrol("initializing randomizer with %s",r)
     else
         math.setrandomseedi(r,"previous run")
+        report_jobcontrol("resuming randomizer with %s",r)
     end
     jobvariables.tobesaved.randomseed = r
     for cs, value in next, jobvariables.collected do

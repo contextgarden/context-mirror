@@ -11,14 +11,15 @@ if not modules then modules = { } end modules ['lpdf-swf'] = {
 
 local format = string.format
 
-local pdfconstant   = lpdf.constant
-local pdfboolean    = lpdf.boolean
-local pdfstring     = lpdf.string
-local pdfunicode    = lpdf.unicode
-local pdfdictionary = lpdf.dictionary
-local pdfarray      = lpdf.array
-local pdfnull       = lpdf.null
-local pdfreference  = lpdf.reference
+local pdfconstant        = lpdf.constant
+local pdfboolean         = lpdf.boolean
+local pdfstring          = lpdf.string
+local pdfunicode         = lpdf.unicode
+local pdfdictionary      = lpdf.dictionary
+local pdfarray           = lpdf.array
+local pdfnull            = lpdf.null
+local pdfreference       = lpdf.reference
+local pdfimmediateobject = lpdf.immediateobject
 
 function backends.pdf.helpers.insertswf(spec)
 
@@ -38,7 +39,7 @@ function backends.pdf.helpers.insertswf(spec)
         },
     }
 
-    local fref = pdfreference(pdf.immediateobj(tostring(flash)))
+    local fref = pdfreference(pdfimmediateobject(tostring(flash)))
 
     local configuration = pdfdictionary {
         Configurations = pdfarray { fref },
@@ -50,7 +51,7 @@ function backends.pdf.helpers.insertswf(spec)
         },
     }
 
-    local cref = pdfreference(pdf.immediateobj(tostring(configuration)))
+    local cref = pdfreference(pdfimmediateobject(tostring(configuration)))
 
     local activation = pdfdictionary {
         Activation = pdfdictionary {
@@ -96,7 +97,7 @@ function backends.pdf.helpers.insertswf(spec)
         }
     }
 
-    local aref = pdfreference(pdf.immediateobj(tostring(activation)))
+    local aref = pdfreference(pdfimmediateobject(tostring(activation)))
 
     local annotation = pdfdictionary {
        Subtype           = pdfconstant("RichMedia"),

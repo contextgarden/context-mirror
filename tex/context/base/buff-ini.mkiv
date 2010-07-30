@@ -176,6 +176,9 @@
 
 \def\thebuffernumber#1%
   {\csname\??bu#1\c!number\endcsname}
+
+\def\thedefinedbuffer#1%
+  {def-\csname\??bu#1\c!number\endcsname}
 
 \unexpanded\def\getbuffer
   {\dodoubleempty\dogetbuffer}
@@ -199,13 +202,17 @@
 
 \def\doprocessbufferverbatim
   {\doinitializeverbatim
-   \ctxlua{buffers.type("\currentbuffer","\typingparameter\c!strip")}}
+   \dostarttagged\t!verbatim\currentbuffer
+   \ctxlua{buffers.type("\currentbuffer","\typingparameter\c!strip")}%
+   \dostoptagged}
 
 \def\doprocessbufferlinesverbatim#1#2#3%
   {#2%
    % todo, set up numbers
    \doinitializeverbatim
+   \dostarttagged\t!verbatim\currentbuffer
    \ctxlua{buffers.type("\currentbuffer","\typingparameter\c!strip")}
+   \dostoptagged
    #3}
 
 \def\doifelsebuffer#1%

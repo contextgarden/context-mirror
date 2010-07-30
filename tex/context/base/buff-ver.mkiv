@@ -344,7 +344,9 @@
 \def\dodotypeAA#1%
   {\doinitializeverbatim
    \def\obs{\obeyedspace}%
+   \dostarttagged\t!verbatim\currenttyping
    \ctxlua{buffers.hooks.flush_inline(\!!bs\detokenize{#1}\!!es)}%
+   \dostoptagged
    \egroup}
 
 \def\dodotypeB#1%
@@ -356,7 +358,9 @@
 
 \def\dodotypeBB#1%
   {\doinitializeverbatim
+   \dostarttagged\t!verbatim\currenttyping
    \ctxlua{buffers.visualizers.flush_nested(\!!bs\detokenize{#1}\!!es,false)}%
+   \dostoptagged
    \egroup
    \gobbleoneargument} % grab last >
 
@@ -370,7 +374,9 @@
 \def\dodotypeCC#1%
   {\doinitializeverbatim
    \ifx\obeycharacters\setupprettytype % temp hack, we need a proper signal
+     \dostarttagged\t!verbatim\currenttyping
      \ctxlua{buffers.hooks.flush_inline([\!!bs\detokenize{#1}\!!es,true)}%
+     \dostoptagged
    \else
      \def\obs{\obeyedspace}%
      \ctxlua{buffers.visualizers.flush_nested(\!!bs\detokenize{#1}\!!es,true)}%
@@ -388,7 +394,9 @@
 
 \def\dodotypeDD#1%
   {\doinitializeverbatim
+   \dostarttagged\t!verbatim\currenttyping
    \ctxlua{buffers.hooks.flush_inline(\!!bs\detokenize{#1}\!!es,true)}%
+   \dostoptagged
    \egroup
    \gobbleoneargument} % grab last >
 
@@ -634,7 +642,9 @@
 \def\dotypefileverbatim
   {\doinitializeverbatim
    \beginofverbatimlines
+   \dostarttagged\t!verbatimblock\currenttyping
    \ctxlua{buffers.typefile("\readfilename","\typingparameter\c!strip","\typingparameter\c!range")}%
+   \dostoptagged
    \endofverbatimlines}
 
 \def\dotypefilelinesverbatim#1#2%
@@ -645,7 +655,9 @@
      {}
      {\doinitializeverbatim
       \beginofverbatimlines
+      \dostarttagged\t!verbatimblock\currenttyping
       \ctxlua{buffers.type("_typing_","\typingparameter\c!strip","\typingparameter\c!range")}%
+      \dostoptagged
       \endofverbatimlines
       \csname#2\endcsname}}
 

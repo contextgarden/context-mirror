@@ -46,11 +46,23 @@
 \registerctxluafile{math-vfu}{1.001}
 \registerctxluafile{math-map}{1.001}
 \registerctxluafile{math-noa}{1.001}
+\registerctxluafile{math-tag}{1.001}
 
 \definesystemattribute[mathalphabet]        \chardef\mathalphabetattribute    \dogetattributeid{mathalphabet}
 \definesystemattribute[mathsize]            \chardef\mathsizeattribute        \dogetattributeid{mathsize}
 \definesystemattribute[mathpunctuation]     \chardef\mathpunctuationattribute \dogetattributeid{mathpunctuation}
 \definesystemattribute[mathgreek]           \chardef\mathgreekattribute       \dogetattributeid{mathgreek}
+\definesystemattribute[mathalternate]       \chardef\mathalternateattribute   \dogetattributeid{mathalternate}
+
+% experiment
+
+% Normally this is applied to only one character.
+%
+% $ABC$ $\cal ABC$ $\mathaltcal ABC$
+
+\def\mathalternate#1{\ctxlua{mathematics.setalternate(0,"#1")}} % fam 0
+
+\def\mathaltcal{\mathalternate{cal}\cal} % ss01 in xits
 
 % todo: only in mmode
 

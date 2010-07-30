@@ -403,12 +403,12 @@
 \def\typefaceencoding{\defaultencoding}
 
 \def\dostarttypefacedefining#1#2#3%
-  {\geteparameters[\??ts][\s!rscale=\plusone,\s!features=,\s!fallbacks=,#3]%
+  {\geteparameters[\??ts][\s!rscale=\plusone,\s!features=,\s!fallbacks=,\s!goodies=,#3]%
    \pushmacro\fontclass
    \setcurrentfontclass{#1}%
    \pushmacro\relativefontsize
    \let\relativefontsize\@@tsrscale % still needed ?
-   \savefontclassparameters{#2}\@@tsrscale\@@tsfeatures\@@tsfallbacks}
+   \savefontclassparameters{#2}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies}
 
 \def\dostoptypefacedefining
    {\popmacro\relativefontsize

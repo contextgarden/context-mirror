@@ -243,4 +243,23 @@
 
 \def\luaconditional#1{\ifcase#1tru\else fals\fi e}
 
+%D Goodie:
+%D
+%D \starttyping
+%D \ctxluacode{context("%0.5f",1/3)}
+%D \stoptyping
+
+\long\def\ctxluacode
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \catcode`\{\plusone
+   \catcode`\}\plustwo
+   \afterassignment\doctxluacode
+   \scratchtoks=}
+
+\def\doctxluacode
+  {\normalexpanded{\endgroup\noexpand\directlua\zerocount\expandafter{\the\scratchtoks}}}
+
+
 \protect \endinput

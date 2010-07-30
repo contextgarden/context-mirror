@@ -61,11 +61,13 @@
 % TODO    \resetsectionmarks\zerosection
     \getstructureblockenvironment\currentstructureblock
     \structureblockparameter\c!before % don't move
+    \dostarttagged\t!division\currentstructureblock
 \to \everybeforestructureblock
 
 \appendtoks
     \structureblockparameter\c!after % don't move
     \doifsomething{\structureblockparameter\c!page}{\page[\structureblockparameter\c!page]}%
+    \dostoptagged
 % TODO    \resetsectionmarks\zerosection
 \to \everyafterstructureblock
 

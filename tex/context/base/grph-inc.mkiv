@@ -77,6 +77,7 @@
 \def\figurexscale        {\ctxlua{figures.tprint("status","xscale",1)}}
 \def\figureyscale        {\ctxlua{figures.tprint("status","yscale",1)}}
 
+\def\figuresize          {\ctxlua{figures.tprint("request","size")}}
 \def\figurelabel         {\ctxlua{figures.tprint("request","label")}}
 \def\figurefileoriginal  {\ctxlua{figures.tprint("request","name")}}
 \def\figurefilepage      {\ctxlua{figures.tprint("request","page",1)}}
@@ -150,6 +151,8 @@
    \let\@@efrepeat    \v!no
    %
    \let\@@efforegroundcolor\empty
+   %
+   \let\@@efinteraction\@@exinteraction
    %
    \let\@@efhfactor   \empty
    \let\@@efwfactor   \empty

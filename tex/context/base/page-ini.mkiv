@@ -300,11 +300,14 @@
      \expandafter\invokenormaloutputroutine
    \fi}
 
-\mainoutput{\invokeoutputroutine} \output{\inotrtrue\the\mainoutput}
+\mainoutput{\invokeoutputroutine}
 
 %D Some hooks:
 
-\output{\inotrtrue\the\everybeforeoutput\the\mainoutput\the\everyafteroutput}
+\def\setoutputroutine#1%
+  {\global\output{\inotrtrue\the\everybeforeoutput#1\the\everyafteroutput}}
+
+\setoutputroutine{\the\mainoutput}
 
 \ifx\pagediscards\undefined \let\pagediscards\relax \fi
 

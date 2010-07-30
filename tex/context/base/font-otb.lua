@@ -168,7 +168,7 @@ local function prepare_base_substitutions(tfmdata,kind,value) -- we can share so
                     if pv then
                         local upv = unicodes[pv]
                         if upv then
-                            if type(upv) == "table" then
+                            if type(upv) == "table" then -- zero change that table
                                 upv = upv[1]
                             end
                             if characters[upv] then
@@ -196,7 +196,7 @@ local function prepare_base_substitutions(tfmdata,kind,value) -- we can share so
                         if pc then
                             local upc = unicodes[pc]
                             if upc then
-                                if type(upc) == "table" then
+                                if type(upc) == "table" then -- zero change that table
                                     upc = upc[1]
                                 end
                                 if characters[upc] then

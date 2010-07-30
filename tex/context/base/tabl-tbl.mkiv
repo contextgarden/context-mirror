@@ -348,6 +348,7 @@
         \bgroup
             \noexpand\bbskip
             \bgroup % we cannot combine the if because a cell may have only one ##
+\noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
                 \noexpand#1%
                 \ifcase\tabulatereshape\else
                     \beginreshapedtabulatepar
@@ -373,6 +374,7 @@
                     \endreshapedtabulatepar
                 \fi
                 \noexpand#2%
+\noexpand\dostoptagged
             \egroup
         \egroup
         &\noexpand\posttabrule\hskip\postabskip##%
@@ -1370,7 +1372,12 @@
      \setbox\tabulatebox\vbox \bgroup
    \fi
    %
+\dostarttagged\t!tabulate\empty
+\dostarttagged\t!tabulaterow\empty
+\appendtoks\dostoptagged\dostarttagged\t!tabulaterow\empty\to\everycr
    \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
+\dostoptagged
+\dostoptagged
    \prevdepth\strutdp % nog eens beter, temporary hack
    \doifvalue{\??tt\currenttabulate\c!distance}\v!grid{\vskip-\strutdp}% experimental tm-prikkels
    %

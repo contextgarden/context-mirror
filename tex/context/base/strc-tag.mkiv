@@ -1,0 +1,192 @@
+%D \module
+%D   [       file=strc-tag,
+%D        version=2010.07.16,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Tags,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% key/values and other names might change (and probably will)
+
+\writestatus{loading}{ConTeXt Structure Macros / Tags}
+
+\registerctxluafile{strc-tag}{1.001}
+
+\unprotect
+
+% labels: temporary here
+
+\def\t!document          {document}               % Div
+
+\def\t!division          {division}               % Div
+\def\t!paragraph         {paragraph}              % P
+\def\t!construct         {construct}              % Span
+
+\def\t!structure         {structure}              % Sect
+\def\t!structuretitle    {structuretitle}         % H
+\def\t!structurenumber   {structurenumber}        % H
+\def\t!structurecontent  {structurecontent}       % Div
+
+\def\t!itemgroup         {itemgroup}              % L
+\def\t!item              {item}                   % Li
+\def\t!itemtag           {itemtag}                % Lbl
+\def\t!itemcontent       {itemcontent}            % LBody
+
+\def\t!description       {description}            % Li
+\def\t!descriptiontag    {descriptiontag}         % Lbl
+\def\t!descriptioncontent{descriptioncontent}     % LBody
+
+\def\t!verbatimblock     {verbatimblock}          % Code
+\def\t!verbatim          {verbatim}               % Code
+
+\def\t!register          {register}               % Div
+\def\t!registersection   {registersection}        % Div
+\def\t!registertag       {registertag}            % Span
+\def\t!registerentries   {registerentries}        % Div
+\def\t!registerentry     {registerentry}          % Span
+\def\t!registersee       {registersee}            % Span
+\def\t!registerpages     {registerpages}          % Span
+\def\t!registerpage      {registerpage}           % Span
+
+\def\t!table             {table}                  % Table
+\def\t!tablerow          {tr}                     % TR
+\def\t!tablecell         {td}                     % TD
+\def\t!tabulate          {tabulate}               % Table
+\def\t!tabulaterow       {row}                    % TR
+\def\t!tabulatecell      {cell}                   % TD
+
+\def\t!list              {list}                   % TOC
+\def\t!listitem          {listitem}               % TOCI
+\def\t!listtag           {listtag}                % Lbl
+\def\t!listcontent       {listcontent}            % P
+\def\t!listdata          {listdata}               % P
+\def\t!listpage          {listpage}               % Reference
+
+\def\t!delimitedblock    {delimited}              % BlockQuote
+\def\t!delimited         {delimited}              % Quote
+\def\t!subsentence       {subsentence}            % Span
+
+\def\t!float             {float}                  % Div
+\def\t!floatcaption      {floatcaption}           % Caption
+\def\t!floattag          {floattag}               % Span
+\def\t!floattext         {floattext}              % Span
+\def\t!floatcontent      {floatcontent}           % P
+
+\def\t!image             {image}                  % P
+
+\def\t!mpgraphic         {mpgraphic}              % P
+
+\def\t!formulaset        {formulaset}             % Div
+\def\t!formula           {formula}                % Div
+\def\t!formulatag        {formulatag}             % Span
+\def\t!formulacontent    {formulacontent}         % P
+\def\t!subformula        {subformula}             % Div
+
+\def\t!link              {link}                   % Link
+
+% \setuptaglabeltext
+%   [en]
+%   [\t!document=document]
+
+% the real code
+
+\definesystemattribute[tagged]  \chardef\taggedattribute \dogetattributeid{tagged}
+\definesystemattribute[image]   \chardef\imageattribute  \dogetattributeid{image}
+
+% \def\mapelementtobackendtag          {\dodoubleargument\domapelementtobackendtag}
+% \def\domapelementtobackendtag[#1][#2]{\ctxlua{backends.codeinjections.maptag("#1","#2")}}
+
+% todo: indirect macro for trialtypesetting
+
+\unexpanded\def\dostartelement{\iftrialtypesetting\expandafter\noostartelement\else\expandafter\dodostartelement\fi}
+\unexpanded\def\dostopelement {\iftrialtypesetting                            \else\expandafter\dodostopelement \fi}
+
+\unexpanded\def\dodostartelement[#1]{\ctxlua{structure.tags.start("#1","\dogetupsometaglabeltext{#1}")}}
+\unexpanded\def\dodostopelement     {\ctxlua{structure.tags.stop()}}
+
+\unexpanded\def\nostartelement[#1]{}
+\unexpanded\def\nostopelement     {}
+
+% beware: making this one unexpanded spoils tables (noalign problem)
+
+\def\dodostarttagged{\iftrialtypesetting\expandafter\nodostarttagged\else\expandafter\dododostarttagged\fi}
+\def\dodostoptagged {\iftrialtypesetting                            \else\expandafter\dododostoptagged \fi}
+
+\def\dododostarttagged#1#2{\ctxlua{structure.tags.start("#1","\dogetupsometaglabeltext{#1}","#2")}}
+\def\dododostoptagged     {\ctxlua{structure.tags.stop()}}
+
+\def\nodostarttagged#1#2{}
+\def\nodostoptagged     {}
+
+\newtoks\everysetupstructure
+
+\def\setupstructure[#1]%
+  {\getparameters[\??el][#1]%
+   \the\everysetupstructure}
+
+\def\doenableelements
+  {\setuplanguage[\s!default][\s!righthyphenchar="AD]% for the moment here
+   \let\startelement\dostartelement
+   \let\stopelement \dostopelement}
+
+\def\dodisableelements
+  {\let\startelement\nostartelement
+   \let\stopelement \nostopelement}
+
+\def\doenabletagged
+  {\let\dostarttagged\dodostarttagged
+   \let\dostoptagged \dodostoptagged }
+
+\def\dodisabletagged
+  {\let\dostarttagged\nodostarttagged
+   \let\dostoptagged \nodostoptagged }
+
+\newtoks\everyenableelements
+\newtoks\everydisableelements
+
+\appendtoks
+    \doenableelements
+    \doifelse\@@elmethod\v!auto\doenabletagged\dodisabletagged
+\to \everyenableelements
+
+\appendtoks
+    \dodisableelements
+    \dodisabletagged
+\to \everydisableelements
+
+\appendtoks
+   \doifelse\@@elstate\v!start{\the\everyenableelements}{\the\everydisableelements}%
+\to \everysetupstructure
+
+\setupstructure
+  [\c!state=\v!stop,
+   \c!method=\v!auto]
+
+\unexpanded\def\startparagraph
+  {\dostarttagged\t!paragraph\empty}
+
+\unexpanded\def\stopparagraph
+  {\dostoptagged
+   \par}
+
+\appendtoks
+    \dostarttagged\t!document\empty
+\to \everystarttext
+
+\appendtoks
+    \dostoptagged
+\to \everystoptext
+
+% \doifinelementelse{structure:section}            {yes} {no}
+% \doifinelementelse{structure:chapter}            {yes} {no}
+% \doifinelementelse{division:*-structure:chapter} {yes} {no}
+
+\def\doifinelementelse#1%
+  {\ctxlua{commands.testcase(structure.atlocation("#1"))}}
+
+\protect

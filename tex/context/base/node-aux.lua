@@ -8,9 +8,11 @@ if not modules then modules = { } end modules ['node-aux'] = {
 
 local gsub, format = string.gsub, string.format
 
-local free_node   = node.free
-local hpack_nodes = node.hpack
-local node_fields = node.fields
+local free_node, hpack_nodes, node_fields, traverse_nodes = node.free, node.hpack, node.fields, node.traverse
+local has_attribute, set_attribute, unset_attribute, has_attribute = node.has_attribute, node.set_attribute, node.unset_attribute,node.has_attribute
+
+local hlist = node.id("hlist")
+local vlist = node.id("vlist")
 
 function nodes.repack_hlist(list,...)
     local temp, b = hpack_nodes(list,...)
@@ -143,3 +145,42 @@ end
 --     end
 -- end
 
+
+local function set_attributes(head,attr,value)
+    for n in traverse_nodes(head) do
+        set_attribute(n,attr,value)
+        local id = n.id
+        if id == hlist or id == vlist then
+            set_attributes(n.list,attr,value)
+        end
+    end
+end
+
+local function set_unset_attributes(head,attr,value)
+    for n in traverse_nodes(head) do
+        if not has_attribute(n,attr) then
+            set_attribute(n,attr,value)
+        end
+        local id = n.id
+        if id == hlist or id == vlist then
+            set_unset_attributes(n.list,attr,value)
+        end
+    end
+end
+
+local function unset_attributes(head,attr)
+    for n in traverse_nodes(head) do
+        unset_attribute(n,attr)
+        local id = n.id
+        if id == hlist or id == vlist then
+            unset_attributes(n.list,attr)
+        end
+    end
+end
+
+nodes.set_attribute        = set_attribute
+nodes.unset_attribute      = unset_attribute
+nodes.has_attribute        = has_attribute
+nodes.set_attributes       = set_attributes
+nodes.set_unset_attributes = set_unset_attributes
+nodes.unset_attributes     = unset_attributes

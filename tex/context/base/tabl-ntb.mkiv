@@ -671,7 +671,7 @@
    \executeifdefined{\@@rawtblprefix\v!start\v!oddeven\TBLlevel}\relax
    \executeifdefined{\@@rawtblprefix\v!start\number\TBLlevel}\relax}
 
-\def\bTABLE
+\unexpanded\def\bTABLE
   {\dosingleempty\dobTABLE}
 
 \def\dobTABLE[#1]%
@@ -726,7 +726,7 @@
 \unexpanded\def\eTH{\ignorespaces}
 \unexpanded\def\eTN{\ignorespaces}
 
-\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
+\unexpanded\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
   {% tricky and dirty order -)
    \doifsometokselse\TBLhead % slow, better a flag
      {\the\TBLhead
@@ -900,18 +900,35 @@
         \fi
       \egroup}}
 
+% \def\begintbl
+%   {\global\tblspn\zerocount
+%    \global\tblcol\zerocount
+%    \global\tblrow\zerocount
+%    \global\advance\tblrow\minusone
+%    \tabskip\zeropoint
+%    \halign\bgroup
+%    \registerparoptions %  new
+%    \ignorespaces##\unskip&&\ignorespaces##\unskip\cr}
+
+% \def\endtbl
+%   {\egroup}
+
 \def\begintbl
   {\global\tblspn\zerocount
    \global\tblcol\zerocount
    \global\tblrow\zerocount
    \global\advance\tblrow\minusone
    \tabskip\zeropoint
+   \dostarttagged\t!table\empty
+   \dostarttagged\t!tablerow\empty
+   \appendtoks\dostoptagged\dostarttagged\t!tablerow\empty\to\everycr
    \halign\bgroup
    \registerparoptions %  new
-   \ignorespaces##\unskip&&\ignorespaces##\unskip\cr}
+   \ignorespaces##\unskip&&\dostarttagged\t!tablecell\empty\ignorespaces##\unskip\dostoptagged\cr}
 
 \def\endtbl
-  {\egroup}
+  {\dostoptagged\egroup
+   \dostoptagged}
 
 \setvalue{\tblnone TBL}#1#2%
   {\spanTBL{#1}{#2}}

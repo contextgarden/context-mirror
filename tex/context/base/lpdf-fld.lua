@@ -27,17 +27,18 @@ local registrations  = backends.pdf.registrations
 
 local registeredsymbol = codeinjections.registeredsymbol
 
-local pdfstream        = lpdf.stream
-local pdfdictionary    = lpdf.dictionary
-local pdfarray         = lpdf.array
-local pdfreference     = lpdf.reference
-local pdfunicode       = lpdf.unicode
-local pdfstring        = lpdf.string
-local pdfconstant      = lpdf.constant
-local pdftoeight       = lpdf.toeight
-local pdfflushobject   = lpdf.flushobject
-local pdfreserveobject = lpdf.reserveobject
-local pdfannotation    = nodes.pdfannotation
+local pdfstream          = lpdf.stream
+local pdfdictionary      = lpdf.dictionary
+local pdfarray           = lpdf.array
+local pdfreference       = lpdf.reference
+local pdfunicode         = lpdf.unicode
+local pdfstring          = lpdf.string
+local pdfconstant        = lpdf.constant
+local pdftoeight         = lpdf.toeight
+local pdfflushobject     = lpdf.flushobject
+local pdfreserveobject   = lpdf.reserveobject
+
+local pdfannotation_node = nodes.pdfannotation
 
 local submitoutputformat = 0 --  0=unknown 1=HTML 2=FDF 3=XML   => not yet used, needs to be checked
 
@@ -119,7 +120,7 @@ end
 local function checked(what)
     if what and what ~= "" then
         local set, bug = jobreferences.identify("",what)
-        return not bug and #set > 0 and lpdf.pdfaction(set)
+        return not bug and #set > 0 and lpdf.action(set)
     end
 end
 
@@ -586,7 +587,7 @@ local function finishfields()
     end
 end
 
-lpdf.registerdocumentfinalizer(finishfields)
+lpdf.registerdocumentfinalizer(finishfields,"form fields")
 
 local pdf_widget = pdfconstant("Widget")
 local pdf_tx     = pdfconstant("Tx")
@@ -634,7 +635,7 @@ end
 local function save_kid(field,specification,d)
     local kn = pdfreserveobject()
     field.kids[#field.kids+1] = pdfreference(kn)
-    node.write(pdfannotation(specification.width,specification.height,0,d(),kn))
+    node.write(pdfannotation_node(specification.width,specification.height,0,d(),kn))
 end
 
 function methods.line(name,specification,variant,extras)

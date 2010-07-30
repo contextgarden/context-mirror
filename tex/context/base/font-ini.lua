@@ -26,6 +26,8 @@ fontloader.totable = fontloader.to_table
 
 fonts     = fonts     or { }
 
+-- we will also have des and fam hashes
+
 fonts.ids = fonts.ids or { } fonts.identifiers = fonts.ids -- aka fontdata
 fonts.chr = fonts.chr or { } fonts.characters  = fonts.chr -- aka chardata
 fonts.qua = fonts.qua or { } fonts.quads       = fonts.qua -- aka quaddata

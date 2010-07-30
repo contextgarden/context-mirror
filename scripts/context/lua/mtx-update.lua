@@ -351,6 +351,9 @@ function scripts.update.synchronize()
         --        command = format("%s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, url, archives, destination)
         --    end
             local normalflags, deleteflags = states.get("rsync.flags.normal"), ""
+if os.name == "windows" then
+    normalflags = normalflags .. " -L" -- no symlinks
+end
             local dryrunflags = ""
             if not environment.argument("force") then
                 dryrunflags = "--dry-run"
@@ -475,7 +478,7 @@ messages.help = [[
 --server=string       repository url (rsync://contextgarden.net)
 --module=string       repository url (minimals)
 --repository=string   specify version (current, experimental)
---context=string      specify version (current, latest, yyyy.mm.dd)
+--context=string      specify version (current, latest, beta, yyyy.mm.dd)
 --rsync=string        rsync binary (rsync)
 --texroot=string      installation directory (not guessed for the moment)
 --engine=string       tex engine (luatex, pdftex, xetex)

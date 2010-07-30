@@ -41,11 +41,14 @@
 
 \def\dodoplaceexternalfigure[#1][#2][#3][#4][#5]%
   {\bgroup
+\dostarttagged\t!image\empty
    \pushmacro\textunderscore
    \edef\textunderscore{\string_}% brrr, temp hack, still needed?
    \calculateexternalfigure[][#1][#2][#3][#4][#5]% [] is dummy dwcomp
    \popmacro\textunderscore
+\global\setbox\foundexternalfigure\naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
    \box\foundexternalfigure
+\dostoptagged
    \egroup}
 
 \def\externalfigurereplacement#1#2#3%
@@ -576,6 +579,7 @@
   [\c!option=,
    \c!object=\v!yes, % we only check for no
    \c!reset=\v!no,
+   \c!interaction=\v!none,
    \c!maxwidth=\@@efwidth,
    \c!maxheight=\@@efheight,
    \c!bodyfont=\bodyfontsize,

@@ -290,6 +290,15 @@ function define.resolve(specification)
     else
         specification.forced = specification.forced
     end
+    -- for the moment here (goodies eset outside features)
+    local goodies = specification.goodies
+    if goodies and goodies ~= "" then
+        local normalgoodies = specification.features.normal.goodies
+        if not normalgoodies or normalgoodies == "" then
+            specification.features.normal.goodies = goodies
+        end
+    end
+    --
     specification.hash = lower(specification.name .. ' @ ' .. tfm.hash_features(specification))
     if specification.sub and specification.sub ~= "" then
         specification.hash = specification.sub .. ' @ ' .. specification.hash

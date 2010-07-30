@@ -2286,6 +2286,12 @@
     \ctxlua{lxml.mml.mmultiscripts("#1")}
 \stopxmlsetups
 
+% goodie
+
+\definebuffer[mml]
+
+\def\stopmml{\xmlprocessbuffer{@mml@}{\thedefinedbuffer{mml}}{}}
+
 \stopmodule
 
 \protect \endinput

@@ -206,16 +206,20 @@
    \setuvalue{#1}%
      {\groupedcommand
         {\getvalue{\??be#1\c!commands}%
+         \dostarttagged\t!construct{#1}%
          \dostartattributes{\??be#1}\c!style\c!color}
         {\dostopattributes
+         \dostoptagged
          \getvalue{\??be#1\c!inbetween}}}%
    \setvalue{\e!start#1}%
      {\getvalue{\??be#1\c!before}%
       \bgroup
       \getvalue{\??be#1\c!commands}%
+      \dostarttagged\t!construct{#1}%
       \dostartattributes{\??be#1}\c!style\c!color\empty}%
    \setvalue{\e!stop#1}%
      {\dostopattributes
+      \dostoptagged
       \egroup
       \getvalue{\??be#1\c!after}}}
 

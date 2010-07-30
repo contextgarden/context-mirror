@@ -439,6 +439,7 @@
 \def\dodostartformula[#1][#2]% setting leftskip adaption is slow !
   {\bgroup % HERE
    \def\currentformula{#1}%
+   \dostarttagged\t!formula\currentformula
    \the\everybeforedisplayformula
    \formulaparskip\parskip
    \formulastrutdp\strutdepth
@@ -453,7 +454,7 @@
    \doifsomething{\formulaparameter\c!margin}% so we test first
      {\dosetleftskipadaption{\formulaparameter\c!margin}%
       \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
-   \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
+   \long\def\dostartformula##1{\bgroup\dostarttagged\t!subformula\def\dostopformula{\dostoptagged\egroup}}%
    \freezedimenmacro\leftdisplayskip
    \freezedimenmacro\rightdisplayskip
    \freezedimenmacro\leftdisplaymargin
@@ -474,8 +475,13 @@
    \endgroup}
 
 \def\dostopformula
-  {\doplaceformulanumber
+  {\dostarttagged\t!formulatag\empty
+   \doplaceformulanumber
+   \dostoptagged
+   \dostarttagged\t!formulacontent\empty
    \getvalue{\e!stop\formulaparameter\c!alternative\v!formula}%
+   \dostoptagged
+   \dostoptagged
    \nonoindentation
    \checknextindentation[\formulaparameter\c!indentnext]%
    \egroup
@@ -587,6 +593,7 @@
 
 \def\dostartformulas[#1]#2\stopformulas % new / to be internationalized
   {\bgroup
+   \dostarttagged\t!formulaset\empty
    \global\settrue\insideformulas
    \edef\currentformulasreference{#1}%
    \handleformulasnumbering
@@ -611,6 +618,7 @@
      \egroup
    \stopdisplaymath
    \global\setfalse\insideformulas
+   \dostoptagged
    \egroup
    \the\everyresetformulas
    \hangafter\minusone    % added for side floats

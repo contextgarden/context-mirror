@@ -1,3 +1,0 @@
-On MSWindows the luatools.lua script is called
-with luatools.exe. On Unix you can either rename
-luatools.lua to luatools, or use a symlink.

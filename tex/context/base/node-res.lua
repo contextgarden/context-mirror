@@ -290,4 +290,4 @@ statistics.register("node memory usage", function() -- comes after cleanup !
     return status.node_mem_usage
 end)
 
-lua.registerfinalizer(nodes.cleanup_reserved)
+lua.registerfinalizer(nodes.cleanup_reserved, "cleanup reserved nodes")

@@ -220,12 +220,17 @@
 \unexpanded\def\setuplanguage
   {\dodoubleempty\dosetuplanguage}
 
+\ifdefined\docomplexlanguage \else \let\docomplexlanguage\relax \fi
+
 \def\dosetuplanguage[#1][#2]%
   {\ifsecondargument
+     \pushmacro\currentlanguage % can be default
      \edef\currentsetuplanguage{\reallanguagetag{#1}}%
      \getparameters[\??la\currentsetuplanguage][#2]%
      \the\everysetuplanguage
-     \doif\currentsetuplanguage\currentlanguage\docomplexlanguage
+     \popmacro\currentlanguage
+    %\doif\currentsetuplanguage\currentlanguage we can have influenced inheritance (default)
+     \docomplexlanguage
    \else
      \let\currentsetuplanguage\currentlanguage
      \getparameters[\??la\currentsetuplanguage][#1]%
@@ -272,6 +277,12 @@
   [\c!compoundhyphen=\compoundhyphen,
    \c!rightcompoundhyphen=\compoundhyphen,
    \c!leftcompoundhyphen=]
+
+% to be tested:
+%
+% \setuplanguage
+%   [\s!default]
+%   [\c!righthyphenchar="AD]
 
 %D The values \type {leftsentence} and \type
 %D {rightsentence} can be (and are) used to implement

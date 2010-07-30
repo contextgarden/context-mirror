@@ -255,6 +255,7 @@
 \def\dostopstructurehead[#1]%
   {%\globalpopmacro\currentstructurehead
    \xdef\currentstructurehead{#1}% recover
+   \dostoptagged\dostoptagged
    \the\everyafterstructurehead}
 
 \def\donextstructurehead[#1][#2][#3]%
@@ -357,13 +358,18 @@
 % \unexpanded\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
 
 \unexpanded\def\fullstructureheadnumber
-   {\edef\currentstructureheadlabeltag{\currentstructureblock\c!label}%
-    \labeltexts{\structureheadparameter\currentstructureheadlabeltag}{\structurenumber}}
+  {\edef\currentstructureheadlabeltag{\currentstructureblock\c!label}%
+   \dostarttagged\t!structurenumber\empty
+   \labeltexts{\structureheadparameter\currentstructureheadlabeltag}{\structurenumber}%
+   \dostoptagged}
 
 % \def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
 % \unexpanded\def\fullstructureheadtitle{\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}
 
-\unexpanded\def\fullstructureheadtitle{\ctxlua{structure.sections.title()}}
+\unexpanded\def\fullstructureheadtitle
+  {\dostarttagged\t!structuretitle\empty
+   \ctxlua{structure.sections.title()}%
+   \dostoptagged}
 
 \let\currentstructurehead        \empty
 \let\currentstructureheadcoupling\empty
@@ -516,6 +522,7 @@
    \flushingcolumnfloatstrue
    \setfalse\ignorehandlepagebreak
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
+   \dostarttagged\t!structurecontent\empty
    \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
      \ignorespaces
    \else
@@ -567,12 +574,14 @@
 \def\dostructureheadspacingbeforeyes
   {\docheckstructureheadbefore
    \dohandlestructureheadpagebreak
-   \structureheadparameter\c!inbetween}
+   \structureheadparameter\c!inbetween
+   \dostarttagged\t!structure\currentstructurehead}
 
 \def\dostructureheadspacingbeforenop
   {\docheckstructureheadbefore
    \docheckstructureheadlayout
-   \structureheadparameter\c!inbetween}
+   \structureheadparameter\c!inbetween
+   \dostarttagged\currentstructurehead\empty}
 
 % \def\emptystructureheadcorrection
 %   {\ifconditional\structureheadleaveempty % inlined \emptyheadcorrection (with after=\blank)
@@ -661,7 +670,7 @@
 %      \ifpagebreakdisabled
 %        \global\pagebreakdisabledfalse
 %      \else
-       \dopreventbreakafterstructureheadauto
+%        \dopreventbreakafterstructureheadauto % not ok as it binds the prev par
 %      \fi
      \doif{\structureheadparameter\c!aligntitle}\v!float\indent
      \global\precedingstructurelevel\currentstructureheadlevel

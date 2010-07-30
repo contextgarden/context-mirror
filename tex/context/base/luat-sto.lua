@@ -52,7 +52,7 @@ local function finalize() -- we can prepend the string with "evaluate:"
     end
 end
 
-lua.registerfinalizer(finalize)
+lua.registerfinalizer(finalize,"evaluate storage")
 
 local function dump()
     for i=1,#data do
@@ -86,7 +86,7 @@ local function dump()
     end
 end
 
-lua.registerfinalizer(dump)
+lua.registerfinalizer(dump,"dump storage")
 
 -- we also need to count at generation time (nicer for message)
 

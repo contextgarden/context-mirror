@@ -41,14 +41,15 @@
 
 \let\handletextprefix\relax
 
-\newconditional\protecttextprefixes
+\let\protecttextprefixes\zerocount
 
 \let\currenttextprefixtag  \s!unknown
 \let\currenttextprefixclass\s!unknown
 
-\unexpanded\def\setupheadtext     {\setfalse\protecttextprefixes\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
-\unexpanded\def\setuplabeltext    {\setfalse\protecttextprefixes\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
-\unexpanded\def\setupmathlabeltext{\setfalse\protecttextprefixes\let\currenttextprefixclass\??mm\dodoubleempty\dosetupsometextprefix}
+\unexpanded\def\setupheadtext     {\let\protecttextprefixes\zerocount\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
+\unexpanded\def\setuplabeltext    {\let\protecttextprefixes\zerocount\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
+\unexpanded\def\setupmathlabeltext{\let\protecttextprefixes\zerocount\let\currenttextprefixclass\??mm\dodoubleempty\dosetupsometextprefix}
+\unexpanded\def\setuptaglabeltext {\let\protecttextprefixes\plustwo  \let\currenttextprefixclass\??me\dodoubleempty\dosetupsometextprefix}
 
 \def\dosetupsometextprefix[#1][#2]%
   {\ifsecondargument
@@ -66,14 +67,19 @@
   {\doassignsometextprefix{#1}[#2,,]}
 
 \def\doassignsometextprefix#1%
-  {\ifconditional\protecttextprefixes
+  {\ifcase\protecttextprefixes
+     % no checking
+     \expandafter\doassignsometextprefixyes
+   \or
+     % checking
      \ifcsname\currenttextprefixclass\currenttextprefixtag#1\endcsname
        \expandafter\expandafter\expandafter\doassignsometextprefixnop
      \else
        \expandafter\expandafter\expandafter\doassignsometextprefixyes
      \fi
-   \else
-     \expandafter\doassignsometextprefixyes
+   \or
+     % simple assignment (a bit overkill but it fits in the whole)
+     \expandafter\doassignsometextprefixdumb
    \fi{#1}}
 
 \ifdefined\Word\else \let\Word\relax \fi
@@ -92,11 +98,14 @@
        \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{{#2}\empty}%
      \fi
    \else
-       \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{{#2}{#3}}%
+     \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{{#2}{#3}}%
    \fi}
 
 \def\doassignsometextprefixnop#1[#2]%
   {}
+
+\def\doassignsometextprefixdumb#1[#2,#3]%
+  {\expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{#2}}
 
 %D By changing the meaning of \type {\handletextprefix} we
 %D can filter the left and right labeltext as well as convert
@@ -128,6 +137,7 @@
 \def\labellanguage    {\reallanguagetag{\defaultlanguage\currentmainlanguage}}
 \def\headlanguage     {\reallanguagetag{\defaultlanguage\currentmainlanguage}}
 \def\mathlabellanguage{\reallanguagetag{\defaultlanguage\currentmainlanguage}}
+\def\taglabellanguage {\reallanguagetag{\defaultlanguage\currentmainlanguage}}
 
 \appendtoks \let\labellanguage\currentlanguage \to \everycurrentdate
 
@@ -135,7 +145,8 @@
 
 \def\dogetupsomelabeltext    {\dodogetupsomelabeltext    \labellanguage     } % second argument is textlabel
 \def\dogetupsomeheadtext     {\dodogetupsomeheadtext     \headlanguage      } % second argument is headlabel
-\def\dogetupsomemathlabeltext{\dodogetupsomemathlabeltext\mathlabellanguage } % second argument is headlabel
+\def\dogetupsomemathlabeltext{\dodogetupsomemathlabeltext\mathlabellanguage }
+\def\dogetupsometaglabeltext {\dodogetupsometaglabeltext \taglabellanguage  }
 
 \def\dodogetupsomelabeltext#1#2%
   {\ifcsname\??ml#1#2\endcsname
@@ -174,6 +185,19 @@
      \expandafter\let\expandafter\thetextprefix\csname\??mm\s!en#2\endcsname
    \else
      \let\thetextprefix\dummytextprefix
+   \fi\fi\fi\fi}
+
+\def\dodogetupsometaglabeltext#1#2% special
+  {\ifcsname\??me#1#2\endcsname
+     \csname\??me#1#2\endcsname
+   \else\ifcsname\??la\mathlabellanguage\s!default\endcsname
+     \expandafter\dodogetupsomemathlabeltext\csname\??la\mathlabellanguage\s!default\endcsname{#2}%
+   \else\ifcsname\??me#2\endcsname
+     \csname\??me#2\endcsname
+   \else\ifcsname\??me\s!en#2\endcsname
+     \csname\??me\s!en#2\endcsname
+   \else
+     #2%
    \fi\fi\fi\fi}
 
 % The WORD variants are a bit inefficient when #1/#2 are empty but they are
@@ -224,9 +248,9 @@
 %D head and label texts without replacing predefined ones.
 %D These are internal macros.
 
-\def\presetheadtext     {\settrue\protecttextprefixes\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
-\def\presetlabeltext    {\settrue\protecttextprefixes\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
-\def\presetmathlabeltext{\settrue\protecttextprefixes\let\currenttextprefixclass\??mm\dodoubleempty\dosetupsometextprefix}
+\def\presetheadtext     {\let\protecttextprefixes\plusone\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
+\def\presetlabeltext    {\let\protecttextprefixes\plusone\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
+\def\presetmathlabeltext{\let\protecttextprefixes\plusone\let\currenttextprefixclass\??mm\dodoubleempty\dosetupsometextprefix}
 
 %D \macros
 %D   {translate}

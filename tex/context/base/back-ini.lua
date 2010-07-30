@@ -8,7 +8,9 @@ if not modules then modules = { } end modules ['back-ini'] = {
 
 backends = backends or { }
 
-local trace_backend = false local function nothing() return nil end
+local trace_backend = false
+
+local function nothing() return nil end
 
 local report_backends = logs.new("backends")
 
@@ -31,6 +33,8 @@ backends.nodeinjections = {
 
     reference    = nothing,
     destination  = nothing,
+
+    addtags      = nothing,
 
 }
 
@@ -82,6 +86,13 @@ backends.codeinjections = {
 
     setfigurecolorspace   = nothing,
     setfigurealternative  = nothing,
+
+    enabletags            = nothing,
+    maptag                = nothing,
+    mapping               = nothing, -- returns table
+
+    mergereferences       = nothing,
+    mergelayers           = nothing,
 
 }
 
