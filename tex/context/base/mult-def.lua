@@ -7783,6 +7783,16 @@ return {
    ["pe"]="رنگ‌پیش‌زمینه",
    ["ro"]="foregroundcolor",
   },
+  ["force"]={
+   ["cs"]="sila",
+   ["de"]="zwinge",
+   ["en"]="force",
+   ["fr"]="force",
+   ["it"]="forza",
+   ["nl"]="forceer",
+   ["pe"]="اجبار",
+   ["ro"]="fortat",
+  },
   ["foregroundstyle"]={
    ["cs"]="foregroundstyle",
    ["de"]="foregroundstyle",
@@ -9411,6 +9421,9 @@ return {
    ["nl"]="proces",
    ["pe"]="پردازش",
    ["ro"]="process",
+  },
+  ["profile"]={
+   ["en"]="profile",
   },
   ["radius"]={
    ["cs"]="polomer",

@@ -559,7 +559,7 @@ function define.register(fontdata,id)
             end
             fonts.identifiers[id] = fontdata
             fonts.characters [id] = fontdata.characters
-            fonts.quads      [id] = fontdata.parameters.quad
+            fonts.quads      [id] = fontdata.parameters and fontdata.parameters.quad
             -- todo: extra functions, e.g. setdigitwidth etc in list
             tfm.internalized[hash] = id
         end
@@ -637,7 +637,6 @@ function define.read(specification,size,id) -- id can be optional, name can alre
             fontdata.encodingname  or "unicode",
             fontdata.fullname      or "?",
             file.basename(fontdata.filename or "?"))
-
     end
     statistics.stoptiming(fonts)
     return fontdata

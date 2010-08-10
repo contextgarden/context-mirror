@@ -123,7 +123,13 @@
 % \newif\ifemptyhead
 % \newif\ifdisplaysectionhead
 
-\def\structureheadattribute{\iflocation attr \destinationattribute \currentstructureattribute\fi}
+\let\currentstructurereferenceattribute\attributeunsetvalue
+
+\def\structureheadattribute
+  {\iflocation
+     attr \destinationattribute \currentstructureattribute
+     attr \referenceattribute   \currentstructurereferenceattribute
+   \fi}
 
 \def\doplacestructureheadtext#1#2#3% nodes, text, endstuff
   {\beginheadplacement
@@ -132,6 +138,9 @@
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint {#1}%
      \makestrutofbox\sectionheadbox
    \else
+     \doif{\namedstructureheadparameter\currentstructurehead\c!interaction}\v!list
+       {\dogetsimplepagereference{bck:\nextinternalreference}%
+        \let\currentstructurereferenceattribute\currentreferenceattribute}%
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute
        {\doresettructureheadnumbercontent
         \ifcase\headtimingmode\or#1\fi                          % outerside font determines distance
@@ -147,12 +156,16 @@
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint{#1}%
      \makestrutofbox\sectionheadbox
    \else % = needed
+     \doif{\namedstructureheadparameter\currentstructurehead\c!interaction}\v!list
+       {\dogetsimplepagereference{bck:\nextinternalreference}%
+        \let\currentstructurereferenceattribute\currentreferenceattribute}%
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute
        {\ifcase\headtimingmode\or#1\fi
         \dosetfontattribute{\??nh\currentstructurehead}\c!style
         \structureheadparameter\c!command{\doplaceheadnumbercomponent{#1}{#2}}{\doplaceheadtextcomponent{#1}{#3}}}%
    \fi
    \endheadplacement{#4}}
+
 
 \unexpanded\def\placestructureheadnumbertext
   {\doplacestructureheadnumbertext\empty\getstructureheadnumber\getstructureheadtitle\getstructureheadsyncs}

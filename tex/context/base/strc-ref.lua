@@ -922,7 +922,7 @@ function jobreferences.doifelse(prefix,reference,highlight,newwindow,layer)
 end
 
 function jobreferences.setinternalreference(prefix,tag,internal,view)
-    local t = { }
+    local t = { } -- maybe add to current
     if tag then
         if prefix and prefix ~= "" then
             prefix = prefix .. ":"
@@ -943,11 +943,10 @@ function jobreferences.setinternalreference(prefix,tag,internal,view)
     return destination
 end
 
-function jobreferences.getinternalreference(n) -- n points into list
+function jobreferences.getinternalreference(n) -- n points into list (todo: registers)
     local l = structure.lists.collected[n]
     texsprint(ctxcatcodes,(l and l.references.internal) or n)
 end
-
 
 --
 

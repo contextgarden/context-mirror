@@ -662,6 +662,7 @@
 		<cd:constant name='footer' value='piedipagina'/>
 		<cd:constant name='footerdistance' value='distanzapdp'/>
 		<cd:constant name='footerstate' value='statopdp'/>
+		<cd:constant name='force' value='forza'/>
 		<cd:constant name='foregroundcolor' value='coloreprimopiano'/>
 		<cd:constant name='foregroundstyle' value='foregroundstyle'/>
 		<cd:constant name='format' value='format'/>
@@ -860,6 +861,7 @@
 		<cd:constant name='previous' value='precedente'/>
 		<cd:constant name='previousnumber' value='numeroprecedente'/>
 		<cd:constant name='process' value='process'/>
+		<cd:constant name='profile' value='profile'/>
 		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='raggio'/>
 		<cd:constant name='random' value='casuale'/>

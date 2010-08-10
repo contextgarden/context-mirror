@@ -185,3 +185,36 @@ function io.ask(question,default,options)
         end
     end
 end
+
+function io.readnumber(f,n,m)
+    if m then
+        f:seek("set",n)
+        n = m
+    end
+    if n == 1 then
+        return byte(f:read(1))
+    elseif n == 2 then
+        local a, b = byte(f:read(2),1,2)
+        return 256*a + b
+    elseif n == 4 then
+        local a, b, c, d = byte(f:read(4),1,4)
+        return 256^3 * a + 256^2 * b + 256*c + d
+    elseif n == 8 then
+        local a, b = readnumber(f,4), readnumber(f,4)
+        return 256 * b + c
+    elseif n == 12 then
+        local a, b, c = readnumber(f,4), readnumber(f,4), readnumber(f,4)
+        return 256^2 * a + 256 * b + c
+    else
+        return 0
+    end
+end
+
+function io.readstring(f,n,m)
+    if m then
+        f:seek("set",n)
+        n = m
+    end
+    local str = gsub(f:read(n),"%z","")
+    return str
+end

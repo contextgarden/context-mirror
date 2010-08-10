@@ -58,6 +58,7 @@ function otf.set_dynamics(font,dynamics,attribute)
                 features  = tfmdata.shared.features
             }
             tfmdata.mode     = "node"
+            tfmdata.dynamics = true -- handy for tracing
             tfmdata.language = language
             tfmdata.script   = script
             tfmdata.shared.features = { }

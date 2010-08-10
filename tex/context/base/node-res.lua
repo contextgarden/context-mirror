@@ -19,14 +19,10 @@ for debugging <l n='luatex'/> node management.</p>
 
 nodes = nodes or { }
 
-nodes.whatsits = { } -- table.swapped(node.whatsits())
+local whatsitcodes = nodes.whatsitcodes
+local skipcodes    = nodes.skipcodes
 
 local reserved = { }
-local whatsits = nodes.whatsits
-
-for k, v in next, node.whatsits() do
-    whatsits[k], whatsits[v] = v, k -- two way
-end
 
 local function register_node(n)
     reserved[#reserved+1] = n
@@ -72,19 +68,19 @@ local penalty           = register_node(new_node("penalty"))
 local glue              = register_node(new_node("glue")) -- glue.spec = nil
 local glue_spec         = register_node(new_node("glue_spec"))
 local glyph             = register_node(new_node("glyph",0))
-local textdir           = register_node(new_node("whatsit",whatsits.dir)) -- 7 (6 is local par node)
+local textdir           = register_node(new_node("whatsit",whatsitcodes.dir)) -- 7 (6 is local par node)
 local rule              = register_node(new_node("rule"))
-local latelua           = register_node(new_node("whatsit",whatsits.late_lua)) -- 35
-local user_n            = register_node(new_node("whatsit",whatsits.user_defined)) user_n.type = 100 -- 44
-local user_l            = register_node(new_node("whatsit",whatsits.user_defined)) user_l.type = 110 -- 44
-local user_s            = register_node(new_node("whatsit",whatsits.user_defined)) user_s.type = 115 -- 44
-local user_t            = register_node(new_node("whatsit",whatsits.user_defined)) user_t.type = 116 -- 44
+local latelua           = register_node(new_node("whatsit",whatsitcodes.late_lua)) -- 35
+local user_n            = register_node(new_node("whatsit",whatsitcodes.user_defined)) user_n.type = 100 -- 44
+local user_l            = register_node(new_node("whatsit",whatsitcodes.user_defined)) user_l.type = 110 -- 44
+local user_s            = register_node(new_node("whatsit",whatsitcodes.user_defined)) user_s.type = 115 -- 44
+local user_t            = register_node(new_node("whatsit",whatsitcodes.user_defined)) user_t.type = 116 -- 44
 local left_margin_kern  = register_node(new_node("margin_kern",0))
 local right_margin_kern = register_node(new_node("margin_kern",1))
-local lineskip          = register_node(new_node("glue",1))
-local baselineskip      = register_node(new_node("glue",2))
-local leftskip          = register_node(new_node("glue",8))
-local rightskip         = register_node(new_node("glue",9))
+local lineskip          = register_node(new_node("glue",skipcodes.lineskip))
+local baselineskip      = register_node(new_node("glue",skipcodes.baselineskip))
+local leftskip          = register_node(new_node("glue",skipcodes.leftskip))
+local rightskip         = register_node(new_node("glue",skipcodes.rightskip))
 local temp              = register_node(new_node("temp",0))
 local noad              = register_node(new_node("noad"))
 

@@ -17,7 +17,7 @@ local format, gsub, concat, match, find = string.format, string.gsub, table.conc
 
 local sample_line = "This is a sample line!"
 local tempname    = "mtx-server-ctx-fonttest-temp"
-local temppath    = caches.setpath("temp","mtx-server-ctx-fonttest")
+local temppath    = caches.setfirstwritablefile("temp","mtx-server-ctx-fonttest")
 local basename    = "mtx-server-ctx-fonttest-data.lua"
 local basepath    = temppath
 

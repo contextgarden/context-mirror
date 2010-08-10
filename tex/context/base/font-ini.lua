@@ -34,7 +34,6 @@ fonts.qua = fonts.qua or { } fonts.quads       = fonts.qua -- aka quaddata
 
 fonts.tfm = fonts.tfm or { }
 
-fonts.mode    = 'base'
 fonts.private = 0xF0000 -- 0x10FFFF
 fonts.verbose = false -- more verbose cache tables
 

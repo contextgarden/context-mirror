@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="sv",
-  ["source"]="hyph-sv.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-sv",
+  ["texcomment"]="% Swedish hyphenation patterns (Jan Michael Rynning, 1994-03-03)\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: sehyph.tex (2003-09-08)\

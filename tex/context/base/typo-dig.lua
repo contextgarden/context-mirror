@@ -27,8 +27,10 @@ local insert_after       = node.insert_after
 
 local texattribute = tex.attribute
 
-local glyph = node.id("glyph")
-local kern  = node.id("kern")
+local nodecodes = nodes.nodecodes
+
+local glyph = nodecodes.glyph
+local kern  = nodecodes.kern
 
 local new_glue = nodes.glue
 

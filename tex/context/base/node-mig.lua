@@ -8,14 +8,16 @@ if not modules then modules = { } end modules ['node-mig'] = {
 
 local format = string.format
 
-local hlist  = node.id('hlist')
-local vlist  = node.id('vlist')
-local insert = node.id('ins')
-local mark   = node.id('mark')
-
 local has_attribute = node.has_attribute
 local set_attribute = node.set_attribute
 local remove_nodes  = nodes.remove
+
+local nodecodes = nodes.nodecodes
+
+local hlist  = nodecodes.hlist
+local vlist  = nodecodes.vlist
+local insert = nodecodes.ins
+local mark   = nodecodes.mark
 
 local migrated = attributes.private("migrated")
 

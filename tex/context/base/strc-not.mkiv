@@ -195,6 +195,8 @@
   %\c!next=\autoinsertnextspace
    \c!prefix=\v!no,
   %\c!continue=\v!no,
+   \c!paragraph=\v!no,
+   \c!inbetween=\hskip1em,
    \c!n=1]
 
 \setupnotes
@@ -338,8 +340,8 @@
 
 % compatibility (will go away)
 
-\newif\ifendnotes
-\newif\ifbottomnotes
+\newif\ifbottomnotes % still used in page-one.mkiv
+%newif\endnotes      % no longer used
 
 % locations:
 
@@ -371,18 +373,21 @@
 
 \def\dochecknote
   {% node states
-   \setnotelocation\plusone
-   \setnoteposition\plustwo
+   \setnotelocation\plusone % page
+   \setnoteposition\plustwo % high
    \normalexpanded{\noexpand\rawprocesscommalist[\noteparameter\c!location]}\dosetcheckednote
    % compatibility hack
-   \ifnum\noteparameter\s!noteloc=\plusfive \endnotestrue    \else \endnotesfalse    \fi
+   %ifnum\noteparameter\s!noteloc=\plusfive \endnotestrue    \else \endnotesfalse    \fi
    \ifnum\noteparameter\s!notepos=\plustwo  \bottomnotestrue \else \bottomnotesfalse \fi
    % set column multiplier
    \edef\currentnotenofcolumns{\noteparameter\c!n}%
    \ifx\currentnotenofcolumns\empty
      \let\currentnotenofcolumns\!!plusone
    \fi
-   \ifcase\noteparameter\s!noteloc\or
+   \ifcase\noteparameter\s!noteloc
+     % can't happen
+     \scratchcounter\plusone
+   \or
      % page
      \scratchcounter \currentnotenofcolumns
    \or
@@ -399,6 +404,9 @@
      \scratchcounter\currentnotenofcolumns
    \fi
    % column factor
+   \ifcase\scratchcounter
+     \scratchcounter\plusone
+   \fi
    \global\count\currentnoteins\plusthousand
    \global\count\currentnoteins\numexpr\plusthousand/\scratchcounter\relax
    % maximize height
@@ -704,17 +712,27 @@
      \normalexpanded{\noexpand\ctxlatelua{structure.notes.setsymbolpage("#1",#2,#3)}}%
    \fi}
 
-\def\handlenoteinsert#1#2%
+\def\handlenoteinsert#1#2% tg, id
   {\begingroup
    \edef\currentnote{#1}%
    \the\everybeforenoteinsert
    \insert\currentnoteins\bgroup
      \the\everyinsidenoteinsert
      \doprocesslocalsetups{\noteparameter\c!setups}% experimental
-     \handlenoteitself{#1}{#2}%
+     \doifelse{\noteparameter\c!paragraph}\v!yes
+        {\nointerlineskip
+         \startvboxtohbox
+         \handlenoteitself{#1}{#2}%
+         % add some slack
+         \stopvboxtohbox}
+        {\handlenoteitself{#1}{#2}}%
    \egroup
    \the\everyafternoteinsert
    \endgroup}
+
+\def\betweennoteitself#1% tg
+  {\edef\currentnote{#1}%
+   \doif{\noteparameter\c!paragraph}\v!yes\dobetweenparagraphnotes}
 
 \def\handlenoteitself#1#2% tg, id
   {\edef\currentdescription{#1}%
@@ -750,10 +768,8 @@
 %D mainly because endnotes had to be supported.} that is,
 %D automatically (vise versa) and by user supplied reference.
 
-\newcount\internalnotereference
-
-\let\startpushnote=\relax
-\let\stoppushnote =\relax
+\let\startpushnote\relax
+\let\stoppushnote \relax
 
 \newsignal\notesignal
 \newcount \notepenalty
@@ -783,9 +799,9 @@
   \splitmaxdepth\strutdp % not actually needed here
   \leftmargindistance\noteparameter\c!margindistance
   \rightmargindistance\leftmargindistance
-  \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
-    \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
-  \fi
+%   \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
+%     \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
+%   \fi
 \to \everyinsidenoteinsert
 
 % not: \appendtoks \setnotehsize \to \everyinsidenoteinsert (spoils columns)
@@ -836,6 +852,47 @@
 \unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi}
 \unexpanded\def\unvcopied{\ifvmode\unvcopy\else\copy\fi}
 
+% idea: tag with attr and then just flush them again
+
+\def\dobetweenparagraphnotes % should not be too much
+  {\noteparameter\c!inbetween}
+
+\def\doflushgobalnotes
+  {\doifelse{\noteparameter\c!paragraph}\v!yes
+     {\vbox
+        {\beginofshapebox
+         \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins
+         \endofshapebox
+        %\doreshapebox{\box\shapebox}{}{}{}% get rid of penalties etc
+         \gdef\dodobetweenparagraphnotes{\glet\dodobetweenparagraphnotes\dobetweenparagraphnotes}% shape works reverse
+         \doreshapebox{\hbox{\unhbox\shapebox\dodobetweenparagraphnotes}}{}{}{}% get rid of penalties etc
+         \innerflushshapebox
+         \convertvboxtohbox}}
+     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins}}
+
+\def\dodoplacenoteinserts
+  {\ifcase\noteparameter\c!n\relax
+     % should not happen
+   \or
+     \doglobalflushnotesnormal
+   \else
+     \doglobalflushnotescolums
+   \fi}
+
+\def\doglobalflushnotesnormal
+  {%\iftrialtypesetting\copy\else\box\fi\currentnoteins
+   \doflushgobalnotes
+   \obeydepth} % (a) added , since split footnotes will not align properly
+
+\def\doglobalflushnotescolums
+  {\edef\currentnotewidth{\noteparameter\c!width}%
+   \doifdimensionelse\currentnotewidth\donothing
+     {\edef\currentnotewidth{\the\hsize}}%
+   \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\currentnotewidth]%
+    %\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins % compare with local
+     \doflushgobalnotes
+   \stopsimplecolumns}
+
 \def\doplacenoteinserts
   {\relax\ifdim\ht\currentnoteins>\zeropoint\relax
      \ifnum\noteparameter\s!noteloc=\plusfive
@@ -845,24 +902,15 @@
          \whitespace
          \noteparameter\c!before
        \fi
-%        \bgroup
-%        \setupalign[\noteparameter\c!align]%
+        %        \bgroup
+        %        \setupalign[\noteparameter\c!align]%
        \placenoterule  % alleen in ..mode
-%        \par
-%        \egroup
+        %        \par
+        %        \egroup
        \bgroup
        \setnotebodyfont
        \setbox\scratchbox\hbox
-         {% this should be checked, smells like a mix-up
-          % does not split: \ifcase\noteparameter\c!n\unvbox\else\box\fi\currentnoteins
-          \ifcase\noteparameter\c!n\relax
-            \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins % is this needed?
-          \or
-            \iftrialtypesetting\copy\else\box\fi\currentnoteins
-            \obeydepth % (a) added , since split footnotes will not align properly
-          \else
-            \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins
-          \fi}%
+         {\dodoplacenoteinserts}%
        \setbox\scratchbox\hbox
          {\localframed
             [\??vn\currentnote]
@@ -995,7 +1043,7 @@
    \the\everyplacelocalnotes
    % beware, we cannot trust setting \currentnote here
    \getparameters[\??vn#2][\c!width=\v!fit,\c!height=\v!fit,\c!strut=\v!no,\c!offset=\v!overlay,#1]% we only need a selective one
-   \donotealternative{#2}%
+   \dolocalnotealternative{#2}%
    \endgroup
    \dochecknote} % we need to restore the old state
 
@@ -1065,7 +1113,7 @@
 \def\doifnotescollected#1%
   {\ctxlua{structure.notes.doifcontent("#1")}}
 
-\def\donotealternative#1%
+\def\dolocalnotealternative#1%
   {\edef\currentnote{#1}%
    \doifnotescollected\currentnote
      {\endgraf

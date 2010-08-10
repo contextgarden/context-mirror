@@ -721,10 +721,10 @@
 
 % permits \expanded{\bTD ... \eTD}
 
-\unexpanded\def\eTR{\ignorespaces} % handy in case we use a macro to generate rows
-\unexpanded\def\eTD{\ignorespaces}
-\unexpanded\def\eTH{\ignorespaces}
-\unexpanded\def\eTN{\ignorespaces}
+\let\bTR\relax \unexpanded\def\eTR{\ignorespaces} % handy in case we use a macro to generate rows
+\let\bTD\relax \unexpanded\def\eTD{\ignorespaces}
+\let\bTH\relax \unexpanded\def\eTH{\ignorespaces}
+\let\bTN\relax \unexpanded\def\eTN{\ignorespaces}
 
 \unexpanded\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
   {% tricky and dirty order -)

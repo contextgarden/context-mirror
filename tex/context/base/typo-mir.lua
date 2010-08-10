@@ -26,9 +26,11 @@ local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove
 
-local glyph   = node.id("glyph")
-local whatsit = node.id("whatsit")
-local mthnode = node.id('math')
+local nodecodes = nodes.nodecodes
+
+local glyph   = nodecodes.glyph
+local whatsit = nodecodes.whatsit
+local mthnode = nodecodes.math
 
 local fontdata = fonts.ids
 local fontchar = fonts.chr
@@ -412,12 +414,12 @@ end
 --~             return false
 --~         end
 
-chars.handle_mirroring = nodes.install_attribute_handler {
+mirroring.handler = nodes.install_attribute_handler {
     name = "mirroring",
     namespace = mirroring,
     processor = mirroring.process,
 }
 
 function mirroring.enable()
-    tasks.enableaction("processors","chars.handle_mirroring")
+    tasks.enableaction("processors","mirroring.handler")
 end

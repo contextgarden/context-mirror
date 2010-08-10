@@ -439,14 +439,13 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
             f:write(format:format(...),"\n")
         end
         --
+        -- This might change ... we can just pass the relevant flags directly.
+        --
         setalways("%% runtime options files (command line driven)")
         --
         setalways("\\unprotect")
         --
         setalways("%% feedback and basic job control")
-        if type(environment.argument("track")) == "string" then
-            setvalue ("track"    , "\\enabletrackers[%s]")
-        end
         if type(environment.argument("trackers")) == "string" then
             setvalue ("trackers" , "\\enabletrackers[%s]")
         end

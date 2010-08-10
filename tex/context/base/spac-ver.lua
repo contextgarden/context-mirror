@@ -72,13 +72,15 @@ local hpack_node         = node.hpack
 local vpack_node         = node.vpack
 local writable_spec      = nodes.writable_spec
 
-local glyph   = node.id("glyph")
-local penalty = node.id("penalty")
-local kern    = node.id("kern")
-local glue    = node.id('glue')
-local hlist   = node.id('hlist')
-local vlist   = node.id('vlist')
-local adjust  = node.id('adjust')
+local nodecodes = nodes.nodecodes
+
+local glyph   = nodecodes.glyph
+local penalty = nodecodes.penalty
+local kern    = nodecodes.kern
+local glue    = nodecodes.glue
+local hlist   = nodecodes.hlist
+local vlist   = nodecodes.vlist
+local adjust  = nodecodes.adjust
 
 vspacing      = vspacing      or { }
 vspacing.data = vspacing.data or { }
@@ -157,8 +159,8 @@ function vspacing.define_snap_method(name,method)
     tex.write(n)
 end
 
---~ local rule_id  = node.id("rule")
---~ local vlist_id = node.id("vlist")
+--~ local rule_id  = nodecodes.rule
+--~ local vlist_id = nodecodes.vlist
 --~ function nodes.makevtop(n)
 --~     if n.id == vlist_id then
 --~         local list = n.list
@@ -530,47 +532,18 @@ end
 
 -- alignment box begin_of_par vmode_par hmode_par insert penalty before_display after_display
 
-local user_skip                =  0
-local line_skip                =  1
-local baseline_skip            =  2
-local par_skip                 =  3
-local above_display_skip       =  4
-local below_display_skip       =  5
-local above_display_short_skip =  6
-local below_display_short_skip =  7
-local left_skip_code           =  8
-local right_skip_code          =  9
-local top_skip_code            = 10
-local split_top_skip_code      = 11
-local tab_skip_code            = 12
-local space_skip_code          = 13
-local xspace_skip_code         = 14
-local par_fill_skip_code       = 15
-local thin_mu_skip_code        = 16
-local med_mu_skip_code         = 17
-local thick_mu_skip_code       = 18
+local skipcodes = nodes.skipcodes
 
-local skips = {
-   [ 0] = "user_skip",
-   [ 1] = "line_skip",
-   [ 2] = "baseline_skip",
-   [ 3] = "par_skip",
-   [ 4] = "above_display_skip",
-   [ 5] = "below_display_skip",
-   [ 6] = "above_display_short_skip",
-   [ 7] = "below_display_short_skip",
-   [ 8] = "left_skip_code",
-   [ 9] = "right_skip_code",
-   [10] = "top_skip_code",
-   [11] = "split_top_skip_code",
-   [12] = "tab_skip_code",
-   [13] = "space_skip_code",
-   [14] = "xspace_skip_code",
-   [15] = "par_fill_skip_code",
-   [16] = "thin_mu_skip_code",
-   [17] = "med_mu_skip_code",
-   [18] = "thick_mu_skip_code",
-}
+local userskip_code              = skipcodes.userskip
+local lineskip_code              = skipcodes.lineskip
+local baselineskip_code          = skipcodes.baselineskip
+local parskip_code               = skipcodes.parskip
+local abovedisplayskip_code      = skipcodes.abovedisplayskip
+local belowdisplayskip_code      = skipcodes.belowdisplayskip
+local abovedisplayshortskip_code = skipcodes.abovedisplayshortskip
+local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
+local topskip_code               = skipcodes.topskip
+local splittopskip_code          = skipcodes.splittopskip
 
 local free_glue_node = free_node
 local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8
@@ -706,7 +679,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         elseif id ~= glue then
             flush("something else")
             current = current.next
-        elseif subtype == user_skip then -- todo, other subtypes, like math
+        elseif subtype == userskip_code then -- todo, other subtypes, like math
             local sc = has_attribute(current,skip_category)      -- has no default, no unset (yet)
             local so = has_attribute(current,skip_order   ) or 1 -- has  1 default, no unset (yet)
             local sp = has_attribute(current,skip_penalty )      -- has no default, no unset (yet)
@@ -832,7 +805,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             if sc == force then
                 force_glue = true
             end
-        elseif subtype == line_skip then
+        elseif subtype == lineskip_code then
             if snap then
                 local s = has_attribute(current,snap_method)
                 if s and s ~= 0 then
@@ -853,7 +826,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 flush("lineskip")
             end
             current = current.next
-        elseif subtype == baseline_skip then
+        elseif subtype == baselineskip_code then
             if snap then
                 local s = has_attribute(current,snap_method)
                 if s and s ~= 0 then
@@ -874,7 +847,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 flush("baselineskip")
             end
             current = current.next
-        elseif subtype == par_skip then
+        elseif subtype == parskip_code then
             -- parskip always comes later
             if ignore_whitespace then
                 if trace then trace_natural("ignored parskip",current) end
@@ -892,7 +865,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 if trace then trace_natural("honored parskip",current) end
                 head, current, glue_data = remove_node(head, current)
             end
-        elseif subtype == top_skip_code or subtype == split_top_skip_code then
+        elseif subtype == topskip_code or subtype == splittopskip_code then
             if snap then
                 local s = has_attribute(current,snap_method)
                 if s and s ~= 0 then
@@ -911,25 +884,25 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 flush("topskip")
             end
             current = current.next
-        elseif subtype == above_display_skip then
+        elseif subtype == abovedisplayskip_code then
             --
             if trace then trace_skip("above display skip (normal)",sc,so,sp,current) end
             flush("above display skip (normal)")
             current = current.next
             --
-        elseif subtype == below_display_skip then
+        elseif subtype == belowdisplayskip_code then
             --
             if trace then trace_skip("below display skip (normal)",sc,so,sp,current) end
             flush("below display skip (normal)")
             current = current.next
             --
-        elseif subtype == above_display_short_skip then
+        elseif subtype == abovedisplayshortskip_code then
             --
             if trace then trace_skip("above display skip (short)",sc,so,sp,current) end
             flush("above display skip (short)")
             current = current.next
             --
-        elseif subtype == below_display_short_skip then
+        elseif subtype == belowdisplayshortskip_code then
             --
             if trace then trace_skip("below display skip (short)",sc,so,sp,current) end
             flush("below display skip (short)")
@@ -937,7 +910,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
             --
         else -- other glue
             if snap and trace_vsnapping and current.spec.writable and current.spec.width ~= 0 then
-                report_snapper("%s of %s (kept)",skips[subtype],current.spec.width)
+                report_snapper("%s of %s (kept)",skipcodes[subtype],current.spec.width)
             --~ current.spec.width = 0
             end
             if trace then trace_skip(format("some glue (%s)",subtype),sc,so,sp,current) end
@@ -1083,8 +1056,10 @@ end
 
 local attribute = attributes.private('graphicvadjust')
 
-local hlist = node.id('hlist')
-local vlist = node.id('vlist')
+local nodecodes = nodes.nodecodes
+
+local hlist = nodecodes.hlist
+local vlist = nodecodes.vlist
 
 local remove_node   = nodes.remove
 local hpack_node    = node.hpack

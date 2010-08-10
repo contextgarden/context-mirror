@@ -56,7 +56,6 @@ TEXFONTMAPS.luatex   = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
 TEXFONTMAPS.xetex    = .;$TEXMF/fonts/{data,map}/{xetex,pdftex,dvips,}//
 TEXFONTMAPS.dvips    = .;$TEXMF/fonts/{data,map}/{dvips,pdftex,}//
 
-# TEXFONTMAPS = .;$TEXMF/fonts/map/{$backend,pdftex,dvips,}//;$TEXMF/{$progname,pdftex,dvips}/{config,}//
 TEXFONTMAPS   = .;$TEXMF/fonts/{data,map}/{$progname,$engine,pdftex,dvips,}//;$TEXMF/{$progname,$engine,pdftex,dvips}/{config,}//
 
 VFFONTS       = $TEXMF/fonts/{data,vf}//

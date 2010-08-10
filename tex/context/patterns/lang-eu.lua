@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="eu",
-  ["source"]="hyph-eu.tex",
-  ["texcomment"]="% Hyphenation patterns for Basque.\
+  ["source"]="hyph-eu",
+  ["texcomment"]="% Basque Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% Hyphenation patterns for Basque.\
 %\
 % This file has first been written by Juan M. Aguirregabiria\
 % (juanmari.aguirregabiria@ehu.es) on February 1997 based on the\
@@ -48,7 +52,7 @@ return {
 % Some of the patterns below represent combinations that never\
 % happen in Basque. Would they happen, they would be hyphenated\
 % according to the rules.\
-% ",
+%",
  },
  ["patterns"]={
   ["characters"]="abcdefgijklmnopqrstuvwxyzñ",

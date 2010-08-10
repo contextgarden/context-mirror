@@ -4991,9 +4991,9 @@
 
 \def\comparedimensioneps#1#2%
   {\chardef\compresult
-     \ifdim\dimexpr(#1-#2)<\roudingeps
+     \ifdim\dimexpr#1-#2\relax<\roudingeps
        \zerocount
-     \else\ifdim\dimexpr(#2-#1)<\roudingeps
+     \else\ifdim\dimexpr#2-#1\relax<\roudingeps
        \zerocount
      \else\ifdim#1<#2%
        \plusone

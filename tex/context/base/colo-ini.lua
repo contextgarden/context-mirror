@@ -6,13 +6,15 @@ if not modules then modules = { } end modules ['colo-ini'] = {
     license   = "see context related readme files"
 }
 
-local type = type
+local type, tonumber = type, tonumber
 local concat = table.concat
 local format, gmatch, gsub, lower, match, find = string.format, string.gmatch, string.gsub, string.lower, string.match, string.find
 local texsprint = tex.sprint
 local ctxcatcodes = tex.ctxcatcodes
 
 local trace_define = false  trackers.register("colors.define",function(v) trace_define = v end)
+
+local report_colors = logs.new("colors")
 
 local settings_to_hash_strict = aux.settings_to_hash_strict
 
@@ -132,6 +134,60 @@ local transparent = {
     difference = 11,
     exclusion  = 12,
 }
+
+-- backend driven limitations
+
+colors.supported         = true -- always true
+transparencies.supported = true
+
+local gray_okay, rgb_okay, cmyk_okay, spot_okay, multichannel_okay, forced = true, true, true, true, true, false
+
+function colors.forcesupport(gray,rgb,cmyk,spot,multichannel) -- pdfx driven
+    gray_okay, rgb_okay, cmyk_okay, spot_okay, multichannel_okay, forced = gray, rgb, cmyk, spot, multichannel, true
+    report_colors("supported models: gray=%s, rgb=%s, cmyk=%s, spot=%s",      -- multichannel=%s
+        tostring(gray), tostring(rgb), tostring(cmyk), tostring(spot)) -- tostring(multichannel)
+end
+
+local function forcedmodel(model) -- delayed till the backend but mp directly
+    if not forced then
+        return model
+    elseif model == 2 then -- gray
+        if gray_okay then
+            -- okay
+        elseif cmyk_okay then
+            return 4
+        elseif rgb_okay then
+            return 3
+        end
+    elseif model == 3 then -- rgb
+        if rgb_okay then
+            -- okay
+        elseif cmyk_okay then
+            return 4
+        elseif gray_okay then
+            return 2
+        end
+    elseif model == 4 then -- cmyk
+        if cmyk_okay then
+            -- okay
+        elseif rgb_okay then
+            return 3
+        elseif gray_okay then
+            return 2
+        end
+    elseif model == 5 then -- spot
+        if cmyk_okay then
+            return 4
+        elseif rgb_okay then
+            return 3
+        elseif gray_okay then
+            return 2
+        end
+    end
+    return model
+end
+
+colors.forcedmodel = forcedmodel
 
 -- By coupling we are downward compatible. When we decouple we need to do more tricky
 -- housekeeping (e.g. persist color independent transparencies when color bound ones
@@ -319,13 +375,14 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     end
 end
 
-function colors.mp(model,ca,ta,default)
-    local cv = colors.value(ca) -- faster when direct colors.values[ca]
+function colors.mp(model,ca,ta,default) -- will move to mlib-col
+    local cv = colors.supported and colors.value(ca) -- faster when direct colors.values[ca]
     if cv then
-        local tv = transparencies.value(ta)
+        local tv = transparencies.supported and transparencies.value(ta)
         if model == 1 then
             model = cv[1]
         end
+        model = forcedmodel(model)
         if tv then
             if model == 2 then
                 return format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])

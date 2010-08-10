@@ -23,13 +23,14 @@ words.threshold = 4
 local set_attribute   = node.set_attribute
 local unset_attribute = node.unset_attribute
 local traverse_nodes  = node.traverse
-local node_id         = node.id
 local wordsdata       = words.data
 local chardata        = characters.data
 
-local glyph_node = node_id('glyph')
-local disc_node  = node_id('disc')
-local kern_node  = node_id('kern')
+local nodecodes = nodes.nodecodes
+
+local glyph_node = nodecodes.glyph
+local disc_node  = nodecodes.disc
+local kern_node  = nodecodes.kern
 
 words.colors    = {
     ["known"]   = "green",

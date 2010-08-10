@@ -143,6 +143,11 @@ local banner_utf_patch = [[
 
 \setXTXcharcodes "201C "201C "201C
 \setXTXcharcodes "201D "201D "201D
+
+% patch needed for french
+
+\setXTXcharcodes "2019 "2019 "2019
+
 ]]
 
 local banner_utf_names = [[

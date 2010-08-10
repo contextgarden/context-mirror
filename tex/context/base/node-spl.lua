@@ -33,13 +33,6 @@ local report_fonts     = logs.new("fonts")
 local report_splitter  = logs.new("splitter")
 local report_optimizer = logs.new("optimizer")
 
-local glyph   = node.id("glyph")
-local glue    = node.id("glue")
-local kern    = node.id("kern")
-local disc    = node.id("disc")
-local hlist   = node.id("hlist")
-local whatsit = node.id("whatsit")
-
 local find_node_tail     = node.tail or node.slide
 local free_node          = node.free
 local free_nodelist      = node.flush_list
@@ -55,6 +48,15 @@ local hpack_nodes        = node.hpack
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local repack_hlist       = nodes.repack_hlist
+
+local nodecodes = nodes.nodecodes
+
+local glyph   = nodecodes.glyph
+local glue    = nodecodes.glue
+local kern    = nodecodes.kern
+local disc    = nodecodes.disc
+local hlist   = nodecodes.hlist
+local whatsit = nodecodes.whatsit
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming

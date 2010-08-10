@@ -1388,22 +1388,23 @@ end
 
 -- for context this will become a task handler
 
+local lists = { -- why local
+    fonts.triggers,
+    fonts.processors,
+    fonts.manipulators,
+}
+
 function otf.set_features(tfmdata,features)
     local processes = { }
     if features and next(features) then
-        local lists = { -- why local
-            fonts.triggers,
-            fonts.processors,
-            fonts.manipulators,
-        }
-        local mode = tfmdata.mode or fonts.mode -- or features.mode
+        local mode = tfmdata.mode or features.mode or "base"
         local initializers = fonts.initializers
         local fi = initializers[mode]
         if fi then
             local fiotf = fi.otf
             if fiotf then
                 local done = { }
-                for l=1,4 do
+                for l=1,#lists do
                     local list = lists[l]
                     if list then
                         for i=1,#list do
@@ -1415,7 +1416,7 @@ function otf.set_features(tfmdata,features)
                                         report_otf("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown', tfmdata.fullname or 'unknown')
                                     end
                                     fiotf[f](tfmdata,value) -- can set mode (no need to pass otf)
-                                    mode = tfmdata.mode or fonts.mode -- keep this, mode can be set local !
+                                    mode = tfmdata.mode or features.mode or "base"
                                     local im = initializers[mode]
                                     if im then
                                         fiotf = initializers[mode].otf
@@ -1428,11 +1429,12 @@ function otf.set_features(tfmdata,features)
                 end
             end
         end
+tfmdata.mode = mode
         local fm = fonts.methods[mode] -- todo: zonder node/mode otf/...
         if fm then
             local fmotf = fm.otf
             if fmotf then
-                for l=1,4 do
+                for l=1,#lists do
                     local list = lists[l]
                     if list then
                         for i=1,#list do
@@ -1535,7 +1537,8 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         local glyphs, pfminfo, metadata = data.glyphs or { }, data.pfminfo or { }, data.metadata or { }
         local luatex = data.luatex
         local unicodes = luatex.unicodes -- names to unicodes
-        local indices = luatex.indices
+        local indices = luatex.indices        local mode = data.mode or "base"
+
         local characters, parameters, math_parameters, descriptions = { }, { }, { }, { }
         local designsize = metadata.designsize or metadata.design_size or 100
         if designsize == 0 then
@@ -1677,6 +1680,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
             designsize         = (designsize/10)*65536,
             spacer             = "500 units",
             encodingbytes      = 2,
+            mode               = mode,
             filename           = filename,
             fontname           = fontname,
             fullname           = fullname,

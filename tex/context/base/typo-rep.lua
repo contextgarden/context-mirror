@@ -22,9 +22,12 @@ local has_attribute = node.has_attribute
 
 local chardata  = characters.data
 local collected = false
-local glyph     = node.id("glyph")
 local attribute = attributes.private("stripping")
 local fontdata  = fonts.ids
+
+local nodecodes = nodes.nodecodes
+
+local glyph = nodecodes.glyph
 
 -- other namespace
 

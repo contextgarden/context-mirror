@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="tr",
-  ["source"]="hyph-tr.tex",
-  ["texcomment"]="% hyph-tr.tex\
+  ["source"]="hyph-tr",
+  ["texcomment"]="% Turkish Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% hyph-tr.tex\
 %\
 % File auto-generated from generate_patterns_tr.rb that is part of hyph-utf8\
 %\
@@ -29,7 +33,7 @@ return {
 %\
 % Notes:\
 % - you need to use loadhyph-tr.tex, please do not try to put \\catcode-s & \\lccode-s here\
-% ",
+%",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnoprstuvyzâçîöûüğış",

@@ -358,4 +358,4 @@ else
 end
 
 
--- mtxrun --script server --start => http://localhost:8080/mtx-server-ctx-help.lua
+-- mtxrun --script server --start => http://localhost:31415/mtx-server-ctx-startup.lua

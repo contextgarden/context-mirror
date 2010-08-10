@@ -149,8 +149,8 @@
 %D
 %D Why should we only honour the romans, and not the greek?
 
-\let\greeknumerals\gobbleoneargument
-\let\Greeknumerals\gobbleoneargument
+% \let\greeknumerals\gobbleoneargument
+% \let\Greeknumerals\gobbleoneargument
 
 %D \macros
 %D   {oldstylenumerals,oldstyleromannumerals}
@@ -586,83 +586,91 @@
 %D \defineconversion [en] [whatever] [\something]
 %D \stoptyping
 
-% \def\dodefineconversion[#1][#2]%
-%   {\ConvertConstantAfter\doifinstringelse{,}{#2}
-%      {\scratchcounter=0
-%       \def\docommand##1%
-%         {\advance\scratchcounter 1
-%          \setvalue{\??cv#1\the\scratchcounter}{##1}}%
-%       \processcommalist[#2]\docommand
-%       \setvalue{\??cv#1}##1{\csname\??cv#1##1\endcsname}}
-%      {\setvalue{\??cv#1}{#2}}}
+% we can consider conversions to be global in which case we can
+% delegate to lua
+
+% \unexpanded\def\defineconversion
+%   {\dotripleempty\dodefineconversion}
 %
-% \unexpanded\def\defineconversion%
-%   {\dodoubleargument\dodefineconversion}
+% \def\dodefineconversion[#1][#2][#3]%
+%   {\ifthirdargument
+%      \dododefineconversion[#1][#2][#3]%
+%    \else
+%      \dododefineconversion[][#1][#2]%
+%    \fi}
+%
+% \def\dododefineconversion[#1][#2][#3]%
+%   {\ConvertConstantAfter\doifinstringelse{,}{#3}
+%      {\scratchcounter\zerocount
+%       \def\docommand##1%
+%         {\advance\scratchcounter \plusone
+%          \setvalue{\??cv#1#2\the\scratchcounter}{##1}}%
+%       \processcommalist[#3]\docommand
+%       \setevalue{\??cv#1#2}##1%
+%         {\noexpand\docheckedconversion{#1#2}{\the\scratchcounter}{##1}}}
+%      {\setvalue{\??cv#1#2}{#3}}}
+%
+% \def\docheckedconversion#1#2#3% class maxnumber number
+%   {\executeifdefined{\??cv#1#3}\unknown}
+%
+% %D When Gerben reported problems with footnote numbering per page,
+% %D Taco came with the following wrap around solution. So, let's
+% %D overload the checked conversion macro
+%
+% %D Taco's modulo code is implemented in the system module
+% %D \type {syst-con}.
+%
+% \def\docheckedconversion#1#2#3% class maxnumber number
+%   {\executeifdefined{\??cv#1\modulatednumber{#2}{#3}}\unknown}
 
 \unexpanded\def\defineconversion
   {\dotripleempty\dodefineconversion}
 
-\def\dodefineconversion[#1][#2][#3]%
+\def\dodefineconversion[#1][#2][#3]% from now on global (maybe local again some day)
   {\ifthirdargument
-     \dododefineconversion[#1][#2][#3]%
+     \dododefineconversion{#1#2}{#1:#2}{#3}%
    \else
-     \dododefineconversion[][#1][#2]%
+     \dododefineconversion{#1}{#1}{#2}%
    \fi}
 
-%D \starttyping
-%D \def\dododefineconversion[#1][#2][#3]%
-%D   {\ConvertConstantAfter\doifinstringelse{,}{#3}
-%D      {\scratchcounter\zerocount
-%D       \def\docommand##1%
-%D         {\advance\scratchcounter \plusone
-%D          \setvalue{\??cv#1#2\the\scratchcounter}{##1}}%
-%D       \processcommalist[#3]\docommand
-%D       \setvalue{\??cv#1#2}##1{\executeifdefined{\??cv#1#2##1}\unknown}} % catch out-of-range numbers
-%D      {\setvalue{\??cv#1#2}{#3}}}
-%D \stoptyping
-
-%D This approach has the disadvantage that when you run out of
-%D symbols you get unknown results. The following implementation
-%D permits overloading of the converter:
-
-\def\dododefineconversion[#1][#2][#3]%
+\def\dododefineconversion#1#2#3%
   {\ConvertConstantAfter\doifinstringelse{,}{#3}
-     {\scratchcounter\zerocount
-      \def\docommand##1%
-        {\advance\scratchcounter \plusone
-         \setvalue{\??cv#1#2\the\scratchcounter}{##1}}%
-      \processcommalist[#3]\docommand
-      \setevalue{\??cv#1#2}##1%
-        {\noexpand\docheckedconversion{#1#2}{\the\scratchcounter}{##1}}}
-     {\setvalue{\??cv#1#2}{#3}}}
+     {\ctxlua{converters.define("#2",\!!bs\detokenize{#3}\!!es)}%
+      \setgvalue{\??cv#1}{\docheckedconversion{#2}}}
+     {\setgvalue{\??cv#1}{#3}}}
 
-\def\docheckedconversion#1#2#3% class maxnumber number
-  {\executeifdefined{\??cv#1#3}\unknown}
-
-%D When Gerben reported problems with footnote numbering per page,
-%D Taco came with the following wrap around solution. So, let's
-%D overload the checked conversion macro:
-
-\def\docheckedconversion#1#2#3% class maxnumber number
-  {\executeifdefined{\??cv#1\modulatednumber{#2}{#3}}\unknown}
-
-%D Taco's modulo code is implemented in the system module
-%D \type {syst-con}.
+\def\docheckedconversion#1#2%
+  {\ctxlua{converters.convert("#1",#2)}}
 
 %D If a conversion is just a font switch then we need to make sure
 %D that the number is indeed end up as number in the input, so we
 %D need to handle the second argument.
 
+% \def\convertnumber#1#2%
+%   {\csname\??cv
+%      \ifcsname\??cv\currentlanguage#1\endcsname
+%        \currentlanguage#1%
+%      \else\ifcsname\??cv#1\endcsname
+%        #1%
+%      \else
+%        \s!default
+%      \fi\fi
+%    \endcsname{\number#2}}
+
 \def\convertnumber#1#2%
-  {\csname\??cv
+  {\csname\??cv % we want a fully expandable (no if interference)
      \ifcsname\??cv\currentlanguage#1\endcsname
        \currentlanguage#1%
+       \@EA\firstoftwoarguments % dirty, gobble {#1}
      \else\ifcsname\??cv#1\endcsname
        #1%
+       \@EAEAEA\firstoftwoarguments % dirty, gobble {#1}
      \else
-       \s!default
+       ->\s!default
      \fi\fi
-   \endcsname{\number#2}}
+   \endcsname{#1}{\number#2}}
+
+\letvalue{\??cv->\s!default}\docheckedconversion
 
 \def\doifconversiondefinedelse#1%
   {\ifcsname\??cv\currentlanguage#1\endcsname
@@ -761,9 +769,6 @@
 
 \defineconversion [g]                    [\greeknumerals]
 \defineconversion [G]                    [\Greeknumerals]
-
-\defineconversion [arabicnumerals]       [\arabicnumerals]
-\defineconversion [persiannumerals]      [\persiannumerals]
 
 \defineconversion [abjadnumerals]        [\abjadnumerals]
 \defineconversion [abjadnodotnumerals]   [\adjadnodotnumerals]

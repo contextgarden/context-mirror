@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['trac-set'] = {
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local format, find, lower, gsub = string.format, string.find, string.lower, string.gsub
+local format, find, lower, gsub, simpleesc = string.format, string.find, string.lower, string.gsub, string.simpleesc
 local is_boolean = string.is_boolean
 
 setters = { }
@@ -80,7 +80,7 @@ local function set(t,what,newvalue)
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
-            elseif find(name,w) then
+            elseif find(name,simpleesc(w)) then
                 done[name] = true
                 for i=1,#functions do
                     functions[i](value)
@@ -144,14 +144,14 @@ end
 function setters.enable(t,what)
     local e = t.enable
     t.enable, t.done = enable, { }
-    enable(t,string.simpleesc(tostring(what)))
+    enable(t,what)
     t.enable, t.done = e, { }
 end
 
 function setters.disable(t,what)
     local e = t.disable
     t.disable, t.done = disable, { }
-    disable(t,string.simpleesc(tostring(what)))
+    disable(t,what)
     t.disable, t.done = e, { }
 end
 
@@ -215,36 +215,50 @@ trackers    = setters.new("trackers")
 directives  = setters.new("directives")
 experiments = setters.new("experiments")
 
+-- experiment
+
+if trackers and environment and environment.engineflags.trackers then
+    trackers.enable(environment.engineflags.trackers)
+end
+if directives and environment and environment.engineflags.directives then
+    directives.enable(environment.engineflags.directives)
+end
+
 -- nice trick: we overload two of the directives related functions with variants that
 -- do tracing (itself using a tracker) .. proof of concept
+
+local function report(...) -- messy .. chicken or egg
+    local p = (commands and commands.writestatus) or (logs and logs.report)
+    if p then p(...) end
+end
 
 local trace_directives  = false local trace_directives  = false  trackers.register("system.directives",  function(v) trace_directives  = v end)
 local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
-local e = directives.enable
-local d = directives.disable
+local enable  = directives.enable
+local disable = directives.disable
 
 function directives.enable(...)
-    (commands.writestatus or logs.report)("directives","enabling: %s",concat({...}," "))
-    e(...)
+    report("directives","enabling: %s",concat({...}," "))
+    enable(...)
 end
 
 function directives.disable(...)
-    (commands.writestatus or logs.report)("directives","disabling: %s",concat({...}," "))
-    d(...)
+    report("directives","disabling: %s",concat({...}," "))
+    disable(...)
 end
 
-local e = experiments.enable
-local d = experiments.disable
+local enable  = experiments.enable
+local disable = experiments.disable
 
 function experiments.enable(...)
-    (commands.writestatus or logs.report)("experiments","enabling: %s",concat({...}," "))
-    e(...)
+    report("experiments","enabling: %s",concat({...}," "))
+    enable(...)
 end
 
 function experiments.disable(...)
-    (commands.writestatus or logs.report)("experiments","disabling: %s",concat({...}," "))
-    d(...)
+    report("experiments","disabling: %s",concat({...}," "))
+    disable(...)
 end
 
 -- a useful example
@@ -252,3 +266,12 @@ end
 directives.register("system.nostatistics", function(v)
     statistics.enable = not v
 end)
+
+-- experiment
+
+if trackers and environment and environment.engineflags.trackers then
+    trackers.enable(environment.engineflags.trackers)
+end
+if directives and environment and environment.engineflags.directives then
+    directives.enable(environment.engineflags.directives)
+end

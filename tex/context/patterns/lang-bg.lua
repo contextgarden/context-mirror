@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="bg",
-  ["source"]="hyph-bg.tex",
-  ["texcomment"]="% Bulgarian hyphenation patterns, version 1.7, July 2008\
+  ["source"]="hyph-bg",
+  ["texcomment"]="% Bulgarian Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% Bulgarian hyphenation patterns, version 1.7, July 2008\
 %   Copyright 1994-2008 Georgi Boshnakov\
 %   Georgi dot Boshnakov at manchester dot ac dot uk\
 %\
@@ -46,7 +50,7 @@ return {
 %   when the language is switched to Bulgarian.  Developers who write\
 %   support for Bulgarian outside LaTeX and/or babel need to take care\
 %   of this.\
-% ",
+%",
  },
  ["patterns"]={
   ["characters"]="абвгдежзийклмнопрстуфхцчшщъьюя",

@@ -11,8 +11,9 @@ if not modules then modules = { } end modules ['node-tra'] = {
 might become a runtime module instead. This module will be cleaned up!</p>
 --ldx]]--
 
-local utf = unicode.utf8
-local format, match, concat, rep, utfchar = string.format, string.match, table.concat, string.rep, utf.char
+local utfchar = utf.char
+local concat = table.concat
+local format, match, gmatch, concat, rep = string.format, string.match, string.gmatch, table.concat, string.rep
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -21,20 +22,14 @@ local report_nodes = logs.new("nodes")
 fonts     = fonts     or { }
 fonts.tfm = fonts.tfm or { }
 fonts.ids = fonts.ids or { }
+fonts.chr = fonts.chr or { }
 
 nodes                    = nodes                    or { }
 nodes.tracers            = nodes.tracers            or { }
 nodes.tracers.characters = nodes.tracers.characters or { }
 nodes.tracers.steppers   = nodes.tracers.steppers   or { }
 
-local glyph   = node.id('glyph')
-local hlist   = node.id('hlist')
-local vlist   = node.id('vlist')
-local disc    = node.id('disc')
-local glue    = node.id('glue')
-local kern    = node.id('kern')
-local rule    = node.id('rule')
-local whatsit = node.id('whatsit')
+local tracers = nodes.tracers
 
 local copy_node_list  = node.copy_list
 local hpack_node_list = node.hpack
@@ -45,8 +40,19 @@ local traverse_nodes  = node.traverse
 
 local texsprint = tex.sprint
 local fontdata  = fonts.ids
+local fontchar  = fonts.chr
+local nodecodes = nodes.nodecodes
 
-function nodes.tracers.characters.collect(head,list,tag,n)
+local glyph   = nodecodes.glyph
+local hlist   = nodecodes.hlist
+local vlist   = nodecodes.vlist
+local disc    = nodecodes.disc
+local glue    = nodecodes.glue
+local kern    = nodecodes.kern
+local rule    = nodecodes.rule
+local whatsit = nodecodes.whatsit
+
+function tracers.characters.collect(head,list,tag,n)
     n = n or 0
     local ok, fn = false, nil
     while head do
@@ -75,7 +81,7 @@ function nodes.tracers.characters.collect(head,list,tag,n)
     end
 end
 
-function nodes.tracers.characters.equal(ta, tb)
+function tracers.characters.equal(ta, tb)
     if #ta ~= #tb then
         return false
     else
@@ -89,7 +95,7 @@ function nodes.tracers.characters.equal(ta, tb)
     return true
 end
 
-function nodes.tracers.characters.string(t)
+function tracers.characters.string(t)
     local tt = { }
     for i=1,#t do
         tt[i] = utfchar(t[i][1])
@@ -97,7 +103,7 @@ function nodes.tracers.characters.string(t)
     return concat(tt,"")
 end
 
-function nodes.tracers.characters.unicodes(t,decimal)
+function tracers.characters.unicodes(t,decimal)
     local tt = { }
     for i=1,#t do
         local n = t[i][1]
@@ -112,7 +118,7 @@ function nodes.tracers.characters.unicodes(t,decimal)
     return concat(tt," ")
 end
 
-function nodes.tracers.characters.indices(t,decimal)
+function tracers.characters.indices(t,decimal)
     local tt = { }
     for i=1,#t do
         local n = t[i][3]
@@ -127,20 +133,20 @@ function nodes.tracers.characters.indices(t,decimal)
     return concat(tt," ")
 end
 
-function nodes.tracers.characters.start()
+function tracers.characters.start()
     local npc = nodes.process_characters
     local list = { }
     function nodes.process_characters(head)
         local n = #list
-        nodes.tracers.characters.collect(head,list,'before',n)
+        tracers.characters.collect(head,list,'before',n)
         local h, d = npc(head)
-        nodes.tracers.characters.collect(head,list,'after',n)
+        tracers.characters.collect(head,list,'after',n)
         if #list > n then
             list[#list+1] = { }
         end
         return h, d
     end
-    function nodes.tracers.characters.stop()
+    function tracers.characters.stop()
         tracers.list['characters'] = list
         local variables = {
             ['title']                = 'ConTeXt Character Processing Information',
@@ -156,14 +162,14 @@ end
 
 local stack = { }
 
-function nodes.tracers.start(tag)
+function tracers.start(tag)
     stack[#stack+1] = tag
-    local tracer = nodes.tracers[tag]
+    local tracer = tracers[tag]
     if tracer and tracer.start then
         tracer.start()
     end
 end
-function nodes.tracers.stop()
+function tracers.stop()
     local tracer = stack[#stack]
     if tracer and tracer.stop then
         tracer.stop()
@@ -175,15 +181,15 @@ end
 
 local collection, collecting, messages = { }, false, { }
 
-function nodes.tracers.steppers.start()
+function tracers.steppers.start()
     collecting = true
 end
 
-function nodes.tracers.steppers.stop()
+function tracers.steppers.stop()
     collecting = false
 end
 
-function nodes.tracers.steppers.reset()
+function tracers.steppers.reset()
     for i=1,#collection do
         local c = collection[i]
         if c then
@@ -193,18 +199,18 @@ function nodes.tracers.steppers.reset()
     collection, messages = { }, { }
 end
 
-function nodes.tracers.steppers.nofsteps()
+function tracers.steppers.nofsteps()
     return tex.write(#collection)
 end
 
-function nodes.tracers.steppers.glyphs(n,i)
+function tracers.steppers.glyphs(n,i)
     local c = collection[i]
     if c then
         tex.box[n] = hpack_node_list(copy_node_list(c))
     end
 end
 
-function nodes.tracers.steppers.features()
+function tracers.steppers.features()
 --  local f = first_character(collection[1])
 --  if f then -- something fishy with first_character
     local f = collection[1]
@@ -235,13 +241,13 @@ function nodes.tracers.steppers.features()
     end
 end
 
-function nodes.tracers.fontchar(font,char)
+function tracers.fontchar(font,char)
     local n = nodes.glyph()
     n.font, n.char, n.subtype = font, char, 256
     node.write(n)
 end
 
-function nodes.tracers.steppers.codes(i,command)
+function tracers.steppers.codes(i,command)
     local c = collection[i]
     while c do
         local id = c.id
@@ -260,7 +266,7 @@ function nodes.tracers.steppers.codes(i,command)
     end
 end
 
-function nodes.tracers.steppers.messages(i,command,split)
+function tracers.steppers.messages(i,command,split)
     local list = messages[i] -- or { "no messages" }
     if list then
         for i=1,#list do
@@ -277,9 +283,9 @@ end
 
 -- hooks into the node list processor (see otf)
 
-function nodes.tracers.steppers.check(head)
+function tracers.steppers.check(head)
     if collecting then
-        nodes.tracers.steppers.reset()
+        tracers.steppers.reset()
         local n = copy_node_list(head)
         nodes.inject_kerns(n,nil,"trace",true)
         nodes.protect_glyphs(n) -- can be option
@@ -287,7 +293,7 @@ function nodes.tracers.steppers.check(head)
     end
 end
 
-function nodes.tracers.steppers.register(head)
+function tracers.steppers.register(head)
     if collecting then
         local nc = #collection+1
         if messages[nc] then
@@ -299,7 +305,7 @@ function nodes.tracers.steppers.register(head)
     end
 end
 
-function nodes.tracers.steppers.message(str,...)
+function tracers.steppers.message(str,...)
     str = format(str,...)
     if collecting then
         local n = #collection + 1
@@ -332,7 +338,7 @@ function nodes.check_glyphs(head,message)
     return false
 end
 
-function nodes.tosequence(start,stop,compact)
+local function tosequence(start,stop,compact)
     if start then
         local t = { }
         while start do
@@ -341,7 +347,7 @@ function nodes.tosequence(start,stop,compact)
                 local c = start.char
                 if compact then
                     if start.components then
-                        t[#t+1] = nodes.tosequence(start.components,nil,compact)
+                        t[#t+1] = tosequence(start.components,nil,compact)
                     else
                         t[#t+1] = utfchar(c)
                     end
@@ -378,6 +384,8 @@ function nodes.tosequence(start,stop,compact)
         return "[empty]"
     end
 end
+
+nodes.tosequence = tosequence
 
 function nodes.report(t,done)
     if done then
@@ -473,4 +481,57 @@ function nodes.list_to_utf(h,joiner)
         h = h.next
     end
     return concat(w)
+end
+
+local what = { [0] = "unknown", "line", "box", "indent", "row", "cell" }
+
+local function show_boxes(n,symbol,depth)
+    depth, symbol = depth or 0, symbol or "."
+    for n in traverse_nodes(n) do
+        local id = n.id
+        if id == hlist or id == vlist then
+            local s = n.subtype
+            logs.simple(rep(symbol,depth) .. what[s] or s)
+            show_boxes(n.list,symbol,depth+1)
+        end
+    end
+end
+
+nodes.show_boxes = show_boxes
+
+local threshold = 65536
+
+function toutf(list,result)
+    for n in traverse_nodes(list) do
+        local id = n.id
+        if id == glyph then
+            local c = n.char
+            local fc = fontchar[n.font]
+            if fc then
+                local u = fc[c].tounicode
+                if u then
+                    for s in gmatch(u,"..") do
+                        result[#result+1] = utfchar(tonumber(s,16))
+                    end
+                else
+                    result[#result+1] = utfchar(c)
+                end
+            else
+                result[#result+1] = utfchar(c)
+            end
+        elseif id == disc then
+            toutf(n.replace,result)
+        elseif id == hlist or id == vlist then
+            toutf(n.list,result)
+        elseif id == glue and n.subtype == 0 and n.spec.width > threshold then
+            result[#result+1] = " "
+        elseif id == kern and n.kern > threshold then
+            result[#result+1] = " "
+        end
+    end
+    return result
+end
+
+function nodes.toutf(list)
+    return concat(toutf(list,{}))
 end

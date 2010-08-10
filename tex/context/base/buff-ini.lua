@@ -59,7 +59,6 @@ function buffers.append(name, str)
     data[name] = (data[name] or "") .. str
 end
 
-
 buffers.flags.store_as_table = true
 
 -- to be sorted out: crlf + \ ; slow now
@@ -314,7 +313,7 @@ end
 local printer = (lpeg.patterns.textline/texprint)^0
 
 function buffers.get(name)
-    local b = buffers.data[name]
+    local b = data[name]
     if b then
         if type(b) == "table" then
             for i=1,#b do

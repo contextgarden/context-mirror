@@ -662,6 +662,7 @@
 		<cd:constant name='footer' value='upati'/>
 		<cd:constant name='footerdistance' value='vzdalenostupati'/>
 		<cd:constant name='footerstate' value='statusupati'/>
+		<cd:constant name='force' value='sila'/>
 		<cd:constant name='foregroundcolor' value='foregroundcolor'/>
 		<cd:constant name='foregroundstyle' value='foregroundstyle'/>
 		<cd:constant name='format' value='formatovat'/>
@@ -860,6 +861,7 @@
 		<cd:constant name='previous' value='predchozi'/>
 		<cd:constant name='previousnumber' value='predchozicislo'/>
 		<cd:constant name='process' value='process'/>
+		<cd:constant name='profile' value='profile'/>
 		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='polomer'/>
 		<cd:constant name='random' value='nahodne'/>

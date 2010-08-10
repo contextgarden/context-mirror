@@ -24,12 +24,14 @@ local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove
 local make_penalty_node  = nodes.penalty
 local make_glue_node     = nodes.glue
-local glyph              = node.id("glyph")
 
 local fontdata           = fonts.identifiers
 local quaddata           = fonts.quads
+local nodecodes          = nodes.nodecodes
 
 local texattribute       = tex.attribute
+
+local glyph              = nodecodes.glyph
 
 typesetting          = typesetting          or { }
 typesetting.spacings = typesetting.spacings or { }

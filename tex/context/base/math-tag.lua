@@ -9,26 +9,27 @@ if not modules then modules = { } end modules ['math-tag'] = {
 local has_attribute  = nodes.has_attribute
 local set_attribute  = nodes.set_attribute
 local set_attributes = nodes.set_attributes
-
 local traverse_nodes = node.traverse
 
-local math_noad      = node.id("noad")           -- attr nucleus sub sup
-local math_noad      = node.id("noad")           -- attr nucleus sub sup
-local math_accent    = node.id("accent")         -- attr nucleus sub sup accent
-local math_radical   = node.id("radical")        -- attr nucleus sub sup left degree
-local math_fraction  = node.id("fraction")       -- attr nucleus sub sup left right
-local math_box       = node.id("sub_box")        -- attr list
-local math_sub       = node.id("sub_mlist")      -- attr list
-local math_char      = node.id("math_char")      -- attr fam char
-local math_text_char = node.id("math_text_char") -- attr fam char
-local math_delim     = node.id("delim")          -- attr small_fam small_char large_fam large_char
-local math_style     = node.id("style")          -- attr style
-local math_choice    = node.id("choice")         -- attr display text script scriptscript
-local math_fence     = node.id("fence")          -- attr subtype
+local nodecodes = nodes.nodecodes
 
-local hlist          = node.id("hlist")
-local vlist          = node.id("vlist")
-local glyph          = node.id("glyph")
+local math_noad      = nodecodes.noad           -- attr nucleus sub sup
+local math_noad      = nodecodes.noad           -- attr nucleus sub sup
+local math_accent    = nodecodes.accent         -- attr nucleus sub sup accent
+local math_radical   = nodecodes.radical        -- attr nucleus sub sup left degree
+local math_fraction  = nodecodes.fraction       -- attr nucleus sub sup left right
+local math_box       = nodecodes.sub_box        -- attr list
+local math_sub       = nodecodes.sub_mlist      -- attr list
+local math_char      = nodecodes.math_char      -- attr fam char
+local math_text_char = nodecodes.math_text_char -- attr fam char
+local math_delim     = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local math_style     = nodecodes.style          -- attr style
+local math_choice    = nodecodes.choice         -- attr display text script scriptscript
+local math_fence     = nodecodes.fence          -- attr subtype
+
+local hlist          = nodecodes.hlist
+local vlist          = nodecodes.vlist
+local glyph          = nodecodes.glyph
 
 local a_tagged = attributes.private('tagged')
 

@@ -38,7 +38,8 @@ patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
 patterns.lowercase     = R("az")
 patterns.uppercase     = R("AZ")
 patterns.letter        = patterns.lowercase + patterns.uppercase
-patterns.space         = S(" ")
+patterns.space         = P(" ")
+patterns.tab           = P("\t")
 patterns.eol           = S("\n\r")
 patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
 patterns.newline       = crlf + cr + lf
@@ -49,6 +50,9 @@ patterns.nonwhitespace = 1 - patterns.whitespace
 patterns.utf8          = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
 patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
 patterns.validutf8     = patterns.utf8^0 * P(-1) * Cc(true) + Cc(false)
+patterns.comma         = P(",")
+patterns.commaspacer   = P(",") * patterns.spacer^0
+patterns.period        = P(".")
 
 patterns.undouble      = P('"')/"" * (1-P('"'))^0 * P('"')/""
 patterns.unsingle      = P("'")/"" * (1-P("'"))^0 * P("'")/""
@@ -169,15 +173,41 @@ local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 6
 
 patterns.utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
 
+--~ local str = " a b c d "
+
+--~ local s = lpeg.stripper(lpeg.R("az"))   print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.keeper(lpeg.R("az"))     print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.stripper("ab")           print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.keeper("ab")             print("["..lpeg.match(s,str).."]")
+
 local cache = { }
 
 function lpeg.stripper(str)
-    local s = cache[str]
-    if not s then
-        s = Cs(((S(str)^1)/"" + 1)^0)
-        cache[str] = s
+    if type(str) == "string" then
+        local s = cache[str]
+        if not s then
+            s = Cs(((S(str)^1)/"" + 1)^0)
+            cache[str] = s
+        end
+        return s
+    else
+        return Cs(((str^1)/"" + 1)^0)
     end
-    return s
+end
+
+local cache = { }
+
+function lpeg.keeper(str)
+    if type(str) == "string" then
+        local s = cache[str]
+        if not s then
+            s = Cs((((1-S(str))^1)/"" + 1)^0)
+            cache[str] = s
+        end
+        return s
+    else
+        return Cs((((1-str)^1)/"" + 1)^0)
+    end
 end
 
 function lpeg.replacer(t)

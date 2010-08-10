@@ -39,6 +39,9 @@ local sections   = structure.sections
 local sets       = structure.sets
 local processors = structure.processors
 
+local sprintprocessor = processors.sprint
+local ignoreprocessor = processors.ignore
+
 -- -- -- document -- -- --
 
 local data
@@ -471,6 +474,51 @@ end
 -- sign=positive => also zero
 -- sign=hang     => llap sign
 
+--~ todo: test this
+--~
+--~ local function process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,preceding,done) -- todo: result
+--~     -- todo: too much (100 steps)
+--~     local number = numbers and (numbers[index] or 0)
+--~     local ownnumber = ownnumbers and ownnumbers[index] or ""
+--~     if number > criterium or (ownnumber ~= "") then
+--~         local block = (entry.block ~= "" and entry.block) or sections.currentblock() -- added
+--~         if preceding then
+--~             local separator = sets.get("structure:separators",block,separatorset,preceding,".")
+--~             if result then
+--~                 result[#result+1] = ignoreprocessor(separator)
+--~             else
+--~                 sprintprocessor(ctxcatcodes,separator)
+--~             end
+--~             preceding = false
+--~         end
+--~         if result then
+--~             if ownnumber ~= "" then
+--~                 result[#result+1] = ownnumber
+--~             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
+--~                 result[#result+1] = converters.convert(conversion,number,true)
+--~             else
+--~                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+--~                 result[#result+1] = converters.convert(theconversion,number,true)
+--~             end
+--~         else
+--~             if ownnumber ~= "" then
+--~                 sprintprocessor(ctxcatcodes,ownnumber)
+--~             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
+--~                 texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+--~              -- context.convertnumber(conversion,number)
+--~             else
+--~                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+--~                 sprintprocessor(ctxcatcodes,theconversion,function(str)
+--~                     return format("\\convertnumber{%s}{%s}",str or "numbers",number)
+--~                 end)
+--~             end
+--~         end
+--~         return index, true -- preceding, done
+--~     else
+--~         return preceding or false, done
+--~     end
+--~ end
+
 function sections.typesetnumber(entry,kind,...) -- kind='section','number','prefix'
     if entry and entry.hidenumber ~= true then -- can be nil
         local separatorset  = ""
@@ -535,7 +583,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local numbers, ownnumbers = entry.numbers, entry.ownnumbers
         if numbers then
             local done, preceding = false, false
-            local function process(index) -- move to outer
+            local function process(index,result) -- move to outer
                 -- todo: too much (100 steps)
                 local number = numbers and (numbers[index] or 0)
                 local ownnumber = ownnumbers and ownnumbers[index] or ""
@@ -544,22 +592,35 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                     if preceding then
                         local separator = sets.get("structure:separators",block,separatorset,preceding,".")
                         if separator then
-                            processors.sprint(ctxcatcodes,separator)
+                            if result then
+                                result[#result+1] = ignoreprocessor(separator)
+                            else
+                                sprintprocessor(ctxcatcodes,separator)
+                            end
                         end
                         preceding = false
                     end
-                    if ownnumber ~= "" then
-                        processors.sprint(ctxcatcodes,ownnumber)
-                 -- elseif conversion and conversion ~= "" then
-                 --    texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
-                    elseif conversion and conversion ~= "" then
-                     -- traditional (e.g. used in itemgroups)
-                        texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+                    if result then
+                        if ownnumber ~= "" then
+                            result[#result+1] = ownnumber
+                        elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
+                            result[#result+1] = converters.convert(conversion,number,true)
+                        else
+                            local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+                            result[#result+1] = converters.convert(theconversion,number,true)
+                        end
                     else
-                        local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
-                        processors.sprint(ctxcatcodes,theconversion,function(str)
-                            return format("\\convertnumber{%s}{%s}",str or "numbers",number)
-                        end)
+                        if ownnumber ~= "" then
+                            sprintprocessor(ctxcatcodes,ownnumber)
+                        elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
+                            texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+                            --~ context.convertnumber(conversion,number)
+                        else
+                            local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+                            sprintprocessor(ctxcatcodes,theconversion,function(str)
+                                return format("\\convertnumber{%s}{%s}",str or "numbers",number)
+                            end)
+                        end
                     end
                     preceding, done = index, true
                 else
@@ -567,11 +628,20 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 end
             end
             --
+            local result = kind == "direct" and { }
+            if result then
+                connector = false
+            end
+            --
             local prefixlist = set and sets.getall("structure:prefixes","",set) -- "" == block
             if starter then
-                processors.sprint(ctxcatcodes,starter)
+                if result then
+                    result[#result+1] = ignoreprocessor(starter)
+                else
+                    sprintprocessor(ctxcatcodes,starter)
+                end
             end
-            if prefixlist and (kind == 'section' or kind == 'prefix') then
+            if prefixlist and (kind == 'section' or kind == 'prefix' or kind == 'direct') then
                 -- find valid set (problem: for sectionnumber we should pass the level)
             --  if kind == "section" then
                     -- no holes
@@ -616,7 +686,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                         local prefix = prefixlist[k]
                         local index = sections.getlevel(prefix) or k
                         if index >= firstprefix and index <= lastprefix then
-                            process(index)
+                            process(index,result)
                         end
                     end
             --  else
@@ -631,15 +701,24 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             else
                 -- also holes check
                 for prefix=firstprefix,lastprefix do
-                    process(prefix)
+                    process(prefix,result)
                 end
             end
             --
             if done and connector and kind == 'prefix' then
-                processors.sprint(ctxcatcodes,connector)
+                if result then
+                    -- can't happen as we're in 'direct'
+                else
+                    sprintprocessor(ctxcatcodes,connector)
+                end
             elseif done and stopper then
-                processors.sprint(ctxcatcodes,stopper)
+                if result then
+                    result[#result+1] = ignoreprocessor(stopper)
+                else
+                    sprintprocessor(ctxcatcodes,stopper)
+                end
             end
+            return result -- a table !
         else
         --  report_structure("error: no numbers")
         end
@@ -686,12 +765,17 @@ function sections.findnumber(depth,what)
     end
 end
 
-function sections.fullnumber(depth,what,raw)
+function sections.fullnumber(depth,what)
     local sectiondata = sections.findnumber(depth,what)
     if sectiondata then
         sections.typesetnumber(sectiondata,'section',sectiondata)
     end
 end
+
+--~ function sections.directnumber(depth,what)
+--~     local sectiondata = sections.findnumber(depth,what)
+--~     return sectiondata and sections.typesetnumber(sectiondata,'direct',sectiondata) or ""
+--~ end
 
 function sections.getnumber(depth,what) -- redefined here
     local sectiondata = sections.findnumber(depth,what)

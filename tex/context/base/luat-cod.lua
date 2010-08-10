@@ -95,6 +95,20 @@ if not environment.luafilechunk then
 
 end
 
+if not environment.engineflags then
+    local engineflags = { }
+    for i=-10,#arg do
+        local a = arg[i]
+        if a then
+            local flag, content = match(a,"^%-%-([^=]+)=?(.-)$")
+            if flag then
+                engineflags[flag] = content or ""
+            end
+        end
+    end
+    environment.engineflags = engineflags
+end
+
 -- We need a few premature callbacks in the format generator. We
 -- also do this when the format is loaded as otherwise we get
 -- a kpse error when disabled. Thi sis en angine issue that will

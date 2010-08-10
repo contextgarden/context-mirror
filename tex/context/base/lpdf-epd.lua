@@ -20,6 +20,13 @@ local setmetatable, rawset = setmetatable, rawset
 -- getNum getString getBool getName getRef
 -- getResourceDict getMediaBox getCropBox getBleedBox getTrimBox getArtBox
 -- getPageRef getKindName findDestgetNumPages getDests getPage getCatalog getAnnots
+--
+-- needed:
+--
+-- add accessor methods to the resource dict
+-- a function to mark objects as to be included
+
+lpdf = lpdf or { }
 
 -- -- -- helpers -- -- --
 
@@ -100,17 +107,17 @@ local basic_resources_access = { -- == dictionary_access
     end
 }
 
-local basic_box_access = {
+local basic_box_access = { -- here it makes sense to do the rawset
     __index = function(t,k)
         local d = t.__data__
-        if     k == "all"    then return { d.x1, d.y1, d.x2, d.y2 }
-        elseif k == "width"  then return d.x2 - d.x1
-        elseif k == "height" then return d.y2 - d.y1
-        elseif k == 1        then return d.x1
-        elseif k == 2        then return d.y1
-        elseif k == 3        then return d.x2
-        elseif k == 4        then return d.y2
-        else                      return 0 end
+        if     k == "all"           then return { d.x1, d.y1, d.x2, d.y2 }
+        elseif k == "width"         then return d.x2 - d.x1
+        elseif k == "height"        then return d.y2 - d.y1
+        elseif k == 1 or k == "llx" then return d.x1
+        elseif k == 2 or k == "lly" then return d.y1
+        elseif k == 3 or k == "urx" then return d.x2
+        elseif k == 4 or k == "lly" then return d.y2
+        else                        return 0 end
     end
 }
 

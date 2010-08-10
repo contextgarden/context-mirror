@@ -7,8 +7,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="us",
-  ["source"]="hyph-en-us.tex",
-  ["texcomment"]="% This file has been renamed from ushyphmax.tex to hyph-en-us.tex in June 2008\
+  ["source"]="hyph-en-us",
+  ["texcomment"]="% Hyphenation Patterns for American English\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file has been renamed from ushyphmax.tex to hyph-en-us.tex in June 2008\
 % for consistency with other files with hyphenation patterns in hyph-utf8 package.\
 % No other changes made. See http://www.tug.org/tex-hyphen for more details.\
 % \

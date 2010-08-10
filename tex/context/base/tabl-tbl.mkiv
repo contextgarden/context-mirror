@@ -696,8 +696,8 @@
        [\c!unit,\c!distance,\c!before,\c!bodyfont,\c!after,
         \c!inner,\c!indenting,\c!frame,\c!split,\c!header,\c!title,
         \c!margin,\c!align,\c!rulecolor,\c!rulethickness,EQ]%
-     \setvalue{\e!start#1::#2}{\dofinalstarttabulate[#1][#2][#3]}%
-     \setvalue{\e!start#1}{\bgroup\dosubstarttabulate[#1]}%
+     \setuvalue{\e!start#1::#2}{\dofinalstarttabulate[#1][#2][#3]}%
+     \setuvalue{\e!start#1}{\bgroup\dosubstarttabulate[#1]}%
      \letvalue{\??tt#1-\v!header}\empty
      \letvalue{\??tt#1-\v!footer }\empty
    \else\ifsecondargument
@@ -752,14 +752,14 @@
      \TABLEnoalign{\kern-\lineheight}%
    \fi}
 
-\setvalue{\e!start\v!tabulatehead}%
+\setuvalue{\e!start\v!tabulatehead}%
   {\dosingleempty\dostartstarttabulatehead}
 
 \def\dostartstarttabulatehead[#1]%
   {\processcontent{\e!stop\v!tabulatehead}\next
      {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::-\v!header}\next}}
 
-\setvalue{\e!start\v!tabulatetail}%
+\setuvalue{\e!start\v!tabulatetail}%
   {\dosingleempty\dostartstarttabulatetail}
 
 \def\dostartstarttabulatetail[#1]%
@@ -772,8 +772,12 @@
 \def\dodosubstarttabulate[#1][#2]%
   {\csname\e!start#1::\ifcsname\e!start#1::#2\endcsname#2\fi\endcsname}
 
-\setvalue{\e!start\v!tabulate}%
+\setuvalue{\e!start\v!tabulate}%
   {\bgroup\dodoubleempty\donormalstarttabulate}
+
+\setuvalue{\e!stop\v!tabulate    }{}
+\setuvalue{\e!stop\v!tabulatehead}{}
+\setuvalue{\e!stop\v!tabulatetail}{}
 
 \bgroup
 

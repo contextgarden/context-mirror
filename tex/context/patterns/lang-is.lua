@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="is",
-  ["source"]="hyph-is.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-is",
+  ["texcomment"]="% Icelandic Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: icehyph.tex (2004-03-08)\

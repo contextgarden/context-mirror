@@ -1028,30 +1028,27 @@
    \dontshowcomposition
    \widowpenalty\zerocount
    \setbox0\vbox{\unvbox\normalpagebox}%
-\ifdim\ht0>\openlineheight % at least one line
-  \ifnum\minbalancetoplines<2 % balance anyway
-    \donetrue
-  \else % check criterium to available lines
-    \getnoflines{\ht0}%
-    \divide\noflines \nofcolumns \relax
-    \ifnum\noflines<\minbalancetoplines \relax
-      \dimen0\ht0
-      \advance\dimen0 \ht\firsttopcolumnbox
-      \advance\dimen0 \openlineheight \relax % let's play safe
-      \ifdim\dimen0>\columntextheight % column exceeding text height
-        \donetrue
-      \else % it seems to fit
-        \donefalse
-      \fi
-    \else % balance indeed
-      \donetrue
-    \fi
+   \ifdim\ht0>\openlineheight % at least one line
+     \ifnum\minbalancetoplines<2 % balance anyway
+       \donetrue
+     \else % check criterium to available lines
+       \getnoflines{\ht0}%
+       \divide\noflines \nofcolumns \relax
+       \ifnum\noflines<\minbalancetoplines \relax
+         % let's play safe
+         \ifdim\dimexpr\ht0+\ht\firsttopcolumnbox+\openlineheight\relax>\columntextheight
+           \donetrue % column exceeding text height
+         \else
+           \donefalse % it seems to fit
+         \fi
+       \else % balance indeed
+         \donetrue
+       \fi
+     \fi
+  \else % balancing does not make sense
+    \donefalse
   \fi
-\else % balancing does not make sense
-  \donefalse
-\fi
-\ifdone % start balancing
-  %\ifdim\ht0>\openlineheight
+  \ifdone % start balancing, was: \ifdim\ht0>\openlineheight
      \dimen0\ht0
      \advance\dimen0 \topskip
      \advance\dimen0 -\baselineskip
@@ -1174,11 +1171,11 @@
    \egroup}
 
 \def\multicolumnseject
-  {\ifdim\pagetotal>\textheight
-     \eject % new
-   \else
+  {%\ifdim\pagetotal>\textheight
+   %  \eject % new, but wrong as fails on mixed-001.tex (wrong pagetotal at this point)
+   %\else
      \allowbreak
-   \fi}
+   }%\fi}
 
 %D The multicolumn mechanism is incorporated in a \CONTEXT\
 %D interface, which acts like:

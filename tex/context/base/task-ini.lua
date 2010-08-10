@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['task-ini'] = {
 tasks.appendaction("processors", "normalizers", "fonts.collections.process")                 -- todo
 tasks.appendaction("processors", "normalizers", "fonts.checkers.missing")                    -- disabled
 
-tasks.appendaction("processors", "characters",  "chars.handle_mirroring")                    -- disabled
+tasks.appendaction("processors", "characters",  "mirroring.handler")                         -- disabled
 tasks.appendaction("processors", "characters",  "typesetting.cases.handler")                 -- disabled
 tasks.appendaction("processors", "characters",  "typesetting.breakpoints.handler")           -- disabled
 tasks.appendaction("processors", "characters",  "scripts.preprocess")
@@ -76,7 +76,7 @@ tasks.disableaction("processors",  "chars.handle_breakpoints")
 tasks.disableaction("processors",  "typesetting.cases.handler")
 tasks.disableaction("processors",  "typesetting.digits.handler")
 tasks.disableaction("processors",  "typesetting.breakpoints.handler")
-tasks.disableaction("processors",  "chars.handle_mirroring")
+tasks.disableaction("processors",  "mirroring.handler")
 tasks.disableaction("processors",  "languages.words.check")
 tasks.disableaction("processors",  "typesetting.spacings.handler")
 tasks.disableaction("processors",  "typesetting.kerns.handler")

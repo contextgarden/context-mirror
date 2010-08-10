@@ -253,6 +253,10 @@ function tfm.do_scale(tfmtable, scaledpoints, relativeid)
     local hasitalic = tfmtable.has_italic
     local descriptions = tfmtable.descriptions or { }
     --
+    if hasmath then
+        t.has_math = true -- this will move to elsewhere
+    end
+    --
     t.parameters = { }
     t.characters = { }
     t.MathConstants = { }

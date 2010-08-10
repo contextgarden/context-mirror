@@ -18,8 +18,12 @@ local round = math.round
 local ctxcatcodes = tex.ctxcatcodes
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
+local trace_usage    = false  trackers.register("fonts.usage",    function(v) trace_usage    = v end)
+local trace_mapfiles = false  trackers.register("fonts.mapfiles", function(v) trace_mapfiles  = v end)
 
-local report_define = logs.new("define fonts")
+local report_define   = logs.new("define fonts")
+local report_usage    = logs.new("fonts usage")
+local report_mapfiles = logs.new("mapfiles")
 
 local tfm      = fonts.tfm
 local define   = fonts.define
@@ -36,6 +40,9 @@ local numbers  = specify.context_numbers
 local merged   = specify.context_merged
 local synonyms = specify.synonyms
 local triggers = fonts.triggers
+
+-- Beware, number can be shared between redefind features but as it is
+-- applied only for special cases it probably doesn't matter.
 
 --[[ldx--
 <p>So far we haven't really dealt with features (or whatever we want
@@ -113,7 +120,8 @@ local function preset_context(name,parent,features) -- currently otf only
         if v then t[k] = v end
     end
     -- needed for dynamic features
-    local number = (setups[name] and setups[name].number) or 0
+    -- maybe number should always be renewed as we can redefine features
+    local number = (setups[name] and setups[name].number) or 0 -- hm, numbers[name]
     if number == 0 then
         number = #numbers + 1
         numbers[number] = name
@@ -233,6 +241,7 @@ function fonts.withset(name,what)
     end
     tex_attribute[0] = done
 end
+
 function fonts.withfnt(name,what)
     local font = current_font()
     local hash = font .. "*" .. name .. "*" .. what
@@ -248,17 +257,58 @@ function specify.show_context(name)
     return setups[name] or setups[numbers[name]] or setups[numbers[tonumber(name)]] or { }
 end
 
-local function split_context(features)
+-- todo: support a,b,c
+
+local function split_context(features) -- preset_context creates dummy here
     return setups[features] or (preset_context(features,"","") and setups[features])
 end
+
+--~ local splitter = lpeg.splitat("=")
+
+--~ local function split_context(features)
+--~     local setup = setups[features]
+--~     if setup then
+--~         return setup
+--~     elseif find(features,",") then
+--~         -- This is not that efficient but handy anyway for quick and dirty tests
+--~         -- beware, due to the way of caching setups you can get the wrong results
+--~         -- when components change. A safeguard is to nil the cache.
+--~         local merge = nil
+--~         for feature in gmatch(features,"[^, ]+") do
+--~             if find(feature,"=") then
+--~                 local k, v = lpegmatch(splitter,feature)
+--~                 if k and v then
+--~                     if not merge then
+--~                         merge = { k = v }
+--~                     else
+--~                         merge[k] = v
+--~                     end
+--~                 end
+--~             else
+--~                 local s = setups[feature]
+--~                 if not s then
+--~                     -- skip
+--~                 elseif not merge then
+--~                     merge = s
+--~                 else
+--~                     for k, v in next, s do
+--~                         merge[k] = v
+--~                     end
+--~                 end
+--~             end
+--~         end
+--~         setup = merge and preset_context(features,"",merge) and setups[features]
+--~         -- actually we have to nil setups[features] in order to permit redefinitions
+--~         setups[features] = nil
+--~     end
+--~     return setup or (preset_context(features,"","") and setups[features]) -- creates dummy
+--~ end
 
 specify.split_context = split_context
 
 function specify.context_tostring(name,kind,separator,yes,no,strict,omit) -- not used
     return aux.hash_to_string(table.merged(fonts[kind].features.default or {},setups[name] or {}),separator,yes,no,strict,omit)
 end
-
-local splitter = lpeg.splitat(",")
 
 function specify.starred(features) -- no longer fallbacks here
     local detail = features.detail
@@ -396,7 +446,7 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
             report_define("defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
         -- resolved (when designsize is used):
-        texsprint(ctxcatcodes,format("\\def\\somefontsize{%isp}",tfmdata.size))
+        texsprint(ctxcatcodes,format("\\def\\somefontsize{%isp}",tfmdata.size or 655360))
     --~ if specification.fallbacks then
     --~     fonts.collections.prepare(specification.fallbacks)
     --~ end
@@ -511,6 +561,9 @@ local loaded = { -- prevent loading (happens in cont-sys files)
 function fonts.map.loadfile(name)
     name = file.addsuffix(name,"map")
     if not loaded[name] then
+        if trace_mapfiles then
+            report_mapfiles("loading map file '%s'",name)
+        end
         pdf.mapfile(name)
         loaded[name] = true
     end
@@ -526,6 +579,9 @@ function fonts.map.loadline(how,line)
         how = "= " .. line
     end
     if not loaded[how] then
+        if trace_mapfiles then
+            report_mapfiles("processing map line '%s'",line)
+        end
         pdf.mapline(how)
         loaded[how] = true
     end
@@ -611,3 +667,57 @@ function fonts.show_font_parameters()
     end
 end
 
+function fonts.report_defined_fonts()
+    if trace_usage then
+        local t = { }
+        for id, data in table.sortedhash(fonts.ids) do
+            t[#t+1] = {
+                format("%03i",id),
+                format("%09i",data.size or 0),
+                data.type                           or "real",
+               (data.mode                           or "base") .. "mode",
+                data.auto_expand    and "expanded"  or "",
+                data.auto_protrude  and "protruded" or "",
+                data.has_math       and "math"      or "",
+                data.extend_factor  and "extended"  or "",
+                data.slant_factor   and "slanted"   or "",
+                data.name                           or "",
+                data.psname                         or "",
+                data.fullname                       or "",
+                data.hash                           or "",
+            }
+        end
+        aux.formatcolumns(t,"  ")
+        report_usage()
+        report_usage("defined fonts:")
+        report_usage()
+        for k=1,#t do
+            report_usage(t[k])
+        end
+    end
+end
+
+luatex.register_stop_actions(fonts.report_defined_fonts)
+
+function fonts.report_used_features()
+    -- numbers, setups, merged
+    if trace_usage then
+        local t = { }
+        for i=1,#numbers do
+            local name = numbers[i]
+            local setup = setups[name]
+            local n = setup.number
+            setup.number = nil -- we have no reason to show this
+            t[#t+1] = { i, name, table.sequenced(setup,false,true) } -- simple mode
+            setup.number = n -- restore it (normally not needed as we're done anyway)
+        end
+        aux.formatcolumns(t,"  ")
+        report_usage()
+        report_usage("defined featuresets:")
+        report_usage()
+        for k=1,#t do
+            report_usage(t[k])
+        end
+    end
+end
+luatex.register_stop_actions(fonts.report_used_features)

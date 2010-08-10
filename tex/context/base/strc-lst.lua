@@ -124,25 +124,25 @@ function lists.enhance(n)
     end
 end
 
-function lists.enforce(n)
- -- todo: symbolic names for counters
-    local l = cached[n]
-    if l then
-        --
-        l.directives = nil -- might change
-        -- save in the right order (happens at shipout)
-        lists.tobesaved[#lists.tobesaved+1] = l
-        -- default enhancer (cross referencing)
-        l.references.realpage = texcount.realpageno
-        -- specific enhancer (kind of obsolete)
-        local kind = l.metadata.kind
-        local enhancer = kind and lists.enhancers[kind]
-        if enhancer then
-            enhancer(l)
-        end
-        return l
-    end
-end
+--~ function lists.enforce(n)
+--~  -- todo: symbolic names for counters
+--~     local l = cached[n]
+--~     if l then
+--~         --
+--~         l.directives = nil -- might change
+--~         -- save in the right order (happens at shipout)
+--~         lists.tobesaved[#lists.tobesaved+1] = l
+--~         -- default enhancer (cross referencing)
+--~         l.references.realpage = texcount.realpageno
+--~         -- specific enhancer (kind of obsolete)
+--~         local kind = l.metadata.kind
+--~         local enhancer = kind and lists.enhancers[kind]
+--~         if enhancer then
+--~             enhancer(l)
+--~         end
+--~         return l
+--~     end
+--~ end
 
 -- we can use level instead but we can also decide to remove level from the metadata
 
@@ -163,17 +163,17 @@ end
 
 -- will be split
 
-local function filter_collected(names, criterium, number, collected, nested)
+local function filter_collected(names, criterium, number, collected, forced, nested) -- names is hash or string
     local numbers, depth = documents.data.numbers, documents.data.depth
-    local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
-    names, criterium = gsub(names," ",""), gsub(criterium," ","")
-    if trace_lists then
-        report_lists("filtering names: %s, criterium: %s, number: %s",names,criterium,number or "-")
+    local result, detail = { }, nil
+    criterium = gsub(criterium," ","") -- not needed
+    forced = forced or { } -- todo: also on other branched, for the moment only needed for bookmarks
+    if type(names) == "string" then
+        names = aux.settings_to_hash(names)
     end
-    if not all then
-        for s in gmatch(names,"[^, ]+") do -- sort of settings to hash
-            hash[s] = true
-        end
+    local all = not next(names) or names[variables.all] or false
+    if trace_lists then
+        report_lists("filtering names: %s, criterium: %s, number: %s",aux.simple_hash_to_string(names),criterium,number or "-")
     end
     if criterium == variables.intro then
         -- special case, no structure yet
@@ -184,15 +184,16 @@ local function filter_collected(names, criterium, number, collected, nested)
                 result[#result+1] = v
             end
         end
-    elseif criterium == variables.all or criterium == variables.text then
+    elseif all or criterium == variables.all or criterium == variables.text then
         for i=1,#collected do
             local v = collected[i]
             local r = v.references
             if r then
-                local sectionnumber = (r.section == 0) or jobsections.collected[r.section]
-                if sectionnumber then -- and not sectionnumber.hidenumber then
-                    local metadata = v.metadata
-                    if metadata and not metadata.nolist and (all or hash[metadata.name or false]) then
+                local metadata = v.metadata
+                if metadata then
+                    local name = metadata.name or false
+                    local sectionnumber = (r.section == 0) or jobsections.collected[r.section]
+                    if forced[name] or (sectionnumber and not metadata.nolist and (all or names[name])) then -- and not sectionnumber.hidenumber then
                         result[#result+1] = v
                     end
                 end
@@ -200,7 +201,7 @@ local function filter_collected(names, criterium, number, collected, nested)
         end
     elseif criterium == variables.current then
         if depth == 0 then
-            return filter_collected(names,variables.intro,number,collected)
+            return filter_collected(names,variables.intro,number,collected,forced)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -211,7 +212,7 @@ local function filter_collected(names, criterium, number, collected, nested)
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
                         if cnumbers then
-                            if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers > depth then
+                            if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers > depth then
                                 local ok = true
                                 for d=1,depth do
                                     local cnd = cnumbers[d]
@@ -232,7 +233,7 @@ local function filter_collected(names, criterium, number, collected, nested)
     elseif criterium == variables.here then
         -- this is quite dirty ... as cnumbers is not sparse we can misuse #cnumbers
         if depth == 0 then
-            return filter_collected(names,variables.intro,number,collected)
+            return filter_collected(names,variables.intro,number,collected,forced)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -244,7 +245,7 @@ local function filter_collected(names, criterium, number, collected, nested)
                         local metadata = v.metadata
                         if cnumbers then
 --~ print(#cnumbers, depth, table.concat(cnumbers))
-                            if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth then
+                            if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers >= depth then
                                 local ok = true
                                 for d=1,depth do
                                     local cnd = cnumbers[d]
@@ -264,7 +265,7 @@ local function filter_collected(names, criterium, number, collected, nested)
         end
     elseif criterium == variables.previous then
         if depth == 0 then
-            return filter_collected(names,variables.intro,number,collected)
+            return filter_collected(names,variables.intro,number,collected,forced)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -275,7 +276,7 @@ local function filter_collected(names, criterium, number, collected, nested)
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
                         if cnumbers then
-                            if metadata and not metadata.nolist and (all or hash[metadata.name or false]) and #cnumbers >= depth then
+                            if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers >= depth then
                                 local ok = true
                                 for d=1,depth-1 do
                                     local cnd = cnumbers[d]
@@ -296,11 +297,11 @@ local function filter_collected(names, criterium, number, collected, nested)
     elseif criterium == variables["local"] then -- not yet ok
         local nested = nesting[#nesting]
         if nested then
-            return filter_collected(names,nested.name,nested.number,collected,nested)
+            return filter_collected(names,nested.name,nested.number,collected,forced,nested)
         elseif sections.autodepth(documents.data.numbers) == 0 then
-            return filter_collected(names,variables.all,number,collected)
+            return filter_collected(names,variables.all,number,collected,forced)
         else
-            return filter_collected(names,variables.current,number,collected)
+            return filter_collected(names,variables.current,number,collected,forced)
         end
     else -- sectionname, number
         -- not the same as register
@@ -321,7 +322,7 @@ local function filter_collected(names, criterium, number, collected, nested)
                         local metadata = v.metadata
                         local cnumbers = sectionnumber.numbers
                         if cnumbers then
-                            if (all or hash[metadata.name or false]) and #cnumbers >= depth and matching_till_depth(depth,cnumbers,parent) then
+                            if (all or names[metadata.name or false]) and #cnumbers >= depth and matching_till_depth(depth,cnumbers,parent) then
                                 result[#result+1] = v
                             end
                         end
@@ -342,8 +343,8 @@ end
 
 lists.filter_collected = filter_collected
 
-function lists.filter(names, criterium, number)
-    return filter_collected(names, criterium, number, lists.collected)
+function lists.filter(names, criterium, number, forced)
+    return filter_collected(names, criterium, number, lists.collected, forced)
 end
 
 lists.result = { }

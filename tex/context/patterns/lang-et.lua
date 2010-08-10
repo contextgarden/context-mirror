@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="et",
-  ["source"]="hyph-et.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-et",
+  ["texcomment"]="% Estonian Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: eehyph.tex (2004-04-13)\

@@ -68,7 +68,7 @@ function tfm.set_features(tfmdata)
 --  local tfmdata = shared.tfmdata
     local features = shared.features
     if features and next(features) then
-        local mode = tfmdata.mode or fonts.mode
+        local mode = tfmdata.mode or features.mode or "base"
         local fi = fonts.initializers[mode]
         if fi and fi.tfm then
             local function initialize(list) -- using tex lig and kerning
@@ -81,7 +81,7 @@ function tfm.set_features(tfmdata)
                                 report_define("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
                             end
                             fi.tfm[f](tfmdata,value)
-                            mode = tfmdata.mode or fonts.mode
+                            mode = tfmdata.mode or features.mode or "base"
                             fi = fonts.initializers[mode]
                         end
                     end

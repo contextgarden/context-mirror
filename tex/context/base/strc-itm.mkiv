@@ -104,7 +104,7 @@
         })
      }%
      \xdef\currentitemattribute{\number\lastdestinationattribute}%
-     \begingroup\attribute\destinationattribute\currentitemattribute\kern\zeropoint\endgroup % todo
+     \begingroup\attribute\destinationattribute\currentitemattribute\kern\zeropoint\endgroup % todo, apply attribute to symbol
    \fi}
 
 
@@ -1258,18 +1258,22 @@
 % \item {test} is this okay?
 % \stopitemize
 
-\def\complexitem[#1]#2\par % todo: no two pass data
-  {\startitemgroup[#1]%
-   \complexdoitemgroupitem[]\begstrut#2\endstrut\par
+% \def\complexitem[#1]#2\par % todo: no two pass data
+%   {\startitemgroup[#1]%
+%    \complexdoitemgroupitem[]\begstrut#2\endstrut\par
+%    \stopitemgroup}
+
+\def\complexitem[#1]#2\par
+  {\doifsomethingelse{#1}{\startitemgroup[#1]}{\startitemgroup[\v!itemize]}%
+   \startitem#2\stopitem
    \stopitemgroup}
+
+\setvalue{\e!start\v!item}%
+  {\startitemgroup[\v!itemize]\startitem
+   \setvalue{\e!stop \v!item}{\endgraf\stopitemgroup}} % inside, else overloaded
 
 \definecomplexorsimpleempty\item
 \definecomplexorsimpleempty\doitemgroupitem
-
-\def\complexhead[#1]#2\par#3\par
-  {\startitemgroup[#1]%
-   \complexdoitemgrouphead[]\begstrut#2\endstrut\par\begstrut#3\endstrut\par
-   \stopitemgroup}
 
 % the next solution accepts \head test \type{x{x}x} test ...
 

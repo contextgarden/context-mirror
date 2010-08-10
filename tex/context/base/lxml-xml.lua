@@ -10,6 +10,7 @@ local finalizers   = xml.finalizers.xml
 local xmlfilter    = xml.filter -- we could inline this one for speed
 local xmltostring  = xml.tostring
 local xmlserialize = xml.serialize
+local xmlcollected = xml.collected
 
 local function first(collected) -- wrong ?
     return collected and collected[1]
@@ -286,3 +287,16 @@ end
 xml.all    = xml.filter
 xml.index  = xml.position
 xml.found  = xml.filter
+
+-- a nice one:
+
+local function totable(x)
+    local t = { }
+    for e in xmlcollected(x[1] or x,"/*") do
+        t[e.tg] = xmltostring(e.dt) or ""
+    end
+    return next(t) and t or nil
+end
+
+xml.table        = totable
+finalizers.table = totable

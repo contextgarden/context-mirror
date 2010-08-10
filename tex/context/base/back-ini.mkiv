@@ -165,4 +165,14 @@
 
 \unexpanded\def\setupoutput[#1]{} % will be command line switch
 
+%D New:
+
+\newtoks\everysetupbackend
+
+\def\backendparameter#1{\csname\ifcsname\??bc#1\endcsname\??bc#1\else\s!empty\fi\endcsname}
+
+\def\setupbackend[#1]%
+  {\getparameters[\??bc][#1]%
+   \the\everysetupbackend}
+
 \protect \endinput

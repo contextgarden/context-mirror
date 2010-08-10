@@ -23,14 +23,16 @@ local insert_node_after  = node.insert_after
 local make_glue_spec     = nodes.glue_spec
 local make_kern_node     = nodes.kern
 
-local texattribute = tex.attribute
+local texattribute       = tex.attribute
 
-local glyph = node.id("glyph")
-local kern  = node.id("kern")
-local disc  = node.id('disc')
-local glue  = node.id('glue')
-local hlist = node.id('hlist')
-local vlist = node.id('vlist')
+local nodecodes = nodes.nodecodes
+
+local glyph = nodecodes.glyph
+local kern  = nodecodes.kern
+local disc  = nodecodes.disc
+local glue  = nodecodes.glue
+local hlist = nodecodes.hlist
+local vlist = nodecodes.vlist
 
 local fontdata = fonts.identifiers
 local chardata = fonts.characters

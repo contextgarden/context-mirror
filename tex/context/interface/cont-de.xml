@@ -1148,6 +1148,10 @@
           <cd:constant type="ja"/>
           <cd:constant type="nein"/>
         </cd:parameter>
+        <cd:parameter name="absatz">
+          <cd:constant type="ja"/>
+          <cd:constant type="nein" default="yes"/>
+        </cd:parameter>
         <cd:parameter name="faktor">
           <cd:constant type="cd:number"/>
         </cd:parameter>
@@ -3166,6 +3170,10 @@
         <cd:parameter name="befehl">
           <cd:constant type="cd:command"/>
         </cd:parameter>
+        <cd:parameter name="bildschirm">
+          <cd:constant type="ja" default="yes"/>
+          <cd:constant type="nein"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -5056,10 +5064,11 @@
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
         <cd:parameter name="interaktion">
-          <cd:constant type="cd:sectionnumber"/>
-          <cd:constant type="cd:text"/>
+          <cd:constant type="abschnittsnummer"/>
+          <cd:constant type="text"/>
           <cd:constant type="seitennummer"/>
           <cd:constant type="alles"/>
+          <cd:constant type="kein"/>
         </cd:parameter>
         <cd:parameter name="vor">
           <cd:constant type="cd:command"/>
@@ -6061,6 +6070,10 @@
         <cd:parameter name="marginaltext">
           <cd:constant type="ja"/>
           <cd:constant type="nein"/>
+        </cd:parameter>
+        <cd:parameter name="interaktion">
+          <cd:constant type="liste"/>
+          <cd:constant type="kein"/>
         </cd:parameter>
         <cd:inherit name="stelleueberschriftenein" n="1"/>
       </cd:assignments>
@@ -8513,6 +8526,11 @@
         <cd:parameter name="prefix">
           <cd:constant type="cd:text"/>
         </cd:parameter>
+        <cd:parameter name="interaktion">
+          <cd:constant type="ja"/>
+          <cd:constant type="nein"/>
+          <!-- more will follow -->
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -9319,6 +9337,12 @@
         <cd:constant type="cd:name"/>
         <cd:constant type="alles"/>
       </cd:keywords>
+      <cd:assignments n="3" optional="yes" list="yes">
+        <cd:parameter name="zwinge">
+          <cd:constant type="ja"/>
+          <cd:constant type="nein"/>
+        </cd:parameter>
+      </cd:assignments>
     </cd:arguments>
   </cd:command>
 

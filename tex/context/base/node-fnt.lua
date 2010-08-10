@@ -12,12 +12,12 @@ local next, type = next, type
 
 local trace_characters = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
 
-local glyph = node.id('glyph')
-
-local traverse_id   = node.traverse_id
-local has_attribute = node.has_attribute
-
+local traverse_id, has_attribute = node.traverse_id, node.has_attribute
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+
+local nodecodes = nodes.nodecodes
+
+local glyph = nodecodes.glyph
 
 fonts     = fonts      or { }
 fonts.tfm = fonts.tfm  or { }

@@ -7,8 +7,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="pl",
-  ["source"]="hyph-pl.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-pl",
+  ["texcomment"]="% Polish Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: plhyph.tex (1995-06-26)\
@@ -93,7 +97,8 @@ return {
 % Mariusz Olko's suggestions, 1995.\
 % \
 % The LeX format mentioned above was the first version of the adaptation\
-% of TeX to the Polish language. The next version is called MeX.",
+% of TeX to the Polish language. The next version is called MeX.\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnoprstuvwxyzóąćęłńśźż",

@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+
+<!--
+
+    We can also support using a lua file: icc.lcg (color goodies) in which case
+    the filename is the hash.
+
+-->
+
+<!--
+
+    <profile>
+        <filename>the file name of the ICC profile</filename>
+        <colorspace>the color space of the profile</colorspace>
+        <class>the device class of the profile (prtr=printer, mntr=monitor, scnr=scanner,spac=space)</class>
+        <id>identifier of the measured data (not for the profile) on which the profile relies; e.g. FOGRA39</id>
+        <info>(optional) info text about the profile</info>
+        <checksum>md5 checksum of the profile</checksum>
+        <version>version number of the profile in hex form</version>
+        <url>url where the profile can be downloaded</url>
+        <outputcondition>(optional) useful info about print technology, paper type/weight</outputcondition>
+    </profile>
+
+-->
+
+<profiles>
+
+    <!-- ghostscript profiles -->
+
+    <profile>
+        <type>default</type>
+        <filename>default_cmyk.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <info>Artifex PS CMYK Profile</info>
+        <checksum>de955d740998369ea1051a4e3e84eb90</checksum>
+        <version>42000000</version>
+    </profile>
+
+    <profile>
+        <type>default</type>
+        <filename>default_gray.icc</filename>
+        <colorspace>GRAY</colorspace>
+        <class>scnr</class>
+    </profile>
+
+    <profile>
+        <type>default</type>
+        <filename>default_rgb.icc</filename>
+        <colorspace>RGB</colorspace>
+        <class>mntr</class>
+    </profile>
+
+    <profile>
+        <type>default</type>
+        <filename>lab.icc</filename>
+        <colorspace>Lab</colorspace>
+        <class>spac</class>
+    </profile>
+
+    <profile>
+        <type>default</type>
+        <filename>ps_cmyk.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <info>U.S. Web Coated (SWOP) v2</info>
+        <checksum>79d7e984ea3ac74eed7cc92bf6b22a0d</checksum>
+        <version>21000000</version>
+    </profile>
+
+    <profile>
+        <type>default</type>
+        <filename>ps_gray.icc</filename>
+        <colorspace>GRAY</colorspace>
+        <class>mntr</class>
+    </profile>
+
+    <profile>
+        <type>default</type>
+        <filename>ps_rgb.icc</filename>
+        <colorspace>RGB</colorspace>
+        <class>mntr</class>
+    </profile>
+
+    <profile>
+        <type>default</type>
+        <filename>sgray.icc</filename>
+        <colorspace>GRAY</colorspace>
+        <class>scnr</class>
+    </profile>
+
+    <profile>
+        <type>default</type>
+        <filename>srgb.icc</filename>
+        <colorspace>RGB</colorspace>
+        <class>mntr</class>
+    </profile>
+
+
+    <!-- test profiles from www.color.org -->
+
+    <profile>
+        <filename>Probev1_ICCv2.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>Custom</id>
+        <info>Probev1_ICCv2.icc</info>
+        <checksum>7d8357d5cb86990465b3d7d4ef359404</checksum>
+        <version>20000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>Probev1_ICCv4.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>Custom</id>
+        <info>Probev1_ICCv4.icc</info>
+        <checksum>915f373c10daf2e295c0e707d3beb856</checksum>
+        <version>40000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>Probe2_ICCv4</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>Custom</id>
+        <info>Probev2_ICCv4.icc</info>
+        <checksum>cd8ccdb2b8ee902100cfc45a75b84579</checksum>
+        <version>40000000</version>
+        <url>>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+
+    <!-- GWG recommendated ICC profiles; see http://www.gwg.org/colormanagement.phtml for the details -->
+
+    <profile>
+        <filename>CoatedFOGRA39.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>FOGRA39</id>
+        <info>Coated FOGRA39 (ISO 12647-2:2004)</info>
+        <checksum>74ff62f330bf0dbe4495b5720542d511</checksum>
+        <version>21000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>GRACoL2006_Coated1v2.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>CGATS TR 006</id>
+        <info>GRACoL2006_Coated1v2.icc</info>
+        <checksum>cc7a6196271b13dbae4622aa1fa0fca9</checksum>
+        <version>20000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>ISOcoated_v2_eci_300.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>FOGRA39</id>
+        <info>ISO Coated v2 300% (ECI)</info>
+        <checksum>e14f5db955711d914d877df35ad7a1b5</checksum>
+        <version>24000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition>Offset printing, according to ISO 12647-2:2004/Amd 1, OFCOM, paper type 1 or 2 = coated art, 115 g/m2, tone value increase curves A (CMY) and B (K)</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>ISOcoated_v2_eci.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>FOGRA39</id>
+        <info>ISO Coated v2 (ECI)</info>
+        <checksum>bda07efcacf5377e91edacb0454ea7e5</checksum>
+        <version>2400000</version>
+        <url>http://www.color.org</url>
+        <outputcondition>Offset printing, according to ISO 12647-2:2004/Amd 1, OFCOM, paper type 1 or 2 = coated art, 115 g/m2, tone value increase curves A (CMY) and B (K)</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>ISOnewspaper26v4.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>IFRA26</id>
+        <info>ISOnewspaper26v4</info>
+        <checksum>bca21a6afa3a4b5cef9ca8e91565c1b7</checksum>
+        <version>2400000</version>
+        <url>http://www.color.org</url>
+        <outputcondition>Newspaper Coldset-Offset printing according to ISO/DIS 12647-3:2004, standard newsprint 45g/m2, screen ruling 40 l/cm, see readme</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>ISOnewspaper26v4_gr.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>IFRA26</id>
+        <info>ISOnewspaper26v4_gr</info>
+        <checksum>45dabde250dbbc2b4ab1ddaab1380892</checksum>
+        <version>2400000</version>
+        <url>http://www.color.org</url>
+        <outputcondition>Newspaper Coldset-Offset printing according to ISO/DIS 12647-3:2004, standard newsprint 45g/m2, screen ruling 40 l/cm, see readme</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>ISOuncoated.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>FOGRA29</id>
+        <info>ISO Uncoated</info>
+        <checksum>c62d711cf39488a1fc60e8be18a9d6d7</checksum>
+        <version>2000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition>Offset printing according to ISO/DIS 12647-2:2003, OFCOM,  paper type 4 = white, uncoated, 120 g/m2, screen ruling 60 cm-1, positive-acting plates, see readme</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>ISOuncoatedyellowish.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>FOGRA30</id>
+        <info>ISO Uncoated Yellowish</info>
+        <checksum>06db2a1b6d1eff0a49aaf350888a170e</checksum>
+        <version>2400000</version>
+        <url>http://www.color.org</url>
+        <outputcondition>Offset printing according to ISO/DIS 12647-2:2004, OFCOM,  paper type 5 = slightly yellowish, uncoated, 120 g/m2, screen ruling 60 cm-1, positive-acting plates, see readme</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>ISOwebcoated.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>FOGRA28</id>
+        <info>ISO Web Coated</info>
+        <checksum>0bf2ede138b0272421b629b6c8c4deaf</checksum>
+        <version>2000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition>Offset printing according to ISO/DIS 12647-2:2003, OFCOM,  paper type 3 = low weight coated web offset, 60 g/m2, screen ruling 60 cm-1, positive-acting plates, see readme</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>JapanColor2001Coated.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>JC200103</id>
+        <info>Japan Color 2001 Coated</info>
+        <checksum>4cb167869183b59bbad20fb90ccf3e0c</checksum>
+        <version>2100000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>JapanColor2002Newspaper.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>JCN2002</id>
+        <info>Japan Color 2002 Newspaper</info>
+        <checksum>fa5be8d5b4eb756bf1399afc2cda7d1c</checksum>
+        <version>2100000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>JapanWebCoated.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>JCW2003</id>
+        <info>Japan Web Coated (Ad)</info>
+        <checksum>f8607e551233cefdda26d7d6baaa2a4f</checksum>
+        <version>2100000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>SNAP-2007.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>CGATS TR 002</id>
+        <info>SNAP 2007</info>
+        <checksum>8d48c9b10937672a0690b724e0527247</checksum>
+        <version>4100000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>SWOP2006_Coated3v2.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>CGATS TR 003</id>
+        <info>SWOP2006_Coated3v2.icc</info>
+        <checksum>7fbad4c0ae1cb7195c34bfc20e623437</checksum>
+        <version>2000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>SWOP2006_Coated5v2.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>CGATS TR 005</id>
+        <info>SWOP2006_Coated5v2.icc</info>
+        <checksum>34f7c3c809b926b173ee54e13d655bee</checksum>
+        <version>2000000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>UncoatedFOGRA29.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>FOGRA29</id>
+        <info>Uncoated FOGRA29 (ISO 12647-2:2004)</info>
+        <checksum>e3d8676356f2709a7b120036b7ada996</checksum>
+        <version>2100000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <profile>
+        <filename>WebCoatedFOGRA28.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>FOGRA28</id>
+        <info>Web Coated FOGRA28 (ISO 12647-2:2004)</info>
+        <checksum>6e3b77d09d3613bc52ba7f63048d4638</checksum>
+        <version>2100000</version>
+        <url>http://www.color.org</url>
+        <outputcondition/>
+    </profile>
+
+    <!--
+        Some currently (JUN2010) unregistered gravure profiles from ECI (www.eci.org). As a consequence
+        the 'Custom' id is used; url and outputcondition are filled with something that hopefully
+        makes sense
+    -->
+
+    <profile>
+        <filename>PSR_LWC_PLUS_V2_PT.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>Custom</id>
+        <info>PSR_LWC_PLUS_V2_PT</info>
+        <checksum>2373b50219e8df70c70f2e0e798c2e38</checksum>
+        <version>2400000</version>
+        <url>http://www.eci.org</url>
+        <outputcondition>Gravure printing according to ISO 12647-4, paper type LWC (light weight coated) plus</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>PSR_LWC_STD_V2_PT.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>Custom</id>
+        <info>PSR_LWC_STD_V2_PT</info>
+        <checksum>0964b3ca5390dfaf7723527bbb7cec37</checksum>
+        <version>2400000</version>
+        <url>http://www.eci.org</url>
+        <outputcondition>Gravure printing according to ISO 12647-4, paper type LWC (light weight coated) standard</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>PSR_SC_PLUS_V2_PT.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>Custom</id>
+        <info>PSR_SC_PLUS_V2_PT</info>
+        <checksum>aa767f70696059557917c050d3ebc6ba</checksum>
+        <version>2400000</version>
+        <url>http://www.eci.org</url>
+        <outputcondition>Gravure printing according to ISO 12647-4, paper type SC (super-calendered) plus</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>PSR_SC_STD_V2_PT.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>Custom</id>
+        <info>PSR_SC_STD_V2_PT</info>
+        <checksum>6d978234223b29cde94dd3a5c3624504</checksum>
+        <version>2400000</version>
+        <url>http://www.eci.org</url>
+        <outputcondition>Gravure printing according to ISO 12647-4, paper type SC (super-calendered) standard</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>PSRgravureMF.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>prtr</class>
+        <id>Custom</id>
+        <info>PSRgravureMF</info>
+        <checksum>728f70371f82e930637e60c760876a3d</checksum>
+        <version>2000000</version>
+        <url>http://www.eci.org</url>
+        <outputcondition>Gravure printing according to ISO 12647-4, paper type MF (machine finished), 55 g/m2
+        </outputcondition>
+    </profile>
+
+    <!-- End of 'GWG recommendated ICC profiles' -->
+
+</profiles>

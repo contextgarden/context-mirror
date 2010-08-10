@@ -199,36 +199,10 @@
   {\let\handleuseMPgraphic     \thirdofthreearguments
    \let\handlereusableMPgraphic\thirdofthreearguments}
 
-\let\MPdrawingdata\empty
-
 \newif\ifMPdrawingdone  \MPdrawingdonefalse
 
-\def\resetMPdrawing
-  {\globallet\MPdrawingdata\empty
-   \global\MPdrawingdonefalse}
-
-\def\pushMPdrawing
-  {\globalpushmacro\MPdrawingdata
-   \globallet\MPdrawingdata\empty}
-
-\def\popMPdrawing
-  {\globalpopmacro\MPdrawingdata}
-
-\def\getMPdrawing{\dosinglegroupempty\dogetMPdrawing}
-
-\def\startMPdrawing
-  {\dosingleempty\dostartMPdrawing}
-
-\long\def\dostartMPdrawing[#1]#2\stopMPdrawing
-  {\relax
-   \bgroup
-   \enableincludeMPgraphics
-   \presetMPdefinitions % in case #2 has measures
-   \doifelse{#1}{-}{\convertargument#2\to\asciia}{\long\def\asciia{#2}}%
-   \long\xdef\MPdrawingdata{\MPdrawingdata\asciia}%
-   \egroup}
-
-\let\stopMPdrawing\relax
+\def\finalizeMPdrawing
+  {\MPdrawingdonetrue}
 
 \let\MPdrawingdata\empty
 
@@ -263,6 +237,14 @@
    \egroup}
 
 \let\stopMPdrawing\relax
+
+\long\def\MPdrawing#1%
+  {\relax
+   \bgroup
+   \enableincludeMPgraphics
+   \presetMPdefinitions
+   \long\xdef\MPdrawingdata{\MPdrawingdata#1}%
+   \egroup}
 
 \let\stopMPclip\relax
 
@@ -770,6 +752,23 @@
   {\processMPgraphic{#2}}
 
 \let\stopMPcode\relax
+
+\def\MPcode{\dosinglegroupempty\doMPcode}
+
+\def\doMPcode
+  {\iffirstargument
+     \expandafter\dodoMPcode
+   \else
+     \expandafter\nodoMPcode
+   \fi}
+
+\def\dodoMPcode#1#2%
+  {\beginMPgraphicgroup{#1::\s!dummy}% name does not matter
+   \processMPgraphic{#2}%
+   \endMPgraphicgroup}
+
+\def\nodoMPcode#1#2%
+  {\processMPgraphic{#2}}
 
 % a bit nasty (also needed for compatibility:
 

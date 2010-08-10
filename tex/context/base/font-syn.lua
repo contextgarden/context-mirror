@@ -1466,32 +1466,3 @@ function names.getlookups(pattern,name,reload)
     end
     return lastlookups
 end
-
-function table.formatcolumns(result)
-    if result and #result > 0 then
-        local widths = { }
-        local first = result[1]
-        local n = #first
-        for i=1,n do
-            widths[i] = 0
-        end
-        for i=1,#result do
-            local r = result[i]
-            for j=1,n do
-                local w = #r[j]
-                if w > widths[j] then
-                    widths[j] = w
-                end
-            end
-        end
-        for i=1,n do
-            widths[i] = "%-" .. widths[i] .. "s"
-        end
-        local template = concat(widths,"   ")
-        for i=1,#result do
-            local str = format(template,unpack(result[i]))
-            result[i] = string.strip(str)
-        end
-    end
-    return result
-end

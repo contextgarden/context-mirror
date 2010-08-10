@@ -14,7 +14,10 @@ local format, gmatch = string.format, string.gmatch
 local concat = table.concat
 local texsprint = tex.sprint
 
-local report_attributes = logs.new("attributes")
+local report_attributes     = logs.new("attributes")
+local report_colors         = logs.new("colors")
+local report_transparencies = logs.new("transparencies")
+local report_viewerlayers   = logs.new("viewerlayers")
 
 local ctxcatcodes = tex.ctxcatcodes
 local unsetvalue  = attributes.unsetvalue
@@ -70,6 +73,7 @@ colors.selector   = attributes.private('colormodel')
 colors.default    = 1
 colors.main       = nil
 colors.triggering = true
+colors.supported  = true
 
 storage.register("colors/values",     colors.values,     "colors.values")
 storage.register("colors/registered", colors.registered, "colors.registered")
@@ -248,7 +252,7 @@ local function cmykcolor(...) cmykcolor = nodeinjections.cmykcolor return cmykco
 local function spotcolor(...) spotcolor = nodeinjections.spotcolor return spotcolor(...) end
 
 local function extender(colors,key)
-    if key == "none" then
+    if colors.supported and key == "none" then
         local d = graycolor(0)
         colors.none = d
         return d
@@ -256,31 +260,33 @@ local function extender(colors,key)
 end
 
 local function reviver(data,n)
-    local v = values[n]
-    local d
-    if not v then
-        local gray = graycolor(0)
-        d = { gray, gray, gray, gray }
-        report_attributes("unable to revive color %s",n or "?")
-    else
-        local kind = v[1]
-        if kind == 2 then
-            local gray= graycolor(v[2])
+    if colors.supported then
+        local v = values[n]
+        local d
+        if not v then
+            local gray = graycolor(0)
             d = { gray, gray, gray, gray }
-        elseif kind == 3 then
-            local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
-            d = { rgb, gray, rgb, cmyk }
-        elseif kind == 4 then
-            local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
-            d = { cmyk, gray, rgb, cmyk }
-        elseif kind == 5 then
-            local spot = spotcolor(v[10],v[11],v[12],v[13])
-        --  d = { spot, gray, rgb, cmyk }
-            d = { spot, spot, spot, spot }
+            report_attributes("unable to revive color %s",n or "?")
+        else
+            local kind = colors.forcedmodel(v[1])
+            if kind == 2 then
+                local gray= graycolor(v[2])
+                d = { gray, gray, gray, gray }
+            elseif kind == 3 then
+                local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
+                d = { rgb, gray, rgb, cmyk }
+            elseif kind == 4 then
+                local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
+                d = { cmyk, gray, rgb, cmyk }
+            elseif kind == 5 then
+                local spot = spotcolor(v[10],v[11],v[12],v[13])
+            --  d = { spot, gray, rgb, cmyk }
+                d = { spot, spot, spot, spot }
+            end
         end
+        data[n] = d
+        return d
     end
-    data[n] = d
-    return d
 end
 
 setmetatable(colors,      { __index = extender })
@@ -325,8 +331,18 @@ shipouts.handle_color = nodes.install_attribute_handler {
     resolver    = function() return colors.main end,
 }
 
-function colors.enable()
-    tasks.enableaction("shipouts","shipouts.handle_color")
+function colors.enable(value)
+    if value == false or not colors.supported then
+        tasks.disableaction("shipouts","shipouts.handle_color")
+    else
+        tasks.enableaction("shipouts","shipouts.handle_color")
+    end
+end
+
+function colors.forcesupport(value) -- can move to attr-div
+    colors.supported = value
+    report_colors("color is %ssupported",value and "" or "not ")
+    colors.enable(value)
 end
 
 -- transparencies
@@ -337,6 +353,7 @@ transparencies.data       = transparencies.data       or { }
 transparencies.values     = transparencies.values     or { }
 transparencies.triggering = true
 transparencies.attribute  = attributes.private('transparency')
+transparencies.supported  = true
 
 storage.register("transparencies/registered", transparencies.registered, "transparencies.registered")
 storage.register("transparencies/values",     transparencies.values,     "transparencies.values")
@@ -377,7 +394,7 @@ function transparencies.register(name,a,t,force) -- name is irrelevant here (can
 end
 
 local function extender(transparencies,key)
-    if key == "none" then
+    if colors.supported and key == "none" then
         local d = inject_transparency(0)
         transparencies.none = d
         return d
@@ -385,16 +402,20 @@ local function extender(transparencies,key)
 end
 
 local function reviver(data,n)
-    local v = values[n]
-    local d
-    if not v then
-        d = inject_transparency(0)
+    if transparencies.supported then
+        local v = values[n]
+        local d
+        if not v then
+            d = inject_transparency(0)
+        else
+            d = inject_transparency(n)
+            register_transparency(n,v[1],v[2])
+        end
+        data[n] = d
+        return d
     else
-        d = inject_transparency(n)
-        register_transparency(n,v[1],v[2])
+        return ""
     end
-    data[n] = d
-    return d
 end
 
 setmetatable(transparencies,      { __index = extender })
@@ -414,8 +435,18 @@ shipouts.handle_transparency = nodes.install_attribute_handler {
     processor   = states.process,
 }
 
-function transparencies.enable()
-    tasks.enableaction("shipouts","shipouts.handle_transparency")
+function transparencies.enable(value) -- nil is enable
+    if value == false or not transparencies.supported then
+        tasks.disableaction("shipouts","shipouts.handle_transparency")
+    else
+        tasks.enableaction("shipouts","shipouts.handle_transparency")
+    end
+end
+
+function transparencies.forcesupport(value) -- can move to attr-div
+    transparencies.supported = value
+    report_transparencies("transparency is %ssupported",value and "" or "not ")
+    transparencies.enable(value)
 end
 
 --- colorintents: overprint / knockout
@@ -591,6 +622,8 @@ viewerlayers.registered = viewerlayers.registered or { }
 viewerlayers.values     = viewerlayers.values     or { }
 viewerlayers.listwise   = viewerlayers.listwise   or { }
 viewerlayers.attribute  = attributes.private("viewerlayer")
+viewerlayers.supported  = true
+viewerlayers.hasorder   = true
 
 storage.register("viewerlayers/registered", viewerlayers.registered, "viewerlayers.registered")
 storage.register("viewerlayers/values",     viewerlayers.values,     "viewerlayers.values")
@@ -604,7 +637,7 @@ local template   = "%s"
 -- stacked
 
 local function extender(viewerlayers,key)
-    if key == "none" then
+    if viewerlayers.supported and key == "none" then
         local d = nodeinjections.stoplayer()
         viewerlayers.none = d
         return d
@@ -612,13 +645,15 @@ local function extender(viewerlayers,key)
 end
 
 local function reviver(data,n)
-    local v = values[n]
-    if v then
-        local d = nodeinjections.startlayer(v)
-        data[n] = d
-        return d
-    else
-        logs.report("viewerlayers","error, unknown reference '%s'",tostring(n))
+    if viewerlayers.supported then
+        local v = values[n]
+        if v then
+            local d = nodeinjections.startlayer(v)
+            data[n] = d
+            return d
+        else
+            logs.report("viewerlayers","error, unknown reference '%s'",tostring(n))
+        end
     end
 end
 
@@ -649,6 +684,20 @@ shipouts.handle_viewerlayer = nodes.install_attribute_handler {
     processor   = states.stacked,
 }
 
-function viewerlayers.enable()
-    tasks.enableaction("shipouts","shipouts.handle_viewerlayer")
+function viewerlayers.enable(value)
+    if value == false or not viewerlayers.supported then
+        tasks.disableaction("shipouts","shipouts.handle_viewerlayer")
+    else
+        tasks.enableaction("shipouts","shipouts.handle_viewerlayer")
+    end
+end
+
+function viewerlayers.forcesupport(value)
+    viewerlayers.supported = value
+    report_viewerlayers("viewerlayers are %ssupported",value and "" or "not ")
+    viewerlayers.enable(value)
+end
+
+function viewerlayers.setfeatures(hasorder)
+    viewerlayers.hasorder = hasorder
 end

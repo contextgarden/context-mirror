@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="da",
-  ["source"]="hyph-da.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-da",
+  ["texcomment"]="% Danish Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: dkcommon.tex (yyyy-mm-dd), dkspecial.tex (yyyy-mm-dd)\

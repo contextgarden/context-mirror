@@ -29,11 +29,12 @@ local executers = jobreferences.executers
 
 local variables = interfaces.variables
 
-local pdfconstant    = lpdf.constant
-local pdfdictionary  = lpdf.dictionary
-local pdfarray       = lpdf.array
-local pdfreference   = lpdf.reference
-local pdfflushobject = lpdf.flushobject
+local pdfconstant      = lpdf.constant
+local pdfdictionary    = lpdf.dictionary
+local pdfarray         = lpdf.array
+local pdfreference     = lpdf.reference
+local pdfflushobject   = lpdf.flushobject
+local pdfreserveobject = lpdf.reserveobject
 
 local pdf_ocg         = pdfconstant("OCG")
 local pdf_ocmd        = pdfconstant("OCMD")
@@ -54,23 +55,84 @@ function backends.pdf.layerreference(name)
     return pdfln[name]
 end
 
+-- only flush layers that are used
+
+--~ function codeinjections.defineviewerlayer(specification)
+--~     if textlayers then
+--~         local tag = specification.tag
+--~         -- todo: reserve
+--~         local n = pdfdictionary {
+--~             Type   = pdf_ocg,
+--~             Name   = specification.title or "unknown",
+--~             Intent = ((specification.kind > 0) and pdf_design) or nil, -- disable layer hiding by user
+--~             Usage  = ((specification.printable == variables.no) and lpdf_usage) or nil , -- printable or not
+--~         }
+--~         local nr = pdfreference(pdfflushobject(n))
+--~         pdfln[tag] = nr -- was n
+--~         local d = pdfdictionary {
+--~             Type = pdf_ocmd,
+--~             OCGs = pdfarray { nr },
+--~         }
+--~         local dr = pdfreference(pdfflushobject(d))
+--~         pdfld[tag] = dr
+--~         textlayers[#textlayers+1] = nr
+--~         if specification.visible == variables.start then
+--~             videlayers[#videlayers+1] = nr
+--~         else
+--~             hidelayers[#hidelayers+1] = nr
+--~         end
+--~         pagelayers[tag] = dr -- check
+--~     end
+--~ end
+
+--~ local function flushtextlayers()
+--~     if textlayers and #textlayers > 0 then
+--~         local d = pdfdictionary {
+--~             OCGs = textlayers,
+--~             D    = pdfdictionary {
+--~                 Order = textlayers,
+--~                 ON    = videlayers,
+--~                 OFF   = hidelayers,
+--~             },
+--~         }
+--~         lpdf.addtocatalog("OCProperties",d)
+--~         textlayers = nil
+--~     end
+--~ end
+
+--~ local function flushpagelayers() -- we can share these
+--~     if next(pagelayers) then
+--~         lpdf.addtopageresources("Properties",pagelayers)
+--~     end
+--~ end
+
+local pagelayers, pagelayersreference, cache = nil, nil, { }
+
 function codeinjections.defineviewerlayer(specification)
-    if textlayers then
+    if viewerlayers.supported and textlayers then
+        if not pagelayers then
+            pagelayers = pdfdictionary()
+            pagelayersreference = pdfreserveobject()
+        end
         local tag = specification.tag
         -- todo: reserve
-        local n = pdfdictionary {
+        local nn = pdfreserveobject()
+        local nr = pdfreference(nn)
+        local nd = pdfdictionary {
             Type   = pdf_ocg,
             Name   = specification.title or "unknown",
             Intent = ((specification.kind > 0) and pdf_design) or nil, -- disable layer hiding by user
             Usage  = ((specification.printable == variables.no) and lpdf_usage) or nil , -- printable or not
         }
-        local nr = pdfreference(pdfflushobject(n))
+        cache[#cache+1] = { nn, nd }
         pdfln[tag] = nr -- was n
-        local d = pdfdictionary {
+        local dn = pdfreserveobject()
+        local dr = pdfreference(dn)
+        local dd = pdfdictionary {
             Type = pdf_ocmd,
             OCGs = pdfarray { nr },
         }
-        local dr = pdfreference(pdfflushobject(d))
+        cache[#cache+1] = { dn, dd }
         pdfld[tag] = dr
         textlayers[#textlayers+1] = nr
         if specification.visible == variables.start then
@@ -83,23 +145,34 @@ function codeinjections.defineviewerlayer(specification)
 end
 
 local function flushtextlayers()
-    if textlayers and #textlayers > 0 then
-        local d = pdfdictionary {
-            OCGs = textlayers,
-            D    = pdfdictionary {
-                Order = textlayers,
-                ON    = videlayers,
-                OFF   = hidelayers,
-            },
-        }
-        lpdf.addtocatalog("OCProperties",d)
-        textlayers = nil
+    if viewerlayers.supported then
+        if pagelayers then
+            pdfflushobject(pagelayersreference,pagelayers)
+        end
+        for i=1,#cache do
+            local ci = cache[i]
+            pdfflushobject(ci[1],ci[2])
+        end
+        if textlayers and #textlayers > 0 then -- we can group them if needed, like: layout
+            local d = pdfdictionary {
+                OCGs = textlayers,
+                D    = pdfdictionary {
+                    Name      = "Document",
+                    Order     = (viewerlayers.hasorder and textlayers) or nil,
+                    ON        = videlayers,
+                    OFF       = hidelayers,
+                    BaseState = pdfconstant("On"),
+                },
+            }
+            lpdf.addtocatalog("OCProperties",d)
+            textlayers = nil
+        end
     end
 end
 
-local function flushpagelayers()
-    if next(pagelayers) then
-        lpdf.addtopageresources("Properties",pagelayers)
+local function flushpagelayers() -- we can share these
+    if pagelayers then
+        lpdf.addtopageresources("Properties",pdfreference(pagelayersreference)) -- we could cache this
     end
 end
 

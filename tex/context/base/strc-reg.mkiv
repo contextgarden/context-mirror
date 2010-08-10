@@ -268,6 +268,8 @@
      \xdef\currentregistersynchronize{\ctxlatelua{jobregisters.enhance("\currentregister",\currentregisternumber)}}%
    \fi
    \currentregistersynchronize % here?
+   % needs thinking ... bla\index{bla}. will break before the . but adding a
+   % penalty is also no solution
    \attribute\destinationattribute\lastdestinationattribute \forcecolorhack % no \strut as it will be removed during cleanup
    \endgroup}
 

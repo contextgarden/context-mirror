@@ -2,9 +2,10 @@
 
 % for comment and copyright, see e:/tmp/patterns/lang-tk.rme
 
-% used: a b d e f g h i j k l m n o p r s t u w y z ä ç ö ü ý ň ş ž
+% used: - a b d e f g h i j k l m n o p r s t u w y z ä ç ö ü ý ň ş ž
 
 \patterns{
+1-4
 ä1bä
 ä1be
 ä1bi

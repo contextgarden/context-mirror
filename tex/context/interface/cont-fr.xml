@@ -1148,6 +1148,10 @@
           <cd:constant type="oui"/>
           <cd:constant type="non"/>
         </cd:parameter>
+        <cd:parameter name="paragraphe">
+          <cd:constant type="oui"/>
+          <cd:constant type="non" default="yes"/>
+        </cd:parameter>
         <cd:parameter name="facteur">
           <cd:constant type="cd:number"/>
         </cd:parameter>
@@ -3166,6 +3170,10 @@
         <cd:parameter name="commande">
           <cd:constant type="cd:command"/>
         </cd:parameter>
+        <cd:parameter name="affichage">
+          <cd:constant type="oui" default="yes"/>
+          <cd:constant type="non"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -5056,10 +5064,11 @@
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
         <cd:parameter name="interaction">
-          <cd:constant type="cd:sectionnumber"/>
-          <cd:constant type="cd:text"/>
+          <cd:constant type="numerosection"/>
+          <cd:constant type="texte"/>
           <cd:constant type="numeropage"/>
           <cd:constant type="tout"/>
+          <cd:constant type="rien"/>
         </cd:parameter>
         <cd:parameter name="avant">
           <cd:constant type="cd:command"/>
@@ -6061,6 +6070,10 @@
         <cd:parameter name="textemarge">
           <cd:constant type="oui"/>
           <cd:constant type="non"/>
+        </cd:parameter>
+        <cd:parameter name="interaction">
+          <cd:constant type="liste"/>
+          <cd:constant type="rien"/>
         </cd:parameter>
         <cd:inherit name="regletetes" n="1"/>
       </cd:assignments>
@@ -8513,6 +8526,11 @@
         <cd:parameter name="prefixe">
           <cd:constant type="cd:text"/>
         </cd:parameter>
+        <cd:parameter name="interaction">
+          <cd:constant type="oui"/>
+          <cd:constant type="non"/>
+          <!-- more will follow -->
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -9319,6 +9337,12 @@
         <cd:constant type="cd:name"/>
         <cd:constant type="tout"/>
       </cd:keywords>
+      <cd:assignments n="3" optional="yes" list="yes">
+        <cd:parameter name="force">
+          <cd:constant type="oui"/>
+          <cd:constant type="non"/>
+        </cd:parameter>
+      </cd:assignments>
     </cd:arguments>
   </cd:command>
 

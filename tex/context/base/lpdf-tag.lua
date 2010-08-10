@@ -27,12 +27,14 @@ local pdfpagereference = lpdf.pagereference
 
 local new_pdfliteral   = nodes.pdfliteral
 
-local hlist            = node.id("hlist")
-local vlist            = node.id("vlist")
-local glyph            = node.id("glyph")
-local glue             = node.id("glue")
-local disc             = node.id("disc")
-local whatsit          = node.id("whatsit")
+local nodecodes = nodes.nodecodes
+
+local hlist            = nodecodes.hlist
+local vlist            = nodecodes.vlist
+local glyph            = nodecodes.glyph
+local glue             = nodecodes.glue
+local disc             = nodecodes.disc
+local whatsit          = nodecodes.whatsit
 
 local a_tagged         = attributes.private('tagged')
 local a_image          = attributes.private('image')

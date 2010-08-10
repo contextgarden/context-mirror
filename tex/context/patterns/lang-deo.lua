@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="deo",
-  ["source"]="hyph-de-1901.tex",
-  ["texcomment"]="% dehypht-x-2009-06-19.pat\
+  ["source"]="hyph-de-1901",
+  ["texcomment"]="% German Hyphenation Patterns (Traditional Orthography)\
+% \
+% (more info about the licence to be added later)\
+% \
+% dehypht-x-2009-06-19.pat\
 % \
 % \\message{German Hyphenation Patterns (Traditional Orthography) `dehypht-x' 2009-06-19 (WL)}\
 % \
@@ -34,7 +38,8 @@ return {
 %   5 5 | 2 7 | 1 1 1\
 %   6 6 | 2 7 | 1 6 1\
 %   7 7 | 2 13 | 1 4 1\
-%   8 8 | 2 13 | 1 8 1",
+%   8 8 | 2 13 | 1 8 1\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzßàáâäçèéêëíñóôöü",
