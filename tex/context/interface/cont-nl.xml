@@ -1148,6 +1148,10 @@
           <cd:constant type="ja"/>
           <cd:constant type="nee"/>
         </cd:parameter>
+        <cd:parameter name="alinea">
+          <cd:constant type="ja"/>
+          <cd:constant type="nee" default="yes"/>
+        </cd:parameter>
         <cd:parameter name="factor">
           <cd:constant type="cd:number"/>
         </cd:parameter>
@@ -3166,6 +3170,10 @@
         <cd:parameter name="commando">
           <cd:constant type="cd:command"/>
         </cd:parameter>
+        <cd:parameter name="scherm">
+          <cd:constant type="ja" default="yes"/>
+          <cd:constant type="nee"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -5056,10 +5064,11 @@
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
         <cd:parameter name="interactie">
-          <cd:constant type="cd:sectionnumber"/>
-          <cd:constant type="cd:text"/>
+          <cd:constant type="sectienummer"/>
+          <cd:constant type="tekst"/>
           <cd:constant type="paginanummer"/>
           <cd:constant type="alles"/>
+          <cd:constant type="geen"/>
         </cd:parameter>
         <cd:parameter name="voor">
           <cd:constant type="cd:command"/>
@@ -6061,6 +6070,10 @@
         <cd:parameter name="margetekst">
           <cd:constant type="ja"/>
           <cd:constant type="nee"/>
+        </cd:parameter>
+        <cd:parameter name="interactie">
+          <cd:constant type="lijst"/>
+          <cd:constant type="geen"/>
         </cd:parameter>
         <cd:inherit name="stelkoppenin" n="1"/>
       </cd:assignments>
@@ -8513,6 +8526,11 @@
         <cd:parameter name="prefix">
           <cd:constant type="cd:text"/>
         </cd:parameter>
+        <cd:parameter name="interactie">
+          <cd:constant type="ja"/>
+          <cd:constant type="nee"/>
+          <!-- more will follow -->
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -9319,6 +9337,12 @@
         <cd:constant type="cd:name"/>
         <cd:constant type="alles"/>
       </cd:keywords>
+      <cd:assignments n="3" optional="yes" list="yes">
+        <cd:parameter name="forceer">
+          <cd:constant type="ja"/>
+          <cd:constant type="nee"/>
+        </cd:parameter>
+      </cd:assignments>
     </cd:arguments>
   </cd:command>
 

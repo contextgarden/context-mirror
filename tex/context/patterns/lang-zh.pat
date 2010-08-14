@@ -2,7 +2,7 @@
 
 % for comment and copyright, see e:/tmp/patterns/lang-zh.rme
 
-% used: a b c d e f g h i j k l m n o p q r s t u w x y z ü
+% used: a b c d e f g h i j k l m n o p q r s t u w x y z ü ’
 
 \patterns{
 a1b
@@ -192,4 +192,7 @@ u1z
 ü1w
 ü1x
 ü1y
-ü1z}
+ü1z
+'1a
+'1e
+'1o}

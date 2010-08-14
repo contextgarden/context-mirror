@@ -32,7 +32,7 @@ end
 utf = utf or unicode.utf8
 
 local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
-local char, byte, find, bytepairs = string.char, string.byte, string.find, string.bytepairs
+local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
@@ -197,3 +197,13 @@ function unicode.utf8_to_utf16(str,littleendian)
         return char(254,255) .. utfgsub(str,".",big)
     end
 end
+
+function unicode.utfcodes(str)
+    local t = { }
+    for k,v in string.utfvalues(str) do
+        t[#t+1] = format("0x%04X",k)
+    end
+    return concat(t,separator or " ")
+end
+
+--~ print(unicode.utfcodes(str))

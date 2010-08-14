@@ -15,7 +15,6 @@ adapted and now has the mappings as comments. This lua file is
 based on that file.
 ]]--
 
-
 nodes = nodes or { }
 
 nodes.is_mirrored = {

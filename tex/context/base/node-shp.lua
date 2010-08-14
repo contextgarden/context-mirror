@@ -6,15 +6,16 @@ if not modules then modules = { } end modules ['node-shp'] = {
     license   = "see context related readme files"
 }
 
-local hlist = node.id('hlist')
-local vlist = node.id('vlist')
-local disc  = node.id('disc')
-local mark  = node.id('mark')
-local kern  = node.id('kern')
-local glue  = node.id('glue')
+local free_node, remove_node = node.free, node.remove
 
-local free_node   = node.free
-local remove_node = node.remove
+local nodecodes = nodes.nodecodes
+
+local hlist = nodecodes.hlist
+local vlist = nodecodes.vlist
+local disc  = nodecodes.disc
+local mark  = nodecodes.mark
+local kern  = nodecodes.kern
+local glue  = nodecodes.glue
 
 local function cleanup_page(head) -- rough
     local start = head

@@ -8,6 +8,21 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 
 -- helper for mtxrun
 
+local quote = string.quote
+
+local function primaryflags()
+    local trackers   = environment.argument("trackers")
+    local directives = environment.argument("directives")
+    local flags = ""
+    if trackers and trackers ~= "" then
+        flags = flags .. "--trackers=" .. quote(trackers)
+    end
+    if directives and directives ~= "" then
+        flags = flags .. "--directives=" .. quote(directives)
+    end
+    return flags
+end
+
 function environment.make_format(name)
     -- change to format path (early as we need expanded paths)
     local olddir = lfs.currentdir()
@@ -68,8 +83,7 @@ function environment.make_format(name)
         return
     end
     -- generate format
-    local q = string.quote
-    local command = string.format("luatex --ini --lua=%s %s %sdump",q(usedluastub),q(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
+    local command = string.format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quote(usedluastub),quote(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
     logs.simple("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
@@ -108,7 +122,7 @@ function environment.run_format(name,data,more)
                 logs.simple("no luc/lua with name: %s",barename)
             else
                 local q = string.quote
-                local command = string.format("luatex --fmt=%s --lua=%s %s %s",q(barename),q(luaname),q(data),more ~= "" and q(more) or "")
+                local command = string.format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quote(barename),quote(luaname),quote(data),more ~= "" and quote(more) or "")
                 logs.simple("running command: %s",command)
                 os.spawn(command)
             end

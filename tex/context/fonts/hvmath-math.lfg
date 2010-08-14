@@ -6,7 +6,7 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         mapfiles = {
-            -- todo
+            "hvm-pem.map",
         },
         virtuals = {
             ["hvmath-math"] = {

@@ -232,6 +232,11 @@ function processors.apply(str)
     end
 end
 
+function processors.ignore(str)
+    local p, s = lpegmatch(splitter,str)
+    return s or str
+end
+
 -- -- -- sets -- -- --
 
 structure.sets         = structure.sets         or { }

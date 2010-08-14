@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="lt",
-  ["source"]="hyph-lt.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-lt",
+  ["texcomment"]="% Lithuanian Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8\
 % in October 2008 by Mojca & Arthur.\
 %\

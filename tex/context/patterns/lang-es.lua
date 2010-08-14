@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="es",
-  ["source"]="hyph-es.tex",
-  ["texcomment"]="% DIVISI'ON DE PALABRAS\
+  ["source"]="hyph-es",
+  ["texcomment"]="% Spanish Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% DIVISI'ON DE PALABRAS\
 % ~~~~~~~~~~~~~~~~~~~~~\
 % hyph-es.tex 4.6\
 % This files corresponds to eshyph.tex 4.6.\

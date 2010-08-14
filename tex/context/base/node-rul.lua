@@ -11,9 +11,11 @@ if not modules then modules = { } end modules ['node-rul'] = {
 --
 -- todo: make robust for layers ... order matters
 
-local glyph = node.id("glyph")
-local disc  = node.id("disc")
-local rule  = node.id("rule")
+local nodecodes = nodes.nodecodes
+
+local glyph = nodecodes.glyph
+local disc  = nodecodes.disc
+local rule  = nodecodes.rule
 
 function nodes.strip_range(first,last) -- todo: dir
     if first and last then -- just to be sure
@@ -62,28 +64,33 @@ local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')
 local a_colorspace   = attributes.private('colormodel')
 
-local glyph   = node.id("glyph")
-local disc    = node.id("disc")
-local glue    = node.id("glue")
-local penalty = node.id("penalty")
-local kern    = node.id("kern")
-local hlist   = node.id("hlist")
-local vlist   = node.id("vlist")
-local rule    = node.id("rule")
-local whatsit = node.id("whatsit")
-
-local new_rule = nodes.rule
-local new_kern = nodes.kern
-local new_glue = nodes.glue
-
 local insert_before, insert_after, strip_range = node.insert_before, node.insert_after, nodes.strip_range
 local list_dimensions, has_attribute, set_attribute = node.dimensions, node.has_attribute, node.set_attribute
 local hpack_nodes = node.hpack
+local skipcodes, nodecodes = nodes.skipcodes, nodes.nodecodes
 local dimenfactor = fonts.dimenfactor
 local texwrite = tex.write
 
 local fontdata  = fonts.ids
 local variables = interfaces.variables
+
+local glyph   = nodecodes.glyph
+local disc    = nodecodes.disc
+local glue    = nodecodes.glue
+local penalty = nodecodes.penalty
+local kern    = nodecodes.kern
+local hlist   = nodecodes.hlist
+local vlist   = nodecodes.vlist
+local rule    = nodecodes.rule
+local whatsit = nodecodes.whatsit
+
+local userskip   = skipcodes.userskip
+local spaceskip  = skipcodes.spaceskip
+local xspaceskip = skipcodes.xspaceskip
+
+local new_rule = nodes.rule
+local new_kern = nodes.kern
+local new_glue = nodes.glue
 
 -- we can use this one elsewhere too
 --
@@ -161,7 +168,9 @@ local function process_words(attribute,data,flush,head,parent) -- we have hlistd
                         l = n
                     elseif id == glue then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
-                        if continue and has_attribute(n,attribute) and n.subtype == 0 then
+                        local subtype = n.subtype
+                        if continue and has_attribute(n,attribute) and
+                            (subtype == userskip or subtype == spaceskip or subskip == xspaceskip) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true

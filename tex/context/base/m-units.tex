@@ -377,6 +377,17 @@
 \def\Peta    {\dimensionprefix{P}}
 \def\Exa     {\dimensionprefix{E}}
 
+%D and binary prefixes:
+
+\def\Kibi    {\dimensionprefix{Ki}}
+\def\Mebi    {\dimensionprefix{Mi}}
+\def\Gibi    {\dimensionprefix{Gi}}
+\def\Tebi    {\dimensionprefix{Ti}}
+\def\Pebi    {\dimensionprefix{Pi}}
+\def\Exbi    {\dimensionprefix{Ei}}
+\def\Zebi    {\dimensionprefix{Zi}}
+\def\Yobi    {\dimensionprefix{Yi}}
+
 %D and operators:
 
 \def\Times   {\dimensionnopfix{\iftextdimensions.\else\cdot\fi}}
@@ -384,7 +395,7 @@
 \def\Per     {\dimensionmidfix{/}}
 \def\OutOf   {\dimensionnopfix{:}}
 
-%D  and suffixes:
+%D and suffixes:
 
 \def\Linear  {\dimensionpower{1}}
 \def\Square  {\dimensionpower{2}}
@@ -665,10 +676,10 @@
 
 %D Computer memory is specified in Bytes:
 
-\getvalue{\v!unit} [Baud]  {Baud}        {Baud (Bit/s)}
-\getvalue{\v!unit} [Bit]   {Bit}         {Bit}
+\getvalue{\v!unit} [Bit]   {bit}       {Bit}
+\getvalue{\v!unit} [Baud]  {Bd}        {Baud (Bit/s)}
 
-\getvalue{\v!unit} [Byte]  {Byte}        {Byte}
+\getvalue{\v!unit} [Byte]  {B}           {Byte}
 \getvalue{\v!unit} [kByte] {\Kilo \Byte} {kilo Byte}
 \getvalue{\v!unit} [MByte] {\Mega \Byte} {mega Byte}
 \getvalue{\v!unit} [GByte] {\Giga \Byte} {giga Byte}

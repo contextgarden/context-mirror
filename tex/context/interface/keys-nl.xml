@@ -662,6 +662,7 @@
 		<cd:constant name='footer' value='voet'/>
 		<cd:constant name='footerdistance' value='voetafstand'/>
 		<cd:constant name='footerstate' value='voetstatus'/>
+		<cd:constant name='force' value='forceer'/>
 		<cd:constant name='foregroundcolor' value='voorgrondkleur'/>
 		<cd:constant name='foregroundstyle' value='voorgrondletter'/>
 		<cd:constant name='format' value='formatteer'/>
@@ -860,6 +861,7 @@
 		<cd:constant name='previous' value='vorige'/>
 		<cd:constant name='previousnumber' value='vorigenummer'/>
 		<cd:constant name='process' value='proces'/>
+		<cd:constant name='profile' value='profile'/>
 		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='straal'/>
 		<cd:constant name='random' value='willekeur'/>

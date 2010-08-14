@@ -566,12 +566,17 @@ end
 function characters.uccode(n) return data[n].uccode or n end
 function characters.lccode(n) return data[n].lccode or n end
 
-function characters.flush(n)
+function characters.flush(n,direct)
     local c = data[n]
     if c and c.contextname then
-        texsprint(texcatcodes, "\\"..c.contextname)
+        c = "\\" .. c.contextname
     else
-        texsprint(utfchar(n))
+        c = utfchar(n)
+    end
+    if direct then
+        return c
+    else
+        texsprint(c)
     end
 end
 

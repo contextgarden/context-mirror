@@ -94,6 +94,8 @@ backends.codeinjections = {
     mergereferences       = nothing,
     mergelayers           = nothing,
 
+    setformat             = nothing,
+    getformatoption       = nothing,
 }
 
 backends.registrations = {

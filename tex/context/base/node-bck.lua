@@ -9,8 +9,10 @@ if not modules then modules = { } end modules ['node-bck'] = {
 -- beware, this one takes quite some runtime, so we need a status flag
 -- maybe some page related state
 
-local hlist = node.id("hlist")
-local vlist = node.id("vlist")
+local nodecodes = nodes.nodecodes
+
+local hlist = nodecodes.hlist
+local vlist = nodecodes.vlist
 
 local has_attribute = node.has_attribute
 local set_attribute = node.set_attribute

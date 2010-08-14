@@ -662,6 +662,7 @@
 		<cd:constant name='footer' value='footer'/>
 		<cd:constant name='footerdistance' value='footerdistance'/>
 		<cd:constant name='footerstate' value='footerstate'/>
+		<cd:constant name='force' value='force'/>
 		<cd:constant name='foregroundcolor' value='foregroundcolor'/>
 		<cd:constant name='foregroundstyle' value='foregroundstyle'/>
 		<cd:constant name='format' value='format'/>
@@ -860,6 +861,7 @@
 		<cd:constant name='previous' value='previous'/>
 		<cd:constant name='previousnumber' value='previousnumber'/>
 		<cd:constant name='process' value='process'/>
+		<cd:constant name='profile' value='profile'/>
 		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='radius'/>
 		<cd:constant name='random' value='random'/>

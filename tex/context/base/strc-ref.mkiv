@@ -127,8 +127,11 @@
 
 \def\dododosetreference#1#2#3#4% kind labels userdata text -> todo: userdata
   {\ifreferencing
+     % we could have a more efficient one for page references but for the moment
+     % we don't care too much
      \edef\currentreferencekind{#1}%
      \edef\currentreferencelabels{#2}%
+     \edef\currentreferenceuserdata{#3}%
      \edef\currentreferenceexpansion{\@@rfexpansion}% {\referenceparameter\c!expansion}
      \ifx\currentreferencelabels\empty \else
        \ifx\currentreferenceexpansion\s!xml
@@ -153,19 +156,24 @@
                     block    = "\currentstructureblock",
                     section  = structure.sections.currentid(),
                 },
-                metadata = {
-                    kind     = "#1",
-                    catcodes = \the\catcodetable,
-                    xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
+                metadata = { % we could assume page to have no metadata
+                    kind = "#1",
+                    \ifx\currentreferencekind\s!page\else
+                        catcodes = \the\catcodetable,
+                        xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
+                    \fi
                 },
                 \ifx\currentreferencedata\empty\else
                     entries = {
                         text = \!!bs\currentreferencedata\!!es
                     },
                 \fi
-                userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+                \ifx\currentreferenceuserdata\empty\else
+                    userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+                \fi
             },"\@@iafocus")
        }%
+       % todo: optional
        \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
        \begingroup\attribute\destinationattribute\currentdestinationattribute\hbox{}\endgroup % todo
      \fi
@@ -173,6 +181,34 @@
 
 \def\defaultreferencepage#1{[[[#1]]]}
 \def\defaultreferencetext#1{[[[#1]]]}
+
+%D For internal usage:
+
+\def\dosetsimplepagereference#1% label
+  {\iflocation
+     \ctxlua{jobreferences.setandgetattribute("\s!page", "\referenceprefix","#1",
+        {
+            references = {
+            %   block    = "\currentstructureblock",
+            %   section  = structure.sections.currentid(),
+            },
+            metadata = { % we could assume page to have no metadata
+                kind = "\s!page",
+            },
+        },"\@@iafocus")
+     }%
+     \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   \else
+     \xdef\currentdestinationattribute{\number\attributeunsetvalue}%
+   \fi}
+
+\def\dogetsimplepagereference#1%
+  {\iflocation
+     \ctxlua{jobreferences.inject("\referenceprefix","#1",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+     \xdef\currentreferenceattribute{\number\lastreferenceattribute}%
+   \else
+     \xdef\currentreferenceattribute{\number\attributeunsetvalue}%
+   \fi}
 
 %D These macros depend on three other ones,
 %D \type {\makesectionformat}, that generated \type
@@ -453,14 +489,26 @@
 %D An unknown reference is reported on the screen, in the log
 %D file and, when enabled, in the left margin of the text.
 
-\def\reportreferenceerror#1#2% only once (keep track in lua)
+\def\reportreferenceerror#1#2#3% only once (keep track in lua)
   {\ifinpagebody \else
-     \doifconcepttracing{\doifsomething{#2}{\inleft{\infofont\doboundtext{#2}{\dimexpr\leftmarginwidth-2em\relax}{..}->}}}%
+     \doifconcepttracing{\doifsomething{#3}{\inleft{\infofont\doboundtext{#3}{\dimexpr\leftmarginwidth-2em\relax}{..}->}}}%
    \fi
-   \showmessage\m!references{#1}{[\referenceprefix][#2]}}
+   \global\advance#1\plusone
+   \showmessage\m!references{#2}{[\referenceprefix][#3]}}
 
-\def\unknownreference{\reportreferenceerror1}
-\def\illegalreference{\reportreferenceerror4}
+\newcount\nofunknownreferences
+\newcount\nofillegalreferences
+
+\def\unknownreference{\reportreferenceerror\nofunknownreferences1}
+\def\illegalreference{\reportreferenceerror\nofillegalreferences4}
+
+\def\reportreferenceproblems
+  {\ifcase\nofunknownreferences\else\showmessage\m!references5{\number\nofunknownreferences}\fi
+   \ifcase\nofillegalreferences\else\showmessage\m!references6{\number\nofillegalreferences}\fi}
+
+\appendtoks
+    \reportreferenceproblems
+\to \everystoptext
 
 %D When a reference is not found, we typeset a placeholder
 %D (two glyphs are often enough to represent the reference
@@ -541,7 +589,10 @@
   {\ctxlua{jobreferences.currentorder("#1","#2")}}
 
 \def\thisissomeinternal#1#2%  tag reference (only for old time sake)
-  {\begingroup\attribute\destinationattribute\ctxlua{jobreferences.mark("#1:#2")}\hbox{}\endgroup}
+  {\begingroup
+   \ctxlua{jobreferences.setinternalreference("","#1:#2")}%
+   \hbox attr \destinationattribute\lastdestinationattribute{}%
+   \endgroup}
 
 \def\gotosomeinternal#1#2#3#4%
   {\ifinternalnamedreferences
@@ -866,8 +917,11 @@
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.
 
+% \def\dounknownreference#1#2[#3]%
+%   {\unknownreference{#3}\dotextprefix{#2}\dummyreference}%
+
 \def\dounknownreference#1#2[#3]%
-  {\unknownreference{#3}\dotextprefix{#2}\dummyreference}%
+  {\unknownreference{#3}\dotextprefix{#2}{\leftofreference\dummyreference\rightofreference}}
 
 \def\docompletereference#1#2[#3]%
   {\goto{\dotextprefix{#2}#1}[#3]}
@@ -885,114 +939,15 @@
 
 \let\dowantedreference\docompletereference
 
-%D \macros
-%D   {definereferenceformat}
-%D
-%D The next few macros were made for for David Arnold and Taco
-%D Hoekwater. They can be used for predefining reference
-%D texts, and thereby stimulate efficiency.
-%D
-%D [more documentation will be added]
-%D
-%D \starttyping
-%D \definereferenceformat[informula]  [left=(,right=),text=formula]
-%D \definereferenceformat[informulas] [left=(,right=),text=formulas]
-%D \definereferenceformat[andformula] [left=(,right=),text=and]
-%D \definereferenceformat[andformulas][left=(,right=),text=and]
-%D
-%D \informula [b] and \informula [for:c]
-%D the \informula {formulas}[b] \informula {and} [for:c]
-%D the \informulas {formulas}[b] \informula {and} [for:c]
-%D the \informulas [b] \informula {en} [for:c]
-%D the \informulas [b] \andformula [for:c]
-%D \stoptyping
-%D
-%D Instead of a text, one can specify a label, which should
-%D be defined with \type {\setuplabeltext}.
+\unexpanded\def\dospecialin{\dontleavehmode\begingroup\doinatreference\currentreferencedefault} % ends in \doinatreference
+\unexpanded\def\dospecialat{\dontleavehmode\begingroup\doinatreference\currentreferencepage   } % ends in \doinatreference
 
-% todo: inherit; probably not yet mkiv okay
+\newtoks\leftreferencetoks   \newtoks\defaultleftreferencetoks   \glet\leftofreference \relax
+\newtoks\rightreferencetoks  \newtoks\defaultrightreferencetoks  \glet\rightofreference\relax
 
-\unexpanded\def\definereferenceformat
-  {\dodoubleargument\dodefinereferenceformat}
-
-\def\dodefinereferenceformat[#1][#2]%
-  {\iffirstargument
-     \getparameters[\??rf#1]
-       [\c!left=,  % of the number
-        \c!right=, % of the number
-        \c!text=,  % before the number
-        \c!label=, % can be {left}{right}
-        \c!command=\in,
-        #2]%
-     \setuvalue{#1}{\dontleavehmode\doexecutereferenceformat{#1}}%
-   \fi}
-
-\def\noexecutelabelreferenceformat#1%
-  {\doifvaluesomething{\??rf#1\c!text}{\gdef\textofreference{\csname\??rf#1\c!text\endcsname}}%
-   \csname\??rf#1\c!command\endcsname}
-
-\def\doexecutelabelreferenceformat#1%
-  {\csname\??rf#1\c!command\endcsname
-     {\leftlabeltext {\csname\??rf#1\c!label\endcsname}}%
-     {\rightlabeltext{\csname\??rf#1\c!label\endcsname}}}
-
-\def\doexecutereferenceformat#1%
-  {\gdef\leftofreference {\csname\??rf#1\c!left \endcsname}%
-   \gdef\rightofreference{\csname\??rf#1\c!right\endcsname}%
-   \glet\textofreference\empty % otherwise ~ added
-   \doifelsevaluenothing{\??rf#1\c!label}\noexecutelabelreferenceformat\doexecutelabelreferenceformat{#1}}
-
-\newtoks\everyresetreferenceformat
-
-\def\resetreferenceformat
-  {\the\everyresetreferenceformat}
-
-\appendtoks
-    \glet\leftofreference \relax
-    \glet\rightofreference\relax
-    \glet\textofreference \relax
-\to \everyresetreferenceformat
-
-\resetreferenceformat
-
-% fails on metafun  {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
-%
-% \def\dodododoinatreference#1#2#3[#4]% no \removeunwantedspaces (fails on metafun)
-%   {\ifx\next\bgroup
-%      \dododododoinatreference{\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
-%    \else
-%      \dododododoinatreference{\leftofreference#1\rightofreference}{#2#3}[#4]%
-%    \fi}
-%
-% \def\dododododoinatreference#1#2[#3]%
-%   {\dontleavehmode   % replaces \leaveoutervmode
-%    \begingroup
-%    \postponenotes
-%    \doifreferencefoundelse{#3}
-%      {\doifelsenothing{#1}\dosymbolreference\dowantedreference{#1}{#2}[#3]}%
-%      {\dounknownreference{#1}{#2}[#3]}%
-%    \endgroup}
-
-% \starttext
-%     \definereferenceformat[inxx]  [left=(,right=),text=txt]
-%     \setupinteraction[state=start]
-%     \chapter[one]{xx}
-%     [\goto{state}[file(mk-last-state)]]
-%     [\goto{state} [file(mk-last-state)]]
-%     [\at{page} [one]]
-%     [\at{page}[one]]
-%     [\at{page}{okay}[one]]
-%     [\inxx{a}{b}[one]]
-% \stoptext
-
-\unexpanded\def\dospecialin{\let\currentreferencecontent\currentreferencedefault\doinatreference}
-\unexpanded\def\dospecialat{\let\currentreferencecontent\currentreferencepage   \doinatreference}
-
-\newtoks\leftreferencetoks  % needs a reset too?
-\newtoks\rightreferencetoks
-
-\def\doinatreference
-  {\futurelet\next\doinatreferenceone}
+\def\doinatreference#1%
+  {\let\currentreferencecontent#1%
+   \futurelet\next\doinatreferenceone}
 
 \def\doinatreferenceone
   {\ifx\next\bgroup
@@ -1017,8 +972,8 @@
 
 \def\dodoinatreferencenone
   {\dodoinatreferenceindeed
-     {\leftofreference\currentreferencecontent\rightofreference}
-     {}}
+     {\the\defaultleftreferencetoks\leftofreference\currentreferencecontent\rightofreference}
+     {\the\defaultrightreferencetoks}}
 
 \def\dodoinatreferenceleft
   {\dodoinatreferenceindeed
@@ -1026,21 +981,125 @@
      {\the\leftreferencetoks}}
 
 \def\dodoinatreferenceboth
-  {\dodoinatreferenceindeed
+  {\doifnothing{\the\leftreferencetoks}
+     {\leftreferencetoks\defaultleftreferencetoks}%
+   \dodoinatreferenceindeed
      {\leftofreference\currentreferencecontent\the\rightreferencetoks\rightofreference}
      {\the\leftreferencetoks}}
 
+% lefttext left <ref> right righttext
+
+\newtoks\everyresetinatreference
+
 \def\dodoinatreferenceindeed#1#2#3[#4]% #3 gobbles space
-  {\dontleavehmode   % replaces \leaveoutervmode
-   \begingroup
+  {%\dontleavehmode\begingroup % already done
    \postponenotes
    \doifreferencefoundelse{#4}
      {\doifelsenothing{#1}\dosymbolreference\dowantedreference{#1}{#2}[#4]}%
      {\dounknownreference{#1}{#2}[#4]}%
-   \resetreferenceformat
+   \the\everyresetinatreference
    \endgroup}
 
 \let\dosymbolreference\dowantedreference
+
+\appendtoks
+    \glet\leftofreference \relax
+    \glet\rightofreference\relax
+\to \everyresetinatreference
+
+%D \macros
+%D   {definereferenceformat}
+%D
+%D The next few macros were made for for David Arnold and Taco
+%D Hoekwater. They can be used for predefining reference
+%D texts, and thereby stimulate efficiency.
+%D
+%D \starttyping
+%D \definereferenceformat[informula]  [left=(,right=),text=formula]
+%D \definereferenceformat[informulas] [left=(,right=),text=formulas]
+%D \definereferenceformat[andformula] [left=(,right=),text=and]
+%D \definereferenceformat[andformulas][left=(,right=),text=and]
+%D
+%D \informula [b] and \informula [for:c]
+%D the \informula {formulas}[b] \informula {and} [for:c]
+%D the \informulas {formulas}[b] \informula {and} [for:c]
+%D the \informulas [b] \informula {en} [for:c]
+%D the \informulas [b] \andformula [for:c]
+%D \stoptyping
+%D
+%D Instead of a text, one can specify a label, which should
+%D be defined with \type {\setuplabeltext}.
+%D
+%D
+%D Watch out: the second argument is somewhat special and mostly
+%D meant for a suffix to a number:
+%D
+%D \startbuffer
+%D \definereferenceformat [intesta] [left=(,right=),text=Whatever~]
+%D \definereferenceformat [intestb] [left=(,right=),label=figure]
+%D
+%D \placeformula[x]\startformula a \stopformula
+%D
+%D \starttabulate[|||||]
+%D \NC \in     [x] \NC \in     {left}[x] \NC \in     {}{right}[x] \NC \in     {left}{right}[x] \NC \NR
+%D \NC \intesta[x] \NC \intesta{left}[x] \NC \intesta{}{right}[x] \NC \intesta{left}{right}[x] \NC \NR
+%D \NC \intestb[x] \NC \intestb{left}[x] \NC \intestb{}{right}[x] \NC \intestb{left}{right}[x] \NC \NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% todo: inherit
+
+\let\currentreferenceformat\empty
+
+\def\referenceformatparameter#1% some day we will add inheritance
+  {\ifcsname\??rf\currentreferenceformat#1\endcsname\csname\??rf\currentreferenceformat#1\expandafter\endcsname\fi}
+
+\unexpanded\def\definereferenceformat
+  {\dodoubleargument\dodefinereferenceformat}
+
+% left right text label
+
+\def\dodefinereferenceformat[#1][#2]%
+  {\iffirstargument
+     \getparameters[\??rf#1][\c!left=,\c!right=,\c!text=,\c!label=,#2]%
+     \setuvalue{#1}{\doexecutereferenceformat{#1}}%
+   \fi}
+
+\def\doexecutereferenceformat#1%
+  {\dontleavehmode\begingroup % ends in \doinatreference
+   \edef\currentreferenceformat{#1}%
+   \gdef\leftofreference {\referenceformatparameter\c!left }%
+   \gdef\rightofreference{\referenceformatparameter\c!right}%
+   % we can make a helper for this .. we will use the new parameter handler anyway
+   % but at least aditya can play with it now
+   \doifsomething{\referenceformatparameter\c!style}
+     {\dosetfontattribute{\??rf\currentreferenceformat}\c!style
+      \let\@@iastyle\empty}%
+   \doifsomething{\referenceformatparameter\c!color}
+     {\dosetcolorattribute{\??rf\currentreferenceformat}\c!color
+      \let\@@iacontrastcolor\empty
+      \let\@@iacolor        \empty}%
+   %
+   \doifsomethingelse{\referenceformatparameter\c!label}
+     {\defaultleftreferencetoks {\leftlabeltext {\referenceformatparameter\c!label}}%
+      \defaultrightreferencetoks{\rightlabeltext{\referenceformatparameter\c!label}}}%
+     {\defaultleftreferencetoks {\referenceformatparameter\c!text}%
+      \defaultrightreferencetoks\emptytoks}%
+   \doinatreference\currentreferencedefault} % we can make \currentreferencedefault configurable
+
+% \starttext
+%     \definereferenceformat[inxx]  [left=(,right=),text=txt]
+%     \setupinteraction[state=start]
+%     \chapter[one]{xx}
+%     [\goto{state}[file(mk-last-state)]]
+%     [\goto{state} [file(mk-last-state)]]
+%     [\at{page} [one]]
+%     [\at{page}[one]]
+%     [\at{page}{okay}[one]]
+%     [\inxx{a}{b}[one]]
+% \stoptext
 
 %D In interactive documents going to a specific location is not
 %D bound to cross references. The \type{\goto} commands can be
@@ -1081,14 +1140,16 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-\dostarttagged\t!link\empty
+     \dostarttagged\t!link\empty % not here
      \ctxlua{jobreferences.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
-\dostoptagged
      \setlocationattributes\??ia
      \setstrut % can be option
      \attribute\referenceattribute\lastreferenceattribute
+     #1%
+     \dostoptagged
+   \else
+     #1%
    \fi
-   #1%
    \endgroup}
 
 \def\dodirectgotohtdp#1[#2]% no test for valid references
@@ -1096,9 +1157,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-\dostarttagged\t!link\empty
+     \dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#2",\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax,\extrareferencearguments)}%
-\dostoptagged
+     \dostoptagged
      \setlocationattributes\??ia
      \attribute\referenceattribute\lastreferenceattribute
    \fi
@@ -1113,9 +1174,9 @@
    \iflocation
      \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
-\dostarttagged\t!link\empty
+        \dostarttagged\t!link\empty
         \ctxlua{jobreferences.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
-\dostoptagged
+        \dostoptagged
         \setlocationattributes\??ia
         \setstrut % can be option
         \attribute\referenceattribute\lastreferenceattribute}%
@@ -1132,9 +1193,9 @@
    \iflocation
      \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
-\dostarttagged\t!link\empty
+        \dostarttagged\t!link\empty
         \ctxlua{jobreferences.injectcurrentset(\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax)}%
-\dostoptagged
+        \dostoptagged
         \setlocationattributes\??ia
         \attribute\referenceattribute\lastreferenceattribute}%
        {\unknownreference{#3}}%
@@ -1147,9 +1208,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-\dostarttagged\t!link\empty
+     \dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
-\dostoptagged
+     \dostoptagged
      \setlocationattributes\??ia
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
    \else
@@ -1162,9 +1223,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-\dostarttagged\t!link\empty
+     \dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
-\dostoptagged
+     \dostoptagged
      \setlocationcolorspec{#1}% no consequence for strut
      \hbox attr \referenceattribute \lastreferenceattribute {#2}%
    \else
@@ -1177,9 +1238,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-\dostarttagged\t!link\empty
+     \dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
-\dostoptagged
+     \dostoptagged
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
    \else
      #1%
@@ -1193,9 +1254,9 @@
    \iflocation
      \ctxlua{jobreferences.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
        {\expandtexincurrentreference
-\dostarttagged\t!link\empty
+        \dostarttagged\t!link\empty
         \ctxlua{jobreferences.injectcurrentset(nil,nil)}%
-\dostoptagged
+        \dostoptagged
         \setlocationattributes\??ia
         \hbox attr \referenceattribute \lastreferenceattribute {#1}}%
        {\unknownreference{#2}}%
@@ -1215,7 +1276,6 @@
      {\unknownreference{#3}}%
    \endgroup}
 
-
 %D An reference to another document can be specified as a file
 %D or as an \URL. Both are handled by the same mechanism and
 %D can be issued by saying something like:

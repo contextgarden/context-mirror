@@ -480,7 +480,8 @@ function afm.copy_to_tfm(data)
             local metadata, luatex = data.metadata, data.luatex
             local unicodes, indices = luatex.unicodes, luatex.indices
             local characters, parameters, descriptions = { }, { }, { }
-            -- todo : merge into tfm
+            local mode = data.mode or "base"
+           -- todo : merge into tfm
             for u, i in next, indices do
                 local d = glyphs[i]
                 characters[u] = { }
@@ -561,6 +562,7 @@ function afm.copy_to_tfm(data)
                     unicodes           = unicodes,
                     luatex             = luatex,
                     encodingbytes      = 2,
+                    mode               = mode,
                     filename           = filename,
                     fontname           = fontname,
                     fullname           = fullname,
@@ -602,7 +604,7 @@ function afm.set_features(tfmdata)
     local afmdata = shared.afmdata
     local features = shared.features
     if features and next(features) then
-        local mode = tfmdata.mode or fonts.mode
+        local mode = tfmdata.mode or features.mode or "base"
         local initializers = fonts.initializers
         local fi = initializers[mode]
         local fiafm = fi and fi.afm
@@ -623,7 +625,7 @@ function afm.set_features(tfmdata)
                                 report_afm("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
                             end
                             fiafm[f](tfmdata,value)
-                            mode = tfmdata.mode or fonts.mode
+                            mode = tfmdata.mode or features.mode or "base"
                             fiafm = initializers[mode].afm
                         end
                     end

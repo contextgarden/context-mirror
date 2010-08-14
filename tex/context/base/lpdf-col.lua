@@ -16,37 +16,43 @@ local registercolor        = colors.register
 local registertransparancy = transparencies.register
 local colorsvalue          = colors.value
 local transparenciesvalue  = transparencies.value
+local forcedmodel          = colors.forcedmodel
 
 -- Literals needed to inject code in the mp stream, we cannot use attributes there
 -- since literals may have qQ's, much may go away once we have mplib code in place.
 --
 -- This module assumes that some functions are defined in the colors namespace
--- which mostlikely will be loaded later.
+-- which most likely will be loaded later.
 
 function lpdf.color(model,ca,default) -- todo: use gray when no color
-    local cv = colorsvalue(ca)
-    if cv then
-        if model == 1 then
-            model = cv[1]
-        end
-        if model == 2 then
-            local s = cv[2]
-            return format("%s g %s G",s,s)
-        elseif model == 3 then
-            local r, g, b = cv[3], cv[4], cv[5]
-            return format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)
-        elseif model == 4 then
-            local c, m, y, k = cv[6],cv[7],cv[8],cv[9]
-            return format("%s %s %s %s k %s %s %s %s K",c,m,y,k,c,m,y,k)
-        else
-            local n,f,d,p = cv[10],cv[11],cv[12],cv[13]
-            if type(p) == "string" then
-                p = gsub(p,","," ") -- brr misuse of spot
+    if colors.supported then
+        local cv = colorsvalue(ca)
+        if cv then
+            if model == 1 then
+                model = cv[1]
             end
-            return format("/%s cs /%s CS %s SCN %s scn",n,n,p,p)
+            model = forcedmodel(model)
+            if model == 2 then
+                local s = cv[2]
+                return format("%s g %s G",s,s)
+            elseif model == 3 then
+                local r, g, b = cv[3], cv[4], cv[5]
+                return format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)
+            elseif model == 4 then
+                local c, m, y, k = cv[6],cv[7],cv[8],cv[9]
+                return format("%s %s %s %s k %s %s %s %s K",c,m,y,k,c,m,y,k)
+            else
+                local n,f,d,p = cv[10],cv[11],cv[12],cv[13]
+                if type(p) == "string" then
+                    p = gsub(p,","," ") -- brr misuse of spot
+                end
+                return format("/%s cs /%s CS %s SCN %s scn",n,n,p,p)
+            end
+        else
+            return format("%s g %s G",default or 0,default or 0)
         end
     else
-        return format("%s g %s G",default or 0,default or 0)
+        return ""
     end
 end
 
@@ -54,11 +60,15 @@ function lpdf.transparency(ct,default) -- kind of overlaps with transparencycode
     -- beware, we need this hack because normally transparencies are not
     -- yet registered and therefore the number is not not known ... we
     -- might use the attribute number itself in the future
-    local ct = transparenciesvalue(ct)
-    if ct then
-        return format("/Tr%s gs",registertransparancy(nil,ct[1],ct[2],true))
+    if transparencies.supported then
+        local ct = transparenciesvalue(ct)
+        if ct then
+            return format("/Tr%s gs",registertransparancy(nil,ct[1],ct[2],true))
+        else
+            return "/Tr0 gs"
+        end
     else
-        return "/Tr0 gs"
+        return ""
     end
 end
 
@@ -68,6 +78,7 @@ function lpdf.colorvalue(model,ca,default)
         if model == 1 then
             model = cv[1]
         end
+        model = forcedmodel(model)
         if model == 2 then
             return format("%s",cv[2])
         elseif model == 3 then
@@ -88,6 +99,7 @@ function lpdf.fdfcolor(model,ca,default)
         if model == 1 then
             model = cv[1]
         end
+        model = forcedmodel(model)
         if model == 2 then
             return format("[%s]",cv[2])
         elseif model == 3 then
@@ -108,6 +120,7 @@ function lpdf.colorspace(model,ca)
         if model == 1 then
             model = cv[1]
         end
+        model = forcedmodel(model)
         if model == 2 then
             return "DeviceGray"
         elseif model == 3 then
@@ -125,23 +138,47 @@ local intransparency = false
 local pdfcolor       = lpdf.color
 
 function lpdf.rgbcode(model,r,g,b)
-    return pdfcolor(model,registercolor(nil,'rgb',r,g,b))
+    if colors.supported then
+        return pdfcolor(model,registercolor(nil,'rgb',r,g,b))
+    else
+        return ""
+    end
 end
+
 function lpdf.cmykcode(model,c,m,y,k)
-    return pdfcolor(model,registercolor(nil,'cmyk',c,m,y,k))
+    if colors.supported then
+        return pdfcolor(model,registercolor(nil,'cmyk',c,m,y,k))
+    else
+        return ""
+    end
 end
+
 function lpdf.graycode(model,s)
-    return pdfcolor(model,registercolor(nil,'gray',s))
+    if colors.supported then
+        return pdfcolor(model,registercolor(nil,'gray',s))
+    else
+        return ""
+    end
 end
+
 function lpdf.spotcode(model,n,f,d,p)
-    return pdfcolor(model,registercolor(nil,'spot',n,f,d,p)) -- incorrect
+    if colors.supported then
+        return pdfcolor(model,registercolor(nil,'spot',n,f,d,p)) -- incorrect
+    else
+        return ""
+    end
 end
+
 function lpdf.transparencycode(a,t)
-    intransparency = true
-    return format("/Tr%s gs",registertransparancy(nil,a,t,true)) -- true forces resource
+    if transparencies.supported then
+        intransparency = true
+        return format("/Tr%s gs",registertransparancy(nil,a,t,true)) -- true forces resource
+    else
+        return ""
+    end
 end
 function lpdf.finishtransparencycode()
-    if intransparency then
+    if transparencies.supported and intransparency then
         intransparency = false
         return "/Tr0 gs"  -- we happen to know this -)
     else

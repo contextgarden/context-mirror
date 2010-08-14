@@ -7,8 +7,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="sk",
-  ["source"]="hyph-sk.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-sk",
+  ["texcomment"]="% Slovak Hyphenation Patterns (Jana Chlebikova, 1992)\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: skhyphen.tex (yyyy-mm-dd), skhyphen.ex (yy-mm-dd)\

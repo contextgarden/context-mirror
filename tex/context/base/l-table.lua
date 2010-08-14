@@ -126,7 +126,7 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
-function table.sortedhash(t)
+local function sortedhash(t)
     local s = sortedhashkeys(t) -- maybe just sortedkeys
     local n = 0
     local function kv(s)
@@ -137,7 +137,8 @@ function table.sortedhash(t)
     return kv, s
 end
 
-table.sortedpairs = table.sortedhash
+table.sortedhash  = sortedhash
+table.sortedpairs = sortedhash
 
 function table.append(t, list)
     for _,v in next, list do
@@ -832,12 +833,26 @@ function table.count(t)
     return n
 end
 
-function table.swapped(t)
-    local s = { }
-    for k, v in next, t do
-        s[v] = k
+function table.swapped(t,s)
+    local n = { }
+    if s then
+--~         for i=1,#s do
+--~             n[i] = s[i]
+--~         end
+        for k, v in next, s do
+            n[k] = v
+        end
     end
-    return s
+--~     for i=1,#t do
+--~         local ti = t[i] -- don't ask but t[i] can be nil
+--~         if ti then
+--~             n[ti] = i
+--~         end
+--~     end
+    for k, v in next, t do
+        n[v] = k
+    end
+    return n
 end
 
 --~ function table.are_equal(a,b)
@@ -860,7 +875,7 @@ function table.hexed(t,seperator)
     return concat(tt,seperator or " ")
 end
 
-function table.reverse_hash(h)
+function table.reverse_hash(h) -- needs another name
     local r = { }
     for k,v in next, h do
         r[v] = lower(gsub(k," ",""))
@@ -908,10 +923,18 @@ function table.insert_after_value(t,value,extra)
     insert(t,#t+1,extra)
 end
 
-function table.sequenced(t,sep)
+function table.sequenced(t,sep,simple) -- hash only
     local s = { }
-    for k, v in next, t do -- indexed?
-        s[#s+1] = k .. "=" .. tostring(v)
+    for k, v in sortedhash(t) do
+        if simple then
+            if v == true then
+                s[#s+1] = k
+            elseif v and v~= "" then
+                s[#s+1] = k .. "=" .. tostring(v)
+            end
+        else
+            s[#s+1] = k .. "=" .. tostring(v)
+        end
     end
     return concat(s, sep or " | ")
 end

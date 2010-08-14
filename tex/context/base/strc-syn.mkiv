@@ -114,7 +114,7 @@
      \fi
      \setuvalue{#1}{\definesynonym[\v!yes][#1]}% \name
    \fi
-   \getparameters[\??sm#1][\s!parent=\??sm,\s!multi={#2}]%
+   \getparameters[\??sm#1][\s!parent=\??sm,\s!single={#1},\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
   %\ctxlua{joblists.define('#1')}%
    \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
@@ -207,8 +207,9 @@
 \def\completelistofsynonyms
   {\dodoubleempty\docompletelistofsynonyms}
 
-\def\docompletelistofsynonyms[#1][#2]% expansion needed to avoid v! (due to french active !)
-  {\normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{\synonymparameter\s!single}}}%
+\def\docompletelistofsynonyms[#1][#2]%
+  {\edef\currentsynonym{#1}%
+   \normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{\synonymparameter\s!multi}}}%
    \doplacelistofsynonyms[#1][#2]%
    \page[\v!yes]}
 

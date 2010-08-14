@@ -1179,11 +1179,11 @@
    \egroup}
 
 \def\multicolumnseject
-  {\ifdim\pagetotal>\textheight
-     \eject % new
-   \else
+  {%\ifdim\pagetotal>\textheight
+   %  \eject % new, but wrong as fails on mixed-001.tex (wrong pagetotal at this point)
+   %\else
      \allowbreak
-   \fi}
+   }%\fi}
 
 %D The multicolumn mechanism is incorporated in a \CONTEXT\
 %D interface, which acts like:

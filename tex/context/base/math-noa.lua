@@ -19,6 +19,7 @@ local has_attribute  = node.has_attribute
 local mlist_to_hlist = node.mlist_to_hlist
 local font_of_family = node.family_font
 local fontdata       = fonts.identifiers
+local nodecodes      = nodes.nodecodes
 
 local format, rep  = string.format, string.rep
 local utfchar, utfbyte = utf.char, utf.byte
@@ -30,6 +31,8 @@ local trace_processing = false  trackers.register("math.processing", function(v)
 local trace_analyzing  = false  trackers.register("math.analyzing",  function(v) trace_analyzing  = v end)
 
 local report_noads = logs.new("mathematics")
+
+-- todo: nodes.noadcodes
 
 local noad_ord              =  0
 local noad_op_displaylimits =  1
@@ -47,34 +50,34 @@ local noad_vcenter          = 12
 
 -- obsolete:
 --
---    math_ord       = node.id("ord")            -- attr nucleus sub sup
---    math_op        = node.id("op")             -- attr nucleus sub sup subtype
---    math_bin       = node.id("bin")            -- attr nucleus sub sup
---    math_rel       = node.id("rel")            -- attr nucleus sub sup
---    math_punct     = node.id("punct")          -- attr nucleus sub sup
---
---    math_open      = node.id("open")           -- attr nucleus sub sup
---    math_close     = node.id("close")          -- attr nucleus sub sup
---
---    math_inner     = node.id("inner")          -- attr nucleus sub sup
---    math_vcenter   = node.id("vcenter")        -- attr nucleus sub sup
---    math_under     = node.id("under")          -- attr nucleus sub sup
---    math_over      = node.id("over")           -- attr nucleus sub sup
+--    math_ord       = nodecodes.ord")            -- attr nucleus sub sup
+--    math_op        = nodecodes.op")             -- attr nucleus sub sup subtype
+--    math_bin       = nodecodes.bin")            -- attr nucleus sub sup
+--    math_rel       = nodecodes.rel")            -- attr nucleus sub sup
+--    math_punct     = nodecodes.punct")          -- attr nucleus sub sup
+--_
+--    math_open      = nodecodes.open")           -- attr nucleus sub sup
+--    math_close     = nodecodes.close")          -- attr nucleus sub sup
+--_
+--    math_inner     = nodecodes.inner")          -- attr nucleus sub sup
+--    math_vcenter   = nodecodes.vcenter")        -- attr nucleus sub sup
+--    math_under     = nodecodes.under")          -- attr nucleus sub sup
+--    math_over      = nodecodes.over")           -- attr nucleus sub sup
 
-local math_noad      = node.id("noad")           -- attr nucleus sub sup
+local math_noad      = nodecodes.noad           -- attr nucleus sub sup
 
-local math_accent    = node.id("accent")         -- attr nucleus sub sup accent
-local math_radical   = node.id("radical")        -- attr nucleus sub sup left degree
-local math_fraction  = node.id("fraction")       -- attr nucleus sub sup left right
+local math_accent    = nodecodes.accent         -- attr nucleus sub sup accent
+local math_radical   = nodecodes.radical        -- attr nucleus sub sup left degree
+local math_fraction  = nodecodes.fraction       -- attr nucleus sub sup left right
 
-local math_box       = node.id("sub_box")        -- attr list
-local math_sub       = node.id("sub_mlist")      -- attr list
-local math_char      = node.id("math_char")      -- attr fam char
-local math_text_char = node.id("math_text_char") -- attr fam char
-local math_delim     = node.id("delim")          -- attr small_fam small_char large_fam large_char
-local math_style     = node.id("style")          -- attr style
-local math_choice    = node.id("choice")         -- attr display text script scriptscript
-local math_fence     = node.id("fence")          -- attr subtype
+local math_box       = nodecodes.sub_box        -- attr list
+local math_sub       = nodecodes.sub_mlist      -- attr list
+local math_char      = nodecodes.math_char      -- attr fam char
+local math_text_char = nodecodes.math_text_char -- attr fam char
+local math_delim     = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local math_style     = nodecodes.style          -- attr style
+local math_choice    = nodecodes.choice         -- attr display text script scriptscript
+local math_fence     = nodecodes.fence          -- attr subtype
 
 local simple_noads = table.tohash {
     math_noad,
@@ -366,7 +369,7 @@ end
 
 fonts.otf.tables.features['mathalternates'] = 'Additional math alternative shapes'
 
-fonts.otf.features.register('mathalternates',true)
+fonts.otf.features.register('mathalternates') -- true
 table.insert(fonts.triggers,"mathalternates")
 
 fonts.initializers.base.otf.mathalternates = fonts.initializers.common.mathalternates

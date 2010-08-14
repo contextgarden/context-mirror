@@ -115,8 +115,8 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
     if data then
         if n == 0 then
             return function(head)
-                local runner = data.runner
                 total = total + 1 -- will go away
+                local runner = data.runner
                 if not runner then
                     created = created + 1
                     if trace_tasks then

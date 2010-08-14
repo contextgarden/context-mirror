@@ -30,10 +30,12 @@ local trace_destinations = false  trackers.register("nodes.destinations", functi
 
 local report_backends = logs.new("backends")
 
-local hlist   = node.id("hlist")
-local vlist   = node.id("vlist")
-local glue    = node.id("glue")
-local whatsit = node.id("whatsit")
+local nodecodes = nodes.nodecodes
+
+local hlist   = nodecodes.hlist
+local vlist   = nodecodes.vlist
+local glue    = nodecodes.glue
+local whatsit = nodecodes.whatsit
 
 local new_kern = nodes.kern
 

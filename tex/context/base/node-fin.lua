@@ -10,21 +10,19 @@ if not modules then modules = { } end modules ['node-fin'] = {
 
 local next, type, format = next, type, string.format
 local texsprint = tex.sprint
-
 local ctxcatcodes = tex.ctxcatcodes
-
-local glyph   = node.id('glyph')
-local disc    = node.id('disc')
-local glue    = node.id('glue')
-local rule    = node.id('rule')
-local whatsit = node.id('whatsit')
-local hlist   = node.id('hlist')
-local vlist   = node.id('vlist')
-
-local has_attribute = node.has_attribute
-local copy_node     = node.copy
-
+local has_attribute, copy_node = node.has_attribute, node.copy
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+
+local nodecodes = nodes.nodecodes
+
+local glyph   = nodecodes.glyph
+local disc    = nodecodes.disc
+local glue    = nodecodes.glue
+local rule    = nodecodes.rule
+local whatsit = nodecodes.whatsit
+local hlist   = nodecodes.hlist
+local vlist   = nodecodes.vlist
 
 states   = states or { }
 shipouts = shipouts or { }

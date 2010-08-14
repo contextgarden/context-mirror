@@ -6,16 +6,17 @@ if not modules then modules = { } end modules ['node-tst'] = {
     license   = "see context related readme files"
 }
 
-local glue    = node.id("glue")
-local penalty = node.id("penalty")
-local kern    = node.id("kern")
-local glyph   = node.id("glyph")
-local whatsit = node.id("whatsit")
-local hlist   = node.id("hlist")
-
 local find_node_tail = node.tail or node.slide
 
-local chardata = characters.data
+local chardata  = characters.data
+local nodecodes = nodes.nodecodes
+
+local glue    = nodecodes.glue
+local penalty = nodecodes.penalty
+local kern    = nodecodes.kern
+local glyph   = nodecodes.glyph
+local whatsit = nodecodes.whatsit
+local hlist   = nodecodes.hlist
 
 function nodes.the_left_margin(n) -- todo: three values
     while n do

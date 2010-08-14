@@ -612,8 +612,6 @@
 \def\inheritlocalframed[#1]#2[#3]{\letvalue{#1\s!parent}#3}
 \def\copylocalframed   [#1]#2[#3]{\setvalue{#1\s!parent}{#3}}
 
-\let\setuplocalframed\getparameters % obsolete
-
 \presetlocalframed[\??ol]
 
 \newcount\framednesting
@@ -627,23 +625,33 @@
 \unexpanded\def\setupframed
   {\dodoubleempty\dosetupframed}
 
-\def\dosetupframed
+% \def\dosetupframed
+%   {\ifsecondargument
+%      \@EA\dodoublesetupframed
+%    \else
+%      \@EA\dosinglesetupframed
+%    \fi}
+
+% we can consider setting the parent of the regular framed to
+% something else in the otr so that we isolate it there
+
+\def\dosetupframed[#1][#2]%
   {\ifsecondargument
-     \@EA\dodoublesetupframed
+     \getparameters[\??ol#1][#2]%
    \else
-     \@EA\dosinglesetupframed
+     \getparameters[\??ol][#1]%
    \fi}
 
-\def\dosinglesetupframed[#1][#2]%
-  {\getparameters[\??ol][#1]}
+% \def\dosinglesetupframed[#1][#2]%
+%   {\getparameters[\??ol][#1]}
 
-\def\dodoublesetupframed[#1][#2]%
-  {\bgroup
-   \let\dodoubleempty\empty
-   \def\doframed[##1]{\gdef\globalredefinedframed{\dodoubleempty\doframed[##1,#2]}}%
-   \getvalue{#1}%
-   \egroup
-   \letvalue{#1}\globalredefinedframed}
+% \def\dodoublesetupframed[#1][#2]%
+%   {\bgroup
+%    \let\dodoubleempty\empty
+%    \def\doframed[##1]{\gdef\globalredefinedframed{\dodoubleempty\doframed[##1,#2]}}%
+%    \getvalue{#1}%
+%    \egroup
+%    \letvalue{#1}\globalredefinedframed}
 
 %D \startbuffer
 %D \setupframed [framecolor=yellow]          \framed{A}
@@ -655,7 +663,6 @@
 %D
 %D \startbuffer
 %D \presetlocalframed[myframed]
-%D \setuplocalframed[myframed][width=4cm,height=2cm]
 %D \localframed[myframed][framecolor=green]{oeps}
 %D \stopbuffer
 %D
@@ -884,7 +891,7 @@
 
 % todo: protect local \framednames
 
-\unexpanded\def\startlocalframed[#1][#2]%
+\unexpanded\def\startlocalframed[#1][#2]% it should be possible to set \@@framed before calling this which saves a [] scan
   {\bgroup
    \inframedtrue
    \edef\@@framed{#1}%
@@ -2829,17 +2836,49 @@
 %D One can also define simple framed texts, using:
 %D
 %D \showsetup{defineframed}
+%D
+%D As suggested by Wolfgang we can now use the new \MKIV\ inheritance
+%D model instead of passing a combination of arguments. This also
+%D also simplified the \type {\setupframed} command. There are
+%D certainly more places where such improvements can be made.
 
-\unexpanded\def\defineframed
+% \unexpanded\def\defineframed
+%   {\dodoubleempty\dodefineframed}
+%
+% \def\dodefineframed[#1][#2]%
+%   {\iffirstargument
+%      \setuvalue{#1}{\dodoubleempty\doframed[#2]}%
+%    \fi}
+%
+% \def\doframed[#1][#2]%
+%   {\framed[#1,#2]}
+
+\def\defineframed
   {\dodoubleempty\dodefineframed}
 
 \def\dodefineframed[#1][#2]%
-  {\iffirstargument
-     \setuvalue{#1}{\dodoubleempty\doframed[#2]}%
-   \fi}
+  {\ifcsname\??ol:#1\endcsname
+     % already defined, keeps settings
+   \else
+     \expandafter\newcount\csname\??ol:#1\endcsname % \the\everypresetframed
+   \fi
+   \getparameters[\??ol#1][\s!parent=\??ol,#2]%
+   \setuvalue{#1}{\doframed[#1]}}% % \the\everydefineframed
 
-\def\doframed[#1][#2]%
-  {\framed[#1,#2]}
+\def\doframed[#1]% we can speed up startlocalframed by using \currentlocalframed
+  {\bgroup
+   \expandafter\let\expandafter\tempframedcount\csname\??ol:#1\endcsname
+   \advance\tempframedcount\plusone
+   \expandafter\def\csname\??ol#1:\the\tempframedcount\s!parent\endcsname{\??ol#1}% \copylocalframed
+   \dodoubleempty\startlocalframed[\??ol#1:\the\tempframedcount]}
+
+%D We can do:
+%D
+%D \starttyping
+%D \defineframed[\v!framed]
+%D \stoptyping
+%D
+%D but the existing one is ok as well (less csname messy too).
 
 %D \macros
 %D   {textrule, starttextrule, setuptextrules}
@@ -3521,6 +3560,9 @@
 \setuplinewidth
   [\v!medium]
 
+% We could omit the empty setings but that is some 10% slower due to
+% extra testing in the chain.
+
 \setupframed
   [\c!width=\v!fit,
    \c!height=\v!broad,
@@ -3554,12 +3596,12 @@
    \c!align=,
    \c!bottom=\vss,
    \c!top=,
-   \c!strut=\v!yes,
    \c!autostrut=\v!yes,
    \c!location=\v!normal,
    \c!orientation=,
    \c!autowidth=\v!yes,
-   \c!setups=]
+   \c!setups=,
+   \c!strut=\v!yes]
 
 \setupscreens
   [%\c!factor=1.0,         % obsolete

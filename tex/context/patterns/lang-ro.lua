@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="ro",
-  ["source"]="hyph-ro.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-ro",
+  ["texcomment"]="% Romanian Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: rohyphen.tex (1996-11-11)\

@@ -11,8 +11,10 @@ local gsub, format = string.gsub, string.format
 local free_node, hpack_nodes, node_fields, traverse_nodes = node.free, node.hpack, node.fields, node.traverse
 local has_attribute, set_attribute, unset_attribute, has_attribute = node.has_attribute, node.set_attribute, node.unset_attribute,node.has_attribute
 
-local hlist = node.id("hlist")
-local vlist = node.id("vlist")
+local nodecodes = nodes.nodecodes
+
+local hlist = nodecodes.hlist
+local vlist = nodecodes.vlist
 
 function nodes.repack_hlist(list,...)
     local temp, b = hpack_nodes(list,...)

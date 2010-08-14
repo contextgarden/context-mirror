@@ -56,3 +56,21 @@ function number.bits(n,zero)
     end
     return t
 end
+
+--~ http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html
+
+function number.bit(p)
+    return 2 ^ (p - 1) -- 1-based indexing
+end
+
+function number.hasbit(x, p) -- typical call: if hasbit(x, bit(3)) then ...
+    return x % (p + p) >= p
+end
+
+function number.setbit(x, p)
+    return hasbit(x, p) and x or x + p
+end
+
+function number.clearbit(x, p)
+    return hasbit(x, p) and x - p or x
+end

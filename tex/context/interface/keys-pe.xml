@@ -662,6 +662,7 @@
 		<cd:constant name='footer' value='ته‌برگ'/>
 		<cd:constant name='footerdistance' value='فاصله‌ته‌برگ'/>
 		<cd:constant name='footerstate' value='وضعیت‌ته‌برگ'/>
+		<cd:constant name='force' value='اجبار'/>
 		<cd:constant name='foregroundcolor' value='رنگ‌پیش‌زمینه'/>
 		<cd:constant name='foregroundstyle' value='سبک‌پیش‌زمینه'/>
 		<cd:constant name='format' value='شمایل'/>
@@ -860,6 +861,7 @@
 		<cd:constant name='previous' value='قبلی'/>
 		<cd:constant name='previousnumber' value='شماره‌قبلی'/>
 		<cd:constant name='process' value='پردازش'/>
+		<cd:constant name='profile' value='profile'/>
 		<cd:constant name='pubsep' value='pubsep'/>
 		<cd:constant name='radius' value='شعاع'/>
 		<cd:constant name='random' value='تصادفی'/>

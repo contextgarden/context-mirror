@@ -347,7 +347,8 @@ patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
 patterns.lowercase     = R("az")
 patterns.uppercase     = R("AZ")
 patterns.letter        = patterns.lowercase + patterns.uppercase
-patterns.space         = S(" ")
+patterns.space         = P(" ")
+patterns.tab           = P("\t")
 patterns.eol           = S("\n\r")
 patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
 patterns.newline       = crlf + cr + lf
@@ -358,6 +359,9 @@ patterns.nonwhitespace = 1 - patterns.whitespace
 patterns.utf8          = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
 patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
 patterns.validutf8     = patterns.utf8^0 * P(-1) * Cc(true) + Cc(false)
+patterns.comma         = P(",")
+patterns.commaspacer   = P(",") * patterns.spacer^0
+patterns.period        = P(".")
 
 patterns.undouble      = P('"')/"" * (1-P('"'))^0 * P('"')/""
 patterns.unsingle      = P("'")/"" * (1-P("'"))^0 * P("'")/""
@@ -462,15 +466,36 @@ local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 6
 
 patterns.utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
 
+
+
 local cache = { }
 
 function lpeg.stripper(str)
-    local s = cache[str]
-    if not s then
-        s = Cs(((S(str)^1)/"" + 1)^0)
-        cache[str] = s
+    if type(str) == "string" then
+        local s = cache[str]
+        if not s then
+            s = Cs(((S(str)^1)/"" + 1)^0)
+            cache[str] = s
+        end
+        return s
+    else
+        return Cs(((str^1)/"" + 1)^0)
     end
-    return s
+end
+
+local cache = { }
+
+function lpeg.keeper(str)
+    if type(str) == "string" then
+        local s = cache[str]
+        if not s then
+            s = Cs((((1-S(str))^1)/"" + 1)^0)
+            cache[str] = s
+        end
+        return s
+    else
+        return Cs((((1-str)^1)/"" + 1)^0)
+    end
 end
 
 function lpeg.replacer(t)
@@ -642,7 +667,7 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
-function table.sortedhash(t)
+local function sortedhash(t)
     local s = sortedhashkeys(t) -- maybe just sortedkeys
     local n = 0
     local function kv(s)
@@ -653,7 +678,8 @@ function table.sortedhash(t)
     return kv, s
 end
 
-table.sortedpairs = table.sortedhash
+table.sortedhash  = sortedhash
+table.sortedpairs = sortedhash
 
 function table.append(t, list)
     for _,v in next, list do
@@ -1315,12 +1341,17 @@ function table.count(t)
     return n
 end
 
-function table.swapped(t)
-    local s = { }
-    for k, v in next, t do
-        s[v] = k
+function table.swapped(t,s)
+    local n = { }
+    if s then
+        for k, v in next, s do
+            n[k] = v
+        end
     end
-    return s
+    for k, v in next, t do
+        n[v] = k
+    end
+    return n
 end
 
 
@@ -1340,7 +1371,7 @@ function table.hexed(t,seperator)
     return concat(tt,seperator or " ")
 end
 
-function table.reverse_hash(h)
+function table.reverse_hash(h) -- needs another name
     local r = { }
     for k,v in next, h do
         r[v] = lower(gsub(k," ",""))
@@ -1388,10 +1419,18 @@ function table.insert_after_value(t,value,extra)
     insert(t,#t+1,extra)
 end
 
-function table.sequenced(t,sep)
+function table.sequenced(t,sep,simple) -- hash only
     local s = { }
-    for k, v in next, t do -- indexed?
-        s[#s+1] = k .. "=" .. tostring(v)
+    for k, v in sortedhash(t) do
+        if simple then
+            if v == true then
+                s[#s+1] = k
+            elseif v and v~= "" then
+                s[#s+1] = k .. "=" .. tostring(v)
+            end
+        else
+            s[#s+1] = k .. "=" .. tostring(v)
+        end
     end
     return concat(s, sep or " | ")
 end
@@ -1593,6 +1632,39 @@ function io.ask(question,default,options)
     end
 end
 
+function io.readnumber(f,n,m)
+    if m then
+        f:seek("set",n)
+        n = m
+    end
+    if n == 1 then
+        return byte(f:read(1))
+    elseif n == 2 then
+        local a, b = byte(f:read(2),1,2)
+        return 256*a + b
+    elseif n == 4 then
+        local a, b, c, d = byte(f:read(4),1,4)
+        return 256^3 * a + 256^2 * b + 256*c + d
+    elseif n == 8 then
+        local a, b = readnumber(f,4), readnumber(f,4)
+        return 256 * b + c
+    elseif n == 12 then
+        local a, b, c = readnumber(f,4), readnumber(f,4), readnumber(f,4)
+        return 256^2 * a + 256 * b + c
+    else
+        return 0
+    end
+end
+
+function io.readstring(f,n,m)
+    if m then
+        f:seek("set",n)
+        n = m
+    end
+    local str = gsub(f:read(n),"%z","")
+    return str
+end
+
 
 end -- of closure
 
@@ -1655,6 +1727,23 @@ function number.bits(n,zero)
         i = i + 1
     end
     return t
+end
+
+
+function number.bit(p)
+    return 2 ^ (p - 1) -- 1-based indexing
+end
+
+function number.hasbit(x, p) -- typical call: if hasbit(x, bit(3)) then ...
+    return x % (p + p) >= p
+end
+
+function number.setbit(x, p)
+    return hasbit(x, p) and x or x + p
+end
+
+function number.clearbit(x, p)
+    return hasbit(x, p) and x - p or x
 end
 
 
@@ -3023,7 +3112,7 @@ end
 utf = utf or unicode.utf8
 
 local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
-local char, byte, find, bytepairs = string.char, string.byte, string.find, string.bytepairs
+local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
@@ -3188,6 +3277,15 @@ function unicode.utf8_to_utf16(str,littleendian)
         return char(254,255) .. utfgsub(str,".",big)
     end
 end
+
+function unicode.utfcodes(str)
+    local t = { }
+    for k,v in string.utfvalues(str) do
+        t[#t+1] = format("0x%04X",k)
+    end
+    return concat(t,separator or " ")
+end
+
 
 
 end -- of closure
@@ -3568,12 +3666,22 @@ function aux.array_to_string(a,separator)
     end
 end
 
-function aux.settings_to_set(str,t)
+function aux.settings_to_set(str,t) -- tohash?
     t = t or { }
-    for s in gmatch(str,"%s*([^,]+)") do
+    for s in gmatch(str,"%s*([^, ]+)") do -- space added
         t[s] = true
     end
     return t
+end
+
+function aux.simple_hash_to_string(h, separator)
+    local t = { }
+    for k, v in table.sortedhash(h) do
+        if v then
+            t[#t+1] = k
+        end
+    end
+    return concat(t,separator or ",")
 end
 
 local value     = lbrace * lpeg.C((nobrace + nested)^0) * rbrace
@@ -3636,6 +3744,60 @@ end
 
 -- as we use this a lot ...
 
+
+function aux.formatcolumns(result,between)
+    if result and #result > 0 then
+        between = between or "   "
+        local widths, numbers = { }, { }
+        local first = result[1]
+        local n = #first
+        for i=1,n do
+            widths[i] = 0
+        end
+        for i=1,#result do
+            local r = result[i]
+            for j=1,n do
+                local rj = r[j]
+                local tj = type(rj)
+                if tj == "number" then
+                    numbers[j] = true
+                end
+                if tj ~= "string" then
+                    rj = tostring(rj)
+                    r[j] = rj
+                end
+                local w = #rj
+                if w > widths[j] then
+                    widths[j] = w
+                end
+            end
+        end
+        for i=1,n do
+            local w = widths[i]
+            if numbers[i] then
+                if w > 80 then
+                    widths[i] = "%s" .. between
+                 else
+                    widths[i] = "%0" .. w .. "i" .. between
+                end
+            else
+                if w > 80 then
+                    widths[i] = "%s" .. between
+                 elseif w > 0 then
+                    widths[i] = "%-" .. w .. "s" .. between
+                else
+                    widths[i] = "%s"
+                end
+            end
+        end
+        local template = string.strip(concat(widths))
+        for i=1,#result do
+            local str = format(template,unpack(result[i]))
+            result[i] = string.strip(str)
+        end
+    end
+    return result
+end
 
 
 end -- of closure
@@ -3843,7 +4005,7 @@ if not modules then modules = { } end modules ['trac-set'] = {
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local format, find, lower, gsub = string.format, string.find, string.lower, string.gsub
+local format, find, lower, gsub, simpleesc = string.format, string.find, string.lower, string.gsub, string.simpleesc
 local is_boolean = string.is_boolean
 
 setters = { }
@@ -3915,7 +4077,7 @@ local function set(t,what,newvalue)
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
-            elseif find(name,w) then
+            elseif find(name,simpleesc(w)) then
                 done[name] = true
                 for i=1,#functions do
                     functions[i](value)
@@ -3979,14 +4141,14 @@ end
 function setters.enable(t,what)
     local e = t.enable
     t.enable, t.done = enable, { }
-    enable(t,string.simpleesc(tostring(what)))
+    enable(t,what)
     t.enable, t.done = e, { }
 end
 
 function setters.disable(t,what)
     local e = t.disable
     t.disable, t.done = disable, { }
-    disable(t,string.simpleesc(tostring(what)))
+    disable(t,what)
     t.disable, t.done = e, { }
 end
 
@@ -4050,36 +4212,50 @@ trackers    = setters.new("trackers")
 directives  = setters.new("directives")
 experiments = setters.new("experiments")
 
+-- experiment
+
+if trackers and environment and environment.engineflags.trackers then
+    trackers.enable(environment.engineflags.trackers)
+end
+if directives and environment and environment.engineflags.directives then
+    directives.enable(environment.engineflags.directives)
+end
+
 -- nice trick: we overload two of the directives related functions with variants that
 -- do tracing (itself using a tracker) .. proof of concept
+
+local function report(...) -- messy .. chicken or egg
+    local p = (commands and commands.writestatus) or (logs and logs.report)
+    if p then p(...) end
+end
 
 local trace_directives  = false local trace_directives  = false  trackers.register("system.directives",  function(v) trace_directives  = v end)
 local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
-local e = directives.enable
-local d = directives.disable
+local enable  = directives.enable
+local disable = directives.disable
 
 function directives.enable(...)
-    (commands.writestatus or logs.report)("directives","enabling: %s",concat({...}," "))
-    e(...)
+    report("directives","enabling: %s",concat({...}," "))
+    enable(...)
 end
 
 function directives.disable(...)
-    (commands.writestatus or logs.report)("directives","disabling: %s",concat({...}," "))
-    d(...)
+    report("directives","disabling: %s",concat({...}," "))
+    disable(...)
 end
 
-local e = experiments.enable
-local d = experiments.disable
+local enable  = experiments.enable
+local disable = experiments.disable
 
 function experiments.enable(...)
-    (commands.writestatus or logs.report)("experiments","enabling: %s",concat({...}," "))
-    e(...)
+    report("experiments","enabling: %s",concat({...}," "))
+    enable(...)
 end
 
 function experiments.disable(...)
-    (commands.writestatus or logs.report)("experiments","disabling: %s",concat({...}," "))
-    d(...)
+    report("experiments","disabling: %s",concat({...}," "))
+    disable(...)
 end
 
 -- a useful example
@@ -4087,6 +4263,15 @@ end
 directives.register("system.nostatistics", function(v)
     statistics.enable = not v
 end)
+
+-- experiment
+
+if trackers and environment and environment.engineflags.trackers then
+    trackers.enable(environment.engineflags.trackers)
+end
+if directives and environment and environment.engineflags.directives then
+    directives.enable(environment.engineflags.directives)
+end
 
 
 end -- of closure
@@ -6357,17 +6542,19 @@ apply_axis['child'] = function(list)
     for l=1,#list do
         local ll = list[l]
         local dt = ll.dt
-        local en = 0
-        for k=1,#dt do
-            local dk = dt[k]
-            if dk.tg then
-                collected[#collected+1] = dk
-                dk.ni = k -- refresh
-            en = en + 1
-            dk.ei = en
+        if dt then -- weird that this is needed
+            local en = 0
+            for k=1,#dt do
+                local dk = dt[k]
+                if dk.tg then
+                    collected[#collected+1] = dk
+                    dk.ni = k -- refresh
+                en = en + 1
+                dk.ei = en
+                end
             end
+            ll.en = en
         end
-        ll.en = en
     end
     return collected
 end
@@ -8079,6 +8266,7 @@ local finalizers   = xml.finalizers.xml
 local xmlfilter    = xml.filter -- we could inline this one for speed
 local xmltostring  = xml.tostring
 local xmlserialize = xml.serialize
+local xmlcollected = xml.collected
 
 local function first(collected) -- wrong ?
     return collected and collected[1]
@@ -8355,6 +8543,19 @@ end
 xml.all    = xml.filter
 xml.index  = xml.position
 xml.found  = xml.filter
+
+-- a nice one:
+
+local function totable(x)
+    local t = { }
+    for e in xmlcollected(x[1] or x,"/*") do
+        t[e.tg] = xmltostring(e.dt) or ""
+    end
+    return next(t) and t or nil
+end
+
+xml.table        = totable
+finalizers.table = totable
 
 
 end -- of closure
@@ -8943,6 +9144,7 @@ formats['pfb']          = 'T1FONTS'        suffixes['pfb']          = { 'pfb', '
 formats['vf']           = 'VFFONTS'        suffixes['vf']           = { 'vf' }
 formats['fea']          = 'FONTFEATURES'   suffixes['fea']          = { 'fea' }
 formats['cid']          = 'FONTCIDMAPS'    suffixes['cid']          = { 'cid', 'cidmap' }
+formats['icc']          = 'ICCPROFILES'    suffixes['icc']          = { 'icc' }
 formats['texmfscripts'] = 'TEXMFSCRIPTS'   suffixes['texmfscripts'] = { 'rb', 'pl', 'py' }
 formats['lua']          = 'LUAINPUTS'      suffixes['lua']          = { 'lua', 'luc', 'tma', 'tmc' }
 formats['lib']          = 'CLUAINPUTS'     suffixes['lib']          = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
@@ -8958,6 +9160,7 @@ alternatives['truetype fonts']       = 'ttf'
 alternatives['truetype collections'] = 'ttc'
 alternatives['truetype dictionary']  = 'dfont'
 alternatives['type1 fonts']          = 'pfb'
+alternatives['icc profiles']         = 'icc'
 
 --[[ldx--
 <p>If you wondered about some of the previous mappings, how about
@@ -12160,6 +12363,21 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 
 -- helper for mtxrun
 
+local quote = string.quote
+
+local function primaryflags()
+    local trackers   = environment.argument("trackers")
+    local directives = environment.argument("directives")
+    local flags = ""
+    if trackers and trackers ~= "" then
+        flags = flags .. "--trackers=" .. quote(trackers)
+    end
+    if directives and directives ~= "" then
+        flags = flags .. "--directives=" .. quote(directives)
+    end
+    return flags
+end
+
 function environment.make_format(name)
     -- change to format path (early as we need expanded paths)
     local olddir = lfs.currentdir()
@@ -12220,8 +12438,7 @@ function environment.make_format(name)
         return
     end
     -- generate format
-    local q = string.quote
-    local command = string.format("luatex --ini --lua=%s %s %sdump",q(usedluastub),q(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
+    local command = string.format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quote(usedluastub),quote(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
     logs.simple("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
@@ -12260,7 +12477,7 @@ function environment.run_format(name,data,more)
                 logs.simple("no luc/lua with name: %s",barename)
             else
                 local q = string.quote
-                local command = string.format("luatex --fmt=%s --lua=%s %s %s",q(barename),q(luaname),q(data),more ~= "" and q(more) or "")
+                local command = string.format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quote(barename),quote(luaname),quote(data),more ~= "" and quote(more) or "")
                 logs.simple("running command: %s",command)
                 os.spawn(command)
             end

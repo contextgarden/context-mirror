@@ -33,8 +33,10 @@ local make_glyph_node    = nodes.glyph
 local remove_node        = nodes.remove -- ! nodes
 local tonodes            = blobs.tonodes
 
-local glyph = node.id("glyph")
-local kern  = node.id("kern")
+local nodecodes = nodes.nodecodes
+
+local glyph = nodecodes.glyph
+local kern  = nodecodes.kern
 
 typesetting             = typesetting             or {}
 typesetting.breakpoints = typesetting.breakpoints or {}

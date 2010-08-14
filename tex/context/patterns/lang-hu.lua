@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="hu",
-  ["source"]="hyph-hu.tex",
-  ["texcomment"]="% Huhyphn - hungarian hyphenation patterns v20081106\
+  ["source"]="hyph-hu",
+  ["texcomment"]="% Hungarian Hyphenation Patterns (v20031107)\
+% \
+% (more info about the licence to be added later)\
+% \
+% Huhyphn - hungarian hyphenation patterns v20081106\
 %\
 % Copyright (C) 2003-2008, Bence Nagy <nagybence@tipogral.hu>\
 % This file can be distributed under the terms of the\

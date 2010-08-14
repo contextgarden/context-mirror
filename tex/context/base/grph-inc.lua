@@ -988,7 +988,8 @@ local gifconverter     = { }
 figures.converters.gif = gifconverter
 
 figures.programs.convert = {
-    command = "convert" -- imagemagick
+    command = "convert"    -- imagemagick
+ -- command = "gm convert" -- graphicmagick
 }
 
 function gifconverter.pdf(oldname,newname)

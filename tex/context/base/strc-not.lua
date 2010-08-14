@@ -304,7 +304,11 @@ function notes.flush(tag,whatkind) -- store and postpone
                 if trace_notes then
                     report_notes("flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
                 end
+                -- todo: as registers: start, stop, inbetween
                 for i=ns,#nd do
+                    if i > ns then
+                        texsprint(ctxcatcodes,format("\\betweennoteitself{%s}",tag))
+                    end
                     texsprint(ctxcatcodes,format("\\handlenoteitself{%s}{%s}",tag,i))
                 end
             end

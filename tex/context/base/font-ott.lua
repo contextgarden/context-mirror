@@ -691,38 +691,40 @@ otf.meanings.checkers = {
 local checkers = otf.meanings.checkers
 
 function otf.meanings.normalize(features)
-    local h = { }
-    for k,v in next, features do
-        k = lower(k)
-        if k == "language" or k == "lang" then
-            v = gsub(lower(v),"[^a-z0-9%-]","")
-            if not languages[v] then
-                h.language = to_languages[v] or "dflt"
-            else
-                h.language = v
-            end
-        elseif k == "script" then
-            v = gsub(lower(v),"[^a-z0-9%-]","")
-            if not scripts[v] then
-                h.script = to_scripts[v] or "dflt"
-            else
-                h.script = v
-            end
-        else
-            if type(v) == "string" then
-                local b = v:is_boolean()
-                if type(b) == "nil" then
-                    v = tonumber(v) or lower(v)
+    if features then
+        local h = { }
+        for k,v in next, features do
+            k = lower(k)
+            if k == "language" or k == "lang" then
+                v = gsub(lower(v),"[^a-z0-9%-]","")
+                if not languages[v] then
+                    h.language = to_languages[v] or "dflt"
                 else
-                    v = b
+                    h.language = v
                 end
+            elseif k == "script" then
+                v = gsub(lower(v),"[^a-z0-9%-]","")
+                if not scripts[v] then
+                    h.script = to_scripts[v] or "dflt"
+                else
+                    h.script = v
+                end
+            else
+                if type(v) == "string" then
+                    local b = v:is_boolean()
+                    if type(b) == "nil" then
+                        v = tonumber(v) or lower(v)
+                    else
+                        v = b
+                    end
+                end
+                k = to_features[k] or k
+                local c = checkers[k]
+                h[k] = c and c(v) or v
             end
-            k = to_features[k] or k
-            local c = checkers[k]
-            h[k] = c and c(v) or v
         end
+        return h
     end
-    return h
 end
 
 -- When I feel the need ...

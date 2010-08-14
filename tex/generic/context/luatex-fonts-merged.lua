@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/30/10 11:35:46
+-- merge date  : 08/10/10 17:14:16
 
 do -- begin closure to overcome local limits and interference
 
@@ -337,7 +337,8 @@ patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
 patterns.lowercase     = R("az")
 patterns.uppercase     = R("AZ")
 patterns.letter        = patterns.lowercase + patterns.uppercase
-patterns.space         = S(" ")
+patterns.space         = P(" ")
+patterns.tab           = P("\t")
 patterns.eol           = S("\n\r")
 patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
 patterns.newline       = crlf + cr + lf
@@ -348,6 +349,9 @@ patterns.nonwhitespace = 1 - patterns.whitespace
 patterns.utf8          = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
 patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
 patterns.validutf8     = patterns.utf8^0 * P(-1) * Cc(true) + Cc(false)
+patterns.comma         = P(",")
+patterns.commaspacer   = P(",") * patterns.spacer^0
+patterns.period        = P(".")
 
 patterns.undouble      = P('"')/"" * (1-P('"'))^0 * P('"')/""
 patterns.unsingle      = P("'")/"" * (1-P("'"))^0 * P("'")/""
@@ -468,15 +472,41 @@ local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 6
 
 patterns.utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
 
+--~ local str = " a b c d "
+
+--~ local s = lpeg.stripper(lpeg.R("az"))   print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.keeper(lpeg.R("az"))     print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.stripper("ab")           print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.keeper("ab")             print("["..lpeg.match(s,str).."]")
+
 local cache = { }
 
 function lpeg.stripper(str)
-    local s = cache[str]
-    if not s then
-        s = Cs(((S(str)^1)/"" + 1)^0)
-        cache[str] = s
+    if type(str) == "string" then
+        local s = cache[str]
+        if not s then
+            s = Cs(((S(str)^1)/"" + 1)^0)
+            cache[str] = s
+        end
+        return s
+    else
+        return Cs(((str^1)/"" + 1)^0)
     end
-    return s
+end
+
+local cache = { }
+
+function lpeg.keeper(str)
+    if type(str) == "string" then
+        local s = cache[str]
+        if not s then
+            s = Cs((((1-S(str))^1)/"" + 1)^0)
+            cache[str] = s
+        end
+        return s
+    else
+        return Cs((((1-str)^1)/"" + 1)^0)
+    end
 end
 
 function lpeg.replacer(t)
@@ -764,7 +794,7 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
-function table.sortedhash(t)
+local function sortedhash(t)
     local s = sortedhashkeys(t) -- maybe just sortedkeys
     local n = 0
     local function kv(s)
@@ -775,7 +805,8 @@ function table.sortedhash(t)
     return kv, s
 end
 
-table.sortedpairs = table.sortedhash
+table.sortedhash  = sortedhash
+table.sortedpairs = sortedhash
 
 function table.append(t, list)
     for _,v in next, list do
@@ -1470,12 +1501,26 @@ function table.count(t)
     return n
 end
 
-function table.swapped(t)
-    local s = { }
-    for k, v in next, t do
-        s[v] = k
+function table.swapped(t,s)
+    local n = { }
+    if s then
+--~         for i=1,#s do
+--~             n[i] = s[i]
+--~         end
+        for k, v in next, s do
+            n[k] = v
+        end
     end
-    return s
+--~     for i=1,#t do
+--~         local ti = t[i] -- don't ask but t[i] can be nil
+--~         if ti then
+--~             n[ti] = i
+--~         end
+--~     end
+    for k, v in next, t do
+        n[v] = k
+    end
+    return n
 end
 
 --~ function table.are_equal(a,b)
@@ -1498,7 +1543,7 @@ function table.hexed(t,seperator)
     return concat(tt,seperator or " ")
 end
 
-function table.reverse_hash(h)
+function table.reverse_hash(h) -- needs another name
     local r = { }
     for k,v in next, h do
         r[v] = lower(gsub(k," ",""))
@@ -1546,10 +1591,18 @@ function table.insert_after_value(t,value,extra)
     insert(t,#t+1,extra)
 end
 
-function table.sequenced(t,sep)
+function table.sequenced(t,sep,simple) -- hash only
     local s = { }
-    for k, v in next, t do -- indexed?
-        s[#s+1] = k .. "=" .. tostring(v)
+    for k, v in sortedhash(t) do
+        if simple then
+            if v == true then
+                s[#s+1] = k
+            elseif v and v~= "" then
+                s[#s+1] = k .. "=" .. tostring(v)
+            end
+        else
+            s[#s+1] = k .. "=" .. tostring(v)
+        end
     end
     return concat(s, sep or " | ")
 end
@@ -2173,6 +2226,39 @@ function io.ask(question,default,options)
             end
         end
     end
+end
+
+function io.readnumber(f,n,m)
+    if m then
+        f:seek("set",n)
+        n = m
+    end
+    if n == 1 then
+        return byte(f:read(1))
+    elseif n == 2 then
+        local a, b = byte(f:read(2),1,2)
+        return 256*a + b
+    elseif n == 4 then
+        local a, b, c, d = byte(f:read(4),1,4)
+        return 256^3 * a + 256^2 * b + 256*c + d
+    elseif n == 8 then
+        local a, b = readnumber(f,4), readnumber(f,4)
+        return 256 * b + c
+    elseif n == 12 then
+        local a, b, c = readnumber(f,4), readnumber(f,4), readnumber(f,4)
+        return 256^2 * a + 256 * b + c
+    else
+        return 0
+    end
+end
+
+function io.readstring(f,n,m)
+    if m then
+        f:seek("set",n)
+        n = m
+    end
+    local str = gsub(f:read(n),"%z","")
+    return str
 end
 
 end -- closure
@@ -3120,7 +3206,6 @@ fonts.qua = fonts.qua or { } fonts.quads       = fonts.qua -- aka quaddata
 
 fonts.tfm = fonts.tfm or { }
 
-fonts.mode    = 'base'
 fonts.private = 0xF0000 -- 0x10FFFF
 fonts.verbose = false -- more verbose cache tables
 
@@ -3443,6 +3528,10 @@ function tfm.do_scale(tfmtable, scaledpoints, relativeid)
     local hasquality = tfmtable.auto_expand or tfmtable.auto_protrude
     local hasitalic = tfmtable.has_italic
     local descriptions = tfmtable.descriptions or { }
+    --
+    if hasmath then
+        t.has_math = true -- this will move to elsewhere
+    end
     --
     t.parameters = { }
     t.characters = { }
@@ -4785,38 +4874,40 @@ otf.meanings.checkers = {
 local checkers = otf.meanings.checkers
 
 function otf.meanings.normalize(features)
-    local h = { }
-    for k,v in next, features do
-        k = lower(k)
-        if k == "language" or k == "lang" then
-            v = gsub(lower(v),"[^a-z0-9%-]","")
-            if not languages[v] then
-                h.language = to_languages[v] or "dflt"
-            else
-                h.language = v
-            end
-        elseif k == "script" then
-            v = gsub(lower(v),"[^a-z0-9%-]","")
-            if not scripts[v] then
-                h.script = to_scripts[v] or "dflt"
-            else
-                h.script = v
-            end
-        else
-            if type(v) == "string" then
-                local b = v:is_boolean()
-                if type(b) == "nil" then
-                    v = tonumber(v) or lower(v)
+    if features then
+        local h = { }
+        for k,v in next, features do
+            k = lower(k)
+            if k == "language" or k == "lang" then
+                v = gsub(lower(v),"[^a-z0-9%-]","")
+                if not languages[v] then
+                    h.language = to_languages[v] or "dflt"
                 else
-                    v = b
+                    h.language = v
                 end
+            elseif k == "script" then
+                v = gsub(lower(v),"[^a-z0-9%-]","")
+                if not scripts[v] then
+                    h.script = to_scripts[v] or "dflt"
+                else
+                    h.script = v
+                end
+            else
+                if type(v) == "string" then
+                    local b = v:is_boolean()
+                    if type(b) == "nil" then
+                        v = tonumber(v) or lower(v)
+                    else
+                        v = b
+                    end
+                end
+                k = to_features[k] or k
+                local c = checkers[k]
+                h[k] = c and c(v) or v
             end
-            k = to_features[k] or k
-            local c = checkers[k]
-            h[k] = c and c(v) or v
         end
+        return h
     end
-    return h
 end
 
 -- When I feel the need ...
@@ -6819,22 +6910,23 @@ end
 
 -- for context this will become a task handler
 
+local lists = { -- why local
+    fonts.triggers,
+    fonts.processors,
+    fonts.manipulators,
+}
+
 function otf.set_features(tfmdata,features)
     local processes = { }
     if features and next(features) then
-        local lists = { -- why local
-            fonts.triggers,
-            fonts.processors,
-            fonts.manipulators,
-        }
-        local mode = tfmdata.mode or fonts.mode -- or features.mode
+        local mode = tfmdata.mode or features.mode or "base"
         local initializers = fonts.initializers
         local fi = initializers[mode]
         if fi then
             local fiotf = fi.otf
             if fiotf then
                 local done = { }
-                for l=1,4 do
+                for l=1,#lists do
                     local list = lists[l]
                     if list then
                         for i=1,#list do
@@ -6846,7 +6938,7 @@ function otf.set_features(tfmdata,features)
                                         report_otf("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown', tfmdata.fullname or 'unknown')
                                     end
                                     fiotf[f](tfmdata,value) -- can set mode (no need to pass otf)
-                                    mode = tfmdata.mode or fonts.mode -- keep this, mode can be set local !
+                                    mode = tfmdata.mode or features.mode or "base"
                                     local im = initializers[mode]
                                     if im then
                                         fiotf = initializers[mode].otf
@@ -6859,11 +6951,12 @@ function otf.set_features(tfmdata,features)
                 end
             end
         end
+tfmdata.mode = mode
         local fm = fonts.methods[mode] -- todo: zonder node/mode otf/...
         if fm then
             local fmotf = fm.otf
             if fmotf then
-                for l=1,4 do
+                for l=1,#lists do
                     local list = lists[l]
                     if list then
                         for i=1,#list do
@@ -6966,7 +7059,8 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
         local glyphs, pfminfo, metadata = data.glyphs or { }, data.pfminfo or { }, data.metadata or { }
         local luatex = data.luatex
         local unicodes = luatex.unicodes -- names to unicodes
-        local indices = luatex.indices
+        local indices = luatex.indices        local mode = data.mode or "base"
+
         local characters, parameters, math_parameters, descriptions = { }, { }, { }, { }
         local designsize = metadata.designsize or metadata.design_size or 100
         if designsize == 0 then
@@ -7108,6 +7202,7 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
             designsize         = (designsize/10)*65536,
             spacer             = "500 units",
             encodingbytes      = 2,
+            mode               = mode,
             filename           = filename,
             fontname           = fontname,
             fullname           = fullname,
@@ -7279,6 +7374,7 @@ function otf.set_dynamics(font,dynamics,attribute)
                 features  = tfmdata.shared.features
             }
             tfmdata.mode     = "node"
+            tfmdata.dynamics = true -- handy for tracing
             tfmdata.language = language
             tfmdata.script   = script
             tfmdata.shared.features = { }
@@ -11528,7 +11624,7 @@ function define.register(fontdata,id)
             end
             fonts.identifiers[id] = fontdata
             fonts.characters [id] = fontdata.characters
-            fonts.quads      [id] = fontdata.parameters.quad
+            fonts.quads      [id] = fontdata.parameters and fontdata.parameters.quad
             -- todo: extra functions, e.g. setdigitwidth etc in list
             tfm.internalized[hash] = id
         end
@@ -11606,7 +11702,6 @@ function define.read(specification,size,id) -- id can be optional, name can alre
             fontdata.encodingname  or "unicode",
             fontdata.fullname      or "?",
             file.basename(fontdata.filename or "?"))
-
     end
     statistics.stoptiming(fonts)
     return fontdata

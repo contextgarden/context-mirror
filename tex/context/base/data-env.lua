@@ -31,6 +31,7 @@ formats['pfb']          = 'T1FONTS'        suffixes['pfb']          = { 'pfb', '
 formats['vf']           = 'VFFONTS'        suffixes['vf']           = { 'vf' }
 formats['fea']          = 'FONTFEATURES'   suffixes['fea']          = { 'fea' }
 formats['cid']          = 'FONTCIDMAPS'    suffixes['cid']          = { 'cid', 'cidmap' }
+formats['icc']          = 'ICCPROFILES'    suffixes['icc']          = { 'icc' }
 formats['texmfscripts'] = 'TEXMFSCRIPTS'   suffixes['texmfscripts'] = { 'rb', 'pl', 'py' }
 formats['lua']          = 'LUAINPUTS'      suffixes['lua']          = { 'lua', 'luc', 'tma', 'tmc' }
 formats['lib']          = 'CLUAINPUTS'     suffixes['lib']          = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
@@ -46,6 +47,7 @@ alternatives['truetype fonts']       = 'ttf'
 alternatives['truetype collections'] = 'ttc'
 alternatives['truetype dictionary']  = 'dfont'
 alternatives['type1 fonts']          = 'pfb'
+alternatives['icc profiles']         = 'icc'
 
 --[[ldx--
 <p>If you wondered about some of the previous mappings, how about

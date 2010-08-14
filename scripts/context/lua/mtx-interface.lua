@@ -161,7 +161,7 @@ function scripts.interface.context()
                     local v = t[key]
                     local value = v[language] or v["en"]
                     if not value then
-                        logs.simple(format("warning, no value for key '%s' for language '%s'",key,language))
+                        logs.simple("warning, no value for key '%s' for language '%s'",key,language)
                     else
                         local value = t[key][language] or t[key].en
                         texresult[#texresult+1] = format("\\setinterface%s{%s}{%s}",tag,key,value)
@@ -199,9 +199,9 @@ function scripts.interface.context()
                 local texfilename = format("mult-%s.tex",language)
                 local xmlfilename = format("keys-%s.xml",language)
                 io.savedata(texfilename,table.concat(texresult,"\n"))
-                logs.simple(format("saving interface definitions '%s'",texfilename))
+                logs.simple("saving interface definitions '%s'",texfilename)
                 io.savedata(xmlfilename,table.concat(xmlresult,"\n"))
-                logs.simple(format("saving interface translations '%s'",xmlfilename))
+                logs.simple("saving interface translations '%s'",xmlfilename)
                 if language ~= "en" and xmldata ~= "" then
                     local newdata = xmldata:gsub("(<cd:interface.*language=.)en(.)","%1"..language.."%2",1)
                     newdata = replace(newdata, 'cd:string', 'value', interface.commands, interface.elements, language)
@@ -212,7 +212,7 @@ function scripts.interface.context()
                     newdata = replace(newdata, 'cd:inherit', 'name', interface.commands, interface.elements, language)
                     local xmlfilename = format("cont-%s.xml",language)
                     io.savedata(xmlfilename,newdata)
-                    logs.simple(format("saving interface specification '%s'",xmlfilename))
+                    logs.simple("saving interface specification '%s'",xmlfilename)
                 end
             end
         end
@@ -223,6 +223,8 @@ function scripts.interface.messages()
     local filename = resolvers.find_file(environment.files[1] or "mult-mes.lua") or ""
     if filename ~= "" then
         local messages = dofile(filename)
+        logs.simple("messages for * loaded from '%s'",filename)
+        logs.simple()
         for i=1,#messageinterfaces do
             local interface = messageinterfaces[i]
             local texresult = { }
@@ -237,7 +239,9 @@ function scripts.interface.messages()
                 end
             end
             texresult[#texresult+1] = format("%%\n\\endinput")
-            io.savedata(format("mult-m%s.tex",interface),table.concat(texresult,"\n"))
+            local interfacefile = format("mult-m%s.tex",interface)
+            io.savedata(interfacefile,table.concat(texresult,"\n"))
+            logs.simple("messages for '%s' saved in '%s'",interface,interfacefile)
         end
     end
 end

@@ -278,23 +278,12 @@ end
 --
 -- normalize(ca,cb) fails for spotcolors
 
-function metapost.specials.cs(specification,object,result,flusher) -- spot colors?
-    -- a mess, not dynamic anyway
-    nofshades = nofshades + 1
-    flusher.flushfigure(result)
-    result = { }
-    local t = lpegmatch(specificationsplitter,specification)
-    -- we need a way to move/scale
-    local ca = lpegmatch(colorsplitter,t[4])
-    local cb = lpegmatch(colorsplitter,t[8])
+local function checkandconvert(ca,cb)
+    local name = format("MpSh%s",nofshades)
     if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
     if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
-    local name = format("MplSh%s",nofshades)
-    local domain = { tonumber(t[1]), tonumber(t[2]) }
-    local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[7]), tonumber(t[9]), tonumber(t[10]), tonumber(t[11]) }
     if type(ca) == "string" then
-        -- backend specific (will be renamed)
-        lpdf.circularshade(name,domain,{ 0 },{ 1 },1,"DeviceGray",coordinates)
+        return { 0 }, { 1 }, "DeviceGray", name
     else
         if #ca > #cb then
             normalize(ca,cb)
@@ -307,38 +296,43 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
         end
         if model == "rgb" then
             if #ca == 4 then
-                ca[1], ca[2], ca[3] = cmyktorgb(ca[1],ca[2],ca[3],ca[4])
-                cb[1], cb[2], cb[3] = cmyktorgb(cb[1],cb[2],cb[3],cb[4])
-                ca[4], cb[4] = nil, nil
+                ca = { cmyktorgb(ca[1],ca[2],ca[3],ca[4]) }
+                cb = { cmyktorgb(cb[1],cb[2],cb[3],cb[4]) }
             elseif #ca == 1 then
                 local a, b = 1-ca[1], 1-cb[1]
-                ca[1], ca[2], ca[3] = a, a, a
-                cb[1], cb[2], cb[3] = b, b, b
+                ca = { a, a, a }
+                cb = { b, b, b }
             end
-            -- backend specific (will be renamed)
-            lpdf.circularshade(name,domain,ca,cb,1,"DeviceRGB",coordinates)
+            return ca, cb, "DeviceRGB", name
         elseif model == "cmyk" then
             if #ca == 3 then
-                ca[1], ca[2], ca[3], ca[4] = rgbtocmyk(ca[1],ca[2],ca[3])
-                cb[1], cb[2], cb[3], ca[4] = rgbtocmyk(cb[1],cb[2],cb[3])
+                ca = { rgbtocmyk(ca[1],ca[2],ca[3]) }
+                cb = { rgbtocmyk(cb[1],cb[2],cb[3]) }
             elseif #ca == 1 then
-                ca[1], ca[2], ca[3], ca[4] = 0, 0, 0, ca[1]
-                cb[1], cb[2], cb[3], ca[4] = 0, 0, 0, ca[1]
+                ca = { 0, 0, 0, ca[1] }
+                cb = { 0, 0, 0, ca[1] }
             end
-            -- backend specific (will be renamed)
-            lpdf.circularshade(name,domain,ca,cb,1,"DeviceCMYK",coordinates)
+            return ca, cb, "DeviceCMYK", name
         else
             if #ca == 4 then
-                ca[1] = cmyktogray(ca[1],ca[2],ca[3],ca[4])
-                cb[1] = cmyktogray(cb[1],cb[2],cb[3],cb[4])
+                ca = { cmyktogray(ca[1],ca[2],ca[3],ca[4]) }
+                cb = { cmyktogray(cb[1],cb[2],cb[3],cb[4]) }
             elseif #ca == 3 then
-                ca[1] = rgbtogray(ca[1],ca[2],ca[3])
-                cb[1] = rgbtogray(cb[1],cb[2],cb[3])
+                ca = { rgbtogray(ca[1],ca[2],ca[3]) }
+                cb = { rgbtogray(cb[1],cb[2],cb[3]) }
             end
             -- backend specific (will be renamed)
-            lpdf.circularshade(name,domain,ca,cb,1,"DeviceGRAY",coordinates)
+            return ca, cb, "DeviceGray", name
         end
     end
+end
+
+local function resources(object,name,flusher,result)
+    -- There is no real need for flushing in between, so:
+    --
+    -- flusher.flushfigure(result)
+    -- local result = { }
+    --
     local before = function()
         result[#result+1] = "q /Pattern cs"
         return object, result
@@ -351,75 +345,30 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
     return object, before, nil, after
 end
 
+-- todo: we need a way to move/scale
+
+function metapost.specials.cs(specification,object,result,flusher) -- spot colors?
+    nofshades = nofshades + 1
+    local t = lpegmatch(specificationsplitter,specification)
+    local ca = lpegmatch(colorsplitter,t[4])
+    local cb = lpegmatch(colorsplitter,t[8])
+    local domain = { tonumber(t[1]), tonumber(t[2]) }
+    local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[7]), tonumber(t[9]), tonumber(t[10]), tonumber(t[11]) }
+    local ca, cb, colorspace, name = checkandconvert(ca,cb)
+    lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
+    return resources(object,name,flusher,result) -- object, before, nil, after
+end
+
 function metapost.specials.ls(specification,object,result,flusher)
     nofshades = nofshades + 1
-    flusher.flushfigure(result)
-    result = { }
     local t = lpegmatch(specificationsplitter,specification)
-    -- we need a way to move/scale
     local ca = lpegmatch(colorsplitter,t[4])
     local cb = lpegmatch(colorsplitter,t[7])
-    if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
-    if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
-    local name = format("MpSh%s",nofshades)
     local domain = { tonumber(t[1]), tonumber(t[2]) }
     local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[8]), tonumber(t[9]) }
-    if type(ca) == "string" then
-        -- backend specific (will be renamed)
-        lpdf.linearshade(name,domain,{ 0 },{ 1 },1,"DeviceGray",coordinates)
-    else
-        if #ca > #cb then
-            normalize(ca,cb)
-        elseif #ca < #cb then
-            normalize(cb,ca)
-        end
-        local model = colors.model
-        if model == "all" then
-            model= (#ca == 4 and "cmyk") or (#ca == 3 and "rgb") or "gray"
-        end
-        if model == "rgb" then
-            if #ca == 4 then
-                ca[1], ca[2], ca[3] = cmyktorgb(ca[1],ca[2],ca[3],ca[4])
-                cb[1], cb[2], cb[3] = cmyktorgb(cb[1],cb[2],cb[3],cb[4])
-            elseif #ca == 1 then
-                local a, b = 1-ca[1], 1-cb[1]
-                ca[1], ca[2], ca[3] = a, a, a
-                cb[1], cb[2], cb[3] = b, b, b
-            end
-            -- backend specific (will be renamed)
-            lpdf.linearshade(name,domain,ca,cb,1,"DeviceRGB",coordinates)
-        elseif model == "cmyk" then
-            if #ca == 3 then
-                ca[1], ca[2], ca[3], ca[4] = rgbtocmyk(ca[1],ca[2],ca[3])
-                cb[1], cb[2], cb[3], ca[4] = rgbtocmyk(cb[1],cb[2],cb[3])
-            elseif #ca == 1 then
-                ca[1], ca[2], ca[3], ca[4] = 0, 0, 0, ca[1]
-                cb[1], cb[2], cb[3], ca[4] = 0, 0, 0, ca[1]
-            end
-            -- backend specific (will be renamed)
-            lpdf.linearshade(name,domain,ca,cb,1,"DeviceCMYK",coordinates)
-        else
-            if #ca == 4 then
-                ca[1] = cmyktogray(ca[1],ca[2],ca[3],ca[4])
-                cb[1] = cmyktogray(cb[1],cb[2],cb[3],cb[4])
-            elseif #ca == 3 then
-                ca[1] = rgbtogray(ca[1],ca[2],ca[3])
-                cb[1] = rgbtogray(cb[1],cb[2],cb[3])
-            end
-            -- backend specific (will be renamed)
-            lpdf.linearshade(name,domain,ca,cb,1,"DeviceGRAY",coordinates)
-        end
-    end
-    local before = function()
-        result[#result+1] = "q /Pattern cs"
-        return object, result
-    end
-    local after = function()
-        result[#result+1] = format("W n /%s sh Q", name)
-        return object, result
-    end
-    object.color, object.type = nil, nil
-    return object, before, nil, after
+    local ca, cb, colorspace, name = checkandconvert(ca,cb)
+    lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
+    return resources(object,name,flusher,result) -- object, before, nil, after
 end
 
 -- no need for a before here

@@ -2,7 +2,7 @@
 
 % for comment and copyright, see e:/tmp/patterns/lang-pt.rme
 
-% used: a b c d e f g h i j k l m n o p q r s t u v w x z á â ã ç é ê í ó ô õ ú
+% used: - a b c d e f g h i j k l m n o p q r s t u v w x z á â ã ç é ê í ó ô õ ú
 
 \patterns{
 1b2l
@@ -310,4 +310,5 @@ s3s
 u3a
 u3e
 u3o
-u3u}
+u3u
+1-}

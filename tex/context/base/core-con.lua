@@ -23,6 +23,23 @@ local tonumber, tostring = tonumber, tostring
 
 local ctxcatcodes = tex.ctxcatcodes
 
+local function flush(...)
+    texsprint(ctxcatcodes,...)
+end
+
+function converters.convert(method,n,direct)
+    local method = converters[method]
+    if method then
+        return method(n,direct)
+    else
+        return direct and n or flush(n)
+    end
+end
+
+function converters.numberst(n,direct)
+    return direct and n or flush(n)
+end
+
 converters = converters or { }
 languages  = languages  or { }
 
@@ -123,24 +140,61 @@ counters['kr-c']    = counters['korean-circle']
 
 local fallback = utf.byte('0')
 
-local function chr(n,m)
-    if n > 0 and n < 27 then
-        texsprint(utfchar(n+m))
-    end
+local function chr(n,m,direct)
+    local s = (n > 0 and n < 27 and utfchar(n+m)) or ""
+    if direct then return s else flush(s) end
 end
-local function chrs(n,m)
+
+--~ local function chrs(n,m,direct)
+--~     if n > 26 then
+--~         chrs(floor((n-1)/26),m)
+--~         n = (n-1)%26 + 1
+--~     end
+--~     flush(utfchar(n+m))
+--~ end
+
+local function chrs(n,m,direct,t)
+    if not t then
+        t = { }
+    end
     if n > 26 then
-        chrs(floor((n-1)/26),m)
+        chrs(floor((n-1)/26),m,direct,t)
         n = (n-1)%26 + 1
     end
-    texsprint(utfchar(n+m))
+    t[#t+1] = utfchar(n+m)
+    if n <= 26 then
+        if direct then
+            return concat(t)
+        else
+            flush(concat(t))
+        end
+    end
 end
-local function maxchrs(n,m,cmd)
+
+--~ local function maxchrs(n,m,cmd,direct)
+--~     if n > m then
+--~         maxchrs(floor((n-1)/m),m,cmd)
+--~         n = (n-1)%m + 1
+--~     end
+--~     flush(format("%s{%s}",cmd,n))
+--~ end
+
+local function maxchrs(n,m,cmd,direct,t) -- direct is not ok
+    if not t then
+        t = { }
+    end
     if n > m then
         maxchrs(floor((n-1)/m),m,cmd)
         n = (n-1)%m + 1
     end
-    texsprint(ctxcatcodes, format("%s{%s}",cmd,n))
+    t[#t+1] = format("%s{%s}",cmd,n)
+    if n <= m then
+        if direct then
+            return concat(t)
+        else
+            flush(concat(t))
+        end
+    end
 end
 
 converters.chr     = chr
@@ -158,7 +212,7 @@ converters.maxchrs = maxchrs
 --~         n = (n-1)%max+1
 --~     end
 --~     n = chr(n,mapping)
---~     texsprint(ctxcatcodes,escapes[n] or utfchar(n))
+--~     flush(escapes[n] or utfchar(n))
 --~ end
 
 --~ local lccodes, uccodes = characters.lccode, characters.uccode
@@ -183,35 +237,52 @@ converters.maxchrs = maxchrs
 --~     do_alphabetic(n,counters[code] or counters['**'],uppercased)
 --~ end
 
---
+local flushcharacter = characters and characters.flush  or function(s) return utfchar(s) end
+local lowercharacter = characters and characters.lccode or function(s) return s end
+local uppercharacter = characters and characters.uccode or function(s) return s end
 
-local function do_alphabetic(n,mapping,mapper)
-    local chr = mapper(mapping[n] or fallback)
+local function do_alphabetic(n,mapping,mapper,direct,verbose,t)
+    if not t then
+        t = { }
+    end
+    local chr = mapping[n] or fallback
+    if mapper then
+        chr = mapper(chr)
+    end
     local max = #mapping
     if n > max then
-        do_alphabetic(floor((n-1)/max),mapping,mapper)
+        do_alphabetic(floor((n-1)/max),mapping,mapper,direct,verbose,t)
         n = (n-1)%max+1
     end
-    characters.flush(chr)
+    if verbose or type(chr) ~= "number" then
+        t[#t+1] = chr
+    else
+        t[#t+1] = utfchar(chr) -- flushcharacter(chr,true) -- force direct here; can't we just use utfchar(chr) nowadays?
+    end
+    if n <= max then
+        if direct then
+            return concat(t)
+        else
+            flush(concat(t))
+        end
+    end
 end
 
-function converters.alphabetic(n,code)
-    do_alphabetic(n,counters[code] or counters['**'],characters.lccode)
+function converters.alphabetic(n,code,direct)
+    return do_alphabetic(n,counters[code] or counters['**'],lowercharacter,direct)
+end
+function converters.Alphabetic(n,code,direct)
+    return do_alphabetic(n,counters[code] or counters['**'],uppercharacter,direct)
 end
 
-function converters.Alphabetic(n,code)
-    do_alphabetic(n,counters[code] or counters['**'],characters.uccode)
-end
+function converters.character (n,direct) return chr (n,96,direct) end
+function converters.Character (n,direct) return chr (n,64,direct) end
+function converters.characters(n,direct) return chrs(n,96,direct) end
+function converters.Characters(n,direct) return chrs(n,64,direct) end
 
---
-
-function converters.character (n) chr (n,96) end
-function converters.Character (n) chr (n,64) end
-function converters.characters(n) chrs(n,96) end
-function converters.Characters(n) chrs(n,64) end
-
-function converters.weekday(day,month,year)
-    texsprint(date("%w",time{year=year,month=month,day=day})+1)
+function converters.weekday(day,month,year,direct)
+    local s = date("%w",time{year=year,month=month,day=day}) + 1
+    if direct then return s else flush(s) end
 end
 
 function converters.isleapyear(year)
@@ -219,7 +290,8 @@ function converters.isleapyear(year)
 end
 
 function converters.leapyear(year)
-    if converters.isleapyear(year) then texsprint(1) else texsprint(0) end
+    local s = converters.isleapyear(year) and 1 or 0
+    if direct then return s else flush(s) end
 end
 
 local days = {
@@ -227,16 +299,19 @@ local days = {
     [true]  = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 }
 
-function converters.nofdays(year,month)
-    texsprint(days[converters.isleapyear(year)][month])
+function converters.nofdays(year,month,direct)
+    local s = days[converters.isleapyear(year)][month]
+    if direct then return s else flush(s) end
 end
 
-function converters.year   () texsprint(date("%Y")) end
-function converters.month  () texsprint(date("%m")) end
-function converters.hour   () texsprint(date("%H")) end
-function converters.minute () texsprint(date("%M")) end
-function converters.second () texsprint(date("%S")) end
-function converters.textime() texsprint(tonumber(date("%H"))*60+tonumber(date("%M"))) end
+function converters.year   (direct) local s = date("%Y") if direct then return s else flush(s) end end
+function converters.year   (direct) local s = date("%Y") if direct then return s else flush(s) end end
+function converters.month  (direct) local s = date("%m") if direct then return s else flush(s) end end
+function converters.hour   (direct) local s = date("%H") if direct then return s else flush(s) end end
+function converters.minute (direct) local s = date("%M") if direct then return s else flush(s) end end
+function converters.second (direct) local s = date("%S") if direct then return s else flush(s) end end
+function converters.textime(direct) local s = tonumber(date("%H")) * 60 + tonumber(date("%M"))
+                                                         if direct then return s else flush(s) end end
 
 local roman = {
     { [0] = '', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX' },
@@ -248,13 +323,12 @@ local function toroman(n)
     if n >= 4000 then
         return toroman(floor(n/1000)) .. " " .. toroman(n%1000)
     else
-        return rep("M",floor(n/1000)) .. roman[3][floor((n%1000)/100)] ..
-            roman[2][floor((n%100)/10)] .. roman[1][floor((n% 10)/1)]
+        return rep("M",floor(n/1000)) .. roman[3][floor((n%1000)/100)] .. roman[2][floor((n%100)/10)] .. roman[1][floor((n% 10)/1)]
     end
 end
 
-function converters.romannumerals(n) return texsprint(lower(toroman(n))) end
-function converters.Romannumerals(n) return texsprint(      toroman(n) ) end
+function converters.romannumerals(n,direct) local s = lower(toroman(n)) if direct then return s else flush(s) end end
+function converters.Romannumerals(n,direct) local s =       toroman(n)  if direct then return s else flush(s) end end
 
 converters.toroman = toroman
 
@@ -304,8 +378,8 @@ function converters.toabjad(n,what)
     end
 end
 
-function converters.abjadnumerals     (n) return texsprint(converters.toabjad(n,false)) end
-function converters.abjadnodotnumerals(n) return texsprint(converters.toabjad(n,true)) end
+function converters.abjadnumerals     (n,direct) local s = converters.toabjad(n,false) if direct then return s else flush(s) end end
+function converters.abjadnodotnumerals(n,direct) local s = converters.toabjad(n,true ) if direct then return s else flush(s) end end
 
 local vector = {
     normal = {
@@ -362,61 +436,6 @@ local vector = {
         [100000000] = "亿",
     }
 }
-
---~ function tochinese(n,name) -- normal, caps, all
---~     local result = { }
---~     local vector = vector[name] or vector.normal
---~     while true do
---~         if n == 0 then
---~             break
---~         elseif n >= 100000000 then
---~             local m = floor(n/100000000)
---~             if m > 1 then result[#result+1] = tochinese(m) end
---~             result[#result+1] = vector[100000000]
---~             n = n % 100000000
---~         elseif n >= 10000000 then
---~             result[#result+1] = tochinese(floor(n/10000))
---~             result[#result+1] = vector[10000]
---~             n = n % 10000
---~         elseif n >= 1000000 then
---~             result[#result+1] = tochinese(floor(n/10000))
---~             result[#result+1] = vector[10000]
---~             n = n % 10000
---~         elseif n >= 100000 then
---~             result[#result+1] = tochinese(floor(n/10000))
---~             result[#result+1] = vector[10000]
---~             n = n % 10000
---~         elseif n >= 10000 then
---~             local m = floor(n/10000)
---~             if m > 1 then result[#result+1] = vector[m] end
---~             result[#result+1] = vector[10000]
---~             n = n % 10000
---~         elseif n >= 1000 then
---~             local m = floor(n/1000)
---~             if m > 1 then result[#result+1] = vector[m] end
---~             result[#result+1] = vector[1000]
---~             n = n % 1000
---~         elseif n >= 100 then
---~             local m = floor(n/100)
---~             if m > 1 then result[#result+1] = vector[m] end
---~             result[#result+1] = vector[100]
---~             n = n % 100
---~         elseif n >= 10 then
---~             local m = floor(n/10)
---~             if vector[m*10] then
---~                 result[#result+1] = vector[m*10]
---~             else
---~                 result[#result+1] = vector[m]
---~                 result[#result+1] = vector[10]
---~             end
---~             n = n % 10
---~         else
---~             result[#result+1] = vector[n]
---~             break
---~         end
---~     end
---~     return concat(result)
---~ end
 
 local function tochinese(n,name) -- normal, caps, all
  -- improved version by Li Yanrui
@@ -500,9 +519,9 @@ end
 --~     print(v,tochinese(v),tochinese(v,"all"),tochinese(v,"cap"))
 --~ end
 
-function converters.chinesenumerals   (n) return texsprint(tochinese(n,"normal")) end
-function converters.chinesecapnumerals(n) return texsprint(tochinese(n,"cap"   )) end
-function converters.chineseallnumerals(n) return texsprint(tochinese(n,"all"   )) end
+function converters.chinesenumerals   (n) local s = tochinese(n,"normal") if direct then return s else flush(s) end end
+function converters.chinesecapnumerals(n) local s = tochinese(n,"cap"   ) if direct then return s else flush(s) end end
+function converters.chineseallnumerals(n) local s = tochinese(n,"all"   ) if direct then return s else flush(s) end end
 
 --~ Well, since the one asking for this didn't test it the following code is not
 --~ enabled.
@@ -603,3 +622,31 @@ function converters.chineseallnumerals(n) return texsprint(tochinese(n,"all"   )
 --~
 --~ print(gregorian_to_jalali(2009,02,24))
 --~ print(jalali_to_gregorian(1387,12,06))
+
+converters.sequences = converters.sequences or { }
+
+storage.register("converters/sequences", converters.sequences, "converters.sequences")
+
+local sequences = converters.sequences
+
+function converters.define(name,set)
+    sequences[name] = aux.settings_to_array(set)
+end
+
+function converters.convert(method,n,direct) -- todo: language
+    local converter = converters[method]
+    if converter then
+        return converter(n,direct)
+    else
+        local lowermethod = lower(method)
+        local linguistic = counters[lowermethod]
+        local sequence = sequences[method]
+        if linguistic then
+            return do_alphabetic(n,linguistic,lowermethod == method and lowercharacter or uppercharacter,direct,false)
+        elseif sequence then
+            return do_alphabetic(n,sequence,false,direct,true)
+        else
+            return direct and n or flush(n)
+        end
+    end
+end

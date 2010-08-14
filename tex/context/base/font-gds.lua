@@ -90,21 +90,21 @@ end
 
 -- featuresets
 
-local function flattened(t,tt)
+local function flattened_features(t,tt)
     -- first set value dominates
     local tt = tt or { }
     for i=1,#t do
         local ti = t[i]
         if type(ti) == "table" then
-            flattened(ti,tt)
+            flattened_features(ti,tt)
         elseif tt[ti] == nil then
             tt[ti] = true
         end
     end
     for k, v in next, t do
-        if type(k) ~= "number" then
+        if type(k) ~= "number" then -- not tonumber(k)
             if type(v) == "table" then
-                flattened(v,tt)
+                flattened_features(v,tt)
             elseif tt[k] == nil then
                 tt[k] = v
             end
@@ -113,11 +113,11 @@ local function flattened(t,tt)
     return tt
 end
 
-fonts.flattened_features = flattened
+fonts.flattened_features = flattened_features
 
 function fonts.goodies.prepare_features(goodies,name,set)
     if set then
-        local ff = fonts.flattened_features(set)
+        local ff = flattened_features(set)
         local fullname = goodies.name .. "::" .. name
         local n, s = preset_context(fullname,"",ff)
         goodies.featuresets[name] = s -- set

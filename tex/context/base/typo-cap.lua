@@ -21,8 +21,10 @@ local traverse_id     = node.traverse_id
 
 local texattribute = tex.attribute
 
-local glyph = node.id("glyph")
-local kern  = node.id("kern")
+local nodecodes = nodes.nodecodes
+
+local glyph = nodecodes.glyph
+local kern  = nodecodes.kern
 
 local fontdata = fonts.ids
 local fontchar = fonts.chr

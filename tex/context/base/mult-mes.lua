@@ -1363,6 +1363,12 @@ return {
    ["no"]="ulovlig referanse --",
    ["ro"]="referinta eronata --",
   },
+  ["5"]={
+   ["en"]="number of unknown references: --",
+  },
+  ["6"]={
+   ["en"]="number of illegal references: --",
+  },
   ["files"]={ "core-obj.tex", "core-ref.tex", "strc-ref.tex" },
   ["title"]={
    ["cs"]="reference",

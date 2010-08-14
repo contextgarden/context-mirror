@@ -52,8 +52,9 @@
 
 % interface
 
-\def\structureheadparameter    #1{\csname\dostructureheadparameter{\??nh\currentstructurehead}#1\endcsname}
-\def\structureheadparameterhash#1{\dostructureheadparameterhash   {\??nh\currentstructurehead}#1}
+\def\structureheadparameter       #1{\csname\dostructureheadparameter{\??nh\currentstructurehead}#1\endcsname}
+\def\structureheadparameterhash   #1{\dostructureheadparameterhash   {\??nh\currentstructurehead}#1}
+\def\namedstructureheadparameter#1#2{\csname\dostructureheadparameter{\??nh#1}#2\endcsname}
 
 \def\dostructureheadparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dostructureheadparentparameter    \csname#1\s!parent\endcsname#2\fi}
 \def\dostructureheadparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dostructureheadparentparameterhash\csname#1\s!parent\endcsname#2\fi}
@@ -376,6 +377,8 @@
 \let\currentstructureheadsection \empty
 \let\currentstructureheadlevel   \!!zerocount
 \let\currentstructureheadcounter \!!zerocount
+
+% here we could inherit as well but it's a bit complex
 
 \def\doregisterstructurehead#1#2#3% name data userdata
   {\structurecomponent

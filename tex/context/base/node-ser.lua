@@ -13,12 +13,14 @@ local type, format, concat = type, string.format, table.concat
 
 local ctxcatcodes = tex.ctxcatcodes
 
-local hlist   = node.id('hlist')
-local vlist   = node.id('vlist')
-
 local traverse    = node.traverse
 local node_fields = node.fields
 local node_type   = node.type
+
+local nodecodes = nodes.nodecodes
+
+local hlist = nodecodes.hlist
+local vlist = nodecodes.vlist
 
 local expand = table.tohash {
     "list",         -- list_ptr & ins_ptr & adjust_ptr

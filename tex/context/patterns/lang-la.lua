@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="la",
-  ["source"]="hyph-la.tex",
-  ["texcomment"]="% This file is part of hyph-utf8 package and resulted from\
+  ["source"]="hyph-la",
+  ["texcomment"]="% Latin Hyphenation Patterns\
+% \
+% (more info about the licence to be added later)\
+% \
+% This file is part of hyph-utf8 package and resulted from\
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: lahyph.tex (2007-09-03)\
@@ -99,14 +103,15 @@ return {
 % Bernd Raichle using the macro code from `dehypht.tex' (this code\
 % is Copyright 1993,1994,1998,1999 Bernd Raichle/DANTE e.V.).\
 %\
+% 2010/06/01 Removal of pattern 2'2 (probably a leftover from Italian)\
 %\
-% \\versionnumber{3.1}   \\versiondate{2007/04/16}\
+% \\versionnumber{3.2}   \\versiondate{2010/06/01}\
 %\
 % Information after \\endinput.\
 %\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 %\
-% \\message{Latin Hyphenation Patterns `lahyph' Version 3.1 <2007/04/16>}\
+% \\message{Latin Hyphenation Patterns `lahyph' Version 3.2 <2010/06/01>}\
 %\
 %",
  },

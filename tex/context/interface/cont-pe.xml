@@ -1148,6 +1148,10 @@
           <cd:constant type="بله"/>
           <cd:constant type="نه"/>
         </cd:parameter>
+        <cd:parameter name="پاراگراف">
+          <cd:constant type="بله"/>
+          <cd:constant type="نه" default="yes"/>
+        </cd:parameter>
         <cd:parameter name="عامل">
           <cd:constant type="cd:number"/>
         </cd:parameter>
@@ -3166,6 +3170,10 @@
         <cd:parameter name="فرمان">
           <cd:constant type="cd:command"/>
         </cd:parameter>
+        <cd:parameter name="نمایش">
+          <cd:constant type="بله" default="yes"/>
+          <cd:constant type="نه"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -5056,10 +5064,11 @@
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
         <cd:parameter name="پانل">
-          <cd:constant type="cd:sectionnumber"/>
-          <cd:constant type="cd:text"/>
+          <cd:constant type="شماره‌بخش"/>
+          <cd:constant type="متن"/>
           <cd:constant type="شماره‌صفحه"/>
           <cd:constant type="همه"/>
+          <cd:constant type="هیچکدام"/>
         </cd:parameter>
         <cd:parameter name="قبل‌از">
           <cd:constant type="cd:command"/>
@@ -6061,6 +6070,10 @@
         <cd:parameter name="متن‌حاشیه">
           <cd:constant type="بله"/>
           <cd:constant type="نه"/>
+        </cd:parameter>
+        <cd:parameter name="پانل">
+          <cd:constant type="لیست"/>
+          <cd:constant type="هیچکدام"/>
         </cd:parameter>
         <cd:inherit name="بارگذاری‌سرها" n="1"/>
       </cd:assignments>
@@ -8513,6 +8526,11 @@
         <cd:parameter name="پیشوند">
           <cd:constant type="cd:text"/>
         </cd:parameter>
+        <cd:parameter name="پانل">
+          <cd:constant type="بله"/>
+          <cd:constant type="نه"/>
+          <!-- more will follow -->
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -9319,6 +9337,12 @@
         <cd:constant type="cd:name"/>
         <cd:constant type="همه"/>
       </cd:keywords>
+      <cd:assignments n="3" optional="yes" list="yes">
+        <cd:parameter name="اجبار">
+          <cd:constant type="بله"/>
+          <cd:constant type="نه"/>
+        </cd:parameter>
+      </cd:assignments>
     </cd:arguments>
   </cd:command>
 

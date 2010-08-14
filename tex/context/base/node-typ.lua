@@ -10,9 +10,7 @@ if not modules then modules = { } end modules ['node-typ'] = {
 
 local utfvalues = string.utfvalues
 
-local newglyph = nodes.glyph
-local newglue  = nodes.glue
-
+local newglyph, newglue = nodes.glyph, nodes.glue
 local hpack, vpack = node.hpack, node.vpack
 
 typesetting = typesetting or { }
@@ -21,7 +19,7 @@ local function tonodes(str,fontid,spacing) -- don't use this
     local head, prev = nil, nil
     for s in utfvalues(str) do
         local next
-         if spacing and s == 32 then
+        if spacing and s == 32 then
             next = newglue(spacing or 64*1024*10)
         else
             next = newglyph(fontid or 1,s)

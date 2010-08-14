@@ -450,7 +450,7 @@
     \definetypescriptprefix [f:cursor]  [cursor]    \definetypescriptprefix [f:courier]    [cursor]
     \definetypescriptprefix [f:chorus]  [chorus]    \definetypescriptprefix [f:chancery]   [chorus] % not the full set
 
-    \starttypescript [serif,sans,mono] [adventor,bonum,bookman,cursor,courier,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times]
+    \starttypescript [serif,sans] [adventor,bonum,bookman,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-regular]    [\s!features=\s!default]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-italic]     [\s!features=\s!default]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]           [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bold]       [\s!features=\s!default]
@@ -459,6 +459,13 @@
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-ItalicCaps]     [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-italic]     [\s!features=\s!smallcaps]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldCaps]       [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bold]       [\s!features=\s!smallcaps]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps] [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bolditalic] [\s!features=\s!smallcaps]
+    \stoptypescript
+
+    \starttypescript [mono] [cursor,courier]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-regular]    [\s!features=\s!none]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-italic]     [\s!features=\s!none]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]           [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bold]       [\s!features=\s!none]
+        \definefontsynonym [\typescriptprefix{n:\typescripttwo}-BoldItalic]     [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bolditalic] [\s!features=\s!none]
     \stoptypescript
 
     \starttypescript [serif,calligraphy] [chorus,chancery]
@@ -1458,7 +1465,7 @@
     \starttypescript [lucida]
         \definetypeface [lucida] [rm] [\s!serif]       [lucida] [\s!default] [\s!features=\s!default]
         \definetypeface [lucida] [ss] [\s!sans]        [lucida] [\s!default] [\s!features=\s!default]
-        \definetypeface [lucida] [tt] [\s!mono]        [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [tt] [\s!mono]        [lucida] [\s!default] [\s!features=\s!none]
         \definetypeface [lucida] [hw] [\s!handwriting] [lucida] [\s!default] [\s!features=\s!default]
         \definetypeface [lucida] [cg] [\s!calligraphy] [lucida] [\s!default] [\s!features=\s!default]
         \definetypeface [lucida] [mm] [\s!math]        [lucida] [\s!default]
@@ -1497,8 +1504,8 @@
 
     \starttypescript[asana]
         \definetypeface [\typescriptone] [rm] [\s!serif] [palatino]       [\s!default]
-        \definetypeface [\typescriptone] [ss] [\s!sans]  [modern]         [\s!default] [rscale=1.075]
-        \definetypeface [\typescriptone] [tt] [\s!mono]  [modern]         [\s!default] [rscale=1.075]
+        \definetypeface [\typescriptone] [ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.075]
+        \definetypeface [\typescriptone] [tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.075]
         \definetypeface [\typescriptone] [mm] [\s!math]  [\typescriptone] [\s!default]
         \quittypescriptscanning
     \stoptypescript
@@ -1613,18 +1620,18 @@
 
     \starttypescript [sans] [mscorearial] [name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [\s!file:arial.ttf]   [\s!features=default]
-        \definefontsynonym [\s!SansBold]       [\s!file:arialbd.ttf] [\s!features=default]
-        \definefontsynonym [\s!SansItalic]     [\s!file:ariali.ttf]  [\s!features=default]
-        \definefontsynonym [\s!SansBoldItalic] [\s!file:arialbi.ttf] [\s!features=default]
+        \definefontsynonym [\s!Sans]           [\s!file:arial.ttf]   [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:arialbd.ttf] [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:ariali.ttf]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:arialbi.ttf] [\s!features=\s!default]
     \stoptypescript
 
     \starttypescript [mono] [mscorecourier] [name]
         \setups[\s!font:\s!fallback:\s!mono]
-        \definefontsynonym [\s!Mono]           [\s!file:cour.ttf]   [\s!features=\s!default]
-        \definefontsynonym [\s!MonoBold]       [\s!file:courbd.ttf] [\s!features=\s!default]
-        \definefontsynonym [\s!MonoItalic]     [\s!file:couri.ttf]  [\s!features=\s!default]
-        \definefontsynonym [\s!MonoBoldItalic] [\s!file:courbi.ttf] [\s!features=\s!default]
+        \definefontsynonym [\s!Mono]           [\s!file:cour.ttf]   [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]       [\s!file:courbd.ttf] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoItalic]     [\s!file:couri.ttf]  [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!file:courbi.ttf] [\s!features=\s!none]
     \stoptypescript
 
     \starttypescript [sans] [mscoreverdana] [name]
@@ -1671,10 +1678,10 @@
 
     \starttypescript [mono] [liberation] [name]
         \setups[\s!font:\s!fallback:\s!mono]
-        \definefontsynonym [\s!Mono]           [\s!file:liberationmono-regular]    [\s!features=\s!default]
-        \definefontsynonym [\s!MonoBold]       [\s!file:liberationmono-bold]       [\s!features=\s!default]
-        \definefontsynonym [\s!MonoItalic]     [\s!file:liberationmono-italic]     [\s!features=\s!default]
-        \definefontsynonym [\s!MonoBoldItalic] [\s!file:liberationmono-bolditalic] [\s!features=\s!default]
+        \definefontsynonym [\s!Mono]           [\s!file:liberationmono-regular]    [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]       [\s!file:liberationmono-bold]       [\s!features=\s!none]
+        \definefontsynonym [\s!MonoItalic]     [\s!file:liberationmono-italic]     [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!file:liberationmono-bolditalic] [\s!features=\s!none]
     \stoptypescript
 
     \starttypescript[liberation]
@@ -1862,12 +1869,22 @@
 
 \starttypescriptcollection[punk]
 
-    \definefontfeature[punknova][mode=node,script=latn,rand=yes,kern=yes,liga=yes,tlig=yes]
+    \definefontfeature [punknova]         [mode=node,script=latn,rand=yes,kern=yes,liga=yes,tlig=yes]
+    \definefontfeature [punknova-slanted] [punknova] [slant=.25]
 
     \starttypescript [serif] [punknova]
-        \setups[font:fallback:serif] % no style variants yet, actually it's a sans
-        \definefontsynonym [Serif] [file:punknova] [features=punknova]
+        \definefontsynonym [Serif]           [\s!file:punknova-regular] [\s!features=punknova]
+        \definefontsynonym [SerifSlanted]    [\s!file:punknova-regular] [\s!features=punknova-slanted]
+        \definefontsynonym [SerifBold]       [\s!file:punknova-bold]    [\s!features=punknova]
+        \definefontsynonym [SerifBoldSlanted][\s!file:punknova-bold]    [\s!features=punknova-slanted]
+        \definefontsynonym [SerifItalic]     [SerifSlanted]
+        \definefontsynonym [SerifBoldItalic] [SerifBoldSlanted]
     \stoptypescript
+
+    %     \definefontfeature [slanted-25] [slant=.25]
+    %     \starttypescript [serif] [punknova]
+    %         \definefontsynonym [SerifSlanted]    [\s!file:punknova-regular] [\s!features={punknova,slanted-25}]
+    %     \stoptypescript
 
     \starttypescript [punknova]
         \definetypeface [punknova] [rm] [serif] [punknova] [default]
@@ -1875,9 +1892,20 @@
 
 \stoptypescriptcollection
 
-% \starttypescript [math] [hvmath]
-%     \definefontsynonym[MathRoman][hvmath@hvmath-math]
-%     \loadfontgoodies[hvmath-math]
-% \stoptypescript
+% \starttypescriptcollection[hvmath]
+
+%     \starttypescript [math] [hvmath]
+%         \definefontsynonym[MathRoman][hvmath@hvmath-math]
+%         \loadfontgoodies[hvmath-math]
+%     \stoptypescript
+
+%     \starttypescript [hvmath]
+%         \definetypeface [hvmath] [ss] [sans]  [heros]  [default] [rscale=0.9]
+%         \definetypeface [hvmath] [rm] [serif] [termes] [default]
+%         \definetypeface [hvmath] [tt] [mono]  [cursor] [default] [rscale=1.05]
+%         \definetypeface [hvmath] [mm] [math]  [hvmath] [default]
+%     \stoptypescript
+
+% \stoptypescriptcollection
 
 \protect \endinput

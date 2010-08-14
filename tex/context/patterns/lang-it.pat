@@ -2,7 +2,7 @@
 
 % for comment and copyright, see e:/tmp/patterns/lang-it.rme
 
-% used: a b c d e f g h i j k l m n o p q r s t u v w x y z
+% used: a b c d e f g h i j k l m n o p q r s t u v w x y z ’
 
 \patterns{
 .a3p2n
@@ -37,6 +37,7 @@
 .su2b3r
 .wa2g3n
 .wel2t1
+2'2
 a1ia
 a1ie
 a1io
@@ -64,6 +65,7 @@ o1iu
 b2l
 b2r
 2b.
+2b'
 1c
 2cb
 2cc
@@ -78,12 +80,16 @@ b2r
 2cz
 2chh
 c2h
+2ch.
+2ch'.
+2ch''.
 2chb
 ch2r
 2chn
 c2l
 c2r
 2c.
+2c'
 .c2
 1d
 2db
@@ -99,6 +105,7 @@ d2r
 2dv
 2dw
 2d.
+2d'
 .d2
 1f
 2fb
@@ -110,6 +117,7 @@ f2r
 2fs
 2ft
 2f.
+2f'
 1g
 2gb
 2gd
@@ -128,6 +136,7 @@ g2r
 2gz
 2gh2t
 2g.
+2g'
 1h
 2hb
 2hd
@@ -139,8 +148,10 @@ h2l
 2hr
 2hv
 2h.
+2h'
 1j
 2j.
+2j'
 1k
 2kg
 2kf
@@ -152,6 +163,7 @@ k2r
 2ks
 2kt
 2k.
+2k'
 1l
 2lb
 2lc
@@ -159,6 +171,7 @@ k2r
 2l3f2
 2lg
 l2h
+l2j
 2lk
 2ll
 2lm
@@ -172,6 +185,8 @@ l2h
 2lw
 2lz
 2l.
+2l'.
+2l''
 1m
 2mb
 2mc
@@ -187,6 +202,7 @@ l2h
 2mv
 2mw
 2m.
+2m'
 1n
 2nb
 2nc
@@ -208,6 +224,7 @@ n2s3fer
 n2g3n
 2nheit
 2n.
+2n'
 1p
 2pd
 p2h
@@ -221,9 +238,11 @@ p2r
 2pt
 2pz
 2p.
+2p'
 1q
 2qq
 2q.
+2q'
 1r
 2rb
 2rc
@@ -246,9 +265,11 @@ r2t2s3
 2rw
 2rz
 2r.
+2r'
 1s2
 2shm
 2sh.
+2sh'
 2s3s
 s4s3m
 2s3p2n
@@ -265,6 +286,8 @@ s4s3m
 2stv
 2sz
 4s.
+4s'.
+4s''
 1t
 2tb
 2tc
@@ -287,17 +310,22 @@ t2z
 2tzk
 tz2s
 2t.
+2t'.
+2t''
 1v
 2vc
 v2l
 v2r
 2vv
 2v.
+2v'.
+2v''
 1w
 w2h
 wa2r
 2w1y
 2w.
+2w'
 1x
 2xb
 2xc
@@ -308,6 +336,7 @@ wa2r
 2xt
 2xw
 2x.
+2x'
 y1ou
 y1i
 1z
@@ -321,4 +350,6 @@ y1i
 2zv
 2zz
 2z.
+2z'.
+2z''
 .z2}

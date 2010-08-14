@@ -55,17 +55,55 @@
 
 %D Placement \unknown\ look how simple compared to \MKII:
 
-\unexpanded\def\placebookmarks
-  {\dodoubleempty\doplacebookmarks}
+\newtoks \everysetupbookmarks
 
-\def\doplacebookmarks[#1][#2]%
+\def\bookmarkparameter#1{\ifcsname\??bm#1\endcsname\csname\??bm#1\endcsname\fi}
+
+\unexpanded\def\setupbookmarks[#1]%
+  {\getparameters[\??bm][#1]%
+    \the\everysetupbookmarks}
+
+\unexpanded\def\placebookmarks
+  {\dotripleempty\doplacebookmarks}
+
+\def\doplacebookmarks[#1][#2][#3]%
   {\iflocation
-     \iffirstargument
-       \ctxlua{structure.bookmarks.register("#1","#2")}%
-     \else
-       \normalexpanded{\noexpand\placebookmarks[\getvalue{\??ih\v!content\c!list}]}%
+     \begingroup
+     \edef\askednames{#1}%
+     \edef\askedopened{#2}%
+     \ifx\askednames\empty
+       \edef\askednames{\getvalue{\??ih\v!content\c!list}}%
      \fi
+     \ifx\askednames\empty
+       \let\askednames\v!all
+     \fi
+     \ifthirdargument
+       \getparameters[\??bm][#3]%
+     \else\ifsecondargument
+       \doifassignmentelse{#2}{\let\askedopened\empty\getparameters[\??bm][#2]}\donothing
+     \fi\fi
+     \ctxlua{structure.bookmarks.register {
+        names  = "\askednames",
+        opened = "\askedopened",
+        force  = "\bookmarkparameter\c!force",
+        number = "\bookmarkparameter\c!number",
+      }}%
+     \endgroup
    \fi}
+
+\setupbookmarks
+  [\c!force=\v!no,    % it's easier to force that to inhibit
+   \c!number=\v!yes]  % might become v!no
+
+\appendtoks
+    \ctxlua{structure.bookmarks.setup {
+        separatorset  = "\bookmarkparameter\c!numberseparatorset",
+        conversionset = "\bookmarkparameter\c!numberconversionset",
+        starter       = \!!bs\bookmarkparameter\c!numberstarter\!!es,
+        stopper       = \!!bs\bookmarkparameter\c!numberstopper\!!es,
+        segments      = "\bookmarkparameter\c!numbersegments",
+    }}%
+\to \everysetupbookmarks
 
 % \prependtoks\ctxlua{structure.bookmarks.place()}\to\everystoptext           % too late
 % \prependtoks\ctxlua{structure.bookmarks.place()}\to\everylastbackendshipout % okay but not nice

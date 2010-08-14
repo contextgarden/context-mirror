@@ -24,10 +24,6 @@ nodes.processors = nodes.processors or { }
 -- vbox: grouptype: vbox vtop output split_off split_keep  | box_type: exactly|aditional
 -- hbox: grouptype: hbox adjusted_hbox(=hbox_in_vmode)     | box_type: exactly|aditional
 
-lists = lists or { }
-chars = chars or { }
-words = words or { } -- not used yet
-
 local actions = tasks.actions("processors",4)
 
 local n = 0

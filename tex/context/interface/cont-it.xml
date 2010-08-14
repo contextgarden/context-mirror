@@ -1148,6 +1148,10 @@
           <cd:constant type="si"/>
           <cd:constant type="no"/>
         </cd:parameter>
+        <cd:parameter name="capoverso">
+          <cd:constant type="si"/>
+          <cd:constant type="no" default="yes"/>
+        </cd:parameter>
         <cd:parameter name="fattore">
           <cd:constant type="cd:number"/>
         </cd:parameter>
@@ -3166,6 +3170,10 @@
         <cd:parameter name="comando">
           <cd:constant type="cd:command"/>
         </cd:parameter>
+        <cd:parameter name="display">
+          <cd:constant type="si" default="yes"/>
+          <cd:constant type="no"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -5056,10 +5064,11 @@
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
         <cd:parameter name="interazione">
-          <cd:constant type="cd:sectionnumber"/>
-          <cd:constant type="cd:text"/>
+          <cd:constant type="numerosezione"/>
+          <cd:constant type="testo"/>
           <cd:constant type="numeropagina"/>
           <cd:constant type="tutti"/>
+          <cd:constant type="nessuno"/>
         </cd:parameter>
         <cd:parameter name="prima">
           <cd:constant type="cd:command"/>
@@ -6061,6 +6070,10 @@
         <cd:parameter name="testomargine">
           <cd:constant type="si"/>
           <cd:constant type="no"/>
+        </cd:parameter>
+        <cd:parameter name="interazione">
+          <cd:constant type="elenco"/>
+          <cd:constant type="nessuno"/>
         </cd:parameter>
         <cd:inherit name="impostateste" n="1"/>
       </cd:assignments>
@@ -8513,6 +8526,11 @@
         <cd:parameter name="prefisso">
           <cd:constant type="cd:text"/>
         </cd:parameter>
+        <cd:parameter name="interazione">
+          <cd:constant type="si"/>
+          <cd:constant type="no"/>
+          <!-- more will follow -->
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
@@ -9319,6 +9337,12 @@
         <cd:constant type="cd:name"/>
         <cd:constant type="tutti"/>
       </cd:keywords>
+      <cd:assignments n="3" optional="yes" list="yes">
+        <cd:parameter name="forza">
+          <cd:constant type="si"/>
+          <cd:constant type="no"/>
+        </cd:parameter>
+      </cd:assignments>
     </cd:arguments>
   </cd:command>
 

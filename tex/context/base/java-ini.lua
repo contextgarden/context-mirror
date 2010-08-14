@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['java-ini'] = {
 }
 
 local format = string.format
-local lpegmatch = lpeg.match
+local concat = table.concat
+local lpegmatch, lpegP, lpegR, lpegS, lpegC = lpeg.match, lpeg.P, lpeg.R, lpeg.S, lpeg.C
 
 javascripts           = javascripts           or { }
 javascripts.codes     = javascripts.codes     or { }
@@ -22,20 +23,20 @@ local function storefunction(s)
     functions[s] = true
 end
 
-local uses     = lpeg.P("uses")
-local used     = lpeg.P("used")
-local left     = lpeg.P("{")
-local right    = lpeg.P("}")
-local space    = lpeg.S(" \r\n")
+local uses     = lpegP("uses")
+local used     = lpegP("used")
+local left     = lpegP("{")
+local right    = lpegP("}")
+local space    = lpegS(" \r\n")
 local spaces   = space^0
-local braced   = left * lpeg.C((1-right-space)^1) * right
-local unbraced = lpeg.C((1-space)^1)
+local braced   = left * lpegC((1-right-space)^1) * right
+local unbraced = lpegC((1-space)^1)
 local name     = spaces * (braced + unbraced) * spaces
-local any      = lpeg.P(1)
-local script   = lpeg.C(any^1)
-local funct    = lpeg.P("function")
-local leftp    = lpeg.P("(")
-local rightp   = lpeg.P(")")
+local any      = lpegP(1)
+local script   = lpegC(any^1)
+local funct    = lpegP("function")
+local leftp    = lpegP("(")
+local rightp   = lpegP(")")
 local fname    = spaces * funct * spaces * (((1-space-left)^1)/storefunction) * spaces * leftp
 
 local parsecode      = name * ((uses * name) + lpeg.Cc("")) * spaces * script
@@ -85,6 +86,8 @@ function javascripts.usepreamblenow(name) -- now later
     end
 end
 
+local splitter = lpeg.Ct(lpeg.splitat(lpeg.patterns.commaspacer))
+
 function javascripts.code(name,arguments)
     local c = codes[name]
     if c then
@@ -99,9 +102,12 @@ function javascripts.code(name,arguments)
     end
     local f = functions[name]
     if f then
-        -- temporary hack, i need a more clever approach
         if arguments then
-            return format("%s(%s)",name,'"' .. arguments.gsub(arguments,'%s*,%s*','"%1",') .. '"')
+            local args = lpegmatch(splitter,arguments)
+            for i=1,#args do -- can be a helper
+                args[i] = format("%q",args[i])
+            end
+            return format("%s(%s)",name,concat(args,","))
         else
             return format("%s()",name)
         end

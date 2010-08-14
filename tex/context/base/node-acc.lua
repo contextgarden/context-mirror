@@ -10,10 +10,12 @@ local traverse_nodes, traverse_id, has_attribute, copy_node = node.traverse, nod
 
 nodes.accessibility = nodes.accessibility or { }
 
-local glue  = node.id("glue")
-local glyph = node.id("glyph")
-local hlist = node.id("hlist")
-local vlist = node.id("vlist")
+local nodecodes = nodes.nodecodes
+
+local glue  = nodecodes.glue
+local glyph = nodecodes.glyph
+local hlist = nodecodes.hlist
+local vlist = nodecodes.vlist
 
 local function injectspaces(head)
     local p

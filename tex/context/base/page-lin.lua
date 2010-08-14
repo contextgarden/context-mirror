@@ -27,11 +27,16 @@ storage.register("lines/data", nodes.lines.data, "nodes.lines.data")
 -- if there is demand for it, we can support multiple numbering streams
 -- and use more than one attibute
 
-local hlist, vlist, whatsit = node.id('hlist'), node.id('vlist'), node.id('whatsit')
+local nodecodes = nodes.nodecodes
+
+local hlist   = nodecodes.hlist
+local vlist   = nodecodes.vlist
+local whatsit = nodecodes.whatsit
 
 local display_math     = attributes.private('display-math')
 local line_number      = attributes.private('line-number')
 local line_reference   = attributes.private('line-reference')
+local verbatim_line    = attributes.private('verbatim-line')
 
 local current_list     = { }
 local cross_references = { }
@@ -44,8 +49,6 @@ local copy_node          = node.copy
 local hpack_node         = node.hpack
 local insert_node_after  = node.insert_after
 local insert_node_before = node.insert_before
-
-local whatsit = node.id("whatsit")
 
 local data = nodes.lines.data
 local last = #data
@@ -147,21 +150,28 @@ end
 
 local the_left_margin = nodes.the_left_margin
 
-local function check_number(n,a,skip) -- move inline
+local function check_number(n,a,skip,sameline)
     local d = data[a]
     if d then
-        local s = d.start or 1
+        local tag, skipflag, s = d.tag or "", 0, d.start or 1
         current_list[#current_list+1] = { n, s }
-        if not skip and s % d.step == 0 then
-            local tag = d.tag or ""
-            texsprint(ctxcatcodes, format("\\makenumber{%s}{%s}{%s}{%s}{%s}{%s}\\endgraf",tag,s,n.shift,n.width,the_left_margin(n.list),n.dir))
+        if sameline then
+            skipflag = 0
+            if trace_numbers then
+                report_lines("skipping broken line number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
+            end
+        elseif not skip and s % d.step == 0 then
+            skipflag, d.start = 1, s + 1 -- (d.step or 1)
             if trace_numbers then
                 report_lines("making number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
             end
         else
-            texsprint(ctxcatcodes, "\\skipnumber\\endgraf")
+            skipflag, d.start = 0, s + 1 -- (d.step or 1)
+            if trace_numbers then
+                report_lines("skipping line number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
+            end
         end
-        d.start = s + 1 -- (d.step or 1)
+        context.makelinenumber(tag,skipflag,s,n.shift,n.width,the_left_margin(n.list),n.dir)
     end
 end
 
@@ -170,12 +180,13 @@ function nodes.lines.boxed.stage_one(n)
     local head = texbox[n]
     if head then
         local list = head.list
-        local last_a, skip = nil, false
+        local last_a, last_v, skip = nil, -1, false
         for n in traverse_id(hlist,list) do -- attr test here and quit as soon as zero found
             if n.height == 0 and n.depth == 0 then
                 -- skip funny hlists
             else
-                local a = has_attribute(n.list,line_number)
+                local list = n.list
+                local a = has_attribute(list,line_number)
                 if a and a > 0 then
                     if last_a ~= a then
                         if data[a].method == variables.next then
@@ -188,10 +199,13 @@ function nodes.lines.boxed.stage_one(n)
                             check_number(n,a,skip)
                         end
                     else
-                        -- the following test fails somehow (change in luatex?)
-                     -- if node.first_character(n.list) then
+                        local v = has_attribute(list,verbatim_line)
+                        if not v or v ~= last_v then
+                            last_v = v
                             check_number(n,a,skip)
-                     -- end
+                        else
+                            check_number(n,a,skip,true)
+                        end
                     end
                     skip = false
                 end

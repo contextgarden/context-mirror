@@ -73,8 +73,6 @@ function blocks.setstate(state,name,tag)
     end
 end
 
---~ filter_collected(names, criterium, number, collected)
-
 function blocks.select(state,name,tag,criterium)
     criterium = criterium or "text"
     if find(tag,"=") then tag = "" end
@@ -83,7 +81,7 @@ function blocks.select(state,name,tag,criterium)
     local tags = not all and aux.settings_to_set(tag)
     local hide = state == "process"
     local n = structure.sections.number_at_depth(criterium)
-    local result = structure.lists.filter_collected("all", criterium, n, collected)
+    local result = structure.lists.filter_collected("all", criterium, n, collected, { })
     for i=1,#result do
         local ri = result[i]
         local metadata = ri.metadata

@@ -21,6 +21,10 @@
 \ifdefined\stoplinenumbering \else \let\stoplinenumbering     \relax \fi
 \ifdefined\setuplinenumbering\else \unexpanded\def\setuplinenumbering[#1]{}     \fi
 
+\definesystemattribute[verbatim-line]  \chardef\verbatimlineattribute \dogetattributeid{verbatim-line}
+
+\appendtoksonce \attribute\verbatimlineattribute \attributeunsetvalue \to \everyforgetall
+
 % D \macros
 % D   {iflinepar}
 % D
@@ -606,19 +610,6 @@
 \def\doverbatimgoodbreak
   {\ifoptimizeverbatim\penalty\linepenalty\fi}
 
-% \def\doflushverbatimline
-%   {\expandafter\dodoverbatimline\expandafter{\savedverbatimline}}
-% \def\doverbatimbeginofline#1% linenumber (optional provided by mkiv / todo)
-%   {\dontleavehmode
-%    \strut
-%    \the\everyline}
-% \def\doverbatimendofline
-%   {\par}
-% \def\doverbatimemptyline
-%   {\strut
-%    \par}
-% \let\handleverbatimline=\relax
-
 % we need this hack because otherwise verbatim skips
 % the first line (everything after the initial command)
 
@@ -1177,8 +1168,12 @@
 \def\doverbatimendofinline
   {\the\everyverbatimendofinline}
 
+\newcount\nofverbatimlines
+
 \def\doverbatimbeginofline#1% linenumber
-  {\bgroup                  % due to pretty status
+  {\global\advance\nofverbatimlines\plusone
+   \attribute\verbatimlineattribute\nofverbatimlines
+   \bgroup                  % due to pretty status
    \iflinepar\else\EveryPar{}\fi
    \noindent % was wrong: \dontleavehmode
    \xdef\dokeepverbatimlinedata % hm, still needed?
@@ -1196,7 +1191,8 @@
 \def\doverbatimendofline
   {%\endverbatimline
    \global\lineparfalse
-   \obeyedline\par}
+   \obeyedline\par
+   \attribute\verbatimlineattribute\attributeunsetvalue}
 
 \def\doverbatimemptyline
   {\strut

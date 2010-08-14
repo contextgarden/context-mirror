@@ -28,7 +28,8 @@ local tags, labels, stack, chain, ids, enabled = { }, { }, { }, { }, { }, false 
 structure.tags.taglist = tags -- can best be hidden
 
 function structure.tags.start(tag,label,detail)
-    labels[label or tag] = tag
+--~     labels[label or tag] = tag
+    labels[tag] = label ~= "" and label or tag
     if detail and detail ~= "" then
         tag = tag .. ":" .. detail
     end

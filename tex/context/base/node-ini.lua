@@ -52,20 +52,71 @@ also ignore the empty nodes. [This is obsolete!]</p>
 
 nodes = nodes or { }
 
-local hlist   = node.id('hlist')
-local vlist   = node.id('vlist')
-local glyph   = node.id('glyph')
-local glue    = node.id('glue')
-local penalty = node.id('penalty')
-local kern    = node.id('kern')
-local whatsit = node.id('whatsit')
+local traverse, traverse_id = node.traverse, node.traverse_id
+local free_node, remove_node = node.free, node.remove
+local insert_node_before, insert_node_after = node.insert_before, node.insert_after
 
-local traverse_id        = node.traverse_id
-local traverse           = node.traverse
-local free_node          = node.free
-local remove_node        = node.remove
-local insert_node_before = node.insert_before
-local insert_node_after  = node.insert_after
+-- there will be more of this:
+
+local skipcodes = {
+   [ 0] = "userskip",
+   [ 1] = "lineskip",
+   [ 2] = "baselineskip",
+   [ 3] = "parskip",
+   [ 4] = "abovedisplayskip",
+   [ 5] = "belowdisplayskip",
+   [ 6] = "abovedisplayshortskip",
+   [ 7] = "belowdisplayshortskip",
+   [ 8] = "leftskip",
+   [ 9] = "rightskip",
+   [10] = "topskip",
+   [11] = "splittopskip",
+   [12] = "tabskip",
+   [13] = "spaceskip",
+   [14] = "xspaceskip",
+   [15] = "parfillskip",
+   [16] = "thinmuskip",
+   [17] = "medmuskip",
+   [18] = "thickmuskip",
+}
+
+local noadcodes = {
+    [ 0] = "ord",
+    [ 1] = "op_displaylimits",
+    [ 2] = "op_limits",
+    [ 3] = "op_nolimits",
+    [ 4] = "bin",
+    [ 5] = "rel",
+    [ 6] = "open",
+    [ 7] = "close",
+    [ 8] = "punct",
+    [ 9] = "inner",
+    [10] = "under",
+    [11] = "over",
+    [12] = "vcenter",
+}
+
+local nodecodes    = node.types()
+local whatsitcodes = node.whatsits()
+
+skipcodes    = table.swapped(skipcodes,skipcodes)
+noadcodes    = table.swapped(noadcodes,noadcodes)
+nodecodes    = table.swapped(nodecodes,nodecodes)
+whatsitcodes = table.swapped(whatsitcodes,whatsitcodes)
+
+nodes.skipcodes    = skipcodes
+nodes.gluecodes    = skipcodes -- more official
+nodes.noadcodes    = noadcodes
+nodes.nodecodes    = nodecodes
+nodes.whatsitcodes = whatsitcodes
+
+local hlist   = nodecodes.hlist
+local vlist   = nodecodes.vlist
+local glyph   = nodecodes.glyph
+local glue    = nodecodes.glue
+local penalty = nodecodes.penalty
+local kern    = nodecodes.kern
+local whatsit = nodecodes.whatsit
 
 function nodes.remove(head, current, free_too)
    local t = current

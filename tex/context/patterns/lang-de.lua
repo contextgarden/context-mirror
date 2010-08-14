@@ -5,8 +5,12 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="de",
-  ["source"]="hyph-de-1996.tex",
-  ["texcomment"]="% dehyphn-x-2009-06-19.pat\
+  ["source"]="hyph-de-1996",
+  ["texcomment"]="% German Hyphenation Patterns (Reformed Orthography)\
+% \
+% (more info about the licence to be added later)\
+% \
+% dehyphn-x-2009-06-19.pat\
 % \
 % \\message{German Hyphenation Patterns (Reformed Orthography, 2006) `dehyphn-x' 2009-06-19 (WL)}\
 % \
@@ -34,7 +38,8 @@ return {
 %   5 5 | 2 7 | 1 1 1\
 %   6 6 | 2 7 | 1 6 1\
 %   7 7 | 2 13 | 1 4 1\
-%   8 8 | 2 13 | 1 8 1",
+%   8 8 | 2 13 | 1 8 1\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzßàáâäçèéêëíñóôöü",

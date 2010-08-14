@@ -145,17 +145,19 @@ apply_axis['child'] = function(list)
     for l=1,#list do
         local ll = list[l]
         local dt = ll.dt
-        local en = 0
-        for k=1,#dt do
-            local dk = dt[k]
-            if dk.tg then
-                collected[#collected+1] = dk
-                dk.ni = k -- refresh
-            en = en + 1
-            dk.ei = en
+        if dt then -- weird that this is needed
+            local en = 0
+            for k=1,#dt do
+                local dk = dt[k]
+                if dk.tg then
+                    collected[#collected+1] = dk
+                    dk.ni = k -- refresh
+                en = en + 1
+                dk.ei = en
+                end
             end
+            ll.en = en
         end
-        ll.en = en
     end
     return collected
 end

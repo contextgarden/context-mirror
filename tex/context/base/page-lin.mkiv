@@ -42,11 +42,7 @@
 
 % id nr shift width leftskip dir
 
-% \def\mkskiplinenumber #1#2#3#4#6#5{}
-% \def\mkleftlinenumber #1#2#3#4#5#6{\hbox{\llap{#2\quad\hskip#3\scaledpoint}}}
-% \def\mkrightlinenumber#1#2#3#4#5#6{\hbox{\rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\quad#2}}}
-
-\let\makenumber\gobblesixarguments
+\let\makelinenumber\gobblesevenarguments
 
 \newconditional\boxcontentneedsprocessing
 
@@ -235,8 +231,6 @@
 
 % number placement
 
-\let\mkskiplinenumber \gobblesixarguments
-
 \def\mkdoinnerlinenumber{\doifoddpageelse\mkdoleftlinenumber\mkdorightlinenumber}
 \def\mkdoouterlinenumber{\doifoddpageelse\mkdorightlinenumber\mkdoleftlinenumber}
 
@@ -278,47 +272,53 @@
      \expandafter\mkdobeginlinenumber
    \fi}
 
+\newconditional\faketextlinenumber
+
 \def\mkaddtextlinenumbers#1#2#3% box col max
   {\bgroup
    \chardef\linenumberbox       #1\relax
    \chardef\linenumbercolumn    #2\relax
    \chardef\linenumberlastcolumn#3\relax
    \fullrestoreglobalbodyfont
-   \def\skipnumber{\hbox{}}%
-   \let\makenumber\maketextlinenumber
+   \let\makelinenumber\maketextlinenumber
    \mkprocesstextlinenumbers\linenumberbox
    \egroup}
 
-\def\maketextlinenumber#1%
+\def\maketextlinenumber#1#2%
   {\edef\currentlinenumbering{#1}%
+   \ifcase#2\relax
+     \settrue \faketextlinenumber
+   \else
+     \setfalse\faketextlinenumber
+   \fi
    \chardef\linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
    \chardef\linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
    \ifcase\linenumberlastcolumn\relax
-     \let\domakenumber\mkskiplinenumber
+     \settrue \faketextlinenumber
    \or
     % one column
      \ifcase\linenumberlocation
-       \let\domakenumber\mkskiplinenumber
+       \settrue \faketextlinenumber
         % hm
      \or
-       \let\domakenumber\mkleftlinenumber
+       \let\domakelinenumber\mkleftlinenumber
      \or
-       \let\domakenumber\mkrightlinenumber
+       \let\domakelinenumber\mkrightlinenumber
      \or % inner
-       \let\domakenumber\mkdoinnerlinenumber
+       \let\domakelinenumber\mkdoinnerlinenumber
      \or % outer
-       \let\domakenumber\mkdoouterlinenumber
+       \let\domakelinenumber\mkdoouterlinenumber
      \or % text
-       \let\domakenumber\mkdotextlinenumber
+       \let\domakelinenumber\mkdotextlinenumber
      \or
-       \let\domakenumber\mkdobeginlinenumber
+       \let\domakelinenumber\mkdobeginlinenumber
      \or
-       \let\domakenumber\mkdoendlinenumber
+       \let\domakelinenumber\mkdoendlinenumber
      \fi
    \else\ifcase\linenumbercolumn\relax
-     \let\domakenumber\mkskiplinenumber
+     \settrue \faketextlinenumber
    \or
-     \let\domakenumber\mkleftlinenumber
+     \let\domakelinenumber\mkleftlinenumber
      \ifcase\linenumberlocation\or
        \chardef\linenumberlocation\plusone
      \or
@@ -335,7 +335,7 @@
        \chardef\linenumberlocation\plusone % todo
      \fi
    \else
-     \let\domakenumber\mkrightlinenumber
+     \let\domakelinenumber\mkrightlinenumber
      \ifcase\linenumberlocation\or
        \chardef\linenumberlocation\plustwo
      \or
@@ -350,7 +350,7 @@
        \chardef\linenumberlocation\plustwo % todo
      \fi
    \fi\fi
-   \domakenumber{#1}}
+   \domakelinenumber{#1}}
 
 \def\mkdotextlinenumber #1#2#3#4#5#6% beware, one needs so compensate for this in the width !
   {\hbox{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}
@@ -420,11 +420,15 @@
       \or
         \doifoddpageelse\hss\relax % outer
       \fi
-      \linenumberattributes\c!style\c!color
-        {\linenumberparameter\c!command
-           {\linenumberparameter\c!left
-            \convertnumber{\linenumberparameter\c!conversion}{#3}%
-            \linenumberparameter\c!right}}%
+      \ifconditional\faketextlinenumber
+        % we need to reserve space
+      \else
+        \linenumberattributes\c!style\c!color
+          {\linenumberparameter\c!command
+             {\linenumberparameter\c!left
+              \convertnumber{\linenumberparameter\c!conversion}{#3}%
+              \linenumberparameter\c!right}}%
+      \fi
       \ifcase\linenumberlocation
         \hss % middle
       \or
