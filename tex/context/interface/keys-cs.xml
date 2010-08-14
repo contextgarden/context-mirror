@@ -93,6 +93,7 @@
 		<cd:variable name='bib' value='bib'/>
 		<cd:variable name='big' value='velke'/>
 		<cd:variable name='bigbodyfont' value='bigbodyfont'/>
+		<cd:variable name='bigger' value='bigger'/>
 		<cd:variable name='bigpreference' value='vysokapriorita'/>
 		<cd:variable name='blank' value='prazdny'/>
 		<cd:variable name='blockquote' value='blockquote'/>
@@ -367,6 +368,7 @@
 		<cd:variable name='random' value='nahodny'/>
 		<cd:variable name='readonly' value='pouzeprocteni'/>
 		<cd:variable name='rectangular' value='pravouhly'/>
+		<cd:variable name='reference' value='odkaz'/>
 		<cd:variable name='referral' value='znacka'/>
 		<cd:variable name='register' value='rejstrik'/>
 		<cd:variable name='regular' value='pravidelne'/>
@@ -414,6 +416,7 @@
 		<cd:variable name='smallbolditalic' value='maletucnekurzivni'/>
 		<cd:variable name='smallboldslanted' value='maletucnesklonene'/>
 		<cd:variable name='smallcaps' value='kapitalky'/>
+		<cd:variable name='smaller' value='smaller'/>
 		<cd:variable name='smallitalic' value='malekurzivni'/>
 		<cd:variable name='smallitalicbold' value='malekurzivnitucne'/>
 		<cd:variable name='smallnormal' value='malenormalni'/>

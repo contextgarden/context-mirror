@@ -31,18 +31,16 @@ local registrations  = backends.pdf.registrations
 
 local pdfliteral, register = nodes.pdfliteral, nodes.register
 
-local pdfconstant      = lpdf.constant
-local pdfstring        = lpdf.string
-local pdfdictionary    = lpdf.dictionary
-local pdfarray         = lpdf.array
-local pdfreference     = lpdf.reference
-local pdfverbose       = lpdf.verbose
-local pdfflushobject   = lpdf.flushobject
-local pdfreserveobject = lpdf.reserveobject
-local pdfannotation    = nodes.pdfannotation
+local pdfconstant         = lpdf.constant
+local pdfstring           = lpdf.string
+local pdfdictionary       = lpdf.dictionary
+local pdfarray            = lpdf.array
+local pdfreference        = lpdf.reference
+local pdfverbose          = lpdf.verbose
+local pdfflushobject      = lpdf.flushobject
+local pdfimmediateobject  = lpdf.immediateobject
 
-local pdfreserveobj    = pdf.reserveobj
-local pdfimmediateobj  = pdf.immediateobj
+local pdfannotation_node  = nodes.pdfannotation
 
 function nodeinjections.rgbcolor(r,g,b)
     return register(pdfliteral(format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)))
@@ -134,7 +132,7 @@ function codeinjections.insertmovie(specification)
         Movie   = moviedict,
         A       = controldict,
     }
-    node.write(pdfannotation(width,height,0,action()))
+    node.write(pdfannotation_node(width,height,0,action()))
 end
 
 function codeinjections.insertsound(specification)
@@ -154,7 +152,7 @@ function codeinjections.insertsound(specification)
             Movie   = sounddict,
             A       = controldict,
         }
-        node.write(pdfannotation(0,0,0,action()))
+        node.write(pdfannotation_node(0,0,0,action()))
     end
 end
 
@@ -197,14 +195,22 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
             Domain       = { 0, 1 },
             Range        = range,
         }
-        local n = pdfimmediateobj("stream",format("{ %s }",funct),dictionary())
+        local n = pdfimmediateobject("stream",format("{ %s }",funct),dictionary())
+
+--~         local n = pdfobject {
+--~             type      = "stream",
+--~             immediate = true,
+--~             string    = format("{ %s }",funct),
+--~             attr      = dictionary(),
+--~         }
+
         local array = pdfarray {
             pdf_separation,
             pdfconstant(spotcolornames[name] or name),
             colorspace,
             pdfreference(n),
         }
-        local m = pdfimmediateobj(tostring(array))
+        local m = pdfimmediateobject(tostring(array))
         local mr = pdfreference(m)
         spotcolorhash[name] = m
         documentcolorspaces[name] = mr
@@ -222,14 +228,14 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
             Domain       = domain,
             Range        = range,
         }
-        local n = pdfimmediateobj("stream",format("{ %s %s }",rep("pop ",noffractions),funct),dictionary())
+        local n = pdfimmediateobject("stream",format("{ %s %s }",rep("pop ",noffractions),funct),dictionary())
         local array = pdfarray {
             pdf_device_n,
             cnames,
             colorspace,
             pdfreference(n),
         }
-        local m = pdfimmediateobj(tostring(array))
+        local m = pdfimmediateobject(tostring(array))
         local mr = pdfreference(m)
         spotcolorhash[name] = m
         documentcolorspaces[name] = mr
@@ -256,7 +262,7 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
         Domain       = domain,
         Range        = range,
     }
-    local n = pdfimmediateobj("stream",format("{ %s %s }",rep("exch pop ",noffractions),funct),dictionary()) -- exch pop
+    local n = pdfimmediateobject("stream",format("{ %s %s }",rep("exch pop ",noffractions),funct),dictionary()) -- exch pop
     local a = pdfarray {
         pdf_device_n,
         cnames,
@@ -280,7 +286,7 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
         vector[#vector+1] = concat(set)
     end
     vector = pdfverbose { "<", concat(vector, " "), ">" }
-    local n = pdfimmediateobj(tostring(pdfarray{ pdf_indexed, a, 255, vector }))
+    local n = pdfimmediateobject(tostring(pdfarray{ pdf_indexed, a, 255, vector }))
     lpdf.adddocumentcolorspace(format("%s_indexed",name),pdfreference(n))
     return n
 end
@@ -393,7 +399,7 @@ function registrations.transparency(n,a,t)
               BM   = transparencies[1],
               AIS  = false,
             }
-        local m = pdfimmediateobj(tostring(d))
+        local m = pdfimmediateobject(tostring(d))
         local mr = pdfreference(m)
         transparencyhash[0] = m
         documenttransparencies[0] = mr
@@ -408,7 +414,7 @@ function registrations.transparency(n,a,t)
               BM   = transparencies[a] or transparencies[0],
               AIS  = false,
             }
-        local m = pdfimmediateobj(tostring(d))
+        local m = pdfimmediateobject(tostring(d))
         local mr = pdfreference(m)
         transparencyhash[n] = m
         documenttransparencies[n] = mr
@@ -440,14 +446,14 @@ function codeinjections.setfigurealternative(data,figure)
         if displayfigure then
         --  figure.aform = true
             img.immediatewrite(figure)
-            local a = lpdf.array {
-                lpdf.dictionary {
-                    Image              = lpdf.reference(figure.objnum),
+            local a = pdfarray {
+                pdfdictionary {
+                    Image              = pdfreference(figure.objnum),
                     DefaultForPrinting = true,
                 }
             }
-            local d = lpdf.dictionary {
-                Alternates = lpdf.reference(pdf.immediateobj(tostring(a))),
+            local d = pdfdictionary {
+                Alternates = pdfreference(pdfimmediateobject(tostring(a))),
             }
             displayfigure.attr = d()
             return displayfigure, figures.current()

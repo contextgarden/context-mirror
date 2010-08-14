@@ -1834,10 +1834,13 @@
 \starttypescriptcollection[xits]
 
     % This one makes more sense. Xits uses the glyph collection from stix but packages
-    % it in a proper OpenType Math font.
+    % it in a proper OpenType Math font. From the Stix site:  Version 1.1, which will
+    % include fonts packaged for use with Microsoft Office applications, is scheduled
+    % for release by the end of 2010. Version 1.2, which will include Type 1 fonts for
+    % use with LaTeX, will follow in 2011. So, we are on our own anyway.
 
     \starttypescript [math] [xits] [name]
-        \definefontsynonym[MathRoman][file:xits-math.otf][\s!features=\s!math\mathsizesuffix]
+        \definefontsynonym[MathRoman][file:xits-math.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=xits-math]
     \stoptypescript
 
     \starttypescript [serif] [xits] [name]

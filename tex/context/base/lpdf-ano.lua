@@ -35,17 +35,17 @@ local specials  = jobreferences.specials
 local handlers  = jobreferences.handlers
 local executers = jobreferences.executers
 
-local pdfdictionary     = lpdf.dictionary
-local pdfarray          = lpdf.array
-local pdfreference      = lpdf.reference
-local pdfunicode        = lpdf.unicode
-local pdfconstant       = lpdf.constant
-local pdfflushobject    = lpdf.flushobject
-local pdfreserveobject  = lpdf.reserveobject
-local pdfannotation     = nodes.pdfannotation
-local pdfdestination    = nodes.pdfdestination
+local pdfdictionary       = lpdf.dictionary
+local pdfarray            = lpdf.array
+local pdfreference        = lpdf.reference
+local pdfunicode          = lpdf.unicode
+local pdfconstant         = lpdf.constant
+local pdfflushobject      = lpdf.flushobject
+local pdfreserveobject    = lpdf.reserveobject
+local pdfpagereference    = lpdf.pagereference
 
-local pdfpagereference  = tex.pdfpageref
+local pdfannotation_node  = nodes.pdfannotation
+local pdfdestination_node = nodes.pdfdestination
 
 local pdf_uri        = pdfconstant("URI")
 local pdf_gotor      = pdfconstant("GoToR")
@@ -60,16 +60,18 @@ local pdf_border     = pdfarray { 0, 0, 0 }
 local cache = { }
 
 local function pagedest(n)
-    local pd = cache[n]
-    if not pd then
-        local a = pdfarray {
-            pdfreference(pdfpagereference(n)),
-            pdfconstant("Fit")
-        }
-        pd = pdfreference(pdfflushobject(a))
-        cache[n] = pd
+    if n > 0 then
+        local pd = cache[n]
+        if not pd then
+            local a = pdfarray {
+                pdfreference(pdfpagereference(n)),
+                pdfconstant("Fit")
+            }
+            pd = pdfreference(pdfflushobject(a))
+            cache[n] = pd
+        end
+        return pd
     end
-    return pd
 end
 
 lpdf.pagedest = pagedest
@@ -97,10 +99,17 @@ local function link(url,filename,destination,page,actions)
             URI = url,
         }
     elseif filename and filename ~= "" then
+        -- no page ?
+        if destination == "" then
+            destination = nil
+        end
+        if not destination and page then
+            destination = pdfarray { page - 1, pdfconstant("Fit") }
+        end
         return pdfdictionary {
             S = pdf_gotor, -- can also be pdf_launch
             F = filename,
-            D = (destination and destination ~= "" and destination), -- or defaultdestination,
+            D = destination or defaultdestination, -- D is mandate
             NewWindow = (actions.newwindow and true) or nil,
         }
     elseif destination and destination ~= "" then
@@ -195,7 +204,7 @@ local function pdfaction(actions)
     end
 end
 
-lpdf.pdfaction = pdfaction
+lpdf.action = pdfaction
 
 function codeinjections.prerollreference(actions)
     local main = actions and pdfaction(actions)
@@ -205,6 +214,7 @@ function codeinjections.prerollreference(actions)
             Border  = pdf_border,
             H       = (not actions.highlight and pdf_n) or nil,
             A       = main,
+            F       = 4, -- print (mandate in pdf/a)
         --  does not work at all in spite of specification
         --  OC      = (actions.layer and lpdf.layerreferences[actions.layer]) or nil,
         --  OC      = backends.pdf.layerreference(actions.layer),
@@ -238,7 +248,7 @@ function nodeinjections.reference(width,height,depth,prerolled)
         if trace_references then
             report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
         end
-        return pdfannotation(width,height,depth,prerolled)
+        return pdfannotation_node(width,height,depth,prerolled)
     end
 end
 
@@ -246,7 +256,7 @@ function nodeinjections.destination(width,height,depth,name,view)
     if trace_destinations then
         report_destinations("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
     end
-    return pdfdestination(width,height,depth,name,view)
+    return pdfdestination_node(width,height,depth,name,view)
 end
 
 -- runners and specials
@@ -337,7 +347,7 @@ function specials.page(var,actions) -- better resolve in strc-ref
     local file = var.f
     if file then
         file = jobreferences.checkedfile(file)
-        return link(nil,file,nil,p or var.operation,actions)
+        return link(nil,file,nil,var.operation,actions)
     else
         local p = jobreferences.pages[var.operation]
         if type(p) == "function" then

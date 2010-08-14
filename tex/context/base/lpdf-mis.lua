@@ -28,17 +28,16 @@ local copy_node = node.copy
 
 local pdfliteral, register = nodes.pdfliteral, nodes.register
 
-local pdfdictionary   = lpdf.dictionary
-local pdfarray        = lpdf.array
-local pdfboolean      = lpdf.boolean
-local pdfconstant     = lpdf.constant
-local pdfreference    = lpdf.reference
-local pdfunicode      = lpdf.unicode
-local pdfverbose      = lpdf.verbose
-local pdfstring       = lpdf.string
-local pdfflushobject  = lpdf.flushobject
-
-local pdfimmediateobj = pdf.immediateobj
+local pdfdictionary      = lpdf.dictionary
+local pdfarray           = lpdf.array
+local pdfboolean         = lpdf.boolean
+local pdfconstant        = lpdf.constant
+local pdfreference       = lpdf.reference
+local pdfunicode         = lpdf.unicode
+local pdfverbose         = lpdf.verbose
+local pdfstring          = lpdf.string
+local pdfflushobject     = lpdf.flushobject
+local pdfimmediateobject = lpdf.immediateobject
 
 local tobasepoints = number.tobasepoints
 local variables    = interfaces.variables
@@ -58,7 +57,7 @@ local function initializenegative()
         Range        = a,
         Domain       = a,
     }
-    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfimmediateobj("stream","1 exch sub",d())) }
+    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfimmediateobject("stream","1 exch sub",d())) }
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
     lpdf.adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
     lpdf.adddocumentextgstate("GSPositive", pdfreference(pdfflushobject(positive)))
@@ -118,10 +117,10 @@ end
 
 local function flushdocumentactions()
     if opendocument then
-        lpdf.addtocatalog("OpenAction",lpdf.pdfaction(opendocument))
+        lpdf.addtocatalog("OpenAction",lpdf.action(opendocument))
     end
     if closedocument then
-        lpdf.addtocatalog("CloseAction",lpdf.pdfaction(closedocument))
+        lpdf.addtocatalog("CloseAction",lpdf.action(closedocument))
     end
 end
 
@@ -129,17 +128,17 @@ local function flushpageactions()
     if openpage or closepage then
         local d = pdfdictionary()
         if openpage then
-            d.O = lpdf.pdfaction(openpage)
+            d.O = lpdf.action(openpage)
         end
         if closepage then
-            d.C = lpdf.pdfaction(closepage)
+            d.C = lpdf.action(closepage)
         end
         lpdf.addtopageattributes("AA",d)
     end
 end
 
-lpdf.registerpagefinalizer(flushpageactions)
-lpdf.registerdocumentfinalizer(flushdocumentactions)
+lpdf.registerpagefinalizer(flushpageactions,"page actions")
+lpdf.registerdocumentfinalizer(flushdocumentactions,"document actions")
 
 --- info
 
@@ -189,7 +188,7 @@ local function flushjavascripts()
             local name, script = t[i][1], t[i][2]
             local j = pdfdictionary {
                 S  = pdf_javascript,
-                JS = pdfreference(pdfimmediateobj("stream",script)),
+                JS = pdfreference(pdfimmediateobject("stream",script)),
             }
             a[#a+1] = pdfstring(name)
             a[#a+1] = pdfreference(pdfflushobject(j))
@@ -198,7 +197,7 @@ local function flushjavascripts()
     end
 end
 
-lpdf.registerdocumentfinalizer(flushjavascripts)
+lpdf.registerdocumentfinalizer(flushjavascripts,"javascripts")
 
 -- -- --
 
@@ -288,8 +287,8 @@ local function pagespecification()
  -- lpdf.addtopageattributes("ArtBox",box)
 end
 
-lpdf.registerpagefinalizer(pagespecification)
-lpdf.registerdocumentfinalizer(documentspecification)
+lpdf.registerpagefinalizer(pagespecification,"page specification")
+lpdf.registerdocumentfinalizer(documentspecification,"document specification")
 
 -- Page Label support ...
 --
@@ -332,4 +331,4 @@ local function featurecreep()
     lpdf.addtocatalog("PageLabels", pdfdictionary { Nums = list })
 end
 
-lpdf.registerdocumentfinalizer(featurecreep)
+lpdf.registerdocumentfinalizer(featurecreep,"featurecreep")

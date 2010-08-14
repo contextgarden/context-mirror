@@ -443,12 +443,14 @@
      \vskip-\struttotal
    \fi
    \global\savedpagetotal\pagetotal
-   \global\singlecolumnout\output
+   \global\singlecolumnout\output % hm
   %\global\output{\global\setbox\precolumnbox\vbox{\unvbox\normalpagebox}}%
-   \global\output{\global\setbox\precolumnbox\vbox{\dotopinsertions\unvbox\normalpagebox}}%
+  %\global\output{\global\setbox\precolumnbox\vbox{\dotopinsertions\unvbox\normalpagebox}}%
+   \setoutputroutine{\global\setbox\precolumnbox\vbox{\dotopinsertions\unvbox\normalpagebox}}%
    \eject % no \holdinginserts=1, can make footnote disappear !
    \global\precolumnboxheight\ht\precolumnbox
-   \global\output{\continuousmulticolumnsout}%
+  %\global\output{\continuousmulticolumnsout}%
+   \setoutputroutine{\continuousmulticolumnsout}%
    \setcolumnfloats
    \dohandleallcolumns
      {\global\setbox\currenttopcolumnbox\emptybox}%
@@ -493,17 +495,21 @@
    \par
    \ifbalancecolumns
      \ifnum\multicolumnendsyncmethod=\plusone
-       \global\output{\continuousmulticolumnsout}%
+      %\global\output{\continuousmulticolumnsout}%
+       \setoutputroutine{\continuousmulticolumnsout}%
        \goodbreak
      \fi
-     \global\output{\balancedmulticolumnsout}%
+    %\global\output{\balancedmulticolumnsout}%
+     \setoutputroutine{\balancedmulticolumnsout}%
    \else
      \goodbreak
    \fi
    \eject               % the prevdepth is important, try e.g. toclist in
    \prevdepth\zeropoint % columns before some noncolumned text text
-   \global\output\singlecolumnout
-   \global\output{\the\mainoutput}% % % % % todo
+  %\global\output\singlecolumnout
+   \setoutputroutine{\singlecolumnout}%
+  %\global\output{\the\mainoutput}% % % % % todo
+   \setoutputroutine{\the\mainoutput}% % % % % todo
    \ifvoid\precolumnbox\else
      \unvbox\precolumnbox
    \fi
@@ -1160,7 +1166,8 @@
      \showmessage\m!columns{10}\empty
      \global\setbox\firstcolumnbox\vbox{\unvbox0}%
    \fi
-   \global\output{\balancingerror}%
+  %\global\output{\balancingerror}%
+   \setoutputroutine{\balancingerror}%
    \b@selinebottomtrue % forces depth in separation rule
    \flushcolumnedpage\plusone
    \multicolumnseject

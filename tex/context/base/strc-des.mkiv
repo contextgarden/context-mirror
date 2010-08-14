@@ -375,6 +375,8 @@
 \def\@@stopdescription
   {\@@placedescriptionclosesymbol
    \par % else we loose
+\dostoptagged
+\dostoptagged
    \endgroup
    \descriptionparameter\c!after % which currentdescription is taken here?
    \egroup % temporary hack
@@ -420,15 +422,19 @@
    \ifcsname @@description\currentdescriptionlocation\endcsname \else
      \let\currentdescriptionlocation\v!left
    \fi
+\dostarttagged\t!description\currentdescription
+\dostarttagged\t!descriptiontag\empty
    \@@dostartdescription
-   \csname @@description\currentdescriptionlocation\endcsname} % args not needed
+   \csname @@description\currentdescriptionlocation\endcsname
+\dostoptagged
+\dostarttagged\t!descriptioncontent\empty} % args not needed
 
 \def\@@makedescription[#1]#2%
- {\postponenotes % new, assumes grouping
-  \edef\currentdescriptionreference{#1}%
-  \doenumerationcheckconditions
-  \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#2},\c!bookmark=,\c!list=][]%
-  \@@dostartdescriptionindeed}
+  {\postponenotes % new, assumes grouping
+   \edef\currentdescriptionreference{#1}%
+   \doenumerationcheckconditions
+   \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#2},\c!bookmark=,\c!list=][]%
+   \@@dostartdescriptionindeed}
 
 \def\dostartstoreddescription
   {\@@dostartdescriptionindeed}

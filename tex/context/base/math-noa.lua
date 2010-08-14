@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- beware: this is experimental code and there will be a more
 -- generic (attribute value driven) interface too but for the
 -- moment this is ok
+--
+-- we will also make dedicated processors (faster)
 
 local utf = unicode.utf8
 
@@ -29,19 +31,19 @@ local trace_analyzing  = false  trackers.register("math.analyzing",  function(v)
 
 local report_noads = logs.new("mathematics")
 
-local noad_ord               =  0
-local noad_op_displaylimits  =  1
-local noad_op_limits         =  2
-local noad_op_nolimits       =  3
-local noad_bin               =  4
-local noad_rel               =  5
-local noad_open              =  6
-local noad_close             =  7
-local noad_punct             =  8
-local noad_inner             =  9
-local noad_under             = 10
-local noad_over              = 11
-local noad_vcenter           = 12
+local noad_ord              =  0
+local noad_op_displaylimits =  1
+local noad_op_limits        =  2
+local noad_op_nolimits      =  3
+local noad_bin              =  4
+local noad_rel              =  5
+local noad_open             =  6
+local noad_close            =  7
+local noad_punct            =  8
+local noad_inner            =  9
+local noad_under            = 10
+local noad_over             = 11
+local noad_vcenter          = 12
 
 -- obsolete:
 --
@@ -334,6 +336,76 @@ end
 
 function noads.respace_characters(head,style,penalties)
     process(head,respace)
+    return true
+end
+
+-- math alternates
+
+function fonts.initializers.common.mathalternates(tfmdata)
+    local goodies = tfmdata.goodies
+    if goodies then
+        for i=1,#goodies do
+            -- first one counts
+            -- we can consider sharing the attributes ... todo (only once scan)
+            local mathgoodies = goodies[i].mathematics
+            local alternates = mathgoodies and mathgoodies.alternates
+            if alternates then
+                local lastattribute, attributes = 0, { }
+                for k, v in next, alternates do
+                    lastattribute = lastattribute + 1
+                    v.attribute = lastattribute
+                    attributes[lastattribute] = v
+                end
+                tfmdata.shared.mathalternates           = alternates -- to be checked if shared is ok here
+                tfmdata.shared.mathalternatesattributes = attributes -- to be checked if shared is ok here
+                return
+            end
+        end
+    end
+end
+
+fonts.otf.tables.features['mathalternates'] = 'Additional math alternative shapes'
+
+fonts.otf.features.register('mathalternates',true)
+table.insert(fonts.triggers,"mathalternates")
+
+fonts.initializers.base.otf.mathalternates = fonts.initializers.common.mathalternates
+fonts.initializers.node.otf.mathalternates = fonts.initializers.common.mathalternates
+
+local get_alternate = fonts.otf.get_alternate
+
+local mathalternate = attributes.private("mathalternate")
+
+local alternate = { } -- noads.processors.alternate = alternate
+
+function mathematics.setalternate(fam,tag)
+    local id = font_of_family(fam)
+    local tfmdata = fontdata[id]
+    local mathalternates = tfmdata.shared.mathalternates
+    if mathalternates then
+        local m = mathalternates[tag]
+        tex.attribute[mathalternate] = m and m.attribute or attributes.unsetvalue
+    end
+end
+
+alternate[math_char] = function(pointer)
+    local a = has_attribute(pointer,mathalternate)
+    if a and a > 0 then
+        set_attribute(pointer,mathalternate,0)
+        local tfmdata = fontdata[font_of_family(pointer.fam)] -- we can also have a famdata
+        local mathalternatesattributes = tfmdata.shared.mathalternatesattributes
+        if mathalternatesattributes then
+            local what = mathalternatesattributes[a]
+            local alt = get_alternate(tfmdata,pointer.char,what.feature,what.value)
+            if alt then
+                pointer.char = alt
+            end
+        end
+    end
+end
+
+function noads.check_alternates(head,style,penalties)
+    process(head,alternate)
     return true
 end
 

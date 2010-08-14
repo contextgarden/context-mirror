@@ -11143,6 +11143,14 @@ return {
    ["en"]="up",
    ["nl"]="omhoog",
   },
+  ["smaller"]={
+   ["en"]="smaller",
+   ["nl"]="kleiner",
+  },
+  ["bigger"]={
+   ["en"]="bigger",
+   ["nl"]="groter",
+  },
   ["underbar"]={
    ["cs"]="podtrzeno",
    ["de"]="unterstrichen",
@@ -14719,6 +14727,16 @@ return {
    ["it"]="referral",
    ["nl"]="kenmerk",
    ["pe"]="مراجعه",
+   ["ro"]="referinta",
+  },
+  ["reference"]={
+   ["cs"]="odkaz",
+   ["de"]="referenz",
+   ["en"]="reference",
+   ["fr"]="reference",
+   ["it"]="riferimento",
+   ["nl"]="referentie",
+   ["pe"]="مرجع",
    ["ro"]="referinta",
   },
   ["register"]={

@@ -17,27 +17,32 @@ local rule  = node.id("rule")
 
 function nodes.strip_range(first,last) -- todo: dir
     if first and last then -- just to be sure
-        local current = first
-        while current and current ~= last do
-            local id = current.id
-            if id == glyph or id == disc then
-    --~         if id == glyph or id == rule or id == disc then
-                first = current
+        if first == last then
+            return first, last
+        end
+        while first and first ~= last do
+            local id = first.id
+            if id == glyph or id == disc then -- or id == rule
                 break
             else
-                current = current.next
+                first = first.next
             end
         end
-        local current = last
-        while current and current ~= first do
-            local id = current.id
-    --~         if id == glyph or id == rule or id == disc then
-            if id == glyph or id == disc then
-                last = current
+        if not first then
+            return nil, nil
+        elseif first == last then
+            return first, last
+        end
+        while last and last ~= first do
+            local id = last.id
+            if id == glyph or id == disc then -- or id == rule
                 break
             else
-                current = current.prev
+                last = last.prev
             end
+        end
+        if not last then
+            return nil, nil
         end
     end
     return first, last
@@ -94,11 +99,13 @@ local checkdir = true
 -- this one needs to take layers into account (i.e. we need a list of
 -- critical attributes)
 
+-- omkeren class en level -> scheelt functie call in analyse
+
 local function process_words(attribute,data,flush,head,parent) -- we have hlistdir and local dir
     local n = head
     if n then
-        local f, l, a, d, i, level
-        local continue, done, strip = false, false, false
+        local f, l, a, d, i, class
+        local continue, done, strip, level = false, false, true, -1
         while n do
             local id = n.id
             if id == glyph or id == rule then
@@ -111,12 +118,18 @@ local function process_words(attribute,data,flush,head,parent) -- we have hlistd
                         l = n
                     else
                         -- possible extensions: when in same class then keep spanning
+                        local newlevel, newclass = floor(aa/1000), aa%1000
+--~                         strip = not continue or level == 1 -- 0
                         if f then
-                            head, done = flush(head,f,l,d,level,parent,strip), true
+                            if class == newclass then -- and newlevel > level then
+                                head, done = flush(head,f,l,d,level,parent,false), true
+                            else
+                                head, done = flush(head,f,l,d,level,parent,strip), true
+                            end
                         end
                         f, l, a = n, n, aa
-                        level, i = floor(a/1000), a%1000
-                        d = data[i]
+                        level, class = newlevel, newclass
+                        d = data[class]
                         continue = d.continue == variables.yes
                     end
                 else
@@ -142,10 +155,18 @@ local function process_words(attribute,data,flush,head,parent) -- we have hlistd
                 end
             elseif f then
                 if continue then
-                    if id == penalty or id == kern then
+                    if id == penalty then
+                        l = n
+                    elseif id == kern then
                         l = n
                     elseif id == glue then
-                        l = n
+                        -- catch \underbar{a} \underbar{a} (subtype test is needed)
+                        if continue and has_attribute(n,attribute) and n.subtype == 0 then
+                            l = n
+                        else
+                            head, done = flush(head,f,l,d,level,parent,strip), true
+                            f, l, a = nil, nil, nil
+                        end
                     end
                 else
                     head, done = flush(head,f,l,d,level,parent,strip), true
@@ -183,13 +204,23 @@ local a_viewerlayer = attributes.private("viewerlayer")
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
 -- check for f and l
-if f.id ~= glyph then
-    -- saveguard ... we need to deal with rules and so (math)
-    return head
-end
+    if f.id ~= glyph then
+        -- saveguard ... we need to deal with rules and so (math)
+        return head
+    end
     local r, m
-    if true then
-        f, l = strip_range(f,l)
+    if strip then
+        if trace_ruled then
+            local before = n_tosequence(f,l,true)
+            f, l = strip_range(f,l)
+            local after = n_tosequence(f,l,true)
+            report_ruled("range stripper: %s -> %s",before,after)
+        else
+            f, l = strip_range(f,l)
+        end
+    end
+    if not f then
+        return head
     end
     local w = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,f,l.next)
     local method, offset, continue, dy, rulethickness, unit, order, max, ma, ca, ta =
@@ -214,11 +245,11 @@ end
         local dp = -(offset+(i-1)*dy-rulethickness)*e + m
         local r = new_rule(w,ht,dp)
         local v = has_attribute(f,a_viewerlayer)
--- quick hack
-if v then
-    set_attribute(r,a_viewerlayer,v)
-end
---
+        -- quick hack
+        if v then
+            set_attribute(r,a_viewerlayer,v)
+        end
+        --
         if color then
             set_attribute(r,a_colorspace,colorspace)
             set_attribute(r,a_color,color)

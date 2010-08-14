@@ -74,6 +74,7 @@
 \registerctxluafile{font-ota}{1.001} % otf analyzers
 \registerctxluafile{font-otp}{1.001} % otf pack
 \registerctxluafile{font-otc}{1.001} % otf context
+\registerctxluafile{font-oth}{1.001} % otf helpers
 \registerctxluafile{font-vf} {1.001}
 \registerctxluafile{font-def}{1.001}
 \registerctxluafile{font-ctx}{1.001}
@@ -734,7 +735,9 @@
       "\@@fontfallbacks",
       0\currentmathsize,
       \number\dimexpr\textface\relax,
-      "\relativefontid" % experiment
+      "\relativefontid", % experiment
+      "\@@fontclassgoodies", % experiment (not yet used)
+      "\@@fontgoodies" % experiment
    )}%
    \edef\somefontspec{at \somefontsize}% we need the resolved designsize (for fallbacks)
    \expandafter\let\expandafter\lastrawfontcall\csname#2\endcsname
@@ -742,7 +745,8 @@
 
 \def\updatefontclassparameters
   {\edef\@@fontclassfeatures {\ifcsname\fontclass\fontstyle\s!features \endcsname\csname\fontclass\fontstyle\s!features \endcsname\fi}%
-   \edef\@@fontclassfallbacks{\ifcsname\fontclass\fontstyle\s!fallbacks\endcsname\csname\fontclass\fontstyle\s!fallbacks\endcsname\fi}}
+   \edef\@@fontclassfallbacks{\ifcsname\fontclass\fontstyle\s!fallbacks\endcsname\csname\fontclass\fontstyle\s!fallbacks\endcsname\fi}%
+   \edef\@@fontclassgoodies  {\ifcsname\fontclass\fontstyle\s!goodies  \endcsname\csname\fontclass\fontstyle\s!goodies  \endcsname\fi}}
 
 % resolve
 
@@ -760,6 +764,13 @@
    \ifcsname\??ff                      #1\endcsname\@EA        \@@thefallbacksyes\csname\??ff                      #1\endcsname\else
                                                        \let    \@@fontfallbacks  \empty                                        \fi\fi\fi\fi}
 
+\def\@@thegoodiesyes#1%
+  {\ifcsname\??ff\fontclass#1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??ff\fontclass#1\s!goodies  \endcsname\else
+   \ifcsname\??ff          #1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??ff          #1\s!goodies  \endcsname\else
+   \ifcsname\??ff\fontclass            #1\endcsname\@EA        \@@thegoodiesyes  \csname\??ff\fontclass            #1\endcsname\else
+   \ifcsname\??ff                      #1\endcsname\@EA        \@@thegoodiesyes  \csname\??ff                      #1\endcsname\else
+                                                       \let    \@@fontgoodies    \empty                                        \fi\fi\fi\fi}
+
 \def\@@thefeaturesnop#1%
   {\ifcsname\??ff#1\s!features \endcsname\@EA\let\@EA\@@fontfeatures   \csname\??ff#1\s!features \endcsname\else
    \ifcsname\??ff            #1\endcsname\@EA        \@@thefeaturesnop \csname\??ff            #1\endcsname\else
@@ -770,13 +781,20 @@
    \ifcsname\??ff            #1\endcsname\@EA        \@@thefallbacksnop\csname\??ff            #1\endcsname\else
                                              \let    \@@fontfallbacks  \empty                              \fi\fi}
 
+\def\@@thegoodiesnop#1%
+  {\ifcsname\??ff#1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??ff#1\s!goodies  \endcsname\else
+   \ifcsname\??ff            #1\endcsname\@EA        \@@thegoodiesnop  \csname\??ff            #1\endcsname\else
+                                             \let    \@@fontgoodies    \empty                              \fi\fi}
+
 \def\updatefontparametersyes
  {\@@thefeaturesyes \somefontname
-  \@@thefallbacksyes\somefontname}
+  \@@thefallbacksyes\somefontname
+  \@@thegoodiesyes  \somefontname}
 
 \def\updatefontparametersnop
  {\@@thefeaturesnop \somefontname
-  \@@thefallbacksnop\somefontname}
+  \@@thefallbacksnop\somefontname
+  \@@thegoodiesnop  \somefontname}
 
 \def\updatefontparameters
  {\ifx\fontclass\empty\updatefontparametersnop\else\updatefontparametersyes\fi}
@@ -786,6 +804,8 @@
 
 \let\@@fontfallbacks\empty
 \let\@@fontfeatures \empty
+\let\@@fontgoodies  \empty
+
 \let\@@hyphenchar   \empty % todo, will go to encoding
 
 %D This brings down maps processing from 466 to 309 seconds
@@ -972,19 +992,23 @@
 
 \def\nonodefinefontsynonymnop
   {\@EA\let\csname\??ff\@@fontname\s!features \endcsname\undefined
-   \@EA\let\csname\??ff\@@fontname\s!fallbacks\endcsname\undefined}
+   \@EA\let\csname\??ff\@@fontname\s!fallbacks\endcsname\undefined
+   \@EA\let\csname\??ff\@@fontname\s!goodies  \endcsname\undefined}
 
 \def\nonodefinefontsynonymyes
   {\fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\undefined
-   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\undefined}
+   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\undefined
+   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!goodies  \endcsname\undefined}
 
 \def\dodododefinefontsynonymnop
   {\@EA\let\csname\??ff\@@fontname\s!features \endcsname\@@ff@@features
-   \@EA\let\csname\??ff\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks}
+   \@EA\let\csname\??ff\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks
+   \@EA\let\csname\??ff\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
 
 \def\dodododefinefontsynonymyes
   {\fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\@@ff@@features
-   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks}
+   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks
+   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
 
 \let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
 
@@ -2139,10 +2163,11 @@
      \trycurrentfontclass{#1}%
    \fi\fi\fi}
 
-\def\savefontclassparameters#1#2#3#4% #1=rm|ss|.. rscale features fallbacks
+\def\savefontclassparameters#1#2#3#4#5% #1=rm|ss|.. rscale features fallbacks goodies
   {\setxvalue{\fontclass#1\s!rscale   }{#2}%
    \setxvalue{\fontclass#1\s!features }{#3}%
-   \setxvalue{\fontclass#1\s!fallbacks}{#4}}
+   \setxvalue{\fontclass#1\s!fallbacks}{#4}%
+   \setxvalue{\fontclass#1\s!goodies  }{#5}}
 
 \settrue\autotypescripts
 
@@ -3756,24 +3781,43 @@
 \definefontsize[\c!a] \definefontsize[\c!b]
 \definefontsize[\c!c] \definefontsize[\c!d]
 
-\definealternativestyle [\v!mediaeval]                            [\os]    []
-\definealternativestyle [\v!normal]                               [\tf]    []
-\definealternativestyle [\v!bold]                                 [\bf]    []
-\definealternativestyle [\v!type]                                 [\tt]    []
-\definealternativestyle [\v!mono]                                 [\tt]    []
-\definealternativestyle [\v!slanted]                              [\sl]    []
-\definealternativestyle [\v!italic]                               [\it]    []
-\definealternativestyle [\v!boldslanted,\v!slantedbold]           [\bs]    []
-\definealternativestyle [\v!bolditalic,\v!italicbold]             [\bi]    []
-\definealternativestyle [\v!small,\v!smallnormal]                 [\tfx]   []
-\definealternativestyle [\v!smallbold]                            [\bfx]   []
-\definealternativestyle [\v!smalltype]                            [\ttx]   []
-\definealternativestyle [\v!smallslanted]                         [\slx]   []
-\definealternativestyle [\v!smallboldslanted,\v!smallslantedbold] [\bsx]   []
-\definealternativestyle [\v!smallbolditalic,\v!smallitalicbold]   [\bix]   []
+\definealternativestyle [\v!mediaeval]                              [\os] []
+\definealternativestyle [\v!normal]                                 [\tf] []
+\definealternativestyle [\v!bold]                                   [\bf] []
+\definealternativestyle [\v!type]                                   [\tt] []
+\definealternativestyle [\v!mono]                                   [\tt] []
+\definealternativestyle [\v!slanted]                                [\sl] []
+\definealternativestyle [\v!italic]                                 [\it] []
+\definealternativestyle [\v!boldslanted,\v!slantedbold]             [\bs] []
+\definealternativestyle [\v!bolditalic,\v!italicbold]               [\bi] []
 
-\definealternativestyle [\v!sans,\v!sansserif]                    [\ss]    []
-\definealternativestyle [\v!sansbold]                             [\ss\bf] []
+% \definealternativestyle [\v!small,\v!smallnormal]                 [\tfx] []
+% \definealternativestyle [\v!smallbold]                            [\bfx] []
+% \definealternativestyle [\v!smalltype]                            [\ttx] []
+% \definealternativestyle [\v!smallslanted]                         [\slx] []
+% \definealternativestyle [\v!smallboldslanted,\v!smallslantedbold] [\bsx] []
+% \definealternativestyle [\v!smallbolditalic,\v!smallitalicbold]   [\bix] []
+
+\definealternativestyle [\v!small,\v!smallnormal]                   [\setsmallbodyfont\tf] []
+\definealternativestyle [\v!smallbold]                              [\setsmallbodyfont\bf] []
+\definealternativestyle [\v!smalltype]                              [\setsmallbodyfont\tt] []
+\definealternativestyle [\v!smallslanted]                           [\setsmallbodyfont\sl] []
+\definealternativestyle [\v!smallboldslanted,\v!smallslantedbold]   [\setsmallbodyfont\bs] []
+\definealternativestyle [\v!smallbolditalic,\v!smallitalicbold]     [\setsmallbodyfont\bi] []
+
+\definealternativestyle [\v!bigger]                                 [\setbigbodyfont  \tf] []
+\definealternativestyle [\v!smaller]                                [\setsmallbodyfont\tf] []
+
+\definealternativestyle [\v!sans,\v!sansserif]                      [\ss]    []
+\definealternativestyle [\v!sansbold]                               [\ss\bf] []
+
+%D We can go on and on and on:
+%D
+%D \starttyping
+%D \setupbodyfontenvironment[default][p=0.8,q=0.6]
+%D \definefontsize[p]
+%D \definefontsize[q]
+%D \stoptyping
 
 %D Slow but handy:
 

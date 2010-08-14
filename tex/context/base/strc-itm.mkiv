@@ -310,10 +310,12 @@
      % \empty
    \else
      \getitemparameter\currentitemlevel\c!before
-   \fi\fi}
+   \fi\fi
+   \dostarttagged\t!itemgroup\currentitemgroup}
 
 \def\itemaftercommand
-  {\ifconditional\nowhitelistitem
+  {\dostoptagged
+   \ifconditional\nowhitelistitem
      \ifconditional\afterlistitem
        \ifcase\currentitemlevel\or\getitemparameter\currentitemlevel\c!after\fi
      \else
@@ -769,7 +771,12 @@
      \par
    \fi
    \dolistreference
-   \ifconditional\firstlistitem \else \endgroup \fi % toegevoegd, eerste \som opent groep
+   \ifconditional\firstlistitem
+   \else
+\dostoptagged
+\dostoptagged
+     \endgroup
+   \fi % toegevoegd, eerste \som opent groep
    \ifnum\itemcolumndepth=\currentitemlevel\relax
      \stopcolumns
      \global\itemcolumndepth\zerocount
@@ -1142,6 +1149,9 @@
 
 \chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
 
+% todo: assume startitem ... stopitem and do an autostopitem .. cleaner for
+% elements
+
 \def\complexdoitemgroupitem[#1]%
   {\def\currentitemreference{#1}%
    \ifconditional\textlistitem
@@ -1176,6 +1186,8 @@
        \fi
      \fi
    \else
+\dostoptagged
+\dostoptagged
      \ifconditional\textlistitem % was bugged: \inlinelistitem
        \ifhmode
          % WS: make the distance between items customizable, think about better default values -> see itemize-1.tex
@@ -1190,7 +1202,10 @@
      \vskip-\dimexpr\lastskip+\lineheight\relax
      \nobreak
    \fi
+\dostarttagged\t!item\empty
+\dostarttagged\t!itemtag\empty
    \dolistitem
+\dostoptagged
    \relax
    \ifconditional\packlistitem
      \setupwhitespace[\v!none]%
@@ -1198,6 +1213,7 @@
    \getitemparameter\currentitemlevel\c!inner
    \marsymbol
    \let\marsymbol\relax
+\dostarttagged\t!itemcontent\empty
    \strut % added 11-08-99
    \setfalse\concatnextitem % new, concat
    \nobreak % else problems with intext items

@@ -93,6 +93,7 @@
 		<cd:variable name='bib' value='bib'/>
 		<cd:variable name='big' value='بزرگ'/>
 		<cd:variable name='bigbodyfont' value='قلم‌بدنه‌بزرگ'/>
+		<cd:variable name='bigger' value='bigger'/>
 		<cd:variable name='bigpreference' value='اولویت‌بزرگ'/>
 		<cd:variable name='blank' value='خالی'/>
 		<cd:variable name='blockquote' value='نقل‌بلوک'/>
@@ -367,6 +368,7 @@
 		<cd:variable name='random' value='تصادفی'/>
 		<cd:variable name='readonly' value='تنهاخواندنی'/>
 		<cd:variable name='rectangular' value='چهارگوشه'/>
+		<cd:variable name='reference' value='مرجع'/>
 		<cd:variable name='referral' value='مراجعه'/>
 		<cd:variable name='register' value='ثبت'/>
 		<cd:variable name='regular' value='منظم'/>
@@ -414,6 +416,7 @@
 		<cd:variable name='smallbolditalic' value='ایتالیک‌مشکی‌کوچک'/>
 		<cd:variable name='smallboldslanted' value='خوابیده‌مشکی‌کوچک'/>
 		<cd:variable name='smallcaps' value='smallcaps'/>
+		<cd:variable name='smaller' value='smaller'/>
 		<cd:variable name='smallitalic' value='ایتالیک‌کوچک'/>
 		<cd:variable name='smallitalicbold' value='مشکی‌ایتالیک‌کوچک'/>
 		<cd:variable name='smallnormal' value='نرمال‌کوچک'/>

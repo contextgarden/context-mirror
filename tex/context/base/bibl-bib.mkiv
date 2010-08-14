@@ -627,7 +627,7 @@
    \ifx\currentbibtexsessiontag\empty
      % can't really happen
    \else\ifx\currentbibtexcriterium\v!all
-     \doplacepublicationindeed
+     \dotypesetbibtexpublication % was \doplacepublicationindeed
    \else
      \ctxlua{bibtex.hacks.doifalreadyplaced("\currentbibtexsessiontag")}
        \donothing

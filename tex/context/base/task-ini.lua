@@ -39,6 +39,8 @@ tasks.appendaction("shipouts",   "normalizers", "nodes.add_references")         
 tasks.appendaction("shipouts",   "normalizers", "nodes.add_destinations")                    -- disabled
 tasks.appendaction("shipouts",   "normalizers", "nodes.rules.process")                       -- disabled
 tasks.appendaction("shipouts",   "normalizers", "nodes.shifts.process")                      -- disabled
+tasks.appendaction("shipouts",   "normalizers", "structure.tags.handler")                    -- disabled
+tasks.appendaction("shipouts",   "normalizers", "nodes.accessibility.handler")               -- disabled
 
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_color")                     -- disabled
 tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_transparency")              -- disabled
@@ -50,6 +52,8 @@ tasks.appendaction("shipouts",   "finishers",   "shipouts.handle_viewerlayer")  
 tasks.appendaction("math",       "normalizers", "noads.relocate_characters", nil, "nohead")  -- always on
 tasks.appendaction("math",       "normalizers", "noads.resize_characters",   nil, "nohead")  -- always on
 tasks.appendaction("math",       "normalizers", "noads.respace_characters",  nil, "nohead")  -- always on
+tasks.appendaction("math",       "normalizers", "noads.check_alternates",    nil, "nohead")  -- always on
+tasks.appendaction("math",       "normalizers", "noads.add_tags",            nil, "nohead")  -- disabled
 
 tasks.appendaction("math",       "builders",    "noads.mlist_to_hlist")                      -- always on
 
@@ -86,6 +90,8 @@ tasks.disableaction("shipouts",    "shipouts.handle_colorintent")
 tasks.disableaction("shipouts",    "shipouts.handle_effect")
 tasks.disableaction("shipouts",    "shipouts.handle_negative")
 tasks.disableaction("shipouts",    "shipouts.handle_viewerlayer")
+tasks.disableaction("shipouts",    "structure.tags.handler")
+tasks.disableaction("shipouts",    "nodes.accessibility.handler")
 
 tasks.disableaction("shipouts",    "nodes.add_references")
 tasks.disableaction("shipouts",    "nodes.add_destinations")
@@ -94,6 +100,8 @@ tasks.disableaction("mvlbuilders", "nodes.migrate_outwards")
 
 tasks.disableaction("processors",  "parbuilders.solutions.splitters.split")
 tasks.disableaction("finalizers",  "parbuilders.solutions.splitters.optimize")
+
+tasks.disableaction("math",        "noads.add_tags")
 
 callbacks.freeze("find_.*_file", "find file using resolver")
 callbacks.freeze("read_.*_file", "read file at once")

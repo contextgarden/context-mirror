@@ -84,7 +84,8 @@ nodes.getn = getn
 -- we could make a special enhancer
 
 function notes.listindex(tag,n)
-    return notedata[tag][n]
+    local ndt = notedata[tag]
+    return ndt and ndt[n]
 end
 
 function notes.define(tag,kind,number)
@@ -98,9 +99,10 @@ function notes.save(tag,newkind)
         if trace_notes then
             report_notes("saving state of '%s': %s -> %s",tag,state.kind,newkind or state.kind)
         end
-        state.saved = notedata[tag]
+        state.saveddata = notedata[tag]
         state.savedkind = state.kind
         state.kind = newkind or state.kind
+        state.saved = true
         notedata[tag] = { }
     end
 end
@@ -111,9 +113,10 @@ function notes.restore(tag,forcedstate)
         if trace_notes then
             report_notes("restoring state of '%s': %s -> %s",tag,state.kind,state.savedkind)
         end
-        state.saved = nil
+        notedata[tag] = state.saveddata
         state.kind = forcedstate or state.savedkind
-        notedata[tag] = state.saved
+        state.saveddata = nil
+        state.saved = false
     end
 end
 
@@ -249,13 +252,17 @@ function notes.postpone()
     end
 end
 
-function notes.setsymbolpage(tag,n)
-    local l = notes.listindex(tag,n)
-    local p = texcount.realpageno
-    if trace_notes then
-        report_notes("note %s of '%s' with list index %s gets page %s",n,tag,l,p)
+function notes.setsymbolpage(tag,n,l)
+    local l = l or notes.listindex(tag,n)
+    if l then
+        local p = texcount.realpageno
+        if trace_notes then
+            report_notes("note %s of '%s' with list index %s gets page %s",n,tag,l,p)
+        end
+        lists.cached[l].references.symbolpage = p
+    else
+        report_notes("internal error: note %s of '%s' is not initialized",n,tag)
     end
-    lists.cached[l].references.symbolpage = p
 end
 
 function notes.getsymbolpage(tag,n)

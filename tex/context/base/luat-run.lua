@@ -8,6 +8,10 @@ if not modules then modules = { } end modules ['luat-run'] = {
 
 local format, rpadd = string.format, string.rpadd
 
+local trace_lua_dump = false  trackers  .register("system.dump", function(v) trace_lua_dump = v end)
+
+local report_lua_dump = logs.new("lua dump actions")
+
 luatex = luatex or { }
 
 local start_actions = { }
@@ -59,6 +63,10 @@ end
 function luatex.report_output_log()
 end
 
+function luatex.pre_dump_actions()
+    lua.finalize(trace_lua_dump and report_lua_dump or nil)
+end
+
 -- this can be done later
 
 callbacks.register('start_run',             luatex.start_run,           "actions performed at the beginning of a run")
@@ -72,3 +80,5 @@ callbacks.register('stop_page_number',      luatex.stop_shipout_page,   "actions
 
 callbacks.register('process_input_buffer',  false,                      "actions performed when reading data")
 callbacks.register('process_output_buffer', false,                      "actions performed when writing data")
+
+callbacks.register("pre_dump",              luatex.pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump

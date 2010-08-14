@@ -116,7 +116,7 @@ local function makestub()
     io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable)))
 end
 
-lua.registerfinalizer(makestub)
+lua.registerfinalizer(makestub,"create stub file")
 
 -- to be moved here:
 --

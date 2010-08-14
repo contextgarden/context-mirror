@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['strc-bkm'] = {
 -- Future version will support adding arbitrary bookmarks with
 -- associated complex actions (rather trivial to implement).
 
+-- this should become proper separated backend code
+
 local format, concat, gsub = string.format, table.concat, string.gsub
 local texsprint, utfvalues = tex.sprint, string.utfvalues
 
@@ -100,7 +102,7 @@ function bookmarks.place()
     end
 end
 
-lpdf.registerdocumentfinalizer(function() structure.bookmarks.place() end,1)
+lpdf.registerdocumentfinalizer(function() structure.bookmarks.place() end,1,"bookmarks")
 
 -- bkm
 --~ function nodes.toutf(list)

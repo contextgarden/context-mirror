@@ -343,7 +343,7 @@ function nodes.tosequence(start,stop,compact)
                     if start.components then
                         t[#t+1] = nodes.tosequence(start.components,nil,compact)
                     else
-                        t[#t+1] = format("%s",utfchar(c))
+                        t[#t+1] = utfchar(c)
                     end
                 else
                     t[#t+1] = format("U+%04X:%s",c,utfchar(c))

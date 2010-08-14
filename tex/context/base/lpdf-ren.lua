@@ -103,8 +103,8 @@ local function flushpagelayers()
     end
 end
 
-lpdf.registerpagefinalizer    (flushpagelayers)
-lpdf.registerdocumentfinalizer(flushtextlayers)
+lpdf.registerpagefinalizer    (flushpagelayers,"layers")
+lpdf.registerdocumentfinalizer(flushtextlayers,"layers")
 
 local function setlayer(what,arguments)
     -- maybe just a gmatch of even better, earlier in lpeg

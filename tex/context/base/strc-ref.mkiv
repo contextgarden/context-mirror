@@ -1081,7 +1081,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
+\dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+\dostoptagged
      \setlocationattributes\??ia
      \setstrut % can be option
      \attribute\referenceattribute\lastreferenceattribute
@@ -1094,7 +1096,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
+\dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#2",\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax,\extrareferencearguments)}%
+\dostoptagged
      \setlocationattributes\??ia
      \attribute\referenceattribute\lastreferenceattribute
    \fi
@@ -1109,7 +1113,9 @@
    \iflocation
      \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
+\dostarttagged\t!link\empty
         \ctxlua{jobreferences.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
+\dostoptagged
         \setlocationattributes\??ia
         \setstrut % can be option
         \attribute\referenceattribute\lastreferenceattribute}%
@@ -1126,7 +1132,9 @@
    \iflocation
      \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
+\dostarttagged\t!link\empty
         \ctxlua{jobreferences.injectcurrentset(\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax)}%
+\dostoptagged
         \setlocationattributes\??ia
         \attribute\referenceattribute\lastreferenceattribute}%
        {\unknownreference{#3}}%
@@ -1139,7 +1147,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
+\dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
+\dostoptagged
      \setlocationattributes\??ia
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
    \else
@@ -1152,7 +1162,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
+\dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
+\dostoptagged
      \setlocationcolorspec{#1}% no consequence for strut
      \hbox attr \referenceattribute \lastreferenceattribute {#2}%
    \else
@@ -1165,7 +1177,9 @@
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
+\dostarttagged\t!link\empty
      \ctxlua{jobreferences.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
+\dostoptagged
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
    \else
      #1%
@@ -1179,7 +1193,9 @@
    \iflocation
      \ctxlua{jobreferences.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
        {\expandtexincurrentreference
+\dostarttagged\t!link\empty
         \ctxlua{jobreferences.injectcurrentset(nil,nil)}%
+\dostoptagged
         \setlocationattributes\??ia
         \hbox attr \referenceattribute \lastreferenceattribute {#1}}%
        {\unknownreference{#2}}%
@@ -1187,6 +1203,18 @@
      #1%
    \fi
    \endgroup}
+
+\unexpanded\def\gotowdhtbox#1#2[#3]% fast variant for overlays
+  {\dontleavehmode
+   \begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
+     {\ctxlua{jobreferences.injectcurrentset(nil,nil)}%
+      \setbox\scratchbox\null\wd\scratchbox#1\ht\scratchbox#2%
+      \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}%
+     {\unknownreference{#3}}%
+   \endgroup}
+
 
 %D An reference to another document can be specified as a file
 %D or as an \URL. Both are handled by the same mechanism and

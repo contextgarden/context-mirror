@@ -35,6 +35,8 @@ The TeX-Lua mix is suboptimal. This has to do with the fact that we cannot
 run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
+-- commands.writestatus -> report
+
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
 local texsprint, texbox = tex.sprint, tex.box
 local contains = table.contains
@@ -227,40 +229,45 @@ do
     local figuredata = { }
     local callstack  = { }
 
-    function figures.new()
+    function figures.new() -- we could use metatables status -> used -> request but it needs testing
+        local request = {
+            name       = false,
+            label      = false,
+            format     = false,
+            page       = false,
+            width      = false,
+            height     = false,
+            preview    = false,
+            ["repeat"] = false,
+            controls   = false,
+            display    = false,
+            conversion = false,
+            cache      = false,
+            prefix     = false,
+            size       = false,
+        }
+        local used = {
+            fullname   = false,
+            format     = false,
+            name       = false,
+            path       = false,
+            suffix     = false,
+            width      = false,
+            height     = false,
+        }
+        local status = {
+            status     = 0,
+            converted  = false,
+            cached     = false,
+            fullname   = false,
+            format     = false,
+        }
+     -- setmetatable(status, { __index = used })
+     -- setmetatable(used,   { __index = request })
         figuredata = {
-            request = {
-                name = false,
-                label = false,
-                format = false,
-                page = false,
-                width = false,
-                height = false,
-                preview = false,
-                ["repeat"] = false,
-                controls = false,
-                display = false,
-                conversion = false,
-                cache = false,
-                prefix = false,
-                size = false,
-            },
-            used = {
-                fullname = false,
-                format = false,
-                name = false,
-                path = false,
-                suffix = false,
-                width = false,
-                height = false,
-            },
-            status = {
-                status = 0,
-                converted = false,
-                cached = false,
-                fullname = false,
-                format = false,
-            },
+            request = request,
+            used    = used,
+            status  = status,
         }
         return figuredata
     end
@@ -649,13 +656,13 @@ function figures.identifiers.default(data)
     local dr, du, ds = data.request, data.used, data.status
     local l = locate(dr)
     local foundname = l.foundname
-    local fullname = l.fullname or foundname
+    local fullname  = l.fullname or foundname
     if fullname then
-        du.format = l.format or false
+        du.format   = l.format or false
         du.fullname = fullname -- can be cached
         ds.fullname = foundname -- original
-        ds.format = l.format
-        ds.status = (l.found and 10) or 0
+        ds.format   = l.format
+        ds.status   = (l.found and 10) or 0
     end
     return data
 end
@@ -699,6 +706,7 @@ function figures.done(data)
     ds.height = box.height
     ds.xscale = ds.width /(du.width  or 1)
     ds.yscale = ds.height/(du.height or 1)
+    ds.page   = ds.page or du.page or dr.page -- sort of redundant but can be limited
 --~ print(table.serialize(figures.current()))
     return data
 end

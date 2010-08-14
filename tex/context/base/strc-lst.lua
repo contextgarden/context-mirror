@@ -124,6 +124,26 @@ function lists.enhance(n)
     end
 end
 
+function lists.enforce(n)
+ -- todo: symbolic names for counters
+    local l = cached[n]
+    if l then
+        --
+        l.directives = nil -- might change
+        -- save in the right order (happens at shipout)
+        lists.tobesaved[#lists.tobesaved+1] = l
+        -- default enhancer (cross referencing)
+        l.references.realpage = texcount.realpageno
+        -- specific enhancer (kind of obsolete)
+        local kind = l.metadata.kind
+        local enhancer = kind and lists.enhancers[kind]
+        if enhancer then
+            enhancer(l)
+        end
+        return l
+    end
+end
+
 -- we can use level instead but we can also decide to remove level from the metadata
 
 local nesting = { }

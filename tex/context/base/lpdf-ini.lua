@@ -13,8 +13,8 @@ local texwrite, texset, texsprint, ctxcatcodes = tex.write, tex.set, tex.sprint,
 local sind, cosd = math.sind, math.cosd
 local lpegmatch = lpeg.match
 
-local pdfreserveobj   = pdf and pdf.reserveobj   or function() return 1 end -- for testing
-local pdfimmediateobj = pdf and pdf.immediateobj or function() return 2 end -- for testing
+local pdfreserveobject   = pdf and pdf.reserveobj   or function() return 1 end -- for testing
+local pdfimmediateobject = pdf and pdf.immediateobj or function() return 2 end -- for testing
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
@@ -331,7 +331,7 @@ lpdf.verbose     = pdfverbose
 local names, cache = { }, { }
 
 function lpdf.reserveobject(name)
-    local r = pdfreserveobj()
+    local r = pdfreserveobject()
     if name then
         names[name] = r
         if trace_objects then
@@ -343,7 +343,30 @@ function lpdf.reserveobject(name)
     return r
 end
 
---~ local pdfreserveobject = lpdf.reserveobject
+function lpdf.reserveannotation()
+    return pdfreserveobject("annot")
+end
+
+lpdf.immediateobject = pdf.immediateobj
+lpdf.object          = pdf.obj          -- the table interface, todo: auto attr() and so
+lpdf.pagereference   = pdf.pageref or tex.pdfpageref
+
+--~ local pdfobj = pdf.obj
+
+--~ function lpdf.object(t)
+--~     local attr = t.attr
+--~     if type(attr) == "function" then
+--~         t.attr = attr()
+--~     end
+--~     local str = t.string
+--~     if str then
+--~         t.string = tostring(str)
+--~     end
+--~     if not t.type then
+--~         t.type = "raw"
+--~     end
+--~     pdfobj(t)
+--~ end
 
 function lpdf.flushobject(name,data)
     if data then
@@ -356,7 +379,7 @@ function lpdf.flushobject(name,data)
                     report_backends("flushing object data to reserved object with name '%s'",name)
                 end
             end
-            return pdfimmediateobj(name,tostring(data))
+            return pdfimmediateobject(name,tostring(data))
         else
             if trace_objects then
                 if trace_detail then
@@ -365,20 +388,20 @@ function lpdf.flushobject(name,data)
                     report_backends("flushing object data to reserved object with number %s",name)
                 end
             end
-            return pdfimmediateobj(tostring(data))
+            return pdfimmediateobject(tostring(data))
         end
     else
         if trace_objects and trace_detail then
             report_backends("flushing object data -> %s",tostring(name))
         end
-        return pdfimmediateobj(tostring(name))
+        return pdfimmediateobject(tostring(name))
     end
 end
 
 function lpdf.sharedobj(content)
     local r = cache[content]
     if not r then
-        r = pdfreference(pdfimmediateobj(content))
+        r = pdfreference(pdfimmediateobject(content))
         cache[content] = r
     end
     return r
@@ -447,6 +470,8 @@ local function resetpageproperties()
     pagesattributes = pdfdictionary()
 end
 
+resetpageproperties()
+
 local function setpageproperties()
 --~     texset("global", "pdfpageresources", pageresources  ())
 --~     texset("global", "pdfpageattr",      pageattributes ())
@@ -460,10 +485,14 @@ function lpdf.addtopageresources  (k,v) pageresources  [k] = v end
 function lpdf.addtopageattributes (k,v) pageattributes [k] = v end
 function lpdf.addtopagesattributes(k,v) pagesattributes[k] = v end
 
-local function set(where,f,when,what)
-    when = when or 2
+local function set(where,what,f,when,comment)
+    if type(when) == "string" then
+        when, comment = 2, when
+    elseif not when then
+        when = 2
+    end
     local w = where[when]
-    w[#w+1] = f
+    w[#w+1] = { f, comment }
     if trace_finalizers then
         report_backends("%s set: [%s,%s]",what,when,#w)
     end
@@ -473,27 +502,29 @@ local function run(where,what)
     for i=1,#where do
         local w = where[i]
         for j=1,#w do
+            local wj = w[j]
             if trace_finalizers then
-                report_backends("%s finalizer: [%s,%s]",what,i,j)
+                report_backends("%s finalizer: [%s,%s] %s",what,i,j,wj[2] or "")
             end
-            w[j]()
+            wj[1]()
         end
     end
 end
 
-function lpdf.registerpagefinalizer(f,when)
-    set(pagefinalizers,f,when,"page")
+function lpdf.registerpagefinalizer(f,when,comment)
+    set(pagefinalizers,"page",f,when,comment)
 end
 
-function lpdf.registerdocumentfinalizer(f,when)
-    set(documentfinalizers,f,when,"document")
+function lpdf.registerdocumentfinalizer(f,when,comment)
+    set(documentfinalizers,"document",f,when,comment)
 end
 
 function lpdf.finalizepage()
     if not environment.initex then
-        resetpageproperties()
+     -- resetpageproperties() -- maybe better before
         run(pagefinalizers,"page")
         setpageproperties()
+        resetpageproperties() -- maybe better before
     end
 end
 
@@ -507,11 +538,8 @@ function lpdf.finalizedocument()
     end
 end
 
-if callbacks.known("finish_pdffile") then
-    callbacks.register("finish_pdffile",function() if not environment.initex then run(documentfinalizers,"document") end end)
-    function lpdf.finalizedocument() end
-end
-
+--~ callbacks.register("finish_pdfoage", lpdf.finalizepage)
+callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
 -- some minimal tracing, handy for checking the order
 
@@ -538,22 +566,22 @@ function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) th
 function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then trace_set("info",   k) info   [k] = v end end
 function lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then trace_set("names",  k) names  [k] = v end end
 
-local dummy = pdfreserveobj() -- else bug in hvmd due so some internal luatex conflict
+local dummy = pdfreserveobject() -- else bug in hvmd due so some internal luatex conflict
 
-local r_extgstates,  d_extgstates  = pdfreserveobj(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
-local r_colorspaces, d_colorspaces = pdfreserveobj(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
-local r_patterns,    d_patterns    = pdfreserveobj(), pdfdictionary()  local p_patterns    = pdfreference(r_patterns)
-local r_shades,      d_shades      = pdfreserveobj(), pdfdictionary()  local p_shades      = pdfreference(r_shades)
+local r_extgstates,  d_extgstates  = pdfreserveobject(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
+local r_colorspaces, d_colorspaces = pdfreserveobject(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
+local r_patterns,    d_patterns    = pdfreserveobject(), pdfdictionary()  local p_patterns    = pdfreference(r_patterns)
+local r_shades,      d_shades      = pdfreserveobject(), pdfdictionary()  local p_shades      = pdfreference(r_shades)
 
 local function checkextgstates () if next(d_extgstates ) then lpdf.addtopageresources("ExtGState", p_extgstates ) end end
 local function checkcolorspaces() if next(d_colorspaces) then lpdf.addtopageresources("ColorSpace",p_colorspaces) end end
 local function checkpatterns   () if next(d_patterns   ) then lpdf.addtopageresources("Pattern",   p_patterns   ) end end
 local function checkshades     () if next(d_shades     ) then lpdf.addtopageresources("Shading",   p_shades     ) end end
 
-local function flushextgstates () if next(d_extgstates ) then trace_flush("extgstates")  pdfimmediateobj(r_extgstates, tostring(d_extgstates )) end end
-local function flushcolorspaces() if next(d_colorspaces) then trace_flush("colorspaces") pdfimmediateobj(r_colorspaces,tostring(d_colorspaces)) end end
-local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobj(r_patterns,   tostring(d_patterns   )) end end
-local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobj(r_shades,     tostring(d_shades     )) end end
+local function flushextgstates () if next(d_extgstates ) then trace_flush("extgstates")  pdfimmediateobject(r_extgstates, tostring(d_extgstates )) end end
+local function flushcolorspaces() if next(d_colorspaces) then trace_flush("colorspaces") pdfimmediateobject(r_colorspaces,tostring(d_colorspaces)) end end
+local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobject(r_patterns,   tostring(d_patterns   )) end end
+local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobject(r_shades,     tostring(d_shades     )) end end
 
 local collected = pdfdictionary {
     ExtGState  = p_extgstates,
@@ -571,19 +599,19 @@ function lpdf.adddocumentcolorspace(k,v) d_colorspaces[k] = v end
 function lpdf.adddocumentpattern   (k,v) d_patterns   [k] = v end
 function lpdf.adddocumentshade     (k,v) d_shades     [k] = v end
 
-lpdf.registerdocumentfinalizer(flushextgstates,3)
-lpdf.registerdocumentfinalizer(flushcolorspaces,3)
-lpdf.registerdocumentfinalizer(flushpatterns,3)
-lpdf.registerdocumentfinalizer(flushshades,3)
+lpdf.registerdocumentfinalizer(flushextgstates,3,"extended graphic states")
+lpdf.registerdocumentfinalizer(flushcolorspaces,3,"color spaces")
+lpdf.registerdocumentfinalizer(flushpatterns,3,"patterns")
+lpdf.registerdocumentfinalizer(flushshades,3,"shades")
 
-lpdf.registerdocumentfinalizer(flushcatalog,3)
-lpdf.registerdocumentfinalizer(flushinfo,3)
-lpdf.registerdocumentfinalizer(flushnames,3)
+lpdf.registerdocumentfinalizer(flushcatalog,3,"catalog")
+lpdf.registerdocumentfinalizer(flushinfo,3,"info")
+lpdf.registerdocumentfinalizer(flushnames,3,"names")
 
-lpdf.registerpagefinalizer(checkextgstates,3)
-lpdf.registerpagefinalizer(checkcolorspaces,3)
-lpdf.registerpagefinalizer(checkpatterns,3)
-lpdf.registerpagefinalizer(checkshades,3)
+lpdf.registerpagefinalizer(checkextgstates,3,"extended graphic states")
+lpdf.registerpagefinalizer(checkcolorspaces,3,"color spaces")
+lpdf.registerpagefinalizer(checkpatterns,3,"patterns")
+lpdf.registerpagefinalizer(checkshades,3,"shades")
 
 -- in strc-bkm: lpdf.registerdocumentfinalizer(function() structure.bookmarks.place() end,1)
 

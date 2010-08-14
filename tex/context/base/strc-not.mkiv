@@ -637,15 +637,16 @@
    \fi}
 
 \def\dolastnotesymbol
-  {\typesetsomenotesymbol\currentnote\currentnotenumber}
+  {\typesetsomenotesymbol\currentnote\currentnotenumber\currentdescriptionnumberentry}
 
-\def\dotypesetsomenotesymbol#1#2% running text
+\def\dotypesetsomenotesymbol#1#2#3% running text (messy: #1 and current mixed)
   {\dodonotesymbol
-     {\synchronizesomenotesymbol{#1}{#2}%
-      \ctxlua{structure.notes.number("\currentnote",\currentnotenumber)}% \currentdescriptionnumberentry
+     {\synchronizesomenotesymbol{#1}{#2}{#3}%
+%     \ctxlua{structure.notes.number("\currentnote",\currentnotenumber)}% \currentdescriptionnumberentry
+      \ctxlua{structure.notes.number("#1",#2)}%
       \domovednote{#1}{#2}\v!previouspage\v!nextpage}}
 
-\unexpanded\def\typesetsomenotesymbol#1#2% running text
+\unexpanded\def\typesetsomenotesymbol#1#2#3% running text
   {\removeunwantedspaces
    \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
@@ -653,8 +654,8 @@
    \fi
    \nobreak
    \doifelse{\noteparameter\c!interaction}\v!no
-     {\dotypesetsomenotesymbol{#1}{#2}}
-     {\directgotobox{\dotypesetsomenotesymbol{#1}{#2}}[page(\ctxlua{structure.notes.getnumberpage("#1",\number#2)})]}% f:
+     {\dotypesetsomenotesymbol{#1}{#2}{#3}}
+     {\directgotobox{\dotypesetsomenotesymbol{#1}{#2}{#3}}[page(\ctxlua{structure.notes.getnumberpage("#1",\number#2)})]}% f:
    \globallet\lastnotesymbol\relax}
 
 \unexpanded\def\typesetdummynotesymbol % temp hack
@@ -698,8 +699,10 @@
       \ctxlua{structure.notes.number("\currentnote",\currentdescriptionnumberentry)}%
       \domovednote\currentdescription\currentdescriptionnumberentry\v!nextpage\v!previouspage}}
 
-\def\synchronizesomenotesymbol#1#2% called more often than needed
-  {\normalexpanded{\noexpand\ctxlatelua{structure.notes.setsymbolpage("#1",#2)}}}
+\def\synchronizesomenotesymbol#1#2#3% called more often than needed
+  {\iftrialtypesetting\else
+     \normalexpanded{\noexpand\ctxlatelua{structure.notes.setsymbolpage("#1",#2,#3)}}%
+   \fi}
 
 \def\handlenoteinsert#1#2%
   {\begingroup

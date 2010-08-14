@@ -577,12 +577,12 @@
    \registerparameter\c!command{\strut#1}%
    \endgroup
    \registerparameter\c!after
-   \par\nobreak}
-
+   \par
+   \nobreak}
 
 % b = <goodbreak> <before> <character> <after> <nobreak>
 
-\setvalue{\??id:\c!indicator:b}#1%
+\setvalue{\??id:\c!indicator:b}#1% will be shared with a
   {\registerparameter\c!before
    \begingroup\dosetregisterattributes\c!style\c!color
    \registerparameter\c!command{\strut#1}%
@@ -603,47 +603,59 @@
 \unexpanded\def\startregisteroutput
   {\endgraf
    \begingroup
+   \dostarttagged\t!register\currentregister
    \forgetparindent
    \forgetparskip}
 
 \unexpanded\def\stopregisteroutput
   {\endgraf
+   \dostoptagged
    \endgroup}
 
 \unexpanded\def\startregisterentries#1% depth
   {\endgraf
    \begingroup
+   \dostarttagged\t!registerentries\empty
    \dosetregisterattributes\c!textstyle\c!textcolor
    \advance\leftskip\numexpr#1-1\relax\dimexpr\registerparameter\c!distance\relax
    \hangindent\registerparameter\c!distance\hangafter\plusone}
 
 \unexpanded\def\stopregisterentries
   {\endgraf
+   \dostoptagged
    \endgroup}
 
 \unexpanded\def\startregistersection#1% title
-  {\registercharacter{#1}\endgraf}
+  {\dostarttagged\t!registersection\empty
+   \dostarttagged\t!registertag\empty
+   \registercharacter{#1}\endgraf
+   \dostoptagged}
 
 \unexpanded\def\stopregistersection
-  {\endgraf}
+  {\dostoptagged
+   \endgraf}
 
 \newconditional\registerpagedone
 
 \unexpanded\def\startregisterpages
   {\begingroup
+   \dostarttagged\t!registerpages\empty
    \setfalse\registerpagedone
    \dosetregisterattributes\c!pagestyle\c!pagecolor}
 
 \unexpanded\def\stopregisterpages
-  {\endgroup}
+  {\dostoptagged
+   \endgroup}
 
 \unexpanded\def\startregisterseewords
   {\begingroup
    \setfalse\registerpagedone
+   \dostarttagged\t!registerpage\empty
    \dosetregisterattributes\c!pagestyle\c!pagecolor}
 
 \unexpanded\def\stopregisterseewords
-  {\endgroup}
+  {\dostoptagged
+   \endgroup}
 
 \def\registerpageseparator% todo: , configurable
   {\ifconditional\registerpagedone
@@ -665,20 +677,37 @@
 
 \def\registeronepage#1#2#3% content
   {\registerpageseparator
-   \withregisterpagecommand{#1}{#2}{#3}}
+   \dostarttagged\t!registerpage\empty
+   \withregisterpagecommand{#1}{#2}{#3}%
+   \dostoptagged}
 
 \def\registerpagerange#1#2#3#4#5#6% content, content todo: -- configurable
   {\registerpageseparator
+   \dostarttagged\t!registerpagerange\empty
+   \dostarttagged\t!registerfrompage\empty
    \withregisterpagecommand{#1}{#2}{#3}%
+   \dostoptagged
    \registeronepagerangeseparator
-   \withregisterpagecommand{#4}{#5}{#6}}
+   \dostarttagged\t!registertopage\empty
+   \withregisterpagecommand{#4}{#5}{#6}%
+   \dostoptagged
+   \dostoptagged}
 
 \def\registeroneword#1#2#3% content
   {\registerpageseparator
-   \registerseeword{#3}}
+   \dostarttagged\t!registersee\empty
+   \registerseeword{#3}%
+   \dostoptagged}
 
-\def\defaultregisterentry  #1{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#1}}}}
-\def\defaultregisterseeword#1{\labeltexts\v!see{#1}}
+\def\defaultregisterentry#1%
+  {\dostarttagged\t!registerentry\empty
+   \registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#1}}}%
+   \dostoptagged}
+
+\def\defaultregisterseeword#1%
+  {\dostarttagged\t!registersee\empty
+   \labeltexts\v!see{#1}%
+   \dostoptagged}
 
 \let\registerseeword  \defaultregisterseeword
 \let\registerentry    \defaultregisterentry
