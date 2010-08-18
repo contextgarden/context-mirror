@@ -13,9 +13,12 @@ reusable components.</p>
 
 local texsprint, texcount = tex.sprint, tex.count
 
-jobobjects           = jobobjects or { }
-jobobjects.collected = jobobjects.collected or { }
-jobobjects.tobesaved = jobobjects.tobesaved or { }
+local jobobjects = {
+    collected = { },
+    tobesaved = { },
+}
+
+job.objects = jobobjects
 
 local collected, tobesaved = jobobjects.collected, jobobjects.tobesaved
 
@@ -23,7 +26,7 @@ local function initializer()
     collected, tobesaved = jobobjects.collected, jobobjects.tobesaved
 end
 
-job.register('jobobjects.collected', jobobjects.tobesaved, initializer, nil)
+job.register('job.objects.collected', jobobjects.tobesaved, initializer, nil)
 
 function jobobjects.save(tag,number,page)
     local t = { number, page }

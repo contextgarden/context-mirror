@@ -188,7 +188,7 @@
    \c!width=]
 
 \installstructurelistprocessor{pubs:userdata}%
-  {\ctxlua{bibtex.hacks.add(structure.lists.uservalue("\currentlist",\currentlistindex,"bibref"),\currentlistindex)}}
+  {\ctxlua{bibtex.hacks.add(structures.lists.uservalue("\currentlist",\currentlistindex,"bibref"),\currentlistindex)}}
 
 \newcount\bibtexblock \bibtexblock\plusone
 
@@ -832,7 +832,7 @@
      {\ifx\@@pbnumbering\v!short
         \setbox\scratchbox\hbox{\@@pbnumbercommand{\listparameter\c!samplesize}}%
       \else
-        \setbox\scratchbox\hbox{\@@pbnumbercommand{\ctxlua{tex.write(structure.lists.size())}}}%
+        \setbox\scratchbox\hbox{\@@pbnumbercommand{\ctxlua{tex.write(structures.lists.size())}}}%
       \fi
       \edef\publistnumberbox{\hbox to \the\wd\scratchbox}%
       \expanded{\setuplist[pubs][\c!width=\the\wd\scratchbox,\c!distance=\zeropoint]}%

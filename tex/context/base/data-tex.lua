@@ -15,7 +15,11 @@ local trace_locating = false trackers.register("resolvers.locating", function(v)
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
+
+local checkgarbage = utilities.garbagecollector and utilities.garbagecollector.check
 
 function finders.generic(tag,filename,filetype)
     local foundname = resolvers.find_file(filename,filetype)
@@ -135,7 +139,7 @@ function openers.text_opener(filename,file_handle,tag)
                 logs.show_close(filename)
                 file_handle:close()
                 t = nil
-                collectgarbage("step") -- saves some memory
+                collectgarbage("step") -- saves some memory, maybe checkgarbage but no #
             end,
             handle = function()
                 return file_handle
@@ -175,7 +179,9 @@ function loaders.generic(tag,filename)
                 report_resolvers("%s loader, file '%s' loaded",tag,filename)
             end
             local s = f:read("*a")
-            if garbagecollector and garbagecollector.check then garbagecollector.check(#s) end
+            if checkgarbage then
+                checkgarbage(#s)
+            end
             f:close()
             if s then
                 return true, s, #s

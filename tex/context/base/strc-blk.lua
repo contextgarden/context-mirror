@@ -10,13 +10,17 @@ if not modules then modules = { } end modules ['strc--blk'] = {
 
 local texprint, format, gmatch, find = tex.print, string.format, string.gmatch, string.find
 local lpegmatch = lpeg.match
+local settings_to_set, settings_to_array = utilities.parsers.settings_to_set, utilities.parsers.settings_to_array
 
 local ctxcatcodes = tex.ctxcatcodes
 
-structure        = structure or { }
-structure.blocks = structure.blocks or { }
+local structures  = structures
 
-local blocks = structure.blocks
+structures.blocks = structures.blocks or { }
+
+local blocks   = structures.blocks
+local sections = structures.sections
+local lists    = structures.lists
 
 blocks.collected = blocks.collected or { }
 blocks.tobesaved = blocks.tobesaved or { }
@@ -28,7 +32,7 @@ local function initializer()
     collected, tobesaved = blocks.collected, blocks.tobesaved
 end
 
-job.register('structure.blocks.collected', structure.blocks.tobesaved, initializer)
+job.register('structures.blocks.collected', blocks.tobesaved, initializer)
 
 local printer = (lpeg.patterns.textline/texprint)^0 -- can be shared
 
@@ -58,7 +62,7 @@ end
 
 function blocks.setstate(state,name,tag)
     local all = tag == ""
-    local tags = not all and aux.settings_to_array(tag)
+    local tags = not all and settings_to_array(tag)
     for n in gmatch(name,"%s*([^,]+)") do
         local sn = states[n]
         if not sn then
@@ -76,12 +80,12 @@ end
 function blocks.select(state,name,tag,criterium)
     criterium = criterium or "text"
     if find(tag,"=") then tag = "" end
-    local names = aux.settings_to_set(name)
+    local names = settings_to_set(name)
     local all = tag == ""
-    local tags = not all and aux.settings_to_set(tag)
+    local tags = not all and settings_to_set(tag)
     local hide = state == "process"
-    local n = structure.sections.number_at_depth(criterium)
-    local result = structure.lists.filter_collected("all", criterium, n, collected, { })
+    local n = sections.number_at_depth(criterium)
+    local result = lists.filter_collected("all", criterium, n, collected, { })
     for i=1,#result do
         local ri = result[i]
         local metadata = ri.metadata
@@ -103,7 +107,7 @@ end
 
 function blocks.save(name,tag,buffer) -- wrong, not yet adapted
     local data = buffers.data[buffer]
-    local tags = aux.settings_to_set(tag)
+    local tags = settings_to_set(tag)
     local plus, minus = false, false
     if tags['+'] then plus  = true tags['+'] = nil end
     if tags['-'] then minus = true tags['-'] = nil end
@@ -115,7 +119,7 @@ function blocks.save(name,tag,buffer) -- wrong, not yet adapted
             minus = minus,
         },
         references = {
-            section  = structure.sections.currentid(),
+            section  = sections.currentid(),
         },
         data = data or "error",
     }

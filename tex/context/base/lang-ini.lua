@@ -22,6 +22,7 @@ local format, gsub = string.format, string.gsub
 local concat = table.concat
 local lpegmatch = lpeg.match
 local texwrite = tex.write
+local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 
@@ -33,18 +34,23 @@ local lefthyphenmin, righthyphenmin = lang.lefthyphenmin, lang.righthyphenmin
 lang.exceptions = lang.hyphenation
 
 languages            = languages or {}
+local languages      = languages
+
 languages.version    = 1.010
+
 languages.registered = languages.registered or { }
+local registered     = languages.registered
+
 languages.associated = languages.associated or { }
+local associated     = languages.associated
+
 languages.numbers    = languages.numbers    or { }
+local numbers        = languages.numbers
 
-storage.register("languages/numbers",   languages.numbers,   "languages.numbers")
-storage.register("languages/registered",languages.registered,"languages.registered")
-storage.register("languages/associated",languages.associated,"languages.associated")
+storage.register("languages/numbers",   numbers,   "languages.numbers")
+storage.register("languages/registered",registered,"languages.registered")
+storage.register("languages/associated",associated,"languages.associated")
 
-local numbers    = languages.numbers
-local registered = languages.registered
-local associated = languages.associated
 local nofloaded  = 0
 
 local function resolve(tag)
@@ -77,7 +83,7 @@ end
 local function loaddefinitions(tag,specification)
     statistics.starttiming(languages)
     local data, instance = resolve(tag)
-    local definitions = aux.settings_to_array(specification.patterns or "")
+    local definitions = settings_to_array(specification.patterns or "")
     if #definitions > 0 then
         local dataused, ok = data.used, false
         for i=1,#definitions do

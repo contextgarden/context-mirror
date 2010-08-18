@@ -10,13 +10,15 @@ if not modules then modules = { } end modules ['font-chk'] = {
 
 local report_fonts = logs.new("fonts")
 
-fonts              = fonts or { }
-fonts.checkers     = fonts.checkers or { }
+local fonts        = fonts
 
+fonts.checkers     = fonts.checkers or { }
 local checkers     = fonts.checkers
+
 local fontdata     = fonts.ids
 local is_character = characters.is_character
 local chardata     = characters.data
+local tasks        = nodes.tasks
 
 local glyph        = node.id('glyph')
 local traverse_id  = node.traverse_id

@@ -560,6 +560,7 @@
 		<cd:constant name='backgroundoffset' value='offsetpozadi'/>
 		<cd:constant name='backgroundradius' value='polomerpozadi'/>
 		<cd:constant name='backgroundscreen' value='rastrpozadi'/>
+		<cd:constant name='backreference' value='backreference'/>
 		<cd:constant name='backspace' value='zpetnamezera'/>
 		<cd:constant name='balance' value='rovnovaha'/>
 		<cd:constant name='before' value='pred'/>
@@ -709,6 +710,7 @@
 		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='interakce'/>
 		<cd:constant name='interlinespace' value='meziradkovamezera'/>
+		<cd:constant name='internalgrid' value='internalgrid'/>
 		<cd:constant name='itemalign' value='itemalign'/>
 		<cd:constant name='items' value='polozky'/>
 		<cd:constant name='juniorsep' value='juniorsep'/>

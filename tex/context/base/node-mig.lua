@@ -8,18 +8,21 @@ if not modules then modules = { } end modules ['node-mig'] = {
 
 local format = string.format
 
+local attributes, nodes, node = attributes, nodes, node
+
 local has_attribute = node.has_attribute
 local set_attribute = node.set_attribute
 local remove_nodes  = nodes.remove
 
-local nodecodes = nodes.nodecodes
+local nodecodes     = nodes.nodecodes
+local tasks         = nodes.tasks
 
-local hlist  = nodecodes.hlist
-local vlist  = nodecodes.vlist
-local insert = nodecodes.ins
-local mark   = nodecodes.mark
+local hlist_code    = nodecodes.hlist
+local vlist_code    = nodecodes.vlist
+local insert_code   = nodecodes.ins
+local mark_code     = nodecodes.mark
 
-local migrated = attributes.private("migrated")
+local migrated      = attributes.private("migrated")
 
 local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)
 
@@ -33,10 +36,10 @@ local function locate(head,first,last,ni,nm)
     local current = head
     while current do
         local id = current.id
-        if id == vlist or id == hlist then
+        if id == vlist_code or id == hlist_code then
             current.list, first, last, ni, nm = locate(current.list,first,last,ni,nm)
             current= current.next
-        elseif migrate_inserts and id == insert then
+        elseif migrate_inserts and id == insert_code then
             local insert
             head, current, insert = remove_nodes(head,current)
             insert.next = nil
@@ -46,7 +49,7 @@ local function locate(head,first,last,ni,nm)
                 insert.prev, first = nil, insert
             end
             last, ni = insert, ni + 1
-        elseif migrate_marks and id == mark then
+        elseif migrate_marks and id == mark_code then
             local mark
             head, current, mark = remove_nodes(head,current)
             mark.next = nil
@@ -63,20 +66,20 @@ local function locate(head,first,last,ni,nm)
     return head, first, last, ni, nm
 end
 
-function nodes.migrate_outwards(head,where)
+function nodes.handlers.migrate(head,where)
     local done = false
     if head then
         local current = head
         while current do
             local id = current.id
-            if id == vlist or id == hlist and not has_attribute(current,migrated) then
+            if id == vlist_code or id == hlist_code and not has_attribute(current,migrated) then
                 set_attribute(current,migrated,1)
                 t_sweeps = t_sweeps + 1
                 local h = current.list
                 local first, last, ni, nm
                 while h do
                     local id = h.id
-                    if id == vlist or id == hlist then
+                    if id == vlist_code or id == hlist_code then
                         h, first, last, ni, nm = locate(h,first,last,0,0)
                     end
                     h = h.next
@@ -103,14 +106,14 @@ end
 
 experiments.register("marks.migrate", function(v)
     if v then
-        tasks.enableaction("mvlbuilders", "nodes.migrate_outwards")
+        tasks.enableaction("mvlbuilders", "nodes.handlers.migrate")
     end
     migrate_marks = v
 end)
 
 experiments.register("inserts.migrate", function(v)
     if v then
-        tasks.enableaction("mvlbuilders", "nodes.migrate_outwards")
+        tasks.enableaction("mvlbuilders", "nodes.handlers.migrate")
     end
     migrate_inserts = v
 end)

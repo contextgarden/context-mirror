@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['core-ctx'] = {
 
 local trace_prepfiles = false  trackers.register("resolvers.prepfiles", function(v) trace_prepfiles = v end)
 
-commands = commands or { }
+commands       = commands or { }
+local commands = commands
 
 local list, suffix, islocal, found = { }, "prep", false, false
 

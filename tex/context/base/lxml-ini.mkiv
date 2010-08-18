@@ -91,9 +91,6 @@
 \def\xmlloaddirectives     #1{\ctxlua{lxml.directives.load("any:///#1")}}
 \def\xmlpos                #1{\ctxlua{lxml.pos("#1")}}
 
-%def\xmldoifelse         #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",false))}}
-%def\xmldoifelsetext     #1#2{\ctxlua{cs.testcase(xml.found(lxml.id("#1"),"#2",true ))}}
-
 % kind of special:
 
 \def\xmlstartraw{\ctxlua{lxml.startraw()}}

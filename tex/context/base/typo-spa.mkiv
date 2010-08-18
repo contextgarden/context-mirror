@@ -38,12 +38,12 @@
   {\ifcsname\??ch:#1\endcsname
      \begingroup % for the moment we use modes, in ordere to avoid interface translation
      \getparameters[\??ch][\c!left=0,\c!right=0,\c!alternative=0,#3]%
-     \ctxlua{typesetting.spacings.setup(\getvalue{\??ch:#1},\number#2,\@@chleft,\@@chright,\@@chalternative)}%
+     \ctxlua{typesetters.spacings.setup(\getvalue{\??ch:#1},\number#2,\@@chleft,\@@chright,\@@chalternative)}%
      \endgroup
    \fi}
 
 \unexpanded\def\setcharacterspacing[#1]%
-  {\ctxlua{typesetting.spacings.set(\number\csname\??ch:#1\endcsname)}}
+  {\ctxlua{typesetters.spacings.set(\number\csname\??ch:#1\endcsname)}}
 
 \unexpanded\def\resetcharacterspacing % fast one
   {\attribute\spacingattribute\attributeunsetvalue}

@@ -15,16 +15,20 @@ symbolic names later on.</p>
 
 attributes = attributes or { }
 
-attributes.names      = attributes.names   or { }
-attributes.numbers    = attributes.numbers or { }
-attributes.list       = attributes.list    or { }
+local attributes, nodes = attributes, nodes
+
+attributes.names      = attributes.names    or { }
+attributes.numbers    = attributes.numbers  or { }
+attributes.list       = attributes.list     or { }
+attributes.states     = attributes.states   or { }
+attributes.handlers   = attributes.handlers or { }
 attributes.unsetvalue = -0x7FFFFFFF
 
-storage.register("attributes/names",   attributes.names,   "attributes.names")
-storage.register("attributes/numbers", attributes.numbers, "attributes.numbers")
-storage.register("attributes/list",    attributes.list,    "attributes.list")
-
 local names, numbers, list = attributes.names, attributes.numbers, attributes.list
+
+storage.register("attributes/names",   names,   "attributes.names")
+storage.register("attributes/numbers", numbers, "attributes.numbers")
+storage.register("attributes/list",    list,    "attributes.list")
 
 function attributes.define(name,number) -- at the tex end
     if not numbers[name] then

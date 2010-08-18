@@ -16,32 +16,33 @@ local concat, format = table.concat, string.format
 local texprint, ctxcatcodes = tex.print, tex.ctxcatcodes
 local lpegmatch = lpeg.match
 
-jobpositions           = jobpositions or { }
-jobpositions.collected = jobpositions.collected or { }
-jobpositions.tobesaved = jobpositions.tobesaved or { }
+local jobpositions = {
+    collected = { },
+    tobesaved = { },
+}
 
--- these are global since they are used often at the tex end
+job.positions = jobpositions
 
--- \the\dimexpr #2\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
--- \the\dimexpr #3\ifnum\positionanchormode=\plusone-\MPy\pageanchor\fi\relax
+local tobesaved, collected = jobpositions.tobesaved, jobpositions.collected
 
-ptbs, pcol = jobpositions.tobesaved, jobpositions.collected -- global
+_plib_, _ptbs_, _pcol_ = jobpositions, tobesaved, collected -- global
 
 local dx, dy = "0pt", "0pt"
 
 local function initializer()
-    ptbs, pcol = jobpositions.tobesaved, jobpositions.collected
-    local p = pcol["page:0"] -- page:1
+    tobesaved, collected = jobpositions.tobesaved, jobpositions.collected -- local
+    _ptbs_, _pcol_ = tobesaved, collected -- global
+    local p = collected["page:0"] -- page:1
     if p then
 -- to be checked !
 --~ dx, dy = p[2] or "0pt", p[3] or "0pt"
     end
 end
 
-job.register('jobpositions.collected', jobpositions.tobesaved, initializer)
+job.register('job.positions.collected', jobpositions.tobesaved, initializer)
 
 function jobpositions.copy(target,source)
-    jobpositions.collected[target] = jobpositions.collected[source] or ptbs[source]
+    jobpositions.collected[target] = jobpositions.collected[source] or tobesaved[source]
 end
 
 function jobpositions.replace(name,...)
@@ -49,19 +50,19 @@ function jobpositions.replace(name,...)
 end
 
 function jobpositions.doifelse(name)
-    commands.testcase(jobpositions.collected[name] or ptbs[name])
+    commands.testcase(jobpositions.collected[name] or tobesaved[name])
 end
 
-function jobpositions.MPp(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatcodes,(jpi and jpi[1]) or '0'  ) end
-function jobpositions.MPx(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatcodes,(jpi and jpi[2]) or '0pt') end
-function jobpositions.MPy(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatcodes,(jpi and jpi[3]) or '0pt') end
-function jobpositions.MPw(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatcodes,(jpi and jpi[4]) or '0pt') end
-function jobpositions.MPh(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatcodes,(jpi and jpi[5]) or '0pt') end
-function jobpositions.MPd(id) local jpi = pcol[id] or ptbs[id] texprint(ctxcatcodes,(jpi and jpi[6]) or '0pt') end
+function jobpositions.MPp(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[1]) or '0'  ) end
+function jobpositions.MPx(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[2]) or '0pt') end
+function jobpositions.MPy(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[3]) or '0pt') end
+function jobpositions.MPw(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[4]) or '0pt') end
+function jobpositions.MPh(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[5]) or '0pt') end
+function jobpositions.MPd(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[6]) or '0pt') end
 
 
 function jobpositions.MPx(id)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     local x = jpi and jpi[2]
     if x then
         texprint(ctxcatcodes,format('\\the\\dimexpr%s-%s\\relax',x,dx)) -- no space after dimexpr !
@@ -71,7 +72,7 @@ function jobpositions.MPx(id)
 end
 
 function jobpositions.MPy(id)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     local y = jpi and jpi[3]
     if y then
         texprint(ctxcatcodes,format('\\the\\dimexpr%s-%s\\relax',y,dy)) -- no space after dimexpr !
@@ -85,7 +86,7 @@ end
 -- can be writes and no format needed any more
 
 function jobpositions.MPxy(id)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s-%s,%s-%s)',jpi[2],dx,jpi[3],dy))
 --~         texprint(ctxcatcodes,'(',jpi[2],'-',dx,',',jpi[3],'-',dy,')')
@@ -95,7 +96,7 @@ function jobpositions.MPxy(id)
 end
 
 function jobpositions.MPll(id)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s-%s,%s-%s-%s)',jpi[2],dx,jpi[3],jpi[6],dy))
 --~         texprint(ctxcatcodes,'(',jpi[2],'-',dx,',',jpi[3],'-',jpi[6],'-',dy,')')
@@ -105,7 +106,7 @@ function jobpositions.MPll(id)
 end
 
 function jobpositions.MPlr(id)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s+%s-%s,%s-%s-%s)',jpi[2],jpi[4],dx,jpi[3],jpi[6],dy))
 --~         texprint(ctxcatcodes,'(',jpi[2],'+',jpi[4],'-',dx,',',jpi[3],'-',jpi[6],'-',dy,')')
@@ -115,7 +116,7 @@ function jobpositions.MPlr(id)
 end
 
 function jobpositions.MPur(id)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s+%s-%s,%s+%s-%s)',jpi[2],jpi[4],dx,jpi[3],jpi[5],dy))
 --~         texprint(ctxcatcodes,'(',jpi[2],'+',jpi[4],'-',dx,',',jpi[3],'+',jpi[5],'-',dy,')')
@@ -125,7 +126,7 @@ function jobpositions.MPur(id)
 end
 
 function jobpositions.MPul(id)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     if jpi then
         texprint(ctxcatcodes,format('(%s-%s,%s+%s-%s)',jpi[2],dx,jpi[3],jpi[5],dy))
 --~         texprint(ctxcatcodes,'(',jpi[2],'-',dx,',',jpi[3],'+',jpi[5],'-',dy,')')
@@ -135,7 +136,7 @@ function jobpositions.MPul(id)
 end
 
 function jobpositions.MPpos(id)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     if jpi then
         texprint(ctxcatcodes,concat(jpi,',',1,6))
     else
@@ -146,7 +147,7 @@ end
 local splitter = lpeg.Ct(lpeg.splitat(","))
 
 function jobpositions.MPplus(id,n,default)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
     if not jpi then
         texprint(ctxcatcodes,default)
     else
@@ -160,7 +161,7 @@ function jobpositions.MPplus(id,n,default)
 end
 
 function jobpositions.MPrest(id,default)
-    local jpi = pcol[id] or ptbs[id]
+    local jpi = collected[id] or tobesaved[id]
  -- texprint(ctxcatcodes,(jpi and jpi[7] and concat(jpi,",",7,#jpi)) or default)
     texprint(ctxcatcodes,(jpi and jpi[7]) or default)
 end

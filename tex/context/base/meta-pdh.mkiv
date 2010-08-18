@@ -112,7 +112,7 @@
         \startMPresources
         \pdfliteral{\letterpercent\space mps begin}%
         \pdfliteral{q 1 0 0 1 0 0 cm}%
-        \ctxlua{mptopdf.convertmpstopdf("\MPfilename")}\removeunwantedspaces
+        \ctxlua{metapost.mptopdf.convertmpstopdf("\MPfilename")}\removeunwantedspaces
         \pdfliteral{Q}%
         \pdfliteral{\letterpercent\space mps end}%
         \stopMPresources

@@ -23,15 +23,18 @@ local next, tostring, tonumber = next, tostring, tonumber
 local utfchar = utf.char
 local random = math.random
 local variables = interfaces.variables
+local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
 
-local trace_split    = false  trackers.register("parbuilders.solutions.splitters.splitter",  function(v) trace_split    = v end)
-local trace_optimize = false  trackers.register("parbuilders.solutions.splitters.optimizer", function(v) trace_optimize = v end)
-local trace_colors   = false  trackers.register("parbuilders.solutions.splitters.colors",    function(v) trace_colors   = v end)
-local trace_goodies  = false  trackers.register("fonts.goodies",                             function(v) trace_goodies  = v end)
+local trace_split    = false  trackers.register("builders.paragraphs.solutions.splitters.splitter",  function(v) trace_split    = v end)
+local trace_optimize = false  trackers.register("builders.paragraphs.solutions.splitters.optimizer", function(v) trace_optimize = v end)
+local trace_colors   = false  trackers.register("builders.paragraphs.solutions.splitters.colors",    function(v) trace_colors   = v end)
+local trace_goodies  = false  trackers.register("fonts.goodies",                                     function(v) trace_goodies  = v end)
 
 local report_fonts     = logs.new("fonts")
 local report_splitter  = logs.new("splitter")
 local report_optimizer = logs.new("optimizer")
+
+local nodes, node = nodes, node
 
 local find_node_tail     = node.tail or node.slide
 local free_node          = node.free
@@ -43,29 +46,38 @@ local copy_node          = node.copy
 local copy_nodelist      = node.copy_list
 local traverse_nodes     = node.traverse
 local traverse_ids       = node.traverse_id
-local protect_nodes      = node.protect_glyphs
+local protect_glyphs     = nodes.handlers.protectglyphs or node.protect_glyphs
 local hpack_nodes        = node.hpack
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local repack_hlist       = nodes.repack_hlist
 
-local nodecodes = nodes.nodecodes
+local nodecodes          = nodes.nodecodes
+local whatsitcodes       = nodes.whatsitcodes
 
-local glyph   = nodecodes.glyph
-local glue    = nodecodes.glue
-local kern    = nodecodes.kern
-local disc    = nodecodes.disc
-local hlist   = nodecodes.hlist
-local whatsit = nodecodes.whatsit
+local glyph_code         = nodecodes.glyph
+local disc_code          = nodecodes.disc
+local hlist_code         = nodecodes.hlist
+local whatsit_code       = nodecodes.whatsit
+
+local localpar_code      = whatsitcodes.localpar
+local dir_code           = whatsitcodes.dir
+local userdefined_code   = whatsitcodes.userdefined
+
+local nodepool           = nodes.pool
+local tasks              = nodes.tasks
+
+local new_textdir        = nodepool.textdir
+local new_usernumber     = nodepool.usernumber
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
-
-local process_characters = nodes.process_characters
-local inject_kerns       = nodes.inject_kerns
+local process_characters = nodes.handlers.characters
+local inject_kerns       = nodes.handlers.injectkerns
 local set_dynamics       = fonts.otf.set_dynamics
 local fontdata           = fonts.ids
 
+local parbuilders               = builders.paragraphs
 parbuilders.solutions           = parbuilders.solutions           or { }
 parbuilders.solutions.splitters = parbuilders.solutions.splitters or { }
 
@@ -84,7 +96,7 @@ local randomseed = nil
 local optimize   = nil -- set later
 
 function splitters.setup(setups)
-    local method = aux.settings_to_hash(setups.method or "")
+    local method = settings_to_hash(setups.method or "")
     if method[variables.preroll] then
         preroll = true
     else
@@ -144,11 +156,11 @@ fonts.goodies.register("solutions",initialize)
 
 function splitters.define(name,parameters)
     local setups = fonts.define.specify.context_setups
-    local settings = aux.settings_to_hash(parameters) -- todo: interfacing
+    local settings = settings_to_hash(parameters) -- todo: interfacing
     local goodies, solution, less, more = settings.goodies, settings.solution, settings.less, settings.more
     local less_set, more_set
-    local l = less and aux.settings_to_array(less)
-    local m = more and aux.settings_to_array(more)
+    local l = less and settings_to_array(less)
+    local m = more and settings_to_array(more)
     if goodies then
         goodies = fonts.goodies.get(goodies) -- also in tfmdata
         if goodies then
@@ -196,10 +208,6 @@ function splitters.define(name,parameters)
     tex.write(#solutions)
 end
 
-local user_node_one = nodes.register(new_node("whatsit",44)) user_node_one.user_id, user_node_one.type = 1, 100
-local user_node_two = nodes.register(new_node("whatsit",44)) user_node_two.user_id, user_node_two.type = 2, 100
-local text_node_trt = nodes.register(new_node("whatsit", 7)) text_node_trt.dir = "+TRT"
-
 local fcs = (fonts.color and fonts.color.set) or function() end
 
 local nofwords, noftries, nofadapted, nofkept, nofparagraphs = 0, 0, 0, 0, 0
@@ -213,13 +221,12 @@ function splitters.split(head)
         local last = stop.next
         local list = last and copy_nodelist(start,last) or copy_nodelist(start)
         local n = #cache + 1
-        local user_one = copy_node(user_node_one)
-        local user_two = copy_node(user_node_two)
-        user_one.value, user_two.value = n, n
+        local user_one = new_usernumber(1,n)
+        local user_two = new_usernumber(2,n)
         head, start = insert_node_before(head,start,user_one)
         insert_node_after(head,stop,user_two)
         if rlmode == "TRT" or rlmode == "+TRT" then
-            local dirnode = copy_node(text_node_trt)
+            local dirnode = new_textdir("+TRT")
             list.prev = dirnode
             dirnode.next = list
             list = dirnode
@@ -243,7 +250,7 @@ function splitters.split(head)
     end
     while current do
         local id = current.id
-        if id == glyph and current.subtype < 255 then
+        if id == glyph_code and current.subtype < 256 then
             local a = has_attribute(current,split)
             if not a then
                 start, stop = nil, nil
@@ -255,14 +262,14 @@ function splitters.split(head)
                 stop = current
             end
             current = current.next
-        elseif id == disc then
+        elseif id == disc_code then
             start, stop, current = nil, nil, current.next
-        elseif id == whatsit then
+        elseif id == whatsit_code then
             if start then
                 flush()
             end
             local subtype = current.subtype
-            if subtype == 7 or subtype == 6 then
+            if subtype == dir_code or subtype == localpar_code then
                 rlmode = current.dir
             end
             current = current.next
@@ -283,8 +290,8 @@ end
 
 local function collect_words(list)
     local words, word = { }, nil
-    for current in traverse_ids(whatsit,list) do
-        if current.subtype == 44 then
+    for current in traverse_ids(whatsit_code,list) do
+        if current.subtype == userdefined_code then
             local user_id = current.user_id
             if user_id == 1 then
                 word = { current.value, current, current }
@@ -344,7 +351,7 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 first = inject_kerns(first)
                 local h = word[2].next -- head of current word
                 local t = word[3].prev -- tail of current word
-                if first.id == whatsit then
+                if first.id == whatsit_code then
                     local temp = first
                     first = first.next
                     free_node(temp)
@@ -478,7 +485,7 @@ function splitters.optimize(head)
             report_optimizer("preroll: %s, variant: %s, preroll criterium: %s, cache size: %s",
                 tostring(preroll),variant,criterium,nc)
         end
-        for current in traverse_ids(hlist,head) do
+        for current in traverse_ids(hlist_code,head) do
          -- report_splitter("before: [%s] => %s",current.dir,nodes.tosequence(current.list,nil))
             line = line + 1
             local sign, dir, list, width = current.glue_sign, current.dir, current.list, current.width
@@ -546,7 +553,7 @@ function splitters.optimize(head)
                         end
                         if done then
                             if b <= criterium then -- was == 0
-                                protect_nodes(list)
+                                protect_glyphs(list)
                                 break
                             end
                         end
@@ -581,11 +588,11 @@ statistics.register("optimizer statistics", function()
 end)
 
 function splitters.enable()
-    tasks.enableaction("processors", "parbuilders.solutions.splitters.split")
-    tasks.enableaction("finalizers", "parbuilders.solutions.splitters.optimize")
+    tasks.enableaction("processors", "builders.paragraphs.solutions.splitters.split")
+    tasks.enableaction("finalizers", "builders.paragraphs.solutions.splitters.optimize")
 end
 
 function splitters.disable()
-    tasks.disableaction("processors", "parbuilders.solutions.splitters.split")
-    tasks.disableaction("finalizers", "parbuilders.solutions.splitters.optimize")
+    tasks.disableaction("processors", "builders.paragraphs.solutions.splitters.split")
+    tasks.disableaction("finalizers", "builders.paragraphs.solutions.splitters.optimize")
 end

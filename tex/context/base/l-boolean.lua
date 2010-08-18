@@ -6,9 +6,10 @@ if not modules then modules = { } end modules ['l-boolean'] = {
     license   = "see context related readme files"
 }
 
-boolean = boolean or { }
-
 local type, tonumber = type, tonumber
+
+boolean = boolean or { }
+local boolean = boolean
 
 function boolean.tonumber(b)
     if b then return 1 else return 0 end

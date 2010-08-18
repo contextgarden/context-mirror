@@ -9,18 +9,21 @@ if not modules then modules = { } end modules ['luat-sto'] = {
 local type, next = type, next
 local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
 
+local report_storage = logs.new("storage")
+
 storage            = storage or { }
+local storage      = storage
+
+local data         = { }
+storage.data       = data
+
+local evaluators   = { }
+storage.evaluators = evaluators
+
 storage.min        = 0 -- 500
 storage.max        = storage.min - 1
 storage.noftables  = storage.noftables or 0
 storage.nofmodules = storage.nofmodules or 0
-storage.data       = { }
-storage.evaluators = { }
-
-local report_storage = logs.new("storage")
-
-local evaluators = storage.evaluators -- (evaluate,message,names)
-local data       = storage.data
 
 function storage.register(...)
     data[#data+1] = { ... }

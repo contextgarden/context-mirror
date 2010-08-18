@@ -6,27 +6,37 @@ if not modules then modules = { } end modules ['node-par'] = {
     license   = "see context related readme files"
 }
 
-parbuilders              = parbuilders or { }
-parbuilders.constructors = parbuilders.constructors or { }
-parbuilders.names        = parbuilders.names or { }
-parbuilders.numbers      = parbuilders.numbers or { }
-parbuilders.attribute    = attributes.numbers['parbuilder'] or 999
+local builders, nodes, node = builders, nodes, node
 
-storage.register("parbuilders.names",   parbuilders.names,   "parbuilders.names")
-storage.register("parbuilders.numbers", parbuilders.numbers, "parbuilders.numbers")
+builders.paragraphs      = builders.paragraphs or { }
+local parbuilders        = builders.paragraphs
+
+parbuilders.constructors = parbuilders.constructors or { }
+local       constructors = parbuilders.constructors
+
+parbuilders.names        = parbuilders.names or { }
+local names              = parbuilders.names
+
+parbuilders.numbers      = parbuilders.numbers or { }
+local numbers            = parbuilders.numbers
+
+local p_attribute        = attributes.numbers['parbuilder'] or 999
+parbuilders.attribute    = p_attribute
+
+local has_attribute      = node.has_attribute
+local starttiming        = statistics.starttiming
+local stoptiming         = statistics.stoptiming
+
+storage.register("builders/paragraphs/names",   names,   "builders.paragraphs.names")
+storage.register("builders/paragraphs/numbers", numbers, "builders.paragraphs.numbers")
 
 local report_parbuilders = logs.new("parbuilders")
-
-local constructors, names, numbers, p_attribute = parbuilders.constructors, parbuilders.names, parbuilders.numbers, parbuilders.attribute
-
-local has_attribute = node.has_attribute
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 local mainconstructor = nil -- not stored in format
 
 function parbuilders.register(name,number)
-    parbuilders.names[number] = name
-    parbuilders.numbers[name] = number
+    names[number] = name
+    numbers[name] = number
 end
 
 function parbuilders.setmain(name)
@@ -62,20 +72,20 @@ end
 
 -- just for testing
 
-function parbuilders.constructors.default(head,followed_by_display)
+function constructors.default(head,followed_by_display)
     return true -- let tex break
 end
 
 -- also for testing (no surrounding spacing done)
 
-function parbuilders.constructors.oneline(head,followed_by_display)
+function constructors.oneline(head,followed_by_display)
     return node.hpack(head)
 end
 
 -- It makes no sense to have a sequence here as we already have
 -- pre and post hooks and only one parbuilder makes sense, so no:
 --
--- local actions = tasks.actions("parbuilders",1)
+-- local actions = nodes.tasks.actions("parbuilders",1)
 
 -- todo: enable one as main
 

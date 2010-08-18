@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['trac-set'] = {
+if not modules then modules = { } end modules ['trac-set'] = { -- might become util-set.lua
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -10,8 +10,12 @@ local type, next, tostring = type, next, tostring
 local concat = table.concat
 local format, find, lower, gsub, simpleesc = string.format, string.find, string.lower, string.gsub, string.simpleesc
 local is_boolean = string.is_boolean
+local settings_to_hash = utilities.parsers.settings_to_hash
 
-setters = { }
+utilities         = utilities or { }
+local utilities   = utilities
+utilities.setters = utilities.setters or { }
+local setters     = utilities.setters
 
 local data = { } -- maybe just local
 
@@ -67,7 +71,7 @@ end
 local function set(t,what,newvalue)
     local data, done = t.data, t.done
     if type(what) == "string" then
-        what = aux.settings_to_hash(what) -- inefficient but ok
+        what = settings_to_hash(what) -- inefficient but ok
     end
     for w, value in next, what do
         if value == "" then
@@ -194,18 +198,20 @@ end
 -- we could have used a bit of oo and the trackers:enable syntax but
 -- there is already a lot of code around using the singular tracker
 
--- we could make this into a module
+-- we could make this into a module but we also want the rest avaliable
+
+local enable, disable, register, list, show = setters.enable, setters.disable, setters.register, setters.list, setters.show
 
 function setters.new(name)
-    local t
+    local t -- we need to access it in t
     t = {
         data     = { }, -- indexed, but also default and value fields
         name     = name,
-        enable   = function(...) setters.enable  (t,...) end,
-        disable  = function(...) setters.disable (t,...) end,
-        register = function(...) setters.register(t,...) end,
-        list     = function(...) setters.list    (t,...) end,
-        show     = function(...) setters.show    (t,...) end,
+        enable   = function(...) enable  (t,...) end,
+        disable  = function(...) disable (t,...) end,
+        register = function(...) register(t,...) end,
+        list     = function(...) list    (t,...) end,
+        show     = function(...) show    (t,...) end,
     }
     data[name] = t
     return t
@@ -215,13 +221,18 @@ trackers    = setters.new("trackers")
 directives  = setters.new("directives")
 experiments = setters.new("experiments")
 
+local t_enable, t_disable = trackers   .enable, trackers   .disable
+local d_enable, d_disable = directives .enable, directives .disable
+local e_enable, e_disable = experiments.enable, experiments.disable
+
 -- experiment
 
 if trackers and environment and environment.engineflags.trackers then
-    trackers.enable(environment.engineflags.trackers)
+    t_enable(environment.engineflags.trackers)
 end
+
 if directives and environment and environment.engineflags.directives then
-    directives.enable(environment.engineflags.directives)
+    d_enable(environment.engineflags.directives)
 end
 
 -- nice trick: we overload two of the directives related functions with variants that
@@ -235,30 +246,24 @@ end
 local trace_directives  = false local trace_directives  = false  trackers.register("system.directives",  function(v) trace_directives  = v end)
 local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
-local enable  = directives.enable
-local disable = directives.disable
-
 function directives.enable(...)
     report("directives","enabling: %s",concat({...}," "))
-    enable(...)
+    d_enable(...)
 end
 
 function directives.disable(...)
     report("directives","disabling: %s",concat({...}," "))
-    disable(...)
+    d_disable(...)
 end
-
-local enable  = experiments.enable
-local disable = experiments.disable
 
 function experiments.enable(...)
     report("experiments","enabling: %s",concat({...}," "))
-    enable(...)
+    e_enable(...)
 end
 
 function experiments.disable(...)
     report("experiments","disabling: %s",concat({...}," "))
-    disable(...)
+    e_disable(...)
 end
 
 -- a useful example
@@ -267,11 +272,15 @@ directives.register("system.nostatistics", function(v)
     statistics.enable = not v
 end)
 
+directives.register("system.nolibraries", function(v)
+    libraries = nil -- we discard this tracing for security
+end)
+
 -- experiment
 
 if trackers and environment and environment.engineflags.trackers then
-    trackers.enable(environment.engineflags.trackers)
+    t_enable(environment.engineflags.trackers)
 end
 if directives and environment and environment.engineflags.directives then
-    directives.enable(environment.engineflags.directives)
+    d_enable(environment.engineflags.directives)
 end

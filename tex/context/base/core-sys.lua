@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['core-sys'] = {
 
 local lower, extname, basename, removesuffix = string.lower, file.extname, file.basename, file.removesuffix
 
+local environment = environment
+
 function commands.updatefilenames(inputfilename,outputfilename)
     environment.inputfilename     = inputfilename or ""
     environment.outputfilename    = outputfilename or ""

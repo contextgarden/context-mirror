@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['page-lin'] = {
     license   = "see context related readme files"
 }
 
--- experimental
+-- experimental -> will become builders
 
 local trace_numbers = false  trackers.register("lines.numbers",  function(v) trace_numbers = v end)
 
@@ -14,24 +14,31 @@ local report_lines = logs.new("lines")
 
 local format = string.format
 local texsprint, texwrite, texbox = tex.sprint, tex.write, tex.box
-
 local ctxcatcodes = tex.ctxcatcodes
-local variables = interfaces.variables
 
-nodes             = nodes             or { }
-nodes.lines       = nodes.lines       or { }
-nodes.lines.data  = nodes.lines.data  or { } -- start step tag
+local attributes, nodes, node = attributes, nodes, node
 
-storage.register("lines/data", nodes.lines.data, "nodes.lines.data")
+nodes.lines       = nodes.lines or { }
+local lines       = nodes.lines
+
+lines.data        = lines.data or { } -- start step tag
+local data        = lines.data
+local last        = #data
+
+lines.scratchbox  = lines.scratchbox or 0
+
+storage.register("lines/data", lines.data, "nodes.lines.data")
 
 -- if there is demand for it, we can support multiple numbering streams
 -- and use more than one attibute
 
-local nodecodes = nodes.nodecodes
+local variables    = interfaces.variables
 
-local hlist   = nodecodes.hlist
-local vlist   = nodecodes.vlist
-local whatsit = nodecodes.whatsit
+local nodecodes    = nodes.nodecodes
+
+local hlist_code   = nodecodes.hlist
+local vlist_code   = nodecodes.vlist
+local whatsit_code = nodecodes.whatsit
 
 local display_math     = attributes.private('display-math')
 local line_number      = attributes.private('line-number')
@@ -50,14 +57,9 @@ local hpack_node         = node.hpack
 local insert_node_after  = node.insert_after
 local insert_node_before = node.insert_before
 
-local data = nodes.lines.data
-local last = #data
-
-nodes.lines.scratchbox = nodes.lines.scratchbox or 0
-
 -- cross referencing
 
-function nodes.lines.number(n)
+function lines.number(n)
     n = tonumber(n)
     local cr = cross_references[n] or 0
     cross_references[n] = nil
@@ -67,20 +69,20 @@ end
 local function resolve(n,m) -- we can now check the 'line' flag (todo)
     while n do
         local id = n.id
-        if id == whatsit then -- why whatsit
+        if id == whatsit_code then -- why whatsit
             local a = has_attribute(n,line_reference)
             if a then
                 cross_references[a] = m
             end
-        elseif id == hlist or id == vlist then
+        elseif id == hlist_code or id == vlist_code then
             resolve(n.list,m)
         end
         n = n.next
     end
 end
 
-function nodes.lines.finalize(t)
-    local getnumber = nodes.lines.number
+function lines.finalize(t)
+    local getnumber = lines.number
     for _,p in next, t do
         for _,r in next, p do
             if r.metadata.kind == "line" then
@@ -94,10 +96,10 @@ function nodes.lines.finalize(t)
     end
 end
 
-local filters = jobreferences.filters
-local helpers = structure.helpers
+local filters = structures.references.filters
+local helpers = structures.helpers
 
-jobreferences.registerfinalizer(nodes.lines.finalize)
+structures.references.registerfinalizer(lines.finalize)
 
 filters.line = filters.line or { }
 
@@ -116,12 +118,13 @@ end
 
 -- boxed variant, todo: use number mechanism
 
-nodes.lines.boxed = { }
+lines.boxed = { }
+local boxed = lines.boxed
 
 -- todo: cache setups, and free id no longer used
 -- use interfaces.cachesetup(t)
 
-function nodes.lines.boxed.register(configuration)
+function boxed.register(configuration)
     last = last + 1
     data[last] = configuration
     if trace_numbers then
@@ -130,7 +133,7 @@ function nodes.lines.boxed.register(configuration)
     return last
 end
 
-function nodes.lines.boxed.setup(n,configuration)
+function boxed.setup(n,configuration)
     local d = data[n]
     if d then
         if trace_numbers then
@@ -175,13 +178,13 @@ local function check_number(n,a,skip,sameline)
     end
 end
 
-function nodes.lines.boxed.stage_one(n)
+function boxed.stage_one(n)
     current_list = { }
     local head = texbox[n]
     if head then
         local list = head.list
         local last_a, last_v, skip = nil, -1, false
-        for n in traverse_id(hlist,list) do -- attr test here and quit as soon as zero found
+        for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
             if n.height == 0 and n.depth == 0 then
                 -- skip funny hlists
             else
@@ -214,11 +217,11 @@ function nodes.lines.boxed.stage_one(n)
     end
 end
 
-function nodes.lines.boxed.stage_two(n,m)
+function boxed.stage_two(n,m)
     if #current_list > 0 then
-        m = m or nodes.lines.scratchbox
+        m = m or lines.scratchbox
         local t, i = { }, 0
-        for l in traverse_id(hlist,texbox[m].list) do
+        for l in traverse_id(hlist_code,texbox[m].list) do
             t[#t+1] = copy_node(l)
         end
         for i=1,#current_list do

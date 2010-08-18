@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=typo-mir,
+%D   [       file=typo-dir,
 %D        version=2009.03.27, % code moved from core-spa.mkiv
 %D          title=\CONTEXT\ Typesetting Macros,
-%D       subtitle=Mirroring,
+%D       subtitle=Directions,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright=\PRAGMA]
@@ -11,23 +11,22 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{ConTeXt Typesetting Macros / Mirroring}
+\writestatus{loading}{ConTeXt Typesetting Macros / Directions}
 
 \unprotect
 
-\registerctxluafile{typo-mir}{1.001}
+\registerctxluafile{typo-dir}{1.001}
 
-\definesystemattribute[mirroring] \chardef\mirroringattribute \dogetattributeid{mirroring}
+\definesystemattribute[directions] \chardef\directionsattribute \dogetattributeid{directions}
 
-% experimental mirroring
+% experimental directions
 
-\def\setcharactermirroring
-  {\ctxlua{mirroring.enable()}%
-   \gdef\setcharactermirroring[##1]{\attribute\mirroringattribute##1\relax}%
-   \setcharactermirroring}
+\unexpanded\def\setdirection[#1]% todo: symbolic names
+   {\ctxlua{typesetters.directions.set(#1)}}
 
-\def\resetcharactermirroring
-  {\attribute\mirroringattribute\attributeunsetvalue}
+\unexpanded\def\resetdirection
+ %{\ctxlua{typesetters.directions.set(0)}}
+  {\attribute\directionsattribute\attributeunsetvalue}
 
 \newtoks\everysetupdirections
 
@@ -45,13 +44,13 @@
 \appendtoks
     \chardef\directionsbidimode\executeifdefined{\??di:bidi:\@@dibidi}\zerocount\relax
     \ifcase\directionsbidimode
-      \resetcharactermirroring
+      \resetdirection
     \or
-      \setcharactermirroring[1]% global, chars
+      \setdirection[1]% global, chars
     \or
-      \setcharactermirroring[2]% local, attributes
+      \setdirection[2]% local, attributes
     \or
-      \setcharactermirroring[1]% default
+      \setdirection[1]% default
     \fi
 \to \everysetupdirections
 
@@ -68,10 +67,10 @@
 
 \unexpanded\def\dirlre{\ifcase\directionsbidimode\or\bidilre\or\textdir TLT\fi}
 \unexpanded\def\dirrle{\ifcase\directionsbidimode\or\bidirle\or\textdir TRT\fi}
-\unexpanded\def\dirlro{\ifcase\directionsbidimode\or\bidilro\or\setcharactermirroring[3]\fi}
-\unexpanded\def\dirrlo{\ifcase\directionsbidimode\or\bidirlo\or\setcharactermirroring[4]\fi}
+\unexpanded\def\dirlro{\ifcase\directionsbidimode\or\bidilro\or\setdirection[3]\fi}
+\unexpanded\def\dirrlo{\ifcase\directionsbidimode\or\bidirlo\or\setdirection[4]\fi}
 
-% for the moment: \setcharactermirroring[\plusone]
+% for the moment: \setdirection[\plusone]
 
 \protect \endinput
 
@@ -86,7 +85,7 @@
 
 \font\Arabic=arabtype*arab at 20pt
 
-\def\LATIN{LATIN} {\setcharactermirroring[1]} % enable this
+\def\LATIN{LATIN} {\setdirection[1]} % enable this
 \def\ARAB {محمد}
 
 \startluacode
@@ -100,9 +99,9 @@
 \def\biditest#1#2#3% font text raw
   {\dontleavehmode\hbox
     {\framed[offset=overlay]{\tttf#2}\quad
-     \enabletrackers[nodes.mirroring]%
+     \enabletrackers[typesetters.directions]%
      \framed[offset=overlay]{#1#3}\quad
-     \disabletrackers[nodes.mirroring]%
+     \disabletrackers[typesetters.directions]%
      \tttf\ctxlua{document.split_tokens([[\detokenize{#3}]])}}}
 
 \startbuffer[bidi-sample]

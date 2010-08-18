@@ -6,13 +6,11 @@ if not modules then modules = { } end modules ['font-otd'] = {
     license   = "see context related readme files"
 }
 
-local trace_dynamics = false  trackers.register("otf.dynamics", function(v) trace_dynamics     = v end)
+local trace_dynamics = false  trackers.register("otf.dynamics", function(v) trace_dynamics = v end)
 
 local report_otf = logs.new("load otf")
 
-fonts     = fonts     or { }
-fonts.otf = fonts.otf or { }
-
+local fonts    = fonts
 local otf      = fonts.otf
 local fontdata = fonts.ids
 

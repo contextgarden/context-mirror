@@ -14,12 +14,17 @@ local trace_callbacks = false  trackers.register("nodes.callbacks", function(v) 
 
 local report_nodes = logs.new("nodes")
 
-local glyph = node.id('glyph')
+local nodes, node = nodes, node
+
+local nodecodes  = nodes.nodecodes
+local glyph_code = nodecodes.glyph
+local tasks      = nodes.tasks
 
 local free_node       = node.free
 local first_character = node.first_character
 
 nodes.processors = nodes.processors or { }
+local processors = nodes.processors
 
 -- vbox: grouptype: vbox vtop output split_off split_keep  | box_type: exactly|aditional
 -- hbox: grouptype: hbox adjusted_hbox(=hbox_in_vmode)     | box_type: exactly|aditional
@@ -33,7 +38,7 @@ local function reconstruct(head)
     local h = head
     while h do
         local id = h.id
-        if id == glyph then
+        if id == glyph_code then
             t[#t+1] = utfchar(h.char)
         else
             t[#t+1] = "[]"
@@ -57,11 +62,11 @@ local function tracer(what,state,head,groupcode,before,after,show)
     end
 end
 
-nodes.processors.tracer = tracer
+processors.tracer = tracer
 
-nodes.processors.enabled = true -- thsi will become a proper state (like trackers)
+processors.enabled = true -- this will become a proper state (like trackers)
 
-function nodes.processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
+function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
     local first, found = first_character(head)
     if found then
         if trace_callbacks then
@@ -85,7 +90,7 @@ function nodes.processors.pre_linebreak_filter(head,groupcode,size,packtype,dire
     return true
 end
 
-function nodes.processors.hpack_filter(head,groupcode,size,packtype,direction)
+function processors.hpack_filter(head,groupcode,size,packtype,direction)
     local first, found = first_character(head)
     if found then
         if trace_callbacks then
@@ -109,8 +114,8 @@ function nodes.processors.hpack_filter(head,groupcode,size,packtype,direction)
     return true
 end
 
-callbacks.register('pre_linebreak_filter', nodes.processors.pre_linebreak_filter,"all kind of horizontal manipulations (before par break)")
-callbacks.register('hpack_filter'        , nodes.processors.hpack_filter,"all kind of horizontal manipulations")
+callbacks.register('pre_linebreak_filter', processors.pre_linebreak_filter,"all kind of horizontal manipulations (before par break)")
+callbacks.register('hpack_filter'        , processors.hpack_filter,"all kind of horizontal manipulations")
 
 local actions = tasks.actions("finalizers",1) -- head, where
 
@@ -119,7 +124,7 @@ local actions = tasks.actions("finalizers",1) -- head, where
 --
 -- beware, much can pass twice, for instance vadjust passes two times
 
-function nodes.processors.post_linebreak_filter(head,groupcode)
+function processors.post_linebreak_filter(head,groupcode)
 --~     local first, found = first_character(head)
 --~     if found then
         if trace_callbacks then
@@ -143,7 +148,7 @@ function nodes.processors.post_linebreak_filter(head,groupcode)
 --~     return true
 end
 
-callbacks.register('post_linebreak_filter', nodes.processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")
+callbacks.register('post_linebreak_filter', processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")
 
 statistics.register("h-node processing time", function()
     return statistics.elapsedseconds(nodes,"including kernel") -- hm, ok here?

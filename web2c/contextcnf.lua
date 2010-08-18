@@ -33,8 +33,8 @@ return {
 
         TEXMF           = "{$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}",
 
-        TEXFONTMAPS     = ".;$TEXMF/fonts/{data,map}/{pdftex,dvips}//",
-        ENCFONTS        = ".;$TEXMF/fonts/{data,enc}/{dvips,pdftex}//",
+        TEXFONTMAPS     = ".;$TEXMF/fonts/data//;$TEXMF/fonts/map/{pdftex,dvips}//",
+        ENCFONTS        = ".;$TEXMF/fonts/data//;$TEXMF/fonts/enc/{dvips,pdftex}//",
         VFFONTS         = ".;$TEXMF/fonts/{data,vf}//",
         TFMFONTS        = ".;$TEXMF/fonts/{data,tfm}//",
         T1FONTS         = ".;$TEXMF/fonts/{data,type1,pfb}//;$OSFONTDIR",
@@ -63,6 +63,10 @@ return {
 
         BIBINPUTS       = ".;$TEXMF/bibtex/bib//",
         BSTINPUTS       = ".;$TEXMF/bibtex/bst//",
+
+        -- Experimental
+
+        ICCPROFILES     = ".;$TEXMF/colors/icc/{context,profiles}//;$OSCOLORDIR",
 
         -- Sort of obsolete.
 
@@ -106,6 +110,7 @@ return {
          -- system_checkglobals = "10",
          -- system.nostatistics = "yes",
             system_errorcontext = "10",
+            mplib_texerrors     = "yes",
         },
 
         experiments = {

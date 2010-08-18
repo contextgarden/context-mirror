@@ -14,17 +14,27 @@ if not modules then modules = { } end modules ['math-noa'] = {
 
 local utf = unicode.utf8
 
+local format, rep  = string.format, string.rep
+local utfchar, utfbyte = utf.char, utf.byte
+
+local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
+
 local set_attribute  = node.set_attribute
 local has_attribute  = node.has_attribute
 local mlist_to_hlist = node.mlist_to_hlist
 local font_of_family = node.family_font
 local fontdata       = fonts.identifiers
-local nodecodes      = nodes.nodecodes
 
-local format, rep  = string.format, string.rep
-local utfchar, utfbyte = utf.char, utf.byte
+noads                = noads or { }
+local noads          = noads
 
-noads = noads or { }
+noads.processors     = noads.processors or { }
+local processors     = noads.processors
+
+noads.handlers       = noads.handlers   or { }
+local handlers       = noads.handlers
+
+local tasks          = nodes.tasks
 
 local trace_remapping  = false  trackers.register("math.remapping",  function(v) trace_remapping  = v end)
 local trace_processing = false  trackers.register("math.processing", function(v) trace_processing = v end)
@@ -32,65 +42,26 @@ local trace_analyzing  = false  trackers.register("math.analyzing",  function(v)
 
 local report_noads = logs.new("mathematics")
 
--- todo: nodes.noadcodes
+local nodecodes     = nodes.nodecodes
+local noadcodes     = nodes.noadcodes
 
-local noad_ord              =  0
-local noad_op_displaylimits =  1
-local noad_op_limits        =  2
-local noad_op_nolimits      =  3
-local noad_bin              =  4
-local noad_rel              =  5
-local noad_open             =  6
-local noad_close            =  7
-local noad_punct            =  8
-local noad_inner            =  9
-local noad_under            = 10
-local noad_over             = 11
-local noad_vcenter          = 12
+local noad_ord      = noadcodes.ord
+local noad_punct    = noadcodes.punct
 
--- obsolete:
---
---    math_ord       = nodecodes.ord")            -- attr nucleus sub sup
---    math_op        = nodecodes.op")             -- attr nucleus sub sup subtype
---    math_bin       = nodecodes.bin")            -- attr nucleus sub sup
---    math_rel       = nodecodes.rel")            -- attr nucleus sub sup
---    math_punct     = nodecodes.punct")          -- attr nucleus sub sup
---_
---    math_open      = nodecodes.open")           -- attr nucleus sub sup
---    math_close     = nodecodes.close")          -- attr nucleus sub sup
---_
---    math_inner     = nodecodes.inner")          -- attr nucleus sub sup
---    math_vcenter   = nodecodes.vcenter")        -- attr nucleus sub sup
---    math_under     = nodecodes.under")          -- attr nucleus sub sup
---    math_over      = nodecodes.over")           -- attr nucleus sub sup
+local math_noad     = nodecodes.noad           -- attr nucleus sub sup
+local math_accent   = nodecodes.accent         -- attr nucleus sub sup accent
+local math_radical  = nodecodes.radical        -- attr nucleus sub sup left degree
+local math_fraction = nodecodes.fraction       -- attr nucleus sub sup left right
+local math_box      = nodecodes.subbox         -- attr list
+local math_sub      = nodecodes.submlist       -- attr list
+local math_char     = nodecodes.mathchar       -- attr fam char
+local math_textchar = nodecodes.mathtextchar   -- attr fam char
+local math_delim    = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local math_style    = nodecodes.style          -- attr style
+local math_choice   = nodecodes.choice         -- attr display text script scriptscript
+local math_fence    = nodecodes.fence          -- attr subtype
 
-local math_noad      = nodecodes.noad           -- attr nucleus sub sup
-
-local math_accent    = nodecodes.accent         -- attr nucleus sub sup accent
-local math_radical   = nodecodes.radical        -- attr nucleus sub sup left degree
-local math_fraction  = nodecodes.fraction       -- attr nucleus sub sup left right
-
-local math_box       = nodecodes.sub_box        -- attr list
-local math_sub       = nodecodes.sub_mlist      -- attr list
-local math_char      = nodecodes.math_char      -- attr fam char
-local math_text_char = nodecodes.math_text_char -- attr fam char
-local math_delim     = nodecodes.delim          -- attr small_fam small_char large_fam large_char
-local math_style     = nodecodes.style          -- attr style
-local math_choice    = nodecodes.choice         -- attr display text script scriptscript
-local math_fence     = nodecodes.fence          -- attr subtype
-
-local simple_noads = table.tohash {
-    math_noad,
-}
-
-local all_noads = {
-    math_noad,
-    math_box, math_sub,
-    math_char, math_text_char, math_delim, math_style,
-    math_accent, math_radical, math_fraction, math_choice, math_fence,
-}
-
-noads.processors = noads.processors or { }
+local left_fence_code = 1
 
 local function process(start,what,n,parent)
     if n then n = n + 1 else n = 0 end
@@ -105,7 +76,7 @@ local function process(start,what,n,parent)
             if newstart then
                 start = newstart
             end
-        elseif id == math_char or id == math_text_char or id == math_delim then
+        elseif id == math_char or id == math_textchar or id == math_delim then
             break
         elseif id == math_style then
             -- has a next
@@ -153,7 +124,7 @@ noads.process = process
 local mathalphabet = attributes.private("mathalphabet")
 local mathgreek    = attributes.private("mathgreek")
 
-noads.processors.relocate = { }
+processors.relocate = { }
 
 local function report_remap(tag,id,old,new,extra)
     report_noads("remapping %s in font %s from U+%04X (%s) to U+%04X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
@@ -189,7 +160,7 @@ local fcs = fonts.color.set
 --~     end
 --~ end
 
-noads.processors.relocate[math_char] = function(pointer)
+processors.relocate[math_char] = function(pointer)
     local g = has_attribute(pointer,mathgreek) or 0
     local a = has_attribute(pointer,mathalphabet) or 0
     if a > 0 or g > 0 then
@@ -228,20 +199,20 @@ noads.processors.relocate[math_char] = function(pointer)
     end
 end
 
-noads.processors.relocate[math_text_char] = function(pointer)
+processors.relocate[math_textchar] = function(pointer)
     if trace_analyzing then
         fcs(pointer,"font:init")
     end
 end
 
-noads.processors.relocate[math_delim] = function(pointer)
+processors.relocate[math_delim] = function(pointer)
     if trace_analyzing then
         fcs(pointer,"font:fina")
     end
 end
 
-function noads.relocate_characters(head,style,penalties)
-    process(head,noads.processors.relocate)
+function handlers.relocate(head,style,penalties)
+    process(head,processors.relocate)
     return true
 end
 
@@ -257,10 +228,10 @@ end
 
 local mathsize = attributes.private("mathsize")
 
-local resize = { } noads.processors.resize = resize
+local resize = { } processors.resize = resize
 
 resize[math_fence] = function(pointer)
-    if pointer.subtype == 1 then -- left
+    if pointer.subtype == left_fence_code then
         local a = has_attribute(pointer,mathsize)
         if a and a > 0 then
             set_attribute(pointer,mathsize,0)
@@ -275,7 +246,7 @@ resize[math_fence] = function(pointer)
     end
 end
 
-function noads.resize_characters(head,style,penalties)
+function handlers.resize(head,style,penalties)
     process(head,resize)
     return true
 end
@@ -284,7 +255,7 @@ end
 
 local mathpunctuation = attributes.private("mathpunctuation")
 
-local respace = { } noads.processors.respace = respace
+local respace = { } processors.respace = respace
 
 local chardata = characters.data
 
@@ -337,7 +308,7 @@ respace[math_noad] = function(pointer)
     end
 end
 
-function noads.respace_characters(head,style,penalties)
+function handlers.respace(head,style,penalties)
     process(head,respace)
     return true
 end
@@ -379,7 +350,7 @@ local get_alternate = fonts.otf.get_alternate
 
 local mathalternate = attributes.private("mathalternate")
 
-local alternate = { } -- noads.processors.alternate = alternate
+local alternate = { } -- processors.alternate = alternate
 
 function mathematics.setalternate(fam,tag)
     local id = font_of_family(fam)
@@ -407,14 +378,14 @@ alternate[math_char] = function(pointer)
     end
 end
 
-function noads.check_alternates(head,style,penalties)
+function handlers.check(head,style,penalties)
     process(head,alternate)
     return true
 end
 
 -- the normal builder
 
-function noads.mlist_to_hlist(head,style,penalties)
+function builders.kernel.mlist_to_hlist(head,style,penalties)
     return mlist_to_hlist(head,style,penalties), true
 end
 
@@ -432,14 +403,14 @@ local actions = tasks.actions("math",2) -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-function nodes.processors.mlist_to_hlist(head,style,penalties)
+function processors.mlist_to_hlist(head,style,penalties)
     starttiming(noads)
     local head, done = actions(head,style,penalties)
     stoptiming(noads)
     return head, done
 end
 
-callbacks.register('mlist_to_hlist',nodes.processors.mlist_to_hlist,"preprocessing math list")
+callbacks.register('mlist_to_hlist',processors.mlist_to_hlist,"preprocessing math list")
 
 -- tracing
 

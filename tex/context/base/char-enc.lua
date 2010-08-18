@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['char-syn'] = {
 
 -- thanks to tex4ht for these mappings
 
-characters = characters or { }
+characters       = characters or { }
+local characters = characters
 
 characters.synonyms = {
     angle              = 0x2220,

@@ -9,11 +9,14 @@ if not modules then modules = { } end modules ['l-file'] = {
 -- needs a cleanup
 
 file = file or { }
+local file = file
 
 local insert, concat = table.insert, table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
 local getcurrentdir = lfs.currentdir
+
+local P, R, S, C, Cs, Cp, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc
 
 local function dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
@@ -285,31 +288,31 @@ end
 
 -- lpeg variants, slightly faster, not always
 
---~ local period    = lpeg.P(".")
---~ local slashes   = lpeg.S("\\/")
+--~ local period    = P(".")
+--~ local slashes   = S("\\/")
 --~ local noperiod  = 1-period
 --~ local noslashes = 1-slashes
 --~ local name      = noperiod^1
 
---~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.C(noperiod^1) * -1
+--~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * C(noperiod^1) * -1
 
 --~ function file.extname(name)
 --~     return lpegmatch(pattern,name) or ""
 --~ end
 
---~ local pattern = lpeg.Cs(((period * noperiod^1 * -1)/"" + 1)^1)
+--~ local pattern = Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 
 --~ function file.removesuffix(name)
 --~     return lpegmatch(pattern,name)
 --~ end
 
---~ local pattern = (noslashes^0 * slashes)^1 * lpeg.C(noslashes^1) * -1
+--~ local pattern = (noslashes^0 * slashes)^1 * C(noslashes^1) * -1
 
 --~ function file.basename(name)
 --~     return lpegmatch(pattern,name) or name
 --~ end
 
---~ local pattern = (noslashes^0 * slashes)^1 * lpeg.Cp() * noslashes^1 * -1
+--~ local pattern = (noslashes^0 * slashes)^1 * Cp() * noslashes^1 * -1
 
 --~ function file.dirname(name)
 --~     local p = lpegmatch(pattern,name)
@@ -320,7 +323,7 @@ end
 --~     end
 --~ end
 
---~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
+--~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * Cp() * noperiod^1 * -1
 
 --~ function file.addsuffix(name, suffix)
 --~     local p = lpegmatch(pattern,name)
@@ -331,7 +334,7 @@ end
 --~     end
 --~ end
 
---~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * lpeg.Cp() * noperiod^1 * -1
+--~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * Cp() * noperiod^1 * -1
 
 --~ function file.replacesuffix(name,suffix)
 --~     local p = lpegmatch(pattern,name)
@@ -342,7 +345,7 @@ end
 --~     end
 --~ end
 
---~ local pattern = (noslashes^0 * slashes)^0 * lpeg.Cp() * ((noperiod^1 * period)^1 * lpeg.Cp() + lpeg.P(true)) * noperiod^1 * -1
+--~ local pattern = (noslashes^0 * slashes)^0 * Cp() * ((noperiod^1 * period)^1 * Cp() + P(true)) * noperiod^1 * -1
 
 --~ function file.nameonly(name)
 --~     local a, b = lpegmatch(pattern,name)
@@ -374,11 +377,11 @@ end
 
 -- also rewrite previous
 
-local letter    = lpeg.R("az","AZ") + lpeg.S("_-+")
-local separator = lpeg.P("://")
+local letter    = R("az","AZ") + S("_-+")
+local separator = P("://")
 
-local qualified = lpeg.P(".")^0 * lpeg.P("/") + letter*lpeg.P(":") + letter^1*separator + letter^1 * lpeg.P("/")
-local rootbased = lpeg.P("/") + letter*lpeg.P(":")
+local qualified = P(".")^0 * P("/") + letter*P(":") + letter^1*separator + letter^1 * P("/")
+local rootbased = P("/") + letter*P(":")
 
 -- ./name ../name  /name c: :// name/name
 
@@ -390,14 +393,16 @@ function file.is_rootbased_path(filename)
     return lpegmatch(rootbased,filename) ~= nil
 end
 
-local slash  = lpeg.S("\\/")
-local period = lpeg.P(".")
-local drive  = lpeg.C(lpeg.R("az","AZ")) * lpeg.P(":")
-local path   = lpeg.C(((1-slash)^0 * slash)^0)
-local suffix = period * lpeg.C(lpeg.P(1-period)^0 * lpeg.P(-1))
-local base   = lpeg.C((1-suffix)^0)
+-- actually these are schemes
 
-local pattern = (drive + lpeg.Cc("")) * (path + lpeg.Cc("")) * (base + lpeg.Cc("")) * (suffix + lpeg.Cc(""))
+local slash  = S("\\/")
+local period = P(".")
+local drive  = C(R("az","AZ")) * P(":")
+local path   = C(((1-slash)^0 * slash)^0)
+local suffix = period * C(P(1-period)^0 * P(-1))
+local base   = C((1-suffix)^0)
+
+local pattern = (drive + Cc("")) * (path + Cc("")) * (base + Cc("")) * (suffix + Cc(""))
 
 function file.splitname(str) -- returns drive, path, base, suffix
     return lpegmatch(pattern,str)

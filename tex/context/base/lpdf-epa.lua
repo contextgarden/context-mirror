@@ -16,7 +16,10 @@ local trace_links = false  trackers.register("figures.links", function(v) trace_
 
 local report_link = logs.new("links")
 
-local variables = interfaces.variables
+local backends, lpdf = backends, lpdf
+
+local variables      = interfaces.variables
+local codeinjections = backends.pdf.codeinjections
 
 local function add_link(x,y,w,h,destination,what)
     if trace_links then
@@ -89,7 +92,7 @@ local function link_file(x,y,w,h,document,annotation)
     end
 end
 
-function backends.codeinjections.mergereferences(specification)
+function codeinjections.mergereferences(specification)
     if figures and not specification then
         specification = figures and figures.current()
         specification = specification and specification.status
@@ -142,7 +145,7 @@ function backends.codeinjections.mergereferences(specification)
     return ""-- no namespace, empty, not nil
 end
 
-function backends.codeinjections.mergelayers(specification)
+function codeinjections.mergeviewerlayers(specification)
     if not specification then
         specification = figures and figures.current()
         specification = specification and specification.status

@@ -40,7 +40,7 @@
 
 \unexpanded\def\defineparbuilder[#1]%
   {\global\advance\nofparbuilders\plusone
-   \ctxlua{parbuilders.register("#1",\number\nofparbuilders)}%
+   \ctxlua{builders.paragraphs.register("#1",\number\nofparbuilders)}%
    \setxvalue{\??ng:#1}{\attribute\parbuilderattribute\nofparbuilders}}
 
 \unexpanded\def\startparbuilder[#1]%
@@ -56,7 +56,7 @@
    \checkparbuilders}
 
 \def\setmainparbuilder[#1]%
-  {\ctxlua{parbuilders.setmain("#1")}}
+  {\ctxlua{builders.paragraphs.setmain("#1")}}
 
 % no high level interface, after all implementing a linebreaker is not something that
 % the average user will do
@@ -65,8 +65,8 @@
 \defineparbuilder[oneline] % just for testing
 \defineparbuilder[basic]   % just for testing
 
-\def\enableparbuilders {\ctxlua{parbuilders.enable ()}}
-\def\disableparbuilders{\ctxlua{parbuilders.disable()}}
+\def\enableparbuilders {\ctxlua{builders.paragraphs.enable ()}}
+\def\disableparbuilders{\ctxlua{builders.paragraphs.disable()}}
 
 \def\checkparbuilders % can be more efficient as we don't want to do this to often
   {\ifcase\attribute\parbuilderattribute

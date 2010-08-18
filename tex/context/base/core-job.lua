@@ -11,6 +11,8 @@ local ctxcatcodes, texcatcodes = tex.ctxcatcodes, tex.texcatcodes
 local lower, format, find, gmatch, gsub, match = string.lower, string.format, string.find, string.gmatch, string.gsub, string.match
 local concat = table.concat
 
+local commands, resolvers = commands, resolvers
+
 -- main code
 
 resolvers.maxreadlevel = 3

@@ -16,8 +16,15 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 local cleanupreferences, cleanupdestinations = false, true
 
+local attributes, nodes, node = attributes, nodes, node
+
 local nodeinjections = backends.nodeinjections
 local codeinjections = backends.codeinjections
+
+local transparencies = attributes.transparencies
+local colors         = attributes.colors
+local references     = structures.references
+local tasks          = nodes.tasks
 
 local hpack_list      = node.hpack
 local list_dimensions = node.dimensions
@@ -30,19 +37,33 @@ local trace_destinations = false  trackers.register("nodes.destinations", functi
 
 local report_backends = logs.new("backends")
 
-local nodecodes = nodes.nodecodes
+local nodecodes        = nodes.nodecodes
+local skipcodes        = nodes.skipcodes
+local whatcodes        = nodes.whatcodes
+local listcodes        = nodes.listcodes
 
-local hlist   = nodecodes.hlist
-local vlist   = nodecodes.vlist
-local glue    = nodecodes.glue
-local whatsit = nodecodes.whatsit
+local hlist_code       = nodecodes.hlist
+local vlist_code       = nodecodes.vlist
+local glue_code        = nodecodes.glue
+local whatsit_code     = nodecodes.whatsit
 
-local new_kern = nodes.kern
+local leftskip_code    = skipcodes.leftskip
+local rightskip_code   = skipcodes.rightskip
+local parfillskip_code = skipcodes.parfillskip
 
-local has_attribute  = node.has_attribute
-local traverse       = node.traverse
-local find_node_tail = node.tail or node.slide
-local tosequence     = nodes.tosequence
+local localpar_code    = whatcodes.localpar
+local dir_code         = whatcodes.dir
+
+local line_code        = listcodes.line
+
+local nodepool         = nodes.pool
+
+local new_kern         = nodepool.kern
+
+local has_attribute    = node.has_attribute
+local traverse         = node.traverse
+local find_node_tail   = node.tail or node.slide
+local tosequence       = nodes.tosequence
 
 local function dimensions(parent,start,stop)
     stop = stop and stop.next
@@ -115,20 +136,17 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
     local width, height, depth, correction = current.width, current.height, current.depth, 0
     local moveright = false
     local first = current.list
-    if id == hlist then
+    if id == hlist_code then -- box_code line_code
         -- can be either an explicit hbox or a line and there is no way
         -- to recognize this; anyway only if ht/dp (then inline)
-        --
-        -- to be tested: 0=unknown, 1=linebreak, 2=hbox
---~ if id.subtype == 1 then
         local sr = stack[reference]
         if first then
             if sr and sr[2] then
                 local last = find_node_tail(first)
-                if last.id == glue and last.subtype == 9 then
+                if last.id == glue_code and last.subtype == rightskip_code then
                     local prev = last.prev
-                    moveright = first.id == glue and first.subtype == 8
-                    if prev and prev.id == glue and prev.subtype == 15 then
+                    moveright = first.id == glue_code and first.subtype == leftskip_code
+                    if prev and prev.id == glue_code and prev.subtype == parfillskip_code then
                         width = dimensions(current,first,prev.prev) -- maybe not current as we already take care of it
                     else
                         if moveright and first.writable then
@@ -142,10 +160,6 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
             else
                 -- also weird
             end
---~ else
---~     print("!!!!!!!!!!!!!!!!!")
-    -- simple
---~ end
         else
             -- ok
         end
@@ -190,14 +204,15 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         while current do
             local id = current.id
             local r = has_attribute(current,attribute)
-            if id == whatsit then
+            if id == whatsit_code then
                 local subtype = current.subtype
-                if subtype == 6 then
+                if subtype == localpar_code then
                     pardir = current.dir
-                elseif subtype == 7 then
+                elseif subtype == dir_code then
                     txtdir = current.dir
                 end
-            elseif id == hlist or id == vlist then
+elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
+            elseif id == hlist_code or id == vlist_code then
                 if not reference and r and (not skip or r > skip) then
                     inject_list(id,current,r,make,stack,pardir,txtdir)
                 end
@@ -218,7 +233,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 reference, first, last, firstdir = r, current, current, txtdir
             elseif r == reference then
                 last = current
-            elseif (done[reference] or 0) == 0 then
+            elseif (done[reference] or 0) == 0 then -- or id == glue_code and current.subtype == right_skip_code
                 if not skip or r > skip then
                     head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
                     reference, first, last, firstdir = nil, nil, nil, nil
@@ -243,14 +258,14 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
         while current do
             local id = current.id
             local r = has_attribute(current,attribute)
-            if id == whatsit then
+            if id == whatsit_code then
                 local subtype = current.subtype
-                if subtype == 6 then
+                if subtype == localpar_code then
                     pardir = current.dir
-                elseif subtype == 7 then
+                elseif subtype == dir_code then
                     txtdir = current.dir
                 end
-            elseif id == hlist or id == vlist then
+            elseif id == hlist_code or id == vlist_code then
                 if r and not done[r] then
                     done[r] = true
                     inject_list(id,current,r,make,stack,pardir,txtdir)
@@ -268,8 +283,12 @@ end
 
 -- tracing
 
-local new_rule       = nodes.rule
-local new_kern       = nodes.kern
+
+local nodepool       = nodes.pool
+
+local new_rule       = nodepool.rule
+local new_kern       = nodepool.kern
+
 local set_attribute  = node.set_attribute
 local register_color = colors.register
 
@@ -312,7 +331,10 @@ local function colorize(width,height,depth,n)
     end
 end
 
-local new_kern     = nodes.kern
+local nodepool     = nodes.pool
+
+local new_kern     = nodepool.kern
+
 local texattribute = tex.attribute
 local texcount     = tex.count
 
@@ -375,7 +397,7 @@ local function makereference(width,height,depth,reference)
     end
 end
 
-function nodes.add_references(head)
+function nodes.references.handler(head)
     if topofstack > 0 then
         return inject_areas(head,attribute,makereference,stack,done)
     else
@@ -445,8 +467,11 @@ local function makedestination(width,height,depth,reference)
                 current = annot
             end
         end
-        result = hpack_list(result,0)
-        result.width, result.height, result.depth = 0, 0, 0
+        if result then
+            -- some internal error
+            result = hpack_list(result,0)
+            result.width, result.height, result.depth = 0, 0, 0
+        end
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved
     elseif trace_destinations then
@@ -454,7 +479,7 @@ local function makedestination(width,height,depth,reference)
     end
 end
 
-function nodes.add_destinations(head)
+function nodes.destinations.handler(head)
     if topofstack > 0 then
         return inject_area(head,attribute,makedestination,stack,done) -- singular
     else
@@ -464,12 +489,12 @@ end
 
 -- will move
 
-function jobreferences.mark(reference,h,d,view)
+function references.mark(reference,h,d,view)
     return setdestination(tex.currentgrouplevel,h,d,reference,view)
 end
 
-function jobreferences.inject(prefix,reference,h,d,highlight,newwindow,layer) -- todo: use currentreference is possible
-    local set, bug = jobreferences.identify(prefix,reference)
+function references.inject(prefix,reference,h,d,highlight,newwindow,layer) -- todo: use currentreference is possible
+    local set, bug = references.identify(prefix,reference)
     if bug or #set == 0 then
         -- unknown ref, just don't set it and issue an error
     else
@@ -479,8 +504,8 @@ function jobreferences.inject(prefix,reference,h,d,highlight,newwindow,layer) --
     end
 end
 
-function jobreferences.injectcurrentset(h,d) -- used inside doifelse
-    local currentset = jobreferences.currentset
+function references.injectcurrentset(h,d) -- used inside doifelse
+    local currentset = references.currentset
     if currentset then
         setreference(tex.currentgrouplevel,h,d,currentset) -- sets attribute / todo: for set[*].error
     end
@@ -490,11 +515,11 @@ end
 
 local function checkboth(open,close)
     if open and open ~= "" then
-        local set, bug = jobreferences.identify("",open)
+        local set, bug = references.identify("",open)
         open = not bug and #set > 0 and set
     end
     if close and close ~= "" then
-        local set, bug = jobreferences.identify("",close)
+        local set, bug = references.identify("",close)
         close = not bug and #set > 0 and set
     end
     return open, close
@@ -506,24 +531,24 @@ local opendocument, closedocument, openpage, closepage
 
 local function check(what)
     if what and what ~= "" then
-        local set, bug = jobreferences.identify("",what)
+        local set, bug = references.identify("",what)
         return not bug and #set > 0 and set
     end
 end
 
-function jobreferences.checkopendocumentactions (open)  opendocument  = check(open)  end
-function jobreferences.checkclosedocumentactions(close) closedocument = check(close) end
-function jobreferences.checkopenpageactions     (open)  openpage      = check(open)  end
-function jobreferences.checkclosepageactions    (close) closepage     = check(close) end
+function references.checkopendocumentactions (open)  opendocument  = check(open)  end
+function references.checkclosedocumentactions(close) closedocument = check(close) end
+function references.checkopenpageactions     (open)  openpage      = check(open)  end
+function references.checkclosepageactions    (close) closepage     = check(close) end
 
-function jobreferences.flushdocumentactions()
+function references.flushdocumentactions()
     if opendocument or closedocument then
-        backends.codeinjections.flushdocumentactions(opendocument,closedocument) -- backend
+        codeinjections.flushdocumentactions(opendocument,closedocument) -- backend
     end
 end
-function jobreferences.flushpageactions()
+function references.flushpageactions()
     if openpage or closepage then
-        backends.codeinjections.flushpageactions(openpage,closepage) -- backend
+        codeinjections.flushpageactions(openpage,closepage) -- backend
     end
 end
 
@@ -537,7 +562,7 @@ statistics.register("interactive elements", function()
     end
 end)
 
-function jobreferences.enable_interaction()
-    tasks.enableaction("shipouts","nodes.add_references")
-    tasks.enableaction("shipouts","nodes.add_destinations")
+function references.enable_interaction()
+    tasks.enableaction("shipouts","nodes.references.handler")
+    tasks.enableaction("shipouts","nodes.destinations.handler")
 end

@@ -20,6 +20,8 @@ local trace_expansions = false  trackers.register("resolvers.expansions", functi
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 -- As this bit of code is somewhat special it gets its own module. After
 -- all, when working on the main resolver code, I don't want to scroll
 -- past this every time.

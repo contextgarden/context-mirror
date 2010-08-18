@@ -7,17 +7,20 @@ if not modules then modules = { } end modules ['font-otf'] = {
 }
 
 local type, next, tonumber, tostring = type, next, tonumber, tostring
-local gsub, lower = string.gsub, string.lower
+local gsub, lower, format = string.gsub, string.lower, string.format
+local is_boolean = string.is_boolean
 
-fonts     = fonts     or { }
-fonts.otf = fonts.otf or { }
+local fonts    = fonts
+fonts.otf      = fonts.otf or { }
+local otf      = fonts.otf
 
-local otf = fonts.otf
+otf.tables     = otf.tables or { }
+local tables   = otf.tables
 
-otf.tables   = otf.tables   or { }
-otf.meanings = otf.meanings or { }
+otf.meanings   = otf.meanings or { }
+local meanings = otf.meanings
 
-otf.tables.scripts = {
+local scripts = {
     ['dflt'] = 'Default',
 
     ['arab'] = 'Arabic',
@@ -90,7 +93,7 @@ otf.tables.scripts = {
     ['yi'  ] = 'Yi',
 }
 
-otf.tables.languages = {
+local languages = {
     ['dflt'] = 'Default',
 
     ['aba'] = 'Abaza',
@@ -484,7 +487,7 @@ otf.tables.languages = {
     ['zul'] = 'Zulu'
 }
 
-otf.tables.features = {
+local features = {
     ['aalt'] = 'Access All Alternates',
     ['abvf'] = 'Above-Base Forms',
     ['abvm'] = 'Above-Base Mark Positioning',
@@ -622,7 +625,7 @@ otf.tables.features = {
     ['tlig'] = 'Traditional TeX Ligatures',
 }
 
-otf.tables.baselines = {
+local baselines = {
     ['hang'] = 'Hanging baseline',
     ['icfb'] = 'Ideographic character face bottom edge baseline',
     ['icft'] = 'Ideographic character face tope edige baseline',
@@ -632,45 +635,18 @@ otf.tables.baselines = {
     ['romn'] = 'Roman baseline'
 }
 
--- can be sped up by local tables
+local to_scripts    = table.reverse_hash(scripts  )
+local to_languages  = table.reverse_hash(languages)
+local to_features   = table.reverse_hash(features )
 
-function otf.tables.to_tag(id)
-    return stringformat("%4s",lower(id))
-end
+tables.scripts      = scripts
+tables.languages    = languages
+tables.features     = features
+tables.baselines    = baselines
 
-local function resolve(tab,id)
-    if tab and id then
-        id = lower(id)
-        return tab[id] or tab[gsub(id," ","")] or tab['dflt'] or ''
-    else
-        return "unknown"
-    end
-end
-
-function otf.meanings.script(id)
-    return resolve(otf.tables.scripts,id)
-end
-function otf.meanings.language(id)
-    return resolve(otf.tables.languages,id)
-end
-function otf.meanings.feature(id)
-    return resolve(otf.tables.features,id)
-end
-function otf.meanings.baseline(id)
-    return resolve(otf.tables.baselines,id)
-end
-
-otf.tables.to_scripts   = table.reverse_hash(otf.tables.scripts  )
-otf.tables.to_languages = table.reverse_hash(otf.tables.languages)
-otf.tables.to_features  = table.reverse_hash(otf.tables.features )
-
-local scripts      = otf.tables.scripts
-local languages    = otf.tables.languages
-local features     = otf.tables.features
-
-local to_scripts   = otf.tables.to_scripts
-local to_languages = otf.tables.to_languages
-local to_features  = otf.tables.to_features
+tables.to_scripts   = to_scripts
+tables.to_languages = to_languages
+tables.to_features  = to_features
 
 for k, v in next, to_features do
     local stripped = gsub(k,"%-"," ")
@@ -682,15 +658,35 @@ for k, v in next, to_features do
     to_features[lower(k)] = v
 end
 
-otf.meanings.checkers = {
+-- can be sped up by local tables
+
+function tables.to_tag(id)
+    return format("%4s",lower(id))
+end
+
+local function resolve(tab,id)
+    if tab and id then
+        id = lower(id)
+        return tab[id] or tab[gsub(id," ","")] or tab['dflt'] or ''
+    else
+        return "unknown"
+    end
+end
+
+function meanings.script  (id) return resolve(scripts,  id) end
+function meanings.language(id) return resolve(languages,id) end
+function meanings.feature (id) return resolve(features, id) end
+function meanings.baseline(id) return resolve(baselines,id) end
+
+local checkers = {
     rand = function(v)
         return v and "random"
     end
 }
 
-local checkers = otf.meanings.checkers
+meanings.checkers = checkers
 
-function otf.meanings.normalize(features)
+function meanings.normalize(features)
     if features then
         local h = { }
         for k,v in next, features do
@@ -711,7 +707,7 @@ function otf.meanings.normalize(features)
                 end
             else
                 if type(v) == "string" then
-                    local b = v:is_boolean()
+                    local b = is_boolean(v)
                     if type(b) == "nil" then
                         v = tonumber(v) or lower(v)
                     else
@@ -729,7 +725,7 @@ end
 
 -- When I feel the need ...
 
---~ otf.tables.aat = {
+--~ tables.aat = {
 --~     [ 0] = {
 --~         name = "allTypographicFeaturesType",
 --~         [ 0] = "allTypeFeaturesOnSelector",

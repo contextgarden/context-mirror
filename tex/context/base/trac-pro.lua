@@ -19,7 +19,8 @@ local trace_namespaces = false  trackers.register("system.namespaces", function(
 
 local report_system = logs.new("system")
 
-namespaces = { }
+namespaces       = namespaces or { }
+local namespaces = namespaces
 
 local registered = { }
 

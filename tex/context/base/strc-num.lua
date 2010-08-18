@@ -11,26 +11,21 @@ local next, type = next, type
 local min, max = math.min, math.max
 local texsprint, texcount = tex.sprint, tex.count
 
-local trace_counters = false  trackers.register("structure.counters", function(v) trace_counters = v end)
+local trace_counters = false  trackers.register("structures.counters", function(v) trace_counters = v end)
 
 local report_counters = logs.new("counters")
 
-structure              = structure           or { }
-structure.helpers      = structure.helpers   or { }
-structure.sections     = structure.sections  or { }
-structure.counters     = structure.counters  or { }
-structure.documents    = structure.documents or { }
+local structures = structures
 
-structure.counters          = structure.counters          or { }
-structure.counters.data     = structure.counters.data     or { }
-structure.counters.specials = structure.counters.specials or { }
-
-local helpers   = structure.helpers
-local sections  = structure.sections
-local counters  = structure.counters
-local documents = structure.documents
+local helpers   = structures.helpers
+local sections  = structures.sections
+local counters  = structures.counters
+local documents = structures.documents
 
 local variables = interfaces.variables
+
+counters.data     = counters.data     or { }
+counters.specials = counters.specials or { }
 
 -- state: start stop none reset
 
@@ -41,8 +36,8 @@ local counterspecials = counters.specials
 counters.collected = counters.collected or { }
 counters.tobesaved = counters.tobesaved or { }
 
-storage.register("structure/counters/data", structure.counters.data, "structure.counters.data")
-storage.register("structure/counters/tobesaved", structure.counters.tobesaved, "structure.counters.tobesaved")
+storage.register("structures/counters/data",      counters.data,      "structures.counters.data")
+storage.register("structures/counters/tobesaved", counters.tobesaved, "structures.counters.tobesaved")
 
 local collected, tobesaved = counters.collected, counters.tobesaved
 
@@ -65,7 +60,7 @@ local function initializer()
 end
 
 if job then
-    job.register('structure.counters.collected', structure.counters.tobesaved, initializer, finalizer)
+    job.register('structures.counters.collected', counters.tobesaved, initializer, finalizer)
 end
 
 local function constructor(t,s,name,i)
@@ -491,7 +486,7 @@ function counters.analyse(name,counterspecification)
     if not section then
         return cd, false, "no section"
     end
-    sectiondata = jobsections.collected[references.section]
+    sectiondata = sections.collected[references.section]
     if not sectiondata then
         return cd, false, "no section data"
     end

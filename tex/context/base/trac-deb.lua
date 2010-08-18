@@ -6,32 +6,39 @@ if not modules then modules = { } end modules ['trac-deb'] = {
     license   = "see context related readme files"
 }
 
+local lpeg = lpeg
 local lpegmatch = lpeg.match
 local format, concat = string.format, table.concat
 local tonumber, tostring = tonumber, tostring
 local texdimen, textoks, texcount = tex.dimen, tex.toks, tex.count
 
-local tracers = namespaces.private("tracers")
+-- maybe tracers -> tracers.tex (and tracers.lua for current debugger)
 
 local report_system = logs.new("system")
 
+tracers         = tracers or { }
+local tracers   = tracers
+
 tracers.lists   = { }
+local lists     = tracers.lists
+
 tracers.strings = { }
+local strings   = tracers.strings
 
-tracers.strings.undefined = "undefined"
+strings.undefined = "undefined"
 
-tracers.lists.scratch = {
+lists.scratch = {
     0, 2, 4, 6, 8
 }
 
-tracers.lists.internals = {
+lists.internals = {
     'p:hsize', 'p:parindent', 'p:leftskip','p:rightskip',
     'p:vsize', 'p:parskip', 'p:baselineskip', 'p:lineskip', 'p:topskip'
 }
 
-tracers.lists.context = {
+lists.context = {
     'd:lineheight',
-    'c:realpageno', 'c:pageno', 'c:subpageno'
+    'c:realpageno', 'c:userpageno', 'c:pageno', 'c:subpageno'
 }
 
 local types = {
@@ -64,24 +71,24 @@ end
 
 function tracers.dimen(name)
     local d = texdimen[name]
-    return d and number.topoints(d) or tracers.strings.undefined
+    return d and number.topoints(d) or strings.undefined
 end
 
 function tracers.count(name)
-    return texcount[name] or tracers.strings.undefined
+    return texcount[name] or strings.undefined
 end
 
 function tracers.toks(name,limit)
     local t = textoks[name]
-    return t and string.limit(t,tonumber(limit) or 40) or tracers.strings.undefined
+    return t and string.limit(t,tonumber(limit) or 40) or strings.undefined
 end
 
 function tracers.primitive(name)
-    return tex[name] or tracers.strings.undefined
+    return tex[name] or strings.undefined
 end
 
 function tracers.knownlist(name)
-    local l = tracers.lists[name]
+    local l = lists[name]
     return l and #l > 0
 end
 
@@ -122,23 +129,6 @@ function tracers.printerror(offset)
     end
 end
 
-if tex.error then
-
-    function tracers.texerrormessage(...) -- for the moment we put this function here
-        tex.error(format(...), { })
-    end
-
-else
-
-    function tracers.texerrormessage(...) -- for the moment we put this function here
-        local v = format(...)
-        tex.sprint(tex.ctxcatcodes,"\\errmessage{")
-        tex.sprint(tex.vrbcatcodes,v)
-        tex.print(tex.ctxcatcodes,"}")
-    end
-
-end
-
 directives.register("system.errorcontext", function(v)
     if v then
         callback.register('show_error_hook', function() tracers.printerror(v) end)
@@ -149,7 +139,7 @@ end)
 
 -- this might move
 
-local lmx = namespaces.private("lmx")
+lmx = lmx or { }
 
 if not lmx.variables then lmx.variables = { } end
 
@@ -199,3 +189,16 @@ function lmx.overloaderror()
 end
 
 directives.register("system.showerror", lmx.overloaderror)
+
+local debugger = utilities.debugger
+
+local function trace_calls(n)
+    debugger.enable()
+    luatex.register_stop_actions(function()
+        debugger.disable()
+        debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
+    end)
+    trace_calls = function() end
+end
+
+directives.register("system.tracecalls", function(n) trace_calls(n) end) -- indirect is needed for nilling

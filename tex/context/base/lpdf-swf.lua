@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['lpdf-swf'] = {
 
 local format = string.format
 
+local backends, lpdf = backends, lpdf
+
 local pdfconstant        = lpdf.constant
 local pdfboolean         = lpdf.boolean
 local pdfstring          = lpdf.string
@@ -21,11 +23,14 @@ local pdfnull            = lpdf.null
 local pdfreference       = lpdf.reference
 local pdfimmediateobject = lpdf.immediateobject
 
-function backends.pdf.helpers.insertswf(spec)
+local codeinjections     = backends.pdf.codeinjections
+local nodeinjections     = backends.pdf.nodeinjections
+
+local function insertswf(spec)
 
     local width, height, filename = spec.width, spec.height, spec.foundname
 
-    local eref = backends.codeinjections.embedfile(filename)
+    local eref = codeinjections.embedfile(filename)
 
     local flash = pdfdictionary {
         Subtype   = pdfconstant("Flash"),
@@ -107,4 +112,18 @@ function backends.pdf.helpers.insertswf(spec)
 
     return annotation, nil, nil
 
+end
+
+function backends.pdf.nodeinjections.insertswf(spec)
+    local annot, preview, ref = insertswf {
+        foundname = spec.foundname,
+        width     = spec.width,
+        height    = spec.height,
+    --  factor    = spec.factor,
+    --  display   = spec.display,
+    --  controls  = spec.controls,
+    --  label     = spec.label,
+    }
+ -- texsprint(ctxcatcodes,format("\\pdfannot width %ssp height %ssp {%s}",spec.width,spec.height,annot())) -- brrrr
+    node.write(pdfannotation(spec.width,spec.height,0,annotation()))
 end

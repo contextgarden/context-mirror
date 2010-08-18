@@ -28,11 +28,13 @@ local mkdirs, isdir = dir.mkdirs, lfs.isdir
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
-local report_cache = logs.new("cache")
-
+local report_cache      = logs.new("cache")
 local report_resolvers = logs.new("resolvers")
 
-caches = caches or { }
+local resolvers = resolvers
+
+caches           = caches or { }
+local caches     = caches
 
 caches.base      = caches.base or "luatex-cache"
 caches.more      = caches.more or "context"
@@ -277,7 +279,7 @@ function caches.savedata(filepath,filename,data,raw)
     end
     local cleanup = resolvers.boolean_variable("PURGECACHE", false)
     local strip = resolvers.boolean_variable("LUACSTRIP", true)
-    utils.lua.compile(tmaname, tmcname, cleanup, strip)
+    utilities.lua.compile(tmaname, tmcname, cleanup, strip)
 end
 
 -- moved from data-res:
@@ -339,7 +341,7 @@ function caches.savecontent(cachename,dataname,content)
         if trace_locating then
             report_resolvers("category '%s', cachename '%s' saved in '%s'",dataname,cachename,luaname)
         end
-        if utils.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
+        if utilities.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
             if trace_locating then
                 report_resolvers("'%s' compiled to '%s'",dataname,lucname)
             end

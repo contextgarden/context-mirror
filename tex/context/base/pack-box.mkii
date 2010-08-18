@@ -447,7 +447,6 @@
 \def\bleed
   {\dosingleempty\dobleed}
 
-
 \def\bleedwidth {\the\hsize}%
 \def\bleedheight{\the\vsize}%
 
@@ -478,12 +477,13 @@
       rt=>\!!donebtrue\!!donectrue]%
    \doifelse\@@bgstretch\v!yes\donetrue\donefalse
    \scratchdimen\@@bgwidth
+   \edef\currentbgposition  {\??bg:\number\nofbleeds}%
+   \edef\currentpageposition{page:0}% todo: per page
    \ifdone
      \if!!donea
-       \advance\scratchdimen\MPx{\??bg:\number\nofbleeds}%
+       \advance\scratchdimen\dimexpr    \MPx\currentbgposition-\MPx\currentpageposition\relax
      \else\if!!doneb
-       \scratchdimen\paperwidth
-       \advance\scratchdimen-\MPx{\??bg:\number\nofbleeds}%
+       \scratchdimen\dimexpr\paperwidth-\MPx\currentbgposition-\MPx\currentpageposition\relax % not checked
      \fi\fi
    \fi
    \advance\scratchdimen\@@bghoffset
@@ -491,10 +491,9 @@
    \scratchdimen\@@bgheight
    \ifdone
      \if!!donec
-       \scratchdimen\paperheight
-       \advance\scratchdimen-\MPy{\??bg:\number\nofbleeds}%
+       \scratchdimen\dimexpr\paperheight-\MPy\currentbgposition-\MPy\currentpageposition\relax % not checked
      \else\if!!doned
-       \advance\scratchdimen\MPy{\??bg:\number\nofbleeds}%
+       \advance\scratchdimen\dimexpr     \MPy\currentbgposition-\MPy\currentpageposition\relax % not checked
      \fi\fi
    \fi
    \advance\scratchdimen\@@bgvoffset
@@ -514,7 +513,7 @@
    \ht\scratchbox\@@bgheight
    \dp\scratchbox\zeropoint
    \ifdone
-     \hpos{\??bg:\number\nofbleeds}{\box\scratchbox}%
+     \hpos\currentbgposition{\box\scratchbox}%
    \else
      \box\scratchbox
    \fi

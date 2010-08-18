@@ -16,6 +16,10 @@ if not modules then modules = { } end modules ['lpdf-u3d'] = {
 local format, find = string.format, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 
+local backends, lpdf = backends, lpdf
+
+local nodeinjections      = backends.pdf.nodeinjections
+
 local pdfconstant         = lpdf.constant
 local pdfboolean          = lpdf.boolean
 local pdfnumber           = lpdf.number
@@ -337,7 +341,7 @@ end
 
 local stored_js, stored_3d, stored_pr, streams = { }, { }, { }, { }
 
-function backends.pdf.helpers.insert3d(spec) -- width, height, factor, display, controls, label, foundname
+local function insert3d(spec) -- width, height, factor, display, controls, label, foundname
 
     local width, height, factor = spec.width, spec.height, spec.factor or number.dimenfactors.bp
     local display, controls, label, foundname = spec.display, spec.controls, spec.label, spec.foundname
@@ -470,4 +474,17 @@ function backends.pdf.helpers.insert3d(spec) -- width, height, factor, display, 
         activationdict.A = pdfconstant("PV")
         return annot, nil, nil
     end
+end
+
+function nodeinjections.insertu3d(spec)
+    local annotation, preview, ref = insert3d {
+        foundname = spec.foundname,
+        width     = spec.width,
+        height    = spec.height,
+        factor    = spec.factor,
+        display   = spec.display,
+        controls  = spec.controls,
+        label     = spec.label,
+    }
+    node.write(pdfannotation(spec.width,spec.height,0,annotation()))
 end

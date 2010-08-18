@@ -6,25 +6,29 @@ if not modules then modules = { } end modules ['node-acc'] = {
     license   = "see context related readme files"
 }
 
-local traverse_nodes, traverse_id, has_attribute, copy_node = node.traverse, node.traverse_id, node.has_attribute, node.copy
+local nodes, node = nodes, node
 
-nodes.accessibility = nodes.accessibility or { }
+local nodecodes      = nodes.nodecodes
+local tasks          = nodes.tasks
 
-local nodecodes = nodes.nodecodes
+local traverse_nodes = node.traverse
+local traverse_id    = node.traverse_id
+local has_attribute  = node.has_attribute
+local copy_node      = node.copy
 
-local glue  = nodecodes.glue
-local glyph = nodecodes.glyph
-local hlist = nodecodes.hlist
-local vlist = nodecodes.vlist
+local glue_code      = nodecodes.glue
+local glyph_code     = nodecodes.glyph
+local hlist_code     = nodecodes.hlist
+local vlist_code     = nodecodes.vlist
 
 local function injectspaces(head)
     local p
     for n in traverse_nodes(head) do
         local id = n.id
-        if id == glue then -- todo: check for subtype related to spacing (13/14 but most seems to be 0)
+        if id == glue_code then -- todo: check for subtype related to spacing (13/14 but most seems to be 0)
          -- local at = has_attribute(n,attribute)
          -- if at then
-                if p and p.id == glyph then
+                if p and p.id == glyph_code then
                     local g = copy_node(p)
                     local s = copy_node(n.spec)
                     g.char, n.spec = 32, s
@@ -33,7 +37,7 @@ local function injectspaces(head)
                     s.width = s.width - g.width
                 end
          -- end
-        elseif id == hlist or id == vlist then
+        elseif id == hlist_code or id == vlist_code then
             injectspaces(n.list,attribute)
         end
         p = n
@@ -41,9 +45,7 @@ local function injectspaces(head)
     return head, true
 end
 
-nodes.accessibility.handler = injectspaces
-
--- nodes.accessibility.handler(tex.box[255].list)
+nodes.handlers.accessibility = injectspaces
 
 -- todo:
 
@@ -53,7 +55,7 @@ nodes.accessibility.handler = injectspaces
 --~
 --~ local function compact(n)
 --~     local t = { }
---~     for n in traverse_id(glyph,n) do
+--~     for n in traverse_id(glyph_code,n) do
 --~         t[#t+1] = utfchar(n.char) -- check for unicode
 --~     end
 --~     return concat(t,"")
@@ -74,7 +76,7 @@ nodes.accessibility.handler = injectspaces
 --~                 end
 --~                 set_attribute(n,a_hyphenated,hsh)
 --~             end
---~         elseif id == hlist or id == vlist then
+--~         elseif id == hlist_code or id == vlist_code then
 --~             injectspans(n.list)
 --~         end
 --~     end
@@ -97,7 +99,7 @@ nodes.accessibility.handler = injectspaces
 --~                 node.insert_before(head,n,b)
 --~                 node.insert_after(head,n,e)
 --~             end
---~         elseif id == hlist or id == vlist then
+--~         elseif id == hlist_code or id == vlist_code then
 --~             injectspans(n.list)
 --~         end
 --~     end

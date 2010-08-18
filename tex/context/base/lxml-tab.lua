@@ -27,6 +27,7 @@ optimize the code.</p>
 --ldx]]--
 
 xml = xml or { }
+local xml = xml
 
 --~ local xml = xml
 

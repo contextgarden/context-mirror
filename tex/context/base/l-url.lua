@@ -21,7 +21,8 @@ local lpegmatch, lpegP, lpegC, lpegR, lpegS, lpegCs, lpegCc = lpeg.match, lpeg.P
 --     / \ /                        \
 --     urn:example:animal:ferret:nose
 
-url = url or { }
+url       = url or { }
+local url = url
 
 local function tochar(s)
     return char(tonumber(s,16))

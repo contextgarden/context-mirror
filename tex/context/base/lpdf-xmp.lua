@@ -12,6 +12,8 @@ local xmlfillin = xml.fillin
 
 local trace_xmp = false  trackers.register("backend.xmp", function(v) trace_xmp = v end)
 
+local lpdf = lpdf
+
 local pdfdictionary = lpdf.dictionary
 local pdfconstant   = lpdf.constant
 local pdfreference  = lpdf.reference

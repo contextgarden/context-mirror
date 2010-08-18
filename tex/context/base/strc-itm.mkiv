@@ -59,19 +59,19 @@
 
 \def\dolistreference
   {\iftrialtypesetting \else % no need for different treatment of \continuelistitems
-     \ctxlua{structure.itemgroups.register("\currentitemgroup",\number\noflistelements,"\getitemparameter\currentitemlevel\c!maxwidth")}%
+     \ctxlua{structures.itemgroups.register("\currentitemgroup",\number\noflistelements,"\getitemparameter\currentitemlevel\c!maxwidth")}%
    \fi}
 
 \def\checkcurrentnofitems % we could do this at the lua end and save a call
-  {\edef\currentnofitems    {\ctxlua{structure.itemgroups.nofitems("\currentitemgroup",\number\currentnoflists)}}%
-   \edef\currentitemmaxwidth{\ctxlua{structure.itemgroups.maxwidth("\currentitemgroup",\number\currentnoflists)}\scaledpoint}}
+  {\edef\currentnofitems    {\ctxlua{structures.itemgroups.nofitems("\currentitemgroup",\number\currentnoflists)}}%
+   \edef\currentitemmaxwidth{\ctxlua{structures.itemgroups.maxwidth("\currentitemgroup",\number\currentnoflists)}\scaledpoint}}
 
 % todo: \dodosetreference -> \dostructurecountercomponent (to be checked)
 
 \def\dohandleitemreference % we will make a decent number helper
   {\ifx\currentitemreference \empty \else
      \setnextinternalreference
-     \ctxlua {jobreferences.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
+     \ctxlua {structures.references.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
         {
             metadata = {
                 kind     = "item",% ?
@@ -80,9 +80,9 @@
             },
             references = {
                 internal = \nextinternalreference,
-                section  = structure.sections.currentid(),
+                section  = structures.sections.currentid(),
             },
-            prefixdata = structure.helpers.simplify {
+            prefixdata = structures.helpers.simplify {
                 prefix        = "\structurecounterparameter\currentitemgroupcounter\c!prefix",
                 separatorset  = "\structurecounterparameter\currentitemgroupcounter\c!prefixseparatorset",
                 conversion    = \!!bs\structurecounterparameter\currentitemgroupcounter\c!prefixconversion\!!es,
@@ -92,8 +92,8 @@
             %     segments      = "\askedprefixsegments",
                 connector     = \!!bs\structurecounterparameter\currentitemgroupcounter\c!prefixconnector\!!es,
             },
-            numberdata = structure.helpers.simplify {
-                numbers       = structure.counters.compact("\currentitemgroupcounter",nil,true),
+            numberdata = structures.helpers.simplify {
+                numbers       = structures.counters.compact("\currentitemgroupcounter",nil,true),
                 separatorset  = "\structurecounterparameter\currentitemgroupcounter\c!numberseparatorset",
                 conversion    = "\structurecounterparameter\currentitemgroupcounter\c!numberconversion",
                 conversionset = "\structurecounterparameter\currentitemgroupcounter\c!numberconversionset",
@@ -1311,7 +1311,7 @@
 \def\sym#1%
   {\noindent
    \begingroup
-   \setbox\scratchbox\hbox{\trialtypesettingtrue#1}%
+   \setbox\scratchbox\hbox{\settrialtypesetting#1}%
    \setbox\scratchbox\hbox
      \ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#1\hfil}%
    \normalexpanded{\box\scratchbox\endgroup\hangindent\the\wd\scratchbox}%

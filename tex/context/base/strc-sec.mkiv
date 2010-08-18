@@ -41,14 +41,14 @@
 
 % lua interface / names and interface might change
 
-\def\setstructurelevel         #1#2{\ctxlua{structure.sections.setlevel("#1","#2")}}  % name, level|parent
-\def\getstructurelevel           #1{\ctxlua{structure.sections.getcurrentlevel("#1")}}% name
-\def\setstructurenumber        #1#2{\ctxlua{structure.sections.setnumber(#1,"#2")}}   % level, number (+/-)
-\def\getstructurenumber          #1{\ctxlua{structure.sections.getnumber(#1)}}        % level
-\def\getsomestructurenumber    #1#2{\ctxlua{structure.sections.getnumber(#1,"#2")}}   % level, what
-\def\getfullstructurenumber      #1{\ctxlua{structure.sections.fullnumber(#1)}}       % level
-\def\getsomefullstructurenumber#1#2{\ctxlua{structure.sections.fullnumber(#1,"#2")}}
-\def\getspecificstructuretitle   #1{\ctxlua{structure.sections.structuredata(#1,"titledata.title",nil,"\structureheadparameter\s!catcodes")}}%
+\def\setstructurelevel         #1#2{\ctxlua{structures.sections.setlevel("#1","#2")}}  % name, level|parent
+\def\getstructurelevel           #1{\ctxlua{structures.sections.getcurrentlevel("#1")}}% name
+\def\setstructurenumber        #1#2{\ctxlua{structures.sections.setnumber(#1,"#2")}}   % level, number (+/-)
+\def\getstructurenumber          #1{\ctxlua{structures.sections.getnumber(#1)}}        % level
+\def\getsomestructurenumber    #1#2{\ctxlua{structures.sections.getnumber(#1,"#2")}}   % level, what
+\def\getfullstructurenumber      #1{\ctxlua{structures.sections.fullnumber(#1)}}       % level
+\def\getsomefullstructurenumber#1#2{\ctxlua{structures.sections.fullnumber(#1,"#2")}}
+\def\getspecificstructuretitle   #1{\ctxlua{structures.sections.structuredata(#1,"titledata.title",nil,"\structureheadparameter\s!catcodes")}}%
 
 % interface
 
@@ -189,8 +189,8 @@
    \doifundefined{\??li#1}{\definelist[#1][\c!prefix=\v!no]}% definestructurelist ?
    \the\everystructureheadsetup}
 
-\def\sectionheadmarkingtitle #1#2{\ctxlua{structure.marks.title("#1","#2")}}
-\def\sectionheadmarkingnumber#1#2{\ctxlua{structure.marks.number("#1","#2")}}
+\def\sectionheadmarkingtitle #1#2{\ctxlua{structures.marks.title("#1","#2")}}
+\def\sectionheadmarkingnumber#1#2{\ctxlua{structures.marks.number("#1","#2")}}
 
 \def\dodefineclonedstructurehead#1#2% class parent
   {\def\currentstructurehead{#1}%
@@ -208,11 +208,11 @@
 %    \setstructurelevel\currentstructurehead{\structuresectionheadsection{\structuresectionheadcoupling\currentstructurehead}}%
    \setstructurelevel\currentstructurehead{\thenamedstructureheadlevel\currentstructurehead}%
    \doifelse{\structureheadparameter\c!ownnumber}\v!yes
-     {\setevalue\currentstructurehead{\noexpand\dohandlestructureheadown[\currentstructurehead]}}
-     {\setevalue\currentstructurehead{\noexpand\dohandlestructureheadnop[\currentstructurehead]}}%
-   \setevalue{\e!next \currentstructurehead}{\noexpand\donextstructurehead [\currentstructurehead]}%
-   \setevalue{\e!start\currentstructurehead}{\noexpand\dostartstructurehead[\currentstructurehead]}%
-   \setevalue{\e!stop \currentstructurehead}{\noexpand\dostopstructurehead [\currentstructurehead]}%
+     {\setevalue\currentstructurehead{\dohandlestructureheadown[\currentstructurehead]}}
+     {\setevalue\currentstructurehead{\dohandlestructureheadnop[\currentstructurehead]}}%
+   \setevalue{\e!next \currentstructurehead}{\donextstructurehead [\currentstructurehead]}%
+   \setevalue{\e!start\currentstructurehead}{\dostartstructurehead[\currentstructurehead]}%
+   \setevalue{\e!stop \currentstructurehead}{\dostopstructurehead [\currentstructurehead]}%
 \to \everystructureheadsetup
 
 % todo, check if section is defined
@@ -229,37 +229,47 @@
 
 % head construction
 
-\def\dohandlestructureheadown{\dodoubleempty\dodohandlestructureheadown} % [ref] {nr} {title}
-\def\dohandlestructureheadnop{\dodoubleempty\dodohandlestructureheadnop} % [ref] {title}
-\def\dostartstructurehead    {\dotripleempty\dodostartstructurehead}     % [settings] [userdata]
+\unexpanded\def\dohandlestructureheadown{\dodoubleempty\dodohandlestructureheadown} % [ref] {nr} {title}
+\unexpanded\def\dohandlestructureheadnop{\dodoubleempty\dodohandlestructureheadnop} % [ref] {title}
+\unexpanded\def\dostartstructurehead    {\dotripleempty\dodostartstructurehead}     % [settings] [userdata]
 
 \newconditional\currentstructureown
-
-\def\dodohandlestructureheadown[#1][#2]#3#4%
-  {\settrue\currentstructureown
-   \dohandlestructurehead{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
-
-\def\dodohandlestructureheadnop[#1][#2]#3%
-  {\setfalse\currentstructureown
-   \dohandlestructurehead{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
 
 \newtoks\everybeforestructurehead % hook, todo: before/after keys
 \newtoks\everyafterstructurehead  % hook, todo: before/after keys
 
-\def\dodostartstructurehead[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
+\unexpanded\def\dodohandlestructureheadown[#1][#2]#3#4%
+  {\settrue\currentstructureown
+   \dohandlestructurehead{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
+
+% \unexpanded\def\dodohandlestructureheadnop[#1][#2]#3%
+%   {\setfalse\currentstructureown
+%    \dohandlestructurehead{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
+
+\unexpanded\def\dodohandlestructureheadnop[#1][#2]% for taco: [key=value] variant
+  {\setfalse\currentstructureown
+   \doifassignmentelse{#2}\dodohandlestructureheadnopA\dodohandlestructureheadnopB{#1}{#2}}
+
+\unexpanded\def\dodohandlestructureheadnopA#1#2%
+  {\dohandlestructurehead{#1}{#2}{}}
+
+\unexpanded\def\dodohandlestructureheadnopB#1#2#3%
+  {\dohandlestructurehead{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
+
+\unexpanded\def\dodostartstructurehead[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
   {\setfalse\currentstructureown
   %\globalpushmacro\currentstructurehead
    \xdef\currentstructurehead{#1}%
    \the\everybeforestructurehead
    \dohandlestructurehead{#1}{#2}{#3}} % name -- -- -- userdata
 
-\def\dostopstructurehead[#1]%
+\unexpanded\def\dostopstructurehead[#1]%
   {%\globalpopmacro\currentstructurehead
    \xdef\currentstructurehead{#1}% recover
    \dostoptagged\dostoptagged
    \the\everyafterstructurehead}
 
-\def\donextstructurehead[#1][#2][#3]%
+\unexpanded\def\donextstructurehead[#1][#2][#3]%
   {\setfalse\currentstructureown
    \xdef\currentstructurehead{#1}%
    \dohandlestructurehead{#1}{#2}{#3}} % name -- -- -- userdata
@@ -279,19 +289,19 @@
 % When do we reset the referenceprefix? This needs to be checked. Does it work
 % at all?
 
-\def\setstructureheadreference#1% reference
-  {\edef\structureheadreference{#1}%
+\def\setstructureheadreference
+  {\edef\structureheadreference      {\structureheadparameter\c!reference}%
    \edef\structureheadreferenceprefix{\structureheadparameter\c!prefix}%
    \ifx\structureheadreferenceprefix\empty
      \setupreferenceprefix[]% yes or no?
    \else\ifx\structureheadreferenceprefix\structureheadreferenceprefixplus
      \ifx\structureheadreference\empty
-        \setupreferenceprefix[\structureheadreferenceprefixplus]
+        \expanded{\setupreferenceprefix[\structureheadreferenceprefixplus]}%
      \else
-        \setupreferenceprefix[#1]% we assume just one reference
+        \expanded{\setupreferenceprefix[\structureheadreference]}% we assume just one reference
      \fi
    \else
-     \setupreferenceprefix[\structureheadreferenceprefix]%
+     \expanded{\setupreferenceprefix[\structureheadreferenceprefix]}%
    \fi\fi}
 
 \setvalue{\??nh:\c!incrementnumber:\v!yes  }{\settrue \structureheaddoincrement\settrue \structureheadtolist}
@@ -369,7 +379,7 @@
 
 \unexpanded\def\fullstructureheadtitle
   {\dostarttagged\t!structuretitle\empty
-   \ctxlua{structure.sections.title()}%
+   \ctxlua{structures.sections.title()}%
    \dostoptagged}
 
 \let\currentstructurehead        \empty
@@ -382,7 +392,7 @@
 
 \def\doregisterstructurehead#1#2#3% name data userdata
   {\structurecomponent
-     [\c!label={\structureheadparameter\c!label},
+     [\c!label={\structureheadparameter\c!label}, % why { }
       \c!incrementnumber=\ifconditional\structureheaddoincrement\v!yes\else\v!no\fi, % not that needed
       \c!saveinlist=\ifconditional\structureheadtolist\v!yes\else\v!no\fi,
       \c!level=\currentstructureheadlevel,
@@ -404,6 +414,7 @@
       \c!sectionsegments=\structureheadparameter\c!sectionsegments,
       \c!reference=\structureheadreference,
       \c!referenceprefix=\structureheadreferenceprefix,
+      \c!backreference=,
       \c!command=,
       #2]%
      [#3]%
@@ -444,14 +455,14 @@
 
 \ifdefined \else \let\presetnumberheadalternative\relax \fi
 
-\def\dohandlestructurehead#1#2#3% name data userdata
+\def\dohandlestructurehead#1#2#3% name data userdata (we can move #1 to the caller)
   {\xdef\currentstructurehead        {#1}%
    \xdef\currentstructureheadcoupling{\structuresectionheadcoupling\currentstructurehead}%
    \xdef\currentstructureheadsection {\structuresectionheadsection \currentstructureheadcoupling}%
    \xdef\currentstructureheadlevel   {\structuresectionlevel       \currentstructureheadsection}%
    %writestatus\m!systems{setup: \currentstructurehead,\currentstructureheadcoupling,\currentstructureheadsection,\currentstructureheadlevel}%
    %
-   \setstructureheadreference{#3}% will change
+   \setstructureheadreference % does not do much currently
    \setstructureheadincrement
    \setstructureheadplacement
    \setstructureheaddisplay
@@ -464,7 +475,7 @@
    %
    % we might remove the lower level
    %
-   % not here, after optional \page: \doregisterstructurehead{#1}{#2}{#3}%
+   % not here, after optional \page: \doregisterstructurehead\currentstructurehead{#2}{#3}%
    %
 %    \xdef\currentstructureheadcounter{\currentstructurecounter}% lua call
    %
@@ -480,7 +491,7 @@
    \ifconditional\structureheaddoincrement
      \ifconditional\structureheaddoplace
        \dostructureheadspacingbeforeyes
-       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \doregisterstructurehead\currentstructurehead{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
        \let\getstructureheadtitle\fullstructureheadtitle
        \ifconditional\structureheadshownumber
@@ -491,12 +502,12 @@
        \fi
        \dostructureheadspacingafteryes
      \else\ifconditional\structureheadhidden
-       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \doregisterstructurehead\currentstructurehead{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
        \placestructureheadhidden % only something when tracing
      \else
        \dostructureheadspacingbeforenop % toegevoegd ivm subpaginanr / tug sheets
-       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \doregisterstructurehead\currentstructurehead{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
        \placestructureheadempty % just flush 'm
        \dostructureheadspacingafternop
@@ -504,19 +515,19 @@
    \else
      \ifconditional\structureheaddoplace
        \dostructureheadspacingbeforeyes
-       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \doregisterstructurehead\currentstructurehead{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
        \let\getstructureheadtitle\fullstructureheadtitle
        \placestructureheadtext
        \dostructureheadspacingafteryes
      \else\ifconditional\structureheadhidden
-       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \doregisterstructurehead\currentstructurehead{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
        \placestructureheadhidden % only something when tracing
      \else
        % do nothing / should be vbox to 0pt
        \dostructureheadspacingbeforenop
-       \doregisterstructurehead{#1}{#2}{#3}% after optional \page
+       \doregisterstructurehead\currentstructurehead{#2}{#3}% after optional \page
        \let\getstructureheadsyncs\thestructureheadsynchonization
        \placestructureheadempty % just flush 'm
        \dostructureheadspacingafternop
@@ -648,8 +659,8 @@
       \dodocheckstructureheadlayout\v!text  \c!text
       \dodocheckstructureheadlayout\v!footer\c!footer}}
 
-\def\currentstructurecounter {\ctxlua{structure.sections.depthnumber(\thenamedstructureheadlevel\currentstructurehead)}}
-\def\previousstructurecounter{\ctxlua{structure.sections.depthnumber(\thenamedstructureheadlevel\currentstructurehead-1)}}
+\def\currentstructurecounter {\ctxlua{structures.sections.depthnumber(\thenamedstructureheadlevel\currentstructurehead)}}
+\def\previousstructurecounter{\ctxlua{structures.sections.depthnumber(\thenamedstructureheadlevel\currentstructurehead-1)}}
 
 \def\dohandlestructureheadpagebreak
   {%[[\currentstructurehead @\thenamedstructureheadlevel\currentstructurehead/prev:\previousstructurecounter/curr:\currentstructurecounter]]

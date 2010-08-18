@@ -10,9 +10,15 @@ if not modules then modules = { } end modules ['luat-sta'] = {
 local gmatch, match = string.gmatch, string.match
 local type = type
 
-states          = states          or { }
-states.data     = states.data     or { }
-states.hash     = states.hash     or { }
+states          = states or { }
+local states    = states
+
+states.data     = states.data or { }
+local data      = states.data
+
+states.hash     = states.hash or { }
+local hash      = states.hash
+
 states.tag      = states.tag      or ""
 states.filename = states.filename or ""
 
@@ -22,7 +28,7 @@ function states.save(filename,tag)
     io.savedata(filename,
         "-- generator : luat-sta.lua\n" ..
         "-- state tag : " .. tag .. "\n\n" ..
-        table.serialize(states.data[tag or states.tag] or {},true)
+        table.serialize(data[tag or states.tag] or {},true)
     )
 end
 
@@ -30,11 +36,11 @@ function states.load(filename,tag)
     states.filename = filename
     states.tag = tag or "whatever"
     states.filename = file.addsuffix(states.filename,'lus')
-    states.data[states.tag], states.hash[states.tag] = (io.exists(filename) and dofile(filename)) or { }, { }
+    data[states.tag], hash[states.tag] = (io.exists(filename) and dofile(filename)) or { }, { }
 end
 
-function states.set_by_tag(tag,key,value,default,persistent)
-    local d, h = states.data[tag], states.hash[tag]
+local function set_by_tag(tag,key,value,default,persistent)
+    local d, h = data[tag], hash[tag]
     if d then
         if type(d) == "table" then
             local dkey, hkey = key, key
@@ -64,17 +70,17 @@ function states.set_by_tag(tag,key,value,default,persistent)
             d[dkey], h[hkey] = value, value
         elseif type(d) == "string" then
             -- weird
-            states.data[tag], states.hash[tag] = value, value
+            data[tag], hash[tag] = value, value
         end
     end
 end
 
-function states.get_by_tag(tag,key,default)
-    local h = states.hash[tag]
+local function get_by_tag(tag,key,default)
+    local h = hash[tag]
     if h and h[key] then
         return h[key]
     else
-        local d = states.data[tag]
+        local d = data[tag]
         if d then
             for k in gmatch(key,"[^%.]+") do
                 local dk = d[k]
@@ -89,15 +95,18 @@ function states.get_by_tag(tag,key,default)
     end
 end
 
+states.set_by_tag = set_by_tag
+states.get_by_tag = get_by_tag
+
 function states.set(key,value,default,persistent)
-    states.set_by_tag(states.tag,key,value,default,persistent)
+    set_by_tag(states.tag,key,value,default,persistent)
 end
 
 function states.get(key,default)
-    return states.get_by_tag(states.tag,key,default)
+    return get_by_tag(states.tag,key,default)
 end
 
---~ states.data.update = {
+--~ data.update = {
 --~ 	["version"] = {
 --~ 		["major"] = 0,
 --~ 		["minor"] = 1,

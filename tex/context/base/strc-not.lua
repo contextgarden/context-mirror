@@ -12,30 +12,30 @@ local texsprint, texwrite, texcount = tex.sprint, tex.write, tex.count
 
 local ctxcatcodes = tex.ctxcatcodes
 
-local trace_notes = false  trackers.register("structure.notes", function(v) trace_notes = v end)
+local trace_notes = false  trackers.register("structures.notes", function(v) trace_notes = v end)
 
 local report_notes = logs.new("notes")
 
-structure              = structure          or { }
-structure.helpers      = structure.helpers  or { }
-structure.lists        = structure.lists    or { }
-structure.sections     = structure.sections or { }
-structure.counters     = structure.counters or { }
-structure.notes        = structure.notes    or { }
+local structures = structures
 
-structure.notes.states    = structure.notes.states    or { }
-structure.lists.enhancers = structure.lists.enhancers or { }
+structures.notes = structures.notes or { }
 
-storage.register("structure/notes/states", structure.notes.states, "structure.notes.states")
+local helpers    = structures.helpers
+local lists      = structures.lists
+local sections   = structures.sections
+local counters   = structures.counters
+local notes      = structures.notes
+local references = structures.references
 
-local helpers  = structure.helpers
-local lists    = structure.lists
-local sections = structure.sections
-local counters = structure.counters
-local notes    = structure.notes
+notes.states     = notes.states or { }
+lists.enhancers  = lists.enhancers or { }
 
-local notestates = structure.notes.states
+storage.register("structures/notes/states", notes.states, "structures.notes.states")
+
+local notestates = notes.states
 local notedata   = { }
+
+local variables  = interfaces.variables
 
 -- state: store, insert, postpone
 
@@ -67,7 +67,7 @@ local function get(tag,n)
                 report_notes("getting note %s of '%s'",n,tag)
             end
             -- is this right?
-            local newdata = structure.lists.collected[nd]
+            local newdata = lists.collected[nd]
             return newdata
         end
     end
@@ -78,8 +78,8 @@ local function getn(tag)
     return (nd and #nd) or 0
 end
 
-nodes.get = get
-nodes.getn = getn
+notes.get = get
+notes.getn = getn
 
 -- we could make a special enhancer
 
@@ -169,7 +169,7 @@ local function internal(tag,n)
         if r then
             local i = r.internal
 --~             return i and lists.internals[i]
-            return i and jobreferences.internals[i]
+            return i and references.internals[i]
         end
     end
     return nil
@@ -221,7 +221,7 @@ function notes.deltapage(tag,n)
     if li then
         local metadata, pagenumber = li.metadata, li.pagenumber
         if metadata and pagenumber then
-            local symbolpage = metadata.symbolpage or 0
+            local symbolpage = references.symbolpage or 0
             local notepage = pagenumber.number or 0
             if notepage > 0 and symbolpage > 0 then
                 if notepage < symbolpage then
@@ -282,7 +282,7 @@ function notes.getnumberpage(tag,n)
     texwrite(li or 0)
 end
 
-function notes.flush(tag,whatkind) -- store and postpone
+function notes.flush(tag,whatkind,how) -- store and postpone
     local state = notestates[tag]
     local kind = state.kind
     if kind == whatkind then
@@ -306,6 +306,16 @@ function notes.flush(tag,whatkind) -- store and postpone
                 end
                 -- todo: as registers: start, stop, inbetween
                 for i=ns,#nd do
+-- tricky : trialtypesetting
+if how == variables.page then
+    local rp = get(tag,i)
+    rp = rp and rp.references
+    rp = rp and rp.symbolpage or 0
+    if rp > texcount.realpageno then
+        state.start = i
+        return
+    end
+end
                     if i > ns then
                         texsprint(ctxcatcodes,format("\\betweennoteitself{%s}",tag))
                     end
@@ -350,9 +360,9 @@ function notes.resetpostponed()
 end
 
 function notes.title(tag,n)
-    structure.lists.savedtitle(tag,notedata[tag][n])
+    lists.savedtitle(tag,notedata[tag][n])
 end
 
 function notes.number(tag,n,spec)
-    structure.lists.savedprefixednumber(tag,notedata[tag][n])
+    lists.savedprefixednumber(tag,notedata[tag][n])
 end

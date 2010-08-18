@@ -50,7 +50,7 @@
 \def\dobookmark[#1]#2%
   {\begingroup
    \simplifycommands
-   \ctxlua{structure.bookmarks.overload("#1",\!!bs\detokenize\expandafter{\normalexpanded{#2}}\!!es)}%
+   \ctxlua{structures.bookmarks.overload("#1",\!!bs\detokenize\expandafter{\normalexpanded{#2}}\!!es)}%
    \endgroup}
 
 %D Placement \unknown\ look how simple compared to \MKII:
@@ -65,6 +65,10 @@
 
 \unexpanded\def\placebookmarks
   {\dotripleempty\doplacebookmarks}
+
+% Use force to get titles in the bookmarklist. This is somewhat tricky as one
+% does not want "Contents" in a table of contents but it has to be in the
+% bookmark list.
 
 \def\doplacebookmarks[#1][#2][#3]%
   {\iflocation
@@ -82,7 +86,7 @@
      \else\ifsecondargument
        \doifassignmentelse{#2}{\let\askedopened\empty\getparameters[\??bm][#2]}\donothing
      \fi\fi
-     \ctxlua{structure.bookmarks.register {
+     \ctxlua{structures.bookmarks.register {
         names  = "\askednames",
         opened = "\askedopened",
         force  = "\bookmarkparameter\c!force",
@@ -96,7 +100,7 @@
    \c!number=\v!yes]  % might become v!no
 
 \appendtoks
-    \ctxlua{structure.bookmarks.setup {
+    \ctxlua{structures.bookmarks.setup {
         separatorset  = "\bookmarkparameter\c!numberseparatorset",
         conversionset = "\bookmarkparameter\c!numberconversionset",
         starter       = \!!bs\bookmarkparameter\c!numberstarter\!!es,
@@ -105,8 +109,8 @@
     }}%
 \to \everysetupbookmarks
 
-% \prependtoks\ctxlua{structure.bookmarks.place()}\to\everystoptext           % too late
-% \prependtoks\ctxlua{structure.bookmarks.place()}\to\everylastbackendshipout % okay but not nice
+% \prependtoks\ctxlua{structures.bookmarks.place()}\to\everystoptext           % too late
+% \prependtoks\ctxlua{structures.bookmarks.place()}\to\everylastbackendshipout % okay but not nice
 
 \protect \endinput
 

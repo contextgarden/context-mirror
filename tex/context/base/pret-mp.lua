@@ -13,6 +13,10 @@ local utfbyte, utffind = utf.byte, utf.find
 local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes = tex.ctxcatcodes
 
+local buffers = buffers
+
+local changestate, finishstate = buffers.changestate, buffers.finishstate
+
 local visualizer = buffers.newvisualizer("mp")
 
 visualizer.identifiers = { }
@@ -141,15 +145,13 @@ for k,v in next, visualizer.identifiers do
     end
 end
 
-local change_state, finish_state = buffers.change_state, buffers.finish_state
-
 local function flush_mp_word(state, word, intex)
     if word then
         if intex then
             if word == 'etex' then
-                state = change_state(2,state)
+                state = changestate(2,state)
                 texwrite(word)
-                state = finish_state(state)
+                state = finishstate(state)
                 return state, false
            else
                 texwrite(word)
@@ -158,21 +160,21 @@ local function flush_mp_word(state, word, intex)
         else
             local id = known_words[word]
             if id then
-                state = change_state(2,state)
+                state = changestate(2,state)
                 if styles[id] then
                     texsprint(ctxcatcodes,styles[id])
                 end
                 texwrite(word)
-                state = finish_state(state)
+                state = finishstate(state)
                 return state, (word == 'btex') or (word == 'verbatimtex')
             else
-                state = finish_state(state)
+                state = finishstate(state)
                 texwrite(word)
                 return state, intex
             end
         end
     else
-        state = finish_state(state)
+        state = finishstate(state)
         return state, intex
     end
 end
@@ -193,16 +195,16 @@ function visualizer.flush_line(str,nested)
         elseif incomment then
             texwrite(c)
         elseif c == '%' then
-            state = change_state(states[c], state)
+            state = changestate(states[c], state)
             incomment = true
             texwrite(c)
-            state = finish_state(state)
+            state = finishstate(state)
         elseif instr then
             if c == '"' then
-                state = change_state(states[c],state)
+                state = changestate(states[c],state)
                 instr = false
                 texwrite(c)
-                state = finish_state(state)
+                state = finishstate(state)
             else
                 texwrite(c)
             end
@@ -215,22 +217,22 @@ function visualizer.flush_line(str,nested)
                 if intex then
                     texwrite(c)
                 else
-                    state = change_state(states[c], state)
+                    state = changestate(states[c], state)
                     texwrite(c)
                 end
             end
         elseif utffind(c,"^[%a]$") then
-            state = finish_state(state)
+            state = finishstate(state)
             if word then word = word .. c else word = c end
         else
             state, intex = flush_mp_word(state, word, intex)
             word = nil
-            state = change_state(states[c], state)
+            state = changestate(states[c], state)
             texwrite(c)
-            state = finish_state(state)
+            state = finishstate(state)
             instr = (c == '"')
         end
     end
     state, intex = flush_mp_word(state, word, intex)
-    state = finish_state(state)
+    state = finishstate(state)
 end

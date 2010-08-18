@@ -6,28 +6,32 @@ if not modules then modules = { } end modules ['node-shp'] = {
     license   = "see context related readme files"
 }
 
-local free_node, remove_node = node.free, node.remove
+local nodes, node = nodes, node
 
-local nodecodes = nodes.nodecodes
+local nodecodes   = nodes.nodecodes
+local tasks       = nodes.tasks
 
-local hlist = nodecodes.hlist
-local vlist = nodecodes.vlist
-local disc  = nodecodes.disc
-local mark  = nodecodes.mark
-local kern  = nodecodes.kern
-local glue  = nodecodes.glue
+local hlist_code  = nodecodes.hlist
+local vlist_code  = nodecodes.vlist
+local disc_code   = nodecodes.disc
+local mark_code   = nodecodes.mark
+local kern_code   = nodecodes.kern
+local glue_code   = nodecodes.glue
 
-local function cleanup_page(head) -- rough
+local free_node   = node.free
+local remove_node = node.remove
+
+local function cleanup(head) -- rough
     local start = head
     while start do
         local id = start.id
-        if id == disc or (id == glue and not start.writable) or (id == kern and start.kern == 0) or id == mark then
+        if id == disc_code or (id == glue_code and not start.writable) or (id == kern_code and start.kern == 0) or id == mark_code then
             head, start, tmp = remove_node(head,start)
             free_node(tmp)
-        elseif id == hlist or id == vlist then
+        elseif id == hlist_code or id == vlist_code then
             local sl = start.list
             if sl then
-                start.list = cleanup_page(sl)
+                start.list = cleanup(sl)
                 start = start.next
             else
                 head, start, tmp = remove_node(head,start)
@@ -40,20 +44,19 @@ local function cleanup_page(head) -- rough
     return head
 end
 
-nodes.cleanup_page_first = false
+directives.register("backend.cleanup", function()
+    tasks.enableaction("shipouts","nodes.handlers.cleanuppage")
+end)
 
-function nodes.cleanup_page(head)
+function nodes.handlers.cleanuppage(head)
     -- about 10% of the nodes make no sense for the backend
-    if nodes.cleanup_page_first then
-        head = cleanup_page(head)
-    end
-    return head, false
+    return cleanup(head), true
 end
 
 local actions = tasks.actions("shipouts",0)  -- no extra arguments
 
-function nodes.process_page(head) -- problem, attr loaded before node, todo ...
+function nodes.handlers.finalize(head) -- problem, attr loaded before node, todo ...
     return actions(head)
 end
 
---~ nodes.process_page = actions
+--~ nodes.handlers.finalize = actions

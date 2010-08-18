@@ -20,25 +20,29 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 -- todo: strip baselineskip around display math
 
 local next, type, tonumber = next, type, tonumber
-local format, gmatch, concat, match = string.format, string.gmatch, table.concat, string.match
-local ceil, floor, max, min, round = math.ceil, math.floor, math.max, math.min, math.round
+local format, gmatch, concat, match, rep = string.format, string.gmatch, table.concat, string.match, string.rep
+local ceil, floor, max, min, round, abs = math.ceil, math.floor, math.max, math.min, math.round, math.abs
 local texsprint, texlists, texdimen, texbox = tex.sprint, tex.lists, tex.dimen, tex.box
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
+local points = number.points
+
+local nodes, node, trackers, attributes =  nodes, node, trackers, attributes
 
 local ctxcatcodes = tex.ctxcatcodes
-local variables = interfaces.variables
+local variables   = interfaces.variables
 
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+local starttiming = statistics.starttiming
+local stoptiming  = statistics.stoptiming
 
 -- vertical space handler
 
-local trace_vbox_vspacing    = false  trackers.register("nodes.vbox_vspacing",    function(v) trace_vbox_vspacing    = v end)
-local trace_page_vspacing    = false  trackers.register("nodes.page_vspacing",    function(v) trace_page_vspacing    = v end)
-local trace_collect_vspacing = false  trackers.register("nodes.collect_vspacing", function(v) trace_collect_vspacing = v end)
-local trace_vspacing         = false  trackers.register("nodes.vspacing",         function(v) trace_vspacing         = v end)
-local trace_vsnapping        = false  trackers.register("nodes.vsnapping",        function(v) trace_vsnapping        = v end)
-local trace_vpacking         = false  trackers.register("nodes.vpacking",         function(v) trace_vpacking         = v end)
+local trace_vbox_vspacing    = false  trackers.register("builders.vbox_vspacing",    function(v) trace_vbox_vspacing    = v end)
+local trace_page_vspacing    = false  trackers.register("builders.page_vspacing",    function(v) trace_page_vspacing    = v end)
+local trace_collect_vspacing = false  trackers.register("builders.collect_vspacing", function(v) trace_collect_vspacing = v end)
+local trace_vspacing         = false  trackers.register("builders.vspacing",         function(v) trace_vspacing         = v end)
+local trace_vsnapping        = false  trackers.register("builders.vsnapping",        function(v) trace_vsnapping        = v end)
+local trace_vpacking         = false  trackers.register("builders.vpacking",         function(v) trace_vpacking         = v end)
 
 local report_vspacing  = logs.new("vspacing")
 local report_collapser = logs.new("collapser")
@@ -50,7 +54,7 @@ local skip_order    = attributes.private('skip-order')
 local snap_category = attributes.private('snap-category')
 local display_math  = attributes.private('display-math')
 local snap_method   = attributes.private('snap-method')
-local snap_done     = attributes.private('snap-done')
+local snap_vbox     = attributes.private('snap-vbox')
 
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
@@ -63,31 +67,39 @@ local traverse_nodes_id  = node.traverse_id
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove
-local make_penalty_node  = nodes.penalty
-local make_kern_node     = nodes.kern
-local make_rule_node     = nodes.rule
 local count_nodes        = nodes.count
 local node_ids_to_string = nodes.ids_to_string
 local hpack_node         = node.hpack
 local vpack_node         = node.vpack
 local writable_spec      = nodes.writable_spec
+local list_to_utf        = nodes.list_to_utf
 
-local nodecodes = nodes.nodecodes
+local nodepool      = nodes.pool
 
-local glyph   = nodecodes.glyph
-local penalty = nodecodes.penalty
-local kern    = nodecodes.kern
-local glue    = nodecodes.glue
-local hlist   = nodecodes.hlist
-local vlist   = nodecodes.vlist
-local adjust  = nodecodes.adjust
+local new_penalty   = nodepool.penalty
+local new_kern      = nodepool.kern
+local new_rule      = nodepool.rule
 
-vspacing      = vspacing      or { }
-vspacing.data = vspacing.data or { }
+local nodecodes     = nodes.nodecodes
+local skipcodes     = nodes.skipcodes
+local fillcodes     = nodes.fillcodes
+
+local penalty_code  = nodecodes.penalty
+local kern_code     = nodecodes.kern
+local glue_code     = nodecodes.glue
+local hlist_code    = nodecodes.hlist
+local vlist_code    = nodecodes.vlist
+local whatsit_code  = nodecodes.whatsit
+
+local userskip_code = skipcodes.userskip
+
+builders.vspacing = builders.vspacing or { }
+local vspacing    = builders.vspacing
+vspacing.data     = vspacing.data or { }
 
 vspacing.data.snapmethods = vspacing.data.snapmethods or { }
 
-storage.register("vspacing/data/snapmethods", vspacing.data.snapmethods, "vspacing.data.snapmethods")
+storage.register("builders/vspacing/data/snapmethods", vspacing.data.snapmethods, "builders.vspacing.data.snapmethods")
 
 local snapmethods = vspacing.data.snapmethods --maybe some older code can go
 
@@ -170,14 +182,92 @@ end
 --~     end
 --~ end
 
-local function snap_hlist(current,method,height,depth) -- method.strut is default
-    local snapht, snapdp
+local reference = nodes.reference
+
+local function validvbox(parentid,list)
+    if parentid == hlist_code then
+        local id = list.id
+        if id == whatsit_code then -- check for initial par subtype
+            list = list.next
+            if not next then
+                return nil
+            end
+        end
+        local done = nil
+        for n in traverse_nodes(list) do
+            local id = n.id
+            if id == vlist_code or id == hlist_code then
+                if done then
+                    return nil
+                else
+                    done = n
+                end
+            elseif id == penalty_code or id == glue_code then
+                -- go on
+            else
+                return nil -- whatever
+            end
+        end
+        if done and done.id == hlist_code then
+            return validvbox(done.id,done.list)
+        end
+        return done -- only one vbox
+    end
+end
+
+local function already_done(parentid,list,snap_method) -- todo: done when only boxes and all snapped
+    -- problem: any snapped vbox ends up in a line
+    if list and parentid == hlist_code then
+        local id = list.id
+        if id == whatsit_code then -- check for initial par subtype
+            list = list.next
+            if not next then
+                return false
+            end
+        end
+--~ local i = 0
+        for n in traverse_nodes(list) do
+            local id = n.id
+--~ i = i + 1 print(i,nodecodes[id],has_attribute(n,snap_method))
+            if id == hlist_code or id == vlist_code then
+                local a = has_attribute(n,snap_method)
+                if not a then
+                 -- return true -- not snapped at all
+                elseif a == 0 then
+                    return true -- already snapped
+                end
+            elseif id == penalty_code or id == glue_code then -- whatsit is weak spot
+                -- go on
+            else
+                return false -- whatever
+            end
+        end
+    end
+    return false
+end
+
+local function snap_hlist(where,current,method,height,depth) -- method.strut is default
+    local list = current.list
 --~ print(table.serialize(method))
+    local t = trace_vsnapping and { }
+    if t then
+        t[#t+1] = format("list content: %s",nodes.toutf(list))
+        t[#t+1] = format("parent id: %s",reference(current))
+        t[#t+1] = format("snap method: %s",method.name)
+        t[#t+1] = format("specification: %s",method.specification)
+    end
+    local snapht, snapdp
     if method["local"] then
         -- snapping is done immediately here
         snapht, snapdp = texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth
+        if t then
+            t[#t+1] = format("local: snapht %s snapdp %s",points(snapht),points(snapdp))
+        end
     elseif method["global"] then
         snapht, snapdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
+        if t then
+            t[#t+1] = format("global: snapht %s snapdp %s",points(snapht),points(snapdp))
+        end
     else
         -- maybe autolocal
         -- snapping might happen later in the otr
@@ -186,109 +276,202 @@ local function snap_hlist(current,method,height,depth) -- method.strut is defaul
         if snapht ~= lsnapht and snapdp ~= lsnapdp then
             snapht, snapdp = lsnapht, lsnapdp
         end
+        if t then
+            t[#t+1] = format("auto: snapht %s snapdp %s",points(snapht),points(snapdp))
+        end
     end
     local h, d = height or current.height, depth or current.depth
     local hr, dr, ch, cd = method.hfraction or 1, method.dfraction or 1, h, d
     local tlines, blines = method.tlines or 1, method.blines or 1
     local done, plusht, plusdp = false, snapht, snapdp
     local snaphtdp = snapht + snapdp
+
     if method.none then
         plusht, plusdp = 0, 0
+        if t then
+            t[#t+1] = format("none: plusht 0pt plusdp 0pt")
+        end
     end
-    if method.halfline then
+    if method.halfline then -- extra halfline
         plusht, plusdp = plusht + snaphtdp/2, plusdp + snaphtdp/2
+        if t then
+            t[#t+1] = format("halfline: plusht %s plusdp %s",points(plusht),points(plusdp))
+        end
     end
-    if method.line then
+    if method.line then -- extra line
         plusht, plusdp = plusht + snaphtdp, plusdp + snaphtdp
+        if t then
+            t[#t+1] = format("line: plusht %s plusdp %s",points(plusht),points(plusdp))
+        end
     end
 
     if method.first then
-        if current.id == vlist then
-            local list, lh, ld = current.list
-            for n in traverse_nodes_id(hlist,list) do
+        local thebox = current
+        local id = thebox.id
+        if id == hlist_code then
+            thebox = validvbox(id,thebox.list)
+            id = thebox and thebox.id
+        end
+        if thebox and id == vlist_code then
+            local list, lh, ld = thebox.list
+            for n in traverse_nodes_id(hlist_code,list) do
                 lh, ld = n.height, n.depth
                 break
             end
             if lh then
-                local x = max(ceil((lh-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
-                local n = make_kern_node(x-lh)
-                n.next, list.prev, current.list = list, n, n
-                ch = x + snaphtdp
-                cd = max(ceil((d+h-lh-dr*snapdp-hr*snapht)/snaphtdp),0)*snaphtdp + plusdp
+                local ht, dp = thebox.height, thebox.depth
+                if t then
+                    t[#t+1] = format("first line: height %s depth %s",points(lh),points(ld))
+                    t[#t+1] = format("dimensions: height %s depth %s",points(ht),points(dp))
+                end
+                local delta = h - lh
+                ch, cd = lh, delta + d
+--~ ch = ch + plusht
+--~ cd = cd + plusdp
+h, d = ch, cd
+                local shifted = hpack_node(current.list)
+                shifted.shift = delta
+                current.list = shifted
                 done = true
+                if t then
+                    t[#t+1] = format("first: height %s depth %s shift %s",points(ch),points(cd),points(delta))
+                end
+            elseif t then
+                t[#t+1] = "first: not done, no content"
             end
+        elseif t then
+            t[#t+1] = "first: not done, no vbox"
         end
     elseif method.last then
-        if current.id == vlist then
-            local list, lh, ld = current.list
-            for n in traverse_nodes_id(hlist,list) do
+        local thebox = current
+        local id = thebox.id
+        if id == hlist_code then
+            thebox = validvbox(id,thebox.list)
+            id = thebox and thebox.id
+        end
+        if thebox and id == vlist_code then
+            local list, lh, ld = thebox.list
+            for n in traverse_nodes_id(hlist_code,list) do
                 lh, ld = n.height, n.depth
             end
             if lh then
-                local baseline_till_top = h + d - ld
-                local x = max(ceil((baseline_till_top-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
-                local n = make_kern_node(x-baseline_till_top)
-                n.next, list.prev, current.list = list, n, n
-                ch = x
-                cd = max(ceil((ld-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
+                local ht, dp = thebox.height, thebox.depth
+                if t then
+                    t[#t+1] = format("last line: height %s depth %s",points(lh),points(ld))
+                    t[#t+1] = format("dimensions: height %s depth %s",points(ht),points(dp))
+                end
+                local delta = d - ld
+                cd, ch = ld, delta + h
+--~ ch = ch + plusht
+--~ cd = cd + plusdp
+h, d = ch, cd
+                local shifted = hpack_node(current.list)
+                shifted.shift = delta
+                current.list = shifted
                 done = true
+                if t then
+                    t[#t+1] = format("last: height %s depth %s shift %s",points(ch),points(cd),points(delta))
+                end
+            elseif t then
+                t[#t+1] = "last: not done, no content"
             end
+        elseif t then
+            t[#t+1] = "last: not done, no vbox"
         end
     end
 
-    if done then
-        -- first or last
-    elseif method.minheight then
+--~     if done then
+--~         -- first or last
+--~     else
+    if method.minheight then
         ch = max(floor((h-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
+        if t then
+            t[#t+1] = format("minheight: %s",points(ch))
+        end
     elseif method.maxheight then
         ch = max(ceil((h-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
+        if t then
+            t[#t+1] = format("maxheight: %s",points(ch))
+        end
     else
         ch = plusht
+        if t then
+            t[#t+1] = format("set height: %s",points(ch))
+        end
     end
-    if done then
-        -- first or last
-    elseif method.mindepth then
+--~     if done then
+--~         -- first or last
+--~     else
+    if method.mindepth then
         cd = max(floor((d-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
+        if t then
+            t[#t+1] = format("mindepth: %s",points(cd))
+        end
     elseif method.maxdepth then
         cd = max(ceil((d-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
+        if t then
+            t[#t+1] = format("maxdepth: %s",points(cd))
+        end
     else
         cd = plusdp
+        if t then
+            t[#t+1] = format("set depth: %s",points(cd))
+        end
     end
     if method.top then
         ch = ch + tlines * snaphtdp
+        if t then
+            t[#t+1] = format("top height: %s",points(ch))
+        end
     end
     if method.bottom then
         cd = cd + blines * snaphtdp
+        if t then
+            t[#t+1] = format("bottom depth: %s",points(cd))
+        end
     end
 
     local offset = method.offset
     if offset then
         -- we need to set the attr
-        local shifted = vpack_node(current.list)
+        if t then
+            t[#t+1] = format("before offset: %s (width %s height %s depth %s)",
+                points(offset),points(current.width),points(current.height),points(current.depth))
+        end
+        local shifted = hpack_node(current.list)
         shifted.shift = offset
         current.list = shifted
+        if t then
+            t[#t+1] = format("after offset: %s (width %s height %s depth %s)",
+                points(offset),points(current.width),points(current.height),points(current.depth))
+        end
+        set_attribute(shifted,snap_method,0)
+        set_attribute(current,snap_method,0)
     end
     if not height then
         current.height = ch
+        if t then
+            t[#t+1] = format("forced height: %s",points(ch))
+        end
     end
     if not depth then
         current.depth = cd
+        if t then
+            t[#t+1] = format("forced depth: %s",points(cd))
+        end
     end
- -- set_attribute(current,snap_method,0)
-    return h, d, ch, cd, (ch+cd)/snaphtdp
+    local lines = (ch+cd)/snaphtdp
+    if t then
+        local original = (h+d)/snaphtdp
+        t[#t+1] = format("final lines: %s -> %s",original,lines)
+        t[#t+1] = format("final height: %s -> %s",points(h),points(ch))
+        t[#t+1] = format("final depth: %s -> %s",points(d),points(cd))
+    end
+    if t then
+        report_snapper("trace: %s type %s\n\t%s",where,nodecodes[current.id],concat(t,"\n\t"))
+    end
+    return h, d, ch, cd, lines
 end
-
---~ local function snap_topskip(current,method)
---~     local spec = current.spec
---~     local w = spec.width
---~     local wd = w
---~     if spec then
---~         wd = 0
---~         spec = writable_spec(current)
---~         spec.width = wd
---~     end
---~     return w, wd
---~ end
 
 local function snap_topskip(current,method)
     local spec = current.spec
@@ -338,8 +521,8 @@ end
 vspacing.data.map  = vspacing.data.map  or { }
 vspacing.data.skip = vspacing.data.skip or { }
 
-storage.register("vspacing/data/map", vspacing.data.map, "vspacing.data.map")
-storage.register("vspacing/data/skip", vspacing.data.skip, "vspacing.data.skip")
+storage.register("builders/vspacing/data/map",  vspacing.data.map,  "builders.vspacing.data.map")
+storage.register("builders/vspacing/data/skip", vspacing.data.skip, "builders.vspacing.data.skip")
 
 do -- todo: interface.variables
 
@@ -443,15 +626,14 @@ local trace_list, tracing_info, before, after = { }, false, "", ""
 
 local function glue_to_string(glue)
     local spec = glue.spec
-    local t = { }
-    t[#t+1] = aux.strip_zeros(number.topoints(spec.width))
+    local t = { points(spec.width) }
     if spec.stretch_order and spec.stretch_order ~= 0 then
-        t[#t+1] = format("plus -%sfi%s",spec.stretch/65536,string.rep("l",math.abs(spec.stretch_order)-1))
+        t[#t+1] = format("plus %s%s",spec.stretch/65536,fillcodes[spec.stretch_order])
     elseif spec.stretch and spec.stretch ~= 0 then
         t[#t+1] = format("plus %s",aux.strip_zeros(number.topoints(spec.stretch)))
     end
     if spec.shrink_order and spec.shrink_order ~= 0 then
-        t[#t+1] = format("minus -%sfi%s",spec.shrink/65536,string.rep("l",math.abs(spec.shrink_order)-1))
+        t[#t+1] = format("minus %s%s",spec.shrink/65536,fillcodes[spec.shrink_order])
     elseif spec.shrink and spec.shrink ~= 0 then
         t[#t+1] = format("minus %s",aux.strip_zeros(number.topoints(spec.shrink)))
     end
@@ -463,11 +645,11 @@ local function nodes_to_string(head)
     while current do
         local id = current.id
         local ty = node.type(id)
-        if id == penalty then
+        if id == penalty_code then
             t[#t+1] = format("%s:%s",ty,current.penalty)
-        elseif id == glue then
+        elseif id == glue_code then
             t[#t+1] = format("%s:%s",ty,aux.strip_zeros(number.topoints(current.spec.width)))
-        elseif id == kern then
+        elseif id == kern_code then
             t[#t+1] = format("%s:%s",ty,aux.strip_zeros(number.topoints(current.kern)))
         else
             t[#t+1] = ty
@@ -506,7 +688,7 @@ local function trace_node(what)
 end
 
 local function trace_done(str,data)
-    if data.id == penalty then
+    if data.id == penalty_code then
         trace_list[#trace_list+1] = { "penalty", format("%s | %s", str, data.penalty) }
     else
         trace_list[#trace_list+1] = { "glue", format("%s | %s", str, glue_to_string(data)) }
@@ -555,20 +737,30 @@ function vspacing.snap_box(n,how)
     if sv then
         local box = texbox[n]
         local list = box.list
---~         if list and (list.id == hlist or list.id == vlist) then
         if list then
             local s = has_attribute(list,snap_method)
             if s == 0 then
                 if trace_vsnapping then
-                --  report_snapper("hlist not snapped, already done")
+                --  report_snapper("box list not snapped, already done")
                 end
             else
-                local h, d, ch, cd, lines = snap_hlist(box,sv,box.height,box.depth)
-                box.height, box.depth = ch, cd
-                if trace_vsnapping then
-                    report_snapper("hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,"direct",lines)
+                local ht, dp = box.height, box.depth
+                if false then -- todo: already_done
+                    -- assume that the box is already snapped
+                    if trace_vsnapping then
+                        report_snapper("box list already snapped at (%s,%s): %s",
+                            ht,dp,list_to_utf(list))
+                    end
+                else
+                    local h, d, ch, cd, lines = snap_hlist("box",box,sv,ht,dp)
+                    box.height, box.depth = ch, cd
+                    if trace_vsnapping then
+                        report_snapper("box list snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines): %s",
+                            h,d,ch,cd,sv.name,sv.specification,"direct",lines,list_to_utf(list))
+                    end
+                    set_attribute(box, snap_method,0) --
+                    set_attribute(list,snap_method,0) -- yes or no
                 end
-                set_attribute(list,snap_method,0)
             end
         end
     end
@@ -576,14 +768,14 @@ end
 
 local function forced_skip(head,current,width,where,trace)
     if where == "after" then
-        head, current = insert_node_after(head,current,make_rule_node(0,0,0))
-        head, current = insert_node_after(head,current,make_kern_node(width))
-        head, current = insert_node_after(head,current,make_rule_node(0,0,0))
+        head, current = insert_node_after(head,current,new_rule(0,0,0))
+        head, current = insert_node_after(head,current,new_kern(width))
+        head, current = insert_node_after(head,current,new_rule(0,0,0))
     else
         local c = current
-        head, current = insert_node_before(head,current,make_rule_node(0,0,0))
-        head, current = insert_node_before(head,current,make_kern_node(width))
-        head, current = insert_node_before(head,current,make_rule_node(0,0,0))
+        head, current = insert_node_before(head,current,new_rule(0,0,0))
+        head, current = insert_node_before(head,current,new_kern(width))
+        head, current = insert_node_before(head,current,new_rule(0,0,0))
         current = c
     end
     if trace then
@@ -592,7 +784,7 @@ local function forced_skip(head,current,width,where,trace)
     return head, current
 end
 
-local function collapser(head,where,what,trace,snap) -- maybe also pass tail
+local function collapser(head,where,what,trace,snap,snap_method) -- maybe also pass tail
     if trace then
         reset_tracing(head)
     end
@@ -605,7 +797,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
     --
     local function flush(why)
         if penalty_data then
-            local p = make_penalty_node(penalty_data)
+            local p = new_penalty(penalty_data)
             if trace then trace_done("flushed due to " .. why,p) end
             head = insert_node_before(head,current,p)
         end
@@ -634,27 +826,38 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
     if trace then trace_info("start analyzing",where,what) end
     while current do
         local id, subtype = current.id, current.subtype
-        if id == hlist or id == vlist then
+        if id == hlist_code or id == vlist_code then
 -- needs checking, why so many calls
             if snap then
+                local list = current.list
                 local s = has_attribute(current,snap_method)
                 if not s then
                 --  if trace_vsnapping then
-                --      report_snapper("hlist not snapped")
+                --      report_snapper("mvl list not snapped")
                 --  end
                 elseif s == 0 then
                     if trace_vsnapping then
-                    --  report_snapper("hlist not snapped, already done")
+                        report_snapper("mvl %s not snapped, already done: %s",nodecodes[id],list_to_utf(list))
                     end
                 else
                     local sv = snapmethods[s]
                     if sv then
-                        local h, d, ch, cd, lines = snap_hlist(current,sv)
-                        if trace_vsnapping then
-                            report_snapper("hlist snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines)",h,d,ch,cd,sv.name,sv.specification,where,lines)
+-- check if already snapped
+                        if list and already_done(id,list,snap_method) then
+                            local ht, dp = current.height, current.depth
+                            -- assume that the box is already snapped
+                            if trace_vsnapping then
+                                report_snapper("mvl list already snapped at (%s,%s): %s",ht,dp,list_to_utf(list))
+                            end
+                        else
+                            local h, d, ch, cd, lines = snap_hlist("mvl",current,sv)
+                            if trace_vsnapping then
+                                report_snapper("mvl %s snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines): %s",
+                                    nodecodes[id],h,d,ch,cd,sv.name,sv.specification,where,lines,list_to_utf(list))
+                            end
                         end
                     elseif trace_vsnapping then
-                        report_snapper("hlist not snapped due to unknown snap specification")
+                        report_snapper("mvl %s not snapped due to unknown snap specification: %s",nodecodes[id],list_to_utf(list))
                     end
                     set_attribute(current,snap_method,0)
                 end
@@ -664,19 +867,19 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
         --  tex.prevdepth = 0
             flush("list")
             current = current.next
-        elseif id == penalty then
+        elseif id == penalty_code then
             --~ natural_penalty = current.penalty
             --~ if trace then trace_done("removed penalty",current) end
             --~ head, current = remove_node(head, current, true)
             current = current.next
-        elseif id == kern then
+        elseif id == kern_code then
             if snap and trace_vsnapping and current.kern ~= 0 then
             --~ current.kern = 0
                 report_snapper("kern of %s (kept)",current.kern)
             end
             flush("kern")
             current = current.next
-        elseif id ~= glue then
+        elseif id ~= glue_code then
             flush("something else")
             current = current.next
         elseif subtype == userskip_code then -- todo, other subtypes, like math
@@ -702,7 +905,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
                 else
                     -- not look back across head
                     local previous = current.prev
-                    if previous and previous.id == glue and previous.subtype == 0 then
+                    if previous and previous.id == glue_code and previous.subtype == userskip_code then
                         local ps = previous.spec
                         if ps.writable then
                             local cs = current.spec
@@ -928,7 +1131,7 @@ local function collapser(head,where,what,trace,snap) -- maybe also pass tail
     local tail
     if penalty_data then
         tail = find_node_tail(head)
-        local p = make_penalty_node(penalty_data)
+        local p = new_penalty(penalty_data)
         if trace then trace_done("result",p) end
         head, tail = insert_node_after(head,tail,p)
     end
@@ -970,7 +1173,7 @@ local function report(message,lst)
     report_vspacing(message,count_nodes(lst,true),node_ids_to_string(lst))
 end
 
-function nodes.handle_page_spacing(newhead,where)
+function nodes.handlers.pagespacing(newhead,where)
 --~     local newhead = texlists.contrib_head
     if newhead then
 --~         starttiming(vspacing)
@@ -979,8 +1182,8 @@ function nodes.handle_page_spacing(newhead,where)
         stackhack = true -- todo: only when grid snapping once enabled
         for n in traverse_nodes(newhead) do -- we could just look for glue nodes
             local id = n.id
-            if id == glue then
-                if n.subtype == 0 then
+            if id == glue_code then
+                if n.subtype == userskip_code then
                     if has_attribute(n,skip_category) then
                         stackhack = true
                     else
@@ -1004,8 +1207,8 @@ function nodes.handle_page_spacing(newhead,where)
             if stackhack then
                 stackhack = false
                 if trace_collect_vspacing then report("processing %s nodes: %s",newhead) end
---~                 texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true)
-newhead = collapser(newhead,"page",where,trace_page_vspacing,true)
+--~                 texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,snap_method)
+                    newhead = collapser(newhead,"page",where,trace_page_vspacing,true,snap_method)
             else
                 if trace_collect_vspacing then report("flushing %s nodes: %s",newhead) end
 --~                 texlists.contrib_head = newhead
@@ -1034,44 +1237,45 @@ local ignore = table.tohash {
  -- "vbox",
 }
 
-function nodes.handle_vbox_spacing(head,where)
+function nodes.handlers.vboxspacing(head,where)
     if head and not ignore[where] and head.next then
     --  starttiming(vspacing)
-        head = collapser(head,"vbox",where,trace_vbox_vspacing,false)
+        head = collapser(head,"vbox",where,trace_vbox_vspacing,true,snap_vbox) -- todo: local snapper
     --  stoptiming(vspacing)
     end
     return head
 end
 
-function nodes.collapse_vbox(n) -- for boxes
+function nodes.collapse_vbox(n) -- for boxes but using global snap_method
     local list = texbox[n].list
     if list then
     --  starttiming(vspacing)
-        texbox[n].list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true))
+        texbox[n].list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true,snap_method))
     --  stoptiming(vspacing)
     end
 end
 
--- we will split this module hence the locals
+-- We will split this module so a few locals are repeated. Also this will be
+-- rewritten.
 
 local attribute = attributes.private('graphicvadjust')
 
 local nodecodes = nodes.nodecodes
 
-local hlist = nodecodes.hlist
-local vlist = nodecodes.vlist
+local hlist_code = nodecodes.hlist
+local vlist_code = nodecodes.vlist
 
 local remove_node   = nodes.remove
 local hpack_node    = node.hpack
 local vpack_node    = node.vpack
 local has_attribute = node.has_attribute
 
-function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
+function nodes.handlers.graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
     if groupcode == "" then -- mvl only
         local h, p, done = head, nil, false
         while h do
             local id = h.id
-            if id == hlist or id == vlist then
+            if id == hlist_code or id == vlist_code then
                 local a = has_attribute(h,attribute)
                 if a then
                     if p then
@@ -1104,7 +1308,7 @@ function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an action
     end
 end
 
---~ function nodes.repackage_graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
+--~ function nodes.handlers.graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
 --~     if groupcode == "" then -- mvl only
 --~         return head, false
 --~     else
@@ -1112,13 +1316,13 @@ end
 --~     end
 --~ end
 
---~ tasks.appendaction("finalizers", "lists", "nodes.repackage_graphicvadjust")
+--~ nodes.tasks.appendaction("finalizers", "lists", "nodes.handlers.graphicvadjust")
 
 nodes.builders = nodes.builder or { }
 
 local builders = nodes.builders
 
-local actions = tasks.actions("vboxbuilders",5)
+local actions = nodes.tasks.actions("vboxbuilders",5)
 
 function nodes.builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
@@ -1146,7 +1350,7 @@ end
 -- and we operate on the mlv. Also, we need to do the
 -- vspacing last as it removes items from the mvl.
 
-local actions = tasks.actions("mvlbuilders",1)
+local actions = nodes.tasks.actions("mvlbuilders",1)
 
 function nodes.builders.buildpage_filter(groupcode)
     starttiming(builders)

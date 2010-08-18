@@ -125,6 +125,8 @@ local format, gmatch, gsub, find, match, lower, strip = string.format, string.gm
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 
+local logs, trackers, fonts, nodes, attributes = logs, trackers, fonts, nodes, attributes
+
 local otf = fonts.otf
 local tfm = fonts.tfm
 
@@ -175,11 +177,19 @@ local default  = "dflt"
 
 local split_at_space = lpeg.splitters[" "] or lpeg.Ct(lpeg.splitat(" ")) -- no trailing or multiple spaces anyway
 
-local glyph   = node.id('glyph')
-local glue    = node.id('glue')
-local kern    = node.id('kern')
-local disc    = node.id('disc')
-local whatsit = node.id('whatsit')
+local nodecodes     = nodes.nodecodes
+local whatcodes     = nodes.whatcodes
+local glyphcodes    = nodes.glyphcodes
+
+local glyph_code    = nodecodes.glyph
+local glue_code     = nodecodes.glue
+local disc_code     = nodecodes.disc
+local whatsit_code  = nodecodes.whatsit
+
+local dir_code      = whatcodes.dir
+local localpar_code = whatcodes.localpar
+
+local ligature_code = glyphcodes.ligature
 
 local state    = attributes.private('state')
 local markbase = attributes.private('markbase')
@@ -309,7 +319,7 @@ local function markstoligature(kind,lookupname,start,stop,char)
         snext.prev = current
     end
     start.prev, stop.next = nil, nil
-    current.char, current.subtype, current.components = char, 2, start
+    current.char, current.subtype, current.components = char, ligature_code, start
     return keep
 end
 
@@ -319,16 +329,16 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
 --~             local lignode = copy_node(start)
 --~             lignode.font = start.font
 --~             lignode.char = char
---~             lignode.subtype = 2
+--~             lignode.subtype = ligature_code
 --~             start = node.do_ligature_n(start, stop, lignode)
---~             if start.id == disc then
+--~             if start.id == disc_code then
 --~                 local prev = start.prev
 --~                 start = start.next
 --~             end
         if discfound then
          -- print("start->stop",nodes.tosequence(start,stop))
             local lignode = copy_node(start)
-            lignode.font, lignode.char, lignode.subtype = start.font, char, 2
+            lignode.font, lignode.char, lignode.subtype = start.font, char, ligature_code
             local next, prev = stop.next, start.prev
             stop.next = nil
             lignode = node.do_ligature_n(start, stop, lignode)
@@ -350,7 +360,7 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
                 snext.prev = current
             end
             start.prev, stop.next = nil, nil
-            current.char, current.subtype, current.components = char, 2, start
+            current.char, current.subtype, current.components = char, ligature_code, start
             local head = current
             if deletemarks then
                 if trace_marks then
@@ -376,7 +386,7 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
                     start = start.next
                 end
                 start = current.next
-                while start and start.id == glyph do
+                while start and start.id == glyph_code do
                     if marks[start.char] then
                         set_attribute(start,markdone,i)
                         if trace_marks then
@@ -471,7 +481,7 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
     if marks[startchar] then
         while s do
             local id = s.id
-            if id == glyph and s.subtype<256 then
+            if id == glyph_code and s.subtype<256 then
                 if s.font == currentfont then
                     local char = s.char
                     local lg = ligature[1][char]
@@ -503,7 +513,7 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
         local skipmark = sequence.flags[1]
         while s do
             local id = s.id
-            if id == glyph and s.subtype<256 then
+            if id == glyph_code and s.subtype<256 then
                 if s.font == currentfont then
                     local char = s.char
                     if skipmark and marks[char] then
@@ -521,7 +531,7 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
                 else
                     break
                 end
-            elseif id == disc then
+            elseif id == disc_code then
                 discfound = true
                 s = s.next
             else
@@ -551,12 +561,12 @@ function handlers.gpos_mark2base(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
         local base = start.prev -- [glyph] [start=mark]
-        if base and base.id == glyph and base.subtype<256 and base.font == currentfont then
+        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
             local basechar = base.char
             if marks[basechar] then
                 while true do
                     base = base.prev
-                    if base and base.id == glyph and base.subtype<256 and base.font == currentfont then
+                    if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                         basechar = base.char
                         if not marks[basechar] then
                             break
@@ -613,13 +623,13 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
     if marks[markchar] then
         local base = start.prev -- [glyph] [optional marks] [start=mark]
         local index = 1
-        if base and base.id == glyph and base.subtype<256 and base.font == currentfont then
+        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
             local basechar = base.char
             if marks[basechar] then
                 index = index + 1
                 while true do
                     base = base.prev
-                    if base and base.id == glyph and base.subtype<256 and base.font == currentfont then
+                    if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                         basechar = base.char
                         if marks[basechar] then
                             index = index + 1
@@ -683,7 +693,7 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
 --~         local alreadydone = markonce and has_attribute(start,markmark)
 --~         if not alreadydone then
             local base = start.prev -- [glyph] [basemark] [start=mark]
-            if base and base.id == glyph and base.subtype<256 and base.font == currentfont then -- subtype test can go
+            if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
                 local basechar = base.char
                 local baseanchors = descriptions[basechar]
                 if baseanchors then
@@ -737,7 +747,7 @@ function handlers.gpos_cursive(start,kind,lookupname,exitanchors,sequence) -- to
             end
         else
             local nxt = start.next
-            while not done and nxt and nxt.id == glyph and nxt.subtype<256 and nxt.font == currentfont do
+            while not done and nxt and nxt.id == glyph_code and nxt.subtype<256 and nxt.font == currentfont do
                 local nextchar = nxt.char
                 if marks[nextchar] then
                     -- should not happen (maybe warning)
@@ -800,9 +810,9 @@ function handlers.gpos_pair(start,kind,lookupname,kerns,sequence)
     else
         local prev, done = start, false
         local factor = tfmdata.factor
-        while snext and snext.id == glyph and snext.subtype<256 and snext.font == currentfont do
+        while snext and snext.id == glyph_code and snext.subtype<256 and snext.font == currentfont do
             local nextchar = snext.char
-local krn = kerns[nextchar]
+            local krn = kerns[nextchar]
             if not krn and marks[nextchar] then
                 prev = snext
                 snext = snext.next
@@ -980,7 +990,7 @@ function chainprocs.gsub_single(start,stop,kind,chainname,currentcontext,cache,c
     local current = start
     local subtables = currentlookup.subtables
     while current do
-        if current.id == glyph then
+        if current.id == glyph_code then
             local currentchar = current.char
             local lookupname = subtables[1]
             local replacement = cache.gsub_single[lookupname]
@@ -1068,7 +1078,7 @@ function chainprocs.gsub_alternate(start,stop,kind,chainname,currentcontext,cach
     local current = start
     local subtables = currentlookup.subtables
     while current do
-        if current.id == glyph then
+        if current.id == glyph_code then
             local currentchar = current.char
             local lookupname = subtables[1]
             local alternatives = cache.gsub_alternate[lookupname]
@@ -1125,7 +1135,7 @@ function chainprocs.gsub_ligature(start,stop,kind,chainname,currentcontext,cache
             local s, discfound, last, nofreplacements = start.next, false, stop, 0
             while s do
                 local id = s.id
-                if id == disc then
+                if id == disc_code then
                     s = s.next
                     discfound = true
                 else
@@ -1186,12 +1196,12 @@ function chainprocs.gpos_mark2base(start,stop,kind,chainname,currentcontext,cach
         end
         if markanchors then
             local base = start.prev -- [glyph] [start=mark]
-            if base and base.id == glyph and base.subtype<256 and base.font == currentfont then
+            if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                 local basechar = base.char
                 if marks[basechar] then
                     while true do
                         base = base.prev
-                        if base and base.id == glyph and base.subtype<256 and base.font == currentfont then
+                        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                             basechar = base.char
                             if not marks[basechar] then
                                 break
@@ -1251,13 +1261,13 @@ function chainprocs.gpos_mark2ligature(start,stop,kind,chainname,currentcontext,
         if markanchors then
             local base = start.prev -- [glyph] [optional marks] [start=mark]
             local index = 1
-            if base and base.id == glyph and base.subtype<256 and base.font == currentfont then
+            if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                 local basechar = base.char
                 if marks[basechar] then
                     index = index + 1
                     while true do
                         base = base.prev
-                        if base and base.id == glyph and base.subtype<256 and base.font == currentfont then
+                        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                             basechar = base.char
                             if marks[basechar] then
                                 index = index + 1
@@ -1327,7 +1337,7 @@ function chainprocs.gpos_mark2mark(start,stop,kind,chainname,currentcontext,cach
             end
             if markanchors then
                 local base = start.prev -- [glyph] [basemark] [start=mark]
-                if base and base.id == glyph and base.subtype<256 and base.font == currentfont then -- subtype test can go
+                if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
                     local basechar = base.char
                     local baseanchors = descriptions[basechar].anchors
                     if baseanchors then
@@ -1387,7 +1397,7 @@ function chainprocs.gpos_cursive(start,stop,kind,chainname,currentcontext,cache,
                 end
             else
                 local nxt = start.next
-                while not done and nxt and nxt.id == glyph and nxt.subtype<256 and nxt.font == currentfont do
+                while not done and nxt and nxt.id == glyph_code and nxt.subtype<256 and nxt.font == currentfont do
                     local nextchar = nxt.char
                     if marks[nextchar] then
                         -- should not happen (maybe warning)
@@ -1467,7 +1477,7 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,cur
             if kerns then
                 local prev, done = start, false
                 local factor = tfmdata.factor
-                while snext and snext.id == glyph and snext.subtype<256 and snext.font == currentfont do
+                while snext and snext.id == glyph_code and snext.subtype<256 and snext.font == currentfont do
                     local nextchar = snext.char
                     local krn = kerns[nextchar]
                     if not krn and marks[nextchar] then
@@ -1555,7 +1565,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
         -- f..l = mid string
         if s == 1 then
             -- never happens
-            match = current.id == glyph and current.subtype<256 and current.font == currentfont and seq[1][current.char]
+            match = current.id == glyph_code and current.subtype<256 and current.font == currentfont and seq[1][current.char]
         else
             -- todo: better space check (maybe check for glue)
             local f, l = ck[4], ck[5]
@@ -1569,12 +1579,12 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 -- we cannot optimize for n=2 because there can be disc nodes
                 -- if not someskip and n == l then
                 --    -- n=2 and no skips then faster loop
-                --    match = last and last.id == glyph and last.subtype<256 and last.font == currentfont and seq[n][last.char]
+                --    match = last and last.id == glyph_code and last.subtype<256 and last.font == currentfont and seq[n][last.char]
                 -- else
                     while n <= l do
                         if last then
                             local id = last.id
-                            if id == glyph then
+                            if id == glyph_code then
                                 if last.subtype<256 and last.font == currentfont then
                                     local char = last.char
                                     local ccd = descriptions[char]
@@ -1600,7 +1610,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 else
                                     match = false break
                                 end
-                            elseif id == disc then -- what to do with kerns?
+                            elseif id == disc_code then -- what to do with kerns?
                                 last = last.next
                             else
                                 match = false break
@@ -1619,7 +1629,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                     while n >= 1 do
                         if prev then
                             local id = prev.id
-                            if id == glyph then
+                            if id == glyph_code then
                                 if prev.subtype<256 and prev.font == currentfont then -- normal char
                                     local char = prev.char
                                     local ccd = descriptions[char]
@@ -1641,7 +1651,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 else
                                     match = false break
                                 end
-                            elseif id == disc then
+                            elseif id == disc_code then
                                 -- skip 'm
                             elseif seq[n][32] then
                                 n = n -1
@@ -1674,7 +1684,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                     while n <= s do
                         if current then
                             local id = current.id
-                            if id == glyph then
+                            if id == glyph_code then
                                 if current.subtype<256 and current.font == currentfont then -- normal char
                                     local char = current.char
                                     local ccd = descriptions[char]
@@ -1696,7 +1706,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 else
                                     match = false break
                                 end
-                            elseif id == disc then
+                            elseif id == disc_code then
                                 -- skip 'm
                             elseif seq[n][32] then -- brrr
                                 n = n + 1
@@ -1998,7 +2008,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                 local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
                 while start do
                     local id = start.id
-                    if id == glyph then
+                    if id == glyph_code then
                         if start.subtype<256 and start.font == font then
                             local a = has_attribute(start,0)
                             if a then
@@ -2047,7 +2057,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                     else
                         while start do
                             local id = start.id
-                            if id == glyph then
+                            if id == glyph_code then
                                 if start.subtype<256 and start.font == font then
                                     local a = has_attribute(start,0)
                                     if a then
@@ -2072,7 +2082,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                 else
                                     start = start.next
                                 end
-                            -- elseif id == glue then
+                            -- elseif id == glue_code then
                             --     if p[5] then -- chain
                             --         local pc = pp[32]
                             --         if pc then
@@ -2087,9 +2097,9 @@ function fonts.methods.node.otf.features(head,font,attr)
                             --     else
                             --         start = start.next
                             --     end
-                            elseif id == whatsit then
+                            elseif id == whatsit_code then
                                 local subtype = start.subtype
-                                if subtype == 7 then
+                                if subtype == dir_code then
                                     local dir = start.dir
                                     if     dir == "+TRT" or dir == "+TLT" then
                                         insert(txtdir,dir)
@@ -2107,7 +2117,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                     if trace_directions then
                                         report_process("directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                     end
-                                elseif subtype == 6 then
+                                elseif subtype == localpar_code then
                                     local dir = start.dir
                                     if dir == "TRT" then
                                         pardir = -1
@@ -2131,7 +2141,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                 else
                     while start do
                         local id = start.id
-                        if id == glyph then
+                        if id == glyph_code then
                             if start.subtype<256 and start.font == font then
                                 local a = has_attribute(start,0)
                                 if a then
@@ -2165,7 +2175,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                             else
                                 start = start.next
                             end
-                        -- elseif id == glue then
+                        -- elseif id == glue_code then
                         --     if p[5] then -- chain
                         --         local pc = pp[32]
                         --         if pc then
@@ -2180,9 +2190,9 @@ function fonts.methods.node.otf.features(head,font,attr)
                         --     else
                         --         start = start.next
                         --     end
-                        elseif id == whatsit then
+                        elseif id == whatsit_code then
                             local subtype = start.subtype
-                            if subtype == 7 then
+                            if subtype == dir_code then
                                 local dir = start.dir
                                 if     dir == "+TRT" or dir == "+TLT" then
                                     insert(txtdir,dir)
@@ -2200,7 +2210,7 @@ function fonts.methods.node.otf.features(head,font,attr)
                                 if trace_directions then
                                     report_process("directions after textdir %s: pardir=%s, txtdir=%s:%s, rlmode=%s",dir,pardir,#txtdir,txtdir[#txtdir] or "unset",rlmode)
                                 end
-                            elseif subtype == 6 then
+                            elseif subtype == localpar_code then
                                 local dir = start.dir
                                 if dir == "TRT" then
                                     pardir = -1

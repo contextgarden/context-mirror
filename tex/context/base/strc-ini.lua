@@ -24,16 +24,18 @@ local format, concat, match = string.format, table.concat, string.match
 local count, texwrite, texprint, texsprint = tex.count, tex.write, tex.print, tex.sprint
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
+local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
 
 local ctxcatcodes, xmlcatcodes, notcatcodes = tex.ctxcatcodes, tex.xmlcatcodes, tex.notcatcodes -- tricky as we're in notcatcodes
 
-local trace_processors = false  trackers.register("structure.processors", function(v) trace_processors = v end)
+local trace_processors = false  trackers.register("structures.processors", function(v) trace_processors = v end)
 
 local report_processors = logs.new("processors")
 
 -- move this
 
 commands = commands or { }
+local commands = commands
 
 function commands.first_in_list(str)
     local first = match(str,"^([^,]+),")
@@ -42,32 +44,40 @@ end
 
 -- -- -- namespace -- -- --
 
-structure = structure or { }
+-- This is tricky: we have stored and initialized already some of
+-- the job.registered tables so we have a forward reference!
 
--- -- -- cache -- -- --
+structures       = structures or { }
+local structures = structures
 
-structure.shares       = structure.shares       or { }
-structure.shares.cache = structure.shares.cache or { }
+structures.blocks       = structures.blocks       or { }
+structures.sections     = structures.sections     or { }
+structures.pages        = structures.pages        or { }
+structures.registers    = structures.registers    or { }
+structures.references   = structures.references   or { }
+structures.lists        = structures.lists        or { }
+structures.helpers      = structures.helpers      or { }
+structures.processors   = structures.processors   or { }
+structures.documents    = structures.documents    or { }
+structures.notes        = structures.notes        or { }
+structures.descriptions = structures.descriptions or { }
+structures.itemgroups   = structures.itemgroups   or { }
+structures.specials     = structures.specials     or { }
+structures.counters     = structures.counters     or { }
+structures.tags         = structures.tags         or { }
+structures.formulas     = structures.formulas     or { }
+structures.sets         = structures.sets         or { }
+structures.marks        = structures.marks        or { }
+structures.floats       = structures.floats       or { }
 
-local shares = structure.shares
-local cache  = shares.cache
-
-function shares.put(data)
-    cache[#cache+1] = data
-    return #cache
-end
-
-function shares.get(n) -- n can be string
-    n = tonumber(n) or -1
-    return cache[n]
-end
+--~ table.print(structures)
 
 -- -- -- specials -- -- --
 
 -- we can store information and get back a reference; this permits
 -- us to store rather raw data in references
 
-local specials = { } structure.specials = specials
+local specials = structures.specials
 
 specials.collected = specials.collected or { }
 specials.tobesaved = specials.collected or { }
@@ -79,7 +89,7 @@ local function initializer()
 end
 
 if job then
-    job.register('structure.specials.collected', structure.specials.tobesaved, initializer)
+    job.register('structures.specials.collected', specials.tobesaved, initializer)
 end
 
 function specials.store(class,data)
@@ -105,12 +115,10 @@ end
 
 -- -- -- helpers -- -- --
 
-structure.helpers = structure.helpers or { }
-
-local helpers = structure.helpers
+local helpers = structures.helpers
 
 function helpers.touserdata(str)
-    local hash = str and str ~= "" and aux.settings_to_hash(str)
+    local hash = str and str ~= "" and settings_to_hash(str)
     if hash and next(hash) then
         return hash
     end
@@ -186,7 +194,7 @@ end
 
 -- -- -- processors -- -- -- syntax: processor->data
 
-local processors = { }  structure.processors = processors
+local processors = structures.processors
 
 local registered = { }
 
@@ -239,12 +247,12 @@ end
 
 -- -- -- sets -- -- --
 
-structure.sets         = structure.sets         or { }
-structure.sets.setlist = structure.sets.setlist or { }
+local sets = structures.sets
 
-storage.register("structure/sets/setlist", structure.sets.setlist, "structure.sets.setlist")
+sets.setlist = sets.setlist or { }
 
-local sets = structure.sets
+storage.register("structures/sets/setlist", structures.sets.setlist, "structures.sets.setlist")
+
 local setlist = sets.setlist
 
 function sets.define(namespace,name,values,default,numbers)
@@ -256,7 +264,7 @@ function sets.define(namespace,name,values,default,numbers)
     if values == "" then
         dn[name] = { { }, default }
     else
-        local split = aux.settings_to_array(values)
+        local split = settings_to_array(values)
         if numbers then
             -- convert to numbers (e.g. for reset)
             for i=1,#split do

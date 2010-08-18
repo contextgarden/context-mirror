@@ -6868,6 +6868,10 @@ return {
    ["pe"]="فضای‌پس",
    ["ro"]="spatiuspate",
   },
+  ["backreference"]={
+   ["en"]="backreference",
+   ["nl"]="terugreferentie",
+  },
   ["balance"]={
    ["cs"]="rovnovaha",
    ["de"]="ausgleichen",
@@ -8215,6 +8219,10 @@ return {
    ["nl"]="interlinie",
    ["pe"]="فضای‌بین‌خط",
    ["ro"]="spatiereinterliniara",
+  },
+  ["internalgrid"]={
+   ["nl"]="interngrid",
+   ["en"]="internalgrid",
   },
   ["itemalign"]={
    ["cs"]="itemalign",

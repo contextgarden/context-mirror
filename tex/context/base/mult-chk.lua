@@ -10,6 +10,7 @@ local format = string.format
 local lpegmatch = lpeg.match
 local type = type
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local make_settings_to_hash_pattern, settings_to_set = utilities.parsers.make_settings_to_hash_pattern, utilities.parsers.settings_to_set
 
 interfaces = interfaces or { }
 
@@ -25,10 +26,10 @@ function interfaces.setvalidkeys(kind,list)
     local s = interfaces.syntax[kind]
     if not s then
         interfaces.syntax[kind] = {
-            keys = aux.settings_to_set(list)
+            keys = settings_to_set(list)
         }
     else
-        s.keys = aux.settings_to_set(list)
+        s.keys = settings_to_set(list)
     end
 end
 
@@ -36,10 +37,10 @@ function interfaces.addvalidkeys(kind,list)
     local s = interfaces.syntax[kind]
     if not s then
         interfaces.syntax[kind] = {
-            keys = aux.settings_to_set(list)
+            keys = settings_to_set(list)
         }
     else
-        aux.settings_to_set(list,s.keys)
+        settings_to_set(list,s.keys)
     end
 end
 
@@ -53,9 +54,9 @@ local function set(key,value)
     end
 end
 
-local pattern = aux.make_settings_to_hash_pattern(set,"tolerant")
+local pattern = make_settings_to_hash_pattern(set,"tolerant")
 
-function commands.getcheckedparameters(k,p,s)
+function interfaces.getcheckedparameters(k,p,s)
     if s and s ~= "" then
         prefix, kind = p, k
         keys = k and k ~= "" and interfaces.syntax[k].keys
@@ -63,4 +64,4 @@ function commands.getcheckedparameters(k,p,s)
     end
 end
 
-_gcp_ = commands.getcheckedparameters
+-- _igcp_ = interfaces.getcheckedparameters

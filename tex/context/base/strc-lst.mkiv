@@ -74,40 +74,40 @@
   {\begingroup
    \edef\currentlistname{#1}%
    \setnextinternalreference
-   \edef\currentlistnumber{\ctxlua{structure.lists.push{
+   \edef\currentlistnumber{\ctxlua{structures.lists.push{
          references = {
             internal = \nextinternalreference,
-            section  = structure.sections.currentid(),
+            section  = structures.sections.currentid(),
         },
         metadata = {
             kind     = "#2",
             name     = "\currentlistname",
-            level    = structure.sections.currentlevel(),
+            level    = structures.sections.currentlevel(),
             catcodes = \the\catcodetable,
         },
-        userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+        userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
    }}}%
    \edef\structurelistsynchronize{\getvalue{\??li::inject::#2::synchronize}}%
    \ifx\structurelistsynchronize\v!yes
      % this injects nodes !
-     \expanded{\ctxlatelua{structure.lists.enhance(\currentlistnumber)}}%
+     \expanded{\ctxlatelua{structures.lists.enhance(\currentlistnumber)}}%
      % new from here
-     \xdef\currentstructurelistattribute{\ctxlua{tex.write(jobreferences.setinternalreference(nil,nil,\nextinternalreference))}}%
+     \xdef\currentstructurelistattribute{\ctxlua{tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
      \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
      %begingroup\attribute\destinationattribute\currentdestinationattribute\dontleavehmode\hbox{}\endgroup % todo
      \dontleavehmode\hbox attr \destinationattribute \currentdestinationattribute{}% todo
      % end of new
    \else
-     \ctxlua{structure.lists.enhance(\currentlistnumber)}% direct injection
+     \ctxlua{structures.lists.enhance(\currentlistnumber)}% direct injection
    \fi
    \endgroup}
 
 \def\structurelistlocation
-  {\ctxlua{structure.lists.location(\currentlistindex)}}
+  {\ctxlua{structures.lists.location(\currentlistindex)}}
 
 \def\structurelistpagenumber
   {\dostarttagged\t!listpage\empty
-   \ctxlua{structure.lists.prefixedpage(
+   \ctxlua{structures.lists.prefixedpage(
     "\currentlist",
     \currentlistindex,
     {
@@ -127,21 +127,21 @@
    \dostoptagged}
 
 \def\structurelistrealpagenumber
-  {\ctxlua{structure.lists.realpage("\currentlist",\currentlistindex)}}
+  {\ctxlua{structures.lists.realpage("\currentlist",\currentlistindex)}}
 
 \def\structurelistfirst
   {\dostarttagged\t!listdata{first} % ot always ok
-   \ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"first")}%
+   \ctxlua{structures.lists.userdata("\currentlist",\currentlistindex,"first")}%
    \dostoptagged}
 
 \def\structurelistsecond
   {\dostarttagged\t!listdata{second}%
-   \ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"second")}%
+   \ctxlua{structures.lists.userdata("\currentlist",\currentlistindex,"second")}%
    \dostoptagged}
 
 \def\structurelistuservariable#1%
   {\dostarttagged\t!listdata{#1}%
-   \ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"#1")}%
+   \ctxlua{structures.lists.userdata("\currentlist",\currentlistindex,"#1")}%
    \dostoptagged}
 
 % \appendtoks
@@ -149,17 +149,17 @@
 
 \unexpanded\def\placestructurelist#1#2#3% hm ... [][][]
   {\dostarttagged\t!list\empty
-   \ctxlua{structure.lists.process("#1","#2","#3")}%
+   \ctxlua{structures.lists.process("#1","#2","#3")}%
    \dostoptagged}
 
 \unexpanded\def\analysestructurelist#1#2#3%
-  {\ctxlua{structure.lists.analyze("#1","#2","#3")}}
+  {\ctxlua{structures.lists.analyze("#1","#2","#3")}}
 
 \def\firststructureelementinlist#1%
   {\ctxlua{commands.first_in_list("#1")}}
 
 \def\structurelistsize
-  {\ctxlua{structure.lists.size()}}
+  {\ctxlua{structures.lists.size()}}
 
 \def\@@structurelistprocess{structurelist:process:}
 
@@ -181,7 +181,7 @@
 % \stoptext
 
 \unexpanded\def\processlistofstructure#1#2#3% name, method, n
-  {\ctxlua{structure.lists.pushnesting(#3)}%
+  {\ctxlua{structures.lists.pushnesting(#3)}%
    \edef\currentlist      {#1}%
    \edef\currentlistmethod{#2}%
    \edef\currentlistindex {#3}%
@@ -193,13 +193,13 @@
                                                                               \s!default                     \fi\fi\fi
    \endcsname
    \dostoptagged
-   \ctxlua{structure.lists.popnesting()}}
+   \ctxlua{structures.lists.popnesting()}}
 
 % \installstructcurelistprocessor{pubs:userdata}
-%   {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"bibref")}}
+%   {\ctxlua{structures.lists.userdata("\currentlist",\currentlistindex,"bibref")}}
 
 \installstructurelistprocessor{command}
-  {\ctxlua{structure.lists.userdata("\currentlist",\currentlistindex,"command")}}
+  {\ctxlua{structures.lists.userdata("\currentlist",\currentlistindex,"command")}}
 
 \installstructurelistprocessor{section}
   {\dodolistelement
@@ -922,12 +922,12 @@
 
 \def\structurelistgenerictitle
   {\dostarttagged\t!listcontent\empty
-   \ctxlua{structure.lists.title("\currentlist",\currentlistindex)}%
+   \ctxlua{structures.lists.title("\currentlist",\currentlistindex)}%
    \dostoptagged}
 
 \def\structurelistgenericnumber
   {\dostarttagged\t!listtag\empty
-   \ctxlua{structure.lists.prefixednumber("\currentlist",\currentlistindex, {
+   \ctxlua{structures.lists.prefixednumber("\currentlist",\currentlistindex, {
         prefix        = "\listparameter\c!prefix",
         separatorset  = "\listparameter\c!prefixseparatorset",
         conversionset = "\listparameter\c!prefixconversionset",

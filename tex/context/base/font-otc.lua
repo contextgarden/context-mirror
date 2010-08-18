@@ -13,10 +13,10 @@ local type, next = type, next
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
-local report_otf = logs.new("load otf")
+local fonts = fonts
+local otf   = fonts.otf
 
-local otf = fonts.otf
-local tfm = fonts.tfm
+local report_otf = logs.new("load otf")
 
 -- instead of "script = "DFLT", langs = { 'dflt' }" we now use wildcards (we used to
 -- have always); some day we can write a "force always when true" trick for other
@@ -108,11 +108,11 @@ local extra_features = { -- maybe just 1..n so that we prescribe order
     },
 }
 
-fonts.otf.enhancers["add some missing characters"] = function(data,filename)
+otf.enhancers["add some missing characters"] = function(data,filename)
     -- todo
 end
 
-fonts.otf.enhancers["enrich with features"] = function(data,filename)
+otf.enhancers["enrich with features"] = function(data,filename)
     -- could be done elsewhere (true can be #)
     local used = { }
     for i=1,#otf.glists do
@@ -195,21 +195,30 @@ fonts.otf.enhancers["enrich with features"] = function(data,filename)
     end
 end
 
-otf.tables.features['tlig'] = 'TeX Ligatures'
-otf.tables.features['trep'] = 'TeX Replacements'
-otf.tables.features['anum'] = 'Arabic Digits'
+local features = otf.tables.features
 
-otf.features.register_base_substitution('tlig')
-otf.features.register_base_substitution('trep')
-otf.features.register_base_substitution('anum')
+features['tlig'] = 'TeX Ligatures'
+features['trep'] = 'TeX Replacements'
+features['anum'] = 'Arabic Digits'
+
+local register_base_substitution = otf.features.register_base_substitution
+
+register_base_substitution('tlig')
+register_base_substitution('trep')
+register_base_substitution('anum')
 
 -- the functionality is defined elsewhere
 
-fonts.initializers.base.otf.equaldigits = fonts.initializers.common.equaldigits
-fonts.initializers.node.otf.equaldigits = fonts.initializers.common.equaldigits
+local initializers        = fonts.initializers
+local common_initializers = initializers.common
+local base_initializers   = initializers.base.otf
+local node_initializers   = initializers.node.otf
 
-fonts.initializers.base.otf.lineheight  = fonts.initializers.common.lineheight
-fonts.initializers.node.otf.lineheight  = fonts.initializers.common.lineheight
+base_initializers.equaldigits = common_initializers.equaldigits
+node_initializers.equaldigits = common_initializers.equaldigits
 
-fonts.initializers.base.otf.compose     = fonts.initializers.common.compose
-fonts.initializers.node.otf.compose     = fonts.initializers.common.compose
+base_initializers.lineheight  = common_initializers.lineheight
+node_initializers.lineheight  = common_initializers.lineheight
+
+base_initializers.compose     = common_initializers.compose
+node_initializers.compose     = common_initializers.compose

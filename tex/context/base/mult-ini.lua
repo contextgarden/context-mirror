@@ -19,6 +19,10 @@ storage.register("interfaces/messages",  interfaces.messages,  "interfaces.messa
 storage.register("interfaces/constants", interfaces.constants, "interfaces.constants")
 storage.register("interfaces/variables", interfaces.variables, "interfaces.variables")
 
+interfaces.interfaces = {
+    "cs", "de", "en", "fr", "it", "nl", "ro", "pe",
+}
+
 local messages, constants, variables = interfaces.messages, interfaces.constants, interfaces.variables
 
 function interfaces.setmessages(category,str)
@@ -81,8 +85,8 @@ end
 interfaces.cachedsetups = interfaces.cachedsetups or { }
 interfaces.hashedsetups = interfaces.hashedsetups or { }
 
-storage.register("interfaces.cachedsetups", interfaces.cachedsetups, "interfaces.cachedsetups")
-storage.register("interfaces.hashedsetups", interfaces.hashedsetups, "interfaces.hashedsetups")
+storage.register("interfaces/cachedsetups", interfaces.cachedsetups, "interfaces.cachedsetups")
+storage.register("interfaces/hashedsetups", interfaces.hashedsetups, "interfaces.hashedsetups")
 
 local cachedsetups = interfaces.cachedsetups
 local hashedsetups = interfaces.hashedsetups

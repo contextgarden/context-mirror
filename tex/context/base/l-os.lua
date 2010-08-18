@@ -8,9 +8,9 @@ if not modules then modules = { } end modules ['l-os'] = {
 
 -- maybe build io.flush in os.execute
 
+local os = os
 local find, format, gsub, upper = string.find, string.format, string.gsub, string.upper
 local random, ceil = math.random, math.ceil
-local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
 -- The following code permits traversing the environment table, at least

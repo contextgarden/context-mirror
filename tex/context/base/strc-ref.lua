@@ -10,7 +10,7 @@ local format, find, gmatch, match, concat = string.format, string.find, string.g
 local lpegmatch = lpeg.match
 local texsprint, texwrite, texcount, texsetcount = tex.sprint, tex.write, tex.count, tex.setcount
 
-local trace_referencing = false  trackers.register("structure.referencing", function(v) trace_referencing = v end)
+local trace_referencing = false  trackers.register("structures.referencing", function(v) trace_referencing = v end)
 
 local report_references = logs.new("references")
 
@@ -18,56 +18,71 @@ local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
 local constants   = interfaces.constants
 
+local settings_to_array = utilities.parsers.settings_to_array
+
 -- beware, this is a first step in the rewrite (just getting rid of
 -- the tuo file); later all access and parsing will also move to lua
 
 -- the useddata and pagedata names might change
 -- todo: pack exported data
 
-jobreferences           = jobreferences or { }
-jobreferences.tobesaved = jobreferences.tobesaved or { }
-jobreferences.collected = jobreferences.collected or { }
-jobreferences.defined   = jobreferences.defined   or { } -- indirect ones
-jobreferences.derived   = jobreferences.derived   or { } -- taken from lists
-jobreferences.specials  = jobreferences.specials  or { } -- system references
-jobreferences.runners   = jobreferences.runners   or { }
-jobreferences.internals = jobreferences.internals or { }
-jobreferences.exporters = jobreferences.exporters or { }
-jobreferences.imported  = jobreferences.imported  or { }
+local structures      = structures
 
-storage.register("jobreferences/defined", jobreferences.defined, "jobreferences.defined")
+structures.references = structures.references or { }
 
-local tobesaved, collected = jobreferences.tobesaved, jobreferences.collected
-local defined, derived, specials = jobreferences.defined, jobreferences.derived, jobreferences.specials
-local exporters, runners = jobreferences.exporters, jobreferences.runners
+local helpers         = structures.helpers
+local sections        = structures.sections
+local references      = structures.references
+local lists           = structures.lists
+local counters        = structures.counters
+
+references.tobesaved  = references.tobesaved or { }
+references.collected  = references.collected or { }
+
+references.defined    = references.defined   or { } -- indirect ones
+references.derived    = references.derived   or { } -- taken from lists
+references.specials   = references.specials  or { } -- system references
+references.runners    = references.runners   or { }
+references.internals  = references.internals or { }
+references.exporters  = references.exporters or { }
+references.imported   = references.imported  or { }
+references.filters    = references.filters or { }
+
+local filters         = references.filters
+
+storage.register("structures/references/defined", references.defined, "structures.references.defined")
+
+local tobesaved, collected = references.tobesaved, references.collected
+local defined, derived, specials = references.defined, references.derived, references.specials
+local exporters, runners = references.exporters, references.runners
 
 local currentreference = nil
 
 local initializers = { }
 local finalizers   = { }
 
-function jobreferences.registerinitializer(func) -- we could use a token register instead
+function references.registerinitializer(func) -- we could use a token register instead
     initializers[#initializers+1] = func
 end
-function jobreferences.registerfinalizer(func) -- we could use a token register instead
+function references.registerfinalizer(func) -- we could use a token register instead
     finalizers[#finalizers+1] = func
 end
 
 local function initializer()
-    tobesaved, collected = jobreferences.tobesaved, jobreferences.collected
+    tobesaved, collected = references.tobesaved, references.collected
     for i=1,#initializers do
         initializers[i](tobesaved,collected)
     end
 end
 local function finalizer()
-    tobesaved = jobreferences.tobesaved
+    tobesaved = references.tobesaved
     for i=1,#finalizers do
         finalizers[i](tobesaved)
     end
 end
 
 if job then
-    job.register('jobreferences.collected', jobreferences.tobesaved, initializer, finalizer)
+    job.register('structures.references.collected', references.tobesaved, initializer, finalizer)
 end
 
 -- todo: delay split till later as in destinations we split anyway
@@ -88,18 +103,18 @@ local function setnextorder(kind,name)
     texsetcount("global","locationorder",lastorder)
 end
 
-jobreferences.setnextorder = setnextorder
+references.setnextorder = setnextorder
 
-function jobreferences.setnextinternal(kind,name)
+function references.setnextinternal(kind,name)
     setnextorder(kind,name) -- always incremented with internal
     texsetcount("global","locationcount",texcount.locationcount + 1)
 end
 
-function jobreferences.currentorder(kind,name)
+function references.currentorder(kind,name)
     texwrite((orders[kind] and orders[kind][name]) or lastorder)
 end
 
-function jobreferences.set(kind,prefix,tag,data)
+function references.set(kind,prefix,tag,data)
     for ref in gmatch(tag,"[^,]+") do
         local p, r = match(ref,"^(%-):(.-)$")
         if p and r then
@@ -119,12 +134,12 @@ function jobreferences.set(kind,prefix,tag,data)
     end
 end
 
-function jobreferences.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
-    jobreferences.set(kind,prefix,tag,data)
-    texcount.lastdestinationattribute = jobreferences.setinternalreference(prefix,tag,nil,view) or -0x7FFFFFFF
+function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
+    references.set(kind,prefix,tag,data)
+    texcount.lastdestinationattribute = references.setinternalreference(prefix,tag,nil,view) or -0x7FFFFFFF
 end
 
-function jobreferences.enhance(prefix,tag,spec)
+function references.enhance(prefix,tag,spec)
     local l = tobesaved[prefix][tag]
     if l then
         l.references.realpage = texcount.realpageno
@@ -162,34 +177,34 @@ local special_reference  = special * lparent * (operation * optional_arguments +
 
 local scanner = (reset * outer_reference * (special_reference + inner_reference)^-1 * -1) / function() return result end
 
---~ function jobreferences.analyse(str) -- overloaded
+--~ function references.analyse(str) -- overloaded
 --~     return lpegmatch(scanner,str)
 --~ end
 
-function jobreferences.split(str)
+function references.split(str)
     return lpegmatch(scanner,str or "")
 end
 
---~ print(table.serialize(jobreferences.analyse("")))
---~ print(table.serialize(jobreferences.analyse("inner")))
---~ print(table.serialize(jobreferences.analyse("special(operation{argument,argument})")))
---~ print(table.serialize(jobreferences.analyse("special(operation)")))
---~ print(table.serialize(jobreferences.analyse("special()")))
---~ print(table.serialize(jobreferences.analyse("inner{argument}")))
---~ print(table.serialize(jobreferences.analyse("outer::")))
---~ print(table.serialize(jobreferences.analyse("outer::inner")))
---~ print(table.serialize(jobreferences.analyse("outer::special(operation{argument,argument})")))
---~ print(table.serialize(jobreferences.analyse("outer::special(operation)")))
---~ print(table.serialize(jobreferences.analyse("outer::special()")))
---~ print(table.serialize(jobreferences.analyse("outer::inner{argument}")))
---~ print(table.serialize(jobreferences.analyse("special(outer::operation)")))
+--~ print(table.serialize(references.analyse("")))
+--~ print(table.serialize(references.analyse("inner")))
+--~ print(table.serialize(references.analyse("special(operation{argument,argument})")))
+--~ print(table.serialize(references.analyse("special(operation)")))
+--~ print(table.serialize(references.analyse("special()")))
+--~ print(table.serialize(references.analyse("inner{argument}")))
+--~ print(table.serialize(references.analyse("outer::")))
+--~ print(table.serialize(references.analyse("outer::inner")))
+--~ print(table.serialize(references.analyse("outer::special(operation{argument,argument})")))
+--~ print(table.serialize(references.analyse("outer::special(operation)")))
+--~ print(table.serialize(references.analyse("outer::special()")))
+--~ print(table.serialize(references.analyse("outer::inner{argument}")))
+--~ print(table.serialize(references.analyse("special(outer::operation)")))
 
 -- -- -- related to strc-ini.lua -- -- --
 
-jobreferences.resolvers = jobreferences.resolvers or { }
+references.resolvers = references.resolvers or { }
 
-function jobreferences.resolvers.section(var)
-    local vi = structure.lists.collected[var.i[2]]
+function references.resolvers.section(var)
+    local vi = lists.collected[var.i[2]]
     if vi then
         var.i = vi
         var.r = (vi.references and vi.references.realpage) or (vi.pagedata and vi.pagedata.realpage) or 1
@@ -199,12 +214,12 @@ function jobreferences.resolvers.section(var)
     end
 end
 
-jobreferences.resolvers.float       = jobreferences.resolvers.section
-jobreferences.resolvers.description = jobreferences.resolvers.section
-jobreferences.resolvers.formula     = jobreferences.resolvers.section
-jobreferences.resolvers.note        = jobreferences.resolvers.section
+references.resolvers.float       = references.resolvers.section
+references.resolvers.description = references.resolvers.section
+references.resolvers.formula     = references.resolvers.section
+references.resolvers.note        = references.resolvers.section
 
-function jobreferences.resolvers.reference(var)
+function references.resolvers.reference(var)
     local vi = var.i[2]
     if vi then
         var.i = vi
@@ -238,22 +253,22 @@ local function register_from_lists(collected,derived)
     end
 end
 
-jobreferences.registerinitializer(function() register_from_lists(structure.lists.collected,derived) end)
+references.registerinitializer(function() register_from_lists(lists.collected,derived) end)
 
 -- urls
 
-jobreferences.urls      = jobreferences.urls      or { }
-jobreferences.urls.data = jobreferences.urls.data or { }
+references.urls      = references.urls      or { }
+references.urls.data = references.urls.data or { }
 
-local urls = jobreferences.urls.data
+local urls = references.urls.data
 
-function jobreferences.urls.define(name,url,file,description)
+function references.urls.define(name,url,file,description)
     if name and name ~= "" then
         urls[name] = { url or "", file or "", description or url or file or ""}
     end
 end
 
-function jobreferences.urls.get(name,method,space) -- method: none, before, after, both, space: yes/no
+function references.urls.get(name,method,space) -- method: none, before, after, both, space: yes/no
     local u = urls[name]
     if u then
         local url, file = u[1], u[2]
@@ -271,18 +286,18 @@ end
 
 -- files
 
-jobreferences.files      = jobreferences.files      or { }
-jobreferences.files.data = jobreferences.files.data or { }
+references.files      = references.files      or { }
+references.files.data = references.files.data or { }
 
-local files = jobreferences.files.data
+local files = references.files.data
 
-function jobreferences.files.define(name,file,description)
+function references.files.define(name,file,description)
     if name and name ~= "" then
         files[name] = { file or "", description or file or ""}
     end
 end
 
-function jobreferences.files.get(name,method,space) -- method: none, before, after, both, space: yes/no
+function references.files.get(name,method,space) -- method: none, before, after, both, space: yes/no
     local f = files[name]
     if f then
         texsprint(ctxcatcodes,f[1])
@@ -295,7 +310,7 @@ end
 
 -- helpers
 
-function jobreferences.checkedfile(whatever) -- return whatever if not resolved
+function references.checkedfile(whatever) -- return whatever if not resolved
     if whatever then
         local w = files[whatever]
         if w then
@@ -306,7 +321,7 @@ function jobreferences.checkedfile(whatever) -- return whatever if not resolved
     end
 end
 
-function jobreferences.checkedurl(whatever) -- return whatever if not resolved
+function references.checkedurl(whatever) -- return whatever if not resolved
     if whatever then
         local w = urls[whatever]
         if w then
@@ -322,7 +337,7 @@ function jobreferences.checkedurl(whatever) -- return whatever if not resolved
     end
 end
 
-function jobreferences.checkedfileorurl(whatever,default) -- return nil, nil if not resolved
+function references.checkedfileorurl(whatever,default) -- return nil, nil if not resolved
     if whatever then
         local w = files[whatever]
         if w then
@@ -344,25 +359,25 @@ end
 
 -- programs
 
-jobreferences.programs      = jobreferences.programs      or { }
-jobreferences.programs.data = jobreferences.programs.data or { }
+references.programs      = references.programs      or { }
+references.programs.data = references.programs.data or { }
 
-local programs = jobreferences.programs.data
+local programs = references.programs.data
 
-function jobreferences.programs.define(name,file,description)
+function references.programs.define(name,file,description)
     if name and name ~= "" then
         programs[name] = { file or "", description or file or ""}
     end
 end
 
-function jobreferences.programs.get(name)
+function references.programs.get(name)
     local f = programs[name]
     if f then
         texsprint(ctxcatcodes,f[1])
     end
 end
 
-function jobreferences.checkedprogram(whatever) -- return whatever if not resolved
+function references.checkedprogram(whatever) -- return whatever if not resolved
     if whatever then
         local w = programs[whatever]
         if w then
@@ -375,11 +390,11 @@ end
 
 -- shared by urls and files
 
-function jobreferences.whatfrom(name)
+function references.whatfrom(name)
     texsprint(ctxcatcodes,(urls[name] and variables.url) or (files[name] and variables.file) or variables.unknown)
 end
 
---~ function jobreferences.from(name)
+--~ function references.from(name)
 --~     local u = urls[name]
 --~     if u then
 --~         local url, file, description = u[1], u[2], u[3]
@@ -404,7 +419,7 @@ end
 --~     end
 --~ end
 
-function jobreferences.from(name)
+function references.from(name)
     local u = urls[name]
     if u then
         local url, file, description = u[1], u[2], u[3]
@@ -483,13 +498,13 @@ local function referencer(data)
     }
 end
 
-function jobreferences.export(usedname)
+function references.export(usedname)
     local exported = { }
     local e_references, e_lists = exporters.references, exporters.lists
     local g_references, g_lists = e_references.generic, e_lists.generic
     -- todo: pagenumbers
     -- todo: some packing
-    for prefix, references in next, jobreferences.tobesaved do
+    for prefix, references in next, references.tobesaved do
         local pe = exported[prefix] if not pe then pe = { } exported[prefix] = pe end
         for key, data in next, references do
             local metadata = data.metadata
@@ -508,7 +523,7 @@ function jobreferences.export(usedname)
         end
     end
     local pe = exported[""] if not pe then pe = { } exported[""] = pe end
-    for n, data in next, structure.lists.tobesaved do
+    for n, data in next, lists.tobesaved do
         local metadata = data.metadata
         local exporter = e_lists[metadata.kind] or g_lists
         if exporter then
@@ -533,9 +548,9 @@ function jobreferences.export(usedname)
     io.savedata(file.replacesuffix(usedname or tex.jobname,"tue"),table.serialize(e,true))
 end
 
-function jobreferences.import(usedname)
+function references.import(usedname)
     if usedname then
-        local imported = jobreferences.imported
+        local imported = references.imported
         local jdn = imported[usedname]
         if not jdn then
             local filename = files[usedname]
@@ -576,20 +591,20 @@ function jobreferences.import(usedname)
     end
 end
 
-function jobreferences.load(usedname)
+function references.load(usedname)
     -- gone
 end
 
-function jobreferences.define(prefix,reference,list)
+function references.define(prefix,reference,list)
     local d = defined[prefix] if not d then d = { } defined[prefix] = d end
     d[reference] = { "defined", list }
 end
 
---~ function jobreferences.registerspecial(name,action,...)
+--~ function references.registerspecial(name,action,...)
 --~     specials[name] = { action, ... }
 --~ end
 
-function jobreferences.reset(prefix,reference)
+function references.reset(prefix,reference)
     local d = defined[prefix]
     if d then
         d[reference] = nil
@@ -601,8 +616,6 @@ end
 -- \referenceunknownaction
 
 -- t.special t.operation t.arguments t.outer t.inner
-
-local settings_to_array = aux.settings_to_array
 
 local function resolve(prefix,reference,args,set) -- we start with prefix,reference
     texcount.referencehastexstate = 0
@@ -650,13 +663,13 @@ end
 
 -- prefix == "" is valid prefix which saves multistep lookup
 
-jobreferences.currentset = nil
+references.currentset = nil
 
-local b, e = "\\ctxlua{local jc = jobreferences.currentset;", "}"
+local b, e = "\\ctxlua{local jc = references.currentset;", "}"
 local o, a = 'jc[%s].operation=[[%s]];', 'jc[%s].arguments=[[%s]];'
 
-function jobreferences.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
-    local currentset = jobreferences.currentset
+function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
+    local currentset = references.currentset
     if currentset and currentset.has_tex then
         local done = false
         for i=1,#currentset do
@@ -732,7 +745,7 @@ local function identify(prefix,reference)
                 var.error = "unknown special"
             end
         elseif outer then
-            local e = jobreferences.import(outer)
+            local e = references.import(outer)
             if e then
                 if inner then
                     local r = e.references
@@ -749,7 +762,7 @@ local function identify(prefix,reference)
                                     var.kind = "outer with inner"
                                 end
                                 var.i = { "reference", r }
-                                jobreferences.resolvers.reference(var)
+                                references.resolvers.reference(var)
                                 var.f = outer
                                 var.e = true -- external
                             end
@@ -771,7 +784,7 @@ local function identify(prefix,reference)
                                         var.kind = "outer with inner"
                                     end
                                     var.i = r
-                                    jobreferences.resolvers[r[1]](var)
+                                    references.resolvers[r[1]](var)
                                     var.f = outer
                                 end
                             end
@@ -814,7 +827,7 @@ local function identify(prefix,reference)
                         var.kind = "outer with inner"
                     end
                     var.i = { "reference", inner }
-                    jobreferences.resolvers.reference(var)
+                    references.resolvers.reference(var)
                     var.f = outer
                 elseif special then
                     local s = specials[special]
@@ -857,7 +870,7 @@ local function identify(prefix,reference)
                 i = i and i[inner]
                 if i then
                     var.i = { "reference", i }
-                    jobreferences.resolvers.reference(var)
+                    references.resolvers.reference(var)
                     var.kind = "inner"
                     var.p = prefix
                 else
@@ -866,7 +879,7 @@ local function identify(prefix,reference)
                     if i then
                         var.kind = "inner"
                         var.i = i
-                        jobreferences.resolvers[i[1]](var)
+                        references.resolvers[i[1]](var)
                         var.p = prefix
                     else
                         i = collected[prefix]
@@ -874,7 +887,7 @@ local function identify(prefix,reference)
                         if i then
                             var.kind = "inner"
                             var.i = { "reference", i }
-                            jobreferences.resolvers.reference(var)
+                            references.resolvers.reference(var)
                             var.p = prefix
                         else
                             local s = specials[inner]
@@ -887,7 +900,7 @@ local function identify(prefix,reference)
                                 if i then
                                     var.kind = "inner"
                                     var.i = { "reference", i }
-                                    jobreferences.resolvers.reference(var)
+                                    references.resolvers.reference(var)
                                     var.p = ""
                                 else
                                     var.error = "unknown inner or special"
@@ -901,14 +914,14 @@ local function identify(prefix,reference)
         bug = bug or var.error
         set[i] = var
     end
-    jobreferences.currentset = set
+    references.currentset = set
 --~ print(bug,table.serialize(set))
     return set, bug
 end
 
-jobreferences.identify = identify
+references.identify = identify
 
-function jobreferences.doifelse(prefix,reference,highlight,newwindow,layer)
+function references.doifelse(prefix,reference,highlight,newwindow,layer)
     local set, bug = identify(prefix,reference)
     local unknown = bug or #set == 0
     if unknown then
@@ -921,7 +934,7 @@ function jobreferences.doifelse(prefix,reference,highlight,newwindow,layer)
     commands.doifelse(not unknown)
 end
 
-function jobreferences.setinternalreference(prefix,tag,internal,view)
+function references.setinternalreference(prefix,tag,internal,view)
     local t = { } -- maybe add to current
     if tag then
         if prefix and prefix ~= "" then
@@ -938,19 +951,19 @@ function jobreferences.setinternalreference(prefix,tag,internal,view)
     if internal then
         t[#t+1] = "aut:" .. internal
     end
-    local destination = jobreferences.mark(t,nil,nil,view) -- returns an attribute
+    local destination = references.mark(t,nil,nil,view) -- returns an attribute
     texcount.lastdestinationattribute = destination
     return destination
 end
 
-function jobreferences.getinternalreference(n) -- n points into list (todo: registers)
-    local l = structure.lists.collected[n]
+function references.getinternalreference(n) -- n points into list (todo: registers)
+    local l = lists.collected[n]
     texsprint(ctxcatcodes,(l and l.references.internal) or n)
 end
 
 --
 
-function jobreferences.get_current_metadata(tag)
+function references.get_current_metadata(tag)
     local data = currentreference and currentreference.i
     data = data and data.metadata and data.metadata[tag]
     if data then
@@ -961,26 +974,20 @@ local function current_metadata(tag)
     local data = currentreference and currentreference.i
     return data and data.metadata and data.metadata[tag]
 end
-jobreferences.current_metadata = current_metadata
+references.current_metadata = current_metadata
 
-function jobreferences.get_current_prefixspec(default) -- todo: message
+function references.get_current_prefixspec(default) -- todo: message
     texsprint(ctxcatcodes,"\\getreferencestructureprefix{",
         current_metadata("kind") or "?", "}{", current_metadata("name") or "?", "}{", default or "?", "}")
 end
 
---~ function jobreferences.get_current_prefixspec(default) -- we can consider storing the data at the lua end
+--~ function references.get_current_prefixspec(default) -- we can consider storing the data at the lua end
 --~     context.getreferencestructureprefix(current_metadata("kind"),current_metadata("name"),default)
 --~ end
 
 --
 
-jobreferences.filters = jobreferences.filters or { }
-
-local filters  = jobreferences.filters
-local helpers  = structure.helpers
-local sections = structure.sections
-
-function jobreferences.filter(name,...) -- number page title ...
+function references.filter(name,...) -- number page title ...
     local data = currentreference and currentreference.i
     if data then
         local kind = data.metadata and data.metadata.kind
@@ -1120,12 +1127,6 @@ filters.float       = { default = filters.generic.number }
 filters.description = { default = filters.generic.number }
 filters.item        = { default = filters.generic.number }
 
-structure.references = structure.references or { }
-structure.helpers    = structure.helpers    or { }
-
-local references = structure.references
-local helpers    = structure.helpers
-
 function references.sectiontitle(n)
     helpers.sectiontitle(lists.collected[tonumber(n) or 0])
 end
@@ -1140,14 +1141,14 @@ end
 
 -- analyse
 
-jobreferences.testrunners  = jobreferences.testrunners  or { }
-jobreferences.testspecials = jobreferences.testspecials or { }
+references.testrunners  = references.testrunners  or { }
+references.testspecials = references.testspecials or { }
 
-local runners  = jobreferences.testrunners
-local specials = jobreferences.testspecials
+local runners  = references.testrunners
+local specials = references.testspecials
 
-function jobreferences.analyse(actions)
-    actions = actions or jobreferences.currentset
+function references.analyse(actions)
+    actions = actions or references.currentset
     if not actions then
         actions = { realpage = 0 }
     elseif actions.realpage then
@@ -1181,26 +1182,26 @@ function jobreferences.analyse(actions)
     return actions
 end
 
-function jobreferences.realpage() -- special case, we always want result
-    local cs = jobreferences.analyse()
+function references.realpage() -- special case, we always want result
+    local cs = references.analyse()
     texwrite(cs.realpage or 0)
 end
 
 --
 
-jobreferences.pages = {
-    [variables.firstpage]       = function() return structure.counters.record("realpage")["first"]    end,
-    [variables.previouspage]    = function() return structure.counters.record("realpage")["previous"] end,
-    [variables.nextpage]        = function() return structure.counters.record("realpage")["next"]     end,
-    [variables.lastpage]        = function() return structure.counters.record("realpage")["last"]     end,
+references.pages = {
+    [variables.firstpage]       = function() return counters.record("realpage")["first"]    end,
+    [variables.previouspage]    = function() return counters.record("realpage")["previous"] end,
+    [variables.nextpage]        = function() return counters.record("realpage")["next"]     end,
+    [variables.lastpage]        = function() return counters.record("realpage")["last"]     end,
 
-    [variables.firstsubpage]    = function() return structure.counters.record("subpage" )["first"]    end,
-    [variables.previoussubpage] = function() return structure.counters.record("subpage" )["previous"] end,
-    [variables.nextsubpage]     = function() return structure.counters.record("subpage" )["next"]     end,
-    [variables.lastsubpage]     = function() return structure.counters.record("subpage" )["last"]     end,
+    [variables.firstsubpage]    = function() return counters.record("subpage" )["first"]    end,
+    [variables.previoussubpage] = function() return counters.record("subpage" )["previous"] end,
+    [variables.nextsubpage]     = function() return counters.record("subpage" )["next"]     end,
+    [variables.lastsubpage]     = function() return counters.record("subpage" )["last"]     end,
 
-    [variables.forward]         = function() return structure.counters.record("realpage")["forward"]  end,
-    [variables.backward]        = function() return structure.counters.record("realpage")["backward"] end,
+    [variables.forward]         = function() return counters.record("realpage")["forward"]  end,
+    [variables.backward]        = function() return counters.record("realpage")["backward"] end,
 }
 
 -- maybe some day i will merge this in the backend code with a testmode (so each
@@ -1221,10 +1222,10 @@ end
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
-local pages = jobreferences.pages
+local pages = references.pages
 
 function specials.internal(var,actions)
-    local v = jobreferences.internals[tonumber(var.operation)]
+    local v = references.internals[tonumber(var.operation)]
     local r = v and v.references.realpage
     if r then
         actions.realpage = r

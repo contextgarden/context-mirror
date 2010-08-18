@@ -15,21 +15,23 @@ local trace_stripping = false  trackers.register("nodes.stripping",  function(v)
 
 local report_fonts = logs.new("fonts")
 
+local nodes, node = nodes, node
+
 local delete_node   = nodes.delete
 local replace_node  = nodes.replace
 local copy_node     = node.copy
 local has_attribute = node.has_attribute
 
-local chardata  = characters.data
-local collected = false
-local attribute = attributes.private("stripping")
-local fontdata  = fonts.ids
+local chardata      = characters.data
+local collected     = false
+local attribute     = attributes.private("stripping")
+local fontdata      = fonts.ids
+local tasks         = nodes.tasks
 
-local nodecodes = nodes.nodecodes
+local nodecodes    = nodes.nodecodes
+local glyph_code   = nodecodes.glyph
 
-local glyph = nodecodes.glyph
-
--- other namespace
+-- todo: other namespace -> typesetters
 
 nodes.stripping  = nodes.stripping  or { } local stripping  = nodes.stripping
 stripping.glyphs = stripping.glyphs or { } local glyphs     = stripping.glyphs
@@ -67,10 +69,10 @@ local function process(what,head,current,char)
     return head, current
 end
 
-function nodes.stripping.process(head)
+function nodes.handlers.stripping(head)
     local current, done = head, false
     while current do
-        if current.id == glyph then
+        if current.id == glyph_code then
             -- it's more efficient to keep track of what needs to be kept
             local todo = has_attribute(current,attribute)
             if todo == 1 then
@@ -92,12 +94,12 @@ function nodes.stripping.process(head)
     return head, done
 end
 
-tasks.appendaction("processors","fonts","nodes.stripping.process",nil,"nodes.process_characters")
-tasks.disableaction("processors","nodes.stripping.process")
+tasks.appendaction("processors","fonts","nodes.handlers.stripping",nil,"nodes.handlers.characters")
+tasks.disableaction("processors","nodes.handlers.stripping")
 
 function nodes.stripping.enable()
     if initialize then initialize() end
-    tasks.enableaction("processors","nodes.stripping.process")
+    tasks.enableaction("processors","nodes.handlers.stripping")
     function nodes.stripping.enable() end
 end
 
@@ -110,7 +112,7 @@ local function processformatters(head,font)
     if how == nil or how == "strip" then -- nil when forced
         local current, done = head, false
         while current do
-            if current.id == glyph and current.subtype<256 and current.font == font then
+            if current.id == glyph_code and current.subtype<256 and current.font == font then
                 local char = current.char
                 local what = glyphs[char]
                 if what then

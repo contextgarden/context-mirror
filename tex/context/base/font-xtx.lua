@@ -31,38 +31,16 @@ well and that does not work too well with the general design
 of the specifier.</p>
 --ldx]]--
 
---~ function fonts.define.specify.colonized(specification) -- xetex mode
---~     local list = { }
---~     if specification.detail and specification.detail ~= "" then
---~         for v in gmatch(specification.detail,"%s*([^;]+)%s*") do
---~             local a, b = match(v,"^(%S*)%s*=%s*(%S*)$")
---~             if a and b then
---~                 list[a] = b:is_boolean()
---~                 if type(list[a]) == "nil" then
---~                     list[a] = b
---~                 end
---~             else
---~                 local a, b = match(v,"^([%+%-]?)%s*(%S+)$")
---~                 if a and b then
---~                     list[b] = a ~= "-"
---~                 end
---~             end
---~         end
---~     end
---~     specification.features.normal = list
---~     return specification
---~ end
-
---~ check("oeps/BI:+a;-b;c=d")
---~ check("[oeps]/BI:+a;-b;c=d")
---~ check("file:oeps/BI:+a;-b;c=d")
---~ check("name:oeps/BI:+a;-b;c=d")
+local fonts              = fonts
+local define             = fonts.define
+local specify            = define.specify
+local normalize_meanings = fonts.otf.meanings.normalize
 
 local list = { }
 
-fonts.define.specify.colonized_default_lookup = "file"
+specify.colonized_default_lookup = "file"
 
-local function issome ()    list.lookup = fonts.define.specify.colonized_default_lookup end
+local function issome ()    list.lookup = specify.colonized_default_lookup end
 local function isfile ()    list.lookup = 'file' end
 local function isname ()    list.lookup = 'name' end
 local function thename(s)   list.name   = s end
@@ -75,32 +53,32 @@ local function iskey  (k,v) list[k]     = v end
 local function istrue (s)   list[s]     = true end
 local function isfalse(s)   list[s]     = false end
 
-local spaces     = lpeg.P(" ")^0
-local namespec   = (1-lpeg.S("/:("))^0 -- was: (1-lpeg.S("/: ("))^0
-local crapspec   = spaces * lpeg.P("/") * (((1-lpeg.P(":"))^0)/iscrap) * spaces
-local filename   = (lpeg.P("file:")/isfile * (namespec/thename)) + (lpeg.P("[") * lpeg.P(true)/isname * (((1-lpeg.P("]"))^0)/thename) * lpeg.P("]"))
-local fontname   = (lpeg.P("name:")/isname * (namespec/thename)) + lpeg.P(true)/issome * (namespec/thename)
-local sometext   = (lpeg.R("az","AZ","09") + lpeg.S("+-."))^1
-local truevalue  = lpeg.P("+") * spaces * (sometext/istrue)
-local falsevalue = lpeg.P("-") * spaces * (sometext/isfalse)
-local keyvalue   = (lpeg.C(sometext) * spaces * lpeg.P("=") * spaces * lpeg.C(sometext))/iskey
+local P, S, R, C = lpeg.P, lpeg.S, lpeg.R, lpeg.C
+
+local spaces     = P(" ")^0
+local namespec   = (1-S("/:("))^0 -- was: (1-S("/: ("))^0
+local crapspec   = spaces * P("/") * (((1-P(":"))^0)/iscrap) * spaces
+local filename   = (P("file:")/isfile * (namespec/thename)) + (P("[") * P(true)/isname * (((1-P("]"))^0)/thename) * P("]"))
+local fontname   = (P("name:")/isname * (namespec/thename)) + P(true)/issome * (namespec/thename)
+local sometext   = (R("az","AZ","09") + S("+-."))^1
+local truevalue  = P("+") * spaces * (sometext/istrue)
+local falsevalue = P("-") * spaces * (sometext/isfalse)
+local keyvalue   = (C(sometext) * spaces * P("=") * spaces * C(sometext))/iskey
 local somevalue  = sometext/istrue
-local subvalue   = lpeg.P("(") * (lpeg.C(lpeg.P(1-lpeg.S("()"))^1)/issub) * lpeg.P(")") -- for Kim
+local subvalue   = P("(") * (C(P(1-S("()"))^1)/issub) * P(")") -- for Kim
 local option     = spaces * (keyvalue + falsevalue + truevalue + somevalue) * spaces
-local options    = lpeg.P(":") * spaces * (lpeg.P(";")^0  * option)^0
+local options    = P(":") * spaces * (P(";")^0  * option)^0
 local pattern    = (filename + fontname) * subvalue^0 * crapspec^0 * options^0
 
-local normalize_meanings = fonts.otf.meanings.normalize
-
-function fonts.define.specify.colonized(specification) -- xetex mode
+local function colonized(specification) -- xetex mode
     list = { }
     lpegmatch(pattern,specification.specification)
---~     for k, v in next, list do
---~         list[k] = v:is_boolean()
---~         if type(list[a]) == "nil" then
---~             list[k] = v
---~         end
---~     end
+ -- for k, v in next, list do
+ --     list[k] = v:is_boolean()
+ --     if type(list[a]) == "nil" then
+ --         list[k] = v
+ --     end
+ -- end
     list.crap = nil -- style not supported, maybe some day
     if list.name then
         specification.name = list.name
@@ -114,9 +92,11 @@ function fonts.define.specify.colonized(specification) -- xetex mode
         specification.sub = list.sub
         list.sub = nil
     end
---  specification.features.normal = list
+ -- specification.features.normal = list
     specification.features.normal = normalize_meanings(list)
     return specification
 end
 
-fonts.define.register_split(":", fonts.define.specify.colonized)
+specify.colonized = colonized
+
+define.register_split(":",colonized)

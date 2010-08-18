@@ -103,7 +103,7 @@
      kind      = 0, % 1 == frozen
      printable = "\v!yes"
    }}%
-   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \ctxlua{tex.write(viewerlayers.register('#1:#2',true))}\relax}%
+   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \ctxlua{tex.write(attributes.viewerlayers.register('#1:#2',true))}\relax}%
    \expandafter\glet\csname\??ly>#1:#2\endcsname\layoutcomponentboxattribute}
 
 \def\dosetlayoutcomponentattribute#1#2% make this faster
@@ -120,7 +120,7 @@
 \let\layoutcomponentboxattribute  \empty
 
 \def\showlayoutcomponents
-  {\ctxlua{viewerlayers.enable()}%
+  {\ctxlua{attributes.viewerlayers.enable()}%
    \let\setlayoutcomponentattribute  \dosetlayoutcomponentattribute
    \let\resetlayoutcomponentattribute\doresetlayoutcomponentattribute}
 

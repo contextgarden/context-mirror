@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['attr-div'] = {
+if not modules then modules = { } end modules ['attr-col'] = {
     version   = 1.001,
-    comment   = "companion to attr-ini.mkiv",
+    comment   = "companion to attr-col.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -10,17 +10,14 @@ if not modules then modules = { } end modules ['attr-div'] = {
 -- we can also do the nsnone via a metatable and then also se index 0
 
 local type = type
-local format, gmatch = string.format, string.gmatch
+local format = string.format
 local concat = table.concat
-local texsprint = tex.sprint
 
 local report_attributes     = logs.new("attributes")
 local report_colors         = logs.new("colors")
 local report_transparencies = logs.new("transparencies")
-local report_viewerlayers   = logs.new("viewerlayers")
 
-local ctxcatcodes = tex.ctxcatcodes
-local unsetvalue  = attributes.unsetvalue
+local attributes, nodes = attributes, nodes
 
 -- todo: document this but first reimplement this as it reflects the early
 -- days of luatex / mkiv and we have better ways now
@@ -28,9 +25,11 @@ local unsetvalue  = attributes.unsetvalue
 -- nb: attributes: color etc is much slower than normal (marks + literals) but ...
 -- nb. too many "0 g"s
 
-nodes    = nodes    or { }
-states   = states   or { }
-shipouts = shipouts or { }
+local states         = attributes.states
+local tasks          = nodes.tasks
+local nodeinjections = backends.nodeinjections
+local registrations  = backends.registrations
+local unsetvalue     = attributes.unsetvalue
 
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
@@ -58,11 +57,12 @@ shipouts = shipouts or { }
 --     colors.strings[color] = "return colors." .. colorspace .. "(" .. concat({...},",") .. ")"
 -- end
 --
--- storage.register("colors/data", colors.strings, "colors.data") -- evaluated
+-- storage.register("attributes/colors/data", colors.strings, "attributes.colors.data") -- evaluated
 --
 -- We assume that only processcolors are defined in the format.
 
-colors            = colors            or { }
+attributes.colors = attributes.colors or { }
+local colors      = attributes.colors          _clib_ = colors -- fast access (less tokens too)
 colors.data       = colors.data       or { }
 colors.values     = colors.values     or { }
 colors.registered = colors.registered or { }
@@ -75,8 +75,8 @@ colors.main       = nil
 colors.triggering = true
 colors.supported  = true
 
-storage.register("colors/values",     colors.values,     "colors.values")
-storage.register("colors/registered", colors.registered, "colors.registered")
+storage.register("attributes/colors/values",     colors.values,     "attributes.colors.values")
+storage.register("attributes/colors/registered", colors.registered, "attributes.colors.registered")
 
 local templates = {
     rgb  = "r:%s:%s:%s",
@@ -105,10 +105,6 @@ local numbers    = attributes.numbers
 local list       = attributes.list
 
 local min, max, floor = math.min, math.max, math.floor
-
-local nodeinjections = backends.nodeinjections
-local codeinjections = backends.codeinjections
-local registrations  = backends.registrations
 
 local function rgbtocmyk(r,g,b) -- we could reduce
     return 1-r, 1-g, 1-b, 0
@@ -322,7 +318,7 @@ function colors.value(id)
     return values[id]
 end
 
-shipouts.handle_color = nodes.install_attribute_handler {
+attributes.colors.handler = nodes.install_attribute_handler {
     name        = "color",
     namespace   = colors,
     initializer = states.initialize,
@@ -333,9 +329,9 @@ shipouts.handle_color = nodes.install_attribute_handler {
 
 function colors.enable(value)
     if value == false or not colors.supported then
-        tasks.disableaction("shipouts","shipouts.handle_color")
+        tasks.disableaction("shipouts","attributes.colors.handler")
     else
-        tasks.enableaction("shipouts","shipouts.handle_color")
+        tasks.enableaction("shipouts","attributes.colors.handler")
     end
 end
 
@@ -347,7 +343,8 @@ end
 
 -- transparencies
 
-transparencies            = transparencies            or { }
+attributes.transparencies = attributes.transparencies or { }
+local transparencies      = attributes.transparencies         _tlib_ = transparencies -- fast access (less tokens too)
 transparencies.registered = transparencies.registered or { }
 transparencies.data       = transparencies.data       or { }
 transparencies.values     = transparencies.values     or { }
@@ -355,8 +352,8 @@ transparencies.triggering = true
 transparencies.attribute  = attributes.private('transparency')
 transparencies.supported  = true
 
-storage.register("transparencies/registered", transparencies.registered, "transparencies.registered")
-storage.register("transparencies/values",     transparencies.values,     "transparencies.values")
+storage.register("attributes/transparencies/registered", transparencies.registered, "attributes.transparencies.registered")
+storage.register("attributes/transparencies/values",     transparencies.values,     "attributes.transparencies.values")
 
 local registered = transparencies.registered -- we could use a 2 dimensional table instead
 local data       = transparencies.data
@@ -427,7 +424,7 @@ function transparencies.value(id)
     return values[id]
 end
 
-shipouts.handle_transparency = nodes.install_attribute_handler {
+attributes.transparencies.handler = nodes.install_attribute_handler {
     name        = "transparency",
     namespace   = transparencies,
     initializer = states.initialize,
@@ -437,9 +434,9 @@ shipouts.handle_transparency = nodes.install_attribute_handler {
 
 function transparencies.enable(value) -- nil is enable
     if value == false or not transparencies.supported then
-        tasks.disableaction("shipouts","shipouts.handle_transparency")
+        tasks.disableaction("shipouts","attributes.transparencies.handler")
     else
-        tasks.enableaction("shipouts","shipouts.handle_transparency")
+        tasks.enableaction("shipouts","attributes.transparencies.handler")
     end
 end
 
@@ -451,9 +448,10 @@ end
 
 --- colorintents: overprint / knockout
 
-colorintents           = colorintents      or { }
-colorintents.data      = colorintents.data or { }
-colorintents.attribute = attributes.private('colorintent')
+attributes.colorintents = attributes.colorintents or  {}
+local colorintents      = attributes.colorintents
+colorintents.data       = colorintents.data or { }
+colorintents.attribute  = attributes.private('colorintent')
 
 colorintents.registered = {
     overprint = 1,
@@ -489,7 +487,7 @@ function colorintents.register(stamp)
     return registered[stamp] or registered.overprint
 end
 
-shipouts.handle_colorintent = nodes.install_attribute_handler {
+attributes.colorintents.handler = nodes.install_attribute_handler {
     name        = "colorintent",
     namespace   = colorintents,
     initializer = states.initialize,
@@ -498,206 +496,5 @@ shipouts.handle_colorintent = nodes.install_attribute_handler {
 }
 
 function colorintents.enable()
-    tasks.enableaction("shipouts","shipouts.handle_colorintent")
-end
-
---- negative / positive
-
-negatives           = negatives      or { }
-negatives.data      = negatives.data or { }
-negatives.attribute = attributes.private("negative")
-
-negatives.registered = {
-    positive = 1,
-    negative = 2,
-}
-
-local data, registered = negatives.data, negatives.registered
-
-local function extender(negatives,key)
-    if key == "none" then
-        local d = data[1]
-        negatives.none = d
-        return d
-    end
-end
-
-local function reviver(data,n)
-    if n == 1 then
-        local d = nodeinjections.positive() -- called once
-        data[1] = d
-        return d
-    elseif n == 2 then
-        local d = nodeinjections.negative() -- called once
-        data[2] = d
-        return d
-    end
-end
-
-setmetatable(negatives,      { __index = extender })
-setmetatable(negatives.data, { __index = reviver  })
-
-function negatives.register(stamp)
-    return registered[stamp] or registered.positive
-end
-
-shipouts.handle_negative = nodes.install_attribute_handler {
-    name        = "negative",
-    namespace   = negatives,
-    initializer = states.initialize,
-    finalizer   = states.finalize,
-    processor   = states.process,
-}
-
-function negatives.enable()
-    tasks.enableaction("shipouts","shipouts.handle_negative")
-end
-
--- effects -- can be optimized (todo: metatables)
-
-effects            = effects            or { }
-effects.data       = effects.data       or { }
-effects.values     = effects.values     or { }
-effects.registered = effects.registered or { }
-effects.stamp      = "%s:%s:%s"
-effects.attribute  = attributes.private("effect")
-
-storage.register("effects/registered", effects.registered, "effects.registered")
-storage.register("effects/values",     effects.values,     "effects.values")
-
-local data, registered, values = effects.data, effects.registered, effects.values
-
--- valid effects: normal inner outer both hidden (stretch,rulethickness,effect)
-
-local function effect(...) effect = nodeinjections.effect return effect(...) end
-
-local function extender(effects,key)
-    if key == "none" then
-        local d = effect(0,0,0)
-        effects.none = d
-        return d
-    end
-end
-
-local function reviver(data,n)
-    local e = values[n] -- we could nil values[n] now but hardly needed
-    local d = effect(e[1],e[2],e[3])
-    data[n] = d
-    return d
-end
-
-setmetatable(effects,      { __index = extender })
-setmetatable(effects.data, { __index = reviver  })
-
-function effects.register(effect,stretch,rulethickness)
-    local stamp = format(effects.stamp,effect,stretch,rulethickness)
-    local n = registered[stamp]
-    if not n then
-        n = #values + 1
-        values[n] = { effect, stretch, rulethickness }
-        registered[stamp] = n
-    end
-    return n
-end
-
-shipouts.handle_effect = nodes.install_attribute_handler {
-    name        = "effect",
-    namespace   = effects,
-    initializer = states.initialize,
-    finalizer   = states.finalize,
-    processor   = states.process,
-}
-
-function effects.enable()
-    tasks.enableaction("shipouts","shipouts.handle_effect")
-end
-
--- layers (ugly code, due to no grouping and such); currently we use exclusive layers
--- but when we need it stacked layers might show up too; the next function based
--- approach can be replaced by static (metatable driven) resolvers
-
-viewerlayers            = viewerlayers            or { }
-viewerlayers.data       = viewerlayers.data       or { }
-viewerlayers.registered = viewerlayers.registered or { }
-viewerlayers.values     = viewerlayers.values     or { }
-viewerlayers.listwise   = viewerlayers.listwise   or { }
-viewerlayers.attribute  = attributes.private("viewerlayer")
-viewerlayers.supported  = true
-viewerlayers.hasorder   = true
-
-storage.register("viewerlayers/registered", viewerlayers.registered, "viewerlayers.registered")
-storage.register("viewerlayers/values",     viewerlayers.values,     "viewerlayers.values")
-
-local data       = viewerlayers.data
-local values     = viewerlayers.values
-local listwise   = viewerlayers.listwise
-local registered = viewerlayers.registered
-local template   = "%s"
-
--- stacked
-
-local function extender(viewerlayers,key)
-    if viewerlayers.supported and key == "none" then
-        local d = nodeinjections.stoplayer()
-        viewerlayers.none = d
-        return d
-    end
-end
-
-local function reviver(data,n)
-    if viewerlayers.supported then
-        local v = values[n]
-        if v then
-            local d = nodeinjections.startlayer(v)
-            data[n] = d
-            return d
-        else
-            logs.report("viewerlayers","error, unknown reference '%s'",tostring(n))
-        end
-    end
-end
-
-setmetatable(viewerlayers,      { __index = extender })
-setmetatable(viewerlayers.data, { __index = reviver  })
-
-local function initializer(...)
-    return states.initialize(...)
-end
-
-viewerlayers.register = function(name,lw) -- if not inimode redefine data[n] in first call
-    local stamp = format(template,name)
-    local n = registered[stamp]
-    if not n then
-        n = #values + 1
-        values[n] = name
-        registered[stamp] = n
-        listwise[n] = lw or false
-    end
-    return registered[stamp] -- == n
-end
-
-shipouts.handle_viewerlayer = nodes.install_attribute_handler {
-    name        = "viewerlayer",
-    namespace   = viewerlayers,
-    initializer = initializer,
-    finalizer   = states.finalize,
-    processor   = states.stacked,
-}
-
-function viewerlayers.enable(value)
-    if value == false or not viewerlayers.supported then
-        tasks.disableaction("shipouts","shipouts.handle_viewerlayer")
-    else
-        tasks.enableaction("shipouts","shipouts.handle_viewerlayer")
-    end
-end
-
-function viewerlayers.forcesupport(value)
-    viewerlayers.supported = value
-    report_viewerlayers("viewerlayers are %ssupported",value and "" or "not ")
-    viewerlayers.enable(value)
-end
-
-function viewerlayers.setfeatures(hasorder)
-    viewerlayers.hasorder = hasorder
+    tasks.enableaction("shipouts","attributes.colorintents.handler")
 end

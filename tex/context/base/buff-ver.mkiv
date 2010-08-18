@@ -216,7 +216,7 @@
 %D \typebuffer \start \getbuffer \stop
 
 \unexpanded\def\setupcommandsintype
-  {\ctxlua{buffers.set_escape("\currenttyping",\!!bs\typingparameter\c!escape\!!es)}}
+  {\ctxlua{buffers.setescapepair("\currenttyping",\!!bs\typingparameter\c!escape\!!es)}}
 
 \appendtoks
     \setupcommandsintype
@@ -363,7 +363,7 @@
 \def\dodotypeBB#1%
   {\doinitializeverbatim
    \dostarttagged\t!verbatim\currenttyping
-   \ctxlua{buffers.visualizers.flush_nested(\!!bs\detokenize{#1}\!!es,false)}%
+   \ctxlua{buffers.visualizers.flushnested(\!!bs\detokenize{#1}\!!es,false)}%
    \dostoptagged
    \egroup
    \gobbleoneargument} % grab last >
@@ -383,7 +383,7 @@
      \dostoptagged
    \else
      \def\obs{\obeyedspace}%
-     \ctxlua{buffers.visualizers.flush_nested(\!!bs\detokenize{#1}\!!es,true)}%
+     \ctxlua{buffers.visualizers.flushnested(\!!bs\detokenize{#1}\!!es,true)}%
    \fi
    \egroup
    \gobbleoneargument} % grab last >

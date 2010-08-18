@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['grph-inc'] = {
     license   = "see context related readme files"
 }
 
+-- figures -> managers.figures
+
 -- lowercase types
 -- mps tex tmp svg
 -- partly qualified
@@ -42,9 +44,11 @@ local texsprint, texbox = tex.sprint, tex.box
 local contains = table.contains
 local concat = table.concat
 local todimen = string.todimen
+local settings_to_array = utilities.parsers.settings_to_array
 
-local ctxcatcodes = tex.ctxcatcodes
-local variables = interfaces.variables
+local ctxcatcodes    = tex.ctxcatcodes
+local variables      = interfaces.variables
+local codeinjections = backends.codeinjections
 
 local trace_figures    = false  trackers.register("figures.locating",   function(v) trace_figures    = v end)
 local trace_bases      = false  trackers.register("figures.bases",      function(v) trace_bases      = v end)
@@ -55,6 +59,8 @@ local trace_inclusion  = false  trackers.register("figures.inclusion",  function
 local report_graphics = logs.new("graphics")
 
 --- some extra img functions ---
+
+local img = img
 
 local imgkeys = img.keys()
 
@@ -90,14 +96,17 @@ function img.check_size(size)
     end
 end
 
----
+--- we can consider an grph-ini file
 
 figures                = figures           or { }
+local figures          = figures
+
 figures.loaded         = figures.loaded    or { }
 figures.used           = figures.used      or { }
 figures.found          = figures.found     or { }
 figures.suffixes       = figures.suffixes  or { }
 figures.patterns       = figures.patterns  or { }
+
 figures.boxnumber      = figures.boxnumber or 0
 figures.defaultsearch  = true
 figures.defaultwidth   = 0
@@ -200,7 +209,7 @@ function figures.setpaths(locationset,pathlist)
     end
     if h[iv["global"]] then
      -- for s in gmatch(pathlist,",* *([^,]+)") do
-        local list = aux.settings_to_array(pathlist)
+        local list = settings_to_array(pathlist)
         for i=1,#list do
             local s = list[i]
             if not contains(t,s) then
@@ -340,7 +349,7 @@ local function register(askedname,specification)
             if not newformat or newformat == "" then
                 newformat = defaultformat
             end
-            local converter = (newformat ~= format) and figures.converters[format]
+            local converter = (newformat ~= format) and converters[format]
             if trace_conversion then
                 report_graphics("checking conversion of '%s': old format '%s', new format '%s', conversion '%s'",
                     askedname,format,newformat,conversion or "default")
@@ -641,18 +650,25 @@ end
 
 -- -- -- plugins -- -- --
 
-figures.existers    = figures.existers    or { }
-figures.checkers    = figures.checkers    or { }
-figures.includers   = figures.includers   or { }
-figures.converters  = figures.converters  or { }
+figures.existers    = figures.existers or { }
+local existers      = figures.existers
+
+figures.checkers    = figures.checkers or { }
+local checkers      = figures.checkers
+
+figures.includers   = figures.includers or { }
+local includers     = figures.includers
+
+figures.converters  = figures.converters or { }
+local converters    = figures.converters
+
 figures.identifiers = figures.identifiers or { }
-figures.programs    = figures.programs    or { }
+local identifiers   = figures.identifiers
 
-figures.identifiers.list = {
-    figures.identifiers.default
-}
+figures.programs    = figures.programs or { }
+programs            = figures.programs
 
-function figures.identifiers.default(data)
+function identifiers.default(data)
     local dr, du, ds = data.request, data.used, data.status
     local l = locate(dr)
     local foundname = l.foundname
@@ -669,7 +685,7 @@ end
 
 function figures.identify(data)
     data = data or figures.current()
-    local list = figures.identifiers.list
+    local list = identifiers.list -- defined at the end
     for i=1,#list do
         local identifier = list[i]
         data = identifier(data)
@@ -680,17 +696,17 @@ function figures.identify(data)
     return data
 end
 function figures.exists(askedname,format,resolve)
-    return (figures.existers[format] or figures.existers.generic)(askedname,resolve)
+    return (existers[format] or existers.generic)(askedname,resolve)
 end
 function figures.check(data)
     data = data or figures.current()
     local dr, du, ds = data.request, data.used, data.status
-    return (figures.checkers[ds.format] or figures.checkers.generic)(data)
+    return (checkers[ds.format] or checkers.generic)(data)
 end
 function figures.include(data)
     data = data or figures.current()
     local dr, du, ds = data.request, data.used, data.status
-    return (figures.includers[ds.format] or figures.includers.generic)(data)
+    return (includers[ds.format] or includers.generic)(data)
 end
 function figures.scale(data) -- will become lua code
     texsprint(ctxcatcodes,"\\doscalefigure")
@@ -727,7 +743,7 @@ end
 
 -- -- -- generic -- -- --
 
-function figures.existers.generic(askedname,resolve)
+function existers.generic(askedname,resolve)
     -- not findbinfile
     local result
     if lfs.isfile(askedname) then
@@ -745,7 +761,7 @@ function figures.existers.generic(askedname,resolve)
     end
     return result
 end
-function figures.checkers.generic(data)
+function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     local name, page, size, color = du.fullname or "unknown generic", du.page or dr.page, dr.size or "crop", dr.color or "natural"
     local conversion = dr.conversion
@@ -756,9 +772,9 @@ function figures.checkers.generic(data)
     local figure = figures.loaded[hash]
     if figure == nil then
         figure = img.new { filename = name, page = page, pagebox = dr.size }
-        backends.codeinjections.setfigurecolorspace(data,figure)
+        codeinjections.setfigurecolorspace(data,figure)
         figure = (figure and img.scan(figure)) or false
-        local f, d = backends.codeinjections.setfigurealternative(data,figure)
+        local f, d = codeinjections.setfigurealternative(data,figure)
         figure, data = f or figure, d or data
         figures.loaded[hash] = figure
         if trace_conversion then
@@ -778,7 +794,7 @@ function figures.checkers.generic(data)
     end
     return data
 end
-function figures.includers.generic(data)
+function includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     -- here we set the 'natural dimensions'
     dr.width = du.width
@@ -807,13 +823,13 @@ end
 
 -- -- -- nongeneric -- -- --
 
-function figures.checkers.nongeneric(data,command)
+function checkers.nongeneric(data,command)
     local dr, du, ds = data.request, data.used, data.status
     local name = du.fullname or "unknown nongeneric"
     local hash = name
     if dr.object then
         -- hm, bugged
-        if not jobobjects.get("FIG::"..hash) then
+        if not job.objects.get("FIG::"..hash) then
             texsprint(ctxcatcodes,command)
             texsprint(ctxcatcodes,format("\\setobject{FIG}{%s}\\vbox{\\box\\foundexternalfigure}",hash))
         end
@@ -823,13 +839,13 @@ function figures.checkers.nongeneric(data,command)
     end
     return data
 end
-function figures.includers.nongeneric(data)
+function includers.nongeneric(data)
     return data
 end
 
 -- -- -- mov -- -- --
 
-function figures.checkers.mov(data)
+function checkers.mov(data)
     local dr, du, ds = data.request, data.used, data.status
     local width = todimen(dr.width or figures.defaultwidth)
     local height = todimen(dr.height or figures.defaultheight)
@@ -842,7 +858,7 @@ function figures.checkers.mov(data)
     -- we need to push the node.write in between ... we could make a shared helper for this
     context.startfoundexternalfigure(width .. "sp",height .. "sp")
     context(function()
-        backends.codeinjections.insertmovie {
+        nodeinjections.insertmovie {
             width      = width,
             height     = height,
             factor     = number.dimenfactors.bp,
@@ -857,7 +873,7 @@ function figures.checkers.mov(data)
     return data
 end
 
-figures.includers.mov = figures.includers.nongeneric
+includers.mov = includers.nongeneric
 
 -- -- -- mps -- -- --
 
@@ -870,45 +886,45 @@ local function internal(askedname)
     end
 end
 
-function figures.existers.mps(askedname)
+function existers.mps(askedname)
     local mprun, mpnum = internal(askedname)
     if mpnum then
         return askedname
     else
-        return figures.existers.generic(askedname)
+        return existers.generic(askedname)
     end
 end
-function figures.checkers.mps(data)
+function checkers.mps(data)
     local mprun, mpnum = internal(data.used.fullname)
     if mpnum then
-        return figures.checkers.nongeneric(data,format("\\docheckfiguremprun{%s}{%s}",mprun,mpnum))
+        return checkers.nongeneric(data,format("\\docheckfiguremprun{%s}{%s}",mprun,mpnum))
     else
-        return figures.checkers.nongeneric(data,format("\\docheckfiguremps{%s}",data.used.fullname))
+        return checkers.nongeneric(data,format("\\docheckfiguremps{%s}",data.used.fullname))
     end
 end
-figures.includers.mps = figures.includers.nongeneric
+includers.mps = includers.nongeneric
 
 -- -- -- buffer -- -- --
 
-function figures.existers.buffer(askedname)
+function existers.buffer(askedname)
     askedname = file.nameonly(askedname)
     return buffers.exists(askedname) and askedname
 end
-function figures.checkers.buffer(data)
-    return figures.checkers.nongeneric(data,format("\\docheckfigurebuffer{%s}", file.nameonly(data.used.fullname)))
+function checkers.buffer(data)
+    return checkers.nongeneric(data,format("\\docheckfigurebuffer{%s}", file.nameonly(data.used.fullname)))
 end
-figures.includers.buffers = figures.includers.nongeneric
+includers.buffers = includers.nongeneric
 
 -- -- -- tex -- -- --
 
-function figures.existers.tex(askedname)
+function existers.tex(askedname)
     askedname = resolvers.find_file(askedname)
     return (askedname ~= "" and askedname) or false
 end
-function figures.checkers.tex(data)
-    return figures.checkers.nongeneric(data,format("\\docheckfiguretex{%s}", data.used.fullname))
+function checkers.tex(data)
+    return checkers.nongeneric(data,format("\\docheckfiguretex{%s}", data.used.fullname))
 end
-figures.includers.tex = figures.includers.nongeneric
+includers.tex = includers.nongeneric
 
 -- -- -- converters -- -- --
 
@@ -928,9 +944,9 @@ end
 -- -- -- eps -- -- --
 
 local epsconverter     = { }
-figures.converters.eps = epsconverter
+converters.eps = epsconverter
 
-figures.programs.gs = {
+programs.gs = {
     options = {
         "-dAutoRotatePages=/None",
         "-dPDFSETTINGS=/prepress",
@@ -940,7 +956,7 @@ figures.programs.gs = {
 }
 
 function epsconverter.pdf(oldname,newname)
-    local gs = figures.programs.gs
+    local gs = programs.gs
     runprogram (
         '%s -q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH %s -sOutputFile="%s" "%s" -c quit',
         gs.command, makeoptions(gs.options), newname, oldname
@@ -952,12 +968,12 @@ epsconverter.default = epsconverter.pdf
 -- -- -- svg -- -- --
 
 local svgconverter      = { }
-figures.converters.svg  = svgconverter
-figures.converters.svgz = svgconverter
+converters.svg  = svgconverter
+converters.svgz = svgconverter
 
 -- inkscape on windows only works with complete paths
 
-figures.programs.inkscape = {
+programs.inkscape = {
     options = {
         "--export-dpi=600"
     },
@@ -965,7 +981,7 @@ figures.programs.inkscape = {
 }
 
 function svgconverter.pdf(oldname,newname)
-    local inkscape = figures.programs.inkscape
+    local inkscape = programs.inkscape
     runprogram (
         '%s "%s" --export-pdf="%s" %s',
         inkscape.command, oldname, newname, makeoptions(inkscape.options)
@@ -973,7 +989,7 @@ function svgconverter.pdf(oldname,newname)
 end
 
 function svgconverter.png(oldname,newname)
-    local inkscape = figures.programs.inkscape
+    local inkscape = programs.inkscape
     runprogram (
         '%s "%s" --export-png="%s" %s',
         inkscape.command, oldname, newname, makeoptions(inkscape.options)
@@ -985,15 +1001,15 @@ svgconverter.default = svgconverter.pdf
 -- -- -- gif -- -- --
 
 local gifconverter     = { }
-figures.converters.gif = gifconverter
+converters.gif = gifconverter
 
-figures.programs.convert = {
+programs.convert = {
     command = "convert"    -- imagemagick
  -- command = "gm convert" -- graphicmagick
 }
 
 function gifconverter.pdf(oldname,newname)
-    local convert = figures.programs.convert
+    local convert = programs.convert
     runprogram (
         "%s %s %s %s",
         convert.command, makeoptions(convert.options), oldname, newname
@@ -1099,7 +1115,7 @@ function bases.locate(askedlabel)
     return false
 end
 
-function figures.identifiers.base(data)
+function identifiers.base(data)
     if bases.enabled then
         local dr, du, ds = data.request, data.used, data.status
         local fbl = bases.locate(dr.name or dr.label)
@@ -1116,9 +1132,9 @@ function figures.identifiers.base(data)
     return data
 end
 
-figures.identifiers.list = {
-    figures.identifiers.base,
-    figures.identifiers.default
+identifiers.list = {
+    identifiers.base,
+    identifiers.default
 }
 
 -- tracing

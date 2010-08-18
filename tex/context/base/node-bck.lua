@@ -9,17 +9,22 @@ if not modules then modules = { } end modules ['node-bck'] = {
 -- beware, this one takes quite some runtime, so we need a status flag
 -- maybe some page related state
 
-local nodecodes = nodes.nodecodes
+local attributes, nodes, node = attributes, nodes, node
 
-local hlist = nodecodes.hlist
-local vlist = nodecodes.vlist
+local nodecodes      = nodes.nodecodes
 
-local has_attribute = node.has_attribute
-local set_attribute = node.set_attribute
-local traverse      = node.traverse
+local hlist_code     = nodecodes.hlist
+local vlist_code     = nodecodes.vlist
 
-local new_rule = nodes.rule
-local new_glue = nodes.glue
+local has_attribute  = node.has_attribute
+local set_attribute  = node.set_attribute
+local traverse       = node.traverse
+
+local nodepool       = nodes.pool
+local tasks          = nodes.tasks
+
+local new_rule       = nodepool.rule
+local new_glue       = nodepool.glue
 
 local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')
@@ -28,11 +33,11 @@ local a_background   = attributes.private('background')
 
 local function add_backgrounds(head) -- boxes, inline will be done too
     local id = head.id
-    if id == vlist or id == hlist then
+    if id == vlist_code or id == hlist_code then
         local current = head.list
         while current do
             local id = current.id
-            if id == hlist then -- and current.list
+            if id == hlist_code then -- and current.list
                 local background = has_attribute(current,a_background)
                 if background then
                     -- direct to hbox
@@ -86,7 +91,7 @@ local function add_backgrounds(head) -- boxes, inline will be done too
                         add_backgrounds(current)
                     end
                 end
-            elseif id == vlist then -- and current.list
+            elseif id == vlist_code then -- and current.list
                     -- direct to vbox
                 local background = has_attribute(current,a_background)
                 if background then
@@ -116,6 +121,6 @@ local function add_backgrounds(head) -- boxes, inline will be done too
     return head, true
 end
 
-nodes.add_backgrounds = add_backgrounds
+nodes.handlers.backgrounds = add_backgrounds
 
-tasks.appendaction("shipouts","normalizers","nodes.add_backgrounds")
+tasks.appendaction("shipouts","normalizers","nodes.handlers.backgrounds")

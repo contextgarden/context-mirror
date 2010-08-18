@@ -22,8 +22,8 @@
 
 \definesystemattribute[trigger] \chardef\triggerattribute \dogetattributeid{trigger} % feature inheritance
 
-\def\finalizeobjectbox #1{\ctxlua{nodes.process_page(tex.box[\number#1])}}
-\def\finalizeshipoutbox#1{\ctxlua{nodes.process_page(tex.box[\number#1])}}
+\def\finalizeobjectbox #1{\ctxlua{nodes.handlers.finalize(tex.box[\number#1])}}
+\def\finalizeshipoutbox#1{\ctxlua{nodes.handlers.finalize(tex.box[\number#1])}}
 
 % tricky stuff:
 
@@ -56,12 +56,12 @@
    \stopinheritattributes}
 
 \def\enableattributeinheritance
-  {\ctxlua{states.enabletriggering()}%
+  {\ctxlua{attributes.states.enabletriggering()}%
    \let\attributedcopy\doattributedcopy
    \let\attributedbox \doattributedbox}
 
 \def\disableattributeinheritance
-  {\ctxlua{states.disabletriggering()}%
+  {\ctxlua{attributes.states.disabletriggering()}%
    \let\attributedcopy\copy
    \let\attributedbox \box}
 

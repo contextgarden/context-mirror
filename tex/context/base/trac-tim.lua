@@ -11,10 +11,7 @@ local concat, sort = table.concat, table.sort
 local next, tonumber = next, tonumber
 
 moduledata.progress = moduledata.progress or { }
-
-local progress = moduledata.progress
-
-progress = progress or { }
+local progress      = moduledata.progress
 
 progress.defaultfilename = ((tex and tex.jobname) or "whatever") .. "-luatex-progress"
 
@@ -47,7 +44,7 @@ function progress.store()
     local c = os.clock()
     local t = {
         elapsed_time = c - last,
-        node_memory  = nodes.usage(),
+        node_memory  = nodes.pool.usage(),
     }
     for k, v in next, params do
         if status[v] then t[v] = status[v] end

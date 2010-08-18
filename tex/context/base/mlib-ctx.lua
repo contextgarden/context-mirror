@@ -8,14 +8,18 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
 
 -- todo
 
-local format, join = string.format, table.concat
+local format, concat = string.format, table.concat
 local sprint = tex.sprint
 
 local report_mplib = logs.new("mplib")
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-metapost = metapost or {}
+local mplib = mplib
+
+metapost       = metapost or {}
+local metapost = metapost
+
 metapost.defaultformat = "metafun"
 
 function metapost.graphic(instance,mpsformat,str,initializations,preamble,askedfig)
@@ -64,7 +68,7 @@ end
 function metapost.theclippath(...)
     local result = metapost.getclippath(...)
     if result then -- we could just print the table
-        result = join(metapost.flushnormalpath(result),"\n")
+        result = concat(metapost.flushnormalpath(result),"\n")
         sprint(result)
     end
 end
@@ -84,3 +88,19 @@ statistics.register("metapost processing time", function()
         return nil
     end
 end)
+
+-- only used in graphictexts
+
+metapost.tex = metapost.tex or { }
+
+local environments = { }
+
+function metapost.tex.set(str)
+    environments[#environments+1] = str
+end
+function metapost.tex.reset()
+    environments = { }
+end
+function metapost.tex.get()
+    return concat(environments,"\n")
+end

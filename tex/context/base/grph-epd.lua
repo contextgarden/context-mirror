@@ -7,17 +7,20 @@ if not modules then modules = { } end modules ['grph-epd'] = {
 }
 
 local variables = interfaces.variables
+local settings_to_hash = utilities.parsers.settings_to_hash
 
 -- todo: page, name, file, url
 
+local codeinjections = backends.codeinjections
+
 function figures.mergegoodies(optionlist)
-    local options = aux.settings_to_hash(optionlist)
+    local options = settings_to_hash(optionlist)
     local all = options[variables.all] or options[variables.yes]
     if all or options[variables.reference] then
-        backends.codeinjections.mergereferences()
+        codeinjections.mergereferences()
     end
     if all or options[variables.layer] then
-        backends.codeinjections.mergelayers()
+        codeinjections.mergeviewerlayers()
     end
 
 end

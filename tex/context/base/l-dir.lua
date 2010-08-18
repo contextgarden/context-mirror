@@ -10,20 +10,30 @@ if not modules then modules = { } end modules ['l-dir'] = {
 
 local type = type
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
+local concat = table.concat
 local lpegmatch = lpeg.match
 
+local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
+
 dir = dir or { }
+local dir = dir
+local lfs = lfs
+
+local attributes = lfs.attributes
+local walkdir    = lfs.dir
+local isdir      = lfs.isdir
+local isfile     = lfs.isfile
+local mkdir      = lfs.mkdir
+local chdir      = lfs.chdir
+local currentdir = lfs.currentdir
 
 -- handy
 
 function dir.current()
-    return (gsub(lfs.currentdir(),"\\","/"))
+    return (gsub(currentdir(),"\\","/"))
 end
 
--- optimizing for no string.find (*) does not save time
-
-local attributes = lfs.attributes
-local walkdir    = lfs.dir
+-- optimizing for no find (*) does not save time
 
 local function glob_pattern(path,patt,recurse,action)
     local ok, scanner
@@ -79,8 +89,6 @@ end
 
 dir.collect_pattern = collect_pattern
 
-local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
-
 local pattern = Ct {
     [1] = (C(P(".") + P("/")^1) + C(R("az","AZ") * P(":") * P("/")^0) + Cc("./")) * V(2) * V(3),
     [2] = C(((1-S("*?/"))^0 * P("/"))^0),
@@ -103,7 +111,7 @@ local function glob(str,t)
             for s=1,#str do
                 glob(str[s],t)
             end
-        elseif lfs.isfile(str) then
+        elseif isfile(str) then
             t(str)
         else
             local split = lpegmatch(pattern,str)
@@ -122,7 +130,7 @@ local function glob(str,t)
                 glob(str[s],t)
             end
             return t
-        elseif lfs.isfile(str) then
+        elseif isfile(str) then
             local t = t or { }
             t[#t+1] = str
             return t
@@ -191,7 +199,7 @@ dir.globfiles = globfiles
 -- print(dir.ls("*.tex"))
 
 function dir.ls(pattern)
-    return table.concat(glob(pattern),"\n")
+    return concat(glob(pattern),"\n")
 end
 
 --~ mkdirs("temp")
@@ -201,7 +209,7 @@ end
 
 local make_indeed = true -- false
 
-if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
+if find(os.getenv("PATH"),";") then -- os.type == "windows"
 
     function dir.mkdirs(...)
         local str, pth, t = "", "", { ... }
@@ -250,11 +258,11 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
             else
                 pth = pth .. "/" .. s
             end
-            if make_indeed and not lfs.isdir(pth) then
-                lfs.mkdir(pth)
+            if make_indeed and not isdir(pth) then
+                mkdir(pth)
             end
         end
-        return pth, (lfs.isdir(pth) == true)
+        return pth, (isdir(pth) == true)
     end
 
 --~         print(dir.mkdirs("","","a","c"))
@@ -280,11 +288,11 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
         if not first then
             first, last = match(str,"^([a-zA-Z]:)(.*)$")
             if first and not find(last,"^/") then
-                local d = lfs.currentdir()
-                if lfs.chdir(first) then
+                local d = currentdir()
+                if chdir(first) then
                     first = dir.current()
                 end
-                lfs.chdir(d)
+                chdir(d)
             end
         end
         if not first then
@@ -325,20 +333,20 @@ else
                 else
                     pth = pth .. "/" .. s
                 end
-                if make_indeed and not first and not lfs.isdir(pth) then
-                    lfs.mkdir(pth)
+                if make_indeed and not first and not isdir(pth) then
+                    mkdir(pth)
                 end
             end
         else
             pth = "."
             for s in gmatch(str,"[^/]+") do
                 pth = pth .. "/" .. s
-                if make_indeed and not lfs.isdir(pth) then
-                    lfs.mkdir(pth)
+                if make_indeed and not isdir(pth) then
+                    mkdir(pth)
                 end
             end
         end
-        return pth, (lfs.isdir(pth) == true)
+        return pth, (isdir(pth) == true)
     end
 
 --~         print(dir.mkdirs("","","a","c"))
@@ -351,7 +359,7 @@ else
 
     function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
-            str = lfs.currentdir() .. "/" .. str
+            str = currentdir() .. "/" .. str
         end
         str = gsub(str,"//","/")
         str = gsub(str,"/%./","/")

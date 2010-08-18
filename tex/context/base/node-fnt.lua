@@ -12,18 +12,20 @@ local next, type = next, type
 
 local trace_characters = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
 
-local traverse_id, has_attribute = node.traverse_id, node.has_attribute
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
-
-local nodecodes = nodes.nodecodes
-
-local glyph = nodecodes.glyph
+local nodes, node = nodes, node
 
 fonts     = fonts      or { }
 fonts.tfm = fonts.tfm  or { }
 fonts.ids = fonts.ids  or { }
 
-local fontdata = fonts.ids
+local traverse_id   = node.traverse_id
+local has_attribute = node.has_attribute
+local starttiming   = statistics.starttiming
+local stoptiming    = statistics.stoptiming
+local nodecodes     = nodes.nodecodes
+local glyph         = nodecodes.glyph
+local fontdata      = fonts.ids
+local handlers      = nodes.handlers
 
 -- some tests with using an array of dynamics[id] and processes[id] demonstrated
 -- that there was nothing to gain (unless we also optimize other parts)
@@ -35,7 +37,7 @@ local fontdata = fonts.ids
 -- happen often; we could consider processing sublists but that might need mor
 -- checking later on; the current approach also permits variants
 
-function nodes.process_characters(head)
+function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
     local usedfonts, attrfonts, done = { }, { }, false
@@ -151,5 +153,5 @@ function nodes.process_characters(head)
     return head, true
 end
 
-nodes.protect_glyphs   = node.protect_glyphs
-nodes.unprotect_glyphs = node.unprotect_glyphs
+handlers.protectglyphs   = node.protect_glyphs
+handlers.unprotectglyphs = node.unprotect_glyphs

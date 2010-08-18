@@ -6,11 +6,16 @@ if not modules then modules = { } end modules ['char-cmp'] = {
     license   = "see context related readme files"
 }
 
+local type = type
 local utf = unicode.utf8
+local utfchar = utf.char
 local unpack = unpack or table.unpack
 
-characters            = characters            or { }
+characters            = characters or { }
+local characters      = characters
+
 characters.uncomposed = characters.uncomposed or { }
+local uncomposed      = characters.uncomposed
 
 --[[ldx--
 <p>The code defined here may move to the big character table.</p>
@@ -45,7 +50,7 @@ Of course they may come in handy elsewhere too</p>
 --    => shcode == { ub('a') }
 --    => reduction = "a"
 
-characters.uncomposed.left = {
+uncomposed.left = {
     AEligature = "A",  aeligature = "a",
     OEligature = "O",  oeligature = "o",
     IJligature = "I",  ijligature = "i",
@@ -55,7 +60,7 @@ characters.uncomposed.left = {
     Ssharp     = "S",  ssharp     = "s",
 }
 
-characters.uncomposed.right = {
+uncomposed.right = {
     AEligature = "E",  aeligature = "e",
     OEligature = "E",  oeligature = "e",
     IJligature = "J",  ijligature = "j",
@@ -65,7 +70,7 @@ characters.uncomposed.right = {
     Ssharp     = "S",  ssharp     = "s",
 }
 
-characters.uncomposed.both = {
+uncomposed.both = {
     Acircumflex = "A",  acircumflex = "a",
     Ccircumflex = "C",  ccircumflex = "c",
     Ecircumflex = "E",  ecircumflex = "e",
@@ -200,11 +205,11 @@ function characters.uncompose(n) -- n == string|number, returns string
     if cdn then
         local shcode = cdn.shcode
         if not shcode then
-            return characters.uncomposed.both[cdn.contextname] or n
+            return uncomposed.both[cdn.contextname] or n
         elseif type(shcode) == "table" then
-            return utf.char(unpack(cdn.shcode))
+            return utfchar(unpack(cdn.shcode))
         else
-            return utf.char(cdn.shcode)
+            return utfchar(cdn.shcode)
         end
     end
     return n

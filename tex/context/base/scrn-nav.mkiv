@@ -96,15 +96,15 @@
   {\iflocation
      \donefalse
      \ifx\@@iaopenaction\empty \else \donetrue
-        \ctxlua{jobreferences.checkopendocumentactions("\@@iaopenaction")}%
-        \ctxlua{jobreferences.expandcurrent()}%
+        \ctxlua{structures.references.checkopendocumentactions("\@@iaopenaction")}%
+        \ctxlua{structures.references.expandcurrent()}%
      \fi
      \ifx\@@iacloseaction\empty \else \donetrue
-        \ctxlua{jobreferences.checkclosedocumentactions("\@@iacloseaction")}%
-        \ctxlua{jobreferences.expandcurrent()}%
+        \ctxlua{structures.references.checkclosedocumentactions("\@@iacloseaction")}%
+        \ctxlua{structures.references.expandcurrent()}%
      \fi
      \ifdone
-        \ctxlua{jobreferences.flushdocumentactions()}%
+        \ctxlua{structures.references.flushdocumentactions()}%
      \fi
      \global\let\dolocationstartup\relax
    \fi}
@@ -113,15 +113,15 @@
   {\iflocation
      \donefalse
      \ifx\@@iaopenpageaction\empty \else \donetrue
-        \ctxlua{jobreferences.checkopenpageactions("\@@iaopenpageaction")}%
-        \ctxlua{jobreferences.expandcurrent()}%
+        \ctxlua{structures.references.checkopenpageactions("\@@iaopenpageaction")}%
+        \ctxlua{structures.references.expandcurrent()}%
      \fi
      \ifx\@@iaclosepageaction\empty \else \donetrue
-        \ctxlua{jobreferences.checkclosepageactions("\@@iaclosepageaction")}%
-        \ctxlua{jobreferences.expandcurrent()}%
+        \ctxlua{structures.references.checkclosepageactions("\@@iaclosepageaction")}%
+        \ctxlua{structures.references.expandcurrent()}%
      \fi
      \ifdone
-        \ctxlua{jobreferences.flushpageactions()}%
+        \ctxlua{structures.references.flushpageactions()}%
      \fi
    \fi}
 
@@ -197,7 +197,7 @@
 
 \def\enableinteractivereferences
   {\ifproductionrun
-     \ctxlua{jobreferences.enable_interaction()}%
+     \ctxlua{structures.references.enable_interaction()}%
      \globallet\enableinteractivereferences\relax
    \fi}
 

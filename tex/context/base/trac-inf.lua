@@ -14,14 +14,13 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 local format = string.format
 local clock = os.gettimeofday or os.clock -- should go in environment
 
-local statusinfo, n, registered = { }, 0, { }
-
-statistics = statistics or { }
+statistics       = statistics or { }
+local statistics = statistics
 
 statistics.enable    = true
 statistics.threshold = 0.05
 
-local timers = { }
+local statusinfo, n, registered, timers = { }, 0, { }, { }
 
 local function hastiming(instance)
     return instance and timers[instance]

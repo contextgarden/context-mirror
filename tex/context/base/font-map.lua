@@ -24,8 +24,8 @@ of obsolete. Some code may move to runtime or auxiliary modules.</p>
 <p>The name to unciode related code will stay of course.</p>
 --ldx]]--
 
-fonts     = fonts     or { }
-fonts.map = fonts.map or { }
+local fonts = fonts
+fonts.map   = fonts.map or { }
 
 local function load_lum_table(filename) -- will move to font goodies
     local lumname = file.replacesuffix(file.basename(filename),"lum")
@@ -39,15 +39,16 @@ local function load_lum_table(filename) -- will move to font goodies
     end
 end
 
-local hex     = lpeg.R("AF","09")
+local P, R, S, C, Ct, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc
+
+local hex     = R("AF","09")
 local hexfour = (hex*hex*hex*hex) / function(s) return tonumber(s,16) end
 local hexsix  = (hex^1)           / function(s) return tonumber(s,16) end
-local dec     = (lpeg.R("09")^1)  / tonumber
-local period  = lpeg.P(".")
-
-local unicode = lpeg.P("uni")   * (hexfour * (period + lpeg.P(-1)) * lpeg.Cc(false) + lpeg.Ct(hexfour^1) * lpeg.Cc(true))
-local ucode   = lpeg.P("u")     * (hexsix  * (period + lpeg.P(-1)) * lpeg.Cc(false) + lpeg.Ct(hexsix ^1) * lpeg.Cc(true))
-local index   = lpeg.P("index") * dec * lpeg.Cc(false)
+local dec     = (R("09")^1)  / tonumber
+local period  = P(".")
+local unicode = P("uni")   * (hexfour * (period + P(-1)) * Cc(false) + Ct(hexfour^1) * Cc(true))
+local ucode   = P("u")     * (hexsix  * (period + P(-1)) * Cc(false) + Ct(hexsix ^1) * Cc(true))
+local index   = P("index") * dec * Cc(false)
 
 local parser  = unicode + ucode + index
 
@@ -59,7 +60,7 @@ local function make_name_parser(str)
     else
         local p = parsers[str]
         if not p then
-            p = lpeg.P(str) * period * dec * lpeg.Cc(false)
+            p = P(str) * period * dec * Cc(false)
             parsers[str] = p
         end
         return p
@@ -126,9 +127,9 @@ fonts.map.make_name_parser    = make_name_parser
 fonts.map.tounicode16         = tounicode16
 fonts.map.tounicode16sequence = tounicode16sequence
 
-local separator   = lpeg.S("_.")
-local other       = lpeg.C((1 - separator)^1)
-local ligsplitter = lpeg.Ct(other * (separator * other)^0)
+local separator   = S("_.")
+local other       = C((1 - separator)^1)
+local ligsplitter = Ct(other * (separator * other)^0)
 
 --~ print(table.serialize(lpegmatch(ligsplitter,"this")))
 --~ print(table.serialize(lpegmatch(ligsplitter,"this.that")))

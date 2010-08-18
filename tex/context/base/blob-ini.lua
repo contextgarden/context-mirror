@@ -31,8 +31,10 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local fontdata = fonts.identifiers
 
-local new_glyph_node    = nodes.glyph
-local new_glue_node     = nodes.glyph
+local nodepool          = nodes.pool
+
+local new_glyph         = nodepool.glyph
+local new_glue          = nodepool.glue
 
 local copy_node         = node.copy
 local copy_node_list    = node.copy_list
@@ -76,7 +78,7 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph)
         if s == 32 then
             if not space then
                 local parameters = fontdata[fnt].parameters
-                space = new_glue_node(parameters.space,parameters.space_stretch,parameters.space_shrink)
+                space = new_glue(parameters.space,parameters.space_stretch,parameters.space_shrink)
                 n = space
             else
                 n = copy_node(space)
@@ -85,7 +87,7 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph)
             n = copy_node(template)
             n.char = s
         else
-            n = new_glyph_node(fnt,s)
+            n = new_glyph(fnt,s)
         end
         if attr then -- normally false when template
             n.attr = copy_node_list(attr)

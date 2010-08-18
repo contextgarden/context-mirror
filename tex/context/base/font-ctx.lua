@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 local texsprint, count, texsetcount = tex.sprint, tex.count, tex.setcount
 local format, concat, gmatch, match, find, lower, gsub, byte = string.format, table.concat, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
+local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
+local formatcolumns = utilities.formatters.formatcolumns
 
 local tostring, next, type = tostring, next, type
 local lpegmatch = lpeg.match
@@ -25,6 +27,7 @@ local report_define   = logs.new("define fonts")
 local report_usage    = logs.new("fonts usage")
 local report_mapfiles = logs.new("mapfiles")
 
+local fonts    = fonts
 local tfm      = fonts.tfm
 local define   = fonts.define
 local fontdata = fonts.identifiers
@@ -76,7 +79,6 @@ storage.register("fonts/merged",   define.specify.context_merged,  "fonts.define
 storage.register("fonts/synonyms", define.specify.synonyms,        "fonts.define.specify.synonyms")
 
 local normalize_meanings = fonts.otf.meanings.normalize
-local settings_to_hash   = aux.settings_to_hash
 local default_features   = fonts.otf.features.default
 
 local function preset_context(name,parent,features) -- currently otf only
@@ -307,7 +309,7 @@ end
 specify.split_context = split_context
 
 function specify.context_tostring(name,kind,separator,yes,no,strict,omit) -- not used
-    return aux.hash_to_string(table.merged(fonts[kind].features.default or {},setups[name] or {}),separator,yes,no,strict,omit)
+    return hash_to_string(table.merged(fonts[kind].features.default or {},setups[name] or {}),separator,yes,no,strict,omit)
 end
 
 function specify.starred(features) -- no longer fallbacks here
@@ -687,7 +689,7 @@ function fonts.report_defined_fonts()
                 data.hash                           or "",
             }
         end
-        aux.formatcolumns(t,"  ")
+        formatcolumns(t,"  ")
         report_usage()
         report_usage("defined fonts:")
         report_usage()
@@ -711,7 +713,7 @@ function fonts.report_used_features()
             t[#t+1] = { i, name, table.sequenced(setup,false,true) } -- simple mode
             setup.number = n -- restore it (normally not needed as we're done anyway)
         end
-        aux.formatcolumns(t,"  ")
+        formatcolumns(t,"  ")
         report_usage()
         report_usage("defined featuresets:")
         report_usage()

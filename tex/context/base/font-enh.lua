@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-enh'] = {
     license   = "see context related readme files"
 }
 
+-- todo: optimize a bit
+
 local next, match = next, string.match
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
@@ -21,7 +23,8 @@ local report_define = logs.new("define fonts")
 <p>Here we only implement a few helper functions.</p>
 --ldx]]--
 
-local tfm = fonts.tfm
+local fonts = fonts
+local tfm   = fonts.tfm
 
 --[[ldx--
 <p>The next function encapsulates the standard <l n='tfm'/> loader as

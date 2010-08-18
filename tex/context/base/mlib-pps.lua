@@ -26,19 +26,26 @@ local trace_textexts = false  trackers.register("metapost.textexts", function(v)
 
 local report_mplib = logs.new("mplib")
 
-colors = colors or { }
+local colors = attributes.colors
 
 local rgbtocmyk  = colors.rgbtocmyk   or function() return 0,0,0,1 end
 local cmyktorgb  = colors.cmyktorgb   or function() return 0,0,0   end
 local rgbtogray  = colors.rgbtogray   or function() return 0       end
 local cmyktogray = colors.cmyktogray  or function() return 0       end
 
-metapost               = metapost or { }
-metapost.specials      = metapost.specials or { }
-metapost.specials.data = metapost.specials.data or { }
-metapost.externals     = metapost.externals or { n = 0 }
+local mplib, lpdf = mplib, lpdf
 
-local data = metapost.specials.data
+metapost           = metapost or { }
+local metapost     = metapost
+
+metapost.specials  = metapost.specials or { }
+local specials     = metapost.specials
+
+specials.data      = specials.data or { }
+local data         = specials.data
+
+metapost.externals = metapost.externals or { n = 0 }
+local externals    = metapost.externals
 
 local colordata = { {}, {}, {}, {}, {} }
 
@@ -59,6 +66,8 @@ local innertransparency   = nooutertransparency
 
 local pdfcolor, pdftransparency = lpdf.color, lpdf.transparency
 local registercolor, registerspotcolor = colors.register, colors.registerspotcolor
+
+local transparencies       = attributes.transparencies
 local registertransparency = transparencies.register
 
 function metapost.set_outer_color(mode,colormodel,colorattribute,transparencyattribute)
@@ -100,7 +109,7 @@ function metapost.colorinitializer()
     return outercolor, outertransparency
 end
 
-function metapost.specials.register(str) -- only colors
+function specials.register(str) -- only colors
     local size, content, n, class = match(str,"^%%%%MetaPostSpecial: (%d+) (.*) (%d+) (%d+)$")
     if class then
         -- use lpeg splitter
@@ -182,7 +191,7 @@ function metapost.colorspec(cs) -- used for shades ... returns table (for checki
     end
 end
 
-function metapost.specials.tr(specification,object,result)
+function specials.tr(specification,object,result)
     local a, t = match(specification,"^(.+),(.+)$")
     local before = a and t and function()
         result[#result+1] = format("/Tr%s gs",registertransparency(nil,a,t,true)) -- maybe nil instead of 'mp'
@@ -209,11 +218,11 @@ local colorsplitter         = lpeg.Ct(lpeg.splitter(":",tonumber))
 --
 -- This is also an example of a simple plugin.
 
---~ function metapost.specials.cc(specification,object,result)
+--~ function specials.cc(specification,object,result)
 --~     object.color = lpegmatch(specificationsplitter,specification)
 --~     return object, nil, nil, nil
 --~ end
---~ function metapost.specials.cc(specification,object,result)
+--~ function specials.cc(specification,object,result)
 --~     local c = lpegmatch(specificationsplitter,specification)
 --~     local o = object.color[1]
 --~     c[1],c[2],c[3],c[4] = o*c[1],o*c[2],o*c[3],o*c[4]
@@ -225,7 +234,7 @@ local colorsplitter         = lpeg.Ct(lpeg.splitter(":",tonumber))
 -- x' = sx * x + ry * y + tx
 -- y' = rx * x + sy * y + ty
 
-function metapost.specials.fg(specification,object,result,flusher) -- graphics
+function specials.fg(specification,object,result,flusher) -- graphics
     local op = object.path
     local first, second, fourth  = op[1], op[2], op[4]
     local tx, ty = first.x_coord      , first.y_coord
@@ -242,7 +251,7 @@ function metapost.specials.fg(specification,object,result,flusher) -- graphics
     return { } , before, nil, nil -- replace { } by object for tracing
 end
 
-function metapost.specials.ps(specification,object,result) -- positions
+function specials.ps(specification,object,result) -- positions
     local op = object.path
     local first, third  = op[1], op[3]
     local x, y = first.x_coord, first.y_coord
@@ -347,7 +356,7 @@ end
 
 -- todo: we need a way to move/scale
 
-function metapost.specials.cs(specification,object,result,flusher) -- spot colors?
+function specials.cs(specification,object,result,flusher) -- spot colors?
     nofshades = nofshades + 1
     local t = lpegmatch(specificationsplitter,specification)
     local ca = lpegmatch(colorsplitter,t[4])
@@ -359,7 +368,7 @@ function metapost.specials.cs(specification,object,result,flusher) -- spot color
     return resources(object,name,flusher,result) -- object, before, nil, after
 end
 
-function metapost.specials.ls(specification,object,result,flusher)
+function specials.ls(specification,object,result,flusher)
     nofshades = nofshades + 1
     local t = lpegmatch(specificationsplitter,specification)
     local ca = lpegmatch(colorsplitter,t[4])
@@ -414,7 +423,7 @@ function metapost.gettext(box,slot)
 --  textexts[slot] = nil -- no, pictures can be placed several times
 end
 
-function metapost.specials.tf(specification,object)
+function specials.tf(specification,object)
 --~ print("setting", metapost.textext_current)
     local n, str = match(specification,"^(%d+):(.+)$")
     if n and str then
@@ -433,7 +442,7 @@ function metapost.specials.tf(specification,object)
     return { }, nil, nil, nil
 end
 
-function metapost.specials.ts(specification,object,result,flusher)
+function specials.ts(specification,object,result,flusher)
     -- print("getting", metapost.textext_current)
     local n, str = match(specification,"^(%d+):(.+)$")
     if n and str then
@@ -787,30 +796,12 @@ function metapost.graphic_extra_pass(askedfig)
     }, false, nil, false, true, askedfig )
 end
 
-metapost.tex = metapost.tex or { }
-
-do -- only used in graphictexts
-
-    local environments = { }
-
-    function metapost.tex.set(str)
-        environments[#environments+1] = str
-    end
-    function metapost.tex.reset()
-        environments = { }
-    end
-    function metapost.tex.get()
-        return concat(environments,"\n")
-    end
-
-end
-
 local graphics = { }
 local start    = [[\starttext]]
 local preamble = [[\long\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
 local stop     = [[\stoptext]]
 
-function metapost.specials.gt(specification,object) -- number, so that we can reorder
+function specials.gt(specification,object) -- number, so that we can reorder
     graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",specification)
     metapost.intermediate.needed = true
     metapost.multipass = true
@@ -819,7 +810,6 @@ end
 
 function metapost.intermediate.actions.makempy()
     if #graphics > 0 then
-        local externals = metapost.externals
         externals.n = externals.n + 1
         starttiming(externals)
         local mpofile = tex.jobname .. "-mpgraph"

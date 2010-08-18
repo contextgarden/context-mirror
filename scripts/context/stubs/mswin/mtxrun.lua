@@ -52,6 +52,7 @@ if not modules then modules = { } end modules ['l-string'] = {
     license   = "see context related readme files"
 }
 
+local string = string
 local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
 local lpegmatch = lpeg.match
 
@@ -198,11 +199,6 @@ function string:lpadd(n,chr)
 end
 
 string.padd = string.rpadd
-
-function is_number(str) -- tonumber
-    return find(str,"^[%-%+]?[%d]-%.?[%d+]$") == 1
-end
-
 
 function string:split_settings() -- no {} handling, see l-aux for lpeg variant
     if find(self,"=") then
@@ -547,12 +543,10 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-table.join = table.concat
-
+local type, next, tostring, tonumber, ipairs, table, string = type, next, tostring, tonumber, ipairs, table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
-local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
 
 -- Starting with version 5.2 Lua no longer provide ipairs, which makes
 -- sense. As we already used the for loop and # in most places the
@@ -1452,7 +1446,9 @@ if not modules then modules = { } end modules ['l-io'] = {
     license   = "see context related readme files"
 }
 
-local byte, find, gsub = string.byte, string.find, string.gsub
+local io = io
+local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
+local concat = table.concat
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -1463,9 +1459,7 @@ end
 function io.loaddata(filename,textmode)
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
-    --  collectgarbage("step") -- sometimes makes a big difference in mem consumption
         local data = f:read('*all')
-    --  garbagecollector.check(data)
         f:close()
         return data
     else
@@ -1477,7 +1471,7 @@ function io.savedata(filename,data,joiner)
     local f = io.open(filename,"wb")
     if f then
         if type(data) == "table" then
-            f:write(table.join(data,joiner or ""))
+            f:write(concat(data,joiner or ""))
         elseif type(data) == "function" then
             data(f)
         else
@@ -1603,12 +1597,12 @@ function io.ask(question,default,options)
     while true do
         io.write(question)
         if options then
-            io.write(string.format(" [%s]",table.concat(options,"|")))
+            io.write(format(" [%s]",concat(options,"|")))
         end
         if default then
-            io.write(string.format(" [%s]",default))
+            io.write(format(" [%s]",default))
         end
-        io.write(string.format(" "))
+        io.write(format(" "))
         local answer = io.read()
         answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then
@@ -1682,7 +1676,8 @@ local tostring = tostring
 local format, floor, insert, match = string.format, math.floor, table.insert, string.match
 local lpegmatch = lpeg.match
 
-number = number or { }
+number       = number or { }
+local number = number
 
 -- a,b,c,d,e,f = number.toset(100101)
 
@@ -1758,6 +1753,8 @@ if not modules then modules = { } end modules ['l-set'] = {
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
+
+-- This will become obsolete when we have the bitset library embedded.
 
 set = set or { }
 
@@ -1840,9 +1837,9 @@ if not modules then modules = { } end modules ['l-os'] = {
 
 -- maybe build io.flush in os.execute
 
+local os = os
 local find, format, gsub, upper = string.find, string.format, string.gsub, string.upper
 local random, ceil = math.random, math.ceil
-local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
 -- The following code permits traversing the environment table, at least
@@ -2193,11 +2190,14 @@ if not modules then modules = { } end modules ['l-file'] = {
 -- needs a cleanup
 
 file = file or { }
+local file = file
 
 local insert, concat = table.insert, table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
 local getcurrentdir = lfs.currentdir
+
+local P, R, S, C, Cs, Cp, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc
 
 local function dirname(name,default)
     return match(name,"^(.+)[/\\].-$") or (default or "")
@@ -2416,11 +2416,11 @@ end
 
 -- also rewrite previous
 
-local letter    = lpeg.R("az","AZ") + lpeg.S("_-+")
-local separator = lpeg.P("://")
+local letter    = R("az","AZ") + S("_-+")
+local separator = P("://")
 
-local qualified = lpeg.P(".")^0 * lpeg.P("/") + letter*lpeg.P(":") + letter^1*separator + letter^1 * lpeg.P("/")
-local rootbased = lpeg.P("/") + letter*lpeg.P(":")
+local qualified = P(".")^0 * P("/") + letter*P(":") + letter^1*separator + letter^1 * P("/")
+local rootbased = P("/") + letter*P(":")
 
 -- ./name ../name  /name c: :// name/name
 
@@ -2432,14 +2432,16 @@ function file.is_rootbased_path(filename)
     return lpegmatch(rootbased,filename) ~= nil
 end
 
-local slash  = lpeg.S("\\/")
-local period = lpeg.P(".")
-local drive  = lpeg.C(lpeg.R("az","AZ")) * lpeg.P(":")
-local path   = lpeg.C(((1-slash)^0 * slash)^0)
-local suffix = period * lpeg.C(lpeg.P(1-period)^0 * lpeg.P(-1))
-local base   = lpeg.C((1-suffix)^0)
+-- actually these are schemes
 
-local pattern = (drive + lpeg.Cc("")) * (path + lpeg.Cc("")) * (base + lpeg.Cc("")) * (suffix + lpeg.Cc(""))
+local slash  = S("\\/")
+local period = P(".")
+local drive  = C(R("az","AZ")) * P(":")
+local path   = C(((1-slash)^0 * slash)^0)
+local suffix = period * C(P(1-period)^0 * P(-1))
+local base   = C((1-suffix)^0)
+
+local pattern = (drive + Cc("")) * (path + Cc("")) * (base + Cc("")) * (suffix + Cc(""))
 
 function file.splitname(str) -- returns drive, path, base, suffix
     return lpegmatch(pattern,str)
@@ -2467,6 +2469,7 @@ if not modules then modules = { } end modules ['l-md5'] = {
 
 -- This also provides file checksums and checkers.
 
+local md5, file = md5, file
 local gsub, format, byte = string.gsub, string.format, string.byte
 
 local function convert(str,fmt)
@@ -2547,7 +2550,8 @@ local lpegmatch, lpegP, lpegC, lpegR, lpegS, lpegCs, lpegCc = lpeg.match, lpeg.P
 --     / \ /                        \
 --     urn:example:animal:ferret:nose
 
-url = url or { }
+url       = url or { }
+local url = url
 
 local function tochar(s)
     return char(tonumber(s,16))
@@ -2687,20 +2691,30 @@ if not modules then modules = { } end modules ['l-dir'] = {
 
 local type = type
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
+local concat = table.concat
 local lpegmatch = lpeg.match
 
+local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
+
 dir = dir or { }
+local dir = dir
+local lfs = lfs
+
+local attributes = lfs.attributes
+local walkdir    = lfs.dir
+local isdir      = lfs.isdir
+local isfile     = lfs.isfile
+local mkdir      = lfs.mkdir
+local chdir      = lfs.chdir
+local currentdir = lfs.currentdir
 
 -- handy
 
 function dir.current()
-    return (gsub(lfs.currentdir(),"\\","/"))
+    return (gsub(currentdir(),"\\","/"))
 end
 
--- optimizing for no string.find (*) does not save time
-
-local attributes = lfs.attributes
-local walkdir    = lfs.dir
+-- optimizing for no find (*) does not save time
 
 local function glob_pattern(path,patt,recurse,action)
     local ok, scanner
@@ -2756,8 +2770,6 @@ end
 
 dir.collect_pattern = collect_pattern
 
-local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
-
 local pattern = Ct {
     [1] = (C(P(".") + P("/")^1) + C(R("az","AZ") * P(":") * P("/")^0) + Cc("./")) * V(2) * V(3),
     [2] = C(((1-S("*?/"))^0 * P("/"))^0),
@@ -2780,7 +2792,7 @@ local function glob(str,t)
             for s=1,#str do
                 glob(str[s],t)
             end
-        elseif lfs.isfile(str) then
+        elseif isfile(str) then
             t(str)
         else
             local split = lpegmatch(pattern,str)
@@ -2799,7 +2811,7 @@ local function glob(str,t)
                 glob(str[s],t)
             end
             return t
-        elseif lfs.isfile(str) then
+        elseif isfile(str) then
             local t = t or { }
             t[#t+1] = str
             return t
@@ -2863,13 +2875,13 @@ dir.globfiles = globfiles
 -- print(dir.ls("*.tex"))
 
 function dir.ls(pattern)
-    return table.concat(glob(pattern),"\n")
+    return concat(glob(pattern),"\n")
 end
 
 
 local make_indeed = true -- false
 
-if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
+if find(os.getenv("PATH"),";") then -- os.type == "windows"
 
     function dir.mkdirs(...)
         local str, pth, t = "", "", { ... }
@@ -2918,11 +2930,11 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
             else
                 pth = pth .. "/" .. s
             end
-            if make_indeed and not lfs.isdir(pth) then
-                lfs.mkdir(pth)
+            if make_indeed and not isdir(pth) then
+                mkdir(pth)
             end
         end
-        return pth, (lfs.isdir(pth) == true)
+        return pth, (isdir(pth) == true)
     end
 
 
@@ -2937,11 +2949,11 @@ if string.find(os.getenv("PATH"),";") then -- os.type == "windows"
         if not first then
             first, last = match(str,"^([a-zA-Z]:)(.*)$")
             if first and not find(last,"^/") then
-                local d = lfs.currentdir()
-                if lfs.chdir(first) then
+                local d = currentdir()
+                if chdir(first) then
                     first = dir.current()
                 end
-                lfs.chdir(d)
+                chdir(d)
             end
         end
         if not first then
@@ -2982,26 +2994,26 @@ else
                 else
                     pth = pth .. "/" .. s
                 end
-                if make_indeed and not first and not lfs.isdir(pth) then
-                    lfs.mkdir(pth)
+                if make_indeed and not first and not isdir(pth) then
+                    mkdir(pth)
                 end
             end
         else
             pth = "."
             for s in gmatch(str,"[^/]+") do
                 pth = pth .. "/" .. s
-                if make_indeed and not lfs.isdir(pth) then
-                    lfs.mkdir(pth)
+                if make_indeed and not isdir(pth) then
+                    mkdir(pth)
                 end
             end
         end
-        return pth, (lfs.isdir(pth) == true)
+        return pth, (isdir(pth) == true)
     end
 
 
     function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
-            str = lfs.currentdir() .. "/" .. str
+            str = currentdir() .. "/" .. str
         end
         str = gsub(str,"//","/")
         str = gsub(str,"/%./","/")
@@ -3025,9 +3037,10 @@ if not modules then modules = { } end modules ['l-boolean'] = {
     license   = "see context related readme files"
 }
 
-boolean = boolean or { }
-
 local type, tonumber = type, tonumber
+
+boolean = boolean or { }
+local boolean = boolean
 
 function boolean.tonumber(b)
     if b then return 1 else return 0 end
@@ -3108,6 +3121,8 @@ if not unicode then
     end
 
 end
+
+local unicode = unicode
 
 utf = utf or unicode.utf8
 
@@ -3280,7 +3295,7 @@ end
 
 function unicode.utfcodes(str)
     local t = { }
-    for k,v in string.utfvalues(str) do
+    for k,v in utfvalues(str) do
         t[#t+1] = format("0x%04X",k)
     end
     return concat(t,separator or " ")
@@ -3339,7 +3354,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['l-utils'] = {
+if not modules then modules = { } end modules ['util-mrg'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -3353,13 +3368,11 @@ local gsub, format = string.gsub, string.format
 local concat = table.concat
 local type, next = type, next
 
-if not utils        then utils        = { } end
-if not utils.merger then utils.merger = { } end
-if not utils.lua    then utils.lua    = { } end
+utilities        = utilities or {}
+utilities.merger = utilities.merger or { }
+utilities.report = utilities.report or print
 
-utils.report = utils.report or print
-
-local merger = utils.merger
+local merger     = utilities.merger
 
 merger.strip_comment = true
 
@@ -3396,9 +3409,9 @@ end
 local function self_load(name)
     local data = io.loaddata(name) or ""
     if data == "" then
-        utils.report("merge: unknown file %s",name)
+        utilities.report("merge: unknown file %s",name)
     else
-        utils.report("merge: inserting %s",name)
+        utilities.report("merge: inserting %s",name)
     end
     return data or ""
 end
@@ -3409,10 +3422,10 @@ local function self_save(name, data)
             -- saves some 20K
             local n = #data
             data = gsub(data,"%-%-~[^\n\r]*[\r\n]","")
-            utils.report("merge: %s bytes of comment stripped, %s bytes of code left",n-#data,#data)
+            utilities.report("merge: %s bytes of comment stripped, %s bytes of code left",n-#data,#data)
         end
         io.savedata(name,data)
-        utils.report("merge: saving %s",name)
+        utilities.report("merge: saving %s",name)
     end
 end
 
@@ -3429,7 +3442,7 @@ local function self_libs(libs,list)
         local lib = libs[i]
         for j=1,#list do
             local pth = gsub(list[j],"\\","/") -- file.clean_path
-            utils.report("merge: checking library path %s",pth)
+            utilities.report("merge: checking library path %s",pth)
             local name = pth .. "/" .. lib
             if lfs.isfile(name) then
                 foundpath = pth
@@ -3438,30 +3451,30 @@ local function self_libs(libs,list)
         if foundpath then break end
     end
     if foundpath then
-        utils.report("merge: using library path %s",foundpath)
+        utilities.report("merge: using library path %s",foundpath)
         local right, wrong = { }, { }
         for i=1,#libs do
             local lib = libs[i]
             local fullname = foundpath .. "/" .. lib
             if lfs.isfile(fullname) then
-                utils.report("merge: using library %s",fullname)
+                utilities.report("merge: using library %s",fullname)
                 right[#right+1] = lib
                 result[#result+1] = m_begin_closure
                 result[#result+1] = io.loaddata(fullname,true)
                 result[#result+1] = m_end_closure
             else
-                utils.report("merge: skipping library %s",fullname)
+                utilities.report("merge: skipping library %s",fullname)
                 wrong[#wrong+1] = lib
             end
         end
         if #right > 0 then
-            utils.report("merge: used libraries: %s",concat(right," "))
+            utilities.report("merge: used libraries: %s",concat(right," "))
         end
         if #wrong > 0 then
-            utils.report("merge: skipped libraries: %s",concat(wrong," "))
+            utilities.report("merge: skipped libraries: %s",concat(wrong," "))
         end
     else
-        utils.report("merge: no valid library path found")
+        utilities.report("merge: no valid library path found")
     end
     return concat(result, "\n\n")
 end
@@ -3480,8 +3493,25 @@ function merger.selfclean(name)
     self_save(name,self_swap(self_load(name),self_nothing()))
 end
 
-function utils.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
-    utils.report("lua: compiling %s into %s",luafile,lucfile)
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['util-lua'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+utilities        = utilities or {}
+utilities.lua    = utilities.merger or { }
+utilities.report = utilities.report or print
+
+function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
+    utilities.report("lua: compiling %s into %s",luafile,lucfile)
     os.remove(lucfile)
     local command = "-o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
     if strip ~= false then
@@ -3489,7 +3519,7 @@ function utils.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=f
     end
     local done = os.spawn("texluac " .. command) == 0 or os.spawn("luac " .. command) == 0
     if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
-        utils.report("lua: removing %s",luafile)
+        utilities.report("lua: removing %s",luafile)
         os.remove(luafile)
     end
     return done
@@ -3501,7 +3531,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['l-aux'] = {
+if not modules then modules = { } end modules ['util-prs'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -3509,15 +3539,16 @@ if not modules then modules = { } end modules ['l-aux'] = {
     license   = "see context related readme files"
 }
 
--- for inline, no store split : for s in string.gmatch(str,",* *([^,]+)") do .. end
+utilities         = utilities or {}
+utilities.parsers = utilities.parsers or { }
+local parsers     = utilities.parsers
+parsers.patterns  = parsers.patterns or { }
 
-aux = aux or { }
-
+local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
+local lpegmatch = lpeg.match
 local concat, format, gmatch = table.concat, string.format, string.gmatch
 local tostring, type = tostring, type
-local lpegmatch = lpeg.match
-
-local P, R, V = lpeg.P, lpeg.R, lpeg.V
+local sortedhash = table.sortedhash
 
 local escape, left, right = P("\\"), P('{'), P('}')
 
@@ -3526,23 +3557,23 @@ lpeg.patterns.balanced = P {
     [2] = left * V(1) * right
 }
 
-local space     = lpeg.P(' ')
-local equal     = lpeg.P("=")
-local comma     = lpeg.P(",")
-local lbrace    = lpeg.P("{")
-local rbrace    = lpeg.P("}")
+local space     = P(' ')
+local equal     = P("=")
+local comma     = P(",")
+local lbrace    = P("{")
+local rbrace    = P("}")
 local nobrace   = 1 - (lbrace+rbrace)
-local nested    = lpeg.P { lbrace * (nobrace + lpeg.V(1))^0 * rbrace }
+local nested    = P { lbrace * (nobrace + V(1))^0 * rbrace }
 local spaces    = space^0
 
-local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
+local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
 
-local key       = lpeg.C((1-equal-comma)^1)
-local pattern_a = (space+comma)^0 * (key * equal * value + key * lpeg.C(""))
+local key       = C((1-equal-comma)^1)
+local pattern_a = (space+comma)^0 * (key * equal * value + key * C(""))
 local pattern_c = (space+comma)^0 * (key * equal * value)
 
-local key       = lpeg.C((1-space-equal-comma)^1)
-local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces * value) + lpeg.C("")))
+local key       = C((1-space-equal-comma)^1)
+local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces * value) + C("")))
 
 -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
 
@@ -3556,11 +3587,11 @@ local pattern_a_s = (pattern_a/set)^1
 local pattern_b_s = (pattern_b/set)^1
 local pattern_c_s = (pattern_c/set)^1
 
-aux.settings_to_hash_pattern_a = pattern_a_s
-aux.settings_to_hash_pattern_b = pattern_b_s
-aux.settings_to_hash_pattern_c = pattern_c_s
+parsers.patterns.settings_to_hash_a = pattern_a_s
+parsers.patterns.settings_to_hash_b = pattern_b_s
+parsers.patterns.settings_to_hash_c = pattern_c_s
 
-function aux.make_settings_to_hash_pattern(set,how)
+function parsers.make_settings_to_hash_pattern(set,how)
     if how == "strict" then
         return (pattern_c/set)^1
     elseif how == "tolerant" then
@@ -3570,7 +3601,7 @@ function aux.make_settings_to_hash_pattern(set,how)
     end
 end
 
-function aux.settings_to_hash(str,existing)
+function parsers.settings_to_hash(str,existing)
     if str and str ~= "" then
         hash = existing or { }
         lpegmatch(pattern_a_s,str)
@@ -3580,7 +3611,7 @@ function aux.settings_to_hash(str,existing)
     end
 end
 
-function aux.settings_to_hash_tolerant(str,existing)
+function parsers.settings_to_hash_tolerant(str,existing)
     if str and str ~= "" then
         hash = existing or { }
         lpegmatch(pattern_b_s,str)
@@ -3590,7 +3621,7 @@ function aux.settings_to_hash_tolerant(str,existing)
     end
 end
 
-function aux.settings_to_hash_strict(str,existing)
+function parsers.settings_to_hash_strict(str,existing)
     if str and str ~= "" then
         hash = existing or { }
         lpegmatch(pattern_c_s,str)
@@ -3601,16 +3632,16 @@ function aux.settings_to_hash_strict(str,existing)
 end
 
 local separator = comma * space^0
-local value     = lpeg.P(lbrace * lpeg.C((nobrace + nested)^0) * rbrace) + lpeg.C((nested + (1-comma))^0)
-local pattern   = lpeg.Ct(value*(separator*value)^0)
+local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
+local pattern   = Ct(value*(separator*value)^0)
 
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
-aux.settings_to_array_pattern = pattern
+parsers.patterns.settings_to_array = pattern
 
 -- we could use a weak table as cache
 
-function aux.settings_to_array(str)
+function parsers.settings_to_array(str)
     if not str or str == "" then
         return { }
     else
@@ -3622,14 +3653,14 @@ local function set(t,v)
     t[#t+1] = v
 end
 
-local value   = lpeg.P(lpeg.Carg(1)*value) / set
-local pattern = value*(separator*value)^0 * lpeg.Carg(1)
+local value   = P(Carg(1)*value) / set
+local pattern = value*(separator*value)^0 * Carg(1)
 
-function aux.add_settings_to_array(t,str)
+function parsers.add_settings_to_array(t,str)
     return lpegmatch(pattern,str,nil,t)
 end
 
-function aux.hash_to_string(h,separator,yes,no,strict,omit)
+function parsers.hash_to_string(h,separator,yes,no,strict,omit)
     if h then
         local t, s = { }, table.sortedkeys(h)
         omit = omit and table.tohash(omit)
@@ -3658,7 +3689,7 @@ function aux.hash_to_string(h,separator,yes,no,strict,omit)
     end
 end
 
-function aux.array_to_string(a,separator)
+function parsers.array_to_string(a,separator)
     if a then
         return concat(a,separator or ",")
     else
@@ -3666,7 +3697,7 @@ function aux.array_to_string(a,separator)
     end
 end
 
-function aux.settings_to_set(str,t) -- tohash?
+function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate anyway
     t = t or { }
     for s in gmatch(str,"%s*([^, ]+)") do -- space added
         t[s] = true
@@ -3674,9 +3705,9 @@ function aux.settings_to_set(str,t) -- tohash?
     return t
 end
 
-function aux.simple_hash_to_string(h, separator)
+function parsers.simple_hash_to_string(h, separator)
     local t = { }
-    for k, v in table.sortedhash(h) do
+    for k, v in sortedhash(h) do
         if v then
             t[#t+1] = k
         end
@@ -3684,43 +3715,44 @@ function aux.simple_hash_to_string(h, separator)
     return concat(t,separator or ",")
 end
 
-local value     = lbrace * lpeg.C((nobrace + nested)^0) * rbrace
-local pattern   = lpeg.Ct((space + value)^0)
+local value   = lbrace * C((nobrace + nested)^0) * rbrace
+local pattern = Ct((space + value)^0)
 
-function aux.arguments_to_table(str)
+function parsers.arguments_to_table(str)
     return lpegmatch(pattern,str)
 end
 
--- temporary here
+-- temporary here (unoptimized)
 
-function aux.getparameters(self,class,parentclass,settings)
+function parsers.getparameters(self,class,parentclass,settings)
     local sc = self[class]
     if not sc then
         sc = table.clone(self[parent])
         self[class] = sc
     end
-    aux.settings_to_hash(settings,sc)
+    parsers.settings_to_hash(settings,sc)
 end
 
--- temporary here
 
-local digit         = lpeg.R("09")
-local period        = lpeg.P(".")
-local zero          = lpeg.P("0")
-local trailingzeros = zero^0 * -digit -- suggested by Roberto R
-local case_1        = period * trailingzeros / ""
-local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
-local number        = digit^1 * (case_1 + case_2)
-local stripper      = lpeg.Cs((number + 1)^0)
+end -- of closure
 
+do -- create closure to overcome 200 locals limit
 
-lpeg.patterns.strip_zeros = stripper
+if not modules then modules = { } end modules ['util-tab'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-function aux.strip_zeros(str)
-    return lpegmatch(stripper,str)
-end
+utilities        = utilities or {}
+utilities.tables = utilities.tables or { }
+local tables     = utilities.tables
 
-function aux.definetable(target) -- defines undefined tables
+local concat, format, gmatch = table.concat, string.format, string.gmatch
+
+function tables.definetable(target) -- defines undefined tables
     local composed, t = nil, { }
     for name in gmatch(target,"([^%.]+)") do
         if composed then
@@ -3733,7 +3765,7 @@ function aux.definetable(target) -- defines undefined tables
     return concat(t,"\n")
 end
 
-function aux.accesstable(target)
+function tables.accesstable(target)
     local t = _G
     for name in gmatch(target,"([^%.]+)") do
         t = t[name]
@@ -3742,10 +3774,48 @@ function aux.accesstable(target)
 end
 
 
--- as we use this a lot ...
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['util-fmt'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+utilities            = utilities or { }
+utilities.formatters = utilities.formatters or { }
+local formatters     = utilities.formatters
+
+local concat, format = table.concat, string.format
+local tostring, type = tostring, type
+local strip = string.strip
+
+local P, R, Cs = lpeg.P, lpeg.R, lpeg.Cs
+local lpegmatch = lpeg.match
+
+-- temporary here
+
+local digit         = R("09")
+local period        = P(".")
+local zero          = P("0")
+local trailingzeros = zero^0 * -digit -- suggested by Roberto R
+local case_1        = period * trailingzeros / ""
+local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
+local number        = digit^1 * (case_1 + case_2)
+local stripper      = Cs((number + 1)^0)
 
 
-function aux.formatcolumns(result,between)
+lpeg.patterns.strip_zeros = stripper
+
+function formatters.strip_zeros(str)
+    return lpegmatch(stripper,str)
+end
+
+function formatters.formatcolumns(result,between)
     if result and #result > 0 then
         between = between or "   "
         local widths, numbers = { }, { }
@@ -3790,14 +3860,123 @@ function aux.formatcolumns(result,between)
                 end
             end
         end
-        local template = string.strip(concat(widths))
+        local template = strip(concat(widths))
         for i=1,#result do
             local str = format(template,unpack(result[i]))
-            result[i] = string.strip(str)
+            result[i] = strip(str)
         end
     end
     return result
 end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['util.deb'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- the <anonymous> tag is kind of generic and used for functions that are not
+-- bound to a variable, like node.new, node.copy etc (contrary to for instance
+-- node.has_attribute which is bound to a has_attribute local variable in mkiv)
+
+local debug = require "debug"
+
+local getinfo = debug.getinfo
+local type, next = type, next
+local format, find = string.format, string.find
+local is_boolean = string.is_boolean
+
+utilities          = utilities or { }
+utilities.debugger = utilities.debugger or { }
+local debugger     = utilities.debugger
+
+local counters = { }
+local names    = { }
+
+-- one
+
+local function hook()
+    local f = getinfo(2,"f").func
+    local n = getinfo(2,"Sn")
+--  if n.what == "C" and n.name then print (n.namewhat .. ': ' .. n.name) end
+    if f then
+        local cf = counters[f]
+        if cf == nil then
+            counters[f] = 1
+            names[f] = n
+        else
+            counters[f] = cf + 1
+        end
+    end
+end
+
+local function getname(func)
+    local n = names[func]
+    if n then
+        if n.what == "C" then
+            return n.name or '<anonymous>'
+        else
+            -- source short_src linedefined what name namewhat nups func
+            local name = n.name or n.namewhat or n.what
+            if not name or name == "" then name = "?" end
+            return format("%s : %s : %s", n.short_src or "unknown source", n.linedefined or "--", name)
+        end
+    else
+        return "unknown"
+    end
+end
+
+function debugger.showstats(printer,threshold)
+    printer   = printer or texio.write or print
+    threshold = threshold or 0
+    local total, grandtotal, functions = 0, 0, 0
+    printer("\n") -- ugly but ok
+ -- table.sort(counters)
+    for func, count in next, counters do
+        if count > threshold then
+            local name = getname(func)
+            if not find(name,"for generator") then
+                printer(format("%8i  %s", count, name))
+                total = total + count
+            end
+        end
+        grandtotal = grandtotal + count
+        functions = functions + 1
+    end
+    printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
+end
+
+-- two
+
+
+-- rest
+
+function debugger.savestats(filename,threshold)
+    local f = io.open(filename,'w')
+    if f then
+        debugger.showstats(function(str) f:write(str) end,threshold)
+        f:close()
+    end
+end
+
+function debugger.enable()
+    debug.sethook(hook,"c")
+end
+
+function debugger.disable()
+    debug.sethook()
+end
+
+
+
+
 
 
 end -- of closure
@@ -3820,14 +3999,13 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 local format = string.format
 local clock = os.gettimeofday or os.clock -- should go in environment
 
-local statusinfo, n, registered = { }, 0, { }
-
-statistics = statistics or { }
+statistics       = statistics or { }
+local statistics = statistics
 
 statistics.enable    = true
 statistics.threshold = 0.05
 
-local timers = { }
+local statusinfo, n, registered, timers = { }, 0, { }, { }
 
 local function hastiming(instance)
     return instance and timers[instance]
@@ -3995,7 +4173,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['trac-set'] = {
+if not modules then modules = { } end modules ['trac-set'] = { -- might become util-set.lua
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -4007,8 +4185,12 @@ local type, next, tostring = type, next, tostring
 local concat = table.concat
 local format, find, lower, gsub, simpleesc = string.format, string.find, string.lower, string.gsub, string.simpleesc
 local is_boolean = string.is_boolean
+local settings_to_hash = utilities.parsers.settings_to_hash
 
-setters = { }
+utilities         = utilities or { }
+local utilities   = utilities
+utilities.setters = utilities.setters or { }
+local setters     = utilities.setters
 
 local data = { } -- maybe just local
 
@@ -4064,7 +4246,7 @@ end
 local function set(t,what,newvalue)
     local data, done = t.data, t.done
     if type(what) == "string" then
-        what = aux.settings_to_hash(what) -- inefficient but ok
+        what = settings_to_hash(what) -- inefficient but ok
     end
     for w, value in next, what do
         if value == "" then
@@ -4191,18 +4373,20 @@ end
 -- we could have used a bit of oo and the trackers:enable syntax but
 -- there is already a lot of code around using the singular tracker
 
--- we could make this into a module
+-- we could make this into a module but we also want the rest avaliable
+
+local enable, disable, register, list, show = setters.enable, setters.disable, setters.register, setters.list, setters.show
 
 function setters.new(name)
-    local t
+    local t -- we need to access it in t
     t = {
         data     = { }, -- indexed, but also default and value fields
         name     = name,
-        enable   = function(...) setters.enable  (t,...) end,
-        disable  = function(...) setters.disable (t,...) end,
-        register = function(...) setters.register(t,...) end,
-        list     = function(...) setters.list    (t,...) end,
-        show     = function(...) setters.show    (t,...) end,
+        enable   = function(...) enable  (t,...) end,
+        disable  = function(...) disable (t,...) end,
+        register = function(...) register(t,...) end,
+        list     = function(...) list    (t,...) end,
+        show     = function(...) show    (t,...) end,
     }
     data[name] = t
     return t
@@ -4212,13 +4396,18 @@ trackers    = setters.new("trackers")
 directives  = setters.new("directives")
 experiments = setters.new("experiments")
 
+local t_enable, t_disable = trackers   .enable, trackers   .disable
+local d_enable, d_disable = directives .enable, directives .disable
+local e_enable, e_disable = experiments.enable, experiments.disable
+
 -- experiment
 
 if trackers and environment and environment.engineflags.trackers then
-    trackers.enable(environment.engineflags.trackers)
+    t_enable(environment.engineflags.trackers)
 end
+
 if directives and environment and environment.engineflags.directives then
-    directives.enable(environment.engineflags.directives)
+    d_enable(environment.engineflags.directives)
 end
 
 -- nice trick: we overload two of the directives related functions with variants that
@@ -4232,30 +4421,24 @@ end
 local trace_directives  = false local trace_directives  = false  trackers.register("system.directives",  function(v) trace_directives  = v end)
 local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
-local enable  = directives.enable
-local disable = directives.disable
-
 function directives.enable(...)
     report("directives","enabling: %s",concat({...}," "))
-    enable(...)
+    d_enable(...)
 end
 
 function directives.disable(...)
     report("directives","disabling: %s",concat({...}," "))
-    disable(...)
+    d_disable(...)
 end
-
-local enable  = experiments.enable
-local disable = experiments.disable
 
 function experiments.enable(...)
     report("experiments","enabling: %s",concat({...}," "))
-    enable(...)
+    e_enable(...)
 end
 
 function experiments.disable(...)
     report("experiments","disabling: %s",concat({...}," "))
-    disable(...)
+    e_disable(...)
 end
 
 -- a useful example
@@ -4264,134 +4447,18 @@ directives.register("system.nostatistics", function(v)
     statistics.enable = not v
 end)
 
+directives.register("system.nolibraries", function(v)
+    libraries = nil -- we discard this tracing for security
+end)
+
 -- experiment
 
 if trackers and environment and environment.engineflags.trackers then
-    trackers.enable(environment.engineflags.trackers)
+    t_enable(environment.engineflags.trackers)
 end
 if directives and environment and environment.engineflags.directives then
-    directives.enable(environment.engineflags.directives)
+    d_enable(environment.engineflags.directives)
 end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['trac-tra'] = {
-    version   = 1.001,
-    comment   = "companion to trac-tra.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
--- the <anonymous> tag is kind of generic and used for functions that are not
--- bound to a variable, like node.new, node.copy etc (contrary to for instance
--- node.has_attribute which is bound to a has_attribute local variable in mkiv)
-
-local debug = require "debug"
-
-local getinfo = debug.getinfo
-local type, next = type, next
-local format, find = string.format, string.find
-local is_boolean = string.is_boolean
-
-debugger = debugger or { }
-
-local counters = { }
-local names = { }
-
--- one
-
-local function hook()
-    local f = getinfo(2,"f").func
-    local n = getinfo(2,"Sn")
---  if n.what == "C" and n.name then print (n.namewhat .. ': ' .. n.name) end
-    if f then
-        local cf = counters[f]
-        if cf == nil then
-            counters[f] = 1
-            names[f] = n
-        else
-            counters[f] = cf + 1
-        end
-    end
-end
-
-local function getname(func)
-    local n = names[func]
-    if n then
-        if n.what == "C" then
-            return n.name or '<anonymous>'
-        else
-            -- source short_src linedefined what name namewhat nups func
-            local name = n.name or n.namewhat or n.what
-            if not name or name == "" then name = "?" end
-            return format("%s : %s : %s", n.short_src or "unknown source", n.linedefined or "--", name)
-        end
-    else
-        return "unknown"
-    end
-end
-
-function debugger.showstats(printer,threshold)
-    printer   = printer or texio.write or print
-    threshold = threshold or 0
-    local total, grandtotal, functions = 0, 0, 0
-    printer("\n") -- ugly but ok
- -- table.sort(counters)
-    for func, count in next, counters do
-        if count > threshold then
-            local name = getname(func)
-            if not find(name,"for generator") then
-                printer(format("%8i  %s", count, name))
-                total = total + count
-            end
-        end
-        grandtotal = grandtotal + count
-        functions = functions + 1
-    end
-    printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
-end
-
--- two
-
-
--- rest
-
-function debugger.savestats(filename,threshold)
-    local f = io.open(filename,'w')
-    if f then
-        debugger.showstats(function(str) f:write(str) end,threshold)
-        f:close()
-    end
-end
-
-function debugger.enable()
-    debug.sethook(hook,"c")
-end
-
-function debugger.disable()
-    debug.sethook()
-end
-
-local function trace_calls(n)
-    debugger.enable()
-    luatex.register_stop_actions(function()
-        debugger.disable()
-        debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
-    end)
-    trace_calls = function() end
-end
-
-if directives then
-    directives.register("system.tracecalls", function(n) trace_calls(n) end) -- indirect is needed for nilling
-end
-
-
-
-
 
 
 end -- of closure
@@ -4422,7 +4489,8 @@ provide an <l n='xml'/> structured file. Actually, any logging that
 is hooked into callbacks will be \XML\ by default.</p>
 --ldx]]--
 
-logs = logs or { }
+logs       = logs or { }
+local logs = logs
 
 --[[ldx--
 <p>This looks pretty ugly but we need to speed things up a bit.</p>
@@ -4665,8 +4733,8 @@ function noplog.simple(fmt,...) -- todo: fmt,s
     end
 end
 
-if utils then
-    utils.report = function(...) logs.simple(...) end
+if utilities then
+    utilities.report = function(...) logs.simple(...) end
 end
 
 function logs.setprogram(newname,newbanner)
@@ -4736,6 +4804,50 @@ function logs.fatal(where,...)
 end
 
 
+function logs.obsolete(old,new)
+    local o = loadstring("return " .. new)()
+    if type(o) == "function" then
+        return function(...)
+            logs.report("system","function %s is obsolete, use %s",old,new)
+            loadstring(old .. "=" .. new  .. " return ".. old)()(...)
+        end
+    elseif type(o) == "table" then
+        local t, m = { }, { }
+        m.__index = function(t,k)
+            logs.report("system","table %s is obsolete, use %s",old,new)
+            m.__index, m.__newindex = o, o
+            return o[k]
+        end
+        m.__newindex = function(t,k,v)
+            logs.report("system","table %s is obsolete, use %s",old,new)
+            m.__index, m.__newindex = o, o
+            o[k] = v
+        end
+        if libraries then
+            libraries.obsolete[old] = t -- true
+        end
+        setmetatable(t,m)
+        return t
+    end
+end
+
+if tex.error then
+
+    function logs.texerrormessage(...) -- for the moment we put this function here
+        tex.error(format(...), { })
+    end
+
+else
+
+    function logs.texerrormessage(...) -- for the moment we put this function here
+        local v = format(...)
+        tex.sprint(tex.ctxcatcodes,"\\errmessage{")
+        tex.sprint(tex.vrbcatcodes,v)
+        tex.print(tex.ctxcatcodes,"}")
+    end
+
+end
+
 
 end -- of closure
 
@@ -4762,7 +4874,8 @@ local trace_namespaces = false  trackers.register("system.namespaces", function(
 
 local report_system = logs.new("system")
 
-namespaces = { }
+namespaces       = namespaces or { }
+local namespaces = namespaces
 
 local registered = { }
 
@@ -4932,6 +5045,7 @@ local report_resolvers = logs.new("resolvers")
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquote, quote = string.unquote, string.quote
+local concat = table.concat
 
 -- precautions
 
@@ -4956,6 +5070,8 @@ end
 -- environment
 
 environment             = environment or { }
+local environment       = environment
+
 environment.arguments   = { }
 environment.files       = { }
 environment.sortedflags = nil
@@ -5078,7 +5194,7 @@ function environment.reconstruct_commandline(arg,noquote)
                 result[#result+1] = a
             end
         end
-        return table.join(result," ")
+        return concat(result," ")
     else
         return ""
     end
@@ -5248,6 +5364,7 @@ optimize the code.</p>
 --ldx]]--
 
 xml = xml or { }
+local xml = xml
 
 
 local concat, remove, insert = table.concat, table.remove, table.insert
@@ -6453,6 +6570,8 @@ of <l n='xpath'/> and since we're not compatible we call it <l n='lpath'/>. We
 will explain more about its usage in other documents.</p>
 --ldx]]--
 
+local xml = xml
+
 local lpathcalls  = 0  function xml.lpathcalls () return lpathcalls  end
 local lpathcached = 0  function xml.lpathcached() return lpathcached end
 
@@ -7647,6 +7766,8 @@ local type, next, tonumber, tostring, setmetatable, loadstring = type, next, ton
 local format, gsub, match = string.format, string.gsub, string.match
 local lpegmatch = lpeg.match
 
+local xml = xml
+
 --[[ldx--
 <p>The following helper functions best belong to the <t>lxml-ini</t>
 module. Some are here because we need then in the <t>mk</t>
@@ -7747,6 +7868,8 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
 
 local report_xml = logs.new("xml")
+
+local xml = xml
 
 local xmlparseapply, xmlconvert, xmlcopy, xmlname = xml.parse_apply, xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
@@ -8262,6 +8385,8 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
     license   = "see context related readme files"
 }
 
+local xml = xml
+
 local finalizers   = xml.finalizers.xml
 local xmlfilter    = xml.filter -- we could inline this one for speed
 local xmltostring  = xml.tostring
@@ -8588,7 +8713,8 @@ local ostype, osname, ossetenv, osgetenv = os.type, os.name, os.setenv, os.geten
 -- we now split it over multiple files. As this file is now the
 -- starting point we introduce resolvers here.
 
-resolvers = resolvers or { }
+resolvers       = resolvers or { }
+local resolvers = resolvers
 
 -- We don't want the kpse library to kick in. Also, we want to be able to
 -- execute programs. Control over execution is implemented later.
@@ -8811,6 +8937,8 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
 local report_resolvers = logs.new("resolvers")
+
+local resolvers = resolvers
 
 -- As this bit of code is somewhat special it gets its own module. After
 -- all, when working on the main resolver code, I don't want to scroll
@@ -9119,6 +9247,8 @@ if not modules then modules = { } end modules ['data-env'] = {
     license   = "see context related readme files",
 }
 
+local resolvers = resolvers
+
 local formats      = { }  resolvers.formats      = formats
 local suffixes     = { }  resolvers.suffixes     = suffixes
 local dangerous    = { }  resolvers.dangerous    = dangerous
@@ -9309,11 +9439,13 @@ local mkdirs, isdir = dir.mkdirs, lfs.isdir
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
-local report_cache = logs.new("cache")
-
+local report_cache      = logs.new("cache")
 local report_resolvers = logs.new("resolvers")
 
-caches = caches or { }
+local resolvers = resolvers
+
+caches           = caches or { }
+local caches     = caches
 
 caches.base      = caches.base or "luatex-cache"
 caches.more      = caches.more or "context"
@@ -9558,7 +9690,7 @@ function caches.savedata(filepath,filename,data,raw)
     end
     local cleanup = resolvers.boolean_variable("PURGECACHE", false)
     local strip = resolvers.boolean_variable("LUACSTRIP", true)
-    utils.lua.compile(tmaname, tmcname, cleanup, strip)
+    utilities.lua.compile(tmaname, tmcname, cleanup, strip)
 end
 
 -- moved from data-res:
@@ -9620,7 +9752,7 @@ function caches.savecontent(cachename,dataname,content)
         if trace_locating then
             report_resolvers("category '%s', cachename '%s' saved in '%s'",dataname,cachename,luaname)
         end
-        if utils.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
+        if utilities.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
             if trace_locating then
                 report_resolvers("'%s' compiled to '%s'",dataname,lucname)
             end
@@ -9656,6 +9788,8 @@ local find = string.find
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 
 local report_resolvers = logs.new("resolvers")
+
+local resolvers = resolvers
 
 resolvers.locators     = { notfound = { nil } }  -- locate databases
 resolvers.hashers      = { notfound = { nil } }  -- load databases
@@ -9713,6 +9847,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
+local os = os
 
 local lpegP, lpegS, lpegR, lpegC, lpegCc, lpegCs, lpegCt = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
@@ -9726,9 +9861,13 @@ local trace_expansions = false  trackers.register("resolvers.expansions", functi
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 local expanded_path_from_list  = resolvers.expanded_path_from_list
 local checked_variable         = resolvers.checked_variable
 local split_configuration_path = resolvers.split_configuration_path
+
+local initializesetter = utilities.setters.initialize
 
 local ostype, osname, osenv, ossetenv, osgetenv = os.type, os.name, os.env, os.setenv, os.getenv
 
@@ -9949,7 +10088,7 @@ local function load_configuration_files()
                                 t[k] = v
                             elseif kind == "table" then
                                 -- this operates on the table directly
-                                setters.initialize(filename,k,v)
+                                initializesetter(filename,k,v)
                                 -- this doesn't (maybe metatables some day)
                                 for kk, vv in next, v do -- vv = variable
                                     if vv ~= unset_variable then
@@ -11122,6 +11261,8 @@ if not modules then modules = { } end modules ['data-pre'] = {
 
 local upper, lower, gsub = string.upper, string.lower, string.gsub
 
+local resolvers = resolvers
+
 local prefixes = { }
 
 local getenv = resolvers.getenv
@@ -11235,6 +11376,8 @@ if not modules then modules = { } end modules ['data-inp'] = {
     license   = "see context related readme files"
 }
 
+local resolvers = resolvers
+
 resolvers.finders = resolvers.finders or { }
 resolvers.openers = resolvers.openers or { }
 resolvers.loaders = resolvers.loaders or { }
@@ -11256,7 +11399,7 @@ if not modules then modules = { } end modules ['data-out'] = {
     license   = "see context related readme files"
 }
 
-outputs = outputs or { }
+-- not used yet
 
 
 
@@ -11291,8 +11434,8 @@ table structures without bothering about the disk cache.</p>
 <p>Examples of usage can be found in the font related code.</p>
 --ldx]]--
 
-containers = containers or { }
-
+containers          = containers or { }
+local containers    = containers
 containers.usecache = true
 
 local report_cache = logs.new("cache")
@@ -11418,6 +11561,8 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 -- we will make a better format, maybe something xml or just text or lua
 
 resolvers.automounted = resolvers.automounted or { }
@@ -11526,14 +11671,19 @@ local report_resolvers = logs.new("resolvers")
 -- zip:///texmf.zip?tree=/tex/texmf-local
 -- zip:///texmf-mine.zip?tree=/tex/texmf-projects
 
-zip                 = zip or { }
-zip.archives        = zip.archives or { }
-zip.registeredfiles = zip.registeredfiles or { }
+local resolvers = resolvers
+
+zip                   = zip or { }
+local zip             = zip
+
+zip.archives          = zip.archives or { }
+local archives        = zip.archives
+
+zip.registeredfiles   = zip.registeredfiles or { }
+local registeredfiles = zip.registeredfiles
 
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 local locators, hashers, concatinators = resolvers.locators, resolvers.hashers, resolvers.concatinators
-
-local archives = zip.archives
 
 local function validzip(str) -- todo: use url splitter
     if not find(str,"^zip://") then
@@ -11698,7 +11848,7 @@ function resolvers.usezipfile(zipname)
     zipname = validzip(zipname)
     local specification = resolvers.splitmethod(zipname)
     local zipfile = specification.path
-    if zipfile and not zip.registeredfiles[zipname] then
+    if zipfile and not registeredfiles[zipname] then
         local tree = url.query(specification.query).tree or ""
         local z = zip.openarchive(zipfile)
         if z then
@@ -11709,7 +11859,7 @@ function resolvers.usezipfile(zipname)
             statistics.starttiming(instance)
             resolvers.prepend_hash('zip',zipname,zipfile)
             resolvers.extend_texmf_var(zipname) -- resets hashes too
-            zip.registeredfiles[zipname] = z
+            registeredfiles[zipname] = z
             instance.files[zipname] = resolvers.register_zip_file(z,tree or "")
             statistics.stoptiming(instance)
         elseif trace_locating then
@@ -11768,6 +11918,8 @@ local find, gsub, format = string.find, string.gsub, string.format
 local unpack = unpack or table.unpack
 
 local report_resolvers = logs.new("resolvers")
+
+local resolvers = resolvers
 
 local done, found, notfound = { }, { }, resolvers.finders.notfound
 
@@ -11851,10 +12003,14 @@ if not modules then modules = { } end modules ['data-crl'] = {
 
 -- this one is replaced by data-sch.lua --
 
-curl = curl or { }
-
 local gsub = string.gsub
+
+local resolvers = resolvers
+
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
+
+curl = curl or { }
+local curl = curl
 
 local cached = { }
 
@@ -11924,6 +12080,8 @@ local report_resolvers = logs.new("resolvers")
 
 local gsub, insert = string.gsub, table.insert
 local unpack = unpack or table.unpack
+
+local resolvers, package = resolvers, package
 
 local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
 local clibformats = { 'lib' }
@@ -12079,6 +12237,8 @@ local type, next = type, next
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
+local resolvers = resolvers
+
 local report_resolvers = logs.new("resolvers")
 
 function resolvers.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
@@ -12139,6 +12299,8 @@ if not modules then modules = { } end modules ['data-tmf'] = {
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
+
+local resolvers = resolvers
 
 --  =  <<
 --  ?  ??
@@ -12209,6 +12371,8 @@ local find, concat, upper, format = string.find, table.concat, string.upper, str
 
 resolvers.listers = resolvers.listers or { }
 
+local resolvers = resolvers
+
 local function tabstr(str)
     if type(str) == 'table' then
         return concat(str," | ")
@@ -12258,9 +12422,15 @@ if not modules then modules = { } end modules ['luat-sta'] = {
 local gmatch, match = string.gmatch, string.match
 local type = type
 
-states          = states          or { }
-states.data     = states.data     or { }
-states.hash     = states.hash     or { }
+states          = states or { }
+local states    = states
+
+states.data     = states.data or { }
+local data      = states.data
+
+states.hash     = states.hash or { }
+local hash      = states.hash
+
 states.tag      = states.tag      or ""
 states.filename = states.filename or ""
 
@@ -12270,7 +12440,7 @@ function states.save(filename,tag)
     io.savedata(filename,
         "-- generator : luat-sta.lua\n" ..
         "-- state tag : " .. tag .. "\n\n" ..
-        table.serialize(states.data[tag or states.tag] or {},true)
+        table.serialize(data[tag or states.tag] or {},true)
     )
 end
 
@@ -12278,11 +12448,11 @@ function states.load(filename,tag)
     states.filename = filename
     states.tag = tag or "whatever"
     states.filename = file.addsuffix(states.filename,'lus')
-    states.data[states.tag], states.hash[states.tag] = (io.exists(filename) and dofile(filename)) or { }, { }
+    data[states.tag], hash[states.tag] = (io.exists(filename) and dofile(filename)) or { }, { }
 end
 
-function states.set_by_tag(tag,key,value,default,persistent)
-    local d, h = states.data[tag], states.hash[tag]
+local function set_by_tag(tag,key,value,default,persistent)
+    local d, h = data[tag], hash[tag]
     if d then
         if type(d) == "table" then
             local dkey, hkey = key, key
@@ -12312,17 +12482,17 @@ function states.set_by_tag(tag,key,value,default,persistent)
             d[dkey], h[hkey] = value, value
         elseif type(d) == "string" then
             -- weird
-            states.data[tag], states.hash[tag] = value, value
+            data[tag], hash[tag] = value, value
         end
     end
 end
 
-function states.get_by_tag(tag,key,default)
-    local h = states.hash[tag]
+local function get_by_tag(tag,key,default)
+    local h = hash[tag]
     if h and h[key] then
         return h[key]
     else
-        local d = states.data[tag]
+        local d = data[tag]
         if d then
             for k in gmatch(key,"[^%.]+") do
                 local dk = d[k]
@@ -12337,12 +12507,15 @@ function states.get_by_tag(tag,key,default)
     end
 end
 
+states.set_by_tag = set_by_tag
+states.get_by_tag = get_by_tag
+
 function states.set(key,value,default,persistent)
-    states.set_by_tag(states.tag,key,value,default,persistent)
+    set_by_tag(states.tag,key,value,default,persistent)
 end
 
 function states.get(key,default)
-    return states.get_by_tag(states.tag,key,default)
+    return get_by_tag(states.tag,key,default)
 end
 
 
@@ -12422,10 +12595,10 @@ function environment.make_format(name)
         local lucstubname = file.addsuffix(texbasename,"luc")
         -- pack libraries in stub
         logs.simple("creating initialization file: %s",luastubname)
-        utils.merger.selfcreate(usedlualibs,specificationpath,luastubname)
+        utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
         local strip = resolvers.boolean_variable("LUACSTRIP", true)
-        if utils.lua.compile(luastubname,lucstubname,false,strip) and lfs.isfile(lucstubname) then
+        if utilities.lua.compile(luastubname,lucstubname,false,strip) and lfs.isfile(lucstubname) then
             logs.simple("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
         else
@@ -12507,12 +12680,16 @@ own.libs = { -- order can be made better
     'l-boolean.lua',
     'l-unicode.lua',
     'l-math.lua',
-    'l-utils.lua',
-    'l-aux.lua',
+
+    'util-mrg.lua',
+    'util-lua.lua',
+    'util-prs.lua',
+    'util-tab.lua',
+    'util-fmt.lua',
+    'util-deb.lua',
 
     'trac-inf.lua',
     'trac-set.lua',
-    'trac-tra.lua',
     'trac-log.lua',
     'trac-pro.lua',
     'luat-env.lua', -- can come before inf (as in mkiv)
@@ -12523,7 +12700,6 @@ own.libs = { -- order can be made better
     'lxml-mis.lua',
     'lxml-aux.lua',
     'lxml-xml.lua',
-
 
     'data-ini.lua',
     'data-exp.lua',
@@ -12589,6 +12765,7 @@ local function locate_libs()
             local filename = pth .. "/" .. lib
             local found = lfs.isfile(filename)
             if found then
+                package.path = package.path .. ";" .. pth .. "/?.lua" -- in case l-* does a require
                 return pth
             end
         end
@@ -13326,7 +13503,7 @@ if environment.argument("selfmerge") then
     runners.loadbase()
     local found = locate_libs()
     if found then
-        utils.merger.selfmerge(own.name,own.libs,{ found })
+        utilities.merger.selfmerge(own.name,own.libs,{ found })
     end
 
 elseif environment.argument("selfclean") then
@@ -13334,7 +13511,7 @@ elseif environment.argument("selfclean") then
     -- remove embedded libraries
 
     runners.loadbase()
-    utils.merger.selfclean(own.name)
+    utilities.merger.selfclean(own.name)
 
 elseif environment.argument("selfupdate") then
 
@@ -13599,6 +13776,7 @@ elseif false then
 
 else
 
+    runners.loadbase()
     runners.execute_ctx_script("mtx-base",filename)
 
 end

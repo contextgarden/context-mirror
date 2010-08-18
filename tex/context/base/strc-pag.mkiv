@@ -107,7 +107,7 @@
 \let\resetpagenumber\resetuserpagenumber
 
 \def\savecurrentpagestate % \normalexpanded?
-  {\ctxlua{structure.pages.save({
+  {\ctxlua{structures.pages.save({
         prefix        = "\structurecounterparameter\s!userpage\c!prefix",
         separatorset  = "\structurecounterparameter\s!userpage\c!prefixseparatorset",
         conversion    = "\structurecounterparameter\s!userpage\c!prefixconversion",

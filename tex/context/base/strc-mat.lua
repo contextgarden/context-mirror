@@ -6,19 +6,15 @@ if not modules then modules = { } end modules ['strc-mat'] = {
     license   = "see context related readme files"
 }
 
-structure                 = structure                 or { }
-structure.helpers         = structure.helpers         or { }
-structure.lists           = structure.lists           or { }
-structure.lists.enhancers = structure.lists.enhancers or { }
-structure.sections        = structure.sections        or { }
-structure.helpers         = structure.helpers         or { }
-structure.formulas        = structure.formulas        or { }
+local structures = structures
 
-local lists     = structure.lists
-local sections  = structure.sections
-local floats    = structure.floats
-local helpers   = structure.helpers
-local formulas  = structure.formulas
+local lists     = structures.lists
+local sections  = structures.sections
+local floats    = structures.floats
+local helpers   = structures.helpers
+local formulas  = structures.formulas
+
+lists.enhancers = lists.enhancers or { }
 
 -- maybe we want to do clever things with formulas, the store might go away
 

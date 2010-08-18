@@ -1,20 +1,25 @@
 if not modules then modules = { } end modules ['node-aux'] = {
     version   = 1.001,
-    comment   = "companion to node-spl.mkiv",
+    comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
-local gsub, format = string.gsub, string.format
+local nodes, node = nodes, node
 
-local free_node, hpack_nodes, node_fields, traverse_nodes = node.free, node.hpack, node.fields, node.traverse
-local has_attribute, set_attribute, unset_attribute, has_attribute = node.has_attribute, node.set_attribute, node.unset_attribute,node.has_attribute
+local nodecodes       = nodes.nodecodes
 
-local nodecodes = nodes.nodecodes
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
 
-local hlist = nodecodes.hlist
-local vlist = nodecodes.vlist
+local traverse_nodes  = node.traverse
+local free_node       = node.free
+local hpack_nodes     = node.hpack
+local has_attribute   = node.has_attribute
+local set_attribute   = node.set_attribute
+local get_attribute   = node.get_attribute
+local unset_attribute = node.unset_attribute
 
 function nodes.repack_hlist(list,...)
     local temp, b = hpack_nodes(list,...)
@@ -24,43 +29,45 @@ function nodes.repack_hlist(list,...)
     return list, b
 end
 
-function nodes.merge(a,b)
-    if a and b then
-        local t = node.fields(a.id)
-        for i=3,#t do
-            local name = t[i]
-            a[name] = b[name]
+local function set_attributes(head,attr,value)
+    for n in traverse_nodes(head) do
+        set_attribute(n,attr,value)
+        local id = n.id
+        if id == hlist_node or id == vlist_node then
+            set_attributes(n.list,attr,value)
         end
     end
-    return a, b
 end
 
-local fields, whatsitfields = { }, { }
-
-for k, v in next, node.types() do
-    if v == "whatsit" then
-        fields[k], fields[v] = { }, { }
-        for kk, vv in next, node.whatsits() do
-            local f = node_fields(k,kk)
-            whatsitfields[kk], whatsitfields[vv] = f, f
+local function set_unset_attributes(head,attr,value)
+    for n in traverse_nodes(head) do
+        if not has_attribute(n,attr) then
+            set_attribute(n,attr,value)
         end
-    else
-        local f = node_fields(k)
-        fields[k], fields[v] = f, f
+        local id = n.id
+        if id == hlist_code or id == vlist_code then
+            set_unset_attributes(n.list,attr,value)
+        end
     end
 end
 
-nodes.fields, nodes.whatsitfields = fields, whatsitfields
-
-function nodes.info(n)
-    local id = n.id
-    local tp = node.type(id)
-    local list = (tp == "whatsit" and whatsitfields[n.subtype]) or fields[id]
-    logs.report(format("%14s","type"),tp)
-    for k,v in next, list do
-        logs.report(format("%14s",v),gsub(gsub(tostring(n[v]),"%s+"," "),"node ",""))
+local function unset_attributes(head,attr)
+    for n in traverse_nodes(head) do
+        unset_attribute(n,attr)
+        local id = n.id
+        if id == hlist_code or id == vlist_code then
+            unset_attributes(n.list,attr)
+        end
     end
 end
+
+nodes.set_attribute        = set_attribute
+nodes.unset_attribute      = unset_attribute
+nodes.has_attribute        = has_attribute
+
+nodes.set_attributes       = set_attributes
+nodes.set_unset_attributes = set_unset_attributes
+nodes.unset_attributes     = unset_attributes
 
 -- history:
 --
@@ -146,43 +153,3 @@ end
 --         return -u
 --     end
 -- end
-
-
-local function set_attributes(head,attr,value)
-    for n in traverse_nodes(head) do
-        set_attribute(n,attr,value)
-        local id = n.id
-        if id == hlist or id == vlist then
-            set_attributes(n.list,attr,value)
-        end
-    end
-end
-
-local function set_unset_attributes(head,attr,value)
-    for n in traverse_nodes(head) do
-        if not has_attribute(n,attr) then
-            set_attribute(n,attr,value)
-        end
-        local id = n.id
-        if id == hlist or id == vlist then
-            set_unset_attributes(n.list,attr,value)
-        end
-    end
-end
-
-local function unset_attributes(head,attr)
-    for n in traverse_nodes(head) do
-        unset_attribute(n,attr)
-        local id = n.id
-        if id == hlist or id == vlist then
-            unset_attributes(n.list,attr)
-        end
-    end
-end
-
-nodes.set_attribute        = set_attribute
-nodes.unset_attribute      = unset_attribute
-nodes.has_attribute        = has_attribute
-nodes.set_attributes       = set_attributes
-nodes.set_unset_attributes = set_unset_attributes
-nodes.unset_attributes     = unset_attributes

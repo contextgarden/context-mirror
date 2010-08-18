@@ -106,8 +106,8 @@
 \unexpanded\def\dostartelement{\iftrialtypesetting\expandafter\noostartelement\else\expandafter\dodostartelement\fi}
 \unexpanded\def\dostopelement {\iftrialtypesetting                            \else\expandafter\dodostopelement \fi}
 
-\unexpanded\def\dodostartelement[#1]{\ctxlua{structure.tags.start("#1","\dogetupsometaglabeltext{#1}")}}
-\unexpanded\def\dodostopelement     {\ctxlua{structure.tags.stop()}}
+\unexpanded\def\dodostartelement[#1]{\ctxlua{structures.tags.start("#1","\dogetupsometaglabeltext{#1}")}}
+\unexpanded\def\dodostopelement     {\ctxlua{structures.tags.stop()}}
 
 \unexpanded\def\nostartelement[#1]{}
 \unexpanded\def\nostopelement     {}
@@ -117,8 +117,8 @@
 \def\dodostarttagged{\iftrialtypesetting\expandafter\nodostarttagged\else\expandafter\dododostarttagged\fi}
 \def\dodostoptagged {\iftrialtypesetting                            \else\expandafter\dododostoptagged \fi}
 
-\def\dododostarttagged#1#2{\ctxlua{structure.tags.start("#1","\dogetupsometaglabeltext{#1}","#2")}}
-\def\dododostoptagged     {\ctxlua{structure.tags.stop()}}
+\def\dododostarttagged#1#2{\ctxlua{structures.tags.start("#1","\dogetupsometaglabeltext{#1}","#2")}}
+\def\dododostoptagged     {\ctxlua{structures.tags.stop()}}
 
 \def\nodostarttagged#1#2{}
 \def\nodostoptagged     {}
@@ -187,6 +187,6 @@
 % \doifinelementelse{division:*-structure:chapter} {yes} {no}
 
 \def\doifinelementelse#1%
-  {\ctxlua{commands.testcase(structure.atlocation("#1"))}}
+  {\ctxlua{commands.testcase(structures.atlocation("#1"))}}
 
 \protect

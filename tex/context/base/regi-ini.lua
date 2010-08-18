@@ -18,12 +18,18 @@ local ctxcatcodes = tex.ctxcatcodes
 runtime.</p>
 --ldx]]--
 
-regimes          = regimes          or { }
-regimes.data     = regimes.data     or { }
-regimes.utf      = regimes.utf      or { }
-regimes.synonyms = regimes.synonyms or { }
+regimes          = regimes or { }
+local regimes    = regimes
 
-storage.register("regimes/synonyms", regimes.synonyms, "regimes.synonyms")
+regimes.data     = regimes.data or { }
+local data       = regimes.data
+
+regimes.utf      = regimes.utf or { }
+
+regimes.synonyms = regimes.synonyms or { }
+local synonyms   = regimes.synonyms
+
+storage.register("regimes/synonyms", synonyms, "regimes.synonyms")
 
 -- setmetatable(regimes.data,_empty_table_)
 
@@ -38,20 +44,20 @@ function regimes.number(n)
 end
 
 function regimes.setsynonym(synonym,target)
-    regimes.synonyms[synonym] = target
+    synonyms[synonym] = target
 end
 
 function regimes.truename(regime)
-    texsprint(ctxcatcodes,(regime and regimes.synonyms[synonym] or regime) or regimes.currentregime)
+    texsprint(ctxcatcodes,(regime and synonyms[synonym] or regime) or regimes.currentregime)
 end
 
 function regimes.load(regime)
-    regime = regimes.synonyms[regime] or regime
-    if not regimes.data[regime] then
+    regime = synonyms[regime] or regime
+    if not data[regime] then
         environment.loadluafile("regi-"..regime, 1.001)
-        if regimes.data[regime] then
+        if data[regime] then
             regimes.utf[regime] = { }
-            for k,v in next, regimes.data[regime] do
+            for k,v in next, data[regime] do
                 regimes.utf[regime][char(k)] = utfchar(v)
             end
         end
@@ -59,7 +65,7 @@ function regimes.load(regime)
 end
 
 function regimes.translate(line,regime)
-    regime = regimes.synonyms[regime] or regime
+    regime = synonyms[regime] or regime
     if regime and line then
         local rur = regimes.utf[regime]
         if rur then
@@ -70,8 +76,8 @@ function regimes.translate(line,regime)
 end
 
 function regimes.enable(regime)
-    regime = regimes.synonyms[regime] or regime
-    if regimes.data[regime] then
+    regime = synonyms[regime] or regime
+    if data[regime] then
         regimes.currentregime = regime
         local translate = regimes.translate
         resolvers.install_text_filter('input',function(s)

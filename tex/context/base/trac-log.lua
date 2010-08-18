@@ -24,7 +24,8 @@ provide an <l n='xml'/> structured file. Actually, any logging that
 is hooked into callbacks will be \XML\ by default.</p>
 --ldx]]--
 
-logs = logs or { }
+logs       = logs or { }
+local logs = logs
 
 --[[ldx--
 <p>This looks pretty ugly but we need to speed things up a bit.</p>
@@ -268,8 +269,8 @@ function noplog.simple(fmt,...) -- todo: fmt,s
     end
 end
 
-if utils then
-    utils.report = function(...) logs.simple(...) end
+if utilities then
+    utilities.report = function(...) logs.simple(...) end
 end
 
 function logs.setprogram(newname,newbanner)
@@ -365,3 +366,47 @@ end
 --~ function logs.tex.stop_page_number()
 --~     write("]")
 --~ end
+
+function logs.obsolete(old,new)
+    local o = loadstring("return " .. new)()
+    if type(o) == "function" then
+        return function(...)
+            logs.report("system","function %s is obsolete, use %s",old,new)
+            loadstring(old .. "=" .. new  .. " return ".. old)()(...)
+        end
+    elseif type(o) == "table" then
+        local t, m = { }, { }
+        m.__index = function(t,k)
+            logs.report("system","table %s is obsolete, use %s",old,new)
+            m.__index, m.__newindex = o, o
+            return o[k]
+        end
+        m.__newindex = function(t,k,v)
+            logs.report("system","table %s is obsolete, use %s",old,new)
+            m.__index, m.__newindex = o, o
+            o[k] = v
+        end
+        if libraries then
+            libraries.obsolete[old] = t -- true
+        end
+        setmetatable(t,m)
+        return t
+    end
+end
+
+if tex.error then
+
+    function logs.texerrormessage(...) -- for the moment we put this function here
+        tex.error(format(...), { })
+    end
+
+else
+
+    function logs.texerrormessage(...) -- for the moment we put this function here
+        local v = format(...)
+        tex.sprint(tex.ctxcatcodes,"\\errmessage{")
+        tex.sprint(tex.vrbcatcodes,v)
+        tex.print(tex.ctxcatcodes,"}")
+    end
+
+end

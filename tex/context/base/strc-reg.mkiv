@@ -130,7 +130,7 @@
 
 \def\dodefineregister[#1][#2]% #2?
   {\setupregister[#1][\s!parent=\??id]%
-   \ctxlua{jobregisters.define('#1')}%
+   \ctxlua{structures.registers.define('#1')}%
    \presetheadtext[#1=\Word{#1}]%
    \setuvalue{#1}{\dodoubleempty\doregister[#1]}%
    \setuvalue{\e!see#1}{\dodoubleempty\doseeregister[#1]}%
@@ -223,11 +223,11 @@
    % we could consider storing register entries in a list which we
    % could then sort
    \xdef\currentregisternumber{\ctxlua{
-    jobregisters.store { % 'own' should not be in metadata
+    structures.registers.store { % 'own' should not be in metadata
         metadata = {
             kind     = "entry",
             name     = "\currentregister",
-            level    = structure.sections.currentlevel(),
+            level    = structures.sections.currentlevel(),
             coding   = "\currentregistercoding",
             catcodes = \the\catcodetable,
         \ifx\currentregisterownnumber\v!yes
@@ -240,7 +240,7 @@
         },
         references = {
             internal = \nextinternalreference,
-            section  = structure.sections.currentid(), % hm, why then not also lastsection the same way
+            section  = structures.sections.currentid(), % hm, why then not also lastsection the same way
             label    = "\currentregisterlabel",
         },
 %     \ifx\currentregisterentries\empty \else
@@ -258,14 +258,14 @@
             \fi
         },
 %     \fi
-        userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+        userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
      }
    } }%
-   \ctxlua{jobreferences.setinternalreference(nil,nil,\nextinternalreference)}%
+   \ctxlua{structures.references.setinternalreference(nil,nil,\nextinternalreference)}%
    \ifx\currentregisterownnumber\v!yes
      \glet\currentregistersynchronize\relax
    \else
-     \xdef\currentregistersynchronize{\ctxlatelua{jobregisters.enhance("\currentregister",\currentregisternumber)}}%
+     \xdef\currentregistersynchronize{\ctxlatelua{structures.registers.enhance("\currentregister",\currentregisternumber)}}%
    \fi
    \currentregistersynchronize % here?
    % needs thinking ... bla\index{bla}. will break before the . but adding a
@@ -298,7 +298,7 @@
    \fi}
 
 \def\dostopregister[#1][#2]%
-  {\normalexpanded{\ctxlatelua{jobregisters.extend("#1","#2")}}}
+  {\normalexpanded{\ctxlatelua{structures.registers.extend("#1","#2")}}}
 
 \def\setregisterentry   {\dotripleempty\dosetregisterentry}
 \def\finishregisterentry{\dotripleempty\dofinishregisterentry}
@@ -330,17 +330,17 @@
      \globallet\currentregistercoding\s!tex
    \fi
    \ifx\currentregisterentries\empty
-       \normalexpanded{\ctxlua{jobregisters.extend("\currentregister","\currentregisterlabel", {
+       \normalexpanded{\ctxlua{structures.registers.extend("\currentregister","\currentregisterlabel", {
             metadata = {
             \ifx\currentregisterownnumber\v!yes
                 own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
             \fi
             },
-            userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+            userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
          })%
        }}%
    \else
-       \normalexpanded{\ctxlua{jobregisters.extend("\currentregister","\currentregisterlabel", {
+       \normalexpanded{\ctxlua{structures.registers.extend("\currentregister","\currentregisterlabel", {
             metadata = {
                 catcodes = \the\catcodetable,
                 coding   = "\currentregistercoding",
@@ -352,7 +352,7 @@
                 % we need a special one for xml, this is just a single one
                 \!!bs\currentregisterentries\!!es, \!!bs\currentregisterkeys\!!es
             },
-            userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+            userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
          })
        }}%
    \fi
@@ -389,7 +389,7 @@
   {\doflushatpar{\doregisterstructurepageregister{#1}{\c!label=#2,#3}{#4}}}
 
 \def\dostopstructurepageregister[#1][#2]%
-  {\normalexpanded{\ctxlatelua{jobregisters.extend("#1","#2")}}}
+  {\normalexpanded{\ctxlatelua{structures.registers.extend("#1","#2")}}}
 
 % So far.
 
@@ -418,16 +418,16 @@
    \fi
    \setnextinternalreference
    % we could consider storing register entries in list
-   \edef\temp{\ctxlua{ jobregisters.store {
+   \edef\temp{\ctxlua{ structures.registers.store {
         metadata = {
             kind     = "see",
             name     = "\currentregister",
-            level    = structure.sections.currentlevel(),
+            level    = structures.sections.currentlevel(),
             catcodes = \the\catcodetable,
         },
         references = {
             internal = \nextinternalreference,
-            section  = structure.sections.currentid(),
+            section  = structures.sections.currentid(),
         },
         entries = {
             % we need a special one for xml, this is just a single one
@@ -451,7 +451,7 @@
   {\begingroup
    \edef\currentregister{#1}%
    \setupregister[\currentregister][#2]%
-   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxlua{jobregisters.analyse('\currentregister',{
+   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxlua{structures.registers.analyse('\currentregister',{
         language  = "\registerparameter\s!language",
         compress  = "\registerparameter\c!compress",
         criterium = "\registerparameter\c!criterium",
@@ -484,7 +484,7 @@
         \c!align=\registerparameter\c!align,
         \c!tolerance=\registerparameter\c!tolerance]%
        \startpacked[\v!blank]%
-         \ctxlua{jobregisters.process('\currentregister',{
+         \ctxlua{structures.registers.process('\currentregister',{
             language  = "\registerparameter\s!language",
             compress  = "\registerparameter\c!compress",
             criterium = "\registerparameter\c!criterium",
@@ -731,7 +731,7 @@
 %     \placeregister[index][n=1,pagecommand=\MyRegisterPageCommand]
 % \stoptext
 
-\def\registerpageuserdata       #1#2{\ctxlua{jobregisters.userdata(#1,"#2")}}
+\def\registerpageuserdata       #1#2{\ctxlua{structures.registers.userdata(#1,"#2")}}
 \def\currentregisterpageuserdata    {\registerpageuserdata\currentregisterpageindex} % {#1}
 
 % not yet ok : new internal handler names

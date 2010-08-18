@@ -7,20 +7,29 @@ if not modules then modules = { } end modules ['node-res'] = {
 }
 
 local gmatch, format = string.gmatch, string.format
-local copy_node, free_node, free_list, new_node, node_type, node_id = node.copy, node.free, node.flush_list, node.new, node.type, node.id
 local tonumber, round = tonumber, math.round
-
-local glyph_node = node_id("glyph")
 
 --[[ldx--
 <p>The next function is not that much needed but in <l n='context'/> we use
 for debugging <l n='luatex'/> node management.</p>
 --ldx]]--
 
-nodes = nodes or { }
+local nodes, node = nodes, node
+
+local copy_node    = node.copy
+local free_node    = node.free
+local free_list    = node.flush_list
+local new_node     = node.new
+local node_type    = node.type
+
+nodes.pool         = nodes.pool or { }
+local pool         = nodes.pool
 
 local whatsitcodes = nodes.whatsitcodes
 local skipcodes    = nodes.skipcodes
+local nodecodes    = nodes.nodecodes
+
+local glyph_code   = nodecodes.glyph
 
 local reserved = { }
 
@@ -29,9 +38,9 @@ local function register_node(n)
     return n
 end
 
-nodes.register = register_node
+pool.register = register_node
 
-function nodes.cleanup_reserved(nofboxes) -- todo
+function pool.cleanup(nofboxes) -- todo
     nodes.tracers.steppers.reset() -- todo: make a registration subsystem
     local nr, nl = #reserved, 0
     for i=1,nr do
@@ -54,7 +63,7 @@ function nodes.cleanup_reserved(nofboxes) -- todo
     return nr, nl, nofboxes -- can be nil
 end
 
-function nodes.usage()
+function pool.usage()
     local t = { }
     for n, tag in gmatch(status.node_mem_usage,"(%d+) ([a-z_]+)") do
         t[tag] = n
@@ -68,13 +77,13 @@ local penalty           = register_node(new_node("penalty"))
 local glue              = register_node(new_node("glue")) -- glue.spec = nil
 local glue_spec         = register_node(new_node("glue_spec"))
 local glyph             = register_node(new_node("glyph",0))
-local textdir           = register_node(new_node("whatsit",whatsitcodes.dir)) -- 7 (6 is local par node)
+local textdir           = register_node(new_node("whatsit",whatsitcodes.dir))
 local rule              = register_node(new_node("rule"))
-local latelua           = register_node(new_node("whatsit",whatsitcodes.late_lua)) -- 35
-local user_n            = register_node(new_node("whatsit",whatsitcodes.user_defined)) user_n.type = 100 -- 44
-local user_l            = register_node(new_node("whatsit",whatsitcodes.user_defined)) user_l.type = 110 -- 44
-local user_s            = register_node(new_node("whatsit",whatsitcodes.user_defined)) user_s.type = 115 -- 44
-local user_t            = register_node(new_node("whatsit",whatsitcodes.user_defined)) user_t.type = 116 -- 44
+local latelua           = register_node(new_node("whatsit",whatsitcodes.latelua))
+local user_n            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_n.type = 100 -- 44
+local user_l            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_l.type = 110 -- 44
+local user_s            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_s.type = 115 -- 44
+local user_t            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_t.type = 116 -- 44
 local left_margin_kern  = register_node(new_node("margin_kern",0))
 local right_margin_kern = register_node(new_node("margin_kern",1))
 local lineskip          = register_node(new_node("glue",skipcodes.lineskip))
@@ -84,7 +93,7 @@ local rightskip         = register_node(new_node("glue",skipcodes.rightskip))
 local temp              = register_node(new_node("temp",0))
 local noad              = register_node(new_node("noad"))
 
-function nodes.zeroglue(n)
+function pool.zeroglue(n)
     local s = n.spec
     return not writable or (
                      s.width == 0
@@ -95,26 +104,26 @@ function nodes.zeroglue(n)
         )
 end
 
-function nodes.glyph(fnt,chr)
+function pool.glyph(fnt,chr)
     local n = copy_node(glyph)
     if fnt then n.font = fnt end
     if chr then n.char = chr end
     return n
 end
 
-function nodes.penalty(p)
+function pool.penalty(p)
     local n = copy_node(penalty)
     n.penalty = p
     return n
 end
 
-function nodes.kern(k)
+function pool.kern(k)
     local n = copy_node(kern)
     n.kern = k
     return n
 end
 
-function nodes.glue_spec(width,stretch,shrink)
+function pool.gluespec(width,stretch,shrink)
     local s = copy_node(glue_spec)
     s.width, s.stretch, s.shrink = width, stretch, shrink
     return s
@@ -135,33 +144,37 @@ local function someskip(skip,width,stretch,shrink)
     return n
 end
 
-function nodes.glue(width,stretch,shrink)
+function pool.glue(width,stretch,shrink)
     return someskip(glue,width,stretch,shrink)
 end
-function nodes.leftskip(width,stretch,shrink)
+
+function pool.leftskip(width,stretch,shrink)
     return someskip(leftskip,width,stretch,shrink)
 end
-function nodes.rightskip(width,stretch,shrink)
+
+function pool.rightskip(width,stretch,shrink)
     return someskip(rightskip,width,stretch,shrink)
 end
-function nodes.lineskip(width,stretch,shrink)
+
+function pool.lineskip(width,stretch,shrink)
     return someskip(lineskip,width,stretch,shrink)
 end
-function nodes.baselineskip(width,stretch,shrink)
+
+function pool.baselineskip(width,stretch,shrink)
     return someskip(baselineskip,width,stretch,shrink)
 end
 
-function nodes.disc()
+function pool.disc()
     return copy_node(disc)
 end
 
-function nodes.textdir(dir)
+function pool.textdir(dir)
     local t = copy_node(textdir)
     t.dir = dir
     return t
 end
 
-function nodes.rule(width,height,depth,dir)
+function pool.rule(width,height,depth,dir)
     local n = copy_node(rule)
     if width  then n.width  = width  end
     if height then n.height = height end
@@ -170,17 +183,17 @@ function nodes.rule(width,height,depth,dir)
     return n
 end
 
-function nodes.latelua(code)
+function pool.latelua(code)
     local n = copy_node(latelua)
     n.data = code
     return n
 end
 
-function nodes.leftmarginkern(glyph,width)
+function pool.leftmarginkern(glyph,width)
     local n = copy_node(left_margin_kern)
     if not glyph then
         logs.fatal("nodes","invalid pointer to left margin glyph node")
-    elseif glyph.id ~= glyph_node then
+    elseif glyph.id ~= glyph_code then
         logs.fatal("nodes","invalid node type %s for left margin glyph node",node_type(glyph))
     else
         n.glyph = glyph
@@ -191,11 +204,11 @@ function nodes.leftmarginkern(glyph,width)
     return n
 end
 
-function nodes.rightmarginkern(glyph,width)
+function pool.rightmarginkern(glyph,width)
     local n = copy_node(right_margin_kern)
     if not glyph then
         logs.fatal("nodes","invalid pointer to right margin glyph node")
-    elseif glyph.id ~= glyph_node then
+    elseif glyph.id ~= glyph_code then
         logs.fatal("nodes","invalid node type %s for right margin glyph node",node_type(p))
     else
         n.glyph = glyph
@@ -206,11 +219,11 @@ function nodes.rightmarginkern(glyph,width)
     return n
 end
 
-function nodes.temp()
+function pool.temp()
     return copy_node(temp)
 end
 
-function nodes.noad()
+function pool.noad()
     return copy_node(noad)
 end
 
@@ -227,7 +240,7 @@ and hide it for the user. And yes, LuaTeX now gives a warning as
 well.</p>
 ]]--
 
-function nodes.writable_spec(n)
+function nodes.writable_spec(n) -- not pool
     local spec = n.spec
     if not spec then
         spec = copy_node(glue_spec)
@@ -239,51 +252,52 @@ function nodes.writable_spec(n)
     return spec
 end
 
-local cache = { }
-
-function nodes.usernumber(num)
-    local n = cache[num]
-    if n then
-        return copy_node(n)
-    else
-        local n = copy_node(user_n)
-        if num then n.value = num end
-        return n
+function pool.usernumber(id,num) -- if one argument then num
+    local n = copy_node(user_n)
+    if num then
+        n.user_id, n.value = id, num
+    elseif id then
+        n.value = id
     end
-end
-
-function nodes.userlist(list)
-    local n = copy_node(user_l)
-    if list then n.value = list end
     return n
 end
 
-local cache = { } -- we could use the same cache
-
-function nodes.userstring(str)
-    local n = cache[str]
-    if n then
-        return copy_node(n)
+function pool.userlist(id,list)
+    local n = copy_node(user_l)
+    if list then
+        n.user_id, n.value =id, list
     else
-        local n = copy_node(user_s)
-        n.type = 115
-        if str then n.value = str end
-        return n
+        n.value = id
     end
+    return n
 end
 
-function nodes.usertokens(tokens)
+function pool.userstring(id,str)
+    local n = copy_node(user_s)
+    if str then
+        n.user_id, n.value =id, str
+    else
+        n.value = id
+    end
+    return n
+end
+
+function pool.usertokens(id,tokens)
     local n = copy_node(user_t)
-    if tokens then n.value = tokens end
+    if tokens then
+        n.user_id, n.value =id, tokens
+    else
+        n.value = id
+    end
     return n
 end
 
 statistics.register("cleaned up reserved nodes", function()
-    return format("%s nodes, %s lists of %s", nodes.cleanup_reserved(tex.count["lastallocatedbox"]))
+    return format("%s nodes, %s lists of %s", pool.cleanup(tex.count["lastallocatedbox"]))
 end) -- \topofboxstack
 
 statistics.register("node memory usage", function() -- comes after cleanup !
     return status.node_mem_usage
 end)
 
-lua.registerfinalizer(nodes.cleanup_reserved, "cleanup reserved nodes")
+lua.registerfinalizer(pool.cleanup, "cleanup reserved nodes")

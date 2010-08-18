@@ -6,12 +6,14 @@ if not modules then modules = { } end modules ['luat-cnf'] = {
     license   = "see context related readme files"
 }
 
+local type, next, tostring, tonumber =  type, next, tostring, tonumber
 local format, concat, find = string.format, table.concat, string.find
 
 texconfig.kpse_init    = false
 texconfig.shell_escape = 't'
 
-luatex = luatex or { }
+luatex       = luatex or { }
+local luatex = luatex
 
 luatex.variablenames = {
     'buf_size',         --  3000
@@ -51,6 +53,7 @@ if not luatex.variables_set then
 end
 
 local stub = [[
+
 -- checking
 
 storage = storage or { }
@@ -68,6 +71,56 @@ luatex.starttime = os.gettimeofday()
 -- this will happen after the format is loaded
 
 function texconfig.init()
+
+    -- development
+
+    local builtin, globals = { }, { }
+
+    libraries = { -- we set it her as we want libraries also 'indexed'
+        basiclua = {
+            "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package",
+        },
+        basictex = { -- noad
+            "callback", "font", "img", "lang", "lua", "node", "pdf", "status", "tex", "texconfig", "texio", "token",
+        },
+        extralua = {
+            "gzip",  "zip", "zlib", "lfs", "ltn12", "mime", "socket", "md5", "profiler", "unicode", "utf",
+        },
+        extratex = {
+            "epdf", "fontloader", "kpse", "mplib",
+        },
+        obsolete = {
+            "fontforge", -- can be filled by luat-log
+        },
+        builtin = builtin, -- to be filled
+        globals = globals, -- to be filled
+    }
+
+    for k, v in next, _G do
+        globals[k] = tostring(v)
+    end
+
+    local function collect(t)
+        local lib = { }
+        for k, v in next, t do
+            local keys = { }
+            local gv = _G[v]
+            if type(gv) == "table" then
+                for k, v in next, gv do
+                    keys[k] = tostring(v) -- true -- by tostring we cannot call overloades functions (security)
+                end
+            end
+            lib[v] = keys
+            builtin[v] = keys
+        end
+        return lib
+    end
+
+    libraries.basiclua = collect(libraries.basiclua)
+    libraries.basictex = collect(libraries.basictex)
+    libraries.extralua = collect(libraries.extralua)
+    libraries.extratex = collect(libraries.extratex)
+    libraries.obsolete = collect(libraries.obsolete)
 
     -- shortcut and helper
 

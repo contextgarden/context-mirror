@@ -21,7 +21,8 @@ your own code into the <l n='tex'/> engine. Here we implement a few handy
 auxiliary functions.</p>
 --ldx]]--
 
-callbacks = callbacks or { }
+callbacks       = callbacks or { }
+local callbacks = callbacks
 
 --[[ldx--
 <p>When you (temporarily) want to install a callback function, and after a
@@ -52,11 +53,11 @@ local delayed = table.tohash {
 }
 
 
-if not callback.original_register_callback then
+if not callback.original_register then
 
-    callback.original_register_callback = register_callback
+    callback.original_register = register_callback
 
-    local original_register_callback = register_callback
+    local original_register = register_callback
 
     if trace_calls then
 
@@ -73,10 +74,10 @@ if not callback.original_register_callback then
                         list[name] = list[name] + 1
                         return functions[name](...)
                     end
-                    return original_register_callback(name,cnuf)
+                    return original_register(name,cnuf)
                 end
             else
-                return original_register_callback(name,func)
+                return original_register(name,func)
             end
         end
 
@@ -272,9 +273,13 @@ restart the collector. Okay, experimental code has been removed,
 because messing aroudn with the gc is too unpredictable.</p>
 --ldx]]--
 
-garbagecollector = garbagecollector or { }
+-- For the moment we keep this here and not in util-gbc.lua or so.
 
-garbagecollector.enabled   = false
+utilities                  = utilities or { }
+utilities.garbagecollector = utilities.garbagecollector or { }
+local garbagecollector     = utilities.garbagecollector
+
+garbagecollector.enabled   = false -- could become a directive
 garbagecollector.criterium = 4*1024*1024
 
 -- Lua allocates up to 12 times the amount of memory needed for

@@ -15,7 +15,11 @@ modules.</p>
 
 local utf = unicode.utf8
 local next, type = next, type
-local format, concat, match, utfchar = string.format, table.concat, string.match, utf.char
+local format, concat, match, gsub = string.format, table.concat, string.match, string.gsub
+local utfchar = utf.char
+local swapped = table.swapped
+local lpegmatch = lpeg.match
+local formatcolumns = utilities.formatters.formatcolumns
 
 --[[ldx--
 <p>Access to nodes is what gives <l n='luatex'/> its power. Here we
@@ -50,11 +54,14 @@ into the <l n='tex'/> engine, but this is a not so natural extension.</p>
 also ignore the empty nodes. [This is obsolete!]</p>
 --ldx]]--
 
-nodes = nodes or { }
-
 local traverse, traverse_id = node.traverse, node.traverse_id
 local free_node, remove_node = node.free, node.remove
 local insert_node_before, insert_node_after = node.insert_before, node.insert_after
+
+nodes          = nodes or { }
+local nodes    = nodes
+
+nodes.handlers = nodes.handlers or { }
 
 -- there will be more of this:
 
@@ -82,9 +89,9 @@ local skipcodes = {
 
 local noadcodes = {
     [ 0] = "ord",
-    [ 1] = "op_displaylimits",
-    [ 2] = "op_limits",
-    [ 3] = "op_nolimits",
+    [ 1] = "opdisplaylimits",
+    [ 2] = "oplimits",
+    [ 3] = "opnolimits",
     [ 4] = "bin",
     [ 5] = "rel",
     [ 6] = "open",
@@ -96,27 +103,112 @@ local noadcodes = {
     [12] = "vcenter",
 }
 
-local nodecodes    = node.types()
-local whatsitcodes = node.whatsits()
+local listcodes = {
+    [ 0] = "unknown",
+    [ 1] = "line",
+    [ 2] = "box",
+    [ 3] = "indent",
+    [ 4] = "alignment", -- row or column
+    [ 5] = "cell",
+}
 
-skipcodes    = table.swapped(skipcodes,skipcodes)
-noadcodes    = table.swapped(noadcodes,noadcodes)
-nodecodes    = table.swapped(nodecodes,nodecodes)
-whatsitcodes = table.swapped(whatsitcodes,whatsitcodes)
+local glyphcodes = {
+    [0] = "character",
+    [1] = "glyph",
+    [2] = "ligature",
+    [3] = "ghost",
+    [4] = "left",
+    [5] = "right",
+}
 
-nodes.skipcodes    = skipcodes
-nodes.gluecodes    = skipcodes -- more official
-nodes.noadcodes    = noadcodes
-nodes.nodecodes    = nodecodes
-nodes.whatsitcodes = whatsitcodes
+local kerncodes = {
+    [0] = "fontkern",
+    [1] = "userkern",
+    [2] = "accentkern",
+}
 
-local hlist   = nodecodes.hlist
-local vlist   = nodecodes.vlist
-local glyph   = nodecodes.glyph
-local glue    = nodecodes.glue
-local penalty = nodecodes.penalty
-local kern    = nodecodes.kern
-local whatsit = nodecodes.whatsit
+local mathcodes  = {
+    [0] = "beginmath",
+    [1] = "endmath",
+}
+
+local fillcodes = {
+    [0] = "stretch",
+    [1] = "fi",
+    [2] = "fil",
+    [3] = "fill",
+    [4] = "filll",
+}
+
+local function simplified(t)
+    local r = { }
+    for k, v in next, t do
+        r[k] = gsub(v,"_","")
+    end
+    return r
+end
+
+local nodecodes = simplified(node.types())
+local whatcodes = simplified(node.whatsits())
+
+skipcodes  = swapped(skipcodes, skipcodes)
+noadcodes  = swapped(noadcodes, noadcodes)
+nodecodes  = swapped(nodecodes, nodecodes)
+whatcodes  = swapped(whatcodes, whatcodes)
+listcodes  = swapped(listcodes, listcodes)
+glyphcodes = swapped(glyphcodes,glyphcodes)
+kerncodes  = swapped(kerncodes, kerncodes)
+mathcodes  = swapped(mathcodes, mathcodes)
+fillcodes  = swapped(fillcodes, fillcodes)
+
+nodes.skipcodes  = skipcodes  nodes.gluecodes    = skipcodes -- more official
+nodes.noadcodes  = noadcodes
+nodes.nodecodes  = nodecodes
+nodes.whatcodes  = whatcodes  nodes.whatsitcodes = whatcodes -- more official
+nodes.listcodes  = listcodes
+nodes.glyphcodes = glyphcodes
+nodes.kerncodes  = kerncodes
+nodes.mathcodes  = mathcodes
+nodes.fillcodes  = fillcodes
+
+listcodes.row              = listcodes.alignment
+listcodes.column           = listcodes.alignment
+
+kerncodes.italiccorrection = kerncodes.userkern
+kerncodes.kerning          = kerncodes.fontkern
+
+nodes.codes = {
+    hlist   = listcodes,
+    vlist   = listcodes,
+    glyph   = glyphcodes,
+    glue    = skipcodes,
+    kern    = kerncodes,
+    whatsit = whatcodes,
+    math    = mathnodes,
+    noad    = noadcodes,
+}
+
+function nodes.showcodes()
+    local t = { }
+    for name, codes in table.sortedhash(nodes.codes) do
+        local sorted = table.sortedkeys(codes)
+        for i=1,#sorted do
+            local s = sorted[i]
+            if type(s) ~= "number" then
+                t[#t+1] = { name, s, codes[s] }
+            end
+        end
+    end
+    formatcolumns(t)
+    for k=1,#t do
+        texio.write_nl(t[k])
+    end
+end
+
+trackers.register("system.showcodes", nodes.showcodes)
+
+local hlist_code   = nodecodes.hlist
+local vlist_code   = nodecodes.vlist
 
 function nodes.remove(head, current, free_too)
    local t = current
@@ -210,7 +302,7 @@ local function count(stack,flat)
     local n = 0
     while stack do
         local id = stack.id
-        if not flat and id == hlist or id == vlist then
+        if not flat and id == hlist_code or id == vlist_code then
             local list = stack.list
             if list then
                 n = n + 1 + count(list) -- self counts too
@@ -229,4 +321,8 @@ nodes.count = count
 
 local left, space = lpeg.P("<"), lpeg.P(" ")
 
-nodes.filterkey = left * (1-left)^0 * left * space^0 * lpeg.C((1-space)^0)
+local reference = left * (1-left)^0 * left * space^0 * lpeg.C((1-space)^0)
+
+function nodes.reference(n)
+    return lpegmatch(reference,tostring(n))
+end

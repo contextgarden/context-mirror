@@ -21,7 +21,6 @@
 
 \registerctxluafile{colo-ini}{1.000}
 \registerctxluafile{colo-icc}{1.000}
-\registerctxluafile{lpdf-col}{1.000}
 
 \unprotect
 
@@ -720,7 +719,7 @@
 %    \dosetcolormodel{#1}}
 
 \def\dosetcolormodel#1% no message
-  {\currentcolormodel\ctxlua{tex.print(colors.setmodel('#1',\ifweightGRAY true\else false\fi))}%
+  {\currentcolormodel\ctxlua{tex.print(_clib_.setmodel('#1',\ifweightGRAY true\else false\fi))}%
    \attribute\colormodelattribute\currentcolormodel}
 
 \dosetcolormodel{all}
@@ -786,7 +785,7 @@
 
 \def\doactivatecolor
   {\ifproductionrun
-     \ctxlua{colors.enable() transparencies.enable()}% not that efficient but at least robust
+     \ctxlua{_clib_.enable() _tlib_.enable()}% not that efficient but at least robust
      \let\doactivatecolor\normaldoactivatecolor
      \expandafter\doactivatecolor
    \else
@@ -805,44 +804,44 @@
 \setfalse\collectcolorsinlist
 \def\collectcolorinlist#1{\doglobal\addtocommalist{#1}\colorlist}
 
-\def\doregistercolor#1#2{\ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}}
+\def\doregistercolor#1#2{\ctxlua{_clib_.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}}
 
 \def\dodefinecolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxlua{_clib_.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefineglobalcolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{colors.defineprocesscolor("#1","#2",true,\iffreezecolors true\else false\fi)}%
+   \ctxlua{_clib_.defineprocesscolor("#1","#2",true,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setgvalue{#1}}
 
 \def\dodefinenamedcolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxlua{_clib_.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefinespotcolor[#1][#2][#3]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{colors.definespotcolor("#1","#2","#3",true)}%
+   \ctxlua{_clib_.definespotcolor("#1","#2","#3",true)}%
    \dodefinecolorcommand\setxvalue{#1}}
 
 \def\dodefinemultitonecolor[#1][#2][#3][#4]%
-  {\ctxlua{colors.definemultitonecolor("#1","#2","#3","#4",true)}%
+  {\ctxlua{_clib_.definemultitonecolor("#1","#2","#3","#4",true)}%
    \dodefinecolorcommand\setxvalue{#1}}
 
 \def\dodefinetransparency[#1][#2]%
-  {\ctxlua{colors.definetransparency("#1",#2)}}
+  {\ctxlua{_clib_.definetransparency("#1",#2)}}
 
 \def\dosetrastercolor#1% slow, we need a fast one
   {\edef\@@rastervalue{#1}%
    \ifx\@@rastervalue\empty
      \let\@@rastervalue\@@rsscreen
    \fi
-   \attribute\colorattribute\ctxlua{tex.sprint(colors.definesimplegray("_raster_",\@@rastervalue))}\relax}
+   \attribute\colorattribute\ctxlua{tex.sprint(_clib_.definesimplegray("_raster_",\@@rastervalue))}\relax}
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok
-  {\ctxlua{colors.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+  {\ctxlua{_clib_.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 %D \macros
@@ -876,7 +875,7 @@
 %D A bit like \type {\definedfont}:
 
 \unexpanded\def\colored[#1]%
-  {\ctxlua{colors.defineprocesscolor("@colored@","#1",false,false)}%
+  {\ctxlua{_clib_.defineprocesscolor("@colored@","#1",false,false)}%
    \groupedcommand{\doactivatecolor{@colored@}}{}}
 
 %D \macros
@@ -916,7 +915,7 @@
   \ifx\maintextcolor\empty\else\doactivatecolor\maintextcolor\fi
 \to \everybeforeoutput
 
-\def\registermaintextcolor{\ctxlua{colors.main = \thecolorattribute\maintextcolor}}
+\def\registermaintextcolor{\ctxlua{_clib_.main = \thecolorattribute\maintextcolor}}
 
 \unexpanded\def\starttextcolor[#1]%
   {\doifsomething{#1}
@@ -998,7 +997,7 @@
 
 \def\colorformatseparator{ }
 
-\def\MPcolor#1{\ctxlua{tex.sprint(colors.mp(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1}))}}
+\def\MPcolor#1{\ctxlua{tex.sprint(_clib_.mp(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1}))}}
 
 \let\currentcolorname\s!black % todo
 \let\outercolorname  \s!black % todo
@@ -1006,18 +1005,18 @@
 \def\thecolorattribute       #1{\number\csname(ca:\ifcsname(ca:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ca:#1)\endcsname#1\fi\fi)\endcsname}
 \def\thetransparencyattribute#1{\number\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
 
-\def\internalspotcolorname  #1{\ctxlua{tex.sprint(colors.spotcolorname  (\thecolorattribute{#1}))}}
-\def\internalspotcolorparent#1{\ctxlua{tex.sprint(colors.spotcolorparent(\thecolorattribute{#1}))}}
-\def\internalspotcolorsize  #1{\ctxlua{tex.sprint(colors.spotcolorvalue (\thecolorattribute{#1}))}}
+\def\internalspotcolorname  #1{\ctxlua{tex.sprint(_clib_.spotcolorname  (\thecolorattribute{#1}))}}
+\def\internalspotcolorparent#1{\ctxlua{tex.sprint(_clib_.spotcolorparent(\thecolorattribute{#1}))}}
+\def\internalspotcolorsize  #1{\ctxlua{tex.sprint(_clib_.spotcolorvalue (\thecolorattribute{#1}))}}
 
-\def\colorcomponents       #1{\ctxlua{tex.sprint(colors.colorcomponents       (\thecolorattribute       {#1}))}}
-\def\transparencycomponents#1{\ctxlua{tex.sprint(colors.transparencycomponents(\thetransparencyattribute{#1}))}}
+\def\colorcomponents       #1{\ctxlua{tex.sprint(_clib_.colorcomponents       (\thecolorattribute       {#1}))}}
+\def\transparencycomponents#1{\ctxlua{tex.sprint(_clib_.transparencycomponents(\thetransparencyattribute{#1}))}}
 
-\def\colorvalue#1{\ctxlua{tex.sprint(colors.formatcolor(\thecolorattribute{#1},"\colorformatseparator"))}}
-\def\grayvalue #1{\ctxlua{tex.sprint(colors.formatgray (\thecolorattribute{#1},"\colorformatseparator"))}}
+\def\colorvalue#1{\ctxlua{tex.sprint(_clib_.formatcolor(\thecolorattribute{#1},"\colorformatseparator"))}}
+\def\grayvalue #1{\ctxlua{tex.sprint(_clib_.formatgray (\thecolorattribute{#1},"\colorformatseparator"))}}
 
-\def\doifblackelse       #1{\ctxlua{commands.doifelse(colors.isblack(\thecolorattribute{#1}))}}
-\def\doifdrawingblackelse  {\ctxlua{commands.doifelse(colors.isblack(tex.attribute[attributes.numbers['color']]))}}
+\def\doifblackelse       #1{\ctxlua{commands.doifelse(_clib_.isblack(\thecolorattribute{#1}))}}
+\def\doifdrawingblackelse  {\ctxlua{commands.doifelse(_clib_.isblack(tex.attribute[attributes.numbers['color']]))}}
 
 %D \macros
 %D   {forcecolorhack}

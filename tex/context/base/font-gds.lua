@@ -17,16 +17,19 @@ local report_fonts = logs.new("fonts")
 --
 -- goodies=auto
 
--- goodies
+local fonts, nodes, attributes = fonts, nodes, attributes
+local node = node
 
-fonts.goodies      = fonts.goodies      or { }
-fonts.goodies.data = fonts.goodies.data or { }
-fonts.goodies.list = fonts.goodies.list or { }
+fonts.goodies     = fonts.goodies or { }
+local fontgoodies = fonts.goodies
 
-local data = fonts.goodies.data
-local list = fonts.goodies.list
+fontgoodies.data  = fontgoodies.data or { }
+local data        = fontgoodies.data
 
-function fonts.goodies.report(what,trace,goodies)
+fontgoodies.list  = fontgoodies.list or { }
+local list        = fontgoodies.list
+
+function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
         local whatever = goodies[what]
         if whatever then
@@ -66,17 +69,17 @@ local function getgoodies(filename) -- maybe a merge is better
     return goodies
 end
 
-function fonts.goodies.register(name,fnc)
+function fontgoodies.register(name,fnc)
     list[name] = fnc
 end
 
-fonts.goodies.get = getgoodies
+fontgoodies.get = getgoodies
 
 -- register goodies file
 
 local preset_context = fonts.define.specify.preset_context
 
-function fonts.initializers.common.goodies(tfmdata,value)
+local function set_goodies(tfmdata,value)
     local goodies = tfmdata.goodies or { } -- future versions might store goodies in the cached instance
     for filename in gmatch(value,"[^, ]+") do
         -- we need to check for duplicates
@@ -87,6 +90,8 @@ function fonts.initializers.common.goodies(tfmdata,value)
     end
     tfmdata.goodies = goodies -- shared ?
 end
+
+-- this will be split into good-* files and this file might become good-ini.lua
 
 -- featuresets
 
@@ -115,7 +120,7 @@ end
 
 fonts.flattened_features = flattened_features
 
-function fonts.goodies.prepare_features(goodies,name,set)
+function fontgoodies.prepare_features(goodies,name,set)
     if set then
         local ff = flattened_features(set)
         local fullname = goodies.name .. "::" .. name
@@ -136,14 +141,14 @@ local function initialize(goodies,tfmdata)
             report_fonts("checking featuresets in '%s'",goodies.name)
         end
         for name, set in next, featuresets do
-            fonts.goodies.prepare_features(goodies,name,set)
+            fontgoodies.prepare_features(goodies,name,set)
         end
     end
 end
 
-fonts.goodies.register("featureset",initialize)
+fontgoodies.register("featureset",initialize)
 
-function fonts.initializers.common.featureset(tfmdata,set)
+local function set_featureset(tfmdata,set)
     local goodies = tfmdata.goodies -- shared ?
     if goodies then
         local features = tfmdata.shared.features
@@ -166,12 +171,11 @@ end
 
 -- colorschemes
 
-fonts.goodies.colorschemes      = fonts.goodies.colorschemes      or { }
-fonts.goodies.colorschemes.data = fonts.goodies.colorschemes.data or { }
+fontgoodies.colorschemes = fontgoodies.colorschemes or { }
+local colorschemes       = fontgoodies.colorschemes
+colorschemes.data        = colorschemes.data or { }
 
-local colorschemes = fonts.goodies.colorschemes
-
-function fonts.initializers.common.colorscheme(tfmdata,scheme)
+local function set_colorscheme(tfmdata,scheme)
     if type(scheme) == "string" then
         local goodies = tfmdata.goodies
         -- todo : check for already defined in shared
@@ -211,7 +215,7 @@ local traverse_id   = node.traverse_id
 local a_colorscheme = attributes.private('colorscheme')
 local glyph         = node.id("glyph")
 
-function fonts.goodies.colorschemes.coloring(head)
+function colorschemes.coloring(head)
     local lastfont, lastscheme
     local done = false
     for n in traverse_id(glyph,head) do
@@ -233,9 +237,9 @@ function fonts.goodies.colorschemes.coloring(head)
     return head, done
 end
 
-function fonts.goodies.colorschemes.enable()
-    tasks.appendaction("processors","fonts","fonts.goodies.colorschemes.coloring")
-    function fonts.goodies.colorschemes.enable() end
+function colorschemes.enable()
+    nodes.tasks.appendaction("processors","fonts","fonts.goodies.colorschemes.coloring")
+    function colorschemes.enable() end
 end
 
 -- installation (collected to keep the overview)
@@ -252,14 +256,17 @@ table.insert(fonts.triggers, 1, "goodies")
 table.insert(fonts.triggers, 2, "featureset") -- insert after
 table.insert(fonts.triggers,    "colorscheme")
 
-fonts.initializers.base.otf.goodies     = fonts.initializers.common.goodies
-fonts.initializers.node.otf.goodies     = fonts.initializers.common.goodies
+local base_initializers   = fonts.initializers.base.otf
+local node_initializers   = fonts.initializers.node.otf
 
-fonts.initializers.base.otf.featureset  = fonts.initializers.common.featureset
-fonts.initializers.node.otf.featureset  = fonts.initializers.common.featureset
+base_initializers.goodies     = set_goodies
+node_initializers.goodies     = set_goodies
 
-fonts.initializers.base.otf.colorscheme = fonts.initializers.common.colorscheme
-fonts.initializers.node.otf.colorscheme = fonts.initializers.common.colorscheme
+base_initializers.featureset  = set_featureset
+node_initializers.featureset  = set_featureset
+
+base_initializers.colorscheme = set_colorscheme
+node_initializers.colorscheme = set_colorscheme
 
 -- experiment, we have to load the definitions immediately as they precede
 -- the definition so they need to be initialized in the typescript
@@ -286,7 +293,7 @@ local function initialize(goodies)
     end
 end
 
-fonts.goodies.register("mathematics", initialize)
+fontgoodies.register("mathematics", initialize)
 
 -- The following file (husayni.lfg) is the experimental setup that we used
 -- for Idris font. For the moment we don't store this in the cache and quite

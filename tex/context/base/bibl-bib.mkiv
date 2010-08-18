@@ -169,7 +169,7 @@
 \def\bibxmlflush   #1{\xmlcontext \currentbibxmlnode{/field[@name='#1']}}
 \def\bibxmlsetup     {\xmlsetup   \currentbibxmlnode} % {#1}
 
-\def\currentbibtexformat{apa}    % ho wto interface this, maybe split loading and key
+\def\currentbibtexformat{apa}    % how to interface this, maybe split loading and key
 \def\currentbibxmlnode  {unset}
 \def\currentbibxmltag   {unset}
 
@@ -299,7 +299,7 @@
 % lists
 
 \def\bibtexlistprocessor
-  {\ctxlua{bibtex.hacks.add(structure.lists.uservalue("\currentlist",\currentlistindex,"bibref"),\currentlistindex)}}
+  {\ctxlua{bibtex.hacks.add(structures.lists.uservalue("\currentlist",\currentlistindex,"bibref"),\currentlistindex)}}
 
 \appendtoks
     \definelist[\currentbibtexsession]%
@@ -466,7 +466,7 @@
 
 \appendtoks
     \doloadbibtexpublicationalternative
-\to \everyjob
+\to \everystarttext % was everyjob, will change anyway
 
 % whatever, should be key
 
@@ -578,7 +578,7 @@
      {\ifx\currentbibtexnumbering\v!short
         \setbox\scratchbox\hbox{\bibtexpublicationsparameter\c!numbercommand{\bibtexpublicationsparameter\c!samplesize}}%
       \else
-        \setbox\scratchbox\hbox{\bibtexpublicationsparameter\c!numbercommand{\ctxlua{tex.write(structure.lists.size())}}}%
+        \setbox\scratchbox\hbox{\bibtexpublicationsparameter\c!numbercommand{\ctxlua{tex.write(structures.lists.size())}}}%
       \fi
       \bibtexnumberwidth\wd\scratchbox
       \setuplist[\currentbibtexsession][\c!distance=\zeropoint]}

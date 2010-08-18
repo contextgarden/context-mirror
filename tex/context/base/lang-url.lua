@@ -13,7 +13,8 @@ local utfbyte, utfgsub = utf.byte, utf.gsub
 
 local ctxcatcodes, texsprint = tex.ctxcatcodes, tex.sprint
 
-commands = commands or { }
+commands       = commands or { }
+local commands = commands
 
 --[[
 <p>Hyphenating <l n='url'/>'s is somewhat tricky and a matter of taste. I did
@@ -23,8 +24,7 @@ dealing with <l n='ascii'/> characters.</p>
 ]]--
 
 commands.hyphenatedurl = commands.hyphenatedurl or { }
-
-local hyphenatedurl = commands.hyphenatedurl
+local hyphenatedurl    = commands.hyphenatedurl
 
 hyphenatedurl.characters = {
   ["!"] = 1,

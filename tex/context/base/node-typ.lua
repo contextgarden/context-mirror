@@ -6,14 +6,19 @@ if not modules then modules = { } end modules ['node-typ'] = {
     license   = "see context related readme files"
 }
 
--- this will be replaced by blob-ini cum suis so typesetting will go away
+-- this will be replaced by blob-ini cum suis so typesetters will go away
 
 local utfvalues = string.utfvalues
 
-local newglyph, newglue = nodes.glyph, nodes.glue
-local hpack, vpack = node.hpack, node.vpack
+local hpack     = node.hpack
+local vpack     = node.vpack
 
-typesetting = typesetting or { }
+local nodepool  = nodes.pool
+
+local new_glyph = nodepool.glyph
+local new_glue  = nodepool.glue
+
+typesetters = typesetters or { }
 
 local function tonodes(str,fontid,spacing) -- don't use this
     local head, prev = nil, nil
@@ -35,17 +40,17 @@ local function tonodes(str,fontid,spacing) -- don't use this
     return head
 end
 
-typesetting.tonodes = tonodes
+typesetters.tonodes = tonodes
 
-function typesetting.hpack(str,fontid,spacing)
+function typesetters.hpack(str,fontid,spacing)
     return hpack(tonodes(str,fontid,spacing))
 end
 
-function typesetting.vpack(str,fontid,spacing)
+function typesetters.vpack(str,fontid,spacing)
     -- vpack is just a hack, and a proper implentation is on the agenda
     -- as it needs more info etc than currently available
     return vpack(tonodes(str,fontid,spacing))
 end
 
---~ node.write(typesetting.hpack("Hello World!"))
---~ node.write(typesetting.hpack("Hello World!",1,100*1024*10))
+--~ node.write(typesetters.hpack("Hello World!"))
+--~ node.write(typesetters.hpack("Hello World!",1,100*1024*10))

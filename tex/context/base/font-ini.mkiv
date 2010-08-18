@@ -16,7 +16,8 @@
 
 % simplification ... we no longer deal with specific mmtfa specifications
 
-%  todo: always fontclass, then less testing
+% todo: always fontclass, then less testing
+% todo: bodyfontvariable: parent
 
 % \definefontfeature[smallcaps][smcp=yes,script=latn]
 % \definefontfeature[smallcaps][SmallCapitals=yes,script=latn]
@@ -517,6 +518,11 @@
 \def\dosetmathfamily#1#2%
   {\let\savedfontbody\fontbody % op hoger plan
    \let\fontfamily#2%
+   % new per 20100817
+   \checkbodyfontenvironment[\scriptscriptface]%
+   \checkbodyfontenvironment[\scriptface]%
+   \checkbodyfontenvironment[\textface]%
+   %
    \let\currentmathsize\!!plusthree\let\fontbody\scriptscriptface\dodosetmathfamily\scriptscriptfont#1%
    \let\currentmathsize\!!plustwo  \let\fontbody\scriptface      \dodosetmathfamily\scriptfont      #1%
    \let\currentmathsize\!!plusone  \let\fontbody\textface        \dodosetmathfamily\textfont        #1%
@@ -1465,6 +1471,8 @@
    \ifcsname\??ft#2#1\c!em\endcsname
       % we test for em as we assume it to be set
    \else
+     % speeding this up saves 0.01 sec on a run (tested 20100817)
+     % but some day we will clean this up anyway
      \def\docommand##1%
        {\scratchdimen\csname\??ft\s!default##1\endcsname\dimexpr#1\relax
         \normalizebodyfontsize\scratchdimen\to\tempbodyfontsize

@@ -163,7 +163,7 @@
     </profile>
 
     <profile>
-        <filename>ISOcoated_v2_eci_300.icc</filename>
+        <filename>ISOcoated_v2_300_eci.icc</filename>
         <colorspace>CMYK</colorspace>
         <class>prtr</class>
         <id>FOGRA39</id>

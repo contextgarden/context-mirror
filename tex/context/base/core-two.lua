@@ -15,9 +15,12 @@ local texprint = tex.print
 bit of a mess because we support old and new methods.</p>
 --ldx]]--
 
-jobpasses           = jobpasses or { }
-jobpasses.collected = jobpasses.collected or { }
-jobpasses.tobesaved = jobpasses.tobesaved or { }
+local jobpasses = {
+    collected = { },
+    tobesaved = { },
+}
+
+job.passes = jobpasses
 
 local collected, tobesaved = jobpasses.collected, jobpasses.tobesaved
 
@@ -25,7 +28,7 @@ local function initializer()
     collected, tobesaved = jobpasses.collected, jobpasses.tobesaved
 end
 
-job.register('jobpasses.collected', jobpasses.tobesaved, initializer, nil)
+job.register('job.passes.collected', jobpasses.tobesaved, initializer, nil)
 
 local function allocate(id)
     local p = tobesaved[id]

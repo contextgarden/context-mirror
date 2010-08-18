@@ -75,14 +75,14 @@
   {\getparameters[\??nb#1]}% [#2]
 
 \def\dosetstructureblock[#1]% used to set the default
-  {\edef\currentstructureblock{\ctxlua{structure.sections.setblock("#1")}}}
+  {\edef\currentstructureblock{\ctxlua{structures.sections.setblock("#1")}}}
 
 \let\currentstructureblock\s!unknown
 
 \unexpanded\def\startstructureblock[#1]%
-  {%\ctxlua{structure.counters.check(0)}% we assume sane usage of \page, as this is the only workable place (in push)
+  {%\ctxlua{structures.counters.check(0)}% we assume sane usage of \page, as this is the only workable place (in push)
    \begingroup
-   \edef\currentstructureblock{\ctxlua{structure.sections.pushblock("#1")}}%
+   \edef\currentstructureblock{\ctxlua{structures.sections.pushblock("#1")}}%
    \csname #1true\endcsname % for old times sake
    \setsystemmode\currentstructureblock
    \the\everybeforestructureblock\relax
@@ -91,7 +91,7 @@
 \unexpanded\def\stopstructureblock
  {\showmessage\m!structures2\currentstructureblock
   \the\everyafterstructureblock\relax
-  \edef\currentstructureblock{\ctxlua{structure.sections.popblock()}}%
+  \edef\currentstructureblock{\ctxlua{structures.sections.popblock()}}%
   \endgroup}
 
 \long\def\setstructureblockenvironment#1#2%

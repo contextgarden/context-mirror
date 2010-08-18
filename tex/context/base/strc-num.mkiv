@@ -57,7 +57,7 @@
   [\c!prefixsegments=\autostructureprefixsegments\sharedstructurecounterparameter]
 
 \def\autostructureprefixsegments#1% todo: \c!prefixsegments=\v!auto
-  {2:\thenamedstructureheadlevel{\ctxlua{structure.sections.way("#1\c!way","\v!by")}}}
+  {2:\thenamedstructureheadlevel{\ctxlua{structures.sections.way("#1\c!way","\v!by")}}}
 
 % \letvalue{\??nn\s!empty}\empty
 
@@ -108,7 +108,7 @@
 
 \def\dododefinestructurecounter[#1][#2]%
   {\getparameters[\??nn#1][\s!counter=,#2]% counter is for internal purposes
-   \ctxlua{structure.counters.define("#1",tonumber("\structurecounterparameter{#1}\c!start") or 0,"\structurecounterparameter{#1}\s!counter")}%
+   \ctxlua{structures.counters.define("#1",tonumber("\structurecounterparameter{#1}\c!start") or 0,"\structurecounterparameter{#1}\s!counter")}%
    \docheckstructurecountersetup{#1}}
 
 \def\donodefinestructurecounter[#1][#2]% inherit
@@ -123,7 +123,7 @@
    \docheckstructurecountersetup{#1}}
 
 \def\structurecounterway#1% slow, we need to store it at the tex end
-  {\ctxlua{structure.sections.way("\structurecounterparameter{#1}\c!way","\v!by")}}
+  {\ctxlua{structures.sections.way("\structurecounterparameter{#1}\c!way","\v!by")}}
 
 \def\thenamedstructurecounterlevel#1%
   {\thenamedstructureheadlevel{\structurecounterway{#1}}}
@@ -139,36 +139,36 @@
    \else
      \edef\currentstructurecounterlevel{\thenamedstructurecounterlevel{#1}}%
      \ctxlua{
-        structure.counters.restart("#1",1,"\structurecounterparameter{#1}\c!start")
-        structure.counters.setstate("#1","\structurecounterparameter{#1}\c!state")
-        structure.counters.setlevel("#1",\currentstructurecounterlevel)
-        structure.sections.setchecker("#1",\currentstructurecounterlevel,structure.counters.reset)
+        structures.counters.restart("#1",1,"\structurecounterparameter{#1}\c!start")
+        structures.counters.setstate("#1","\structurecounterparameter{#1}\c!state")
+        structures.counters.setlevel("#1",\currentstructurecounterlevel)
+        structures.sections.setchecker("#1",\currentstructurecounterlevel,structures.counters.reset)
      }%
    \fi}
 
-\def\doifstructurecounterelse#1{\ctxlua{structure.counters.doifelse("\@@thestructurecounter{#1}")}}
-\def\doifstructurecounter    #1{\ctxlua{structure.counters.doif    ("\@@thestructurecounter{#1}")}}
-\def\doifnotstructurecounter #1{\ctxlua{structure.counters.doifnot ("\@@thestructurecounter{#1}")}}
+\def\doifstructurecounterelse#1{\ctxlua{structures.counters.doifelse("\@@thestructurecounter{#1}")}}
+\def\doifstructurecounter    #1{\ctxlua{structures.counters.doif    ("\@@thestructurecounter{#1}")}}
+\def\doifnotstructurecounter #1{\ctxlua{structures.counters.doifnot ("\@@thestructurecounter{#1}")}}
 
-\def\setstructurecounter      [#1]#2{\ctxlua{structure.counters.set    ("\@@thestructurecounter{#1}",1,\number#2)}}
-\def\setstructurecounterown   [#1]#2{\ctxlua{structure.counters.setown ("\@@thestructurecounter{#1}",1,"#2")}}
-\def\resetstructurecounter      [#1]{\ctxlua{structure.counters.reset  ("\@@thestructurecounter{#1}",1)}}
-\def\restartstructurecounter  [#1]#2{\ctxlua{structure.counters.restart("\@@thestructurecounter{#1}",1,#2)}}
-\def\savestructurecounter       [#1]{\ctxlua{structure.counters.save   ("\@@thestructurecounter{#1}")}}
-\def\restorestructurecounter    [#1]{\ctxlua{structure.counters.restore("\@@thestructurecounter{#1}")}}
-\def\incrementstructurecounter  [#1]{\ctxlua{structure.counters.add    ("\@@thestructurecounter{#1}",1,1)}}
-\def\decrementstructurecounter  [#1]{\ctxlua{structure.counters.add    ("\@@thestructurecounter{#1}",1,-1)}}
-\def\rawstructurecounter        [#1]{\ctxlua{structure.counters.value  ("\@@thestructurecounter{#1}",1)}}
-\def\laststructurecounter       [#1]{\ctxlua{structure.counters.last   ("\@@thestructurecounter{#1}",1)}}
-\def\firststructurecounter      [#1]{\ctxlua{structure.counters.first  ("\@@thestructurecounter{#1}",1)}}
-\def\nextstructurecounter       [#1]{\ctxlua{structure.counters.next   ("\@@thestructurecounter{#1}",1)}}
-\def\prevstructurecounter       [#1]{\ctxlua{structure.counters.prev   ("\@@thestructurecounter{#1}",1)}}
-\def\structurecountersubs       [#1]{\ctxlua{structure.counters.subs   ("\@@thestructurecounter{#1}",1)}}
+\def\setstructurecounter      [#1]#2{\ctxlua{structures.counters.set    ("\@@thestructurecounter{#1}",1,\number#2)}}
+\def\setstructurecounterown   [#1]#2{\ctxlua{structures.counters.setown ("\@@thestructurecounter{#1}",1,"#2")}}
+\def\resetstructurecounter      [#1]{\ctxlua{structures.counters.reset  ("\@@thestructurecounter{#1}",1)}}
+\def\restartstructurecounter  [#1]#2{\ctxlua{structures.counters.restart("\@@thestructurecounter{#1}",1,#2)}}
+\def\savestructurecounter       [#1]{\ctxlua{structures.counters.save   ("\@@thestructurecounter{#1}")}}
+\def\restorestructurecounter    [#1]{\ctxlua{structures.counters.restore("\@@thestructurecounter{#1}")}}
+\def\incrementstructurecounter  [#1]{\ctxlua{structures.counters.add    ("\@@thestructurecounter{#1}",1,1)}}
+\def\decrementstructurecounter  [#1]{\ctxlua{structures.counters.add    ("\@@thestructurecounter{#1}",1,-1)}}
+\def\rawstructurecounter        [#1]{\ctxlua{structures.counters.value  ("\@@thestructurecounter{#1}",1)}}
+\def\laststructurecounter       [#1]{\ctxlua{structures.counters.last   ("\@@thestructurecounter{#1}",1)}}
+\def\firststructurecounter      [#1]{\ctxlua{structures.counters.first  ("\@@thestructurecounter{#1}",1)}}
+\def\nextstructurecounter       [#1]{\ctxlua{structures.counters.next   ("\@@thestructurecounter{#1}",1)}}
+\def\prevstructurecounter       [#1]{\ctxlua{structures.counters.prev   ("\@@thestructurecounter{#1}",1)}}
+\def\structurecountersubs       [#1]{\ctxlua{structures.counters.subs   ("\@@thestructurecounter{#1}",1)}}
 
-\def\tracestructurecounter      [#1]{\ctxlua{structure.counters.trace  ("\@@thestructurecounter{#1}")}}
+\def\tracestructurecounter      [#1]{\ctxlua{structures.counters.trace  ("\@@thestructurecounter{#1}")}}
 
-\def\incrementedstructurecounter[#1]{\ctxlua{tex.write(structure.counters.add("\@@thestructurecounter{#1}",1,1))}}
-\def\decrementedstructurecounter[#1]{\ctxlua{tex.write(structure.counters.add("\@@thestructurecounter{#1}",1,-1))}}
+\def\incrementedstructurecounter[#1]{\ctxlua{tex.write(structures.counters.add("\@@thestructurecounter{#1}",1,1))}}
+\def\decrementedstructurecounter[#1]{\ctxlua{tex.write(structures.counters.add("\@@thestructurecounter{#1}",1,-1))}}
 
 \def\setsubstructurecounter        {\dodoubleargument\dosetsubstructurecounter}
 \def\setsubstructurecounterown     {\dodoubleargument\dosetsubstructurecounterown}
@@ -178,16 +178,16 @@
 \def\decrementsubstructurecounter  {\dodoubleargument\dodecrementsubstructurecounter}
 \def\rawsubstructurecounter        {\dodoubleargument\dorawsubstructurecounter}
 
-\def\dosetsubstructurecounter      [#1][#2]#3{\ctxlua{structure.counters.set    ("\@@thestructurecounter{#1}",#2,\number#3)}}
-\def\dosetsubstructurecounterown   [#1][#2]#3{\ctxlua{structure.counters.setown ("\@@thestructurecounter{#1}",#2,"#3")}}
-\def\doresetsubstructurecounter      [#1][#2]{\ctxlua{structure.counters.reset  ("\@@thestructurecounter{#1}",#2)}}
-\def\dorestartsubstructurecounter  [#1][#2]#3{\ctxlua{structure.counters.restart("\@@thestructurecounter{#1}",#2,#3)}}
-\def\doincrementsubstructurecounter  [#1][#2]{\ctxlua{structure.counters.add    ("\@@thestructurecounter{#1}",#2,1)}}
-\def\dodecrementsubstructurecounter  [#1][#2]{\ctxlua{structure.counters.add    ("\@@thestructurecounter{#1}",#2,-1)}}
-\def\dorawsubstructurecounter        [#1][#2]{\ctxlua{structure.counters.value  ("\@@thestructurecounter{#1}",#2)}}
-\def\dolastsubstructurecounter       [#1][#2]{\ctxlua{structure.counters.last   ("\@@thestructurecounter{#1}",#2)}}
-\def\dofirstsubstructurecounter      [#1][#2]{\ctxlua{structure.counters.first  ("\@@thestructurecounter{#1}",#2)}}
-\def\dosubstructurecountersubs       [#1][#2]{\ctxlua{structure.counters.subs   ("\@@thestructurecounter{#1}",#2)}}
+\def\dosetsubstructurecounter      [#1][#2]#3{\ctxlua{structures.counters.set    ("\@@thestructurecounter{#1}",#2,\number#3)}}
+\def\dosetsubstructurecounterown   [#1][#2]#3{\ctxlua{structures.counters.setown ("\@@thestructurecounter{#1}",#2,"#3")}}
+\def\doresetsubstructurecounter      [#1][#2]{\ctxlua{structures.counters.reset  ("\@@thestructurecounter{#1}",#2)}}
+\def\dorestartsubstructurecounter  [#1][#2]#3{\ctxlua{structures.counters.restart("\@@thestructurecounter{#1}",#2,#3)}}
+\def\doincrementsubstructurecounter  [#1][#2]{\ctxlua{structures.counters.add    ("\@@thestructurecounter{#1}",#2,1)}}
+\def\dodecrementsubstructurecounter  [#1][#2]{\ctxlua{structures.counters.add    ("\@@thestructurecounter{#1}",#2,-1)}}
+\def\dorawsubstructurecounter        [#1][#2]{\ctxlua{structures.counters.value  ("\@@thestructurecounter{#1}",#2)}}
+\def\dolastsubstructurecounter       [#1][#2]{\ctxlua{structures.counters.last   ("\@@thestructurecounter{#1}",#2)}}
+\def\dofirstsubstructurecounter      [#1][#2]{\ctxlua{structures.counters.first  ("\@@thestructurecounter{#1}",#2)}}
+\def\dosubstructurecountersubs       [#1][#2]{\ctxlua{structures.counters.subs   ("\@@thestructurecounter{#1}",#2)}}
 
 % The bypage check needs a multipass reference and therefore
 % we only check for it when we increment and know that some
@@ -200,11 +200,11 @@
 
 \def\incrementstructurecounter[#1]%
   {\docheckstructurecounterbypage{#1}%
-   \ctxlua{structure.counters.add("\@@thestructurecounter{#1}",1,1)}}
+   \ctxlua{structures.counters.add("\@@thestructurecounter{#1}",1,1)}}
 
 \def\doincrementsubstructurecounter[#1][#2]%
   {\docheckstructurecounterbypage{#1}%
-   \ctxlua{structure.counters.add("\@@thestructurecounter{#1}",#2,1)}}
+   \ctxlua{structures.counters.add("\@@thestructurecounter{#1}",#2,1)}}
 
 \def\convertedstructurecounter
   {\dodoubleempty\doconvertedstructurecounter}
@@ -212,7 +212,7 @@
 \def\doconvertedstructurecounter[#1][#2]%
   {\begingroup
    \ifsecondargument\getparameters[\??nn#1][#2]\fi
-   \ctxlua{structure.counters.prefixedconverted(
+   \ctxlua{structures.counters.prefixedconverted(
      "\@@thestructurecounter{#1}",
      {
        prefix        = "\structurecounterparameter{#1}\c!prefix",
@@ -241,7 +241,7 @@
 
 \def\directconvertedstructurecounter#1#2% name, type
   {\begingroup
-   \ctxlua{structure.counters.prefixedconverted(
+   \ctxlua{structures.counters.prefixedconverted(
      "\@@thestructurecounter{#1}",
      {
        prefix        = "\structurecounterparameter{#1}\c!prefix",
@@ -403,11 +403,11 @@
      \edef\currentlabel{#3\c!label}%
      \edef\currentreference{#3\c!reference}%
      \setnextinternalreference
-     \xdef\laststructurecounternumber{\ctxlua{structure.lists.push{
+     \xdef\laststructurecounternumber{\ctxlua{structures.lists.push{
         metadata = {
             kind     = "#1",
             name     = "\currentname",
-            level    = structure.sections.currentlevel(),
+            level    = structures.sections.currentlevel(),
             catcodes = \the\catcodetable,
         },
         references = {
@@ -415,7 +415,7 @@
             reference       = "\currentreference",
             referenceprefix = "\referenceprefix",
             block           = "\currentstructureblock",
-            section         = structure.sections.currentid(),
+            section         = structures.sections.currentid(),
         },
         titledata = {
             label    = \!!bs\detokenize\expandafter{\currentlabel    }\!!es,
@@ -439,7 +439,7 @@
             connector     = \!!bs#3\c!prefixconnector\!!es,
         },
         numberdata = {
-            numbers       = structure.counters.compact("\currentcounter",nil,true),
+            numbers       = structures.counters.compact("\currentcounter",nil,true),
             separatorset  = "#3\c!numberseparatorset",
             conversion    = \!!bs#3\c!numberconversion\!!es,
             conversionset = "#3\c!numberconversionset",
@@ -448,11 +448,11 @@
             segments      = "#3\c!numbersegments",
         },
     \fi
-        userdata = structure.helpers.touserdata(\!!bs\detokenize{#9}\!!es)
+        userdata = structures.helpers.touserdata(\!!bs\detokenize{#9}\!!es)
        }
      }}%
-     \xdef\laststructurecounterattribute  {\ctxlua    {tex.write(jobreferences.setinternalreference(nil,nil,\nextinternalreference))}}%
-     \xdef\laststructurecountersynchronize{\ctxlatelua{structure.lists.enhance(\laststructurecounternumber)}}%
+     \xdef\laststructurecounterattribute  {\ctxlua    {tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
+     \xdef\laststructurecountersynchronize{\ctxlatelua{structures.lists.enhance(\laststructurecounternumber)}}%
    \else
      \glet\laststructurecounternumber     \relax
      \glet\laststructurecounterattribute  \attributeunsetvalue

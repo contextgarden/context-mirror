@@ -23,25 +23,30 @@ local trace_loading  = false  trackers.register("afm.loading",  function(v) trac
 
 local report_afm = logs.new("load afm")
 
+local next, type = next, type
 local format, match, gmatch, lower, gsub = string.format, string.match, string.gmatch, string.lower, string.gsub
 local lpegmatch = lpeg.match
 local abs = math.abs
 
-fonts      = fonts     or { }
-fonts.afm  = fonts.afm or { }
+local fonts = fonts
+fonts.afm   = fonts.afm or { }
 
-local afm = fonts.afm
-local tfm = fonts.tfm
+local afm   = fonts.afm
+local tfm   = fonts.tfm
 
 afm.version          = 1.402 -- incrementing this number one up will force a re-cache
 afm.syncspace        = true  -- when true, nicer stretch values
 afm.enhance_data     = true  -- best leave this set to true
-afm.features         = { }
-afm.features.aux     = { }
-afm.features.data    = { }
-afm.features.list    = { }
-afm.features.default = { }
 afm.cache            = containers.define("fonts", "afm", afm.version, true)
+
+local afmfeatures = {
+    aux     = { },
+    data    = { },
+    list    = { },
+    default = { },
+}
+
+afm.features = afmfeatures
 
 --[[ldx--
 <p>We start with the basic reader which we give a name similar to the
@@ -64,11 +69,13 @@ built in <l n='tfm'/> and <l n='otf'/> reader.</p>
 --~ Comment DELIM 2390 1010
 --~ Comment AXISHEIGHT 250
 
-local c = lpeg.P("Comment")
-local s = lpeg.S(" \t")
-local l = lpeg.S("\n\r")
-local w = lpeg.C((1 - l)^1)
-local n = lpeg.C((lpeg.R("09") + lpeg.S("."))^1) / tonumber * s^0
+local P, S, C = lpeg.P, lpeg.S, lpeg.C
+
+local c = P("Comment")
+local s = S(" \t")
+local l = S("\n\r")
+local w = C((1 - l)^1)
+local n = C((lpeg.R("09") + S("."))^1) / tonumber * s^0
 
 local fd = { }
 
@@ -253,6 +260,8 @@ by adding ligatures and kern information to the afm derived data. That
 way we can set them faster when defining a font.</p>
 --ldx]]--
 
+local add_kerns, add_ligatures, unify -- we will implement these later
+
 function afm.load(filename)
     -- hm, for some reasons not resolved yet
     filename = resolvers.find_file(filename,'afm') or ""
@@ -284,14 +293,14 @@ function afm.load(filename)
                     report_afm("no pfb file for %s",filename)
                 end
                 report_afm( "unifying %s",filename)
-                afm.unify(data,filename)
+                unify(data,filename)
                 if afm.enhance_data then
                     report_afm( "add ligatures")
-                    afm.add_ligatures(data,'ligatures') -- easier this way
+                    add_ligatures(data,'ligatures') -- easier this way
                     report_afm( "add tex-ligatures")
-                    afm.add_ligatures(data,'texligatures') -- easier this way
+                    add_ligatures(data,'texligatures') -- easier this way
                     report_afm( "add extra kerns")
-                    afm.add_kerns(data) -- faster this way
+                    add_kerns(data) -- faster this way
                 end
                 report_afm( "add tounicode data")
                 fonts.map.add_to_unicode(data,filename)
@@ -311,7 +320,7 @@ function afm.load(filename)
     end
 end
 
-function afm.unify(data, filename)
+unify = function(data, filename)
     local unicodevector = fonts.enc.load('unicode').hash
     local glyphs, indices, unicodes, names = { }, { }, { }, { }
     local verbose, private = fonts.verbose, fonts.private
@@ -361,7 +370,7 @@ end
 and extra kerns. This saves quite some lookups later.</p>
 --ldx]]--
 
-function afm.add_ligatures(afmdata,ligatures)
+add_ligatures = function(afmdata,ligatures)
     local glyphs, luatex = afmdata.glyphs, afmdata.luatex
     local indices, unicodes, names = luatex.indices, luatex.unicodes, luatex.names
     for k,v in next, characters[ligatures] do -- main characters table
@@ -389,7 +398,7 @@ end
 them selectively.</p>
 --ldx]]--
 
-function afm.add_kerns(afmdata)
+add_kerns = function(afmdata)
     local glyphs = afmdata.glyphs
     local names = afmdata.luatex.names
     local uncomposed = characters.uncomposed
@@ -449,7 +458,7 @@ end
 -- once we have otf sorted out (new format) we can try to make the afm
 -- cache similar to it (similar tables)
 
-function afm.add_dimensions(data) -- we need to normalize afm to otf i.e. indexed table instead of name
+local function add_dimensions(data) -- we need to normalize afm to otf i.e. indexed table instead of name
     if data then
         for index, glyph in next, data.glyphs do
             local bb = glyph.boundingbox
@@ -594,10 +603,12 @@ to treat this fontformat like any other and handle features in a
 more configurable way.</p>
 --ldx]]--
 
-function afm.features.register(name,default)
-    afm.features.list[#afm.features.list+1] = name
-    afm.features.default[name] = default
+local function register_feature(name,default)
+    afmfeatures.list[#afmfeatures.list+1] = name
+    afmfeatures.default[name] = default
 end
+
+afmfeatures.register = register_feature
 
 function afm.set_features(tfmdata)
     local shared = tfmdata.shared
@@ -611,7 +622,7 @@ function afm.set_features(tfmdata)
         if fiafm then
             local lists = {
                 fonts.triggers,
-                afm.features.list,
+                afmfeatures.list,
                 fonts.manipulators,
             }
             for l=1,3 do
@@ -636,7 +647,7 @@ function afm.set_features(tfmdata)
         local fmafm = fm and fm.afm
         if fmafm then
             local lists = {
-                afm.features.list,
+                afmfeatures.list,
             }
             local sp = shared.processors
             for l=1,1 do
@@ -660,7 +671,7 @@ function afm.set_features(tfmdata)
 end
 
 function afm.check_features(specification)
-    local features, done = fonts.define.check(specification.features.normal,afm.features.default)
+    local features, done = fonts.define.check(specification.features.normal,afmfeatures.default)
     if done then
         specification.features.normal = features
         tfm.hash_instance(specification,true)
@@ -693,13 +704,14 @@ function afm.afm_to_tfm(specification)
         if not tfmdata then
             local afmdata = afm.load(afmname)
             if afmdata and next(afmdata) then
-                afm.add_dimensions(afmdata)
+                add_dimensions(afmdata)
                 tfmdata = afm.copy_to_tfm(afmdata)
                 if tfmdata and next(tfmdata) then
-                    tfmdata.shared = tfmdata.shared or { }
-                    tfmdata.unique = tfmdata.unique or { }
-                    tfmdata.shared.afmdata  = afmdata
-                    tfmdata.shared.features = features
+                    local shared = tfmdata.shared
+                    local unique = tfmdata.unique
+                    if not shared then shared = { } tfmdata.shared = shared end
+                    if not unique then unique = { } tfmdata.unique = unique end
+                    shared.afmdata, shared.features = afmdata, features
                     afm.set_features(tfmdata)
                 end
             elseif trace_loading then
@@ -723,9 +735,17 @@ tfm.default_encoding = 'unicode'
 
 function tfm.set_normal_feature(specification,name,value)
     if specification and name then
-        specification.features = specification.features or { }
-        specification.features.normal = specification.features.normal or { }
-        specification.features.normal[name] = value
+        local features = specification.features
+        if not features then
+            features = { }
+            specification.features = features
+        end
+        local normalfeatures = features.normal
+        if normalfeatures then
+            normalfeatures[name] = value
+        else
+            features.normal = { [name] = value }
+        end
     end
 end
 
@@ -745,7 +765,7 @@ end
 those that make sense for this format.</p>
 --ldx]]--
 
-function afm.features.prepare_ligatures(tfmdata,ligatures,value)
+local function prepare_ligatures(tfmdata,ligatures,value)
     if value then
         local afmdata = tfmdata.shared.afmdata
         local luatex = afmdata.luatex
@@ -774,7 +794,7 @@ function afm.features.prepare_ligatures(tfmdata,ligatures,value)
     end
 end
 
-function afm.features.prepare_kerns(tfmdata,kerns,value)
+local function prepare_kerns(tfmdata,kerns,value)
     if value then
         local afmdata = tfmdata.shared.afmdata
         local luatex = afmdata.luatex
@@ -800,59 +820,68 @@ function afm.features.prepare_kerns(tfmdata,kerns,value)
     end
 end
 
+afmfeatures.prepare_kerns     = prepare_kerns
+afmfeatures.prepare_ligatures = prepare_ligatures
+
 -- hm, register?
 
-function fonts.initializers.base.afm.ligatures   (tfmdata,value) afm.features.prepare_ligatures(tfmdata,'ligatures',   value) end
-function fonts.initializers.base.afm.texligatures(tfmdata,value) afm.features.prepare_ligatures(tfmdata,'texligatures',value) end
-function fonts.initializers.base.afm.kerns       (tfmdata,value) afm.features.prepare_kerns    (tfmdata,'kerns',       value) end
-function fonts.initializers.base.afm.extrakerns  (tfmdata,value) afm.features.prepare_kerns    (tfmdata,'extrakerns',  value) end
+local base_initializers   = fonts.initializers.base.afm
+local node_initializers   = fonts.initializers.node.afm
+local common_initializers = fonts.initializers.common
 
-afm.features.register('liga',true)
-afm.features.register('kerns',true)
-afm.features.register('extrakerns') -- needed?
+local function ligatures   (tfmdata,value) prepare_ligatures(tfmdata,'ligatures',   value) end
+local function texligatures(tfmdata,value) prepare_ligatures(tfmdata,'texligatures',value) end
+local function kerns       (tfmdata,value) prepare_kerns    (tfmdata,'kerns',       value) end
+local function extrakerns  (tfmdata,value) prepare_kerns    (tfmdata,'extrakerns',  value) end
 
-fonts.initializers.node.afm.ligatures    = fonts.initializers.base.afm.ligatures
-fonts.initializers.node.afm.texligatures = fonts.initializers.base.afm.texligatures
-fonts.initializers.node.afm.kerns        = fonts.initializers.base.afm.kerns
-fonts.initializers.node.afm.extrakerns   = fonts.initializers.base.afm.extrakerns
+register_feature('liga',true)
+register_feature('kerns',true)
+register_feature('extrakerns') -- needed?
 
-fonts.initializers.base.afm.liga         = fonts.initializers.base.afm.ligatures
-fonts.initializers.node.afm.liga         = fonts.initializers.base.afm.ligatures
-fonts.initializers.base.afm.tlig         = fonts.initializers.base.afm.texligatures
-fonts.initializers.node.afm.tlig         = fonts.initializers.base.afm.texligatures
+base_initializers.ligatures    = ligatures
+node_initializers.ligatures    = ligatures
+base_initializers.texligatures = texligatures
+node_initializers.texligatures = texligatures
+base_initializers.kerns        = kerns
+node_initializers.kerns        = kerns
+node_initializers.extrakerns   = extrakerns
+base_initializers.extrakerns   = extrakerns
 
-fonts.initializers.base.afm.trep         = tfm.replacements
-fonts.initializers.node.afm.trep         = tfm.replacements
+base_initializers.liga         = ligatures
+node_initializers.liga         = ligatures
+base_initializers.tlig         = texligatures
+node_initializers.tlig         = texligatures
+base_initializers.trep         = tfm.replacements
+node_initializers.trep         = tfm.replacements
 
-afm.features.register('tlig',true) -- todo: also proper features for afm
-afm.features.register('trep',true) -- todo: also proper features for afm
+register_feature('tlig',true) -- todo: also proper features for afm
+register_feature('trep',true) -- todo: also proper features for afm
 
 -- tfm features
 
-fonts.initializers.base.afm.equaldigits = fonts.initializers.common.equaldigits
-fonts.initializers.node.afm.equaldigits = fonts.initializers.common.equaldigits
-fonts.initializers.base.afm.lineheight  = fonts.initializers.common.lineheight
-fonts.initializers.node.afm.lineheight  = fonts.initializers.common.lineheight
+base_initializers.equaldigits = common_initializers.equaldigits
+node_initializers.equaldigits = common_initializers.equaldigits
+base_initializers.lineheight  = common_initializers.lineheight
+node_initializers.lineheight  = common_initializers.lineheight
 
 -- vf features
 
-fonts.initializers.base.afm.compose = fonts.initializers.common.compose
-fonts.initializers.node.afm.compose = fonts.initializers.common.compose
+base_initializers.compose = common_initializers.compose
+node_initializers.compose = common_initializers.compose
 
 -- afm specific, encodings ...kind of obsolete
 
-afm.features.register('encoding')
+register_feature('encoding')
 
-fonts.initializers.base.afm.encoding = fonts.initializers.common.encoding
-fonts.initializers.node.afm.encoding = fonts.initializers.common.encoding
+base_initializers.encoding = common_initializers.encoding
+node_initializers.encoding = common_initializers.encoding
 
 -- todo: oldstyle smallcaps as features for afm files (use with care)
 
-fonts.initializers.base.afm.onum  = fonts.initializers.common.oldstyle
-fonts.initializers.base.afm.smcp  = fonts.initializers.common.smallcaps
-fonts.initializers.base.afm.fkcp  = fonts.initializers.common.fakecaps
+base_initializers.onum  = common_initializers.oldstyle
+base_initializers.smcp  = common_initializers.smallcaps
+base_initializers.fkcp  = common_initializers.fakecaps
 
-afm.features.register('onum',false)
-afm.features.register('smcp',false)
-afm.features.register('fkcp',false)
-
+register_feature('onum',false)
+register_feature('smcp',false)
+register_feature('fkcp',false)

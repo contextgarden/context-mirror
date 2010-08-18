@@ -20,8 +20,15 @@ local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, format, rep = string.lower, string.format, string.rep
 local texsprint, utfchar = tex.sprint, utf.char
 local tonumber, tostring = tonumber, tostring
+local settings_to_array = utilities.parsers.settings_to_array
 
 local ctxcatcodes = tex.ctxcatcodes
+
+converters       = converters or { }
+local converters = converters
+
+languages        = languages  or { }
+local languages  = languages
 
 local function flush(...)
     texsprint(ctxcatcodes,...)
@@ -39,9 +46,6 @@ end
 function converters.numberst(n,direct)
     return direct and n or flush(n)
 end
-
-converters = converters or { }
-languages  = languages  or { }
 
 --~     ['arabic-digits'] = {
 --~         0x0660, 0x0661, 0x0662, 0x0663, 0x0664,
@@ -630,7 +634,7 @@ storage.register("converters/sequences", converters.sequences, "converters.seque
 local sequences = converters.sequences
 
 function converters.define(name,set)
-    sequences[name] = aux.settings_to_array(set)
+    sequences[name] = settings_to_array(set)
 end
 
 function converters.convert(method,n,direct) -- todo: language

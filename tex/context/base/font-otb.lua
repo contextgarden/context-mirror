@@ -11,8 +11,9 @@ local format, gmatch, gsub, find, match, lower, strip = string.format, string.gm
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 
-local otf = fonts.otf
-local tfm = fonts.tfm
+local fonts = fonts
+local otf   = fonts.otf
+local tfm   = fonts.tfm
 
 local trace_baseinit     = false  trackers.register("otf.baseinit",     function(v) trace_baseinit     = v end)
 local trace_singles      = false  trackers.register("otf.singles",      function(v) trace_singles      = v end)
@@ -49,7 +50,7 @@ local function gref(descriptions,n)
                 for j=1,#ni do
                     local nj = ni[j]
                     nnum[j] = format("U+%04X",nj)
-                    nnam[j] =  descriptions[nj].name or "?"
+                    nnam[j] = descriptions[nj].name or "?"
                 end
                 num[i] = concat(nnum,"|")
                 nam[i] = concat(nnam,"|")

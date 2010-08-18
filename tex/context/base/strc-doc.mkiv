@@ -63,6 +63,7 @@
    \xdef\currentstructurelabel          {\structureparameter\c!label}%
    \xdef\currentstructurereference      {\structureparameter\c!reference}%
    \xdef\currentstructurereferenceprefix{\structureparameter\c!referenceprefix}%
+   \xdef\currentstructurebackreference  {\structureparameter\c!backreference}%
    \xdef\currentstructureshownumber     {\structureparameter\c!number}%
    \xdef\currentstructuresaveinlist     {\structureparameter\c!saveinlist}%
    \xdef\currentstructureincrementnumber{\structureparameter\c!incrementnumber}%
@@ -102,12 +103,13 @@
    \fi
    \setnextinternalreference
    \xdef\currentstructurenumber{\ctxlua{ % todo: combine with next call, adapt marks accordingly
-        structure.sections.somelevel {
+        structures.sections.somelevel {
             references = {
                 internal        = \nextinternalreference,
                 block           = "\currentstructureblock",
                 reference       = "\currentstructurereference",
                 referenceprefix = "\currentstructurereferenceprefix",
+                backreference   = "\currentstructurebackreference",
             },
             directives = {
                 resetset   = "\structureparameter\c!sectionresetset",
@@ -159,10 +161,10 @@
                 segments      = "\structureparameter\c!sectionsegments",
                 ownnumber     = "\currentstructureownnumber",
             },
-            userdata = structure.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
+            userdata = structures.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
         }
     }}%
-   \xdef\currentstructurelistnumber{\ctxlua{structure.lists.push(structure.sections.current())}}%
+   \xdef\currentstructurelistnumber{\ctxlua{structures.lists.push(structures.sections.current())}}%
    % \currentstructuresynchronize has to be called someplace, since it introduces a node
    \setstructuresynchronization\currentstructurelistnumber
    \structureparameter\c!command
@@ -173,10 +175,10 @@
 \let\previousstructurecounter\!!zerocount
 
 \def\setstructuresynchronization#1%
-  {\xdef\currentstructureattribute  {\ctxlua    {tex.write(jobreferences.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\@@iafocus"))}}%
-   \xdef\currentstructuresynchronize{\ctxlatelua{structure.lists.enhance(#1)}}}
+  {\xdef\currentstructureattribute  {\ctxlua    {tex.write(structures.references.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\@@iafocus"))}}%
+   \xdef\currentstructuresynchronize{\ctxlatelua{structures.lists.enhance(#1)}}}
 
-\def\reportcurrentstructure{\ctxlua{structure.sections.writestatus()}}
+\def\reportcurrentstructure{\ctxlua{structures.sections.writestatus()}}
 
 % Beware: we need to flush the data to the list explicitly. This is because
 % node in inserted and we may want control over when that happens.
@@ -206,11 +208,11 @@
 %     \stopchapter
 % \stoptext
 
-\def\structurevariable          #1{\ctxlua{structure.sections.structuredata(nil,"#1")}}
-\def\structureuservariable      #1{\ctxlua{structure.sections.userdata(nil,"#1")}}
-\def\structurenumber              {\ctxlua{structure.sections.fullnumber()}}
-\def\structurecatcodedget       #1{\ctxlua{structure.sections.structuredata(nil,"#1",nil,true)}} % bad name
-\def\structuregivencatcodedget#1#2{\ctxlua{structure.sections.structuredata(nil,"#1",nil,\number#2)}} % bad name
-\def\structureautocatcodedget #1#2{\ctxlua{structure.sections.structuredata(nil,"#1",nil,"#2")}}
+\def\structurevariable          #1{\ctxlua{structures.sections.structuredata(nil,"#1")}}
+\def\structureuservariable      #1{\ctxlua{structures.sections.userdata(nil,"#1")}}
+\def\structurenumber              {\ctxlua{structures.sections.fullnumber()}}
+\def\structurecatcodedget       #1{\ctxlua{structures.sections.structuredata(nil,"#1",nil,true)}} % bad name
+\def\structuregivencatcodedget#1#2{\ctxlua{structures.sections.structuredata(nil,"#1",nil,\number#2)}} % bad name
+\def\structureautocatcodedget #1#2{\ctxlua{structures.sections.structuredata(nil,"#1",nil,"#2")}}
 
 \protect \endinput

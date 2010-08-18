@@ -12,29 +12,33 @@ local insert, remove, unpack, concat = table.insert, table.remove, table.unpack,
 local gsub, find, topattern, format = string.gsub, string.find, string.topattern, string.format
 local lpegmatch = lpeg.match
 local texattribute = tex.attribute
-local unsetvalue = attributes.unsetvalue
 
-structure.tags = structure.tags or { }
+local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
 local report_tags = logs.new("tags")
 
-local trace_tags = false  trackers.register("structure.tags", function(v) trace_tags = v end)
+local attributes, structures = attributes, structures
 
-local a_tagged = attributes.private('tagged')
-local a_image  = attributes.private('image')
+local a_tagged       = attributes.private('tagged')
+local a_image        = attributes.private('image')
 
-local tags, labels, stack, chain, ids, enabled = { }, { }, { }, { }, { }, false -- no grouping assumed
+local unsetvalue     = attributes.unsetvalue
+local codeinjections = backends.codeinjections
 
-structure.tags.taglist = tags -- can best be hidden
+local taglist, labels, stack, chain, ids, enabled = { }, { }, { }, { }, { }, false -- no grouping assumed
 
-function structure.tags.start(tag,label,detail)
+structures.tags = structures.tags or { }
+local tags      = structures.tags
+tags.taglist    = taglist -- can best be hidden
+
+function tags.start(tag,label,detail)
 --~     labels[label or tag] = tag
     labels[tag] = label ~= "" and label or tag
     if detail and detail ~= "" then
         tag = tag .. ":" .. detail
     end
     if not enabled then
-        backends.codeinjections.enabletags(tags,labels)
+        codeinjections.enabletags(tags,labels)
         enabled = true
     end
     local n = (ids[tag] or 0) + 1
@@ -42,12 +46,12 @@ function structure.tags.start(tag,label,detail)
     chain[#chain+1] = tag .. "-" .. n -- insert(chain,tag .. ":" .. n)
     local t = #tags + 1
     stack[#stack+1] = t -- insert(stack,t)
-    tags[t] = { unpack(chain) } -- we can add key values for alt and actualtext if needed
+    taglist[t] = { unpack(chain) } -- we can add key values for alt and actualtext if needed
     texattribute[a_tagged] = t
     return t
 end
 
-function structure.tags.stop()
+function tags.stop()
     local t = stack[#stack] stack[#stack] = nil -- local t = remove(stack)
     if not t then
         if trace_tags then
@@ -61,12 +65,12 @@ function structure.tags.stop()
     return t
 end
 
-function structure.atlocation(str)
-    local location = gsub(concat(tags[texattribute[a_tagged]],"-"),"%-%d+","")
+function structures.atlocation(str)
+    local location = gsub(concat(taglist[texattribute[a_tagged]],"-"),"%-%d+","")
     return find(location,topattern(str)) ~= nil
 end
 
-function structure.tags.handler(head)  -- we need a dummy
+function tags.handler(head)  -- we need a dummy
     return head, false
 end
 
@@ -80,7 +84,7 @@ end)
 
 directives.register("backend.addtags", function(v)
     if not enabled then
-        backends.codeinjections.enabletags(tags,labels)
+        codeinjections.enabletags(tags,labels)
         enabled = true
     end
 end)

@@ -12,7 +12,10 @@ local trace_inclusion = false  trackers.register("figures.inclusion",  function(
 
 local report_graphics = logs.new("graphics")
 
-local pdfannotation   = nodes.pdfannotation
+local figures = figures
+
+local nodeinjections  = backends.nodeinjections
+local pdfannotation   = nodepool.pdfannotation
 local todimen         = string.todimen
 
 -- maybe todo: backends.codeinjections.insertu3d
@@ -29,17 +32,15 @@ function figures.checkers.u3d(data)
     end
     context.startfoundexternalfigure(width .. "sp",height .. "sp")
     context(function()
-        local annotation, preview, ref = backends.pdf.helpers.insert3d {
-            foundname = foundname,
-            width     = width,
-            height    = height,
-            factor    = number.dimenfactors.bp,
-            display   = dr.display,
-            controls  = dr.controls,
-            label     = dr.label,
+        nodeinjections.insertu3d {
+            foundname  = foundname,
+            width      = width,
+            height     = height,
+            factor     = number.dimenfactors.bp,
+            display    = dr.display,
+            controls   = dr.controls,
+            label      = dr.label,
         }
---~         print(annotation, preview, ref)
-        node.write(pdfannotation(width,height,0,annotation()))
     end)
     context.stopfoundexternalfigure()
     return data

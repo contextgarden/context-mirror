@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['l-io'] = {
     license   = "see context related readme files"
 }
 
-local byte, find, gsub = string.byte, string.find, string.gsub
+local io = io
+local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
+local concat = table.concat
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -17,9 +19,7 @@ end
 function io.loaddata(filename,textmode)
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
-    --  collectgarbage("step") -- sometimes makes a big difference in mem consumption
         local data = f:read('*all')
-    --  garbagecollector.check(data)
         f:close()
         return data
     else
@@ -31,7 +31,7 @@ function io.savedata(filename,data,joiner)
     local f = io.open(filename,"wb")
     if f then
         if type(data) == "table" then
-            f:write(table.join(data,joiner or ""))
+            f:write(concat(data,joiner or ""))
         elseif type(data) == "function" then
             data(f)
         else
@@ -157,12 +157,12 @@ function io.ask(question,default,options)
     while true do
         io.write(question)
         if options then
-            io.write(string.format(" [%s]",table.concat(options,"|")))
+            io.write(format(" [%s]",concat(options,"|")))
         end
         if default then
-            io.write(string.format(" [%s]",default))
+            io.write(format(" [%s]",default))
         end
-        io.write(string.format(" "))
+        io.write(format(" "))
         local answer = io.read()
         answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then

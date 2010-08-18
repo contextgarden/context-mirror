@@ -560,6 +560,7 @@
 		<cd:constant name='backgroundoffset' value='decalagearriereplan'/>
 		<cd:constant name='backgroundradius' value='rayonarriereplan'/>
 		<cd:constant name='backgroundscreen' value='ecranarriereplan'/>
+		<cd:constant name='backreference' value='backreference'/>
 		<cd:constant name='backspace' value='retour'/>
 		<cd:constant name='balance' value='equilibre'/>
 		<cd:constant name='before' value='avant'/>
@@ -709,6 +710,7 @@
 		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='interaction'/>
 		<cd:constant name='interlinespace' value='espaceinterligne'/>
+		<cd:constant name='internalgrid' value='internalgrid'/>
 		<cd:constant name='itemalign' value='itemalign'/>
 		<cd:constant name='items' value='elements'/>
 		<cd:constant name='juniorsep' value='juniorsep'/>

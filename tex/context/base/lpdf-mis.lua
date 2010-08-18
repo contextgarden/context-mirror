@@ -20,13 +20,17 @@ local format = string.format
 local texsprint, texset = tex.sprint, tex.set
 local ctxcatcodes = tex.ctxcatcodes
 
+local backends, lpdf, nodes = backends, lpdf, nodes
+
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
 local registrations  = backends.pdf.registrations
 
 local copy_node = node.copy
 
-local pdfliteral, register = nodes.pdfliteral, nodes.register
+local nodepool = nodes.pool
+
+local pdfliteral, register = nodepool.pdfliteral, nodepool.register
 
 local pdfdictionary      = lpdf.dictionary
 local pdfarray           = lpdf.array
@@ -180,7 +184,7 @@ function codeinjections.setupidentity(specification)
 end
 
 local function flushjavascripts()
-    local t = javascripts.flushpreambles()
+    local t = interactions.javascripts.flushpreambles()
     if #t > 0 then
         local a = pdfarray()
         local pdf_javascript = pdfconstant("JavaScript")
@@ -306,26 +310,30 @@ local map = {
 }
 
 local function featurecreep()
-    local pages, lastconversion, list = jobpages.tobesaved, nil, pdfarray()
-    local getstructureset = structure.sets.get
+    local pages, lastconversion, list = structures.pages.tobesaved, nil, pdfarray()
+    local getstructureset = structures.sets.get
     for i=1,#pages do
         local p = pages[i]
-        local numberdata = p.numberdata
-        if numberdata then
-            local conversionset = numberdata.conversionset
-            if conversionset then
-                local conversion = getstructureset("structure:conversions",p.block,conversionset,1,"numbers")
-                if conversion ~= lastconversion then
-                    lastconversion = conversion
-                    list[#list+1] = i - 1 -- pdf starts numbering at 0
-                    list[#list+1] = pdfdictionary { S = pdfconstant(map[conversion] or map.numbers) }
+        if not p then
+            return -- fatal error
+        else
+            local numberdata = p.numberdata
+            if numberdata then
+                local conversionset = numberdata.conversionset
+                if conversionset then
+                    local conversion = getstructureset("structure:conversions",p.block,conversionset,1,"numbers")
+                    if conversion ~= lastconversion then
+                        lastconversion = conversion
+                        list[#list+1] = i - 1 -- pdf starts numbering at 0
+                        list[#list+1] = pdfdictionary { S = pdfconstant(map[conversion] or map.numbers) }
+                    end
                 end
             end
-        end
-        if not lastconversion then
-            lastconversion = "numbers"
-            list[#list+1] = i - 1 -- pdf starts numbering at 0
-            list[#list+1] = pdfdictionary { S = pdfconstant(map.numbers) }
+            if not lastconversion then
+                lastconversion = "numbers"
+                list[#list+1] = i - 1 -- pdf starts numbering at 0
+                list[#list+1] = pdfdictionary { S = pdfconstant(map.numbers) }
+            end
         end
     end
     lpdf.addtocatalog("PageLabels", pdfdictionary { Nums = list })

@@ -23,7 +23,18 @@ local trace_detail     = false  trackers.register("backend.detail",     function
 
 local report_backends = logs.new("backends")
 
-lpdf = lpdf or { }
+local backends = backends
+
+backends.pdf = backends.pdf or {
+    comment        = "backend for directly generating pdf output",
+    nodeinjections = { },
+    codeinjections = { },
+    registrations  = { },
+    tables         = { },
+}
+
+lpdf       = lpdf or { }
+local lpdf = lpdf
 
 local function tosixteen(str)
     if not str or str == "" then
@@ -176,7 +187,7 @@ local tostring_c = function(t) return t[1]            end -- already prefixed (h
 local tostring_z = function()  return "null"          end
 local tostring_t = function()  return "true"          end
 local tostring_f = function()  return "false"         end
-local tostring_r = function(t) return t[1] .. " 0 R"  end
+local tostring_r = function(t) local n = t[1] return n and n > 0 and (n .. " 0 R") or "NULL" end
 
 local tostring_v = function(t)
     local s = t[1]
@@ -197,7 +208,7 @@ local function value_a(t)     return tostring_a(t,true) end -- the call is exper
 local function value_z()      return nil                end -- the call is experimental
 local function value_t(t)     return t.value or true    end -- the call is experimental
 local function value_f(t)     return t.value or false   end -- the call is experimental
-local function value_r()      return t[1]               end -- the call is experimental
+local function value_r()      return t[1] or 0          end -- the call is experimental -- NULL
 local function value_v()      return t[1]               end -- the call is experimental
 
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end
@@ -481,9 +492,13 @@ local function setpageproperties()
     pdf.pagesattributes = pagesattributes()
 end
 
-function lpdf.addtopageresources  (k,v) pageresources  [k] = v end
-function lpdf.addtopageattributes (k,v) pageattributes [k] = v end
-function lpdf.addtopagesattributes(k,v) pagesattributes[k] = v end
+local function addtopageresources  (k,v) pageresources  [k] = v end
+local function addtopageattributes (k,v) pageattributes [k] = v end
+local function addtopagesattributes(k,v) pagesattributes[k] = v end
+
+lpdf.addtopageresources   = addtopageresources
+lpdf.addtopageattributes  = addtopageattributes
+lpdf.addtopagesattributes = addtopagesattributes
 
 local function set(where,what,f,when,comment)
     if type(when) == "string" then
@@ -511,13 +526,16 @@ local function run(where,what)
     end
 end
 
-function lpdf.registerpagefinalizer(f,when,comment)
+local function registerpagefinalizer(f,when,comment)
     set(pagefinalizers,"page",f,when,comment)
 end
 
-function lpdf.registerdocumentfinalizer(f,when,comment)
+local function registerdocumentfinalizer(f,when,comment)
     set(documentfinalizers,"document",f,when,comment)
 end
+
+lpdf.registerpagefinalizer     = registerpagefinalizer
+lpdf.registerdocumentfinalizer = registerdocumentfinalizer
 
 function lpdf.finalizepage()
     if not environment.initex then
@@ -538,7 +556,9 @@ function lpdf.finalizedocument()
     end
 end
 
---~ callbacks.register("finish_pdfoage", lpdf.finalizepage)
+backends.pdf.codeinjections.finalizepage = lpdf.finalizepage      -- will go when we have hook
+
+--~ callbacks.register("finish_pdfpage", lpdf.finalizepage)
 callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
 -- some minimal tracing, handy for checking the order
@@ -573,10 +593,10 @@ local r_colorspaces, d_colorspaces = pdfreserveobject(), pdfdictionary()  local 
 local r_patterns,    d_patterns    = pdfreserveobject(), pdfdictionary()  local p_patterns    = pdfreference(r_patterns)
 local r_shades,      d_shades      = pdfreserveobject(), pdfdictionary()  local p_shades      = pdfreference(r_shades)
 
-local function checkextgstates () if next(d_extgstates ) then lpdf.addtopageresources("ExtGState", p_extgstates ) end end
-local function checkcolorspaces() if next(d_colorspaces) then lpdf.addtopageresources("ColorSpace",p_colorspaces) end end
-local function checkpatterns   () if next(d_patterns   ) then lpdf.addtopageresources("Pattern",   p_patterns   ) end end
-local function checkshades     () if next(d_shades     ) then lpdf.addtopageresources("Shading",   p_shades     ) end end
+local function checkextgstates () if next(d_extgstates ) then addtopageresources("ExtGState", p_extgstates ) end end
+local function checkcolorspaces() if next(d_colorspaces) then addtopageresources("ColorSpace",p_colorspaces) end end
+local function checkpatterns   () if next(d_patterns   ) then addtopageresources("Pattern",   p_patterns   ) end end
+local function checkshades     () if next(d_shades     ) then addtopageresources("Shading",   p_shades     ) end end
 
 local function flushextgstates () if next(d_extgstates ) then trace_flush("extgstates")  pdfimmediateobject(r_extgstates, tostring(d_extgstates )) end end
 local function flushcolorspaces() if next(d_colorspaces) then trace_flush("colorspaces") pdfimmediateobject(r_colorspaces,tostring(d_colorspaces)) end end
@@ -599,21 +619,21 @@ function lpdf.adddocumentcolorspace(k,v) d_colorspaces[k] = v end
 function lpdf.adddocumentpattern   (k,v) d_patterns   [k] = v end
 function lpdf.adddocumentshade     (k,v) d_shades     [k] = v end
 
-lpdf.registerdocumentfinalizer(flushextgstates,3,"extended graphic states")
-lpdf.registerdocumentfinalizer(flushcolorspaces,3,"color spaces")
-lpdf.registerdocumentfinalizer(flushpatterns,3,"patterns")
-lpdf.registerdocumentfinalizer(flushshades,3,"shades")
+registerdocumentfinalizer(flushextgstates,3,"extended graphic states")
+registerdocumentfinalizer(flushcolorspaces,3,"color spaces")
+registerdocumentfinalizer(flushpatterns,3,"patterns")
+registerdocumentfinalizer(flushshades,3,"shades")
 
-lpdf.registerdocumentfinalizer(flushcatalog,3,"catalog")
-lpdf.registerdocumentfinalizer(flushinfo,3,"info")
-lpdf.registerdocumentfinalizer(flushnames,3,"names")
+registerdocumentfinalizer(flushcatalog,3,"catalog")
+registerdocumentfinalizer(flushinfo,3,"info")
+registerdocumentfinalizer(flushnames,3,"names")
 
-lpdf.registerpagefinalizer(checkextgstates,3,"extended graphic states")
-lpdf.registerpagefinalizer(checkcolorspaces,3,"color spaces")
-lpdf.registerpagefinalizer(checkpatterns,3,"patterns")
-lpdf.registerpagefinalizer(checkshades,3,"shades")
+registerpagefinalizer(checkextgstates,3,"extended graphic states")
+registerpagefinalizer(checkcolorspaces,3,"color spaces")
+registerpagefinalizer(checkpatterns,3,"patterns")
+registerpagefinalizer(checkshades,3,"shades")
 
--- in strc-bkm: lpdf.registerdocumentfinalizer(function() structure.bookmarks.place() end,1)
+-- in strc-bkm: lpdf.registerdocumentfinalizer(function() structures.bookmarks.place() end,1)
 
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
@@ -693,14 +713,3 @@ end
 -- lpdf.addtoinfo("ConTeXt.Time",    os.date("%Y.%m.%d %H:%M")) -- :%S
 -- lpdf.addtoinfo("ConTeXt.Jobname", tex.jobname)
 -- lpdf.addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
-
--- saves definitions later on
-
-backends     = backends or { }
-backends.pdf = backends.pdf or {
-    comment        = "backend for directly generating pdf output",
-    nodeinjections = { },
-    codeinjections = { },
-    registrations  = { },
-    helpers        = { },
-}

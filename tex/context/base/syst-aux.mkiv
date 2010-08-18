@@ -5896,8 +5896,25 @@
 %D helps a lot. The second boolena can be used to inhibit
 %D processing completely.
 
-\newif\iftrialtypesetting  \trialtypesettingfalse
 \newif\ifvisible           \visibletrue
+
+\newif   \iftrialtypesetting
+\newcount\trialtypesettingmode       % we need to find a way to query conditionals so this one can become obsolete
+\newtoks \everysettrialtypesetting
+\newtoks \everyresettrialtypesetting
+
+\unexpanded\def\settrialtypesetting  {\the\everysettrialtypesetting  } % obeys grouping so
+\unexpanded\def\resettrialtypesetting{\the\everyresettrialtypesetting} % this one is seldom needed
+
+\appendtoks
+    \trialtypesettingtrue
+    \trialtypesettingmode\plusone
+\to \everysettrialtypesetting
+
+\appendtoks
+    \trialtypesettingfalse
+    \trialtypesettingmode\zerocount
+\to \everyresettrialtypesetting
 
 %D \macros
 %D   {startlocal, startglobal}

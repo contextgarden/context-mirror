@@ -14,7 +14,6 @@ them in tables. But we may do so some day, for consistency.</p>
 --ldx]]--
 
 fonts.enc = fonts.enc or { }
-
 local enc = fonts.enc
 
 enc.version = 1.03

@@ -11,6 +11,8 @@ local type, next, tonumber, tostring, setmetatable, loadstring = type, next, ton
 local format, gsub, match = string.format, string.gsub, string.match
 local lpegmatch = lpeg.match
 
+local xml = xml
+
 --[[ldx--
 <p>The following helper functions best belong to the <t>lxml-ini</t>
 module. Some are here because we need then in the <t>mk</t>

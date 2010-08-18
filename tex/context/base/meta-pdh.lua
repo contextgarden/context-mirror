@@ -27,10 +27,14 @@ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local tostring, tonumber, select = tostring, tonumber, select
 local lpegmatch = lpeg.match
 
-mptopdf         = { }
-mptopdf.parsers = { }
-mptopdf.parser  = 'none'
-mptopdf.n       = 0
+local metapost = metapost
+
+metapost.mptopdf = metapost.mptopdf or { }
+local mptopdf    = metapost.mptopdf
+
+mptopdf.parsers  = { }
+mptopdf.parser   = 'none'
+mptopdf.n        = 0
 
 function mptopdf.reset()
     mptopdf.data      = ""
@@ -126,9 +130,9 @@ function mptopdf.steps.convert()
     mptopdf.data = gsub(mptopdf.data,"%s*([^%a]-)%s*(%a+)", function(args,cmd)
         if cmd == "textext" then
             t = mptopdf.texts[tonumber(args)]
-            return "mps.textext(" ..  "\"" .. t[2] .. "\"," .. t[3] .. ",\"" .. t[1] .. "\")\n"
+            return "metapost.mps.textext(" ..  "\"" .. t[2] .. "\"," .. t[3] .. ",\"" .. t[1] .. "\")\n"
         else
-            return "mps." .. cmd .. "(" .. gsub(args," +",",") .. ")\n"
+            return "metapost.mps." .. cmd .. "(" .. gsub(args," +",",") .. ")\n"
         end
     end)
 end
@@ -229,7 +233,8 @@ end
 
 -- mp interface
 
-mps = mps or { }
+metapost.mps = metapost.mps or { }
+local mps    = metapost.mps or { }
 
 function mps.creator(a, b, c)
     mptopdf.version = tonumber(b)

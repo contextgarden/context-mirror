@@ -17,16 +17,20 @@ utility file under different setups, we now load a table once. This
 saves much runtime but at the cost of more memory usage.</p>
 --ldx]]--
 
-local sort, concat, format, match = table.sort, table.concat, string.format, string.match
+local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local definetable, accesstable = utilities.tables.definetable, utilities.tables.accesstable
+local serialize = table.serialize
 
 local report_jobcontrol = logs.new("jobcontrol")
 
 if not jobs then jobs         = { } end
 if not job  then jobs['main'] = { } end job = jobs['main']
 
-jobs.version = 1.10
+local packers = utilities.packers
+
+jobs.version = 1.14
 
 --[[ldx--
 <p>Variables are saved using in the previously defined table and passed
@@ -43,7 +47,7 @@ end
 job.comment(format("version: %1.2f",jobs.version))
 
 function job.initialize(loadname,savename)
-    job.load(loadname)
+    job.load(loadname) -- has to come after  structure is defined !
     luatex.register_stop_actions(function()
         if not status.lasterrorstring or status.lasterrorstring == "" then
             job.save(savename)
@@ -57,15 +61,18 @@ end
 
 -- as an example we implement variables
 
-jobvariables           = jobvariables or { }
-jobvariables.collected = jobvariables.collected or { }
-jobvariables.tobesaved = jobvariables.tobesaved or { }
-jobvariables.checksums = jobvariables.checksums or { }
+local jobvariables = {
+    collected = { },
+    tobesaved = { },
+    checksums = { },
+}
+
+job.variables = jobvariables
 
 if not jobvariables.checksums.old then jobvariables.checksums.old = md5.HEX("old") end -- used in experiment
 if not jobvariables.checksums.new then jobvariables.checksums.new = md5.HEX("new") end -- used in experiment
 
-job.register('jobvariables.checksums', jobvariables.checksums)
+job.register('job.variables.checksums', jobvariables.checksums)
 
 local function initializer()
     local r = jobvariables.collected.randomseed
@@ -83,110 +90,10 @@ local function initializer()
     end
 end
 
-job.register('jobvariables.collected', jobvariables.tobesaved, initializer)
+job.register('job.variables.collected', jobvariables.tobesaved, initializer)
 
 function jobvariables.save(cs,value)
     jobvariables.tobesaved[cs] = value
-end
-
--- experiment (bugged: some loop in running)
-
--- for the moment here, very experimental stuff
-
-packer = packer or { }
-packer.version = 1.00
-
-local function hashed(t)
-    local s = { }
-    for k, v in next, t do
-        if type(v) == "table" then
-            s[#s+1] = k.."={"..hashed(v).."}"
-        else
-            s[#s+1] = k.."="..tostring(v)
-        end
-    end
-    sort(s)
-    return concat(s,",")
-end
-
-local function pack(t,keys,hash,index)
-    for k,v in next, t do
-        if type(v) == "table" then
-            pack(v,keys,hash,index)
-        end
-        if keys[k] and type(v) == "table" then
-            local h = hashed(v)
-            local i = hash[h]
-            if not i then
-                i = #index+1
-                index[i] = v
-                hash[h] = i
-            end
-            t[k] = i
-        end
-    end
-end
-
-local function unpack(t,keys,index)
-    for k,v in next, t do
-        if keys[k] and type(v) == "number" then
-            local iv = index[v]
-            if iv then
-                v = iv
-                t[k] = v
-            end
-        end
-        if type(v) == "table" then
-            unpack(v,keys,index)
-        end
-    end
-end
-
-function packer.new(keys,version)
-    return {
-        version = version or packer.version,
-        keys = table.tohash(keys),
-        hash = { },
-        index = { },
-    }
-end
-
-function packer.pack(t,p,shared)
-    if shared then
-        pack(t,p.keys,p.hash,p.index)
-    elseif not t.packer then
-        pack(t,p.keys,p.hash,p.index)
-        if #p.index > 0 then
-            t.packer = {
-                version = p.version or packer.version,
-                keys = p.keys,
-                index = p.index,
-            }
-        end
-        p.hash, p.index = { }, { }
-    end
-end
-
-function packer.unpack(t,p,shared)
-    if shared then
-        if p then
-            unpack(t,p.keys,p.index)
-        end
-    else
-        local tp = t.packer
-        if tp then
-            if tp.version == (p and p.version or packer.version) then
-                unpack(t,tp.keys,tp.index)
-            else
-                -- fatal error, wrong version
-            end
-            t.packer = nil
-        end
-    end
-end
-
-function packer.strip(p)
-    p.hash = nil
 end
 
 local packlist = {
@@ -199,10 +106,10 @@ local packlist = {
     "directives",
     "specification",
     "processors", -- might become key under directives or metadata
---  "references", -- we need to rename of them as only one packs (not structure.lists.references)
+--  "references", -- we need to rename of them as only one packs (not structures.lists.references)
 }
 
-local jobpacker = packer.new(packlist,1.01)
+local jobpacker = packers.new(packlist,1.01)
 
 job.pack = true
 
@@ -223,14 +130,14 @@ function job.save(filename)
                 finalizer()
             end
             if job.pack then
-                packer.pack(data,jobpacker,true)
+                packers.pack(data,jobpacker,true)
             end
-            f:write(aux.definetable(target),"\n")
-            f:write(table.serialize(data,target,true,true),"\n")
+            f:write(definetable(target),"\n")
+            f:write(serialize(data,target,true,true),"\n")
         end
         if job.pack then
-            packer.strip(jobpacker)
-            f:write(table.serialize(jobpacker,"job.packer",true,true),"\n")
+            packers.strip(jobpacker)
+            f:write(serialize(jobpacker,"job.packed",true,true),"\n")
         end
         f:close()
     end
@@ -252,12 +159,12 @@ function job.load(filename)
             for l=1,#savelist do
                 local list = savelist[l]
                 local target, initializer = list[1], list[3]
-                packer.unpack(aux.accesstable(target),job.packer,true)
+                packers.unpack(accesstable(target),job.packed,true)
                 if type(initializer) == "function" then
-                    initializer(aux.accesstable(target))
+                    initializer(accesstable(target))
                 end
             end
-            job.packer = nil
+            job.packed = nil
         end
     end
     statistics.stoptiming(job._load_)

@@ -19,14 +19,19 @@ local report_resolvers = logs.new("resolvers")
 -- zip:///texmf.zip?tree=/tex/texmf-local
 -- zip:///texmf-mine.zip?tree=/tex/texmf-projects
 
-zip                 = zip or { }
-zip.archives        = zip.archives or { }
-zip.registeredfiles = zip.registeredfiles or { }
+local resolvers = resolvers
+
+zip                   = zip or { }
+local zip             = zip
+
+zip.archives          = zip.archives or { }
+local archives        = zip.archives
+
+zip.registeredfiles   = zip.registeredfiles or { }
+local registeredfiles = zip.registeredfiles
 
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 local locators, hashers, concatinators = resolvers.locators, resolvers.hashers, resolvers.concatinators
-
-local archives = zip.archives
 
 local function validzip(str) -- todo: use url splitter
     if not find(str,"^zip://") then
@@ -191,7 +196,7 @@ function resolvers.usezipfile(zipname)
     zipname = validzip(zipname)
     local specification = resolvers.splitmethod(zipname)
     local zipfile = specification.path
-    if zipfile and not zip.registeredfiles[zipname] then
+    if zipfile and not registeredfiles[zipname] then
         local tree = url.query(specification.query).tree or ""
         local z = zip.openarchive(zipfile)
         if z then
@@ -202,7 +207,7 @@ function resolvers.usezipfile(zipname)
             statistics.starttiming(instance)
             resolvers.prepend_hash('zip',zipname,zipfile)
             resolvers.extend_texmf_var(zipname) -- resets hashes too
-            zip.registeredfiles[zipname] = z
+            registeredfiles[zipname] = z
             instance.files[zipname] = resolvers.register_zip_file(z,tree or "")
             statistics.stoptiming(instance)
         elseif trace_locating then

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['l-set'] = {
     license   = "see context related readme files"
 }
 
+-- This will become obsolete when we have the bitset library embedded.
+
 set = set or { }
 
 local nums   = { }
