@@ -14,6 +14,10 @@ local rep = string.rep
 local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes, vrbcatcodes = tex.ctxcatcodes, tex.vrbcatcodes
 
+local buffers = buffers
+
+local changestate, finishstate = buffers.changestate, buffers.finishstate
+
 local visualizer = buffers.newvisualizer("tex")
 
 local colors = {
@@ -31,8 +35,6 @@ local states = {
 
 -- some day I'll make an lpeg
 
-local change_state, finish_state = buffers.change_state, buffers.finish_state
-
 local chardata = characters.data
 local is_letter = characters.is_letter
 
@@ -42,11 +44,11 @@ function visualizer.flush_line(str,nested)
     for c in utfcharacters(str) do
         i = i + 1
         if c == " " then
-            state = finish_state(state)
+            state = finishstate(state)
             texsprint(ctxcatcodes,"\\obs")
             first = false
         elseif c == "\t" then
-            state = finish_state(state)
+            state = finishstate(state)
             texsprint(ctxcatcodes,"\\obs")
             if buffers.visualizers.enabletab then
                 texsprint(ctxcatcodes,rep("\\obs ",i%buffers.visualizers.tablength))
@@ -57,7 +59,7 @@ function visualizer.flush_line(str,nested)
             state = 1
             texwrite(c)
             if not utffind(c,"^[%a%!%?%@]$") then
-                state = finish_state(state)
+                state = finishstate(state)
             end
             first = false
         elseif state == 1 then
@@ -65,23 +67,23 @@ function visualizer.flush_line(str,nested)
                 texwrite(c)
                 first = false
             elseif c == "\\" then
-                state = change_state(1, state)
+                state = changestate(1, state)
                 texwrite(c)
                 first = true
             else
-                state = change_state(states[c], state)
+                state = changestate(states[c], state)
                 texwrite(c)
                 first = false
             end
         elseif c == "\\" then
             first = true
-            state = change_state(1, state)
+            state = changestate(1, state)
             texwrite(c)
         else
-            state = change_state(states[c], state)
+            state = changestate(states[c], state)
             texwrite(c)
             first = false
         end
     end
-    state = finish_state(state)
+    state = finishstate(state)
 end

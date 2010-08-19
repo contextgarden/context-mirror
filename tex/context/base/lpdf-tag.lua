@@ -10,9 +10,16 @@ local format, match, concat = string.format, string.match, table.concat
 local lpegmatch = lpeg.match
 local utfchar = utf.char
 
-local trace_tags = false  trackers.register("structure.tags", function(v) trace_tags = v end)
+local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
 local report_tags = logs.new("tags")
+
+local backends, lpdf, nodes = backends, lpdf, nodes
+
+local nodeinjections   = backends.pdf.nodeinjections
+local codeinjections   = backends.pdf.codeinjections
+
+local tasks            = nodes.tasks
 
 local pdfdictionary    = lpdf.dictionary
 local pdfarray         = lpdf.array
@@ -25,16 +32,15 @@ local pdfflushobject   = lpdf.flushobject
 local pdfreserveobject = lpdf.reserveobject
 local pdfpagereference = lpdf.pagereference
 
-local new_pdfliteral   = nodes.pdfliteral
+local nodepool         = nodes.pool
 
-local nodecodes = nodes.nodecodes
+local pdfliteral       = nodepool.pdfliteral
 
-local hlist            = nodecodes.hlist
-local vlist            = nodecodes.vlist
-local glyph            = nodecodes.glyph
-local glue             = nodecodes.glue
-local disc             = nodecodes.disc
-local whatsit          = nodecodes.whatsit
+local nodecodes        = nodes.nodecodes
+
+local hlist_code       = nodecodes.hlist
+local vlist_code       = nodecodes.vlist
+local glyph_code       = nodecodes.glyph
 
 local a_tagged         = attributes.private('tagged')
 local a_image          = attributes.private('image')
@@ -148,11 +154,11 @@ local mapping = {
 local usedmapping = { }
 local usedlabels  = { }
 
-function backends.codeinjections.mapping()
+function codeinjections.mapping()
     return mapping -- future versions may provide a copy
 end
 
-function backends.codeinjections.maptag(original,target)
+function codeinjections.maptag(original,target)
     mapping[original] = target
 end
 
@@ -277,7 +283,7 @@ local function makecontent(parent,start,stop,slist,id)
         kids[#kids+1] = d
     end
     --
-    local bliteral = new_pdfliteral(format("/%s <</MCID %s>>BDC",tag,last))
+    local bliteral = pdfliteral(format("/%s <</MCID %s>>BDC",tag,last))
     local prev = start.prev
     if prev then
         prev.next, bliteral.prev = bliteral, prev
@@ -289,7 +295,7 @@ local function makecontent(parent,start,stop,slist,id)
         report_tags("this can't happen: injection in front of nothing")
     end
     --
-    local eliteral = new_pdfliteral("EMC")
+    local eliteral = pdfliteral("EMC")
     local next = stop.next
     if next then
         next.prev, eliteral.next = eliteral, next
@@ -308,7 +314,7 @@ local level, last, ranges, range = 0, nil, { }, { }
 local function collectranges(head,list)
     for n in traverse_nodes(head) do
         local id = n.id -- 14: image, 8: literal (mp)
-        if id == glyph then
+        if id == glyph_code then
             local at = has_attribute(n,a_tagged)
             if not at then
                 range = nil
@@ -319,7 +325,7 @@ local function collectranges(head,list)
             elseif range then
                 range[4] = n -- stop
             end
-        elseif id == hlist or id == vlist then
+        elseif id == hlist_code or id == vlist_code then
             local at = has_attribute(n,a_image)
             if at then
                 local at = has_attribute(n,a_tagged)
@@ -337,7 +343,7 @@ local function collectranges(head,list)
     end
 end
 
-function backends.nodeinjections.addtags(head)
+function nodeinjections.addtags(head)
     -- no need to adapt head, as we always operate on lists
     level, last, ranges, range = 0, nil, { }, { }
     initializepage()
@@ -379,13 +385,13 @@ function backends.nodeinjections.addtags(head)
     return head, true
 end
 
-function backends.codeinjections.enabletags(tg,lb)
+function codeinjections.enabletags(tg,lb)
     taglist = tg
     usedlabels = lb
-    structure.tags.handler = backends.nodeinjections.addtags
-    tasks.enableaction("shipouts","structure.tags.handler")
-    tasks.enableaction("shipouts","nodes.accessibility.handler")
-    tasks.enableaction("math","noads.add_tags")
+    structures.tags.handler = nodeinjections.addtags
+    tasks.enableaction("shipouts","structures.tags.handler")
+    tasks.enableaction("shipouts","nodes.handlers.accessibility")
+    tasks.enableaction("math","noads.handlers.tags")
     if trace_tags then
         report_tags("enabling structure tags")
     end

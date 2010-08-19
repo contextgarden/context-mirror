@@ -26,10 +26,9 @@ local xmlparseapply = xml.parse_apply
 --~ <directive attribute='cdx' value="*" element="cals:table" setup="cdx:cals:table:*"/>
 --~ </directives>
 
+local lxml = lxml
 
-
-lxml.directives = lxml.directives or { }
-
+lxml.directives  = lxml.directives or { }
 local directives = lxml.directives
 
 local data = {

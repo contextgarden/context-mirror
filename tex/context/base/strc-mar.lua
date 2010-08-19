@@ -6,13 +6,17 @@ if not modules then modules = { } end modules ['strc-mar'] = {
     license   = "see context related readme files"
 }
 
-structure.marks = structure.marks or { }
+local structures = structures
 
-function structure.marks.title(tag,n)
-    structure.lists.savedtitle(tag,n,"marking")
+structures.marks = structures.marks or { }
+local marks      = structures.marks
+local lists      = structures.lists
+
+function marks.title(tag,n)
+    lists.savedtitle(tag,n,"marking")
 end
 
-function structure.marks.number(tag,n) -- no spec
+function marks.number(tag,n) -- no spec
     -- no prefix (as it is the prefix)
-    structure.lists.savednumber(tag,n)
+    lists.savednumber(tag,n)
 end

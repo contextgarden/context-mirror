@@ -16,12 +16,13 @@ local trace_define = false  trackers.register("colors.define",function(v) trace_
 
 local report_colors = logs.new("colors")
 
-local settings_to_hash_strict = aux.settings_to_hash_strict
+local attributes, context, commands = attributes, context, commands
 
-colors         = colors         or { }
-transparencies = transparencies or { }
+local settings_to_hash_strict = utilities.parsers.settings_to_hash_strict
 
-local registrations = backends.registrations
+local colors         = attributes.colors
+local transparencies = attributes.transparencies
+local registrations  = backends.registrations
 
 local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')

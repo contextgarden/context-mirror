@@ -20,46 +20,49 @@ over a string.</p>
 --ldx]]--
 
 local utf = unicode.utf8
+local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
 local concat, gmatch = table.concat, string.gmatch
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
-
 local ctxcatcodes = tex.ctxcatcodes
+local texsprint = tex.sprint
 
-characters              = characters              or { }
-characters.graphemes    = characters.graphemes    or { }
-characters.filters      = characters.filters      or { }
-characters.filters.utf  = characters.filters.utf  or { }
+-- todo: trackers
 
-characters.filters.utf.initialized = false
-characters.filters.utf.collapsing  = true
-characters.filters.utf.expanding   = true
+characters              = characters or { }
+local characters        = characters
 
-local graphemes  = characters.graphemes
-local utffilters = characters.filters.utf
-local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
+characters.graphemes    = characters.graphemes or { }
+local graphemes         = characters.graphemes
+
+characters.filters      = characters.filters or { }
+local filters           = characters.filters
+
+filters.utf             = filters.utf  or { }
+local utffilters        = characters.filters.utf
+
+utffilters.collapsing   = true
+utffilters.expanding    = true
 
 --[[ldx--
 <p>It only makes sense to collapse at runtime, since we don't expect
 source code to depend on collapsing.</p>
 --ldx]]--
 
-function utffilters.initialize()
-    if utffilters.collapsing and not utffilters.initialized then
-        for k,v in next, characters.data do
-            -- using vs and first testing for length is faster (.02->.01 s)
-            local vs = v.specials
-            if vs and #vs == 3 and vs[1] == 'char' then
-                local first, second = utfchar(vs[2]), utfchar(vs[3])
-                local cgf = graphemes[first]
-                if not cgf then
-                    cgf = { }
-                    graphemes[first] = cgf
-                end
-                cgf[second] = utfchar(k)
+local function initialize()
+    for k,v in next, characters.data do
+        -- using vs and first testing for length is faster (.02->.01 s)
+        local vs = v.specials
+        if vs and #vs == 3 and vs[1] == 'char' then
+            local first, second = utfchar(vs[2]), utfchar(vs[3])
+            local cgf = graphemes[first]
+            if not cgf then
+                cgf = { }
+                graphemes[first] = cgf
             end
+            cgf[second] = utfchar(k)
         end
-        utffilters.initialized = true
     end
+    initialize = false
 end
 
 -- utffilters.add_grapheme(utfchar(318),'l','\string~')
@@ -79,8 +82,8 @@ end
 
 function utffilters.collapse(str) -- old one
     if utffilters.collapsing and str and #str > 1 then
-        if not utffilters.initialized then -- saves a call
-            utffilters.initialize()
+        if initialize then -- saves a call
+            initialize()
         end
         local tokens, first, done = { }, false, false
         for second in utfcharacters(str) do
@@ -120,18 +123,20 @@ to their right glyph there.</p>
 0x100000.</p>
 --ldx]]--
 
-utffilters.private = {
-    high    = { },
-    low     = { },
-    escapes = { },
-}
-
-local low     = utffilters.private.low
-local high    = utffilters.private.high
-local escapes = utffilters.private.escapes
+local low     = { }
+local high    = { }
+local escapes = { }
 local special = "~#$%^&_{}\\|"
 
-function utffilters.private.set(ch)
+local private = {
+    low     = low,
+    high    = high,
+    escapes = escapes,
+}
+
+utffilters.private = private
+
+local function set(ch)
     local cb
     if type(ch) == "number" then
         cb, ch = ch, utfchar(ch)
@@ -145,11 +150,11 @@ function utffilters.private.set(ch)
     end
 end
 
-function utffilters.private.replace(str) return utfgsub(str,"(.)", low    ) end
-function utffilters.private.revert(str)  return utfgsub(str,"(.)", high   ) end
-function utffilters.private.escape(str)  return utfgsub(str,"(.)", escapes) end
+private.set = set
 
-local set = utffilters.private.set
+function private.replace(str) return utfgsub(str,"(.)", low    ) end
+function private.revert(str)  return utfgsub(str,"(.)", high   ) end
+function private.escape(str)  return utfgsub(str,"(.)", escapes) end
 
 for ch in gmatch(special,".") do set(ch) end
 
@@ -162,12 +167,7 @@ first snippet uses the relocated dollars.</p>
 <typing>
 [󰀤x󰀤] [$x$]
 </typing>
---ldx]]--
 
-local cr = utffilters.private.high -- kan via een lpeg
-local cf = utffilters
-
---[[ldx--
 <p>The next variant has lazy token collecting, on a 140 page mk.tex this saves
 about .25 seconds, which is understandable because we have no graphmes and
 not collecting tokens is not only faster but also saves garbage collecting.
@@ -177,15 +177,15 @@ not collecting tokens is not only faster but also saves garbage collecting.
 -- lpeg variant is not faster
 
 function utffilters.collapse(str) -- not really tested (we could preallocate a table)
-    if cf.collapsing and str then
+    if utffilters.collapsing and str then
         if #str > 1 then
-            if not cf.initialized then -- saves a call
-                cf.initialize()
+            if initialize then -- saves a call
+                initialize()
             end
             local tokens, first, done, n = { }, false, false, 0
             for second in utfcharacters(str) do
                 if done then
-                    local crs = cr[second]
+                    local crs = high[second]
                     if crs then
                         if first then
                             tokens[#tokens+1] = first
@@ -203,7 +203,7 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                         end
                     end
                 else
-                    local crs = cr[second]
+                    local crs = high[second]
                     if crs then
                         for s in utfcharacters(str) do
                             if n == 1 then
@@ -238,7 +238,7 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                 return concat(tokens) -- seldom called
             end
         elseif #str > 0 then
-            return cr[str] or str
+            return high[str] or str
         end
     end
     return str
@@ -251,7 +251,7 @@ end
 commands = commands or { }
 
 function commands.uchar(first,second)
-    tex.sprint(ctxcatcodes,utfchar(first*256+second))
+    texsprint(ctxcatcodes,utfchar(first*256+second))
 end
 
 --[[ldx--

@@ -572,7 +572,7 @@
    \fi\fi\fi}
 
 \def\dodotypesetfile#1#2#3#4% options settings-a filename settings-b
-  {\edef\typesetfilename{\ctxlua{tex.write(jobfiles.run("#3","#1"))}}%
+  {\edef\typesetfilename{\ctxlua{tex.write(job.files.run("#3","#1"))}}%
    \expanded{\externalfigure[\typesetfilename]}[#2,#4]}
 
 \setupexternalfigures

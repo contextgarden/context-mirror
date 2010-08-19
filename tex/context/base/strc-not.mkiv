@@ -247,7 +247,7 @@
      [\s!parent=\??vn,#2]%
 %    \definestructurecounter
 %      [\currentnote]%
-   \ctxlua{structure.notes.define("\currentnote","insert",\number\csname\??vn:\currentnote\endcsname)}%
+   \ctxlua{structures.notes.define("\currentnote","insert",\number\csname\??vn:\currentnote\endcsname)}%
    \the\everysetupnote
    \dochecknote}
 
@@ -417,7 +417,7 @@
    \dosetnotedistance
    % play safe
    \ifnum\noteparameter\s!noteloc=\plusfive
-     \ctxlua{structure.notes.setstate("\currentnote","store")}%
+     \ctxlua{structures.notes.setstate("\currentnote","store")}%
      % text notes (e.g. end notes) but we don't use inserts anyway
      \global\dimen\currentnoteins\maxdimen
      \global\count\currentnoteins\zerocount
@@ -588,7 +588,7 @@
 \unexpanded\def\setnotetext[#1]{\global\settrue\skipnoteplacement\getvalue{#1}}
 
 \def\domovednote#1#2#3#4%
-  {\ifcase\ctxlua{structure.notes.deltapage("#1",#2)}\or\symbol[#3]\or\symbol[#4]\fi}
+  {\ifcase\ctxlua{structures.notes.deltapage("#1",#2)}\or\symbol[#3]\or\symbol[#4]\fi}
 
 \setvalue{\??dd:\v!note:\s!handler:\s!text  }{\@@donotetext}
 \setvalue{\??dd:\v!note:\s!handler:\s!number}{\@@donotenumber}
@@ -613,7 +613,7 @@
        \doenumerationcheckconditions
        \let\currentnote\currentdescriptionmain
        \dodescriptioncomponent[\c!reference=#1,\c!label={\descriptionparameter\c!text},\c!title={#3},\c!list=,\c!bookmark=,][]%
-       \xdef\currentnotenumber{\ctxlua{structure.notes.store("\currentnote",\currentdescriptionnumberentry)}}%
+       \xdef\currentnotenumber{\ctxlua{structures.notes.store("\currentnote",\currentdescriptionnumberentry)}}%
        \settrue\processingnote
        \ifconditional\skipnoteplacement
          \globallet\lastnotesymbol\dolastnotesymbol
@@ -650,8 +650,8 @@
 \def\dotypesetsomenotesymbol#1#2#3% running text (messy: #1 and current mixed)
   {\dodonotesymbol
      {\synchronizesomenotesymbol{#1}{#2}{#3}%
-%     \ctxlua{structure.notes.number("\currentnote",\currentnotenumber)}% \currentdescriptionnumberentry
-      \ctxlua{structure.notes.number("#1",#2)}%
+%     \ctxlua{structures.notes.number("\currentnote",\currentnotenumber)}% \currentdescriptionnumberentry
+      \ctxlua{structures.notes.number("#1",#2)}%
       \domovednote{#1}{#2}\v!previouspage\v!nextpage}}
 
 \unexpanded\def\typesetsomenotesymbol#1#2#3% running text
@@ -663,7 +663,7 @@
    \nobreak
    \doifelse{\noteparameter\c!interaction}\v!no
      {\dotypesetsomenotesymbol{#1}{#2}{#3}}
-     {\directgotobox{\dotypesetsomenotesymbol{#1}{#2}{#3}}[page(\ctxlua{structure.notes.getnumberpage("#1",\number#2)})]}% f:
+     {\directgotobox{\dotypesetsomenotesymbol{#1}{#2}{#3}}[page(\ctxlua{structures.notes.getnumberpage("#1",\number#2)})]}% f:
    \globallet\lastnotesymbol\relax}
 
 \unexpanded\def\typesetdummynotesymbol % temp hack
@@ -677,7 +677,7 @@
    \globallet\lastnotesymbol\relax}
 
 \def\currentnotedescriptiontext % todo: can be other number
-  {\ctxlua{structure.notes.title("\currentnote",\currentdescriptionnumberentry)}}
+  {\ctxlua{structures.notes.title("\currentnote",\currentdescriptionnumberentry)}}
 
 \def\@@donotetext
   {\ifconditional\enumerationnumberenabled
@@ -699,17 +699,17 @@
      {\docurrentnoteenumerationfullnumber}%
      {\directgotobox
         {\docurrentnoteenumerationfullnumber}%
-        [page(\ctxlua{structure.notes.getsymbolpage("\currentnote",\currentdescriptionnumberentry)})]}}
+        [page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentdescriptionnumberentry)})]}}
 
 \def\docurrentnoteenumerationfullnumber
   {\noteparameter\c!numbercommand
      {\dosetnoteattributes\c!numberstyle\c!numbercolor
-      \ctxlua{structure.notes.number("\currentnote",\currentdescriptionnumberentry)}%
+      \ctxlua{structures.notes.number("\currentnote",\currentdescriptionnumberentry)}%
       \domovednote\currentdescription\currentdescriptionnumberentry\v!nextpage\v!previouspage}}
 
 \def\synchronizesomenotesymbol#1#2#3% called more often than needed
   {\iftrialtypesetting\else
-     \normalexpanded{\noexpand\ctxlatelua{structure.notes.setsymbolpage("#1",#2,#3)}}%
+     \normalexpanded{\noexpand\ctxlatelua{structures.notes.setsymbolpage("#1",#2,#3)}}%
    \fi}
 
 \def\handlenoteinsert#1#2% tg, id
@@ -738,7 +738,7 @@
   {\edef\currentdescription{#1}%
    \edef\currentnote{#1}%
    \edef\currentdescriptionnumberentry{#2}%
-   \edef\currentdescriptionlistentry{\ctxlua{tex.write(structure.notes.listindex("#1",#2))}}%
+   \edef\currentdescriptionlistentry{\ctxlua{tex.write(structures.notes.listindex("#1",#2))}}%
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
    \reinstatedescriptionnumberentry\currentdescriptionlistentry % we could store the number in the entry
@@ -970,7 +970,7 @@
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
      \global\let\flushnotes\doflushnotes
-     \ctxlua{structure.notes.postpone()}%
+     \ctxlua{structures.notes.postpone()}%
    \fi}
 
 \let\flushnotes\relax
@@ -980,7 +980,7 @@
      \begingroup
      \let\flushnotes   \relax
      \let\postponenotes\relax
-     \ctxlua{structure.notes.flushpostponed()}% this also resets the states !
+     \ctxlua{structures.notes.flushpostponed()}% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes
      \global\let\flushnotes\relax
@@ -1025,18 +1025,18 @@
   {\doifnot{\noteparameter\c!continue}\v!yes
      {\savestructurecounter[#1]%
       \resetstructurecounter[#1]}%
-   \ctxlua{structure.notes.save("#1","store")}}
+   \ctxlua{structures.notes.save("#1","store")}}
 
 \def\dodostoplocalnotes#1%
   {\doifnot{\noteparameter\c!continue}\v!yes
      {\restorestructurecounter[#1]}%
-   \ctxlua{structure.notes.restore("#1")}}
+   \ctxlua{structures.notes.restore("#1")}}
 
 \unexpanded\def\placelocalnotes
   {\dodoubleempty\doplacelocalnotes}
 
 \def\doplacelocalnotes[#1][#2]%
-  {\doif{\ctxlua{structure.notes.getstate("#1")}}{store}{\dodoplacelocalnotes{#2}{#1}}}
+  {\doif{\ctxlua{structures.notes.getstate("#1")}}{store}{\dodoplacelocalnotes{#2}{#1}}}
 
 \def\dodoplacelocalnotes#1#2% settings note
   {\begingroup
@@ -1093,7 +1093,7 @@
 
 \def\dodoplacenotes#1#2% settings note
   {\edef\currentnote{#2}%
-   \doifelse{\ctxlua{structure.notes.getstate("#2")}}{store}
+   \doifelse{\ctxlua{structures.notes.getstate("#2")}}{store}
      \dodoplacelocalnotes
      \dodoplaceglobalnotes
        {#1}{#2}}
@@ -1111,7 +1111,7 @@
   {\setvalue{\??vn:\c!alternative:#1}{#2}}
 
 \def\doifnotescollected#1%
-  {\ctxlua{structure.notes.doifcontent("#1")}}
+  {\ctxlua{structures.notes.doifcontent("#1")}}
 
 \def\dolocalnotealternative#1%
   {\edef\currentnote{#1}%
@@ -1137,7 +1137,8 @@
 %D \setupfootnotes[location=text,alternative=none]
 %D \stoptyping
 
-\def\flushlocalnotes#1{\ctxlua{structure.notes.flush("#1","store")}}
+% \def\flushlocalnotes#1{\ctxlua{structures.notes.flush("#1","store")}}
+\def\flushlocalnotes#1{\ctxlua{structures.notes.flush("#1","store","\noteparameter\c!criterium")}}
 
 \installnotealternative \v!none
   {\flushlocalnotes\currentnote}
@@ -1286,7 +1287,7 @@
 \unexpanded\def\setupfootnotedefinition{\setupnotedefinition                [\v!footnote]}
 \unexpanded\def\setupfootnotes         {\setupnote                          [\v!footnote]}
 %unexpanded\def\footnote               {\setnote                            [\v!footnote]}
-\def\footnotetext           {\setnotetext                        [\v!footnote]}
+\def\footnotetext                      {\setnotetext                        [\v!footnote]}
 %unexpanded\def\note                   {\dodoubleempty\notesymbol           [\v!footnote]} %  alleen footnote
 \unexpanded\def\placefootnotes         {\dodoubleempty\doplacefootnotes     [\v!footnote]}
 \unexpanded\def\placelocalfootnotes    {\dodoubleempty\doplacelocalfootnotes[\v!footnote]}
@@ -1308,7 +1309,7 @@
 %D }
 %D \stoptyping
 
-\def\doifnoteonsamepageelse[#1]{\ctxlua{structure.notes.doifonsamepageasprevious("#1")}}
+\def\doifnoteonsamepageelse[#1]{\ctxlua{structures.notes.doifonsamepageasprevious("#1")}}
 
 %D New trickery:
 

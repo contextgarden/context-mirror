@@ -11,18 +11,29 @@ if not modules then modules = { } end modules ['strc-bkm'] = {
 
 -- this should become proper separated backend code
 
+-- we should hook the placement into everystoptext ... needs checking
+
 local format, concat, gsub = string.format, table.concat, string.gsub
 local texsprint, utfvalues = tex.sprint, string.utfvalues
-
 local ctxcatcodes = tex.ctxcatcodes
+local settings_to_hash = utilities.parsers.settings_to_hash
 
-local lists     = structure.lists
-local levelmap  = structure.sections.levelmap
-local variables = interfaces.variables
+local codeinjections = backends.codeinjections
 
-structure.bookmarks = structure.bookmarks or { }
+local trace_bookmarks = false  trackers.register("references.bookmarks", function(v) trace_bookmarks = v end)
 
-local bookmarks = structure.bookmarks
+local report_bookmarks = logs.new("bookmarks")
+
+local structures     = structures
+
+structures.bookmarks = structures.bookmarks or { }
+
+local bookmarks      = structures.bookmarks
+local sections       = structures.sections
+local lists          = structures.lists
+
+local levelmap       = sections.levelmap
+local variables      = interfaces.variables
 
 bookmarks.method = "internal" -- or "page"
 
@@ -32,7 +43,7 @@ function bookmarks.register(settings)
     local force = settings.force == variables.yes
     local number = settings.number == variables.yes
     local allopen = settings.opened == variables.all
-    for k, v in next, aux.settings_to_hash(settings.names or "") do
+    for k, v in next, settings_to_hash(settings.names or "") do
         names[k] = true
         if force then
             forced[k] = true
@@ -45,7 +56,7 @@ function bookmarks.register(settings)
         end
     end
     if not allopen then
-        for k, v in next, aux.settings_to_hash(settings.opened or "") do
+        for k, v in next, settings_to_hash(settings.opened or "") do
             opened[k] = true
         end
     end
@@ -84,7 +95,7 @@ end
 
 local numberspec = { }
 
-function structure.bookmarks.setup(spec)
+function bookmarks.setup(spec)
  -- table.merge(numberspec,spec)
     for k, v in next, spec do
         numberspec[k] = v
@@ -116,11 +127,11 @@ function bookmarks.place()
                             end
                         end
                         if numbered[name] then
-                            local sectiondata = jobsections.collected[li.references.section]
+                            local sectiondata = sections.collected[li.references.section]
                             local numberdata = li.numberdata
                             if sectiondata and numberdata and not numberdata.hidenumber then
                                 -- we could typeset the number and convert it
-                                title = concat(structure.sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)) .. " " .. title
+                                title = concat(sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)) .. " " .. title
                             end
                         end
                         levels[#levels+1] = {
@@ -132,9 +143,43 @@ function bookmarks.place()
                     end
                 end
             end
+--~ print(table.serialize(levels))
             bookmarks.finalize(levels)
         end
         function bookmarks.place() end -- prevent second run
+    end
+end
+
+function bookmarks.flatten(levels)
+    -- This function promotes leading structurelements with a higher level
+    -- to the next lower level. Such situations are the result of lack of
+    -- structure: a subject preceding a chapter in a sectionblock. So, the
+    -- following code runs over section blocks as well. (bookmarks-007.tex)
+    local noflevels = #levels
+    if noflevels > 1 then
+        local skip, start, one = false, 1, levels[1]
+        local first, block = one[1], one[3].block
+        for i=2,noflevels do
+            local li = levels[i]
+            local new, newblock = li[1], li[3].block
+            if newblock ~= block then
+                first, block, start, skip = new, newblock, i, false
+            elseif skip then
+                -- go on
+            elseif new > first then
+                skip = true
+            elseif new < first then
+                for j=start,i-1 do
+                    local lj = levels[j]
+                    local old = lj[1]
+                    lj[1] = new
+                    if trace_bookmarks then
+                        report_bookmarks("promoting entry %s from level %s to %s: %s",j,old,new,lj[2])
+                    end
+                end
+                skip = true
+            end
+        end
     end
 end
 
@@ -142,7 +187,5 @@ function bookmarks.finalize(levels)
     -- This function can be overloaded by an optional converter
     -- that uses nodes.toutf on a typeset stream. This is something
     -- that we will support when the main loop has become a coroutine.
-    backends.codeinjections.addbookmarks(levels,bookmarks.method)
+    codeinjections.addbookmarks(levels,bookmarks.method)
 end
-
-lpdf.registerdocumentfinalizer(function() structure.bookmarks.place() end,1,"bookmarks")

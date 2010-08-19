@@ -6,8 +6,11 @@ if not modules then modules = { } end modules ['bibl-bib'] = {
     license   = "see context related readme files"
 }
 
-bibtex       = bibtex       or { }
+bibtex       = bibtex or { }
+local bibtex = bibtex
+
 bibtex.hacks = bibtex.hacks or { }
+local hacks  = bibtex.hacks
 
 local match, gmatch, format, concat, sort = string.match, string.gmatch, string.format, table.concat, table.sort
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
@@ -17,7 +20,10 @@ local trace_bibtex = false  trackers.register("publications.bibtex", function(v)
 
 local report_publications = logs.new("publications")
 
-local hacks = bibtex.hacks
+local context, structures, references = context, structures, references
+
+local references = structures.references
+local sections   = structures.sections
 
 local list, done, alldone, used, registered, ordered  = { }, { }, { }, { }, { }, { }
 local mode = 0
@@ -60,14 +66,14 @@ function hacks.add(str,listindex)
         -- skip
     elseif mode == 1 then
         -- all locals but no duplicates
-        local sc = structure.sections.currentid()
+        local sc = sections.currentid()
         if done[str] ~= sc then
             done[str], alldone[str] = sc, true
             list[#list+1] = { str, listindex }
         end
     elseif mode == 2 then
         -- all locals but no preceding
-        local sc = structure.sections.currentid()
+        local sc = sections.currentid()
         if not alldone[str] and done[str] ~= sc then
             done[str], alldone[str] = sc, true
             list[#list+1] = { str, listindex }
@@ -113,7 +119,7 @@ local function compare(a,b)
 end
 
 function hacks.resolve(prefix,block,reference) -- maybe already feed it split
-    local subset = jobreferences.collected[prefix or ""] or jobreferences.collected[""]
+    local subset = references.collected[prefix or ""] or references.collected[""]
     if subset then
         local result, done = { }, { }
         block = tonumber(block)

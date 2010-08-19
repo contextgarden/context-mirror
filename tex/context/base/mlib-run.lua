@@ -33,13 +33,16 @@ local trace_graphics = false  trackers.register("metapost.graphics", function(v)
 
 local report_mplib = logs.new("mplib")
 
-local texerrormessage = tracers.texerrormessage
+local texerrormessage = logs.texerrormessage
 
 local format, gsub, match = string.format, string.gsub, string.match
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-metapost = metapost or { }
+local mplib = mplib
+
+metapost       = metapost or { }
+local metapost = metapost
 
 metapost.showlog      = false
 metapost.lastlog      = ""

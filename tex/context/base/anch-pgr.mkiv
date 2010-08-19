@@ -69,10 +69,14 @@
 
 \def\registerpageposition#1% this one is flushed first !
   {\ifpositioning\ifcase\realpageno\or
-     \ifdim\printpaperheight=\paperheight\else
-       \ifdim\printpaperwidth=\paperwidth\else
+     \ifdim\printpaperheight=\paperheight
+       \ifdim\printpaperwidth=\paperwidth
+         % not needed,
+       \else
          \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
        \fi
+     \else
+       \setbox#1\ruledhbox{\hpos\pageanchor{\box#1}}%
      \fi
    \fi\fi}
 

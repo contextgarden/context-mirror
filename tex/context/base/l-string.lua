@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['l-string'] = {
     license   = "see context related readme files"
 }
 
+local string = string
 local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
 local lpegmatch = lpeg.match
 
@@ -164,18 +165,6 @@ function string:lpadd(n,chr)
 end
 
 string.padd = string.rpadd
-
-function is_number(str) -- tonumber
-    return find(str,"^[%-%+]?[%d]-%.?[%d+]$") == 1
-end
-
---~ print(is_number("1"))
---~ print(is_number("1.1"))
---~ print(is_number(".1"))
---~ print(is_number("-0.1"))
---~ print(is_number("+0.1"))
---~ print(is_number("-.1"))
---~ print(is_number("+.1"))
 
 function string:split_settings() -- no {} handling, see l-aux for lpeg variant
     if find(self,"=") then

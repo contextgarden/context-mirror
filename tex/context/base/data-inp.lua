@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['data-inp'] = {
     license   = "see context related readme files"
 }
 
+local resolvers = resolvers
+
 resolvers.finders = resolvers.finders or { }
 resolvers.openers = resolvers.openers or { }
 resolvers.loaders = resolvers.loaders or { }

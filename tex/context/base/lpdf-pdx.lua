@@ -13,8 +13,13 @@ local trace_format = false  trackers.register("backend.format", function(v) trac
 
 local report_backends = logs.new("backends")
 
-local codeinjections = backends.codeinjections -- normally it is registered
+local backends, lpdf = backends, lpdf
+
+local codeinjections = backends.pdf.codeinjections -- normally it is registered
 local variables      = interfaces.variables
+local viewerlayers   = attributes.viewerlayers
+local colors         = attributes.colors
+local transparencies = attributes.transparencies
 
 local pdfdictionary  = lpdf.dictionary
 local pdfarray       = lpdf.array
@@ -29,6 +34,7 @@ local addtoinfo, injectxmpinfo, insertxmpinfo = lpdf.addtoinfo, lpdf.injectxmpin
 
 local lower, gmatch, format, find = string.lower, string.gmatch, string.format, string.find
 local concat, serialize = table.concat, table.serialize
+local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array,  utilities.parsers.settings_to_hash
 
 local channels = {
     gray = 1,
@@ -154,6 +160,7 @@ local pdfx = {
         transparency            = true,
         jbig2_compression       = true,
         jpeg2000_compression    = true,
+        object_compression      = true,
         inject_metadata         = function()
             injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
             insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
@@ -177,7 +184,7 @@ local pdfx = {
         transparency            = true,
         jbig2_compression       = true,
         jpeg2000_compression    = true,
-        nchannel_colorspace     = false,
+        object_compression      = true,
         inject_metadata         = function()
             injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4p</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
             insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
@@ -201,6 +208,7 @@ local pdfx = {
         transparency            = true,
         jbig2_compression       = true,
         jpeg2000_compression    = true,
+        object_compression      = true,
         inject_metadata         = function()
             -- todo
         end
@@ -223,6 +231,7 @@ local pdfx = {
         transparency            = true,
         jbig2_compression       = true,
         jpeg2000_compression    = true,
+        object_compression      = true,
         inject_metadata         = function()
             -- todo
         end
@@ -244,6 +253,7 @@ local pdfx = {
         jbig2_compression       = true,
         jpeg2000_compression    = true,
         nchannel_colorspace     = true,
+        object_compression      = true,
         inject_metadata         = function()
             -- todo
         end
@@ -267,7 +277,7 @@ end
 
 local function loadprofile(name,filename)
     local profile = false
-    local databases = filename and filename ~= "" and aux.settings_to_array(filename) or filenames
+    local databases = filename and filename ~= "" and settings_to_array(filename) or filenames
     for i=1,#databases do
         local filename = locatefile(databases[i])
         if filename and filename ~= "" then
@@ -482,7 +492,7 @@ end
 
 local function handleiccprofile(message,name,filename,how,options,alwaysinclude)
     if name and name ~= "" then
-        local list = aux.settings_to_array(name)
+        local list = settings_to_array(name)
         for i=1,#list do
             local name = list[i]
             local profile = loadprofile(name,filename)
@@ -555,16 +565,25 @@ function codeinjections.setformat(s)
         local spec = pdfx[lower(format)]
         if spec then
             pdfxspecification, pdfxformat = spec, spec.format_name
+            level = level and tonumber(level)
             report_backends("setting format to '%s'",pdfxformat)
             local pdf_version, inject_metadata = spec.pdf_version * 10, spec.inject_metadata
             local majorversion, minorversion = math.div(pdf_version,10), math.mod(pdf_version,10)
-            local objectcompression = pdf_version >= 15
-            tex.pdfcompresslevel = level and tonumber(level) or tex.pdfobjcompresslevel  -- keep default
-            tex.pdfobjcompresslevel = objectcompression and tex.pdfobjcompresslevel or 0 -- keep default
-            tex.pdfmajorversion = majorversion
-            tex.pdfminorversion = minorversion
-            report_backends("forcing pdf version %s.%s, compression level %s, object compression %sabled",
-                majorversion,minorversion,tex.pdfcompresslevel,compression and "en" or "dis")
+            local objectcompression = spec.object_compression and pdf_version >= 15
+            local compresslevel = level or tex.pdfcompresslevel -- keep default
+            local objectcompresslevel = (objectcompression and level or tex.pdfobjcompresslevel) or 0
+            tex.pdfcompresslevel, tex.pdfobjcompresslevel = compresslevel, objectcompresslevel
+            tex.pdfmajorversion, tex.pdfminorversion = majorversion, minorversion
+            if objectcompression then
+                report_backends("forcing pdf version %s.%s, compression level %s, object compression level %s",
+                    majorversion,minorversion,compresslevel,objectcompresslevel)
+            elseif compresslevel > 0 then
+                report_backends("forcing pdf version %s.%s, compression level %s, object compression disabled",
+                    majorversion,minorversion,compresslevel)
+            else
+                report_backends("forcing pdf version %s.%s, compression disabled",
+                    majorversion,minorversion)
+            end
             --
             -- context.setupcolors { -- not this way
             --     cmyk = spec.cmyk_colors and variables.yes or variables.no,
@@ -594,7 +613,7 @@ function codeinjections.setformat(s)
             if type(inject_metadata) == "function" then
                 inject_metadata()
             end
-            local options = aux.settings_to_hash(option)
+            local options = settings_to_hash(option)
             handleiccprofile("color profile",profile,filename,handledefaultprofile,options,true)
             handleiccprofile("output intent",intent,filename,handleoutputintent,options,false)
             if trace_format then
@@ -606,7 +625,7 @@ function codeinjections.setformat(s)
                 end
             end
             function codeinjections.setformat(noname)
-                report_backends("error, format is already set to '%s', ignoring '%s'",pdfxformat,noname)
+                report_backends("error, format is already set to '%s', ignoring '%s'",pdfxformat,noname.format)
             end
         else
             report_backends("error, format '%s' is not supported",format)
@@ -616,6 +635,16 @@ end
 
 function codeinjections.getformatoption(key)
     return pdfxspecification and pdfxspecification[key]
+end
+
+function codeinjections.supportedformats()
+    local t = { }
+    for k, v in table.sortedhash(pdfx) do
+        if find(k,"pdf") then
+            t[#t+1] = k
+        end
+    end
+    return t
 end
 
 --~ The following is somewhat cleaner but then we need to flag that there are

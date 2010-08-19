@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['luat-cod'] = {
 
 local match, gsub, find = string.match, string.gsub, string.find
 
+local texconfig, lua = texconfig, lua
+
 -- some basic housekeeping
 
 texconfig.kpse_init      = false
@@ -52,7 +54,7 @@ end
 local finalizers = { }
 
 function lua.registerfinalizer(f,comment)
-    if type(f) == "function"then
+    if type(f) == "function" then
         finalizers[#finalizers+1] = { action = f, comment = comment }
     end
 end
@@ -69,11 +71,12 @@ end
 
 -- A first start with environments. This will be overloaded later.
 
+environment       = environment or { }
+local environment = environment
+
 local sourcefile = arg and arg[1] or ""
 local sourcepath = find(sourcefile,"/") and gsub(sourcefile,"/[^/]+$","") or ""
 local targetpath = "."
-
-environment = environment or { }
 
 -- delayed (via metatable):
 --
@@ -114,20 +117,22 @@ end
 -- a kpse error when disabled. Thi sis en angine issue that will
 -- be sorted out in due time.
 
+local isfile = lfs.isfile
+
 local function source_file(name)
     local fullname = sourcepath .. "/" .. name
-    if lfs.isfile(fullname) then
+    if isfile(fullname) then
         return fullname
     end
     fullname = fullname .. ".tex"
-    if lfs.isfile(fullname) then
+    if isfile(fullname) then
         return fullname
     end
-    if lfs.isfile(name) then
+    if isfile(name) then
         return name
     end
     name = name .. ".tex"
-    if lfs.isfile(name) then
+    if isfile(name) then
         return name
     end
     return nil

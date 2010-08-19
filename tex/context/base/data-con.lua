@@ -25,8 +25,8 @@ table structures without bothering about the disk cache.</p>
 <p>Examples of usage can be found in the font related code.</p>
 --ldx]]--
 
-containers = containers or { }
-
+containers          = containers or { }
+local containers    = containers
 containers.usecache = true
 
 local report_cache = logs.new("cache")

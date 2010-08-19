@@ -8,18 +8,19 @@ if not modules then modules = { } end modules ['math-ext'] = {
 
 local trace_virtual = false trackers.register("math.virtual", function(v) trace_virtual = v end)
 
-mathematics = mathematics or { }
-characters  = characters  or { }
+local mathematics = mathematics
+local characters  = characters
 
 local report_math = logs.new("mathematics")
 
 mathematics.extras = mathematics.extras or { }
-characters.math    = characters.math    or { }
+local extras       = mathematics.extras
 
-local chardata = characters.data
-local mathdata = characters.math
+characters.math    = characters.math or { }
+local mathdata     = characters.math
+local chardata     = characters.data
 
-function mathematics.extras.add(unicode,t)
+function extras.add(unicode,t)
     local min, max = mathematics.extrabase, mathematics.privatebase - 1
     if unicode >= min and unicode <= max then
         mathdata[unicode], chardata[unicode] = t, t
@@ -28,7 +29,7 @@ function mathematics.extras.add(unicode,t)
     end
 end
 
-function mathematics.extras.copy(tfmdata)
+function extras.copy(tfmdata)
     local math_parameters = tfmdata.math_parameters
     local MathConstants = tfmdata.MathConstants
     if (math_parameters and next(math_parameters)) or (MathConstants and next(MathConstants)) then
@@ -72,11 +73,11 @@ function mathematics.extras.copy(tfmdata)
     end
 end
 
-table.insert(fonts.tfm.mathactions,mathematics.extras.copy)
+table.insert(fonts.tfm.mathactions,extras.copy)
 
 -- 0xFE302 -- 0xFE320 for accents
 
-mathematics.extras.add(0xFE302, {
+extras.add(0xFE302, {
     category="mn",
     description="WIDE MATHEMATICAL HAT",
     direction="nsm",
@@ -88,7 +89,7 @@ mathematics.extras.add(0xFE302, {
     nextinsize={ 0x00302, 0x0005E },
 } )
 
-mathematics.extras.add(0xFE303, {
+extras.add(0xFE303, {
     category="mn",
     cjkwd="a",
     description="WIDE MATHEMATICAL TILDE",
@@ -103,7 +104,7 @@ mathematics.extras.add(0xFE303, {
 
 -- 0xFE321 -- 0xFE340 for missing characters
 
-mathematics.extras.add(0xFE321, {
+extras.add(0xFE321, {
     category="sm",
     description="MATHEMATICAL SHORT BAR",
 --  direction="on",
@@ -113,7 +114,7 @@ mathematics.extras.add(0xFE321, {
     unicodeslot=0xFE321,
 } )
 
-mathematics.extras.add(0xFE322, {
+extras.add(0xFE322, {
     category="sm",
     description="MATHEMATICAL LEFT HOOK",
     mathclass="relation",
@@ -121,7 +122,7 @@ mathematics.extras.add(0xFE322, {
     unicodeslot=0xFE322,
 } )
 
-mathematics.extras.add(0xFE323, {
+extras.add(0xFE323, {
     category="sm",
     description="MATHEMATICAL RIGHT HOOK",
     mathclass="relation",
@@ -129,7 +130,7 @@ mathematics.extras.add(0xFE323, {
     unicodeslot=0xFE323,
 } )
 
-mathematics.extras.add(0xFE324, {
+extras.add(0xFE324, {
     category="sm",
     description="MATHEMATICAL SHORT BAR MIRRORED",
 --  direction="on",
@@ -139,7 +140,7 @@ mathematics.extras.add(0xFE324, {
     unicodeslot=0xFE324,
 } )
 
---~ mathematics.extras.add(0xFE304, {
+--~ extras.add(0xFE304, {
 --~   category="sm",
 --~   description="TOP AND BOTTOM PARENTHESES",
 --~   direction="on",
@@ -150,7 +151,7 @@ mathematics.extras.add(0xFE324, {
 --~   accents={ 0x023DC, 0x023DD },
 --~ } )
 
---~ mathematics.extras.add(0xFE305, {
+--~ extras.add(0xFE305, {
 --~   category="sm",
 --~   description="TOP AND BOTTOM BRACES",
 --~   direction="on",

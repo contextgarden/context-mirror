@@ -2,7 +2,7 @@
 %D   [       file=mult-aux,
 %D        version=2010.08.2,
 %D          title=\CONTEXT\ Multilingual Macros,
-%D       subtitle=Definitions,
+%D       subtitle=helpers,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright=PRAGMA]
@@ -12,7 +12,12 @@
 %C details.
 
 %D A generalization of \MKIV-like inheritance. Just something to play
-%D with (interface might change).
+%D with (interface might change). The code here evolved in an email
+%D exchange between me and Wolgang Schuster.
+
+\writestatus{loading}{ConTeXt Multilingual Macros / Helpers}
+
+\registerctxluafile{mult-aux}{1.001}
 
 \unprotect
 
@@ -48,52 +53,44 @@
 
 % problem: every* could clash
 
-% faster but assumes \c!always
-%
-% \unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7#8#9% \??aa {whatever} \current..
-%   {\def#3##1{\csname#6{#1#2}##1\endcsname}%
-%    \def#4##1{#7{#1#2}##1}%
-%    \def#5##1##2{\csname#6{#1##2}##1\endcsname}%
-%    \def#6##1##2{\ifcsname##1##2\endcsname##1##2\else\expandafter#8\csname##1\s!parent\endcsname##2\fi}%
-%    \def#7##1##2{\ifcsname##1##2\endcsname   ##1\else\expandafter#9\csname##1\s!parent\endcsname##2\fi}%
-%    \def#8##1##2{\ifx##1\relax\s!empty\else#6{##1}##2\fi}%
-%    \def#9##1##2{\ifx##1\relax        \else#7{##1}##2\fi}}
-
-\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7#8#9% \??aa {whatever} \current..
-  {\def#3##1{\csname#6{#1#2}{##1}\endcsname}%
-   \def#4##1{#7{#1#2}{##1}}%
-   \def#5##1##2{\csname#6{#1##1}{##2}\endcsname}%
-   \def#6##1##2{\ifcsname##1##2\endcsname##1##2\else\expandafter#8\csname##1\s!parent\endcsname{##2}\fi}%
-   \def#7##1##2{\ifcsname##1##2\endcsname   ##1\else\expandafter#9\csname##1\s!parent\endcsname{##2}\fi}%
-   \def#8##1##2{\ifx##1\relax\s!empty\else#6{##1}{##2}\fi}%
-   \def#9##1##2{\ifx##1\relax        \else#7{##1}{##2}\fi}}
+% There can be less {} in the following definitions if we assume \??aa and \c!somecs
 
 % todo: \def\detokenized...parameter#1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2\endcsname}} % always root
+
+\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7%
+  {\def#3##1{\csname#4{#1#2}{##1}\endcsname}%
+   \def#4##1##2{\ifcsname##1##2\endcsname##1##2\else\expandafter#5\csname##1\s!parent\endcsname{##2}\fi}%
+   \def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}%
+   \def#6##1##2{\csname#4{#1##1}{##2}\endcsname}%
+   \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}} % always root
 
 \def\installparameterhandler#1#2%
   {\normalexpanded
      {\doinstallparameterhandler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname #2parameter\endcsname      % can move
-        \expandafter\noexpand\csname #2parameterhash\endcsname  % can move
-        \expandafter\noexpand\csname named#2parameter\endcsname % can move
+        \expandafter\noexpand\csname #2parameter\endcsname
         \expandafter\noexpand\csname do#2parameter\endcsname
-        \expandafter\noexpand\csname do#2parameterhash\endcsname
         \expandafter\noexpand\csname do#2parentparameter\endcsname
+        \expandafter\noexpand\csname named#2parameter\endcsname
+        \expandafter\noexpand\csname detokenized#2parameter\endcsname}}
+
+\unexpanded\def\doinstallparameterhashhandler#1#2#3#4#5%
+  {\def#3##1{#4{#1#2}{##1}}%
+   \def#4##1##2{\ifcsname##1##2\endcsname##1\else\expandafter#5\csname##1\s!parent\endcsname{##2}\fi}%
+   \def#5##1##2{\ifx##1\relax\else#4{##1}{##2}\fi}}
+
+\def\installparameterhashhandler#1#2%
+  {\normalexpanded
+     {\doinstallparameterhashhandler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname #2parameterhash\endcsname
+        \expandafter\noexpand\csname do#2parameterhash\endcsname
         \expandafter\noexpand\csname do#2parentparameterhash\endcsname}}
 
-% faster but assumes \c!always
-%
-% \unexpanded\def\doinstallattributehandler#1#2#3% #1 not used here
-%   {\expandafter\def\csname doset#2attributes\endcsname##1##2% style color
-%      {\edef\fontattributehash {#3##1}%
-%       \edef\colorattributehash{#3##2}%
-%       \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash ##1\fi
-%       \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash##2\fi}}
-
 \unexpanded\def\doinstallattributehandler#1#2#3% #1 not used here
-  {\expandafter\def\csname doset#2attributes\endcsname##1##2% style color
+  {\def#2##1##2% style color
      {\edef\fontattributehash {#3{##1}}%
       \edef\colorattributehash{#3{##2}}%
       \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash {##1}\fi
@@ -103,12 +100,13 @@
   {\normalexpanded
      {\doinstallattributehandler
         {\noexpand#1}% \??aa
-        {\noexpand#2}% whatever
+        \expandafter\noexpand\csname doset#2attributes\endcsname
         \expandafter\noexpand\csname #2parameterhash\endcsname}}
 
 \unexpanded\def\doinstalldefinehandler#1#2#3#4#5#6#7%
-  {\unexpanded\expandafter\def\csname define#2\endcsname{\dodoubleempty#5}%
-   \expandafter\newtoks\csname everydefine#2\endcsname
+  {\unexpanded\def#2{\dodoubleempty#5}%
+   \newtoks#6%
+   \newtoks#7%
    \def#5[##1][##2]%
      {\edef#4{##1}%
       \the#6% predefine
@@ -123,20 +121,20 @@
   {\normalexpanded
      {\doinstalldefinehandler
         {\noexpand#1}% \??aa
-        {#2}% whatever
-        {#3}% root
+        \expandafter\noexpand\csname define#2\endcsname
+        {\noexpand#3}% root
         \expandafter\noexpand\csname current#2\endcsname
         \expandafter\noexpand\csname dodefine#2\endcsname
         \expandafter\noexpand\csname everypreset#2\endcsname
         \expandafter\noexpand\csname everydefine#2\endcsname}}
 
 \unexpanded\def\doinstallsetuphandler#1#2#3#4#5%
-  {\unexpanded\expandafter\def\csname setup#2\endcsname{\dodoubleempty#4}%
-   \expandafter\newtoks\csname everysetup#2\endcsname
+  {\unexpanded\def#2{\dodoubleempty#4}%
+   \newtoks#5%
    \def#4[##1][##2]%
      {\ifsecondargument
         \def\docommand####1% we will have a simple one as well
-          {\edef#3{##1#1}%
+          {\edef#3{##1}%
            \getparameters[#1#3][##2]%
            \the#5}%
         \processcommalist[##1]\docommand
@@ -150,16 +148,53 @@
   {\normalexpanded
      {\doinstallsetuphandler
         {\noexpand#1}% \??aa
-        {#2}% whatever
+        \expandafter\noexpand\csname setup#2\endcsname
         \expandafter\noexpand\csname current#2\endcsname
         \expandafter\noexpand\csname dosetup#2\endcsname
         \expandafter\noexpand\csname everysetup#2\endcsname}}
 
-\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
-  {\installparameterhandler{#1}{#2}%
-   \installdefinehandler   {#1}{#2}#3%
-   \installsetuphandler    {#1}{#2}%
-   \installattributehandler{#1}{#2}}
+\unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installparameterhandler    {#1}{#2}%
+   \installparameterhashhandler{#1}{#2}%
+   \installdefinehandler       {#1}{#2}{#3}%
+   \installsetuphandler        {#1}{#2}%
+   \installattributehandler    {#1}{#2}}
+
+\def\installnamespace#1%
+  {\setvalue{????#1}{@@@@#1}}
+
+% \start
+%
+% \enabletrackers[interfaces.namespaces]
+%
+% \definenamespace
+%   [ws]
+%   [type=module,
+%    comment=letter module,
+%    version=1,
+%    name=letter,
+%    style=yes,
+%    command=yes,
+%    setup=list,
+%    parent=ws-common]
+%
+% \ttx \listnamespaces
+%
+% \defineletter[mine][whatever=true]  \setupletter[mine][whatever=true]
+%
+% \namedletterparameter{mine}{whatever}
+%
+% \def\currentletter{mine} \letterparameter{whatever}
+%
+% \stop
+
+\def\definenamespace{\dodoubleargument\dodefinenamespace}
+
+\def\dodefinenamespace[#1][#2]% namespace settings
+  {\ctxlua{interfaces.namespaces.define(\!!bs#1\!!es,\!!bs#2\!!es)}}
+
+\def\listnamespaces
+  {\ctxlua{interfaces.namespaces.list()}}
 
 \protect
 

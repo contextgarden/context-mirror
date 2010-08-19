@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['scrp-ini'] = {
     license   = "see context related readme files"
 }
 
+local attributes, nodes, node = attributes, nodes, node
+
+local texwrite = tex.write
+
 local trace_analyzing  = false  trackers.register("scripts.analyzing",  function(v) trace_analyzing  = v end)
 local trace_injections = false  trackers.register("scripts.injections", function(v) trace_injections = v end)
 
@@ -16,31 +20,41 @@ local has_attribute   = node.has_attribute
 local first_character = node.first_character
 local traverse_id     = node.traverse_id
 
-local glyph   = node.id('glyph')
-local glue    = node.id('glue')
-local penalty = node.id('penalty')
+local nodecodes       = nodes.nodecodes
+local unsetvalue      = attributes.unsetvalue
 
-local fcs = (fonts.color and fonts.color.set)   or function() end
-local fcr = (fonts.color and fonts.color.reset) or function() end
+local glyph_code      = nodecodes.glyph
+local glue_code       = nodecodes.glue
 
-local state   = attributes.private('state')
-local preproc = attributes.private('preproc')
-local prestat = attributes.private('prestat')
+local state           = attributes.private('state')
+local preproc         = attributes.private('preproc')
+local prestat         = attributes.private('prestat')
 
-local fontdata = fonts.ids
+local fontdata        = fonts.ids
 
-scripts          = scripts          or { }
+local fcs             = (fonts.color and fonts.color.set)   or function() end
+local fcr             = (fonts.color and fonts.color.reset) or function() end
+
+scripts          = scripts or { }
+local scripts    = scripts
+
 scripts.handlers = scripts.handlers or { }
+local handlers   = scripts.handlers
 
-scripts.names    = scripts.names    or { }
-scripts.numbers  = scripts.numbers  or { }
-scripts.hash     = scripts.hash     or { }
+scripts.names    = scripts.names or { }
+local names      = scripts.names
 
-storage.register("scripts/hash", scripts.hash, "scripts.hash")
+scripts.numbers  = scripts.numbers or { }
+local numbers    = scripts.numbers
 
-if not next(scripts.hash) then
+scripts.hash     = scripts.hash or { }
+local hash       = scripts.hash
 
-    local hash = {
+storage.register("scripts/hash", hash, "scripts.hash")
+
+if not next(hash) then
+
+    hash = { -- no local
         --
         -- half width opening parenthesis
         [0x0028] = "half_width_open",
@@ -165,6 +179,8 @@ if not next(scripts.hash) then
 
 end
 
+-- the following tables will become a proper installer
+
 scripts.colors = {  -- todo: just named colors
     korean           = "font:isol",
     chinese          = "font:rest",
@@ -177,10 +193,11 @@ scripts.colors = {  -- todo: just named colors
     jamo_initial     = "font:init",
     jamo_medial      = "font:medi",
     jamo_final       = "font:fina",
-
 }
 
-scripts.number_to_kind = {
+local colors = scripts.colors
+
+local number_to_kind = {
     "korean",
     "chinese",
     "full_width_open",
@@ -194,7 +211,7 @@ scripts.number_to_kind = {
     "jamo_final",
 }
 
-scripts.kind_to_number = {
+local kind_to_number = {
     korean           =  1,
     chinese          =  2,
     full_width_open  =  3,
@@ -208,19 +225,13 @@ scripts.kind_to_number = {
     jamo_final       = 11,
 }
 
-local kind_to_number = scripts.kind_to_number
-local number_to_kind = scripts.number_to_kind
+scripts.kind_to_number = kind_to_number
+scripts.number_to_kind = number_to_kind
 
 -- no, this time loading the lua always precedes the definitions
 --
 -- storage.register("scripts/names",   scripts.names,   "scripts.names")
 -- storage.register("scripts/numbers", scripts.numbers, "scripts.numbers")
-
-local handlers = scripts.handlers
-local names    = scripts.names
-local numbers  = scripts.numbers
-local hash     = scripts.hash
-local colors   = scripts.colors
 
 -- maybe also process
 
@@ -236,13 +247,13 @@ function scripts.install(handler)
 end
 
 function scripts.define(name)
-    tex.write(names[name] or attributes.unsetvalue)
+    texwrite(names[name] or unsetvalue)
 end
 
 -- some time i will make a fonts.originals[id]
 
 local function colorize(start,stop)
-    for n in traverse_id(glyph,start) do
+    for n in traverse_id(glyph_code,start) do
         local kind = number_to_kind[has_attribute(n,prestat)]
         if kind then
             local ac = colors[kind]
@@ -279,7 +290,7 @@ function scripts.preprocess(head)
         local done, first, last, ok = false, nil, nil, false
         while start do
             local id = start.id
-            if id == glyph then
+            if id == glyph_code then
                 local a = has_attribute(start,preproc)
                 if a then
                     if a ~= last_a then
@@ -349,7 +360,7 @@ function scripts.preprocess(head)
                     end
                     first, last = nil, nil
                 end
-            elseif id == glue then
+            elseif id == glue_code then
                 if ok then
                     -- continue
                 elseif first then

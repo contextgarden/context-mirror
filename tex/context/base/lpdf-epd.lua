@@ -26,7 +26,7 @@ local setmetatable, rawset = setmetatable, rawset
 -- add accessor methods to the resource dict
 -- a function to mark objects as to be included
 
-lpdf = lpdf or { }
+local lpdf = lpdf
 
 -- -- -- helpers -- -- --
 

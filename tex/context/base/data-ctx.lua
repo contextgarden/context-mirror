@@ -10,6 +10,8 @@ local format = string.format
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 function resolvers.save_used_files_in_trees()
     local jobname = environment.jobname
     if not jobname or jobname == "" then jobname = "luatex" end

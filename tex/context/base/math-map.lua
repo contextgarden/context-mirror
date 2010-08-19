@@ -28,7 +28,8 @@ local trace_greek  = false  trackers.register("math.greek",  function(v) trace_g
 
 local report_math = logs.new("mathematics")
 
-mathematics = mathematics or { }
+mathematics       = mathematics or { }
+local mathematics = mathematics
 
 -- we could use one level less and have tf etc be tables directly but the
 -- following approach permits easier remapping of a-a, A-Z and 0-9 to

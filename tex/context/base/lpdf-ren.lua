@@ -11,23 +11,21 @@ if not modules then modules = { } end modules ['lpdf-ren'] = {
 local tostring, tonumber, next = tostring, tonumber, next
 local format = string.format
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local settings_to_array = utilities.parsers.settings_to_array
+
+local backends, lpdf = backends, lpdf
 
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
 local registrations  = backends.pdf.registrations
+local viewerlayers   = attributes.viewerlayers
 
-jobreferences          = jobreferences          or { }
---~ jobreferences.runners  = jobreferences.runners  or { }
---~ jobreferences.specials = jobreferences.specials or { }
---~ jobreferences.handlers = jobreferences.handlers or { }
-jobreferences.executers = jobreferences.executers or { }
+local references     = structures.references
 
---~ local runners   = jobreferences.runners
---~ local specials  = jobreferences.specials
---~ local handlers  = jobreferences.handlers
-local executers = jobreferences.executers
+references.executers = references.executers or { }
+local executers      = references.executers
 
-local variables = interfaces.variables
+local variables      = interfaces.variables
 
 local pdfconstant      = lpdf.constant
 local pdfdictionary    = lpdf.dictionary
@@ -181,7 +179,7 @@ lpdf.registerdocumentfinalizer(flushtextlayers,"layers")
 
 local function setlayer(what,arguments)
     -- maybe just a gmatch of even better, earlier in lpeg
-    arguments = (type(arguments) == "table" and arguments) or aux.settings_to_array(arguments)
+    arguments = (type(arguments) == "table" and arguments) or settings_to_array(arguments)
     local state = pdfarray { what }
     for i=1,#arguments do
         local p = pdfln[arguments[i]]
@@ -263,7 +261,7 @@ function codeinjections.setpagetransition(specification)
     end
     local t = n and pagetransitions[n] or pagetransitions[1]
     if not t then
-        t = aux.settings_to_array(n)
+        t = settings_to_array(n)
     end
     if t and #t > 0 then
         local d = pdfdictionary()

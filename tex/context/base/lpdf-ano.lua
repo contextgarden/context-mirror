@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 local tostring, format, rep = tostring, string.rep, string.format
 local texcount = tex.count
 
+local backends, lpdf = backends, lpdf
+
 local trace_references   = false  trackers.register("references.references",   function(v) trace_references   = v end)
 local trace_destinations = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
 local trace_bookmarks    = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
@@ -20,20 +22,26 @@ local report_bookmarks    = logs.new("bookmarks")
 local variables = interfaces.variables
 local constants = interfaces.constants
 
+local settings_to_array = utilities.parsers.settings_to_array
+
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
 local registrations  = backends.pdf.registrations
 
-jobreferences           = jobreferences           or { }
-jobreferences.runners   = jobreferences.runners   or { }
-jobreferences.specials  = jobreferences.specials  or { }
-jobreferences.handlers  = jobreferences.handlers  or { }
-jobreferences.executers = jobreferences.executers or { }
+local javascriptcode = interactions.javascripts.code
 
-local runners   = jobreferences.runners
-local specials  = jobreferences.specials
-local handlers  = jobreferences.handlers
-local executers = jobreferences.executers
+local references     = structures.references
+local bookmarks      = structures.bookmarks
+
+references.runners   = references.runners   or { }
+references.specials  = references.specials  or { }
+references.handlers  = references.handlers  or { }
+references.executers = references.executers or { }
+
+local runners   = references.runners
+local specials  = references.specials
+local handlers  = references.handlers
+local executers = references.executers
 
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
@@ -44,8 +52,10 @@ local pdfflushobject      = lpdf.flushobject
 local pdfreserveobject    = lpdf.reserveobject
 local pdfpagereference    = lpdf.pagereference
 
-local pdfannotation_node  = nodes.pdfannotation
-local pdfdestination_node = nodes.pdfdestination
+local nodepool            = nodes.pool
+
+local pdfannotation_node  = nodepool.pdfannotation
+local pdfdestination_node = nodepool.pdfdestination
 
 local pdf_uri        = pdfconstant("URI")
 local pdf_gotor      = pdfconstant("GoToR")
@@ -59,7 +69,7 @@ local pdf_border     = pdfarray { 0, 0, 0 }
 
 local cache = { }
 
-local function pagedest(n)
+local function pagedestination(n) -- only cache fit
     if n > 0 then
         local pd = cache[n]
         if not pd then
@@ -74,7 +84,26 @@ local function pagedest(n)
     end
 end
 
-lpdf.pagedest = pagedest
+lpdf.pagedestination = pagedestination
+
+--~ local cache = { }
+
+--~ local function gotopagedestination(n) -- could be reference instead
+--~     if n > 0 then
+--~         local pd = cache[n]
+--~         if not pd then
+--~             local d = pdfdictionary { -- can be cached
+--~                 S = pdf_goto,
+--~                 D = pagedestination(p),
+--~             }
+--~             pd = pdfreference(pdfflushobject(d))
+--~             cache[n] = pd
+--~         end
+--~         return pd
+--~     end
+--~ end
+
+--~ lpdf.gotopagedestination = gotopagedestination
 
 local defaultdestination = pdfarray { 0, pdfconstant("Fit") }
 
@@ -123,7 +152,7 @@ local function link(url,filename,destination,page,actions)
         else
             texcount.referencepagestate = 1
         end
-        return pdfdictionary {
+        return pdfdictionary { -- can be cached
             S = pdf_goto,
             D = destination,
         }
@@ -137,9 +166,10 @@ local function link(url,filename,destination,page,actions)
             else
                 texcount.referencepagestate = 1
             end
-            return pdfdictionary {
+        --~ return gotopagedestination(p)
+            return pdfdictionary { -- can be cached
                 S = pdf_goto,
-                D = pagedest(p),
+                D = pagedestination(p),
             }
         else
             commands.writestatus("references","invalid page reference: %s",page or "?")
@@ -165,7 +195,7 @@ function lpdf.launch(program,parameters)
 end
 
 function lpdf.javascript(name,arguments)
-    local script = javascripts.code(name,arguments) -- make into object (hash)
+    local script = javascriptcode(name,arguments) -- make into object (hash)
     if script then
         return pdfdictionary {
             S  = pdf_javascript,
@@ -280,12 +310,12 @@ runners["inner with arguments"] = function(var,actions)
 end
 
 runners["outer"] = function(var,actions)
-    local file, url = jobreferences.checkedfileorurl(var.outer,var.outer)
+    local file, url = references.checkedfileorurl(var.outer,var.outer)
     return link(url,file,var.arguments,nil,actions)
 end
 
 runners["outer with inner"] = function(var,actions)
-    local file = jobreferences.checkedfile(var.f)
+    local file = references.checkedfile(var.f)
     return link(nil,file,var.inner,var.r,actions)
 end
 
@@ -329,7 +359,7 @@ runners["special operation with arguments"] = runners["special"]
 
 function specials.internal(var,actions) -- better resolve in strc-ref
     local i = tonumber(var.operation)
-    local v = jobreferences.internals[i]
+    local v = references.internals[i]
     if not v then
         -- error
     elseif method == "internal" then
@@ -346,10 +376,10 @@ specials.i = specials.internal
 function specials.page(var,actions) -- better resolve in strc-ref
     local file = var.f
     if file then
-        file = jobreferences.checkedfile(file)
+        file = references.checkedfile(file)
         return link(nil,file,nil,var.operation,actions)
     else
-        local p = jobreferences.pages[var.operation]
+        local p = references.pages[var.operation]
         if type(p) == "function" then
             p = p()
         end
@@ -361,7 +391,7 @@ end
 
 local splitter = lpeg.splitat(":")
 
-function specials.order(var,actions) -- jobreferences.specials !
+function specials.order(var,actions) -- references.specials !
     local operation = var.operation
     if operation then
         local kind, name, n = lpegmatch(splitter,operation)
@@ -377,22 +407,22 @@ function specials.order(var,actions) -- jobreferences.specials !
 end
 
 function specials.url(var,actions)
-    local url = jobreferences.checkedurl(var.operation)
+    local url = references.checkedurl(var.operation)
     return link(url,nil,var.arguments,nil,actions)
 end
 
 function specials.file(var,actions)
-    local file = jobreferences.checkedfile(var.operation)
+    local file = references.checkedfile(var.operation)
     return link(nil,file,var.arguments,nil,actions)
 end
 
 function specials.fileorurl(var,actions)
-    local file, url = jobreferences.checkedfileorurl(var.operation,var.operation)
+    local file, url = references.checkedfileorurl(var.operation,var.operation)
     return link(url,file,var.arguments,nil,actions)
 end
 
 function specials.program(var,content)
-    local program = jobreferences.checkedprogram(var.operation)
+    local program = references.checkedprogram(var.operation)
     return lpdf.launch(program,var.arguments)
 end
 
@@ -434,7 +464,7 @@ local function fieldset(arguments)
 end
 
 function executers.resetform(arguments)
-    arguments = (type(arguments) == "table" and arguments) or aux.settings_to_array(arguments)
+    arguments = (type(arguments) == "table" and arguments) or settings_to_array(arguments)
     return pdfdictionary {
         S     = pdfconstant("ResetForm"),
         Field = fieldset(arguments[1])
@@ -456,7 +486,7 @@ local flags = {
 }
 
 function executers.submitform(arguments)
-    arguments = (type(arguments) == "table" and arguments) or aux.settings_to_array(arguments)
+    arguments = (type(arguments) == "table" and arguments) or settings_to_array(arguments)
     local flag = flags[formmethod] or flags.post
     flag = (flag and (flag[formformat] or flag.xml)) or 32 -- default: post, xml
     return pdfdictionary {
@@ -491,7 +521,7 @@ local pdf_resume = pdfconstant("Resume")
 local pdf_pause  = pdfconstant("Pause")
 
 local function movie_or_sound(operation,arguments)
-    arguments = (type(arguments) == "table" and arguments) or aux.settings_to_array(arguments)
+    arguments = (type(arguments) == "table" and arguments) or settings_to_array(arguments)
     return pdfdictionary {
         S         = pdf_movie,
         T         = format("movie %s",arguments[1] or "noname"),
@@ -530,11 +560,13 @@ local function build(levels,start,parent,method)
     local startlevel = levels[start][1]
     local i, n = start, 0
     local child, entry, m, prev, first, last, f, l
--- to be tested: i can be nil
     while i and i <= #levels do
         local li = levels[i]
         local level, title, reference, open = li[1], li[2], li[3], li[4]
-        if level == startlevel then
+        if level < startlevel then
+            pdfflushobject(child,entry)
+            return i, n, first, last
+        elseif level == startlevel then
             if trace_bookmarks then
                 report_bookmarks("%3i %s%s %s",reference.realpage,rep("  ",level-1),(open and "+") or "-",title)
             end
@@ -552,16 +584,13 @@ local function build(levels,start,parent,method)
             if method == "internal" then
                 entry.Dest = "aut:" .. reference.internal
             else -- if method == "page" then
-                entry.Dest = pagedest(reference.realpage)
+                entry.Dest = pagedestination(reference.realpage)
             end
             if not first then first, last = child, child end
             prev = child
             last = prev
             n = n + 1
             i = i + 1
-        elseif level < startlevel then
-            pdfflushobject(child,entry)
-            return i, n, first, last
         elseif i < #levels and level > startlevel then
             i, m, f, l = build(levels,i,pdfreference(child),method)
             entry.Count = (open and m) or -m
@@ -584,14 +613,21 @@ local function build(levels,start,parent,method)
 end
 
 function codeinjections.addbookmarks(levels,method)
-    local parent = pdfreserveobject()
-    local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal")
-    local dict = pdfdictionary {
-        Type  = pdfconstant("Outlines"),
-        First = pdfreference(first),
-        Last  = pdfreference(last),
-        Count = m,
-    }
-    pdfflushobject(parent,dict)
-    lpdf.addtocatalog("Outlines",lpdf.reference(parent))
+    if #levels > 0 then
+        structures.bookmarks.flatten(levels) -- dirty trick for lack of structure
+        local parent = pdfreserveobject()
+        local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal")
+        local dict = pdfdictionary {
+            Type  = pdfconstant("Outlines"),
+            First = pdfreference(first),
+            Last  = pdfreference(last),
+            Count = m,
+        }
+        pdfflushobject(parent,dict)
+        lpdf.addtocatalog("Outlines",lpdf.reference(parent))
+    end
 end
+
+-- this could also be hooked into the frontend finalizer
+
+lpdf.registerdocumentfinalizer(function() bookmarks.place() end,1,"bookmarks")

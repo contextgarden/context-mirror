@@ -51,6 +51,8 @@ of <l n='xpath'/> and since we're not compatible we call it <l n='lpath'/>. We
 will explain more about its usage in other documents.</p>
 --ldx]]--
 
+local xml = xml
+
 local lpathcalls  = 0  function xml.lpathcalls () return lpathcalls  end
 local lpathcached = 0  function xml.lpathcached() return lpathcached end
 

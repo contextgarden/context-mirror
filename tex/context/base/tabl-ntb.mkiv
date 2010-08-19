@@ -1052,8 +1052,8 @@
    \chardef\tblpass\plusone
    \let\makeTBL\domakeTBLone
    \let\handleTBLcell\dohandleTBLcellA
-   \setbox0\vbox{\trialtypesettingtrue \flushtbltoks}%
-%    \setbox\scratchbox\vbox{\trialtypesettingtrue \flushtbltoks}%
+   \setbox0\vbox{\settrialtypesetting \flushtbltoks}%
+%    \setbox\scratchbox\vbox{\settrialtypesetting \flushtbltoks}%
    \lettbldis\maximumcol\zeropoint
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize
@@ -1061,13 +1061,13 @@
      \checktblwidthstwo   % real run
      \stretchtblwidths
      \let\handleTBLcell\dohandleTBLcellB
-     \setbox\scratchbox\vbox{\trialtypesettingtrue \flushtbltoks}%
+     \setbox\scratchbox\vbox{\settrialtypesetting \flushtbltoks}%
    \else\ifdim\wd0>\hsize
      \ifautoTBLhsize
        \checktblwidthsone % trial run
        \checktblwidthstwo % real run
        \let\handleTBLcell\dohandleTBLcellB
-       \setbox\scratchbox\vbox{\trialtypesettingtrue \flushtbltoks}%
+       \setbox\scratchbox\vbox{\settrialtypesetting \flushtbltoks}%
      \fi
    \else\ifautoTBLrowspan\ifnum\maximumrowspan>1 % max ?
      % added jan 2002 because nx=* did no longer work
@@ -1078,12 +1078,12 @@
      \hsize\savedhsize
      %
      \let\handleTBLcell\dohandleTBLcellC
-     \setbox\scratchbox\vbox{\trialtypesettingtrue \flushtbltoks}%
+     \setbox\scratchbox\vbox{\settrialtypesetting \flushtbltoks}%
    \fi\fi\fi\fi
    \let\handleTBLcell\dohandleTBLcellD
    \chardef\tblpass\plustwo
    \let\makeTBL\domakeTBLtwo
-   \setbox\scratchbox\vbox{\trialtypesettingtrue \flushtbltoks}%
+   \setbox\scratchbox\vbox{\settrialtypesetting \flushtbltoks}%
    \checktblheightsone
    \checktblheightstwo
    \let\handleTBLcell\dohandleTBLcellE

@@ -19,14 +19,17 @@ local trace_injections = false  trackers.register("nodes.injections", function(v
 
 local report_injections = logs.new("injections")
 
+local attributes, nodes, node = attributes, nodes, node
+
 fonts     = fonts      or { }
 fonts.tfm = fonts.tfm  or { }
 fonts.ids = fonts.ids  or { }
 
-local fontdata = fonts.ids
-
-local glyph = node.id('glyph')
-local kern  = node.id('kern')
+local fontdata   = fonts.ids
+local nodecodes  = nodes.nodecodes
+local glyph_code = nodecodes.glyph
+local nodepool   = nodes.pool
+local newkern    = nodepool.kern
 
 local traverse_id        = node.traverse_id
 local unset_attribute    = node.unset_attribute
@@ -34,8 +37,6 @@ local has_attribute      = node.has_attribute
 local set_attribute      = node.set_attribute
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
-
-local newkern = nodes.kern
 
 local markbase = attributes.private('markbase')
 local markmark = attributes.private('markmark')
@@ -121,12 +122,13 @@ function nodes.set_mark(start,base,factor,rlmode,ba,ma,index) --ba=baseanchor, m
     return dx, dy, bound
 end
 
+local function dir(n)
+    return (n and n<0 and "r-to-l") or (n and n>0 and "l-to-r") or "unset"
+end
+
 function nodes.trace_injection(head)
-    local function dir(n)
-        return (n and n<0 and "r-to-l") or (n and n>0 and "l-to-r") or ("unset")
-    end
     report_injections("begin run")
-    for n in traverse_id(glyph,head) do
+    for n in traverse_id(glyph_code,head) do
         if n.subtype < 256 then
             local kp = has_attribute(n,kernpair)
             local mb = has_attribute(n,markbase)
@@ -175,7 +177,7 @@ end
 -- todo: reuse tables (i.e. no collection), but will be extra fields anyway
 -- todo: check for attribute
 
-function nodes.inject_kerns(head,where,keep)
+function nodes.handlers.injectkerns(head,where,keep)
     local has_marks, has_cursives, has_kerns = next(marks), next(cursives), next(kerns)
     if has_marks or has_cursives then
 --~     if has_marks or has_cursives or has_kerns then
@@ -186,7 +188,7 @@ function nodes.inject_kerns(head,where,keep)
         local done, ky, rl, valid, cx, wx, mk = false, { }, { }, { }, { }, { }, { }
         if has_kerns then -- move outside loop
             local nf, tm = nil, nil
-            for n in traverse_id(glyph,head) do
+            for n in traverse_id(glyph_code,head) do
                 if n.subtype < 256 then
                     valid[#valid+1] = n
                     if n.font ~= nf then
@@ -214,7 +216,7 @@ function nodes.inject_kerns(head,where,keep)
             end
         else
             local nf, tm = nil, nil
-            for n in traverse_id(glyph,head) do
+            for n in traverse_id(glyph_code,head) do
                 if n.subtype < 256 then
                     valid[#valid+1] = n
                     if n.font ~= nf then
@@ -307,7 +309,7 @@ function nodes.inject_kerns(head,where,keep)
                     local p_markbase = has_attribute(p,markbase)
                     if p_markbase then
                         local mrks = marks[p_markbase]
-                        for n in traverse_id(glyph,p.next) do
+                        for n in traverse_id(glyph_code,p.next) do
                             local n_markmark = has_attribute(n,markmark)
                             if p_markbase == n_markmark then
                                 local index = has_attribute(n,markdone) or 1
@@ -386,7 +388,7 @@ function nodes.inject_kerns(head,where,keep)
         if trace_injections then
             nodes.trace_injection(head)
         end
-        for n in traverse_id(glyph,head) do
+        for n in traverse_id(glyph_code,head) do
             if n.subtype < 256 then
                 local k = has_attribute(n,kernpair)
                 if k then

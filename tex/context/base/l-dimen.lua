@@ -19,6 +19,7 @@ local format, match, gsub, type, setmetatable = string.format, string.match, str
 local P, S, R, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.match
 
 number = number or { }
+local number = number
 
 number.tonumberf = function(n) return match(format("%.20f",n),"(.-0?)0*$") end -- one zero too much but alas
 number.tonumberg = function(n) return       format("%.20g",n)              end

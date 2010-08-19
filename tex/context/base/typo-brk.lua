@@ -13,11 +13,13 @@ local next, type, tonumber = next, type, tonumber
 local utfbyte, utfchar = utf.byte, utf.char
 local format = string.format
 
-local trace_breakpoints = false  trackers.register("typesetting.breakpoints", function(v) trace_breakpoints = v end)
+local trace_breakpoints = false  trackers.register("typesetters.breakpoints", function(v) trace_breakpoints = v end)
 
 local report_breakpoints = logs.new("breakpoints")
 
-local settings_to_array  = aux.settings_to_array
+local nodes, node = nodes, node
+
+local settings_to_array  = utilities.parsers.settings_to_array
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local set_attribute      = node.set_attribute
@@ -26,32 +28,41 @@ local copy_nodelist      = node.copy_list
 local free_node          = node.free
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
-local make_penalty_node  = nodes.penalty
-local make_glue_node     = nodes.glue
-local make_disc_node     = nodes.disc
-local make_glyph_node    = nodes.glyph
 local remove_node        = nodes.remove -- ! nodes
 local tonodes            = blobs.tonodes
 
-local nodecodes = nodes.nodecodes
+local texattribute       = tex.attribute
 
-local glyph = nodecodes.glyph
-local kern  = nodecodes.kern
+local nodepool           = nodes.pool
+local tasks              = nodes.tasks
 
-typesetting             = typesetting             or {}
-typesetting.breakpoints = typesetting.breakpoints or {}
+local new_penalty        = nodepool.penalty
+local new_glue           = nodepool.glue
+local new_disc           = nodepool.disc
 
-local breakpoints = typesetting.breakpoints
+local nodecodes          = nodes.nodecodes
+local kerncodes          = nodes.kerncodes
 
-breakpoints.mapping   = breakpoints.mapping or { }
-breakpoints.methods   = breakpoints.methods or { }
-breakpoints.attribute = attributes.private("breakpoint")
+local glyph_code         = nodecodes.glyph
+local kern_code          = nodecodes.kern
 
-local a_breakpoints = breakpoints.attribute
+local kerning_code       = kerncodes.kerning
 
-storage.register("typesetting/breakpoints/mapping", breakpoints.mapping, "typesetting.breakpoints.mapping")
+local typesetters        = typesetters
 
-local mapping = breakpoints.mapping
+typesetters.breakpoints  = typesetters.breakpoints or {}
+local breakpoints        = typesetters.breakpoints
+
+breakpoints.mapping      = breakpoints.mapping or { }
+local mapping            = breakpoints.mapping
+
+breakpoints.methods      = breakpoints.methods or { }
+local methods            = breakpoints.methods
+
+local a_breakpoints      = attributes.private("breakpoint")
+breakpoints.attribute    = a_breakpoints
+
+storage.register("typesetters/breakpoints/mapping", breakpoints.mapping, "typesetters.breakpoints.mapping")
 
 function breakpoints.setreplacement(id,char,language,settings)
     char = utfbyte(char)
@@ -77,24 +88,24 @@ function breakpoints.setreplacement(id,char,language,settings)
 end
 
 local function insert_break(head,start,before,after)
-    insert_node_before(head,start,make_penalty_node(before))
-    insert_node_before(head,start,make_glue_node(0))
-    insert_node_after(head,start,make_glue_node(0))
-    insert_node_after(head,start,make_penalty_node(after))
+    insert_node_before(head,start,new_penalty(before))
+    insert_node_before(head,start,new_glue(0))
+    insert_node_after(head,start,new_glue(0))
+    insert_node_after(head,start,new_penalty(after))
 end
 
-breakpoints.methods[1] = function(head,start)
+methods[1] = function(head,start)
     if start.prev and start.next then
         insert_break(head,start,10000,0)
     end
     return head, start
 end
 
-breakpoints.methods[2] = function(head,start) -- ( => (-
+methods[2] = function(head,start) -- ( => (-
     if start.prev and start.next then
         local tmp
         head, start, tmp = remove_node(head,start)
-        head, start = insert_node_before(head,start,make_disc_node())
+        head, start = insert_node_before(head,start,new_disc())
         start.attr = copy_nodelist(tmp.attr) -- todo: critical only
         start.replace = tmp
         local tmp, hyphen = copy_node(tmp), copy_node(tmp)
@@ -106,11 +117,11 @@ breakpoints.methods[2] = function(head,start) -- ( => (-
     return head, start
 end
 
-breakpoints.methods[3] = function(head,start) -- ) => -)
+methods[3] = function(head,start) -- ) => -)
     if start.prev and start.next then
         local tmp
         head, start, tmp = remove_node(head,start)
-        head, start = insert_node_before(head,start,make_disc_node())
+        head, start = insert_node_before(head,start,new_disc())
         start.attr = copy_nodelist(tmp.attr) -- todo: critical only
         start.replace = tmp
         local tmp, hyphen = copy_node(tmp), copy_node(tmp)
@@ -122,11 +133,11 @@ breakpoints.methods[3] = function(head,start) -- ) => -)
     return head, start
 end
 
-breakpoints.methods[4] = function(head,start) -- - => - - -
+methods[4] = function(head,start) -- - => - - -
     if start.prev and start.next then
         local tmp
         head, start, tmp = remove_node(head,start)
-        head, start = insert_node_before(head,start,make_disc_node())
+        head, start = insert_node_before(head,start,new_disc())
         start.attr = copy_nodelist(tmp.attr) -- todo: critical only
         start.pre, start.post, start.replace = copy_node(tmp), copy_node(tmp), tmp
         insert_break(head,start,10000,10000)
@@ -134,11 +145,11 @@ breakpoints.methods[4] = function(head,start) -- - => - - -
     return head, start
 end
 
-breakpoints.methods[5] = function(head,start,settings) -- x => p q r
+methods[5] = function(head,start,settings) -- x => p q r
     if start.prev and start.next then
         local tmp
         head, start, tmp = remove_node(head,start)
-        head, start = insert_node_before(head,start,make_disc_node())
+        head, start = insert_node_before(head,start,new_disc())
         local attr = tmp.attr
         start.attr = copy_nodelist(attr) -- todo: critical only
         start.pre, start.post, start.replace = tonodes(settings.right,tmp,attr), tonodes(settings.left,tmp,attr), tonodes(settings.middle,tmp,attr)
@@ -148,14 +159,12 @@ breakpoints.methods[5] = function(head,start,settings) -- x => p q r
     return head, start
 end
 
-local methods = breakpoints.methods
-
 local function process(namespace,attribute,head)
     local done, numbers = false,  languages.numbers
     local start, n = head, 0
     while start do
         local id = start.id
-        if id == glyph then
+        if id == glyph_code then
             local attr = has_attribute(start,attribute)
             if attr and attr > 0 then
                 unset_attribute(start,attribute) -- maybe test for subtype > 256 (faster)
@@ -173,7 +182,7 @@ local function process(namespace,attribute,head)
                                 local next = start.next
                                 while next do -- gamble on same attribute (not that important actually)
                                     local id = next.id
-                                    if id == glyph then -- gamble on same attribute (not that important actually)
+                                    if id == glyph_code then -- gamble on same attribute (not that important actually)
                                         if map[next.char] then
                                             break
                                         elseif m == 1 then
@@ -187,7 +196,7 @@ local function process(namespace,attribute,head)
                                             m = m - 1
                                             next = next.next
                                         end
-                                    elseif id == kern and next.subtype == 0 then
+                                    elseif id == kern_code and next.subtype == kerning_code then
                                         next = next.next
                                         -- ignore intercharacter kerning, will go way
                                     else
@@ -209,7 +218,7 @@ local function process(namespace,attribute,head)
             else
              -- n = n + 1 -- if we want single char handling (|-|) then we will use grouping and then we need this
             end
-        elseif id == kern and start.subtype == 0 then
+        elseif id == kern_code and start.subtype == kerning_code then
             -- ignore intercharacter kerning, will go way
         else
             n = 0
@@ -223,9 +232,9 @@ function breakpoints.set(n)
     if trace_breakpoints then
         report_breakpoints("enabling breakpoints handler")
     end
-    tasks.enableaction("processors","typesetting.breakpoints.handler")
+    tasks.enableaction("processors","typesetters.breakpoints.handler")
     function breakpoints.set(n)
-        tex.attribute[a_breakpoints] = n
+        texattribute[a_breakpoints] = n
     end
     breakpoints.set(n)
 end
@@ -237,5 +246,5 @@ breakpoints.handler = nodes.install_attribute_handler {
 }
 
 function breakpoints.enable()
-    tasks.enableaction("processors","typesetting.breakpoints.handler")
+    tasks.enableaction("processors","typesetters.breakpoints.handler")
 end

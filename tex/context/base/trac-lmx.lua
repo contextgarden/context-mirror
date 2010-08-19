@@ -10,9 +10,11 @@ if not modules then modules = { } end modules ['trac-lmx'] = {
 
 local gsub, format, concat, byte = string.gsub, string.format, table.concat, string.byte
 
-local lmx = namespaces.private("lmx")
+lmx                = lmx or { }
+local lmx          = lmx
 
-lmx.variables = lmx.variables or { } -- global, shared
+lmx.variables      = lmx.variables or { } -- global, shared
+local lmxvariables = lmx.variables
 
 local escapes = {
     ['&'] = '&amp;',
@@ -22,8 +24,6 @@ local escapes = {
 }
 
 -- variables
-
-local lmxvariables = lmx.variables
 
 lmxvariables['title-default']           = 'ConTeXt LMX File'
 lmxvariables['title']                   = lmx.variables['title-default']

@@ -109,7 +109,7 @@
   {\begingroup\obeylualines\obeyluatokens\dostartJScode}
 
 \long\def\dostartJScode#1\stopJScode
-  {\normalexpanded{\endgroup\ctxlua{javascripts.storecode(\!!bs#1\!!es)}}}
+  {\normalexpanded{\endgroup\ctxlua{interactions.javascripts.storecode(\!!bs#1\!!es)}}}
 
 \let\stopJScode\relax
 
@@ -117,14 +117,13 @@
   {\begingroup\obeylualines\obeyluatokens\dostartJSpreamble}
 
 \long\def\dostartJSpreamble#1\stopJSpreamble
-  {\normalexpanded{\endgroup\ctxlua{javascripts.storepreamble(\!!bs#1\!!es)}}}
+  {\normalexpanded{\endgroup\ctxlua{interactions.javascripts.storepreamble(\!!bs#1\!!es)}}}
 
 \let\stopJSpreamble\relax
 
-\def\setJSpreamble   #1#2{\ctxlua{javascripts.storepreamble ("#1",\!!bs#2\!!es)}}
-\def\addtoJSpreamble #1#2{\ctxlua{javascripts.addtopreamble ("#1",\!!bs#2\!!es)}}
-\def\useJSpreamblenow  #1{\ctxlua{javascripts.usepreamblenow("#1")}}
-\def\finalflushJSpreamble{\iflocation\ctxlua{javascripts.flushpreambles()}\fi}
+\def\setJSpreamble   #1#2{\ctxlua{interactions.javascripts.storepreamble ("#1",\!!bs#2\!!es)}}
+\def\addtoJSpreamble #1#2{\ctxlua{interactions.javascripts.addtopreamble ("#1",\!!bs#2\!!es)}}
+\def\useJSpreamblenow  #1{\ctxlua{interactions.javascripts.usepreamblenow("#1")}}
 
 %D \macros
 %D   {useJSscripts}

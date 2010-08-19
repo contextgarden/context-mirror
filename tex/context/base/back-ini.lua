@@ -6,27 +6,37 @@ if not modules then modules = { } end modules ['back-ini'] = {
     license   = "see context related readme files"
 }
 
+-- I need to check what is actually needed, maybe some can become
+-- locals.
+
 backends = backends or { }
+local backends = backends
 
-local trace_backend = false
-
-local function nothing() return nil end
+local trace_backend = false  trackers.register("backend.initializers", function(v) trace_finalizers = v end)
 
 local report_backends = logs.new("backends")
+
+local function nothing() return nil end
 
 backends.nothing = nothing
 
 backends.nodeinjections = {
+
     rgbcolor     = nothing,
     cmykcolor    = nothing,
     graycolor    = nothing,
     spotcolor    = nothing,
+
     transparency = nothing,
+
     overprint    = nothing,
     knockout     = nothing,
+
     positive     = nothing,
     negative     = nothing,
+
     effect       = nothing,
+
     startlayer   = nothing,
     stoplayer    = nothing,
     switchlayer  = nothing,
@@ -36,82 +46,107 @@ backends.nodeinjections = {
 
     addtags      = nothing,
 
+    insertu3d    = nothing,
+    insertswf    = nothing,
+    insertmovie  = nothing,
+    insertsound  = nothing,
+
 }
 
 backends.codeinjections = {
 
-    prerollreference      = nothing,
+    prerollreference       = nothing,
 
-    insertmovie           = nothing,
-    insertsound           = nothing,
+    presetsymbol           = nothing,
+    presetsymbollist       = nothing,
+    registersymbol         = nothing,
+    registeredsymbol       = nothing,
 
-    presetsymbollist      = nothing,
-    registersymbol        = nothing,
-    registeredsymbol      = nothing,
+    registercomment        = nothing,
 
-    registercomment       = nothing,
-    embedfile             = nothing,
-    attachfile            = nothing,
-    adddocumentinfo       = nothing,
-    setupidentity         = nothing,
-    setpagetransition     = nothing,
-    defineviewerlayer     = nothing,
-    addbookmarks          = nothing,
-    addtransparencygroup  = nothing,
+    embedfile              = nothing,
+    attachfile             = nothing,
+    attachmentid           = nothing,
 
-    typesetfield          = nothing,
-    doiffieldelse         = nothing,
-    doiffieldgroupelse    = nothing,
-    definefield           = nothing,
-    clonefield            = nothing,
-    definefieldset        = nothing,
-    getfieldgroup         = nothing,
-    setformsmethod        = nothing,
-    getdefaultfieldvalue  = nothing,
+    adddocumentinfo        = nothing,
+    setupidentity          = nothing,
+    setupcanvas            = nothing,
 
-    setupcanvas           = nothing,
+    setpagetransition      = nothing,
 
-    initializepage        = nothing,
-    initializedocument    = nothing,
-    finalizepage          = nothing,
-    finalizedocument      = nothing,
+    defineviewerlayer      = nothing,
 
-    flushpageactions      = nothing,
-    flushdocumentactions  = nothing,
+    addbookmarks           = nothing,
 
-    insertrenderingwindow = nothing,
-    processrendering      = nothing,
-    kindofrendering       = nothing,
-    flushrenderingwindow  = nothing,
+    addtransparencygroup   = nothing,
 
-    setfigurecolorspace   = nothing,
-    setfigurealternative  = nothing,
+    typesetfield           = nothing,
+    doiffieldelse          = nothing,
+    doiffieldgroupelse     = nothing,
+    doiffieldsetelse       = nothing,
+    definefield            = nothing,
+    clonefield             = nothing,
+    definefieldset         = nothing,
+    setfieldcalculationset = nothing,
+    getfieldgroup          = nothing,
+    getfieldset            = nothing,
+    setformsmethod         = nothing,
+    getdefaultfieldvalue   = nothing,
 
-    enabletags            = nothing,
-    maptag                = nothing,
-    mapping               = nothing, -- returns table
+    flushpageactions       = nothing,
+    flushdocumentactions   = nothing,
 
-    mergereferences       = nothing,
-    mergelayers           = nothing,
+    insertrenderingwindow  = nothing,
+    processrendering       = nothing,
 
-    setformat             = nothing,
-    getformatoption       = nothing,
+    setfigurecolorspace    = nothing,
+    setfigurealternative   = nothing,
+
+    enabletags             = nothing,
+    maptag                 = nothing,
+    mapping                = nothing, -- returns table
+
+    mergereferences        = nothing,
+    mergeviewerlayers      = nothing,
+
+    setformat              = nothing,
+    getformatoption        = nothing,
+    supportedformats       = nothing,
+
+    -- called in tex
+
+    finalizepage           = nothing -- will go when we have a hook at the lua end
+
 }
 
 backends.registrations = {
+
     grayspotcolor  = nothing,
     rgbspotcolor   = nothing,
     cmykspotcolor  = nothing,
+
     grayindexcolor = nothing,
     rgbindexcolor  = nothing,
     cmykindexcolor = nothing,
+
     spotcolorname  = nothing,
+
     transparency   = nothing,
+
 }
 
-local nodeinjections = backends.nodeinjections
-local codeinjections = backends.codeinjections
-local registrations  = backends.registrations
+local comment = { "comment", "" }
+
+backends.tables = {
+    vfspecials = {
+        red        = comment,
+        green      = comment,
+        blue       = comment,
+        black      = comment,
+        startslant = comment,
+        stopslant  = comment,
+    }
+}
 
 backends.current = "unknown"
 
@@ -123,10 +158,10 @@ function backends.install(what)
                 report_backends("initializing backend %s (%s)",what,backend.comment or "no comment")
             end
             backends.current = what
-            for _, category in next, { "nodeinjections", "codeinjections", "registrations"} do
+            for _, category in next, { "nodeinjections", "codeinjections", "registrations", "tables" } do
                 local plugin = backend[category]
+                local whereto = backends[category]
                 if plugin then
-                    local whereto = backends[category]
                     for name, meaning in next, whereto do
                         if plugin[name] then
                             whereto[name] = plugin[name]
@@ -138,8 +173,18 @@ function backends.install(what)
                 elseif trace_backend then
                     report_backends("no category %s in %s",category,what)
                 end
+                -- extra checks
+                for k, v in next, whereto do
+                    if not plugin[k] then
+                        report_backends("entry %s in %s is not set",k,category)
+                    end
+                end
+                for k, v in next, plugin do
+                    if not whereto[k] then
+                        report_backends("entry %s in %s is not used",k,category)
+                    end
+                end
             end
-            backends.helpers = backend.helpers
         elseif trace_backend then
             report_backends("no backend named %s",what)
         end

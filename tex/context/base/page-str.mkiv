@@ -47,7 +47,7 @@
   {\ctxlua{streams.initialize()}%
    \glet\initializeoutputstreams\relax}
 
-\def\enableoutputstream[#1]%
+\def\enableoutputstream[#1]% could be \startoutputsubstream
   {\initializeoutputstreams
    \the\everyenableoutputstream
    \inoutputstreamtrue
@@ -70,6 +70,16 @@
 \unexpanded\def\stopoutputstream
   {\ctxlua{streams.stop()}%
    \endgroup}
+
+\let\currentoutputsubstream\empty
+
+\def\startoutputsubstream[#1]%
+  {\glet\savedcurrentoutputstream\currentoutputstream
+   \enableoutputstream[#1]}
+
+\def\stopoutputsubstream
+  {\glet\currentoutputstream\savedcurrentoutputstream
+   \enableoutputstream[\savedcurrentoutputstream]}
 
 \def\flushoutputstream  [#1]{\ctxlua{streams.flush("#1")}}
 \def\outputstreamcopy   [#1]{\vbox{\ctxlua{streams.flush("#1",true)}}}

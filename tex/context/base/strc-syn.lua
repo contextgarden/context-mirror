@@ -13,14 +13,18 @@ local ctxcatcodes = tex.ctxcatcodes
 
 -- interface to tex end
 
-joblists           = joblists or { }
-joblists.collected = joblists.collected or { }
-joblists.tobesaved = joblists.tobesaved or { }
+local structures    = structures
 
-local collected, tobesaved = joblists.collected, joblists.tobesaved
+structures.synonyms = structures.synonyms or { }
+local synonyms      = structures.synonyms
+
+synonyms.collected = synonyms.collected or { }
+synonyms.tobesaved = synonyms.tobesaved or { }
+
+local collected, tobesaved = synonyms.collected, synonyms.tobesaved
 
 local function initializer()
-    collected, tobesaved = joblists.collected, joblists.tobesaved
+    collected, tobesaved = synonyms.collected, synonyms.tobesaved
 end
 
 local function finalizer()
@@ -29,7 +33,7 @@ local function finalizer()
     end
 end
 
-job.register('joblists.collected', joblists.tobesaved, initializer, finalizer)
+job.register('structures.synonyms.collected', synonyms.tobesaved, initializer, finalizer)
 
 local function allocate(class)
     local d = tobesaved[class]
@@ -50,12 +54,12 @@ local function allocate(class)
     return d
 end
 
-function joblists.define(class,kind)
+function synonyms.define(class,kind)
     local data = allocate(class)
     data.metadata.kind = kind
 end
 
-function joblists.register(class,kind,spec)
+function synonyms.register(class,kind,spec)
     local data = allocate(class)
     data.metadata.kind = kind -- runtime, not saved in format (yet)
     if not data.hash[spec.definition.tag or ""] then
@@ -64,7 +68,7 @@ function joblists.register(class,kind,spec)
     end
 end
 
-function joblists.registerused(class,tag)
+function synonyms.registerused(class,tag)
     local data = allocate(class)
     local dht = data.hash[tag]
     if dht then
@@ -72,7 +76,7 @@ function joblists.registerused(class,tag)
     end
 end
 
-function joblists.synonym(class,tag)
+function synonyms.synonym(class,tag)
     local data = allocate(class).hash
     local d = data[tag]
     if d then
@@ -82,7 +86,7 @@ function joblists.synonym(class,tag)
     end
 end
 
-function joblists.meaning(class,tag)
+function synonyms.meaning(class,tag)
     local data = allocate(class).hash
     local d = data[tag]
     if d then
@@ -92,9 +96,9 @@ function joblists.meaning(class,tag)
     end
 end
 
-joblists.compare = sorters.comparers.basic -- (a,b)
+synonyms.compare = sorters.comparers.basic -- (a,b)
 
-function joblists.filter(data,options)
+function synonyms.filter(data,options)
     local result = { }
     local entries = data.entries
     local all = options and options.criterium == interfaces.variables.all
@@ -107,7 +111,7 @@ function joblists.filter(data,options)
     data.result = result
 end
 
-function joblists.prepare(data)
+function synonyms.prepare(data)
     local strip = sorters.strip
     local splitter = sorters.splitters.utf
     local result = data.result
@@ -124,11 +128,11 @@ function joblists.prepare(data)
     end
 end
 
-function joblists.sort(data,options)
-    sorters.sort(data.result,joblists.compare)
+function synonyms.sort(data,options)
+    sorters.sort(data.result,synonyms.compare)
 end
 
-function joblists.finalize(data,options)
+function synonyms.finalize(data,options)
     local result = data.result
     data.metadata.nofsorted = #result
     local split = { }
@@ -145,7 +149,7 @@ function joblists.finalize(data,options)
     data.result = split
 end
 
-function joblists.flush(data,options) -- maybe pass the settings differently
+function synonyms.flush(data,options) -- maybe pass the settings differently
     local kind = data.metadata.kind   -- hack, will be done better
 --~     texsprint(ctxcatcodes,format("\\start%soutput",kind))
     local result = data.result
@@ -167,23 +171,23 @@ function joblists.flush(data,options) -- maybe pass the settings differently
     data.metadata.sorted = false
 end
 
-function joblists.analysed(class,options)
-    local data = joblists.collected[class]
+function synonyms.analysed(class,options)
+    local data = synonyms.collected[class]
     if data and data.entries then
         options = options or { }
         sorters.setlanguage(options.language)
-        joblists.filter(data,options)   -- filters entries to result
-        joblists.prepare(data,options)  -- adds split table parallel to list table
-        joblists.sort(data,options)     -- sorts entries in result
-        joblists.finalize(data,options) -- do things with data.entries
+        synonyms.filter(data,options)   -- filters entries to result
+        synonyms.prepare(data,options)  -- adds split table parallel to list table
+        synonyms.sort(data,options)     -- sorts entries in result
+        synonyms.finalize(data,options) -- do things with data.entries
         data.metadata.sorted = true
     end
     return data and data.metadata.sorted and data.result and next(data.result)
 end
 
-function joblists.process(class,options)
-    if joblists.analysed(class,options) then
-        joblists.flush(joblists.collected[class],options)
+function synonyms.process(class,options)
+    if synonyms.analysed(class,options) then
+        synonyms.flush(synonyms.collected[class],options)
     end
 end
 

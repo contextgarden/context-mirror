@@ -12,7 +12,7 @@ local lpegmatch = lpeg.match
 
 local ctxcatcodes = tex.ctxcatcodes
 
-commands = commands or { } cs = commands -- shorter
+commands = commands or { } -- cs = commands -- shorter, maybe some day, not used now
 
 function commands.writereport(...) logs.report(...) end -- not that efficient
 function commands.writestatus(...) logs.status(...) end

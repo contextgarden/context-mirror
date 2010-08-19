@@ -473,7 +473,7 @@
 
 % eventually we will do this in lua
 
-\def\currentreferencelinenumber{\ctxlua{jobreferences.filter("linenumber")}}
+\def\currentreferencelinenumber{\ctxlua{structures.references.filter("linenumber")}}
 
 \def\doifelsesamelinereference#1#2#3%
   {\doifreferencefoundelse{lr:b:#1}

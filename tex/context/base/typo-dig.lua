@@ -13,43 +13,46 @@ local next, type = next, type
 local format, insert = string.format, table.insert
 local round, div = math.round, math.div
 
-local trace_digits = false  trackers.register("typesetting.digits", function(v) trace_digits = v end)
+local trace_digits = false  trackers.register("typesetters.digits", function(v) trace_digits = v end)
 
 local report_digits = logs.new("digits")
 
-local has_attribute      = node.has_attribute
-local unset_attribute    = node.unset_attribute
-local set_attribute      = node.set_attribute
-local hpack_node         = node.hpack
-local traverse_id        = node.traverse_id
-local insert_before      = node.insert_before
-local insert_after       = node.insert_after
+local nodes, node = nodes, node
 
-local texattribute = tex.attribute
+local has_attribute   = node.has_attribute
+local unset_attribute = node.unset_attribute
+local set_attribute   = node.set_attribute
+local hpack_node      = node.hpack
+local traverse_id     = node.traverse_id
+local insert_before   = node.insert_before
+local insert_after    = node.insert_after
 
-local nodecodes = nodes.nodecodes
+local texattribute    = tex.attribute
 
-local glyph = nodecodes.glyph
-local kern  = nodecodes.kern
+local nodecodes       = nodes.nodecodes
+local glyph_code      = nodecodes.glyph
 
-local new_glue = nodes.glue
+local nodepool        = nodes.pool
+local tasks           = nodes.tasks
 
-local fontdata = fonts.identifiers
-local chardata = fonts.characters
-local quaddata = fonts.quads
-local charbase = characters.data
+local new_glue        = nodepool.glue
 
-typesetting        = typesetting        or { }
-typesetting.digits = typesetting.digits or { }
+local fontdata        = fonts.identifiers
+local chardata        = fonts.characters
+local quaddata        = fonts.quads
+local charbase        = characters.data
 
-local digits = typesetting.digits
+typesetters           = typesetters or { }
+local typesetters     = typesetters
 
-digits.actions   = { }
-digits.attribute = attributes.private("digits")
+typesetters.digits    = typesetters.digits or { }
+local digits          = typesetters.digits
 
-local a_digits = digits.attribute
+digits.actions        = { }
+local actions         = digits.actions
 
-local actions  = digits.actions
+local a_digits        = attributes.private("digits")
+digits.attribute      = a_digits
 
 -- at some point we can manipulate the glyph node so then i need
 -- to rewrite this then
@@ -99,7 +102,7 @@ end
 local function process(namespace,attribute,head)
     local done, current, ok = false, head, false
     while current do
-        if current.id == glyph then
+        if current.id == glyph_code then
             local attr = has_attribute(current,attribute)
             if attr and attr > 0 then
                 unset_attribute(current,attribute)
@@ -121,7 +124,7 @@ local m, enabled = 0, false -- a trick to make neighbouring ranges work
 
 function digits.set(n)
     if not enabled then
-        tasks.enableaction("processors","typesetting.digits.handler")
+        tasks.enableaction("processors","typesetters.digits.handler")
         if trace_digits then
             report_digits("enabling digit handler")
         end

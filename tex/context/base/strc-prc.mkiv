@@ -50,11 +50,11 @@
 \def\dodefineprocessor[#1][#2]%
   {\ifsecondargument
      \letbeundefined{\??po#1\c!command}%
-     \ctxlua{structure.processors.register("#1")}%
+     \ctxlua{structures.processors.register("#1")}%
      \getparameters[\??po#1][\c!style=,\c!color=,\c!left=,\c!right=,#2]%
    \else
      \letbeundefined{\??po#1\c!style}%
-     \ctxlua{structure.processors.reset("#1")}%
+     \ctxlua{structures.processors.reset("#1")}%
    \fi}
 
 %D The following command can be used by users but normally it will be

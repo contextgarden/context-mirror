@@ -21,23 +21,20 @@ local variables   = interfaces.variables
 
 --~ if not trackers then trackers = { register = function() end } end
 
-local trace_sectioning = false  trackers.register("structure.sectioning", function(v) trace_sectioning = v end)
-local trace_detail     = false  trackers.register("structure.detail",     function(v) trace_detail     = v end)
+local trace_sectioning = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
+local trace_detail     = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
 
 local report_structure = logs.new("structure")
 
-structure            = structure            or { }
-structure.helpers    = structure.helpers    or { }
-structure.documents  = structure.documents  or { }
-structure.sections   = structure.sections   or { }
-structure.sets       = structure.sets       or { }
-structure.processors = structure.processors or { }
+local structures = structures
 
-local helpers    = structure.helpers
-local documents  = structure.documents
-local sections   = structure.sections
-local sets       = structure.sets
-local processors = structure.processors
+local helpers    = structures.helpers
+local documents  = structures.documents
+local sections   = structures.sections
+local lists      = structures.lists
+local counters   = structures.counters
+local sets       = structures.sets
+local processors = structures.processors
 
 local sprintprocessor = processors.sprint
 local ignoreprocessor = processors.ignore
@@ -73,17 +70,16 @@ documents.initialize()
 
 -- -- -- sections -- -- --
 
-jobsections           = jobsections or { }
-jobsections.collected = jobsections.collected or { }
-jobsections.tobesaved = jobsections.tobesaved or { }
+sections.collected = sections.collected or { }
+sections.tobesaved = sections.tobesaved or { }
 
-local collected, tobesaved = jobsections.collected, jobsections.tobesaved
+local collected, tobesaved = sections.collected, sections.tobesaved
 
 --~ local function initializer()
---~     collected, tobesaved = jobsections.collected, jobsections.tobesaved
+--~     collected, tobesaved = sections.collected, sections.tobesaved
 --~ end
 
---~ job.register('jobsections.collected', jobsections.tobesaved, initializer)
+--~ job.register('structures.sections.collected', sections.tobesaved, initializer)
 
 function sections.currentid()
     return #tobesaved
@@ -106,7 +102,7 @@ end
 
 function sections.load()
     setmetatable(collected,nil)
-    local l = structure.lists.collected
+    local l = lists.collected
     for i=1,#l do
         local li = l[i]
         local lm = li.metadata
@@ -129,11 +125,11 @@ setmetatable(collected, {
 
 --
 
-structure.sections.levelmap = structure.sections.levelmap or { }
+sections.levelmap = sections.levelmap or { }
 
-local levelmap = structure.sections.levelmap
+local levelmap = sections.levelmap
 
-storage.register("structure/sections/levelmap", structure.sections.levelmap, "structure.sections.levelmap")
+storage.register("structures/sections/levelmap", sections.levelmap, "structures.sections.levelmap")
 
 sections.verbose = true
 
@@ -166,7 +162,7 @@ function sections.setblock(name)
 end
 
 function sections.pushblock(name)
-    structure.counters.check(0) -- we assume sane usage of \page between blocks
+    counters.check(0) -- we assume sane usage of \page between blocks
     local block = name or data.block
     data.blocks[#data.blocks+1] = block
     data.block = block
@@ -250,7 +246,7 @@ function sections.somelevel(given)
             status[i] = nil
         end
     end
-    structure.counters.check(newdepth)
+    counters.check(newdepth)
     ownnumbers[newdepth] = given.numberdata.ownnumber or ""
     given.numberdata.ownnumber = nil
     data.depth = newdepth
@@ -460,7 +456,7 @@ end
 
 --
 
-function structure.currentsectionnumber() -- brr, namespace wrong
+function structures.currentsectionnumber() -- brr, namespace wrong
     local sc = sections.current()
     return sc and sc.numberdata
 end
@@ -736,7 +732,7 @@ function sections.findnumber(depth,what)
     local data = data.status[depth or data.depth]
     if data then
         local index = data.references.section
-        local collected = jobsections.collected
+        local collected = sections.collected
         local sectiondata = collected[index]
         if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
             if what == variables.first then

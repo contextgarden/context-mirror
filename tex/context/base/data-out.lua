@@ -6,5 +6,5 @@ if not modules then modules = { } end modules ['data-out'] = {
     license   = "see context related readme files"
 }
 
-outputs = outputs or { }
+-- not used yet
 

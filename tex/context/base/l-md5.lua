@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['l-md5'] = {
 
 -- This also provides file checksums and checkers.
 
+local md5, file = md5, file
 local gsub, format, byte = string.gsub, string.format, string.byte
 
 local function convert(str,fmt)

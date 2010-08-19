@@ -15,10 +15,14 @@ local trace_loading = false  trackers.register("otf.loading", function(v) trace_
 
 local report_otf = logs.new("load otf")
 
-fonts               = fonts               or { }
-fonts.otf           = fonts.otf           or { }
-fonts.otf.enhancers = fonts.otf.enhancers or { }
-fonts.otf.glists    = fonts.otf.glists    or { "gsub", "gpos" }
+fonts       = fonts     or { }  -- this module is also used in mtxrun
+local fonts = fonts
+fonts.otf   = fonts.otf or { }  -- this module is also used in mtxrun
+local otf   = fonts.otf
+
+otf.enhancers   = otf.enhancers or { }
+local enhancers = otf.enhancers
+otf.glists      = otf.glists or { "gsub", "gpos" } -- these can be extended so no local here
 
 local criterium, threshold, tabstr = 1, 0, table.serialize
 
@@ -26,16 +30,16 @@ local function tabstr(t) -- hashed from core-uti / experiment
     local s = { }
     for k, v in next, t do
         if type(v) == "table" then
-            s[#s+1] = k.."={"..tabstr(v).."}"
+            s[#s+1] = k .. "={" .. tabstr(v) .. "}"
         else
-            s[#s+1] = k.."="..tostring(v)
+            s[#s+1] = k .. "=" .. tostring(v)
         end
     end
     sort(s)
     return concat(s,",")
 end
 
-function fonts.otf.enhancers.pack(data)
+function enhancers.pack(data)
     if data then
         local h, t, c = { }, { }, { }
         local hh, tt, cc = { }, { }, { }
@@ -245,7 +249,7 @@ function fonts.otf.enhancers.pack(data)
                 end
                 local lf = data.luatex.features
                 if lf then
-                    for _, g in next, fonts.otf.glists do
+                    for _, g in next, otf.glists do
                         local gl = lf[g]
                         if gl then
                             for feature, spec in next, gl do
@@ -301,7 +305,7 @@ function fonts.otf.enhancers.pack(data)
     end
 end
 
-function fonts.otf.enhancers.unpack(data)
+function enhancers.unpack(data)
     if data then
         local t = data.tables
         if t then
@@ -490,7 +494,7 @@ function fonts.otf.enhancers.unpack(data)
                 end
                 local lf = luatex.features
                 if lf then
-                    for _, g in next, fonts.otf.glists do
+                    for _, g in next, otf.glists do
                         local gl = lf[g]
                         if gl then
                             for feature, spec in next, gl do

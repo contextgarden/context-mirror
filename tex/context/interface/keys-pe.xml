@@ -560,6 +560,7 @@
 		<cd:constant name='backgroundoffset' value='آفست‌پس‌زمینه'/>
 		<cd:constant name='backgroundradius' value='شعاع‌پس‌زمینه'/>
 		<cd:constant name='backgroundscreen' value='پرده‌پس‌زمینه'/>
+		<cd:constant name='backreference' value='backreference'/>
 		<cd:constant name='backspace' value='فضای‌پس'/>
 		<cd:constant name='balance' value='تعادل'/>
 		<cd:constant name='before' value='قبل‌از'/>
@@ -709,6 +710,7 @@
 		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='پانل'/>
 		<cd:constant name='interlinespace' value='فضای‌بین‌خط'/>
+		<cd:constant name='internalgrid' value='internalgrid'/>
 		<cd:constant name='itemalign' value='تنظیم‌آیتم'/>
 		<cd:constant name='items' value='آیتمها'/>
 		<cd:constant name='juniorsep' value='juniorsep'/>

@@ -13,37 +13,43 @@ local utf = unicode.utf8
 local next, type = next, type
 local utfchar = utf.char
 
-local trace_spacing = false  trackers.register("typesetting.spacing", function(v) trace_spacing = v end)
+local trace_spacing = false  trackers.register("typesetters.spacing", function(v) trace_spacing = v end)
 
 local report_spacing = logs.new("spacing")
+
+local nodes, fonts, node = nodes, fonts, node
 
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove
-local make_penalty_node  = nodes.penalty
-local make_glue_node     = nodes.glue
 
 local fontdata           = fonts.identifiers
 local quaddata           = fonts.quads
-local nodecodes          = nodes.nodecodes
 
 local texattribute       = tex.attribute
 
-local glyph              = nodecodes.glyph
+local nodecodes          = nodes.nodecodes
+local glyph_code         = nodecodes.glyph
 
-typesetting          = typesetting          or { }
-typesetting.spacings = typesetting.spacings or { }
+local nodepool           = nodes.pool
+local tasks              = nodes.tasks
 
-local spacings = typesetting.spacings
+local new_penalty        = nodepool.penalty
+local new_glue           = nodepool.glue
 
-spacings.mapping   = spacings.mapping or { }
-spacings.attribute = attributes.private("spacing")
+typesetters              = typesetters or { }
+local typesetters        = typesetters
 
-local a_spacings = spacings.attribute
+typesetters.spacings     = typesetters.spacings or { }
+local spacings           = typesetters.spacings
 
-storage.register("typesetting/spacings/mapping", spacings.mapping, "typesetting.spacings.mapping")
+spacings.mapping         = spacings.mapping or { }
+local a_spacings         = attributes.private("spacing")
+spacings.attribute       = a_spacings
+
+storage.register("typesetters/spacings/mapping", spacings.mapping, "typesetters.spacings.mapping")
 
 local function process(namespace,attribute,head)
     local done, mapping = false, spacings.mapping
@@ -51,7 +57,7 @@ local function process(namespace,attribute,head)
     -- head is always begin of par (whatsit), so we have at least two prev nodes
     -- penalty followed by glue
     while start do
-        if start.id == glyph then
+        if start.id == glyph_code then
             local attr = has_attribute(start,attribute)
             if attr and attr > 0 then
                 local map = mapping[attr]
@@ -90,8 +96,8 @@ local function process(namespace,attribute,head)
                                 if trace_spacing then
                                     report_spacing("inserting penalty and space before %s (left)", utfchar(start.char))
                                 end
-                                insert_node_before(head,start,make_penalty_node(10000))
-                                insert_node_before(head,start,make_glue_node(tex.scale(quad,left)))
+                                insert_node_before(head,start,new_penalty(10000))
+                                insert_node_before(head,start,new_glue(tex.scale(quad,left)))
                                 done = true
                             end
                         end
@@ -127,8 +133,8 @@ local function process(namespace,attribute,head)
                                 if trace_spacing then
                                     report_spacing("inserting penalty and space after %s (right)", utfchar(start.char))
                                 end
-                                insert_node_after(head,start,make_glue_node(tex.scale(quad,right)))
-                                insert_node_after(head,start,make_penalty_node(10000))
+                                insert_node_after(head,start,new_glue(tex.scale(quad,right)))
+                                insert_node_after(head,start,new_penalty(10000))
                                 done = true
                             end
                         end
@@ -159,7 +165,7 @@ end
 
 function spacings.set(id)
     if not enabled then
-        tasks.enableaction("processors","typesetting.spacings.handler")
+        tasks.enableaction("processors","typesetters.spacings.handler")
         enabled = true
     end
     texattribute[a_spacings] = id

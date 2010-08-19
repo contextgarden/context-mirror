@@ -9,18 +9,20 @@ if not modules then modules = { } end modules ['node-ser'] = {
 -- beware, some field names will change in a next releases
 -- of luatex; this is pretty old code that needs an overhaul
 
-local type, format, concat = type, string.format, table.concat
+local type, format, concat, rep = type, string.format, table.concat, string.rep
 
 local ctxcatcodes = tex.ctxcatcodes
+
+local nodes, node = nodes, node
 
 local traverse    = node.traverse
 local node_fields = node.fields
 local node_type   = node.type
 
-local nodecodes = nodes.nodecodes
+local nodecodes   = nodes.nodecodes
 
-local hlist = nodecodes.hlist
-local vlist = nodecodes.vlist
+local hlist_code  = nodecodes.hlist
+local vlist_code  = nodecodes.vlist
 
 local expand = table.tohash {
     "list",         -- list_ptr & ins_ptr & adjust_ptr
@@ -241,8 +243,8 @@ function nodes.list(head,n) -- name might change to nodes.type
     end
     while head do
         local id = head.id
-        tex.print(string.rep(" ",n or 0) .. tostring(head) .. "\n")
-        if id == hlist or id == vlist then
+        tex.print(rep(" ",n or 0) .. tostring(head) .. "\n")
+        if id == hlist_code or id == vlist_code then
             nodes.list(head.list,(n or 0)+1)
         end
         head = head.next
@@ -255,8 +257,8 @@ end
 function nodes.print(head,n)
     while head do
         local id = head.id
-        texio.write_nl(string.rep(" ",n or 0) .. tostring(head))
-        if id == hlist or id == vlist then
+        texio.write_nl(rep(" ",n or 0) .. tostring(head))
+        if id == hlist_code or id == vlist_code then
             nodes.print(head.list,(n or 0)+1)
         end
         head = head.next

@@ -25,22 +25,22 @@ local report_define = logs.new("define fonts")
 <p>Here we only implement a few helper functions.</p>
 --ldx]]--
 
-fonts     = fonts     or { }
-fonts.tfm = fonts.tfm or { }
-fonts.ids = fonts.ids or { }
+local fonts = fonts
+local tfm   = fonts.tfm
 
-local tfm = fonts.tfm
-
-fonts.loaded              = fonts.loaded    or { }
+fonts.loaded              = fonts.loaded or { }
 fonts.dontembed           = fonts.dontembed or { }
-fonts.triggers            = fonts.triggers  or { } -- brrr
-fonts.initializers        = fonts.initializers        or { }
+fonts.triggers            = fonts.triggers or { } -- brrr
+fonts.initializers        = fonts.initializers or { }
 fonts.initializers.common = fonts.initializers.common or { }
 
-local fontdata      = fonts.ids
-local disc          = node.id('disc')
-local glyph         = node.id('glyph')
 local set_attribute = node.set_attribute
+
+local fontdata   = fonts.ids
+local nodecodes  = nodes.nodecodes
+
+local disc_code  = nodecodes.disc
+local glyph_code = nodecodes.glyph
 
 --[[ldx--
 <p>The next function encapsulates the standard <l n='tfm'/> loader as
@@ -664,7 +664,7 @@ function fonts.analyzers.aux.setstate(head,font)
     local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
     while current do
         local id = current.id
-        if id == glyph and current.font == font then
+        if id == glyph_code and current.font == font then
             local d = descriptions[current.char]
             if d then
                 if d.class == "mark" then
@@ -685,7 +685,7 @@ function fonts.analyzers.aux.setstate(head,font)
                 end
                 first, last, n = nil, nil, 0
             end
-        elseif id == disc then
+        elseif id == disc_code then
             -- always in the middle
             set_attribute(current,state,2) -- midi
             last = current

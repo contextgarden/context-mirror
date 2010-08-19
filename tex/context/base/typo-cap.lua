@@ -10,38 +10,47 @@ local next, type = next, type
 local format, insert = string.format, table.insert
 local div = math.div
 
-local trace_casing = false  trackers.register("typesetting.casing", function(v) trace_casing = v end)
+local trace_casing = false  trackers.register("typesetters.casing", function(v) trace_casing = v end)
 
 local report_casing = logs.new("casing")
+
+local nodes, node = nodes, node
 
 local has_attribute   = node.has_attribute
 local unset_attribute = node.unset_attribute
 local set_attribute   = node.set_attribute
 local traverse_id     = node.traverse_id
 
-local texattribute = tex.attribute
+local texattribute    = tex.attribute
 
-local nodecodes = nodes.nodecodes
+local nodecodes       = nodes.nodecodes
+local skipcodes       = nodes.skipcodes
+local kerncodes       = nodes.kerncodes
 
-local glyph = nodecodes.glyph
-local kern  = nodecodes.kern
+local glyph_code      = nodecodes.glyph
+local kern_code       = nodecodes.kern
 
-local fontdata = fonts.ids
-local fontchar = fonts.chr
-local chardata = characters.data
+local kerning_code    = kerncodes.kerning
+local userskip_code   = skipcodes.userskip
 
-typesetting       = typesetting       or { }
-typesetting.cases = typesetting.cases or { }
+local tasks           = nodes.tasks
 
-local cases = typesetting.cases
+local fontdata        = fonts.ids
+local fontchar        = fonts.chr
+local chardata        = characters.data
 
-cases.actions   = { }
-cases.attribute = attributes.private("case") -- no longer needed
+typesetters           = typesetters or { }
+local typesetters     = typesetters
 
-local a_cases = cases.attribute
+typesetters.cases     = typesetters.cases or { }
+local cases           = typesetters.cases
 
-local actions  = cases.actions
-local lastfont = nil
+cases.actions         = { }
+local actions         = cases.actions
+cases.attribute       = c_cases  -- no longer needed
+local a_cases         = attributes.private("case")
+
+local lastfont        = nil
 
 -- we use char(0) as placeholder for the larger font, so we need to remove it
 -- before it can do further harm
@@ -68,7 +77,7 @@ local function helper(start, code, codes, special, attribute, once)
                     next.prev = prev
                 end
                 return prev, true
-            elseif lastfont and start.prev.id ~= glyph then
+            elseif lastfont and start.prev.id ~= glyph_code then
                 fnt = lastfont
                 start.font = lastfont
             end
@@ -130,12 +139,12 @@ end
 actions[3] = function(start,attribute,attr)
     lastfont = nil
     local prev = start.prev
-    if prev and prev.id == kern and prev.subtype == 0 then
+    if prev and prev.id == kern_code and prev.subtype == kerning_code then
         prev = prev.prev
     end
-    if not prev or prev.id ~= glyph then
+    if not prev or prev.id ~= glyph_code then
         --- only the first character is treated
-        for n in traverse_id(glyph,start.next) do
+        for n in traverse_id(glyph_code,start.next) do
             if has_attribute(n,attribute) == attr then
                 unset_attribute(n,attribute)
             else
@@ -153,10 +162,10 @@ end
 actions[4] = function(start,attribute)
     lastfont = nil
     local prev = start.prev
-    if prev and prev.id == kern and prev.subtype == 0 then
+    if prev and prev.id == kern_code and prev.subtype == kerning_code then
         prev = prev.prev
     end
-    if not prev or prev.id ~= glyph then
+    if not prev or prev.id ~= glyph_code then
         return helper(start,'uccode','uccodes')
     else
         return start, false
@@ -212,7 +221,7 @@ local function process(namespace,attribute,head) -- not real fast but also not u
     local start = head
     while start do -- while because start can jump ahead
         local id = start.id
-        if id == glyph then
+        if id == glyph_code then
             local attr = has_attribute(start,attribute)
             if attr and attr > 0 then
                 if attr ~= lastattr then
@@ -244,7 +253,7 @@ local m, enabled = 0, false -- a trick to make neighbouring ranges work
 
 function cases.set(n)
     if not enabled then
-        tasks.enableaction("processors","typesetting.cases.handler")
+        tasks.enableaction("processors","typesetters.cases.handler")
         if trace_casing then
             report_casing("enabling case handler")
         end

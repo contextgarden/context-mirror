@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['font-map'] = {
     comment   = "Adobe Glyph List, version 2.0, September 20, 2002",
 }
 
-fonts     = fonts     or { }
-fonts.map = fonts.map or { }
+local fonts = fonts
+fonts.map   = fonts.map or { }
 
 fonts.map.unicode_to_agl = {
     "controlSTX",

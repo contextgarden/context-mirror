@@ -682,7 +682,7 @@
 
 \def\@@nmpre#1%
   {\begingroup
-   \setbox\scratchbox\normalhbox{\trialtypesettingtrue\ignorespaces#1\removeunwantedspaces}%
+   \setbox\scratchbox\normalhbox{\settrialtypesetting\ignorespaces#1\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
      \doifelsenothing\@@nmwidth
        {\box\scratchbox\tfskip}
@@ -692,7 +692,7 @@
 
 \def\@@nmpos#1%
   {\begingroup
-   \setbox\scratchbox\normalhbox{\trialtypesettingtrue\ignorespaces#1\removeunwantedspaces}%
+   \setbox\scratchbox\normalhbox{\settrialtypesetting\ignorespaces#1\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
      \doifelsenothing\@@nmwidth
        {\tfskip\box\scratchbox}

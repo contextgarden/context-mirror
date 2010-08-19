@@ -11,33 +11,35 @@ local texcount, format = tex.count, string.format
 local ctxcatcodes = tex.ctxcatcodes
 local texsprint, texwrite = tex.sprint, tex.write
 
-local trace_pages = false  trackers.register("structure.pages", function(v) trace_pages = v end)
+local trace_pages = false  trackers.register("structures.pages", function(v) trace_pages = v end)
 
 local report_pages = logs.new("pages")
 
-structure.pages  = structure.pages      or { }
+local structures = structures
 
-local helpers    = structure.helpers    or { }
-local sections   = structure.sections   or { }
-local pages      = structure.pages      or { }
-local processors = structure.processors or { }
-local sets       = structure.sets       or { }
+structures.pages  = structures.pages     or { }
+
+local helpers    = structures.helpers    or { }
+local sections   = structures.sections   or { }
+local pages      = structures.pages      or { }
+local processors = structures.processors or { }
+local sets       = structures.sets       or { }
+local counters   = structures.counters   or { }
 
 local variables  = interfaces.variables
 
 -- storage
 
-jobpages           = jobpages or { }
-jobpages.collected = jobpages.collected or { }
-jobpages.tobesaved = jobpages.tobesaved or { }
+pages.collected = pages.collected or { }
+pages.tobesaved = pages.tobesaved or { }
 
-local collected, tobesaved = jobpages.collected, jobpages.tobesaved
+local collected, tobesaved = pages.collected, pages.tobesaved
 
 local function initializer()
-    collected, tobesaved = jobpages.collected, jobpages.tobesaved
+    collected, tobesaved = pages.collected, pages.tobesaved
 end
 
-job.register('jobpages.collected', jobpages.tobesaved, initializer)
+job.register('structures.pages.collected', pages.tobesaved, initializer)
 
 local specification = { } -- to be checked
 
@@ -62,7 +64,7 @@ function pages.save(prefixdata,numberdata)
     end
 end
 
-function structure.counters.specials.userpage()
+function counters.specials.userpage()
     local r = texcount.realpageno
     if r > 0 then
         local t = tobesaved[r]
@@ -156,7 +158,7 @@ function pages.analyse(entry,pagespecification)
         return pagedata, false, "pagedata blocks prefix"
     end
     -- final verdict
-    return pagedata, jobsections.collected[references.section], "okay"
+    return pagedata, sections.collected[references.section], "okay"
 end
 
 function helpers.page(data,pagespec)
@@ -207,7 +209,7 @@ function helpers.analyse(entry,specification)
     if not section then
         return entry, false, "no section"
     end
-    local sectiondata = jobsections.collected[references.section]
+    local sectiondata = sections.collected[references.section]
     if not sectiondata then
         return entry, false, "no section data"
     end

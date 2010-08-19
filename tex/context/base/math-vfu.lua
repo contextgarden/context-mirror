@@ -18,6 +18,8 @@ local trace_timings = false trackers.register("math.timings", function(v) trace_
 
 local report_virtual = logs.new("virtual math")
 
+local fonts, nodes, mathematics = fonts, nodes, mathematics
+
 fonts.enc.math = fonts.enc.math or { }
 
 local shared = { }

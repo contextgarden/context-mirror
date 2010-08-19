@@ -17,6 +17,10 @@ local byte, sub, find, match = string.byte, string.sub, string.find, string.matc
 local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes = tex.ctxcatcodes
 
+local buffers = buffers
+
+local changestate, finishstate = buffers.changestate, buffers.finishstate
+
 local visualizer = buffers.newvisualizer("lua")
 
 visualizer.identifiers = { }
@@ -112,24 +116,22 @@ local states = {
     ['--']=4,
 }
 
-local change_state, finish_state = buffers.change_state, buffers.finish_state
-
 local function flush_lua_word(state, word)
     if word then
         local id = known_words[word]
         if id then
-            state = change_state(2,state)
+            state = changestate(2,state)
             if styles[id] then
                 texsprint(ctxcatcodes,styles[id])
             end
             texwrite(word)
-            state = finish_state(state)
+            state = finishstate(state)
         else
-            state = finish_state(state) -- ?
+            state = finishstate(state) -- ?
             texwrite(word)
         end
     else
-        state = finish_state(state)
+        state = finishstate(state)
     end
     return state
 end
@@ -145,10 +147,10 @@ end
 
 local function written(state,c,i)
     if c == " " then
-        state = finish_state(state)
+        state = finishstate(state)
         texsprint(ctxcatcodes,"\\obs")
     elseif c == "\t" then
-        state = finish_state(state)
+        state = finishstate(state)
         texsprint(ctxcatcodes,"\\obs")
         if buffers.visualizers.enabletab then
             texsprint(ctxcatcodes,rep("\\obs ",i%buffers.visualizers.tablength))
@@ -172,9 +174,9 @@ function visualizer.flush_line(str, nested)
             for c in utfcharacters(comment) do
                 if c == " " then texsprint(ctxcatcodes,"\\obs") else texwrite(c) end
             end
-            state = change_state(states['--'], state)
+            state = changestate(states['--'], state)
             texwrite("]]")
-            state = finish_state(state)
+            state = finishstate(state)
             incomment = false
         else
             for c in utfcharacters(str) do
@@ -203,10 +205,10 @@ function visualizer.flush_line(str, nested)
                         texwrite(c)
                         inesc = false
                     else
-                        state = change_state(states[c],state)
+                        state = changestate(states[c],state)
                         instr = false
                         texwrite(c)
-                        state = finish_state(state)
+                        state = finishstate(state)
                     end
                     s = nil
                 else
@@ -224,9 +226,9 @@ function visualizer.flush_line(str, nested)
                 end
                 if p == "[" then
                     inlongstring = true
-                    state = change_state(states["[["],state)
+                    state = changestate(states["[["],state)
                     texwrite(p,c)
-                    state = finish_state(state)
+                    state = finishstate(state)
                     p = nil
                 else
                     if p then
@@ -241,9 +243,9 @@ function visualizer.flush_line(str, nested)
                 end
                 if p == "]" then
                     inlongstring = false
-                    state = change_state(states["]]"],state)
+                    state = changestate(states["]]"],state)
                     texwrite(p,c)
-                    state = finish_state(state)
+                    state = finishstate(state)
                     p = nil
                 else
                     if p then
@@ -253,9 +255,9 @@ function visualizer.flush_line(str, nested)
                 end
             else
                 if p then
-                    state = change_state(states[p],state)
+                    state = changestate(states[p],state)
                     texwrite(p)
-                    state = finish_state(state)
+                    state = finishstate(state)
                     p = nil
                 end
                 if c == " " or c == "\t" then
@@ -272,19 +274,19 @@ if word then
     word = nil
 end
                     instr = true
-                    state = change_state(states[c],state)
+                    state = changestate(states[c],state)
                     state, i = written(state,c,i)
-                    state = finish_state(state)
+                    state = finishstate(state)
                     s = c
                 elseif find(c,"^[%a]$") then
-                    state = finish_state(state)
+                    state = finishstate(state)
                     if word then word = word .. c else word = c end
                 elseif word and (#word > 1) and find(c,"^[%d%.%_]$") then
                     if word then word = word .. c else word = c end
                 else
                     state = flush_lua_word(state,word)
                     word = nil
-                    state = change_state(states[c],state)
+                    state = changestate(states[c],state)
                     texwrite(c)
                     instr = (c == '"')
                 end
@@ -297,9 +299,9 @@ end
         end
         state = flush_lua_word(state,word)
         if post then
-            state = change_state(states['--'], state)
+            state = changestate(states['--'], state)
             texwrite("--")
-            state = finish_state(state)
+            state = finishstate(state)
             for c in utfcharacters(post) do
                 state, i = written(state,c,i)
             end
@@ -307,13 +309,13 @@ end
     end
     if comment then
         incomment = true
-        state = change_state(states['--'], state)
+        state = changestate(states['--'], state)
         texwrite("[[")
-        state = finish_state(state)
+        state = finishstate(state)
      -- texwrite(comment) -- maybe also split and
         for c in utfcharacters(comment) do
             state, i = written(state,c,i)
         end
     end
-    state = finish_state(state)
+    state = finishstate(state)
 end

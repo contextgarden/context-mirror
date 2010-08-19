@@ -15,6 +15,11 @@ local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 local P, S, C, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 
+local tex, xml = tex, xml
+
+lxml       = lxml or { }
+local lxml = lxml
+
 if not tex and not tex.sprint then -- no longer needed
     tex = {
         sprint = function(catcodes,...) texio.write(table.concat{...}) end,
@@ -45,9 +50,7 @@ local trace_comments = false  trackers.register("lxml.comments", function(v) tra
 
 local report_lxml = logs.new("lxml")
 
-lxml              = lxml or { }
-lxml.loaded       = lxml.loaded or { }
-
+lxml.loaded  = lxml.loaded or { }
 local loaded = lxml.loaded
 
 -- print(contextdirective("context-mathml-directive function reduction yes "))
@@ -77,7 +80,7 @@ local xmltextcapture = (
     space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
     space^0 * newline    * space^0 * Cc(" ") / texsprint +
     content                                  / function(str) return texsprint(notcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                  / xml.resolved_entity
+    entity                                   / xml.resolved_entity
 )^0
 
 local ctxtextcapture = (

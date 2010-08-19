@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['data-pre'] = {
 
 local upper, lower, gsub = string.upper, string.lower, string.gsub
 
+local resolvers = resolvers
+
 local prefixes = { }
 
 local getenv = resolvers.getenv

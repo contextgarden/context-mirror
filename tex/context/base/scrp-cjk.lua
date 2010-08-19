@@ -7,15 +7,21 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
 }
 
 local has_attribute      = node.has_attribute
-local make_glue_node     = nodes.glue
-local make_penalty_node  = nodes.penalty
 local insert_node_after  = node.insert_after
 local insert_node_before = node.insert_before
 local remove_node        = nodes.remove
 
-local glyph   = node.id('glyph')
-local glue    = node.id('glue')
-local penalty = node.id('penalty')
+local nodepool      = nodes.pool
+
+local new_glue      = nodepool.glue
+local new_penalty   = nodepool.penalty
+
+local nodecodes     = nodes.nodecodes
+local skipcodes     = nodes.skipcodes
+
+local glyph_code    = nodecodes.glyph
+
+local userskip_code = skipcodes.userskip
 
 local preproc = attributes.private('preproc')
 local prestat = attributes.private('prestat')
@@ -50,123 +56,123 @@ end
 -- at font definition time and/or just assume a correct font
 
 local function nobreak(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
+    insert_node_before(head,current,new_penalty(10000))
 end
 local function stretch_break(head,current)
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
 local function shrink_break(head,current)
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
 local function nobreak_stretch(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
 local function korean_break(head,current)
-    insert_node_before(head,current,make_penalty_node(inter_char_hangul_penalty))
+    insert_node_before(head,current,new_penalty(inter_char_hangul_penalty))
 end
 
 local function nobreak_shrink(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
 local function nobreak_autoshrink(head,current)
     if true then
-        insert_node_before(head,current,make_penalty_node(10000))
-        insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_penalty(10000))
+        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
 end
 
 local function nobreak_stretch_nobreak_shrink(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
 local function nobreak_stretch_nobreak_autoshrink(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
     if true then
-        insert_node_before(head,current,make_penalty_node(10000))
-        insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_penalty(10000))
+        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
 end
 
 local function nobreak_shrink_nobreak_stretch(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
 local function nobreak_autoshrink_nobreak_stretch(head,current)
     if true then
-        insert_node_before(head,current,make_penalty_node(10000))
-        insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_penalty(10000))
+        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
 
 local function nobreak_shrink_break_stretch(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
 local function nobreak_autoshrink_break_stretch(head,current)
     if true then
-        insert_node_before(head,current,make_penalty_node(10000))
-        insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_penalty(10000))
+        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
 
 local function nobreak_shrink_break_stretch_nobreak_shrink(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
 local function nobreak_autoshrink_break_stretch_nobreak_autoshrink(head,current)
     if true then
-        insert_node_before(head,current,make_penalty_node(10000))
-        insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_penalty(10000))
+        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
     if true then
-        insert_node_before(head,current,make_penalty_node(10000))
-        insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_penalty(10000))
+        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
 end
 local function nobreak_autoshrink_break_stretch_nobreak_shrink(head,current)
     if true then
-        insert_node_before(head,current,make_penalty_node(10000))
-        insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_penalty(10000))
+        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
 local function nobreak_shrink_break_stretch_nobreak_autoshrink(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
     if true then
-        insert_node_before(head,current,make_penalty_node(10000))
-        insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+        insert_node_before(head,current,new_penalty(10000))
+        insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
     end
 end
 
 local function nobreak_stretch_break_shrink(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
-    insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
 local function nobreak_stretch_break_autoshrink(head,current)
-    insert_node_before(head,current,make_penalty_node(10000))
-    insert_node_before(head,current,make_glue_node(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_penalty(10000))
+    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
     if true then
-        insert_node_before(head,current,make_glue_node(0,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
 end
 
@@ -318,7 +324,7 @@ local function process(head,first,last)
         local lastfont, previous, originals, last = nil, "start", nil, nil
         while true do
             local upcoming, id = first.next, first.id
-            if id == glyph then
+            if id == glyph_code then
                 local a = has_attribute(first,prestat)
                 local current = number_to_kind[a]
                 local action = injectors[previous]
@@ -338,7 +344,7 @@ local function process(head,first,last)
                 local p, n = first.prev, upcoming
                 if p and n then
                     local pid, nid = p.id, n.id
-                    if pid == glyph and nid == glyph then
+                    if pid == glyph_code and nid == glyph_code then
                         local pa, na = has_attribute(p,prestat), has_attribute(n,prestat)
                         local pcjk, ncjk = pa and number_to_kind[pa], na and number_to_kind[na]
                         if not pcjk                 or not ncjk
@@ -521,7 +527,7 @@ local function process(head,first,last)
         local lastfont, previous, originals, last = nil, "start", nil, nil
         while true do
             local upcoming, id = first.next, first.id
-            if id == glyph then
+            if id == glyph_code then
                 local a = has_attribute(first,prestat)
                 local current = number_to_kind[a]
                 local action = injectors[previous]
@@ -541,7 +547,7 @@ local function process(head,first,last)
                 local p, n = first.prev, upcoming
                 if p and n then
                     local pid, nid = p.id, n.id
-                    if pid == glyph and nid == glyph then
+                    if pid == glyph_code and nid == glyph_code then
                         local pa, na = has_attribute(p,prestat), has_attribute(n,prestat)
                         local pcjk, ncjk = pa and number_to_kind[pa], na and number_to_kind[na]
                         if not pcjk                 or not ncjk

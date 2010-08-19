@@ -9,40 +9,46 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 local utf = unicode.utf8
 local lower, utfchar = string.lower, utf.char
 local lpegmatch = lpeg.match
+local P, S, Cs = lpeg.P, lpeg.S, lpeg.Cs
 
 local report_languages = logs.new("languages")
 
-languages.words = languages.words or { }
+local nodes, node, languages = nodes, node, languages
 
-local words = languages.words
+languages.words       = languages.words or { }
+local words           = languages.words
 
-words.data      = words.data or { }
-words.enables   = false
-words.threshold = 4
+words.data            = words.data or { }
+words.enables         = false
+words.threshold       = 4
 
 local set_attribute   = node.set_attribute
 local unset_attribute = node.unset_attribute
 local traverse_nodes  = node.traverse
 local wordsdata       = words.data
 local chardata        = characters.data
+local tasks           = nodes.tasks
 
-local nodecodes = nodes.nodecodes
+local nodecodes       = nodes.nodecodes
+local kerncodes       = nodes.kerncodes
 
-local glyph_node = nodecodes.glyph
-local disc_node  = nodecodes.disc
-local kern_node  = nodecodes.kern
+local glyph_node      = nodecodes.glyph
+local disc_node       = nodecodes.disc
+local kern_no   de    = nodecodes.kern
+
+local kerning_code    = kerncodes.kerning
 
 words.colors    = {
     ["known"]   = "green",
     ["unknown"] = "red",
 }
 
-local spacing = lpeg.S(" \n\r\t")
-local markup  = lpeg.S("-=")
-local lbrace  = lpeg.P("{")
-local rbrace  = lpeg.P("}")
+local spacing = S(" \n\r\t")
+local markup  = S("-=")
+local lbrace  = P("{")
+local rbrace  = P("}")
 local disc    = (lbrace * (1-rbrace)^0 * rbrace)^1 -- or just 3 times, time this
-local word    = lpeg.Cs((markup/"" + disc/"" + (1-spacing))^1)
+local word    = Cs((markup/"" + disc/"" + (1-spacing))^1)
 
 local loaded = { } -- we share lists
 
@@ -115,7 +121,8 @@ local function mark_words(head,whenfound) -- can be optimized
                 end
             else
                 local code = current.char
-                if chardata[code].uccode or chardata[code].lccode then
+                local data = chardata[code]
+                if data.uccode or data.lccode then
                     start = start or current
                     n = n + 1
                     str = str .. utfchar(code)
@@ -127,7 +134,7 @@ local function mark_words(head,whenfound) -- can be optimized
             if n > 0 then
                 n = n + 1
             end
-        elseif id == kern_node and current.subtype == 0 and start then
+        elseif id == kern_node and current.subtype == kerning_code and start then
             -- ok
         elseif start then
             action()
@@ -141,9 +148,9 @@ local function mark_words(head,whenfound) -- can be optimized
 end
 
 words.methods = { }
-words.method  = 1
-
 local methods = words.methods
+
+local wordmethod = 1
 
 methods[1] = function(head, attribute, yes, nop)
     local right, wrong = false, false
@@ -169,13 +176,13 @@ end
 
 local list, dump = { }, false -- todo: per language
 
-local lower = characters.lower
+local lowerchar = characters.lower
 
 methods[2] = function(head, attribute)
     dump = true
     mark_words(head, function(language,str)
         if #str >= words.threshold then
-            str = lower(str)
+            str = lowerchar(str)
             list[str] = (list[str] or 0) + 1
         end
     end)
@@ -193,11 +200,13 @@ end
 
 local color = attributes.private('color')
 
+local enabled = false
+
 function words.check(head)
-    if words.enabled and head.next then
+    if enabled and head.next then
         local colors = words.colors
         local alc    = attributes.list[color]
-        return methods[words.method](head, color, alc[colors.known], alc[colors.unknown])
+        return methods[wordmethod](head, color, alc[colors.known], alc[colors.unknown])
     else
         return head, false
     end
@@ -205,12 +214,12 @@ end
 
 function words.enable(method)
     tasks.enableaction("processors","languages.words.check")
-    words.method = method or words.method or 1
-    words.enabled = true
+    wordmethod = method or wordmethod or 1
+    enabled = true
 end
 
 function words.disable()
-    words.enabled = false
+    enabled = false
 end
 
 -- for the moment we hook it into the attribute handler

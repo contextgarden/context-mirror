@@ -11,28 +11,34 @@ local texwrite, texsprint, texcount = tex.write, tex.sprint, tex.count
 local format, gmatch, concat = string.format, string.gmatch, table.concat
 local utfchar = utf.char
 local lpegmatch = lpeg.match
+local ctxcatcodes  = tex.ctxcatcodes
 
-local trace_registers = false  trackers.register("structure.registers", function(v) trace_registers = v end)
+local trace_registers = false  trackers.register("structures.registers", function(v) trace_registers = v end)
 
 local report_registers = logs.new("registers")
 
-local ctxcatcodes = tex.ctxcatcodes
+local structures      = structures
 
-local variables = interfaces.variables
+structures.registers  = structures.registers or { }
 
-local helpers    = structure.helpers
-local sections   = structure.sections
-local documents  = structure.documents
-local pages      = structure.pages
-local processors = structure.processors
+local registers       = structures.registers
+local helpers         = structures.helpers
+local sections        = structures.sections
+local documents       = structures.documents
+local pages           = structures.pages
+local processors      = structures.processors
+local references      = structures.references
 
-local mappings     = sorters.mappings
-local entries      = sorters.entries
-local replacements = sorters.replacements
+local mappings        = sorters.mappings
+local entries         = sorters.entries
+local replacements    = sorters.replacements
 
 local processor_split = processors.split
 
+local variables       = interfaces.variables
+
 local matching_till_depth, number_at_depth = sections.matching_till_depth, sections.number_at_depth
+
 
 -- some day we will share registers and lists (although there are some conceptual
 -- differences in the application of keywords)
@@ -62,7 +68,7 @@ local function filter_collected(names,criterium,number,collected,prevmode)
     elseif criterium == variables.current then
         for i=1,#collected do
             local v = collected[i]
-            local sectionnumber = jobsections.collected[v.references.section]
+            local sectionnumber = sections.collected[v.references.section]
             if sectionnumber then
                 local cnumbers = sectionnumber.numbers
                 if prevmode then
@@ -98,7 +104,7 @@ local function filter_collected(names,criterium,number,collected,prevmode)
     elseif criterium == variables.previous then
         for i=1,#collected do
             local v = collected[i]
-            local sectionnumber = jobsections.collected[v.references.section]
+            local sectionnumber = sections.collected[v.references.section]
             if sectionnumber then
                 local cnumbers = sectionnumber.numbers
                 if (all or hash[v.metadata.name]) and #cnumbers >= depth then
@@ -143,7 +149,7 @@ local function filter_collected(names,criterium,number,collected,prevmode)
                 local v = collected[i]
                 local r = v.references
                 if r then
-                    local sectionnumber = jobsections.collected[r.section]
+                    local sectionnumber = sections.collected[r.section]
                     if sectionnumber then
                         local metadata = v.metadata
                         local cnumbers = sectionnumber.numbers
@@ -167,21 +173,20 @@ local function filter_collected(names,criterium,number,collected,prevmode)
     return result
 end
 
-jobregisters           = jobregisters or { }
-jobregisters.collected = jobregisters.collected or { }
-jobregisters.tobesaved = jobregisters.tobesaved or { }
+registers.collected = registers.collected or { }
+registers.tobesaved = registers.tobesaved or { }
 
-jobregisters.filter_collected = filter_collected
+registers.filter_collected = filter_collected
 
 -- we follow a different strategy than by lists, where we have a global
 -- result table; we might do that here as well but since sorting code is
 -- older we delay that decision
 
-local tobesaved, collected = jobregisters.tobesaved, jobregisters.collected
+local tobesaved, collected = registers.tobesaved, registers.collected
 
 local function initializer()
-    tobesaved, collected = jobregisters.tobesaved, jobregisters.collected
-    local internals = jobreferences.internals
+    tobesaved, collected = registers.tobesaved, registers.collected
+    local internals = references.internals
     for name, list in next, collected do
         local entries = list.entries
         for e=1,#entries do
@@ -197,7 +202,7 @@ local function initializer()
     end
 end
 
-job.register('jobregisters.collected', jobregisters.tobesaved, initializer)
+job.register('structures.registers.collected', registers.tobesaved, initializer)
 
 local function allocate(class)
     local d = tobesaved[class]
@@ -215,7 +220,7 @@ local function allocate(class)
     return d
 end
 
-jobregisters.define = allocate
+registers.define = allocate
 
 local entrysplitter = lpeg.Ct(lpeg.splitat('+')) -- & obsolete in mkiv
 
@@ -259,7 +264,7 @@ local function preprocessentries(rawdata)
     end
 end
 
-function jobregisters.store(rawdata) -- metadata, references, entries
+function registers.store(rawdata) -- metadata, references, entries
     local data = allocate(rawdata.metadata.name).entries
     local references = rawdata.references
     references.realpage = references.realpage or 0 -- just to be sure as it can be refered to
@@ -270,14 +275,14 @@ function jobregisters.store(rawdata) -- metadata, references, entries
     texwrite(#data)
 end
 
-function jobregisters.enhance(name,n)
+function registers.enhance(name,n)
     local r = tobesaved[name].entries[n]
     if r then
         r.references.realpage = texcount.realpageno
     end
 end
 
-function jobregisters.extend(name,tag,rawdata) -- maybe do lastsection internally
+function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
     if type(tag) == "string" then
         tag = tagged[tag]
     end
@@ -286,7 +291,7 @@ function jobregisters.extend(name,tag,rawdata) -- maybe do lastsection internall
         if r then
             local rr = r.references
             rr.lastrealpage = texcount.realpageno
-            rr.lastsection = structure.sections.currentid()
+            rr.lastsection = sections.currentid()
             if rawdata then
                 preprocessentries(rawdata)
                 for k,v in next, rawdata do
@@ -310,7 +315,7 @@ end
 
 local compare = sorters.comparers.basic
 
-function jobregisters.compare(a,b)
+function registers.compare(a,b)
     local result = compare(a,b)
     if result ~= 0 then
         return result
@@ -327,11 +332,11 @@ function jobregisters.compare(a,b)
     return 0
 end
 
-function jobregisters.filter(data,options)
-    data.result = jobregisters.filter_collected(nil,options.criterium,options.number,data.entries,true)
+function registers.filter(data,options)
+    data.result = registers.filter_collected(nil,options.criterium,options.number,data.entries,true)
 end
 
-function jobregisters.prepare(data)
+function registers.prepare(data)
     -- data has 'list' table
     local strip = sorters.strip
     local splitter = sorters.splitters.utf
@@ -355,11 +360,11 @@ function jobregisters.prepare(data)
     end
 end
 
-function jobregisters.sort(data,options)
-    sorters.sort(data.result,jobregisters.compare)
+function registers.sort(data,options)
+    sorters.sort(data.result,registers.compare)
 end
 
-function jobregisters.unique(data,options)
+function registers.unique(data,options)
     local result, prev, equal = { }, nil, table.are_equal
     local dataresult = data.result
     for k=1,#dataresult do
@@ -389,7 +394,7 @@ function jobregisters.unique(data,options)
     data.result = result
 end
 
-function jobregisters.finalize(data,options)
+function registers.finalize(data,options)
     local result = data.result
     data.metadata.nofsorted = #result
     local split, lasttag, s, d = { }, nil, nil, nil
@@ -411,16 +416,16 @@ function jobregisters.finalize(data,options)
     data.result = split
 end
 
-function jobregisters.analysed(class,options)
+function registers.analysed(class,options)
     local data = collected[class]
     if data and data.entries then
         options = options or { }
         sorters.setlanguage(options.language)
-        jobregisters.filter(data,options)   -- filter entries into results (criteria)
-        jobregisters.prepare(data,options)  -- adds split table parallel to list table
-        jobregisters.sort(data,options)     -- sorts results
-        jobregisters.unique(data,options)   -- get rid of duplicates
-        jobregisters.finalize(data,options) -- split result in ranges
+        registers.filter(data,options)   -- filter entries into results (criteria)
+        registers.prepare(data,options)  -- adds split table parallel to list table
+        registers.sort(data,options)     -- sorts results
+        registers.unique(data,options)   -- get rid of duplicates
+        registers.finalize(data,options) -- split result in ranges
         data.metadata.sorted = true
         return data.metadata.nofsorted or 0
     else
@@ -430,8 +435,8 @@ end
 
 -- todo take conversion from index
 
-function jobregisters.userdata(index,name)
-    local data = jobreferences.internals[tonumber(index)]
+function registers.userdata(index,name)
+    local data = references.internals[tonumber(index)]
     data = data and data.userdata and data.userdata[name]
     if data then
         texsprint(ctxcatcodes,data)
@@ -440,7 +445,7 @@ end
 
 -- proc can be wrapped
 
-function jobregisters.flush(data,options,prefixspec,pagespec)
+function registers.flush(data,options,prefixspec,pagespec)
     local equal = table.are_equal
     texsprint(ctxcatcodes,"\\startregisteroutput")
     local collapse_singles = options.compress == interfaces.variables.yes
@@ -726,12 +731,12 @@ function jobregisters.flush(data,options,prefixspec,pagespec)
     data.metadata.sorted = false
 end
 
-function jobregisters.analyse(class,options)
-    texwrite(jobregisters.analysed(class,options))
+function registers.analyse(class,options)
+    texwrite(registers.analysed(class,options))
 end
 
-function jobregisters.process(class,...)
-    if jobregisters.analysed(class,...) > 0 then
-        jobregisters.flush(collected[class],...)
+function registers.process(class,...)
+    if registers.analysed(class,...) > 0 then
+        registers.flush(collected[class],...)
     end
 end

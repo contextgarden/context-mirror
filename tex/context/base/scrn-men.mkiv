@@ -389,11 +389,11 @@
      {\analyzecurrentreference % we need to act on the state
       \ifcase\referencepagestate
          % something else than a page reference
-         \ctxlua{jobreferences.injectcurrentset(nil,nil)}%
+         \ctxlua{structures.references.injectcurrentset(nil,nil)}%
          \hbox attr \referenceattribute \lastreferenceattribute {\localframed[#1][#2]{#3}}%
       \else\ifcase\csname\??am:\c!location:\menuparameter\c!samepage\endcsname\relax
         % yes: same page or not ... todo
-        \ctxlua{jobreferences.injectcurrentset(nil,nil)}%
+        \ctxlua{structures.references.injectcurrentset(nil,nil)}%
         \ifnum\referencepagestate=\plusone % same page
            \hbox attr \referenceattribute \lastreferenceattribute {\localframed[#1][#2,\c!color=\menuparameter\c!contrastcolor]{#3}}%
         \else % elsewhere

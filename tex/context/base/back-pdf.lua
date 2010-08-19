@@ -23,13 +23,17 @@ local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes = tex.ctxcatcodes
 
-local copy_node = node.copy
+local backends, lpdf, nodes, node = backends, lpdf, nodes, node
 
-local nodeinjections = backends.pdf.nodeinjections
-local codeinjections = backends.pdf.codeinjections
-local registrations  = backends.pdf.registrations
+local copy_node           = node.copy
 
-local pdfliteral, register = nodes.pdfliteral, nodes.register
+local nodeinjections      = backends.pdf.nodeinjections
+local codeinjections      = backends.pdf.codeinjections
+local registrations       = backends.pdf.registrations
+
+local nodepool            = nodes.pool
+
+local register            = nodepool.register
 
 local pdfconstant         = lpdf.constant
 local pdfstring           = lpdf.string
@@ -40,7 +44,8 @@ local pdfverbose          = lpdf.verbose
 local pdfflushobject      = lpdf.flushobject
 local pdfimmediateobject  = lpdf.immediateobject
 
-local pdfannotation_node  = nodes.pdfannotation
+local pdfliteral          = nodepool.pdfliteral
+local pdfannotation_node  = nodepool.pdfannotation
 
 function nodeinjections.rgbcolor(r,g,b)
     return register(pdfliteral(format("%s %s %s rg %s %s %s RG",r,g,b,r,g,b)))
@@ -111,7 +116,7 @@ end
 
 -- code
 
-function codeinjections.insertmovie(specification)
+function nodeinjections.insertmovie(specification)
     -- managed in figure inclusion: width, height, factor, repeat, controls, preview, label, foundname
     local width  = specification.width
     local height = specification.height
@@ -135,9 +140,9 @@ function codeinjections.insertmovie(specification)
     node.write(pdfannotation_node(width,height,0,action()))
 end
 
-function codeinjections.insertsound(specification)
+function nodeinjections.insertsound(specification)
     -- rmanaged in interaction: repeat, label, foundname
-    local soundclip = interactions.soundclip(specification.label)
+    local soundclip = interactions.soundclips.soundclip(specification.label)
     if soundclip then
         local controldict = pdfdictionary {
             Mode = (specification["repeat"] and pdfconstant("Repeat")) or nil
@@ -460,14 +465,5 @@ function codeinjections.setfigurealternative(data,figure)
         end
     end
 end
-
--- eventually we need to load this runtime
---
--- backends.install((environment and environment.arguments and environment.arguments.backend) or "pdf")
---
--- but now we need to force this as we also load the pdf tex part which hooks into all kind of places
-
-codeinjections.finalizepage     = lpdf.finalizepage
-codeinjections.finalizedocument = lpdf.finalizedocument
 
 backends.install("pdf")

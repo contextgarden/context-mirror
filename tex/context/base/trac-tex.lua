@@ -8,14 +8,18 @@ if not modules then modules = { } end modules ['trac-hsh'] = {
 
 -- moved from trac-deb.lua
 
+local texhashtokens = tex.hashtokens
+
+local trackers = trackers
+
 local saved = { }
 
 function trackers.save_hash()
-    saved = tex.hashtokens()
+    saved = texhashtokens()
 end
 
 function trackers.dump_hash(filename,delta)
-    local list, hash, command_name = { }, tex.hashtokens(), token.command_name
+    local list, hash, command_name = { }, texhashtokens(), token.command_name
     for name, token in next, hash do
         if not delta or not saved[name] then
             -- token: cmd, chr, csid -- combination cmd,chr determines name
@@ -37,8 +41,8 @@ local delta = nil
 
 local function dump_hash(wanteddelta)
     if delta == nil then
-        saved = saved or tex.hashtokens()
-        luatex.register_stop_actions(1,function() trackers.dump_hash(nil,wanteddelta) end) -- at front
+        saved = saved or texhashtokens() -- no need for trackers.dump_hash
+        luatex.register_stop_actions(1,function() dump_hash(nil,wanteddelta) end) -- at front
     end
     delta = wanteddelta
 end

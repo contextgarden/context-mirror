@@ -12,6 +12,8 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 -- we will make a better format, maybe something xml or just text or lua
 
 resolvers.automounted = resolvers.automounted or { }

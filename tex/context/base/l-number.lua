@@ -10,7 +10,8 @@ local tostring = tostring
 local format, floor, insert, match = string.format, math.floor, table.insert, string.match
 local lpegmatch = lpeg.match
 
-number = number or { }
+number       = number or { }
+local number = number
 
 -- a,b,c,d,e,f = number.toset(100101)
 

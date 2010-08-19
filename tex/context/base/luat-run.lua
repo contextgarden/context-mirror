@@ -12,7 +12,8 @@ local trace_lua_dump = false  trackers  .register("system.dump", function(v) tra
 
 local report_lua_dump = logs.new("lua dump actions")
 
-luatex = luatex or { }
+luatex       = luatex or { }
+local luatex = luatex
 
 local start_actions = { }
 local stop_actions  = { }
@@ -23,7 +24,7 @@ function luatex.register_stop_actions (...) table.insert(stop_actions,  ...) end
 luatex.show_tex_stat = luatex.show_tex_stat or function() end
 luatex.show_job_stat = luatex.show_job_stat or statistics.show_job_stat
 
-function luatex.start_run()
+local function start_run()
     if logs.start_run then
         logs.start_run()
     end
@@ -32,7 +33,7 @@ function luatex.start_run()
     end
 end
 
-function luatex.stop_run()
+local function stop_run()
     for _, action in next, stop_actions do
         action()
     end
@@ -49,36 +50,36 @@ function luatex.stop_run()
     end
 end
 
-function luatex.start_shipout_page()
+local function start_shipout_page()
     logs.start_page_number()
 end
 
-function luatex.stop_shipout_page()
+local function stop_shipout_page()
     logs.stop_page_number()
 end
 
-function luatex.report_output_pages()
+local function report_output_pages()
 end
 
-function luatex.report_output_log()
+local function report_output_log()
 end
 
-function luatex.pre_dump_actions()
+local function pre_dump_actions()
     lua.finalize(trace_lua_dump and report_lua_dump or nil)
 end
 
 -- this can be done later
 
-callbacks.register('start_run',             luatex.start_run,           "actions performed at the beginning of a run")
-callbacks.register('stop_run',              luatex.stop_run,            "actions performed at the end of a run")
+callbacks.register('start_run',             start_run,           "actions performed at the beginning of a run")
+callbacks.register('stop_run',              stop_run,            "actions performed at the end of a run")
 
-callbacks.register('report_output_pages',   luatex.report_output_pages, "actions performed when reporting pages")
-callbacks.register('report_output_log',     luatex.report_output_log,   "actions performed when reporting log file")
+callbacks.register('report_output_pages',   report_output_pages, "actions performed when reporting pages")
+callbacks.register('report_output_log',     report_output_log,   "actions performed when reporting log file")
 
-callbacks.register('start_page_number',     luatex.start_shipout_page,  "actions performed at the beginning of a shipout")
-callbacks.register('stop_page_number',      luatex.stop_shipout_page,   "actions performed at the end of a shipout")
+callbacks.register('start_page_number',     start_shipout_page,  "actions performed at the beginning of a shipout")
+callbacks.register('stop_page_number',      stop_shipout_page,   "actions performed at the end of a shipout")
 
-callbacks.register('process_input_buffer',  false,                      "actions performed when reading data")
-callbacks.register('process_output_buffer', false,                      "actions performed when writing data")
+callbacks.register('process_input_buffer',  false,               "actions performed when reading data")
+callbacks.register('process_output_buffer', false,               "actions performed when writing data")
 
-callbacks.register("pre_dump",              luatex.pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
+callbacks.register("pre_dump",              pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump

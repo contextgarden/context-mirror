@@ -17,8 +17,6 @@ local lower = string.lower
 
 local report_define = logs.new("define fonts")
 
-if not fontloader then fontloader = fontforge end
-
 fontloader.totable = fontloader.to_table
 
 -- vtf comes first
@@ -33,6 +31,10 @@ fonts.chr = fonts.chr or { } fonts.characters  = fonts.chr -- aka chardata
 fonts.qua = fonts.qua or { } fonts.quads       = fonts.qua -- aka quaddata
 
 fonts.tfm = fonts.tfm or { }
+fonts.vf  = fonts.vf  or { }
+fonts.afm = fonts.afm or { }
+fonts.pfb = fonts.pfb or { }
+fonts.otf = fonts.otf or { }
 
 fonts.private = 0xF0000 -- 0x10FFFF
 fonts.verbose = false -- more verbose cache tables

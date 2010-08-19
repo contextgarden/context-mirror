@@ -17,13 +17,17 @@ local report_chemistry = logs.new("chemistry")
 
 local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.match, string.lower, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
-local apply = structure.processors.apply
+local apply = structures.processors.apply
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local lpegmatch = lpeg.match
+local settings_to_array = utilities.parsers.settings_to_array
+
+local P, R, S, C, Cs, Ct, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc
 
 local variables = interfaces.variables
 
 chemicals = chemicals or { }
+local chemicals = chemicals
 
 chemicals.instance   = "metafun" -- "ppchtex"
 chemicals.format     = "metafun"
@@ -152,8 +156,8 @@ function chemicals.define(name,spec,text)
     local dn = definitions[name]
     if not dn then dn = { } definitions[name] = dn end
     dn[#dn+1] = {
-        spec = aux.settings_to_array(lower(spec)),
-        text = aux.settings_to_array(text),
+        spec = settings_to_array(lower(spec)),
+        text = settings_to_array(text),
     }
 end
 
@@ -163,42 +167,41 @@ local molecule = chemicals.molecule -- or use lpegmatch(chemicals.moleculeparser
 local function fetch(txt)
     local st = stack[txt]
     local t = st.text[st.n]
---~ st.n = st.n + 1
     while not t and txt > 1 do
         txt = txt - 1
         st = stack[txt]
         t = st.text[st.n]
---~ st.n = st.n + 1
     end
     if t then
         if trace_textstack then
             report_chemistry("fetching from stack %s slot %s: %s",txt,st.n,t)
         end
-st.n = st.n + 1
+        st.n = st.n + 1
     end
     return txt, t
 end
 
-local digit     = lpeg.R("09")/tonumber
-local colon     = lpeg.P(":")
-local equal     = lpeg.P("=")
+local digit     = R("09")/tonumber
+local colon     = P(":")
+local equal     = P("=")
 local other     = 1 - digit - colon - equal
-local remapped  = lpeg.S("+-") / remapper
-local operation = lpeg.Cs((remapped^0 * other)^1)
+local remapped  = S("+-") / remapper
+local operation = Cs((remapped^0 * other)^1)
 local amount    = digit
 local single    = digit
-local special   = (colon * lpeg.C(other^1)) + lpeg.Cc("")
-local range     = digit * lpeg.P("..") * digit
-local set       = lpeg.Ct(digit^2)
-local text      = (equal * lpeg.C(lpeg.P(1)^0)) + lpeg.Cc(false)
+local special   = (colon * C(other^1)) + Cc("")
+local range     = digit * P("..") * digit
+local set       = Ct(digit^2)
+local text      = (equal * C(P(1)^0)) + Cc(false)
+
 local pattern   =
-    (amount + lpeg.Cc(1)) *
+    (amount + Cc(1)) *
     operation *
     special * (
-        range * lpeg.Cc(false) * text +
-        lpeg.Cc(false) * lpeg.Cc(false) * set * text +
-        single * lpeg.Cc(false) * lpeg.Cc(false) * text +
-        lpeg.Cc(false) * lpeg.Cc(false) * lpeg.Cc(false) * text
+        range * Cc(false) * text +
+        Cc(false) * Cc(false) * set * text +
+        single * Cc(false) * Cc(false) * text +
+        Cc(false) * Cc(false) * Cc(false) * text
     )
 
 --~ local n, operation, index, upto, set, text = lpegmatch(pattern,"RZ1357")
@@ -451,8 +454,8 @@ end
 
 function chemicals.component(spec,text,settings)
     rulethickness, rulecolor, offset = settings.rulethickness, settings.rulecolor
-    local spec = aux.settings_to_array(lower(spec))
-    local text = aux.settings_to_array(text)
+    local spec = settings_to_array(lower(spec))
+    local text = settings_to_array(text)
     metacode[#metacode+1] = "chem_start_component ;"
     process(spec,text,1,rulethickness,rulecolor)
     metacode[#metacode+1] = "chem_stop_component ;"
@@ -473,7 +476,7 @@ local inline = {
 -- todo: top / bottom
 
 function chemicals.inline(spec)
-    local spec = aux.settings_to_array(spec)
+    local spec = settings_to_array(spec)
     for i=1,#spec do
         local s = spec[i]
         local inl = inline[lower(s)]

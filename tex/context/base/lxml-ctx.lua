@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['lxml-ctx'] = {
 
 -- is this still used?
 
+local xml = xml
+
 xml.ctx           = { }
 xml.ctx.enhancers = { }
 

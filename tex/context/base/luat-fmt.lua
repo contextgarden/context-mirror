@@ -67,10 +67,10 @@ function environment.make_format(name)
         local lucstubname = file.addsuffix(texbasename,"luc")
         -- pack libraries in stub
         logs.simple("creating initialization file: %s",luastubname)
-        utils.merger.selfcreate(usedlualibs,specificationpath,luastubname)
+        utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
         local strip = resolvers.boolean_variable("LUACSTRIP", true)
-        if utils.lua.compile(luastubname,lucstubname,false,strip) and lfs.isfile(lucstubname) then
+        if utilities.lua.compile(luastubname,lucstubname,false,strip) and lfs.isfile(lucstubname) then
             logs.simple("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
         else

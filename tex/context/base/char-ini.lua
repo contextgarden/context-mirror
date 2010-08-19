@@ -6,9 +6,7 @@ if not modules then modules = { } end modules ['char-ini'] = {
     license   = "see context related readme files"
 }
 
-tex = tex or { }
-xml = xml or { }
-
+local tex = tex
 local utf = unicode.utf8
 
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
@@ -29,10 +27,10 @@ from the big character table that we use for all kind of purposes:
 loaded!</p>
 --ldx]]--
 
-characters      = characters      or { }
-characters.data = characters.data or { }
-
-local data = characters.data
+characters       = characters      or { }
+local characters = characters
+characters.data  = characters.data or { }
+local data       = characters.data
 
 if not characters.ranges then
     characters.ranges = { }

@@ -12,84 +12,90 @@ local trace_tasks = false  trackers.register("tasks.creation", function(v) trace
 
 local report_tasks = logs.new("tasks")
 
-tasks      = tasks       or { }
-tasks.data = tasks.data  or { }
+local nodes      = nodes
+
+nodes.tasks      = nodes.tasks or { }
+local tasks      = nodes.tasks
+tasks.data       = tasks.data  or { }
+local tasksdata  = tasks.data
+
+local sequencers = utilities.sequencers
 
 function tasks.new(name,list)
-    local tasklist = sequencer.reset()
-    tasks.data[name] = { list = tasklist, runner = false }
+    local tasklist = sequencers.reset()
+    tasksdata[name] = { list = tasklist, runner = false }
     for l=1,#list do
-        sequencer.appendgroup(tasklist,list[l])
+        sequencers.appendgroup(tasklist,list[l])
     end
 end
 
 function tasks.restart(name)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
         data.runner = false
     end
 end
 
 function tasks.enableaction(name,action)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
-        sequencer.enableaction(data.list,action)
+        sequencers.enableaction(data.list,action)
         data.runner = false
     end
 end
 
 function tasks.disableaction(name,action)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
-        sequencer.disableaction(data.list,action)
+        sequencers.disableaction(data.list,action)
         data.runner = false
     end
 end
 
 function tasks.enablegroup(name,group)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
-        sequencer.enablegroup(data.list,group)
+        sequencers.enablegroup(data.list,group)
         data.runner = false
     end
 end
 
 function tasks.disablegroup(name,group)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
-        sequencer.disablegroup(data.list,group)
+        sequencers.disablegroup(data.list,group)
         data.runner = false
     end
 end
 
 function tasks.appendaction(name,group,action,where,kind)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
-        sequencer.appendaction(data.list,group,action,where,kind)
+        sequencers.appendaction(data.list,group,action,where,kind)
         data.runner = false
     end
 end
 
 function tasks.prependaction(name,group,action,where,kind)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
-        sequencer.prependaction(data.list,group,action,where,kind)
+        sequencers.prependaction(data.list,group,action,where,kind)
         data.runner = false
     end
 end
 
 function tasks.removeaction(name,group,action)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
-        sequencer.removeaction(data.list,group,action)
+        sequencers.removeaction(data.list,group,action)
         data.runner = false
     end
 end
 
 function tasks.showactions(name,group,action,where,kind)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
-        report_tasks("task %s, list:\n%s",name,sequencer.nodeprocessor(data.list))
+        report_tasks("task %s, list:\n%s",name,sequencers.nodeprocessor(data.list))
     end
 end
 
@@ -102,16 +108,16 @@ local created, total = 0, 0
 
 statistics.register("node list callback tasks", function()
     if total > 0 then
-        return string.format("%s unique task lists, %s instances (re)created, %s calls",table.count(tasks.data),created,total)
+        return string.format("%s unique task lists, %s instances (re)created, %s calls",table.count(tasksdata),created,total)
     else
         return nil
     end
 end)
 
-local compile, nodeprocessor = sequencer.compile, sequencer.nodeprocessor
+local compile, nodeprocessor = sequencers.compile, sequencers.nodeprocessor
 
 function tasks.actions(name,n) -- we optimize for the number or arguments (no ...)
-    local data = tasks.data[name]
+    local data = tasksdata[name]
     if data then
         if n == 0 then
             return function(head)
@@ -218,7 +224,7 @@ function tasks.actions(name,n) -- we optimize for the number or arguments (no ..
 end
 
 function tasks.table(name) --maybe move this to task-deb.lua
-    local tsk = tasks.data[name]
+    local tsk = tasksdata[name]
     local lst = tsk and tsk.list
     local HL, NC, NR, bold, type = context.HL, context.NC, context.NR, context.bold, context.type
     if lst then

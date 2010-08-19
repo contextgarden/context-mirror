@@ -12,7 +12,9 @@ if not modules then modules = { } end modules ['supp-ran'] = {
 local report_system = logs.new("system")
 
 commands = commands or { }
+local commands = commands
 
+local math = math
 local random, randomseed, round, seed, last = math.random, math.randomseed, math.round, false, 1
 local texwrite = tex.write
 

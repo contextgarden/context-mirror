@@ -17,6 +17,8 @@ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 local report_mptopdf = logs.new("mptopdf")
 
+local mplib, metapost, lpdf = mplib, metapost, lpdf
+
 local pdfrgbcode                = lpdf.rgbcode
 local pdfcmykcode               = lpdf.cmykcode
 local pdfgraycode               = lpdf.graycode
@@ -24,8 +26,10 @@ local pdfspotcode               = lpdf.spotcode
 local pdftransparencycode       = lpdf.transparencycode
 local pdffinishtransparencycode = lpdf.finishtransparencycode
 
-mptopdf   = { }
-mptopdf.n = 0
+metapost.mptopdf = metapost.mptopdf or { }
+local mptopdf    = metapost.mptopdf
+
+mptopdf.n        = 0
 
 local m_path, m_stack, m_texts, m_version, m_date, m_shortcuts = { }, { }, { }, 0, 0, false
 
@@ -114,7 +118,8 @@ end
 
 -- mp interface
 
-mps = mps or { }
+metapost.mps = metapost.mps or { }
+local mps    = metapost.mps or { }
 
 function mps.creator(a, b, c)
     m_version = tonumber(b)

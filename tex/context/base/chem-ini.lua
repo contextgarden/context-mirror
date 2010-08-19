@@ -9,13 +9,16 @@ if not modules then modules = { } end modules ['chem-ini'] = {
 local format, texsprint = string.format, tex.sprint
 local lpegmatch = lpeg.match
 
+local P, R, V, Cc, Cs = lpeg.P, lpeg.R, lpeg.V, lpeg.Cc, lpeg.Cs
+
 local trace_molecules = false  trackers.register("chemistry.molecules",  function(v) trace_molecules = v end)
 
 local report_chemistry = logs.new("chemistry")
 
 local ctxcatcodes = tex.ctxcatcodes
 
-chemicals = chemicals or { }
+chemicals       = chemicals or { }
+local chemicals = chemicals
 
 --[[
 <p>The next code is an adaptation of code from Wolfgang Schuster
@@ -27,38 +30,37 @@ of input then.</p>
 
 -- some lpeg, maybe i'll make an syst-lpg module
 
-local lowercase   = lpeg.R("az")
-local uppercase   = lpeg.R("AZ")
-local backslash   = lpeg.P("\\")
-local csname      = backslash * lpeg.P(1) * (1-backslash)^0
-local plus        = lpeg.P("+") / "\\textplus "
-local minus       = lpeg.P("-") / "\\textminus "
-local digit       = lpeg.R("09")
+local lowercase   = R("az")
+local uppercase   = R("AZ")
+local backslash   = P("\\")
+local csname      = backslash * P(1) * (1-backslash)^0
+local plus        = P("+") / "\\textplus "
+local minus       = P("-") / "\\textminus "
+local digit       = R("09")
 local sign        = plus + minus
 local cardinal    = digit^1
 local integer     = sign^0 * cardinal
 
-local leftbrace   = lpeg.P("{")
-local rightbrace  = lpeg.P("}")
+local leftbrace   = P("{")
+local rightbrace  = P("}")
 local nobrace     = 1 - (leftbrace + rightbrace)
-local nested      = lpeg.P { leftbrace * (csname + sign + nobrace + lpeg.V(1))^0 * rightbrace }
-local any         = lpeg.P(1)
+local nested      = P { leftbrace * (csname + sign + nobrace + V(1))^0 * rightbrace }
+local any         = P(1)
 
-local subscript   = lpeg.P("_")
-local superscript = lpeg.P("^")
+local subscript   = P("_")
+local superscript = P("^")
 local somescript  = subscript + superscript
 
---~ local content     = lpeg.Cs(nested + integer + sign + any)
-local content     = lpeg.Cs(csname + nested + sign + any)
+local content     = Cs(csname + nested + sign + any)
 
 -- could be made more efficient
 
-local lowhigh    = lpeg.Cc("\\lohi{%s}{%s}") * subscript   * content * superscript * content / format
-local highlow    = lpeg.Cc("\\hilo{%s}{%s}") * superscript * content * subscript   * content / format
-local low        = lpeg.Cc("\\low{%s}")      * subscript   * content                         / format
-local high       = lpeg.Cc("\\high{%s}")     * superscript * content                         / format
+local lowhigh    = Cc("\\lohi{%s}{%s}") * subscript   * content * superscript * content / format
+local highlow    = Cc("\\hilo{%s}{%s}") * superscript * content * subscript   * content / format
+local low        = Cc("\\low{%s}")      * subscript   * content                         / format
+local high       = Cc("\\high{%s}")     * superscript * content                         / format
 local justtext   = (1 - somescript)^1
-local parser     = lpeg.Cs((csname + lowhigh + highlow + low + high + sign + any)^0)
+local parser     = Cs((csname + lowhigh + highlow + low + high + sign + any)^0)
 
 chemicals.moleculeparser = parser -- can be used to avoid functioncall
 

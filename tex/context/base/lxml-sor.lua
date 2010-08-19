@@ -10,6 +10,8 @@ local format, concat = string.format, table.concat
 local lpegmatch = lpeg.match
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
+local xml, lxml = xml, lxml
+
 lxml.sorters = lxml.sorters or { }
 
 if not lxml.splitid then

@@ -362,9 +362,9 @@ class TEX
             end
         rescue
         end
-        ['mpgraph.mp'].each do |file|
-            (File.delete(file) if (FileTest.size?(file) rescue 10) < 10) rescue false
-        end
+        # ['mpgraph.mp'].each do |file|
+            # (File.delete(file) if (FileTest.size?(file) rescue 10) < 10) rescue false
+        # end
     end
 
     def backends() @@backends.keys.sort end

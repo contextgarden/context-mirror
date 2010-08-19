@@ -6,30 +6,34 @@ if not modules then modules = { } end modules ['node-tst'] = {
     license   = "see context related readme files"
 }
 
-local find_node_tail = node.tail or node.slide
+local nodes, node = nodes, node
 
-local chardata  = characters.data
-local nodecodes = nodes.nodecodes
+local chardata                   = characters.data
+local nodecodes                  = nodes.nodecodes
+local skipcodes                  = nodes.skipcodes
 
-local glue    = nodecodes.glue
-local penalty = nodecodes.penalty
-local kern    = nodecodes.kern
-local glyph   = nodecodes.glyph
-local whatsit = nodecodes.whatsit
-local hlist   = nodecodes.hlist
+local glue_code                  = nodecodes.glue
+local penalty_code               = nodecodes.penalty
+local kern_code                  = nodecodes.kern
+local glyph_code                 = nodecodes.glyph
+local whatsit_code               = nodecodes.whatsit
+local hlist_code                 = nodecodes.hlist
+
+local leftskip_code              = skipcodes.leftskip
+local rightskip_code             = skipcodes.rightskip
+local abovedisplayshortskip_code = skipcodes.abovedisplayshortskip
+local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
+
+local find_node_tail             = node.tail or node.slide
 
 function nodes.the_left_margin(n) -- todo: three values
     while n do
         local id = n.id
-        if id == glue then
-            if n.subtype == 8 then -- 7 in c/web source
-                return n.spec.width
-            else
-                return 0
-            end
-        elseif id == whatsit then
+        if id == glue_code then
+            return n.subtype == leftskip_code and n.spec.width or 0
+        elseif id == whatsit_code then
             n = n.next
-        elseif id == hlist then
+        elseif id == hlist_code then
             return n.width
         else
             break
@@ -43,13 +47,9 @@ function nodes.the_right_margin(n)
         n = find_node_tail(n)
         while n do
             local id = n.id
-            if id == glue then
-                if n.subtype == 9 then -- 8 in the c/web source
-                    return n.spec.width
-                else
-                    return 0
-                end
-            elseif id == whatsit then
+            if id == glue_code then
+                return n.subtype == rightskip_code and n.spec.width or 0
+            elseif id == whatsit_code then
                 n = n.prev
             else
                 break
@@ -62,14 +62,14 @@ end
 function nodes.somespace(n,all)
     if n then
         local id = n.id
-        if id == glue then
-            return (all or (n.spec.width ~= 0)) and glue
-        elseif id == kern then
+        if id == glue_code then
+            return (all or (n.spec.width ~= 0)) and glue_code
+        elseif id == kern_code then
             return (all or (n.kern ~= 0)) and kern
-        elseif id == glyph then
+        elseif id == glyph_code then
             local category = chardata[n.char].category
          -- maybe more category checks are needed
-            return (category == "zs") and glyph
+            return (category == "zs") and glyph_code
         end
     end
     return false
@@ -78,7 +78,7 @@ end
 function nodes.somepenalty(n,value)
     if n then
         local id = n.id
-        if id == penalty then
+        if id == penalty_code then
             if value then
                 return n.penalty == value
             else
@@ -93,9 +93,9 @@ function nodes.is_display_math(head)
     local n = head.prev
     while n do
         local id = n.id
-        if id == penalty then
-        elseif id == glue then
-            if n.subtype == 6 then -- above_display_short_skip
+        if id == penalty_code then
+        elseif id == glue_code then
+            if n.subtype == abovedisplayshortskip_code then
                 return true
             end
         else
@@ -106,9 +106,9 @@ function nodes.is_display_math(head)
     n = head.next
     while n do
         local id = n.id
-        if id == penalty then
-        elseif id == glue then
-            if n.subtype == 7 then -- below_display_short_skip
+        if id == penalty_code then
+        elseif id == glue_code then
+            if n.subtype == belowdisplayshortskip_code then
                 return true
             end
         else

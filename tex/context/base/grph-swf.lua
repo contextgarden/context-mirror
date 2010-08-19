@@ -8,9 +8,12 @@ if not modules then modules = { } end modules ['grph-swf'] = {
 
 local format = string.format
 
-local texsprint     = tex.sprint
-local ctxcatcodes   = tex.ctxcatcodes
-local pdfannotation = nodes.pdfannotation
+local texsprint      = tex.sprint
+local ctxcatcodes    = tex.ctxcatcodes
+local nodeinjections = backends.nodeinjections
+local pdfannotation  = nodes.pool.pdfannotation
+
+local figures = figures
 
 function figures.checkers.swf(data)
     local dr, du, ds = data.request, data.used, data.status
@@ -20,7 +23,7 @@ function figures.checkers.swf(data)
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
     texsprint(ctxcatcodes,format("\\startfoundexternalfigure{%ssp}{%ssp}",width,height))
-    local annot, preview, ref = backends.pdf.helpers.insertswf {
+    nodeinjections.insertswf {
         foundname = foundname,
         width     = width,
         height    = height,
@@ -29,11 +32,6 @@ function figures.checkers.swf(data)
     --  controls  = dr.controls,
     --  label     = dr.label,
     }
- -- node.write(pdfannotation(width,-height,0,annot()))
-    texsprint(ctxcatcodes,format("\\pdfannot width %ssp height %ssp {%s}",width,height,annot())) -- brrrr
---~     if ref then -- wrong ! a direct ref should work
---~         texsprint(ctxcatcodes,format("\\smash{\\pdfrefximage%s\\relax}",ref)) -- brrrr
---~     end
     texsprint(ctxcatcodes,"\\stopfoundexternalfigure")
     return data
 end

@@ -24,7 +24,8 @@ local ostype, osname, ossetenv, osgetenv = os.type, os.name, os.setenv, os.geten
 -- we now split it over multiple files. As this file is now the
 -- starting point we introduce resolvers here.
 
-resolvers = resolvers or { }
+resolvers       = resolvers or { }
+local resolvers = resolvers
 
 -- We don't want the kpse library to kick in. Also, we want to be able to
 -- execute programs. Control over execution is implemented later.

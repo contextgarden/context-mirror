@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['data-env'] = {
     license   = "see context related readme files",
 }
 
+local resolvers = resolvers
+
 local formats      = { }  resolvers.formats      = formats
 local suffixes     = { }  resolvers.suffixes     = suffixes
 local dangerous    = { }  resolvers.dangerous    = dangerous

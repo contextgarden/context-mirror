@@ -8,7 +8,9 @@ if not modules then modules = { } end modules ['node-tex'] = {
 
 local format = string.format
 
-kernel = kernel or { }
+builders        = builders        or { }
+builders.kernel = builders.kernel or { }
+local kernel    = builders.kernel
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 local hyphenate, ligaturing, kerning = lang.hyphenate, node.ligaturing, node.kerning

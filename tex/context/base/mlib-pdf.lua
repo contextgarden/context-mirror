@@ -12,11 +12,15 @@ local abs, sqrt, round = math.abs, math.sqrt, math.round
 
 local report_mplib = logs.new("mplib")
 
-local copy_node, write_node = node.copy, node.write
+local mplib = mplib
 
 local ctxcatcodes = tex.ctxcatcodes
+local copy_node   = node.copy
+local write_node  = node.write
 
 metapost           = metapost or { }
+local metapost     = metapost
+
 metapost.multipass = false
 metapost.n         = 0
 metapost.optimize  = true -- false
@@ -63,7 +67,7 @@ metapost.flushers.pdf = { }
 
 local savedliterals = nil
 
-local mpsliteral = nodes.register(node.new("whatsit",8))
+local mpsliteral = nodes.pool.register(node.new("whatsit",8)) -- pdfliteral
 
 function metapost.flush_literal(d) -- \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
     if savedliterals then

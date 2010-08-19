@@ -26,7 +26,7 @@
 
 \let\currentfloat\empty
 
-\def\letfloatparameter   #1{\expandafter\csname\??fl\currentfloat#1\endcsname}
+\def\letfloatparameter   #1{\expandafter\let\csname\??fl\currentfloat#1\endcsname}
 
 \def\floatparameter      #1{\csname\dofloatparameter{\??fl\currentfloat}#1\endcsname}
 \def\floatsharedparameter#1{\csname                  \??fl              #1\endcsname}
@@ -306,7 +306,7 @@
 %   {\ifnofloatcaption \else \ifnofloatnumber \else
 %    % \labeltexts\currentfloat{\convertedstructurecounter[\currentfloat]}% ! ! todo: use a lua call instead
 %      \ifx\currentfloatnumber\relax\else
-%        \labeltexts\currentfloat{\ctxlua{structure.lists.savednumber("\currentfloat",\currentfloatnumber)}}%
+%        \labeltexts\currentfloat{\ctxlua{structures.lists.savednumber("\currentfloat",\currentfloatnumber)}}%
 %      \fi
 %    \fi \fi}
 
@@ -314,7 +314,7 @@
   {\ifnofloatcaption \else \ifnofloatnumber \else
      \ifx\currentfloatnumber\relax\else
        \dostarttagged\t!floattag\empty
-       \labeltexts\currentfloat{\ctxlua{structure.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}}%
+       \labeltexts\currentfloat{\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}}%
        \dostoptagged
      \fi
    \fi \fi}
@@ -323,7 +323,7 @@
   {\ifnofloatcaption \else
      \ifx\currentfloatnumber\relax\else
        \dostarttagged\t!floattext\empty
-       \ctxlua{structure.lists.savedtitle("\currentfloat",\currentfloatnumber)}%
+       \ctxlua{structures.lists.savedtitle("\currentfloat",\currentfloatnumber)}%
        \dostoptagged
      \fi
    \fi}
@@ -472,7 +472,7 @@
 \long\def\docheckcaptioncontent#1#2%
   {\ifnofloatcaption \else
      \setbox\tempcaptionbox\hbox
-       {\trialtypesettingtrue
+       {\settrialtypesetting
         \notesenabledfalse
         \putcompletecaption{#1}{#2}}%
      % new, \placefigure{\XMLflush{somecaption}}{} passes earlier empty check
@@ -630,7 +630,7 @@
       \postponenotes} % new
      {\doifsomething{\floatparameter\c!criterium}
         {\ifdim\wd\nextbox>\floatparameter\c!criterium\relax
-           \edef\forcedfloatmethod{\floatvariable\c!fallback}%
+           \edef\forcedfloatmethod{\floatparameter\c!fallback}%
            \ifx\forcedfloatmethod\empty\let\forcedfloatmethod\v!here\fi
          \fi}%
       \xdocompletefloat{#1}{#3}{#2}{#4}% ** not yet done
@@ -937,14 +937,14 @@
    \ifextrafloatactions
      \ifdim\sidefloatdownshift=\zeropoint\else
        \global\setbox\floatbox\vbox
-        {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
+         {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
      \fi
      \doifsomething{\floatparameter\c!minwidth}
        {\scratchdimen\floatparameter\c!minwidth\relax
         \ifdim\wd\floatbox<\scratchdimen
           \global\setbox\floatbox\hbox to \scratchdimen
             {\doifnot{\floatparameter\c!location}\v!left \hss
-             \box\floatbox%
+             \box\floatbox
              \doifnot{\floatparameter\c!location}\v!right\hss}%
         \fi}%
      % todo: rand / rug
@@ -956,8 +956,7 @@
      \doifsomething{\floatparameter\c!maxwidth}
        {\scratchdimen\floatparameter\c!maxwidth\relax
         \ifdim\wd\floatbox>\scratchdimen
-          \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge
-                          \v!inleft,\v!leftmargin,\v!leftedge}{#1}
+          \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}{#1}
             {\global\sidefloatmaximum\scratchdimen}
             {\global\setbox\floatbox\hbox to \scratchdimen
               {\doifcommonelse{\v!right,\v!left}{#1}
@@ -1357,7 +1356,7 @@
    \ifdim\captionhsize>\hsize
      % float is wider than \hsize
      \dosettempcaptionbox
-       {\trialtypesettingtrue
+       {\settrialtypesetting
         \hsize\captionhsize
         \notesenabledfalse
         \putcompletecaption{#2}{#3}}%
@@ -1381,7 +1380,7 @@
        \edef\captionhsize{\the\scratchdimen}%
      \fi
      \setbox\scratchbox\vbox     % test with overshoot
-       {\trialtypesettingtrue
+       {\settrialtypesetting
         \scratchdimen\captionhsize
         \advance\scratchdimen \captionovershoot
         \advance\scratchdimen 3em % an average word length

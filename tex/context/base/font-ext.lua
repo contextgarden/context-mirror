@@ -10,6 +10,7 @@ local utf = unicode.utf8
 local next, type, byte = next, type, string.byte
 local gmatch, concat = string.gmatch, table.concat
 local utfchar = utf.char
+local getparameters = utilities.parsers.getparameters
 
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
@@ -24,19 +25,28 @@ will depend of the font format. Here we define the few that are kind
 of neutral.</p>
 --ldx]]--
 
-fonts.triggers            = fonts.triggers            or { }
-fonts.initializers        = fonts.initializers        or { }
-fonts.methods             = fonts.methods             or { }
-fonts.initializers.common = fonts.initializers.common or { }
+local fonts = fonts
 
-local initializers = fonts.initializers
-local methods      = fonts.methods
+fonts.triggers      = fonts.triggers or { }
+local triggers      = fonts.triggers
+
+fonts.methods       = fonts.methods or { }
+local methods       = fonts.methods
+
+fonts.manipulators  = fonts.manipulators or { }
+local manipulators  = fonts.manipulators
+
+fonts.initializers  = fonts.initializers or { }
+local initializers  = fonts.initializers
+initializers.common = initializers.common or { }
+
+local otf = fonts.otf
 
 --[[ldx--
 <p>This feature will remove inter-digit kerns.</p>
 --ldx]]--
 
-table.insert(fonts.triggers,"equaldigits")
+table.insert(triggers,"equaldigits")
 
 function initializers.common.equaldigits(tfmdata,value)
     if value then
@@ -56,7 +66,7 @@ values are <type>none</type>, <type>height</type>, <type>depth</type> and
 <type>both</type>.</p>
 --ldx]]--
 
-table.insert(fonts.triggers,"lineheight")
+table.insert(triggers,"lineheight")
 
 function initializers.common.lineheight(tfmdata,value)
     if value and type(value) == "string" then
@@ -114,20 +124,21 @@ end
 -- expansion (hz)
 -- -- -- -- -- --
 
-fonts.expansions         = fonts.expansions         or { }
-fonts.expansions.classes = fonts.expansions.classes or { }
-fonts.expansions.vectors = fonts.expansions.vectors or { }
+fonts.expansions   = fonts.expansions or { }
+local expansions   = fonts.expansions
 
-local expansions = fonts.expansions
-local classes    = fonts.expansions.classes
-local vectors    = fonts.expansions.vectors
+expansions.classes = expansions.classes or { }
+expansions.vectors = expansions.vectors or { }
+
+local classes      = expansions.classes
+local vectors      = expansions.vectors
 
 -- beware, pdftex itself uses percentages * 10
 
 classes.preset = { stretch = 2, shrink = 2, step = .5, factor = 1 }
 
 function commands.setupfontexpansion(class,settings)
-    aux.getparameters(classes,class,'preset',settings)
+    getparameters(classes,class,'preset',settings)
 end
 
 classes['quality'] = {
@@ -204,7 +215,7 @@ function initializers.common.expansion(tfmdata,value)
     end
 end
 
-table.insert(fonts.manipulators,"expansion")
+table.insert(manipulators,"expansion")
 
 initializers.base.otf.expansion = initializers.common.expansion
 initializers.node.otf.expansion = initializers.common.expansion
@@ -220,20 +231,21 @@ local report_opbd = logs.new("otf opbd")
 -- protrusion
 -- -- -- -- -- --
 
-fonts.protrusions         = fonts.protrusions         or { }
-fonts.protrusions.classes = fonts.protrusions.classes or { }
-fonts.protrusions.vectors = fonts.protrusions.vectors or { }
+fonts.protrusions   = fonts.protrusions or { }
+local protrusions   = fonts.protrusions
 
-local protrusions = fonts.protrusions
-local classes     = fonts.protrusions.classes
-local vectors     = fonts.protrusions.vectors
+protrusions.classes = protrusions.classes or { }
+protrusions.vectors = protrusions.vectors or { }
+
+local classes       = protrusions.classes
+local vectors       = protrusions.vectors
 
 -- the values need to be revisioned
 
 classes.preset = { factor = 1, left = 1, right = 1 }
 
 function commands.setupfontprotrusion(class,settings)
-    aux.getparameters(classes,class,'preset',settings)
+    getparameters(classes,class,'preset',settings)
 end
 
 classes['pure'] = {
@@ -489,7 +501,7 @@ function initializers.common.protrusion(tfmdata,value)
     end
 end
 
-table.insert(fonts.manipulators,"protrusion")
+table.insert(manipulators,"protrusion")
 
 initializers.base.otf.protrusion = initializers.common.protrusion
 initializers.node.otf.protrusion = initializers.common.protrusion
@@ -505,12 +517,12 @@ function initializers.common.nostackmath(tfmdata,value)
     tfmdata.ignore_stack_math = value
 end
 
-table.insert(fonts.manipulators,"nostackmath")
+table.insert(manipulators,"nostackmath")
 
 initializers.base.otf.nostackmath = initializers.common.nostackmath
 initializers.node.otf.nostackmath = initializers.common.nostackmath
 
-table.insert(fonts.triggers,"itlc")
+table.insert(triggers,"itlc")
 
 function initializers.common.itlc(tfmdata,value)
     if value then
@@ -541,7 +553,7 @@ initializers.node.afm.itlc = initializers.common.itlc
 
 -- slanting
 
-table.insert(fonts.triggers,"slant")
+table.insert(triggers,"slant")
 
 function initializers.common.slant(tfmdata,value)
     value = tonumber(value)
@@ -561,7 +573,7 @@ initializers.node.otf.slant = initializers.common.slant
 initializers.base.afm.slant = initializers.common.slant
 initializers.node.afm.slant = initializers.common.slant
 
-table.insert(fonts.triggers,"extend")
+table.insert(triggers,"extend")
 
 function initializers.common.extend(tfmdata,value)
     value = tonumber(value)
@@ -584,8 +596,10 @@ initializers.node.afm.extend = initializers.common.extend
 -- historic stuff, move from font-ota
 
 local delete_node = nodes.delete
-local glyph       = node.id("glyph")
 local fontdata    = fonts.ids
+
+local nodecodes  = nodes.nodecodes
+local glyph_code = nodecodes.glyph
 
 fonts.strippables = fonts.strippables or { -- just a placeholder
     [0x200C] = true, -- zwnj
@@ -599,7 +613,7 @@ local function processformatters(head,font)
     if how == nil or how == "strip" then -- nil when forced
         local current, done = head, false
         while current do
-            if current.id == glyph and current.subtype<256 and current.font == font then
+            if current.id == glyph_code and current.subtype<256 and current.font == font then
                 local char = current.char
                 if strippables[char] then
                     head, current = delete_node(head,current)
@@ -624,4 +638,4 @@ fonts.otf.tables.features['formatters'] = 'Hide Formatting Characters'
 
 fonts.otf.features.register("formatters")
 
-table.insert(fonts.manipulators,"formatters") -- at end
+table.insert(manipulators,"formatters") -- at end

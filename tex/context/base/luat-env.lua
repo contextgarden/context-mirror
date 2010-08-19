@@ -18,6 +18,7 @@ local report_resolvers = logs.new("resolvers")
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquote, quote = string.unquote, string.quote
+local concat = table.concat
 
 -- precautions
 
@@ -42,6 +43,8 @@ end
 -- environment
 
 environment             = environment or { }
+local environment       = environment
+
 environment.arguments   = { }
 environment.files       = { }
 environment.sortedflags = nil
@@ -164,7 +167,7 @@ function environment.reconstruct_commandline(arg,noquote)
                 result[#result+1] = a
             end
         end
-        return table.join(result," ")
+        return concat(result," ")
     else
         return ""
     end

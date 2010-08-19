@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
     license   = "see context related readme files"
 }
 
+local xml = xml
+
 local finalizers   = xml.finalizers.xml
 local xmlfilter    = xml.filter -- we could inline this one for speed
 local xmltostring  = xml.tostring

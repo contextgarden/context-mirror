@@ -21,18 +21,22 @@ local trace_modules = false  trackers.register("modules.loading", function(v) tr
 
 local report_modules = logs.new("modules")
 
-support     = support     or { }
-environment = environment or { }
+commands          = commands or { }
+local commands    = commands
+environment       = environment or { }
+local environment = environment
 
-function support.checkfilename(str) -- "/whatever..." "c:..." "http://..."
+function commands.checkfilename(str) -- "/whatever..." "c:..." "http://..."
     commands.chardef("kindoffile",boolean.tonumber(find(str,"^/") or find(str,"[%a]:")))
 end
 
-function support.thesanitizedfilename(str)
+function commands.thesanitizedfilename(str)
     texwrite((gsub(str,"\\","/")))
 end
 
-function support.splitfilename(fullname)
+local def, chardef, testcase = commands.def, commands.chardef, commands.testcase
+
+function commands.splitfilename(fullname)
     local path, name, base, suffix, kind = '', fullname, fullname, '', 0
     local p, n = match(fullname,"^(.+)/(.-)$")
     if p and n then
@@ -49,44 +53,44 @@ function support.splitfilename(fullname)
     else
         kind = 2
     end
-    commands.def("splitofffull", fullname)
-    commands.def("splitoffpath", path)
-    commands.def("splitoffbase", base)
-    commands.def("splitoffname", name)
-    commands.def("splitofftype", suffix)
-    commands.chardef("splitoffkind", kind)
+    def("splitofffull", fullname)
+    def("splitoffpath", path)
+    def("splitoffbase", base)
+    def("splitoffname", name)
+    def("splitofftype", suffix)
+    chardef("splitoffkind", kind)
 end
 
-function support.splitfiletype(fullname)
+function commands.splitfiletype(fullname)
     local name, suffix = fullname, ''
     local n, s = match(fullname,"^(.+)%.(.-)$")
     if n and s then
         name, suffix = n, s
     end
-    commands.def("splitofffull", fullname)
-    commands.def("splitoffpath", "")
-    commands.def("splitoffname", name)
-    commands.def("splitofftype", suffix)
+    def("splitofffull", fullname)
+    def("splitoffpath", "")
+    def("splitoffname", name)
+    def("splitofftype", suffix)
 end
 
-function support.doifparentfileelse(n)
-    commands.testcase(n==environment.jobname or n==environment.jobname..'.tex' or n==environment.outputfilename)
+function commands.doifparentfileelse(n)
+    testcase(n==environment.jobname or n==environment.jobname..'.tex' or n==environment.outputfilename)
 end
 
 -- saves some .15 sec on 12 sec format generation
 
 local lastexistingfile = ""
 
-function support.doiffileexistelse(name)
+function commands.doiffileexistelse(name)
     if not name or name == "" then
         lastexistingfile = ""
     else
         lastexistingfile = resolvers.findtexfile(name) or ""
     end
-    return commands.testcase(lastexistingfile ~= "")
+    return testcase(lastexistingfile ~= "")
 end
 
-function support.lastexistingfile()
+function commands.lastexistingfile()
     texsprint(ctxcatcodes,lastexistingfile)
 end
 
@@ -125,7 +129,7 @@ local function readfilename(specification,backtrack,treetoo)
     return fnd or ""
 end
 
-support.readfilename = readfilename
+commands.readfilename = readfilename
 
 function finders.job(filename) return readfilename(filename,nil,false) end -- current path, no backtracking
 function finders.loc(filename) return readfilename(filename,2,  false) end -- current path, backtracking
@@ -141,7 +145,7 @@ openers.fix = openers.generic loaders.fix = loaders.generic
 openers.set = openers.generic loaders.set = loaders.generic
 openers.any = openers.generic loaders.any = loaders.generic
 
-function support.doreadfile(protocol,path,name) -- better do a split and then pass table
+function commands.doreadfile(protocol,path,name) -- better do a split and then pass table
     local specification
     if url.hasscheme(name) then
         specification = name
@@ -171,14 +175,14 @@ local function usemodule(name,hasscheme)
         if trace_modules then
             report_modules("checking suffix driven file '%s'",name)
         end
-        foundname = support.readfilename(name,false,true) or ""
+        foundname = commands.readfilename(name,false,true) or ""
     else
         for i=1,#suffixes do
             local fullname = file.addsuffix(name,suffixes[i])
             if trace_modules then
                 report_modules("checking suffix driven file '%s'",fullname)
             end
-            foundname = support.readfilename(fullname,false,true) or ""
+            foundname = commands.readfilename(fullname,false,true) or ""
             if foundname ~= "" then
                 break
             end
@@ -197,7 +201,7 @@ local function usemodule(name,hasscheme)
     end
 end
 
-function support.usemodules(prefix,askedname,truename)
+function commands.usemodules(prefix,askedname,truename)
     local hasprefix = prefix and prefix ~= ""
     local hashname = ((hasprefix and prefix) or "*") .. "-" .. truename
     local status = modstatus[hashname]

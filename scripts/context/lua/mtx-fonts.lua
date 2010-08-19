@@ -194,7 +194,7 @@ local function list_specifications(t,info)
                     fontweight(entry.fontweight),
                 }
             end
-            aux.formatcolumns(s)
+            utilities.formatters.formatcolumns(s)
             for k=1,#s do
                 texio.write_nl(s[k])
             end
@@ -221,7 +221,7 @@ local function list_matches(t,info)
                     subfont(entry.subfont)
                 }
             end
-            aux.formatcolumns(s)
+            utilities.formatters.formatcolumns(s)
             for k=1,#s do
                 texio.write_nl(s[k])
             end

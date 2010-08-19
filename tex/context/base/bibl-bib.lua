@@ -19,7 +19,7 @@ local utfchar = utf.char
 local lpegmatch = lpeg.match
 local textoutf = characters and characters.tex.toutf
 local variables = interfaces and interfaces.variables
-
+local settings_to_hash = utilities.parsers.settings_to_hash
 local finalizers = xml.finalizers.tex
 local xmlfilter, xmltext = xml.filter, xml.text
 
@@ -27,7 +27,8 @@ local trace_bibxml = false  trackers.register("publications.bibxml", function(v)
 
 local report_publications = logs.new("publications")
 
-bibtex = bibtex or { }
+bibtex       = bibtex or { }
+local bibtex = bibtex
 
 bibtex.size        = 0
 bibtex.definitions = 0
@@ -103,7 +104,7 @@ local collapsed  = (space^1)/ " "
 
 local function add(a,b) if b then return a..b else return a end end
 
-local keyword    = C((lpeg.R("az","AZ","09") + S("@_:-"))^1)  -- lpeg.C((1-space)^1)
+local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)  -- lpeg.C((1-space)^1)
 local s_quoted   = ((escape*single) + collapsed + (1-single))^0
 local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 local balanced   = lpeg.patterns.balanced
@@ -196,7 +197,7 @@ function bibtex.toxml(session,options)
     -- format slows down things a bit but who cares
     statistics.starttiming(bibtex)
     local result = { }
-    local options = aux.settings_to_hash(options)
+    local options = settings_to_hash(options)
     local convert = options.convert -- todo: interface
     local strip = options.strip -- todo: interface
     local entries = session.entries
@@ -306,7 +307,7 @@ local commasplitter  = Ct(lpeg.splitat(space^0 * comma * space^0))
 local spacesplitter  = Ct(lpeg.splitat(space^1))
 local firstcharacter = lpeg.patterns.utf8byte
 
-function is_upper(str)
+local function is_upper(str)
     local first = lpegmatch(firstcharacter,str)
     local okay = chardata[first]
     return okay and okay.category == "lu"
@@ -580,7 +581,7 @@ end
 -- pays off.
 
 local function collectauthoryears(id,list)
-    list = aux.settings_to_hash(list)
+    list = settings_to_hash(list)
     id = lxml.get_id(id)
     local found = { }
     for e in xml.collected(id,"/bibtex/entry") do
@@ -738,6 +739,7 @@ if commands then
             texsprint(ctxcatcodes,singular)
         end
     end
+
 end
 
 

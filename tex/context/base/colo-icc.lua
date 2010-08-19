@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['colo-ini'] = {
 local char, byte, gsub, match, format, strip = string.char, string.byte, string.gsub, string.match, string.format, string.strip
 local readstring, readnumber = io.readstring, io.readnumber
 
-colors = colors or { } -- can also be used in mtxrun
+local colors = attributes and attributes.colors or { } -- when used in mtxrun
 
 local R, Cs, lpegmatch = lpeg.R, lpeg.Cs, lpeg.match
 

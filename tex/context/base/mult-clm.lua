@@ -17,7 +17,7 @@ local trace_define = false  trackers.register("context.define", function(v) trac
 
 mkiv = mkiv or { }
 
-mkiv.h, mkiv.a = aux.settings_to_hash, aux.settings_to_array
+mkiv.h, mkiv.a = utilities.parsers.settings_to_hash, utilities.parsers.settings_to_array
 
 local starters, stoppers, macros, stack = { }, { }, { }, { }
 

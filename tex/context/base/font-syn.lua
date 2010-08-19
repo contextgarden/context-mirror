@@ -29,16 +29,15 @@ using a table that has keys filtered from the font related files.</p>
 
 local texsprint = (tex and tex.sprint) or print
 
-fonts = fonts or { }
-input = input or { }
-texmf = texmf or { }
+local fonts      = fonts
 
-fonts.names            = fonts.names         or { }
-fonts.names.filters    = fonts.names.filters or { }
-fonts.names.data       = fonts.names.data    or { }
+fonts.names      = fonts.names or { }
+local names      = fonts.names
 
-local names   = fonts.names
-local filters = fonts.names.filters
+names.filters    = names.filters or { }
+local filters    = names.filters
+
+names.data       = names.data or { }
 
 names.version    = 1.103
 names.basename   = "names"

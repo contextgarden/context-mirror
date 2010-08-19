@@ -87,11 +87,10 @@
 \loadmarkfile{core-var}
 
 \loadmarkfile{back-ini}
-\loadmarkfile{lpdf-ini} % some day back-ini will load this
-\loadmarkfile{lpdf-pdx} % might be merged into lpdf-ini
-\loadmarkfile{back-pdf} % some day back-ini will load this
 
-\loadmarkfile{attr-div} % code will move
+\loadmarkfile{attr-col}
+\loadmarkfile{attr-lay}
+\loadmarkfile{attr-eff}
 
 \loadmarkfile{core-env}
 
@@ -264,7 +263,7 @@
 
 \loadmarkfile{typo-spa}
 \loadmarkfile{typo-krn}
-\loadmarkfile{typo-mir}
+\loadmarkfile{typo-dir}
 \loadmarkfile{typo-brk}
 \loadmarkfile{typo-cap}
 \loadmarkfile{typo-dig}
@@ -277,17 +276,14 @@
 
 \loadmarkfile{prop-ini}
 \loadmarkfile{prop-lay}
-\loadmarkfile{prop-mis}
+\loadmarkfile{prop-eff}
+\loadmarkfile{prop-neg}
 
 \loadmarkfile{mlib-ctx}
-\loadmarkfile{mlib-pdf}
-\loadmarkfile{mlib-pps}
 
 \loadmarkfile{meta-ini}
 \loadmarkfile{meta-tex}
-\loadmarkfile{meta-pdf}
 \loadmarkfile{meta-fun}
-
 \loadmarkfile{meta-pag}
 
 \loadmarkfile{page-flw}
@@ -330,7 +326,6 @@
 \loadmarkfile{grph-trf}
 \loadmarkfile{grph-inc}
 \loadmarkfile{grph-fig}
-\loadmarkfile{grph-epd}
 
 \loadmarkfile{pack-box}
 \loadmarkfile{pack-bar}
@@ -360,6 +355,14 @@
 %usemodule[x][res-04] % xml resource libraries
 %usemodule[x][res-08] % rlx runtime conversion
 %usemodule[x][res-12] % rli external indentification
+
+% now we hook in backend code (needs checking)
+
+\loadmarkfile{back-pdf} % actually, this one should load the next three
+\loadmarkfile{mlib-pdf}
+\loadmarkfile{mlib-pps}
+\loadmarkfile{grph-epd}
+\loadmarkfile{meta-pdf}
 
 \unprotect
 

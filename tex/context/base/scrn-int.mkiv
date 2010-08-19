@@ -137,7 +137,7 @@
 \unexpanded\def\setuplinkedlists{\dosingleargument\dosetuplinkedlists}
 
 \def\dodefinelinkedlist[#1][#2]%
-  {\ctxlua{interactions.definelinkedlist("#1")}%
+  {\ctxlua{interactions.linkedlists.define("#1")}%
    \getparameters[\??lk#1][\s!parent=\??lk,#2]}
 
 \def\dosetuplinkedlist[#1][#2]%
@@ -161,8 +161,8 @@
      \edef\currentlinkedlist{#1}%
      \ifcsname\??lk\currentlinkedlist\s!parent\endcsname
        \hskip\linkedlistparameter\c!distance
-       \ctxlua{interactions.addlinktolist("\currentlinkedlist")}%
-       \expanded{\ctxlatelua{interactions.enhancelinkoflist("\currentlinkedlist",\currentlink)}}%
+       \ctxlua{interactions.linklists.add("\currentlinkedlist")}%
+       \expanded{\ctxlatelua{interactions.linklists.enhance("\currentlinkedlist",\currentlink)}}%
        \dogotosomepage  {\??lk\currentlinkedlist}\gotobegincharacter \firstlink
        \ifnum\noflinks>\plustwo
          \dogotosomepage{\??lk\currentlinkedlist}\gobackwardcharacter\previouslink
@@ -412,13 +412,13 @@
 
 \def\douseattachment[#1][#2][#3][#4]% tag title newname filename
   {\iffourthargument
-     \ctxlua{interactions.registerattachment{ label="#1", title="#2", newname="#3", filename="#4" }}%
+     \ctxlua{interactions.attachments.register{ label="#1", title="#2", newname="#3", filename="#4" }}%
    \else\ifthirdargument
-     \ctxlua{interactions.registerattachment{ label="#1", title="#2", newname="#2", filename="#3" }}%
+     \ctxlua{interactions.attachments.register{ label="#1", title="#2", newname="#2", filename="#3" }}%
    \else\ifsecondargument
-     \ctxlua{interactions.registerattachment{ label="#1", title="#2", newname="#2", filename="#2" }}%
+     \ctxlua{interactions.attachments.register{ label="#1", title="#2", newname="#2", filename="#2" }}%
    \else
-     \ctxlua{interactions.registerattachment{ label="#1", title="#1", newname="#1", filename="#1" }}%
+     \ctxlua{interactions.attachments.register{ label="#1", title="#1", newname="#1", filename="#1" }}%
    \fi\fi\fi}
 
 \def\attachment
@@ -483,11 +483,11 @@
   {\dodoubleargument\douseexternalsoundtrack}
 
 \def\douseexternalsoundtrack[#1][#2]%
-  {\ctxlua{interactions.registersound{ label="#1", filename="#2" }}}
+  {\ctxlua{interactions.soundclips.register{ label="#1", filename="#2" }}}
 
 \def\checksoundtrack#1% yet untested in mkiv (also move management to lua)
   {\iflocation
-     \ctxlua{codeinjections.insertsound{
+     \ctxlua{nodeinjections.insertsound{
        label  = "#1",
        repeat = "\@@sdoption", % not entirely ok but works
       }}%
@@ -516,7 +516,7 @@
 \def\setinternalrendering{\dodoubleempty   \dosetinternalrendering}
 
 \def\douseexternalrendering[#1][#2][#3][#4]% tag mime file options
-  {\ctxlua{interactions.registerrendering {
+  {\ctxlua{interactions.renderings.register {
       kind     = "external",
       label    = "#1",
       mime     = "#2",
@@ -527,7 +527,7 @@
 \def\dosetinternalrendering[#1][#2]% tag options {content}
   {\bgroup
    \dowithnextbox
-     {\ctxlua{interactions.registerrendering {
+     {\ctxlua{interactions.renderings.register {
          kind     = "internal",
          label    = "#1",
          mime     = "IRO",
@@ -539,8 +539,8 @@
       \egroup}%
      \hbox}
 
-\def\renderingtype   #1{\ctxlua{interactions.renderingvar("#1","kind")}}
-\def\renderingoptions#1{\ctxlua{interactions.renderingvar("#1","options")}}
+\def\renderingtype   #1{\ctxlua{interactions.renderings.var("#1","kind")}}
+\def\renderingoptions#1{\ctxlua{interactions.renderings.var("#1","options")}}
 
 \def\renderingwidth    {8cm}
 \def\renderingheight   {6cm}

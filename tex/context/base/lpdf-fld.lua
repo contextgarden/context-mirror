@@ -12,20 +12,24 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 
 local gmatch, lower, format = string.gmatch, string.lower, string.format
 local lpegmatch = lpeg.match
+local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 local trace_fields = false  trackers.register("widgets.fields",   function(v) trace_fields   = v end)
 
 local report_fields = logs.new("fields")
 
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local backends, lpdf = backends, lpdf
 
-local variables = interfaces.variables
+local variables          = interfaces.variables
 
-local nodeinjections = backends.pdf.nodeinjections
-local codeinjections = backends.pdf.codeinjections
-local registrations  = backends.pdf.registrations
+local references         = structures.references
+local settings_to_array  = utilities.parsers.settings_to_array
 
-local registeredsymbol = codeinjections.registeredsymbol
+local nodeinjections     = backends.pdf.nodeinjections
+local codeinjections     = backends.pdf.codeinjections
+local registrations      = backends.pdf.registrations
+
+local registeredsymbol   = codeinjections.registeredsymbol
 
 local pdfstream          = lpdf.stream
 local pdfdictionary      = lpdf.dictionary
@@ -38,7 +42,9 @@ local pdftoeight         = lpdf.toeight
 local pdfflushobject     = lpdf.flushobject
 local pdfreserveobject   = lpdf.reserveobject
 
-local pdfannotation_node = nodes.pdfannotation
+local nodepool           = nodes.pool
+
+local pdfannotation_node = nodepool.pdfannotation
 
 local submitoutputformat = 0 --  0=unknown 1=HTML 2=FDF 3=XML   => not yet used, needs to be checked
 
@@ -116,10 +122,9 @@ local function fieldplus(specification)
     return n
 end
 
-
 local function checked(what)
     if what and what ~= "" then
-        local set, bug = jobreferences.identify("",what)
+        local set, bug = references.identify("",what)
         return not bug and #set > 0 and lpdf.action(set)
     end
 end
@@ -235,7 +240,7 @@ local function fieldappearances(specification)
         -- error
         return
     end
-    local v = aux.settings_to_array(values)
+    local v = settings_to_array(values)
     local n, r, d
     if #v == 1 then
         n, r, d = v[1], v[1], v[1]
@@ -257,7 +262,7 @@ local function fieldstates(specification,forceyes,values,default)
         -- error
         return
     end
-    local v = aux.settings_to_array(values)
+    local v = settings_to_array(values)
     local yes, off, yesn, yesr, yesd, offn, offr, offd
     if #v == 1 then
         yes, off = v[1], v[1]
@@ -268,12 +273,12 @@ local function fieldstates(specification,forceyes,values,default)
     if not (yesshown and yesvalue) then
         yesshown = yes, yes
     end
-    yes = aux.settings_to_array(yesshown)
+    yes = settings_to_array(yesshown)
     local offshown, offvalue = lpegmatch(splitter,off)
     if not (offshown and offvalue) then
         offshown = off, off
     end
-    off = aux.settings_to_array(offshown)
+    off = settings_to_array(offshown)
     if #yes == 1 then
         yesn, yesr, yesd = yes[1], yes[1], yes[1]
     elseif #yes == 2 then
@@ -317,7 +322,7 @@ local function fieldoptions(specification)
     local values = specification.values
     local default = specification.default
     if values then
-        local v = aux.settings_to_array(values)
+        local v = settings_to_array(values)
         for i=1,#v do
             local vi = v[i]
             local shown, value = lpegmatch(splitter,vi)
@@ -334,11 +339,11 @@ end
 local function radiodefault(parent,field,forceyes)
     local default, values = parent.default, parent.values
     if not default or default == "" then
-        values = aux.settings_to_array(values)
+        values = settings_to_array(values)
         default = values[1]
     end
     local name = field.name
-    local fieldvalues = aux.settings_to_array(field.values)
+    local fieldvalues = settings_to_array(field.values)
     local yes, off = fieldvalues[1], fieldvalues[2] or fieldvalues[1]
     if not default then
         return pdfconstant((forceyes and "On") or yes)
@@ -391,7 +396,7 @@ end
 local function predefinesymbols(specification)
     local values = specification.values
     if values then
-        local symbols = aux.settings_to_array(values)
+        local symbols = settings_to_array(values)
         for i=1,#symbols do
             local symbol = symbols[i]
             local a, b = lpegmatch(splitter,symbol)
@@ -406,7 +411,7 @@ function codeinjections.getdefaultfieldvalue(name)
         local values  = f.values
         local default = f.default
         if not default or default == "" then
-            local symbols = aux.settings_to_array(values)
+            local symbols = settings_to_array(values)
             local symbol = symbols[1]
             if symbol then
                 local a, b = lpegmatch(splitter,symbol) -- splits at =>
@@ -431,7 +436,7 @@ function codeinjections.definefield(specification)
         elseif kind == "radio" then
             local values = specification.values
             if values and values ~= "" then
-                values = aux.settings_to_array(values)
+                values = settings_to_array(values)
                 for v=1,#values do
                     radios[values[v]] = { parent = n }
                 end
@@ -526,7 +531,12 @@ end
 
 --
 
-function codeinjections.doiffieldset(tag)
+function codeinjections.doiffieldgroupelse(name)
+    local f = fields[name] or radios[name] or clones[name]
+    commands.testcase(f and f.group)
+end
+
+function codeinjections.doiffieldsetelse(tag)
     commands.testcase(fieldsets[tag])
 end
 

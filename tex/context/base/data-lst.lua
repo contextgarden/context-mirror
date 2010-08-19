@@ -12,6 +12,8 @@ local find, concat, upper, format = string.find, table.concat, string.upper, str
 
 resolvers.listers = resolvers.listers or { }
 
+local resolvers = resolvers
+
 local function tabstr(str)
     if type(str) == 'table' then
         return concat(str," | ")

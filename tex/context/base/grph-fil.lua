@@ -12,9 +12,12 @@ local trace_run = false  trackers.register("files.run",function(v) trace_run = v
 
 local command = "context %s"
 
-jobfiles           = jobfiles or { }
-jobfiles.collected = jobfiles.collected or { }
-jobfiles.tobesaved = jobfiles.tobesaved or { }
+local jobfiles = {
+    collected = { },
+    tobesaved = { },
+}
+
+job.files = jobfiles
 
 local tobesaved, collected = jobfiles.tobesaved, jobfiles.collected
 
@@ -22,7 +25,7 @@ local function initializer()
     tobesaved, collected = jobfiles.tobesaved, jobfiles.collected
 end
 
-job.register('jobfiles.collected', jobfiles.tobesaved, initializer)
+job.register('job.files.collected', jobfiles.tobesaved, initializer)
 
 jobfiles.forcerun = false
 

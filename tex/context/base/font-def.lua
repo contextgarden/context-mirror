@@ -24,34 +24,33 @@ local report_afm    = logs.new("load afm")
 default loader that only handles <l n='tfm'/>.</p>
 --ldx]]--
 
-fonts        = fonts        or { }
-fonts.define = fonts.define or { }
-fonts.tfm    = fonts.tfm    or { }
-fonts.ids    = fonts.ids    or { }
-fonts.vf     = fonts.vf     or { }
-fonts.used   = fonts.used   or { }
+local fonts       = fonts
+local tfm         = fonts.tfm
+local vf          = fonts.vf
+local fontids     = fonts.ids
 
-local tfm    = fonts.tfm
-local vf     = fonts.vf
-local define = fonts.define
+fonts.used        = fonts.used or { }
 
-tfm.version = 1.01
-tfm.cache   = containers.define("fonts", "tfm", tfm.version, false) -- better in font-tfm
+tfm.readers       = tfm.readers or { }
+tfm.fonts         = tfm.fonts or { }
+tfm.internalized  = tfm.internalized or { } -- internal tex numbers
 
-define.method        = "afm or tfm" -- afm, tfm, afm or tfm, tfm or afm
-define.specify       = fonts.define.specify or { }
-define.methods       = fonts.define.methods or { }
+local readers     = tfm.readers
+local sequence    = { 'otf', 'ttf', 'afm', 'tfm' }
+readers.sequence  = sequence
 
-tfm.fonts            = tfm.fonts        or { }
-tfm.readers          = tfm.readers      or { }
-tfm.internalized     = tfm.internalized or { } -- internal tex numbers
+tfm.version       = 1.01
+tfm.cache         = containers.define("fonts", "tfm", tfm.version, false) -- better in font-tfm
+tfm.auto_afm      = true
 
-tfm.readers.sequence = { 'otf', 'ttf', 'afm', 'tfm' }
+fonts.define      = fonts.define or { }
+local define      = fonts.define
 
-tfm.auto_afm = true
+define.method     = "afm or tfm" -- afm, tfm, afm or tfm, tfm or afm
+define.specify    = define.specify or { }
+define.methods    = define.methods or { }
 
-local readers  = tfm.readers
-local sequence = readers.sequence
+local findbinfile = resolvers.findbinfile
 
 --[[ldx--
 <p>We hardly gain anything when we cache the final (pre scaled)
@@ -127,10 +126,6 @@ function define.makespecification(specification, lookup, name, sub, method, deta
             specification, (lookup ~= "" and lookup) or "[file]", (name ~= "" and name) or "-",
             (sub ~= "" and sub) or "-", (method ~= "" and method) or "-", (detail ~= "" and detail) or "-")
     end
---~     if specification.lookup then
---~         lookup = specification.lookup -- can come from xetex [] syntax
---~         specification.lookup = nil
---~     end
     if not lookup or lookup == "" then
         lookup = define.defaultlookup
     end
@@ -210,7 +205,7 @@ function tfm.hash_instance(specification,force)
         specification.hash = hash
     end
     if size < 1000 and fonts.designsizes[hash] then
-        size = math.round(tfm.scaled(size, fonts.designsizes[hash]))
+        size = math.round(tfm.scaled(size,fonts.designsizes[hash]))
         specification.size = size
     end
 --~     local mathsize = specification.mathsize or 0
@@ -234,11 +229,12 @@ end
 <p>We can resolve the filename using the next function:</p>
 --ldx]]--
 
-define.resolvers = resolvers
+define.resolvers = define.resolvers or { }
+local resolvers  = define.resolvers
 
 -- todo: reporter
 
-function define.resolvers.file(specification)
+function resolvers.file(specification)
     local suffix = file.suffix(specification.name)
     if fonts.formats[suffix] then
         specification.forced = suffix
@@ -246,7 +242,7 @@ function define.resolvers.file(specification)
     end
 end
 
-function define.resolvers.name(specification)
+function resolvers.name(specification)
     local resolve = fonts.names.resolve
     if resolve then
         local resolved, sub = fonts.names.resolve(specification.name,specification.sub)
@@ -261,11 +257,11 @@ function define.resolvers.name(specification)
             end
         end
     else
-        define.resolvers.file(specification)
+        resolvers.file(specification)
     end
 end
 
-function define.resolvers.spec(specification)
+function resolvers.spec(specification)
     local resolvespec = fonts.names.resolvespec
     if resolvespec then
         specification.resolved, specification.sub = fonts.names.resolvespec(specification.name,specification.sub)
@@ -274,13 +270,13 @@ function define.resolvers.spec(specification)
             specification.name = file.removesuffix(specification.resolved)
         end
     else
-        define.resolvers.name(specification)
+        resolvers.name(specification)
     end
 end
 
 function define.resolve(specification)
     if not specification.resolved or specification.resolved == "" then -- resolved itself not per se in mapping hash
-        local r = define.resolvers[specification.lookup]
+        local r = resolvers[specification.lookup]
         if r then
             r(specification)
         end
@@ -290,7 +286,7 @@ function define.resolve(specification)
     else
         specification.forced = specification.forced
     end
-    -- for the moment here (goodies eset outside features)
+    -- for the moment here (goodies set outside features)
     local goodies = specification.goodies
     if goodies and goodies ~= "" then
         local normalgoodies = specification.features.normal.goodies
@@ -402,9 +398,9 @@ evolved. Each one has its own way of dealing with its format.</p>
 local function check_tfm(specification,fullname)
     -- ofm directive blocks local path search unless set; btw, in context we
     -- don't support ofm files anyway as this format is obsolete
-    local foundname = resolvers.findbinfile(fullname, 'tfm') or "" -- just to be sure
+    local foundname = findbinfile(fullname, 'tfm') or "" -- just to be sure
     if foundname == "" then
-        foundname = resolvers.findbinfile(fullname, 'ofm') or "" -- bonus for usage outside context
+        foundname = findbinfile(fullname, 'ofm') or "" -- bonus for usage outside context
     end
     if foundname ~= "" then
         specification.filename, specification.format = foundname, "ofm"
@@ -413,11 +409,11 @@ local function check_tfm(specification,fullname)
 end
 
 local function check_afm(specification,fullname)
-    local foundname = resolvers.findbinfile(fullname, 'afm') or "" -- just to be sure
+    local foundname = findbinfile(fullname, 'afm') or "" -- just to be sure
     if foundname == "" and tfm.auto_afm then
         local encoding, shortname = match(fullname,"^(.-)%-(.*)$") -- context: encoding-name.*
         if encoding and shortname and fonts.enc.known[encoding] then
-            shortname = resolvers.findbinfile(shortname,'afm') or "" -- just to be sure
+            shortname = findbinfile(shortname,'afm') or "" -- just to be sure
             if shortname ~= "" then
                 foundname = shortname
              -- tfm.set_normal_feature(specification,'encoding',encoding) -- will go away
@@ -481,17 +477,17 @@ local function check_otf(forced,specification,suffix,what)
     if forced then
         name = file.addsuffix(name,suffix,true)
     end
-    local fullname, tfmtable = resolvers.findbinfile(name,suffix) or "", nil -- one shot
+    local fullname, tfmtable = findbinfile(name,suffix) or "", nil -- one shot
     if fullname == "" then
         local fb = fonts.names.old_to_new[name]
         if fb then
-            fullname = resolvers.findbinfile(fb,suffix) or ""
+            fullname = findbinfile(fb,suffix) or ""
         end
     end
     if fullname == "" then
         local fb = fonts.names.new_to_old[name]
         if fb then
-            fullname = resolvers.findbinfile(fb,suffix) or ""
+            fullname = findbinfile(fb,suffix) or ""
         end
     end
     if fullname ~= "" then
@@ -650,7 +646,7 @@ function vf.find(name)
             if trace_defining then
                 report_define("locating vf for %s",name)
             end
-            return resolvers.findbinfile(name,"ovf")
+            return findbinfile(name,"ovf")
         else
             if trace_defining then
                 report_define("vf for %s is already taken care of",name)
@@ -661,7 +657,7 @@ function vf.find(name)
         if trace_defining then
             report_define("locating vf for %s",name)
         end
-        return resolvers.findbinfile(name,"ovf")
+        return findbinfile(name,"ovf")
     end
 end
 

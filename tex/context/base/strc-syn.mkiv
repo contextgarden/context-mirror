@@ -116,7 +116,7 @@
    \fi
    \getparameters[\??sm#1][\s!parent=\??sm,\s!single={#1},\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
-  %\ctxlua{joblists.define('#1')}%
+  %\ctxlua{structures.synonyms.define('#1')}%
    \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
    \setvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
    \setvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}}
@@ -137,7 +137,7 @@
      \edef\currentsynonymexpansion{\synonymparameter\c!expansion}%
      \preprocessexpansion\currentsynonymexpansion\currentsynonymtext   \currentsynonymcoding{#4}%
      \preprocessexpansion\currentsynonymexpansion\currentsynonymmeaning\currentsynonymcoding{#5}%
-     \ctxlua{joblists.register("\currentsynonym", "synonym", {
+     \ctxlua{structures.synonyms.register("\currentsynonym", "synonym", {
         metadata = {
             catcodes = \the\catcodetable,
             coding   = "\currentsynonymcoding",
@@ -158,20 +158,20 @@
   {\dodoubleargument\doregistersynonym}
 
 \def\registersynonym[#1][#2]%
-  {\ctxlua{joblists.registerused("#1","#2")}}
+  {\ctxlua{structures.synonyms.registerused("#1","#2")}}
 
 \unexpanded\def\doinsertsynonymmeaning#1#2% name tag
   {\begingroup
    \def\currentsynonym{#1}%
    \dosetsynonymattributes\c!textstyle\c!textcolor
-   \synonymparameter\c!textcommand{\ctxlua{joblists.meaning("#1","#2")}}%
+   \synonymparameter\c!textcommand{\ctxlua{structures.synonyms.meaning("#1","#2")}}%
    \endgroup}
 
 \unexpanded\def\doinsertsynonym#1#2% name tag
   {\begingroup
    \def\currentsynonym{#1}%
    \dosetsynonymattributes\c!synonymstyle\c!synonymcolor
-   \synonymparameter\c!synonymcommand{\ctxlua{joblists.synonym("#1","#2")}}%
+   \synonymparameter\c!synonymcommand{\ctxlua{structures.synonyms.synonym("#1","#2")}}%
    \normalexpanded{\endgroup\synonymparameter\c!next}}
 
 \unexpanded\def\placelistofsynonyms
@@ -200,7 +200,7 @@
      \c!color=.
      #2]%
    \startpacked
-     \ctxlua{joblists.process('#1',{ criterium = "\synonymparameter\c!criterium" })}%
+     \ctxlua{structures.synonyms.process('#1',{ criterium = "\synonymparameter\c!criterium" })}%
    \stoppacked
    \endgroup}
 
@@ -282,7 +282,7 @@
    \fi
    \getparameters[\??so#1][\s!parent=\??so,\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
-  %\ctxlua{joblists.define('#1')}%
+  %\ctxlua{structures.synonyms.define('#1')}%
    \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??so#1]}% to be obsolete
    \setvalue{\e!place   \e!listof#2}{\placelistofsorts[#1]}%
    \setvalue{\e!complete\e!listof#2}{\completelistofsorts[#1]}}
@@ -302,7 +302,7 @@
    \else
      \edef\currentsortingexpansion{\sortingparameter\c!expansion}%
      \preprocessexpansion\currentsortingexpansion\currentsortingtext\currentsortingcoding{#4}%
-     \ctxlua{joblists.register("\currentsorting", "sorting", {
+     \ctxlua{structures.synonyms.register("\currentsorting", "sorting", {
         metadata = {
             catcodes = \the\catcodetable,
             coding   = "\currentsortingcoding",
@@ -323,14 +323,14 @@
    % no kap currently, of .. we need to map cap onto WORD
    \edef\currentsorting{#1}%
    \dosetsynonymattributes\c!style\c!color
-   \ctxlua{joblists.synonym("#1","#2")}%
+   \ctxlua{structures.synonyms.synonym("#1","#2")}%
    \normalexpanded{\endgroup\sortingparameter\c!next}}
 
 \def\registersort
   {\dodoubleargument\doregistersort}
 
 \def\registersort[#1][#2]%
-  {\ctxlua{joblists.registerused("#1","#2")}}
+  {\ctxlua{structures.synonyms.registerused("#1","#2")}}
 
 % before after
 %
@@ -344,7 +344,7 @@
    \def\currentsorting{#1}%
    \getparameters[\??so#1][#2]%
    \startpacked
-     \ctxlua{joblists.process('#1',{ criterium = "\sortingparameter\c!criterium" })}%
+     \ctxlua{structures.synonyms.process('#1',{ criterium = "\sortingparameter\c!criterium" })}%
    \stoppacked
    \endgroup}
 
@@ -373,7 +373,7 @@
 % \def\mkloadsortedlist#1% class
 %   {\bgroup
 %    \getvalue{\s!set#1}%
-%    \ctxlua{joblists.process('#1')}%
+%    \ctxlua{structures.synonyms.process('#1')}%
 %    \getvalue{\s!reset#1}%
 %    \egroup}
 

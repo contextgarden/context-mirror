@@ -8,6 +8,10 @@ if not modules then modules = { } end modules ['lpdf-grp'] = {
 
 local format = string.format
 
+local backends, lpdf = backends, lpdf
+
+local colors         = attributes.colors
+
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
 local registrations  = backends.pdf.registrations

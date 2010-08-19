@@ -12,6 +12,8 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 resolvers.locators     = { notfound = { nil } }  -- locate databases
 resolvers.hashers      = { notfound = { nil } }  -- load databases
 resolvers.generators   = { notfound = { nil } }  -- generate databases

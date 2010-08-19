@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['node-seq'] = {
+if not modules then modules = { } end modules ['util-seq'] = {
     version   = 1.001,
-    comment   = "companion to node-ini.mkiv",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -18,7 +18,9 @@ use locals to refer to them when compiling the chain.</p>
 local format, gsub, concat, gmatch = string.format, string.gsub, table.concat, string.gmatch
 local type, loadstring = type, loadstring
 
-sequencer = sequencer or { }
+utilities            = utilities or { }
+utilities.sequencers = utilities.sequencers or { }
+local sequencers     = utilities.sequencers
 
 local function validaction(action)
     local g = _G
@@ -31,7 +33,7 @@ local function validaction(action)
     return true
 end
 
-function sequencer.reset()
+function sequencers.reset()
     return {
         list  = { },
         order = { },
@@ -41,21 +43,21 @@ function sequencer.reset()
     }
 end
 
-function sequencer.prependgroup(t,group,where)
+function sequencers.prependgroup(t,group,where)
     local list, order = t.list, t.order
     table.remove_value(order,group)
     table.insert_before_value(order,where,group)
     list[group] = { }
 end
 
-function sequencer.appendgroup(t,group,where)
+function sequencers.appendgroup(t,group,where)
     local list, order = t.list, t.order
     table.remove_value(order,group)
     table.insert_after_value(order,where,group)
     list[group] = { }
 end
 
-function sequencer.prependaction(t,group,action,where,kind,force)
+function sequencers.prependaction(t,group,action,where,kind,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
         table.remove_value(g,action)
@@ -64,7 +66,7 @@ function sequencer.prependaction(t,group,action,where,kind,force)
     end
 end
 
-function sequencer.appendaction(t,group,action,where,kind,force)
+function sequencers.appendaction(t,group,action,where,kind,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
         table.remove_value(g,action)
@@ -73,29 +75,29 @@ function sequencer.appendaction(t,group,action,where,kind,force)
     end
 end
 
-function sequencer.enableaction (t,action) t.askip[action] = false end
-function sequencer.disableaction(t,action) t.askip[action] = true  end
-function sequencer.enablegroup  (t,group)  t.gskip[group]  = false end
-function sequencer.disablegroup (t,group)  t.gskip[group]  = true  end
+function sequencers.enableaction (t,action) t.askip[action] = false end
+function sequencers.disableaction(t,action) t.askip[action] = true  end
+function sequencers.enablegroup  (t,group)  t.gskip[group]  = false end
+function sequencers.disablegroup (t,group)  t.gskip[group]  = true  end
 
-function sequencer.setkind(t,action,kind)
+function sequencers.setkind(t,action,kind)
     t.kind[action] = kind
 end
 
-function sequencer.removeaction(t,group,action,force)
+function sequencers.removeaction(t,group,action,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
         table.remove_value(g,action)
     end
 end
 
-function sequencer.compile(t,compiler,n)
+function sequencers.compile(t,compiler,n)
     if type(t) == "string" then
         -- already compiled
     elseif compiler then
         t = compiler(t,n)
     else
-        t = sequencer.tostring(t)
+        t = sequencers.tostring(t)
     end
     return loadstring(t)()
 end
@@ -110,7 +112,7 @@ return function(...)
 %s
 end]]
 
-function sequencer.tostring(t)
+function sequencers.tostring(t)
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
     local vars, calls, args = { }, { }, nil
     for i=1,#order do
@@ -144,7 +146,7 @@ return function(head%s)
   return head, done
 end]]
 
-function sequencer.nodeprocessor(t,n)
+function sequencers.nodeprocessor(t,n)
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
     local vars, calls, args = { }, { }, nil
     if n == 0 then

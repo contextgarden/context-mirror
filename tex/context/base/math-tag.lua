@@ -6,35 +6,40 @@ if not modules then modules = { } end modules ['math-tag'] = {
     license   = "see context related readme files"
 }
 
-local has_attribute  = nodes.has_attribute
-local set_attribute  = nodes.set_attribute
-local set_attributes = nodes.set_attributes
-local traverse_nodes = node.traverse
+local attributes, nodes = attributes, nodes
 
-local nodecodes = nodes.nodecodes
+local has_attribute       = nodes.has_attribute
+local set_attribute       = nodes.set_attribute
+local set_attributes      = nodes.set_attributes
+local traverse_nodes      = node.traverse
 
-local math_noad      = nodecodes.noad           -- attr nucleus sub sup
-local math_noad      = nodecodes.noad           -- attr nucleus sub sup
-local math_accent    = nodecodes.accent         -- attr nucleus sub sup accent
-local math_radical   = nodecodes.radical        -- attr nucleus sub sup left degree
-local math_fraction  = nodecodes.fraction       -- attr nucleus sub sup left right
-local math_box       = nodecodes.sub_box        -- attr list
-local math_sub       = nodecodes.sub_mlist      -- attr list
-local math_char      = nodecodes.math_char      -- attr fam char
-local math_text_char = nodecodes.math_text_char -- attr fam char
-local math_delim     = nodecodes.delim          -- attr small_fam small_char large_fam large_char
-local math_style     = nodecodes.style          -- attr style
-local math_choice    = nodecodes.choice         -- attr display text script scriptscript
-local math_fence     = nodecodes.fence          -- attr subtype
+local nodecodes           = nodes.nodecodes
 
-local hlist          = nodecodes.hlist
-local vlist          = nodecodes.vlist
-local glyph          = nodecodes.glyph
+local math_noad_code      = nodecodes.noad           -- attr nucleus sub sup
+local math_accent_code    = nodecodes.accent         -- attr nucleus sub sup accent
+local math_radical_code   = nodecodes.radical        -- attr nucleus sub sup left degree
+local math_fraction_code  = nodecodes.fraction       -- attr nucleus sub sup left right
+local math_box_code       = nodecodes.subbox         -- attr list
+local math_sub_code       = nodecodes.submlist       -- attr list
+local math_char_code      = nodecodes.mathchar       -- attr fam char
+local math_textchar_code  = nodecodes.mathtextchar   -- attr fam char
+local math_delim_code     = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local math_style_code     = nodecodes.style          -- attr style
+local math_choice_code    = nodecodes.choice         -- attr display text script scriptscript
+local math_fence_code     = nodecodes.fence          -- attr subtype
 
-local a_tagged = attributes.private('tagged')
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+local glyph_code          = nodecodes.glyph
 
-local start_tagged = structure.tags.start
-local stop_tagged  = structure.tags.stop
+local a_tagged            = attributes.private('tagged')
+
+local tags                = structures.tags
+
+local start_tagged        = tags.start
+local stop_tagged         = tags.stop
+local taglist             = tags.taglist
+
 local chardata     = characters.data
 
 local process
@@ -67,7 +72,7 @@ end
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     while start do
         local id = start.id
-        if id == math_char then
+        if id == math_char_code then
             -- check for code
             local ch = chardata[start.char]
             local mc = ch and ch.mathclass
@@ -80,22 +85,22 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             end
             stop_tagged()
             break
-        elseif id == math_text_char then
+        elseif id == math_textchar_code then
             -- check for code
             set_attribute(start,a_tagged,start_tagged("ms"))
             stop_tagged()
             break
-        elseif id == math_delim then
+        elseif id == math_delim_code then
             -- check for code
             set_attribute(start,a_tagged,start_tagged("mo"))
             stop_tagged()
             break
-        elseif id == math_style then
+        elseif id == math_style_code then
             -- has a next
-        elseif id == math_noad then
+        elseif id == math_noad_code then
             processsubsup(start)
-        elseif id == math_box or id == hlist or id == vlist then
-            -- keep an eye on math_box and see what ends up in there
+        elseif id == math_box_code or id == hlist_code or id == vlist_code then
+            -- keep an eye on math_box_code and see what ends up in there
             local attr = has_attribute(start,a_tagged)
             local text = start_tagged("mtext")
             set_attribute(start,a_tagged,text)
@@ -110,16 +115,15 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 -- need to nest. This approach is a hack, maybe I'll make a proper
                 -- nesting feature to deal with this at another level. Here we just
                 -- fake structure by enforcing the inner one.
-                local taglist = structure.tags.taglist
                 local tagdata = taglist[attr]
                 local common = #tagdata + 1
                 local function runner(list) -- quite inefficient
                     local cache = { } -- we can have nested unboxed mess so best local to runner
                     for n in traverse_nodes(list) do
                         local id = n.id
-                        if id == hlist or id == vlist then
+                        if id == hlist_code or id == vlist_code then
                             runner(n.list)
-                        elseif id == glyph then
+                        elseif id == glyph_code then
                             local aa = has_attribute(n,a_tagged) -- only glyph needed
                             if aa then
                                 local ac = cache[aa]
@@ -148,14 +152,14 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 runner(list)
             end
             stop_tagged()
-        elseif id == math_sub then
+        elseif id == math_sub_code then
             local list = start.list
             if list then
                 set_attribute(start,a_tagged,start_tagged("mrow"))
                 process(list)
                 stop_tagged()
             end
-        elseif id == math_fraction then
+        elseif id == math_fraction_code then
             local num, denom, left, right = start.num, start.denom, start.left, start.right
             if left then
                set_attribute(left,a_tagged,start_tagged("mo"))
@@ -171,7 +175,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 process(right)
                 stop_tagged()
             end
-        elseif id == math_choice then
+        elseif id == math_choice_code then
             local display, text, script, scriptscript = start.display, start.text, start.script, start.scriptscript
             if display then
                 process(display)
@@ -185,14 +189,14 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             if scriptscript then
                 process(scriptscript)
             end
-        elseif id == math_fence then
+        elseif id == math_fence_code then
             local delim = start.delim
             if delim then
                 set_attribute(start,a_tagged,start_tagged("mo"))
                 process(delim)
                 stop_tagged()
             end
-        elseif id == math_radical then
+        elseif id == math_radical_code then
             local left, degree = start.left, start.degree
             if left then
                 process(left) -- mrow needed ?
@@ -207,7 +211,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 processsubsup(start)
                 stop_tagged()
             end
-        elseif id == math_accent then
+        elseif id == math_accent_code then
             local accent, bot_accent = start.accent, start.bot_accent
             if bot_accent then
                 if accent then
@@ -238,7 +242,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
     end
 end
 
-function noads.add_tags(head,style,penalties)
+function noads.handlers.tags(head,style,penalties)
     set_attribute(head,a_tagged,start_tagged("math"))
     set_attribute(head,a_tagged,start_tagged("mrow"))
     process(head)

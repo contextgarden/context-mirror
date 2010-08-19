@@ -22,40 +22,44 @@ local trace_tests = false  trackers.register("sorters.tests", function(v) trace_
 
 local report_sorters = logs.new("sorters")
 
-sorters              = { }
-sorters.comparers    = { }
-sorters.splitters    = { }
-sorters.entries      = { }
-sorters.mappings     = { }
-sorters.replacements = { }
+local comparers          = { }
+local splitters          = { }
+local entries            = { }
+local mappings           = { }
+local replacements       = { }
+local ignored_offset     = 0x10000
+local replacement_offset = 0x10000
+local digits_offset      = 0x20000
+local digits_maximum     = 0xFFFFF
 
-sorters.ignored_offset     = 0x10000
-sorters.replacement_offset = 0x10000
-sorters.digits_offset      = 0x20000
-sorters.digits_maximum     = 0xFFFFF
+sorters = {
+    comparers          = comparers,
+    splitters          = splitters,
+    entries            = entries,
+    mappings           = mappings,
+    replacements       = replacements,
+    ignored_offset     = ignored_offset,
+    replacement_offset = replacement_offset,
+    digits_offset      = digits_offset,
+    digits_maximum     = digits_maximum,
+}
 
-local ignored_offset = sorters.ignored_offset
-local digits_offset  = sorters.digits_offset
-local digits_maximum = sorters.digits_maximum
+local ssorters = sorters
 
-local mappings     = sorters.mappings
-local entries      = sorters.entries
-local replacements = sorters.replacements
+local language, defaultlanguage = 'en', 'en'
 
-local language, defaultlanguage, dummy = 'en', 'en', { }
-
-local currentreplacements, currentmappings, currententries
+local currentreplacements, currentmappings, currententries = { }, { }, { }
 
 function sorters.setlanguage(lang)
     language = lang or language or defaultlanguage
-    currentreplacements = replacements[language] or replacements[defaultlanguage] or dummy
-    currentmappings     = mappings    [language] or mappings    [defaultlanguage] or dummy
-    currententries      = entries     [language] or entries     [defaultlanguage] or dummy
-    report_sorters("setting language '%s'",language)
+    currentreplacements = replacements[language] or replacements[defaultlanguage] or { }
+    currentmappings     = mappings    [language] or mappings    [defaultlanguage] or { }
+    currententries      = entries     [language] or entries     [defaultlanguage] or { }
+    if trace_tests then
+        report_sorters("setting language '%s'",language)
+    end
     return currentreplacements, currentmappings, currententries
 end
-
-sorters.setlanguage()
 
 -- maybe inline code if it's too slow
 
@@ -105,7 +109,7 @@ local function basicsort(sort_a,sort_b)
     end
 end
 
-function sorters.comparers.basic(a,b)
+function comparers.basic(a,b)
     local ea, eb = a.split, b.split
     local na, nb = #ea, #eb
     if na == 0 and nb == 0 then
@@ -176,7 +180,7 @@ sorters.firstofsplit = firstofsplit
 
 -- beware, numbers get spaces in front
 
-function sorters.splitters.utf(str)
+function splitters.utf(str)
     if #currentreplacements > 0 then
         for k=1,#currentreplacements do
             local v = currentreplacements[k]
@@ -198,7 +202,7 @@ end
 -- but for the moment we do it this way as it is more
 -- handy for tracing
 
--- function sorters.splitters.utf(str)
+-- function splitters.utf(str)
 --     if #currentreplacements > 0 then
 --         for k=1,#currentreplacements do
 --             local v = currentreplacements[k]

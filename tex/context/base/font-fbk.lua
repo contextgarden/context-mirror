@@ -14,20 +14,25 @@ local trace_combining = false  trackers.register("fonts.combining", function(v) 
 <p>This is very experimental code!</p>
 --ldx]]--
 
+local fonts = fonts
+local vf    = fonts.vf
+local tfm   = fonts.tfm
+
 fonts.fallbacks = fonts.fallbacks or { }
+local fallbacks = fonts.fallbacks
+local commands  = vf.aux.combine.commands
 
-local vf  = fonts.vf
-local tfm = fonts.tfm
+local push, pop = { "push" }, { "pop" }
 
-vf.aux.combine.commands["enable-tracing"] = function(g,v)
+commands["enable-tracing"] = function(g,v)
     trace_combining = true
 end
 
-vf.aux.combine.commands["disable-tracing"] = function(g,v)
+commands["disable-tracing"] = function(g,v)
     trace_combining = false
 end
 
-vf.aux.combine.commands["set-tracing"] = function(g,v)
+commands["set-tracing"] = function(g,v)
     if v[2] == nil then
         trace_combining = true
     else
@@ -35,53 +40,70 @@ vf.aux.combine.commands["set-tracing"] = function(g,v)
     end
 end
 
-function vf.aux.combine.initialize_trace()
-    if trace_combining then
-        return "special", "pdf: .8 0 0 rg .8 0 0 RG", "pdf: 0 .8 0 rg 0 .8 0 RG", "pdf: 0 0 .8 rg 0 0 .8 RG", "pdf: 0 g 0 G"
-    else
-        return "comment", "", "", "", ""
-    end
-end
+local force_fallback = false
 
-vf.aux.combine.force_fallback = false
-
-vf.aux.combine.commands["fake-character"] = function(g,v) -- g, nr, fallback_id
+commands["fake-character"] = function(g,v) -- g, nr, fallback_id
     local index, fallback = v[2], v[3]
-    if vf.aux.combine.force_fallback or not g.characters[index] then
-        if fonts.fallbacks[fallback] then
-            g.characters[index], g.descriptions[index] = fonts.fallbacks[fallback](g)
-        end
+    if (force_fallback or not g.characters[index]) and fallbacks[fallback] then
+        g.characters[index], g.descriptions[index] = fallbacks[fallback](g)
     end
 end
 
-fonts.fallbacks['textcent'] = function (g)
+fallbacks['textcent'] = function (g)
     local c = ("c"):byte()
     local t = table.fastcopy(g.characters[c])
     local a = - tan(rad(g.italicangle or 0))
-    local special, red, green, blue, black = vf.aux.combine.initialize_trace()
+    local vfspecials = backends.tables.vfspecials
+    local green, black
+    if trace_combining then
+        green, black = vfspecials.green, vfspecials.black
+    end
+    local startslant, stopslant = vfspecials.startslant, vfspecials.stopslant
     local quad = g.parameters.quad
     if a == 0 then
-        t.commands = {
-            {"push"}, {"slot", 1, c}, {"pop"},
-            {"right", .5*t.width},
-            {"down",  .2*t.height},
-            {special, green},
-            {"rule", 1.4*t.height, .02*quad},
-            {special, black},
-        }
+        if trace_combining then
+            t.commands = {
+                push, {"slot", 1, c}, pop,
+                {"right", .5*t.width},
+                {"down",  .2*t.height},
+                green,
+                {"rule", 1.4*t.height, .02*quad},
+                black,
+            }
+        else
+            t.commands = {
+                push, {"slot", 1, c}, pop,
+                {"right", .5*t.width},
+                {"down",  .2*t.height},
+                {"rule", 1.4*t.height, .02*quad},
+            }
+        end
     else
-        t.commands = {
-            {"push"},
-            {"right", .5*t.width-.025*quad},
-            {"down",  .2*t.height},
-            {"special",format("pdf: q 1 0 %s 1 0 0 cm",a)},
-            {special, green},
-            {"rule", 1.4*t.height, .025*quad},
-            {special, black},
-            {"special","pdf: Q"},
-            {"pop"},
-            {"slot", 1, c} -- last else problems with cm
-        }
+        if trace_combining then
+            t.commands = {
+                push,
+                {"right", .5*t.width-.025*quad},
+                {"down",  .2*t.height},
+                startslant(a),
+                green,
+                {"rule", 1.4*t.height, .025*quad},
+                black,
+                stopslant,
+                pop,
+                {"slot", 1, c} -- last else problems with cm
+            }
+        else
+            t.commands = {
+                push,
+                {"right", .5*t.width-.025*quad},
+                {"down",  .2*t.height},
+                startslant(a),
+                {"rule", 1.4*t.height, .025*quad},
+                stopslant,
+                pop,
+                {"slot", 1, c} -- last else problems with cm
+            }
+        end
     end
     -- somehow the width is messed up now
     -- todo: set height
@@ -92,31 +114,43 @@ fonts.fallbacks['textcent'] = function (g)
     return t, d and d[c]
 end
 
-fonts.fallbacks['texteuro'] = function (g)
+fallbacks['texteuro'] = function (g)
     local c = ("C"):byte()
     local t = table.fastcopy(g.characters[c])
     local d = cos(rad(90+(g.italicangle)))
-    local special, red, green, blue, black = vf.aux.combine.initialize_trace()
+    local vfspecials = backends.tables.vfspecials
+    local green, black
+    if trace_combining then
+        green, black = vfspecials.green, vfspecials.black
+    end
     local quad = g.parameters.quad
     t.width = 1.05*t.width
-    t.commands = {
-        {"right", .05*t.width},
-        {"push"}, {"slot", 1, c}, {"pop"},
-        {"right", .5*t.width*d},
-        {"down", -.5*t.height},
-        {special, green},
-        {"rule", .05*quad, .4*quad},
-        {special, black},
-    }
+    if trace_combining then
+        t.commands = {
+            {"right", .05*t.width},
+            push, {"slot", 1, c}, pop,
+            {"right", .5*t.width*d},
+            {"down", -.5*t.height},
+            green,
+            {"rule", .05*quad, .4*quad},
+            black,
+        }
+    else
+        t.commands = {
+            {"right", .05*t.width},
+            push, {"slot", 1, c}, pop,
+            {"right", .5*t.width*d},
+            {"down", -.5*t.height},
+            {"rule", .05*quad, .4*quad},
+        }
+    end
     g.virtualized = true
     return t, g.descriptions[c]
 end
 
 -- maybe store llx etc instead of bbox in tfm blob / more efficient
 
-vf.aux.combine.force_composed = false
-
-local push, pop = { "push" }, { "pop" }
+local force_composed = false
 
 local cache = { } -- we could make these weak
 
@@ -130,16 +164,15 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
         local scale = g.factor or 1
         local cap_lly = scale*xdesc.boundingbox[4]
         local ita_cor = cos(rad(90+(g.italicangle or 0)))
-        local force = vf.aux.combine.force_composed
         local fallbacks = characters.fallbacks
-        local special, red, green, blue, black
+        local vfspecials = backends.tables.vfspecials
+        local red, green, blue, black
         if trace_combining then
-            special, red, green, blue, black = vf.aux.combine.initialize_trace()
-            red, green, blue, black = { special, red }, { special, green }, { special, blue }, { special, black }
+            red, green, blue, black = vfspecials.red, vfspecials.green, vfspecials.blue, vfspecials.black
         end
         local done = false
         for i,c in next, characters.data do
-            if force or not chars[i] then
+            if force_composed or not chars[i] then
                 local s = c.specials
                 if s and s[1] == 'char' then
                     local chr = s[2]
@@ -155,14 +188,14 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                 end
                             end
                             local charsacc = chars[acc]
---~ local ca = charsacc.category
---~ if ca == "mn" then
---~     -- mark nonspacing
---~ elseif ca == "ms" then
---~     -- mark spacing combining
---~ elseif ca == "me" then
---~     -- mark enclosing
---~ else
+                        --~ local ca = charsacc.category
+                        --~ if ca == "mn" then
+                        --~     -- mark nonspacing
+                        --~ elseif ca == "ms" then
+                        --~     -- mark spacing combining
+                        --~ elseif ca == "me" then
+                        --~     -- mark enclosing
+                        --~ else
                             if not charsacc then
                                 acc = fallbacks[acc]
                                 charsacc = acc and chars[acc]
@@ -232,20 +265,20 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                     else
                                         if trace_combining then
                                             t.commands = {
-                                                {"push"},
+                                                push,
                                                 {"right", dx+dd},
                                                 blue,
                                                 acc_t,
                                                 black,
-                                                {"pop"},
+                                                pop,
                                                 chr_t,
                                             }
                                         else
                                             t.commands = {
-                                                {"push"},
+                                                push,
                                                 {"right", dx+dd},
                                                 acc_t,
-                                                {"pop"},
+                                                pop,
                                                 chr_t,
                                             }
                                         end
@@ -272,7 +305,7 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
     end
 end
 
-vf.aux.combine.commands["complete-composed-characters"] = function(g,v)
+commands["complete-composed-characters"] = function(g,v)
     vf.aux.compose_characters(g)
 end
 
@@ -284,21 +317,24 @@ end
 
 -- for documentation purposes we provide:
 
-fonts.define.methods.install("fallback", { -- todo: auto-fallback with loop over data.characters
+commands["enable-force"] = function(g,v)
+    force_composed = true
+    force_fallback = true
+end
+
+commands["disable-force"] = function(g,v)
+    force_composed = false
+    force_fallback = false
+end
+
+local install = fonts.define.methods.install
+
+install("fallback", { -- todo: auto-fallback with loop over data.characters
     { "fake-character", 0x00A2, 'textcent' },
     { "fake-character", 0x20AC, 'texteuro' }
 })
 
-vf.aux.combine.commands["enable-force"] = function(g,v)
-    vf.aux.combine.force_composed = true
-    vf.aux.combine.force_fallback = true
-end
-vf.aux.combine.commands["disable-force"] = function(g,v)
-    vf.aux.combine.force_composed = false
-    vf.aux.combine.force_fallback = false
-end
-
-fonts.define.methods.install("demo-2", {
+install("demo-2", {
     { "enable-tracing" },
     { "enable-force" },
     { "initialize" },
@@ -308,7 +344,7 @@ fonts.define.methods.install("demo-2", {
     { "disable-force" },
 })
 
-fonts.define.methods.install("demo-3", {
+install("demo-3", {
     { "enable-tracing" },
     { "initialize" },
     { "complete-composed-characters" },

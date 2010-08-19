@@ -176,7 +176,7 @@ fonts.define.methods.install( "punkboldslanted", {
     { "metafont", "mfplain", "punkfont-boldslanted.mp", 10 },
 } )
 
-typesetting.cases.actions[99] = function(current)
+typesetters.cases.actions[99] = function(current)
     local used = fontdata[current.font].variants
     if used then
         local f = math.random(1,#used)

@@ -798,12 +798,12 @@
 \let\poparrangedpages\relax
 \let\pusharrangedpage\relax
 
-\ifx\shiftprintpagebox\undefined
+\ifdefined\shiftprintpagebox \else
   \let\shiftprintpagebox\gobbleoneargument
   \let\shiftpaperpagebox\gobbleoneargument
 \fi
 
-\ifx\registerpageposition\undefined
+\ifdefined\registerpageposition \else
   \let\registerpageposition\gobbleoneargument
 \fi
 

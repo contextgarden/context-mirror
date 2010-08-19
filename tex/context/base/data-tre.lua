@@ -13,6 +13,8 @@ local unpack = unpack or table.unpack
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 local done, found, notfound = { }, { }, resolvers.finders.notfound
 
 function resolvers.finders.tree(specification,filetype)

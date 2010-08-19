@@ -11,6 +11,8 @@ local utf = unicode.utf8
 local next, type = next, type
 local utfchar = utf.char
 
+local nodes, node, fonts = nodes, node, fonts
+
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
 local find_node_tail     = node.tail or node.slide
@@ -20,37 +22,47 @@ local copy_node          = node.copy
 local copy_nodelist      = node.copy_list
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
-local make_glue_spec     = nodes.glue_spec
-local make_kern_node     = nodes.kern
 
 local texattribute       = tex.attribute
 
-local nodecodes = nodes.nodecodes
+local nodepool           = nodes.pool
+local tasks              = nodes.tasks
 
-local glyph = nodecodes.glyph
-local kern  = nodecodes.kern
-local disc  = nodecodes.disc
-local glue  = nodecodes.glue
-local hlist = nodecodes.hlist
-local vlist = nodecodes.vlist
+local new_gluespec       = nodepool.glue_spec
+local new_kern           = nodepool.kern
 
-local fontdata = fonts.identifiers
-local chardata = fonts.characters
-local quaddata = fonts.quads
+local nodecodes          = nodes.nodecodes
+local kerncodes          = nodes.kerncodes
+local skipcodes          = nodes.skipcodes
 
-typesetting       = typesetting       or { }
-typesetting.kerns = typesetting.kerns or { }
+local glyph_code         = nodecodes.glyph
+local kern_code          = nodecodes.kern
+local disc_code          = nodecodes.disc
+local glue_code          = nodecodes.glue
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
 
-local kerns = typesetting.kerns
+local kerning_code       = kerncodes.kerning
+local userkern_code      = kerncodes.userkern
+local userskip_code      = skipcodes.userskip
 
-kerns.mapping   = kerns.mapping or { }
-kerns.factors   = kerns.factors or { }
-kerns.attribute = attributes.private("kern")
+local fontdata           = fonts.identifiers
+local chardata           = fonts.characters
+local quaddata           = fonts.quads
 
-local a_kerns = kerns.attribute
+typesetters              = typesetters or { }
+local typesetters        = typesetters
 
-storage.register("typesetting/kerns/mapping", kerns.mapping, "typesetting.kerns.mapping")
-storage.register("typesetting/kerns/factors", kerns.factors, "typesetting.kerns.factors")
+typesetters.kerns        = typesetters.kerns or { }
+local kerns              = typesetters.kerns
+
+kerns.mapping            = kerns.mapping or { }
+kerns.factors            = kerns.factors or { }
+local a_kerns            = attributes.private("kern")
+kerns.attribute          = kerns.attribute
+
+storage.register("typesetters/kerns/mapping", kerns.mapping, "typesetters.kerns.mapping")
+storage.register("typesetters/kerns/factors", kerns.factors, "typesetters.kerns.factors")
 
 local mapping = kerns.mapping
 local factors = kerns.factors
@@ -73,7 +85,7 @@ local function do_process(namespace,attribute,head,force)
             local krn = mapping[attr]
             if krn and krn ~= 0 then
                 local id = start.id
-                if id == glyph then
+                if id == glyph_code then
                     lastfont = start.font
                     local c = start.components
                     if c then
@@ -102,11 +114,11 @@ local function do_process(namespace,attribute,head,force)
                         local pid = prev.id
                         if not pid then
                             -- nothing
-                        elseif pid == kern and prev.subtype == 0 then
-                            prev.subtype = 1
+                        elseif pid == kern_code and prev.subtype == kerning_code then
+                            prev.subtype = userkern_code
                             prev.kern = prev.kern + quaddata[lastfont]*krn
                             done = true
-                        elseif pid == glyph then
+                        elseif pid == glyph_code then
                             if prev.font == lastfont then
                                 local prevchar, lastchar = prev.char, start.char
                                 local kerns = chardata[lastfont][prevchar].kerns
@@ -115,9 +127,9 @@ local function do_process(namespace,attribute,head,force)
                             else
                                 krn = quaddata[lastfont]*krn
                             end
-                            insert_node_before(head,start,make_kern_node(krn))
+                            insert_node_before(head,start,new_kern(krn))
                             done = true
-                        elseif pid == disc then
+                        elseif pid == disc_code then
                             -- a bit too complicated, we can best not copy and just calculate
                             -- but we could have multiple glyphs involved so ...
                             local disc = prev -- disc
@@ -164,7 +176,7 @@ local function do_process(namespace,attribute,head,force)
                                 free_node(after)
                                 free_node(before)
                             else
-                                if prv and prv.id == glyph and prv.font == lastfont then
+                                if prv and prv.id == glyph_code and prv.font == lastfont then
                                     local prevchar, lastchar = prv.char, start.char
                                     local kerns = chardata[lastfont][prevchar].kerns
                                     local kern = kerns and kerns[lastchar] or 0
@@ -172,33 +184,33 @@ local function do_process(namespace,attribute,head,force)
                                 else
                                     krn = quaddata[lastfont]*krn
                                 end
-                                disc.replace = make_kern_node(krn)
+                                disc.replace = new_kern(krn)
                             end
                         end
                     end
-                elseif id == glue and start.subtype == 0 then
+                elseif id == glue_code and start.subtype == userskip_code then
                     local s = start.spec
                     local w = s.width
                     if w > 0 then
                         local width, stretch, shrink = w+gluefactor*w*krn, s.stretch, s.shrink
-                        start.spec = make_glue_spec(width,stretch*width/w,shrink*width/w)
+                        start.spec = new_gluespec(width,stretch*width/w,shrink*width/w)
                         done = true
                     end
-                elseif false and id == kern and start.subtype == 0 then -- handle with glyphs
+                elseif false and id == kern_code and start.subtype == kerning_code then -- handle with glyphs
                     local sk = start.kern
                     if sk > 0 then
                         start.kern = sk*krn
                         done = true
                     end
-                elseif lastfont and (id == hlist or id == vlist) then -- todo: lookahead
+                elseif lastfont and (id == hlist_code or id == vlist_code) then -- todo: lookahead
                     local p = start.prev
-                    if p and p.id ~= glue then
-                        insert_node_before(head,start,make_kern_node(quaddata[lastfont]*krn))
+                    if p and p.id ~= glue_code then
+                        insert_node_before(head,start,new_kern(quaddata[lastfont]*krn))
                         done = true
                     end
                     local n = start.next
-                    if n and n.id ~= glue then
-                        insert_node_after(head,start,make_kern_node(quaddata[lastfont]*krn))
+                    if n and n.id ~= glue_code then
+                        insert_node_after(head,start,new_kern(quaddata[lastfont]*krn))
                         done = true
                     end
                 end
@@ -215,7 +227,7 @@ local enabled = false
 
 function kerns.set(factor)
     if not enabled then
-        tasks.enableaction("processors","typesetting.kerns.handler")
+        tasks.enableaction("processors","typesetters.kerns.handler")
         enabled = true
     end
     if factor > 0 then

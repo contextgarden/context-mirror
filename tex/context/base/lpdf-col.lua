@@ -9,11 +9,12 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 local type = type
 local format, gsub = string.format, string.gsub
 
--- colors         = colors         or { }
--- transparencies = transparencies or { }
+local backends, lpdf = backends, lpdf
 
-local registercolor        = colors.register
+local colors               = attributes.colors
+local transparencies       = attributes.transparencies
 local registertransparancy = transparencies.register
+local registercolor        = colors.register
 local colorsvalue          = colors.value
 local transparenciesvalue  = transparencies.value
 local forcedmodel          = colors.forcedmodel
@@ -185,3 +186,17 @@ function lpdf.finishtransparencycode()
         return ""
     end
 end
+
+-- this will move to lpdf-spe.lua
+
+backends.pdf.tables.vfspecials = { -- todo: distinguish between glyph and rule color
+
+    red        = { "special", 'pdf: 1 0 0 rg 1 0 0 RG' },
+    green      = { "special", 'pdf: 0 1 0 rg 0 1 0 RG' },
+    blue       = { "special", 'pdf: 0 0 1 rg 0 0 1 RG' },
+    black      = { "special", 'pdf: 0 g 0 G' },
+
+    startslant = function(a) return { "special", format("pdf: q 1 0 %s 1 0 0 cm",a) } end,
+    stopslant  = { "special", "pdf: Q" },
+
+}

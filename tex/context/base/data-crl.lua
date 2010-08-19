@@ -8,10 +8,14 @@ if not modules then modules = { } end modules ['data-crl'] = {
 
 -- this one is replaced by data-sch.lua --
 
-curl = curl or { }
-
 local gsub = string.gsub
+
+local resolvers = resolvers
+
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
+
+curl = curl or { }
+local curl = curl
 
 local cached = { }
 

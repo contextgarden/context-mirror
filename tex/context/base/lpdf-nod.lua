@@ -8,9 +8,13 @@ if not modules then modules = { } end modules ['lpdf-nod'] = {
 
 local copy_node, new_node = node.copy, node.new
 
-local pdfliteral = nodes.register(new_node("whatsit", 8))    pdfliteral.mode  = 1
-local pdfdest    = nodes.register(new_node("whatsit",19))    pdfdest.named_id = 1 -- xyz_zoom untouched
-local pdfannot   = nodes.register(new_node("whatsit",15))
+local nodepool = nodes.pool
+
+local register = nodepool.register
+
+local pdfliteral = register(new_node("whatsit", 8))    pdfliteral.mode  = 1
+local pdfdest    = register(new_node("whatsit",19))    pdfdest.named_id = 1 -- xyz_zoom untouched
+local pdfannot   = register(new_node("whatsit",15))
 
 local variables = interfaces.variables
 
@@ -25,13 +29,13 @@ local views = { -- beware, we do support the pdf keys but this is *not* official
     fitr  = 7,
 }
 
-function nodes.pdfliteral(str)
+function nodepool.pdfliteral(str)
     local t = copy_node(pdfliteral)
     t.data = str
     return t
 end
 
-function nodes.pdfannotation(w,h,d,data,n)
+function nodepool.pdfannotation(w,h,d,data,n)
     local t = copy_node(pdfannot)
     if w and w ~= 0 then t.width  = w end
     if h and h ~= 0 then t.height = h end
@@ -41,7 +45,7 @@ function nodes.pdfannotation(w,h,d,data,n)
     return t
 end
 
-function nodes.pdfdestination(w,h,d,name,view,n)
+function nodepool.pdfdestination(w,h,d,name,view,n)
     local t = copy_node(pdfdest)
     if w and w ~= 0 then t.width  = w end
     if h and h ~= 0 then t.height = h end

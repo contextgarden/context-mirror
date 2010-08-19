@@ -41,7 +41,7 @@
 % function objects.register(name)
 %     objects.n = objects.n + 1
 %     local list = texbox.objectbox
-%     nodes.process_page(list)
+%     nodes.handlers.finalize(list)
 %     data[name] = {
 %         codeinjections.restore(list),
 %         texdimen.objectwd,
@@ -353,8 +353,8 @@
 
 % no undefined test ! ! ! ! (pdftex fails on undefined objects)
 
-\def\doregisterobjectreference#1#2#3{\normalexpanded{\noexpand\ctxlatelua{jobobjects.save("#1::#2",#3,\noexpand\the\realpageno)}}}
-\def\dooverloadobjectreference#1#2#3{\ctxlua{jobobjects.set("#1::#2",#3,\the\realpageno)}}
+\def\doregisterobjectreference#1#2#3{\normalexpanded{\noexpand\ctxlatelua{job.objects.save("#1::#2",#3,\noexpand\the\realpageno)}}}
+\def\dooverloadobjectreference#1#2#3{\ctxlua{job.objects.set("#1::#2",#3,\the\realpageno)}}
 
 \def\dosetobjectreference
   {\ifcase\crossreferenceobject
@@ -370,8 +370,8 @@
 \def\defaultobjectreference#1#2{0} % driver dependent
 \def\defaultobjectpage     #1#2{\realfolio}
 
-\def\dogetobjectreference    #1#2#3{\xdef#3{\ctxlua{jobobjects.number("#1::#2","\defaultobjectreference{#1}{#2}")}}}
-\def\dogetobjectreferencepage#1#2#3{\xdef#3{\ctxlua{jobobjects.page("#1::#2","\defaultobjectpage{#1}{#2}")}}}
+\def\dogetobjectreference    #1#2#3{\xdef#3{\ctxlua{job.objects.number("#1::#2","\defaultobjectreference{#1}{#2}")}}}
+\def\dogetobjectreferencepage#1#2#3{\xdef#3{\ctxlua{job.objects.page("#1::#2","\defaultobjectpage{#1}{#2}")}}}
 
 \def\setobject     {\driverreferenced\dosetobject1}
 \def\settightobject{\driverreferenced\dosetobject0}
@@ -394,6 +394,6 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifobjectreferencefoundelse#1#2{\ctxlua{jobobjects.doifelse("#1::#2")}}
+\def\doifobjectreferencefoundelse#1#2{\ctxlua{job.objects.doifelse("#1::#2")}}
 
 \protect \endinput

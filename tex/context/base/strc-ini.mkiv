@@ -76,10 +76,10 @@
 \unexpanded\def\definestructureconversionset{\dotripleempty\dodefinestructureconversionset}
 \unexpanded\def\definestructureprefixset    {\dotripleempty\dodefinestructureprefixset}
 
-\def\dodefinestructureresetset     [#1][#2][#3]{\ctxlua{structure.sets.define("structure:resets",     "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}",true)}}
-\def\dodefinestructureseparatorset [#1][#2][#3]{\ctxlua{structure.sets.define("structure:separators", "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
-\def\dodefinestructureconversionset[#1][#2][#3]{\ctxlua{structure.sets.define("structure:conversions","#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
-\def\dodefinestructureprefixset    [#1][#2][#3]{\ctxlua{structure.sets.define("structure:prefixes",   "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
+\def\dodefinestructureresetset     [#1][#2][#3]{\ctxlua{structures.sets.define("structure:resets",     "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}",true)}}
+\def\dodefinestructureseparatorset [#1][#2][#3]{\ctxlua{structures.sets.define("structure:separators", "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
+\def\dodefinestructureconversionset[#1][#2][#3]{\ctxlua{structures.sets.define("structure:conversions","#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
+\def\dodefinestructureprefixset    [#1][#2][#3]{\ctxlua{structures.sets.define("structure:prefixes",   "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
 
 % \definestructureseparatorset [weird][!,?,*][:]                                  % tex content
 % \definestructureconversionset[weird][numbers,characters,romannumerals][numbers] % symbolic names

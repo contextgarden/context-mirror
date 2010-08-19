@@ -13,13 +13,6 @@ if not modules then modules = { } end modules ['buff-ini'] = {
 
 -- redefine buffers.get
 
-buffers             = { }
-buffers.data        = { }
-buffers.hooks       = { }
-buffers.flags       = { }
-buffers.commands    = { }
-buffers.visualizers = { }
-
 -- if needed we can make 'm local
 
 local trace_run       = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
@@ -33,13 +26,27 @@ local concat, texsprint, texprint, texwrite = table.concat, tex.sprint, tex.prin
 local utfbyte, utffind, utfgsub = utf.byte, utf.find, utf.gsub
 local type, next = type, next
 local huge = math.huge
-local byte, sub, find, char, gsub, rep, lower, format, gmatch, match = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format, string.gmatch, string.match
+local byte, sub, find, char, gsub, rep, lower, format, gmatch, match, count = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format, string.gmatch, string.match, string.count
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
 local lpegmatch = lpeg.match
+local settings_to_array = utilities.parsers.settings_to_array
 
-local data, flags, hooks, visualizers = buffers.data, buffers.flags, buffers.hooks, buffers.visualizers
+buffers = {
+    data        = { },
+    hooks       = { },
+    flags       = { },
+    commands    = { },
+    visualizers = { },
+}
+
+local buffers = buffers
+
+local data        = buffers.data
+local flags       = buffers.flags
+local hooks       = buffers.hooks
+local visualizers = buffers.visualizers
 
 visualizers.defaultname = variables.typing
 
@@ -70,7 +77,7 @@ function buffers.grab(name,begintag,endtag,bufferdata)
     if dn == "" then
         buffers.level = 0
     end
-    buffers.level = buffers.level + bufferdata:count("\\"..begintag) - bufferdata:count("\\"..endtag)
+    buffers.level = buffers.level + count(bufferdata,"\\"..begintag) - count(bufferdata,"\\"..endtag)
     local more = buffers.level > 0
     if more then
         dn = dn .. bufferdata .. endtag
@@ -87,7 +94,7 @@ function buffers.grab(name,begintag,endtag,bufferdata)
         end
     end
     data[name] = dn
-    cs.testcase(more)
+    commands.testcase(more)
 end
 
 function buffers.exists(name)
@@ -95,7 +102,7 @@ function buffers.exists(name)
 end
 
 function buffers.doifelsebuffer(name)
-    cs.testcase(data[name] ~= nil)
+    commands.testcase(data[name] ~= nil)
 end
 
 flags.optimize_verbatim        = true
@@ -145,7 +152,7 @@ end
 
 function buffers.range(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
     local first, last = first or 1, last or #lines
-    local what = aux.settings_to_array(range)
+    local what = settings_to_array(range)
     local r_first, r_last = what[1], what[2]
     local f, l = tonumber(r_first), tonumber(r_last)
     if r_first then
@@ -353,7 +360,7 @@ function buffers.collect(names,separator) -- no print
     -- maybe we should always store a buffer as table so
     -- that we can pass it directly
     if type(names) == "string" then
-        names = aux.settings_to_array(names)
+        names = settings_to_array(names)
     end
     local t = { }
     for i=1,#names do
@@ -484,7 +491,7 @@ function visualizers.reset()
 end
 
 function buffers.doifelsevisualizer(str)
-    cs.testcase((str ~= "") and (handlers[lower(str)] ~= nil))
+    commands.testcase((str ~= "") and (handlers[lower(str)] ~= nil))
 end
 
 -- calling routines, don't change
@@ -592,65 +599,79 @@ function default.flush_line(str)
     end
 end
 
--- not needed any more
-
-local function escaped_token(c)
-    if utffind(c,"^(%a%d)$") then
-        return c
-    elseif c == " " then
-        return "\\obs "
-    else
-        return "\\char" .. utfbyte(c) .. " "
-    end
-end
-
-buffers.escaped_token = escaped_token
-
-function buffers.escaped(str)
-    -- use the utfcharacters loop
-    return (utfgsub(str,"(.)", escaped_token))
-end
-
 -- special one
 
 buffers.commands.nested = "\\switchslantedtype "
 
--- todo : utf + faster, direct print and such. no \\char, vrb catcodes, see end
+--~ function visualizers.flushnested(str, enable) -- todo: no utf, vrb catcodes, kind of obsolete mess
+--~     str = gsub(str," *[\n\r]+ *"," ")
+--~     local result, c, nested, i = "", "", 0, 1
+--~     local commands = buffers.commands -- otherwise wrong commands
+--~     while i < #str do -- slow
+--~         c = sub(str,i,i+1)
+--~         if c == "<<" then
+--~             nested = nested + 1
+--~             if enable then
+--~                 result = result .. "{" .. commands.nested
+--~             else
+--~                 result = result .. "{"
+--~             end
+--~             i = i + 2
+--~         elseif c == ">>" then
+--~             if nested > 0 then
+--~                 nested = nested - 1
+--~                 result = result .. "}"
+--~             end
+--~             i = i + 2
+--~         else
+--~             c = sub(str,i,i)
+--~             if c == " " then
+--~                 result = result .. "\\obs "
+--~             elseif find(c,"%a") then
+--~                 result = result .. c
+--~             else
+--~                 result = result .. "\\char" .. byte(c) .. " "
+--~             end
+--~             i = i + 1
+--~         end
+--~     end
+--~     result = result .. "\\char" .. byte(sub(str,i,i)) .. " " .. rep("}",nested)
+--~     texsprint(ctxcatcodes,result)
+--~ end
 
-function visualizers.flush_nested(str, enable) -- no utf, kind of obsolete mess
+function visualizers.flushnested(str, enable) -- todo: no utf, vrb catcodes, kind of obsolete mess
     str = gsub(str," *[\n\r]+ *"," ")
-    local result, c, nested, i = "", "", 0, 1
+    local c, nested, i = "", 0, 1
     local commands = buffers.commands -- otherwise wrong commands
     while i < #str do -- slow
         c = sub(str,i,i+1)
         if c == "<<" then
             nested = nested + 1
             if enable then
-                result = result .. "{" .. commands.nested
+                texsprint(ctxcatcodes,"{",commands.nested)
             else
-                result = result .. "{"
+                texsprint(ctxcatcodes,"{")
             end
             i = i + 2
         elseif c == ">>" then
             if nested > 0 then
                 nested = nested - 1
-                result = result .. "}"
+                texsprint(ctxcatcodes,"}")
             end
             i = i + 2
         else
             c = sub(str,i,i)
             if c == " " then
-                result = result .. "\\obs "
+                texsprint(ctxcatcodes,"\\obs")
             elseif find(c,"%a") then
-                result = result .. c
+                texsprint(ctxcatcodes,c)
             else
-                result = result .. "\\char" .. byte(c) .. " "
+                texsprint(ctxcatcodes,"\\char",byte(c)," ")
             end
             i = i + 1
         end
     end
-    result = result .. "\\char" .. byte(sub(str,i,i)) .. " " .. rep("}",nested)
-    texsprint(ctxcatcodes,result)
+    texsprint(ctxcatcodes,"\\char",byte(sub(str,i,i))," ",rep("}",nested))
 end
 
 -- handy helpers
@@ -663,7 +684,7 @@ end
 
 buffers.currentcolors = { }
 
-function buffers.change_state(n, state)
+function buffers.changestate(n, state)
     if n then
         if state ~= n then
             if state > 0 then
@@ -680,7 +701,7 @@ function buffers.change_state(n, state)
     return state
 end
 
-function buffers.finish_state(state)
+function buffers.finishstate(state)
     if state > 0 then
         texsprint(ctxcatcodes,"\\eop")
         return 0
@@ -689,20 +710,20 @@ function buffers.finish_state(state)
     end
 end
 
-buffers.open_nested  = rep("\\char"..byte('<').." ",2)
-buffers.close_nested = rep("\\char"..byte('>').." ",2)
+local opennested  = rep("\\char"..byte('<').." ",2)
+local closenested = rep("\\char"..byte('>').." ",2)
 
-function buffers.replace_nested(result)
-    result = gsub(result,buffers.open_nested, "{")
-    result = gsub(result,buffers.close_nested,"}")
+function buffers.replacenested(result)
+    result = gsub(result,opennested, "{")
+    result = gsub(result,closenested,"}")
     return result
 end
 
-function buffers.flush_result(result,nested)
+function buffers.flushresult(result,nested)
     if nested then
-        texsprint(ctxcatcodes,buffers.replace_nested(concat(result,"")))
+        texsprint(ctxcatcodes,buffers.replacenested(concat(result)))
     else
-        texsprint(ctxcatcodes,concat(result,""))
+        texsprint(ctxcatcodes,concat(result))
     end
 end
 
@@ -745,7 +766,7 @@ function buffers.realign(name,forced_n) -- no, auto, <number>
     return d
 end
 
--- escapes: buffers.set_escape("tex","/BTEX","/ETEX")
+-- escapes: buffers.setescapepair("tex","/BTEX","/ETEX")
 
 local function flush_escaped_line(str,pattern,flushline)
     while true do
@@ -769,7 +790,7 @@ local function flush_escaped_line(str,pattern,flushline)
     end
 end
 
-function buffers.set_escape(name,pair)
+function buffers.setescapepair(name,pair)
     if pair and pair ~= "" then
         local visualizer = buffers.getvisualizer(name)
         visualizer.normal_flush_line = visualizer.normal_flush_line or visualizer.flush_line

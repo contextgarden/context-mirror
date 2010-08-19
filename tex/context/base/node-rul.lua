@@ -11,11 +11,14 @@ if not modules then modules = { } end modules ['node-rul'] = {
 --
 -- todo: make robust for layers ... order matters
 
-local nodecodes = nodes.nodecodes
+local attributes, nodes, node = attributes, nodes, node
 
-local glyph = nodecodes.glyph
-local disc  = nodecodes.disc
-local rule  = nodecodes.rule
+local nodecodes  = nodes.nodecodes
+local tasks      = nodes.tasks
+
+local glyph_code = nodecodes.glyph
+local disc_code  = nodecodes.disc
+local rule_code  = nodecodes.rule
 
 function nodes.strip_range(first,last) -- todo: dir
     if first and last then -- just to be sure
@@ -24,7 +27,7 @@ function nodes.strip_range(first,last) -- todo: dir
         end
         while first and first ~= last do
             local id = first.id
-            if id == glyph or id == disc then -- or id == rule
+            if id == glyph_code or id == disc_code then -- or id == rule_code
                 break
             else
                 first = first.next
@@ -37,7 +40,7 @@ function nodes.strip_range(first,last) -- todo: dir
         end
         while last and last ~= first do
             local id = last.id
-            if id == glyph or id == disc then -- or id == rule
+            if id == glyph_code or id == disc_code then -- or id == rule_code
                 break
             else
                 last = last.prev
@@ -67,30 +70,40 @@ local a_colorspace   = attributes.private('colormodel')
 local insert_before, insert_after, strip_range = node.insert_before, node.insert_after, nodes.strip_range
 local list_dimensions, has_attribute, set_attribute = node.dimensions, node.has_attribute, node.set_attribute
 local hpack_nodes = node.hpack
-local skipcodes, nodecodes = nodes.skipcodes, nodes.nodecodes
 local dimenfactor = fonts.dimenfactor
 local texwrite = tex.write
 
 local fontdata  = fonts.ids
 local variables = interfaces.variables
 
-local glyph   = nodecodes.glyph
-local disc    = nodecodes.disc
-local glue    = nodecodes.glue
-local penalty = nodecodes.penalty
-local kern    = nodecodes.kern
-local hlist   = nodecodes.hlist
-local vlist   = nodecodes.vlist
-local rule    = nodecodes.rule
-local whatsit = nodecodes.whatsit
+local nodecodes = nodes.nodecodes
+local skipcodes = nodes.skipcodes
+local whatcodes = nodes.whatcodes
+local kerncodes = nodes.kerncodes
 
-local userskip   = skipcodes.userskip
-local spaceskip  = skipcodes.spaceskip
-local xspaceskip = skipcodes.xspaceskip
+local glyph_code      = nodecodes.glyph
+local disc_code       = nodecodes.disc
+local glue_code       = nodecodes.glue
+local penalty_code    = nodecodes.penalty
+local kern_code       = nodecodes.kern
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
+local rule_code       = nodecodes.rule
+local whatsit_code    = nodecodes.whatsit
 
-local new_rule = nodes.rule
-local new_kern = nodes.kern
-local new_glue = nodes.glue
+local userskip_code   = skipcodes.userskip
+local spaceskip_code  = skipcodes.spaceskip
+local xspaceskip_code = skipcodes.xspaceskip
+
+local dir_code        = whatcodes.dir
+
+local kerning_code    = kerncodes.kern
+
+local nodepool        = nodes.pool
+
+local new_rule        = nodepool.rule
+local new_kern        = nodepool.kern
+local new_glue        = nodepool.glue
 
 -- we can use this one elsewhere too
 --
@@ -115,7 +128,7 @@ local function process_words(attribute,data,flush,head,parent) -- we have hlistd
         local continue, done, strip, level = false, false, true, -1
         while n do
             local id = n.id
-            if id == glyph or id == rule then
+            if id == glyph_code or id == rule_code then
                 local aa = has_attribute(n,attribute)
                 if aa then
                     if aa == a then
@@ -145,9 +158,9 @@ local function process_words(attribute,data,flush,head,parent) -- we have hlistd
                     end
                     f, l, a = nil, nil, nil
                 end
-            elseif f and (id == disc or (id == kern and n.subtype == 0)) then
+            elseif f and (id == disc_code or (id == kern_code and n.subtype == kerning_code)) then
                 l = n
-            elseif id == hlist or id == vlist then
+            elseif id == hlist_code or id == vlist_code then
                 if f then
                     head, done = flush(head,f,l,d,level,parent,strip), true
                     f, l, a = nil, nil, nil
@@ -156,21 +169,21 @@ local function process_words(attribute,data,flush,head,parent) -- we have hlistd
                 if list then
                     n.list = process_words(attribute,data,flush,list,n)
                 end
-            elseif checkdir and id == whatsit and n.subtype == 7 then -- only changes in dir, we assume proper boundaries
+            elseif checkdir and id == whatsit_code and n.subtype == dir_code then -- only changes in dir, we assume proper boundaries
                 if f and a then
                     l = n
                 end
             elseif f then
                 if continue then
-                    if id == penalty then
+                    if id == penalty_code then
                         l = n
-                    elseif id == kern then
+                    elseif id == kern_code then
                         l = n
-                    elseif id == glue then
+                    elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
                         local subtype = n.subtype
                         if continue and has_attribute(n,attribute) and
-                            (subtype == userskip or subtype == spaceskip or subskip == xspaceskip) then
+                            (subtype == userskip_code or subtype == spaceskip_code or subskip == xspaceskip_code) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true
@@ -213,7 +226,7 @@ local a_viewerlayer = attributes.private("viewerlayer")
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
 -- check for f and l
-    if f.id ~= glyph then
+    if f.id ~= glyph_code then
         -- saveguard ... we need to deal with rules and so (math)
         return head
     end
@@ -286,16 +299,16 @@ end
 
 local process = nodes.process_words
 
-nodes.rules.process = function(head) return process(a_ruled,data,flush_ruled,head) end
+nodes.rules.handler = function(head) return process(a_ruled,data,flush_ruled,head) end
 
 function nodes.rules.enable()
-    tasks.enableaction("shipouts","nodes.rules.process")
+    tasks.enableaction("shipouts","nodes.rules.handler")
 end
 
 -- elsewhere:
 --
--- tasks.appendaction ("shipouts", "normalizers", "nodes.rules.process")
--- tasks.disableaction("shipouts",                "nodes.rules.process") -- only kick in when used
+-- tasks.appendaction ("shipouts", "normalizers", "nodes.rules.handler")
+-- tasks.disableaction("shipouts",                "nodes.rules.handler") -- only kick in when used
 
 local trace_shifted = false  trackers.register("nodes.shifted", function(v) trace_shifted = v end)
 
@@ -342,8 +355,8 @@ end
 
 local process = nodes.process_words
 
-nodes.shifts.process = function(head) return process(a_shifted,data,flush_shifted,head) end
+nodes.shifts.handler = function(head) return process(a_shifted,data,flush_shifted,head) end
 
 function nodes.shifts.enable()
-    tasks.enableaction("shipouts","nodes.shifts.process")
+    tasks.enableaction("shipouts","nodes.shifts.handler")
 end

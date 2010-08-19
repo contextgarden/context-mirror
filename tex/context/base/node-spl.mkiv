@@ -82,14 +82,14 @@
   {\dodoubleargument\dodefinefontsolution}
 
 \def\dodefinefontsolution[#1][#2]% we could set the attribute at the lua end
-  {\setxvalue{\??fu:#1}{\attribute\splitterattribute\ctxlua{parbuilders.solutions.splitters.define("#1","#2")}\relax}}
+  {\setxvalue{\??fu:#1}{\attribute\splitterattribute\ctxlua{builders.paragraphs.solutions.splitters.define("#1","#2")}\relax}}
 
 \unexpanded\def\setfontsolution[#1]%
-  {\ctxlua{parbuilders.solutions.splitters.enable()}%
+  {\ctxlua{builders.paragraphs.solutions.splitters.enable()}%
    \csname\??fu:#1\endcsname}
 
 \unexpanded\def\resetfontsolution
-  {\ctxlua{parbuilders.solutions.splitters.disable()}%
+  {\ctxlua{builders.paragraphs.solutions.splitters.disable()}%
    \attribute\splitterattribute\attributeunsetvalue}
 
 \letvalue{\??fu:\v!reset}\resetfontsolution
@@ -99,7 +99,7 @@
    \the\everysetupfontsolutions}
 
 \appendtoks
-    \ctxlua{parbuilders.solutions.splitters.setup {
+    \ctxlua{builders.paragraphs.solutions.splitters.setup {
         method    = "\@@fumethod",
         criterium = "\@@fucriterium",
     }}%

@@ -17,7 +17,8 @@ local trace_defining = false  trackers.register("math.defining", function(v) tra
 
 local report_math = logs.new("mathematics")
 
-mathematics = mathematics or { }
+mathematics       = mathematics or { }
+local mathematics = mathematics
 
 mathematics.extrabase   = 0xFE000 -- here we push some virtuals
 mathematics.privatebase = 0xFF000 -- here we push the ex

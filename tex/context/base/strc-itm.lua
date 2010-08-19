@@ -6,10 +6,12 @@ if not modules then modules = { } end modules ['strc-itm'] = {
     license   = "see context related readme files"
 }
 
-structure            = structure            or { }
-structure.itemgroups = structure.itemgroups or { }
+local structures = structures
 
-local itemgroups = structure.itemgroups
+structures.itemgroups = structures.itemgroups or { }
+local itemgroups      = structures.itemgroups
+
+local jobpasses       = job.passes
 
 function itemgroups.register(name,nofitems,maxwidth)
     jobpasses.savedata("itemgroup", { nofitems, maxwidth })

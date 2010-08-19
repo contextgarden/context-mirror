@@ -16,31 +16,33 @@ local tonumber = tonumber
 local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write, tex.count
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
+local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
 
-local trace_lists = false  trackers.register("structure.lists", function(v) trace_lists = v end)
+local trace_lists = false  trackers.register("structures.lists", function(v) trace_lists = v end)
 
 local report_lists = logs.new("lists")
 
 local ctxcatcodes = tex.ctxcatcodes
 
-structure.lists     = structure.lists     or { }
-structure.sections  = structure.sections  or { }
-structure.helpers   = structure.helpers   or { }
-structure.documents = structure.documents or { }
-structure.pages     = structure.pages     or { }
+local structures = structures
 
-local lists     = structure.lists
-local sections  = structure.sections
-local helpers   = structure.helpers
-local documents = structure.documents
-local pages     = structure.pages
+structures.lists     = structures.lists or { }
 
-lists.collected = lists.collected or { }
-lists.tobesaved = lists.tobesaved or { }
-lists.enhancers = lists.enhancers or { }
-lists.internals = lists.internals or { }
-lists.ordered   = lists.ordered   or { }
-lists.cached    = lists.cached    or { }
+local lists          = structures.lists
+local sections       = structures.sections
+local helpers        = structures.helpers
+local documents      = structures.documents
+local pages          = structures.pages
+local references     = structures.references
+
+lists.collected      = lists.collected or { }
+lists.tobesaved      = lists.tobesaved or { }
+lists.enhancers      = lists.enhancers or { }
+lists.internals      = lists.internals or { }
+lists.ordered        = lists.ordered   or { }
+lists.cached         = lists.cached    or { }
+
+references.specials  = references.specials or { }
 
 local cached, pushed = lists.cached, { }
 
@@ -51,7 +53,7 @@ local function initializer()
     -- create a cross reference between internal references
     -- and list entries
     local collected = lists.collected
-    local internals = jobreferences.internals
+    local internals = references.internals
     local ordered   = lists.ordered
     for i=1,#collected do
         local c = collected[i]
@@ -83,7 +85,7 @@ local function initializer()
 end
 
 if job then
-    job.register('structure.lists.collected', structure.lists.tobesaved, initializer)
+    job.register('structures.lists.collected', lists.tobesaved, initializer)
 end
 
 function lists.push(t)
@@ -169,11 +171,11 @@ local function filter_collected(names, criterium, number, collected, forced, nes
     criterium = gsub(criterium," ","") -- not needed
     forced = forced or { } -- todo: also on other branched, for the moment only needed for bookmarks
     if type(names) == "string" then
-        names = aux.settings_to_hash(names)
+        names = settings_to_hash(names)
     end
     local all = not next(names) or names[variables.all] or false
     if trace_lists then
-        report_lists("filtering names: %s, criterium: %s, number: %s",aux.simple_hash_to_string(names),criterium,number or "-")
+        report_lists("filtering names: %s, criterium: %s, number: %s",simple_hash_to_string(names),criterium,number or "-")
     end
     if criterium == variables.intro then
         -- special case, no structure yet
@@ -192,7 +194,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
                 local metadata = v.metadata
                 if metadata then
                     local name = metadata.name or false
-                    local sectionnumber = (r.section == 0) or jobsections.collected[r.section]
+                    local sectionnumber = (r.section == 0) or sections.collected[r.section]
                     if forced[name] or (sectionnumber and not metadata.nolist and (all or names[name])) then -- and not sectionnumber.hidenumber then
                         result[#result+1] = v
                     end
@@ -207,7 +209,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
                 local v = collected[i]
                 local r = v.references
                 if r then
-                    local sectionnumber = jobsections.collected[r.section]
+                    local sectionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
@@ -239,7 +241,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
                 local v = collected[i]
                 local r = v.references
                 if r then
-                    local sectionnumber = jobsections.collected[r.section]
+                    local sectionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
@@ -271,7 +273,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
                 local v = collected[i]
                 local r = v.references
                 if r then
-                    local sectionnumber = jobsections.collected[r.section]
+                    local sectionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
@@ -317,7 +319,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
                 local v = collected[i]
                 local r = v.references
                 if r then
-                    local sectionnumber = jobsections.collected[r.section]
+                    local sectionnumber = sections.collected[r.section]
                     if sectionnumber then
                         local metadata = v.metadata
                         local cnumbers = sectionnumber.numbers
@@ -392,7 +394,7 @@ end
 
 function lists.sectionnumber(name,n,spec)
     local data = lists.result[n]
-    local sectiondata = jobsections.collected[data.references.section]
+    local sectiondata = sections.collected[data.references.section]
     -- hm, prefixnumber?
     sections.typesetnumber(sectiondata,"prefix",spec,sectiondata) -- data happens to contain the spec too
 end
@@ -494,7 +496,7 @@ end
 
 local splitter = lpeg.splitat(":")
 
-function jobreferences.specials.order(var,actions) -- jobreferences.specials !
+function references.specials.order(var,actions) -- references.specials !
     local operation = var.operation
     if operation then
         local kind, name, n = lpegmatch(splitter,operation)
@@ -505,7 +507,7 @@ function jobreferences.specials.order(var,actions) -- jobreferences.specials !
         if r then
             actions.realpage = r
             var.operation = r -- brrr, but test anyway
-            return jobreferences.specials.page(var,actions)
+            return references.specials.page(var,actions)
         end
     end
 end

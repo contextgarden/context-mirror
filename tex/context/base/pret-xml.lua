@@ -12,12 +12,15 @@ if not modules then modules = { } end modules ['pret-xml'] = {
 -- built in parser)
 
 local utf = unicode.utf8
-
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local utfbyte, utffind = utf.byte, utf.find
 local rep = string.rep
 local texsprint, texwrite = tex.sprint, tex.write
 local ctxcatcodes = tex.ctxcatcodes
+
+local buffers = buffers
+
+local changestate, finishstate = buffers.changestate, buffers.finishstate
 
 local visualizer = buffers.newvisualizer("xml")
 
@@ -33,8 +36,6 @@ local states = {
     ["-"]=1, ["?"]=1, ["!"]=1, [":"]=1, ["_"]=1, ["/"]=1,
 }
 
-local change_state, finish_state = buffers.change_state, buffers.finish_state
-
 local state, intag, dotag, inentity, inquote
 
 function visualizer.reset()
@@ -46,26 +47,26 @@ function visualizer.flush_line(str,nested)
     for c in utfcharacters(str) do
         if c == "&" then
             inentity = true -- no further checking
-            state = change_state(3, state)
+            state = changestate(3, state)
             texwrite(c)
         elseif c == ";" then
             if inentity then
                 inentity = false
-                state = change_state(3, state)
+                state = changestate(3, state)
                 texwrite(c)
-                state = finish_state(state)
+                state = finishstate(state)
             else
                 texwrite(c)
             end
         elseif inentity then
-            state = change_state(3, state)
+            state = changestate(3, state)
             texwrite(c)
         elseif c == " " then
-            state = finish_state(state)
+            state = finishstate(state)
             texsprint(ctxcatcodes,"\\obs")
             intag = false
         elseif c == "\t" then
-            state = finish_state(state)
+            state = finishstate(state)
             texsprint(ctxcatcodes,"\\obs")
             if buffers.visualizers.enabletab then
                 texsprint(ctxcatcodes,rep("\\obs ",i%buffers.visualizers.tablength))
@@ -73,64 +74,64 @@ function visualizer.flush_line(str,nested)
             intag = false
         elseif c == "<" then
             if intag then
-                state = finish_state(state)
+                state = finishstate(state)
                 -- error
             else
                 intag = 1
                 dotag = true
-                state = change_state(1, state)
+                state = changestate(1, state)
             end
             texwrite(c)
         elseif c == ">" then
             if intag then
                 texwrite(c)
-                state = finish_state(state)
+                state = finishstate(state)
                 intag, dotag = false, false
             elseif dotag then
-                state = change_state(1, state)
+                state = changestate(1, state)
                 texwrite(c)
-                state = finish_state(state)
+                state = finishstate(state)
                 intag, dotag = false, false
             else
-                state = finish_state(state)
+                state = finishstate(state)
                 texwrite(c)
             end
         elseif intag then
             if utffind(c,"^[%S]$") then
-                state = change_state(1, state)
+                state = changestate(1, state)
                 texwrite(c)
                 intag = intag + 1
             else
                 intag = false
-                state = finish_state(state)
+                state = finishstate(state)
                 texwrite(c)
             end
         elseif dotag then
             if c == "'" or c == '"' then
                 if inquote then
                     if c == inquote then
-                        state = change_state(states[c], state) -- 2
+                        state = changestate(states[c], state) -- 2
                         texwrite(c)
-                        state = finish_state(state)
+                        state = finishstate(state)
                         inquote = false
                     else
                         texwrite(c)
                     end
                 else
                     inquote = c
-                    state = change_state(states[c], state)
+                    state = changestate(states[c], state)
                     texwrite(c)
-                    state = finish_state(state)
+                    state = finishstate(state)
                 end
             elseif inquote then
                 texwrite(c)
             else
-                state = change_state(states[c], state)
+                state = changestate(states[c], state)
                 texwrite(c)
             end
         else
             texwrite(c)
         end
     end
-    state = finish_state(state)
+    state = finishstate(state)
 end

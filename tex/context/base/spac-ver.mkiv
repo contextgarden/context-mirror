@@ -1336,7 +1336,7 @@
 \definesystemattribute[skip-order]     \chardef\skiporderattribute     \dogetattributeid{skip-order}
 \definesystemattribute[display-math]   \chardef\displaymathattribute   \dogetattributeid{display-math}
 \definesystemattribute[snap-method]    \chardef\snapmethodattribute    \dogetattributeid{snap-method}
-\definesystemattribute[snap-done]      \chardef\snapdoneattribute      \dogetattributeid{snap-done}
+\definesystemattribute[snap-vbox]      \chardef\snapvboxattribute      \dogetattributeid{snap-vbox}
 
 %definesystemattribute[snap-category]  \chardef\snapcategoryattribute  \dogetattributeid{snap-category}
 
@@ -1350,6 +1350,17 @@
 \newdimen \globalbodyfontstrutheight
 \newdimen \globalbodyfontstrutdepth
 
+\def\snappedvboxattribute{\ifgridsnapping attr       \snapvboxattribute \attribute\snapmethodattribute\fi}
+\def\setlocalgridsnapping{\ifgridsnapping \attribute \snapvboxattribute \attribute\snapmethodattribute\fi}
+
+\def\dosetlocalgridsnapping#1%
+  {\ifgridsnapping
+     \doifsomething{#1}%
+       {\autosetsnapvalue{#1}%
+        \attribute \snapvboxattribute \attribute\snapmethodattribute}%
+   \fi}
+
+
 % \appendtoks
 %     \dosetupgridsnapping
 % \to \everysetupbodyfont
@@ -1357,7 +1368,7 @@
 \def\installsnapvalues#1#2% todo: a proper define
   {\edef\currentsnapper{#1:#2}%
    \ifcsname\currentsnapper\endcsname \else
-     \setevalue\currentsnapper{\ctxlua{vspacing.define_snap_method("#1","#2")}}%
+     \setevalue\currentsnapper{\ctxlua{builders.vspacing.define_snap_method("#1","#2")}}%
    \fi
    \setevalue{\??gr:#1}{\attribute\snapmethodattribute\csname\currentsnapper\endcsname\space}}
 
@@ -1472,7 +1483,7 @@
   {} % gone, unless we set an attribute
 
 \def\doplaceongrid[#1]%
-  {\snaptogrid[#1]\vbox}
+  {\snaptogrid[#1]\vbox} % mark as done
 
 \def\dosnaptogrid[#1]% list or predefined
   {\ifgridsnapping
@@ -1489,21 +1500,12 @@
 % eventually there will always be a line snap
 
 \def\dododosnaptogrid#1%
-  {\ifvbox\nextbox
-     \ctxlua{nodes.collapse_vbox(\number\nextbox)}%
+  {\ifvbox\nextbox % this will go away
+     \ctxlua{nodes.collapse_vbox(\number\nextbox)}% isn't that already done?
    \fi
    \doifelsenothing{#1}{\setsnapvalue\v!normal}{\autosetsnapvalue{#1}}%
-   \ctxlua{vspacing.snap_box(\number\nextbox,\number\attribute\snapmethodattribute)}%
-%    \ifzeropt\ht\nextbox
-%      \ifzeropt\dp\nextbox
-%        \box\nextbox % here, else empty and zero
-%        \kern-\bodyfontlineheight
-%      \else
-%        \box\nextbox
-%      \fi
-%    \else
-     \box\nextbox
-%    \fi
+   \ctxlua{builders.vspacing.snap_box(\number\nextbox,\number\attribute\snapmethodattribute)}%
+   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}%
    \egroup}
 
 \def\docheckgridsnapping
@@ -1638,7 +1640,7 @@
 %
 % \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
 
-% todo, in grid mode: vspacing.fixed = false
+% todo, in grid mode: builders.vspacing.fixed = false
 
 \let\saveouterspacing   \relax % for old times sake
 \let\restoreouterspacing\relax % for old times sake
@@ -1739,11 +1741,11 @@
   {\dotripleempty\dodefinevspacingamount}
 
 % \def\dodefinevspacingamount[#1][#2][#3]%
-%   {\ctxlua{vspacing.setskip("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+%   {\ctxlua{builders.vspacing.setskip("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
 
 \def\dodefinevspacingamount[#1][#2][#3]% can be combined
   {\setvalue{\??vs:#1}{\ifgridsnapping#3\else#2\fi}%
-   \ctxlua{vspacing.setskip("#1")}}
+   \ctxlua{builders.vspacing.setskip("#1")}}
 
 \def\addpredefinedblankskip#1#2%
   {\settrue\someblankdone
@@ -1757,7 +1759,7 @@
   {\dodoubleempty\dodefinevspacing}
 
 \def\dodefinevspacing[#1][#2]%
-  {\ctxlua{vspacing.setmap("#1","#2")}}
+  {\ctxlua{builders.vspacing.setmap("#1","#2")}}
 
 \unexpanded\def\vspacing
   {\dosingleempty\dovspacing}
@@ -1774,8 +1776,8 @@
    \fi\fi}
 
 \def\dovspacingyes[#1]%
- %{\ifmmode\else\ctxlua{vspacing.analyse("\iffirstargument#1\else\s!default\fi")}\fi}
-  {\ifmmode\else\ctxlua{vspacing.analyse("\iffirstargument#1\else\currentvspacing\fi")}\fi}
+ %{\ifmmode\else\ctxlua{builders.vspacing.analyse("\iffirstargument#1\else\s!default\fi")}\fi}
+  {\ifmmode\else\ctxlua{builders.vspacing.analyse("\iffirstargument#1\else\currentvspacing\fi")}\fi}
 
 \def\dovspacingnop[#1]%
   {\ifmmode\else\par\fi}
@@ -1868,13 +1870,13 @@
 % \appendtoks
 %     \writestatus\m!systems{! ! enabling vspacing ! !}%
 %     \settrue\vspacingenabled
-%     \ctxlua{vspacing.enable()}%
+%     \ctxlua{builders.vspacing.enable()}%
 % \to \everyenablevspacing
 %
 % \appendtoks
 %     \writestatus\m!systems{! ! disabling vspacing ! !}%
 %     \setfalse\vspacingenabled
-%     \ctxlua{vspacing.disable()}%
+%     \ctxlua{builders.vspacing.disable()}%
 % \to \everydisablevspacing
 
 \let\blank            \vspacing

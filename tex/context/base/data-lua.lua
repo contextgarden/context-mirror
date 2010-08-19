@@ -17,6 +17,8 @@ local report_resolvers = logs.new("resolvers")
 local gsub, insert = string.gsub, table.insert
 local unpack = unpack or table.unpack
 
+local resolvers, package = resolvers, package
+
 local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
 local clibformats = { 'lib' }
 

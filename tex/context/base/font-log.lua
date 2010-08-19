@@ -12,7 +12,9 @@ local trace_defining = false  trackers.register("fonts.defining", function(v) tr
 
 local report_define = logs.new("define fonts")
 
+local fonts  = fonts
 fonts.logger = fonts.logger or { }
+local logger = fonts.logger
 
 --[[ldx--
 <p>The following functions are used for reporting about the fonts
@@ -21,7 +23,7 @@ we now have several readers it may be handy to know what reader is
 used for which font.</p>
 --ldx]]--
 
-function fonts.logger.save(tfmtable,source,specification) -- save file name in spec here ! ! ! ! ! !
+function logger.save(tfmtable,source,specification) -- save file name in spec here ! ! ! ! ! !
     if tfmtable and specification and specification.specification then
         local name = lower(specification.name)
         if trace_defining and not fonts.used[name] then
@@ -34,7 +36,7 @@ function fonts.logger.save(tfmtable,source,specification) -- save file name in s
     end
 end
 
-function fonts.logger.report(complete)
+function logger.report(complete)
     local t = { }
     for name, used in table.sortedhash(fonts.used) do
         if complete then
@@ -46,13 +48,13 @@ function fonts.logger.report(complete)
     return t
 end
 
-function fonts.logger.format(name)
+function logger.format(name)
     return fonts.used[name] or "unknown"
 end
 
 statistics.register("loaded fonts", function()
     if next(fonts.used) then
-        local t = fonts.logger.report()
+        local t = logger.report()
         return (#t > 0 and format("%s files: %s",#t,concat(t," "))) or "none"
     else
         return nil

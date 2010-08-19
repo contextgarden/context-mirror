@@ -129,20 +129,44 @@
   {\iflocation
      attr \destinationattribute \currentstructureattribute
      attr \referenceattribute   \currentstructurereferenceattribute
-   \fi}
+  \fi}
+
+% \def\docheckstructureheadreference
+%   {\edef\currentstructureheadinteraction{\structureheadparameter\c!interaction}%
+%    \ifx\currentstructureheadinteraction\v!list
+%      \dogetsimplepagereference{bck:\nextinternalreference}%
+%      \let\currentstructurereferenceattribute\currentreferenceattribute
+%    \fi}
+
+\def\docheckstructureheadreference
+  {\edef\currentstructureheadinteraction{\structureheadparameter\c!interaction}%
+   \ifx\currentstructureheadinteraction\v!list
+     % setuphead[<section>][interaction=list,...]
+     \dogetsimplepagereference{bck:\nextinternalreference}%
+     \let\currentstructurereferenceattribute\currentreferenceattribute
+   \else\ifx\currentstructureheadinteraction\v!reference
+     % setuphead[<section>][interaction=reference,...] start<section>[backreference=abc,...]
+     \edef\currentstructureheadbackreference{\structurevariable{references.\c!backreference}}%
+     \ifx\currentstructureheadbackreference\empty \else
+       \dogetsimplepagereference\currentstructureheadbackreference
+       \let\currentstructurereferenceattribute\currentreferenceattribute
+     \fi
+   \else
+      % maybe auto: backreference when given, else list
+   \fi\fi}
 
 \def\doplacestructureheadtext#1#2#3% nodes, text, endstuff
   {\beginheadplacement
    \doresettructureheadnumbercontent
    \ifconditional\structureheadleaveempty
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint {#1}%
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint
+       {\dosetlocalgridsnapping{\structureheadparameter\c!internalgrid}#1}%
      \makestrutofbox\sectionheadbox
    \else
-     \doif{\namedstructureheadparameter\currentstructurehead\c!interaction}\v!list
-       {\dogetsimplepagereference{bck:\nextinternalreference}%
-        \let\currentstructurereferenceattribute\currentreferenceattribute}%
+     \docheckstructureheadreference
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute
-       {\doresettructureheadnumbercontent
+       {\dosetlocalgridsnapping{\structureheadparameter\c!internalgrid}%
+        \doresettructureheadnumbercontent
         \ifcase\headtimingmode\or#1\fi                          % outerside font determines distance
         \dosetfontattribute{\??nh\currentstructurehead}\c!style % but we don't want color to influence user command, todo: get the if-else out of it
         \structureheadparameter\c!command{}{\doplaceheadtextcomponent{#1}{#2}}}%
@@ -156,11 +180,10 @@
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint{#1}%
      \makestrutofbox\sectionheadbox
    \else % = needed
-     \doif{\namedstructureheadparameter\currentstructurehead\c!interaction}\v!list
-       {\dogetsimplepagereference{bck:\nextinternalreference}%
-        \let\currentstructurereferenceattribute\currentreferenceattribute}%
+     \docheckstructureheadreference
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute
-       {\ifcase\headtimingmode\or#1\fi
+       {\dosetlocalgridsnapping{\structureheadparameter\c!internalgrid}%
+        \ifcase\headtimingmode\or#1\fi
         \dosetfontattribute{\??nh\currentstructurehead}\c!style
         \structureheadparameter\c!command{\doplaceheadnumbercomponent{#1}{#2}}{\doplaceheadtextcomponent{#1}{#3}}}%
    \fi

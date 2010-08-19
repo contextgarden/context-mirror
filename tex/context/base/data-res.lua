@@ -17,6 +17,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
 local next, type = next, type
+local os = os
 
 local lpegP, lpegS, lpegR, lpegC, lpegCc, lpegCs, lpegCt = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
@@ -30,9 +31,13 @@ local trace_expansions = false  trackers.register("resolvers.expansions", functi
 
 local report_resolvers = logs.new("resolvers")
 
+local resolvers = resolvers
+
 local expanded_path_from_list  = resolvers.expanded_path_from_list
 local checked_variable         = resolvers.checked_variable
 local split_configuration_path = resolvers.split_configuration_path
+
+local initializesetter = utilities.setters.initialize
 
 local ostype, osname, osenv, ossetenv, osgetenv = os.type, os.name, os.env, os.setenv, os.getenv
 
@@ -255,7 +260,7 @@ local function load_configuration_files()
                                 t[k] = v
                             elseif kind == "table" then
                                 -- this operates on the table directly
-                                setters.initialize(filename,k,v)
+                                initializesetter(filename,k,v)
                                 -- this doesn't (maybe metatables some day)
                                 for kk, vv in next, v do -- vv = variable
                                     if vv ~= unset_variable then

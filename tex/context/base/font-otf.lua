@@ -62,26 +62,26 @@ involved is not that large. This only makes sense when we have many fonts in a l
 and don't change to frequently.</p>
 --ldx]]--
 
-fonts                = fonts     or { }
-fonts.otf            = fonts.otf or { }
-fonts.tfm            = fonts.tfm or { }
+local fonts          = fonts
 
+fonts.otf            = fonts.otf or { }
 local otf            = fonts.otf
 local tfm            = fonts.tfm
 
 local fontdata       = fonts.ids
 
-otf.tables           = otf.tables           or { } -- defined in font-ott.lua
-otf.meanings         = otf.meanings         or { } -- defined in font-ott.lua
-otf.tables.features  = otf.tables.features  or { } -- defined in font-ott.lua
-otf.tables.languages = otf.tables.languages or { } -- defined in font-ott.lua
-otf.tables.scripts   = otf.tables.scripts   or { } -- defined in font-ott.lua
+--~ otf.tables           = otf.tables           or { } -- defined in font-ott.lua
+--~ otf.tables.features  = otf.tables.features  or { } -- defined in font-ott.lua
+--~ otf.tables.languages = otf.tables.languages or { } -- defined in font-ott.lua
+--~ otf.tables.scripts   = otf.tables.scripts   or { } -- defined in font-ott.lua
 
 otf.features         = otf.features         or { }
 otf.features.list    = otf.features.list    or { }
 otf.features.default = otf.features.default or { }
 
-otf.enhancers        = otf.enhancers        or { }
+otf.enhancers        = otf.enhancers or { }
+local enhancers      = otf.enhancers
+
 otf.glists           = { "gsub", "gpos" }
 
 otf.version          = 2.653 -- beware: also sync font-mis.lua
@@ -97,6 +97,8 @@ local default  = "dflt"
 --[[ldx--
 <p>We start with a lot of tables and related functions.</p>
 --ldx]]--
+
+-- we can have more local functions
 
 otf.tables.global_fields = table.tohash {
     "lookups",
@@ -192,8 +194,8 @@ local function load_featurefile(ff,featurefile)
     end
 end
 
-function otf.enhance(name,data,filename,verbose)
-    local enhancer = otf.enhancers[name]
+local function enhance(name,data,filename,verbose)
+    local enhancer = enhancers[name]
     if enhancer then
         if (verbose ~= nil and verbose) or trace_loading then
             report_otf("enhance: %s (%s)",name,filename)
@@ -202,7 +204,7 @@ function otf.enhance(name,data,filename,verbose)
     end
 end
 
-local enhancers = {
+local ordered_enhancers = { -- implemented later
     -- pack and unpack are handled separately; they might even be moved
     -- away from the enhancers namespace
     "patch bugs",
@@ -221,6 +223,8 @@ local enhancers = {
     "migrate metadata",
     "check math parameters",
 }
+
+local add_dimensions, show_feature_order -- implemented later
 
 function otf.load(filename,format,sub,featurefile)
     local name = file.basename(file.removesuffix(filename))
@@ -262,12 +266,12 @@ function otf.load(filename,format,sub,featurefile)
             if data then
                 report_otf("file size: %s", size)
                 report_otf("enhancing ...")
-                for e=1,#enhancers do
-                    otf.enhance(enhancers[e],data,filename)
+                for e=1,#ordered_enhancers do
+                    enhance(ordered_enhancers[e],data,filename)
                     io.flush() -- we want instant messages
                 end
                 if otf.pack and not fonts.verbose then
-                    otf.enhance("pack",data,filename)
+                    enhance("pack",data,filename)
                 end
                 data.size = size
                 data.time = time
@@ -288,16 +292,16 @@ function otf.load(filename,format,sub,featurefile)
         if trace_defining then
             report_otf("loading from cache: %s",hash)
         end
-        otf.enhance("unpack",data,filename,false) -- no message here
-        otf.add_dimensions(data)
+        enhance("unpack",data,filename,false) -- no message here
+        add_dimensions(data)
         if trace_sequences then
-            otf.show_feature_order(data,filename)
+            show_feature_order(data,filename)
         end
     end
     return data
 end
 
-function otf.add_dimensions(data)
+add_dimensions = function(data)
     -- todo: forget about the width if it's the defaultwidth (saves mem)
     -- we could also build the marks hash here (instead of storing it)
     if data then
@@ -333,7 +337,7 @@ function otf.add_dimensions(data)
     end
 end
 
-function otf.show_feature_order(otfdata,filename)
+local function show_feature_order(otfdata,filename)
     local sequences = otfdata.luatex.sequences
     if sequences and #sequences > 0 then
         if trace_loading then
@@ -375,7 +379,7 @@ end
 
 -- todo: normalize, design_size => designsize
 
-otf.enhancers["reorganize mark classes"] = function(data,filename)
+enhancers["reorganize mark classes"] = function(data,filename)
     if data.mark_classes then
         local unicodes = data.luatex.unicodes
         local reverse = { }
@@ -398,7 +402,7 @@ otf.enhancers["reorganize mark classes"] = function(data,filename)
     end
 end
 
-otf.enhancers["prepare luatex tables"] = function(data,filename)
+enhancers["prepare luatex tables"] = function(data,filename)
     data.luatex = data.luatex or { }
     local luatex = data.luatex
     luatex.filename = filename
@@ -406,7 +410,7 @@ otf.enhancers["prepare luatex tables"] = function(data,filename)
     luatex.creator = "context mkiv"
 end
 
-otf.enhancers["cleanup aat"] = function(data,filename)
+enhancers["cleanup aat"] = function(data,filename)
     if otf.cleanup_aat then
     end
 end
@@ -434,13 +438,13 @@ local function analyze_features(g, features)
     return nil
 end
 
-otf.enhancers["analyse features"] = function(data,filename)
+enhancers["analyse features"] = function(data,filename)
  -- local luatex = data.luatex
  -- luatex.gposfeatures = analyze_features(data.gpos)
  -- luatex.gsubfeatures = analyze_features(data.gsub)
 end
 
-otf.enhancers["rehash features"] = function(data,filename)
+enhancers["rehash features"] = function(data,filename)
     local features = { }
     data.luatex.features = features
     for k, what in next, otf.glists do
@@ -471,7 +475,7 @@ otf.enhancers["rehash features"] = function(data,filename)
     end
 end
 
-otf.enhancers["analyse anchors"] = function(data,filename)
+enhancers["analyse anchors"] = function(data,filename)
     local classes = data.anchor_classes
     local luatex = data.luatex
     local anchor_to_lookup, lookup_to_anchor = { }, { }
@@ -497,7 +501,7 @@ otf.enhancers["analyse anchors"] = function(data,filename)
     end
 end
 
-otf.enhancers["analyse marks"] = function(data,filename)
+enhancers["analyse marks"] = function(data,filename)
     local glyphs = data.glyphs
     local marks = { }
     data.luatex.marks = marks
@@ -509,9 +513,9 @@ otf.enhancers["analyse marks"] = function(data,filename)
     end
 end
 
-otf.enhancers["analyse unicodes"] = fonts.map.add_to_unicode
+enhancers["analyse unicodes"] = fonts.map.add_to_unicode
 
-otf.enhancers["analyse subtables"] = function(data,filename)
+enhancers["analyse subtables"] = function(data,filename)
     data.luatex = data.luatex or { }
     local luatex = data.luatex
     local sequences = { }
@@ -579,7 +583,7 @@ otf.enhancers["analyse subtables"] = function(data,filename)
     end
 end
 
-otf.enhancers["merge cid fonts"] = function(data,filename)
+enhancers["merge cid fonts"] = function(data,filename)
     -- we can also move the names to data.luatex.names which might
     -- save us some more memory (at the cost of harder tracing)
     if data.subfonts then
@@ -633,7 +637,7 @@ otf.enhancers["merge cid fonts"] = function(data,filename)
     end
 end
 
-otf.enhancers["prepare unicode"] = function(data,filename)
+enhancers["prepare unicode"] = function(data,filename)
     local luatex = data.luatex
     if not luatex then luatex = { } data.luatex = luatex end
     local indices, unicodes, multiples, internals = { }, { }, { }, { }
@@ -716,7 +720,7 @@ otf.enhancers["prepare unicode"] = function(data,filename)
     luatex.private = private
 end
 
-otf.enhancers["cleanup ttf tables"] = function(data,filename)
+enhancers["cleanup ttf tables"] = function(data,filename)
     local ttf_tables = data.ttf_tables
     if ttf_tables then
         for k=1,#ttf_tables do
@@ -726,7 +730,7 @@ otf.enhancers["cleanup ttf tables"] = function(data,filename)
     data.ttf_tab_saved = nil
 end
 
-otf.enhancers["compact glyphs"] = function(data,filename)
+enhancers["compact glyphs"] = function(data,filename)
     table.compact(data.glyphs) -- needed?
     if data.subfonts then
         for _, subfont in next, data.subfonts do
@@ -735,7 +739,7 @@ otf.enhancers["compact glyphs"] = function(data,filename)
     end
 end
 
-otf.enhancers["reverse coverage"] = function(data,filename)
+enhancers["reverse coverage"] = function(data,filename)
     -- we prefer the before lookups in a normal order
     if data.lookups then
         for _, v in next, data.lookups do
@@ -751,7 +755,7 @@ otf.enhancers["reverse coverage"] = function(data,filename)
     end
 end
 
-otf.enhancers["check italic correction"] = function(data,filename)
+enhancers["check italic correction"] = function(data,filename)
     local glyphs = data.glyphs
     local ok = false
     for index, glyph in next, glyphs do
@@ -769,7 +773,7 @@ otf.enhancers["check italic correction"] = function(data,filename)
     data.has_italic = true
 end
 
-otf.enhancers["check math"] = function(data,filename)
+enhancers["check math"] = function(data,filename)
     if data.math then
         -- we move the math stuff into a math subtable because we then can
         -- test faster in the tfm copy
@@ -836,7 +840,7 @@ otf.enhancers["check math"] = function(data,filename)
     end
 end
 
-otf.enhancers["share widths"] = function(data,filename)
+enhancers["share widths"] = function(data,filename)
     local glyphs = data.glyphs
     local widths = { }
     for index, glyph in next, glyphs do
@@ -870,7 +874,7 @@ end
 -- unpredictable alternatively we could force an [1] if not set (maybe I will do that
 -- anyway).
 
---~ otf.enhancers["reorganize kerns"] = function(data,filename)
+--~ enhancers["reorganize kerns"] = function(data,filename)
 --~     local glyphs, mapmap, unicodes = data.glyphs, data.luatex.indices, data.luatex.unicodes
 --~     local mkdone = false
 --~     for index, glyph in next, glyphs do
@@ -1010,7 +1014,7 @@ end
 --~     end
 --~ end
 
-otf.enhancers["reorganize kerns"] = function(data,filename)
+enhancers["reorganize kerns"] = function(data,filename)
     local glyphs, mapmap, unicodes = data.glyphs, data.luatex.indices, data.luatex.unicodes
     local mkdone = false
     local function do_it(lookup,first_unicode,kerns)
@@ -1154,15 +1158,7 @@ otf.enhancers["reorganize kerns"] = function(data,filename)
     end
 end
 
-
-
-
-
-
-
-
-
-otf.enhancers["strip not needed data"] = function(data,filename)
+enhancers["strip not needed data"] = function(data,filename)
     local verbose = fonts.verbose
     local int_to_uni = data.luatex.unicodes
     for k, v in next, data.glyphs do
@@ -1204,7 +1200,7 @@ otf.enhancers["strip not needed data"] = function(data,filename)
     end
 end
 
-otf.enhancers["migrate metadata"] = function(data,filename)
+enhancers["migrate metadata"] = function(data,filename)
     local global_fields = otf.tables.global_fields
     local metadata = { }
     for k,v in next, data do
@@ -1225,7 +1221,7 @@ local private_math_parameters = {
     "FractionDelimiterDisplayStyleSize",
 }
 
-otf.enhancers["check math parameters"] = function(data,filename)
+enhancers["check math parameters"] = function(data,filename)
     local mathdata = data.metadata.math
     if mathdata then
         for m=1,#private_math_parameters do
@@ -1240,7 +1236,7 @@ otf.enhancers["check math parameters"] = function(data,filename)
     end
 end
 
-otf.enhancers["flatten glyph lookups"] = function(data,filename)
+enhancers["flatten glyph lookups"] = function(data,filename)
     for k, v in next, data.glyphs do
         local lookups = v.lookups
         if lookups then
@@ -1294,7 +1290,7 @@ otf.enhancers["flatten glyph lookups"] = function(data,filename)
     end
 end
 
-otf.enhancers["simplify glyph lookups"] = function(data,filename)
+enhancers["simplify glyph lookups"] = function(data,filename)
     for k, v in next, data.glyphs do
         local lookups = v.lookups
         if lookups then
@@ -1319,7 +1315,7 @@ otf.enhancers["simplify glyph lookups"] = function(data,filename)
     end
 end
 
-otf.enhancers["flatten anchor tables"] = function(data,filename)
+enhancers["flatten anchor tables"] = function(data,filename)
     for k, v in next, data.glyphs do
         if v.anchors then
             for kk, vv in next, v.anchors do
@@ -1338,7 +1334,7 @@ otf.enhancers["flatten anchor tables"] = function(data,filename)
     end
 end
 
-otf.enhancers["flatten feature tables"] = function(data,filename)
+enhancers["flatten feature tables"] = function(data,filename)
     -- is this needed? do we still use them at all?
     for _, tag in next, otf.glists do
         if data[tag] then
@@ -1364,11 +1360,11 @@ otf.enhancers["flatten feature tables"] = function(data,filename)
     end
 end
 
-otf.enhancers.patches = otf.enhancers.patches or { }
+enhancers.patches = enhancers.patches or { }
 
-otf.enhancers["patch bugs"] = function(data,filename)
+enhancers["patch bugs"] = function(data,filename)
     local basename = file.basename(lower(filename))
-    for pattern, action in next, otf.enhancers.patches do
+    for pattern, action in next, enhancers.patches do
         if find(basename,pattern) then
             action(data,filename)
         end
@@ -1377,7 +1373,7 @@ end
 
 -- tex features
 
-fonts.otf.enhancers["enrich with features"] = function(data,filename)
+enhancers["enrich with features"] = function(data,filename)
     -- later, ctx only
 end
 

@@ -13,6 +13,8 @@ local trace_manipulations = false  trackers.register("lxml.manipulations", funct
 
 local report_xml = logs.new("xml")
 
+local xml = xml
+
 local xmlparseapply, xmlconvert, xmlcopy, xmlname = xml.parse_apply, xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 

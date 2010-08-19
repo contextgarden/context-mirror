@@ -15,6 +15,8 @@ local utf = unicode.utf8
 local uc = utf.char
 local ub = utf.byte
 
+local sorters = sorters
+
 local mappings                   = sorters.mappings
 local entries                    = sorters.entries
 local replacements               = sorters.replacements
@@ -317,3 +319,30 @@ mappings['sl'] = {
 
 add_uppercase_entries ("sl")
 add_uppercase_mappings("sl") -- cf. MM
+
+sorters.replacements["pl"] = {
+    -- no replacements
+}
+
+sorters.entries["pl"] = {
+    ["a"]   = "a", ["ą"]   = "ą", ["b"]   = "b", ["c"]   = "c", ["ć"]   = "ć",
+    ["d"]   = "d", ["e"]   = "e", ["ę"]   = "ę", ["f"]   = "f", ["g"]   = "g",
+    ["h"]   = "h", ["i"]   = "i", ["j"]   = "j", ["k"]   = "k", ["l"]   = "l",
+    ["ł"]   = "ł", ["m"]   = "m", ["n"]   = "n", ["ń"]   = "ń", ["o"]   = "o",
+    ["ó"]   = "ó", ["p"]   = "p", ["q"]   = "q", ["r"]   = "r", ["s"]   = "s",
+    ["ś"]   = "ś", ["t"]   = "t", ["u"]   = "u", ["v"]   = "v", ["w"]   = "w",
+    ["x"]   = "x", ["y"]   = "y", ["z"]   = "z", ["ź"]   = "ź", ["ż"]   = "ż",
+}
+
+sorters.mappings["pl"] = {
+    ["a"]   =  1, ["ą"]   =  2, ["b"]   =  3, ["c"]   =  4, ["ć"]   =  5,
+    ["d"]   =  6, ["e"]   =  7, ["ę"]   =  8, ["f"]   =  9, ["g"]   = 10,
+    ["h"]   = 11, ["i"]   = 12, ["j"]   = 13, ["k"]   = 14, ["l"]   = 15,
+    ["ł"]   = 16, ["m"]   = 17, ["n"]   = 18, ["ń"]   = 19, ["o"]   = 20,
+    ["ó"]   = 21, ["p"]   = 22, ["q"]   = 23, ["r"]   = 24, ["s"]   = 25,
+    ["ś"]   = 26, ["t"]   = 27, ["u"]   = 28, ["v"]   = 29, ["w"]   = 30,
+    ["x"]   = 31, ["y"]   = 32, ["z"]   = 33, ["ź"]   = 34, ["ż"]   = 35,
+}
+
+add_uppercase_entries ('pl')
+add_uppercase_mappings('pl',1)

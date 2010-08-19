@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['page-str'] = {
     license   = "see context related readme files"
 }
 
+-- streams -> managers.streams
+
 -- work in progresss .. unfinished
 
 local concat = table.concat
@@ -13,16 +15,23 @@ local concat = table.concat
 local find_tail, write_node, free_node, copy_nodelist = node.slide, node.write, node.free, node.copy_list
 local vpack_nodelist, hpack_nodelist = node.vpack, node.hpack
 local texdimen, texbox = tex.dimen, tex.box
+local settings_to_array = utilities.parsers.settings_to_array
 
-local new_kern  = nodes.kern
-local new_glyph = nodes.glyph
+local nodes, node = nodes, node
+
+local nodepool  = nodes.pool
+local tasks     = nodes.tasks
+
+local new_kern  = nodepool.kern
+local new_glyph = nodepool.glyph
 
 local trace_collecting = false  trackers.register("streams.collecting", function(v) trace_collecting = v end)
 local trace_flushing   = false  trackers.register("streams.flushing",   function(v) trace_flushing   = v end)
 
 local report_streams = logs.new("streams")
 
-streams = streams or { }
+streams       = streams or { } -- might move to the builders namespace
+local streams = streams
 
 local data, name, stack = { }, nil, { }
 
@@ -125,7 +134,7 @@ end
 
 function streams.synchronize(list) -- this is an experiment !
     -- we don't optimize this as we want to trace in detail
-    list = aux.settings_to_array(list)
+    list = settings_to_array(list)
     local max = 0
     if trace_flushing then
         report_streams("synchronizing list: %s",concat(list," "))

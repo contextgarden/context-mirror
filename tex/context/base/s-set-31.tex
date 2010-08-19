@@ -1,0 +1,118 @@
+% show missing translations
+
+\startluacode
+function interfaces.show_missing(whatinterfaces)
+    whatinterfaces = whatinterfaces or interfaces.interfaces
+    local list = dofile(resolvers.find_file("mult-def.lua"))
+    local NC, NR, HL = context.NC, context.NR, context.HL
+    for k,v in table.sortedhash(list) do
+        context.title(k)
+        context.starttabulate { string.rep("|",#whatinterfaces+1) }
+        for i=1,#whatinterfaces do
+            NC()
+            context(whatinterfaces[i])
+        end
+        NC() NR() HL()
+        for kk, vv in next, v do
+            if not string.find(kk,"subsub") then
+                local okay = true
+                for i=1,#whatinterfaces do
+                    local int = whatinterfaces[i]
+                    local str = vv[int]
+                    if not str or (int ~= "en" and str == vv.en) then
+                        okay = false
+                        break
+                    end
+                end
+                if not okay then
+                    for i=1,#whatinterfaces do
+                        local int = whatinterfaces[i]
+                        local str = vv[int]
+                        context.NC()
+                        if not str then
+                            -- nothing
+                        elseif int == "en" then
+                            context.color( { "darkgreen" }, str )
+                        elseif str == vv.en then
+                            context.color( { "darkred" }, str )
+                        elseif int == "pe" then
+                            context("\\righttoleft " .. str)
+                        else
+                            context(str)
+                        end
+                    end
+                    NC() NR()
+                end
+            end
+        end
+        context.stoptabulate()
+    end
+end
+
+function interfaces.show_missing_messages(whatinterfaces)
+    whatinterfaces = whatinterfaces or interfaces.interfaces
+    local list = dofile(resolvers.find_file("mult-mes.lua"))
+    local NC, NR, HL = context.NC, context.NR, context.HL
+    for k,v in table.sortedhash(list) do
+        context.title("message: " .. k)
+        context.starttabulate { "|l|" .. string.rep("pl|",#whatinterfaces) }
+        NC()
+        for i=1,#whatinterfaces do
+            NC()
+            context(whatinterfaces[i])
+        end
+        NC() NR() HL()
+        local sorted = table.sortedkeys(v)
+        for i=1,#sorted do
+            local kk = sorted[i]
+            local vv = v[kk]
+            if kk ~= "files" then
+                local okay = true
+                for i=1,#whatinterfaces do
+                    local int = whatinterfaces[i]
+                    local str = vv[int]
+                    if not str or (int ~= "en" and str == vv.en) then
+                        okay = false
+                        break
+                    end
+                end
+                if not okay then
+                    context.NC()
+                    context(kk)
+                    for i=1,#whatinterfaces do
+                        local int = whatinterfaces[i]
+                        local str = vv[int]
+                        NC()
+                        if not str then
+                            -- nothing
+                        elseif int == "en" then
+                            context.color( { "darkgreen" }, str )
+                        elseif str == vv.en then
+                            context.color( { "darkred" }, str )
+                        elseif int == "pe" then
+                            context("\\righttoleft " .. str)
+                        else
+                            context(str)
+                        end
+                    end
+                    NC() NR()
+                end
+            end
+        end
+        context.stoptabulate()
+    end
+end
+\stopluacode
+
+\starttext
+
+\setupbodyfont[dejavu,7pt,tt]
+\setuppapersize[A4,landscape][A4,landscape]
+\setuplayout[backspace=.5cm,width=middle,topspace=.5cm,height=middle,header=1cm,footer=0cm]
+
+\startluacode
+    interfaces.show_missing() --  { "en","nl" }
+    interfaces.show_missing_messages() --  { "en","nl" }
+\stopluacode
+
+\stoptext

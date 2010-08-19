@@ -11,6 +11,8 @@ local type, next = type, next
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
+local resolvers = resolvers
+
 local report_resolvers = logs.new("resolvers")
 
 function resolvers.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix

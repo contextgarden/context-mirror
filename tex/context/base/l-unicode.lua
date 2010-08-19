@@ -29,6 +29,8 @@ if not unicode then
 
 end
 
+local unicode = unicode
+
 utf = utf or unicode.utf8
 
 local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
@@ -200,7 +202,7 @@ end
 
 function unicode.utfcodes(str)
     local t = { }
-    for k,v in string.utfvalues(str) do
+    for k,v in utfvalues(str) do
         t[#t+1] = format("0x%04X",k)
     end
     return concat(t,separator or " ")

@@ -10,10 +10,11 @@ local format = string.format
 local concat = table.concat
 local lpegmatch, lpegP, lpegR, lpegS, lpegC = lpeg.match, lpeg.P, lpeg.R, lpeg.S, lpeg.C
 
-javascripts           = javascripts           or { }
-javascripts.codes     = javascripts.codes     or { }
-javascripts.preambles = javascripts.preambles or { }
-javascripts.functions = javascripts.functions or { }
+interactions.javascripts = interactions.javascripts or { }
+local javascripts        = interactions.javascripts
+javascripts.codes        = javascripts.codes     or { }
+javascripts.preambles    = javascripts.preambles or { }
+javascripts.functions    = javascripts.functions or { }
 
 local codes, preambles, functions = javascripts.codes, javascripts.preambles, javascripts.functions
 

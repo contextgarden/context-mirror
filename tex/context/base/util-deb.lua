@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['trac-tra'] = {
+if not modules then modules = { } end modules ['util.deb'] = {
     version   = 1.001,
-    comment   = "companion to trac-tra.mkiv",
+    comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -17,10 +17,12 @@ local type, next = type, next
 local format, find = string.format, string.find
 local is_boolean = string.is_boolean
 
-debugger = debugger or { }
+utilities          = utilities or { }
+utilities.debugger = utilities.debugger or { }
+local debugger     = utilities.debugger
 
 local counters = { }
-local names = { }
+local names    = { }
 
 -- one
 
@@ -124,19 +126,6 @@ end
 function debugger.disable()
     debug.sethook()
 --~ counters[debug.getinfo(2,"f").func] = nil
-end
-
-local function trace_calls(n)
-    debugger.enable()
-    luatex.register_stop_actions(function()
-        debugger.disable()
-        debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
-    end)
-    trace_calls = function() end
-end
-
-if directives then
-    directives.register("system.tracecalls", function(n) trace_calls(n) end) -- indirect is needed for nilling
 end
 
 --~ debugger.enable()

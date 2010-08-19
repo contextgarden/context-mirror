@@ -338,7 +338,7 @@
    \fi
    \setbox\descriptionheadbox\hbox
      {\forgetall\dontcomplain
-      \trialtypesettingtrue
+      \settrialtypesetting
       \doifelsenothing{\descriptionparameter\c!sample}
         {\dodescriptionhandler\currentdescriptiontext}%
         {\dodescriptionhandler\currentdescriptionsample}}%
@@ -529,7 +529,7 @@
    \fi#1}
 
 \def\@@dododescriptiontext
-  {\ctxlua{structure.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+  {\ctxlua{structures.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
 
 \def\@@dodescriptiontext
   {\begingroup
@@ -650,13 +650,13 @@
 \let\@@doenumerationhandler\@@dodescriptionhandler
 
 % \def\currentenumerationfullnumber
-%   {\ctxlua{structure.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+%   {\ctxlua{structures.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
 
 \def\@@doenumerationnumber
-  {\ctxlua{structure.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+  {\ctxlua{structures.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
 
 \def\@@dodoenumerationtext
-  {\ctxlua{structure.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
+  {\ctxlua{structures.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
 
 \def\doenumerationnumber
   {\descriptionparameter\c!left
@@ -726,7 +726,7 @@
    \fi \fi}
 
 \def\skipenumerationcoupling[#1]% e.g. for questions with no answer
-  {\ctxlua{jobreferences.setnextorder("description","#1")}}
+  {\ctxlua{structures.references.setnextorder("description","#1")}}
 
 \def\showdnpuretext{\strut\descriptionparameter\c!text} % geen spatie
 \def\showdnlisttext{\descriptionparameter\c!listtext}   % space in default
@@ -752,7 +752,7 @@
 \newif\ifnodescriptioncaption
 
 \def\doifelsedescriptioncomponent
-  {\ctxlua{structure.lists.doifstoredelse(currentdescriptionnumberentry)}}
+  {\ctxlua{structures.lists.doifstoredelse(currentdescriptionnumberentry)}}
 
 \def\dodescriptioncomponent
   {\doifelsedescriptioncomponent\nododescriptioncomponent\dododescriptioncomponent}
@@ -828,11 +828,11 @@
    \else
     %\setnextinternalreference
      \setnextinternalreferences{description}\currentdescriptionname % plural
-     \xdef\currentdescriptionnumberentry{\ctxlua{structure.lists.push{
+     \xdef\currentdescriptionnumberentry{\ctxlua{structures.lists.push{
         metadata = {
             kind     = "description",
             name     = "\currentdescriptionname",
-            level    = structure.sections.currentlevel(),
+            level    = structures.sections.currentlevel(),
             catcodes = \the\catcodetable,
         %   \currentdirectionparameters
         },
@@ -842,7 +842,7 @@
             reference       = "\currentdescriptionreference",
             referenceprefix = "\referenceprefix",
             block           = "\currentstructureblock",
-            section         = structure.sections.currentid(),
+            section         = structures.sections.currentid(),
         },
         titledata = {
             label    = \!!bs\detokenize\expandafter{\currentdescriptionlabel   }\!!es,
@@ -865,7 +865,7 @@
             connector     = \!!bs\descriptionparameter\c!prefixconnector\!!es,
         },
         numberdata = {
-            numbers       = structure.counters.compact("\currentdescriptionnumber",nil,true), % ! number can be cloned
+            numbers       = structures.counters.compact("\currentdescriptionnumber",nil,true), % ! number can be cloned
             separatorset  = "\descriptionparameter\c!numberseparatorset",
             conversion    = "\descriptionparameter\c!numberconversion",
             conversionset = "\descriptionparameter\c!numberconversionset",
@@ -874,11 +874,11 @@
             segments      = "\descriptionparameter\c!numbersegments",
         },
     \fi
-        userdata = structure.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
+        userdata = structures.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
        }
      }}%
-    \xdef\currentdescriptionattribute  {\ctxlua    {tex.write(jobreferences.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\@@iafocus"))}}%
-    \xdef\currentdescriptionsynchronize{\ctxlatelua{structure.lists.enhance(\currentdescriptionnumberentry)}}%
+    \xdef\currentdescriptionattribute  {\ctxlua    {tex.write(structures.references.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\@@iafocus"))}}%
+    \xdef\currentdescriptionsynchronize{\ctxlatelua{structures.lists.enhance(\currentdescriptionnumberentry)}}%
    \fi
    \endgroup}
 
@@ -887,8 +887,8 @@
 % macros.
 
 \def\reinstatedescriptionnumberentry#1%
-  {\xdef\currentdescriptionattribute  {\ctxlua    {tex.write(jobreferences.getinternalreference(#1))}}%
-   \xdef\currentdescriptionsynchronize{\ctxlatelua{structure.lists.enhance(#1)}}}
+  {\xdef\currentdescriptionattribute  {\ctxlua    {tex.write(structures.references.getinternalreference(#1))}}%
+   \xdef\currentdescriptionsynchronize{\ctxlatelua{structures.lists.enhance(#1)}}}
 
 \installstructurelistprocessor{description}{\usestructurelistprocessor{number+title}}
 

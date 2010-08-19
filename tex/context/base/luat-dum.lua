@@ -37,12 +37,6 @@ logs = {
     report        = dummyfunction,
     simple        = dummyfunction,
 }
-tasks = { -- no longer needed
-    new           = dummyfunction,
-    actions       = dummyfunction,
-    appendaction  = dummyfunction,
-    prependaction = dummyfunction,
-}
 callbacks = {
     register = function(n,f) return callback.register(n,f) end,
 }

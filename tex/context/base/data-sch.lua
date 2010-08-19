@@ -15,15 +15,17 @@ local trace_schemes = false  trackers.register("resolvers.schemes",function(v) t
 
 local report_schemes = logs.new("schemes")
 
-schemes = schemes or { }
+local resolvers = resolvers
 
+resolvers.schemes = resolvers.schemes or { }
+local schemes     = resolvers.schemes
 schemes.threshold = 24 * 60 * 60
 
 directives.register("schemes.threshold", function(v) schemes.threshold = tonumber(v) or schemes.threshold end)
 
 local cached, loaded, reused = { }, { }, { }
 
-function schemes.curl(name,cachename)
+function schemes.curl(name,cachename) -- will use sockets instead or the curl library
     local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name -- no protocol .. "://"
     os.spawn(command)
 end

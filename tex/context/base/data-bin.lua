@@ -6,8 +6,11 @@ if not modules then modules = { } end modules ['data-bin'] = {
     license   = "see context related readme files"
 }
 
-local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 local unpack = unpack or table.unpack
+
+local resolvers = resolvers
+
+local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
 function resolvers.findbinfile(filename, filetype)
     return resolvers.methodhandler('finders',filename, filetype)

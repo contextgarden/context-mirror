@@ -14,22 +14,35 @@ might become a runtime module instead. This module will be cleaned up!</p>
 local utfchar = utf.char
 local concat = table.concat
 local format, match, gmatch, concat, rep = string.format, string.match, string.gmatch, table.concat, string.rep
+local lpegmatch = lpeg.match
 
 local ctxcatcodes = tex.ctxcatcodes
 
 local report_nodes = logs.new("nodes")
 
-fonts     = fonts     or { }
+fonts = fonts or { }
+nodes = nodes or { }
+
+local fonts, nodes, node = fonts, nodes, node
+
 fonts.tfm = fonts.tfm or { }
 fonts.ids = fonts.ids or { }
 fonts.chr = fonts.chr or { }
 
-nodes                    = nodes                    or { }
-nodes.tracers            = nodes.tracers            or { }
-nodes.tracers.characters = nodes.tracers.characters or { }
-nodes.tracers.steppers   = nodes.tracers.steppers   or { }
+nodes.tracers         = nodes.tracers or { }
+local tracers         = nodes.tracers
 
-local tracers = nodes.tracers
+nodes.tasks           = nodes.tasks or { }
+local tasks           = nodes.tasks
+
+nodes.handlers        = nodes.handlers or { }
+local handlers        = nodes.handlers
+
+tracers.characters    = tracers.characters or { }
+tracers.steppers      = tracers.steppers   or { }
+
+local char_tracers    = tracers.characters
+local step_tracers    = tracers.steppers
 
 local copy_node_list  = node.copy_list
 local hpack_node_list = node.hpack
@@ -38,26 +51,38 @@ local first_character = node.first_character
 local node_type       = node.type
 local traverse_nodes  = node.traverse
 
-local texsprint = tex.sprint
-local fontdata  = fonts.ids
-local fontchar  = fonts.chr
-local nodecodes = nodes.nodecodes
+local texsprint       = tex.sprint
+local fontdata        = fonts.ids
+local fontchar        = fonts.chr
 
-local glyph   = nodecodes.glyph
-local hlist   = nodecodes.hlist
-local vlist   = nodecodes.vlist
-local disc    = nodecodes.disc
-local glue    = nodecodes.glue
-local kern    = nodecodes.kern
-local rule    = nodecodes.rule
-local whatsit = nodecodes.whatsit
+local nodecodes       = nodes.nodecodes
+local whatcodes       = nodes.whatcodes
+local skipcodes       = nodes.skipcodes
 
-function tracers.characters.collect(head,list,tag,n)
+local glyph_code      = nodecodes.glyph
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
+local disc_code       = nodecodes.disc
+local glue_code       = nodecodes.glue
+local kern_code       = nodecodes.kern
+local rule_code       = nodecodes.rule
+local whatsit_code    = nodecodes.whatsit
+
+local localpar_code   = whatcodes.localpar
+local dir_code        = whatcodes.dir
+
+local userskip_code   = skipcodes.userskip
+
+local nodepool        = nodes.pool
+
+local new_glyph       = nodepool.glyph
+
+function char_tracers.collect(head,list,tag,n)
     n = n or 0
     local ok, fn = false, nil
     while head do
         local id = head.id
-        if id == glyph then
+        if id == glyph_code then
             local f = head.font
             if f ~= fn then
                 ok, fn = false, f
@@ -72,7 +97,7 @@ function tracers.characters.collect(head,list,tag,n)
             end
             local l = list[n][tag]
             l[#l+1] = { c, f, i }
-        elseif id == disc then
+        elseif id == disc_code then
             -- skip
         else
             ok = false
@@ -81,7 +106,7 @@ function tracers.characters.collect(head,list,tag,n)
     end
 end
 
-function tracers.characters.equal(ta, tb)
+function char_tracers.equal(ta, tb)
     if #ta ~= #tb then
         return false
     else
@@ -95,7 +120,7 @@ function tracers.characters.equal(ta, tb)
     return true
 end
 
-function tracers.characters.string(t)
+function char_tracers.string(t)
     local tt = { }
     for i=1,#t do
         tt[i] = utfchar(t[i][1])
@@ -103,7 +128,7 @@ function tracers.characters.string(t)
     return concat(tt,"")
 end
 
-function tracers.characters.unicodes(t,decimal)
+function char_tracers.unicodes(t,decimal)
     local tt = { }
     for i=1,#t do
         local n = t[i][1]
@@ -118,7 +143,7 @@ function tracers.characters.unicodes(t,decimal)
     return concat(tt," ")
 end
 
-function tracers.characters.indices(t,decimal)
+function char_tracers.indices(t,decimal)
     local tt = { }
     for i=1,#t do
         local n = t[i][3]
@@ -133,20 +158,20 @@ function tracers.characters.indices(t,decimal)
     return concat(tt," ")
 end
 
-function tracers.characters.start()
-    local npc = nodes.process_characters
+function char_tracers.start()
+    local npc = handlers.characters
     local list = { }
-    function nodes.process_characters(head)
+    function handlers.characters(head)
         local n = #list
-        tracers.characters.collect(head,list,'before',n)
+        char_tracers.collect(head,list,'before',n)
         local h, d = npc(head)
-        tracers.characters.collect(head,list,'after',n)
+        char_tracers.collect(head,list,'after',n)
         if #list > n then
             list[#list+1] = { }
         end
         return h, d
     end
-    function tracers.characters.stop()
+    function char_tracers.stop()
         tracers.list['characters'] = list
         local variables = {
             ['title']                = 'ConTeXt Character Processing Information',
@@ -154,7 +179,7 @@ function tracers.characters.start()
             ['color-background-two'] = lmx.get('color-background-purple'),
         }
         lmx.show('context-characters.lmx',variables)
-        nodes.process_characters = npc
+        handlers.characters = npc
         tasks.restart("processors", "characters")
     end
     tasks.restart("processors", "characters")
@@ -181,15 +206,15 @@ end
 
 local collection, collecting, messages = { }, false, { }
 
-function tracers.steppers.start()
+function step_tracers.start()
     collecting = true
 end
 
-function tracers.steppers.stop()
+function step_tracers.stop()
     collecting = false
 end
 
-function tracers.steppers.reset()
+function step_tracers.reset()
     for i=1,#collection do
         local c = collection[i]
         if c then
@@ -199,23 +224,23 @@ function tracers.steppers.reset()
     collection, messages = { }, { }
 end
 
-function tracers.steppers.nofsteps()
+function step_tracers.nofsteps()
     return tex.write(#collection)
 end
 
-function tracers.steppers.glyphs(n,i)
+function step_tracers.glyphs(n,i)
     local c = collection[i]
     if c then
         tex.box[n] = hpack_node_list(copy_node_list(c))
     end
 end
 
-function tracers.steppers.features()
+function step_tracers.features()
 --  local f = first_character(collection[1])
 --  if f then -- something fishy with first_character
     local f = collection[1]
     while f do
-        if f.id == glyph then
+        if f.id == glyph_code then
             local tfmdata, t = fontdata[f.font], { }
             for feature, value in table.sortedhash(tfmdata.shared.features) do
                 if feature == "number" or feature == "features" then
@@ -242,22 +267,22 @@ function tracers.steppers.features()
 end
 
 function tracers.fontchar(font,char)
-    local n = nodes.glyph()
+    local n = new_glyph()
     n.font, n.char, n.subtype = font, char, 256
     node.write(n)
 end
 
-function tracers.steppers.codes(i,command)
+function step_tracers.codes(i,command)
     local c = collection[i]
     while c do
         local id = c.id
-        if id == glyph then
+        if id == glyph_code then
             if command then
                 texsprint(ctxcatcodes,format("%s{%s}{%s}",command,c.font,c.char))
             else
                 texsprint(ctxcatcodes,format("[%s:U+%04X]",c.font,c.char))
             end
-        elseif id == whatsit and (c.subtype == 6 or c.subtype == 7) then
+        elseif id == whatsit_code and (c.subtype == localpar_code or c.subtype == dir_code) then
             texsprint(ctxcatcodes,format("[%s]",c.dir))
         else
             texsprint(ctxcatcodes,format("[%s]",node_type(id)))
@@ -266,7 +291,7 @@ function tracers.steppers.codes(i,command)
     end
 end
 
-function tracers.steppers.messages(i,command,split)
+function step_tracers.messages(i,command,split)
     local list = messages[i] -- or { "no messages" }
     if list then
         for i=1,#list do
@@ -283,29 +308,29 @@ end
 
 -- hooks into the node list processor (see otf)
 
-function tracers.steppers.check(head)
+function step_tracers.check(head)
     if collecting then
-        tracers.steppers.reset()
+        step_tracers.reset()
         local n = copy_node_list(head)
-        nodes.inject_kerns(n,nil,"trace",true)
-        nodes.protect_glyphs(n) -- can be option
+        handlers.injectkerns(n,nil,"trace",true)
+        handlers.protectglyphs(n) -- can be option
         collection[1] = n
     end
 end
 
-function tracers.steppers.register(head)
+function step_tracers.register(head)
     if collecting then
         local nc = #collection+1
         if messages[nc] then
             local n = copy_node_list(head)
-            nodes.inject_kerns(n,nil,"trace",true)
-            nodes.protect_glyphs(n) -- can be option
+            handlers.injectkerns(n,nil,"trace",true)
+            handlers.protectglyphs(n) -- can be option
             collection[nc] = n
         end
     end
 end
 
-function tracers.steppers.message(str,...)
+function step_tracers.message(str,...)
     str = format(str,...)
     if collecting then
         local n = #collection + 1
@@ -329,7 +354,7 @@ end
 
 function nodes.check_glyphs(head,message)
     local t = { }
-    for g in traverse_id(glyph,head) do
+    for g in traverse_id(glyph_code,head) do
         t[#t+1] = format("U+%04X:%s",g.char,g.subtype)
     end
     if #t > 0 then
@@ -343,7 +368,7 @@ local function tosequence(start,stop,compact)
         local t = { }
         while start do
             local id = start.id
-            if id == glyph then
+            if id == glyph_code then
                 local c = start.char
                 if compact then
                     if start.components then
@@ -354,9 +379,9 @@ local function tosequence(start,stop,compact)
                 else
                     t[#t+1] = format("U+%04X:%s",c,utfchar(c))
                 end
-            elseif id == whatsit and start.subtype == 6 or start.subtype == 7 then
+            elseif id == whatsit_code and start.subtype == localpar_code or start.subtype == dir_code then
                 t[#t+1] = "[" .. start.dir .. "]"
-            elseif id == rule then
+            elseif id == rule_code then
                 if compact then
                     t[#t+1] = "|"
                 else
@@ -448,7 +473,7 @@ local function show_simple_list(h,depth,n)
         texio.write_nl(rep(" ",n) .. tostring(h))
         if not depth or n < depth then
             local id = h.id
-            if id == hlist or id == vlist then
+            if id == hlist_code or id == vlist_code then
                 show_simple_list(h.list,depth,n+1)
             end
         end
@@ -470,7 +495,7 @@ function nodes.list_to_utf(h,joiner)
     local joiner = (joiner ==true and utfchar(0x200C)) or joiner -- zwnj
     local w = { }
     while h do
-        if h.id == glyph then -- always true
+        if h.id == glyph_code then -- always true
             w[#w+1] = utfchar(h.char)
             if joiner then
                 w[#w+1] = joiner
@@ -489,7 +514,7 @@ local function show_boxes(n,symbol,depth)
     depth, symbol = depth or 0, symbol or "."
     for n in traverse_nodes(n) do
         local id = n.id
-        if id == hlist or id == vlist then
+        if id == hlist_code or id == vlist_code then
             local s = n.subtype
             logs.simple(rep(symbol,depth) .. what[s] or s)
             show_boxes(n.list,symbol,depth+1)
@@ -501,10 +526,10 @@ nodes.show_boxes = show_boxes
 
 local threshold = 65536
 
-function toutf(list,result)
+local function toutf(list,result)
     for n in traverse_nodes(list) do
         local id = n.id
-        if id == glyph then
+        if id == glyph_code then
             local c = n.char
             local fc = fontchar[n.font]
             if fc then
@@ -519,14 +544,21 @@ function toutf(list,result)
             else
                 result[#result+1] = utfchar(c)
             end
-        elseif id == disc then
+        elseif id == disc_code then
             toutf(n.replace,result)
-        elseif id == hlist or id == vlist then
+        elseif id == hlist_code or id == vlist_code then
+            if #result > 0 and result[#result] ~= " " then
+                result[#result+1] = " "
+            end
             toutf(n.list,result)
-        elseif id == glue and n.subtype == 0 and n.spec.width > threshold then
-            result[#result+1] = " "
-        elseif id == kern and n.kern > threshold then
-            result[#result+1] = " "
+        elseif id == glue_code and n.subtype == userskip_code and n.spec.width > threshold then
+            if #result > 0 and result[#result] ~= " " then
+                result[#result+1] = " "
+            end
+        elseif id == kern_code and n.kern > threshold then
+            if #result > 0 and result[#result] ~= " " then
+                result[#result+1] = " "
+            end
         end
     end
     return result
@@ -535,3 +567,14 @@ end
 function nodes.toutf(list)
     return concat(toutf(list,{}))
 end
+
+-- might move elsewhere
+
+local factor   = number.dimenfactors.pt
+local stripper = lpeg.patterns.strip_zeros
+
+local points = function(n)
+    return lpegmatch(stripper,format("%.5fpt",n*factor))
+end
+
+number.points = points

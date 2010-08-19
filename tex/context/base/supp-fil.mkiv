@@ -12,7 +12,7 @@
 %C details.
 
 %D \TEX\ operates on files, so one wouldn't wonder that there
-%D is a separate module for file support. In \CONTEXT\ files
+%D is a separate module for file commands. In \CONTEXT\ files
 %D are used for several purposes:
 %D
 %D \startitemize[packed]
@@ -106,8 +106,8 @@
 
 \def\writeln#1{\write#1{}}
 
-\def\doiffileexistselse   #1{\ctxlua{support.doiffileexistelse([[#1]])}}
-\def\lastfoundexistingfile  {\ctxlua{support.lastexistingfile()}}
+\def\doiffileexistselse   #1{\ctxlua{commands.doiffileexistelse([[#1]])}}
+\def\lastfoundexistingfile  {\ctxlua{commands.lastexistingfile()}}
 
 %D \macros
 %D   {doprocessfile,fileline,fileprocessedtrue,dofinishfile}
@@ -172,13 +172,13 @@
      {\edef#3{#2}}
      {\edef#3{#1\f!pathseparator#2}}}
 
-\def\sanitizefilename#1\to#2{\edef#2{\ctxlua{support.thesanitizedfilename([[#1]])}}}
+\def\sanitizefilename#1\to#2{\edef#2{\ctxlua{commands.thesanitizedfilename([[#1]])}}}
 
 %D NEW:
 
 \chardef\kindoffile=0 % 0=normal 1=full path spec (or http) / set at the lua end
 
-\def\checkfilename#1{\ctxlua{support.checkfilename([[#1]])}}
+\def\checkfilename#1{\ctxlua{commands.checkfilename([[#1]])}}
 
 %D \macros
 %D   {input, normalinput}
@@ -254,7 +254,7 @@
 % a format is generated on a source path.
 
 \def\doreadfile#1#2#3% protocol path filename true false
-  {\edef\readfilename{\ctxlua{support.doreadfile("#1","#2","#3")}}%
+  {\edef\readfilename{\ctxlua{commands.doreadfile("#1","#2","#3")}}%
    \ifx\readfilename\empty
      \expandafter\doreadfilenop
    \else
@@ -403,7 +403,7 @@
 
 \ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
 
-\def\doifparentfileelse#1{\ctxlua{support.doifparentfileelse([[#1]])}}
+\def\doifparentfileelse#1{\ctxlua{commands.doifparentfileelse([[#1]])}}
 
 \newcount\readingfilelevel
 
@@ -458,7 +458,7 @@
 \let\splitoffname\empty
 \let\splitofftype\empty
 
-\def\splitfilename#1{\ctxlua{support.splitfilename([[#1]])}}
-\def\splitfiletype#1{\ctxlua{support.splitfiletype([[#1]])}}
+\def\splitfilename#1{\ctxlua{commands.splitfilename([[#1]])}}
+\def\splitfiletype#1{\ctxlua{commands.splitfiletype([[#1]])}}
 
 \protect \endinput

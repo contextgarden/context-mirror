@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['font-col'] = {
 local format, gmatch, texsprint, type = string.format, string.gmatch, tex.sprint, type
 local traverse_id, first_character = node.traverse_id, node.first_character
 local lpegmatch = lpeg.match
+local settings_to_hash = utilities.parsers.settings_to_hash
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -18,19 +19,20 @@ local trace_collecting = false  trackers.register("fonts.collecting", function(v
 
 local report_fonts = logs.new("fonts")
 
-local fontdata = fonts.ids
+local fonts = fonts
+
+fonts.collections       = fonts.collections or { }
+local collections       = fonts.collections
+
+collections.definitions = collections.definitions or { }
+local definitions       = collections.definitions
+
+collections.vectors     = collections.vectors or { }
+local vectors           = collections.vectors
+
+local fontdata          = fonts.ids
 
 local glyph = node.id('glyph')
-
-fonts.normalizers             = fonts.normalizers or { }
-
-fonts.collections             = fonts.collections or { }
-fonts.collections.definitions = fonts.collections.definitions or { }
-fonts.collections.vectors     = fonts.collections.vectors or { }
-
-local collections = fonts.collections
-local definitions = fonts.collections.definitions
-local vectors     = fonts.collections.vectors
 
 local list, current, active = { }, 0, false
 
@@ -65,7 +67,7 @@ function collections.define(name,font,ranges,details)
         d = { }
         definitions[name] = d
     end
-    details = aux.settings_to_hash(details)
+    details = settings_to_hash(details)
     -- todo, combine per font start/stop as arrays
     for s in gmatch(ranges,"([^, ]+)") do
         local start, stop, description = characters.getrange(s)

@@ -6,9 +6,8 @@ if not modules then modules = { } end modules ['toks-ini'] = {
 }
 
 local utf = unicode.utf8
-local format, gsub, texsprint = string.format, string.gsub, tex.sprint
-
-local ctxcatcodes = tex.ctxcatcodes
+local utfbyte, utfchar = utf.byte, utf.char
+local format, gsub = string.format, string.gsub
 
 --[[ldx--
 <p>This code is experimental and needs a cleanup. The visualizers will move to
@@ -32,85 +31,86 @@ a module.</p>
 
 -- actually, we can use token registers to store tokens
 
-tokens = tokens or { }
+local token, tex = token, tex
 
-tokens.vbox   = token.create("vbox")
-tokens.hbox   = token.create("hbox")
-tokens.vtop   = token.create("vtop")
-tokens.bgroup = token.create(utf.byte("{"), 1)
-tokens.egroup = token.create(utf.byte("}"), 2)
+local texsprint     = tex.sprint
+local ctxcatcodes   = tex.ctxcatcodes
 
-tokens.letter = function(chr) return token.create(utf.byte(chr), 11) end
-tokens.other  = function(chr) return token.create(utf.byte(chr), 12) end
+local createtoken   = token.create
+local csname_id     = token.csname_id
+local command_id    = token.command_id
+local command_name  = token.command_name
+local get_next      = token.get_next
+local expand        = token.expand
+local is_activechar = token.is_activechar
+local csname_name   = token.csname_name
+
+tokens        = tokens or { }
+local tokens  = tokens
+
+tokens.vbox   = createtoken("vbox")
+tokens.hbox   = createtoken("hbox")
+tokens.vtop   = createtoken("vtop")
+tokens.bgroup = createtoken(utfbyte("{"), 1)
+tokens.egroup = createtoken(utfbyte("}"), 2)
+
+tokens.letter = function(chr) return createtoken(utfbyte(chr), 11) end
+tokens.other  = function(chr) return createtoken(utfbyte(chr), 12) end
 
 tokens.letters = function(str)
     local t = { }
     for chr in string.utfvalues(str) do
-        t[#t+1] = token.create(chr, 11)
+        t[#t+1] = createtoken(chr, 11)
     end
     return t
 end
 
-collectors       = collectors      or { }
-collectors.data  = collectors.data or { }
+tokens.collectors     = tokens.collectors or { }
+local collectors      = tokens.collectors
 
-function tex.printlist(data)
+collectors.data       = collectors.data or { }
+local collectordata   = collectors.data
+
+collectors.registered = collectors.registered or { }
+local registered      = collectors.registered
+
+local function printlist(data)
     callbacks.push('token_filter', function ()
        callbacks.pop('token_filter') -- tricky but the nil assignment helps
        return data
     end)
 end
 
+tex.printlist = printlist
+
 function collectors.flush(tag)
-    tex.printlist(collectors.data[tag])
+    printlist(collectordata[tag])
 end
 
 function collectors.test(tag)
-    tex.printlist(collectors.data[tag])
+    printlist(collectordata[tag])
 end
-
-collectors.registered = { }
 
 function collectors.register(name)
-    collectors.registered[token.csname_id(name)] = name
+    registered[csname_id(name)] = name
 end
 
---~ function collectors.install(tag,end_cs)
---~     collectors.data[tag] = { }
---~     local data   = collectors.data[tag]
---~     local call   = token.command_id("call")
---~     local relax  = token.command_id("relax")
---~     local endcs  = token.csname_id(end_cs)
---~     local expand = collectors.registered
---~     local get    = token.get_next -- so no callback!
---~     while true do
---~         local t = get()
---~         local a, b = t[1], t[3]
---~         if a == relax and b == endcs then
---~             return
---~         elseif a == call and expand[b] then
---~             token.expand()
---~         else
---~             data[#data+1] = t
---~         end
---~     end
---~ end
+local call   = command_id("call")
+local letter = command_id("letter")
+local other  = command_id("other_char")
 
 function collectors.install(tag,end_cs)
-    collectors.data[tag] = { }
-    local data   = collectors.data[tag]
-    local call   = token.command_id("call")
-    local endcs  = token.csname_id(end_cs)
-    local expand = collectors.registered
-    local get    = token.get_next
+    local data  = { }
+    collectordata[tag] = data
+    local endcs = csname_id(end_cs)
     while true do
-        local t = get()
+        local t = get_next()
         local a, b = t[1], t[3]
         if b == endcs then
-            tex.print('\\' ..end_cs)
+            texsprint('\\' ..end_cs)
             return
-        elseif a == call and expand[b] then
-            token.expand()
+        elseif a == call and registered[b] then
+            expand()
         else
             data[#data+1] = t
         end
@@ -118,30 +118,26 @@ function collectors.install(tag,end_cs)
 end
 
 function collectors.handle(tag,handle,flush)
-    collectors.data[tag] = handle(collectors.data[tag])
+    collectordata[tag] = handle(collectordata[tag])
     if flush then
         collectors.flush(tag)
     end
 end
 
-collectors.show_methods = { }
+local show_methods      = { }
+collectors.show_methods = show_methods
 
 function collectors.show(tag, method)
     if type(tag) == "table" then
-        collectors.show_methods[method or 'a'](tag)
+        show_methods[method or 'a'](tag)
     else
-        collectors.show_methods[method or 'a'](collectors.data[tag])
+        show_methods[method or 'a'](collectordata[tag])
     end
 end
 
-commands = commands or { }
-
-commands.letter = token.command_id("letter")
-commands.other  = token.command_id("other_char")
-
 function collectors.default_words(t,str)
     t[#t+1] = tokens.bgroup
-    t[#t+1] = token.create("red")
+    t[#t+1] = createtoken("red")
     for i=1,#str do
         t[#t+1] = tokens.other('*')
     end
@@ -151,10 +147,10 @@ end
 function collectors.with_words(tag,handle)
     local t, w = { }, { }
     handle = handle or collectors.default_words
-    local tagdata = collectors.data[tag]
+    local tagdata = collectordata[tag]
     for k=1,#tagdata do
         local v = tagdata[k]
-        if v[1] == commands.letter then
+        if v[1] == letter then
             w[#w+1] = v[2]
         else
             if #w > 0 then
@@ -167,16 +163,16 @@ function collectors.with_words(tag,handle)
     if #w > 0 then
         handle(t,w)
     end
-    collectors.data[tag] = t
+    collectordata[tag] = t
 end
 
 function collectors.show_token(t)
     if t then
-        local cmd, chr, id, cs, name = t[1], t[2], t[3], nil, token.command_name(t) or ""
-        if cmd == commands.letter or cmd == commands.other then
-            return format("%s-> %s -> %s", name, chr, utf.char(chr))
+        local cmd, chr, id, cs, name = t[1], t[2], t[3], nil, command_name(t) or ""
+        if cmd == letter or cmd == other then
+            return format("%s-> %s -> %s", name, chr, utfchar(chr))
         elseif id > 0 then
-            cs = token.csname_name(t) or nil
+            cs = csname_name(t) or nil
             if cs then
                 return format("%s-> %s", name, cs)
             elseif tonumber(chr) < 0 then
@@ -193,98 +189,110 @@ function collectors.show_token(t)
 end
 
 function collectors.trace()
-    local t = token.get_next()
+    local t = get_next()
     texio.write_nl(collectors.show_token(t))
     return t
 end
 
-collectors.show_methods.a = function(data) -- no need to store the table, just pass directly
-    local template = "\\NC %s\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR "
-    texsprint(ctxcatcodes, "\\starttabulate[|T|Tr|cT|Tr|T|]")
-    texsprint(ctxcatcodes, format(template,"cmd","chr","","id","name"))
-    texsprint(ctxcatcodes, "\\HL")
+-- these might move to a runtime module
+
+show_methods.a = function(data) -- no need to store the table, just pass directly
+    local function row(one,two,three,four,five)
+        context.NC() context(one)
+        context.NC() context(two)
+        context.NC() context(three)
+        context.NC() context(four)
+        context.NC() context(five)
+        context.NC() context.NR()
+    end
+    context.starttabulate { "|T|Tr|cT|Tr|T|" }
+    row("cmd","chr","","id","name")
+    context.HL()
     for _,v in next, data do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
-        local name = gsub(token.command_name(v) or "","_","\\_")
+        local name = gsub(command_name(v) or "","_","\\_")
         if id > 0 then
-            cs = token.csname_name(v) or ""
+            cs = csname_name(v) or ""
             if cs ~= "" then cs = "\\string " .. cs end
         else
             id = ""
         end
-        if cmd == commands.letter or cmd == commands.other then
+        if cmd == letter or cmd == other then
             sym = "\\char " .. chr
         end
         if tonumber(chr) < 0 then
-            texsprint(ctxcatcodes, format(template, name,  "", sym, id, cs))
+            row(name,"",sym,id,cs)
         else
-            texsprint(ctxcatcodes, format(template, name, chr, sym, id, cs))
+            row(name,chr,sym,id,cs)
         end
     end
-    texsprint(ctxcatcodes, "\\stoptabulate")
+    context.stoptabulate()
 end
 
-collectors.show_methods.b_c = function(data,swap) -- no need to store the table, just pass directly
-    local template = "\\NC %s\\NC %s\\NC %s\\NC\\NR"
-    if swap then
-        texsprint(ctxcatcodes, "\\starttabulate[|Tl|Tl|Tr|]")
-    else
-        texsprint(ctxcatcodes, "\\starttabulate[|Tl|Tr|Tl|]")
+local function show_b_c(data,swap) -- no need to store the table, just pass directly
+    local function row(one,two,three)
+        context.NC() context(one)
+        context.NC() context(two)
+        context.NC() context(three)
+        context.NC() context.NR()
     end
-    texsprint(ctxcatcodes, format(template,"cmd","chr","name"))
-    texsprint(ctxcatcodes, "\\HL")
+    if swap then
+        context.starttabulate { "|Tl|Tl|Tr|" }
+    else
+        context.starttabulate { "|Tl|Tr|Tl|" }
+    end
+    row("cmd","chr","name")
+    context.HL()
     for _,v in next, data do
         local cmd, chr, id, cs, sym = v[1], v[2], v[3], "", ""
-        local name = gsub(token.command_name(v) or "","_","\\_")
+        local name = gsub(command_name(v) or "","_","\\_")
         if id > 0 then
-            cs = token.csname_name(v) or ""
+            cs = csname_name(v) or ""
         end
-        if cmd == commands.letter or cmd == commands.other then
+        if cmd == letter or cmd == other then
             sym = "\\char " .. chr
-        elseif cs ~= "" then
-            if token.is_activechar(v) then
-                sym = "\\string " .. cs
-            else
-                sym = "\\string\\" .. cs
-            end
+        elseif cs == "" then
+            -- okay
+        elseif is_activechar(v) then
+            sym = "\\string " .. cs
+        else
+            sym = "\\string\\" .. cs
         end
         if swap then
-            texsprint(ctxcatcodes, format(template, name, sym, chr))
+            row(name,sym,chr)
         elseif tonumber(chr) < 0 then
-            texsprint(ctxcatcodes, format(template, name,  "", sym))
+            row(name,"",sym)
         else
-            texsprint(ctxcatcodes, format(template, name, chr, sym))
+            row(name,chr,sym)
         end
     end
-    texsprint(ctxcatcodes, "\\stoptabulate")
+    context.stoptabulate()
 end
 
 -- Even more experimental ...
 
-collectors.show_methods.b = function(tag) collectors.show_methods.b_c(tag,false) end
-collectors.show_methods.c = function(tag) collectors.show_methods.b_c(tag,true ) end
+show_methods.b = function(data) show_b_c(data,false) end
+show_methods.c = function(data) show_b_c(data,true ) end
 
-collectors.remapper = {
-    -- namespace
-}
+local remapper      = { }  -- namespace
+collectors.remapper = remapper
 
-collectors.remapper.data = {
-    -- user mappings
-}
+local remapperdata  = { }  -- user mappings
+remapper.data       = remapperdata
 
-function collectors.remapper.store(tag,class,key)
-    local s = collectors.remapper.data[class]
+function remapper.store(tag,class,key)
+    local s = remapperdata[class]
     if not s then
         s = { }
-        collectors.remapper.data[class] = s
+        remapperdata[class] = s
     end
-    s[key] = collectors.data[tag]
-    collectors.data[tag] = nil
+    s[key] = collectordata[tag]
+    collectordata[tag] = nil
 end
 
-function collectors.remapper.convert(tag,toks)
-    local data = collectors.remapper.data[tag]
-    local leftbracket, rightbracket = utf.byte('['), utf.byte(']')
+function remapper.convert(tag,toks)
+    local data = remapperdata[tag]
+    local leftbracket, rightbracket = utfbyte('['), utfbyte(']')
     local skipping = 0
     -- todo: math
     if data then

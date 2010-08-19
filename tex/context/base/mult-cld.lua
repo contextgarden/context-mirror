@@ -20,9 +20,11 @@ context = context or { }
 
 local format, concat = string.format, table.concat
 local next, type, tostring = next, type, tostring
-local texsprint, texiowrite, ctxcatcodes = tex.sprint, texio.write, tex.ctxcatcodes
+local texsprint, texiowrite, texcount, ctxcatcodes = tex.sprint, texio.write, tex.count, tex.ctxcatcodes
 
 local flush = texsprint or function(cct,...) print(concat{...}) end
+
+local report_cld = logs.new("cld")
 
 local _stack_, _n_ = { }, 0
 
@@ -33,7 +35,10 @@ local function _store_(ti)
 end
 
 local function _flush_(n)
-    if not _stack_[n]() then
+    local sn = _stack_[n]
+    if not sn then
+        report_cld("data with id %s cannot be found on stack",n)
+    elseif not sn() and texcount.trialtypesettingmode == 0 then
         _stack_[n] = nil
     else
         -- keep, beware, that way the stack can grow
@@ -201,7 +206,9 @@ local function indexer(t,k)
 end
 
 local function caller(t,f,a,...)
-    if a then
+    if not t then
+        -- so we don't need to test in the calling (slower but often no issue)
+    elseif a then
         flush(ctxcatcodes,format(f,a,...))
     elseif type(f) == "function" then
         flush(ctxcatcodes,"{\\mkivflush{" .. _store_(f) .. "}}")

@@ -26,6 +26,8 @@ local trace_entities = false  trackers.register("xml.entities", function(v) trac
 
 local report_xml = logs.new("xml")
 
+local xml = xml
+
 xml.entities = xml.entities or { } -- xml.entity_handler == function
 
 storage.register("xml/entities",xml.entities,"xml.entities") -- this will move to lxml

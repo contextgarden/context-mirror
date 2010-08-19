@@ -11,8 +11,6 @@ if not modules then modules = { } end modules ['math-dim'] = {
 
 local abs, next = math.abs, next
 
-mathematics = mathematics or { }
-
 local defaults = {
     ['axis']={
         ['default']={ "AxisHeight", "axis_height" },

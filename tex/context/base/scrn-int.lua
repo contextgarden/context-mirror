@@ -9,11 +9,22 @@ if not modules then modules = { } end modules ['scrn-int'] = {
 local format = string.format
 local texsprint, texcount, ctxcatcodes = tex.sprint, tex.count, tex.ctxcatcodes
 
-interactions = interactions or { }
+interactions       = interactions or { }
+local interactions = interactions
 
-local attachments = { }
+interactions.attachments = interactions.attachments or { }
+interactions.soundclips  = interactions.soundclips  or { }
+interactions.renderings  = interactions.renderings  or { }
+interactions.linkedlists = interactions.linkedlists or { }
 
-function interactions.registerattachment(specification)
+local attachments = interactions.attachments
+local soundclips  = interactions.soundclips
+local renderings  = interactions.renderings
+local linkedlists = interactions.linkedlists
+
+local jobpasses   = job.passes
+
+function attachments.register(specification)
     if specification.label then
         specification.filename = specification.filename or specification.label
         specification.newname = specification.newname or specification.filename
@@ -24,24 +35,22 @@ function interactions.registerattachment(specification)
     end
 end
 
-function interactions.attachment(label)
+function attachments.attachment(label)
     local at = attachments[label]
     if not at then
         interfaces.showmessage("interactions",6,label)
-        return interactions.registerattachment { label = label }
+        return attachments.register { label = label }
     else
         return at
     end
 end
 
-function interactions.attachmentvar(label,key)
+function attachments.var(label,key)
     local at = attachments[label]
     texsprint(ctxcatcodes,at and at[key] or "")
 end
 
-local soundclips = { }
-
-function interactions.registersoundclip(specification)
+function soundclips.register(specification)
     if specification.label then
         specification.filename = specification.filename or specification.label
         soundclips[specification.label] = specification
@@ -49,47 +58,45 @@ function interactions.registersoundclip(specification)
     end
 end
 
-function interactions.soundclip(label)
+function soundclips.soundclip(label)
     local sc = soundclips[label]
     if not sc then
         -- todo: message
-        return interactions.registersoundclip { label = label }
+        return soundclips.register { label = label }
     else
         return sc
     end
 end
 
-local renderings = { }
-
-function interactions.registerrendering(specification)
+function renderings.register(specification)
     if specification.label then
         renderings[specification.label] = specification
         return specification
     end
 end
 
-function interactions.rendering(label)
+function renderings.rendering(label)
     local rn = renderings[label]
     if not rn then
         -- todo: message
-        return interactions.registerrendering { label = label }
+        return renderings.register { label = label }
     else
         return rn
     end
 end
 
-function interactions.renderingvar(label,key)
+function renderings.var(label,key)
     local rn = renderings[label]
     texsprint(ctxcatcodes,rn and rn[key] or "")
 end
 
 -- linked lists
 
-function interactions.definelinkedlist(name)
+function linkedlists.define(name)
     -- no need
 end
 
-function interactions.addlinktolist(name)
+function linkedlists.add(name)
     local tobesaved   = jobpasses.gettobesaved(name)
     local collected   = jobpasses.getcollected(name) or { }
     local currentlink = #tobesaved + 1
@@ -102,10 +109,9 @@ function interactions.addlinktolist(name)
     texsprint(ctxcatcodes,format("\\setlinkproperties{%s}{%s}{%s}{%s}{%s}{%s}",currentlink,noflinks,f,p,n,l))
 end
 
-function interactions.enhancelinkoflist(name,n)
+function linkedlists.enhance(name,n)
     local ll = jobpasses.gettobesaved(name)
     if ll then
         ll[n] = texcount.realpageno
     end
 end
-

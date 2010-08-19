@@ -6,28 +6,30 @@ if not modules then modules = { } end modules ['luat-exe'] = {
     license   = "see context related readme files"
 }
 
-local match, find = string.match, string.find
+-- this module needs checking (very old and never really used, not even enabled)
+
+local match, find, gmatch = string.match, string.find, string.gmatch
 local concat = table.concat
 
-local report_executer = logs.new("executer")
+local report_executers = logs.new("executers")
 
-if not executer then executer = { } end
+resolvers.executers = resolver.executers or { }
+local executers     = resolvers.executers
 
-executer.permitted = { }
-executer.execute   = os.execute
+local permitted     = { }
+local osexecute     = os.execute
+local execute       = osexecute
 
-function executer.register(...)
-    local ep = executer.permitted
+local function register(...)
     local t = { ... }
     for k=1,#t do
         local v = t[k]
-        ep[#ep+1] = (v == "*" and ".*") or v
+        permitted[#permitted+1] = (v == "*" and ".*") or v
     end
 end
 
-function executer.finalize() -- todo: os.exec, todo: report ipv print
-    local execute = os.execute
-    function executer.execute(...)
+local function finalize() -- todo: os.exec, todo: report ipv print
+    execute = function execute(...)
         -- todo: make more clever first split
         local t, name, arguments = { ... }, "", ""
         local one = t[1]
@@ -43,48 +45,53 @@ function executer.finalize() -- todo: os.exec, todo: report ipv print
         else
             name, arguments = one, concat(t," ",2,#t)
         end
-        local permitted = executer.permitted
         for k=1,#permitted do
             local v = permitted[k]
             if find(name,v) then
-                execute(name .. " " .. arguments)
+                osexecute(name .. " " .. arguments)
             --  print("executed: " .. name .. " " .. arguments)
             else
-                report_executer("not permitted: %s %s",name,arguments)
+                report_executers("not permitted: %s %s",name,arguments)
             end
         end
     end
-    function executer.finalize()
-        report_executer("already finalized")
+    finalize = function()
+        report_executers("already finalized")
     end
-    executer.register = executer.finalize
-    os.execute = executer.execute
+    register = function()
+        report_executers("already finalized, no registration permitted")
+    end
+    os.execute = execute
 end
 
---~ executer.register('.*')
---~ executer.register('*')
---~ executer.register('dir','ls')
---~ executer.register('dir')
+executers.finalize = function(...) finalize(...) end
+executers.register = function(...) register(...) end
+executers.execute  = function(...) execute (...) end
 
---~ executer.finalize()
---~ executer.execute('dir',"*.tex")
---~ executer.execute("dir *.tex")
---~ executer.execute("ls *.tex")
---~ os.execute('ls')
-
-function executer.check()
+function executers.check()
     local mode = resolvers.variable("command_mode")
     local list = resolvers.variable("command_list")
     if mode == "none" then
-        executer.finalize()
+        finalize()
     elseif mode == "list" and list ~= "" then
-        for s in string.gmatch("[^%s,]",list) do
-            executer.register(s)
+        for s in gmatch("[^%s,]",list) do
+            register(s)
         end
-        executer.finalize()
+        finalize()
     else
         -- all
     end
 end
 
---~ executer.check()
+--~ resolvers.executers.register('.*')
+--~ resolvers.executers.register('*')
+--~ resolvers.executers.register('dir','ls')
+--~ resolvers.executers.register('dir')
+
+--~ resolvers.executers.finalize()
+--~ resolvers.executers.execute('dir',"*.tex")
+--~ resolvers.executers.execute("dir *.tex")
+--~ resolvers.executers.execute("ls *.tex")
+--~ os.execute('ls')
+
+--~ resolvers.executers.check()

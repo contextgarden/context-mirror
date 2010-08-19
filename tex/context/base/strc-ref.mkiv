@@ -112,8 +112,8 @@
 \newcount\lastreferenceattribute
 \newcount\lastdestinationattribute
 
-\def\dofinishfullreference#1#2{\normalexpanded{\ctxlatelua{jobreferences.enhance("#1","#2")}}}
-\def\dofinishtextreference#1#2{\normalexpanded{\ctxlatelua{jobreferences.enhance("#1","#2",{})}}}
+\def\dofinishfullreference#1#2{\normalexpanded{\ctxlatelua{structures.references.enhance("#1","#2")}}}
+\def\dofinishtextreference#1#2{\normalexpanded{\ctxlatelua{structures.references.enhance("#1","#2",{})}}}
 
 \let\dofinishpagereference\dofinishfullreference
 \let\dofinishuserreference\dofinishfullreference
@@ -147,14 +147,14 @@
          \fi
          \globallet\currentreferencecoding\s!tex
        \fi
-       % beware, the jobreferences.set writes a
+       % beware, the structures.references.set writes a
        % \setnextinternalreference
-       \ctxlua{jobreferences.setandgetattribute("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
+       \ctxlua{structures.references.setandgetattribute("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
             {
                 references = {
                 %   internal = \nextinternalreference, % no need for an internal as we have an explicit
                     block    = "\currentstructureblock",
-                    section  = structure.sections.currentid(),
+                    section  = structures.sections.currentid(),
                 },
                 metadata = { % we could assume page to have no metadata
                     kind = "#1",
@@ -169,7 +169,7 @@
                     },
                 \fi
                 \ifx\currentreferenceuserdata\empty\else
-                    userdata = structure.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+                    userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
                 \fi
             },"\@@iafocus")
        }%
@@ -186,11 +186,11 @@
 
 \def\dosetsimplepagereference#1% label
   {\iflocation
-     \ctxlua{jobreferences.setandgetattribute("\s!page", "\referenceprefix","#1",
+     \ctxlua{structures.references.setandgetattribute("\s!page", "\referenceprefix","#1",
         {
             references = {
             %   block    = "\currentstructureblock",
-            %   section  = structure.sections.currentid(),
+            %   section  = structures.sections.currentid(),
             },
             metadata = { % we could assume page to have no metadata
                 kind = "\s!page",
@@ -204,7 +204,7 @@
 
 \def\dogetsimplepagereference#1%
   {\iflocation
-     \ctxlua{jobreferences.inject("\referenceprefix","#1",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#1",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
      \xdef\currentreferenceattribute{\number\lastreferenceattribute}%
    \else
      \xdef\currentreferenceattribute{\number\attributeunsetvalue}%
@@ -414,13 +414,13 @@
   {\dodoubleempty\dodefinereference}
 
 \def\dodefinereference[#1][#2]%
-  {\ctxlua{jobreferences.define("\referenceprefix","#1",\!!bs\detokenize{#2}\!!es)}}
+  {\ctxlua{structures.references.define("\referenceprefix","#1",\!!bs\detokenize{#2}\!!es)}}
 
 \def\resetreference[#1]%
-  {\ctxlua{jobreferences.reset("\referenceprefix","#1")}}
+  {\ctxlua{structures.references.reset("\referenceprefix","#1")}}
 
 \def\setpagereference#1#2% name, specification
-  {\ctxlua{jobreferences.define("","#1",\!!bs\v!page(\luaescapestring{#2})\!!es)}}
+  {\ctxlua{structures.references.define("","#1",\!!bs\v!page(\luaescapestring{#2})\!!es)}}
 
 %D Chained references are defined as:
 %D
@@ -450,10 +450,10 @@
 \newconditional\gotonewwindow \setfalse\gotonewwindow
 
 \def\expandtexincurrentreference % will happen in lua some time
-  {\ifcase\referencehastexstate\else\ctxlua{jobreferences.expandcurrent()}\fi}
+  {\ifcase\referencehastexstate\else\ctxlua{structures.references.expandcurrent()}\fi}
 
 \def\doifreferencefoundelse#1#2#3%
-  {\ctxlua{jobreferences.doifelse("\referenceprefix","#1",\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
+  {\ctxlua{structures.references.doifelse("\referenceprefix","#1",\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
      {\expandtexincurrentreference#2}%
      {#3}}
 
@@ -465,7 +465,7 @@
 %D be called.
 
 \def\analyzecurrentreference
-  {\ctxlua{jobreferences.analyse()}}
+  {\ctxlua{structures.references.analyse()}}
 
 %D The inner case is simple. Only two cases have to be taken
 %D care of:
@@ -490,11 +490,13 @@
 %D file and, when enabled, in the left margin of the text.
 
 \def\reportreferenceerror#1#2#3% only once (keep track in lua)
-  {\ifinpagebody \else
-     \doifconcepttracing{\doifsomething{#3}{\inleft{\infofont\doboundtext{#3}{\dimexpr\leftmarginwidth-2em\relax}{..}->}}}%
-   \fi
-   \global\advance#1\plusone
-   \showmessage\m!references{#2}{[\referenceprefix][#3]}}
+  {\iftrialtypesetting \else
+     \ifinpagebody \else
+       \doifconcepttracing{\doifsomething{#3}{\inleft{\infofont\doboundtext{#3}{\dimexpr\leftmarginwidth-2em\relax}{..}->}}}%
+     \fi
+     \global\advance#1\plusone
+     \showmessage\m!references{#2}{[\referenceprefix][#3]}%
+   \fi}
 
 \newcount\nofunknownreferences
 \newcount\nofillegalreferences
@@ -583,14 +585,14 @@
   {\global\advance\locationcount\plusone}
 
 \def\setnextinternalreferences#1#2% plural
-  {\ctxlua{jobreferences.setnextinternal("#1","#2")}}
+  {\ctxlua{structures.references.setnextinternal("#1","#2")}}
 
 \def\getinternalorderreference#1#2%
-  {\ctxlua{jobreferences.currentorder("#1","#2")}}
+  {\ctxlua{structures.references.currentorder("#1","#2")}}
 
 \def\thisissomeinternal#1#2%  tag reference (only for old time sake)
   {\begingroup
-   \ctxlua{jobreferences.setinternalreference("","#1:#2")}%
+   \ctxlua{structures.references.setinternalreference("","#1:#2")}%
    \hbox attr \destinationattribute\lastdestinationattribute{}%
    \endgroup}
 
@@ -679,7 +681,7 @@
      {\settrue \autoglobalfilereferences}
      {\setfalse\autoglobalfilereferences}}
 
-% \appendtoks\ctxlua{jobreferences.export("whatever")}\to\everystoptext
+% \appendtoks\ctxlua{structures.references.export("whatever")}\to\everystoptext
 % \starttext
 %     \chapter[test]{test}
 %     test \in{IN}[more]           and \in{IN}[test]           or \at{AT}[more]           and \at{AT}[test]\par
@@ -688,7 +690,7 @@
 % \stoptext
 
 \def\exportreferences
-  {\doif\@@rfexport\v!yes{\ctxlua{jobreferences.export()}}}
+  {\doif\@@rfexport\v!yes{\ctxlua{structures.references.export()}}}
 
 \appendtoks
   \exportreferences
@@ -819,14 +821,14 @@
 % \definecommand from  {\dospecialfrom}
 % \definecommand over  {\dospecialabout} % needed here, else math problems
 
-\def\currentreferencenumber  {\ctxlua{jobreferences.filter("number")}}
-\def\currentreferencepage    {\ctxlua{jobreferences.filter("page")}}
-\def\currentreferencetitle   {\ctxlua{jobreferences.filter("title")}}
-\def\currentreferencetext    {\ctxlua{jobreferences.filter("text")}}
-\def\currentreferencedefault {\ctxlua{jobreferences.filter("default")}}
-\def\currentreferencerealpage{\ctxlua{jobreferences.realpage()}}
+\def\currentreferencenumber  {\ctxlua{structures.references.filter("number")}}
+\def\currentreferencepage    {\ctxlua{structures.references.filter("page")}}
+\def\currentreferencetitle   {\ctxlua{structures.references.filter("title")}}
+\def\currentreferencetext    {\ctxlua{structures.references.filter("text")}}
+\def\currentreferencedefault {\ctxlua{structures.references.filter("default")}}
+\def\currentreferencerealpage{\ctxlua{structures.references.realpage()}}
 
-\def\getreferenceentry#1{\ctxlua{jobreferences.filter("#1")}} % user entry
+\def\getreferenceentry#1{\ctxlua{structures.references.filter("#1")}} % user entry
 
 \unexpanded\def\dospecialabout[#1]%
   {\dontleavehmode
@@ -1133,17 +1135,24 @@
 % The unbox trick is needed in order to permit \par inside a reference. Otherwise
 % the reference attribute migrates to the outer boxes.
 
+\newcount\lastsavedreferenceattribute
+
 \newbox\referencebox
+
+\def\revivesavedreferenceattribute % sometimes handy as no test etc needed
+  {\attribute\referenceattribute\lastsavedreferenceattribute}
 
 \def\dodirectgoto#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty % not here
-     \ctxlua{jobreferences.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
      \setlocationattributes\??ia
      \setstrut % can be option
+\global\lastsavedreferenceattribute\lastreferenceattribute
      \attribute\referenceattribute\lastreferenceattribute
      #1%
      \dostoptagged
@@ -1155,13 +1164,15 @@
 \def\dodirectgotohtdp#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
-     \ctxlua{jobreferences.inject("\referenceprefix","#2",\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#2",\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax,\extrareferencearguments)}%
      \dostoptagged
      \setlocationattributes\??ia
      \attribute\referenceattribute\lastreferenceattribute
+\global\lastsavedreferenceattribute\lastreferenceattribute
    \fi
    #1%
    \endgroup}
@@ -1170,15 +1181,17 @@
   {\dontleavehmode
    \begingroup
   %\setbox\referencebox\hbox\bgroup % experiment, might change again to non \par support
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
+     \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \dostarttagged\t!link\empty
-        \ctxlua{jobreferences.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
+        \ctxlua{structures.references.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
         \dostoptagged
         \setlocationattributes\??ia
         \setstrut % can be option
+\global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute}%
        {\unknownreference{#3}}%
    \fi
@@ -1189,14 +1202,16 @@
 \def\dogotohtdp#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
   {\dontleavehmode
    \begingroup
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
+     \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \dostarttagged\t!link\empty
-        \ctxlua{jobreferences.injectcurrentset(\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax)}%
+        \ctxlua{structures.references.injectcurrentset(\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax)}%
         \dostoptagged
         \setlocationattributes\??ia
+\global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute}%
        {\unknownreference{#3}}%
    \fi
@@ -1206,12 +1221,14 @@
 \unexpanded\def\directgotobox#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
-     \ctxlua{jobreferences.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
      \dostoptagged
      \setlocationattributes\??ia
+\global\lastsavedreferenceattribute\lastreferenceattribute
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
    \else
      #1%
@@ -1221,12 +1238,14 @@
 \unexpanded\def\directgotospecbox#1#2[#3]% no test for valid references
   {\dontleavehmode
    \begingroup
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
-     \ctxlua{jobreferences.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
      \dostoptagged
      \setlocationcolorspec{#1}% no consequence for strut
+\global\lastsavedreferenceattribute\lastreferenceattribute
      \hbox attr \referenceattribute \lastreferenceattribute {#2}%
    \else
      #2%
@@ -1236,11 +1255,13 @@
 \unexpanded\def\directgotodumbbox#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
-     \ctxlua{jobreferences.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
      \dostoptagged
+\global\lastsavedreferenceattribute\lastreferenceattribute
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
    \else
      #1%
@@ -1250,14 +1271,16 @@
 \unexpanded\def\gotobox#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{jobreferences.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
+     \ctxlua{structures.references.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \dostarttagged\t!link\empty
-        \ctxlua{jobreferences.injectcurrentset(nil,nil)}%
+        \ctxlua{structures.references.injectcurrentset(nil,nil)}%
         \dostoptagged
         \setlocationattributes\??ia
+\global\lastsavedreferenceattribute\lastreferenceattribute
         \hbox attr \referenceattribute \lastreferenceattribute {#1}}%
        {\unknownreference{#2}}%
    \else
@@ -1268,10 +1291,12 @@
 \unexpanded\def\gotowdhtbox#1#2[#3]% fast variant for overlays
   {\dontleavehmode
    \begingroup
+\global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
-   \ctxlua{jobreferences.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
-     {\ctxlua{jobreferences.injectcurrentset(nil,nil)}%
+   \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
+     {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
       \setbox\scratchbox\null\wd\scratchbox#1\ht\scratchbox#2%
+\global\lastsavedreferenceattribute\lastreferenceattribute
       \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}%
      {\unknownreference{#3}}%
    \endgroup}
@@ -1332,10 +1357,10 @@
 \let\useexternaldocument\usefile
 
 \def\douseurl[#1][#2][#3][#4]%
-  {\ctxlua{jobreferences.urls.define("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es,\!!bs\detokenize{#4}\!!es)}}
+  {\ctxlua{structures.references.urls.define("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es,\!!bs\detokenize{#4}\!!es)}}
 
 \def\dousefile[#1][#2][#3]%
-  {\ctxlua{jobreferences.files.define("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+  {\ctxlua{structures.references.files.define("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
 
 \def\doifurldefinedelse #1{\ctxlua{commands.doifurldefinedelse ("#1")}}
 \def\doiffiledefinedelse#1{\ctxlua{commands.doiffiledefinedelse("#1")}}
@@ -1365,7 +1390,7 @@
    \begingroup
    \dosetfontattribute\??ur\c!style
    \dosetcolorattribute\??ur\c!color
-   \hyphenatedurl{\ctxlua{jobreferences.urls.get("#1","\@@uralternative","\@@urspace")}}%
+   \hyphenatedurl{\ctxlua{structures.references.urls.get("#1","\@@uralternative","\@@urspace")}}%
    \endgroup}
 
 % # fails
@@ -1415,7 +1440,7 @@
 
 \def\dodospecialfrom[#1]%
   {\dontleavehmode
-   \goto{\ctxlua{jobreferences.from("#1")}}[fileorurl(#1)]}
+   \goto{\ctxlua{structures.references.from("#1")}}[fileorurl(#1)]}
 
 \def\dofromurldescription#1%
   {#1}
@@ -1460,14 +1485,14 @@
   {\dotripleargument\dodefineprogram}
 
 \def\dodefineprogram[#1][#2][#3]%
-  {\ctxlua{jobreferences.programs.define("#1","#2","#3")}}
+  {\ctxlua{structures.references.programs.define("#1","#2","#3")}}
 
 \def\program[#1]% incompatible, more consistent, hardy used anyway
   {\dontleavehmode
    \begingroup
    \dosetfontattribute\??pr\c!style
    \dosetcolorattribute\??pr\c!color
-   \ctxlua{jobreferences.programs.get("#1","\@@pralternative","\@@prspace")}%
+   \ctxlua{structures.references.programs.get("#1","\@@pralternative","\@@prspace")}%
    \endgroup}
 
 %D As we can see, we directly use the special reference
@@ -1921,16 +1946,16 @@
 
 % \def\getreferencestructureprefixspec#1% we can save one call by moving this to the lua end
 %   {\getreferencestructureprefix
-%      {\ctxlua{jobreferences.get_current_metadata("kind")}}
-%      {\ctxlua{jobreferences.get_current_metadata("name")}}
+%      {\ctxlua{structures.references.get_current_metadata("kind")}}
+%      {\ctxlua{structures.references.get_current_metadata("name")}}
 %      {#1}}
 % \def\currentreferencedefault
-%   {\ctxlua{jobreferences.filter("default",\getreferencestructureprefixspec\v!default)}}
+%   {\ctxlua{structures.references.filter("default",\getreferencestructureprefixspec\v!default)}}
 %
 % this is shortcut for:
 
 \def\currentreferencedefault
-  {\ctxlua{jobreferences.filter("default",\ctxlua{jobreferences.get_current_prefixspec("\v!default")})}}
+  {\ctxlua{structures.references.filter("default",\ctxlua{structures.references.get_current_prefixspec("\v!default")})}}
 
 \protect \endinput
 

@@ -8,12 +8,15 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 
 local format, gmatch, gsub, find = string.format, string.gmatch, string.gsub, string.find
 local texsprint, ctxcatcodes, texbox, texcount = tex.sprint, tex.ctxcatcodes, tex.box, tex.count
+local settings_to_array = utilities.parsers.settings_to_array
+
+local backends, lpdf, nodes = backends, lpdf, nodes
 
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
 local registrations  = backends.pdf.registrations
 
-local executers = jobreferences.executers
+local executers = structures.references.executers
 local variables = interfaces.variables
 
 local pdfconstant          = lpdf.constant
@@ -29,7 +32,9 @@ local pdfreserveannotation = lpdf.reserveobject
 local pdfimmediateobject   = lpdf.immediateobject
 local pdfpagereference     = lpdf.pagereference
 
-local pdfannotation_node   = nodes.pdfannotation
+local nodepool             = nodes.pool
+
+local pdfannotation_node   = nodepool.pdfannotation
 
 local hpack_node, write_node = node.hpack, node.write
 
@@ -88,7 +93,7 @@ local function analyzesymbol(symbol)
     elseif symbols[symbol] then
         return symbols[symbol], nil
     else
-        local set = aux.settings_to_array(symbol)
+        local set = settings_to_array(symbol)
         local normal, down = set[1], set[2]
         if normal then
             normal = codeinjections.registeredsymbol(down or normal)
@@ -174,7 +179,7 @@ function codeinjections.embedfile(filename)
 end
 
 function codeinjections.attachfile(specification)
-    local attachment = interactions.attachment(specification.label)
+    local attachment = interactions.attachments.attachment(specification.label)
     if not attachment then
         -- todo: message
         return
@@ -329,7 +334,7 @@ function codeinjections.insertrenderingwindow(specification)
 end
 
 function codeinjections.processrendering(label)
-    local specification = interactions.rendering(label)
+    local specification = interactions.renderings.rendering(label)
     if specification then
         if specification.kind == "external" then
             insertrendering(specification)

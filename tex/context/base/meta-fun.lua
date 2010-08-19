@@ -11,10 +11,13 @@ if not modules then modules = { } end modules ['meta-fun'] = {
 local format, loadstring, type = string.format, loadstring, type
 local texwrite = tex.write
 
-metafun = metafun or { }
+local metapost = metapost
+
+metapost.metafun = metapost.metafun or { }
+local metafun    = metapost.metafun
 
 function metafun.topath(t,connector)
-    tex.write("(")
+    texwrite("(")
     if #t > 0 then
         for i=1,#t do
             if i > 1 then
@@ -35,7 +38,7 @@ end
 
 function metafun.interpolate(f,b,e,s,c)
     local done = false
-    tex.write("(")
+    texwrite("(")
     for i=b,e,(e-b)/s do
         local d = loadstring(format("return function(x) return %s end",f))
         if d then

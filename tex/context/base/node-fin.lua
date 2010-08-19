@@ -11,25 +11,32 @@ if not modules then modules = { } end modules ['node-fin'] = {
 local next, type, format = next, type, string.format
 local texsprint = tex.sprint
 local ctxcatcodes = tex.ctxcatcodes
-local has_attribute, copy_node = node.has_attribute, node.copy
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-local nodecodes = nodes.nodecodes
+local attributes, nodes, node = attributes, nodes, node
 
-local glyph   = nodecodes.glyph
-local disc    = nodecodes.disc
-local glue    = nodecodes.glue
-local rule    = nodecodes.rule
-local whatsit = nodecodes.whatsit
-local hlist   = nodecodes.hlist
-local vlist   = nodecodes.vlist
+local has_attribute   = node.has_attribute
+local copy_node       = node.copy
 
-states   = states or { }
-shipouts = shipouts or { }
+local nodecodes       = nodes.nodecodes
+local whatcodes       = nodes.whatcodes
 
+local glyph_code      = nodecodes.glyph
+local disc_code       = nodecodes.disc
+local glue_code       = nodecodes.glue
+local rule_code       = nodecodes.rule
+local whatsit_code    = nodecodes.whatsit
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
+
+local pdfliteral_code = whatcodes.pdfliteral
+
+local states     = attributes.states
 local numbers    = attributes.numbers
 local trigger    = attributes.private('trigger')
 local triggering = false
+
+local starttiming = statistics.starttiming
+local stoptiming  = statistics.stoptiming
 
 -- these two will be like trackers
 
@@ -108,7 +115,7 @@ local function process_attribute(head,plugin) -- head,attribute,enabled,initiali
     end
 end
 
-nodes.process_attribute = process_attribute
+-- nodes.process_attribute = process_attribute
 
 function nodes.install_attribute_handler(plugin) -- we need to avoid this nested function
     return function(head)
@@ -182,7 +189,7 @@ end
 function states.finalize(namespace,attribute,head) -- is this one ok?
     if current > 0 and nsnone then
         local id = head.id
-        if id == hlist or id == vlist then
+        if id == hlist_code or id == vlist_code then
             local list = head.list
             if list then
                 head.list = insert_node_before(list,list,copy_node(nsnone))
@@ -200,9 +207,9 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
     while stack do
         local id = stack.id
         -- we need to deal with literals too (reset as well as oval)
-        -- if id == glyph or (id == whatsit and stack.subtype == 8) or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
-        if id == glyph -- or id == disc
-                or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
+        -- if id == glyph_code or (id == whatsit_code and stack.subtype == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
+        if id == glyph_code -- or id == disc_code
+                or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
             local c = has_attribute(stack,attribute)
             if c then
                 if default and c == inheritance then
@@ -215,13 +222,13 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                     current, done = c, true
                 end
                 -- here ? compare selective
-                if id == glue then --leader
+                if id == glue_code then --leader
                     -- same as *list
                     local content = stack.leader
                     if content then
                         local savedcurrent = current
                         local ci = content.id
-                        if ci == hlist or ci == vlist then
+                        if ci == hlist_code or ci == vlist_code then
                             -- else we reset inside a box unneeded, okay, the downside is
                             -- that we trigger color in each repeated box, so there is room
                             -- for improvement here
@@ -251,7 +258,7 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                 head = insert_node_before(head,stack,copy_node(nsnone))
                 current, done = 0, true
             end
-        elseif id == hlist or id == vlist then
+        elseif id == hlist_code or id == vlist_code then
             local content = stack.list
             if content then
                 local ok = false
@@ -286,9 +293,9 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
     while stack do
         local id = stack.id
         -- we need to deal with literals too (reset as well as oval)
-        -- if id == glyph or (id == whatsit and stack.subtype == 8) or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
-        if id == glyph -- or id == disc
-                or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
+        -- if id == glyph_code or (id == whatsit_code and stack.subtype == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
+        if id == glyph_code -- or id == disc_code
+                or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
             local c = has_attribute(stack,attribute)
             if c then
                 if default and c == inheritance then
@@ -315,13 +322,13 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                 head = insert_node_before(head,stack,copy_node(nsnone))
                 current, current_selector, done = 0, 0, true
             end
-            if id == glue then -- leader
+            if id == glue_code then -- leader
                 -- same as *list
                 local content = stack.leader
                 if content then
                     local savedcurrent = current
                     local ci = content.id
-                    if ci == hlist or ci == vlist then
+                    if ci == hlist_code or ci == vlist_code then
                         -- else we reset inside a box unneeded, okay, the downside is
                         -- that we trigger color in each repeated box, so there is room
                         -- for improvement here
@@ -342,7 +349,7 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                     done = done or ok
                 end
             end
-        elseif id == hlist or id == vlist then
+        elseif id == hlist_code or id == vlist_code then
             local content = stack.list
             if content then
                 local ok = false
@@ -377,7 +384,7 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
     local current, depth = default or 0, 0
     while stack do
         local id = stack.id
-        if id == glyph or (id == rule and stack.width ~= 0) or (id == glue and stack.leader) then -- or disc
+        if id == glyph_code or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
             local c = has_attribute(stack,attribute)
             if c then
                 if current ~= c then
@@ -385,7 +392,7 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                     depth = depth + 1
                     current, done = c, true
                 end
-                if id == glue then
+                if id == glue_code then
                     local content = stack.leader
                     if content then -- unchecked
                         local ok = false
@@ -400,7 +407,7 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                 depth = depth - 1
                 current, done = 0, true
             end
-        elseif id == hlist or id == vlist then
+        elseif id == hlist_code or id == vlist_code then
             local content = stack.list
             if content then
              -- the problem is that broken lines gets the attribute which can be a later one

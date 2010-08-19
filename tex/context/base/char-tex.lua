@@ -6,10 +6,15 @@ if not modules then modules = { } end modules ['char-tex'] = {
     license   = "see context related readme files"
 }
 
-characters     = characters or { }
-characters.tex = characters.tex or { }
-
 local find = string.find
+
+local lpeg = lpeg
+local P, C, R, S, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc
+local U, lpegmatch = lpeg.patterns.utf8, lpeg.match
+
+characters       = characters or { }
+local characters = characters
+characters.tex   = characters.tex or { }
 
 local accent_map = {
    ['~'] = "̃" , --  ̃ Ẽ
@@ -56,9 +61,6 @@ local function remap_commands(c)
         return "\\" .. c
     end
 end
-
-local P, C, R, S, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc
-local U, lpegmatch = lpeg.patterns.utf8, lpeg.match
 
 local accents  = (P('\\') * C(S(accents)) * (P("{") * C(U) * P("}" * Cc(true)) + C(U) * Cc(false))) / remap_accents
 local commands = (P('\\') * C(R("az","AZ")^1)) / remap_commands

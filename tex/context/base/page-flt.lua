@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['page-flt'] = {
     license   = "see context related readme files"
 }
 
+-- floats -> managers.floats
+
 local setdimen, setbox, setcount, texbox = tex.setdimen, tex.setbox, tex.setcount, tex.box
 local insert, remove = table.insert, table.remove
 local texwrite, texsprint, ctxcatcodes = tex.write, tex.sprint, tex.ctxcatcodes
@@ -19,7 +21,8 @@ local report_floats = logs.new("floats")
 -- we use floatbox, floatwidth, floatheight
 -- text page leftpage rightpage (todo: top, bottom, margin, order)
 
-floats = floats or { }
+floats       = floats or { }
+local floats = floats
 
 local noffloats, last, default, pushed = 0, nil, "text", { }
 
@@ -204,7 +207,7 @@ end
 
 function floats.thecheckedpagefloat(packed)
     local result = ""
-    if structure.pages.is_odd() then
+    if structures.pages.is_odd() then
         if #stacks.rightpage > 0 then
             result = "rightpage"
         elseif #stacks.page > 0 then
