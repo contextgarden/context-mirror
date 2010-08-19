@@ -58,7 +58,7 @@ function negatives.register(stamp)
     return registered[stamp] or registered.positive
 end
 
-attributes.negatives.handler = nodes.install_attribute_handler {
+attributes.negatives.handler = nodes.installattributehandler {
     name        = "negative",
     namespace   = negatives,
     initializer = states.initialize,

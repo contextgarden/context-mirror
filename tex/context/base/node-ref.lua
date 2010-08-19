@@ -562,7 +562,7 @@ statistics.register("interactive elements", function()
     end
 end)
 
-function references.enable_interaction()
+function references.enableinteraction()
     tasks.enableaction("shipouts","nodes.references.handler")
     tasks.enableaction("shipouts","nodes.destinations.handler")
 end

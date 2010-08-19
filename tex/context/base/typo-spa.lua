@@ -171,7 +171,7 @@ function spacings.set(id)
     texattribute[a_spacings] = id
 end
 
-spacings.handler = nodes.install_attribute_handler {
+spacings.handler = nodes.installattributehandler {
     name      = "spacing",
     namespace = spacings,
     processor = process,

@@ -333,13 +333,7 @@ characters.bidi = {
     on  = "Other Neutrals",
 }
 
-local _empty_table_ = { __index = function(t,k) return "" end }
-
-function table.set_empty_metatable(t)
-    setmetatable(t,_empty_table_)
-end
-
-table.set_empty_metatable(data)
+table.setemptymetatable(data) -- so each key resolves to ""
 
 --[[ldx--
 <p>At this point we assume that the big data table is loaded. From this
@@ -617,7 +611,7 @@ function characters.remapentity(chr,slot)
     texsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
 end
 
-characters.active_offset = 0x10000 -- there will be remapped in that byte range
+characters.activeoffset = 0x10000 -- there will be remapped in that byte range
 
 -- xml.entities = xml.entities or { }
 --
@@ -632,9 +626,9 @@ characters.active_offset = 0x10000 -- there will be remapped in that byte range
 --
 -- function characters.setmkiientities()
 --     local entities = xml.entities
---     entities.lt  = utfchar(characters.active_offset + utfbyte("<"))
---     entities.amp = utfchar(characters.active_offset + utfbyte("&"))
---     entities.gt  = utfchar(characters.active_offset + utfbyte(">"))
+--     entities.lt  = utfchar(characters.activeoffset + utfbyte("<"))
+--     entities.amp = utfchar(characters.activeoffset + utfbyte("&"))
+--     entities.gt  = utfchar(characters.activeoffset + utfbyte(">"))
 -- end
 
 -- some day we will make a table

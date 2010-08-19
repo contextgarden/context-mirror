@@ -693,7 +693,7 @@ function scripts.context.run(ctxdata,filename)
                         local texexec = resolvers.find_file("texexec.rb") or ""
                         if texexec ~= "" then
                             os.setenv("RUBYOPT","")
-                            local command = string.format("ruby %s %s",texexec,environment.reconstruct_commandline(environment.arguments_after))
+                            local command = string.format("ruby %s %s",texexec,environment.reconstructcommandline(environment.arguments_after))
                             os.exec(command)
                         end
                     end
@@ -771,7 +771,7 @@ function scripts.context.run(ctxdata,filename)
                             end
                         end
                         --
-                        local okay = statistics.check_fmt_status(formatfile)
+                        local okay = statistics.checkfmtstatus(formatfile)
                         if okay ~= true then
                             logs.simple("warning: %s, forcing remake",tostring(okay))
                             scripts.context.generate()
@@ -926,7 +926,7 @@ function scripts.context.pipe()
         formatfile, scriptfile = resolvers.locate_format(formatname)
     end
     if formatfile and scriptfile then
-        local okay = statistics.check_fmt_status(formatfile)
+        local okay = statistics.checkfmtstatus(formatfile)
         if okay ~= true then
             logs.simple("warning: %s, forcing remake",tostring(okay))
             scripts.context.generate()

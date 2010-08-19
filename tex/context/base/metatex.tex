@@ -155,6 +155,12 @@
 
 \pdfoutput\plusone
 
+% too
+
+\appendtoks
+    \ctxlua{statistics.savefmtstatus("\jobname","\metatexversion","metatex.tex")}% can become automatic
+\to \everydump
+
 % done
 
 \errorstopmode \dump \endinput

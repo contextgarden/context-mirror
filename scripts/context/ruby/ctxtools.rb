@@ -554,7 +554,7 @@ class Commands
         "tuo", "tub", "top", "tuc"
     ]
     $dummyfiles = [
-        "mpgraph"
+        # "mpgraph"
     ]
 
     def removecontextfile (filename)

@@ -32,19 +32,18 @@ local tags      = structures.tags
 tags.taglist    = taglist -- can best be hidden
 
 function tags.start(tag,label,detail)
---~     labels[label or tag] = tag
     labels[tag] = label ~= "" and label or tag
     if detail and detail ~= "" then
         tag = tag .. ":" .. detail
     end
     if not enabled then
-        codeinjections.enabletags(tags,labels)
+        codeinjections.enabletags(taglist,labels)
         enabled = true
     end
     local n = (ids[tag] or 0) + 1
     ids[tag] = n
     chain[#chain+1] = tag .. "-" .. n -- insert(chain,tag .. ":" .. n)
-    local t = #tags + 1
+    local t = #taglist + 1
     stack[#stack+1] = t -- insert(stack,t)
     taglist[t] = { unpack(chain) } -- we can add key values for alt and actualtext if needed
     texattribute[a_tagged] = t
@@ -76,7 +75,7 @@ end
 
 statistics.register("structure elements", function()
     if enabled then
-        return format("%s element chains identified",#tags)
+        return format("%s element chains identified",#taglist)
     else
         return nil
     end
@@ -84,7 +83,7 @@ end)
 
 directives.register("backend.addtags", function(v)
     if not enabled then
-        codeinjections.enabletags(tags,labels)
+        codeinjections.enabletags(taglist,labels)
         enabled = true
     end
 end)

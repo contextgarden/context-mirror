@@ -409,7 +409,7 @@ function lpdf.flushobject(name,data)
     end
 end
 
-function lpdf.sharedobj(content)
+function lpdf.sharedobject(content)
     local r = cache[content]
     if not r then
         r = pdfreference(pdfimmediateobject(content))

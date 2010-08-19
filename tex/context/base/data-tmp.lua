@@ -60,18 +60,18 @@ local function identify()
                 cachepath = file.collapse_path(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
-                    if file.isreadable(cachepath) then
+                    if file.is_readable(cachepath) then
                         readables[#readables+1] = cachepath
-                        if not writable and file.iswritable(cachepath) then
+                        if not writable and file.is_writable(cachepath) then
                             writable = cachepath
                         end
                     end
                 elseif not writable and caches.force then
                     local cacheparent = file.dirname(cachepath)
-                    if file.iswritable(cacheparent) then
+                    if file.is_writable(cacheparent) then
                         if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
                             mkdirs(cachepath)
-                            if isdir(cachepath) and file.iswritable(cachepath) then
+                            if isdir(cachepath) and file.is_writable(cachepath) then
                                 report_cache("created: %s",cachepath)
                                 writable = cachepath
                                 readables[#readables+1] = cachepath
@@ -92,8 +92,8 @@ local function identify()
             if cachepath ~= "" then
                 cachepath = resolvers.clean_path(cachepath)
                 local valid = isdir(cachepath)
-                if valid and file.isreadable(cachepath) then
-                    if not writable and file.iswritable(cachepath) then
+                if valid and file.is_readable(cachepath) then
+                    if not writable and file.is_writable(cachepath) then
                         readables[#readables+1] = cachepath
                         writable = cachepath
                         break
@@ -112,7 +112,7 @@ local function identify()
         os.exit()
     end
     -- why here
-    writable = dir.expand_name(resolvers.clean_path(writable)) -- just in case
+    writable = dir.expandname(resolvers.clean_path(writable)) -- just in case
     -- moved here
     local base, more, tree = caches.base, caches.more, caches.tree or caches.treehash() -- we have only one writable tree
     if tree then
@@ -219,7 +219,7 @@ function caches.getfirstreadablefile(filename,...)
     for i=1,#rd do
         local path = rd[i]
         local fullname = file.join(path,filename)
-        if file.isreadable(fullname) then
+        if file.is_readable(fullname) then
             usedreadables[i] = true
             return fullname, path
         end
@@ -260,9 +260,9 @@ function caches.loaddata(readables,name)
     return false
 end
 
-function caches.iswritable(filepath,filename)
+function caches.is_writable(filepath,filename)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
-    return file.iswritable(tmaname)
+    return file.is_writable(tmaname)
 end
 
 function caches.savedata(filepath,filename,data,raw)

@@ -84,7 +84,7 @@ function blocks.select(state,name,tag,criterium)
     local all = tag == ""
     local tags = not all and settings_to_set(tag)
     local hide = state == "process"
-    local n = sections.number_at_depth(criterium)
+    local n = sections.numberatdepth(criterium)
     local result = lists.filter_collected("all", criterium, n, collected, { })
     for i=1,#result do
         local ri = result[i]

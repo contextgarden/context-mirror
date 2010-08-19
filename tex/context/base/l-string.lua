@@ -30,7 +30,9 @@ if not string.split then
 
 end
 
-local chr_to_esc = {
+string.patterns = { }
+
+local escapes = {
     ["%"] = "%%",
     ["."] = "%.",
     ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
@@ -40,10 +42,10 @@ local chr_to_esc = {
     ["{"] = "%{", ["}"] = "%}"
 }
 
-string.chr_to_esc = chr_to_esc
+string.patterns.escapes = escapes
 
 function string:esc() -- variant 2
-    return (gsub(self,"(.)",chr_to_esc))
+    return (gsub(self,"(.)",escapes))
 end
 
 function string:unquote()
@@ -110,21 +112,6 @@ function string:enhance(pattern,action)
     return self, n
 end
 
-local chr_to_hex, hex_to_chr = { }, { }
-
-for i=0,255 do
-    local c, h = char(i), format("%02X",i)
-    chr_to_hex[c], hex_to_chr[h] = h, c
-end
-
-function string:to_hex()
-    return (gsub(self or "","(.)",chr_to_hex))
-end
-
-function string:from_hex()
-    return (gsub(self or "","(..)",hex_to_chr))
-end
-
 if not string.characters then
 
     local function nextchar(str, index)
@@ -143,8 +130,6 @@ if not string.characters then
     end
 
 end
-
--- we can use format for this (neg n)
 
 function string:rpadd(n,chr)
     local m = n-#self
@@ -166,18 +151,6 @@ end
 
 string.padd = string.rpadd
 
-function string:split_settings() -- no {} handling, see l-aux for lpeg variant
-    if find(self,"=") then
-        local t = { }
-        for k,v in gmatch(self,"(%a+)=([^%,]*)") do
-            t[k] = v
-        end
-        return t
-    else
-        return nil
-    end
-end
-
 local patterns_escapes = {
     ["-"] = "%-",
     ["."] = "%.",
@@ -190,7 +163,7 @@ local patterns_escapes = {
     ["]"] = "%]",
 }
 
-function string:pattesc()
+function string:escapedpattern()
     return (gsub(self,".",patterns_escapes))
 end
 
@@ -201,7 +174,7 @@ local simple_escapes = {
     ["*"] = ".*",
 }
 
-function string:simpleesc()
+function string:partialescapedpattern()
     return (gsub(self,".",simple_escapes))
 end
 

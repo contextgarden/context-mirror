@@ -347,12 +347,12 @@ alphabets.serif    = alphabets.regular
 alphabets.type     = alphabets.monospaced
 alphabets.teletype = alphabets.monospaced
 
-function mathematics.to_a_style(attribute)
+function mathematics.tostyle(attribute)
     local r = mathremap[attribute]
     return r and r.style or "tf"
 end
 
-function mathematics.to_a_name(attribute)
+function mathematics.toname(attribute)
     local r = mathremap[attribute]
     return r and r.alphabet or "regular"
 end
@@ -361,13 +361,13 @@ end
 
 local mathalphabet = attributes.private("mathalphabet")
 
-function mathematics.sync_a_both(alphabet,style)
+function mathematics.syncboth(alphabet,style)
     local data = alphabets[alphabet or "regular"] or alphabets.regular
     data = data[style or "tf"] or data.tf
     texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
 end
 
-function mathematics.sync_a_style(style)
+function mathematics.syncstyle(style)
 --~ local r = mathremap[mathalphabet]
     local r = mathremap[texattribute[mathalphabet]]
     local alphabet = r and r.alphabet or "regular"
@@ -375,7 +375,7 @@ function mathematics.sync_a_style(style)
     texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
 end
 
-function mathematics.sync_a_name(alphabet)
+function mathematics.syncname(alphabet)
 --~ local r = mathremap[mathalphabet]
     local r = mathremap[texattribute[mathalphabet]]
     local style = r and r.style or "tf"
@@ -393,7 +393,7 @@ local remapping = {
     [3] = { what = "italic",  tf = "it", bf = "bi" }, -- italic
 }
 
-function mathematics.remap_alphabets(char,mathalphabet,mathgreek)
+function mathematics.remapalphabets(char,mathalphabet,mathgreek)
     if mathgreek > 0 then
         local lc, uc = floor(mathgreek/10), mathgreek % 10 -- 2 == upright 3 == italic
         if lc > 1 or uc > 1 then

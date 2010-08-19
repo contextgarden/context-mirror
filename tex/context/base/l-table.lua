@@ -264,14 +264,10 @@ function table.is_empty(t) -- obolete, use inline code instead
     return not t or not next(t)
 end
 
-function table.one_entry(t) -- obolete, use inline code instead
+function table.has_one_entry(t)
     local n = next(t)
     return n and not next(t,n)
 end
-
---~ function table.starts_at(t) -- obsolete, not nice anyway
---~     return ipairs(t,1)(t,0)
---~ end
 
 function table.tohash(t,value)
     local h = { }
@@ -694,7 +690,7 @@ function table.unnest(t) -- bad name
     return f
 end
 
-table.flatten_one_level = table.unnest
+table.flattenonelevel = table.unnest
 
 -- a better one:
 
@@ -713,51 +709,6 @@ local function flattened(t,f)
 end
 
 table.flattened = flattened
-
--- the next three may disappear
-
-function table.remove_value(t,value) -- todo: n
-    if value then
-        for i=1,#t do
-            if t[i] == value then
-                remove(t,i)
-                -- remove all, so no: return
-            end
-        end
-    end
-end
-
-function table.insert_before_value(t,value,str)
-    if str then
-        if value then
-            for i=1,#t do
-                if t[i] == value then
-                    insert(t,i,str)
-                    return
-                end
-            end
-        end
-        insert(t,1,str)
-    elseif value then
-        insert(t,1,value)
-    end
-end
-
-function table.insert_after_value(t,value,str)
-    if str then
-        if value then
-            for i=1,#t do
-                if t[i] == value then
-                    insert(t,i+1,str)
-                    return
-                end
-            end
-        end
-        t[#t+1] = str
-    elseif value then
-        t[#t+1] = value
-    end
-end
 
 local function are_equal(a,b,n,m) -- indexed
     if a and b and #a == #b then
@@ -873,7 +824,7 @@ function table.hexed(t,seperator)
     return concat(tt,seperator or " ")
 end
 
-function table.reverse_hash(h) -- needs another name
+function table.swaphash(h) -- needs another name
     local r = { }
     for k,v in next, h do
         r[v] = lower(gsub(k," ",""))
@@ -889,36 +840,6 @@ function table.reverse(t)
         end
     end
     return tt
-end
-
-function table.insert_before_value(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i,extra)
-            return
-        end
-    end
-    insert(t,1,extra)
-end
-
-function table.insert_after_value(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i+1,extra)
-            return
-        end
-    end
-    insert(t,#t+1,extra)
 end
 
 function table.sequenced(t,sep,simple) -- hash only

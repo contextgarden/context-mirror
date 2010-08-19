@@ -963,26 +963,26 @@ end
 
 --
 
-function references.get_current_metadata(tag)
+function references.getcurrentmetadata(tag)
     local data = currentreference and currentreference.i
     data = data and data.metadata and data.metadata[tag]
     if data then
         texsprint(ctxcatcodes,data)
     end
 end
-local function current_metadata(tag)
+local function currentmetadata(tag)
     local data = currentreference and currentreference.i
     return data and data.metadata and data.metadata[tag]
 end
-references.current_metadata = current_metadata
+references.currentmetadata = currentmetadata
 
-function references.get_current_prefixspec(default) -- todo: message
+function references.getcurrentprefixspec(default) -- todo: message
     texsprint(ctxcatcodes,"\\getreferencestructureprefix{",
-        current_metadata("kind") or "?", "}{", current_metadata("name") or "?", "}{", default or "?", "}")
+        currentmetadata("kind") or "?", "}{", currentmetadata("name") or "?", "}{", default or "?", "}")
 end
 
---~ function references.get_current_prefixspec(default) -- we can consider storing the data at the lua end
---~     context.getreferencestructureprefix(current_metadata("kind"),current_metadata("name"),default)
+--~ function references.getcurrentprefixspec(default) -- we can consider storing the data at the lua end
+--~     context.getreferencestructureprefix(currentmetadata("kind"),currentmetadata("name"),default)
 --~ end
 
 --

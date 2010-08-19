@@ -7,9 +7,8 @@ if not modules then modules = { } end modules ['lxml-dir'] = {
 }
 
 local format, gsub = string.format, string.gsub
-local get_id = lxml.id
+local getid = lxml.getid
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
-local xmlparseapply = xml.parse_apply
 
 --~ <?xml version="1.0" standalone="yes"?>
 --~ <!-- demo.cdx -->
@@ -42,7 +41,7 @@ local function load_setup(filename)
     if fullname ~= "" then
         filename = fullname
     end
-    local collection = xmlparseapply({ get_id(xml.load(filename)) },"directive")
+    local collection = xmlparseapply({ getid(xml.load(filename)) },"directive")
     if collection then
         local valid = 0
         for i=1,#collection do
@@ -66,7 +65,7 @@ local function load_setup(filename)
 end
 
 local function handle_setup(category,root,attribute,element)
-    root = get_id(root)
+    root = getid(root)
     if attribute then
         local value = root.at[attribute]
         if value then

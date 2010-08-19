@@ -263,7 +263,7 @@ end
 
 -- bonus
 
-function fonts.otf.name_to_slot(name)
+function fonts.otf.nametoslot(name)
     local tfmdata = fonts.ids[font.current()]
     if tfmdata and tfmdata.shared then
         local otfdata = tfmdata.shared.otfdata
@@ -274,7 +274,7 @@ end
 
 function fonts.otf.char(n)
     if type(n) == "string" then
-        n = fonts.otf.name_to_slot(n)
+        n = fonts.otf.nametoslot(n)
     end
     if type(n) == "number" then
         tex.sprint("\\char" .. n)

@@ -352,7 +352,7 @@ function nodes.show_list(head, message)
     end
 end
 
-function nodes.check_glyphs(head,message)
+function nodes.checkglyphs(head,message)
     local t = { }
     for g in traverse_id(glyph_code,head) do
         t[#t+1] = format("U+%04X:%s",g.char,g.subtype)
@@ -428,7 +428,7 @@ function nodes.report(t,done)
     end
 end
 
-function nodes.pack_list(head)
+function nodes.packlist(head)
     local t = { }
     for n in traverse(head) do
         t[#t+1] = tostring(n)
@@ -491,7 +491,7 @@ end
 
 nodes.show_simple_list = function(h,depth) show_simple_list(h,depth,0) end
 
-function nodes.list_to_utf(h,joiner)
+function nodes.listtoutf(h,joiner)
     local joiner = (joiner ==true and utfchar(0x200C)) or joiner -- zwnj
     local w = { }
     while h do

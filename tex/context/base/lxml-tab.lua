@@ -161,8 +161,8 @@ function xml.setproperty(root,k,v)
     getmetatable(root).__index[k] = v
 end
 
-function xml.check_error(top,toclose)
-    return ""
+function xml.checkerror(top,toclose)
+    return "" -- can be set
 end
 
 local function add_attribute(namespace,tag,value)
@@ -218,9 +218,9 @@ local function add_end(spacing, namespace, tag)
     local toclose = remove(stack)
     top = stack[#stack]
     if #stack < 1 then
-        errorstr = format("nothing to close with %s %s", tag, xml.check_error(top,toclose) or "")
+        errorstr = format("nothing to close with %s %s", tag, xml.checkerror(top,toclose) or "")
     elseif toclose.tg ~= tag then -- no namespace check
-        errorstr = format("unable to close %s with %s %s", toclose.tg, tag, xml.check_error(top,toclose) or "")
+        errorstr = format("unable to close %s with %s %s", toclose.tg, tag, xml.checkerror(top,toclose) or "")
     end
     dt = top.dt
     dt[#dt+1] = toclose
@@ -272,9 +272,13 @@ local function attribute_specification_error(str)
     return str
 end
 
-function xml.unknown_dec_entity_format(str) return (str == "" and "&error;") or format("&%s;",str) end
-function xml.unknown_hex_entity_format(str) return format("&#x%s;",str) end
-function xml.unknown_any_entity_format(str) return format("&#x%s;",str) end
+xml.placeholders = {
+    unknown_dec_entity = function(str) return (str == "" and "&error;") or format("&%s;",str) end,
+    unknown_hex_entity = function(str) return format("&#x%s;",str) end,
+    unknown_any_entity = function(str) return format("&#x%s;",str) end,
+}
+
+local placeholders = xml.placeholders
 
 local function fromhex(s)
     local n = tonumber(s,16)
@@ -331,7 +335,7 @@ local function handle_hex_entity(str)
                 report_xml("utfize, converting hex entity &#x%s; into %s",str,h)
             end
         elseif utfize then
-            h = (n and utfchar(n)) or xml.unknown_hex_entity_format(str) or ""
+            h = (n and utfchar(n)) or xml.unknown_hex_entity(str) or ""
             if not n then
                 report_xml("utfize, ignoring hex entity &#x%s;",str)
             elseif trace_entities then
@@ -358,7 +362,7 @@ local function handle_dec_entity(str)
                 report_xml("utfize, converting dec entity &#%s; into %s",str,d)
             end
         elseif utfize then
-            d = (n and utfchar(n)) or xml.unknown_dec_entity_format(str) or ""
+            d = (n and utfchar(n)) or placeholders.unknown_dec_entity(str) or ""
             if not n then
                 report_xml("utfize, ignoring dec entity &#%s;",str)
             elseif trace_entities then
@@ -395,8 +399,9 @@ local function handle_any_entity(str)
                 end
                 a = lpegmatch(parsedentity,a) or a
             else
-                if xml.unknown_any_entity_format then
-                    a = xml.unknown_any_entity_format(str) or ""
+                local unknown_any_entity = placeholders.unknown_any_entity
+                if unknown_any_entity then
+                    a = unknown_any_entity(str) or ""
                 end
                 if a then
                     if trace_entities then
@@ -611,13 +616,13 @@ local function xmlconvert(data, settings)
     if errorstr and errorstr ~= "" then
         result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={ }, er = true } } }
         setmetatable(stack, mt)
-        local error_handler = settings.error_handler
-        if error_handler == false then
+        local errorhandler = settings.error_handler
+        if errorhandler == false then
             -- no error message
         else
-            error_handler = error_handler or xml.error_handler
-            if error_handler then
-                xml.error_handler("load",errorstr)
+            errorhandler = errorhandler or xml.errorhandler
+            if errorhandler then
+                xml.errorhandler("load",errorstr)
             end
         end
     else
@@ -677,7 +682,7 @@ function xml.is_valid(root)
     return root and not root.error
 end
 
-xml.error_handler = (logs and logs.report) or (input and logs.report) or print
+xml.errorhandler = (logs and logs.report) or (input and logs.report) or print
 
 --[[ldx--
 <p>We cannot load an <l n='lpeg'/> from a filehandle so we need to load

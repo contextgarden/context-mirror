@@ -34,7 +34,7 @@ local kerncodes       = nodes.kerncodes
 
 local glyph_node      = nodecodes.glyph
 local disc_node       = nodecodes.disc
-local kern_no   de    = nodecodes.kern
+local kern_node       = nodecodes.kern
 
 local kerning_code    = kerncodes.kerning
 

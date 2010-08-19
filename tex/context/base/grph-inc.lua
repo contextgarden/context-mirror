@@ -87,7 +87,7 @@ end
 local validsizes = table.tohash(img.boxes())
 local validtypes = table.tohash(img.types())
 
-function img.check_size(size)
+function img.checksize(size)
     if size then
         size = gsub(size,"box","")
         return (validsizes[size] and size) or "crop"
@@ -112,7 +112,7 @@ figures.defaultsearch  = true
 figures.defaultwidth   = 0
 figures.defaultheight  = 0
 figures.defaultdepth   = 0
-figures.n              = 0
+figures.nofprocessed   = 0
 figures.prefer_quality = true -- quality over location
 
 figures.localpaths = {
@@ -293,7 +293,7 @@ do
         --  can be determined; at some point the handlers might set them to numbers instead
         --  local w, h = tonumber(request.width), tonumber(request.height)
             request.page      = math.max(tonumber(request.page) or 1,1)
-            request.size      = img.check_size(request.size)
+            request.size      = img.checksize(request.size)
             request.object    = iv[request.object] == variables.yes
             request["repeat"] = iv[request["repeat"]] == variables.yes
             request.preview   = iv[request.preview] == variables.yes
@@ -666,7 +666,7 @@ figures.identifiers = figures.identifiers or { }
 local identifiers   = figures.identifiers
 
 figures.programs    = figures.programs or { }
-programs            = figures.programs
+local programs      = figures.programs
 
 function identifiers.default(data)
     local dr, du, ds = data.request, data.used, data.status
@@ -713,7 +713,7 @@ function figures.scale(data) -- will become lua code
     return data
 end
 function figures.done(data)
-    figures.n = figures.n + 1
+    figures.nofprocessed = figures.nofprocessed + 1
     data = data or figures.current()
 --~ print(table.serialize(figures.current()))
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
@@ -1140,9 +1140,9 @@ identifiers.list = {
 -- tracing
 
 statistics.register("graphics processing time", function()
-    local n = figures.n
-    if n > 0 then
-        return format("%s seconds including tex, n=%s", statistics.elapsedtime(figures),n)
+    local nofprocessed = figures.nofprocessed
+    if nofprocessed > 0 then
+        return format("%s seconds including tex, %s processed images", statistics.elapsedtime(figures),nofprocessed)
     else
         return nil
     end

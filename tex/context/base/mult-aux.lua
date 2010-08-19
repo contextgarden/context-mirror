@@ -22,6 +22,9 @@ local meaning = "@@@@"
 local data = { }
 
 function namespaces.define(namespace,settings)
+    if trace_namespaces then
+        report_namespaces("installing namespace '%s' with settings '%s'",namespace,settings)
+    end
     if data[namespace] then
         report_namespaces("namespace '%s' is already taken",namespace)
     end
@@ -35,29 +38,29 @@ function namespaces.define(namespace,settings)
     if not name or name == "" then
         report_namespaces("provide a (command) name in namespace '%s'",namespace)
     end
-    local self = prefix .. namespace
+    local self = "\\" .. prefix .. namespace
     context.unprotect()
  -- context.installnamespace(namespace)
-    context("\\def\\%s%s{%s%s}",prefix,self,meaning,namespace)
+    context("\\def\\%s%s{%s%s}",prefix,namespace,meaning,namespace)
     if trace_namespaces then
-        report_namespaces("installing namespace '%s' for '%s'",namespace,name)
+        report_namespaces("using namespace '%s' for '%s'",namespace,name)
     end
     local parent = ns.parent or ""
     if parent ~= "" then
         if trace_namespaces then
             report_namespaces("namespace '%s' for '%s' uses parent '%s'",namespace,name,parent)
         end
-        parent = prefix .. parent
+        parent = "\\" .. prefix .. parent
         -- todo: check if defined
     end
     context.installparameterhandler(self,name)
     if trace_namespaces then
         report_namespaces("installing parameter handler for '%s'",name)
-        end
+    end
     context.installparameterhashhandler(self,name)
     if trace_namespaces then
         report_namespaces("installing parameterhash handler for '%s'",name)
-        end
+    end
     local style = ns.style
     if style == v_yes then
         context.installattributehandler(self,name)

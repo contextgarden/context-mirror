@@ -34,10 +34,10 @@ local report_processors = logs.new("processors")
 
 -- move this
 
-commands = commands or { }
+commands       = commands or { }
 local commands = commands
 
-function commands.first_in_list(str)
+function commands.firstinlist(str)
     local first = match(str,"^([^,]+),")
     texsprint(ctxcatcodes,first or str)
 end

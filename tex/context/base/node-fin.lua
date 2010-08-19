@@ -117,7 +117,7 @@ end
 
 -- nodes.process_attribute = process_attribute
 
-function nodes.install_attribute_handler(plugin) -- we need to avoid this nested function
+function nodes.installattributehandler(plugin) -- we need to avoid this nested function
     return function(head)
         return process_attribute(head,plugin)
     end
@@ -165,7 +165,7 @@ end
 --~ end
 --~ ]]
 --~
---~ function nodes.install_attribute_handler(plugin) -- we need to avoid this nested function
+--~ function nodes.installattributehandler(plugin) -- we need to avoid this nested function
 --~     plugindata[plugin.name] = plugin
 --~     local str = format(template,plugin.name)
 --~     return loadstring(str)()

@@ -53,39 +53,30 @@ local delayed = table.tohash {
 }
 
 
-if not callback.original_register then
+if trace_calls then
 
-    callback.original_register = register_callback
+    local functions = { }
+    local original  = register_callback
 
-    local original_register = register_callback
-
-    if trace_calls then
-
-        local functions = { }
-
-        register_callback = function(name,func)
-            if type(func) == "function" then
-                if functions[name] then
-                    functions[name] = func
-                    return find_callback(name)
-                else
-                    functions[name] = func
-                    local cnuf = function(...)
-                        list[name] = list[name] + 1
-                        return functions[name](...)
-                    end
-                    return original_register(name,cnuf)
-                end
+    register_callback = function(name,func)
+        if type(func) == "function" then
+            if functions[name] then
+                functions[name] = func
+                return find_callback(name)
             else
-                return original_register(name,func)
+                functions[name] = func
+                local cnuf = function(...)
+                    list[name] = list[name] + 1
+                    return functions[name](...)
+                end
+                return original(name,cnuf)
             end
+        else
+            return original(name,func)
         end
-
     end
 
 end
-
-callback.register = register_callback
 
 local function frozen_message(what,name)
     report_callbacks("not %s frozen '%s' (%s)",what,name,frozen[name])
@@ -133,7 +124,7 @@ end
 function callbacks.freeze(name,freeze)
     freeze = type(freeze) == "string" and freeze
     if find(name,"%*") then
-        local pattern = name -- string.simpleesc(name)
+        local pattern = name -- string.partialescapedpattern(name)
         for name, _ in next, list do
             if find(name,pattern) then
                 frozen[name] = freeze or frozen[name] or "frozen"

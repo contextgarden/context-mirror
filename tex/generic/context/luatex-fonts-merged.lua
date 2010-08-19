@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/19/10 01:08:29
+-- merge date  : 08/20/10 00:00:51
 
 do -- begin closure to overcome local limits and interference
 
@@ -36,7 +36,9 @@ if not string.split then
 
 end
 
-local chr_to_esc = {
+string.patterns = { }
+
+local escapes = {
     ["%"] = "%%",
     ["."] = "%.",
     ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
@@ -46,10 +48,10 @@ local chr_to_esc = {
     ["{"] = "%{", ["}"] = "%}"
 }
 
-string.chr_to_esc = chr_to_esc
+string.patterns.escapes = escapes
 
 function string:esc() -- variant 2
-    return (gsub(self,"(.)",chr_to_esc))
+    return (gsub(self,"(.)",escapes))
 end
 
 function string:unquote()
@@ -116,21 +118,6 @@ function string:enhance(pattern,action)
     return self, n
 end
 
-local chr_to_hex, hex_to_chr = { }, { }
-
-for i=0,255 do
-    local c, h = char(i), format("%02X",i)
-    chr_to_hex[c], hex_to_chr[h] = h, c
-end
-
-function string:to_hex()
-    return (gsub(self or "","(.)",chr_to_hex))
-end
-
-function string:from_hex()
-    return (gsub(self or "","(..)",hex_to_chr))
-end
-
 if not string.characters then
 
     local function nextchar(str, index)
@@ -149,8 +136,6 @@ if not string.characters then
     end
 
 end
-
--- we can use format for this (neg n)
 
 function string:rpadd(n,chr)
     local m = n-#self
@@ -172,18 +157,6 @@ end
 
 string.padd = string.rpadd
 
-function string:split_settings() -- no {} handling, see l-aux for lpeg variant
-    if find(self,"=") then
-        local t = { }
-        for k,v in gmatch(self,"(%a+)=([^%,]*)") do
-            t[k] = v
-        end
-        return t
-    else
-        return nil
-    end
-end
-
 local patterns_escapes = {
     ["-"] = "%-",
     ["."] = "%.",
@@ -196,7 +169,7 @@ local patterns_escapes = {
     ["]"] = "%]",
 }
 
-function string:pattesc()
+function string:escapedpattern()
     return (gsub(self,".",patterns_escapes))
 end
 
@@ -207,7 +180,7 @@ local simple_escapes = {
     ["*"] = ".*",
 }
 
-function string:simpleesc()
+function string:partialescapedpattern()
     return (gsub(self,".",simple_escapes))
 end
 
@@ -922,14 +895,10 @@ function table.is_empty(t) -- obolete, use inline code instead
     return not t or not next(t)
 end
 
-function table.one_entry(t) -- obolete, use inline code instead
+function table.has_one_entry(t)
     local n = next(t)
     return n and not next(t,n)
 end
-
---~ function table.starts_at(t) -- obsolete, not nice anyway
---~     return ipairs(t,1)(t,0)
---~ end
 
 function table.tohash(t,value)
     local h = { }
@@ -1352,7 +1321,7 @@ function table.unnest(t) -- bad name
     return f
 end
 
-table.flatten_one_level = table.unnest
+table.flattenonelevel = table.unnest
 
 -- a better one:
 
@@ -1371,51 +1340,6 @@ local function flattened(t,f)
 end
 
 table.flattened = flattened
-
--- the next three may disappear
-
-function table.remove_value(t,value) -- todo: n
-    if value then
-        for i=1,#t do
-            if t[i] == value then
-                remove(t,i)
-                -- remove all, so no: return
-            end
-        end
-    end
-end
-
-function table.insert_before_value(t,value,str)
-    if str then
-        if value then
-            for i=1,#t do
-                if t[i] == value then
-                    insert(t,i,str)
-                    return
-                end
-            end
-        end
-        insert(t,1,str)
-    elseif value then
-        insert(t,1,value)
-    end
-end
-
-function table.insert_after_value(t,value,str)
-    if str then
-        if value then
-            for i=1,#t do
-                if t[i] == value then
-                    insert(t,i+1,str)
-                    return
-                end
-            end
-        end
-        t[#t+1] = str
-    elseif value then
-        t[#t+1] = value
-    end
-end
 
 local function are_equal(a,b,n,m) -- indexed
     if a and b and #a == #b then
@@ -1531,7 +1455,7 @@ function table.hexed(t,seperator)
     return concat(tt,seperator or " ")
 end
 
-function table.reverse_hash(h) -- needs another name
+function table.swaphash(h) -- needs another name
     local r = { }
     for k,v in next, h do
         r[v] = lower(gsub(k," ",""))
@@ -1547,36 +1471,6 @@ function table.reverse(t)
         end
     end
     return tt
-end
-
-function table.insert_before_value(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i,extra)
-            return
-        end
-    end
-    insert(t,1,extra)
-end
-
-function table.insert_after_value(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i+1,extra)
-            return
-        end
-    end
-    insert(t,#t+1,extra)
 end
 
 function table.sequenced(t,sep,simple) -- hash only
@@ -1613,13 +1507,13 @@ if not modules then modules = { } end modules ['l-file'] = {
 
 -- needs a cleanup
 
-file = file or { }
+file       = file or { }
 local file = file
 
 local insert, concat = table.insert, table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
-local getcurrentdir = lfs.currentdir
+local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 
 local P, R, S, C, Cs, Cp, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc
 
@@ -1751,18 +1645,18 @@ end
 --~ print(file.join("http:///a","/y"))
 --~ print(file.join("//nas-1","/y"))
 
-function file.iswritable(name)
-    local a = lfs.attributes(name) or lfs.attributes(dirname(name,"."))
+function file.is_writable(name)
+    local a = attributes(name) or attributes(dirname(name,"."))
     return a and sub(a.permissions,2,2) == "w"
 end
 
-function file.isreadable(name)
-    local a = lfs.attributes(name)
+function file.is_readable(name)
+    local a = attributes(name)
     return a and sub(a.permissions,1,1) == "r"
 end
 
-file.is_readable = file.isreadable
-file.is_writable = file.iswritable
+file.isreadable = file.is_readable -- depricated
+file.iswritable = file.is_writable -- depricated
 
 -- todo: lpeg
 
@@ -1794,7 +1688,7 @@ end
 --~ function file.old_collapse_path(str) -- fails on b.c/..
 --~     str = gsub(str,"\\","/")
 --~     if find(str,"/") then
---~         str = gsub(str,"^%./",(gsub(lfs.currentdir(),"\\","/")) .. "/") -- ./xx in qualified
+--~         str = gsub(str,"^%./",(gsub(getcurrentdir(),"\\","/")) .. "/") -- ./xx in qualified
 --~         str = gsub(str,"/%./","/")
 --~         local n, m = 1, 1
 --~         while n > 0 or m > 0 do
@@ -2023,8 +1917,8 @@ end
 --~ -- todo:
 --~
 --~ if os.type == "windows" then
---~     local currentdir = lfs.currentdir
---~     function lfs.currentdir()
+--~     local currentdir = getcurrentdir
+--~     function getcurrentdir()
 --~         return (gsub(currentdir(),"\\","/"))
 --~     end
 --~ end
@@ -2364,7 +2258,7 @@ do
     cachepaths = string.split(cachepaths,os.type == "windows" and ";" or ":")
 
     for i=1,#cachepaths do
-        if file.iswritable(cachepaths[i]) then
+        if file.is_writable(cachepaths[i]) then
             writable = file.join(cachepaths[i],"luatex-cache")
             lfs.mkdir(writable)
             writable = file.join(writable,caches.namespace)
@@ -2374,7 +2268,7 @@ do
     end
 
     for i=1,#cachepaths do
-        if file.isreadable(cachepaths[i]) then
+        if file.is_readable(cachepaths[i]) then
             readables[#readables+1] = file.join(cachepaths[i],"luatex-cache",caches.namespace)
         end
     end
@@ -2417,9 +2311,9 @@ local function makefullname(path,name)
     end
 end
 
-function caches.iswritable(path,name)
+function caches.is_writable(path,name)
     local fullname = makefullname(path,name)
-    return fullname and file.iswritable(fullname)
+    return fullname and file.is_writable(fullname)
 end
 
 function caches.loaddata(paths,name)
@@ -2527,7 +2421,7 @@ function containers.define(category, subcategory, version, enabled)
 end
 
 function containers.is_usable(container, name)
-    return container.enabled and caches and caches.iswritable(container.writable, name)
+    return container.enabled and caches and caches.is_writable(container.writable, name)
 end
 
 function containers.is_valid(container, name)
@@ -4825,9 +4719,9 @@ local baselines = {
     ['romn'] = 'Roman baseline'
 }
 
-local to_scripts    = table.reverse_hash(scripts  )
-local to_languages  = table.reverse_hash(languages)
-local to_features   = table.reverse_hash(features )
+local to_scripts    = table.swaphash(scripts  )
+local to_languages  = table.swaphash(languages)
+local to_features   = table.swaphash(features )
 
 tables.scripts      = scripts
 tables.languages    = languages
@@ -6916,7 +6810,7 @@ local lists = { -- why local
     fonts.manipulators,
 }
 
-function otf.set_features(tfmdata,features)
+function otf.setfeatures(tfmdata,features)
     local processes = { }
     if features and next(features) then
         local mode = tfmdata.mode or features.mode or "base"
@@ -6978,52 +6872,6 @@ tfmdata.mode = mode
     return processes, features
 end
 
-function otf.otf_to_tfm(specification)
-    local name     = specification.name
-    local sub      = specification.sub
-    local filename = specification.filename
-    local format   = specification.format
-    local features = specification.features.normal
-    local cache_id = specification.hash
-    local tfmdata  = containers.read(tfm.cache,cache_id)
---~ print(cache_id)
-    if not tfmdata then
-        local otfdata = otf.load(filename,format,sub,features and features.featurefile)
-        if otfdata and next(otfdata) then
-            otfdata.shared = otfdata.shared or {
-                featuredata = { },
-                anchorhash  = { },
-                initialized = false,
-            }
-            tfmdata = otf.copy_to_tfm(otfdata,cache_id)
-            if tfmdata and next(tfmdata) then
-                tfmdata.unique = tfmdata.unique or { }
-                tfmdata.shared = tfmdata.shared or { } -- combine
-                local shared = tfmdata.shared
-                shared.otfdata = otfdata
-                shared.features = features -- default
-                shared.dynamics = { }
-                shared.processes = { }
-                shared.set_dynamics = otf.set_dynamics -- fast access and makes other modules independent
-                -- this will be done later anyway, but it's convenient to have
-                -- them already for fast access
-                tfmdata.luatex = otfdata.luatex
-                tfmdata.indices = otfdata.luatex.indices
-                tfmdata.unicodes = otfdata.luatex.unicodes
-                tfmdata.marks = otfdata.luatex.marks
-                tfmdata.originals = otfdata.luatex.originals
-                tfmdata.changed = { }
-                tfmdata.has_italic = otfdata.metadata.has_italic
-                if not tfmdata.language then tfmdata.language = 'dflt' end
-                if not tfmdata.script   then tfmdata.script   = 'dflt' end
-                shared.processes, shared.features = otf.set_features(tfmdata,fonts.define.check(features,otf.features.default))
-            end
-        end
-        containers.write(tfm.cache,cache_id,tfmdata)
-    end
-    return tfmdata
-end
-
 --~ {
 --~  ['boundingbox']={ 95, -458, 733, 1449 },
 --~  ['class']="base",
@@ -7054,7 +6902,7 @@ fonts.formats.ttc   = "truetype"
 fonts.formats.ttf   = "truetype"
 fonts.formats.otf   = "opentype"
 
-function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder the tma to unicode (nasty due to one->many)
+local function copytotfm(data,cache_id) -- we can save a copy when we reorder the tma to unicode (nasty due to one->many)
     if data then
         local glyphs, pfminfo, metadata = data.glyphs or { }, data.pfminfo or { }, data.metadata or { }
         local luatex = data.luatex
@@ -7221,10 +7069,56 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
     end
 end
 
+local function otftotfm(specification)
+    local name     = specification.name
+    local sub      = specification.sub
+    local filename = specification.filename
+    local format   = specification.format
+    local features = specification.features.normal
+    local cache_id = specification.hash
+    local tfmdata  = containers.read(tfm.cache,cache_id)
+--~ print(cache_id)
+    if not tfmdata then
+        local otfdata = otf.load(filename,format,sub,features and features.featurefile)
+        if otfdata and next(otfdata) then
+            otfdata.shared = otfdata.shared or {
+                featuredata = { },
+                anchorhash  = { },
+                initialized = false,
+            }
+            tfmdata = copytotfm(otfdata,cache_id)
+            if tfmdata and next(tfmdata) then
+                tfmdata.unique = tfmdata.unique or { }
+                tfmdata.shared = tfmdata.shared or { } -- combine
+                local shared = tfmdata.shared
+                shared.otfdata = otfdata
+                shared.features = features -- default
+                shared.dynamics = { }
+                shared.processes = { }
+                shared.setdynamics = otf.setdynamics -- fast access and makes other modules independent
+                -- this will be done later anyway, but it's convenient to have
+                -- them already for fast access
+                tfmdata.luatex = otfdata.luatex
+                tfmdata.indices = otfdata.luatex.indices
+                tfmdata.unicodes = otfdata.luatex.unicodes
+                tfmdata.marks = otfdata.luatex.marks
+                tfmdata.originals = otfdata.luatex.originals
+                tfmdata.changed = { }
+                tfmdata.has_italic = otfdata.metadata.has_italic
+                if not tfmdata.language then tfmdata.language = 'dflt' end
+                if not tfmdata.script   then tfmdata.script   = 'dflt' end
+                shared.processes, shared.features = otf.setfeatures(tfmdata,fonts.define.check(features,otf.features.default))
+            end
+        end
+        containers.write(tfm.cache,cache_id,tfmdata)
+    end
+    return tfmdata
+end
+
 otf.features.register('mathsize')
 
-function tfm.read_from_open_type(specification)
-    local tfmtable = otf.otf_to_tfm(specification)
+function tfm.read_from_open_type(specification) -- wrong namespace
+    local tfmtable = otftotfm(specification)
     if tfmtable then
         local otfdata = tfmtable.shared.otfdata
         tfmtable.name = specification.name
@@ -7336,10 +7230,12 @@ otf.features.default = otf.features.default or { }
 local context_setups  = fonts.define.specify.context_setups
 local context_numbers = fonts.define.specify.context_numbers
 
+-- todo: dynamics namespace
+
 local a_to_script   = { }  otf.a_to_script   = a_to_script
 local a_to_language = { }  otf.a_to_language = a_to_language
 
-function otf.set_dynamics(font,dynamics,attribute)
+function otf.setdynamics(font,dynamics,attribute)
     local features = context_setups[context_numbers[attribute]] -- can be moved to caller
     if features then
         local script   = features.script   or 'dflt'
@@ -7378,7 +7274,7 @@ function otf.set_dynamics(font,dynamics,attribute)
             tfmdata.shared.features = { }
             -- end of save
             local set = fonts.define.check(features,otf.features.default)
-            dsla = otf.set_features(tfmdata,set)
+            dsla = otf.setfeatures(tfmdata,set)
             if trace_dynamics then
                 report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",context_numbers[attribute],attribute,script,language,table.sequenced(set))
             end
@@ -7730,7 +7626,7 @@ local function prepare_base_substitutions(tfmdata,kind,value) -- we can share so
     end
 end
 
-local function prepare_base_kerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
+local function preparebasekerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
     if value then
         local otfdata = tfmdata.shared.otfdata
         local validlookups, lookuplist = otf.collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
@@ -7800,10 +7696,10 @@ local supported_gpos = {
     'kern'
 }
 
-function otf.features.register_base_substitution(tag)
+function otf.features.registerbasesubstitution(tag)
     supported_gsub[#supported_gsub+1] = tag
 end
-function otf.features.register_base_kern(tag)
+function otf.features.registerbasekern(tag)
     supported_gsub[#supported_gpos+1] = tag
 end
 
@@ -7827,7 +7723,7 @@ function fonts.initializers.base.otf.features(tfmdata,value)
             for f=1,#supported_gpos do
                 local feature = supported_gpos[f]
                 local value = features[feature]
-                prepare_base_kerns(tfmdata,feature,features[feature])
+                preparebasekerns(tfmdata,feature,features[feature])
                 if value then
                     h[#h+1] = feature  .. "=" .. tostring(value)
                 end
@@ -11062,11 +10958,11 @@ features['tlig'] = 'TeX Ligatures'
 features['trep'] = 'TeX Replacements'
 features['anum'] = 'Arabic Digits'
 
-local register_base_substitution = otf.features.register_base_substitution
+local registerbasesubstitution = otf.features.registerbasesubstitution
 
-register_base_substitution('tlig')
-register_base_substitution('trep')
-register_base_substitution('anum')
+registerbasesubstitution('tlig')
+registerbasesubstitution('trep')
+registerbasesubstitution('anum')
 
 -- the functionality is defined elsewhere
 
@@ -12134,7 +12030,7 @@ end
 
 -- bonus
 
-function fonts.otf.name_to_slot(name)
+function fonts.otf.nametoslot(name)
     local tfmdata = fonts.ids[font.current()]
     if tfmdata and tfmdata.shared then
         local otfdata = tfmdata.shared.otfdata
@@ -12145,7 +12041,7 @@ end
 
 function fonts.otf.char(n)
     if type(n) == "string" then
-        n = fonts.otf.name_to_slot(n)
+        n = fonts.otf.nametoslot(n)
     end
     if type(n) == "number" then
         tex.sprint("\\char" .. n)

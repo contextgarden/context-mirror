@@ -27,7 +27,7 @@
 % no xml logging in format generation
 
 \everyjob {% we can redefine at the lua end !
-    \doif {\ctxlua{tex.sprint(logs.get_method())}} {xml} {%
+    \doif {\ctxlua{tex.sprint(logs.getmethod())}} {xml} {%
         \long\def\writebanner  #1{\writestring  {<m t='banner'>#1</m>}}%
         \long\def\writestatus#1#2{\writestring  {<m t='#1'>#2</m>}}%
         \long\def\message      #1{\normalmessage{<m t='message'>#1</m>}}%

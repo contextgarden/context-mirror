@@ -37,8 +37,7 @@ local processor_split = processors.split
 
 local variables       = interfaces.variables
 
-local matching_till_depth, number_at_depth = sections.matching_till_depth, sections.number_at_depth
-
+local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.numberatdepth
 
 -- some day we will share registers and lists (although there are some conceptual
 -- differences in the application of keywords)
@@ -140,7 +139,7 @@ local function filter_collected(names,criterium,number,collected,prevmode)
     else -- sectionname, number
         -- beware, this works ok for registers
         local depth = sections.getlevel(criterium)
-        local number = tonumber(number) or number_at_depth(depth) or 0
+        local number = tonumber(number) or numberatdepth(depth) or 0
         if trace_registers then
             detail = format("depth: %s, number: %s, numbers: %s, startset: %s",depth,number,concat(sections.numbers(),".",1,depth),#collected)
         end
@@ -154,7 +153,7 @@ local function filter_collected(names,criterium,number,collected,prevmode)
                         local metadata = v.metadata
                         local cnumbers = sectionnumber.numbers
                         if cnumbers then
-                            if (all or hash[metadata.name or false]) and #cnumbers >= depth and matching_till_depth(depth,cnumbers) then
+                            if (all or hash[metadata.name or false]) and #cnumbers >= depth and matchingtilldepth(depth,cnumbers) then
                                 result[#result+1] = v
                             end
                         end

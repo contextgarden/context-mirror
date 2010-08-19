@@ -785,10 +785,10 @@ end
 function names.is_permitted(name)
     return containers.is_usable(names.cache, name)
 end
-function names.write_data(name,data)
+function names.writedata(name,data)
     containers.write(names.cache,name,data)
 end
-function names.read_data(name)
+function names.readdata(name)
     return containers.read(names.cache,name)
 end
 
@@ -797,13 +797,13 @@ function names.load(reload,verbose)
         if reload then
             if names.is_permitted(names.basename) then
                 names.identify(verbose)
-                names.write_data(names.basename,names.data)
+                names.writedata(names.basename,names.data)
             else
                 report_names("unable to access database cache")
             end
             names.saved = true
         end
-        local data = names.read_data(names.basename)
+        local data = names.readdata(names.basename)
         names.data = data
         if not names.saved then
             if not data or not next(data) or not data.specifications or not next(data.specifications) then

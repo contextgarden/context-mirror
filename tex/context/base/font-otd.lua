@@ -20,10 +20,12 @@ otf.features.default = otf.features.default or { }
 local context_setups  = fonts.define.specify.context_setups
 local context_numbers = fonts.define.specify.context_numbers
 
+-- todo: dynamics namespace
+
 local a_to_script   = { }  otf.a_to_script   = a_to_script
 local a_to_language = { }  otf.a_to_language = a_to_language
 
-function otf.set_dynamics(font,dynamics,attribute)
+function otf.setdynamics(font,dynamics,attribute)
     local features = context_setups[context_numbers[attribute]] -- can be moved to caller
     if features then
         local script   = features.script   or 'dflt'
@@ -62,7 +64,7 @@ function otf.set_dynamics(font,dynamics,attribute)
             tfmdata.shared.features = { }
             -- end of save
             local set = fonts.define.check(features,otf.features.default)
-            dsla = otf.set_features(tfmdata,set)
+            dsla = otf.setfeatures(tfmdata,set)
             if trace_dynamics then
                 report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",context_numbers[attribute],attribute,script,language,table.sequenced(set))
             end

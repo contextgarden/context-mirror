@@ -45,23 +45,23 @@ end
 
 function sequencers.prependgroup(t,group,where)
     local list, order = t.list, t.order
-    table.remove_value(order,group)
-    table.insert_before_value(order,where,group)
+    table.removevalue(order,group)
+    table.insertbeforevalue(order,where,group)
     list[group] = { }
 end
 
 function sequencers.appendgroup(t,group,where)
     local list, order = t.list, t.order
-    table.remove_value(order,group)
-    table.insert_after_value(order,where,group)
+    table.removevalue(order,group)
+    table.insertaftervalue(order,where,group)
     list[group] = { }
 end
 
 function sequencers.prependaction(t,group,action,where,kind,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
-        table.remove_value(g,action)
-        table.insert_before_value(g,where,action)
+        table.removevalue(g,action)
+        table.insertbeforevalue(g,where,action)
         t.kind[action] = kind
     end
 end
@@ -69,8 +69,8 @@ end
 function sequencers.appendaction(t,group,action,where,kind,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
-        table.remove_value(g,action)
-        table.insert_after_value(g,where,action)
+        table.removevalue(g,action)
+        table.insertaftervalue(g,where,action)
         t.kind[action] = kind
     end
 end
@@ -87,7 +87,7 @@ end
 function sequencers.removeaction(t,group,action,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
-        table.remove_value(g,action)
+        table.removevalue(g,action)
     end
 end
 

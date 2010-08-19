@@ -91,7 +91,7 @@ viewerlayers.register = function(name,lw) -- if not inimode redefine data[n] in 
     return registered[stamp] -- == n
 end
 
-attributes.viewerlayers.handler = nodes.install_attribute_handler {
+attributes.viewerlayers.handler = nodes.installattributehandler {
     name        = "viewerlayer",
     namespace   = viewerlayers,
     initializer = initializer,

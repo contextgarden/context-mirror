@@ -79,7 +79,7 @@ fontgoodies.get = getgoodies
 
 local preset_context = fonts.define.specify.preset_context
 
-local function set_goodies(tfmdata,value)
+local function setgoodies(tfmdata,value)
     local goodies = tfmdata.goodies or { } -- future versions might store goodies in the cached instance
     for filename in gmatch(value,"[^, ]+") do
         -- we need to check for duplicates
@@ -95,13 +95,13 @@ end
 
 -- featuresets
 
-local function flattened_features(t,tt)
+local function flattenedfeatures(t,tt)
     -- first set value dominates
     local tt = tt or { }
     for i=1,#t do
         local ti = t[i]
         if type(ti) == "table" then
-            flattened_features(ti,tt)
+            flattenedfeatures(ti,tt)
         elseif tt[ti] == nil then
             tt[ti] = true
         end
@@ -109,7 +109,7 @@ local function flattened_features(t,tt)
     for k, v in next, t do
         if type(k) ~= "number" then -- not tonumber(k)
             if type(v) == "table" then
-                flattened_features(v,tt)
+                flattenedfeatures(v,tt)
             elseif tt[k] == nil then
                 tt[k] = v
             end
@@ -118,11 +118,11 @@ local function flattened_features(t,tt)
     return tt
 end
 
-fonts.flattened_features = flattened_features
+fonts.flattenedfeatures = flattenedfeatures
 
 function fontgoodies.prepare_features(goodies,name,set)
     if set then
-        local ff = flattened_features(set)
+        local ff = flattenedfeatures(set)
         local fullname = goodies.name .. "::" .. name
         local n, s = preset_context(fullname,"",ff)
         goodies.featuresets[name] = s -- set
@@ -148,7 +148,7 @@ end
 
 fontgoodies.register("featureset",initialize)
 
-local function set_featureset(tfmdata,set)
+local function setfeatureset(tfmdata,set)
     local goodies = tfmdata.goodies -- shared ?
     if goodies then
         local features = tfmdata.shared.features
@@ -259,11 +259,11 @@ table.insert(fonts.triggers,    "colorscheme")
 local base_initializers   = fonts.initializers.base.otf
 local node_initializers   = fonts.initializers.node.otf
 
-base_initializers.goodies     = set_goodies
-node_initializers.goodies     = set_goodies
+base_initializers.goodies     = setgoodies
+node_initializers.goodies     = setgoodies
 
-base_initializers.featureset  = set_featureset
-node_initializers.featureset  = set_featureset
+base_initializers.featureset  = setfeatureset
+node_initializers.featureset  = setfeatureset
 
 base_initializers.colorscheme = set_colorscheme
 node_initializers.colorscheme = set_colorscheme
@@ -278,7 +278,7 @@ local function initialize(goodies)
     local maplines = mathgoodies and mathgoodies.maplines
     if virtuals then
         for name, specification in next, virtuals do
-            mathematics.make_font(name,specification)
+            mathematics.makefont(name,specification)
         end
     end
     if mapfiles then

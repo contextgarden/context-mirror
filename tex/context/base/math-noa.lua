@@ -130,7 +130,7 @@ local function report_remap(tag,id,old,new,extra)
     report_noads("remapping %s in font %s from U+%04X (%s) to U+%04X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
 end
 
-local remap_alphabets = mathematics.remap_alphabets
+local remapalphabets = mathematics.remapalphabets
 local fcs = fonts.color.set
 
 -- we can have a global famdata == fonts.famdata and chrdata == fonts.chrdata
@@ -171,7 +171,7 @@ processors.relocate[math_char] = function(pointer)
             set_attribute(pointer,mathalphabet,0)
         end
         local char = pointer.char
-        local newchar = remap_alphabets(char,a,g)
+        local newchar = remapalphabets(char,a,g)
         if newchar then
             local fam = pointer.fam
             local id = font_of_family(fam)
@@ -346,7 +346,7 @@ table.insert(fonts.triggers,"mathalternates")
 fonts.initializers.base.otf.mathalternates = fonts.initializers.common.mathalternates
 fonts.initializers.node.otf.mathalternates = fonts.initializers.common.mathalternates
 
-local get_alternate = fonts.otf.get_alternate
+local getalternate = fonts.otf.getalternate
 
 local mathalternate = attributes.private("mathalternate")
 
@@ -370,7 +370,7 @@ alternate[math_char] = function(pointer)
         local mathalternatesattributes = tfmdata.shared.mathalternatesattributes
         if mathalternatesattributes then
             local what = mathalternatesattributes[a]
-            local alt = get_alternate(tfmdata,pointer.char,what.feature,what.value)
+            local alt = getalternate(tfmdata,pointer.char,what.feature,what.value)
             if alt then
                 pointer.char = alt
             end

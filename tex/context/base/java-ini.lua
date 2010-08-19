@@ -10,6 +10,8 @@ local format = string.format
 local concat = table.concat
 local lpegmatch, lpegP, lpegR, lpegS, lpegC = lpeg.match, lpeg.P, lpeg.R, lpeg.S, lpeg.C
 
+-- todo: don't flush scripts if no JS key
+
 interactions.javascripts = interactions.javascripts or { }
 local javascripts        = interactions.javascripts
 javascripts.codes        = javascripts.codes     or { }
@@ -89,6 +91,8 @@ end
 
 local splitter = lpeg.Ct(lpeg.splitat(lpeg.patterns.commaspacer))
 
+local used = false
+
 function javascripts.code(name,arguments)
     local c = codes[name]
     if c then
@@ -99,10 +103,12 @@ function javascripts.code(name,arguments)
                 preambles[p][1] = "now"
             end
         end
+        used = true
         return code
     end
     local f = functions[name]
     if f then
+        used = true
         if arguments then
             local args = lpegmatch(splitter,arguments)
             for i=1,#args do -- can be a helper
@@ -117,10 +123,12 @@ end
 
 function javascripts.flushpreambles()
     local t = { }
-    for i=1,#preambles do
-        local preamble = preambles[i]
-        if preamble[2] == "now" then
-            t[#t+1] = { preamble[1], preamble[3] }
+    if used then
+        for i=1,#preambles do
+            local preamble = preambles[i]
+            if preamble[2] == "now" then
+                t[#t+1] = { preamble[1], preamble[3] }
+            end
         end
     end
     return t

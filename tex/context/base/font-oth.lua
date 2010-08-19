@@ -15,7 +15,7 @@ local collect_lookups = fonts.otf.collect_lookups
 -- happen when I get the feeling that there is a performance
 -- penalty involved.
 
-function fonts.otf.get_alternate(tfmdata,k,kind,value)
+function fonts.otf.getalternate(tfmdata,k,kind,value)
     if value then
         local shared = tfmdata.shared
         local otfdata = shared and shared.otfdata

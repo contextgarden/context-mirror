@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local format, find, lower, gsub, simpleesc = string.format, string.find, string.lower, string.gsub, string.simpleesc
+local format, find, lower, gsub, partialescapedpattern = string.format, string.find, string.lower, string.gsub, string.partialescapedpattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 
@@ -84,7 +84,7 @@ local function set(t,what,newvalue)
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
-            elseif find(name,simpleesc(w)) then
+            elseif find(name,partialescapedpattern(w)) then
                 done[name] = true
                 for i=1,#functions do
                     functions[i](value)

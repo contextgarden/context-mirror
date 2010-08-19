@@ -51,13 +51,13 @@ local functions = {
 
 local method = "nop"
 
-function logs.set_method(newmethod)
+function logs.setmethod(newmethod)
     method = newmethod
     -- a direct copy might be faster but let's try this for a while
     setmetatable(logs, { __index = logs[method] })
 end
 
-function logs.get_method()
+function logs.getmethod()
     return method
 end
 
@@ -144,7 +144,7 @@ function texlog.stop_page_number()
     io.flush()
 end
 
-texlog.report_job_stat = statistics and statistics.show_job_stat
+texlog.report_job_stat = statistics and statistics.showjobstat
 
 -- xml logging
 
@@ -237,12 +237,12 @@ end
 if tex and (tex.jobname or tex.formatname) then
     -- todo: this can be set in mtxrun ... or maybe we should just forget about this alternative format
     if (os.getenv("mtx.directives.logmethod") or os.getenv("mtx_directives_logmethod")) == "xml" then
-        logs.set_method('xml')
+        logs.setmethod('xml')
     else
-        logs.set_method('tex')
+        logs.setmethod('tex')
     end
 else
-    logs.set_method('nop')
+    logs.setmethod('nop')
 end
 
 -- logging in runners -> these are actually the nop loggers

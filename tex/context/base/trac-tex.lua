@@ -18,7 +18,7 @@ function trackers.save_hash()
     saved = texhashtokens()
 end
 
-function trackers.dump_hash(filename,delta)
+function trackers.dumphashtofile(filename,delta)
     local list, hash, command_name = { }, texhashtokens(), token.command_name
     for name, token in next, hash do
         if not delta or not saved[name] then
@@ -42,7 +42,7 @@ local delta = nil
 local function dump_hash(wanteddelta)
     if delta == nil then
         saved = saved or texhashtokens() -- no need for trackers.dump_hash
-        luatex.register_stop_actions(1,function() dump_hash(nil,wanteddelta) end) -- at front
+        luatex.registerstopactions(1,function() dump_hash(nil,wanteddelta) end) -- at front
     end
     delta = wanteddelta
 end

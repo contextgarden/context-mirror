@@ -118,9 +118,9 @@
 \newtoks  \everysetupbibtexsession
 \setfalse \tracebibtexformat
 
-\unexpanded\def\definebibtexsession           {\dosingleargument\dodefinebibtexsession}
+\unexpanded\def\definebibtexsession{\dosingleargument\dodefinebibtexsession}
 \def\preparebibtexsession          {\dodoubleempty   \dopreparebibtexsession}
-\unexpanded\def\setupbibtexsession            {\dodoubleargument\dosetupbibtexsession}
+\unexpanded\def\setupbibtexsession {\dodoubleargument\dosetupbibtexsession}
 
 \def\dodefinebibtexsession     [#1]{\edef\currentbibtexsession{#1}%
                                     \ctxlua{commands.definebibtexsession("#1")}%
@@ -956,7 +956,7 @@
 \def\dodobibtexauthoryearref #1{\ctxlua{bibtex.authoryearref ("bibtex:\currentbibtexsession","#1","normal","author")}}
 \def\dodobibtexauthoryearsref#1{\ctxlua{bibtex.authoryearsref("bibtex:\currentbibtexsession","#1","normal","author")}}
 
-\unexpanded\def\bibtexsingularplural#1#2{\ctxlua{bibtex.singular_or_plural(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\unexpanded\def\bibtexsingularplural#1#2{\ctxlua{bibtex.singularorplural(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
 \protect \endinput
 

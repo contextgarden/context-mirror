@@ -386,8 +386,7 @@ function nodeinjections.addtags(head)
 end
 
 function codeinjections.enabletags(tg,lb)
-    taglist = tg
-    usedlabels = lb
+    taglist, usedlabels = tg, lb
     structures.tags.handler = nodeinjections.addtags
     tasks.enableaction("shipouts","structures.tags.handler")
     tasks.enableaction("shipouts","nodes.handlers.accessibility")

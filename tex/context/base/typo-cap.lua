@@ -267,7 +267,7 @@ function cases.set(n)
     texattribute[a_cases] = m * 100 + n
 end
 
-cases.handler = nodes.install_attribute_handler {
+cases.handler = nodes.installattributehandler {
     name      = "case",
     namespace = cases,
     processor = process,

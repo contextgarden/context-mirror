@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['lxml-inf'] = {
 
 -- This file will be loaded runtime by x-pending.tex.
 
-
 local xmlwithelements = xml.withelements
+local getid = lxml.getid
 
 local status, stack
 
@@ -42,7 +42,7 @@ end
 local function get_command_status(id)
     status, stack = {}, {}
     if id then
-        xmlwithelements(get_id(id),get)
+        xmlwithelements(getid(id),get)
         return status
     else
         local t = { }

@@ -869,3 +869,9 @@ end
 --~ str = [[test 123 test $oeps$]]
 
 --~ lpegmatch(pattern,str)
+
+buffers.obsolete = buffers.obsolete or { }
+local obsolete = buffers.obsolete
+
+buffers.finish_state = buffers.finishstate   obsolete.finish_state = buffers.finishstate
+buffers.change_state = buffers.finishstate   obsolete.change_state = buffers.finishstate

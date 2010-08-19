@@ -34,18 +34,18 @@ storage.register("xml/entities",xml.entities,"xml.entities") -- this will move t
 
 local entities = xml.entities -- this is a shared hash
 
-xml.unknown_any_entity_format = nil -- has to be per xml
+xml.placeholders.unknown_any_entity = nil -- has to be per xml
 
 local parsedentity = xml.parsedentitylpeg
 
-function xml.register_entity(key,value)
+function xml.registerentity(key,value)
     entities[key] = value
     if trace_entities then
         report_xml("registering entity '%s' as: %s",key,value)
     end
 end
 
-function xml.resolved_entity(str)
+function xml.resolvedentity(str)
     local e = entities[str]
     if e then
         local te = type(e)

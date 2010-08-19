@@ -377,10 +377,7 @@
 \to \everyjob
 
 \appendtoks
-    \ctxlua {
-        statistics.report_storage("log")
-        statistics.save_fmt_status("\jobname","\contextversion","context.tex")
-    }%
+    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.tex")}% can become automatic
 \to \everydump
 
 \protect \errorstopmode \dump \endinput

@@ -446,7 +446,7 @@ function directions.set(n)
     directions.set(n)
 end
 
-directions.handler = nodes.install_attribute_handler {
+directions.handler = nodes.installattributehandler {
     name = "directions",
     namespace = directions,
     processor = directions.process,

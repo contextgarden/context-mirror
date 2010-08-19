@@ -62,10 +62,10 @@ function tfm.enhance(tfmdata,specification)
             features.encoding = encoding
         end
     end
-    tfm.set_features(tfmdata)
+    tfm.setfeatures(tfmdata)
 end
 
-function tfm.set_features(tfmdata)
+function tfm.setfeatures(tfmdata)
     -- todo: no local functions
     local shared = tfmdata.shared
 --  local tfmdata = shared.tfmdata

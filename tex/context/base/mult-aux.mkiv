@@ -65,7 +65,8 @@
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}} % always root
 
 \def\installparameterhandler#1#2%
-  {\normalexpanded
+  {%\message{\detokenize{#1}/\detokenize{#2}}%
+   \normalexpanded
      {\doinstallparameterhandler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
@@ -163,30 +164,40 @@
 \def\installnamespace#1%
   {\setvalue{????#1}{@@@@#1}}
 
-% \start
-%
-% \enabletrackers[interfaces.namespaces]
+% \enabletrackers[interfaces.namespaces,context.flush]
 %
 % \definenamespace
-%   [ws]
+%   [xy]
 %   [type=module,
-%    comment=letter module,
+%    comment=test module,
 %    version=1,
-%    name=letter,
+%    name=test,
 %    style=yes,
 %    command=yes,
 %    setup=list,
-%    parent=ws-common]
+%    parent=xy]
 %
-% \ttx \listnamespaces
+% \unprotect
+% \getparameters
+%   [\????xy]
+%   [text=]
+% \protect
 %
-% \defineletter[mine][whatever=true]  \setupletter[mine][whatever=true]
+% \definetest[one]
 %
-% \namedletterparameter{mine}{whatever}
+% \starttext
 %
-% \def\currentletter{mine} \letterparameter{whatever}
+%   “\testparameter{text}”
 %
-% \stop
+%   \setuptest[text=foo]
+%
+%   “\testparameter{text}”
+%
+%   \setuptest[one][text=bar]
+%
+%   “\testparameter{text}”
+%
+% \stoptext
 
 \def\definenamespace{\dodoubleargument\dodefinenamespace}
 

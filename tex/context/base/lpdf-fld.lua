@@ -13,6 +13,7 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 local gmatch, lower, format = string.gmatch, string.lower, string.format
 local lpegmatch = lpeg.match
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local bpfactor, todimen = number.dimenfactors.bp, string.todimen
 
 local trace_fields = false  trackers.register("widgets.fields",   function(v) trace_fields   = v end)
 
@@ -40,6 +41,7 @@ local pdfstring          = lpdf.string
 local pdfconstant        = lpdf.constant
 local pdftoeight         = lpdf.toeight
 local pdfflushobject     = lpdf.flushobject
+local pdfsharedobject    = lpdf.sharedobject
 local pdfreserveobject   = lpdf.reserveobject
 
 local nodepool           = nodes.pool
@@ -193,10 +195,10 @@ local function fieldsurrounding(specification)
         alternative, a = "tf", s.tf
     end
     local tag = style .. alternative
-    size = string.todimen(size)
+    size = todimen(size)
     local stream = pdfstream {
         pdfconstant(tag),
-        format("%0.4f Tf",(size and (number.dimenfactors.bp * size)) or 12),
+        format("%0.4f Tf",(size and (bpfactor * size)) or 12),
     }
     usedfonts[tag] = a -- the name
     -- add color to stream: 0 g
@@ -252,7 +254,7 @@ local function fieldappearances(specification)
     local appearance = pdfdictionary { -- cache this one
         N = registeredsymbol(n), R = registeredsymbol(r), D = registeredsymbol(d),
     }
-    return lpdf.sharedobj(tostring(appearance))
+    return pdfsharedobject(tostring(appearance))
 end
 
 local function fieldstates(specification,forceyes,values,default)
@@ -314,7 +316,7 @@ local function fieldstates(specification,forceyes,values,default)
         R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
         D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
     }
-    local appearanceref = lpdf.sharedobj(tostring(appearance))
+    local appearanceref = pdfsharedobject(tostring(appearance))
     return appearanceref, default
 end
 
@@ -668,7 +670,6 @@ function methods.line(name,specification,variant,extras)
             F        = fieldplus(specification),
             Ff       = fieldflag(specification),
             OC       = fieldlayer(specification),
-            MK       = fieldsurrounding(specification), -- needed ?
             DA       = fieldsurrounding(specification),
             AA       = fieldactions(specification),
             FT       = pdf_tx,
@@ -690,7 +691,6 @@ function methods.line(name,specification,variant,extras)
         F       = fieldplus(specification),
         DA      = fieldattributes(specification),
         OC      = fieldlayer(specification),
-        MK      = fieldsurrounding(specification),
         DA      = fieldsurrounding(specification),
         AA      = fieldactions(specification),
         Q       = fieldalignment(specification),
@@ -870,13 +870,14 @@ function methods.sub(name,specification,variant)
     --  enhance(specification,"Radio,RadiosInUnison")
         enhance(specification,"RadiosInUnison") -- maybe also PushButton as acrobat does
         local d = pdfdictionary {
-            T    = parent.name,
-            FT   = pdf_btn,
-            Rect = pdf_no_rect,
-            F    = fieldplus(specification),
-            Ff   = fieldflag(specification),
-            H    = pdf_n,
-            V    = default,
+            Subtype  = pdf_widget,
+            T        = parent.name,
+            FT       = pdf_btn,
+            Rect     = pdf_no_rect,
+            F        = fieldplus(specification),
+            Ff       = fieldflag(specification),
+            H        = pdf_n,
+            V        = default,
         }
         save_parent(parent,specification,d)
     end

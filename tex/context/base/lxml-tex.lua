@@ -36,8 +36,9 @@ local texsprint, texprint, texwrite = tex.sprint, tex.print, tex.write
 local texcatcodes, ctxcatcodes, vrbcatcodes, notcatcodes = tex.texcatcodes, tex.ctxcatcodes, tex.vrbcatcodes, tex.notcatcodes
 
 local xmlelements, xmlcollected, xmlsetproperty = xml.elements, xml.collected, xml.setproperty
-local xmlparseapply, xmlwithelements = xml.parse_apply, xml.withelements
+local xmlwithelements = xml.withelements
 local xmlserialize, xmlcollect, xmltext, xmltostring = xml.serialize, xml.collect, xml.text, xml.tostring
+local xmlapplylpath = xml.applylpath
 
 local variables = (interfaces and interfaces.variables) or { }
 
@@ -80,14 +81,14 @@ local xmltextcapture = (
     space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
     space^0 * newline    * space^0 * Cc(" ") / texsprint +
     content                                  / function(str) return texsprint(notcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                   / xml.resolved_entity
+    entity                                   / xml.resolvedentity
 )^0
 
 local ctxtextcapture = (
     space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
     space^0 * newline    * space^0 * Cc(" ") / texsprint +
     content                                  / function(str) return texsprint(ctxcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                   / xml.resolved_entity
+    entity                                   / xml.resolvedentity
 )^0
 
 local forceraw, rawroot = false, nil
@@ -142,23 +143,23 @@ local function toverbatim(str)
     if aftercommand  then texsprint(texcatcodes,aftercommand,"{}")  end
 end
 
-function lxml.set_verbatim(before,after,obeyedline,obeyedspace)
+function lxml.setverbatim(before,after,obeyedline,obeyedspace)
     beforecommand, aftercommand, linecommand, spacecommand = before, after, obeyedline, obeyedspace
 end
 
 local obeycdata = true
 
-function lxml.set_cdata()
+function lxml.setcdata()
     obeycdata = true
 end
 
-function lxml.reset_cdata()
+function lxml.resetcdata()
     obeycdata = false
 end
 
 -- cdata and verbatim
 
-lxml.set_verbatim("\\xmlcdatabefore", "\\xmlcdataafter", "\\xmlcdataobeyedline", "\\xmlcdataobeyedspace")
+lxml.setverbatim("\\xmlcdatabefore", "\\xmlcdataafter", "\\xmlcdataobeyedline", "\\xmlcdataobeyedspace")
 
 -- local capture = (space^0*newline)^0 * capture * (space+newline)^0 * -1
 
@@ -194,7 +195,7 @@ function lxml.splitid(id)
     end
 end
 
-local function get_id(id, qualified)
+local function getid(id, qualified)
     if id then
         local lid = loaded[id]
         if lid then
@@ -233,8 +234,8 @@ local function get_id(id, qualified)
     end
 end
 
-lxml.id     = get_id
-lxml.get_id = get_id
+lxml.id    = getid -- we provide two names as locals can already use such
+lxml.getid = getid -- names and we don't want clashes
 
 function lxml.root(id)
     return loaded[id]
@@ -245,7 +246,7 @@ end
 local nofindices = 0
 
 local function addindex(name,check_sum,force)
-    local root = get_id(name)
+    local root = getid(name)
     if root and (not root.index or force) then -- weird, only called once
         local n, index, maxindex, check = 0, root.index or { }, root.maxindex or 0, root.check or { }
         local function nest(root)
@@ -284,27 +285,27 @@ lxml.addindex = addindex
 
 -- another cache
 
-local function lxmlparseapply(id,pattern) -- better inline, saves call
-    return xmlparseapply({ get_id(id) }, pattern)
+local function lxmlapplylpath(id,pattern) -- better inline, saves call
+    return xmlapplylpath({ getid(id) }, pattern)
 end
 
-lxml.filter = lxmlparseapply
+lxml.filter = lxmlapplylpath
 
 function lxml.filterlist(list,pattern)
     for s in gmatch(list,"[^, ]+") do -- we could cache a table
-        lxmlparseapply(s,pattern)
+        xmlapplylpath({ getid(s) }, pattern)
     end
 end
 
 lxml["function"] = function(id,name)
     local f = xml.functions[name]
-    return f and f(get_id(id))
+    return f and f(getid(id))
 end
 
 -- rather new, indexed storage (backward refs), maybe i will merge this
 
 function lxml.checkindex(name)
-    local root = get_id(name)
+    local root = getid(name)
     return (root and root.index) or 0
 end
 
@@ -381,7 +382,7 @@ end
 
 function lxml.include(id,pattern,attribute,recurse)
     starttiming(xml)
-    local root = get_id(id)
+    local root = getid(id)
     xml.include(root,pattern,attribute,recurse,function(filename)
         if filename then
             filename = commands.preparedfile(filename)
@@ -553,7 +554,7 @@ function lxml.serialize(root)
 end
 
 function lxml.setaction(id,pattern,action)
-    local collected = lxmlparseapply(id,pattern)
+    local collected = xmlapplylpath({ getid(id) }, pattern)
     if collected then
         for c=1,#collected do
             collected[c].command = action
@@ -619,7 +620,7 @@ xml.cprint = cprint local xmlcprint = cprint
 -- now we can flush
 
 function lxml.main(id)
-    xmlserialize(get_id(id),xmltexhandler) -- the real root (@rt@)
+    xmlserialize(getid(id),xmltexhandler) -- the real root (@rt@)
 end
 
 --~ -- lines (untested)
@@ -675,12 +676,12 @@ end
 
 local setups = { }
 
-function lxml.set_command_to_text(id)
-    xmlwithelements(get_id(id),to_text)
+function lxml.setcommandtotext(id)
+    xmlwithelements(getid(id),to_text)
 end
 
-function lxml.set_command_to_none(id)
-    xmlwithelements(get_id(id),to_none)
+function lxml.setcommandtonone(id)
+    xmlwithelements(getid(id),to_none)
 end
 
 function lxml.installsetup(what,document,setup,where)
@@ -704,12 +705,12 @@ function lxml.installsetup(what,document,setup,where)
         if trace_loading then
             commands.writestatus("lxml","inserting setup %s for %s before %s",setup,document,where)
         end
-        table.insert_before_value(sd,setup,where)
+        table.insertbeforevalue(sd,setup,where)
     elseif what == 4 then
         if trace_loading then
             commands.writestatus("lxml","inserting setup %s for %s after %s",setup,document,where)
         end
-        table.insert_after_value(sd,setup,where)
+        table.insertaftervalue(sd,setup,where)
     end
 end
 
@@ -759,7 +760,7 @@ end
 
 function lxml.setsetup(id,pattern,setup)
     if not setup or setup == "" or setup == "*" or setup == "-" or setup == "+" then
-        local collected = lxmlparseapply(id,pattern)
+        local collected = xmlapplylpath({ getid(id) }, pattern)
         if collected then
             if trace_setups then
                 for c=1, #collected do
@@ -802,7 +803,7 @@ function lxml.setsetup(id,pattern,setup)
     else
         local a, b = match(setup,"^(.+:)([%*%-])$")
         if a and b then
-            local collected = lxmlparseapply(id,pattern)
+            local collected = xmlapplylpath({ getid(id) }, pattern)
             if collected then
                 if trace_setups then
                     for c=1, #collected do
@@ -847,7 +848,7 @@ function lxml.setsetup(id,pattern,setup)
                 report_lxml("no lpath matches for %s",pattern)
             end
         else
-            local collected = lxmlparseapply(id,pattern)
+            local collected = xmlapplylpath({ getid(id) }, pattern)
             if collected then
                 if trace_setups then
                     for c=1, #collected do
@@ -1134,7 +1135,7 @@ end
 --
 
 local function verbatim(id,before,after)
-    local root = get_id(id)
+    local root = getid(id)
     if root then
         if before then texsprint(ctxcatcodes,before,"[",root.tg or "?","]") end
         lxml.toverbatim(xmltostring(root.dt))
@@ -1153,21 +1154,21 @@ lxml.verbatim = verbatim
 -- helpers
 
 function lxml.first(id,pattern)
-    local collected = lxmlparseapply(id,pattern)
+    local collected = xmlapplylpath({ getid(id) }, pattern)
     if collected then
         first(collected)
     end
 end
 
 function lxml.last(id,pattern)
-    local collected = lxmlparseapply(id,pattern)
+    local collected = xmlapplylpath({ getid(id) }, pattern)
     if collected then
         last(collected)
     end
 end
 
 function lxml.all(id,pattern)
-    local collected = lxmlparseapply(id,pattern)
+    local collected = xmlapplylpath({ getid(id) }, pattern)
     if collected then
         all(collected)
     end
@@ -1175,18 +1176,18 @@ end
 
 function lxml.count(id,pattern)
     -- always needs to produce a result so no test here
-    count(lxmlparseapply(id,pattern))
+    count(xmlapplylpath({ getid(id) }, pattern))
 end
 
 function lxml.attribute(id,pattern,a,default)
-    local collected = lxmlparseapply(id,pattern)
+    local collected = xmlapplylpath({ getid(id) }, pattern)
     if collected then
         attribute(collected,a,default)
     end
 end
 
 function lxml.raw(id,pattern) -- the content, untouched by commands
-    local collected = (pattern and lxmlparseapply(id,pattern)) or get_id(id)
+    local collected = (pattern and xmlapplylpath({ getid(id) }, pattern)) or getid(id)
     if collected then
         texsprint(xmltostring(collected[1].dt))
     end
@@ -1194,11 +1195,11 @@ end
 
 function lxml.context(id,pattern) -- the content, untouched by commands
     if not pattern then
-        local collected = get_id(id)
+        local collected = getid(id)
     --  texsprint(ctxcatcodes,collected.dt[1])
         ctx_text(collected.dt[1])
     else
-        local collected = lxmlparseapply(id,pattern) or get_id(id)
+        local collected = xmlapplylpath({ getid(id) }, pattern) or getid(id)
         if collected and #collected > 0 then
             texsprint(ctxcatcodes,collected[1].dt)
         end
@@ -1206,7 +1207,7 @@ function lxml.context(id,pattern) -- the content, untouched by commands
 end
 
 function lxml.text(id,pattern)
-    local collected = (pattern and lxmlparseapply(id,pattern)) or get_id(id)
+    local collected = (pattern and xmlapplylpath({ getid(id) }, pattern)) or getid(id)
     if collected then
         text(collected)
     end
@@ -1215,40 +1216,40 @@ end
 lxml.content = text
 
 function lxml.position(id,pattern,n)
-    local collected = lxmlparseapply(id,pattern)
+    local collected = xmlapplylpath({ getid(id) }, pattern)
     if collected then
         position(collected,n)
     end
 end
 
 function lxml.chainattribute(id,pattern,a,default)
-    local collected = lxmlparseapply(id,pattern)
+    local collected = xmlapplylpath({ getid(id) }, pattern)
     if collected then
         chainattribute(collected,a,default)
     end
 end
 
 function lxml.concatrange(id,pattern,start,stop,separator,lastseparator,textonly) -- test this on mml
-    concatrange(lxmlparseapply(id,pattern),start,stop,separator,lastseparator,textonly)
+    concatrange(xmlapplylpath({ getid(id) }, pattern),start,stop,separator,lastseparator,textonly)
 end
 
 function lxml.concat(id,pattern,separator,lastseparator,textonly)
-    concatrange(lxmlparseapply(id,pattern),false,false,separator,lastseparator,textonly)
+    concatrange(xmlapplylpath({ getid(id) }, pattern),false,false,separator,lastseparator,textonly)
 end
 
 function lxml.element(id,n)
-    position(lxmlparseapply(id,"/*"),n)
+    position(xmlapplylpath({ getid(id) },"/*"),n)
 end
 
 lxml.index = lxml.position
 
 function lxml.pos(id)
-    local root = get_id(id)
+    local root = getid(id)
     texwrite((root and root.ni) or 0)
 end
 
 function lxml.att(id,a,default)
-    local root = get_id(id)
+    local root = getid(id)
     if root then
         local at = root.at
         local str = (at and at[a]) or default
@@ -1261,7 +1262,7 @@ function lxml.att(id,a,default)
 end
 
 function lxml.name(id) -- or remapped name? -> lxml.info, combine
-    local r = get_id(id)
+    local r = getid(id)
     local ns = r.rn or r.ns or ""
     if ns ~= "" then
         texsprint(ns,":",r.tg)
@@ -1271,20 +1272,20 @@ function lxml.name(id) -- or remapped name? -> lxml.info, combine
 end
 
 function lxml.match(id) -- or remapped name? -> lxml.info, combine
-    texsprint(get_id(id).mi or 0)
+    texsprint(getid(id).mi or 0)
 end
 
 function lxml.tag(id) -- tag vs name -> also in l-xml tag->name
-    texsprint(get_id(id).tg or "")
+    texsprint(getid(id).tg or "")
 end
 
 function lxml.namespace(id) -- or remapped name?
-    local root = get_id(id)
+    local root = getid(id)
     texsprint(root.rn or root.ns or "")
 end
 
 function lxml.flush(id)
-    id = get_id(id)
+    id = getid(id)
     local dt = id and id.dt
     if dt then
         xmlsprint(dt)
@@ -1292,7 +1293,7 @@ function lxml.flush(id)
 end
 
 function lxml.snippet(id,i)
-    local e = get_id(id)
+    local e = getid(id)
     if e then
         local edt = e.dt
         if edt then
@@ -1302,12 +1303,12 @@ function lxml.snippet(id,i)
 end
 
 function lxml.direct(id)
-    xmlsprint(get_id(id))
+    xmlsprint(getid(id))
 end
 
 function lxml.command(id,pattern,cmd)
-    local i, p = get_id(id,true)
-    local collected = lxmlparseapply(i,pattern)
+    local i, p = getid(id,true)
+    local collected = xmlapplylpath({ getid(i) }, pattern)
     if collected then
         local rootname = p or i.name
         for c=1,#collected do
@@ -1325,11 +1326,11 @@ end
 -- loops
 
 function lxml.collected(id,pattern,reverse)
-    return xmlcollected(get_id(id),pattern,reverse)
+    return xmlcollected(getid(id),pattern,reverse)
 end
 
 function lxml.elements(id,pattern,reverse)
-    return xmlelements(get_id(id),pattern,reverse)
+    return xmlelements(getid(id),pattern,reverse)
 end
 
 -- obscure ones
@@ -1342,16 +1343,16 @@ local found, empty = xml.found, xml.empty
 
 local doif, doifnot, doifelse = commands.doif, commands.doifnot, commands.doifelse
 
-function lxml.doif         (id,pattern) doif    (found(get_id(id),pattern)) end
-function lxml.doifnot      (id,pattern) doifnot (found(get_id(id),pattern)) end
-function lxml.doifelse     (id,pattern) doifelse(found(get_id(id),pattern)) end
-function lxml.doiftext     (id,pattern) doif    (not empty(get_id(id),pattern)) end
-function lxml.doifnottext  (id,pattern) doifnot (not empty(get_id(id),pattern)) end
-function lxml.doifelsetext (id,pattern) doifelse(not empty(get_id(id),pattern)) end
+function lxml.doif         (id,pattern) doif    (found(getid(id),pattern)) end
+function lxml.doifnot      (id,pattern) doifnot (found(getid(id),pattern)) end
+function lxml.doifelse     (id,pattern) doifelse(found(getid(id),pattern)) end
+function lxml.doiftext     (id,pattern) doif    (not empty(getid(id),pattern)) end
+function lxml.doifnottext  (id,pattern) doifnot (not empty(getid(id),pattern)) end
+function lxml.doifelsetext (id,pattern) doifelse(not empty(getid(id),pattern)) end
 
 -- special case: "*" and "" -> self else lpath lookup
 
---~ function lxml.doifelseempty(id,pattern) doifelse(isempty(get_id(id),pattern ~= "" and pattern ~= nil)) end -- not yet done, pattern
+--~ function lxml.doifelseempty(id,pattern) doifelse(isempty(getid(id),pattern ~= "" and pattern ~= nil)) end -- not yet done, pattern
 
 -- status info
 
@@ -1397,15 +1398,15 @@ end)
 -- misc
 
 function lxml.nonspace(id,pattern) -- slow, todo loop
-    xmltprint(xmlcollect(get_id(id),pattern,true))
+    xmltprint(xmlcollect(getid(id),pattern,true))
 end
 
 function lxml.strip(id,pattern,nolines,anywhere)
-    xml.strip(get_id(id),pattern,nolines,anywhere)
+    xml.strip(getid(id),pattern,nolines,anywhere)
 end
 
 function lxml.stripped(id,pattern,nolines)
-    local str = xmltext(get_id(id),pattern) or ""
+    local str = xmltext(getid(id),pattern) or ""
     str = gsub(str,"^%s*(.-)%s*$","%1")
     if nolines then
         str = gsub(str,"%s+"," ")
@@ -1414,5 +1415,9 @@ function lxml.stripped(id,pattern,nolines)
 end
 
 function lxml.delete(id,pattern)
-    xml.delete(get_id(id),pattern)
+    xml.delete(getid(id),pattern)
 end
+
+lxml.obsolete = { }
+
+lxml.get_id = getid   lxml.obsolete.get_id = getid

@@ -16,11 +16,22 @@ if not modules then modules = { } end modules ['mult-cld'] = {
 -- Todo: optional checking against interface
 -- Todo: coroutine trickery
 
-context = context or { }
+context       = context or { }
+local context = context
 
 local format, concat = string.format, table.concat
 local next, type, tostring = next, type, tostring
-local texsprint, texiowrite, texcount, ctxcatcodes = tex.sprint, texio.write, tex.count, tex.ctxcatcodes
+local insert, remove = table.insert, table.remove
+
+local tex = tex
+
+local texsprint   = tex.sprint
+local texprint    = tex.print
+local texiowrite  = texio.write
+local texcount    = tex.count
+local ctxcatcodes = tex.ctxcatcodes
+local prtcatcodes = tex.prtcatcodes
+local vrbcatcodes = tex.vrbcatcodes
 
 local flush = texsprint or function(cct,...) print(concat{...}) end
 
@@ -49,9 +60,42 @@ context._stack_ = _stack_
 context._store_ = _store_
 context._flush_ = _flush_
 
-function tex.fprint(...) -- goodie
-    texsprint(ctxcatcodes,format(...))
+-- Should we keep the catcodes with the function?
+
+local catcodestack    = { }
+local currentcatcodes = ctxcatcodes
+
+function context.pushcatcodes(c)
+    insert(catcodestack,currentcatcodes)
+    currentcatcodes = c
 end
+
+function context.popcatcodes()
+    currentcatcodes = remove(catcodestack) or currentcatcodes
+end
+
+function context.unprotect()
+    insert(catcodestack,currentcatcodes)
+    currentcatcodes = prtcatcodes
+end
+
+function context.protect()
+    currentcatcodes = remove(catcodestack) or currentcatcodes
+end
+
+function tex.fprint(...) -- goodie
+    texsprint(currentcatcodes,format(...))
+end
+
+--~ function context.direct(...)
+--~     context.flush(...)
+--~ end
+
+--~ function context.verbose(...)
+--~     context.flush(vrbcatcodes,...)
+--~ end
+
+local trace_context = logs.new("context") -- here
 
 function context.trace(intercept)
     local normalflush = flush
@@ -67,69 +111,11 @@ end
 trackers.register("context.flush",     function(v) if v then context.trace()     end end)
 trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
 
-local trace_context = logs.new("context")
-
-local function writer(k,...) -- we can optimize for 1 argument
-    if k then
-        flush(ctxcatcodes,k)
-        local t = { ... }
-        local nt = #t
-        if nt > 0 then
-            for i=1,nt do
-                local ti = t[i]
-                local typ = type(ti)
-                if ti == nil then
-                    -- next
-                elseif typ == "string" or typ == "number" then
-                    flush(ctxcatcodes,"{",ti,"}")
-                elseif typ == "table" then
-                    local tn = #ti
-                    if tn > 0 then
-                        for j=1,tn do
-                            local tj = ti[j]
-                            if type(tj) == "function" then
-                                ti[j] = "\\mkivflush{" .. _store_(tj) .. "}"
-                            end
-                        end
-                        flush(ctxcatcodes,"[",concat(ti,","),"]")
-                    else
-                        flush(ctxcatcodes,"[")
-                        local done = false
-                        for k, v in next, ti do
-                            if done then
-                                flush(ctxcatcodes,",",k,'=',v)
-                            else
-                                flush(ctxcatcodes,k,'=',v)
-                                done = true
-                            end
-                        end
-                        flush(ctxcatcodes,"]")
-                    end
-                elseif typ == "function" then
-                    flush(ctxcatcodes,"{\\mkivflush{" .. _store_(ti) .. "}}")
-            --  elseif typ == "boolean" then
-            --      flush(ctxcatcodes,"\n")
-                elseif ti == true then
-                    flush(ctxcatcodes,"\n")
-                elseif typ == false then
-                --  if force == "direct" then
-                    flush(ctxcatcodes,tostring(ti))
-                --  end
-                elseif typ == "thread" then
-                    trace_context("coroutines not supported as we cannot yeild across boundaries")
-                else
-                    trace_context("error: %s gets a weird argument %s",k,tostring(ti))
-                end
-            end
-        end
-    end
-end
-
-local function newwriter(command,first,...) -- 5% faster than just ... and separate flush of command
+local function writer(command,first,...) -- 5% faster than just ... and separate flush of command
     if not command then
         -- error
     elseif not first then
-        flush(ctxcatcodes,command)
+        flush(currentcatcodes,command)
     else
         local t = { first, ... }
         for i=1,#t do
@@ -139,28 +125,28 @@ local function newwriter(command,first,...) -- 5% faster than just ... and separ
             local ti = t[i]
             local typ = type(ti)
             if ti == nil then
-                flush(ctxcatcodes,command)
+                flush(currentcatcodes,command)
             elseif typ == "string" or typ == "number" then
-                flush(ctxcatcodes,command,"{",ti,"}")
+                flush(currentcatcodes,command,"{",ti,"}")
             elseif typ == "table" then
                 local tn = #ti
                 if tn == 0 then
                     local done = false
                     for k, v in next, ti do
                         if done then
-                            flush(ctxcatcodes,",",k,'=',v)
+                            flush(currentcatcodes,",",k,'=',v)
                         else
-                            flush(ctxcatcodes,command,"[",k,'=',v)
+                            flush(currentcatcodes,command,"[",k,'=',v)
                             done = true
                         end
                     end
-                    flush(ctxcatcodes,"]")
+                    flush(currentcatcodes,"]")
                 elseif tn == 1 then -- some 20% faster than the next loop
                     local tj = ti[1]
                     if type(tj) == "function" then
-                        flush(ctxcatcodes,command,"[\\mkivflush{",_store_(tj),"}]")
+                        flush(currentcatcodes,command,"[\\mkivflush{",_store_(tj),"}]")
                     else
-                        flush(ctxcatcodes,command,"[",tj,"]")
+                        flush(currentcatcodes,command,"[",tj,"]")
                     end
                 else -- is concat really faster than flushes here?
                     for j=1,tn do
@@ -169,32 +155,32 @@ local function newwriter(command,first,...) -- 5% faster than just ... and separ
                             ti[j] = "\\mkivflush{" .. _store_(tj) .. "}"
                         end
                     end
-                    flush(ctxcatcodes,command,"[",concat(ti,","),"]")
+                    flush(currentcatcodes,command,"[",concat(ti,","),"]")
                 end
             elseif typ == "function" then
-                flush(ctxcatcodes,command,"{\\mkivflush{",_store_(ti),"}}")
+                flush(currentcatcodes,command,"{\\mkivflush{",_store_(ti),"}}")
         --  elseif typ == "boolean" then
-        --      flush(ctxcatcodes,"\n")
+        --      flush(currentcatcodes,"\n")
             elseif ti == true then
-                flush(ctxcatcodes,command,"\n")
+                flush(currentcatcodes,command,"\n")
             elseif typ == false then
             --  if force == "direct" then
-                flush(ctxcatcodes,command,tostring(ti))
+                flush(currentcatcodes,command,tostring(ti))
             --  end
             elseif typ == "thread" then
-                flush(ctxcatcodes,command)
-                trace_context("coroutines not supported as we cannot yeild across boundaries")
+                flush(currentcatcodes,command)
+                trace_context("coroutines not supported as we cannot yield across boundaries")
             else
-                flush(ctxcatcodes,command)
+                flush(currentcatcodes,command)
                 trace_context("error: %s gets a weird argument %s",command,tostring(ti))
             end
         end
     end
 end
 
-experiments.register("context.writer",function()
-    writer = newwriter
-end)
+--~ experiments.register("context.writer",function()
+--~     writer = newwriter
+--~ end)
 
 -- -- --
 
@@ -209,13 +195,13 @@ local function caller(t,f,a,...)
     if not t then
         -- so we don't need to test in the calling (slower but often no issue)
     elseif a then
-        flush(ctxcatcodes,format(f,a,...))
+        flush(currentcatcodes,format(f,a,...))
     elseif type(f) == "function" then
-        flush(ctxcatcodes,"{\\mkivflush{" .. _store_(f) .. "}}")
+        flush(currentcatcodes,"{\\mkivflush{" .. _store_(f) .. "}}")
     elseif f then
-        flush(ctxcatcodes,f)
+        flush(currentcatcodes,f)
     else
-        flush(ctxcatcodes,"\n")
+        flush(currentcatcodes,"\n")
     end
 end
 

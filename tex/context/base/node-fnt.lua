@@ -58,7 +58,7 @@ function handlers.characters(head)
                     if shared then
                         local dynamics = shared.dynamics
                         if dynamics then
-                            local d = shared.set_dynamics(font,dynamics,attr) -- still valid?
+                            local d = shared.setdynamics(font,dynamics,attr)
                             if d then
                                 used[attr] = d
                                 a = a + 1

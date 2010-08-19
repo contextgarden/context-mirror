@@ -41,7 +41,7 @@ function environment.make_format(name)
     else
         logs.simple("using tex source file: %s",fulltexsourcename)
     end
-    local texsourcepath = dir.expand_name(file.dirname(fulltexsourcename)) -- really needed
+    local texsourcepath = dir.expandname(file.dirname(fulltexsourcename)) -- really needed
     -- check specification
     local specificationname = file.replacesuffix(fulltexsourcename,"lus")
     local fullspecificationname = resolvers.find_file(specificationname,"tex") or ""

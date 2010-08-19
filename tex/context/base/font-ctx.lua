@@ -601,7 +601,7 @@ fonts.map.reset() -- resets the default file
 
 local nounicode = byte("?")
 
-local function name_to_slot(name) -- maybe some day rawdata
+local function nametoslot(name) -- maybe some day rawdata
     local tfmdata = fonts.ids[font.current()]
     local shared = tfmdata and tfmdata.shared
     local fntdata = shared and shared.otfdata or shared.afmdata
@@ -618,11 +618,11 @@ local function name_to_slot(name) -- maybe some day rawdata
     return nounicode
 end
 
-fonts.name_to_slot = name_to_slot
+fonts.nametoslot = nametoslot
 
 function fonts.char(n) -- todo: afm en tfm
     if type(n) == "string" then
-        n = name_to_slot(n)
+        n = nametoslot(n)
     end
     if type(n) == "number" then
         texsprint(ctxcatcodes,format("\\char%s ",n))
@@ -631,15 +631,15 @@ end
 
 -- this will become obsolete:
 
-fonts.otf.name_to_slot = name_to_slot
-fonts.afm.name_to_slot = name_to_slot
+fonts.otf.nametoslot = nametoslot
+fonts.afm.nametoslot = nametoslot
 
 fonts.otf.char = fonts.char
 fonts.afm.char = fonts.char
 
 -- this will change ...
 
-function fonts.show_char_data(n)
+function fonts.showchardata(n)
     local tfmdata = fonts.ids[font.current()]
     if tfmdata then
         if type(n) == "string" then
@@ -652,7 +652,7 @@ function fonts.show_char_data(n)
     end
 end
 
-function fonts.show_font_parameters()
+function fonts.showfontparameters()
     local tfmdata = fonts.ids[font.current()]
     if tfmdata then
         local parameters, mathconstants = tfmdata.parameters, tfmdata.MathConstants
@@ -699,7 +699,7 @@ function fonts.report_defined_fonts()
     end
 end
 
-luatex.register_stop_actions(fonts.report_defined_fonts)
+luatex.registerstopactions(fonts.report_defined_fonts)
 
 function fonts.report_used_features()
     -- numbers, setups, merged
@@ -722,4 +722,4 @@ function fonts.report_used_features()
         end
     end
 end
-luatex.register_stop_actions(fonts.report_used_features)
+luatex.registerstopactions(fonts.report_used_features)

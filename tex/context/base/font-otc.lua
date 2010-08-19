@@ -201,11 +201,11 @@ features['tlig'] = 'TeX Ligatures'
 features['trep'] = 'TeX Replacements'
 features['anum'] = 'Arabic Digits'
 
-local register_base_substitution = otf.features.register_base_substitution
+local registerbasesubstitution = otf.features.registerbasesubstitution
 
-register_base_substitution('tlig')
-register_base_substitution('trep')
-register_base_substitution('anum')
+registerbasesubstitution('tlig')
+registerbasesubstitution('trep')
+registerbasesubstitution('anum')
 
 -- the functionality is defined elsewhere
 

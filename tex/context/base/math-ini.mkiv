@@ -73,9 +73,9 @@
 \let\mathgreeknormal\mathgreekupright
 \let\mathgreeknone  \mathgreekdefault
 
-\def\setmathattribute#1#2{\ifmmode\ctxlua{mathematics.sync_a_both ("#1","#2")}\fi}
-\def\setmathalphabet   #1{\ifmmode\ctxlua{mathematics.sync_a_name ("#1")}\fi}
-\def\setmathstyle      #1{\ifmmode\ctxlua{mathematics.sync_a_style("#1")}\fi}
+\def\setmathattribute#1#2{\ifmmode\ctxlua{mathematics.syncboth ("#1","#2")}\fi}
+\def\setmathalphabet   #1{\ifmmode\ctxlua{mathematics.syncname ("#1")}\fi}
+\def\setmathstyle      #1{\ifmmode\ctxlua{mathematics.syncstyle("#1")}\fi}
 
 \unexpanded\def\mr            {\setmathattribute{regular}{tf}}
 

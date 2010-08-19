@@ -123,7 +123,7 @@ function scripts.tools.dirtoxml()
 
     lfs.chdir(root)
 
-    local list = dir.collect_pattern(root,luapattern,recurse)
+    local list = dir.collectpattern(root,luapattern,recurse)
 
     if list[outputfile] then
         list[outputfile] = nil

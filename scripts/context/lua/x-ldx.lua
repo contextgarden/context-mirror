@@ -269,10 +269,10 @@ The next function wraps it all in one call:
 --ldx]]--
 
 function ldx.convert(luaname,ldxname)
-    if not file.isreadable(luaname) then
+    if not file.is_readable(luaname) then
         luaname = luaname .. ".lua"
     end
-    if file.isreadable(luaname) then
+    if file.is_readable(luaname) then
         if not ldxname then
             ldxname = file.replacesuffix(luaname,"ldx")
         end

@@ -10,7 +10,8 @@ utilities        = utilities or {}
 utilities.tables = utilities.tables or { }
 local tables     = utilities.tables
 
-local concat, format, gmatch = table.concat, string.format, string.gmatch
+local format, gmatch = string.format, string.gmatch
+local concat, insert, remove = table.concat, table.insert, table.remove
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t = nil, { }
@@ -31,4 +32,51 @@ function tables.accesstable(target)
         t = t[name]
     end
     return t
+end
+
+function table.removevalue(t,value) -- todo: n
+    if value then
+        for i=1,#t do
+            if t[i] == value then
+                remove(t,i)
+                -- remove all, so no: return
+            end
+        end
+    end
+end
+
+function table.insertbeforevalue(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i,extra)
+            return
+        end
+    end
+    insert(t,1,extra)
+end
+
+function table.insertaftervalue(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i+1,extra)
+            return
+        end
+    end
+    insert(t,#t+1,extra)
+end
+
+local _empty_table_ = { __index = function(t,k) return "" end }
+
+function table.setemptymetatable(t)
+    setmetatable(t,_empty_table_)
 end

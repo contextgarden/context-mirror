@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['math-ent'] = {
 
 -- this might go into char-def
 
-mathematics.entities={
+mathematics.xml.entities={
     ["Aacute"]=0x000C1,
     ["aacute"]=0x000E1,
     ["Abreve"]=0x00102,
@@ -2100,5 +2100,4 @@ mathematics.entities={
     ["plusminus"]=0x000B1,
     ["minusplus"]=0x02213,
     ["cdots"]=0x2026,
-
 }
