@@ -15,7 +15,7 @@
 
 \registerctxluafile{mlib-pdf}{1.001}
 
-\def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
+\def\MPLIBtoPDF#1{\ctxlua{metapost.flushliteral(#1)}}
 
 \def\MPLIBboundingbox#1#2#3#4%
   {\xdef\MPllx{#1}%

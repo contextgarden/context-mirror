@@ -121,7 +121,7 @@ local checkdir = true
 
 -- omkeren class en level -> scheelt functie call in analyse
 
-local function process_words(attribute,data,flush,head,parent) -- we have hlistdir and local dir
+local function processwords(attribute,data,flush,head,parent) -- we have hlistdir and local dir
     local n = head
     if n then
         local f, l, a, d, i, class
@@ -167,7 +167,7 @@ local function process_words(attribute,data,flush,head,parent) -- we have hlistd
                 end
                 local list = n.list
                 if list then
-                    n.list = process_words(attribute,data,flush,list,n)
+                    n.list = processwords(attribute,data,flush,list,n)
                 end
             elseif checkdir and id == whatsit_code and n.subtype == dir_code then -- only changes in dir, we assume proper boundaries
                 if f and a then
@@ -206,7 +206,7 @@ local function process_words(attribute,data,flush,head,parent) -- we have hlistd
     end
 end
 
-nodes.process_words = process_words
+nodes.processwords = processwords
 
 --
 
@@ -297,7 +297,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     return head
 end
 
-local process = nodes.process_words
+local process = nodes.processwords
 
 nodes.rules.handler = function(head) return process(a_ruled,data,flush_ruled,head) end
 
@@ -353,7 +353,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     return head
 end
 
-local process = nodes.process_words
+local process = nodes.processwords
 
 nodes.shifts.handler = function(head) return process(a_shifted,data,flush_shifted,head) end
 

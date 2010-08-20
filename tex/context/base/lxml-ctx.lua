@@ -41,8 +41,8 @@ function xml.ctx.tshow(specification)
         if not string.find(xmlpattern,"^[%a]+://") then
             xmlpattern = "xml://" .. pattern
         end
-        parsed = xml.parse_pattern(xmlpattern)
-        titlecommand = specification.title or "type"
+        local parsed = xml.lpath(xmlpattern)
+        local titlecommand = specification.title or "type"
         if parsed.state then
             context[titlecommand]("pattern: " .. pattern .. " (".. parsed.state .. ")")
         else
@@ -88,9 +88,9 @@ function xml.ctx.tshow(specification)
         context.stoptabulate()
         if xmlroot and xmlroot ~= "" then
             if not loaded[xmlroot] then
-                loaded[xmlroot] = { xml.convert(buffers.content(xmlroot) or "") }
+                loaded[xmlroot] = xml.convert(buffers.content(xmlroot) or "")
             end
-            local collected = xml.parse_apply(loaded[xmlroot],xmlpattern)
+            local collected = xml.filter(loaded[xmlroot],xmlpattern)
             if collected then
                 local tc = type(collected)
                 if not tc then

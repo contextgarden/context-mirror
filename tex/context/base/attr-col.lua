@@ -318,7 +318,7 @@ function colors.value(id)
     return values[id]
 end
 
-attributes.colors.handler = nodes.install_attribute_handler {
+attributes.colors.handler = nodes.installattributehandler {
     name        = "color",
     namespace   = colors,
     initializer = states.initialize,
@@ -424,7 +424,7 @@ function transparencies.value(id)
     return values[id]
 end
 
-attributes.transparencies.handler = nodes.install_attribute_handler {
+attributes.transparencies.handler = nodes.installattributehandler {
     name        = "transparency",
     namespace   = transparencies,
     initializer = states.initialize,
@@ -487,7 +487,7 @@ function colorintents.register(stamp)
     return registered[stamp] or registered.overprint
 end
 
-attributes.colorintents.handler = nodes.install_attribute_handler {
+attributes.colorintents.handler = nodes.installattributehandler {
     name        = "colorintent",
     namespace   = colorintents,
     initializer = states.initialize,

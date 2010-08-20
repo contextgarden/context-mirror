@@ -263,7 +263,7 @@ local function prepare_base_substitutions(tfmdata,kind,value) -- we can share so
     end
 end
 
-local function prepare_base_kerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
+local function preparebasekerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
     if value then
         local otfdata = tfmdata.shared.otfdata
         local validlookups, lookuplist = otf.collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
@@ -333,10 +333,10 @@ local supported_gpos = {
     'kern'
 }
 
-function otf.features.register_base_substitution(tag)
+function otf.features.registerbasesubstitution(tag)
     supported_gsub[#supported_gsub+1] = tag
 end
-function otf.features.register_base_kern(tag)
+function otf.features.registerbasekern(tag)
     supported_gsub[#supported_gpos+1] = tag
 end
 
@@ -360,7 +360,7 @@ function fonts.initializers.base.otf.features(tfmdata,value)
             for f=1,#supported_gpos do
                 local feature = supported_gpos[f]
                 local value = features[feature]
-                prepare_base_kerns(tfmdata,feature,features[feature])
+                preparebasekerns(tfmdata,feature,features[feature])
                 if value then
                     h[#h+1] = feature  .. "=" .. tostring(value)
                 end

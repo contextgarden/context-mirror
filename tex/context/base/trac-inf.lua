@@ -135,10 +135,10 @@ function statistics.show(reporter)
     end
 end
 
-function statistics.show_job_stat(tag,data,n)
+function statistics.showjobstat(tag,data,n)
     if type(data) == "table" then
         for i=1,#data do
-            statistics.show_job_stat(tag,data[i],n)
+            statistics.showjobstat(tag,data[i],n)
         end
     else
         texio.write_nl(format("%-15s: %s - %s","mkiv lua stats",tag:rpadd(n," "),data))

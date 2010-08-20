@@ -16,12 +16,14 @@ local utf = unicode.utf8
 local lower, format, gsub, concat = string.lower, string.format, string.gsub, table.concat
 local next = next
 local utfchar = utf.char
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local textoutf = characters and characters.tex.toutf
 local variables = interfaces and interfaces.variables
 local settings_to_hash = utilities.parsers.settings_to_hash
 local finalizers = xml.finalizers.tex
-local xmlfilter, xmltext = xml.filter, xml.text
+local xmlfilter, xmltext, getid = xml.filter, xml.text, lxml.getid
+
+local P, R, S, C, Cc, Cs, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct
 
 local trace_bibxml = false  trackers.register("publications.bibxml", function(v) trace_bibtex = v end)
 
@@ -30,9 +32,12 @@ local report_publications = logs.new("publications")
 bibtex       = bibtex or { }
 local bibtex = bibtex
 
-bibtex.size        = 0
-bibtex.definitions = 0
-bibtex.shortcuts   = 0
+bibtex.statistics = bibtex.statistics or { }
+local bibtexstats = bibtex.statistics
+
+bibtexstats.nofbytes       = 0
+bibtexstats.nofdefinitions = 0
+bibtexstats.nofshortcuts   = 0
 
 local defaultshortcuts = {
     jan = "1",
@@ -58,7 +63,7 @@ local entries
 -- hashed again.
 
 local function do_shortcut(tag,key,value)
-    bibtex.shortcuts = bibtex.shortcuts + 1
+    bibtexstats.nofshortcuts = bibtexstats.nofshortcuts + 1
     if lower(tag) == "@string" then
         shortcuts[key] = value
     end
@@ -66,7 +71,7 @@ end
 
 local function do_definition(tag,key,tab) -- maybe check entries here (saves memory)
     if not entries or entries[key] then
-        bibtex.definitions = bibtex.definitions + 1
+        bibtexstats.nofdefinitions = bibtexstats.nofdefinitions + 1
         local t = { }
         for i=1,#tab,2 do
             t[tab[i]] = tab[i+1]
@@ -83,8 +88,6 @@ end
 local function resolve(s)
     return shortcuts[s] or defaultshortcuts[s] or s -- can be number
 end
-
-local P, R, S, C, Cc, Cs, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct
 
 local percent    = P("%")
 local start      = P("@")
@@ -104,10 +107,10 @@ local collapsed  = (space^1)/ " "
 
 local function add(a,b) if b then return a..b else return a end end
 
-local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)  -- lpeg.C((1-space)^1)
+local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)  -- C((1-space)^1)
 local s_quoted   = ((escape*single) + collapsed + (1-single))^0
 local d_quoted   = ((escape*double) + collapsed + (1-double))^0
-local balanced   = lpeg.patterns.balanced
+local balanced   = lpegpatterns.balanced
 
 local s_value    = (single/"") * s_quoted * (single/"")
 local d_value    = (double/"") * d_quoted * (double/"")
@@ -119,7 +122,7 @@ local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0
 
 local assignment = spacing * keyword * spacing * equal * spacing * value * spacing
 local shortcut   = keyword * spacing * left * spacing * (assignment * comma^0)^0 * spacing * right
-local definition = keyword * spacing * left * spacing * keyword * comma * lpeg.Ct((assignment * comma^0)^0) * spacing * right
+local definition = keyword * spacing * left * spacing * keyword * comma * Ct((assignment * comma^0)^0) * spacing * right
 local comment    = keyword * spacing * left * (1-right)^0 * spacing * right
 local forget     = percent^1 * (1-lineending)^0
 
@@ -130,9 +133,8 @@ local grammar = (space + forget + shortcut/do_shortcut + definition/do_definitio
 function bibtex.convert(session,content)
     statistics.starttiming(bibtex)
     data, shortcuts, entries = session.data, session.shortcuts, session.entries
- -- session.size = session.size + #content
-    bibtex.size = bibtex.size + #content
-    session.size = session.size + #content
+    bibtexstats.nofbytes = bibtexstats.nofbytes + #content
+    session.nofbytes = session.nofbytes + #content
     lpegmatch(grammar,content or "")
     statistics.stoptiming(bibtex)
 end
@@ -152,16 +154,16 @@ end
 
 function bibtex.new()
     return {
-        data = { },
+        data      = { },
         shortcuts = { },
-        xml = xml.convert("<?xml version='1.0' standalone='yes'?>\n<bibtex></bibtex>"),
-        size = 0,
-        entries = nil,
-        loaded = false,
+        xml       = xml.convert("<?xml version='1.0' standalone='yes'?>\n<bibtex></bibtex>"),
+        nofbytes  = 0,
+        entries   = nil,
+        loaded    = false,
     }
 end
 
-local escaped_pattern = xml.escaped_pattern
+local escaped_pattern = lpegpatterns.xml.escaped
 
 local ihatethis = {
     f = "\\f",
@@ -243,10 +245,10 @@ function bibtex.toxml(session,options)
 end
 
 statistics.register("bibtex load time", function()
-    local size = bibtex.size
-    if size > 0 then
+    local nofbytes = bibtexstats.nofbytes
+    if nofbytes > 0 then
         return format("%s seconds (%s bytes, %s definitions, %s shortcuts)",
-            statistics.elapsedtime(bibtex),size,bibtex.definitions,bibtex.shortcuts)
+            statistics.elapsedtime(bibtex),nofbytes,bibtexstats.nofdefinitions,bibtexstats.nofshortcuts)
     else
         return nil
     end
@@ -267,14 +269,14 @@ end)
 --~ local session = bibtex.new()
 --~ bibtex.convert(session,str)
 --~ bibtex.toxml(session)
---~ print(session.size,statistics.elapsedtime(bibtex))
+--~ print(session.nofbytes,statistics.elapsedtime(bibtex))
 
 --~ local session = bibtex.new()
 --~ bibtex.load(session,"IEEEabrv.bib")
 --~ bibtex.load(session,"IEEEfull.bib")
 --~ bibtex.load(session,"IEEEexample.bib")
 --~ bibtex.toxml(session)
---~ print(session.size,statistics.elapsedtime(bibtex))
+--~ print(session.nofbytes,statistics.elapsedtime(bibtex))
 
 --~ local session = bibtex.new()
 --~ bibtex.load(session,"gut.bib")
@@ -287,7 +289,7 @@ end)
 --~ bibtex.load(session,"texnique.bib")
 --~ bibtex.load(session,"tugboat.bib")
 --~ bibtex.toxml(session)
---~ print(session.size,statistics.elapsedtime(bibtex))
+--~ print(session.nofbytes,statistics.elapsedtime(bibtex))
 
 --~ print(table.serialize(session.data))
 --~ print(table.serialize(session.shortcuts))
@@ -298,14 +300,16 @@ if not characters then dofile(resolvers.find_file("char-def.lua")) end
 local chardata = characters.data
 local concat = table.concat
 
-local P, Ct, lpegmatch = lpeg.P, lpeg.Ct, lpeg.match
+local lpeg = lpeg
+
+local P, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.Ct, lpeg.match, lpeg.patterns
 
 local space, comma = P(" "), P(",")
 
 local andsplitter    = Ct(lpeg.splitat(space^1 * "and" * space^1))
 local commasplitter  = Ct(lpeg.splitat(space^0 * comma * space^0))
 local spacesplitter  = Ct(lpeg.splitat(space^1))
-local firstcharacter = lpeg.patterns.utf8byte
+local firstcharacter = lpegpatterns.utf8byte
 
 local function is_upper(str)
     local first = lpegmatch(firstcharacter,str)
@@ -582,7 +586,7 @@ end
 
 local function collectauthoryears(id,list)
     list = settings_to_hash(list)
-    id = lxml.get_id(id)
+    id = getid(id)
     local found = { }
     for e in xml.collected(id,"/bibtex/entry") do
         if list[e.at.tag] then
@@ -732,7 +736,7 @@ if commands then
         end
     end
 
-    function bibtex.singular_or_plural(singular,plural)
+    function bibtex.singularorplural(singular,plural)
         if lastconcatsize and lastconcatsize > 1 then
             texsprint(ctxcatcodes,plural)
         else

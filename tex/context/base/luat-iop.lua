@@ -29,10 +29,10 @@ local function o_permit (name) out_permitted[#out_permitted+1] = name end
 ioinp.inhibit, ioinp.permit = i_inhibit, o_permit
 ioout.inhibit, ioout.permit = o_inhibit, o_permit
 
-local blocked_openers = { } -- *.open(name,method)
+local blockedopeners = { } -- *.open(name,method)
 
-function io.register_opener(func)
-    blocked_openers[#blocked_openers+1] = func
+function io.registeropener(func)
+    blockedopeners[#blockedopeners+1] = func
 end
 
 local function checked(name,blocked,permitted)
@@ -50,7 +50,7 @@ local function checked(name,blocked,permitted)
     return true
 end
 
-function io.finalize_openers(func)
+function io.finalizeopeners(func)
     if #out_blocked > 0 or #inp_blocked > 0 then
         local open = func -- why not directly?
         return function(name,method)
@@ -78,7 +78,7 @@ end
 --~ io.inp.inhibit('/winnt/')
 --~ io.inp.permit('c:/windows/wmsetup.log')
 
---~ io.open = io.finalize_openers(io.open)
+--~ io.open = io.finalizeopeners(io.open)
 
 --~ f = io.open('.tex')                   print(f)
 --~ f = io.open('tufte.tex')              print(f)

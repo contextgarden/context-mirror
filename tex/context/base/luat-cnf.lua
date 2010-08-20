@@ -15,7 +15,7 @@ texconfig.shell_escape = 't'
 luatex       = luatex or { }
 local luatex = luatex
 
-luatex.variablenames = {
+local variablenames = { -- most of this becomes obsolete
     'buf_size',         --  3000
     'dvi_buf_size',     -- 16384
     'error_line',       --    79
@@ -36,21 +36,19 @@ luatex.variablenames = {
     'strings_free',     --   100
 }
 
-function luatex.variables()
-    local t = { }
-    for _,v in next, luatex.variablenames do
-        local x = resolvers.var_value(v)
-        t[v] = tonumber(x) or x
+local function initialize()
+    local t, var_value = { }, resolvers.var_value
+    for i=1,#variablenames do
+        local name = variablenames[i]
+        local value = var_value(name)
+        value = tonumber(value) or value
+        texconfig[name], t[name] = value, value
     end
+    initialize = nil
     return t
 end
 
-if not luatex.variables_set then
-    for k, v in next, luatex.variables() do
-        texconfig[k] = v
-    end
-    luatex.variables_set = true
-end
+luatex.variables = initialize()
 
 local stub = [[
 
@@ -160,7 +158,7 @@ local function makestub()
         "-- this file is generated, don't change it\n",
         "-- configuration (can be overloaded later)\n"
     }
-    for _,v in next, luatex.variablenames do
+    for _,v in next, variablenames do
         local tv = texconfig[v]
         if tv and tv ~= "" then
             t[#t+1] = format("texconfig.%s=%s",v,tv)
@@ -170,8 +168,3 @@ local function makestub()
 end
 
 lua.registerfinalizer(makestub,"create stub file")
-
--- to be moved here:
---
--- statistics.report_storage("log")
--- statistics.save_fmt_status("\jobname","\contextversion","context.tex")

@@ -48,7 +48,7 @@ job.comment(format("version: %1.2f",jobs.version))
 
 function job.initialize(loadname,savename)
     job.load(loadname) -- has to come after  structure is defined !
-    luatex.register_stop_actions(function()
+    luatex.registerstopactions(function()
         if not status.lasterrorstring or status.lasterrorstring == "" then
             job.save(savename)
         end
@@ -113,10 +113,10 @@ local jobpacker = packers.new(packlist,1.01)
 
 job.pack = true
 
-job._save_, job._load_ = { }, { } -- registers timing
+local _save_, _load_ = { }, { } -- registers timing
 
 function job.save(filename)
-    statistics.starttiming(job._save_)
+    statistics.starttiming(_save_)
     local f = io.open(filename,'w')
     if f then
         for c=1,#comment do
@@ -141,11 +141,11 @@ function job.save(filename)
         end
         f:close()
     end
-    statistics.stoptiming(job._save_)
+    statistics.stoptiming(_save_)
 end
 
 function job.load(filename)
-    statistics.starttiming(job._load_)
+    statistics.starttiming(_load_)
     local data = io.loaddata(filename)
     if data and data ~= "" then
         local version = tonumber(match(data,"^-- version: ([%d%.]+)"))
@@ -167,7 +167,7 @@ function job.load(filename)
             job.packed = nil
         end
     end
-    statistics.stoptiming(job._load_)
+    statistics.stoptiming(_load_)
 end
 
 -- eventually this will end up in strc-ini
@@ -177,8 +177,8 @@ statistics.register("startup time", function()
 end)
 
 statistics.register("jobdata time",function()
-    if statistics.elapsedindeed(job._save_) or statistics.elapsedindeed(job._load_) then
-        return format("%s seconds saving, %s seconds loading", statistics.elapsedtime(job._save_), statistics.elapsedtime(job._load_))
+    if statistics.elapsedindeed(_save_) or statistics.elapsedindeed(_load_) then
+        return format("%s seconds saving, %s seconds loading", statistics.elapsedtime(_save_), statistics.elapsedtime(_load_))
     end
 end)
 

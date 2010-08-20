@@ -239,7 +239,7 @@ function breakpoints.set(n)
     breakpoints.set(n)
 end
 
-breakpoints.handler = nodes.install_attribute_handler {
+breakpoints.handler = nodes.installattributehandler {
     name      = "breakpoint",
     namespace = breakpoints,
     processor = process,

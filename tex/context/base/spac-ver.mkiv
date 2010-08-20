@@ -1368,7 +1368,7 @@
 \def\installsnapvalues#1#2% todo: a proper define
   {\edef\currentsnapper{#1:#2}%
    \ifcsname\currentsnapper\endcsname \else
-     \setevalue\currentsnapper{\ctxlua{builders.vspacing.define_snap_method("#1","#2")}}%
+     \setevalue\currentsnapper{\ctxlua{builders.vspacing.definesnapmethod("#1","#2")}}%
    \fi
    \setevalue{\??gr:#1}{\attribute\snapmethodattribute\csname\currentsnapper\endcsname\space}}
 
@@ -1501,10 +1501,10 @@
 
 \def\dododosnaptogrid#1%
   {\ifvbox\nextbox % this will go away
-     \ctxlua{nodes.collapse_vbox(\number\nextbox)}% isn't that already done?
+     \ctxlua{nodes.collapsevbox(\number\nextbox)}% isn't that already done?
    \fi
    \doifelsenothing{#1}{\setsnapvalue\v!normal}{\autosetsnapvalue{#1}}%
-   \ctxlua{builders.vspacing.snap_box(\number\nextbox,\number\attribute\snapmethodattribute)}%
+   \ctxlua{builders.vspacing.snapbox(\number\nextbox,\number\attribute\snapmethodattribute)}%
    \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}%
    \egroup}
 

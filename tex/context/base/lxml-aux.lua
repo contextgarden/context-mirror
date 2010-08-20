@@ -15,8 +15,9 @@ local report_xml = logs.new("xml")
 
 local xml = xml
 
-local xmlparseapply, xmlconvert, xmlcopy, xmlname = xml.parse_apply, xml.convert, xml.copy, xml.name
+local xmlconvert, xmlcopy, xmlname = xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
+local xmlapplylpath = xml.applylpath
 
 local type = type
 local insert, remove = table.insert, table.remove
@@ -77,10 +78,8 @@ function xml.withelement(e,n,handle) -- slow
     end
 end
 
-xml.elements_only = xml.collected
-
-function xml.each_element(root,pattern,handle,reverse)
-    local collected = xmlparseapply({ root },pattern)
+function xml.each(root,pattern,handle,reverse)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         if reverse then
             for c=#collected,1,-1 do
@@ -95,10 +94,8 @@ function xml.each_element(root,pattern,handle,reverse)
     end
 end
 
-xml.process_elements = xml.each_element
-
-function xml.process_attributes(root,pattern,handle)
-    local collected = xmlparseapply({ root },pattern)
+function xml.processattributes(root,pattern,handle)
+    local collected = xmlapplylpath({ root },pattern)
     if collected and handle then
         for c=1,#collected do
             handle(collected[c].at)
@@ -113,12 +110,12 @@ end
 
 -- are these still needed -> lxml-cmp.lua
 
-function xml.collect_elements(root, pattern)
-    return xmlparseapply({ root },pattern)
+function xml.collect(root, pattern)
+    return xmlapplylpath({ root },pattern)
 end
 
-function xml.collect_texts(root, pattern, flatten) -- todo: variant with handle
-    local collected = xmlparseapply({ root },pattern)
+function xml.collecttexts(root, pattern, flatten) -- todo: variant with handle
+    local collected = xmlapplylpath({ root },pattern)
     if collected and flatten then
         local xmltostring = xml.tostring
         for c=1,#collected do
@@ -129,7 +126,7 @@ function xml.collect_texts(root, pattern, flatten) -- todo: variant with handle
 end
 
 function xml.collect_tags(root, pattern, nonamespace)
-    local collected = xmlparseapply({ root },pattern)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         local t = { }
         for c=1,#collected do
@@ -153,7 +150,7 @@ end
 
 local no_root = { no_root = true }
 
-function xml.redo_ni(d)
+local function redo_ni(d)
     for k=1,#d do
         local dk = d[k]
         if type(dk) == "table" then
@@ -199,8 +196,8 @@ local function copiedelement(element,newparent)
     end
 end
 
-function xml.delete_element(root,pattern)
-    local collected = xmlparseapply({ root },pattern)
+function xml.delete(root,pattern)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -211,15 +208,15 @@ function xml.delete_element(root,pattern)
                 end
                 local d = p.dt
                 remove(d,e.ni)
-                xml.redo_ni(d) -- can be made faster and inlined
+                redo_ni(d) -- can be made faster and inlined
             end
         end
     end
 end
 
-function xml.replace_element(root,pattern,whatever)
+function xml.replace(root,pattern,whatever)
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlparseapply({ root },pattern)
+    local collected = element and xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -230,7 +227,7 @@ function xml.replace_element(root,pattern,whatever)
                 end
                 local d = p.dt
                 d[e.ni] = copiedelement(element,p)
-                xml.redo_ni(d) -- probably not needed
+                redo_ni(d) -- probably not needed
             end
         end
     end
@@ -238,7 +235,7 @@ end
 
 local function inject_element(root,pattern,whatever,prepend)
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlparseapply({ root },pattern)
+    local collected = element and xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -261,7 +258,7 @@ local function inject_element(root,pattern,whatever,prepend)
                 else
                     d[k].dt = be
                 end
-                xml.redo_ni(d)
+                redo_ni(d)
             end
         end
     end
@@ -269,7 +266,7 @@ end
 
 local function insert_element(root,pattern,whatever,before) -- todo: element als functie
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlparseapply({ root },pattern)
+    local collected = element and xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -279,24 +276,23 @@ local function insert_element(root,pattern,whatever,before) -- todo: element als
                 k = k + 1
             end
             insert(d,k,copiedelement(element,r))
-            xml.redo_ni(d)
+            redo_ni(d)
         end
     end
 end
 
-xml.insert_element        =                 insert_element
-xml.insert_element_after  =                 insert_element
-xml.insert_element_before = function(r,p,e) insert_element(r,p,e,true) end
-xml.inject_element        =                 inject_element
-xml.inject_element_after  =                 inject_element
-xml.inject_element_before = function(r,p,e) inject_element(r,p,e,true) end
+xml.insert_element  =                 insert_element
+xml.insertafter     =                 insert_element
+xml.insertbefore    = function(r,p,e) insert_element(r,p,e,true) end
+xml.injectafter     =                 inject_element
+xml.injectbefore    = function(r,p,e) inject_element(r,p,e,true) end
 
 local function include(xmldata,pattern,attribute,recursive,loaddata)
     -- parse="text" (default: xml), encoding="" (todo)
     -- attribute = attribute or 'href'
     pattern = pattern or 'include'
     loaddata = loaddata or io.loaddata
-    local collected = xmlparseapply({ xmldata },pattern)
+    local collected = xmlapplylpath({ xmldata },pattern)
     if collected then
         for c=1,#collected do
             local ek = collected[c]
@@ -339,65 +335,8 @@ end
 
 xml.include = include
 
---~ local function manipulate(xmldata,pattern,manipulator) -- untested and might go away
---~     local collected = xmlparseapply({ xmldata },pattern)
---~     if collected then
---~         local xmltostring = xml.tostring
---~         for c=1,#collected do
---~             local e = collected[c]
---~             local data = manipulator(xmltostring(e))
---~             if data == "" then
---~                 epdt[e.ni] = ""
---~             else
---~                 local xi = xmlinheritedconvert(data,xmldata)
---~                 if not xi then
---~                     epdt[e.ni] = ""
---~                 else
---~                     epdt[e.ni] = xml.body(xi) -- xml.assign(d,k,xi)
---~                 end
---~             end
---~         end
---~     end
---~ end
-
---~ xml.manipulate = manipulate
-
-function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and trailing space !
-    local collected = xmlparseapply({ root },pattern)
-    if collected then
-        for i=1,#collected do
-            local e = collected[i]
-            local edt = e.dt
-            if edt then
-                local t = { }
-                for i=1,#edt do
-                    local str = edt[i]
-                    if type(str) == "string" then
-                        if str == "" then
-                            -- stripped
-                        else
-                            if nolines then
-                                str = gsub(str,"[ \n\r\t]+"," ")
-                            end
-                            if str == "" then
-                                -- stripped
-                            else
-                                t[#t+1] = str
-                            end
-                        end
-                    else
-        --~                         str.ni = i
-                        t[#t+1] = str
-                    end
-                end
-                e.dt = t
-            end
-        end
-    end
-end
-
-function xml.strip_whitespace(root, pattern, nolines, anywhere) -- strips all leading and trailing spacing
-    local collected = xmlparseapply({ root },pattern) -- beware, indices no longer are valid now
+function xml.strip(root, pattern, nolines, anywhere) -- strips all leading and trailing spacing
+    local collected = xmlapplylpath({ root },pattern) -- beware, indices no longer are valid now
     if collected then
         for i=1,#collected do
             local e = collected[i]
@@ -468,7 +407,7 @@ function xml.strip_whitespace(root, pattern, nolines, anywhere) -- strips all le
     end
 end
 
-local function rename_space(root, oldspace, newspace) -- fast variant
+local function renamespace(root, oldspace, newspace) -- fast variant
     local ndt = #root.dt
     for i=1,ndt or 0 do
         local e = root[i]
@@ -481,16 +420,16 @@ local function rename_space(root, oldspace, newspace) -- fast variant
             end
             local edt = e.dt
             if edt then
-                rename_space(edt, oldspace, newspace)
+                renamespace(edt, oldspace, newspace)
             end
         end
     end
 end
 
-xml.rename_space = rename_space
+xml.renamespace = renamespace
 
-function xml.remap_tag(root, pattern, newtg)
-    local collected = xmlparseapply({ root },pattern)
+function xml.remaptag(root, pattern, newtg)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             collected[c].tg = newtg
@@ -498,8 +437,8 @@ function xml.remap_tag(root, pattern, newtg)
     end
 end
 
-function xml.remap_namespace(root, pattern, newns)
-    local collected = xmlparseapply({ root },pattern)
+function xml.remapnamespace(root, pattern, newns)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             collected[c].ns = newns
@@ -507,8 +446,8 @@ function xml.remap_namespace(root, pattern, newns)
     end
 end
 
-function xml.check_namespace(root, pattern, newns)
-    local collected = xmlparseapply({ root },pattern)
+function xml.checknamespace(root, pattern, newns)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -519,8 +458,8 @@ function xml.check_namespace(root, pattern, newns)
     end
 end
 
-function xml.remap_name(root, pattern, newtg, newns, newrn)
-    local collected = xmlparseapply({ root },pattern)
+function xml.remapname(root, pattern, newtg, newns, newrn)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -533,15 +472,31 @@ end
 <p>Here are a few synonyms.</p>
 --ldx]]--
 
-xml.each     = xml.each_element
-xml.process  = xml.process_element
-xml.strip    = xml.strip_whitespace
-xml.collect  = xml.collect_elements
-xml.all      = xml.collect_elements
+xml.all     = xml.each
+xml.insert  = xml.insertafter
+xml.inject  = xml.injectafter
+xml.after   = xml.insertafter
+xml.before  = xml.insertbefore
+xml.process = xml.each
 
-xml.insert   = xml.insert_element_after
-xml.inject   = xml.inject_element_after
-xml.after    = xml.insert_element_after
-xml.before   = xml.insert_element_before
-xml.delete   = xml.delete_element
-xml.replace  = xml.replace_element
+-- obsolete
+
+xml.obsolete   = xml.obsolete or { }
+local obsolete = xml.obsolete
+
+xml.strip_whitespace           = xml.strip                 obsolete.strip_whitespace      = xml.strip
+xml.collect_elements           = xml.collect               obsolete.collect_elements      = xml.collect
+xml.delete_element             = xml.delete                obsolete.delete_element        = xml.delete
+xml.replace_element            = xml.replace               obsolete.replace_element       = xml.replacet
+xml.each_element               = xml.each                  obsolete.each_element          = xml.each
+xml.process_elements           = xml.process               obsolete.process_elements      = xml.process
+xml.insert_element_after       = xml.insertafter           obsolete.insert_element_after  = xml.insertafter
+xml.insert_element_before      = xml.insertbefore          obsolete.insert_element_before = xml.insertbefore
+xml.inject_element_after       = xml.injectafter           obsolete.inject_element_after  = xml.injectafter
+xml.inject_element_before      = xml.injectbefore          obsolete.inject_element_before = xml.injectbefore
+xml.process_attributes         = xml.processattributes     obsolete.process_attributes    = xml.processattributes
+xml.collect_texts              = xml.collecttexts          obsolete.collect_texts         = xml.collecttexts
+xml.inject_element             = xml.inject                obsolete.inject_element        = xml.inject
+xml.remap_tag                  = xml.remaptag              obsolete.remap_tag             = xml.remaptag
+xml.remap_name                 = xml.remapname             obsolete.remap_name            = xml.remapname
+xml.remap_namespace            = xml.remapnamespace        obsolete.remap_namespace       = xml.remapnamespace

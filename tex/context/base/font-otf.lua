@@ -1390,7 +1390,7 @@ local lists = { -- why local
     fonts.manipulators,
 }
 
-function otf.set_features(tfmdata,features)
+function otf.setfeatures(tfmdata,features)
     local processes = { }
     if features and next(features) then
         local mode = tfmdata.mode or features.mode or "base"
@@ -1452,52 +1452,6 @@ tfmdata.mode = mode
     return processes, features
 end
 
-function otf.otf_to_tfm(specification)
-    local name     = specification.name
-    local sub      = specification.sub
-    local filename = specification.filename
-    local format   = specification.format
-    local features = specification.features.normal
-    local cache_id = specification.hash
-    local tfmdata  = containers.read(tfm.cache,cache_id)
---~ print(cache_id)
-    if not tfmdata then
-        local otfdata = otf.load(filename,format,sub,features and features.featurefile)
-        if otfdata and next(otfdata) then
-            otfdata.shared = otfdata.shared or {
-                featuredata = { },
-                anchorhash  = { },
-                initialized = false,
-            }
-            tfmdata = otf.copy_to_tfm(otfdata,cache_id)
-            if tfmdata and next(tfmdata) then
-                tfmdata.unique = tfmdata.unique or { }
-                tfmdata.shared = tfmdata.shared or { } -- combine
-                local shared = tfmdata.shared
-                shared.otfdata = otfdata
-                shared.features = features -- default
-                shared.dynamics = { }
-                shared.processes = { }
-                shared.set_dynamics = otf.set_dynamics -- fast access and makes other modules independent
-                -- this will be done later anyway, but it's convenient to have
-                -- them already for fast access
-                tfmdata.luatex = otfdata.luatex
-                tfmdata.indices = otfdata.luatex.indices
-                tfmdata.unicodes = otfdata.luatex.unicodes
-                tfmdata.marks = otfdata.luatex.marks
-                tfmdata.originals = otfdata.luatex.originals
-                tfmdata.changed = { }
-                tfmdata.has_italic = otfdata.metadata.has_italic
-                if not tfmdata.language then tfmdata.language = 'dflt' end
-                if not tfmdata.script   then tfmdata.script   = 'dflt' end
-                shared.processes, shared.features = otf.set_features(tfmdata,fonts.define.check(features,otf.features.default))
-            end
-        end
-        containers.write(tfm.cache,cache_id,tfmdata)
-    end
-    return tfmdata
-end
-
 --~ {
 --~  ['boundingbox']={ 95, -458, 733, 1449 },
 --~  ['class']="base",
@@ -1528,7 +1482,7 @@ fonts.formats.ttc   = "truetype"
 fonts.formats.ttf   = "truetype"
 fonts.formats.otf   = "opentype"
 
-function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder the tma to unicode (nasty due to one->many)
+local function copytotfm(data,cache_id) -- we can save a copy when we reorder the tma to unicode (nasty due to one->many)
     if data then
         local glyphs, pfminfo, metadata = data.glyphs or { }, data.pfminfo or { }, data.metadata or { }
         local luatex = data.luatex
@@ -1695,10 +1649,56 @@ function otf.copy_to_tfm(data,cache_id) -- we can save a copy when we reorder th
     end
 end
 
+local function otftotfm(specification)
+    local name     = specification.name
+    local sub      = specification.sub
+    local filename = specification.filename
+    local format   = specification.format
+    local features = specification.features.normal
+    local cache_id = specification.hash
+    local tfmdata  = containers.read(tfm.cache,cache_id)
+--~ print(cache_id)
+    if not tfmdata then
+        local otfdata = otf.load(filename,format,sub,features and features.featurefile)
+        if otfdata and next(otfdata) then
+            otfdata.shared = otfdata.shared or {
+                featuredata = { },
+                anchorhash  = { },
+                initialized = false,
+            }
+            tfmdata = copytotfm(otfdata,cache_id)
+            if tfmdata and next(tfmdata) then
+                tfmdata.unique = tfmdata.unique or { }
+                tfmdata.shared = tfmdata.shared or { } -- combine
+                local shared = tfmdata.shared
+                shared.otfdata = otfdata
+                shared.features = features -- default
+                shared.dynamics = { }
+                shared.processes = { }
+                shared.setdynamics = otf.setdynamics -- fast access and makes other modules independent
+                -- this will be done later anyway, but it's convenient to have
+                -- them already for fast access
+                tfmdata.luatex = otfdata.luatex
+                tfmdata.indices = otfdata.luatex.indices
+                tfmdata.unicodes = otfdata.luatex.unicodes
+                tfmdata.marks = otfdata.luatex.marks
+                tfmdata.originals = otfdata.luatex.originals
+                tfmdata.changed = { }
+                tfmdata.has_italic = otfdata.metadata.has_italic
+                if not tfmdata.language then tfmdata.language = 'dflt' end
+                if not tfmdata.script   then tfmdata.script   = 'dflt' end
+                shared.processes, shared.features = otf.setfeatures(tfmdata,fonts.define.check(features,otf.features.default))
+            end
+        end
+        containers.write(tfm.cache,cache_id,tfmdata)
+    end
+    return tfmdata
+end
+
 otf.features.register('mathsize')
 
-function tfm.read_from_open_type(specification)
-    local tfmtable = otf.otf_to_tfm(specification)
+function tfm.read_from_open_type(specification) -- wrong namespace
+    local tfmtable = otftotfm(specification)
     if tfmtable then
         local otfdata = tfmtable.shared.otfdata
         tfmtable.name = specification.name

@@ -60,7 +60,7 @@ function effects.register(effect,stretch,rulethickness)
     return n
 end
 
-attributes.effects.handler = nodes.install_attribute_handler {
+attributes.effects.handler = nodes.installattributehandler {
     name        = "effect",
     namespace   = effects,
     initializer = states.initialize,

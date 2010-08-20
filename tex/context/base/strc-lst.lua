@@ -47,7 +47,7 @@ references.specials  = references.specials or { }
 local cached, pushed = lists.cached, { }
 
 local variables = interfaces.variables
-local matching_till_depth, number_at_depth = sections.matching_till_depth, sections.number_at_depth
+local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.numberatdepth
 
 local function initializer()
     -- create a cross reference between internal references
@@ -308,7 +308,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
     else -- sectionname, number
         -- not the same as register
         local depth = sections.getlevel(criterium)
-        local number = tonumber(number) or number_at_depth(depth) or 0
+        local number = tonumber(number) or numberatdepth(depth) or 0
         if trace_lists then
             local t = sections.numbers()
             detail = format("depth: %s, number: %s, numbers: %s, startset: %s",depth,number,(#t>0 and concat(t,".",1,depth)) or "?",#collected)
@@ -324,7 +324,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
                         local metadata = v.metadata
                         local cnumbers = sectionnumber.numbers
                         if cnumbers then
-                            if (all or names[metadata.name or false]) and #cnumbers >= depth and matching_till_depth(depth,cnumbers,parent) then
+                            if (all or names[metadata.name or false]) and #cnumbers >= depth and matchingtilldepth(depth,cnumbers,parent) then
                                 result[#result+1] = v
                             end
                         end

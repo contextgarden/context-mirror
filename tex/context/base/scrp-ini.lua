@@ -197,7 +197,7 @@ scripts.colors = {  -- todo: just named colors
 
 local colors = scripts.colors
 
-local number_to_kind = {
+local numbertokind = {
     "korean",
     "chinese",
     "full_width_open",
@@ -211,7 +211,7 @@ local number_to_kind = {
     "jamo_final",
 }
 
-local kind_to_number = {
+local kindtonumber = {
     korean           =  1,
     chinese          =  2,
     full_width_open  =  3,
@@ -225,8 +225,8 @@ local kind_to_number = {
     jamo_final       = 11,
 }
 
-scripts.kind_to_number = kind_to_number
-scripts.number_to_kind = number_to_kind
+scripts.kindtonumber = kindtonumber
+scripts.numbertokind = numbertokind
 
 -- no, this time loading the lua always precedes the definitions
 --
@@ -254,7 +254,7 @@ end
 
 local function colorize(start,stop)
     for n in traverse_id(glyph_code,start) do
-        local kind = number_to_kind[has_attribute(n,prestat)]
+        local kind = numbertokind[has_attribute(n,prestat)]
         if kind then
             local ac = colors[kind]
             if ac then
@@ -322,7 +322,7 @@ function scripts.preprocess(head)
                         if originals then c = originals[c] or c end
                         local h = hash[c]
                         if h then
-                            set_attribute(start,prestat,kind_to_number[h])
+                            set_attribute(start,prestat,kindtonumber[h])
                             if not first then
                                 first, last = start, start
                             else

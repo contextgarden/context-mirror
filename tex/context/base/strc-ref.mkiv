@@ -1946,8 +1946,8 @@
 
 % \def\getreferencestructureprefixspec#1% we can save one call by moving this to the lua end
 %   {\getreferencestructureprefix
-%      {\ctxlua{structures.references.get_current_metadata("kind")}}
-%      {\ctxlua{structures.references.get_current_metadata("name")}}
+%      {\ctxlua{structures.references.getcurrentmetadata("kind")}}
+%      {\ctxlua{structures.references.getcurrentmetadata("name")}}
 %      {#1}}
 % \def\currentreferencedefault
 %   {\ctxlua{structures.references.filter("default",\getreferencestructureprefixspec\v!default)}}
@@ -1955,7 +1955,7 @@
 % this is shortcut for:
 
 \def\currentreferencedefault
-  {\ctxlua{structures.references.filter("default",\ctxlua{structures.references.get_current_prefixspec("\v!default")})}}
+  {\ctxlua{structures.references.filter("default",\ctxlua{structures.references.getcurrentprefixspec("\v!default")})}}
 
 \protect \endinput
 

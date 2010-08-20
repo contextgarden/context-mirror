@@ -72,7 +72,7 @@ local node_ids_to_string = nodes.ids_to_string
 local hpack_node         = node.hpack
 local vpack_node         = node.vpack
 local writable_spec      = nodes.writable_spec
-local list_to_utf        = nodes.list_to_utf
+local listtoutf          = nodes.listtoutf
 
 local nodepool      = nodes.pool
 
@@ -163,7 +163,7 @@ local function listtohash(str)
     end
 end
 
-function vspacing.define_snap_method(name,method)
+function vspacing.definesnapmethod(name,method)
     local n = #snapmethods + 1
     local t = listtohash(method)
     snapmethods[n] = t
@@ -732,7 +732,7 @@ local discard, largest, force, penalty, add, disable, nowhite, goback, together 
 
 --~ local function free_glue_node(n) free_node(n.spec) free_node(n) end
 
-function vspacing.snap_box(n,how)
+function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
     if sv then
         local box = texbox[n]
@@ -749,14 +749,14 @@ function vspacing.snap_box(n,how)
                     -- assume that the box is already snapped
                     if trace_vsnapping then
                         report_snapper("box list already snapped at (%s,%s): %s",
-                            ht,dp,list_to_utf(list))
+                            ht,dp,listtoutf(list))
                     end
                 else
                     local h, d, ch, cd, lines = snap_hlist("box",box,sv,ht,dp)
                     box.height, box.depth = ch, cd
                     if trace_vsnapping then
                         report_snapper("box list snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines): %s",
-                            h,d,ch,cd,sv.name,sv.specification,"direct",lines,list_to_utf(list))
+                            h,d,ch,cd,sv.name,sv.specification,"direct",lines,listtoutf(list))
                     end
                     set_attribute(box, snap_method,0) --
                     set_attribute(list,snap_method,0) -- yes or no
@@ -837,7 +837,7 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
                 --  end
                 elseif s == 0 then
                     if trace_vsnapping then
-                        report_snapper("mvl %s not snapped, already done: %s",nodecodes[id],list_to_utf(list))
+                        report_snapper("mvl %s not snapped, already done: %s",nodecodes[id],listtoutf(list))
                     end
                 else
                     local sv = snapmethods[s]
@@ -847,17 +847,17 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
                             local ht, dp = current.height, current.depth
                             -- assume that the box is already snapped
                             if trace_vsnapping then
-                                report_snapper("mvl list already snapped at (%s,%s): %s",ht,dp,list_to_utf(list))
+                                report_snapper("mvl list already snapped at (%s,%s): %s",ht,dp,listtoutf(list))
                             end
                         else
                             local h, d, ch, cd, lines = snap_hlist("mvl",current,sv)
                             if trace_vsnapping then
                                 report_snapper("mvl %s snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines): %s",
-                                    nodecodes[id],h,d,ch,cd,sv.name,sv.specification,where,lines,list_to_utf(list))
+                                    nodecodes[id],h,d,ch,cd,sv.name,sv.specification,where,lines,listtoutf(list))
                             end
                         end
                     elseif trace_vsnapping then
-                        report_snapper("mvl %s not snapped due to unknown snap specification: %s",nodecodes[id],list_to_utf(list))
+                        report_snapper("mvl %s not snapped due to unknown snap specification: %s",nodecodes[id],listtoutf(list))
                     end
                     set_attribute(current,snap_method,0)
                 end
@@ -1246,7 +1246,7 @@ function nodes.handlers.vboxspacing(head,where)
     return head
 end
 
-function nodes.collapse_vbox(n) -- for boxes but using global snap_method
+function nodes.collapsevbox(n) -- for boxes but using global snap_method
     local list = texbox[n].list
     if list then
     --  starttiming(vspacing)

@@ -87,7 +87,7 @@ end
 
 do
 
-    local args = environment.original_arguments or arg -- this needs a cleanup
+    local args = environment.originalarguments or arg -- this needs a cleanup
 
     local ownbin  = environment.ownbin  or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
     local ownpath = environment.ownpath or os.selfdir

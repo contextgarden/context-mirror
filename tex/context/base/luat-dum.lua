@@ -104,7 +104,7 @@ do
     cachepaths = string.split(cachepaths,os.type == "windows" and ";" or ":")
 
     for i=1,#cachepaths do
-        if file.iswritable(cachepaths[i]) then
+        if file.is_writable(cachepaths[i]) then
             writable = file.join(cachepaths[i],"luatex-cache")
             lfs.mkdir(writable)
             writable = file.join(writable,caches.namespace)
@@ -114,7 +114,7 @@ do
     end
 
     for i=1,#cachepaths do
-        if file.isreadable(cachepaths[i]) then
+        if file.is_readable(cachepaths[i]) then
             readables[#readables+1] = file.join(cachepaths[i],"luatex-cache",caches.namespace)
         end
     end
@@ -157,9 +157,9 @@ local function makefullname(path,name)
     end
 end
 
-function caches.iswritable(path,name)
+function caches.is_writable(path,name)
     local fullname = makefullname(path,name)
-    return fullname and file.iswritable(fullname)
+    return fullname and file.is_writable(fullname)
 end
 
 function caches.loaddata(paths,name)

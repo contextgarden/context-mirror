@@ -635,9 +635,9 @@ local baselines = {
     ['romn'] = 'Roman baseline'
 }
 
-local to_scripts    = table.reverse_hash(scripts  )
-local to_languages  = table.reverse_hash(languages)
-local to_features   = table.reverse_hash(features )
+local to_scripts    = table.swaphash(scripts  )
+local to_languages  = table.swaphash(languages)
+local to_features   = table.swaphash(features )
 
 tables.scripts      = scripts
 tables.languages    = languages

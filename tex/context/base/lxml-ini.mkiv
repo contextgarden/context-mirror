@@ -69,8 +69,8 @@
 \def\xmlelement          #1#2{\ctxlua{lxml.element("#1",#2)}}
 \def\xmlregisterns       #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
 \def\xmlremapname    #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
-\def\xmlremapnamespace #1#2#3{\ctxlua{xml.rename_space(lxml.id("#1"),"#2","#3")}}    % document
-\def\xmlchecknamespace #1#2#3{\ctxlua{xml.check_namespace(lxml.id("#1"),"#2","#3")}} % element
+\def\xmlremapnamespace #1#2#3{\ctxlua{xml.renamespace(lxml.id("#1"),"#2","#3")}}    % document
+\def\xmlchecknamespace #1#2#3{\ctxlua{xml.checknamespace(lxml.id("#1"),"#2","#3")}} % element
 \def\xmlsetfunction    #1#2#3{\ctxlua{lxml.setaction("#1","#2",#3)}}
 \def\xmlsetsetup       #1#2#3{\ctxlua{lxml.setsetup("#1","#2","#3")}}
 \def\xmlstrip            #1#2{\ctxlua{lxml.strip("#1","#2")}}
@@ -263,9 +263,9 @@
 \def\inlinemessage #1{\dontleavehmode{\tttf#1}}
 \def\displaymessage#1{\blank\inlinemessage{#1}\blank}
 
-\def\xmltraceentities
-  {\ctxlua{xml.set_text_cleanup(lxml.trace_text_entities)}%
-   \appendtoks\ctxlua{lxml.show_text_entities()}\to\everygoodbye}
+% \def\xmltraceentities % settextcleanup is not defined
+%   {\ctxlua{xml.settextcleanup(lxml.trace_text_entities)}%
+%    \appendtoks\ctxlua{lxml.showtextentities()}\to\everygoodbye}
 
 % processing instructions
 
@@ -296,9 +296,9 @@
   {\ifcase\xmlprocessingmode
      % unset
    \or
-     \ctxlua{lxml.set_command_to_text("#1")}% 1
+     \ctxlua{lxml.setcommandtotext("#1")}% 1
    \or
-     \ctxlua{lxml.set_command_to_none("#1")}% 2
+     \ctxlua{lxml.setcommandtonone("#1")}% 2
    \else
      % unset
    \fi}
@@ -353,8 +353,8 @@
 
 \let\isolatedentity\firstofoneargument
 
-\def\xmlsetentity#1#2{\ctxlua{xml.register_entity('#1',\!!bs\detokenize{#2}\!!es)}}
-\def\xmltexentity#1#2{\ctxlua{xml.register_entity('#1',\!!bs\detokenize{\isolatedentity{#2}}\!!es)}}
+\def\xmlsetentity#1#2{\ctxlua{xml.registerentity('#1',\!!bs\detokenize{#2}\!!es)}}
+\def\xmltexentity#1#2{\ctxlua{xml.registerentity('#1',\!!bs\detokenize{\isolatedentity{#2}}\!!es)}}
 
 % \xmlsetentity{tex}{\TEX{}} % {} needed
 
@@ -405,7 +405,7 @@
 % \stopextendcatcodetable
 %
 % \ctxlua { % entities are remembered in the format
-%     characters.remapentity("<",characters.active_offset + utf.byte("<"))
-%     characters.remapentity("&",characters.active_offset + utf.byte("&"))
-%     characters.remapentity(">",characters.active_offset + utf.byte(">"))
+%     characters.remapentity("<",characters.activeoffset + utf.byte("<"))
+%     characters.remapentity("&",characters.activeoffset + utf.byte("&"))
+%     characters.remapentity(">",characters.activeoffset + utf.byte(">"))
 % }

@@ -97,7 +97,7 @@ function metapost.characters.process(mpxformat, name, instances, scalefactor)
         -- we can use a format per font
         local data = io.loaddata(resolvers.find_file(name))
         metapost.reset(mpxformat)
-        metapost.set_outer_color(2) -- no outer color and no reset either
+        metapost.setoutercolor(2) -- no outer color and no reset either
         lists = { }
         for i=1,instances do
             characters, descriptions = { }, { }

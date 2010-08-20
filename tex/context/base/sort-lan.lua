@@ -17,15 +17,15 @@ local ub = utf.byte
 
 local sorters = sorters
 
-local mappings                   = sorters.mappings
-local entries                    = sorters.entries
-local replacements               = sorters.replacements
+local mappings                 = sorters.mappings
+local entries                  = sorters.entries
+local replacements             = sorters.replacements
 
-local add_uppercase_replacements = sorters.add_uppercase_replacements
-local add_uppercase_entries      = sorters.add_uppercase_entries
-local add_uppercase_mappings     = sorters.add_uppercase_mappings
+local adduppercasereplacements = sorters.adduppercasereplacements
+local adduppercaseentries      = sorters.adduppercaseentries
+local adduppercasemappings     = sorters.adduppercasemappings
 
-local replacement_offset         = sorters.replacement_offset
+local replacementoffset        = sorters.constants.replacementoffset
 
 -- english
 
@@ -76,8 +76,8 @@ mappings    ['nl'] = mappings['en']
 
 -- czech
 
-local cz_ch = uc(replacement_offset + 1)
-local cz_CH = uc(replacement_offset + 2)
+local cz_ch = uc(replacementoffset + 1)
+local cz_CH = uc(replacementoffset + 2)
 
 replacements['cz'] = {
     [1] = { "ch", cz_ch }
@@ -171,8 +171,8 @@ mappings['cz'] = {
     [uc(0x017E)] = 81, -- zcaron
 }
 
-add_uppercase_entries ("cz")
-add_uppercase_mappings("cz") -- 1 can be option (but then we need a runtime variant)
+adduppercaseentries ("cz")
+adduppercasemappings("cz") -- 1 can be option (but then we need a runtime variant)
 
 entries ['cz'][cz_CH] = entries ['cz'][cz_ch]
 mappings['cz'][cz_CH] = mappings['cz'][cz_ch]
@@ -197,7 +197,7 @@ mappings ['DIN 5007-1'] = mappings['en']
 
 -- DIN 5007-2
 
-replacements['DIN 5007-2'] = { -- todo: add_uppercase_replacements
+replacements['DIN 5007-2'] = { -- todo: adduppercasereplacements
     { "ä", 'ae' },
     { "ö", 'oe' },
     { "ü", 'ue' },
@@ -206,7 +206,7 @@ replacements['DIN 5007-2'] = { -- todo: add_uppercase_replacements
     { "Ü", 'Ue' },
 }
 
---~ add_uppercase_replacements('DIN 5007-2')
+--~ adduppercasereplacements('DIN 5007-2')
 
 entries     ['DIN 5007-2'] = entries ['en']
 mappings    ['DIN 5007-2'] = mappings['en']
@@ -269,8 +269,8 @@ mappings['de-AT'] = {
 --  ["W"] = 52, ["X"] = 54, ["Y"] = 56, ["Z"] = 58,
 }
 
-add_uppercase_entries ('de-AT')
-add_uppercase_mappings('de-AT',1)
+adduppercaseentries ('de-AT')
+adduppercasemappings('de-AT',1)
 
 -- finish (by Wolfgang Schuster)
 
@@ -292,8 +292,8 @@ mappings['fi'] = {
     ["z"] = 51, ["å"] = 53, ["ä"] = 55, ["ö"] = 57,
 }
 
-add_uppercase_entries ("fi")
-add_uppercase_mappings("fi")
+adduppercaseentries ("fi")
+adduppercasemappings("fi")
 
 -- slovenian
 --
@@ -317,32 +317,32 @@ mappings['sl'] = {
     ["ž"] = 61,
 }
 
-add_uppercase_entries ("sl")
-add_uppercase_mappings("sl") -- cf. MM
+adduppercaseentries ("sl")
+adduppercasemappings("sl") -- cf. MM
 
 sorters.replacements["pl"] = {
     -- no replacements
 }
 
 sorters.entries["pl"] = {
-    ["a"]   = "a", ["ą"]   = "ą", ["b"]   = "b", ["c"]   = "c", ["ć"]   = "ć",
-    ["d"]   = "d", ["e"]   = "e", ["ę"]   = "ę", ["f"]   = "f", ["g"]   = "g",
-    ["h"]   = "h", ["i"]   = "i", ["j"]   = "j", ["k"]   = "k", ["l"]   = "l",
-    ["ł"]   = "ł", ["m"]   = "m", ["n"]   = "n", ["ń"]   = "ń", ["o"]   = "o",
-    ["ó"]   = "ó", ["p"]   = "p", ["q"]   = "q", ["r"]   = "r", ["s"]   = "s",
-    ["ś"]   = "ś", ["t"]   = "t", ["u"]   = "u", ["v"]   = "v", ["w"]   = "w",
-    ["x"]   = "x", ["y"]   = "y", ["z"]   = "z", ["ź"]   = "ź", ["ż"]   = "ż",
+    ["a"] = "a", ["ą"] = "ą", ["b"] = "b", ["c"] = "c", ["ć"] = "ć",
+    ["d"] = "d", ["e"] = "e", ["ę"] = "ę", ["f"] = "f", ["g"] = "g",
+    ["h"] = "h", ["i"] = "i", ["j"] = "j", ["k"] = "k", ["l"] = "l",
+    ["ł"] = "ł", ["m"] = "m", ["n"] = "n", ["ń"] = "ń", ["o"] = "o",
+    ["ó"] = "ó", ["p"] = "p", ["q"] = "q", ["r"] = "r", ["s"] = "s",
+    ["ś"] = "ś", ["t"] = "t", ["u"] = "u", ["v"] = "v", ["w"] = "w",
+    ["x"] = "x", ["y"] = "y", ["z"] = "z", ["ź"] = "ź", ["ż"] = "ż",
 }
 
 sorters.mappings["pl"] = {
-    ["a"]   =  1, ["ą"]   =  2, ["b"]   =  3, ["c"]   =  4, ["ć"]   =  5,
-    ["d"]   =  6, ["e"]   =  7, ["ę"]   =  8, ["f"]   =  9, ["g"]   = 10,
-    ["h"]   = 11, ["i"]   = 12, ["j"]   = 13, ["k"]   = 14, ["l"]   = 15,
-    ["ł"]   = 16, ["m"]   = 17, ["n"]   = 18, ["ń"]   = 19, ["o"]   = 20,
-    ["ó"]   = 21, ["p"]   = 22, ["q"]   = 23, ["r"]   = 24, ["s"]   = 25,
-    ["ś"]   = 26, ["t"]   = 27, ["u"]   = 28, ["v"]   = 29, ["w"]   = 30,
-    ["x"]   = 31, ["y"]   = 32, ["z"]   = 33, ["ź"]   = 34, ["ż"]   = 35,
+    ["a"] =  1, ["ą"] =  2, ["b"] =  3, ["c"] =  4, ["ć"] =  5,
+    ["d"] =  6, ["e"] =  7, ["ę"] =  8, ["f"] =  9, ["g"] = 10,
+    ["h"] = 11, ["i"] = 12, ["j"] = 13, ["k"] = 14, ["l"] = 15,
+    ["ł"] = 16, ["m"] = 17, ["n"] = 18, ["ń"] = 19, ["o"] = 20,
+    ["ó"] = 21, ["p"] = 22, ["q"] = 23, ["r"] = 24, ["s"] = 25,
+    ["ś"] = 26, ["t"] = 27, ["u"] = 28, ["v"] = 29, ["w"] = 30,
+    ["x"] = 31, ["y"] = 32, ["z"] = 33, ["ź"] = 34, ["ż"] = 35,
 }
 
-add_uppercase_entries ('pl')
-add_uppercase_mappings('pl',1)
+adduppercaseentries ('pl')
+adduppercasemappings('pl',1)

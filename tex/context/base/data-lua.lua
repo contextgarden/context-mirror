@@ -51,11 +51,11 @@ end
 
 local p_libpaths, a_libpaths = { }, { }
 
-function package.append_libpath(...)
+function package.appendtolibpath(...)
     insert(a_libpath,thepath(...))
 end
 
-function package.prepend_libpath(...)
+function package.prependtolibpath(...)
     insert(p_libpaths,1,thepath(...))
 end
 
@@ -154,3 +154,13 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
 end
 
 resolvers.loadlualib = require
+
+-- -- -- --
+
+package.obsolete = package.obsolete or { }
+
+package.append_libpath           = appendtolibpath   -- will become obsolete
+package.prepend_libpath          = prependtolibpath  -- will become obsolete
+
+package.obsolete.append_libpath  = appendtolibpath   -- will become obsolete
+package.obsolete.prepend_libpath = prependtolibpath  -- will become obsolete

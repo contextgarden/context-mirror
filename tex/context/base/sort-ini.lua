@@ -27,10 +27,10 @@ local splitters          = { }
 local entries            = { }
 local mappings           = { }
 local replacements       = { }
-local ignored_offset     = 0x10000
-local replacement_offset = 0x10000
-local digits_offset      = 0x20000
-local digits_maximum     = 0xFFFFF
+local ignoredoffset      = 0x10000
+local replacementoffset  = 0x10000
+local digitsoffset       = 0x20000
+local digitsmaximum      = 0xFFFFF
 
 sorters = {
     comparers          = comparers,
@@ -38,10 +38,12 @@ sorters = {
     entries            = entries,
     mappings           = mappings,
     replacements       = replacements,
-    ignored_offset     = ignored_offset,
-    replacement_offset = replacement_offset,
-    digits_offset      = digits_offset,
-    digits_maximum     = digits_maximum,
+    constants          = {
+        ignoredoffset     = ignoredoffset,
+        replacementoffset = replacementoffset,
+        digitsoffset      = digitsoffset,
+        digitsmaximum     = digitsmaximum,
+    }
 }
 
 local ssorters = sorters
@@ -146,9 +148,9 @@ local function numify(s)
 end
 
 local function numify(s)
-    s = digits_offset + tonumber(s)
-    if s > digits_maximum then
-        s = digits_maximum
+    s = digitsoffset + tonumber(s)
+    if s > digitsmaximum then
+        s = digitsmaximum
     end
     return utfchar(s)
 end
@@ -240,7 +242,7 @@ local function pack(entry)
             local tt, li = { }, split[i].s
             for j=1,#li do
                 local lij = li[j]
-                tt[j] = utfbyte(lij) > ignored_offset and "[]" or lij
+                tt[j] = utfbyte(lij) > ignoredoffset and "[]" or lij
             end
             t[i] = concat(tt)
         end
@@ -249,7 +251,7 @@ local function pack(entry)
         local t, li = { }, split.s
         for j=1,#li do
             local lij = li[j]
-            t[j] = utfbyte(lij) > ignored_offset and "[]" or lij
+            t[j] = utfbyte(lij) > ignoredoffset and "[]" or lij
         end
         return concat(t)
     end
@@ -283,7 +285,7 @@ end
 
 -- some day we can have a characters.upper and characters.lower
 
-function sorters.add_uppercase_replacements(what)
+function sorters.adduppercasereplacements(what)
     local rep, new = replacements[what], { }
     for i=1,#rep do
         local r = rep[i]
@@ -297,7 +299,7 @@ function sorters.add_uppercase_replacements(what)
     end
 end
 
-function sorters.add_uppercase_entries(what)
+function sorters.adduppercaseentries(what)
     local ent, new = entries[what], { }
     for k, v in next, ent do
         local u = chardata[utfbyte(k)].uccode
@@ -310,7 +312,7 @@ function sorters.add_uppercase_entries(what)
     end
 end
 
-function sorters.add_uppercase_mappings(what,offset)
+function sorters.adduppercasemappings(what,offset)
     local map, new, offset = mappings[what], { }, offset or 0
     for k, v in next, map do
         local u = chardata[utfbyte(k)].uccode

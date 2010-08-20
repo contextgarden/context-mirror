@@ -21,7 +21,7 @@ over a string.</p>
 
 local utf = unicode.utf8
 local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
-local concat, gmatch = table.concat, string.gmatch
+local concat, gmatch, gsub = table.concat, string.gmatch, string.gsub
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local ctxcatcodes = tex.ctxcatcodes
 local texsprint = tex.sprint
@@ -152,9 +152,9 @@ end
 
 private.set = set
 
+function private.escape (str) return    gsub(str,"(.)", escapes) end
 function private.replace(str) return utfgsub(str,"(.)", low    ) end
-function private.revert(str)  return utfgsub(str,"(.)", high   ) end
-function private.escape(str)  return utfgsub(str,"(.)", escapes) end
+function private.revert (str) return utfgsub(str,"(.)", high   ) end
 
 for ch in gmatch(special,".") do set(ch) end
 

@@ -76,7 +76,9 @@ if not string.split then
 
 end
 
-local chr_to_esc = {
+string.patterns = { }
+
+local escapes = {
     ["%"] = "%%",
     ["."] = "%.",
     ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
@@ -86,10 +88,10 @@ local chr_to_esc = {
     ["{"] = "%{", ["}"] = "%}"
 }
 
-string.chr_to_esc = chr_to_esc
+string.patterns.escapes = escapes
 
 function string:esc() -- variant 2
-    return (gsub(self,"(.)",chr_to_esc))
+    return (gsub(self,"(.)",escapes))
 end
 
 function string:unquote()
@@ -144,21 +146,6 @@ function string:enhance(pattern,action)
     return self, n
 end
 
-local chr_to_hex, hex_to_chr = { }, { }
-
-for i=0,255 do
-    local c, h = char(i), format("%02X",i)
-    chr_to_hex[c], hex_to_chr[h] = h, c
-end
-
-function string:to_hex()
-    return (gsub(self or "","(.)",chr_to_hex))
-end
-
-function string:from_hex()
-    return (gsub(self or "","(..)",hex_to_chr))
-end
-
 if not string.characters then
 
     local function nextchar(str, index)
@@ -177,8 +164,6 @@ if not string.characters then
     end
 
 end
-
--- we can use format for this (neg n)
 
 function string:rpadd(n,chr)
     local m = n-#self
@@ -200,18 +185,6 @@ end
 
 string.padd = string.rpadd
 
-function string:split_settings() -- no {} handling, see l-aux for lpeg variant
-    if find(self,"=") then
-        local t = { }
-        for k,v in gmatch(self,"(%a+)=([^%,]*)") do
-            t[k] = v
-        end
-        return t
-    else
-        return nil
-    end
-end
-
 local patterns_escapes = {
     ["-"] = "%-",
     ["."] = "%.",
@@ -224,7 +197,7 @@ local patterns_escapes = {
     ["]"] = "%]",
 }
 
-function string:pattesc()
+function string:escapedpattern()
     return (gsub(self,".",patterns_escapes))
 end
 
@@ -235,7 +208,7 @@ local simple_escapes = {
     ["*"] = ".*",
 }
 
-function string:simpleesc()
+function string:partialescapedpattern()
     return (gsub(self,".",simple_escapes))
 end
 
@@ -801,11 +774,10 @@ function table.is_empty(t) -- obolete, use inline code instead
     return not t or not next(t)
 end
 
-function table.one_entry(t) -- obolete, use inline code instead
+function table.has_one_entry(t)
     local n = next(t)
     return n and not next(t,n)
 end
-
 
 function table.tohash(t,value)
     local h = { }
@@ -1198,7 +1170,7 @@ function table.unnest(t) -- bad name
     return f
 end
 
-table.flatten_one_level = table.unnest
+table.flattenonelevel = table.unnest
 
 -- a better one:
 
@@ -1217,51 +1189,6 @@ local function flattened(t,f)
 end
 
 table.flattened = flattened
-
--- the next three may disappear
-
-function table.remove_value(t,value) -- todo: n
-    if value then
-        for i=1,#t do
-            if t[i] == value then
-                remove(t,i)
-                -- remove all, so no: return
-            end
-        end
-    end
-end
-
-function table.insert_before_value(t,value,str)
-    if str then
-        if value then
-            for i=1,#t do
-                if t[i] == value then
-                    insert(t,i,str)
-                    return
-                end
-            end
-        end
-        insert(t,1,str)
-    elseif value then
-        insert(t,1,value)
-    end
-end
-
-function table.insert_after_value(t,value,str)
-    if str then
-        if value then
-            for i=1,#t do
-                if t[i] == value then
-                    insert(t,i+1,str)
-                    return
-                end
-            end
-        end
-        t[#t+1] = str
-    elseif value then
-        t[#t+1] = value
-    end
-end
 
 local function are_equal(a,b,n,m) -- indexed
     if a and b and #a == #b then
@@ -1365,7 +1292,7 @@ function table.hexed(t,seperator)
     return concat(tt,seperator or " ")
 end
 
-function table.reverse_hash(h) -- needs another name
+function table.swaphash(h) -- needs another name
     local r = { }
     for k,v in next, h do
         r[v] = lower(gsub(k," ",""))
@@ -1381,36 +1308,6 @@ function table.reverse(t)
         end
     end
     return tt
-end
-
-function table.insert_before_value(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i,extra)
-            return
-        end
-    end
-    insert(t,1,extra)
-end
-
-function table.insert_after_value(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i+1,extra)
-            return
-        end
-    end
-    insert(t,#t+1,extra)
 end
 
 function table.sequenced(t,sep,simple) -- hash only
@@ -2189,13 +2086,13 @@ if not modules then modules = { } end modules ['l-file'] = {
 
 -- needs a cleanup
 
-file = file or { }
+file       = file or { }
 local file = file
 
 local insert, concat = table.insert, table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
-local getcurrentdir = lfs.currentdir
+local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 
 local P, R, S, C, Cs, Cp, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc
 
@@ -2297,18 +2194,18 @@ function file.join(...)
 end
 
 
-function file.iswritable(name)
-    local a = lfs.attributes(name) or lfs.attributes(dirname(name,"."))
+function file.is_writable(name)
+    local a = attributes(name) or attributes(dirname(name,"."))
     return a and sub(a.permissions,2,2) == "w"
 end
 
-function file.isreadable(name)
-    local a = lfs.attributes(name)
+function file.is_readable(name)
+    local a = attributes(name)
     return a and sub(a.permissions,1,1) == "r"
 end
 
-file.is_readable = file.isreadable
-file.is_writable = file.iswritable
+file.isreadable = file.is_readable -- depricated
+file.iswritable = file.is_writable -- depricated
 
 -- todo: lpeg
 
@@ -2687,7 +2584,7 @@ if not modules then modules = { } end modules ['l-dir'] = {
     license   = "see context related readme files"
 }
 
--- dir.expand_name will be merged with cleanpath and collapsepath
+-- dir.expandname will be merged with cleanpath and collapsepath
 
 local type = type
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
@@ -2716,7 +2613,7 @@ end
 
 -- optimizing for no find (*) does not save time
 
-local function glob_pattern(path,patt,recurse,action)
+local function globpattern(path,patt,recurse,action)
     local ok, scanner
     if path == "/" then
         ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
@@ -2733,15 +2630,15 @@ local function glob_pattern(path,patt,recurse,action)
                     action(full)
                 end
             elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                glob_pattern(full,patt,recurse,action)
+                globpattern(full,patt,recurse,action)
             end
         end
     end
 end
 
-dir.glob_pattern = glob_pattern
+dir.globpattern = globpattern
 
-local function collect_pattern(path,patt,recurse,result)
+local function collectpattern(path,patt,recurse,result)
     local ok, scanner
     result = result or { }
     if path == "/" then
@@ -2760,7 +2657,7 @@ local function collect_pattern(path,patt,recurse,result)
                     result[name] = attr
                 end
             elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                attr.list = collect_pattern(full,patt,recurse)
+                attr.list = collectpattern(full,patt,recurse)
                 result[name] = attr
             end
         end
@@ -2768,7 +2665,7 @@ local function collect_pattern(path,patt,recurse,result)
     return result
 end
 
-dir.collect_pattern = collect_pattern
+dir.collectpattern = collectpattern
 
 local pattern = Ct {
     [1] = (C(P(".") + P("/")^1) + C(R("az","AZ") * P(":") * P("/")^0) + Cc("./")) * V(2) * V(3),
@@ -2801,7 +2698,7 @@ local function glob(str,t)
                 local recurse = find(base,"%*%*")
                 local start = root .. path
                 local result = lpegmatch(filter,start .. base)
-                glob_pattern(start,result,recurse,t)
+                globpattern(start,result,recurse,t)
             end
         end
     else
@@ -2824,7 +2721,7 @@ local function glob(str,t)
                 local recurse = find(base,"%*%*")
                 local start = root .. path
                 local result = lpegmatch(filter,start .. base)
-                glob_pattern(start,result,recurse,action)
+                globpattern(start,result,recurse,action)
                 return t
             else
                 return { }
@@ -2938,7 +2835,7 @@ if find(os.getenv("PATH"),";") then -- os.type == "windows"
     end
 
 
-    function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
+    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
             first = dir.current() .. "/"
@@ -3011,7 +2908,7 @@ else
     end
 
 
-    function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
+    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
             str = currentdir() .. "/" .. str
         end
@@ -3750,7 +3647,8 @@ utilities        = utilities or {}
 utilities.tables = utilities.tables or { }
 local tables     = utilities.tables
 
-local concat, format, gmatch = table.concat, string.format, string.gmatch
+local format, gmatch = string.format, string.gmatch
+local concat, insert, remove = table.concat, table.insert, table.remove
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t = nil, { }
@@ -3771,6 +3669,53 @@ function tables.accesstable(target)
         t = t[name]
     end
     return t
+end
+
+function table.removevalue(t,value) -- todo: n
+    if value then
+        for i=1,#t do
+            if t[i] == value then
+                remove(t,i)
+                -- remove all, so no: return
+            end
+        end
+    end
+end
+
+function table.insertbeforevalue(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i,extra)
+            return
+        end
+    end
+    insert(t,1,extra)
+end
+
+function table.insertaftervalue(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i+1,extra)
+            return
+        end
+    end
+    insert(t,#t+1,extra)
+end
+
+local _empty_table_ = { __index = function(t,k) return "" end }
+
+function table.setemptymetatable(t)
+    setmetatable(t,_empty_table_)
 end
 
 
@@ -4120,10 +4065,10 @@ function statistics.show(reporter)
     end
 end
 
-function statistics.show_job_stat(tag,data,n)
+function statistics.showjobstat(tag,data,n)
     if type(data) == "table" then
         for i=1,#data do
-            statistics.show_job_stat(tag,data[i],n)
+            statistics.showjobstat(tag,data[i],n)
         end
     else
         texio.write_nl(format("%-15s: %s - %s","mkiv lua stats",tag:rpadd(n," "),data))
@@ -4183,7 +4128,7 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local format, find, lower, gsub, simpleesc = string.format, string.find, string.lower, string.gsub, string.simpleesc
+local format, find, lower, gsub, partialescapedpattern = string.format, string.find, string.lower, string.gsub, string.partialescapedpattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 
@@ -4259,7 +4204,7 @@ local function set(t,what,newvalue)
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
-            elseif find(name,simpleesc(w)) then
+            elseif find(name,partialescapedpattern(w)) then
                 done[name] = true
                 for i=1,#functions do
                     functions[i](value)
@@ -4516,13 +4461,13 @@ local functions = {
 
 local method = "nop"
 
-function logs.set_method(newmethod)
+function logs.setmethod(newmethod)
     method = newmethod
     -- a direct copy might be faster but let's try this for a while
     setmetatable(logs, { __index = logs[method] })
 end
 
-function logs.get_method()
+function logs.getmethod()
     return method
 end
 
@@ -4608,7 +4553,7 @@ function texlog.stop_page_number()
     io.flush()
 end
 
-texlog.report_job_stat = statistics and statistics.show_job_stat
+texlog.report_job_stat = statistics and statistics.showjobstat
 
 -- xml logging
 
@@ -4701,12 +4646,12 @@ end
 if tex and (tex.jobname or tex.formatname) then
     -- todo: this can be set in mtxrun ... or maybe we should just forget about this alternative format
     if (os.getenv("mtx.directives.logmethod") or os.getenv("mtx_directives_logmethod")) == "xml" then
-        logs.set_method('xml')
+        logs.setmethod('xml')
     else
-        logs.set_method('tex')
+        logs.setmethod('tex')
     end
 else
-    logs.set_method('nop')
+    logs.setmethod('nop')
 end
 
 -- logging in runners -> these are actually the nop loggers
@@ -5104,7 +5049,7 @@ local mt = {
 
 setmetatable(environment,mt)
 
-function environment.initialize_arguments(arg)
+function environment.initializearguments(arg)
     local arguments, files = { }, { }
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
     for index=1,#arg do
@@ -5158,11 +5103,11 @@ function environment.argument(name,partial)
     return nil
 end
 
-function environment.split_arguments(separator) -- rather special, cut-off before separator
+function environment.splitarguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }
-    local original_arguments = environment.original_arguments
-    for k=1,#original_arguments do
-        local v = original_arguments[k]
+    local originalarguments = environment.originalarguments
+    for k=1,#originalarguments do
+        local v = originalarguments[k]
         if not done and v == separator then
             done = true
         elseif done then
@@ -5174,8 +5119,8 @@ function environment.split_arguments(separator) -- rather special, cut-off befor
     return before, after
 end
 
-function environment.reconstruct_commandline(arg,noquote)
-    arg = arg or environment.original_arguments
+function environment.reconstructcommandline(arg,noquote)
+    arg = arg or environment.originalarguments
     if noquote and #arg == 1 then
         local a = arg[1]
         a = resolvers.resolve(a)
@@ -5225,9 +5170,10 @@ if arg then
         newarg[i] = arg[i]
     end
 
-    environment.initialize_arguments(newarg)
-    environment.original_arguments = newarg
-    environment.raw_arguments = arg
+    environment.initializearguments(newarg)
+
+    environment.originalarguments = newarg
+    environment.rawarguments      = arg
 
     arg = { } -- prevent duplicate handling
 
@@ -5497,8 +5443,8 @@ function xml.setproperty(root,k,v)
     getmetatable(root).__index[k] = v
 end
 
-function xml.check_error(top,toclose)
-    return ""
+function xml.checkerror(top,toclose)
+    return "" -- can be set
 end
 
 local function add_attribute(namespace,tag,value)
@@ -5554,9 +5500,9 @@ local function add_end(spacing, namespace, tag)
     local toclose = remove(stack)
     top = stack[#stack]
     if #stack < 1 then
-        errorstr = format("nothing to close with %s %s", tag, xml.check_error(top,toclose) or "")
+        errorstr = format("nothing to close with %s %s", tag, xml.checkerror(top,toclose) or "")
     elseif toclose.tg ~= tag then -- no namespace check
-        errorstr = format("unable to close %s with %s %s", toclose.tg, tag, xml.check_error(top,toclose) or "")
+        errorstr = format("unable to close %s with %s %s", toclose.tg, tag, xml.checkerror(top,toclose) or "")
     end
     dt = top.dt
     dt[#dt+1] = toclose
@@ -5608,9 +5554,13 @@ local function attribute_specification_error(str)
     return str
 end
 
-function xml.unknown_dec_entity_format(str) return (str == "" and "&error;") or format("&%s;",str) end
-function xml.unknown_hex_entity_format(str) return format("&#x%s;",str) end
-function xml.unknown_any_entity_format(str) return format("&#x%s;",str) end
+xml.placeholders = {
+    unknown_dec_entity = function(str) return (str == "" and "&error;") or format("&%s;",str) end,
+    unknown_hex_entity = function(str) return format("&#x%s;",str) end,
+    unknown_any_entity = function(str) return format("&#x%s;",str) end,
+}
+
+local placeholders = xml.placeholders
 
 local function fromhex(s)
     local n = tonumber(s,16)
@@ -5667,7 +5617,7 @@ local function handle_hex_entity(str)
                 report_xml("utfize, converting hex entity &#x%s; into %s",str,h)
             end
         elseif utfize then
-            h = (n and utfchar(n)) or xml.unknown_hex_entity_format(str) or ""
+            h = (n and utfchar(n)) or xml.unknown_hex_entity(str) or ""
             if not n then
                 report_xml("utfize, ignoring hex entity &#x%s;",str)
             elseif trace_entities then
@@ -5694,7 +5644,7 @@ local function handle_dec_entity(str)
                 report_xml("utfize, converting dec entity &#%s; into %s",str,d)
             end
         elseif utfize then
-            d = (n and utfchar(n)) or xml.unknown_dec_entity_format(str) or ""
+            d = (n and utfchar(n)) or placeholders.unknown_dec_entity(str) or ""
             if not n then
                 report_xml("utfize, ignoring dec entity &#%s;",str)
             elseif trace_entities then
@@ -5731,8 +5681,9 @@ local function handle_any_entity(str)
                 end
                 a = lpegmatch(parsedentity,a) or a
             else
-                if xml.unknown_any_entity_format then
-                    a = xml.unknown_any_entity_format(str) or ""
+                local unknown_any_entity = placeholders.unknown_any_entity
+                if unknown_any_entity then
+                    a = unknown_any_entity(str) or ""
                 end
                 if a then
                     if trace_entities then
@@ -5947,13 +5898,13 @@ local function xmlconvert(data, settings)
     if errorstr and errorstr ~= "" then
         result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={ }, er = true } } }
         setmetatable(stack, mt)
-        local error_handler = settings.error_handler
-        if error_handler == false then
+        local errorhandler = settings.error_handler
+        if errorhandler == false then
             -- no error message
         else
-            error_handler = error_handler or xml.error_handler
-            if error_handler then
-                xml.error_handler("load",errorstr)
+            errorhandler = errorhandler or xml.errorhandler
+            if errorhandler then
+                xml.errorhandler("load",errorstr)
             end
         end
     else
@@ -6013,7 +5964,7 @@ function xml.is_valid(root)
     return root and not root.error
 end
 
-xml.error_handler = (logs and logs.report) or (input and logs.report) or print
+xml.errorhandler = (logs and logs.report) or (input and logs.report) or print
 
 --[[ldx--
 <p>We cannot load an <l n='lpeg'/> from a filehandle so we need to load
@@ -6530,7 +6481,7 @@ if not modules then modules = { } end modules ['lxml-pth'] = {
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
@@ -6575,14 +6526,20 @@ local xml = xml
 local lpathcalls  = 0  function xml.lpathcalls () return lpathcalls  end
 local lpathcached = 0  function xml.lpathcached() return lpathcached end
 
-xml.functions      = xml.functions      or { } -- internal
-xml.expressions    = xml.expressions    or { } -- in expressions
-xml.finalizers     = xml.finalizers     or { } -- fast do-with ... (with return value other than collection)
-xml.specialhandler = xml.specialhandler or { }
+xml.functions        = xml.functions or { } -- internal
+local functions      = xml.functions
 
-local functions   = xml.functions
-local expressions = xml.expressions
-local finalizers  = xml.finalizers
+xml.expressions      = xml.expressions or { } -- in expressions
+local expressions    = xml.expressions
+
+xml.finalizers       = xml.finalizers or { } -- fast do-with ... (with return value other than collection)
+local finalizers     = xml.finalizers
+
+xml.specialhandler   = xml.specialhandler or { }
+local specialhandler = xml.specialhandler
+
+lpegpatterns.xml     = lpegpatterns.xml or { }
+local xmlpatterns    = lpegpatterns.xml
 
 finalizers.xml = finalizers.xml or { }
 finalizers.tex = finalizers.tex or { }
@@ -7160,7 +7117,7 @@ local special_1 = P("*")  * Cc(register_auto_descendant) * Cc(register_all_nodes
 local special_2 = P("/")  * Cc(register_auto_self)
 local special_3 = P("")   * Cc(register_auto_self)
 
-local parser = Ct { "patterns", -- can be made a bit faster by moving pattern outside
+local pathparser = Ct { "patterns", -- can be made a bit faster by moving pattern outside
 
     patterns             = spaces * V("protocol") * spaces * (
                               ( V("special") * spaces * P(-1)                                                         ) +
@@ -7232,6 +7189,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
 
 }
 
+xmlpatterns.pathparser = pathparser
+
 local cache = { }
 
 local function nodesettostring(set,nodetest)
@@ -7268,11 +7227,11 @@ end
 
 xml.nodesettostring = nodesettostring
 
-local parse_pattern -- we have a harmless kind of circular reference
+local lpath -- we have a harmless kind of circular reference
 
 local function lshow(parsed)
     if type(parsed) == "string" then
-        parsed = parse_pattern(parsed)
+        parsed = lpath(parsed)
     end
     local s = table.serialize_functions -- ugly
     table.serialize_functions = false -- ugly
@@ -7291,7 +7250,7 @@ local function add_comment(p,str)
     end
 end
 
-parse_pattern = function (pattern) -- the gain of caching is rather minimal
+lpath = function (pattern) -- the gain of caching is rather minimal
     lpathcalls = lpathcalls + 1
     if type(pattern) == "table" then
         return pattern
@@ -7300,7 +7259,7 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
         if parsed then
             lpathcached = lpathcached + 1
         else
-            parsed = lpegmatch(parser,pattern)
+            parsed = lpegmatch(pathparser,pattern)
             if parsed then
                 parsed.pattern = pattern
                 local np = #parsed
@@ -7347,6 +7306,8 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
         return parsed
     end
 end
+
+xml.lpath = lpath
 
 -- we can move all calls inline and then merge the trace back
 -- technically we can combine axis and the next nodes which is
@@ -7472,7 +7433,7 @@ local function normal_apply(list,parsed,nofparsed,order)
     return collected
 end
 
-local function parse_apply(list,pattern)
+local function applylpath(list,pattern)
     -- we avoid an extra call
     local parsed = cache[pattern]
     if parsed then
@@ -7482,7 +7443,7 @@ local function parse_apply(list,pattern)
         lpathcalls = lpathcalls + 1
         parsed = pattern
     else
-        parsed = parse_pattern(pattern) or pattern
+        parsed = lpath(pattern) or pattern
     end
     if not parsed then
         return
@@ -7491,7 +7452,7 @@ local function parse_apply(list,pattern)
     if nofparsed == 0 then
         return -- something is wrong
     end
-    local one = list[1]
+    local one = list[1] -- we could have a third argument: isroot and list or list[1] or whatever we like ... todo
     if not one then
         return -- something is wrong
     elseif not trace_lpath then
@@ -7503,13 +7464,15 @@ local function parse_apply(list,pattern)
     end
 end
 
+xml.applylpath = applylpath -- takes a table as first argment, which is what xml.filter will do
+
 -- internal (parsed)
 
 expressions.child = function(e,pattern)
-    return parse_apply({ e },pattern) -- todo: cache
+    return applylpath({ e },pattern) -- todo: cache
 end
 expressions.count = function(e,pattern)
-    local collected = parse_apply({ e },pattern) -- todo: cache
+    local collected = applylpath({ e },pattern) -- todo: cache
     return (collected and #collected) or 0
 end
 
@@ -7519,7 +7482,7 @@ expressions.oneof = function(s,...) -- slow
     local t = {...} for i=1,#t do if s == t[i] then return true end end return false
 end
 expressions.error = function(str)
-    xml.error_handler("unknown function in lpath expression",tostring(str or "?"))
+    xml.errorhandler("unknown function in lpath expression",tostring(str or "?"))
     return false
 end
 expressions.undefined = function(s)
@@ -7549,7 +7512,7 @@ expressions.boolean   = toboolean
 
 local function traverse(root,pattern,handle)
     report_lpath("use 'xml.selection' instead for '%s'",pattern)
-    local collected = parse_apply({ root },pattern)
+    local collected = applylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -7560,7 +7523,7 @@ local function traverse(root,pattern,handle)
 end
 
 local function selection(root,pattern,handle)
-    local collected = parse_apply({ root },pattern)
+    local collected = applylpath({ root },pattern)
     if collected then
         if handle then
             for c=1,#collected do
@@ -7572,19 +7535,9 @@ local function selection(root,pattern,handle)
     end
 end
 
-xml.parse_parser  = parser
-xml.parse_pattern = parse_pattern
-xml.parse_apply   = parse_apply
 xml.traverse      = traverse           -- old method, r, d, k
 xml.selection     = selection          -- new method, simple handle
 
-local lpath = parse_pattern
-
-xml.lpath = lpath
-
-function xml.cached_patterns()
-    return cache
-end
 
 -- generic function finalizer (independant namespace)
 
@@ -7601,8 +7554,8 @@ local function dofunction(collected,fnc)
     end
 end
 
-xml.finalizers.xml["function"] = dofunction
-xml.finalizers.tex["function"] = dofunction
+finalizers.xml["function"] = dofunction
+finalizers.tex["function"] = dofunction
 
 -- functions
 
@@ -7699,7 +7652,7 @@ end
 --ldx]]--
 
 function xml.filter(root,pattern) -- no longer funny attribute handling here
-    return parse_apply({ root },pattern)
+    return applylpath({ root },pattern)
 end
 
 --[[ldx--
@@ -7721,7 +7674,7 @@ end
 local wrap, yield = coroutine.wrap, coroutine.yield
 
 function xml.elements(root,pattern,reverse) -- r, d, k
-    local collected = parse_apply({ root },pattern)
+    local collected = applylpath({ root },pattern)
     if collected then
         if reverse then
             return wrap(function() for c=#collected,1,-1 do
@@ -7737,7 +7690,7 @@ function xml.elements(root,pattern,reverse) -- r, d, k
 end
 
 function xml.collected(root,pattern,reverse) -- e
-    local collected = parse_apply({ root },pattern)
+    local collected = applylpath({ root },pattern)
     if collected then
         if reverse then
             return wrap(function() for c=#collected,1,-1 do yield(collected[c]) end end)
@@ -7761,12 +7714,16 @@ if not modules then modules = { } end modules ['lxml-mis'] = {
     license   = "see context related readme files"
 }
 
+local xml, lpeg, string = xml, lpeg, string
+
 local concat = table.concat
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, gsub, match = string.format, string.gsub, string.match
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Cs
 
-local xml = xml
+lpegpatterns.xml  = lpegpatterns.xml or { }
+local xmlpatterns = lpegpatterns.xml
 
 --[[ldx--
 <p>The following helper functions best belong to the <t>lxml-ini</t>
@@ -7791,7 +7748,7 @@ local function xmlgsub(t,old,new) -- will be replaced
 end
 
 
-function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
+function xml.stripleadingspaces(dk,d,k) -- cosmetic, for manual
     if d and k then
         local dkm = d[k-1]
         if dkm and type(dkm) == "string" then
@@ -7802,8 +7759,6 @@ function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
 end
 
 
-
-local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Cs
 
 -- 100 * 2500 * "oeps< oeps> oeps&" : gsub:lpeg|lpeg|lpeg
 --
@@ -7829,9 +7784,9 @@ local unescaped = Cs(normal * (special * normal)^0)
 
 local cleansed = Cs(((P("<") * (1-P(">"))^0 * P(">"))/"" + 1)^0)
 
-xml.escaped_pattern   = escaped
-xml.unescaped_pattern = unescaped
-xml.cleansed_pattern  = cleansed
+xmlpatterns.escaped   = escaped
+xmlpatterns.unescaped = unescaped
+xmlpatterns.cleansed  = cleansed
 
 function xml.escaped  (str) return lpegmatch(escaped,str)   end
 function xml.unescaped(str) return lpegmatch(unescaped,str) end
@@ -7871,8 +7826,9 @@ local report_xml = logs.new("xml")
 
 local xml = xml
 
-local xmlparseapply, xmlconvert, xmlcopy, xmlname = xml.parse_apply, xml.convert, xml.copy, xml.name
+local xmlconvert, xmlcopy, xmlname = xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
+local xmlapplylpath = xml.applylpath
 
 local type = type
 local insert, remove = table.insert, table.remove
@@ -7933,10 +7889,8 @@ function xml.withelement(e,n,handle) -- slow
     end
 end
 
-xml.elements_only = xml.collected
-
-function xml.each_element(root,pattern,handle,reverse)
-    local collected = xmlparseapply({ root },pattern)
+function xml.each(root,pattern,handle,reverse)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         if reverse then
             for c=#collected,1,-1 do
@@ -7951,10 +7905,8 @@ function xml.each_element(root,pattern,handle,reverse)
     end
 end
 
-xml.process_elements = xml.each_element
-
-function xml.process_attributes(root,pattern,handle)
-    local collected = xmlparseapply({ root },pattern)
+function xml.processattributes(root,pattern,handle)
+    local collected = xmlapplylpath({ root },pattern)
     if collected and handle then
         for c=1,#collected do
             handle(collected[c].at)
@@ -7969,12 +7921,12 @@ end
 
 -- are these still needed -> lxml-cmp.lua
 
-function xml.collect_elements(root, pattern)
-    return xmlparseapply({ root },pattern)
+function xml.collect(root, pattern)
+    return xmlapplylpath({ root },pattern)
 end
 
-function xml.collect_texts(root, pattern, flatten) -- todo: variant with handle
-    local collected = xmlparseapply({ root },pattern)
+function xml.collecttexts(root, pattern, flatten) -- todo: variant with handle
+    local collected = xmlapplylpath({ root },pattern)
     if collected and flatten then
         local xmltostring = xml.tostring
         for c=1,#collected do
@@ -7985,7 +7937,7 @@ function xml.collect_texts(root, pattern, flatten) -- todo: variant with handle
 end
 
 function xml.collect_tags(root, pattern, nonamespace)
-    local collected = xmlparseapply({ root },pattern)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         local t = { }
         for c=1,#collected do
@@ -8009,7 +7961,7 @@ end
 
 local no_root = { no_root = true }
 
-function xml.redo_ni(d)
+local function redo_ni(d)
     for k=1,#d do
         local dk = d[k]
         if type(dk) == "table" then
@@ -8050,8 +8002,8 @@ local function copiedelement(element,newparent)
     end
 end
 
-function xml.delete_element(root,pattern)
-    local collected = xmlparseapply({ root },pattern)
+function xml.delete(root,pattern)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -8062,15 +8014,15 @@ function xml.delete_element(root,pattern)
                 end
                 local d = p.dt
                 remove(d,e.ni)
-                xml.redo_ni(d) -- can be made faster and inlined
+                redo_ni(d) -- can be made faster and inlined
             end
         end
     end
 end
 
-function xml.replace_element(root,pattern,whatever)
+function xml.replace(root,pattern,whatever)
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlparseapply({ root },pattern)
+    local collected = element and xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -8081,7 +8033,7 @@ function xml.replace_element(root,pattern,whatever)
                 end
                 local d = p.dt
                 d[e.ni] = copiedelement(element,p)
-                xml.redo_ni(d) -- probably not needed
+                redo_ni(d) -- probably not needed
             end
         end
     end
@@ -8089,7 +8041,7 @@ end
 
 local function inject_element(root,pattern,whatever,prepend)
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlparseapply({ root },pattern)
+    local collected = element and xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -8112,7 +8064,7 @@ local function inject_element(root,pattern,whatever,prepend)
                 else
                     d[k].dt = be
                 end
-                xml.redo_ni(d)
+                redo_ni(d)
             end
         end
     end
@@ -8120,7 +8072,7 @@ end
 
 local function insert_element(root,pattern,whatever,before) -- todo: element als functie
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlparseapply({ root },pattern)
+    local collected = element and xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -8130,24 +8082,23 @@ local function insert_element(root,pattern,whatever,before) -- todo: element als
                 k = k + 1
             end
             insert(d,k,copiedelement(element,r))
-            xml.redo_ni(d)
+            redo_ni(d)
         end
     end
 end
 
-xml.insert_element        =                 insert_element
-xml.insert_element_after  =                 insert_element
-xml.insert_element_before = function(r,p,e) insert_element(r,p,e,true) end
-xml.inject_element        =                 inject_element
-xml.inject_element_after  =                 inject_element
-xml.inject_element_before = function(r,p,e) inject_element(r,p,e,true) end
+xml.insert_element  =                 insert_element
+xml.insertafter     =                 insert_element
+xml.insertbefore    = function(r,p,e) insert_element(r,p,e,true) end
+xml.injectafter     =                 inject_element
+xml.injectbefore    = function(r,p,e) inject_element(r,p,e,true) end
 
 local function include(xmldata,pattern,attribute,recursive,loaddata)
     -- parse="text" (default: xml), encoding="" (todo)
     -- attribute = attribute or 'href'
     pattern = pattern or 'include'
     loaddata = loaddata or io.loaddata
-    local collected = xmlparseapply({ xmldata },pattern)
+    local collected = xmlapplylpath({ xmldata },pattern)
     if collected then
         for c=1,#collected do
             local ek = collected[c]
@@ -8187,43 +8138,8 @@ end
 
 xml.include = include
 
-
-
-function xml.strip_whitespace(root, pattern, nolines) -- strips all leading and trailing space !
-    local collected = xmlparseapply({ root },pattern)
-    if collected then
-        for i=1,#collected do
-            local e = collected[i]
-            local edt = e.dt
-            if edt then
-                local t = { }
-                for i=1,#edt do
-                    local str = edt[i]
-                    if type(str) == "string" then
-                        if str == "" then
-                            -- stripped
-                        else
-                            if nolines then
-                                str = gsub(str,"[ \n\r\t]+"," ")
-                            end
-                            if str == "" then
-                                -- stripped
-                            else
-                                t[#t+1] = str
-                            end
-                        end
-                    else
-                                t[#t+1] = str
-                    end
-                end
-                e.dt = t
-            end
-        end
-    end
-end
-
-function xml.strip_whitespace(root, pattern, nolines, anywhere) -- strips all leading and trailing spacing
-    local collected = xmlparseapply({ root },pattern) -- beware, indices no longer are valid now
+function xml.strip(root, pattern, nolines, anywhere) -- strips all leading and trailing spacing
+    local collected = xmlapplylpath({ root },pattern) -- beware, indices no longer are valid now
     if collected then
         for i=1,#collected do
             local e = collected[i]
@@ -8294,7 +8210,7 @@ function xml.strip_whitespace(root, pattern, nolines, anywhere) -- strips all le
     end
 end
 
-local function rename_space(root, oldspace, newspace) -- fast variant
+local function renamespace(root, oldspace, newspace) -- fast variant
     local ndt = #root.dt
     for i=1,ndt or 0 do
         local e = root[i]
@@ -8307,16 +8223,16 @@ local function rename_space(root, oldspace, newspace) -- fast variant
             end
             local edt = e.dt
             if edt then
-                rename_space(edt, oldspace, newspace)
+                renamespace(edt, oldspace, newspace)
             end
         end
     end
 end
 
-xml.rename_space = rename_space
+xml.renamespace = renamespace
 
-function xml.remap_tag(root, pattern, newtg)
-    local collected = xmlparseapply({ root },pattern)
+function xml.remaptag(root, pattern, newtg)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             collected[c].tg = newtg
@@ -8324,8 +8240,8 @@ function xml.remap_tag(root, pattern, newtg)
     end
 end
 
-function xml.remap_namespace(root, pattern, newns)
-    local collected = xmlparseapply({ root },pattern)
+function xml.remapnamespace(root, pattern, newns)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             collected[c].ns = newns
@@ -8333,8 +8249,8 @@ function xml.remap_namespace(root, pattern, newns)
     end
 end
 
-function xml.check_namespace(root, pattern, newns)
-    local collected = xmlparseapply({ root },pattern)
+function xml.checknamespace(root, pattern, newns)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -8345,8 +8261,8 @@ function xml.check_namespace(root, pattern, newns)
     end
 end
 
-function xml.remap_name(root, pattern, newtg, newns, newrn)
-    local collected = xmlparseapply({ root },pattern)
+function xml.remapname(root, pattern, newtg, newns, newrn)
+    local collected = xmlapplylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -8359,18 +8275,34 @@ end
 <p>Here are a few synonyms.</p>
 --ldx]]--
 
-xml.each     = xml.each_element
-xml.process  = xml.process_element
-xml.strip    = xml.strip_whitespace
-xml.collect  = xml.collect_elements
-xml.all      = xml.collect_elements
+xml.all     = xml.each
+xml.insert  = xml.insertafter
+xml.inject  = xml.injectafter
+xml.after   = xml.insertafter
+xml.before  = xml.insertbefore
+xml.process = xml.each
 
-xml.insert   = xml.insert_element_after
-xml.inject   = xml.inject_element_after
-xml.after    = xml.insert_element_after
-xml.before   = xml.insert_element_before
-xml.delete   = xml.delete_element
-xml.replace  = xml.replace_element
+-- obsolete
+
+xml.obsolete   = xml.obsolete or { }
+local obsolete = xml.obsolete
+
+xml.strip_whitespace           = xml.strip                 obsolete.strip_whitespace      = xml.strip
+xml.collect_elements           = xml.collect               obsolete.collect_elements      = xml.collect
+xml.delete_element             = xml.delete                obsolete.delete_element        = xml.delete
+xml.replace_element            = xml.replace               obsolete.replace_element       = xml.replacet
+xml.each_element               = xml.each                  obsolete.each_element          = xml.each
+xml.process_elements           = xml.process               obsolete.process_elements      = xml.process
+xml.insert_element_after       = xml.insertafter           obsolete.insert_element_after  = xml.insertafter
+xml.insert_element_before      = xml.insertbefore          obsolete.insert_element_before = xml.insertbefore
+xml.inject_element_after       = xml.injectafter           obsolete.inject_element_after  = xml.injectafter
+xml.inject_element_before      = xml.injectbefore          obsolete.inject_element_before = xml.injectbefore
+xml.process_attributes         = xml.processattributes     obsolete.process_attributes    = xml.processattributes
+xml.collect_texts              = xml.collecttexts          obsolete.collect_texts         = xml.collecttexts
+xml.inject_element             = xml.inject                obsolete.inject_element        = xml.inject
+xml.remap_tag                  = xml.remaptag              obsolete.remap_tag             = xml.remaptag
+xml.remap_name                 = xml.remapname             obsolete.remap_name            = xml.remapname
+xml.remap_namespace            = xml.remapnamespace        obsolete.remap_namespace       = xml.remapnamespace
 
 
 end -- of closure
@@ -8776,7 +8708,7 @@ end
 
 do
 
-    local args = environment.original_arguments or arg -- this needs a cleanup
+    local args = environment.originalarguments or arg -- this needs a cleanup
 
     local ownbin  = environment.ownbin  or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
     local ownpath = environment.ownpath or os.selfdir
@@ -9471,18 +9403,18 @@ local function identify()
                 cachepath = file.collapse_path(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
-                    if file.isreadable(cachepath) then
+                    if file.is_readable(cachepath) then
                         readables[#readables+1] = cachepath
-                        if not writable and file.iswritable(cachepath) then
+                        if not writable and file.is_writable(cachepath) then
                             writable = cachepath
                         end
                     end
                 elseif not writable and caches.force then
                     local cacheparent = file.dirname(cachepath)
-                    if file.iswritable(cacheparent) then
+                    if file.is_writable(cacheparent) then
                         if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
                             mkdirs(cachepath)
-                            if isdir(cachepath) and file.iswritable(cachepath) then
+                            if isdir(cachepath) and file.is_writable(cachepath) then
                                 report_cache("created: %s",cachepath)
                                 writable = cachepath
                                 readables[#readables+1] = cachepath
@@ -9503,8 +9435,8 @@ local function identify()
             if cachepath ~= "" then
                 cachepath = resolvers.clean_path(cachepath)
                 local valid = isdir(cachepath)
-                if valid and file.isreadable(cachepath) then
-                    if not writable and file.iswritable(cachepath) then
+                if valid and file.is_readable(cachepath) then
+                    if not writable and file.is_writable(cachepath) then
                         readables[#readables+1] = cachepath
                         writable = cachepath
                         break
@@ -9523,7 +9455,7 @@ local function identify()
         os.exit()
     end
     -- why here
-    writable = dir.expand_name(resolvers.clean_path(writable)) -- just in case
+    writable = dir.expandname(resolvers.clean_path(writable)) -- just in case
     -- moved here
     local base, more, tree = caches.base, caches.more, caches.tree or caches.treehash() -- we have only one writable tree
     if tree then
@@ -9630,7 +9562,7 @@ function caches.getfirstreadablefile(filename,...)
     for i=1,#rd do
         local path = rd[i]
         local fullname = file.join(path,filename)
-        if file.isreadable(fullname) then
+        if file.is_readable(fullname) then
             usedreadables[i] = true
             return fullname, path
         end
@@ -9671,9 +9603,9 @@ function caches.loaddata(readables,name)
     return false
 end
 
-function caches.iswritable(filepath,filename)
+function caches.is_writable(filepath,filename)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
-    return file.iswritable(tmaname)
+    return file.is_writable(tmaname)
 end
 
 function caches.savedata(filepath,filename,data,raw)
@@ -11489,7 +11421,7 @@ function containers.define(category, subcategory, version, enabled)
 end
 
 function containers.is_usable(container, name)
-    return container.enabled and caches and caches.iswritable(container.writable, name)
+    return container.enabled and caches and caches.is_writable(container.writable, name)
 end
 
 function containers.is_valid(container, name)
@@ -11605,7 +11537,7 @@ statistics.register("used cache path",  function() return caches.usedpaths() end
 
 -- experiment (code will move)
 
-function statistics.save_fmt_status(texname,formatbanner,sourcefile) -- texname == formatname
+function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname == formatname
     local enginebanner = status.list().banner
     if formatbanner and enginebanner and sourcefile then
         local luvname = file.replacesuffix(texname,"luv")
@@ -11619,7 +11551,7 @@ function statistics.save_fmt_status(texname,formatbanner,sourcefile) -- texname 
     end
 end
 
-function statistics.check_fmt_status(texname)
+function statistics.checkfmtstatus(texname)
     local enginebanner = status.list().banner
     if enginebanner and texname then
         local luvname = file.replacesuffix(texname,"luv")
@@ -12115,11 +12047,11 @@ end
 
 local p_libpaths, a_libpaths = { }, { }
 
-function package.append_libpath(...)
+function package.appendtolibpath(...)
     insert(a_libpath,thepath(...))
 end
 
-function package.prepend_libpath(...)
+function package.prependtolibpath(...)
     insert(p_libpaths,1,thepath(...))
 end
 
@@ -12218,6 +12150,16 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
 end
 
 resolvers.loadlualib = require
+
+-- -- -- --
+
+package.obsolete = package.obsolete or { }
+
+package.append_libpath           = appendtolibpath   -- will become obsolete
+package.prepend_libpath          = prependtolibpath  -- will become obsolete
+
+package.obsolete.append_libpath  = appendtolibpath   -- will become obsolete
+package.obsolete.prepend_libpath = prependtolibpath  -- will become obsolete
 
 
 end -- of closure
@@ -12569,7 +12511,7 @@ function environment.make_format(name)
     else
         logs.simple("using tex source file: %s",fulltexsourcename)
     end
-    local texsourcepath = dir.expand_name(file.dirname(fulltexsourcename)) -- really needed
+    local texsourcepath = dir.expandname(file.dirname(fulltexsourcename)) -- really needed
     -- check specification
     local specificationname = file.replacesuffix(fulltexsourcename,"lus")
     local fullspecificationname = resolvers.find_file(specificationname,"tex") or ""
@@ -13002,7 +12944,7 @@ function runners.execute_script(fullname,internal,nosplit)
             end
             if result and result ~= "" then
                 if not no_split then
-                    local before, after = environment.split_arguments(fullname) -- already done
+                    local before, after = environment.splitarguments(fullname) -- already done
                     environment.arguments_before, environment.arguments_after = before, after
                 end
                 if internal then
@@ -13014,7 +12956,7 @@ function runners.execute_script(fullname,internal,nosplit)
                     if binary and binary ~= "" then
                         result = binary .. " " .. result
                     end
-                    local command = result .. " " .. environment.reconstruct_commandline(environment.arguments_after,noquote)
+                    local command = result .. " " .. environment.reconstructcommandline(environment.arguments_after,noquote)
                     if logs.verbose then
                         logs.simpleline()
                         logs.simple("executing: %s",command)
@@ -13056,10 +12998,10 @@ function runners.execute_program(fullname)
         elseif state == 'skip' then
             return true
         elseif state == "run" then
-            local before, after = environment.split_arguments(fullname)
-            environment.initialize_arguments(after)
+            local before, after = environment.splitarguments(fullname)
+            environment.initializearguments(after)
             fullname = fullname:gsub("^bin:","")
-            local command = fullname .. " " .. (environment.reconstruct_commandline(after or "",noquote) or "")
+            local command = fullname .. " " .. (environment.reconstructcommandline(after or "",noquote) or "")
             logs.simpleline()
             logs.simple("executing: %s",command)
             logs.simpleline()
@@ -13315,7 +13257,7 @@ function runners.execute_ctx_script(filename,...)
         elseif state == "run" then
             -- load and save ... kind of undocumented
             arg = { } for _,v in pairs(arguments) do arg[#arg+1] = resolvers.resolve(v) end
-            environment.initialize_arguments(arg)
+            environment.initializearguments(arg)
             local loadname = environment.arguments['load']
             if loadname then
                 if type(loadname) ~= "string" then loadname = file.basename(fullname) end
@@ -13406,9 +13348,9 @@ end
 local filename = environment.files[1] or ""
 local ok      = true
 
-local before, after = environment.split_arguments(filename)
+local before, after = environment.splitarguments(filename)
 environment.arguments_before, environment.arguments_after = before, after
-environment.initialize_arguments(before)
+environment.initializearguments(before)
 
 instance.engine   = environment.argument("engine")   or 'luatex'
 instance.progname = environment.argument("progname") or 'context'
@@ -13639,7 +13581,7 @@ elseif environment.argument("find-file") then
     local format = environment.arguments["format"] or instance.format
     if not pattern then
         runners.register_arguments(filename)
-        environment.initialize_arguments(environment.arguments_after)
+        environment.initializearguments(environment.arguments_after)
         resolvers.for_files(resolvers.find_files,environment.files,format)
     elseif type(pattern) == "string" then
         instance.allresults = true -- brrrr
@@ -13664,7 +13606,7 @@ elseif environment.argument("expand-braces") then
 
     resolvers.load("nofiles")
     runners.register_arguments(filename)
-    environment.initialize_arguments(environment.arguments_after)
+    environment.initializearguments(environment.arguments_after)
     resolvers.for_files(resolvers.expand_braces, environment.files)
 
 elseif environment.argument("expand-path") then
@@ -13673,7 +13615,7 @@ elseif environment.argument("expand-path") then
 
     resolvers.load("nofiles")
     runners.register_arguments(filename)
-    environment.initialize_arguments(environment.arguments_after)
+    environment.initializearguments(environment.arguments_after)
     resolvers.for_files(resolvers.expand_path, environment.files)
 
 elseif environment.argument("expand-var") or environment.argument("expand-variable") then
@@ -13682,7 +13624,7 @@ elseif environment.argument("expand-var") or environment.argument("expand-variab
 
     resolvers.load("nofiles")
     runners.register_arguments(filename)
-    environment.initialize_arguments(environment.arguments_after)
+    environment.initializearguments(environment.arguments_after)
     resolvers.for_files(resolvers.expand_var, environment.files)
 
 elseif environment.argument("show-path") or environment.argument("path-value") then
@@ -13691,7 +13633,7 @@ elseif environment.argument("show-path") or environment.argument("path-value") t
 
     resolvers.load("nofiles")
     runners.register_arguments(filename)
-    environment.initialize_arguments(environment.arguments_after)
+    environment.initializearguments(environment.arguments_after)
     resolvers.for_files(resolvers.show_path, environment.files)
 
 elseif environment.argument("var-value") or environment.argument("show-value") then
@@ -13700,7 +13642,7 @@ elseif environment.argument("var-value") or environment.argument("show-value") t
 
     resolvers.load("nofiles")
     runners.register_arguments(filename)
-    environment.initialize_arguments(environment.arguments_after)
+    environment.initializearguments(environment.arguments_after)
     resolvers.for_files(resolvers.var_value,environment.files)
 
 elseif environment.argument("format-path") then

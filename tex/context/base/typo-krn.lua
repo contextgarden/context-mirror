@@ -246,7 +246,7 @@ local function process(namespace,attribute,head)
     return do_process(namespace,attribute,head)  -- no direct map, because else fourth argument is tail == true
 end
 
-kerns.handler = nodes.install_attribute_handler {
+kerns.handler = nodes.installattributehandler {
     name     = "kern",
     namespace = kerns,
     processor = process,

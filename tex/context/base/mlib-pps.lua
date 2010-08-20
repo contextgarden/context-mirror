@@ -18,6 +18,8 @@ local lpegmatch = lpeg.match
 local texbox = tex.box
 local copy_list = node.copy_list
 
+local P, S, V, Cs = lpeg.P, lpeg.S, lpeg.V, lpeg.Cs
+
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 local ctxcatcodes = tex.ctxcatcodes
@@ -70,7 +72,7 @@ local registercolor, registerspotcolor = colors.register, colors.registerspotcol
 local transparencies       = attributes.transparencies
 local registertransparency = transparencies.register
 
-function metapost.set_outer_color(mode,colormodel,colorattribute,transparencyattribute)
+function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattribute)
     -- has always to be called before conversion
     -- todo: transparency (not in the mood now)
     outercolormode = mode
@@ -100,8 +102,6 @@ local function checked_color_pair(color)
         return color, outercolor
     end
 end
-
-metapost.checked_color_pair = checked_color_pair
 
 function metapost.colorinitializer()
     innercolor = outercolor
@@ -391,15 +391,7 @@ metapost.multipass       = false
 
 local textexts = { }
 
-function metapost.free_boxes() -- todo: mp direct list ipv box
- -- for i = metapost.first_box,metapost.last_box do
- --     local b = texbox[i]
- --     if b then
- --         texbox[i] = nil -- no node.flush_list(b) needed, else double free error
- --     else
- --         break
- --     end
- -- end
+local function free_boxes() -- todo: mp direct list ipv box
     for n, box in next, textexts do
         local tn = textexts[n]
         if tn then
@@ -627,64 +619,58 @@ function metapost.colorconverter()
     return models[colors.model] or gray
 end
 
-do
+local btex      = P("btex")
+local etex      = P(" etex")
+local vtex      = P("verbatimtex")
+local ttex      = P("textext")
+local gtex      = P("graphictext")
+local multipass = P("forcemultipass")
+local spacing   = S(" \n\r\t\v")^0
+local dquote    = P('"')
 
-    local P, S, V, Cs = lpeg.P, lpeg.S, lpeg.V, lpeg.Cs
+local found, forced = false, false
 
-    local btex      = P("btex")
-    local etex      = P(" etex")
-    local vtex      = P("verbatimtex")
-    local ttex      = P("textext")
-    local gtex      = P("graphictext")
-    local multipass = P("forcemultipass")
-    local spacing   = S(" \n\r\t\v")^0
-    local dquote    = P('"')
+local function convert(str)
+    found = true
+    return "rawtextext(\"" .. str .. "\")" -- centered
+end
+local function ditto(str)
+    return "\" & ditto & \""
+end
+local function register()
+    found = true
+end
+local function force()
+    forced = true
+end
 
-    local found, forced = false, false
+local texmess   = (dquote/ditto + (1 - etex))^0
 
-    local function convert(str)
-        found = true
-        return "rawtextext(\"" .. str .. "\")" -- centered
-    end
-    local function ditto(str)
-        return "\" & ditto & \""
-    end
-    local function register()
-        found = true
-    end
-    local function force()
-        forced = true
-    end
+local function ignore(s)
+    report_mplib("ignoring verbatim tex: %s",s)
+    return ""
+end
 
-    local texmess   = (dquote/ditto + (1 - etex))^0
+local parser = P {
+    [1] = Cs((V(2)/register + V(4)/ignore + V(3)/convert + V(5)/force + 1)^0),
+    [2] = ttex + gtex,
+    [3] = btex * spacing * Cs(texmess) * etex,
+    [4] = vtex * spacing * Cs(texmess) * etex,
+    [5] = multipass, -- experimental, only for testing
+}
 
-    local function ignore(s)
-        report_mplib("ignoring verbatim tex: %s",s)
-        return ""
-    end
+-- currently a a one-liner produces less code
 
-    local parser = P {
-        [1] = Cs((V(2)/register + V(4)/ignore + V(3)/convert + V(5)/force + 1)^0),
-        [2] = ttex + gtex,
-        [3] = btex * spacing * Cs(texmess) * etex,
-        [4] = vtex * spacing * Cs(texmess) * etex,
-        [5] = multipass, -- experimental, only for testing
-    }
+local parser = Cs((
+    (ttex + gtex)/register
+  + (btex * spacing * Cs(texmess) * etex)/convert
+  + (vtex * spacing * Cs(texmess) * etex)/ignore
+  + 1
+)^0)
 
-    -- currently a a one-liner produces less code
-
-    local parser = Cs((
-        (ttex + gtex)/register
-      + (btex * spacing * Cs(texmess) * etex)/convert
-      + (vtex * spacing * Cs(texmess) * etex)/ignore
-      + 1
-    )^0)
-
-    function metapost.check_texts(str)
-        found, forced = false, false
-        return lpegmatch(parser,str), found, forced
-    end
-
+local function check_texts(str)
+    found, forced = false, false
+    return lpegmatch(parser,str), found, forced
 end
 
 local factor = 65536*(7227/7200)
@@ -707,7 +693,7 @@ local do_begin_fig       = "; beginfig(1); "
 local do_end_fig         = "; endfig ;"
 local do_safeguard       = ";"
 
-function metapost.text_texts_data()
+function metapost.texttextsdata()
     local t, n = { }, 0
 --~     for i = metapost.first_box, metapost.last_box do
 --~         n = n + 1
@@ -735,11 +721,11 @@ metapost.method = 1 -- 1:dumb 2:clever
 function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,askedfig)
     local nofig = (askedfig and "") or false
     local done_1, done_2, forced_1, forced_2
-    str, done_1, forced_1 = metapost.check_texts(str)
+    str, done_1, forced_1 = check_texts(str)
     if not preamble or preamble == "" then
         preamble, done_2, forced_2 = "", false, false
     else
-        preamble, done_2, forced_2 = metapost.check_texts(preamble)
+        preamble, done_2, forced_2 = check_texts(preamble)
     end
  -- metapost.textext_current = metapost.first_box
     metapost.intermediate.needed  = false
@@ -779,7 +765,7 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,asked
         }, false, nil, false, false, askedfig )
     end
     -- here we could free the textext boxes
-    metapost.free_boxes()
+    free_boxes()
 end
 
 function metapost.graphic_extra_pass(askedfig)
@@ -788,7 +774,7 @@ function metapost.graphic_extra_pass(askedfig)
     metapost.process(current_format, {
         nofig or do_begin_fig,
         no_trial_run,
-        concat(metapost.text_texts_data()," ;\n"),
+        concat(metapost.texttextsdata()," ;\n"),
         current_initializations,
         do_safeguard,
         current_graphic,

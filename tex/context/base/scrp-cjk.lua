@@ -28,13 +28,13 @@ local prestat = attributes.private('prestat')
 
 scripts.cjk = scripts.cjk or { }
 
-local kind_to_number = scripts.kind_to_number
-local number_to_kind = scripts.number_to_kind
-local hash           = scripts.hash
-local cjk            = scripts.cjk
+local kindtonumber = scripts.kindtonumber
+local numbertokind = scripts.numbertokind
+local hash         = scripts.hash
+local cjk          = scripts.cjk
 
-local fontdata       = fonts.identifiers
-local quaddata       = fonts.quads
+local fontdata     = fonts.identifiers
+local quaddata     = fonts.quads
 
 -- raggedleft is controlled by leftskip and we might end up with a situation where
 -- the intercharacter spacing interferes with this; the solution is to patch the
@@ -326,7 +326,7 @@ local function process(head,first,last)
             local upcoming, id = first.next, first.id
             if id == glyph_code then
                 local a = has_attribute(first,prestat)
-                local current = number_to_kind[a]
+                local current = numbertokind[a]
                 local action = injectors[previous]
                 if action then
                     action = action[current]
@@ -346,7 +346,7 @@ local function process(head,first,last)
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
                         local pa, na = has_attribute(p,prestat), has_attribute(n,prestat)
-                        local pcjk, ncjk = pa and number_to_kind[pa], na and number_to_kind[na]
+                        local pcjk, ncjk = pa and numbertokind[pa], na and numbertokind[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
                             or pcjk == "other"      or ncjk == "other"
@@ -529,7 +529,7 @@ local function process(head,first,last)
             local upcoming, id = first.next, first.id
             if id == glyph_code then
                 local a = has_attribute(first,prestat)
-                local current = number_to_kind[a]
+                local current = numbertokind[a]
                 local action = injectors[previous]
                 if action then
                     action = action[current]
@@ -549,7 +549,7 @@ local function process(head,first,last)
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
                         local pa, na = has_attribute(p,prestat), has_attribute(n,prestat)
-                        local pcjk, ncjk = pa and number_to_kind[pa], na and number_to_kind[na]
+                        local pcjk, ncjk = pa and numbertokind[pa], na and numbertokind[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
                             or pcjk == "other"      or ncjk == "other"

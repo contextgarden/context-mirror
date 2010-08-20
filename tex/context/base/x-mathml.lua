@@ -12,7 +12,7 @@ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
 local utfchar, utffind, utfgmatch, utfgsub  = utf.char, utf.find, utf.gmatch, utf.gsub
 local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
-local lxmltext, get_id = lxml.text, lxml.get_id
+local lxmltext, getid = lxml.text, lxml.getid
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local lpegmatch = lpeg.match
 
@@ -468,18 +468,18 @@ end
 function lxml.mml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
-    local str = xmlcontent(get_id(id)) or ""
+    local str = xmlcontent(getid(id)) or ""
     str = gsub(str,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
     texsprint(ctxcatcodes,(gsub(str,".",n_replacements)))
 end
 
 function lxml.mml.mo(id)
-    local str = xmlcontent(get_id(id)) or ""
+    local str = xmlcontent(getid(id)) or ""
     texsprint(ctxcatcodes,(utfgsub(str,".",o_replacements)))
 end
 
 function lxml.mml.mi(id)
-    local str = xmlcontent(get_id(id)) or ""
+    local str = xmlcontent(getid(id)) or ""
     -- str = gsub(str,"^%s*(.-)%s*$","%1")
     local rep = i_replacements[str]
     if rep then
@@ -490,7 +490,7 @@ function lxml.mml.mi(id)
 end
 
 function lxml.mml.mfenced(id) -- multiple separators
-    id = get_id(id)
+    id = getid(id)
     local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
     local l, r = l_replacements[left], r_replacements[right]
     texsprint(ctxcatcodes,"\\enabledelimiter")
@@ -610,7 +610,7 @@ local frametypes = {
 -- crazy element ... should be a proper structure instead of such a mess
 
 function lxml.mml.mcolumn(root)
-    root = get_id(root)
+    root = getid(root)
     local matrix, numbers = { }, 0
     local function collect(m,e)
         local tag = e.tg
@@ -707,7 +707,7 @@ local spacesplitter = lpeg.Ct(lpeg.splitat(" "))
 
 function lxml.mml.mtable(root)
     -- todo: align, rowspacing, columnspacing, rowlines, columnlines
-    root = get_id(root)
+    root = getid(root)
     local at           = root.at
     local rowalign     = at.rowalign
     local columnalign  = at.columnalign
@@ -764,7 +764,7 @@ function lxml.mml.mtable(root)
 end
 
 function lxml.mml.csymbol(root)
-    root = get_id(root)
+    root = getid(root)
     local at = root.at
     local encoding = at.encoding or ""
     local hash = url.hashed(lower(at.definitionUrl or ""))
@@ -776,7 +776,7 @@ function lxml.mml.csymbol(root)
 end
 
 function lxml.mml.menclosepattern(root)
-    root = get_id(root)
+    root = getid(root)
     local a = root.at.notation
     if a and a ~= "" then
         texsprint("mml:enclose:",gsub(a," +",",mml:enclose:"))

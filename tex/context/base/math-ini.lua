@@ -273,11 +273,13 @@ function mathematics.utfmathfiller(chr, default)
     tex.sprint(cmd or default or "")
 end
 
-mathematics.entities = mathematics.entities or { }
+-- xml
 
-function mathematics.register_xml_entities()
+mathematics.xml = { entities = { } }
+
+function mathematics.xml.registerentities()
     local entities = xml.entities
-    for name, unicode in next, mathematics.entities do
+    for name, unicode in next, mathematics.xml.entities do
         if not entities[name] then
             entities[name] = utfchar(unicode)
         end

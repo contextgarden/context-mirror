@@ -690,7 +690,7 @@ function fonts.vf.math.define(specification,set)
     return main
 end
 
-function mathematics.make_font(name, set)
+function mathematics.makefont(name, set)
     fonts.define.methods[name] = function(specification)
         return fonts.vf.math.define(specification,set)
     end

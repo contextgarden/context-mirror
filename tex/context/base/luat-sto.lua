@@ -113,7 +113,7 @@ if lua.bytedata then
     storage.register("lua/bytedata",lua.bytedata,"lua.bytedata")
 end
 
-function statistics.report_storage(whereto)
+function statistics.reportstorage(whereto)
     whereto = whereto or "term and log"
     write_nl(whereto," ","stored tables:"," ")
     for k,v in table.sortedhash(storage.data) do

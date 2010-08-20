@@ -138,7 +138,7 @@ function digits.set(n)
     texattribute[a_digits] = m * 100 + n
 end
 
-digits.handler = nodes.install_attribute_handler {
+digits.handler = nodes.installattributehandler {
     name      = "digits",
     namespace = digits,
     processor = process,

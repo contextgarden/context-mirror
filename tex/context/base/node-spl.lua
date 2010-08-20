@@ -74,7 +74,6 @@ local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 local process_characters = nodes.handlers.characters
 local inject_kerns       = nodes.handlers.injectkerns
-local set_dynamics       = fonts.otf.set_dynamics
 local fontdata           = fonts.ids
 
 local parbuilders               = builders.paragraphs
@@ -239,7 +238,7 @@ function splitters.split(head)
         }
         if trace_split then
             report_splitter( "cached %4i: font: %s, attribute: %s, word: %s, direction: %s", n,
-                font, attribute, nodes.list_to_utf(list,true), rlmode)
+                font, attribute, nodes.listtoutf(list,true), rlmode)
         end
         cache[n] = c
         local solution = solutions[attribute]
@@ -336,13 +335,14 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 end
                 local font = found.font
                 local dynamics = found.dynamics
+                local shared = fontdata[font].shared
                 if not dynamics then -- we cache this
-                    dynamics = fontdata[font].shared.dynamics
+                    dynamics = shared.dynamics
                     found.dynamics = dynamics
                 end
                 local processors = found[featurenumber]
                 if not processors then -- we cache this too
-                    processors = set_dynamics(font,dynamics,featurenumber)
+                    processors = shared.setdynamics(font,dynamics,featurenumber)
                     found[featurenumber] = processors
                 end
                 for i=1,#processors do -- often more than 1

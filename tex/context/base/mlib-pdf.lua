@@ -69,7 +69,7 @@ local savedliterals = nil
 
 local mpsliteral = nodes.pool.register(node.new("whatsit",8)) -- pdfliteral
 
-function metapost.flush_literal(d) -- \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
+function metapost.flushliteral(d) -- \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
     if savedliterals then
         local literal = copy_node(mpsliteral)
         literal.data = savedliterals[d]
@@ -79,7 +79,7 @@ function metapost.flush_literal(d) -- \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_l
     end
 end
 
-function metapost.flush_reset()
+function metapost.flushreset() -- will become obsolete and internal
     savedliterals = nil
 end
 
@@ -107,7 +107,7 @@ end
 function metapost.flushers.pdf.stopfigure(message)
     if message then metapost.flushers.pdf.comment(message) end
     texsprint(ctxcatcodes,"\\stopMPLIBtoPDF")
-    texsprint(ctxcatcodes,"\\ctxlua{metapost.flush_reset()}") -- maybe just at the beginning
+    texsprint(ctxcatcodes,"\\ctxlua{metapost.flushreset()}") -- maybe just at the beginning
 end
 
 function metapost.flushers.pdf.flushfigure(pdfliterals) -- table

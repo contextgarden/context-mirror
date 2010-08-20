@@ -6,12 +6,16 @@ if not modules then modules = { } end modules ['lxml-mis'] = {
     license   = "see context related readme files"
 }
 
+local xml, lpeg, string = xml, lpeg, string
+
 local concat = table.concat
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, gsub, match = string.format, string.gsub, string.match
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Cs
 
-local xml = xml
+lpegpatterns.xml  = lpegpatterns.xml or { }
+local xmlpatterns = lpegpatterns.xml
 
 --[[ldx--
 <p>The following helper functions best belong to the <t>lxml-ini</t>
@@ -37,7 +41,7 @@ end
 
 --~ xml.gsub = xmlgsub
 
-function xml.strip_leading_spaces(dk,d,k) -- cosmetic, for manual
+function xml.stripleadingspaces(dk,d,k) -- cosmetic, for manual
     if d and k then
         local dkm = d[k-1]
         if dkm and type(dkm) == "string" then
@@ -53,8 +57,6 @@ end
 --~ function xml.escaped  (str) return (gsub(str,"(.)"   , xml.escapes  )) end
 --~ function xml.unescaped(str) return (gsub(str,"(&.-;)", xml.unescapes)) end
 --~ function xml.cleansed (str) return (gsub(str,"<.->"  , ''           )) end -- "%b<>"
-
-local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Cs
 
 -- 100 * 2500 * "oeps< oeps> oeps&" : gsub:lpeg|lpeg|lpeg
 --
@@ -80,9 +82,9 @@ local unescaped = Cs(normal * (special * normal)^0)
 
 local cleansed = Cs(((P("<") * (1-P(">"))^0 * P(">"))/"" + 1)^0)
 
-xml.escaped_pattern   = escaped
-xml.unescaped_pattern = unescaped
-xml.cleansed_pattern  = cleansed
+xmlpatterns.escaped   = escaped
+xmlpatterns.unescaped = unescaped
+xmlpatterns.cleansed  = cleansed
 
 function xml.escaped  (str) return lpegmatch(escaped,str)   end
 function xml.unescaped(str) return lpegmatch(unescaped,str) end

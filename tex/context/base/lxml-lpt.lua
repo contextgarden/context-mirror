@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['lxml-pth'] = {
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
@@ -56,14 +56,20 @@ local xml = xml
 local lpathcalls  = 0  function xml.lpathcalls () return lpathcalls  end
 local lpathcached = 0  function xml.lpathcached() return lpathcached end
 
-xml.functions      = xml.functions      or { } -- internal
-xml.expressions    = xml.expressions    or { } -- in expressions
-xml.finalizers     = xml.finalizers     or { } -- fast do-with ... (with return value other than collection)
-xml.specialhandler = xml.specialhandler or { }
+xml.functions        = xml.functions or { } -- internal
+local functions      = xml.functions
 
-local functions   = xml.functions
-local expressions = xml.expressions
-local finalizers  = xml.finalizers
+xml.expressions      = xml.expressions or { } -- in expressions
+local expressions    = xml.expressions
+
+xml.finalizers       = xml.finalizers or { } -- fast do-with ... (with return value other than collection)
+local finalizers     = xml.finalizers
+
+xml.specialhandler   = xml.specialhandler or { }
+local specialhandler = xml.specialhandler
+
+lpegpatterns.xml     = lpegpatterns.xml or { }
+local xmlpatterns    = lpegpatterns.xml
 
 finalizers.xml = finalizers.xml or { }
 finalizers.tex = finalizers.tex or { }
@@ -676,7 +682,7 @@ local special_1 = P("*")  * Cc(register_auto_descendant) * Cc(register_all_nodes
 local special_2 = P("/")  * Cc(register_auto_self)
 local special_3 = P("")   * Cc(register_auto_self)
 
-local parser = Ct { "patterns", -- can be made a bit faster by moving pattern outside
+local pathparser = Ct { "patterns", -- can be made a bit faster by moving pattern outside
 
     patterns             = spaces * V("protocol") * spaces * (
                               ( V("special") * spaces * P(-1)                                                         ) +
@@ -748,6 +754,8 @@ local parser = Ct { "patterns", -- can be made a bit faster by moving pattern ou
 
 }
 
+xmlpatterns.pathparser = pathparser
+
 local cache = { }
 
 local function nodesettostring(set,nodetest)
@@ -784,11 +792,11 @@ end
 
 xml.nodesettostring = nodesettostring
 
-local parse_pattern -- we have a harmless kind of circular reference
+local lpath -- we have a harmless kind of circular reference
 
 local function lshow(parsed)
     if type(parsed) == "string" then
-        parsed = parse_pattern(parsed)
+        parsed = lpath(parsed)
     end
     local s = table.serialize_functions -- ugly
     table.serialize_functions = false -- ugly
@@ -807,7 +815,7 @@ local function add_comment(p,str)
     end
 end
 
-parse_pattern = function (pattern) -- the gain of caching is rather minimal
+lpath = function (pattern) -- the gain of caching is rather minimal
     lpathcalls = lpathcalls + 1
     if type(pattern) == "table" then
         return pattern
@@ -816,7 +824,7 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
         if parsed then
             lpathcached = lpathcached + 1
         else
-            parsed = lpegmatch(parser,pattern)
+            parsed = lpegmatch(pathparser,pattern)
             if parsed then
                 parsed.pattern = pattern
                 local np = #parsed
@@ -863,6 +871,8 @@ parse_pattern = function (pattern) -- the gain of caching is rather minimal
         return parsed
     end
 end
+
+xml.lpath = lpath
 
 -- we can move all calls inline and then merge the trace back
 -- technically we can combine axis and the next nodes which is
@@ -988,7 +998,7 @@ local function normal_apply(list,parsed,nofparsed,order)
     return collected
 end
 
-local function parse_apply(list,pattern)
+local function applylpath(list,pattern)
     -- we avoid an extra call
     local parsed = cache[pattern]
     if parsed then
@@ -998,7 +1008,7 @@ local function parse_apply(list,pattern)
         lpathcalls = lpathcalls + 1
         parsed = pattern
     else
-        parsed = parse_pattern(pattern) or pattern
+        parsed = lpath(pattern) or pattern
     end
     if not parsed then
         return
@@ -1007,7 +1017,7 @@ local function parse_apply(list,pattern)
     if nofparsed == 0 then
         return -- something is wrong
     end
-    local one = list[1]
+    local one = list[1] -- we could have a third argument: isroot and list or list[1] or whatever we like ... todo
     if not one then
         return -- something is wrong
     elseif not trace_lpath then
@@ -1019,13 +1029,15 @@ local function parse_apply(list,pattern)
     end
 end
 
+xml.applylpath = applylpath -- takes a table as first argment, which is what xml.filter will do
+
 -- internal (parsed)
 
 expressions.child = function(e,pattern)
-    return parse_apply({ e },pattern) -- todo: cache
+    return applylpath({ e },pattern) -- todo: cache
 end
 expressions.count = function(e,pattern)
-    local collected = parse_apply({ e },pattern) -- todo: cache
+    local collected = applylpath({ e },pattern) -- todo: cache
     return (collected and #collected) or 0
 end
 
@@ -1035,7 +1047,7 @@ expressions.oneof = function(s,...) -- slow
     local t = {...} for i=1,#t do if s == t[i] then return true end end return false
 end
 expressions.error = function(str)
-    xml.error_handler("unknown function in lpath expression",tostring(str or "?"))
+    xml.errorhandler("unknown function in lpath expression",tostring(str or "?"))
     return false
 end
 expressions.undefined = function(s)
@@ -1065,7 +1077,7 @@ expressions.boolean   = toboolean
 
 local function traverse(root,pattern,handle)
     report_lpath("use 'xml.selection' instead for '%s'",pattern)
-    local collected = parse_apply({ root },pattern)
+    local collected = applylpath({ root },pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -1076,7 +1088,7 @@ local function traverse(root,pattern,handle)
 end
 
 local function selection(root,pattern,handle)
-    local collected = parse_apply({ root },pattern)
+    local collected = applylpath({ root },pattern)
     if collected then
         if handle then
             for c=1,#collected do
@@ -1088,19 +1100,12 @@ local function selection(root,pattern,handle)
     end
 end
 
-xml.parse_parser  = parser
-xml.parse_pattern = parse_pattern
-xml.parse_apply   = parse_apply
 xml.traverse      = traverse           -- old method, r, d, k
 xml.selection     = selection          -- new method, simple handle
 
-local lpath = parse_pattern
-
-xml.lpath = lpath
-
-function xml.cached_patterns()
-    return cache
-end
+--~ function xml.cachedpatterns()
+--~     return cache
+--~ end
 
 -- generic function finalizer (independant namespace)
 
@@ -1117,8 +1122,8 @@ local function dofunction(collected,fnc)
     end
 end
 
-xml.finalizers.xml["function"] = dofunction
-xml.finalizers.tex["function"] = dofunction
+finalizers.xml["function"] = dofunction
+finalizers.tex["function"] = dofunction
 
 -- functions
 
@@ -1215,7 +1220,7 @@ end
 --ldx]]--
 
 function xml.filter(root,pattern) -- no longer funny attribute handling here
-    return parse_apply({ root },pattern)
+    return applylpath({ root },pattern)
 end
 
 --[[ldx--
@@ -1237,7 +1242,7 @@ end
 local wrap, yield = coroutine.wrap, coroutine.yield
 
 function xml.elements(root,pattern,reverse) -- r, d, k
-    local collected = parse_apply({ root },pattern)
+    local collected = applylpath({ root },pattern)
     if collected then
         if reverse then
             return wrap(function() for c=#collected,1,-1 do
@@ -1253,7 +1258,7 @@ function xml.elements(root,pattern,reverse) -- r, d, k
 end
 
 function xml.collected(root,pattern,reverse) -- e
-    local collected = parse_apply({ root },pattern)
+    local collected = applylpath({ root },pattern)
     if collected then
         if reverse then
             return wrap(function() for c=#collected,1,-1 do yield(collected[c]) end end)

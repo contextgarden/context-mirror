@@ -210,7 +210,7 @@ local function get_indexes(data,pfbname)
     end
 end
 
-function afm.read_afm(filename)
+local function readafm(filename)
     local ok, afmblob, size = resolvers.loadbinfile(filename) -- has logging
 --  local ok, afmblob = true, file.readdata(filename)
     if ok and afmblob then
@@ -284,7 +284,7 @@ function afm.load(filename)
         if not data or data.verbose ~= fonts.verbose
                 or data.size ~= size or data.time ~= time or data.pfbsize ~= pfbsize or data.pfbtime ~= pfbtime then
             report_afm( "reading %s",filename)
-            data = afm.read_afm(filename)
+            data = readafm(filename)
             if data then
             --  data.luatex = data.luatex or { }
                 if pfbname ~= "" then
@@ -482,7 +482,7 @@ end
 fonts.formats.afm = "type1"
 fonts.formats.pfb = "type1"
 
-function afm.copy_to_tfm(data)
+local function copytotfm(data)
     if data then
         local glyphs = data.glyphs
         if glyphs then
@@ -610,7 +610,7 @@ end
 
 afmfeatures.register = register_feature
 
-function afm.set_features(tfmdata)
+local function setfeatures(tfmdata)
     local shared = tfmdata.shared
     local afmdata = shared.afmdata
     local features = shared.features
@@ -670,7 +670,7 @@ function afm.set_features(tfmdata)
     end
 end
 
-function afm.check_features(specification)
+local function checkfeatures(specification)
     local features, done = fonts.define.check(specification.features.normal,afmfeatures.default)
     if done then
         specification.features.normal = features
@@ -678,7 +678,7 @@ function afm.check_features(specification)
     end
 end
 
-function afm.afm_to_tfm(specification)
+local function afmtotfm(specification)
     local afmname = specification.filename or specification.name
     if specification.forced == "afm" or specification.format == "afm" then -- move this one up
         if trace_loading then
@@ -696,7 +696,7 @@ function afm.afm_to_tfm(specification)
     if afmname == "" then
         return nil
     else
-        afm.check_features(specification)
+        checkfeatures(specification)
         specification = fonts.define.resolve(specification) -- new, was forgotten
         local features = specification.features.normal
         local cache_id = specification.hash
@@ -705,14 +705,14 @@ function afm.afm_to_tfm(specification)
             local afmdata = afm.load(afmname)
             if afmdata and next(afmdata) then
                 add_dimensions(afmdata)
-                tfmdata = afm.copy_to_tfm(afmdata)
+                tfmdata = copytotfm(afmdata)
                 if tfmdata and next(tfmdata) then
                     local shared = tfmdata.shared
                     local unique = tfmdata.unique
                     if not shared then shared = { } tfmdata.shared = shared end
                     if not unique then unique = { } tfmdata.unique = unique end
                     shared.afmdata, shared.features = afmdata, features
-                    afm.set_features(tfmdata)
+                    setfeatures(tfmdata)
                 end
             elseif trace_loading then
                 report_afm("no (valid) afm file found with name %s",afmname)
@@ -750,7 +750,7 @@ function tfm.set_normal_feature(specification,name,value)
 end
 
 function tfm.read_from_afm(specification)
-    local tfmtable = afm.afm_to_tfm(specification)
+    local tfmtable = afmtotfm(specification)
     if tfmtable then
         tfmtable.name = specification.name
         tfmtable = tfm.scale(tfmtable, specification.size, specification.relativeid)
@@ -819,9 +819,6 @@ local function prepare_kerns(tfmdata,kerns,value)
         end
     end
 end
-
-afmfeatures.prepare_kerns     = prepare_kerns
-afmfeatures.prepare_ligatures = prepare_ligatures
 
 -- hm, register?
 

@@ -8,13 +8,13 @@ if not modules then modules = { } end modules ['l-file'] = {
 
 -- needs a cleanup
 
-file = file or { }
+file       = file or { }
 local file = file
 
 local insert, concat = table.insert, table.concat
 local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
 local lpegmatch = lpeg.match
-local getcurrentdir = lfs.currentdir
+local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 
 local P, R, S, C, Cs, Cp, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc
 
@@ -146,18 +146,18 @@ end
 --~ print(file.join("http:///a","/y"))
 --~ print(file.join("//nas-1","/y"))
 
-function file.iswritable(name)
-    local a = lfs.attributes(name) or lfs.attributes(dirname(name,"."))
+function file.is_writable(name)
+    local a = attributes(name) or attributes(dirname(name,"."))
     return a and sub(a.permissions,2,2) == "w"
 end
 
-function file.isreadable(name)
-    local a = lfs.attributes(name)
+function file.is_readable(name)
+    local a = attributes(name)
     return a and sub(a.permissions,1,1) == "r"
 end
 
-file.is_readable = file.isreadable
-file.is_writable = file.iswritable
+file.isreadable = file.is_readable -- depricated
+file.iswritable = file.is_writable -- depricated
 
 -- todo: lpeg
 
@@ -189,7 +189,7 @@ end
 --~ function file.old_collapse_path(str) -- fails on b.c/..
 --~     str = gsub(str,"\\","/")
 --~     if find(str,"/") then
---~         str = gsub(str,"^%./",(gsub(lfs.currentdir(),"\\","/")) .. "/") -- ./xx in qualified
+--~         str = gsub(str,"^%./",(gsub(getcurrentdir(),"\\","/")) .. "/") -- ./xx in qualified
 --~         str = gsub(str,"/%./","/")
 --~         local n, m = 1, 1
 --~         while n > 0 or m > 0 do
@@ -418,8 +418,8 @@ end
 --~ -- todo:
 --~
 --~ if os.type == "windows" then
---~     local currentdir = lfs.currentdir
---~     function lfs.currentdir()
+--~     local currentdir = getcurrentdir
+--~     function getcurrentdir()
 --~         return (gsub(currentdir(),"\\","/"))
 --~     end
 --~ end

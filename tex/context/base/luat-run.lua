@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['luat-run'] = {
 }
 
 local format, rpadd = string.format, string.rpadd
+local insert = table.insert
 
 local trace_lua_dump = false  trackers  .register("system.dump", function(v) trace_lua_dump = v end)
 
@@ -15,32 +16,32 @@ local report_lua_dump = logs.new("lua dump actions")
 luatex       = luatex or { }
 local luatex = luatex
 
-local start_actions = { }
-local stop_actions  = { }
+local startactions = { }
+local stopactions  = { }
 
-function luatex.register_start_actions(...) table.insert(start_actions, ...) end
-function luatex.register_stop_actions (...) table.insert(stop_actions,  ...) end
+function luatex.registerstartactions(...) insert(startactions, ...) end
+function luatex.registerstopactions (...) insert(stopactions,  ...) end
 
-luatex.show_tex_stat = luatex.show_tex_stat or function() end
-luatex.show_job_stat = luatex.show_job_stat or statistics.show_job_stat
+luatex.showtexstat = luatex.showtexstat or function() end
+luatex.showjobstat = luatex.showjobstat or statistics.showjobstat
 
 local function start_run()
     if logs.start_run then
         logs.start_run()
     end
-    for _, action in next, start_actions do
-        action()
+    for i=1,#startactions do
+        startactions[i]()
     end
 end
 
 local function stop_run()
-    for _, action in next, stop_actions do
-        action()
+    for i=1,#stopactions do
+        stopactions[i]()
     end
-    if luatex.show_job_stat then
+    if luatex.showjobstat then
         statistics.show(logs.report_job_stat)
     end
-    if luatex.show_tex_stat then
+    if luatex.showtexstat then
         for k,v in next, status.list() do
             logs.report_tex_stat(k,v)
         end
@@ -66,6 +67,8 @@ end
 
 local function pre_dump_actions()
     lua.finalize(trace_lua_dump and report_lua_dump or nil)
+    statistics.reportstorage("log")
+ -- statistics.savefmtstatus("\jobname","\contextversion","context.tex")
 end
 
 -- this can be done later

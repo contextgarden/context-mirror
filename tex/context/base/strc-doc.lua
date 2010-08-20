@@ -347,7 +347,7 @@ function sections.setnumber(depth,n)
     end
 end
 
-function sections.number_at_depth(depth)
+function sections.numberatdepth(depth)
     return data.numbers[tonumber(depth) or sections.getlevel(depth) or 0] or 0
 end
 
@@ -355,7 +355,7 @@ function sections.numbers()
     return data.numbers
 end
 
-function sections.matching_till_depth(depth,numbers,parentnumbers)
+function sections.matchingtilldepth(depth,numbers,parentnumbers)
     local dn = parentnumbers or data.numbers
     local ok = false
     for i=1,depth do

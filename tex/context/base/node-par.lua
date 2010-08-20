@@ -14,32 +14,35 @@ local parbuilders        = builders.paragraphs
 parbuilders.constructors = parbuilders.constructors or { }
 local       constructors = parbuilders.constructors
 
-parbuilders.names        = parbuilders.names or { }
-local names              = parbuilders.names
+constructors.names       = constructors.names or { }
+local names              = constructors.names
 
-parbuilders.numbers      = parbuilders.numbers or { }
-local numbers            = parbuilders.numbers
+constructors.numbers     = constructors.numbers or { }
+local numbers            = constructors.numbers
+
+constructors.methods     = constructors.methods or { }
+local methods            = constructors.methods
 
 local p_attribute        = attributes.numbers['parbuilder'] or 999
-parbuilders.attribute    = p_attribute
+constructors.attribute   = p_attribute
 
 local has_attribute      = node.has_attribute
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 
-storage.register("builders/paragraphs/names",   names,   "builders.paragraphs.names")
-storage.register("builders/paragraphs/numbers", numbers, "builders.paragraphs.numbers")
+storage.register("builders/paragraphs/constructors/names",   names,   "builders.paragraphs.constructors.names")
+storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.paragraphs.constructors.numbers")
 
 local report_parbuilders = logs.new("parbuilders")
 
 local mainconstructor = nil -- not stored in format
 
-function parbuilders.register(name,number)
+function constructors.register(name,number)
     names[number] = name
     numbers[name] = number
 end
 
-function parbuilders.setmain(name)
+function constructors.set(name)
     mainconstructor = numbers[name]
 end
 
@@ -49,19 +52,19 @@ end
 -- false : idem but dangerous
 -- head  : list of valid vmode nodes with last being hlist
 
-function parbuilders.constructor(head,followed_by_display)
+function constructors.handler(head,followed_by_display)
     if type(head) == "boolean" then
         return head
     else
         local attribute = has_attribute(head,p_attribute) or mainconstructor
         if attribute then
-            local constructor = names[attribute]
-            if constructor then
-                local handler = constructor and constructors[constructor]
+            local method = names[attribute]
+            if method then
+                local handler = methods[method]
                 if handler then
                     return handler(head,followed_by_display)
                 else
-                    report_parbuilders("handler '%s' is not defined",tostring(constructor))
+                    report_parbuilders("contructor method '%s' is not defined",tostring(method))
                     return true -- let tex break
                 end
             end
@@ -72,13 +75,13 @@ end
 
 -- just for testing
 
-function constructors.default(head,followed_by_display)
+function constructors.methods.default(head,followed_by_display)
     return true -- let tex break
 end
 
 -- also for testing (no surrounding spacing done)
 
-function constructors.oneline(head,followed_by_display)
+function constructors.methods.oneline(head,followed_by_display)
     return node.hpack(head)
 end
 
@@ -89,11 +92,11 @@ end
 
 -- todo: enable one as main
 
-local actions = parbuilders.constructor
+local actions = constructors.handler
 local enabled = false
 
-function parbuilders.enable () enabled = true  end
-function parbuilders.disable() enabled = false end
+function constructors.enable () enabled = true  end
+function constructors.disable() enabled = false end
 
 local function processor(head,followed_by_display)
     if enabled then

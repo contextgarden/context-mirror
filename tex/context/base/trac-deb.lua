@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['trac-deb'] = {
 
 local lpeg = lpeg
 local lpegmatch = lpeg.match
-local format, concat = string.format, table.concat
+local format, concat, match = string.format, table.concat, string.match
 local tonumber, tostring = tonumber, tostring
 local texdimen, textoks, texcount = tex.dimen, tex.toks, tex.count
 
@@ -92,10 +92,29 @@ function tracers.knownlist(name)
     return l and #l > 0
 end
 
-function tracers.showlines(filename,linenumber,offset)
+function tracers.showlines(filename,linenumber,offset,errorstr)
     local data = io.loaddata(filename)
     local lines = data and string.splitlines(data)
     if lines and #lines > 0 then
+        -- this does not work yet as we cannot access the last lua error
+        -- table.print(status.list())
+        -- this will be a plugin sequence
+        local what, where = match(errorstr,"LuaTeX error <main (%a+) instance>:(%d+)")
+        if what and where then
+            -- lua error: linenumber points to last line
+            local start, stop = "\\start" .. what .. "code", "\\stop" .. what .. "code"
+            if lines[linenumber] == start then
+                local n = linenumber
+                for i=n,1,-1 do
+                    if lines[i] == start then
+                        local n = i + tonumber(where)
+                        if n <= linenumber then
+                            linenumber = n
+                        end
+                    end
+                end
+            end
+        end
         offset = tonumber(offset) or 10
         linenumber = tonumber(linenumber) or 10
         local start = math.max(linenumber - offset,1)
@@ -124,8 +143,9 @@ function tracers.printerror(offset)
         -- currently we still get the error message printed to the log/console so we
         -- add a bit of spacing around our variant
         texio.write_nl("\n")
-        report_system("error on line %s in file %s: %s ...\n",linenumber,filename,status.lasterrorstring or "?") -- lua error?
-        texio.write_nl(tracers.showlines(filename,linenumber,offset),"\n")
+        local errorstr = status.lasterrorstring or "?"
+        report_system("error on line %s in file %s: %s ...\n",linenumber,filename,errorstr) -- lua error?
+        texio.write_nl(tracers.showlines(filename,linenumber,offset,errorstr),"\n")
     end
 end
 
@@ -194,7 +214,7 @@ local debugger = utilities.debugger
 
 local function trace_calls(n)
     debugger.enable()
-    luatex.register_stop_actions(function()
+    luatex.registerstopactions(function()
         debugger.disable()
         debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
     end)

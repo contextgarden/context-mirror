@@ -77,7 +77,7 @@ local mt = {
 
 setmetatable(environment,mt)
 
-function environment.initialize_arguments(arg)
+function environment.initializearguments(arg)
     local arguments, files = { }, { }
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
     for index=1,#arg do
@@ -131,11 +131,11 @@ function environment.argument(name,partial)
     return nil
 end
 
-function environment.split_arguments(separator) -- rather special, cut-off before separator
+function environment.splitarguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }
-    local original_arguments = environment.original_arguments
-    for k=1,#original_arguments do
-        local v = original_arguments[k]
+    local originalarguments = environment.originalarguments
+    for k=1,#originalarguments do
+        local v = originalarguments[k]
         if not done and v == separator then
             done = true
         elseif done then
@@ -147,8 +147,8 @@ function environment.split_arguments(separator) -- rather special, cut-off befor
     return before, after
 end
 
-function environment.reconstruct_commandline(arg,noquote)
-    arg = arg or environment.original_arguments
+function environment.reconstructcommandline(arg,noquote)
+    arg = arg or environment.originalarguments
     if noquote and #arg == 1 then
         local a = arg[1]
         a = resolvers.resolve(a)
@@ -198,9 +198,10 @@ if arg then
         newarg[i] = arg[i]
     end
 
-    environment.initialize_arguments(newarg)
-    environment.original_arguments = newarg
-    environment.raw_arguments = arg
+    environment.initializearguments(newarg)
+
+    environment.originalarguments = newarg
+    environment.rawarguments      = arg
 
     arg = { } -- prevent duplicate handling
 

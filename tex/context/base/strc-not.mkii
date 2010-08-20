@@ -534,7 +534,7 @@
 \unexpanded\def\setnotetext{\dotripleempty\dosetnote[0]}
 
 \def\dosetnote[#1][#2][#3]%
-  {\unskip
+  {\removeunwantedspaces
    \def\currentnote{#2}%
    \dochecknote % sometimes needed for local notes
    \ifcase#1\relax

@@ -10,11 +10,7 @@ if lua then do
 
     local delayed = { }
 
-    function lua.delay(f)
-        delayed[#delayed+1] = f
-    end
-
-    function lua.flush_delayed(...)
+    local function flushdelayed(...)
         local t = delayed
         delayed = { }
         for i=1, #t do
@@ -22,8 +18,12 @@ if lua then do
         end
     end
 
+    function lua.delay(f)
+        delayed[#delayed+1] = f
+    end
+
     function lua.flush(...)
-        tex.sprint("\\directlua0{lua.flush_delayed(",table.concat({...},','),")}")
+        tex.sprint("\\directlua{flushdelayed(",table.concat({...},','),")}")
     end
 
 end end

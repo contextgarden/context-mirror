@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['l-dir'] = {
     license   = "see context related readme files"
 }
 
--- dir.expand_name will be merged with cleanpath and collapsepath
+-- dir.expandname will be merged with cleanpath and collapsepath
 
 local type = type
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
@@ -35,7 +35,7 @@ end
 
 -- optimizing for no find (*) does not save time
 
-local function glob_pattern(path,patt,recurse,action)
+local function globpattern(path,patt,recurse,action)
     local ok, scanner
     if path == "/" then
         ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
@@ -52,15 +52,15 @@ local function glob_pattern(path,patt,recurse,action)
                     action(full)
                 end
             elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                glob_pattern(full,patt,recurse,action)
+                globpattern(full,patt,recurse,action)
             end
         end
     end
 end
 
-dir.glob_pattern = glob_pattern
+dir.globpattern = globpattern
 
-local function collect_pattern(path,patt,recurse,result)
+local function collectpattern(path,patt,recurse,result)
     local ok, scanner
     result = result or { }
     if path == "/" then
@@ -79,7 +79,7 @@ local function collect_pattern(path,patt,recurse,result)
                     result[name] = attr
                 end
             elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                attr.list = collect_pattern(full,patt,recurse)
+                attr.list = collectpattern(full,patt,recurse)
                 result[name] = attr
             end
         end
@@ -87,7 +87,7 @@ local function collect_pattern(path,patt,recurse,result)
     return result
 end
 
-dir.collect_pattern = collect_pattern
+dir.collectpattern = collectpattern
 
 local pattern = Ct {
     [1] = (C(P(".") + P("/")^1) + C(R("az","AZ") * P(":") * P("/")^0) + Cc("./")) * V(2) * V(3),
@@ -120,7 +120,7 @@ local function glob(str,t)
                 local recurse = find(base,"%*%*")
                 local start = root .. path
                 local result = lpegmatch(filter,start .. base)
-                glob_pattern(start,result,recurse,t)
+                globpattern(start,result,recurse,t)
             end
         end
     else
@@ -143,7 +143,7 @@ local function glob(str,t)
                 local recurse = find(base,"%*%*")
                 local start = root .. path
                 local result = lpegmatch(filter,start .. base)
-                glob_pattern(start,result,recurse,action)
+                globpattern(start,result,recurse,action)
                 return t
             else
                 return { }
@@ -277,7 +277,7 @@ if find(os.getenv("PATH"),";") then -- os.type == "windows"
 --~         print(dir.mkdirs("///a/b/c"))
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
-    function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
+    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
             first = dir.current() .. "/"
@@ -357,7 +357,7 @@ else
 --~         print(dir.mkdirs("///a/b/c"))
 --~         print(dir.mkdirs("a/bbb//ccc/"))
 
-    function dir.expand_name(str) -- will be merged with cleanpath and collapsepath
+    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
             str = currentdir() .. "/" .. str
         end

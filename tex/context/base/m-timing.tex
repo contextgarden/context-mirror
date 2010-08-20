@@ -53,7 +53,7 @@ end
 \startnotmode[no-timing]
     \appendtoks\ctxlua{moduledata.progress.store()}\to\everystarttext
     \appendtoks\ctxlua{moduledata.progress.store()}\to\everyshipout
-    \ctxlua{luatex.register_stop_actions(function() moduledata.progress.save() end)}
+    \ctxlua{luatex.registerstopactions(function() moduledata.progress.save() end)}
 \stopnotmode
 
 \def\ShowNamedUsage#1#2#3%

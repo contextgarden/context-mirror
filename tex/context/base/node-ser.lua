@@ -265,7 +265,7 @@ function nodes.print(head,n)
     end
 end
 
-function nodes.check_for_leaks(sparse)
+function nodes.checkforleaks(sparse)
     local l = { }
     local q = node.usedlist()
     for p in traverse(q) do
