@@ -101,7 +101,7 @@ local banner_pdf_2 = [[
 ]]
 
 function scripts.chars.makepdfr()
-    local chartable = resolvers.find_file("char-def.lua") or ""
+    local chartable = resolvers.findfile("char-def.lua") or ""
     if chartable ~= "" then
         dofile(chartable)
         if characters and characters.data then
@@ -179,7 +179,7 @@ local xtxclasses = {
 }
 
 function scripts.chars.makeencoutf()
-    local chartable = resolvers.find_file("char-def.lua") or ""
+    local chartable = resolvers.findfile("char-def.lua") or ""
     if chartable ~= "" then
         dofile(chartable)
         local function open(name,banner)

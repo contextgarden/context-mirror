@@ -1186,10 +1186,12 @@
    \dokeepverbatimlinedata
    \doopenupverbatimline
    \the\everyline\strut
+   \dostarttagged\t!verbatimline\empty
    }%\beginverbatimline}
 
 \def\doverbatimendofline
   {%\endverbatimline
+   \dostoptagged
    \global\lineparfalse
    \obeyedline\par
    \attribute\verbatimlineattribute\attributeunsetvalue}

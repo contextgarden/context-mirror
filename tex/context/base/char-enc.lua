@@ -8,10 +8,12 @@ if not modules then modules = { } end modules ['char-syn'] = {
 
 -- thanks to tex4ht for these mappings
 
+local allocate = utilities.storage.allocate
+
 characters       = characters or { }
 local characters = characters
 
-characters.synonyms = {
+characters.synonyms = allocate {
     angle              = 0x2220,
     anticlockwise      = 0x21BA,
     arrowaxisleft      = 0x2190,

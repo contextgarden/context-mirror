@@ -15,6 +15,8 @@ local trace_injections = false  trackers.register("scripts.injections", function
 
 local report_preprocessing = logs.new("preprocessing")
 
+local allocate = utilities.storage.allocate
+
 local set_attribute   = node.set_attribute
 local has_attribute   = node.has_attribute
 local first_character = node.first_character
@@ -32,23 +34,23 @@ local prestat         = attributes.private('prestat')
 
 local fontdata        = fonts.ids
 
-local fcs             = (fonts.color and fonts.color.set)   or function() end
-local fcr             = (fonts.color and fonts.color.reset) or function() end
+local fcs             = fonts.colors.set
+local fcr             = fonts.colors.reset
 
-scripts          = scripts or { }
-local scripts    = scripts
+scripts               = scripts or { }
+local scripts         = scripts
 
-scripts.handlers = scripts.handlers or { }
-local handlers   = scripts.handlers
+scripts.handlers      = scripts.handlers or { }
+local handlers        = scripts.handlers
 
-scripts.names    = scripts.names or { }
-local names      = scripts.names
+scripts.names         = allocate()
+local names           = scripts.names
 
-scripts.numbers  = scripts.numbers or { }
-local numbers    = scripts.numbers
+scripts.numbers       = allocate()
+local numbers         = scripts.numbers
 
-scripts.hash     = scripts.hash or { }
-local hash       = scripts.hash
+scripts.hash          = scripts.hash or { }
+local hash            = scripts.hash
 
 storage.register("scripts/hash", hash, "scripts.hash")
 
@@ -181,7 +183,7 @@ end
 
 -- the following tables will become a proper installer
 
-scripts.colors = {  -- todo: just named colors
+scripts.colors = allocate {  -- todo: just named colors
     korean           = "font:isol",
     chinese          = "font:rest",
     full_width_open  = "font:init",
@@ -197,7 +199,7 @@ scripts.colors = {  -- todo: just named colors
 
 local colors = scripts.colors
 
-local numbertokind = {
+local numbertokind = allocate {
     "korean",
     "chinese",
     "full_width_open",
@@ -211,7 +213,7 @@ local numbertokind = {
     "jamo_final",
 }
 
-local kindtonumber = {
+local kindtonumber = allocate {
     korean           =  1,
     chinese          =  2,
     full_width_open  =  3,

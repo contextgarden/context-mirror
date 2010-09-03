@@ -13,6 +13,7 @@ converters = converters or { }
 the top of <l n='luatex'/>'s char range but outside the unicode range.</p>
 --ldx]]--
 
+local tonumber = tonumber
 local char, texsprint, format = unicode.utf8.char, tex.sprint, string.format
 
 function converters.hexstringtonumber(n) texsprint(tonumber(n,16))   end

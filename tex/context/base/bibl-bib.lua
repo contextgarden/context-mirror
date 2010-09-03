@@ -140,7 +140,7 @@ function bibtex.convert(session,content)
 end
 
 function bibtex.load(session,filename)
-    local filename = resolvers.find_file(filename,"bib")
+    local filename = resolvers.findfile(filename,"bib")
     if filename ~= "" then
         local data = io.loaddata(filename) or ""
         if data == "" then
@@ -295,7 +295,7 @@ end)
 --~ print(table.serialize(session.shortcuts))
 --~ print(xml.serialize(session.xml))
 
-if not characters then dofile(resolvers.find_file("char-def.lua")) end
+if not characters then dofile(resolvers.findfile("char-def.lua")) end
 
 local chardata = characters.data
 local concat = table.concat

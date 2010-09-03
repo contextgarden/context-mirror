@@ -647,11 +647,16 @@
 \def\dolastnotesymbol
   {\typesetsomenotesymbol\currentnote\currentnotenumber\currentdescriptionnumberentry}
 
+\let\dotagsetnotesymbol\relax
+
 \def\dotypesetsomenotesymbol#1#2#3% running text (messy: #1 and current mixed)
   {\dodonotesymbol
      {\synchronizesomenotesymbol{#1}{#2}{#3}%
 %     \ctxlua{structures.notes.number("\currentnote",\currentnotenumber)}% \currentdescriptionnumberentry
+      \dostarttagged\t!descriptionsymbol\currentnote
+      \dotagsetnotesymbol
       \ctxlua{structures.notes.number("#1",#2)}%
+      \dostoptagged
       \domovednote{#1}{#2}\v!previouspage\v!nextpage}}
 
 \unexpanded\def\typesetsomenotesymbol#1#2#3% running text

@@ -30,11 +30,11 @@ function scripts.scite.start(indeed)
     local binpaths = file.split_path(os.getenv("PATH")) or file.split_path(os.getenv("path"))
     for i=1,#scitesignals do
         local scitesignal = scitesignals[i]
-        local scitepath = resolvers.find_file(scitesignal,"other text files") or ""
+        local scitepath = resolvers.findfile(scitesignal,"other text files") or ""
         if scitepath ~= "" then
             scitepath  = file.dirname(scitepath) -- data
             if scitepath == "" then
-                scitepath = resolvers.clean_path(lfs.currentdir())
+                scitepath = resolvers.cleanpath(lfs.currentdir())
             else
                 usedsignal, datapath = scitesignal, scitepath
                 break
@@ -62,7 +62,7 @@ function scripts.scite.start(indeed)
     end
     local properties  = dir.glob(file.join(datapath,"*.properties"))
     local luafiles    = dir.glob(file.join(datapath,"*.lua"))
-    local extrafont   = resolvers.find_file(screenfont,"truetype font") or ""
+    local extrafont   = resolvers.findfile(screenfont,"truetype font") or ""
     local pragmafound = dir.glob(file.join(datapath,"pragma.properties"))
     if userpath == "" then
         logs.simple("unable to figure out userpath")

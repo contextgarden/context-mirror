@@ -43,7 +43,6 @@ local pdfstring          = lpdf.string
 local pdfflushobject     = lpdf.flushobject
 local pdfimmediateobject = lpdf.immediateobject
 
-local tobasepoints = number.tobasepoints
 local variables    = interfaces.variables
 
 --

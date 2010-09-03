@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-oth'] = {
 local lpegmatch = lpeg.match
 local splitter  = lpeg.Ct(lpeg.splitat(" "))
 
-local collect_lookups = fonts.otf.collect_lookups
+local collectlookups = fonts.otf.collectlookups
 
 -- For the moment there is no need to cache this but this might
 -- happen when I get the feeling that there is a performance
@@ -20,7 +20,7 @@ function fonts.otf.getalternate(tfmdata,k,kind,value)
         local shared = tfmdata.shared
         local otfdata = shared and shared.otfdata
         if otfdata then
-            local validlookups, lookuplist = collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
+            local validlookups, lookuplist = collectlookups(otfdata,kind,tfmdata.script,tfmdata.language)
             if validlookups then
                 local lookups = tfmdata.descriptions[k].slookups -- we assume only slookups (we can always extend)
                 if lookups then

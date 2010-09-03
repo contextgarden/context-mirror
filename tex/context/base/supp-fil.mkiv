@@ -318,10 +318,14 @@
    \readfile{#1}{#2}{#3}%
    \popcatcodetable}
 
-\def\readxmlfile#1#2#3%
-  {\pushcatcodetable \catcodetable \xmlcatcodes
-   \readfile{#1}{#2}{#3}%
-   \popcatcodetable}
+\ifdefined \xmlcatcodes
+
+    \def\readxmlfile#1#2#3%
+      {\pushcatcodetable \catcodetable \xmlcatcodes
+       \readfile{#1}{#2}{#3}%
+       \popcatcodetable}
+
+\fi
 
 %D \macros
 %D   {doiffileelse,doiflocfileelse}

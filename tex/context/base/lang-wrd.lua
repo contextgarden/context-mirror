@@ -32,9 +32,9 @@ local tasks           = nodes.tasks
 local nodecodes       = nodes.nodecodes
 local kerncodes       = nodes.kerncodes
 
-local glyph_node      = nodecodes.glyph
-local disc_node       = nodecodes.disc
-local kern_node       = nodecodes.kern
+local glyph_code      = nodecodes.glyph
+local disc_code       = nodecodes.disc
+local kern_code       = nodecodes.kern
 
 local kerning_code    = kerncodes.kerning
 
@@ -53,7 +53,7 @@ local word    = Cs((markup/"" + disc/"" + (1-spacing))^1)
 local loaded = { } -- we share lists
 
 function words.load(tag,filename)
-    local fullname = resolvers.find_file(filename,'other text file') or ""
+    local fullname = resolvers.findfile(filename,'other text file') or ""
     if fullname ~= "" then
         statistics.starttiming(languages)
         local list = loaded[fullname]
@@ -99,7 +99,7 @@ local function mark_words(head,whenfound) -- can be optimized
     end
     while current do
         local id = current.id
-        if id == glyph_node then
+        if id == glyph_code then
             local a = current.lang
             if a then
                 if a ~= language then
@@ -130,11 +130,11 @@ local function mark_words(head,whenfound) -- can be optimized
                     action()
                 end
             end
-        elseif id == disc_node then
+        elseif id == disc_code then
             if n > 0 then
                 n = n + 1
             end
-        elseif id == kern_node and current.subtype == kerning_code and start then
+        elseif id == kern_code and current.subtype == kerning_code and start then
             -- ok
         elseif start then
             action()
@@ -174,7 +174,7 @@ methods[1] = function(head, attribute, yes, nop)
     return head, done
 end
 
-local list, dump = { }, false -- todo: per language
+local list = { } -- todo: per language
 
 local lowerchar = characters.lower
 
@@ -189,14 +189,16 @@ methods[2] = function(head, attribute)
     return head, true
 end
 
-words.used = list
+-- words.used = list
 
-function words.dump_used_words(name)
-    if dump then
+directives.register("languages.words.dump", function(v)
+    local name = type(v) == "string" and v ~= "" and v or file.addsuffix(tex.jobname,"words")
+    local function dumpusedwords(name)
         report_languages("saving list of used words in '%s'",name)
         io.savedata(name,table.serialize(list))
     end
-end
+    luatex.registerstopactions(dumpusedwords)
+end )
 
 local color = attributes.private('color')
 

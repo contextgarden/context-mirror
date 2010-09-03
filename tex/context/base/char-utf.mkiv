@@ -31,7 +31,7 @@
 \appendtoks
     \ctxlua {
         characters.filters.utf.collapsing = true
-        resolvers.install_text_filter('utf',characters.filters.utf.collapse)
+        resolvers.filters.install('utf',characters.filters.utf.collapse)
     }%
 \to \everyjob
 

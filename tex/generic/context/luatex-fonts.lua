@@ -129,7 +129,7 @@ callback.register('ligaturing',           false)
 callback.register('kerning',              false)
 callback.register('pre_linebreak_filter', nodes.simple_font_handler)
 callback.register('hpack_filter',         nodes.simple_font_handler)
-callback.register('define_font' ,         fonts.define.read)
+callback.register('define_font' ,         fonts.definers.read)
 callback.register('find_vf_file',         nil) -- reset to normal
 
 -- We're done.

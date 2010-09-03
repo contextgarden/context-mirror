@@ -16,6 +16,8 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local report_resolvers = logs.new("resolvers")
 
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquote, quote = string.unquote, string.quote
 local concat = table.concat
@@ -45,8 +47,8 @@ end
 environment             = environment or { }
 local environment       = environment
 
-environment.arguments   = { }
-environment.files       = { }
+environment.arguments   = allocate()
+environment.files       = allocate()
 environment.sortedflags = nil
 
 local mt = {
@@ -114,7 +116,7 @@ function environment.argument(name,partial)
         return arguments[name]
     elseif partial then
         if not sortedflags then
-            sortedflags = table.sortedkeys(arguments)
+            sortedflags = allocate(table.sortedkeys(arguments))
             for k=1,#sortedflags do
                 sortedflags[k] = "^" .. sortedflags[k]
             end
@@ -200,8 +202,8 @@ if arg then
 
     environment.initializearguments(newarg)
 
-    environment.originalarguments = newarg
-    environment.rawarguments      = arg
+    environment.originalarguments = mark(newarg)
+    environment.rawarguments      = mark(arg)
 
     arg = { } -- prevent duplicate handling
 
@@ -210,19 +212,19 @@ end
 -- weird place ... depends on a not yet loaded module
 
 function environment.texfile(filename)
-    return resolvers.find_file(filename,'tex')
+    return resolvers.findfile(filename,'tex')
 end
 
 function environment.luafile(filename)
-    local resolved = resolvers.find_file(filename,'tex') or ""
+    local resolved = resolvers.findfile(filename,'tex') or ""
     if resolved ~= "" then
         return resolved
     end
-    resolved = resolvers.find_file(filename,'texmfscripts') or ""
+    resolved = resolvers.findfile(filename,'texmfscripts') or ""
     if resolved ~= "" then
         return resolved
     end
-    return resolvers.find_file(filename,'luatexlibs') or ""
+    return resolvers.findfile(filename,'luatexlibs') or ""
 end
 
 environment.loadedluacode = loadfile -- can be overloaded

@@ -43,23 +43,18 @@ local traverse_node_list = node.traverse
 local fontdata           = fonts.ids
 local state              = attributes.private('state')
 
-local fcs                = (fonts.color and fonts.color.set)   or function() end
-local fcr                = (fonts.color and fonts.color.reset) or function() end
-
-local a_to_script        = otf.a_to_script
-local a_to_language      = otf.a_to_language
+local fontcolors         = fonts.colors
+local fcs                = (fontscolors and fontscolors.set)   or function() end
+local fcr                = (fontscolors and fontscolors.reset) or function() end
 
 -- in the future we will use language/script attributes instead of the
 -- font related value, but then we also need dynamic features which is
 -- somewhat slower; and .. we need a chain of them
 
+local scriptandlanguage = otf.scriptandlanguage
+
 function fonts.initializers.node.otf.analyze(tfmdata,value,attr)
-    local script, language
-    if attr and attr > 0 then
-        script, language = a_to_script[attr], a_to_language[attr]
-    else
-        script, language = tfmdata.script, tfmdata.language
-    end
+    local script, language = otf.scriptandlanguage(tfmdata,attr)
     local action = initializers[script]
     if action then
         if type(action) == "function" then
@@ -76,12 +71,7 @@ end
 
 function fonts.methods.node.otf.analyze(head,font,attr)
     local tfmdata = fontdata[font]
-    local script, language
-    if attr and attr > 0 then
-        script, language = a_to_script[attr], a_to_language[attr]
-    else
-        script, language = tfmdata.script, tfmdata.language
-    end
+    local script, language = otf.scriptandlanguage(tfmdata,attr)
     local action = methods[script]
     if action then
         if type(action) == "function" then

@@ -11,17 +11,19 @@ local utf = unicode.utf8
 local utfchar = utf.char
 local unpack = unpack or table.unpack
 
+local allocate = utilities.storage.allocate
+
 characters            = characters or { }
 local characters      = characters
 
-characters.uncomposed = characters.uncomposed or { }
+characters.uncomposed = allocate()
 local uncomposed      = characters.uncomposed
 
 --[[ldx--
 <p>The code defined here may move to the big character table.</p>
 --ldx]]--
 
-characters.basedigits = {
+characters.basedigits = allocate {
     ['zero']  = 48, ['one']   = 49,
     ['two']   = 50, ['three'] = 51,
     ['four']  = 52, ['five']  = 53,
@@ -50,7 +52,7 @@ Of course they may come in handy elsewhere too</p>
 --    => shcode == { ub('a') }
 --    => reduction = "a"
 
-uncomposed.left = {
+uncomposed.left = allocate {
     AEligature = "A",  aeligature = "a",
     OEligature = "O",  oeligature = "o",
     IJligature = "I",  ijligature = "i",
@@ -60,7 +62,7 @@ uncomposed.left = {
     Ssharp     = "S",  ssharp     = "s",
 }
 
-uncomposed.right = {
+uncomposed.right = allocate {
     AEligature = "E",  aeligature = "e",
     OEligature = "E",  oeligature = "e",
     IJligature = "J",  ijligature = "j",
@@ -70,7 +72,7 @@ uncomposed.right = {
     Ssharp     = "S",  ssharp     = "s",
 }
 
-uncomposed.both = {
+uncomposed.both = allocate {
     Acircumflex = "A",  acircumflex = "a",
     Ccircumflex = "C",  ccircumflex = "c",
     Ecircumflex = "E",  ecircumflex = "e",
@@ -222,7 +224,7 @@ is that a character can be in an encoding twice but is hashed
 once.</p>
 --ldx]]--
 
-characters.ligatures = {
+characters.ligatures = allocate {
     ['f'] = {
         { 'f', 'ff' },
         { 'i', 'fi' },
@@ -245,7 +247,7 @@ characters.ligatures = {
     },
 }
 
-characters.texligatures = {
+characters.texligatures = allocate {
  -- ['space'] = {
  --     { 'L', 'Lslash' },
  --     { 'l', 'lslash' }

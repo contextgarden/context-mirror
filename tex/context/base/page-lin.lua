@@ -27,6 +27,8 @@ local last        = #data
 
 lines.scratchbox  = lines.scratchbox or 0
 
+local leftmarginwidth = nodes.leftmarginwidth
+
 storage.register("lines/data", lines.data, "nodes.lines.data")
 
 -- if there is demand for it, we can support multiple numbering streams
@@ -151,8 +153,6 @@ function boxed.setup(n,configuration)
     return n
 end
 
-local the_left_margin = nodes.the_left_margin
-
 local function check_number(n,a,skip,sameline)
     local d = data[a]
     if d then
@@ -174,7 +174,7 @@ local function check_number(n,a,skip,sameline)
                 report_lines("skipping line number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
             end
         end
-        context.makelinenumber(tag,skipflag,s,n.shift,n.width,the_left_margin(n.list),n.dir)
+        context.makelinenumber(tag,skipflag,s,n.shift,n.width,leftmarginwidth(n.list),n.dir)
     end
 end
 

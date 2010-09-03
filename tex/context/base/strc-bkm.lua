@@ -104,7 +104,7 @@ end
 
 function bookmarks.place()
     if next(names) then
-        local list = lists.filter_collected(names,"all",nil,lists.collected,forced)
+        local list = lists.filtercollected(names,"all",nil,lists.collected,forced)
         if #list > 0 then
             local levels, lastlevel = { }, 1
             for i=1,#list do

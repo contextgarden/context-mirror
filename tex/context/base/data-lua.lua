@@ -27,7 +27,7 @@ local _path_, libpaths, _cpath_, clibpaths
 function package.libpaths()
     if not _path_ or package.path ~= _path_ then
         _path_ = package.path
-        libpaths = file.split_path(_path_,";")
+        libpaths = file.splitpath(_path_,";")
     end
     return libpaths
 end
@@ -35,7 +35,7 @@ end
 function package.clibpaths()
     if not _cpath_ or package.cpath ~= _cpath_ then
         _cpath_ = package.cpath
-        clibpaths = file.split_path(_cpath_,";")
+        clibpaths = file.splitpath(_cpath_,";")
     end
     return clibpaths
 end
@@ -84,7 +84,7 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
     end
     for i=1,#libformats do
         local format = libformats[i]
-        local resolved = resolvers.find_file(name,format) or ""
+        local resolved = resolvers.findfile(name,format) or ""
         if trace_locating then -- mode detail
             report_resolvers("! checking for '%s' using 'libformat path': '%s'",name,format)
         end
@@ -108,7 +108,7 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
     for i=1,#clibformats do
         -- better have a dedicated loop
         local format = clibformats[i]
-        local paths = resolvers.expanded_path_list_from_var(format)
+        local paths = resolvers.expandedpathlistfromvariable(format)
         for p=1,#paths do
             local path = paths[p]
             local resolved = file.join(path,libname)
@@ -140,7 +140,7 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
     if trace_loading then -- more detail
         report_resolvers("! checking for '%s' using 'luatexlibs': '%s'",name)
     end
-    local resolved = resolvers.find_file(file.basename(name),'luatexlibs') or ""
+    local resolved = resolvers.findfile(file.basename(name),'luatexlibs') or ""
     if resolved ~= "" then
         if trace_locating then
             report_resolvers("! lib '%s' located by basename via environment: '%s'",name,resolved)

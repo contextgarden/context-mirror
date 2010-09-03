@@ -103,8 +103,6 @@ backends.codeinjections = {
     setfigurealternative   = nothing,
 
     enabletags             = nothing,
-    maptag                 = nothing,
-    mapping                = nothing, -- returns table
 
     mergereferences        = nothing,
     mergeviewerlayers      = nothing,
@@ -115,7 +113,9 @@ backends.codeinjections = {
 
     -- called in tex
 
-    finalizepage           = nothing -- will go when we have a hook at the lua end
+    finalizepage           = nothing, -- will go when we have a hook at the lua end
+
+    finishreference        = nothing,
 
 }
 

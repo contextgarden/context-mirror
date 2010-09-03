@@ -36,7 +36,7 @@ local fontdata = fonts.ids or { }
 function nodes.simple_font_handler(head)
 --  lang.hyphenate(head)
     head = nodes.handlers.characters(head)
-    nodes.handlers.injectkerns(head)
+    nodes.injections.handler(head)
     nodes.handlers.protectglyphs(head)
     head = node.ligaturing(head)
     head = node.kerning(head)

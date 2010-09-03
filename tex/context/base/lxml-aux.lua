@@ -79,7 +79,7 @@ function xml.withelement(e,n,handle) -- slow
 end
 
 function xml.each(root,pattern,handle,reverse)
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected then
         if reverse then
             for c=#collected,1,-1 do
@@ -95,7 +95,7 @@ function xml.each(root,pattern,handle,reverse)
 end
 
 function xml.processattributes(root,pattern,handle)
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected and handle then
         for c=1,#collected do
             handle(collected[c].at)
@@ -111,11 +111,11 @@ end
 -- are these still needed -> lxml-cmp.lua
 
 function xml.collect(root, pattern)
-    return xmlapplylpath({ root },pattern)
+    return xmlapplylpath(root,pattern)
 end
 
 function xml.collecttexts(root, pattern, flatten) -- todo: variant with handle
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected and flatten then
         local xmltostring = xml.tostring
         for c=1,#collected do
@@ -126,7 +126,7 @@ function xml.collecttexts(root, pattern, flatten) -- todo: variant with handle
 end
 
 function xml.collect_tags(root, pattern, nonamespace)
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected then
         local t = { }
         for c=1,#collected do
@@ -197,7 +197,7 @@ local function copiedelement(element,newparent)
 end
 
 function xml.delete(root,pattern)
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -216,7 +216,7 @@ end
 
 function xml.replace(root,pattern,whatever)
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlapplylpath({ root },pattern)
+    local collected = element and xmlapplylpath(root,pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -235,7 +235,7 @@ end
 
 local function inject_element(root,pattern,whatever,prepend)
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlapplylpath({ root },pattern)
+    local collected = element and xmlapplylpath(root,pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -266,7 +266,7 @@ end
 
 local function insert_element(root,pattern,whatever,before) -- todo: element als functie
     local element = root and xmltoelement(whatever,root)
-    local collected = element and xmlapplylpath({ root },pattern)
+    local collected = element and xmlapplylpath(root,pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -292,7 +292,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
     -- attribute = attribute or 'href'
     pattern = pattern or 'include'
     loaddata = loaddata or io.loaddata
-    local collected = xmlapplylpath({ xmldata },pattern)
+    local collected = xmlapplylpath(xmldata,pattern)
     if collected then
         for c=1,#collected do
             local ek = collected[c]
@@ -335,74 +335,80 @@ end
 
 xml.include = include
 
-function xml.strip(root, pattern, nolines, anywhere) -- strips all leading and trailing spacing
-    local collected = xmlapplylpath({ root },pattern) -- beware, indices no longer are valid now
-    if collected then
-        for i=1,#collected do
-            local e = collected[i]
-            local edt = e.dt
-            if edt then
-                if anywhere then
-                    local t = { }
-                    for e=1,#edt do
-                        local str = edt[e]
-                        if type(str) ~= "string" then
-                            t[#t+1] = str
-                        elseif str ~= "" then
-                            -- todo: lpeg for each case
-                            if nolines then
-                                str = gsub(str,"%s+"," ")
-                            end
-                            str = gsub(str,"^%s*(.-)%s*$","%1")
-                            if str ~= "" then
-                                t[#t+1] = str
-                            end
-                        end
+local function stripelement(e,nolines,anywhere)
+    local edt = e.dt
+    if edt then
+        if anywhere then
+            local t = { }
+            for e=1,#edt do
+                local str = edt[e]
+                if type(str) ~= "string" then
+                    t[#t+1] = str
+                elseif str ~= "" then
+                    -- todo: lpeg for each case
+                    if nolines then
+                        str = gsub(str,"%s+"," ")
                     end
-                    e.dt = t
-                else
-                    -- we can assume a regular sparse xml table with no successive strings
-                    -- otherwise we should use a while loop
-                    if #edt > 0 then
-                        -- strip front
-                        local str = edt[1]
-                        if type(str) ~= "string" then
-                            -- nothing
-                        elseif str == "" then
-                            remove(edt,1)
-                        else
-                            if nolines then
-                                str = gsub(str,"%s+"," ")
-                            end
-                            str = gsub(str,"^%s+","")
-                            if str == "" then
-                                remove(edt,1)
-                            else
-                                edt[1] = str
-                            end
-                        end
-                    end
-                    if #edt > 1 then
-                        -- strip end
-                        local str = edt[#edt]
-                        if type(str) ~= "string" then
-                            -- nothing
-                        elseif str == "" then
-                            remove(edt)
-                        else
-                            if nolines then
-                                str = gsub(str,"%s+"," ")
-                            end
-                            str = gsub(str,"%s+$","")
-                            if str == "" then
-                                remove(edt)
-                            else
-                                edt[#edt] = str
-                            end
-                        end
+                    str = gsub(str,"^%s*(.-)%s*$","%1")
+                    if str ~= "" then
+                        t[#t+1] = str
                     end
                 end
             end
+            e.dt = t
+        else
+            -- we can assume a regular sparse xml table with no successive strings
+            -- otherwise we should use a while loop
+            if #edt > 0 then
+                -- strip front
+                local str = edt[1]
+                if type(str) ~= "string" then
+                    -- nothing
+                elseif str == "" then
+                    remove(edt,1)
+                else
+                    if nolines then
+                        str = gsub(str,"%s+"," ")
+                    end
+                    str = gsub(str,"^%s+","")
+                    if str == "" then
+                        remove(edt,1)
+                    else
+                        edt[1] = str
+                    end
+                end
+            end
+            if #edt > 1 then
+                -- strip end
+                local str = edt[#edt]
+                if type(str) ~= "string" then
+                    -- nothing
+                elseif str == "" then
+                    remove(edt)
+                else
+                    if nolines then
+                        str = gsub(str,"%s+"," ")
+                    end
+                    str = gsub(str,"%s+$","")
+                    if str == "" then
+                        remove(edt)
+                    else
+                        edt[#edt] = str
+                    end
+                end
+            end
+        end
+    end
+    return e -- convenient
+end
+
+xml.stripelement = stripelement
+
+function xml.strip(root,pattern,nolines,anywhere) -- strips all leading and trailing spacing
+    local collected = xmlapplylpath(root,pattern) -- beware, indices no longer are valid now
+    if collected then
+        for i=1,#collected do
+            stripelement(collected[i],nolines,anywhere)
         end
     end
 end
@@ -429,7 +435,7 @@ end
 xml.renamespace = renamespace
 
 function xml.remaptag(root, pattern, newtg)
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected then
         for c=1,#collected do
             collected[c].tg = newtg
@@ -438,7 +444,7 @@ function xml.remaptag(root, pattern, newtg)
 end
 
 function xml.remapnamespace(root, pattern, newns)
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected then
         for c=1,#collected do
             collected[c].ns = newns
@@ -447,7 +453,7 @@ function xml.remapnamespace(root, pattern, newns)
 end
 
 function xml.checknamespace(root, pattern, newns)
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -459,7 +465,7 @@ function xml.checknamespace(root, pattern, newns)
 end
 
 function xml.remapname(root, pattern, newtg, newns, newrn)
-    local collected = xmlapplylpath({ root },pattern)
+    local collected = xmlapplylpath(root,pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]

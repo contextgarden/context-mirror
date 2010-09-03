@@ -392,6 +392,8 @@
 
 \definecomplexorsimple\language
 
+\newcount\mainlanguagenumber
+
 \def\mainlanguage[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
@@ -408,7 +410,8 @@
          \docomplexlanguage
        \fi
      \fi
-   \fi}
+   \fi
+   \mainlanguagenumber\normallanguage}
 
 %D New (see nomarking and nolist):
 

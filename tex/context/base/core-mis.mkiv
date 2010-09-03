@@ -745,23 +745,6 @@
 \unexpanded\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
 \unexpanded\def\subsentence     {\groupedcommand\startsubsentence\stopsubsentence}
 
-%D \defineXMLenvironment [subsentence]
-%D   {|<|}
-%D   {|>|}
-%D \defineXMLenvironment [subsentence]
-%D   {\directdiscretionary{<}}
-%D   {\directdiscretionary{>}}
-%D \defineXMLenvironment [subsentence]
-%D   {\startsubsentence}
-%D   {\stopsubsentence}
-%D
-%D \startbuffer
-%D test <subsentence>test</subsentence> test
-%D \stopbuffer
-%D
-%D \typebuffer
-%D \processXMLbuffer
-
 \enableactivediscretionaries
 
 \definehspace [quotation]      [\zeropoint]

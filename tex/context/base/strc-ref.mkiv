@@ -465,7 +465,7 @@
 %D be called.
 
 \def\analyzecurrentreference
-  {\ctxlua{structures.references.analyse()}}
+  {\ctxlua{structures.references.analyze()}}
 
 %D The inner case is simple. Only two cases have to be taken
 %D care of:
@@ -578,7 +578,7 @@
 \newcount\locationorder
 \newbox  \locationbox
 
-\def\nextinternalreference    {\the\locationcount}
+\def\nextinternalreference     {\the\locationcount}
 \def\nextinternalorderreference{\the\locationorder}
 
 \def\setnextinternalreference
@@ -596,11 +596,13 @@
    \hbox attr \destinationattribute\lastdestinationattribute{}%
    \endgroup}
 
+\newconditional\preferpagereferences
+
 \def\gotosomeinternal#1#2#3#4%
-  {\ifinternalnamedreferences
-     \directgoto{#4}[#1:#2]%
-   \else
+  {\ifconditional\preferpagereferences
      \directgoto{#4}[page(#3)]%
+   \else
+     \directgoto{#4}[#1:#2]%
    \fi}
 
 \def\gotonextinternal#1#2%
@@ -859,12 +861,12 @@
 % Yet untested:
 
 \unexpanded\def\somewhere#1#2#3[#4]% #3 gobbles space around #2 % todo
-  {\doifreferencefoundelse{#4}% kind of inefficient as \goto also analyses
+  {\doifreferencefoundelse{#4}% kind of inefficient as \goto also analyzes
      {\goto{\analyzecurrentreference\ifcase\referencepagestate\relax#1/#2\or#2\or#1\or#2\fi}[#4]}
      {[#1/#2]}}
 
 \unexpanded\def\atpage[#1]% todo
-  {\doifreferencefoundelse{#1}% kind of inefficient as \goto also analyses
+  {\doifreferencefoundelse{#1}% kind of inefficient as \goto also analyzes
      {\goto{\analyzecurrentreference\ifcase\referencepagestate
         \labeltexts\v!page\dummyreference
       \or

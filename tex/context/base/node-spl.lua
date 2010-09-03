@@ -24,6 +24,7 @@ local utfchar = utf.char
 local random = math.random
 local variables = interfaces.variables
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
+local fcs = fonts.colors.set
 
 local trace_split    = false  trackers.register("builders.paragraphs.solutions.splitters.splitter",  function(v) trace_split    = v end)
 local trace_optimize = false  trackers.register("builders.paragraphs.solutions.splitters.optimizer", function(v) trace_optimize = v end)
@@ -73,7 +74,7 @@ local new_usernumber     = nodepool.usernumber
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 local process_characters = nodes.handlers.characters
-local inject_kerns       = nodes.handlers.injectkerns
+local inject_kerns       = nodes.injections.handler
 local fontdata           = fonts.ids
 
 local parbuilders               = builders.paragraphs
@@ -110,17 +111,18 @@ function splitters.setup(setups)
     criterium = tonumber(setups.criterium) or criterium
 end
 
+local contextsetups = fonts.definers.specifiers.contextsetups
+
 local function convert(featuresets,name,set,what)
     local list, numbers = set[what], { }
     if list then
-        local setups = fonts.define.specify.context_setups
         for i=1,#list do
             local feature = list[i]
             local fs = featuresets[feature]
             local fn = fs and fs.number
             if not fn then
                 -- fall back on global features
-                fs = setups[feature]
+                fs = contextsetups[feature]
                 fn = fs and fs.number
             end
             if fn then
@@ -154,7 +156,6 @@ end
 fonts.goodies.register("solutions",initialize)
 
 function splitters.define(name,parameters)
-    local setups = fonts.define.specify.context_setups
     local settings = settings_to_hash(parameters) -- todo: interfacing
     local goodies, solution, less, more = settings.goodies, settings.solution, settings.less, settings.more
     local less_set, more_set
@@ -179,7 +180,7 @@ function splitters.define(name,parameters)
     else
         if l then
             for i=1,#l do
-                local ss = setups[l[i]]
+                local ss = contextsetups[l[i]]
                 if ss then
                     less_set[#less_set+1] = ss.number
                 end
@@ -187,7 +188,7 @@ function splitters.define(name,parameters)
         end
         if m then
             for i=1,#m do
-                local ss = setups[m[i]]
+                local ss = contextsetups[m[i]]
                 if ss then
                     more_set[#more_set+1] = ss.number
                 end
@@ -206,8 +207,6 @@ function splitters.define(name,parameters)
 --~     print(table.serialize(solutions[#solutions]))
     tex.write(#solutions)
 end
-
-local fcs = (fonts.color and fonts.color.set) or function() end
 
 local nofwords, noftries, nofadapted, nofkept, nofparagraphs = 0, 0, 0, 0, 0
 

@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['node-ser'] = {
 
 local type, format, concat, rep = type, string.format, table.concat, string.rep
 
+local allocate = utilities.storage.allocate
+
 local ctxcatcodes = tex.ctxcatcodes
 
 local nodes, node = nodes, node
@@ -24,7 +26,7 @@ local nodecodes   = nodes.nodecodes
 local hlist_code  = nodecodes.hlist
 local vlist_code  = nodecodes.vlist
 
-local expand = table.tohash {
+local expand = allocate ( table.tohash {
     "list",         -- list_ptr & ins_ptr & adjust_ptr
     "pre",          --
     "post",         --
@@ -39,25 +41,25 @@ local expand = table.tohash {
     "leader",       -- leader_ptr
     "action",       -- action_ptr
     "value",        -- user_defined nodes with subtype 'a' en 'n'
-}
+} )
 
 -- page_insert: "height", "last_ins_ptr", "best_ins_ptr"
 -- split_insert:  "height", "last_ins_ptr", "best_ins_ptr", "broken_ptr", "broken_ins"
 
-local ignore = table.tohash {
+local ignore = allocate ( table.tohash {
     "page_insert",
     "split_insert",
     "ref_count",
-}
+} )
 
-local dimension = table.tohash {
+local dimension = allocate ( table.tohash {
     "width", "height", "depth", "shift",
     "stretch", "shrink",
     "xoffset", "yoffset",
     "surround",
     "kern",
     "box_left_width", "box_right_width"
-}
+} )
 
 -- flat: don't use next, but indexes
 -- verbose: also add type
@@ -264,17 +266,3 @@ function nodes.print(head,n)
         head = head.next
     end
 end
-
-function nodes.checkforleaks(sparse)
-    local l = { }
-    local q = node.usedlist()
-    for p in traverse(q) do
-        local s = table.serialize(nodes.astable(p,sparse),node_type(p.id))
-        l[s] = (l[s] or 0) + 1
-    end
-    node.flush_list(q)
-    for k, v in next, l do
-        texio.write_nl(format("%s * %s", v, k))
-    end
-end
-

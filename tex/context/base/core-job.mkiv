@@ -65,7 +65,7 @@
 \def\registerfileinfo[#1#2]#3% geen \showmessage ?
   {\writestatus\m!systems{#1#2 file #3 at line \the\inputlineno}}
 
-\ifx\preloadfonts   \undefined \let\preloadfonts   \relax \fi
+\ifdefined\preloadfonts\else \let\preloadfonts\relax \fi
 
 \def\loadallsystemfiles#1#2%
   {\ifx\@@svdirectory\empty
@@ -76,8 +76,6 @@
      \processcommacommand[\@@svdirectory]\doloadsystemfile
    \fi}
 
-\ifx\disableXML\undefined \let\disableXML\relax \fi
-
 \def\loadsystemfiles
   {\reportprotectionstate
    \readsysfile\f!newfilename{\showmessage\m!systems2\f!newfilename}\donothing
@@ -86,13 +84,11 @@
      \donothing
    \loadallsystemfiles\f!sysfilename
      {\loadallsystemfiles{\f!sysfilename.rme}\donothing % new, fall back
-      \doglobal\appendtoks % brrr better \setcatcodetable\ctxcatcodes % % test
-        \bgroup\disableXML\loadallsystemfiles\f!errfilename\donothing\egroup
-      \to\everygoodbye}}
+      \loadallsystemfiles \f!errfilename     \donothing}}
 
 %D We don't want multiple jobfiles to interfere.
 
-\def\loadoptionfile
+\def\loadoptionfile % todo : mark document.* tables as storage
   {\readjobfile{\jobname.\f!optionextension}
      {\showmessage\m!systems2{\jobname.\f!optionextension}%
       \ctxlua{commands.logoptionfile("\jobname.\f!optionextension")}}%

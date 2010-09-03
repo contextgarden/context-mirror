@@ -92,7 +92,7 @@ local function locate(registry,ordering,supplement)
         if trace_loading then
             report_otf("checking cidmap, registry: %s, ordering: %s, supplement: %s, filename: %s",registry,ordering,supplement,filename)
         end
-        local fullname = resolvers.find_file(filename,'cid') or ""
+        local fullname = resolvers.findfile(filename,'cid') or ""
         if fullname ~= "" then
             cidmap = cid.load(fullname)
             if cidmap then

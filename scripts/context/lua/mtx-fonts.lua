@@ -10,9 +10,9 @@ if not modules then modules = { } end modules ['mtx-fonts'] = {
 
 if not fontloader then fontloader = fontforge end
 
-dofile(resolvers.find_file("font-otp.lua","tex"))
-dofile(resolvers.find_file("font-syn.lua","tex"))
-dofile(resolvers.find_file("font-mis.lua","tex"))
+dofile(resolvers.findfile("font-otp.lua","tex"))
+dofile(resolvers.findfile("font-syn.lua","tex"))
+dofile(resolvers.findfile("font-mis.lua","tex"))
 
 scripts       = scripts       or { }
 scripts.fonts = scripts.fonts or { }
@@ -33,7 +33,7 @@ function fonts.names.statistics()
 
     logs.simple("cache uuid      : %s", data.cache_uuid)
     logs.simple("cache version   : %s", data.cache_version)
-    logs.simple("number of trees : %s", #data.data_state)
+    logs.simple("number of trees : %s", #data.datastate)
     logs.simpleline()
     logs.simple("number of fonts : %s", statistics.fonts or 0)
     logs.simple("used files      : %s", statistics.readfiles or 0)
@@ -82,7 +82,7 @@ function fonts.names.simple()
         end
         logs.report("fontnames","saving names in '%s'",name)
         io.savedata(name,table.serialize(simplified,true))
-        local data = io.loaddata(resolvers.find_file("font-dum.lua","tex"))
+        local data = io.loaddata(resolvers.findfile("font-dum.lua","tex"))
         local dummy = string.match(data,"fonts%.names%.version%s*=%s*([%d%.]+)")
         if tonumber(dummy) ~= simpleversion then
             logs.report("fontnames","warning: version number %s in 'font-dum' does not match database version number %s",dummy or "?",simpleversion)
@@ -304,7 +304,7 @@ function scripts.fonts.save()
         end
     end
     if name and name ~= "" then
-        local filename = resolvers.find_file(name) -- maybe also search for opentype
+        local filename = resolvers.findfile(name) -- maybe also search for opentype
         if filename and filename ~= "" then
             local suffix = string.lower(file.extname(filename))
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' or suffix == "dfont" then

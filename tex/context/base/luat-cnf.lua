@@ -9,13 +9,15 @@ if not modules then modules = { } end modules ['luat-cnf'] = {
 local type, next, tostring, tonumber =  type, next, tostring, tonumber
 local format, concat, find = string.format, table.concat, string.find
 
+local allocate = utilities.storage.allocate
+
 texconfig.kpse_init    = false
 texconfig.shell_escape = 't'
 
 luatex       = luatex or { }
 local luatex = luatex
 
-local variablenames = { -- most of this becomes obsolete
+local variablenames = allocate { -- most of this becomes obsolete
     'buf_size',         --  3000
     'dvi_buf_size',     -- 16384
     'error_line',       --    79
@@ -37,10 +39,10 @@ local variablenames = { -- most of this becomes obsolete
 }
 
 local function initialize()
-    local t, var_value = { }, resolvers.var_value
+    local t, variable = allocate(), resolvers.variable
     for i=1,#variablenames do
         local name = variablenames[i]
-        local value = var_value(name)
+        local value = variable(name)
         value = tonumber(value) or value
         texconfig[name], t[name] = value, value
     end
@@ -89,6 +91,7 @@ function texconfig.init()
         },
         obsolete = {
             "fontforge", -- can be filled by luat-log
+            "kpse",
         },
         builtin = builtin, -- to be filled
         globals = globals, -- to be filled

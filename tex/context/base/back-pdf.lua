@@ -114,7 +114,7 @@ function nodeinjections.switchlayer(name)
     return copy_node(c)
 end
 
--- code
+-- code, will move to lpdf-*
 
 function nodeinjections.insertmovie(specification)
     -- managed in figure inclusion: width, height, factor, repeat, controls, preview, label, foundname

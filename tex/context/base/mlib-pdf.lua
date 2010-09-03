@@ -10,6 +10,8 @@ local format, concat, gsub = string.format, table.concat, string.gsub
 local texsprint = tex.sprint
 local abs, sqrt, round = math.abs, math.sqrt, math.round
 
+local allocate = utilities.storage.allocate
+
 local report_mplib = logs.new("mplib")
 
 local mplib = mplib
@@ -24,6 +26,7 @@ local metapost     = metapost
 metapost.multipass = false
 metapost.n         = 0
 metapost.optimize  = true -- false
+metapost.specials  = allocate()
 
 --~ Because in MKiV we always have two passes, we save the objects. When an extra
 --~ mp run is done (due to for instance texts identifier in the parse pass), we
@@ -224,8 +227,6 @@ local function flushconcatpath(path, t, open)
 end
 
 metapost.flushnormalpath = flushnormalpath
-
-metapost.specials = metapost.specials or { }
 
 -- we have two extension handlers, one for pre and postscripts, and one for colors
 

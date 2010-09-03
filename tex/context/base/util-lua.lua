@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['util-lua'] = {
 }
 
 utilities        = utilities or {}
-utilities.lua    = utilities.merger or { }
+utilities.lua    = utilities.lua or { }
 utilities.report = utilities.report or print
 
 function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true

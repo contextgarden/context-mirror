@@ -15,6 +15,8 @@ local abs = math.abs
 local getn = table.getn
 local lpegmatch = lpeg.match
 
+local allocate = utilities.storage.allocate
+
 local trace_private    = false  trackers.register("otf.private",      function(v) trace_private      = v end)
 local trace_loading    = false  trackers.register("otf.loading",      function(v) trace_loading      = v end)
 local trace_features   = false  trackers.register("otf.features",     function(v) trace_features     = v end)
@@ -79,8 +81,10 @@ otf.features         = otf.features         or { }
 otf.features.list    = otf.features.list    or { }
 otf.features.default = otf.features.default or { }
 
-otf.enhancers        = otf.enhancers or { }
+otf.enhancers        = allocate()
 local enhancers      = otf.enhancers
+
+local definers       = fonts.definers
 
 otf.glists           = { "gsub", "gpos" }
 
@@ -89,7 +93,6 @@ otf.pack             = true  -- beware: also sync font-mis.lua
 otf.syncspace        = true
 otf.notdef           = false
 otf.cache            = containers.define("fonts", "otf", otf.version, true)
-otf.cleanup_aat      = false -- only context
 
 local wildcard = "*"
 local default  = "dflt"
@@ -100,7 +103,7 @@ local default  = "dflt"
 
 -- we can have more local functions
 
-otf.tables.global_fields = table.tohash {
+otf.tables.global_fields = allocate( table.tohash {
     "lookups",
     "glyphs",
     "subfonts",
@@ -116,9 +119,9 @@ otf.tables.global_fields = table.tohash {
     "kern_classes",
     "gpos",
     "gsub"
-}
+} )
 
-otf.tables.valid_fields = {
+otf.tables.valid_fields = allocate( {
     "anchor_classes",
     "ascent",
     "cache_version",
@@ -176,21 +179,18 @@ otf.tables.valid_fields = {
     "weight",
     "weight_width_slope_only",
     "xuid",
-}
+} )
 
 --[[ldx--
 <p>Here we go.</p>
 --ldx]]--
 
 local function load_featurefile(ff,featurefile)
-    if featurefile then
-        featurefile = resolvers.find_file(file.addsuffix(featurefile,'fea'),'fea')
-        if featurefile and featurefile ~= "" then
-            if trace_loading then
-                report_otf("featurefile: %s", featurefile)
-            end
-            fontloader.apply_featurefile(ff, featurefile)
+    if featurefile and featurefile ~= "" then
+        if trace_loading then
+            report_otf("featurefile: %s", featurefile)
         end
+        fontloader.apply_featurefile(ff, featurefile)
     end
 end
 
@@ -215,8 +215,8 @@ local ordered_enhancers = { -- implemented later
     "flatten glyph lookups", "flatten anchor tables", "flatten feature tables",
     "simplify glyph lookups", -- some saving
     "prepare luatex tables",
-    "analyse features", "rehash features",
-    "analyse anchors", "analyse marks", "analyse unicodes", "analyse subtables",
+    "analyze features", "rehash features",
+    "analyze anchors", "analyze marks", "analyze unicodes", "analyze subtables",
     "check italic correction","check math",
     "share widths",
     "strip not needed data",
@@ -224,7 +224,7 @@ local ordered_enhancers = { -- implemented later
     "check math parameters",
 }
 
-local add_dimensions, show_feature_order -- implemented later
+local adddimensions, showfeatureorder -- implemented later
 
 function otf.load(filename,format,sub,featurefile)
     local name = file.basename(file.removesuffix(filename))
@@ -239,8 +239,50 @@ function otf.load(filename,format,sub,featurefile)
         hash = hash .. "-" .. sub
     end
     hash = containers.cleanname(hash)
+    local featurefiles
+    if featurefile then
+        featurefiles = { }
+        for s in gmatch(featurefile,"[^,]+") do
+            local name = resolvers.findfile(file.addsuffix(s,'fea'),'fea') or ""
+            if name == "" then
+                report_otf("loading: no featurefile '%s'",s)
+            else
+                local attr = lfs.attributes(name)
+                featurefiles[#featurefiles+1] = {
+                    name = name,
+                    size = attr.size or 0,
+                    time = attr.modification or 0,
+                }
+            end
+        end
+        if #featurefiles == 0 then
+            featurefiles = nil
+        end
+    end
     local data = containers.read(otf.cache,hash)
-    if not data or data.verbose ~= fonts.verbose or data.size ~= size or data.time ~= time then
+    local reload = not data or data.verbose ~= fonts.verbose or data.size ~= size or data.time ~= time
+    if not reload then
+        local featuredata = data.featuredata
+        if featurefiles then
+            if not featuredata or #featuredata ~= #featurefiles then
+                reload = true
+            else
+                for i=1,#featurefiles do
+                    local fi, fd = featurefiles[i], featuredata[i]
+                    if fi.name ~= fd.name or fi.size ~= fd.size or fi.time ~= fd.time then
+                        reload = true
+                        break
+                    end
+                end
+            end
+        elseif featuredata then
+            reload = true
+        end
+        if reload then
+           report_otf("loading: forced reload due to changed featurefile specification: %s",featurefile or "--")
+        end
+     end
+     if reload then
         report_otf("loading: %s (hash: %s)",filename,hash)
         local ff, messages
         if sub then
@@ -260,7 +302,11 @@ function otf.load(filename,format,sub,featurefile)
             report_otf("font loaded okay")
         end
         if ff then
-            load_featurefile(ff,featurefile)
+            if featurefiles then
+                for i=1,#featurefiles do
+                    load_featurefile(ff,featurefiles[i].name)
+                end
+            end
             data = fontloader.to_table(ff)
             fontloader.close(ff)
             if data then
@@ -275,6 +321,9 @@ function otf.load(filename,format,sub,featurefile)
                 end
                 data.size = size
                 data.time = time
+                if featurefiles then
+                    data.featuredata = featurefiles
+                end
                 data.verbose = fonts.verbose
                 report_otf("saving in cache: %s",filename)
                 data = containers.write(otf.cache, hash, data)
@@ -293,15 +342,15 @@ function otf.load(filename,format,sub,featurefile)
             report_otf("loading from cache: %s",hash)
         end
         enhance("unpack",data,filename,false) -- no message here
-        add_dimensions(data)
+        adddimensions(data)
         if trace_sequences then
-            show_feature_order(data,filename)
+            showfeatureorder(data,filename)
         end
     end
     return data
 end
 
-add_dimensions = function(data)
+adddimensions = function(data)
     -- todo: forget about the width if it's the defaultwidth (saves mem)
     -- we could also build the marks hash here (instead of storing it)
     if data then
@@ -337,7 +386,7 @@ add_dimensions = function(data)
     end
 end
 
-local function show_feature_order(otfdata,filename)
+local function showfeatureorder(otfdata,filename)
     local sequences = otfdata.luatex.sequences
     if sequences and #sequences > 0 then
         if trace_loading then
@@ -410,11 +459,6 @@ enhancers["prepare luatex tables"] = function(data,filename)
     luatex.creator = "context mkiv"
 end
 
-enhancers["cleanup aat"] = function(data,filename)
-    if otf.cleanup_aat then
-    end
-end
-
 local function analyze_features(g, features)
     if g then
         local t, done = { }, { }
@@ -438,7 +482,7 @@ local function analyze_features(g, features)
     return nil
 end
 
-enhancers["analyse features"] = function(data,filename)
+enhancers["analyze features"] = function(data,filename)
  -- local luatex = data.luatex
  -- luatex.gposfeatures = analyze_features(data.gpos)
  -- luatex.gsubfeatures = analyze_features(data.gsub)
@@ -475,7 +519,7 @@ enhancers["rehash features"] = function(data,filename)
     end
 end
 
-enhancers["analyse anchors"] = function(data,filename)
+enhancers["analyze anchors"] = function(data,filename)
     local classes = data.anchor_classes
     local luatex = data.luatex
     local anchor_to_lookup, lookup_to_anchor = { }, { }
@@ -501,7 +545,7 @@ enhancers["analyse anchors"] = function(data,filename)
     end
 end
 
-enhancers["analyse marks"] = function(data,filename)
+enhancers["analyze marks"] = function(data,filename)
     local glyphs = data.glyphs
     local marks = { }
     data.luatex.marks = marks
@@ -513,9 +557,9 @@ enhancers["analyse marks"] = function(data,filename)
     end
 end
 
-enhancers["analyse unicodes"] = fonts.map.add_to_unicode
+enhancers["analyze unicodes"] = fonts.map.addtounicode
 
-enhancers["analyse subtables"] = function(data,filename)
+enhancers["analyze subtables"] = function(data,filename)
     data.luatex = data.luatex or { }
     local luatex = data.luatex
     local sequences = { }
@@ -654,8 +698,8 @@ enhancers["prepare unicode"] = function(data,filename)
     else
         mapmap = mapmap.map
     end
-    local criterium = fonts.private
-    local private = fonts.private
+    local criterium = fonts.privateoffset
+    local private = criterium
     for index, glyph in next, glyphs do
         if index > 0 then
             local name = glyph.name
@@ -1360,7 +1404,7 @@ enhancers["flatten feature tables"] = function(data,filename)
     end
 end
 
-enhancers.patches = enhancers.patches or { }
+enhancers.patches = allocate()
 
 enhancers["patch bugs"] = function(data,filename)
     local basename = file.basename(lower(filename))
@@ -1575,7 +1619,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         end
         spaceunits = tonumber(spaceunits) or tfm.units/2 -- 500 -- brrr
         -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
-        local filename = fonts.tfm.checked_filename(luatex)
+        local filename = fonts.tfm.checkedfilename(luatex)
         local fontname = metadata.fontname
         local fullname = metadata.fullname or fontname
         local cidinfo  = data.cidinfo
@@ -1687,7 +1731,7 @@ local function otftotfm(specification)
                 tfmdata.has_italic = otfdata.metadata.has_italic
                 if not tfmdata.language then tfmdata.language = 'dflt' end
                 if not tfmdata.script   then tfmdata.script   = 'dflt' end
-                shared.processes, shared.features = otf.setfeatures(tfmdata,fonts.define.check(features,otf.features.default))
+                shared.processes, shared.features = otf.setfeatures(tfmdata,definers.check(features,otf.features.default))
             end
         end
         containers.write(tfm.cache,cache_id,tfmdata)
@@ -1697,7 +1741,7 @@ end
 
 otf.features.register('mathsize')
 
-function tfm.read_from_open_type(specification) -- wrong namespace
+function tfm.read_from_otf(specification) -- wrong namespace
     local tfmtable = otftotfm(specification)
     if tfmtable then
         local otfdata = tfmtable.shared.otfdata
@@ -1735,7 +1779,7 @@ function tfm.read_from_open_type(specification) -- wrong namespace
             end
         end
         tfmtable = tfm.scale(tfmtable,s,specification.relativeid)
-        if tfm.fontname_mode == "specification" then
+        if tfm.fontnamemode == "specification" then
             -- not to be used in context !
             local specname = specification.specification
             if specname then
@@ -1753,7 +1797,7 @@ end
 
 -- helpers
 
-function otf.collect_lookups(otfdata,kind,script,language)
+function otf.collectlookups(otfdata,kind,script,language)
     -- maybe store this in the font
     local sequences = otfdata.luatex.sequences
     if sequences then

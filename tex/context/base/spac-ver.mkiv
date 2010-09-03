@@ -1501,7 +1501,7 @@
 
 \def\dododosnaptogrid#1%
   {\ifvbox\nextbox % this will go away
-     \ctxlua{nodes.collapsevbox(\number\nextbox)}% isn't that already done?
+     \ctxlua{builders.vspacing.collapsevbox(\number\nextbox)}% isn't that already done?
    \fi
    \doifelsenothing{#1}{\setsnapvalue\v!normal}{\autosetsnapvalue{#1}}%
    \ctxlua{builders.vspacing.snapbox(\number\nextbox,\number\attribute\snapmethodattribute)}%
@@ -1608,19 +1608,6 @@
 
 % \start \dosetstretch{.25em} \setuptolerance[tolerant,stretch] \input tufte \endgraf \stop
 % \start \dosetstretch{.5em} effe flink doorfietsen \stop
-
-% \def\dosetupgridsnapping % calls too often, only needed in gridsnapping
-%   {\ctxlua{nodes.setsnapvalue(1,\number\openstrutheight,\number\openstrutdepth)}}
-%
-% \def\doenablegridsnapping
-%   {\attribute\snapcategoryattribute\plusone
-%    \topskip\strutht
-%    \offinterlineskip}
-%
-% \def\dodisablegridsnapping
-%   {\attribute\snapcategoryattribute\attributeunsetvalue
-%    % reset topskip
-%    \oninterlineskip}
 
 % experimental code, not yet interfaced:
 
@@ -1776,8 +1763,8 @@
    \fi\fi}
 
 \def\dovspacingyes[#1]%
- %{\ifmmode\else\ctxlua{builders.vspacing.analyse("\iffirstargument#1\else\s!default\fi")}\fi}
-  {\ifmmode\else\ctxlua{builders.vspacing.analyse("\iffirstargument#1\else\currentvspacing\fi")}\fi}
+ %{\ifmmode\else\ctxlua{builders.vspacing.analyze("\iffirstargument#1\else\s!default\fi")}\fi}
+  {\ifmmode\else\ctxlua{builders.vspacing.analyze("\iffirstargument#1\else\currentvspacing\fi")}\fi}
 
 \def\dovspacingnop[#1]%
   {\ifmmode\else\par\fi}

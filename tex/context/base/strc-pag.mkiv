@@ -17,10 +17,6 @@
 
 \unprotect
 
-% Hacks:
-
-\let\preparepageprefix\gobbleoneargument
-
 % Allocation:
 
 \countdef\realpageno  = 0  \realpageno  = 1
@@ -40,7 +36,7 @@
 \def\initializepagecounters{\the\everyinitializepagecounters}
 
 \appendtoks
-  \initializepagecounters
+    \initializepagecounters
 \to \everyjob
 
 % Page numbers are kind of independent of each other and therefore they

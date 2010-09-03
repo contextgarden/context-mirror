@@ -23,7 +23,7 @@ local calltemplate      = "%9i %s"
 local totaltemplate     = "%i internal calls, %i function calls taking %3.4f seconds"
 local thresholdtemplate = "thresholds: %i internal calls, %i function calls, %i seconds"
 
-function scripts.profiler.analyse(filename)
+function scripts.profiler.analyze(filename)
     local f = io.open(filename)
     if f then
         local times, counts, calls = { }, { }, { }
@@ -101,7 +101,7 @@ function scripts.profiler.analyse(filename)
     end
 end
 
-function scripts.profiler.x_analyse(filename)
+function scripts.profiler.x_analyze(filename)
     local f = io.open(filename)
     local calls = { }
     local lines = 0
@@ -151,20 +151,20 @@ local criterium = 100
     end
 end
 
---~ scripts.profiler.analyse("t:/manuals/mk/mk-fonts-profile.lua")
---~ scripts.profiler.analyse("t:/manuals/mk/mk-introduction-profile.lua")
+--~ scripts.profiler.analyze("t:/manuals/mk/mk-fonts-profile.lua")
+--~ scripts.profiler.analyze("t:/manuals/mk/mk-introduction-profile.lua")
 
 logs.extendbanner("ConTeXt MkIV LuaTeX Profiler 1.00")
 
 messages.help = [[
---analyse             analyse lua calls
---trace               analyse tex calls
+--analyze             analyze lua calls
+--trace               analyze tex calls
 ]]
 
-if environment.argument("analyse") then
-    scripts.profiler.analyse(environment.files[1] or "luatex-profile.log")
+if environment.argument("analyze") then
+    scripts.profiler.analyze(environment.files[1] or "luatex-profile.log")
 elseif environment.argument("trace") then
-    scripts.profiler.analyse(environment.files[1] or "temp.log")
+    scripts.profiler.analyze(environment.files[1] or "temp.log")
 else
     logs.help(messages.help)
 end

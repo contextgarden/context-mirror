@@ -15,21 +15,21 @@ local resolvers = resolvers
 
 local report_resolvers = logs.new("resolvers")
 
-function resolvers.update_script(oldname,newname) -- oldname -> own.name, not per se a suffix
+function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per se a suffix
     local scriptpath = "scripts/context/lua"
     newname = file.addsuffix(newname,"lua")
-    local oldscript = resolvers.clean_path(oldname)
+    local oldscript = resolvers.cleanpath(oldname)
     if trace_locating then
         report_resolvers("to be replaced old script %s", oldscript)
     end
-    local newscripts = resolvers.find_files(newname) or { }
+    local newscripts = resolvers.findfiles(newname) or { }
     if #newscripts == 0 then
         if trace_locating then
             report_resolvers("unable to locate new script")
         end
     else
         for i=1,#newscripts do
-            local newscript = resolvers.clean_path(newscripts[i])
+            local newscript = resolvers.cleanpath(newscripts[i])
             if trace_locating then
                 report_resolvers("checking new script %s", newscript)
             end

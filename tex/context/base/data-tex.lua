@@ -22,7 +22,7 @@ local finders, openers, loaders = resolvers.finders, resolvers.openers, resolver
 local checkgarbage = utilities.garbagecollector and utilities.garbagecollector.check
 
 function finders.generic(tag,filename,filetype)
-    local foundname = resolvers.find_file(filename,filetype)
+    local foundname = resolvers.findfile(filename,filetype)
     if foundname and foundname ~= "" then
         if trace_locating then
             report_resolvers("%s finder: file '%s' found",tag,filename)
@@ -39,15 +39,17 @@ end
 --~ local lpegmatch = lpeg.match
 --~ local getlines = lpeg.Ct(lpeg.patterns.textline)
 
+resolvers.filters = resolvers.filters or { }
+
 local input_translator, utf_translator, user_translator = nil, nil, nil
 
-function resolvers.install_text_filter(name,func)
+function resolvers.filters.install(name,func)
         if name == "input" then input_translator = func
     elseif name == "utf"   then utf_translator   = func
     elseif name == "user"  then user_translator  = func end
 end
 
-function openers.text_opener(filename,file_handle,tag)
+function openers.textopener(filename,file_handle,tag)
     local u = unicode.utftype(file_handle)
     local t = { }
     if u > 0  then
@@ -161,7 +163,7 @@ function openers.generic(tag,filename)
             if trace_locating then
                 report_resolvers("%s opener, file '%s' opened",tag,filename)
             end
-            return openers.text_opener(filename,f,tag)
+            return openers.textopener(filename,f,tag)
         end
     end
     if trace_locating then

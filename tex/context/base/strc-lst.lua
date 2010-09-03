@@ -17,34 +17,38 @@ local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
+local allocate, mark, checked = utilities.storage.allocate, utilities.storage.mark, utilities.storage.checked
 
 local trace_lists = false  trackers.register("structures.lists", function(v) trace_lists = v end)
 
 local report_lists = logs.new("lists")
 
-local ctxcatcodes = tex.ctxcatcodes
+local ctxcatcodes    = tex.ctxcatcodes
 
-local structures = structures
-
-structures.lists     = structures.lists or { }
-
+local structures     = structures
 local lists          = structures.lists
 local sections       = structures.sections
 local helpers        = structures.helpers
 local documents      = structures.documents
 local pages          = structures.pages
+local tags           = structures.tags
 local references     = structures.references
 
-lists.collected      = lists.collected or { }
-lists.tobesaved      = lists.tobesaved or { }
+local collected      = allocate()
+local tobesaved      = allocate()
+local cached         = allocate()
+local pushed         = allocate()
+
+lists.collected      = collected
+lists.tobesaved      = tobesaved
+
 lists.enhancers      = lists.enhancers or { }
-lists.internals      = lists.internals or { }
-lists.ordered        = lists.ordered   or { }
-lists.cached         = lists.cached    or { }
+lists.internals      = allocate(lists.internals or { }) -- to be checked
+lists.ordered        = allocate(lists.ordered   or { }) -- to be checked
+lists.cached         = cached
+lists.pushed         = pushed
 
 references.specials  = references.specials or { }
-
-local cached, pushed = lists.cached, { }
 
 local variables = interfaces.variables
 local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.numberatdepth
@@ -52,8 +56,8 @@ local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.nu
 local function initializer()
     -- create a cross reference between internal references
     -- and list entries
-    local collected = lists.collected
-    local internals = references.internals
+    local collected = mark(lists.collected)
+    local internals = checked(references.internals)
     local ordered   = lists.ordered
     for i=1,#collected do
         local c = collected[i]
@@ -84,9 +88,7 @@ local function initializer()
     end
 end
 
-if job then
-    job.register('structures.lists.collected', lists.tobesaved, initializer)
-end
+job.register('structures.lists.collected', tobesaved, initializer)
 
 function lists.push(t)
     local r = t.references
@@ -94,6 +96,9 @@ function lists.push(t)
     local p = pushed[i]
     if not p then
         p = #cached + 1
+        if r.tag == nil then
+            r.tag = tags.last and tags.last(t.metadata.kind) -- maybe kind but then also check elsewhere
+        end
         cached[p] = helpers.simplify(t)
         pushed[i] = p
     end
@@ -165,7 +170,7 @@ end
 
 -- will be split
 
-local function filter_collected(names, criterium, number, collected, forced, nested) -- names is hash or string
+local function filtercollected(names, criterium, number, collected, forced, nested) -- names is hash or string
     local numbers, depth = documents.data.numbers, documents.data.depth
     local result, detail = { }, nil
     criterium = gsub(criterium," ","") -- not needed
@@ -203,7 +208,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
         end
     elseif criterium == variables.current then
         if depth == 0 then
-            return filter_collected(names,variables.intro,number,collected,forced)
+            return filtercollected(names,variables.intro,number,collected,forced)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -235,7 +240,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
     elseif criterium == variables.here then
         -- this is quite dirty ... as cnumbers is not sparse we can misuse #cnumbers
         if depth == 0 then
-            return filter_collected(names,variables.intro,number,collected,forced)
+            return filtercollected(names,variables.intro,number,collected,forced)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -267,7 +272,7 @@ local function filter_collected(names, criterium, number, collected, forced, nes
         end
     elseif criterium == variables.previous then
         if depth == 0 then
-            return filter_collected(names,variables.intro,number,collected,forced)
+            return filtercollected(names,variables.intro,number,collected,forced)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -299,11 +304,11 @@ local function filter_collected(names, criterium, number, collected, forced, nes
     elseif criterium == variables["local"] then -- not yet ok
         local nested = nesting[#nesting]
         if nested then
-            return filter_collected(names,nested.name,nested.number,collected,forced,nested)
+            return filtercollected(names,nested.name,nested.number,collected,forced,nested)
         elseif sections.autodepth(documents.data.numbers) == 0 then
-            return filter_collected(names,variables.all,number,collected,forced)
+            return filtercollected(names,variables.all,number,collected,forced)
         else
-            return filter_collected(names,variables.current,number,collected,forced)
+            return filtercollected(names,variables.current,number,collected,forced)
         end
     else -- sectionname, number
         -- not the same as register
@@ -343,10 +348,10 @@ local function filter_collected(names, criterium, number, collected, forced, nes
     return result
 end
 
-lists.filter_collected = filter_collected
+lists.filtercollected = filtercollected
 
 function lists.filter(names, criterium, number, forced)
-    return filter_collected(names, criterium, number, lists.collected, forced)
+    return filtercollected(names, criterium, number, lists.collected, forced)
 end
 
 lists.result = { }

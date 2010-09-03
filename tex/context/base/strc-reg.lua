@@ -12,15 +12,13 @@ local format, gmatch, concat = string.format, string.gmatch, table.concat
 local utfchar = utf.char
 local lpegmatch = lpeg.match
 local ctxcatcodes  = tex.ctxcatcodes
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local trace_registers = false  trackers.register("structures.registers", function(v) trace_registers = v end)
 
 local report_registers = logs.new("registers")
 
 local structures      = structures
-
-structures.registers  = structures.registers or { }
-
 local registers       = structures.registers
 local helpers         = structures.helpers
 local sections        = structures.sections
@@ -42,7 +40,7 @@ local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.nu
 -- some day we will share registers and lists (although there are some conceptual
 -- differences in the application of keywords)
 
-local function filter_collected(names,criterium,number,collected,prevmode)
+local function filtercollected(names,criterium,number,collected,prevmode)
     if not criterium or criterium == "" then criterium = variables.all end
     local data = documents.data
     local numbers, depth = data.numbers, data.depth
@@ -132,9 +130,9 @@ local function filter_collected(names,criterium,number,collected,prevmode)
         end
     elseif criterium == variables["local"] then
         if sections.autodepth(data.numbers) == 0 then
-            return filter_collected(names,variables.all,number,collected,prevmode)
+            return filtercollected(names,variables.all,number,collected,prevmode)
         else
-            return filter_collected(names,variables.current,number,collected,prevmode)
+            return filtercollected(names,variables.current,number,collected,prevmode)
         end
     else -- sectionname, number
         -- beware, this works ok for registers
@@ -172,19 +170,20 @@ local function filter_collected(names,criterium,number,collected,prevmode)
     return result
 end
 
-registers.collected = registers.collected or { }
-registers.tobesaved = registers.tobesaved or { }
+local tobesaved, collected = allocate(), allocate()
 
-registers.filter_collected = filter_collected
+registers.collected = collected
+registers.tobesaved = tobesaved
+
+registers.filtercollected = filtercollected
 
 -- we follow a different strategy than by lists, where we have a global
 -- result table; we might do that here as well but since sorting code is
 -- older we delay that decision
 
-local tobesaved, collected = registers.tobesaved, registers.collected
-
 local function initializer()
-    tobesaved, collected = registers.tobesaved, registers.collected
+    tobesaved = mark(registers.tobesaved)
+    collected = mark(registers.collected)
     local internals = references.internals
     for name, list in next, collected do
         local entries = list.entries
@@ -201,7 +200,7 @@ local function initializer()
     end
 end
 
-job.register('structures.registers.collected', registers.tobesaved, initializer)
+job.register('structures.registers.collected', tobesaved, initializer)
 
 local function allocate(class)
     local d = tobesaved[class]
@@ -332,7 +331,7 @@ function registers.compare(a,b)
 end
 
 function registers.filter(data,options)
-    data.result = registers.filter_collected(nil,options.criterium,options.number,data.entries,true)
+    data.result = registers.filtercollected(nil,options.criterium,options.number,data.entries,true)
 end
 
 function registers.prepare(data)
@@ -415,7 +414,7 @@ function registers.finalize(data,options)
     data.result = split
 end
 
-function registers.analysed(class,options)
+function registers.analyzed(class,options)
     local data = collected[class]
     if data and data.entries then
         options = options or { }
@@ -446,6 +445,13 @@ end
 
 function registers.flush(data,options,prefixspec,pagespec)
     local equal = table.are_equal
+    -- local usedtags = { }
+    -- for i=1,#result do
+    --     usedtags[#usedtags+1] = result[i].tag
+    -- end
+    --
+    -- texsprint(ctxcatcodes,"\\def\\usedregistertags{",concat(usedtags,","),"}") -- todo: { } and escape special chars
+    --
     texsprint(ctxcatcodes,"\\startregisteroutput")
     local collapse_singles = options.compress == interfaces.variables.yes
     local collapse_ranges  = options.compress == interfaces.variables.all
@@ -453,8 +459,8 @@ function registers.flush(data,options,prefixspec,pagespec)
     -- todo ownnumber
     local function pagenumber(entry)
         local er = entry.references
-        texsprint(ctxcatcodes,format("\\registeronepage{%s}{%s}{",er.internal or 0,er.realpage or 0)) -- internal realpage content
         local proc = entry.processors and entry.processors[2]
+        texsprint(ctxcatcodes,"\\registeronepage{",er.internal or 0,"}{",er.realpage or 0,"}{") -- internal realpage content
         if proc then
             texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
             helpers.prefixpage(entry,prefixspec,pagespec)
@@ -466,8 +472,8 @@ function registers.flush(data,options,prefixspec,pagespec)
     end
     local function pagerange(f_entry,t_entry,is_last)
         local er = f_entry.references
-        texsprint(ctxcatcodes,format("\\registerpagerange{%s}{%s}{",er.internal or 0,er.realpage or 0))
         local proc = f_entry.processors and f_entry.processors[2]
+        texsprint(ctxcatcodes,"\\registerpagerange{",er.internal or 0,"}{",er.realpage or 0,"}{")
         if proc then
             texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
             helpers.prefixpage(f_entry,prefixspec,pagespec)
@@ -476,7 +482,7 @@ function registers.flush(data,options,prefixspec,pagespec)
             helpers.prefixpage(f_entry,prefixspec,pagespec)
         end
         local er = t_entry.references
-        texsprint(ctxcatcodes,format("}{%s}{%s}{",er.internal or 0,er.lastrealpage or er.realpage or 0))
+        texsprint(ctxcatcodes,"}{",er.internal or 0,"}{",er.lastrealpage or er.realpage or 0,"}{")
         if is_last then
             if proc then
                 texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
@@ -502,7 +508,7 @@ function registers.flush(data,options,prefixspec,pagespec)
         local done = { false, false, false, false }
         local data = sublist.data
         local d, n = 0, 0
-        texsprint(ctxcatcodes,format("\\startregistersection{%s}",sublist.tag))
+        texsprint(ctxcatcodes,"\\startregistersection{",sublist.tag,"}")
         while d < #data do
             d = d + 1
             local entry = data[d]
@@ -516,7 +522,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                     if e[i] and e[i] ~= "" then
                         done[i] = e[i]
                         if n == i then
-                            texsprint(ctxcatcodes,format("\\stopregisterentries\\startregisterentries{%s}",n))
+                            texsprint(ctxcatcodes,"\\stopregisterentries\\startregisterentries{",n,"}")
                         else
                             while n > i do
                                 n = n - 1
@@ -524,11 +530,12 @@ function registers.flush(data,options,prefixspec,pagespec)
                             end
                             while n < i do
                                 n = n + 1
-                                texsprint(ctxcatcodes,format("\\startregisterentries{%s}",n))
+                                texsprint(ctxcatcodes,"\\startregisterentries{",n,"}")
                             end
                         end
+                        local internal = entry.references.internal
                         if metadata then
-                            texsprint(ctxcatcodes,"\\registerentry{")
+                            texsprint(ctxcatcodes,"\\registerentry{",internal,"}{")
                             local proc = entry.processors and entry.processors[1]
                             if proc then
                                 texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
@@ -541,11 +548,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                         else
                             local proc = entry.processors and entry.processors[1]
                             if proc then
-                                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-                                texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
-                                texsprint(ctxcatcodes,"}")
+                                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{\\registerentry{",internal,"}{",e[i],"}}")
                             else
-                                texsprint(ctxcatcodes,format("\\registerentry{%s}",e[i]))
+                                texsprint(ctxcatcodes,"\\registerentry{",internal,"}{",e[i],"}")
                             end
                         end
                     else
@@ -709,11 +714,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                 texsprint(ctxcatcodes,"\\startregisterseewords")
                 local proc = entry.processors and entry.processors[1]
                 if proc then
-                    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-                    texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
-                    texsprint(ctxcatcodes,"}")
+                    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{\\registeroneword{0}{0}{",entry.seeword.text,"}}") -- todo: internal
                 else
-                    texsprint(ctxcatcodes,format("\\registeroneword{0}{0}{%s}",entry.seeword.text)) -- todo: internal
+                    texsprint(ctxcatcodes,"\\registeroneword{0}{0}{",entry.seeword.text,"}") -- todo: internal
                 end
                 texsprint(ctxcatcodes,"\\stopregisterseewords")
             end
@@ -730,12 +733,13 @@ function registers.flush(data,options,prefixspec,pagespec)
     data.metadata.sorted = false
 end
 
-function registers.analyse(class,options)
-    texwrite(registers.analysed(class,options))
+function registers.analyze(class,options)
+    texwrite(registers.analyzed(class,options))
 end
 
 function registers.process(class,...)
-    if registers.analysed(class,...) > 0 then
+    if registers.analyzed(class,...) > 0 then
         registers.flush(collected[class],...)
     end
 end
+

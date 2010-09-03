@@ -117,6 +117,7 @@
    \c!prefix=\v!both,
   %\c!expansion=,
 %\c!xmlsetup=,
+   \c!pagenumber=\v!yes,
    \c!pageprefixconnector=\endash,
    \c!pagesegments=2:2,
    \c!file=\jobname,
@@ -451,7 +452,7 @@
   {\begingroup
    \edef\currentregister{#1}%
    \setupregister[\currentregister][#2]%
-   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxlua{structures.registers.analyse('\currentregister',{
+   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxlua{structures.registers.analyze('\currentregister',{
         language  = "\registerparameter\s!language",
         compress  = "\registerparameter\c!compress",
         criterium = "\registerparameter\c!criterium",
@@ -563,8 +564,25 @@
   {\doifsomething{#1}
      {\doifnot{#1}\s!unknown
         {\doifelse{\registerparameter\c!indicator}\v!yes
-           {\expandcheckedcsname{\??id:\c!indicator:}{\registerparameter\c!alternative}{a}{#1}}
+           {\doregistercharacter{#1}}
            {\noregistercharacter{#1}}}}}
+
+% \def\doregistercharacter#1%
+%   {\expandcheckedcsname % why no \executeifdefined
+%      {\??id:\c!indicator:}%
+%      {\registerparameter\c!alternative}%
+%      {a}%
+%      {#1}}
+
+\def\doregistercharacter#1%
+  {\iflocation
+     \pagereference[\currentregister:\v!section:#1]%
+   \fi
+   \expandcheckedcsname % why no \executeifdefined
+     {\??id:\c!indicator:}%
+     {\registerparameter\c!alternative}%
+     {a}%
+     {#1}}
 
 \def\noregistercharacter#1%
   {\registerparameter\c!before
@@ -701,10 +719,20 @@
    \registerseeword{#3}%
    \dostoptagged}
 
-\def\defaultregisterentry#1%
+\def\doapplyregisterentrycommand#1%
   {\dostarttagged\t!registerentry\empty
    \registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#1}}}%
    \dostoptagged}
+
+\def\defaultregisterentry#1#2% #1 is pageref
+  {\def\currentregisterpageindex{#1}%
+   \iflocation
+     \doifelse{\registerparameter\c!interaction}\v!text
+       {\directgoto{\setlocationcolor\??ia\doapplyregisterentrycommand{#2}}[internal(#1)]}
+       {\doapplyregisterentrycommand{#2}}%
+   \else
+     \doapplyregisterentrycommand{#2}%
+   \fi}
 
 \def\defaultregisterseeword#1%
   {\dostarttagged\t!registersee\empty
@@ -760,7 +788,9 @@
    \def\registerpagerange         {\registerpagebuttonsymbol\gobblesixarguments}}
 
 \def\setregisterpagerendering
-  {\edef\currentregisterpagesymbol{\registerparameter\c!symbol}%
+  {\doifelse{\registerparameter\c!pagenumber}\v!no
+     {\let \currentregisterpagesymbol\v!none}
+     {\edef\currentregisterpagesymbol{\registerparameter\c!symbol}}%
    \ifx\currentregisterpagesymbol\empty
      \csname\??id:\c!symbol:\c!n\endcsname
    \else\ifcsname\??id:\c!symbol:\currentregisterpagesymbol\endcsname

@@ -15,17 +15,17 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local backends, lpdf = backends, lpdf
 
-local nodeinjections = backends.pdf.nodeinjections
-local codeinjections = backends.pdf.codeinjections
-local registrations  = backends.pdf.registrations
-local viewerlayers   = attributes.viewerlayers
+local nodeinjections   = backends.pdf.nodeinjections
+local codeinjections   = backends.pdf.codeinjections
+local registrations    = backends.pdf.registrations
+local viewerlayers     = attributes.viewerlayers
 
-local references     = structures.references
+local references       = structures.references
 
-references.executers = references.executers or { }
-local executers      = references.executers
+references.executers   = references.executers or { }
+local executers        = references.executers
 
-local variables      = interfaces.variables
+local variables        = interfaces.variables
 
 local pdfconstant      = lpdf.constant
 local pdfdictionary    = lpdf.dictionary
@@ -34,12 +34,12 @@ local pdfreference     = lpdf.reference
 local pdfflushobject   = lpdf.flushobject
 local pdfreserveobject = lpdf.reserveobject
 
-local pdf_ocg         = pdfconstant("OCG")
-local pdf_ocmd        = pdfconstant("OCMD")
-local pdf_off         = pdfconstant("OFF")
-local pdf_on          = pdfconstant("ON")
-local pdf_toggle      = pdfconstant("Toggle")
-local pdf_setocgstate = pdfconstant("SetOCGState")
+local pdf_ocg          = pdfconstant("OCG")
+local pdf_ocmd         = pdfconstant("OCMD")
+local pdf_off          = pdfconstant("OFF")
+local pdf_on           = pdfconstant("ON")
+local pdf_toggle       = pdfconstant("Toggle")
+local pdf_setocgstate  = pdfconstant("SetOCGState")
 
 local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdfconstant("OFF") } }
 

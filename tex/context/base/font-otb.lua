@@ -154,7 +154,7 @@ local splitter = lpeg.splitat(" ")
 local function prepare_base_substitutions(tfmdata,kind,value) -- we can share some code with the node features
     if value then
         local otfdata = tfmdata.shared.otfdata
-        local validlookups, lookuplist = otf.collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
+        local validlookups, lookuplist = otf.collectlookups(otfdata,kind,tfmdata.script,tfmdata.language)
         if validlookups then
             local ligatures = { }
             local unicodes = tfmdata.unicodes -- names to unicodes
@@ -266,7 +266,7 @@ end
 local function preparebasekerns(tfmdata,kind,value) -- todo what kind of kerns, currently all
     if value then
         local otfdata = tfmdata.shared.otfdata
-        local validlookups, lookuplist = otf.collect_lookups(otfdata,kind,tfmdata.script,tfmdata.language)
+        local validlookups, lookuplist = otf.collectlookups(otfdata,kind,tfmdata.script,tfmdata.language)
         if validlookups then
             local unicodes = tfmdata.unicodes -- names to unicodes
             local indices = tfmdata.indices

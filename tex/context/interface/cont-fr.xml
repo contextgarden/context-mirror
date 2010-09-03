@@ -6868,12 +6868,6 @@
         <cd:parameter name="hauteur">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
-        <cd:parameter name="voffset">
-          <cd:constant type="cd:dimension"/>
-        </cd:parameter>
-        <cd:parameter name="decalagehauteur">
-          <cd:constant type="cd:dimension"/>
-        </cd:parameter>
         <cd:parameter name="page">
           <cd:constant type="gauche"/>
           <cd:constant type="oui"/>

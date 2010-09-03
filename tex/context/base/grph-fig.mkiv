@@ -41,14 +41,14 @@
 
 \def\dodoplaceexternalfigure[#1][#2][#3][#4][#5]%
   {\bgroup
-\dostarttagged\t!image\empty
+   \dostarttagged\t!image\empty
    \pushmacro\textunderscore
    \edef\textunderscore{\string_}% brrr, temp hack, still needed?
    \calculateexternalfigure[][#1][#2][#3][#4][#5]% [] is dummy dwcomp
    \popmacro\textunderscore
-\global\setbox\foundexternalfigure\naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
+   \global\setbox\foundexternalfigure\naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
    \box\foundexternalfigure
-\dostoptagged
+   \dostoptagged
    \egroup}
 
 \def\externalfigurereplacement#1#2#3%
@@ -163,7 +163,7 @@
 
 \def\dodouseexternalfigure#1#2#3#4%
   {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[#1][#2][#3][#4]}%
-   \doanalyseexternalfigurecollection[#2][#4]}
+   \doanalyzeexternalfigurecollection[#2][#4]}
 
 \newconditional\inexternalfigurecollection
 \newdimen\xexternalfigurecollectionminwidth
@@ -171,7 +171,7 @@
 \newdimen\xexternalfigurecollectionminheight
 \newdimen\xexternalfigurecollectionmaxheight
 
-\def\doanalyseexternalfigurecollection[#1][#2]%
+\def\doanalyzeexternalfigurecollection[#1][#2]%
   {\ifconditional\inexternalfigurecollection
       \setfalse\inexternalfigurecollection
       \getfiguredimensions[#1][#2]%
@@ -572,7 +572,7 @@
    \fi\fi\fi}
 
 \def\dodotypesetfile#1#2#3#4% options settings-a filename settings-b
-  {\edef\typesetfilename{\ctxlua{tex.write(job.files.run("#3","#1"))}}%
+  {\edef\typesetfilename{\ctxlua{tex.write(job.files.context("#3","#1"))}}%
    \expanded{\externalfigure[\typesetfilename]}[#2,#4]}
 
 \setupexternalfigures

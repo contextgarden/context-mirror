@@ -45,6 +45,7 @@ local contains = table.contains
 local concat = table.concat
 local todimen = string.todimen
 local settings_to_array = utilities.parsers.settings_to_array
+local allocate = utilities.storage.allocate
 
 local ctxcatcodes    = tex.ctxcatcodes
 local variables      = interfaces.variables
@@ -96,16 +97,22 @@ function img.checksize(size)
     end
 end
 
+local indexed = { }
+
+function img.ofindex(n)
+    return indexed[n]
+end
+
 --- we can consider an grph-ini file
 
-figures                = figures           or { }
+figures                = figures or { }
 local figures          = figures
 
-figures.loaded         = figures.loaded    or { }
-figures.used           = figures.used      or { }
-figures.found          = figures.found     or { }
-figures.suffixes       = figures.suffixes  or { }
-figures.patterns       = figures.patterns  or { }
+figures.loaded         = allocate()
+figures.used           = allocate()
+figures.found          = allocate()
+figures.suffixes       = allocate()
+figures.patterns       = allocate()
 
 figures.boxnumber      = figures.boxnumber or 0
 figures.defaultsearch  = true
@@ -113,24 +120,24 @@ figures.defaultwidth   = 0
 figures.defaultheight  = 0
 figures.defaultdepth   = 0
 figures.nofprocessed   = 0
-figures.prefer_quality = true -- quality over location
+figures.preferquality  = true -- quality over location
 
-figures.localpaths = {
+figures.localpaths = allocate {
     ".", "..", "../.."
 }
-figures.cachepaths = {
+figures.cachepaths = allocate {
     prefix = "",
     path = ".",
     subpath = ".",
 }
 
-figures.paths  = table.copy(figures.localpaths)
+figures.paths  = allocate(table.copy(figures.localpaths))
 
-figures.order =  {
+figures.order =  allocate{
     "pdf", "mps", "jpg", "png", "jbig", "svg", "eps", "gif", "mov", "buffer", "tex",
 }
 
-figures.formats = {
+figures.formats = allocate{
     ["pdf"]    = { list = { "pdf" } },
     ["mps"]    = { patterns = { "mps", "%d+" } },
     ["jpg"]    = { list = { "jpg", "jpeg" } },
@@ -145,10 +152,10 @@ figures.formats = {
 }
 
 function figures.setlookups()
-    figures.suffixes, figures.patterns = { }, { }
+    local fs, fp = allocate(), allocate()
+    figures.suffixes, figures.patterns = fs, fp
     for _, format in next, figures.order do
         local data = figures.formats[format]
-        local fs, fp = figures.suffixes, figures.patterns
         local list = data.list
         if list then
             for i=1,#list do
@@ -441,7 +448,7 @@ end
 local resolve_too = true -- urls
 
 local function locate(request) -- name, format, cache
-    local askedname = resolvers.clean_path(request.name)
+    local askedname = resolvers.cleanpath(request.name)
     local foundname = figures.found[askedname .. "->" .. (request.conversion or "default")]
     if foundname then
         return foundname
@@ -526,7 +533,7 @@ local function locate(request) -- name, format, cache
                 end
             end
             if figures.defaultsearch then
-                local check = resolvers.find_file(askedname)
+                local check = resolvers.findfile(askedname)
                 if check and check ~= "" then
                     return register(askedname, {
                         askedname = askedname,
@@ -561,7 +568,7 @@ local function locate(request) -- name, format, cache
             end
         end
     else
-        if figures.prefer_quality then
+        if figures.preferquality then
             if trace_figures then
                 commands.writestatus("figures","strategy: unknown format, prefer quality")
             end
@@ -631,7 +638,7 @@ local function locate(request) -- name, format, cache
                 local list = figures.formats[format].list or { format }
                 for k=1,#list do
                     local suffix = list[k]
-                    local check = resolvers.find_file(file.replacesuffix(askedname,suffix))
+                    local check = resolvers.findfile(file.replacesuffix(askedname,suffix))
                     if check and check ~= "" then
                         return register(askedname, {
                             askedname = askedname,
@@ -650,22 +657,22 @@ end
 
 -- -- -- plugins -- -- --
 
-figures.existers    = figures.existers or { }
+figures.existers    = allocate()
 local existers      = figures.existers
 
-figures.checkers    = figures.checkers or { }
+figures.checkers    = allocate()
 local checkers      = figures.checkers
 
-figures.includers   = figures.includers or { }
+figures.includers   = allocate()
 local includers     = figures.includers
 
-figures.converters  = figures.converters or { }
+figures.converters  = allocate()
 local converters    = figures.converters
 
-figures.identifiers = figures.identifiers or { }
+figures.identifiers = allocate()
 local identifiers   = figures.identifiers
 
-figures.programs    = figures.programs or { }
+figures.programs    = allocate()
 local programs      = figures.programs
 
 function identifiers.default(data)
@@ -813,6 +820,7 @@ function includers.generic(data)
         local nr = figures.boxnumber
         -- it looks like we have a leak in attributes here .. todo
         local box = node.hpack(img.node(figure)) -- img.node(figure) not longer valid
+        indexed[figure.index] = figure
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         texbox[nr] = box
         ds.objectnumber = figure.objnum
@@ -918,7 +926,7 @@ includers.buffers = includers.nongeneric
 -- -- -- tex -- -- --
 
 function existers.tex(askedname)
-    askedname = resolvers.find_file(askedname)
+    askedname = resolvers.findfile(askedname)
     return (askedname ~= "" and askedname) or false
 end
 function checkers.tex(data)

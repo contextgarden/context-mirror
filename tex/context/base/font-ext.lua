@@ -12,6 +12,8 @@ local gmatch, concat = string.gmatch, table.concat
 local utfchar = utf.char
 local getparameters = utilities.parsers.getparameters
 
+local allocate = utilities.storage.allocate
+
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
 
@@ -124,13 +126,13 @@ end
 -- expansion (hz)
 -- -- -- -- -- --
 
-fonts.expansions   = fonts.expansions or { }
+fonts.expansions   = allocate()
 local expansions   = fonts.expansions
 
-expansions.classes = expansions.classes or { }
-expansions.vectors = expansions.vectors or { }
-
+expansions.classes = allocate()
 local classes      = expansions.classes
+
+expansions.vectors = allocate()
 local vectors      = expansions.vectors
 
 -- beware, pdftex itself uses percentages * 10
@@ -231,13 +233,13 @@ local report_opbd = logs.new("otf opbd")
 -- protrusion
 -- -- -- -- -- --
 
-fonts.protrusions   = fonts.protrusions or { }
+fonts.protrusions   = allocate()
 local protrusions   = fonts.protrusions
 
-protrusions.classes = protrusions.classes or { }
+protrusions.classes = allocate()
 protrusions.vectors = protrusions.vectors or { }
 
-local classes       = protrusions.classes
+local classes       = allocate()
 local vectors       = protrusions.vectors
 
 -- the values need to be revisioned
@@ -390,7 +392,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
         factor = tonumber(value) or 1
     end
     if opbd ~= "right" then
-        local validlookups, lookuplist = fonts.otf.collect_lookups(otfdata,"lfbd",script,language)
+        local validlookups, lookuplist = otf.collectlookups(otfdata,"lfbd",script,language)
         if validlookups then
             for i=1,#lookuplist do
                 local lookup = lookuplist[i]
@@ -413,7 +415,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
         end
     end
     if opbd ~= "left" then
-        local validlookups, lookuplist = fonts.otf.collect_lookups(otfdata,"rtbd",script,language)
+        local validlookups, lookuplist = otf.collectlookups(otfdata,"rtbd",script,language)
         if validlookups then
             for i=1,#lookuplist do
                 local lookup = lookuplist[i]
@@ -634,8 +636,8 @@ end
 methods.node.otf.formatters = processformatters
 methods.base.otf.formatters = processformatters
 
-fonts.otf.tables.features['formatters'] = 'Hide Formatting Characters'
+otf.tables.features['formatters'] = 'Hide Formatting Characters'
 
-fonts.otf.features.register("formatters")
+otf.features.register("formatters")
 
 table.insert(manipulators,"formatters") -- at end

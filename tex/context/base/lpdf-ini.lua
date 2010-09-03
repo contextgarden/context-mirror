@@ -342,16 +342,21 @@ lpdf.verbose     = pdfverbose
 local names, cache = { }, { }
 
 function lpdf.reserveobject(name)
-    local r = pdfreserveobject()
-    if name then
-        names[name] = r
-        if trace_objects then
-            report_backends("reserving object number %s under name '%s'",r,name)
+    if name == "annot" then
+        -- catch misuse
+        return pdfreserveobject("annot")
+    else
+        local r = pdfreserveobject()
+        if name then
+            names[name] = r
+            if trace_objects then
+                report_backends("reserving object number %s under name '%s'",r,name)
+            end
+        elseif trace_objects then
+            report_backends("reserving object number %s",r)
         end
-    elseif trace_objects then
-        report_backends("reserving object number %s",r)
+        return r
     end
-    return r
 end
 
 function lpdf.reserveannotation()
@@ -409,14 +414,33 @@ function lpdf.flushobject(name,data)
     end
 end
 
-function lpdf.sharedobject(content)
-    local r = cache[content]
+local shareobjectcache, shareobjectreferencecache = { }, { }
+
+function lpdf.shareobject(content)
+    content = tostring(content)
+    local o = shareobjectcache[content]
+    if not o then
+        o = pdfimmediateobject(content)
+        shareobjectcache[content] = o
+    end
+    return o
+end
+
+function lpdf.shareobjectreference(content)
+    content = tostring(content)
+    local r = shareobjectreferencecache[content]
     if not r then
-        r = pdfreference(pdfimmediateobject(content))
-        cache[content] = r
+        local o = shareobjectcache[content]
+        if not o then
+            o = pdfimmediateobject(content)
+            shareobjectcache[content] = o
+        end
+        r = pdfreference(o)
+        shareobjectreferencecache[content] = r
     end
     return r
 end
+
 
 --~ local d = lpdf.dictionary()
 --~ local e = lpdf.dictionary { ["e"] = "abc", x = lpdf.dictionary { ["f"] = "ABC" }  }

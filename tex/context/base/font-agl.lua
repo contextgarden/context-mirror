@@ -6,10 +6,13 @@ if not modules then modules = { } end modules ['font-map'] = {
     comment   = "Adobe Glyph List, version 2.0, September 20, 2002",
 }
 
-local fonts = fonts
-fonts.map   = fonts.map or { }
+local allocate = utilities.storage.allocate
 
-fonts.map.unicode_to_agl = {
+local enc = fonts.enc
+local agl = { }
+enc.agl   = agl
+
+agl.names = allocate { -- to name
     "controlSTX",
     "controlSOT",
     "controlETX",
@@ -3692,4 +3695,4 @@ fonts.map.unicode_to_agl = {
     [0xFFE6] = "wonmonospace",
 }
 
-fonts.map.agl_to_unicode = table.swapped(fonts.map.unicode_to_agl)
+agl.unicodes = allocate(table.swapped(agl.names)) -- to unicode

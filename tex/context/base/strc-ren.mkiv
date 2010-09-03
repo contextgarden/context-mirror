@@ -146,7 +146,7 @@
      \let\currentstructurereferenceattribute\currentreferenceattribute
    \else\ifx\currentstructureheadinteraction\v!reference
      % setuphead[<section>][interaction=reference,...] start<section>[backreference=abc,...]
-     \edef\currentstructureheadbackreference{\structurevariable{references.\c!backreference}}%
+     \edef\currentstructureheadbackreference{\structurevariable{references.backreference}}%
      \ifx\currentstructureheadbackreference\empty \else
        \dogetsimplepagereference\currentstructureheadbackreference
        \let\currentstructurereferenceattribute\currentreferenceattribute
@@ -159,8 +159,7 @@
   {\beginheadplacement
    \doresettructureheadnumbercontent
    \ifconditional\structureheadleaveempty
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint
-       {\dosetlocalgridsnapping{\structureheadparameter\c!internalgrid}#1}%
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint{#1}%
      \makestrutofbox\sectionheadbox
    \else
      \docheckstructureheadreference

@@ -14,7 +14,7 @@ local trackers = trackers
 
 local saved = { }
 
-function trackers.save_hash()
+function trackers.savehash()
     saved = texhashtokens()
 end
 

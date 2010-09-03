@@ -63,7 +63,7 @@ local function finder(name, mode, ftype)
     elseif file.is_qualified_path(name) then
         return name
     else
-        return resolvers.find_file(name,ftype)
+        return resolvers.findfile(name,ftype)
     end
 end
 

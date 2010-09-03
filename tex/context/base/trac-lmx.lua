@@ -10,13 +10,15 @@ if not modules then modules = { } end modules ['trac-lmx'] = {
 
 local gsub, format, concat, byte = string.gsub, string.format, table.concat, string.byte
 
+local allocate = utilities.storage.allocate
+
 lmx                = lmx or { }
 local lmx          = lmx
 
-lmx.variables      = lmx.variables or { } -- global, shared
+lmx.variables      = allocate()
 local lmxvariables = lmx.variables
 
-local escapes = {
+local escapes = allocate {
     ['&'] = '&amp;',
     ['<'] = '&lt;',
     ['>'] = '&gt;',
@@ -76,7 +78,7 @@ local function do_variable(str)
 end
 
 function lmx.loadedfile(name)
-    name = (resolvers and resolvers.find_file and resolvers.find_file(name)) or name
+    name = (resolvers and resolvers.findfile and resolvers.findfile(name)) or name
     return io.loaddata(name)
 end
 

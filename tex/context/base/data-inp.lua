@@ -6,12 +6,10 @@ if not modules then modules = { } end modules ['data-inp'] = {
     license   = "see context related readme files"
 }
 
+local allocate = utilities.storage.allocate
+
 local resolvers = resolvers
 
-resolvers.finders = resolvers.finders or { }
-resolvers.openers = resolvers.openers or { }
-resolvers.loaders = resolvers.loaders or { }
-
-resolvers.finders.notfound  = { nil }
-resolvers.openers.notfound  = { nil }
-resolvers.loaders.notfound  = { false, nil, 0 }
+resolvers.finders = allocate { notfound  = { nil } }
+resolvers.openers = allocate { notfound  = { nil } }
+resolvers.loaders = allocate { notfound  = { false, nil, 0 } }

@@ -80,7 +80,7 @@ function regimes.enable(regime)
     if data[regime] then
         regimes.currentregime = regime
         local translate = regimes.translate
-        resolvers.install_text_filter('input',function(s)
+        resolvers.filters.install('input',function(s)
             return translate(s,regime)
         end)
     else
@@ -90,5 +90,5 @@ end
 
 function regimes.disable()
     regimes.currentregime = "utf"
-    resolvers.install_text_filter('input',nil)
+    resolvers.filters.install('input',nil)
 end

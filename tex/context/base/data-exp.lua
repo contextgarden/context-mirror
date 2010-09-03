@@ -135,9 +135,9 @@ local function validate(s)
     return s ~= "" and not find(s,dummy_path_expr) and s
 end
 
-resolvers.validated_path = validate -- keeps the trailing //
+resolvers.validatedpath = validate -- keeps the trailing //
 
-function resolvers.expanded_path_from_list(pathlist) -- maybe not a list, just a path
+function resolvers.expandedpathfromlist(pathlist) -- maybe not a list, just a path
     -- a previous version fed back into pathlist
     local newlist, ok = { }, false
     for k=1,#pathlist do
@@ -172,7 +172,7 @@ cleanup = lpeg.replacer {
     { "~" , function() return lpegmatch(cleanup,environment.homedir) end },
 }
 
-function resolvers.clean_path(str)
+function resolvers.cleanpath(str)
     return str and lpegmatch(cleanup,str)
 end
 
@@ -193,7 +193,7 @@ local stripper = lpegCs(
     lpegpatterns.unspacer * (dosingle + dodouble + dostring) * lpegpatterns.unspacer
 )
 
-function resolvers.checked_variable(str) -- assumes str is a string
+function resolvers.checkedvariable(str) -- assumes str is a string
     return lpegmatch(stripper,str) or str
 end
 
@@ -209,7 +209,7 @@ local cache = { }
 
 local splitter = lpegCt(lpeg.splitat(lpegS(ostype == "windows" and ";" or ":;"))) -- maybe add ,
 
-local function split_configuration_path(str) -- beware, this can be either a path or a { specification }
+local function splitconfigurationpath(str) -- beware, this can be either a path or a { specification }
     if str then
         local found = cache[str]
         if not found then
@@ -238,19 +238,19 @@ local function split_configuration_path(str) -- beware, this can be either a pat
     end
 end
 
-resolvers.split_configuration_path = split_configuration_path
+resolvers.splitconfigurationpath = splitconfigurationpath
 
-function resolvers.split_path(str)
+function resolvers.splitpath(str)
     if type(str) == 'table' then
         return str
     else
-        return split_configuration_path(str)
+        return splitconfigurationpath(str)
     end
 end
 
-function resolvers.join_path(str)
+function resolvers.joinpath(str)
     if type(str) == 'table' then
-        return file.join_path(str)
+        return file.joinpath(str)
     else
         return str
     end
@@ -280,7 +280,7 @@ end
 
 local weird = lpegP(".")^1 + lpeg.anywhere(lpegS("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
 
-function resolvers.scan_files(specification)
+function resolvers.scanfiles(specification)
     if trace_locating then
         report_resolvers("scanning path '%s'",specification)
     end
@@ -335,4 +335,4 @@ function resolvers.scan_files(specification)
     return files
 end
 
---~ print(table.serialize(resolvers.scan_files("t:/sources")))
+--~ print(table.serialize(resolvers.scanfiles("t:/sources")))

@@ -139,21 +139,6 @@
 \unexpanded\def\stoptextproperties {\the\everystoptextproperties}
 
 %D \macros
-%D   {defineinputmode,setinputmode}
-%D
-%D New. Some work needs to be done.
-
-% not in mkiv
-
-\unexpanded\def\defineinputmode[#1]{\@EA\newtoks\csname every#1inputmode\endcsname}
-\def\setinputmode   [#1]{\the\executeifdefined{every#1inputmode}\emptytoks}
-
-\defineinputmode [TEX]
-\defineinputmode [XML]
-
-\setinputmode    [TEX]
-
-%D \macros
 %D   {trialtypesetting}
 %D
 %D We disable trial typesetting in the output routine,
@@ -179,7 +164,7 @@
 %D
 %D We need this one even if no \XML\ is supported.
 
-\newif\ifprocessingXML % old way
+% \newif\ifprocessingXML % old way
 
 %D \macros
 %D   {ifproductionrun}

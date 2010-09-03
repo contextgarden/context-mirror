@@ -15,23 +15,25 @@ adapted and now has the mappings as comments. This lua file is
 based on that file.
 ]]--
 
+local allocate = utilities.storage.allocate
+
 local nodes = nodes
 
-nodes.is_mirrored = {
+nodes.is_mirrored = allocate {
  -- TLT = false,
  -- TRT = false,
  -- LTL = false,
  -- RTT = false,
 }
 
-nodes.is_rotated = {
+nodes.is_rotated = allocate {
  -- TLT = false,
  -- TRT = false,
  -- LTL = false,
     RTT = true, ["+RTT"] = true,
 }
 
-nodes.textdir_is_parallel = {
+nodes.textdir_is_parallel = allocate {
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -58,7 +60,7 @@ nodes.textdir_is_parallel = {
     }
 }
 
-nodes.pardir_is_parallel = {
+nodes.pardir_is_parallel = allocate {
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -85,7 +87,7 @@ nodes.pardir_is_parallel = {
     },
 }
 
-nodes.pardir_is_opposite = {
+nodes.pardir_is_opposite = allocate {
     TLT = {
      -- TLT = false,
      -- TRT = false,
@@ -112,7 +114,7 @@ nodes.pardir_is_opposite = {
     },
 }
 
-nodes.textdir_is_opposite = {
+nodes.textdir_is_opposite = allocate {
     TLT = {
      -- TLT = false,
         TRT = true, ["+TRT"] = true,
@@ -139,7 +141,7 @@ nodes.textdir_is_opposite = {
     },
 }
 
-nodes.glyphdir_is_opposite = {
+nodes.glyphdir_is_opposite = allocate {
     TLT = {
      -- TLT = false,
      -- TRT = false,
@@ -166,7 +168,7 @@ nodes.glyphdir_is_opposite = {
     },
 }
 
-nodes.pardir_is_equal = {
+nodes.pardir_is_equal = allocate {
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -193,7 +195,7 @@ nodes.pardir_is_equal = {
     },
 }
 
-nodes.textdir_is_equal = {
+nodes.textdir_is_equal = allocate {
     TLT = {
         TLT = true, ["+TLT"] = true,
      -- TRT = false,
@@ -220,7 +222,7 @@ nodes.textdir_is_equal = {
     },
 }
 
-nodes.glyphdir_is_equal = {
+nodes.glyphdir_is_equal = allocate {
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -247,7 +249,7 @@ nodes.glyphdir_is_equal = {
     },
 }
 
-nodes.partextdir_is_equal = {
+nodes.partextdir_is_equal = allocate {
     TLT = {
      -- TLT = false,
      -- TRT = false,
@@ -274,28 +276,28 @@ nodes.partextdir_is_equal = {
     },
 }
 
-nodes.textdir_is_is = {
+nodes.textdir_is_is = allocate {
     TLT = true, ["+TLT"] = true,
  -- TRT = false,
  -- LTL = false,
  -- RTT = false,
 }
 
-nodes.glyphdir_is_orthogonal = {
+nodes.glyphdir_is_orthogonal = allocate {
     TLT = true, ["+TLT"] = true,
     TRT = true, ["+TRT"] = true,
     LTL = true, ["+LTL"] = true,
  -- RTT = false
 }
 
-nodes.dir_is_pop = {
+nodes.dir_is_pop = allocate {
     ["-TRT"] = true,
     ["-TLT"] = true,
     ["-LTL"] = true,
     ["-RTT"] = true,
 }
 
-nodes.dir_negation = {
+nodes.dir_negation = allocate {
     ["-TRT"] = "+TRT",
     ["-TLT"] = "+TLT",
     ["-LTL"] = "+LTL",

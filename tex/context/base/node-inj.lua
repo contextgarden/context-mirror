@@ -25,6 +25,9 @@ fonts     = fonts      or { }
 fonts.tfm = fonts.tfm  or { }
 fonts.ids = fonts.ids  or { }
 
+nodes.injections = nodes.injections or { }
+local injections = nodes.injections
+
 local fontdata   = fonts.ids
 local nodecodes  = nodes.nodecodes
 local glyph_code = nodecodes.glyph
@@ -57,7 +60,7 @@ local kerns    = { }
 
 -- for the moment we pass the r2l key ... volt/arabtype tests
 
-function nodes.set_cursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext)
+function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext)
     local dx, dy = factor*(exit[1]-entry[1]), factor*(exit[2]-entry[2])
     local ws, wn = tfmstart.width, tfmnext.width
     local bound = #cursives + 1
@@ -67,7 +70,7 @@ function nodes.set_cursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext)
     return dx, dy, bound
 end
 
-function nodes.set_pair(current,factor,rlmode,r2lflag,spec,tfmchr)
+function injections.setpair(current,factor,rlmode,r2lflag,spec,tfmchr)
     local x, y, w, h = factor*spec[1], factor*spec[2], factor*spec[3], factor*spec[4]
     -- dy = y - h
     if x ~= 0 or w ~= 0 or y ~= 0 or h ~= 0 then
@@ -86,7 +89,7 @@ function nodes.set_pair(current,factor,rlmode,r2lflag,spec,tfmchr)
     return x, y, w, h -- no bound
 end
 
-function nodes.set_kern(current,factor,rlmode,x,tfmchr)
+function injections.setkern(current,factor,rlmode,x,tfmchr)
     local dx = factor*x
     if dx ~= 0 then
         local bound = #kerns + 1
@@ -98,7 +101,7 @@ function nodes.set_kern(current,factor,rlmode,x,tfmchr)
     end
 end
 
-function nodes.set_mark(start,base,factor,rlmode,ba,ma,index) --ba=baseanchor, ma=markanchor
+function injections.setmark(start,base,factor,rlmode,ba,ma,index) --ba=baseanchor, ma=markanchor
     local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])
     local bound = has_attribute(base,markbase)
     if bound then
@@ -126,7 +129,7 @@ local function dir(n)
     return (n and n<0 and "r-to-l") or (n and n>0 and "l-to-r") or "unset"
 end
 
-function nodes.trace_injection(head)
+local function trace(head)
     report_injections("begin run")
     for n in traverse_id(glyph_code,head) do
         if n.subtype < 256 then
@@ -177,12 +180,12 @@ end
 -- todo: reuse tables (i.e. no collection), but will be extra fields anyway
 -- todo: check for attribute
 
-function nodes.handlers.injectkerns(head,where,keep)
+function injections.handler(head,where,keep)
     local has_marks, has_cursives, has_kerns = next(marks), next(cursives), next(kerns)
     if has_marks or has_cursives then
 --~     if has_marks or has_cursives or has_kerns then
         if trace_injections then
-            nodes.trace_injection(head)
+            trace(head)
         end
         -- in the future variant we will not copy items but refs to tables
         local done, ky, rl, valid, cx, wx, mk = false, { }, { }, { }, { }, { }, { }
@@ -386,7 +389,7 @@ function nodes.handlers.injectkerns(head,where,keep)
         end
     elseif has_kerns then
         if trace_injections then
-            nodes.trace_injection(head)
+            trace(head)
         end
         for n in traverse_id(glyph_code,head) do
             if n.subtype < 256 then

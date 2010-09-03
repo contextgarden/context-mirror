@@ -10,6 +10,7 @@ local format = string.format
 local next, type = next, type
 local min, max = math.min, math.max
 local texsprint, texcount = tex.sprint, tex.count
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local trace_counters = false  trackers.register("structures.counters", function(v) trace_counters = v end)
 
@@ -17,32 +18,38 @@ local report_counters = logs.new("counters")
 
 local structures = structures
 
-local helpers   = structures.helpers
-local sections  = structures.sections
-local counters  = structures.counters
-local documents = structures.documents
+local helpers    = structures.helpers
+local sections   = structures.sections
+local counters   = structures.counters
+local documents  = structures.documents
 
-local variables = interfaces.variables
-
-counters.data     = counters.data     or { }
-counters.specials = counters.specials or { }
+local variables  = interfaces.variables
 
 -- state: start stop none reset
 
-local counterdata = counters.data
-local counterranges, tbs = { }, 0
-local counterspecials = counters.specials
+counters.specials        = counters.specials or { }
+local counterspecials    = counters.specials
 
-counters.collected = counters.collected or { }
+local counterranges, tbs = { }, 0
+
+counters.collected = allocate()
 counters.tobesaved = counters.tobesaved or { }
+counters.data      = counters.data or { }
 
 storage.register("structures/counters/data",      counters.data,      "structures.counters.data")
 storage.register("structures/counters/tobesaved", counters.tobesaved, "structures.counters.tobesaved")
 
-local collected, tobesaved = counters.collected, counters.tobesaved
+local collected   = counters.collected
+local tobesaved   = counters.tobesaved
+local counterdata = counters.data
+
+local function initializer() -- not really needed
+    collected   = counters.collected
+    tobesaved   = counters.tobesaved
+    counterdata = counters.data
+end
 
 local function finalizer()
-    local ct = counters.tobesaved
     for name, cd in next, counterdata do
         local cs = tobesaved[name]
         local data = cd.data
@@ -55,13 +62,7 @@ local function finalizer()
     end
 end
 
-local function initializer()
-    collected, tobesaved = counters.collected, counters.tobesaved
-end
-
-if job then
-    job.register('structures.counters.collected', counters.tobesaved, initializer, finalizer)
-end
+job.register('structures.counters.collected', tobesaved, initializer, finalizer)
 
 local function constructor(t,s,name,i)
     if s == "last" then
@@ -267,7 +268,6 @@ function counters.setoffset(name,value)
     counters.setvalue(name,"offset",value)
 end
 
-
 local function synchronize(name,d)
     local dc = d.counter
     if dc then
@@ -465,54 +465,54 @@ function counters.converted(name,spec) -- name can be number and reference to st
     end
 end
 
--- move to strc-pag.lua
+--~ -- move to strc-pag.lua
 
-function counters.analyse(name,counterspecification)
-    local cd = counterdata[name]
-    -- safeguard
-    if not cd then
-        return false, false, "no counter data"
-    end
-    -- section data
-    local sectiondata = sections.current()
-    if not sectiondata then
-        return cd, false, "not in section"
-    end
-    local references = sectiondata.references
-    if not references then
-        return cd, false, "no references"
-    end
-    local section = references.section
-    if not section then
-        return cd, false, "no section"
-    end
-    sectiondata = sections.collected[references.section]
-    if not sectiondata then
-        return cd, false, "no section data"
-    end
-    -- local preferences
-    local no = variables.no
-    if counterspecification and counterspecification.prefix == no then
-        return cd, false, "current spec blocks prefix"
-    end
-    -- stored preferences (not used)
-    if cd.prefix == no then
-        return cd, false, "entry blocks prefix"
-    end
-    -- sectioning
-    -- if sectiondata.prefix == no then
-    --     return false, false, "sectiondata blocks prefix"
-    -- end
-    -- final verdict
-    return cd, sectiondata, "okay"
-end
+--~ function counters.analyze(name,counterspecification)
+--~     local cd = counterdata[name]
+--~     -- safeguard
+--~     if not cd then
+--~         return false, false, "no counter data"
+--~     end
+--~     -- section data
+--~     local sectiondata = sections.current()
+--~     if not sectiondata then
+--~         return cd, false, "not in section"
+--~     end
+--~     local references = sectiondata.references
+--~     if not references then
+--~         return cd, false, "no references"
+--~     end
+--~     local section = references.section
+--~     if not section then
+--~         return cd, false, "no section"
+--~     end
+--~     sectiondata = sections.collected[references.section]
+--~     if not sectiondata then
+--~         return cd, false, "no section data"
+--~     end
+--~     -- local preferences
+--~     local no = variables.no
+--~     if counterspecification and counterspecification.prefix == no then
+--~         return cd, false, "current spec blocks prefix"
+--~     end
+--~     -- stored preferences (not used)
+--~     if cd.prefix == no then
+--~         return cd, false, "entry blocks prefix"
+--~     end
+--~     -- sectioning
+--~     -- if sectiondata.prefix == no then
+--~     --     return false, false, "sectiondata blocks prefix"
+--~     -- end
+--~     -- final verdict
+--~     return cd, sectiondata, "okay"
+--~ end
 
-function counters.prefixedconverted(name,prefixspec,numberspec)
-    local cd, prefixdata, result = counters.analyse(name,prefixspec)
-    if cd then
-        if prefixdata then
-            sections.typesetnumber(prefixdata,"prefix",prefixspec or false,cd or false)
-        end
-        counters.converted(name,numberspec)
-    end
-end
+--~ function counters.prefixedconverted(name,prefixspec,numberspec)
+--~     local cd, prefixdata, result = counters.analyze(name,prefixspec)
+--~     if cd then
+--~         if prefixdata then
+--~             sections.typesetnumber(prefixdata,"prefix",prefixspec or false,cd or false)
+--~         end
+--~         counters.converted(name,numberspec)
+--~     end
+--~ end

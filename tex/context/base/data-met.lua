@@ -12,11 +12,14 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 
 local report_resolvers = logs.new("resolvers")
 
+local allocate = utilities.storage.allocate
+
 local resolvers = resolvers
 
-resolvers.locators     = { notfound = { nil } }  -- locate databases
-resolvers.hashers      = { notfound = { nil } }  -- load databases
-resolvers.generators   = { notfound = { nil } }  -- generate databases
+resolvers.concatinators = allocate ()
+resolvers.locators      = allocate { notfound = { nil } }  -- locate databases
+resolvers.hashers       = allocate { notfound = { nil } }  -- load databases
+resolvers.generators    = allocate { notfound = { nil } }  -- generate databases
 
 function resolvers.splitmethod(filename)
     if not filename then

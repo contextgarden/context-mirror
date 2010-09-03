@@ -12,11 +12,13 @@ local trace_tasks = false  trackers.register("tasks.creation", function(v) trace
 
 local report_tasks = logs.new("tasks")
 
+local allocate = utilities.storage.allocate
+
 local nodes      = nodes
 
 nodes.tasks      = nodes.tasks or { }
 local tasks      = nodes.tasks
-tasks.data       = tasks.data  or { }
+tasks.data       = allocate()
 local tasksdata  = tasks.data
 
 local sequencers = utilities.sequencers

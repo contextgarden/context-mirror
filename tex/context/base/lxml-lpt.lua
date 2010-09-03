@@ -998,8 +998,41 @@ local function normal_apply(list,parsed,nofparsed,order)
     return collected
 end
 
+--~ local function applylpath(list,pattern)
+--~     -- we avoid an extra call
+--~     local parsed = cache[pattern]
+--~     if parsed then
+--~         lpathcalls = lpathcalls + 1
+--~         lpathcached = lpathcached + 1
+--~     elseif type(pattern) == "table" then
+--~         lpathcalls = lpathcalls + 1
+--~         parsed = pattern
+--~     else
+--~         parsed = lpath(pattern) or pattern
+--~     end
+--~     if not parsed then
+--~         return
+--~     end
+--~     local nofparsed = #parsed
+--~     if nofparsed == 0 then
+--~         return -- something is wrong
+--~     end
+--~     local one = list[1] -- we could have a third argument: isroot and list or list[1] or whatever we like ... todo
+--~     if not one then
+--~         return -- something is wrong
+--~     elseif not trace_lpath then
+--~         return normal_apply(list,parsed,nofparsed,one.mi)
+--~     elseif trace_lprofile then
+--~         return profiled_apply(list,parsed,nofparsed,one.mi)
+--~     else
+--~         return traced_apply(list,parsed,nofparsed,one.mi)
+--~     end
+--~ end
+
 local function applylpath(list,pattern)
-    -- we avoid an extra call
+    if not list then
+        return
+    end
     local parsed = cache[pattern]
     if parsed then
         lpathcalls = lpathcalls + 1
@@ -1017,27 +1050,32 @@ local function applylpath(list,pattern)
     if nofparsed == 0 then
         return -- something is wrong
     end
-    local one = list[1] -- we could have a third argument: isroot and list or list[1] or whatever we like ... todo
-    if not one then
-        return -- something is wrong
-    elseif not trace_lpath then
-        return normal_apply(list,parsed,nofparsed,one.mi)
+    if not trace_lpath then
+        return normal_apply  ({ list },parsed,nofparsed,list.mi)
     elseif trace_lprofile then
-        return profiled_apply(list,parsed,nofparsed,one.mi)
+        return profiled_apply({ list },parsed,nofparsed,list.mi)
     else
-        return traced_apply(list,parsed,nofparsed,one.mi)
+        return traced_apply  ({ list },parsed,nofparsed,list.mi)
     end
 end
 
 xml.applylpath = applylpath -- takes a table as first argment, which is what xml.filter will do
 
+--[[ldx--
+<p>This is the main filter function. It returns whatever is asked for.</p>
+--ldx]]--
+
+function xml.filter(root,pattern) -- no longer funny attribute handling here
+    return applylpath(root,pattern)
+end
+
 -- internal (parsed)
 
 expressions.child = function(e,pattern)
-    return applylpath({ e },pattern) -- todo: cache
+    return applylpath(e,pattern) -- todo: cache
 end
 expressions.count = function(e,pattern)
-    local collected = applylpath({ e },pattern) -- todo: cache
+    local collected = applylpath(e,pattern) -- todo: cache
     return (collected and #collected) or 0
 end
 
@@ -1077,7 +1115,7 @@ expressions.boolean   = toboolean
 
 local function traverse(root,pattern,handle)
     report_lpath("use 'xml.selection' instead for '%s'",pattern)
-    local collected = applylpath({ root },pattern)
+    local collected = applylpath(root,pattern)
     if collected then
         for c=1,#collected do
             local e = collected[c]
@@ -1088,7 +1126,7 @@ local function traverse(root,pattern,handle)
 end
 
 local function selection(root,pattern,handle)
-    local collected = applylpath({ root },pattern)
+    local collected = applylpath(root,pattern)
     if collected then
         if handle then
             for c=1,#collected do
@@ -1216,14 +1254,6 @@ expressions.tag = function(e,n) -- only tg
 end
 
 --[[ldx--
-<p>This is the main filter function. It returns whatever is asked for.</p>
---ldx]]--
-
-function xml.filter(root,pattern) -- no longer funny attribute handling here
-    return applylpath({ root },pattern)
-end
-
---[[ldx--
 <p>Often using an iterators looks nicer in the code than passing handler
 functions. The <l n='lua'/> book describes how to use coroutines for that
 purpose (<url href='http://www.lua.org/pil/9.3.html'/>). This permits
@@ -1242,7 +1272,7 @@ end
 local wrap, yield = coroutine.wrap, coroutine.yield
 
 function xml.elements(root,pattern,reverse) -- r, d, k
-    local collected = applylpath({ root },pattern)
+    local collected = applylpath(root,pattern)
     if collected then
         if reverse then
             return wrap(function() for c=#collected,1,-1 do
@@ -1258,7 +1288,7 @@ function xml.elements(root,pattern,reverse) -- r, d, k
 end
 
 function xml.collected(root,pattern,reverse) -- e
-    local collected = applylpath({ root },pattern)
+    local collected = applylpath(root,pattern)
     if collected then
         if reverse then
             return wrap(function() for c=#collected,1,-1 do yield(collected[c]) end end)

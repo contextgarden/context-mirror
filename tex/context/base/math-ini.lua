@@ -13,6 +13,8 @@ local utf = unicode.utf8
 
 local texsprint, format, utfchar, utfbyte = tex.sprint, string.format, utf.char, utf.byte
 
+local allocate = utilities.storage.allocate
+
 local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
 local report_math = logs.new("mathematics")
@@ -23,11 +25,11 @@ local mathematics = mathematics
 mathematics.extrabase   = 0xFE000 -- here we push some virtuals
 mathematics.privatebase = 0xFF000 -- here we push the ex
 
-local families = {
+local families = allocate {
     tf = 0, it = 1, sl = 2, bf = 3, bi = 4, bs = 5, -- virtual fonts or unicode otf
 }
 
-local classes = {
+local classes = allocate {
     ord       =  0,  -- mathordcomm     mathord
     op        =  1,  -- mathopcomm      mathop
     bin       =  2,  -- mathbincomm     mathbin

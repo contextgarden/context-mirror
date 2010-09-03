@@ -14,6 +14,7 @@ local utf = unicode.utf8
 local format, serialize = string.format, table.serialize
 local write_nl = texio.write_nl
 local lower = string.lower
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local report_define = logs.new("define fonts")
 
@@ -26,9 +27,11 @@ fonts     = fonts     or { }
 
 -- we will also have des and fam hashes
 
-fonts.ids = fonts.ids or { } fonts.identifiers = fonts.ids -- aka fontdata
-fonts.chr = fonts.chr or { } fonts.characters  = fonts.chr -- aka chardata
-fonts.qua = fonts.qua or { } fonts.quads       = fonts.qua -- aka quaddata
+-- beware, soem alreadyu defined
+
+fonts.ids = mark(fonts.ids or { })  fonts.identifiers = fonts.ids -- aka fontdata
+fonts.chr = mark(fonts.chr or { })  fonts.characters  = fonts.chr -- aka chardata
+fonts.qua = mark(fonts.qua or { })  fonts.quads       = fonts.qua -- aka quaddata
 
 fonts.tfm = fonts.tfm or { }
 fonts.vf  = fonts.vf  or { }
@@ -36,7 +39,7 @@ fonts.afm = fonts.afm or { }
 fonts.pfb = fonts.pfb or { }
 fonts.otf = fonts.otf or { }
 
-fonts.private = 0xF0000 -- 0x10FFFF
+fonts.privateoffset = 0xF0000 -- 0x10FFFF
 fonts.verbose = false -- more verbose cache tables
 
 fonts.ids[0] = { -- nullfont
@@ -70,15 +73,15 @@ fonts.processors = fonts.processors or {
 fonts.manipulators = fonts.manipulators or {
 }
 
-fonts.define                  = fonts.define                  or { }
-fonts.define.specify          = fonts.define.specify          or { }
-fonts.define.specify.synonyms = fonts.define.specify.synonyms or { }
+fonts.definers                     = fonts.definers                     or { }
+fonts.definers.specifiers          = fonts.definers.specifiers          or { }
+fonts.definers.specifiers.synonyms = fonts.definers.specifiers.synonyms or { }
 
 -- tracing
 
 if not fonts.color then
 
-    fonts.color = {
+    fonts.color = allocate {
         set   = function() end,
         reset = function() end,
     }
@@ -87,7 +90,7 @@ end
 
 -- format identification
 
-fonts.formats = { }
+fonts.formats = allocate()
 
 function fonts.fontformat(filename,default)
     local extname = lower(file.extname(filename))

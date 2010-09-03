@@ -30,7 +30,7 @@ local remove_node  = nodes.remove
 checkers.enabled = false
 checkers.delete  = false
 
-function fonts.register_message(font,char,message)
+local function registermessage(font,char,message)
     local tfmdata = fontdata[font]
     local shared = tfmdata.shared
     local messages = shared.messages
@@ -49,6 +49,8 @@ function fonts.register_message(font,char,message)
     end
 end
 
+local registermessage = fonts.registermessage
+
 function checkers.missing(head)
     if checkers.enabled then
         local lastfont, characters, found = nil, nil, nil
@@ -59,9 +61,9 @@ function checkers.missing(head)
             end
             if not characters[char] and is_character[chardata[char].category] then
                 if checkers.delete then
-                    fonts.register_message(font,char,"missing (will be deleted)")
+                    registermessage(font,char,"missing (will be deleted)")
                 else
-                    fonts.register_message(font,char,"missing")
+                    registermessage(font,char,"missing")
                 end
                 if not found then
                     found = { n }

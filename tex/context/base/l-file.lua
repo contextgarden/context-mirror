@@ -161,26 +161,14 @@ file.iswritable = file.is_writable -- depricated
 
 -- todo: lpeg
 
---~ function file.split_path(str)
---~     local t = { }
---~     str = gsub(str,"\\", "/")
---~     str = gsub(str,"(%a):([;/])", "%1\001%2")
---~     for name in gmatch(str,"([^;:]+)") do
---~         if name ~= "" then
---~             t[#t+1] = gsub(name,"\001",":")
---~         end
---~     end
---~     return t
---~ end
-
 local checkedsplit = string.checkedsplit
 
-function file.split_path(str,separator)
+function file.splitpath(str,separator) -- string
     str = gsub(str,"\\","/")
     return checkedsplit(str,separator or io.pathseparator)
 end
 
-function file.join_path(tab)
+function file.joinpath(tab) -- table
     return concat(tab,io.pathseparator) -- can have trailing //
 end
 

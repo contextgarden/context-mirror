@@ -415,6 +415,8 @@
    \BeforePar{\@@makedescription[#1]{#2}}%
    \GotoPar}
 
+\let\dotagsetdescriptiontag\relax
+
 \def\@@dostartdescriptionindeed
   {\edef\currentdescriptionlocation{\descriptionparameter\c!location}%
    \ifx\currentdescriptionlocation\empty
@@ -425,6 +427,7 @@
    \fi
    \dostarttagged\t!description\currentdescription
    \dostarttagged\t!descriptiontag\empty
+   \dotagsetdescriptiontag
    \@@dostartdescription
    \csname @@description\currentdescriptionlocation\endcsname
    \dostoptagged

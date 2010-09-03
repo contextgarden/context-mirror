@@ -163,13 +163,13 @@
 \unexpanded\long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
   {\dostartcurrentMPgraphic
    \forgetall
-   \setbox\MPgraphicbox\hbox\bgroup
+   \setbox\MPgraphicbox\hbox\bgroup % ; added 20100901 (as in mkii)
      \normalexpanded{\noexpand\ctxlua{metapost.graphic(
        "\currentMPgraphicinstance",
        "\currentMPgraphicformat",
-       \!!bs#1\!!es,
-       \!!bs\currentMPinitializations\!!es,
-       \!!bs\currentMPpreamble\!!es,
+       \!!bs#1;\!!es,
+       \!!bs\currentMPinitializations;\!!es,
+       \!!bs\currentMPpreamble;\!!es,
        \MPaskedfigure
      )}}%
    \egroup

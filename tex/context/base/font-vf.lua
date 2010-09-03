@@ -11,33 +11,38 @@ if not modules then modules = { } end modules ['font-vf'] = {
 changes. This will change.</p>
 --ldx]]--
 
--- define.methods elsewhere !
-
 local next = next
 local fastcopy = table.fastcopy
+
+local allocate = utilities.storage.allocate
 
 local fonts = fonts
 local vf    = fonts.vf
 local tfm   = fonts.tfm
 
-fonts.define   = fonts.define or { }
-local define   = fonts.define
-define.methods = define.methods or { }
+fonts.definers   = fonts.definers or { }
+local definers   = fonts.definers
+
+definers.methods = definers.methods or { }
+local methods    = definers.methods
+
+methods.variants = allocate()
+local variants   = methods.variants
 
 vf.combinations = vf.combinations or { }
 vf.aux          = vf.aux          or { }
 vf.aux.combine  = vf.aux.combine  or { }
 local combine   = vf.aux.combine
 
-function define.methods.install(tag, rules)
+function methods.install(tag, rules)
     vf.combinations[tag] = rules
-    define.methods[tag] = function(specification)
+    variants[tag] = function(specification)
         return vf.combine(specification,tag)
     end
 end
 
 local function combine_load(g,name)
-    return tfm.read_and_define(name or g.specification.name,g.specification.size)
+    return tfm.readanddefine(name or g.specification.name,g.specification.size)
 end
 
 local function combine_assign(g, name, from, to, start, force)
@@ -78,7 +83,7 @@ local function combine_process(g,list)
 end
 
 local function combine_names(g,name,force)
-    local f, id = tfm.read_and_define(name,g.specification.size)
+    local f, id = tfm.readanddefine(name,g.specification.size)
     if f and id then
         local fc, gc = f.characters, g.characters
         local fd, gd = f.descriptions, g.descriptions
@@ -123,7 +128,7 @@ end
 --~ combine.names   = combine_names
 --~ combine.feature = combine_feature
 
-combine.commands = {
+combine.commands = allocate {
     ["initialize"]      = function(g,v) combine_assign    (g,g.name) end,
     ["include-method"]  = function(g,v) combine_process   (g,vf.combinations[v[2]])  end, -- name
  -- ["copy-parameters"] = function(g,v) combine_parameters(g,v[2]) end, -- name
@@ -152,7 +157,7 @@ end
 
 -- simple example with features
 
-define.methods.install(
+methods.install(
     "ligatures", {
         { "feature", "liga" } ,
         { "feature", "dlig" } ,
@@ -160,7 +165,7 @@ define.methods.install(
     }
 )
 
---~ define.methods.install (
+--~ methods.install (
 --~     "ligatures-x", {
 --~         { "feature", "liga" } ,
 --~         { "feature", "dlig" } ,
@@ -169,7 +174,7 @@ define.methods.install(
 --~     }
 --~ )
 
---~ define.methods.install(
+--~ methods.install(
 --~     "lmsymbol10", {
 --~         { "fallback_names", "lmsy10.afm" } ,
 --~         { "fallback_names", "msam10.afm" } ,
@@ -180,7 +185,7 @@ define.methods.install(
 
 -- docu case
 
---~ define.methods.install(
+--~ methods.install(
 --~     "weird", {
 --~         { "copy-range", "lmroman10-regular" } ,
 --~         { "copy-char", "lmroman10-regular", 65, 66 } ,
@@ -194,10 +199,10 @@ define.methods.install(
 
 -- todo: interface tables in back-ini
 
-define.methods["demo-1"] = function(specification)
+variants["demo-1"] = function(specification)
     local name = specification.name          -- symbolic name
     local size = specification.size          -- given size
-    local f, id = tfm.read_and_define('lmroman10-regular',size)
+    local f, id = tfm.readanddefine('lmroman10-regular',size)
     if f and id then
         local capscale, digscale = 0.85, 0.75
     --  f.name, f.type = name, 'virtual'

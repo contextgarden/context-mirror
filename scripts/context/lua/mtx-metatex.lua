@@ -20,7 +20,7 @@ end
 function scripts.metatex.run(ctxdata,filename)
     local filename = environment.files[1] or ""
     if filename ~= "" then
-        local formatfile, scriptfile = resolvers.locate_format("metatex")
+        local formatfile, scriptfile = resolvers.locateformat("metatex")
         if formatfile and scriptfile then
             local command = string.format("luatex --fmt=%s --lua=%s  %s",
                 string.quote(formatfile), string.quote(scriptfile), string.quote(filename))

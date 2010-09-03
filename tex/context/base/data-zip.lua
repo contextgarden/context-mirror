@@ -47,7 +47,7 @@ function zip.openarchive(name)
     else
         local arch = archives[name]
         if not arch then
-           local full = resolvers.find_file(name) or ""
+           local full = resolvers.findfile(name) or ""
            arch = (full ~= "" and zip.open(full)) or false
            archives[name] = arch
         end
@@ -141,7 +141,7 @@ function openers.zip(specification)
                     if trace_locating then
                         report_resolvers("zip opener, file '%s' found",q.name)
                     end
-                    return openers.text_opener(specification,dfile,'zip')
+                    return openers.textopener(specification,dfile,'zip')
                 elseif trace_locating then
                     report_resolvers("zip opener, file '%s' not found",q.name)
                 end
@@ -205,10 +205,10 @@ function resolvers.usezipfile(zipname)
                 report_resolvers("zip registering, registering archive '%s'",zipname)
             end
             statistics.starttiming(instance)
-            resolvers.prepend_hash('zip',zipname,zipfile)
-            resolvers.extend_texmf_var(zipname) -- resets hashes too
+            resolvers.prependhash('zip',zipname,zipfile)
+            resolvers.extendtexmfvariable(zipname) -- resets hashes too
             registeredfiles[zipname] = z
-            instance.files[zipname] = resolvers.register_zip_file(z,tree or "")
+            instance.files[zipname] = resolvers.registerzipfile(z,tree or "")
             statistics.stoptiming(instance)
         elseif trace_locating then
             report_resolvers("zip registering, unknown archive '%s'",zipname)
@@ -218,7 +218,7 @@ function resolvers.usezipfile(zipname)
     end
 end
 
-function resolvers.register_zip_file(z,tree)
+function resolvers.registerzipfile(z,tree)
     local files, filter = { }, ""
     if tree == "" then
         filter = "^(.+)/(.-)$"
@@ -228,7 +228,7 @@ function resolvers.register_zip_file(z,tree)
     if trace_locating then
         report_resolvers("zip registering, using filter '%s'",filter)
     end
-    local register, n = resolvers.register_file, 0
+    local register, n = resolvers.registerfile, 0
     for i in z:files() do
         local path, name = match(i.filename,filter)
         if path then

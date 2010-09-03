@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['strc--blk'] = {
+if not modules then modules = { } end modules ['strc-blk'] = {
     version   = 1.001,
     comment   = "companion to strc-blk.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['strc--blk'] = {
 local texprint, format, gmatch, find = tex.print, string.format, string.gmatch, string.find
 local lpegmatch = lpeg.match
 local settings_to_set, settings_to_array = utilities.parsers.settings_to_set, utilities.parsers.settings_to_array
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -22,17 +23,18 @@ local blocks   = structures.blocks
 local sections = structures.sections
 local lists    = structures.lists
 
-blocks.collected = blocks.collected or { }
-blocks.tobesaved = blocks.tobesaved or { }
-blocks.states    = blocks.states    or { }
+local collected, tobesaved, states = allocate(), allocate(), allocate()
 
-local tobesaved, collected, states = blocks.tobesaved, blocks.collected, blocks.states
+blocks.collected = collected
+blocks.tobesaved = tobesaved
+blocks.states    = states
 
 local function initializer()
-    collected, tobesaved = blocks.collected, blocks.tobesaved
+    collected = mark(blocks.collected)
+    tobesaved = mark(blocks.tobesaved)
 end
 
-job.register('structures.blocks.collected', blocks.tobesaved, initializer)
+job.register('structures.blocks.collected', tobesaved, initializer)
 
 local printer = (lpeg.patterns.textline/texprint)^0 -- can be shared
 
@@ -85,7 +87,7 @@ function blocks.select(state,name,tag,criterium)
     local tags = not all and settings_to_set(tag)
     local hide = state == "process"
     local n = sections.numberatdepth(criterium)
-    local result = lists.filter_collected("all", criterium, n, collected, { })
+    local result = lists.filtercollected("all", criterium, n, collected, { })
     for i=1,#result do
         local ri = result[i]
         local metadata = ri.metadata

@@ -11,7 +11,6 @@ local format = string.format
 local texsprint      = tex.sprint
 local ctxcatcodes    = tex.ctxcatcodes
 local nodeinjections = backends.nodeinjections
-local pdfannotation  = nodes.pool.pdfannotation
 
 local figures = figures
 

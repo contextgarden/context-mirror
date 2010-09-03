@@ -50,6 +50,8 @@
 \long\def\displaymath#1{\noindent      \ifmmode#1\else\Ustartdisplaymath#1\Ustopdisplaymath\fi}
 \long\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\Ustartmath       #1\Ustopmath       \fi}
 
+\let\m\mathematics % unexpanded?
+
 \let\stopmathmode\relax
 
 \unexpanded\def\startmathmode % cannot be used nested

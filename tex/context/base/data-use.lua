@@ -19,7 +19,7 @@ local resolvers = resolvers
 resolvers.automounted = resolvers.automounted or { }
 
 function resolvers.automount(usecache)
-    local mountpaths = resolvers.clean_path_list(resolvers.expansion('TEXMFMOUNT'))
+    local mountpaths = resolvers.cleanpathlist(resolvers.expansion('TEXMFMOUNT'))
     if (not mountpaths or #mountpaths == 0) and usecache then
         mountpaths = caches.getreadablepaths("mount")
     end
@@ -63,7 +63,7 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname ==
         local luvdata = {
             enginebanner = enginebanner,
             formatbanner = formatbanner,
-            sourcehash   = md5.hex(io.loaddata(resolvers.find_file(sourcefile)) or "unknown"),
+            sourcehash   = md5.hex(io.loaddata(resolvers.findfile(sourcefile)) or "unknown"),
             sourcefile   = sourcefile,
         }
         io.savedata(luvname,table.serialize(luvdata,true))
@@ -77,7 +77,7 @@ function statistics.checkfmtstatus(texname)
         if lfs.isfile(luvname) then
             local luv = dofile(luvname)
             if luv and luv.sourcefile then
-                local sourcehash = md5.hex(io.loaddata(resolvers.find_file(luv.sourcefile)) or "unknown")
+                local sourcehash = md5.hex(io.loaddata(resolvers.findfile(luv.sourcefile)) or "unknown")
                 local luvbanner = luv.enginebanner or "?"
                 if luvbanner ~= enginebanner then
                     return format("engine mismatch (luv: %s <> bin: %s)",luvbanner,enginebanner)

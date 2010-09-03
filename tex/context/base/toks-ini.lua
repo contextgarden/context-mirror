@@ -135,7 +135,7 @@ function collectors.show(tag, method)
     end
 end
 
-function collectors.default_words(t,str)
+function collectors.defaultwords(t,str)
     t[#t+1] = tokens.bgroup
     t[#t+1] = createtoken("red")
     for i=1,#str do
@@ -144,9 +144,9 @@ function collectors.default_words(t,str)
     t[#t+1] = tokens.egroup
 end
 
-function collectors.with_words(tag,handle)
+function collectors.dowithwords(tag,handle)
     local t, w = { }, { }
-    handle = handle or collectors.default_words
+    handle = handle or collectors.defaultwords
     local tagdata = collectordata[tag]
     for k=1,#tagdata do
         local v = tagdata[k]
@@ -166,7 +166,7 @@ function collectors.with_words(tag,handle)
     collectordata[tag] = t
 end
 
-function collectors.show_token(t)
+local function showtoken(t)
     if t then
         local cmd, chr, id, cs, name = t[1], t[2], t[3], nil, command_name(t) or ""
         if cmd == letter or cmd == other then
@@ -188,9 +188,11 @@ function collectors.show_token(t)
     end
 end
 
+collectors.showtoken = showtoken
+
 function collectors.trace()
     local t = get_next()
-    texio.write_nl(collectors.show_token(t))
+    texio.write_nl(showtoken(t))
     return t
 end
 

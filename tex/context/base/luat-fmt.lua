@@ -33,7 +33,7 @@ function environment.make_format(name)
     logs.simple("format path: %s",lfs.currentdir())
     -- check source file
     local texsourcename = file.addsuffix(name,"tex")
-    local fulltexsourcename = resolvers.find_file(texsourcename,"tex") or ""
+    local fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
     if fulltexsourcename == "" then
         logs.simple("no tex source file with name: %s",texsourcename)
         lfs.chdir(olddir)
@@ -44,10 +44,10 @@ function environment.make_format(name)
     local texsourcepath = dir.expandname(file.dirname(fulltexsourcename)) -- really needed
     -- check specification
     local specificationname = file.replacesuffix(fulltexsourcename,"lus")
-    local fullspecificationname = resolvers.find_file(specificationname,"tex") or ""
+    local fullspecificationname = resolvers.findfile(specificationname,"tex") or ""
     if fullspecificationname == "" then
         specificationname = file.join(texsourcepath,"context.lus")
-        fullspecificationname = resolvers.find_file(specificationname,"tex") or ""
+        fullspecificationname = resolvers.findfile(specificationname,"tex") or ""
     end
     if fullspecificationname == "" then
         logs.simple("unknown stub specification: %s",specificationname)
@@ -69,7 +69,7 @@ function environment.make_format(name)
         logs.simple("creating initialization file: %s",luastubname)
         utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
-        local strip = resolvers.boolean_variable("LUACSTRIP", true)
+        local strip = resolvers.booleanvariable("LUACSTRIP", true)
         if utilities.lua.compile(luastubname,lucstubname,false,strip) and lfs.isfile(lucstubname) then
             logs.simple("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
@@ -106,9 +106,9 @@ function environment.run_format(name,data,more)
         local barename = file.removesuffix(name)
         local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats")
         if fmtname == "" then
-            fmtname = resolvers.find_file(file.addsuffix(barename,"fmt")) or ""
+            fmtname = resolvers.findfile(file.addsuffix(barename,"fmt")) or ""
         end
-        fmtname = resolvers.clean_path(fmtname)
+        fmtname = resolvers.cleanpath(fmtname)
         if fmtname == "" then
             logs.simple("no format with name: %s",name)
         else

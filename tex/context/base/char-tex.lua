@@ -12,11 +12,13 @@ local lpeg = lpeg
 local P, C, R, S, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc
 local U, lpegmatch = lpeg.patterns.utf8, lpeg.match
 
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
 characters       = characters or { }
 local characters = characters
 characters.tex   = characters.tex or { }
 
-local accent_map = {
+local accent_map = allocate {
    ['~'] = "̃" , --  ̃ Ẽ
    ['"'] = "̈" , --  ̈ Ë
    ["`"] = "̀" , --  ̀ È
@@ -49,7 +51,7 @@ local function remap_accents(a,c,braced)
     end
 end
 
-local command_map = {
+local command_map = allocate {
     ["i"] = "ı"
 }
 

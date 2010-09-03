@@ -13,12 +13,14 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / XML Processing}
 
+% This might disappear.
+
 \unprotect
 
 \startxmlsetups xml:ctx:internal:setup
-    \xmlsetsetup{\xmldocument}{ctx:genericentry} {xml:ctx:genericentry}
-    \xmlsetsetup{\xmldocument}{ctx:sectionentry} {xml:ctx:sectionentry}
-    \xmlsetsetup{\xmldocument}{ctx:registerentry}{xml:ctx:registerentry}
+    \xmlsetsetup{#1}{ctx:genericentry} {xml:ctx:genericentry}
+    \xmlsetsetup{#1}{ctx:sectionentry} {xml:ctx:sectionentry}
+    \xmlsetsetup{#1}{ctx:registerentry}{xml:ctx:registerentry}
 \stopxmlsetups
 
 \xmlregistersetup{xml:ctx:internal:setup}

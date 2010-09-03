@@ -20,7 +20,7 @@ local glyph_code = nodecodes.glyph
 local disc_code  = nodecodes.disc
 local rule_code  = nodecodes.rule
 
-function nodes.strip_range(first,last) -- todo: dir
+function nodes.striprange(first,last) -- todo: dir
     if first and last then -- just to be sure
         if first == last then
             return first, last
@@ -60,14 +60,14 @@ local trace_ruled = false  trackers.register("nodes.ruled", function(v) trace_ru
 local report_ruled   = logs.new("ruled")
 
 local floor = math.floor
-local n_tostring, n_tosequence = nodes.ids_tostring, nodes.tosequence
+local n_tostring, n_tosequence = nodes.idstostring, nodes.tosequence
 
 local a_ruled        = attributes.private('ruled')
 local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')
 local a_colorspace   = attributes.private('colormodel')
 
-local insert_before, insert_after, strip_range = node.insert_before, node.insert_after, nodes.strip_range
+local insert_before, insert_after, striprange = node.insert_before, node.insert_after, nodes.striprange
 local list_dimensions, has_attribute, set_attribute = node.dimensions, node.has_attribute, node.set_attribute
 local hpack_nodes = node.hpack
 local dimenfactor = fonts.dimenfactor
@@ -119,7 +119,7 @@ local checkdir = true
 -- this one needs to take layers into account (i.e. we need a list of
 -- critical attributes)
 
--- omkeren class en level -> scheelt functie call in analyse
+-- omkeren class en level -> scheelt functie call in analyze
 
 local function processwords(attribute,data,flush,head,parent) -- we have hlistdir and local dir
     local n = head
@@ -234,11 +234,11 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     if strip then
         if trace_ruled then
             local before = n_tosequence(f,l,true)
-            f, l = strip_range(f,l)
+            f, l = striprange(f,l)
             local after = n_tosequence(f,l,true)
             report_ruled("range stripper: %s -> %s",before,after)
         else
-            f, l = strip_range(f,l)
+            f, l = striprange(f,l)
         end
     end
     if not f then
@@ -330,7 +330,7 @@ end
 
 local function flush_shifted(head,first,last,data,level,parent,strip) -- not that fast but acceptable for this purpose
     if true then
-        first, last = strip_range(first,last)
+        first, last = striprange(first,last)
     end
     local prev, next = first.prev, last.next
     first.prev, last.next = nil, nil

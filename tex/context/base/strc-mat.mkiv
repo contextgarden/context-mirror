@@ -73,8 +73,9 @@
      [\c!name=\v!formula,\s!counter=\v!formula,%
       \s!hascaption=\v!yes,\s!hastitle=\v!yes,\s!hasnumber=\v!yes,%\s!haslevel=#6,%
       \s!hasnumber=\v!no,%
-      \c!reference=#1,\c!title=,\c!bookmark=]%
+      \c!reference=#1,\c!title=\namedformulaentry,\c!bookmark=]%
      [#2]%
+   \glet\namedformulaentry\relax
    \globallet#3\laststructurecounternumber
    \globallet#4\laststructurecountersynchronize
    \globallet#5\laststructurecounterattribute}
@@ -160,7 +161,7 @@
        \currentplaceformulaattribute
      \currentplaceformulasynchronize
      \glet\currentplaceformulasynchronize\relax
-\theformuladestinationattribute\currentplaceformulaattribute
+     \theformuladestinationattribute\currentplaceformulaattribute
    \fi
    \ifnum\formulasnumbermode=\plusthree
      \storecurrentformulanumber
@@ -171,7 +172,7 @@
        \currentformulasattribute
      \currentformulassynchronize
      \glet\currentformulassynchronize\relax
-\theformuladestinationattribute\currentformulasattribute
+     \theformuladestinationattribute\currentformulasattribute
    \fi
    \ifnum\subformulasnumbermode=\plusthree
      \currentsubformulassynchronize
@@ -186,7 +187,7 @@
        \currentnestedformulaattribute
      \currentnestedformulasynchronize
      \glet\currentnestedformulasynchronize\relax
-\theformuladestinationattribute\currentnestedformulaattribute
+     \theformuladestinationattribute\currentnestedformulaattribute
    \fi}
 
 % needs checking ... too many:
@@ -254,6 +255,15 @@
    \fi}
 
 \definelist[\v!formula]
+
+\installstructurelistprocessor\v!formula % to be checked ...
+  {\dodolistelement
+     \currentlist
+     \structurelistlocation
+     \structurelistgenericnumber
+     \structurelistgenerictitle % hm, can end up in message (volkers test)
+     \structurelistpagenumber
+     \structurelistrealpagenumber}
 
 \appendtoks
     \global\setfalse\insideplaceformula
@@ -638,7 +648,10 @@
 \def\forceformulanumberflag  {+}
 
 \def\docheckformulareference#1#2%
-  {\chardef#1\ifx#2\empty
+  {\chardef#1%
+   \unless\ifx\namedformulaentry\relax % new 29/8/2010
+     \plusthree
+   \else\ifx#2\empty
      \zerocount
    \else\ifx#2\forceformulanumberflag
      \plusone
@@ -646,7 +659,7 @@
      \plustwo
    \else
      \plusthree
-   \fi\fi\fi}
+   \fi\fi\fi\fi}
 
 \def\formulanumber{\doformulanumber} % for the moment
 
@@ -769,12 +782,10 @@
    \setformulalistentry{#2}%
    \next}
 
-\global\let\doflushformulalistentry\gobbleoneargument
+\glet\namedformulaentry\relax % this will become a key/value so that we can do bookmarks
 
 \def\setformulalistentry#1%
-  {\gdef\doflushformulalistentry##1%
-     {\normalexpanded{\noexpand\writetolist[\v!formula]{##1}}{#1}%
-      \global\let\doflushformulalistentry\gobbleoneargument}}
+  {\gdef\namedformulaentry{#1}}
 
 \protect \endinput
 

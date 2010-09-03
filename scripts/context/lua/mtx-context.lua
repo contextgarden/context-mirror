@@ -46,7 +46,7 @@ do
         elseif method == 'base'     then str = file.basename(str)
     --  elseif method == 'full'     then
     --  elseif method == 'complete' then
-    --  elseif method == 'expand'   then -- str = file.expand_path(str)
+    --  elseif method == 'expand'   then -- str = file.expandpath(str)
         end
         return str:gsub("\\","/")
     end
@@ -191,7 +191,7 @@ do
             end
         end
 
-        usedname = resolvers.find_file(ctxdata.ctxname,"tex")
+        usedname = resolvers.findfile(ctxdata.ctxname,"tex")
         found = usedname ~= ""
 
         if not found and defaultname and defaultname ~= "" and lfs.isfile(defaultname) then
@@ -638,13 +638,13 @@ end
 local pdfview -- delayed loading
 
 function scripts.context.openpdf(name)
-    pdfview = pdfview or dofile(resolvers.find_file("l-pdfview.lua","tex"))
+    pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     logs.simple("pdfview methods: %s, current method: %s, MTX_PDFVIEW_METHOD=%s",pdfview.methods(),pdfview.method,os.getenv(pdfview.METHOD) or "<unset>")
     pdfview.open(file.replacesuffix(name,"pdf"))
 end
 
 function scripts.context.closepdf(name)
-    pdfview = pdfview or dofile(resolvers.find_file("l-pdfview.lua","tex"))
+    pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.close(file.replacesuffix(name,"pdf"))
 end
 
@@ -664,13 +664,13 @@ function scripts.context.run(ctxdata,filename)
         interface = (type(interface) == "string" and interface) or "en"
         --
         local formatname = scripts.context.interfaces[interface] or "cont-en"
-        local formatfile, scriptfile = resolvers.locate_format(formatname)
+        local formatfile, scriptfile = resolvers.locateformat(formatname)
         -- this catches the command line
         if not formatfile or not scriptfile then
             logs.simple("warning: no format found, forcing remake (commandline driven)")
             scripts.context.generate()
             scripts.context.make(formatname)
-            formatfile, scriptfile = resolvers.locate_format(formatname)
+            formatfile, scriptfile = resolvers.locateformat(formatname)
         end
         --
         if formatfile and scriptfile then
@@ -690,7 +690,7 @@ function scripts.context.run(ctxdata,filename)
                         --
                         -- require "mtx-texutil.lua"
                     else
-                        local texexec = resolvers.find_file("texexec.rb") or ""
+                        local texexec = resolvers.findfile("texexec.rb") or ""
                         if texexec ~= "" then
                             os.setenv("RUBYOPT","")
                             local command = string.format("ruby %s %s",texexec,environment.reconstructcommandline(environment.arguments_after))
@@ -700,14 +700,14 @@ function scripts.context.run(ctxdata,filename)
                 else
                     if a and a.interface and a.interface ~= interface then
                         formatname = scripts.context.interfaces[a.interface] or formatname
-                        formatfile, scriptfile = resolvers.locate_format(formatname)
+                        formatfile, scriptfile = resolvers.locateformat(formatname)
                     end
                     -- this catches the command line
                     if not formatfile or not scriptfile then
                         logs.simple("warning: no format found, forcing remake (source driven)")
                         scripts.context.generate()
                         scripts.context.make(formatname)
-                        formatfile, scriptfile = resolvers.locate_format(formatname)
+                        formatfile, scriptfile = resolvers.locateformat(formatname)
                     end
                     if formatfile and scriptfile then
                         -- we default to mkiv xml !
@@ -918,12 +918,12 @@ function scripts.context.pipe()
     local interface = environment.argument("interface")
     interface = (type(interface) == "string" and interface) or "en"
     local formatname = scripts.context.interfaces[interface] or "cont-en"
-    local formatfile, scriptfile = resolvers.locate_format(formatname)
+    local formatfile, scriptfile = resolvers.locateformat(formatname)
     if not formatfile or not scriptfile then
         logs.simple("warning: no format found, forcing remake (commandline driven)")
         scripts.context.generate()
         scripts.context.make(formatname)
-        formatfile, scriptfile = resolvers.locate_format(formatname)
+        formatfile, scriptfile = resolvers.locateformat(formatname)
     end
     if formatfile and scriptfile then
         local okay = statistics.checkfmtstatus(formatfile)
@@ -1036,7 +1036,7 @@ local loaded = false
 function scripts.context.metapost()
     local filename = environment.files[1] or ""
     if not loaded then
-        dofile(resolvers.find_file("mlib-run.lua"))
+        dofile(resolvers.findfile("mlib-run.lua"))
         loaded = true
         commands = commands or { }
         commands.writestatus = logs.report
@@ -1065,7 +1065,7 @@ function scripts.context.metapost()
 end
 
 function scripts.context.version()
-    local name = resolvers.find_file("context.tex")
+    local name = resolvers.findfile("context.tex")
     if name ~= "" then
         logs.simple("main context file: %s",name)
         local data = io.loaddata(name)
@@ -1135,7 +1135,7 @@ function scripts.context.purge_job(jobname,all)
             end
         end
         if #deleted > 0 then
-            logs.simple("purged files: %s", table.join(deleted,", "))
+            logs.simple("purged files: %s", table.concat(deleted,", "))
         end
     end
 end
@@ -1158,15 +1158,12 @@ function scripts.context.purge(all)
         end
     end
     if #deleted > 0 then
-        logs.simple("purged files: %s", table.join(deleted,", "))
+        logs.simple("purged files: %s", table.concat(deleted,", "))
     end
 end
 
---~ purge_for_files("test",true)
---~ purge_all_files()
-
 local function touch(name,pattern)
-    local name = resolvers.find_file(name)
+    local name = resolvers.findfile(name)
     local olddata = io.loaddata(name)
     if olddata then
         local oldversion, newversion = "", os.date("%Y.%m.%d %H:%M")
@@ -1208,11 +1205,11 @@ end
 -- extras
 
 function scripts.context.extras(pattern)
-    local found = resolvers.find_file("context.tex")
+    local found = resolvers.findfile("context.tex")
     if found == "" then
         logs.simple("unknown extra: %s", extra)
     else
-        pattern = file.join(dir.expand_name(file.dirname(found)),string.format("mtx-context-%s.tex",pattern or "*"))
+        pattern = file.join(dir.expandname(file.dirname(found)),string.format("mtx-context-%s.tex",pattern or "*"))
         local list = dir.glob(pattern)
         if not extra or extra == "" then
             logs.extendbanner("extras")
@@ -1245,7 +1242,7 @@ function scripts.context.extra()
             if not string.find(fullextra,"mtx%-context%-") then
                 fullextra = "mtx-context-" .. extra
             end
-            local foundextra = resolvers.find_file(fullextra)
+            local foundextra = resolvers.findfile(fullextra)
             if foundextra == "" then
                 scripts.context.extras()
                 return
@@ -1267,14 +1264,14 @@ end
 -- todo: we need to do a dummy run
 
 function scripts.context.trackers()
-    environment.files = { resolvers.find_file("m-trackers.tex") }
+    environment.files = { resolvers.findfile("m-trackers.tex") }
     scripts.context.multipass.nofruns = 1
     scripts.context.run()
     -- maybe filter from log
 end
 
 function scripts.context.directives()
-    environment.files = { resolvers.find_file("m-directives.tex") }
+    environment.files = { resolvers.findfile("m-directives.tex") }
     scripts.context.multipass.nofruns = 1
     scripts.context.run()
     -- maybe filter from log
@@ -1303,7 +1300,7 @@ function scripts.context.update()
     local force = environment.argument("force")
     local socket = require("socket")
     local http   = require("socket.http")
-    local basepath = resolvers.find_file("context.tex") or ""
+    local basepath = resolvers.findfile("context.tex") or ""
     if basepath == "" then
         logs.simple("quiting, no 'context.tex' found")
         return
@@ -1355,7 +1352,7 @@ function scripts.context.update()
             logs.simple("quiting, unable to open '%s'","context.tex")
             return
         end
-        local oldfile = io.loaddata(resolvers.find_file("context.tex")) or ""
+        local oldfile = io.loaddata(resolvers.findfile("context.tex")) or ""
         local function versiontonumber(what,str)
             local version = str:match("\\edef\\contextversion{(.-)}") or ""
             local year, month, day, hour, minute = str:match("\\edef\\contextversion{(%d+)%.(%d+)%.(%d+) *(%d+)%:(%d+)}")
@@ -1395,7 +1392,7 @@ function scripts.context.update()
             end
         end
         for _, scriptname in next, selfscripts do
-            local oldscript = resolvers.find_file(scriptname) or ""
+            local oldscript = resolvers.findfile(scriptname) or ""
             if oldscript ~= "" and is_okay(oldscript) then
                 local newscript = "./scripts/context/lua/" .. scriptname
                 local data = io.loaddata(newscript) or ""
@@ -1477,7 +1474,7 @@ expert options:
 --touch               update context version number (remake needed afterwards, also provide --expert)
 --nostats             omit runtime statistics at the end of the run
 --update              update context from website (not to be confused with contextgarden)
---profile             profile job (use: mtxrun --script profile --analyse)
+--profile             profile job (use: mtxrun --script profile --analyze)
 --timing              generate timing and statistics overview
 --tracefiles          show some extra info when locating files (at the tex end)
 
@@ -1527,7 +1524,7 @@ elseif environment.argument("touch") then
 elseif environment.argument("update") then
     scripts.context.update()
 elseif environment.argument("expert") then
-    logs.help(table.join({ messages.expert, messages.special },"\n"))
+    logs.help(table.concat({ messages.expert, messages.special },"\n"))
 elseif environment.argument("extras") then
     scripts.context.extras()
 elseif environment.argument("extra") then

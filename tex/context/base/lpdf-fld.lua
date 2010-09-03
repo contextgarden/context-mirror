@@ -21,32 +21,33 @@ local report_fields = logs.new("fields")
 
 local backends, lpdf = backends, lpdf
 
-local variables          = interfaces.variables
+local variables            = interfaces.variables
 
-local references         = structures.references
-local settings_to_array  = utilities.parsers.settings_to_array
+local references           = structures.references
+local settings_to_array    = utilities.parsers.settings_to_array
 
-local nodeinjections     = backends.pdf.nodeinjections
-local codeinjections     = backends.pdf.codeinjections
-local registrations      = backends.pdf.registrations
+local nodeinjections       = backends.pdf.nodeinjections
+local codeinjections       = backends.pdf.codeinjections
+local registrations        = backends.pdf.registrations
 
-local registeredsymbol   = codeinjections.registeredsymbol
+local registeredsymbol     = codeinjections.registeredsymbol
 
-local pdfstream          = lpdf.stream
-local pdfdictionary      = lpdf.dictionary
-local pdfarray           = lpdf.array
-local pdfreference       = lpdf.reference
-local pdfunicode         = lpdf.unicode
-local pdfstring          = lpdf.string
-local pdfconstant        = lpdf.constant
-local pdftoeight         = lpdf.toeight
-local pdfflushobject     = lpdf.flushobject
-local pdfsharedobject    = lpdf.sharedobject
-local pdfreserveobject   = lpdf.reserveobject
+local pdfstream            = lpdf.stream
+local pdfdictionary        = lpdf.dictionary
+local pdfarray             = lpdf.array
+local pdfreference         = lpdf.reference
+local pdfunicode           = lpdf.unicode
+local pdfstring            = lpdf.string
+local pdfconstant          = lpdf.constant
+local pdftoeight           = lpdf.toeight
+local pdfflushobject       = lpdf.flushobject
+local pdfshareobjectref    = lpdf.shareobjectreference
+local pdfreserveobject     = lpdf.reserveobject
+local pdfreserveannotation = lpdf.reserveannotation
 
-local nodepool           = nodes.pool
+local nodepool             = nodes.pool
 
-local pdfannotation_node = nodepool.pdfannotation
+local pdfannotation_node   = nodepool.pdfannotation
 
 local submitoutputformat = 0 --  0=unknown 1=HTML 2=FDF 3=XML   => not yet used, needs to be checked
 
@@ -254,7 +255,7 @@ local function fieldappearances(specification)
     local appearance = pdfdictionary { -- cache this one
         N = registeredsymbol(n), R = registeredsymbol(r), D = registeredsymbol(d),
     }
-    return pdfsharedobject(tostring(appearance))
+    return pdfshareobjectref(appearance)
 end
 
 local function fieldstates(specification,forceyes,values,default)
@@ -316,7 +317,7 @@ local function fieldstates(specification,forceyes,values,default)
         R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
         D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
     }
-    local appearanceref = pdfsharedobject(tostring(appearance))
+    local appearanceref = pdfshareobjectref(appearance)
     return appearanceref, default
 end
 
@@ -645,7 +646,8 @@ local function save_parent(field,specification,d)
 end
 
 local function save_kid(field,specification,d)
-    local kn = pdfreserveobject()
+--~     local kn = pdfreserveobject()
+    local kn = pdfreserveannotation()
     field.kids[#field.kids+1] = pdfreference(kn)
     node.write(pdfannotation_node(specification.width,specification.height,0,d(),kn))
 end

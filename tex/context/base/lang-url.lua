@@ -26,7 +26,7 @@ dealing with <l n='ascii'/> characters.</p>
 commands.hyphenatedurl = commands.hyphenatedurl or { }
 local hyphenatedurl    = commands.hyphenatedurl
 
-hyphenatedurl.characters = {
+hyphenatedurl.characters = utilities.storage.allocate {
   ["!"] = 1,
   ["\""] = 1,
   ["#"] = 1,

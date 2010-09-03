@@ -27,24 +27,24 @@ function scripts.texworks.start(indeed)
     local fullname = nil
     local binpaths = file.split_path(os.getenv("PATH")) or file.split_path(os.getenv("path"))
     local usedsignal = texworkssignal
-    local datapath = resolvers.find_file(usedsignal,"other text files") or ""
+    local datapath = resolvers.findfile(usedsignal,"other text files") or ""
     if datapath ~= "" then
         datapath  = file.dirname(datapath) -- data
         if datapath == "" then
-            datapath = resolvers.clean_path(lfs.currentdir())
+            datapath = resolvers.cleanpath(lfs.currentdir())
         end
     else
         usedsignal = texworkininame
-        datapath = resolvers.find_file(usedsignal,"other text files") or ""
+        datapath = resolvers.findfile(usedsignal,"other text files") or ""
         if datapath == "" then
             usedsignal = string.lower(usedsignal)
-            datapath = resolvers.find_file(usedsignal,"other text files") or ""
+            datapath = resolvers.findfile(usedsignal,"other text files") or ""
         end
         if datapath ~= "" and lfs.isfile(datapath) then
             datapath  = file.dirname(datapath) -- TUG
             datapath  = file.dirname(datapath) -- data
             if datapath == "" then
-                datapath = resolvers.clean_path(lfs.currentdir())
+                datapath = resolvers.cleanpath(lfs.currentdir())
             end
         end
     end

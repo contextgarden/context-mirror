@@ -74,12 +74,12 @@
 
 %D Define menus:
 
-\def\setmenuparameter#1#2#3{\@EA\def\csname\??am#1#2\endcsname{#3}}
-\def\letmenuparameter  #1#2{\@EA\let\csname\??am#1#2\endcsname}
+\def\setmenuparameter#1#2#3{\@EA\def\csname\??am#1:#2\endcsname{#3}}
+\def\letmenuparameter  #1#2{\@EA\let\csname\??am#1:#2\endcsname}
 
-\def\menuparameter       #1{\csname\domenuparameter{\??am\currentmenu}#1\endcsname}
-\def\namedmenuparameter#1#2{\csname\domenuparameter{\??am          #1}#2\endcsname}
-\def\menuparameterhash   #1{\domenuparameterhash   {\??am\currentmenu}#1}
+\def\menuparameter       #1{\csname\domenuparameter{\??am\currentmenu:}#1\endcsname}
+\def\namedmenuparameter#1#2{\csname\domenuparameter{\??am          #1:}#2\endcsname}
+\def\menuparameterhash   #1{\domenuparameterhash   {\??am\currentmenu:}#1}
 
 \def\domenuparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\domenuparentparameter    \csname#1\s!parent\endcsname#2\fi}
 \def\domenuparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\domenuparentparameterhash\csname#1\s!parent\endcsname#2\fi}
@@ -90,7 +90,7 @@
 \unexpanded\def\defineinteractionmenu
   {\dotripleempty\dodefineinteractionmenu}
 
-\def\dodefineinteractionmenu[#1][#2][#3]% [name] [location] [settings]
+\def\dodefineinteractionmenu[#1][#2][#3]% [name] [location] [settings|parent] % right right vertical
   {\ifsecondargument
      \ifcsname\??am:\c!list:#2\endcsname \else
         \letvalue{\??am:\c!list:#2}\empty
@@ -98,19 +98,19 @@
      \normalexpanded{\noexpand\addtocommalist{#1}\@EA\noexpand\csname\??am:\c!list:#2\endcsname}%
      \setvalue{\@@dodolistelement#1}{\def\dosomelistelement{\dodomenulistelement{#1}}}%
      \ifthirdargument
-       \presetlocalframed[\??am#1]%
+       \presetlocalframed[\??am#1:]%
        \doifassignmentelse{#3}
          {\doifelse{#1}{#2}
-            {\getparameters[\??am#1][\c!location=#2,\c!menu=,\s!parent=\??am,#3]}
-            {\getparameters[\??am#1][\c!location=#2,\c!menu=,\s!parent=\??am#2,#3]}}%
+            {\getparameters[\??am#1:][\c!location=#2,\c!menu=,\s!parent=\??am,#3]}
+            {\getparameters[\??am#1:][\c!location=#2,\c!menu=,\s!parent=\??am#2:,#3]}}%
          {\doifelsenothing{#3}
-            {\getparameters[\??am#1][\c!location=#2,\c!menu=,\s!parent=\??am]}
-            {\getparameters[\??am#1][\c!location=#2,\c!menu=,\s!parent=\??am#3]}}%
+            {\getparameters[\??am#1:][\c!location=#2,\c!menu=,\s!parent=\??am]}
+            {\getparameters[\??am#1:][\c!location=#2,\c!menu=,\s!parent=\??am#3:]}}%
      \else
-       \getparameters[\??am#1][\c!location=#2,\c!menu=,\s!parent=\??am#2]%
+       \getparameters[\??am#1:][\c!location=#2,\c!menu=,\s!parent=\??am#2:]%
      \fi
    \else
-     \getparameters[\??am#1][\s!parent=\??am]% simple cloning
+     \getparameters[\??am#1:][\s!parent=\??am]% simple cloning, like vertical
    \fi}
 
 \def\currentmenulist{\ifcsname\??am:\c!list:\currentmenu\endcsname\csname\??am:\c!list:\currentmenu\endcsname\fi}
@@ -121,7 +121,7 @@
   {\dodoubleargument\dosetupinteractionmenu}
 
 \def\dosetupinteractionmenu[#1][#2]%
-  {\def\docommand##1{\getparameters[\??am##1][#2]}%
+  {\def\docommand##1{\getparameters[\??am##1:][#2]}%
    \processcommalist[#1]\docommand}
 
 \unexpanded\def\setupinteractionmenus[#1]%
@@ -156,19 +156,6 @@
   {\iflocation
      \csname\??am:\c!menu:#1\endcsname
    \fi}
-
-% \unexpanded\def\defineinteractionmenuclass
-%   {\dodoubleargument\dodefineinteractionmenuclass}
-%
-% \def\dodefineinteractionmenuclass[#1][#2]% tag hori|veri
-%   {\doifelse{#2}\v!vertical
-%      {\setvalue{\??am:\c!menu:#1}{\verticalinteractionmenu  {#1}{\getvalue{\??am#1\c!width }}}}
-%      {\setvalue{\??am:\c!menu:#1}{\horizontalinteractionmenu{#1}{\getvalue{\??am#1\c!height}}}}}
-%
-% \defineinteractionmenuclass[\v!left  ][\v!horizontal]
-% \defineinteractionmenuclass[\v!right ][\v!horizontal]
-% \defineinteractionmenuclass[\v!top   ][\v!vertical]
-% \defineinteractionmenuclass[\v!bottom][\v!vertical]
 
 \setvalue{\??am:\c!menu   :\v!left  }{\horizontalinteractionmenu\v!left  \leftedgewidth }
 \setvalue{\??am:\c!menu   :\v!right }{\horizontalinteractionmenu\v!right \rightedgewidth}
@@ -349,6 +336,8 @@
 
 %D The menu commands:
 
+% to be redone, using parent inheritance instead
+
 % ja   : kader/achtergrond met tekst
 % leeg : kader/achtergrond maar geen tekst
 % nee  : alleen ruimte reserveren
@@ -380,6 +369,21 @@
 %    \dosetfontattribute {#1}{#2}%
 %    \dosetcolorattribute{#1}{#3}%
 
+\def\locboxyesinject
+  {\ctxlua{structures.references.injectcurrentset(nil,nil)}}
+
+\def\locboxyesnormal#1#2#3%
+  {\hbox attr \referenceattribute \lastreferenceattribute {\localframed[#1][#2]{#3}}}
+
+\def\locboxyescontrast#1#2#3%
+  {\hbox attr \referenceattribute \lastreferenceattribute {\localframed[#1][#2,\c!color=\menuparameter\c!contrastcolor]{#3}}}
+
+\def\locboxyesempty#1#2#3%
+  {\localframed[#1][\c!empty=\v!yes,#2]{#3}}
+
+\def\locboxyesnothing#1#2#3%
+  {\localframed[#1][\c!empty=\v!yes,\c!frame=,\c!background=,#2]{#1}}
+
 \def\setlocationboxyes#1[#2]#3[#4]% needs to be split as the attr is not applicable to the box
   {\begingroup
    \settrue\usemenuclick
@@ -389,33 +393,45 @@
      {\analyzecurrentreference % we need to act on the state
       \ifcase\referencepagestate
          % something else than a page reference
-         \ctxlua{structures.references.injectcurrentset(nil,nil)}%
-         \hbox attr \referenceattribute \lastreferenceattribute {\localframed[#1][#2]{#3}}%
-      \else\ifcase\csname\??am:\c!location:\menuparameter\c!samepage\endcsname\relax
-        % yes: same page or not ... todo
-        \ctxlua{structures.references.injectcurrentset(nil,nil)}%
-        \ifnum\referencepagestate=\plusone % same page
-           \hbox attr \referenceattribute \lastreferenceattribute {\localframed[#1][#2,\c!color=\menuparameter\c!contrastcolor]{#3}}%
-        \else % elsewhere
-           \hbox attr \referenceattribute \lastreferenceattribute {\localframed[#1][#2]{#3}}%
+         \locboxyesinject
+         \locboxyesnormal{#1}{#2}{#3}%
+      \else
+        \ifcase\csname\??am:\c!location:\menuparameter\c!samepage\endcsname\relax
+          % yes: same page or not ... todo
+          \locboxyesinject
+          \ifnum\referencepagestate=\plusone % same page
+            \locboxyescontrast{#1}{#2}{#3}%
+          \else % elsewhere
+            \locboxyesnormal{#1}{#2}{#3}%
+          \fi
+        \or
+          % empty but frame: no click
+          \ifnum\referencepagestate=\plusone % same page
+            \locboxyesempty{#1}{#2}{#3}
+          \else % elsewhere
+            \locboxyesinject
+            \locboxyesnormal{#1}{#2}{#3}%
+          \fi
+        \or
+          % empty no frame: no
+          \ifnum\referencepagestate=\plusone % same page
+            \locboxyesnothing{#1}{#2}{#3}%
+          \else % elsewhere
+            \locboxyesinject
+            \locboxyesnormal{#1}{#2}{#3}%
+          \fi
+        \or
+          % nothing at all
+          \global\settrue\skippedmenuitem
         \fi
-      \or
-        % empty but frame: no click
-        \localframed[#1][\c!empty=\v!yes,#2]{#3}%
-      \or
-        % empty no frame: no
-        \localframed[#1][\c!empty=\v!yes,\c!frame=,\c!background=,#2]{#3}%
-      \or
-        % nothing at all
-        \global\settrue\skippedmenuitem
-      \fi\fi}%
+      \fi}%
     {\unknownreference{#4}%
      \ifcase\csname\??am:\c!location:\menuparameter\c!unknownreference\endcsname\relax
         \localframed[#1][#2]{#3}%
       \or
-        \localframed[#1][\c!empty=\v!yes,#2]{#3}%
+        \locboxyesempty{#1}{#2}{#3}
       \or
-        \localframed[#1][\c!empty=\v!yes,\c!frame=,\c!background=,#2]{#1}%
+        \locboxyesnothing{#1}{#2}{#3}%
       \or
         \global\skippedmenuitemtrue
       \fi}%
@@ -431,19 +447,19 @@
   {\addsomemenuitem{\gotobox{\ignorespaces#2\unskip}[#1]}}
 
 \def\menu@but[#1]#2\\%
-  {\addsomemenuitem{\domenuitemposition\currentmenu{#1}{\setlocationboxyes{\??am\currentmenu}[]{\ignorespaces#2\unskip}[#1]}}}
+  {\addsomemenuitem{\domenuitemposition\currentmenu{#1}{\setlocationboxyes{\??am\currentmenu:}[]{\ignorespaces#2\unskip}[#1]}}}
 
 \def\menu@got[#1]#2\\%
-  {\addsomemenuitem{\setlocationboxyes{\??am\currentmenu}[\c!frame=\v!off,\c!background=]{\ignorespaces#2\unskip}[#1]}}
+  {\addsomemenuitem{\setlocationboxyes{\??am\currentmenu:}[\c!frame=\v!off,\c!background=]{\ignorespaces#2\unskip}[#1]}}
 
 \def\menu@nop#1\\%
-  {\addsomemenuitem{\setlocationboxraw{\??am\currentmenu}[\c!frame=\v!off,\c!background=,\c!empty=\v!yes]{\ignorespaces#1\unskip}[]}}
+  {\addsomemenuitem{\setlocationboxraw{\??am\currentmenu:}[\c!frame=\v!off,\c!background=,\c!empty=\v!yes]{\ignorespaces#1\unskip}[]}}
 
 \def\menu@txt#1\\%
-  {\addsomemenuitem{\localframed[\??am\currentmenu][\c!frame=\v!off,\c!background=]{\ignorespaces#1\unskip}}}
+  {\addsomemenuitem{\localframed[\??am\currentmenu:][\c!frame=\v!off,\c!background=]{\ignorespaces#1\unskip}}}
 
 \def\menu@rul#1\\%
-  {\addsomemenuitem{\localframed[\??am\currentmenu][]{\ignorespaces#1\unskip}}}
+  {\addsomemenuitem{\localframed[\??am\currentmenu:][]{\ignorespaces#1\unskip}}}
 
 \def\menu@com#1\\%
   {\ignorespaces#1\unskip\ignorespaces}
@@ -473,7 +489,7 @@
 
 \def\dodomenulistelement#1#2#3#4#5#6#7%
   {\addsomemenuitem{\domenuitemposition\currentmenu{internal(#3)}%
-     {\setlocationboxyes{\??am\currentmenu}[]{\limitatetext{#5}{\namedlistparameter{#2}\c!maxwidth}{\unknown}}[internal(#3)]}}}
+     {\setlocationboxyes{\??am\currentmenu:}[]{\limitatetext{#5}{\namedlistparameter{#2}\c!maxwidth}{\unknown}}[internal(#3)]}}}
 
 \unexpanded\def\menubutton
   {\dodoubleempty\domenubutton}
@@ -491,10 +507,10 @@
      \@EA\domenubuttonA
    \fi[#1]}
 
-\def\domenubuttonA[#1][#2]#3[#4]{\setlocationboxyes\??bt[]{#3}[#4]}       % normal button, no parameters
-\def\domenubuttonB[#1][#2]#3[#4]{\setlocationboxyes{\??am#1}[#2]{#3}[#4]} % menu button, with parameters
-\def\domenubuttonC[#1][#2]#3[#4]{\setlocationboxyes\??bt[#1]{#3}[#4]}     % normal button, with parameters
-\def\domenubuttonD[#1][#2]#3[#4]{\setlocationboxyes{\??am#1}[]{#3}[#4]}   % menu button, no parameters
+\def\domenubuttonA[#1][#2]#3[#4]{\setlocationboxyes       \??bt[]{#3}[#4]}        % normal button, no parameters
+\def\domenubuttonB[#1][#2]#3[#4]{\setlocationboxyes{\??am#1:}[#2]{#3}[#4]} % menu button, with parameters
+\def\domenubuttonC[#1][#2]#3[#4]{\setlocationboxyes     \??bt[#1]{#3}[#4]}      % normal button, with parameters
+\def\domenubuttonD[#1][#2]#3[#4]{\setlocationboxyes  {\??am#1:}[]{#3}[#4]}   % menu button, no parameters
 
 \def\menubox
   {\dodoubleempty\domenubox}

@@ -10,6 +10,8 @@ local cos, tan, rad, format = math.cos, math.tan, math.rad, string.format
 
 local trace_combining = false  trackers.register("fonts.combining", function(v) trace_combining = v end)
 
+local allocate = utilities.storage.allocate
+
 --[[ldx--
 <p>This is very experimental code!</p>
 --ldx]]--
@@ -18,7 +20,7 @@ local fonts = fonts
 local vf    = fonts.vf
 local tfm   = fonts.tfm
 
-fonts.fallbacks = fonts.fallbacks or { }
+fonts.fallbacks = allocate()
 local fallbacks = fonts.fallbacks
 local commands  = vf.aux.combine.commands
 
@@ -327,7 +329,7 @@ commands["disable-force"] = function(g,v)
     force_fallback = false
 end
 
-local install = fonts.define.methods.install
+local install = fonts.definers.methods.install
 
 install("fallback", { -- todo: auto-fallback with loop over data.characters
     { "fake-character", 0x00A2, 'textcent' },

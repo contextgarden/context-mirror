@@ -72,13 +72,13 @@ if environment.arguments["find-file"] then
     instance.format  = environment.arguments["format"] or instance.format
     if instance.pattern then
         instance.allresults = true
-        resolvers.for_files(resolvers.find_files, { instance.pattern }, instance.my_format)
+        resolvers.dowithfilesandreport(resolvers.findfiles, { instance.pattern }, instance.my_format)
     else
-        resolvers.for_files(resolvers.find_files, environment.files, instance.my_format)
+        resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, instance.my_format)
     end
 elseif environment.arguments["find-path"] then
     resolvers.load()
-    local path = resolvers.find_path(environment.files[1], instance.my_format)
+    local path = resolvers.findpath(environment.files[1], instance.my_format)
     print(path) -- quite basic, wil become function in logs
 elseif environment.arguments["run"] then
     resolvers.load("nofiles") -- ! no need for loading databases
@@ -90,19 +90,19 @@ elseif environment.arguments["fmt"] then
     environment.run_format(environment.arguments["fmt"], environment.files[1] or "",environment.files[2] or "")
 elseif environment.arguments["expand-braces"] then
     resolvers.load("nofiles")
-    resolvers.for_files(resolvers.expand_braces, environment.files)
+    resolvers.dowithfilesandreport(resolvers.expandbraces, environment.files)
 elseif environment.arguments["expand-path"] then
     resolvers.load("nofiles")
-    resolvers.for_files(resolvers.expand_path, environment.files)
+    resolvers.dowithfilesandreport(resolvers.expandpath, environment.files)
 elseif environment.arguments["expand-var"] or environment.arguments["expand-variable"] then
     resolvers.load("nofiles")
-    resolvers.for_files(resolvers.expand_var, environment.files)
+    resolvers.dowithfilesandreport(resolvers.expandvar, environment.files)
 elseif environment.arguments["show-path"] or environment.arguments["path-value"] then
     resolvers.load("nofiles")
-    resolvers.for_files(resolvers.show_path, environment.files)
+    resolvers.dowithfilesandreport(resolvers.showpath, environment.files)
 elseif environment.arguments["var-value"] or environment.arguments["show-value"] then
     resolvers.load("nofiles")
-    resolvers.for_files(resolvers.var_value, environment.files)
+    resolvers.dowithfilesandreport(resolvers.var_value, environment.files)
 elseif environment.arguments["format-path"] then
     resolvers.load()
     logs.simple(caches.getwritablepath("format"))
@@ -110,7 +110,7 @@ elseif instance.pattern then -- brrr
     resolvers.load()
     instance.format = environment.arguments["format"] or instance.format
     instance.allresults = true
-    resolvers.for_files(resolvers.find_files, { instance.pattern }, instance.my_format)
+    resolvers.dowithfilesandreport(resolvers.findfiles, { instance.pattern }, instance.my_format)
 elseif environment.arguments["generate"] then
     instance.renewcache = true
     trackers.enable("resolvers.locating")
@@ -135,5 +135,5 @@ elseif environment.files[1]=='texmfcnf.lua' then
     resolvers.listers.configurations()
 else
     resolvers.load()
-    resolvers.for_files(resolvers.find_files, environment.files, instance.my_format)
+    resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, instance.my_format)
 end

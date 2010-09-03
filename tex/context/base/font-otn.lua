@@ -200,10 +200,11 @@ local curscurs = attributes.private('curscurs')
 local cursdone = attributes.private('cursdone')
 local kernpair = attributes.private('kernpair')
 
-local set_mark    = nodes.set_mark
-local set_cursive = nodes.set_cursive
-local set_kern    = nodes.set_kern
-local set_pair    = nodes.set_pair
+local injections  = nodes.injections
+local setmark     = injections.setmark
+local setcursive  = injections.setcursive
+local setkern     = injections.setkern
+local setpair     = injections.setpair
 
 local markonce = true
 local cursonce = true
@@ -232,9 +233,10 @@ local featurevalue  = false
 
 -- we cheat a bit and assume that a font,attr combination are kind of ranged
 
-local context_setups  = fonts.define.specify.context_setups
-local context_numbers = fonts.define.specify.context_numbers
-local context_merged  = fonts.define.specify.context_merged
+local specifiers     = fonts.definers.specifiers
+local contextsetups  = specifiers.contextsetups
+local contextnumbers = specifiers.contextnumbers
+local contextmerged  = specifiers.contextmerged
 
 -- we cannot optimize with "start = first_character(head)" because then we don't
 -- know which rlmode we're in which messes up cursive handling later on
@@ -591,7 +593,7 @@ function handlers.gpos_mark2base(start,kind,lookupname,markanchors,sequence)
                         if al[anchor] then
                             local ma = markanchors[anchor]
                             if ma then
-                                local dx, dy, bound = set_mark(start,base,tfmdata.factor,rlmode,ba,ma)
+                                local dx, dy, bound = setmark(start,base,tfmdata.factor,rlmode,ba,ma)
                                 if trace_marks then
                                     logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%s,%s)",
                                         pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -606,7 +608,7 @@ function handlers.gpos_mark2base(start,kind,lookupname,markanchors,sequence)
                 end
             else -- if trace_bugs then
             --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(basechar))
-                fonts.register_message(currentfont,basechar,"no base anchors")
+                fonts.registermessage(currentfont,basechar,"no base anchors")
             end
         elseif trace_bugs then
             logwarning("%s: prev node is no char",pref(kind,lookupname))
@@ -659,7 +661,7 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
                                 if ma then
                                     ba = ba[index]
                                     if ba then
-                                        local dx, dy, bound = set_mark(start,base,tfmdata.factor,rlmode,ba,ma,index)
+                                        local dx, dy, bound = setmark(start,base,tfmdata.factor,rlmode,ba,ma,index)
                                         if trace_marks then
                                             logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%s,%s)",
                                                 pref(kind,lookupname),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -676,7 +678,7 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
                 end
             else -- if trace_bugs then
             --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(basechar))
-                fonts.register_message(currentfont,basechar,"no base anchors")
+                fonts.registermessage(currentfont,basechar,"no base anchors")
             end
         elseif trace_bugs then
             logwarning("%s: prev node is no char",pref(kind,lookupname))
@@ -706,7 +708,7 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
                                 if al[anchor] then
                                     local ma = markanchors[anchor]
                                     if ma then
-                                        local dx, dy, bound = set_mark(start,base,tfmdata.factor,rlmode,ba,ma)
+                                        local dx, dy, bound = setmark(start,base,tfmdata.factor,rlmode,ba,ma)
                                         if trace_marks then
                                             logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%s,%s)",
                                                 pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -722,7 +724,7 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
                     end
                 else -- if trace_bugs then
                 --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(basechar))
-                    fonts.register_message(currentfont,basechar,"no base anchors")
+                    fonts.registermessage(currentfont,basechar,"no base anchors")
                 end
             elseif trace_bugs then
                 logwarning("%s: prev node is no mark",pref(kind,lookupname))
@@ -764,7 +766,7 @@ function handlers.gpos_cursive(start,kind,lookupname,exitanchors,sequence) -- to
                                     if al[anchor] then
                                         local exit = exitanchors[anchor]
                                         if exit then
-                                            local dx, dy, bound = set_cursive(start,nxt,tfmdata.factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+                                            local dx, dy, bound = setcursive(start,nxt,tfmdata.factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                                             if trace_cursive then
                                                 logprocess("%s: moving %s to %s cursive (%s,%s) using anchor %s and bound %s in rlmode %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound,rlmode)
                                             end
@@ -777,7 +779,7 @@ function handlers.gpos_cursive(start,kind,lookupname,exitanchors,sequence) -- to
                         end
                     else -- if trace_bugs then
                     --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(startchar))
-                        fonts.register_message(currentfont,startchar,"no entry anchors")
+                        fonts.registermessage(currentfont,startchar,"no entry anchors")
                     end
                     break
                 end
@@ -794,7 +796,7 @@ end
 
 function handlers.gpos_single(start,kind,lookupname,kerns,sequence)
     local startchar = start.char
-    local dx, dy, w, h = set_pair(start,tfmdata.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
+    local dx, dy, w, h = setpair(start,tfmdata.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
     if trace_kerns then
         logprocess("%s: shifting single %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),dx,dy,w,h)
     end
@@ -825,14 +827,14 @@ function handlers.gpos_pair(start,kind,lookupname,kerns,sequence)
                         local a, b = krn[3], krn[4]
                         if a and #a > 0 then
                             local startchar = start.char
-                            local x, y, w, h = set_pair(start,factor,rlmode,sequence.flags[4],a,characters[startchar])
+                            local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,characters[startchar])
                             if trace_kerns then
                                 logprocess("%s: shifting first of pair %s and %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),gref(nextchar),x,y,w,h)
                             end
                         end
                         if b and #b > 0 then
                             local startchar = start.char
-                            local x, y, w, h = set_pair(snext,factor,rlmode,sequence.flags[4],b,characters[nextchar])
+                            local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,characters[nextchar])
                             if trace_kerns then
                                 logprocess("%s: shifting second of pair %s and %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),gref(nextchar),x,y,w,h)
                             end
@@ -841,7 +843,7 @@ function handlers.gpos_pair(start,kind,lookupname,kerns,sequence)
                         report_process("%s: check this out (old kern stuff)",pref(kind,lookupname))
                         local a, b = krn[3], krn[7]
                         if a and a ~= 0 then
-                            local k = set_kern(snext,factor,rlmode,a)
+                            local k = setkern(snext,factor,rlmode,a)
                             if trace_kerns then
                                 logprocess("%s: inserting first kern %s between %s and %s",pref(kind,lookupname),k,gref(prev.char),gref(nextchar))
                             end
@@ -852,7 +854,7 @@ function handlers.gpos_pair(start,kind,lookupname,kerns,sequence)
                     end
                     done = true
                 elseif krn ~= 0 then
-                    local k = set_kern(snext,factor,rlmode,krn)
+                    local k = setkern(snext,factor,rlmode,krn)
                     if trace_kerns then
                         logprocess("%s: inserting kern %s between %s and %s",pref(kind,lookupname),k,gref(prev.char),gref(nextchar))
                     end
@@ -1223,7 +1225,7 @@ function chainprocs.gpos_mark2base(start,stop,kind,chainname,currentcontext,cach
                             if al[anchor] then
                                 local ma = markanchors[anchor]
                                 if ma then
-                                    local dx, dy, bound = set_mark(start,base,tfmdata.factor,rlmode,ba,ma)
+                                    local dx, dy, bound = setmark(start,base,tfmdata.factor,rlmode,ba,ma)
                                     if trace_marks then
                                         logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%s,%s)",
                                             cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1296,7 +1298,7 @@ function chainprocs.gpos_mark2ligature(start,stop,kind,chainname,currentcontext,
                                 if ma then
                                     ba = ba[index]
                                     if ba then
-                                        local dx, dy, bound = set_mark(start,base,tfmdata.factor,rlmode,ba,ma,index)
+                                        local dx, dy, bound = setmark(start,base,tfmdata.factor,rlmode,ba,ma,index)
                                         if trace_marks then
                                             logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%s,%s)",
                                                 cref(kind,chainname,chainlookupname,lookupname),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -1348,7 +1350,7 @@ function chainprocs.gpos_mark2mark(start,stop,kind,chainname,currentcontext,cach
                                 if al[anchor] then
                                     local ma = markanchors[anchor]
                                     if ma then
-                                        local dx, dy, bound = set_mark(start,base,tfmdata.factor,rlmode,ba,ma)
+                                        local dx, dy, bound = setmark(start,base,tfmdata.factor,rlmode,ba,ma)
                                         if trace_marks then
                                             logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%s,%s)",
                                                 cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1414,7 +1416,7 @@ function chainprocs.gpos_cursive(start,stop,kind,chainname,currentcontext,cache,
                                         if al[anchor] then
                                             local exit = exitanchors[anchor]
                                             if exit then
-                                                local dx, dy, bound = set_cursive(start,nxt,tfmdata.factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+                                                local dx, dy, bound = setcursive(start,nxt,tfmdata.factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                                                 if trace_cursive then
                                                     logprocess("%s: moving %s to %s cursive (%s,%s) using anchor %s and bound %s in rlmode %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound,rlmode)
                                                 end
@@ -1427,7 +1429,7 @@ function chainprocs.gpos_cursive(start,stop,kind,chainname,currentcontext,cache,
                             end
                         else -- if trace_bugs then
                         --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(startchar))
-                            fonts.register_message(currentfont,startchar,"no entry anchors")
+                            fonts.registermessage(currentfont,startchar,"no entry anchors")
                         end
                         break
                     end
@@ -1453,7 +1455,7 @@ function chainprocs.gpos_single(start,stop,kind,chainname,currentcontext,cache,c
     if kerns then
         kerns = kerns[startchar]
         if kerns then
-            local dx, dy, w, h = set_pair(start,tfmdata.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
+            local dx, dy, w, h = setpair(start,tfmdata.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
             if trace_kerns then
                 logprocess("%s: shifting single %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),dx,dy,w,h)
             end
@@ -1491,14 +1493,14 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,cur
                                 local a, b = krn[3], krn[4]
                                 if a and #a > 0 then
                                     local startchar = start.char
-                                    local x, y, w, h = set_pair(start,factor,rlmode,sequence.flags[4],a,characters[startchar])
+                                    local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,characters[startchar])
                                     if trace_kerns then
                                         logprocess("%s: shifting first of pair %s and %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),gref(nextchar),x,y,w,h)
                                     end
                                 end
                                 if b and #b > 0 then
                                     local startchar = start.char
-                                    local x, y, w, h = set_pair(snext,factor,rlmode,sequence.flags[4],b,characters[nextchar])
+                                    local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,characters[nextchar])
                                     if trace_kerns then
                                         logprocess("%s: shifting second of pair %s and %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),gref(nextchar),x,y,w,h)
                                     end
@@ -1507,7 +1509,7 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,cur
                                 report_process("%s: check this out (old kern stuff)",cref(kind,chainname,chainlookupname))
                                 local a, b = krn[3], krn[7]
                                 if a and a ~= 0 then
-                                    local k = set_kern(snext,factor,rlmode,a)
+                                    local k = setkern(snext,factor,rlmode,a)
                                     if trace_kerns then
                                         logprocess("%s: inserting first kern %s between %s and %s",cref(kind,chainname,chainlookupname),k,gref(prev.char),gref(nextchar))
                                     end
@@ -1518,7 +1520,7 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,cache,cur
                             end
                             done = true
                         elseif krn ~= 0 then
-                            local k = set_kern(snext,factor,rlmode,krn)
+                            local k = setkern(snext,factor,rlmode,krn)
                             if trace_kerns then
                                 logprocess("%s: inserting kern %s between %s and %s",cref(kind,chainname,chainlookupname),k,gref(prev.char),gref(nextchar))
                             end
@@ -1922,8 +1924,8 @@ function fonts.methods.node.otf.features(head,font,attr)
     local script, language, s_enabled, a_enabled, dyn
     local attribute_driven = attr and attr ~= 0
     if attribute_driven then
-        local features = context_setups[context_numbers[attr]] -- could be a direct list
-        dyn = context_merged[attr] or 0
+        local features = contextsetups[contextnumbers[attr]] -- could be a direct list
+        dyn = contextmerged[attr] or 0
         language, script = features.language or "dflt", features.script or "dflt"
         a_enabled = features -- shared.features -- can be made local to the resolver
         if dyn == 2 or dyn == -2 then

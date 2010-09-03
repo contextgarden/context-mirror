@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['mtx-timing'] = {
 
 local format, gsub, concat = string.format, string.gsub, table.concat
 
-dofile(resolvers.find_file("trac-tim.lua","tex"))
-dofile(resolvers.find_file("trac-lmx.lua","tex"))
+dofile(resolvers.findfile("trac-tim.lua","tex"))
+dofile(resolvers.findfile("trac-lmx.lua","tex"))
 
 local meta = [[
     beginfig(%s) ;
@@ -74,7 +74,7 @@ function plugins.progress.make_svg(filename,other)
     metadata[#metadata+1] = "end ."
     metadata = concat(metadata,"\n\n")
     if directrun then
-        dofile(resolvers.find_file("mlib-run.lua","tex"))
+        dofile(resolvers.findfile("mlib-run.lua","tex"))
         commands = commands or { }
         commands.writestatus = logs.report
         local result = metapost.directrun("metafun","timing data","svg",true,metadata)
@@ -138,7 +138,7 @@ function plugins.progress.make_lmx_page(name,launch,remove)
     local htmldata = plugins.progress.makehtml(filename,other,menudata,metadata)
 
     lmx.htmfile = function(name) return name .. "-timing.xhtml" end
-    lmx.lmxfile = function(name) return resolvers.find_file(name,'tex') end
+    lmx.lmxfile = function(name) return resolvers.findfile(name,'tex') end
 
     local variables = {
         ['title-default']        = 'ConTeXt Timing Information',

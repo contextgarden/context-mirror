@@ -25,6 +25,7 @@ local count, texwrite, texprint, texsprint = tex.count, tex.write, tex.print, te
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local ctxcatcodes, xmlcatcodes, notcatcodes = tex.ctxcatcodes, tex.xmlcatcodes, tex.notcatcodes -- tricky as we're in notcatcodes
 
@@ -69,6 +70,7 @@ structures.formulas     = structures.formulas     or { }
 structures.sets         = structures.sets         or { }
 structures.marks        = structures.marks        or { }
 structures.floats       = structures.floats       or { }
+structures.synonyms     = structures.synonyms     or { }
 
 --~ table.print(structures)
 
@@ -79,17 +81,18 @@ structures.floats       = structures.floats       or { }
 
 local specials = structures.specials
 
-specials.collected = specials.collected or { }
-specials.tobesaved = specials.collected or { }
+local collected, tobesaved = allocate(), allocate()
 
-local collected, tobesaved = specials.collected, specials.tobesaved
+specials.collected = collected
+specials.tobesaved = tobesaved
 
 local function initializer()
-    collected, tobesaved = specials.collected, specials.tobesaved
+    collected = mark(specials.collected)
+    tobesaved = mark(specials.tobesaved)
 end
 
 if job then
-    job.register('structures.specials.collected', specials.tobesaved, initializer)
+    job.register('structures.specials.collected', tobesaved, initializer)
 end
 
 function specials.store(class,data)
@@ -168,21 +171,43 @@ local tags = {
     entry   = "ctx:registerentry",
 }
 
-function helpers.title(title,metadata) -- brrr
-    if title and title ~= "" then
+--  We had the following but it overloads the main document so it's a no-go as we
+--  no longer push and pop. So now we use the tag as buffername, namespace and also
+--  (optionally) as a setups to be applied but keep in mind that document setups
+--  also get applied (when they use #1's).
+--
+--  local command = format("\\xmlprocessbuffer{%s}{%s}{}",metadata.xmlroot or "main",tag)
+
+function helpers.title(title,metadata) -- coding is xml is rather old and not that much needed now
+    if title and title ~= "" then      -- so it might disappear
         if metadata then
-            if metadata.coding == "xml" then
-                tag = tags[metadata.kind] or tags.generic
-                buffers.set(tag,format("<?xml version='1.0'?><%s>%s</%s>",tag,title,tag))
-                texsprint(ctxcatcodes,format("\\xmlprocessbuffer{%s}{%s}{}",metadata.xmlroot or "main",tag))
-            elseif metadata.xmlsetup then
-                texsprint(ctxcatcodes,format("\\xmlsetup{%s}{%s}",title,metadata.xmlsetup)) -- nasty
+            if metadata.coding == "xml" then -- title can contain raw xml
+                local tag = tags[metadata.kind] or tags.generic
+                local xmldata = format("<?xml version='1.0'?><%s>%s</%s>",tag,title,tag)
+                local command = format("\\xmlprocessbuffer{%s}{%s}{%s}","dummy",tag,metadata.xmlsetup or "")
+                buffers.set(tag,xmldata)
+                if trace_processors then
+                    report_processors("xmldata: %s",xmldata)
+                    report_processors("feeding: %s",command)
+                end
+                texsprint(ctxcatcodes,command)
+            elseif metadata.xmlsetup then -- title is reference to node (so \xmlraw should have been used)
+                local command = format("\\xmlsetup{%s}{%s}",title,metadata.xmlsetup)
+                if trace_processors then
+                    report_processors("feeding: %s",command)
+                end
+                texsprint(ctxcatcodes,command)
             else
                 local catcodes = metadata.catcodes
---~ print(tex.ctxcatcodes,tex.xmlcatcodes,catcodes,title)
                 if catcodes == notcatcodes or catcodes == xmlcatcodes then
+                    if trace_processors then
+                        report_processors("cct: %s (overloads %s), txt: %s",ctxcatcodes,catcodes,title)
+                    end
                     texsprint(ctxcatcodes,title) -- nasty
                 else
+                    if trace_processors then
+                        report_processors("cct: %s, txt: %s",catcodes,title)
+                    end
                     texsprint(catcodes,title)
                 end
             end

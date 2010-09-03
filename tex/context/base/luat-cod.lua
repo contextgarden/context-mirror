@@ -56,6 +56,9 @@ local finalizers = { }
 function lua.registerfinalizer(f,comment)
     if type(f) == "function" then
         finalizers[#finalizers+1] = { action = f, comment = comment }
+    else
+        print(string.format("fatal error: invalid finalizer, action: %s",finalizer.comment or "unknown"))
+        os.exit()
     end
 end
 

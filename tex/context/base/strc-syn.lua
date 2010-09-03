@@ -8,23 +8,23 @@ if not modules then modules = { } end modules ['str-syn'] = {
 
 local next, type = next, type
 local texwrite, texsprint, format = tex.write, tex.sprint, string.format
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local ctxcatcodes = tex.ctxcatcodes
 
 -- interface to tex end
 
 local structures    = structures
-
-structures.synonyms = structures.synonyms or { }
 local synonyms      = structures.synonyms
 
-synonyms.collected = synonyms.collected or { }
-synonyms.tobesaved = synonyms.tobesaved or { }
+local collected, tobesaved = allocate(), allocate()
 
-local collected, tobesaved = synonyms.collected, synonyms.tobesaved
+synonyms.collected = collected
+synonyms.tobesaved = tobesaved
 
 local function initializer()
-    collected, tobesaved = synonyms.collected, synonyms.tobesaved
+    collected = mark(synonyms.collected)
+    tobesaved = mark(synonyms.tobesaved)
 end
 
 local function finalizer()
@@ -33,7 +33,7 @@ local function finalizer()
     end
 end
 
-job.register('structures.synonyms.collected', synonyms.tobesaved, initializer, finalizer)
+job.register('structures.synonyms.collected', tobesaved, initializer, finalizer)
 
 local function allocate(class)
     local d = tobesaved[class]
@@ -171,7 +171,7 @@ function synonyms.flush(data,options) -- maybe pass the settings differently
     data.metadata.sorted = false
 end
 
-function synonyms.analysed(class,options)
+function synonyms.analyzed(class,options)
     local data = synonyms.collected[class]
     if data and data.entries then
         options = options or { }
@@ -186,7 +186,7 @@ function synonyms.analysed(class,options)
 end
 
 function synonyms.process(class,options)
-    if synonyms.analysed(class,options) then
+    if synonyms.analyzed(class,options) then
         synonyms.flush(synonyms.collected[class],options)
     end
 end

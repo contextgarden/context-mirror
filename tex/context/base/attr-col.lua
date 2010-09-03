@@ -13,6 +13,8 @@ local type = type
 local format = string.format
 local concat = table.concat
 
+local allocate = utilities.storage.allocate
+
 local report_attributes     = logs.new("attributes")
 local report_colors         = logs.new("colors")
 local report_transparencies = logs.new("transparencies")
@@ -63,8 +65,9 @@ local unsetvalue     = attributes.unsetvalue
 
 attributes.colors = attributes.colors or { }
 local colors      = attributes.colors          _clib_ = colors -- fast access (less tokens too)
-colors.data       = colors.data       or { }
-colors.values     = colors.values     or { }
+
+colors.data       = allocate()
+colors.values     = colors.values or { }
 colors.registered = colors.registered or { }
 
 colors.weightgray = true
@@ -346,8 +349,8 @@ end
 attributes.transparencies = attributes.transparencies or { }
 local transparencies      = attributes.transparencies         _tlib_ = transparencies -- fast access (less tokens too)
 transparencies.registered = transparencies.registered or { }
-transparencies.data       = transparencies.data       or { }
-transparencies.values     = transparencies.values     or { }
+transparencies.data       = allocate()
+transparencies.values     = transparencies.values or { }
 transparencies.triggering = true
 transparencies.attribute  = attributes.private('transparency')
 transparencies.supported  = true
@@ -448,12 +451,12 @@ end
 
 --- colorintents: overprint / knockout
 
-attributes.colorintents = attributes.colorintents or  {}
+attributes.colorintents = attributes.colorintents or  { }
 local colorintents      = attributes.colorintents
-colorintents.data       = colorintents.data or { }
+colorintents.data       = allocate() -- colorintents.data or { }
 colorintents.attribute  = attributes.private('colorintent')
 
-colorintents.registered = {
+colorintents.registered = allocate {
     overprint = 1,
     knockout  = 2,
 }

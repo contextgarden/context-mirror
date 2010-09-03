@@ -27,10 +27,10 @@
 \def\t!paragraph         {paragraph}              % P
 \def\t!construct         {construct}              % Span
 
-\def\t!structure         {structure}              % Sect
-\def\t!structuretitle    {structuretitle}         % H
-\def\t!structurenumber   {structurenumber}        % H
-\def\t!structurecontent  {structurecontent}       % Div
+\def\t!section           {section}                % Sect
+\def\t!sectiontitle      {sectiontitle}           % H
+\def\t!sectionnumber     {sectionnumber}          % H
+\def\t!sectioncontent    {sectioncontent}         % Div
 
 \def\t!itemgroup         {itemgroup}              % L
 \def\t!item              {item}                   % Li
@@ -40,8 +40,10 @@
 \def\t!description       {description}            % Li
 \def\t!descriptiontag    {descriptiontag}         % Lbl
 \def\t!descriptioncontent{descriptioncontent}     % LBody
+\def\t!descriptionsymbol {descriptionsymbol}      % Span
 
 \def\t!verbatimblock     {verbatimblock}          % Code
+\def\t!verbatimline      {verbatimline}           % Code
 \def\t!verbatim          {verbatim}               % Code
 
 \def\t!register          {register}               % Div
@@ -54,11 +56,11 @@
 \def\t!registerpage      {registerpage}           % Span
 
 \def\t!table             {table}                  % Table
-\def\t!tablerow          {tr}                     % TR
-\def\t!tablecell         {td}                     % TD
+\def\t!tablerow          {tablerow}               % TR
+\def\t!tablecell         {tablecell}              % TD
 \def\t!tabulate          {tabulate}               % Table
-\def\t!tabulaterow       {row}                    % TR
-\def\t!tabulatecell      {cell}                   % TD
+\def\t!tabulaterow       {tabulaterow}            % TR
+\def\t!tabulatecell      {tabulatecell}           % TD
 
 \def\t!list              {list}                   % TOC
 \def\t!listitem          {listitem}               % TOCI
@@ -89,6 +91,9 @@
 
 \def\t!link              {link}                   % Link
 
+\def\t!margintext        {margintext}             % Span
+\def\t!margintextblock   {margintextblock}        % Div
+
 % \setuptaglabeltext
 %   [en]
 %   [\t!document=document]
@@ -98,8 +103,11 @@
 \definesystemattribute[tagged]  \chardef\taggedattribute \dogetattributeid{tagged}
 \definesystemattribute[image]   \chardef\imageattribute  \dogetattributeid{image}
 
-% \def\mapelementtobackendtag          {\dodoubleargument\domapelementtobackendtag}
-% \def\domapelementtobackendtag[#1][#2]{\ctxlua{backends.codeinjections.maptag("#1","#2")}}
+\def\setelementbackendtag{\dodoubleargument\dosetelementbackendtag}
+\def\setelementnature    {\dodoubleargument\dosetelementnature}
+
+\def\dosetelementbackendtag[#1][#2]{\ctxlua{structures.tags.settagproperty("#1","backend","#2")}}
+\def\dosetelementnature    [#1][#2]{\ctxlua{structures.tags.settagproperty("#1","nature", "#2")}}
 
 % todo: indirect macro for trialtypesetting
 
