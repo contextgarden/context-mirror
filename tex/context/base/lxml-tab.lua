@@ -898,7 +898,7 @@ local function serialize(e,handlers,...)
  -- elseif type(e) == "string" then
  --     functions["@tx@"](e,handlers)
     else
-        functions["@dc@"](e,handlers)
+        functions["@dc@"](e,handlers) -- dc ?
     end
     if finalize then
         return finalize()
@@ -936,6 +936,7 @@ local function newhandlers(settings)
             handlers[settings.name] = t
         end
     end
+    utilities.storage.mark(t)
     return t
 end
 

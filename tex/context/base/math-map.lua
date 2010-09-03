@@ -22,6 +22,8 @@ if not modules then modules = { } end modules ['math-map'] = {
 local type, next = type, next
 local floor, div = math.floor, math.div
 
+local allocate = utilities.storage.allocate
+
 local texattribute = tex.attribute
 
 local trace_greek  = false  trackers.register("math.greek",  function(v) trace_greek = v end)
@@ -35,7 +37,7 @@ local mathematics = mathematics
 -- following approach permits easier remapping of a-a, A-Z and 0-9 to
 -- fallbacks; symbols is currently mostly greek
 
-mathematics.alphabets = {
+mathematics.alphabets = allocate {
     regular = {
         tf = {
             digits    = 0x00030,

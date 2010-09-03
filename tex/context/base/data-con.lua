@@ -50,7 +50,8 @@ local mt = {
             t.readables = readables
             return readables
         end
-    end
+    end,
+    __storage__ = true
 }
 
 function containers.define(category, subcategory, version, enabled)

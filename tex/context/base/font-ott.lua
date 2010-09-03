@@ -10,6 +10,8 @@ local type, next, tonumber, tostring = type, next, tonumber, tostring
 local gsub, lower, format = string.gsub, string.lower, string.format
 local is_boolean = string.is_boolean
 
+local allocate = utilities.storage.allocate
+
 local fonts    = fonts
 fonts.otf      = fonts.otf or { }
 local otf      = fonts.otf
@@ -20,7 +22,7 @@ local tables   = otf.tables
 otf.meanings   = otf.meanings or { }
 local meanings = otf.meanings
 
-local scripts = {
+local scripts = allocate {
     ['dflt'] = 'Default',
 
     ['arab'] = 'Arabic',
@@ -93,7 +95,7 @@ local scripts = {
     ['yi'  ] = 'Yi',
 }
 
-local languages = {
+local languages = allocate {
     ['dflt'] = 'Default',
 
     ['aba'] = 'Abaza',
@@ -487,7 +489,7 @@ local languages = {
     ['zul'] = 'Zulu'
 }
 
-local features = {
+local features = allocate {
     ['aalt'] = 'Access All Alternates',
     ['abvf'] = 'Above-Base Forms',
     ['abvm'] = 'Above-Base Mark Positioning',
@@ -625,7 +627,7 @@ local features = {
     ['tlig'] = 'Traditional TeX Ligatures',
 }
 
-local baselines = {
+local baselines = allocate {
     ['hang'] = 'Hanging baseline',
     ['icfb'] = 'Ideographic character face bottom edge baseline',
     ['icft'] = 'Ideographic character face tope edige baseline',
@@ -635,32 +637,32 @@ local baselines = {
     ['romn'] = 'Roman baseline'
 }
 
-local to_scripts    = table.swaphash(scripts  )
-local to_languages  = table.swaphash(languages)
-local to_features   = table.swaphash(features )
+local verbosescripts    = allocate(table.swaphash(scripts  ))
+local verboselanguages  = allocate(table.swaphash(languages))
+local verbosefeatures   = allocate(table.swaphash(features ))
 
-tables.scripts      = scripts
-tables.languages    = languages
-tables.features     = features
-tables.baselines    = baselines
+tables.scripts          = scripts
+tables.languages        = languages
+tables.features         = features
+tables.baselines        = baselines
 
-tables.to_scripts   = to_scripts
-tables.to_languages = to_languages
-tables.to_features  = to_features
+tables.verbosescripts   = verbosescripts
+tables.verboselanguages = verboselanguages
+tables.verbosefeatures  = verbosefeatures
 
-for k, v in next, to_features do
+for k, v in next, verbosefeatures do
     local stripped = gsub(k,"%-"," ")
-    to_features[stripped] = v
+    verbosefeatures[stripped] = v
     local stripped = gsub(k,"[^a-zA-Z0-9]","")
-    to_features[stripped] = v
+    verbosefeatures[stripped] = v
 end
-for k, v in next, to_features do
-    to_features[lower(k)] = v
+for k, v in next, verbosefeatures do
+    verbosefeatures[lower(k)] = v
 end
 
 -- can be sped up by local tables
 
-function tables.to_tag(id)
+function tables.totag(id) -- not used
     return format("%4s",lower(id))
 end
 
@@ -694,14 +696,14 @@ function meanings.normalize(features)
             if k == "language" or k == "lang" then
                 v = gsub(lower(v),"[^a-z0-9%-]","")
                 if not languages[v] then
-                    h.language = to_languages[v] or "dflt"
+                    h.language = verboselanguages[v] or "dflt"
                 else
                     h.language = v
                 end
             elseif k == "script" then
                 v = gsub(lower(v),"[^a-z0-9%-]","")
                 if not scripts[v] then
-                    h.script = to_scripts[v] or "dflt"
+                    h.script = verbosescripts[v] or "dflt"
                 else
                     h.script = v
                 end
@@ -714,7 +716,7 @@ function meanings.normalize(features)
                         v = b
                     end
                 end
-                k = to_features[k] or k
+                k = verbosefeatures[k] or k
                 local c = checkers[k]
                 h[k] = c and c(v) or v
             end

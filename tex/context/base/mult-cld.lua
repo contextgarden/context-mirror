@@ -108,6 +108,16 @@ function context.trace(intercept)
     context.trace = function() end
 end
 
+function context.getflush()
+    return flush
+end
+
+function context.setflush(newflush)
+    local oldflush = flush
+    flush = newflush
+    return oldflush
+end
+
 trackers.register("context.flush",     function(v) if v then context.trace()     end end)
 trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
 
@@ -276,3 +286,52 @@ function context.disabletrackers(str) trackers.disable(str) end
 -- context.stopchapter(true)
 --
 -- context.stoptext(true)
+
+--~ Not that useful yet. Maybe something like this when the main loop
+--~ is a coroutine. It also does not help taking care of nested calls.
+--~ Even worse, it interferes with other mechanisms usign context calls.
+--~
+--~ local create, yield, resume = coroutine.create, coroutine.yield, coroutine.resume
+--~ local getflush, setflush = context.getflush, context.setflush
+--~ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+--~
+--~ function context.direct(f)
+--~     local routine = create(f)
+--~     local oldflush = getflush()
+--~     function newflush(...)
+--~         oldflush(...)
+--~         yield(true)
+--~     end
+--~     setflush(newflush)
+--~
+--~  -- local function resumecontext()
+--~  --     local done = resume(routine)
+--~  --     if not done then
+--~  --         return
+--~  --     end
+--~  --     resumecontext() -- stack overflow ... no tail recursion
+--~  -- end
+--~  -- context.resume = resumecontext
+--~  -- texsprint(ctxcatcodes,"\\ctxlua{context.resume()}")
+--~
+--~     local function resumecontext()
+--~         local done = resume(routine)
+--~         if not done then
+--~             return
+--~         end
+--~      -- texsprint(ctxcatcodes,"\\exitloop")
+--~         texsprint(ctxcatcodes,"\\ctxlua{context.resume()}") -- can be simple macro call
+--~     end
+--~     context.resume = resumecontext
+--~  -- texsprint(ctxcatcodes,"\\doloop{\\ctxlua{context.resume()}}") -- can be fast loop at the tex end
+--~     texsprint(ctxcatcodes,"\\ctxlua{context.resume()}")
+--~
+--~ end
+--~
+--~ function something()
+--~     context("\\setbox0")
+--~     context("\\hbox{hans hagen xx}")
+--~     context("\\the\\wd0/\\box0")
+--~ end
+--~
+--~ context.direct(something)

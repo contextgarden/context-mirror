@@ -17,7 +17,7 @@ local prefixes = { }
 local getenv = resolvers.getenv
 
 prefixes.environment = function(str) -- getenv is case insensitive anyway
-    return resolvers.clean_path(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
+    return resolvers.cleanpath(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
 end
 
 prefixes.relative = function(str,n)
@@ -36,7 +36,7 @@ prefixes.relative = function(str,n)
             end
         end
     end
-    return resolvers.clean_path(str)
+    return resolvers.cleanpath(str)
 end
 
 prefixes.auto = function(str)
@@ -48,18 +48,18 @@ prefixes.auto = function(str)
 end
 
 prefixes.locate = function(str)
-    local fullname = resolvers.find_given_file(str) or ""
-    return resolvers.clean_path((fullname ~= "" and fullname) or str)
+    local fullname = resolvers.findgivenfile(str) or ""
+    return resolvers.cleanpath((fullname ~= "" and fullname) or str)
 end
 
 prefixes.filename = function(str)
-    local fullname = resolvers.find_given_file(str) or ""
-    return resolvers.clean_path(file.basename((fullname ~= "" and fullname) or str))
+    local fullname = resolvers.findgivenfile(str) or ""
+    return resolvers.cleanpath(file.basename((fullname ~= "" and fullname) or str))
 end
 
 prefixes.pathname = function(str)
-    local fullname = resolvers.find_given_file(str) or ""
-    return resolvers.clean_path(file.dirname((fullname ~= "" and fullname) or str))
+    local fullname = resolvers.findgivenfile(str) or ""
+    return resolvers.cleanpath(file.dirname((fullname ~= "" and fullname) or str))
 end
 
 prefixes.env  = prefixes.environment

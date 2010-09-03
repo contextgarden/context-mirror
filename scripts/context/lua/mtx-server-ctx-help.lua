@@ -8,9 +8,9 @@ if not modules then modules = { } end modules ['mtx-server-ctx-help'] = {
 
 -- todo in lua interface: noargument, oneargument, twoarguments, threearguments
 
---~ dofile(resolvers.find_file("l-aux.lua","tex"))
---~ dofile(resolvers.find_file("l-url.lua","tex"))
-dofile(resolvers.find_file("trac-lmx.lua","tex"))
+--~ dofile(resolvers.findfile("l-aux.lua","tex"))
+--~ dofile(resolvers.findfile("l-url.lua","tex"))
+dofile(resolvers.findfile("trac-lmx.lua","tex"))
 
 -- problem ... serialize parent stack
 
@@ -329,7 +329,7 @@ document.setups.showsources = true
 document.setups.mode = 1
 
 function document.setups.load(filename)
-    filename = resolvers.find_file(filename) or ""
+    filename = resolvers.findfile(filename) or ""
     if filename ~= "" then
         local current = document.setups.loaded[filename]
         if not current then
@@ -574,7 +574,7 @@ local variables = {
 }
 
 --~ function lmx.loadedfile(filename)
---~     return io.loaddata(resolvers.find_file(filename)) -- return resolvers.texdatablob(filename)
+--~     return io.loaddata(resolvers.findfile(filename)) -- return resolvers.texdatablob(filename)
 --~ end
 
 local function doit(configuration,filename,hashed)
@@ -632,7 +632,7 @@ local function doit(configuration,filename,hashed)
 
     if document.setups.showsources and lastsource and lastsource ~= "" then
         -- todo: mkii, mkiv, tex (can be different)
-        local data = io.loaddata(resolvers.find_file(lastsource))
+        local data = io.loaddata(resolvers.findfile(lastsource))
         variables.maintitle = lastsource
         variables.maintext  = formats.listing:format(data)
         lastsource = ""

@@ -9,6 +9,9 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
 local lpegmatch = lpeg.match
 local texsprint, texwrite, texcount, texsetcount = tex.sprint, tex.write, tex.count, tex.setcount
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+local allocate = utilities.storage.allocate
 
 local trace_referencing = false  trackers.register("structures.referencing", function(v) trace_referencing = v end)
 
@@ -19,6 +22,7 @@ local variables   = interfaces.variables
 local constants   = interfaces.constants
 
 local settings_to_array = utilities.parsers.settings_to_array
+local unsetvalue        = attributes.unsetvalue
 
 -- beware, this is a first step in the rewrite (just getting rid of
 -- the tuo file); later all access and parsing will also move to lua
@@ -27,34 +31,42 @@ local settings_to_array = utilities.parsers.settings_to_array
 -- todo: pack exported data
 
 local structures      = structures
-
-structures.references = structures.references or { }
-
 local helpers         = structures.helpers
 local sections        = structures.sections
 local references      = structures.references
 local lists           = structures.lists
 local counters        = structures.counters
 
-references.tobesaved  = references.tobesaved or { }
-references.collected  = references.collected or { }
+-- some might become local
 
-references.defined    = references.defined   or { } -- indirect ones
-references.derived    = references.derived   or { } -- taken from lists
-references.specials   = references.specials  or { } -- system references
-references.runners    = references.runners   or { }
-references.internals  = references.internals or { }
-references.exporters  = references.exporters or { }
-references.imported   = references.imported  or { }
-references.filters    = references.filters or { }
+references.defined   = references.defined or allocate()
 
-local filters         = references.filters
+local defined        = references.defined
+local derived        = allocate()
+local specials       = { } -- allocate()
+local runners        = { } -- allocate()
+local internals      = allocate()
+local exporters      = allocate()
+local imported       = allocate()
+local filters        = allocate()
+local executers      = allocate()
+local handlers       = allocate()
+local tobesaved      = allocate()
+local collected      = allocate()
+
+references.derived   = derived
+references.specials  = specials
+references.runners   = runners
+references.internals = internals
+references.exporters = exporters
+references.imported  = imported
+references.filters   = filters
+references.executers = executers
+references.handlers  = handlers
+references.tobesaved = tobesaved
+references.collected = collected
 
 storage.register("structures/references/defined", references.defined, "structures.references.defined")
-
-local tobesaved, collected = references.tobesaved, references.collected
-local defined, derived, specials = references.defined, references.derived, references.specials
-local exporters, runners = references.exporters, references.runners
 
 local currentreference = nil
 
@@ -69,20 +81,21 @@ function references.registerfinalizer(func) -- we could use a token register ins
 end
 
 local function initializer()
-    tobesaved, collected = references.tobesaved, references.collected
+    tobesaved = mark(references.tobesaved)
+    collected = mark(references.collected)
     for i=1,#initializers do
         initializers[i](tobesaved,collected)
     end
 end
 local function finalizer()
-    tobesaved = references.tobesaved
+ -- tobesaved = mark(references.tobesaved)
     for i=1,#finalizers do
         finalizers[i](tobesaved)
     end
 end
 
 if job then
-    job.register('structures.references.collected', references.tobesaved, initializer, finalizer)
+    job.register('structures.references.collected', tobesaved, initializer, finalizer)
 end
 
 -- todo: delay split till later as in destinations we split anyway
@@ -177,7 +190,7 @@ local special_reference  = special * lparent * (operation * optional_arguments +
 
 local scanner = (reset * outer_reference * (special_reference + inner_reference)^-1 * -1) / function() return result end
 
---~ function references.analyse(str) -- overloaded
+--~ function references.analyze(str) -- overloaded
 --~     return lpegmatch(scanner,str)
 --~ end
 
@@ -185,19 +198,19 @@ function references.split(str)
     return lpegmatch(scanner,str or "")
 end
 
---~ print(table.serialize(references.analyse("")))
---~ print(table.serialize(references.analyse("inner")))
---~ print(table.serialize(references.analyse("special(operation{argument,argument})")))
---~ print(table.serialize(references.analyse("special(operation)")))
---~ print(table.serialize(references.analyse("special()")))
---~ print(table.serialize(references.analyse("inner{argument}")))
---~ print(table.serialize(references.analyse("outer::")))
---~ print(table.serialize(references.analyse("outer::inner")))
---~ print(table.serialize(references.analyse("outer::special(operation{argument,argument})")))
---~ print(table.serialize(references.analyse("outer::special(operation)")))
---~ print(table.serialize(references.analyse("outer::special()")))
---~ print(table.serialize(references.analyse("outer::inner{argument}")))
---~ print(table.serialize(references.analyse("special(outer::operation)")))
+--~ print(table.serialize(references.analyze("")))
+--~ print(table.serialize(references.analyze("inner")))
+--~ print(table.serialize(references.analyze("special(operation{argument,argument})")))
+--~ print(table.serialize(references.analyze("special(operation)")))
+--~ print(table.serialize(references.analyze("special()")))
+--~ print(table.serialize(references.analyze("inner{argument}")))
+--~ print(table.serialize(references.analyze("outer::")))
+--~ print(table.serialize(references.analyze("outer::inner")))
+--~ print(table.serialize(references.analyze("outer::special(operation{argument,argument})")))
+--~ print(table.serialize(references.analyze("outer::special(operation)")))
+--~ print(table.serialize(references.analyze("outer::special()")))
+--~ print(table.serialize(references.analyze("outer::inner{argument}")))
+--~ print(table.serialize(references.analyze("special(outer::operation)")))
 
 -- -- -- related to strc-ini.lua -- -- --
 
@@ -498,6 +511,9 @@ local function referencer(data)
     }
 end
 
+-- Exported and imported references ... not yet used but don't forget it
+-- and redo it.
+
 function references.export(usedname)
     local exported = { }
     local e_references, e_lists = exporters.references, exporters.lists
@@ -550,7 +566,6 @@ end
 
 function references.import(usedname)
     if usedname then
-        local imported = references.imported
         local jdn = imported[usedname]
         if not jdn then
             local filename = files[usedname]
@@ -620,7 +635,12 @@ end
 local function resolve(prefix,reference,args,set) -- we start with prefix,reference
     texcount.referencehastexstate = 0
     if reference and reference ~= "" then
-        set = set or { }
+        if not set then
+            set = { prefix = prefix, reference = reference }
+        else
+            set.reference = set.reference or reference
+            set.prefix    = set.prefix    or prefix
+        end
         local r = settings_to_array(reference)
         for i=1,#r do
             local ri = r[i]
@@ -665,7 +685,7 @@ end
 
 references.currentset = nil
 
-local b, e = "\\ctxlua{local jc = references.currentset;", "}"
+local b, e = "\\ctxlua{local jc = structures.references.currentset;", "}"
 local o, a = 'jc[%s].operation=[[%s]];', 'jc[%s].arguments=[[%s]];'
 
 function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
@@ -934,26 +954,43 @@ function references.doifelse(prefix,reference,highlight,newwindow,layer)
     commands.doifelse(not unknown)
 end
 
+local innermethod = "names"
+
+function references.setinnermethod(m)
+    innermethod = m -- page names mixed
+    function references.setinnermethod()
+        report_references("inner method is already set and frozen to '%s'",innermethod)
+    end
+end
+
+function references.getinnermethod()
+    return innermethod or "names"
+end
+
 function references.setinternalreference(prefix,tag,internal,view)
-    local t = { } -- maybe add to current
-    if tag then
-        if prefix and prefix ~= "" then
-            prefix = prefix .. ":"
-            for ref in gmatch(tag,"[^,]+") do
-                t[#t+1] = prefix .. ref
-            end
-        else
-            for ref in gmatch(tag,"[^,]+") do
-                t[#t+1] = ref
+    if innermethod == "page" then
+        return unsetvalue
+    else
+        local t = { } -- maybe add to current
+        if tag then
+            if prefix and prefix ~= "" then
+                prefix = prefix .. ":"
+                for ref in gmatch(tag,"[^,]+") do
+                    t[#t+1] = prefix .. ref
+                end
+            else
+                for ref in gmatch(tag,"[^,]+") do
+                    t[#t+1] = ref
+                end
             end
         end
+        if internal and innermethod == "names" then -- mixed or page
+            t[#t+1] = "aut:" .. internal
+        end
+        local destination = references.mark(t,nil,nil,view) -- returns an attribute
+        texcount.lastdestinationattribute = destination
+        return destination
     end
-    if internal then
-        t[#t+1] = "aut:" .. internal
-    end
-    local destination = references.mark(t,nil,nil,view) -- returns an attribute
-    texcount.lastdestinationattribute = destination
-    return destination
 end
 
 function references.getinternalreference(n) -- n points into list (todo: registers)
@@ -1139,7 +1176,7 @@ function references.sectionpage(n,prefixspec,pagespec)
     helpers.prefixedpage(lists.collected[tonumber(n) or 0],prefixspec,pagespec)
 end
 
--- analyse
+-- analyze
 
 references.testrunners  = references.testrunners  or { }
 references.testspecials = references.testspecials or { }
@@ -1147,15 +1184,15 @@ references.testspecials = references.testspecials or { }
 local runners  = references.testrunners
 local specials = references.testspecials
 
-function references.analyse(actions)
+function references.analyze(actions)
     actions = actions or references.currentset
     if not actions then
         actions = { realpage = 0 }
     elseif actions.realpage then
-        -- already analysed
+        -- already analyzed
     else
         -- we store some analysis data alongside the indexed array
-        -- at this moment only the real reference page is analysed
+        -- at this moment only the real reference page is analyzed
         -- normally such an analysis happens in the backend code
         texcount.referencepagestate = 0
         local nofactions = #actions
@@ -1183,13 +1220,13 @@ function references.analyse(actions)
 end
 
 function references.realpage() -- special case, we always want result
-    local cs = references.analyse()
+    local cs = references.analyze()
     texwrite(cs.realpage or 0)
 end
 
 --
 
-references.pages = {
+references.pages = allocate {
     [variables.firstpage]       = function() return counters.record("realpage")["first"]    end,
     [variables.previouspage]    = function() return counters.record("realpage")["previous"] end,
     [variables.nextpage]        = function() return counters.record("realpage")["next"]     end,

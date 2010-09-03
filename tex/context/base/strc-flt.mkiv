@@ -475,7 +475,7 @@
        {\settrialtypesetting
         \notesenabledfalse
         \putcompletecaption{#1}{#2}}%
-     % new, \placefigure{\XMLflush{somecaption}}{} passes earlier empty check
+     % new, \placefigure{\xmlfirst{#1}{somecaption}}{} passes earlier empty check
      % so here we misuse the scratch box; actually this means that the previous
      % test can go away (some day, when i redo this module)
      \ifdim\wd\tempcaptionbox=\zeropoint

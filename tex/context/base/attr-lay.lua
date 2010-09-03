@@ -13,6 +13,8 @@ if not modules then modules = { } end modules ['attr-lay'] = {
 local type = type
 local format = string.format
 
+local allocate = utilities.storage.allocate
+
 local report_viewerlayers = logs.new("viewerlayers")
 
 -- todo: document this but first reimplement this as it reflects the early
@@ -28,10 +30,10 @@ attributes.viewerlayers = attributes.viewerlayers or { }
 local viewerlayers = attributes.viewerlayers
 
 viewerlayers            = viewerlayers            or { }
-viewerlayers.data       = viewerlayers.data       or { }
+viewerlayers.data       = allocate()
 viewerlayers.registered = viewerlayers.registered or { }
 viewerlayers.values     = viewerlayers.values     or { }
-viewerlayers.listwise   = viewerlayers.listwise   or { }
+viewerlayers.listwise   = allocate()
 viewerlayers.attribute  = attributes.private("viewerlayer")
 viewerlayers.supported  = true
 viewerlayers.hasorder   = true

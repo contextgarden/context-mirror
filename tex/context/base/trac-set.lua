@@ -11,6 +11,7 @@ local concat = table.concat
 local format, find, lower, gsub, partialescapedpattern = string.format, string.find, string.lower, string.gsub, string.partialescapedpattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
+local allocate = utilities.storage.allocate
 
 utilities         = utilities or { }
 local utilities   = utilities
@@ -205,7 +206,7 @@ local enable, disable, register, list, show = setters.enable, setters.disable, s
 function setters.new(name)
     local t -- we need to access it in t
     t = {
-        data     = { }, -- indexed, but also default and value fields
+        data     = allocate(), -- indexed, but also default and value fields
         name     = name,
         enable   = function(...) enable  (t,...) end,
         disable  = function(...) disable (t,...) end,

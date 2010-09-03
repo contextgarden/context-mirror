@@ -186,7 +186,7 @@ function io.ask(question,default,options)
     end
 end
 
-function io.readnumber(f,n,m)
+local function readnumber(f,n,m)
     if m then
         f:seek("set",n)
         n = m
@@ -198,17 +198,19 @@ function io.readnumber(f,n,m)
         return 256*a + b
     elseif n == 4 then
         local a, b, c, d = byte(f:read(4),1,4)
-        return 256^3 * a + 256^2 * b + 256*c + d
+        return 256*256*256 * a + 256*256 * b + 256*c + d
     elseif n == 8 then
         local a, b = readnumber(f,4), readnumber(f,4)
-        return 256 * b + c
+        return 256 * a + b
     elseif n == 12 then
         local a, b, c = readnumber(f,4), readnumber(f,4), readnumber(f,4)
-        return 256^2 * a + 256 * b + c
+        return 256*256 * a + 256 * b + c
     else
         return 0
     end
 end
+
+io.readnumber = readnumber
 
 function io.readstring(f,n,m)
     if m then

@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lpdf-pdx'] = {
+if not modules then modules = { } end modules ['lpdf-fmt'] = {
     version   = 1.001,
     comment   = "companion to lpdf-ini.mkiv",
     author    = "Peter Rolf and Hans Hagen",
@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['lpdf-pdx'] = {
 
 -- context --directives="backend.format=PDF/X-1a:2001" --trackers=backend.format yourfile
 
-local trace_pdfx   = false  trackers.register("backend.pdfx",   function(v) trace_pdfx   = v end)
-local trace_format = false  trackers.register("backend.format", function(v) trace_format = v end)
+local trace_format    = false  trackers.register("backend.format",    function(v) trace_format    = v end)
+local trace_variables = false  trackers.register("backend.variables", function(v) trace_variables = v end)
 
 local report_backends = logs.new("backends")
 
@@ -50,18 +50,17 @@ local prefixes = {
     cmyk = "DefaultCMYK",
 }
 
-local pdfxspecification, pdfxformat = nil, nil
+local formatspecification, formatname = nil, nil
 
 -- * correspondent document wide flags (write once) needed for permission tests
 
-local pdfx = {
+local formats = utilities.storage.allocate {
     ["version"] = {
         external_icc_profiles   = 1.4, -- 'p' in name; URL reference of output intent
         jbig2_compression       = 1.4,
         jpeg2000_compression    = 1.5, -- not supported yet
         nchannel_colorspace     = 1.6, -- 'n' in name; n-channel colorspace support
         open_prepress_interface = 1.3, -- 'g' in name; reference to external graphics
-        opentype_fonts          = 1.6,
         optional_content        = 1.5,
         transparency            = 1.4,
         object_compression      = 1.5,
@@ -69,6 +68,7 @@ local pdfx = {
     ["default"] = {
         pdf_version             = 1.7,  -- todo: block tex primitive
         format_name             = "default",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -80,7 +80,6 @@ local pdfx = {
         external_icc_profiles   = true, -- controls profile inclusion
         include_intents         = true,
         open_prepress_interface = true, -- unknown
-        opentype_fonts          = true, -- out of our control
         optional_content        = true, -- todo: block at lua level
         transparency            = true, -- todo: block at lua level
         jbig2_compression       = true, -- todo: block at lua level
@@ -92,6 +91,7 @@ local pdfx = {
     ["pdf/x-1a:2001"] = {
         pdf_version             = 1.3,
         format_name             = "PDF/X-1a:2001",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         spot_colors             = true,
@@ -104,6 +104,7 @@ local pdfx = {
     ["pdf/x-1a:2003"] = {
         pdf_version             = 1.4,
         format_name             = "PDF/X-1a:2003",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         spot_colors             = true,
@@ -116,6 +117,7 @@ local pdfx = {
     ["pdf/x-3:2002"] = {
         pdf_version             = 1.3,
         format_name             = "PDF/X-3:2002",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -131,6 +133,7 @@ local pdfx = {
     ["pdf/x-3:2003"] = {
         pdf_version             = 1.4,
         format_name             = "PDF/X-3:2003",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -147,6 +150,7 @@ local pdfx = {
     ["pdf/x-4"] = {
         pdf_version             = 1.6,
         format_name             = "PDF/X-4",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -155,7 +159,6 @@ local pdfx = {
         cielab_colors           = true,
         internal_icc_profiles   = true,
         include_intents         = true,
-        opentype_fonts          = true,
         optional_content        = true,
         transparency            = true,
         jbig2_compression       = true,
@@ -170,6 +173,7 @@ local pdfx = {
     ["pdf/x-4p"] = {
         pdf_version             = 1.6,
         format_name             = "PDF/X-4p",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -179,7 +183,6 @@ local pdfx = {
         internal_icc_profiles   = true,
         external_icc_profiles   = true,
         include_intents         = true,
-        opentype_fonts          = true,
         optional_content        = true,
         transparency            = true,
         jbig2_compression       = true,
@@ -194,6 +197,7 @@ local pdfx = {
     ["pdf/x-5g"] = {
         pdf_version             = 1.6,
         format_name             = "PDF/X-5g",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -203,7 +207,6 @@ local pdfx = {
         internal_icc_profiles   = true,
         include_intents         = true,
         open_prepress_interface = true,
-        opentype_fonts          = true,
         optional_content        = true,
         transparency            = true,
         jbig2_compression       = true,
@@ -216,6 +219,7 @@ local pdfx = {
     ["pdf/x-5pg"] = {
         pdf_version             = 1.6,
         format_name             = "PDF/X-5pg",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -226,7 +230,6 @@ local pdfx = {
         external_icc_profiles   = true,
         include_intents         = true,
         open_prepress_interface = true,
-        opentype_fonts          = true,
         optional_content        = true,
         transparency            = true,
         jbig2_compression       = true,
@@ -239,6 +242,7 @@ local pdfx = {
     ["pdf/x-5n"] = {
         pdf_version             = 1.6,
         format_name             = "PDF/X-5n",
+        xmp_file                = "lpdf-pdx.xml",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -247,7 +251,6 @@ local pdfx = {
         cielab_colors           = true,
         internal_icc_profiles   = true,
         include_intents         = true,
-        opentype_fonts          = true,
         optional_content        = true,
         transparency            = true,
         jbig2_compression       = true,
@@ -257,10 +260,43 @@ local pdfx = {
         inject_metadata         = function()
             -- todo
         end
-    }
+    },
+    ["pdf/a-1a:2005"] = {
+        pdf_version             = 1.4,
+        format_name             = "pdf/a-1a:2005",
+        xmp_file                = "lpdf-pda.xml",
+        gray_scale              = true,
+        cmyk_colors             = true,
+        rgb_colors              = true,
+        spot_colors             = true,
+        calibrated_rgb_colors   = true, -- unknown
+        cielab_colors           = true, -- unknown
+        include_intents         = true,
+        forms                   = true, -- NEW; forms are allowed (with limitations); no JS,  other restrictions are unknown (TODO)
+        tagging                 = true, -- NEW; the only difference to PDF/A-1b
+        inject_metadata         = function()
+            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+        end
+    },
+    ["pdf/a-1b:2005"] = {
+        pdf_version             = 1.4,
+        format_name             = "pdf/a-1b:2005",
+        xmp_file                = "lpdf-pda.xml",
+        gray_scale              = true,
+        cmyk_colors             = true,
+        rgb_colors              = true,
+        spot_colors             = true,
+        calibrated_rgb_colors   = true, -- unknown
+        cielab_colors           = true, -- unknown
+        include_intents         = true,
+        forms                   = true,
+        inject_metadata         = function()
+            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
+        end
+    },
 }
 
-lpdf.pdfx = pdfx -- it does not hurt to have this one visible
+lpdf.formats = formats -- it does not hurt to have this one visible
 
 local filenames = {
     "colorprofiles.xml",
@@ -268,7 +304,7 @@ local filenames = {
 }
 
 local function locatefile(filename)
-    local fullname = resolvers.find_file(filename,"icc")
+    local fullname = resolvers.findfile(filename,"icc")
     if not fullname or fullname == "" then
         fullname = resolvers.finders.loc(filename) -- could be specific to the project
     end
@@ -308,7 +344,7 @@ local function loadprofile(name,filename)
                 if next(profile) then
                     report_backends("profile specification '%s' loaded from '%s'",name,filename)
                     return profile
-                elseif trace_pdfx then
+                elseif trace_format then
                     report_backends("profile specification '%s' loaded from '%s' but empty",name,filename)
                 end
                 return false
@@ -368,13 +404,13 @@ local function handleinternalprofile(s,include)
                         attr          = a(),
                     }
                     internalprofiles[tag] = profile
-                    if trace_pdfx then
+                    if trace_format then
                         report_backends("including '%s' color profile from '%s'",colorspace,fullname)
                     end
                 end
             else
                 internalprofiles[tag] = true
-                if trace_pdfx then
+                if trace_format then
                     report_backends("not including '%s' color profile '%s'",colorspace,filename)
                 end
             end
@@ -447,7 +483,7 @@ local function handledefaultprofile(s) -- specification
         else
             report_backends("no default profile '%s' for colorspace '%s'",filename,colorspace)
         end
-    elseif trace_pdfx then
+    elseif trace_format then
         report_backends("a default '%s' colorspace is already in use",colorspace)
     end
 end
@@ -478,14 +514,14 @@ local function handleoutputintent(s)
                 report_backends("omitting reference to profile for intent '%s'",name)
             end
             intents[#intents+1] = pdfreference(pdfflushobject(pdfdictionary(d)))
-            if trace_pdfx then
+            if trace_format then
                 report_backends("setting output intent to '%s' with id '%s' (entry %s)",name,id,#intents)
             end
         else
             report_backends("invalid output intent '%s'",name)
         end
         loadedintents[name] = true
-    elseif trace_pdfx then
+    elseif trace_format then
         report_backends("an output intent with name '%s' is already in use",name)
     end
 end
@@ -496,48 +532,48 @@ local function handleiccprofile(message,name,filename,how,options,alwaysinclude)
         for i=1,#list do
             local name = list[i]
             local profile = loadprofile(name,filename)
-            if trace_pdfx then
+            if trace_format then
                 report_backends("handling %s '%s'",message,name)
             end
             if profile then
-                if pdfxspecification.cmyk_colors then
+                if formatspecification.cmyk_colors then
                     profile.colorspace = profile.colorspace or "CMYK"
                 else
                     profile.colorspace = profile.colorspace or "RGB"
                 end
-                local external = pdfxspecification.external_icc_profiles
-                local internal = pdfxspecification.internal_icc_profiles
-                local include  = pdfxspecification.include_intents
+                local external = formatspecification.external_icc_profiles
+                local internal = formatspecification.internal_icc_profiles
+                local include  = formatspecification.include_intents
                 local always, never = options[variables.always], options[variables.never]
                 if always or alwaysinclude then
-                    if trace_pdfx then
+                    if trace_format then
                         report_backends("forcing internal profiles") -- can make preflight unhappy
                     end
                  -- internal, external = true, false
                     internal, external = not never, false
                 elseif never then
-                    if trace_pdfx then
+                    if trace_format then
                         report_backends("forcing external profiles") -- can make preflight unhappy
                     end
                     internal, external = false, true
                 end
                 if external then
-                    if trace_pdfx then
+                    if trace_format then
                         report_backends("handling external profiles cf. '%s'",name)
                     end
                     handleexternalprofile(profile,false)
                 else
-                    if trace_pdfx then
+                    if trace_format then
                         report_backends("handling internal profiles cf. '%s'",name)
                     end
                     if internal then
                         handleinternalprofile(profile,always or include)
                     else
-                        report_backends("no profile inclusion for '%s'",pdfxformat)
+                        report_backends("no profile inclusion for '%s'",formatname)
                     end
                 end
                 how(profile)
-            elseif trace_pdfx then
+            elseif trace_format then
                 report_backends("unknown profile '%s'",name)
             end
         end
@@ -562,16 +598,22 @@ function codeinjections.setformat(s)
     if format == "" then
         -- we ignore this as we hook it in \everysetupbackend
     else
-        local spec = pdfx[lower(format)]
+        local spec = formats[lower(format)]
         if spec then
-            pdfxspecification, pdfxformat = spec, spec.format_name
+            formatspecification, formatname = spec, spec.format_name
             level = level and tonumber(level)
-            report_backends("setting format to '%s'",pdfxformat)
+            report_backends("setting format to '%s'",formatname)
+            local xmp_file = formatspecification.xmp_file or ""
+            if xmp_file == "" then
+                -- weird error
+            else
+                lpdf.setxmpfile(xmp_file)
+            end
             local pdf_version, inject_metadata = spec.pdf_version * 10, spec.inject_metadata
             local majorversion, minorversion = math.div(pdf_version,10), math.mod(pdf_version,10)
             local objectcompression = spec.object_compression and pdf_version >= 15
             local compresslevel = level or tex.pdfcompresslevel -- keep default
-            local objectcompresslevel = (objectcompression and level or tex.pdfobjcompresslevel) or 0
+            local objectcompresslevel = (objectcompression and (level or tex.pdfobjcompresslevel)) or 0
             tex.pdfcompresslevel, tex.pdfobjcompresslevel = compresslevel, objectcompresslevel
             tex.pdfmajorversion, tex.pdfminorversion = majorversion, minorversion
             if objectcompression then
@@ -616,16 +658,16 @@ function codeinjections.setformat(s)
             local options = settings_to_hash(option)
             handleiccprofile("color profile",profile,filename,handledefaultprofile,options,true)
             handleiccprofile("output intent",intent,filename,handleoutputintent,options,false)
-            if trace_format then
-                for k, v in table.sortedhash(pdfx.default) do
-                    local v = pdfxspecification[k]
+            if trace_variables then
+                for k, v in table.sortedhash(formats.default) do
+                    local v = formatspecification[k]
                     if type(v) ~= "function" then
                         report_backends("%s = %s",k,tostring(v or false))
                     end
                 end
             end
             function codeinjections.setformat(noname)
-                report_backends("error, format is already set to '%s', ignoring '%s'",pdfxformat,noname.format)
+                report_backends("error, format is already set to '%s', ignoring '%s'",formatname,noname.format)
             end
         else
             report_backends("error, format '%s' is not supported",format)
@@ -634,12 +676,12 @@ function codeinjections.setformat(s)
 end
 
 function codeinjections.getformatoption(key)
-    return pdfxspecification and pdfxspecification[key]
+    return formatspecification and formatspecification[key]
 end
 
 function codeinjections.supportedformats()
     local t = { }
-    for k, v in table.sortedhash(pdfx) do
+    for k, v in table.sortedhash(formats) do
         if find(k,"pdf") then
             t[#t+1] = k
         end

@@ -37,14 +37,8 @@ kpse = { original = kpse }
 
 setmetatable(kpse, {
     __index = function(kp,name)
-        local r = resolvers[name]
-        if not r then
-            r = function (...)
-                report_resolvers("not supported: %s(%s)",name,concat(...))
-            end
-            rawset(kp,name,r)
-        end
-        return r
+        report_resolvers("fatal error: kpse library is accessed (key: %s)",name)
+        os.exit()
     end
 } )
 

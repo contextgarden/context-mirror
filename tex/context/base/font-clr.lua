@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['font-clr'] = {
 
 -- moved from ini:
 
-fonts.color = fonts.color or { } -- dummy in ini
+fonts.colors = fonts.colors or { } -- dummy in ini
+local colors = fonts.colors
 
 local set_attribute   = node.set_attribute
 local unset_attribute = node.unset_attribute
@@ -16,7 +17,7 @@ local unset_attribute = node.unset_attribute
 local attribute = attributes.private('color')
 local mapping   = attributes and attributes.list[attribute] or { }
 
-function fonts.color.set(n,c)
+function colors.set(n,c)
     local mc = mapping[c]
     if not mc then
         unset_attribute(n,attribute)
@@ -25,6 +26,6 @@ function fonts.color.set(n,c)
     end
 end
 
-function fonts.color.reset(n)
+function colors.reset(n)
     unset_attribute(n,attribute)
 end

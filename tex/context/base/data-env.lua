@@ -6,13 +6,15 @@ if not modules then modules = { } end modules ['data-env'] = {
     license   = "see context related readme files",
 }
 
+local allocate = utilities.storage.allocate
+
 local resolvers = resolvers
 
-local formats      = { }  resolvers.formats      = formats
-local suffixes     = { }  resolvers.suffixes     = suffixes
-local dangerous    = { }  resolvers.dangerous    = dangerous
-local suffixmap    = { }  resolvers.suffixmap    = suffixmap
-local alternatives = { }  resolvers.alternatives = alternatives
+local formats      = allocate()  resolvers.formats      = formats
+local suffixes     = allocate()  resolvers.suffixes     = suffixes
+local dangerous    = allocate()  resolvers.dangerous    = dangerous
+local suffixmap    = allocate()  resolvers.suffixmap    = suffixmap
+local alternatives = allocate()  resolvers.alternatives = alternatives
 
 formats['afm']          = 'AFMFONTS'       suffixes['afm']          = { 'afm' }
 formats['enc']          = 'ENCFONTS'       suffixes['enc']          = { 'enc' }
@@ -95,12 +97,12 @@ alternatives['subfont definition files'] = 'sfd'
 
 -- A few accessors, mostly for command line tool.
 
-function resolvers.suffix_of_format(str)
+function resolvers.suffixofformat(str)
     local s = suffixes[str]
     return s and s[1] or ""
 end
 
-function resolvers.suffixes_of_format(str)
+function resolvers.suffixesofformat(str)
     return suffixes[str] or { }
 end
 
@@ -113,13 +115,15 @@ for name, suffixlist in next, suffixes do
     end
 end
 
-setmetatable(suffixes, { __newindex = function(suffixes,name,suffixlist)
+local mt = getmetatable(suffixes)
+
+mt.__newindex = function(suffixes,name,suffixlist)
     rawset(suffixes,name,suffixlist)
     suffixes[name] = suffixlist
     for i=1,#suffixlist do
         suffixmap[suffixlist[i]] = name
     end
-end } )
+end
 
 for name, format in next, formats do
     dangerous[name] = true
@@ -135,19 +139,19 @@ dangerous.tex = nil
 
 -- more helpers
 
-function resolvers.format_of_var(str)
+function resolvers.formatofvariable(str)
     return formats[str] or formats[alternatives[str]] or ''
 end
 
-function resolvers.format_of_suffix(str) -- of file
+function resolvers.formatofsuffix(str) -- of file
     return suffixmap[file.extname(str)] or 'tex'
 end
 
-function resolvers.variable_of_format(str)
+function resolvers.variableofformat(str)
     return formats[str] or formats[alternatives[str]] or ''
 end
 
-function resolvers.var_of_format_or_suffix(str)
+function resolvers.vsriableofformatorsuffix(str)
     local v = formats[str]
     if v then
         return v

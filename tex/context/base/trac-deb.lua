@@ -161,10 +161,8 @@ end)
 
 lmx = lmx or { }
 
-if not lmx.variables then lmx.variables = { } end
-
 lmx.htmfile = function(name) return environment.jobname .. "-status.html" end
-lmx.lmxfile = function(name) return resolvers.find_file(name,'tex') end
+lmx.lmxfile = function(name) return resolvers.findfile(name,'tex') end
 
 function lmx.showdebuginfo(lmxname)
     local variables = {

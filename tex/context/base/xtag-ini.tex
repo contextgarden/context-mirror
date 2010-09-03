@@ -16,6 +16,26 @@
 %D Beware: don't rely on \longempty things, since this may
 %D change!
 
+%D \macros
+%D   {defineinputmode,setinputmode}
+%D
+%D For old times sake we still support:
+
+\unexpanded\def\defineinputmode[#1]{\expandafter\newtoks\csname every#1inputmode\endcsname}
+\unexpanded\def\setinputmode   [#1]{\the\executeifdefined{every#1inputmode}\emptytoks}
+
+\defineinputmode [TEX]
+\defineinputmode [XML]
+
+\setinputmode    [TEX]
+
+%D Finally we make sure that the compound handler keeps doingits job.
+
+\ifx\normalcompound\undefined \let\normalcompound=| \fi
+
+\appendtoks \catcode`|=\activecatcode \let|\normalcompound \to \everyTEXinputmode
+\appendtoks \catcode`|=\lettercatcode                      \to \everyXMLinputmode
+
 %D This module is highly optimized for speed, which sometimes
 %D leads to rather unreadable code. Sorry for this.
 
@@ -192,7 +212,7 @@
 \newif\ifignoreXMLspaces
 \newif\iffixedXMLfont
 \newif\iftraceXMLelements
-%newif\ifprocessingXML
+\newif\ifprocessingXML
 
 \newcount\XMLlevel % scratchcounter
 \newcount\XMLdepth % used here

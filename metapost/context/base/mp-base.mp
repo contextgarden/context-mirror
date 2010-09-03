@@ -479,7 +479,7 @@ def label = draw thelabel enddef;
 newinternal dotlabeldiam; dotlabeldiam:=3bp;
 vardef dotlabel@#(expr s,z) text t_ =
   label@#(s,z) t_;
-  label@#(s,z);
+% label@#(s,z);
   interim linecap:=rounded;
   draw z withpen pencircle scaled dotlabeldiam t_;
 enddef;

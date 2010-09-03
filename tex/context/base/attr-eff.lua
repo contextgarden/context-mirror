@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['attr-eff'] = {
 
 local format = string.format
 
+local allocate = utilities.storage.allocate
+
 local attributes, nodes = attributes, nodes
 
 local states         = attributes.states
@@ -16,14 +18,15 @@ local nodeinjections = backends.nodeinjections
 
 attributes.effects = attributes.effects or { }
 local effects      = attributes.effects
-effects.data       = effects.data       or { }
+effects.data       = allocate()
 effects.values     = effects.values     or { }
 effects.registered = effects.registered or { }
-effects.stamp      = "%s:%s:%s"
 effects.attribute  = attributes.private("effect")
 
 storage.register("attributes/effects/registered", effects.registered, "attributes.effects.registered")
 storage.register("attributes/effects/values",     effects.values,     "attributes.effects.values")
+
+local template = "%s:%s:%s"
 
 local data, registered, values = effects.data, effects.registered, effects.values
 
@@ -50,7 +53,7 @@ setmetatable(effects,      { __index = extender })
 setmetatable(effects.data, { __index = reviver  })
 
 function effects.register(effect,stretch,rulethickness)
-    local stamp = format(effects.stamp,effect,stretch,rulethickness)
+    local stamp = format(template,effect,stretch,rulethickness)
     local n = registered[stamp]
     if not n then
         n = #values + 1

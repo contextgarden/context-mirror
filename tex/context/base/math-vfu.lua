@@ -20,7 +20,9 @@ local report_virtual = logs.new("virtual math")
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
 
-fonts.enc.math = fonts.enc.math or { }
+local mathencodings = utilities.storage.allocate { }
+
+fonts.enc.math = mathencodings -- better is then: fonts.enc.vectors
 
 local shared = { }
 
@@ -371,7 +373,7 @@ local reverse -- index -> unicode
 function fonts.vf.math.define(specification,set)
     if not reverse then
         reverse = { }
-        for k, v in next, fonts.enc.math do
+        for k, v in next, mathencodings do
             local r = { }
             for u, i in next, v do
                 r[i] = u
@@ -394,7 +396,7 @@ function fonts.vf.math.define(specification,set)
         else
             if ss.features then ssname = ssname .. "*" .. ss.features end
             if ss.main then main = s end
-            local f, id = fonts.tfm.read_and_define(ssname,size)
+            local f, id = fonts.tfm.readanddefine(ssname,size)
             if not f then
                 report_virtual("loading font %s subfont %s with name %s at %s is skipped, not found",name,s,ssname,size)
             else
@@ -408,7 +410,7 @@ function fonts.vf.math.define(specification,set)
                 end
                 if not ss.checked then
                     ss.checked = true
-                    local vector = fonts.enc.math[ss.vector]
+                    local vector = mathencodings[ss.vector]
                     if vector then
                         -- we resolve named glyphs only once as we can assume that vectors
                         -- are unique to a font set (when we read an afm we get those names
@@ -485,7 +487,7 @@ function fonts.vf.math.define(specification,set)
             local vectorname = ss.vector
             if vectorname then
                 local offset = 0xFF000
-                local vector = fonts.enc.math[vectorname]
+                local vector = mathencodings[vectorname]
                 local rotcev = reverse[vectorname]
                 if vector then
                     local fc, fd, si = fs.characters, fs.descriptions, shared[s]
@@ -555,7 +557,7 @@ function fonts.vf.math.define(specification,set)
                     end
                     if ss.extension then
                         -- todo: if multiple ex, then 256 offsets per instance
-                        local extension = fonts.enc.math["large-to-small"]
+                        local extension = mathencodings["large-to-small"]
                         local variants_done = fs.variants_done
                         for index, fci in next, fc do -- the raw ex file
                             if type(index) == "number" then
@@ -691,14 +693,14 @@ function fonts.vf.math.define(specification,set)
 end
 
 function mathematics.makefont(name, set)
-    fonts.define.methods[name] = function(specification)
+    fonts.definers.methods.variants[name] = function(specification)
         return fonts.vf.math.define(specification,set)
     end
 end
 
 -- varphi is part of the alphabet, contrary to the other var*s'
 
-fonts.enc.math["large-to-small"] = {
+mathencodings["large-to-small"] = {
     [0x00028] = 0x00, -- (
     [0x00029] = 0x01, -- )
     [0x0005B] = 0x02, -- [
@@ -742,7 +744,7 @@ fonts.enc.math["large-to-small"] = {
     [0x02044] = 0x0E, -- /
 }
 
-fonts.enc.math["tex-ex"] = {
+mathencodings["tex-ex"] = {
     [0x0220F] = 0x51, -- prod
     [0x0222B] = 0x52, -- intop
     [0x02210] = 0x60, -- coprod
@@ -762,7 +764,7 @@ fonts.enc.math["tex-ex"] = {
 -- only math stuff is needed, since we always use an lm or gyre
 -- font as main font
 
-fonts.enc.math["tex-mr"] = {
+mathencodings["tex-mr"] = {
     [0x00393] = 0x00, -- Gamma
     [0x00394] = 0x01, -- Delta
     [0x00398] = 0x02, -- Theta
@@ -817,11 +819,11 @@ fonts.enc.math["tex-mr"] = {
 --  [0x000A8] = 0x7F, -- [math]ddot
 }
 
-fonts.enc.math["tex-mr-missing"] = {
+mathencodings["tex-mr-missing"] = {
     [0x02236] = 0x3A, -- colon
 }
 
-fonts.enc.math["tex-mi"] = {
+mathencodings["tex-mi"] = {
     [0x1D6E4] = 0x00, -- Gamma
     [0x1D6E5] = 0x01, -- Delta
     [0x1D6E9] = 0x02, -- Theta
@@ -906,7 +908,7 @@ fonts.enc.math["tex-mi"] = {
 }
 
 
-fonts.enc.math["tex-it"] = {
+mathencodings["tex-it"] = {
 --  [0x1D434] = 0x41, -- A
     [0x1D6E2] = 0x41, -- Alpha
 --  [0x1D435] = 0x42, -- B
@@ -976,14 +978,14 @@ fonts.enc.math["tex-it"] = {
 --  [0x1D467] = 0x7A, -- z
 }
 
-fonts.enc.math["tex-ss"]           = { }
-fonts.enc.math["tex-tt"]           = { }
-fonts.enc.math["tex-bf"]           = { }
-fonts.enc.math["tex-bi"]           = { }
-fonts.enc.math["tex-fraktur"]      = { }
-fonts.enc.math["tex-fraktur-bold"] = { }
+mathencodings["tex-ss"]           = { }
+mathencodings["tex-tt"]           = { }
+mathencodings["tex-bf"]           = { }
+mathencodings["tex-bi"]           = { }
+mathencodings["tex-fraktur"]      = { }
+mathencodings["tex-fraktur-bold"] = { }
 
-function fonts.vf.math.set_letters(font_encoding, name, uppercase, lowercase)
+function fonts.vf.math.setletters(font_encoding, name, uppercase, lowercase)
     local enc = font_encoding[name]
     for i = 0,25 do
         enc[uppercase+i] = i + 0x41
@@ -991,14 +993,14 @@ function fonts.vf.math.set_letters(font_encoding, name, uppercase, lowercase)
     end
 end
 
-function fonts.vf.math.set_digits(font_encoding, name, digits)
+function fonts.vf.math.setdigits(font_encoding, name, digits)
     local enc = font_encoding[name]
     for i = 0,9 do
         enc[digits+i] = i + 0x30
     end
 end
 
-fonts.enc.math["tex-sy"] = {
+mathencodings["tex-sy"] = {
     [0x0002D] = 0x00, -- -
     [0x02212] = 0x00, -- -
 --  [0x02201] = 0x00, -- complement
@@ -1147,7 +1149,7 @@ fonts.enc.math["tex-sy"] = {
 -- column, while in the second column we show the tex/ams names. As usual
 -- it costs hours to figure out such a table.
 
-fonts.enc.math["tex-ma"] = {
+mathencodings["tex-ma"] = {
     [0x022A1] = 0x00, -- squaredot             \boxdot
     [0x0229E] = 0x01, -- squareplus            \boxplus
     [0x022A0] = 0x02, -- squaremultiply        \boxtimes
@@ -1281,7 +1283,7 @@ fonts.enc.math["tex-ma"] = {
     [0x0229D] = 0x7F, -- circleminus           \circleddash
 }
 
-fonts.enc.math["tex-mb"] = {
+mathencodings["tex-mb"] = {
     --  [0x0] = 0x00, -- lessornotequal        \lvertneqq
     --  [0x0] = 0x01, -- greaterornotequal     \gvertneqq
     [0x02270] = 0x02, -- notlessequal          \nleq
@@ -1407,12 +1409,12 @@ fonts.enc.math["tex-mb"] = {
     [0x003F6] = 0x7F, -- epsiloninv            \backepsilon
 }
 
-fonts.enc.math["tex-mc"] = {
+mathencodings["tex-mc"] = {
     -- this file has no tfm so it gets mapped in the private space
     [0xFE324] = "mapsfromchar",
 }
 
-fonts.enc.math["tex-fraktur"] = {
+mathencodings["tex-fraktur"] = {
 --  [0x1D504] = 0x41, -- A                     (fraktur A)
 --  [0x1D505] = 0x42, -- B
     [0x0212D] = 0x43, -- C
@@ -1469,19 +1471,19 @@ fonts.enc.math["tex-fraktur"] = {
 
 -- now that all other vectors are defined ...
 
-fonts.vf.math.set_letters(fonts.enc.math, "tex-it",           0x1D434, 0x1D44E)
-fonts.vf.math.set_letters(fonts.enc.math, "tex-ss",           0x1D5A0, 0x1D5BA)
-fonts.vf.math.set_letters(fonts.enc.math, "tex-tt",           0x1D670, 0x1D68A)
-fonts.vf.math.set_letters(fonts.enc.math, "tex-bf",           0x1D400, 0x1D41A)
-fonts.vf.math.set_letters(fonts.enc.math, "tex-bi",           0x1D468, 0x1D482)
-fonts.vf.math.set_letters(fonts.enc.math, "tex-fraktur",      0x1D504, 0x1D51E)
-fonts.vf.math.set_letters(fonts.enc.math, "tex-fraktur-bold", 0x1D56C, 0x1D586)
+fonts.vf.math.setletters(mathencodings, "tex-it",           0x1D434, 0x1D44E)
+fonts.vf.math.setletters(mathencodings, "tex-ss",           0x1D5A0, 0x1D5BA)
+fonts.vf.math.setletters(mathencodings, "tex-tt",           0x1D670, 0x1D68A)
+fonts.vf.math.setletters(mathencodings, "tex-bf",           0x1D400, 0x1D41A)
+fonts.vf.math.setletters(mathencodings, "tex-bi",           0x1D468, 0x1D482)
+fonts.vf.math.setletters(mathencodings, "tex-fraktur",      0x1D504, 0x1D51E)
+fonts.vf.math.setletters(mathencodings, "tex-fraktur-bold", 0x1D56C, 0x1D586)
 
-fonts.vf.math.set_digits (fonts.enc.math, "tex-ss", 0x1D7E2)
-fonts.vf.math.set_digits (fonts.enc.math, "tex-tt", 0x1D7F6)
-fonts.vf.math.set_digits (fonts.enc.math, "tex-bf", 0x1D7CE)
+fonts.vf.math.setdigits (mathencodings, "tex-ss", 0x1D7E2)
+fonts.vf.math.setdigits (mathencodings, "tex-tt", 0x1D7F6)
+fonts.vf.math.setdigits (mathencodings, "tex-bf", 0x1D7CE)
 
--- fonts.vf.math.set_digits (fonts.enc.math, "tex-bi", 0x1D7CE)
+-- fonts.vf.math.setdigits (mathencodings, "tex-bi", 0x1D7CE)
 
 -- todo: add ss, tt, bf etc vectors
 -- todo: we can make ss tt etc an option

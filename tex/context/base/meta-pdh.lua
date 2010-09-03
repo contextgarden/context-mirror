@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
     license   = "see context related readme files"
 }
 
+os.exit()
+
 -- This file contains the history of the converter. We keep it around as it
 -- relates to the development of luatex.
 
@@ -32,9 +34,9 @@ local metapost = metapost
 metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf
 
-mptopdf.parsers  = { }
-mptopdf.parser   = 'none'
-mptopdf.n        = 0
+mptopdf.parsers      = { }
+mptopdf.parser       = 'none'
+mptopdf.nofconverted = 0
 
 function mptopdf.reset()
     mptopdf.data      = ""
@@ -221,7 +223,7 @@ end
 
 function mptopdf.convertmpstopdf(name)
     if mptopdf.loaded(name) then
-        mptopdf.n = mptopdf.n + 1
+        mptopdf.nofconverted = mptopdf.nofconverted + 1
         statistics.starttiming(mptopdf)
         mptopdf.parse()
         mptopdf.reset()
@@ -598,7 +600,7 @@ mptopdf.parser = 'lpeg'
 -- status info
 
 statistics.register("mps conversion time",function()
-    local n = mptopdf.n
+    local n = mptopdf.nofconverted
     if n > 0 then
         return format("%s seconds, %s conversions", statistics.elapsedtime(mptopdf),n)
     else

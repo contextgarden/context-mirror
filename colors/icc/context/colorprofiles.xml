@@ -96,6 +96,19 @@
         <class>mntr</class>
     </profile>
 
+    <!-- srgb.icc also as output intent -->
+
+    <profile>
+         <filename>srgb.icc</filename>
+         <colorspace>RGB</colorspace>
+         <class>mntr</class>
+         <id>Custom</id>
+         <info>sRGB IEC61966-2.1</info>
+         <checksum>1d3fda2edb4a89ab60a23c5f7c7d81dd</checksum>
+         <version>21000000</version>
+         <url>http://www.color.org</url>
+         <outputcondition/>
+    </profile>
 
     <!-- test profiles from www.color.org -->
 

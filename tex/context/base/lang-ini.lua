@@ -97,7 +97,7 @@ local function loaddefinitions(tag,specification)
                 elseif not dataused[definition] then
                     dataused[definition] = definition
                     local filename = "lang-" .. definition .. ".lua"
-                    local fullname = resolvers.find_file(filename) or ""
+                    local fullname = resolvers.findfile(filename) or ""
                     if fullname ~= "" then
                         if trace_patterns then
                             report_languages("loading definition '%s' for language '%s' from '%s'",definition,tag,fullname)
@@ -178,7 +178,7 @@ end
 
 function languages.loadable(tag,defaultlanguage) -- hack
     local l = registered[tag] -- no synonyms
-    if l and resolvers.find_file("lang-"..l.patterns..".lua") then
+    if l and resolvers.findfile("lang-"..l.patterns..".lua") then
         return true
     else
         return false
@@ -343,20 +343,20 @@ end)
 --~ local parser     = (1-command)^0 * command * content
 --~
 --~ local function filterpatterns(filename)
---~     return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "")
+--~     return lpegmatch(parser,io.loaddata(resolvers.findfile(filename)) or "")
 --~ end
 --~
 --~ local command = lpeg.P("\\hyphenation")
 --~ local parser  = (1-command)^0 * command * content
 --~
 --~ local function filterexceptions(filename)
---~     return lpegmatch(parser,io.loaddata(resolvers.find_file(filename)) or "") -- "" ?
+--~     return lpegmatch(parser,io.loaddata(resolvers.findfile(filename)) or "") -- "" ?
 --~ end
 --~
 --~ local function loadthem(tag, filename, filter, target)
 --~     statistics.starttiming(languages)
 --~     local data, instance = resolve(tag)
---~     local fullname = (filename and filename ~= "" and resolvers.find_file(filename)) or ""
+--~     local fullname = (filename and filename ~= "" and resolvers.findfile(filename)) or ""
 --~     local ok = fullname ~= ""
 --~     if ok then
 --~         if trace_patterns then

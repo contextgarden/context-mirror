@@ -26,7 +26,7 @@ local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
 
 local find_node_tail             = node.tail or node.slide
 
-function nodes.the_left_margin(n) -- todo: three values
+function nodes.leftmarginwidth(n) -- todo: three values
     while n do
         local id = n.id
         if id == glue_code then
@@ -42,7 +42,7 @@ function nodes.the_left_margin(n) -- todo: three values
     return 0
 end
 
-function nodes.the_right_margin(n)
+function nodes.rightmarginwidth(n)
     if n then
         n = find_node_tail(n)
         while n do

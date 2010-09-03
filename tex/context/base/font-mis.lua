@@ -38,7 +38,7 @@ local featuregroups = { "gsub", "gpos" }
 function fonts.get_features(name,t,script,language)
     local t = lower(t or (name and file.extname(name)) or "")
     if t == "otf" or t == "ttf" or t == "ttc" or t == "dfont" then
-        local filename = resolvers.find_file(name,t) or ""
+        local filename = resolvers.findfile(name,t) or ""
         if filename ~= "" then
             local data = fonts.otf.loadcached(filename)
             if data and data.luatex and data.luatex.features then

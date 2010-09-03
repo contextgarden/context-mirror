@@ -12,6 +12,8 @@ local xmlfillin = xml.fillin
 
 local trace_xmp = false  trackers.register("backend.xmp", function(v) trace_xmp = v end)
 
+local report_xmp = logs.new("backends")
+
 local lpdf = lpdf
 
 local pdfdictionary = lpdf.dictionary
@@ -73,18 +75,32 @@ local mapping = {
 
 -- maybe some day we will load the xmp file at runtime
 
-local xmp, xmpfile, xmpname = nil, nil, "lpdf-xmp.xml"
+local xmp, xmpfile, xmpname = nil, nil, "lpdf-pdx.xml"
 
 function lpdf.setxmpfile(name)
-    xmpfile = resolvers.findctxfile(name) or ""
-    if xmpfile == "" then
-        xmpfile = nil
+ -- xmpfile = resolvers.findctxfile(name) or ""
+ -- if xmpfile == "" then
+ --     xmpfile = nil
+ -- end
+    if xmp then
+        report_xmp("discarding loaded xmp file '%s'",xmpfile)
+        xmp = nil
     end
+    xmpfile = name ~= "" and name
 end
 
 local function valid_xmp()
     if not xmp then
-        local xmpfile = xmpfile or resolvers.find_file(xmpname) or ""
+     -- local xmpfile = xmpfile or resolvers.findfile(xmpname) or ""
+        if xmpfile and xmpfile ~= "" then
+            xmpfile = resolvers.findfile(xmpfile) or ""
+        end
+        if not xmpfile or xmpfile == "" then
+            xmpfile = resolvers.findfile(xmpname) or ""
+        end
+        if xmpfile ~= "" then
+            report_xmp("using xmp file '%s'",xmpfile)
+        end
         local xmpdata = (xmpfile ~= "" and io.loaddata(xmpfile)) or ""
         xmp = xml.convert(xmpdata)
     end

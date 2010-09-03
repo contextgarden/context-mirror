@@ -26,7 +26,7 @@ tasks.appendaction("processors",   "words",       "languages.words.check")      
 
 tasks.appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
 tasks.appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
-tasks.appendaction("processors",   "fonts",       "nodes.handlers.injectkerns")                        -- maybe todo
+tasks.appendaction("processors",   "fonts",       "nodes.injections.handler")                           -- maybe todo
 tasks.appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
 tasks.appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on
 tasks.appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on
@@ -68,9 +68,9 @@ tasks.appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions
 -- rather new
 
 tasks.appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")                            --
-tasks.appendaction("mvlbuilders",  "normalizers", "nodes.handlers.pagespacing")                        -- last !
+tasks.appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                        -- last !
 
-tasks.appendaction("vboxbuilders", "normalizers", "nodes.handlers.vboxspacing")                        --
+tasks.appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")                        --
 
 -- speedup: only kick in when used
 

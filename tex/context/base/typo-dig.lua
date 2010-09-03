@@ -41,6 +41,7 @@ local fontdata        = fonts.identifiers
 local chardata        = fonts.characters
 local quaddata        = fonts.quads
 local charbase        = characters.data
+local getdigitwidth   = fonts.getdigitwidth
 
 typesetters           = typesetters or { }
 local typesetters     = typesetters
@@ -86,7 +87,7 @@ actions[1] = function(head,start,attribute,attr)
     local unic = chardata[font][char].tounicode
     local what = unic and tonumber(unic,16) or char
     if charbase[what].category == "nd" then
-        local oldwidth, newwidth = start.width, fonts.get_digit_width(font)
+        local oldwidth, newwidth = start.width, getdigitwidth(font)
         if newwidth ~= oldwidth then
             if trace_digits then
                 report_digits("digit trigger %s, instance %s, char 0x%05X, unicode 0x%05X, delta %s",

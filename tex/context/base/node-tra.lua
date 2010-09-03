@@ -15,6 +15,7 @@ local utfchar = utf.char
 local concat = table.concat
 local format, match, gmatch, concat, rep = string.format, string.match, string.gmatch, table.concat, string.rep
 local lpegmatch = lpeg.match
+local write_nl = texio.write_nl
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -37,6 +38,9 @@ local tasks           = nodes.tasks
 
 nodes.handlers        = nodes.handlers or { }
 local handlers        = nodes.handlers
+
+nodes.injections      = nodes.injections or { }
+local injections      = nodes.injections
 
 tracers.characters    = tracers.characters or { }
 tracers.steppers      = tracers.steppers   or { }
@@ -312,7 +316,7 @@ function step_tracers.check(head)
     if collecting then
         step_tracers.reset()
         local n = copy_node_list(head)
-        handlers.injectkerns(n,nil,"trace",true)
+        injections.handler(n,nil,"trace",true)
         handlers.protectglyphs(n) -- can be option
         collection[1] = n
     end
@@ -323,7 +327,7 @@ function step_tracers.register(head)
         local nc = #collection+1
         if messages[nc] then
             local n = copy_node_list(head)
-            handlers.injectkerns(n,nil,"trace",true)
+            injections.handler(n,nil,"trace",true)
             handlers.protectglyphs(n) -- can be option
             collection[nc] = n
         end
@@ -343,16 +347,16 @@ end
 
 -- this will be reorganized:
 
-function nodes.show_list(head, message)
+function nodes.showlist(head, message)
     if message then
-        texio.write_nl(message)
+        write_nl(message)
     end
     for n in traverse_nodes(head) do
-        texio.write_nl(tostring(n))
+        write_nl(tostring(n))
     end
 end
 
-function nodes.checkglyphs(head,message)
+function nodes.handlers.checkglyphs(head,message)
     local t = { }
     for g in traverse_id(glyph_code,head) do
         t[#t+1] = format("U+%04X:%s",g.char,g.subtype)
@@ -361,6 +365,19 @@ function nodes.checkglyphs(head,message)
         logs.report(message or "nodes","%s glyphs: %s",#t,concat(t," "))
     end
     return false
+end
+
+function nodes.handlers.checkforleaks(sparse)
+    local l = { }
+    local q = node.usedlist()
+    for p in traverse(q) do
+        local s = table.serialize(nodes.astable(p,sparse),node_type(p.id))
+        l[s] = (l[s] or 0) + 1
+    end
+    node.flush_list(q)
+    for k, v in next, l do
+        write_nl(format("%s * %s", v, k))
+    end
 end
 
 local function tosequence(start,stop,compact)
@@ -417,13 +434,13 @@ function nodes.report(t,done)
         if status.output_active then
             report_nodes("output, changed, %s nodes",nodes.count(t))
         else
-            texio.write("nodes","normal, changed, %s nodes",nodes.count(t))
+            write_nl("nodes","normal, changed, %s nodes",nodes.count(t))
         end
     else
         if status.output_active then
             report_nodes("output, unchanged, %s nodes",nodes.count(t))
         else
-            texio.write("nodes","normal, unchanged, %s nodes",nodes.count(t))
+            write_nl("nodes","normal, unchanged, %s nodes",nodes.count(t))
         end
     end
 end
@@ -436,7 +453,7 @@ function nodes.packlist(head)
     return t
 end
 
-function nodes.ids_to_string(head,tail)
+function nodes.idstostring(head,tail)
     local t, last_id, last_n = { }, nil, 0
     for n in traverse_nodes(head,tail) do -- hm, does not stop at tail
         local id = n.id
@@ -466,11 +483,9 @@ function nodes.ids_to_string(head,tail)
     return concat(t," ")
 end
 
-nodes.ids_tostring = nodes.ids_to_string
-
-local function show_simple_list(h,depth,n)
+local function showsimplelist(h,depth,n)
     while h do
-        texio.write_nl(rep(" ",n) .. tostring(h))
+        write_nl(rep(" ",n) .. tostring(h))
         if not depth or n < depth then
             local id = h.id
             if id == hlist_code or id == vlist_code then
@@ -510,39 +525,44 @@ end
 
 local what = { [0] = "unknown", "line", "box", "indent", "row", "cell" }
 
-local function show_boxes(n,symbol,depth)
+local function showboxes(n,symbol,depth)
     depth, symbol = depth or 0, symbol or "."
     for n in traverse_nodes(n) do
         local id = n.id
         if id == hlist_code or id == vlist_code then
             local s = n.subtype
             logs.simple(rep(symbol,depth) .. what[s] or s)
-            show_boxes(n.list,symbol,depth+1)
+            showboxes(n.list,symbol,depth+1)
         end
     end
 end
 
-nodes.show_boxes = show_boxes
+nodes.showboxes = showboxes
 
 local threshold = 65536
 
-local function toutf(list,result)
+local function toutf(list,result,stopcriterium)
     for n in traverse_nodes(list) do
         local id = n.id
         if id == glyph_code then
-            local c = n.char
-            local fc = fontchar[n.font]
-            if fc then
-                local u = fc[c].tounicode
-                if u then
-                    for s in gmatch(u,"..") do
-                        result[#result+1] = utfchar(tonumber(s,16))
+            local components = n.components
+            if components then
+                toutf(components,result)
+            else
+                local c = n.char
+                local fc = fontchar[n.font]
+                if fc then
+                    local u = fc[c].tounicode
+                    if u then
+                        for s in gmatch(u,"....") do
+                            result[#result+1] = utfchar(tonumber(s,16))
+                        end
+                    else
+                        result[#result+1] = utfchar(c)
                     end
                 else
                     result[#result+1] = utfchar(c)
                 end
-            else
-                result[#result+1] = utfchar(c)
             end
         elseif id == disc_code then
             toutf(n.replace,result)
@@ -560,12 +580,15 @@ local function toutf(list,result)
                 result[#result+1] = " "
             end
         end
+        if n == stopcriterium then
+            break
+        end
     end
     return result
 end
 
-function nodes.toutf(list)
-    return concat(toutf(list,{}))
+function nodes.toutf(list,stopcriterium)
+    return concat(toutf(list,{},stopcriterium))
 end
 
 -- might move elsewhere

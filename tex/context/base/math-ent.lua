@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['math-ent'] = {
 
 -- this might go into char-def
 
-mathematics.xml.entities={
+mathematics.xml.entities = utilities.storage.allocate {
     ["Aacute"]=0x000C1,
     ["aacute"]=0x000E1,
     ["Abreve"]=0x00102,

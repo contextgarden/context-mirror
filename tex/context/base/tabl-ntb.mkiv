@@ -99,8 +99,11 @@
 %D
 %D \typebuffer \getbuffer
 
+\let\dotagTABLEalign\relax
+
 \def\bTBLCELL % why not \doinhibitblank
   {\inhibitblank
+   \dotagTABLEalign
    \doconvertfont\tbltblstyle\empty
    \everypar{\tbltblleft\delayedbegstrut}}
 
@@ -913,6 +916,8 @@
 % \def\endtbl
 %   {\egroup}
 
+\let\dotagTABLEcell\relax
+
 \def\begintbl
   {\global\tblspn\zerocount
    \global\tblcol\zerocount
@@ -923,8 +928,9 @@
    \dostarttagged\t!tablerow\empty
    \appendtoks\dostoptagged\dostarttagged\t!tablerow\empty\to\everycr
    \halign\bgroup
-   \registerparoptions %  new
-   \ignorespaces##\unskip&&\dostarttagged\t!tablecell\empty\ignorespaces##\unskip\dostoptagged\cr}
+   \registerparoptions
+   % watch out: tagging the cell happens at the outer level (faster)
+   \ignorespaces##\unskip&&\dostarttagged\t!tablecell\empty\ignorespaces##\unskip\dostoptagged\cr} % one too many
 
 \def\endtbl
   {\dostoptagged\egroup
@@ -977,11 +983,16 @@
      \settblhei{#1}{\the\ht\scratchbox}%
    \fi}%
 
+\let\dotagnoftablecolumns\relax
+\let\dotagnoftablerows   \relax
+
 \def\domakeTBLthree#1 #2 %
   {% height
    \!!counta \gettblcol{#1}{#2}\relax
    \!!countb \gettblrow{#1}{#2}\relax
    \!!heighta\gettblht {#1}{#2}\relax
+\dotagnoftablecolumns
+\dotagnoftablerows
    \scratchdimen\zeropoint
    \ifnum\!!counta=\maximumcol\relax
      % case: nc=maxcolumns
@@ -1020,7 +1031,7 @@
    \else
      \normalexpanded{\noexpand\directgotobox{\box\scratchbox}[\!!stringa]}% to be checked
    \fi
-   \box\scratchbox}
+   \dotagTABLEcell} % right spot
 
 \def\inTBLcell#1#2% hm, do we need #1 #2 ? we use tblcol anyway
   {\ExpandBothAfter\doifinsetelse\localwidth{\v!fit,\v!broad} % user set

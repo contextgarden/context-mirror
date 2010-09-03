@@ -6868,12 +6868,6 @@
         <cd:parameter name="ارتفاع">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
-        <cd:parameter name="آفست‌ع">
-          <cd:constant type="cd:dimension"/>
-        </cd:parameter>
-        <cd:parameter name="آفست‌ا">
-          <cd:constant type="cd:dimension"/>
-        </cd:parameter>
         <cd:parameter name="صفحه">
           <cd:constant type="چپ"/>
           <cd:constant type="بله"/>

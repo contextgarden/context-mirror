@@ -504,6 +504,7 @@
 \def\dosetupalign[#1]% can be made faster by checking for defined #1
   {\!!doneafalse
    \!!donebfalse
+   \chardef\raggedstatus\zerocount
    \processcommacommand[#1]\dodosetupngila
    \processcommacommand[#1]\dodosetupalign}
 

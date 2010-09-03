@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['mtx-colors'] = {
 
 if not fontloader then fontloader = fontforge end
 
-dofile(resolvers.find_file("colo-icc.lua","tex"))
+dofile(resolvers.findfile("colo-icc.lua","tex"))
 
 scripts        = scripts        or { }
 scripts.colors = scripts.colors or { }

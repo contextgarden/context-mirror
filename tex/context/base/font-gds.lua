@@ -13,6 +13,8 @@ local trace_goodies = false  trackers.register("fonts.goodies", function(v) trac
 
 local report_fonts = logs.new("fonts")
 
+local allocate = utilities.storage.allocate
+
 -- goodies=name,colorscheme=,featureset=
 --
 -- goodies=auto
@@ -23,10 +25,10 @@ local node = node
 fonts.goodies     = fonts.goodies or { }
 local fontgoodies = fonts.goodies
 
-fontgoodies.data  = fontgoodies.data or { }
+fontgoodies.data  = allocate() -- fontgoodies.data or { }
 local data        = fontgoodies.data
 
-fontgoodies.list  = fontgoodies.list or { }
+fontgoodies.list  = fontgoodies.list or { } -- no allocate as we want to see what is there
 local list        = fontgoodies.list
 
 function fontgoodies.report(what,trace,goodies)
@@ -43,9 +45,9 @@ local function getgoodies(filename) -- maybe a merge is better
     if goodies ~= nil then
         -- found or tagged unfound
     elseif type(filename) == "string" then
-        local fullname = resolvers.find_file(file.addsuffix(filename,"lfg")) or "" -- prefered suffix
+        local fullname = resolvers.findfile(file.addsuffix(filename,"lfg")) or "" -- prefered suffix
         if fullname == "" then
-            fullname = resolvers.find_file(file.addsuffix(filename,"lua")) or "" -- fallback suffix
+            fullname = resolvers.findfile(file.addsuffix(filename,"lua")) or "" -- fallback suffix
         end
         if fullname == "" then
             report_fonts("goodie file '%s.lfg' is not found",filename)
@@ -77,7 +79,7 @@ fontgoodies.get = getgoodies
 
 -- register goodies file
 
-local preset_context = fonts.define.specify.preset_context
+local presetcontext = fonts.definers.specifiers.presetcontext
 
 local function setgoodies(tfmdata,value)
     local goodies = tfmdata.goodies or { } -- future versions might store goodies in the cached instance
@@ -124,7 +126,7 @@ function fontgoodies.prepare_features(goodies,name,set)
     if set then
         local ff = flattenedfeatures(set)
         local fullname = goodies.name .. "::" .. name
-        local n, s = preset_context(fullname,"",ff)
+        local n, s = presetcontext(fullname,"",ff)
         goodies.featuresets[name] = s -- set
         if trace_goodies then
             report_fonts("feature set '%s' gets number %s and name '%s'",name,n,fullname)
@@ -209,7 +211,7 @@ local function set_colorscheme(tfmdata,scheme)
 end
 
 local fontdata      = fonts.ids
-local fcs           = fonts.color.set
+local fcs           = fonts.colors.set
 local has_attribute = node.has_attribute
 local traverse_id   = node.traverse_id
 local a_colorscheme = attributes.private('colorscheme')

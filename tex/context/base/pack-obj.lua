@@ -12,21 +12,23 @@ reusable components.</p>
 --ldx]]--
 
 local texsprint, texcount = tex.sprint, tex.count
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+local collected, tobesaved = allocate(), allocate()
 
 local jobobjects = {
-    collected = { },
-    tobesaved = { },
+    collected = collected,
+    tobesaved = tobesaved,
 }
 
 job.objects = jobobjects
 
-local collected, tobesaved = jobobjects.collected, jobobjects.tobesaved
-
 local function initializer()
-    collected, tobesaved = jobobjects.collected, jobobjects.tobesaved
+    collected = mark(jobobjects.collected)
+    tobesaved = mark(jobobjects.tobesaved)
 end
 
-job.register('job.objects.collected', jobobjects.tobesaved, initializer, nil)
+job.register('job.objects.collected', tobesaved, initializer, nil)
 
 function jobobjects.save(tag,number,page)
     local t = { number, page }

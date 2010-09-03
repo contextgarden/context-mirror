@@ -29,7 +29,9 @@ patterns.sign          = sign
 patterns.cardinal      = sign^0 * digit^1
 patterns.integer       = sign^0 * digit^1
 patterns.float         = sign^0 * digit^0 * P('.') * digit^1
+patterns.cfloat        = sign^0 * digit^0 * P(',') * digit^1
 patterns.number        = patterns.float + patterns.integer
+patterns.cnumber       = patterns.cfloat + patterns.integer
 patterns.oct           = P("0") * R("07")^1
 patterns.octal         = patterns.oct
 patterns.HEX           = P("0x") * R("09","AF")^1
@@ -246,6 +248,10 @@ function lpeg.secondofsplit(separator) -- nil if not split
         splitters_s[separator] = splitter
     end
     return splitter
+end
+
+function lpeg.balancer(left,right)
+    return P { left * ((1 - left - right) + V(1))^0 * right }
 end
 
 --~ print(1,match(lpeg.firstofsplit(":"),"bc:de"))

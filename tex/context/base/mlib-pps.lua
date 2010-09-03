@@ -17,6 +17,7 @@ local tonumber, type = tonumber, type
 local lpegmatch = lpeg.match
 local texbox = tex.box
 local copy_list = node.copy_list
+local free_list = node.flush_list
 
 local P, S, V, Cs = lpeg.P, lpeg.S, lpeg.V, lpeg.Cs
 
@@ -37,17 +38,14 @@ local cmyktogray = colors.cmyktogray  or function() return 0       end
 
 local mplib, lpdf = mplib, lpdf
 
-metapost           = metapost or { }
 local metapost     = metapost
-
-metapost.specials  = metapost.specials or { }
 local specials     = metapost.specials
 
 specials.data      = specials.data or { }
 local data         = specials.data
 
-metapost.externals = metapost.externals or { n = 0 }
-local externals    = metapost.externals
+metapost.makempy = metapost.makempy or { nofconverted = 0 }
+local makempy    = metapost.makempy
 
 local colordata = { {}, {}, {}, {}, {} }
 
@@ -384,23 +382,27 @@ end
 
 local current_format, current_graphic, current_initializations
 
--- metapost.first_box       = metapost.first_box or 1000
--- metapost.last_box        = metapost.last_box or 1100
---~ metapost.textext_current = metapost.first_box
-metapost.multipass       = false
+metapost.multipass = false
 
-local textexts = { }
+local textexts   = { }
+local scratchbox = 0
 
-local function free_boxes() -- todo: mp direct list ipv box
+local function freeboxes() -- todo: mp direct list ipv box
     for n, box in next, textexts do
         local tn = textexts[n]
         if tn then
-            -- somehow not flushed (used)
-            textexts[n] = nil
+            free_list(tn)
+          -- texbox[scratchbox] = tn
+          -- texbox[scratchbox] = nil -- this frees too
+            if trace_textexts then
+                report_mplib("freeing textext %s",n)
+            end
         end
     end
     textexts = { }
 end
+
+metapost.resettextexts = freeboxes
 
 function metapost.settext(box,slot)
     textexts[slot] = copy_list(texbox[box])
@@ -412,35 +414,44 @@ end
 
 function metapost.gettext(box,slot)
     texbox[box] = copy_list(textexts[slot])
---  textexts[slot] = nil -- no, pictures can be placed several times
+    if trace_textexts then
+        report_mplib("putting textext %s in box %s",slot,box)
+    end
+ -- textexts[slot] = nil -- no, pictures can be placed several times
 end
 
 function specials.tf(specification,object)
---~ print("setting", metapost.textext_current)
     local n, str = match(specification,"^(%d+):(.+)$")
     if n and str then
         n = tonumber(n)
-     -- if metapost.textext_current < metapost.last_box then
-     --     metapost.textext_current = metapost.first_box + n - 1
-     -- end
         if trace_textexts then
-         -- report_mplib("first pass: order %s, box %s",n,metapost.textext_current)
-            report_mplib("first pass: order %s",n)
+            report_mplib("setting textext %s (first pass)",n)
         end
-     -- sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",metapost.textext_current,str))
         sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",n,str))
         metapost.multipass = true
     end
     return { }, nil, nil, nil
 end
 
+local factor = 65536*(7227/7200)
+
+function metapost.edefsxsy(wd,ht,dp) -- helper for figure
+    local hd = ht + dp
+    commands.edef("sx",(wd ~= 0 and factor/wd) or 0)
+    commands.edef("sy",(hd ~= 0 and factor/hd) or 0)
+end
+
+local function sxsy(wd,ht,dp) -- helper for text
+    local hd = ht + dp
+    return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
+end
+
 function specials.ts(specification,object,result,flusher)
-    -- print("getting", metapost.textext_current)
     local n, str = match(specification,"^(%d+):(.+)$")
     if n and str then
         n = tonumber(n)
         if trace_textexts then
-            report_mplib("second pass: order %s",n)
+            report_mplib("processing textext %s (second pass)",n)
         end
         local op = object.path
         local first, second, fourth = op[1], op[2], op[4]
@@ -453,20 +464,11 @@ function specials.ts(specification,object,result,flusher)
             object.path = nil
         end
         local before = function() -- no need for before function (just do it directly)
-        --~ flusher.flushfigure(result)
-        --~ sprint(ctxcatcodes,format("\\MPLIBgettext{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,metapost.textext_current))
-        --~ result = { }
             result[#result+1] = format("q %f %f %f %f %f %f cm", sx,rx,ry,sy,tx,ty)
             flusher.flushfigure(result)
-            -- if metapost.textext_current < metapost.last_box then
-            --     metapost.textext_current = metapost.first_box + n - 1
-            --  end
-         -- local b = metapost.textext_current
-         -- local box = texbox[b]
             local box = textexts[n]
             if box then
-             -- sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",b,metapost.sxsy(box.width,box.height,box.depth)))
-                sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",n,metapost.sxsy(box.width,box.height,box.depth)))
+                sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",n,sxsy(box.width,box.height,box.depth)))
             else
                 -- error
             end
@@ -651,13 +653,13 @@ local function ignore(s)
     return ""
 end
 
-local parser = P {
-    [1] = Cs((V(2)/register + V(4)/ignore + V(3)/convert + V(5)/force + 1)^0),
-    [2] = ttex + gtex,
-    [3] = btex * spacing * Cs(texmess) * etex,
-    [4] = vtex * spacing * Cs(texmess) * etex,
-    [5] = multipass, -- experimental, only for testing
-}
+-- local parser = P {
+--     [1] = Cs((V(2)/register + V(4)/ignore + V(3)/convert + V(5)/force + 1)^0),
+--     [2] = ttex + gtex,
+--     [3] = btex * spacing * Cs(texmess) * etex,
+--     [4] = vtex * spacing * Cs(texmess) * etex,
+--     [5] = multipass, -- experimental, only for testing
+-- }
 
 -- currently a a one-liner produces less code
 
@@ -668,22 +670,9 @@ local parser = Cs((
   + 1
 )^0)
 
-local function check_texts(str)
+local function checktexts(str)
     found, forced = false, false
     return lpegmatch(parser,str), found, forced
-end
-
-local factor = 65536*(7227/7200)
-
-function metapost.edefsxsy(wd,ht,dp) -- helper for figure
-    local hd = ht + dp
-    commands.edef("sx",(wd ~= 0 and factor/wd) or 0)
-    commands.edef("sy",(hd ~= 0 and factor/hd) or 0)
-end
-
-function metapost.sxsy(wd,ht,dp) -- helper for text
-    local hd = ht + dp
-    return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
 local no_trial_run       = "_trial_run_ := false ;"
@@ -695,20 +684,17 @@ local do_safeguard       = ";"
 
 function metapost.texttextsdata()
     local t, n = { }, 0
---~     for i = metapost.first_box, metapost.last_box do
---~         n = n + 1
---~         local box = texbox[i]
     for n, box in next, textexts do
-        if trace_textexts then
-            report_mplib("passed data: order %s",n)
-        end
         if box then
-            t[#t+1] = format(text_data_template,n,box.width/factor,n,box.height/factor,n,box.depth/factor)
+            local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
+            if trace_textexts then
+                report_mplib("passed textext data %s: (%0.4f,%0.4f,%0.4f)",n,wd,ht,dp)
+            end
+            t[#t+1] = format(text_data_template,n,wd,n,ht,n,dp)
         else
             break
         end
     end
---~     print(table.serialize(t))
     return t
 end
 
@@ -721,13 +707,12 @@ metapost.method = 1 -- 1:dumb 2:clever
 function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,askedfig)
     local nofig = (askedfig and "") or false
     local done_1, done_2, forced_1, forced_2
-    str, done_1, forced_1 = check_texts(str)
+    str, done_1, forced_1 = checktexts(str)
     if not preamble or preamble == "" then
         preamble, done_2, forced_2 = "", false, false
     else
-        preamble, done_2, forced_2 = check_texts(preamble)
+        preamble, done_2, forced_2 = checktexts(preamble)
     end
- -- metapost.textext_current = metapost.first_box
     metapost.intermediate.needed  = false
     metapost.multipass = false -- no needed here
     current_format, current_graphic, current_initializations = mpsformat, str, initializations or ""
@@ -764,13 +749,10 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,asked
             nofig or do_end_fig
         }, false, nil, false, false, askedfig )
     end
-    -- here we could free the textext boxes
-    free_boxes()
 end
 
 function metapost.graphic_extra_pass(askedfig)
     local nofig = (askedfig and "") or false
- -- metapost.textext_current = metapost.first_box
     metapost.process(current_format, {
         nofig or do_begin_fig,
         no_trial_run,
@@ -780,24 +762,17 @@ function metapost.graphic_extra_pass(askedfig)
         current_graphic,
         nofig or do_end_fig
     }, false, nil, false, true, askedfig )
+    sprint(ctxcatcodes,format("\\ctxlua{metapost.resettextexts()}")) -- must happen afterwards
 end
 
-local graphics = { }
 local start    = [[\starttext]]
 local preamble = [[\long\def\MPLIBgraphictext#1{\startTEXpage[scale=10000]#1\stopTEXpage}]]
 local stop     = [[\stoptext]]
 
-function specials.gt(specification,object) -- number, so that we can reorder
-    graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",specification)
-    metapost.intermediate.needed = true
-    metapost.multipass = true
-    return { }, nil, nil, nil
-end
-
-function metapost.intermediate.actions.makempy()
+function makempy.processgraphics(graphics)
     if #graphics > 0 then
-        externals.n = externals.n + 1
-        starttiming(externals)
+        makempy.nofconverted = makempy.nofconverted + 1
+        starttiming(makempy)
         local mpofile = tex.jobname .. "-mpgraph"
         local mpyfile = file.replacesuffix(mpofile,"mpy")
         local pdffile = file.replacesuffix(mpofile,"pdf")
@@ -817,7 +792,22 @@ function metapost.intermediate.actions.makempy()
                 io.savedata(mpyfile,concat(result,""))
             end
         end
-        stoptiming(externals)
+        stoptiming(makempy)
+    end
+end
+
+local graphics = { }
+
+function specials.gt(specification,object) -- number, so that we can reorder
+    graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",specification)
+    metapost.intermediate.needed = true
+    metapost.multipass = true
+    return { }, nil, nil, nil
+end
+
+function metapost.intermediate.actions.makempy()
+    if #graphics > 0 then
+        makempy.processgraphics(graphics)
         graphics = { } -- ?
     end
 end

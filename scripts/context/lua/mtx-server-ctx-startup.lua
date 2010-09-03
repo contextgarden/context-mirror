@@ -6,12 +6,12 @@ if not modules then modules = { } end modules ['mtx-server-ctx-startup'] = {
     license   = "see context related readme files"
 }
 
-dofile(resolvers.find_file("trac-lmx.lua","tex"))
+dofile(resolvers.findfile("trac-lmx.lua","tex"))
 
 function doit(configuration,filename,hashed)
 
     local list = { }
-    local root = file.dirname(resolvers.find_file("mtx-server.lua") or ".")
+    local root = file.dirname(resolvers.findfile("mtx-server.lua") or ".")
     if root == "" then root = "." end
     local pattern = root .. "/mtx-server-ctx-*.lua"
     local files = dir.glob(pattern)

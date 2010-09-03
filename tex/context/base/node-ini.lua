@@ -58,6 +58,8 @@ local traverse, traverse_id = node.traverse, node.traverse_id
 local free_node, remove_node = node.free, node.remove
 local insert_node_before, insert_node_after = node.insert_before, node.insert_after
 
+local allocate = utilities.storage.allocate
+
 nodes          = nodes or { }
 local nodes    = nodes
 
@@ -65,7 +67,7 @@ nodes.handlers = nodes.handlers or { }
 
 -- there will be more of this:
 
-local skipcodes = {
+local skipcodes = allocate {
    [ 0] = "userskip",
    [ 1] = "lineskip",
    [ 2] = "baselineskip",
@@ -87,7 +89,7 @@ local skipcodes = {
    [18] = "thickmuskip",
 }
 
-local noadcodes = {
+local noadcodes = allocate {
     [ 0] = "ord",
     [ 1] = "opdisplaylimits",
     [ 2] = "oplimits",
@@ -103,7 +105,7 @@ local noadcodes = {
     [12] = "vcenter",
 }
 
-local listcodes = {
+local listcodes = allocate {
     [ 0] = "unknown",
     [ 1] = "line",
     [ 2] = "box",
@@ -112,7 +114,7 @@ local listcodes = {
     [ 5] = "cell",
 }
 
-local glyphcodes = {
+local glyphcodes = allocate {
     [0] = "character",
     [1] = "glyph",
     [2] = "ligature",
@@ -121,18 +123,18 @@ local glyphcodes = {
     [5] = "right",
 }
 
-local kerncodes = {
+local kerncodes = allocate {
     [0] = "fontkern",
     [1] = "userkern",
     [2] = "accentkern",
 }
 
-local mathcodes  = {
+local mathcodes = allocate {
     [0] = "beginmath",
     [1] = "endmath",
 }
 
-local fillcodes = {
+local fillcodes = allocate {
     [0] = "stretch",
     [1] = "fi",
     [2] = "fil",
@@ -151,15 +153,15 @@ end
 local nodecodes = simplified(node.types())
 local whatcodes = simplified(node.whatsits())
 
-skipcodes  = swapped(skipcodes, skipcodes)
-noadcodes  = swapped(noadcodes, noadcodes)
-nodecodes  = swapped(nodecodes, nodecodes)
-whatcodes  = swapped(whatcodes, whatcodes)
-listcodes  = swapped(listcodes, listcodes)
-glyphcodes = swapped(glyphcodes,glyphcodes)
-kerncodes  = swapped(kerncodes, kerncodes)
-mathcodes  = swapped(mathcodes, mathcodes)
-fillcodes  = swapped(fillcodes, fillcodes)
+skipcodes  = allocate(swapped(skipcodes, skipcodes ))
+noadcodes  = allocate(swapped(noadcodes, noadcodes ))
+nodecodes  = allocate(swapped(nodecodes, nodecodes ))
+whatcodes  = allocate(swapped(whatcodes, whatcodes ))
+listcodes  = allocate(swapped(listcodes, listcodes ))
+glyphcodes = allocate(swapped(glyphcodes,glyphcodes))
+kerncodes  = allocate(swapped(kerncodes, kerncodes ))
+mathcodes  = allocate(swapped(mathcodes, mathcodes ))
+fillcodes  = allocate(swapped(fillcodes, fillcodes ))
 
 nodes.skipcodes  = skipcodes  nodes.gluecodes    = skipcodes -- more official
 nodes.noadcodes  = noadcodes
@@ -177,7 +179,7 @@ listcodes.column           = listcodes.alignment
 kerncodes.italiccorrection = kerncodes.userkern
 kerncodes.kerning          = kerncodes.fontkern
 
-nodes.codes = {
+nodes.codes = allocate {
     hlist   = listcodes,
     vlist   = listcodes,
     glyph   = glyphcodes,

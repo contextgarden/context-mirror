@@ -15,22 +15,24 @@ more efficient.</p>
 local concat, format = table.concat, string.format
 local texprint, ctxcatcodes = tex.print, tex.ctxcatcodes
 local lpegmatch = lpeg.match
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+local collected, tobesaved = allocate(), allocate()
 
 local jobpositions = {
-    collected = { },
-    tobesaved = { },
+    collected = collected,
+    tobesaved = tobesaved,
 }
 
 job.positions = jobpositions
-
-local tobesaved, collected = jobpositions.tobesaved, jobpositions.collected
 
 _plib_, _ptbs_, _pcol_ = jobpositions, tobesaved, collected -- global
 
 local dx, dy = "0pt", "0pt"
 
 local function initializer()
-    tobesaved, collected = jobpositions.tobesaved, jobpositions.collected -- local
+    tobesaved = mark(jobpositions.tobesaved)
+    collected = mark(jobpositions.collected)
     _ptbs_, _pcol_ = tobesaved, collected -- global
     local p = collected["page:0"] -- page:1
     if p then
@@ -39,18 +41,18 @@ local function initializer()
     end
 end
 
-job.register('job.positions.collected', jobpositions.tobesaved, initializer)
+job.register('job.positions.collected', tobesaved, initializer)
 
 function jobpositions.copy(target,source)
-    jobpositions.collected[target] = jobpositions.collected[source] or tobesaved[source]
+    collected[target] = collected[source] or tobesaved[source]
 end
 
 function jobpositions.replace(name,...)
-    jobpositions.collected[name] = {...}
+    collected[name] = {...}
 end
 
 function jobpositions.doifelse(name)
-    commands.testcase(jobpositions.collected[name] or tobesaved[name])
+    commands.testcase(collected[name] or tobesaved[name])
 end
 
 function jobpositions.MPp(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[1]) or '0'  ) end
@@ -59,7 +61,6 @@ function jobpositions.MPy(id) local jpi = collected[id] or tobesaved[id] texprin
 function jobpositions.MPw(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[4]) or '0pt') end
 function jobpositions.MPh(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[5]) or '0pt') end
 function jobpositions.MPd(id) local jpi = collected[id] or tobesaved[id] texprint(ctxcatcodes,(jpi and jpi[6]) or '0pt') end
-
 
 function jobpositions.MPx(id)
     local jpi = collected[id] or tobesaved[id]

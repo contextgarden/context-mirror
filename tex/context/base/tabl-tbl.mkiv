@@ -326,6 +326,8 @@
 
 \let\endreshapedtabulatepar\egroup
 
+\let\dotagtabulatealign\relax
+
 \def\dodosettabulatepreamble#1#2% only makes sense for many tabulates
   {\normalexpanded{\!!toksa{\the\!!toksa
         &\hskip\pretabskip\noexpand\pretabrule##&%
@@ -349,6 +351,7 @@
             \noexpand\bbskip
             \bgroup % we cannot combine the if because a cell may have only one ##
 \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
+\dotagtabulatealign
                 \noexpand#1%
                 \ifcase\tabulatereshape\else
                     \beginreshapedtabulatepar
@@ -1108,6 +1111,7 @@
 
 \def\tabulatebskiptwo
   {\ifvoid\tablebox\tabulatecolumn
+     % first line
      \global\setbox\tablebox\tabulatecolumn\vbox
      \bgroup
      \glet\tabulatehook\notabulatehook
@@ -1117,6 +1121,7 @@
      \ignorespaces
      \let\eskip\tabulatebskiptwoeskip
    \else
+     % successive lines
      \let\eskip\empty
      \dontcomplain
      \glet\tabulatehook\dotabulatehook
@@ -1248,6 +1253,8 @@
 \def\tabulateautorule{\doHR\plusone}%
 \def\tabulateautoline{\doHL\plusone}%
 
+\newtoks\everytabulatepar
+
 \bgroup \catcode`\|=\@@other
 
 \gdef\processtabulate[|#1|]% in the process of optimizing
@@ -1325,6 +1332,7 @@
    \fi
    \dontcomplain
    \forgetall % hm, interference with \forgetparindent ^^^ probably bug, to be solved
+   \everypar\everytabulatepar
    \setbox0\vbox % outside \if because of line counting
      {\notesenabledfalse
       \let\tabulateindent\!!zeropoint

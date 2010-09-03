@@ -814,17 +814,6 @@
    \startlinetableanalysis\readfile{#1}\donothing\donothing\stoplinetableanalysis
    \startlinetablerun     \readfile{#1}\donothing\donothing\stoplinetablerun
    \egroup}
-
-% will go away:
-
-\def\processlinetableXMLfile#1%
-  {\bgroup
-   \let\startlinetable\donothing
-   \let\stoplinetable \donothing
-   \startlinetableanalysis\processXMLfile{#1}\stoplinetableanalysis
-   \startlinetablerun     \processXMLfile{#1}\stoplinetablerun
-   \egroup}
-
 \protect \endinput
 
 \doifnotmode{demo}{\endinput}

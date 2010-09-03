@@ -20,7 +20,7 @@ local trace_bibtex = false  trackers.register("publications.bibtex", function(v)
 
 local report_publications = logs.new("publications")
 
-local context, structures, references = context, structures, references
+local context, structures = context, structures
 
 local references = structures.references
 local sections   = structures.sections

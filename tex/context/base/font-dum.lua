@@ -10,9 +10,9 @@ fonts = fonts or { }
 
 -- general
 
-fonts.otf.pack          = false -- only makes sense in context
-fonts.tfm.resolve_vf    = false -- no sure about this
-fonts.tfm.fontname_mode = "specification" -- somehow latex needs this
+fonts.otf.pack              = false -- only makes sense in context
+fonts.tfm.resolvevirtualtoo = false -- context specific (du eto resolver)
+fonts.tfm.fontnamemode      = "specification" -- somehow latex needs this (changed name!)
 
 -- readers
 
@@ -22,13 +22,12 @@ fonts.tfm.readers.afm      = nil
 
 -- define
 
-fonts.define = fonts.define or { }
+fonts.definers            = fonts.definers or { }
+fonts.definers.specifiers = fonts.definers.specifiers or { }
 
---~ fonts.define.method = "tfm"
+fonts.definers.specifiers.specifiers.colonizedpreference = "name" -- is "file" in context
 
-fonts.define.specify.colonized_default_lookup = "name"
-
-function fonts.define.get_specification(str)
+function fonts.definers.getspecification(str)
     return "", str, "", ":", str
 end
 
@@ -63,7 +62,7 @@ function fonts.names.resolve(name,sub)
         if basename and basename ~= "" then
             for i=1,#fileformats do
                 local format = fileformats[i]
-                local foundname = resolvers.find_file(basename,format) or ""
+                local foundname = resolvers.findfile(basename,format) or ""
                 if foundname ~= "" then
                     data = dofile(foundname)
                     break
@@ -210,7 +209,7 @@ fonts.initializers.node.otf.expansion  = fonts.initializers.common.expansion
 
 -- left over
 
-function fonts.register_message()
+function fonts.registermessage()
 end
 
 -- example vectors
@@ -259,6 +258,12 @@ fonts.otf.meanings.normalize = fonts.otf.meanings.normalize or function(t)
     if t.rand then
         t.rand = "random"
     end
+end
+
+-- needed (different in context)
+
+function otf.scriptandlanguage(tfmdata)
+    return tfmdata.script, tfmdata.language
 end
 
 -- bonus

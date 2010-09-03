@@ -109,20 +109,29 @@
 %     \part{second} \chapter{gamma} \section{a} \section{b} \subsection{x} \subsection{y} \chapter{delta}
 % \stoptext
 
-\definestructureseparatorset  [\s!default]   [] [.]
-\definestructureconversionset [\s!default]   [] [numbers]
-\definestructureresetset      [\s!default]   [] [1] % each level
-\definestructureprefixset     [\s!default]   [section-1,section-2,section-3] []
+\definestructureseparatorset  [\s!default]    [] [.]
+\definestructureconversionset [\s!default]    [] [numbers]
+\definestructureresetset      [\s!default]    [] [1] % each level
+\definestructureprefixset     [\s!default]    [section-1,section-2,section-3] []
 
-\definestructureprefixset     [\v!all]       [section-1,section-2,section-3,section-4,section-5,section-6,section-7,section-8] []
-\definestructureprefixset     [\v!none]      [] []
+\definestructureconversionset [\v!pagenumber] [] [numbers]
 
-\definestructureprefixset     [\v!part]      [section-1] []
-\definestructureprefixset     [\v!chapter]   [section-2] []
+\definestructureprefixset     [\v!all]     [section-1,section-2,section-3,section-4,section-5,section-6,section-7,section-8] []
+\definestructureprefixset     [\v!none]    [] []
+
+\definestructureprefixset     [\v!part]    [section-1] []
+\definestructureprefixset     [\v!chapter] [section-2] []
 
 \definestructureseparatorset  [\v!appendix:\s!default] [] [.]
 \definestructureconversionset [\v!appendix:\s!default] [Romannumerals,Characters] [numbers]
 \definestructureresetset      [\v!appendix:\s!default] [] [1] % why was this 0
+
+\setupuserpagenumber          [\c!numberconversionset=\v!pagenumber]
+
+% \startsetups defaults:frontpart:pagenumbers:roman
+%     \definestructureconversionset[\c!frontpart:\c!pagenumber][][romannumerals]
+%     \setupuserpagenumber[\c!way=\v!byblock]
+% \stopsetups
 
 % \definesectionblock
 

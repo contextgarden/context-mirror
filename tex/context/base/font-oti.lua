@@ -13,11 +13,8 @@ local fonts = fonts
 local otf          = fonts.otf
 local initializers = fonts.initializers
 
-otf.default_language = 'latn'
-otf.default_script   = 'dflt'
-
-local languages = otf.tables.languages
-local scripts   = otf.tables.scripts
+local languages    = otf.tables.languages
+local scripts      = otf.tables.scripts
 
 local function set_language(tfmdata,value)
     if value then

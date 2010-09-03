@@ -314,24 +314,6 @@
    \c!compress=\v!no,    % strip comment
    \c!entities=\v!yes]   % replace entities
 
-% \defineXMLenvironment[y]{(}{)}
-%
-% \startxmlsetups x
-%     /\xmlflush{#1}/
-% \stopxmlsetups
-%
-% \startxmlsetups xx
-%     \xmlsetsetup{main}{x}{*}
-% \stopxmlsetups
-%
-% \xmlregistersetup{xx}
-%
-% \startbuffer
-% <x>a &lt;&amp;&gt;<y>{b}</y> c</x>
-% \stopbuffer
-%
-% mkii: [\processXMLbuffer]\quad mkiv: [\xmlprocessbuffer{main}{}{}]
-
 \def\xmlmapvalue    #1#2#3{\setvalue{\??xm:v:#1:#2}{#3}} % keep #3 to grab spaces
 \def\xmlvalue       #1#2#3{\executeifdefined{\??xm:v:#1:#2}{#3}}
 %def\xmlvalue         #1#2{\ifcsname\??xm:v:#1:#2\endcsname\csname\??xm:v:#1:#2\expandafter\expandafter\gobbleoneargument\expandafter\endcsname\else\expandafter\firstofoneargument\fi}

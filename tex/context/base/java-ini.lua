@@ -10,13 +10,16 @@ local format = string.format
 local concat = table.concat
 local lpegmatch, lpegP, lpegR, lpegS, lpegC = lpeg.match, lpeg.P, lpeg.R, lpeg.S, lpeg.C
 
+local allocate = utilities.storage.allocate
+
 -- todo: don't flush scripts if no JS key
 
 interactions.javascripts = interactions.javascripts or { }
 local javascripts        = interactions.javascripts
-javascripts.codes        = javascripts.codes     or { }
-javascripts.preambles    = javascripts.preambles or { }
-javascripts.functions    = javascripts.functions or { }
+
+javascripts.codes        = allocate()
+javascripts.preambles    = allocate()
+javascripts.functions    = allocate()
 
 local codes, preambles, functions = javascripts.codes, javascripts.preambles, javascripts.functions
 
@@ -49,7 +52,7 @@ local parsefunctions = (fname + any)^0
 function javascripts.storecode(str)
     local name, uses, script = lpegmatch(parsecode,str)
     if name and name ~= "" then
-        javascripts.codes[name] = { uses, script }
+        codes[name] = { uses, script }
     end
 end
 

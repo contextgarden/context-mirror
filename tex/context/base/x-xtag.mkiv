@@ -11,8 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Here we load the \MKII\ (mostly) streaming \XML\ parser. We
+%D define a couple of catcode regimes first.
+
 \ifdefined\XMLbanner \endinput \fi
 
+\loadcorefile{catc-xml}
 \loadcorefile{xtag-ini}
 \loadcorefile{xtag-ext}
 \loadcorefile{xtag-exp}

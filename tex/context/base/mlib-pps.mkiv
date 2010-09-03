@@ -43,11 +43,7 @@
 \def\MPLIBsettext#1% #2%
   {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
 
-% \def\MPLIBgettextscaled#1#2#3%  why a copy
-%   {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}% \black has no use here (applied to box)
-%    \vbox to \zeropoint{\vss\hbox to \zeropoint{\black\scale[sx=#2,sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\hss}}}
-
-\def\MPLIBgettextscaled#1#2#3%  why a copy
+\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
   {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}% we need the colorhack or else the color backend does not sync
    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
 
@@ -55,20 +51,3 @@
   {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
 
 \protect \endinput
-
-% \def\MPLIBsettext#1% #2% we could as well store in hlists at the lua end i.e. just one box
-% {\global\setbox#1\hbox}
-%
-% \def\MPLIBfreetext#1%
-%   {\global\setbox#1\emptybox}
-%
-% \def\MPLIBgettextscaled#1#2#3%  why a copy
-%   {\vbox to \zeropoint{\vss\hbox to \zeropoint{\black\scale[sx=#2,sy=#3]{\raise\dp#1\copy#1}\hss}}}
-%
-% \def\MPLIBallocate#1%
-%   {\newbox\MPLIBfirst
-%    \dorecurse{\numexpr#1-1\relax}{\let\MPLIBlast\relax\newbox\MPLIBlast}%
-%    \MPLIBregister}
-%
-% \def\MPLIBregister % after allocate!
-%   {\ctxlua{metapost.first_box, metapost.last_box = \number\MPLIBfirst, \number\MPLIBlast}}

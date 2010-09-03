@@ -28,7 +28,7 @@ local mkdirs, isdir = dir.mkdirs, lfs.isdir
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
-local report_cache      = logs.new("cache")
+local report_cache     = logs.new("cache")
 local report_resolvers = logs.new("resolvers")
 
 local resolvers = resolvers
@@ -51,12 +51,12 @@ local writable, readables, usedreadables = nil, { }, { }
 local function identify()
     -- Combining the loops makes it messy. First we check the format cache path
     -- and when the last component is not present we try to create it.
-    local texmfcaches = resolvers.clean_path_list("TEXMFCACHE")
+    local texmfcaches = resolvers.cleanpathlist("TEXMFCACHE")
     if texmfcaches then
         for k=1,#texmfcaches do
             local cachepath = texmfcaches[k]
             if cachepath ~= "" then
-                cachepath = resolvers.clean_path(cachepath)
+                cachepath = resolvers.cleanpath(cachepath)
                 cachepath = file.collapse_path(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
@@ -90,7 +90,7 @@ local function identify()
             local cachepath = texmfcaches[k]
             cachepath = resolvers.getenv(cachepath)
             if cachepath ~= "" then
-                cachepath = resolvers.clean_path(cachepath)
+                cachepath = resolvers.cleanpath(cachepath)
                 local valid = isdir(cachepath)
                 if valid and file.is_readable(cachepath) then
                     if not writable and file.is_writable(cachepath) then
@@ -112,7 +112,7 @@ local function identify()
         os.exit()
     end
     -- why here
-    writable = dir.expandname(resolvers.clean_path(writable)) -- just in case
+    writable = dir.expandname(resolvers.cleanpath(writable)) -- just in case
     -- moved here
     local base, more, tree = caches.base, caches.more, caches.tree or caches.treehash() -- we have only one writable tree
     if tree then
@@ -277,8 +277,8 @@ function caches.savedata(filepath,filename,data,raw)
     else
         table.tofile(tmaname, data,'return',false,true,false) -- maybe not the last true
     end
-    local cleanup = resolvers.boolean_variable("PURGECACHE", false)
-    local strip = resolvers.boolean_variable("LUACSTRIP", true)
+    local cleanup = resolvers.booleanvariable("PURGECACHE", false)
+    local strip = resolvers.booleanvariable("LUACSTRIP", true)
     utilities.lua.compile(tmaname, tmcname, cleanup, strip)
 end
 
@@ -356,5 +356,3 @@ function caches.savecontent(cachename,dataname,content)
         report_resolvers("unable to save '%s' in '%s' (access error)",dataname,luaname)
     end
 end
-
-

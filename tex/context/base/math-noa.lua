@@ -131,7 +131,7 @@ local function report_remap(tag,id,old,new,extra)
 end
 
 local remapalphabets = mathematics.remapalphabets
-local fcs = fonts.color.set
+local fcs = fonts.colors.set
 
 -- we can have a global famdata == fonts.famdata and chrdata == fonts.chrdata
 

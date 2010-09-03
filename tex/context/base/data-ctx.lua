@@ -12,7 +12,7 @@ local report_resolvers = logs.new("resolvers")
 
 local resolvers = resolvers
 
-function resolvers.save_used_files_in_trees()
+local function saveusedfilesin_trees()
     local jobname = environment.jobname
     if not jobname or jobname == "" then jobname = "luatex" end
     local filename = file.replacesuffix(jobname,'jlg')
@@ -40,4 +40,4 @@ function resolvers.save_used_files_in_trees()
     end
 end
 
-directives.register("system.dumpfiles", function() resolvers.save_used_files_in_trees() end)
+directives.register("system.dumpfiles", function() saveusedfilesintrees() end)

@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
     license   = "see context related readme files"
 }
 
-local tostring, format, rep = tostring, string.rep, string.format
+local next, tostring = next, tostring
+local rep, format = string.rep, string.format
 local texcount = tex.count
 
 local backends, lpdf = backends, lpdf
@@ -24,24 +25,20 @@ local constants = interfaces.constants
 
 local settings_to_array = utilities.parsers.settings_to_array
 
-local nodeinjections = backends.pdf.nodeinjections
-local codeinjections = backends.pdf.codeinjections
-local registrations  = backends.pdf.registrations
+local nodeinjections      = backends.pdf.nodeinjections
+local codeinjections      = backends.pdf.codeinjections
+local registrations       = backends.pdf.registrations
 
-local javascriptcode = interactions.javascripts.code
+local javascriptcode      = interactions.javascripts.code
 
-local references     = structures.references
-local bookmarks      = structures.bookmarks
+local references          = structures.references
+local bookmarks           = structures.bookmarks
+local references          = structures.references
 
-references.runners   = references.runners   or { }
-references.specials  = references.specials  or { }
-references.handlers  = references.handlers  or { }
-references.executers = references.executers or { }
-
-local runners   = references.runners
-local specials  = references.specials
-local handlers  = references.handlers
-local executers = references.executers
+local runners             = references.runners
+local specials            = references.specials
+local handlers            = references.handlers
+local executers           = references.executers
 
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
@@ -49,14 +46,20 @@ local pdfreference        = lpdf.reference
 local pdfunicode          = lpdf.unicode
 local pdfconstant         = lpdf.constant
 local pdfflushobject      = lpdf.flushobject
+local pdfshareobjectref   = lpdf.shareobjectreference
+local pdfimmediateobject  = lpdf.immediateobject
 local pdfreserveobject    = lpdf.reserveobject
 local pdfpagereference    = lpdf.pagereference
+
+local pdfregisterannot    = pdf.registerannot
 
 local nodepool            = nodes.pool
 
 local pdfannotation_node  = nodepool.pdfannotation
 local pdfdestination_node = nodepool.pdfdestination
+local latelua_node        = nodepool.latelua
 
+local pdf_annot      = pdfconstant("Annot")
 local pdf_uri        = pdfconstant("URI")
 local pdf_gotor      = pdfconstant("GoToR")
 local pdf_goto       = pdfconstant("GoTo")
@@ -66,6 +69,8 @@ local pdf_link       = pdfconstant("Link")
 local pdf_n          = pdfconstant("N")
 local pdf_t          = pdfconstant("T")
 local pdf_border     = pdfarray { 0, 0, 0 }
+
+local getinnermethod = references.getinnermethod
 
 local cache = { }
 
@@ -77,7 +82,7 @@ local function pagedestination(n) -- only cache fit
                 pdfreference(pdfpagereference(n)),
                 pdfconstant("Fit")
             }
-            pd = pdfreference(pdfflushobject(a))
+            pd = pdfshareobjectref(a)
             cache[n] = pd
         end
         return pd
@@ -85,25 +90,6 @@ local function pagedestination(n) -- only cache fit
 end
 
 lpdf.pagedestination = pagedestination
-
---~ local cache = { }
-
---~ local function gotopagedestination(n) -- could be reference instead
---~     if n > 0 then
---~         local pd = cache[n]
---~         if not pd then
---~             local d = pdfdictionary { -- can be cached
---~                 S = pdf_goto,
---~                 D = pagedestination(p),
---~             }
---~             pd = pdfreference(pdfflushobject(d))
---~             cache[n] = pd
---~         end
---~         return pd
---~     end
---~ end
-
---~ lpdf.gotopagedestination = gotopagedestination
 
 local defaultdestination = pdfarray { 0, pdfconstant("Fit") }
 
@@ -166,11 +152,20 @@ local function link(url,filename,destination,page,actions)
             else
                 texcount.referencepagestate = 1
             end
-        --~ return gotopagedestination(p)
-            return pdfdictionary { -- can be cached
-                S = pdf_goto,
-                D = pagedestination(p),
-            }
+            if p > 0 then
+                --~ return gotopagedestination(p)
+                --~ return pdfdictionary { -- can be cached
+                --~     S = pdf_goto,
+                --~     D = pagedestination(p),
+                --~ }
+                return pdfdictionary { -- can be cached
+                    S = pdf_goto,
+                    D = pdfarray {
+                        pdfreference(pdfpagereference(p)),
+                        pdfconstant("Fit")
+                    }
+                }
+            end
         else
             commands.writestatus("references","invalid page reference: %s",page or "?")
         end
@@ -236,50 +231,87 @@ end
 
 lpdf.action = pdfaction
 
-function codeinjections.prerollreference(actions)
+function codeinjections.prerollreference(actions) -- share can become option
     local main = actions and pdfaction(actions)
     if main then
          main = pdfdictionary {
             Subtype = pdf_link,
             Border  = pdf_border,
             H       = (not actions.highlight and pdf_n) or nil,
-            A       = main,
+            A       = pdfshareobjectref(main),
             F       = 4, -- print (mandate in pdf/a)
-        --  does not work at all in spite of specification
-        --  OC      = (actions.layer and lpdf.layerreferences[actions.layer]) or nil,
-        --  OC      = backends.pdf.layerreference(actions.layer),
         }
-        return main("A") -- todo: cache this, maybe weak
+        return main("A")
     end
 end
 
--- local cache = { } -- no real gain in thsi
---
--- function codeinjections.prerollreference(actions)
---     local main = actions and pdfaction(actions)
---     if main then
---          main = pdfdictionary {
---             Subtype = pdf_link,
---             Border  = pdf_border,
---             H       = (not actions.highlight and pdf_n) or nil,
---             A       = main,
---         }
---         local cm = cache[main]
---         if not cm then
---             cm = "/A ".. tostring(pdfreference(pdfflushobject(main))
---             cache[main] = cm
---         end
---         return cm
---     end
--- end
+local shareannotations   experiments.register("backend.shareannotations",function() shareannotations = true end)
 
-function nodeinjections.reference(width,height,depth,prerolled)
-    if prerolled then
-        if trace_references then
-            report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+if not shareannotations then
+
+    function nodeinjections.reference(width,height,depth,prerolled) -- keep this one
+        if prerolled then
+            if trace_references then
+                report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+            end
+            return pdfannotation_node(width,height,depth,prerolled)
         end
-        return pdfannotation_node(width,height,depth,prerolled)
     end
+
+else
+
+    local delayed = { }
+    local hashed  = { }
+    local sharing = true -- we can do this for special refs (so we need an extra argument)
+
+    local function flush()
+        local n = 0
+        for k,v in next, delayed do
+            pdfimmediateobject(k,v)
+            n = n + 1
+        end
+        if trace_references then
+            report_references("%s annotations flushed",n)
+        end
+        delayed = { }
+    end
+
+    lpdf.registerpagefinalizer    (flush,3,"annotations") -- somehow this lags behind .. I need to look into that some day
+    lpdf.registerdocumentfinalizer(flush,3,"annotations") -- so we need a final flush too
+
+    local factor = number.dimenfactors.bp
+
+    function codeinjections.finishreference(width,height,depth,prerolled)
+        local h, v = pdf.h, pdf.v
+        local llx, lly = h*factor, (v - depth)*factor
+        local urx, ury = (h + width)*factor, (v + height)*factor
+        local annot = format("<< /Type /Annot %s /Rect [%s %s %s %s] >>",prerolled,llx,lly,urx,ury)
+        local n = sharing and hashed[annot]
+        if not n then
+            n = pdfreserveobject() -- todo: share
+            delayed[n] = annot
+--~ n = pdf.obj(annot)
+--~ pdf.refobj(n)
+            if sharing then
+                hashed[annot] = n
+            end
+        end
+        pdfregisterannot(n)
+    end
+
+    _bpnf_ = codeinjections.finishreference
+
+    function nodeinjections.reference(width,height,depth,prerolled)
+        if prerolled then
+            if trace_references then
+                report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+            end
+--~             local luacode = format("backends.pdf.codeinjections.finishreference(%s,%s,%s,'%s')",width,height,depth,prerolled)
+            local luacode = format("_bpnf_(%s,%s,%s,'%s')",width,height,depth,prerolled)
+            return latelua_node(luacode)
+        end
+    end
+
 end
 
 function nodeinjections.destination(width,height,depth,name,view)
@@ -291,15 +323,15 @@ end
 
 -- runners and specials
 
-local method = "internal"
-
 runners["inner"] = function(var,actions)
-    if method == "internal" then
+    if getinnermethod() == "names" then
         local vir = var.i.references
         local internal = vir and vir.internal
         if internal then
             var.inner = "aut:"..internal
         end
+    else
+        var.inner = nil
     end
     return link(nil,nil,var.inner,var.r,actions)
 end
@@ -362,7 +394,7 @@ function specials.internal(var,actions) -- better resolve in strc-ref
     local v = references.internals[i]
     if not v then
         -- error
-    elseif method == "internal" then
+    elseif getinnermethod() == "names" then
         -- named
         return link(nil,nil,"aut:"..i,v.references.realpage,actions)
     else

@@ -6868,12 +6868,6 @@
         <cd:parameter name="altezza">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
-        <cd:parameter name="voffset">
-          <cd:constant type="cd:dimension"/>
-        </cd:parameter>
-        <cd:parameter name="hoffset">
-          <cd:constant type="cd:dimension"/>
-        </cd:parameter>
         <cd:parameter name="pagina">
           <cd:constant type="sinistra"/>
           <cd:constant type="si"/>

@@ -19,7 +19,7 @@ local enc = fonts.enc
 enc.version = 1.03
 enc.cache   = containers.define("fonts", "enc", fonts.enc.version, true)
 
-enc.known = { -- sort of obsolete
+enc.known = utilities.storage.allocate { -- sort of obsolete
     texnansi = true,
     ec       = true,
     qx       = true,
@@ -66,7 +66,7 @@ function enc.load(filename)
         return data
     end
     local vector, tag, hash, unicodes = { }, "", { }, { }
-    local foundname = resolvers.find_file(filename,'enc')
+    local foundname = resolvers.findfile(filename,'enc')
     if foundname and foundname ~= "" then
         local ok, encoding, size = resolvers.loadbinfile(foundname)
         if ok and encoding then
@@ -91,11 +91,11 @@ function enc.load(filename)
         end
     end
     local data = {
-        name=name,
-        tag=tag,
-        vector=vector,
-        hash=hash,
-        unicodes=unicodes
+        name     = name,
+        tag      = tag,
+        vector   = vector,
+        hash     = hash,
+        unicodes = unicodes
     }
     return containers.write(enc.cache, name, data)
 end

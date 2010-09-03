@@ -370,7 +370,7 @@
 
 \unexpanded\def\fullstructureheadnumber
   {\edef\currentstructureheadlabeltag{\currentstructureblock\c!label}%
-   \dostarttagged\t!structurenumber\empty
+   \dostarttagged\t!sectionnumber\empty
    \labeltexts{\structureheadparameter\currentstructureheadlabeltag}{\structurenumber}%
    \dostoptagged}
 
@@ -378,7 +378,7 @@
 % \unexpanded\def\fullstructureheadtitle{\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}
 
 \unexpanded\def\fullstructureheadtitle
-  {\dostarttagged\t!structuretitle\empty
+  {\dostarttagged\t!sectiontitle\empty
    \ctxlua{structures.sections.title()}%
    \dostoptagged}
 
@@ -536,7 +536,7 @@
    \flushingcolumnfloatstrue
    \setfalse\ignorehandlepagebreak
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
-   \dostarttagged\t!structurecontent\empty
+   \dostarttagged\t!sectioncontent\empty
    \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
      \ignorespaces
    \else
@@ -589,7 +589,7 @@
   {\docheckstructureheadbefore
    \dohandlestructureheadpagebreak
    \structureheadparameter\c!inbetween
-   \dostarttagged\t!structure\currentstructurehead}
+   \dostarttagged\t!section\currentstructurehead}
 
 \def\dostructureheadspacingbeforenop
   {\docheckstructureheadbefore

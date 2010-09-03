@@ -32,15 +32,15 @@ of the specifier.</p>
 --ldx]]--
 
 local fonts              = fonts
-local define             = fonts.define
-local specify            = define.specify
+local definers           = fonts.definers
+local specifiers         = definers.specifiers
 local normalize_meanings = fonts.otf.meanings.normalize
 
 local list = { }
 
-specify.colonized_default_lookup = "file"
+specifiers.colonizedpreference = "file"
 
-local function issome ()    list.lookup = specify.colonized_default_lookup end
+local function issome ()    list.lookup = specifiers.colonizedpreference end
 local function isfile ()    list.lookup = 'file' end
 local function isname ()    list.lookup = 'name' end
 local function thename(s)   list.name   = s end
@@ -97,6 +97,4 @@ local function colonized(specification) -- xetex mode
     return specification
 end
 
-specify.colonized = colonized
-
-define.register_split(":",colonized)
+definers.registersplit(":",colonized)

@@ -60,12 +60,16 @@
       #2]%
    \setuvalue{#1}{\dohandlemarginline{#1}}}
 
-\def\marginlineparameter  #1{\csname\??im\??im\currentmarginline#1\endcsname}
-\def\marginlineexecuter #1#2{\executeifdefined{\??im\??im\currentmarginline#1}{#2}}
+\def\marginlineparameter#1{\csname\??im\??im\currentmarginline#1\endcsname}
 
-\def\dohandlemarginline#1% #2
+\def\marginlineexecuter#1#2%
+  {\dostarttagged\t!margintext\currentmarginline
+   \executeifdefined{\??im\??im\currentmarginline#1}{#2}%
+   \dostoptagged}
+
+\def\dohandlemarginline#1%#2%
   {\def\currentmarginline{#1}%
-   \csname\s!do\??im\??im\executeifdefined{\??im\??im#1\c!location}\v!left\endcsname{#1}} % {#2}
+   \csname\s!do\??im\??im\executeifdefined{\??im\??im#1\c!location}\v!left\endcsname{#1}}% {#2}
 
 \def\doleftmarginline#1#2% #1 is redundant (we can remove it when we group dohandlemarginline; maybe ...
   {\pushindentation
@@ -284,7 +288,9 @@
       \@@imbefore
       \dostartattributes{\??im\margincontenttag}\c!style\c!color\empty
         \dosetupstrut[\margincontentstrut]% was: \setstrut % yes or no
+        \dostarttagged\t!margintextblock\currentmargincontent % margincontenttag
         \begstrut#3\endstrut\endgraf
+        \dostoptagged
         \xdef\margincontentstrutheight{\the\strutht}% so that it's known outside the framed
       \dostopattributes
       \@@imafter}%
@@ -676,7 +682,7 @@
      \noexpand \doinmargin[\executeifdefined{\??im\margincontenttag\c!location}\@@imlocation][\v!normal][\margincontenttag][\margincontenttag][#2]%
    \to \collectedmargintexts
    \doglobal \appendtoks
-     {#3}%
+     {#3}% argument to previously appended \doinmargin
    \to \collectedmargintexts}
 
 \def\doflushmargincontents % plural

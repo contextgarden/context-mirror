@@ -121,7 +121,7 @@ local function readfilename(specification,backtrack,treetoo)
             end
         end
         if not fnd and treetoo then
---~             fnd = resolvers.find_file(filename)
+--~             fnd = resolvers.findfile(filename)
             fnd = resolvers.findtexfile(filename)
         end
         found[specification] = fnd

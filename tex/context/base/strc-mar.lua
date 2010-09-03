@@ -7,8 +7,6 @@ if not modules then modules = { } end modules ['strc-mar'] = {
 }
 
 local structures = structures
-
-structures.marks = structures.marks or { }
 local marks      = structures.marks
 local lists      = structures.lists
 

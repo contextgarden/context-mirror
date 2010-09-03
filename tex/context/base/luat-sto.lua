@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['luat-sto'] = {
     license   = "see context related readme files"
 }
 
-local type, next = type, next
+local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
 local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
 
 local report_storage = logs.new("storage")
@@ -25,8 +25,21 @@ storage.max        = storage.min - 1
 storage.noftables  = storage.noftables or 0
 storage.nofmodules = storage.nofmodules or 0
 
+storage.mark       = utilities.storage.mark
+storage.allocate   = utilities.storage.allocate
+storage.marked     = utilities.storage.marked
+
 function storage.register(...)
-    data[#data+1] = { ... }
+    local t = { ... }
+    local d = t[2]
+    if d then
+        storage.mark(d)
+    else
+        report_storage("fatal error: invalid storage '%s'",t[1])
+        os.exit()
+    end
+    data[#data+1] = t
+    return t
 end
 
 -- evaluators .. messy .. to be redone
@@ -140,3 +153,11 @@ storage.shared = storage.shared or { }
 -- (non table) values.
 
 storage.register("storage/shared", storage.shared, "storage.shared")
+
+local mark  = storage.mark
+
+if string.patterns     then                               mark(string.patterns)     end
+if lpeg.patterns       then                               mark(lpeg.patterns)       end
+if os.env              then                               mark(os.env)              end
+if number.dimenfactors then                               mark(number.dimenfactors) end
+if libraries           then for k,v in next, libraries do mark(v)                   end end

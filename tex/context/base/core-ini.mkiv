@@ -56,11 +56,4 @@
 %appendtoks \setlastlinewidth            \to \everyendofpar % gone, will be done in lua
 \appendtoks \endgraf                     \to \everyendofpar
 
-% Todo: verbatim, xml, tex, move code to here
-
-\ifx\normalcompound\undefined \let\normalcompound=| \fi
-
-\appendtoks \catcode`|=\@@active \let|\normalcompound \to \everyTEXinputmode
-\appendtoks \catcode`|=\@@letter                      \to \everyXMLinputmode
-
 \protect \endinput

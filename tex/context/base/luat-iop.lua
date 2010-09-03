@@ -13,10 +13,12 @@ if not modules then modules = { } end modules ['luat-iop'] = {
 
 local lower, find, sub = string.lower, string.find, string.sub
 
+local allocate = utilities.storage.allocate
+
 local ioinp = io.inp if not ioinp then ioinp = { } io.inp = ioinp end
 local ioout = io.out if not ioout then ioout = { } io.out = ioout end
 
-ioinp.modes, ioout.modes = { }, { }  -- functions
+ioinp.modes, ioout.modes = allocate(), allocate()
 
 local inp_blocked, inp_permitted = { }, { }
 local out_blocked, out_permitted = { }, { }
@@ -104,12 +106,12 @@ function ioinp.modes.paranoid()
     i_inhibit('%.%.')
     i_permit('^%./')
     i_permit('[^/]')
-    resolvers.do_with_path('TEXMF',i_permit)
+    resolvers.dowithpath('TEXMF',i_permit)
 end
 
 function ioout.modes.paranoid()
     o_inhibit('.*')
-    resolvers.do_with_path('TEXMFOUTPUT',o_permit)
+    resolvers.dowithpath('TEXMFOUTPUT',o_permit)
 end
 
 -- handy

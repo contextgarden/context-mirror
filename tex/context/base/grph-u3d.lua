@@ -15,7 +15,6 @@ local report_graphics = logs.new("graphics")
 local figures = figures
 
 local nodeinjections  = backends.nodeinjections
-local pdfannotation   = nodepool.pdfannotation
 local todimen         = string.todimen
 
 -- maybe todo: backends.codeinjections.insertu3d

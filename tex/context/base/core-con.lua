@@ -18,11 +18,12 @@ local utf = unicode.utf8
 
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, format, rep = string.lower, string.format, string.rep
-local texsprint, utfchar = tex.sprint, utf.char
+local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
-local settings_to_array = utilities.parsers.settings_to_array
 
-local ctxcatcodes = tex.ctxcatcodes
+local settings_to_array = utilities.parsers.settings_to_array
+local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local allocate = utilities.storage.allocate
 
 converters       = converters or { }
 local converters = converters
@@ -56,7 +57,9 @@ end
 --~         0x06F5, 0x06F6, 0x06F7, 0x06F8, 0x06F9
 --~     },
 
-languages.counters = {
+-- to be reconsidered ... languages namespace here, might become local plus a register command
+
+languages.counters = allocate {
     ['**'] = {
         0x0061, 0x0062, 0x0063, 0x0064, 0x0065,
         0x0066, 0x0067, 0x0068, 0x0069, 0x006A,
@@ -134,13 +137,13 @@ languages.counters = {
 
 local counters = languages.counters
 
-counters['ar']      = counters['arabic']
-counters['gr']      = counters['greek']
-counters['g']       = counters['greek']
-counters['sl']      = counters['slovenian']
-counters['kr']      = counters['korean']
-counters['kr-p']    = counters['korean-parent']
-counters['kr-c']    = counters['korean-circle']
+counters['ar']   = counters['arabic']
+counters['gr']   = counters['greek']
+counters['g']    = counters['greek']
+counters['sl']   = counters['slovenian']
+counters['kr']   = counters['korean']
+counters['kr-p'] = counters['korean-parent']
+counters['kr-c'] = counters['korean-circle']
 
 local fallback = utf.byte('0')
 

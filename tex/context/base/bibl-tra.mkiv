@@ -804,6 +804,8 @@
 \def\bibinsertcrossref#1#2#3%
   {\bibdoifelse\@@pb@crossref{#1\cite[\@@pb@crossref]#2}{#3}}
 
+\let\insertcrossref\gobblethreearguments
+
 \appendtoks\let\insertcrossref\bibinsertcrossref\to\initializebibdefinitions
 
 %D The next macro is needed because the number command of the

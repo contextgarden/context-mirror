@@ -34,10 +34,14 @@ fonts.afm   = fonts.afm or { }
 local afm   = fonts.afm
 local tfm   = fonts.tfm
 
-afm.version          = 1.402 -- incrementing this number one up will force a re-cache
-afm.syncspace        = true  -- when true, nicer stretch values
-afm.enhance_data     = true  -- best leave this set to true
-afm.cache            = containers.define("fonts", "afm", afm.version, true)
+afm.version         = 1.402 -- incrementing this number one up will force a re-cache
+afm.syncspace       = true  -- when true, nicer stretch values
+afm.addligatures    = true  -- best leave this set to true
+afm.addtexligatures = true  -- best leave this set to true
+afm.addkerns        = true  -- best leave this set to true
+afm.cache           = containers.define("fonts", "afm", afm.version, true)
+
+local definers = fonts.definers
 
 local afmfeatures = {
     aux     = { },
@@ -260,11 +264,11 @@ by adding ligatures and kern information to the afm derived data. That
 way we can set them faster when defining a font.</p>
 --ldx]]--
 
-local add_kerns, add_ligatures, unify -- we will implement these later
+local addkerns, addligatures, unify -- we will implement these later
 
 function afm.load(filename)
     -- hm, for some reasons not resolved yet
-    filename = resolvers.find_file(filename,'afm') or ""
+    filename = resolvers.findfile(filename,'afm') or ""
     if filename ~= "" then
         local name = file.removesuffix(file.basename(filename))
         local data = containers.read(afm.cache,name)
@@ -272,9 +276,9 @@ function afm.load(filename)
         local size, time = attr.size or 0, attr.modification or 0
         --
         local pfbfile = file.replacesuffix(name,"pfb")
-        local pfbname = resolvers.find_file(pfbfile,"pfb") or ""
+        local pfbname = resolvers.findfile(pfbfile,"pfb") or ""
         if pfbname == "" then
-            pfbname = resolvers.find_file(file.basename(pfbfile),"pfb") or ""
+            pfbname = resolvers.findfile(file.basename(pfbfile),"pfb") or ""
         end
         local pfbsize, pfbtime = 0, 0
         if pfbname ~= "" then
@@ -294,16 +298,20 @@ function afm.load(filename)
                 end
                 report_afm( "unifying %s",filename)
                 unify(data,filename)
-                if afm.enhance_data then
+                if afm.addligatures then
                     report_afm( "add ligatures")
-                    add_ligatures(data,'ligatures') -- easier this way
+                    addligatures(data,'ligatures') -- easier this way
+                end
+                if afm.addtexligatures then
                     report_afm( "add tex-ligatures")
-                    add_ligatures(data,'texligatures') -- easier this way
+                    addligatures(data,'texligatures') -- easier this way
+                end
+                if afm.addkerns then
                     report_afm( "add extra kerns")
-                    add_kerns(data) -- faster this way
+                    addkerns(data) -- faster this way
                 end
                 report_afm( "add tounicode data")
-                fonts.map.add_to_unicode(data,filename)
+                fonts.map.addtounicode(data,filename)
                 data.size = size
                 data.time = time
                 data.pfbsize = pfbsize
@@ -323,7 +331,7 @@ end
 unify = function(data, filename)
     local unicodevector = fonts.enc.load('unicode').hash
     local glyphs, indices, unicodes, names = { }, { }, { }, { }
-    local verbose, private = fonts.verbose, fonts.private
+    local verbose, private = fonts.verbose, fonts.privateoffset
     for name, blob in next, data.characters do
         local code = unicodevector[name] -- or characters.name_to_unicode[name]
         if not code then
@@ -370,7 +378,7 @@ end
 and extra kerns. This saves quite some lookups later.</p>
 --ldx]]--
 
-add_ligatures = function(afmdata,ligatures)
+addligatures = function(afmdata,ligatures)
     local glyphs, luatex = afmdata.glyphs, afmdata.luatex
     local indices, unicodes, names = luatex.indices, luatex.unicodes, luatex.names
     for k,v in next, characters[ligatures] do -- main characters table
@@ -398,7 +406,7 @@ end
 them selectively.</p>
 --ldx]]--
 
-add_kerns = function(afmdata)
+addkerns = function(afmdata)
     local glyphs = afmdata.glyphs
     local names = afmdata.luatex.names
     local uncomposed = characters.uncomposed
@@ -458,7 +466,7 @@ end
 -- once we have otf sorted out (new format) we can try to make the afm
 -- cache similar to it (similar tables)
 
-local function add_dimensions(data) -- we need to normalize afm to otf i.e. indexed table instead of name
+local function adddimensions(data) -- we need to normalize afm to otf i.e. indexed table instead of name
     if data then
         for index, glyph in next, data.glyphs do
             local bb = glyph.boundingbox
@@ -496,7 +504,7 @@ local function copytotfm(data)
                 characters[u] = { }
                 descriptions[u] = d
             end
-            local filename = fonts.tfm.checked_filename(luatex) -- was metadata.filename
+            local filename = fonts.tfm.checkedfilename(luatex) -- was metadata.filename
             local fontname = metadata.fontname or metadata.fullname
             local fullname = metadata.fullname or metadata.fontname
             local endash, emdash, spacer, spaceunits = unicodes['space'], unicodes['emdash'], "space", 500
@@ -671,10 +679,10 @@ local function setfeatures(tfmdata)
 end
 
 local function checkfeatures(specification)
-    local features, done = fonts.define.check(specification.features.normal,afmfeatures.default)
+    local features, done = definers.check(specification.features.normal,afmfeatures.default)
     if done then
         specification.features.normal = features
-        tfm.hash_instance(specification,true)
+        tfm.hashinstance(specification,true)
     end
 end
 
@@ -697,14 +705,14 @@ local function afmtotfm(specification)
         return nil
     else
         checkfeatures(specification)
-        specification = fonts.define.resolve(specification) -- new, was forgotten
+        specification = definers.resolve(specification) -- new, was forgotten
         local features = specification.features.normal
         local cache_id = specification.hash
         local tfmdata  = containers.read(tfm.cache, cache_id) -- cache with features applied
         if not tfmdata then
             local afmdata = afm.load(afmname)
             if afmdata and next(afmdata) then
-                add_dimensions(afmdata)
+                adddimensions(afmdata)
                 tfmdata = copytotfm(afmdata)
                 if tfmdata and next(tfmdata) then
                     local shared = tfmdata.shared
@@ -731,23 +739,23 @@ those cases, but now that we can handle <l n='opentype'/> directly we no longer
 need this features.</p>
 --ldx]]--
 
-tfm.default_encoding = 'unicode'
-
-function tfm.set_normal_feature(specification,name,value)
-    if specification and name then
-        local features = specification.features
-        if not features then
-            features = { }
-            specification.features = features
-        end
-        local normalfeatures = features.normal
-        if normalfeatures then
-            normalfeatures[name] = value
-        else
-            features.normal = { [name] = value }
-        end
-    end
-end
+-- tfm.default_encoding = 'unicode'
+--
+-- function tfm.setnormalfeature(specification,name,value)
+--     if specification and name then
+--         local features = specification.features
+--         if not features then
+--             features = { }
+--             specification.features = features
+--         end
+--         local normalfeatures = features.normal
+--         if normalfeatures then
+--             normalfeatures[name] = value
+--         else
+--             features.normal = { [name] = value }
+--         end
+--     end
+-- end
 
 function tfm.read_from_afm(specification)
     local tfmtable = afmtotfm(specification)

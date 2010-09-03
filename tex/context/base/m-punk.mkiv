@@ -95,7 +95,7 @@ function metapost.characters.process(mpxformat, name, instances, scalefactor)
     if not lists then
         statistics.starttiming(flusher)
         -- we can use a format per font
-        local data = io.loaddata(resolvers.find_file(name))
+        local data = io.loaddata(resolvers.findfile(name))
         metapost.reset(mpxformat)
         metapost.setoutercolor(2) -- no outer color and no reset either
         lists = { }
@@ -163,16 +163,16 @@ function fonts.vf.aux.combine.commands.metafont(g,v)
     g.variants = list
 end
 
-fonts.define.methods.install( "punk", {
+fonts.definers.methods.install( "punk", {
     { "metafont", "mfplain", "punkfont.mp", 10 },
 } )
-fonts.define.methods.install( "punkbold", {
+fonts.definers.methods.install( "punkbold", {
     { "metafont", "mfplain", "punkfont-bold.mp", 10 },
 } )
-fonts.define.methods.install( "punkslanted", {
+fonts.definers.methods.install( "punkslanted", {
     { "metafont", "mfplain", "punkfont-slanted.mp", 10 },
 } )
-fonts.define.methods.install( "punkboldslanted", {
+fonts.definers.methods.install( "punkboldslanted", {
     { "metafont", "mfplain", "punkfont-boldslanted.mp", 10 },
 } )
 

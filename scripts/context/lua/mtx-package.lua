@@ -13,7 +13,7 @@ messages        = messages        or { }
 scripts.package = scripts.package or { }
 
 function scripts.package.merge_luatex_files(name,strip)
-    local oldname = resolvers.find_file(name) or ""
+    local oldname = resolvers.findfile(name) or ""
     oldname = file.replacesuffix(oldname,"lua")
     if oldname == "" then
         logs.simple("missing '%s'",name)
@@ -31,7 +31,7 @@ function scripts.package.merge_luatex_files(name,strip)
             -- loadmodule can have extra arguments
             for lib in gmatch(data,"loadmodule *%([\'\"](.-)[\'\"]") do
                 if file.basename(lib) ~= file.basename(newname) then
-                    local fullname = resolvers.find_file(lib) or ""
+                    local fullname = resolvers.findfile(lib) or ""
                     if fullname == "" then
                         logs.simple("missing '%s'",lib)
                     else

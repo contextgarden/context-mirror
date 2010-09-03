@@ -29,7 +29,7 @@ local pdffinishtransparencycode = lpdf.finishtransparencycode
 metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf
 
-mptopdf.n        = 0
+mptopdf.nofconverted = 0
 
 local m_path, m_stack, m_texts, m_version, m_date, m_shortcuts = { }, { }, { }, 0, 0, false
 
@@ -118,8 +118,7 @@ end
 
 -- mp interface
 
-metapost.mps = metapost.mps or { }
-local mps    = metapost.mps or { }
+local mps = { }
 
 function mps.creator(a, b, c)
     m_version = tonumber(b)
@@ -533,8 +532,8 @@ function mptopdf.convertmpstopdf(name)
     if ok then
         mps.colormodel = tex.attribute[a_colorspace]
         statistics.starttiming(mptopdf)
-        mptopdf.n = mptopdf.n + 1
-        pdfcode(format("\\letterpercent\\space mptopdf begin: n=%s, file=%s",mptopdf.n,file.basename(name)))
+        mptopdf.nofconverted = mptopdf.nofconverted + 1
+        pdfcode(format("\\letterpercent\\space mptopdf begin: n=%s, file=%s",mptopdf.nofconverted,file.basename(name)))
         pdfcode("q 1 0 0 1 0 0 cm")
         parse(m_data)
         pdfcode(pdffinishtransparencycode())
@@ -551,7 +550,7 @@ end
 -- status info
 
 statistics.register("mps conversion time",function()
-    local n = mptopdf.n
+    local n = mptopdf.nofconverted
     if n > 0 then
         return format("%s seconds, %s conversions", statistics.elapsedtime(mptopdf),n)
     else

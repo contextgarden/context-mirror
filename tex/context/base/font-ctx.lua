@@ -8,8 +8,9 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 -- needs a cleanup: merge of replace, lang/script etc
 
-local texsprint, count, texsetcount = tex.sprint, tex.count, tex.setcount
-local format, concat, gmatch, match, find, lower, gsub, byte = string.format, table.concat, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
+local texsprint, count, texsetcount, write_nl = tex.sprint, tex.count, tex.setcount, texio.write_nl
+local format, gmatch, match, find, lower, gsub, byte = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
+local concat, serialize = table.concat, table.serialize
 local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
 local formatcolumns = utilities.formatters.formatcolumns
 
@@ -27,21 +28,21 @@ local report_define   = logs.new("define fonts")
 local report_usage    = logs.new("fonts usage")
 local report_mapfiles = logs.new("mapfiles")
 
-local fonts    = fonts
-local tfm      = fonts.tfm
-local define   = fonts.define
-local fontdata = fonts.identifiers
-local specify  = define.specify
+local fonts      = fonts
+local tfm        = fonts.tfm
+local fontdata   = fonts.identifiers
+local definers   = fonts.definers
+local specifiers = definers.specifiers
 
-specify.context_setups  = specify.context_setups  or { }
-specify.context_numbers = specify.context_numbers or { }
-specify.context_merged  = specify.context_merged  or { }
-specify.synonyms        = specify.synonyms        or { }
+specifiers.contextsetups  = specifiers.contextsetups  or { }
+specifiers.contextnumbers = specifiers.contextnumbers or { }
+specifiers.contextmerged  = specifiers.contextmerged  or { }
+specifiers.synonyms       = specifiers.synonyms       or { }
 
-local setups   = specify.context_setups
-local numbers  = specify.context_numbers
-local merged   = specify.context_merged
-local synonyms = specify.synonyms
+local setups   = specifiers.contextsetups
+local numbers  = specifiers.contextnumbers
+local merged   = specifiers.contextmerged
+local synonyms = specifiers.synonyms
 local triggers = fonts.triggers
 
 -- Beware, number can be shared between redefind features but as it is
@@ -60,28 +61,25 @@ name*context specification
 </code>
 --ldx]]--
 
-function specify.predefined(specification)
+local function predefined(specification)
     local detail = specification.detail
-    if detail ~= "" then
-    --  detail = gsub(detail,"["..define.splitsymbols.."].*$","") -- get rid of *whatever specs and such
-        if define.methods[detail] then                            -- since these may be appended at the
-            specification.features.vtf = { preset = detail }      -- tex end by default
-        end
+    if detail ~= "" and definers.methods.variants[detail] then
+        specification.features.vtf = { preset = detail }
     end
     return specification
 end
 
-define.register_split("@", specify.predefined)
+definers.registersplit("@", predefined)
 
-storage.register("fonts/setups" ,  define.specify.context_setups , "fonts.define.specify.context_setups" )
-storage.register("fonts/numbers",  define.specify.context_numbers, "fonts.define.specify.context_numbers")
-storage.register("fonts/merged",   define.specify.context_merged,  "fonts.define.specify.context_merged")
-storage.register("fonts/synonyms", define.specify.synonyms,        "fonts.define.specify.synonyms")
+storage.register("fonts/setups" ,  setups ,  "fonts.definers.specifiers.contextsetups" )
+storage.register("fonts/numbers",  numbers,  "fonts.definers.specifiers.contextnumbers")
+storage.register("fonts/merged",   merged,   "fonts.definers.specifiers.contextmerged")
+storage.register("fonts/synonyms", synonyms, "fonts.definers.specifiers.synonyms")
 
 local normalize_meanings = fonts.otf.meanings.normalize
 local default_features   = fonts.otf.features.default
 
-local function preset_context(name,parent,features) -- currently otf only
+local function presetcontext(name,parent,features) -- currently otf only
     if features == "" and find(parent,"=") then
         features = parent
         parent = ""
@@ -133,7 +131,7 @@ local function preset_context(name,parent,features) -- currently otf only
     return number, t
 end
 
-local function context_number(name) -- will be replaced
+local function contextnumber(name) -- will be replaced
     local t = setups[name]
     if not t then
         return 0
@@ -164,7 +162,7 @@ local function context_number(name) -- will be replaced
     end
 end
 
-local function merge_context(currentnumber,extraname,option)
+local function mergecontext(currentnumber,extraname,option)
     local current = setups[numbers[currentnumber]]
     local extra = setups[extraname]
     if extra then
@@ -194,13 +192,13 @@ local function merge_context(currentnumber,extraname,option)
         numbers[number] = mergedname
         merged[number] = option
         setups[mergedname] = mergedfeatures
-        return number -- context_number(mergedname)
+        return number -- contextnumber(mergedname)
     else
         return currentnumber
     end
 end
 
-local function register_context(fontnumber,extraname,option)
+local function registercontext(fontnumber,extraname,option)
     local extra = setups[extraname]
     if extra then
         local mergedfeatures, mergedname = { }, nil
@@ -217,16 +215,16 @@ local function register_context(fontnumber,extraname,option)
         numbers[number] = mergedname
         merged[number] = option
         setups[mergedname] = mergedfeatures
-        return number -- context_number(mergedname)
+        return number -- contextnumber(mergedname)
     else
         return 0
     end
 end
 
-specify.preset_context   = preset_context
-specify.context_number   = context_number
-specify.merge_context    = merge_context
-specify.register_context = register_context
+specifiers.presetcontext   = presetcontext
+specifiers.contextnumber   = contextnumber
+specifiers.mergecontext    = mergecontext
+specifiers.registercontext = registercontext
 
 local current_font  = font.current
 local tex_attribute = tex.attribute
@@ -238,7 +236,7 @@ function fonts.withset(name,what)
     local hash = zero .. "+" .. name .. "*" .. what
     local done = cache[hash]
     if not done then
-        done = merge_context(zero,name,what)
+        done = mergecontext(zero,name,what)
         cache[hash] = done
     end
     tex_attribute[0] = done
@@ -249,25 +247,25 @@ function fonts.withfnt(name,what)
     local hash = font .. "*" .. name .. "*" .. what
     local done = cache[hash]
     if not done then
-        done = register_context(font,name,what)
+        done = registercontext(font,name,what)
         cache[hash] = done
     end
     tex_attribute[0] = done
 end
 
-function specify.show_context(name)
+function specifiers.showcontext(name)
     return setups[name] or setups[numbers[name]] or setups[numbers[tonumber(name)]] or { }
 end
 
 -- todo: support a,b,c
 
-local function split_context(features) -- preset_context creates dummy here
-    return setups[features] or (preset_context(features,"","") and setups[features])
+local function splitcontext(features) -- presetcontext creates dummy here
+    return setups[features] or (presetcontext(features,"","") and setups[features])
 end
 
 --~ local splitter = lpeg.splitat("=")
 
---~ local function split_context(features)
+--~ local function splitcontext(features)
 --~     local setup = setups[features]
 --~     if setup then
 --~         return setup
@@ -299,30 +297,30 @@ end
 --~                 end
 --~             end
 --~         end
---~         setup = merge and preset_context(features,"",merge) and setups[features]
+--~         setup = merge and presetcontext(features,"",merge) and setups[features]
 --~         -- actually we have to nil setups[features] in order to permit redefinitions
 --~         setups[features] = nil
 --~     end
---~     return setup or (preset_context(features,"","") and setups[features]) -- creates dummy
+--~     return setup or (presetcontext(features,"","") and setups[features]) -- creates dummy
 --~ end
 
-specify.split_context = split_context
+specifiers.splitcontext = splitcontext
 
-function specify.context_tostring(name,kind,separator,yes,no,strict,omit) -- not used
+function specifiers.contexttostring(name,kind,separator,yes,no,strict,omit) -- not used
     return hash_to_string(table.merged(fonts[kind].features.default or {},setups[name] or {}),separator,yes,no,strict,omit)
 end
 
-function specify.starred(features) -- no longer fallbacks here
+local function starred(features) -- no longer fallbacks here
     local detail = features.detail
     if detail and detail ~= "" then
-        features.features.normal = split_context(detail)
+        features.features.normal = splitcontext(detail)
     else
         features.features.normal = { }
     end
     return features
 end
 
-define.register_split('*',specify.starred)
+definers.registersplit('*',starred)
 
 -- define (two steps)
 
@@ -346,15 +344,15 @@ local splitpattern = spaces * value * spaces * rest
 
 local specification --
 
-local get_specification = define.get_specification
+local getspecification = definers.getspecification
 
 -- we can make helper macros which saves parsing (but normaly not
 -- that many calls, e.g. in mk a couple of 100 and in metafun 3500)
 
-function define.command_1(str)
+function definers.stage_one(str)
     statistics.starttiming(fonts)
     local fullname, size = lpegmatch(splitpattern,str)
-    local lookup, name, sub, method, detail = get_specification(fullname)
+    local lookup, name, sub, method, detail = getspecification(fullname)
     if not name then
         report_define("strange definition '%s'",str)
         texsprint(ctxcatcodes,"\\fcglet\\somefontname\\defaultfontfile")
@@ -381,20 +379,20 @@ function define.command_1(str)
         count.scaledfontmode = 0
         texsprint(ctxcatcodes,"\\let\\somefontsize\\empty")
     end
-    specification = define.makespecification(str,lookup,name,sub,method,detail,size)
+    specification = definers.makespecification(str,lookup,name,sub,method,detail,size)
 end
 
 local n = 0
 
 -- we can also move rscale to here (more consistent)
 
-function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
+function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
         mathsize,textsize,relativeid,classgoodies,goodies)
     if trace_defining then
         report_define("memory usage before: %s",statistics.memused())
     end
     -- name is now resolved and size is scaled cf sa/mo
-    local lookup, name, sub, method, detail = get_specification(str or "")
+    local lookup, name, sub, method, detail = getspecification(str or "")
     -- asome settings can be overloaded
     if lookup and lookup ~= "" then
         specification.lookup = lookup
@@ -423,7 +421,7 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
     elseif classfallbacks and classfallbacks ~= "" then
         specification.fallbacks = classfallbacks
     end
-    local tfmdata = define.read(specification,size) -- id not yet known
+    local tfmdata = definers.read(specification,size) -- id not yet known
     if not tfmdata then
         report_define("unable to define %s as \\%s",name,cs)
         texsetcount("global","lastfontid",-1)
@@ -441,9 +439,9 @@ function define.command_2(global,cs,str,size,classfeatures,fontfeatures,classfal
         local id = font.define(tfmdata)
     --  print(name,os.clock()-t)
         tfmdata.id = id
-        define.register(tfmdata,id)
+        definers.register(tfmdata,id)
         tex.definefont(global,cs,id)
-        tfm.cleanup_table(tfmdata)
+        tfm.cleanuptable(tfmdata)
         if trace_defining then
             report_define("defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
@@ -466,14 +464,14 @@ experiments.register("fonts.autorscale", function(v)
     enable_auto_r_scale = v
 end)
 
-local calculate_scale = fonts.tfm.calculate_scale
+local calculatescale = fonts.tfm.calculatescale
 
 -- Not ok, we can best use a database for this. The problem is that we
 -- have delayed definitions and so we never know what style is taken
 -- as start.
 
-function fonts.tfm.calculate_scale(tfmtable, scaledpoints, relativeid)
-    local scaledpoints, delta, units = calculate_scale(tfmtable,scaledpoints)
+function fonts.tfm.calculatescale(tfmtable, scaledpoints, relativeid)
+    local scaledpoints, delta, units = calculatescale(tfmtable,scaledpoints)
 --~     if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
 --~         local relativedata = fontdata[relativeid]
 --~         local rfmtable = relativedata and relativedata.unscaled and relativedata.unscaled
@@ -531,7 +529,7 @@ end
 -- for the moment here, this will become a chain of extras that is
 -- hooked into the ctx registration (or scaler or ...)
 
-function fonts.set_digit_width(font) -- max(quad/2,wd(0..9))
+local function digitwidth(font) -- max(quad/2,wd(0..9))
     local tfmtable = fontdata[font]
     local parameters = tfmtable.parameters
     local width = parameters.digitwidth
@@ -549,7 +547,8 @@ function fonts.set_digit_width(font) -- max(quad/2,wd(0..9))
     return width
 end
 
-fonts.get_digit_width = fonts.set_digit_width
+fonts.getdigitwidth = digitwidth
+fonts.setdigitwidth = digitwidth
 
 -- soon to be obsolete:
 
@@ -669,7 +668,7 @@ function fonts.showfontparameters()
     end
 end
 
-function fonts.report_defined_fonts()
+function fonts.reportdefinedfonts()
     if trace_usage then
         local t = { }
         for id, data in table.sortedhash(fonts.ids) do
@@ -699,9 +698,9 @@ function fonts.report_defined_fonts()
     end
 end
 
-luatex.registerstopactions(fonts.report_defined_fonts)
+luatex.registerstopactions(fonts.reportdefinedfonts)
 
-function fonts.report_used_features()
+function fonts.reportusedfeatures()
     -- numbers, setups, merged
     if trace_usage then
         local t = { }
@@ -722,4 +721,4 @@ function fonts.report_used_features()
         end
     end
 end
-luatex.registerstopactions(fonts.report_used_features)
+luatex.registerstopactions(fonts.reportusedfeatures)

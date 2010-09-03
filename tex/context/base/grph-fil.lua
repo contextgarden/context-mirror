@@ -10,36 +10,53 @@ local format, concat = string.format, table.concat
 
 local trace_run = false  trackers.register("files.run",function(v) trace_run = v end)
 
-local command = "context %s"
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+local collected, tobesaved = allocate(), allocate()
 
 local jobfiles = {
-    collected = { },
-    tobesaved = { },
+    collected = collected,
+    tobesaved = tobesaved,
 }
 
 job.files = jobfiles
 
-local tobesaved, collected = jobfiles.tobesaved, jobfiles.collected
-
 local function initializer()
-    tobesaved, collected = jobfiles.tobesaved, jobfiles.collected
+    tobesaved = mark(jobfiles.tobesaved)
+    collected = mark(jobfiles.collected)
 end
 
-job.register('job.files.collected', jobfiles.tobesaved, initializer)
+job.register('job.files.collected', tobesaved, initializer)
 
 jobfiles.forcerun = false
 
-function jobfiles.run(name,...)
+function jobfiles.run(name,command)
     local oldchecksum = collected[name]
     local newchecksum = file.checksum(name)
     if jobfiles.forcerun or not oldchecksum or oldchecksum ~= newchecksum then
         if trace_run then
-            commands.writestatus("buffers","changes in '%s', processing forced",name)
+            commands.writestatus("processing","changes in '%s', processing forced",name)
         end
-        os.execute(format(command,concat({ name, ... }," ")))
+        if command and command ~= "" then
+            os.execute(command)
+        else
+            commands.writestatus("processing","no command given for processing '%s'",name)
+        end
     elseif trace_run then
-        commands.writestatus("buffers","no changes in '%s', not processed",name)
+        commands.writestatus("processing","no changes in '%s', not processed",name)
     end
     tobesaved[name] = newchecksum
-    return file.replacesuffix(name,"pdf")
+end
+
+function jobfiles.context(name,options)
+    if type(name) == "table" then
+        local result = { }
+        for i=1,#name do
+            result[#result+1] = jobfiles.context(name[i],options)
+        end
+        return result
+    else
+        jobfiles.run(name,"context ".. (options or "") .. " " .. name)
+        return file.replacesuffix(name,"pdf")
+    end
 end

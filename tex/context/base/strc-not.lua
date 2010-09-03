@@ -17,9 +17,6 @@ local trace_notes = false  trackers.register("structures.notes", function(v) tra
 local report_notes = logs.new("notes")
 
 local structures = structures
-
-structures.notes = structures.notes or { }
-
 local helpers    = structures.helpers
 local lists      = structures.lists
 local sections   = structures.sections
@@ -169,7 +166,7 @@ local function internal(tag,n)
         if r then
             local i = r.internal
 --~             return i and lists.internals[i]
-            return i and references.internals[i]
+            return i and references.internals[i] -- dependency on references
         end
     end
     return nil
@@ -365,4 +362,12 @@ end
 
 function notes.number(tag,n,spec)
     lists.savedprefixednumber(tag,notedata[tag][n])
+end
+
+function notes.internalid(tag,n)
+    local nd = get(tag,n)
+    if nd then
+        local r = nd.references
+        return r.internal
+    end
 end

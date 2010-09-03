@@ -32,9 +32,10 @@ local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
 local lpegmatch = lpeg.match
 local settings_to_array = utilities.parsers.settings_to_array
+local allocate = utilities.storage.allocate
 
 buffers = {
-    data        = { },
+    data        = allocate(),
     hooks       = { },
     flags       = { },
     commands    = { },
@@ -66,7 +67,7 @@ function buffers.append(name, str)
     data[name] = (data[name] or "") .. str
 end
 
-buffers.flags.store_as_table = true
+buffers.flags.storeastable = true
 
 -- to be sorted out: crlf + \ ; slow now
 
@@ -89,7 +90,7 @@ function buffers.grab(name,begintag,endtag,bufferdata)
             dn = dn .. "\n" .. sub(bufferdata,1,#bufferdata-1)
         end
         dn = gsub(dn,"[\010\013]$","")
-        if flags.store_as_table then
+        if flags.storeastable then
             dn = dn:splitlines()
         end
     end
@@ -105,8 +106,8 @@ function buffers.doifelsebuffer(name)
     commands.testcase(data[name] ~= nil)
 end
 
-flags.optimize_verbatim        = true
-flags.count_empty_lines        = false
+flags.optimizeverbatim        = true
+flags.countemptylines         = false
 
 local no_break_command         = "\\doverbatimnobreak"
 local do_break_command         = "\\doverbatimgoodbreak"
@@ -120,7 +121,7 @@ local begin_of_inline_command  = "\\doverbatimbeginofinline"
 local end_of_inline_command    = "\\doverbatimendofinline"
 
 function buffers.verbatimbreak(n,m)
-    if flags.optimize_verbatim then
+    if flags.optimizeverbatim then
         if n == 2 or n == m then
             texsprint(no_break_command)
         elseif n > 1 then
@@ -265,7 +266,7 @@ function buffers.typeline(str,n,m,line)
         hooks.flush_line(hooks.line(str))
         hooks.end_of_line()
     else
-        if flags.count_empty_lines then
+        if flags.countemptylines then
             line = line + 1
         end
         hooks.empty_line(line)

@@ -327,7 +327,7 @@
 
 \startxmlsetups mml:apply:mml:fn
     \xmldoifelse {#1} {/mml:ci} {
-        \edef\mmlfnci{\xmlcontent{#1}{/mml:ci}}% replaces \XMLfnoperator
+        \edef\mmlfnci{\xmlcontent{#1}{/mml:ci}}%
         \doifsetupselse{mml:fn:\mmlfnci} { % was mmc:fn:...
             \xmlsetup{#1}{mml:fn:\mmlfnci} % \MMLdoL/MMLdoR to be handled in plugin
         } {
@@ -391,12 +391,12 @@
       \let\MMCfnright\relax
     \fi
     \xmldoifelse {#1} {/mml:ci} { % first
-        \edef\mmlfnci{\xmlcontent{#1}{/mml:ci}}% replaces \XMLfnoperator
+        \edef\mmlfnci{\xmlcontent{#1}{/mml:ci}}%
         \doifsetupselse{mml:fn:\mmlfnci} { % was mmc:fn:...
             \xmlsetup{#1}{mml:fn:\mmlfnci} % \MMLdoL/MMLdoR to be handled in plugin
         } {
             \MMLcreset
-            \getXMLstackdata\plusone
+            \mmlfirst{#1}
         }
     } {
         \xmldoifelse {#1} {/mml:apply} { % first
@@ -422,7 +422,7 @@
 
 \startxmlsetups mmc:fn:apply % where used?
     \xmldoifelse {#1} {/mml:ci} { % first
-        \edef\mmlfnci{\xmlcontent{#1}{/mml:ci}}% replaces \XMLfnoperator
+        \edef\mmlfnci{\xmlcontent{#1}{/mml:ci}}%
         \doifsetupselse{mml:fn:\mmlfnci} { % was mmc:fn:...
             \xmlsetup{#1}{mml:fn:\mmlfnci} % \MMLdoL/MMLdoR to be handled in plugin
         } {
@@ -475,22 +475,6 @@
 % \startxmlsetups mml:csymbol:<url> \stopxmlsetups
 
 %D Alternative b will convert periods into comma's:
-%D
-%D \startbuffer
-%D \startXMLdata
-%D <imath><apply><cn>1.23</cn></apply></imath>
-%D <dmath><apply><cn>1.23</cn></apply></dmath>
-%D \stopXMLdata
-%D
-%D \type{\setupMMLappearance[cn] [alternative=b]}
-%D
-%D \startXMLdata
-%D <imath><apply><cn>1.23</cn></apply></imath>
-%D <dmath><apply><cn>1.23</cn></apply></dmath>
-%D \stopXMLdata
-%D \stopbuffer
-%D
-%D \start \typebuffer \getbuffer \stop
 
 \setupMMLappearance[cn]       [\c!alternative=\v!a]
 \setupMMLappearance[polar]    [\c!alternative=\v!a]  % a|b|c
@@ -599,13 +583,11 @@
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:b
-%   {\mr e}^{\xmlsnippet{#1}{1}\mskip2mu\getXMLentity{imaginaryi}}
     {\mr e}^{\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\thinspace{\mr i}}
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:c
-%   \exp\left(\xmlsnippet{#1}{1}\mskip2mu\getXMLentity{imaginaryi}\right)}
-    \exp\left(\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\thinspace\getXMLentity{imaginaryi}\right)
+    \exp\left(\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\thinspace{\mr i}\right)
 \stopxmlsetups
 
 \startxmlsetups mml:cn:complex-polar
@@ -1239,22 +1221,6 @@
 \stopxmlsetups
 
 \setupMMLappearance[diff][\c!location=\v!top,\c!alternative=\v!a]
-
-% \setupMMLappearance[diff][alternative=b]
-%
-% \startXMLdata
-% <math><apply><apply><diff/><bvar><ci>x</ci></bvar><ci>f</ci></apply><ci>a</ci></apply></math>
-% <math><apply><apply><diff/><bvar><ci>x</ci></bvar><degree>2</degree><ci>f</ci></apply><ci>a</ci></apply></math>
-% \stopXMLdata
-
-% d^y/dx^2
-%
-% \startXMLdata
-% <math><apply><diff/>
-%   <bvar><ci>x</ci><cn type="integer">2</cn></bvar>
-%   <lambda><bvar><ci>x</ci></bvar><ci>y</ci></lambda>
-% </apply></math>
-% \stopXMLdata
 
 \startxmlsetups mml:diff
    \MMLcreset
@@ -1987,7 +1953,7 @@
             \frac{\mmlfirst{#1}}{\mmlsecond{#1}}
         }
     \else
-        \doifXMLvalelse {mml:mfrac:linethickness} \mmlfraclinethickness {
+        \doifelse {\xmlval{mml:mfrac:linethickness}{\mmlfraclinethickness}{}} {} {
             \scratchdimen\xmlval{mml:mfrac:linethickness}\mmlfraclinethickness{.4pt}
         } {
             \setdimensionwithunit\scratchdimen\mmlfraclinethickness{pt}
@@ -2296,27 +2262,8 @@
 
 \protect \endinput
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % TODO:
-
-\startmoduletestsection
-
-\def\xflushXMLstackwith#1#2#3#4% num bgroup egroup whatever
-  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
-     {#2\relax
-      \ifnum\recurselevel>#1\relax#4\fi
-      \getXMLstackdata\recurselevel
-      #3}}
-
-\def\xflushXMLstackfrom#1#2#3%
-  {\dostepwiserecurse{#1}\XMLstacklevel\plusone
-     {#2\getXMLstackdata\recurselevel#3}}
-
+%
 % <apply><divide/>
 %     <apply><minus/>
 %         <apply><minus/><ci>b</ci></apply>
@@ -2330,46 +2277,59 @@
 %     </apply>
 % </apply>
 
-\startxmlsetups mml:minus
-    \doif \MMLsignreduction \v!yes {
-        \setMMLcreset{fn,\MMLcfunctionlist}
-    }
-    \ifcase\XMLstacklevel
-    \or
-       % self
-    \or
-       -\getXMLstackdata\plustwo
-    \else
-        \dostepwiserecurse \plustwo \XMLstacklevel \plusone {
-            \begingroup
-            \doifelse {\getXMLstackname\recurselevel} {apply} {
-                \ifnum\recurselevel=\plustwo
-                    \begingroup
-                    \dodoifelseMMCfunctioninapply \recurselevel {minus} {
-                        \ifnum\XMLstacklevel>\plustwo
-                            \endgroup
-                        \else
-                            \endgroup
-                            \MMLcreset
-                        \fi
-                    } {
-                        \endgroup
-                    }
-                \else
-                    \doifelseMMCfunctioninapply \recurselevel {\MMLcfunctionlist,\MMLcconstructlist} {
-                        \MMLcreset
-                    } {
-                    }
-                \fi
-            } {
-            }
-            \getXMLstackdata\recurselevel
-            \ifnum\recurselevel<\XMLstacklevel\relax
-                -
-            \fi
-            \endgroup
-        }
-    \fi
-\stopxmlsetups
-
-\stopmoduletestsection
+% \startmoduletestsection
+%
+% \def\xflushXMLstackwith#1#2#3#4% num bgroup egroup whatever
+%   {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+%      {#2\relax
+%       \ifnum\recurselevel>#1\relax#4\fi
+%       \getXMLstackdata\recurselevel
+%       #3}}
+%
+% \def\xflushXMLstackfrom#1#2#3%
+%   {\dostepwiserecurse{#1}\XMLstacklevel\plusone
+%      {#2\getXMLstackdata\recurselevel#3}}
+%
+% \startxmlsetups mml:minus
+%     \doif \MMLsignreduction \v!yes {
+%         \setMMLcreset{fn,\MMLcfunctionlist}
+%     }
+%     \ifcase\XMLstacklevel
+%     \or
+%        % self
+%     \or
+%        -\getXMLstackdata\plustwo
+%     \else
+%         \dostepwiserecurse \plustwo \XMLstacklevel \plusone {
+%             \begingroup
+%             \doifelse {\getXMLstackname\recurselevel} {apply} {
+%                 \ifnum\recurselevel=\plustwo
+%                     \begingroup
+%                     \dodoifelseMMCfunctioninapply \recurselevel {minus} {
+%                         \ifnum\XMLstacklevel>\plustwo
+%                             \endgroup
+%                         \else
+%                             \endgroup
+%                             \MMLcreset
+%                         \fi
+%                     } {
+%                         \endgroup
+%                     }
+%                 \else
+%                     \doifelseMMCfunctioninapply \recurselevel {\MMLcfunctionlist,\MMLcconstructlist} {
+%                         \MMLcreset
+%                     } {
+%                     }
+%                 \fi
+%             } {
+%             }
+%             \getXMLstackdata\recurselevel
+%             \ifnum\recurselevel<\XMLstacklevel\relax
+%                 -
+%             \fi
+%             \endgroup
+%         }
+%     \fi
+% \stopxmlsetups
+%
+% \stopmoduletestsection

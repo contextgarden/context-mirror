@@ -74,13 +74,13 @@ function scripts.interface.editor(editor)
     if #interfaces == 0 then
         interfaces= userinterfaces
     end
-    local xmlfile = resolvers.find_file("cont-en.xml") or ""
+    local xmlfile = resolvers.findfile("cont-en.xml") or ""
     if xmlfile == "" then
         logs.simple("unable to locate cont-en.xml")
     end
     for i=1,#interfaces do
         local interface = interfaces[i]
-        local keyfile = resolvers.find_file(format("keys-%s.xml",interface)) or ""
+        local keyfile = resolvers.findfile(format("keys-%s.xml",interface)) or ""
         if keyfile == "" then
             logs.simple("unable to locate keys-*.xml")
         else
@@ -117,7 +117,7 @@ function scripts.interface.editor(editor)
 end
 
 function scripts.interface.check()
-    local xmlfile = resolvers.find_file("cont-en.xml") or ""
+    local xmlfile = resolvers.findfile("cont-en.xml") or ""
     if xmlfile ~= "" then
         local f = io.open("cont-en-check.tex","w")
         if f then
@@ -143,12 +143,12 @@ function scripts.interface.check()
 end
 
 function scripts.interface.context()
-    local filename = resolvers.find_file(environment.files[1] or "mult-def.lua") or ""
+    local filename = resolvers.findfile(environment.files[1] or "mult-def.lua") or ""
     if filename ~= "" then
         local interface = dofile(filename)
         if interface and next(interface) then
             local variables, constants, commands, elements = interface.variables, interface.constants, interface.commands, interface.elements
-            local filename = resolvers.find_file("cont-en.xml") or ""
+            local filename = resolvers.findfile("cont-en.xml") or ""
             local xmldata = filename ~= "" and (io.loaddata(filename) or "")
             local function flush(texresult,xmlresult,language,what,tag)
                 local t = interface[what]
@@ -220,7 +220,7 @@ function scripts.interface.context()
 end
 
 function scripts.interface.messages()
-    local filename = resolvers.find_file(environment.files[1] or "mult-mes.lua") or ""
+    local filename = resolvers.findfile(environment.files[1] or "mult-mes.lua") or ""
     if filename ~= "" then
         local messages = dofile(filename)
         logs.simple("messages for * loaded from '%s'",filename)

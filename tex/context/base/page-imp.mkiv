@@ -152,6 +152,8 @@
 \let\pagestoshipout\empty      % {1,3,6}
 \chardef\whichpagetoshipout=0  % 0=all 1=odd 2=even
 
+\newbox\shipoutscratchbox
+
 \def\actualshipout#1%
   {\global\advance\shippedoutpages\plusone
    % this is not resource safe!
@@ -170,6 +172,23 @@
        \donetrue\donefalse
    \fi
    \ifdone
+     \begingroup
+     \setbox\shipoutscratchbox\hbox{#1}% just in case there are objects there, hook for testing
+     \finalizeshipoutbox\shipoutscratchbox
+     \setbox\scratchbox\hbox
+       {% before the main one !
+        \ifcase\realfolio \or
+          \the\everyfirstshipout
+          \global\everyfirstshipout\emptytoks
+        \fi
+        % the main one
+        \the\everyshipout\relax
+        % always last (and after the main one)
+        \ifnum\realpageno=\lastpage\relax
+          \the\everylastshipout
+          \global\everylastshipout\emptytoks
+        \fi}%
+     \smashbox\scratchbox
      \shipout\vbox
        {%\forgetall
         \offinterlineskip
@@ -177,26 +196,11 @@
         \scratchdimen-1in
         \vskip\scratchdimen
         \hskip\scratchdimen
-        \setbox0\hbox{#1}% just in case there are objects there, hook for testing
-        \finalizeshipoutbox0%
-        \setbox\scratchbox\hbox
-          {% before the main one !
-           \ifcase\realfolio \or
-             \the\everyfirstshipout
-             \global\everyfirstshipout\emptytoks
-           \fi
-           % the main one
-           \the\everyshipout\relax
-           % always last (and after the main one)
-           \ifnum\realpageno=\lastpage\relax
-             \the\everylastshipout
-             \global\everylastshipout\emptytoks
-           \fi}%
-        \smashbox\scratchbox
         \hbox % \setbox0=\box.. is nicer
           {\box\scratchbox
            \ifvoid\postponedcontent\else\box\postponedcontent\fi % evt ver naar links !
-           \box0}}%
+           \box\shipoutscratchbox}}%
+     \endgroup
    \else
      \message
        {[\ifarrangingpages arranged \fi page

@@ -12,9 +12,11 @@ local type = type
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local make_settings_to_hash_pattern, settings_to_set = utilities.parsers.make_settings_to_hash_pattern, utilities.parsers.settings_to_set
 
+local allocate = utilities.storage.allocate
+
 interfaces = interfaces or { }
 
-interfaces.syntax = {
+interfaces.syntax = allocate {
     test = { keys = table.tohash { "a","b","c","d","e","f","g" } }
 }
 

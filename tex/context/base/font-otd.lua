@@ -10,23 +10,24 @@ local trace_dynamics = false  trackers.register("otf.dynamics", function(v) trac
 
 local report_otf = logs.new("load otf")
 
-local fonts    = fonts
-local otf      = fonts.otf
-local fontdata = fonts.ids
+local fonts          = fonts
+local otf            = fonts.otf
+local fontdata       = fonts.ids
 
 otf.features         = otf.features         or { }
 otf.features.default = otf.features.default or { }
 
-local context_setups  = fonts.define.specify.context_setups
-local context_numbers = fonts.define.specify.context_numbers
+local definers       = fonts.definers
+local contextsetups  = definers.specifiers.contextsetups
+local contextnumbers = definers.specifiers.contextnumbers
 
 -- todo: dynamics namespace
 
-local a_to_script   = { }  otf.a_to_script   = a_to_script
-local a_to_language = { }  otf.a_to_language = a_to_language
+local a_to_script   = { }
+local a_to_language = { }
 
 function otf.setdynamics(font,dynamics,attribute)
-    local features = context_setups[context_numbers[attribute]] -- can be moved to caller
+    local features = contextsetups[contextnumbers[attribute]] -- can be moved to caller
     if features then
         local script   = features.script   or 'dflt'
         local language = features.language or 'dflt'
@@ -43,7 +44,7 @@ function otf.setdynamics(font,dynamics,attribute)
         local dsla = dsl[attribute]
         if dsla then
         --  if trace_dynamics then
-        --      report_otf("using dynamics %s: attribute %s, script %s, language %s",context_numbers[attribute],attribute,script,language)
+        --      report_otf("using dynamics %s: attribute %s, script %s, language %s",contextnumbers[attribute],attribute,script,language)
         --  end
             return dsla
         else
@@ -63,10 +64,10 @@ function otf.setdynamics(font,dynamics,attribute)
             tfmdata.script   = script
             tfmdata.shared.features = { }
             -- end of save
-            local set = fonts.define.check(features,otf.features.default)
+            local set = definers.check(features,otf.features.default)
             dsla = otf.setfeatures(tfmdata,set)
             if trace_dynamics then
-                report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",context_numbers[attribute],attribute,script,language,table.sequenced(set))
+                report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",contextnumbers[attribute],attribute,script,language,table.sequenced(set))
             end
             -- we need to restore some values
             tfmdata.script          = saved.script
@@ -79,4 +80,12 @@ function otf.setdynamics(font,dynamics,attribute)
         end
     end
     return nil -- { }
+end
+
+function otf.scriptandlanguage(tfmdata,attr)
+    if attr and attr > 0 then
+        return a_to_script[attr] or tfmdata.script, a_to_language[attr] or tfmdata.language
+    else
+        return tfmdata.script, tfmdata.language
+    end
 end

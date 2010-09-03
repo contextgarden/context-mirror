@@ -14,17 +14,19 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 -- helper, will end up in luatex
 
+-- is grouplevel still used?
+
 local cleanupreferences, cleanupdestinations = false, true
 
 local attributes, nodes, node = attributes, nodes, node
 
-local nodeinjections = backends.nodeinjections
-local codeinjections = backends.codeinjections
+local nodeinjections  = backends.nodeinjections
+local codeinjections  = backends.codeinjections
 
-local transparencies = attributes.transparencies
-local colors         = attributes.colors
-local references     = structures.references
-local tasks          = nodes.tasks
+local transparencies  = attributes.transparencies
+local colors          = attributes.colors
+local references      = structures.references
+local tasks           = nodes.tasks
 
 local hpack_list      = node.hpack
 local list_dimensions = node.dimensions
@@ -211,7 +213,8 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 elseif subtype == dir_code then
                     txtdir = current.dir
                 end
-elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
+            elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
+                --
             elseif id == hlist_code or id == vlist_code then
                 if not reference and r and (not skip or r > skip) then
                     inject_list(id,current,r,make,stack,pardir,txtdir)
@@ -340,24 +343,34 @@ local texcount     = tex.count
 
 -- references:
 
+local stack         = { }
+local done          = { }
+local attribute     = attributes.private('reference')
+local nofreferences = 0
+local topofstack    = 0
+
 nodes.references = {
-    attribute = attributes.private('reference'),
-    stack = { },
-    done  = { },
+    attribute = attribute,
+    stack     = stack,
+    done      = done,
 }
 
-local stack, done, attribute = nodes.references.stack, nodes.references.done, nodes.references.attribute
+-- todo: get rid of n (n is just a number, can be used for tracing, obsolete)
 
-local nofreferences, topofstack = 0, 0
-
-local function setreference(n,h,d,r) -- n is just a number, can be used for tracing
+local function setreference(n,h,d,r)
     topofstack = topofstack + 1
-    stack[topofstack] = { n, h, d, codeinjections.prerollreference(r) } -- the preroll permits us to determine samepage (but delayed also has some advantages)
---~     texattribute[attribute] = topofstack -- todo -> at tex end
+    -- the preroll permits us to determine samepage (but delayed also has some advantages)
+    -- so some part of the backend work is already done here
+--~     stack[topofstack] = { n, h, d, codeinjections.prerollreference(r) }
+    stack[topofstack] = { r, h, d, codeinjections.prerollreference(r) }
+ -- texattribute[attribute] = topofstack -- todo -> at tex end
     texcount.lastreferenceattribute = topofstack
 end
 
-nodes.setreference = setreference
+function references.get(n) -- not public so functionality can change
+    local sn = stack[n]
+    return sn and sn[1]
+end
 
 local function makereference(width,height,depth,reference)
     local sr = stack[reference]
@@ -407,23 +420,23 @@ end
 
 -- destinations (we can clean up once set!)
 
+local stack           = { }
+local done            = { }
+local attribute       = attributes.private('destination')
+local nofdestinations = 0
+local topofstack      = 0
+
 nodes.destinations = {
-    attribute = attributes.private('destination'),
-    stack = { },
-    done  = { },
+    attribute = attribute,
+    stack     = stack,
+    done      = done,
 }
-
-local stack, done, attribute = nodes.destinations.stack, nodes.destinations.done, nodes.destinations.attribute
-
-local nofdestinations, topofstack = 0, 0
 
 local function setdestination(n,h,d,name,view) -- n = grouplevel, name == table
     topofstack = topofstack + 1
     stack[topofstack] = { n, h, d, name, view }
     return topofstack
 end
-
-nodes.setdestination = setdestination
 
 local function makedestination(width,height,depth,reference)
     local sr = stack[reference]

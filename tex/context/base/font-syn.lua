@@ -17,6 +17,8 @@ local lpegmatch = lpeg.match
 local utfgsub, utflower = utf.gsub, utf.lower
 local unpack = unpack or table.unpack
 
+local allocate = utilities.storage.allocate
+
 local trace_names    = false  trackers.register("fonts.names",    function(v) trace_names    = v end)
 local trace_warnings = false  trackers.register("fonts.warnings", function(v) trace_warnings = v end)
 
@@ -39,7 +41,7 @@ local filters    = names.filters
 
 names.data       = names.data or { }
 
-names.version    = 1.103
+names.version    = 1.110
 names.basename   = "names"
 names.saved      = false
 names.loaded     = false
@@ -103,14 +105,14 @@ local variants = Cs( -- fax casual
 
 local any = P(1)
 
-local analysed_table
+local analyzed_table
 
-local analyser = Cs (
+local analyzer = Cs (
     (
-        weights  / function(s) analysed_table[1] = s return "" end
-      + styles   / function(s) analysed_table[2] = s return "" end
-      + widths   / function(s) analysed_table[3] = s return "" end
-      + variants / function(s) analysed_table[4] = s return "" end
+        weights  / function(s) analyzed_table[1] = s return "" end
+      + styles   / function(s) analyzed_table[2] = s return "" end
+      + widths   / function(s) analyzed_table[3] = s return "" end
+      + variants / function(s) analyzed_table[4] = s return "" end
       + any
     )^0
 )
@@ -137,11 +139,11 @@ function names.splitspec(askedname)
     return name or askedname, weight, style, width, variant
 end
 
-local function analysespec(somename)
+local function analyzespec(somename)
     if somename then
-        analysed_table = { }
-        local name = lpegmatch(analyser,somename)
-        return name, analysed_table[1], analysed_table[2], analysed_table[3], analysed_table[4]
+        analyzed_table = { }
+        local name = lpegmatch(analyzer,somename)
+        return name, analyzed_table[1], analyzed_table[2], analyzed_table[3], analyzed_table[4]
     end
 end
 
@@ -172,9 +174,9 @@ filters.otf = fontloader.fullinfo
 function filters.afm(name)
     -- we could parse the afm file as well, and then report an error but
     -- it's not worth the trouble
-    local pfbname = resolvers.find_file(file.removesuffix(name)..".pfb","pfb") or ""
+    local pfbname = resolvers.findfile(file.removesuffix(name)..".pfb","pfb") or ""
     if pfbname == "" then
-        pfbname = resolvers.find_file(file.removesuffix(file.basename(name))..".pfb","pfb") or ""
+        pfbname = resolvers.findfile(file.removesuffix(file.basename(name))..".pfb","pfb") or ""
     end
     if pfbname ~= "" then
         local f = io.open(name)
@@ -211,8 +213,8 @@ filters.list = {
 --~   "ttc",  "otf", "ttf", "dfont", "afm",
 }
 
-names.xml_configuration_file    = "fonts.conf" -- a bit weird format, bonus feature
-names.environment_path_variable = "OSFONTDIR"  -- the official way, in minimals etc
+names.fontconfigfile    = "fonts.conf" -- a bit weird format, bonus feature
+names.osfontdirvariable = "OSFONTDIR"  -- the official way, in minimals etc
 
 filters.paths = { }
 filters.names = { }
@@ -221,7 +223,7 @@ function names.getpaths(trace)
     local hash, result = { }, { }
     local function collect(t,where)
         for i=1, #t do
-            local v = resolvers.clean_path(t[i])
+            local v = resolvers.cleanpath(t[i])
             v = gsub(v,"/+$","") -- not needed any more
             local key = lower(v)
             report_names("adding path from %s: %s",where,v)
@@ -230,18 +232,18 @@ function names.getpaths(trace)
             end
         end
     end
-    local path = names.environment_path_variable or ""
+    local path = names.osfontdirvariable or ""
     if path ~= "" then
-        collect(resolvers.expanded_path_list(path),path)
+        collect(resolvers.expandedpathlist(path),path)
     end
     if xml then
         local confname = resolvers.getenv("FONTCONFIG_FILE") or ""
         if confname == "" then
-            confname = names.xml_configuration_file or ""
+            confname = names.fontconfigfile or ""
         end
         if confname ~= "" then
             -- first look in the tex tree
-            local name = resolvers.find_file(confname,"fontconfig files") or ""
+            local name = resolvers.findfile(confname,"fontconfig files") or ""
             if name == "" then
                 -- after all, fontconfig is a unix thing
                 name = file.join("/etc",confname)
@@ -292,7 +294,20 @@ local function cleanname(name)
  -- return (utfgsub(utfgsub(lower(str),"[^%a%A%d]",""),"%s",""))
 end
 
-names.cleanname = cleanname
+local function cleanfilename(fullname,defaultsuffix)
+    local _, _, name, suffix = file.splitname(fullname)
+    name = gsub(lower(name),"[^%a%d]","")
+    if suffix and suffix ~= "" then
+        return name .. ".".. suffix
+    elseif defaultsuffix and defaultsuffix ~= "" then
+        return name .. ".".. defaultsuffix
+    else
+        return name
+    end
+end
+
+names.cleanname     = cleanname
+names.cleanfilename = cleanfilename
 
 local function check_names(result)
     local names = result.names
@@ -310,7 +325,7 @@ local function walk_tree(pathlist,suffix,identify)
     if pathlist then
         for i=1,#pathlist do
             local path = pathlist[i]
-            path = resolvers.clean_path(path .. "/")
+            path = resolvers.cleanpath(path .. "/")
             path = gsub(path,"/+","/")
             local pattern = path .. "**." .. suffix -- ** forces recurse
             report_names( "globbing path %s",pattern)
@@ -348,8 +363,8 @@ local function check_name(data,result,filename,suffix,subfont)
     modifiers   = modifiers  and cleanname(modifiers)
     weight      = weight     and cleanname(weight)
     italicangle = (italicangle == 0) and nil
-    -- analyse
-    local a_name, a_weight, a_style, a_width, a_variant = analysespec(fullname or fontname or familyname)
+    -- analyze
+    local a_name, a_weight, a_style, a_width, a_variant = analyzespec(fullname or fontname or familyname)
     -- check
     local width = a_width
     local variant = a_variant
@@ -400,11 +415,11 @@ local function cleanupkeywords()
         for i=1,#specifications do
             local s = specifications[i]
             -- fix (sofar styles are taken from the name, and widths from the specification)
-            local _, b_weight, b_style, b_width, b_variant = analysespec(s.weight)
-            local _, c_weight, c_style, c_width, c_variant = analysespec(s.style)
-            local _, d_weight, d_style, d_width, d_variant = analysespec(s.width)
-            local _, e_weight, e_style, e_width, e_variant = analysespec(s.variant)
-            local _, f_weight, f_style, f_width, f_variant = analysespec(s.fullname or "")
+            local _, b_weight, b_style, b_width, b_variant = analyzespec(s.weight)
+            local _, c_weight, c_style, c_width, c_variant = analyzespec(s.style)
+            local _, d_weight, d_style, d_width, d_variant = analyzespec(s.width)
+            local _, e_weight, e_style, e_width, e_variant = analyzespec(s.variant)
+            local _, f_weight, f_style, f_width, f_variant = analyzespec(s.fullname or "")
             local weight  = b_weight  or c_weight  or d_weight  or e_weight  or f_weight  or "normal"
             local style   = b_style   or c_style   or d_style   or e_style   or f_style   or "normal"
             local width   = b_width   or c_width   or d_width   or e_width   or f_width   or "normal"
@@ -593,7 +608,7 @@ local function unpackreferences()
     end
 end
 
-local function analysefiles()
+local function analyzefiles()
     local data = names.data
     local done, totalnofread, totalnofskipped, totalnofduplicates, nofread, nofskipped, nofduplicates = { }, 0, 0, 0, 0, 0, 0
     local skip_paths, skip_names = filters.paths, filters.names
@@ -616,7 +631,7 @@ local function analysefiles()
                 logs.push()
             end
             nofskipped = nofskipped + 1
-        elseif not file.is_qualified_path(completename) and resolvers.find_file(completename,suffix) == "" then
+        elseif not file.is_qualified_path(completename) and resolvers.findfile(completename,suffix) == "" then
             -- not locateble by backend anyway
             if trace_names then
                 report_names("%s font %s cannot be found by backend",suffix,completename)
@@ -702,7 +717,7 @@ local function analysefiles()
         report_names( "warnings are disabled (tracker 'fonts.warnings')")
     end
     traverse("tree", function(suffix) -- TEXTREE only
-        resolvers.with_files(".*%." .. suffix .. "$", function(method,root,path,name)
+        resolvers.dowithfilesintree(".*%." .. suffix .. "$", function(method,root,path,name)
             if method == "file" or method == "tree" then
                 local completename = root .."/" .. path .. "/" .. name
                 identify(completename,name,suffix,name)
@@ -718,7 +733,7 @@ local function analysefiles()
         -- we do this only for a stupid names run, not used for context itself,
         -- using the vars is to clumsy so we just stick to a full scan instead
         traverse("lsr", function(suffix) -- all trees
-            local pathlist = resolvers.split_path(resolvers.show_path("ls-R") or "")
+            local pathlist = resolvers.splitpath(resolvers.showpath("ls-R") or "")
             walk_tree(pathlist,suffix,identify)
         end)
     else
@@ -727,6 +742,17 @@ local function analysefiles()
         end)
     end
     data.statistics.readfiles, data.statistics.skippedfiles, data.statistics.duplicatefiles = totalnofread, totalnofskipped, totalnofduplicates
+end
+
+local function addfilenames()
+    local data = names.data
+    local specifications = data.specifications
+    local files =  { }
+    for i=1,#specifications do
+        local fullname = specifications[i].filename
+        files[cleanfilename(fullname)] = fullname
+    end
+    data.files = files
 end
 
 local function rejectclashes() -- just to be sure, so no explicit afm will be found then
@@ -766,19 +792,20 @@ local function resetdata()
         specifications = { },
         families = { },
         statistics = { },
-        data_state = resolvers.data_state(),
+        datastate = resolvers.datastate(),
     }
 end
 
 function names.identify()
     resetdata()
-    analysefiles()
+    analyzefiles()
     rejectclashes()
     collectfamilies()
     collectstatistics()
     cleanupkeywords()
     collecthashes()
     checkduplicates()
+    addfilenames()
  -- sorthashes() -- will be resorted when saved
 end
 
@@ -838,7 +865,7 @@ local function list_them(mapping,sorted,pattern,t,all)
 end
 
 function names.list(pattern,reload,all) -- here?
-    names.load(reload)
+    names.load() -- todo reload
     if names.loaded then
         local t = { }
         local data = names.data
@@ -868,8 +895,8 @@ local function is_reloaded()
     if not reloaded then
         local data = names.data
         if names.autoreload then
-            local c_status = table.serialize(resolvers.data_state())
-            local f_status = table.serialize(data.data_state)
+            local c_status = table.serialize(resolvers.datastate())
+            local f_status = table.serialize(data.datastate)
             if c_status == f_status then
              -- report_names("font database matches configuration and file hashes")
                 return
@@ -971,6 +998,17 @@ function names.resolve(askedname,sub)
     local found = names.resolvedspecification(askedname,sub)
     if found then
         return found.filename, found.subfont and found.rawname
+    end
+end
+
+function names.getfilename(askedname,suffix) -- last resort, strip funny chars
+    names.load()
+    local files = names.data.files
+    askedname = files and files[cleanfilename(askedname,suffix)] or ""
+    if askedname == "" then
+        return ""
+    else
+        return resolvers.findbinfile(askedname,suffix) or ""
     end
 end
 
@@ -1284,7 +1322,8 @@ end
 
 function names.specification(askedname,weight,style,width,variant,reload,all)
     if askedname and askedname ~= "" and names.enabled then
-        askedname = lower(askedname) -- or cleanname
+--~         askedname = lower(askedname) -- or cleanname
+        askedname = cleanname(askedname) -- or cleanname
         names.load(reload)
         local found = heuristic(askedname,weight,style,width,variant,all)
         if not found and is_reloaded() then
@@ -1299,7 +1338,8 @@ end
 
 function names.collect(askedname,weight,style,width,variant,reload,all)
     if askedname and askedname ~= "" and names.enabled then
-        askedname = lower(askedname) -- or cleanname
+--~         askedname = lower(askedname) -- or cleanname
+        askedname = cleanname(askedname) -- or cleanname
         names.load(reload)
         local list = heuristic(askedname,weight,style,width,variant,true)
         if not list or #list == 0 and is_reloaded() then
@@ -1323,14 +1363,16 @@ end
 
 function names.collectfiles(askedname,reload) -- no all
     if askedname and askedname ~= "" and names.enabled then
-        askedname = lower(askedname) -- or cleanname
+--~         askedname = lower(askedname) -- or cleanname
+        askedname = cleanname(askedname) -- or cleanname
         names.load(reload)
         local list = { }
         local basename = file.basename
         local specifications = names.data.specifications
         for i=1,#specifications do
             local s = specifications[i]
-            if find(lower(basename(s.filename)),askedname) then
+--~             if find(lower(basename(s.filename)),askedname) then
+            if find(cleanname(basename(s.filename)),askedname) then
                 list[#list+1] = s
             end
         end
@@ -1338,65 +1380,65 @@ function names.collectfiles(askedname,reload) -- no all
     end
 end
 
---[[ldx--
-<p>Fallbacks, not permanent but a transition thing.</p>
---ldx]]--
-
-names.new_to_old = {
-    ["lmroman10-capsregular"]                = "lmromancaps10-oblique",
-    ["lmroman10-capsoblique"]                = "lmromancaps10-regular",
-    ["lmroman10-demi"]                       = "lmromandemi10-oblique",
-    ["lmroman10-demioblique"]                = "lmromandemi10-regular",
-    ["lmroman8-oblique"]                     = "lmromanslant8-regular",
-    ["lmroman9-oblique"]                     = "lmromanslant9-regular",
-    ["lmroman10-oblique"]                    = "lmromanslant10-regular",
-    ["lmroman12-oblique"]                    = "lmromanslant12-regular",
-    ["lmroman17-oblique"]                    = "lmromanslant17-regular",
-    ["lmroman10-boldoblique"]                = "lmromanslant10-bold",
-    ["lmroman10-dunhill"]                    = "lmromandunh10-oblique",
-    ["lmroman10-dunhilloblique"]             = "lmromandunh10-regular",
-    ["lmroman10-unslanted"]                  = "lmromanunsl10-regular",
-    ["lmsans10-demicondensed"]               = "lmsansdemicond10-regular",
-    ["lmsans10-demicondensedoblique"]        = "lmsansdemicond10-oblique",
-    ["lmsansquotation8-bold"]                = "lmsansquot8-bold",
-    ["lmsansquotation8-boldoblique"]         = "lmsansquot8-boldoblique",
-    ["lmsansquotation8-oblique"]             = "lmsansquot8-oblique",
-    ["lmsansquotation8-regular"]             = "lmsansquot8-regular",
-    ["lmtypewriter8-regular"]                = "lmmono8-regular",
-    ["lmtypewriter9-regular"]                = "lmmono9-regular",
-    ["lmtypewriter10-regular"]               = "lmmono10-regular",
-    ["lmtypewriter12-regular"]               = "lmmono12-regular",
-    ["lmtypewriter10-italic"]                = "lmmono10-italic",
-    ["lmtypewriter10-oblique"]               = "lmmonoslant10-regular",
-    ["lmtypewriter10-capsoblique"]           = "lmmonocaps10-oblique",
-    ["lmtypewriter10-capsregular"]           = "lmmonocaps10-regular",
-    ["lmtypewriter10-light"]                 = "lmmonolt10-regular",
-    ["lmtypewriter10-lightoblique"]          = "lmmonolt10-oblique",
-    ["lmtypewriter10-lightcondensed"]        = "lmmonoltcond10-regular",
-    ["lmtypewriter10-lightcondensedoblique"] = "lmmonoltcond10-oblique",
-    ["lmtypewriter10-dark"]                  = "lmmonolt10-bold",
-    ["lmtypewriter10-darkoblique"]           = "lmmonolt10-boldoblique",
-    ["lmtypewritervarwd10-regular"]          = "lmmonoproplt10-regular",
-    ["lmtypewritervarwd10-oblique"]          = "lmmonoproplt10-oblique",
-    ["lmtypewritervarwd10-light"]            = "lmmonoprop10-regular",
-    ["lmtypewritervarwd10-lightoblique"]     = "lmmonoprop10-oblique",
-    ["lmtypewritervarwd10-dark"]             = "lmmonoproplt10-bold",
-    ["lmtypewritervarwd10-darkoblique"]      = "lmmonoproplt10-boldoblique",
-}
-
-names.old_to_new = table.swapped(names.new_to_old)
+--~ --[[ldx--
+--~ <p>Fallbacks, not permanent but a transition thing.</p>
+--~ --ldx]]--
+--~
+--~ names.new_to_old = allocate {
+--~     ["lmroman10-capsregular"]                = "lmromancaps10-oblique",
+--~     ["lmroman10-capsoblique"]                = "lmromancaps10-regular",
+--~     ["lmroman10-demi"]                       = "lmromandemi10-oblique",
+--~     ["lmroman10-demioblique"]                = "lmromandemi10-regular",
+--~     ["lmroman8-oblique"]                     = "lmromanslant8-regular",
+--~     ["lmroman9-oblique"]                     = "lmromanslant9-regular",
+--~     ["lmroman10-oblique"]                    = "lmromanslant10-regular",
+--~     ["lmroman12-oblique"]                    = "lmromanslant12-regular",
+--~     ["lmroman17-oblique"]                    = "lmromanslant17-regular",
+--~     ["lmroman10-boldoblique"]                = "lmromanslant10-bold",
+--~     ["lmroman10-dunhill"]                    = "lmromandunh10-oblique",
+--~     ["lmroman10-dunhilloblique"]             = "lmromandunh10-regular",
+--~     ["lmroman10-unslanted"]                  = "lmromanunsl10-regular",
+--~     ["lmsans10-demicondensed"]               = "lmsansdemicond10-regular",
+--~     ["lmsans10-demicondensedoblique"]        = "lmsansdemicond10-oblique",
+--~     ["lmsansquotation8-bold"]                = "lmsansquot8-bold",
+--~     ["lmsansquotation8-boldoblique"]         = "lmsansquot8-boldoblique",
+--~     ["lmsansquotation8-oblique"]             = "lmsansquot8-oblique",
+--~     ["lmsansquotation8-regular"]             = "lmsansquot8-regular",
+--~     ["lmtypewriter8-regular"]                = "lmmono8-regular",
+--~     ["lmtypewriter9-regular"]                = "lmmono9-regular",
+--~     ["lmtypewriter10-regular"]               = "lmmono10-regular",
+--~     ["lmtypewriter12-regular"]               = "lmmono12-regular",
+--~     ["lmtypewriter10-italic"]                = "lmmono10-italic",
+--~     ["lmtypewriter10-oblique"]               = "lmmonoslant10-regular",
+--~     ["lmtypewriter10-capsoblique"]           = "lmmonocaps10-oblique",
+--~     ["lmtypewriter10-capsregular"]           = "lmmonocaps10-regular",
+--~     ["lmtypewriter10-light"]                 = "lmmonolt10-regular",
+--~     ["lmtypewriter10-lightoblique"]          = "lmmonolt10-oblique",
+--~     ["lmtypewriter10-lightcondensed"]        = "lmmonoltcond10-regular",
+--~     ["lmtypewriter10-lightcondensedoblique"] = "lmmonoltcond10-oblique",
+--~     ["lmtypewriter10-dark"]                  = "lmmonolt10-bold",
+--~     ["lmtypewriter10-darkoblique"]           = "lmmonolt10-boldoblique",
+--~     ["lmtypewritervarwd10-regular"]          = "lmmonoproplt10-regular",
+--~     ["lmtypewritervarwd10-oblique"]          = "lmmonoproplt10-oblique",
+--~     ["lmtypewritervarwd10-light"]            = "lmmonoprop10-regular",
+--~     ["lmtypewritervarwd10-lightoblique"]     = "lmmonoprop10-oblique",
+--~     ["lmtypewritervarwd10-dark"]             = "lmmonoproplt10-bold",
+--~     ["lmtypewritervarwd10-darkoblique"]      = "lmmonoproplt10-boldoblique",
+--~ }
+--~
+--~ names.old_to_new = allocate(table.swapped(names.new_to_old))
 
 function names.exists(name)
     local found = false
     local list = filters.list
     for k=1,#list do
         local v = list[k]
-        found = (resolvers.find_file(name,v) or "") ~= ""
+        found = (resolvers.findfile(name,v) or "") ~= ""
         if found then
             return found
         end
     end
-    return ((resolvers.find_file(name,"tfm") or "") ~= "") or ((names.resolve(name) or "") ~= "")
+    return ((resolvers.findfile(name,"tfm") or "") ~= "") or ((names.resolve(name) or "") ~= "")
 end
 
 -- for i=1,fonts.names.lookup(pattern) do

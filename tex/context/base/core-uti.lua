@@ -22,15 +22,18 @@ local next, type, tostring = next, type, tostring
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local definetable, accesstable = utilities.tables.definetable, utilities.tables.accesstable
 local serialize = table.serialize
+local packers = utilities.packers
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local report_jobcontrol = logs.new("jobcontrol")
 
-if not jobs then jobs         = { } end
-if not job  then jobs['main'] = { } end job = jobs['main']
+job         = job or { }
+local job   = job
 
-local packers = utilities.packers
+job.version = 1.14
 
-jobs.version = 1.14
+-- some day we will implement loading of other jobs and then we need
+-- job.jobs
 
 --[[ldx--
 <p>Variables are saved using in the previously defined table and passed
@@ -44,7 +47,7 @@ function job.comment(str)
     comment[#comment+1] = str
 end
 
-job.comment(format("version: %1.2f",jobs.version))
+job.comment(format("version: %1.2f",job.version))
 
 function job.initialize(loadname,savename)
     job.load(loadname) -- has to come after  structure is defined !
@@ -61,21 +64,26 @@ end
 
 -- as an example we implement variables
 
+local tobesaved, collected, checksums = allocate(),  allocate(),  allocate()
+
 local jobvariables = {
-    collected = { },
-    tobesaved = { },
-    checksums = { },
+    collected = collected,
+    tobesaved = tobesaved,
+    checksums = checksums,
 }
 
 job.variables = jobvariables
 
-if not jobvariables.checksums.old then jobvariables.checksums.old = md5.HEX("old") end -- used in experiment
-if not jobvariables.checksums.new then jobvariables.checksums.new = md5.HEX("new") end -- used in experiment
+if not checksums.old then checksums.old = md5.HEX("old") end -- used in experiment
+if not checksums.new then checksums.new = md5.HEX("new") end -- used in experiment
 
-job.register('job.variables.checksums', jobvariables.checksums)
+job.register('job.variables.checksums', checksums)
 
 local function initializer()
-    local r = jobvariables.collected.randomseed
+    tobesaved = mark(jobvariables.tobesaved)
+    collected = mark(jobvariables.collected)
+    checksums = mark(jobvariables.checksums)
+    local r = collected.randomseed
     if not r then
         r = math.random()
         math.setrandomseedi(r,"initialize")
@@ -84,16 +92,16 @@ local function initializer()
         math.setrandomseedi(r,"previous run")
         report_jobcontrol("resuming randomizer with %s",r)
     end
-    jobvariables.tobesaved.randomseed = r
-    for cs, value in next, jobvariables.collected do
+    tobesaved.randomseed = r
+    for cs, value in next, collected do
         texsprint(ctxcatcodes,format("\\xdef\\%s{%s}",cs,value))
     end
 end
 
-job.register('job.variables.collected', jobvariables.tobesaved, initializer)
+job.register('job.variables.collected', tobesaved, initializer)
 
 function jobvariables.save(cs,value)
-    jobvariables.tobesaved[cs] = value
+    tobesaved[cs] = value
 end
 
 local packlist = {
@@ -149,8 +157,8 @@ function job.load(filename)
     local data = io.loaddata(filename)
     if data and data ~= "" then
         local version = tonumber(match(data,"^-- version: ([%d%.]+)"))
-        if version ~= jobs.version then
-            report_jobcontrol("version mismatch with jobfile: %s <> %s", version or "?", jobs.version)
+        if version ~= job.version then
+            report_jobcontrol("version mismatch with jobfile: %s <> %s", version or "?", job.version)
         else
             local data = loadstring(data)
             if data then

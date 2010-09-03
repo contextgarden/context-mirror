@@ -26,6 +26,9 @@ local texsprint, texlists, texdimen, texbox = tex.sprint, tex.lists, tex.dimen, 
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local points = number.points
+local allocate = utilities.storage.allocate
+
+local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
 local nodes, node, trackers, attributes =  nodes, node, trackers, attributes
 
@@ -44,64 +47,63 @@ local trace_vspacing         = false  trackers.register("builders.vspacing",    
 local trace_vsnapping        = false  trackers.register("builders.vsnapping",        function(v) trace_vsnapping        = v end)
 local trace_vpacking         = false  trackers.register("builders.vpacking",         function(v) trace_vpacking         = v end)
 
-local report_vspacing  = logs.new("vspacing")
-local report_collapser = logs.new("collapser")
-local report_snapper   = logs.new("snapper")
+local report_vspacing     = logs.new("vspacing")
+local report_collapser    = logs.new("collapser")
+local report_snapper      = logs.new("snapper")
 
-local skip_category = attributes.private('skip-category')
-local skip_penalty  = attributes.private('skip-penalty')
-local skip_order    = attributes.private('skip-order')
-local snap_category = attributes.private('snap-category')
-local display_math  = attributes.private('display-math')
-local snap_method   = attributes.private('snap-method')
-local snap_vbox     = attributes.private('snap-vbox')
+local skip_category       = attributes.private('skip-category')
+local skip_penalty        = attributes.private('skip-penalty')
+local skip_order          = attributes.private('skip-order')
+local snap_category       = attributes.private('snap-category')
+local display_math        = attributes.private('display-math')
+local snap_method         = attributes.private('snap-method')
+local snap_vbox           = attributes.private('snap-vbox')
 
-local has_attribute      = node.has_attribute
-local unset_attribute    = node.unset_attribute
-local set_attribute      = node.set_attribute
-local find_node_tail     = node.tail
-local free_node          = node.free
-local copy_node          = node.copy
-local traverse_nodes     = node.traverse
-local traverse_nodes_id  = node.traverse_id
-local insert_node_before = node.insert_before
-local insert_node_after  = node.insert_after
-local remove_node        = nodes.remove
-local count_nodes        = nodes.count
-local node_ids_to_string = nodes.ids_to_string
-local hpack_node         = node.hpack
-local vpack_node         = node.vpack
-local writable_spec      = nodes.writable_spec
-local listtoutf          = nodes.listtoutf
+local has_attribute       = node.has_attribute
+local unset_attribute     = node.unset_attribute
+local set_attribute       = node.set_attribute
+local find_node_tail      = node.tail
+local free_node           = node.free
+local copy_node           = node.copy
+local traverse_nodes      = node.traverse
+local traverse_nodes_id   = node.traverse_id
+local insert_node_before  = node.insert_before
+local insert_node_after   = node.insert_after
+local remove_node         = nodes.remove
+local count_nodes         = nodes.count
+local nodeidstostring     = nodes.idstostring
+local hpack_node          = node.hpack
+local vpack_node          = node.vpack
+local writable_spec       = nodes.writable_spec
+local listtoutf           = nodes.listtoutf
 
-local nodepool      = nodes.pool
+local nodepool            = nodes.pool
 
-local new_penalty   = nodepool.penalty
-local new_kern      = nodepool.kern
-local new_rule      = nodepool.rule
+local new_penalty         = nodepool.penalty
+local new_kern            = nodepool.kern
+local new_rule            = nodepool.rule
 
-local nodecodes     = nodes.nodecodes
-local skipcodes     = nodes.skipcodes
-local fillcodes     = nodes.fillcodes
+local nodecodes           = nodes.nodecodes
+local skipcodes           = nodes.skipcodes
+local fillcodes           = nodes.fillcodes
 
-local penalty_code  = nodecodes.penalty
-local kern_code     = nodecodes.kern
-local glue_code     = nodecodes.glue
-local hlist_code    = nodecodes.hlist
-local vlist_code    = nodecodes.vlist
-local whatsit_code  = nodecodes.whatsit
+local penalty_code        = nodecodes.penalty
+local kern_code           = nodecodes.kern
+local glue_code           = nodecodes.glue
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+local whatsit_code        = nodecodes.whatsit
 
-local userskip_code = skipcodes.userskip
+local userskip_code       = skipcodes.userskip
 
-builders.vspacing = builders.vspacing or { }
-local vspacing    = builders.vspacing
-vspacing.data     = vspacing.data or { }
+builders.vspacing         = builders.vspacing or { }
+local vspacing            = builders.vspacing
+vspacing.data             = vspacing.data or { }
 
 vspacing.data.snapmethods = vspacing.data.snapmethods or { }
+local snapmethods         = vspacing.data.snapmethods --maybe some older code can go
 
-storage.register("builders/vspacing/data/snapmethods", vspacing.data.snapmethods, "builders.vspacing.data.snapmethods")
-
-local snapmethods = vspacing.data.snapmethods --maybe some older code can go
+storage.register("builders/vspacing/data/snapmethods", snapmethods, "builders.vspacing.data.snapmethods")
 
 local default = {
     maxheight = true,
@@ -483,7 +485,7 @@ local function snap_topskip(current,method)
     return w, wd
 end
 
-vspacing.categories = {
+local categories = allocate {
      [0] = 'discard',
      [1] = 'largest',
      [2] = 'force'  ,
@@ -495,7 +497,7 @@ vspacing.categories = {
      [8] = 'together'
 }
 
-local categories = vspacing.categories
+vspacing.categories = categories
 
 function vspacing.tocategories(str)
     local t = { }
@@ -518,8 +520,8 @@ function vspacing.tocategory(str)
     end
 end
 
-vspacing.data.map  = vspacing.data.map  or { }
-vspacing.data.skip = vspacing.data.skip or { }
+vspacing.data.map  = vspacing.data.map  or { } -- allocate ?
+vspacing.data.skip = vspacing.data.skip or { } -- allocate ?
 
 storage.register("builders/vspacing/data/map",  vspacing.data.map,  "builders.vspacing.data.map")
 storage.register("builders/vspacing/data/skip", vspacing.data.skip, "builders.vspacing.data.skip")
@@ -536,17 +538,17 @@ do -- todo: interface.variables
     local map  = vspacing.data.map
     local skip = vspacing.data.skip
 
-    local multiplier = lpeg.C(lpeg.S("+-")^0 * lpeg.R("09")^1) * lpeg.P("*")
-    local category   = lpeg.P(":") * lpeg.C(lpeg.P(1)^1)
-    local keyword    = lpeg.C((1-category)^1)
-    local splitter   = (multiplier + lpeg.Cc(1)) * keyword * (category + lpeg.Cc(false))
+    local multiplier = C(S("+-")^0 * R("09")^1) * P("*")
+    local category   = P(":") * C(P(1)^1)
+    local keyword    = C((1-category)^1)
+    local splitter   = (multiplier + Cc(1)) * keyword * (category + Cc(false))
 
     local k_fixed, k_flexible, k_category, k_penalty, k_order = variables.fixed, variables.flexible, "category", "penalty", "order"
 
     -- This will change: just node.write and we can store the values in skips which
     -- then obeys grouping
 
-    local function analyse(str,oldcategory,texsprint) -- we could use shorter names
+    local function analyze(str,oldcategory,texsprint) -- we could use shorter names
         for s in gmatch(str,"([^ ,]+)") do
             local amount, keyword, detail = lpegmatch(splitter,s)
             if not keyword then
@@ -554,7 +556,7 @@ do -- todo: interface.variables
             else
                 local mk = map[keyword]
                 if mk then
-                    category = analyse(mk,category,texsprint)
+                    category = analyze(mk,category,texsprint)
                 elseif keyword == k_fixed then
                     texsprint(ctxcatcodes,"\\fixedblankskip")
                 elseif keyword == k_flexible then
@@ -592,10 +594,10 @@ do -- todo: interface.variables
         return category
     end
 
-    function vspacing.analyse(str)
+    function vspacing.analyze(str)
         local texsprint = (trace_vspacing and logger) or texsprint
         texsprint(ctxcatcodes,"\\startblankhandling")
-        analyse(str,1,texsprint)
+        analyze(str,1,texsprint)
         texsprint(ctxcatcodes,"\\stopblankhandling")
     end
 
@@ -1170,10 +1172,10 @@ end
 local stackhead, stacktail, stackhack = nil, nil, false
 
 local function report(message,lst)
-    report_vspacing(message,count_nodes(lst,true),node_ids_to_string(lst))
+    report_vspacing(message,count_nodes(lst,true),nodeidstostring(lst))
 end
 
-function nodes.handlers.pagespacing(newhead,where)
+function vspacing.pagehandler(newhead,where)
 --~     local newhead = texlists.contrib_head
     if newhead then
 --~         starttiming(vspacing)
@@ -1237,7 +1239,7 @@ local ignore = table.tohash {
  -- "vbox",
 }
 
-function nodes.handlers.vboxspacing(head,where)
+function vspacing.vboxhandler(head,where)
     if head and not ignore[where] and head.next then
     --  starttiming(vspacing)
         head = collapser(head,"vbox",where,trace_vbox_vspacing,true,snap_vbox) -- todo: local snapper
@@ -1246,7 +1248,7 @@ function nodes.handlers.vboxspacing(head,where)
     return head
 end
 
-function nodes.collapsevbox(n) -- for boxes but using global snap_method
+function vspacing.collapsevbox(n) -- for boxes but using global snap_method
     local list = texbox[n].list
     if list then
     --  starttiming(vspacing)
@@ -1258,12 +1260,12 @@ end
 -- We will split this module so a few locals are repeated. Also this will be
 -- rewritten.
 
-local attribute = attributes.private('graphicvadjust')
+local attribute     = attributes.private('graphicvadjust')
 
-local nodecodes = nodes.nodecodes
+local nodecodes     = nodes.nodecodes
 
-local hlist_code = nodecodes.hlist
-local vlist_code = nodecodes.vlist
+local hlist_code    = nodecodes.hlist
+local vlist_code    = nodecodes.vlist
 
 local remove_node   = nodes.remove
 local hpack_node    = node.hpack
@@ -1361,7 +1363,7 @@ function nodes.builders.buildpage_filter(groupcode)
     return (done and head) or true
 end
 
-callbacks.register('vpack_filter',     nodes.builders.vpack_filter, "vertical spacing etc")
+callbacks.register('vpack_filter',     nodes.builders.vpack_filter,     "vertical spacing etc")
 callbacks.register('buildpage_filter', nodes.builders.buildpage_filter, "vertical spacing etc (mvl)")
 
 statistics.register("v-node processing time", function()

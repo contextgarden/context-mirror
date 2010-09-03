@@ -25,23 +25,24 @@ local concat, gmatch, gsub = table.concat, string.gmatch, string.gsub
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local ctxcatcodes = tex.ctxcatcodes
 local texsprint = tex.sprint
+local allocate = utilities.storage.allocate
 
 -- todo: trackers
 
-characters              = characters or { }
-local characters        = characters
+characters            = characters or { }
+local characters      = characters
 
-characters.graphemes    = characters.graphemes or { }
-local graphemes         = characters.graphemes
+characters.graphemes  = allocate()
+local graphemes       = characters.graphemes
 
-characters.filters      = characters.filters or { }
-local filters           = characters.filters
+characters.filters    = allocate()
+local filters         = characters.filters
 
-filters.utf             = filters.utf  or { }
-local utffilters        = characters.filters.utf
+filters.utf           = filters.utf  or { }
+local utffilters      = characters.filters.utf
 
-utffilters.collapsing   = true
-utffilters.expanding    = true
+utffilters.collapsing = true
+utffilters.expanding  = true
 
 --[[ldx--
 <p>It only makes sense to collapse at runtime, since we don't expect
@@ -123,9 +124,9 @@ to their right glyph there.</p>
 0x100000.</p>
 --ldx]]--
 
-local low     = { }
-local high    = { }
-local escapes = { }
+local low     = allocate({ })
+local high    = allocate({ })
+local escapes = allocate({ })
 local special = "~#$%^&_{}\\|"
 
 local private = {

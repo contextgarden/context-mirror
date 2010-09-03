@@ -18,15 +18,17 @@ local utfcharacters, utfvalues, strcharacters = string.utfcharacters, string.utf
 local chardata = characters.data
 local next, type, tonumber = next, type, tonumber
 
+local allocate = utilities.storage.allocate
+
 local trace_tests = false  trackers.register("sorters.tests", function(v) trace_tests = v end)
 
 local report_sorters = logs.new("sorters")
 
 local comparers          = { }
 local splitters          = { }
-local entries            = { }
-local mappings           = { }
-local replacements       = { }
+local entries            = allocate()
+local mappings           = allocate()
+local replacements       = allocate()
 local ignoredoffset      = 0x10000
 local replacementoffset  = 0x10000
 local digitsoffset       = 0x20000

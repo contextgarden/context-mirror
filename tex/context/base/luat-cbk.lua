@@ -38,7 +38,7 @@ local frozen, stack, list = { }, { }, callbacks.list
 
 if not callbacks.list then -- otherwise counters get reset
 
-    list = list_callbacks()
+    list = utilities.storage.allocate(list_callbacks())
 
     for k, _ in next, list do
         list[k] = 0

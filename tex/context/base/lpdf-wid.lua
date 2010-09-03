@@ -27,8 +27,7 @@ local pdfunicode           = lpdf.unicode
 local pdfstring            = lpdf.string
 local pdfcolorspec         = lpdf.colorspec
 local pdfflushobject       = lpdf.flushobject
-local pdfreserveobject     = lpdf.reserveobject
-local pdfreserveannotation = lpdf.reserveobject
+local pdfreserveannotation = lpdf.reserveannotation
 local pdfimmediateobject   = lpdf.immediateobject
 local pdfpagereference     = lpdf.pagereference
 
@@ -131,10 +130,14 @@ function codeinjections.registercomment(specification)
         Name      = name,
         AP        = appearance,
     }
+    --
     -- watch the nice feed back to tex hack
+    --
+    -- we can consider replacing nodes by user nodes that do a latelua
+    -- so that we get rid of all annotation whatsits
     if usepopupcomments then
-        local nd = pdfreserveobject()
-        local nc = pdfreserveobject()
+        local nd = pdfreserveannotation()
+        local nc = pdfreserveannotation()
         local c = pdfdictionary {
             Subtype = pdfconstant("Popup"),
             Parent  = pdfreference(nd),

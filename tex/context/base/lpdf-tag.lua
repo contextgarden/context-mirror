@@ -57,110 +57,20 @@ local root            = { pref = pdfreference(structure_ref), kids = structure_k
 local tree            = { }
 local elements        = { }
 local names           = pdfarray()
-local taglist         = { } -- set later
+local taglist         = structures.tags.taglist
+local usedlabels      = structures.tags.labels
+local properties      = structures.tags.properties
+local usedmapping     = { }
 
 local colonsplitter   = lpeg.splitat(":")
 local dashsplitter    = lpeg.splitat("-")
 
 local add_ids         = false -- true
 
-local mapping = {
-    document           = "Div",
 
-    division           = "Div",
-    paragraph          = "P",
-    construct          = "Span",
-
-    structure          = "Sect",
-    structuretitle     = "H",
-    structurenumber    = "H",
-    structurecontent   = "Div",
-
-    itemgroup          = "L",
-    item               = "Li",
-    itemtag            = "Lbl",
-    itemcontent        = "LBody",
-
-    description        = "Li",
-    descriptiontag     = "Lbl",
-    descriptioncontent = "LBody",
-
-    verbatimblock      = "Code",
-    verbatim           = "Code",
-
-    register           = "Div",
-    registersection    = "Div",
-    registertag        = "Span",
-    registerentries    = "Div",
-    registerentry      = "Span",
-    registersee        = "Span",
-    registerpages      = "Span",
-    registerpage       = "Span",
-
-    table              = "Table",
-    tablerow           = "TR",
-    tablecell          = "TD",
-    tabulate           = "Table",
-    tabulaterow        = "TR",
-    tabulatecell       = "TD",
-
-    list               = "TOC",
-    listitem           = "TOCI",
-    listtag            = "Lbl",
-    listcontent        = "P",
-    listdata           = "P",
-    listpage           = "Reference",
-
-    delimitedblock     = "BlockQuote",
-    delimited          = "Quote",
-    subsentence        = "Span",
-
-    float              = "Div",
-    floatcaption       = "Caption",
-    floattag           = "Span",
-    floattext          = "Span",
-    floatcontent       = "P",
-
-    image              = "P",
-    mpgraphic          = "P",
-
-    formulaset         = "Div",
-    formula            = "Div",
-    formulatag         = "Span",
-    formulacontent     = "P",
-    subformula         = "Div",
-
-    link               = "Link",
-
-    math               = "Div",
-    mn                 = "Span",
-    mi                 = "Span",
-    mo                 = "Span",
-    ms                 = "Span",
-    mrow               = "Span",
-    msubsup            = "Span",
-    msub               = "Span",
-    msup               = "Span",
-    merror             = "Span",
-    munderover         = "Span",
-    munder             = "Span",
-    mover              = "Span",
-    mtext              = "Span",
-    mfrac              = "Span",
-    mroot              = "Span",
-    msqrt              = "Span",
-}
-
-local usedmapping = { }
-local usedlabels  = { }
-
-function codeinjections.mapping()
-    return mapping -- future versions may provide a copy
-end
-
-function codeinjections.maptag(original,target)
-    mapping[original] = target
-end
+--~ function codeinjections.maptag(original,target,kind)
+--~     mapping[original] = { target, kind or "inline" }
+--~ end
 
 local function finishstructure()
     if #structure_kids > 0 then
@@ -186,7 +96,8 @@ local function finishstructure()
         local rolemap = pdfdictionary()
         for k, v in next, usedmapping do
             k = usedlabels[k] or k
-            rolemap[k] = pdfconstant(mapping[k] or "Span") -- or "Div"
+            local p = properties[k]
+            rolemap[k] = pdfconstant(p and p.pdf or "Span") -- or "Div"
         end
         local structuretree = pdfdictionary {
             Type       = pdfconstant("StructTreeRoot"),
@@ -240,15 +151,15 @@ local function makeelement(fulltag,parent)
     usedmapping[tg] = true
     tg = usedlabels[tg] or tg
     local d = pdfdictionary {
-        Type = pdf_struct_element,
-        S    = pdfconstant(tg),
-        ID   = (add_ids and fulltag) or nil,
-        T    = detail and detail or nil,
-        P    = parent.pref,
-        Pg   = pageref,
-        K    = pdfreference(r),
---~ Alt = " Who cares ",
---~ ActualText = " Hi Hans ",
+        Type       = pdf_struct_element,
+        S          = pdfconstant(tg),
+        ID         = (add_ids and fulltag) or nil,
+        T          = detail and detail or nil,
+        P          = parent.pref,
+        Pg         = pageref,
+        K          = pdfreference(r),
+     -- Alt        = " Who cares ",
+     -- ActualText = " Hi Hans ",
     }
     local s = pdfreference(pdfflushobject(d))
     if add_ids then
@@ -309,7 +220,7 @@ end
 
 -- -- --
 
-local level, last, ranges, range = 0, nil, { }, { }
+local level, last, ranges, range = 0, nil, { }, nil
 
 local function collectranges(head,list)
     for n in traverse_nodes(head) do
@@ -336,8 +247,9 @@ local function collectranges(head,list)
                 end
                 last = nil
             else
-                slide_nodelist(n.list) -- temporary hack till math gets slided (tracker item)
-                collectranges(n.list,n)
+                local nl = n.list
+                slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
+                collectranges(nl,n)
             end
         end
     end
@@ -345,7 +257,7 @@ end
 
 function nodeinjections.addtags(head)
     -- no need to adapt head, as we always operate on lists
-    level, last, ranges, range = 0, nil, { }, { }
+    level, last, ranges, range = 0, nil, { }, nil
     initializepage()
     collectranges(head)
     if trace_tags then
@@ -353,7 +265,7 @@ function nodeinjections.addtags(head)
             local range = ranges[i]
             local attr, id, start, stop = range[1], range[2], range[3], range[4]
             local tags = taglist[attr]
-            if tags then
+            if tags then -- not ok ... only first lines
                 report_tags("%s => %s : %05i %s",tosequence(start,start),tosequence(stop,stop),attr,concat(tags," "))
             end
         end
@@ -386,7 +298,6 @@ function nodeinjections.addtags(head)
 end
 
 function codeinjections.enabletags(tg,lb)
-    taglist, usedlabels = tg, lb
     structures.tags.handler = nodeinjections.addtags
     tasks.enableaction("shipouts","structures.tags.handler")
     tasks.enableaction("shipouts","nodes.handlers.accessibility")

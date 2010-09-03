@@ -17,7 +17,7 @@ local invalid = R(char(0)..char(31))
 local cleaned = invalid^0 * Cs((1-invalid)^0)
 
 function colors.iccprofile(filename,verbose)
-    local fullname = resolvers.find_file(filename,"icc") or ""
+    local fullname = resolvers.findfile(filename,"icc") or ""
     if fullname == "" then
         local locate = resolvers.finders.loc -- not in mtxrun
         if locate then

@@ -412,7 +412,7 @@ function scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenation
 end
 
 function scripts.patterns.prepare()
-    dofile(resolvers.find_file("char-def.lua"))
+    dofile(resolvers.findfile("char-def.lua"))
 end
 
 function scripts.patterns.check()

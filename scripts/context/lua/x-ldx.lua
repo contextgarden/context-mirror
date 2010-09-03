@@ -186,7 +186,7 @@ function ldx.enhance(data) -- i need to use lpeg and then we can properly autoin
                         for k=1,#t do
                             t[k] = "<variable>" .. t[k] .. "</variable>"
                         end
-                        return table.join(t,", ") .. rest
+                        return table.concat(t,", ") .. rest
                     end)
                     -- so far
                     lines[k] = v

@@ -13,6 +13,8 @@ local string, table, lpeg, math, io, system = string, table, lpeg, math, io, sys
 local next, setfenv = next, setfenv or debug.setfenv
 local format = string.format
 
+local mark = utilities.storage.mark
+
 --[[ldx--
 <p>We cannot load anything yet. However what we will do us reserve a fewtables.
 These can be used for runtime user data or third party modules and will not be
@@ -31,8 +33,8 @@ document      = document      or { }
 <p>These can be used/set by the caller program; <t>mtx-context.lua</t> does it.</p>
 --ldx]]--
 
-document.arguments = document.arguments or { }
-document.files     = document.files     or { }
+document.arguments = mark(document.arguments or { })
+document.files     = mark(document.files     or { })
 
 --[[ldx--
 <p>Please create a namespace within these tables before using them!</p>

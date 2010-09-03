@@ -9,8 +9,8 @@ if not modules then modules = { } end modules ['mtx-server'] = {
 scripts           = scripts           or { }
 scripts.webserver = scripts.webserver or { }
 
-dofile(resolvers.find_file("l-url.lua","tex"))
-dofile(resolvers.find_file("luat-soc.lua","tex"))
+dofile(resolvers.findfile("l-url.lua","tex"))
+dofile(resolvers.findfile("luat-soc.lua","tex"))
 
 local socket = socket or require("socket") -- redundant in future version
 local format = string.format
@@ -262,7 +262,7 @@ function scripts.webserver.run(configuration)
             end
         end
     end
-    configuration.root = dir.expand_name(configuration.root)
+    configuration.root = dir.expandname(configuration.root)
     if not configuration.index then
         for i=1,#indices do
             local name = indices[i]
@@ -274,7 +274,7 @@ function scripts.webserver.run(configuration)
         configuration.index = configuration.index or "unknown"
     end
     if not configuration.scripts or configuration.scripts == "" then
-        configuration.scripts = dir.expand_name(file.join(configuration.root or ".",configuration.scripts or "."))
+        configuration.scripts = dir.expandname(file.join(configuration.root or ".",configuration.scripts or "."))
     end
     -- so far for checks
     logs.simple("running at port: %s",configuration.port)
@@ -340,7 +340,7 @@ messages.help = [[
 ]]
 
 if environment.argument("auto") then
-    local path = resolvers.find_file("mtx-server.lua") or "."
+    local path = resolvers.findfile("mtx-server.lua") or "."
     scripts.webserver.run {
         port    = environment.argument("port"),
         root    = environment.argument("root") or file.dirname(path) or ".",

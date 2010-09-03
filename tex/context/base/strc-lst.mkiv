@@ -152,7 +152,7 @@
    \ctxlua{structures.lists.process("#1","#2","#3")}%
    \dostoptagged}
 
-\unexpanded\def\analysestructurelist#1#2#3%
+\unexpanded\def\analyzestructurelist#1#2#3%
   {\ctxlua{structures.lists.analyze("#1","#2","#3")}}
 
 \def\firststructureelementinlist#1%
@@ -857,7 +857,7 @@
    \dosetuplist[#1][#2]%
    \edef\currentlist{\firststructureelementinlist{#1}}%
    \the\everystructurelist
-   \analysestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
+   \analyzestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
    \xdef\utilitylistlength{\structurelistsize}%
    \endgroup
    \dosetlistmode}

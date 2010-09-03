@@ -6,12 +6,12 @@ if not modules then modules = { } end modules ['mtx-server-ctx-fonttest'] = {
     license   = "see context related readme files"
 }
 
---~ dofile(resolvers.find_file("l-aux.lua","tex"))
-dofile(resolvers.find_file("trac-lmx.lua","tex"))
-dofile(resolvers.find_file("font-ott.lua","tex"))
-dofile(resolvers.find_file("font-syn.lua","tex"))
-dofile(resolvers.find_file("font-mis.lua","tex"))
-dofile(resolvers.find_file("font-otp.lua","tex"))
+--~ dofile(resolvers.findfile("l-aux.lua","tex"))
+dofile(resolvers.findfile("trac-lmx.lua","tex"))
+dofile(resolvers.findfile("font-ott.lua","tex"))
+dofile(resolvers.findfile("font-syn.lua","tex"))
+dofile(resolvers.findfile("font-mis.lua","tex"))
+dofile(resolvers.findfile("font-otp.lua","tex"))
 
 local format, gsub, concat, match, find = string.format, string.gsub, table.concat, string.match, string.find
 
@@ -33,7 +33,7 @@ local process_templates = { }
 process_templates.default = [[
 \starttext
     \setcharactermirroring[1]
-    \definefontfeature[sample][analyse=yes,%s]
+    \definefontfeature[sample][analyze=yes,%s]
     \definedfont[name:%s*sample]
     \startTEXpage[offset=3pt]
         \detokenize{%s}
@@ -153,7 +153,7 @@ local function showfeatures(f)
         logs.simple("processing font '%s'",f)
         local features = cache[f]
         if features == nil then
-            features = fonts.get_features(resolvers.find_file(f))
+            features = fonts.get_features(resolvers.findfile(f))
             if not features then
                 logs.simple("building cache for '%s'",f)
                 io.savedata(file.join(temppath,file.addsuffix(tempname,"tex")),format(process_templates.cache,f,f))

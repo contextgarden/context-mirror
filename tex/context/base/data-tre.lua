@@ -52,7 +52,7 @@ function resolvers.locators.tree(specification)
         if trace_locating then
             report_resolvers("tree locator '%s' found (%s)",path,specification)
         end
-        resolvers.append_hash('tree',specification,path,false) -- don't cache
+        resolvers.appendhash('tree',specification,path,false) -- don't cache
     elseif trace_locating then
         report_resolvers("tree locator '%s' not found",path)
     end

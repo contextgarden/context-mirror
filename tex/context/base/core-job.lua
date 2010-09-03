@@ -49,7 +49,7 @@ function resolvers.findctxfile(name,maxreadlevel)
                 end
             end
         end
-        return resolvers.find_file(name) or ""
+        return resolvers.findfile(name) or ""
     end
 end
 
@@ -73,12 +73,12 @@ function commands.locatefilepath(name,maxreadlevel)
 end
 
 function commands.usepath(paths,maxreadlevel)
-    resolvers.register_extra_path(paths)
+    resolvers.registerextrapath(paths)
     texsprint(texcatcodes,concat(resolvers.instance.extra_paths or {}, ""))
 end
 
 function commands.usesubpath(subpaths,maxreadlevel)
-    resolvers.register_extra_path(nil,subpaths)
+    resolvers.registerextrapath(nil,subpaths)
     texsprint(texcatcodes,concat(resolvers.instance.extra_paths or {}, ""))
 end
 
@@ -113,13 +113,13 @@ local function convertexamodes(str)
     end
 end
 
--- we need a system file option: ,. .. etc + paths but no tex lookup so resolvers.find_file is wrong here
+-- we need a system file option: ,. .. etc + paths but no tex lookup so resolvers.findfile is wrong here
 
 function commands.loadexamodes(filename)
     if not filename or filename == "" then
         filename = file.removesuffix(tex.jobname)
     end
-    filename = resolvers.find_file(file.addsuffix(filename,'ctm')) or ""
+    filename = resolvers.findfile(file.addsuffix(filename,'ctm')) or ""
     if filename ~= "" then
         commands.writestatus("examodes","loading %s",filename) -- todo: message system
         convertexamodes(io.loaddata(filename))

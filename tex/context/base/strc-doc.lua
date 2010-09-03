@@ -15,6 +15,7 @@ local format, gsub, find, concat, gmatch, match = string.format, string.gsub, st
 local texsprint, texwrite = tex.sprint, tex.write
 local concat = table.concat
 local max, min = math.max, math.min
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
@@ -34,6 +35,7 @@ local sections   = structures.sections
 local lists      = structures.lists
 local counters   = structures.counters
 local sets       = structures.sets
+local tags       = structures.tags
 local processors = structures.processors
 
 local sprintprocessor = processors.sprint
@@ -70,16 +72,18 @@ documents.initialize()
 
 -- -- -- sections -- -- --
 
-sections.collected = sections.collected or { }
-sections.tobesaved = sections.tobesaved or { }
 
-local collected, tobesaved = sections.collected, sections.tobesaved
+local collected, tobesaved = allocate(), allocate()
+
+sections.collected = collected
+sections.tobesaved = tobesaved
 
 --~ local function initializer()
---~     collected, tobesaved = sections.collected, sections.tobesaved
+--~     collected = mark(sections.collected)
+--~     tobesaved = mark(sections.tobesaved)
 --~ end
 
---~ job.register('structures.sections.collected', sections.tobesaved, initializer)
+--~ job.register('structures.sections.collected', tobesaved, initializer)
 
 function sections.currentid()
     return #tobesaved
@@ -311,6 +315,9 @@ function sections.somelevel(given)
     if trace_detail then
         report_structure("name '%s', numbers '%s', own numbers '%s'",givenname,concat(numberdata.numbers, " "),concat(numberdata.ownnumbers, " "))
     end
+
+    given.references.tag = tags.last and tags.last("section") -- (metadata.kind) sort of forward usage (section -> structure)
+
     given.references.section = sections.save(given)
  -- given.numberdata = nil
 end
@@ -472,48 +479,51 @@ end
 
 --~ todo: test this
 --~
---~ local function process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,preceding,done) -- todo: result
---~     -- todo: too much (100 steps)
---~     local number = numbers and (numbers[index] or 0)
---~     local ownnumber = ownnumbers and ownnumbers[index] or ""
---~     if number > criterium or (ownnumber ~= "") then
---~         local block = (entry.block ~= "" and entry.block) or sections.currentblock() -- added
---~         if preceding then
---~             local separator = sets.get("structure:separators",block,separatorset,preceding,".")
---~             if result then
---~                 result[#result+1] = ignoreprocessor(separator)
---~             else
---~                 sprintprocessor(ctxcatcodes,separator)
---~             end
---~             preceding = false
---~         end
---~         if result then
---~             if ownnumber ~= "" then
---~                 result[#result+1] = ownnumber
---~             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
---~                 result[#result+1] = converters.convert(conversion,number,true)
---~             else
---~                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
---~                 result[#result+1] = converters.convert(theconversion,number,true)
---~             end
---~         else
---~             if ownnumber ~= "" then
---~                 sprintprocessor(ctxcatcodes,ownnumber)
---~             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
---~                 texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
---~              -- context.convertnumber(conversion,number)
---~             else
---~                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
---~                 sprintprocessor(ctxcatcodes,theconversion,function(str)
---~                     return format("\\convertnumber{%s}{%s}",str or "numbers",number)
---~                 end)
---~             end
---~         end
---~         return index, true -- preceding, done
---~     else
---~         return preceding or false, done
---~     end
---~ end
+
+local function process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
+    -- todo: too much (100 steps)
+    local number = numbers and (numbers[index] or 0)
+    local ownnumber = ownnumbers and ownnumbers[index] or ""
+    if number > criterium or (ownnumber ~= "") then
+        local block = (entry.block ~= "" and entry.block) or sections.currentblock() -- added
+        if preceding then
+            local separator = sets.get("structure:separators",block,separatorset,preceding,".")
+            if separator then
+                if result then
+                    result[#result+1] = ignoreprocessor(separator)
+                else
+                    sprintprocessor(ctxcatcodes,separator)
+                end
+            end
+            preceding = false
+        end
+        if result then
+            if ownnumber ~= "" then
+                result[#result+1] = ownnumber
+            elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups) .. inherited!
+                result[#result+1] = converters.convert(conversion,number,true)
+            else
+                local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+                result[#result+1] = converters.convert(theconversion,number,true)
+            end
+        else
+            if ownnumber ~= "" then
+                sprintprocessor(ctxcatcodes,ownnumber)
+            elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
+                texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+             -- context.convertnumber(conversion,number)
+            else
+                local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+                sprintprocessor(ctxcatcodes,theconversion,function(str)
+                    return format("\\convertnumber{%s}{%s}",str or "numbers",number)
+                end)
+            end
+        end
+        return index, true
+    else
+        return preceding or false, done
+    end
+end
 
 function sections.typesetnumber(entry,kind,...) -- kind='section','number','prefix'
     if entry and entry.hidenumber ~= true then -- can be nil
@@ -579,50 +589,6 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local numbers, ownnumbers = entry.numbers, entry.ownnumbers
         if numbers then
             local done, preceding = false, false
-            local function process(index,result) -- move to outer
-                -- todo: too much (100 steps)
-                local number = numbers and (numbers[index] or 0)
-                local ownnumber = ownnumbers and ownnumbers[index] or ""
-                if number > criterium or (ownnumber ~= "") then
-                    local block = (entry.block ~= "" and entry.block) or sections.currentblock() -- added
-                    if preceding then
-                        local separator = sets.get("structure:separators",block,separatorset,preceding,".")
-                        if separator then
-                            if result then
-                                result[#result+1] = ignoreprocessor(separator)
-                            else
-                                sprintprocessor(ctxcatcodes,separator)
-                            end
-                        end
-                        preceding = false
-                    end
-                    if result then
-                        if ownnumber ~= "" then
-                            result[#result+1] = ownnumber
-                        elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
-                            result[#result+1] = converters.convert(conversion,number,true)
-                        else
-                            local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
-                            result[#result+1] = converters.convert(theconversion,number,true)
-                        end
-                    else
-                        if ownnumber ~= "" then
-                            sprintprocessor(ctxcatcodes,ownnumber)
-                        elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
-                            texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
-                            --~ context.convertnumber(conversion,number)
-                        else
-                            local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
-                            sprintprocessor(ctxcatcodes,theconversion,function(str)
-                                return format("\\convertnumber{%s}{%s}",str or "numbers",number)
-                            end)
-                        end
-                    end
-                    preceding, done = index, true
-                else
-                    preceding = preceding or false
-                end
-            end
             --
             local result = kind == "direct" and { }
             if result then
@@ -639,65 +605,57 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             end
             if prefixlist and (kind == 'section' or kind == 'prefix' or kind == 'direct') then
                 -- find valid set (problem: for sectionnumber we should pass the level)
-            --  if kind == "section" then
-                    -- no holes
-                    local b, e, bb, ee = 1, #prefixlist, 0, 0
-                    -- find last valid number
-                    for k=e,b,-1 do
-                        local prefix = prefixlist[k]
-                        local index = sections.getlevel(prefix) or k
-                        if index >= firstprefix and index <= lastprefix then
-                            local number = numbers and numbers[index]
-                            if number then
-                                local ownnumber = ownnumbers and ownnumbers[index] or ""
-                                if number > 0 or (ownnumber ~= "") then
-                                    break
-                                else
-                                    e = k -1
-                                end
-                            end
-                        end
-                    end
-                    -- find valid range
-                    for k=b,e do
-                        local prefix = prefixlist[k]
-                        local index = sections.getlevel(prefix) or k
-                        if index >= firstprefix and index <= lastprefix then
-                            local number = numbers and numbers[index]
-                            if number then
-                                local ownnumber = ownnumbers and ownnumbers[index] or ""
-                                if number > 0 or (ownnumber ~= "") then
-                                    if bb == 0 then bb = k end
-                                    ee = k
-                                else
-                                    bb, ee = 0, 0
-                                end
-                            else
+                -- no holes
+                local b, e, bb, ee = 1, #prefixlist, 0, 0
+                -- find last valid number
+                for k=e,b,-1 do
+                    local prefix = prefixlist[k]
+                    local index = sections.getlevel(prefix) or k
+                    if index >= firstprefix and index <= lastprefix then
+                        local number = numbers and numbers[index]
+                        if number then
+                            local ownnumber = ownnumbers and ownnumbers[index] or ""
+                            if number > 0 or (ownnumber ~= "") then
                                 break
+                            else
+                                e = k -1
                             end
                         end
                     end
-                    -- print valid range
-                    for k=bb,ee do
-                        local prefix = prefixlist[k]
-                        local index = sections.getlevel(prefix) or k
-                        if index >= firstprefix and index <= lastprefix then
-                            process(index,result)
+                end
+                -- find valid range
+                for k=b,e do
+                    local prefix = prefixlist[k]
+                    local index = sections.getlevel(prefix) or k
+                    if index >= firstprefix and index <= lastprefix then
+                        local number = numbers and numbers[index]
+                        if number then
+                            local ownnumber = ownnumbers and ownnumbers[index] or ""
+                            if number > 0 or (ownnumber ~= "") then
+                                if bb == 0 then bb = k end
+                                ee = k
+                            else
+                                bb, ee = 0, 0
+                            end
+                        else
+                            break
                         end
                     end
-            --  else
-            --      for k=1,#prefixlist do
-            --          local prefix = prefixlist[k]
-            --          local index = sections.getlevel(prefix) or k
-            --          if index >= firstprefix and index <= lastprefix then
-            --              process(index)
-            --          end
-            --      end
-            --  end
+                end
+                -- print valid range
+                for k=bb,ee do
+                    local prefix = prefixlist[k]
+                    local index = sections.getlevel(prefix) or k
+                    if index >= firstprefix and index <= lastprefix then
+                     -- process(index,result)
+                        preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
+                    end
+                end
             else
                 -- also holes check
-                for prefix=firstprefix,lastprefix do
-                    process(prefix,result)
+                for index=firstprefix,lastprefix do
+                 -- process(index,result)
+                    preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
                 end
             end
             --
@@ -777,3 +735,49 @@ function sections.getnumber(depth,what) -- redefined here
     local sectiondata = sections.findnumber(depth,what)
     texwrite((sectiondata and sectiondata.numbers[depth]) or 0)
 end
+
+--~             local done, preceding = false, false
+--~             local function process(index,result) -- move to outer
+--~                 -- todo: too much (100 steps)
+--~                 local number = numbers and (numbers[index] or 0)
+--~                 local ownnumber = ownnumbers and ownnumbers[index] or ""
+--~                 if number > criterium or (ownnumber ~= "") then
+--~                     local block = (entry.block ~= "" and entry.block) or sections.currentblock() -- added
+--~                     if preceding then
+--~                         local separator = sets.get("structure:separators",block,separatorset,preceding,".")
+--~                         if separator then
+--~                             if result then
+--~                                 result[#result+1] = ignoreprocessor(separator)
+--~                             else
+--~                                 sprintprocessor(ctxcatcodes,separator)
+--~                             end
+--~                         end
+--~                         preceding = false
+--~                     end
+--~                     if result then
+--~                         if ownnumber ~= "" then
+--~                             result[#result+1] = ownnumber
+--~                         elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
+--~                             result[#result+1] = converters.convert(conversion,number,true)
+--~                         else
+--~                             local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+--~                             result[#result+1] = converters.convert(theconversion,number,true)
+--~                         end
+--~                     else
+--~                         if ownnumber ~= "" then
+--~                             sprintprocessor(ctxcatcodes,ownnumber)
+--~                         elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
+--~                             texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+--~                             --~ context.convertnumber(conversion,number)
+--~                         else
+--~                             local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
+--~                             sprintprocessor(ctxcatcodes,theconversion,function(str)
+--~                                 return format("\\convertnumber{%s}{%s}",str or "numbers",number)
+--~                             end)
+--~                         end
+--~                     end
+--~                     preceding, done = index, true
+--~                 else
+--~                     preceding = preceding or false
+--~                 end
+--~             end

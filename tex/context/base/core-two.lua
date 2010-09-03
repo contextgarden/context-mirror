@@ -7,8 +7,10 @@ if not modules then modules = { } end modules ['core-two'] = {
 }
 
 local remove, concat = table.remove, table.concat
-
 local texprint = tex.print
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+local collected, tobesaved = allocate(), allocate()
 
 --[[ldx--
 <p>We save multi-pass information in the main utility table. This is a
@@ -16,19 +18,18 @@ bit of a mess because we support old and new methods.</p>
 --ldx]]--
 
 local jobpasses = {
-    collected = { },
-    tobesaved = { },
+    collected = collected,
+    tobesaved = tobesaved,
 }
 
 job.passes = jobpasses
 
-local collected, tobesaved = jobpasses.collected, jobpasses.tobesaved
-
 local function initializer()
-    collected, tobesaved = jobpasses.collected, jobpasses.tobesaved
+    collected = mark(jobpasses.collected)
+    tobesaved = mark(jobpasses.tobesaved)
 end
 
-job.register('job.passes.collected', jobpasses.tobesaved, initializer, nil)
+job.register('job.passes.collected', tobesaved, initializer, nil)
 
 local function allocate(id)
     local p = tobesaved[id]
