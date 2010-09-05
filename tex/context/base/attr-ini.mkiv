@@ -33,34 +33,39 @@
 
 \newtoks \attributesresetlist
 
-\ifdefined \v!global \else \def\v!global{global} \fi % for metatex
+\ifdefined \s!global \else \def\s!global{global} \fi % for metatex % or hard check later
+\ifdefined \s!public \else \def\s!public{public} \fi % for metatex % or hard check later
 
 \unexpanded\def\defineattribute
   {\dodoubleempty\dodefineattribute}
 
 \def\dodefineattribute[#1][#2]% alternatively we can let lua do the housekeeping
   {\expandafter\newattribute\csname @attr@#1\endcsname
-   \expandafter        \xdef\csname :attr:#1\endcsname{\number\lastallocatedattribute}%
+   \expandafter\newconstant \csname :attr:#1\endcsname
+   \csname :attr:#1\endcsname\lastallocatedattribute
    \ctxlua{attributes.define("#1",\number\lastallocatedattribute)}%
   %\writestatus\m!systems{defining attribute #1 with number \number\lastallocatedattribute}%
-   \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
+   \doifnotinset\s!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
+   \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname :attr:#1\endcsname}}
 
 \unexpanded\def\definesystemattribute
   {\dodoubleempty\dodefinesystemattribute}
 
 \def\dodefinesystemattribute[#1][#2]% alternatively we can let lua do the housekeeping
   {\scratchcounter\ctxlua{tex.print(attributes.private("#1"))}\relax
-   \global\expandafter\attributedef\csname @attr@#1\endcsname\scratchcounter
-          \expandafter        \xdef\csname :attr:#1\endcsname{\number\scratchcounter}%
+   \expandafter\attributedef\csname @attr@#1\endcsname\scratchcounter
+   \expandafter\newconstant \csname :attr:#1\endcsname
+   \csname :attr:#1\endcsname\scratchcounter
   %\writestatus\m!systems{defining system attribute #1 with number \number\scratchcounter}%
-   \doifnotinset\v!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}}
+   \doifnotinset\s!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
+   \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname :attr:#1\endcsname}}
 
 % expandable so we can \edef them for speed
 
 \def\dosetattribute#1#2{\csname @attr@#1\endcsname#2\relax}
 \def\doresetattribute#1{\csname @attr@#1\endcsname\attributeunsetvalue}
 \def\dogetattribute  #1{\number\csname @attr@#1\endcsname}
-\def\dogetattributeid#1{\csname :attr:#1\endcsname}
+\def\dogetattributeid#1{\number\csname :attr:#1\endcsname}
 
 \let\dompattribute\gobbletwoarguments
 
@@ -68,22 +73,22 @@
 
 %D For the moment we put this here (later it will move to where it's used):
 
-\definesystemattribute[state]
-\definesystemattribute[skip]
-\definesystemattribute[penalty]
-\definesystemattribute[colormodel][global]                     \chardef\colormodelattribute     \dogetattributeid{colormodel}
-\definesystemattribute[color]                                  \chardef\colorattribute          \dogetattributeid{color}
-\definesystemattribute[transparency]                           \chardef\transparencyattribute   \dogetattributeid{transparency}
-\definesystemattribute[background]                             \chardef\backgroundattribute     \dogetattributeid{background}
-\definesystemattribute[colorintent]                            \chardef\colorintentattribute    \dogetattributeid{colorintent}
-\definesystemattribute[negative]                               \chardef\negativeattribute       \dogetattributeid{negative}
-\definesystemattribute[effect]                                 \chardef\effectattribute         \dogetattributeid{effect}
-\definesystemattribute[viewerlayer]                            \chardef\viewerlayerattribute    \dogetattributeid{viewerlayer}
-\definesystemattribute[layoutcomponent]                        \chardef\layoutcomponentattribute\dogetattributeid{layoutcomponent}
-\definesystemattribute[reference]                              \chardef\referenceattribute      \dogetattributeid{reference}
-\definesystemattribute[destination]                            \chardef\destinationattribute    \dogetattributeid{destination}
-\definesystemattribute[graphicvadjust]                         \chardef\graphicvadjustattribute \dogetattributeid{graphicvadjust}
-\definesystemattribute[ruled]                                  \chardef\ruledattribute          \dogetattributeid{ruled}
-\definesystemattribute[shifted]                                \chardef\shiftedattribute        \dogetattributeid{shifted}
+\definesystemattribute [state]
+\definesystemattribute [skip]
+\definesystemattribute [penalty]
+\definesystemattribute [colormodel]      [public,global]
+\definesystemattribute [color]           [public]
+\definesystemattribute [transparency]    [public]
+\definesystemattribute [background]      [public]
+\definesystemattribute [colorintent]     [public]
+\definesystemattribute [negative]        [public]
+\definesystemattribute [effect]          [public]
+\definesystemattribute [viewerlayer]     [public]
+\definesystemattribute [layoutcomponent] [public]
+\definesystemattribute [reference]       [public]
+\definesystemattribute [destination]     [public]
+\definesystemattribute [graphicvadjust]  [public]
+\definesystemattribute [ruled]           [public]
+\definesystemattribute [shifted]         [public]
 
 \protect \endinput

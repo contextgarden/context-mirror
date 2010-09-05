@@ -326,39 +326,49 @@
 %D implemented by keeping track of the state, often the last
 %D command on a row.
 
-\chardef\TABLEunknown          = 0
+\setnewconstant\TABLEunknown          0
 
-\chardef\TABLEseparaterow      = 1
-\chardef\TABLEfirstrow         = 2
-\chardef\TABLEmidrow           = 3
-\chardef\TABLElastrow          = 4
-\chardef\TABLErule             = 5
-\chardef\TABLEskip             = 6
-\chardef\TABLEautorow          = 7
+\setnewconstant\TABLEseparaterow      1
+\setnewconstant\TABLEfirstrow         2
+\setnewconstant\TABLEmidrow           3
+\setnewconstant\TABLElastrow          4
+\setnewconstant\TABLErule             5
+\setnewconstant\TABLEskip             6
+\setnewconstant\TABLEautorow          7
 
-\chardef\TABLEforcefirstrow    = 1
-\chardef\TABLEforcelastrow     = 2
+\setnewconstant\TABLEforcefirstrow    1
+\setnewconstant\TABLEforcelastrow     2
 
-\chardef\TABLEmissingrow       = 1
-\chardef\TABLEmissingcolumn    = 2
-\chardef\TABLEspanoverflow     = 3
-\chardef\TABLEdivisionoverflow = 4
+\setnewconstant\TABLEmissingrow       1
+\setnewconstant\TABLEmissingcolumn    2
+\setnewconstant\TABLEspanoverflow     3
+\setnewconstant\TABLEdivisionoverflow 4
 
-%D We store these states using efficient \type {\chardef}'s.
-%D Like most variables, these are global ones. When needed,
+\newconstant\TABLErowfactor
+\newconstant\TABLEendofrowdepth
+\newconstant\TABLEendofrowheight
+\newconstant\TABLEcr
+\newconstant\TABLErowzero
+\newconstant\TABLEn
+\newconstant\TABLEerror
+\newconstant\TABLEforce
+\newconstant\TABLEaction
+
+%D We store these states using \type {constants}'s and
+%D like most variables, these are global ones. When needed,
 %D especially when we flush the backgrounds, we can temporary
 %D disable the assignment.
 
 \newif\ifsetTABLEaction
 
 \def\setTABLEaction#1%
-  {\ifsetTABLEaction\global\chardef\TABLEaction#1\fi}
+  {\ifsetTABLEaction\global\TABLEaction#1\fi}
 
 \def\setTABLEforce#1%
-  {\ifsetTABLEaction\global\chardef\TABLEforce#1\fi}
+  {\ifsetTABLEaction\global\TABLEforce#1\fi}
 
 \def\setTABLEerror#1%
-  {\global\chardef\TABLEerror#1}
+  {\global\TABLEerror#1}
 
 %D Before we come to using these variables, we redefine and/or
 %D adapt some \TABLE\ macros. Within \TABLE's the \type{|} and
@@ -372,13 +382,13 @@
 
 % \bgroup
 
-% \catcode`\|=\@@active
-% \catcode`\"=\@@active
+% \catcode`\|=\activecatcode
+% \catcode`\"=\activecatcode
 %
 % \gdef\pushouterbarandquote
 %    {\ifForgetTableBarAndQuote
-%       \ifnum\catcode`\|=\@@active \let\outertablebar  |\else\let\outertablebar  \relax\fi
-%       \ifnum\catcode`\"=\@@active \let\outertablequote"\else\let\outertablequote\relax\fi
+%       \ifnum\catcode`\|=\activecatcode \let\outertablebar  |\else\let\outertablebar  \relax\fi
+%       \ifnum\catcode`\"=\activecatcode \let\outertablequote"\else\let\outertablequote\relax\fi
 %       \let|\letterbar
 %       \let"\letterdoublequote
 %     \fi}
@@ -1020,7 +1030,7 @@
   {\bgroup                   % kan-ie weg?
    \global\intabletrue
    \pushouterbarandquote
-   %catcode`\|=\@@other
+   %catcode`\|=\othercatcode
    \complexorsimple\secondstagestartTABLE}
 
 \def\simplesecondstagestartTABLE#1%
@@ -1047,7 +1057,7 @@
 
 \unexpanded\def\definetabletemplate % to be redone
   {\bgroup
-   \catcode`\|=\@@other
+   \catcode`\|=\othercatcode
    \doquadrupleempty\dodefinetabletemplate}
 
 \def\dodefinetabletemplate[#1][#2][#3][#4]%
@@ -1120,7 +1130,7 @@
    \fi \fi
    \TABLEnoalign{\globalpopmacro\simpleTableHL}}
 
-\bgroup \catcode`|=\@@other \catcode`"=\@@other
+\bgroup \catcode`|=\othercatcode \catcode`"=\othercatcode
 
 \gdef\complexsecondstagestartTABLE#1[#2]% brr nested mess
   {\bgroup
@@ -1439,7 +1449,7 @@
 %D handles alignments, we cannot automate spacing for colored
 %D rows and columns.
 
-\chardef\TABLErowzero=0
+\setnewconstant\TABLErowzero\zerocount
 
 \def\checkTABLErow#1% pure for message purposes
   {\unskip % added
@@ -1651,13 +1661,13 @@
 %D \TABLE\ changes the catcode when needed.}
 
 \bgroup
-    \catcode`\|=\@@other  \gdef\@@otherbar     {|}
-    \catcode`\"=\@@other  \gdef\@@otherquote   {"}
-    \catcode`\|=\@@active \gdef\@@useotherbar  {\let|\@@otherbar}
-    \catcode`\"=\@@active \gdef\@@useotherquote{\let"\@@otherquote}
+    \catcode`\|=\othercatcode  \gdef\@@otherbar     {|}
+    \catcode`\"=\othercatcode  \gdef\@@otherquote   {"}
+    \catcode`\|=\activecatcode \gdef\@@useotherbar  {\let|\@@otherbar}
+    \catcode`\"=\activecatcode \gdef\@@useotherquote{\let"\@@otherquote}
 \egroup
 
-\bgroup \catcode`\|=\@@other
+\bgroup \catcode`\|=\othercatcode
 
 \gdef\getTABLEnofcolumns#1%
   {\bgroup
@@ -1913,8 +1923,8 @@
    \fi}
 
 % \bgroup
-% \catcode`\|=\@@active
-% \catcode`\"=\@@active
+% \catcode`\|=\activecatcode
+% \catcode`\"=\activecatcode
 % \gdef\redefinetablebarandquote
 %   {\def|{\VL}%           % \normalTABLEsimplebar
 %    \def\|##1{\VL[##1]}%  % \normalTABLEcomplexbar
@@ -2057,8 +2067,8 @@
    \globallet\lastTABLEc\@@tibackgroundcolor
    \globallet\lastTABLEr\@@tibackgroundscreen
    \doifinsetelse\@@tibackground{c,color} % \v!color
-     {\global\chardef\TABLEcr\plusone}
-     {\global\chardef\TABLEcr\plustwo}}
+     {\global\TABLEcr\plusone}
+     {\global\TABLEcr\plustwo}}
 
 \def\TableBC
   {\ifTABLEgrayline
@@ -2111,13 +2121,13 @@
      {\dodoanalyzeTABLEcr[1,#1,#2]}}
 
 \def\dodoanalyzeTABLEcr[#1,#2,#3]%
-  {\global\chardef\TABLEn#1\relax
+  {\global\TABLEn#1\relax
    \processaction
      [#2]
-     [     c=>\global\chardef\TABLEcr1,%
-       color=>\global\chardef\TABLEcr1,%
-           r=>\global\chardef\TABLEcr2,%
-      raster=>\global\chardef\TABLEcr2]%
+     [     c=>\global\TABLEcr\plusone,%
+       color=>\global\TABLEcr\plusone,%
+           r=>\global\TABLEcr\plustwo,%
+      raster=>\global\TABLEcr\plustwo]%
    \ifcase\TABLEcr \or
      \doifsomething{#3}{\xdef\lastTABLEc{#3}}%
    \or
@@ -2322,28 +2332,28 @@
 
 \def\endTABLEgrayrow#1#2#3%
   {\ifcase#1\relax
-     \global\chardef\TABLEendofrowheight\TABLErowfactor
-     \global\chardef\TABLEendofrowdepth \TABLErowfactor
+     \global\TABLEendofrowheight\TABLErowfactor
+     \global\TABLEendofrowdepth \TABLErowfactor
    \or
-     \global\chardef\TABLEendofrowheight\TABLErowfactor
-     \global\chardef\TABLEendofrowdepth \TABLErowfactor
+     \global\TABLEendofrowheight\TABLErowfactor
+     \global\TABLEendofrowdepth \TABLErowfactor
    \or
-     \global\chardef\TABLEendofrowheight\TABLErowfactor
-     \global\chardef\TABLEendofrowdepth \TABLErowzero
+     \global\TABLEendofrowheight\TABLErowfactor
+     \global\TABLEendofrowdepth \TABLErowzero
    \or
      \ifnum\TABLEforce=\TABLEforcelastrow
-       \global\chardef\TABLEendofrowheight\TABLErowzero
-       \global\chardef\TABLEendofrowdepth \TABLErowfactor
+       \global\TABLEendofrowheight\TABLErowzero
+       \global\TABLEendofrowdepth \TABLErowfactor
      \else\ifnum\TABLEforce=\TABLEforcefirstrow
-       \global\chardef\TABLEendofrowheight\TABLErowfactor
-       \global\chardef\TABLEendofrowdepth \TABLErowzero
+       \global\TABLEendofrowheight\TABLErowfactor
+       \global\TABLEendofrowdepth \TABLErowzero
      \else
-       \global\chardef\TABLEendofrowheight\TABLErowzero
-       \global\chardef\TABLEendofrowdepth \TABLErowzero
+       \global\TABLEendofrowheight\TABLErowzero
+       \global\TABLEendofrowdepth \TABLErowzero
      \fi\fi
    \or
-     \global\chardef\TABLEendofrowheight\TABLErowzero
-     \global\chardef\TABLEendofrowdepth \TABLErowfactor
+     \global\TABLEendofrowheight\TABLErowzero
+     \global\TABLEendofrowdepth \TABLErowfactor
    \fi}
 
 \unexpanded\def\defineTABLEshorthands%
@@ -2363,8 +2373,8 @@
       \v!medium=>\OpenUp11\def\LOW{\Lower7 },
          \v!big=>\OpenUp22\def\LOW{\Lower8 }]%
    \doifelse\@@tidistance\v!none
-     {\chardef\TABLErowfactor\zerocount}
-     {\chardef\TABLErowfactor\plustwo  }}
+     {\TABLErowfactor\zerocount}
+     {\TABLErowfactor\plustwo  }}
 
 \def\dohandlebar % here ?
   {\ifmmode

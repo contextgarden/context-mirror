@@ -196,8 +196,10 @@
 %D
 %D \METAPOST\ support.
 
+\ifx\makeMPintoPDFobject\undefined \newcount\makeMPintoPDFobject \fi
+
 \appendtoks
-  \chardef\makeMPintoPDFobject\zerocount
+  \makeMPintoPDFobject\zerocount
   \def\setMPPDFobject#1#2{\def\getMPPDFobject{\box#2}}%
 \to \everyresetspecials
 

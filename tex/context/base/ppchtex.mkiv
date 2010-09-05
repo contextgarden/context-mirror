@@ -97,13 +97,15 @@
 \doifundefined{fiverm}  % In the more recent LaTeX versions
   {\font\fiverm=cmr5 }  % \fiverm is no longer (pre)defined.
 
+\newconstant\chemicaldrawingmode
+
 \doifdefinedelse{beginpicture}           % PiCTeX
   {\doifdefinedelse{startMPdrawing}
-     {\chardef\chemicaldrawingmode=2 }   % MetaPost
-     {\chardef\chemicaldrawingmode=0 }}  % raw
+     {\chemicaldrawingmode\plustwo  }   % MetaPost
+     {\chemicaldrawingmode\zerocount}}  % raw
   {\doifdefinedelse{psaxes}
-     {\chardef\chemicaldrawingmode=1 }   % PSTricks
-     {\chardef\chemicaldrawingmode=3 }}  % unknown
+     {\chemicaldrawingmode\plusone  }   % PSTricks
+     {\chemicaldrawingmode\plusthree}}  % unknown
 
 \ifcase\chemicaldrawingmode
   \writestatus{ppchtex}{using PiCTeX}
@@ -719,8 +721,8 @@
    \ignorespaces}
 
 \def\dostartchemical%
-  {\catcode`\^=\@@superscript% t.b.v. \enableduplication
-   \catcode`\_=\@@subscript  % t.b.v. de zekerheid
+  {\catcode`\^=\superscriptcatcode% t.b.v. \enableduplication
+   \catcode`\_=\subscriptcatcode  % t.b.v. de zekerheid
    \begingroup
    \inchemicaltrue
    \def\toptext##1{\gdef\thetoptext{##1}\ignorespaces}\toptext{}%
@@ -1204,7 +1206,7 @@
 % #3: x-coordinaat eindpunt
 % #4: y-coordinaat eindpunt
 
-\chardef\chemicallinetype=0
+\newconstant\chemicallinetype
 
 \def\doplotchemicalline
   {\!!counte=\!!countc \advance\!!counte by -\!!counta
@@ -1407,7 +1409,7 @@
    \getvalue{\s!chemicallinesegment#2#1}}
 
 \def\doprocesschemicallinesegment#1#2#3#4#5%
-  {\chardef\chemicallinetype=#1
+  {\chemicallinetype#1\relax
    \def\chemicallineposition{#2}%
    \def\doprocess[##1##2##3##4##5]%
      {\doifelse{##1}{?}
@@ -1778,8 +1780,8 @@
      \innerchemicalfalse
    \fi
    \bgroup
-   \catcode`\^=\@@superscript %  t.b.v. \enableduplication
-   \catcode`\_=\@@subscript   %  t.b.v. de zekerheid
+   \catcode`\^=\superscriptcatcode %  t.b.v. \enableduplication
+   \catcode`\_=\subscriptcatcode   %  t.b.v. de zekerheid
    \ifmmode
      \ifinnerchemical
        \def\next{\dotriplegroupempty\dosimplechemicalA}%

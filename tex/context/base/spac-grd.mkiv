@@ -208,11 +208,11 @@
 %D is not needed, but I want to look the visualization as good
 %D as possible too.
 
-\chardef\baselinecorrectionmode\plusone
+\setnewconstant\baselinecorrectionmode\plusone
 
-\def\onbaselinecorrection   {\chardef\baselinecorrectionmode\plusone  }
-\def\offbaselinecorrection  {\chardef\baselinecorrectionmode\plustwo  }
-\def\forcebaselinecorrection{\chardef\baselinecorrectionmode\plusthree}
+\def\onbaselinecorrection   {\baselinecorrectionmode\plusone  }
+\def\offbaselinecorrection  {\baselinecorrectionmode\plustwo  }
+\def\forcebaselinecorrection{\baselinecorrectionmode\plusthree}
 
 %D \macros
 %D  {topbaselinecorrection,botbaselinecorrection}

@@ -321,8 +321,10 @@
 
 %D A new key 'headalign' in definitions.
 
+\newconstant\nesteddescriptionstate
+
 \def\resetdescriptions % to be used in e.g. footnotes
-  {\chardef\nesteddescriptionstate\zerocount}
+  {\nesteddescriptionstate\zerocount}
 
 \resetdescriptions
 
@@ -359,9 +361,9 @@
    \normalexpanded{\noexpand\indenting[\descriptionparameter\c!indenting]}%
    % better a system mode
    \ifcase\nesteddescriptionstate
-     \chardef\nesteddescriptionstate\plusone
+     \nesteddescriptionstate\plusone
    \or
-     \chardef\nesteddescriptionstate\plustwo
+     \nesteddescriptionstate\plustwo
    \fi % now happens elsewhere : \noindent\ignorespaces
    \@@resetdescriptionclosesymbol}
 

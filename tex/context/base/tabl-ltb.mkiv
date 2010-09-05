@@ -59,8 +59,9 @@
 
 \unprotect
 
-\chardef\linetablesplitstate\zerocount
-\chardef\linetableheadstate \zerocount
+\newconstant\linetablesplitstate
+\newconstant\linetableheadstate
+\newconstant\linetablemode
 
 \edef\??ler{\??le:r:}
 \edef\??lec{\??le:c:}
@@ -89,9 +90,9 @@
 
 \initializetablebox     \zerocount % holds repeater
 
-\chardef\linetablehmode \zerocount
-\chardef\linetablepage  \zerocount
-\chardef\linetablerepeat\zerocount
+\newconstant\linetablehmode
+\newconstant\linetablepage
+\newconstant\linetablerepeat
 
 \unexpanded\def\setuplinetable
   {\dotripleempty\dosetuplinetable}
@@ -206,7 +207,7 @@
        }%
      \global\linetablecolumn\scratchcounter
    \fi
-   \chardef\linetablemode
+   \linetablemode
      \iflinetablepreroll
        \ifdim\scratchdimen>\zeropoint \zerocount \else \plustwo \fi
      \else
@@ -218,7 +219,7 @@
      \or
        % fit, keep it simple
      \or
-       \chardef\linetablemode\plusone % line
+       \linetablemode\plusone % line
      \else
        % some already calculated height
      \fi
@@ -375,14 +376,14 @@
        \else
          % after, later
        \fi
-       \chardef\linetableheadstate\plusthree
+       \linetableheadstate\plusthree
        \global\setbox\tablebox\zerocount\emptybox % here
      \fi
      % reset \linetablerow will be an option, currently
      % starts at zero after split
      \globallet\linetablerow\!!zerocount
      \globallet\linetableline\!!zerocount
-     \global\chardef\linetablepage\zerocount
+     \global\linetablepage\zerocount
      \global\linetablewidth\zeropoint
      \setnoftableslines
    \fi}
@@ -448,9 +449,9 @@
          \savelinetablepart
        \fi
        \ifcase\linetablepage \or
-         \global\chardef\linetablepage \plustwo
+         \global\linetablepage \plustwo
        \else
-         \global\chardef\linetablepage \plusone
+         \global\linetablepage \plusone
        \fi
        \doglobal\increment\linetablepart
        \global\linetablewidth\wd\tablebox\zerocount
@@ -482,9 +483,9 @@
        \stoplinetablepart
        \savelinetablepart
        \ifcase\linetablepage \or
-         \global\chardef\linetablepage \plustwo
+         \global\linetablepage \plustwo
        \else
-         \global\chardef\linetablepage \plusone
+         \global\linetablepage \plusone
        \fi
        \doglobal\increment\linetablepart
        \ifnum\linetablepart>\noflinetableparts
@@ -524,8 +525,8 @@
      [\linetableparameter\c!stretch]
      [ \v!no=>{\setuplinetable[\c!stretch=\maxdimen]},% no stretch
       \v!yes=>{\setuplinetable[\c!stretch=\zeropoint]}]% max stretch
-   \chardef\linetablerepeat\linetableparameter\c!nleft
-   \chardef\linetablesplitstate % =
+   \linetablerepeat\linetableparameter\c!nleft
+   \linetablesplitstate % =
      \ifdim\linetableparameter\c!maxwidth>\zeropoint
        \zerocount \else \plusone
      \fi
@@ -573,7 +574,7 @@
 
 \unexpanded\def\stoplinetablerun
   {\globallet\linetableline\!!maxcard
-   \chardef\linetableheadstate\zerocount % blocked
+   \linetableheadstate\zerocount % blocked
    \flushlinetableparts
    \iflinetablepreroll \else
      \linetableparameter\c!after
@@ -649,7 +650,7 @@
 %   \else\ifx\linetableheight\v!fit
 %     % keep it simple
 %   \else\ifx\linetableheight\v!line
-%     \chardef\linetablemode\plusone
+%     \linetablemode\plusone
 %   \else
 %     \!!heighta\linetableheight
 %     \advance\!!heighta-\strutdepth
@@ -658,11 +659,11 @@
    \linetableheight\zeropoint
    \edef\!!stringa{\linetablerparameter\c!height}%
    \ifx\!!stringa\empty
-     \chardef\linetablehmode\zerocount
+     \linetablehmode\zerocount
    \else\ifx\!!stringa\v!fit
-     \chardef\linetablehmode\plusone
+     \linetablehmode\plusone
    \else\ifx\!!stringa\v!line
-     \chardef\linetablehmode\plustwo
+     \linetablehmode\plustwo
    \else
      \linetableheight\!!stringa
      \advance\linetableheight-\strutdepth
@@ -703,10 +704,10 @@
    \flushlinetablehead}
 
 \def\checklinetablepage
-  {\global\chardef\linetablepage\zerocount
+  {\global\linetablepage\zerocount
    \ifcase\linetablerepeat \else \ifcase\linetablepage
      \doif{\linetableparameter\c!repeat}\v!no
-       {\global\chardef\linetablepage\doifoddpageelse\plusone\plustwo}%
+       {\global\linetablepage\doifoddpageelse\plusone\plustwo}%
    \fi \fi}
 
 \def\flushlinetablehead
@@ -718,9 +719,9 @@
      % 2 head done
    \or
      % 3 trigger flush
-     \chardef\linetableheadstate\plusone
+     \linetableheadstate\plusone
      \the\@@linetablehead\relax
-     \chardef\linetableheadstate\plustwo
+     \linetableheadstate\plustwo
    \fi}
 
 \def\linetableNC % first time special treatment
@@ -771,7 +772,7 @@
   {\ifinlinetable
      \@@linetablehead\emptytoks
    \fi
-   \chardef\linetableheadstate3 % full
+   \linetableheadstate\plusthree % full
    \@@linetablehead{#1}%
    \ifinlinetable
      \flushlinetablehead

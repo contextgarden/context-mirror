@@ -149,9 +149,9 @@
 %D The last object number used is avaliable in the macro
 %D \type {\lastPDFMPobject}.
 
-\ifx\makeMPintoPDFobject   \undefined \chardef\makeMPintoPDFobject   \zerocount \fi
-\ifx\blackoutMPgraphic     \undefined \chardef\blackoutMPgraphic     \plusone   \fi
-\ifx\everyMPtoPDFconversion\undefined \newtoks\everyMPtoPDFconversion           \fi
+\ifx\makeMPintoPDFobject   \undefined \newcount\makeMPintoPDFobject      \fi
+\ifx\blackoutMPgraphic     \undefined \chardef\blackoutMPgraphic\plusone \fi
+\ifx\everyMPtoPDFconversion\undefined \newtoks\everyMPtoPDFconversion    \fi
 
 \let\lastPDFMPobject    \!!zerocount
 \let\currentPDFresources\empty
@@ -238,7 +238,7 @@
 \def\dopackageMPgraphic#1% #1 = boxregister
   {\ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
      % an existing value of 2 signals object support (set elsewhere)
-     \chardef\makeMPintoPDFobject\plusone
+     \makeMPintoPDFobject\plusone
    \fi\fi
    \ifcase\makeMPintoPDFobject
      \box#1%

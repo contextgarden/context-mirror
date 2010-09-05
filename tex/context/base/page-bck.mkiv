@@ -13,8 +13,6 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Backgrounds}
 
-% \chardef\kindofpagetextareas=1 will isolate graphics from backgrounds
-
 % todo \fastlocalframed -> \localbackgroundframed
 
 \unprotect
@@ -248,8 +246,8 @@
 %D background at the same time since something may have
 %D changed halfway a page.
 
-\chardef\newrightbackground\zerocount
-\chardef\newleftbackground \zerocount
+\newconditional\newrightbackground
+\newconditional\newleftbackground
 
 \def\recalculatebackgrounds
   {\global\newbackgroundtrue}
@@ -262,28 +260,31 @@
    \ifx\@@mastate\v!repeat\else\global\newbackgroundfalse\fi}
 
 \def\dosetbackgroundboxesr
-  {\global\chardef\newrightbackground\plusone
-   \global\chardef\newleftbackground\plusone
+  {\global\settrue\newrightbackground
+   \global\settrue\newleftbackground
    \global\setbox\leftbackground\emptybox
    \global\setbox\rightbackground\emptybox}
+
 \def\dosetbackgroundboxesa
-  {\ifcase\newleftbackground \else
+  {\ifconditional\newleftbackground
      % \showmessage\m!layouts8\empty
      \setbackgroundbox\leftbackground\relax
-     \global\chardef\newleftbackground\zerocount
-     \global\chardef\newrightbackground\zerocount
+     \global\setfalse\newleftbackground
+     \global\setfalse\newrightbackground
    \fi}
+
 \def\dosetbackgroundboxesb
-  {\ifcase\newleftbackground \else
+  {\ifconditional\newleftbackground
      % \showmessage\m!layouts8\empty
      \setbackgroundbox\leftbackground\relax
-     \global\chardef\newleftbackground\zerocount
+     \global\setfalse\newleftbackground
    \fi}
+
 \def\dosetbackgroundboxesc
-  {\ifcase\newrightbackground \else
+  {\ifconditional\newrightbackground
      % \showmessage\m!layouts8\empty
      \setbackgroundbox\rightbackground\doswapmargins
-     \global\chardef\newrightbackground\zerocount
+     \global\setfalse\newrightbackground
    \fi}
 
 \def\addmainbackground#1% todo: dimension spec

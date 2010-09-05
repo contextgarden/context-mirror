@@ -49,12 +49,12 @@
 
 \def\controlspace{\hbox{\char32}} % rather tex
 \def\normalspace { }
-\def\normalspaces{\catcode`\ =\@@space}
+\def\normalspaces{\catcode`\ =\spacecatcode}
 
 \bgroup
-\catcode`\ =\@@active
-\gdef\obeyspaces{\catcode`\ =\@@active\def {\obeyedspace}}
-\gdef\setcontrolspaces{\catcode`\ =\@@active\def {\controlspace}}
+\catcode`\ =\activecatcode
+\gdef\obeyspaces{\catcode`\ =\activecatcode\def {\obeyedspace}}
+\gdef\setcontrolspaces{\catcode`\ =\activecatcode\def {\controlspace}}
 \egroup
 
 %D \macros
@@ -66,25 +66,25 @@
 %D \NEWPAGE\ character locally, we redefine the meaning of
 %D this (often already) active character.
 
-\catcode`\^^L=\@@active \def^^L{\par}
+\catcode`\^^L=\activecatcode \def^^L{\par}
 
 %D The following indirect definitions enable us to implement
 %D all kind of \type{\obeyed} handlers.
 
 \bgroup
 
-\catcode`\^^I=\@@active
-\catcode`\^^M=\@@active
-\catcode`\^^L=\@@active
+\catcode`\^^I=\activecatcode
+\catcode`\^^M=\activecatcode
+\catcode`\^^L=\activecatcode
 
-\gdef\obeytabs    {\catcode`\^^I=\@@active\def^^I{\obeyedtab}}
-\gdef\obeylines   {\catcode`\^^M=\@@active\def^^M{\obeyedline}}
-\gdef\obeypages   {\catcode`\^^L=\@@active\def^^L{\obeyedpage}}
+\gdef\obeytabs    {\catcode`\^^I=\activecatcode\def^^I{\obeyedtab}}
+\gdef\obeylines   {\catcode`\^^M=\activecatcode\def^^M{\obeyedline}}
+\gdef\obeypages   {\catcode`\^^L=\activecatcode\def^^L{\obeyedpage}}
 
-\gdef\ignoretabs  {\catcode`\^^I=\@@active\def^^I{\obeyedspace}}
-\gdef\ignorelines {\catcode`\^^M=\@@active\def^^M{\obeyedspace}}
-\gdef\ignorepages {\catcode`\^^L=\@@ignore}  % \@@active\def^^L{\obeyedline}}
-\gdef\ignoreeofs  {\catcode`\^^Z=\@@ignore}
+\gdef\ignoretabs  {\catcode`\^^I=\activecatcode\def^^I{\obeyedspace}}
+\gdef\ignorelines {\catcode`\^^M=\activecatcode\def^^M{\obeyedspace}}
+\gdef\ignorepages {\catcode`\^^L=\ignorecatcode}  % \activecatcode\def^^L{\obeyedline}}
+\gdef\ignoreeofs  {\catcode`\^^Z=\ignorecatcode}
 
 \egroup
 

@@ -69,10 +69,10 @@
   {\doiffastoptionalcheckelse{\tabulatenormalcolumnyes#1}{\tabulatenormalcolumnnop#1}}
 
 \def\tabulatenormalcolumnnop#1% overloads anch-pgr
-  {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi&\global\chardef\tabulatetype#1&}
+  {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi&\global\tabulatetype#1&}
 
 \def\tabulatenormalcolumnyes#1[#2]%
-  {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi&\global\chardef\tabulatetype#1&%
+  {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi&\global\tabulatetype#1&%
    \iftrialtypesetting\else\settabulatecolor{#2}\fi\ignorespaces}
 
 \newcount\maxtabularcolorcolumn

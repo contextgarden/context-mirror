@@ -571,8 +571,6 @@
 %D start with defining some booleans. These give an impression
 %D of what we are going to take into account.
 
-% todo: chardefs
-
 \newif\ifboxhasoffset
 \newif\ifboxhaswidth
 \newif\ifboxhasheight
@@ -1629,13 +1627,13 @@
 %D Beware, since we entered a group and either or not grab the next
 %D bgroup token, we need to finish the group in the oneliner mode.
 
-\ifx\raggedoneliner\undefined \chardef\raggedoneliner\zerocount \fi
+\ifdefined\raggedonelinerstate \else \newconditional\raggedonelinerstate \fi
 
 \def\doformatonelinerbox % beware: assumes explicit preceding bgroup
-  {\ifcase\raggedoneliner
-     \expandafter\nodoformatonelinerbox
-   \else
+  {\ifconditional\raggedonelinerstate
      \expandafter\dodoformatonelinerbox
+   \else
+     \expandafter\nodoformatonelinerbox
    \fi}
 
 \def\dodoformatonelinerbox
@@ -2368,25 +2366,27 @@
 %D
 %D which looks like: \thinrules[n=2]
 
+\newconstant\ruletype
+
 \def\thinrule
   {\strut
    \bgroup
-   \chardef\ruletype\plusone
+   \ruletype\plusone
    \processaction
      [\@@dlalternative]
-     [ \v!a=>\chardef\ruletype0,% no line
-      %\v!b=>\chardef\ruletype1,% height/depth
-       \v!c=>\chardef\ruletype2,% topheight/botdepth
-      %  11=>\chardef\ruletype1,% fallback for  backgrounds
-          0=>\chardef\ruletype0,% compatible with backgrounds
-      %   1=>\chardef\ruletype1,% compatible with backgrounds
-          2=>\chardef\ruletype2]% compatible with backgrounds
+     [ \v!a=>\ruletype\zerocount,% no line
+      %\v!b=>\ruletype\plusone  ,% height/depth
+       \v!c=>\ruletype\plustwo  ,% topheight/botdepth
+      %  11=>\ruletype\plusone  ,% fallback for  backgrounds
+          0=>\ruletype\zerocount,% compatible with backgrounds
+      %   1=>\ruletype\plusone  ,% compatible with backgrounds
+          2=>\ruletype\plustwo  ]% compatible with backgrounds
    \doifsomething\@@dlrulethickness
      {\linewidth\@@dlrulethickness}%
    \ifdim\linewidth=\zeropoint
-     \chardef\ruletype\zerocount
+     \ruletype\zerocount
    \else
-     \doifnot\@@dlframe\v!on{\chardef\ruletype\zerocount}%
+     \doifnot\@@dlframe\v!on{\ruletype\zerocount}%
    \fi
    \ifnum\ruletype=\plusone
      \doif\@@dlheight\v!max{\let\@@dlheight\!!plusone}%
@@ -3235,7 +3235,7 @@
 
 % 0=no-split, 1=no-split+indent, 2=split, 3=split+indent
 
-\chardef\backgroundsplitmode\plusthree
+\setnewconstant\backgroundsplitmode\plusthree
 
 %D The \type{\vbox to \lineheight{}\vskip\zeropoint}
 %D construction gives the first real line a decent height by
@@ -3264,7 +3264,7 @@
    \dimen2\leftskip % new **
    \forgetall
    \ifinsidefloat
-     \chardef\backgroundsplitmode\zerocount
+     \backgroundsplitmode\zerocount
    \fi
    \ifcase\backgroundsplitmode
      \localframed[\??ag][\c!offset=\v!overlay]{\box0}%
@@ -3278,11 +3278,11 @@
      \loop
        \ifdim\pagetotal=\zeropoint % empty page
          \scratchdimen\textheight
-         \chardef\backgroundsplit\plusone % split to max height
+         \backgroundsplit\plusone % split to max height
        \else
          \setbox\scratchbox\vbox{\@@agbefore}%
          \scratchdimen\dimexpr\pagegoal-\ht\scratchbox-\pagetotal\relax
-         \chardef\backgroundsplit\plustwo % split to partial height
+         \backgroundsplit\plustwo % split to partial height
        \fi
        \advance\scratchdimen\dimexpr-\@@agtopoffset-\@@agbottomoffset\relax
        \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
@@ -3290,7 +3290,7 @@
            \setbox2\vsplit0 to \scratchdimen
          \else
            \setbox2\box0
-           \chardef\backgroundsplit\zerocount % no split
+           \backgroundsplit\zerocount % no split
          \fi
          \setbox2\vbox \ifcase\backgroundsplit\or to \textheight \fi % max split
            {\vskip\@@agtopoffset

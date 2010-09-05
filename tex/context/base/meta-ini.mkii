@@ -815,10 +815,12 @@
    \box\scratchbox
    \egroup}
 
+\ifx\makeMPintoPDFobject\undefined \newcount\makeMPintoPDFobject \fi
+
 \def\includeMPasPDF#1%
   {\bgroup
    \the\everyinsertMPfile
-   \ifinobject \else \chardef\makeMPintoPDFobject\plustwo \fi % when needed
+   \ifinobject \else \makeMPintoPDFobject\plustwo \fi % when needed
    \convertMPtoPDF{#1}{1}{1}% no \plusone !
    \egroup}
 

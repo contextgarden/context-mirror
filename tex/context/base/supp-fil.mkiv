@@ -71,14 +71,14 @@
 \def\pushendofline
   {\advance\endoflinelevel\plusone
    \expandafter\chardef\csname :eol:\number\endoflinelevel\endcsname\catcode\newlinecode
-   \catcode\newlinecode\@@comment\relax}
+   \catcode\newlinecode\commentcatcode\relax}
 
 \def\popendofline
   {\catcode\newlinecode\csname :eol:\number\endoflinelevel\endcsname
    \advance\endoflinelevel\minusone}
 
 \def\restoreendofline
-  {\catcode\newlinecode\@@endofline}
+  {\catcode\newlinecode\endoflinecatcode}
 
 %D \macros
 %D   {scratchread, scratchwrite}

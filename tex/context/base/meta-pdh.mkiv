@@ -36,7 +36,7 @@
 
 %D First we define a handy constant:
 
-\bgroup \catcode`\%=\@@other \xdef\letterpercent{\string%} \egroup
+\bgroup \catcode`\%=\othercatcode \xdef\letterpercent{\string%} \egroup
 
 %D \macros
 %D   {convertMPtoPDF}
@@ -78,8 +78,8 @@
 %D The last object number used is avaliable in the macro
 %D \type {\lastPDFMPobject}.
 
-\ifx\makeMPintoPDFobject   \undefined \chardef\makeMPintoPDFobject   \zerocount \fi
-\ifx\everyMPtoPDFconversion\undefined \newtoks\everyMPtoPDFconversion           \fi
+\ifx\makeMPintoPDFobject   \undefined \newconstant\makeMPintoPDFobject    \fi
+\ifx\everyMPtoPDFconversion\undefined \newtoks    \everyMPtoPDFconversion \fi
 
 \let\lastPDFMPobject    \!!zerocount
 \let\currentPDFresources\empty
@@ -144,7 +144,7 @@
 \def\dopackageMPgraphic#1% #1 = boxregister
   {\ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
      % an existing value of 2 signals object support (set elsewhere)
-     \chardef\makeMPintoPDFobject\plusone
+     \makeMPintoPDFobject\plusone
    \fi\fi
    \ifcase\makeMPintoPDFobject
      \box#1%

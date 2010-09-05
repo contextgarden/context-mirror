@@ -21,7 +21,7 @@
 \ifdefined\stoplinenumbering \else \let\stoplinenumbering     \relax \fi
 \ifdefined\setuplinenumbering\else \unexpanded\def\setuplinenumbering[#1]{}     \fi
 
-\definesystemattribute[verbatim-line]  \chardef\verbatimlineattribute \dogetattributeid{verbatim-line}
+\definesystemattribute[verbatimline][public]
 
 \appendtoksonce \attribute\verbatimlineattribute \attributeunsetvalue \to \everyforgetall
 
@@ -320,8 +320,8 @@
    % \begstrut
    \let\currenttypingclass\??ty
    \edef\currenttyping{#1}%
-   \catcode`\<=\@@other
-   \catcode`\>=\@@other
+   \catcode`\<=\othercatcode
+   \catcode`\>=\othercatcode
    \futurelet\next\dodotype}
 
 \def\dodotype
@@ -482,8 +482,8 @@
 %D \def\dospecialtype#1#2%
 %D   {\bgroup
 %D    \initializetype
-%D    \catcode`\{=\@@begingroup
-%D    \catcode`\}=\@@endgroup
+%D    \catcode`\{=\begingroupcatcode
+%D    \catcode`\}=\endgroupcatcode
 %D    \def\dospecialtype%
 %D      {\def\dospecialtype{#2\egroup}%
 %D       \bgroup
@@ -504,8 +504,8 @@
    \verbatimcolor
    \dosetverbatimfont
   %\setcatcodetable \typcatcodesa
-   \catcode`\{=\@@begingroup
-   \catcode`\}=\@@endgroup}
+   \catcode`\{=\begingroupcatcode
+   \catcode`\}=\endgroupcatcode}
 
 \unexpanded\def\tex{\groupedcommand{\setgroupedtype\texescape}{\relax}}
 \unexpanded\def\arg{\groupedcommand{\setgroupedtype\leftargument}{\rightargument}}

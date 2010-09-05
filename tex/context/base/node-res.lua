@@ -183,10 +183,18 @@ function pool.rule(width,height,depth,dir)
     return n
 end
 
-function pool.latelua(code)
-    local n = copy_node(latelua)
-    n.data = code
-    return n
+if node.has_field(latelua,'string') then
+    function pool.latelua(code)
+        local n = copy_node(latelua)
+        n.string = code
+        return n
+    end
+else
+    function pool.latelua(code)
+        local n = copy_node(latelua)
+        n.data = code
+        return n
+    end
 end
 
 function pool.leftmarginkern(glyph,width)

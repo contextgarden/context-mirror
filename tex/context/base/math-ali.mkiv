@@ -61,7 +61,7 @@
 
 % preamble is scanned for tabskips so we need the span to prevent an error message
 
-\chardef\eqalignmode\plusone
+\setnewconstant\eqalignmode\plusone
 
 \def\preparereqalignno
   {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
@@ -73,7 +73,7 @@
    \else
      \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
    \fi\fi
-   \global\chardef\mathnumberstatus\zerocount
+   \global\mathnumberstatus\zerocount
    \buildeqalign
    \presetdisplaymath
    \tabskip\centering}
@@ -89,7 +89,7 @@
    \else
      \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
    \fi\fi
-   \global\chardef\mathnumberstatus\zerocount
+   \global\mathnumberstatus\zerocount
    \buildeqalign
    \presetdisplaymath
    \tabskip\centering}
@@ -109,7 +109,7 @@
 \def\dobothaligneqalignno#1%
   {\ifmmode
     \displ@y
-    \global\chardef\mathnumberstatus\plusone
+    \global\mathnumberstatus\plusone
     \ifcase\mathraggedstatus
        \def\finishalignno{\crcr\egroup}%
     \else
@@ -127,12 +127,12 @@
      \xdef\mathnumbercorrection{\the\wd\scratchbox}%
    \fi
    \box\scratchbox
-   \global\chardef\mathnumberstatus\plustwo}
+   \global\mathnumberstatus\plustwo}
 
 % \def\dobothaligneqalignno#1%
 %   {\ifmmode
 %     \displ@y
-%     \global\chardef\mathnumberstatus\plusone
+%     \global\mathnumberstatus\plusone
 %      we're in a mathbox
 %      \vcenter\bgroup
 %      \def\finishalignno{\crcr\egroup\egroup}%
@@ -1069,14 +1069,15 @@
 \def\mathhbox
   {\iftracemath\ruledhbox\else\hbox\fi}
 
-\chardef\mathraggedstatus=0 % normal left center  right
-\chardef\mathnumberstatus=0 % nothing normal shift_right
+\newconstant\mathraggedstatus % normal left center  right
+\newconstant\mathnumberstatus % nothing normal shift_right
+
 \let\mathnumbercorrection\!!zeropoint
 
 \unexpanded\def\startmathbox#1%
   {\hsize\displaywidth
-   \global\chardef\mathnumberstatus\plusone
-   \chardef\mathraggedstatus#1\relax
+   \global\mathnumberstatus\plusone
+   \mathraggedstatus#1\relax
    \let\mathnumbercorrection\!!zeropoint
    \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
    \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%

@@ -51,13 +51,12 @@ local report_vspacing     = logs.new("vspacing")
 local report_collapser    = logs.new("collapser")
 local report_snapper      = logs.new("snapper")
 
-local skip_category       = attributes.private('skip-category')
-local skip_penalty        = attributes.private('skip-penalty')
-local skip_order          = attributes.private('skip-order')
-local snap_category       = attributes.private('snap-category')
-local display_math        = attributes.private('display-math')
-local snap_method         = attributes.private('snap-method')
-local snap_vbox           = attributes.private('snap-vbox')
+local a_skipcategory      = attributes.private('skipcategory')
+local a_skippenalty       = attributes.private('skippenalty')
+local a_skiporder         = attributes.private('skiporder')
+----- snap_category       = attributes.private('snapcategory')
+local a_snapmethod        = attributes.private('snapmethod')
+local a_snapvbox          = attributes.private('snapvbox')
 
 local has_attribute       = node.has_attribute
 local unset_attribute     = node.unset_attribute
@@ -217,7 +216,7 @@ local function validvbox(parentid,list)
     end
 end
 
-local function already_done(parentid,list,snap_method) -- todo: done when only boxes and all snapped
+local function already_done(parentid,list,a_snapmethod) -- todo: done when only boxes and all snapped
     -- problem: any snapped vbox ends up in a line
     if list and parentid == hlist_code then
         local id = list.id
@@ -230,9 +229,9 @@ local function already_done(parentid,list,snap_method) -- todo: done when only b
 --~ local i = 0
         for n in traverse_nodes(list) do
             local id = n.id
---~ i = i + 1 print(i,nodecodes[id],has_attribute(n,snap_method))
+--~ i = i + 1 print(i,nodecodes[id],has_attribute(n,a_snapmethod))
             if id == hlist_code or id == vlist_code then
-                local a = has_attribute(n,snap_method)
+                local a = has_attribute(n,a_snapmethod)
                 if not a then
                  -- return true -- not snapped at all
                 elseif a == 0 then
@@ -447,8 +446,8 @@ h, d = ch, cd
             t[#t+1] = format("after offset: %s (width %s height %s depth %s)",
                 points(offset),points(current.width),points(current.height),points(current.depth))
         end
-        set_attribute(shifted,snap_method,0)
-        set_attribute(current,snap_method,0)
+        set_attribute(shifted,a_snapmethod,0)
+        set_attribute(current,a_snapmethod,0)
     end
     if not height then
         current.height = ch
@@ -740,7 +739,7 @@ function vspacing.snapbox(n,how)
         local box = texbox[n]
         local list = box.list
         if list then
-            local s = has_attribute(list,snap_method)
+            local s = has_attribute(list,a_snapmethod)
             if s == 0 then
                 if trace_vsnapping then
                 --  report_snapper("box list not snapped, already done")
@@ -760,8 +759,8 @@ function vspacing.snapbox(n,how)
                         report_snapper("box list snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines): %s",
                             h,d,ch,cd,sv.name,sv.specification,"direct",lines,listtoutf(list))
                     end
-                    set_attribute(box, snap_method,0) --
-                    set_attribute(list,snap_method,0) -- yes or no
+                    set_attribute(box, a_snapmethod,0) --
+                    set_attribute(list,a_snapmethod,0) -- yes or no
                 end
             end
         end
@@ -786,7 +785,7 @@ local function forced_skip(head,current,width,where,trace)
     return head, current
 end
 
-local function collapser(head,where,what,trace,snap,snap_method) -- maybe also pass tail
+local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
         reset_tracing(head)
     end
@@ -832,7 +831,7 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
 -- needs checking, why so many calls
             if snap then
                 local list = current.list
-                local s = has_attribute(current,snap_method)
+                local s = has_attribute(current,a_snapmethod)
                 if not s then
                 --  if trace_vsnapping then
                 --      report_snapper("mvl list not snapped")
@@ -845,7 +844,7 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
                     local sv = snapmethods[s]
                     if sv then
 -- check if already snapped
-                        if list and already_done(id,list,snap_method) then
+                        if list and already_done(id,list,a_snapmethod) then
                             local ht, dp = current.height, current.depth
                             -- assume that the box is already snapped
                             if trace_vsnapping then
@@ -861,7 +860,7 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
                     elseif trace_vsnapping then
                         report_snapper("mvl %s not snapped due to unknown snap specification: %s",nodecodes[id],listtoutf(list))
                     end
-                    set_attribute(current,snap_method,0)
+                    set_attribute(current,a_snapmethod,0)
                 end
             else
                 --
@@ -885,9 +884,9 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
             flush("something else")
             current = current.next
         elseif subtype == userskip_code then -- todo, other subtypes, like math
-            local sc = has_attribute(current,skip_category)      -- has no default, no unset (yet)
-            local so = has_attribute(current,skip_order   ) or 1 -- has  1 default, no unset (yet)
-            local sp = has_attribute(current,skip_penalty )      -- has no default, no unset (yet)
+            local sc = has_attribute(current,a_skipcategory)      -- has no default, no unset (yet)
+            local so = has_attribute(current,a_skiporder   ) or 1 -- has  1 default, no unset (yet)
+            local sp = has_attribute(current,a_skippenalty )      -- has no default, no unset (yet)
             if sp and sc == penalty then
                 if not penalty_data then
                     penalty_data = sp
@@ -1012,9 +1011,9 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
             end
         elseif subtype == lineskip_code then
             if snap then
-                local s = has_attribute(current,snap_method)
+                local s = has_attribute(current,a_snapmethod)
                 if s and s ~= 0 then
-                    set_attribute(current,snap_method,0)
+                    set_attribute(current,a_snapmethod,0)
                     if current.spec.writable then
                         local spec = writable_spec(current)
                         spec.width = 0
@@ -1033,9 +1032,9 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
             current = current.next
         elseif subtype == baselineskip_code then
             if snap then
-                local s = has_attribute(current,snap_method)
+                local s = has_attribute(current,a_snapmethod)
                 if s and s ~= 0 then
-                    set_attribute(current,snap_method,0)
+                    set_attribute(current,a_snapmethod,0)
                     if current.spec.writable then
                         local spec = writable_spec(current)
                         spec.width = 0
@@ -1072,9 +1071,9 @@ local function collapser(head,where,what,trace,snap,snap_method) -- maybe also p
             end
         elseif subtype == topskip_code or subtype == splittopskip_code then
             if snap then
-                local s = has_attribute(current,snap_method)
+                local s = has_attribute(current,a_snapmethod)
                 if s and s ~= 0 then
-                    set_attribute(current,snap_method,0)
+                    set_attribute(current,a_snapmethod,0)
                     local sv = snapmethods[s]
                     local w, cw = snap_topskip(current,sv)
                     if trace_vsnapping then
@@ -1186,7 +1185,7 @@ function vspacing.pagehandler(newhead,where)
             local id = n.id
             if id == glue_code then
                 if n.subtype == userskip_code then
-                    if has_attribute(n,skip_category) then
+                    if has_attribute(n,a_skipcategory) then
                         stackhack = true
                     else
                         flush = true
@@ -1209,8 +1208,8 @@ function vspacing.pagehandler(newhead,where)
             if stackhack then
                 stackhack = false
                 if trace_collect_vspacing then report("processing %s nodes: %s",newhead) end
---~                 texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,snap_method)
-                    newhead = collapser(newhead,"page",where,trace_page_vspacing,true,snap_method)
+--~                 texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
+                    newhead = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
             else
                 if trace_collect_vspacing then report("flushing %s nodes: %s",newhead) end
 --~                 texlists.contrib_head = newhead
@@ -1242,17 +1241,17 @@ local ignore = table.tohash {
 function vspacing.vboxhandler(head,where)
     if head and not ignore[where] and head.next then
     --  starttiming(vspacing)
-        head = collapser(head,"vbox",where,trace_vbox_vspacing,true,snap_vbox) -- todo: local snapper
+        head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
     --  stoptiming(vspacing)
     end
     return head
 end
 
-function vspacing.collapsevbox(n) -- for boxes but using global snap_method
+function vspacing.collapsevbox(n) -- for boxes but using global a_snapmethod
     local list = texbox[n].list
     if list then
     --  starttiming(vspacing)
-        texbox[n].list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true,snap_method))
+        texbox[n].list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true,a_snapmethod))
     --  stoptiming(vspacing)
     end
 end

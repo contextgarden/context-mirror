@@ -110,11 +110,13 @@
 %D different vision on paths, the graphic is positioned in
 %D such a way that accuracy in \PDF\ xforms is guaranteed.
 
+\ifx\makeMPintoPDFobject\undefined \newcount\makeMPintoPDFobject \fi
+
 \def\processMPfile#1 %
   {\pdfoutput=1
    \pdfpkresolution600
    \pdfcompresslevel=9
-   \chardef\makeMPintoPDFobject=1
+   \makeMPintoPDFobject=1
    \hsize=100in
    \vsize=\hsize
    \hoffset=-1in

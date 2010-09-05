@@ -119,7 +119,7 @@
   {\everyraggedcommand\emptytoks
    \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
-   \chardef\raggedoneliner\zerocount
+   \setfalse\raggedonelinerstate
    \doifsomething{#1}
      {\doifinsetelse\v!broad{#1}\!!doneatrue\!!doneafalse
       \doifinsetelse\v!wide {#1}\!!donebtrue\!!donebfalse
@@ -223,10 +223,10 @@
 \setvalue{\@@ragged@@command\v!disable}% for one liners
   {\appendtoks\raggedright\parfillskip\zeropoint\to\everyraggedcommand}
 
-\chardef\raggedoneliner\zerocount
+\ifdefined\raggedonelinerstate \else \newconditional\raggedonelinerstate \fi
 
 \setvalue{\@@ragged@@command\v!line}%
-  {\chardef\raggedoneliner\plusone}
+  {\settrue\raggedonelinerstate}
 
 % More alignments:
 
@@ -234,7 +234,7 @@
 % \tolerance     >= 1500 % was 200
 % \raggedness     = 2 .. 6\bodyfontsize
 
-\chardef\raggedstatus=0 % normal left center right
+\newconstant\raggedstatus % normal left center right
 
 \def\leftraggedness   {2\bodyfontsize}
 \def\rightraggedness  {2\bodyfontsize}
@@ -285,7 +285,7 @@
    \updateraggedskips}
 
 \def\dosetraggedskips#1#2#3#4#5#6#7%
-  {\chardef    \raggedstatus#1\relax
+  {\raggedstatus#1\relax
    \leftskip   1\leftskip \!!plus#2\relax % zie: Tex By Topic 8.1.3
    \rightskip  1\rightskip\!!plus#3\relax % zie: Tex By Topic 8.1.3
    \spaceskip  #4\relax
@@ -347,7 +347,7 @@
 \def\raggedxspaceamount  {.5em}
 
 \unexpanded\def\notragged
-  {\chardef\raggedstatus\zerocount
+  {\raggedstatus\zerocount
    \leftskip  1\leftskip
    \rightskip 1\rightskip
    \spaceskip  \zeropoint
@@ -504,7 +504,7 @@
 \def\dosetupalign[#1]% can be made faster by checking for defined #1
   {\!!doneafalse
    \!!donebfalse
-   \chardef\raggedstatus\zerocount
+   \raggedstatus\zerocount
    \processcommacommand[#1]\dodosetupngila
    \processcommacommand[#1]\dodosetupalign}
 
@@ -525,7 +525,7 @@
   {\par
    \egroup}
 
-\chardef\alignstrutmode=1
+\setnewconstant\alignstrutmode\plusone
 
 % see later for the real definition, which in the simple case is:
 

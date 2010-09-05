@@ -266,10 +266,10 @@
 %D We keep track of these features with the following
 %D variables.
 
-\chardef\papermirror     =0  \chardef\printmirror     =0
-\chardef\paperorientation=0  \chardef\printorientation=0 % beware: later no chardef
-\chardef\paperreverse    =0  \chardef\printreverse    =0
-\chardef\paperlandscape  =0  \chardef\printlandscape  =0
+\newconditional\papermirror      \newconditional\printmirror
+\newconstant   \paperorientation \newconstant   \printorientation
+\newconstant   \paperreverse     \newconstant   \printreverse
+\newconditional\paperlandscape   \newconditional\printlandscape
 
 \let\papersize\empty \let\printpapersize\empty
 
@@ -361,10 +361,10 @@
    \global\setdimentoatleast\paperheight     \onepoint
    \global\setdimentoatleast\printpaperwidth \onepoint
    \global\setdimentoatleast\printpaperheight\onepoint
-   \ifcase\paperlandscape\else
+   \ifconditional\paperlandscape
      \doglobal\swapdimens\paperwidth\paperheight
    \fi
-   \ifcase\printlandscape\else
+   \ifconditional\printlandscape
      \doglobal\swapdimens\printpaperwidth\printpaperheight
    \fi
    % this check can be confusing, so we've added the possibility
@@ -372,12 +372,16 @@
    \doif\@@ppoption\v!max % \v!fit is
      {\bgroup
       % we need to pre-swap else we get the wrong paper size
-      \ifcase\paperorientation\else
-        \doifinset\paperorientation{90,270}{\swapdimens\paperwidth\paperheight}%
-      \fi
-      \ifcase\printorientation\else
-        \doifinset\printorientation{90,270}{\swapdimens\printpaperwidth\printpaperheight}%
-      \fi
+      \ifnum\paperorientation=\rightrotatioangle
+        \swapdimens\paperwidth\paperheight
+      \else\ifnum\paperorientation=\leftrotatioangle
+        \swapdimens\paperwidth\paperheight
+      \fi\fi
+      \ifnum\printorientation=\rightrotatioangle
+        \swapdimens\printpaperwidth\printpaperheight
+      \else\ifnum\printorientation=\leftrotatioangle
+        \swapdimens\printpaperwidth\printpaperheight
+      \fi\fi
       \ifdim\paperheight>\printpaperheight
         \global\printpaperheight\paperheight
         \writestatus\m!systems{print height forced to paper height}%
@@ -389,20 +393,24 @@
       \egroup}}
 
 \def\dosetuppaperorientation#1#2#3#4#5%
-  {\global\chardef#2\zerocount
-   \global\chardef#5\zerocount
-   \globallet#3\!!zerocount
-   \globallet#4\!!zerocount
+  {\global\setfalse#2%
+   \global\setfalse#5%
+   \global#3\uprotationangle
+   \global#4\uprotationangle
    \global\negateprintboxfalse
    \processallactionsinset
      [#1]
-     [ \v!landscape=>\global\chardef#2\plusone,
-        \v!mirrored=>\global\chardef#5\plusone,
-         \v!rotated=>\gdef#3{90}\gdef#4{270},
+     [ \v!landscape=>\global\settrue#2,
+        \v!mirrored=>\global\settrue#5,
+         \v!rotated=>\global#3\rightrotatioangle
+                     \global#4\leftrotatioangle,
         \v!negative=>\global\negateprintboxtrue,
-                 90=>\gdef#3{90}\gdef#4{270},
-                180=>\gdef#3{180}\gdef#4{0},
-                270=>\gdef#3{270}\gdef#4{90}]}
+                 90=>\global#3\rightrotatioangle
+                     \global#4\leftrotatioangle,
+                180=>\global#3\downrotatioangle
+                     \global#4\zerocount,
+                270=>\global#3\leftrotatioangle
+                     \global#4\rightrotatioangle]}
 
 \ifx\calculatepaperoffsets\undefined
 
@@ -826,28 +834,22 @@
    \fi}
 
 \def\orientpagebodybox#1#2#3%
-  {\ifnum#2#3>\zerocount
-     \setbox#1\vbox
-       {\edef\somerotation{\ifdoublesided\ifodd\realpageno#2\else#3\fi\else#2\fi}%
-        \dorotatebox\somerotation\hbox{\box#1}}%
+  {\ifnum\number#1\number#2>\zerocount
+     \setbox#3\vbox
+       {\edef\somerotation{\number\ifdoublesided\ifodd\realpageno#1\else#2\fi\else#1\fi}%
+        \dorotatebox\somerotation\hbox{\box#3}}%
    \fi}
 
-\def\orientpaperbox#1%
-  {\orientpagebodybox{#1}\paperorientation\paperreverse}
-
-\def\orientprintbox#1%
-  {\orientpagebodybox{#1}\printorientation\printreverse}
+\def\orientpaperbox{\orientpagebodybox\paperorientation\paperreverse}
+\def\orientprintbox{\orientpagebodybox\printorientation\printreverse}
 
 \def\mirrorpagebodybox#1#2%
-  {\ifcase#2\or
-     \setbox#1\vbox{\domirrorbox\vbox{\box#1}}%
+  {\ifconditional#1\relax
+     \setbox#2\vbox{\domirrorbox\vbox{\box#2}}%
    \fi}
 
-\def\mirrorpaperbox#1%
-  {\mirrorpagebodybox{#1}\papermirror}
-
-\def\mirrorprintbox#1%
-  {\mirrorpagebodybox{#1}\printmirror}
+\def\mirrorpaperbox{\mirrorpagebodybox\papermirror}
+\def\mirrorprintbox{\mirrorpagebodybox\printmirror}
 
 \def\scalepagebox#1%
   {\ifdim\@@lyscale\points=\onepoint \else
@@ -910,8 +912,8 @@
 
 \def\doaddpagecolormarks#1#2%
   {\makepagecutbox{#2}%
-   \ifnum\horizontalcutmarks>\plustwo \chardef\colormarkoffset\plusfour \fi
-   \ifnum\verticalcutmarks  >\plustwo \chardef\colormarkoffset\plusfour \fi
+   \ifnum\horizontalcutmarks>\plustwo \def\colormarkoffset{\plusfour}\fi
+   \ifnum\verticalcutmarks  >\plustwo \def\colormarkoffset{\plusfour}\fi
    #1{#2}}
 
 % NOG EENS NAGAAN WANNEER NU GLOBAL EN WANNEER NIET
@@ -963,10 +965,10 @@
 \newdimen\innermakeupwidth  % special purpose
 \newdimen\innermakeupmargin % special purpose
 
-\chardef\innermakeupcompensation\plusone
+\newconditional\innermakeupcompensation \settrue\innermakeupcompensation
 
 \def\compensatedinnermakeupmargin
-  {\dimexpr\ifnum\innermakeupcompensation=\plusone+\innermakeupmargin\else\zeropoint\fi\relax}
+  {\dimexpr\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi\relax}
 
 \def\freezetextwidth      % \makeupwidth may be set to \textwidth
   {\textwidth\makeupwidth % which is a tricky but valid value

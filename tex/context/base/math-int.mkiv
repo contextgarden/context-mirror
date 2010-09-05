@@ -33,19 +33,19 @@
 %D
 %D Limits: \setupmathematics[integral=limits] \getbuffer
 
-\chardef\intlimitcode\zerocount  % 0 nolimits 1 displaylimits 2 limits
+\newconstant\mathintlimitmode % 0 nolimits 1 displaylimits 2 limits
 
 \def\intlimits
-  {\ifcase\intlimitcode \nolimits \or \displaylimits \or \limits \fi}
+  {\ifcase\mathintlimitmode \nolimits \or \displaylimits \or \limits \fi}
 
 \ifx\v!integral\undefined \def\v!integral{integral} \fi
 
 \appendtoks
    \processaction
       [\mathematicsparameter\v!integral]
-      [     nolimits=>\chardef\intlimitcode\zerocount,
-       displaylimits=>\chardef\intlimitcode\plusone,
-              limits=>\chardef\intlimitcode\plustwo]%
+      [     nolimits=>\mathintlimitmode\zerocount,
+       displaylimits=>\mathintlimitmode\plusone,
+              limits=>\mathintlimitmode\plustwo]%
 \to \everysetupmathematics
 
 \setupmathematics
@@ -103,7 +103,7 @@
    {\ifx\next\limits          \dointlimitcorrection \else
     \ifx\next\displaylimits   \dointlimitcorrection \else
     \ifx\next\nolimits        \donothing            \else
-    \ifcase\intlimitcode\else \dointlimitcorrection \fi\fi\fi\fi
+    \ifcase\mathintlimitmode\else \dointlimitcorrection \fi\fi\fi\fi
     \dodorepeatintegral}
 
 \def\dointlimitcorrection

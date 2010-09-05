@@ -237,8 +237,6 @@
 \newdimen\layerwidth
 \newdimen\layerheight
 
-\chardef\@@lacome=1 % LAyerCOnstructionMEthod / temp, will be default
-
 \def\dododosetlayer[#1][#2][#3]% will be sped up
   {% we use the global width, never change this
    \def\currentlayer{#1}%
@@ -343,20 +341,16 @@
       \ifdim\scratchdimen<\getboxllx\layerpagebox
         \gsetboxllx\layerpagebox\scratchdimen
       \fi
-      \ifcase\@@lacome\or % this test will become obsolete
-        \advance\scratchdimen\nextboxwd
-        \nextboxwd\ifdim\scratchdimen>\lastlayerwidth \scratchdimen \else \lastlayerwidth \fi
-      \fi
+      \advance\scratchdimen\nextboxwd
+      \nextboxwd\ifdim\scratchdimen>\lastlayerwidth \scratchdimen \else \lastlayerwidth \fi
       \scratchdimen\dimexpr\@@layerypos+\@@layeryoff\relax
       \ifdim\scratchdimen<\getboxlly\layerpagebox
         \gsetboxlly\layerpagebox\scratchdimen
       \fi
       % ll compensation
-      \ifcase\@@lacome\or % this test will become obsolete
-        \advance\scratchdimen\dimexpr\nextboxht+\nextboxdp\relax
-        \nextboxht\ifdim\scratchdimen>\lastlayerheight \scratchdimen \else \lastlayerheight \fi
-        \nextboxdp\zeropoint
-      \fi
+      \advance\scratchdimen\dimexpr\nextboxht+\nextboxdp\relax
+      \nextboxht\ifdim\scratchdimen>\lastlayerheight \scratchdimen \else \lastlayerheight \fi
+      \nextboxdp\zeropoint
       % placement
       \hsize\layerparameter\c!width % new, keep box small
       \vbox to \layerparameter\c!height \bgroup

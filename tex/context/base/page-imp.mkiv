@@ -148,9 +148,10 @@
 % \stoptypen
 
 \newcount\shippedoutpages
+\newcount\combinedpagescounter
 
-\let\pagestoshipout\empty      % {1,3,6}
-\chardef\whichpagetoshipout=0  % 0=all 1=odd 2=even
+\let\pagestoshipout\empty        % {1,3,6}
+\newconstant\whichpagetoshipout  % 0=all 1=odd 2=even
 
 \newbox\shipoutscratchbox
 
@@ -235,12 +236,15 @@
 \def\arrangedrotationO{0}
 \def\arrangedrotationE{0}
 
-\newcounter\arrangedpageN
-\newcounter\arrangedpageM
+\newcount\arrangedpageN
+\newcount\arrangedpageM
 
-\chardef\arrangedpageT=1
-\chardef\arrangedpageX=1
-\chardef\arrangedpageY=1
+\newcount\arrangedpageT \arrangedpageT\plusone
+\newcount\arrangedpageX \arrangedpageX\plusone
+\newcount\arrangedpageY \arrangedpageY\plusone
+
+% \newcount\horizontalcutmarks
+% \newcount\verticalcutmarks
 
 \def\calculatepaperoffsets#1%
   {\scratchdimen\getvalue{\??pp#1\c!offset}%
@@ -280,7 +284,7 @@
        \global\arrangingpagesfalse
      \fi
      \doifcommonelse{#1}{90,270,\v!rotated}
-       {\swapmacros\horizontalcutmarks\verticalcutmarks}{}% ugly solution
+       {\swapcounts\horizontalcutmarks\verticalcutmarks}{}% ugly solution
      \setuppapersize
    \fi}
 
@@ -291,11 +295,11 @@
   {\executeifdefined{\??pp\??pp#1}\donothing}
 
 \def\dosetuparrangement#1#2#3#4#5#6#7#8%
-  {\global\chardef\arrangedpageX     #1%
-   \global\chardef\arrangedpageY     #2%
-   \global\chardef\arrangedpageT     #3%
-   \global\chardef\horizontalcutmarks#4%
-   \global\chardef\verticalcutmarks  #5%
+  {\global\arrangedpageX     #1%
+   \global\arrangedpageY     #2%
+   \global\arrangedpageT     #3%
+   \global\horizontalcutmarks#4%
+   \global\verticalcutmarks  #5%
    \global\let    \pusharrangedpage  #6%
    \global\let    \poparrangedpages  #7%
    \global\let    \handlearrangedpage#8}
@@ -430,11 +434,11 @@
      \paperheight\arrangedpageY\paperheight
      \outputarrangedbox\arrangedpageA
      \outputarrangedbox\arrangedpageB
-     \doglobal\newcounter\arrangedpageN
+     \global\arrangedpageN\zerocount
    \fi}
 
 \def\pusharrangedpageTHIRTYTWO#1% taco's challenge
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}033\arrangedpageA %  1
@@ -473,7 +477,7 @@
    \fi}
 
 \def\pusharrangedpageSIXTEEN#1% changed to match the official way of doing
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}031\arrangedpageA %  1
@@ -496,7 +500,7 @@
    \fi}
 
 \def\pusharrangedpageEIGHT#1% changed to match the official way of doing
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}011\arrangedpageA %  1
@@ -514,7 +518,7 @@
 \def\pusharrangedpageFOURB{\pusharrangedpageFOURdo10}
 
 \def\pusharrangedpageFOURdo#1#2#3%
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#3}010\arrangedpageA    %  1
@@ -525,7 +529,7 @@
    \fi}
 
 \def\pusharrangedpageSIDETOP#1%
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}000\arrangedpageA %  1
@@ -610,11 +614,11 @@
         \ifdim\ht\arrangedpageB=\zeropoint
           \exitloop
         \fi}%
-     \doglobal\newcounter\arrangedpageN
+     \global\arrangedpageN\zerocount
    \fi}
 
 \def\pusharrangedpageTWO#1%
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \global\setbox\arrangedpageB\vbox
      {%\forgetall
@@ -628,16 +632,18 @@
 \def\poparrangedpagesTWOTOPSIDE
   {\ifnum\arrangedpageN>\zerocount
      \bgroup
-     \gdef\arrangedpageN{2}\poparrangedpagesTWO
+     \global\arrangedpageN\plustwo
+     \poparrangedpagesTWO
      \let\arrangedpageA\arrangedpageC
      \let\arrangedpageB\arrangedpageD
-     \gdef\arrangedpageN{2}\poparrangedpagesTWO
-     \doglobal\newcounter\arrangedpageN
+     \global\arrangedpageN\plustwo
+     \poparrangedpagesTWO
+     \global\arrangedpageN\zerocount
      \egroup
   \fi}
 
 \def\pusharrangedpageTWOTOPSIDE#1%
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}000\arrangedpageA %  1
@@ -662,7 +668,7 @@
      \outputarrangedbox\arrangedpageF
      \outputarrangedbox\arrangedpageG
      \outputarrangedbox\arrangedpageH
-     \doglobal\newcounter\arrangedpageN
+     \global\arrangedpageN\zerocount
    \fi}
 
 % to arrange 16 pages on 2 sheets to form one booklet
@@ -676,13 +682,13 @@
      \outputarrangedbox\arrangedpageB
      \outputarrangedbox\arrangedpageC
      \outputarrangedbox\arrangedpageD
-     \doglobal\newcounter\arrangedpageN
+     \global\arrangedpageN\zerocount
    \fi}
 
 % to arrange 16 pages on 4 sheets to form one booklet
 
 \def\pusharrangedpageSIXTEENFOUR#1%
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}010\arrangedpageA %  1
@@ -707,7 +713,7 @@
 % to arrange 16 pages on 2 sheets to form one booklet
 
 \def\pusharrangedpageSIXTEENTWO#1%
-  {\doglobal\increment\arrangedpageN
+  {\global\advance\arrangedpageN\plusone
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}011\arrangedpageA %  1
@@ -742,10 +748,10 @@
 % \starttext \dorecurse{30}{test \recurselevel \page} \stoptext
 
 \def\pusharrangedpageXY#1%
-   {\doglobal\increment\arrangedpageN
-    \reportarrangedpage\arrangedpageN
-    \doglobal\increment\arrangedpageM
-    \global\setbox\arrangedpageB\hbox
+  {\global\advance\arrangedpageN\plusone
+   \reportarrangedpage\arrangedpageN
+   \global\advance\arrangedpageM\plusone
+   \global\setbox\arrangedpageB\hbox
       \ifdim\@@ppwidth>\zeropoint to \@@ppwidth \fi
       {\ifvoid\arrangedpageB\else
          \unhbox\arrangedpageB
@@ -765,7 +771,7 @@
            \ifdim\@@ppdy>\zeropoint \else \vss\fi
          \fi
          \box\arrangedpageB}%
-      \doglobal\newcounter\arrangedpageM
+      \global\arrangedpageM\zerocount
     \fi
     \ifnum\arrangedpageN<\arrangedpageT\else
       \poparrangedpages
@@ -777,8 +783,8 @@
      \paperwidth\arrangedpageX\paperwidth
      \paperheight \arrangedpageY\paperheight
      \outputarrangedbox\arrangedpageA
-     \doglobal\newcounter\arrangedpageN
-     \doglobal\newcounter\arrangedpageM
+     \global\arrangedpageN\zerocount
+     \global\arrangedpageM\zerocount
    \fi}
 
 \installpagearrangement XY
@@ -1033,7 +1039,7 @@
    \egroup}
 
 \setvalue{\??ip::\c!alternative:\v!a}%
-  {\globallet\combinedpagescounter\@@ipstart
+  {\global\combinedpagescounter\@@ipstart
    \doloop
      {\vbox to \textheight
         {\hsize\textwidth % ? ?
@@ -1054,7 +1060,7 @@
                         \else\ifnum\combinedpagescounter>\@@ipn \else
                           \externalfigure[\@@ipname]
                             [\c!object=\v!no,
-                             \c!page=\combinedpagescounter,
+                             \c!page=\number\combinedpagescounter,
                              \c!factor=\v!max,
                              \c!background=\@@ipbackground,
                              \c!backgroundcolor=\@@ipbackgroundcolor,
@@ -1062,7 +1068,7 @@
                         \fi\fi
                         \@@ipright}
                      \@@ipbottom}%
-                  \doglobal\increment\combinedpagescounter
+                  \global\advance\combinedpagescounter\plusone
                   \hfil}%
                \hfilneg}
             \vfil}%
@@ -1071,7 +1077,7 @@
          \ifnum\combinedpagescounter>\@@ipn \exitloop\fi}}
 
 \setvalue{\??ip::\c!alternative:\v!c}%
-  {\globallet\combinedpagescounter\@@ipstart
+  {\global\combinedpagescounter\@@ipstart
    \doloop
      {\vbox to \textheight
         {\hsize\textwidth % ? ?
@@ -1094,13 +1100,13 @@
                               \else\ifnum\combinedpagescounter>\@@ipn \else
                                 \externalfigure[\@@ipname]
                                   [\c!object=\v!no,
-                                   \c!page=\combinedpagescounter,
+                                   \c!page=\number\combinedpagescounter,
                                    \c!factor=\v!max,
                                    \c!background=\@@ipbackground,
                                    \c!backgroundcolor=\@@ipbackgroundcolor,
                                    \c!frame=\@@ipframe]%
                               \fi\fi}}
-                         \doglobal\increment\combinedpagescounter
+                         \global\advance\combinedpagescounter\plusone
                          \@@ipbottom}%
                       \vfil}%
                    \vfilneg}
@@ -1113,17 +1119,17 @@
 \setvalue{\??ip::\c!alternative:\v!vertical  }{\getvalue{\??ip::\c!alternative:\v!c}}
 
 \setvalue{\??ip::\c!alternative:\v!b}%
-  {\globallet\combinedpagescounter\@@ipstart
+  {\global\combinedpagescounter\@@ipstart
    \doloop
      {\startbaselinecorrection
         \scratchdimen\@@ipdistance
         \!!widtha\dimexpr(\hsize-\@@ipnx\scratchdimen+\scratchdimen)/\@@ipnx\relax
         \hbox to \hsize
           {\dorecurse\@@ipnx
-             {\doglobal\increment\combinedpagescounter
+             {\global\advance\combinedpagescounter\plusone
               \ifnum\combinedpagescounter>\@@ipn \else
                  \normalexpanded{\noexpand\externalfigure[\@@ipname]
-                   [\c!page=\combinedpagescounter,
+                   [\c!page=\number\combinedpagescounter,
                     \c!width=\the\!!widtha,% todo \freezedimenmacro
                     \c!background=\@@ipbackground,
                     \c!backgroundcolor=\@@ipbackgroundcolor,

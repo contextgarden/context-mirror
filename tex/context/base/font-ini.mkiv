@@ -474,11 +474,11 @@
 %D check for fontclass being default or empty and save a few
 %D tests but it does not help us when no math is defined.
 
-\chardef\mrfam\zerocount % math regular
-\chardef\mbfam\plusone   % math bold
+\let\mrfam\zerocount % math regular
+\let\mbfam\plusone   % math bold
 
-\unexpanded\def\mr{\ifmmode\fam\zerocount\else\setcurrentfontalternative\c!mr\fi} % \fam\csname\c!mr fam\endcsname
-\unexpanded\def\mb{\ifmmode\fam\plusone  \else\setcurrentfontalternative\c!mb\fi} % \fam\csname\c!mb fam\endcsname
+\unexpanded\def\mr{\ifmmode\fam\mrfam\else\setcurrentfontalternative\c!mr\fi}
+\unexpanded\def\mb{\ifmmode\fam\mbfam\else\setcurrentfontalternative\c!mb\fi}
 
 \def\mathtextsuffix        {-text}
 \def\mathscriptsuffix      {-script}
@@ -536,29 +536,14 @@
 
 % not official !
 
-\chardef\boldmathmode\zerocount % might change ... maybe \mathfontsupport 1 (normal) 2 (bold too)
+\newconditional\boldmathmode % might change ... maybe \mathfontsupport 1 (normal) 2 (bold too)
 
-\def\enableboldmath {\chardef\boldmathmode\plusone  } % todo: \setupbodyfont[boldmath,...]
-\def\disableboldmath{\chardef\boldmathmode\zerocount}
+\def\enableboldmath {\settrue \boldmathmode} % todo: \setupbodyfont[boldmath,...]
+\def\disableboldmath{\setfalse\boldmathmode}
 
 \appendtoks
-    \ifcase\boldmathmode\or\dosetmathfamily\mbfam\c!mb\fi
+    \ifconditional\boldmathmode\dosetmathfamily\mbfam\c!mb\fi
 \to \mathstrategies
-
-% \chardef\msfam\plustwo % math symbol
-%
-% \def\c!ms{ms}
-%
-% \unexpanded\def\ms{\ifmmode\fam\plustwo\else\setcurrentfontalternative\c!ms\fi}
-%
-% \chardef\symbolmathmode\zerocount
-%
-% \def\enablesymbolmath {\chardef\symbolmathmode\plusone  }
-% \def\disablesymbolmath{\chardef\symbolmathmode\zerocount}
-%
-% \appendtoks
-%     \ifcase\symbolmathmode\or\dosetmathfamily\msfam\c!ms\fi
-% \to \mathstrategies
 
 %D All used styles, like rm, ss and tt, are saved in a comma
 %D separated list. Appart from practical limitations one can
@@ -1295,6 +1280,12 @@
 %D expands to the current size in terms of \type {a} \unknown
 %D \type {d}, nothing, or \type {x} \unknown \type {xx}.
 
+%D In the following macros we use \type{\currentxfontsize} to
+%D hold the current x||size of the font. This enables us to
+%D support for instance \type{\sl} inside a \type{\tx} switch.
+
+\newconstant\currentxfontsize
+
 \def\xfontsize{\ifcase\currentxfontsize\fontsize\or\c!x\else\c!xx\fi}
 
 %D A typical use of this command is in commands that switch
@@ -1886,7 +1877,7 @@
 %D often not the way users specify the bodyfont size. Therefore
 %D we also store the normalized value.
 
-\chardef\fontdigits=2 % was 1
+\setnewconstant\fontdigits\plustwo % was 1
 
 % \def\normalizebodyfontsize#1\to#2%
 %   {\@EA\@EA\@EA\donormalizedbodyfontsize\@EA\WITHOUTPT\the\dimexpr#1+\ifcase\fontdigits.5\or.05\or.005\fi\points\relax000\to#2}
@@ -2061,7 +2052,7 @@
           \let\defaultfontclass\fontclass
         \fi
       \fi}%
-   \chardef\currentxfontsize\zerocount}
+   \currentxfontsize\zerocount}
 
 \def\dodosetfont#1#2%  #1 = set/switch state | check fo rempty, else space
   {\doifsomething{#2}{\dododosetfont{#1}{#2}{\showmessage\m!fonts4{#2}}}}
@@ -2116,12 +2107,6 @@
    \fi}
 
 % % %
-
-%D In the previous macros we use \type{\currentxfontsize} to
-%D hold the current x||size of the font. This enables us to
-%D support for instance \type{\sl} inside a \type{\tx} switch.
-
-\chardef\currentxfontsize=0
 
 %D When users specify for instance a 13 point bodyfont while no
 %D such bodyfont is defined, the system automatically tries to
@@ -2227,7 +2212,7 @@
 
 % 0=never 1=everymath 2=always
 
-\chardef\synchronizebigmathflag=1
+\setnewconstant\synchronizebigmathflag\plusone
 
 \appendtoks
   \ifcase\synchronizebigmathflag
@@ -2239,9 +2224,9 @@
   \fi
 \to \everymathematics
 
-\def\nobigmath  {\chardef\synchronizebigmathflag\zerocount}
-\def\autobigmath{\chardef\synchronizebigmathflag\plusone\synchronizebigmath}
-\def\bigmath    {\chardef\synchronizebigmathflag\plustwo\synchronizebigmath}
+\def\nobigmath  {\synchronizebigmathflag\zerocount}
+\def\autobigmath{\synchronizebigmathflag\plusone\synchronizebigmath}
+\def\bigmath    {\synchronizebigmathflag\plustwo\synchronizebigmath}
 
 \let\bigmathfontsize\empty
 
@@ -2482,7 +2467,7 @@
 %D used. Here we also set \type{\currentxfontsize}.
 
 \def\dosetcurrentfontxxxalternative#1#2#3#4%
-  {\chardef\currentxfontsize#2\relax
+  {\currentxfontsize#2\relax
    \ifmmode
      #4%
    \else\ifcsname\bodyfontvariable{\normalizedbodyfontsize#3}\endcsname
@@ -2500,7 +2485,7 @@
 
 \def\checknestedxfontsize % option
   {\ifcase\currentxfontsize\else\ifx\fontsize\empty\else
-     \chardef\currentxfontsize\zeropoint
+     \currentxfontsize\zerocount
      \let\fontsize\empty
      \let\tx\normaltx
      \let\txx\normaltxx
@@ -2640,8 +2625,6 @@
 
 % \newtoks \everysetupbodyfont
 % \newtoks \everyswitchtobodyfont
-
-\chardef\bodyfontsetstate=0
 
 \definecomplexorsimple\setupbodyfont
 
@@ -2938,7 +2921,7 @@
 \def\fullrestoreglobalbodyfont
   {\let\fontsize\defaultfontsize
    \let\fontbody\defaultfontbody
-   \chardef\currentxfontsize\zerocount
+   \currentxfontsize\zerocount
    \let\fontclass\globalfontclass
    \doswitchpoints[\normalizedglobalbodyfontsize]%
    \doswitchstyle[\globalfontstyle]%
@@ -2951,7 +2934,7 @@
 \def\partialrestoreglobalbodyfont
   {\let\fontsize\defaultfontsize
    \let\fontbody\defaultfontbody
-   \chardef\currentxfontsize\zerocount
+   \currentxfontsize\zerocount
    \redoconvertfont
    \tf
    \the\everybodyfont % indeed needed

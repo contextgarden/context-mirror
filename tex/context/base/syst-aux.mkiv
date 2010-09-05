@@ -107,6 +107,11 @@
 \def\!!plustwo   {2} % alongside \plustwo
 \def\!!plusthree {3} % alongside \plusthree
 
+\setnewconstant\uprotationangle     0
+\setnewconstant\rightrotatioangle  90
+\setnewconstant\downrotatioangle  180
+\setnewconstant\leftrotatioangle  270
+
 \ifdefined\data \else \let\data \relax \fi % dep checker
 
 %D \macros
@@ -2236,8 +2241,8 @@
 
 % idea: \ignorespaces afterwards
 
-\chardef\noexpectedarguments=0
-\chardef\expectedarguments  =0
+\setnewconstant\noexpectedarguments\zerocount
+\setnewconstant\expectedarguments  \zerocount
 
 \def\showargumenterror#1#2%
   {\writestatus{systems}{\number#1 argument(s) expected in line #2}}
@@ -2753,8 +2758,8 @@
 %D of the identification string with the macro \type
 %D {\statuswidth}.
 
-\chardef\statuswidth=15
-\chardef\statuswrite=16
+\setnewconstant\statuswidth 15
+\setnewconstant\statuswrite 16
 
 \ifdefined\writestring \else
 
@@ -2935,7 +2940,7 @@
    \dostarttexdefinition}
 
 \gdef\dostarttexdefinition #1
-  {\catcode13=\@@ignore%
+  {\catcode13=\ignorecatcode%
    \doifinstringelse\letterhash{\detokenize{#1}}\dodostarttexdefinition\nonostarttexdefinition#1
   }
 
@@ -3139,8 +3144,7 @@
 %D conditionals. The next implementation is abaou as fast
 %D and just as straightforward:
 
-% \def\settrue #1{\chardef#1\zerocount}
-% \def\setfalse#1{\chardef#1\plusone}
+% maybe reserve special zero and plusone
 
 \def\settrue #1{\let#1\zerocount}
 \def\setfalse#1{\let#1\plusone}
@@ -4434,7 +4438,7 @@
 %D \starttyping
 %D \bgroup
 %D
-%D \catcode`\*=\@@superscript
+%D \catcode`\*=\superscriptcatcode
 %D
 %D \gdef\redorepeatwithcommand[#1]%
 %D   {\redodorepeatwithcommand#1*\empty*\relax}
@@ -4941,9 +4945,9 @@
 %D \PtToCm{dimension}
 %D \stoptyping
 
-{\catcode`\.=\@@other
- \catcode`\p=\@@other
- \catcode`\t=\@@other
+{\catcode`\.=\othercatcode
+ \catcode`\p=\othercatcode
+ \catcode`\t=\othercatcode
  \gdef\WITHOUTPT#1pt{#1}}
 
 \def\withoutpt#1%
@@ -4976,18 +4980,16 @@
 \def\numberofpoints    #1{\the\numexpr\dimexpr#1\relax/\maxcard\relax}
 
 %D \macros
-%D   {swapdimens,swapmacros}
+%D   {swapdimens,swapcounts,swapmacros}
 %D
 %D Simple but effective are the next two macros. There name
 %D exactly states their purpose. The \type{\scratchdimen} and
 %D \type{\!!stringa} can only be swapped when being the first
 %D argument.
 
-\def\swapdimens#1#2%
-  {\scratchdimen #1\redoglobal    #1#2\dodoglobal    #2\scratchdimen}
-
-\def\swapmacros#1#2%
-  {\let\!!stringa#1\redoglobal\let#1#2\dodoglobal\let#2\!!stringa}
+\def\swapdimens#1#2{\scratchdimen  #1\redoglobal    #1#2\dodoglobal    #2\scratchdimen}
+\def\swapcounts#1#2{\scratchcounter#1\redoglobal    #1#2\dodoglobal    #2\scratchcounter}
+\def\swapmacros#1#2{\let\!!stringa #1\redoglobal\let#1#2\dodoglobal\let#2\!!stringa}
 
 %D \macros
 %D   {pushmacro,popmacro}
@@ -5619,8 +5621,8 @@
 
 \def\untexsomething
   {\begingroup
-   \catcode`\{=\@@ignore
-   \catcode`\}=\@@ignore
+   \catcode`\{=\ignorecatcode
+   \catcode`\}=\ignorecatcode
    \escapechar\minusone
    \dountexsomething}
 
@@ -6420,10 +6422,11 @@
 %D
 %D This is a dirty one: we simply append a unit and discard it when needed.
 
-\newdimen\roundingeps \roundingeps=10sp
+\newdimen   \roundingeps \roundingeps=10sp
+\newconstant\compresult
 
 \def\comparedimension#1#2%
-  {\chardef\compresult
+  {\compresult
      \ifdim#1<#2%
        \zerocount
      \else\ifdim#1<#2%
@@ -6433,7 +6436,7 @@
      \fi\fi}
 
 \def\comparedimensioneps#1#2% todo: use eps feature
-  {\chardef\compresult
+  {\compresult
      \ifdim\dimexpr#1-#2\relax<\roudingeps
        \zerocount
      \else\ifdim\dimexpr#2-#1\relax<\roudingeps
@@ -6479,7 +6482,7 @@
 
 \def\unspaceargument#1\to#2%
   {\scratchcounter\catcode32\relax
-   \catcode32\@@ignore\scantextokens{\edef#2{#1}}%
+   \catcode32\ignorecatcode\scantextokens{\edef#2{#1}}%
    \catcode32\scratchcounter}
 
 \def\unspaceafter#1#2%
@@ -6689,13 +6692,13 @@
 \gdef\insideduplication
   {\ifmmode\expandafter^\else\expandafter\egroup\fi}
 
-\catcode`\^=\@@active
+\catcode`\^=\activecatcode
 
 \gdef\enableduplication
-  {\catcode`\^=\@@active \let^\checkduplication}
+  {\catcode`\^=\activecatcode \let^\checkduplication}
 
 \gdef\disableduplication
-  {\catcode`\^=\@@superscript}
+  {\catcode`\^=\superscriptcatcode}
 
 \gdef\startduplication
   {\bgroup \duplicatetrue \let^\insideduplication}

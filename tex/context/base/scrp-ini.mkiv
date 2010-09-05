@@ -16,8 +16,8 @@
 \registerctxluafile{scrp-ini}{1.001}
 \registerctxluafile{scrp-cjk}{1.001}
 
-\definesystemattribute[preproc] \chardef\preprocattribute \dogetattributeid{preproc}
-\definesystemattribute[prestat] \chardef\prestatattribute \dogetattributeid{prestat}
+\definesystemattribute[preproc][public]
+\definesystemattribute[prestat][public]
 
 %D Since scripts need specific \LUA\ code we use hard coded attribute
 %D values, but we might have more tricks at some time, so we use a

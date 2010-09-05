@@ -261,11 +261,11 @@
 \newdimen\tractempheight
 \newdimen\tractempdepth
 
-\def\cutmarklength           {2\bodyfontsize}
+\def     \cutmarklength        {2\bodyfontsize}
 
-\chardef\horizontalcutmarks = 2
-\chardef\verticalcutmarks   = 2
-\chardef\cutmarkoffset      = 1
+\newcount\horizontalcutmarks \horizontalcutmarks = 2
+\newcount\verticalcutmarks   \verticalcutmarks   = 2
+\newcount\cutmarkoffset      \cutmarkoffset      = 1
 
 \let\cutmarksymbol          = \relax
 \let\cutmarktoptext         = \empty

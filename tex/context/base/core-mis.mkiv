@@ -576,8 +576,8 @@
 
 \unexpanded\def\ongeveer
   {\mathematics\pm}
-
-\chardef\boundarycharactermode\plusone
+
+\setnewconstant\boundarycharactermode\plusone
 
 \def\midboundarycharacter#1#2%
   {\ifcase\boundarycharactermode
@@ -590,7 +590,7 @@
    \or
      \languageparameter#1%
    \fi
-   \chardef\boundarycharactermode\plusone}
+   \boundarycharactermode\plusone}
 
 \def\leftboundarycharacter#1#2%
   {\ifcase\boundarycharactermode
@@ -601,7 +601,7 @@
    \or
      \languageparameter#1%
    \fi
-   \chardef\boundarycharactermode\plusone}
+   \boundarycharactermode\plusone}
 
 \def\rightboundarycharacter#1#2%
   {\ifcase\boundarycharactermode
@@ -612,7 +612,7 @@
    \or
      \languageparameter#1%
    \fi
-   \chardef\boundarycharactermode\plusone}
+   \boundarycharactermode\plusone}
 
 % actually this is pretty old, but temporary moved here
 %
@@ -1623,31 +1623,34 @@
         \let\next=}
    \hbox}
 
+\setnewconstant\pairedlocationa\plusone
+\setnewconstant\pairedlocationb\plusfour
+
 \def\beforefirstpairedbox
-  {\chardef\pairedlocationa1 % left
-   \chardef\pairedlocationb4 % middle
+  {\pairedlocationa\plusone  % left
+   \pairedlocationb\plusfour % middle
    \getfromcommacommand[\@@ldlocation][1]%
    \processaction
      [\commalistelement]
-     [  \v!left=>\chardef\pairedlocationa0,
-       \v!right=>\chardef\pairedlocationa1,
-         \v!top=>\chardef\pairedlocationa2,
-      \v!bottom=>\chardef\pairedlocationa3]%
+     [  \v!left=>\pairedlocationa\zerocount,
+       \v!right=>\pairedlocationa\plusone,
+         \v!top=>\pairedlocationa\plustwo,
+      \v!bottom=>\pairedlocationa\plusthree]%
    \getfromcommacommand[\@@ldlocation][2]%
    \processaction
      [\commalistelement]
-     [  \v!left=>\chardef\pairedlocationb0,
-       \v!right=>\chardef\pairedlocationb1,
-        \v!high=>\chardef\pairedlocationb2,
-         \v!top=>\chardef\pairedlocationb2,
-         \v!low=>\chardef\pairedlocationb3,
-      \v!bottom=>\chardef\pairedlocationb3,
-      \v!middle=>\chardef\pairedlocationb4]}
+     [  \v!left=>\pairedlocationb\zerocount,
+       \v!right=>\pairedlocationb\plusone,
+        \v!high=>\pairedlocationb\plustwo,
+         \v!top=>\pairedlocationb\plustwo,
+         \v!low=>\pairedlocationb\plusthree,
+      \v!bottom=>\pairedlocationb\plusthree,
+      \v!middle=>\pairedlocationb\plusfour]}
 
 \def\betweenbothpairedboxes
   {\switchtobodyfont[\@@ldbodyfont]% split under same regime
    \setbox\firstpairedbox\flushnextbox
-   \ifnum\pairedlocationa<2
+   \ifnum\pairedlocationa<\plustwo
      \hsize\wd\firstpairedbox % trick
      \hsize\@@ldwidth
      \scratchdimen\wd\firstpairedbox
@@ -1676,9 +1679,9 @@
       \else
         \flushnextbox
       \fi}%
-   \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize
+   \ifnum\pairedlocationa<\plustwo\hbox\else\vbox\fi\bgroup % hide vsize
    \forgetall
-   \ifnum\pairedlocationa<2
+   \ifnum\pairedlocationa<\plustwo
      \scratchdimen\maxoftwoboxdimens\ht\firstpairedbox\secondpairedbox
      \vsize\scratchdimen
      \ifdim\scratchdimen<\@@ldheight\relax % can be \vsize
@@ -1703,9 +1706,9 @@
      \fi
      \ifdim\scratchdimen>\ht\secondpairedbox
        \setbox\secondpairedbox\vbox to \scratchdimen
-         {\ifnum\pairedlocationa=3 \vss\fi %
+         {\ifnum\pairedlocationa=\plusthree \vss\fi %
           \box\secondpairedbox
-          \ifnum\pairedlocationa=2 \vss\fi}% \kern\zeropoint
+          \ifnum\pairedlocationa=\plustwo \vss\fi}% \kern\zeropoint
      \fi
    \fi
    \ifcase\pairedlocationa
@@ -1987,7 +1990,7 @@
 \def\dostartfloatcombination[#1][#2]%
   {\vbox\bgroup
   %\insidecolumnstrue % trick, forces no centering, todo: proper switch/feature
-   \chardef\postcenterfloatmethod\zerocount
+   \postcenterfloatmethod\zerocount
    \forcelocalfloats
    \unexpanded\def\stopfloatcombination
      {\scratchtoks\emptytoks
@@ -2333,7 +2336,7 @@
 %D character and the fractional digits (we use 57 as
 %D sample). Here we combine all methods in one macros.
 
-\chardef\vulgarfractionmethod=3
+\setnewconstant\vulgarfractionmethod\plusthree
 
 \definehspace[vulgarfraction][.25em] % [.15em]
 \definesymbol[vulgarfraction][/]     % [\raise.2ex\hbox{/}]
@@ -2366,10 +2369,10 @@
 %D \HL
 %D \NC \bf method \NC \bf visualization \NC\NR
 %D \HL
-%D \NC 0 \NC \chardef\vulgarfractionmethod0\vulgarfraction{1}{2} \NC\NR
-%D \NC 1 \NC \chardef\vulgarfractionmethod1\vulgarfraction{1}{2} \NC\NR
-%D \NC 2 \NC \chardef\vulgarfractionmethod2\vulgarfraction{1}{2} \NC\NR
-%D \NC 3 \NC \chardef\vulgarfractionmethod3\vulgarfraction{1}{2} \NC\NR
+%D \NC 0 \NC \vulgarfractionmethod0 \vulgarfraction{1}{2} \NC\NR
+%D \NC 1 \NC \vulgarfractionmethod1 \vulgarfraction{1}{2} \NC\NR
+%D \NC 2 \NC \vulgarfractionmethod2 \vulgarfraction{1}{2} \NC\NR
+%D \NC 3 \NC \vulgarfractionmethod3 \vulgarfraction{1}{2} \NC\NR
 %D \HL
 %D \stoptabulate
 

@@ -52,7 +52,7 @@
 \newtoks\everynextparagraphintro
 \newtoks\@@everyparagraphtoks
 
-\chardef\everyparagraphintro\zerocount
+\newconstant\everyparagraphintrostate
 
 \unexpanded\def\setupparagraphintro
   {\dodoubleempty\dosetupparagraphintro}
@@ -60,14 +60,14 @@
 \def\dosetupparagraphintro[#1][#2]%
   {\processallactionsinset
      [#1]
-     [   \v!reset=>\global\chardef\everyparagraphintro\zerocount
+     [   \v!reset=>\global\everyparagraphintrostate\zerocount
                    \global\everyfirstparagraphintro\emptytoks
                    \global\everynextparagraphintro \emptytoks,
-         \v!first=>\global\chardef\everyparagraphintro\plusone
+         \v!first=>\global\everyparagraphintrostate\plusone
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro,
-          \v!next=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plusone\fi
+          \v!next=>\ifcase\everyparagraphintrostate\global\everyparagraphintrostate\plusone\fi
                    \doglobal\appendtoks#2\to\everynextparagraphintro,
-          \v!each=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plustwo\fi
+          \v!each=>\ifcase\everyparagraphintrostate\global\everyparagraphintrostate\plustwo\fi
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro
                    \doglobal\appendtoks#2\to\everynextparagraphintro]}
 
@@ -84,22 +84,22 @@
 %D \stoptyping
 
 \def\flushatparagraph#1%
-  {\global\chardef\everyparagraphintro\plusone
+  {\global\everyparagraphintrostate\plusone
    \global\appendtoks{#1}\to\everyfirstparagraphintro
    \global\let\insertparagraphintro\doinsertparagraphintro}
 
 \def\doinsertparagraphintro % can be merged with the next
-  {\ifcase\everyparagraphintro\else\@EA\dodoinsertparagraphintro\fi}
+  {\ifcase\everyparagraphintrostate\else\@EA\dodoinsertparagraphintro\fi}
 
 \def\dodoinsertparagraphintro
   {\begingroup
    \everypar\emptytoks
-   \ifcase\everyparagraphintro\relax
+   \ifcase\everyparagraphintrostate\relax
      % no data
      \@@everyparagraphtoks\emptytoks
    \or
      % first data
-     \global\chardef\everyparagraphintro\plustwo
+     \global\everyparagraphintrostate\plustwo
      \@@everyparagraphtoks\everyfirstparagraphintro
      \global\everyfirstparagraphintro\emptytoks
    \or

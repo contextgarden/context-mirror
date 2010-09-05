@@ -75,7 +75,7 @@ end
 
 statistics.register("metapost processing time", function()
     local n =  metapost.n
-    if n > 0 then
+    if n and n > 0 then
         local e, t = metapost.makempy.nofconverted, statistics.elapsedtime
         local str = format("%s seconds, loading: %s seconds, execution: %s seconds, n: %s",
             t(metapost), t(mplib), t(metapost.exectime), n)

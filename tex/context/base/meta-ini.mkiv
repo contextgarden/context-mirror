@@ -403,10 +403,9 @@
 %D \uniqueMPgraphic{meta:hash}{gap=10pt,angle=30}
 %D \stoptyping
 
-\newcount\MPobjectcounter
-\newbox  \MPgraphicbox
-
-\chardef\MPboxmode\zerocount
+\newcount   \MPobjectcounter
+\newbox     \MPgraphicbox
+\newconstant\MPboxmode
 
 \def\doobeyMPboxdepth % mode = 1
   {\setbox\MPgraphicbox\hbox{\hskip\MPllx\onebasepoint\raise\MPlly\onebasepoint\box\MPgraphicbox}}
@@ -418,9 +417,9 @@
       \ht\MPgraphicbox\the\ht\MPgraphicbox
       \dp\MPgraphicbox\the\dp\MPgraphicbox}}
 
-\def\obeyMPboxdepth  {\chardef\MPboxmode\plusone}
-\def\ignoreMPboxdepth{\chardef\MPboxmode\plustwo}
-\def\normalMPboxdepth{\chardef\MPboxmode\zerocount}
+\def\obeyMPboxdepth  {\MPboxmode\plusone}
+\def\ignoreMPboxdepth{\MPboxmode\plustwo}
+\def\normalMPboxdepth{\MPboxmode\zerocount}
 
 % compatibility hack:
 
@@ -638,8 +637,6 @@
     def data_mpo_file = "\MPdataMPOfile" enddef ;
     def data_mpy_file = "\MPdataMPYfile" enddef ;
 \stopMPextensions
-
-\chardef\currentMPgraphic\plusone
 
 \def\getMPdata
   {\let\MPdata\secondoftwoarguments
@@ -984,58 +981,6 @@
 
 \newtoks\everyinsertMPfile
 
-% removed in backend:
-%
-% \def\doinsertMPfile#1%
-%   {\doiffileelse{./#1}{\includeMPasPDF{./#1}}{\message{[MP #1]}}}
-%
-% \let\insertMPfileARG\insertMPfile
-%
-% \def\insertMPfile#1#2% in context #2 is empty
-%   {\doifelsenothing{#2}{\doinsertMPfile{#1}}{\insertMPfileARG{#1}{#2}}}
-%
-% \def\includeMPasEPS#1% untested !!
-%   {\bgroup
-%    \message{[MP as EPS #1]}%
-%    \the\everyinsertMPfile
-%    \dogetEPSboundingbox{#1}\!!widtha\!!heighta\!!widthb\!!heightb
-%    \setbox\scratchbox\vbox to \!!heightb
-%      {\vfill
-%       \let \@@DriverImageType  \c!mps
-%       \def \@@DriverImageFile  {#1}%
-%       \edef\@@DriverImageWidth {\the\!!widthb }%
-%       \edef\@@DriverImageHeight{\the\!!heightb}%
-%       \doinsertfile}%
-%    \wd\scratchbox\!!widthb
-%    \dp\scratchbox\zeropoint
-%    \box\scratchbox
-%    \egroup}
-%
-% \def\includeMPasPDF#1%
-%   {\bgroup
-%    \the\everyinsertMPfile
-%    \ifinobject \else \chardef\makeMPintoPDFobject\plustwo \fi % when needed
-%    \convertMPtoPDF{#1}{1}{1}% no \plusone !
-%    \egroup}
-%
-% %D So, using a low level approach (thereby avoiding the slower
-% %D figure analysis macros) pays off. This kind of
-% %D optimizations are a bit tricky since we must make sure that
-% %D special resources end up in the (PDF) files. Because the
-% %D \METAPOST\ to \PDF\ can handle objects itself, it is not
-% %D that complicated.
-%
-% %D We hook a couple of initializations into the graphic
-% %D macros.
-%
-% \appendtoks
-%     \let\figuretypes\c!mps
-%     \runutilityfilefalse
-%     \consultutilityfilefalse
-% \to \everyinsertMPfile
-%
-% %D One more: (still needed?)
-
 \startMPextensions
     def initialize_form_numbers =
         do_initialize_numbers;
@@ -1220,16 +1165,16 @@
 %D \stopuseMPgraphic
 %D
 %D \starttabulate
-%D \NC 0\quad \NC \chardef\MPcolormethod0 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
-%D \NC 1\quad \NC \chardef\MPcolormethod1 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
-%D \NC 2\quad \NC \chardef\MPcolormethod2 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
-%D \NC 3\quad \NC \chardef\MPcolormethod3 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 0\quad \NC \MPcolormethod0 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 1\quad \NC \MPcolormethod1 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 2\quad \NC \MPcolormethod2 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 3\quad \NC \MPcolormethod3 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
 %D \stoptabulate
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
 
-\chardef\MPcolormethod\zerocount
+\newconstant\MPcolormethod
 
 % can be faster, just
 
@@ -1258,7 +1203,7 @@
 %D behave in unexpected ways.
 
 \appendtoks
-    \doifelse\@@mpcolor\v!global{\chardef\MPcolormethod\plusone}{\chardef\MPcolormethod\zerocount}%
+    \doifelse\@@mpcolor\v!global{\MPcolormethod\plusone}{\MPcolormethod\zerocount}%
 \to \everysetupMPgraphics
 
 \setupMPgraphics

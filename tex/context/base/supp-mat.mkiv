@@ -165,12 +165,12 @@
 %D and \type {\suber} by saying \type {\enablesupsub}.
 
 \bgroup
-\catcode`\^=\@@active
-\catcode`\_=\@@active
+\catcode`\^=\activecatcode
+\catcode`\_=\activecatcode
 \gdef\enablesupsub
-  {\catcode`\^=\@@active
+  {\catcode`\^=\activecatcode
    \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
-   \catcode`\_=\@@active
+   \catcode`\_=\activecatcode
    \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
 \egroup
 

@@ -60,10 +60,9 @@
 
 \unprotect
 
-\chardef\buffernestmode\plusone % 0: not nested, 1: startbuffer nested, 2: all buffers nested
+\setnewconstant\buffernestmode\plusone % 0: not nested, 1: startbuffer nested, 2: all buffers nested
 
-\newif\ifsegmentatebuffer
-\newif\ifemptybufferline
+\newconditional\segmentatebuffermode % not implemented in mkiv (yet)
 
 \def\currentbuffer{\jobname}
 
@@ -95,10 +94,12 @@
 \def\dododostartbuffer#1#2#3#4%
   {%\showmessage\m!systems{15}{#2}%
    \doifelsevalue{\??bu#1\c!paragraph}\v!yes
-     {\segmentatebuffertrue} % todo in mkiv
-     {\doifnumberelse{\getvalue{\??bu#1\c!paragraph}}\segmentatebuffertrue\segmentatebufferfalse}%
+     {\settrue\segmentatebuffermode} % todo in mkiv
+     {\doifnumberelse{\getvalue{\??bu#1\c!paragraph}}
+        {\settrue \segmentatebuffermode}
+        {\setfalse\segmentatebuffermode}}%
    \doifvalue{\??bu#1\c!local}\v!yes
-     {\chardef\buffernestmode\plustwo}% permit nesting
+     {\buffernestmode\plustwo}% permit nesting
    \setcurrentbuffer{#2}%
    \doifelsenothing{#4}
      {\normalexpanded{\noexpand\setbuffercapsules{\e!start\v!buffer}{\e!stop\v!buffer}}%

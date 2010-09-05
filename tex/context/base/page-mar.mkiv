@@ -186,13 +186,13 @@
 %D The next bunch of macros looks messy which is due to its
 %D multi-purpose character.
 
-\chardef\margincontentdisplacement \zerocount
-\let    \margincontentdistance     \!!zeropoint
-\let    \margincontenthoffset      \!!zeropoint
-\def    \margincontentlines        {1}
-\def    \margincontenttag          {0}
-\let    \margincontentseparator    \empty
-\def    \margincontentstrutheight  {\strutht}
+\setnewconstant\margincontentdisplacement \zerocount
+\let           \margincontentdistance     \!!zeropoint
+\let           \margincontenthoffset      \!!zeropoint
+\def           \margincontentlines        {1}
+\def           \margincontenttag          {0}
+\let           \margincontentseparator    \empty
+\def           \margincontentstrutheight  {\strutht}
 
 \newcount\margincontentlevel
 \newdimen\margincontentheight
@@ -355,8 +355,9 @@
 % 2 only natural height
 % 3 also stack height
 
-\chardef\margincontentmethod  \plusthree % beware: 1 = old method
-\chardef\marginpagecheckmethod\plusone
+\setnewconstant\margincontentmethod   \plusthree % beware: 1 = old method
+\setnewconstant\marginpagecheckmethod \plusone
+\setnewconstant\marginrepositionmethod\plusone
 
 \def\margincontentextralines{1}        % old method, play safe
 \def\nofmargincontentlines  {0}
@@ -614,15 +615,15 @@
   {\bgroup
    % old stuff, a bit tricky, but now interfaced
    \edef\currentmargincontent{#1}%
-   \chardef\marginrepositionmethod\executeifdefined{\??im\currentmargincontent\c!sidemethod }\plusone
-   \chardef\margincontentmethod   \executeifdefined{\??im\currentmargincontent\c!textmethod }\plusthree
-   \chardef\marginpagecheckmethod \executeifdefined{\??im\currentmargincontent\c!splitmethod}\plusone
+   \marginrepositionmethod\executeifdefined{\??im\currentmargincontent\c!sidemethod }\plusone
+   \margincontentmethod   \executeifdefined{\??im\currentmargincontent\c!textmethod }\plusthree
+   \marginpagecheckmethod \executeifdefined{\??im\currentmargincontent\c!splitmethod}\plusone
    % so far
    \forgetall % otherwise sidefloat problems, added 2005/07/20, maybe dangerous
    \postponenotes % group is (somehow) needed
    \doifinsetelse\v!low{#4}
-     {\chardef\margincontentdisplacement\plusone}
-     {\chardef\margincontentdisplacement\zerocount}%
+     {\margincontentdisplacement\plusone}
+     {\margincontentdisplacement\zerocount}%
    \doif\v!reverse{#2}
      {\swapmacros\dorightmarginblock\doleftmarginblock}%
    \processaction
@@ -666,10 +667,10 @@
 \def\margintitle{\margintext} % txt mark as well
 
 \newtoks\collectedmargintexts % so .. delayed!
-\chardef\margintextcollected  \zerocount
+\newconditional\margintextcollected
 
 \def\domargincontent[#1][#2]#3% we used to check for #2/#1 being number, no longer now
-  {\global\chardef\margintextcollected\plusone
+  {\global\settrue\margintextcollected
    \global\let\flushmargincontents\doflushmargincontents
    \edef\margincontenttag{#1}%
    \ifx\margincontenttag\empty
@@ -764,14 +765,14 @@
 
 \def\resetmargincontent
   {\global\margincontentlevel\zerocount
-   \global\chardef\margintextcollected\zerocount
+   \global\setfalse\margintextcollected
    \global\collectedmargintexts\emptytoks}
 
 \unexpanded\def\placemargincontent
-  {\ifcase\margintextcollected\else % was level check
+  {\ifconditional\margintextcollected % was level check
      \bgroup
        \redoconvertfont % !!
-       \chardef\graphicvadjustmode\zerocount
+      %\setfalse\graphicvadjustmode % not used
        \flushmargincontentsindeed
      \egroup
    \fi}

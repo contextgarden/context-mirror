@@ -667,7 +667,7 @@
 \let\pushTBL\relax
 \let\popTBL \relax
 
-\chardef\tblpass=0
+\newconstant\tblpass
 
 \def\presetallTABLEparameters% each odd|even level / can be sped up but only once per table
   {\executeifdefined{\@@rawtblprefix\v!start\v!each}\relax
@@ -959,7 +959,7 @@
   {\global\tblspn\zerocount
    \global\tblrow\zerocount
    \global\tblcol\zerocount
-   \chardef\tblpass\zerocount
+   \tblpass\zerocount
    \tbltoks\emptytoks}
 
 \def\flushtbltoks{\begintbl\the\tbltoks\endtbl}
@@ -1060,7 +1060,7 @@
       \lettbldis\recurselevel\zeropoint}%
    \dorecurse\maximumrow
      {\lettblhei\recurselevel\maxdimen}%
-   \chardef\tblpass\plusone
+   \tblpass\plusone
    \let\makeTBL\domakeTBLone
    \let\handleTBLcell\dohandleTBLcellA
    \setbox0\vbox{\settrialtypesetting \flushtbltoks}%
@@ -1092,13 +1092,13 @@
      \setbox\scratchbox\vbox{\settrialtypesetting \flushtbltoks}%
    \fi\fi\fi\fi
    \let\handleTBLcell\dohandleTBLcellD
-   \chardef\tblpass\plustwo
+   \tblpass\plustwo
    \let\makeTBL\domakeTBLtwo
    \setbox\scratchbox\vbox{\settrialtypesetting \flushtbltoks}%
    \checktblheightsone
    \checktblheightstwo
    \let\handleTBLcell\dohandleTBLcellE
-   \chardef\tblpass\plusthree
+   \tblpass\plusthree
    \let\makeTBL\domakeTBLthree
    \ifnum\TBLlevel>\plusone
      \@EA\notsplittblbox
@@ -1616,8 +1616,6 @@
 
 \appendtoks\let\TB\TableTB   \to\everytable
 \appendtoks\let\TB\TabulateTB\to\everytabulate % strange place
-
-\appendtoks \chardef\recodeverbatimmode\plustwo \to \everytable
 
 % new (for Olivier Turlier)
 %

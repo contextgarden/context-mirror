@@ -15,8 +15,8 @@
 
 \unprotect
 
-\let    \keeputfcharacters\relax       % used in xtag
-\chardef\utfunicodetracer \zerocount   % used in xtag
+\let\keeputfcharacters\relax  % used in xtag
+\newconstant\utfunicodetracer % used in xtag
 
 \def\unicodechar     #1{\char\numexpr#1\relax} % no lookahead
 \def\unicodenumber   #1{\the \numexpr#1\relax} % no lookahead

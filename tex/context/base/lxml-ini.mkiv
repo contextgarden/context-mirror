@@ -280,12 +280,11 @@
 
 % \def\xmlctxdirective#1#2#3{\doif{#1}{clue}{\doif{#2}{page}}{\page[#3]}}
 
-\chardef\xmlprocessingmode=0 % 0=unset, 1=text, 2=hidden
+\newconstant\xmlprocessingmode % 0=unset, 1=text, 2=hidden
 
 \newtoks\everysetupxml
 
 \unexpanded\def\setupxml[#1]{\getparameters[\??xm][#1]\the\everysetupxml}
-
 
 \letvalue{\??xm:\s!default:\v!normal}\zerocount
 \letvalue{\??xm:\s!default:\v!none  }\zerocount
@@ -304,7 +303,7 @@
    \fi}
 
 \appendtoks
-    \chardef\xmlprocessingmode\executeifdefined{\??xm:\s!default:\@@xmdefault}\plusone
+    \xmlprocessingmode\executeifdefined{\??xm:\s!default:\@@xmdefault}\plusone
 \to \everysetupxml
 
 \def\xmlinitialize{\the\everysetupxml}
@@ -331,7 +330,7 @@
 
 %D Entities:
 
-\chardef\xmlautoentities=1 % 0=off, 1=upper, 2=upper,lower
+\setnewconstant\xmlautoentities\plusone % 0=off, 1=upper, 2=upper,lower
 
 \let\isolatedentity\firstofoneargument
 

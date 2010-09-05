@@ -84,16 +84,16 @@
 % 7 = rightedge
 % 8 = cutspace
 
-\chardef\sidefloattype\zerocount
+\newconstant\sidefloattype
 
-\def\backspacefloat    {\global\chardef\sidefloattype1 \putsidefloat}
-\def\leftedgefloat     {\global\chardef\sidefloattype2 \putsidefloat}
-\def\leftmarginfloat   {\global\chardef\sidefloattype3 \putsidefloat}
-\def\leftfloat         {\global\chardef\sidefloattype4 \putsidefloat}
-\def\rightfloat        {\global\chardef\sidefloattype5 \putsidefloat}
-\def\rightmarginfloat  {\global\chardef\sidefloattype6 \putsidefloat}
-\def\rightedgefloat    {\global\chardef\sidefloattype7 \putsidefloat}
-\def\cutspacefloat     {\global\chardef\sidefloattype8 \putsidefloat}
+\def\backspacefloat    {\global\sidefloattype1 \putsidefloat}
+\def\leftedgefloat     {\global\sidefloattype2 \putsidefloat}
+\def\leftmarginfloat   {\global\sidefloattype3 \putsidefloat}
+\def\leftfloat         {\global\sidefloattype4 \putsidefloat}
+\def\rightfloat        {\global\sidefloattype5 \putsidefloat}
+\def\rightmarginfloat  {\global\sidefloattype6 \putsidefloat}
+\def\rightedgefloat    {\global\sidefloattype7 \putsidefloat}
+\def\cutspacefloat     {\global\sidefloattype8 \putsidefloat}
 
 \let\marginfloat       \cutspacefloat
 
@@ -474,9 +474,9 @@
      \fi\fi
    \else
      \ifnum\sidefloattype<\plusfour
-       \global\chardef\sidefloattype\plusfour
+       \global\sidefloattype\plusfour
      \else\ifnum\sidefloattype>\plusfive
-       \global\chardef\sidefloattype\plusfive
+       \global\sidefloattype\plusfive
      \fi\fi
    \fi
    \previoussidefloat

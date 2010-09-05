@@ -151,8 +151,9 @@
 %D page box and therefore flushed first. So, when present, it
 %D is applied to all positions except itself.
 
-\chardef\positionanchormode=0 % don't relocate page origin
-\chardef\positionanchormode=1 % relocate page origin once
+% 0 = don't relocate page origin  1 = relocate page origin once
+
+\setnewconstant\positionanchormode\plusone
 
 %D The core set macros.
 
@@ -501,7 +502,6 @@
 
 \newcount\parposcounter
 \newif   \ifpositioningpar
-\chardef \parposstrut = 1 % 0 => no strut data, so fall backs used
 \newif   \iftracepositions
 
 % we can check for used entries, and if not, then not add one
@@ -594,7 +594,7 @@
 \def\getnodelocationn#1{\countervalue{\@@noden#1}}
 \def\getnodelocationo#1{\getvalue    {\@@nodeo#1}}
 
-\chardef\nodelocationmode\plusone
+\setnewconstant\nodelocationmode\plusone
 
 \def\analyzenodelocation#1%
   {\ifcsname\@@noden#1\endcsname
