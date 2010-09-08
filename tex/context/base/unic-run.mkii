@@ -39,8 +39,8 @@
    \stoptable}
 
 %D \starttyping
-%D \chardef\utfunicodetracer=0
-%D \chardef\utfunicodetracer=7
+%D \utfunicodetracer=0
+%D \utfunicodetracer=7
 %D
 %D \showunicodevector[000]
 %D \showunicodevector[001]
@@ -66,11 +66,11 @@
    \dostepwiserecurse{0}{15}{1}
      {\bTD
       \edef\entrypoint{\the\numexpr#1*256+#2+##1*16\relax}%
-      \chardef\utfunicodetracer0{\dontleavehmode    \strut\unicodechar\entrypoint\endgraf}%
+      \utfunicodetracer\zerocount{\dontleavehmode    \strut\unicodechar\entrypoint\endgraf}%
       \tt
-      \chardef\utfunicodetracer7{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
-      \chardef\utfunicodetracer3{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
-      \chardef\utfunicodetracer8{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
+      \utfunicodetracer\plusseven{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
+      \utfunicodetracer\plusthree{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
+      \utfunicodetracer\pluseight{\dontleavehmode\txx\strut\unicodechar\entrypoint\endgraf}%
       \eTD}%
    \bTD\uchexnumber{#2}\eTD
    \eTR}

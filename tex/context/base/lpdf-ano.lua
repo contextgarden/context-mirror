@@ -245,9 +245,7 @@ function codeinjections.prerollreference(actions) -- share can become option
     end
 end
 
-local shareannotations   experiments.register("backend.shareannotations",function() shareannotations = true end)
-
-if not shareannotations then
+local lln = latelua_node()  if not node.has_field(lln,'string') then
 
     function nodeinjections.reference(width,height,depth,prerolled) -- keep this one
         if prerolled then
@@ -258,7 +256,12 @@ if not shareannotations then
         end
     end
 
+    function codeinjections.finishreference()
+    end
+
 else
+
+    report_references("hashing annotations")
 
     local delayed = { }
     local hashed  = { }
@@ -290,8 +293,8 @@ else
         if not n then
             n = pdfreserveobject() -- todo: share
             delayed[n] = annot
---~ n = pdf.obj(annot)
---~ pdf.refobj(n)
+        --~ n = pdf.obj(annot)
+        --~ pdf.refobj(n)
             if sharing then
                 hashed[annot] = n
             end
@@ -306,13 +309,13 @@ else
             if trace_references then
                 report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
             end
---~             local luacode = format("backends.pdf.codeinjections.finishreference(%s,%s,%s,'%s')",width,height,depth,prerolled)
+         -- local luacode = format("backends.pdf.codeinjections.finishreference(%s,%s,%s,'%s')",width,height,depth,prerolled)
             local luacode = format("_bpnf_(%s,%s,%s,'%s')",width,height,depth,prerolled)
             return latelua_node(luacode)
         end
     end
 
-end
+end  node.free(lln)
 
 function nodeinjections.destination(width,height,depth,name,view)
     if trace_destinations then

@@ -113,11 +113,14 @@ local function get_class_and_vector(tfmdata,value,where) -- "expansions"
     local g_where = tfmdata.goodies and tfmdata.goodies[where]
     local f_where = fonts[where]
     local g_classes = g_where and g_where.classes
-    local class = g_where and g_where[value] or f_where.classes[value]
+    local f_classes = f_where and f_where.classes
+    local class = (g_classes and g_classes[value]) or (f_classes and f_classes[value])
+--~ print(value,class,f_where,f_classes)
     if class then
         local class_vector = class.vector
         local g_vectors = g_where and g_where.vectors
-        local vector = g_vectors and g_vectors[class_vector] or f_where.vectors[class_vector]
+        local f_vectors = f_where and f_where.vectors
+        local vector = (g_vectors and g_vectors[class_vector]) or (f_vectors and f_vectors[class_vector])
         return class, vector
     end
 end
@@ -183,7 +186,8 @@ function initializers.common.expansion(tfmdata,value)
             if vector then
                 local stretch, shrink, step, factor = class.stretch or 0, class.shrink or 0, class.step or 0, class.factor or 1
                 if trace_expansion then
-                    report_fonts("set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",value,class_vector,factor,stretch,shrink,step)
+                    report_fonts("set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",
+                        value,class.vector,factor,stretch,shrink,step)
                 end
                 tfmdata.stretch, tfmdata.shrink, tfmdata.step, tfmdata.auto_expand = stretch * 10, shrink * 10, step * 10, true
                 local data = characters and characters.data
@@ -209,7 +213,7 @@ function initializers.common.expansion(tfmdata,value)
                     end
                 end
             elseif trace_expansion then
-                report_fonts("unknown expansion vector '%s' in class '%s",class_vector,value)
+                report_fonts("unknown expansion vector '%s' in class '%s",class.vector,value)
             end
         elseif trace_expansion then
             report_fonts("unknown expansion class '%s'",value)
@@ -237,9 +241,9 @@ fonts.protrusions   = allocate()
 local protrusions   = fonts.protrusions
 
 protrusions.classes = allocate()
-protrusions.vectors = protrusions.vectors or { }
+protrusions.vectors = allocate()
 
-local classes       = allocate()
+local classes       = protrusions.classes
 local vectors       = protrusions.vectors
 
 -- the values need to be revisioned
@@ -459,7 +463,8 @@ function initializers.common.protrusion(tfmdata,value)
                     local left   = class.left   or 1
                     local right  = class.right  or 1
                     if trace_protrusion then
-                        report_fonts("set protrusion class %s, vector: %s, factor: %s, left: %s, right: %s",value,class_vector,factor,left,right)
+                        report_fonts("set protrusion class %s, vector: %s, factor: %s, left: %s, right: %s",
+                            value,class.vector,factor,left,right)
                     end
                     local data = characters.data
                     local emwidth = tfmdata.parameters.quad
@@ -494,7 +499,7 @@ function initializers.common.protrusion(tfmdata,value)
                         end
                     end
                 elseif trace_protrusion then
-                    report_fonts("unknown protrusion vector '%s' in class '%s",class_vector,value)
+                    report_fonts("unknown protrusion vector '%s' in class '%s",class.vector,value)
                 end
             elseif trace_protrusion then
                 report_fonts("unknown protrusion class '%s'",value)

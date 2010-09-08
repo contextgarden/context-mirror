@@ -361,7 +361,7 @@
 \unexpanded\def\startmessages #1 library: #2 %
   {\bgroup
    \ifcsname\m!prefix!#2\endcsname\else\setgvalue{\m!prefix!#2}{#2}\fi
-   \catcode13=\active
+   \catcode13=\activecatcode
    \doifinsetelse{#1}{\currentresponses,all}\dostartmessages\nostartmessages{#2}}
 
 \def\dostartmessages#1#2\stopmessages

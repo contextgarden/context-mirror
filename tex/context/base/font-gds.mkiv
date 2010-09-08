@@ -39,7 +39,7 @@
 \definecolor[colorscheme:2:2][m=.75]
 \definecolor[colorscheme:2:1][y=.75]
 
-\definesystemattribute[colorscheme] \chardef\colorschemeattribute \dogetattributeid{colorscheme}
+\definesystemattribute[colorscheme][public]
 
 \def\setfontcolorscheme
   {\ctxlua{fonts.goodies.colorschemes.enable()}%

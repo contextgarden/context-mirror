@@ -518,18 +518,18 @@
 \def\preparefloatnumber#1%
   {\xdef\floatcaptionnumber{#1}%
    \doifelsenodelocation{\v!float\@@thenumber{#1}}
-     \donothing {\chardef\nodelocationmode\zerocount}%
+     \donothing {\nodelocationmode\zerocount}%
    \doifelse{\floatsharedparameter\c!numbering}\v!nocheck
      {\incrementnumber[#1]%
       \makesectionnumber[#1]%
       \ifconditional\retainfloatnumber\decrementnumber[#1]\fi}
      {\ifinsidecolumns
-        \chardef\nodelocationmode\zerocount
+        \nodelocationmode\zerocount
         % to be perfected:
-        % \chardef\nodelocationmode\plustwo
+        % \nodelocationmode\plustwo
       \fi
 % FOR THE MOMENT NOT AVAILABLE
-\chardef\nodelocationmode\zerocount
+\nodelocationmode\zerocount
 % BUT NOT THAT HARD TO DO
       \ifcase\nodelocationmode
         \incrementnumber[#1]%
@@ -647,8 +647,9 @@
 \def\xxdocompletefloat#1#2%
   {\rightorleftpageaction{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
 
-\chardef\textfloatmethod=0 % 0=raw 1=safe (.99) 2=tight (-1pt)
-\chardef\sidefloatmethod=1 % 0=raw 1=safe (.99) 2=tight (-1pt)
+\setnewconstant\sidefloatalign \zerocount
+\setnewconstant\textfloatmethod\zerocount % 0=raw 1=safe (.99) 2=tight (-1pt)
+\setnewconstant\sidefloatmethod\plusone   % 0=raw 1=safe (.99) 2=tight (-1pt)
 
 \let\floatrotation\!!zerocount
 
@@ -667,26 +668,26 @@
    \fi
    \global\sidefloatshift\zeropoint
    \global\sidefloatmaximum\zeropoint
-   \global\chardef\sidefloatmethod\floatparameter\c!sidemethod
-   \global\chardef\textfloatmethod\floatparameter\c!textmethod
-   \global\chardef\sidefloatalign\zerocount
+   \global\sidefloatmethod\floatparameter\c!sidemethod
+   \global\textfloatmethod\floatparameter\c!textmethod
+   \global\sidefloatalign\zerocount
    \globallet\floatrotation\!!zerocount
    \calculatefloatskips
    \ifparfloat
      \processaction
        [\floatparameter\c!sidealign]
-       [\v!height=>\global\chardef\sidefloatalign\plusone,%
-          \v!line=>\global\chardef\sidefloatalign\plustwo,% (***)
-         \v!depth=>\global\chardef\sidefloatalign\plusthree,%
-          \v!grid=>\global\chardef\sidefloatalign\plusfour,%
-      \v!halfline=>\global\chardef\sidefloatalign\plusfive]%
-     % todo (test first): \doifinset\v!lokaal{#2}{\chardef\sidefloatalign\zerocount}%
+       [\v!height=>\global\sidefloatalign\plusone,%
+          \v!line=>\global\sidefloatalign\plustwo,% (***)
+         \v!depth=>\global\sidefloatalign\plusthree,%
+          \v!grid=>\global\sidefloatalign\plusfour,%
+      \v!halfline=>\global\sidefloatalign\plusfive]%
+     % todo (test first): \doifinset\v!lokaal{#2}{\global\sidefloatalign\zerocount}%
      \ifcase\sidefloatalign\relax % todo: optie v!lokaal => \else
-       \doifinset\v!height  {#2}{\global\chardef\sidefloatalign\plusone}%
-       \doifinset\v!line    {#2}{\global\chardef\sidefloatalign\plustwo}%
-       \doifinset\v!depth   {#2}{\global\chardef\sidefloatalign\plusthree}%
-       \doifinset\v!grid    {#2}{\global\chardef\sidefloatalign\plusfour}%
-       \doifinset\v!halfline{#2}{\global\chardef\sidefloatalign\plusfive}% meant for 'none'
+       \doifinset\v!height  {#2}{\global\sidefloatalign\plusone}%
+       \doifinset\v!line    {#2}{\global\sidefloatalign\plustwo}%
+       \doifinset\v!depth   {#2}{\global\sidefloatalign\plusthree}%
+       \doifinset\v!grid    {#2}{\global\sidefloatalign\plusfour}%
+       \doifinset\v!halfline{#2}{\global\sidefloatalign\plusfive}% meant for 'none'
      \fi
      \doifinset\v!high{#2}{\global\sidefloattopskip   \zeropoint}%
      \doifinset\v!low {#2}{\global\sidefloatbottomskip\zeropoint}%
@@ -1212,14 +1213,14 @@
 \ifdefined\moveboxontogrid\else \let\movecaptionontogrid\gobblethreearguments \fi
 
 \def\locatefloatbox
-  {\chardef\alignstrutmode\zerocount
+  {\alignstrutmode\zerocount
    \shiftalignedline
      {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
      {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}%
    \alignedline{\floatparameter\c!location}\v!middle}
 
 \def\locatecaptionbox
-  {\chardef\alignstrutmode\zerocount
+  {\alignstrutmode\zerocount
    \shiftalignedline
      {\floatcaptionparameter\c!leftmargin }{\floatcaptionparameter\c!rightmargin}%
      {\floatcaptionparameter\c!innermargin}{\floatcaptionparameter\c!outermargin}%
@@ -1732,7 +1733,7 @@
 
 \newif\ifpostponecolumnfloats \postponecolumnfloatsfalse % don't change
 
-\chardef\postcenterfloatmethod\plusone
+\setnewconstant\postcenterfloatmethod\plusone
 
 \def\postcenterfloatbox#1%
   {\scratchdimen
@@ -1808,7 +1809,7 @@
    \let\locatecaption\relax
    \def\locatesidefloat##1%
      {\begingroup
-      \chardef\alignstrutmode\zerocount
+      \alignstrutmode\zerocount
       \hsize\tempfloatwidth \forgetall
       \alignedline{\floatparameter\c!location}\v!middle{##1}%
       \endgroup}%

@@ -217,41 +217,6 @@
 \def\doifsetupselse#1% to be done: grid
   {\doifdefinedelse{\??su:#1}} % doto: ifcsname
 
-% % % %
-
-% \chardef\setupseolmode\plusone
-%
-% \unexpanded\def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
-% \unexpanded\def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
-% \unexpanded\def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
-% \unexpanded\def\startxmlsetups  {\xxstartsetups\plustwo  \stopxmlsetups  } \let\stopxmlsetups  \relax
-%
-% \def\xxstartsetups#1#2%
-%   {\begingroup\let\setupseolmode#1\doifnextoptionalelse{\dostartsetupsA#2}{\dostartsetupsB#2}}
-%
-% \def\dostartsetupsA#1% [ ] delimited
-%   {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
-%    \dotripleempty\dostartsetups[#1]}
-%
-% \def\dostartsetupsB#1#2 % space delimited
-%   {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\or\catcode`\^^M\@@ignore\catcode`\|\@@other\fi
-%    \dodostartsetups#1\empty{#2}}
-%
-% \def\dostartsetupsC[#1][#2][#3]{\dodostartsetups#1{#2}{#3}}   % [..] [..]
-% \def\dostartsetupsD[#1][#2][#3]{\dodostartsetups#1\empty{#2}} % [..]
-%
-% \def\dostartsetups
-%   {\ifthirdargument\@EA\dostartsetupsC\else\@EA\dostartsetupsD\fi}
-%
-% \long\def\dodostartsetups#1#2#3% needs a speedup
-%   {\long\def\dododostartsetups##1#1%
-%      {\endgroup
-%       \dodoglobal % bah
-%       \long\expandafter\def\csname\??su#2:#3\expandafter\endcsname\expandafter####\expandafter1\expandafter{##1}}%
-%    \dododostartsetups\empty} % the empty trick prevents the { } in {arg} from being eaten up
-
-% % % %
-
 % \startluasetups oeps
 %     tex.print("DONE")
 %     a = 1
@@ -285,11 +250,11 @@
 % \ctxluabuffer
 
 \newtoks\everydefinesetups      \appendtoks
-    \catcode`\^^M\@@ignore
+    \catcode`\^^M\ignorecatcode
 \to \everydefinesetups
 
 \newtoks\everydefinelocalsetups \appendtoks
-    \catcode`\^^M\@@ignore
+    \catcode`\^^M\ignorecatcode
 \to \everydefinelocalsetups
 
 \newtoks\everydefinerawsetups   \appendtoks
@@ -297,8 +262,8 @@
 \to \everydefinerawsetups
 
 \newtoks\everydefinexmlsetups   \appendtoks
-    \catcode`\^^M\@@ignore
-    \catcode`\|\@@other
+    \catcode`\^^M\ignorecatcode
+    \catcode`\|\othercatcode
 \to \everydefinexmlsetups
 
 \newtoks\everydefineluasetups   \appendtoks

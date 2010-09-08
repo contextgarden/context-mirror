@@ -1150,7 +1150,7 @@
 % \setupitemize[each][atmargin][width=3em]
 % \startitemize[n,repeat,packed]         \getbuffer \stopitemize
 
-\chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
+\setnewconstant\autoitemgroupspacing\plustwo % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
 
 % todo: assume startitem ... stopitem and do an autostopitem .. cleaner for
 % elements

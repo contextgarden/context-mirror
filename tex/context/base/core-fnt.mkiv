@@ -26,7 +26,7 @@
 %D so test\compound{}test can be used instead of test||test
 %D \stoptyping
 
-\bgroup \catcode`\|=\@@active \gdef\compound#1{|#1|} \egroup
+\bgroup \catcode`\|=\activecatcode \gdef\compound#1{|#1|} \egroup
 
 %D Here we hook some code into the clean up mechanism needed
 %D for verbatim data.

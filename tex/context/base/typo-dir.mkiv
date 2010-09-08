@@ -17,7 +17,7 @@
 
 \registerctxluafile{typo-dir}{1.001}
 
-\definesystemattribute[directions] \chardef\directionsattribute \dogetattributeid{directions}
+\definesystemattribute[directions][public]
 
 % experimental directions
 
@@ -34,7 +34,7 @@
   {\getparameters[\??di][#1]%
    \the\everysetupdirections}
 
-\chardef\directionsbidimode=0
+\newconstant\directionsbidimode
 
 \letvalue{\??di:bidi:\v!off   }\zerocount
 \letvalue{\??di:bidi:\v!global}\plusone
@@ -42,7 +42,7 @@
 \letvalue{\??di:bidi:\v!on    }\plustwo
 
 \appendtoks
-    \chardef\directionsbidimode\executeifdefined{\??di:bidi:\@@dibidi}\zerocount\relax
+    \directionsbidimode\executeifdefined{\??di:bidi:\@@dibidi}\zerocount\relax
     \ifcase\directionsbidimode
       \resetdirection
     \or

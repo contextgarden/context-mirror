@@ -478,14 +478,13 @@
 % [name] [location]
 % [name] [location] [pars]
 
-\expandafter\chardef\csname\??am:\c!location:\v!yes    \endcsname\zerocount
-\expandafter\chardef\csname\??am:\c!location:\v!empty  \endcsname\plusone
-\expandafter\chardef\csname\??am:\c!location:\v!no     \endcsname\plustwo
-\expandafter\chardef\csname\??am:\c!location:\v!none   \endcsname\plusthree
-
-\expandafter\chardef\csname\??am:\c!location:\v!normal \endcsname\plusone % default
-\expandafter\chardef\csname\??am:\c!location:\s!default\endcsname\plusone % default
-\expandafter\chardef\csname\??am:\c!location:\s!empty  \endcsname\plusone % default
+\expandafter\let\csname\??am:\c!location:\v!yes    \endcsname\zerocount
+\expandafter\let\csname\??am:\c!location:\v!empty  \endcsname\plusone
+\expandafter\let\csname\??am:\c!location:\v!no     \endcsname\plustwo
+\expandafter\let\csname\??am:\c!location:\v!none   \endcsname\plusthree
+\expandafter\let\csname\??am:\c!location:\v!normal \endcsname\plusone % default
+\expandafter\let\csname\??am:\c!location:\s!default\endcsname\plusone % default
+\expandafter\let\csname\??am:\c!location:\s!empty  \endcsname\plusone % default
 
 \def\dodomenulistelement#1#2#3#4#5#6#7%
   {\addsomemenuitem{\domenuitemposition\currentmenu{internal(#3)}%

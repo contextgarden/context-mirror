@@ -358,8 +358,7 @@
 \newdimen\mcscratchdimen
 \newcount\nofcolumnlines
 
-\chardef\multicolumnlinemethod\zerocount % 0: overshoot (old default), 1: tight
-% \chardef\multicolumnlinemethod\plusone
+\newconstant\multicolumnlinemethod % 0: overshoot (old default), 1: tight
 
 \def\getmulticolumnlines
   {\mcscratchdimen-\columntextoffset
@@ -477,7 +476,7 @@
 %D e.g. when there is no text given between \type{\begin..}
 %D and \type{\end..}. The \type{\par} is needed!
 
-\chardef\multicolumnendsyncmethod\plusone % 1: old sync 2: new sync (cont-loc/project) / may fail ! ! ! !
+\setnewconstant\multicolumnendsyncmethod\plusone % 1: old sync 2: new sync (cont-loc/project) / may fail ! ! ! !
 
 \def\endmulticolumns
   {%\par
@@ -575,8 +574,8 @@
         \edef\maxcolumndepth{\the\dp\currentcolumnbox}%
       \fi}}
 
-\chardef\multicolumntopflushmethod\plusone % 0: no correction, 1: correction when topstuff, 2: correction, 3: correction++
-\chardef\multicolumntopalignmethod\plustwo % 0: nothing, 1: force grid, 2: follow grid
+\setnewconstant\multicolumntopflushmethod\plusone % 0: no correction, 1: correction when topstuff, 2: correction, 3: correction++
+\setnewconstant\multicolumntopalignmethod\plustwo % 0: nothing, 1: force grid, 2: follow grid
 
 \def\flushprecolumnboxnogrid
   {\unvbox\precolumnbox}

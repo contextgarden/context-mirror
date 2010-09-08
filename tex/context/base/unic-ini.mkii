@@ -276,10 +276,10 @@
 %D By default, the converter produces a character representation,
 %D but for tracing purposes, you can set a trace option.
 
-\chardef\utfunicodetracer=0
+\newconstant\utfunicodetracer
 
 %D \def\TraceUnic#1%
-%D   {\chardef\utfunicodetracer#1\relax\enableregime[utf]Ű}
+%D   {\utfunicodetracer#1\relax\enableregime[utf]Ű}
 %D
 %D \starttabulate[|c|c|c|c|c|c|]
 %D \NC option   \NC number\NC mapping\NC glyph\NC string\NC example    \NC \NR
@@ -317,7 +317,7 @@
 %D \startbuffer
 %D \enableregime[utf] \dostepwiserecurse{0}{8}{1}
 %D   {\recurselevel:
-%D    \chardef\utfunicodetracer=\recurselevel aap‒noot coördinatie – één
+%D    \utfunicodetracer\recurselevel aap‒noot coördinatie – één
 %D    \crlf}
 %D \stopbuffer
 %D

@@ -48,11 +48,11 @@
 \registerctxluafile{math-noa}{1.001}
 \registerctxluafile{math-tag}{1.001}
 
-\definesystemattribute[mathalphabet]        \chardef\mathalphabetattribute    \dogetattributeid{mathalphabet}
-\definesystemattribute[mathsize]            \chardef\mathsizeattribute        \dogetattributeid{mathsize}
-\definesystemattribute[mathpunctuation]     \chardef\mathpunctuationattribute \dogetattributeid{mathpunctuation}
-\definesystemattribute[mathgreek]           \chardef\mathgreekattribute       \dogetattributeid{mathgreek}
-\definesystemattribute[mathalternate]       \chardef\mathalternateattribute   \dogetattributeid{mathalternate}
+\definesystemattribute[mathalphabet]   [public]
+\definesystemattribute[mathsize]       [public]
+\definesystemattribute[mathpunctuation][public]
+\definesystemattribute[mathgreek]      [public]
+\definesystemattribute[mathalternate]  [public]
 
 % experiment
 
@@ -181,23 +181,23 @@
 \def\@@mathboxcomm   #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
 \def\@@mathchoicecomm#1{[todo #1]}
 
-\chardef\mathordcode    = 0  \let\mathordcomm     \mathord
-\chardef\mathopcode     = 1  \let\mathopcomm      \mathop
-\chardef\mathbincode    = 2  \let\mathbincomm     \mathbin
-\chardef\mathrelcode    = 3  \let\mathrelcomm     \mathrel
-\chardef\mathopencode   = 4  \let\mathopencomm    \mathopen
-\chardef\mathclosecode  = 5  \let\mathclosecomm   \mathclose
-\chardef\mathpunctcode  = 6  \let\mathpunctcomm   \mathpunct
-\chardef\mathalphacode  = 7  \let\mathalphacomm   \firstofoneargument
-\chardef\mathinnercode  = 0  \let\mathinnercomm   \mathinner
-\chardef\mathnothingcode= 0  \let\mathnothingcomm \firstofoneargument
-\chardef\mathlimopcode  = 1  \let\mathlimopcomm   \@@mathlimopcomm
-\chardef\mathnolopcode  = 1  \let\mathnolopcomm   \@@mathnolopcomm
-\chardef\mathchoicecode = 0  \let\mathchoicecomm  \@@mathchoicecomm
-\chardef\mathboxcode    = 0  \let\mathboxcomm     \@@mathboxcomm
+\setnewconstant\mathordcode     0  \let\mathordcomm     \mathord
+\setnewconstant\mathopcode      1  \let\mathopcomm      \mathop
+\setnewconstant\mathbincode     2  \let\mathbincomm     \mathbin
+\setnewconstant\mathrelcode     3  \let\mathrelcomm     \mathrel
+\setnewconstant\mathopencode    4  \let\mathopencomm    \mathopen
+\setnewconstant\mathclosecode   5  \let\mathclosecomm   \mathclose
+\setnewconstant\mathpunctcode   6  \let\mathpunctcomm   \mathpunct
+\setnewconstant\mathalphacode   7  \let\mathalphacomm   \firstofoneargument
+\setnewconstant\mathinnercode   0  \let\mathinnercomm   \mathinner
+\setnewconstant\mathnothingcode 0  \let\mathnothingcomm \firstofoneargument
+\setnewconstant\mathlimopcode   1  \let\mathlimopcomm   \@@mathlimopcomm
+\setnewconstant\mathnolopcode   1  \let\mathnolopcomm   \@@mathnolopcomm
+\setnewconstant\mathchoicecode  0  \let\mathchoicecomm  \@@mathchoicecomm
+\setnewconstant\mathboxcode     0  \let\mathboxcomm     \@@mathboxcomm
 
-\chardef\mathaccentcode = 8
-\chardef\mathradicalcode= 9
+\setnewconstant\mathaccentcode  8
+\setnewconstant\mathradicalcode 9
 
 \def\puremathcode#1{\the\csname math#1code\endcsname}
 \def\puremathcomm#1{\csname     math#1comm\endcsname}
@@ -366,9 +366,9 @@
 
 \bgroup
 
-    \catcode`_=\active
-    \catcode`^=\active
-    \catcode`&=\active
+    \catcode`_=\activecatcode
+    \catcode`^=\activecatcode
+    \catcode`&=\activecatcode
 
     \global \everynonknuthmode {\appendtoks
         \let_\normalsuber
@@ -382,30 +382,30 @@
     \mathcode`_="8000
     \mathcode`^="8000
     \mathcode`&="8000
-    \catcode`_=\@@other
-    \catcode`^=\@@other
-    \catcode`&=\@@other
+    \catcode`_=\othercatcode
+    \catcode`^=\othercatcode
+    \catcode`&=\othercatcode
 \to \everynonknuthmode
 
 \appendtoks
-    \catcode`_=\@@subscript
-    \catcode`^=\@@superscript
-    \catcode`&=\@@alignment
+    \catcode`_=\subscriptcatcode
+    \catcode`^=\superscriptcatcode
+    \catcode`&=\alignmentcatcode
 \to \everydonknuthmode
 
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
-        \catcode`_=\@@other
-        \catcode`^=\@@other
-        \catcode`&=\@@other
+        \catcode`_=\othercatcode
+        \catcode`^=\othercatcode
+        \catcode`&=\othercatcode
     \stopextendcatcodetable
 \to \everynonknuthmode
 
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
-        \catcode`_=\@@subscript
-        \catcode`^=\@@superscript
-        \catcode`&=\@@alignment
+        \catcode`_=\subscriptcatcode
+        \catcode`^=\superscriptcatcode
+        \catcode`&=\alignmentcatcode
     \stopextendcatcodetable
 \to \everydonknuthmode
 

@@ -71,14 +71,16 @@
 \def\dofrac#1#2#3{\relax\mathematics{\Ustack{{#1{#2}}\normalover{#1{#3}}}}}
 \def\nofrac  #1#2{\relax\mathematics{\Ustack{{#1}\normalover{#2}}}}
 
-% \chardef\mathfracmode=0 $\frac{1}{2}$
-% \chardef\mathfracmode=1 $\frac{1}{2}$
-% \chardef\mathfracmode=2 $\frac{1}{2}$
-% \chardef\mathfracmode=3 $\frac{1}{2}$
-% \chardef\mathfracmode=4 $\frac{1}{2}$
-% \chardef\mathfracmode=5 $\frac{1}{2}$
+% $\mathfracmode0 \frac{1}{2}$
+% $\mathfracmode1 \frac{1}{2}$
+% $\mathfracmode2 \frac{1}{2}$
+% $\mathfracmode3 \frac{1}{2}$
+% $\mathfracmode4 \frac{1}{2}$
+% $\mathfracmode5 \frac{1}{2}$
 
-\chardef\mathfracmode=0 % 0=auto, 1=displaystyle, 2=textstyle, 3=scriptstyle, 4=scriptscriptstyle, 5=mathstyle
+% 0=auto, 1=displaystyle, 2=textstyle, 3=scriptstyle, 4=scriptscriptstyle, 5=mathstyle
+
+\setnewconstant\mathfracmode\zerocount
 
 \unexpanded\def\frac
   {\ifcase\mathfracmode
@@ -151,8 +153,8 @@
 
 \bgroup
 
-\catcode`\/=\@@other    \global           \let\normalforwardslash/
-\catcode`\/=\@@active \doglobal\appendtoks\let/\normalforwardslash\to\everymathematics
+\catcode`\/=\othercatcode    \global           \let\normalforwardslash/
+\catcode`\/=\activecatcode \doglobal\appendtoks\let/\normalforwardslash\to\everymathematics
 
 \egroup
 

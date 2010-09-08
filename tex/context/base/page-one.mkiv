@@ -59,8 +59,6 @@
      \fi
    \fi}
 
-\chardef\kindofpagetextareas=2 % whole page (public variable! never change)
-
 % can we avoind the extra vboxing here?
 
 \def\OTRONEregisteredtextarea#1%
@@ -71,8 +69,6 @@
    \else
      #1%
    \fi}
-
-% \chardef\kindofpagetextareas\plusone
 
 \def\doOTRONEregisteredtextareaA#1%
   {\ifregistertextareas
@@ -103,6 +99,10 @@
 
 \let\OTRONEregisteredtextareaA\firstofoneargument
 \let\OTRONEregisteredtextareaB\firstofoneargument
+
+% 1 = partial page, 2 = whole page, 3 = partial page
+
+\setnewconstant\kindofpagetextareas\plustwo
 
 \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n>
   {\bgroup             % niet breedte zetten, kan fractie zijn!
@@ -285,7 +285,7 @@
      \fi
    \fi}
 
-\chardef\topinserttopskipmode=0 % 1 no topskip
+\newconstant\topinserttopskipmode % 1 = no topskip
 
 \def\OTRONEdotopinsertions
   {\ifvoid\topins\else
@@ -433,7 +433,7 @@
 %    [before force] \input thuan
 %    \placefigure[force]{force}{\framed[height=8cm,width=8cm]{}}}
 
-\chardef\fixedfloatmethod=3
+\setnewconstant\fixedfloatmethod\plusthree
 
 % \def\OTRONEsomefixdfloat % [#1]
 %   {\docheckiffloatfits

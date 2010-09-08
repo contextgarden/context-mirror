@@ -23,8 +23,8 @@
 
 \registerctxluafile{page-lin}{1.001}
 
-\definesystemattribute[line-number]    \chardef\linenumberattribute    \dogetattributeid{line-number}
-\definesystemattribute[line-reference] \chardef\linereferenceattribute \dogetattributeid{line-reference}
+\definesystemattribute[linenumber]   [public]
+\definesystemattribute[linereference][public]
 
 \appendtoksonce \attribute\linenumberattribute \attributeunsetvalue \to \everyforgetall
 \appendtoksonce \attribute\displaymathattribute\plusone             \to \everybeforedisplayformula
@@ -113,9 +113,9 @@
 
 \let\currentlinenumbering\empty
 
-\chardef\linenumbermode      = 1 % 0=continue, 1=restart
-\chardef\linenumberlocation  = 1 % 0=middle, 1=left, 2=right, 3=inner, 4=outer, 5=text, 6=begin, 7=end
-\chardef\linenumberalignment = 5 % 0=middle, 1=left, 2=right, 5=auto
+\setnewconstant\linenumbermode     \plusone  % 0=continue, 1=restart
+\setnewconstant\linenumberlocation \plusone  % 0=middle, 1=left, 2=right, 3=inner, 4=outer, 5=text, 6=begin, 7=end
+\setnewconstant\linenumberalignment\plusfive % 0=middle, 1=left, 2=right, 5=auto
 
 \newevery \beforeeverylinenumbering \relax
 \newevery \aftereverylinenumbering  \relax
@@ -176,29 +176,29 @@
 
 % todo: text
 
-\expandafter\chardef\csname\??rn:l:\v!middle  \endcsname \zerocount
-\expandafter\chardef\csname\??rn:l:\v!left    \endcsname \plusone
-\expandafter\chardef\csname\??rn:l:\v!margin  \endcsname \plusone
-\expandafter\chardef\csname\??rn:l:\v!inmargin\endcsname \plusone
-\expandafter\chardef\csname\??rn:l:\v!inleft  \endcsname \plusone
-\expandafter\chardef\csname\??rn:l:\v!right   \endcsname \plustwo
-\expandafter\chardef\csname\??rn:l:\v!inright \endcsname \plustwo
-\expandafter\chardef\csname\??rn:l:\v!inner   \endcsname \plusthree
-\expandafter\chardef\csname\??rn:l:\v!outer   \endcsname \plusfour
-\expandafter\chardef\csname\??rn:l:\v!text    \endcsname \plusfive
-\expandafter\chardef\csname\??rn:l:\v!begin   \endcsname \plussix
-\expandafter\chardef\csname\??rn:l:\v!end     \endcsname \plusseven
+\expandafter\let\csname\??rn:l:\v!middle    \endcsname \zerocount
+\expandafter\let\csname\??rn:l:\v!left      \endcsname \plusone
+\expandafter\let\csname\??rn:l:\v!margin    \endcsname \plusone
+\expandafter\let\csname\??rn:l:\v!inmargin  \endcsname \plusone
+\expandafter\let\csname\??rn:l:\v!inleft    \endcsname \plusone
+\expandafter\let\csname\??rn:l:\v!right     \endcsname \plustwo
+\expandafter\let\csname\??rn:l:\v!inright   \endcsname \plustwo
+\expandafter\let\csname\??rn:l:\v!inner     \endcsname \plusthree
+\expandafter\let\csname\??rn:l:\v!outer     \endcsname \plusfour
+\expandafter\let\csname\??rn:l:\v!text      \endcsname \plusfive
+\expandafter\let\csname\??rn:l:\v!begin     \endcsname \plussix
+\expandafter\let\csname\??rn:l:\v!end       \endcsname \plusseven
 
-\expandafter\chardef\csname\??rn:a:\v!middle    \endcsname \zerocount
-\expandafter\chardef\csname\??rn:a:\v!right     \endcsname \plusone
-\expandafter\chardef\csname\??rn:a:\v!flushleft \endcsname \plusone
-\expandafter\chardef\csname\??rn:a:\v!left      \endcsname \plustwo
-\expandafter\chardef\csname\??rn:a:\v!flushright\endcsname \plustwo
-\expandafter\chardef\csname\??rn:a:\v!auto      \endcsname \plusfive
+\expandafter\let\csname\??rn:a:\v!middle    \endcsname \zerocount
+\expandafter\let\csname\??rn:a:\v!right     \endcsname \plusone
+\expandafter\let\csname\??rn:a:\v!flushleft \endcsname \plusone
+\expandafter\let\csname\??rn:a:\v!left      \endcsname \plustwo
+\expandafter\let\csname\??rn:a:\v!flushright\endcsname \plustwo
+\expandafter\let\csname\??rn:a:\v!auto      \endcsname \plusfive
 
 \def\dostartlinenumbering[#1][#2]% todo: c!continue
   {\begingroup
-   \chardef\linenumbermode\plusone
+   \linenumbermode\plusone
    \ifsecondargument
      \def\currentlinenumbering{#1}%
      \doifassignmentelse{#2}
@@ -207,7 +207,7 @@
           {\setvalue{\??rn#1\c!start}{#2}}%
           {\doif{#2}\v!continue
              {\getparameters[\??rn\currentlinenumbering][\c!continue=\v!yes]%
-              \chardef\linenumbermode\zerocount}}}%
+              \linenumbermode\zerocount}}}%
    \else\iffirstargument
      \doifnumberelse{#1}% downward compatible
        {\let\currentlinenumbering\empty
@@ -215,11 +215,11 @@
        {\doifelse{#1}\v!continue
           {\let\currentlinenumbering\empty
            \getparameters[\??rn\currentlinenumbering][\c!continue=\v!yes]%
-           \chardef\linenumbermode\zerocount}
+           \linenumbermode\zerocount}
           {\def\currentlinenumbering{#1}}}%
    \fi\fi
    \doif{\linenumberparameter\c!continue}\v!yes
-     {\chardef\linenumbermode\zerocount}%
+     {\linenumbermode\zerocount}%
    \numberinglinestrue
    \the\beforeeverylinenumbering
    \mkstarttextlinenumbering\currentlinenumbering\linenumbermode}
@@ -273,12 +273,15 @@
    \fi}
 
 \newconditional\faketextlinenumber
+\newconstant   \linenumberbox
+\newconstant   \linenumbercolumn
+\newconstant   \linenumberlastcolumn
 
 \def\mkaddtextlinenumbers#1#2#3% box col max
   {\bgroup
-   \chardef\linenumberbox       #1\relax
-   \chardef\linenumbercolumn    #2\relax
-   \chardef\linenumberlastcolumn#3\relax
+   \linenumberbox       #1\relax
+   \linenumbercolumn    #2\relax
+   \linenumberlastcolumn#3\relax
    \fullrestoreglobalbodyfont
    \let\makelinenumber\maketextlinenumber
    \mkprocesstextlinenumbers\linenumberbox
@@ -291,8 +294,8 @@
    \else
      \setfalse\faketextlinenumber
    \fi
-   \chardef\linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
-   \chardef\linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
+   \linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
+   \linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
    \ifcase\linenumberlastcolumn\relax
      \settrue \faketextlinenumber
    \or
@@ -320,34 +323,34 @@
    \or
      \let\domakelinenumber\mkleftlinenumber
      \ifcase\linenumberlocation\or
-       \chardef\linenumberlocation\plusone
+       \linenumberlocation\plusone
      \or
-       \chardef\linenumberlocation\plustwo
+       \linenumberlocation\plustwo
      \else
-       \chardef\linenumberlocation\plusone
+       \linenumberlocation\plusone
      \or
-       \chardef\linenumberlocation\plusone
+       \linenumberlocation\plusone
      \or
-       \chardef\linenumberlocation\plusone
+       \linenumberlocation\plusone
      \or
-       \chardef\linenumberlocation\plusone % todo
+       \linenumberlocation\plusone % todo
      \or
-       \chardef\linenumberlocation\plusone % todo
+       \linenumberlocation\plusone % todo
      \fi
    \else
      \let\domakelinenumber\mkrightlinenumber
      \ifcase\linenumberlocation\or
-       \chardef\linenumberlocation\plustwo
+       \linenumberlocation\plustwo
      \or
-       \chardef\linenumberlocation\plusone
+       \linenumberlocation\plusone
      \or
-       \chardef\linenumberlocation\plustwo
+       \linenumberlocation\plustwo
      \or
-       \chardef\linenumberlocation\plustwo
+       \linenumberlocation\plustwo
      \or
-       \chardef\linenumberlocation\plustwo % todo
+       \linenumberlocation\plustwo % todo
      \or
-       \chardef\linenumberlocation\plustwo % todo
+       \linenumberlocation\plustwo % todo
      \fi
    \fi\fi
    \domakelinenumber{#1}}
@@ -370,19 +373,19 @@
 
 \def\mkdobeginlinenumber #1#2#3#4#5#6%
   {\ifcase\istltdir#6\relax
-     \chardef\linenumberlocation\plusone
+     \linenumberlocation\plusone
      \expandafter\mkdoleftlinenumber
    \else
-     \chardef\linenumberlocation\plustwo
+     \linenumberlocation\plustwo
      \expandafter\mkdorightlinenumber
    \fi{#1}{#2}{#3}{#4}{#5}{#6}}
 
 \def\mkdoendlinenumber#1#2#3#4#5#6%
   {\ifcase\istltdir#6\relax
-     \chardef\linenumberlocation\plustwo
+     \linenumberlocation\plustwo
      \expandafter\mkdorightlinenumber
    \else
-     \chardef\linenumberlocation\plusone
+     \linenumberlocation\plusone
      \expandafter\mkdoleftlinenumber
    \fi{#1}{#2}{#3}{#4}{#5}{#6}}
 
@@ -397,16 +400,16 @@
    \ifcase#2\relax\or\hskip\linenumberdistance\fi\relax
    \ifnum\linenumberlocation=\plusfive
      \scratchdimen\dimexpr#4\scaledpoint-\linenumberdistance\relax
-     \chardef\linenumberlocation\plusone
+     \linenumberlocation\plusone
    \else
      \scratchdimen\zeropoint
    \fi
    \ifcase\linenumberalignment
-     \chardef\linenumberlocation\zerocount % middle
+     \linenumberlocation\zerocount % middle
    \or
-     \chardef\linenumberlocation\plusone % left
+     \linenumberlocation\plusone % left
    \or
-     \chardef\linenumberlocation\plustwo % right
+     \linenumberlocation\plustwo % right
    \fi
    \ifconditional\tracelinenumbering\ruledhbox\else\hbox\fi to \linenumberwidth
      {\ifcase\linenumberlocation

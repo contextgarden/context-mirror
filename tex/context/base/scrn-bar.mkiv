@@ -263,6 +263,8 @@
      \!!height.5\interactionbarheight \!!depth.5\interactionbardepth \else
      \!!height  \interactionbarheight \!!depth  \interactionbardepth \fi}
 
+\newconstant\interactionbarwhatmode
+
 \unexpanded\def\@@commoninteractionbarx#1%
   {\doifelse{\interactionbarparameter\c!symbol}\v!yes
      {\setupsymbolset[\@@iasymbolset]%
@@ -270,11 +272,11 @@
      {\let\dogotox\@@commoninteractionbargotob}%
    \dorecurse\nofsubpages
      {\scratchcounter\numexpr\recurselevel+\firstsubpage+\minusone\relax
-      \chardef\what
+      \interactionbarwhatmode
         \ifnum\scratchcounter<\realpageno \zerocount \else
         \ifnum\scratchcounter=\realpageno \plusone   \else
                                           \plustwo   \fi\fi
-      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\dogotox\what}[page(\the\scratchcounter)]}%
+      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\dogotox\interactionbarwhatmode}[page(\the\scratchcounter)]}%
       #1}%
    \unskip}
 
@@ -346,7 +348,7 @@
           \advance\!!countf \plusone
           \ifnum\recurselevel=\firstsubpage\relax \!!doneatrue \fi
           \ifnum\recurselevel=\lastsubpage \relax \!!doneatrue \fi
-          \chardef\what \if!!donea
+          \interactionbarwhatmode \if!!donea
             \ifnum\recurselevel<\realpageno \zerocount \else
             \ifnum\recurselevel>\realpageno \plustwo   \else
                                             \plusfour  \fi\fi
@@ -355,7 +357,7 @@
             \ifnum\recurselevel>\realpageno \plusthree \else
                                             \plustwo   \fi\fi
           \fi \fi
-          \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\dogotox\what}[page(\recurselevel)]}%
+          \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\dogotox\interactionbarwhatmode}[page(\recurselevel)]}%
           \hss
           \!!countf\zerocount}%
        \unskip

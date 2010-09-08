@@ -25,10 +25,10 @@
 \def\setalignmentswitch#1%
   {\chardef\alignmentswitch0\csname\??as#1\endcsname\relax}
 
-\newcount \noftrackedpagestates
-\newif    \ifpagestatemismatch
-\newcount \realpagestateno
-\chardef  \frozenpagestate      \zerocount
+\newcount   \noftrackedpagestates
+\newif      \ifpagestatemismatch
+\newcount   \realpagestateno
+\newconstant\frozenpagestate
 
 \def\dotrackpagestate#1#2%
   {\ifdoublesided \ifinpagebody \else
@@ -113,8 +113,8 @@
      \@EA\secondoftwoarguments
    \fi}
 
-\def\freezepagestate {\chardef\frozenpagestate\plusone  }
-\def\defrostpagestate{\chardef\frozenpagestate\zerocount}
+\def\freezepagestate {\frozenpagestate\plusone  }
+\def\defrostpagestate{\frozenpagestate\zerocount}
 
 % we can make more of these on top, but how to deal with mixed frozen states
 

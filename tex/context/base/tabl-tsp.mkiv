@@ -113,7 +113,7 @@
      {\forgetall
       \dontcomplain
       \global\settrue\splitfloatdone
-      \chardef\nodelocationmode\zerocount % bypass auto-renumbering
+      \nodelocationmode\zerocount % bypass auto-renumbering
       \incrementnumber[\??si]%
       \ifcase\rawnumber[\??si]\or \ifconditional\onlyonesplitofffloat
         \let\floatcaptionsuffix\empty
@@ -161,7 +161,7 @@
   {\doif\extrasplitfloatlines\v!auto
      {\bgroup
       \settrue\retainfloatnumber
-      \chardef\nodelocationmode\zerocount
+      \nodelocationmode\zerocount
       \forcelocalfloats
       \setuplocalfloats[\c!before=,\c!after=,\c!inbetween=]%
       \splitfloatcommand{\hbox to \wd#1{\strut}}% dummy line

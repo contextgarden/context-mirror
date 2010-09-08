@@ -2328,7 +2328,7 @@
    \simplifyXMLelements
    \let\getXMLentity\firstofoneargument
    \XMLrawentitiestrue
-   \chardef\utfunicodetracer7% new
+   \utfunicodetracer\plusseven % new
    \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
    \egroup
    \defconvertedcommand#1\@@XML@@string}
@@ -2344,7 +2344,7 @@
    \enableXMLexpansion
    \simplifyXMLelements
    \simplifyXMLentities
-   \chardef\utfunicodetracer7% new
+   \utfunicodetracer\plusseven % new
    \let\getXMLentity\expandedXMLentity % should this go in \simplify ?
    \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
    \egroup

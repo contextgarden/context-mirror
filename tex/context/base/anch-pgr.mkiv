@@ -1289,9 +1289,9 @@
    \graphicvadjust{\dontleavehmode\box#1}% dontleavehmode is needed to get direction right
    \egroup}
 
-\chardef\marginrepositionmethod\plusone   % sidemethod
-\chardef\margincontentmethod   \plusthree % textmethod  % beware: 1 = old method
-\chardef\marginpagecheckmethod \plusone   % splitmethod
+% \setnewconstant\marginrepositionmethod\plusone   % sidemethod
+% \setnewconstant\margincontentmethod   \plusthree % textmethod  % beware: 1 = old method
+% \setnewconstant\marginpagecheckmethod \plusone   % splitmethod
 
 %D For a right menu, a sequence of calls to \type
 %D {right_menu_button} is generated.
@@ -1314,17 +1314,17 @@
 
 \appendtoks \global\MPmenutoks\emptytoks \to \everyshipout
 
-% 0=notfound  1=found  2=currentpage
+\newconstant\currentamrealpagemode % 0=notfound  1=found  2=currentpage
 
 \def\domenuitemposition#1#2#3%
   {\doifelsevalue{\??am#1\c!position}\v!yes
      {\doglobal\increment\currentamposition
       \doifreferencefoundelse{#2}% 0=not found, 1=same page, >1=elsewhere
-        {\chardef\currentamrealpage\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
-        {\chardef\currentamrealpage\plustwo}%
-      \expanded
+        {\currentamrealpagemode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
+        {\currentamrealpagemode\plustwo}%
+      \expanded % \doglobal\appendetoks
         {\doglobal\noexpand\appendtoks
-           #1_menu_button(\number\currentamposition,\the\currentamrealpage,\MPpos{#1:\currentamposition}) ;
+           #1_menu_button(\number\currentamposition,\the\currentamrealpagemode,\MPpos{#1:\currentamposition}) ;
          \to \MPmenutoks}%
       \hpos{#1:\currentamposition}{#3}}
      {#3}}
@@ -1459,11 +1459,11 @@
 
 \def\tabulatenormalcolumn#1% overloaded later in node-bck
   {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi
-   &\global\chardef\tabulatetype#1&}
+   &\global\tabulatetype#1&}
 
 \def\tabulateequalcolumn#1% overloaded
   {&\tabulateequalpos
-   &\global\chardef\tabulatetype#1&}
+   &\global\tabulatetype#1&}
 
 \appendtoks
   \global\advance\noftabpositions\plusone

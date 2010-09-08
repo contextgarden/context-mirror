@@ -223,10 +223,10 @@
 
 \def\installdiscretionaries#1#2{\writestatus\m!systems{use \string \installdiscretionary}} % obsolete
 
-\chardef\discretionarymode\plusone
+\setnewconstant\discretionarymode\plusone
 
 \def\ignorediscretionaries
-  {\chardef\discretionarymode\zerocount}
+  {\discretionarymode\zerocount}
 
 \def\discretionarycommand
   {% if direct if, we need \relax for lookahead in math mode
@@ -542,7 +542,7 @@
 %D approach for defining the active character itself. In MK II as
 %D well as in MK IV we now use the catcode vectors.
 
-\chardef\compoundcharactermode\plusone
+\setnewconstant\compoundcharactermode\plusone
 
 \def\installcompoundcharacter #1#2#3 #4% {#4} no grouping
   {\ifcase\compoundcharactermode
@@ -553,8 +553,6 @@
      \def\!!stringa{#3}%
      \@EA\def\csname\ifx\!!stringa\empty\@cc@\else\@cs@\fi\detokenize{#1#2#3}\endcsname{#4}%
      \setevalue{\@cx@\detokenize{#1}}{\noexpand\handlecompoundcharacter{\detokenize{#1}}}% beter nr's
-%      \@EA\letcatcodecommand\@EA\prtcatcodes\@EA\thecompoundcharacter\csname\@cx@\detokenize{#1}\endcsname
-%      \@EA\letcatcodecommand\@EA\texcatcodes\@EA\thecompoundcharacter\csname\@cx@\detokenize{#1}\endcsname
      \@EA\letcatcodecommand\@EA\ctxcatcodes\@EA\thecompoundcharacter\csname\@cx@\detokenize{#1}\endcsname
    \fi}
 
@@ -574,7 +572,7 @@
 %D this macro is supposed to be used grouped!
 
 \def\ignorecompoundcharacter
-  {\chardef\compoundcharactermode\zerocount}
+  {\compoundcharactermode\zerocount}
 
 \let\restorecompoundcharacter   \gobbleoneargument % obsolete
 \let\enableactivediscretionaries\relax             % obsolete

@@ -649,7 +649,8 @@
 %D document). By setting the \type{interaction} variable, one
 %D can influences the way interactive references are set.
 
-\chardef\autocrossfilereferences=0
+\newconstant\autocrossfilereferences  % not yet supported in mkiv
+\newconstant\referencefilecaseswap    % not yet supported in mkiv
 
 \unexpanded\def\setupreferencing
   {\dosingleargument\dosetupreferencing}
@@ -668,16 +669,16 @@
        \v!label=>\let\dowantedreference\dolabelonlyreference,
         \v!text=>\let\dowantedreference\dotextonlyreference,
       \v!symbol=>\let\dowantedreference\dosymbolreference]%
-   \chardef\autocrossfilereferences\zerocount
+   \autocrossfilereferences\zerocount
    \processaction
      [\@@rfautofile]
-     [  \v!yes=>\chardef\autocrossfilereferences\plusone,
-       \v!page=>\chardef\autocrossfilereferences\plustwo]%
-   \chardef\referencefilecase\zerocount
+     [  \v!yes=>\autocrossfilereferences\plusone,
+       \v!page=>\autocrossfilereferences\plustwo]%
+   \referencefilecaseswap\zerocount
    \processaction[\@@rfconvertfile]
-     [  \v!yes=>\chardef\referencefilecase\plusone,
-        \v!big=>\chardef\referencefilecase\plusone,
-      \v!small=>\chardef\referencefilecase\plustwo]%
+     [  \v!yes=>\referencefilecaseswap\plusone,
+        \v!big=>\referencefilecaseswap\plusone,
+      \v!small=>\referencefilecaseswap\plustwo]%
    \setupreferenceprefix[\@@rfprefix]%
    \doifelse\@@rfglobal\v!yes
      {\settrue \autoglobalfilereferences}
@@ -1579,8 +1580,6 @@
 %D and alike. The title placement definition macros have a
 %D key \type{file}, which is interpreted as the file to jump
 %D to, that is, when one clicks on the title.
-
-\newif\ifautocrossdocument
 
 \def\coupledocument
   {\doquadrupleempty\docoupledocument}

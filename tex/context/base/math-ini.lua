@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['math-ext'] = {
 local utf = unicode.utf8
 
 local texsprint, format, utfchar, utfbyte = tex.sprint, string.format, utf.char, utf.byte
+local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
 
 local allocate = utilities.storage.allocate
 
@@ -103,57 +104,101 @@ local function mathbotaccent(class,family,slot)
     return format('\\Umathbotaccent "%X "%X "%X ',0,family,slot) -- no class
 end
 local function mathtopdelimiter(class,family,slot)
-    return format('\\Uoverdelimiter "%X "%X ',0,family,slot) -- no class
+    return format('\\Udelimiterover "%X "%X ',family,slot) -- no class
 end
 local function mathbotdelimiter(class,family,slot)
-    return format('\\Uunderdelimiter "%X "%X ',0,family,slot) -- no class
+    return format('\\Udelimiterunder "%X "%X ',family,slot) -- no class
 end
 
 local escapes = characters.filters.utf.private.escapes
 
-local function setmathsymbol(name,class,family,slot)
-    if class == classes.accent then
-        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathaccent(class,family,slot)))
-    elseif class == classes.topaccent then
-        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathtopaccent(class,family,slot)))
-    elseif class == classes.botaccent then
-        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathbotaccent(class,family,slot)))
-    elseif class == classes.over then
-        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathtopdelimiter(class,family,slot)))
-    elseif class == classes.under then
-        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathbotdelimiter(class,family,slot)))
-    elseif class == classes.open or class == classes.close then
-        texsprint(delcode(slot,family,slot))
-        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,delimiter(class,family,slot)))
-    elseif class == classes.delimiter then
-        texsprint(delcode(slot,family,slot))
-        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,delimiter(0,family,slot)))
-    elseif class == classes.radical then
-        texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,radical(family,slot)))
-    else
-        -- beware, open/close and other specials should not end up here
---~         local ch = utfchar(slot)
---~         if escapes[ch] then
---~             texsprint(format("\\xdef\\%s{\\char%s }",name,slot))
---~         else
+local setmathcharacter, setmathsynonym, setmathsymbol -- once updated we will inline them
+
+if setmathcode then
+
+    setmathcharacter = function(class,family,slot,unicode,firsttime)
+        if not firsttime and class <= 7 then
+            setmathcode(slot,{class,family,unicode or slot})
+        end
+    end
+
+    setmathsynonym = function(class,family,slot,unicode,firsttime)
+        if not firsttime and class <= 7 then
+            setmathcode(slot,{class,family,unicode})
+        end
+        if class == classes.open or class == classes.close then
+            setdelcode(slot,{family,unicode,0,0})
+        end
+    end
+
+    setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
+        if class == classes.accent then
+            texsprint(format([[\unexpanded\gdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
+        elseif class == classes.topaccent then
+            texsprint(format([[\unexpanded\gdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
+        elseif class == classes.botaccent then
+            texsprint(format([[\unexpanded\gdef\%s{\Umathbotaccent 0 "%X "%X }]],name,family,slot))
+        elseif class == classes.over then
+            texsprint(format([[\unexpanded\gdef\%s{\Udelimiterover "%X "%X }]],name,family,slot))
+        elseif class == classes.under then
+            texsprint(format([[\unexpanded\gdef\%s{\Udelimiterunder "%X "%X }]],name,family,slot))
+        elseif class == classes.open or class == classes.close then
+            setdelcode(slot,{family,slot,0,0})
+            texsprint(format([[\unexpanded\gdef\%s{\Udelimiter "%X "%X "%X }]],name,class,family,slot))
+        elseif class == classes.delimiter then
+            setdelcode(slot,{family,slot,0,0})
+            texsprint(format([[\unexpanded\gdef\%s{\Udelimiter 0 "%X "%X }]],name,family,slot))
+        elseif class == classes.radical then
+            texsprint(format([[\unexpanded\gdef\%s{\Uradical "%X "%X }]],name,family,slot))
+        else
+            -- beware, open/close and other specials should not end up here
+            texsprint(format([[\unexpanded\gdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
+        end
+    end
+
+
+else
+
+    setmathcharacter = function(class,family,slot,unicode,firsttime)
+        if not firsttime and class <= 7 then
+            texsprint(mathcode(slot,class,family,unicode or slot))
+        end
+    end
+
+    setmathsynonym = function(class,family,slot,unicode,firsttime)
+        if not firsttime and class <= 7 then
+            texsprint(mathcode(slot,class,family,unicode))
+        end
+        if class == classes.open or class == classes.close then
+            texsprint(delcode(slot,family,unicode))
+        end
+    end
+
+    setmathsymbol = function(name,class,family,slot)
+        if class == classes.accent then
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathaccent(class,family,slot)))
+        elseif class == classes.topaccent then
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathtopaccent(class,family,slot)))
+        elseif class == classes.botaccent then
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathbotaccent(class,family,slot)))
+        elseif class == classes.over then
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathtopdelimiter(class,family,slot)))
+        elseif class == classes.under then
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathbotdelimiter(class,family,slot)))
+        elseif class == classes.open or class == classes.close then
+            texsprint(delcode(slot,family,slot))
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,delimiter(class,family,slot)))
+        elseif class == classes.delimiter then
+            texsprint(delcode(slot,family,slot))
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,delimiter(0,family,slot)))
+        elseif class == classes.radical then
+            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,radical(family,slot)))
+        else
+            -- beware, open/close and other specials should not end up here
             texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathchar(class,family,slot)))
---~         end
+        end
     end
-end
 
-local function setmathcharacter(class,family,slot,unicode,firsttime)
-    if not firsttime and class <= 7 then
-        texsprint(mathcode(slot,class,family,unicode or slot))
-    end
-end
-
-local function setmathsynonym(class,family,slot,unicode,firsttime)
-    if not firsttime and class <= 7 then
-        texsprint(mathcode(slot,class,family,unicode))
-    end
-    if class == classes.open or class == classes.close then
-        texsprint(delcode(slot,family,unicode))
-    end
 end
 
 local function report(class,family,unicode,name)
@@ -214,14 +259,12 @@ function mathematics.define(slots,family)
                             report(class,family,unicode,name)
                         end
                         setmathsymbol(name,class,family,unicode)
-                    -- setmathcharacter(class,family,unicode,unicode,i)
                     else
                         name = class == classes.variable or class == classes.number and character.adobename
                         if name then
                             if trace_defining then
                                 report(class,family,unicode,name)
                             end
-                        --  setmathcharacter(class,family,unicode,unicode,i)
                         end
                     end
                     setmathcharacter(class,family,unicode,unicode,i)

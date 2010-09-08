@@ -28,7 +28,7 @@
 
 \def\m!otr{otr}
 
-\chardef\normalpagebox=255
+% \setnewconstant\normalpagebox 255 % already set
 
 \newbox\pagebox
 
@@ -335,8 +335,8 @@
 \newcount\nofcolumns \nofcolumns = 1
 \newcount\mofcolumns \mofcolumns = 1
 
-\chardef\maxnofcolumns       = 50
-\chardef\allocatednofcolumns =  0
+\setnewconstant\maxnofcolumns       50
+\setnewconstant\allocatednofcolumns  0
 
 %D The next dimensions reports the final column height
 
@@ -369,7 +369,7 @@
           \@EA\newbox\csname\@col@-\recurselevel-h\endcsname % top insert
           \@EA\newbox\csname\@col@-\recurselevel-l\endcsname % top insert
         \fi}%
-     \global\chardef\allocatednofcolumns=\nofcolumns
+     \global\allocatednofcolumns\nofcolumns
    \fi}
 
 \def\firstcolumnbox     {\columntextbox\plusone}
@@ -451,7 +451,7 @@
 \newdimen\localcolumnwidth
 \newdimen\savedpagetotal
 
-\chardef\columndirection=0   % 0:lr 1:rl
+\newconstant\columndirection % 0:lr 1:rl
 
 \def\minbalancetoplines      {1}
 \def\minfreecolumnlines      {2}
@@ -579,8 +579,6 @@
 
 \maxdeadcycles=1000
 
-% will be installable tracer; better use chardef
-
 % this needs a real cleanup
 
 \def\doplaceversiontext#1#2%
@@ -615,13 +613,13 @@
 % tot hier
 
 \def\doversion[#1]%
-  {\chardef\conceptmode\zerocount
+  {\conceptmode\zerocount
    \overfullrule\zeropoint
    \processaction % \v!final=>
      [#1]
-     [  \v!concept=>\chardef\conceptmode\plusone,  % simple banner
-           \v!file=>\chardef\conceptmode\plustwo,  % full banner
-      \v!temporary=>\chardef\conceptmode\plusthree % full banner plus
+     [  \v!concept=>\conceptmode\plusone,  % simple banner
+           \v!file=>\conceptmode\plustwo,  % full banner
+      \v!temporary=>\conceptmode\plusthree % full banner plus
                     \overfullrule5\points]}        % info in the margin
 
 \def\version
@@ -702,28 +700,28 @@
 \newtoks\afterpage     \newtoks\aftereverypage
 \newtoks\beforepage    \newtoks\beforeeverypage
 
-\chardef\showgridstate=0
+\newconstant\showgridstate
 
 \def\showgrid
   {\dosingleempty\doshowgrid}
 
 \def\doshowgrid[#1]%
-  {\chardef\showgridstate    \plusone % downward compatible default
-   \chardef\gridboxlinemode  \plusone
-   \chardef\gridboxlinenomode\plusone
+  {\showgridstate    \plusone % downward compatible default
+   \gridboxlinemode  \plusone
+   \gridboxlinenomode\plusone
    \processallactionsinset
      [#1]%
-     [ \v!reset=>\chardef\showgridstate    \zerocount,
-      \v!bottom=>\chardef\showgridstate    \plusone,
-         \v!top=>\chardef\showgridstate    \plustwo,
-        \v!none=>\chardef\gridboxlinemode  \zerocount,
-         \v!all=>\chardef\gridboxlinemode  \plusone,
-       \v!lines=>\chardef\gridboxlinemode  \plustwo,
-       \v!frame=>\chardef\gridboxlinemode  \plusthree,
-    \v!nonumber=>\chardef\gridboxlinenomode\zerocount,
-       \v!right=>\chardef\gridboxlinenomode\plusone,
-        \v!left=>\chardef\gridboxlinenomode\plustwo,
-       \v!outer=>\chardef\gridboxlinenomode\plusthree]%
+     [ \v!reset=>\showgridstate    \zerocount,
+      \v!bottom=>\showgridstate    \plusone,
+         \v!top=>\showgridstate    \plustwo,
+        \v!none=>\gridboxlinemode  \zerocount,
+         \v!all=>\gridboxlinemode  \plusone,
+       \v!lines=>\gridboxlinemode  \plustwo,
+       \v!frame=>\gridboxlinemode  \plusthree,
+    \v!nonumber=>\gridboxlinenomode\zerocount,
+       \v!right=>\gridboxlinenomode\plusone,
+        \v!left=>\gridboxlinenomode\plustwo,
+       \v!outer=>\gridboxlinenomode\plusthree]%
    \ifcase\showgridstate
      \let\addtextgridlayer\gobbleoneargument
    \else % 1=bottom 2=top
@@ -784,14 +782,14 @@
 
 \newif\ifarrangingpages    \arrangingpagesfalse
 
-\chardef\pageornamentstate\zerocount % 0=on 1=one-off 2=always-off
+\newconstant\pageornamentstate % 0=on 1=one-off 2=always-off
 
-\def\pagebodyornamentstrue {\chardef\pageornamentstate\zerocount} % for a while
-\def\pagebodyornamentsfalse{\chardef\pageornamentstate\plusone}   % for a while
+\def\pagebodyornamentstrue {\pageornamentstate\zerocount} % for a while
+\def\pagebodyornamentsfalse{\pageornamentstate\plusone}   % for a while
 
 \appendtoks
   \ifcase\pageornamentstate\or
-    \chardef\pageornamentstate\zerocount
+    \pageornamentstate\zerocount
   \fi
 \to \everyaftershipout
 
@@ -809,7 +807,7 @@
 
 \def\reportarrangedpage#1%
   {\showmessage\m!systems
-     {23}{\the\realpageno.\the\pageno\ifnum\subpageno>0 .\the\subpageno\fi,#1}}
+     {23}{\the\realpageno.\the\pageno\ifnum\subpageno>0 .\the\subpageno\fi,\number#1}}
 
 \newif\ifsavepagebody \newbox\savedpagebody
 
@@ -922,8 +920,8 @@
 
 \newif\ifpagebreakdisabled \pagebreakdisabledfalse
 
-\chardef\testpagemethod \zerocount % todo: \testnewpage[method=,lines=,voffset=]
-\chardef\testpagetrigger\zerocount
+\newconstant\testpagemethod % todo: \testnewpage[method=,lines=,voffset=]
+\newconstant\testpagetrigger
 
 \def\testpage    {\dotripleempty\dotestpage[\plusone  ]} %
 \def\testpageonly{\dotripleempty\dotestpage[\plustwo  ]} % no penalties added to the mvl
@@ -1060,7 +1058,7 @@
    \edef\prevrealpageno{\the\realpageno}%
    \ifcase\pageornamentstate \or
      % disable reset after shipout
-     \global\chardef\pageornamentstate\plustwo
+     \global\pageornamentstate\plustwo
    \fi
    \iffirstargument % or if empty i.e. []
      \executepagebreakhandlers{#1}%
@@ -1073,7 +1071,7 @@
    % as WS found out so we have to wait till the next side
    % effect shows up
    % \ifcase\pageornamentstate\or
-       \global\chardef\pageornamentstate\zerocount
+       \global\pageornamentstate\zerocount
    % \fi
    \fi
    \egroup}
@@ -1109,7 +1107,7 @@
   {} % do nothing if empty
 
 \installpagebreakhandler \v!reset
-  {% better not: \global\chardef\pageornamentstate\zerocount
+  {% better not: \global\pageornamentstate\zerocount
    \resetpagebreak}
 
 \installpagebreakhandler \v!disable
@@ -1131,7 +1129,7 @@
 
 \installpagebreakhandler \v!blank
   {\ifcase\pageornamentstate
-     \global\chardef\pageornamentstate\plusone
+     \global\pageornamentstate\plusone
    \fi}
 
 \installpagebreakhandler \v!no
@@ -1497,7 +1495,7 @@
      {\ifvoid\facingpage\else
         \ifnum\realpageno>\plusone
           \bgroup
-          \chardef\pageornamentstate\plusone
+          \pageornamentstate\plusone
           \finishfacingpage
           \myshipout{\buildpagebody\box\facingpage}%
           \egroup

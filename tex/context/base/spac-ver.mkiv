@@ -468,6 +468,8 @@
      \dosetupwhitespace
    \fi}
 
+\newconstant\baselinegridmode % option in layout / 1=permit_half_lines
+
 \def\dosetupwhitespace % quick test for no list
   {\ifcsname\??ws\??ws\currentwhitespace\endcsname
      \csname\??ws\??ws\currentwhitespace\endcsname
@@ -494,8 +496,6 @@
      \ifconditional\flexiblewhitespace \else \ctxparskip1\ctxparskip \fi
    \fi
    \parskip\ctxparskip}
-
-\chardef\baselinegridmode=0 % option in layout / 1=permit_half_lines
 
 \def\dodosetupwhitespace
   {\ifgridsnapping
@@ -1281,7 +1281,7 @@
 
 %D Page spacing
 
-\chardef\bottomraggedness=0 % 0=ragged 1=normal/align 2=baseline
+\newconstant\bottomraggednessmode % 0=ragged 1=normal/align 2=baseline
 
 \def\bottomalignlimit{3\lineheight}
 
@@ -1294,21 +1294,21 @@
    \r@ggedbottomfalse}
 
 \def\raggedbottom
-  {\chardef\bottomraggedness\zerocount
+  {\bottomraggednessmode\zerocount
    \n@rmalbottomfalse
    \r@ggedbottomtrue
    \b@selinebottomfalse
    \settopskip}
 
 \def\alignbottom
-  {\chardef\bottomraggedness\plusone
+  {\bottomraggednessmode\plusone
    \n@rmalbottomtrue
    \r@ggedbottomfalse
    \b@selinebottomfalse
    \settopskip}
 
 \def\baselinebottom
-  {\chardef\bottomraggedness\plustwo
+  {\bottomraggednessmode\plustwo
    \n@rmalbottomfalse
    \r@ggedbottomfalse
    \b@selinebottomtrue
@@ -1318,27 +1318,26 @@
 
 % so, the new one will be
 %
-% \chardef\bottomraggedness=0 % 0=ragged 1=normal/align 2=baseline
+% \bottomraggednessmode=0 % 0=ragged 1=normal/align 2=baseline
 %
 % \def\bottomalignlimit{3\lineheight} % will be settable
 %
-% \def\raggedbottom  {\chardef\bottomraggedness=0 \settopskip}
-% \def\alignbottom   {\chardef\bottomraggedness=1 \settopskip}
-% \def\baselinebottom{\chardef\bottomraggedness=2 \settopskip}
+% \def\raggedbottom  {\bottomraggednessmode\zerocount\settopskip}
+% \def\alignbottom   {\bottomraggednessmode\plusone  \settopskip}
+% \def\baselinebottom{\bottomraggednessmode\plustwo  \settopskip}
 %
 % \let\normalbottom  =\alignbottom
 
 %D Good old blank redone:
 
-\definesystemattribute[kern-chars]
-\definesystemattribute[skip-category]  \chardef\skipcategoryattribute  \dogetattributeid{skip-category}
-\definesystemattribute[skip-penalty]   \chardef\skippenaltyattribute   \dogetattributeid{skip-penalty}
-\definesystemattribute[skip-order]     \chardef\skiporderattribute     \dogetattributeid{skip-order}
-\definesystemattribute[display-math]   \chardef\displaymathattribute   \dogetattributeid{display-math}
-\definesystemattribute[snap-method]    \chardef\snapmethodattribute    \dogetattributeid{snap-method}
-\definesystemattribute[snap-vbox]      \chardef\snapvboxattribute      \dogetattributeid{snap-vbox}
-
-%definesystemattribute[snap-category]  \chardef\snapcategoryattribute  \dogetattributeid{snap-category}
+%definesystemattribute[kernchars]    [public]
+\definesystemattribute[skipcategory] [public]
+\definesystemattribute[skippenalty]  [public]
+\definesystemattribute[skiporder]    [public]
+\definesystemattribute[displaymath]  [public]
+\definesystemattribute[snapmethod]   [public]
+\definesystemattribute[snapvbox]     [public]
+%definesystemattribute[snapcategory] [public]
 
 % TODO: NAMED SNAPPERS
 
@@ -1536,8 +1535,8 @@
             \hss}%
          \flushnextbox}}}
 
-\chardef\gridboxlinenomode\plusone % 0:nothing 1:all 2:lines 3:frame 4:l/r
-\chardef\gridboxlinemode  \plusone
+\setnewconstant\gridboxlinenomode\plusone % 0:nothing 1:all 2:lines 3:frame 4:l/r
+\setnewconstant\gridboxlinemode  \plusone
 
 \def\gridboxvbox {\ifcase\gridboxlinemode\vbox\or\ruledvbox\or\vbox\or\ruledvbox\else\ruledvbox\fi}
 \def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\testrulewidth}
@@ -1550,7 +1549,7 @@
       \hsize#2%
       \baselinerulefalse
       \ifnum\gridboxlinenomode=\plusthree
-        \chardef\gridboxlinenomode\ifodd\realpageno\plusone\else\plustwo\fi
+        \gridboxlinenomode\ifodd\realpageno\plusone\else\plustwo\fi
       \fi
       \gridboxvbox % calculated size
         {\getrawnoflines{#3}% \getnoflines{#3}%

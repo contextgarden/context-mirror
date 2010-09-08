@@ -23,8 +23,9 @@
 \newdimen \ctxparindent
 \parindent\ctxparindent % for the show
 
-\newif  \ifindentfirstparagraph \indentfirstparagraphtrue
-\chardef\indentingtoggle\zerocount
+\newif\ifindentfirstparagraph \indentfirstparagraphtrue
+
+\newconstant\indentingtogglestate
 
 %D After a blank or comparable situation (left side floats) we
 %D need to check if the next paragraph has to be indented.
@@ -48,7 +49,7 @@
    \doifsomething\currentindenting % handy when a parameter is passed
      {% not here: \indentfirstparagraphtrue
       % not here: \parindent\ctxparindent
-      % not here: \chardef\indentingtoggle\zerocount
+      % not here: \indentingtogglestate\zerocount
       % we use commacommand in order to catch #1 being a command (expanded parameter)
       \processcommacommand[\currentindenting]\docomplexsetupindentingA % catch small, medium, etc
       \processcommacommand[\currentindenting]\docomplexsetupindentingB % catch rest
@@ -89,10 +90,10 @@
 \defineindentingmethod [\v!always] {\parindent\ctxparindent\relax} % no \indent !
 
 \defineindentingmethod [\v!never]  {\parindent\zeropoint\relax     % no \indent !
-                                    \chardef\indentingtoggle\zerocount}
+                                    \indentingtogglestate\zerocount}
 
-\defineindentingmethod [\v!odd]    {\chardef\indentingtoggle\plusone}
-\defineindentingmethod [\v!even]   {\chardef\indentingtoggle\plustwo}
+\defineindentingmethod [\v!odd]    {\indentingtogglestate\plusone}
+\defineindentingmethod [\v!even]   {\indentingtogglestate\plustwo}
 
 \defineindentingmethod [\v!normal] {\ifx\normalindentation\empty\else
                                       \let\currentindentation\normalindentation
@@ -101,7 +102,7 @@
 
 \defineindentingmethod [\v!reset]  {\indentfirstparagraphtrue
                                     \parindent\zeropoint
-                                    \chardef\indentingtoggle\zerocount}
+                                    \indentingtogglestate\zerocount}
 
 \def\noindenting{\indenting[\v!no, \v!next ]}
 \def\doindenting{\indenting[\v!yes,\v!first]}
@@ -159,7 +160,7 @@
    \fi \fi}
 
 \def\toggleindentation % does not play well with noindentation
-  {\ifcase\indentingtoggle
+  {\ifcase\indentingtogglestate
      % nothing
    \or
      \notoggleindentation
@@ -186,27 +187,15 @@
    \popmacro\checkindentation
 \to \everypopsomestate
 
-% we need to save the state if we want to adapt behaviour to empty lines
-%
-% \def\setlasthvmode
-%   {\global\chardef\savedhvmode\ifhmode\plusone\else\ifvmode\plustwo\else\zerocount\fi\fi}
-%
-% \def\resetlasthvmode
-%   {\global\chardef\savedhvmode\zerocount}
-%
-% \chardef\savedhvmode\zerocount
-
 % This is a user requested hack (using the auto-hook).
 
-\chardef\recheckindentationmode\zerocount
+\newconditional\recheckindentationmode
 
 \def\dontrechecknextindentation
-  {\global\chardef\recheckindentationmode\zerocount}
+  {\global\setfalse\recheckindentationmode}
 
 \def\dorechecknextindentation
-  {\ifcase\recheckindentationmode
-     % nothing
-   \or
+  {\ifconditional\recheckindentationmode
      \dontrechecknextindentation
      \expandafter\doautoindentation
    \fi}
@@ -215,7 +204,7 @@
   {\doifnextcharelse\par\donothing\noindentation}
 
 \def\autoindentation
-  {\global\chardef\recheckindentationmode\plusone}
+  {\global\settrue\recheckindentationmode}
 
 %D An example of usage:
 %D

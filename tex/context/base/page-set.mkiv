@@ -739,7 +739,7 @@
 % 2 = a solution that works ok, is experimental and above
 %     all messy
 
-\chardef\OTRSETflushtextmode=0
+\newconstant\OTRSETflushtextmode % will be replaced
 
 \def\OTRSETflushtextsofar
   {\ifcase\OTRSETflushtextmode
@@ -1148,7 +1148,7 @@
      \pofcolumns    \pofcolumns +\currenthcell
      \columnmaxcells\preferedrow-\currentvcell{#1}}
 
-\chardef\OTRSETforcefixedfloats=0
+\newconstant\OTRSETforcefixedfloats
 
 \def\OTRSETstoreincolumnslotHERE#1% fixed column
   {\ifcase\OTRSETforcefixedfloats
@@ -1179,9 +1179,9 @@
      \ifdim\scratchdimen<\pagegoal
        %OTRSETprepareforcolumnslot3{#1}%
        %ruledvskip\columnslotspacing\lineheight
-       \blank[\columnslotspacing*\v!line]%
+       \blank[\number\columnslotspacing*\v!line]%
        \snaptogrid\hbox to \hsize{\hss\box#1\hss}% strange, why the centering
-       \blank[\columnslotspacing*\v!line]%
+       \blank[\number\columnslotspacing*\v!line]%
      \else
        \OTRSETstoreincolumnslotSOMEWHERE2{#1}%
      \fi
@@ -1279,7 +1279,7 @@
      \OTRSETsavebox{#9}%
    \fi}
 
-\chardef\columnslotspacing \plusone
+\setnewconstant\columnslotspacing\plusone
 
 \def\OTRSETstoreincolumnslot#1% #2 % {method} {box} % alleen last
   {% no messing around here
@@ -1624,7 +1624,8 @@
 
 \newcounter\columnsetlevel
 \let\currentcolumnset\empty
-\chardef\OTRSETfinish\zerocount
+
+\newconditional\OTRSETfinish % never checked
 
 \unexpanded\def\startcolumnset
   {\dodoubleempty\dostartcolumnset}
@@ -1632,7 +1633,7 @@
 \def\dostartcolumnset[#1][#2]%
   {\increment\columnsetlevel\relax
    \globallet\localcolumnmaxcells\!!zerocount
-   \global\chardef\OTRSETfinish\zerocount
+   \global\setfalse\OTRSETfinish
    \resetOTRSETmarks
    \ifnum\columnsetlevel=\plusone
      \bgroup
@@ -1666,7 +1667,7 @@
   {\OTRSETdoifcellelse{1}{1}
      {\bgroup
       \OTRSETcentergridcells
-      \chardef\OTRSETbalancemethod\plusone
+      \OTRSETbalancemethod\plusone
       \OTRSETreducegridbox
       \global\setbox\OTRfinalpagebox\OTRSETmakegridbox
       \global\ht\OTRfinalpagebox\textheight % signals output that there is content
@@ -1679,7 +1680,7 @@
   {\relax
    \ifnum\columnsetlevel=\plusone
      \endgraf % needed, else wrong vsize in one par case
-     \global\chardef\OTRSETfinish\plusone
+     \global\settrue\OTRSETfinish
      % no, extra page \pagebreak % (test on pascal toc)
      \dostopcolumnset
      \egroup
@@ -1694,7 +1695,7 @@
          \box\OTRfinalpagebox
        \fi
      \fi
-     \global\chardef\OTRSETfinish\zerocount
+     \global\setfalse\OTRSETfinish
      \ifsomefloatwaiting \setvsize \pagebreak \setvsize \fi
      \OTRSETflushleftovers
    \else
@@ -1702,7 +1703,7 @@
    \fi
    \decrement\columnsetlevel\relax}
 
-\chardef\OTRSETbalancemethod\zerocount
+\newconstant\OTRSETbalancemethod
 
 \def\dostopcolumnset
   {%\OTRSETdofinalflushfloats % yes/no
@@ -1826,15 +1827,15 @@
    \getrawnoflines\textheight\xdef\columnmaxcells{\the\noflines}%
    % direction
    \doifelsevalue{\??mc\OTRSETidentifier\c!direction}\v!right
-     {\chardef\columndirection\zerocount}
-     {\chardef\columndirection\plusone}%
+     {\columndirection\zerocount}
+     {\columndirection\plusone}%
    % balancing
-   \chardef\OTRSETbalancemethod\zerocount
+   \OTRSETbalancemethod\zerocount
    \processaction
      [\getvalue{\??mc\OTRSETidentifier\c!balance}]
-     [    \v!yes=>\chardef\OTRSETbalancemethod\plusone,
-          \v!top=>\chardef\OTRSETbalancemethod\plustwo,
-       \v!bottom=>\chardef\OTRSETbalancemethod\plusthree]}
+     [    \v!yes=>\OTRSETbalancemethod\plusone,
+          \v!top=>\OTRSETbalancemethod\plustwo,
+       \v!bottom=>\OTRSETbalancemethod\plusthree]}
 
 % test:
 %
@@ -2522,7 +2523,7 @@
 %
 % \setbox\scratchbox\frozenhbox to \hsize
 %   {\dontcomplain
-%    \chardef\alignstrutmode\zerocount
+%    \alignstrutmode\zerocount
 %    \alignedline{\framedtextparameter{cs:#1}\c!plaats}\v!midden
 %      {\box\scratchbox}}%
 %
@@ -2531,8 +2532,8 @@
    \else\ifnum\columnsetlevel>\zerocount
      % we only set \columnsetspacing when asked for, else bottom problems
      % don't change this any more (test naw)
-     \chardef\columnslotspacing\framedtextparameter{cs:#1}\c!nlines\relax
-     % todo: nboven/onder & \chardef\columnslotlocation2
+     \columnslotspacing\framedtextparameter{cs:#1}\c!nlines\relax
+     % todo: nboven/onder
      %\OTRSETstoreincolumnslotHERE\scratchbox
      \edef\floatmethod{\framedtextparameter{cs:#1}\c!default}%
      \@EA\uppercasestring\floatmethod\to\floatmethod

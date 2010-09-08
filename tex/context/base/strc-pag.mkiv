@@ -224,7 +224,7 @@
 \appendtoks
     \decrementstructurecounter[\s!realpage]%
     \decrementstructurecounter[\s!userpage]%
-    \decrementstructurecounter[\s!subpage]%
+    \decrementstructurecounter[\s!subpage ]%
 \to\everygoodbye
 
 % Equivalents (compatibility):
@@ -390,17 +390,17 @@
 % compatible. So, in fact there can be multiple handlers active at the
 % same time, but only the current one does something.
 
-\chardef\realpagenumberstate   =2 % counter state : 0=stop, 1=start, 2=start and visible
-\chardef\userpagenumberstate   =2 % counter state : 0=stop, 1=start, 2=start and visible
-\chardef\subpagenumberstate    =2 % counter state : 0=stop, 1=start, 2=start and visible
-\chardef\overallpagenumberstate=1 % general number: 0=invisible, 1=visible
+\setnewconstant\realpagenumberstate   \plustwo % counter state : 0=stop, 1=start, 2=start and visible
+\setnewconstant\userpagenumberstate   \plustwo % counter state : 0=stop, 1=start, 2=start and visible
+\setnewconstant\subpagenumberstate    \plustwo % counter state : 0=stop, 1=start, 2=start and visible
+\setnewconstant\overallpagenumberstate\plusone % general number: 0=invisible, 1=visible
 
 \def\checkpagenumberstatechange#1#2%
   {\edef\newpagenumberstate{\structurecounterparameter#1\c!state}%
    \ifx\newpagenumberstate\oldpagenumberstate \else
      \doifelse\newpagenumberstate\v!start
-         {\chardef#2\plustwo}%
-         {\chardef#2\zerocount}%
+       {#2\plustwo}%
+       {#2\zerocount}%
    \fi}
 
 \appendtoks % todo: set state: none, start, stop, reset
@@ -417,8 +417,8 @@
 
 \appendtoks % todo: set state: none, start, stop, reset
     \doifelse\@@nmstate\v!start
-        {\chardef\overallpagenumberstate\plusone}%
-        {\chardef\overallpagenumberstate\zerocount}%
+      {\overallpagenumberstate\plusone  }%
+      {\overallpagenumberstate\zerocount}%
 \to \everysetuppagenumbering
 
 % Done

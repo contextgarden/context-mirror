@@ -50,7 +50,7 @@
 %.......
 %catcode`\z     = 11
 
-\chardef\active = 13
+\chardef\activecatcode = 13 % later this will become a counter
 
 \def ^^L{\par}
 \def\^^M{\   } % control <return> = control <space>
@@ -94,29 +94,27 @@
 
 \ifnum\texengine=\luatexengine
     \directlua 0 { % this info is stored in the format
-        if lua.name then
-            lua.name[0] = "main ctx instance"
+        lua.name[0] = "main ctx instance"
+        local extraprimitives  = tex.extraprimitives
+        local enableprimitives = tex.enableprimitives
+        local core   = extraprimitives('core')
+        local btex   = extraprimitives('tex')
+        local etex   = extraprimitives('etex')
+        local pdftex = extraprimitives('pdftex')
+        local luatex = extraprimitives('luatex')
+        local omega = {
+            "textdir", "pagedir", "mathdir", "pardir", "bodydir",
+            "leftghost", "rightghost", "localleftbox", "localrightbox",
+            "localinterlinepenalty", "localbrokenpenalty",
+        }
+        local aleph = {
+            "boxdir", "pagebottomoffset", "pagerightoffset",
+        }
+        for _, subset in next, { etex, pdftex, luatex, omega, aleph } do
+            enableprimitives('',subset)
         end
-        if tex.extraprimitives then
-            local core = tex.extraprimitives('core')
-            local btex = tex.extraprimitives('tex')
-            local etex = tex.extraprimitives('etex')
-            local pdftex = tex.extraprimitives('pdftex')
-            local luatex = tex.extraprimitives('luatex')
-            local omega = {
-                "textdir", "pagedir", "mathdir", "pardir", "bodydir",
-                "leftghost", "rightghost", "localleftbox", "localrightbox",
-                "localinterlinepenalty", "localbrokenpenalty",
-            }
-            local aleph = {
-                "boxdir", "pagebottomoffset", "pagerightoffset",
-            }
-            for _, subset in pairs { etex, pdftex, luatex, omega, aleph } do
-                tex.enableprimitives('',subset)
-            end
-            for _, subset in pairs { core, btex, etex, pdftex, luatex, omega, aleph } do
-                tex.enableprimitives('normal',subset)
-            end
+        for _, subset in next, { core, btex, etex, pdftex, luatex, omega, aleph } do
+            enableprimitives('normal',subset)
         end
     }
 \fi
@@ -157,6 +155,12 @@
 %D
 %D We reserve some registers for special (management) purposes:
 
+%   0 -  20 : scratch
+%  21 - 127 : internal
+% 128 - 254 : inserts
+% 255       : page
+% 256 -     : user
+
 \countdef   \minallocatedregister   =    52 \minallocatedregister   =   256
 \countdef   \maxallocatedregister   =    53 \maxallocatedregister   = 32767
 \countdef   \minallocatediochannel  =    54 \minallocatediochannel  =    -1
@@ -177,22 +181,28 @@
 \countdef   \lastallocatedread      =    38 \lastallocatedread      = \minallocatediochannel
 \countdef   \lastallocatedwrite     =    39 \lastallocatedwrite     = \minallocatediochannel
 \countdef   \lastallocatedmarks     =    40 \lastallocatedmarks     = \minallocatedregister
-\countdef   \lastallocatedlanguage  =    41 \lastallocatedlanguage  = \minallocatedlanguage
+\countdef   \lastallocatedlanguage  =    41 \lastallocatedlanguage  = \minallocatedlanguage    % not used in context
 \countdef   \lastallocatedinsertion =    42 \lastallocatedinsertion = \minallocatedinsert
-\countdef   \lastallocatedfamily    =    43 \lastallocatedfamily    = \minallocatedfamily
+\countdef   \lastallocatedfamily    =    43 \lastallocatedfamily    = \minallocatedfamily      % not used in context
 \countdef   \lastallocatedattribute =    44 \lastallocatedattribute = \minallocatedregister
 
 \countdef   \mincountervalue        =   125 \mincountervalue        = -"7FFFFFFF % beware, we use index 125 at the lua end
 \countdef   \maxcountervalue        =   126 \maxcountervalue        =  "7FFFFFFF % beware, we use index 126 at the lua end
-\countdef   \minusone               =   127 \minusone               = -1
-\chardef    \zerocount              =     0
-\chardef    \plusone                =     1
 
-\chardef    \normalpagebox          =   255 % hardcoded in the engine
+%countdef   \minusone               =   127 \minusone               = -1
+%chardef    \zerocount              =     0
+%chardef    \plusone                =     1
+
+\countdef   \zerocount              =   120 \zerocount              =  0
+\countdef   \plusone                =   121 \plusone                =  1
+\countdef   \minusone               =   122 \minusone               = -1
+
+%chardef    \normalpagebox                                          = 255
+\countdef   \normalpagebox          =   127 \normalpagebox          = 255  % hardcoded in pdftex/xetex
 
 % A few traditional allocations:
 
-\countdef   \count@                 =   255 % hm, used in \newif
+\countdef   \count@                 =   255 % hm, used in \newif .. todo: replace it there
 \dimendef   \dimen@                 =     0
 \dimendef   \dimen@i                =     1 % global only
 \dimendef   \dimen@ii               =     2
@@ -216,11 +226,22 @@
 \def\newread    {\allocateregister\lastallocatedread     \read    \chardef    \maxallocatediochannel}
 \def\newwrite   {\allocateregister\lastallocatedwrite    \write   \chardef    \maxallocatediochannel}
 \def\newmarks   {\allocateregister\lastallocatedmarks    \marks   \mathchardef\maxallocatedregister}
-\def\newlanguage{\allocateregister\lastallocatedlanguage \language\chardef    \maxallocatedlanguage}
 \def\newinsert  {\allocateregister\lastallocatedinsertion\insert  \chardef    \maxallocatedinsert}
+
+%D We don't need these in \CONTEXT:
+
+\def\newlanguage{\allocateregister\lastallocatedlanguage \language\chardef    \maxallocatedlanguage}
 \def\newfamily  {\allocateregister\lastallocatedfamily   \fam     \chardef    \maxallocatedfamily}
 
 \let\newfam\newfamily
+
+% watch out, for the moment we disable the check for already being defined
+% later we will revert this but first all chardefs must be replaced
+
+\def\newconstant   #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
+\def\setnewconstant#1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
+
+% matbe setconstant with check
 
 % %D The next definitions are really needed (in \CONTEXT):
 
@@ -318,7 +339,7 @@
 
 \newtoks \emptytoks
 
-%D And even more:
+%D And even more: (todo: countdefs 60+)
 
 %newcount   \minusone \minusone =    -1
 \newcount   \minustwo \minustwo =    -2
@@ -424,7 +445,8 @@
 %D characters. Because we are not that good at remembering numbers,
 %D we introduce some symbolic names.
 
-%D As we now have catc-* files, we also have more readable names
+%D As we now have catc-* files, we also have more readable names but
+%D We will keep the following around for a while.
 
 \chardef\@@escape      =  0
 \chardef\@@begingroup  =  1
@@ -438,8 +460,8 @@
 \chardef\@@ignore      =  9
 \chardef\@@space       = 10
 \chardef\@@letter      = 11
-\chardef\@@other       = 12   \chardef\other  = 12
-\chardef\@@active      = 13   \chardef\active = 13
+\chardef\@@other       = 12
+\chardef\@@active      = 13
 \chardef\@@comment     = 14
 
 %D Constants to be used with \type {\currentgrouptype}.
@@ -634,13 +656,13 @@
 %D change.
 
 \bgroup
-    \catcode`\^^M=\active%
-    \gdef\obeylines{\catcode`\^^M\active \let^^M\par}%
+    \catcode`\^^M=\activecatcode%
+    \gdef\obeylines{\catcode`\^^M\activecatcode \let^^M\par}%
     \global\let^^M\par%
 \egroup
 
 \bgroup
-    \gdef\obeyspaces{\catcode`\ \active}%
+    \gdef\obeyspaces{\catcode`\ \activecatcode}%
     \obeyspaces\global\let =\space%
 \egroup
 

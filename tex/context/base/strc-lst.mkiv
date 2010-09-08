@@ -88,6 +88,7 @@
         userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
    }}}%
    \edef\structurelistsynchronize{\getvalue{\??li::inject::#2::synchronize}}%
+   % we can do the enhance injection at the lua end which saves tokenization and a call
    \ifx\structurelistsynchronize\v!yes
      % this injects nodes !
      \expanded{\ctxlatelua{structures.lists.enhance(\currentlistnumber)}}%

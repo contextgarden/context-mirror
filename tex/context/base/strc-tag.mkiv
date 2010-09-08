@@ -100,8 +100,8 @@
 
 % the real code
 
-\definesystemattribute[tagged]  \chardef\taggedattribute \dogetattributeid{tagged}
-\definesystemattribute[image]   \chardef\imageattribute  \dogetattributeid{image}
+\definesystemattribute[tagged][public]
+\definesystemattribute[image] [public]
 
 \def\setelementbackendtag{\dodoubleargument\dosetelementbackendtag}
 \def\setelementnature    {\dodoubleargument\dosetelementnature}

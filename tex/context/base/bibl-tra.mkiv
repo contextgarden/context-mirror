@@ -295,12 +295,12 @@
 %D We can omit already shown references (\v!global) or use fresh
 %D lists each time (\v!local).
 
-\chardef\bibtexoncemode\plusone % 0=disable, 1=local, 2=global
+\setnewconstant\bibtexoncemode\plusone % 0=disable, 1=local, 2=global
 
 \appendtoks
   \doifelse\@@pbmethod\v!local
-    {\chardef\bibtexoncemode\plusone}%
-    {\chardef\bibtexoncemode\plustwo}%
+    {\bibtexoncemode\plusone}%
+    {\bibtexoncemode\plustwo}%
 \to \everysetuppublications
 
 %D Cite lists are compressed, if possible. This is set later on.

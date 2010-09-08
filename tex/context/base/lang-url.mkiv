@@ -38,8 +38,6 @@
 %D
 %D \typebuffer
 
-\ifx\urlsplitmode\undefined \chardef\urlsplitmode\zerocount \fi % not supported in mkiv
-
 \newtoks\everyhyphenatedurl
 
 \appendtoks
@@ -72,8 +70,8 @@
 
 % \sethyphenatedurlafter{ABCDEF}
 
-\chardef\hyphenatedurllefthyphenmin  = 3
-\chardef\hyphenatedurlrighthyphenmin = 3
+\setnewconstant\hyphenatedurllefthyphenmin \plusthree
+\setnewconstant\hyphenatedurlrighthyphenmin\plusthree
 
 \unexpanded \def\hyphenatedurl#1%
   {\dontleavehmode

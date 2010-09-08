@@ -87,6 +87,13 @@
 
 \newtoks\everyresetformulas
 
+% 0=unset, 1=forced, 2=none, 3=reference
+
+\newconstant\placeformulanumbermode
+\newconstant\formulasnumbermode
+\newconstant\subformulasnumbermode
+\newconstant\nestedformulanumbermode
+
 \newconditional\insideplaceformula
 \newconditional\insideplacesubformula
 \newconditional\insideformulas
@@ -636,20 +643,11 @@
 
 % place
 
-% 0=unset, 1=forced, 2=none, 3=reference
-
-\chardef\placeformulanumbermode \zerocount
-\chardef\formulanumbermode      \zerocount
-\chardef\formulasnumbermode     \zerocount
-\chardef\subformulasnumbermode  \zerocount
-\chardef\nestedformulanumbermode\zerocount
-
 \def\inhibitformulanumberflag{-}
 \def\forceformulanumberflag  {+}
 
 \def\docheckformulareference#1#2%
-  {\chardef#1%
-   \unless\ifx\namedformulaentry\relax % new 29/8/2010
+  {#1\unless\ifx\namedformulaentry\relax % new 29/8/2010
      \plusthree
    \else\ifx#2\empty
      \zerocount

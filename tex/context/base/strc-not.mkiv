@@ -353,10 +353,9 @@
 \def\clevernotes % compatibility hack, will be redone
   {\numexpr\ifcase\namednoteparameter\v!footnote\s!noteloc\or0\or2\or2\or1\else0\fi\relax}
 
-\def\setnotelocation  #1{\expandafter\chardef\csname\??vn\currentnote\s!noteloc\endcsname#1\relax}
-\def\setnoteposition  #1{\expandafter\chardef\csname\??vn\currentnote\s!notepos\endcsname#1\relax}
-\def\setnoteformatting#1{\expandafter\chardef\csname\??vn\currentnote\s!notefmt\endcsname#1\relax}
-\def\setnotecolumns   #1{\expandafter\chardef\csname\??vn\currentnote\s!notecol\endcsname#1\relax}
+\def\setnotelocation  #1{\expandafter\let\csname\??vn\currentnote\s!noteloc\endcsname#1\relax}
+\def\setnoteposition  #1{\expandafter\let\csname\??vn\currentnote\s!notepos\endcsname#1\relax}
+\def\setnoteformatting#1{\expandafter\let\csname\??vn\currentnote\s!notefmt\endcsname#1\relax}
 
 \def\currentnofcolumns{\@@kln}
 

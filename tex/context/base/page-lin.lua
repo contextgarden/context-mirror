@@ -34,22 +34,22 @@ storage.register("lines/data", lines.data, "nodes.lines.data")
 -- if there is demand for it, we can support multiple numbering streams
 -- and use more than one attibute
 
-local variables    = interfaces.variables
+local variables          = interfaces.variables
 
-local nodecodes    = nodes.nodecodes
+local nodecodes          = nodes.nodecodes
 
-local hlist_code   = nodecodes.hlist
-local vlist_code   = nodecodes.vlist
-local whatsit_code = nodecodes.whatsit
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
+local whatsit_code       = nodecodes.whatsit
 
-local display_math     = attributes.private('display-math')
-local line_number      = attributes.private('line-number')
-local line_reference   = attributes.private('line-reference')
-local verbatim_line    = attributes.private('verbatim-line')
+local a_displaymath      = attributes.private('displaymath')
+local a_linenumber       = attributes.private('linenumber')
+local a_linereference    = attributes.private('linereference')
+local a_verbatimline     = attributes.private('verbatimline')
 
-local current_list     = { }
-local cross_references = { }
-local chunksize        = 250 -- not used in boxed
+local current_list       = { }
+local cross_references   = { }
+local chunksize          = 250 -- not used in boxed
 
 local has_attribute      = node.has_attribute
 local traverse_id        = node.traverse_id
@@ -72,7 +72,7 @@ local function resolve(n,m) -- we can now check the 'line' flag (todo)
     while n do
         local id = n.id
         if id == whatsit_code then -- why whatsit
-            local a = has_attribute(n,line_reference)
+            local a = has_attribute(n,a_linereference)
             if a then
                 cross_references[a] = m
             end
@@ -189,7 +189,7 @@ function boxed.stage_one(n)
                 -- skip funny hlists
             else
                 local list = n.list
-                local a = has_attribute(list,line_number)
+                local a = has_attribute(list,a_linenumber)
                 if a and a > 0 then
                     if last_a ~= a then
                         if data[a].method == variables.next then
@@ -197,12 +197,12 @@ function boxed.stage_one(n)
                         end
                         last_a = a
                     end
-                    if has_attribute(n,display_math) then
+                    if has_attribute(n,a_displaymath) then
                         if nodes.is_display_math(n) then
                             check_number(n,a,skip)
                         end
                     else
-                        local v = has_attribute(list,verbatim_line)
+                        local v = has_attribute(list,a_verbatimline)
                         if not v or v ~= last_v then
                             last_v = v
                             check_number(n,a,skip)

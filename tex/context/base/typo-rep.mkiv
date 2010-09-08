@@ -35,7 +35,7 @@
 
 \registerctxluafile{typo-rep}{1.001}
 
-\definesystemattribute[stripping] \chardef\strippingattribute \dogetattributeid{stripping}
+\definesystemattribute[stripping][public]
 
 \def\setcharacterstripping
   {\ctxlua{nodes.stripping.enable()}%

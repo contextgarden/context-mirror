@@ -190,7 +190,7 @@
 %   {\long\setvalue{\??ly\c!method:#1}{#2}}
 
 \long\unexpanded\def\startpagelayout
-  {\bgroup\catcode`\^^M=\@@ignore\dostartpagelayout}
+  {\bgroup\catcode`\^^M=\ignorecatcode\dostartpagelayout}
 
 \long\def\dostartpagelayout[#1]#2\stoppagelayout
   {\egroup\long\setvalue{\??ly\c!method:#1}{#2}}

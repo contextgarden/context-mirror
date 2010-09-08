@@ -550,7 +550,7 @@
 \def\tabulatesetpreamblewidthsimple
   {\dodosettabulatepreamble\xbskip\xeskip}
 
-\bgroup  \catcode`\|=\@@other
+\bgroup  \catcode`\|=\othercatcode
 
 \gdef\nexttabulate#1|%
   {\let\tabulatealign\@@tabulatealign
@@ -680,7 +680,7 @@
 % \starttabulate[preamble]
 % \starttabulate -> \starttabulate[|l|p|]
 
-\bgroup  \catcode`\|=\@@other
+\bgroup  \catcode`\|=\othercatcode
 
 \gdef\definetabulate
   {\dotripleempty\dodefinetabulate}
@@ -803,18 +803,17 @@
 
 % An example of its usage:
 
-\appendtoks \optimizeverbatimfalse          \to \everytabulate
-\appendtoks \let\recodeverbatimmode\plustwo \to \everytabulate
+\appendtoks \optimizeverbatimfalse \to \everytabulate
 
 % A status variable:
 
-\chardef\tabulatepass=0
+\newconstant\tabulatepass
 
 \def\tabulateparameter#1{\csname\??tt\currenttabulate#1\endcsname}
 
 \bgroup
-    \catcode`\|=\@@other  \gdef\@@otherbar{|}
-    \catcode`\|=\@@active \gdef\@@useotherbar{\let|\@@otherbar}
+    \catcode`\|=\othercatcode  \gdef\@@otherbar{|}
+    \catcode`\|=\activecatcode \gdef\@@useotherbar{\let|\@@otherbar}
 \egroup
 
 \def\doparsetabulate
@@ -872,7 +871,7 @@
    \doifvaluesomething{\??tt\currenttabulate\c!bodyfont}
      {\expanded{\switchtobodyfont[\tabulateparameter\c!bodyfont]}}%
    \postponenotes % new, to be tested / will be configurable
-   \let\tabulatepass\plusone
+   \tabulatepass\plusone
    \widowpenalty\zerocount % otherwise lines are not broken
    \clubpenalty \zerocount % but overlap in funny ways
    \the\everytabulate
@@ -890,7 +889,7 @@
      \tabulatecontent
      {\@EA\processtabulate\@EA[\the\!!toksb]}}
 
-\chardef\tabulatetype=0
+\newconstant\tabulatetype
 
 % 0 = NC column next   EQ equal column
 % 1 = RC column raw    RQ equal column raw
@@ -903,19 +902,19 @@
    \global\tabulateequalfalse}
 
 % \def\tabulatenormalcolumn#1%
-%   {&\iftabulateequal\tabulateEQ\fi&\global\chardef\tabulatetype#1&}
+%   {&\iftabulateequal\tabulateEQ\fi&\global\tabulatetype#1&}
 %
 % \def\tabulateequalcolumn#1%
-%   {&\tabulateEQ&\global\chardef\tabulatetype#1&}
+%   {&\tabulateEQ&\global\tabulatetype#1&}
 %
 % however, \unskip en \ignorespaces permit usage in complex XML/\starttabulate
 
 \def\tabulatenormalcolumn#1%
-  {\unskip&\iftabulateequal\tabulateEQ\fi&\global\chardef\tabulatetype#1&%
+  {\unskip&\iftabulateequal\tabulateEQ\fi&\global\tabulatetype#1&%
    \ignorespaces}
 
 \def\tabulateequalcolumn#1%
-  {\unskip&\tabulateEQ&\global\chardef\tabulatetype#1&%
+  {\unskip&\tabulateEQ&\global\tabulatetype#1&%
    \ignorespaces}
 
 \def\tabulateautocolumn
@@ -1023,8 +1022,7 @@
 %D cum suis, since \TEX's hard coded noalign lookahead fails
 %D on it! I mistakenly added this for a while.
 
-\chardef\tabulaterepeathead\zerocount
-
+\newcount\tabulaterepeathead
 \newcount\noftabulatelines
 \newcount\totalnoftabulatelines
 \newcount\minusnoftabulatelines
@@ -1255,7 +1253,7 @@
 
 \newtoks\everytabulatepar
 
-\bgroup \catcode`\|=\@@other
+\bgroup \catcode`\|=\othercatcode
 
 \gdef\processtabulate[|#1|]% in the process of optimizing
   {\tabulateunit\tabulateparameter\c!unit
@@ -1282,7 +1280,7 @@
      \donetrue
    \fi\fi
    \ifdone
-     \chardef\tabulaterepeathead\executeifdefined{\??tt:\c!header:\tabulateparameter\c!header}\zerocount
+     \tabulaterepeathead\executeifdefined{\??tt:\c!header:\tabulateparameter\c!header}\zerocount
    \fi
    \let\NC\tabulateNCone
    \let\RC\tabulateRCone
@@ -1372,7 +1370,7 @@
    \let\FL\tabulateFLfive
    \let\ML\tabulateMLfive
    \let\LL\tabulateLLfive
-   \let\tabulatepass\plustwo
+   \tabulatepass\plustwo
    %
    \ifcase\tabulaterepeathead
      \ifinsidesplitfloat

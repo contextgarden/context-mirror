@@ -51,12 +51,12 @@
 %D and \type {\sub} by saying \type {\enablesupersub}.
 
 \bgroup
-\catcode`\^=\@@active
-\catcode`\_=\@@active
+\catcode`\^=\activecatcode
+\catcode`\_=\activecatcode
 \gdef\enablesupersub
-  {\catcode`\^=\@@active
+  {\catcode`\^=\activecatcode
    \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
-   \catcode`\_=\@@active
+   \catcode`\_=\activecatcode
    \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
 \egroup
 

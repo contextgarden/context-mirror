@@ -15,8 +15,6 @@
 
 \unprotect
 
-\ifx\mrfam\undefined \chardef\mrfam\plusone \fi
-
 \startluacode
     mathematics.define()
     mathematics.xml.registerentities()
@@ -108,10 +106,10 @@
 
 % using attributes
 
-\chardef\bigmathdelimitermethod\plusone
+\setnewconstant\bigmathdelimitermethod\plusone
 
 \def\plainbigdelimiters % traditional method
-  {\chardef\bigmathdelimitermethod\plustwo}
+  {\bigmathdelimitermethod\plustwo}
 
 \plainbigdelimiters % is default for the moment but not so nice
 
