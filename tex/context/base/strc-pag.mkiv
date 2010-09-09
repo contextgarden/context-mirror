@@ -71,9 +71,9 @@
 %     \stopbodymatter
 % \stoptext
 
-\definestructurecounter[\s!realpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=realpageno]
-\definestructurecounter[\s!userpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=userpageno]
-\definestructurecounter[\s!subpage] [\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=subpageno]
+\definestructurecounter[\s!realpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=realpageno,\c!method=\v!page]
+\definestructurecounter[\s!userpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=userpageno,\c!method=\v!page]
+\definestructurecounter[\s!subpage] [\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=subpageno, \c!method=\v!page]
 
 \newtoks\everysetuprealpagenumber % todo: set state: none, start, stop, reset
 \newtoks\everysetupuserpagenumber % todo: set state: none, start, stop, reset
@@ -221,11 +221,18 @@
 \def\nextuserpagenumber {\directconvertedstructurecounter\s!userpage\v!next}
 \def\nextsubpagenumber  {\directconvertedstructurecounter\s!subpage \v!next}
 
-\appendtoks
-    \decrementstructurecounter[\s!realpage]%
+\def\dodeincrementpageboundcounters % only at the end
+   {\decrementstructurecounter[\s!realpage]%
     \decrementstructurecounter[\s!userpage]%
-    \decrementstructurecounter[\s!subpage ]%
-\to\everygoodbye
+    \decrementstructurecounter[\s!subpage ]}
+
+\def\doincrementpageboundcounters
+  {\incrementpagenumber
+   \incrementsubpagenumber}
+
+\appendtoks
+    \dodeincrementpageboundcounters
+\to \everygoodbye
 
 % Equivalents (compatibility):
 %

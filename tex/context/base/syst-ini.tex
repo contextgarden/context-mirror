@@ -235,13 +235,13 @@
 
 \let\newfam\newfamily
 
-% watch out, for the moment we disable the check for already being defined
-% later we will revert this but first all chardefs must be replaced
+% Watch out, for the moment we disable the check for already being defined
+% later we will revert this but first all chardefs must be replaced.
 
 \def\newconstant   #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
 \def\setnewconstant#1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
 
-% matbe setconstant with check
+% maybe setconstant with check
 
 % %D The next definitions are really needed (in \CONTEXT):
 

@@ -2471,7 +2471,7 @@ local function prepare_lookups(tfmdata)
                 end
             end
         end
-        local list = glyph.mykerns
+        local list = glyph.kerns
         if list then
             for lookup, krn in next, list do
                 local k = kerns[lookup]

@@ -17,7 +17,7 @@ local report_otf = logs.new("load otf")
 -- older versions of latin modern didn't have the designsize set
 -- so for them we get it from the name
 
-local patches = fonts.otf.enhancers.patches
+local register = enhancers.patches.register
 
 local function patch(data,filename)
     if data.design_size == 0 then
@@ -29,6 +29,13 @@ local function patch(data,filename)
             data.design_size = tonumber(ds) * 10
         end
     end
+end
+
+register("after","migrate metadata","^lmroman",     patch)
+register("after","migrate metadata","^lmsans",      patch)
+register("after","migrate metadata","^lmtypewriter",patch)
+
+local function patch(data,filename)
     local uni_to_ind = data.map.map
     if not uni_to_ind[0x391] then
         -- beware, this is a hack, features for latin often don't apply to greek
@@ -50,21 +57,11 @@ local function patch(data,filename)
         uni_to_ind[0x3A7] = uni_to_ind[0x58]
         uni_to_ind[0x396] = uni_to_ind[0x5A]
     end
-    -- better make this into a feature
-    --
-    -- local glyphs = data.glyphs
-    -- for i=0x300,0x36F do
-    --     local c = glyphs[uni_to_ind[i]]
-    --     if c and c.width == 0 then
-    --         local boundingbox = c.boundingbox
-    --         c.width = boundingbox[3] - boundingbox[1]
-    --     end
-    -- end
 end
 
-patches["^lmroman"]      = patch
-patches["^lmsans"]       = patch
-patches["^lmtypewriter"] = patch
+register("after","prepare glyphs","^lmroman",     patch)
+register("after","prepare glyphs","^lmsans",      patch)
+register("after","prepare glyphs","^lmtypewriter",patch)
 
 -- for some reason (either it's a bug in the font, or it's
 -- a problem in the library) the palatino arabic fonts don't
@@ -81,12 +78,13 @@ local function patch(data,filename)
                 end
                 v.features = {
                     {
-                        scripts = {
-                            {
-                                langs = { "ARA ", "FAR ", "URD ", "dflt" },
-                                script = "arab",
-                            },
-                        },
+--~                         scripts = {
+--~                             {
+--~                                 langs = { "ARA ", "FAR ", "URD ", "dflt" },
+--~                                 script = "arab",
+--~                             },
+--~                         },
+                        scripts = { arab = { "ARA " = true, "FAR " = true, "URD " = true, "dflt" = true } },
                         tag = "mkmk"
                     }
                 }
@@ -95,10 +93,10 @@ local function patch(data,filename)
     end
 end
 
-patches["palatino.*arabic"] = patch
+register("after","rehash features","palatino.*arabic",patch)
 
 local function patch_domh(data,filename,threshold)
-    local m = data.math
+    local m = data.metadata.math
     if m then
         local d = m.DisplayOperatorMinHeight or 0
         if d < threshold then
@@ -108,21 +106,8 @@ local function patch_domh(data,filename,threshold)
             m.DisplayOperatorMinHeight = threshold
         end
      end
---   if tex.luatexversion < 48 then
---      for _, g in next, data.glyphs do
---         local name = g.name
---         if find(name,"^integral$") or find(name,"^integral%.vsize") then
---            local width, italic = g.width or 0, g.italic_correction or 0
---            local newwidth = width - italic
---            if trace_loading then
---               report_otf("patching width of %s: %s (width) - %s (italic) = %s",name,width,italic,newwidth)
---            end
---            g.width = newwidth
---         end
---      end
---   end
 end
 
-patches["cambria"]  = function(data,filename) patch_domh(data,filename,2800) end
-patches["cambmath"] = function(data,filename) patch_domh(data,filename,2800) end
-patches["asana"]    = function(data,filename) patch_domh(data,filename,1350) end
+register("after","check math parameters","cambria", function(data,filename) patch_domh(data,filename,2800) end)
+register("after","check math parameters","cambmath",function(data,filename) patch_domh(data,filename,2800) end)
+register("after","check math parameters","asana",   function(data,filename) patch_domh(data,filename,1350) end)

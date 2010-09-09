@@ -151,7 +151,7 @@ function resolvers.variableofformat(str)
     return formats[str] or formats[alternatives[str]] or ''
 end
 
-function resolvers.vsriableofformatorsuffix(str)
+function resolvers.variableofformatorsuffix(str)
     local v = formats[str]
     if v then
         return v

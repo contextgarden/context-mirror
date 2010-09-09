@@ -107,10 +107,12 @@ return {
         -- like ['foo.bar'] so for convenience we also support 'foo_bar'.
 
         directives = {
-         -- system_checkglobals = "10",
-         -- system.nostatistics = "yes",
-            system_errorcontext = "10",
-            mplib_texerrors     = "yes",
+         -- system_checkglobals      = "10",
+         -- system_nostatistics      = "yes",
+            system_errorcontext      = "10",
+            mplib_texerrors          = "yes",
+         -- fonts_otf_loader_method  = "table", -- table mixed sparse
+         -- fonts_otf_loader_cleanup = "0",     -- 0 1 2 3
         },
 
         experiments = {

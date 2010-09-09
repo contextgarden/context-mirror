@@ -38,6 +38,7 @@ function io.savedata(filename,data,joiner)
             f:write(data or "")
         end
         f:close()
+        io.flush()
         return true
     else
         return false

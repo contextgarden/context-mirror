@@ -565,8 +565,7 @@
      \fi
    \fi#1#2%
    \resetselectiepagina
-   \incrementpagenumber
-   \incrementsubpagenumber
+   \doincrementpageboundcounters % should hook into an every
    \checkpagedimensions
    \ifnum\outputpenalty>\superpenalty \else
      \dosupereject

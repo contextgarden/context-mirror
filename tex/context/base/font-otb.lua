@@ -276,7 +276,7 @@ local function preparebasekerns(tfmdata,kind,value) -- todo what kind of kerns, 
             for u, chr in next, characters do
                 local d = descriptions[u]
                 if d then
-                    local dk = d.mykerns -- shared
+                    local dk = d.kerns -- shared
                     if dk then
                         local s = sharedkerns[dk]
                         if s == false then

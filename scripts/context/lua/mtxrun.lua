@@ -709,26 +709,30 @@ function table.imerged(...)
     return tmp
 end
 
-local function fastcopy(old) -- fast one
+local function fastcopy(old,metatabletoo) -- fast one
     if old then
         local new = { }
         for k,v in next, old do
             if type(v) == "table" then
-                new[k] = fastcopy(v) -- was just table.copy
+                new[k] = fastcopy(v,metatabletoo) -- was just table.copy
             else
                 new[k] = v
             end
         end
-        -- optional second arg
-        local mt = getmetatable(old)
-        if mt then
-            setmetatable(new,mt)
+        if metatabletoo then
+            -- optional second arg
+            local mt = getmetatable(old)
+            if mt then
+                setmetatable(new,mt)
+            end
         end
         return new
     else
         return { }
     end
 end
+
+-- todo : copy without metatable
 
 local function copy(t, tables) -- taken from lua wiki, slightly adapted
     tables = tables or { }
@@ -1146,6 +1150,7 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
             serialize(root,name,flush,reduce,noquotes,hexify)
         end
         f:close()
+        io.flush()
     end
 end
 
@@ -1381,6 +1386,7 @@ function io.savedata(filename,data,joiner)
             f:write(data or "")
         end
         f:close()
+        io.flush()
         return true
     else
         return false
@@ -9406,7 +9412,7 @@ function resolvers.variableofformat(str)
     return formats[str] or formats[alternatives[str]] or ''
 end
 
-function resolvers.vsriableofformatorsuffix(str)
+function resolvers.variableofformatorsuffix(str)
     local v = formats[str]
     if v then
         return v

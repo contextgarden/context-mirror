@@ -130,7 +130,7 @@ elseif environment.arguments["configurations"] or environment.arguments["show-co
     resolvers.listers.configurations()
 elseif environment.arguments["help"] or (environment.files[1]=='help') or (#environment.files==0) then
     logs.help(messages.help)
-elseif environment.files[1]=='texmfcnf.lua' then
+elseif environment.files[1] == 'texmfcnf.lua' then
     resolvers.load("nofiles")
     resolvers.listers.configurations()
 else

@@ -55,9 +55,9 @@ local properties = allocate {
     itemtag            = { pdf = "Lbl",        nature = "mixed"   },
     itemcontent        = { pdf = "LBody",      nature = "mixed"   },
 
-    description        = { pdf = "Li",         nature = "display" },
-    descriptiontag     = { pdf = "Lbl",        nature = "mixed"   },
-    descriptioncontent = { pdf = "LBody",      nature = "mixed"   },
+    description        = { pdf = "Div",        nature = "display" },
+    descriptiontag     = { pdf = "Div",        nature = "mixed"   },
+    descriptioncontent = { pdf = "Div",        nature = "mixed"   },
     descriptionsymbol  = { pdf = "Span",       nature = "inline"  }, -- note reference
 
     verbatimblock      = { pdf = "Code",       nature = "display" },
@@ -91,7 +91,7 @@ local properties = allocate {
     delimited          = { pdf = "Quote",      nature = "inline"  },
     subsentence        = { pdf = "Span",       nature = "inline"  },
 
-    float              = { pdf = "Div",        nature = "display" },
+    float              = { pdf = "Div",        nature = "display" }, -- Figure
     floatcaption       = { pdf = "Caption",    nature = "display" },
     floattag           = { pdf = "Span",       nature = "mixed"   },
     floattext          = { pdf = "Span",       nature = "mixed"   },
@@ -101,7 +101,7 @@ local properties = allocate {
     mpgraphic          = { pdf = "P",          nature = "mixed"   },
 
     formulaset         = { pdf = "Div",        nature = "display" },
-    formula            = { pdf = "Div",        nature = "display" },
+    formula            = { pdf = "Div",        nature = "display" }, -- Formula
     formulatag         = { pdf = "Span",       nature = "mixed"   },
     formulacontent     = { pdf = "P",          nature = "display" },
     subformula         = { pdf = "Div",        nature = "display" },
