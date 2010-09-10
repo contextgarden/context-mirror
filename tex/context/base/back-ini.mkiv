@@ -128,22 +128,6 @@
 \let \doloadmapline      \gobbletwoarguments % + - = | fileline
 
 %D \macros
-%D   {ifusepagedestinations}
-%D
-%D In \PDF\ version 1.0 only page references were supported,
-%D while in \DVIWINDO\ 1.N only named references were accepted.
-%D Therefore \CONTEXT\ supports both methods of referencing. In
-%D \PDF\ version 1.1 named destinations arrived. Lack of
-%D continuous support of version 1.1 viewers for \MSDOS\
-%D therefore sometimes forces us to prefer page references. As
-%D a bonus, they are faster too and have no limitations. How
-%D fortunate we were having both mechanisms available when the
-%D version 3.0 (\PDF\ version 1.2) viewers proved to be too
-%D bugged to support named destinations.
-
-\newif\ifusepagedestinations % not yet interfaced in mkiv
-
-%D \macros
 %D   {jobsuffix}
 %D
 %D By default, \TEX\ produces \DVI\ files which can be

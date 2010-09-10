@@ -957,7 +957,13 @@ end
 local innermethod = "names"
 
 function references.setinnermethod(m)
-    innermethod = m -- page names mixed
+    if m then
+        if m == "page" or m == "mixed" or m == "names" then
+            innermethod = m
+        elseif m == true or m == variables.yes then
+            innermethod = "page"
+        end
+    end
     function references.setinnermethod()
         report_references("inner method is already set and frozen to '%s'",innermethod)
     end
@@ -966,6 +972,10 @@ end
 function references.getinnermethod()
     return innermethod or "names"
 end
+
+directives.register("references.linkmethod", function(v) -- page mixed names
+    references.setinnermethod(v)
+end)
 
 function references.setinternalreference(prefix,tag,internal,view)
     if innermethod == "page" then

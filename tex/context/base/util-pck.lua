@@ -29,6 +29,18 @@ local function hashed(t)
     return concat(s,",")
 end
 
+local function simplehashed(t)
+    local s = { }
+    for k, v in next, t do
+        s[#s+1] = k.."="..v
+    end
+    sort(s)
+    return concat(s,",")
+end
+
+packers.hashed       = hashed
+packers.simplehashed = simplehashed
+
 local function pack(t,keys,hash,index)
     for k,v in next, t do
         if type(v) == "table" then

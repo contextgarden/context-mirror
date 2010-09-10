@@ -233,7 +233,11 @@ fonts.map.addtounicode = function(data,filename)
                             t[#t+1] = u
                         end
                     end
-                    if #t > 0 then -- done then
+                    if #t == 0 then -- done then
+                        -- nothing
+                    elseif #t == 1 then
+                        originals[index], tounicode[index], nl, unicode = t[1], tounicode16(t[1]), nl + 1, true
+                    else
                         originals[index], tounicode[index], nl, unicode = t, tounicode16sequence(t), nl + 1, true
                     end
                 end

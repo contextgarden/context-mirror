@@ -161,9 +161,17 @@ local function savevalue(name,i)
         local cd = counterdata[name].data[i]
         local cs = tobesaved[name][i]
         local cc = collected[name]
+        if trace_counters then
+            report_counters("saving value %s of counter named %s",cd.number,name)
+        end
         local cr = cd.range
         local old = (cc and cc[i] and cc[i][cr]) or 0
-        cs[cr] = cd.number
+        local number = cd.number
+        if cd.method == variables.page then
+            -- we can be one page ahead
+            number = number - 1
+        end
+        cs[cr] = (number >= 0) and number or 0
         cd.range = cr + 1
         return old
     else
@@ -171,11 +179,12 @@ local function savevalue(name,i)
     end
 end
 
-function counters.define(name, start, counter) -- todo: step
+function counters.define(name, start, counter, method) -- todo: step
     local d = allocate(name,1)
     d.start = start
     if counter ~= "" then
         d.counter = counter -- only for special purposes, cannot be false
+        d.method = method -- frozen at define time
     end
 end
 

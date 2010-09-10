@@ -39,7 +39,7 @@ local function tabstr(t) -- hashed from core-uti / experiment
     return concat(s,",")
 end
 
-function enhancers.pack(data)
+local function packdata(data)
     if data then
         local h, t, c = { }, { }, { }
         local hh, tt, cc = { }, { }, { }
@@ -140,7 +140,7 @@ function enhancers.pack(data)
                         end
                     end
                 end
-                local m = v.mykerns
+                local m = v.kerns
                 if m then
                     for k,v in next, m do
                         m[k] = pack(v)
@@ -267,9 +267,9 @@ function enhancers.pack(data)
             for pass=1,2 do
                 local pack = (pass == 1 and pack_1) or pack_2
                 for k, v in next, data.glyphs do
-                    local m = v.mykerns
+                    local m = v.kerns
                     if m then
-                        v.mykerns = pack(m)
+                        v.kerns = pack(m)
                     end
                     local m = v.math
                     if m then
@@ -305,7 +305,7 @@ function enhancers.pack(data)
     end
 end
 
-function enhancers.unpack(data)
+local function unpackdata(data)
     if data then
         local t = data.tables
         if t then
@@ -344,11 +344,11 @@ function enhancers.unpack(data)
                         end
                     end
                 end
-                local m = v.mykerns
+                local m = v.kerns
                 if m then
                     local tm = t[m]
                     if tm then
-                        v.mykerns = tm
+                        v.kerns = tm
                         if unpacked[tm] then
                             m = false
                         else
@@ -508,3 +508,6 @@ function enhancers.unpack(data)
         end
     end
 end
+
+otf.enhancers.register(  "pack",  packdata)
+otf.enhancers.register("unpack",unpackdata)

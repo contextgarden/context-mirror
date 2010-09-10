@@ -553,7 +553,8 @@ local function process(head,first,last)
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
                             or pcjk == "other"      or ncjk == "other"
-                            or pcjk == "jamo_final" or ncjk == "jamo_initial" then
+                         -- or pcjk == "jamo_final" or ncjk == "jamo_initial" then
+                            or pcjk == "jamo_final" or ncjk == "jamo_initial" or pcjk == "half_width_close" or ncjk == "half_width_open" then
                             previous = "start"
                         else -- if head ~= first then
                             remove_node(head,first,true)

@@ -245,9 +245,81 @@ function codeinjections.prerollreference(actions) -- share can become option
     end
 end
 
-local lln = latelua_node()  if not node.has_field(lln,'string') then
+--~ local lln = latelua_node()  if not node.has_field(lln,'string') then
 
-    function nodeinjections.reference(width,height,depth,prerolled) -- keep this one
+--~     function nodeinjections.reference(width,height,depth,prerolled) -- keep this one
+--~         if prerolled then
+--~             if trace_references then
+--~                 report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+--~             end
+--~             return pdfannotation_node(width,height,depth,prerolled)
+--~         end
+--~     end
+
+--~     function codeinjections.finishreference()
+--~     end
+
+--~ else
+
+--~     report_references("hashing annotations")
+
+--~     local delayed = { }
+--~     local hashed  = { }
+--~     local sharing = true -- we can do this for special refs (so we need an extra argument)
+
+--~     local function flush()
+--~         local n = 0
+--~         for k,v in next, delayed do
+--~             pdfimmediateobject(k,v)
+--~             n = n + 1
+--~         end
+--~         if trace_references then
+--~             report_references("%s annotations flushed",n)
+--~         end
+--~         delayed = { }
+--~     end
+
+--~     lpdf.registerpagefinalizer    (flush,3,"annotations") -- somehow this lags behind .. I need to look into that some day
+--~     lpdf.registerdocumentfinalizer(flush,3,"annotations") -- so we need a final flush too
+
+--~     local factor = number.dimenfactors.bp
+
+--~     function codeinjections.finishreference(width,height,depth,prerolled)
+--~         local h, v = pdf.h, pdf.v
+--~         local llx, lly = h*factor, (v - depth)*factor
+--~         local urx, ury = (h + width)*factor, (v + height)*factor
+--~         local annot = format("<< /Type /Annot %s /Rect [%s %s %s %s] >>",prerolled,llx,lly,urx,ury)
+--~         local n = sharing and hashed[annot]
+--~         if not n then
+--~             n = pdfreserveobject() -- todo: share
+--~             delayed[n] = annot
+--~         --~ n = pdf.obj(annot)
+--~         --~ pdf.refobj(n)
+--~             if sharing then
+--~                 hashed[annot] = n
+--~             end
+--~         end
+--~         pdfregisterannot(n)
+--~     end
+
+--~     _bpnf_ = codeinjections.finishreference
+
+--~     function nodeinjections.reference(width,height,depth,prerolled)
+--~         if prerolled then
+--~             if trace_references then
+--~                 report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+--~             end
+--~          -- local luacode = format("backends.pdf.codeinjections.finishreference(%s,%s,%s,'%s')",width,height,depth,prerolled)
+--~             local luacode = format("_bpnf_(%s,%s,%s,'%s')",width,height,depth,prerolled)
+--~             return latelua_node(luacode)
+--~         end
+--~     end
+
+--~ end  node.free(lln)
+
+local function use_normal_annotations()
+
+    local function reference(width,height,depth,prerolled) -- keep this one
         if prerolled then
             if trace_references then
                 report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
@@ -256,35 +328,35 @@ local lln = latelua_node()  if not node.has_field(lln,'string') then
         end
     end
 
-    function codeinjections.finishreference()
+    local function finishreference()
     end
 
-else
+    return reference, finishreference
 
-    report_references("hashing annotations")
+end
 
-    local delayed = { }
-    local hashed  = { }
-    local sharing = true -- we can do this for special refs (so we need an extra argument)
+local delayed, hashed, sharing = { }, { }, true -- we can do this for special refs (so we need an extra argument)
 
-    local function flush()
-        local n = 0
-        for k,v in next, delayed do
-            pdfimmediateobject(k,v)
-            n = n + 1
-        end
-        if trace_references then
-            report_references("%s annotations flushed",n)
-        end
-        delayed = { }
+local function flush()
+    local n = 0
+    for k,v in next, delayed do
+        pdfimmediateobject(k,v)
+        n = n + 1
     end
+    if trace_references then
+        report_references("%s annotations flushed",n)
+    end
+    delayed = { }
+end
 
-    lpdf.registerpagefinalizer    (flush,3,"annotations") -- somehow this lags behind .. I need to look into that some day
-    lpdf.registerdocumentfinalizer(flush,3,"annotations") -- so we need a final flush too
+lpdf.registerdocumentfinalizer(flush,3,"annotations") -- so we need a final flush too
+lpdf.registerpagefinalizer    (flush,3,"annotations") -- somehow this lags behind .. I need to look into that some day
+
+local function use_shared_annotations()
 
     local factor = number.dimenfactors.bp
 
-    function codeinjections.finishreference(width,height,depth,prerolled)
+    local function finishreference(width,height,depth,prerolled)
         local h, v = pdf.h, pdf.v
         local llx, lly = h*factor, (v - depth)*factor
         local urx, ury = (h + width)*factor, (v + height)*factor
@@ -302,9 +374,9 @@ else
         pdfregisterannot(n)
     end
 
-    _bpnf_ = codeinjections.finishreference
+    _bpnf_ = finishreference
 
-    function nodeinjections.reference(width,height,depth,prerolled)
+    local function reference(width,height,depth,prerolled)
         if prerolled then
             if trace_references then
                 report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
@@ -315,7 +387,32 @@ else
         end
     end
 
+    return reference, finishreference
+
+end
+
+local lln = latelua_node()  if node.has_field(lln,'string') then
+
+    directives.register("refences.sharelinks", function(v)
+        if v then
+            backends.nodeinjections.reference, backends.codeinjections.finishreference = use_shared_annotations()
+        else
+            backends.nodeinjections.reference, backends.codeinjections.finishreference = use_normal_annotations()
+        end
+    end)
+
+    nodeinjections.reference, codeinjections.finishreference = use_shared_annotations()
+
+else
+
+    nodeinjections.reference, codeinjections.finishreference = use_normal_annotations()
+
 end  node.free(lln)
+
+-- -- -- --
+-- -- -- --
+
+
 
 function nodeinjections.destination(width,height,depth,name,view)
     if trace_destinations then

@@ -56,11 +56,11 @@
 \appendtoks
   \doifelse\@@iastate\v!start
     {\iflocation\else
-       \showmessage\m!interactions2{\ifusepagedestinations\space(PAGE)\fi}%
+       \showmessage\m!interactions2{(page mode: \@@iapage)}%
        \global\locationtrue
      \fi}%
     {\iflocation
-       \showmessage\m!interactions3{\ifusepagedestinations\space(PAGE)\fi}%
+       \showmessage\m!interactions3{(page mode: \@@iapage)}%
        \global\locationfalse
      \fi}%
   \iflocation
@@ -73,8 +73,11 @@
   \doifelse\@@iastrut  \v!yes \settrue \setfalse \uselocationstrut
   \doifelse\@@iaclick  \v!yes \settrue \setfalse \highlighthyperlinks
   \doifelse\@@iadisplay\v!new \settrue \setfalse \gotonewwindow
-  \doifelse\@@iapage   \v!yes \settrue \setfalse \usepagedestinations
+  \doifnot \@@iapage   \v!no  \dosetpagedestinations
 \to \everysetupinteraction
+
+\def\dosetpagedestinations
+  {\ctxlua{structures.references.setinnermethod("\@@iapage")}}
 
 \def\synchronizebackendidentity
   {\ctxlua{backends.codeinjections.setupidentity{
