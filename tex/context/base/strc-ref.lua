@@ -941,11 +941,22 @@ end
 
 references.identify = identify
 
+local unknowns, nofunknowns = { }, 0
+
 function references.doifelse(prefix,reference,highlight,newwindow,layer)
     local set, bug = identify(prefix,reference)
     local unknown = bug or #set == 0
     if unknown then
         currentreference = nil -- will go away
+        local str = format("[%s][%s]",prefix,reference)
+        local u = unknowns[str]
+        if not u then
+            interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
+            unknowns[str] = 1
+            nofunknowns = nofunknowns + 1
+        else
+            unknowns[str] = u + 1
+        end
     else
         set.highlight, set.newwindow,set.layer = highlight, newwindow, layer
         currentreference = set[1]
@@ -953,6 +964,20 @@ function references.doifelse(prefix,reference,highlight,newwindow,layer)
     -- we can do the expansion here which saves a call
     commands.doifelse(not unknown)
 end
+
+function references.reportproblems() -- might become local
+    if nofunknowns > 0 then
+        interfaces.showmessage("references",5,nofunknowns) -- 5 = unknown, 6 = illegal
+     -- -- we need a proper logger specific for the log file
+     -- texio.write_nl("log",format("%s unknown references",nofunknowns))
+     -- for k, v in table.sortedpairs(unknowns) do
+     --     texio.write_nl("log",format("%s (n=%s)",k,v))
+     -- end
+     -- texio.write_nl("log","")
+    end
+end
+
+luatex.registerstopactions(references.reportproblems)
 
 local innermethod = "names"
 

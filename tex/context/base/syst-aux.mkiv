@@ -3154,6 +3154,15 @@
 
 \let\then\relax % so that we can say: \ifnum1>2\then -)
 
+% demands that each conditional is defined .. it would be handy to have
+% a primitive \unless\ifcase .. then we could use better values
+%
+% \def\settrue #1{#1\zerocount}
+% \def\setfalse#1{#1\plusone}
+%
+% \def\newconditional#1{\ifdefined#1\else\newcount#1\fi\setfalse#1}
+% \let\ifconditional \ifcase
+
 %D \macros
 %D   {ifzeropt}
 %D

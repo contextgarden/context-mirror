@@ -36,6 +36,29 @@ local lower, gmatch, format, find = string.lower, string.gmatch, string.format, 
 local concat, serialize = table.concat, table.serialize
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array,  utilities.parsers.settings_to_hash
 
+--[[
+    Comments by Peter:
+
+    output intent       : only one profile per color space (and device class)
+    default color space : (theoretically) several profiles per color space possible
+
+    The default color space profiles define the current gamuts (part of/all the
+    colors we have in the document), while the output intent profile declares the
+    gamut of the output devices (the colors that we get normally a printer or
+    monitor).
+
+    Example:
+
+    I have two RGB pictures (both 'painted' in /DeviceRGB) and I declare sRGB as
+    default color space for one picture and AdobeRGB for the other. As output
+    intent I use ISO_coated_v2_eci.icc.
+
+    If I had more than one output intent profile for the combination CMYK/printer I
+    can't decide which one to use. But it is no problem to use several default color
+    space profiles for the same color space as it's just a different color
+    transformation. The relation between picture and profile is clear.
+]]--
+
 local channels = {
     gray = 1,
     grey = 1,

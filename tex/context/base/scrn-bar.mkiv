@@ -85,7 +85,7 @@
      \begingroup
      \doifnot{#1}\v!reset % obsolete, no caching any more
        {\doifassignmentelse{#1}
-          {\getparameters[\??ib][#2]%
+          {\getparameters[\??ib][#1]%
            \edef\currentinteractionbar{\interactionbarparameter\c!alternative}}%
           {\edef\currentinteractionbar{#1}%
            \ifsecondargument\getparameters[\??ib#1][#2]\fi}%

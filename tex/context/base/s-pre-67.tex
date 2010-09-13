@@ -141,6 +141,15 @@
 \let\Title\title
 \let\TitlePage\titlepage
 
-% \starttext \input tufte \stoptext
+\doifnotmode{demo}{\endinput}
+
+\starttext
+    \chapter{Test}
+    \startitemize
+    \startitem test \stopitem
+    \startitem test \stopitem
+    \startitem test \stopitem
+    \stopitemize
+\stoptext
 
 \endinput

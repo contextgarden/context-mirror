@@ -485,8 +485,8 @@
         {\edef\tline{\currentreferencelinenumber}%
          %[\fline,\tline]
          \ifx\fline\tline#2\else#3\fi}
-        {\unknownreference{#1}#2}}
-     {\unknownreference{#1}#2}}
+        {#2}}
+     {#2}}
 
 \def\inline#1[#2]%
   {\doifelsenothing{#1}

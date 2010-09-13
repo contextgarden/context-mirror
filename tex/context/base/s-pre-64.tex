@@ -169,35 +169,37 @@
     \definefont[titlefont][palatinosanscom-bold*default at 48pt]
 \stopmode
 
-\endinput
+\doifnotmode{demo}{\endinput}
 
-% \starttext
+\starttext
 
-% \SetBanner{tug 2007 san diego}
+\usemodule[abr-01]
 
-% \Title {hans hagen}
+\SetBanner{tug 2007 san diego}
 
-% \startstandardmakeup \titlefont \setupinterlinespace[line=3ex] \vfill
+\Title {hans hagen}
 
-% \StartItem \dontleavehmode \quad {\morecolor zapfino, a}   \StopItem
-% \StartItem \dontleavehmode \quad {\morecolor torture test} \StopItem
-% \StartItem \dontleavehmode \quad {\morecolor for luatex}   \StopItem
+\startstandardmakeup \titlefont \setupinterlinespace[line=3ex] \vfill
 
-% \vfill \stopstandardmakeup
+\StartItem \dontleavehmode \quad {\morecolor zapfino, a}   \StopItem
+\StartItem \dontleavehmode \quad {\morecolor torture test} \StopItem
+\StartItem \dontleavehmode \quad {\morecolor for luatex}   \StopItem
 
-% \Title{loading fonts}
+\vfill \stopstandardmakeup
 
-% \StartSteps
+\Title{loading fonts}
 
-% \StartItem the \OPENTYPE\ font reader is borrowed from \FONTFORGE\  \FlushStep \StopItem
-% \StartItem once it was ready, we could look into such a font  \FlushStep \StopItem
-% \StartItem it tooks while to figure out the format due to rather fuzzy specs  \FlushStep \StopItem
-% \StartItem it took us even more time to find out that the loader was flawed  \FlushStep \StopItem
-% \StartItem one reason was that fonts themselves may have bugs or be incomplete \FlushStep \StopItem
-% \StartItem then we changed to \FONTFORGE\ version 2 \FlushStep \StopItem
-% \StartItem this made the missing pieces surface in more complex feature handling \FlushStep \StopItem
-% \StartItem while implementing features the new table format was cleaned up \FlushStep \StopItem
+\StartSteps
 
-% \StopSteps
+\StartItem the \OPENTYPE\ font reader is borrowed from \FONTFORGE\  \FlushStep \StopItem
+\StartItem once it was ready, we could look into such a font  \FlushStep \StopItem
+\StartItem it tooks while to figure out the format due to rather fuzzy specs  \FlushStep \StopItem
+\StartItem it took us even more time to find out that the loader was flawed  \FlushStep \StopItem
+\StartItem one reason was that fonts themselves may have bugs or be incomplete \FlushStep \StopItem
+\StartItem then we changed to \FONTFORGE\ version 2 \FlushStep \StopItem
+\StartItem this made the missing pieces surface in more complex feature handling \FlushStep \StopItem
+\StartItem while implementing features the new table format was cleaned up \FlushStep \StopItem
 
-% \stoptext
+\StopSteps
+
+\stoptext

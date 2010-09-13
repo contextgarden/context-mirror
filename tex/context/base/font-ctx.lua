@@ -721,4 +721,5 @@ function fonts.reportusedfeatures()
         end
     end
 end
+
 luatex.registerstopactions(fonts.reportusedfeatures)

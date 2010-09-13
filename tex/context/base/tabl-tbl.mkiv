@@ -1215,20 +1215,23 @@
 %     \starttabulate[||] \dorecurse{100}{\NC Eins \NC \NR \HL} \stoptabulate
 % \stoptext
 
-\def\tabulateMLfive{\TABLEnoalign
+\def\tabulateMLfive{\TABLEnoalign % this will be redone in the mkiv spacing way
   {\dotabulateruleseperator
    \dotabulaterule
-   \ifnum\noftabulatelines>\plusone
-     \ifnum\noftabulatelines<\minusnoftabulatelines
-     % *** somehow topskip messes up as it's intercepted
-     % \vskip \topskip\allowbreak\vskip- \topskip
-     % messy anyhow so this needs to be improved, so for
-     % the momenet we keep this bugged variant
-       \vskip1\topskip\allowbreak\vskip-1\topskip
+%    \ifnum\noftabulatelines>\plusone
+%      \ifnum\noftabulatelines<\minusnoftabulatelines
+%      % *** somehow topskip messes up as it's intercepted
+%      % \vskip \topskip\allowbreak\vskip- \topskip
+%      % messy anyhow so this needs to be improved, so for
+%      % the moment we keep this bugged variant
+%        \vskip1\topskip
+%        \allowbreak
+%        \vskip-1\topskip
        \vskip-\tabulateparameter\c!rulethickness
        \dotabulaterule
-     \fi
-   \fi
+\nobreak
+%      \fi
+%    \fi
    \dotabulateruleseperator}}
 
 \def\tabulateLLfive{\TABLEnoalign
@@ -1245,6 +1248,38 @@
 
 \def\tabulateHLfive
   {\doHL\zerocount}
+
+% \dorecurse{10}{
+%     \starttabulate[|l|]
+%     \FL
+%     \NC first line, bound to next rule    \NC \NR
+%     \TL
+%     \NC bound to previous rule            \NC \NR
+%     \NC some line                         \NC \NR
+%     \NC some line                         \NC \NR
+%     \NC some line                         \NC \NR
+%     \NC bound to next rule                \NC \NR
+%     \ML
+%     \NC bound to previous rule            \NC \NR
+%     \NC bound to next rule                \NC \NR
+%     \BL
+%     \NC last line, bound to previous rule \NC \NR
+%     \LL
+%     \stoptabulate
+% }
+
+\def\tabulateTLfive{\TABLEnoalign
+  {\dotabulatenobreak
+   \dotabulateruleseperator
+   \dotabulatenobreak
+   \dotabulaterule
+   \dotabulatenobreak
+   \dotabulateruleseperator
+%    \prevdepth\strutdp % todo, might differ between TL and BL
+   \dotabulatenobreak}}
+
+\let\tabulateBLfive\tabulateTLfive
+
 
 \def\tabulaterule    {\HR}% a rule with lineheight
 \def\tabulateline    {\HL}% just a spaced rule
@@ -1299,6 +1334,8 @@
    \let\FL\empty \let\FR\NR
    \let\ML\empty \let\MR\NR
    \let\LL\empty \let\LR\NR
+   \let\TL\empty
+   \let\BL\empty
    \let\doHR\gobbleoneargument
    \let\doHL\gobbleoneargument
    \glet\flushtabulated\empty
@@ -1370,6 +1407,8 @@
    \let\FL\tabulateFLfive
    \let\ML\tabulateMLfive
    \let\LL\tabulateLLfive
+   \let\TL\tabulateTLfive
+   \let\BL\tabulateBLfive
    \tabulatepass\plustwo
    %
    \ifcase\tabulaterepeathead

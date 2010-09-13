@@ -13,6 +13,7 @@ local gsub, find, topattern, format = string.gsub, string.find, string.topattern
 local lpegmatch = lpeg.match
 local texattribute, texsprint, ctxcatcodes = tex.attribute, tex.sprint, tex.ctxcatcodes
 local allocate = utilities.storage.allocate
+local settings_to_hash = utilities.parsers.settings_to_hash
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
@@ -143,8 +144,14 @@ function tags.settagproperty(tag,key,value)
 end
 
 local lasttags = { }
+local userdata = { }
 
-function tags.start(tag,label,detail)
+tags.userdata = userdata
+
+function tags.start(tag,specification)
+    local label = specification.label
+    local detail = specification.detail
+    local user = specification.userdata
     if not enabled then
         codeinjections.enabletags()
         enabled = true
@@ -161,9 +168,15 @@ function tags.start(tag,label,detail)
     ids[fulltag] = n
     lasttags[tag] = n
 --~ print("SETTING",tag,n)
-    chain[#chain+1] = fulltag .. "-" .. n -- insert(chain,tag .. ":" .. n)
+    local completetag = fulltag .. "-" .. n
+    chain[#chain+1] = completetag -- insert(chain,tag .. ":" .. n)
     stack[#stack+1] = t -- insert(stack,t)
     taglist[t] = { unpack(chain) } -- we can add key values for alt and actualtext if needed
+    if user and user ~= "" then
+        -- maybe we should merge this into taglistor or whatever ... anyway there is room to optimize
+        -- taglist.userdata = settings_to_hash(user)
+        userdata[completetag] = settings_to_hash(user)
+    end
     texattribute[a_tagged] = t
     return t
 end

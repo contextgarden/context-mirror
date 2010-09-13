@@ -3235,6 +3235,7 @@
 
 % 0=no-split, 1=no-split+indent, 2=split, 3=split+indent
 
+
 \setnewconstant\backgroundsplitmode\plusthree
 
 %D The \type{\vbox to \lineheight{}\vskip\zeropoint}
@@ -3278,11 +3279,11 @@
      \loop
        \ifdim\pagetotal=\zeropoint % empty page
          \scratchdimen\textheight
-         \backgroundsplit\plusone % split to max height
+         \backgroundsplitmode\plusone % split to max height
        \else
          \setbox\scratchbox\vbox{\@@agbefore}%
          \scratchdimen\dimexpr\pagegoal-\ht\scratchbox-\pagetotal\relax
-         \backgroundsplit\plustwo % split to partial height
+         \backgroundsplitmode\plustwo % split to partial height
        \fi
        \advance\scratchdimen\dimexpr-\@@agtopoffset-\@@agbottomoffset\relax
        \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
@@ -3290,9 +3291,9 @@
            \setbox2\vsplit0 to \scratchdimen
          \else
            \setbox2\box0
-           \backgroundsplit\zerocount % no split
+           \backgroundsplitmode\zerocount % no split
          \fi
-         \setbox2\vbox \ifcase\backgroundsplit\or to \textheight \fi % max split
+         \setbox2\vbox \ifcase\backgroundsplitmode\or to \textheight \fi % max split
            {\vskip\@@agtopoffset
             \unvcopy2
             \prevdepth\dp2
@@ -3300,7 +3301,7 @@
             \vskip\@@agbottomoffset
             \vfill}
          \@@agbefore
-         \ifcase\backgroundsplit\or\or % partial split
+         \ifcase\backgroundsplitmode\or\or % partial split
            \ifdim\pagegoal<\maxdimen
              \pagegoal=1.2\pagegoal % be a bit more tolerant
            \fi
@@ -3310,7 +3311,7 @@
            \ifnum\backgroundsplitmode=\plusthree \hskip\dimen2 \fi %
            \localframed[\??ag][\c!offset=\v!overlay]{\box2}% new **
          \stoplinecorrection
-         \ifcase\backgroundsplit % no split
+         \ifcase\backgroundsplitmode % no split
            \@@agafter
          \else % some split
            \vfill\eject % geen \page !
