@@ -111,25 +111,40 @@
 
 % todo: indirect macro for trialtypesetting
 
-\unexpanded\def\dostartelement{\iftrialtypesetting\expandafter\noostartelement\else\expandafter\dodostartelement\fi}
-\unexpanded\def\dostopelement {\iftrialtypesetting                            \else\expandafter\dodostopelement \fi}
+\unexpanded\def\dostartelement{\iftrialtypesetting\expandafter\renostartelement\else\expandafter\redostartelement\fi}
+\unexpanded\def\dostopelement {\iftrialtypesetting\expandafter\nonostopelement \else\expandafter\dodostopelement \fi}
 
-\unexpanded\def\dodostartelement[#1]{\ctxlua{structures.tags.start("#1","\dogetupsometaglabeltext{#1}")}}
-\unexpanded\def\dodostopelement     {\ctxlua{structures.tags.stop()}}
+\unexpanded\def\redostartelement{\dodoubleempty\dodostartelement}
+\unexpanded\def\renostartelement{\dodoubleempty\nonostartelement}
 
-\unexpanded\def\nostartelement[#1]{}
-\unexpanded\def\nostopelement     {}
+\unexpanded\def\dodostartelement[#1][#2]%
+  {\ctxlua{structures.tags.start("#1",{
+     label    = "\dogetupsometaglabeltext{#1}",
+     userdata = \!!bs#2\!!es,
+   })}}
+
+\unexpanded\def\dodostopelement
+  {\ctxlua{structures.tags.stop()}}
+
+\unexpanded\def\nonostartelement[#1][#2]{}
+\unexpanded\def\nonostopelement         {}
 
 % beware: making this one unexpanded spoils tables (noalign problem)
 
-\def\dodostarttagged{\iftrialtypesetting\expandafter\nodostarttagged\else\expandafter\dododostarttagged\fi}
-\def\dodostoptagged {\iftrialtypesetting                            \else\expandafter\dododostoptagged \fi}
+\def\dodostarttagged{\iftrialtypesetting\expandafter\nododostarttagged\else\expandafter\dododostarttagged\fi}
+\def\dodostoptagged {\iftrialtypesetting\expandafter\nododostoptagged \else\expandafter\dododostoptagged \fi}
 
-\def\dododostarttagged#1#2{\ctxlua{structures.tags.start("#1","\dogetupsometaglabeltext{#1}","#2")}}
-\def\dododostoptagged     {\ctxlua{structures.tags.stop()}}
+\def\dododostarttagged#1#2%
+  {\ctxlua{structures.tags.start("#1",{
+     label  = "\dogetupsometaglabeltext{#1}",
+     detail = "#2",
+   })}}
 
-\def\nodostarttagged#1#2{}
-\def\nodostoptagged     {}
+\def\dododostoptagged
+  {\ctxlua{structures.tags.stop()}}
+
+\def\nododostarttagged#1#2{}
+\def\nododostoptagged     {}
 
 \newtoks\everysetupstructure
 
@@ -143,16 +158,16 @@
    \let\stopelement \dostopelement}
 
 \def\dodisableelements
-  {\let\startelement\nostartelement
-   \let\stopelement \nostopelement}
+  {\let\startelement\renostartelement
+   \let\stopelement \nonostopelement}
 
 \def\doenabletagged
   {\let\dostarttagged\dodostarttagged
    \let\dostoptagged \dodostoptagged }
 
 \def\dodisabletagged
-  {\let\dostarttagged\nodostarttagged
-   \let\dostoptagged \nodostoptagged }
+  {\let\dostarttagged\nododostarttagged
+   \let\dostoptagged \nododostoptagged }
 
 \newtoks\everyenableelements
 \newtoks\everydisableelements

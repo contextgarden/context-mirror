@@ -255,18 +255,28 @@
 \def\StartItems#1%
   {\setvariable{document}{topic}{\tfb#1}
    \startstandardmakeup[top=,bottom=\vss]
+   \startelement[items][title={#1}]%
    \ctxlua{document.SetParShape()}
    \StartSteps}
 
 \def\StopItems
   {\StopSteps
+   \stopelement
    \stopstandardmakeup}
 
 \def\StartItem
-  {\dontleavehmode\llap{\symbol[mysymbol]\quad}\ignorespaces}
+  {\dontleavehmode
+   \startelement[item]%
+   \llap{\symbol[mysymbol]\quad}% graphic
+   \ignorespaces}
 
 \def\StopItem
-  {\removeunwantedspaces\nobreak\crlf\crlf\FlushStep}
+  {\removeunwantedspaces
+   \nobreak
+   \crlf
+   \stopelement
+   \crlf
+   \FlushStep}
 
 \def\ShapeParagraph
   {\ctxlua{document.SetParShape()}}
@@ -277,17 +287,28 @@
   {\setvariable{document}{topic}{\tfb#1}
    \startstandardmakeup[top=,bottom=\vss]
   %\ctxlua{document.SetParShape()}
+   \startelement[paragraphs]%
    \StartSteps}
 
 \def\StopParagraphs
   {\StopSteps
+   \stopelement
    \stopstandardmakeup}
 
 \def\StartParagraph
-  {}
+  {\startelement[paragraph]}
 
 \def\StopParagraph
-  {\par\FlushStep}
+  {\par
+   \stopelement
+   \FlushStep}
+
+% experiment .. likely to change
+
+\setelementexporttag[items]     [nature][display]
+\setelementexporttag[item]      [nature][mixed]
+\setelementexporttag[paragraphs][nature][display]
+\setelementexporttag[paragraph] [nature][mixed]
 
 \doifnotmode{demo}{\endinput}
 

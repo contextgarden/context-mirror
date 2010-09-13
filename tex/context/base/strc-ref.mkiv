@@ -489,28 +489,14 @@
 %D An unknown reference is reported on the screen, in the log
 %D file and, when enabled, in the left margin of the text.
 
-\def\reportreferenceerror#1#2#3% only once (keep track in lua)
-  {\iftrialtypesetting \else
-     \ifinpagebody \else
-       \doifconcepttracing{\doifsomething{#3}{\inleft{\infofont\doboundtext{#3}{\dimexpr\leftmarginwidth-2em\relax}{..}->}}}%
-     \fi
-     \global\advance#1\plusone
-     \showmessage\m!references{#2}{[\referenceprefix][#3]}%
-   \fi}
+% \def\unknownreference#1%
+%   {\iftrialtypesetting \else
+%      \ifinpagebody \else
+%        \doifconcepttracing{\doifsomething{#1}{\inleft{\infofont\doboundtext{#1}{\dimexpr\leftmarginwidth-2em\relax}{..}->}}}%
+%      \fi
+%    \fi}
 
-\newcount\nofunknownreferences
-\newcount\nofillegalreferences
-
-\def\unknownreference{\reportreferenceerror\nofunknownreferences1}
-\def\illegalreference{\reportreferenceerror\nofillegalreferences4}
-
-\def\reportreferenceproblems
-  {\ifcase\nofunknownreferences\else\showmessage\m!references5{\number\nofunknownreferences}\fi
-   \ifcase\nofillegalreferences\else\showmessage\m!references6{\number\nofillegalreferences}\fi}
-
-\appendtoks
-    \reportreferenceproblems
-\to \everystoptext
+\let\unknownreference\gobbleoneargument
 
 %D When a reference is not found, we typeset a placeholder
 %D (two glyphs are often enough to represent the reference
@@ -763,7 +749,7 @@
   {\ifsecondargument
      \doifreferencefoundelse{#2}
        {\executeifdefined{reftype#1}\reftypep}
-       {\unknownreference{#2}\dummyreference}%
+       {\dummyreference}%
    \else
      \dummyreference
    \fi}
@@ -923,10 +909,10 @@
 %D label, only the text, or the label and the text.
 
 % \def\dounknownreference#1#2[#3]%
-%   {\unknownreference{#3}\dotextprefix{#2}\dummyreference}%
+%   {\dotextprefix{#2}\dummyreference}%
 
 \def\dounknownreference#1#2[#3]%
-  {\unknownreference{#3}\dotextprefix{#2}{\leftofreference\dummyreference\rightofreference}}
+  {\dotextprefix{#2}{\leftofreference\dummyreference\rightofreference}}
 
 \def\docompletereference#1#2[#3]%
   {\goto{\dotextprefix{#2}#1}[#3]}
@@ -1196,7 +1182,7 @@
         \setstrut % can be option
 \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute}%
-       {\unknownreference{#3}}%
+       {}%
    \fi
    #1%
   %\egroup\unhbox\referencebox}
@@ -1216,7 +1202,7 @@
         \setlocationattributes\??ia
 \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute}%
-       {\unknownreference{#3}}%
+       {}%
    \fi
    #1%
    \endgroup}
@@ -1285,7 +1271,7 @@
         \setlocationattributes\??ia
 \global\lastsavedreferenceattribute\lastreferenceattribute
         \hbox attr \referenceattribute \lastreferenceattribute {#1}}%
-       {\unknownreference{#2}}%
+       {}%
    \else
      #1%
    \fi
@@ -1301,7 +1287,7 @@
       \setbox\scratchbox\null\wd\scratchbox#1\ht\scratchbox#2%
 \global\lastsavedreferenceattribute\lastreferenceattribute
       \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}%
-     {\unknownreference{#3}}%
+     {}%
    \endgroup}
 
 %D An reference to another document can be specified as a file
@@ -1637,8 +1623,7 @@
           {\setlocationboxnop#1[#2]{#3}[#4]}
           {\doifreferencefoundelse{#4} % INEFFICIENT
              {\setlocationboxyes#1[#2]{#3}[#4]}
-             {\unknownreference{#4}%
-              \setlocationboxnop#1[#2]{#3}[#4]}}}%
+             {\setlocationboxnop#1[#2]{#3}[#4]}}}%
    \fi
    \endgroup}
 

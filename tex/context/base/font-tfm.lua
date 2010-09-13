@@ -229,6 +229,10 @@ local lastfont = nil
 -- base mode) but it complicates vf building where the new characters
 -- demand this data .. solution: functions that access them
 
+-- we don't need the glyph data as we can use the description .. but we will
+-- have to wait till we can access the internal tfm table efficiently in which
+-- case characters will become a metatable afterwards
+
 function tfm.cleanuptable(tfmdata) -- we need a cleanup callback, now we miss the last one
     if tfm.autocleanup then  -- ok, we can hook this into everyshipout or so ... todo
         if tfmdata.type == 'virtual' or tfmdata.virtualized then

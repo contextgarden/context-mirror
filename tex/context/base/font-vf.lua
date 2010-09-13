@@ -58,7 +58,7 @@ local function combine_assign(g, name, from, to, start, force)
         g.fonts[hn] = { id = id } -- no need to be sparse
         for i=from,to do
             if fc[i] and (force or not gc[i]) then
-                gc[i] = fastcopy(fc[i]) -- can be optimized
+                gc[i] = fastcopy(fc[i],true) -- can be optimized
                 gc[i].commands = { { 'slot', hn, start } }
                 gd[i] = fd[i]
             end
@@ -91,7 +91,7 @@ local function combine_names(g,name,force)
         local hn = #g.fonts
         for k, v in next, fc do
             if force or not gc[k] then
-                gc[k] = fastcopy(v)
+                gc[k] = fastcopy(v,true)
                 gc[k].commands = { { 'slot', hn, k } }
                 gd[i] = fd[i]
             end

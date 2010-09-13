@@ -425,8 +425,7 @@
           \global\settrue\skippedmenuitem
         \fi
       \fi}%
-    {\unknownreference{#4}%
-     \ifcase\csname\??am:\c!location:\menuparameter\c!unknownreference\endcsname\relax
+    {\ifcase\csname\??am:\c!location:\menuparameter\c!unknownreference\endcsname\relax
         \localframed[#1][#2]{#3}%
       \or
         \locboxyesempty{#1}{#2}{#3}

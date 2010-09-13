@@ -40,24 +40,24 @@ local specials            = references.specials
 local handlers            = references.handlers
 local executers           = references.executers
 
-local pdfdictionary       = lpdf.dictionary
-local pdfarray            = lpdf.array
-local pdfreference        = lpdf.reference
-local pdfunicode          = lpdf.unicode
-local pdfconstant         = lpdf.constant
-local pdfflushobject      = lpdf.flushobject
-local pdfshareobjectref   = lpdf.shareobjectreference
-local pdfimmediateobject  = lpdf.immediateobject
-local pdfreserveobject    = lpdf.reserveobject
-local pdfpagereference    = lpdf.pagereference
-
-local pdfregisterannot    = pdf.registerannot
-
 local nodepool            = nodes.pool
 
 local pdfannotation_node  = nodepool.pdfannotation
 local pdfdestination_node = nodepool.pdfdestination
 local latelua_node        = nodepool.latelua
+
+local pdfdictionary           = lpdf.dictionary
+local pdfarray                = lpdf.array
+local pdfreference            = lpdf.reference
+local pdfunicode              = lpdf.unicode
+local pdfconstant             = lpdf.constant
+local pdfflushobject          = lpdf.flushobject
+local pdfshareobjectreference = lpdf.shareobjectreference
+local pdfimmediateobject      = lpdf.immediateobject
+local pdfreserveobject        = lpdf.reserveobject
+local pdfpagereference        = lpdf.pagereference
+local pdfdelayedobject        = lpdf.delayedobject
+local pdfregisterannotation   = lpdf.registerannotation
 
 local pdf_annot      = pdfconstant("Annot")
 local pdf_uri        = pdfconstant("URI")
@@ -68,6 +68,9 @@ local pdf_javascript = pdfconstant("JavaScript")
 local pdf_link       = pdfconstant("Link")
 local pdf_n          = pdfconstant("N")
 local pdf_t          = pdfconstant("T")
+local pdf_fit        = pdfconstant("Fit")
+local pdf_named      = pdfconstant("Named")
+
 local pdf_border     = pdfarray { 0, 0, 0 }
 
 local getinnermethod = references.getinnermethod
@@ -80,9 +83,9 @@ local function pagedestination(n) -- only cache fit
         if not pd then
             local a = pdfarray {
                 pdfreference(pdfpagereference(n)),
-                pdfconstant("Fit")
+                pdf_fit,
             }
-            pd = pdfshareobjectref(a)
+            pd = pdfshareobjectreference(a)
             cache[n] = pd
         end
         return pd
@@ -91,7 +94,7 @@ end
 
 lpdf.pagedestination = pagedestination
 
-local defaultdestination = pdfarray { 0, pdfconstant("Fit") }
+local defaultdestination = pdfarray { 0, pdf_fit }
 
 local function link(url,filename,destination,page,actions)
     if filename and filename ~= "" then
@@ -119,7 +122,7 @@ local function link(url,filename,destination,page,actions)
             destination = nil
         end
         if not destination and page then
-            destination = pdfarray { page - 1, pdfconstant("Fit") }
+            destination = pdfarray { page - 1, pdf_fit }
         end
         return pdfdictionary {
             S = pdf_gotor, -- can also be pdf_launch
@@ -162,7 +165,7 @@ local function link(url,filename,destination,page,actions)
                     S = pdf_goto,
                     D = pdfarray {
                         pdfreference(pdfpagereference(p)),
-                        pdfconstant("Fit")
+                        pdf_fit,
                     }
                 }
             end
@@ -238,84 +241,12 @@ function codeinjections.prerollreference(actions) -- share can become option
             Subtype = pdf_link,
             Border  = pdf_border,
             H       = (not actions.highlight and pdf_n) or nil,
-            A       = pdfshareobjectref(main),
+            A       = pdfshareobjectreference(main),
             F       = 4, -- print (mandate in pdf/a)
         }
         return main("A")
     end
 end
-
---~ local lln = latelua_node()  if not node.has_field(lln,'string') then
-
---~     function nodeinjections.reference(width,height,depth,prerolled) -- keep this one
---~         if prerolled then
---~             if trace_references then
---~                 report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
---~             end
---~             return pdfannotation_node(width,height,depth,prerolled)
---~         end
---~     end
-
---~     function codeinjections.finishreference()
---~     end
-
---~ else
-
---~     report_references("hashing annotations")
-
---~     local delayed = { }
---~     local hashed  = { }
---~     local sharing = true -- we can do this for special refs (so we need an extra argument)
-
---~     local function flush()
---~         local n = 0
---~         for k,v in next, delayed do
---~             pdfimmediateobject(k,v)
---~             n = n + 1
---~         end
---~         if trace_references then
---~             report_references("%s annotations flushed",n)
---~         end
---~         delayed = { }
---~     end
-
---~     lpdf.registerpagefinalizer    (flush,3,"annotations") -- somehow this lags behind .. I need to look into that some day
---~     lpdf.registerdocumentfinalizer(flush,3,"annotations") -- so we need a final flush too
-
---~     local factor = number.dimenfactors.bp
-
---~     function codeinjections.finishreference(width,height,depth,prerolled)
---~         local h, v = pdf.h, pdf.v
---~         local llx, lly = h*factor, (v - depth)*factor
---~         local urx, ury = (h + width)*factor, (v + height)*factor
---~         local annot = format("<< /Type /Annot %s /Rect [%s %s %s %s] >>",prerolled,llx,lly,urx,ury)
---~         local n = sharing and hashed[annot]
---~         if not n then
---~             n = pdfreserveobject() -- todo: share
---~             delayed[n] = annot
---~         --~ n = pdf.obj(annot)
---~         --~ pdf.refobj(n)
---~             if sharing then
---~                 hashed[annot] = n
---~             end
---~         end
---~         pdfregisterannot(n)
---~     end
-
---~     _bpnf_ = codeinjections.finishreference
-
---~     function nodeinjections.reference(width,height,depth,prerolled)
---~         if prerolled then
---~             if trace_references then
---~                 report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
---~             end
---~          -- local luacode = format("backends.pdf.codeinjections.finishreference(%s,%s,%s,'%s')",width,height,depth,prerolled)
---~             local luacode = format("_bpnf_(%s,%s,%s,'%s')",width,height,depth,prerolled)
---~             return latelua_node(luacode)
---~         end
---~     end
-
---~ end  node.free(lln)
 
 local function use_normal_annotations()
 
@@ -335,43 +266,27 @@ local function use_normal_annotations()
 
 end
 
-local delayed, hashed, sharing = { }, { }, true -- we can do this for special refs (so we need an extra argument)
+-- evenrually we can do this for special refs only
 
-local function flush()
-    local n = 0
-    for k,v in next, delayed do
-        pdfimmediateobject(k,v)
-        n = n + 1
-    end
-    if trace_references then
-        report_references("%s annotations flushed",n)
-    end
-    delayed = { }
-end
-
-lpdf.registerdocumentfinalizer(flush,3,"annotations") -- so we need a final flush too
-lpdf.registerpagefinalizer    (flush,3,"annotations") -- somehow this lags behind .. I need to look into that some day
+local hashed, nofunique, nofused = { }, 0, 0
 
 local function use_shared_annotations()
 
     local factor = number.dimenfactors.bp
 
-    local function finishreference(width,height,depth,prerolled)
+    local function finishreference(width,height,depth,prerolled) -- %0.2f looks okay enough (no scaling anyway)
         local h, v = pdf.h, pdf.v
         local llx, lly = h*factor, (v - depth)*factor
         local urx, ury = (h + width)*factor, (v + height)*factor
-        local annot = format("<< /Type /Annot %s /Rect [%s %s %s %s] >>",prerolled,llx,lly,urx,ury)
-        local n = sharing and hashed[annot]
+        local annot = format("<< /Type /Annot %s /Rect [%0.2f %0.2f %0.2f %0.2f] >>",prerolled,llx,lly,urx,ury)
+        local n = hashed[annot]
         if not n then
-            n = pdfreserveobject() -- todo: share
-            delayed[n] = annot
-        --~ n = pdf.obj(annot)
-        --~ pdf.refobj(n)
-            if sharing then
-                hashed[annot] = n
-            end
+            n = pdfdelayedobject(annot)
+            hashed[annot] = n
+            nofunique = nofunique + 1
         end
-        pdfregisterannot(n)
+        nofused = nofused + 1
+        pdfregisterannotation(n)
     end
 
     _bpnf_ = finishreference
@@ -381,11 +296,20 @@ local function use_shared_annotations()
             if trace_references then
                 report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
             end
-         -- local luacode = format("backends.pdf.codeinjections.finishreference(%s,%s,%s,'%s')",width,height,depth,prerolled)
             local luacode = format("_bpnf_(%s,%s,%s,'%s')",width,height,depth,prerolled)
             return latelua_node(luacode)
         end
     end
+
+    statistics.register("pdf annotations", function()
+        if nofused > 0 then
+         -- table.print(hashed,"hashed_annotations")
+            return string.format("%s embedded, %s unique",nofused,nofunique)
+        else
+            return nil
+        end
+    end)
+
 
     return reference, finishreference
 
@@ -563,8 +487,6 @@ function specials.javascript(var)
 end
 
 specials.JS = specials.javascript
-
-local pdf_named = pdfconstant("Named")
 
 executers.importform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ImportFDF") }
 executers.exportform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ExportFDF") }

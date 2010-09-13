@@ -53,7 +53,7 @@ end
 
 fallbacks['textcent'] = function (g)
     local c = ("c"):byte()
-    local t = table.fastcopy(g.characters[c])
+    local t = table.fastcopy(g.characters[c],true)
     local a = - tan(rad(g.italicangle or 0))
     local vfspecials = backends.tables.vfspecials
     local green, black
@@ -118,7 +118,7 @@ end
 
 fallbacks['texteuro'] = function (g)
     local c = ("C"):byte()
-    local t = table.fastcopy(g.characters[c])
+    local t = table.fastcopy(g.characters[c],true)
     local d = cos(rad(90+(g.italicangle)))
     local vfspecials = backends.tables.vfspecials
     local green, black

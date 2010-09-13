@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['mtx-fonts'] = {
 
 if not fontloader then fontloader = fontforge end
 
-dofile(resolvers.findfile("font-otp.lua","tex"))
+--~ dofile(resolvers.findfile("font-otp.lua","tex"))
 dofile(resolvers.findfile("font-syn.lua","tex"))
 dofile(resolvers.findfile("font-mis.lua","tex"))
 

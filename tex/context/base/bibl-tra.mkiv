@@ -1285,9 +1285,9 @@
 %D
 %D The final task is looping over that list until a match is found.
 
-\def\gotobiblink#1[#2]{\doifreferencefoundelse{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{\unknownreference{#2}}}
-\def\atbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{\unknownreference{#1}}}
-\def\inbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{\unknownreference{#1}}}
+\def\gotobiblink#1[#2]{\doifreferencefoundelse{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{}}
+\def\atbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{}}
+\def\inbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{}}
 
 %D \macros{bibauthoryearref,bibauthoryearsref,bibauthorref,bibyearref}
 %D
@@ -1388,7 +1388,7 @@
   {\bibinsertrefsep
    \doifbibreferencefoundelse{#1}
      {\gotobiblink{\bibgetvars{#1}}[#1]}
-	 {\unknownreference{#1}}}
+	 {}}
 
 \def\bibserialref[#1]%
   {\bibalternative\v!left
@@ -1399,7 +1399,7 @@
   {\bibinsertrefsep
    \doifbibreferencefoundelse{#1}
      {\gotobiblink{\bibgetvarn{#1}}[#1]}
-     {\unknownreference{#1}}}
+     {}}
 
 \def\bibkeyref[#1]%
   {\bibalternative\v!left
@@ -1426,7 +1426,7 @@
   {\bibinsertrefsep
    \doifbibreferencefoundelse{#1}
      {\expanded{\bibgotoDOI{#1}{\bibgetvaro{#1}}}}
-     {\unknownreference{#1}}}
+     {}}
 
 \def\biburlref[#1]%
   {\bibalternative\v!left
@@ -1442,7 +1442,7 @@
   {\bibinsertrefsep
    \doifbibreferencefoundelse{#1}
      {\expanded{\bibgotoURL{#1}{\bibgetvaru{#1}}}}
-     {\unknownreference{#1}}}
+     {}}
 
 \def\bibtyperef[#1]%
   {\bibalternative\v!left
@@ -1453,7 +1453,7 @@
   {\bibinsertrefsep
    \doifbibreferencefoundelse{#1}
      {\gotobiblink{\bibgetvart{#1}}[#1]}
-     {\unknownreference{#1}}}
+     {}}
 
 \def\bibpageref[#1]%
   {\bibalternative\v!left
@@ -1475,7 +1475,7 @@
   {\bibinsertrefsep
    \doifbibreferencefoundelse{#1}
      {\dotypesetapublication{#1}}
-     {\unknownreference{#1}}}
+     {}}
 
 \let\bibnoneref\nocite
 
@@ -1531,7 +1531,7 @@
      \setuppublications[\c!refcommand=num]%
      \cite[#1]%
      \endgroup}
-    {\unknownreference{#1}}}
+    {}}
 
 %D And some defaults are loaded from bibl-apa:
 

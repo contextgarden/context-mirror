@@ -13,8 +13,13 @@ local texwrite, texset, texsprint, ctxcatcodes = tex.write, tex.set, tex.sprint,
 local sind, cosd = math.sind, math.cosd
 local lpegmatch = lpeg.match
 
-local pdfreserveobject   = pdf and pdf.reserveobj   or function() return 1 end -- for testing
-local pdfimmediateobject = pdf and pdf.immediateobj or function() return 2 end -- for testing
+--~ local pdfreserveobject   = pdf and pdf.reserveobj   or function() return 1 end -- for testing
+--~ local pdfimmediateobject = pdf and pdf.immediateobj or function() return 2 end -- for testing
+
+local pdfreserveobject   = pdf.reserveobj
+local pdfimmediateobject = pdf.immediateobj
+local pdfdeferredobject  = pdf.obj
+local pdfreferenceobject = pdf.refobj
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
@@ -363,26 +368,18 @@ function lpdf.reserveannotation()
     return pdfreserveobject("annot")
 end
 
-lpdf.immediateobject = pdf.immediateobj
-lpdf.object          = pdf.obj          -- the table interface, todo: auto attr() and so
-lpdf.pagereference   = pdf.pageref or tex.pdfpageref
+lpdf.immediateobject    = pdfimmediateobject
+lpdf.object             = pdfdeferredobject          -- the table interface, todo: auto attr() and so
+lpdf.deferredobject     = pdfdeferredobject
+lpdf.referenceobject    = pdfreferenceobject
+lpdf.pagereference      = pdf.pageref or tex.pdfpageref
+lpdf.registerannotation = pdf.registerannot
 
---~ local pdfobj = pdf.obj
-
---~ function lpdf.object(t)
---~     local attr = t.attr
---~     if type(attr) == "function" then
---~         t.attr = attr()
---~     end
---~     local str = t.string
---~     if str then
---~         t.string = tostring(str)
---~     end
---~     if not t.type then
---~         t.type = "raw"
---~     end
---~     pdfobj(t)
---~ end
+function lpdf.delayedobject(data)
+    local n = pdfdeferredobject(data)
+    pdfreferenceobject(n)
+    return n
+end
 
 function lpdf.flushobject(name,data)
     if data then
@@ -440,7 +437,6 @@ function lpdf.shareobjectreference(content)
     end
     return r
 end
-
 
 --~ local d = lpdf.dictionary()
 --~ local e = lpdf.dictionary { ["e"] = "abc", x = lpdf.dictionary { ["f"] = "ABC" }  }
@@ -737,3 +733,30 @@ end
 -- lpdf.addtoinfo("ConTeXt.Time",    os.date("%Y.%m.%d %H:%M")) -- :%S
 -- lpdf.addtoinfo("ConTeXt.Jobname", tex.jobname)
 -- lpdf.addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
+
+if not pdfreferenceobject then
+
+    local delayed = { }
+
+    local function flush()
+        local n = 0
+        for k,v in next, delayed do
+            pdfimmediateobject(k,v)
+            n = n + 1
+        end
+        if trace_objects then
+            report_backends("%s objects flushed",n)
+        end
+        delayed = { }
+    end
+
+    lpdf.registerdocumentfinalizer(flush,3,"objects") -- so we need a final flush too
+    lpdf.registerpagefinalizer    (flush,3,"objects") -- somehow this lags behind .. I need to look into that some day
+
+    function lpdf.delayedobject(data)
+        local n = pdfreserveobject()
+        delayed[n] = data
+        return n
+    end
+
+end

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/09/10 23:45:11
+-- merge date  : 09/13/10 11:06:52
 
 do -- begin closure to overcome local limits and interference
 
@@ -3417,6 +3417,10 @@ local lastfont = nil
 -- base mode) but it complicates vf building where the new characters
 -- demand this data .. solution: functions that access them
 
+-- we don't need the glyph data as we can use the description .. but we will
+-- have to wait till we can access the internal tfm table efficiently in which
+-- case characters will become a metatable afterwards
+
 function tfm.cleanuptable(tfmdata) -- we need a cleanup callback, now we miss the last one
     if tfm.autocleanup then  -- ok, we can hook this into everyshipout or so ... todo
         if tfmdata.type == 'virtual' or tfmdata.virtualized then
@@ -5462,13 +5466,13 @@ local ioflush = io.flush
 
 local allocate = utilities.storage.allocate
 
-local trace_private    = false  trackers.register("otf.private",      function(v) trace_private      = v end)
-local trace_loading    = false  trackers.register("otf.loading",      function(v) trace_loading      = v end)
-local trace_features   = false  trackers.register("otf.features",     function(v) trace_features     = v end)
-local trace_dynamics   = false  trackers.register("otf.dynamics",     function(v) trace_dynamics     = v end)
-local trace_sequences  = false  trackers.register("otf.sequences",    function(v) trace_sequences    = v end)
-local trace_math       = false  trackers.register("otf.math",         function(v) trace_math         = v end)
-local trace_defining   = false  trackers.register("fonts.defining",   function(v) trace_defining     = v end)
+local trace_private    = false  trackers.register("otf.private",    function(v) trace_private      = v end)
+local trace_loading    = false  trackers.register("otf.loading",    function(v) trace_loading      = v end)
+local trace_features   = false  trackers.register("otf.features",   function(v) trace_features     = v end)
+local trace_dynamics   = false  trackers.register("otf.dynamics",   function(v) trace_dynamics     = v end)
+local trace_sequences  = false  trackers.register("otf.sequences",  function(v) trace_sequences    = v end)
+local trace_math       = false  trackers.register("otf.math",       function(v) trace_math         = v end)
+local trace_defining   = false  trackers.register("fonts.defining", function(v) trace_defining     = v end)
 
 local report_otf = logs.new("load otf")
 
@@ -6017,6 +6021,9 @@ local function somecopy(old) -- fast one
         return { }
     end
 end
+
+-- not setting italic_correction and class (when nil) during
+-- table cronstruction can save some mem
 
 actions["prepare glyphs"] = function(data,filename,raw)
     -- we can also move the names to data.luatex.names which might

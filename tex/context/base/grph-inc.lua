@@ -122,6 +122,13 @@ figures.defaultdepth   = 0
 figures.nofprocessed   = 0
 figures.preferquality  = true -- quality over location
 
+figures.existers    = allocate()   local existers    = figures.existers
+figures.checkers    = allocate()   local checkers    = figures.checkers
+figures.includers   = allocate()   local includers   = figures.includers
+figures.converters  = allocate()   local converters  = figures.converters
+figures.identifiers = allocate()   local identifiers = figures.identifiers
+figures.programs    = allocate()   local programs    = figures.programs
+
 figures.localpaths = allocate {
     ".", "..", "../.."
 }
@@ -356,11 +363,11 @@ local function register(askedname,specification)
             if not newformat or newformat == "" then
                 newformat = defaultformat
             end
-            local converter = (newformat ~= format) and converters[format]
             if trace_conversion then
                 report_graphics("checking conversion of '%s': old format '%s', new format '%s', conversion '%s'",
                     askedname,format,newformat,conversion or "default")
             end
+            local converter = (newformat ~= format) and converters[format]
             if converter then
                 if converter[newformat] then
                     converter = converter[newformat]
@@ -372,6 +379,8 @@ local function register(askedname,specification)
                         newformat = defaultformat
                     end
                 end
+            elseif trace_conversion then
+                report_graphics("no converter for '%s' -> '%s'",format,newformat)
             end
             if converter then
                 local oldname = specification.fullname
@@ -398,7 +407,7 @@ local function register(askedname,specification)
                 newname = file.collapse_path(newname)
                 local oldtime = lfs.attributes(oldname,'modification') or 0
                 local newtime = lfs.attributes(newname,'modification') or 0
-                if oldtime > newtime then
+                if newtime == 0 or oldtime > newtime then
                     if trace_conversion then
                         report_graphics("converting '%s' from '%s' to '%s'",askedname,format,newformat)
                     end
@@ -656,24 +665,6 @@ local function locate(request) -- name, format, cache
 end
 
 -- -- -- plugins -- -- --
-
-figures.existers    = allocate()
-local existers      = figures.existers
-
-figures.checkers    = allocate()
-local checkers      = figures.checkers
-
-figures.includers   = allocate()
-local includers     = figures.includers
-
-figures.converters  = allocate()
-local converters    = figures.converters
-
-figures.identifiers = allocate()
-local identifiers   = figures.identifiers
-
-figures.programs    = allocate()
-local programs      = figures.programs
 
 function identifiers.default(data)
     local dr, du, ds = data.request, data.used, data.status
@@ -990,9 +981,11 @@ programs.inkscape = {
 
 function svgconverter.pdf(oldname,newname)
     local inkscape = programs.inkscape
+    local oldname = dir.expandname(oldname)
+    local newname = dir.expandname(newname)
     runprogram (
-        '%s "%s" --export-pdf="%s" %s',
-        inkscape.command, oldname, newname, makeoptions(inkscape.options)
+        '%s "%s" %s -A "%s"',
+        inkscape.command, oldname, makeoptions(inkscape.options), newname
     )
 end
 

@@ -207,22 +207,8 @@
 \def\TitlePage   {\doTitlePage\TitleFont\relax}
 \def\SubTitlePage{\doTitlePage\TitleFont\SubTitleFont}
 
+\long\def\StartTitlePage   #1\StopTitlePage   {\TitlePage   {#1}}
+\long\def\StartSubTitlePage#1\StopSubTitlePage{\SubTitlePage{#1}}
+
 \doifnotmode{demo} {\endinput}
 
-\starttext
-
-\StartTitlePage
-bla\\bla bla\\bla
-\StopTitlePage
-
-\StartRemark {Bla Bla}
-    Bla Bla Bla. \FlushStep
-    Bla Bla Bla. \FlushStep
-\StopRemark
-
-\StartRemark {Bla Bla}
-    Bla Bla Bla. \FlushStep
-    Bla Bla Bla. \FlushStep
-\StopRemark
-
-\stoptext

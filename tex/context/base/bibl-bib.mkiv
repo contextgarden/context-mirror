@@ -822,17 +822,17 @@
 \def\inbibtexlink#1#2%
   {\doifreferencefoundelse{\bibtexrefprefix#1}
      {\goto{#2}[\bibtexrefprefix#1]}
-     {!#1!\unknownreference{#1}}}
+     {!#1!}}
 
 \def\dobibtexgotolink#1#2%
   {\doifreferencefoundelse{\bibtexrefprefix#1}
      {\goto{#2}[\bibtexrefprefix#1]}
-     {!#1!\unknownreference{#1}}}
+     {!#1!}}
 
 \def\dobibattexlink#1#2%
   {\doifreferencefoundelse{\bibtexrefprefix#1}
     {\at{#2}[\bibtexrefprefix#1]}
-    {!#1!\unknownreference{#1}}}
+    {!#1!}}
 
 \def\dobibtexurllink#1#2%
   {\expanded{\useURL[bibtex:url:#1][#2]}%
@@ -940,7 +940,7 @@
 %      \setuppublications[\c!refcommand=num]%
 %      \cite[#1]%
 %      \endgroup}
-%     {\unknownreference{#1}}}
+%     {}}
 
 % compress years
 % andtext namesep
