@@ -66,10 +66,11 @@ end
 
 -- todo: cache them
 
-function url.hashed(str)
+function url.hashed(str) -- not yet ok (/test?test)
     local s = url.split(str)
     local somescheme = s[1] ~= ""
-    if not somescheme then
+    local somequery  = s[4] ~= ""
+    if not somescheme and not somequery then
         return {
             scheme    = "file",
             authority = "",
@@ -91,6 +92,8 @@ function url.hashed(str)
         }
     end
 end
+
+--~ table.print(url.hashed("/test?test"))
 
 function url.hasscheme(str)
     return url.split(str)[1] ~= ""

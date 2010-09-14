@@ -301,6 +301,7 @@ function scripts.webserver.run(configuration)
             local hashed = url.hashed(fullurl)
             local query = url.query(hashed.query)
             local filename = hashed.path
+--~ table.print(hashed)
             if filename then
                 filename = socket.url.unescape(filename)
                 logs.simple("requested action: %s",filename)

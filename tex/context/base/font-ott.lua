@@ -12,6 +12,7 @@ local is_boolean = string.is_boolean
 
 local allocate = utilities.storage.allocate
 
+fonts          = fonts or { } -- needed for font server
 local fonts    = fonts
 fonts.otf      = fonts.otf or { }
 local otf      = fonts.otf
