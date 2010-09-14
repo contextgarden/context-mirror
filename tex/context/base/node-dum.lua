@@ -58,40 +58,38 @@ end
 nodes.handlers.protectglyphs   = node.protect_glyphs
 nodes.handlers.unprotectglyphs = node.unprotect_glyphs
 
-nodes.characters = {
-    handler = function (head)
-        local usedfonts, done, prevfont = { }, false, nil
-        for n in traverse_id(glyph_code,head) do
-            local font = n.font
-            if font ~= prevfont then
-                prevfont = font
-                local used = usedfonts[font]
-                if not used then
-                    local tfmdata = fontdata[font]
-                    if tfmdata then
-                        local shared = tfmdata.shared -- we need to check shared, only when same features
-                        if shared then
-                            local processors = shared.processes
-                            if processors and #processors > 0 then
-                                usedfonts[font] = processors
-                                done = true
-                            end
+function nodes.handlers.characters(head)
+    local usedfonts, done, prevfont = { }, false, nil
+    for n in traverse_id(glyph_code,head) do
+        local font = n.font
+        if font ~= prevfont then
+            prevfont = font
+            local used = usedfonts[font]
+            if not used then
+                local tfmdata = fontdata[font]
+                if tfmdata then
+                    local shared = tfmdata.shared -- we need to check shared, only when same features
+                    if shared then
+                        local processors = shared.processes
+                        if processors and #processors > 0 then
+                            usedfonts[font] = processors
+                            done = true
                         end
                     end
                 end
             end
         end
-        if done then
-            for font, processors in next, usedfonts do
-                for i=1,#processors do
-                    local h, d = processors[i](head,font,0)
-                    head, done = h or head, done or d
-                end
+    end
+    if done then
+        for font, processors in next, usedfonts do
+            for i=1,#processors do
+                local h, d = processors[i](head,font,0)
+                head, done = h or head, done or d
             end
         end
-        return head, true
     end
-}
+    return head, true
+end
 
 -- helper
 

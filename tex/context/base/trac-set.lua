@@ -74,6 +74,9 @@ local function set(t,what,newvalue)
     if type(what) == "string" then
         what = settings_to_hash(what) -- inefficient but ok
     end
+    if type(what) ~= "table" then
+        return
+    end
     for w, value in next, what do
         if value == "" then
             value = newvalue

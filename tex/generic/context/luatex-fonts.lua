@@ -8,6 +8,10 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 
 -- We keep track of load time by storing the current time. That
 -- way we cannot be accused of slowing down luading too much.
+--
+-- Please don't update to this version without proper testing. It
+-- might be that this version lags behind stock context and the only
+-- formal release takes place around tex live code freeze.
 
 local starttime = os.gettimeofday()
 
@@ -116,6 +120,7 @@ else
     loadmodule('font-otn.lua')
     loadmodule('font-ota.lua')
     loadmodule('font-otc.lua')
+    loadmodule('font-agl.lua')
     loadmodule('font-def.lua')
     loadmodule('font-xtx.lua')
     loadmodule('font-dum.lua')

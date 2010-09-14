@@ -442,7 +442,9 @@ function otf.load(filename,format,sub,featurefile)
                     collectgarbage("collect")
                 end
                 stoptiming(data)
-                report_otf("preprocessing and caching took %s seconds",elapsedtime(data))
+                if elapsedtime then -- not in generic
+                    report_otf("preprocessing and caching took %s seconds",elapsedtime(data))
+                end
                 data = containers.read(otf.cache, hash) -- this frees the old table and load the sparse one
                 if cleanup > 1 then
                     collectgarbage("collect")

@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['font-map'] = {
 
 local allocate = utilities.storage.allocate
 
+fonts.enc = fonts.enc or { }
 local enc = fonts.enc
 local agl = { }
 enc.agl   = agl
