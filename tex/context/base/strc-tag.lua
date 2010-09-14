@@ -149,9 +149,10 @@ local userdata = { }
 tags.userdata = userdata
 
 function tags.start(tag,specification)
-    local label = specification.label
-    local detail = specification.detail
-    local user = specification.userdata
+    local label, detail, user
+    if specification then
+        label, detail, user = specification.label, specification.detail, specification.userdata
+    end
     if not enabled then
         codeinjections.enabletags()
         enabled = true

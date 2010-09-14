@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/13/10 11:06:52
+-- merge date  : 09/14/10 10:28:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -4112,6 +4112,7 @@ local is_boolean = string.is_boolean
 
 local allocate = utilities.storage.allocate
 
+fonts          = fonts or { } -- needed for font server
 local fonts    = fonts
 fonts.otf      = fonts.otf or { }
 local otf      = fonts.otf

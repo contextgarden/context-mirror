@@ -7,22 +7,4 @@
    intent=ISOcoated_v2_eci.icc,
    profile=sRGB.icc] % test for default colorspace
 
-\showlayoutcomponents \nopdfcompression
-
-\setupinteraction
-  [title=TITLE,
-   subtitle=SUBTITLE,
-   author=AUTHOR,
-   keyword={{KEYWORD1, KEYWORD2}, KEYWORD3}]
-
-\definecolor[cmykblack][k=1]
-\definecolor[transtest][r=1,g=1,a=1,t=.5]
-
-\startTEXpage
-    \blackrule[width=1cm,height=1cm,color=cyan]
-    \blackrule[width=1cm,height=1cm,color=magenta]
-    \blackrule[width=1cm,height=1cm,color=yellow]
-    \blackrule[width=1cm,height=1cm,color=cmykblack]
-    \blackrule[width=1cm,height=1cm,color=transtest]\hskip-.5cm
-    \blackrule[width=1cm,height=1cm,color=transtest]
-\stopTEXpage
+\input pdf-x-common.mkiv

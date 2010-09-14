@@ -1,0 +1,103 @@
+%D \module
+%D   [       file=back-exp,
+%D        version=2010.08.22,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=XML export,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Backend Macros / XML export}
+
+\registerctxluafile{back-exp.lua}{}
+
+%D This is an experimental exporter and a logical follow up on tagging. The
+%D exporter assumes a properly tagged document. Some elements get a couple
+%D of attributes becaus eitherwise rendering information would get lost. In
+%D general we assume that when the \XML\ is converted to \HTML\ some stylesheet
+%D is applied anyway.
+
+\unprotect
+
+% we can replace this by a more generic attributeset mechanism where we bind
+% to any element (needed anyway, see userdata thingies)
+
+\definesystemattribute[taggedrows]   [public]
+\definesystemattribute[taggedcolumns][public]
+\definesystemattribute[taggedalign]  [public]
+\definesystemattribute[taggedpar]    [public]
+\definesystemattribute[taggedpacked] [public]
+\definesystemattribute[taggedsymbol] [public]
+\definesystemattribute[taggedinsert] [public]
+
+\def\setelementexporttag
+  {\dotripleargument\dosetelementexporttag}
+
+\def\dosetelementexporttag[#1][#2][#3]%
+  {\ifthirdargument
+     \ctxlua{structures.tags.settagproperty("#1","#2", "#3")}%
+   \else\ifsecondargument
+     \ctxlua{structures.tags.settagproperty("#1","export", "#2")}%
+   \fi\fi}
+
+\newcount\tagparcounter
+
+\let\dotagsetparcounter\relax
+
+\appendtoks
+    \dotagsetparcounter
+\to \everypar
+
+\appendtoks
+    \dotagsetparcounter
+\to \neverypar
+
+\appendtoks
+    \dotagsetparcounter
+\to \everytabulatepar % tricky, maybe this should be neverypar
+
+\appendtoks
+    \def\dotagnoftablecolumns{\attribute\taggedcolumnsattribute\!!counta}%
+    \def\dotagnoftablerows   {\attribute\taggedrowsattribute   \!!countb}%
+\to \everyenableelements
+
+\appendtoks
+    \def\dotagTABLEalign{\attribute\taggedalignattribute\raggedstatus}%
+    \def\dotagTABLEcell {\char\zerocount}%
+\to \everyenableelements
+
+\appendtoks
+    \def\dotagtabulatealign{\attribute\taggedalignattribute\ifcase\tabulatealign\attributeunsetvalue\or\plusthree\or\plusone\or\plustwo\or\attributeunsetvalue\fi}%
+\to \everyenableelements
+
+\appendtoks
+    \def\dotagsetparcounter{\global\advance\tagparcounter\plusone\attribute\taggedparattribute\tagparcounter}%
+\to \everyenableelements
+
+\appendtoks
+    \def\dotagsetitemize{\ctxlua{structures.tags.setitemgroup(\ifconditional\packlistitem true\else false\fi,"\currentitemsymbol")}}%
+\to \everyenableelements
+
+\appendtoks
+    \def\dotagsetdescriptiontag{\ctxlua{structures.tags.setdescriptionid("\currentdescription",\currentdescriptionnumberentry)}}%
+\to \everyenableelements
+
+\appendtoks
+    \def\dotagsetnotesymbol{\ctxlua{structures.tags.setdescriptionid("\currentnote",\currentnotenumber)}}%
+\to \everyenableelements
+
+% The action: \setubackend[export=yes] % or filename
+
+\def\c!export{export}
+
+\appendtoks
+    \doifsomething{\backendparameter\c!export}
+      {\setupstructure[\c!state=\v!start]%
+       \enabledirectives[backend.export=\backendparameter\c!export]}%
+\to \everysetupbackend
+
+\protect \endinput

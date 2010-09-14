@@ -25,7 +25,7 @@ local texworkininame = "texworks.ini"
 function scripts.texworks.start(indeed)
     local workname = (os.type == "windows" and "texworks.exe") or "texworks"
     local fullname = nil
-    local binpaths = file.split_path(os.getenv("PATH")) or file.split_path(os.getenv("path"))
+    local binpaths = file.splitpath(os.getenv("PATH")) or file.splitpath(os.getenv("path"))
     local usedsignal = texworkssignal
     local datapath = resolvers.findfile(usedsignal,"other text files") or ""
     if datapath ~= "" then

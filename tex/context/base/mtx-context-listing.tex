@@ -69,6 +69,12 @@
         lfg  = "lua",
     }
 
+    local pattern = document.arguments.pattern
+
+    if pattern then
+        document.files = dir.glob(pattern)
+    end
+
     if #document.files > 0 then
         if document.arguments.sort then
             table.sort(document.files)
@@ -85,10 +91,16 @@
                 end
                 context.page()
                 context.setupfootertexts( -- return true: we need to keep this entry
-                    { function() context.detokenize(file.basename(filename)) return true end },
+                    { function() context.detokenize(pattern and filename or file.basename(filename)) return true end },
                     { function() context.pagenumber() return true end }
                 )
-                context.setuptyping { option = types[pretty] or pretty }
+                if pretty then
+                    if type(pretty) ~= "string" or pretty == "" then
+                        context.setuptyping { option = "color" }
+                    else
+                        context.setuptyping { option = types[pretty] or pretty }
+                    end
+                end
                 context.typefile(filename)
             end
         end

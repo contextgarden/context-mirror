@@ -11,7 +11,7 @@ dofile(resolvers.findfile("trac-lmx.lua","tex"))
 dofile(resolvers.findfile("font-ott.lua","tex"))
 dofile(resolvers.findfile("font-syn.lua","tex"))
 dofile(resolvers.findfile("font-mis.lua","tex"))
-dofile(resolvers.findfile("font-otp.lua","tex"))
+--~ dofile(resolvers.findfile("font-otp.lua","tex"))
 
 local format, gsub, concat, match, find = string.format, string.gsub, table.concat, string.match, string.find
 
