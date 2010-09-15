@@ -4281,6 +4281,9 @@ local function set(t,what,newvalue)
     if type(what) == "string" then
         what = settings_to_hash(what) -- inefficient but ok
     end
+    if type(what) ~= "table" then
+        return
+    end
     for w, value in next, what do
         if value == "" then
             value = newvalue
@@ -12515,8 +12518,10 @@ local function set_by_tag(tag,key,value,default,persistent)
                 end
                 dkey, hkey = post, key
             end
-            if type(value) == nil then
-                value = value or default
+            if value == nil then
+                value = default
+            elseif value == false then
+                -- special case
             elseif persistent then
                 value = value or d[dkey] or default
             else
@@ -12539,13 +12544,17 @@ local function get_by_tag(tag,key,default)
         if d then
             for k in gmatch(key,"[^%.]+") do
                 local dk = d[k]
-                if dk then
+                if dk ~= nil then
                     d = dk
                 else
                     return default
                 end
             end
-            return d or default
+            if d == false then
+                return false
+            else
+                return d or default
+            end
         end
     end
 end

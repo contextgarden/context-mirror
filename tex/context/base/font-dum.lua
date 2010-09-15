@@ -25,7 +25,7 @@ fonts.tfm.readers.afm      = nil
 fonts.definers            = fonts.definers or { }
 fonts.definers.specifiers = fonts.definers.specifiers or { }
 
-fonts.definers.specifiers.specifiers.colonizedpreference = "name" -- is "file" in context
+fonts.definers.specifiers.colonizedpreference = "name" -- is "file" in context
 
 function fonts.definers.getspecification(str)
     return "", str, "", ":", str
@@ -262,7 +262,7 @@ end
 
 -- needed (different in context)
 
-function otf.scriptandlanguage(tfmdata)
+function fonts.otf.scriptandlanguage(tfmdata)
     return tfmdata.script, tfmdata.language
 end
 

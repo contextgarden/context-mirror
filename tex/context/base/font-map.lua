@@ -165,7 +165,7 @@ fonts.map.addtounicode = function(data,filename)
         cidcodes = usedmap.unicodes
     end
     uparser = makenameparser()
-    local aglmap = fonts.enc.agl and fonts.enc.unicodes -- to name
+    local aglmap = fonts.enc and fonts.enc.agl -- to name
     for index, glyph in next, data.glyphs do
         local name, unic = glyph.name, glyph.unicode or -1 -- play safe
         if unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then

@@ -12,6 +12,7 @@ statistics = {
     register      = dummyfunction,
     starttiming   = dummyfunction,
     stoptiming    = dummyfunction,
+    elapsedtime   = nil,
 }
 directives = {
     register      = dummyfunction,
@@ -41,8 +42,10 @@ callbacks = {
     register = function(n,f) return callback.register(n,f) end,
 }
 utilities = {
-    allocate = function(t) return t end,
-    mark     = function(t) return t end,
+    storage = {
+        allocate = function(t) return t or { } end,
+        mark     = function(t) return t or { } end,
+    },
 }
 
 -- we need to cheat a bit here

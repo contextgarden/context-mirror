@@ -1,0 +1,207 @@
+%D \module
+%D   [       file=m-database,
+%D        version=2010.08.04,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Database Thingies,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA
+%D ]
+
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D For Mojca.
+
+\registerctxluafile{m-database}{1.001}
+
+\unprotect
+
+\ifdefined \installparameterhandler \else \input mult-aux.mkiv \fi
+
+\def\c!first       {first}
+\def\c!last        {last}
+\def\c!quotechar   {quotechar}
+\def\c!commentchar {commentchar}
+
+\def\????db{@@@@db}
+
+\installparameterhandler  \????db {database}
+\installcommandhandler    \????db {database} \????db % #3 == defaultroot
+\installattributehandler  \????db {database}
+
+\appendtoks
+  \getparameters
+    [\????db\currentdatabase]
+    [\c!separator={,},
+     \c!quotechar=,
+     \c!commentchar=,
+     \c!setups=,
+     \c!before=,
+     \c!after=,
+     \c!first=,
+     \c!last=,
+     \c!left=,
+     \c!right=,
+     \c!command=]%
+\to \everypresetdatabase
+
+% \let\currentdatabase\empty \the\everypresetdatabase % or just:
+
+\setupdatabase
+  [\c!separator={,}]
+
+\def\doprocessdatabase#1#2#3%
+  {\edef\currentdatabasetype{#1}%
+   \edef\currentdatabase    {#2}%
+   \edef\currentdatabasename{#3}%
+   \ifx\currentdatabasename\empty
+     \let\currentdatabasename\currentdatabase
+     \let\currentdatabase\empty
+   \fi
+   \ctxlua{buffers.database.process {
+     name        = "\currentdatabase",
+     type        = "\currentdatabasetype",
+     database    = "\currentdatabasename",
+     separator   = \!!bs\databaseparameter\c!separator  \!!es,
+     quotechar   = \!!bs\databaseparameter\c!quotechar  \!!es,
+     commentchar = \!!bs\databaseparameter\c!commentchar\!!es,
+     setups      = \!!bs\databaseparameter\c!setups     \!!es,
+     before      = \!!bs\databaseparameter\c!before     \!!es,
+     after       = \!!bs\databaseparameter\c!after      \!!es,
+     first       = \!!bs\databaseparameter\c!first      \!!es,
+     last        = \!!bs\databaseparameter\c!last       \!!es,
+     left        = \!!bs\databaseparameter\c!left       \!!es,
+     right       = \!!bs\databaseparameter\c!right      \!!es,
+     command     = \!!bs\databaseparameter\c!command    \!!es,
+  }}}
+
+\unexpanded\def\processdatabasebuffer{\dodoubleempty\doprocessdatabasebuffer}
+\unexpanded\def\processdatabasefile  {\dodoubleempty\doprocessdatabasefile  }
+
+\def\doprocessdatabasebuffer[#1][#2]{\doprocessdatabase{buffer}{#1}{#2}}
+\def\doprocessdatabasefile  [#1][#2]{\doprocessdatabase{file}  {#1}{#2}}
+
+% for old times sake:
+
+\def\defineseparatedlist {\dodoubleempty\dodefineseparatedlist }
+\def\processseparatedfile{\dodoubleempty\doprocessseparatedfile}
+
+\def\dodefineseparatedlist[#1][#2]%
+  {\definedatabase[#1][#2]%
+   \setuvalue{\e!start#1}{\dostartbuffer[#1][\e!start#1][\e!stop#1]}%
+   \setuvalue{\e!stop#1}{\processdatabasebuffer[#1][#1]}}
+
+\def\processseparatedfile[#1][#2]%
+  {\processdatabasefile[#1][#2]}
+
+\protect
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+% m-database.txt
+%
+% 1,2,3,4,5
+% 6,7,8,"9,x",0
+% A,B,C,D
+% E,,F
+% G
+
+\definedatabase[test]
+
+\setupdatabase
+  [test]
+  [separator={,},
+   quotechar={"},
+   before={<},
+   after={>},
+   first={\endgraf[},
+   last={]\endgraf},
+   left={ (},
+   right={) },
+   command=\ruledhbox]
+
+\startbuffer[testbuffer]
+1,2,3,4,5
+6,7,8,"9,x",0
+A,B,C,D
+E,,F
+G
+\stopbuffer
+
+\processdatabasebuffer[test][testbuffer]
+
+\processdatabasefile[test][m-database.txt]
+
+\defineseparatedlist
+  [CSV]
+  [separator={,},
+   before=\bTABLE,after=\eTABLE,
+   first=\bTR,last=\eTR,
+   left=\bTD,right=\eTD]
+
+% \startseparatedlist[CSV]
+% a,b,c
+% d,e,f
+% \stopseparatedlist
+
+\startCSV
+a,b,c
+d,e,f
+\stopCSV
+
+\defineseparatedlist
+  [CSV]
+  [separator={,+},quotechar={"'},commentchar=\letterhash,
+   before={\starttabulate[|l|l|l|]},after=\stoptabulate,
+   first=\NC,last=\NR,
+   left=,right=\NC]
+
+\startCSV
+#a,b,"c,d"
+a,b,"c,d"
+a,'b,c',d
+"a,b"+c+d
+\stopCSV
+
+\defineseparatedlist
+  [CSV]
+  [separator=space,
+   first=\NC,last=\NR,
+   left=,right=\NC,
+   before={\starttabulate[|l|l|l|]},after=\stoptabulate]
+
+\startCSV
+a b c
+d e f
+\stopCSV
+
+\startsetups csv:unix
+  \catcode`\#=\commentcatcode
+\stopsetups
+
+\defineseparatedlist
+  [CSV]
+  [setups=csv:unix,
+   separator={,},
+   first=\NC,last=\NR,
+   left=,right=\NC,
+   before={\starttabulate[|l|l|l|]},after=\stoptabulate]
+
+\processseparatedfile[CSV][m-database.txt]
+
+\defineseparatedlist[CSV]
+  [separator=comma,
+   before=\bTABLE, after=\eTABLE,
+   first=\bTR, last=\eTR,
+   left=\bTD, right=\eTD]
+
+\startCSV
+a,b,c,č
+d,e,f,š
+\stopCSV
+
+\stoptext
