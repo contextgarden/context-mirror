@@ -653,7 +653,14 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                 if var then
                     var.reference = ri
                     if not var.outer and var.inner then
-                        local d = defined[prefix][var.inner] or defined[""][var.inner]
+--~                         local d = defined[prefix]
+--~                         d = d and d[var.inner]
+--~                         if not d then
+--~                             d = defined[""]
+--~                             d = d and d[var.inner]
+--~                         end
+                        local d = defined[prefix] or defined[""]
+                        d = d and d[var.inner]
                         if d then
                             resolve(prefix,d[2],var.arguments,set) -- args can be nil
                         else

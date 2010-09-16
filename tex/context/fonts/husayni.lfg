@@ -1,4 +1,4 @@
-local yes = "yes", "node"
+local yes = "yes"
 
 local basics = {
     analyze  = yes,
