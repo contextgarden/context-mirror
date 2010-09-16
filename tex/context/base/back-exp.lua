@@ -827,8 +827,10 @@ local function stopexport()
     end
 end
 
+-- encoding='utf-8'
+
 local preamble = [[
-<?xml standalone='yes' encoding='utf-8' ?>
+<?xml version='1.0' standalone='yes' ?>
 
 <!-- input filename   : %- 17s -->
 <!-- processing date  : %- 17s -->

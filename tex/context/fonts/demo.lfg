@@ -1,0 +1,37 @@
+local yes = "yes"
+
+local default = {
+    analyze  = yes,
+    mode     = "node",
+    language = "dflt",
+    script   = "dflt",
+}
+
+local smallcaps = {
+    smcp = yes,
+}
+
+return {
+    name = "demo",
+    version = "1.00",
+    comment = "An example of goodies.",
+    author = "Hans Hagen",
+    featuresets = {
+        default = {
+            default,
+        },
+        smallcaps = {
+            default, smallcaps,
+        },
+    },
+    colorschemes = {
+        default = {
+            [1] = {
+                "one", "three", "five", "seven", "nine",
+            },
+            [2] = {
+                "two", "four", "six", "eight", "ten",
+            },
+        }
+    }
+}
