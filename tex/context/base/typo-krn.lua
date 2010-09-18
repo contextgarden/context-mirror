@@ -28,7 +28,7 @@ local texattribute       = tex.attribute
 local nodepool           = nodes.pool
 local tasks              = nodes.tasks
 
-local new_gluespec       = nodepool.glue_spec
+local new_gluespec       = nodepool.gluespec
 local new_kern           = nodepool.kern
 
 local nodecodes          = nodes.nodecodes

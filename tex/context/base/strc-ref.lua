@@ -632,6 +632,8 @@ end
 
 -- t.special t.operation t.arguments t.outer t.inner
 
+local prefixsplitter = lpeg.splitat(":")
+
 local function resolve(prefix,reference,args,set) -- we start with prefix,reference
     texcount.referencehastexstate = 0
     if reference and reference ~= "" then
@@ -653,13 +655,19 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                 if var then
                     var.reference = ri
                     if not var.outer and var.inner then
---~                         local d = defined[prefix]
---~                         d = d and d[var.inner]
+                        local d = defined[prefix]
+                        d = d and d[var.inner]
 --~                         if not d then
---~                             d = defined[""]
---~                             d = d and d[var.inner]
+--~                             local p, r = lpegmatch(prefixsplitter,var.inner)
+--~                             d = defined[p]
+--~                             d = d and d[r]
+--~ print(p,r,d)
+--~ table.print(defined)
 --~                         end
-                        local d = defined[prefix] or defined[""]
+                        if not d then
+                            d = defined[""]
+                            d = d and d[var.inner]
+                        end
                         d = d and d[var.inner]
                         if d then
                             resolve(prefix,d[2],var.arguments,set) -- args can be nil
