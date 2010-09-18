@@ -113,13 +113,13 @@ local function basicsort(sort_a,sort_b)
     end
 end
 
-function comparers.basic(a,b)
+function comparers.basic(a,b) -- trace ea and eb
     local ea, eb = a.split, b.split
     local na, nb = #ea, #eb
     if na == 0 and nb == 0 then
         -- simple variant (single word)
         local result = basicsort(ea.e,eb.e)
-        return result == 0 and result or basicsort(ea.m,eb.m)
+        return (result == 0 and result) or basicsort(ea.m,eb.m)
     else
         -- complex variant, used in register (multiple words)
         local result = 0
@@ -199,7 +199,9 @@ function splitters.utf(str)
         e[n] = currentmappings[ec] or mc
         m[n] = mc
     end
-    return { s = s, e = e, m = m }
+    local t = { s = s, e = e, m = m }
+--~     table.print(t)
+    return t
 end
 
 -- we can use one array instead (sort of like in mkii)
@@ -263,7 +265,7 @@ function sorters.sort(entries,cmp)
     if trace_tests then
         sort(entries,function(a,b)
             local r = cmp(a,b)
-            report_sorters("%s %s %s",pack(a),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(b))
+            report_sorters("%s %s %s (%s)",pack(a),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(b),r)
             return r == -1
         end)
         local s

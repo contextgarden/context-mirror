@@ -44,6 +44,7 @@ local replaced_whatever =  {
 }
 
 scripts.patterns.list = {
+    { "af",  "hyph-af",            "afrikaans" },
  -- { "ar",  "hyph-ar",            "arabic" },
  -- { "as",  "hyph-as",            "assamese" },
     { "bg",  "hyph-bg",            "bulgarian" },
