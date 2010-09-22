@@ -12,6 +12,9 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- Because we need to look ahead we now always build a tree (this was optional in
 -- the beginning). The extra overhead in the frontend is neglectable.
 
+-- We can consider replacing attributes by the hash entry ... slower in resolving but it's still
+-- quite okay.
+
 local nodecodes       = nodes.nodecodes
 local traverse_nodes  = node.traverse
 local hlist_code      = nodecodes.hlist
@@ -383,6 +386,8 @@ function extras.itemgroup(element,detail,n,fulltag,di)
                     local tg = ddi.tg
                     if tg == "itemtag" or tg == "itemcontent" then
                         local hash = attributehash[ddi.fulltag]
+--~ table.print(attributehash)
+--~ print(ddi.fulltag,hash)
                         if hash then
                             local v = hash.packed
                             if v and v == 1 then
@@ -392,8 +397,8 @@ function extras.itemgroup(element,detail,n,fulltag,di)
                             if v then
                                 handle:write(" symbol='",snames[v],"'")
                             end
+                            return
                         end
-                        return
                     end
                 end
             end

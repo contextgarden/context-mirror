@@ -1429,6 +1429,12 @@ end
 --~
 --~ names.old_to_new = allocate(table.swapped(names.new_to_old))
 
+--~ todo:
+--~
+--~ blacklisted = {
+--~     ["cmr10.ttf"] = "completely messed up",
+--~ }
+
 function names.exists(name)
     local found = false
     local list = filters.list

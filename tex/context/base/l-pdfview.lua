@@ -35,6 +35,12 @@ pdfview.METHOD = "MTX_PDFVIEW_METHOD"
 pdfview.method = resolvers.getenv(pdfview.METHOD) or 'default'
 pdfview.method = (opencalls[pdfview.method] and pdfview.method) or 'default'
 
+function pdfview.setmethod(method)
+    if method and opencalls[method] then
+        pdfview.method = method
+    end
+end
+
 function pdfview.methods()
     return concat(table.sortedkeys(opencalls), " ")
 end
