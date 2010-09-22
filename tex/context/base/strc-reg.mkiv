@@ -122,6 +122,7 @@
    \c!pagesegments=2:2,
    \c!file=\jobname,
   %\c!deeptextcommand=, % undefined by default !
+   \c!method=, % no default as we have them in the module, maybe some day in lang-*
    \s!language=\currentmainlanguage]%
 
 %D Definition:
@@ -443,6 +444,8 @@
 
 %D Rendering:
 
+% todo: c!language ipv s!language
+
 \let\utilityregisterlength\!!zerocount
 
 \def\determineregistercharacteristics
@@ -454,6 +457,7 @@
    \setupregister[\currentregister][#2]%
    \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxlua{structures.registers.analyze('\currentregister',{
         language  = "\registerparameter\s!language",
+        method    = "\registerparameter\c!method",
         compress  = "\registerparameter\c!compress",
         criterium = "\registerparameter\c!criterium",
    })}}}% brrr
@@ -487,6 +491,7 @@
        \startpacked[\v!blank]%
          \ctxlua{structures.registers.process('\currentregister',{
             language  = "\registerparameter\s!language",
+            method    = "\registerparameter\c!method",
             compress  = "\registerparameter\c!compress",
             criterium = "\registerparameter\c!criterium",
          },

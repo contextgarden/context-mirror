@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/18/10 12:08:38
+-- merge date  : 09/22/10 09:35:53
 
 do -- begin closure to overcome local limits and interference
 
@@ -736,7 +736,7 @@ local function sortedkeys(tab)
             elseif tkey == "number" then
             --  if kind == 1 then kind = 3 else kind = 2 end
                 kind = (kind == 1 and 3) or 2
-            else
+            else -- if tkey then
                 kind = 3
             end
         end
@@ -752,7 +752,9 @@ end
 local function sortedhashkeys(tab) -- fast one
     local srt = { }
     for key,_ in next, tab do
-        srt[#srt+1] = key
+        if key then
+            srt[#srt+1] = key
+        end
     end
     sort(srt)
     return srt

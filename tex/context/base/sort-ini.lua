@@ -15,8 +15,7 @@ local utf = unicode.utf8
 local gsub, rep, sort, concat = string.gsub, string.rep, table.sort, table.concat
 local utfbyte, utfchar = utf.byte, utf.char
 local utfcharacters, utfvalues, strcharacters = string.utfcharacters, string.utfvalues, string.characters
-local chardata = characters.data
-local next, type, tonumber = next, type, tonumber
+local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
 
 local allocate = utilities.storage.allocate
 
@@ -24,48 +23,157 @@ local trace_tests = false  trackers.register("sorters.tests", function(v) trace_
 
 local report_sorters = logs.new("sorters")
 
-local comparers          = { }
-local splitters          = { }
-local entries            = allocate()
-local mappings           = allocate()
-local replacements       = allocate()
-local ignoredoffset      = 0x10000
-local replacementoffset  = 0x10000
-local digitsoffset       = 0x20000
-local digitsmaximum      = 0xFFFFF
+local comparers         = { }
+local splitters         = { }
+local definitions       = allocate()
+local tracers           = allocate()
+local ignoredoffset     = 0x10000 -- frozen
+local replacementoffset = 0x10000 -- frozen
+local digitsoffset      = 0x20000 -- frozen
+local digitsmaximum     = 0xFFFFF -- frozen
+
+local lccodes     = characters.lccodes
+local shcodes     = characters.shcodes
+local lcchars     = characters.lcchars
+local shchars     = characters.shchars
+
+local variables   = interfaces.variables
 
 sorters = {
-    comparers          = comparers,
-    splitters          = splitters,
-    entries            = entries,
-    mappings           = mappings,
-    replacements       = replacements,
-    constants          = {
+    comparers   = comparers,
+    splitters   = splitters,
+    definitions = definitions,
+    tracers     = tracers,
+    constants   = {
         ignoredoffset     = ignoredoffset,
         replacementoffset = replacementoffset,
         digitsoffset      = digitsoffset,
         digitsmaximum     = digitsmaximum,
+        defaultlanguage   = variables.default,
+        defaultmethod     = variables.before,
     }
 }
 
-local ssorters = sorters
+local sorters   = sorters
+local constants = sorters.constants
 
-local language, defaultlanguage = 'en', 'en'
+local data, language, method
+local replacements, mappings, entries, orders, lower, upper
 
-local currentreplacements, currentmappings, currententries = { }, { }, { }
-
-function sorters.setlanguage(lang)
-    language = lang or language or defaultlanguage
-    currentreplacements = replacements[language] or replacements[defaultlanguage] or { }
-    currentmappings     = mappings    [language] or mappings    [defaultlanguage] or { }
-    currententries      = entries     [language] or entries     [defaultlanguage] or { }
-    if trace_tests then
-        report_sorters("setting language '%s'",language)
+local mte = {
+    __index = function(t,k)
+        local el
+        if k then
+            local l = lower[k] or lcchars[k]
+            el = rawget(t,l)
+        end
+        if not el then
+            local l = shchars[k]
+            if l and l ~= k then
+                el = rawget(t,l)
+                if not el then
+                    l = lower[k] or lcchars[l]
+                    if l then
+                        el = rawget(t,l)
+                    end
+                end
+            end
+            el = el or k
+        end
+    --  rawset(t,k,el) also make a copy?
+        return el
     end
-    return currentreplacements, currentmappings, currententries
+}
+
+local function preparetables(data)
+    local orders, lower, method, mappings = data.orders, data.lower, data.method, { }
+    for i=1,#orders do
+        local oi = orders[i]
+        mappings[oi] = 2*i
+    end
+    local delta = (method == variables.before or method == variables.first or method == variables.last) and -1 or 1
+    local mtm = {
+        __index = function(t,k)
+            local n
+            if k then
+                local l = lower[k] or lcchars[k]
+                if l then
+                    local ml = rawget(t,l)
+                    if ml then
+                        n = ml + delta -- first
+                    end
+                end
+                if not n then
+                    l = shchars[k]
+                    if l and l ~= k then
+                        local ml = rawget(t,l)
+                        if ml then
+                            n = ml -- first or last
+                        else
+                            l = lower[l] or lcchars[l]
+                            if l then
+                                local ml = rawget(t,l)
+                                if ml then
+                                    n = ml + delta
+                                end
+                            end
+                        end
+                    end
+                end
+                if not n then
+                    n = 0
+                end
+            else
+                n = 0
+            end
+            rawset(t,k,n)
+            return n
+        end
+    }
+    data.mappings = mappings
+    setmetatable(data.entries,mte)
+    setmetatable(data.mappings,mtm)
+    return mappings
 end
 
--- maybe inline code if it's too slow
+local function update() -- prepare parent chains, needed when new languages are added
+    for language, data in next, definitions do
+        local parent = data.parent or "default"
+        if language ~= "default" then
+            setmetatable(data,{ __index = definitions[parent] or definitions.default })
+        end
+        data.language = language
+        data.parent   = parent
+        data.mappings = { } -- free temp data
+    end
+end
+
+local function setlanguage(l,m)
+    language = (l ~= "" and l) or constants.defaultlanguage
+    data = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
+    method  = (m ~= "" and m) or data.method or constants.defaultmethod
+    if trace_tests then
+        report_sorters("setting language '%s', method '%s'",language,method)
+    end
+    data.method  = method
+    replacements = data.replacements
+    entries      = data.entries
+    orders       = data.orders
+    lower        = data.lower
+    upper        = data.upper
+    mappings     = preparetables(data)
+    return data
+end
+
+function sorters.update()
+    update()
+    setlanguage(language,method) -- resync current language and method
+end
+
+function sorters.setlanguage(language,method)
+    update()
+    setlanguage(language,method) -- new language and method
+end
 
 local function basicsort(sort_a,sort_b)
     if not sort_a or not sort_b then
@@ -118,16 +226,27 @@ function comparers.basic(a,b) -- trace ea and eb
     local na, nb = #ea, #eb
     if na == 0 and nb == 0 then
         -- simple variant (single word)
-        local result = basicsort(ea.e,eb.e)
-        return (result == 0 and result) or basicsort(ea.m,eb.m)
+        local result = basicsort(ea.m,eb.m)
+        if result == 0 then
+            result = basicsort(ea.c,eb.c)
+        end
+        if result == 0 then
+            result = basicsort(ea.u,eb.u)
+        end
+        return result
     else
         -- complex variant, used in register (multiple words)
         local result = 0
         for i=1,nb < na and nb or na do
             local eai, ebi = ea[i], eb[i]
-            result = basicsort(eai.e,ebi.e)
             if result == 0 then
-                result = basicsort(eai.m,ebi.m) -- only needed it there are m's
+                result = basicsort(eai.m,ebi.m)
+            end
+            if result == 0 then
+                result = basicsort(eai.c,ebi.c)
+            end
+            if result == 0 then
+                result = basicsort(eai.u,ebi.u)
             end
             if result ~= 0 then
                 break
@@ -177,58 +296,49 @@ local function firstofsplit(entry)
         split = split.s
     end
     local entry = split and split[1] or ""
-    return entry, currententries[entry] or "\000"
+    return entry, entries[entry] or "\000"
 end
 
 sorters.firstofsplit = firstofsplit
 
--- beware, numbers get spaces in front
-
-function splitters.utf(str)
-    if #currentreplacements > 0 then
-        for k=1,#currentreplacements do
-            local v = currentreplacements[k]
+function splitters.utf(str) -- we could append m and u but this is cleaner, s is for tracing
+    if #replacements > 0 then
+        -- todo make an lpeg for this
+        for k=1,#replacements do
+            local v = replacements[k]
             str = gsub(str,v[1],v[2])
         end
     end
-    local s, e, m, n = { }, { }, { }, 0
-    for sc in utfcharacters(str) do -- maybe an lpeg
-        local ec, mc = currententries[sc], currentmappings[sc] or utfbyte(sc)
-        n = n + 1
-        s[n] = sc
-        e[n] = currentmappings[ec] or mc
-        m[n] = mc
+    local s, u, m, c, n = { }, { }, { }, { }, 0
+    if method == variables.last then
+        for sc in utfcharacters(str) do
+            local b = utfbyte(sc)
+            local l = lower[sc]
+            l = l and utfbyte(l) or lccodes[b]
+            if l ~= b then l = l - 1 end -- brrrr, can clash
+            n = n + 1
+            s[n], u[n], m[n], c[n] = sc, b, l, mappings[sc]
+        end
+    elseif method == variables.first then
+        for sc in utfcharacters(str) do
+            local b = utfbyte(sc)
+            local l = lower[sc]
+            l = l and utfbyte(l) or lccodes[b]
+            if l ~= b then l = l + 1 end -- brrrr, can clash
+            n = n + 1
+            s[n], u[n], m[n], c[n] = sc, b, l, mappings[sc]
+        end
+    else
+        for sc in utfcharacters(str) do
+            local b = utfbyte(sc)
+            n = n + 1
+            s[n], u[n], m[n], c[n] = sc, b, mappings[sc], b
+        end
     end
-    local t = { s = s, e = e, m = m }
---~     table.print(t)
+    local t = { s = s, m = m, u = u, c = c }
+ -- table.print(t)
     return t
 end
-
--- we can use one array instead (sort of like in mkii)
--- but for the moment we do it this way as it is more
--- handy for tracing
-
--- function splitters.utf(str)
---     if #currentreplacements > 0 then
---         for k=1,#currentreplacements do
---             local v = currentreplacements[k]
---             str = gsub(str,v[1],v[2])
---         end
---     end
---     local s, e, m, n = { }, { }, { }, 0
---     for sc in utfcharacters(str) do -- maybe an lpeg
---         local ec, mc = currententries[sc], currentmappings[sc] or utfbyte(sc)
---         n = n + 1
---         ec = currentmappings[ec] or mc
---         s[n] = sc
---         e[n] = ec
---         if ec ~= mc then
---             n = n + 1
---             e[n] = mc
---         end
---     end
---     return { s = s, e = e }
--- end
 
 function table.remap(t)
     local tt = { }
@@ -284,47 +394,5 @@ function sorters.sort(entries,cmp)
         sort(entries,function(a,b)
             return cmp(a,b) == -1
         end)
-    end
-end
-
--- some day we can have a characters.upper and characters.lower
-
-function sorters.adduppercasereplacements(what)
-    local rep, new = replacements[what], { }
-    for i=1,#rep do
-        local r = rep[i]
-        local u = chardata[utfbyte(r[1])].uccode
-        if u then
-            new[utfchar(u)] = r[2]
-        end
-    end
-    for k, v in next, new do
-        rep[k] = v
-    end
-end
-
-function sorters.adduppercaseentries(what)
-    local ent, new = entries[what], { }
-    for k, v in next, ent do
-        local u = chardata[utfbyte(k)].uccode
-        if u then
-            new[utfchar(u)] = v
-        end
-    end
-    for k, v in next, new do
-        ent[k] = v
-    end
-end
-
-function sorters.adduppercasemappings(what,offset)
-    local map, new, offset = mappings[what], { }, offset or 0
-    for k, v in next, map do
-        local u = chardata[utfbyte(k)].uccode
-        if u then
-            new[utfchar(u)] = v + offset
-        end
-    end
-    for k, v in next, new do
-        map[k] = v
     end
 end

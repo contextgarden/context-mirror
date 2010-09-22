@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 }
 
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
-local lpegmatch = lpeg.match
+local lpegmatch, lpegP, lpegCs = lpeg.match, lpeg.P, lpeg.Cs
 local texsprint, texwrite, texcount, texsetcount = tex.sprint, tex.write, tex.count, tex.setcount
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
@@ -80,7 +80,7 @@ function references.registerfinalizer(func) -- we could use a token register ins
     finalizers[#finalizers+1] = func
 end
 
-local function initializer()
+local function initializer() -- can we use a tobesaved as metatable for collected?
     tobesaved = mark(references.tobesaved)
     collected = mark(references.collected)
     for i=1,#initializers do
@@ -163,9 +163,9 @@ end
 
 local result = { }
 
-local lparent, rparent, lbrace, rbrace, dcolon, backslash = lpeg.P("("), lpeg.P(")"), lpeg.P("{"), lpeg.P("}"), lpeg.P("::"), lpeg.P("\\")
+local lparent, rparent, lbrace, rbrace, dcolon, backslash = lpegP("("), lpegP(")"), lpegP("{"), lpegP("}"), lpegP("::"), lpegP("\\")
 
-local reset     = lpeg.P("") / function()  result = { } end
+local reset     = lpegP("") / function()  result = { } end
 local b_token   = backslash  / function(s) result.has_tex = true return s end
 
 local o_token   = 1 - rparent - rbrace - lparent - lbrace
@@ -174,11 +174,11 @@ local s_token   = 1 - lparent - lbrace - lparent - lbrace
 local i_token   = 1 - lparent - lbrace
 local f_token   = 1 - lparent - lbrace - dcolon
 
-local outer     =         (f_token          )^1  / function (s) result.outer     = s   end
-local operation = lpeg.Cs((b_token + o_token)^1) / function (s) result.operation = s   end
-local arguments = lpeg.Cs((b_token + a_token)^0) / function (s) result.arguments = s   end
-local special   =         (s_token          )^1  / function (s) result.special   = s   end
-local inner     =         (i_token          )^1  / function (s) result.inner     = s   end
+local outer     =        (f_token          )^1  / function (s) result.outer     = s   end
+local operation = lpegCs((b_token + o_token)^1) / function (s) result.operation = s   end
+local arguments = lpegCs((b_token + a_token)^0) / function (s) result.arguments = s   end
+local special   =        (s_token          )^1  / function (s) result.special   = s   end
+local inner     =        (i_token          )^1  / function (s) result.inner     = s   end
 
 local outer_reference    = (outer * dcolon)^0
 
@@ -244,6 +244,7 @@ function references.resolvers.reference(var)
 end
 
 local function register_from_lists(collected,derived)
+    local g = derived[""] if not g then g = { } derived[""] = g end -- global
     for i=1,#collected do
         local entry = collected[i]
         local m, r = entry.metadata, entry.references
@@ -258,7 +259,8 @@ local function register_from_lists(collected,derived)
                         if trace_referencing then
                             report_references("list entry %s provides %s reference '%s' on realpage %s",i,kind,s,realpage)
                         end
-                        d[s] = t -- share them
+                        d[s] = d[s] or t -- share them
+                        g[s] = g[s] or t -- first wins
                     end
                 end
             end
@@ -632,7 +634,9 @@ end
 
 -- t.special t.operation t.arguments t.outer t.inner
 
-local prefixsplitter = lpeg.splitat(":")
+-- to what extend do we check the non prefixed variant
+
+local strict = false
 
 local function resolve(prefix,reference,args,set) -- we start with prefix,reference
     texcount.referencehastexstate = 0
@@ -646,29 +650,39 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
         local r = settings_to_array(reference)
         for i=1,#r do
             local ri = r[i]
-            local dp = defined[prefix] or defined[""]
-            local d = dp[ri]
+            local d
+            if strict then
+                d = defined[prefix] or defined[""]
+                d = d and d[ri]
+            else
+                d = defined[prefix]
+                d = d and d[ri]
+                if not d then
+                    d = defined[""]
+                    d = d and d[ri]
+                end
+            end
             if d then
                 resolve(prefix,d[2],nil,set)
             else
                 local var = lpegmatch(scanner,ri)
                 if var then
                     var.reference = ri
-                    if not var.outer and var.inner then
-                        local d = defined[prefix]
-                        d = d and d[var.inner]
---~                         if not d then
---~                             local p, r = lpegmatch(prefixsplitter,var.inner)
---~                             d = defined[p]
---~                             d = d and d[r]
---~ print(p,r,d)
---~ table.print(defined)
---~                         end
-                        if not d then
-                            d = defined[""]
-                            d = d and d[var.inner]
+                    local vo, vi = var.outer, var.inner
+                    if not vo and vi then
+                        -- to be checked
+                        if strict then
+                            d = defined[prefix] or defined[""]
+                            d = d and d[vi]
+                        else
+                            d = defined[prefix]
+                            d = d and d[vi]
+                            if not d then
+                                d = defined[""]
+                                d = d and d[vi]
+                            end
                         end
-                        d = d and d[var.inner]
+                        --
                         if d then
                             resolve(prefix,d[2],var.arguments,set) -- args can be nil
                         else
@@ -690,6 +704,7 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
         if set.has_tex then
             texcount.referencehastexstate = 1
         end
+--~ table.print(set)
         return set
     else
         return { }
@@ -745,6 +760,8 @@ end
 --~         special, operation, argument = "file", fo[1], inner -- maybe more is needed
 --~     end
 --~ end
+
+local prefixsplitter = lpegCs(lpegP((1-lpegP(":"))^1 * lpegP(":"))) * lpegCs(lpegP(1)^1)
 
 local function identify(prefix,reference)
     local set = resolve(prefix,reference)
@@ -899,47 +916,91 @@ local function identify(prefix,reference)
                     var.error = "unknown inner or special"
                 end
             else
-                -- inner
---~                 local i = tobesaved[prefix]
-                local i = collected[prefix]
-                i = i and i[inner]
+                -- inner ... we could move the prefix logic into the parser so that we have 'm for each entry
+                -- foo:bar -> foo == prefix (first we try the global one)
+                -- -:bar   -> ignore prefix
+                local p, i = prefix, nil
+                local splitprefix, splitinner = lpegmatch(prefixsplitter,inner)
+                -- these are taken from other anonymous references
+                if splitprefix and splitinner then
+                    if splitprefix == "-" then
+                        i = collected[""]
+                        i = i and i[splitinner]
+                        if i then
+                            p = ""
+                        end
+                    else
+                        i = collected[splitprefix]
+                        i = i and i[splitinner]
+                        if i then
+                            p = splitprefix
+                        end
+                    end
+                else
+                    i = collected[prefix]
+                    i = i and i[inner]
+                    if i then
+                        p = prefix
+                    end
+                end
                 if i then
                     var.i = { "reference", i }
                     references.resolvers.reference(var)
                     var.kind = "inner"
-                    var.p = prefix
+                    var.p = p
                 else
-                    i = derived[prefix]
-                    i = i and i[inner]
+                    -- these are taken from other data structures (like lists)
+--~ print("!!!!!!!!!!!!!!",splitprefix,splitinner)
+--~ table.print(derived)
+                    if splitprefix and splitinner then
+                        if splitprefix == "-" then
+                            i = derived[""]
+                            i = i and i[splitinner]
+                            if i then
+                                p = ""
+                            end
+                        else
+                            i = derived[splitprefix]
+                            i = i and i[splitinner]
+                            if i then
+                                p = splitprefix
+                            end
+                        end
+                    else
+                        i = derived[prefix]
+                        i = i and i[inner]
+                        if i then
+                            p = prefix
+                        end
+                    end
+                    if not i and prefix ~= "" then
+                        i = derived[""]
+                        i = i and i[inner]
+                        if i then
+                            p = ""
+                        end
+                    end
                     if i then
                         var.kind = "inner"
                         var.i = i
                         references.resolvers[i[1]](var)
-                        var.p = prefix
+                        var.p = p
                     else
-                        i = collected[prefix]
-                        i = i and i[inner]
-                        if i then
-                            var.kind = "inner"
-                            var.i = { "reference", i }
-                            references.resolvers.reference(var)
-                            var.p = prefix
+                        -- no prefixes here
+                        local s = specials[inner]
+                        if s then
+                            var.kind = "special"
                         else
-                            local s = specials[inner]
-                            if s then
-                                var.kind = "special"
+                            i = (collected[""] and collected[""][inner]) or
+                                (derived  [""] and derived  [""][inner]) or
+                                (tobesaved[""] and tobesaved[""][inner])
+                            if i then
+                                var.kind = "inner"
+                                var.i = { "reference", i }
+                                references.resolvers.reference(var)
+                                var.p = ""
                             else
-                                i = (collected[""] and collected[""][inner]) or
-                                    (derived  [""] and derived  [""][inner]) or
-                                    (tobesaved[""] and tobesaved[""][inner])
-                                if i then
-                                    var.kind = "inner"
-                                    var.i = { "reference", i }
-                                    references.resolvers.reference(var)
-                                    var.p = ""
-                                else
-                                    var.error = "unknown inner or special"
-                                end
+                                var.error = "unknown inner or special"
                             end
                         end
                     end

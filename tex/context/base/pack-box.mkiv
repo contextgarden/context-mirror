@@ -497,9 +497,14 @@
    \fi
    \advance\scratchdimen\@@bgvoffset
    \xdef\bleedheight{\the\scratchdimen}%
+   %
+   \bgroup
    \hsize\bleedwidth
    \vsize\bleedheight
-   \setbox\scratchbox\hbox{#2}%
+   \global\setbox\globalscratchbox\hbox{#2}%
+   \egroup
+   \setbox\scratchbox\box\globalscratchbox
+   %
    \doif\@@bgpage\v!yes
      {\setbox\scratchbox\topskippedbox{\box\scratchbox}}%
    \setbox\scratchbox\hbox to \@@bgwidth

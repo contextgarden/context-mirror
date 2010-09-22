@@ -153,6 +153,9 @@ end
 
 function buffers.range(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
     local first, last = first or 1, last or #lines
+    if last < 0 then
+        last = #lines + last
+    end
     local what = settings_to_array(range)
     local r_first, r_last = what[1], what[2]
     local f, l = tonumber(r_first), tonumber(r_last)
@@ -172,6 +175,9 @@ function buffers.range(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
     end
     if r_last then
         if l then
+            if l < 0 then
+                l = #lines + l
+            end
             if find(r_last,"^[%+]") then -- 1,+3
                 l = first + l
             end
