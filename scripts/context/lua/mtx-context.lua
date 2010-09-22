@@ -637,14 +637,16 @@ end
 
 local pdfview -- delayed loading
 
-function scripts.context.openpdf(name)
+function scripts.context.openpdf(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
+    pdfview.setmethod(method)
     logs.simple("pdfview methods: %s, current method: %s, MTX_PDFVIEW_METHOD=%s",pdfview.methods(),pdfview.method,os.getenv(pdfview.METHOD) or "<unset>")
     pdfview.open(file.replacesuffix(name,"pdf"))
 end
 
-function scripts.context.closepdf(name)
+function scripts.context.closepdf(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
+    pdfview.setmethod(method)
     pdfview.close(file.replacesuffix(name,"pdf"))
 end
 
@@ -764,10 +766,11 @@ function scripts.context.run(ctxdata,filename)
                             resultname = nil
                         end
                         --
-                        if environment.argument("autopdf") or environment.argument("closepdf") then
-                            scripts.context.closepdf(filename)
+                        local pdfview = environment.argument("autopdf") or environment.argument("closepdf")
+                        if pdfview then
+                            scripts.context.closepdf(filename,pdfview)
                             if resultname then
-                                scripts.context.closepdf(resultname)
+                                scripts.context.closepdf(resultname,pdfview)
                             end
                         end
                         --
@@ -880,8 +883,9 @@ function scripts.context.run(ctxdata,filename)
                             scripts.context.purge_job(resultname,true)
                         end
                         --
-                        if environment.argument("autopdf") then
-                            scripts.context.openpdf(resultname or filename)
+                        local pdfview = environment.argument("autopdf")
+                        if pdfview then
+                            scripts.context.openpdf(resultname or filename,pdfview)
                         end
                         --
                         if environment.argument("timing") then

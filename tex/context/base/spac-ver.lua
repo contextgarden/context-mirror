@@ -732,7 +732,8 @@ local free_glue_node = free_node
 local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8
 
 --~ local function free_glue_node(n)
---~     free_node(n.spec)
+--~  -- free_node(n.spec)
+--~     print(n)
 --~     free_node(n)
 --~ end
 

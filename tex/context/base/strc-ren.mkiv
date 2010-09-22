@@ -478,7 +478,7 @@
       \begstrut % use one \strut here!
       \dontleavehmode % in case there is no strut, else side effects with llap
       \ifconditional\structureheadshownumber % \ifheadnumbercontent
-        \llap{\hbox to 5em{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
+        \llap{\hbox{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
         % maybe better:
         % \inleftmargin{\hbox{\hss{#1}\hskip\localheadskip}}%
       \fi

@@ -209,14 +209,24 @@ end
 
 trackers.register("system.showcodes", nodes.showcodes)
 
-local hlist_code   = nodecodes.hlist
-local vlist_code   = nodecodes.vlist
+local hlist_code = nodecodes.hlist
+local vlist_code = nodecodes.vlist
+local glue_code  = nodecodes.glue
 
 function nodes.remove(head, current, free_too)
    local t = current
    head, current = remove_node(head,current)
    if t then
         if free_too then
+--~ if t.id == glue_code then
+--~     local s = t.spec
+--~ print(t)
+--~ print(s,s and s.writable)
+--~     if s and s.writable then
+--~         free_node(s)
+--~     end
+--~     t.spec = nil
+--~ end
             free_node(t)
             t = nil
         else

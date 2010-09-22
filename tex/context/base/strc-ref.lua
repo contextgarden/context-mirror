@@ -763,6 +763,9 @@ end
 
 local prefixsplitter = lpegCs(lpegP((1-lpegP(":"))^1 * lpegP(":"))) * lpegCs(lpegP(1)^1)
 
+
+-- todo: add lots of tracing here
+
 local function identify(prefix,reference)
     local set = resolve(prefix,reference)
     local bug = false
@@ -936,11 +939,20 @@ local function identify(prefix,reference)
                             p = splitprefix
                         end
                     end
-                else
+                end
+                -- todo: strict here
+                if not i then
                     i = collected[prefix]
                     i = i and i[inner]
                     if i then
                         p = prefix
+                    end
+                end
+                if not i and prefix ~= "" then
+                    i = collected[""]
+                    i = i and i[inner]
+                    if i then
+                        p = ""
                     end
                 end
                 if i then
@@ -966,7 +978,8 @@ local function identify(prefix,reference)
                                 p = splitprefix
                             end
                         end
-                    else
+                    end
+                    if not i then
                         i = derived[prefix]
                         i = i and i[inner]
                         if i then
