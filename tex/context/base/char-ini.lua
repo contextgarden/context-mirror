@@ -10,8 +10,8 @@ local tex = tex
 local utf = unicode.utf8
 
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
-local concat = table.concat
-local next, tonumber = next, tonumber
+local concat, unpack = table.concat, table.unpack
+local next, tonumber, type = next, tonumber, type
 local texsprint, texprint = tex.sprint, tex.print
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
 local texsetlccode, texsetuccode, texsetsfcode, texsetcatcode  = tex.setlccode, tex.setuccode, tex.setsfcode, tex.setcatcode
@@ -771,29 +771,64 @@ characters.activeoffset = 0x10000 -- there will be remapped in that byte range
 
 -- some day we will make a table
 
-characters.lccodes     = allocate()  local lccodes     = characters.lccodes     -- lazy table
-characters.uccodes     = allocate()  local uccodes     = characters.uccodes     -- lazy table
-characters.shcodes     = allocate()  local shcodes     = characters.shcodes     -- lazy table
+local function utfstring(s)
+    if type(s) == "table" then
+        return concat { utfchar( unpack(s) ) }
+    else
+        return utfchar(s)
+    end
+end
 
-characters.lcchars     = allocate()  local lcchars     = characters.lcchars     -- lazy table
-characters.ucchars     = allocate()  local ucchars     = characters.ucchars     -- lazy table
-characters.shchars     = allocate()  local shchars     = characters.shchars     -- lazy table
+utf.string = utf.string or utfstring
 
-characters.lccharcodes = allocate()  local lccharcodes = characters.lccharcodes -- lazy table
-characters.uccharcodes = allocate()  local uccharcodes = characters.uccharcodes -- lazy table
-characters.shcharcodes = allocate()  local shcharcodes = characters.shcharcodes -- lazy table
+characters.lccodes = allocate()  local lccodes = characters.lccodes -- lazy table
+characters.uccodes = allocate()  local uccodes = characters.uccodes -- lazy table
+characters.shcodes = allocate()  local shcodes = characters.shcodes -- lazy table
 
-setmetatable(lccodes,     { __index = function(t,u) if u then local c = data[u]          c = c and c.lccode                      or u t[u] = c return c end end } )
-setmetatable(uccodes,     { __index = function(t,u) if u then local c = data[u]          c = c and c.uccode                      or u t[u] = c return c end end } )
-setmetatable(shcodes,     { __index = function(t,u) if u then local c = data[u]          c = c and c.shcode                      or u t[u] = c return c end end } )
+setmetatable(lccodes, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode or u t[u] = c return c end end } )
+setmetatable(uccodes, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode or u t[u] = c return c end end } )
+setmetatable(shcodes, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode or u t[u] = c return c end end } )
 
-setmetatable(lcchars,     { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.lccode c = c and utfchar(c) or u t[u] = c return c end end } )
-setmetatable(ucchars,     { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.uccode c = c and utfchar(c) or u t[u] = c return c end end } )
-setmetatable(shchars,     { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.shcode c = c and utfchar(c) or u t[u] = c return c end end } )
+characters.lcchars = allocate()  local lcchars = characters.lcchars -- lazy table
+characters.ucchars = allocate()  local ucchars = characters.ucchars -- lazy table
+characters.shchars = allocate()  local shchars = characters.shchars -- lazy table
 
-setmetatable(lccharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.lccode                      or u t[u] = c return c end end } )
-setmetatable(uccharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.uccode                      or u t[u] = c return c end end } )
-setmetatable(shcharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.shcode                      or u t[u] = c return c end end } )
+setmetatable(lcchars, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.lccode c = c and utfchar  (c) or u t[u] = c return c end end } )
+setmetatable(ucchars, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.uccode c = c and utfchar  (c) or u t[u] = c return c end end } )
+setmetatable(shchars, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.shcode c = c and utfstring(c) or u t[u] = c return c end end } )
+
+--~ characters.lccharcodes = allocate()  local lccharcodes = characters.lccharcodes -- lazy table
+--~ characters.uccharcodes = allocate()  local uccharcodes = characters.uccharcodes -- lazy table
+--~ characters.shcharcodes = allocate()  local shcharcodes = characters.shcharcodes -- lazy table
+
+--~ setmetatable(lccharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.lccode or u t[u] = c return c end end } )
+--~ setmetatable(uccharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.uccode or u t[u] = c return c end end } )
+--~ setmetatable(shcharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.shcode or u t[u] = c return c end end } )
+
+characters.specialchars = allocate()  local specialchars = characters.specialchars -- lazy table
+
+setmetatable(specialchars, { __index = function(t,u)
+    if u then
+        local c = data[utfbyte(u)]
+        local s = c and c.specials
+        if s then
+            local t = { }
+            for i=2,#s do
+                local c = data[s[i]]
+                if is_letter[c.category] then
+                    t[#t+1] = c
+                end
+            end
+            c = concat(t)
+            t[u] = c
+            return c
+        else
+            t[u] = u
+            return u
+        end
+    end
+end } )
+
 
 function characters.lower(str)
     local new = { }

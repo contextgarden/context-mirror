@@ -329,7 +329,7 @@ end
 function otf.load(filename,format,sub,featurefile)
     local name = file.basename(file.removesuffix(filename))
     local attr = lfs.attributes(filename)
-    local size, time = attr.size or 0, attr.modification or 0
+    local size, time = attr and attr.size or 0, attr and attr.modification or 0
     if featurefile then
         name = name .. "@" .. file.removesuffix(file.basename(featurefile))
     end

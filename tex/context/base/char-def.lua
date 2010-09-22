@@ -2330,7 +2330,7 @@ characters.data={
   description="LATIN SMALL LETTER AE",
   direction="l",
   linebreak="al",
-  shcode={ 0x00E6, 0x00EA },
+  shcode={ 0x0061, 0x0065 },
   uccode=0x00C6,
   unicodeslot=0x00E6,
  },

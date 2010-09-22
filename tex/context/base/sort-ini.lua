@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['sort-ini'] = {
 -- todo: cleanup splits (in other modules)
 
 local utf = unicode.utf8
-local gsub, rep, sort, concat = string.gsub, string.rep, table.sort, table.concat
+local gsub, rep, sub, sort, concat = string.gsub, string.rep, string.sub, table.sort, table.concat
 local utfbyte, utfchar = utf.byte, utf.char
 local utfcharacters, utfvalues, strcharacters = string.utfcharacters, string.utfvalues, string.characters
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
@@ -32,12 +32,11 @@ local replacementoffset = 0x10000 -- frozen
 local digitsoffset      = 0x20000 -- frozen
 local digitsmaximum     = 0xFFFFF -- frozen
 
-local lccodes     = characters.lccodes
-local shcodes     = characters.shcodes
-local lcchars     = characters.lcchars
-local shchars     = characters.shchars
+local lccodes           = characters.lccodes
+local lcchars           = characters.lcchars
+local shchars           = characters.shchars
 
-local variables   = interfaces.variables
+local variables         = interfaces.variables
 
 sorters = {
     comparers   = comparers,
@@ -60,6 +59,8 @@ local constants = sorters.constants
 local data, language, method
 local replacements, mappings, entries, orders, lower, upper
 
+--~ local shchars = characters.specialchars -- no specials for AE and ae
+
 local mte = {
     __index = function(t,k)
         local el
@@ -70,6 +71,9 @@ local mte = {
         if not el then
             local l = shchars[k]
             if l and l ~= k then
+                if #l > 0 then
+                    l = sub(l,1,1)
+                end
                 el = rawget(t,l)
                 if not el then
                     l = lower[k] or lcchars[l]
@@ -89,42 +93,81 @@ local function preparetables(data)
     local orders, lower, method, mappings = data.orders, data.lower, data.method, { }
     for i=1,#orders do
         local oi = orders[i]
-        mappings[oi] = 2*i
+        mappings[oi] = { 2*i }
     end
     local delta = (method == variables.before or method == variables.first or method == variables.last) and -1 or 1
     local mtm = {
         __index = function(t,k)
             local n
             if k then
+                if trace_tests then
+                    report_sorters("simplifing character 0x%04x %s",utfbyte(k),k)
+                end
                 local l = lower[k] or lcchars[k]
                 if l then
+                    if trace_tests then
+                        report_sorters(" 1 lower: %s",l)
+                    end
                     local ml = rawget(t,l)
                     if ml then
-                        n = ml + delta -- first
-                    end
-                end
-                if not n then
-                    l = shchars[k]
-                    if l and l ~= k then
-                        local ml = rawget(t,l)
-                        if ml then
-                            n = ml -- first or last
-                        else
-                            l = lower[l] or lcchars[l]
-                            if l then
-                                local ml = rawget(t,l)
-                                if ml then
-                                    n = ml + delta
-                                end
-                            end
+                        n = { }
+                        for i=1,#ml do
+                            n[#n+1] = ml[i] + delta
+                        end
+                        if trace_tests then
+                            report_sorters(" 2 order: %s",concat(n," "))
                         end
                     end
                 end
                 if not n then
-                    n = 0
+                    local s = shchars[k]
+                    if s and s ~= k then -- weird test
+                        if trace_tests then
+                            report_sorters(" 3 shape: %s",s)
+                        end
+                        n = { }
+                        for l in utfcharacters(s) do
+                            local ml = rawget(t,l)
+                            if ml then
+                                if trace_tests then
+                                    report_sorters(" 4 keep: %s",l)
+                                end
+                                if ml then
+                                    for i=1,#ml do
+                                        n[#n+1] = ml[i]
+                                    end
+                                end
+                            else
+                                l = lower[l] or lcchars[l]
+                                if l then
+                                    if trace_tests then
+                                        report_sorters(" 5 lower: %s",l)
+                                    end
+                                    local ml = rawget(t,l)
+                                    if ml then
+                                        for i=1,#ml do
+                                            n[#n+1] = ml[i] + delta
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        if trace_tests then
+                            report_sorters(" 6 order: %s",concat(n," "))
+                        end
+                    end
+                    if not n then
+                        n = { 0 }
+                        if trace_tests then
+                            report_sorters(" 7 order: 0")
+                        end
+                    end
                 end
             else
-                n = 0
+                n =  { 0 }
+                if trace_tests then
+                    report_sorters(" 8 order: 0")
+                end
             end
             rawset(t,k,n)
             return n
@@ -317,7 +360,11 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             l = l and utfbyte(l) or lccodes[b]
             if l ~= b then l = l - 1 end -- brrrr, can clash
             n = n + 1
-            s[n], u[n], m[n], c[n] = sc, b, l, mappings[sc]
+            s[n], u[n], m[n] = sc, b, l
+            local msc = mappings[sc]
+            for i=1,#msc do
+                c[#c+1] = msc[i]
+            end
         end
     elseif method == variables.first then
         for sc in utfcharacters(str) do
@@ -326,13 +373,21 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             l = l and utfbyte(l) or lccodes[b]
             if l ~= b then l = l + 1 end -- brrrr, can clash
             n = n + 1
-            s[n], u[n], m[n], c[n] = sc, b, l, mappings[sc]
+            s[n], u[n], m[n] = sc, b, l
+            local msc = mappings[sc]
+            for i=1,#msc do
+                c[#c+1] = msc[i]
+            end
         end
     else
         for sc in utfcharacters(str) do
             local b = utfbyte(sc)
             n = n + 1
-            s[n], u[n], m[n], c[n] = sc, b, mappings[sc], b
+            s[n], u[n], c[n] = sc, b, b
+            local msc = mappings[sc]
+            for i=1,#msc do
+                m[#m+1] = msc[i]
+            end
         end
     end
     local t = { s = s, m = m, u = u, c = c }
@@ -373,9 +428,12 @@ end
 
 function sorters.sort(entries,cmp)
     if trace_tests then
+        for i=1,#entries do
+            report_sorters("entry %s",table.serialize(entries[i].split,i))
+        end
         sort(entries,function(a,b)
             local r = cmp(a,b)
-            report_sorters("%s %s %s (%s)",pack(a),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(b),r)
+            report_sorters("%s %s %s",pack(a),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(b))
             return r == -1
         end)
         local s

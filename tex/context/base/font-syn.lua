@@ -19,8 +19,9 @@ local unpack = unpack or table.unpack
 
 local allocate = utilities.storage.allocate
 
-local trace_names    = false  trackers.register("fonts.names",    function(v) trace_names    = v end)
-local trace_warnings = false  trackers.register("fonts.warnings", function(v) trace_warnings = v end)
+local trace_names          = false  trackers.register("fonts.names",          function(v) trace_names          = v end)
+local trace_warnings       = false  trackers.register("fonts.warnings",       function(v) trace_warnings       = v end)
+local trace_specifications = false  trackers.register("fonts.specifications", function(v) trace_specifications = v end)
 
 local report_names = logs.new("fontnames")
 
@@ -1323,7 +1324,6 @@ end
 
 function names.specification(askedname,weight,style,width,variant,reload,all)
     if askedname and askedname ~= "" and names.enabled then
---~         askedname = lower(askedname) -- or cleanname
         askedname = cleanname(askedname) -- or cleanname
         names.load(reload)
         local found = heuristic(askedname,weight,style,width,variant,all)
@@ -1339,7 +1339,6 @@ end
 
 function names.collect(askedname,weight,style,width,variant,reload,all)
     if askedname and askedname ~= "" and names.enabled then
---~         askedname = lower(askedname) -- or cleanname
         askedname = cleanname(askedname) -- or cleanname
         names.load(reload)
         local list = heuristic(askedname,weight,style,width,variant,true)
@@ -1355,7 +1354,7 @@ function names.collectspec(askedname,reload,all)
     return names.collect(name,weight,style,width,variant,reload,all)
 end
 
-function names.resolvespec(askedname,sub)
+function names.resolvespec(askedname,sub) -- redefined later
     local found = names.specification(names.splitspec(askedname))
     if found then
         return found.filename, found.subfont and found.rawname
@@ -1375,6 +1374,7 @@ function names.collectfiles(askedname,reload) -- no all
 --~             if find(lower(basename(s.filename)),askedname) then
             if find(cleanname(basename(s.filename)),askedname) then
                 list[#list+1] = s
+
             end
         end
         return list
@@ -1513,4 +1513,90 @@ function names.getlookups(pattern,name,reload)
         names.lookup(pattern,name,reload)
     end
     return lastlookups
+end
+
+-- The following is new ... watch the overload!
+
+local specifications = allocate()
+names.specifications = specifications
+
+-- files = {
+--     name = "antykwapoltawskiego",
+--     list = {
+--         ["AntPoltLtCond-Regular.otf"] = {
+--          -- name   = "antykwapoltawskiego",
+--             style  = "regular",
+--             weight = "light",
+--             width  = "condensed",
+--         },
+--     },
+-- }
+
+function names.register(files)
+    if files then
+        local list, commonname = files.list, files.name
+        if list then
+            local n, m = 0, 0
+            for filename, filespec in next, list do
+                local name = lower(filespec.name or commonname)
+                if name and name ~= "" then
+                    local style    = lower(filespec.style   or "normal")
+                    local width    = lower(filespec.width   or "normal")
+                    local weight   = lower(filespec.weight  or "normal")
+                    local variant  = lower(filespec.variant or "normal")
+                    local weights  = specifications[name  ] if not weights  then weights  = { } specifications[name  ] = weights  end
+                    local styles   = weights       [weight] if not styles   then styles   = { } weights       [weight] = styles   end
+                    local widths   = styles        [style ] if not widths   then widths   = { } styles        [style ] = widths   end
+                    local variants = widths        [width ] if not variants then variants = { } widths        [width ] = variants end
+                    variants[variant] = filename
+                    n = n + 1
+                else
+                    m = m + 1
+                end
+            end
+            if trace_specifications then
+                report_names("%s filenames registered, %s filenames rejected",n,m)
+            end
+        end
+    end
+end
+
+function names.registered(name,weight,style,width,variant)
+    local ok = specifications[name]
+    ok = ok and (ok[weight  and weight  ~= "" and weight  or "normal"] or ok[normal])
+    ok = ok and (ok[style   and style   ~= "" and style   or "normal"] or ok[normal])
+    ok = ok and (ok[width   and width   ~= "" and width   or "normal"] or ok[normal])
+    ok = ok and (ok[variant and variant ~= "" and variant or "normal"] or ok[normal])
+    --
+    -- todo: same fallbacks as with database
+    --
+    if ok then
+        return {
+            filename = ok,
+            subname  = "",
+         -- rawname  = nil,
+        }
+    end
+end
+
+function names.resolvespec(askedname,sub) -- overloads previous definition
+    local name, weight, style, width, variant = names.splitspec(askedname)
+    local found = names.registered(name,weight,style,width,variant)
+    if found and found.filename then
+        if trace_specifications then
+            report_names("resolved by registered names: %s -> %s",askedname,found.filename)
+        end
+        return found.filename, found.subname, found.rawname
+    else
+        found = names.specification(name,weight,style,width,variant)
+        if found and found.filename then
+            if trace_specifications then
+                report_names("resolved by font database: %s -> %s",askedname,found.filename)
+            end
+            return found.filename, found.subfont and found.rawname
+        end
+    end
+    if trace_specifications then
+        report_names("unresolved: %s",askedname)
+    end
 end
