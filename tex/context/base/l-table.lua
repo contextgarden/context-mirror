@@ -99,7 +99,7 @@ local function sortedkeys(tab)
             elseif tkey == "number" then
             --  if kind == 1 then kind = 3 else kind = 2 end
                 kind = (kind == 1 and 3) or 2
-            else
+            else -- if tkey then
                 kind = 3
             end
         end
@@ -115,7 +115,9 @@ end
 local function sortedhashkeys(tab) -- fast one
     local srt = { }
     for key,_ in next, tab do
-        srt[#srt+1] = key
+        if key then
+            srt[#srt+1] = key
+        end
     end
     sort(srt)
     return srt

@@ -96,6 +96,7 @@
   %\c!after=,
    \c!indentnext=\v!no,
   %\c!expansion=,
+   \c!method=,
    \s!language=\currentmainlanguage]
 
 \unexpanded\def\definesynonyms
@@ -200,7 +201,11 @@
      \c!color=.
      #2]%
    \startpacked
-     \ctxlua{structures.synonyms.process('#1',{ criterium = "\synonymparameter\c!criterium" })}%
+     \ctxlua{structures.synonyms.process('#1',{
+        criterium = "\synonymparameter\c!criterium",
+        language  = "\synonymparameter\s!language",
+        method    = "\synonymparameter\c!method",
+     })}%
    \stoppacked
    \endgroup}
 
@@ -263,6 +268,7 @@
   %\c!before=,
    \c!after=\endgraf,
   %\c!expansion=,
+   \c!method=,
    \s!language=\currentmainlanguage]
 
 \unexpanded\def\definesorting
@@ -344,7 +350,11 @@
    \def\currentsorting{#1}%
    \getparameters[\??so#1][#2]%
    \startpacked
-     \ctxlua{structures.synonyms.process('#1',{ criterium = "\sortingparameter\c!criterium" })}%
+     \ctxlua{structures.synonyms.process('#1',{
+        criterium = "\sortingparameter\c!criterium",
+        language  = "\sortingparameter\s!language",
+        method    = "\sortingparameter\c!method",
+     })}%
    \stoppacked
    \endgroup}
 

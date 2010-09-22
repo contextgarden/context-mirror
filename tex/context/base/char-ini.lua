@@ -771,10 +771,34 @@ characters.activeoffset = 0x10000 -- there will be remapped in that byte range
 
 -- some day we will make a table
 
+characters.lccodes     = allocate()  local lccodes     = characters.lccodes     -- lazy table
+characters.uccodes     = allocate()  local uccodes     = characters.uccodes     -- lazy table
+characters.shcodes     = allocate()  local shcodes     = characters.shcodes     -- lazy table
+
+characters.lcchars     = allocate()  local lcchars     = characters.lcchars     -- lazy table
+characters.ucchars     = allocate()  local ucchars     = characters.ucchars     -- lazy table
+characters.shchars     = allocate()  local shchars     = characters.shchars     -- lazy table
+
+characters.lccharcodes = allocate()  local lccharcodes = characters.lccharcodes -- lazy table
+characters.uccharcodes = allocate()  local uccharcodes = characters.uccharcodes -- lazy table
+characters.shcharcodes = allocate()  local shcharcodes = characters.shcharcodes -- lazy table
+
+setmetatable(lccodes,     { __index = function(t,u) if u then local c = data[u]          c = c and c.lccode                      or u t[u] = c return c end end } )
+setmetatable(uccodes,     { __index = function(t,u) if u then local c = data[u]          c = c and c.uccode                      or u t[u] = c return c end end } )
+setmetatable(shcodes,     { __index = function(t,u) if u then local c = data[u]          c = c and c.shcode                      or u t[u] = c return c end end } )
+
+setmetatable(lcchars,     { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.lccode c = c and utfchar(c) or u t[u] = c return c end end } )
+setmetatable(ucchars,     { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.uccode c = c and utfchar(c) or u t[u] = c return c end end } )
+setmetatable(shchars,     { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.shcode c = c and utfchar(c) or u t[u] = c return c end end } )
+
+setmetatable(lccharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.lccode                      or u t[u] = c return c end end } )
+setmetatable(uccharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.uccode                      or u t[u] = c return c end end } )
+setmetatable(shcharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.shcode                      or u t[u] = c return c end end } )
+
 function characters.lower(str)
     local new = { }
     for u in utfvalues(str) do
-        new[#new+1] = utfchar(data[u].lccode or u)
+        new[#new+1] = utfchar(lccodes[u])
     end
     return concat(new)
 end
@@ -782,7 +806,7 @@ end
 function characters.upper(str)
     local new = { }
     for u in utfvalues(str) do
-        new[#new+1] = utfchar(data[u].uccode or u)
+        new[#new+1] = utfchar(uccodes[u])
     end
     return concat(new)
 end
@@ -792,7 +816,7 @@ function characters.lettered(str)
     for u in utfvalues(str) do
         local d = data[u]
         if is_letter[d.category] then
-            new[#new+1] = utfchar(d.lccode or u)
+            new[#new+1] = utfchar(lccodes[u])
         end
     end
     return concat(new)

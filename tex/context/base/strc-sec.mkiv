@@ -287,22 +287,35 @@
 \let\structureheadprefix\empty \def\structureheadprefixplus{+}
 
 % When do we reset the referenceprefix? This needs to be checked. Does it work
-% at all?
+% at all? Todo: pushpop.
+
+% \def\setstructureheadreference
+%   {\edef\structureheadreference      {\structureheadparameter\c!reference}%
+%    \edef\structureheadreferenceprefix{\structureheadparameter\c!prefix}%
+%    \ifx\structureheadreferenceprefix\empty
+%      \ifx\currentrefenceprefix\structureheadreferenceprefixplus
+%        \setupreferenceprefix[]% yes or no? only when set by structure
+%      \fi
+%    \else\ifx\structureheadreferenceprefix\structureheadreferenceprefixplus
+%      \ifx\structureheadreference\empty
+%         \expanded{\setupreferenceprefix[\structureheadreferenceprefixplus]}%
+%      \else
+%         \expanded{\setupreferenceprefix[\structureheadreference]}% we assume just one reference
+%      \fi
+%    \else
+%      \expanded{\setupreferenceprefix[\structureheadreferenceprefix]}%
+%    \fi\fi}
+
+% pop in stopsection commands unless empty
 
 \def\setstructureheadreference
   {\edef\structureheadreference      {\structureheadparameter\c!reference}%
    \edef\structureheadreferenceprefix{\structureheadparameter\c!prefix}%
    \ifx\structureheadreferenceprefix\empty
-     \setupreferenceprefix[]% yes or no?
-   \else\ifx\structureheadreferenceprefix\structureheadreferenceprefixplus
-     \ifx\structureheadreference\empty
-        \expanded{\setupreferenceprefix[\structureheadreferenceprefixplus]}%
-     \else
-        \expanded{\setupreferenceprefix[\structureheadreference]}% we assume just one reference
-     \fi
+     \let\structureheadreferenceprefix\referenceprefix
    \else
-     \expanded{\setupreferenceprefix[\structureheadreferenceprefix]}%
-   \fi\fi}
+     \setupreferenceprefix[\structureheadreferenceprefix]% currenty no pop
+   \fi}
 
 \setvalue{\??nh:\c!incrementnumber:\v!yes  }{\settrue \structureheaddoincrement\settrue \structureheadtolist}
 \setvalue{\??nh:\c!incrementnumber:\v!no   }{\setfalse\structureheaddoincrement\setfalse\structureheadtolist}
