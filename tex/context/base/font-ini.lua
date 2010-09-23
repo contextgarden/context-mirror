@@ -73,6 +73,10 @@ fonts.processors = fonts.processors or {
 fonts.manipulators = fonts.manipulators or {
 }
 
+fonts.tracers = fonts.tracers or {
+}
+
+
 fonts.definers                     = fonts.definers                     or { }
 fonts.definers.specifiers          = fonts.definers.specifiers          or { }
 fonts.definers.specifiers.synonyms = fonts.definers.specifiers.synonyms or { }

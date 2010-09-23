@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/22/10 12:33:39
+-- merge date  : 09/23/10 01:03:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -3155,6 +3155,10 @@ fonts.processors = fonts.processors or {
 fonts.manipulators = fonts.manipulators or {
 }
 
+fonts.tracers = fonts.tracers or {
+}
+
+
 fonts.definers                     = fonts.definers                     or { }
 fonts.definers.specifiers          = fonts.definers.specifiers          or { }
 fonts.definers.specifiers.synonyms = fonts.definers.specifiers.synonyms or { }
@@ -5775,7 +5779,7 @@ end
 function otf.load(filename,format,sub,featurefile)
     local name = file.basename(file.removesuffix(filename))
     local attr = lfs.attributes(filename)
-    local size, time = attr.size or 0, attr.modification or 0
+    local size, time = attr and attr.size or 0, attr and attr.modification or 0
     if featurefile then
         name = name .. "@" .. file.removesuffix(file.basename(featurefile))
     end

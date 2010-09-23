@@ -297,6 +297,29 @@ end
 
 fontgoodies.register("mathematics", initialize)
 
+-- the following takes care of explicit file specifications
+--
+-- files = {
+--     name = "antykwapoltawskiego",
+--     list = {
+--         ["AntPoltLtCond-Regular.otf"] = {
+--          -- name   = "antykwapoltawskiego",
+--             style  = "regular",
+--             weight = "light",
+--             width  = "condensed",
+--         },
+--     },
+-- }
+
+local function initialize(goodies)
+    local files = goodies.files
+    if files then
+        fonts.names.register(files)
+    end
+end
+
+fonts.goodies.register("files", initialize)
+
 -- The following file (husayni.lfg) is the experimental setup that we used
 -- for Idris font. For the moment we don't store this in the cache and quite
 -- probably these files sit in one of the paths:

@@ -1,0 +1,213 @@
+return {
+    name = "antykwapoltawskiego",
+    version = "1.00",
+    comment = "Goodies that complement Antykwa Poltawskiego, one of Mojca's favourites",
+    author = "Hans & Mojca",
+    copyright = "ConTeXt development team",
+    files = {
+        name = "antykwapoltawskiego", -- shared
+        list = {
+            ["AntPoltLtCond-Regular.otf"] = {
+             -- name   = "antykwapoltawskiego",
+                style  = "regular",
+                weight = "light",
+                width  = "condensed",
+            },
+            ["AntPoltLtCond-Italic.otf"] = {
+                style  = "italic",
+                weight = "light",
+                width  = "condensed",
+            },
+            ["AntPoltCond-Regular.otf"] = {
+                style  = "regular",
+                weight = "normal",
+                width  = "condensed",
+            },
+            ["AntPoltCond-Italic.otf"] = {
+                style  = "italic",
+                weight = "normal",
+                width  = "condensed",
+            },
+            ["AntPoltLtCond-Bold.otf"] = {
+                style  = "regular",
+                weight = "medium",
+                width  = "condensed",
+            },
+            ["AntPoltLtCond-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "medium",
+                width  = "condensed",
+            },
+            ["AntPoltCond-Bold.otf"] = {
+                style  = "regular",
+                weight = "bold",
+                width  = "condensed",
+            },
+            ["AntPoltCond-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "bold",
+                width  = "condensed",
+            },
+            ["AntPoltLtSemiCond-Regular.otf"] = {
+                style  = "regular",
+                weight = "light",
+                width  = "semicondensed",
+            },
+            ["AntPoltLtSemiCond-Italic.otf"] = {
+                style  = "italic",
+                weight = "light",
+                width  = "semicondensed",
+            },
+            ["AntPoltSemiCond-Regular.otf"] = {
+                style  = "regular",
+                weight = "normal",
+                width  = "semicondensed",
+            },
+            ["AntPoltSemiCond-Italic.otf"] = {
+                style  = "italic",
+                weight = "normal",
+                width  = "semicondensed",
+            },
+            ["AntPoltLtSemiCond-Bold.otf"] = {
+                style  = "regular",
+                weight = "medium",
+                width  = "semicondensed",
+            },
+            ["AntPoltLtSemiCond-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "medium",
+                width  = "semicondensed",
+            },
+            ["AntPoltSemiCond-Bold.otf"] = {
+                style  = "regular",
+                weight = "bold",
+                width  = "semicondensed",
+            },
+            ["AntPoltSemiCond-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "bold",
+                width  = "semicondensed",
+            },
+            ["AntPoltLt-Regular.otf"] = {
+                style  = "regular",
+                weight = "light",
+                width  = "normal",
+            },
+            ["AntPoltLt-Italic.otf"] = {
+                style  = "italic",
+                weight = "light",
+                width  = "normal",
+            },
+            ["AntPolt-Regular.otf"] = {
+                style  = "regular",
+                weight = "normal",
+                width  = "normal",
+            },
+            ["AntPolt-Italic.otf"] = {
+                style  = "italic",
+                weight = "normal",
+                width  = "normal",
+            },
+            ["AntPoltLt-Bold.otf"] = {
+                style  = "regular",
+                weight = "medium",
+                width  = "normal",
+            },
+            ["AntPoltLt-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "medium",
+                width  = "normal",
+            },
+            ["AntPolt-Bold.otf"] = {
+                style  = "regular",
+                weight = "bold",
+                width  = "normal",
+            },
+            ["AntPolt-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "bold",
+                width  = "normal",
+            },
+            ["AntPoltLtSemiExpd-Regular.otf"] = {
+                style  = "regular",
+                weight = "light",
+                width  = "semiexpanded",
+            },
+            ["AntPoltLtSemiExpd-Italic.otf"] = {
+                style  = "italic",
+                weight = "light",
+                width  = "semiexpanded",
+            },
+            ["AntPoltSemiExpd-Regular.otf"] = {
+                style  = "regular",
+                weight = "normal",
+                width  = "semiexpanded",
+            },
+            ["AntPoltSemiExpd-Italic.otf"] = {
+                style  = "italic",
+                weight = "normal",
+                width  = "semiexpanded",
+            },
+            ["AntPoltLtSemiExpd-Bold.otf"] = {
+                style  = "regular",
+                weight = "medium",
+                width  = "semiexpanded",
+            },
+            ["AntPoltLtSemiExpd-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "medium",
+                width  = "semiexpanded",
+            },
+            ["AntPoltSemiExpd-Bold.otf"] = {
+                style  = "regular",
+                weight = "bold",
+                width  = "semiexpanded",
+            },
+            ["AntPoltSemiExpd-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "bold",
+                width  = "semiexpanded",
+            },
+            ["AntPoltLtExpd-Regular.otf"] = {
+                style  = "regular",
+                weight = "light",
+                width  = "expanded",
+            },
+            ["AntPoltLtExpd-Italic.otf"] = {
+                style  = "italic",
+                weight = "light",
+                width  = "expanded",
+            },
+            ["AntPoltExpd-Regular.otf"] = {
+                style  = "regular",
+                width  = "expanded",
+                weight = "normal",
+            },
+            ["AntPoltExpd-Italic.otf"] = {
+                style  = "italic",
+                width  = "expanded",
+                weight = "normal",
+            },
+            ["AntPoltLtExpd-Bold.otf"] = {
+                style  = "regular",
+                width  = "expanded",
+                weight = "medium",
+            },
+            ["AntPoltLtExpd-BoldItalic.otf"] = {
+                style  = "italic",
+                width  = "expanded",
+                weight = "medium",
+            },
+            ["AntPoltExpd-Bold.otf"] = {
+                style  = "regular",
+                weight = "bold",
+                width  = "expanded",
+            },
+            ["AntPoltExpd-BoldItalic.otf"] = {
+                style  = "italic",
+                weight = "bold",
+                width  = "expanded",
+            },
+        },
+    },
+}
