@@ -25,7 +25,7 @@ else
     local format, concat, abs, match = string.format, table.concat, math.abs, string.match
 
     local mplib = require ('mplib')
-    local kpse = require ('kpse')
+    local kpse  = require ('kpse')
 
     --[[ldx--
     <p>We create a namespace and some variables to it. If a namespace is
@@ -93,11 +93,11 @@ else
         metapost.lastlog = ""
     end
 
-    metapost.make = metapost.make or function(name,mem_name,dump)
-        if false then
-            metapost.report("no format %s made for %s",mem_name,name)
-            return false
-        else
+    local mplibone = tonumber(mplib.version()) <= 1.50
+
+    if mplibone then
+
+        metapost.make = metapost.make or function(name,mem_name,dump)
             local t = os.clock()
             local mpx = mplib.new {
                 ini_version = true,
@@ -113,25 +113,52 @@ else
             end
             return mpx
         end
-    end
 
-    function metapost.load(name)
-        local mem_name = file.replacesuffix(name,"mem")
-        local mpx = mplib.new {
-            ini_version = false,
-            mem_name = mem_name,
-            find_file = metapost.finder
-        }
-        if not mpx and type(metapost.make) == "function" then
-            -- when i have time i'll locate the format and dump
-            mpx = metapost.make(name,mem_name)
+        function metapost.load(name)
+            local mem_name = file.replacesuffix(name,"mem")
+            local mpx = mplib.new {
+                ini_version = false,
+                mem_name = mem_name,
+                find_file = metapost.finder
+            }
+            if not mpx and type(metapost.make) == "function" then
+                -- when i have time i'll locate the format and dump
+                mpx = metapost.make(name,mem_name)
+            end
+            if mpx then
+                metapost.report("using format %s",mem_name,false)
+                return mpx, nil
+            else
+                return nil, { status = 99, error = "out of memory or invalid format" }
+            end
         end
-        if mpx then
-            metapost.report("using format %s",mem_name,false)
-            return mpx, nil
-        else
-            return nil, { status = 99, error = "out of memory or invalid format" }
+
+    else
+
+        local preamble = [[
+            boolean mplib ; mplib := true ;
+            let dump = endinput ;
+            input %s ;
+        ]]
+
+        metapost.make = metapost.make or function()
         end
+
+        function metapost.load(name)
+            local mpx = mplib.new {
+                ini_version = true,
+                find_file = metapost.finder,
+            }
+            local result
+            if not mpx then
+                result = { status = 99, error = "out of memory"}
+            else
+                result = mpx:execute(format(preamble, file.replacesuffix(name,"mp")))
+            end
+            metapost.reporterror(result)
+            return mpx, result
+        end
+
     end
 
     function metapost.unload(mpx)

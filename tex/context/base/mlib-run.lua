@@ -109,7 +109,7 @@ if mplibone then
 
     function metapost.make(name, target, version)
         starttiming(mplib)
-        target = file.replacesuffix(target or name, "mem")
+        target = file.replacesuffix(target or name, "mem") -- redundant
         local mpx = mplib.new ( table.merged (
             metapost.parameters,
             {

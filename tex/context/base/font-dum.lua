@@ -31,6 +31,8 @@ function fonts.definers.getspecification(str)
     return "", str, "", ":", str
 end
 
+fonts.definers.registersplit("",fonts.definers.specifiers.variants[":"]) -- we add another one for catching lone [names]
+
 -- logger
 
 fonts.logger = fonts.logger or { }
@@ -88,6 +90,10 @@ function fonts.names.resolve(name,sub)
 end
 
 fonts.names.resolvespec = fonts.names.resolve -- only supported in mkiv
+
+function fonts.names.getfilename(askedname,suffix)  -- only supported in mkiv
+    return ""
+end
 
 -- For the moment we put this (adapted) pseudo feature here.
 

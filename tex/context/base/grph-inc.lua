@@ -50,6 +50,7 @@ local allocate = utilities.storage.allocate
 local ctxcatcodes    = tex.ctxcatcodes
 local variables      = interfaces.variables
 local codeinjections = backends.codeinjections
+local nodeinjections = backends.nodeinjections
 
 local trace_figures    = false  trackers.register("figures.locating",   function(v) trace_figures    = v end)
 local trace_bases      = false  trackers.register("figures.bases",      function(v) trace_bases      = v end)
@@ -153,7 +154,7 @@ figures.formats = allocate{
     ["svg"]    = { list = { "svg", "svgz" } },
     ["eps"]    = { list = { "eps", "ai" } },
     ["gif"]    = { list = { "gif" } },
-    ["mov"]    = { list = { "mov", "avi" } },
+    ["mov"]    = { list = { "mov", "flv" } }, -- "avi" is not supported
     ["buffer"] = { list = { "tmp", "buffer", "buf" } },
     ["tex"]    = { list = { "tex" } },
 }
