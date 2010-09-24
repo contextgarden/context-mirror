@@ -1,4 +1,6 @@
-fonts.enc.math["lbr-ma"] = {
+local mathencodings = fonts.enc.math
+
+mathencodings["lbr-ma"] = {
     [0x025CB] = 0x00, -- circle
     [0x025CF] = 0x01, -- blackcircle
     [0x025A1] = 0x02, -- square
@@ -188,7 +190,7 @@ fonts.enc.math["lbr-ma"] = {
     [0x022AF] = 0xFB, -- nVDash
 }
 
-fonts.enc.math["lbr-mb"] = {
+mathencodings["lbr-mb"] = {
     [0x00393] = 0x00, -- Gamma
     [0x00394] = 0x01, -- Delta
     [0x00398] = 0x02, -- Theta
@@ -248,7 +250,7 @@ fonts.enc.math["lbr-mb"] = {
     [0x1D718] = 0x9B, -- varkappa
 }
 
-fonts.enc.math["lbr-sy"] = {
+mathencodings["lbr-sy"] = {
     [0x021CB] = 0x8D, -- leftrightharpoons
     [0x021CC] = 0x8E, -- rightleftharpoons
     [0x02214] = 0x89, -- dotplus
@@ -293,7 +295,12 @@ fonts.enc.math["lbr-sy"] = {
     [0x025CA] = 0x05, -- lozenge
 }
 
-fonts.enc.math["lbr-sy"] = table.merged(fonts.enc.math["tex-sy"],fonts.enc.math["lbr-sy"])
+
+mathencodings["lbr-sy"] = table.merged(mathencodings["tex-sy"],mathencodings["lbr-sy"])
+
+mathencodings["lbr-fraktur"] = { }
+
+fonts.vf.math.setletters(mathencodings, "lbr-fraktur",  0x1D504, 0x1D51E)
 
 return {
     name = "lucida-math",
@@ -314,6 +321,11 @@ return {
                 { name = "hlcrv.tfm", vector = "tex-ex", extension = true },
                 { name = "hlcra.tfm", vector = "lbr-ma" },
                 { name = "hlcrm.tfm", vector = "lbr-mb" },
+                { name = "file:lbd.afm", vector = "tex-bf" },
+                { name = "file:lbdi.afm", vector = "tex-bi" } ,
+                { name = "file:lsr.afm", vector = "tex-ss" },
+                { name = "file:lstr.afm", vector = "tex-tt" },
+                { name = "file:lbl.afm", vector = "lbr-fraktur" }, -- more complete
             }
         }
     }

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/23/10 11:35:08
+-- merge date  : 09/24/10 11:40:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -5506,7 +5506,7 @@ local definers       = fonts.definers
 
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.702 -- beware: also sync font-mis.lua
+otf.version          = 2.705 -- beware: also sync font-mis.lua
 otf.cache            = containers.define("fonts", "otf", otf.version, true)
 
 local loadmethod     = "table" -- table, mixed, sparse
@@ -6517,6 +6517,7 @@ end
 
 actions["analyze math"] = function(data,filename,raw)
     if raw.math then
+data.metadata.math = raw.math
         -- we move the math stuff into a math subtable because we then can
         -- test faster in the tfm copy
         local glyphs, udglyphs = data.glyphs, data.udglyphs
@@ -6744,6 +6745,13 @@ actions["check glyphs"] = function(data,filename,raw)
             v.unicode = nil
             v.index = nil
         end
+        -- only needed on non sparse/mixed mode
+        if v.math then
+            if v.mathkern      then v.mathkern      = nil end
+            if v.horiz_variant then v.horiz_variant = nil end
+            if v.vert_variants then v.vert_variants = nil end
+        end
+        --
     end
     data.luatex.comment = "Glyph tables have their original index. When present, kern tables are indexed by unicode."
 end
@@ -15646,6 +15654,8 @@ function fonts.definers.getspecification(str)
     return "", str, "", ":", str
 end
 
+fonts.definers.registersplit("",fonts.definers.specifiers.variants[":"]) -- we add another one for catching lone [names]
+
 -- logger
 
 fonts.logger = fonts.logger or { }
@@ -15703,6 +15713,10 @@ function fonts.names.resolve(name,sub)
 end
 
 fonts.names.resolvespec = fonts.names.resolve -- only supported in mkiv
+
+function fonts.names.getfilename(askedname,suffix)  -- only supported in mkiv
+    return ""
+end
 
 -- For the moment we put this (adapted) pseudo feature here.
 

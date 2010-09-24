@@ -56,7 +56,7 @@ local definers       = fonts.definers
 
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.702 -- beware: also sync font-mis.lua
+otf.version          = 2.705 -- beware: also sync font-mis.lua
 otf.cache            = containers.define("fonts", "otf", otf.version, true)
 
 local loadmethod     = "table" -- table, mixed, sparse
@@ -1067,6 +1067,7 @@ end
 
 actions["analyze math"] = function(data,filename,raw)
     if raw.math then
+data.metadata.math = raw.math
         -- we move the math stuff into a math subtable because we then can
         -- test faster in the tfm copy
         local glyphs, udglyphs = data.glyphs, data.udglyphs
@@ -1294,6 +1295,13 @@ actions["check glyphs"] = function(data,filename,raw)
             v.unicode = nil
             v.index = nil
         end
+        -- only needed on non sparse/mixed mode
+        if v.math then
+            if v.mathkern      then v.mathkern      = nil end
+            if v.horiz_variant then v.horiz_variant = nil end
+            if v.vert_variants then v.vert_variants = nil end
+        end
+        --
     end
     data.luatex.comment = "Glyph tables have their original index. When present, kern tables are indexed by unicode."
 end
