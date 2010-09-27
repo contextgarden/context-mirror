@@ -16,10 +16,6 @@
 \startluacode
     local last_data = nil
     local format = string.format
-    local function tpf(...)
---     print("!!!!",...)
-        tex.print(tex.ctxcatcodes,format(...))
-    end
     function fonts.otf.show_shape(n)
         local tfmdata = fonts.ids[font.current()]
         last_data = tfmdata
@@ -36,13 +32,13 @@
             local width, italic = (d.width or 0)*factor, (d.italic or 0)*factor
             local top_accent, bot_accent = (d.top_accent or 0)*factor, (d.bot_accent or 0)*factor
             local anchors, math = d.anchors, d.math
-            tpf("\\startMPcode")
-            tpf("pickup pencircle scaled .25bp ; ")
-            tpf('picture p ; p := image(draw textext.drt("\\gray\\char%s");); draw p ;',charnum)
-            tpf('draw (%s,%s)--(%s,%s)--(%s,%s)--(%s,%s)--cycle withcolor green ;',llx,lly,urx,lly,urx,ury,llx,ury)
-            tpf('draw (%s,%s)--(%s,%s) withcolor green ;',llx,0,urx,0)
-            tpf('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
-            tpf("defaultscale := 0.05 ; ")
+            context.startMPcode()
+            context("pickup pencircle scaled .25bp ; ")
+            context('picture p ; p := image(draw textext.drt("\\gray\\char%s");); draw p ;',charnum)
+            context('draw (%s,%s)--(%s,%s)--(%s,%s)--(%s,%s)--cycle withcolor green ;',llx,lly,urx,lly,urx,ury,llx,ury)
+            context('draw (%s,%s)--(%s,%s) withcolor green ;',llx,0,urx,0)
+            context('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
+            context("defaultscale := 0.05 ; ")
             -- inefficient but non critical
             local function slant_1(v,dx,dy,txt,xsign,ysign,loc,labloc)
                 if #v > 0 then
@@ -53,11 +49,11 @@
                             l[#l+1] = format("((%s,%s) shifted (%s,%s))",xsign*k*factor,ysign*h*factor,dx,dy)
                         end
                     end
-                    tpf("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled .25) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
-                    tpf("draw laddered (%s) withcolor .5white ;",table.concat(l,".."))
-                    tpf("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled .25) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
+                    context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled .25) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
+                    context("draw laddered (%s) withcolor .5white ;",table.concat(l,".."))
+                    context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled .25) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
                     for k, v in ipairs(l) do
-                        tpf("draw %s withcolor blue  withpen pencircle scaled 1bp;",v)
+                        context("draw %s withcolor blue  withpen pencircle scaled 1bp;",v)
                     end
                 end
             end
@@ -71,14 +67,14 @@
                         end
                     end
                     if loc == "top" then
-                        tpf('label.%s("\\type{%s}",%s shifted (0,-1bp)) ;',loc,txt,l[#l])
+                        context('label.%s("\\type{%s}",%s shifted (0,-1bp)) ;',loc,txt,l[#l])
                     else
-                        tpf('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
+                        context('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
                     end
                     for kk, vv in ipairs(v) do
                         local h, k = vv.height, vv.kern
                         if h and k then
-                            tpf('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[kk])
+                            context('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[kk])
                         end
                     end
                 end
@@ -103,9 +99,9 @@
             end
             local function show(x,y,txt)
                 local xx, yy = x*factor, y*factor
-                tpf("draw (%s,%s) withcolor blue withpen pencircle scaled 1bp;",xx,yy)
-                tpf('label.top("\\type{%s}",(%s,%s-2bp)) ;',txt,xx,yy)
-                tpf('label.bot("(%s,%s)",(%s,%s+2bp)) ;',x,y,xx,yy)
+                context("draw (%s,%s) withcolor blue withpen pencircle scaled 1bp;",xx,yy)
+                context('label.top("\\type{%s}",(%s,%s-2bp)) ;',txt,xx,yy)
+                context('label.bot("(%s,%s)",(%s,%s+2bp)) ;',x,y,xx,yy)
             end
             if anchors then
                 local a = anchors.baselig
@@ -142,59 +138,59 @@
                 end
             end
             if italic ~= 0 then
-                tpf('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width,ury,width,ury)
-                tpf('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width+italic,ury,width+italic,ury)
-                tpf('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue;',width,ury,width+italic,ury)
-                tpf('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,ury)
-                tpf('label.rt("%s",(%s-2bp,%s-1bp));',d.italic,width+italic,ury)
+                context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width,ury,width,ury)
+                context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width+italic,ury,width+italic,ury)
+                context('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue;',width,ury,width+italic,ury)
+                context('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,ury)
+                context('label.rt("%s",(%s-2bp,%s-1bp));',d.italic,width+italic,ury)
             end
             if top_accent ~= 0 then
-                tpf('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',top_accent,ury,top_accent,ury)
-                tpf('label.bot("\\type{%s}",(%s,%s+1bp));',"top_accent",top_accent,ury)
-                tpf('label.top("%s",(%s,%s-1bp));',d.top_accent,top_accent,ury)
+                context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',top_accent,ury,top_accent,ury)
+                context('label.bot("\\type{%s}",(%s,%s+1bp));',"top_accent",top_accent,ury)
+                context('label.top("%s",(%s,%s-1bp));',d.top_accent,top_accent,ury)
             end
             if bot_accent ~= 0 then
-                tpf('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',bot_accent,lly,bot_accent,lly)
-                tpf('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,ury)
-                tpf('label.bot("%s",(%s,%s+1bp));',d.bot_accent,bot_accent,lly)
+                context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',bot_accent,lly,bot_accent,lly)
+                context('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,ury)
+                context('label.bot("%s",(%s,%s+1bp));',d.bot_accent,bot_accent,lly)
             end
-            tpf('draw origin withcolor red withpen pencircle scaled 1bp;')
-            tpf("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
-            tpf("currentpicture := currentpicture scaled 8 ;")
-            tpf("\\stopMPcode")
+            context('draw origin withcolor red withpen pencircle scaled 1bp;')
+            context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
+            context("currentpicture := currentpicture scaled 8 ;")
+            context.stopMPcode()
         elseif c then
             local factor = (7200/7227)/65536
-            tpf("\\startMPcode")
-            tpf("pickup pencircle scaled .25bp ; ")
-            tpf('picture p ; p := image(draw textext.drt("\\gray\\char%s");); draw p ;',charnum)
-            tpf('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
-            tpf("defaultscale := 0.05 ; ")
+            context.startMPcode()
+            context("pickup pencircle scaled .25bp ; ")
+            context('picture p ; p := image(draw textext.drt("\\gray\\char%s");); draw p ;',charnum)
+            context('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
+            context("defaultscale := 0.05 ; ")
             local italic, top_accent, bot_accent = (c.italic or 0)*factor, (c.top_accent or 0)*factor, (c.bot_accent or 0)*factor
             local width, height, depth = (c.width or 0)*factor, (c.height or 0)*factor, (c.depth or 0)*factor
             local ury = height
             if italic ~= 0 then
-                tpf('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width,ury,width,ury)
-                tpf('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width+italic,ury,width+italic,ury)
-                tpf('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue;',width,ury,width+italic,height)
-                tpf('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,height)
-                tpf('label.rt("%6.3f bp",(%s-2bp,%s-1bp));',italic,width+italic,height)
+                context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width,ury,width,ury)
+                context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width+italic,ury,width+italic,ury)
+                context('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue;',width,ury,width+italic,height)
+                context('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,height)
+                context('label.rt("%6.3f bp",(%s-2bp,%s-1bp));',italic,width+italic,height)
             end
             if top_accent ~= 0 then
-                tpf('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',top_accent,ury,top_accent,height)
-                tpf('label.bot("\\type{%s}",(%s,%s+1bp));',"top_accent",top_accent,height)
-                tpf('label.top("%6.3f bp",(%s,%s-1bp));',top_accent,top_accent,height)
+                context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',top_accent,ury,top_accent,height)
+                context('label.bot("\\type{%s}",(%s,%s+1bp));',"top_accent",top_accent,height)
+                context('label.top("%6.3f bp",(%s,%s-1bp));',top_accent,top_accent,height)
             end
             if bot_accent ~= 0 then
-                tpf('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',bot_accent,lly,bot_accent,height)
-                tpf('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,height)
-                tpf('label.bot("%6.3f bp",(%s,%s+1bp));',bot_accent,bot_accent,height)
+                context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',bot_accent,lly,bot_accent,height)
+                context('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,height)
+                context('label.bot("%6.3f bp",(%s,%s+1bp));',bot_accent,bot_accent,height)
             end
-            tpf('draw origin withcolor red withpen pencircle scaled 1bp;')
-            tpf("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
-            tpf("currentpicture := currentpicture scaled 8 ;")
-            tpf("\\stopMPcode")
+            context('draw origin withcolor red withpen pencircle scaled 1bp;')
+            context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
+            context("currentpicture := currentpicture scaled 8 ;")
+            context.stopMPcode()
         else
-            tpf("no such shape: %s",n)
+            context("no such shape: %s",n)
         end
     end
     function fonts.otf.show_all_shapes(start,stop)
@@ -205,10 +201,10 @@
         for _, unicode in next, table.sortedkeys(descriptions) do
             local d = descriptions[unicode]
             local name = d.name
-            tpf("%s{%s}%%",start,unicode)
-            tpf("\\writestatus{glyph}{U+%04X -> %s}%%",unicode,name)
+            context("%s{%s}%%",start,unicode)
+            context("\\writestatus{glyph}{U+%04X -> %s}%%",unicode,name)
             fonts.otf.show_shape(unicode)
-            tpf(stop)
+            context(stop)
         end
     end
     function fonts.otf.show_shape_field(unicode,name)
@@ -216,11 +212,11 @@
         local d = tfmdata.descriptions[unicode]
         if d then
             if name == "unicode" then
-                tpf("U+%04X",unicode)
+                context("U+%04X",unicode)
             else
                 d = d[name]
                 if d then
-                    tpf(d)
+                    context(d)
                 end
             end
         end

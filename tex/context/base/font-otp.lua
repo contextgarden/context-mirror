@@ -509,5 +509,11 @@ local function unpackdata(data)
     end
 end
 
-otf.enhancers.register(  "pack",  packdata)
-otf.enhancers.register("unpack",unpackdata)
+if otf.enhancers.register then
+
+    otf.enhancers.register(  "pack",  packdata)
+    otf.enhancers.register("unpack",unpackdata)
+
+end
+
+otf.enhancers.unpack = unpackdata -- used elsewhere
