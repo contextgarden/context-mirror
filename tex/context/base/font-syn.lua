@@ -6,6 +6,17 @@ if not modules then modules = { } end modules ['font-syn'] = {
     license   = "see context related readme files"
 }
 
+local keyisvalue = { __index = function(t,k)
+    t[k] = k
+    return k
+end }
+
+function table.initialysparse(t)
+    t = t or { }
+    setmetatable(t,keyisvalue)
+    return t
+end
+
 -- todo: subs in lookups requests
 
 local utf = unicode.utf8
@@ -79,6 +90,10 @@ local weights = Cs ( -- not extra
   + P("regular")  / "normal"
 )
 
+local normalized_weights = table.initialysparse {
+    regular = "normal",
+}
+
 local styles = Cs (
     P("reverseoblique") / "reverseitalic"
   + P("regular")        / "normal"
@@ -90,6 +105,12 @@ local styles = Cs (
   + P("ita")            / "italic"
 )
 
+local normalized_styles = table.initialysparse {
+    reverseoblique = "reverseitalic",
+    regular        = "normal",
+    oblique        = "italic",
+}
+
 local widths = Cs(
     P("condensed")
   + P("thin")
@@ -99,11 +120,15 @@ local widths = Cs(
   + P("book")     / "normal"
 )
 
+local normalized_widths = table.initialysparse()
+
 local variants = Cs( -- fax casual
     P("smallcaps")
   + P("oldstyle")
   + P("caps")      / "smallcaps"
 )
+
+local normalized_variants = table.initialysparse()
 
 local any = P(1)
 
@@ -1540,10 +1565,10 @@ function names.register(files)
             for filename, filespec in next, list do
                 local name = lower(filespec.name or commonname)
                 if name and name ~= "" then
-                    local style    = lower(filespec.style   or "normal")
-                    local width    = lower(filespec.width   or "normal")
-                    local weight   = lower(filespec.weight  or "normal")
-                    local variant  = lower(filespec.variant or "normal")
+                    local style    = normalized_styles  [lower(filespec.style   or "normal")]
+                    local width    = normalized_widths  [lower(filespec.width   or "normal")]
+                    local weight   = normalized_weights [lower(filespec.weight  or "normal")]
+                    local variant  = normalized_variants[lower(filespec.variant or "normal")]
                     local weights  = specifications[name  ] if not weights  then weights  = { } specifications[name  ] = weights  end
                     local styles   = weights       [weight] if not styles   then styles   = { } weights       [weight] = styles   end
                     local widths   = styles        [style ] if not widths   then widths   = { } styles        [style ] = widths   end
@@ -1563,10 +1588,10 @@ end
 
 function names.registered(name,weight,style,width,variant)
     local ok = specifications[name]
-    ok = ok and (ok[weight  and weight  ~= "" and weight  or "normal"] or ok[normal])
-    ok = ok and (ok[style   and style   ~= "" and style   or "normal"] or ok[normal])
-    ok = ok and (ok[width   and width   ~= "" and width   or "normal"] or ok[normal])
-    ok = ok and (ok[variant and variant ~= "" and variant or "normal"] or ok[normal])
+    ok = ok and (ok[(weight  and weight  ~= "" and weight ) or "normal"] or ok.normal)
+    ok = ok and (ok[(style   and style   ~= "" and style  ) or "normal"] or ok.normal)
+    ok = ok and (ok[(width   and width   ~= "" and width  ) or "normal"] or ok.normal)
+    ok = ok and (ok[(variant and variant ~= "" and variant) or "normal"] or ok.normal)
     --
     -- todo: same fallbacks as with database
     --
@@ -1581,6 +1606,9 @@ end
 
 function names.resolvespec(askedname,sub) -- overloads previous definition
     local name, weight, style, width, variant = names.splitspec(askedname)
+    if trace_specifications then
+        report_names("resolving specification: %s -> name=%s, weight=%s, style=%s, width=%s, variant=%s",askedname,name,weight,style,width,variant)
+    end
     local found = names.registered(name,weight,style,width,variant)
     if found and found.filename then
         if trace_specifications then

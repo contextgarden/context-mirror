@@ -38,6 +38,15 @@ local shchars           = characters.shchars
 
 local variables         = interfaces.variables
 
+local validmethods      = table.tohash{ "mm", "zm", "pm", "mc", "zc", "pc", "uc" }
+
+local predefinedmethods = {
+    [variables.before] = "mm,mc,uc",
+    [variables.after]  = "pm,mc,uc",
+    [variables.first]  = "pc,mm,uc",
+    [variables.last]   = "mc,mm,uc",
+}
+
 sorters = {
     comparers   = comparers,
     splitters   = splitters,
@@ -49,7 +58,7 @@ sorters = {
         digitsoffset      = digitsoffset,
         digitsmaximum     = digitsmaximum,
         defaultlanguage   = variables.default,
-        defaultmethod     = variables.before,
+        defaultmethod     = "before",
     }
 }
 
@@ -57,7 +66,7 @@ local sorters   = sorters
 local constants = sorters.constants
 
 local data, language, method
-local replacements, mappings, entries, orders, lower, upper
+local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, upper, method, sequence
 
 --~ local shchars = characters.specialchars -- no specials for AE and ae
 
@@ -90,12 +99,12 @@ local mte = {
 }
 
 local function preparetables(data)
-    local orders, lower, method, mappings = data.orders, data.lower, data.method, { }
+    local orders, lower, m_mappings, z_mappings, p_mappings = data.orders, data.lower, { }, { }, { }
     for i=1,#orders do
         local oi = orders[i]
-        mappings[oi] = { 2*i }
+        local n = { 2 * i }
+        m_mappings[oi], z_mappings[oi], p_mappings[oi] = n, n, n
     end
-    local delta = (method == variables.before or method == variables.first or method == variables.last) and -1 or 1
     local mtm = {
         __index = function(t,k)
             local n
@@ -112,7 +121,7 @@ local function preparetables(data)
                     if ml then
                         n = { }
                         for i=1,#ml do
-                            n[#n+1] = ml[i] + delta
+                            n[#n+1] = ml[i] + (t.__delta or 0)
                         end
                         if trace_tests then
                             report_sorters(" 2 order: %s",concat(n," "))
@@ -146,7 +155,7 @@ local function preparetables(data)
                                     local ml = rawget(t,l)
                                     if ml then
                                         for i=1,#ml do
-                                            n[#n+1] = ml[i] + delta
+                                            n[#n+1] = ml[i] + (t.__delta or 0)
                                         end
                                     end
                                 end
@@ -173,10 +182,16 @@ local function preparetables(data)
             return n
         end
     }
-    data.mappings = mappings
+    data.m_mappings = m_mappings
+    data.z_mappings = z_mappings
+    data.p_mappings = p_mappings
+    m_mappings.__delta = -1
+    z_mappings.__delta =  0
+    p_mappings.__delta =  1
     setmetatable(data.entries,mte)
-    setmetatable(data.mappings,mtm)
-    return mappings
+    setmetatable(data.m_mappings,mtm)
+    setmetatable(data.z_mappings,mtm)
+    setmetatable(data.p_mappings,mtm)
 end
 
 local function update() -- prepare parent chains, needed when new languages are added
@@ -185,9 +200,11 @@ local function update() -- prepare parent chains, needed when new languages are 
         if language ~= "default" then
             setmetatable(data,{ __index = definitions[parent] or definitions.default })
         end
-        data.language = language
-        data.parent   = parent
-        data.mappings = { } -- free temp data
+        data.language   = language
+        data.parent     = parent
+        data.m_mappings = { } -- free temp data
+        data.z_mappings = { } -- free temp data
+        data.p_mappings = { } -- free temp data
     end
 end
 
@@ -198,13 +215,32 @@ local function setlanguage(l,m)
     if trace_tests then
         report_sorters("setting language '%s', method '%s'",language,method)
     end
-    data.method  = method
     replacements = data.replacements
     entries      = data.entries
     orders       = data.orders
     lower        = data.lower
     upper        = data.upper
-    mappings     = preparetables(data)
+    preparetables(data)
+    m_mappings   = data.m_mappings
+    z_mappings   = data.z_mappings
+    p_mappings   = data.p_mappings
+    --
+    method = predefinedmethods[method] or method
+    data.method  = method
+    --
+    local seq = utilities.parsers.settings_to_array(method or "") -- check the list
+    sequence = { }
+    for i=1,#seq do
+        local s = seq[i]
+        if validmethods[s] then
+            sequence[#sequence+1] = s
+        else
+            report_sorters("invalid sorter method '%s' in '%s'",s,method)
+        end
+    end
+    data.sequence = sequence
+    report_sorters("using sort sequence: %s",concat(sequence," "))
+    --
     return data
 end
 
@@ -269,12 +305,13 @@ function comparers.basic(a,b) -- trace ea and eb
     local na, nb = #ea, #eb
     if na == 0 and nb == 0 then
         -- simple variant (single word)
-        local result = basicsort(ea.m,eb.m)
-        if result == 0 then
-            result = basicsort(ea.c,eb.c)
-        end
-        if result == 0 then
-            result = basicsort(ea.u,eb.u)
+        local result = 0
+        for j=1,#sequence do
+            local m = sequence[j]
+            result = basicsort(ea[m],eb[m])
+            if result ~= 0 then
+                return result
+            end
         end
         return result
     else
@@ -282,17 +319,15 @@ function comparers.basic(a,b) -- trace ea and eb
         local result = 0
         for i=1,nb < na and nb or na do
             local eai, ebi = ea[i], eb[i]
-            if result == 0 then
-                result = basicsort(eai.m,ebi.m)
-            end
-            if result == 0 then
-                result = basicsort(eai.c,ebi.c)
-            end
-            if result == 0 then
-                result = basicsort(eai.u,ebi.u)
+            for j=1,#sequence do
+                local m = sequence[j]
+                result = basicsort(eai[m],ebi[m])
+                if result ~= 0 then
+                    return result
+                end
             end
             if result ~= 0 then
-                break
+                return result
             end
         end
         if result ~= 0 then
@@ -334,15 +369,18 @@ local function firstofsplit(entry)
     -- numbers are left padded by spaces
     local split = entry.split
     if #split > 0 then
-        split = split[1].s
+        split = split[1].ch
     else
-        split = split.s
+        split = split.ch
     end
     local entry = split and split[1] or ""
     return entry, entries[entry] or "\000"
 end
 
 sorters.firstofsplit = firstofsplit
+
+-- for the moment we use an inefficient bunch of tables but once
+-- we know what combinations make sense we can optimize this
 
 function splitters.utf(str) -- we could append m and u but this is cleaner, s is for tracing
     if #replacements > 0 then
@@ -352,48 +390,52 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             str = gsub(str,v[1],v[2])
         end
     end
-    local s, u, m, c, n = { }, { }, { }, { }, 0
-    if method == variables.last then
-        for sc in utfcharacters(str) do
-            local b = utfbyte(sc)
-            local l = lower[sc]
-            l = l and utfbyte(l) or lccodes[b]
-            if l ~= b then l = l - 1 end -- brrrr, can clash
-            n = n + 1
-            s[n], u[n], m[n] = sc, b, l
-            local msc = mappings[sc]
-            for i=1,#msc do
-                c[#c+1] = msc[i]
-            end
+
+    local m_case, z_case, p_case, m_mapping, z_mapping, p_mapping, char, byte, n = { }, { }, { }, { }, { }, { }, { }, { }, 0
+    for sc in utfcharacters(str) do
+        local b = utfbyte(sc)
+        local l = lower[sc]
+        n = n + 1
+        l = l and utfbyte(l) or lccodes[b]
+        z_case[n] = l
+        if l ~= b then
+            m_case[n] = l - 1
+            p_case[n] = l + 1
+        else
+            m_case[n] = l
+            p_case[n] = l
         end
-    elseif method == variables.first then
-        for sc in utfcharacters(str) do
-            local b = utfbyte(sc)
-            local l = lower[sc]
-            l = l and utfbyte(l) or lccodes[b]
-            if l ~= b then l = l + 1 end -- brrrr, can clash
-            n = n + 1
-            s[n], u[n], m[n] = sc, b, l
-            local msc = mappings[sc]
-            for i=1,#msc do
-                c[#c+1] = msc[i]
-            end
+        char[n], byte[n] = sc, b
+        local msc = m_mappings[sc]
+        for i=1,#msc do
+            m_mapping[#m_mapping+1] = msc[i]
         end
-    else
-        for sc in utfcharacters(str) do
-            local b = utfbyte(sc)
-            n = n + 1
-            s[n], u[n], c[n] = sc, b, b
-            local msc = mappings[sc]
-            for i=1,#msc do
-                m[#m+1] = msc[i]
-            end
+        local zsc = z_mappings[sc]
+        for i=1,#zsc do
+            z_mapping[#z_mapping+1] = zsc[i]
+        end
+        local psc = p_mappings[sc]
+        for i=1,#psc do
+            p_mapping[#p_mapping+1] = psc[i]
         end
     end
-    local t = { s = s, m = m, u = u, c = c }
+
+    local t = {
+        ch = char,
+        uc = byte,
+        mc = m_case,
+        zc = z_case,
+        pc = p_case,
+        mm = m_mapping,
+        zm = z_mapping,
+        pm = p_mapping,
+    }
+
  -- table.print(t)
+
     return t
 end
+
 
 function table.remap(t)
     local tt = { }
@@ -408,7 +450,7 @@ local function pack(entry)
     local split = entry.split
     if #split > 0 then
         for i=1,#split do
-            local tt, li = { }, split[i].s
+            local tt, li = { }, split[i].ch
             for j=1,#li do
                 local lij = li[j]
                 tt[j] = utfbyte(lij) > ignoredoffset and "[]" or lij
@@ -417,7 +459,7 @@ local function pack(entry)
         end
         return concat(t," + ")
     else
-        local t, li = { }, split.s
+        local t, li = { }, split.ch
         for j=1,#li do
             local lij = li[j]
             t[j] = utfbyte(lij) > ignoredoffset and "[]" or lij

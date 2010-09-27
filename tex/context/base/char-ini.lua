@@ -814,9 +814,10 @@ setmetatable(specialchars, { __index = function(t,u)
         if s then
             local t = { }
             for i=2,#s do
-                local c = data[s[i]]
+                local si = s[i]
+                local c = data[si]
                 if is_letter[c.category] then
-                    t[#t+1] = c
+                    t[#t+1] = utfchar(si)
                 end
             end
             c = concat(t)
