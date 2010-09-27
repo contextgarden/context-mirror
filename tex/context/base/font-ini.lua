@@ -76,6 +76,8 @@ fonts.manipulators = fonts.manipulators or {
 fonts.tracers = fonts.tracers or {
 }
 
+fonts.typefaces = fonts.typefaces or {
+}
 
 fonts.definers                     = fonts.definers                     or { }
 fonts.definers.specifiers          = fonts.definers.specifiers          or { }
