@@ -667,31 +667,54 @@
 \def\dodefinelayout[#1][#2]%
   {\getparameters[\??ly#1][\c!state=\v!start,#2]}
 
-% \def\dodosetuplayout[#1][#2]%
-%   {\ConvertToConstant\doifnot{#2}\v!reset % #2 ?
-%      {\getparameters[\??ly#1][#2]%
-%       \checkforems[#2]}}
-
 \def\dodosetuplayout[#1][#2]%
   {\doifnot{#2}\v!reset{\getparameters[\??ly#1][#2]}}
 
 % global needed for non-doublesided standardmakeup
 
+\unexpanded\def\setuplayout
+  {\dodoubleempty\dosetuplayout}
+
+% \def\dosetuplayout[#1][#2]%
+%   {\globallet\currentlayout\empty % new, global
+%    \ifsecondargument
+%      \dodosetuplayout[#1][#2]%
+%    \else\iffirstargument
+%      \doifassignmentelse{#1}
+%        {\dodosetuplayout[][#1]}
+%        {\doifnot{#1}\v!reset{\xdef\currentlayout{#1}}}% new, global
+%    \fi\fi
+%    \recalculatelayout
+%    \checkcurrentlayout % here ?
+%    \presetcenterpagebox}
+
 \def\dosetuplayout[#1][#2]%
-  {\globallet\currentlayout\empty % new, global
+  {\globallet\currentlayout\empty
    \ifsecondargument
      \dodosetuplayout[#1][#2]%
    \else\iffirstargument
      \doifassignmentelse{#1}
        {\dodosetuplayout[][#1]}
-       {\doifnot{#1}\v!reset{\xdef\currentlayout{#1}}}% new, global
+       {\doifelse{#1}\v!reset
+          {\let\@@lymethod\v!normal}% hardcodes, assumes a definition
+          {\xdef\currentlayout{#1}}}%
    \fi\fi
    \recalculatelayout
-   \checkcurrentlayout % here ?
+  %\checkcurrentlayout % here?
+   \dochecknextlayout  % here?
    \presetcenterpagebox}
 
-\unexpanded\def\setuplayout
-  {\dodoubleempty\dosetuplayout}
+\def\installlayouthandler#1#2%
+  {\setgvalue{\??ly:\c!method:#1}{#2}}
+
+\installlayouthandler\v!default
+  {\checkcurrentlayout}
+
+\installlayouthandler\v!normal
+  {\checkcurrentlayout}
+
+\def\dochecknextlayout
+  {\executeifdefined{\??ly:\c!method:\@@lymethod}\checkcurrentlayout}
 
 \let\@@zaheight\!!zeropoint
 

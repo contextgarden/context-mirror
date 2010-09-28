@@ -35,7 +35,7 @@ local report_mplib = logs.new("mplib")
 
 local texerrormessage = logs.texerrormessage
 
-local format, gsub, match = string.format, string.gsub, string.match
+local format, gsub, match, find = string.format, string.gsub, string.match, string.find
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
@@ -57,8 +57,8 @@ function metapost.resetlastlog()
     metapost.lastlog = ""
 end
 
-local function finder(name, mode, ftype)
-    if mode=="w" then
+local function finder(name, mode, ftype) -- we can use the finder to intercept btex/etex
+    if mode == "w" then
         return name
     elseif file.is_qualified_path(name) then
         return name
@@ -66,6 +66,23 @@ local function finder(name, mode, ftype)
         return resolvers.findfile(name,ftype)
     end
 end
+
+local function finder(name, mode, ftype) -- we use the finder to intercept btex/etex
+    if mode ~= "w" then
+        name = file.is_qualified_path(name) and name or resolvers.findfile(name,ftype)
+        if not (find(name,"/metapost/context/base/") or find(name,"/metapost/context/") or find(name,"/metapost/base/")) then
+            local data, found, forced = metapost.checktexts(io.loaddata(name) or "")
+            if found then
+                local temp = luatex.registertempfile(name)
+                io.savedata(temp,data)
+                name = temp
+            end
+        end
+    end
+    return name
+end
+
+-- -- --
 
 metapost.finder = finder
 

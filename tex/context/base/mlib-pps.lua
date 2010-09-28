@@ -675,6 +675,8 @@ local function checktexts(str)
     return lpegmatch(parser,str), found, forced
 end
 
+metapost.checktexts = checktexts
+
 local no_trial_run       = "_trial_run_ := false ;"
 local do_trial_run       = "if unknown _trial_run_ : boolean _trial_run_ fi ; _trial_run_ := true ;"
 local text_data_template = "_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;"

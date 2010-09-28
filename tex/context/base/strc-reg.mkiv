@@ -123,6 +123,7 @@
    \c!file=\jobname,
   %\c!deeptextcommand=, % undefined by default !
    \c!method=, % no default as we have them in the module, maybe some day in lang-*
+   \c!numberorder=\v!numbers, % \v!characters
    \s!language=\currentmainlanguage]%
 
 %D Definition:
@@ -456,10 +457,11 @@
    \edef\currentregister{#1}%
    \setupregister[\currentregister][#2]%
    \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxlua{structures.registers.analyze('\currentregister',{
-        language  = "\registerparameter\s!language",
-        method    = "\registerparameter\c!method",
-        compress  = "\registerparameter\c!compress",
-        criterium = "\registerparameter\c!criterium",
+        language    = "\registerparameter\s!language",
+        method      = "\registerparameter\c!method",
+        numberorder = "\registerparameter\c!numberorder",
+        compress    = "\registerparameter\c!compress",
+        criterium   = "\registerparameter\c!criterium",
    })}}}% brrr
    \ifcase\utilityregisterlength\relax
      \resetsystemmode\v!register
@@ -490,10 +492,11 @@
         \c!tolerance=\registerparameter\c!tolerance]%
        \startpacked[\v!blank]%
          \ctxlua{structures.registers.process('\currentregister',{
-            language  = "\registerparameter\s!language",
-            method    = "\registerparameter\c!method",
-            compress  = "\registerparameter\c!compress",
-            criterium = "\registerparameter\c!criterium",
+            language    = "\registerparameter\s!language",
+            method      = "\registerparameter\c!method",
+            numberorder = "\registerparameter\c!numberorder",
+            compress    = "\registerparameter\c!compress",
+            criterium   = "\registerparameter\c!criterium",
          },
         {
 %             prefix        = "\registerparameter\c!pageprefix",

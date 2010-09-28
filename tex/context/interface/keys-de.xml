@@ -1064,7 +1064,6 @@
 		<cd:command name='CAPPED' value='KAP'/>
 		<cd:command name='Character' value='Buchstabe'/>
 		<cd:command name='Characters' value='Buchstaben'/>
-		<cd:command name='LABELTEXT' value='LABELTEXT'/>
 		<cd:command name='MONTH' value='MONAT'/>
 		<cd:command name='Numbers' value='Ziffern'/>
 		<cd:command name='Romannumerals' value='Roemischezahlen'/>
