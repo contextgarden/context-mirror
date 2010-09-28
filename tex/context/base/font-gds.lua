@@ -320,6 +320,33 @@ end
 
 fonts.goodies.register("files", initialize)
 
+-- some day we will have a define command and then we can also do some
+-- proper tracing
+--
+-- fonts.typefaces["antykwapoltawskiego-condensed"] = {
+--     shortcut     = "rm",
+--     shape        = "serif",
+--     fontname     = "antykwapoltawskiego",
+--     normalweight = "light",
+--     boldweight   = "medium",
+--     width        = "condensed",
+--     size         = "default",
+--     features     = "default",
+-- }
+
+local function initialize(goodies)
+    local typefaces = goodies.typefaces
+    if typefaces then
+        local ft = fonts.typefaces
+        for k, v in next, typefaces do
+            ft[k] = v
+        end
+    end
+end
+
+fonts.goodies.register("typefaces", initialize)
+
+
 -- The following file (husayni.lfg) is the experimental setup that we used
 -- for Idris font. For the moment we don't store this in the cache and quite
 -- probably these files sit in one of the paths:

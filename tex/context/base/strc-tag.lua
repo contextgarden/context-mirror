@@ -73,6 +73,7 @@ local properties = allocate {
     registersee        = { pdf = "Span",       nature = "mixed"   },
     registerpages      = { pdf = "Span",       nature = "mixed"   },
     registerpage       = { pdf = "Span",       nature = "inline"  },
+    registerpagerange  = { pdf = "Span",       nature = "mixed"   },
 
     table              = { pdf = "Table",      nature = "display" },
     tablerow           = { pdf = "TR",         nature = "display" },

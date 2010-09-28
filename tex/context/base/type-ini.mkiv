@@ -416,18 +416,46 @@
    {\popmacro\relativefontsize
     \popmacro\fontclass}
 
-\def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
+% \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
+%   {\dododefinetypeface[#1][#2]%
+%    \iffifthargument % sixth is optional, we need to expand since in #6 there can be a \typescripttwo
+%      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
+%      \dostarttypefacedefining{#1}{#2}{#6}%
+%      \usetypescript[#3][#4][\t!name,\t!default]%
+%      \usetypescript[#3][#5][\t!size]%
+%      \dostoptypefacedefining
+%    \else\iffourthargument
+%      \definetypeface[#1][#2][#3][#4][\s!default]%
+%    \else\ifthirdargument
+%      \getparameters[\??tf#1#2][#3]%
+%    \fi\fi\fi}
+
+\def\dofastdefinetypeface#1#2#3#4#5%
   {\dododefinetypeface[#1][#2]%
-   \iffifthargument % sixth is optional, we need to expand since in #6 there can be a \typescripttwo
+   \dostarttypefacedefining{#1}{#2}{#5}%
+   \usetypescript[#3][#4][\t!size]%
+   \dostoptypefacedefining}
+
+\def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
+  {\iffifthargument % sixth is optional, we need to expand since in #6 there can be a \typescripttwo
      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
+     \dododefinetypeface[#1][#2]%
      \dostarttypefacedefining{#1}{#2}{#6}%
-     \usetypescript[#3][#4][\t!name,\t!default]%
-     \usetypescript[#3][#5][\t!size]%
+       \usetypescript[#3][#4][\t!name,\t!default]%
+       \usetypescript[#3][#5][\t!size]%
      \dostoptypefacedefining
    \else\iffourthargument
-     \definetypeface[#1][#2][#3][#4][\s!default]%
+     \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
+     \dododefinetypeface[#1][#2]%
+     \dostarttypefacedefining{#1}{#2}{}%
+       \usetypescript[#3][#4][\t!name,\t!default]%
+       \usetypescript[#3][\s!default][\t!size]%
+     \dostoptypefacedefining
    \else\ifthirdargument
+     \dododefinetypeface[#1][#2]%
      \getparameters[\??tf#1#2][#3]%
+   \else
+     \ctxlua{fonts.definetypeface(\!!bs#1\!!es,\!!bs#2\!!es)}%
    \fi\fi\fi}
 
 \def\dododefinetypeface[#1][#2]% saveguard against redefinition

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/27/10 11:54:49
+-- merge date  : 09/27/10 23:32:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -3158,6 +3158,8 @@ fonts.manipulators = fonts.manipulators or {
 fonts.tracers = fonts.tracers or {
 }
 
+fonts.typefaces = fonts.typefaces or {
+}
 
 fonts.definers                     = fonts.definers                     or { }
 fonts.definers.specifiers          = fonts.definers.specifiers          or { }

@@ -723,3 +723,61 @@ function fonts.reportusedfeatures()
 end
 
 luatex.registerstopactions(fonts.reportusedfeatures)
+
+-- experimental mechanism for Mojca:
+--
+-- fonts.definetypeface {
+--     name         = "mainbodyfont-light",
+--     preset       = "antykwapoltawskiego-light",
+-- }
+--
+-- fonts.definetypeface {
+--     name         = "mojcasfavourite",
+--     preset       = "antykwapoltawskiego",
+--     normalweight = "light",
+--     boldweight   = "bold",
+--     width        = "condensed",
+-- }
+
+local Shapes = {
+    serif = "Serif",
+    sans  = "Sans",
+    mono  = "Mono",
+}
+
+function fonts.definetypeface(name,t)
+    if type(name) == "table" then
+        -- {name=abc,k=v,...}
+        t = name
+    elseif t then
+        if type(t) == "string" then
+            -- "abc", "k=v,..."
+            t = utilities.parsers.settings_to_hash(name)
+        else
+            -- "abc", {k=v,...}
+        end
+        t.name = t.name or name
+    else
+        -- "name=abc,k=v,..."
+        t = utilities.parsers.settings_to_hash(name)
+    end
+    local p = t.preset and fonts.typefaces[t.preset] or { }
+    local name         = t.name         or "unknowntypeface"
+    local shortcut     = t.shortcut     or p.shortcut or "rm"
+    local size         = t.size         or p.size     or "default"
+    local shape        = t.shape        or p.shape    or "serif"
+    local fontname     = t.fontname     or p.fontname or "unknown"
+    local normalweight = t.normalweight or t.weight or p.normalweight or p.weight or "normal"
+    local boldweight   = t.boldweight   or t.weight or p.boldweight   or p.weight or "normal"
+    local normalwidth  = t.normalwidth  or t.width  or p.normalwidth  or p.width  or "normal"
+    local boldwidth    = t.boldwidth    or t.width  or p.boldwidth    or p.width  or "normal"
+    Shape = Shapes[shape] or "Serif"
+    context.startfontclass { name }
+        context.definefontsynonym( { format("%s",           Shape) }, { format("spec:%s-%s-regular-%s", fontname, normalweight, normalwidth) } )
+        context.definefontsynonym( { format("%sBold",       Shape) }, { format("spec:%s-%s-regular-%s", fontname, boldweight,   boldwidth  ) } )
+        context.definefontsynonym( { format("%sBoldItalic", Shape) }, { format("spec:%s-%s-italic-%s",  fontname, boldweight,   boldwidth  ) } )
+        context.definefontsynonym( { format("%sItalic",     Shape) }, { format("spec:%s-%s-italic-%s",  fontname, normalweight, normalwidth) } )
+    context.stopfontclass()
+    local settings = table.sequenced({ features= t.features },",")
+    context.dofastdefinetypeface(name, shortcut, shape, size, settings)
+end

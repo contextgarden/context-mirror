@@ -70,31 +70,35 @@ local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, 
 
 --~ local shchars = characters.specialchars -- no specials for AE and ae
 
+local usemetatable = true
+
 local mte = {
     __index = function(t,k)
-        local el
-        if k then
-            local l = lower[k] or lcchars[k]
-            el = rawget(t,l)
-        end
-        if not el then
-            local l = shchars[k]
-            if l and l ~= k then
-                if #l > 0 then
-                    l = sub(l,1,1)
-                end
+        if usemetatable then
+            local el
+            if k then
+                local l = lower[k] or lcchars[k]
                 el = rawget(t,l)
-                if not el then
-                    l = lower[k] or lcchars[l]
-                    if l then
-                        el = rawget(t,l)
+            end
+            if not el then
+                local l = shchars[k]
+                if l and l ~= k then
+                    if #l > 0 then
+                        l = sub(l,1,1)
+                    end
+                    el = rawget(t,l)
+                    if not el then
+                        l = lower[k] or lcchars[l]
+                        if l then
+                            el = rawget(t,l)
+                        end
                     end
                 end
+                el = el or k
             end
-            el = el or k
+        --  rawset(t,k,el) also make a copy?
+            return el
         end
-    --  rawset(t,k,el) also make a copy?
-        return el
     end
 }
 
@@ -347,7 +351,7 @@ local function numify(s)
 end
 
 local function numify(s)
-    s = digitsoffset + tonumber(s)
+    s = digitsoffset + tonumber(s) -- alternatively we can create a consecutive range
     if s > digitsmaximum then
         s = digitsmaximum
     end
@@ -373,8 +377,11 @@ local function firstofsplit(entry)
     else
         split = split.ch
     end
+    usemetatable = false -- ugly hack
     local entry = split and split[1] or ""
-    return entry, entries[entry] or "\000"
+    local tag = entries[entry] or "\000"
+    usemetatable = true
+    return entry, tag
 end
 
 sorters.firstofsplit = firstofsplit
@@ -394,29 +401,54 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
     local m_case, z_case, p_case, m_mapping, z_mapping, p_mapping, char, byte, n = { }, { }, { }, { }, { }, { }, { }, { }, 0
     for sc in utfcharacters(str) do
         local b = utfbyte(sc)
-        local l = lower[sc]
-        n = n + 1
-        l = l and utfbyte(l) or lccodes[b]
-        z_case[n] = l
-        if l ~= b then
-            m_case[n] = l - 1
-            p_case[n] = l + 1
+        if b >= digitsoffset then
+            if n == 0 then
+                -- we need to force number to the top
+                z_case[1] = 0
+                m_case[1] = 0
+                p_case[1] = 0
+                char[1] = sc
+                byte[1] = 0
+                m_mapping[1] = 0
+                z_mapping[1] = 0
+                p_mapping[1] = 0
+                n = 2
+            else
+                n = n + 1
+            end
+            z_case[n] = b
+            m_case[n] = b
+            p_case[n] = b
+            char[n] = sc
+            byte[n] = b
+            m_mapping[#m_mapping+1] = b
+            z_mapping[#z_mapping+1] = b
+            p_mapping[#p_mapping+1] = b
         else
-            m_case[n] = l
-            p_case[n] = l
-        end
-        char[n], byte[n] = sc, b
-        local msc = m_mappings[sc]
-        for i=1,#msc do
-            m_mapping[#m_mapping+1] = msc[i]
-        end
-        local zsc = z_mappings[sc]
-        for i=1,#zsc do
-            z_mapping[#z_mapping+1] = zsc[i]
-        end
-        local psc = p_mappings[sc]
-        for i=1,#psc do
-            p_mapping[#p_mapping+1] = psc[i]
+            local l = lower[sc]
+            n = n + 1
+            l = l and utfbyte(l) or lccodes[b]
+            z_case[n] = l
+            if l ~= b then
+                m_case[n] = l - 1
+                p_case[n] = l + 1
+            else
+                m_case[n] = l
+                p_case[n] = l
+            end
+            char[n], byte[n] = sc, b
+            local msc = m_mappings[sc]
+            for i=1,#msc do
+                m_mapping[#m_mapping+1] = msc[i]
+            end
+            local zsc = z_mappings[sc]
+            for i=1,#zsc do
+                z_mapping[#z_mapping+1] = zsc[i]
+            end
+            local psc = p_mappings[sc]
+            for i=1,#psc do
+                p_mapping[#p_mapping+1] = psc[i]
+            end
         end
     end
 

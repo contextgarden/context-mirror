@@ -306,7 +306,7 @@ return {
     name = "lucida-math",
     version = "1.00",
     comment = "Goodies that complement lucida math.",
-    author = "Aditya, Hans, Mojca",
+    author = "Aditya, Hans, Mojca with help from Zhichu Chen",
     copyright = "ConTeXt development team",
     mathematics = {
         mapfiles = {
