@@ -73,12 +73,12 @@
         \expandafter\noexpand\csname              #1text\endcsname}}
 
 \def\dododefinelabelclass#1#2#3#4#5#6#7#8#9%
-  {\unexpanded\def#3{#5#4}%
-              \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
-   \setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
+  {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
    \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
+   \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
    \ifnum#2=\plustwo
-     \unexpanded\def#5##1##2% ##1=language
+     \def#3{#5#4}%
+     \def#5##1##2% ##1=language
        {\ifcsname\??ml:#1:##1:##2\endcsname
           \csname\??ml:#1:##1:##2\endcsname
         \else\ifcsname\??la#4\s!default\endcsname
@@ -88,13 +88,14 @@
         \else\ifcsname\??ml:#1:\s!en:##2\endcsname
           \csname\??ml:#1:\s!en:##2\endcsname
         \else
-          #2%
+          ##2%
         \fi\fi\fi\fi}%
      \let#6\gobbleoneargument
      \let#7\gobbleoneargument
      \let#8\gobbletwoarguments
      \let#9#3%
    \else
+     \unexpanded\def#3{#5#4}%
      \unexpanded\def#5##1##2%
        {\ifcsname\??ml:#1:##1:##2\endcsname
           \expandafter\let\expandafter\thetextprefix\csname\??ml:#1:##1:##2\endcsname

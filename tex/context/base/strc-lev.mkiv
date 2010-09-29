@@ -24,7 +24,7 @@
 \unprotect
 
 \unexpanded\def\definestructurelevels{\dodoubleargument\dodefinestructurelevels}
-\unexpanded\def\startstructurelevel  {\dosingleargument\dostartstructurelevel}
+\unexpanded\def\startstructurelevel  {\dosingleempty\dostartstructurelevel}
 
 \unexpanded\def\dodefinestructurelevels[#1][#2]{\ctxlua{structures.sections.defineautolevels("#1","#2")}}
 \unexpanded\def\dostartstructurelevel      [#1]{\ctxlua{structures.sections.startautolevel("#1")}}
@@ -32,6 +32,11 @@
 
 \unexpanded\def\nostartstructurehead{\dotripleargument\nonostartstructurehead}
 \unexpanded\def\nostopstructurehead {\dosingleargument\nonostopstructurehead }
+
+\unexpanded\def\dostartstructurelevel[#1]%
+  {\doifassignmentelse{#1}
+     {\ctxlua{structures.sections.startautolevel("\v!default")}[#1]}
+     {\ctxlua{structures.sections.startautolevel("#1")}}}
 
 \unexpanded\def\nonostartstructurehead[#1][#2][#3]%
   {\blank
@@ -42,6 +47,15 @@
   {\blank
    \noindentation{\tttf[stop missing structure level #1]}
    \blank}
+
+\definestructurelevels
+  [\v!default]
+  [\v!chapter,
+   \v!section,
+   \v!subsection,
+   \v!subsubsection,
+   \v!subsubsubsection,
+   \v!subsubsubsubsection]
 
 \protect \endinput
 

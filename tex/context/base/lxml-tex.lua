@@ -914,7 +914,8 @@ local function position(collected,n)
 end
 
 local function match(collected) -- is match in preceding collected, never change, see bibxml
-    texwrite((collected and collected[1].mi) or 0)
+    local m = collected and collected[1]
+    texwrite(m and m.mi or 0)
 end
 
 local function index(collected,n)

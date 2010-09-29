@@ -123,7 +123,8 @@
    \let\@@efforegroundcolor\empty
    \let\@@efcolor          \empty
    \let\@@efconversion     \empty
-   \let\@@efbackground     \empty}
+   \let\@@efbackground     \empty
+   \let\@@efresolution     \empty}
 
 \appendtoks \resetexternalfigures \to \everyoverlay
 \appendtoks \resetexternalfigures \to \everybeforepagebody % not really needed
@@ -134,6 +135,7 @@
    \let\@@eflabel     \empty
    \let\@@efsize      \empty
    \let\@@efconversion\@@exconversion
+   \let\@@efresolution\@@exresolution
    \let\@@efprefix    \@@exprefix
    \let\@@efcache     \@@excache
    \let\@@efpage      \!!zerocount
@@ -230,23 +232,24 @@
 %    \color[\@@efcolor]{\xdef\globcolorattr{\internalspotcolorname}}
 %    \endgroup
    \ctxlua{figures.push {
-        name="#3",
-        label="#2", % todo: \@eflabel
-        page="\@@efpage",
-        size="\@@efsize",
-        object="\@@efobject",
-        prefix="\@@efprefix",
-        cache="\@@efcache",
-        format="\@@efmethod",
-        preset="\@@efprefix",
-        controls="\@@efcontrols",
-        preview="\@@efpreview",
-        display="\@@efdisplay",
-        conversion="\@@efconversion",
-        color="\internalspotcolorparent\@@efcolor", % hack is needed
-        ["repeat"]="\@@efrepeat",
-        width="\@@efwidth", % can be crap
-        height="\@@efheight", % can be crap
+        name       = "#3",
+        label      = "#2", % todo: \@eflabel
+        page       = "\@@efpage",
+        size       = "\@@efsize",
+        object     = "\@@efobject",
+        prefix     = "\@@efprefix",
+        cache      = "\@@efcache",
+        format     = "\@@efmethod",
+        preset     = "\@@efprefix",
+        controls   = "\@@efcontrols",
+        preview    = "\@@efpreview",
+        display    = "\@@efdisplay",
+        conversion = "\@@efconversion",
+        resolution = "\@@efresolution",
+        color      = "\internalspotcolorparent\@@efcolor", % hack is needed
+        ["repeat"] = "\@@efrepeat",
+        width      = "\@@efwidth", % can be crap
+        height     = "\@@efheight", % can be crap
     } }%
    \ctxlua{figures.identify()}%
    \ifconditional\testexternalfigureonly

@@ -10,14 +10,20 @@ local format = string.format
 local insert, remove = table.insert, table.remove
 
 local sections = structures.sections
+local default  = interfaces.variables.default
 
-local level, levels, categories = 0, { }, { }
+sections.levels = sections.levels or { }
+
+local level, levels, categories = 0, sections.levels, { }
+
+storage.register("structures/sections/levels", levels, "structures.sections.levels")
 
 function sections.defineautolevels(category,list)
     levels[category] = utilities.parsers.settings_to_array(list)
 end
 
 function sections.startautolevel(category)
+    category = category ~= "" and category or default
     level = level + 1
     local lc = levels[category]
     if not lc or level > #lc then
