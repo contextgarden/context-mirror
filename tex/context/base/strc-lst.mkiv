@@ -148,9 +148,14 @@
 % \appendtoks
 % \to \everystructurelist
 
-\unexpanded\def\placestructurelist#1#2#3% hm ... [][][]
+\unexpanded\def\placestructurelist#1#2#3#4%
   {\dostarttagged\t!list\empty
-   \ctxlua{structures.lists.process("#1","#2","#3")}%
+   \ctxlua{structures.lists.process {
+        names     = "#1",
+        criterium = "#2",
+        number    = "#3",
+        extras    = "#4"
+   }}%
    \dostoptagged}
 
 \unexpanded\def\analyzestructurelist#1#2#3%
@@ -181,11 +186,28 @@
 %   \chapter{Two} \section{First} \section{Second}
 % \stoptext
 
-\unexpanded\def\processlistofstructure#1#2#3% name, method, n
+\def\definelistextra
+  {\dodoubleargument\dodefinelistextra}
+
+\def\dodefinelistextra[#1][#2]%
+  {\getparameters[\??li:\c!extras:#1:][#2]}
+
+% todo: more generic tracing
+
+\definelistextra
+  [\v!page]
+  [\c!before={\showmessage\m!systems{14}{\currentlist/\currentlistindex}\page}]
+
+\def\processlistextrabefore{\executeifdefined{\??li:\c!extras:\currentlistextra:\c!before}\relax}
+\def\processlistextraafter {\executeifdefined{\??li:\c!extras:\currentlistextra:\c!after }\relax}
+
+\unexpanded\def\processlistofstructure#1#2#3#4% name, method, n, extra
   {\ctxlua{structures.lists.pushnesting(#3)}%
-   \edef\currentlist      {#1}%
-   \edef\currentlistmethod{#2}%
-   \edef\currentlistindex {#3}%
+   \edef\currentlist       {#1}%
+   \edef\currentlistmethod {#2}%
+   \edef\currentlistindex  {#3}%
+   \edef\currentlistextra  {#4}%
+   \processlistextrabefore
    \dostarttagged\t!listitem\currentlist
    \csname\@@structurelistprocess
      \ifcsname\@@structurelistprocess\currentlist:\currentlistmethod\endcsname\currentlist:\currentlistmethod\else
@@ -194,6 +216,7 @@
                                                                               \s!default                     \fi\fi\fi
    \endcsname
    \dostoptagged
+   \processlistextraafter
    \ctxlua{structures.lists.popnesting()}}
 
 % \installstructcurelistprocessor{pubs:userdata}
@@ -289,7 +312,7 @@
    \c!pagecommand=\listpagecommand,
    \c!pagenumber=\v!yes,
    \c!headnumber=\v!yes,
-   \c!pageboundaries=,
+   \c!extras=,
    \c!margin=\!!zeropoint,
    \c!aligntitle=,
    \c!before=,
@@ -387,7 +410,11 @@
    \edef\currentlist{\firststructureelementinlist{#1}}%
    \the\everystructurelist
    \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#1}}%
-   \placestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
+   \placestructurelist
+     {#1}%
+     {\listparameter\c!criterium}%
+     {\number\listparameter\c!number}%
+     {\listparameter\c!extras}%
    \stoplistreferences
    \endgroup
    \dosetlistmode}
@@ -559,16 +586,14 @@
   {\edef\currentlist{#1}%
    \edef\currentlistnumber{#3}%
    \docurrentlistalternative
-   %\showcomposition
-   \let\@@iawidth\!!zeropoint  % moet boolean worden
-   \begingroup
-   \edef\listelements{\listparameter\c!pageboundaries}%
-   \normalexpanded{\noexpand\doifinset{#3}{\listelements}}
-     {\showmessage\m!systems{14}{#3}%
-      \page}%
-   \endgroup
+   \let\@@iawidth\!!zeropoint % todo: constant or so
+%    \begingroup
+%    \edef\listelements{\listparameter\c!pageboundaries}%
+%    \normalexpanded{\noexpand\doifinset{#3}{\listelements}}
+%      {\showmessage\m!systems{14}{#3}%
+%       \page}%
+%    \endgroup
    \dontcomplain
-  %\setfullsectionnumber{\??li\currentlist}% todo
    \dosomelistelement{#1}{#2}{#3}{#4}{#5}{#6}}
 
 \def\dodocommandlistelement#1#2#3#4#5#6%
@@ -900,7 +925,11 @@
    \doif{\combinedlistparameter\c!coupling}\v!on{\startlistreferences{#1}}%
    \dobeginoflist
    \normalexpanded{\noexpand\dosetuplist[\combinedlist][#2]}%
-   \placestructurelist{\combinedlist}{\combinedlistparameter\c!criterium}{\combinedlistparameter\c!number}%
+   \placestructurelist
+     {\combinedlist}%
+     {\combinedlistparameter\c!criterium}%
+     {\combinedlistparameter\c!number}%
+     {\combinedlistparameter\c!pageboundaries}%
    \doendoflist
    \stoplistreferences
    \endgroup

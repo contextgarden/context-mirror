@@ -5033,7 +5033,7 @@
           <cd:constant type="intro"/>
           <cd:constant type="tot"/>
         </cd:parameter>
-        <cd:parameter name="marginipagina">
+        <cd:parameter name="extras">
           <cd:constant type="cd:list"/>
         </cd:parameter>
         <cd:parameter name="stil">

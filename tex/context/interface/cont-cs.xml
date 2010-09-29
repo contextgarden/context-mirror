@@ -5033,7 +5033,7 @@
           <cd:constant type="uvod"/>
           <cd:constant type="vse"/>
         </cd:parameter>
-        <cd:parameter name="hranicestranky">
+        <cd:parameter name="extras">
           <cd:constant type="cd:list"/>
         </cd:parameter>
         <cd:parameter name="pismeno">
