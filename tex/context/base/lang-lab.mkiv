@@ -13,6 +13,9 @@
 
 \unprotect
 
+%C The UPPERCASE variants are obsolete as we can now use \WORD
+%C in an non-interfering way.
+
 %D In this module we deal with language dependant labels and
 %D prefixes, like in {\em Figure~12} and {\em Chapter 1}. In
 %D this file we set the default values. Users can easily
@@ -28,6 +31,9 @@
 %D in front as well as after a part number. This is why the
 %D current implementation of labels supports two labels too.
 
+\ifdefined\simplifiedcommands \else \newtoks\simplifiedcommands \fi
+\ifdefined\Word               \else \let\Word\relax             \fi
+
 %D \macros
 %D   {setupheadtext, setuplabeltext}
 %D
@@ -38,18 +44,116 @@
 %D \showsetup{setuplabeltext}
 %D
 %D A regular \CONTEXT\ stores some 1500 labels at most.
+%D
+%D These commands accept all kind of inputs:
+%D
+%D \starttyping
+%D \setuplabeltext [language] [labellabel=text]
+%D \setuplabeltext [language] [labellabel=text,labellabel=text,...]
+%D \setuplabeltext            [labellabel=text]
+%D \setuplabeltext            [labellabel=text,labellabel=text,...]
+%D \stoptyping
+%D
+%D The last two cases concern the current language.
 
-\let\handletextprefix\relax
+\def\definelabelclass
+  {\dodoubleempty\dodefinelabelclass}
 
-\let\protecttextprefixes\zerocount
+\def\dodefinelabelclass[#1][#2]%
+  {\normalexpanded
+     {\noexpand\dododefinelabelclass
+        {#1}%
+        {\ifsecondargument#2\else\zerocount\fi}%
+        \expandafter\noexpand\csname   dogetupsome#1text\endcsname
+        \expandafter\noexpand\csname          #1language\endcsname
+        \expandafter\noexpand\csname dodogetupsome#1text\endcsname
+        \expandafter\noexpand\csname          left#1text\endcsname
+        \expandafter\noexpand\csname         right#1text\endcsname
+        \expandafter\noexpand\csname             #1texts\endcsname
+        \expandafter\noexpand\csname              #1text\endcsname}}
+
+\def\dododefinelabelclass#1#2#3#4#5#6#7#8#9%
+  {\unexpanded\def#3{#5#4}%
+              \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
+   \setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
+   \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
+   \ifnum#2=\plustwo
+     \unexpanded\def#5##1##2% ##1=language
+       {\ifcsname\??ml:#1:##1:##2\endcsname
+          \csname\??ml:#1:##1:##2\endcsname
+        \else\ifcsname\??la#4\s!default\endcsname
+          \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
+        \else\ifcsname\??ml:#1:##2\endcsname
+          \csname\??ml:#1:##2\endcsname
+        \else\ifcsname\??ml:#1:\s!en:##2\endcsname
+          \csname\??ml:#1:\s!en:##2\endcsname
+        \else
+          #2%
+        \fi\fi\fi\fi}%
+     \let#6\gobbleoneargument
+     \let#7\gobbleoneargument
+     \let#8\gobbletwoarguments
+     \let#9#3%
+   \else
+     \unexpanded\def#5##1##2%
+       {\ifcsname\??ml:#1:##1:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\csname\??ml:#1:##1:##2\endcsname
+        \else\ifcsname\??la#4\s!default\endcsname
+          \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
+        \else\ifcsname\??ml:#1:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\csname\??ml:#1:##2\endcsname
+        \else\ifcsname\??ml:#1:\s!en:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\csname\??ml:#1:\s!en:##2\endcsname
+        \else
+          \let\thetextprefix\dummytextprefix
+        \fi\fi\fi\fi}%
+     \unexpanded\def#6##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
+     \unexpanded\def#7##1{#3{##1}\expandafter\flushrightlabelclass\thetextprefix}%
+     \unexpanded\def#8##1{#3{##1}\expandafter\flushbothlabelclass \thetextprefix}% #2
+     \unexpanded\def#9##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
+   \fi
+   \appendtoks
+     \let#6\firstofoneargument % to be checked
+     \let#7\firstofoneargument % to be checked
+     \let#8\firstofoneargument % to be checked
+     \let#9\firstofoneargument % to be checked
+   \to \simplifiedcommands
+  }
+
+\let\flushleftlabelclass \firstoftwoarguments
+\let\flushrightlabelclass\secondoftwoarguments
+\def\flushbothlabelclass #1#2#3{#1#3#2}
+\def\dummytextprefix     {\empty\empty}
+
+%D \macros
+%D   {headtext,
+%D    labeltext, leftlabeltext, rightlabeltext, labeltexts,
+%D    LABELTEXT, LEFTLABELTEXT, RIGHTLABELTEXT, LABELTEXTS}
+%D
+%D Once defined, head and label texts can be called upon using:
+%D
+%D \showsetup{headtext}
+%D \showsetup{labeltext}
+%D
+%D The latter one has an upcased alternative \type{\LABELTEXT}.
+%D
+%D \macros
+%D   {presetheadtext,presetlabeltext}
+%D
+%D These macros enable us to automatically define head and label
+%D texts without replacing predefined ones. They are internal macros.
+
+\definelabelclass [head]      [0]
+\definelabelclass [label]     [0]
+\definelabelclass [mathlabel] [0]
+\definelabelclass [taglabel]  [2]
+
+\appendtoks \let\labellanguage\currentlanguage \to \everycurrentdate
+
+\newconstant\protecttextprefixes
 
 \let\currenttextprefixtag  \s!unknown
 \let\currenttextprefixclass\s!unknown
-
-\unexpanded\def\setupheadtext     {\let\protecttextprefixes\zerocount\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
-\unexpanded\def\setuplabeltext    {\let\protecttextprefixes\zerocount\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
-\unexpanded\def\setupmathlabeltext{\let\protecttextprefixes\zerocount\let\currenttextprefixclass\??mm\dodoubleempty\dosetupsometextprefix}
-\unexpanded\def\setuptaglabeltext {\let\protecttextprefixes\plustwo  \let\currenttextprefixclass\??me\dodoubleempty\dosetupsometextprefix}
 
 \def\dosetupsometextprefix[#1][#2]%
   {\ifsecondargument
@@ -72,7 +176,7 @@
      \expandafter\doassignsometextprefixyes
    \or
      % checking
-     \ifcsname\currenttextprefixclass\currenttextprefixtag#1\endcsname
+     \ifcsname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname
        \expandafter\expandafter\expandafter\doassignsometextprefixnop
      \else
        \expandafter\expandafter\expandafter\doassignsometextprefixyes
@@ -82,180 +186,29 @@
      \expandafter\doassignsometextprefixdumb
    \fi{#1}}
 
-\ifdefined\Word\else \let\Word\relax \fi
-
-% Checking saves some 8K in the compressed format and getting rid of the embedded
-% \handletextprefix was good for another 6K. In the end the new solution is not
-% even that inefficient. And the checking is done at format generation time anyway.
-
 \def\doassignsometextprefixyes#1[#2,#3,#4]%
   {\edef\!!stringa{#2}%
    \edef\!!stringb{#3}%
    \ifx\!!stringb\empty
      \ifx\!!stringa\empty
-       \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{\empty\empty}%
+       \expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
      \else
-       \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{{#2}\empty}%
+       \expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
      \fi
    \else
-     \expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{{#2}{#3}}%
+     \expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
    \fi}
 
 \def\doassignsometextprefixnop#1[#2]%
   {}
 
 \def\doassignsometextprefixdumb#1[#2,#3]%
-  {\expandafter\def\csname\currenttextprefixclass\currenttextprefixtag#1\endcsname{#2}}
-
-%D By changing the meaning of \type {\handletextprefix} we
-%D can filter the left and right labeltext as well as convert
-%D labels to uppercase.
-%D
-%D These commands accept all kind of inputs:
-%D
-%D \starttyping
-%D \setuplabeltext [language] [labellabel=text]
-%D \setuplabeltext [language] [labellabel=text,labellabel=text,...]
-%D \setuplabeltext            [labellabel=text]
-%D \setuplabeltext            [labellabel=text,labellabel=text,...]
-%D \stoptyping
-%D
-%D The last two cases concern the current language.
-
-%D \macros
-%D   {headtext,
-%D    labeltext, leftlabeltext, rightlabeltext, labeltexts,
-%D    LABELTEXT, LEFTLABELTEXT, RIGHTLABELTEXT, LABELTEXTS}
-%D
-%D Once defined, head and label texts can be called upon using:
-%D
-%D \showsetup{headtext}
-%D \showsetup{labeltext}
-%D
-%D The latter one has an upcased alternative \type{\LABELTEXT}.
-
-\def\labellanguage    {\reallanguagetag{\defaultlanguage\currentmainlanguage}}
-\def\headlanguage     {\reallanguagetag{\defaultlanguage\currentmainlanguage}}
-\def\mathlabellanguage{\reallanguagetag{\defaultlanguage\currentmainlanguage}}
-\def\taglabellanguage {\reallanguagetag{\defaultlanguage\currentmainlanguage}}
-
-\appendtoks \let\labellanguage\currentlanguage \to \everycurrentdate
-
-\def\dummytextprefix{\empty\empty}
-
-\def\dogetupsomelabeltext    {\dodogetupsomelabeltext    \labellanguage     } % second argument is textlabel
-\def\dogetupsomeheadtext     {\dodogetupsomeheadtext     \headlanguage      } % second argument is headlabel
-\def\dogetupsomemathlabeltext{\dodogetupsomemathlabeltext\mathlabellanguage }
-\def\dogetupsometaglabeltext {\dodogetupsometaglabeltext \taglabellanguage  }
-
-\def\dodogetupsomelabeltext#1#2%
-  {\ifcsname\??ml#1#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??ml#1#2\endcsname
-   \else\ifcsname\??la\labellanguage\s!default\endcsname
-     \expandafter\dodogetupsomelabeltext\csname\??la\labellanguage\s!default\endcsname{#2}%
-   \else\ifcsname\??ml#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??ml#2\endcsname
-   \else\ifcsname\??ml\s!en#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??ml\s!en#2\endcsname
-   \else
-     \let\thetextprefix\dummytextprefix
-   \fi\fi\fi\fi}
-
-\def\dodogetupsomeheadtext#1#2%
-  {\ifcsname\??mh#1#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mh#1#2\endcsname
-   \else\ifcsname\??la\headlanguage\s!default\endcsname
-     \expandafter\dodogetupsomeheadtext\csname\??la\headlanguage\s!default\endcsname{#2}%
-   \else\ifcsname\??mh#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mh#2\endcsname
-   \else\ifcsname\??mh\s!en#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mh\s!en#2\endcsname
-   \else
-     \let\thetextprefix\dummytextprefix
-   \fi\fi\fi\fi}
-
-\def\dodogetupsomemathlabeltext#1#2%
-  {\ifcsname\??mm#1#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mm#1#2\endcsname
-   \else\ifcsname\??la\mathlabellanguage\s!default\endcsname
-     \expandafter\dodogetupsomemathlabeltext\csname\??la\mathlabellanguage\s!default\endcsname{#2}%
-   \else\ifcsname\??mm#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mm#2\endcsname
-   \else\ifcsname\??mm\s!en#2\endcsname
-     \expandafter\let\expandafter\thetextprefix\csname\??mm\s!en#2\endcsname
-   \else
-     \let\thetextprefix\dummytextprefix
-   \fi\fi\fi\fi}
-
-\def\dodogetupsometaglabeltext#1#2% special
-  {\ifcsname\??me#1#2\endcsname
-     \csname\??me#1#2\endcsname
-   \else\ifcsname\??la\mathlabellanguage\s!default\endcsname
-     \expandafter\dodogetupsomemathlabeltext\csname\??la\mathlabellanguage\s!default\endcsname{#2}%
-   \else\ifcsname\??me#2\endcsname
-     \csname\??me#2\endcsname
-   \else\ifcsname\??me\s!en#2\endcsname
-     \csname\??me\s!en#2\endcsname
-   \else
-     #2%
-   \fi\fi\fi\fi}
-
-% The WORD variants are a bit inefficient when #1/#2 are empty but they are
-% seldom used (one can better set the style).
-
-\let\flushleftlabeltext     \firstoftwoarguments
-\let\flushrightlabeltext    \secondoftwoarguments
-\let\flushleftmathlabeltext \firstoftwoarguments
-\let\flushrightmathlabeltext\secondoftwoarguments
-
-\def\flushleftlabelWORD     #1#2{\WORD{#1}}
-\def\flushrightlabelWORD    #1#2{\WORD{#2}}
-\def\flushbothlabeltexts    #1#2#3{#1#3#2}
-\def\flushbothlabelTEXTS    #1#2#3{\WORD{#1}#3\WORD{#2}}
-
-\unexpanded\def\headtext          #1{\dogetupsomeheadtext     {#1}\expandafter\flushleftlabeltext     \thetextprefix}
-\unexpanded\def\leftlabeltext     #1{\dogetupsomelabeltext    {#1}\expandafter\flushleftlabeltext     \thetextprefix}
-\unexpanded\def\rightlabeltext    #1{\dogetupsomelabeltext    {#1}\expandafter\flushrightmathlabeltext\thetextprefix}
-\unexpanded\def\LEFTLABELTEXT     #1{\dogetupsomelabeltext    {#1}\expandafter\flushleftlabelWORD     \thetextprefix}
-\unexpanded\def\RIGHTLABELTEXT    #1{\dogetupsomelabeltext    {#1}\expandafter\flushrightlabelWORD    \thetextprefix}
-\unexpanded\def\labeltexts        #1{\dogetupsomelabeltext    {#1}\expandafter\flushbothlabeltexts    \thetextprefix} % #2
-\unexpanded\def\LABELTEXTS        #1{\dogetupsomelabeltext    {#1}\expandafter\flushbothlabelTEXTS    \thetextprefix} % #2
-\unexpanded\def\leftmathlabeltext #1{\dogetupsomemathlabeltext{#1}\expandafter\flushleftmathlabeltext \thetextprefix}
-\unexpanded\def\rightmathlabeltext#1{\dogetupsomemathlabeltext{#1}\expandafter\flushrightlabeltext    \thetextprefix}
-
-\let\labeltext    \leftlabeltext
-\let\LABELTEXT    \LEFTLABELTEXT
-\let\mathlabeltext\leftmathlabeltext
-
-\ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi
-
-\appendtoks
-  \let \headtext       \firstofoneargument
-  \let \labeltext      \firstofoneargument
-  \let \leftlabeltext  \firstofoneargument
-  \let \rightlabeltext \firstofoneargument
-  \let \HEADTEXT       \firstofoneargument
-  \let \LABELTEXT      \firstofoneargument
-  \let \LEFTLABELTEXT  \firstofoneargument
-  \let \RIGHTLABELTEXT \firstofoneargument
-  \let \mathlabeltext  \firstofoneargument
-\to \simplifiedcommands
-
-%D \macros
-%D   {presetheadtext,presetlabeltext}
-%D
-%D The next two macros enable us to automatically define
-%D head and label texts without replacing predefined ones.
-%D These are internal macros.
-
-\def\presetheadtext     {\let\protecttextprefixes\plusone\let\currenttextprefixclass\??mh\dodoubleempty\dosetupsometextprefix}
-\def\presetlabeltext    {\let\protecttextprefixes\plusone\let\currenttextprefixclass\??ml\dodoubleempty\dosetupsometextprefix}
-\def\presetmathlabeltext{\let\protecttextprefixes\plusone\let\currenttextprefixclass\??mm\dodoubleempty\dosetupsometextprefix}
+  {\expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
 %D \macros
 %D   {translate}
 %D
-%D Sometismes macros contain language specific words that are to
+%D Sometimes macros contain language specific words that are to
 %D be typeset. Such macros can be made (more) language
 %D independant by using:
 %D

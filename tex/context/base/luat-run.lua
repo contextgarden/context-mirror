@@ -9,9 +9,11 @@ if not modules then modules = { } end modules ['luat-run'] = {
 local format, rpadd = string.format, string.rpadd
 local insert = table.insert
 
-local trace_lua_dump = false  trackers  .register("system.dump", function(v) trace_lua_dump = v end)
+local trace_lua_dump   = false  trackers.register("system.dump",      function(v) trace_lua_dump   = v end)
+local trace_temp_files = false  trackers.register("system.tempfiles", function(v) trace_temp_files = v end)
 
-local report_lua_dump = logs.new("lua dump actions")
+local report_lua_dump   = logs.new("lua dump actions")
+local report_temp_files = logs.new("temporary files")
 
 luatex       = luatex or { }
 local luatex = luatex
@@ -86,3 +88,28 @@ callbacks.register('process_input_buffer',  false,               "actions perfor
 callbacks.register('process_output_buffer', false,               "actions performed when writing data")
 
 callbacks.register("pre_dump",              pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
+
+-- an example:
+
+local tempfiles = { }
+
+function luatex.registertempfile(name)
+    name = name .. ".mkiv-tmp" -- maybe just .tmp
+    if trace_temp_files and not tempfiles[name] then
+        report_temp_files("registering: %s",name)
+    end
+    tempfiles[name] = true
+    return name
+end
+
+function luatex.cleanuptempfiles()
+    for name, _ in next, tempfiles do
+        if trace_temp_files then
+            report_temp_files("removing: %s",name)
+        end
+        os.remove(name)
+    end
+    tempfiles = { }
+end
+
+luatex.registerstopactions(luatex.cleanuptempfiles)

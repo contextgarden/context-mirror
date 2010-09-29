@@ -418,7 +418,7 @@ function registers.analyzed(class,options)
     local data = collected[class]
     if data and data.entries then
         options = options or { }
-        sorters.setlanguage(options.language,options.method)
+        sorters.setlanguage(options.language,options.method,options.numberorder)
         registers.filter(data,options)   -- filter entries into results (criteria)
         registers.prepare(data,options)  -- adds split table parallel to list table
         registers.sort(data,options)     -- sorts results

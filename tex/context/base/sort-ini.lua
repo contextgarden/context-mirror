@@ -37,8 +37,9 @@ local lcchars           = characters.lcchars
 local shchars           = characters.shchars
 
 local variables         = interfaces.variables
+local v_numbers         = variables.numbers
 
-local validmethods      = table.tohash{ "mm", "zm", "pm", "mc", "zc", "pc", "uc" }
+local validmethods      = table.tohash { "mm", "zm", "pm", "mc", "zc", "pc", "uc" }
 
 local predefinedmethods = {
     [variables.before] = "mm,mc,uc",
@@ -58,23 +59,22 @@ sorters = {
         digitsoffset      = digitsoffset,
         digitsmaximum     = digitsmaximum,
         defaultlanguage   = variables.default,
-        defaultmethod     = "before",
+        defaultmethod     = variables.before,
+        defaultdigits     = v_numbers,
     }
 }
 
 local sorters   = sorters
 local constants = sorters.constants
 
-local data, language, method
+local data, language, method, digits
 local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, upper, method, sequence
 
 --~ local shchars = characters.specialchars -- no specials for AE and ae
 
-local usemetatable = true
-
 local mte = {
     __index = function(t,k)
-        if usemetatable then
+        if utfbyte(k) < digitsoffset then
             local el
             if k then
                 local l = lower[k] or lcchars[k]
@@ -212,12 +212,13 @@ local function update() -- prepare parent chains, needed when new languages are 
     end
 end
 
-local function setlanguage(l,m)
+local function setlanguage(l,m,d)
     language = (l ~= "" and l) or constants.defaultlanguage
     data = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
-    method  = (m ~= "" and m) or data.method or constants.defaultmethod
+    method = (m ~= "" and m) or data.method or constants.defaultmethod
+    digits =  (d ~= "" and d) or data.digits or constants.defaultdigits
     if trace_tests then
-        report_sorters("setting language '%s', method '%s'",language,method)
+        report_sorters("setting language '%s', method '%s', digits '%s'",language,method,digits)
     end
     replacements = data.replacements
     entries      = data.entries
@@ -231,6 +232,8 @@ local function setlanguage(l,m)
     --
     method = predefinedmethods[method] or method
     data.method  = method
+    --
+    data.digits  = digite
     --
     local seq = utilities.parsers.settings_to_array(method or "") -- check the list
     sequence = { }
@@ -250,12 +253,12 @@ end
 
 function sorters.update()
     update()
-    setlanguage(language,method) -- resync current language and method
+    setlanguage(language,method,numberorder) -- resync current language and method
 end
 
-function sorters.setlanguage(language,method)
+function sorters.setlanguage(language,method,numberorder)
     update()
-    setlanguage(language,method) -- new language and method
+    setlanguage(language,method,numberorder) -- new language and method
 end
 
 local function basicsort(sort_a,sort_b)
@@ -346,9 +349,9 @@ function comparers.basic(a,b) -- trace ea and eb
     end
 end
 
-local function numify(s)
-    return rep(" ",10-#s) .. s -- or format with padd
-end
+-- local function numify(s)
+--     return rep(" ",10-#s) .. s -- or format with padd
+-- end
 
 local function numify(s)
     s = digitsoffset + tonumber(s) -- alternatively we can create a consecutive range
@@ -361,8 +364,11 @@ end
 function sorters.strip(str) -- todo: only letters and such utf.gsub("([^%w%d])","")
     if str then
         str = gsub(str,"\\%S*","")
+        str = gsub(str,"%s","\001") -- can be option
         str = gsub(str,"[%s%[%](){}%$\"\']*","")
-        str = gsub(str,"(%d+)",numify) -- sort numbers properly
+        if digits == v_numbers then
+            str = gsub(str,"(%d+)",numify) -- sort numbers properly
+        end
         return str
     else
         return ""
@@ -377,10 +383,8 @@ local function firstofsplit(entry)
     else
         split = split.ch
     end
-    usemetatable = false -- ugly hack
     local entry = split and split[1] or ""
     local tag = entries[entry] or "\000"
-    usemetatable = true
     return entry, tag
 end
 

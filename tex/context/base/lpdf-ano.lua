@@ -429,6 +429,8 @@ end
 
 specials.i = specials.internal
 
+local pages = references.pages
+
 function specials.page(var,actions) -- better resolve in strc-ref
     local file = var.f
     if file then
@@ -436,10 +438,33 @@ function specials.page(var,actions) -- better resolve in strc-ref
         return link(nil,file,nil,var.operation,actions)
     else
         local p = references.pages[var.operation]
-        if type(p) == "function" then
+        if type(p) == "function" then -- double
             p = p()
         end
         return link(nil,nil,nil,p or var.operation,actions)
+    end
+end
+
+function specials.realpage(var,actions) -- better resolve in strc-ref
+    local file = var.f
+    if file then
+        file = references.checkedfile(file)
+        return link(nil,file,nil,var.operation,actions)
+    else
+        return link(nil,nil,nil,var.operation,actions)
+    end
+end
+
+function specials.userpage(var,actions)
+    local p = references.realpageofpage(tonumber(var.operation or 0))
+    if p then
+        local file = var.f
+        if file then
+         -- file = references.checkedfile(file)
+         -- return link(nil,file,nil,p,actions)
+        else
+            return link(nil,nil,nil,p,actions)
+        end
     end
 end
 

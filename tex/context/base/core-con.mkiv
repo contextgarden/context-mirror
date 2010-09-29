@@ -225,9 +225,9 @@
 \def\monthshort{\doconvertmonthshort}
 \def\month     {\doconvertmonth}
 
-\def\MONTH     #1{{\let\labeltext\LABELTEXT\month     {#1}}}
-\def\MONTHLONG #1{{\let\labeltext\LABELTEXT\monthlong {#1}}}
-\def\MONTHSHORT#1{{\let\labeltext\LABELTEXT\monthshort{#1}}}
+\def\MONTH     #1{{\WORD{\month     {#1}}}}
+\def\MONTHLONG #1{{\WORD{\monthlong {#1}}}}
+\def\MONTHSHORT#1{{\WORD{\monthshort{#1}}}}
 
 %D We never explicitly needed this, but Tobias Burnus pointed
 %D out that it would be handy to convert to the day of the
@@ -304,7 +304,7 @@
   {\doconvertday}
 
 \def\WEEKDAY#1%
-  {{\let\labeltext\LABELTEXT\doconvertday{#1}}}
+  {{\WORD{\doconvertday{#1}}}}
 
 %D \macros
 %D   {weekoftheday}

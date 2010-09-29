@@ -1064,7 +1064,6 @@
 		<cd:command name='CAPPED' value='CAP'/>
 		<cd:command name='Character' value='Lettera'/>
 		<cd:command name='Characters' value='Lettere'/>
-		<cd:command name='LABELTEXT' value='TESTOETICHETTA'/>
 		<cd:command name='MONTH' value='MESE'/>
 		<cd:command name='Numbers' value='Numeri'/>
 		<cd:command name='Romannumerals' value='Numeriromani'/>

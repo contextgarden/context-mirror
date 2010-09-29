@@ -1348,6 +1348,21 @@ function references.realpage() -- special case, we always want result
     texwrite(cs.realpage or 0)
 end
 
+local plist
+
+function realpageofpage(p)
+    if not plist then
+        local pages = structures.pages.collected
+        plist = { }
+        for rp=1,#pages do
+            plist[pages[rp].number] = rp
+        end
+    end
+    return plist[p]
+end
+
+references.realpageofpage = realpageofpage
+
 --
 
 references.pages = allocate {
@@ -1383,8 +1398,6 @@ end
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
-local pages = references.pages
-
 function specials.internal(var,actions)
     local v = references.internals[tonumber(var.operation)]
     local r = v and v.references.realpage
@@ -1395,6 +1408,10 @@ end
 
 specials.i = specials.internal
 
+-- weird, why is this code here and in lpdf-ano
+
+local pages = references.pages
+
 function specials.page(var,actions) -- is this ok?
     local p = pages[var.operation]
     if type(p) == "function" then
@@ -1403,4 +1420,13 @@ function specials.page(var,actions) -- is this ok?
     if p then
         actions.realpage = p
     end
+end
+
+function specials.realpage(var,actions) -- is this ok?
+    actions.realpage = tonumber(var.operation)
+end
+
+
+function specials.userpage(var,actions) -- is this ok?
+    actions.realpage = tonumber(realpageofpage(var.operation))
 end
