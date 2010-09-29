@@ -53,6 +53,25 @@ references.specials  = references.specials or { }
 local variables = interfaces.variables
 local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.numberatdepth
 
+-- -- -- -- -- --
+
+function table.zerostrippedconcat(t,separator)
+    local f, l = 1, #t
+    for i=f,l do
+        if t[i] == 0 then
+            f = f + 1
+        end
+    end
+    for i=l,f,-1 do
+        if t[i] == 0 then
+            l = l - 1
+        end
+    end
+    return concat(t,separator,f,l)
+end
+
+-- -- -- -- -- --
+
 local function initializer()
     -- create a cross reference between internal references
     -- and list entries
@@ -251,7 +270,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
                         if cnumbers then
---~ print(#cnumbers, depth, table.concat(cnumbers))
+--~ print(#cnumbers, depth, concat(cnumbers))
                             if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers >= depth then
                                 local ok = true
                                 for d=1,depth do
@@ -350,24 +369,27 @@ end
 
 lists.filtercollected = filtercollected
 
-function lists.filter(names, criterium, number, forced)
-    return filtercollected(names, criterium, number, lists.collected, forced)
+function lists.filter(specification)
+    return filtercollected(specification.names, specification.criterium, specification.number, lists.collected, specification.forced)
 end
 
 lists.result = { }
 
-function lists.process(...)
-    lists.result = lists.filter(...)
+function lists.process(specification)
+    lists.result = lists.filter(specification)
+    local specials = utilities.parsers.settings_to_hash(specification.extras or "")
+    specials = next(specials) and specials or nil
     for i=1,#lists.result do
         local r = lists.result[i]
         local m = r.metadata
-        texsprint(ctxcatcodes,format("\\processlistofstructure{%s}{%s}{%i}",m.name,m.kind,i))
---~         context.processlistofstructure(m.name,m.kind,i)
+        local s = specials and r.numberdata and specials[table.zerostrippedconcat(r.numberdata.numbers,".")] or ""
+        texsprint(ctxcatcodes,format("\\processlistofstructure{%s}{%s}{%i}{%s}",m.name,m.kind,i,s))
+--~         context.processlistofstructure(m.name,m.kind,i,s)
     end
 end
 
-function lists.analyze(...)
-    lists.result = lists.filter(...)
+function lists.analyze(specification)
+    lists.result = lists.filter(specification)
 end
 
 function lists.userdata(name,r,tag) -- to tex (todo: xml)
@@ -396,6 +418,17 @@ function lists.location(n)
     local l = lists.result[n]
     texsprint(l.references.internal or n)
 end
+
+--~ function lists.stamp(n)
+--~     local l = lists.result[n]
+--~     local numberdata = l.numberdata
+--~     if numberdata then
+--~         local numbers = numberdata.numbers
+--~         if numbers then
+--~             tex.sprint(table.zerostrippedconcat(numbers,"."))
+--~         end
+--~     end
+--~ end
 
 function lists.sectionnumber(name,n,spec)
     local data = lists.result[n]

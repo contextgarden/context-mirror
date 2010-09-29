@@ -5033,7 +5033,7 @@
           <cd:constant type="intro"/>
           <cd:constant type="alles"/>
         </cd:parameter>
-        <cd:parameter name="seitenbegrenzung">
+        <cd:parameter name="extras">
           <cd:constant type="cd:list"/>
         </cd:parameter>
         <cd:parameter name="stil">

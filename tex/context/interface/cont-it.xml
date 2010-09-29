@@ -5033,7 +5033,7 @@
           <cd:constant type="intro"/>
           <cd:constant type="tutti"/>
         </cd:parameter>
-        <cd:parameter name="limitipagina">
+        <cd:parameter name="extras">
           <cd:constant type="cd:list"/>
         </cd:parameter>
         <cd:parameter name="stile">
