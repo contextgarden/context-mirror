@@ -248,105 +248,108 @@ end
 
 -- interfacing to tex
 
-do
 
-    local figuredata = { }
-    local callstack  = { }
+local figuredata = { }
+local callstack  = { }
 
-    function figures.new() -- we could use metatables status -> used -> request but it needs testing
-        local request = {
-            name       = false,
-            label      = false,
-            format     = false,
-            page       = false,
-            width      = false,
-            height     = false,
-            preview    = false,
-            ["repeat"] = false,
-            controls   = false,
-            display    = false,
-            conversion = false,
-            cache      = false,
-            prefix     = false,
-            size       = false,
-        }
-        local used = {
-            fullname   = false,
-            format     = false,
-            name       = false,
-            path       = false,
-            suffix     = false,
-            width      = false,
-            height     = false,
-        }
-        local status = {
-            status     = 0,
-            converted  = false,
-            cached     = false,
-            fullname   = false,
-            format     = false,
-        }
-     -- setmetatable(status, { __index = used })
-     -- setmetatable(used,   { __index = request })
-        figuredata = {
-            request = request,
-            used    = used,
-            status  = status,
-        }
-        return figuredata
-    end
+function figures.new() -- we could use metatables status -> used -> request but it needs testing
+    local request = {
+        name       = false,
+        label      = false,
+        format     = false,
+        page       = false,
+        width      = false,
+        height     = false,
+        preview    = false,
+        ["repeat"] = false,
+        controls   = false,
+        display    = false,
+        conversion = false,
+        resolution = false,
+        cache      = false,
+        prefix     = false,
+        size       = false,
+    }
+    local used = {
+        fullname   = false,
+        format     = false,
+        name       = false,
+        path       = false,
+        suffix     = false,
+        width      = false,
+        height     = false,
+    }
+    local status = {
+        status     = 0,
+        converted  = false,
+        cached     = false,
+        fullname   = false,
+        format     = false,
+    }
+ -- setmetatable(status, { __index = used })
+ -- setmetatable(used,   { __index = request })
+    figuredata = {
+        request = request,
+        used    = used,
+        status  = status,
+    }
+    return figuredata
+end
 
-    function figures.push(request)
-        local ncs = #callstack + 1
-        if ncs == 1 then
-            statistics.starttiming(figures)
-        end
-        local figuredata = figures.new()
-        if request then
-        local iv = interfaces.variables
-        --  request.width/height are strings and are only used when no natural dimensions
-        --  can be determined; at some point the handlers might set them to numbers instead
-        --  local w, h = tonumber(request.width), tonumber(request.height)
-            request.page      = math.max(tonumber(request.page) or 1,1)
-            request.size      = img.checksize(request.size)
-            request.object    = iv[request.object] == variables.yes
-            request["repeat"] = iv[request["repeat"]] == variables.yes
-            request.preview   = iv[request.preview] == variables.yes
-            request.cache     = request.cache  ~= "" and request.cache
-            request.prefix    = request.prefix ~= "" and request.prefix
-            request.format    = request.format ~= "" and request.format
-        --  request.width     = (w and w > 0) or false
-        --  request.height    = (h and h > 0) or false
-            table.merge(figuredata.request,request)
-        end
-        callstack[ncs] = figuredata
-        return figuredata
+function figures.push(request)
+    local ncs = #callstack + 1
+    if ncs == 1 then
+        statistics.starttiming(figures)
     end
-    function figures.pop()
-        local ncs = #callstack
-        figuredata = callstack[ncs]
-        callstack[ncs] = nil
-        if ncs == 1 then
-            statistics.stoptiming(figures)
-        end
+    local figuredata = figures.new()
+    if request then
+    local iv = interfaces.variables
+    --  request.width/height are strings and are only used when no natural dimensions
+    --  can be determined; at some point the handlers might set them to numbers instead
+    --  local w, h = tonumber(request.width), tonumber(request.height)
+        request.page       = math.max(tonumber(request.page) or 1,1)
+        request.size       = img.checksize(request.size)
+        request.object     = iv[request.object] == variables.yes
+        request["repeat"]  = iv[request["repeat"]] == variables.yes
+        request.preview    = iv[request.preview] == variables.yes
+        request.cache      = request.cache ~= "" and request.cache
+        request.prefix     = request.prefix ~= "" and request.prefix
+        request.format     = request.format ~= "" and request.format
+    --  request.width      = (w and w > 0) or false
+    --  request.height     = (h and h > 0) or false
+        table.merge(figuredata.request,request)
     end
-    -- maybe move texsprint to tex
-    function figures.get(category,tag,default)
-        local value = figuredata[category]
-        value = value and value[tag]
-        if not value or value == "" or value == true then
-            return default or ""
-        else
-            return value
-        end
-    end
-    function figures.tprint(category,tag,default)
-        texsprint(ctxcatcodes,figures.get(category,tag,default))
-    end
-    function figures.current()
-        return callstack[#callstack]
-    end
+    callstack[ncs] = figuredata
+    return figuredata
+end
 
+function figures.pop()
+    local ncs = #callstack
+    figuredata = callstack[ncs]
+    callstack[ncs] = nil
+    if ncs == 1 then
+        statistics.stoptiming(figures)
+    end
+end
+
+-- maybe move texsprint to tex
+
+function figures.get(category,tag,default)
+    local value = figuredata[category]
+    value = value and value[tag]
+    if not value or value == "" or value == true then
+        return default or ""
+    else
+        return value
+    end
+end
+
+function figures.tprint(category,tag,default)
+    texsprint(ctxcatcodes,figures.get(category,tag,default))
+end
+
+function figures.current()
+    return callstack[#callstack]
 end
 
 local defaultformat = "pdf"
@@ -357,16 +360,20 @@ local function register(askedname,specification)
         local format = specification.format
         if format then
             local conversion = specification.conversion
+            local resolution = specification.resolution
             if conversion == "" then
                 conversion = nil
+            end
+            if resolution == "" then
+                resolution = nil
             end
             local newformat = conversion
             if not newformat or newformat == "" then
                 newformat = defaultformat
             end
             if trace_conversion then
-                report_graphics("checking conversion of '%s': old format '%s', new format '%s', conversion '%s'",
-                    askedname,format,newformat,conversion or "default")
+                report_graphics("checking conversion of '%s': old format '%s', new format '%s', conversion '%s', resolution '%s'",
+                    askedname,format,newformat,conversion or "default",resolution or "default")
             end
             local converter = (newformat ~= format) and converters[format]
             if converter then
@@ -387,7 +394,7 @@ local function register(askedname,specification)
                 local oldname = specification.fullname
                 local newpath = file.dirname(oldname)
                 local oldbase = file.basename(oldname)
-                local newbase = file.replacesuffix(oldbase,newformat)
+                local newbase = file.removesuffix(oldbase)
                 local fc = specification.cache or figures.cachepaths.path
                 if fc and fc ~= "" and fc ~= "." then
                     newpath = fc
@@ -402,6 +409,10 @@ local function register(askedname,specification)
                 if prefix and prefix ~= "" then
                     newbase = prefix .. newbase
                 end
+                if resolution and resolution ~= "" then -- the order might change
+                    newbase = newbase .. "_" .. resolution
+                end
+                local newbase = file.addsuffix(newbase,newformat)
                 local newname = file.join(newpath,newbase)
                 dir.makedirs(newpath)
                 oldname = file.collapse_path(oldname)
@@ -412,7 +423,7 @@ local function register(askedname,specification)
                     if trace_conversion then
                         report_graphics("converting '%s' from '%s' to '%s'",askedname,format,newformat)
                     end
-                    converter(oldname,newname)
+                    converter(oldname,newname,resolution or "")
                 else
                     if trace_conversion then
                         report_graphics("no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
@@ -451,7 +462,7 @@ local function register(askedname,specification)
         specification = { }
     end
     specification.foundname = specification.foundname or specification.fullname
-    figures.found[askedname .. "->" .. (specification.conversion or "default")] = specification
+    figures.found[askedname .. "->" .. (specification.conversion or "default") .. "->" .. (specification.resolution or "default")] = specification
     return specification
 end
 
@@ -459,7 +470,7 @@ local resolve_too = true -- urls
 
 local function locate(request) -- name, format, cache
     local askedname = resolvers.cleanpath(request.name)
-    local foundname = figures.found[askedname .. "->" .. (request.conversion or "default")]
+    local foundname = figures.found[askedname .. "->" .. (request.conversion or "default") .. "->" .. (request.resolution or "default")]
     if foundname then
         return foundname
     end
@@ -484,6 +495,7 @@ local function locate(request) -- name, format, cache
     local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
     local askedcache = request.cache
     local askedconversion = request.conversion
+    local askedresolution = request.resolution
     if askedformat ~= "" then
         if trace_figures then
             commands.writestatus("figures","strategy: forced format")
@@ -504,12 +516,13 @@ local function locate(request) -- name, format, cache
             local foundname = figures.exists(askedname,format,resolve_too) -- not askedformat
             if foundname then
                 return register(askedname, {
-                    askedname = askedname,
-                    fullname = askedname,
-                    format = format,
-                    cache = askedcache,
-                    foundname = foundname,
+                    askedname  = askedname,
+                    fullname   = askedname,
+                    format     = format,
+                    cache      = askedcache,
+                    foundname  = foundname,
                     conversion = askedconversion,
+                    resolution = askedresolution,
                 })
             end
         end
@@ -517,11 +530,12 @@ local function locate(request) -- name, format, cache
             -- path and type given, todo: strip pieces of path
             if figures.exists(askedname,askedformat,resolve_too) then
                 return register(askedname, {
-                    askedname = askedname,
-                    fullname = askedname,
-                    format = askedformat,
-                    cache = askedcache,
+                    askedname  = askedname,
+                    fullname   = askedname,
+                    format     = askedformat,
+                    cache      = askedcache,
                     conversion = askedconversion,
+                    resolution = askedresolution,
                 })
             end
         else
@@ -534,11 +548,12 @@ local function locate(request) -- name, format, cache
              -- is given we don't waste much time
                 if figures.exists(check,askedformat,resolve_too) then
                     return register(check, {
-                        askedname = askedname,
-                        fullname = check,
-                        format = askedformat,
-                        cache = askedcache,
+                        askedname  = askedname,
+                        fullname   = check,
+                        format     = askedformat,
+                        cache      = askedcache,
                         conversion = askedconversion,
+                        resolution = askedresolution,
                     })
                 end
             end
@@ -546,11 +561,12 @@ local function locate(request) -- name, format, cache
                 local check = resolvers.findfile(askedname)
                 if check and check ~= "" then
                     return register(askedname, {
-                        askedname = askedname,
-                        fullname = check,
-                        format = askedformat,
-                        cache = askedcache,
+                        askedname  = askedname,
+                        fullname   = check,
+                        format     = askedformat,
+                        cache      = askedcache,
                         conversion = askedconversion,
+                        resolution = askedresolution,
                     })
                 end
             end
@@ -568,11 +584,12 @@ local function locate(request) -- name, format, cache
                 local check = file.addsuffix(askedname,suffix)
                 if figures.exists(check,format,resolve_too) then
                     return register(askedname, {
-                        askedname = askedname,
-                        fullname = check,
-                        format = format,
-                        cache = askedcache,
+                        askedname  = askedname,
+                        fullname   = check,
+                        format     = format,
+                        cache      = askedcache,
                         conversion = askedconversion,
+                        resolution = askedresolution,
                     })
                 end
             end
@@ -601,11 +618,12 @@ local function locate(request) -- name, format, cache
                             end
                         elseif figures.exists(check,format,true) then
                             return register(askedname, {
-                                askedname = askedname,
-                                fullname = check,
-                                format = format,
-                                cache = askedcache,
+                                askedname  = askedname,
+                                fullname   = check,
+                                format     = format,
+                                cache      = askedcache,
                                 conversion = askedconversion,
+                                resolution = askedresolution,
                             })
                         end
                     end
@@ -627,11 +645,12 @@ local function locate(request) -- name, format, cache
                         local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
                         if figures.exists(check,format,resolve_too) then
                             return register(askedname, {
-                                askedname = askedname,
-                                fullname = check,
-                                format = format,
-                                cache = askedcache,
+                                askedname  = askedname,
+                                fullname   = check,
+                                format     = format,
+                                cache      = askedcache,
                                 conversion = askedconversion,
+                                resolution = askedresolution,
                             })
                         end
                     end
@@ -651,11 +670,12 @@ local function locate(request) -- name, format, cache
                     local check = resolvers.findfile(file.replacesuffix(askedname,suffix))
                     if check and check ~= "" then
                         return register(askedname, {
-                            askedname = askedname,
-                            fullname = check,
-                            format = format,
-                            cache = askedcache,
+                            askedname  = askedname,
+                            fullname   = check,
+                            format     = format,
+                            cache      = askedcache,
                             conversion = askedconversion,
+                            resolution = askedresolution,
                         })
                     end
                 end
@@ -764,10 +784,14 @@ function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     local name, page, size, color = du.fullname or "unknown generic", du.page or dr.page, dr.size or "crop", dr.color or "natural"
     local conversion = dr.conversion
+    local resolution = dr.resolution
     if not conversion or conversion == "" then
         conversion = "unknown"
     end
-    local hash = name .. "->" .. page .. "->" .. size .. "->" .. color .. "->" .. conversion
+    if not resolution or resolution == "" then
+        resolution = "unknown"
+    end
+    local hash = name .. "->" .. page .. "->" .. size .. "->" .. color .. "->" .. conversion .. "->" .. resolution
     local figure = figures.loaded[hash]
     if figure == nil then
         figure = img.new { filename = name, page = page, pagebox = dr.size }
@@ -928,7 +952,7 @@ includers.tex = includers.nongeneric
 
 -- -- -- converters -- -- --
 
-local function makeoptions(program)
+local function makeoptions(options)
     local to = type(options)
     return (to == "table" and concat(options," ")) or (to == "string" and options) or ""
 end
@@ -947,19 +971,27 @@ local epsconverter     = { }
 converters.eps = epsconverter
 
 programs.gs = {
+    resolutions = {
+        [variables.low]    = "screen",
+        [variables.medium] = "ebook",
+        [variables.high]   = "prepress",
+    },
     options = {
         "-dAutoRotatePages=/None",
-        "-dPDFSETTINGS=/prepress",
+        "-dPDFSETTINGS=/%s",
         "-dEPSCrop",
     },
-    command = (os.type == "windows" and "gswin32") or "gs"
+    command = (os.type == "windows" and "gswin32c") or "gs"
 }
 
-function epsconverter.pdf(oldname,newname)
+function epsconverter.pdf(oldname,newname,resolution) -- the resolution interface might change
     local gs = programs.gs
     runprogram (
         '%s -q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH %s -sOutputFile="%s" "%s" -c quit',
-        gs.command, makeoptions(gs.options), newname, oldname
+        gs.command,
+        format(makeoptions(gs.options),gs.resolutions[resolution or ""] or "prepress"),
+        newname,
+        oldname
     )
 end
 

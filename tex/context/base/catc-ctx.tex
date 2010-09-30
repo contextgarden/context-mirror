@@ -22,6 +22,7 @@
 % \ifdefined \xmlcatcodesr \else \newcatcodetable \xmlcatcodesr \fi % reduce
 \ifdefined \typcatcodesa \else \newcatcodetable \typcatcodesa \fi % { }
 \ifdefined \typcatcodesb \else \newcatcodetable \typcatcodesb \fi % < >
+\ifdefined \typcatcodesc \else \newcatcodetable \typcatcodesc \fi % delimited
 
 \startcatcodetable \ctxcatcodes
     \catcode`\^^I = 10
@@ -162,6 +163,15 @@
     \catcode`\^^Z = 12
     \catcode`\<   =  1
     \catcode`\>   =  2
+\stopcatcodetable
+
+
+\startcatcodetable \typcatcodesc
+    \catcode`\^^I = 12
+    \catcode`\^^M = 12
+    \catcode`\^^L = 12
+    \catcode`\    = 12
+    \catcode`\^^Z = 12
 \stopcatcodetable
 
 \startcatcodetable \txtcatcodes

@@ -261,7 +261,10 @@ if environment.argument("context") then
     scripts.interface.context()
 elseif environment.argument("messages") then
     scripts.interface.messages()
-elseif environment.argument("scite") or environment.argument("bbedit") or environment.argument("jedit") then
+elseif environment.argument("scite")  or
+       environment.argument("bbedit") or
+       environment.argument("jedit")  or
+       environment.argument("raw")    then
     if environment.argument("scite") then
         scripts.interface.editor("scite")
     end
@@ -270,6 +273,9 @@ elseif environment.argument("scite") or environment.argument("bbedit") or enviro
     end
     if environment.argument("jedit") then
         scripts.interface.editor("jedit")
+    end
+    if environment.argument("raw") then
+        scripts.interface.editor("raw")
     end
 elseif environment.argument("check") then
     scripts.interface.check()
