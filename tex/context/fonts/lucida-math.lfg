@@ -250,7 +250,12 @@ mathencodings["lbr-mb"] = {
     [0x1D718] = 0x9B, -- varkappa
 }
 
+
 mathencodings["lbr-sy"] = {
+
+    [0x0002B] = 0x82, -- plus
+    [0x0003D] = 0x83, -- equal
+
     [0x021CB] = 0x8D, -- leftrightharpoons
     [0x021CC] = 0x8E, -- rightleftharpoons
     [0x02214] = 0x89, -- dotplus

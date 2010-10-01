@@ -15,6 +15,7 @@ buffers.database = buffers.database or { }
 
 local separators = { -- not interfaced
     tab    = lpegpatterns.tab,
+    tabs   = lpegpatterns.tab^1,
     comma  = lpegpatterns.comma,
     space  = lpegpatterns.space,
     spaces = lpegpatterns.space^1,
@@ -30,6 +31,12 @@ function buffers.database.process(settings)
     else
         data = buffers.raw(settings.database)
     end
+local function sprint(c,...)
+    tex.sprint(tex.ctxcatcodes,[[\tt\bgroup]])
+    tex.sprint(tex.vrbcatcodes,...)
+    tex.sprint(tex.ctxcatcodes,[[\egroup\crlf]])
+end
+
     if data and #data > 0 then
         local separatorchar, quotechar, commentchar = settings.separator, settings.quotechar, settings.commentchar
         local before, after = settings.before or "", settings.after or ""
@@ -58,30 +65,38 @@ function buffers.database.process(settings)
         for i=1,#data do
             local line = data[i]
             if line ~= "" and (not checker or not lpegmatch(checker,line)) then
+                local result = { } -- we collect as this is nicer in tracing
                 local list = lpegmatch(splitter,line)
-                if found then
-                    sprint(ctxcatcodes,first)
-                else
+                if not found then
                     local setups = settings.setups or ""
                     if setups == "" then
-                        sprint(ctxcatcodes,"\\begingroup",before,first)
+                        sprint(ctxcatcodes,"\\begingroup")
                     else
-                        sprint(ctxcatcodes,"\\begingroup\\setups[",setups,"]",before,first)
+                        sprint(ctxcatcodes,"\\begingroup\\setups[",setups,"]")
                     end
+                    sprint(ctxcatcodes,before)
                     found = true
                 end
+                result[#result+1] = first
                 for j=1,#list do
+                    result[#result+1] = left
                     if command == "" then
-                        sprint(ctxcatcodes,left,list[j],right)
+                        result[#result+1] = list[j]
                     else
-                        sprint(ctxcatcodes,left,command,"{",list[j],"}",right)
+                        result[#result+1] = command
+                        result[#result+1] = "{"
+                        result[#result+1] = list[j]
+                        result[#result+1] = "}"
                     end
+                    result[#result+1] = right
                 end
-                sprint(ctxcatcodes,last)
+                result[#result+1] = last
+                sprint(ctxcatcodes,result)
             end
         end
         if found then
-            sprint(ctxcatcodes,after,"\\endgroup")
+            sprint(ctxcatcodes,after)
+            sprint(ctxcatcodes,"\\endgroup")
         end
     else
         -- message

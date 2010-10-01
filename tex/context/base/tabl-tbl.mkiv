@@ -584,6 +584,27 @@
      \expandafter\nexttabulate
    \fi}
 
+% \def\donormalizetabulatesplitline
+%   {\ht\tabulatebox\strutht
+%    \dp\tabulatebox\strutdp}
+
+\setnewconstant \tabulatesplitlinemode \plusone
+
+\def\donormalizetabulatesplitline
+  {\ifcase\tabulatesplitlinemode
+     % nothing
+   \or
+     \ht\tabulatebox\strutht
+     \dp\tabulatebox\strutdp
+   \or
+     \ifdim\ht\tabulatebox<\strutht
+       \ht\tabulatebox\strutht
+     \fi
+     \ifdim\dp\tabulatebox<\strutdp
+       \dp\tabulatebox\strutdp
+     \fi
+   \fi}
+
 \def\splitofftabulatebox % overloaded in anch-pgr
   {\dontcomplain
    \global\setbox\tabulatebox % % % global ? % % %
@@ -592,8 +613,7 @@
      {\unvbox\tabulatebox}%
    \setbox\tabulatebox\hbox to \wd\tabulatebox
      {\hss\dotabulatehook{\box\tabulatebox}\hss}%
-   \ht\tabulatebox\strutht
-   \dp\tabulatebox\strutdp
+   \donormalizetabulatesplitline
    \box\tabulatebox}
 
 \def\dotabulatehook {\csname\??tt:h:\the\tabulatecolumn\endcsname}
@@ -614,22 +634,6 @@
    \ifdim\scratchdimen>\tabulatemaxpheight
      \global\tabulatemaxpheight\scratchdimen
    \fi}
-
-% \def\handletabulatepbreak
-%   {\TABLEnoalign
-%      {\ifhandletabulatepbreak
-%         \iftabulatenopbreak
-%           \dotabulatenobreak
-%         \else\ifnum\tabulatemaxplines>\plusone
-%           \ifnum\tabulateminplines=\plusone
-%             \dotabulatenobreak
-%           \fi
-%           \global\advance\tabulateminplines\plusone
-%           \ifnum\tabulateminplines=\tabulatemaxplines\relax
-%             \dotabulatenobreak
-%           \fi
-%         \fi \fi
-%       \fi}}
 
 \def\dohandletabulatepbreak
   {\ifhandletabulatepbreak
@@ -738,11 +742,6 @@
      \let\tabulatetailcontent\empty
    \fi}
 
-% \def\fulltabulatecontent
-%   {\tabulateheadcontent
-%    \tabulatecontent
-%    \tabulatetailcontent}
-
 \def\fulltabulatecontent
   {\tabulateheadcontent
    \tabulatecontent
@@ -797,7 +796,7 @@
 
 \egroup
 
-% The much neede hook:
+% The much needed hook:
 
 \newtoks\everytabulate
 
@@ -1129,18 +1128,6 @@
 \def\tabulatexbskiptwo{\bskip}
 \def\tabulatexeskiptwo{\eskip}
 
-% \def\tabulateflushtabulatedtwo
-%   {\TABLEnoalign % noalign % no interference !
-%      {\glet\flushtabulatedindeed\empty
-%       \global\tabulatecolumn\zerocount
-%       \handletabulatepbreak
-%       \dorecurse\tabulatecolumns % was: \noftabcolumns
-%         {\ifvoid\tablebox\recurselevel\else
-%            \gdef\flushtabulatedindeed{\the\tabulatedummy}%
-%          \fi}%
-%       \global\tabulatefirstflushedtrue}%
-%    \flushtabulatedindeed}
-
 \def\dotabulateflushtabulatedtwo
   {\glet\flushtabulatedindeed\empty
    \global\tabulatecolumn\zerocount
@@ -1275,7 +1262,7 @@
    \dotabulaterule
    \dotabulatenobreak
    \dotabulateruleseperator
-%    \prevdepth\strutdp % todo, might differ between TL and BL
+  %\prevdepth\strutdp % todo, might differ between TL and BL
    \dotabulatenobreak}}
 
 \let\tabulateBLfive\tabulateTLfive
@@ -1421,12 +1408,12 @@
      \setbox\tabulatebox\vbox \bgroup
    \fi
    %
-\dostarttagged\t!tabulate\empty
-\dostarttagged\t!tabulaterow\empty
-\appendtoks\dostoptagged\dostarttagged\t!tabulaterow\empty\to\everycr
+   \dostarttagged\t!tabulate\empty
+   \dostarttagged\t!tabulaterow\empty
+   \appendtoks\dostoptagged\dostarttagged\t!tabulaterow\empty\to\everycr
    \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
-\dostoptagged
-\dostoptagged
+   \dostoptagged
+   \dostoptagged
    \prevdepth\strutdp % nog eens beter, temporary hack
    \doifvalue{\??tt\currenttabulate\c!distance}\v!grid{\vskip-\strutdp}% experimental tm-prikkels
    %

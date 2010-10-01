@@ -159,7 +159,11 @@
    \dostoptagged}
 
 \unexpanded\def\analyzestructurelist#1#2#3%
-  {\ctxlua{structures.lists.analyze("#1","#2","#3")}}
+  {\ctxlua{structures.lists.analyze {
+        names     = "#1",
+        criterium = "#2",
+        number    = "#3"
+   }}}
 
 \def\firststructureelementinlist#1%
   {\ctxlua{commands.firstinlist("#1")}}
@@ -929,7 +933,7 @@
      {\combinedlist}%
      {\combinedlistparameter\c!criterium}%
      {\combinedlistparameter\c!number}%
-     {\combinedlistparameter\c!pageboundaries}%
+     {\combinedlistparameter\c!extras}%
    \doendoflist
    \stoplistreferences
    \endgroup

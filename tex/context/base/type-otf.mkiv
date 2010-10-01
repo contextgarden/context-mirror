@@ -1907,4 +1907,39 @@
 
 \stoptypescriptcollection
 
+\starttypescriptcollection[computer-modern-unicode]
+
+    \starttypescript [serif,sans,mono] [computer-modern-unicode]
+        \definefontsynonym [\s!Serif]           [\s!file:cmunrm] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:cmunti] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifSlanted]    [\s!file:cmunsl] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:cmunbx] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:cmunbi] [\s!features=\s!default]
+        \definefontsynonym [\s!Sans]            [\s!file:cmunss] [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]      [\s!file:cmunsi] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]        [\s!file:cmunsx] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic]  [\s!file:cmunso] [\s!features=\s!default]
+        \definefontsynonym [\s!Mono]            [\s!file:cmuntt] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoItalic]      [\s!file:cmunit] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoSlanted]     [\s!file:cmunst] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]        [\s!file:cmuntb] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldItalic]  [\s!file:cmuntx] [\s!features=\s!none]
+    \stoptypescript
+
+    \starttypescript [serif] [computer-modern-unicode-concrete]
+        \definefontsynonym [\s!Serif]           [\s!file:cmunorm] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:cmunoti] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:cmunobx] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:cmunobi] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript[computer-modern-unicode]
+        \definetypeface[computer-modern-unicode][rm][\s!serif][computer-modern-unicode][\s!default]
+        \definetypeface[computer-modern-unicode][ss][\s!sans] [computer-modern-unicode][\s!default]
+        \definetypeface[computer-modern-unicode][tt][\s!mono] [computer-modern-unicode][\s!default]
+        \definetypeface[computer-modern-unicode][mm][\s!math] [modern]                 [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection
+
 \protect \endinput

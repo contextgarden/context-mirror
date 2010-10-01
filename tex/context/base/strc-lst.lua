@@ -192,7 +192,7 @@ end
 local function filtercollected(names, criterium, number, collected, forced, nested) -- names is hash or string
     local numbers, depth = documents.data.numbers, documents.data.depth
     local result, detail = { }, nil
-    criterium = gsub(criterium," ","") -- not needed
+    criterium = gsub(criterium or ""," ","") -- not needed
     forced = forced or { } -- todo: also on other branched, for the moment only needed for bookmarks
     if type(names) == "string" then
         names = settings_to_hash(names)

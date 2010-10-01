@@ -13178,7 +13178,7 @@ end
 function runners.locate_file(filename)
     -- differs from texmfstart where locate appends .com .exe .bat ... todo
     if filename and filename ~= "" then
-        runners.report_location(resolvers.find_given_file(filename))
+        runners.report_location(resolvers.findgivenfile(filename))
     end
 end
 

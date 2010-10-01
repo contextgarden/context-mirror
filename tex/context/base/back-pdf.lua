@@ -416,7 +416,7 @@ function registrations.transparency(n,a,t)
               Type = pdf_extgstate,
               ca   = tonumber(t),
               CA   = tonumber(t),
-              BM   = transparencies[a] or transparencies[0],
+              BM   = transparencies[tonumber(a)] or transparencies[0],
               AIS  = false,
             }
         local m = pdfimmediateobject(tostring(d))
