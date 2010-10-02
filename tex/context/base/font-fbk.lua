@@ -7,6 +7,9 @@ if not modules then modules = { } end modules ['font-fbk'] = {
 }
 
 local cos, tan, rad, format = math.cos, math.tan, math.rad, string.format
+local byte = utf.byte
+
+-- maybe use compose instead of combine
 
 local trace_combining = false  trackers.register("fonts.combining", function(v) trace_combining = v end)
 
@@ -159,12 +162,12 @@ local cache = { } -- we could make these weak
 function vf.aux.compose_characters(g) -- todo: scaling depends on call location
     -- this assumes that slot 1 is self, there will be a proper self some day
     local chars, descs = g.characters, g.descriptions
-    local X = ("X"):byte()
+    local X = byte("X")
     local xchar = chars[X]
     local xdesc = descs[X]
     if xchar and xdesc then
         local scale = g.factor or 1
-        local cap_lly = scale*xdesc.boundingbox[4]
+        local cap_ury = scale*xdesc.boundingbox[4]
         local ita_cor = cos(rad(90+(g.italicangle or 0)))
         local fallbacks = characters.fallbacks
         local vfspecials = backends.tables.vfspecials
@@ -223,66 +226,27 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                     local dd = (c_urx - c_llx)*ita_cor
                                     if a_ury < 0  then
                                         if trace_combining then
-                                            t.commands = {
-                                                push,
-                                                {"right", dx-dd},
-                                                red,
-                                                acc_t,
-                                                black,
-                                                pop,
-                                                chr_t,
-                                            }
+                                            t.commands = { push, {"right", dx-dd},                red,   acc_t, black, pop, chr_t }
                                         else
-                                            t.commands = {
-                                                push,
-                                                {"right", dx-dd},
-                                                acc_t,
-                                                pop,
-                                                chr_t,
-                                            }
+                                            t.commands = { push, {"right", dx-dd},                       acc_t,        pop, chr_t }
                                         end
                                     elseif c_ury > a_lly then
-                                        local dy = cap_lly-a_lly
+--~                                         local dy = cap_ury - a_lly
+local X = byte("x")
+local xdesc = descs[X]
+local x_ury = scale*xdesc.boundingbox[4] -- x height
+local dy = c_ury - x_ury
+
                                         if trace_combining then
-                                            t.commands = {
-                                                push,
-                                                {"right", dx+dd},
-                                                {"down", -dy},
-                                                green,
-                                                acc_t,
-                                                black,
-                                                pop,
-                                                chr_t,
-                                            }
+                                            t.commands = { push, {"right", dx+dd}, {"down", -dy}, green, acc_t, black, pop, chr_t }
                                         else
-                                            t.commands = {
-                                                push,
-                                                {"right", dx+dd},
-                                                {"down", -dy},
-                                                acc_t,
-                                                pop,
-                                                chr_t,
-                                            }
+                                            t.commands = { push, {"right", dx+dd}, {"down", -dy},        acc_t,        pop, chr_t }
                                         end
                                     else
                                         if trace_combining then
-                                            t.commands = {
-                                                push,
-                                                {"right", dx+dd},
-                                                blue,
-                                                acc_t,
-                                                black,
-                                                pop,
-                                                chr_t,
-                                            }
+                                            t.commands = { push, {"right", dx+dd},                blue,  acc_t, black, pop, chr_t }
                                         else
-                                            t.commands = {
-                                                push,
-                                                {"right", dx+dd},
-                                                acc_t,
-                                                pop,
-                                                chr_t,
-                                            }
+                                            t.commands = { push, {"right", dx+dd},                       acc_t,        pop, chr_t }
                                         end
                                     end
                                     done = true

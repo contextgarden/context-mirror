@@ -117,8 +117,7 @@
    \setbox\tabulatebox\hbox to \wd\tabulatebox
      {\iftrialtypesetting\else\ifconditional\tabulatehascolors\repeatsettabulatecolor\fi\fi
       \hss\dotabulatehook{\box\tabulatebox}\hss}%
-   \ht\tabulatebox\strutht
-   \dp\tabulatebox\strutdp
+   \donormalizetabulatesplitline
    \box\tabulatebox
    \iftrialtypesetting\else\ifconditional\tablehaspositions\doflushtabulateepos\fi\fi}
 
