@@ -232,10 +232,11 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                         end
                                     elseif c_ury > a_lly then
 --~                                         local dy = cap_ury - a_lly
-local X = byte("x")
-local xdesc = descs[X]
-local x_ury = scale*xdesc.boundingbox[4] -- x height
-local dy = c_ury - x_ury
+local lower_x = byte("x")
+local upper_x = byte("X")
+local Xdesc = descs[upper_x]
+local xdesc = descs[lower_x]
+local dy = scale*(Xdesc.boundingbox[4] - xdesc.boundingbox[4] - 30) -- x height
 
                                         if trace_combining then
                                             t.commands = { push, {"right", dx+dd}, {"down", -dy}, green, acc_t, black, pop, chr_t }
