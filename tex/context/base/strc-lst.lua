@@ -189,17 +189,40 @@ end
 
 -- will be split
 
+-- Historically we had blocks but in the mkiv approach that could as well be a level
+-- which would simplify things a bit.
+
+local splitter = lpeg.splitat(":")
+
+-- this will become filtercollected(specification) and then we'll also have sectionblock as key
+
 local function filtercollected(names, criterium, number, collected, forced, nested) -- names is hash or string
     local numbers, depth = documents.data.numbers, documents.data.depth
     local result, detail = { }, nil
+    local block = false -- all
     criterium = gsub(criterium or ""," ","") -- not needed
+    -- new, will be applied stepwise
+    local wantedblock, wantedcriterium = lpegmatch(splitter,criterium) -- block:criterium
+    if not wantedcriterium then
+        block = documents.data.block
+    elseif wantedblock == "" or wantedblock == variables.all or wantedblock == variables.text then
+        criterium = wantedcriterium ~= "" and wantedcriterium or criterium
+    else
+        block, criterium = wantedblock, wantedcriterium
+    end
+    if block == "" then
+        block = false
+    end
+--~ print(">>",block,criterium)
+    --
     forced = forced or { } -- todo: also on other branched, for the moment only needed for bookmarks
     if type(names) == "string" then
         names = settings_to_hash(names)
     end
     local all = not next(names) or names[variables.all] or false
     if trace_lists then
-        report_lists("filtering names: %s, criterium: %s, number: %s",simple_hash_to_string(names),criterium,number or "-")
+        report_lists("filtering names: %s, criterium: %s, block: %s, number: %s",
+            simple_hash_to_string(names),criterium,block or "*", number or "-")
     end
     if criterium == variables.intro then
         -- special case, no structure yet
@@ -232,7 +255,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
-                if r then
+                if r and (not block or block == r.block) then
                     local sectionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers
@@ -264,8 +287,8 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
-                if r then
-                    local sectionnumber = sections.collected[r.section]
+                if r and (not block or block == r.block) then
+ctionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
@@ -296,7 +319,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
-                if r then
+                if r and (not block or block == r.block) then
                     local sectionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers
@@ -342,7 +365,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
-                if r then
+                if r then -- block ?
                     local sectionnumber = sections.collected[r.section]
                     if sectionnumber then
                         local metadata = v.metadata
@@ -359,9 +382,9 @@ local function filtercollected(names, criterium, number, collected, forced, nest
     end
     if trace_lists then
         if detail then
-            report_lists("criterium: %s, %s, found: %s",criterium,detail,#result)
+            report_lists("criterium: %s, block: %s, %s, found: %s",criterium,block or "*",detail,#result)
         else
-            report_lists("criterium: %s, found: %s",criterium,#result)
+            report_lists("criterium: %s, block: %s, found: %s",criterium,block or "*",#result)
         end
     end
     return result
