@@ -7,11 +7,13 @@ if not modules then modules = { } end modules ['font-fbk'] = {
 }
 
 local cos, tan, rad, format = math.cos, math.tan, math.rad, string.format
-local byte = utf.byte
-
--- maybe use compose instead of combine
+local utfbyte, utfchar = utf.byte, utf.char
 
 local trace_combining = false  trackers.register("fonts.combining", function(v) trace_combining = v end)
+
+trackers.register("fonts.composing", "fonts.combining")
+
+local report_combining = logs.new("combining")
 
 local allocate = utilities.storage.allocate
 
@@ -45,6 +47,169 @@ commands["set-tracing"] = function(g,v)
     end
 end
 
+-- maybe store llx etc instead of bbox in tfm blob / more efficient
+
+local force_composed = false
+
+local cache    = { }  -- we could make these weak
+local fraction = 0.15 -- 30 units for lucida
+
+function vf.aux.compose_characters(g) -- todo: scaling depends on call location
+    -- this assumes that slot 1 is self, there will be a proper self some day
+    local chars, descs = g.characters, g.descriptions
+    local Xdesc, xdesc = descs[utfbyte("X")], descs[utfbyte("x")]
+    if Xdesc and xdesc then
+        local scale = g.factor or 1
+        local deltaxheight = scale * (Xdesc.boundingbox[4] - xdesc.boundingbox[4])
+        local extraxheight = fraction * deltaxheight -- maybe use compose value
+     -- local cap_ury = scale*xdesc.boundingbox[4]
+        local ita_cor = cos(rad(90+(g.italicangle or 0)))
+        local fallbacks = characters.fallbacks
+        local vfspecials = backends.tables.vfspecials
+        local red, green, blue, black
+        if trace_combining then
+            red, green, blue, black = vfspecials.red, vfspecials.green, vfspecials.blue, vfspecials.black
+        end
+        local compose = fonts.goodies.getcompositions(g)
+        if compose and trace_combining then
+            report_combining("using compose information from goodies file")
+        end
+        local done = false
+        for i,c in next, characters.data do
+            if force_composed or not chars[i] then
+                local s = c.specials
+                if s and s[1] == 'char' then
+                    local chr = s[2]
+                    local charschr = chars[chr]
+                    if charschr then
+                        local cc = c.category
+                        if cc == 'll' or cc == 'lu' or cc == 'lt' then
+                            local acc = s[3]
+                            local t = { }
+                            for k, v in next, charschr do
+                                if k ~= "commands" then
+                                    t[k] = v
+                                end
+                            end
+                            local charsacc = chars[acc]
+                        --~ local ca = charsacc.category
+                        --~ if ca == "mn" then
+                        --~     -- mark nonspacing
+                        --~ elseif ca == "ms" then
+                        --~     -- mark spacing combining
+                        --~ elseif ca == "me" then
+                        --~     -- mark enclosing
+                        --~ else
+                            if not charsacc then
+                                acc = fallbacks[acc]
+                                charsacc = acc and chars[acc]
+                            end
+                            if charsacc then
+                                if trace_combining then
+                                    report_combining("%s (0x%05X) = %s (0x%05X) + %s (0x%05X)",utfchar(i),i,utfchar(chr),chr,utfchar(acc),acc)
+                                end
+                                local chr_t = cache[chr]
+                                if not chr_t then
+                                    chr_t = {"slot", 1, chr}
+                                    cache[chr] = chr_t
+                                end
+                                local acc_t = cache[acc]
+                                if not acc_t then
+                                    acc_t = {"slot", 1, acc}
+                                    cache[acc] = acc_t
+                                end
+                                local cb = descs[chr].boundingbox
+                                local ab = descs[acc].boundingbox
+                                -- todo: adapt height
+                                if cb and ab then
+                                    -- can be sped up for scale == 1
+                                    local c_llx, c_lly, c_urx, c_ury = scale*cb[1], scale*cb[2], scale*cb[3], scale*cb[4]
+                                    local a_llx, a_lly, a_urx, a_ury = scale*ab[1], scale*ab[2], scale*ab[3], scale*ab[4]
+                                    local dx = (c_urx - a_urx - a_llx + c_llx)/2
+                                    local dd = (c_urx - c_llx)*ita_cor
+                                    if a_ury < 0  then
+                                        if trace_combining then
+                                            t.commands = { push, {"right", dx-dd}, red, acc_t, black, pop, chr_t }
+                                        else
+                                            t.commands = { push, {"right", dx-dd},      acc_t,        pop, chr_t }
+                                        end
+                                    elseif c_ury > a_lly then -- messy test
+                                        -- local dy = cap_ury - a_lly
+                                        local dy
+                                        if compose then
+                                            -- experimental: we could use sx but all that testing
+                                            -- takes time and code
+                                            dy = compose[i]
+                                            if dy then
+                                                dy = dy.DY
+                                            end
+                                            if not dy then
+                                                dy = compose[acc]
+                                                if dy then
+                                                    dy = dy and dy.DY
+                                                end
+                                            end
+                                            if not dy then
+                                                dy = compose.DY
+                                            end
+                                            if not dy then
+                                                dy = - deltaxheight + extraxheight
+                                            elseif dy > -1.5 and dy < 1.5 then
+                                                -- we assume a fraction of (percentage)
+                                                dy = - dy * deltaxheight
+                                            else
+                                                -- we assume fontunits (value smaller than 2 make no sense)
+                                                dy = - dy * scale
+                                            end
+                                        else
+                                            dy = - deltaxheight + extraxheight
+                                        end
+                                        if trace_combining then
+                                            t.commands = { push, {"right", dx+dd}, {"down", dy}, green, acc_t, black, pop, chr_t }
+                                        else
+                                            t.commands = { push, {"right", dx+dd}, {"down", dy},        acc_t,        pop, chr_t }
+                                        end
+                                    else
+                                        if trace_combining then
+                                            t.commands = { push, {"right", dx+dd},               blue,  acc_t, black, pop, chr_t }
+                                        else
+                                            t.commands = { push, {"right", dx+dd},                      acc_t,        pop, chr_t }
+                                        end
+                                    end
+                                    done = true
+                                end
+                            elseif trace_combining then
+                                report_combining("%s (0x%05X) = %s (0x%05X)",utfchar(i),i,utfchar(chr),chr)
+                            end
+                            chars[i] = t
+                            local d = { }
+                            for k, v in next, descs[chr] do
+                                d[k] = v
+                            end
+                        --  d.name = c.adobename or "unknown" -- TOO TRICKY ! CAN CLASH WITH THE SUBSETTER
+                        --  d.unicode = i
+                            descs[i] = d
+                        end
+                    end
+                end
+            end
+        end
+        if done then
+            g.virtualized = true
+        end
+    end
+end
+
+commands["complete-composed-characters"] = function(g,v)
+    vf.aux.compose_characters(g)
+end
+
+-- {'special', 'pdf: q ' .. s .. ' 0 0 '.. s .. ' 0 0 cm'},
+-- {'special', 'pdf: q 1 0 0 1 ' .. -w .. ' ' .. -h .. ' cm'},
+-- {'special', 'pdf: /Fm\XX\space Do'},
+-- {'special', 'pdf: Q'},
+-- {'special', 'pdf: Q'},
+
 local force_fallback = false
 
 commands["fake-character"] = function(g,v) -- g, nr, fallback_id
@@ -54,8 +219,23 @@ commands["fake-character"] = function(g,v) -- g, nr, fallback_id
     end
 end
 
+commands["enable-force"] = function(g,v)
+    force_composed = true
+    force_fallback = true
+end
+
+commands["disable-force"] = function(g,v)
+    force_composed = false
+    force_fallback = false
+end
+
+local install = fonts.definers.methods.install
+
+-- these are just examples used in the manuals, so they will end up in
+-- modules eventually
+
 fallbacks['textcent'] = function (g)
-    local c = ("c"):byte()
+    local c = utfbyte("c")
     local t = table.fastcopy(g.characters[c],true)
     local a = - tan(rad(g.italicangle or 0))
     local vfspecials = backends.tables.vfspecials
@@ -120,7 +300,7 @@ fallbacks['textcent'] = function (g)
 end
 
 fallbacks['texteuro'] = function (g)
-    local c = ("C"):byte()
+    local c = byte("C")
     local t = table.fastcopy(g.characters[c],true)
     local d = cos(rad(90+(g.italicangle)))
     local vfspecials = backends.tables.vfspecials
@@ -153,148 +333,6 @@ fallbacks['texteuro'] = function (g)
     return t, g.descriptions[c]
 end
 
--- maybe store llx etc instead of bbox in tfm blob / more efficient
-
-local force_composed = false
-
-local cache = { } -- we could make these weak
-
-function vf.aux.compose_characters(g) -- todo: scaling depends on call location
-    -- this assumes that slot 1 is self, there will be a proper self some day
-    local chars, descs = g.characters, g.descriptions
-    local X = byte("X")
-    local xchar = chars[X]
-    local xdesc = descs[X]
-    if xchar and xdesc then
-        local scale = g.factor or 1
-        local cap_ury = scale*xdesc.boundingbox[4]
-        local ita_cor = cos(rad(90+(g.italicangle or 0)))
-        local fallbacks = characters.fallbacks
-        local vfspecials = backends.tables.vfspecials
-        local red, green, blue, black
-        if trace_combining then
-            red, green, blue, black = vfspecials.red, vfspecials.green, vfspecials.blue, vfspecials.black
-        end
-        local done = false
-        for i,c in next, characters.data do
-            if force_composed or not chars[i] then
-                local s = c.specials
-                if s and s[1] == 'char' then
-                    local chr = s[2]
-                    local charschr = chars[chr]
-                    if charschr then
-                        local cc = c.category
-                        if cc == 'll' or cc == 'lu' or cc == 'lt' then
-                            local acc = s[3]
-                            local t = { }
-                            for k, v in next, charschr do
-                                if k ~= "commands" then
-                                    t[k] = v
-                                end
-                            end
-                            local charsacc = chars[acc]
-                        --~ local ca = charsacc.category
-                        --~ if ca == "mn" then
-                        --~     -- mark nonspacing
-                        --~ elseif ca == "ms" then
-                        --~     -- mark spacing combining
-                        --~ elseif ca == "me" then
-                        --~     -- mark enclosing
-                        --~ else
-                            if not charsacc then
-                                acc = fallbacks[acc]
-                                charsacc = acc and chars[acc]
-                            end
-                            if charsacc then
-                                local chr_t = cache[chr]
-                                if not chr_t then
-                                    chr_t = {"slot", 1, chr}
-                                    cache[chr] = chr_t
-                                end
-                                local acc_t = cache[acc]
-                                if not acc_t then
-                                    acc_t = {"slot", 1, acc}
-                                    cache[acc] = acc_t
-                                end
-                                local cb = descs[chr].boundingbox
-                                local ab = descs[acc].boundingbox
-                                if cb and ab then
-                                    -- can be sped up for scale == 1
-                                    local c_llx, c_lly, c_urx, c_ury = scale*cb[1], scale*cb[2], scale*cb[3], scale*cb[4]
-                                    local a_llx, a_lly, a_urx, a_ury = scale*ab[1], scale*ab[2], scale*ab[3], scale*ab[4]
-                                    local dx = (c_urx - a_urx - a_llx + c_llx)/2
-                                    local dd = (c_urx - c_llx)*ita_cor
-                                    if a_ury < 0  then
-                                        if trace_combining then
-                                            t.commands = { push, {"right", dx-dd},                red,   acc_t, black, pop, chr_t }
-                                        else
-                                            t.commands = { push, {"right", dx-dd},                       acc_t,        pop, chr_t }
-                                        end
-                                    elseif c_ury > a_lly then
---~                                         local dy = cap_ury - a_lly
-local lower_x = byte("x")
-local upper_x = byte("X")
-local Xdesc = descs[upper_x]
-local xdesc = descs[lower_x]
-local dy = scale*(Xdesc.boundingbox[4] - xdesc.boundingbox[4] - 30) -- x height
-
-                                        if trace_combining then
-                                            t.commands = { push, {"right", dx+dd}, {"down", -dy}, green, acc_t, black, pop, chr_t }
-                                        else
-                                            t.commands = { push, {"right", dx+dd}, {"down", -dy},        acc_t,        pop, chr_t }
-                                        end
-                                    else
-                                        if trace_combining then
-                                            t.commands = { push, {"right", dx+dd},                blue,  acc_t, black, pop, chr_t }
-                                        else
-                                            t.commands = { push, {"right", dx+dd},                       acc_t,        pop, chr_t }
-                                        end
-                                    end
-                                    done = true
-                                end
-                            end
-                            chars[i] = t
-                            local d = { }
-                            for k, v in next, descs[chr] do
-                                d[k] = v
-                            end
-                            d.name = c.adobename or "unknown"
-                        --  d.unicode = i
-                            descs[i] = d
-                        end
-                    end
-                end
-            end
-        end
-        if done then
-            g.virtualized = true
-        end
-    end
-end
-
-commands["complete-composed-characters"] = function(g,v)
-    vf.aux.compose_characters(g)
-end
-
---~         {'special', 'pdf: q ' .. s .. ' 0 0 '.. s .. ' 0 0 cm'},
---~         {'special', 'pdf: q 1 0 0 1 ' .. -w .. ' ' .. -h .. ' cm'},
---~     --  {'special', 'pdf: /Fm\XX\space Do'},
---~         {'special', 'pdf: Q'},
---~         {'special', 'pdf: Q'},
-
--- for documentation purposes we provide:
-
-commands["enable-force"] = function(g,v)
-    force_composed = true
-    force_fallback = true
-end
-
-commands["disable-force"] = function(g,v)
-    force_composed = false
-    force_fallback = false
-end
-
-local install = fonts.definers.methods.install
 
 install("fallback", { -- todo: auto-fallback with loop over data.characters
     { "fake-character", 0x00A2, 'textcent' },
@@ -317,3 +355,5 @@ install("demo-3", {
     { "complete-composed-characters" },
     { "disable-tracing" },
 })
+
+-- end of examples

@@ -483,6 +483,43 @@ function nodes.idstostring(head,tail)
     return concat(t," ")
 end
 
+--~ function nodes.xidstostring(head,tail) -- only for special tracing of backlinks
+--~     local n = head
+--~     while n.next do
+--~         n = n.next
+--~     end
+--~     local t, last_id, last_n = { }, nil, 0
+--~     while n do
+--~         local id = n.id
+--~         if not last_id then
+--~             last_id, last_n = id, 1
+--~         elseif last_id == id then
+--~             last_n = last_n + 1
+--~         else
+--~             if last_n > 1 then
+--~                 t[#t+1] = format("[%s*%s]",last_n,node_type(last_id) or "?")
+--~             else
+--~                 t[#t+1] = format("[%s]",node_type(last_id) or "?")
+--~             end
+--~             last_id, last_n = id, 1
+--~         end
+--~         if n == head then
+--~             break
+--~         end
+--~         n = n.prev
+--~     end
+--~     if not last_id then
+--~         t[#t+1] = "no nodes"
+--~     elseif last_n > 1 then
+--~         t[#t+1] = format("[%s*%s]",last_n,node_type(last_id) or "?")
+--~     else
+--~         t[#t+1] = format("[%s]",node_type(last_id) or "?")
+--~     end
+--~     return table.concat(table.reverse(t)," ")
+--~ end
+
+
+
 local function showsimplelist(h,depth,n)
     while h do
         write_nl(rep(" ",n) .. tostring(h))

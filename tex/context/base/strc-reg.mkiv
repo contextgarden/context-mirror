@@ -583,10 +583,7 @@
 %      {#1}}
 
 \def\doregistercharacter#1%
-  {\iflocation
-     \pagereference[\currentregister:\v!section:#1]%
-   \fi
-   \expandcheckedcsname % why no \executeifdefined
+  {\expandcheckedcsname % why no \executeifdefined
      {\??id:\c!indicator:}%
      {\registerparameter\c!alternative}%
      {a}%
@@ -601,8 +598,14 @@
 \setvalue{\??id:\c!indicator:a}#1%
   {\registerparameter\c!before
    % bugged, why does leftskip gets set: \vskip\lineheight\goodbreak\vskip-\lineheight
-   \begingroup\dosetregisterattributes\c!style\c!color
-   \registerparameter\c!command{\strut#1}%
+   \begingroup
+   \dosetregisterattributes\c!style\c!color
+   \dontleavehmode
+   \strut
+   \iflocation
+     \pagereference[\currentregister:\v!section:#1]%
+   \fi
+   \registerparameter\c!command{#1}%
    \endgroup
    \registerparameter\c!after
    \par
@@ -612,8 +615,14 @@
 
 \setvalue{\??id:\c!indicator:b}#1% will be shared with a
   {\registerparameter\c!before
-   \begingroup\dosetregisterattributes\c!style\c!color
-   \registerparameter\c!command{\strut#1}%
+   \begingroup
+   \dosetregisterattributes\c!style\c!color
+   \dontleavehmode
+   \strut
+   \iflocation
+     \pagereference[\currentregister:\v!section:#1]%
+   \fi
+   \registerparameter\c!command{#1}%
    \endgroup
    \registerparameter\c!after
    \nobreak}

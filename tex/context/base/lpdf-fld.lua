@@ -516,19 +516,21 @@ end
 
 function codeinjections.getfieldgroup(name)
     local f = fields[name] or radios[name] or clones[name]
-    local g = f and f.group
-    if not g or g == "" then
-        local v, p, k = f.variant, f.parent, f.kind
-        if v == "clone" or v == "copy" then
-            f = fields[p] or radios[p]
-            g = f and f.group
-        elseif k == "sub" then
-            f = fields[p]
-            g = f and f.group
+    if f then
+        local g = f.group
+        if not g or g == "" then
+            local v, p, k = f.variant, f.parent, f.kind
+            if v == "clone" or v == "copy" then
+                f = fields[p] or radios[p]
+                g = f and f.group
+            elseif k == "sub" then
+                f = fields[p]
+                g = f and f.group
+            end
         end
-    end
-    if g then
-        texsprint(ctxcatcodes,g)
+        if g then
+            texsprint(ctxcatcodes,g)
+        end
     end
 end
 

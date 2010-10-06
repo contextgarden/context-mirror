@@ -12,14 +12,17 @@
 %C details.
 
 % generic or not ... maybe not bother too much and simplify to mkiv only
+% get rid of \mk*
 
 \writestatus{loading}{ConTeXt Core Macros / Line Numbering}
 
 \unprotect
 
 % todo: save settings
-
+%
 % low level interface
+%
+% we should use normal counters but then we need to sync settings
 
 \registerctxluafile{page-lin}{1.001}
 
@@ -29,7 +32,7 @@
 \appendtoksonce \attribute\linenumberattribute \attributeunsetvalue \to \everyforgetall
 \appendtoksonce \attribute\displaymathattribute\plusone             \to \everybeforedisplayformula
 
-\newcount\linenumber
+\newcount\linenumber % not used
 \newbox  \linenumberscratchbox
 \newcount\linenumberchunk
 \newcount\linerefcounter
@@ -464,6 +467,7 @@
        {\vrule\!!width\onepoint\!!depth\strutdp\!!height.8\strutht\raise.85\strutht\hbox{\llap{\tt\txx#1}}}}%
      \smashbox\scratchbox\box\scratchbox
    \fi}
+
 \def\mkshowstoplinereference#1%
   {\ifconditional\tracelinenumbering
      \setbox\scratchbox\hbox{\rlap

@@ -14,6 +14,8 @@
 \writestatus{loading}{ConTeXt Structure Macros / Line Notes}
 
 %D This module loads on top of the footnote and line numbering macros.
+%D
+%D ln: might go away
 
 \unprotect
 
@@ -70,53 +72,54 @@
 
 \definelinenote[\v!linenote]
 
+% beware: line numbers are added later on so grouping setups is a bad idea
+%
 % \startbuffer[test]
 % \startlinenumbering[100]
-% test \linenote {oeps} test test test test test test
-% test \startlinenote [well] {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
+% test \linenote {oeps 1} test test test test test test
+% test \startlinenote [well] {oeps X} test test test test test test
+% test \linenote {oeps 2} test test test test test test
+% test \linenote {oeps 3} test test test test test test
+% test \linenote {oeps 4} test test test test test test
+% test \linenote {oeps 5} test test test test test test
 % test \stoplinenote [well] test test test test test test
 % \stoplinenumbering
 % \stopbuffer
 %
-% \setupnotedefinition[linenote] [location=serried,distance=.5em]
-%
-% {\typebuffer[test] \getbuffer[test]} \page
+% \typebuffer[test] \getbuffer[test] \page
 %
 % \startbuffer[setup]
 % \setuplinenumbering
-%   [align=left]
+%   [align=flushleft]
 % \stopbuffer
 %
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
+% \typebuffer[setup] \getbuffer[setup,test] \page
 %
 % \startbuffer[setup]
 % \setuplinenumbering
-%   [width=1em,
-%    align=left]
+%   [width=4em,
+%    distance=1em,
+%    align=flushright]
 % \stopbuffer
 %
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
+% \typebuffer[setup] \getbuffer[setup,test] \page
+%
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=4em,
+%    align=flushleft]
+% \stopbuffer
+%
+% \typebuffer[setup] \getbuffer[setup,test] \page
 %
 % \startbuffer[setup]
 % \setuplinenumbering
 %   [width=2em,
 %    distance=.5em,
-%    align=left]
-% \stopbuffer
-%
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-%
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=2em,
 %    align=middle]
 % \stopbuffer
 %
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
+% \typebuffer[setup] \getbuffer[setup,test] \page
 %
 % \startbuffer[setup]
 % \setuplinenumbering
@@ -129,7 +132,7 @@
 %    width=1.5em]
 % \stopbuffer
 %
-% {\typebuffer[setup] \startnarrower\getbuffer[setup,test]\stopnarrower} \page
+% \typebuffer[setup] \getbuffer[setup] \startnarrower\getbuffer[test]\stopnarrower \page
 %
 % \startbuffer[setup]
 % \setuplinenumbering
@@ -139,7 +142,7 @@
 %    align=middle]
 % \stopbuffer
 %
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
+% \typebuffer[setup] \getbuffer[setup,test] \page
 %
 % \startbuffer[setup-1]
 % \setuplinenumbering
@@ -159,7 +162,7 @@
 %      {#1}}
 % \stopbuffer
 %
-% {\typebuffer[setup-1,setup-2] \getbuffer[setup-1,setup-2,test]} \page
+% \typebuffer[setup-1,setup-2] \getbuffer[setup-1,setup-2,test] \page
 %
 % \startbuffer[setup-1]
 % \setuplinenumbering
@@ -168,6 +171,6 @@
 %    command=\WatchThis]
 % \stopbuffer
 %
-% {\typebuffer[setup-1] \getbuffer[setup-1,setup-2,test]} \page
+% \typebuffer[setup-1] \getbuffer[setup-1,setup-2,test] \page
 
 \protect \endinput

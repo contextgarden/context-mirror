@@ -255,7 +255,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
-                if r and (not block or block == r.block) then
+                if r and (not block or not r.block or block == r.block) then
                     local sectionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers
@@ -287,8 +287,8 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
-                if r and (not block or block == r.block) then
-ctionnumber = sections.collected[r.section]
+                if r then -- and (not block or not r.block or block == r.block) then
+                    local sectionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
@@ -319,7 +319,7 @@ ctionnumber = sections.collected[r.section]
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
-                if r and (not block or block == r.block) then
+                if r and (not block or not r.block or block == r.block) then
                     local sectionnumber = sections.collected[r.section]
                     if sectionnumber then -- and not sectionnumber.hidenumber then
                         local cnumbers = sectionnumber.numbers

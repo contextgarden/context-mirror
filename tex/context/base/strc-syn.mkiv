@@ -328,7 +328,7 @@
   {\begingroup
    % no kap currently, of .. we need to map cap onto WORD
    \edef\currentsorting{#1}%
-   \dosetsynonymattributes\c!style\c!color
+   \dosetsortingattributes\c!style\c!color
    \ctxlua{structures.synonyms.synonym("#1","#2")}%
    \normalexpanded{\endgroup\sortingparameter\c!next}}
 

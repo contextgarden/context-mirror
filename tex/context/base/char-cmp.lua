@@ -34,23 +34,9 @@ characters.basedigits = allocate {
 --[[ldx--
 <p>The next three tables can for instance be be used to enhance
 kerning tables that lack kerning pairs for these special characters.
-Of course they may come in handy elsewhere too</p>
+Of course they may come in handy elsewhere too. Using shcodes is
+not handy here (incpmplete).</p>
 --ldx]]--
-
--- we can use shcodes, but then we also need slcode and srcode
---
--- AEligature
---    => slcode == ub('A')
---    => srcode == ub('E')
--- or
---    => shcode == { ub('A'), ub('E') }
---    => reduction = "AE"
---
--- eacute
---    => shcode == ub('A')
--- or
---    => shcode == { ub('a') }
---    => reduction = "a"
 
 uncomposed.left = allocate {
     AEligature = "A",  aeligature = "a",
@@ -191,9 +177,28 @@ uncomposed.both = allocate {
 
 }
 
+-- adobename ... inclomplete
+--
+-- if characters.data then
+--     uncomposed.left, uncomposed.right, uncomposed.both = allocate(), allocate(), allocate()
+--     for k,v in next, characters.data do
+--         local s = v.shcode
+--         if s then
+--             local name = v.adobename
+--             if not name then
+--              -- table.print(v) -- only used for afm anyway
+--             elseif type(s) == "table" then
+--                 uncomposed.left[name], uncomposed.right[name] = s[1], s[#s]
+--             else
+--                 uncomposed.both[name] = s
+--             end
+--         end
+--     end
+-- end
+
 --[[ldx--
-<p>The following function is used in the indexing code, where
-we need some sort of default fallback mapping.</p>
+<p>The following function is used in the indexing code, where we
+need some sort of default fallback mapping. (This is obsolete!)</p>
 --ldx]]--
 
 function characters.uncompose(n) -- n == string|number, returns string

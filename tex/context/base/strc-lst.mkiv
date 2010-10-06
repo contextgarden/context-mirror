@@ -77,6 +77,7 @@
    \edef\currentlistnumber{\ctxlua{structures.lists.push{
          references = {
             internal = \nextinternalreference,
+            block    = "\currentstructureblock", % handy for lists, like bibl
             section  = structures.sections.currentid(),
         },
         metadata = {
