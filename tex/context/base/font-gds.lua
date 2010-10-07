@@ -177,7 +177,7 @@ fontgoodies.colorschemes = fontgoodies.colorschemes or { }
 local colorschemes       = fontgoodies.colorschemes
 colorschemes.data        = colorschemes.data or { }
 
-local function set_colorscheme(tfmdata,scheme)
+local function setcolorscheme(tfmdata,scheme)
     if type(scheme) == "string" then
         local goodies = tfmdata.goodies
         -- todo : check for already defined in shared
@@ -244,7 +244,7 @@ function colorschemes.enable()
     function colorschemes.enable() end
 end
 
--- installation (collected to keep the overview)
+-- installation (collected to keep the overview) -- also for type 1
 
 fonts.otf.tables.features['goodies']     = 'Goodies on top of built in features'
 fonts.otf.tables.features['featurset']   = 'Goodie Feature Set'
@@ -267,8 +267,14 @@ node_initializers.goodies     = setgoodies
 base_initializers.featureset  = setfeatureset
 node_initializers.featureset  = setfeatureset
 
-base_initializers.colorscheme = set_colorscheme
-node_initializers.colorscheme = set_colorscheme
+base_initializers.colorscheme = setcolorscheme
+node_initializers.colorscheme = setcolorscheme
+
+local base_initializers   = fonts.initializers.base.afm
+local node_initializers   = fonts.initializers.node.afm
+
+base_initializers.goodies     = setgoodies
+node_initializers.goodies     = setgoodies
 
 -- experiment, we have to load the definitions immediately as they precede
 -- the definition so they need to be initialized in the typescript
@@ -346,6 +352,34 @@ end
 
 fonts.goodies.register("typefaces", initialize)
 
+local function initialize(goodies)
+    local typefaces = goodies.typefaces
+    if typefaces then
+        local ft = fonts.typefaces
+        for k, v in next, typefaces do
+            ft[k] = v
+        end
+    end
+end
+
+fonts.goodies.register("typefaces", initialize)
+
+local compositions = { }
+
+function fonts.goodies.getcompositions(tfmdata)
+    return compositions[file.nameonly(tfmdata.filename or "")]
+end
+
+local function initialize(goodies)
+    local gc = goodies.compositions
+    if gc then
+        for k, v in next, gc do
+            compositions[k] = v
+        end
+    end
+end
+
+fonts.goodies.register("compositions", initialize)
 
 -- The following file (husayni.lfg) is the experimental setup that we used
 -- for Idris font. For the moment we don't store this in the cache and quite

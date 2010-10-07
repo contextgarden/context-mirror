@@ -406,7 +406,7 @@ end
 them selectively.</p>
 --ldx]]--
 
-addkerns = function(afmdata)
+addkerns = function(afmdata) -- using shcodes is not robust here
     local glyphs = afmdata.glyphs
     local names = afmdata.luatex.names
     local uncomposed = characters.uncomposed

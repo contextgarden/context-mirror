@@ -342,3 +342,17 @@ local reference = left * (1-left)^0 * left * space^0 * lpeg.C((1-space)^0)
 function nodes.reference(n)
     return lpegmatch(reference,tostring(n))
 end
+
+--
+
+if not node.next then
+
+    function node.next(n)
+        return n and n.next
+    end
+
+    function node.prev(n)
+        return n and n.prev
+    end
+
+end

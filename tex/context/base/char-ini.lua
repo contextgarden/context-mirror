@@ -377,7 +377,7 @@ if not characters.fallbacks then
 
 end
 
-storage.register("characters/fallbacks",  characters.fallbacks,  "characters.fallbacks")
+storage.register("characters/fallbacks",  characters.fallbacks,  "characters.fallbacks") -- accents and such
 storage.register("characters/directions", characters.directions, "characters.directions")
 
 --[[ldx--

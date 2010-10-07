@@ -186,14 +186,18 @@ function boxed.stage_one(n)
         local last_a, last_v, skip = nil, -1, false
         for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
             if n.height == 0 and n.depth == 0 then
-                -- skip funny hlists
+                -- skip funny hlists -- todo: check line subtype
             else
                 local list = n.list
                 local a = has_attribute(list,a_linenumber)
                 if a and a > 0 then
                     if last_a ~= a then
-                        if data[a].method == variables.next then
+                        local da = data[a]
+                        local ma = da.method
+                        if ma == variables.next then
                             skip = true
+                        elseif ma == variables.page then
+                            da.start = 1 -- eventually we will have a normal counter
                         end
                         last_a = a
                     end
