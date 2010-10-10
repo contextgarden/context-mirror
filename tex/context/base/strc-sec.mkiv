@@ -15,6 +15,8 @@
 
 \unprotect
 
+\ifdefined \v!block \else \def\v!block{block} \fi
+
 % compatibility issue:
 %
 % \def\setfullsectionnumber #1{}
@@ -114,10 +116,14 @@
      \getparameters[\??nh#1][#2]%
    \fi}
 
+% -2=text -1=manual 0=block 1+=structurelevel
+
 \def\structuresectionlevel#1%
   {\executeifdefined{\??nh#1\c!level}{-1}}
 
-\setvalue{\??nh block\c!level}{0} % -1 == manual
+\setvalue{\??nh\v!block\c!level}{0}
+\setvalue{\??nh\v!none \c!level}{-1}
+\setvalue{\??nh\v!text \c!level}{-2}
 
 % head -> structurehead
 
@@ -600,13 +606,13 @@
 
 \def\dostructureheadspacingbeforeyes
   {\docheckstructureheadbefore
-   \dohandlestructureheadpagebreak
+   \dohandlestructureheadpagebreakyes
    \structureheadparameter\c!inbetween
    \dostarttagged\t!section\currentstructurehead}
 
 \def\dostructureheadspacingbeforenop
   {\docheckstructureheadbefore
-   \docheckstructureheadlayout
+   \dohandlestructureheadpagebreaknop
    \structureheadparameter\c!inbetween
    \dostarttagged\currentstructurehead\empty}
 
@@ -675,7 +681,16 @@
 \def\currentstructurecounter {\ctxlua{structures.sections.depthnumber(\thenamedstructureheadlevel\currentstructurehead)}}
 \def\previousstructurecounter{\ctxlua{structures.sections.depthnumber(\thenamedstructureheadlevel\currentstructurehead-1)}}
 
-\def\dohandlestructureheadpagebreak
+\def\dohandlestructureheadpagebreaknop
+  {\doifelse{\structureheadparameter\c!continue}\v!yes
+     {\ifnum\previousstructurecounter=\zerocount
+        \docheckstructureheadlayout
+      \else\ifnum\currentstructurecounter>\zerocount
+        \docheckstructureheadlayout
+      \fi\fi}%
+     {\docheckstructureheadlayout}}
+
+\def\dohandlestructureheadpagebreakyes
   {%[[\currentstructurehead @\thenamedstructureheadlevel\currentstructurehead/prev:\previousstructurecounter/curr:\currentstructurecounter]]
    \ifconditional\ignorehandlepagebreak
      \setfalse\ignorehandlepagebreak

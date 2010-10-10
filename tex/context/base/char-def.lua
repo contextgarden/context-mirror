@@ -53839,7 +53839,7 @@ characters.data={
   mathname="nsubset",
   linebreak="al",
   mirror=0x2285,
-  specials={ "char", 0x0338, 0x2282 },
+  specials={ "char", 0x2282, 0x0338 },
   unicodeslot=0x2284,
  },
  [0x2285]={
@@ -53850,7 +53850,7 @@ characters.data={
   mathclass="relation",
   mathname="nsupset",
   mirror=0x2284,
-  specials={ "char", 0x0338, 0x2283 },
+  specials={ "char", 0x2283, 0x0338 },
   unicodeslot=0x2285,
  },
  [0x2286]={

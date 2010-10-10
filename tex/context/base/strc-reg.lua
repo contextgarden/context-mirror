@@ -443,6 +443,8 @@ end
 
 -- proc can be wrapped
 
+local seeindex = 0
+
 function registers.flush(data,options,prefixspec,pagespec)
     local equal = table.are_equal
     -- local usedtags = { }
@@ -502,8 +504,49 @@ function registers.flush(data,options,prefixspec,pagespec)
         end
         texsprint(ctxcatcodes,"}")
     end
-    -- ranges need checking !
+    --
+    -- maybe we can nil the splits and save memory
+    --
+    do
+        -- hash words (potential see destinations)
+        local words = { }
+        for i=1,#result do
+            local data = result[i].data
+            for j=1,#data do
+                local d = data[j]
+                local word = d.list[1][1]
+                words[word] = d
+            end
+        end
+        -- link seewords to words and tag destination
+        for i=1,#result do
+            local data = result[i].data
+            for j=1,#data do
+                local d = data[j]
+                local seeword = d.seeword
+                if seeword then
+                    local text = seeword.text
+                    if text then
+                        local w = words[text]
+                        if w then
+                            local wr = w.references
+                            local dr = d.references
+                            if wr.seeindex then
+                                dr.seeindex = wr.seeindex
+                            else
+                                seeindex = seeindex + 1
+                                dr.seeindex = seeindex
+                                wr.seeindex = seeindex
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    --
     for i=1,#result do
+     -- ranges need checking !
         local sublist = result[i]
         local done = { false, false, false, false }
         local data = sublist.data
@@ -533,9 +576,10 @@ function registers.flush(data,options,prefixspec,pagespec)
                                 texsprint(ctxcatcodes,"\\startregisterentries{",n,"}")
                             end
                         end
-                        local internal = entry.references.internal
+                        local internal = entry.references.internal or 0
+                        local seeindex = entry.references.seeindex or ""
                         if metadata then
-                            texsprint(ctxcatcodes,"\\registerentry{",internal,"}{")
+                            texsprint(ctxcatcodes,"\\registerentry{",internal,"}{",seeindex,"}{")
                             local proc = entry.processors and entry.processors[1]
                             if proc then
                                 texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
@@ -548,9 +592,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                         else
                             local proc = entry.processors and entry.processors[1]
                             if proc then
-                                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{\\registerentry{",internal,"}{",e[i],"}}")
+                                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{\\registerentry{",internal,"}{",seeindex,"}{",e[i],"}}")
                             else
-                                texsprint(ctxcatcodes,"\\registerentry{",internal,"}{",e[i],"}")
+                                texsprint(ctxcatcodes,"\\registerentry{",internal,"}{",seeindex,"}{",e[i],"}")
                             end
                         end
                     else
@@ -712,11 +756,14 @@ function registers.flush(data,options,prefixspec,pagespec)
             elseif kind == 'see' then
                 -- maybe some day more words
                 texsprint(ctxcatcodes,"\\startregisterseewords")
+                local seeindex = entry.references.seeindex or ""
+                local seetext = entry.seeword.text or ""
                 local proc = entry.processors and entry.processors[1]
+                -- todo: metadata like normal entries
                 if proc then
-                    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{\\registeroneword{0}{0}{",entry.seeword.text,"}}") -- todo: internal
+                    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{\\registeroneword{0}{",seeindex,"}{",seetext,"}}")
                 else
-                    texsprint(ctxcatcodes,"\\registeroneword{0}{0}{",entry.seeword.text,"}") -- todo: internal
+                    texsprint(ctxcatcodes,"\\registeroneword{0}{",seeindex,"}{",seetext,"}")
                 end
                 texsprint(ctxcatcodes,"\\stopregisterseewords")
             end

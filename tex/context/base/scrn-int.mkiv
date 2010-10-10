@@ -588,13 +588,14 @@
 %    \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!closepageaction}}\dosetuprenderingclosepageaction
    \localframed
      [\??rw\currentrenderingwindow][\c!offset=\v!overlay]%
-     {\ctxlua{backends.codeinjections.insertrenderingwindow {
+     {\vfill
+      \ctxlua{backends.codeinjections.insertrenderingwindow {
         label   = "\currentrendering",
         width   = \number\dimexpr\renderingwidth\relax,
         height  = \number\dimexpr\renderingheight\relax,
         options = "\renderingoptions\currentrendering",
         page    = \number\renderingpage,
-      }}}%
+      }}\hfill}%
    \egroup}
 
 \setupinteractionscreen

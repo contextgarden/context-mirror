@@ -730,25 +730,43 @@
    \dostoptagged
    \dostoptagged}
 
-\def\registeroneword#1#2#3% content
+\def\registeroneword#1#2#3% #1:internal #2:seeindex #3:word
   {\registerpageseparator
+   \def\currentregisterpageindex{#1}%
    \dostarttagged\t!registersee\empty
-   \registerseeword{#3}%
+   \iflocation
+     \def\currentregisterseeindex{#2}%
+   \else
+     \let\currentregisterseeindex\empty
+   \fi
+   \ifx\currentregisterseeindex\empty
+     \registerseeword{#3}%
+   \else
+[>\currentregisterseeindex]%
+     \registerseeword{\goto{#3}[seeindex:\currentregisterseeindex]}%
+   \fi
    \dostoptagged}
 
 \def\doapplyregisterentrycommand#1%
   {\dostarttagged\t!registerentry\empty
+   \ifx\currentregisterseeindex\empty \else
+     \dontleavehmode
+[<\currentregisterseeindex]%
+     \pagereference[seeindex:\currentregisterseeindex]% maybe some day we will support an area
+   \fi
    \registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#1}}}%
    \dostoptagged}
 
-\def\defaultregisterentry#1#2% #1 is pageref
+\def\defaultregisterentry#1#2#3% #1:internal #2:seeindex #3:word
   {\def\currentregisterpageindex{#1}%
    \iflocation
+     \def\currentregisterseeindex{#2}%
      \doifelse{\registerparameter\c!interaction}\v!text
-       {\directgoto{\setlocationcolor\??ia\doapplyregisterentrycommand{#2}}[internal(#1)]}
-       {\doapplyregisterentrycommand{#2}}%
+       {\directgoto{\setlocationcolor\??ia\doapplyregisterentrycommand{#3}}[internal(#1)]}
+       {\doapplyregisterentrycommand{#3}}%
    \else
-     \doapplyregisterentrycommand{#2}%
+     \let\currentregisterseeindex\empty
+     \doapplyregisterentrycommand{#3}%
    \fi}
 
 \def\defaultregisterseeword#1%

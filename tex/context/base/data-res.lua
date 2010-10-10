@@ -244,9 +244,9 @@ local function load_configuration_files()
             local filename = filejoin(pathname,luacnfname)
             local blob = loadfile(filename)
             if blob then
+                local setups = instance.setups
                 local data = blob()
                 data = data and data.content
-                local setups = instance.setups
                 if data then
                     if trace_locating then
                         report_resolvers("loading configuration file '%s'",filename)
@@ -298,13 +298,13 @@ local function load_configuration_files()
 
                 else
                     if trace_locating then
-                        report_resolvers("skipping configuration file '%s'",filename)
+                        report_resolvers("skipping configuration file '%s' (no content)",filename)
                     end
                     setups[pathname] = { }
                     instance.loaderror = true
                 end
             elseif trace_locating then
-                report_resolvers("skipping configuration file '%s'",filename)
+                report_resolvers("skipping configuration file '%s' (no file)",filename)
             end
             instance.order[#instance.order+1] = instance.setups[pathname]
             if instance.loaderror then

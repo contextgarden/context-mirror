@@ -29,31 +29,31 @@ local shared = { }
 fonts.vf.math          = fonts.vf.math or { }
 fonts.vf.math.optional = false
 
-local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
+--~ local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
 
-local function negate(main,characters,id,size,unicode,basecode)
-    if not characters[unicode] then
-        local basechar = characters[basecode]
-        if basechar then
-            local ht, wd = basechar.height, basechar.width
-            characters[unicode] = {
-                width    = wd,
-                height   = ht,
-                depth    = basechar.depth,
-                italic   = basechar.italic,
-                kerns    = basechar.kerns,
-                commands = {
-                    { "slot", 1, basecode },
-                    push,
-                    { "down",    ht/5},
-                    { "right", - wd/2},
-                    back,
-                    push,
-                }
-            }
-        end
-    end
-end
+--~ local function negate(main,characters,id,size,unicode,basecode)
+--~     if not characters[unicode] then
+--~         local basechar = characters[basecode]
+--~         if basechar then
+--~             local ht, wd = basechar.height, basechar.width
+--~             characters[unicode] = {
+--~                 width    = wd,
+--~                 height   = ht,
+--~                 depth    = basechar.depth,
+--~                 italic   = basechar.italic,
+--~                 kerns    = basechar.kerns,
+--~                 commands = {
+--~                     { "slot", 1, basecode },
+--~                     push,
+--~                     { "down",    ht/5},
+--~                     { "right", - wd/2},
+--~                     back,
+--~                     push,
+--~                 }
+--~             }
+--~         end
+--~     end
+--~ end
 
 --~ \Umathchardef\braceld="0 "1 "FF07A
 --~ \Umathchardef\bracerd="0 "1 "FF07B
@@ -300,7 +300,7 @@ function fonts.vf.math.alas(main,id,size)
     brace    (main,characters,id,size,0x23DF,0xFF27C,0xFF401,0xFF27B,0xFF27A,0xFF401,0xFF27D)
     parent   (main,characters,id,size,0x23DC,0xFF17A,0xFF301,0xFF17B)
     parent   (main,characters,id,size,0x23DD,0xFF27C,0xFF401,0xFF27D)
-    negate   (main,characters,id,size,0x2260,0x003D)
+ -- negate   (main,characters,id,size,0x2260,0x003D)
     dots     (main,characters,id,size,0x2026) -- ldots
     dots     (main,characters,id,size,0x22EE) -- vdots
     dots     (main,characters,id,size,0x22EF) -- cdots
@@ -322,6 +322,7 @@ function fonts.vf.math.alas(main,id,size)
     jointwo  (main,characters,id,size,0x21AA,0xFE322,3,0x02192)           -- \lhook\joinrel\rightarrow
     stack    (main,characters,id,size,0x2259,0x0003D,3,0x02227)           -- \buildrel\wedge\over=
     jointwo  (main,characters,id,size,0x22C8,0x022B3,4,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
+    jointwo  (main,characters,id,size,0x2260,0x00338,0,0x0003D)           -- \not\equal
     jointwo  (main,characters,id,size,0x2284,0x00338,0,0x02282)           -- \not\subset
     jointwo  (main,characters,id,size,0x2285,0x00338,0,0x02283)           -- \not\supset
     jointwo  (main,characters,id,size,0x22A7,0x0007C,3,0x0003D)           -- \mathrel|\joinrel=

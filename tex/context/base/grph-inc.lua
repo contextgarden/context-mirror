@@ -154,7 +154,7 @@ figures.formats = allocate{
     ["svg"]    = { list = { "svg", "svgz" } },
     ["eps"]    = { list = { "eps", "ai" } },
     ["gif"]    = { list = { "gif" } },
-    ["mov"]    = { list = { "mov", "flv" } }, -- "avi" is not supported
+    ["mov"]    = { list = { "mov", "flv", "mp4" } }, -- "avi" is not supported
     ["buffer"] = { list = { "tmp", "buffer", "buf" } },
     ["tex"]    = { list = { "tex" } },
 }
@@ -353,7 +353,7 @@ function figures.current()
 end
 
 local defaultformat = "pdf"
-local defaultprefix = "m_k_v_i_"
+local defaultprefix = "m_k_i_v_"
 
 local function register(askedname,specification)
     if specification then

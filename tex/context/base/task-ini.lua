@@ -53,6 +53,7 @@ tasks.appendaction("shipouts",     "finishers",   "attributes.effects.handler") 
 tasks.appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")                   -- disabled
 
 tasks.appendaction("math",         "normalizers", "noads.handlers.relocate", nil, "nohead")            -- always on
+tasks.appendaction("math",         "normalizers", "noads.handlers.collapse", nil, "nohead")            -- always on
 tasks.appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "nohead")            -- always on
 tasks.appendaction("math",         "normalizers", "noads.handlers.respace",  nil, "nohead")            -- always on
 tasks.appendaction("math",         "normalizers", "noads.handlers.check",    nil, "nohead")            -- always on

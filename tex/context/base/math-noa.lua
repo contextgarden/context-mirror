@@ -11,6 +11,9 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- moment this is ok
 --
 -- we will also make dedicated processors (faster)
+--
+-- beware: names will change as we wil make noads.xxx.handler i.e. xxx
+-- subnamespaces
 
 local utf = unicode.utf8
 
@@ -46,6 +49,7 @@ local nodecodes     = nodes.nodecodes
 local noadcodes     = nodes.noadcodes
 
 local noad_ord      = noadcodes.ord
+local noad_rel      = noadcodes.rel
 local noad_punct    = noadcodes.punct
 
 local math_noad     = nodecodes.noad           -- attr nucleus sub sup
@@ -160,6 +164,8 @@ local fcs = fonts.colors.set
 --~     end
 --~ end
 
+local current_id, current_characters
+
 processors.relocate[math_char] = function(pointer)
     local g = has_attribute(pointer,mathgreek) or 0
     local a = has_attribute(pointer,mathalphabet) or 0
@@ -175,8 +181,15 @@ processors.relocate[math_char] = function(pointer)
         if newchar then
             local fam = pointer.fam
             local id = font_of_family(fam)
+         --
             local tfmdata = fontdata[id]
-            if tfmdata and tfmdata.characters[newchar] then -- we could probably speed this up
+            if tfmdata and tfmdata.characters[newchar] then
+         -- -- to be tested:
+         -- if id ~= current_id then
+         --     current_id = id
+         --     current_characters = fontdata[id].characters
+         -- end
+         -- if current_characters and current_characters[newchar] then
                 if trace_remapping then
                     report_remap("char",id,char,newchar)
                 end
@@ -310,6 +323,58 @@ end
 
 function handlers.respace(head,style,penalties)
     process(head,respace)
+    return true
+end
+
+-- The following code is dedicated to Luigi Scarso who pointed me
+-- to the fact that \not= is not producing valid pdf-a code.
+-- The code does not solve this for virtual characters but it does
+-- a decent job on collapsing so that fonts that have the right
+-- glyph will have a decent unicode point.
+
+local collapse = { } processors.collapse = collapse
+
+local mathpairs = characters.mathpairs
+
+collapse[math_noad] = function(pointer)
+    if pointer.subtype == noad_rel then
+        local current_nucleus = pointer.nucleus
+        if current_nucleus.id == math_char then
+            local current_char = current_nucleus.char
+            local mathpair = mathpairs[current_char]
+            if mathpair then
+                local next_noad = pointer.next
+                if next_noad and next_noad.id == math_noad and next_noad.subtype == noad_rel then
+                    local next_nucleus = next_noad.nucleus
+                    if next_nucleus.id == math_char then
+                        local next_char = next_nucleus.char
+                        local newchar = mathpair[next_char]
+                        if newchar then
+                            local fam = current_nucleus.fam
+                            local id = font_of_family(fam)
+                            local tfmdata = fontdata[id]
+                            if tfmdata and tfmdata.characters[newchar] then
+                             -- print("!!!!!",current_char,next_char,newchar)
+                                current_nucleus.char = newchar
+                                local next_next_noad = next_noad.next
+                                if next_next_noad then
+                                    pointer.next = next_next_noad
+                                    next_next_noad.prev = pointer
+                                else
+                                    pointer.next = nil
+                                end
+                                node.free(next_noad)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function noads.handlers.collapse(head,style,penalties)
+    process(head,collapse)
     return true
 end
 

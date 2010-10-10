@@ -106,7 +106,7 @@ function linkedlists.add(name)
     local l = collected[noflinks] or 0
     local p = collected[currentlink-1] or f
     local n = collected[currentlink+1] or l
-    texsprint(ctxcatcodes,format("\\setlinkproperties{%s}{%s}{%s}{%s}{%s}{%s}",currentlink,noflinks,f,p,n,l))
+    context.setlinkproperties(currentlink,noflinks,f,p,n,l)
 end
 
 function linkedlists.enhance(name,n)

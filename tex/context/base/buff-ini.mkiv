@@ -203,18 +203,14 @@
 
 \def\doprocessbufferverbatim
   {\doinitializeverbatim
+   \beginofverbatimlines
    \dostarttagged\t!verbatim\currentbuffer
    \ctxlua{buffers.type("\currentbuffer","\typingparameter\c!strip")}%
-   \dostoptagged}
+   \dostoptagged
+   \endofverbatimlines}
 
 \def\doprocessbufferlinesverbatim#1#2#3%
-  {#2%
-   % todo, set up numbers
-   \doinitializeverbatim
-   \dostarttagged\t!verbatim\currentbuffer
-   \ctxlua{buffers.type("\currentbuffer","\typingparameter\c!strip")}
-   \dostoptagged
-   #3}
+  {#2\doprocessbufferverbatim#3}
 
 \def\doifelsebuffer#1%
   {\ctxlua{buffers.doifelsebuffer("#1")}}
