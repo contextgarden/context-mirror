@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/06/10 10:20:42
+-- merge date  : 10/10/10 14:25:57
 
 do -- begin closure to overcome local limits and interference
 
@@ -719,7 +719,12 @@ function table.keys(t)
 end
 
 local function compare(a,b)
-    return (tostring(a) < tostring(b))
+    local ta, tb = type(a), type(b) -- needed, else 11 < 2
+    if ta == tb then
+        return a < b
+    else
+        return tostring(a) < tostring(b)
+    end
 end
 
 local function sortedkeys(tab)
@@ -731,12 +736,10 @@ local function sortedkeys(tab)
         else
             local tkey = type(key)
             if tkey == "string" then
-            --  if kind == 2 then kind = 3 else kind = 1 end
                 kind = (kind == 2 and 3) or 1
             elseif tkey == "number" then
-            --  if kind == 1 then kind = 3 else kind = 2 end
                 kind = (kind == 1 and 3) or 2
-            else -- if tkey then
+            else
                 kind = 3
             end
         end
@@ -2757,7 +2760,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,index) --ba=baseancho
     set_attribute(base,markbase,bound)
     set_attribute(start,markmark,bound)
     set_attribute(start,markdone,index)
-    marks[bound] = { [index] = { dx, dy } }
+    marks[bound] = { [index] = { dx, dy, rlmode } }
     return dx, dy, bound
 end
 
@@ -2954,17 +2957,23 @@ function injections.handler(head,where,keep)
                                 local index = has_attribute(n,markdone) or 1
                                 local d = mrks[index]
                                 if d then
-                                --  local rlmode = d[3] -- not used
-                                --  if rlmode and rlmode > 0 then
-                                        -- todo
-                                --  else
+                                    local rlmode = d[3]
+                                    if rlmode and rlmode > 0 then
+                                        -- new per 2010-10-06
+                                        local k = wx[p]
+                                        if k then -- maybe (d[1] - p.width) and/or + k[2]
+                                            n.xoffset = p.xoffset - (p.width - d[1]) - k[2]
+                                        else
+                                            n.xoffset = p.xoffset - (p.width - d[1])
+                                        end
+                                    else
                                         local k = wx[p]
                                         if k then
                                             n.xoffset = p.xoffset - d[1] - k[2]
                                         else
                                             n.xoffset = p.xoffset - d[1]
                                         end
-                                --  end
+                                    end
                                     if mk[p] then
                                         n.yoffset = p.yoffset + d[2]
                                     else

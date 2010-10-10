@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lpdf-fmt'] = {
     license   = "see context related readme files",
 }
 
+-- Thanks to Luigi and Steffen for testing.
+
 -- context --directives="backend.format=PDF/X-1a:2001" --trackers=backend.format yourfile
 
 local trace_format    = false  trackers.register("backend.format",    function(v) trace_format    = v end)
@@ -115,6 +117,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.3,
         format_name             = "PDF/X-1a:2001",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         spot_colors             = true,
@@ -128,6 +131,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.4,
         format_name             = "PDF/X-1a:2003",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         spot_colors             = true,
@@ -141,6 +145,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.3,
         format_name             = "PDF/X-3:2002",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -157,6 +162,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.4,
         format_name             = "PDF/X-3:2003",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -174,6 +180,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.6,
         format_name             = "PDF/X-4",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -197,6 +204,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.6,
         format_name             = "PDF/X-4p",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -221,6 +229,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.6,
         format_name             = "PDF/X-5g",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -243,6 +252,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.6,
         format_name             = "PDF/X-5pg",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -266,6 +276,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.6,
         format_name             = "PDF/X-5n",
         xmp_file                = "lpdf-pdx.xml",
+        gts_flag                = "GTS_PDFX",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -288,6 +299,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.4,
         format_name             = "pdf/a-1a:2005",
         xmp_file                = "lpdf-pda.xml",
+        gts_flag                = "GTS_PDFA1",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -297,6 +309,7 @@ local formats = utilities.storage.allocate {
         include_intents         = true,
         forms                   = true, -- NEW; forms are allowed (with limitations); no JS,  other restrictions are unknown (TODO)
         tagging                 = true, -- NEW; the only difference to PDF/A-1b
+        internal_icc_profiles   = true,
         inject_metadata         = function()
             injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
         end
@@ -305,6 +318,7 @@ local formats = utilities.storage.allocate {
         pdf_version             = 1.4,
         format_name             = "pdf/a-1b:2005",
         xmp_file                = "lpdf-pda.xml",
+        gts_flag                = "GTS_PDFA1",
         gray_scale              = true,
         cmyk_colors             = true,
         rgb_colors              = true,
@@ -313,6 +327,7 @@ local formats = utilities.storage.allocate {
         cielab_colors           = true, -- unknown
         include_intents         = true,
         forms                   = true,
+        internal_icc_profiles   = true,
         inject_metadata         = function()
             injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
         end
@@ -485,7 +500,7 @@ end
 
 local loadeddefaults = { }
 
-local function handledefaultprofile(s) -- specification
+local function handledefaultprofile(s,spec) -- specification
     local filename, colorspace = s.filename or "", lower(s.colorspace or "")
     if filename == "" or colorspace == "" then
         report_backends("error in default profile specification: %s",serialize(s,false))
@@ -513,7 +528,7 @@ end
 
 local loadedintents, intents = { }, pdfarray()
 
-local function handleoutputintent(s)
+local function handleoutputintent(s,spec)
     local name, url, filename, id, outputcondition, info = s.info or s.filename or "", s.url or "", s.filename or "", s.id or "", s.outputcondition or "", s.info or ""
     if name == "" or id == "" then
         report_backends("error in output intent specification: %s",serialize(s,false))
@@ -523,7 +538,7 @@ local function handleoutputintent(s)
         if internal or external then
             local d = {
                   Type                      = pdfconstant("OutputIntent"),
-                  S                         = pdfconstant("GTS_PDFX"),
+                  S                         = pdfconstant(spec.gts_flag or "GTS_PDFX"),
                   OutputConditionIdentifier = id,
                   RegistryName              = url,
                   OutputCondition           = outputcondition,
@@ -549,7 +564,7 @@ local function handleoutputintent(s)
     end
 end
 
-local function handleiccprofile(message,name,filename,how,options,alwaysinclude)
+local function handleiccprofile(message,spec,name,filename,how,options,alwaysinclude,gts_flag)
     if name and name ~= "" then
         local list = settings_to_array(name)
         for i=1,#list do
@@ -595,7 +610,7 @@ local function handleiccprofile(message,name,filename,how,options,alwaysinclude)
                         report_backends("no profile inclusion for '%s'",formatname)
                     end
                 end
-                how(profile)
+                how(profile,spec)
             elseif trace_format then
                 report_backends("unknown profile '%s'",name)
             end
@@ -679,8 +694,8 @@ function codeinjections.setformat(s)
                 inject_metadata()
             end
             local options = settings_to_hash(option)
-            handleiccprofile("color profile",profile,filename,handledefaultprofile,options,true)
-            handleiccprofile("output intent",intent,filename,handleoutputintent,options,false)
+            handleiccprofile("color profile",spec,profile,filename,handledefaultprofile,options,true)
+            handleiccprofile("output intent",spec,intent,filename,handleoutputintent,options,false)
             if trace_variables then
                 for k, v in table.sortedhash(formats.default) do
                     local v = formatspecification[k]

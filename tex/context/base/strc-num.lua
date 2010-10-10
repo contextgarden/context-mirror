@@ -27,8 +27,8 @@ local variables  = interfaces.variables
 
 -- state: start stop none reset
 
-counters.specials        = counters.specials or { }
-local counterspecials    = counters.specials
+counters.specials     = counters.specials or { }
+local counterspecials = counters.specials
 
 local counterranges, tbs = { }, 0
 
@@ -121,13 +121,13 @@ local function allocate(name,i)
     local cd = counterdata[name]
     if not cd then
         cd = {
-            level = 1,
---~ block = "", -- todo
+            level   = 1,
+         -- block   = "", -- todo
             numbers = nil,
-            state = variables.start, -- true
-            data = { }
+            state   = variables.start, -- true
+            data    = { }
         }
-        tobesaved[name] = { }
+        tobesaved[name]   = { }
         counterdata[name] = cd
     end
     cd = cd.data
@@ -135,13 +135,12 @@ local function allocate(name,i)
     if not ci then
         ci = {
             number = 0,
-            start = 0,
-            saved = 0,
-            step = 1,
-            range = 1,
+            start  = 0,
+            saved  = 0,
+            step   = 1,
+            range  = 1,
             offset = false,
-        --  via metatable: last, first, and for tracing:
-            stop = 0,
+            stop   = 0, -- via metatable: last, first, stop only for tracing
         }
         setmetatable(ci, { __index = function(t,s) return constructor(t,s,name,i) end })
         cd[i] = ci
@@ -340,7 +339,7 @@ function counters.setown(name,n,value)
         elseif level > 0 then
             check(name,d,n+1)
         elseif level == 0 then
-            -- happens elsewhere
+            -- happens elsewhere, check this for block
         end
         synchronize(name,d)
     end
@@ -378,10 +377,15 @@ function counters.add(name,n,delta)
     if cd and cd.state == variables.start then
         local data = cd.data
         local d = allocate(name,n)
+-- table.print(cd)
         d.number = (d.number or d.start or 0) + delta*(d.step or 0)
         local level = cd.level
+-- print(name,n,level)
         if not level or level == -1 then
             -- -1 is signal that we reset manually
+        elseif level == -2 then
+            -- -2 is signal that we work per text
+            check(name,data,n+1)
         elseif level > 0 then
             -- within countergroup
             check(name,data,n+1)

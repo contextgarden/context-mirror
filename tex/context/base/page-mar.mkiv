@@ -16,6 +16,8 @@
 %D extended en enhanced. Therefore it's always good to watch
 %D out for unexpected side effects.
 
+%D TODO: use parents etc
+
 \writestatus{loading}{ConTeXt Page Macros / Maginal Things}
 
 \unprotect
@@ -197,6 +199,9 @@
 \newcount\margincontentlevel
 \newdimen\margincontentheight
 
+% \installparameterhandler    \??im{inmargin}
+% \installparameterhashhandler\??im{inmargin}
+
 \unexpanded\def\setupinmargin
   {\dodoubleempty\dosetupinmargin}
 
@@ -206,10 +211,6 @@
    \else
      \getparameters[\??im][#1]%
    \fi}
-
-% \def\dodosetupinmargin[#1]#2% [settings]{class}
-%   {\checkinmargin[#2]%
-%    \getparameters[\??im#2][#1]}
 
 \def\dodosetupinmargin[#1]#2% [settings]{class}
   {\checkinmargin[#2]%
@@ -423,7 +424,7 @@
         +\compensatedinnermakeupmargin
         +\csname\??im#1\c!distance\endcsname
       \relax}
-     {\dimexpr
+     {\hskip\dimexpr
         +\margincontenthoffset
         +\compensatedinnermakeupmargin
         +\margincontentdistance

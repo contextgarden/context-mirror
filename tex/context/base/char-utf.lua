@@ -35,6 +35,9 @@ local characters      = characters
 characters.graphemes  = allocate()
 local graphemes       = characters.graphemes
 
+characters.mathpairs  = allocate()
+local mathpairs       = characters.mathpairs
+
 characters.filters    = allocate()
 local filters         = characters.filters
 
@@ -54,13 +57,28 @@ local function initialize()
         -- using vs and first testing for length is faster (.02->.01 s)
         local vs = v.specials
         if vs and #vs == 3 and vs[1] == 'char' then
-            local first, second = utfchar(vs[2]), utfchar(vs[3])
+            local one, two = vs[2], vs[3]
+            local first, second, combined = utfchar(one), utfchar(two), utfchar(k)
             local cgf = graphemes[first]
             if not cgf then
                 cgf = { }
                 graphemes[first] = cgf
             end
-            cgf[second] = utfchar(k)
+            cgf[second] = combined
+            if v.mathclass or v.mathspec then
+                local mps = mathpairs[two]
+                if not mps then
+                    mps = { }
+                    mathpairs[two] = mps
+                end
+                mps[one] = k
+                local mps = mathpairs[second]
+                if not mps then
+                    mps = { }
+                    mathpairs[second] = mps
+                end
+                mps[first] = combined
+            end
         end
     end
     initialize = false

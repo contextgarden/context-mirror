@@ -178,11 +178,43 @@ local function check_number(n,a,skip,sameline)
     end
 end
 
-function boxed.stage_one(n)
+-- xlist
+--   xlist
+--     hlist
+
+local function identify(list)
+    if list then
+        for n in traverse_id(hlist_code,list) do
+            if has_attribute(n,a_linenumber) then
+                return list
+            end
+        end
+        local n = list
+        while n do
+            local id = n.id
+            if id == hlist_code or id == vlist_code then
+                local ok = identify(n.list)
+                if ok then
+                    return ok
+                end
+            end
+            n = n.next
+        end
+    end
+end
+
+function boxed.stage_zero(n)
+    return identify(texbox[n].list)
+end
+
+function boxed.stage_one(n,nested)
     current_list = { }
     local head = texbox[n]
     if head then
         local list = head.list
+        if nested then
+            list = identify(list)
+        end
         local last_a, last_v, skip = nil, -1, false
         for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
             if n.height == 0 and n.depth == 0 then
@@ -200,6 +232,9 @@ function boxed.stage_one(n)
                             da.start = 1 -- eventually we will have a normal counter
                         end
                         last_a = a
+                        if trace_numbers then
+                            report_lines("starting line number range %s: start %s, continue",a,da.start,da.continue or "no")
+                        end
                     end
                     if has_attribute(n,a_displaymath) then
                         if nodes.is_display_math(n) then
@@ -231,8 +266,13 @@ function boxed.stage_two(n,m)
         for i=1,#current_list do
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
-            ti.next, n.list = n.list, ti
-            resolve(n,m)
+            if ti then
+                ti.next, n.list = n.list, ti
+                resolve(n,m)
+            else
+                report_lines("error in linenumbering (1)")
+                return
+            end
        end
     end
 end

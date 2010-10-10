@@ -10,6 +10,8 @@ local format, gmatch, gsub, find = string.format, string.gmatch, string.gsub, st
 local texsprint, ctxcatcodes, texbox, texcount = tex.sprint, tex.ctxcatcodes, tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
 
+local report_media = logs.report("media")
+
 local backends, lpdf, nodes = backends, lpdf, nodes
 
 local nodeinjections = backends.pdf.nodeinjections
@@ -36,6 +38,8 @@ local nodepool             = nodes.pool
 local pdfannotation_node   = nodepool.pdfannotation
 
 local hpack_node, write_node = node.hpack, node.write
+
+local pdf_border = pdfarray { 0, 0, 0 } -- can be shared
 
 -- symbols
 
@@ -247,12 +251,33 @@ end
 -- smil application/smil
 -- swf  application/x-shockwave-flash
 
+-- P  media play parameters (evt /BE for controls etc
+-- A  boolean (audio)
+-- C  boolean (captions)
+---O  boolean (overdubs)
+---S  boolean (subtitles)
+-- PL pdfconstant("ADBE_MCI"),
+
+-- F        = flags,
+-- T        = title,
+-- Contents = rubish,
+-- AP       = irrelevant,
+
+-- sound is different, no window (or zero) so we need to collect them and
+-- force them if not set
+
 local ms, mu, mf = { }, { }, { }
 
-local delayed = { }
+local function delayed(label)
+    local a = pdfreserveannotation()
+    mu[label] = a
+    return pdfreference(a)
+end
 
 local function insertrenderingwindow(label,width,height,specification)
-    if options == variables.auto then
+--~     local openpage = specification.openpage
+--~     local closepage = specification.closepage
+    if specification.options == variables.auto then
         if openpageaction then
             -- \handlereferenceactions{\v!StartRendering{#2}}
         end
@@ -267,15 +292,15 @@ local function insertrenderingwindow(label,width,height,specification)
             PC = (closepage and lpdf.action(closepage)) or nil,
         }
     end
-    local page = tonumber(specification.page) or texcount.realpageno
+    local page = tonumber(specification.page) or texcount.realpageno -- todo
     local d = pdfdictionary {
         Subtype = pdfconstant("Screen"),
         P       = pdfreference(pdfpagereference(page)),
         A       = mf[label],
-        Border  = pdfarray { 0, 0, 0 } ,
+        Border  = pdf_border,
         AA      = actions,
     }
-    local r = pdfreserveannotation()
+    local r = mu[label] or pdfreserveannotation()
     write_node(pdfannotation_node(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
@@ -287,12 +312,14 @@ local function insertrendering(specification)
         local isurl = find(filename,"://")
         local d = pdfdictionary {
             Type = pdfconstant("Rendition"),
-            S    = pdfconstant("MR"),
+            S    = pdfconstant("MR"), -- or SR for selector
+            N    = label, -- here too?
             C    = pdfdictionary {
                 Type = pdfconstant("MediaClip"),
                 S    = pdfconstant("MCD"),
                 N    = label,
-                CT   = specification.mime,
+             -- P    = pdfdictionary { TF = pdfstring("TEMPALWAYS") }, -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS
+                CT   = specification.mime, -- also /PL needs to be present then
                 Alt  = pdfarray {
                     "", "file not found", -- language id + message
                 },
@@ -304,15 +331,13 @@ local function insertrendering(specification)
             }
         }
         mf[label] = pdfreference(pdfflushobject(d))
-        if not ms[label]  then
-            mu[label] = insertrenderingwindow(label,0,0,specification.options)
-        end
     end
 end
 
 local function insertrenderingobject(specification)
     local label = specification.label
     if not mf[label] then
+        report_media("todo: unknown medium '%s'",label or "?")
         local d = pdfdictionary {
             Type = pdfconstant("Rendition"),
             S    = pdfconstant("MR"),
@@ -320,40 +345,37 @@ local function insertrenderingobject(specification)
                 Type = pdfconstant("MediaClip"),
                 S    = pdfconstant("MCD"),
                 N    = label,
-                D    = pdfreference(unknown), -- not label but objectname, hm
+                D    = pdfreference(unknown), -- not label but objectname, hm .. todo?
             }
         }
         mf[label] = pdfreference(pdfflushobject(d))
-        if ms[label] then
-            insertrenderingwindow(label,0,0,specification)
-        end
+    end
+end
+
+function codeinjections.processrendering(label)
+    local specification = interactions.renderings.rendering(label)
+    if not specification then
+        -- error
+    elseif specification.kind == "external" then
+        insertrendering(specification)
+    else
+        insertrenderingobject(specification)
     end
 end
 
 function codeinjections.insertrenderingwindow(specification)
     local label = specification.label
-    codeinjections.processrendering(label) -- was check at tex end
+    codeinjections.processrendering(label)
     ms[label] = insertrenderingwindow(label,specification.width,specification.height,specification)
 end
 
-function codeinjections.processrendering(label)
-    local specification = interactions.renderings.rendering(label)
-    if specification then
-        if specification.kind == "external" then
-            insertrendering(specification)
-        else
-            insertrenderingobject(specification)
-        end
-    end
-end
-
 local function set(operation,arguments)
-    codeinjections.processrendering(arguments) -- was check at the tex end
+    codeinjections.processrendering(arguments)
     return pdfdictionary {
         S  = pdfconstant("Rendition"),
         OP = operation,
         R  = mf[arguments],
-        AN = ms[arguments] or mu[arguments],
+        AN = ms[arguments] or delayed(arguments),
     }
 end
 

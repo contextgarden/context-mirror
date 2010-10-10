@@ -598,7 +598,12 @@ function table.keys(t)
 end
 
 local function compare(a,b)
-    return (tostring(a) < tostring(b))
+    local ta, tb = type(a), type(b) -- needed, else 11 < 2
+    if ta == tb then
+        return a < b
+    else
+        return tostring(a) < tostring(b)
+    end
 end
 
 local function sortedkeys(tab)
@@ -610,12 +615,10 @@ local function sortedkeys(tab)
         else
             local tkey = type(key)
             if tkey == "string" then
-            --  if kind == 2 then kind = 3 else kind = 1 end
                 kind = (kind == 2 and 3) or 1
             elseif tkey == "number" then
-            --  if kind == 1 then kind = 3 else kind = 2 end
                 kind = (kind == 1 and 3) or 2
-            else -- if tkey then
+            else
                 kind = 3
             end
         end
@@ -10105,9 +10108,9 @@ local function load_configuration_files()
             local filename = filejoin(pathname,luacnfname)
             local blob = loadfile(filename)
             if blob then
+                local setups = instance.setups
                 local data = blob()
                 data = data and data.content
-                local setups = instance.setups
                 if data then
                     if trace_locating then
                         report_resolvers("loading configuration file '%s'",filename)
@@ -10159,13 +10162,13 @@ local function load_configuration_files()
 
                 else
                     if trace_locating then
-                        report_resolvers("skipping configuration file '%s'",filename)
+                        report_resolvers("skipping configuration file '%s' (no content)",filename)
                     end
                     setups[pathname] = { }
                     instance.loaderror = true
                 end
             elseif trace_locating then
-                report_resolvers("skipping configuration file '%s'",filename)
+                report_resolvers("skipping configuration file '%s' (no file)",filename)
             end
             instance.order[#instance.order+1] = instance.setups[pathname]
             if instance.loaderror then
@@ -13829,6 +13832,11 @@ elseif false then
     if not ok then
         ok = runners.execute_script(filename)
     end
+
+elseif environment.files[1] == 'texmfcnf.lua' then -- so that we don't need to load mtx-base
+
+    resolvers.load("nofiles")
+    resolvers.listers.configurations()
 
 else
 

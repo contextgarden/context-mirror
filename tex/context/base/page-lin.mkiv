@@ -24,6 +24,30 @@
 %
 % we should use normal counters but then we need to sync settings
 
+% not yet ok, we need to give the top line a proper height
+%
+% \newbox\locallinenumberbox
+%
+% \unexpanded\def\startlocallinenumbering
+%   {\setbox\locallinenumberbox\vbox\bgroup
+%    \startlinenumbering}
+%
+% \unexpanded\def\stoplocallinenumbering
+%   {\stoplinenumbering
+%    \egroup
+%    \mkdoprocessdeepboxcontents\locallinenumberbox
+%    \unvbox\locallinenumberbox}
+
+% some line
+%
+% \startlocallinenumbering
+% some source code 1\par
+% some source code 2\par
+% some source code 3\par
+% \stoplocallinenumbering
+%
+% some line
+
 \registerctxluafile{page-lin}{1.001}
 
 \definesystemattribute[linenumber]   [public]
@@ -32,15 +56,19 @@
 \appendtoksonce \attribute\linenumberattribute \attributeunsetvalue \to \everyforgetall
 \appendtoksonce \attribute\displaymathattribute\plusone             \to \everybeforedisplayformula
 
-\newcount\linenumber % not used
-\newbox  \linenumberscratchbox
-\newcount\linenumberchunk
-\newcount\linerefcounter
+\newcount   \linenumber % not used
+\newbox     \linenumberscratchbox
+\newcount   \linenumberchunk
+\newcount   \linerefcounter
+\newconstant\linenumbernesting
 
 \newconditional\tracelinenumbering
 
-\def\mkprocesstextlinenumbers#1%
-  {\setbox\linenumberscratchbox\vbox{\forgetall\offinterlineskip\ctxlua{nodes.lines.boxed.stage_one(\number#1)}}%
+\def\mkprocesstextlinenumbers#1#2%
+  {\setbox\linenumberscratchbox\vbox
+     {\forgetall
+      \offinterlineskip
+      \ctxlua{nodes.lines.boxed.stage_one(\number#1,\ifcase\linenumbernesting false\else true\fi)}}%
    \ctxlua{nodes.lines.boxed.stage_two(\number#1,\number\linenumberscratchbox)}}% can move to lua code
 
 % id nr shift width leftskip dir
@@ -49,9 +77,10 @@
 
 \newconditional\boxcontentneedsprocessing
 
-\def\mkdoprocesspagecontents  #1{\mkaddtextlinenumbers{#1}\plusone      \plusone}
-\def\mkdoprocessboxcontents   #1{\mkaddtextlinenumbers{#1}\plusone      \plusone}
-\def\mkdoprocesscolumncontents#1{\mkaddtextlinenumbers{#1}\currentcolumn\nofcolumns}
+\def\mkdoprocesspagecontents   #1{\mkaddtextlinenumbers{#1}\plusone      \plusone   \zerocount}
+\def\mkdoprocessboxcontents    #1{\mkaddtextlinenumbers{#1}\plusone      \plusone   \zerocount}
+\def\mkdoprocessdeepboxcontents#1{\mkaddtextlinenumbers{#1}\plusone      \plusone   \plusone  }
+\def\mkdoprocesscolumncontents #1{\mkaddtextlinenumbers{#1}\currentcolumn\nofcolumns\zerocount}
 
 \def\mklinenumberparameters
   {continue = "\linenumberparameter\c!continue",
@@ -280,14 +309,15 @@
 \newconstant   \linenumbercolumn
 \newconstant   \linenumberlastcolumn
 
-\def\mkaddtextlinenumbers#1#2#3% box col max
+\def\mkaddtextlinenumbers#1#2#3#4% box col max nesting
   {\bgroup
    \linenumberbox       #1\relax
    \linenumbercolumn    #2\relax
    \linenumberlastcolumn#3\relax
+   \linenumbernesting   #4\relax
    \fullrestoreglobalbodyfont
    \let\makelinenumber\maketextlinenumber
-   \mkprocesstextlinenumbers\linenumberbox
+   \mkprocesstextlinenumbers\linenumberbox\linenumbernesting
    \egroup}
 
 \def\maketextlinenumber#1#2%
