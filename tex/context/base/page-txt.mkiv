@@ -392,12 +392,28 @@
 
 \newbox\scratchpagebox
 
+% \newbox\collectedprepagecontent % only for delayed stuff
+
+% \def\flushcollectedpagecontent
+%   {\ifvoid\collectedprepagecontent \else
+%      \smashbox\collectedprepagecontent
+%      \box\collectedprepagecontent
+%    \fi}
+
+% \def\delaytillpageisflushhed#1%
+%   {\global\setbox\collectedprepagecontent\hbox
+%      {\ifvoid\collectedprepagecontent \else
+%         \unhbox\collectedprepagecontent
+%       \fi % ignore and remove not really needed
+%       \ignorespaces#1\removeunwantedspaces}}
+
 \def\gettextboxes
   {\setbox\scratchpagebox\vbox
      {\dontcomplain
       \calculatereducedvsizes
       \swapmargins
       \offinterlineskip
+%       \flushcollectedpagecontent
       \vskip\dimexpr-\topheight-\topdistance\relax
       \the\toptextcontent
       \vskip\dimexpr\topheight+\topdistance\relax

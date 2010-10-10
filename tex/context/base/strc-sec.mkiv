@@ -345,16 +345,41 @@
      % use  : \currentstructureheadincrement as spec
    \fi}
 
+% \def\setstructureheadplacement
+%   {\setfalse\structureheadleaveempty
+%    \settrue \structureheaddoplace
+%    \setfalse\structureheadhidden
+%    \processaction
+%      [\structureheadparameter\c!placehead]
+%      [  \v!yes=>,
+%       \v!empty=>\settrue\structureheadleaveempty,
+%          \v!no=>\settrue\structureheadleaveempty\setfalse\structureheaddoplace,
+%      \v!hidden=>\settrue\structureheadleaveempty\setfalse\structureheaddoplace\settrue\structureheadhidden]}
+
+\setvalue{\??nh:\c!placehead:\v!yes}%
+  {\setfalse\structureheadleaveempty
+   \settrue \structureheaddoplace
+   \setfalse\structureheadhidden}
+
+\setvalue{\??nh:\c!placehead:\v!empty}%
+  {\settrue \structureheadleaveempty
+   \settrue \structureheaddoplace
+   \setfalse\structureheadhidden}
+
+\setvalue{\??nh:\c!placehead:\v!no}%
+  {\settrue \structureheadleaveempty
+   \setfalse\structureheaddoplace
+   \setfalse\structureheadhidden}
+
+\setvalue{\??nh:\c!placehead:\v!hidden}%
+  {\settrue \structureheadleaveempty
+   \setfalse\structureheaddoplace
+   \settrue \structureheadhidden}
+
 \def\setstructureheadplacement
-  {\settrue\structureheaddoplace
-   \setfalse\structureheadleaveempty
-   \setfalse\structureheadhidden
-   \processaction
-     [\structureheadparameter\c!placehead]
-     [  \v!yes=>,
-      \v!empty=>\settrue\structureheadleaveempty,
-         \v!no=>\settrue\structureheadleaveempty\setfalse\structureheaddoplace,
-     \v!hidden=>\settrue\structureheadhidden\settrue\structureheadleaveempty\setfalse\structureheaddoplace]}
+  {\executeifdefined
+     {\??nh:\c!placehead:\structureheadparameter\c!placehead}
+     {\getvalue{\??nh:\c!placehead:\v!yes}}}
 
 \def\setstructureheaddisplay
   {\doifelsevalue{\??nh:\structureheadparameter\c!alternative}\v!horizontal
@@ -577,7 +602,8 @@
 
 \unexpanded\def\placestructureheadhidden
   {\setxvalue{\currentstructurehead:sync}%
-     {\noexpand\pagetype[\currentstructureheadcoupling]% hm also number
+     {\noexpand\setgvalue{\currentstructurehead:sync}{}%
+      \noexpand\pagetype[\currentstructureheadcoupling]% hm also number
       \noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}%
       \currentstructuresynchronize}}
 

@@ -227,6 +227,7 @@ local tagged = { }
 local function preprocessentries(rawdata)
     local entries = rawdata.entries
     if entries then
+--~ table.print(rawdata)
         local e, k = entries[1] or "", entries[2] or ""
         local et, kt, entryproc, pageproc
         if type(e) == "table" then
@@ -236,7 +237,7 @@ local function preprocessentries(rawdata)
             et = lpegmatch(entrysplitter,e)
         end
         if type(k) == "table" then
-            kt = e
+            kt = k
         else
             pageproc, k = processor_split(k)
             kt = lpegmatch(entrysplitter,k)
@@ -529,14 +530,14 @@ function registers.flush(data,options,prefixspec,pagespec)
                     if text then
                         local w = words[text]
                         if w then
-                            local wr = w.references
-                            local dr = d.references
-                            if wr.seeindex then
-                                dr.seeindex = wr.seeindex
+                            local wr = w.references -- the referred word
+                            local dr = d.references -- the see word
+                            if wr.seeparent then
+                                dr.seeindex = wr.seeparent
                             else
                                 seeindex = seeindex + 1
+                                wr.seeparent = seeindex
                                 dr.seeindex = seeindex
-                                wr.seeindex = seeindex
                             end
                         end
                     end
@@ -577,9 +578,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                             end
                         end
                         local internal = entry.references.internal or 0
-                        local seeindex = entry.references.seeindex or ""
+                        local seeparent = entry.references.seeparent or ""
                         if metadata then
-                            texsprint(ctxcatcodes,"\\registerentry{",internal,"}{",seeindex,"}{")
+                            texsprint(ctxcatcodes,"\\registerentry{",internal,"}{",seeparent,"}{")
                             local proc = entry.processors and entry.processors[1]
                             if proc then
                                 texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")

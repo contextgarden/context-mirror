@@ -15,6 +15,9 @@
 
 \registerctxluafile{strc-itm}{1.001}
 
+% this will be reimplemented: \startitem ... \stopitem will be the main macros and
+% \item will then call them
+
 \unprotect
 
 \newconditional\sublistitem            \setfalse\sublistitem
@@ -70,6 +73,7 @@
 
 \def\dohandleitemreference % we will make a decent number helper
   {\ifx\currentitemreference \empty \else
+\iftrialtypesetting \else
      \setnextinternalreference
      \ctxlua {structures.references.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
         {
@@ -105,8 +109,8 @@
      }%
      \xdef\currentitemattribute{\number\lastdestinationattribute}%
      \begingroup\attribute\destinationattribute\currentitemattribute\kern\zeropoint\endgroup % todo, apply attribute to symbol
+\fi
    \fi}
-
 
 % \startitemize[n,packed]
 % \item test \item test \item test
@@ -578,7 +582,7 @@
 
 \@EA\long\@EA\def\@EA\collectitemgroupitem\@EA#\@EA1\csname\e!stop\v!item\endcsname
   {\increment\itemcollectcounter
-   \long\setvalue{\v!item*\itemcollectcounter}{\item#1\par}}
+   \long\setvalue{\v!item*\itemcollectcounter}{\startitemgroupitem#1\stopitemgroupitem}}
 
 \def\flushcollecteditems
   {\ifconditional\randomizeitems
@@ -654,6 +658,9 @@
    \doifinsetelse\v!random  {#1}{\settrue\randomizeitems   }{\setfalse\randomizeitems   }%
    \doifinsetelse\v!continue{#1}{\settrue\continuelistitems}{\setfalse\continuelistitems}%
    % == \doifinsetelse\v!intro{#1}\settrue\setfalse\introlistitem
+\iftrialtypesetting
+    \savestructurecounter[\currentitemgroupcounter]%[\currentitemlevel]% todo: per level
+\fi
    \global\advance\noflists\plusone
    \currentnoflists\noflists
    \noflistelements\zerocount
@@ -766,6 +773,11 @@
 % \item \input ward \item \input ward \item \input ward
 % \stopitemize \blank
 
+\def\dorestoreitemgroup
+  {\restorestructurecounter[\currentitemgroupcounter]% [\currentitemlevel]% todo: per level
+   \global\advance\noflists\minusone
+   \currentnoflists\noflists}
+
 \unexpanded\def\stopitemgroup
   {\stopcollectitems
    \ifconditional\textlistitem
@@ -776,8 +788,8 @@
    \dolistreference
    \ifconditional\firstlistitem
    \else
-\dostoptagged
-\dostoptagged
+     \dostoptagged
+     \dostoptagged
      \endgroup
    \fi % toegevoegd, eerste \som opent groep
    \ifnum\itemcolumndepth=\currentitemlevel\relax
@@ -801,6 +813,9 @@
      \fi
    \fi
    % new test, needed in sidefloats (surfaced in volker's proceedings)
+\iftrialtypesetting
+  \dorestoreitemgroup
+\fi
    \ifconditional\textlistitem % else forgotten
      \endgroup
      \global\advance\itemdepth-\itemincrement
@@ -899,14 +914,33 @@
 %
 % so we need to keep that property
 
+\let\startitemgroupitem\itemgroupitem
+
+\def\stopitemgroupitem
+  {\ifconditional\textlistitem
+     % nothing
+   \else
+     \endgraf
+   \fi}
+
+\def\startitemgroupitemhead#1%
+  {\itemgrouphead#1\par}
+
+\def\stopitemgroupitemhead
+  {\ifconditional\textlistitem
+     % to be tested
+   \else
+     \endgraf
+   \fi}
+
 \appendtoks
-  \letvalue{\e!start\v!item}\itemgroupitem
-  \letvalue{\e!stop \v!item}\endgraf
+  \letvalue{\e!start\v!item}\startitemgroupitem
+  \letvalue{\e!stop \v!item}\stopitemgroupitem
 \to \itemgroupcommands
 
 \appendtoks
-  \setvalue{\e!start\v!head}#1{\itemgrouphead#1\par}%
-  \letvalue{\e!stop \v!head}\endgraf
+  \letvalue{\e!start\v!head}\startitemgroupitemhead
+  \letvalue{\e!stop \v!head}\stopitemgroupitemhead
 \to \itemgroupcommands
 
 % \startitemize

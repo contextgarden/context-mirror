@@ -237,9 +237,9 @@
             own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
         \fi
             xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
-\ifx\currentregisterxmlsetup\empty \else
-    xmlsetup = "\currentregisterxmlsetup",
-\fi
+        \ifx\currentregisterxmlsetup\empty \else
+            xmlsetup = "\currentregisterxmlsetup",
+        \fi
         },
         references = {
             internal = \nextinternalreference,
@@ -742,7 +742,7 @@
    \ifx\currentregisterseeindex\empty
      \registerseeword{#3}%
    \else
-[>\currentregisterseeindex]%
+% [>\currentregisterseeindex]%
      \registerseeword{\goto{#3}[seeindex:\currentregisterseeindex]}%
    \fi
    \dostoptagged}
@@ -751,7 +751,7 @@
   {\dostarttagged\t!registerentry\empty
    \ifx\currentregisterseeindex\empty \else
      \dontleavehmode
-[<\currentregisterseeindex]%
+% [<\currentregisterseeindex]%
      \pagereference[seeindex:\currentregisterseeindex]% maybe some day we will support an area
    \fi
    \registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#1}}}%
