@@ -18,6 +18,8 @@ local trace_floats = false  trackers.register("graphics.floats", function(v) tra
 
 local report_floats = logs.new("floats")
 
+local C, S, P, lpegmatch = lpeg.C, lpeg.S, lpeg.P, lpeg.match
+
 -- we use floatbox, floatwidth, floatheight
 -- text page leftpage rightpage (todo: top, bottom, margin, order)
 
@@ -32,6 +34,7 @@ local function initialize()
         page      = { },
         leftpage  = { },
         rightpage = { },
+        somewhere = { },
     }
 end
 
@@ -76,12 +79,21 @@ local function setdimensions(b)
     return w, h, d
 end
 
-local function get(stack,n)
-    n = n or #stack
-    if n > 0 then
-        local t = stack[n]
-        if t then
-            return t, t.box, n
+local function get(stack,n,bylabel)
+    if bylabel then
+        for i=1,#stack do
+            local s = stack[i]
+            if s.data.label == n then
+                return s, s.box, i
+            end
+        end
+    else
+        n = n or #stack
+        if n > 0 then
+            local t = stack[n]
+            if t then
+                return t, t.box, n
+            end
         end
     end
 end
@@ -131,10 +143,10 @@ function floats.resave(which)
     end
 end
 
-function floats.flush(which,n)
+function floats.flush(which,n,bylabel)
     which = which or default
     local stack = stacks[which]
-    local t, b, n = get(stack,n or 1)
+    local t, b, n = get(stack,n or 1,bylabel)
     if t then
         local w, h, d = setdimensions(b)
         if trace_floats then
@@ -233,4 +245,27 @@ function floats.thecheckedpagefloat(packed)
         end
     end
     texsprint(ctxcatcodes,result)
+end
+
+local method   = C((1-S(", :"))^1)
+local position = P(":") * C((1-S("*,"))^1) * P("*") * C((1-S(","))^1)
+local label    = P(":") * C((1-S(",*: "))^0)
+
+local pattern = method * (label * position + C("") * position + label + C("") * C("") * C(""))
+
+-- table.print { lpeg.match(pattern,"somewhere:blabla,crap") }
+-- table.print { lpeg.match(pattern,"somewhere:1*2") }
+-- table.print { lpeg.match(pattern,"somewhere:blabla:1*2") }
+-- table.print { lpeg.match(pattern,"somewhere::1*2") }
+-- table.print { lpeg.match(pattern,"somewhere,") }
+-- table.print { lpeg.match(pattern,"somewhere") }
+
+function floats.analysemethod(str)
+    if str ~= "" then -- extra check, already done at the tex end
+        local method, label, row, column = lpegmatch(pattern,str)
+        context.setvalue("floatmethod",method or "")
+        context.setvalue("floatlabel", label  or "")
+        context.setvalue("floatrow",   row    or "")
+        context.setvalue("floatcolumn",column or "")
+    end
 end

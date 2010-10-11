@@ -1329,7 +1329,7 @@
    \else
      \bgroup
      \getcolumnstatus\column\count255\total\dimen0\goal\dimen2\\%
-     \dofloatsgetinfo{text}%
+     \dofloatsgetinfo\s!text
      \setbox\scratchbox\vbox % tricky met objecten ?
        {\blank[\@@bkspacebefore]
         \snaptogrid\vbox{\vskip\floatheight}}% copy?
@@ -1359,7 +1359,7 @@
      \let\doflushcolumnfloat\relax
      \getcolumnstatus\column\mofcolumns\total\dimen0\goal\dimen2\\%
      \ifdim\dimen0>\zeropoint
-       \dofloatsgetinfo{text}%
+       \dofloatsgetinfo\s!text
        \ifdim\floatwidth>\hsize
           % dropped ?
        \else
@@ -1371,7 +1371,7 @@
            \ifnum\mofcolumns<\nofcolumns
              \advance\mofcolumns \plusone
              \ifdim\ht\currenttopcolumnbox=\zeropoint
-               \dofloatsflush{text}{1}%
+               \dofloatsflush\s!text{1}%
                \global\setbox\currenttopcolumnbox\vbox
                  {\snaptogrid\vbox{\box\floatbox}
                   \whitespace % nodig ?
@@ -1395,7 +1395,7 @@
              \blank[\@@bkspacebefore]
              \nobreak
            \fi
-           \dofloatsflush{text}{1}%
+           \dofloatsflush\s!text{1}%
            \flushfloatbox
            \blank[\@@bkspaceafter]
          \fi
@@ -1436,7 +1436,7 @@
                   \whitespace % nodig ?
                   \blank[\@@bkspaceafter]}%
           \else
-            \dofloatsgetinfo{text}%
+            \dofloatsgetinfo\s!text
             \ifdim\floatwidth>\hsize
               \dimen0\dimexpr\floatwidth+\intercolumnwidth+.5pt\relax
               \dimen2\dimexpr\hsize     +\intercolumnwidth+.5pt\relax
@@ -1447,7 +1447,7 @@
                 \count0\zerocount
               \else
                 \dimen0\dimexpr\count0\hsize+\count0\intercolumnwidth-\intercolumnwidth\relax
-                \dofloatsflush{text}{1}%
+                \dofloatsflush\s!text{1}%
                 \ifdim\floatwidth>\finalcolumntextwidth % better somewhere else too
                   \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
                 \fi % otherwise the graphic may disappear
@@ -1460,7 +1460,7 @@
               \fi
               \showmessage\m!columns{13}\empty
             \else
-              \dofloatsflush{text}{1}%
+              \dofloatsflush\s!text{1}%
               \ifdim\floatwidth>\finalcolumntextwidth % better somewhere else too
                 \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
               \fi % otherwise the graphic may disappear

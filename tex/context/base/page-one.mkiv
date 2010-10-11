@@ -343,15 +343,15 @@
   {\ifsomefloatwaiting
      \ifpackflushedfloats
        \centerfloatboxfalse % not needed as we do call directly
-       \dofloatscollect{text}{\hsize}{1em}%
+       \dofloatscollect\s!text{\hsize}{1em}%
        \OTRONEsetvsize
        \global\setbox\floatbox\hbox to \hsize
          {\hfil
           \dorecurse\nofcollectedfloats
             {\ifcase\columndirection % nog document wide
-               \dofloatsflush{text}{1}%
+               \dofloatsflush\s!text{1}%
              \else
-               \dofloatsflushn{text}{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+               \dofloatsflushn\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
              \fi
              \ifdim\wd\floatbox>\makeupwidth % \hsize
                \hbox to \makeupwidth{\hss\box\floatbox\hss}%
@@ -490,9 +490,11 @@
      \doifinset\v!tall{#1}\flushsidefloatsafterpar
    \fi}
 
-\def\OTRONEsomepagefloat     [#1]{\dofloatssavepagefloat{page}     {#1}}
-\def\OTRONEsomeleftpagefloat [#1]{\dofloatssavepagefloat{leftpage} {#1}}
-\def\OTRONEsomerightpagefloat[#1]{\dofloatssavepagefloat{rightpage}{#1}}
+\def\OTRONEsomepagefloat     [#1]{\dofloatssavepagefloat     {\s!page}     {#1}}
+\def\OTRONEsomeleftpagefloat [#1]{\dofloatssavepagefloat     {\s!leftpage} {#1}}
+\def\OTRONEsomerightpagefloat[#1]{\dofloatssavepagefloat     {\s!rightpage}{#1}}
+
+%def\OTRONEsomesoemwherefloat[#1]{\dofloatssavesomewherefloat{\s!somewhere}{#1}}
 
 \def\OTRONEsometopsfloat[#1]%
   {\ifdim\topinserted=\zeropoint

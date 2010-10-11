@@ -75,6 +75,10 @@
   {\ctxlua{floats.flush("#1",\number#2)}%
    \the\everyfloatscheck}
 
+\def\dofloatsflushbylabel#1#2%
+  {\ctxlua{floats.flush("#1","#2",true)}%
+   \the\everyfloatscheck}
+
 \def\dofloatssave#1%
   {\ctxlua{floats.save("#1")}%
    \the\everyfloatscheck}
@@ -112,6 +116,31 @@
 \def\dofloatssavepagefloat#1#2%
   {\ctxlua{floats.save("#1", { specification = "#2" })}}
 
+\def\dofloatssavesomewherefloat#1#2% #1=method
+  {\ctxlua{floats.save("#1", { specification = "#2", label = "\floatlabel" })}}
+
+%D This is an experimental new feature (for Alan Braslau), a prelude to more:
+%D
+%D \starttyping
+%D test \placefigure{}{}
+%D test \placefigure[somewhere:123][whatever]{}{}
+%D test \placefigure[somewhere:456][whatever]{}{}
+%D test \placefigure{}{}
+%D
+%D \placenamedfloat[figure][456]
+%D \placenamedfloat[figure][123]
+%D \stoptyping
+
+\def\placenamedfloat
+  {\dodoubleargument\doplacenamedfloat}
+
+\def\doplacenamedfloat[#1][#2]%
+  {\def\currentfloat{#1}%
+   \blank[\@@bkspacebefore]%
+   \dofloatsflushbylabel\s!somewhere{#2}%
+   \box\floatbox
+   \blank[\@@bkspaceafter]}
+
 %D The following code is in transition as we don't want to break the
 %D current single column, multi column, and columnset mechanism.
 %D
@@ -119,7 +148,7 @@
 
 \def\dogetfloat
   {\ifsomefloatwaiting
-     \dofloatsflush{text}{1}%
+     \dofloatsflush\s!text{1}%
      \ifcenterfloatbox
        \ifdim\wd\globalscratchbox<\hsize
          \global\setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
@@ -138,14 +167,14 @@
    \fi}
 
 \def\dosavefloat
-  {\dofloatssave{text}%
+  {\dofloatssave\s!text
    \nonoindentation} % brrr nonoindentation here
 
 \def\doresavefloat
-  {\dofloatsresave{text}}
+  {\dofloatsresave\s!text}
 
 \def\doreversesavefloat
-  {\dofloatsresave{text}}
+  {\dofloatsresave\s!text}
 
 \def\doflushsavedfloats % simplified \OTRONEdodoflushfloats
   {\doloop
@@ -177,21 +206,21 @@
 
 % \def\doflushpagefloats
 %   {\doifoddpageelse
-%      {\ifnum\dofloatsnofstacked{rightpage}>\zerocount
-%         \doflushsomepagefloat{rightpage}%
-%       \else\ifnum\dofloatsnofstacked{page}>\zerocount
-%         \doflushsomepagefloat{page}
-%       \else\ifnum\dofloatsnofstacked{leftpage}>\zerocount
+%      {\ifnum\dofloatsnofstacked\s!rightpage>\zerocount
+%         \doflushsomepagefloat\s!rightpage
+%       \else\ifnum\dofloatsnofstacked\s!page>\zerocount
+%         \doflushsomepagefloat\s!page
+%       \else\ifnum\dofloatsnofstacked\s!leftpage>\zerocount
 %         \null\vfill\eject
-%        %\doflushsomepagefloat{leftpage}%
+%        %\doflushsomepagefloat\s!leftpage
 %       \fi\fi\fi}
-%      {\ifnum\dofloatsnofstacked{leftpage}>\zerocount
-%         \doflushsomepagefloat{leftpage}%
-%       \else\ifnum\dofloatsnofstacked{page}>\zerocount
-%         \doflushsomepagefloat{page}
-%       \else\ifnum\dofloatsnofstacked{rightpage}>\zerocount
+%      {\ifnum\dofloatsnofstacked\s!leftpage>\zerocount
+%         \doflushsomepagefloat\s!leftpage
+%       \else\ifnum\dofloatsnofstacked\s!page>\zerocount
+%         \doflushsomepagefloat\s!page
+%       \else\ifnum\dofloatsnofstacked\s!rightpage>\zerocount
 %         \null\vfill\eject
-%        %\doflushsomepagefloat{rightpage}%
+%        %\doflushsomepagefloat\s!rightpage
 %       \fi\fi\fi}}
 
 \def\doflushpagefloats

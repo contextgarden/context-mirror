@@ -16,6 +16,8 @@ if not modules then modules = { } end modules ['mult-cld'] = {
 -- Todo: optional checking against interface
 -- Todo: coroutine trickery
 
+-- tflush needs checking ... sort of weird that it's not a table
+
 context       = context or { }
 local context = context
 
@@ -26,6 +28,7 @@ local insert, remove = table.insert, table.remove
 local tex = tex
 
 local texsprint   = tex.sprint
+local textprint   = tex.tprint
 local texprint    = tex.print
 local texiowrite  = texio.write
 local texcount    = tex.count
@@ -33,7 +36,7 @@ local ctxcatcodes = tex.ctxcatcodes
 local prtcatcodes = tex.prtcatcodes
 local vrbcatcodes = tex.vrbcatcodes
 
-local flush = texsprint or function(cct,...) print(concat{...}) end
+local flush = texsprint
 
 local report_cld = logs.new("cld")
 
@@ -99,10 +102,10 @@ local trace_context = logs.new("context") -- here
 
 function context.trace(intercept)
     local normalflush = flush
-    flush = function(c,...)
-        trace_context(concat({...}))
+    flush = function(...)
+        trace_context(concat({...},"",2))
         if not intercept then
-            normalflush(c,...)
+            normalflush(...)
         end
     end
     context.trace = function() end
@@ -114,12 +117,17 @@ end
 
 function context.setflush(newflush)
     local oldflush = flush
-    flush = newflush
+    flush = newflush or flush
     return oldflush
 end
 
 trackers.register("context.flush",     function(v) if v then context.trace()     end end)
 trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
+
+--~ context.trace()
+
+-- beware, we had command as part of the flush and made it "" afterwards so that we could
+-- keep it there (...,command,...) but that really confuses the tex machinery
 
 local function writer(command,first,...) -- 5% faster than just ... and separate flush of command
     if not command then
@@ -128,25 +136,37 @@ local function writer(command,first,...) -- 5% faster than just ... and separate
         flush(currentcatcodes,command)
     else
         local t = { first, ... }
+        flush(currentcatcodes,command)
         for i=1,#t do
-            if i == 2 then
-                command = ""
-            end
             local ti = t[i]
             local typ = type(ti)
             if ti == nil then
-                flush(currentcatcodes,command)
-            elseif typ == "string" or typ == "number" then
-                flush(currentcatcodes,command,"{",ti,"}")
+                -- nothing
+            elseif typ == "string" then
+                if ti == "" then
+                    flush(currentcatcodes,"{}")
+                else
+                    flush(currentcatcodes,"{",ti,"}")
+                end
+            elseif typ == "number" then
+                flush(currentcatcodes,"{",ti,"}")
             elseif typ == "table" then
                 local tn = #ti
                 if tn == 0 then
                     local done = false
                     for k, v in next, ti do
                         if done then
-                            flush(currentcatcodes,",",k,'=',v)
+                            if v == "" then
+                                flush(currentcatcodes,",",k,'=')
+                            else
+                                flush(currentcatcodes,",",k,'=',v)
+                            end
                         else
-                            flush(currentcatcodes,command,"[",k,'=',v)
+                            if v == "" then
+                                flush(currentcatcodes,"[",k,'=')
+                            else
+                                flush(currentcatcodes,"[",k,'=',v)
+                            end
                             done = true
                         end
                     end
@@ -154,34 +174,32 @@ local function writer(command,first,...) -- 5% faster than just ... and separate
                 elseif tn == 1 then -- some 20% faster than the next loop
                     local tj = ti[1]
                     if type(tj) == "function" then
-                        flush(currentcatcodes,command,"[\\mkivflush{",_store_(tj),"}]")
+                        flush(currentcatcodes,"[\\mkivflush{",_store_(tj),"}]")
                     else
-                        flush(currentcatcodes,command,"[",tj,"]")
+                        flush(currentcatcodes,"[",tj,"]")
                     end
-                else -- is concat really faster than flushes here?
+                else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
                     for j=1,tn do
                         local tj = ti[j]
                         if type(tj) == "function" then
                             ti[j] = "\\mkivflush{" .. _store_(tj) .. "}"
                         end
                     end
-                    flush(currentcatcodes,command,"[",concat(ti,","),"]")
+                    flush(currentcatcodes,"[",concat(ti,","),"]")
                 end
             elseif typ == "function" then
-                flush(currentcatcodes,command,"{\\mkivflush{",_store_(ti),"}}")
+                flush(currentcatcodes,"{\\mkivflush{",_store_(ti),"}}")
         --  elseif typ == "boolean" then
         --      flush(currentcatcodes,"\n")
             elseif ti == true then
-                flush(currentcatcodes,command,"\n")
+                flush(currentcatcodes,"\n")
             elseif typ == false then
             --  if force == "direct" then
-                flush(currentcatcodes,command,tostring(ti))
+                flush(currentcatcodes,tostring(ti))
             --  end
             elseif typ == "thread" then
-                flush(currentcatcodes,command)
                 trace_context("coroutines not supported as we cannot yield across boundaries")
             else
-                flush(currentcatcodes,command)
                 trace_context("error: %s gets a weird argument %s",command,tostring(ti))
             end
         end
@@ -191,9 +209,6 @@ end
 --~ experiments.register("context.writer",function()
 --~     writer = newwriter
 --~ end)
-
--- -- --
-
 local function indexer(t,k)
     local c = "\\" .. k .. " "
     local f = function(...) return writer(c,...) end

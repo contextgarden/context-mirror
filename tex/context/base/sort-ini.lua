@@ -103,7 +103,7 @@ local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, 
 
 local mte = {
     __index = function(t,k)
-        if utfbyte(k) < digitsoffset then
+        if k ~= "" and utfbyte(k) < digitsoffset then
             local el
             if k then
                 local l = lower[k] or lcchars[k]

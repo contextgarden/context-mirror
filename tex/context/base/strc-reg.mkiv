@@ -332,6 +332,7 @@
      \fi
      \globallet\currentregistercoding\s!tex
    \fi
+   % I hate this kind of mess ... but it's a user request.
    \ifx\currentregisterentries\empty
        \normalexpanded{\ctxlua{structures.registers.extend("\currentregister","\currentregisterlabel", {
             metadata = {
