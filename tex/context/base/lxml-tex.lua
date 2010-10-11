@@ -988,18 +988,24 @@ local function text(collected)
     end
 end
 
-local function stripped(collected)
-    if collected then
-        for c=1,#collected do
-            cprint(xml.stripelement(collected[c]))
-        end
-    end
-end
-
 local function ctxtext(collected)
     if collected then
         for c=1,#collected do
             texsprint(ctxcatcodes,collected[1].dt)
+        end
+    end
+end
+
+--~     local str = xmltext(getid(id),pattern) or ""
+--~     str = gsub(str,"^%s*(.-)%s*$","%1")
+--~     if nolines then
+--~         str = gsub(str,"%s+"," ")
+--~     end
+
+local function stripped(collected) -- tricky as we strip in place
+    if collected then
+        for c=1,#collected do
+            cprint(xml.stripelement(collected[c]))
         end
     end
 end

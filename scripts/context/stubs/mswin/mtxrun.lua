@@ -8280,7 +8280,7 @@ local function stripelement(e,nolines,anywhere)
                     end
                 end
             end
-            if #edt > 1 then
+            if #edt > 0 then
                 -- strip end
                 local str = edt[#edt]
                 if type(str) ~= "string" then
