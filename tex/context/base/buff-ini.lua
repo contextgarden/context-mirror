@@ -242,8 +242,12 @@ function buffers.loaddata(filename) -- this one might go away
     end
 end
 
-function buffers.typefile(name,realign,range) -- still somewhat messy, since name can be be suffixless
+function buffers.typefile(name,realign,range,regime) -- still somewhat messy, since name can be be suffixless
     local str = buffers.loaddata(name)
+    if regime and regime ~= "" then
+        regimes.load(regime)
+        str = regimes.translate(str,regime)
+    end
     if str and str~= "" then
         local lines = str:splitlines()
         if realign then

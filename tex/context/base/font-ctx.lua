@@ -407,6 +407,8 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
     specification.mathsize = mathsize
     specification.textsize = textsize
     specification.goodies = goodies
+    specification.cs = cs
+    specification.global = global
     if detail and detail ~= "" then
         specification.method, specification.detail = method or "*", detail
     elseif specification.detail and specification.detail ~= "" then
@@ -456,6 +458,57 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
         report_define("memory usage after: %s",statistics.memused())
     end
     statistics.stoptiming(fonts)
+end
+
+function definers.define(specification)
+    --
+    local name = specification.name
+    if not name or name == "" then
+        return -1
+    else
+        statistics.starttiming(fonts)
+        --
+        -- following calls expect a few properties to be set:
+        --
+        specification.lookup        = specification.lookup or "file"
+        specification.specification =                         "" -- not used
+        specification.size          = specification.size   or 655260
+        specification.sub           = specification.sub    or ""
+        specification.method        = specification.method or "*"
+        specification.detail        = specification.detail or ""
+        specification.resolved      =                         ""
+        specification.forced        =                         ""
+        specification.features      =                         { } -- via detail
+        --
+        -- we don't care about mathsize textsize goodies fallbacks
+        --
+        if specification.cs == "" then
+            specification.cs     = nil
+            specification.global = false
+        elseif specification.global == nil then
+            specification.global = false
+        end
+        --
+        local tfmdata = definers.read(specification,specification.size)
+        if not tfmdata then
+            return -1, nil
+        elseif type(tfmdata) == "number" then
+            if specification.cs then
+                tex.definefont(specification.global,specification.cs,tfmdata)
+            end
+            return tfmdata, fontdata[tfmdata]
+        else
+            local id = font.define(tfmdata)
+            tfmdata.id = id
+            definers.register(tfmdata,id)
+            if specification.cs then
+                tex.definefont(specification.global,specification.cs,id)
+            end
+            tfm.cleanuptable(tfmdata)
+            return id, tfmdata
+        end
+        statistics.stoptiming(fonts)
+    end
 end
 
 local enable_auto_r_scale = false

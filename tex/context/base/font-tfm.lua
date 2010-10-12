@@ -627,7 +627,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
         t.psname = t.fontname or (t.fullname and fonts.names.cleanname(t.fullname))
     end
     if trace_defining then
-        report_define("used for accesing subfont: '%s'",t.psname or "nopsname")
+        report_define("used for accessing (sub)font: '%s'",t.psname or "nopsname")
         report_define("used for subsetting: '%s'",t.fontname or "nofontname")
     end
     -- this will move up (side effect of merging split call)

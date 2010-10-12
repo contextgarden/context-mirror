@@ -123,23 +123,33 @@
 %D
 %D \starttyping
 %D test \placefigure{}{}
-%D test \placefigure[somewhere:123][whatever]{}{}
-%D test \placefigure[somewhere:456][whatever]{}{}
+%D test \placefigure[somewhere:alpha][whatever]{}{}
+%D test \placefigure[somewhere:beta] [whatever]{}{}
+%D test \placefigure[somewhere:gamma][whatever]{}{}
+%D test \placefigure[somewhere:delta][whatever]{}{}
 %D test \placefigure{}{}
 %D
-%D \placenamedfloat[figure][456]
-%D \placenamedfloat[figure][123]
+%D in \in{figure}[whatever] bla bla
+%D
+%D \placenamedfloat[figure][*l*]
+%D \placenamedfloat[figure][gamma]
+%D \placenamedfloat[figure][beta]
 %D \stoptyping
 
 \def\placenamedfloat
   {\dodoubleargument\doplacenamedfloat}
 
 \def\doplacenamedfloat[#1][#2]%
-  {\def\currentfloat{#1}%
-   \blank[\@@bkspacebefore]%
-   \dofloatsflushbylabel\s!somewhere{#2}%
-   \box\floatbox
-   \blank[\@@bkspaceafter]}
+  {\doloop
+     {\dofloatsflushbylabel\s!somewhere{#2}%
+      \ifvoid\floatbox
+        \exitloop
+      \else
+        \def\currentfloat{#1}%
+        \blank[\@@bkspacebefore]%
+        \box\floatbox
+        \blank[\@@bkspaceafter]
+      \fi}}
 
 %D The following code is in transition as we don't want to break the
 %D current single column, multi column, and columnset mechanism.
