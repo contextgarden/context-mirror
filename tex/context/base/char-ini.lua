@@ -434,9 +434,9 @@ if texsetcatcode then
         end
 
         if tobelettered then -- shared
-         -- local saved = tex.catcodetable
-         -- for i=1,#tobelettered do
-         --     tex.catcodetable = tobelettered[i]
+          local saved = tex.catcodetable
+          for i=1,#tobelettered do
+              tex.catcodetable = tobelettered[i]
                 if trace_defining then
                     report_defining("defining letters (global, shared)")
                 end
@@ -452,8 +452,8 @@ if texsetcatcode then
                 end
                 texsetcatcode(0x200C,11) -- non-joiner
                 texsetcatcode(0x200D,11) -- joiner
-         -- end
-         -- tex.catcodetable = saved
+          end
+          tex.catcodetable = saved
         end
 
         local nofactivated = #tobeactivated

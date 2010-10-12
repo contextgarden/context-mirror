@@ -14,9 +14,10 @@ local utfchar           = utf.char
 local sorters           = sorters
 local definitions       = sorters.definitions
 local replacementoffset = sorters.constants.replacementoffset
+local variables         = interfaces.variables
 
 definitions["default"] = {
-    method  = "before",
+    method  = variables.before,
     replacements = {
         -- no replacements
     },

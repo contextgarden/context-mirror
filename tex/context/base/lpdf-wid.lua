@@ -30,6 +30,7 @@ local pdfstring            = lpdf.string
 local pdfcolorspec         = lpdf.colorspec
 local pdfflushobject       = lpdf.flushobject
 local pdfreserveannotation = lpdf.reserveannotation
+local pdfreserveobject     = lpdf.reserveobject
 local pdfimmediateobject   = lpdf.immediateobject
 local pdfpagereference     = lpdf.pagereference
 
@@ -254,8 +255,8 @@ end
 -- P  media play parameters (evt /BE for controls etc
 -- A  boolean (audio)
 -- C  boolean (captions)
----O  boolean (overdubs)
----S  boolean (subtitles)
+-- O  boolean (overdubs)
+-- S  boolean (subtitles)
 -- PL pdfconstant("ADBE_MCI"),
 
 -- F        = flags,
@@ -274,7 +275,8 @@ local function delayed(label)
     return pdfreference(a)
 end
 
-local function insertrenderingwindow(label,width,height,specification)
+local function insertrenderingwindow(specification)
+    local label = specification.label
 --~     local openpage = specification.openpage
 --~     local closepage = specification.closepage
     if specification.options == variables.auto then
@@ -293,62 +295,104 @@ local function insertrenderingwindow(label,width,height,specification)
         }
     end
     local page = tonumber(specification.page) or texcount.realpageno -- todo
+    local r = mu[label] or pdfreserveannotation() -- why the reserve here?
+    local a = pdfdictionary {
+        S  = pdfconstant("Rendition"),
+        R  = mf[label],
+        OP = 0,
+        AN = pdfreference(r),
+    }
     local d = pdfdictionary {
         Subtype = pdfconstant("Screen"),
         P       = pdfreference(pdfpagereference(page)),
-        A       = mf[label],
+        A       = a, -- needed in order to make the annotation clickable (i.e. don't bark)
         Border  = pdf_border,
         AA      = actions,
     }
-    local r = mu[label] or pdfreserveannotation()
-    write_node(pdfannotation_node(width,height,0,d(),r)) -- save ref
+    write_node(pdfannotation_node(specification.width or 0,specification.height or 0,0,d(),r)) -- save ref
     return pdfreference(r)
 end
+
+-- some dictionaries can have a MH (must honor) or BE (best effort) capsule
 
 local function insertrendering(specification)
     local label = specification.label
     if not mf[label] then
         local filename = specification.filename
         local isurl = find(filename,"://")
-        local d = pdfdictionary {
-            Type = pdfconstant("Rendition"),
-            S    = pdfconstant("MR"), -- or SR for selector
-            N    = label, -- here too?
-            C    = pdfdictionary {
-                Type = pdfconstant("MediaClip"),
-                S    = pdfconstant("MCD"),
-                N    = label,
-             -- P    = pdfdictionary { TF = pdfstring("TEMPALWAYS") }, -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS
-                CT   = specification.mime, -- also /PL needs to be present then
-                Alt  = pdfarray {
-                    "", "file not found", -- language id + message
-                },
-                D    = pdfdictionary {
-                    Type = pdfconstant("Filespec"),
-                    F    = filename,
-                    FS   = (isurl and pdfconstant("URL")) or nil,
-                }
-            }
+    --~ local start = pdfdictionary {
+    --~     Type = pdfconstant("MediaOffset"),
+    --~     S = pdfconstant("T"), -- time
+    --~     T = pdfdictionary { -- time
+    --~         Type = pdfconstant("Timespan"),
+    --~         S    = pdfconstant("S"),
+    --~         V    = 3, -- time in seconds
+    --~     },
+    --~ }
+    --~ local start = pdfdictionary {
+    --~     Type = pdfconstant("MediaOffset"),
+    --~     S = pdfconstant("F"), -- frame
+    --~     F = 100 -- framenumber
+    --~ }
+    --~ local start = pdfdictionary {
+    --~     Type = pdfconstant("MediaOffset"),
+    --~     S = pdfconstant("M"), -- mark
+    --~     M = "somemark",
+    --~ }
+    --~ local parameters = pdfdictionary {
+    --~     BE = pdfdictionary {
+    --~          B = start,
+    --~     }
+    --~ }
+    --~ local parameters = pdfdictionary {
+    --~     Type = pdfconstant(MediaPermissions),
+    --~     TF   = pdfstring("TEMPALWAYS") }, -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS
+    --~ }
+        local descriptor = pdfdictionary {
+            Type = pdfconstant("Filespec"),
+            F    = filename,
         }
-        mf[label] = pdfreference(pdfflushobject(d))
+        if isurl then
+            descriptor.FS = pdfconstant("URL")
+        elseif specification.embed then
+            descriptor.EF = codeinjections.embedfile(filename)
+        end
+        local clip = pdfdictionary {
+            Type = pdfconstant("MediaClip"),
+            S    = pdfconstant("MCD"),
+            N    = label,
+            CT   = specification.mime,
+            Alt  = pdfarray { "", "file not found" }, -- language id + message
+            D    = pdfreference(pdfflushobject(descriptor)),
+         -- P    = pdfreference(pdfflushobject(parameters)),
+        }
+        local rendition = pdfdictionary {
+            Type = pdfconstant("Rendition"),
+            S    = pdfconstant("MR"),
+            N    = label,
+            C    = pdfreference(pdfflushobject(clip)),
+        }
+        mf[label] = pdfreference(pdfflushobject(rendition))
     end
 end
 
-local function insertrenderingobject(specification)
+local function insertrenderingobject(specification) -- todo
     local label = specification.label
     if not mf[label] then
         report_media("todo: unknown medium '%s'",label or "?")
-        local d = pdfdictionary {
+        local clip = pdfdictionary { -- does  not work that well one level up
+            Type = pdfconstant("MediaClip"),
+            S    = pdfconstant("MCD"),
+            N    = label,
+            D    = pdfreference(unknown), -- not label but objectname, hm .. todo?
+        }
+        local rendition = pdfdictionary {
             Type = pdfconstant("Rendition"),
             S    = pdfconstant("MR"),
-            C    = pdfdictionary {
-                Type = pdfconstant("MediaClip"),
-                S    = pdfconstant("MCD"),
-                N    = label,
-                D    = pdfreference(unknown), -- not label but objectname, hm .. todo?
-            }
+            N    = label,
+            C    = pdfreference(pdfflushobject(clip)),
         }
-        mf[label] = pdfreference(pdfflushobject(d))
+        mf[label] = pdfreference(pdfflushobject(rendition))
     end
 end
 
@@ -366,7 +410,7 @@ end
 function codeinjections.insertrenderingwindow(specification)
     local label = specification.label
     codeinjections.processrendering(label)
-    ms[label] = insertrenderingwindow(label,specification.width,specification.height,specification)
+    ms[label] = insertrenderingwindow(specification)
 end
 
 local function set(operation,arguments)
