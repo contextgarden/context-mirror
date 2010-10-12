@@ -29,7 +29,7 @@ default loader that only handles <l n='tfm'/>.</p>
 local fonts         = fonts
 local tfm           = fonts.tfm
 local vf            = fonts.vf
-local fontids       = fonts.ids
+local fontcsnames   = fonts.csnames
 
 fonts.used          = allocate()
 
@@ -646,7 +646,7 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         end
     end
     lastdefined = fontdata or id -- todo ! ! ! ! !
-    if not fontdata then
+    if not fontdata then -- or id?
         report_define( "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(fontdata) == "table" then
         report_define("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
@@ -658,6 +658,10 @@ function definers.read(specification,size,id) -- id can be optional, name can al
             fontdata.encodingname  or "unicode",
             fontdata.fullname      or "?",
             file.basename(fontdata.filename or "?"))
+    end
+    local cs = specification.cs
+    if cs then
+        fontcsnames[cs] = fontdata -- new (beware: locals can be forgotten)
     end
     statistics.stoptiming(fonts)
     return fontdata

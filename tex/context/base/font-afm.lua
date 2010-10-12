@@ -24,7 +24,7 @@ local trace_loading  = false  trackers.register("afm.loading",  function(v) trac
 local report_afm = logs.new("load afm")
 
 local next, type = next, type
-local format, match, gmatch, lower, gsub = string.format, string.match, string.gmatch, string.lower, string.gsub
+local format, match, gmatch, lower, gsub, strip = string.format, string.match, string.gmatch, string.lower, string.gsub, string.strip
 local lpegmatch = lpeg.match
 local abs = math.abs
 
@@ -107,11 +107,13 @@ local function scan_comment(str)
     return fd
 end
 
--- On a rainy day I will rewrite this in lpeg ...
+-- On a rainy day I will rewrite this in lpeg ... or we can use the (slower) fontloader
+-- as in now supports afm/pfb loading.
 
 local keys = { }
 
-function keys.FontName    (data,line) data.metadata.fullname     = line:strip() end
+function keys.FontName    (data,line) data.metadata.fontname     = strip    (line) -- get rid of spaces
+                                      data.metadata.fullname     = strip    (line) end
 function keys.ItalicAngle (data,line) data.metadata.italicangle  = tonumber (line) end
 function keys.IsFixedPitch(data,line) data.metadata.isfixedpitch = toboolean(line,true) end
 function keys.CharWidth   (data,line) data.metadata.charwidth    = tonumber (line) end
@@ -840,14 +842,15 @@ local function kerns       (tfmdata,value) prepare_kerns    (tfmdata,'kerns',   
 local function extrakerns  (tfmdata,value) prepare_kerns    (tfmdata,'extrakerns',  value) end
 
 register_feature('liga',true)
-register_feature('kerns',true)
+register_feature('kern',true)
+--~ register_feature('kerns',true) -- kerns?
 register_feature('extrakerns') -- needed?
 
 base_initializers.ligatures    = ligatures
 node_initializers.ligatures    = ligatures
 base_initializers.texligatures = texligatures
 node_initializers.texligatures = texligatures
-base_initializers.kerns        = kerns
+base_initializers.kern         = kerns
 node_initializers.kerns        = kerns
 node_initializers.extrakerns   = extrakerns
 base_initializers.extrakerns   = extrakerns

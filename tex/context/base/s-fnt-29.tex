@@ -13,18 +13,6 @@
 
 \startluacode
 
-    local function char(k)
-        if type(k) == "table" then
-            for i=1,#k do
-                context([[\char%s\relax]],k[i])
-            end
-        elseif k then
-            context([[\char%s\relax]],k)
-        end
-    end
-
- -- context.char = char  -- to be considered
-
     function fonts.tracers.shapes() -- todo: ranges
         local NC, NR = context.NC, context.NR
         local chrs = fonts.ids[font.current()].characters

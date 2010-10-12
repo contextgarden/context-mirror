@@ -350,3 +350,16 @@ function context.disabletrackers(str) trackers.disable(str) end
 --~ end
 --~
 --~ context.direct(something)
+
+-- this might be generalized: register some primitives as: accepting this or that
+-- we can also speed this up
+
+function context.char(k)
+    if type(k) == "table" then
+        for i=1,#k do
+            context(format([[\char%s\relax]],k[i]))
+        end
+    elseif k then
+        context(format([[\char%s\relax]],k))
+    end
+end

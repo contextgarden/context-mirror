@@ -8,8 +8,9 @@ if not modules then modules = { } end modules ['page-flt'] = {
 
 -- floats -> managers.floats
 
-local setdimen, setbox, setcount, texbox = tex.setdimen, tex.setbox, tex.setcount, tex.box
 local insert, remove = table.insert, table.remove
+local find = string.find
+local setdimen, setbox, setcount, texbox = tex.setdimen, tex.setbox, tex.setcount, tex.box
 local texwrite, texsprint, ctxcatcodes = tex.write, tex.sprint, tex.ctxcatcodes
 
 local copy_node_list = node.copy_list
@@ -83,7 +84,8 @@ local function get(stack,n,bylabel)
     if bylabel then
         for i=1,#stack do
             local s = stack[i]
-            if s.data.label == n then
+            local n = string.topattern(tostring(n)) -- to be sure
+            if find(s.data.label,n) then
                 return s, s.box, i
             end
         end

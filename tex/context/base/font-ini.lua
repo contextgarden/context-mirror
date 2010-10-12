@@ -32,6 +32,7 @@ fonts     = fonts     or { }
 fonts.ids = mark(fonts.ids or { })  fonts.identifiers = fonts.ids -- aka fontdata
 fonts.chr = mark(fonts.chr or { })  fonts.characters  = fonts.chr -- aka chardata
 fonts.qua = mark(fonts.qua or { })  fonts.quads       = fonts.qua -- aka quaddata
+fonts.css = mark(fonts.css or { })  fonts.csnames     = fonts.css -- aka namedata
 
 fonts.tfm = fonts.tfm or { }
 fonts.vf  = fonts.vf  or { }

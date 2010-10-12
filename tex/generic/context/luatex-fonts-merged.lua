@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/12/10 01:03:01
+-- merge date  : 10/12/10 17:13:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -3123,6 +3123,7 @@ fonts     = fonts     or { }
 fonts.ids = mark(fonts.ids or { })  fonts.identifiers = fonts.ids -- aka fontdata
 fonts.chr = mark(fonts.chr or { })  fonts.characters  = fonts.chr -- aka chardata
 fonts.qua = mark(fonts.qua or { })  fonts.quads       = fonts.qua -- aka quaddata
+fonts.css = mark(fonts.css or { })  fonts.csnames     = fonts.css -- aka namedata
 
 fonts.tfm = fonts.tfm or { }
 fonts.vf  = fonts.vf  or { }
@@ -3833,7 +3834,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
         t.psname = t.fontname or (t.fullname and fonts.names.cleanname(t.fullname))
     end
     if trace_defining then
-        report_define("used for accesing subfont: '%s'",t.psname or "nopsname")
+        report_define("used for accessing (sub)font: '%s'",t.psname or "nopsname")
         report_define("used for subsetting: '%s'",t.fontname or "nofontname")
     end
     -- this will move up (side effect of merging split call)
@@ -14859,7 +14860,7 @@ default loader that only handles <l n='tfm'/>.</p>
 local fonts         = fonts
 local tfm           = fonts.tfm
 local vf            = fonts.vf
-local fontids       = fonts.ids
+local fontcsnames   = fonts.csnames
 
 fonts.used          = allocate()
 
@@ -15476,7 +15477,7 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         end
     end
     lastdefined = fontdata or id -- todo ! ! ! ! !
-    if not fontdata then
+    if not fontdata then -- or id?
         report_define( "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(fontdata) == "table" then
         report_define("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
@@ -15488,6 +15489,10 @@ function definers.read(specification,size,id) -- id can be optional, name can al
             fontdata.encodingname  or "unicode",
             fontdata.fullname      or "?",
             file.basename(fontdata.filename or "?"))
+    end
+    local cs = specification.cs
+    if cs then
+        fontcsnames[cs] = fontdata -- new (beware: locals can be forgotten)
     end
     statistics.stoptiming(fonts)
     return fontdata
