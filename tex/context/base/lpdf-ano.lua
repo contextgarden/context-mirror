@@ -33,7 +33,6 @@ local javascriptcode      = interactions.javascripts.code
 
 local references          = structures.references
 local bookmarks           = structures.bookmarks
-local references          = structures.references
 
 local runners             = references.runners
 local specials            = references.specials
@@ -131,44 +130,26 @@ local function link(url,filename,destination,page,actions)
             NewWindow = (actions.newwindow and true) or nil,
         }
     elseif destination and destination ~= "" then
-        local realpage, p = texcount.realpageno, tonumber(page)
-        if not p then
-            -- sorry
-        elseif p > realpage then
-            texcount.referencepagestate = 3
-        elseif p < realpage then
-            texcount.referencepagestate = 2
-        else
-            texcount.referencepagestate = 1
-        end
+        local p = references.checkedpage(actions.n,page)
         return pdfdictionary { -- can be cached
             S = pdf_goto,
             D = destination,
         }
     elseif page and page ~= "" then
-        local realpage, p = texcount.realpageno, tonumber(page)
-        if p then
-            if p > realpage then
-                texcount.referencepagestate = 3
-            elseif p < realpage then
-                texcount.referencepagestate = 2
-            else
-                texcount.referencepagestate = 1
-            end
-            if p > 0 then
-                --~ return gotopagedestination(p)
-                --~ return pdfdictionary { -- can be cached
-                --~     S = pdf_goto,
-                --~     D = pagedestination(p),
-                --~ }
-                return pdfdictionary { -- can be cached
-                    S = pdf_goto,
-                    D = pdfarray {
-                        pdfreference(pdfpagereference(p)),
-                        pdf_fit,
-                    }
+        local p = references.checkedpage(actions.n,page)
+        if p and p > 0 then
+            --~ return gotopagedestination(p)
+            --~ return pdfdictionary { -- can be cached
+            --~     S = pdf_goto,
+            --~     D = pagedestination(p),
+            --~ }
+            return pdfdictionary { -- can be cached
+                S = pdf_goto,
+                D = pdfarray {
+                    pdfreference(pdfpagereference(p)),
+                    pdf_fit,
                 }
-            end
+            }
         else
             commands.writestatus("references","invalid page reference: %s",page or "?")
         end
@@ -227,7 +208,7 @@ local function pdfaction(actions)
                     return nil
                 end
             end
-            return first
+            return first, actions.n
         end
     end
 end
@@ -235,16 +216,18 @@ end
 lpdf.action = pdfaction
 
 function codeinjections.prerollreference(actions) -- share can become option
-    local main = actions and pdfaction(actions)
-    if main then
-         main = pdfdictionary {
-            Subtype = pdf_link,
-            Border  = pdf_border,
-            H       = (not actions.highlight and pdf_n) or nil,
-            A       = pdfshareobjectreference(main),
-            F       = 4, -- print (mandate in pdf/a)
-        }
-        return main("A")
+    if actions then
+        local main, n = pdfaction(actions)
+        if main then
+             main = pdfdictionary {
+                Subtype = pdf_link,
+                Border  = pdf_border,
+                H       = (not actions.highlight and pdf_n) or nil,
+                A       = pdfshareobjectreference(main),
+                F       = 4, -- print (mandate in pdf/a)
+            }
+            return main("A"), n
+        end
     end
 end
 

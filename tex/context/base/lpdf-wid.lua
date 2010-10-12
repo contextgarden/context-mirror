@@ -10,7 +10,7 @@ local format, gmatch, gsub, find = string.format, string.gmatch, string.gsub, st
 local texsprint, ctxcatcodes, texbox, texcount = tex.sprint, tex.ctxcatcodes, tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
 
-local report_media = logs.report("media")
+local report_media = logs.new("media")
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 

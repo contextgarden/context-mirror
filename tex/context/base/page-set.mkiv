@@ -1333,11 +1333,11 @@
 
 \def\OTRSETsavebox#1% clean up the skips
   {\OTRSETunpreparebox{#1}%
-   \dofloatssave{text}}
+   \dofloatssave\s!text}
 
 \def\OTRSETresavebox#1% clean up the skips
   {\OTRSETunpreparebox{#1}%
-   \dofloatsresave{text}}
+   \dofloatsresave\s!text}
 
 \def\OTRSETflushfloatbox % nog verder doorvoeren en meer info in marge
   {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
@@ -1348,10 +1348,10 @@
    \doloop
      {\ifsomefloatwaiting
         \OTRSETskipstart
-        \dofloatsgetinfo{text}%
+        \dofloatsgetinfo\s!text
         \ifdim\floatwidth>\zeropoint
           \!!doneatrue
-          \dofloatsflush{text}{1}%
+          \dofloatsflush\s!text{1}%
           \dp\floatbox\zeropoint
           \OTRSETstoreincolumnslot{TBLR}\floatbox
           \if!!donea

@@ -292,14 +292,20 @@ function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
             rr.lastrealpage = texcount.realpageno
             rr.lastsection = sections.currentid()
             if rawdata then
-                preprocessentries(rawdata)
+                if rawdata.entries then
+                    preprocessentries(rawdata)
+                end
                 for k,v in next, rawdata do
                     if not r[k] then
                         r[k] = v
                     else
                         local rk = r[k]
                         for kk,vv in next, v do
-                            if vv ~= "" then
+                            if type(vv) == "table" then
+                                if next(vv) then
+                                    rk[kk] = vv
+                                end
+                            elseif vv ~= "" then
                                 rk[kk] = vv
                             end
                         end

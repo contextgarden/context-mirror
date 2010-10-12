@@ -10,6 +10,7 @@ local format, find, gmatch, match, concat = string.format, string.find, string.g
 local lpegmatch, lpegP, lpegCs = lpeg.match, lpeg.P, lpeg.Cs
 local texsprint, texwrite, texcount, texsetcount = tex.sprint, tex.write, tex.count, tex.setcount
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local setmetatable, rawget = setmetatable, rawget
 
 local allocate = utilities.storage.allocate
 
@@ -53,18 +54,22 @@ local executers      = allocate()
 local handlers       = allocate()
 local tobesaved      = allocate()
 local collected      = allocate()
+local tobereferred   = allocate()
+local referred       = allocate()
 
-references.derived   = derived
-references.specials  = specials
-references.runners   = runners
-references.internals = internals
-references.exporters = exporters
-references.imported  = imported
-references.filters   = filters
-references.executers = executers
-references.handlers  = handlers
-references.tobesaved = tobesaved
-references.collected = collected
+references.derived      = derived
+references.specials     = specials
+references.runners      = runners
+references.internals    = internals
+references.exporters    = exporters
+references.imported     = imported
+references.filters      = filters
+references.executers    = executers
+references.handlers     = handlers
+references.tobesaved    = tobesaved
+references.collected    = collected
+references.tobereferred = tobereferred
+references.referred     = referred
 
 storage.register("structures/references/defined", references.defined, "structures.references.defined")
 
@@ -87,6 +92,7 @@ local function initializer() -- can we use a tobesaved as metatable for collecte
         initializers[i](tobesaved,collected)
     end
 end
+
 local function finalizer()
  -- tobesaved = mark(references.tobesaved)
     for i=1,#finalizers do
@@ -94,9 +100,67 @@ local function finalizer()
     end
 end
 
-if job then
-    job.register('structures.references.collected', tobesaved, initializer, finalizer)
+job.register('structures.references.collected', tobesaved, initializer, finalizer)
+
+local maxreferred = 1
+
+local function initializer() -- can we use a tobesaved as metatable for collected?
+    tobereferred = mark(references.tobereferred)
+    referred     = mark(references.referred)
+
+    function get(t,n)    -- catch sparse, a bit slow but who cares
+        for i=n,1,-1 do  -- we could make a tree ... too much work
+            local p = rawget(t,i)
+            if p then
+                return p
+            end
+        end
+    end
+    setmetatable(referred, { __index = get })
 end
+
+local function finalizer() -- make sparse
+    local last
+    for i=1,maxreferred do
+        local r = tobereferred[i]
+        if not last then
+            last = r
+        elseif r == last then
+            tobereferred[i] = nil
+        else
+            last = r
+        end
+    end
+end
+
+function references.referredpage(n)
+    return referred[n] or referred[n] or texcount.realpageno
+end
+
+function references.checkedpage(n,page)
+    local r, p = referred[n] or texcount.realpageno, tonumber(page)
+    if not p then
+        -- sorry
+    elseif p > r then
+        texcount.referencepagestate = 3
+    elseif p < r then
+        texcount.referencepagestate = 2
+    else
+        texcount.referencepagestate = 1
+    end
+    return p
+end
+
+function references.registerpage(n)
+    if not tobereferred[n] then
+        if n > maxreferred then
+            maxreferred = n
+        end
+        tobereferred[n] = texcount.realpageno
+    end
+end
+
+job.register('structures.references.referred', tobereferred, initializer, finalizer)
 
 -- todo: delay split till later as in destinations we split anyway
 
@@ -763,12 +827,15 @@ end
 
 local prefixsplitter = lpegCs(lpegP((1-lpegP(":"))^1 * lpegP(":"))) * lpegCs(lpegP(1)^1)
 
-
 -- todo: add lots of tracing here
+
+local n = 0
 
 local function identify(prefix,reference)
     local set = resolve(prefix,reference)
     local bug = false
+n = n + 1
+set.n = n
     for i=1,#set do
         local var = set[i]
         local special, inner, outer, arguments, operation = var.special, var.inner, var.outer, var.arguments, var.operation
@@ -1131,10 +1198,12 @@ function references.getcurrentmetadata(tag)
         texsprint(ctxcatcodes,data)
     end
 end
+
 local function currentmetadata(tag)
     local data = currentreference and currentreference.i
     return data and data.metadata and data.metadata[tag]
 end
+
 references.currentmetadata = currentmetadata
 
 function references.getcurrentprefixspec(default) -- todo: message
@@ -1328,16 +1397,7 @@ function references.analyze(actions)
                     what = what(a,actions)
                 end
             end
-            local realpage, p = texcount.realpageno, tonumber(actions.realpage)
-            if not p then
-                -- sorry
-            elseif p > realpage then
-                texcount.referencepagestate = 3
-            elseif p < realpage then
-                texcount.referencepagestate = 2
-            else
-                texcount.referencepagestate = 1
-            end
+            references.checkedpage(actions.n,actions.realpage)
         end
     end
     return actions

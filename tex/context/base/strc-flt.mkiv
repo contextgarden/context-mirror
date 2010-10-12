@@ -110,17 +110,17 @@
    \c!textcolor=,
    \c!align=,
    \c!number=\v!yes,
-% \c!prefix=\v!no,
-% \c!prefixconnector=.,
-% \c!way=\v!by\v!chapter,
-% \c!prefixsegments=2:2,
-%    \c!way=\@@nrway,
-%    \c!blockway=\@@nrblockway,
-%    \c!sectionnumber=\@@nrsectionnumber,
-%    \c!separator=\@@koseparator,
-%    \c!starter=\@@kostarter,
-%    \c!stopper=\@@kostopper,
-%    \c!suffix=\floatcaptionsuffix, % hook
+ % \c!prefix=\v!no,
+ % \c!prefixconnector=.,
+ % \c!way=\v!by\v!chapter,
+ % \c!prefixsegments=2:2,
+ % \c!way=\@@nrway,
+ % \c!blockway=\@@nrblockway,
+ % \c!sectionnumber=\@@nrsectionnumber,
+ % \c!separator=\@@koseparator,
+ % \c!starter=\@@kostarter,
+ % \c!stopper=\@@kostopper,
+ % \c!suffix=\floatcaptionsuffix, % hook
    \c!distance=1em,
    \c!conversion=\v!numbers,
    \c!command=]
@@ -169,7 +169,7 @@
    \c!local=,
    \c!bottombefore=, % e.g. \vfill
    \c!bottomafter=,
-   \c!default=\v!figure,
+   \c!default=, % default location
    \c!numbering=\v!yes]
 
 \def\@@bknumbering  {\floatsharedparameter\c!numbering  } % global one
@@ -205,7 +205,6 @@
 %       \c!blockway=\floatcaptionparameter\c!blockway,
 %       \c!sectionnumber=\floatcaptionparameter\c!sectionnumber,
 %       \c!conversion=\floatcaptionparameter\c!conversion]%
-
 
 %D Individial settings:
 
@@ -301,14 +300,6 @@
 \def\getcaptionparameters{\getparameters[\??kj\currentfloat]}
 
 \installstructurelistprocessor{float}{\usestructurelistprocessor{number+title}}
-
-% \def\thecurrentfloatnumber
-%   {\ifnofloatcaption \else \ifnofloatnumber \else
-%    % \labeltexts\currentfloat{\convertedstructurecounter[\currentfloat]}% ! ! todo: use a lua call instead
-%      \ifx\currentfloatnumber\relax\else
-%        \labeltexts\currentfloat{\ctxlua{structures.lists.savednumber("\currentfloat",\currentfloatnumber)}}%
-%      \fi
-%    \fi \fi}
 
 \def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
@@ -1872,25 +1863,34 @@
 % float strategy, replaces some of the above macros
 
 \let\floatmethod      \empty
+\let\floatlabel       \empty
 \let\floatcolumn      \empty
 \let\floatrow         \empty
 \let\forcedfloatmethod\empty
 
+% \def\setfloatmethodvariables#1%
+%   {\getfromcommalist[#1][1]%
+%    \@EA\beforesplitstring\commalistelement\at:\to\floatmethod
+%    \@EA\aftersplitstring \commalistelement\at:\to\floatcolumn
+%    \@EA\aftersplitstring \floatcolumn\at*\to\floatrow
+%    \@EA\beforesplitstring\floatcolumn\at*\to\floatcolumn}
+
+\def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
+  {\ctxlua{floats.analysemethod("#1")}}
+
 \def\dogetfloatbox#1#2%
   {\ifvisible
-     \doifelsenothing{#2}
-       {\getfromcommalist[#1][1]%
-        \@EA\beforesplitstring\commalistelement\at:\to\floatmethod
-        \@EA\aftersplitstring \commalistelement\at:\to\floatcolumn
-        \@EA\aftersplitstring \floatcolumn\at*\to\floatrow
-        \@EA\beforesplitstring\floatcolumn\at*\to\floatcolumn
-        % todo: nog algemeen otr
-        \ifdefined\OTRSETsetpreferedcolumnslot
-          \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
-        \fi}
-       {\let\floatcolumn\empty
-        \let\floatrow\empty
-        \edef\floatmethod{#2}}%
+     \let \floatlabel \empty
+     \let \floatcolumn\empty
+     \let \floatrow   \empty
+     \edef\floatmethod{#2}%
+     \ifx\floatmethod\empty
+       \setfloatmethodvariables{#1}%
+       % todo: nog algemeen otr
+       \ifdefined\OTRSETsetpreferedcolumnslot
+         \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
+       \fi
+     \fi
      \doifundefined{\string\floatmethod\floatmethod}
        {\let\floatmethod\v!here}%
      \doifsomething\forcedfloatmethod
@@ -1901,6 +1901,9 @@
 
 \def\installfloathandler#1#2% #1=keyword #2=handler
   {\setvalue{\string\floatmethod#1}{#2}}
+
+\def\somesomewherefloat[#1]%
+  {\dofloatssavesomewherefloat\s!somewhere{#1}}
 
 \installfloathandler \v!here        \someherefloat
 \installfloathandler \v!force       \somefixdfloat
@@ -1922,6 +1925,8 @@
 \installfloathandler \v!rightmargin \someinrightmarginfloat
 \installfloathandler \v!leftedge    \someinleftedgefloat
 \installfloathandler \v!rightedge   \someinrightedgefloat
+
+\installfloathandler \v!somewhere   \somesomewherefloat
 
 \installfloathandler \v!backspace   \somebackspacefloat
 \installfloathandler \v!cutspace    \somecutspacefloat
@@ -1966,6 +1971,7 @@
 \unexpanded\def\placesomebotsfloat     {\OTRcommand\somebotsfloat}
 \unexpanded\def\placesomesidefloat     {\OTRcommand\somesidefloat}
 \unexpanded\def\placesomefacefloat     {\OTRcommand\somefacefloat}
+%unexpanded\def\placesomesomewherefloat{\OTRcommand\somesomewherefloat}
 
 \def\somefixdfloat     {\placesomefixdfloat}
 \def\somepagefloat     {\placesomepagefloat}

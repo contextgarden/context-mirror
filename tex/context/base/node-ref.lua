@@ -16,6 +16,8 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 -- is grouplevel still used?
 
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
 local cleanupreferences, cleanupdestinations = false, true
 
 local attributes, nodes, node = attributes, nodes, node
@@ -378,7 +380,7 @@ local function makereference(width,height,depth,reference)
         if trace_references then
             report_backends("resolving reference attribute %s",reference)
         end
-        local resolved, ht, dp, set = sr[1], sr[2], sr[3], sr[4]
+        local resolved, ht, dp, set, n = sr[1], sr[2], sr[3], sr[4], sr[5]
         if ht then
             if height < ht then height = ht end
             if depth  < dp then depth  = dp end
@@ -398,6 +400,7 @@ local function makereference(width,height,depth,reference)
             else
                 result = annot
             end
+            references.registerpage(n)
             result = hpack_list(result,0)
             result.width, result.height, result.depth = 0, 0, 0
             if cleanupreferences then stack[reference] = nil end

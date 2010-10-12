@@ -125,7 +125,8 @@ local function allocate(name,i)
          -- block   = "", -- todo
             numbers = nil,
             state   = variables.start, -- true
-            data    = { }
+            data    = { },
+            saved   = { },
         }
         tobesaved[name]   = { }
         counterdata[name] = cd
@@ -360,15 +361,14 @@ end
 function counters.save(name) -- or just number
     local cd = counterdata[name]
     if cd then
-        cd.saved = table.copy(cd.data)
+        table.insert(cd.saved,table.copy(cd.data))
     end
 end
 
 function counters.restore(name)
     local cd = counterdata[name]
     if cd and cd.saved then
-        cd.data = cd.saved
-        cd.saved = nil
+        cd.data = table.remove(cd.saved)
     end
 end
 
