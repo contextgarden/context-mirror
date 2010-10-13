@@ -11148,6 +11148,10 @@ return {
   },
  },
  ["variables"]={
+  ["embed"]={
+   ["en"]="embed",
+   ["nl"]="sluitin",
+  },
   ["end"]={
    ["en"]="end",
    ["nl"]="eind",

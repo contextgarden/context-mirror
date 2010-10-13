@@ -229,13 +229,13 @@
      [\c!location=\@@defaultnotedefloc,
       \c!distance=\@@defaultnotedefdis,
       \c!width=\v!fit,
-      \c!headstyle=\noteparameter\c!style, % hm
-      \c!headcolor=\noteparameter\c!color, % hm
+      \c!headstyle=\noteparameter\c!style,
+      \c!headcolor=\noteparameter\c!color,
       \s!handler=\v!note,
       \c!text=,
       \c!before=,
       \c!after=]%
-   \doredefinenotecommands\currentnote
+   \doredefinenotecommands
    \setupenumerations
      [\currentnote]
      [\s!parent=\??vn\currentnote,
@@ -245,8 +245,6 @@
    \getparameters
      [\??vn\currentnote]
      [\s!parent=\??vn,#2]%
-%    \definestructurecounter
-%      [\currentnote]%
    \ctxlua{structures.notes.define("\currentnote","insert",\number\csname\??vn:\currentnote\endcsname)}%
    \the\everysetupnote
    \dochecknote}
@@ -265,13 +263,13 @@
      {\begingroup
       \doenumerationinit{#1}{#2}{#3}%
       \@@notemakedescription[##1]{}{##2}%
-      \endgroup}}
+      \expandafter\endgroup\noteparameter\c!next}} % WS: added \noteparameter\c!next
 
-\def\doredefinenotecommands#1%
-  {\normalexpanded{\noexpand\dodoredefinenotecommands{#1}{1}{}}%
+\def\doredefinenotecommands
+  {\normalexpanded{\noexpand\dodoredefinenotecommands{\currentnote}{1}{}}%
    \let\@@subslevel\empty
    \dostepwiserecurse{2}{\descriptionparameter\c!levels}{1}
-     {\normalexpanded{\noexpand\dodoredefinenotecommands{#1}{\recurselevel}{\@@subslevel\v!sub}}%
+     {\normalexpanded{\noexpand\dodoredefinenotecommands{\currentnote}{\recurselevel}{\@@subslevel\v!sub}}%
       \edef\@@subslevel{\@@subslevel\v!sub}}}
 
 \let\setupnotedefinition\setupenumerations

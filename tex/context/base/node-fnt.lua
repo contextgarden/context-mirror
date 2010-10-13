@@ -9,8 +9,12 @@ if not modules then modules = { } end modules ['node-fnt'] = {
 if not context then os.exit() end -- generic function in node-dum
 
 local next, type = next, type
+local concat = table.concat
 
 local trace_characters = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
+local trace_fontrun    = false  trackers.register("nodes.fontrun",    function(v) trace_fontrun    = v end)
+
+local report_fontrun = logs.new("font run")
 
 local nodes, node = nodes, node
 
@@ -23,9 +27,10 @@ local has_attribute = node.has_attribute
 local starttiming   = statistics.starttiming
 local stoptiming    = statistics.stoptiming
 local nodecodes     = nodes.nodecodes
-local glyph         = nodecodes.glyph
 local fontdata      = fonts.ids
 local handlers      = nodes.handlers
+
+local glyph_code    = nodecodes.glyph
 
 -- some tests with using an array of dynamics[id] and processes[id] demonstrated
 -- that there was nothing to gain (unless we also optimize other parts)
@@ -37,15 +42,33 @@ local handlers      = nodes.handlers
 -- happen often; we could consider processing sublists but that might need mor
 -- checking later on; the current approach also permits variants
 
+local run = 0
+
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
     local usedfonts, attrfonts, done = { }, { }, false
     local a, u, prevfont, prevattr = 0, 0, nil, 0
-    for n in traverse_id(glyph,head) do
-        local font, attr = n.font, has_attribute(n,0) -- zero attribute is reserved for fonts in context
-        if attr and attr > 0 then
-            if font ~= prevfont or attr ~= prevattr then
+    if trace_fontrun then
+        run = run + 1
+        report_fontrun("")
+        report_fontrun("node mode run %s",run)
+        report_fontrun("")
+        local n = head
+        while n do
+            if n.id == glyph_code then
+                local font, attr = n.font, has_attribute(n,0) or 0
+                report_run("font %03i dynamic %03i glyph %s",font,attr,utf.char(n.char))
+            else
+                report_run("[%s]",node.type(n.id))
+            end
+            n = n.next
+        end
+    end
+    for n in traverse_id(glyph_code,head) do
+        local font, attr = n.font, has_attribute(n,0) or 0 -- zero attribute is reserved for fonts in context
+        if font ~= prevfont or attr ~= prevattr then
+            if attr > 0 then
                 local used = attrfonts[font]
                 if not used then
                     used = { }
@@ -66,31 +89,33 @@ function handlers.characters(head)
                         end
                     end
                 end
-                prevfont, prevattr = font, attr
-            end
-        elseif font ~= prevfont then
-            prevfont, prevattr = font, 0
-            local used = usedfonts[font]
-            if not used then
-                local tfmdata = fontdata[font]
-                if tfmdata then
-                    local shared = tfmdata.shared -- we need to check shared, only when same features
-                    if shared then
-                        local processors = shared.processes
-                        if processors and #processors > 0 then
-                            usedfonts[font] = processors
-                            u = u + 1
+            else
+                local used = usedfonts[font]
+                if not used then
+                    local tfmdata = fontdata[font]
+                    if tfmdata then
+                        local shared = tfmdata.shared -- we need to check shared, only when same features
+                        if shared then
+                            local processors = shared.processes
+                            if processors and #processors > 0 then
+                                usedfonts[font] = processors
+                                u = u + 1
+                            end
                         end
+                    else
+                        -- probably nullfont
                     end
-                else
-                    -- probably nullfont
                 end
             end
-        else
-            prevattr = attr
+            prevfont, prevattr = font, attr
         end
     end
-
+    if trace_fontrun then
+        report_fontrun("")
+        report_fontrun("statics : %s",(u > 0 and concat(table.keys(usedfonts)," ")) or "none")
+        report_fontrun("dynamics: %s",(a > 0 and concat(table.keys(attrfonts)," ")) or "none")
+        report_fontrun("")
+    end
     -- we could combine these and just make the attribute nil
     if u == 1 then
         local font, processors = next(usedfonts)
