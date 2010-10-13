@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 local format, gmatch, gsub, find = string.format, string.gmatch, string.gsub, string.find
 local texsprint, ctxcatcodes, texbox, texcount = tex.sprint, tex.ctxcatcodes, tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_hash = utilities.parsers.settings_to_hash
 
 local report_media = logs.new("media")
 
@@ -159,6 +160,8 @@ end
 --
 
 local nofattachments, attachments, filestreams = 0, { }, { }
+
+-- todo: hash and embed once
 
 function codeinjections.embedfile(filename)
     local r = filestreams[filename]
@@ -317,6 +320,7 @@ end
 
 local function insertrendering(specification)
     local label = specification.label
+    local options = utilities.parsers.settings_to_hash(specification.options)
     if not mf[label] then
         local filename = specification.filename
         local isurl = find(filename,"://")
@@ -354,7 +358,7 @@ local function insertrendering(specification)
         }
         if isurl then
             descriptor.FS = pdfconstant("URL")
-        elseif specification.embed then
+        elseif options[variables.embed] then
             descriptor.EF = codeinjections.embedfile(filename)
         end
         local clip = pdfdictionary {
