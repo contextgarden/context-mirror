@@ -470,20 +470,25 @@ function definers.define(specification)
         --
         -- following calls expect a few properties to be set:
         --
-        specification.lookup        = specification.lookup or "file"
-        specification.specification =                         "" -- not used
-        specification.size          = specification.size   or 655260
-        specification.sub           = specification.sub    or ""
-        specification.method        = specification.method or "*"
-        specification.detail        = specification.detail or ""
-        specification.resolved      =                         ""
-        specification.forced        =                         ""
-        specification.features      =                         { } -- via detail
+        local lookup, name, sub, method, detail = getspecification(name or "")
+        --
+        specification.name          = (name ~= "" and name) or specification.name
+        --
+        specification.lookup        = specification.lookup or (lookup ~= "" and lookup) or "file"
+        specification.size          = specification.size                                or 655260
+        specification.sub           = specification.sub    or (sub    ~= "" and sub)    or ""
+        specification.method        = specification.method or (method ~= "" and method) or "*"
+        specification.detail        = specification.detail or (detail ~= "" and detail) or ""
+        --
+        specification.specification = "" -- not used
+        specification.resolved      = ""
+        specification.forced        = ""
+        specification.features      = { } -- via detail
         --
         -- we don't care about mathsize textsize goodies fallbacks
         --
         if specification.cs == "" then
-            specification.cs     = nil
+            specification.cs = nil
             specification.global = false
         elseif specification.global == nil then
             specification.global = false

@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Environments}
 
+\registerctxluafile{core-env}{1.001}
+
 \unprotect
 
 %D Modes:
@@ -39,68 +41,89 @@
 %D considered a permanent disabling on forehand.
 
 \def\@mode@{@md@}
+\def\@mode@{mode}
 
 \def\systemmodeprefix{*}
 
-\def\disabledmode {0} % no chardefs
-\def\enabledmode  {1}
-\def\preventedmode{2}
+% todo: check prevent mode, also at the lua end
+
+\setnewconstant\disabledmode \zerocount
+\setnewconstant\enabledmode  \plusone
+\setnewconstant\preventedmode\plustwo
 
 % fast internal ones
 
-\def\setmode  #1{\@EA\let\csname\@mode@#1\endcsname\enabledmode }
-\def\resetmode#1{\@EA\let\csname\@mode@#1\endcsname\disabledmode}
+\def\donewmode#1%
+  {\@EA\newcount\csname\@mode@#1\endcsname}
 
-\def\setsystemmode  #1{\@EA\let\csname\@mode@\systemmodeprefix#1\endcsname\enabledmode }
-\def\resetsystemmode#1{\@EA\let\csname\@mode@\systemmodeprefix#1\endcsname\disabledmode}
+\def\newmode#1%
+  {\ifcsname\@mode@#1\endcsname\else\donewmode{#1}\fi}
+
+\def\setmode#1%
+  {\ifcsname\@mode@#1\endcsname\else\donewmode{#1}\fi
+   \csname\@mode@#1\endcsname\enabledmode}
+
+\def\resetmode#1%
+  {\ifcsname\@mode@#1\endcsname\else\donewmode{#1}\fi
+   \csname\@mode@#1\endcsname\disabledmode}
+
+\def\newsystemmode#1%
+  {\ifcsname\@mode@\systemmodeprefix#1\endcsname\else\donewmode{\systemmodeprefix#1}\fi}
+
+\def\setsystemmode#1%
+  {\ifcsname\@mode@\systemmodeprefix#1\endcsname\else\donewmode{\systemmodeprefix#1}\fi
+   \csname\@mode@\systemmodeprefix#1\endcsname\enabledmode}
+
+\def\resetsystemmode#1%
+  {\ifcsname\@mode@\systemmodeprefix#1\endcsname\else\donewmode{\systemmodeprefix#1}\fi
+   \csname\@mode@\systemmodeprefix#1\endcsname\disabledmode}
 
 % user ones
 
-\def\preventmode{\unprotect\dopreventmode}
-\def\enablemode {\unprotect\doenablemode }
-\def\disablemode{\unprotect\dodisablemode}
+\unexpanded\def\preventmode{\unprotect\dopreventmode}
+\unexpanded\def\enablemode {\unprotect\doenablemode }
+\unexpanded\def\disablemode{\unprotect\dodisablemode}
+
+\let\definemode\disablemode % nicer
 
 \def\dopreventmode[#1]{\protect\rawprocesscommacommand[#1]\dodopreventmode}
 \def\doenablemode [#1]{\protect\rawprocesscommacommand[#1]\dodoenablemode }
 \def\dodisablemode[#1]{\protect\rawprocesscommacommand[#1]\dododisablemode}
 
 \def\dodopreventmode#1%
-  {\@EA\let\csname\@mode@#1\endcsname\preventedmode}
+  {\ifcsname\@mode@#1\endcsname\else\donewmode{#1}\fi
+   \csname\@mode@#1\endcsname\preventedmode}
 
-\def\dodoenablemode#1% mode can be relax
-  {\ifcase0\csname\@mode@#1\endcsname\relax
-     \@EA\let\csname\@mode@#1\endcsname\enabledmode
+\def\dodoenablemode#1% we can speed it up by moving the new outside
+  {\ifcsname\@mode@#1\endcsname\else\donewmode{#1}\fi
+   \ifnum\csname\@mode@#1\endcsname=\preventedmode \else
+     \csname\@mode@#1\endcsname\enabledmode
    \fi}
 
 \def\dododisablemode#1%
-  {\ifcase0\csname\@mode@#1\endcsname\or
-     \@EA\let\csname\@mode@#1\endcsname\disabledmode
+  {\ifcsname\@mode@#1\endcsname\else\donewmode{#1}\fi
+   \ifnum\csname\@mode@#1\endcsname=\preventedmode \else
+     \csname\@mode@#1\endcsname\disabledmode
    \fi}
 
 % handy for mp
 
-\def\booleanmodevalue#1% can be \relax
-  {\expandafter\ifx\csname\@mode@#1\endcsname\relax
-     fals%
-   \else\ifnum0\csname\@mode@#1\endcsname=0
-     fals%
-   \else
-     tru%
-   \fi\fi e}
+\def\booleanmodevalue#1%
+  {\ifcsname\@mode@#1\endcsname\ifcase\csname\@mode@#1\endcsname fals\else tru\fi\else fals\fi e}
 
 % check macros
 
 \newif\ifcheckedmode
 
 \def\dodocheckformode#1%
-  {\ifcase0\csname\@mode@#1\endcsname\or\checkedmodetrue\fi}
+  {\ifcsname\@mode@#1\endcsname\ifcase\csname\@mode@#1\endcsname\else\checkedmodetrue\fi\fi}
 
 \def\docheckformode#1#2#3% will be sped up with a quit
   {\protect\checkedmodefalse\rawprocesscommacommand[#3]\dodocheckformode
    \ifcheckedmode\@EA#1\else\@EA#2\fi}
 
 \def\dodocheckforallmodes#1%
-  {\ifcase0\csname\@mode@#1\endcsname\relax\checkedmodefalse\or\or\checkedmodefalse\fi}
+  {\ifcsname\@mode@#1\endcsname\ifcase\csname\@mode@#1\endcsname\checkedmodefalse\fi\else\checkedmodefalse\fi}
 
 \def\docheckforallmodes#1#2#3% will be sped up with a quit
   {\protect\checkedmodetrue\rawprocesscommacommand[#3]\dodocheckforallmodes
@@ -164,7 +187,7 @@
 
 %D Lets now set a mode:
 
-\enablemode[mkiv] \setsystemmode{mkiv}
+\enablemode[mkiv] \newsystemmode{mkiv} \setsystemmode{mkiv}
 
 %D Setups:
 
@@ -301,7 +324,7 @@
 \def\dostartlocalsetupsA        {\the\everydefinelocalsetups\dodoubleempty\dostartlocalsetups}  % [ ] delimited
 \def\dostartsetupsA             {\the\everydefinesetups     \dodoubleempty\dostartsetups}       % [ ] delimited
 
-        % empty preserves inner {} (is removed by the \@EA{#3})
+% empty preserves inner {} (is removed by the \@EA{#3})
 
 \def\dostartluasetupsB       #1 {\the\everydefineluasetups  \dodostartluasetups  \empty{#1}\empty}    % space delimited
 \def\dostartxmlsetupsB       #1 {\the\everydefinexmlsetups  \dodostartxmlsetups  \empty{#1}\empty}    % space delimited
