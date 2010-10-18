@@ -275,7 +275,9 @@ local function setlanguage(l,m,d)
         end
     end
     data.sequence = sequence
-    report_sorters("using sort sequence: %s",concat(sequence," "))
+    if trace_tests then
+        report_sorters("using sort sequence: %s",concat(sequence," "))
+    end
     --
     return data
 end

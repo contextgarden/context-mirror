@@ -88,12 +88,19 @@
 
 \def\figurenaturalwidth  {\ctxlua{figures.tprint("used","width", \number\dimexpr\defaultfigurewidth \relax)}sp}
 \def\figurenaturalheight {\ctxlua{figures.tprint("used","height",\number\dimexpr\defaultfigureheight\relax)}sp}
+\def\figurexresolution   {\ctxlua{figures.tprint("used","xresolution",0)}}
+\def\figureyresolution   {\ctxlua{figures.tprint("used","yresolution",0)}}
+\def\figurexsize         {\ctxlua{figures.tprint("used","xsize",0)}}
+\def\figureysize         {\ctxlua{figures.tprint("used","ysize",0)}}
+\def\figurecolordepth    {\ctxlua{figures.tprint("used","colordepth",0)}}
+\def\figuredepth         {\ctxlua{figures.tprint("used","depth",0)}}
 
-\def\figurefilepath      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.dirname (figures.get("used","fullname")))}}
-\def\figurefilename      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.nameonly(figures.get("used","fullname")))}}
-\def\figurefiletype      {\ctxlua{tex.sprint(tex.ctxcatcodes,file.extname (figures.get("used","fullname")))}}
 \def\figurefullname      {\ctxlua{figures.tprint("used","fullname")}}
 \def\noffigurepages      {\ctxlua{figures.tprint("used","pages",0)}}
+
+\def\figurefilepath      {\ctxsprint{file.dirname (figures.get("used","fullname"))}}
+\def\figurefilename      {\ctxsprint{file.nameonly(figures.get("used","fullname"))}}
+\def\figurefiletype      {\ctxsprint{file.extname (figures.get("used","fullname"))}}
 
 \let\naturalfigurewidth  \figurenaturalwidth
 \let\naturalfigureheight \figurenaturalheight
@@ -207,8 +214,12 @@
 \def\doprocessmpslikefigure#1% retrofit into mkii
   {\global\setbox\foundexternalfigure\vbox{\convertMPtoPDF{#1}11}}
 
+\def\doprocesscldlikefigure#1%
+  {\global\setbox\foundexternalfigure\vbox{\cldprocessfile{#1}}}
+
 \def\docheckfigurebuffer  #1{\doprocesstexlikefigure{\getbuffer[#1]}}
 \def\docheckfiguretex     #1{\doprocesstexlikefigure{\input#1\relax}}
+\def\docheckfigurecld     #1{\doprocesscldlikefigure{#1}} % we can always add cldrun
 \def\docheckfiguremps     #1{\doprocessmpslikefigure{#1}}
 \def\docheckfiguremprun #1#2{\doprocesstexlikefigure{\useMPrun{#1}{#2}}}
 

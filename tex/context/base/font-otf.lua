@@ -43,6 +43,7 @@ local otf            = fonts.otf
 local tfm            = fonts.tfm
 
 local fontdata       = fonts.ids
+local chardata       = characters.data
 
 otf.features         = otf.features         or { }
 otf.features.list    = otf.features.list    or { }
@@ -756,8 +757,13 @@ actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this 
         end
         local width = glyph.width
         widths[width] = (widths[width] or 0) + 1
-        if glyph.class == "mark" then
-            marks[glyph.unicode] = true
+        local class = glyph.class
+        local unicode = glyph.unicode
+        if class == "mark" then
+            marks[unicode] = true
+     -- elseif chardata[unicode].category == "mn" then
+     --     marks[unicode] = true
+     --     glyph.class = "mark"
         end
         local a = glyph.altuni     if a then glyph.altuni     = nil end
         local d = glyph.dependents if d then glyph.dependents = nil end

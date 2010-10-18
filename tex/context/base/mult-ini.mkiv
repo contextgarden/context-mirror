@@ -375,12 +375,14 @@
   {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
    \ctxlua{interfaces.setmessage("#1","#2",\!!bs#3\!!es)}}
 
-\unexpanded\def\setmessagetext     #1#2{\edef\currentmessagetext{\ctxlua{tex.sprint(tex.ctxcatcodes,interfaces.getmessage("#1","#2"))}}}
+\unexpanded\def\setmessagetext     #1#2{\edef\currentmessagetext{\ctxsprint{interfaces.getmessage("#1","#2")}}}
+
 \unexpanded\def\doifelsemessage    #1#2{\ctxlua{interfaces.doifelsemessage("#1","#2")}}
-\unexpanded\def\getmessage         #1#2{\ctxlua{tex.sprint(tex.ctxcatcodes,interfaces.getmessage("#1","#2"))}}
-\unexpanded\def\getmessagedefault#1#2#3{\ctxlua{tex.sprint(tex.ctxcatcodes,interfaces.getmessage("#1","#2","#3"))}}
-\unexpanded\def\makemessage      #1#2#3{\ctxlua{tex.sprint(tex.ctxcatcodes,interfaces.makemessage("#1","#2","#3"))}}
 \unexpanded\def\showmessage      #1#2#3{\ctxlua{interfaces.showmessage("#1","#2","#3")}}
+
+\unexpanded\def\getmessage         #1#2{\ctxsprint{interfaces.getmessage("#1","#2")}}
+\unexpanded\def\getmessagedefault#1#2#3{\ctxsprint{interfaces.getmessage("#1","#2","#3")}}
+\unexpanded\def\makemessage      #1#2#3{\ctxsprint{interfaces.makemessage("#1","#2","#3")}}
 
 %D \macros
 %D   {ifshowwarnings, ifshowmessages}

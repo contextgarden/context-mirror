@@ -75,8 +75,12 @@ function img.totable(imgtable)
     return result
 end
 
-function img.serialize(i)
-    return table.serialize(img.totable(i))
+function img.serialize(i,...)
+    return table.serialize(img.totable(i),...)
+end
+
+function img.print(i,...)
+    return table.print(img.totable(i),...)
 end
 
 function img.clone(i,data)
@@ -142,7 +146,7 @@ figures.cachepaths = allocate {
 figures.paths  = allocate(table.copy(figures.localpaths))
 
 figures.order =  allocate{
-    "pdf", "mps", "jpg", "png", "jbig", "svg", "eps", "gif", "mov", "buffer", "tex",
+    "pdf", "mps", "jpg", "png", "jbig", "svg", "eps", "gif", "mov", "buffer", "tex", "cld",
 }
 
 figures.formats = allocate{
@@ -157,6 +161,7 @@ figures.formats = allocate{
     ["mov"]    = { list = { "mov", "flv", "mp4" } }, -- "avi" is not supported
     ["buffer"] = { list = { "tmp", "buffer", "buf" } },
     ["tex"]    = { list = { "tex" } },
+    ["cld"]    = { list = { "cld" } },
 }
 
 function figures.setlookups()
@@ -355,6 +360,8 @@ end
 local defaultformat = "pdf"
 local defaultprefix = "m_k_i_v_"
 
+-- todo: local path or cache path
+
 local function register(askedname,specification)
     if specification then
         local format = specification.format
@@ -384,6 +391,7 @@ local function register(askedname,specification)
                     if converter[newformat] then
                         converter = converter[newformat]
                     else
+                        converter = nil
                         newformat = defaultformat
                     end
                 end
@@ -392,6 +400,7 @@ local function register(askedname,specification)
             end
             if converter then
                 local oldname = specification.fullname
+local oldname = specification.foundname
                 local newpath = file.dirname(oldname)
                 local oldbase = file.basename(oldname)
                 local newbase = file.removesuffix(oldbase)
@@ -400,6 +409,12 @@ local function register(askedname,specification)
                     newpath = fc
                 else
                     newbase = defaultprefix .. newbase
+                end
+                if not file.is_writable(newpath) then
+                    if trace_conversion then
+                        report_graphics("[ath '%s'is not writable, forcing conversion path '.' ",newpath)
+                    end
+                    newpath = "."
                 end
                 local subpath = specification.subpath or figures.cachepaths.subpath
                 if subpath and subpath ~= "" and subpath ~= "."  then
@@ -812,6 +827,12 @@ function checkers.generic(data)
         du.width = figure.width
         du.height = figure.height
         du.pages = figure.pages
+        du.depth = figure.depth or 0
+        du.colordepth = figure.colordepth or 0
+        du.xresolution = figure.xres or 0
+        du.yresolution = figure.yres or 0
+        du.xsize = figure.xsize or 0
+        du.ysize = figure.ysize or 0
         ds.private = figure
         ds.hash = hash
     end
@@ -928,17 +949,6 @@ function checkers.mps(data)
 end
 includers.mps = includers.nongeneric
 
--- -- -- buffer -- -- --
-
-function existers.buffer(askedname)
-    askedname = file.nameonly(askedname)
-    return buffers.exists(askedname) and askedname
-end
-function checkers.buffer(data)
-    return checkers.nongeneric(data,format("\\docheckfigurebuffer{%s}", file.nameonly(data.used.fullname)))
-end
-includers.buffers = includers.nongeneric
-
 -- -- -- tex -- -- --
 
 function existers.tex(askedname)
@@ -949,6 +959,22 @@ function checkers.tex(data)
     return checkers.nongeneric(data,format("\\docheckfiguretex{%s}", data.used.fullname))
 end
 includers.tex = includers.nongeneric
+
+-- -- -- buffer -- -- --
+
+existers.buffer = existers.tex
+function checkers.buffer(data)
+    return checkers.nongeneric(data,format("\\docheckfigurebuffer{%s}", file.nameonly(data.used.fullname)))
+end
+includers.buffers = includers.nongeneric
+
+-- -- -- cld -- -- --
+
+existers.cld = existers.tex
+function checkers.cld(data)
+    return checkers.nongeneric(data,format("\\docheckfigurecld{%s}", data.used.fullname))
+end
+includers.cld = includers.nongeneric
 
 -- -- -- converters -- -- --
 

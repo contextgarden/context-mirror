@@ -336,8 +336,8 @@
 
 \ifdefined\softhyphen \else \let\softhyphen\- \fi
 
-\ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\unexpanded\string\\def\string\\\string\n{\string\\space}")}
-% \ctxlua{tex.sprint(tex.ctxcatcodes,"\string\\let\string\\\string\n=\string\\space")}
+\ctxsprint{"\string\\unexpanded\string\\def\string\\\string\n{\string\\space}"}
+%ctxsprint{"\string\\let\string\\\string\n=\string\\space"}
 
 % in tables we need:
 %

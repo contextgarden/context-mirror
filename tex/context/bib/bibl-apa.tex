@@ -106,7 +106,7 @@
 %D Some shortcuts.
 
 % ((#1(type\ |)chapter#2)|#3)
- 
+
 \def\insertchap#1#2#3%
   {\insertchapter
     {#1\insertbibtype{}{\ }{chapter\ }}{#2}%
@@ -164,12 +164,12 @@
 \setuppublicationlayout[book]{%
    \insertauthors{}{ }{\inserteditors{}{, editor%
                          \ifnum\getvalue{editor@num}> 1 s\fi
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{. }{}}}%
    \insertpubyear{(}{). }{\unskip.}%
    \inserttitle
         {\bgroup\it }%
-        {\/\egroup 
+        {\/\egroup
          \ifeditedbook
            \global\editedbookfalse
            \insertvolume
@@ -182,7 +182,7 @@
         \else
        \insertcrossref
         {\insertchap{, }{}{}%
-         \insertpages{, pages }{. }{. }%
+         \insertpages{\unskip, pages }{. }{. }%
          \insertvolume{Volume~}{ of~}{}%
          }%
         {}%
@@ -194,7 +194,7 @@
                       {}}
                    {}%
                    \insertchap{, }{}{}%
-                   \insertpages{, pages }{.}{.}%
+                   \insertpages{\unskip, pages }{.}{.}%
                 }%
         \fi}%
         {}%
@@ -207,7 +207,7 @@
 \setuppublicationlayout[inbook]{%
    \insertauthors{}{ }{\inserteditors{}{, editor%
                          \ifnum\getvalue{editor@num}> 1 s\fi
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{. }{}}}%
    \insertpubyear{(}{). }{\unskip.}%
    \inserttitle
@@ -225,7 +225,7 @@
       \else
         \insertcrossref
           {\insertchap{, }{}{}%
-           \insertpages{, pages }{. }{. }%
+           \insertpages{\unskip, pages }{. }{. }%
            \insertvolume{Volume~}{ of~}{}%
            }%
           {}%
@@ -237,7 +237,7 @@
                  {}}
               {}%
            \insertchap{, }{}{}%
-           \insertpages{, pages }{.}{}%
+           \insertpages{\unskip, pages }{.}{}%
            }%
         \fi}%
      { }%
@@ -275,19 +275,19 @@
         {, editor\ifnum\getvalue{editor@num}> 1 s\fi, }%
         {}%
     \bgroup\it}%
-    {\egroup 
+    {\egroup
          \insertseries
               {\insertvolume{, number }{~in }{ }}%
               {}%
               {}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+         \insertpages{\unskip, pages~}{. }{\unskip. }%
           \insertedition{ }{ edition}{}%
           \insertpublisher{ }{.}{.}%
         }%
         {In \insertcrossref{}{}{}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+         \insertpages{\unskip, pages~}{. }{\unskip. }%
         }%
    \insertnote{ }{.}{}%
 }
@@ -301,18 +301,18 @@
         {, editor\ifnum\getvalue{editor@num}> 1 s\fi, }%
         {}%
     \bgroup\it}%
-    {\egroup 
+    {\egroup
          \insertseries
               {\insertvolume{, number }{~in }{ }}%
               {}%
               {}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{, pages~}{}{}%
+         \insertpages{\unskip, pages~}{}{}%
          \insertorg{. }{.}{.}%
         }%
         {In \insertcrossref{}{}{}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+         \insertpages{\unskip, pages~}{. }{\unskip. }%
         }%
    \insertnote{ }{.}{}%
 }
@@ -320,18 +320,18 @@
 \setuppublicationlayout[proceedings]{%
    \inserteditors{}{, editor%
                          \ifnum\getvalue{editor@num}> 1 s\fi
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{ }{}}%
    \insertpubyear{(}{). }{}%
    \inserttitle
     {\bgroup\it}%
-    {\egroup 
+    {\egroup
      \insertseries
         {\insertvolume{, number }{~in }{ }}%
         {}%
         {}%
      \insertchap{\unskip, }{ }{ }%
-     \insertpages{, pages~}{}{}%
+     \insertpages{\unskip, pages~}{}{}%
      \insertorg{. }{.}{.}%
     }%
     {}%

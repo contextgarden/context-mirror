@@ -1812,6 +1812,7 @@
    \doifelse{\combinationparameter\c!height}\v!fit
      \vbox {\vbox to \combinationparameter\c!height}%
    \bgroup
+\let\combination\empty % permits \combination{}{} handy for cld
    \expanded{\dodostartcombination[\currentcombinationspec]}}
 
 \long\def\dodostartcombination[#1*#2*#3]%

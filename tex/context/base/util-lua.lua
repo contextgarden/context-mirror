@@ -24,4 +24,3 @@ function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: clean
     end
     return done
 end
-

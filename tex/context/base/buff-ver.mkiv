@@ -138,11 +138,15 @@
 \let\noverbatimeop\ignoreendofpretty
 \let\noverbatimsop\ignorebeginofpretty
 
+\setvalue{\??tp:\c!space:\v!on     }{\let\obs\fastcontrolspace}
+\setvalue{\??tp:\c!space:\v!stretch}{\let\obs\specialstretchedspace
+                                     \let\specialobeyedspace\specialstretchedspace % I need to clean
+                                     \let\obeyedspace\specialstretchedspace}       % up this mess.
+\setvalue{\??tp:\c!space:\v!normal }{\let\obs\specialobeyedspace}
+
 \def\doinitializeverbatim % todo: combine all in one call is faster
   {\ctxlua{buffers.visualizers.reset()}%
-   \doifelse{\typingparameter\c!space}\v!on
-     {\let\obs\fastcontrolspace}%
-     {\let\obs\specialobeyedspace}%
+   \executeifdefined{\??tp:\c!space:\typingparameter\c!space}{\let\obs\specialobeyedspace}%
    \edef\askedverbatimtab{\typingparameter\c!tab}%
    \doifelse\askedverbatimtab\v!no
      {\ctxlua{buffers.settablength(1)}}
@@ -441,11 +445,12 @@
 %D works all right, but a decent hyphenation support of
 %D \type{\tt} text will be implemented soon.
 
-\def\specialobeyedspace {\hskip\interwordspace\relax} % better than spaceskip
-\def\specialcontrolspace{\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
+\def\specialobeyedspace   {\hskip\interwordspace\relax} % better than spaceskip
+\def\specialstretchedspace{\hskip.5\interwordspace\!!plus.125\interwordstretch\relax} % more but not less
+\def\specialcontrolspace  {\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
 
 \def\obeyhyphens
-  {\let\obeyedspace \specialobeyedspace
+  {\let\obeyedspace \specialobeyedspace % maybe \specialstretchedspace
    \let\controlspace\specialcontrolspace
    \spaceskip.25em\relax} % hm a bit of stretch !
 
@@ -462,6 +467,7 @@
 \unexpanded\def\typ
   {\bgroup
    \let\@@tylines\v!hyphenated
+   \let\specialobeyedspace\specialstretchedspace
    \futurelet\next\dodotype}
 
 %D \macros

@@ -455,9 +455,11 @@
 
 \def\dodoloadbibtexpublicationalternative#1%
   {\doonlyonce{#1}
-     {\readsysfile{bxml-#1.mkiv}
+     {\startreadingfile
+      \readsysfile{bxml-#1.mkiv}
         {\showmessage\m!publications{6}{bxml-#1}}
-        {\showmessage\m!publications{1}{bxml-#1}}}}
+        {\showmessage\m!publications{1}{bxml-#1}}%
+      \stopreadingfile}}
 
 \appendtoks
     \doloadbibtexpublicationalternative

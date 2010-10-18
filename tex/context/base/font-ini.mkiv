@@ -2781,7 +2781,7 @@
   {\dodoubleargument\dofontfeatureslist}
 
 \def\dofontfeatureslist[#1][#2]% todo: arg voor type
-  {\ctxlua{tex.sprint(tex.ctxcatcodes,fonts.definers.specifiers.contexttostring("#1","otf","\luaescapestring{#2}","yes","no",true,{"number"}))}}
+  {\ctxsprint{fonts.definers.specifiers.contexttostring("#1","otf","\luaescapestring{#2}","yes","no",true,{"number"})}}
 
 \attribute\zerocount\zerocount % first in list, so fast match
 
@@ -3028,7 +3028,7 @@
 \unexpanded\def\definealternativestyle
   {\dotripleempty\dodefinealternativestyle}
 
-\unexpanded\def\definestyle{\definealternativestyle}
+\unexpanded\def\definestyle{\definealternativestyle} % later redefined
 
 %D Maybe too geneneric, but probably ok is the following. (Maybe one
 %D day we will use a dedicated grouped command for styles.)
@@ -3084,13 +3084,15 @@
 %D conversion by saying \type{\redoconvertfont}.
 
 % subtle ... \expandafter is needed else problems with lookahead caps
+%
+% this will be cleaned up
 
 \def\@@dodoconvertfont{\csname\@letter@  \p!defined\expandafter\endcsname\gobbleoneargument}
 \def\@@donoconvertfont{\csname\@noletter@\p!defined\endcsname}
 \def\@@redoconvertfont{\csname           \p!defined\expandafter\endcsname\gobbleoneargument}
 
 % beware: p!defined can contain crap like \edef crap {...} and such
-% so we need to pass #1 as well
+% so we need to pass #1 as well .. no longer needed in luatex
 
 \unexpanded\def\dodoconvertfont#1% #2% we need the protection
   {\edef\p!defined{#1}%
@@ -3872,15 +3874,83 @@
 
 %D New commands (not yet interfaced):
 
-\def\style[#1]% for inline usage, like \color
-  {\groupedcommand{\ifcsname#1\endcsname\csname#1\endcsname\else\definedfont[#1]\fi}{}}
+% \def\style[#1]% for inline usage, like \color
+%   {\groupedcommand{\ifcsname#1\endcsname\csname#1\endcsname\else\definedfont[#1]\fi}{}}
+%
+% \unexpanded\def\startstyle[#1]%
+%   {\begingroup
+%    \ifcsname#1\endcsname\csname#1\endcsname\else\definedfont[#1]\fi}
+%
+% \unexpanded\def\stopstyle
+%   {\endgroup}
+
+% definitions
+
+\def\definestyle
+  {\dotripleargument\dodefinestyle}
+
+\def\dodefinestyle[#1][#2][#3]%
+  {\doifassignmentelse{#2}\dododefinestyle\definealternativestyle[#1][#2][#3]}
+
+\def\dododefinestyle[#1][#2][#3]% no commalist and for the moment #3 is ignored
+  {\getparameters[\??cf:#1][\c!style=,\c!color=,#2]%
+   \setuvalue{\e!start#1}{\begingroup\dostartattributes{\??cf:#1}\c!style\c!color}%
+   \setuvalue{\e!stop #1}{\dostopattributes\endgroup}%
+   \setuvalue        {#1}{\groupedcommand{\dostartattributes{\??cf:#1}\c!style\c!color}\dostopattributes}}
+
+\def\setupstyle
+  {\dotripleargument\dosetupstyle}
+
+\def\dosetupstyle[#1][#2][#3]% no commalist and for the moment #3 is ignored
+  {\ifcsname\??cf:#1\c!style\endcsname
+     \getparameters[\??cf:#1][#2]%
+   \else
+     \getparameters[\??cf:#1][\c!style,\c!color=,#2]% so we define but without commands (todo for all define related things)
+   \fi}
+
+% commands
+
+\unexpanded\def\style[#1]%
+  {\csname\ifcsname#1\endcsname n\else\ifcsname\??cf:#1\c!style\endcsname c\else d\fi\fi ostyle\endcsname{#1}}
+
+\def\nostyle#1{\csname#1\endcsname}
+\def\costyle#1{\groupedcommand{\dostartattributes{\??cf:#1}\c!style\c!color}\dostopattributes}
+\def\dostyle#1{\doifassignmentelse{#1}\dostyleassignment\dostyledirect{#1}}
+
+\def\dostyleassignment#1%
+  {\groupedcommand
+     {\getparameters[\??cf][\c!style,\c!color=,#1]%
+      \dostartattributes\??cf\c!style\c!color}
+     {\dostopattributes}}
+
+\def\dostyledirect#1%
+  {\groupedcommand
+     {\definedfont[#1]}
+     {}}
+
+% environments
 
 \unexpanded\def\startstyle[#1]%
   {\begingroup
-   \ifcsname#1\endcsname\csname#1\endcsname\else\definedfont[#1]\fi}
+   \csname\ifcsname#1\endcsname n\else\ifcsname\??cf:#1\c!style\endcsname c\else d\fi\fi ostyless\endcsname{#1}}
 
 \unexpanded\def\stopstyle
-  {\endgroup}
+  {\dostopstyle
+   \endgroup
+   \autoinsertnextspace} % will be configurable, maybe also in \definestartstop
+
+\def\nostyless#1{\let\dostopstyle\donothing\csname#1\endcsname}
+\def\costyless#1{\let\dostopstyle\dostopattributes\dostartattributes{\??cf:#1}\c!style\c!color}
+\def\dostyless#1{\doifassignmentelse{#1}\dostylessassignment\dostylessdirect{#1}}
+
+\def\dostylessassignment#1%
+  {\let\dostopstyle\dostopattributes
+   \getparameters[\??cf][\c!style,\c!color=,#1]%
+   \dostartattributes\??cf\c!style\c!color}
+
+\def\dostylessdirect#1%
+ {\let\dostopstyle\donothing
+  \definedfont[#1]\relax}
 
 %D Still experimental (might even go away).
 

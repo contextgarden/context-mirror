@@ -33,6 +33,21 @@ local report_resolvers = logs.new("resolvers")
 
 local resolvers = resolvers
 
+-- intermezzo
+
+local directive_cleanup = false  directives.register("system.compile.cleanup", function(v) directive_cleanup = v end)
+local directive_strip   = true   directives.register("system.compile.strip",   function(v) directive_strip   = v end)
+
+local compile = utilities.lua.compile
+
+function utilities.lua.compile(luafile,lucfile,cleanup,strip)
+    if cleanup == nil then cleanup = directive_cleanup end
+    if strip   == nil then strip   = directive_strip   end
+    return compile(luafile,lucfile,cleanup,strip)
+end
+
+-- end of intermezzo
+
 caches           = caches or { }
 local caches     = caches
 
@@ -277,9 +292,7 @@ function caches.savedata(filepath,filename,data,raw)
     else
         table.tofile(tmaname, data,'return',false,true,false) -- maybe not the last true
     end
-    local cleanup = resolvers.booleanvariable("PURGECACHE", false)
-    local strip = resolvers.booleanvariable("LUACSTRIP", true)
-    utilities.lua.compile(tmaname, tmcname, cleanup, strip)
+    utilities.lua.compile(tmaname,tmcname)
 end
 
 -- moved from data-res:
@@ -341,7 +354,7 @@ function caches.savecontent(cachename,dataname,content)
         if trace_locating then
             report_resolvers("category '%s', cachename '%s' saved in '%s'",dataname,cachename,luaname)
         end
-        if utilities.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
+        if utilities.lua.compile(luaname,lucname) then
             if trace_locating then
                 report_resolvers("'%s' compiled to '%s'",dataname,lucname)
             end

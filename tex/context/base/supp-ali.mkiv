@@ -1,0 +1,173 @@
+%D \module
+%D   [       file=supp-ali,
+%D        version=2000.04.17,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Alignment,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Yet undocumented.
+
+% 0 = centered
+% 1 = left  in before
+% 2 = right in before
+% 3 = left  in after
+% 4 = right in after
+
+\unprotect
+
+% \starttabulate[|cg{.}|cg{,}|cg{,}|]
+% \NC period     \NC comma      \NC comma   \NC\NR
+% \NG 100.000,00 \NG 100.000,00 \NG 100,00  \NC\NR
+% \NG 10.000,00  \NG 10.000,00  \NG 1000,00 \NC\NR
+% \NG 100,00     \NG 100,00     \NG 10,00   \NC\NR
+% \NG 100,00     \NG 100,00     \NG 10,00   \NC\NR
+% \NG 10\\       \NG 10\\       \NG 0,00    \NC\NR
+% \NG 10         \NG 10         \NG 0,00    \NC\NR
+% \NG 10         \NG 10         \NG 0,00    \NC\NR
+% \stoptabulate
+
+\chardef\characteralignmentmode=4
+\chardef\characteralignmentslot=1
+
+\newtoks\@@characteralignlst
+
+\let\afterassignwidth \!!zeropoint
+\let\beforeassignwidth\!!zeropoint
+
+\def\alignmentcharacter{.}
+
+\let\alignmentclass\s!default % can be used to handle multiple mixed ones
+
+\def\setfirstpasscharacteralign
+  {\popcharacteralign
+   \expanded{\dosetfirstpasscharacteralign{\alignmentcharacter}}}
+
+\def\dosetfirstpasscharacteralign#1%
+  {\def\checkalignment##1%
+     {\popcharacteralign
+      \let\\\empty
+      \setbox\scratchbox\hbox{#1}%
+      \edef\characterassignwidth{\the\wd\scratchbox}%
+      \setbox\scratchbox\null
+      \docheckalignment##1#1\relax\relax
+      \scratchdimen-\wd\scratchbox
+      \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
+      \advance\scratchdimen \wd\scratchbox
+      \ifdim\scratchdimen>\beforeassignwidth\relax
+        \edef\beforeassignwidth{\the\scratchdimen}%
+      \fi
+      \ifdim\scratchdimen=\zeropoint
+        \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
+        \scratchdimen\wd\scratchbox
+        \ifcase\characteralignmentmode
+          % do nothing
+        \else\ifnum\characteralignmentmode<\plusthree
+          \advance\scratchdimen \characterassignwidth
+          \ifdim\scratchdimen>\beforeassignwidth\relax
+            \edef\beforeassignwidth{\the\scratchdimen}%
+          \fi
+        \else
+          \ifdim\scratchdimen>\afterassignwidth\relax
+            \edef\afterassignwidth{\the\scratchdimen}%
+          \fi
+        \fi\fi
+      \fi
+      \pushcharacteralign}%
+   \def\docheckalignment##1#1##2##3\relax
+     {\ifx##2\relax
+        \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
+        \ifdim\wd\scratchbox>\afterassignwidth
+          \edef\afterassignwidth{\the\wd\scratchbox}%
+        \fi
+      \else
+        \docheckalignment##2##3\relax\relax
+      \fi}}
+
+\def\setsecondpasscharacteralign
+  {\popcharacteralign
+   \expanded{\dosetsecondpasscharacteralign{\alignmentcharacter}}}
+
+\def\dosetsecondpasscharacteralign#1%
+  {\def\checkalignment##1%
+     {\popcharacteralign
+      \let\\\empty % beware, no grouping
+      \setbox\scratchbox\hbox{#1}%
+      \edef\characterassignwidth{\the\wd\scratchbox}%
+      \setbox\scratchbox\null
+      % new 12,34 vs 10\\ where 10 aligns on 12 if #1 = ,
+      \ifcase\characteralignmentslot
+        \docheckalignment##1#1\relax\relax
+        \scratchdimen\wd\scratchbox
+        \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
+      \else
+        \def\\{#1}%
+        \expanded{\docheckalignment##1#1\relax\relax}%
+        \scratchdimen\wd\scratchbox
+        \setbox\scratchbox\hbox{\def\\{\hphantom{#1}}\ignorespaces##1\unskip}%
+      \fi
+      \noindent
+      \ifdim\scratchdimen=\wd\scratchbox
+        \ifcase\characteralignmentmode
+          \box\scratchbox
+        \else
+          \hbox
+            {\dontcomplain
+             \hbox to \beforeassignwidth
+               {\ifcase\characteralignmentmode\or
+                  \box\scratchbox\hss
+                \or
+                  \hss\box\scratchbox\hskip\characterassignwidth
+                \or
+                  \hss\rlap{\box\scratchbox}%
+                \or
+                  \hss\rlap{\hbox to \afterassignwidth{\hss\box\scratchbox}}%
+                \fi}%
+             \hskip\afterassignwidth}%
+        \fi
+      \else
+        \hbox
+          {\hbox to \beforeassignwidth
+             {\hss\box\scratchbox\hskip-\scratchdimen}%
+           \hskip\afterassignwidth}%
+      \fi}%
+   \def\docheckalignment##1#1##2##3\relax
+     {\ifx##2\relax
+        \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
+      \else
+        \docheckalignment##2##3\relax\relax
+      \fi}}
+
+% provide a means to use multiple alignments mixed
+
+\def\pushcharacteralign
+  {\ifundefined{@cac@\alignmentclass}%
+     \doglobal\appendetoks\noexpand\do{\alignmentclass}\to\@@characteralignlst
+   \fi
+   \setxvalue{@cac@\alignmentclass}{\noexpand\do
+     {\afterassignwidth}{\beforeassignwidth}{\alignmentcharacter}}}
+
+\def\popcharacteralign
+  {\def\do##1##2##3%
+     {\def\afterassignwidth  {##1}%
+      \def\beforeassignwidth {##2}%
+      \def\alignmentcharacter{##3}}%
+   \executeifdefined{@cac@\alignmentclass}\donothing}
+
+\def\resetcharacteralign % does not work well nested
+  {\def\do##1{\global\letbeundefined{@cac@##1}}% global !
+   \the\@@characteralignlst
+   \global\@@characteralignlst\emptytoks}
+
+\long\def\startcharacteralign#1\stopcharacteralign
+  {\bgroup
+   \setfirstpasscharacteralign #1%
+   \setsecondpasscharacteralign#1%
+   \egroup}
+
+\protect \endinput

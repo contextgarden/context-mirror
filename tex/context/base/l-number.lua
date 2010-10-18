@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['l-number'] = {
 }
 
 local tostring = tostring
-local format, floor, insert, match = string.format, math.floor, table.insert, string.match
+local format, floor, insert, match = string.format, math.floor, string.match
+local concat, insert = table.concat, table.insert
 local lpegmatch = lpeg.match
 
 number       = number or { }
@@ -74,4 +75,17 @@ end
 
 function number.clearbit(x, p)
     return hasbit(x, p) and x - p or x
+end
+
+function number.tobitstring(n)
+    if n == 0 then
+        return "0"
+    else
+        local t = { }
+        while n > 0 do
+            insert(t,1,n % 2 > 0 and 1 or 0)
+            n = floor(n/2)
+        end
+        return concat(t)
+    end
 end

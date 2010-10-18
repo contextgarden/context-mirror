@@ -144,9 +144,7 @@
 %D We disable trial typesetting in the output routine,
 %D just to be sure.
 
-\newif\iftrialtypesetting
-
-\prependtoks \trialtypesettingfalse \to \everybeforepagebody
+\prependtoks \resettrialtypesetting \to \everybeforepagebody
 
 %D \macros
 %D   {ifinpagebody,ifinsidecolumns,ifdoublesided,ifsinglesided}

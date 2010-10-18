@@ -11,12 +11,16 @@ if not modules then modules = { } end modules ['core-env'] = {
 --
 -- if tex.modes['xxxx'] then .... else .... end
 
-local csname_id, texcount = token.csname_id, tex.count
+local csname_id, texcount, create = token.csname_id, tex.count, token.create
 
 local undefined = csname_id("*undefined*crap*")
+local iftrue    = create("iftrue")[2] -- inefficient hack
 
-tex.modes     = { } local modes     = { }
-tex.constants = { } local constants = { }
+tex.modes        = { } local modes        = { }
+tex.systemmodes  = { } local systemmodes  = { }
+tex.constants    = { }
+tex.conditionals = { }
+tex.ifs          = { }
 
 setmetatable(tex.modes, { __index = function(t,k)
     local m = modes[k]
@@ -33,14 +37,29 @@ setmetatable(tex.modes, { __index = function(t,k)
     end
 end })
 
-setmetatable(tex.constants, { __index = function(t,k)
-    local m = constants[k]
+setmetatable(tex.systemmodes, { __index = function(t,k)
+    local m = systemmodes[k]
     if m then
         return m()
-    elseif csname_id(k) == undefined then
-        return false
     else
-        constants[k] = function() return texcount[k] >= 1 end
-        return texcount[k] >= 1
+        local n = "mode*" .. k
+        if csname_id(n) == undefined then
+            return false
+        else
+            systemmodes[k] = function() return texcount[n] >= 1 end
+            return texcount[n] >= 1
+        end
     end
+end })
+
+setmetatable(tex.constants, { __index = function(t,k)
+    return csname_id(k) ~= undefined and texcount[k] or 0
+end })
+
+setmetatable(tex.conditionals, { __index = function(t,k) -- 0 == true
+    return csname_id(k) ~= undefined and texcount[k] == 0
+end })
+
+setmetatable(tex.ifs, { __index = function(t,k)
+    return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
 end })
