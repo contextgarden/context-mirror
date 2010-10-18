@@ -474,6 +474,7 @@
 \definesystemvariable {cb}   % CollectBox
 \definesystemvariable {cc}   % Comment
 \definesystemvariable {ce}   % CasEs
+\definesystemvariable {cf}   % Style (ColorFont)
 \definesystemvariable {ch}   % CHaracterspacing
 \definesystemvariable {ci}   % CItaat
 \definesystemvariable {ck}   % Character Kerning
@@ -770,7 +771,7 @@
 \definefileconstant {sysfilename} {cont-sys}
 \definefileconstant {oldfilename} {cont-old}
 \definefileconstant {newfilename} {cont-new}
-\definefileconstant {filfilename} {cont-fil}
+\definefileconstant {filfilename} {cont-fil.\mksuffix}
 \definefileconstant {modfilename} {cont-mod}
 
 %D Handy for typescripts (we could use s! instead:
@@ -875,6 +876,7 @@
 \defineinterfaceconstant {svg}  {svg}
 \defineinterfaceconstant {tex}  {tex}
 \defineinterfaceconstant {tmp}  {tmp}
+\defineinterfaceconstant {cld}  {cld}
 
 %D A careful reader will have noticed that in the module
 %D \type{mult-ini} we defined \type{\selectinterface}. We were

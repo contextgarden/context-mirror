@@ -78,6 +78,26 @@
   {\ifcsname\@mode@\systemmodeprefix#1\endcsname\else\donewmode{\systemmodeprefix#1}\fi
    \csname\@mode@\systemmodeprefix#1\endcsname\disabledmode}
 
+% \def\dosetsystemmode#1%
+%   {\csname\@mode@\systemmodeprefix#1\endcsname\enabledmode}
+%
+% \def\doresetsystemmode#1%
+%   {\csname\@mode@\systemmodeprefix#1\endcsname\disabledmode}
+
+% demo: trialtypesetting is a systemmode as an if
+
+\newsystemmode{trialtypesetting}
+
+\expandafter\let\expandafter\@@trialtypesetting\csname\@mode@\systemmodeprefix trialtypesetting\endcsname % private !
+
+\appendtoks
+    \@@trialtypesetting\enabledmode
+\to \everysettrialtypesetting
+
+\appendtoks
+    \@@trialtypesetting\disabledmode
+\to \everyresettrialtypesetting
+
 % user ones
 
 \unexpanded\def\preventmode{\unprotect\dopreventmode}

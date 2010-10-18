@@ -38,14 +38,14 @@
 %newlinechar=10   \def\outputnewlinechar{\rawcharacter{10}}
 \newlinechar=10  \edef\outputnewlinechar{^^J}
 
-\edef\operatingsystem  {\ctxlua{tex.write(os.platform)}}
+\edef\operatingsystem {\ctxwrite {os.platform}}
 
-\def\jobfilename      {\ctxlua{tex.sprint(tex.texcatcodes,environment.jobfilename       or "")}}
-\def\jobfilesuffix    {\ctxlua{tex.sprint(tex.texcatcodes,environment.jobfilesuffix     or "")}}
-\def\inputfilebarename{\ctxlua{tex.sprint(tex.texcatcodes,environment.inputfilebarename or "")}}
-\def\inputfilesuffix  {\ctxlua{tex.sprint(tex.texcatcodes,environment.inputfilesuffix   or "")}}
-\def\inputfilename    {\ctxlua{tex.sprint(tex.texcatcodes,environment.inputfilename     or "")}}
-\def\outputfilename   {\ctxlua{tex.sprint(tex.texcatcodes,environment.outputfilename    or "")}}
+\def\jobfilename      {\ctxsprint{environment.jobfilename       or ""}}
+\def\jobfilesuffix    {\ctxsprint{environment.jobfilesuffix     or ""}}
+\def\inputfilebarename{\ctxsprint{environment.inputfilebarename or ""}}
+\def\inputfilesuffix  {\ctxsprint{environment.inputfilesuffix   or ""}}
+\def\inputfilename    {\ctxsprint{environment.inputfilename     or ""}}
+\def\outputfilename   {\ctxsprint{environment.outputfilename    or ""}}
 
 \def\initializenewlinechar
   {\bgroup\newlinechar=10\xdef\outputnewlinechar{^^J}\egroup}

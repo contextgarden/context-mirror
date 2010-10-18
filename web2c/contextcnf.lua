@@ -9,9 +9,6 @@ return {
 
     content = {
 
-     -- LUACSTRIP       = 'f',
-     -- PURGECACHE      = 't',
-
         TEXMFCACHE      = "$SELFAUTOPARENT/texmf-cache",
 
         TEXMFOS         = "$SELFAUTODIR",
@@ -113,6 +110,8 @@ return {
             mplib_texerrors          = "yes",
          -- fonts_otf_loader_method  = "table", -- table mixed sparse
          -- fonts_otf_loader_cleanup = "0",     -- 0 1 2 3
+            system_compile_cleanup   = "no",    -- remove tma files
+            system_compile_strip     = "yes",   -- strip tmc files
         },
 
         experiments = {

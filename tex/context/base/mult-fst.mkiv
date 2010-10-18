@@ -26,25 +26,13 @@
     \def\dosetxvalue  #1#2{\@EA\gdef\csname#1#2\endcsname}
     \def\docopyvalue#1#2#3{\@EA\def \csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}}
 
-    \ifx\ctxlua\undefined
+    \def\setinterfaceconstant#1#2%
+      {\ctxlua{interfaces.setconstant("#1","#2")}%
+       \setvalue{\c!prefix!#1}{#1}}
 
-        \def\setinterfaceconstant#1#2%
-          {\setvalue{\c!prefix!#1}{#1}}
-
-        \def\setinterfacevariable#1#2%
-          {\setvalue{\v!prefix!#1}{#2}}
-
-    \else
-
-        \def\setinterfaceconstant#1#2%
-          {\ctxlua{interfaces.setconstant("#1","#2")}%
-           \setvalue{\c!prefix!#1}{#1}}
-
-        \def\setinterfacevariable#1#2%
-          {\ctxlua{interfaces.setvariable("#1","#2")}%
-           \setvalue{\v!prefix!#1}{#2}}
-
-    \fi
+    \def\setinterfacevariable#1#2%
+      {\ctxlua{interfaces.setvariable("#1","#2")}%
+       \setvalue{\v!prefix!#1}{#2}}
 
     \def\interfaced#1{#1}
 

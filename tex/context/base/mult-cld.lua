@@ -15,6 +15,7 @@ if not modules then modules = { } end modules ['mult-cld'] = {
 --
 -- Todo: optional checking against interface
 -- Todo: coroutine trickery
+-- Todo: maybe use txtcatcodes
 
 -- tflush needs checking ... sort of weird that it's not a table
 
@@ -22,7 +23,7 @@ context       = context or { }
 local context = context
 
 local format, concat = string.format, table.concat
-local next, type, tostring = next, type, tostring
+local next, type, tostring, setmetatable = next, type, tostring, setmetatable
 local insert, remove = table.insert, table.remove
 
 local tex = tex
@@ -32,9 +33,16 @@ local textprint   = tex.tprint
 local texprint    = tex.print
 local texiowrite  = texio.write
 local texcount    = tex.count
+
+local isnode      = node.is_node
+local writenode   = node.write
+
 local ctxcatcodes = tex.ctxcatcodes
 local prtcatcodes = tex.prtcatcodes
+local texcatcodes = tex.texcatcodes
+local txtcatcodes = tex.txtcatcodes
 local vrbcatcodes = tex.vrbcatcodes
+local xmlcatcodes = tex.xmlcatcodes
 
 local flush = texsprint
 
@@ -52,11 +60,15 @@ local function _flush_(n)
     local sn = _stack_[n]
     if not sn then
         report_cld("data with id %s cannot be found on stack",n)
-    elseif not sn() and texcount.trialtypesettingmode == 0 then
+    elseif not sn() and texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
         _stack_[n] = nil
     else
         -- keep, beware, that way the stack can grow
     end
+end
+
+function context.restart()
+     _stack_, _n_ = { }, 0
 end
 
 context._stack_ = _stack_
@@ -68,9 +80,18 @@ context._flush_ = _flush_
 local catcodestack    = { }
 local currentcatcodes = ctxcatcodes
 
+local catcodes = {
+    ctx = ctxcatcodes, ctxcatcodes = ctxcatcodes, context  = ctxcatcodes,
+    prt = prtcatcodes, prtcatcodes = prtcatcodes, protect  = prtcatcodes,
+    tex = texcatcodes, texcatcodes = texcatcodes, plain    = texcatcodes,
+    txt = txtcatcodes, txtcatcodes = txtcatcodes, text     = txtcatcodes,
+    vrb = vrbcatcodes, vrbcatcodes = vrbcatcodes, verbatim = vrbcatcodes,
+    xml = xmlcatcodes, xmlcatcodes = xmlcatcodes,
+}
+
 function context.pushcatcodes(c)
     insert(catcodestack,currentcatcodes)
-    currentcatcodes = c
+    currentcatcodes = (c and catcodes[c] or tonumber(c)) or currentcatcodes
 end
 
 function context.popcatcodes()
@@ -89,14 +110,6 @@ end
 function tex.fprint(...) -- goodie
     texsprint(currentcatcodes,format(...))
 end
-
---~ function context.direct(...)
---~     context.flush(...)
---~ end
-
---~ function context.verbose(...)
---~     context.flush(vrbcatcodes,...)
---~ end
 
 local trace_context = logs.new("context") -- here
 
@@ -122,25 +135,33 @@ function context.setflush(newflush)
 end
 
 trackers.register("context.flush",     function(v) if v then context.trace()     end end)
-trackers.register("context.intercept", function(v) if v then context.trace(true) end end)
+trackers.register("context.intercept", function(v) if v then context.trace(true) end end) -- will become obsolete
 
 --~ context.trace()
 
 -- beware, we had command as part of the flush and made it "" afterwards so that we could
 -- keep it there (...,command,...) but that really confuses the tex machinery
 
-local function writer(command,first,...) -- 5% faster than just ... and separate flush of command
+local function writer(command,first,...)
     if not command then
         -- error
-    elseif not first then
+    elseif first == nil then
         flush(currentcatcodes,command)
     else
         local t = { first, ... }
-        flush(currentcatcodes,command)
+        flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
+        local direct = false
         for i=1,#t do
             local ti = t[i]
             local typ = type(ti)
-            if ti == nil then
+            if direct then
+                if typ == "string" or typ == "number" then
+                    flush(currentcatcodes,ti)
+                else
+                    trace_context("error: invalid use of direct in '%s', only strings and numbers can be flushed directly, not '%s'",command,typ)
+                end
+                direct = false
+            elseif ti == nil then
                 -- nothing
             elseif typ == "string" then
                 if ti == "" then
@@ -188,20 +209,23 @@ local function writer(command,first,...) -- 5% faster than just ... and separate
                     flush(currentcatcodes,"[",concat(ti,","),"]")
                 end
             elseif typ == "function" then
-                flush(currentcatcodes,"{\\mkivflush{",_store_(ti),"}}")
-        --  elseif typ == "boolean" then
-        --      flush(currentcatcodes,"\n")
-            elseif ti == true then
-                flush(currentcatcodes,"\n")
-            elseif typ == false then
-            --  if force == "direct" then
-                flush(currentcatcodes,tostring(ti))
-            --  end
+                flush(currentcatcodes,"{\\mkivflush{",_store_(ti),"}}") -- todo: ctx|prt|texcatcodes
+            elseif typ == "boolean" then
+                if ti then
+                    flush(currentcatcodes,"^^M")
+                else
+                    direct = true
+                end
             elseif typ == "thread" then
                 trace_context("coroutines not supported as we cannot yield across boundaries")
+            elseif isnode(ti) then
+                writenode(ti)
             else
-                trace_context("error: %s gets a weird argument %s",command,tostring(ti))
+                trace_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
             end
+        end
+        if direct then
+            trace_context("error: direct flushing used in '%s' without following argument",command)
         end
     end
 end
@@ -209,8 +233,9 @@ end
 --~ experiments.register("context.writer",function()
 --~     writer = newwriter
 --~ end)
+
 local function indexer(t,k)
-    local c = "\\" .. k .. " "
+    local c = "\\" .. k -- .. " "
     local f = function(...) return writer(c,...) end
     t[k] = f
     return f
@@ -219,14 +244,38 @@ end
 local function caller(t,f,a,...)
     if not t then
         -- so we don't need to test in the calling (slower but often no issue)
-    elseif a then
-        flush(currentcatcodes,format(f,a,...))
-    elseif type(f) == "function" then
-        flush(currentcatcodes,"{\\mkivflush{" .. _store_(f) .. "}}")
-    elseif f then
-        flush(currentcatcodes,f)
-    else
-        flush(currentcatcodes,"\n")
+    elseif f ~= nil then
+        local typ = type(f)
+        if typ == "string" then
+            if a then
+                flush(currentcatcodes,format(f,a,...))
+            else
+                flush(currentcatcodes,f)
+            end
+        elseif typ == "number" then
+            if a then
+                flush(currentcatcodes,f,a,...)
+            else
+                flush(currentcatcodes,f)
+            end
+        elseif typ == "function" then
+            -- ignored: a ...
+            flush(currentcatcodes,"{\\mkivflush{",_store_(f),"}}") -- todo: ctx|prt|texcatcodes
+        elseif typ == "boolean" then
+            -- ignored: a ...
+            if f then
+                flush(currentcatcodes,"^^M")
+            else
+                writer("",a,...)
+             -- trace_context("warning: 'context' gets argument 'false' which is currently unsupported")
+            end
+        elseif typ == "thread" then
+            trace_context("coroutines not supported as we cannot yield across boundaries")
+        elseif isnode(f) then
+            writenode(f)
+        else
+            trace_context("error: 'context' gets a weird argument '%s'",tostring(f))
+        end
     end
 end
 
@@ -237,24 +286,24 @@ setmetatable(context, { __index = indexer, __call = caller } )
 local trace_cld = false
 
 function context.runfile(filename)
-    filename = resolvers.findtexfile(filename) or ""
-    if filename ~= "" then
-        local ok = dofile(filename)
+    local foundname = resolvers.findtexfile(file.addsuffix(filename,"cld")) or ""
+    if foundname ~= "" then
+        local ok = dofile(foundname)
         if type(ok) == "function" then
             if trace_cld then
-                commands.writestatus("cld","begin of file '%s' (function call)",filename)
+                trace_context("begin of file '%s' (function call)",foundname)
             end
             ok()
             if trace_cld then
-                commands.writestatus("cld","end of file '%s' (function call)",filename)
+                trace_context("end of file '%s' (function call)",foundname)
             end
         elseif ok then
-            commands.writestatus("cld","file '%s' is processed and returns true",filename)
+            trace_context("file '%s' is processed and returns true",foundname)
         else
-            commands.writestatus("cld","file '%s' is processed and returns nothing",filename)
+            trace_context("file '%s' is processed and returns nothing",foundname)
         end
     else
-        commands.writestatus("cld","unknown file '%s'",filename)
+        trace_context("unknown file '%s'",filename)
     end
 end
 
@@ -277,6 +326,24 @@ end)
 
 function context.enabletrackers (str) trackers.enable (str) end
 function context.disabletrackers(str) trackers.disable(str) end
+
+function context.direct(...)
+    return writer("",...)
+end
+
+function context.char(k)
+    if type(k) == "table" then
+        for i=1,#k do
+            context(format([[\char%s\relax]],k[i]))
+        end
+    elseif k then
+        context(format([[\char%s\relax]],k))
+    end
+end
+
+function context.par()
+    context([[\par]]) -- no need to add {} there
+end
 
 -- see demo-cld.cld for an example
 
@@ -304,7 +371,7 @@ function context.disabletrackers(str) trackers.disable(str) end
 
 --~ Not that useful yet. Maybe something like this when the main loop
 --~ is a coroutine. It also does not help taking care of nested calls.
---~ Even worse, it interferes with other mechanisms usign context calls.
+--~ Even worse, it interferes with other mechanisms using context calls.
 --~
 --~ local create, yield, resume = coroutine.create, coroutine.yield, coroutine.resume
 --~ local getflush, setflush = context.getflush, context.setflush
@@ -354,12 +421,107 @@ function context.disabletrackers(str) trackers.disable(str) end
 -- this might be generalized: register some primitives as: accepting this or that
 -- we can also speed this up
 
-function context.char(k)
-    if type(k) == "table" then
-        for i=1,#k do
-            context(format([[\char%s\relax]],k[i]))
+
+local delayed = { } context.delayed = delayed -- maybe also global
+
+local function indexer(t,k)
+    local f = function(...)
+        local a = { ... }
+        return function()
+            return context[k](unpack(a))
         end
-    elseif k then
-        context(format([[\char%s\relax]],k))
+    end
+    t[k] = f
+    return f
+end
+
+
+local function caller(t,...)
+    local a = { ... }
+    return function()
+        return context(unpack(a))
     end
 end
+
+setmetatable(delayed, { __index = indexer, __call = caller } )
+
+--~ context.test("test 1",context.delayed(" test 2a "),"test 3")
+--~ context.test("test 1",context.delayed.test(" test 2b "),"test 3")
+
+-- experimental:
+
+local metafun = { } context.metafun = metafun
+
+local mpdrawing = "\\MPdrawing"
+
+local function caller(t,f,a,...)
+    if not t then
+        -- skip
+    elseif f then
+        local typ = type(f)
+        if typ == "string" then
+            if a then
+                flush(currentcatcodes,mpdrawing,"{",format(f,a,...),"}")
+            else
+                flush(currentcatcodes,mpdrawing,"{",f,"}")
+            end
+        elseif typ == "number" then
+            if a then
+                flush(currentcatcodes,mpdrawing,"{",f,a,...,"}")
+            else
+                flush(currentcatcodes,mpdrawing,"{",f,"}")
+            end
+        elseif typ == "function" then
+            -- ignored: a ...
+            flush(currentcatcodes,mpdrawing,"{\\mkivflush{",store_(f),"}}")
+        elseif typ == "boolean" then
+            -- ignored: a ...
+            if f then
+                flush(currentcatcodes,mpdrawing,"{^^M}")
+            else
+                trace_context("warning: 'metafun' gets argument 'false' which is currently unsupported")
+            end
+        else
+            trace_context("error: 'metafun' gets a weird argument '%s'",tostring(f))
+        end
+    end
+end
+
+setmetatable(metafun, { __call = caller } )
+
+function metafun.start()
+    context.resetMPdrawing()
+end
+
+function metafun.stop()
+    context.MPdrawingdonetrue()
+    context.getMPdrawing()
+end
+
+function metafun.color(name)
+    return format([[\MPcolor{%s}]],name)
+end
+
+
+local delayed = { } metafun.delayed = delayed
+
+local function indexer(t,k)
+    local f = function(...)
+        local a = { ... }
+        return function()
+            return metafun[k](unpack(a))
+        end
+    end
+    t[k] = f
+    return f
+end
+
+
+local function caller(t,...)
+    local a = { ... }
+    return function()
+        return metafun(unpack(a))
+    end
+end
+
+setmetatable(delayed, { __index = indexer, __call = caller } )

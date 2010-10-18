@@ -58,6 +58,8 @@ local dangerous    = resolvers.dangerous
 local suffixmap    = resolvers.suffixmap
 local alternatives = resolvers.alternatives
 
+resolvers.defaultsuffixes = { "tex" } --  "mkiv", "cld" -- too tricky
+
 resolvers.instance = resolvers.instance or nil -- the current one (slow access)
 local     instance = resolvers.instance or nil -- the current one (fast access)
 
@@ -884,27 +886,17 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         else
             local forcedname, ok, suffix = "", false, fileextname(filename)
             if suffix == "" then -- why
-                if instance.format == "" then
-                    forcedname = filename .. ".tex"
-                    if resolvers.isreadable.file(forcedname) then
-                        if trace_locating then
-                            report_resolvers("no suffix, forcing standard filetype 'tex'")
-                        end
-                        result, ok = { forcedname }, true
-                    end
-                else
-                    local format_suffixes = suffixes[instance.format]
-                    if format_suffixes then
-                        for i=1,#format_suffixes do
-                            local s = format_suffixes[i]
-                            forcedname = filename .. "." .. s
-                            if resolvers.isreadable.file(forcedname) then
-                                if trace_locating then
-                                    report_resolvers("no suffix, forcing format filetype '%s'", s)
-                                end
-                                result, ok = { forcedname }, true
-                                break
+                local format_suffixes = instance.format == "" and resolvers.defaultsuffixes or suffixes[instance.format]
+                if format_suffixes then
+                    for i=1,#format_suffixes do
+                        local s = format_suffixes[i]
+                        forcedname = filename .. "." .. s
+                        if resolvers.isreadable.file(forcedname) then
+                            if trace_locating then
+                                report_resolvers("no suffix, forcing format filetype '%s'", s)
                             end
+                            result, ok = { forcedname }, true
+                            break
                         end
                     end
                 end
@@ -972,11 +964,14 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         end
         if instance.format == "" then
             if ext == "" or not suffixmap[ext] then
-                local forcedname = filename .. '.tex'
-                wantedfiles[#wantedfiles+1] = forcedname
-                filetype = resolvers.formatofsuffix(forcedname)
-                if trace_locating then
-                    report_resolvers("forcing filetype '%s'",filetype)
+                local defaultsuffixes = resolvers.defaultsuffixes
+                for i=1,#defaultsuffixes do
+                    local forcedname = filename .. '.' .. defaultsuffixes[i]
+                    wantedfiles[#wantedfiles+1] = forcedname
+                    filetype = resolvers.formatofsuffix(forcedname)
+                    if trace_locating then
+                        report_resolvers("forcing filetype '%s'",filetype)
+                    end
                 end
             else
                 filetype = resolvers.formatofsuffix(filename)

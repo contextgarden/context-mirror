@@ -80,7 +80,7 @@
   {\reportprotectionstate
    \readsysfile\f!newfilename{\showmessage\m!systems2\f!newfilename}\donothing
   %\readsysfile\f!oldfilename{\showmessage\m!systems2\f!oldfilename}\donothing
-   \loadallsystemfiles\f!filfilename
+   \loadallsystemfiles\f!filfilename % this will move to lua and get preloaded
      \donothing
    \loadallsystemfiles\f!sysfilename
      {\loadallsystemfiles{\f!sysfilename.rme}\donothing % new, fall back

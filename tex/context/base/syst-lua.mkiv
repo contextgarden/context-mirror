@@ -37,6 +37,7 @@
 % a handy helper (we can probably omit the tex.ctxcatcodes here as nowadays we seldom
 % change the regime at the tex end
 
-\def\luaexpr#1{\ctxlua{tex.sprint(tex.ctxcatcodes,tostring(#1))}}
+%def\luaexpr#1{\ctxlua             {tex.sprint(tex.ctxcatcodes,tostring(#1))}}
+\def\luaexpr#1{\directlua\zerocount{tex.sprint(tex.ctxcatcodes,tostring(#1))}} % wrap in global function ?
 
 \protect \endinput

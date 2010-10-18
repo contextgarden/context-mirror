@@ -44,6 +44,8 @@
 
 \def\ctxdirectlua{\directlua\zerocount}
 \def\ctxlatelua  {\latelua  \zerocount}
+\def\ctxsprint #1{\directlua\zerocount{tex.sprint(tex.ctxcatcodes,#1)}} % saves tokens
+\def\ctxwrite  #1{\directlua\zerocount{tex.write(#1)}} % saves tokens
 
 %D Take your choice \unknown
 

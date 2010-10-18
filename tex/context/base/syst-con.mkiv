@@ -134,12 +134,18 @@
 % \let\calculatecos\gobbleoneargument
 % \let\calculatetan\gobbleoneargument
 
-% \def\calculatedsin#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.sin(#1))}}
-% \def\calculatedcos#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.cos(#1))}}
-% \def\calculatedtan#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.tan(#1))}}
+% \def\calculatedsin#1{\ctxsprint{math.sin(#1)}}
+% \def\calculatedcos#1{\ctxsprint{math.cos(#1)}}
+% \def\calculatedtan#1{\ctxsprint{math.tan(#1)}}
 
-\def\setcalculatedsin#1#2{\edef#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.sind(#2))}}}
-\def\setcalculatedcos#1#2{\edef#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.cosd(#2))}}}
-\def\setcalculatedtan#1#2{\edef#1{\ctxlua{tex.sprint(tex.ctxcatcodes,math.tand(#2))}}}
+% \def\setcalculatedsin#1#2{\edef#1{\ctxsprint{math.sind(#2)}}}
+% \def\setcalculatedcos#1#2{\edef#1{\ctxsprint{math.cosd(#2)}}}
+% \def\setcalculatedtan#1#2{\edef#1{\ctxsprint{math.tand(#2)}}}
+
+% this is actually 20% faster: some overhead in functions but less tokenization
+
+\def\setcalculatedsin#1#2{\edef#1{\cldcontext{math.sind(#2)}}}
+\def\setcalculatedcos#1#2{\edef#1{\cldcontext{math.cosd(#2)}}}
+\def\setcalculatedtan#1#2{\edef#1{\cldcontext{math.tand(#2)}}}
 
 \protect \endinput

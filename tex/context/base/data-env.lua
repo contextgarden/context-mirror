@@ -144,7 +144,7 @@ function resolvers.formatofvariable(str)
 end
 
 function resolvers.formatofsuffix(str) -- of file
-    return suffixmap[file.extname(str)] or 'tex'
+    return suffixmap[file.extname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
 end
 
 function resolvers.variableofformat(str)

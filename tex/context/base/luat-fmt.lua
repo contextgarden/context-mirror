@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
     license   = "see context related readme files"
 }
 
+
+local format = string.format
+
 -- helper for mtxrun
 
 local quote = string.quote
@@ -70,7 +73,7 @@ function environment.make_format(name)
         utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
         local strip = resolvers.booleanvariable("LUACSTRIP", true)
-        if utilities.lua.compile(luastubname,lucstubname,false,strip) and lfs.isfile(lucstubname) then
+        if utilities.lua.compile(luastubname,lucstubname) and lfs.isfile(lucstubname) then
             logs.simple("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
         else
@@ -83,7 +86,7 @@ function environment.make_format(name)
         return
     end
     -- generate format
-    local command = string.format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quote(usedluastub),quote(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
+    local command = format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quote(usedluastub),quote(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
     logs.simple("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
@@ -122,7 +125,7 @@ function environment.run_format(name,data,more)
                 logs.simple("no luc/lua with name: %s",barename)
             else
                 local q = string.quote
-                local command = string.format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quote(barename),quote(luaname),quote(data),more ~= "" and quote(more) or "")
+                local command = format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quote(barename),quote(luaname),quote(data),more ~= "" and quote(more) or "")
                 logs.simple("running command: %s",command)
                 os.spawn(command)
             end

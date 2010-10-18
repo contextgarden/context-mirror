@@ -1589,7 +1589,8 @@ if not modules then modules = { } end modules ['l-number'] = {
 }
 
 local tostring = tostring
-local format, floor, insert, match = string.format, math.floor, table.insert, string.match
+local format, floor, insert, match = string.format, math.floor, string.match
+local concat, insert = table.concat, table.insert
 local lpegmatch = lpeg.match
 
 number       = number or { }
@@ -1655,6 +1656,19 @@ end
 
 function number.clearbit(x, p)
     return hasbit(x, p) and x - p or x
+end
+
+function number.tobitstring(n)
+    if n == 0 then
+        return "0"
+    else
+        local t = { }
+        while n > 0 do
+            insert(t,1,n % 2 > 0 and 1 or 0)
+            n = floor(n/2)
+        end
+        return concat(t)
+    end
 end
 
 
@@ -3443,7 +3457,6 @@ function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: clean
 end
 
 
-
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
@@ -4233,13 +4246,13 @@ local setters     = utilities.setters
 local data = { } -- maybe just local
 
 -- We can initialize from the cnf file. This is sort of tricky as
--- laster defined setters also need to be initialized then. If set
+-- later defined setters also need to be initialized then. If set
 -- this way, we need to ensure that they are not reset later on.
 
-local trace_initialize = false
+local trace_initialize = false -- only for testing during development
 
-local function report(what,filename,name,key,value)
-    texio.write_nl(format("%s setter, filename: %s, name: %s, key: %s, value: %s",what,filename,name,key,value))
+local function report(a,b,...)
+    texio.write_nl(format("%-16s> %s",a,format(b,...)))
 end
 
 function setters.initialize(filename,name,values) -- filename only for diagnostics
@@ -4254,7 +4267,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                 if functions then
                     if #functions > 0 and not functions.value then
                         if trace_initialize then
-                            report("doing",filename,name,key,value)
+                            report(name,"executing %s (%s -> %s)",key,filename,tostring(value))
                         end
                         for i=1,#functions do
                             functions[i](value)
@@ -4262,7 +4275,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                         functions.value = value
                     else
                         if trace_initialize then
-                            report("skipping",filename,name,key,value)
+                            report(name,"skipping %s (%s -> %s)",key,filename,tostring(value))
                         end
                     end
                 else
@@ -4271,7 +4284,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                     functions = { default = value }
                     data[key] = functions
                     if trace_initialize then
-                        report("storing",filename,name,key,value)
+                        report(name,"storing %s (%s -> %s)",key,filename,tostring(value))
                     end
                 end
             end
@@ -4341,11 +4354,17 @@ function setters.register(t,what,...)
     if not functions then
         functions = { }
         data[what] = functions
+        if trace_initialize then
+            report(t.name,"defining %s",what)
+        end
     end
     local default = functions.default -- can be set from cnf file
     for _, fnc in next, { ... } do
         local typ = type(fnc)
         if typ == "string" then
+            if trace_initialize then
+                report(t.name,"coupling %s to %s",what,fnc)
+            end
             local s = fnc -- else wrong reference
             fnc = function(value) set(t,s,value) end
         elseif typ ~= "function" then
@@ -4353,9 +4372,12 @@ function setters.register(t,what,...)
         end
         if fnc then
             functions[#functions+1] = fnc
-            if default then
-                fnc(default)
-                functions.value = default
+            -- default: set at command line or in cnf file
+            -- value  : set in tex run (needed when loading runtime)
+            local value = functions.value or default
+            if value ~= nil then
+                fnc(value)
+                functions.value = value
             end
         end
     end
@@ -4405,7 +4427,7 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            commands.writestatus(category,format("%-25s   modules: %2i   default: %5s   value: %5s",name,modules,default,value))
+            commands.writestatus(category,format("%-30s   modules: %2i   default: %5s   value: %5s",name,modules,default,value))
         end
     end
     commands.writestatus("","")
@@ -9415,7 +9437,7 @@ function resolvers.formatofvariable(str)
 end
 
 function resolvers.formatofsuffix(str) -- of file
-    return suffixmap[file.extname(str)] or 'tex'
+    return suffixmap[file.extname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
 end
 
 function resolvers.variableofformat(str)
@@ -9478,6 +9500,21 @@ local report_cache     = logs.new("cache")
 local report_resolvers = logs.new("resolvers")
 
 local resolvers = resolvers
+
+-- intermezzo
+
+local directive_cleanup = false  directives.register("system.compile.cleanup", function(v) directive_cleanup = v end)
+local directive_strip   = true   directives.register("system.compile.strip",   function(v) directive_strip   = v end)
+
+local compile = utilities.lua.compile
+
+function utilities.lua.compile(luafile,lucfile,cleanup,strip)
+    if cleanup == nil then cleanup = directive_cleanup end
+    if strip   == nil then strip   = directive_strip   end
+    return compile(luafile,lucfile,cleanup,strip)
+end
+
+-- end of intermezzo
 
 caches           = caches or { }
 local caches     = caches
@@ -9723,9 +9760,7 @@ function caches.savedata(filepath,filename,data,raw)
     else
         table.tofile(tmaname, data,'return',false,true,false) -- maybe not the last true
     end
-    local cleanup = resolvers.booleanvariable("PURGECACHE", false)
-    local strip = resolvers.booleanvariable("LUACSTRIP", true)
-    utilities.lua.compile(tmaname, tmcname, cleanup, strip)
+    utilities.lua.compile(tmaname,tmcname)
 end
 
 -- moved from data-res:
@@ -9787,7 +9822,7 @@ function caches.savecontent(cachename,dataname,content)
         if trace_locating then
             report_resolvers("category '%s', cachename '%s' saved in '%s'",dataname,cachename,luaname)
         end
-        if utilities.lua.compile(luaname,lucname,false,true) then -- no cleanup but strip
+        if utilities.lua.compile(luaname,lucname) then
             if trace_locating then
                 report_resolvers("'%s' compiled to '%s'",dataname,lucname)
             end
@@ -9923,6 +9958,8 @@ local suffixes     = resolvers.suffixes
 local dangerous    = resolvers.dangerous
 local suffixmap    = resolvers.suffixmap
 local alternatives = resolvers.alternatives
+
+resolvers.defaultsuffixes = { "tex" } --  "mkiv", "cld" -- too tricky
 
 resolvers.instance = resolvers.instance or nil -- the current one (slow access)
 local     instance = resolvers.instance or nil -- the current one (fast access)
@@ -10748,27 +10785,17 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         else
             local forcedname, ok, suffix = "", false, fileextname(filename)
             if suffix == "" then -- why
-                if instance.format == "" then
-                    forcedname = filename .. ".tex"
-                    if resolvers.isreadable.file(forcedname) then
-                        if trace_locating then
-                            report_resolvers("no suffix, forcing standard filetype 'tex'")
-                        end
-                        result, ok = { forcedname }, true
-                    end
-                else
-                    local format_suffixes = suffixes[instance.format]
-                    if format_suffixes then
-                        for i=1,#format_suffixes do
-                            local s = format_suffixes[i]
-                            forcedname = filename .. "." .. s
-                            if resolvers.isreadable.file(forcedname) then
-                                if trace_locating then
-                                    report_resolvers("no suffix, forcing format filetype '%s'", s)
-                                end
-                                result, ok = { forcedname }, true
-                                break
+                local format_suffixes = instance.format == "" and resolvers.defaultsuffixes or suffixes[instance.format]
+                if format_suffixes then
+                    for i=1,#format_suffixes do
+                        local s = format_suffixes[i]
+                        forcedname = filename .. "." .. s
+                        if resolvers.isreadable.file(forcedname) then
+                            if trace_locating then
+                                report_resolvers("no suffix, forcing format filetype '%s'", s)
                             end
+                            result, ok = { forcedname }, true
+                            break
                         end
                     end
                 end
@@ -10833,11 +10860,14 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         end
         if instance.format == "" then
             if ext == "" or not suffixmap[ext] then
-                local forcedname = filename .. '.tex'
-                wantedfiles[#wantedfiles+1] = forcedname
-                filetype = resolvers.formatofsuffix(forcedname)
-                if trace_locating then
-                    report_resolvers("forcing filetype '%s'",filetype)
+                local defaultsuffixes = resolvers.defaultsuffixes
+                for i=1,#defaultsuffixes do
+                    local forcedname = filename .. '.' .. defaultsuffixes[i]
+                    wantedfiles[#wantedfiles+1] = forcedname
+                    filetype = resolvers.formatofsuffix(forcedname)
+                    if trace_locating then
+                        report_resolvers("forcing filetype '%s'",filetype)
+                    end
                 end
             else
                 filetype = resolvers.formatofsuffix(filename)
@@ -12591,6 +12621,9 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
     license   = "see context related readme files"
 }
 
+
+local format = string.format
+
 -- helper for mtxrun
 
 local quote = string.quote
@@ -12655,7 +12688,7 @@ function environment.make_format(name)
         utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
         local strip = resolvers.booleanvariable("LUACSTRIP", true)
-        if utilities.lua.compile(luastubname,lucstubname,false,strip) and lfs.isfile(lucstubname) then
+        if utilities.lua.compile(luastubname,lucstubname) and lfs.isfile(lucstubname) then
             logs.simple("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
         else
@@ -12668,7 +12701,7 @@ function environment.make_format(name)
         return
     end
     -- generate format
-    local command = string.format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quote(usedluastub),quote(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
+    local command = format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quote(usedluastub),quote(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
     logs.simple("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
@@ -12707,7 +12740,7 @@ function environment.run_format(name,data,more)
                 logs.simple("no luc/lua with name: %s",barename)
             else
                 local q = string.quote
-                local command = string.format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quote(barename),quote(luaname),quote(data),more ~= "" and quote(more) or "")
+                local command = format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quote(barename),quote(luaname),quote(data),more ~= "" and quote(more) or "")
                 logs.simple("running command: %s",command)
                 os.spawn(command)
             end

@@ -21,13 +21,13 @@ local setters     = utilities.setters
 local data = { } -- maybe just local
 
 -- We can initialize from the cnf file. This is sort of tricky as
--- laster defined setters also need to be initialized then. If set
+-- later defined setters also need to be initialized then. If set
 -- this way, we need to ensure that they are not reset later on.
 
-local trace_initialize = false
+local trace_initialize = false -- only for testing during development
 
-local function report(what,filename,name,key,value)
-    texio.write_nl(format("%s setter, filename: %s, name: %s, key: %s, value: %s",what,filename,name,key,value))
+local function report(a,b,...)
+    texio.write_nl(format("%-16s> %s",a,format(b,...)))
 end
 
 function setters.initialize(filename,name,values) -- filename only for diagnostics
@@ -42,7 +42,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                 if functions then
                     if #functions > 0 and not functions.value then
                         if trace_initialize then
-                            report("doing",filename,name,key,value)
+                            report(name,"executing %s (%s -> %s)",key,filename,tostring(value))
                         end
                         for i=1,#functions do
                             functions[i](value)
@@ -50,7 +50,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                         functions.value = value
                     else
                         if trace_initialize then
-                            report("skipping",filename,name,key,value)
+                            report(name,"skipping %s (%s -> %s)",key,filename,tostring(value))
                         end
                     end
                 else
@@ -59,7 +59,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                     functions = { default = value }
                     data[key] = functions
                     if trace_initialize then
-                        report("storing",filename,name,key,value)
+                        report(name,"storing %s (%s -> %s)",key,filename,tostring(value))
                     end
                 end
             end
@@ -129,11 +129,17 @@ function setters.register(t,what,...)
     if not functions then
         functions = { }
         data[what] = functions
+        if trace_initialize then
+            report(t.name,"defining %s",what)
+        end
     end
     local default = functions.default -- can be set from cnf file
     for _, fnc in next, { ... } do
         local typ = type(fnc)
         if typ == "string" then
+            if trace_initialize then
+                report(t.name,"coupling %s to %s",what,fnc)
+            end
             local s = fnc -- else wrong reference
             fnc = function(value) set(t,s,value) end
         elseif typ ~= "function" then
@@ -141,9 +147,12 @@ function setters.register(t,what,...)
         end
         if fnc then
             functions[#functions+1] = fnc
-            if default then
-                fnc(default)
-                functions.value = default
+            -- default: set at command line or in cnf file
+            -- value  : set in tex run (needed when loading runtime)
+            local value = functions.value or default
+            if value ~= nil then
+                fnc(value)
+                functions.value = value
             end
         end
     end
@@ -193,7 +202,7 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            commands.writestatus(category,format("%-25s   modules: %2i   default: %5s   value: %5s",name,modules,default,value))
+            commands.writestatus(category,format("%-30s   modules: %2i   default: %5s   value: %5s",name,modules,default,value))
         end
     end
     commands.writestatus("","")

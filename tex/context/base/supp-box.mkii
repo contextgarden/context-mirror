@@ -508,7 +508,9 @@
 
 \def\doiftextelse#1%
   {\bgroup
-   \setbox\scratchbox\normalhbox{\trialtypesettingtrue\ignorespaces#1\removeunwantedspaces}%
+   \setbox\scratchbox\normalhbox
+     {\trialtypesettingtrue
+      \ignorespaces#1\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox
      \egroup\@EA\secondoftwoarguments
    \else

@@ -17,28 +17,11 @@
 %D typeset with an lowered~E. From te beginning of \TEX,
 %D authors of macro packages adapted this raising and lowering
 %D style. In this module we define some of those logos.
-%D Watch the \type{cmr} detection hack.
+
+%D The Computer Modern detection hack is gone as we now have Latin
+%D Modern which has more kerning pairs.
 
 \unprotect
-
-\defconvertedargument\someCMRfont{cmr} % hm, we now have lm
-
-% \def\doifCMRfontelse#1#2%
-%   {\doifinstringelse{\someCMRfont}{\fontname\font}
-%      {\def\next{#1}}
-%      {\def\next{#2}}%
-%    \next}
-
-\def\doifCMRfontelse
-  {\doifinstringelse\someCMRfont{\fontname\font}}
-
-\unexpanded\def\CMRkern
-  {\doifCMRfontelse\kern{\scratchdimen=}}
-
-% \def\TeX
-%   {T%
-%    \kern-.1667em\lower.5ex\hbox{E}%
-%    \kern-.125emX}
 
 \def\Mkern#1%
   {{\setbox\scratchbox\hbox{M}\kern#1\wd\scratchbox}}
@@ -48,24 +31,9 @@
    \Mkern{-.1667}\lower.5ex\hbox{E}%
    \Mkern{-.125}X}
 
-\unexpanded\def\ConTeXt
-                  {C%
-   \CMRkern-.0333emo%
-   \CMRkern-.0333emn%
-%  \CMRkern-.1667em\TeX%
-   \CMRkern-.0667em\TeX%
-   \CMRkern-.0333emt}
-
-\unexpanded\def\PPCHTeX
-  {ppch\TeX}
-
-\unexpanded\def\PRAGMA
-  {Pragma ADE}
-
-%\def\LaTeX
-%  {L%
-%   \kern-.30em\raise.3ex\hbox{\txx A}%
-%   \kern-.18em\TeX}
+\unexpanded\def\ConTeXt{Con\TeX t}
+\unexpanded\def\PPCHTeX{ppch\TeX}
+\unexpanded\def\PRAGMA {Pragma ADE}
 
 \unexpanded\def\LaTeX % requested by erik frambach
   {{\setbox\scratchbox\hbox{L}%
@@ -193,7 +161,7 @@
 %D   CONTEXT, PPCHTEX,
 %D   AMSTEX, LATEX, LAMSTEX}
 %D
-%D We define the funny written ones as well as th eless
+%D We define the funny written ones as well as the less
 %D error prone upper case names (in \CONTEXT\ we tend to
 %D write all user defined commands, like abbreviations, in
 %D uppercase.)
@@ -216,13 +184,6 @@
 %D \PiCTeX, \TaBlE, \ConTeXt, \PPCHTeX, \AmSTeX, \LaTeX,
 %D \LamSTeX.
 
-% \def\TEXEDIT  {\TeX edit}
-% \def\TEXFORM  {\TeX form}
-% \def\TEXADRES {\TeX adres}
-% \def\TEXSPELL {\TeX spell}
-% \def\TEXUTIL  {\TeX util}
-% \def\TEXEXEC  {\TeX exec}
-
 %D Some placeholders:
 
 \unexpanded\def\eTeX   {\mathematics{\varepsilon}-\TeX}
@@ -231,21 +192,6 @@
 \unexpanded\def\luaTeX {lua\TeX}
 \unexpanded\def\metaTeX{meta\TeX}
 \unexpanded\def\XeTeX  {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
-
-% Better, since lm has a mirrored E (don't ask me why)
-
-% \unexpanded\def\XeTeX
-%   {X\lower.5ex
-%    \hbox
-%      {\kern-.15em
-%       \ifx\XeTeXcharglyph\undefined
-%         \mirror{E}%
-%       \else\ifcase\XeTeXcharglyph"018E\relax
-%         \mirror{E}%
-%       \else
-%         \char"018E%
-%       \fi}%
-%    \kern-.1667em \TeX}
 
 % Adapted from a patch by Mojca:
 
@@ -294,7 +240,7 @@
 \let\LuaTeX \luaTeX
 \let\XETEX  \XeTeX
 
-\unexpanded\def\MkApproved
+\unexpanded\def\MkApproved % joke, not used so it might move
   {\dontleavehmode\rotate
      [\c!rotation={\ifnum\texengine=\luatexengine\ctxlua{tex.write(45-45*\the\luatexversion/100)}\else0\fi},
       \c!align=\v!middle,

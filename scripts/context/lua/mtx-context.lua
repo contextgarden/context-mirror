@@ -589,7 +589,7 @@ scripts.context.defaultformats  = {
 --  "plain"
 }
 
-local function analyze(filename)
+local function analyze(filename) -- only files on current path
     local f = io.open(file.addsuffix(filename,"tex"))
     if f then
         local t = { }

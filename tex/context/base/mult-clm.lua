@@ -63,10 +63,10 @@ function mkiv.define(name,specification) -- name is optional
         local environment = specification.environment
         if na == 0 then
             if environment then
-                texsprint(ctxcatcodes,"\\defmkstart{",name,"}{\\ctxlua{mkiv.b('",name,"')}}")
-                texsprint(ctxcatcodes,"\\defmkstop{", name,"}{\\ctxlua{mkiv.b('",name,"')}}")
+                texsprint(ctxcatcodes,"\\mkdefstart{",name,"}{\\ctxlua{mkiv.b('",name,"')}}")
+                texsprint(ctxcatcodes,"\\mkdefstop{", name,"}{\\ctxlua{mkiv.b('",name,"')}}")
             else
-                texsprint(ctxcatcodes,"\\defmkiv{",   name,"}{\\ctxlua{mkiv.m('",name,"')}}")
+                texsprint(ctxcatcodes,"\\mkivdef{",   name,"}{\\ctxlua{mkiv.m('",name,"')}}")
             end
         else
             stack[name] = { }
@@ -106,10 +106,10 @@ function mkiv.define(name,specification) -- name is optional
             end
             texsprint(ctxcatcodes,")}}")
             if environment then
-                texsprint(ctxcatcodes,"\\defmkivstop{" ,name,"}{\\ctxlua{mkiv.e('",name,"')}}")
-                texsprint(ctxcatcodes,"\\defmkivstart{",name,"}{",checkers[opt],mkivdo,"}")
+                texsprint(ctxcatcodes,"\\mkivdefstop{" ,name,"}{\\ctxlua{mkiv.e('",name,"')}}")
+                texsprint(ctxcatcodes,"\\mkivdefstart{",name,"}{",checkers[opt],mkivdo,"}")
             else
-                texsprint(ctxcatcodes,"\\defmkiv{",     name,"}{",checkers[opt],mkivdo,"}")
+                texsprint(ctxcatcodes,"\\mkivdef{",     name,"}{",checkers[opt],mkivdo,"}")
             end
         end
         if environment then
