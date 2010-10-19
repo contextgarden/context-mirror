@@ -17,8 +17,7 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 
 local next, tostring = next, tostring
 local format = string.format
-local texsprint, texset = tex.sprint, tex.set
-local ctxcatcodes = tex.ctxcatcodes
+local texset = tex.set
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 

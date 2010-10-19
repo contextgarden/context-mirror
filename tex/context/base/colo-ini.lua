@@ -9,8 +9,6 @@ if not modules then modules = { } end modules ['colo-ini'] = {
 local type, tonumber = type, tonumber
 local concat = table.concat
 local format, gmatch, gsub, lower, match, find = string.format, string.gmatch, string.gsub, string.lower, string.match, string.find
-local texsprint = tex.sprint
-local ctxcatcodes = tex.ctxcatcodes
 
 local trace_define = false  trackers.register("colors.define",function(v) trace_define = v end)
 

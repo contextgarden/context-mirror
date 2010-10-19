@@ -406,8 +406,7 @@ function lists.process(specification)
         local r = lists.result[i]
         local m = r.metadata
         local s = specials and r.numberdata and specials[table.zerostrippedconcat(r.numberdata.numbers,".")] or ""
-        texsprint(ctxcatcodes,format("\\processlistofstructure{%s}{%s}{%i}{%s}",m.name,m.kind,i,s))
---~         context.processlistofstructure(m.name,m.kind,i,s)
+        context.processlistofstructure(m.name,m.kind,i,s)
     end
 end
 
@@ -478,7 +477,6 @@ function lists.savedtitle(name,n,tag)
         local titledata = data.titledata
         if titledata then
             helpers.title(titledata[tag] or titledata.title or "",data.metadata)
---~             texsprint(ctxcatcodes,titledata[tag] or titledata.title or "")
         end
     end
 end

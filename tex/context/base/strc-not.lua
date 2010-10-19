@@ -8,9 +8,7 @@ if not modules then modules = { } end modules ['strc-not'] = {
 
 local format = string.format
 local next = next
-local texsprint, texwrite, texcount = tex.sprint, tex.write, tex.count
-
-local ctxcatcodes = tex.ctxcatcodes
+local texcount = tex.count
 
 local trace_notes = false  trackers.register("structures.notes", function(v) trace_notes = v end)
 
@@ -33,6 +31,7 @@ local notestates = notes.states
 local notedata   = { }
 
 local variables  = interfaces.variables
+local context    = context
 
 -- state: store, insert, postpone
 
@@ -51,7 +50,7 @@ function notes.store(tag,n)
         end
         state.start = state.start or nnd
     end
-    texwrite(#nd)
+    context(#nd)
 end
 
 local function get(tag,n)
@@ -140,7 +139,7 @@ end
 
 function notes.getstate(tag)
     local state = notestates[tag]
-    texsprint(ctxcatcodes,(state and state.kind ) or "unknown")
+    context(state and state.kind or "unknown")
 end
 
 function notes.doifcontent(tag)
@@ -235,7 +234,7 @@ function notes.deltapage(tag,n)
             what = 3
         end
     end
-    texwrite(what)
+    context(what)
 end
 
 function notes.postpone()
@@ -268,7 +267,7 @@ function notes.getsymbolpage(tag,n)
     if trace_notes then
         report_notes("note %s of '%s' has page %s",n,tag,p)
     end
-    texwrite(p)
+    context(p)
 end
 
 function notes.getnumberpage(tag,n)
@@ -276,7 +275,7 @@ function notes.getnumberpage(tag,n)
     li = li and li.pagenumber
     li = li and li.numbers
     li = li and li[1]
-    texwrite(li or 0)
+    context(li or 0)
 end
 
 function notes.flush(tag,whatkind,how) -- store and postpone
@@ -291,7 +290,7 @@ function notes.flush(tag,whatkind,how) -- store and postpone
                     report_notes("flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
                 end
                 for i=ns,#nd do
-                    texsprint(ctxcatcodes,format("\\handlenoteinsert{%s}{%s}",tag,i))
+                    context.handlenoteinsert(tag,i)
                 end
             end
             state.start = nil
@@ -303,20 +302,20 @@ function notes.flush(tag,whatkind,how) -- store and postpone
                 end
                 -- todo: as registers: start, stop, inbetween
                 for i=ns,#nd do
--- tricky : trialtypesetting
-if how == variables.page then
-    local rp = get(tag,i)
-    rp = rp and rp.references
-    rp = rp and rp.symbolpage or 0
-    if rp > texcount.realpageno then
-        state.start = i
-        return
-    end
-end
-                    if i > ns then
-                        texsprint(ctxcatcodes,format("\\betweennoteitself{%s}",tag))
+                    -- tricky : trialtypesetting
+                    if how == variables.page then
+                        local rp = get(tag,i)
+                        rp = rp and rp.references
+                        rp = rp and rp.symbolpage or 0
+                        if rp > texcount.realpageno then
+                            state.start = i
+                            return
+                        end
                     end
-                    texsprint(ctxcatcodes,format("\\handlenoteitself{%s}{%s}",tag,i))
+                    if i > ns then
+                        context.betweennoteitself(tag)
+                    end
+                    context.handlenoteitself(tag,i)
                 end
             end
             state.start = nil

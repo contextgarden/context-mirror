@@ -83,7 +83,7 @@
      {\global\advance\maxstructuredepth\plusone
       \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
       \setstructurelevel{#1}{\the\maxstructuredepth}%
-%     \letvalue{\??nh#1\c!marking}\empty % ?
+     %\letvalueempty{\??nh#1\c!marking}% ?
      %\writestatus{structure}{#1\ifx\laststructuresectionname\empty\else\space->\space\laststructuresectionname\fi}%
       \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\laststructuresectionname]}%
       % this is a rather practical default that we don't want to be part of the parent chain
@@ -96,7 +96,7 @@
       % so far for these default inheritances
       \definemarking[#1]%
       \ifnum\maxstructuredepth>\plusone
-%       \normalexpanded{\noexpand\couplemarking[#1][\laststructuresectionname]}% so, the child inherits settings from the parent
+       %\normalexpanded{\noexpand\couplemarking[#1][\laststructuresectionname]}% so, the child inherits settings from the parent
         \normalexpanded{\noexpand\relatemarking[#1][\laststructuresectionname]}% so, the parent will reset the child
       \fi
       \xdef\laststructuresectionname{#1}}}
@@ -411,19 +411,31 @@
    \currentstructuresynchronize}
 
 % \unexpanded\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
+% \def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
+% \unexpanded\def\fullstructureheadtitle{\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}
+
+\let\deepstructurenumbercommand\relax
+\let\deepstructuretitlecommand \relax
 
 \unexpanded\def\fullstructureheadnumber
   {\edef\currentstructureheadlabeltag{\currentstructureblock\c!label}%
    \dostarttagged\t!sectionnumber\empty
-   \labeltexts{\structureheadparameter\currentstructureheadlabeltag}{\structurenumber}%
+   \labeltexts
+     {\structureheadparameter\currentstructureheadlabeltag}
+     {\ifx\deepstructurenumbercommand\relax
+        \structurenumber
+      \else
+        \normalexpanded{\noexpand\deepstructurenumbercommand{\structurenumber}}%
+      \fi}%
    \dostoptagged}
-
-% \def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
-% \unexpanded\def\fullstructureheadtitle{\structureautocatcodedget{titledata.title}{\structureheadparameter\s!catcodes}}
 
 \unexpanded\def\fullstructureheadtitle
   {\dostarttagged\t!sectiontitle\empty
-   \ctxlua{structures.sections.title()}%
+   \ifx\deepstructuretitlecommand\relax
+     \structuretitle
+   \else
+     \normalexpanded{\noexpand\deepstructuretitlecommand{\structuretitle}}%
+   \fi
    \dostoptagged}
 
 \let\currentstructurehead        \empty

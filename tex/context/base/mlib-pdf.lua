@@ -7,16 +7,14 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
 }
 
 local format, concat, gsub = string.format, table.concat, string.gsub
-local texsprint = tex.sprint
 local abs, sqrt, round = math.abs, math.sqrt, math.round
 
 local allocate = utilities.storage.allocate
 
 local report_mplib = logs.new("mplib")
 
-local mplib = mplib
+local mplib, context = mplib, context
 
-local ctxcatcodes = tex.ctxcatcodes
 local copy_node   = node.copy
 local write_node  = node.write
 
@@ -92,10 +90,10 @@ function metapost.flushers.pdf.comment(message)
         if savedliterals then
             local last = #savedliterals + 1
             savedliterals[last] = message
-            texsprint(ctxcatcodes,"\\MPLIBtoPDF{",last,"}")
+            context.MPLIBtoPDF(last)
         else
             savedliterals = { message }
-            texsprint(ctxcatcodes,"\\MPLIBtoPDF{1}")
+            context.MPLIBtoPDF(1)
         end
     end
 end
@@ -103,14 +101,14 @@ end
 function metapost.flushers.pdf.startfigure(n,llx,lly,urx,ury,message)
     savedliterals = nil
     metapost.n = metapost.n + 1
-    texsprint(ctxcatcodes,format("\\startMPLIBtoPDF{%s}{%s}{%s}{%s}",llx,lly,urx,ury))
+    context.startMPLIBtoPDF(llx,lly,urx,ury)
     if message then metapost.flushers.pdf.comment(message) end
 end
 
 function metapost.flushers.pdf.stopfigure(message)
     if message then metapost.flushers.pdf.comment(message) end
-    texsprint(ctxcatcodes,"\\stopMPLIBtoPDF")
-    texsprint(ctxcatcodes,"\\ctxlua{metapost.flushreset()}") -- maybe just at the beginning
+    context.stopMPLIBtoPDF()
+    context.MPLIBflushreset() -- maybe just at the beginning
 end
 
 function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
@@ -119,17 +117,17 @@ function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
         if savedliterals then
             local last = #savedliterals + 1
             savedliterals[last] = pdfliterals
-            texsprint(ctxcatcodes,"\\MPLIBtoPDF{",last,"}")
+            context.MPLIBtoPDF(last)
         else
             savedliterals = { pdfliterals }
-            texsprint(ctxcatcodes,"\\MPLIBtoPDF{1}")
+            context.MPLIBtoPDF(1)
         end
     end
 end
 
 function metapost.flushers.pdf.textfigure(font,size,text,width,height,depth) -- we could save the factor
     text = gsub(text,".","\\hbox{%1}") -- kerning happens in metapost (i have to check if this is true for mplib)
-    texsprint(ctxcatcodes,format("\\MPLIBtextext{%s}{%s}{%s}{%s}{%s}",font,size,text,0,-number.dimenfactors.bp*depth))
+    context.MPLIBtextext(font,size,text,0,-number.dimenfactors.bp*depth)
 end
 
 local bend_tolerance = 131/65536
@@ -474,7 +472,7 @@ local t = { }
 local flusher = {
     startfigure = function()
         t = { }
-        texsprint(ctxcatcodes,"\\startnointerference")
+        context.startnointerference()
     end,
     flushfigure = function(literals)
         for i=1, #literals do
@@ -482,7 +480,7 @@ local flusher = {
         end
     end,
     stopfigure = function()
-        texsprint(ctxcatcodes,"\\stopnointerference")
+        context.stopnointerference()
     end
 }
 

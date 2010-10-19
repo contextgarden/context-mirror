@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
     license   = "see context related readme files"
 }
 
-local format, gmatch, gsub, find = string.format, string.gmatch, string.gsub, string.find
-local texsprint, ctxcatcodes, texbox, texcount = tex.sprint, tex.ctxcatcodes, tex.box, tex.count
+local gmatch, gsub, find = string.gmatch, string.gsub, string.find
+local texbox, texcount = tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
 
@@ -57,7 +57,7 @@ end
 
 function codeinjections.presetsymbol(symbol)
     if not presets[symbol] then
-        texsprint(ctxcatcodes,format("\\predefinesymbol[%s]",symbol))
+        context.predefinesymbol { symbol }
     end
 end
 

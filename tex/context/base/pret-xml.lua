@@ -14,11 +14,10 @@ if not modules then modules = { } end modules ['pret-xml'] = {
 local utf = unicode.utf8
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local utfbyte, utffind = utf.byte, utf.find
-local rep = string.rep
-local texsprint, texwrite = tex.sprint, tex.write
-local ctxcatcodes = tex.ctxcatcodes
+local texwrite = tex.write
 
 local buffers = buffers
+local context = context
 
 local changestate, finishstate = buffers.changestate, buffers.finishstate
 
@@ -42,6 +41,8 @@ function visualizer.reset()
     state, intag, dotag, inentity, inquote = 0, false, false, false, false
 end
 
+local space = context.obs
+
 function visualizer.flush_line(str,nested)
     buffers.currentcolors = colors
     for c in utfcharacters(str) do
@@ -63,13 +64,15 @@ function visualizer.flush_line(str,nested)
             texwrite(c)
         elseif c == " " then
             state = finishstate(state)
-            texsprint(ctxcatcodes,"\\obs")
+            space()
             intag = false
         elseif c == "\t" then
             state = finishstate(state)
-            texsprint(ctxcatcodes,"\\obs")
+            space()
             if buffers.visualizers.enabletab then
-                texsprint(ctxcatcodes,rep("\\obs ",i%buffers.visualizers.tablength))
+                for i=1,i%buffers.visualizers.tablength do
+                    space()
+                end
             end
             intag = false
         elseif c == "<" then

@@ -12,11 +12,9 @@ local trace_numbers = false  trackers.register("lines.numbers",  function(v) tra
 
 local report_lines = logs.new("lines")
 
-local format = string.format
-local texsprint, texwrite, texbox = tex.sprint, tex.write, tex.box
-local ctxcatcodes = tex.ctxcatcodes
+local texbox = tex.box
 
-local attributes, nodes, node = attributes, nodes, node
+local attributes, nodes, node, context = attributes, nodes, node, context
 
 nodes.lines       = nodes.lines or { }
 local lines       = nodes.lines
@@ -107,7 +105,7 @@ filters.line = filters.line or { }
 
 function filters.line.default(data)
 --  helpers.title(data.entries.linenumber or "?",data.metadata)
-    texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",data.entries.conversion or "numbers",data.entries.linenumber or "0"))
+    context.convertnumber(data.entries.conversion or "numbers",data.entries.linenumber or "0")
 end
 
 function filters.line.page(data,prefixspec,pagespec) -- redundant
@@ -115,7 +113,7 @@ function filters.line.page(data,prefixspec,pagespec) -- redundant
 end
 
 function filters.line.linenumber(data) -- raw
-    texwrite(data.entries.linenumber or "0")
+    context(data.entries.linenumber or "0")
 end
 
 -- boxed variant, todo: use number mechanism

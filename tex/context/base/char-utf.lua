@@ -23,8 +23,6 @@ local utf = unicode.utf8
 local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
 local concat, gmatch, gsub = table.concat, string.gmatch, string.gsub
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
-local ctxcatcodes = tex.ctxcatcodes
-local texsprint = tex.sprint
 local allocate = utilities.storage.allocate
 
 -- todo: trackers
@@ -269,9 +267,9 @@ end
 
 commands = commands or { }
 
-function commands.uchar(first,second)
-    texsprint(ctxcatcodes,utfchar(first*256+second))
-end
+--~ function commands.uchar(first,second)
+--~     context(utfchar(first*256+second))
+--~ end
 
 --[[ldx--
 <p>A few helpers (used to be <t>luat-uni<t/>).</p>

@@ -27,7 +27,7 @@ local trace_detail     = false  trackers.register("structures.detail",     funct
 
 local report_structure = logs.new("structure")
 
-local structures = structures
+local structures, context = structures, context
 
 local helpers    = structures.helpers
 local documents  = structures.documents
@@ -156,7 +156,7 @@ function sections.getlevel(name)
 end
 
 function sections.way(way,by)
-    texsprint(ctxcatcodes,(gsub(way,"^"..by,"")))
+    context((gsub(way,"^"..by,"")))
 end
 
 function sections.setblock(name)
@@ -385,7 +385,7 @@ end
 
 function sections.cct()
     local metadata = data.status[data.depth].metadata
-    texsprint((metadata and metadata.catcodes) or ctxcatcodes)
+    context(metadata and metadata.catcodes or ctxcatcodes)
 end
 
 function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: spec table and then also depth
@@ -405,20 +405,20 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
                 local metadata = data.metadata
                 texsprint((metadata and metadata.catcodes) or ctxcatcodes,d)
             elseif not honorcatcodetable then
-                texsprint(ctxcatcodes,d)
+                context(d)
             elseif type(honorcatcodetable) == "number" then
                 texsprint(honorcatcodetable,d)
             elseif type(honorcatcodetable) == "string" and honorcatcodetable ~= "" then
                 honorcatcodetable = tex[honorcatcodetable] or ctxcatcodes-- we should move ctxcatcodes to another table, ctx or so
                 texsprint(honorcatcodetable,d)
             else
-                texsprint(ctxcatcodes,d)
+                context(d)
             end
             return
         end
     end
     if default then
-        texsprint(ctxcatcodes,default)
+        context(default)
     end
 end
 
@@ -429,7 +429,7 @@ function sections.userdata(depth,key,default)
         userdata = userdata and userdata.userdata
         userdata = (userdata and userdata[key]) or default
         if userdata then
-            texsprint(ctxcatcodes,userdata)
+            context(userdata)
         end
     end
 end
@@ -510,8 +510,7 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
             if ownnumber ~= "" then
                 sprintprocessor(ctxcatcodes,ownnumber)
             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
-                texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
-             -- context.convertnumber(conversion,number)
+                context.convertnumber(conversion,number)
             else
                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
                 sprintprocessor(ctxcatcodes,theconversion,function(str)
@@ -767,8 +766,7 @@ end
 --~                         if ownnumber ~= "" then
 --~                             sprintprocessor(ctxcatcodes,ownnumber)
 --~                         elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
---~                             texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
---~                             --~ context.convertnumber(conversion,number)
+--~                             context.convertnumber(conversion,number)
 --~                         else
 --~                             local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
 --~                             sprintprocessor(ctxcatcodes,theconversion,function(str)

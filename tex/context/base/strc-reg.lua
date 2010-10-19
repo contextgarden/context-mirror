@@ -7,11 +7,10 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 }
 
 local next, type = next, type
-local texwrite, texsprint, texcount = tex.write, tex.sprint, tex.count
+local texwrite, texcount = tex.write, tex.count
 local format, gmatch, concat = string.format, string.gmatch, table.concat
 local utfchar = utf.char
 local lpegmatch = lpeg.match
-local ctxcatcodes  = tex.ctxcatcodes
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local trace_registers = false  trackers.register("structures.registers", function(v) trace_registers = v end)
@@ -34,6 +33,7 @@ local replacements    = sorters.replacements
 local processor_split = processors.split
 
 local variables       = interfaces.variables
+local context         = context
 
 local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.numberatdepth
 
@@ -444,7 +444,7 @@ function registers.userdata(index,name)
     local data = references.internals[tonumber(index)]
     data = data and data.userdata and data.userdata[name]
     if data then
-        texsprint(ctxcatcodes,data)
+        context(data)
     end
 end
 
@@ -458,58 +458,42 @@ function registers.flush(data,options,prefixspec,pagespec)
     -- for i=1,#result do
     --     usedtags[#usedtags+1] = result[i].tag
     -- end
+    -- context.setvalue("usedregistertags",concat(usedtags,",")) -- todo: { } and escape special chars
     --
-    -- texsprint(ctxcatcodes,"\\def\\usedregistertags{",concat(usedtags,","),"}") -- todo: { } and escape special chars
-    --
-    texsprint(ctxcatcodes,"\\startregisteroutput")
+    context.startregisteroutput()
     local collapse_singles = options.compress == interfaces.variables.yes
     local collapse_ranges  = options.compress == interfaces.variables.all
     local result = data.result
     -- todo ownnumber
     local function pagenumber(entry)
         local er = entry.references
-        local proc = entry.processors and entry.processors[2]
-        texsprint(ctxcatcodes,"\\registeronepage{",er.internal or 0,"}{",er.realpage or 0,"}{") -- internal realpage content
-        if proc then
-            texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-            helpers.prefixpage(entry,prefixspec,pagespec)
-            texsprint(ctxcatcodes,"}")
-        else
-            helpers.prefixpage(entry,prefixspec,pagespec)
-        end
-        texsprint(ctxcatcodes,"}")
+        context.registeronepage(
+            entry.processors and entry.processors[2] or "",
+            er.internal or 0,
+            er.realpage or 0,
+            function() helpers.prefixpage(entry,prefixspec,pagespec) end
+        )
     end
     local function pagerange(f_entry,t_entry,is_last)
-        local er = f_entry.references
-        local proc = f_entry.processors and f_entry.processors[2]
-        texsprint(ctxcatcodes,"\\registerpagerange{",er.internal or 0,"}{",er.realpage or 0,"}{")
-        if proc then
-            texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-            helpers.prefixpage(f_entry,prefixspec,pagespec)
-            texsprint(ctxcatcodes,"}")
-        else
-            helpers.prefixpage(f_entry,prefixspec,pagespec)
-        end
-        local er = t_entry.references
-        texsprint(ctxcatcodes,"}{",er.internal or 0,"}{",er.lastrealpage or er.realpage or 0,"}{")
-        if is_last then
-            if proc then
-                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-                helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
-                texsprint(ctxcatcodes,"}")
-            else
-                helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
+        local fer = f_entry.references
+        local ter = t_entry.references
+        context.registerpagerange(
+            f_entry.processors and f_entry.processors[2] or "",
+            fer.internal or 0,
+            fer.realpage or 0,
+            function()
+                helpers.prefixpage(f_entry,prefixspec,pagespec)
+            end,
+            ter.internal or 0,
+            ter.lastrealpage or ter.realpage or 0,
+            function()
+                if is_last then
+                    helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
+                else
+                    helpers.prefixpage    (t_entry,prefixspec,pagespec)
+                end
             end
-        else
-            if proc then
-                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-                helpers.prefixpage(t_entry,prefixspec,pagespec)
-                texsprint(ctxcatcodes,"}")
-            else
-                helpers.prefixpage(t_entry,prefixspec,pagespec)
-            end
-        end
-        texsprint(ctxcatcodes,"}")
+        )
     end
     --
     -- maybe we can nil the splits and save memory
@@ -558,7 +542,7 @@ function registers.flush(data,options,prefixspec,pagespec)
         local done = { false, false, false, false }
         local data = sublist.data
         local d, n = 0, 0
-        texsprint(ctxcatcodes,"\\startregistersection{",sublist.tag,"}")
+        context.startregistersection(sublist.tag)
         while d < #data do
             d = d + 1
             local entry = data[d]
@@ -572,37 +556,25 @@ function registers.flush(data,options,prefixspec,pagespec)
                     if e[i] and e[i] ~= "" then
                         done[i] = e[i]
                         if n == i then
-                            texsprint(ctxcatcodes,"\\stopregisterentries\\startregisterentries{",n,"}")
+                            context.stopregisterentries()
+                            context.startregisterentries(n)
                         else
                             while n > i do
                                 n = n - 1
-                                texsprint(ctxcatcodes,"\\stopregisterentries")
+                                context.stopregisterentries()
                             end
                             while n < i do
                                 n = n + 1
-                                texsprint(ctxcatcodes,"\\startregisterentries{",n,"}")
+                                context.startregisterentries(n)
                             end
                         end
                         local internal = entry.references.internal or 0
                         local seeparent = entry.references.seeparent or ""
+                        local processor = entry.processors and entry.processors[1] or ""
                         if metadata then
-                            texsprint(ctxcatcodes,"\\registerentry{",internal,"}{",seeparent,"}{")
-                            local proc = entry.processors and entry.processors[1]
-                            if proc then
-                                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{")
-                                helpers.title(e[i],metadata)
-                                texsprint(ctxcatcodes,"}")
-                            else
-                                helpers.title(e[i],metadata)
-                            end
-                            texsprint(ctxcatcodes,"}")
+                            context.registerentry(processor,internal,seeparent,function() helpers.title(e[i],metadata) end)
                         else
-                            local proc = entry.processors and entry.processors[1]
-                            if proc then
-                                texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{\\registerentry{",internal,"}{",seeindex,"}{",e[i],"}}")
-                            else
-                                texsprint(ctxcatcodes,"\\registerentry{",internal,"}{",seeindex,"}{",e[i],"}")
-                            end
+                            context.registerentry(processor,internal,seeindex,e[i])
                         end
                     else
                         done[i] = false
@@ -611,7 +583,7 @@ function registers.flush(data,options,prefixspec,pagespec)
             end
             local kind = entry.metadata.kind
             if kind == 'entry' then
-                texsprint(ctxcatcodes,"\\startregisterpages")
+                context.startregisterpages()
             --~ collapse_ranges = true
                 if collapse_singles or collapse_ranges then
                     -- we collapse ranges and keep existing ranges as they are
@@ -759,29 +731,25 @@ function registers.flush(data,options,prefixspec,pagespec)
                         end
                     end
                 end
-                texsprint(ctxcatcodes,"\\stopregisterpages")
+                context.stopregisterpages()
             elseif kind == 'see' then
                 -- maybe some day more words
-                texsprint(ctxcatcodes,"\\startregisterseewords")
+                context.startregisterseewords()
                 local seeindex = entry.references.seeindex or ""
                 local seetext = entry.seeword.text or ""
                 local proc = entry.processors and entry.processors[1]
                 -- todo: metadata like normal entries
-                if proc then
-                    texsprint(ctxcatcodes,"\\applyprocessor{",proc,"}{\\registeroneword{0}{",seeindex,"}{",seetext,"}}")
-                else
-                    texsprint(ctxcatcodes,"\\registeroneword{0}{",seeindex,"}{",seetext,"}")
-                end
-                texsprint(ctxcatcodes,"\\stopregisterseewords")
+                context.registeroneword(proc or "",0,seeindex,seetext)
+                context.stopregisterseewords()
             end
         end
         while n > 0 do
-            texsprint(ctxcatcodes,"\\stopregisterentries")
+            context.stopregisterentries()
             n = n - 1
         end
-        texsprint(ctxcatcodes,"\\stopregistersection")
+        context.stopregistersection()
     end
-    texsprint(ctxcatcodes,"\\stopregisteroutput")
+    context.stopregisteroutput()
     -- for now, maybe at some point we will do a multipass or so
     data.result = nil
     data.metadata.sorted = false

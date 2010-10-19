@@ -22,7 +22,7 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 local next, type, tonumber = next, type, tonumber
 local format, gmatch, concat, match, rep = string.format, string.gmatch, table.concat, string.match, string.rep
 local ceil, floor, max, min, round, abs = math.ceil, math.floor, math.max, math.min, math.round, math.abs
-local texsprint, texlists, texdimen, texbox = tex.sprint, tex.lists, tex.dimen, tex.box
+local texlists, texdimen, texbox = tex.lists, tex.dimen, tex.box
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local points = number.points
@@ -30,9 +30,8 @@ local allocate = utilities.storage.allocate
 
 local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
-local nodes, node, trackers, attributes =  nodes, node, trackers, attributes
+local nodes, node, trackers, attributes, context =  nodes, node, trackers, attributes, context
 
-local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
 
 local starttiming = statistics.starttiming
@@ -527,11 +526,6 @@ storage.register("builders/vspacing/data/skip", vspacing.data.skip, "builders.vs
 
 do -- todo: interface.variables
 
-    local function logger(c,...)
-        report_vspacing(concat {...})
-        texsprint(c,...)
-    end
-
     vspacing.fixed = false
 
     local map  = vspacing.data.map
@@ -547,7 +541,7 @@ do -- todo: interface.variables
     -- This will change: just node.write and we can store the values in skips which
     -- then obeys grouping
 
-    local function analyze(str,oldcategory,texsprint) -- we could use shorter names
+    local function analyze(str,oldcategory) -- we could use shorter names
         for s in gmatch(str,"([^ ,]+)") do
             local amount, keyword, detail = lpegmatch(splitter,s)
             if not keyword then
@@ -555,37 +549,37 @@ do -- todo: interface.variables
             else
                 local mk = map[keyword]
                 if mk then
-                    category = analyze(mk,category,texsprint)
+                    category = analyze(mk,category)
                 elseif keyword == k_fixed then
-                    texsprint(ctxcatcodes,"\\fixedblankskip")
+                    context.fixedblankskip()
                 elseif keyword == k_flexible then
-                    texsprint(ctxcatcodes,"\\flexibleblankskip")
+                    context.flexibleblankskip()
                 elseif keyword == k_category then
                     local category = tonumber(detail)
                     if category then
-                        texsprint(ctxcatcodes,"\\setblankcategory{",category,"}")
+                        context.setblankcategory(category)
                         if category ~= oldcategory then
-                            texsprint(ctxcatcodes,"\\flushblankhandling")
+                            context.flushblankhandling()
                             oldcategory = category
                         end
                     end
                 elseif keyword == k_order and detail then
                     local order = tonumber(detail)
                     if order then
-                        texsprint(ctxcatcodes,"\\setblankorder{",order,"}")
+                        context.setblankorder(order)
                     end
                 elseif keyword == k_penalty and detail then
                     local penalty = tonumber(detail)
                     if penalty then
-                        texsprint(ctxcatcodes,"\\setblankpenalty{",penalty,"}")
+                        context.setblankpenalty(penalty)
                     end
                 else
                     amount = tonumber(amount) or 1
                     local sk = skip[keyword]
                     if sk then
-                        texsprint(ctxcatcodes,"\\addpredefinedblankskip{",amount,"}{",keyword,"}")
+                        context.addpredefinedblankskip(amount,keyword)
                     else -- no check
-                        texsprint(ctxcatcodes,"\\addaskedblankskip{",amount,"}{",keyword,"}")
+                        context.addaskedblankskip(amount,keyword)
                     end
                 end
             end
@@ -594,10 +588,15 @@ do -- todo: interface.variables
     end
 
     function vspacing.analyze(str)
-        local texsprint = (trace_vspacing and logger) or texsprint
-        texsprint(ctxcatcodes,"\\startblankhandling")
-        analyze(str,1,texsprint)
-        texsprint(ctxcatcodes,"\\stopblankhandling")
+        if trace_vspacing then
+            context.pushlogger(report_vspacing)
+        end
+        context.startblankhandling()
+        analyze(str,1)
+        context.stopblankhandling()
+        if trace_vspacing then
+            context.poplogger()
+        end
     end
 
     --

@@ -17,14 +17,12 @@ local format, match, gmatch, concat, rep = string.format, string.match, string.g
 local lpegmatch = lpeg.match
 local write_nl = texio.write_nl
 
-local ctxcatcodes = tex.ctxcatcodes
-
 local report_nodes = logs.new("nodes")
 
 fonts = fonts or { }
 nodes = nodes or { }
 
-local fonts, nodes, node = fonts, nodes, node
+local fonts, nodes, node, context = fonts, nodes, node, context
 
 fonts.tfm = fonts.tfm or { }
 fonts.ids = fonts.ids or { }
@@ -55,7 +53,6 @@ local first_character = node.first_character
 local node_type       = node.type
 local traverse_nodes  = node.traverse
 
-local texsprint       = tex.sprint
 local fontdata        = fonts.ids
 local fontchar        = fonts.chr
 
@@ -260,9 +257,9 @@ function step_tracers.features()
                 end
             end
             if #t > 0 then
-                texsprint(ctxcatcodes,concat(t,", "))
+                context(concat(t,", "))
             else
-                texsprint(ctxcatcodes,"no features")
+                context("no features")
             end
             return
         end
@@ -273,7 +270,7 @@ end
 function tracers.fontchar(font,char)
     local n = new_glyph()
     n.font, n.char, n.subtype = font, char, 256
-    node.write(n)
+    context(n)
 end
 
 function step_tracers.codes(i,command)
@@ -282,14 +279,17 @@ function step_tracers.codes(i,command)
         local id = c.id
         if id == glyph_code then
             if command then
-                texsprint(ctxcatcodes,format("%s{%s}{%s}",command,c.font,c.char))
+                local f, c = c.font,c.char
+                local d = fontdata[f].descriptions
+                local d = d and d[c]
+                context[command](f,c,d and d.class or "")
             else
-                texsprint(ctxcatcodes,format("[%s:U+%04X]",c.font,c.char))
+                context("[%s:U+%04X]",c.font,c.char)
             end
         elseif id == whatsit_code and (c.subtype == localpar_code or c.subtype == dir_code) then
-            texsprint(ctxcatcodes,format("[%s]",c.dir))
+            context("[%s]",c.dir)
         else
-            texsprint(ctxcatcodes,format("[%s]",node_type(id)))
+            context("[%s]",node_type(id))
         end
         c = c.next
     end
@@ -300,11 +300,13 @@ function step_tracers.messages(i,command,split)
     if list then
         for i=1,#list do
             local l = list[i]
-            if split then
+            if not command then
+                context("(%s)",l)
+            elseif split then
                 local a, b = match(l,"^(.-)%s*:%s*(.*)$")
-                texsprint(ctxcatcodes,format("%s{%s}{%s}",command,a or l,b or ""))
+                context[command](a or l or "",b or "")
             else
-                texsprint(ctxcatcodes,format("%s{%s}",command,l))
+                context[command](l)
             end
         end
     end

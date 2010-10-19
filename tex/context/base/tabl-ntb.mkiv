@@ -276,7 +276,7 @@
    \processcommalist[#1]\dodosetupTABLE}
 
 \def\nopTABLEparameters[#1][#2]%
-  {\letvalue{\@@tblprefix#1}\empty}
+  {\letvalueempty{\@@tblprefix#1}} % can be made faster
 
 \def\setTABLEparameters[#1][#2]%
   {\pushTBLparameters

@@ -68,7 +68,7 @@ local function _flush_(n)
 end
 
 function context.restart()
-     _stack_, _n_ = { }, 0
+    _stack_, _n_ = { }, 0
 end
 
 context._stack_ = _stack_
@@ -111,43 +111,10 @@ function tex.fprint(...) -- goodie
     texsprint(currentcatcodes,format(...))
 end
 
-local trace_context = logs.new("context") -- here
-
-function context.trace(intercept)
-    local normalflush = flush
-    flush = function(...)
-        trace_context(concat({...},"",2))
-        if not intercept then
-            normalflush(...)
-        end
-    end
-    context.trace = function() end
-end
-
-function context.getflush()
-    return flush
-end
-
-function context.setflush(newflush)
-    local oldflush = flush
-    flush = newflush or flush
-    return oldflush
-end
-
-trackers.register("context.flush",     function(v) if v then context.trace()     end end)
-trackers.register("context.intercept", function(v) if v then context.trace(true) end end) -- will become obsolete
-
---~ context.trace()
-
--- beware, we had command as part of the flush and made it "" afterwards so that we could
--- keep it there (...,command,...) but that really confuses the tex machinery
-
 local function writer(command,first,...)
-    if not command then
-        -- error
-    elseif first == nil then
-        flush(currentcatcodes,command)
-    else
+--~     if first == nil then -- we can move the first test to the caller (twice: direct and boolean)
+--~         flush(currentcatcodes,command)
+--~     else
         local t = { first, ... }
         flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
         local direct = false
@@ -227,16 +194,18 @@ local function writer(command,first,...)
         if direct then
             trace_context("error: direct flushing used in '%s' without following argument",command)
         end
-    end
+--~     end
 end
 
---~ experiments.register("context.writer",function()
---~     writer = newwriter
---~ end)
-
 local function indexer(t,k)
-    local c = "\\" .. k -- .. " "
-    local f = function(...) return writer(c,...) end
+    local c = "\\" .. k
+    local f = function(first,...)
+        if first == nil then
+            flush(currentcatcodes,c)
+        else
+            return writer(c,first,...)
+        end
+    end
     t[k] = f
     return f
 end
@@ -265,9 +234,8 @@ local function caller(t,f,a,...)
             -- ignored: a ...
             if f then
                 flush(currentcatcodes,"^^M")
-            else
+            elseif a ~= nil then
                 writer("",a,...)
-             -- trace_context("warning: 'context' gets argument 'false' which is currently unsupported")
             end
         elseif typ == "thread" then
             trace_context("coroutines not supported as we cannot yield across boundaries")
@@ -281,9 +249,71 @@ end
 
 setmetatable(context, { __index = indexer, __call = caller } )
 
--- the only non macro:
+-- logging
 
-local trace_cld = false
+local trace_context = logs.new("context") -- here
+local trace_stack   = { }
+
+local normalflush   = flush
+local normalwriter  = writer
+local currenttrace  = nil
+local nofwriters    = 0
+local nofflushes    = 0
+
+statistics.register("traced context", function()
+    if nofwriters > 0 or nofflushes > 0 then
+        return format("writers: %s, flushes: %s, maxstack: %s",nofwriters,nofflushes,_n_)
+    end
+end)
+
+local tracedwriter = function(...)
+    nofwriters = nofwriters + 1
+    local t, f = { "w : " }, flush
+    flush = function(...)
+        t[#t+1] = concat({...},"",2)
+        normalflush(...)
+    end
+    normalwriter(...)
+    flush = f
+    currenttrace(concat(t))
+end
+
+local tracedflush = function(...)
+    nofflushes = nofflushes + 1
+    normalflush(...)
+    local t = { ... }
+    t[1] = "f : " -- replaces the catcode
+    currenttrace(concat(t))
+end
+
+local function pushlogger(trace)
+    insert(trace_stack,currenttrace)
+    currenttrace = trace
+    flush, writer = tracedflush, tracedwriter
+end
+
+local function poplogger()
+    currenttrace = remove(trace_stack)
+    if not currenttrace then
+        flush, writer = normalflush, normalwriter
+    end
+end
+
+local function settracing(v)
+    if v then
+        pushlogger(trace_context)
+    else
+        poplogger()
+    end
+end
+
+trackers.register("context.trace",settracing)
+
+context.pushlogger = pushlogger
+context.poplogger  = poplogger
+context.settracing = settracing
+
+local trace_cld = false  trackers.register("context.files", function(v) trace_cld = v end)
 
 function context.runfile(filename)
     local foundname = resolvers.findtexfile(file.addsuffix(filename,"cld")) or ""
@@ -307,31 +337,15 @@ function context.runfile(filename)
     end
 end
 
--- tracking is using the regular mechanism; we need to define
--- these 'macro' functions explictly as otherwise they are are
--- delayed (as all commands print back to tex, so that tracing
--- would be enabled afterwards)
+-- some functions
 
-trackers.register("cld.print", function(v)
-    trace_cld = v
-    if v then
-        flush = function(c,...)
-            texiowrite(...)
-            texsprint(c,...)
-        end
-    else
-        flush = texsprint
+function context.direct(first,...)
+    if first ~= nil then
+        return writer("",first,...)
     end
-end)
-
-function context.enabletrackers (str) trackers.enable (str) end
-function context.disabletrackers(str) trackers.disable(str) end
-
-function context.direct(...)
-    return writer("",...)
 end
 
-function context.char(k)
+function context.char(k) -- todo: if catcode == letter or other then just the utf
     if type(k) == "table" then
         for i=1,#k do
             context(format([[\char%s\relax]],k[i]))
@@ -341,88 +355,29 @@ function context.char(k)
     end
 end
 
+function context.chardef(cs,u)
+    context(format([[\chardef\%s=%s\relax]],k))
+end
+
 function context.par()
     context([[\par]]) -- no need to add {} there
 end
 
--- see demo-cld.cld for an example
+function context.bgroup()
+    context("{")
+end
 
--- context.starttext(true)
--- context.chapter({ "label" }, "title", true)
--- context.chapter(function() return { "label" } end, "title", true)
---
--- context.startchapter({ title = "test" }, { more = "oeps" }, true)
---
--- context.bTABLE(true)
--- for i=1,10 do
---     context.bTR()
---     for i=1,10 do
---         context.bTD()
---         context("%#2i",math.random(99))
---         context.eTD()
---     end
---     context.eTR(true)
--- end
--- context.eTABLE(true)
---
--- context.stopchapter(true)
---
--- context.stoptext(true)
+function context.egroup()
+    context("}")
+end
 
---~ Not that useful yet. Maybe something like this when the main loop
---~ is a coroutine. It also does not help taking care of nested calls.
---~ Even worse, it interferes with other mechanisms using context calls.
---~
---~ local create, yield, resume = coroutine.create, coroutine.yield, coroutine.resume
---~ local getflush, setflush = context.getflush, context.setflush
---~ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
---~
---~ function context.direct(f)
---~     local routine = create(f)
---~     local oldflush = getflush()
---~     function newflush(...)
---~         oldflush(...)
---~         yield(true)
---~     end
---~     setflush(newflush)
---~
---~  -- local function resumecontext()
---~  --     local done = resume(routine)
---~  --     if not done then
---~  --         return
---~  --     end
---~  --     resumecontext() -- stack overflow ... no tail recursion
---~  -- end
---~  -- context.resume = resumecontext
---~  -- texsprint(ctxcatcodes,"\\ctxlua{context.resume()}")
---~
---~     local function resumecontext()
---~         local done = resume(routine)
---~         if not done then
---~             return
---~         end
---~      -- texsprint(ctxcatcodes,"\\exitloop")
---~         texsprint(ctxcatcodes,"\\ctxlua{context.resume()}") -- can be simple macro call
---~     end
---~     context.resume = resumecontext
---~  -- texsprint(ctxcatcodes,"\\doloop{\\ctxlua{context.resume()}}") -- can be fast loop at the tex end
---~     texsprint(ctxcatcodes,"\\ctxlua{context.resume()}")
---~
---~ end
---~
---~ function something()
---~     context("\\setbox0")
---~     context("\\hbox{hans hagen xx}")
---~     context("\\the\\wd0/\\box0")
---~ end
---~
---~ context.direct(something)
+function context.verbatim(...)
+    flush(vrbcatcodes,...)
+end
 
--- this might be generalized: register some primitives as: accepting this or that
--- we can also speed this up
+-- context.delayed
 
-
-local delayed = { } context.delayed = delayed -- maybe also global
+local delayed = { } context.delayed = delayed -- maybe also store them
 
 local function indexer(t,k)
     local f = function(...)
@@ -435,7 +390,6 @@ local function indexer(t,k)
     return f
 end
 
-
 local function caller(t,...)
     local a = { ... }
     return function()
@@ -445,10 +399,37 @@ end
 
 setmetatable(delayed, { __index = indexer, __call = caller } )
 
---~ context.test("test 1",context.delayed(" test 2a "),"test 3")
---~ context.test("test 1",context.delayed.test(" test 2b "),"test 3")
+-- context.nested
 
--- experimental:
+local nested = { } context.nested = nested
+
+local function indexer(t,k)
+    local f = function(...)
+        local t, savedflush = { }, flush
+        flush = function(c,f,s,...) -- catcodes are ignored
+            t[#t+1] = s and concat{f,s,...} or f -- optimized for #args == 1
+        end
+        context[k](...)
+        flush = savedflush
+        return concat(t)
+    end
+    t[k] = f
+    return f
+end
+
+local function caller(t,...)
+    local t, savedflush = { }, flush
+    flush = function(c,f,s,...) -- catcodes are ignored
+        t[#t+1] = s and concat{f,s,...} or f -- optimized for #args == 1
+    end
+    context(...)
+    flush = savedflush
+    return concat(t)
+end
+
+setmetatable(nested, { __index = indexer, __call = caller } )
+
+-- metafun
 
 local metafun = { } context.metafun = metafun
 
@@ -502,6 +483,7 @@ function metafun.color(name)
     return format([[\MPcolor{%s}]],name)
 end
 
+-- metafun.delayed
 
 local delayed = { } metafun.delayed = delayed
 
@@ -525,3 +507,62 @@ local function caller(t,...)
 end
 
 setmetatable(delayed, { __index = indexer, __call = caller } )
+
+--~ Not that useful yet. Maybe something like this when the main loop
+--~ is a coroutine. It also does not help taking care of nested calls.
+--~ Even worse, it interferes with other mechanisms using context calls.
+--~
+--~ local create, yield, resume = coroutine.create, coroutine.yield, coroutine.resume
+--~ local getflush, setflush = context.getflush, context.setflush
+--~ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+--~
+--~ function context.getflush()
+--~     return flush
+--~ end
+--~
+--~ function context.setflush(newflush)
+--~     local oldflush = flush
+--~     flush = newflush or flush
+--~     return oldflush
+--~ end
+--~
+--~ function context.direct(f)
+--~     local routine = create(f)
+--~     local oldflush = getflush()
+--~     function newflush(...)
+--~         oldflush(...)
+--~         yield(true)
+--~     end
+--~     setflush(newflush)
+--~
+--~  -- local function resumecontext()
+--~  --     local done = resume(routine)
+--~  --     if not done then
+--~  --         return
+--~  --     end
+--~  --     resumecontext() -- stack overflow ... no tail recursion
+--~  -- end
+--~  -- context.resume = resumecontext
+--~  -- texsprint(ctxcatcodes,"\\ctxlua{context.resume()}")
+--~
+--~     local function resumecontext()
+--~         local done = resume(routine)
+--~         if not done then
+--~             return
+--~         end
+--~      -- texsprint(ctxcatcodes,"\\exitloop")
+--~         texsprint(ctxcatcodes,"\\ctxlua{context.resume()}") -- can be simple macro call
+--~     end
+--~     context.resume = resumecontext
+--~  -- texsprint(ctxcatcodes,"\\doloop{\\ctxlua{context.resume()}}") -- can be fast loop at the tex end
+--~     texsprint(ctxcatcodes,"\\ctxlua{context.resume()}")
+--~
+--~ end
+--~
+--~ function something()
+--~     context("\\setbox0")
+--~     context("\\hbox{hans hagen xx}")
+--~     context("\\the\\wd0/\\box0")
+--~ end
+--~
+--~ context.direct(something)

@@ -50,4 +50,13 @@
 \def\MPLIBgraphictext#1%
   {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
 
+\def\MPLIBpositionwhd#1#2#3#4#5%
+  {\dosavepositionwhd{#1}{0}{#2sp}{#3sp}{#4sp}{#5sp}{0sp}}
+
+\def\MPLIBextrapass#1%
+  {\ctxlua{metapost.graphic_extra_pass(#1)}}
+
+\def\MPLIBresettexts
+  {\ctxlua{metapost.resettextexts()}}
+
 \protect \endinput

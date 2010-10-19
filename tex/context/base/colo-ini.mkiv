@@ -371,7 +371,7 @@
 \def\dodefinepalet[#1][#2]%
   {\doifassignmentelse{#2}
      {%\showcolormessage\m!colors6{#1}%
-      \letvalue{\??pa#1}\empty
+      \letvalueempty{\??pa#1}%
       \setevalue{\??pa\??pa#1}{#2}%
       \def\dodododefinepalet[##1=##2]%
         {\doifvaluesomething{\??pa#1}
@@ -765,8 +765,8 @@
 
 % Since we couple definitions, we could stick to one test. Todo. Same for mpcolor.
 
-\letvalue{(cs:-}\empty
-\letvalue{(ts:-}\empty
+\letvalueempty{(cs:-}
+\letvalueempty{(ts:-}
 
 \def\doactivatecolor#1% : in currentpalet, maybe not, ugly
   {\def\currentcolorname{#1}%

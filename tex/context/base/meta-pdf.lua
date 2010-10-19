@@ -13,11 +13,10 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 local concat, format, gsub, find, byte, gmatch, match = table.concat, string.format, string.gsub, string.find, string.byte, string.gmatch, string.match
 local lpegmatch = lpeg.match
 local round = math.round
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 local report_mptopdf = logs.new("mptopdf")
 
-local mplib, metapost, lpdf = mplib, metapost, lpdf
+local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
 local pdfrgbcode                = lpdf.rgbcode
 local pdfcmykcode               = lpdf.cmykcode
@@ -25,6 +24,7 @@ local pdfgraycode               = lpdf.graycode
 local pdfspotcode               = lpdf.spotcode
 local pdftransparencycode       = lpdf.transparencycode
 local pdffinishtransparencycode = lpdf.finishtransparencycode
+local pdfliteral                = node.pdfliteral
 
 metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf
@@ -54,11 +54,7 @@ resetall()
 -- in no hurry as this kind of conversion does not happen that often in mkiv
 
 local function pdfcode(str) -- could be a node.write instead
-    texsprint(ctxcatcodes,"\\pdfliteral{",str,"}")
-end
-
-local function texcode(str)
-    texsprint(ctxcatcodes,str)
+    context(pdfliteral(str))
 end
 
 local function mpscode(str)
@@ -133,7 +129,7 @@ function mps.newpath()
 end
 
 function mps.boundingbox(llx, lly, urx, ury)
-    texcode("\\MPSboundingbox{" .. llx .. "}{" .. lly .. "}{" .. urx .. "}{" .. ury .. "}")
+    context.MPSboundingbox(llx,lly,urx,ury)
 end
 
 function mps.moveto(x,y)
@@ -227,7 +223,7 @@ function mps.textext(font, scale, str) -- old parser
         dx, dy = m_stack_path[1][1], m_stack_path[1][2]
     end
     flushconcat()
-    texcode("\\MPStextext{"..font.."}{"..scale.."}{"..str.."}{"..dx.."}{"..dy.."}")
+    context.MPStextext(font,scale,str,dx,dy)
     resetpath()
 end
 

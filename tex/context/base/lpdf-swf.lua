@@ -124,6 +124,5 @@ function backends.pdf.nodeinjections.insertswf(spec)
     --  controls  = spec.controls,
     --  label     = spec.label,
     }
- -- texsprint(ctxcatcodes,format("\\pdfannot width %ssp height %ssp {%s}",spec.width,spec.height,annotation())) -- brrrr
     node.write(pdfannotation(spec.width,spec.height,0,annotation()))
 end

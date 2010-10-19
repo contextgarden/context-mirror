@@ -292,7 +292,7 @@
    \setvalue{\e!start\currentparagraph}%
      {\bgroup
       \edef\currentparagraph{#1}%
-      \letvalue{\s!do\s!next\currentparagraph}\empty
+      \letvalueempty{\s!do\s!next\currentparagraph}%
       \setvalue{\e!stop\currentparagraph}{\getvalue\currentparagraph\egroup}%
       \getvalue\currentparagraph}%
    \getparameters[\??al\currentparagraph]%

@@ -14,7 +14,7 @@ parsers.patterns  = parsers.patterns or { }
 local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat, format, gmatch = table.concat, string.format, string.gmatch
-local tostring, type = tostring, type
+local tostring, type, next = tostring, type, next
 local sortedhash = table.sortedhash
 
 local escape, left, right = P("\\"), P('{'), P('}')

@@ -7,10 +7,8 @@ if not modules then modules = { } end modules ['str-syn'] = {
 }
 
 local next, type = next, type
-local texwrite, texsprint, format = tex.write, tex.sprint, string.format
+local texwrite, format = tex.write,  string.format
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
-
-local ctxcatcodes = tex.ctxcatcodes
 
 -- interface to tex end
 
@@ -82,7 +80,7 @@ function synonyms.synonym(class,tag)
     if d then
         local de = d.definition
         de.used = true
-        texsprint(ctxcatcodes,de.synonym)
+        context(de.synonym)
     end
 end
 
@@ -92,7 +90,7 @@ function synonyms.meaning(class,tag)
     if d then
         local de = d.definition
         de.used = true
-        texsprint(ctxcatcodes,de.meaning)
+        context(de.meaning)
     end
 end
 
@@ -149,24 +147,26 @@ function synonyms.finalize(data,options)
     data.result = split
 end
 
-function synonyms.flush(data,options) -- maybe pass the settings differently
-    local kind = data.metadata.kind   -- hack, will be done better
---~     texsprint(ctxcatcodes,format("\\start%soutput",kind))
+-- for now, maybe at some point we will do a multipass or so
+-- maybe pass the settings differently
+
+function synonyms.flush(data,options)
+    local kind = data.metadata.kind -- hack, will be done better
+ -- context[format("\\start%soutput",kind)]()
     local result = data.result
     local sorted = table.sortedkeys(result)
     for k=1,#sorted do
         local letter = sorted[k]
         local sublist = result[letter]
         local data = sublist.data
---~         texsprint(ctxcatcodes,format("\\start%ssection{%s}",kind,sublist.tag))
+     -- context[format("\\start%ssection",kind)](sublist.tag)
         for d=1,#data do
             local entry = data[d].definition
-            texsprint(ctxcatcodes,format("\\%sentry{%s}{%s}{%s}{%s}",kind,d,entry.tag,entry.synonym,entry.meaning or ""))
+            context("\\%sentry{%s}{%s}{%s}{%s}",kind,d,entry.tag,entry.synonym,entry.meaning or "")
         end
---~         texsprint(ctxcatcodes,format("\\stop%ssection",kind))
+     -- context[format("\\stop%ssection",kind)]()
     end
---~     texsprint(ctxcatcodes,format("\\stop%soutput",kind))
-    -- for now, maybe at some point we will do a multipass or so
+ -- context[format("\\stop%soutput",kind)]()
     data.result = nil
     data.metadata.sorted = false
 end

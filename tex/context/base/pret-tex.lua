@@ -10,11 +10,10 @@ local utf = unicode.utf8
 
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local utfbyte, utffind = utf.byte, utf.find
-local rep = string.rep
-local texsprint, texwrite = tex.sprint, tex.write
-local ctxcatcodes, vrbcatcodes = tex.ctxcatcodes, tex.vrbcatcodes
+local texwrite = tex.write
 
 local buffers = buffers
+local context = context
 
 local changestate, finishstate = buffers.changestate, buffers.finishstate
 
@@ -38,6 +37,8 @@ local states = {
 local chardata = characters.data
 local is_letter = characters.is_letter
 
+local space = context.obs
+
 function visualizer.flush_line(str,nested)
     local state, first, i = 0, false, 0
     buffers.currentcolors = colors
@@ -45,13 +46,15 @@ function visualizer.flush_line(str,nested)
         i = i + 1
         if c == " " then
             state = finishstate(state)
-            texsprint(ctxcatcodes,"\\obs")
+            space()
             first = false
         elseif c == "\t" then
             state = finishstate(state)
-            texsprint(ctxcatcodes,"\\obs")
+            space()
             if buffers.visualizers.enabletab then
-                texsprint(ctxcatcodes,rep("\\obs ",i%buffers.visualizers.tablength))
+                for i=1,i%buffers.visualizers.tablength do
+                    space()
+                end
                 i = 0
             end
             first = false

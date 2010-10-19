@@ -11,7 +11,7 @@ local ctxcatcodes, texcatcodes = tex.ctxcatcodes, tex.texcatcodes
 local lower, format, find, gmatch, gsub, match = string.lower, string.format, string.find, string.gmatch, string.gsub, string.match
 local concat = table.concat
 
-local commands, resolvers = commands, resolvers
+local commands, resolvers, context = commands, resolvers, context
 
 -- main code
 
@@ -106,9 +106,9 @@ local function convertexamodes(str)
             local data = xml.text(e)
             local mode = match(label,"^mode:(.+)$")
             if mode then
-                texsprint(ctxcatcodes,format("\\enablemode[%s:%s]",mode,data))
+                context.enablemode { format("%s:%s",mode,data) }
             end
-            texsprint(ctxcatcodes,format("\\setvariable{exa:variables}{%s}{%s}",label,gsub(data,"([{}])","\\%1")))
+            context.setvariable("exa:variables",label,(gsub(data,"([{}])","\\%1")))
         end
     end
 end
@@ -150,7 +150,7 @@ end
 --~         for sa in gmatch(a,"[^ ,]+") do
 --~             for sb in gmatch(b,"[^ ,]+") do
 --~                 if sa == sb then
---~                     texsprint(ctxcatcodes,"\\def\\commalistelement{",sa,"}")
+--~                     context.setvalue("commalistelement",sa)
 --~                     return true
 --~                 end
 --~             end
@@ -158,24 +158,24 @@ end
 --~     elseif ba then
 --~         for sa in gmatch(a,"[^ ,]+") do
 --~             if sa == b then
---~                 texsprint(ctxcatcodes,"\\def\\commalistelement{",b,"}")
+--~                 context.setvalue("commalistelement",b)
 --~                 return true
 --~             end
 --~         end
 --~     elseif bb then
 --~         for sb in gmatch(b,"[^ ,]+") do
 --~             if a == sb then
---~                 texsprint(ctxcatcodes,"\\def\\commalistelement{",a,"}")
+--~                 context.setvalue("commalistelement",sb)
 --~                 return true
 --~             end
 --~         end
 --~     else
 --~         if a == b then
---~             texsprint(ctxcatcodes,"\\def\\commalistelement{",a,"}")
+--~             context.setvalue("commalistelement",a)
 --~             return true
 --~         end
 --~     end
---~     texsprint(ctxcatcodes,"\\let\\commalistelement\\empty")
+--~     context.letvalueempty("commalistelement")
 --~     return false
 --~ end
 --~ local function doifinsetelse(a,b)

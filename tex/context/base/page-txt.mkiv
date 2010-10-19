@@ -172,8 +172,8 @@
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}%
           {\c!rightstyle\c!rightcolor\c!rightwidth}{#3}}%
    \else\ifsecondargument % new
-     \letvalue{\??tk#1\v!text\c!lefttext  }\empty
-     \letvalue{\??tk#1\v!text\c!righttext }\empty
+     \letvalueempty{\??tk#1\v!text\c!lefttext}%
+     \letvalueempty{\??tk#1\v!text\c!righttext}%
      \setvalue{\??tk#1\v!text\c!middletext}{\dosingletexts{#1}\v!text\c!style\c!color\c!width{#2}}%
    \else
      \dosixtupleempty\dosetuptexts[#1][\v!text  ][][][][]%
@@ -367,19 +367,19 @@
 
 \def\doresettextcontent[#1][#2][#3]% header text middle
   {\ifthirdargument
-     \letvalue{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}\empty
+     \letvalueempty{\??tk#1#2\executeifdefined{:\c!text:#3:}\c!middletext}%
    \else\ifsecondargument
-     \letvalue{\??tk#1#2\c!lefttext  }\empty
-     \letvalue{\??tk#1#2\c!middletext}\empty
-     \letvalue{\??tk#1#2\c!righttext }\empty
+     \letvalueempty{\??tk#1#2\c!lefttext}%
+     \letvalueempty{\??tk#1#2\c!middletext}%
+     \letvalueempty{\??tk#1#2\c!righttext}%
    \fi\fi}
 
 \let\settext  \settextcontent    % downward compatibility
 \let\resettext\resettextcontent  % downward compatibility
 
-\setvalue{:\c!middle:\c!text:}{\c!middletext}
-\setvalue{:\c!left  :\c!text:}{\c!lefttext  }
-\setvalue{:\c!right :\c!text:}{\c!righttext }
+\letvalue{:\c!middle:\c!text:}\c!middletext
+\letvalue{:\c!left  :\c!text:}\c!lefttext
+\letvalue{:\c!right :\c!text:}\c!righttext
 
 %D The next series of macros is not that easy to read,
 %D because they hook into the main page building macros. By

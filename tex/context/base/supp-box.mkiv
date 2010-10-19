@@ -2775,8 +2775,8 @@
 %      \def\docommand##1{\global\letbeundefined{\@@stacktag#1:##1}}%
 %      \processcommacommand[\getvalue{\@@stacklst#1}]\docommand
 %    \fi
-%    \global\letvalue{\@@stacklst#1}\empty
-%    \global\letvalue{\@@stackmax#1}\!!zeropoint}
+%    \letgvalueempty{\@@stacklst#1}%
+%    \letgvalue{\@@stackmax#1}\!!zeropoint}
 %
 % \def\savebox#1#2% stack name
 %   {\dowithnextbox
@@ -2828,7 +2828,7 @@
    \ifcsname\@@stacklst#1\endcsname
      \processcommacommand[\getvalue{\@@stacklst#1}]\docommand
    \fi
-   \global\letvalue{\@@stacklst#1}\empty}
+   \letgvalueempty{\@@stacklst#1}}
 
 \def\savebox#1#2% stack name
   {% beware, \setxvalue defines the cs beforehand so we cannot use the

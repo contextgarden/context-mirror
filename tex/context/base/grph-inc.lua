@@ -40,14 +40,13 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 -- commands.writestatus -> report
 
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
-local texsprint, texbox = tex.sprint, tex.box
+local texbox = tex.box
 local contains = table.contains
 local concat = table.concat
 local todimen = string.todimen
 local settings_to_array = utilities.parsers.settings_to_array
 local allocate = utilities.storage.allocate
 
-local ctxcatcodes    = tex.ctxcatcodes
 local variables      = interfaces.variables
 local codeinjections = backends.codeinjections
 local nodeinjections = backends.nodeinjections
@@ -60,9 +59,9 @@ local trace_inclusion  = false  trackers.register("figures.inclusion",  function
 
 local report_graphics = logs.new("graphics")
 
---- some extra img functions ---
+local context, img = context, img
 
-local img = img
+--- some extra img functions ---
 
 local imgkeys = img.keys()
 
@@ -337,8 +336,6 @@ function figures.pop()
     end
 end
 
--- maybe move texsprint to tex
-
 function figures.get(category,tag,default)
     local value = figuredata[category]
     value = value and value[tag]
@@ -350,7 +347,7 @@ function figures.get(category,tag,default)
 end
 
 function figures.tprint(category,tag,default)
-    texsprint(ctxcatcodes,figures.get(category,tag,default))
+    context(figures.get(category,tag,default))
 end
 
 function figures.current()
@@ -743,7 +740,7 @@ function figures.include(data)
     return (includers[ds.format] or includers.generic)(data)
 end
 function figures.scale(data) -- will become lua code
-    texsprint(ctxcatcodes,"\\doscalefigure")
+    context.doscalefigure()
     return data
 end
 function figures.done(data)
@@ -861,29 +858,32 @@ function includers.generic(data)
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         texbox[nr] = box
         ds.objectnumber = figure.objnum
-        texsprint(ctxcatcodes,"\\relocateexternalfigure")
+        context.relocateexternalfigure()
     end
     return data
 end
 
 -- -- -- nongeneric -- -- --
 
-function checkers.nongeneric(data,command)
+function checkers.nongeneric(data,command) -- todo: macros and context.*
     local dr, du, ds = data.request, data.used, data.status
     local name = du.fullname or "unknown nongeneric"
     local hash = name
     if dr.object then
-        -- hm, bugged
+        -- hm, bugged ... waiting for an xform interface
         if not job.objects.get("FIG::"..hash) then
-            texsprint(ctxcatcodes,command)
-            texsprint(ctxcatcodes,format("\\setobject{FIG}{%s}\\vbox{\\box\\foundexternalfigure}",hash))
+            if type(command) == "function" then
+                command()
+            end
+            context.dosetfigureobject(hash)
         end
-        texsprint(ctxcatcodes,format("\\global\\setbox\\foundexternalfigure\\vbox{\\getobject{FIG}{%s}}",hash))
-    else
-        texsprint(ctxcatcodes,command)
+        context.doboxfigureobject(hash)
+    elseif type(command) == "function" then
+        command()
     end
     return data
 end
+
 function includers.nongeneric(data)
     return data
 end
@@ -942,9 +942,9 @@ end
 function checkers.mps(data)
     local mprun, mpnum = internal(data.used.fullname)
     if mpnum then
-        return checkers.nongeneric(data,format("\\docheckfiguremprun{%s}{%s}",mprun,mpnum))
+        return checkers.nongeneric(data,function() context.docheckfiguremprun(mprun,mpnum) end)
     else
-        return checkers.nongeneric(data,format("\\docheckfiguremps{%s}",data.used.fullname))
+        return checkers.nongeneric(data,function() context.docheckfiguremps(data.used.fullname) end)
     end
 end
 includers.mps = includers.nongeneric
@@ -956,7 +956,7 @@ function existers.tex(askedname)
     return (askedname ~= "" and askedname) or false
 end
 function checkers.tex(data)
-    return checkers.nongeneric(data,format("\\docheckfiguretex{%s}", data.used.fullname))
+    return checkers.nongeneric(data,function() context.docheckfiguretex(data.used.fullname) end)
 end
 includers.tex = includers.nongeneric
 
@@ -964,7 +964,7 @@ includers.tex = includers.nongeneric
 
 existers.buffer = existers.tex
 function checkers.buffer(data)
-    return checkers.nongeneric(data,format("\\docheckfigurebuffer{%s}", file.nameonly(data.used.fullname)))
+    return checkers.nongeneric(data,function() context.docheckfigurebuffer(file.nameonly(data.used.fullname)) end)
 end
 includers.buffers = includers.nongeneric
 
@@ -972,7 +972,7 @@ includers.buffers = includers.nongeneric
 
 existers.cld = existers.tex
 function checkers.cld(data)
-    return checkers.nongeneric(data,format("\\docheckfigurecld{%s}", data.used.fullname))
+    return checkers.nongeneric(data,function() context.docheckfigurecld(data.used.fullname) end)
 end
 includers.cld = includers.nongeneric
 

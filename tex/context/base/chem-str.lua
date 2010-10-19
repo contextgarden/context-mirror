@@ -18,13 +18,13 @@ local report_chemistry = logs.new("chemistry")
 local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.match, string.lower, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local apply = structures.processors.apply
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local lpegmatch = lpeg.match
 local settings_to_array = utilities.parsers.settings_to_array
 
 local P, R, S, C, Cs, Ct, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc
 
 local variables = interfaces.variables
+local context   = context
 
 chemicals = chemicals or { }
 local chemicals = chemicals
@@ -481,9 +481,9 @@ function chemicals.inline(spec)
         local s = spec[i]
         local inl = inline[lower(s)]
         if inl then
-            texsprint(ctxcatcodes,inl)
+            context(inl)
         else
-            texsprint(ctxcatcodes,format("\\chemicalinline{%s}",molecule(s)))
+            context.chemicalinline(molecule(s))
         end
     end
 end

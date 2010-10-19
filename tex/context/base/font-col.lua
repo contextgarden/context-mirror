@@ -8,18 +8,16 @@ if not modules then modules = { } end modules ['font-col'] = {
 
 -- possible optimization: delayed initialization of vectors
 
-local format, gmatch, texsprint, type = string.format, string.gmatch, tex.sprint, type
+local gmatch, type = string.gmatch, type
 local traverse_id, first_character = node.traverse_id, node.first_character
 local lpegmatch = lpeg.match
 local settings_to_hash = utilities.parsers.settings_to_hash
-
-local ctxcatcodes = tex.ctxcatcodes
 
 local trace_collecting = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
 
 local report_fonts = logs.new("fonts")
 
-local fonts = fonts
+local fonts, context = fonts, context
 
 fonts.collections       = fonts.collections or { }
 local collections       = fonts.collections
@@ -166,20 +164,20 @@ function collections.prepare(name)
             report_fonts("def: applying collection %s to %s (file: %s)",name,current,filename)
         end
         list = { }
-        texsprint(ctxcatcodes,"\\dostartcloningfonts") -- move this to tex \dostart...
+        context.dostartcloningfonts() -- move this to tex \dostart...
         for i=1,#d do
             local f = d[i]
             local name = f.font
             local scale = f.rscale or 1
             if lpegmatch(okay,name) then
-                texsprint(ctxcatcodes,format("\\doclonefonta{%s}{%s}",name,scale))  -- define with unique specs
+                context.doclonefonta(name,scale)  -- define with unique specs
             else
-                texsprint(ctxcatcodes,format("\\doclonefontb{%s}{%s}",name,scale))  -- define with inherited specs
+                context.doclonefontb(name,scale)  -- define with inherited specs
             end
-            texsprint(ctxcatcodes,format("\\ctxlua{fonts.collections.stage_1('%s')}",name)) -- registering main font
+            context.doclonefontstageone(name) -- registering main font
         end
-        texsprint(ctxcatcodes,format("\\ctxlua{fonts.collections.stage_2('%s')}",name)) -- preparing clone vectors
-        texsprint(ctxcatcodes,"\\dostopcloningfonts")
+        context.doclonefontstagetwo(name) -- preparing clone vectors
+        context.dostopcloningfonts()
     elseif trace_collecting then
         local filename = file.basename(fontdata[current].filename or "?")
         report_fonts("def: error in applying collection %s to %s (file: %s)",name,current,filename)

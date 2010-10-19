@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['supp-fil'] = {
 
 -- This module will be redone !
 
+-- context is not defined yet! todo! (we need to load tupp-fil after cld)
+
 --[[ldx--
 <p>It's more convenient to manipulate filenames (paths) in
 <l n='lua'/> than in <l n='tex'/>. These methods have counterparts
@@ -15,7 +17,7 @@ at the <l n='tex'/> side.</p>
 --ldx]]--
 
 local find, gsub, match, format, concat = string.find, string.gsub, string.match, string.format, table.concat
-local texsprint, texwrite, ctxcatcodes = tex.sprint, tex.write, tex.ctxcatcodes
+local texcount = tex.count
 
 local trace_modules = false  trackers.register("modules.loading", function(v) trace_modules = v end)
 
@@ -27,14 +29,14 @@ environment       = environment or { }
 local environment = environment
 
 function commands.checkfilename(str) -- "/whatever..." "c:..." "http://..."
-    commands.chardef("kindoffile",boolean.tonumber(find(str,"^/") or find(str,"[%a]:")))
+    texcount.kindoffile = (find(str,"^/") or find(str,"[%a]:") and 1) or 0
 end
 
 function commands.thesanitizedfilename(str)
-    texwrite((gsub(str,"\\","/")))
+    context((gsub(str,"\\","/")))
 end
 
-local def, chardef, testcase = commands.def, commands.chardef, commands.testcase
+local testcase = commands.testcase
 
 function commands.splitfilename(fullname)
     local path, name, base, suffix, kind = '', fullname, fullname, '', 0
@@ -46,19 +48,13 @@ function commands.splitfilename(fullname)
     if b and s then
         name, suffix = b, s
     end
-    if path == "" then
-        kind = 0
-    elseif path == '.' then
-        kind = 1
-    else
-        kind = 2
-    end
-    def("splitofffull", fullname)
-    def("splitoffpath", path)
-    def("splitoffbase", base)
-    def("splitoffname", name)
-    def("splitofftype", suffix)
-    chardef("splitoffkind", kind)
+    texcount.splitoffkind = (path == "" and 0) or (path == '.' and 1) or 2
+    local setvalue = context.setvalue
+    setvalue("splitofffull", fullname)
+    setvalue("splitoffpath", path)
+    setvalue("splitoffbase", base)
+    setvalue("splitoffname", name)
+    setvalue("splitofftype", suffix)
 end
 
 function commands.splitfiletype(fullname)
@@ -67,14 +63,15 @@ function commands.splitfiletype(fullname)
     if n and s then
         name, suffix = n, s
     end
-    def("splitofffull", fullname)
-    def("splitoffpath", "")
-    def("splitoffname", name)
-    def("splitofftype", suffix)
+    local setvalue = context.setvalue
+    setvalue("splitofffull", fullname)
+    setvalue("splitoffpath", "")
+    setvalue("splitoffname", name)
+    setvalue("splitofftype", suffix)
 end
 
 function commands.doifparentfileelse(n)
-    testcase(n==environment.jobname or n==environment.jobname..'.tex' or n==environment.outputfilename)
+    testcase(n == environment.jobname or n == environment.jobname .. '.tex' or n == environment.outputfilename)
 end
 
 -- saves some .15 sec on 12 sec format generation
@@ -91,7 +88,7 @@ function commands.doiffileexistelse(name)
 end
 
 function commands.lastexistingfile()
-    texsprint(ctxcatcodes,lastexistingfile)
+    context(lastexistingfile)
 end
 
 -- more, we can cache matches
@@ -152,7 +149,7 @@ function commands.doreadfile(protocol,path,name) -- better do a split and then p
     else
         specification = ((path == "") and format("%s:///%s",protocol,name)) or format("%s:///%s/%s",protocol,path,name)
     end
-    texsprint(ctxcatcodes,resolvers.findtexfile(specification))
+    context(resolvers.findtexfile(specification))
 end
 
 -- modules can only have a tex or mkiv suffix or can have a specified one

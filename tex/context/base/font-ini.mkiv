@@ -975,11 +975,14 @@
      \expandafter\dogetfontparameteryes
    \fi}
 
-% hm, was wrong, class/global reversed
+% helpers, some day these will be toks and counts
 
-\let\fcglobal\global
-\let\fcxdef  \xdef
-\let\fcglet  \glet
+\def\fntsetdefname {\global\let\somefontname\defaultfontfile}
+\def\fntsetsomename{\gdef\somefontname} % {#1}
+\def\fntsetnopsize {\let\somefontsize\empty}
+\def\fntsetsomesize{\def\somefontsize}  % {#1}
+
+% end of helpers
 
 \def\nonodefinefontsynonymnop
   {\@EA\let\csname\??ff\@@fontname\s!features \endcsname\undefined
@@ -987,9 +990,9 @@
    \@EA\let\csname\??ff\@@fontname\s!goodies  \endcsname\undefined}
 
 \def\nonodefinefontsynonymyes
-  {\fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\undefined
-   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\undefined
-   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!goodies  \endcsname\undefined}
+  {\global\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\undefined
+   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\undefined
+   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!goodies  \endcsname\undefined}
 
 \def\dodododefinefontsynonymnop
   {\@EA\let\csname\??ff\@@fontname\s!features \endcsname\@@ff@@features
@@ -997,9 +1000,9 @@
    \@EA\let\csname\??ff\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
 
 \def\dodododefinefontsynonymyes
-  {\fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\@@ff@@features
-   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks
-   \fcglobal\@EA\let\csname\??ff\fontclass\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
+  {\global\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\@@ff@@features
+   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks
+   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
 
 \let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
 
@@ -1482,7 +1485,7 @@
      % only once
    \else
      % prevent loop (hence \empty)
-     \letvalue{\@size@#1}\empty
+     \letvalueempty{\@size@#1}%
      \pushmacro\fontclass     % new per 26102009
      \edef\fontclass{#2}%     % new per 26102009
      \defineunknownfont{#1}%
@@ -1701,8 +1704,8 @@
 
 \def\dodefinebodyfontyesxx#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
-   \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#5*\endcsname\undefined
-   \unexpanded\@EA\fcxdef\csname\fontclass#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
+   \global\@EA\let\csname*\fontclass#2#1#3#4#5*\endcsname\undefined
+   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
 
 \def\dodefinebodyfontnopmm#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
@@ -1715,12 +1718,12 @@
 
 \def\dodefinebodyfontyesmm#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
-   \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#51*\endcsname\undefined
-   \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#52*\endcsname\undefined
-   \fcglobal\@EA\let\csname*\fontclass#2#1#3#4#53*\endcsname\undefined
-   \unexpanded\@EA\fcxdef\csname\fontclass#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
-   \unexpanded\@EA\fcxdef\csname\fontclass#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
-   \unexpanded\@EA\fcxdef\csname\fontclass#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
+   \global\@EA\let\csname*\fontclass#2#1#3#4#51*\endcsname\undefined
+   \global\@EA\let\csname*\fontclass#2#1#3#4#52*\endcsname\undefined
+   \global\@EA\let\csname*\fontclass#2#1#3#4#53*\endcsname\undefined
+   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
 
 \def\checkbodyfont#1% tests for ttsl mmbf
   {\edef\c!!mm{#1}%
@@ -2170,10 +2173,10 @@
 %      \ifcsname\@fontclass@#1\endcsname
 %        \edef\fontclass{#1}%
 %      \else
-%        \letvalue{\@no@fontclass@#1}\empty
+%        \letvalueempty{\@no@fontclass@#1}%
 %      \fi
 %    \else
-%      \letvalue{\@no@fontclass@#1}\empty
+%      \letvalueempty{\@no@fontclass@#1}%
 %    \fi}
 
 \def\trycurrentfontclass#1%
@@ -2191,12 +2194,12 @@
          \edef\fontclass{#1}%
        \else
          % todo: message
-         \letvalue{\@no@fontclass@#1}\empty
+         \letvalueempty{\@no@fontclass@#1}%
        \fi
      \fi
    \else
      % todo: message
-     \letvalue{\@no@fontclass@#1}\empty
+     \letvalueempty{\@no@fontclass@#1}%
    \fi}
 
 \let\defaultfontstyle       \c!rm
@@ -3988,7 +3991,7 @@
    \else\ifthirdargument
      \setvalue{\??sx#1::#2}{#3}%
    \else\ifsecondargument
-     \letvalue{\??sx#1::#2}\empty
+     \letvalueempty{\??sx#1::#2}%
    \fi\fi\fi}
 
 \unexpanded\def\styleinstance[#1]% will be made faster

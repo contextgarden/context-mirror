@@ -638,9 +638,6 @@ end
 
 if commands then
 
-    local texsprint   = tex and tex.sprint
-    local ctxcatcodes = tex and tex.ctxcatcodes
-
     local sessions = { }
 
     function commands.definebibtexsession(name)
@@ -674,7 +671,7 @@ if commands then
         if collected then
             local author = collected[1].dt[1] or ""
             if author ~= "" then
-                texsprint(ctxcatcodes,authors.concat(author,method,what,settings))
+                context(authors.concat(author,method,what,settings))
             end
         end
     end
@@ -684,7 +681,7 @@ if commands then
             local c = collected[1]
             local year   = xmlfilter(c,"xml://field[@name='year']/text()")
             local author = xmlfilter(c,"xml://field[@name='author']/text()")
-            texsprint(ctxcatcodes,authors.short(author,year))
+            context(authors.short(author,year))
         end
     end
 
@@ -718,29 +715,29 @@ if commands then
     function bibtex.authorref(id,list)
         local result = collectauthoryears(id,list,method,what)
         for author, years in next, result do
-            texsprint(ctxcatcodes,authors.concat(author,method,what,settings))
+            context(authors.concat(author,method,what,settings))
         end
     end
 
     function bibtex.authoryearref(id,list)
         local result = collectauthoryears(id,list,method,what)
         for author, years in next, result do
-            texsprint(ctxcatcodes,authors.concat(author,method,what,settings)," (",concat(years,", "),")")
+            context("%s (%s)",authors.concat(author,method,what,settings),concat(years,", "))
         end
     end
 
     function bibtex.authoryearsref(id,list)
         local result = collectauthoryears(id,list,method,what)
         for author, years in next, result do
-            texsprint(ctxcatcodes,"(",authors.concat(author,method,what,settings),", ",concat(years,", "),")")
+            context("(%s, %s)",authors.concat(author,method,what,settings),concat(years,", "))
         end
     end
 
     function bibtex.singularorplural(singular,plural)
         if lastconcatsize and lastconcatsize > 1 then
-            texsprint(ctxcatcodes,plural)
+            context(plural)
         else
-            texsprint(ctxcatcodes,singular)
+            context(singular)
         end
     end
 

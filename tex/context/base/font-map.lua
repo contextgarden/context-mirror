@@ -16,8 +16,6 @@ local trace_unimapping = false  trackers.register("otf.unimapping", function(v) 
 
 local report_otf = logs.new("load otf")
 
-local ctxcatcodes = tex and tex.ctxcatcodes
-
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
 of obsolete. Some code may move to runtime or auxiliary modules.</p>

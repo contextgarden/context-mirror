@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 -- needs a cleanup: merge of replace, lang/script etc
 
-local texsprint, count, texsetcount, write_nl = tex.sprint, tex.count, tex.setcount, texio.write_nl
+local texcount, texsetcount, write_nl = tex.count, tex.setcount, texio.write_nl
 local format, gmatch, match, find, lower, gsub, byte = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
 local concat, serialize = table.concat, table.serialize
 local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
@@ -17,8 +17,6 @@ local formatcolumns = utilities.formatters.formatcolumns
 local tostring, next, type = tostring, next, type
 local lpegmatch = lpeg.match
 local round = math.round
-
-local ctxcatcodes = tex.ctxcatcodes
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_usage    = false  trackers.register("fonts.usage",    function(v) trace_usage    = v end)
@@ -43,7 +41,9 @@ local setups   = specifiers.contextsetups
 local numbers  = specifiers.contextnumbers
 local merged   = specifiers.contextmerged
 local synonyms = specifiers.synonyms
+
 local triggers = fonts.triggers
+local names    = fonts.names
 
 -- Beware, number can be shared between redefind features but as it is
 -- applied only for special cases it probably doesn't matter.
@@ -349,35 +349,40 @@ local getspecification = definers.getspecification
 -- we can make helper macros which saves parsing (but normaly not
 -- that many calls, e.g. in mk a couple of 100 and in metafun 3500)
 
+local setdefaultfontname = context.fntsetdefname
+local setsomefontname    = context.fntsetsomename
+local setemptyfontsize   = context.fntsetnopsize
+local setsomefontsize    = context.fntsetsomesize
+
 function definers.stage_one(str)
     statistics.starttiming(fonts)
     local fullname, size = lpegmatch(splitpattern,str)
     local lookup, name, sub, method, detail = getspecification(fullname)
     if not name then
         report_define("strange definition '%s'",str)
-        texsprint(ctxcatcodes,"\\fcglet\\somefontname\\defaultfontfile")
+        setdefaultfontname()
     elseif name == "unknown" then
-        texsprint(ctxcatcodes,"\\fcglet\\somefontname\\defaultfontfile")
+        setdefaultfontname()
     else
-        texsprint(ctxcatcodes,"\\fcxdef\\somefontname{",name,"}")
+        setsomefontname(name)
     end
     -- we can also use a count for the size
     if size and size ~= "" then
         local mode, size = lpegmatch(sizepattern,size)
         if size and mode then
-            count.scaledfontmode = mode
-            texsprint(ctxcatcodes,"\\def\\somefontsize{",size,"}")
+            texcount.scaledfontmode = mode
+            setsomefontsize(size)
         else
-            count.scaledfontmode = 0
-            texsprint(ctxcatcodes,"\\let\\somefontsize\\empty")
+            texcount.scaledfontmode = 0
+            setemptyfontsize()
         end
     elseif true then
         -- so we don't need to check in tex
-        count.scaledfontmode = 2
-        texsprint(ctxcatcodes,"\\let\\somefontsize\\empty")
+        texcount.scaledfontmode = 2
+        setemptyfontsize()
     else
-        count.scaledfontmode = 0
-        texsprint(ctxcatcodes,"\\let\\somefontsize\\empty")
+        texcount.scaledfontmode = 0
+        setemptyfontsize()
     end
     specification = definers.makespecification(str,lookup,name,sub,method,detail,size)
 end
@@ -434,7 +439,7 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
         end
         tex.definefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
-        texsprint(ctxcatcodes,format("\\def\\somefontsize{%isp}",fontdata[tfmdata].size))
+        setsomefontsize(fontdata[tfmdata].size .. "sp")
         texsetcount("global","lastfontid",tfmdata)
     else
     --  local t = os.clock(t)
@@ -448,7 +453,7 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
             report_define("defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
         -- resolved (when designsize is used):
-        texsprint(ctxcatcodes,format("\\def\\somefontsize{%isp}",tfmdata.size or 655360))
+        setsomefontsize((tfmdata.size or 655360) .. "sp")
     --~ if specification.fallbacks then
     --~     fonts.collections.prepare(specification.fallbacks)
     --~ end
@@ -569,7 +574,7 @@ function fonts.dimenfactor(unit,tfmdata)
 end
 
 function fonts.cleanname(name)
-    texsprint(ctxcatcodes,fonts.names.cleanname(name))
+    context(names.cleanname(name))
 end
 
 local p, f = 1, "%0.1fpt" -- normally this value is changed only once
@@ -581,7 +586,7 @@ function fonts.nbfs(amount,precision)
         p = precision
         f = "%0." .. p .. "fpt"
     end
-    texsprint(ctxcatcodes,lpegmatch(stripper,format(f,amount/65536)))
+    context(lpegmatch(stripper,format(f,amount/65536)))
 end
 
 -- for the moment here, this will become a chain of extras that is
@@ -682,7 +687,7 @@ function fonts.char(n) -- todo: afm en tfm
         n = nametoslot(n)
     end
     if type(n) == "number" then
-        texsprint(ctxcatcodes,format("\\char%s ",n))
+        context.char(n)
     end
 end
 

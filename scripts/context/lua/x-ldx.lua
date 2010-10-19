@@ -10,6 +10,10 @@ subsystem. On the other hand, we cannot expect proper <logo label='tex'/>
 ad for educational purposed the syntax migh be wrong.
 --ldx]]--
 
+-- there is anice parser on from http://lua-users.org/wiki/LpegRecipes (by
+-- Patrick Donnelly) but lua crashes when I apply functions to some of the
+-- matches
+
 banner = "version 1.0.1 - 2007+ - PRAGMA ADE / CONTEXT"
 
 --[[

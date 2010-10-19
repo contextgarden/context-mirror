@@ -118,6 +118,8 @@
 \let\dofinishpagereference\dofinishfullreference
 \let\dofinishuserreference\dofinishfullreference
 
+\def\dofinishsomereference#1{\executeifdefined{dofinish#1reference}\gobbletwoarguments}
+
 \def\dodosetreference
   {\ifreferencing
       \expandafter\dododosetreference

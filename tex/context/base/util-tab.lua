@@ -12,6 +12,7 @@ local tables     = utilities.tables
 
 local format, gmatch = string.format, string.gmatch
 local concat, insert, remove = table.concat, table.insert, table.remove
+local setmetatable = setmetatable
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t = nil, { }

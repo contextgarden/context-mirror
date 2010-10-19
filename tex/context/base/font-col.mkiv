@@ -93,6 +93,13 @@
 \def\doclonefontb#1% #2
   {\doclonefonta{#1 \savedfontspec}}
 
+\def\doclonefontstageone#1%
+  {\ctxlua{fonts.collections.stage_1("#1")}}
+
+\def\doclonefontstagetwo#1%
+  {\ctxlua{fonts.collections.stage_2("#1")}}
+
+
 % check : only replace when present in replacement font (default: no)
 % force : force replacent even when basefont has glyph  (default: yes)
 

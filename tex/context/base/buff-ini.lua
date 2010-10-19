@@ -22,7 +22,7 @@ local report_buffers = logs.new("buffers")
 
 local utf = unicode.utf8
 
-local concat, texsprint, texprint, texwrite = table.concat, tex.sprint, tex.print, tex.write
+local concat, texprint, texwrite = table.concat, tex.print, tex.write
 local utfbyte, utffind, utfgsub = utf.byte, utf.find, utf.gsub
 local type, next = type, next
 local huge = math.huge
@@ -43,6 +43,7 @@ buffers = {
 }
 
 local buffers = buffers
+local context = context
 
 local data        = buffers.data
 local flags       = buffers.flags
@@ -106,26 +107,36 @@ function buffers.doifelsebuffer(name)
     commands.testcase(data[name] ~= nil)
 end
 
-flags.optimizeverbatim        = true
-flags.countemptylines         = false
+-- handy helpers
+--
+-- \sop[color] switch_of_pretty
+-- \bop[color] begin_of_pretty
+-- \eop        end_of_pretty
+-- \obs        obeyedspace
+-- \char <n>   special characters
 
-local no_break_command         = "\\doverbatimnobreak"
-local do_break_command         = "\\doverbatimgoodbreak"
-local begin_of_line_command    = "\\doverbatimbeginofline"
-local end_of_line_command      = "\\doverbatimendofline"
-local empty_line_command       = "\\doverbatimemptyline"
+local sop    = context.sop
+local bop    = context.bop
+local eop    = context.eop
+local obs    = context.obs
+local par    = context.par
+local chr    = context.char
 
-local begin_of_display_command = "\\doverbatimbeginofdisplay"
-local end_of_display_command   = "\\doverbatimendofdisplay"
-local begin_of_inline_command  = "\\doverbatimbeginofinline"
-local end_of_inline_command    = "\\doverbatimendofinline"
+local bgroup = context.bgroup
+local egroup = context.egroup
+
+flags.optimizeverbatim = true
+flags.countemptylines  = false
+
+local doverbatimnobreak   = context.doverbatimnobreak
+local doverbatimgoodbreak = context.doverbatimgoodbreak
 
 function buffers.verbatimbreak(n,m)
     if flags.optimizeverbatim then
         if n == 2 or n == m then
-            texsprint(no_break_command)
+            doverbatimnobreak()
         elseif n > 1 then
-            texsprint(do_break_command)
+            doverbatimgoodbreak()
         end
     end
 end
@@ -399,14 +410,11 @@ function buffers.inspect(name)
         if type(b) == "table" then
             for k=1,#b do
                 local v = b[k]
-                if v == "" then
-                    texsprint(ctxcatcodes,"[crlf]\\par ") -- space ?
-                else
-                    texsprint(ctxcatcodes,(gsub(v,"(.)",tobyte)),"\\par")
-                end
+                context(v == "" and "[crlf]" or gsub(v,"(.)",tobyte))
+                par()
             end
         else
-            texsprint(ctxcatcodes,(gsub(b,"(.)",tobyte)))
+            context((gsub(b,"(.)",tobyte)))
         end
     end
 end
@@ -462,6 +470,14 @@ end
 -- was "default", should be set at tex end (todo)
 
 local default = buffers.newvisualizer(visualizers.defaultname)
+
+default.begin_of_display = context.doverbatimbeginofdisplay
+default.end_of_display   = context.doverbatimendofdisplay
+default.begin_of_inline  = context.doverbatimbeginofinline
+default.end_of_inline    = context.doverbatimendofinline
+default.begin_of_line    = context.doverbatimbeginofline
+default.end_of_line      = context.doverbatimendofline
+default.empty_line       = context.doverbatimemptyline
 
 --~ print(variables.typing) os.exit()
 
@@ -561,34 +577,23 @@ function hooks.line(str)
     return (currenthandler.line or default.line)(str)
 end
 
--- defaults
+buffers.currentcolors = { } -- todo: registercurrentcolor and preset sop then ... faster or at least precreate tables
 
-function default.begin_of_display(currentvisualizer)
-    texsprint(ctxcatcodes,begin_of_display_command,"{",currentvisualizer,"}")
-end
-
-function default.end_of_display()
-    texsprint(ctxcatcodes,end_of_display_command)
-end
-
-function default.begin_of_inline(currentvisualizer)
-    texsprint(ctxcatcodes,begin_of_inline_command,"{",currentvisualizer,"}")
-end
-
-function default.end_of_inline()
-    texsprint(ctxcatcodes,end_of_inline_command)
-end
-
-function default.begin_of_line(n)
-    texsprint(ctxcatcodes, begin_of_line_command,"{",n,"}")
-end
-
-function default.end_of_line()
-    texsprint(ctxcatcodes,end_of_line_command)
-end
-
-function default.empty_line()
-    texsprint(ctxcatcodes,empty_line_command)
+function buffers.changestate(n, state)
+    if n then
+        if state ~= n then
+            if state > 0 then
+                sop { buffers.currentcolors[n] }
+            else
+                bop { buffers.currentcolors[n] }
+            end
+            return n
+        end
+    elseif state > 0 then
+        eop()
+        return 0
+    end
+    return state
 end
 
 function default.line(str)
@@ -600,7 +605,7 @@ function default.flush_line(str)
     if visualizers.obeyspace then
         for c in utfcharacters(str) do
             if c == " " then
-                texsprint(ctxcatcodes,"\\obs")
+                obs()
             else
                 texwrite(c)
             end
@@ -614,42 +619,6 @@ end
 
 buffers.commands.nested = "\\switchslantedtype "
 
---~ function visualizers.flushnested(str, enable) -- todo: no utf, vrb catcodes, kind of obsolete mess
---~     str = gsub(str," *[\n\r]+ *"," ")
---~     local result, c, nested, i = "", "", 0, 1
---~     local commands = buffers.commands -- otherwise wrong commands
---~     while i < #str do -- slow
---~         c = sub(str,i,i+1)
---~         if c == "<<" then
---~             nested = nested + 1
---~             if enable then
---~                 result = result .. "{" .. commands.nested
---~             else
---~                 result = result .. "{"
---~             end
---~             i = i + 2
---~         elseif c == ">>" then
---~             if nested > 0 then
---~                 nested = nested - 1
---~                 result = result .. "}"
---~             end
---~             i = i + 2
---~         else
---~             c = sub(str,i,i)
---~             if c == " " then
---~                 result = result .. "\\obs "
---~             elseif find(c,"%a") then
---~                 result = result .. c
---~             else
---~                 result = result .. "\\char" .. byte(c) .. " "
---~             end
---~             i = i + 1
---~         end
---~     end
---~     result = result .. "\\char" .. byte(sub(str,i,i)) .. " " .. rep("}",nested)
---~     texsprint(ctxcatcodes,result)
---~ end
-
 function visualizers.flushnested(str, enable) -- todo: no utf, vrb catcodes, kind of obsolete mess
     str = gsub(str," *[\n\r]+ *"," ")
     local c, nested, i = "", 0, 1
@@ -658,63 +627,38 @@ function visualizers.flushnested(str, enable) -- todo: no utf, vrb catcodes, kin
         c = sub(str,i,i+1)
         if c == "<<" then
             nested = nested + 1
+            bgroup()
             if enable then
-                texsprint(ctxcatcodes,"{",commands.nested)
-            else
-                texsprint(ctxcatcodes,"{")
+                context(commands.nested)
             end
             i = i + 2
         elseif c == ">>" then
             if nested > 0 then
                 nested = nested - 1
-                texsprint(ctxcatcodes,"}")
+                egroup()
             end
             i = i + 2
         else
             c = sub(str,i,i)
             if c == " " then
-                texsprint(ctxcatcodes,"\\obs")
+                obs()
             elseif find(c,"%a") then
-                texsprint(ctxcatcodes,c)
+                context(c)
             else
-                texsprint(ctxcatcodes,"\\char",byte(c)," ")
+                chr(byte(c))
             end
             i = i + 1
         end
     end
-    texsprint(ctxcatcodes,"\\char",byte(sub(str,i,i))," ",rep("}",nested))
-end
-
--- handy helpers
---
--- \sop[color] switch_of_pretty
--- \bop[color] begin_of_pretty
--- \eop        end_of_pretty
--- \obs        obeyedspace
--- \char <n>   special characters
-
-buffers.currentcolors = { }
-
-function buffers.changestate(n, state)
-    if n then
-        if state ~= n then
-            if state > 0 then
-                texsprint(ctxcatcodes,"\\sop[",buffers.currentcolors[n],"]")
-            else
-                texsprint(ctxcatcodes,"\\bop[",buffers.currentcolors[n],"]")
-            end
-            return n
-        end
-    elseif state > 0 then
-        texsprint(ctxcatcodes,"\\eop")
-        return 0
+    chr(byte(sub(str,i,i)))
+    for i=1,#nested do
+        egroup()
     end
-    return state
 end
 
 function buffers.finishstate(state)
     if state > 0 then
-        texsprint(ctxcatcodes,"\\eop")
+        eop()
         return 0
     else
         return state
@@ -732,9 +676,9 @@ end
 
 function buffers.flushresult(result,nested)
     if nested then
-        texsprint(ctxcatcodes,buffers.replacenested(concat(result)))
+        context(buffers.replacenested(concat(result)))
     else
-        texsprint(ctxcatcodes,concat(result))
+        context(concat(result))
     end
 end
 
@@ -786,7 +730,7 @@ local function flush_escaped_line(str,pattern,flushline)
             flushline(a)
         end
         if b and b ~= "" then
-            texsprint(ctxcatcodes,"{",b,"}")
+            context(b)
         end
         if c then
             if c == "" then
