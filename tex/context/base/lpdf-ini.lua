@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfvalues = string.utfvalues
-local texwrite, texset, texsprint, ctxcatcodes = tex.write, tex.set, tex.sprint, tex.ctxcatcodes
+local texset = tex.set
 local sind, cosd = math.sind, math.cosd
 local lpegmatch = lpeg.match
 
@@ -28,7 +28,7 @@ local trace_detail     = false  trackers.register("backend.detail",     function
 
 local report_backends = logs.new("backends")
 
-local backends = backends
+local backends, context = backends, context
 
 backends.pdf = backends.pdf or {
     comment        = "backend for directly generating pdf output",
@@ -631,7 +631,7 @@ local collected = pdfdictionary {
 } ; collected = collected()
 
 function lpdf.collectedresources()
-    tex.sprint(tex.ctxcatcodes,collected)
+    context(collected)
 end
 
 function lpdf.adddocumentextgstate (k,v) d_extgstates [k] = v end
@@ -657,7 +657,7 @@ registerpagefinalizer(checkshades,3,"shades")
 
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
-    texwrite(format("%s %s %s %s 0 0 cm",c,s,-s,c))
+    context("%s %s %s %s 0 0 cm",c,s,-s,c)
 end
 
 -- ! -> universaltime

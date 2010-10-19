@@ -34,7 +34,6 @@ a module.</p>
 local token, tex = token, tex
 
 local texsprint     = tex.sprint
-local ctxcatcodes   = tex.ctxcatcodes
 
 local createtoken   = token.create
 local csname_id     = token.csname_id
@@ -107,7 +106,7 @@ function collectors.install(tag,end_cs)
         local t = get_next()
         local a, b = t[1], t[3]
         if b == endcs then
-            texsprint('\\' ..end_cs)
+            texsprint('\\' ..end_cs) -- to be checked, can be context[end_cs]()
             return
         elseif a == call and registered[b] then
             expand()

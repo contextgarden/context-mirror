@@ -9,8 +9,6 @@ if not modules then modules = { } end modules ['node-fin'] = {
 -- this module is being reconstructed
 
 local next, type, format = next, type, string.format
-local texsprint = tex.sprint
-local ctxcatcodes = tex.ctxcatcodes
 
 local attributes, nodes, node = attributes, nodes, node
 
@@ -63,7 +61,7 @@ end
 -- function states.flush()
 --     if #collected > 0 then
 --         for i=1,#collected do
---             texsprint(ctxcatcodes,collected[i]) -- we're in context mode anyway
+--             context(collected[i]) -- we're in context mode anyway
 --         end
 --         collected = { }
 --         states.collected = collected

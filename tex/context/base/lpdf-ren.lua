@@ -10,7 +10,6 @@ if not modules then modules = { } end modules ['lpdf-ren'] = {
 
 local tostring, tonumber, next = tostring, tonumber, next
 local format = string.format
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local settings_to_array = utilities.parsers.settings_to_array
 
 local backends, lpdf = backends, lpdf

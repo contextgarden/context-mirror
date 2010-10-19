@@ -555,7 +555,7 @@
 %      {\noexpand\handleMPfigurespecial{\gMPs1}{\gMPs2}{\gMPs3}{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}{\gMPs8}}}
 %
 % \def\handleMPfigurespecial#1#2#3#4#5#6#7#8% todo : combine with ext fig
-%   {\global\letvalue{\@@MPSK#8}\empty
+%   {\letgvalueempty{\@@MPSK#8}%
 %    \vbox to \zeropoint
 %      {\vss
 %       \hbox to \zeropoint
@@ -595,7 +595,7 @@
 %      {\noexpand\handleMPhyperlink{\gMPs1}{\gMPs2}{\gMPs3}{\gMPs4}{\gMPs5}{\gMPs6}}}
 %
 % \def\handleMPhyperlink#1#2#3#4#5#6%
-%   {\global\letvalue{\@@MPSK#6}\empty
+%   {\letgvalueempty{\@@MPSK#6}%
 %    \setbox\scratchbox\hbox
 %      {\setbox\scratchbox\null
 %       \wd\scratchbox\dimexpr-#1\onebasepoint+#3\onebasepoint\relax

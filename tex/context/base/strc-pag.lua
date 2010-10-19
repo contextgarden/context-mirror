@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['strc-pag'] = {
 local texcount, format = tex.count, string.format
 
 local ctxcatcodes = tex.ctxcatcodes
-local texsprint, texwrite = tex.sprint, tex.write
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local trace_pages = false  trackers.register("structures.pages", function(v) trace_pages = v end)
@@ -28,6 +27,7 @@ local counters    = structures.counters
 local counterdata = counters.data
 
 local variables   = interfaces.variables
+local context     = context
 
 -- storage
 
@@ -94,7 +94,7 @@ function pages.number(realdata,pagespec)
         processors.sprint(ctxcatcodes,starter)
     end
     if conversion ~= "" then
-        texsprint(ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,userpage))
+        context.convertnumber(conversion,userpage)
     else
         if conversionset == "" then conversionset = "default" end
         local theconversion = sets.get("structure:conversions",block,conversionset,1,"numbers") -- to be checked: 1

@@ -17,17 +17,18 @@ local format, sprint = string.format, tex.sprint
 function fonts.otf.show_all()
     local tfmdata = fonts.ids[font.current()]
     if tfmdata and tfmdata.shared then
+        local NC, NR, char = context.NC, context.NR, context.char
         local otfdata = tfmdata.shared.otfdata
         if otfdata and otfdata.luatex then
             local unicodes = otfdata.luatex.unicodes
-            sprint(tex.ctxcatcodes,format("\\starttabulate[|l|r|c|]"))
+            context.starttabulate { "|l|r|c|" }
             for i, name in ipairs(table.sortedkeys(unicodes)) do
                 local unicode = unicodes[name]
                 if unicode >= 0 then
-                    sprint(tex.ctxcatcodes,format("\\NC %s \\NC %s \\NC \\char%s \\NC\\NR",name,unicode,unicode))
+                    NC() context(name) NC() context(unicode) NC() char(unicode) NC() NR()
                 end
             end
-            sprint(tex.ctxcatcodes,format("\\stoptabulate"))
+            context.stoptabulate()
         end
     end
 end
@@ -35,15 +36,21 @@ end
 function fonts.show_all()
     local tfmdata = fonts.ids[font.current()]
     if tfmdata then
+        local NC, NR, HL, char, bold, tttf = context.NC, context.NR, context.HL, context.char, context.bold, context.tttf
         local chars = tfmdata.characters
         local descs = tfmdata.descriptions or { }
         local data = characters.data
-        sprint(tex.ctxcatcodes,format("\\setuptabulate[header=repeat]"))
-        sprint(tex.ctxcatcodes,format("\\starttabulatehead"))
-        sprint(tex.ctxcatcodes,"\\NC\\bf unicode\\NC\\bf visual\\NC\\bf index\\NC\\bf glyph\\NC\\bf adobe\\NC\\bf context\\NC\\NR")
-        sprint(tex.ctxcatcodes,"\\HL")
-        sprint(tex.ctxcatcodes,format("\\stoptabulatehead"))
-        sprint(tex.ctxcatcodes,format("\\starttabulate[|l|c|l|p|p|p|]"))
+     -- context.setuptabulate { header = "repeat" }
+        context.starttabulatehead()
+            NC() bold("unicode")
+            NC() bold("visual")
+            NC() bold("index")
+            NC() bold("glyph")
+            NC() bold("adobe")
+            NC() bold("context")
+            NC() NR()
+        context.stoptabulatehead()
+        context.starttabulate { "|l|c|l|p|p|p|" }
         for k, unicode in ipairs(table.sortedkeys(chars)) do
 --      for unicode, _  in table.sortedpairs(chars) do
             if unicode >= 0 then
@@ -77,22 +84,27 @@ function fonts.show_all()
                         cname = mname
                     end
                 end
-                sprint(tex.ctxcatcodes,format("\\NC\\tttf U+%05X\\NC\\char%s\\NC\\tttf %05X\\NC\\tttf %s\\NC\\tttf %s\\NC\\tttf %s\\NC\\NR",unicode,unicode,index,gname,aname,cname))
+                NC() tttf() context("U+%05X",unicode)
+                NC()        char(unicode)
+                NC() tttf() context("%05X",index)
+                NC() tttf() context(gname)
+                NC() tttf() context(aname)
+                NC() tttf() context(cname)
+                NC() NR()
             end
         end
-        sprint(tex.ctxcatcodes,format("\\stoptabulate"))
+        context.stoptabulate()
     else
-        sprint(tex.ctxcatcodes,"problems")
+        context("problems")
     end
 end
 
 function fonts.show_glyphs()
     local tfmdata = fonts.ids[font.current()]
     if tfmdata then
-        local chars = tfmdata.characters
-        for k, v in ipairs(table.sortedkeys(chars)) do
+        for k, v in ipairs(table.sortedkeys(tfmdata.characters)) do
             if v >=0 then
-                sprint(tex.ctxcatcodes,format("\\dontleavehmode{\\strut\\char%s}\\endgraf",v))
+                context.showglyph(v) -- local macro
             end
         end
     end
@@ -120,6 +132,7 @@ end
 \def\ShowAllGlyphs#1#2#3%
   {\bgroup
    \page
+   \def\showglyph##1{\dontleavehmode\strut\char##1\relax\par}
    \font\TestFontA=#1 at 12pt
    \font\TestFontB=#1 at #2
    \setuplayout[style=\TestFontA]
@@ -139,7 +152,7 @@ end
 
 \starttext
 
-% \ShowCompleteFont{name:dejavusansmono}{10pt}{2}
+% \ShowCompleteFont{name:dejavusansmono}{10pt}{1}
 % \ShowCompleteFont{name:dejavuserif}{10pt}{2}
 % \ShowCompleteFont{name:officinasansbookitcregular}{10pt}{2}
 % \ShowCompleteFont{name:officinaserifbookitcregular}{10pt}{2}

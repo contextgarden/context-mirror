@@ -297,13 +297,6 @@ function table.fromhash(t)
     return h
 end
 
---~ print(table.serialize(t), "\n")
---~ print(table.serialize(t,"name"), "\n")
---~ print(table.serialize(t,false), "\n")
---~ print(table.serialize(t,true), "\n")
---~ print(table.serialize(t,"name",true), "\n")
---~ print(table.serialize(t,"name",true,true), "\n")
-
 table.serialize_functions = true
 table.serialize_compact   = true
 table.serialize_inline    = true
@@ -395,8 +388,8 @@ local function do_serialize(root,name,depth,level,indexed)
             --~ if v == root then
                 -- circular
             --~ else
-            local t = type(v)
-            if compact and first and type(k) == "number" and k >= first and k <= last then
+            local t, tk = type(v), type(k)
+            if compact and first and tk == "number" and k >= first and k <= last then
                 if t == "number" then
                     if hexify then
                         handle(format("%s 0x%04X,",depth,v))
@@ -438,16 +431,17 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s __p__=nil,",depth))
                 end
             elseif t == "number" then
-            --~ if hexify then
-            --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
-            --~ else
-            --~     handle(format("%s %s=%s,",depth,key(k),v)) -- %.99g
-            --~ end
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
                         handle(format("%s [%s]=%s,",depth,k,v)) -- %.99g
+                    end
+                elseif tk == "boolean" then
+                    if hexify then
+                        handle(format("%s [%s]=0x%04X,",depth,tostring(k),v))
+                    else
+                        handle(format("%s [%s]=%s,",depth,tostring(k),v)) -- %.99g
                     end
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     if hexify then
@@ -464,26 +458,28 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "string" then
                 if reduce and tonumber(v) then
-                --~ handle(format("%s %s=%s,",depth,key(k),v))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=%s,",depth,k,v))
                         else
                             handle(format("%s [%s]=%s,",depth,k,v))
                         end
+                    elseif tk == "boolean" then
+                        handle(format("%s [%s]=%s,",depth,tostring(k),v))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s=%s,",depth,k,v))
                     else
                         handle(format("%s [%q]=%s,",depth,k,v))
                     end
                 else
-                --~ handle(format("%s %s=%q,",depth,key(k),v))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=%q,",depth,k,v))
                         else
                             handle(format("%s [%s]=%q,",depth,k,v))
                         end
+                    elseif tk == "boolean" then
+                        handle(format("%s [%s]=%q,",depth,tostring(k),v))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s=%q,",depth,k,v))
                     else
@@ -492,13 +488,14 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "table" then
                 if not next(v) then
-                    --~ handle(format("%s %s={},",depth,key(k)))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]={},",depth,k))
                         else
                             handle(format("%s [%s]={},",depth,k))
                         end
+                    elseif tk == "boolean" then
+                        handle(format("%s [%s]={},",depth,tostring(k)))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s={},",depth,k))
                     else
@@ -507,13 +504,14 @@ local function do_serialize(root,name,depth,level,indexed)
                 elseif inline then
                     local st = simple_table(v)
                     if st then
-                    --~ handle(format("%s %s={ %s },",depth,key(k),concat(st,", ")))
-                        if type(k) == "number" then -- or find(k,"^%d+$") then
+                        if tk == "number" then -- or find(k,"^%d+$") then
                             if hexify then
                                 handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
                             else
                                 handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
                             end
+                        elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                            handle(format("%s [%s]={ %s },",depth,tostring(k),concat(st,", ")))
                         elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                             handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
                         else
@@ -526,13 +524,14 @@ local function do_serialize(root,name,depth,level,indexed)
                     do_serialize(v,k,depth,level+1)
                 end
             elseif t == "boolean" then
-            --~ handle(format("%s %s=%s,",depth,key(k),tostring(v)))
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=%s,",depth,k,tostring(v)))
                     else
                         handle(format("%s [%s]=%s,",depth,k,tostring(v)))
                     end
+                elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                    handle(format("%s [%s]=%s,",depth,tostring(k),tostring(v)))
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     handle(format("%s %s=%s,",depth,k,tostring(v)))
                 else
@@ -540,13 +539,14 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "function" then
                 if functions then
-                    --~ handle(format('%s %s=loadstring(%q),',depth,key(k),dump(v)))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=loadstring(%q),",depth,k,dump(v)))
                         else
                             handle(format("%s [%s]=loadstring(%q),",depth,k,dump(v)))
                         end
+                    elseif tk == "boolean" then
+                        handle(format("%s [%s]=loadstring(%q),",depth,tostring(k),dump(v)))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s=loadstring(%q),",depth,k,dump(v)))
                     else
@@ -554,13 +554,14 @@ local function do_serialize(root,name,depth,level,indexed)
                     end
                 end
             else
-                --~ handle(format("%s %s=%q,",depth,key(k),tostring(v)))
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
                     else
                         handle(format("%s [%s]=%q,",depth,k,tostring(v)))
                     end
+                elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                    handle(format("%s [%s]=%q,",depth,tostring(k),tostring(v)))
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     handle(format("%s %s=%q,",depth,k,tostring(v)))
                 else
@@ -869,5 +870,5 @@ function table.sequenced(t,sep,simple) -- hash only
 end
 
 function table.print(...)
-    print(table.serialize(...))
+    table.tohandle(print,...)
 end

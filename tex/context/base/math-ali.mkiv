@@ -193,8 +193,8 @@
 \def\rightofeqalign{\getvalue{\??eq:\v!right:\number\eqaligncolumn}}
 
 \def\doseteqaligncolumn#1%
-  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\empty
-   \letvalue{\??eq:\v!right:\number\eqaligncolumn}\empty
+  {\letvalueempty{\??eq:\v!left :\number\eqaligncolumn}%
+   \letvalueempty{\??eq:\v!right:\number\eqaligncolumn}%
    \doif{#1}\v!left  {\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill}%
    \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}%
    \doif{#1}\v!middle{\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill

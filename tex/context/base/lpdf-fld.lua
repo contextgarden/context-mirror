@@ -12,7 +12,6 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 
 local gmatch, lower, format = string.gmatch, string.lower, string.format
 local lpegmatch = lpeg.match
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local bpfactor, todimen = number.dimenfactors.bp, string.todimen
 
 local trace_fields = false  trackers.register("widgets.fields",   function(v) trace_fields   = v end)
@@ -22,6 +21,7 @@ local report_fields = logs.new("fields")
 local backends, lpdf = backends, lpdf
 
 local variables            = interfaces.variables
+local context              = context
 
 local references           = structures.references
 local settings_to_array    = utilities.parsers.settings_to_array
@@ -422,7 +422,7 @@ function codeinjections.getdefaultfieldvalue(name)
             end
         end
         if default then
-            tex.sprint(ctxcatcodes,default)
+            context(default)
         end
     end
 end
@@ -529,7 +529,7 @@ function codeinjections.getfieldgroup(name)
             end
         end
         if g then
-            texsprint(ctxcatcodes,g)
+            context(g)
         end
     end
 end

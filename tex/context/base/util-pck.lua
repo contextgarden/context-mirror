@@ -20,9 +20,9 @@ local function hashed(t)
     local s = { }
     for k, v in next, t do
         if type(v) == "table" then
-            s[#s+1] = k.."={"..hashed(v).."}"
+            s[#s+1] = k .. "={" .. hashed(v) .. "}"
         else
-            s[#s+1] = k.."="..tostring(v)
+            s[#s+1] = k .. "=" .. tostring(v)
         end
     end
     sort(s)
@@ -32,7 +32,7 @@ end
 local function simplehashed(t)
     local s = { }
     for k, v in next, t do
-        s[#s+1] = k.."="..v
+        s[#s+1] = k.. "=" .. v
     end
     sort(s)
     return concat(s,",")
@@ -41,20 +41,38 @@ end
 packers.hashed       = hashed
 packers.simplehashed = simplehashed
 
+--~ local function pack(t,keys,hash,index)
+--~     for k,v in next, t do
+--~         if type(v) == "table" then
+--~             pack(v,keys,hash,index)
+--~         end
+--~         if keys[k] and type(v) == "table" then
+--~             local h = hashed(v)
+--~             local i = hash[h]
+--~             if not i then
+--~                 i = #index + 1
+--~                 index[i] = v
+--~                 hash[h] = i
+--~             end
+--~             t[k] = i
+--~         end
+--~     end
+--~ end
+
 local function pack(t,keys,hash,index)
     for k,v in next, t do
         if type(v) == "table" then
             pack(v,keys,hash,index)
-        end
-        if keys[k] and type(v) == "table" then
-            local h = hashed(v)
-            local i = hash[h]
-            if not i then
-                i = #index+1
-                index[i] = v
-                hash[h] = i
+            if keys[k] then
+                local h = hashed(v)
+                local i = hash[h]
+                if not i then
+                    i = #index + 1
+                    index[i] = v
+                    hash[h] = i
+                end
+                t[k] = i
             end
-            t[k] = i
         end
     end
 end

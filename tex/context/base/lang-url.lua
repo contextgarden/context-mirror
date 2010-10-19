@@ -11,7 +11,7 @@ local utf = unicode.utf8
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local utfbyte, utfgsub = utf.byte, utf.gsub
 
-local ctxcatcodes, texsprint = tex.ctxcatcodes, tex.sprint
+context = context
 
 commands       = commands or { }
 local commands = commands
@@ -76,15 +76,15 @@ function hyphenatedurl.action(str, left, right, disc)
     for s in utfcharacters(str) do
         n = n + 1
         if s == d then
-            texsprint(ctxcatcodes,"\\d{",utfbyte(s),"}")
+            context.d(utfbyte(s))
         else
             local c = chars[s]
             if not c or n<=b or n>=e then
-                texsprint(ctxcatcodes,"\\n{",utfbyte(s),"}")
+                context.n(utfbyte(s))
             elseif c == 1 then
-                texsprint(ctxcatcodes,"\\b{",utfbyte(s),"}")
+                context.b(utfbyte(s))
             elseif c == 2 then
-                texsprint(ctxcatcodes,"\\a{",utfbyte(s),"}")
+                context.a(utfbyte(s))
             end
         end
     end

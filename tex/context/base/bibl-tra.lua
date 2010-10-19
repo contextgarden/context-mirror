@@ -13,7 +13,6 @@ bibtex.hacks = bibtex.hacks or { }
 local hacks  = bibtex.hacks
 
 local match, gmatch, format, concat, sort = string.match, string.gmatch, string.format, table.concat, table.sort
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local variables, constants = interfaces.variables, interfaces.constants
 
 local trace_bibtex = false  trackers.register("publications.bibtex", function(v) trace_bibtex = v end)

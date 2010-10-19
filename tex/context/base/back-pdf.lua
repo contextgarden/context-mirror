@@ -20,8 +20,6 @@ local char, byte, format, gsub, rep, gmatch = string.char, string.byte, string.f
 local concat = table.concat
 local round = math.round
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
-local texsprint, texwrite = tex.sprint, tex.write
-local ctxcatcodes = tex.ctxcatcodes
 
 local backends, lpdf, nodes, node = backends, lpdf, nodes, node
 

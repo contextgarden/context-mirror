@@ -13,8 +13,6 @@ local type, format, concat, rep = type, string.format, table.concat, string.rep
 
 local allocate = utilities.storage.allocate
 
-local ctxcatcodes = tex.ctxcatcodes
-
 local nodes, node = nodes, node
 
 local traverse    = node.traverse
@@ -233,26 +231,36 @@ function nodes.serializebox(n,flat,verbose,name)
     return nodes.serialize(nodes.totable(tex.box[n],flat,verbose),name)
 end
 
-function nodes.visualizebox(...)
-    tex.print(ctxcatcodes,"\\starttyping")
-    tex.print(nodes.serializebox(...))
-    tex.print("\\stoptyping")
+-- keep:
+--
+-- function nodes.visualizebox(...)
+--     tex.print(ctxcatcodes,"\\starttyping")
+--     tex.print(nodes.serializebox(...))
+--     tex.print("\\stoptyping")
+-- end
+
+function nodes.visualizebox(...) -- to be checked .. will move to module anyway
+    context.starttyping()
+    context.pushcatcodes("verbatim")
+    context(nodes.serializebox(...))
+    context.stoptyping()
+    context.popcatcodes()
 end
 
-function nodes.list(head,n) -- name might change to nodes.type
+function nodes.list(head,n) -- name might change to nodes.type -- to be checked .. will move to module anyway
     if not n then
-        tex.print(ctxcatcodes,"\\starttyping")
+        context.starttyping(true)
     end
     while head do
         local id = head.id
-        tex.print(rep(" ",n or 0) .. tostring(head) .. "\n")
+        tex.write(rep(" ",n or 0) .. tostring(head) .. "\n")
         if id == hlist_code or id == vlist_code then
             nodes.list(head.list,(n or 0)+1)
         end
         head = head.next
     end
     if not n then
-        tex.print("\\stoptyping")
+        context.stoptyping(true)
     end
 end
 

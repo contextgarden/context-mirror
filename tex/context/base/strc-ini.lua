@@ -142,8 +142,6 @@ local function simplify(d,nodefault)
                 t[k] = v
             end
         end
---~ print(table.serialize(d,"before"))
---~ print(table.serialize(t,"after"))
         return next(t) and t
     elseif nodefault then
         return nil
@@ -181,29 +179,29 @@ local tags = {
 function helpers.title(title,metadata) -- coding is xml is rather old and not that much needed now
     if title and title ~= "" then      -- so it might disappear
         if metadata then
-            if metadata.coding == "xml" then -- title can contain raw xml
+            local xmlsetup = metadata.xmlsetup
+            if metadata.coding == "xml" then
+                -- title can contain raw xml
                 local tag = tags[metadata.kind] or tags.generic
                 local xmldata = format("<?xml version='1.0'?><%s>%s</%s>",tag,title,tag)
-                local command = format("\\xmlprocessbuffer{%s}{%s}{%s}","dummy",tag,metadata.xmlsetup or "")
                 buffers.set(tag,xmldata)
                 if trace_processors then
-                    report_processors("xmldata: %s",xmldata)
-                    report_processors("feeding: %s",command)
+                    report_processors("putting xml data in buffer: %s",xmldata)
+                    report_processors("processing buffer with setup '%s' and tag '%s'",xmlsetup or "",tag)
                 end
-                texsprint(ctxcatcodes,command)
-            elseif metadata.xmlsetup then -- title is reference to node (so \xmlraw should have been used)
-                local command = format("\\xmlsetup{%s}{%s}",title,metadata.xmlsetup)
+                context.xmlprocessbuffer("dummy",tag,xmlsetup or "")
+            elseif xmlsetup then -- title is reference to node (so \xmlraw should have been used)
                 if trace_processors then
-                    report_processors("feeding: %s",command)
+                    report_processors("feeding xmlsetup '%s' using node '%s'",xmlsetup,title)
                 end
-                texsprint(ctxcatcodes,command)
+                context.xmlsetup(title,metadata.xmlsetup)
             else
                 local catcodes = metadata.catcodes
                 if catcodes == notcatcodes or catcodes == xmlcatcodes then
                     if trace_processors then
                         report_processors("cct: %s (overloads %s), txt: %s",ctxcatcodes,catcodes,title)
                     end
-                    texsprint(ctxcatcodes,title) -- nasty
+                    context(title) -- nasty
                 else
                     if trace_processors then
                         report_processors("cct: %s, txt: %s",catcodes,title)
@@ -217,7 +215,7 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
     end
 end
 
--- -- -- processors -- -- -- syntax: processor->data
+-- -- -- processors -- -- -- syntax: processor->data ... not ok yet
 
 local processors = structures.processors
 
@@ -242,7 +240,7 @@ function processors.split(str)
     end
 end
 
-function processors.sprint(catcodes,str,fnc,...)
+function processors.sprint(catcodes,str,fnc,...) -- not ok: mixed
     local p, s = lpegmatch(splitter,str)
     local code
     if registered[p] then

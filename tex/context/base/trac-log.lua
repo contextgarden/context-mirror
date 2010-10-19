@@ -394,19 +394,6 @@ function logs.obsolete(old,new)
     end
 end
 
-if tex.error then
-
-    function logs.texerrormessage(...) -- for the moment we put this function here
-        tex.error(format(...), { })
-    end
-
-else
-
-    function logs.texerrormessage(...) -- for the moment we put this function here
-        local v = format(...)
-        tex.sprint(tex.ctxcatcodes,"\\errmessage{")
-        tex.sprint(tex.vrbcatcodes,v)
-        tex.print(tex.ctxcatcodes,"}")
-    end
-
+function logs.texerrormessage(...) -- for the moment we put this function here
+    tex.error(format(...), { })
 end

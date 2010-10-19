@@ -40,10 +40,10 @@ local progress = moduledata.progress
 
 function progress.show(filename,parameters,nodes,other)
     for n, name in pairs(parameters or progress.parameters(filename)) do
-        tex.sprint(tex.ctxcatcodes,string.format("\\ShowNamedUsage{%s}{%s}{%s}",filename or progress.defaultfilename,name,other or ""))
+        context.ShowNamedUsage(filename or progress.defaultfilename,name,other or "")
     end
     for n, name in pairs(nodes or progress.nodes(filename)) do
-        tex.sprint(tex.ctxcatcodes,string.format("\\ShowNamedUsage{%s}{%s}{%s}",filename or progress.defaultfilename,name,other or ""))
+        context.ShowNamedUsage(filename or progress.defaultfilename,name,other or "")
     end
 end
 \stopluacode

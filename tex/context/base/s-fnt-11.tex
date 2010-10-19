@@ -26,19 +26,31 @@
 function fonts.names.table(pattern,reload,all)
     local t = fonts.names.list(pattern,reload)
     if t then
-        tex.sprint(tex.ctxcatcodes,"\\start\\nonknuthmode\\starttabulate[|T|T|T|T|T|]")
-        tex.sprint(tex.ctxcatcodes,"\\NC hashname\\NC type\\NC fontname\\NC filename\\NC\\NR\\HL")
-        for v,tv in table.sortedpairs(t) do
-            local kind, name, file = tv[1], tv[2], tv[3]
-            if all or v == string.lower(name) then
-                if kind and name and file then
-                    tex.sprint(tex.ctxcatcodes,string.format("\\NC %s\\NC %s\\NC %s\\NC %s\\NC\\NR",v,kind,name,file))
-                else
-                    logs.report("font table", "skipping %s", v)
+        local NC, NR, HL = context.NC, context.NR, context.HL
+        context.start()
+            context.nonknuthmode()
+            context.starttabulate { "|T|T|T|T|T|" }
+                NC(false,hashname)
+                NC(false,type)
+                NC(false,fontname)
+                NC(false,filename)
+                NC() NR() HL()
+                for v,tv in table.sortedpairs(t) do
+                    local kind, name, file = tv[1], tv[2], tv[3]
+                    if all or v == string.lower(name) then
+                        if kind and name and file then
+                            NC(false,v)
+                            NC(false,kind)
+                            NC(false,name)
+                            NC(false,file)
+                            NC() NR()
+                        else
+                            logs.report("font table", "skipping %s", v)
+                        end
+                    end
                 end
-            end
-        end
-        tex.sprint(tex.ctxcatcodes,"\\stoptabulate\\stop")
+            context.stoptabulate()
+        context.stop()
     end
 end
 \stopluacode

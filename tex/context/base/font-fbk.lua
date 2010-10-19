@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['font-fbk'] = {
 local cos, tan, rad, format = math.cos, math.tan, math.rad, string.format
 local utfbyte, utfchar = utf.byte, utf.char
 
-local trace_combining = false  trackers.register("fonts.combining", function(v) trace_combining = v end)
+local trace_combining     = false  trackers.register("fonts.combining",     function(v) trace_combining     = v end)
+local trace_combining_all = false  trackers.register("fonts.combining.all", function(v) trace_combining_all = v end)
 
 trackers.register("fonts.composing", "fonts.combining")
 
@@ -105,7 +106,7 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                 charsacc = acc and chars[acc]
                             end
                             if charsacc then
-                                if trace_combining then
+                                if trace_combining_all then
                                     report_combining("%s (0x%05X) = %s (0x%05X) + %s (0x%05X)",utfchar(i),i,utfchar(chr),chr,utfchar(acc),acc)
                                 end
                                 local chr_t = cache[chr]
@@ -178,7 +179,7 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                     end
                                     done = true
                                 end
-                            elseif trace_combining then
+                            elseif trace_combining_all then
                                 report_combining("%s (0x%05X) = %s (0x%05X)",utfchar(i),i,utfchar(chr),chr)
                             end
                             chars[i] = t
@@ -300,7 +301,7 @@ fallbacks['textcent'] = function (g)
 end
 
 fallbacks['texteuro'] = function (g)
-    local c = byte("C")
+    local c = utfbyte("C")
     local t = table.fastcopy(g.characters[c],true)
     local d = cos(rad(90+(g.italicangle)))
     local vfspecials = backends.tables.vfspecials

@@ -176,7 +176,7 @@
 
 %D NEW:
 
-\chardef\kindoffile=0 % 0=normal 1=full path spec (or http) / set at the lua end
+\newconstant\kindoffile % 0=normal 1=full path spec (or http) / set at the lua end
 
 \def\checkfilename#1{\ctxlua{commands.checkfilename([[#1]])}}
 
@@ -454,7 +454,7 @@
 %D
 %D \start \typebuffer \getbuffer \stop
 
-\def\splitoffroot{.} \chardef\splitoffkind\zerocount
+\def\splitoffroot{.} \newconstant\splitoffkind
 
 \let\splitofffull\empty
 \let\splitoffpath\empty

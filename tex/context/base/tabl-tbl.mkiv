@@ -705,8 +705,8 @@
         \c!margin,\c!align,\c!rulecolor,\c!rulethickness,EQ]%
      \setuvalue{\e!start#1::#2}{\dofinalstarttabulate[#1][#2][#3]}%
      \setuvalue{\e!start#1}{\bgroup\dosubstarttabulate[#1]}%
-     \letvalue{\??tt#1-\v!header}\empty
-     \letvalue{\??tt#1-\v!footer }\empty
+     \letvalueempty{\??tt#1-\v!header}%
+     \letvalueempty{\??tt#1-\v!footer}%
    \else\ifsecondargument
      \definetabulate[#1][][#2]%
    \else

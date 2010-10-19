@@ -15,20 +15,23 @@
 function document.show_character_data(n)
     local n = characters.number(n)
     local d = characters.data[n]
+    local NC, NR = context.NC, context.NR
     if d then
         local function entry(label,name)
-            texsprint(tex.ctxcatcodes,format("\\NC %s\\NC %s\\NC\\NR",label,characters.valid(d[name])))
+            NC() context(label)
+            NC() context(characters.valid(d[name])
+            NC() NR()
         end
-        texsprint(tex.ctxcatcodes,"\\starttabulate[|Tl|Tl|]")
-        entry("unicode index" , "unicodeslot")
-        entry("context name"  , "contextname")
-        entry("adobe name"    , "adobename")
-        entry("category"      , "category")
-        entry("description"   , "description")
-        entry("uppercase code", "uccode")
-        entry("lowercase code", "lccode")
-        entry("specials"      , "specials")
-        texsprint(tex.ctxcatcodes,"\\stoptabulate ")
+        context.starttabulate { "|Tl|Tl|]" }
+            entry("unicode index" , "unicodeslot")
+            entry("context name"  , "contextname")
+            entry("adobe name"    , "adobename")
+            entry("category"      , "category")
+            entry("description"   , "description")
+            entry("uppercase code", "uccode")
+            entry("lowercase code", "lccode")
+            entry("specials"      , "specials")
+        context.stoptabulate()
     end
 end
 \stopluacode

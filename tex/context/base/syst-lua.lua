@@ -81,12 +81,6 @@ function commands.doifinsetelse(a,b)
     return testcase(false)
 end
 
-function commands. def   (cs,value) texsprint(ctxcatcodes,format( "\\def\\%s{%s}",cs,value)) end
-function commands.edef   (cs,value) texsprint(ctxcatcodes,format("\\edef\\%s{%s}",cs,value)) end
-function commands.gdef   (cs,value) texsprint(ctxcatcodes,format("\\gdef\\%s{%s}",cs,value)) end
-function commands.xdef   (cs,value) texsprint(ctxcatcodes,format("\\xdef\\%s{%s}",cs,value)) end
-function commands.chardef(cs,value) texsprint(ctxcatcodes,format("\\chardef\\%s=%s\\relax",cs,value)) end
-
 local pattern = lpeg.patterns.validdimen
 
 function commands.doifdimenstringelse(str)

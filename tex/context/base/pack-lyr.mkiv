@@ -426,9 +426,9 @@
 
 % \unexpanded\def\flushlayer[#1]%
 %   {\doifelsevalue{\??ll#1\c!state}\v!next
-%      {\global\letvalue{\??ll#1\c!state}\v!start} % dangerous, stack-built-up
+%      {\letgvalue{\??ll#1\c!state}\v!start} % dangerous, stack-built-up
 %      {\doifelsevalue{\??ll#1\c!state}\v!continue
-%         {\global\letvalue{\??ll#1\c!state}\v!repeat} % dangerous, stack-built-up
+%         {\letgvalue{\??ll#1\c!state}\v!repeat} % dangerous, stack-built-up
 %         {\doifelsevalue{\??ll#1\c!doublesided}\v!yes
 %            {\doifundefinedelse{\@@layerbox#1}%
 %               {\dodoflushlayerA[#1]}

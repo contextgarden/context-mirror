@@ -40,10 +40,10 @@
   {\ctxlua{nodes.tracers.steppers.glyphs(\number\otfcollector,#1)}%
    \unhbox\otfcollector}
 
-\def\otfstepcharcommand#1#2% font char
+\def\otfstepcharcommand#1#2#3% font char class
   {\removeunwantedspaces
    \hskip.5em plus .125em\relax
-   U+\hexnumber{#2}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
+   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
    \hskip.5em plus .125em\relax}
 
 \def\otfstepmessagecommand#1#2%
@@ -58,10 +58,10 @@
    \blank}
 
 \def\showotfstepchars#1%
-  {\ctxlua{nodes.tracers.steppers.codes(#1,\!!bs\detokenize{\otfstepcharcommand}\!!es)}}
+  {\ctxlua{nodes.tracers.steppers.codes(#1,"otfstepcharcommand")}}
 
 \def\showotfstepmessages#1%
-  {\ctxlua{nodes.tracers.steppers.messages(#1,\!!bs\detokenize{\otfstepmessagecommand}\!!es,true)}}
+  {\ctxlua{nodes.tracers.steppers.messages(#1,"otfstepmessagecommand",true)}}
 
 \def\showotfstepfeatures
   {\ctxlua{nodes.tracers.steppers.features()}}

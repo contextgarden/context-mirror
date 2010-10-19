@@ -77,21 +77,19 @@
      % \ifcase\headtimingmode#1\fi % can introduce cr
      \structureheadparameter\c!commandbefore
      \placeheadmargintexts
+     \ifcsname\??nh\currentstructurehead\c!deeptextcommand\endcsname
+       \expandafter\let\expandafter\deepstructuretitlecommand\csname\??nh\currentstructurehead\c!deeptextcommand\endcsname
+     \fi
      \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
-       \structureheadparameter\c!textcommand% struts can be nilled with \setnostrut
-         {\setstrut
-          \begstrut
-          \ifcase\headtimingmode\hbox{#1}\fi
-          \executeifdefined{\??nh\currentstructurehead\c!deeptextcommand}\firstofoneargument{#2}%
-          \endstrut}% \hbox prevents break
+       % struts can be nilled with \setnostrut, the \hbox prevents break
+       \structureheadparameter\c!textcommand{\setstrut\begstrut\ifcase\headtimingmode\hbox{#1}\fi#2\endstrut}%
        \xdef\localheadheight    {\the\strutht}%
        \xdef\localheaddepth     {\the\strutdp}%
        \xdef\localheadlineheight{\the\lineheight}%
        % == \globallet\localheaddepth\strutdepth
      \else
        \ifcase\headtimingmode#1\fi
-       \structureheadparameter\c!textcommand
-          {\executeifdefined{\??nh\currentstructurehead\c!deeptextcommand}\firstofoneargument{#2}}%
+       \structureheadparameter\c!textcommand{#2}%
      \fi
      \structureheadparameter\c!commandafter
      \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
@@ -104,16 +102,14 @@
      \setupheadcomponentfont\c!numberstyle\c!numbercolor
      % \getvalue{\??ko\currentstructurehead\c!commandbefore}% strange, why here? moved 21/11/2005
      \placeheadmargintexts
+     \ifcsname\??nh\currentstructurehead\c!deepnumbercommand\endcsname
+       \expandafter\let\expandafter\deepstructurenumbercommand\csname\??nh\currentstructurehead\c!deeptextcommand\endcsname
+     \fi
      \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
        % can be nilled with \setnostrut
-       \structureheadparameter\c!numbercommand
-         {\setstrut
-          \begstrut
-          \executeifdefined{\??nh\currentstructurehead\c!deepnumbercommand}\firstofoneargument{#2}%
-          \endstrut}%
+       \structureheadparameter\c!numbercommand{\setstrut\begstrut#2\endstrut}%
      \else
-       \structureheadparameter\c!numbercommand
-         {\executeifdefined{\??nh\currentstructurehead\c!deepnumbercommand}\firstofoneargument{#2}}%
+       \structureheadparameter\c!numbercommand{#2}%
      \fi
    \endgroup}
 

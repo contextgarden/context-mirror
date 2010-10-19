@@ -705,74 +705,74 @@
 
 \def\registeronepagerangeseparator{|\endash|}
 
-\def\withregisterpagecommand#1#2#3%
-  {\def\currentregisterpageindex{#1}%
+\def\withregisterpagecommand#1#2#3#4%
+  {\def\currentregisterpageindex{#2}%
    \iflocation
-     \goto{\registerparameter\c!pagecommand{#3}}[internal(#1)]%
+     \goto{\registerparameter\c!pagecommand{#4}}[internal(#2)]%
    \else
-     \registerparameter\c!pagecommand{#3}%
+     \registerparameter\c!pagecommand{#4}%
    \fi}
 
-\def\registeronepage#1#2#3% content
+\def\registeronepage#1#2#3#4% #1:processor content
   {\registerpageseparator
    \dostarttagged\t!registerpage\empty
-   \withregisterpagecommand{#1}{#2}{#3}%
+   \withregisterpagecommand{#1}{#2}{#3}{#4}%
    \dostoptagged}
 
-\def\registerpagerange#1#2#3#4#5#6% content, content todo: -- configurable
+\def\registerpagerange#1#2#3#4#5#6#7% #1:processor  content, content todo: -- configurable
   {\registerpageseparator
    \dostarttagged\t!registerpagerange\empty
    \dostarttagged\t!registerfrompage\empty
-   \withregisterpagecommand{#1}{#2}{#3}%
+   \withregisterpagecommand{#1}{#2}{#3}{#4}%
    \dostoptagged
    \registeronepagerangeseparator
    \dostarttagged\t!registertopage\empty
-   \withregisterpagecommand{#4}{#5}{#6}%
+   \withregisterpagecommand{#1}{#5}{#6}{#7}%
    \dostoptagged
    \dostoptagged}
 
-\def\registeroneword#1#2#3% #1:internal #2:seeindex #3:word
+\def\registeroneword#1#2#3#4% #1:processor #2:internal #3:seeindex #4:word
   {\registerpageseparator
-   \def\currentregisterpageindex{#1}%
+   \def\currentregisterpageindex{#2}%
    \dostarttagged\t!registersee\empty
    \iflocation
-     \def\currentregisterseeindex{#2}%
+     \def\currentregisterseeindex{#3}%
    \else
      \let\currentregisterseeindex\empty
    \fi
    \ifx\currentregisterseeindex\empty
-     \registerseeword{#3}%
+     \registerseeword{#1}{#4}%
    \else
 % [>\currentregisterseeindex]%
-     \registerseeword{\goto{#3}[seeindex:\currentregisterseeindex]}%
+     \registerseeword{#1}{\goto{#4}[seeindex:\currentregisterseeindex]}%
    \fi
    \dostoptagged}
 
-\def\doapplyregisterentrycommand#1%
+\def\doapplyregisterentrycommand#1#2% processor text
   {\dostarttagged\t!registerentry\empty
    \ifx\currentregisterseeindex\empty \else
      \dontleavehmode
 % [<\currentregisterseeindex]%
      \pagereference[seeindex:\currentregisterseeindex]% maybe some day we will support an area
    \fi
-   \registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#1}}}%
+   \applyprocessor{#1}{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#2}}}}%
    \dostoptagged}
 
-\def\defaultregisterentry#1#2#3% #1:internal #2:seeindex #3:word
-  {\def\currentregisterpageindex{#1}%
+\def\defaultregisterentry#1#2#3#4% #1:processor #2:internal #3:seeindex #4:word
+  {\def\currentregisterpageindex{#2}%
    \iflocation
-     \def\currentregisterseeindex{#2}%
+     \def\currentregisterseeindex{#3}%
      \doifelse{\registerparameter\c!interaction}\v!text
-       {\directgoto{\setlocationcolor\??ia\doapplyregisterentrycommand{#3}}[internal(#1)]}
-       {\doapplyregisterentrycommand{#3}}%
+       {\directgoto{\setlocationcolor\??ia\doapplyregisterentrycommand{#1}{#4}}[internal(#2)]}
+       {\doapplyregisterentrycommand{#1}{#4}}%
    \else
      \let\currentregisterseeindex\empty
-     \doapplyregisterentrycommand{#3}%
+     \doapplyregisterentrycommand{#1}{#4}%
    \fi}
 
-\def\defaultregisterseeword#1%
+\def\defaultregisterseeword#1#2% processor word
   {\dostarttagged\t!registersee\empty
-   \labeltexts\v!see{#1}%
+   \applyprocessor{#1}{\labeltexts\v!see{#2}}%
    \dostoptagged}
 
 \let\registerseeword  \defaultregisterseeword
@@ -810,18 +810,18 @@
 
 \setvalue{\??id:\c!symbol:\v!none}%
   {\let\registerpageseparatorsymbol\empty
-   \let\registeronepage            \gobblethreearguments
-   \let\registerpagerange          \gobblesixarguments}
+   \let\registeronepage            \gobblefourarguments
+   \let\registerpagerange          \gobblesevenarguments}
 
 \setvalue{\??id:\c!symbol:1}%
   {\let\registerpageseparatorsymbol\space
-   \def\registeronepage           {\symbol[1]\gobblethreearguments}%
-   \def\registerpagerange         {\symbol[1]\gobblesixarguments}}
+   \def\registeronepage           {\symbol[1]\gobblefourarguments}%
+   \def\registerpagerange         {\symbol[1]\gobblesevenarguments}}
 
 \setvalue{\??id:\c!symbol:2}%
   {\let\registerpageseparatorsymbol\space
-   \def\registeronepage           {\registerpagebuttonsymbol\gobblethreearguments}%
-   \def\registerpagerange         {\registerpagebuttonsymbol\gobblesixarguments}}
+   \def\registeronepage           {\registerpagebuttonsymbol\gobblefourarguments}%
+   \def\registerpagerange         {\registerpagebuttonsymbol\gobblesevenarguments}}
 
 \def\setregisterpagerendering
   {\doifelse{\registerparameter\c!pagenumber}\v!no
@@ -833,8 +833,8 @@
      \csname\??id:\c!symbol:\currentregisterpagesymbol\endcsname
    \else
      \let\registerpageseparatorsymbol\space
-     \def\registeronepage           {\registerparameter\c!symbol\gobblethreearguments}%
-     \def\registerpagerange         {\registerparameter\c!symbol\gobblesixarguments}%
+     \def\registeronepage           {\registerparameter\c!symbol\gobblefourarguments}%
+     \def\registerpagerange         {\registerparameter\c!symbol\gobblesevenarguments}%
    \fi\fi}
 
 \appendtoks

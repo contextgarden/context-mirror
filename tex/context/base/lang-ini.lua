@@ -157,7 +157,7 @@ function languages.synonym(synonym,tag) -- convenience function
 end
 
 function languages.installed(separator)
-    tex.sprint(tex.ctxcatcodes,concat(table.sortedkeys(registered),separator or ","))
+    context(concat(table.sortedkeys(registered),separator or ","))
 end
 
 function languages.associate(tag,script,language) -- not yet used

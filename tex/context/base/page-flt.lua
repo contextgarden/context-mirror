@@ -11,7 +11,6 @@ if not modules then modules = { } end modules ['page-flt'] = {
 local insert, remove = table.insert, table.remove
 local find = string.find
 local setdimen, setbox, setcount, texbox = tex.setdimen, tex.setbox, tex.setcount, tex.box
-local texwrite, texsprint, ctxcatcodes = tex.write, tex.sprint, tex.ctxcatcodes
 
 local copy_node_list = node.copy_list
 
@@ -48,7 +47,7 @@ function floats.stacked(which) -- floats.thenofstacked
 end
 
 function floats.thestacked(which)
-    return texwrite(#stacks[which or default])
+    return context(#stacks[which or default])
 end
 
 function floats.push()
@@ -168,7 +167,7 @@ end
 function floats.thevar(name,default)
     local value = last and last.data[name] or default
     if value and value ~= "" then
-        texsprint(ctxcatcodes,value)
+        context(value)
     end
 end
 
@@ -246,7 +245,7 @@ function floats.thecheckedpagefloat(packed)
             end
         end
     end
-    texsprint(ctxcatcodes,result)
+    context(result)
 end
 
 local method   = C((1-S(", :"))^1)

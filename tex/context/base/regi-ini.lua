@@ -8,9 +8,6 @@ if not modules then modules = { } end modules ['regi-ini'] = {
 
 local utf = unicode.utf8
 local char, utfchar, gsub = string.char, utf.char, string.gsub
-local texsprint = tex.sprint
-
-local ctxcatcodes = tex.ctxcatcodes
 
 --[[ldx--
 <p>Regimes take care of converting the input characters into
@@ -48,7 +45,7 @@ function regimes.setsynonym(synonym,target)
 end
 
 function regimes.truename(regime)
-    texsprint(ctxcatcodes,(regime and synonyms[synonym] or regime) or regimes.currentregime)
+    context((regime and synonyms[synonym] or regime) or regimes.currentregime)
 end
 
 function regimes.load(regime)

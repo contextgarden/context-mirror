@@ -75,14 +75,14 @@
   {mathsymbol: #1~\ruledhbox{\char#2}\par}
 
 \startluacode
+local concat = table.concat
+local format, lower = string.format, string.lower
+
 function document.showmathfont(id,slot)
     local data = characters.data
     local tfmdata = fonts.ids[id]
     local characters = tfmdata.characters
     local sorted = (slot and { slot }) or table.sortedkeys(characters)
-    local function report(...)
-        tex.sprint(tex.ctxcatcodes,string.format(...))
-    end
     local virtual, names = tfmdata.type == "virtual", { }
     if virtual then
         for k, v in ipairs(tfmdata.fonts) do
@@ -91,17 +91,16 @@ function document.showmathfont(id,slot)
         end
     end
     local round = math.round
---  print(table.serialize(names))
-local limited = true
+    local limited = true
     for _, s in next, sorted do
         if not limited or s < 0xF0000 then
             local char = characters[s]
             if char then
                 local info = data[s]
                 local cnext, cvert_variants, choriz_variants = char.next, char.vert_variants, char.horiz_variants
-                report("\\startmathfontlistentry")
-                report("\\mathfontlistentryhexdectit{U+%05X}{%s}{%s}",s,s,string.lower(info.description or "no description, private to font"))
-                report("\\mathfontlistentrywdhtdpic{%s}{%s}{%s}{%s}",round(char.width or 0),round(char.height or 0),round(char.depth or 0),round(char.italic or 0))
+                context.startmathfontlistentry()
+                context.mathfontlistentryhexdectit(format("U+%05X",s),s,lower(info.description or "no description, private to font"))
+                context.mathfontlistentrywdhtdpic(round(char.width or 0),round(char.height or 0),round(char.depth or 0),round(char.italic or 0))
                 if virtual then
                     local commands = char.commands
                     if commands then
@@ -110,24 +109,24 @@ local limited = true
                             local ci = commands[i]
                             if ci[1] == "slot" then
                                 local fnt, idx = ci[2], ci[3]
-                                t[#t+1] = string.format("%s/%0X",names[fnt] or fnt,idx)
+                                t[#t+1] = format("%s/%0X",names[fnt] or fnt,idx)
                             end
                         end
                         if #t > 0 then
-                            report("\\mathfontlistentryresource{%s}",table.concat(t,", "))
+                            context.mathfontlistentryresource(concat(t,", "))
                         end
                     end
                 end
                 if info.mathclass then
-                    report("\\mathfontlistentryclassname{%s}{%s}",info.mathclass,info.mathname or "no name")
+                    context.mathfontlistentryclassname(info.mathclass,info.mathname or "no name")
                 end
                 if info.mathspec then
                     for i=1,#info.mathspec do
-                        report("\\mathfontlistentryclassname{%s}{%s}",info.mathspec[i].class,info.mathspec[i].name or "no name")
+                        context.mathfontlistentryclassname(info.mathspec[i].class,info.mathspec[i].name or "no name")
                     end
                 end
                 if info.mathsymbol then
-                    report("\\mathfontlistentrysymbol{U+%05X}{%s}",info.mathsymbol,info.mathsymbol)
+                    context.mathfontlistentrysymbol(format("U+%05X",info.mathsymbol),info.mathsymbol)
                 end
                 if cnext then
                     local t, done = { }, { }
@@ -137,7 +136,7 @@ local limited = true
                             break
                         else
                             done[cnext] = true
-                            t[#t+1] = string.format("\\mathfontlistentrynext{U+%05X}{%s}",cnext,cnext)
+                            t[#t+1] = context.nested.mathfontlistentrynext(format("U+%05X",cnext),cnext)
                             cnext = characters[cnext]
                             cvert_variants = cnext.vert_variants or cvert_variants
                             choriz_variants = cnext.horiz_variants or choriz_variants
@@ -151,29 +150,29 @@ local limited = true
                 if cvert_variants then
                     local t = { }
                     for k, v in next, cvert_variants do
-                        t[#t+1] = string.format("\\fontlistentryvariants{U+%05X}{%s}",v.glyph,v.glyph)
+                        t[#t+1] = context.nested.fontlistentryvariants(format("U+%05X",v.glyph),v.glyph)
                     end
                     cvert_variants = t
                 end
                 if choriz_variants then
                     local t = { }
                     for k, v in next, choriz_variants do
-                        t[#t+1] = string.format("\\fontlistentryvariants{U+%05X}{%s}",v.glyph,v.glyph)
+                        t[#t+1] = context.nested.fontlistentryvariants(format("U+%05X",v.glyph),v.glyph)
                     end
                     choriz_variants = t
                 end
                 local cvariants = choriz_variants or cvert_variants
                 if cvariants and cnext then
-                    report("\\mathfontlistentrynextvariantslist{%s}{%s}",table.concat(cnext," => "),table.concat(cvariants," => "))
+                    context.mathfontlistentrynextvariantslist(concat(cnext," => "),concat(cvariants," => "))
                 else
                     if cnext then
-                        report("\\mathfontlistentrynextlist{%s}",table.concat(cnext," => "))
+                        context.mathfontlistentrynextlist(concat(cnext," => "))
                     end
                     if cvariants then
-                        report("\\mathfontlistentryvariantslist{%s}",table.concat(cvariants," "))
+                        context.mathfontlistentryvariantslist(concat(cvariants," "))
                     end
                 end
-                report("\\stopmathfontlistentry")
+                context.stopmathfontlistentry()
             end
         end
     end
@@ -184,13 +183,13 @@ end
 
 \starttext
     \setupbodyfont[cambria,  12pt] \showmathfontcharacters
-    \setupbodyfont[lmvirtual,12pt] \showmathfontcharacters
-    \setupbodyfont[pxvirtual,12pt] \showmathfontcharacters
-    \setupbodyfont[txvirtual,12pt] \showmathfontcharacters
-    \setupbodyfont[palatino, 10pt] \showmathfontcharacters
-    \setupbodyfont[mathtimes,12pt] \showmathfontcharacters
-    \setupbodyfont[stix,     12pt] \showmathfontcharacters
-    \setupbodyfont[xits,     12pt] \showmathfontcharacters
-    \setupbodyfont[lucida,   12pt] \showmathfontcharacters
+%     \setupbodyfont[lmvirtual,12pt] \showmathfontcharacters
+%     \setupbodyfont[pxvirtual,12pt] \showmathfontcharacters
+%     \setupbodyfont[txvirtual,12pt] \showmathfontcharacters
+%     \setupbodyfont[palatino, 10pt] \showmathfontcharacters
+%     \setupbodyfont[mathtimes,12pt] \showmathfontcharacters
+%     \setupbodyfont[stix,     12pt] \showmathfontcharacters
+%     \setupbodyfont[xits,     12pt] \showmathfontcharacters
+%     \setupbodyfont[lucida,   12pt] \showmathfontcharacters
 \stoptext
 

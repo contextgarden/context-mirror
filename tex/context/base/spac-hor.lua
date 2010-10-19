@@ -26,7 +26,6 @@ function commands.autonextspace(str) -- todo: use nexttoken
     local ch = match(str,"the letter (.)") or match(str,"the character (.)")
     ch = ch and chardata[utfbyte(ch)]
     if ch and can_have_space[ch.category] then
-     -- texsprint(ctxcatcodes,"\\space") -- faster
         context.space()
     end
 end

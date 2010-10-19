@@ -19,7 +19,6 @@ saves much runtime but at the cost of more memory usage.</p>
 
 local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local definetable, accesstable = utilities.tables.definetable, utilities.tables.accesstable
 local serialize = table.serialize
 local packers = utilities.packers
@@ -94,7 +93,7 @@ local function initializer()
     end
     tobesaved.randomseed = r
     for cs, value in next, collected do
-        texsprint(ctxcatcodes,format("\\xdef\\%s{%s}",cs,value))
+        context.setxvalue(cs,value)
     end
 end
 

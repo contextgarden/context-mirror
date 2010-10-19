@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['chem-ini'] = {
     license   = "see context related readme files"
 }
 
-local format, texsprint = string.format, tex.sprint
+local format = string.format
 local lpegmatch = lpeg.match
 
 local P, R, V, Cc, Cs = lpeg.P, lpeg.R, lpeg.V, lpeg.Cc, lpeg.Cs
@@ -15,7 +15,7 @@ local trace_molecules = false  trackers.register("chemistry.molecules",  functio
 
 local report_chemistry = logs.new("chemistry")
 
-local ctxcatcodes = tex.ctxcatcodes
+local context = context
 
 chemicals       = chemicals or { }
 local chemicals = chemicals
@@ -72,8 +72,8 @@ function commands.molecule(str)
     if trace_molecules then
         local rep = lpegmatch(parser,str)
         report_chemistry("molecule %s => %s",str,rep)
-        texsprint(ctxcatcodes,rep)
+        context(rep)
     else
-        texsprint(ctxcatcodes,lpegmatch(parser,str))
+        context(lpegmatch(parser,str))
     end
 end

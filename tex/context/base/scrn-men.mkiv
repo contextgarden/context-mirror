@@ -93,7 +93,7 @@
 \def\dodefineinteractionmenu[#1][#2][#3]% [name] [location] [settings|parent] % right right vertical
   {\ifsecondargument
      \ifcsname\??am:\c!list:#2\endcsname \else
-        \letvalue{\??am:\c!list:#2}\empty
+        \letvalueempty{\??am:\c!list:#2}%
      \fi
      \normalexpanded{\noexpand\addtocommalist{#1}\@EA\noexpand\csname\??am:\c!list:#2\endcsname}%
      \setvalue{\@@dodolistelement#1}{\def\dosomelistelement{\dodomenulistelement{#1}}}%

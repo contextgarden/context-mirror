@@ -48,7 +48,7 @@ function fonts.analyzers.cjktest(first,second)
         if (not first or first == "") or first == k then
             for kk, vv in next, example do
                 if (not second or second == "") or second == kk then
-                    tex.sprint(tex.ctxcatcodes,string.format("\\ShowChineseCombiChar{%s}{%s}{%s}{%s}",v,vv,k,kk))
+                    context.ShowChineseCombiChar(v,vv,k,kk)
                 end
             end
         end

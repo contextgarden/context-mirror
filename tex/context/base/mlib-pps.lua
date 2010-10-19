@@ -12,18 +12,16 @@ if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, pos
 -- todo: report max textexts
 
 local format, gmatch, concat, round, match = string.format, string.gmatch, table.concat, math.round, string.match
-local sprint = tex.sprint
 local tonumber, type = tonumber, type
 local lpegmatch = lpeg.match
 local texbox = tex.box
-local copy_list = node.copy_list
-local free_list = node.flush_list
+local copy_list, free_list = node.copy_list, node.flush_list
 
 local P, S, V, Cs = lpeg.P, lpeg.S, lpeg.V, lpeg.Cs
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-local ctxcatcodes = tex.ctxcatcodes
+local context = context
 
 local trace_textexts = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 
@@ -242,7 +240,7 @@ function specials.fg(specification,object,result,flusher) -- graphics
     if sy == 0 then sy = 0.00001 end
     local before = specification and function()
         flusher.flushfigure(result)
-        sprint(ctxcatcodes,format("\\MPLIBfigure{%f}{%f}{%f}{%f}{%f}{%f}{%s}",sx,rx,ry,sy,tx,ty,specification))
+        context.MPLIBfigure(sx,rx,ry,sy,tx,ty,specification)
         object.path = nil
         return object, { }
     end
@@ -257,8 +255,7 @@ function specials.ps(specification,object,result) -- positions
     local label = specification
     x = x - metapost.llx
     y = metapost.ury - y
- -- report_mplib( "todo: position '%s' at (%s,%s) with (%s,%s)",label,x,y,w,h)
-    sprint(ctxcatcodes,format("\\dosavepositionwhd{%s}{0}{%sbp}{%sbp}{%sbp}{%sbp}{0pt}",label,x,y,w,h))
+    context.MPLIBpositionwhd(label,x,y,w,h)
     return { }, nil, nil, nil
 end
 
@@ -427,7 +424,7 @@ function specials.tf(specification,object)
         if trace_textexts then
             report_mplib("setting textext %s (first pass)",n)
         end
-        sprint(ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",n,str))
+        context.MPLIBsettext(n,str)
         metapost.multipass = true
     end
     return { }, nil, nil, nil
@@ -437,8 +434,8 @@ local factor = 65536*(7227/7200)
 
 function metapost.edefsxsy(wd,ht,dp) -- helper for figure
     local hd = ht + dp
-    commands.edef("sx",(wd ~= 0 and factor/wd) or 0)
-    commands.edef("sy",(hd ~= 0 and factor/hd) or 0)
+    context.setvalue("sx",wd ~= 0 and factor/wd or 0)
+    context.setvalue("sy",hd ~= 0 and factor/hd or 0)
 end
 
 local function sxsy(wd,ht,dp) -- helper for text
@@ -468,7 +465,7 @@ function specials.ts(specification,object,result,flusher)
             flusher.flushfigure(result)
             local box = textexts[n]
             if box then
-                sprint(ctxcatcodes,format("\\MPLIBgettextscaled{%s}{%s}{%s}",n,sxsy(box.width,box.height,box.depth)))
+                context.MPLIBgettextscaled(n,sxsy(box.width,box.height,box.depth))
             else
                 -- error
             end
@@ -738,7 +735,7 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,asked
         if not flushed or not metapost.optimize then
             -- tricky, we can only ask once for objects and therefore
             -- we really need a second run when not optimized
-            sprint(ctxcatcodes,format("\\ctxlua{metapost.graphic_extra_pass(%s)}",askedfig or "false"))
+            context.MPLIBextrapass(askedfig or "false")
         end
     else
         metapost.process(mpsformat, {
@@ -764,7 +761,7 @@ function metapost.graphic_extra_pass(askedfig)
         current_graphic,
         nofig or do_end_fig
     }, false, nil, false, true, askedfig )
-    sprint(ctxcatcodes,format("\\ctxlua{metapost.resettextexts()}")) -- must happen afterwards
+    context.MPLIBresettexts() -- must happen afterwards
 end
 
 local start    = [[\starttext]]

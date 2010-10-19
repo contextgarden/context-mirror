@@ -14,10 +14,10 @@ local utf = unicode.utf8
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local utfbyte, utffind = utf.byte, utf.find
 local byte, sub, find, match = string.byte, string.sub, string.find, string.match
-local texsprint, texwrite = tex.sprint, tex.write
-local ctxcatcodes = tex.ctxcatcodes
+local texwrite = tex.write
 
 local buffers = buffers
+local context = context
 
 local changestate, finishstate = buffers.changestate, buffers.finishstate
 
@@ -95,9 +95,9 @@ end
 
 visualizer.styles = {
     core = "",
-    base = "\\sl ",
-    five = "\\sl ",
-    libs = "\\sl ",
+    base = "sl ",
+    five = "sl ",
+    libs = "sl ",
 }
 
 local styles = visualizer.styles
@@ -121,8 +121,9 @@ local function flush_lua_word(state, word)
         local id = known_words[word]
         if id then
             state = changestate(2,state)
-            if styles[id] then
-                texsprint(ctxcatcodes,styles[id])
+            local style = styles[id]
+            if style and style ~= "" then
+                context[style]()
             end
             texwrite(word)
             state = finishstate(state)
@@ -145,15 +146,19 @@ end
 -- we will also provide a proper parser based pretty printer although normaly
 -- a pretty printer should handle faulty code too (educational purposes)
 
+local space = context.obs
+
 local function written(state,c,i)
     if c == " " then
         state = finishstate(state)
-        texsprint(ctxcatcodes,"\\obs")
+        space()
     elseif c == "\t" then
         state = finishstate(state)
-        texsprint(ctxcatcodes,"\\obs")
+        space()
         if buffers.visualizers.enabletab then
-            texsprint(ctxcatcodes,rep("\\obs ",i%buffers.visualizers.tablength))
+            for i=1,i%buffers.visualizers.tablength do
+                space()
+            end
         end
     else
         texwrite(c)
@@ -172,7 +177,11 @@ function visualizer.flush_line(str, nested)
         if comment then
             -- flush the comment and then process the code
             for c in utfcharacters(comment) do
-                if c == " " then texsprint(ctxcatcodes,"\\obs") else texwrite(c) end
+                if c == " " then
+                    space()
+                else
+                    texwrite(c)
+                end
             end
             state = changestate(states['--'], state)
             texwrite("]]")
@@ -180,7 +189,11 @@ function visualizer.flush_line(str, nested)
             incomment = false
         else
             for c in utfcharacters(str) do
-                if c == " " then texsprint(ctxcatcodes,"\\obs") else texwrite(c) end
+                if c == " " then
+                    space()
+                else
+                    texwrite(c)
+                end
             end
         end
         comment = nil

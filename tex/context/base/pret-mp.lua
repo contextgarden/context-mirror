@@ -10,8 +10,7 @@ local utf = unicode.utf8
 
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local utfbyte, utffind = utf.byte, utf.find
-local texsprint, texwrite = tex.sprint, tex.write
-local ctxcatcodes = tex.ctxcatcodes
+local texwrite = tex.write
 
 local buffers = buffers
 
@@ -114,8 +113,8 @@ visualizer.identifiers.metafun = {
 
 visualizer.styles = {
     primitives = "",
-    plain      = "\\sl",
-    metafun    = "\\sl",
+    plain      = "sl",
+    metafun    = "sl",
 }
 
 local styles = visualizer.styles
@@ -161,8 +160,9 @@ local function flush_mp_word(state, word, intex)
             local id = known_words[word]
             if id then
                 state = changestate(2,state)
-                if styles[id] then
-                    texsprint(ctxcatcodes,styles[id])
+                local style = styles[id]
+                if style and style ~= "" then
+                    context[style]()
                 end
                 texwrite(word)
                 state = finishstate(state)
@@ -184,6 +184,8 @@ end
 
 -- to be considered: visualizer => table [result, instr, incomment, word]
 
+local space = context.obs
+
 function visualizer.flush_line(str,nested)
     local state, word, instr, intex, incomment = 0, nil, false, false, false
     buffers.currentcolors = colors
@@ -191,7 +193,7 @@ function visualizer.flush_line(str,nested)
         if c == " " then
             state, intex = flush_mp_word(state, word, intex)
             word = nil
-            texsprint(ctxcatcodes,"\\obs")
+            space()
         elseif incomment then
             texwrite(c)
         elseif c == '%' then

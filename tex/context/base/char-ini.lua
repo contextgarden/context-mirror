@@ -500,10 +500,8 @@ else -- keep this
                      -- by this time, we're still in normal catcode mode
                      -- subtle: not "\\",contextname but "\\"..contextname
                         if chr.unicodeslot < 128 then
-                        --  texprint(ctxcatcodes, "\\chardef\\"..contextname,"=",u)
                             texprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u))
                         else
-                        --  texprint(ctxcatcodes, "\\let\\"..contextname,"=",utfchar(u))
                             texprint(ctxcatcodes,format("\\let\\%s=%s",contextname,utfchar(u)))
                             if is_letter[category] then
                                 lettered[#lettered+1] = "\\c"..u.."\\l"

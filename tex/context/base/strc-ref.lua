@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
 local lpegmatch, lpegP, lpegCs = lpeg.match, lpeg.P, lpeg.Cs
-local texsprint, texwrite, texcount, texsetcount = tex.sprint, tex.write, tex.count, tex.setcount
+local texcount, texsetcount = tex.count, tex.setcount
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 local setmetatable, rawget = setmetatable, rawget
 
@@ -18,9 +18,9 @@ local trace_referencing = false  trackers.register("structures.referencing", fun
 
 local report_references = logs.new("references")
 
-local ctxcatcodes = tex.ctxcatcodes
 local variables   = interfaces.variables
 local constants   = interfaces.constants
+local context     = context
 
 local settings_to_array = utilities.parsers.settings_to_array
 local unsetvalue        = attributes.unsetvalue
@@ -188,7 +188,7 @@ function references.setnextinternal(kind,name)
 end
 
 function references.currentorder(kind,name)
-    texwrite((orders[kind] and orders[kind][name]) or lastorder)
+    context(orders[kind] and orders[kind][name] or lastorder)
 end
 
 function references.set(kind,prefix,tag,data)
@@ -206,7 +206,7 @@ function references.set(kind,prefix,tag,data)
                 tobesaved[prefix] = pd
             end
             pd[ref] = data
-            texsprint(ctxcatcodes,format("\\dofinish%sreference{%s}{%s}",kind,prefix,ref))
+            context.dofinishsomereference(kind,prefix,ref)
         end
     end
 end
@@ -352,9 +352,9 @@ function references.urls.get(name,method,space) -- method: none, before, after, 
     if u then
         local url, file = u[1], u[2]
         if file and file ~= "" then
-            texsprint(ctxcatcodes,url,"/",file)
+            context("%s/%s",url,file)
         else
-            texsprint(ctxcatcodes,url)
+            context(url)
         end
     end
 end
@@ -379,7 +379,7 @@ end
 function references.files.get(name,method,space) -- method: none, before, after, both, space: yes/no
     local f = files[name]
     if f then
-        texsprint(ctxcatcodes,f[1])
+        context(f[1])
     end
 end
 
@@ -452,7 +452,7 @@ end
 function references.programs.get(name)
     local f = programs[name]
     if f then
-        texsprint(ctxcatcodes,f[1])
+        context(f[1])
     end
 end
 
@@ -470,7 +470,7 @@ end
 -- shared by urls and files
 
 function references.whatfrom(name)
-    texsprint(ctxcatcodes,(urls[name] and variables.url) or (files[name] and variables.file) or variables.unknown)
+    context((urls[name] and variables.url) or (files[name] and variables.file) or variables.unknown)
 end
 
 --~ function references.from(name)
@@ -478,21 +478,21 @@ end
 --~     if u then
 --~         local url, file, description = u[1], u[2], u[3]
 --~         if description ~= "" then
---~             texsprint(ctxcatcodes,format("\\dofromurldescription{%s}",description))
+--~             context.dofromurldescription(description)
 --~             -- ok
 --~         elseif file and file ~= "" then
---~             texsprint(ctxcatcodes,format("\\dofromurlliteral{%s}",url .. "/" .. file))
+--~             context.dofromurlliteral(url .. "/" .. file)
 --~         else
---~             texsprint(ctxcatcodes,format("\\dofromurlliteral{%s}",url))
+--~             context(dofromurlliteral,url)
 --~         end
 --~     else
 --~         local f = files[name]
 --~         if f then
 --~             local description, file = f[1], f[2]
 --~             if description ~= "" then
---~                 texsprint(ctxcatcodes,format("\\dofromfiledescription{%s}",description))
+--~                 context.dofromfiledescription(description)
 --~             else
---~                 texsprint(ctxcatcodes,format("\\dofromfileliteral{%s}",file))
+--~                 context.dofromfileliteral(file)
 --~             end
 --~         end
 --~     end
@@ -792,25 +792,25 @@ function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
             if operation then
                 if find(operation,"\\") then -- if o_has_tex then
                     if not done then
-                        texsprint(ctxcatcodes,b)
+                        context(b)
                         done = true
                     end
-                    texsprint(ctxcatcodes,format(o,i,operation))
+                    context(o,i,operation)
                 end
             end
             local arguments = ci.arguments
             if arguments then
                 if find(arguments,"\\") then -- if a_has_tex then
                     if not done then
-                        texsprint(ctxcatcodes,b)
+                        context(b)
                         done = true
                     end
-                    texsprint(ctxcatcodes,format(a,i,arguments))
+                    context(a,i,arguments)
                 end
             end
         end
         if done then
-            texsprint(ctxcatcodes,e)
+            context(e)
         end
     end
 end
@@ -1186,7 +1186,7 @@ end
 
 function references.getinternalreference(n) -- n points into list (todo: registers)
     local l = lists.collected[n]
-    texsprint(ctxcatcodes,(l and l.references.internal) or n)
+    context(l and l.references.internal or n)
 end
 
 --
@@ -1195,7 +1195,7 @@ function references.getcurrentmetadata(tag)
     local data = currentreference and currentreference.i
     data = data and data.metadata and data.metadata[tag]
     if data then
-        texsprint(ctxcatcodes,data)
+        context(data)
     end
 end
 
@@ -1207,15 +1207,8 @@ end
 references.currentmetadata = currentmetadata
 
 function references.getcurrentprefixspec(default) -- todo: message
-    texsprint(ctxcatcodes,"\\getreferencestructureprefix{",
-        currentmetadata("kind") or "?", "}{", currentmetadata("name") or "?", "}{", default or "?", "}")
+    context.getreferencestructureprefix(currentmetadata("kind") or "?",currentmetadata("name") or "?",default or "?")
 end
-
---~ function references.getcurrentprefixspec(default) -- we can consider storing the data at the lua end
---~     context.getreferencestructureprefix(currentmetadata("kind"),currentmetadata("name"),default)
---~ end
-
---
 
 function references.filter(name,...) -- number page title ...
     local data = currentreference and currentreference.i
@@ -1270,7 +1263,7 @@ function filters.generic.number(data,what,prefixspec) -- todo: spec and then no 
         else
             local useddata = data.useddata
             if useddata and useddsta.number then
-                tex.sprint(tex.ctxcatcodes,useddata.number)
+                context(useddata.number)
             end
         end
     end
@@ -1285,9 +1278,9 @@ function filters.generic.page(data,prefixspec,pagespec)
         if not number then
             -- error
         elseif conversion then
-            tex.sprint(tex.ctxcatcodes,format("\\convertnumber{%s}{%s}",conversion,number))
+            context.convertnumber(conversion,number)
         else
-            tex.sprint(tex.ctxcatcodes,number)
+            context(number)
         end
     else
         helpers.prefixpage(data,prefixspec,pagespec)
@@ -1310,7 +1303,7 @@ function filters.user.unknown(data,name)
         end
         local namedata = userdata and userdata[name]
         if namedata then
-            texsprint(ctxcatcodes,namedata)
+            context(namedata)
         end
     end
 end
@@ -1318,12 +1311,10 @@ end
 filters.text = { }
 
 function filters.text.title(data)
---  texsprint(ctxcatcodes,"[text title]")
     helpers.title(data.entries.text or "?",data.metadata)
 end
 
 function filters.text.number(data)
---  texsprint(ctxcatcodes,"[text number]")
     helpers.title(data.entries.text or "?",data.metadata)
 end
 
@@ -1341,7 +1332,7 @@ function filters.section.number(data,what,prefixspec)
         else
             local useddata = data.useddata
             if useddata and useddata.number then
-                tex.sprint(tex.ctxcatcodes,useddata.number)
+                context(useddata.number)
             end
         end
     end
@@ -1405,7 +1396,7 @@ end
 
 function references.realpage() -- special case, we always want result
     local cs = references.analyze()
-    texwrite(cs.realpage or 0)
+    context(cs.realpage or 0)
 end
 
 local plist

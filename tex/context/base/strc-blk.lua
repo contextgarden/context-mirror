@@ -8,14 +8,13 @@ if not modules then modules = { } end modules ['strc-blk'] = {
 
 -- this one runs on top of buffers and structure
 
-local texprint, format, gmatch, find = tex.print, string.format, string.gmatch, string.find
+local type = type
+local gmatch, find = string.gmatch, string.find
 local lpegmatch = lpeg.match
 local settings_to_set, settings_to_array = utilities.parsers.settings_to_set, utilities.parsers.settings_to_array
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local ctxcatcodes = tex.ctxcatcodes
-
-local structures  = structures
+local structures, context = structures, context
 
 structures.blocks = structures.blocks or { }
 
@@ -36,25 +35,25 @@ end
 
 job.register('structures.blocks.collected', tobesaved, initializer)
 
-local printer = (lpeg.patterns.textline/texprint)^0 -- can be shared
+local printer = (lpeg.patterns.textline/tex.print)^0 -- can be shared
 
 function blocks.print(name,data,hide)
     if hide then
-        texprint(ctxcatcodes,format("\\dostarthiddenblock{%s}",name))
+        context.dostarthiddenblock(name)
     else
-        texprint(ctxcatcodes,format("\\dostartnormalblock{%s}",name))
+        context.dostartnormalblock(name)
     end
     if type(data) == "table" then
         for i=1,#data do
-            texprint(data[i])
+            context(data[i])
         end
     else
         lpegmatch(printer,data)
     end
     if hide then
-        texprint(ctxcatcodes,"\\dostophiddenblock")
+        context.dostophiddenblock()
     else
-        texprint(ctxcatcodes,"\\dostopnormalblock")
+        context.dostopnormalblock()
     end
 end
 

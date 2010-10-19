@@ -22,8 +22,9 @@ local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
 
 local settings_to_array = utilities.parsers.settings_to_array
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local allocate = utilities.storage.allocate
+
+local context = context
 
 converters       = converters or { }
 local converters = converters
@@ -31,21 +32,17 @@ local converters = converters
 languages        = languages  or { }
 local languages  = languages
 
-local function flush(...)
-    texsprint(ctxcatcodes,...)
-end
-
 function converters.convert(method,n,direct)
     local method = converters[method]
     if method then
         return method(n,direct)
     else
-        return direct and n or flush(n)
+        return direct and n or context(n)
     end
 end
 
 function converters.numberst(n,direct)
-    return direct and n or flush(n)
+    return direct and n or context(n)
 end
 
 --~     ['arabic-digits'] = {
@@ -149,7 +146,7 @@ local fallback = utf.byte('0')
 
 local function chr(n,m,direct)
     local s = (n > 0 and n < 27 and utfchar(n+m)) or ""
-    if direct then return s else flush(s) end
+    if direct then return s else context(s) end
 end
 
 --~ local function chrs(n,m,direct)
@@ -157,7 +154,7 @@ end
 --~         chrs(floor((n-1)/26),m)
 --~         n = (n-1)%26 + 1
 --~     end
---~     flush(utfchar(n+m))
+--~     context(utfchar(n+m))
 --~ end
 
 local function chrs(n,m,direct,t)
@@ -173,18 +170,10 @@ local function chrs(n,m,direct,t)
         if direct then
             return concat(t)
         else
-            flush(concat(t))
+            context(concat(t))
         end
     end
 end
-
---~ local function maxchrs(n,m,cmd,direct)
---~     if n > m then
---~         maxchrs(floor((n-1)/m),m,cmd)
---~         n = (n-1)%m + 1
---~     end
---~     flush(format("%s{%s}",cmd,n))
---~ end
 
 local function maxchrs(n,m,cmd,direct,t) -- direct is not ok
     if not t then
@@ -199,7 +188,7 @@ local function maxchrs(n,m,cmd,direct,t) -- direct is not ok
         if direct then
             return concat(t)
         else
-            flush(concat(t))
+            context(concat(t))
         end
     end
 end
@@ -219,7 +208,7 @@ converters.maxchrs = maxchrs
 --~         n = (n-1)%max+1
 --~     end
 --~     n = chr(n,mapping)
---~     flush(escapes[n] or utfchar(n))
+--~     context(escapes[n] or utfchar(n))
 --~ end
 
 --~ local lccodes, uccodes = characters.lccode, characters.uccode
@@ -270,7 +259,7 @@ local function do_alphabetic(n,mapping,mapper,direct,verbose,t)
         if direct then
             return concat(t)
         else
-            flush(concat(t))
+            context(concat(t))
         end
     end
 end
@@ -289,7 +278,7 @@ function converters.Characters(n,direct) return chrs(n,64,direct) end
 
 function converters.weekday(day,month,year,direct)
     local s = date("%w",time{year=year,month=month,day=day}) + 1
-    if direct then return s else flush(s) end
+    if direct then return s else context(s) end
 end
 
 function converters.isleapyear(year)
@@ -298,7 +287,7 @@ end
 
 function converters.leapyear(year)
     local s = converters.isleapyear(year) and 1 or 0
-    if direct then return s else flush(s) end
+    if direct then return s else context(s) end
 end
 
 local days = {
@@ -308,17 +297,17 @@ local days = {
 
 function converters.nofdays(year,month,direct)
     local s = days[converters.isleapyear(year)][month]
-    if direct then return s else flush(s) end
+    if direct then return s else context(s) end
 end
 
-function converters.year   (direct) local s = date("%Y") if direct then return s else flush(s) end end
-function converters.year   (direct) local s = date("%Y") if direct then return s else flush(s) end end
-function converters.month  (direct) local s = date("%m") if direct then return s else flush(s) end end
-function converters.hour   (direct) local s = date("%H") if direct then return s else flush(s) end end
-function converters.minute (direct) local s = date("%M") if direct then return s else flush(s) end end
-function converters.second (direct) local s = date("%S") if direct then return s else flush(s) end end
+function converters.year   (direct) local s = date("%Y") if direct then return s else context(s) end end
+function converters.year   (direct) local s = date("%Y") if direct then return s else context(s) end end
+function converters.month  (direct) local s = date("%m") if direct then return s else context(s) end end
+function converters.hour   (direct) local s = date("%H") if direct then return s else context(s) end end
+function converters.minute (direct) local s = date("%M") if direct then return s else context(s) end end
+function converters.second (direct) local s = date("%S") if direct then return s else context(s) end end
 function converters.textime(direct) local s = tonumber(date("%H")) * 60 + tonumber(date("%M"))
-                                                         if direct then return s else flush(s) end end
+                                                         if direct then return s else context(s) end end
 
 local roman = {
     { [0] = '', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX' },
@@ -334,8 +323,8 @@ local function toroman(n)
     end
 end
 
-function converters.romannumerals(n,direct) local s = lower(toroman(n)) if direct then return s else flush(s) end end
-function converters.Romannumerals(n,direct) local s =       toroman(n)  if direct then return s else flush(s) end end
+function converters.romannumerals(n,direct) local s = lower(toroman(n)) if direct then return s else context(s) end end
+function converters.Romannumerals(n,direct) local s =       toroman(n)  if direct then return s else context(s) end end
 
 converters.toroman = toroman
 
@@ -385,8 +374,8 @@ function converters.toabjad(n,what)
     end
 end
 
-function converters.abjadnumerals     (n,direct) local s = converters.toabjad(n,false) if direct then return s else flush(s) end end
-function converters.abjadnodotnumerals(n,direct) local s = converters.toabjad(n,true ) if direct then return s else flush(s) end end
+function converters.abjadnumerals     (n,direct) local s = converters.toabjad(n,false) if direct then return s else context(s) end end
+function converters.abjadnodotnumerals(n,direct) local s = converters.toabjad(n,true ) if direct then return s else context(s) end end
 
 local vector = {
     normal = {
@@ -526,9 +515,9 @@ end
 --~     print(v,tochinese(v),tochinese(v,"all"),tochinese(v,"cap"))
 --~ end
 
-function converters.chinesenumerals   (n) local s = tochinese(n,"normal") if direct then return s else flush(s) end end
-function converters.chinesecapnumerals(n) local s = tochinese(n,"cap"   ) if direct then return s else flush(s) end end
-function converters.chineseallnumerals(n) local s = tochinese(n,"all"   ) if direct then return s else flush(s) end end
+function converters.chinesenumerals   (n) local s = tochinese(n,"normal") if direct then return s else context(s) end end
+function converters.chinesecapnumerals(n) local s = tochinese(n,"cap"   ) if direct then return s else context(s) end end
+function converters.chineseallnumerals(n) local s = tochinese(n,"all"   ) if direct then return s else context(s) end end
 
 --~ Well, since the one asking for this didn't test it the following code is not
 --~ enabled.
@@ -653,7 +642,7 @@ function converters.convert(method,n,direct) -- todo: language
         elseif sequence then
             return do_alphabetic(n,sequence,false,direct,true)
         else
-            return direct and n or flush(n)
+            return direct and n or context(n)
         end
     end
 end

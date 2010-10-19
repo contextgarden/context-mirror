@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/18/10 11:11:34
+-- merge date  : 10/19/10 23:03:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -934,13 +934,6 @@ function table.fromhash(t)
     return h
 end
 
---~ print(table.serialize(t), "\n")
---~ print(table.serialize(t,"name"), "\n")
---~ print(table.serialize(t,false), "\n")
---~ print(table.serialize(t,true), "\n")
---~ print(table.serialize(t,"name",true), "\n")
---~ print(table.serialize(t,"name",true,true), "\n")
-
 table.serialize_functions = true
 table.serialize_compact   = true
 table.serialize_inline    = true
@@ -1032,8 +1025,8 @@ local function do_serialize(root,name,depth,level,indexed)
             --~ if v == root then
                 -- circular
             --~ else
-            local t = type(v)
-            if compact and first and type(k) == "number" and k >= first and k <= last then
+            local t, tk = type(v), type(k)
+            if compact and first and tk == "number" and k >= first and k <= last then
                 if t == "number" then
                     if hexify then
                         handle(format("%s 0x%04X,",depth,v))
@@ -1075,16 +1068,17 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s __p__=nil,",depth))
                 end
             elseif t == "number" then
-            --~ if hexify then
-            --~     handle(format("%s %s=0x%04X,",depth,key(k),v))
-            --~ else
-            --~     handle(format("%s %s=%s,",depth,key(k),v)) -- %.99g
-            --~ end
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
                         handle(format("%s [%s]=%s,",depth,k,v)) -- %.99g
+                    end
+                elseif tk == "boolean" then
+                    if hexify then
+                        handle(format("%s [%s]=0x%04X,",depth,tostring(k),v))
+                    else
+                        handle(format("%s [%s]=%s,",depth,tostring(k),v)) -- %.99g
                     end
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     if hexify then
@@ -1101,26 +1095,28 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "string" then
                 if reduce and tonumber(v) then
-                --~ handle(format("%s %s=%s,",depth,key(k),v))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=%s,",depth,k,v))
                         else
                             handle(format("%s [%s]=%s,",depth,k,v))
                         end
+                    elseif tk == "boolean" then
+                        handle(format("%s [%s]=%s,",depth,tostring(k),v))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s=%s,",depth,k,v))
                     else
                         handle(format("%s [%q]=%s,",depth,k,v))
                     end
                 else
-                --~ handle(format("%s %s=%q,",depth,key(k),v))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=%q,",depth,k,v))
                         else
                             handle(format("%s [%s]=%q,",depth,k,v))
                         end
+                    elseif tk == "boolean" then
+                        handle(format("%s [%s]=%q,",depth,tostring(k),v))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s=%q,",depth,k,v))
                     else
@@ -1129,13 +1125,14 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "table" then
                 if not next(v) then
-                    --~ handle(format("%s %s={},",depth,key(k)))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]={},",depth,k))
                         else
                             handle(format("%s [%s]={},",depth,k))
                         end
+                    elseif tk == "boolean" then
+                        handle(format("%s [%s]={},",depth,tostring(k)))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s={},",depth,k))
                     else
@@ -1144,13 +1141,14 @@ local function do_serialize(root,name,depth,level,indexed)
                 elseif inline then
                     local st = simple_table(v)
                     if st then
-                    --~ handle(format("%s %s={ %s },",depth,key(k),concat(st,", ")))
-                        if type(k) == "number" then -- or find(k,"^%d+$") then
+                        if tk == "number" then -- or find(k,"^%d+$") then
                             if hexify then
                                 handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
                             else
                                 handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
                             end
+                        elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                            handle(format("%s [%s]={ %s },",depth,tostring(k),concat(st,", ")))
                         elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                             handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
                         else
@@ -1163,13 +1161,14 @@ local function do_serialize(root,name,depth,level,indexed)
                     do_serialize(v,k,depth,level+1)
                 end
             elseif t == "boolean" then
-            --~ handle(format("%s %s=%s,",depth,key(k),tostring(v)))
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=%s,",depth,k,tostring(v)))
                     else
                         handle(format("%s [%s]=%s,",depth,k,tostring(v)))
                     end
+                elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                    handle(format("%s [%s]=%s,",depth,tostring(k),tostring(v)))
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     handle(format("%s %s=%s,",depth,k,tostring(v)))
                 else
@@ -1177,13 +1176,14 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "function" then
                 if functions then
-                    --~ handle(format('%s %s=loadstring(%q),',depth,key(k),dump(v)))
-                    if type(k) == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
                             handle(format("%s [0x%04X]=loadstring(%q),",depth,k,dump(v)))
                         else
                             handle(format("%s [%s]=loadstring(%q),",depth,k,dump(v)))
                         end
+                    elseif tk == "boolean" then
+                        handle(format("%s [%s]=loadstring(%q),",depth,tostring(k),dump(v)))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s=loadstring(%q),",depth,k,dump(v)))
                     else
@@ -1191,13 +1191,14 @@ local function do_serialize(root,name,depth,level,indexed)
                     end
                 end
             else
-                --~ handle(format("%s %s=%q,",depth,key(k),tostring(v)))
-                if type(k) == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then -- or find(k,"^%d+$") then
                     if hexify then
                         handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
                     else
                         handle(format("%s [%s]=%q,",depth,k,tostring(v)))
                     end
+                elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                    handle(format("%s [%s]=%q,",depth,tostring(k),tostring(v)))
                 elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                     handle(format("%s %s=%q,",depth,k,tostring(v)))
                 else
@@ -1506,7 +1507,7 @@ function table.sequenced(t,sep,simple) -- hash only
 end
 
 function table.print(...)
-    print(table.serialize(...))
+    table.tohandle(print,...)
 end
 
 end -- closure
@@ -3114,7 +3115,7 @@ fontloader.totable = fontloader.to_table
 -- vtf comes first
 -- fix comes last
 
-fonts     = fonts     or { }
+fonts = fonts or { }
 
 -- we will also have des and fam hashes
 
@@ -3177,9 +3178,9 @@ fonts.definers.specifiers.synonyms = fonts.definers.specifiers.synonyms or { }
 
 -- tracing
 
-if not fonts.color then
+if not fonts.colors then
 
-    fonts.color = allocate {
+    fonts.colors = allocate {
         set   = function() end,
         reset = function() end,
     }
@@ -5095,8 +5096,6 @@ local trace_loading    = false  trackers.register("otf.loading",    function(v) 
 local trace_unimapping = false  trackers.register("otf.unimapping", function(v) trace_unimapping = v end)
 
 local report_otf = logs.new("load otf")
-
-local ctxcatcodes = tex and tex.ctxcatcodes
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
@@ -10650,7 +10649,7 @@ local traverse_node_list = node.traverse
 local fontdata           = fonts.ids
 local state              = attributes.private('state')
 
-local fontcolors         = fonts.colors
+local fontscolors        = fonts.colors
 local fcs                = (fontscolors and fontscolors.set)   or function() end
 local fcr                = (fontscolors and fontscolors.reset) or function() end
 
@@ -10768,6 +10767,10 @@ local isol_fina_medi_init = {
     [0x077E] = true, [0x077F] = true, [zwj] = true,
 }
 
+local mark = {
+    [0x0650] = true,
+}
+
 local arab_warned = { }
 
 -- todo: gref
@@ -10838,7 +10841,7 @@ function analyzers.methods.arab(head,font,attr) -- maybe make a special version 
         if current.id == glyph_code and current.subtype<256 and current.font == font and not has_attribute(current,state) then
             done = true
             local char = current.char
-            if marks[char] then
+            if marks[char] or mark[char] then
                 set_attribute(current,state,5) -- mark
                 if trace_analyzing then fcs(current,"font:mark") end
             elseif isol[char] then -- can be zwj or zwnj too

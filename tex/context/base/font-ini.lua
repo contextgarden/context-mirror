@@ -23,7 +23,7 @@ fontloader.totable = fontloader.to_table
 -- vtf comes first
 -- fix comes last
 
-fonts     = fonts     or { }
+fonts = fonts or { }
 
 -- we will also have des and fam hashes
 
@@ -86,9 +86,9 @@ fonts.definers.specifiers.synonyms = fonts.definers.specifiers.synonyms or { }
 
 -- tracing
 
-if not fonts.color then
+if not fonts.colors then
 
-    fonts.color = allocate {
+    fonts.colors = allocate {
         set   = function() end,
         reset = function() end,
     }

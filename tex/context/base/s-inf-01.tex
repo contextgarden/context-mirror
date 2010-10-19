@@ -15,7 +15,6 @@
 
 \startluacode
     local format, gsub, find, match = string.format, string.gsub, string.find, string.match
-    local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
     local list, size, comp, used, nope = { }, { }, { }, { mkii = { }, mkiv = { } }, { 0, 0, 0, 0 }
 
@@ -105,8 +104,10 @@
 
     function document.context_state_1(what)
         local max, what, norm = prepare(what)
-        texsprint(ctxcatcodes,"\\starttabulate[|Tc|T|T|T|T|]")
-        texsprint(ctxcatcodes,"\\NC category\\NC")
+        context.starttabulate { "|Tc|T|T|T|T|]" }
+        context.NC()
+        context(category)
+        context.NC()
         for i, t in ipairs(types) do
             local n, m = 0, 0
             for k, v in pairs(list) do
@@ -114,30 +115,35 @@
                 n = n + nn
                 m = m + (mm or nn)
             end
-            texsprint(ctxcatcodes,format("\\Top{%s}{%s}{%s}{%s}\\NC",t,norm(max),n,m))
+            context.Top(t,norm(max),n,m)
+            context.NC()
         end
-        texsprint(ctxcatcodes,"\\NC\\NR\\HL")
+        context.NC()
+        context.NR()
+        context.HL()
         for k, v in table.sortedpairs(what) do
             local c = (what == size and comp[k]) or nope
-            local cat = format("%s~%s~~%s",(used.mkii[k] and "ii") or "~~",(used.mkiv[k] and "iv") or "~~",k)
-            texsprint(ctxcatcodes,"\\NC",cat,"\\NC")
+            context.NC()
+            context("%s~%s~~%s",(used.mkii[k] and "ii") or "~~",(used.mkiv[k] and "iv") or "~~",k)
+            context.NC()
             for i, t in ipairs(types) do
-                texsprint(ctxcatcodes,format("\\Bar{%s}{%s}{%s}{%s}\\NC",t,v[i],c[i],norm(v[i])))
+                context.Bar(t,v[i],c[i],norm(v[i]))
+                context.NC()
             end
-            texsprint(ctxcatcodes,"\\NR")
+            context.NR()
         end
-        texsprint(ctxcatcodes,"\\stoptabulate")
+        context.stoptabulate()
     end
 
     function document.context_state_2(what)
         local max, what, norm = prepare(what)
         for k, v in table.sortedpairs(what) do
             local c = (what == size and comp[k]) or nope
-            texsprint(ctxcatcodes,format("\\StartUp{%s}",k))
+            context.StartUp(k)
             for i, t in ipairs(types) do
-                texsprint(ctxcatcodes,format("\\Up{%s}{%s}",t,norm(v[i])))
+                context.Up(t,norm(v[i]))
             end
-            texsprint(ctxcatcodes,"\\StopUp")
+            context.StopUp()
         end
     end
 

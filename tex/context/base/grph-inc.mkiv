@@ -396,6 +396,14 @@
      \externalfigure[#1][#2,\c!display=,\c!object=\v!no]%
    \stopnointerference}
 
+% helpers (will be replaced when xforms are accessible at the lua end)
+
+\def\dosetfigureobject#1%
+  {\setobject{FIG}{#1}\vbox{\box\foundexternalfigure}}
+
+\def\doboxfigureobject#1%
+  {\global\setbox\foundexternalfigure\vbox{\getobject{FIG}{#1}}} % probably one vbox too many
+
 % figurebases
 
 \def\usefigurebase[#1]%

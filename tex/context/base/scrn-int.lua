@@ -6,9 +6,6 @@ if not modules then modules = { } end modules ['scrn-int'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
-local texsprint, texcount, ctxcatcodes = tex.sprint, tex.count, tex.ctxcatcodes
-
 interactions       = interactions or { }
 local interactions = interactions
 
@@ -47,7 +44,7 @@ end
 
 function attachments.var(label,key)
     local at = attachments[label]
-    texsprint(ctxcatcodes,at and at[key] or "")
+    context(at and at[key] or "")
 end
 
 function soundclips.register(specification)
@@ -87,7 +84,7 @@ end
 
 function renderings.var(label,key)
     local rn = renderings[label]
-    texsprint(ctxcatcodes,rn and rn[key] or "")
+    context(rn and rn[key] or "")
 end
 
 -- linked lists

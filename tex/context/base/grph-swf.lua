@@ -6,13 +6,12 @@ if not modules then modules = { } end modules ['grph-swf'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local todimen = number.todimen
 
-local texsprint      = tex.sprint
-local ctxcatcodes    = tex.ctxcatcodes
 local nodeinjections = backends.nodeinjections
 
 local figures = figures
+local context = context
 
 function figures.checkers.swf(data)
     local dr, du, ds = data.request, data.used, data.status
@@ -21,7 +20,7 @@ function figures.checkers.swf(data)
     local foundname = du.fullname
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
-    texsprint(ctxcatcodes,format("\\startfoundexternalfigure{%ssp}{%ssp}",width,height))
+    context.startfoundexternalfigure(todimen(width),todimen(height))
     nodeinjections.insertswf {
         foundname = foundname,
         width     = width,
@@ -31,7 +30,7 @@ function figures.checkers.swf(data)
     --  controls  = dr.controls,
     --  label     = dr.label,
     }
-    texsprint(ctxcatcodes,"\\stopfoundexternalfigure")
+    context.stopfoundexternalfigure()
     return data
 end
 
