@@ -255,28 +255,6 @@ end
 table.fastcopy = fastcopy
 table.copy     = copy
 
--- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
-
-function table.sub(t,i,j)
-    return { unpack(t,i,j) }
-end
-
-function table.replace(a,b)
-    for k,v in next, b do
-        a[k] = v
-    end
-end
-
--- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
-
-function table.is_empty(t) -- obolete, use inline code instead
-    return not t or not next(t)
-end
-
-function table.has_one_entry(t)
-    local n = next(t)
-    return n and not next(t,n)
-end
 
 function table.tohash(t,value)
     local h = { }
@@ -871,4 +849,29 @@ end
 
 function table.print(...)
     table.tohandle(print,...)
+end
+
+-- -- -- obsolete but we keep them for a while and will comment them later -- -- --
+
+-- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
+
+function table.sub(t,i,j)
+    return { unpack(t,i,j) }
+end
+
+-- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
+
+function table.is_empty(t)
+    return not t or not next(t)
+end
+
+function table.has_one_entry(t)
+    local n = next(t)
+    return n and not next(t,n)
+end
+
+function table.replace(a,b)
+    for k,v in next, b do
+        a[k] = v
+    end
 end

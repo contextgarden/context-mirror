@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/19/10 23:03:29
+-- merge date  : 10/20/10 13:11:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -892,28 +892,6 @@ end
 table.fastcopy = fastcopy
 table.copy     = copy
 
--- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
-
-function table.sub(t,i,j)
-    return { unpack(t,i,j) }
-end
-
-function table.replace(a,b)
-    for k,v in next, b do
-        a[k] = v
-    end
-end
-
--- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
-
-function table.is_empty(t) -- obolete, use inline code instead
-    return not t or not next(t)
-end
-
-function table.has_one_entry(t)
-    local n = next(t)
-    return n and not next(t,n)
-end
 
 function table.tohash(t,value)
     local h = { }
@@ -1508,6 +1486,31 @@ end
 
 function table.print(...)
     table.tohandle(print,...)
+end
+
+-- -- -- obsolete but we keep them for a while and will comment them later -- -- --
+
+-- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
+
+function table.sub(t,i,j)
+    return { unpack(t,i,j) }
+end
+
+-- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
+
+function table.is_empty(t)
+    return not t or not next(t)
+end
+
+function table.has_one_entry(t)
+    local n = next(t)
+    return n and not next(t,n)
+end
+
+function table.replace(a,b)
+    for k,v in next, b do
+        a[k] = v
+    end
 end
 
 end -- closure
@@ -3163,6 +3166,10 @@ fonts.triggers = fonts.triggers or {
 fonts.processors = fonts.processors or {
 }
 
+fonts.analyzers = fonts.analyzers or {
+    useunicodemarks = false,
+}
+
 fonts.manipulators = fonts.manipulators or {
 }
 
@@ -3869,6 +3876,7 @@ analyzers.initializers = analyzers.initializers or { }
 local state = attributes.private('state')
 
 function analyzers.aux.setstate(head,font)
+    local useunicodemarks  = analyzers.useunicodemarks
     local tfmdata = fontdata[font]
     local characters = tfmdata.characters
     local descriptions = tfmdata.descriptions
@@ -3876,9 +3884,10 @@ function analyzers.aux.setstate(head,font)
     while current do
         local id = current.id
         if id == glyph_code and current.font == font then
-            local d = descriptions[current.char]
+            local char = current.char
+            local d = descriptions[char]
             if d then
-                if d.class == "mark" then
+                if d.class == "mark" or (useunicodemarks and categories[char] == "mn") then
                     done = true
                     set_attribute(current,state,5) -- mark
                 elseif n == 0 then
@@ -10648,10 +10657,12 @@ local traverse_node_list = node.traverse
 
 local fontdata           = fonts.ids
 local state              = attributes.private('state')
+local categories         = characters and characters.categories or { } -- sorry, only in context
 
 local fontscolors        = fonts.colors
 local fcs                = (fontscolors and fontscolors.set)   or function() end
 local fcr                = (fontscolors and fontscolors.reset) or function() end
+
 
 -- in the future we will use language/script attributes instead of the
 -- font related value, but then we also need dynamic features which is
@@ -10767,10 +10778,6 @@ local isol_fina_medi_init = {
     [0x077E] = true, [0x077F] = true, [zwj] = true,
 }
 
-local mark = {
-    [0x0650] = true,
-}
-
 local arab_warned = { }
 
 -- todo: gref
@@ -10834,6 +10841,7 @@ local function finish(first,last)
 end
 
 function analyzers.methods.arab(head,font,attr) -- maybe make a special version with no trace
+    local useunicodemarks = analyzers.useunicodemarks
     local tfmdata = fontdata[font]
     local marks = tfmdata.marks
     local first, last, current, done = nil, nil, head, false
@@ -10841,7 +10849,7 @@ function analyzers.methods.arab(head,font,attr) -- maybe make a special version 
         if current.id == glyph_code and current.subtype<256 and current.font == font and not has_attribute(current,state) then
             done = true
             local char = current.char
-            if marks[char] or mark[char] then
+            if marks[char] or (useunicodemarks and categories[char] == "mn") then
                 set_attribute(current,state,5) -- mark
                 if trace_analyzing then fcs(current,"font:mark") end
             elseif isol[char] then -- can be zwj or zwnj too

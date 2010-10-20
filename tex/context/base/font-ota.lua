@@ -42,10 +42,12 @@ local traverse_node_list = node.traverse
 
 local fontdata           = fonts.ids
 local state              = attributes.private('state')
+local categories         = characters and characters.categories or { } -- sorry, only in context
 
 local fontscolors        = fonts.colors
 local fcs                = (fontscolors and fontscolors.set)   or function() end
 local fcr                = (fontscolors and fontscolors.reset) or function() end
+
 
 -- in the future we will use language/script attributes instead of the
 -- font related value, but then we also need dynamic features which is
@@ -161,10 +163,6 @@ local isol_fina_medi_init = {
     [0x077E] = true, [0x077F] = true, [zwj] = true,
 }
 
-local mark = {
-    [0x0650] = true,
-}
-
 local arab_warned = { }
 
 -- todo: gref
@@ -228,6 +226,7 @@ local function finish(first,last)
 end
 
 function analyzers.methods.arab(head,font,attr) -- maybe make a special version with no trace
+    local useunicodemarks = analyzers.useunicodemarks
     local tfmdata = fontdata[font]
     local marks = tfmdata.marks
     local first, last, current, done = nil, nil, head, false
@@ -235,7 +234,7 @@ function analyzers.methods.arab(head,font,attr) -- maybe make a special version 
         if current.id == glyph_code and current.subtype<256 and current.font == font and not has_attribute(current,state) then
             done = true
             local char = current.char
-            if marks[char] or mark[char] then
+            if marks[char] or (useunicodemarks and categories[char] == "mn") then
                 set_attribute(current,state,5) -- mark
                 if trace_analyzing then fcs(current,"font:mark") end
             elseif isol[char] then -- can be zwj or zwnj too

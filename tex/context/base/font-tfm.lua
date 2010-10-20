@@ -661,6 +661,7 @@ analyzers.initializers = analyzers.initializers or { }
 local state = attributes.private('state')
 
 function analyzers.aux.setstate(head,font)
+    local useunicodemarks  = analyzers.useunicodemarks
     local tfmdata = fontdata[font]
     local characters = tfmdata.characters
     local descriptions = tfmdata.descriptions
@@ -668,9 +669,10 @@ function analyzers.aux.setstate(head,font)
     while current do
         local id = current.id
         if id == glyph_code and current.font == font then
-            local d = descriptions[current.char]
+            local char = current.char
+            local d = descriptions[char]
             if d then
-                if d.class == "mark" then
+                if d.class == "mark" or (useunicodemarks and categories[char] == "mn") then
                     done = true
                     set_attribute(current,state,5) -- mark
                 elseif n == 0 then

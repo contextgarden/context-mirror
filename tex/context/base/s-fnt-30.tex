@@ -19,7 +19,7 @@ function document.show_character_data(n)
     if d then
         local function entry(label,name)
             NC() context(label)
-            NC() context(characters.valid(d[name])
+            NC() context(d[name])
             NC() NR()
         end
         context.starttabulate { "|Tl|Tl|]" }

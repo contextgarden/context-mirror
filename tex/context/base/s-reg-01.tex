@@ -26,22 +26,21 @@ function regimes.show(regime)
     regime = regimes.synonyms[regime] or regime
     local r = regimes.data[regime]
     if r then
+        local chardata = characters.data
         context.starttabulate { "|rT|T|rT|lT|lT|lT|" }
         for k, v in ipairs(r) do
-            context.NC()
-            context(k)
-            context.NC()
-            context.getvalue(characters.contextname(v))
-            context.NC()
-            context(characters.hexindex(v))
-            context.NC()
-            context(characters.contextname(v))
-            context.NC()
-            context(characters.category(v))
-            context.NC()
-            context(characters.description(v))
-            context.NC()
-            context.NR()
+            local chr = chardata[v]
+            if chr then
+                context.NC() context(k)
+                context.NC() context.getvalue(chr.contextname])
+                context.NC() context("%U+05X",v)
+                context.NC() context(chr.contextname)
+                context.NC() context(chr.category)
+                context.NC() context(chr.description)
+                context.NC() context.NR()
+            else
+                -- can't happen
+            end
         end
         context.stoptabulate()
     else
