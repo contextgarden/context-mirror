@@ -71,6 +71,10 @@ fonts.triggers = fonts.triggers or {
 fonts.processors = fonts.processors or {
 }
 
+fonts.analyzers = fonts.analyzers or {
+    useunicodemarks = false,
+}
+
 fonts.manipulators = fonts.manipulators or {
 }
 

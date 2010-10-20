@@ -11,10 +11,11 @@ local utf = unicode.utf8
 
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
 local concat, unpack = table.concat, table.unpack
-local next, tonumber, type = next, tonumber, type
+local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
 local texsprint, texprint = tex.sprint, tex.print
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
 local texsetlccode, texsetuccode, texsetsfcode, texsetcatcode  = tex.setlccode, tex.setuccode, tex.setsfcode, tex.setcatcode
+local P, R, lpegmatch = lpeg.P, lpeg.R, lpeg.match
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
@@ -58,7 +59,36 @@ storage.register("characters/ranges",characters.ranges,"characters.ranges")
 
 local ranges = characters.ranges
 
+--[[ldx--
+<p>This converts a string (if given) into a number.</p>
+--ldx]]--
+
+local pattern = (P("0x") + P("U+")) * ((R("09","AF")^1 * P(-1)) / function(s) return tonumber(s,16) end)
+
+lpeg.patterns.chartonumber = pattern
+
+local function chartonumber(k)
+    return type(k) == "string" and (lpegmatch(pattern,k) or utfbyte(k)) or k
+end
+
+--~ print(chartonumber(97), chartonumber("a"), chartonumber("0x61"), chartonumber("U+61"))
+
+characters.tonumber = chartonumber
+
 setmetatablekey(data, "__index", function(t,k)
+    if type(k) == "string" then
+        k = lpegmatch(pattern,k) or utfbyte(k)
+        if k then
+            local tk = rawget(t,k)
+            if tk then
+                return tk
+            else
+                -- goes to ranges
+            end
+        else
+            return nil
+        end
+    end
     for r=1,#ranges do
         local rr = ranges[r] -- first in range
         if k > rr and k <= data[rr].range then
@@ -392,10 +422,15 @@ use the table. After all, we have this information available anyway.</p>
 
 function characters.makeactive(n,name) -- let ?
     texsprint(ctxcatcodes,format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name))
+ -- context("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name)
 end
 
-function tex.uprint(n)
-    texsprint(ctxcatcodes,utfchar(n))
+function tex.uprint(c,n)
+    if n then
+        texsprint(c,utfchar(n))
+    else
+        texsprint(utfchar(c))
+    end
 end
 
 if texsetcatcode then
@@ -478,7 +513,7 @@ if texsetcatcode then
 
     end
 
-else -- keep this
+else -- char-obs
 
     local template_a = "\\startextendcatcodetable{%s}\\chardef\\l=11\\chardef\\a=13\\let\\c\\catcode%s\\let\\a\\undefined\\let\\l\\undefined\\let\\c\\undefined\\stopextendcatcodetable"
     local template_b = "\\chardef\\l=11\\chardef\\a=13\\let\\c\\catcode%s\\let\\a\\undefined\\let\\l\\undefined\\let\\c\\undefined"
@@ -595,7 +630,7 @@ if texsetcatcode then
         end
     end
 
-else -- keep this one
+else -- char-obs
 
     function characters.setcodes()
         for code, chr in next, data do
@@ -623,69 +658,16 @@ of the official <l n='api'/>.</p>
 --ldx]]--
 
 --[[ldx--
-<p>This converts a string (if given) into a number.</p>
+<p>A couple of convenience methods. Beware, these are slower than directly
+accessing the data table.</p>
 --ldx]]--
 
-function characters.number(n)
-    if type(n) == "string" then return tonumber(n,16) else return n end
-end
+-- we could make them virtual: characters.contextnames[n]
 
---[[ldx--
-<p>Checking for valid characters.</p>
---ldx]]--
-
-function characters.is_valid(s)
-    return s or ""
-end
-
-function characters.checked(s, default)
-    return s or default
-end
-
-characters.valid = characters.is_valid
-
---[[ldx--
-<p></p>
---ldx]]--
--- set a table entry; index is number (can be different from unicodeslot)
-
-function characters.set(n, c)
-    data[characters.number(n)] = c
-end
-
---[[ldx--
-<p>Get a table entry happens by number. Keep in mind that the unicodeslot
-can be different (not likely).</p>
---ldx]]--
-
-function characters.get(n)
-    return data[characters.number(n)]
-end
-
---[[ldx--
-<p>A couple of convenience methods. Beware, these are not that fast due
-to the checking.</p>
---ldx]]--
-
-function characters.hexindex(n)
-    return format("%04X", characters.valid(data[characters.number(n)].unicodeslot))
-end
-
-function characters.contextname(n)
-    return characters.valid(data[characters.number(n)].contextname)
-end
-
-function characters.adobename(n)
-    return characters.valid(data[characters.number(n)].adobename)
-end
-
-function characters.description(n)
-    return characters.valid(data[characters.number(n)].description)
-end
-
-function characters.category(n)
-    return characters.valid(data[characters.number(n)].category)
-end
+function characters.contextname(n) return data[n].contextname or "" end
+function characters.adobename  (n) return data[n].adobename   or "" end
+function characters.description(n) return data[n].description or "" end
+function characters.category   (n) return data[n].category    or "" end
 
 --[[ldx--
 <p>Requesting lower and uppercase codes:</p>
@@ -717,28 +699,6 @@ function characters.shape(n)
     else
         return shcode, nil
     end
-end
-
---[[ldx--
-<p>Categories play an important role, so here are some checkers.</p>
---ldx]]--
-
-function characters.is_of_category(token,category)
-    if type(token) == "string" then
-        return data[utfbyte(token)].category == category
-    else
-        return data[token].category == category
-    end
-end
-
-function characters.i_is_of_category(i,category) -- by index (number)
-    local cd = data[i]
-    return cd and cd.category == category
-end
-
-function characters.n_is_of_category(n,category) -- by name (string)
-    local cd = data[utfbyte(n)]
-    return cd and cd.category == category
 end
 
 -- xml support (moved)
@@ -779,13 +739,17 @@ end
 
 utf.string = utf.string or utfstring
 
-characters.lccodes = allocate()  local lccodes = characters.lccodes -- lazy table
-characters.uccodes = allocate()  local uccodes = characters.uccodes -- lazy table
-characters.shcodes = allocate()  local shcodes = characters.shcodes -- lazy table
+characters.categories = allocate()  local categories = characters.categories -- lazy table
 
-setmetatable(lccodes, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode or u t[u] = c return c end end } )
-setmetatable(uccodes, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode or u t[u] = c return c end end } )
-setmetatable(shcodes, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode or u t[u] = c return c end end } )
+setmetatable(categories, { __index = function(t,u) if u then local c = data[u] c = c and c.category or u t[u] = c return c end end } )
+
+characters.lccodes    = allocate()  local lccodes    = characters.lccodes    -- lazy table
+characters.uccodes    = allocate()  local uccodes    = characters.uccodes    -- lazy table
+characters.shcodes    = allocate()  local shcodes    = characters.shcodes    -- lazy table
+
+setmetatable(lccodes,    { __index = function(t,u) if u then local c = data[u] c = c and c.lccode   or u t[u] = c return c end end } )
+setmetatable(uccodes,    { __index = function(t,u) if u then local c = data[u] c = c and c.uccode   or u t[u] = c return c end end } )
+setmetatable(shcodes,    { __index = function(t,u) if u then local c = data[u] c = c and c.shcode   or u t[u] = c return c end end } )
 
 characters.lcchars = allocate()  local lcchars = characters.lcchars -- lazy table
 characters.ucchars = allocate()  local ucchars = characters.ucchars -- lazy table
@@ -855,7 +819,6 @@ function characters.lettered(str)
     end
     return concat(new)
 end
-
 
 -- -- some day we might go this route, but it does not really save that much
 -- -- so not now (we can generate a lot using mtx-unicode that operates on the

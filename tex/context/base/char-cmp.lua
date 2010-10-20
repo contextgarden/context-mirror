@@ -208,7 +208,6 @@ function characters.uncompose(n) -- n == string|number, returns string
     else
         cdn = characters.data[n]
     end
-    -- return characters.shape(n)
     if cdn then
         local shcode = cdn.shcode
         if not shcode then

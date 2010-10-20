@@ -34,6 +34,8 @@ vf.aux          = vf.aux          or { }
 vf.aux.combine  = vf.aux.combine  or { }
 local combine   = vf.aux.combine
 
+local chardata = characters.data
+
 function methods.install(tag, rules)
     vf.combinations[tag] = rules
     variants[tag] = function(specification)
@@ -200,8 +202,8 @@ methods.install(
 -- todo: interface tables in back-ini
 
 variants["demo-1"] = function(specification)
-    local name = specification.name          -- symbolic name
-    local size = specification.size          -- given size
+    local name = specification.name -- symbolic name
+    local size = specification.size -- given size
     local f, id = tfm.readanddefine('lmroman10-regular',size)
     if f and id then
         local capscale, digscale = 0.85, 0.75
@@ -212,15 +214,15 @@ variants["demo-1"] = function(specification)
             { name = 'lmsans10-regular'      , size = size*capscale }, -- forced extra name
             { name = 'lmtypewriter10-regular', size = size*digscale }  -- forced extra name
         }
-        local i_is_of_category = characters.i_is_of_category
         local characters, descriptions = f.characters, f.descriptions
         local vfspecials = backends.tables.vfspecials
         local red, green, blue, black = vfspecials.red, vfspecials.green, vfspecials.blue, vfspecials.black
         for u,v in next, characters do
-            if u and i_is_of_category(u,'lu') then
+            local category = chardata[u].category
+            if category == 'lu' then
                 v.width = capscale*v.width
                 v.commands = { red, { 'slot', 2, u }, black }
-            elseif u and i_is_of_category(u,'nd') then
+            elseif category == 'nd' then
                 v.width = digscale*v.width
                 v.commands = { blue, { 'slot', 3, u }, black }
             else

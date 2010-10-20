@@ -345,6 +345,8 @@ function context.direct(first,...)
     end
 end
 
+-- todo: use flush directly
+
 function context.char(k) -- todo: if catcode == letter or other then just the utf
     if type(k) == "table" then
         for i=1,#k do
@@ -353,6 +355,10 @@ function context.char(k) -- todo: if catcode == letter or other then just the ut
     elseif k then
         context(format([[\char%s\relax]],k))
     end
+end
+
+function context.utfchar(k)
+    context(utfchar(k))
 end
 
 function context.chardef(cs,u)
