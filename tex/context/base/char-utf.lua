@@ -19,7 +19,6 @@ in special kinds of output (for instance <l n='pdf'/>).</p>
 over a string.</p>
 --ldx]]--
 
-local utf = unicode.utf8
 local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
 local concat, gmatch, gsub = table.concat, string.gmatch, string.gsub
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues

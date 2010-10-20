@@ -37,14 +37,23 @@
 \unexpanded\def\setupspellchecking
   {\dosingleargument\dosetupspellchecking}
 
+\newtoks\everysetupspellchecking
+
 \unexpanded\def\setupspellchecking[#1]% todo colors
   {\getparameters[\??wl][#1]%
+   \the\everysetupspellchecking}
+
+\appendtoks
    \doifelse\@@wlstate\v!start
-     {\ctxlua{languages.words.enable(\@@wlmethod)}}
-     {\ctxlua{languages.words.disable()}}}
+     {\ctxlua{languages.words.enable { method = "\@@wlmethod", list = "\@@wllist" }}}
+     {\ctxlua{languages.words.disable()}}%
+\to \everysetupspellchecking
+
+% beware, maybe some day we will honour grouping
 
 \setupspellchecking
   [\c!state=\v!stop,
-   \c!method=1]
+   \c!method=1,
+   \c!list=]
 
 \protect \endinput

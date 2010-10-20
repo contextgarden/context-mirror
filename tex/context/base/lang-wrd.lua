@@ -37,6 +37,9 @@ local disc_code       = nodecodes.disc
 local kern_code       = nodecodes.kern
 
 local kerning_code    = kerncodes.kerning
+local lowerchar       = characters.lower
+
+local a_color         = attributes.private('color')
 
 words.colors    = {
     ["known"]   = "green",
@@ -84,11 +87,12 @@ end
 -- hyphenating and spell checking.
 
 local function mark_words(head,whenfound) -- can be optimized
-    local current, start, str, language, n = head, nil, "", nil, 0
+    local current, start, str, language, n, done = head, nil, "", nil, 0, false
     local function action()
         if #str > 0 then
             local f = whenfound(language,str)
             if f then
+                done = true
                 for i=1,n do
                     f(start)
                     start = start.next
@@ -144,85 +148,134 @@ local function mark_words(head,whenfound) -- can be optimized
     if start then
         action()
     end
-    return head
-end
-
-words.methods = { }
-local methods = words.methods
-
-local wordmethod = 1
-
-methods[1] = function(head, attribute, yes, nop)
-    local right, wrong = false, false
-    if yes then right = function(n) set_attribute(n,attribute,yes) end end
-    if nop then wrong = function(n) set_attribute(n,attribute,nop) end end
-    for n in traverse_nodes(head) do
-        unset_attribute(n,attribute) -- hm, not that selective (reset color)
-    end
-    local found, done = words.found, false
-    mark_words(head, function(language,str)
-        if #str < words.threshold then
-            return false
-        elseif found(language,str) then
-            done = true
-            return right
-        else
-            done = true
-            return wrong
-        end
-    end)
     return head, done
 end
 
-local list = { } -- todo: per language
+local methods  = { }
+words.methods  = methods
 
-local lowerchar = characters.lower
+local enablers = { }
+words.enablers = enablers
 
-methods[2] = function(head, attribute)
-    dump = true
-    mark_words(head, function(language,str)
-        if #str >= words.threshold then
-            str = lowerchar(str)
-            list[str] = (list[str] or 0) + 1
-        end
-    end)
-    return head, true
-end
-
--- words.used = list
-
-directives.register("languages.words.dump", function(v)
-    local name = type(v) == "string" and v ~= "" and v or file.addsuffix(tex.jobname,"words")
-    local function dumpusedwords(name)
-        report_languages("saving list of used words in '%s'",name)
-        io.savedata(name,table.serialize(list))
-    end
-    luatex.registerstopactions(dumpusedwords)
-end )
-
-local color = attributes.private('color')
-
-local enabled = false
+local wordmethod = 1
+local enabled    = false
 
 function words.check(head)
     if enabled and head.next then
-        local colors = words.colors
-        local alc    = attributes.list[color]
-        return methods[wordmethod](head, color, alc[colors.known], alc[colors.unknown])
+        return methods[wordmethod](head)
     else
         return head, false
     end
 end
 
-function words.enable(method)
+function words.enable(settings)
+    local method = settings.method
+    wordmethod = method and tonumber(method) or wordmethod or 1
+    local e = enablers[wordmethod]
+    if e then e(settings) end
     tasks.enableaction("processors","languages.words.check")
-    wordmethod = method or wordmethod or 1
     enabled = true
 end
 
 function words.disable()
     enabled = false
 end
+
+-- method 1
+
+local colors = words.colors
+local colist = attributes.list[a_color]
+
+local right  = function(n) set_attribute(n,a_color,colist[colors.known]) end
+local wrong  = function(n) set_attribute(n,a_color,colist[colors.unknown]) end
+
+local function sweep(language,str)
+    if #str < words.threshold then
+        return false
+    elseif words.found(language,str) then
+        return right
+    else
+        return wrong
+    end
+end
+
+methods[1] = function(head)
+    for n in traverse_nodes(head) do
+        unset_attribute(n,attribute) -- hm, not that selective (reset color)
+    end
+    return mark_words(head,sweep)
+end
+
+-- method 2
+
+local dumpname   = nil
+local dumpthem   = false
+local listname   = "document"
+
+local category   = { }
+
+local collected  = {
+    total      = 0,
+    categories = { document = { total = 0, list = { } } },
+}
+
+enablers[2] = function(settings)
+    local name = settings.list
+    listname = name and name ~= "" and name or "document"
+    category = collected.categories[listname]
+    if not category then
+        category = { }
+        collected.categories[listname] = category
+    end
+end
+
+local numbers    = languages.numbers
+local registered = languages.registered
+
+local function sweep(language,str)
+    if #str >= words.threshold then
+        collected.total = collected.total + 1
+        str = lowerchar(str)
+        local number = numbers[language] or "unset"
+        local words = category[number]
+        if not words then
+            local r = registered[number]
+            category[number] = {
+                number   = language,
+                parent   = r and r.parent   or nil,
+                patterns = r and r.patterns or nil,
+                tag      = r and r.tag      or nil,
+                list     = { [str] = 1 },
+                total    = 1,
+            }
+        else
+            local list = words.list
+            list[str] = (list[str] or 0) + 1
+            words.total = words.total + 1
+        end
+    end
+end
+
+methods[2] = function(head)
+    dumpthem = true
+    return mark_words(head,sweep)
+end
+
+local function dumpusedwords()
+    if dumpthem then
+        collected.threshold = words.threshold
+        dumpname = dumpname or file.addsuffix(tex.jobname,"words")
+        report_languages("saving list of used words in '%s'",dumpname)
+        io.savedata(dumpname,table.serialize(collected,true))
+     -- table.tofile(dumpname,list,true)
+    end
+end
+
+directives.register("languages.words.dump", function(v)
+    dumpname = type(v) == "string" and v ~= "" and v
+end)
+
+luatex.registerstopactions(dumpusedwords)
 
 -- for the moment we hook it into the attribute handler
 

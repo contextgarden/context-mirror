@@ -6,9 +6,9 @@ if not modules then modules = { } end modules ['char-tex'] = {
     license   = "see context related readme files"
 }
 
-local find = string.find
-
 local lpeg = lpeg
+
+local find = string.find
 local P, C, R, S, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc
 local U, lpegmatch = lpeg.patterns.utf8, lpeg.match
 
@@ -77,13 +77,11 @@ local convert_accents_strip  = Cs((no_l * accents  * no_r + accents  + P(1))^0)
 local convert_commands_strip = Cs((no_l * commands * no_r + commands + P(1))^0)
 
 function characters.tex.toutf(str,strip)
-    if find(str,"\\") then -- we can start at teh found position
+    if find(str,"\\") then -- we can start at the found position
         if strip then
-            str = lpegmatch(convert_commands_strip,str)
-            str = lpegmatch(convert_accents_strip,str)
+            return lpegmatch(convert_accents_strip,lpegmatch(convert_commands_strip,str))
         else
-            str = lpegmatch(convert_commands,str)
-            str = lpegmatch(convert_accents,str)
+            return lpegmatch(convert_accents,      lpegmatch(convert_commands,      str))
         end
     end
     return str

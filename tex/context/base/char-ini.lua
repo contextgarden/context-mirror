@@ -582,12 +582,6 @@ else -- char-obs
 
 end
 
-function characters.charcode(box)
-    local b = tex.box[box]
-    local l = b.list
-    texsprint((l and l.id == node.id('glyph') and l.char) or 0)
-end
-
 --[[ldx--
 <p>Setting the lccodes is also done in a loop over the data table.</p>
 --ldx]]--

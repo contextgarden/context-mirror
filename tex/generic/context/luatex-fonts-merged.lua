@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/20/10 13:11:27
+-- merge date  : 10/20/10 21:33:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -969,21 +969,25 @@ local function do_serialize(root,name,depth,level,indexed)
         depth = depth .. " "
         if indexed then
             handle(format("%s{",depth))
-        elseif name then
-        --~ handle(format("%s%s={",depth,key(name)))
-            if type(name) == "number" then -- or find(k,"^%d+$") then
+        else
+            local tn = type(name)
+            if tn == "number" then -- or find(k,"^%d+$") then
                 if hexify then
                     handle(format("%s[0x%04X]={",depth,name))
                 else
                     handle(format("%s[%s]={",depth,name))
                 end
-            elseif noquotes and not reserved[name] and find(name,"^%a[%w%_]*$") then
-                handle(format("%s%s={",depth,name))
+            elseif tn == "string" then
+                if noquotes and not reserved[name] and find(name,"^%a[%w%_]*$") then
+                    handle(format("%s%s={",depth,name))
+                else
+                    handle(format("%s[%q]={",depth,name))
+                end
+            elseif tn == "boolean" then
+                handle(format("%s[%s]={",depth,tostring(name)))
             else
-                handle(format("%s[%q]={",depth,name))
+                handle(format("%s{",depth))
             end
-        else
-            handle(format("%s{",depth))
         end
     end
     -- we could check for k (index) being number (cardinal)
