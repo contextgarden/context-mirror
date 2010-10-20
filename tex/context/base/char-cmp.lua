@@ -6,15 +6,16 @@ if not modules then modules = { } end modules ['char-cmp'] = {
     license   = "see context related readme files"
 }
 
+-- There is some overlap here with shcodes ...
+
 local type = type
-local utf = unicode.utf8
-local utfchar = utf.char
+local utfchar, utfbyte = utf.char, utf.byte
 local unpack = unpack or table.unpack
 
 local allocate = utilities.storage.allocate
 
-characters            = characters or { }
 local characters      = characters
+local chardata        = characters.data
 
 characters.uncomposed = allocate()
 local uncomposed      = characters.uncomposed
@@ -38,7 +39,7 @@ Of course they may come in handy elsewhere too. Using shcodes is
 not handy here (incpmplete).</p>
 --ldx]]--
 
-uncomposed.left = allocate {
+local left = allocate {
     AEligature = "A",  aeligature = "a",
     OEligature = "O",  oeligature = "o",
     IJligature = "I",  ijligature = "i",
@@ -48,7 +49,7 @@ uncomposed.left = allocate {
     Ssharp     = "S",  ssharp     = "s",
 }
 
-uncomposed.right = allocate {
+local right = allocate {
     AEligature = "E",  aeligature = "e",
     OEligature = "E",  oeligature = "e",
     IJligature = "J",  ijligature = "j",
@@ -58,7 +59,7 @@ uncomposed.right = allocate {
     Ssharp     = "S",  ssharp     = "s",
 }
 
-uncomposed.both = allocate {
+local both = allocate {
     Acircumflex = "A",  acircumflex = "a",
     Ccircumflex = "C",  ccircumflex = "c",
     Ecircumflex = "E",  ecircumflex = "e",
@@ -177,24 +178,9 @@ uncomposed.both = allocate {
 
 }
 
--- adobename ... inclomplete
---
--- if characters.data then
---     uncomposed.left, uncomposed.right, uncomposed.both = allocate(), allocate(), allocate()
---     for k,v in next, characters.data do
---         local s = v.shcode
---         if s then
---             local name = v.adobename
---             if not name then
---              -- table.print(v) -- only used for afm anyway
---             elseif type(s) == "table" then
---                 uncomposed.left[name], uncomposed.right[name] = s[1], s[#s]
---             else
---                 uncomposed.both[name] = s
---             end
---         end
---     end
--- end
+uncomposed.left  = left
+uncomposed.right = right
+uncomposed.both  = both
 
 --[[ldx--
 <p>The following function is used in the indexing code, where we
@@ -202,16 +188,11 @@ need some sort of default fallback mapping. (This is obsolete!)</p>
 --ldx]]--
 
 function characters.uncompose(n) -- n == string|number, returns string
-    local cdn
-    if type(n) == "string" then
-        cdn = characters.data[utf.byte(n)]
-    else
-        cdn = characters.data[n]
-    end
+    local cdn = type(n) == "string" and chardata[utfbyte(n)] or chardata[n]
     if cdn then
         local shcode = cdn.shcode
         if not shcode then
-            return uncomposed.both[cdn.contextname] or n
+            return both[cdn.contextname] or n
         elseif type(shcode) == "table" then
             return utfchar(unpack(cdn.shcode))
         else

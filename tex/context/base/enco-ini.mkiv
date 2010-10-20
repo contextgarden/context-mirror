@@ -100,7 +100,7 @@
 \unexpanded\def\buildtextaccent#1#2%
   {\begingroup
    \global\setbox\accenttestbox\hbox{#1}%
-   \scratchcounter\ctxlua{characters.charcode(\number\accenttestbox)}%
+   \scratchcounter\cldcontext{nodes.firstcharinbox(\number\accenttestbox)}%
    \ifcase\scratchcounter\else\accent\scratchcounter\fi
    \relax#2%
    \endgroup}

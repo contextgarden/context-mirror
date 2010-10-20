@@ -20,6 +20,9 @@ local has_attribute   = node.has_attribute
 local set_attribute   = node.set_attribute
 local get_attribute   = node.get_attribute
 local unset_attribute = node.unset_attribute
+local first_character = node.first_character
+
+local texbox          = tex.box
 
 function nodes.repack_hlist(list,...)
     local temp, b = hpack_nodes(list,...)
@@ -153,3 +156,9 @@ nodes.unset_attributes     = unset_attributes
 --         return -u
 --     end
 -- end
+
+function nodes.firstcharinbox(n)
+    local l = texbox[n].list
+    local f = l and first_character(l)
+    return f and f.char or 0
+end

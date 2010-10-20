@@ -13,7 +13,7 @@ local allocate = utilities.storage.allocate
 characters       = characters or { }
 local characters = characters
 
-characters.synonyms = allocate {
+characters.synonyms = allocate { -- afm mess
     angle              = 0x2220,
     anticlockwise      = 0x21BA,
     arrowaxisleft      = 0x2190,
