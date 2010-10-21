@@ -88,3 +88,13 @@ end
 --~ local t = bla.test
 --~ table.print(t)
 --~ print(t.a)
+
+function storage.setinitializer(data,initialize)
+    local m = getmetatable(data) or { }
+    m.__index = function(data,k)
+        m.__index = nil -- so that we can access the entries during initializing
+        initialize()
+        return data[k]
+    end
+    setmetatable(data, m)
+end

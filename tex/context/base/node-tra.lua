@@ -49,7 +49,6 @@ local step_tracers    = tracers.steppers
 local copy_node_list  = node.copy_list
 local hpack_node_list = node.hpack
 local free_node_list  = node.flush_list
-local first_character = node.first_character
 local node_type       = node.type
 local traverse_nodes  = node.traverse
 
@@ -237,8 +236,7 @@ function step_tracers.glyphs(n,i)
 end
 
 function step_tracers.features()
---  local f = first_character(collection[1])
---  if f then -- something fishy with first_character
+    -- we cannot use first_character here as it only finds characters with subtype < 256
     local f = collection[1]
     while f do
         if f.id == glyph_code then

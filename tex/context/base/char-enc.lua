@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['char-syn'] = {
 
 -- thanks to tex4ht for these mappings
 
-local allocate = utilities.storage.allocate
+local allocate, setinitializer = utilities.storage.allocate, utilities.storage.setinitializer
 
 characters       = characters or { }
 local characters = characters
@@ -144,23 +144,42 @@ characters.synonyms = allocate { -- afm mess
     Yen                = 0x00A5,
 }
 
-if not characters.enccodes then
+--~ if not characters.enccodes then
+--~
+--~     local enccodes = { } characters.enccodes  = enccodes
+--~
+--~     for unicode, data in next, characters.data do
+--~         local encname = data.adobename or data.contextname
+--~         if encname then
+--~             enccodes[encname] = unicode
+--~         end
+--~     end
+--~
+--~     for name, unicode in next, characters.synonyms do
+--~         if not enccodes[name] then enccodes[name] = unicode end
+--~     end
+--~
+--~
+--~ end
+--~
+--~ storage.register("characters.enccodes", characters.enccodes, "characters.enccodes")
 
-    local enccodes = { }
+-- As this table is seldom used, we can delay its definition. Beware, this means
+-- that table.print would not work on this file unless it is accessed once. This
+-- why the serializer does a dummy access.
 
+local enccodes = allocate()  characters.enccodes = enccodes
+
+local function initialize()
     for unicode, data in next, characters.data do
         local encname = data.adobename or data.contextname
         if encname then
             enccodes[encname] = unicode
         end
     end
-
     for name, unicode in next, characters.synonyms do
         if not enccodes[name] then enccodes[name] = unicode end
     end
-
-    characters.enccodes  = enccodes
-
 end
 
-storage.register("characters.enccodes", characters.enccodes, "characters.enccodes")
+setinitializer(enccodes,initialize)

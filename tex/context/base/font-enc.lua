@@ -53,6 +53,8 @@ Latin Modern or <l n='tex'> Gyre) come in OpenType variants too, so these
 will be used.</p>
 --ldx]]--
 
+local enccodes = characters.enccodes
+
 function enc.load(filename)
     local name = file.removesuffix(filename)
     local data = containers.read(enc.cache,name)
@@ -70,7 +72,6 @@ function enc.load(filename)
     if foundname and foundname ~= "" then
         local ok, encoding, size = resolvers.loadbinfile(foundname)
         if ok and encoding then
-            local enccodes = characters.enccodes
             encoding = gsub(encoding,"%%(.-)\n","")
             local tag, vec = match(encoding,"/(%w+)%s*%[(.*)%]%s*def")
             local i = 0

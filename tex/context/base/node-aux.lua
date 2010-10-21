@@ -10,10 +10,12 @@ local nodes, node = nodes, node
 
 local nodecodes       = nodes.nodecodes
 
+local glyph_code      = nodecodes.glyph
 local hlist_code      = nodecodes.hlist
 local vlist_code      = nodecodes.vlist
 
 local traverse_nodes  = node.traverse
+local traverse_id     = node.traverse_id
 local free_node       = node.free
 local hpack_nodes     = node.hpack
 local has_attribute   = node.has_attribute
@@ -157,8 +159,22 @@ nodes.unset_attributes     = unset_attributes
 --     end
 -- end
 
+function nodes.firstcharacter(n,untagged) -- tagged == subtype > 255
+    if untagged then
+        return first_character(n)
+    else
+        for g in traverse_id(glyph_code,n) do
+            return g
+        end
+    end
+end
+
 function nodes.firstcharinbox(n)
     local l = texbox[n].list
-    local f = l and first_character(l)
-    return f and f.char or 0
+    if l then
+        for g in traverse_id(glyph_code,l) do
+            return g.char
+        end
+    end
+    return 0
 end
