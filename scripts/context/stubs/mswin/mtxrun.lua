@@ -1110,8 +1110,14 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
     else
         handle("t={")
     end
-    if root and next(root) then
-        do_serialize(root,name,"",0)
+    if root then
+        -- The dummy access will initialize a table that has a delayed initialization
+        -- using a metatable.
+        local dummy = root.whatever
+        -- Let's forget about empty tables.
+        if next(root) then
+            do_serialize(root,name,"",0)
+        end
     end
     handle("}")
 end
@@ -4062,6 +4068,16 @@ function getmetatablekey(t,key,value)
 end
 
 
+function storage.setinitializer(data,initialize)
+    local m = getmetatable(data) or { }
+    m.__index = function(data,k)
+        m.__index = nil -- so that we can access the entries during initializing
+        initialize()
+        return data[k]
+    end
+    setmetatable(data, m)
+end
+
 
 end -- of closure
 
@@ -4190,6 +4206,7 @@ function statistics.show(reporter)
             local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
             return format("direct: %s, indirect: %s, total: %s", total-indirect, indirect, total)
         end)
+        collectgarbage("collect")
         register("current memory usage", statistics.memused)
         register("runtime",statistics.runtime)
         for i=1,#statusinfo do

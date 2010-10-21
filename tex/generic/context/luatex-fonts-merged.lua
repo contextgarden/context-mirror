@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/21/10 19:55:03
+-- merge date  : 10/21/10 23:27:14
 
 do -- begin closure to overcome local limits and interference
 
@@ -1234,8 +1234,14 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
     else
         handle("t={")
     end
-    if root and next(root) then
-        do_serialize(root,name,"",0)
+    if root then
+        -- The dummy access will initialize a table that has a delayed initialization
+        -- using a metatable.
+        local dummy = root.whatever
+        -- Let's forget about empty tables.
+        if next(root) then
+            do_serialize(root,name,"",0)
+        end
     end
     handle("}")
 end
@@ -8041,6 +8047,7 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
+local random = math.random
 
 local logs, trackers, fonts, nodes, attributes = logs, trackers, fonts, nodes, attributes
 
@@ -8336,7 +8343,7 @@ end
 local function alternative_glyph(start,alternatives,kind,chainname,chainlookupname,lookupname) -- chainname and chainlookupname optional
     local value, choice, n = featurevalue or tfmdata.shared.features[kind], nil, #alternatives -- global value, brrr
     if value == "random" then
-        local r = math.random(1,n)
+        local r = random(1,n)
         value, choice = format("random, choice %s",r), alternatives[r]
     elseif value == "first" then
         value, choice = format("first, choice %s",1), alternatives[1]
@@ -9701,22 +9708,22 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
 
                     local i = 1
                     repeat
-if skipped then
-    while true do
-        local char = start.char
-        local ccd = descriptions[char]
-        if ccd then
-            local class = ccd.class
-            if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
-                start = start.next
-            else
-                break
-            end
-        else
-            break
-        end
-    end
-end
+                        if skipped then
+                            while true do
+                                local char = start.char
+                                local ccd = descriptions[char]
+                                if ccd then
+                                    local class = ccd.class
+                                    if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                        start = start.next
+                                    else
+                                        break
+                                    end
+                                else
+                                    break
+                                end
+                            end
+                        end
                         local chainlookupname = chainlookups[i]
                         local chainlookup = lookuptable[chainlookupname]
                         local cp = chainmores[chainlookup.type]

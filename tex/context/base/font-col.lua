@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-col'] = {
 -- possible optimization: delayed initialization of vectors
 
 local gmatch, type = string.gmatch, type
-local traverse_id, first_character = node.traverse_id, node.first_character
+local traverse_id = node.traverse_id
 local lpegmatch = lpeg.match
 local settings_to_hash = utilities.parsers.settings_to_hash
 

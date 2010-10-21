@@ -121,6 +121,7 @@ function statistics.show(reporter)
             local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
             return format("direct: %s, indirect: %s, total: %s", total-indirect, indirect, total)
         end)
+        collectgarbage("collect")
         register("current memory usage", statistics.memused)
         register("runtime",statistics.runtime)
         for i=1,#statusinfo do

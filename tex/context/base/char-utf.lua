@@ -81,10 +81,10 @@ local function initialize()
     initialize = false
 end
 
--- utffilters.add_grapheme(utfchar(318),'l','\string~')
--- utffilters.add_grapheme('c','a','b')
+-- utffilters.addgrapheme(utfchar(318),'l','\string~')
+-- utffilters.addgrapheme('c','a','b')
 
-function utffilters.add_grapheme(result,first,second)
+function utffilters.addgrapheme(result,first,second)
     local r, f, s = tonumber(result), tonumber(first), tonumber(second)
     if r then result = utfchar(r) end
     if f then first  = utfchar(f) end
@@ -96,30 +96,30 @@ function utffilters.add_grapheme(result,first,second)
     end
 end
 
-function utffilters.collapse(str) -- old one
-    if utffilters.collapsing and str and #str > 1 then
-        if initialize then -- saves a call
-            initialize()
-        end
-        local tokens, first, done = { }, false, false
-        for second in utfcharacters(str) do
-            local cgf = graphemes[first]
-            if cgf and cgf[second] then
-                first, done = cgf[second], true
-            elseif first then
-                tokens[#tokens+1] = first
-                first = second
-            else
-                first = second
-            end
-        end
-        if done then
-            tokens[#tokens+1] = first
-            return concat(tokens)
-        end
-    end
-    return str
-end
+--~ function utffilters.collapse(str) -- old one
+--~     if utffilters.collapsing and str and #str > 1 then
+--~         if initialize then -- saves a call
+--~             initialize()
+--~         end
+--~         local tokens, first, done = { }, false, false
+--~         for second in utfcharacters(str) do
+--~             local cgf = graphemes[first]
+--~             if cgf and cgf[second] then
+--~                 first, done = cgf[second], true
+--~             elseif first then
+--~                 tokens[#tokens+1] = first
+--~                 first = second
+--~             else
+--~                 first = second
+--~             end
+--~         end
+--~         if done then
+--~             tokens[#tokens+1] = first
+--~             return concat(tokens)
+--~         end
+--~     end
+--~     return str
+--~ end
 
 --[[ldx--
 <p>In order to deal with 8-bit output, we need to find a way to

@@ -389,6 +389,8 @@ table we derive a few more.</p>
 
 if not characters.fallbacks then
 
+    -- we could the definition by using a metatable
+
     characters.fallbacks   = { }
     characters.directions  = { }
 
@@ -785,7 +787,6 @@ setmetatable(specialchars, { __index = function(t,u)
         end
     end
 end } )
-
 
 function characters.lower(str)
     local new = { }

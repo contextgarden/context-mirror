@@ -76,7 +76,7 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
             report_combining("using compose information from goodies file")
         end
         local done = false
-        for i,c in next, characters.data do
+        for i,c in next, characters.data do -- loop over all characters ... not that efficient but a specials hash takes memory
             if force_composed or not chars[i] then
                 local s = c.specials
                 if s and s[1] == 'char' then
@@ -84,7 +84,7 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                     local charschr = chars[chr]
                     if charschr then
                         local cc = c.category
-                        if cc == 'll' or cc == 'lu' or cc == 'lt' then
+                        if cc == 'll' or cc == 'lu' or cc == 'lt' then -- characters.is_letter[cc]
                             local acc = s[3]
                             local t = { }
                             for k, v in next, charschr do
@@ -101,7 +101,7 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                         --~ elseif ca == "me" then
                         --~     -- mark enclosing
                         --~ else
-                            if not charsacc then
+                            if not charsacc then -- fallback accents
                                 acc = fallbacks[acc]
                                 charsacc = acc and chars[acc]
                             end

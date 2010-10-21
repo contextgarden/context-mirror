@@ -411,7 +411,7 @@ local function removeemptyentries(result)
         end
     end
     if m > 0 then
-        report_registers("%s empty entries removed in register")
+        report_registers("%s empty entries removed in register",m)
     end
 end
 
