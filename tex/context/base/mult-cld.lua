@@ -28,25 +28,26 @@ local insert, remove = table.insert, table.remove
 
 local tex = tex
 
-local texsprint   = tex.sprint
-local textprint   = tex.tprint
-local texprint    = tex.print
-local texiowrite  = texio.write
-local texcount    = tex.count
+local texsprint    = tex.sprint
+local textprint    = tex.tprint
+local texprint     = tex.print
+local texiowrite   = texio.write
+local texcount     = tex.count
 
-local isnode      = node.is_node
-local writenode   = node.write
+local isnode       = node.is_node
+local writenode    = node.write
 
-local ctxcatcodes = tex.ctxcatcodes
-local prtcatcodes = tex.prtcatcodes
-local texcatcodes = tex.texcatcodes
-local txtcatcodes = tex.txtcatcodes
-local vrbcatcodes = tex.vrbcatcodes
-local xmlcatcodes = tex.xmlcatcodes
+local ctxcatcodes  = tex.ctxcatcodes
+local prtcatcodes  = tex.prtcatcodes
+local texcatcodes  = tex.texcatcodes
+local txtcatcodes  = tex.txtcatcodes
+local vrbcatcodes  = tex.vrbcatcodes
+local xmlcatcodes  = tex.xmlcatcodes
 
-local flush = texsprint
+local flush         = texsprint
 
-local report_cld = logs.new("cld")
+local trace_context = logs.new("context") -- here
+local report_cld    = logs.new("cld")
 
 local _stack_, _n_ = { }, 0
 
@@ -251,7 +252,6 @@ setmetatable(context, { __index = indexer, __call = caller } )
 
 -- logging
 
-local trace_context = logs.new("context") -- here
 local trace_stack   = { }
 
 local normalflush   = flush

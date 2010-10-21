@@ -11941,6 +11941,16 @@ return {
    ["pe"]="همواره",
    ["ro"]="totdeauna",
   },
+  ["and"]={
+ --["cs"]="",
+   ["de"]="und",
+   ["en"]="and",
+ --["fr"]="",
+ --["it"]="",
+   ["nl"]="en",
+ --["pe"]="",
+ --["ro"]="",
+  },
   ["answerarea"]={
    ["cs"]="answerarea",
    ["de"]="answerarea",

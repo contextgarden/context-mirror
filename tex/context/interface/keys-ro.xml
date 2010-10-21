@@ -71,6 +71,7 @@
 		<cd:variable name='after' value='dupa'/>
 		<cd:variable name='all' value='tot'/>
 		<cd:variable name='always' value='totdeauna'/>
+		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
 		<cd:variable name='appendices' value='apendixuri'/>
 		<cd:variable name='appendix' value='apendix'/>

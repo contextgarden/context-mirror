@@ -71,6 +71,7 @@
 		<cd:variable name='after' value='بعداز'/>
 		<cd:variable name='all' value='همه'/>
 		<cd:variable name='always' value='همواره'/>
+		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
 		<cd:variable name='appendices' value='پیوستها'/>
 		<cd:variable name='appendix' value='پیوست'/>
