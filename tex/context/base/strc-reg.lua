@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 
 local next, type = next, type
 local texwrite, texcount = tex.write, tex.count
-local format, gmatch, concat = string.format, string.gmatch, table.concat
+local format, gmatch, concat, remove = string.format, string.gmatch, table.concat, table.remove
 local utfchar = utf.char
 local lpegmatch = lpeg.match
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
@@ -333,6 +333,7 @@ function registers.compare(a,b)
         elseif page_a > page_b then
             return  1
         end
+    else -- see
     end
     return 0
 end
@@ -448,94 +449,161 @@ function registers.userdata(index,name)
     end
 end
 
--- proc can be wrapped
+-- todo: ownnumber
 
 local seeindex = 0
 
-function registers.flush(data,options,prefixspec,pagespec)
-    local equal = table.are_equal
-    -- local usedtags = { }
-    -- for i=1,#result do
-    --     usedtags[#usedtags+1] = result[i].tag
-    -- end
-    -- context.setvalue("usedregistertags",concat(usedtags,",")) -- todo: { } and escape special chars
-    --
-    context.startregisteroutput()
-    local collapse_singles = options.compress == interfaces.variables.yes
-    local collapse_ranges  = options.compress == interfaces.variables.all
-    local result = data.result
-    -- todo ownnumber
-    local function pagenumber(entry)
-        local er = entry.references
-        context.registeronepage(
-            entry.processors and entry.processors[2] or "",
-            er.internal or 0,
-            er.realpage or 0,
-            function() helpers.prefixpage(entry,prefixspec,pagespec) end
-        )
-    end
-    local function pagerange(f_entry,t_entry,is_last)
-        local fer = f_entry.references
-        local ter = t_entry.references
-        context.registerpagerange(
-            f_entry.processors and f_entry.processors[2] or "",
-            fer.internal or 0,
-            fer.realpage or 0,
-            function()
-                helpers.prefixpage(f_entry,prefixspec,pagespec)
-            end,
-            ter.internal or 0,
-            ter.lastrealpage or ter.realpage or 0,
-            function()
-                if is_last then
-                    helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
-                else
-                    helpers.prefixpage    (t_entry,prefixspec,pagespec)
-                end
-            end
-        )
-    end
-    --
-    -- maybe we can nil the splits and save memory
-    --
-    do
-        -- hash words (potential see destinations)
-        local words = { }
-        for i=1,#result do
-            local data = result[i].data
-            for j=1,#data do
-                local d = data[j]
-                local word = d.list[1][1]
-                words[word] = d
+local function pagerange(f_entry,t_entry,is_last,prefixspec,pagespec)
+    local fer, ter = f_entry.references, t_entry.references
+    context.registerpagerange(
+        f_entry.processors and f_entry.processors[2] or "",
+        fer.internal or 0,
+        fer.realpage or 0,
+        function()
+            helpers.prefixpage(f_entry,prefixspec,pagespec)
+        end,
+        ter.internal or 0,
+        ter.lastrealpage or ter.realpage or 0,
+        function()
+            if is_last then
+                helpers.prefixlastpage(t_entry,prefixspec,pagespec) -- swaps page and realpage keys
+            else
+                helpers.prefixpage    (t_entry,prefixspec,pagespec)
             end
         end
-        -- link seewords to words and tag destination
-        for i=1,#result do
-            local data = result[i].data
-            for j=1,#data do
-                local d = data[j]
-                local seeword = d.seeword
-                if seeword then
-                    local text = seeword.text
-                    if text then
-                        local w = words[text]
-                        if w then
-                            local wr = w.references -- the referred word
-                            local dr = d.references -- the see word
-                            if wr.seeparent then
-                                dr.seeindex = wr.seeparent
-                            else
-                                seeindex = seeindex + 1
-                                wr.seeparent = seeindex
-                                dr.seeindex = seeindex
-                            end
+    )
+end
+
+local function pagenumber(entry,prefixspec,pagespec)
+    local er = entry.references
+    context.registeronepage(
+        entry.processors and entry.processors[2] or "",
+        er.internal or 0,
+        er.realpage or 0,
+        function() helpers.prefixpage(entry,prefixspec,pagespec) end
+    )
+end
+
+-- local usedtags = { }
+-- for i=1,#result do
+--     usedtags[#usedtags+1] = result[i].tag
+-- end
+-- context.setvalue("usedregistertags",concat(usedtags,",")) -- todo: { } and escape special chars
+
+--~ local function remove(pages,i) -- todo: use table.remove(pages,i)
+--~     for j=i,#pages-1 do
+--~         pages[j] = pages[j+1]
+--~     end
+--~     pages[#pages] = nil
+--~ end
+
+local function collapsedpage(pages)
+    for i=2,#pages do
+        local first, second = pages[i-1], pages[i]
+        local first_first, first_last, second_first, second_last = first[1], first[2], second[1], second[2]
+        local first_last_pn     = first_last  .references.realpage
+        local second_first_pn   = second_first.references.realpage
+        local second_last_pn    = second_last .references.realpage
+        local first_last_last   = first_last  .references.lastrealpage
+        local second_first_last = second_first.references.lastrealpage
+        if first_last_last then
+            first_last_pn = first_last_last
+            if second_first == second_last and second_first_pn <= first_last_pn then
+                -- 2=8, 5 -> 12=8
+                remove(pages,i)
+                return true
+            elseif second_first == second_last and second_first_pn > first_last_pn then
+                -- 2=8, 9 -> 2-9
+                pages[i-1] = { first_first, second_last }
+                remove(pages,i)
+                return true
+            elseif second_last_pn < first_last_pn then
+                -- 2=8, 3-4 -> 2=8
+                remove(pages,i)
+                return true
+            elseif first_last_pn < second_last_pn then
+                -- 2=8, 3-9 -> 2-9
+                pages[i-1] = { first_first, second_last }
+                remove(pages,i)
+                return true
+            elseif first_last_pn + 1 == second_first_pn and second_last_pn > first_last_pn then
+                -- 2=8, 9-11 -> 2-11
+                pages[i-1] = { first_first, second_last }
+                remove(pages,i)
+                return true
+            elseif second_first.references.lastrealpage then
+                -- 2=8, 9=11 -> 2-11
+                pages[i-1] = { first_first, second_last }
+                remove(pages,i)
+                return true
+            end
+        elseif second_first_last then
+            second_first_pn = second_first_last
+            if first_last_pn == second_first_pn then
+                -- 2-4, 5=9 -> 2-9
+                pages[i-1] = { first_first, second_last }
+                remove(pages,i)
+                return true
+            end
+        elseif first_last_pn == second_first_pn then
+            -- 2-3, 3-4 -> 2-4
+            pages[i-1] = { first_last, second_last }
+            remove(pages,i)
+            return true
+        end
+    end
+    return false
+end
+
+function collapsepages(pages)
+    while collapsedpage(pages) do end
+end
+
+local function crosslinkseewords(result)
+    -- hash words (potential see destinations)
+    local words = { }
+    for i=1,#result do
+        local data = result[i].data
+        for j=1,#data do
+            local d = data[j]
+            local word = d.list[1][1]
+            words[word] = d
+        end
+    end
+    -- link seewords to words and tag destination
+    for i=1,#result do
+        local data = result[i].data
+        for j=1,#data do
+            local d = data[j]
+            local seeword = d.seeword
+            if seeword then
+                local text = seeword.text
+                if text then
+                    local w = words[text]
+                    if w then
+                        local wr = w.references -- the referred word
+                        local dr = d.references -- the see word
+                        if wr.seeparent then
+                            dr.seeindex = wr.seeparent
+                        else
+                            seeindex = seeindex + 1
+                            wr.seeparent = seeindex
+                            dr.seeindex = seeindex
                         end
                     end
                 end
             end
         end
     end
-    --
+end
+
+function registers.flush(data,options,prefixspec,pagespec)
+    local equal = table.are_equal
+    local collapse_singles = options.compress == variables.yes
+    local collapse_ranges  = options.compress == variables.all
+    local result = data.result
+    crosslinkseewords(result)
+    context.startregisteroutput()
     for i=1,#result do
      -- ranges need checking !
         local sublist = result[i]
@@ -568,7 +636,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                                 context.startregisterentries(n)
                             end
                         end
-                        local internal = entry.references.internal or 0
+                        local internal  = entry.references.internal or 0
                         local seeparent = entry.references.seeparent or ""
                         local processor = entry.processors and entry.processors[1] or ""
                         if metadata then
@@ -588,9 +656,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                 if collapse_singles or collapse_ranges then
                     -- we collapse ranges and keep existing ranges as they are
                     -- so we get prebuilt as well as built ranges
-                    local first, last, prev = entry, nil, entry
-                    local pages = { }
-                    local dd = d
+                    local first, last, prev, pages, dd = entry, nil, entry, { }, d
                     while dd < #data do
                         dd = dd + 1
                         local next = data[dd]
@@ -600,11 +666,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                         --~ first = nil
                             break
                         elseif next.references.lastrealpage then
-                            if first then
-                                pages[#pages+1] = { first, last or first }
-                            else
-                                pages[#pages+1] = { entry, entry }
-                            end
+                            pages[#pages+1] = first and { first, last or first } or { entry, entry }
                             pages[#pages+1] = { next, next }
                             first, last, prev = nil, nil, nil
                         elseif not first then
@@ -620,102 +682,35 @@ function registers.flush(data,options,prefixspec,pagespec)
                         pages[#pages+1] = { first, last or first }
                     end
                     if collapse_ranges and #pages > 1 then
-                        -- ok, not that efficient
-                        local function doit()
-                            local function bubble(i)
-                                for j=i,#pages-1 do
-                                    pages[j] = pages[j+1]
-                                end
-                                pages[#pages] = nil
-                            end
-                            for i=2,#pages do
-                                local first, second = pages[i-1], pages[i]
-                                local first_first, first_last, second_first, second_last = first[1], first[2], second[1], second[2]
-                                local first_last_pn     = first_last  .references.realpage
-                                local second_first_pn   = second_first.references.realpage
-                                local second_last_pn    = second_last .references.realpage
-                                local first_last_last   = first_last  .references.lastrealpage
-                                local second_first_last = second_first.references.lastrealpage
-                                if first_last_last then
-                                    first_last_pn = first_last_last
-                                    if second_first == second_last and second_first_pn <= first_last_pn then
-                                        -- 2=8, 5 -> 12=8
-                                        bubble(i)
-                                        return true
-                                    elseif second_first == second_last and second_first_pn > first_last_pn then
-                                        -- 2=8, 9 -> 2-9
-                                        pages[i-1] = { first_first, second_last }
-                                        bubble(i)
-                                        return true
-                                    elseif second_last_pn < first_last_pn then
-                                        -- 2=8, 3-4 -> 2=8
-                                        bubble(i)
-                                        return true
-                                    elseif first_last_pn < second_last_pn then
-                                        -- 2=8, 3-9 -> 2-9
-                                        pages[i-1] = { first_first, second_last }
-                                        bubble(i)
-                                        return true
-                                    elseif first_last_pn + 1 == second_first_pn and second_last_pn > first_last_pn then
-                                        -- 2=8, 9-11 -> 2-11
-                                        pages[i-1] = { first_first, second_last }
-                                        bubble(i)
-                                        return true
-                                    elseif second_first.references.lastrealpage then
-                                        -- 2=8, 9=11 -> 2-11
-                                        pages[i-1] = { first_first, second_last }
-                                        bubble(i)
-                                        return true
-                                    end
-                                elseif second_first_last then
-                                    second_first_pn = second_first_last
-                                    if first_last_pn == second_first_pn then
-                                        -- 2-4, 5=9 -> 2-9
-                                        pages[i-1] = { first_first, second_last }
-                                        bubble(i)
-                                        return true
-                                    end
-                                elseif first_last_pn == second_first_pn then
-                                    -- 2-3, 3-4 -> 2-4
-                                    pages[i-1] = { first_last, second_last }
-                                    bubble(i)
-                                    return true
-                                end
-                            end
-                            return false
-                        end
-                        while doit() do end
+                        collapsepages(pages)
                     end
-                    --
                     if #pages > 0 then -- or 0
                         d = dd
                         for p=1,#pages do
                             local first, last = pages[p][1], pages[p][2]
                             if first == last then
                                 if first.references.lastrealpage then
-                                    pagerange(first,first,true)
+                                    pagerange(first,first,true,prefixspec,pagespec)
                                 else
-                                    pagenumber(first)
+                                    pagenumber(first,prefixspec,pagespec)
                                 end
                             elseif last.references.lastrealpage then
-                                pagerange(first,last,true)
+                                pagerange(first,last,true,prefixspec,pagespec)
                             else
-                                pagerange(first,last,false)
+                                pagerange(first,last,false,prefixspec,pagespec)
                             end
                         end
+                    elseif entry.references.lastrealpage then
+                        pagerange(entry,entry,true,prefixspec,pagespec)
                     else
-                        if entry.references.lastrealpage then
-                            pagerange(entry,entry,true)
-                        else
-                            pagenumber(entry)
-                        end
+                        pagenumber(entry,prefixspec,pagespec)
                     end
                 else
                     while true do
                         if entry.references.lastrealpage then
-                            pagerange(entry,entry,true)
+                            pagerange(entry,entry,true,prefixspec,pagespec)
                         else
-                            pagenumber(entry)
+                            pagenumber(entry,prefixspec,pagespec)
                         end
                         if d == #data then
                             break
@@ -733,13 +728,12 @@ function registers.flush(data,options,prefixspec,pagespec)
                 end
                 context.stopregisterpages()
             elseif kind == 'see' then
-                -- maybe some day more words
+                -- maybe some day more words, todo: metadata like normal entries
                 context.startregisterseewords()
-                local seeindex = entry.references.seeindex or ""
-                local seetext = entry.seeword.text or ""
-                local proc = entry.processors and entry.processors[1]
-                -- todo: metadata like normal entries
-                context.registeroneword(proc or "",0,seeindex,seetext)
+                local seeindex  = entry.references.seeindex or ""
+                local seetext   = entry.seeword.text or ""
+                local processor = entry.processors and entry.processors[1] or ""
+                context.registeroneword(processor,0,seeindex,seetext)
                 context.stopregisterseewords()
             end
         end

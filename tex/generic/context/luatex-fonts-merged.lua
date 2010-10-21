@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/20/10 21:33:36
+-- merge date  : 10/21/10 14:02:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -766,15 +766,21 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
+local function nothing() end
+
 local function sortedhash(t)
-    local s = sortedhashkeys(t) -- maybe just sortedkeys
-    local n = 0
-    local function kv(s)
-        n = n + 1
-        local k = s[n]
-        return k, t[k]
+    if t then
+        local s = sortedhashkeys(t) -- maybe just sortedkeys
+        local n = 0
+        local function kv(s)
+            n = n + 1
+            local k = s[n]
+            return k, t[k]
+        end
+        return kv, s
+    else
+        return nothing
     end
-    return kv, s
 end
 
 table.sortedhash  = sortedhash

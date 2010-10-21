@@ -22,6 +22,9 @@ words.data            = words.data or { }
 words.enables         = false
 words.threshold       = 4
 
+local numbers         = languages.numbers
+local registered      = languages.registered
+
 local set_attribute   = node.set_attribute
 local unset_attribute = node.unset_attribute
 local traverse_nodes  = node.traverse
@@ -40,11 +43,9 @@ local kerning_code    = kerncodes.kerning
 local lowerchar       = characters.lower
 
 local a_color         = attributes.private('color')
+local colist          = attributes.list[a_color]
 
-words.colors    = {
-    ["known"]   = "green",
-    ["unknown"] = "red",
-}
+local is_letter       = characters.is_letter -- maybe is_character as variant
 
 local spacing = S(" \n\r\t")
 local markup  = S("-=")
@@ -86,7 +87,9 @@ end
 -- The following code is an adaption of experimental code for
 -- hyphenating and spell checking.
 
-local function mark_words(head,whenfound) -- can be optimized
+-- there is an n=1 problem somewhere in nested boxes
+
+local function mark_words(head,whenfound) -- can be optimized and shared
     local current, start, str, language, n, done = head, nil, "", nil, 0, false
     local function action()
         if #str > 0 then
@@ -127,9 +130,10 @@ local function mark_words(head,whenfound) -- can be optimized
                 local code = current.char
                 local data = chardata[code]
                 if data.uccode or data.lccode then
+--~                 if is_letter[code] then -- why does this fail
                     start = start or current
                     n = n + 1
-                    str = str .. utfchar(code)
+                    str = str .. utfchar(code) -- slow, maybe str should be a table
                 elseif start then
                     action()
                 end
@@ -161,7 +165,7 @@ local wordmethod = 1
 local enabled    = false
 
 function words.check(head)
-    if enabled and head.next then
+    if enabled then
         return methods[wordmethod](head)
     else
         return head, false
@@ -181,27 +185,39 @@ function words.disable()
     enabled = false
 end
 
+-- colors
+
+local cache = { } -- can also be done with method 1 -- frozen colors once used
+
+setmetatable(cache, {
+    __index = function(t,k) -- k == language, numbers[k] == tag
+        local c
+        if k < 0 then
+            c = colist["word:unset"]
+        else
+            c = colist["word:" .. (numbers[k] or "unset")] or colist["word:unknown"]
+        end
+        local v = c and function(n) set_attribute(n,a_color,c) end or false
+        t[k] = v
+        return v
+    end
+} )
+
 -- method 1
-
-local colors = words.colors
-local colist = attributes.list[a_color]
-
-local right  = function(n) set_attribute(n,a_color,colist[colors.known]) end
-local wrong  = function(n) set_attribute(n,a_color,colist[colors.unknown]) end
 
 local function sweep(language,str)
     if #str < words.threshold then
         return false
-    elseif words.found(language,str) then
-        return right
+    elseif words.found(language,str) then -- can become a local wordsfound
+        return cache["word:yes"] -- maybe variables.yes
     else
-        return wrong
+        return cache["word:no"]
     end
 end
 
 methods[1] = function(head)
     for n in traverse_nodes(head) do
-        unset_attribute(n,attribute) -- hm, not that selective (reset color)
+        unset_attribute(n,a_color) -- hm, not that selective (reset color)
     end
     return mark_words(head,sweep)
 end
@@ -213,46 +229,63 @@ local dumpthem   = false
 local listname   = "document"
 
 local category   = { }
+local categories = { }
+
+setmetatable(categories, {
+    __index = function(t,k)
+        local languages = { }
+        setmetatable(languages, {
+            __index = function(t,k)
+                local r = registered[k]
+                local v = {
+                    number   = language,
+                    parent   = r and r.parent   or nil,
+                    patterns = r and r.patterns or nil,
+                    tag      = r and r.tag      or nil,
+                    list     = { },
+                    total    = 0,
+                    unique   = 0,
+                }
+                t[k] = v
+                return v
+            end
+        } )
+        local v = {
+            languages = languages,
+            total     = 0,
+        }
+        t[k] = v
+        return v
+    end
+} )
 
 local collected  = {
     total      = 0,
-    categories = { document = { total = 0, list = { } } },
+    version    = 1.000,
+    categories = categories,
 }
 
 enablers[2] = function(settings)
     local name = settings.list
     listname = name and name ~= "" and name or "document"
     category = collected.categories[listname]
-    if not category then
-        category = { }
-        collected.categories[listname] = category
-    end
 end
-
-local numbers    = languages.numbers
-local registered = languages.registered
 
 local function sweep(language,str)
     if #str >= words.threshold then
-        collected.total = collected.total + 1
         str = lowerchar(str)
-        local number = numbers[language] or "unset"
-        local words = category[number]
-        if not words then
-            local r = registered[number]
-            category[number] = {
-                number   = language,
-                parent   = r and r.parent   or nil,
-                patterns = r and r.patterns or nil,
-                tag      = r and r.tag      or nil,
-                list     = { [str] = 1 },
-                total    = 1,
-            }
+        local words = category.languages[numbers[language] or "unset"]
+        local list = words.list
+        local ls = list[str]
+        if ls then
+            list[str] = ls + 1
         else
-            local list = words.list
-            list[str] = (list[str] or 0) + 1
-            words.total = words.total + 1
+            list[str] = 1
+            words.unique = words.unique + 1
         end
+        collected.total = collected.total + 1
+        category.total = category.total + 1
+        words.total = words.total + 1
     end
 end
 
@@ -276,6 +309,19 @@ directives.register("languages.words.dump", function(v)
 end)
 
 luatex.registerstopactions(dumpusedwords)
+
+-- method 3
+
+local function sweep(language,str)
+    return cache[language]
+end
+
+methods[3] = function(head)
+    for n in traverse_nodes(head) do
+        unset_attribute(n,a_color)
+    end
+    return mark_words(head,sweep)
+end
 
 -- for the moment we hook it into the attribute handler
 
