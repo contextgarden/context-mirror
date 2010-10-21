@@ -686,7 +686,8 @@
    \endgroup}
 
 \unexpanded\def\startregisterseewords
-  {\begingroup
+  {\par
+   \begingroup
    \setfalse\registerpagedone
    \dostarttagged\t!registerpage\empty
    \dosetregisterattributes\c!pagestyle\c!pagecolor}
@@ -731,28 +732,10 @@
    \dostoptagged
    \dostoptagged}
 
-\def\registeroneword#1#2#3#4% #1:processor #2:internal #3:seeindex #4:word
-  {\registerpageseparator
-   \def\currentregisterpageindex{#2}%
-   \dostarttagged\t!registersee\empty
-   \iflocation
-     \def\currentregisterseeindex{#3}%
-   \else
-     \let\currentregisterseeindex\empty
-   \fi
-   \ifx\currentregisterseeindex\empty
-     \registerseeword{#1}{#4}%
-   \else
-% [>\currentregisterseeindex]%
-     \registerseeword{#1}{\goto{#4}[seeindex:\currentregisterseeindex]}%
-   \fi
-   \dostoptagged}
-
 \def\doapplyregisterentrycommand#1#2% processor text
   {\dostarttagged\t!registerentry\empty
    \ifx\currentregisterseeindex\empty \else
      \dontleavehmode
-% [<\currentregisterseeindex]%
      \pagereference[seeindex:\currentregisterseeindex]% maybe some day we will support an area
    \fi
    \applyprocessor{#1}{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#2}}}}%
@@ -770,9 +753,31 @@
      \doapplyregisterentrycommand{#1}{#4}%
    \fi}
 
-\def\defaultregisterseeword#1#2% processor word
-  {\dostarttagged\t!registersee\empty
-   \applyprocessor{#1}{\labeltexts\v!see{#2}}%
+\unexpanded\def\doapplyregisterseecommand#1#2%
+  {\ifx\currentregisterseeindex\empty
+   % \dontleavehmode
+     \applyprocessor{#1}{#2}%
+   \else
+     \goto{\applyprocessor{#1}{#2}}[seeindex:\currentregisterseeindex]%
+   \fi}
+
+\def\defaultregisterseeword#1#2#3#4#5#6% i n #3:processor #4:internal #5:seeindex #6:word
+  {%\registerpageseparator
+   \def\currentregisterpageindex{#4}%
+   \dostarttagged\t!registersee\empty
+   \settrue\registerpagedone
+   \iflocation
+     \def\currentregisterseeindex{#5}%
+   \else
+     \let\currentregisterseeindex\empty
+   \fi
+   \ifnum#1=\plusone
+     \labeltexts\v!see{\doapplyregisterseecommand{#3}{#6}}%
+   \else\ifnum#1=#2\relax
+     \labeltexts\v!and{\doapplyregisterseecommand{#3}{#6}}%
+   \else
+     ,\space\doapplyregisterseecommand{#3}{#6}%
+   \fi\fi
    \dostoptagged}
 
 \let\registerseeword  \defaultregisterseeword

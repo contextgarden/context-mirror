@@ -71,6 +71,7 @@
 		<cd:variable name='after' value='apres'/>
 		<cd:variable name='all' value='tout'/>
 		<cd:variable name='always' value='toujours'/>
+		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
 		<cd:variable name='appendices' value='annexes'/>
 		<cd:variable name='appendix' value='annexe'/>

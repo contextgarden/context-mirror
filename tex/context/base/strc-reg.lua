@@ -258,8 +258,6 @@ local function preprocessentries(rawdata)
             rawdata.processors = { entryproc, pageproc }
         end
         rawdata.entries = nil
-    else
-        rawdata.list = { { "", "" } } -- br
     end
 end
 
@@ -324,22 +322,97 @@ function registers.compare(a,b)
     local result = compare(a,b)
     if result ~= 0 then
         return result
-    elseif a.metadata.kind == 'entry' then -- e/f/t
-        local page_a, page_b = a.references.realpage, b.references.realpage
-        if not page_a or not page_b then
-            return 0
-        elseif page_a < page_b then
+    else
+        local ka, kb = a.metadata.kind, b.metadata.kind
+        if ka == kb then
+            local page_a, page_b = a.references.realpage, b.references.realpage
+            if not page_a or not page_b then
+                return 0
+            elseif page_a < page_b then
+                return -1
+            elseif page_a > page_b then
+                return  1
+            end
+        elseif ka == "see" then
+            return 1
+        elseif kb == "see" then
             return -1
-        elseif page_a > page_b then
-            return  1
         end
-    else -- see
     end
     return 0
 end
 
 function registers.filter(data,options)
     data.result = registers.filtercollected(nil,options.criterium,options.number,data.entries,true)
+end
+
+local seeindex = 0
+
+local function crosslinkseewords(result)
+    -- hash words (potential see destinations)
+    local words = { }
+    for i=1,#result do
+        local data = result[i]
+        local word = data.list[1]
+        word = word and word[1]
+        if word then
+            words[word] = data
+        else
+            -- can't happen
+        end
+    end
+    -- link seewords to words and tag destination
+    for i=1,#result do
+        local data = result[i]
+        local seeword = data.seeword
+        if seeword then
+            local text = seeword.text
+            if text then
+                local word = words[text]
+                if word then
+                    local wr = word.references -- the referred word
+                    local dr = data.references -- the see word
+                    if wr.seeparent then
+                        dr.seeindex = wr.seeparent
+                    else
+                        seeindex = seeindex + 1
+                        wr.seeparent = seeindex
+                        dr.seeindex = seeindex
+                    end
+                    local s, d, w, l = { }, data.split, word.split, data.list
+                    -- trick: we influence sorting by adding fake subentries
+                    for i=1,#d do
+                        s[#s+1] = d[i] -- parent
+                    end
+                    for i=1,#w do
+                        s[#s+1] = w[i] -- see
+                    end
+                    data.split = s
+                    -- we also register a fake extra list entry so that the
+                    -- collapser works okay
+                    l[#l+1] = { text, "" }
+                end
+            end
+        end
+    end
+end
+
+
+local function removeemptyentries(result)
+    local i, n, m = 1, #result, 0
+    while i <= n do
+        local entry = result[i]
+        if #entry.list == 0 or #entry.split == 0 then
+            remove(result,i)
+            n = n - 1
+            m = m + 1
+        else
+            i = i + 1
+        end
+    end
+    if m > 0 then
+        report_registers("%s empty entries removed in register")
+    end
 end
 
 function registers.prepare(data)
@@ -363,6 +436,8 @@ function registers.prepare(data)
             end
             entry.split = split
         end
+        removeemptyentries(result)
+        crosslinkseewords(result)
     end
 end
 
@@ -450,8 +525,6 @@ function registers.userdata(index,name)
 end
 
 -- todo: ownnumber
-
-local seeindex = 0
 
 local function pagerange(f_entry,t_entry,is_last,prefixspec,pagespec)
     local fer, ter = f_entry.references, t_entry.references
@@ -559,50 +632,11 @@ function collapsepages(pages)
     while collapsedpage(pages) do end
 end
 
-local function crosslinkseewords(result)
-    -- hash words (potential see destinations)
-    local words = { }
-    for i=1,#result do
-        local data = result[i].data
-        for j=1,#data do
-            local d = data[j]
-            local word = d.list[1][1]
-            words[word] = d
-        end
-    end
-    -- link seewords to words and tag destination
-    for i=1,#result do
-        local data = result[i].data
-        for j=1,#data do
-            local d = data[j]
-            local seeword = d.seeword
-            if seeword then
-                local text = seeword.text
-                if text then
-                    local w = words[text]
-                    if w then
-                        local wr = w.references -- the referred word
-                        local dr = d.references -- the see word
-                        if wr.seeparent then
-                            dr.seeindex = wr.seeparent
-                        else
-                            seeindex = seeindex + 1
-                            wr.seeparent = seeindex
-                            dr.seeindex = seeindex
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
 function registers.flush(data,options,prefixspec,pagespec)
     local equal = table.are_equal
     local collapse_singles = options.compress == variables.yes
     local collapse_ranges  = options.compress == variables.all
     local result = data.result
-    crosslinkseewords(result)
     context.startregisteroutput()
     for i=1,#result do
      -- ranges need checking !
@@ -616,9 +650,15 @@ function registers.flush(data,options,prefixspec,pagespec)
             local entry = data[d]
             local e = { false, false, false, false }
             local metadata = entry.metadata
+            local kind = metadata.kind
+            local list = entry.list
+            if kind == "see" then
+                -- remove fake entry
+                list[#list] = nil
+            end
             for i=1,4 do -- max 4
-                if entry.list[i] then
-                    e[i] = entry.list[i][1]
+                if list[i] then
+                    e[i] = list[i][1]
                 end
                 if e[i] ~= done[i] then
                     if e[i] and e[i] ~= "" then
@@ -649,10 +689,8 @@ function registers.flush(data,options,prefixspec,pagespec)
                     end
                 end
             end
-            local kind = entry.metadata.kind
             if kind == 'entry' then
                 context.startregisterpages()
-            --~ collapse_ranges = true
                 if collapse_singles or collapse_ranges then
                     -- we collapse ranges and keep existing ranges as they are
                     -- so we get prebuilt as well as built ranges
@@ -728,12 +766,36 @@ function registers.flush(data,options,prefixspec,pagespec)
                 end
                 context.stopregisterpages()
             elseif kind == 'see' then
-                -- maybe some day more words, todo: metadata like normal entries
+                local t, lasttext = { }, ""
+                while true do
+                    local text = entry.seeword.text or ""
+                    if text ~= "" and lasttext ~= text then
+                        t[#t+1] = {
+                            seeindex  = entry.references.seeindex or "",
+                            seetext   = text,
+                            processor = entry.processors and entry.processors[1] or "",
+                        }
+                        lasttext = text
+                    end
+                    if d == #data then
+                        break
+                    else
+                        d = d + 1
+                        local next = data[d]
+                        if next and next.metadata.kind == "see" then
+                            entry = next
+                        else
+                            d = d - 1
+                            break
+                        end
+                    end
+                end
                 context.startregisterseewords()
-                local seeindex  = entry.references.seeindex or ""
-                local seetext   = entry.seeword.text or ""
-                local processor = entry.processors and entry.processors[1] or ""
-                context.registeroneword(processor,0,seeindex,seetext)
+                local n = #t
+                for i=1,n do
+                    local ti = t[i]
+                    context.registerseeword(i,n,ti.processor,0,ti.seeindex,ti.seetext)
+                end
                 context.stopregisterseewords()
             end
         end

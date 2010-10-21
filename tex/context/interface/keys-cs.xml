@@ -71,6 +71,7 @@
 		<cd:variable name='after' value='po'/>
 		<cd:variable name='all' value='vse'/>
 		<cd:variable name='always' value='vzdy'/>
+		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
 		<cd:variable name='appendices' value='dodatky'/>
 		<cd:variable name='appendix' value='dodatek'/>
