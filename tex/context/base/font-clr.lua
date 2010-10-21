@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-clr'] = {
     license   = "see context related readme files"
 }
 
--- moved from ini:
+-- moved from ini ... will become inline
 
 fonts.colors = fonts.colors or { } -- dummy in ini
 local colors = fonts.colors

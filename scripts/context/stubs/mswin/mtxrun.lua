@@ -645,15 +645,21 @@ end
 table.sortedkeys     = sortedkeys
 table.sortedhashkeys = sortedhashkeys
 
+local function nothing() end
+
 local function sortedhash(t)
-    local s = sortedhashkeys(t) -- maybe just sortedkeys
-    local n = 0
-    local function kv(s)
-        n = n + 1
-        local k = s[n]
-        return k, t[k]
+    if t then
+        local s = sortedhashkeys(t) -- maybe just sortedkeys
+        local n = 0
+        local function kv(s)
+            n = n + 1
+            local k = s[n]
+            return k, t[k]
+        end
+        return kv, s
+    else
+        return nothing
     end
-    return kv, s
 end
 
 table.sortedhash  = sortedhash

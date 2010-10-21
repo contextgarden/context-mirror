@@ -51,9 +51,22 @@
 
 % beware, maybe some day we will honour grouping
 
+% 1: spell checking
+% 2: word counting
+% 3: language coloring
+
 \setupspellchecking
   [\c!state=\v!stop,
    \c!method=1,
    \c!list=]
+
+\definecolor[word:yes]    [darkgreen]
+\definecolor[word:no]     [darkred]
+
+%definecolor[word:unset]  [darkgray]
+\definecolor[word:en]     [b=.75]
+\definecolor[word:de]     [r=.75]
+\definecolor[word:nl]     [g=.75]
+\definecolor[word:unknown][r=.75,g=.75]
 
 \protect \endinput
