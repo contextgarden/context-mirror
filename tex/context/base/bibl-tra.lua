@@ -100,6 +100,12 @@ function hacks.flush(sortvariant)
     end
 end
 
+function hacks.filterall()
+    for i=1,#registered do
+        list[i] = { registered[i], i }
+    end
+end
+
 function hacks.registerplaced(str)
     used[str] = true
 end

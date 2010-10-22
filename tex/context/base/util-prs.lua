@@ -50,6 +50,10 @@ local function set(key,value) -- using Carg is slower here
     hash[key] = value
 end
 
+local function set(key,value) -- using Carg is slower here
+    hash[key] = value
+end
+
 local pattern_a_s = (pattern_a/set)^1
 local pattern_b_s = (pattern_b/set)^1
 local pattern_c_s = (pattern_c/set)^1

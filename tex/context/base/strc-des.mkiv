@@ -615,9 +615,12 @@
 
 \def\dodefineenumerationcommands#1#2#3#4% since we use \currentdescription, we need an edef
   {\setevalue{\??dd#3#1\s!parent}{#4}%
-   \setuevalue        {#3#1}{\noexpand\doenumerationcommand{#1}{#2}{#3}}%
-   \setuevalue{\e!start#3#1}{\noexpand\doenumerationstart  {#1}{#2}{#3}}%
-   \setuevalue{\e!stop #3#1}{\noexpand\doenumerationstop   {#1}{#2}{#3}}}
+   \setuevalue        {#3#1}{\noexpand\doenumerationcommand    {#1}{#2}{#3}}%
+   \setuevalue{\c!reset#3#1}{\noexpand\doresetenumerationnumber{#1}{#2}{#3}}%
+   %setuevalue{\c!set  #3#1}{\noexpand\dosetenumerationnumber  {#1}{#2}{#3}}%
+   \setuevalue{\e!next #3#1}{\noexpand\donextenumerationnumber {#1}{#2}{#3}}%
+   \setuevalue{\e!start#3#1}{\noexpand\doenumerationstart      {#1}{#2}{#3}}%
+   \setuevalue{\e!stop #3#1}{\noexpand\doenumerationstop       {#1}{#2}{#3}}}
 
 % handle enumeration
 

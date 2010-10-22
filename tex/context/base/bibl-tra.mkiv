@@ -816,16 +816,20 @@
 \def\doprocessbibtexentry#1{\typesetapublication{#1}}
 
 \def\typesetpubslist
-  {\dobeginoflist
+  {\preloadbiblist
+   \dobeginoflist
    % \the\initializebibdefinitions % COMMENTED
    \edef\currentlist{pubs}%
-   \doif{\listparameter\c!criterium}\v!cite{\setuplist[pubs][\c!criterium=\v!here]}%
    \ctxlua{bibtex.hacks.reset(\number\bibtexoncemode)}%
-   \placestructurelist
-     {pubs}%
-     {\listparameter\c!criterium}%
-     {\listparameter\c!number}%
-     {\listparameter\c!extras}%
+   \doifelse{\listparameter\c!criterium}\v!all
+     {\ctxlua{bibtex.hacks.filterall()}}
+     {\doif{\listparameter\c!criterium}\v!cite
+        {\setuplist[pubs][\c!criterium=\v!here]}%
+      \placestructurelist
+        {pubs}%
+        {\listparameter\c!criterium}%
+        {\listparameter\c!number}%
+        {\listparameter\c!extras}}%
    \ctxlua{bibtex.hacks.flush("\@@pbsorttype")}%
    \doendoflist}
 
