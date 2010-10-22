@@ -1444,3 +1444,19 @@ end
 --~         end
 --~     end
 --~ end
+
+function lxml.toparameters(id)
+    local e = getid(id)
+    if e then
+        local a = e.at
+        if a and next(a) then
+            local setups = { }
+            for k, v in next, a do
+                setups[#setups+1] = k .. "=" .. v
+            end
+            setups = concat(setups,",")
+            -- tracing
+            context(setups)
+        end
+    end
+end

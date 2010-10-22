@@ -46,13 +46,15 @@ function interfaces.addvalidkeys(kind,list)
     end
 end
 
+-- weird code, looks incomplete ... probbably an experiment
+
 local prefix, kind, keys
 
 local function set(key,value)
     if keys and not keys[key] then
         interfaces.invalidkey(kind,key)
     else
-        texsprint(ctxcatcodes,format("\\setsomevalue{%s}{%s}{%s}",prefix,key,value))
+        context.setsomevalue(prefix,key,value)
     end
 end
 
