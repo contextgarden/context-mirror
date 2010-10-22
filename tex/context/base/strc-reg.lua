@@ -348,38 +348,53 @@ end
 
 local seeindex = 0
 
-local function crosslinkseewords(result)
-    -- hash words (potential see destinations)
-    local words = { }
+-- meerdere loops, seewords, dan words, an seewords
+
+local function crosslinkseewords(result) -- all words
+    -- collect all seewords
+    local seewords = { }
+    for i=1,#result do
+        local data = result[i]
+        local seeword = data.seeword
+        if seeword then
+            local seetext = seeword.text
+            if seetext and not seewords[seetext] then
+                seeindex = seeindex + 1
+                seewords[seetext] = seeindex
+                if trace_registers then
+                    report_registers("see word %03i: %s",seeindex,seetext)
+                end
+            end
+        end
+    end
+    -- mark seeparents
+    local seeparents = { }
     for i=1,#result do
         local data = result[i]
         local word = data.list[1]
         word = word and word[1]
         if word then
-            words[word] = data
-        else
-            -- can't happen
+            local seeindex = seewords[word]
+            if seeindex then
+                seeparents[word] = data
+                data.references.seeparent = seeindex
+                if trace_registers then
+                    report_registers("see parent %03i: %s",seeindex,word)
+                end
+            end
         end
     end
-    -- link seewords to words and tag destination
+    -- mark seewords and extend sort list
     for i=1,#result do
         local data = result[i]
         local seeword = data.seeword
         if seeword then
             local text = seeword.text
             if text then
-                local word = words[text]
-                if word then
-                    local wr = word.references -- the referred word
-                    local dr = data.references -- the see word
-                    if wr.seeparent then
-                        dr.seeindex = wr.seeparent
-                    else
-                        seeindex = seeindex + 1
-                        wr.seeparent = seeindex
-                        dr.seeindex = seeindex
-                    end
-                    local s, d, w, l = { }, data.split, word.split, data.list
+                local seeparent = seeparents[text]
+                if seeparent then
+                    local seeindex = seewords[text]
+                    local s, d, w, l = { }, data.split, seeparent.split, data.list
                     -- trick: we influence sorting by adding fake subentries
                     for i=1,#d do
                         s[#s+1] = d[i] -- parent
@@ -391,6 +406,10 @@ local function crosslinkseewords(result)
                     -- we also register a fake extra list entry so that the
                     -- collapser works okay
                     l[#l+1] = { text, "" }
+                    data.references.seeindex = seeindex
+                    if trace_registers then
+                        report_registers("see crosslink %03i: %s",seeindex,text)
+                    end
                 end
             end
         end
@@ -645,6 +664,13 @@ function registers.flush(data,options,prefixspec,pagespec)
         local data = sublist.data
         local d, n = 0, 0
         context.startregistersection(sublist.tag)
+        for d=1,#data do
+            local entry = data[d]
+            if entry.metadata.kind == "see" then
+                local list = entry.list
+                list[#list] = nil
+            end
+        end
         while d < #data do
             d = d + 1
             local entry = data[d]
@@ -652,10 +678,6 @@ function registers.flush(data,options,prefixspec,pagespec)
             local metadata = entry.metadata
             local kind = metadata.kind
             local list = entry.list
-            if kind == "see" then
-                -- remove fake entry
-                list[#list] = nil
-            end
             for i=1,4 do -- max 4
                 if list[i] then
                     e[i] = list[i][1]
@@ -681,7 +703,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                         local processor = entry.processors and entry.processors[1] or ""
                         if metadata then
                             context.registerentry(processor,internal,seeparent,function() helpers.title(e[i],metadata) end)
-                        else
+                        else -- ?
                             context.registerentry(processor,internal,seeindex,e[i])
                         end
                     else
@@ -698,22 +720,27 @@ function registers.flush(data,options,prefixspec,pagespec)
                     while dd < #data do
                         dd = dd + 1
                         local next = data[dd]
-                        local el, nl = entry.list, next.list
-                        if not equal(el,nl) then
+                        if next and next.metadata.kind == "see" then
                             dd = dd - 1
-                        --~ first = nil
                             break
-                        elseif next.references.lastrealpage then
-                            pages[#pages+1] = first and { first, last or first } or { entry, entry }
-                            pages[#pages+1] = { next, next }
-                            first, last, prev = nil, nil, nil
-                        elseif not first then
-                            first, prev = next, next
-                        elseif next.references.realpage - prev.references.realpage == 1 then -- 1 ?
-                            last, prev = next, next
                         else
-                            pages[#pages+1] = { first, last or first }
-                            first, last, prev = next, nil, next
+                            local el, nl = entry.list, next.list
+                            if not equal(el,nl) then
+                                dd = dd - 1
+                            --~ first = nil
+                                break
+                            elseif next.references.lastrealpage then
+                                pages[#pages+1] = first and { first, last or first } or { entry, entry }
+                                pages[#pages+1] = { next, next }
+                                first, last, prev = nil, nil, nil
+                            elseif not first then
+                                first, prev = next, next
+                            elseif next.references.realpage - prev.references.realpage == 1 then -- 1 ?
+                                last, prev = next, next
+                            else
+                                pages[#pages+1] = { first, last or first }
+                                first, last, prev = next, nil, next
+                            end
                         end
                     end
                     if first then
@@ -755,7 +782,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                         else
                             d = d + 1
                             local next = data[d]
-                            if not equal(entry.list,next.list) then
+                            if next.metadata.kind == "see" or not equal(entry.list,next.list) then
                                 d = d - 1
                                 break
                             else
@@ -766,35 +793,30 @@ function registers.flush(data,options,prefixspec,pagespec)
                 end
                 context.stopregisterpages()
             elseif kind == 'see' then
-                local t, lasttext = { }, ""
+                local t = { }
                 while true do
-                    local text = entry.seeword.text or ""
-                    if text ~= "" and lasttext ~= text then
-                        t[#t+1] = {
-                            seeindex  = entry.references.seeindex or "",
-                            seetext   = text,
-                            processor = entry.processors and entry.processors[1] or "",
-                        }
-                        lasttext = text
-                    end
+                    t[#t+1] = entry
                     if d == #data then
                         break
                     else
                         d = d + 1
                         local next = data[d]
-                        if next and next.metadata.kind == "see" then
-                            entry = next
-                        else
+                        if next.metadata.kind ~= "see" or not equal(entry.list,next.list) then
                             d = d - 1
                             break
+                        else
+                            entry = next
                         end
                     end
                 end
                 context.startregisterseewords()
                 local n = #t
                 for i=1,n do
-                    local ti = t[i]
-                    context.registerseeword(i,n,ti.processor,0,ti.seeindex,ti.seetext)
+                    local entry = t[i]
+                    local processor = entry.processors and entry.processors[1] or ""
+                    local seeindex  = entry.references.seeindex or ""
+                    local seeword   = entry.seeword.text or ""
+                    context.registerseeword(i,n,processor,0,seeindex,seeword)
                 end
                 context.stopregisterseewords()
             end
