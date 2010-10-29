@@ -33,15 +33,15 @@ local actions = tasks.actions("processors",4)
 
 local n = 0
 
-local function reconstruct(head)
-    local t = { }
-    local h = head
+local function reconstruct(head) -- we probably have a better one
+    local t, n, h = { }, 0, head
     while h do
+        n = n + 1
         local id = h.id
-        if id == glyph_code then
-            t[#t+1] = utfchar(h.char)
+        if id == glyph_code then -- todo: disc etc
+            t[n] = utfchar(h.char)
         else
-            t[#t+1] = "[]"
+            t[n] = "[]"
         end
         h = h.next
     end

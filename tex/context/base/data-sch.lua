@@ -116,21 +116,23 @@ schemes.install('https')
 schemes.install('ftp')
 
 statistics.register("scheme handling time", function()
-    local l, r = { }, { }
+    local l, r, nl, nr = { }, { }, 0, 0
     for k, v in table.sortedhash(loaded) do
         if v > 0 then
-            l[#l+1] = k .. ":" .. v
+            nl = nl + 1
+            l[nl] = k .. ":" .. v
         end
     end
     for k, v in table.sortedhash(reused) do
         if v > 0 then
-            r[#r+1] = k .. ":" .. v
+            nr = nr + 1
+            r[nr] = k .. ":" .. v
         end
     end
-    local n = #l + #r
+    local n = nl + nr
     if n > 0 then
-        l = (#l > 0 and concat(l)) or "none"
-        r = (#r > 0 and concat(r)) or "none"
+        l = (nl > 0 and concat(l)) or "none"
+        r = (nr > 0 and concat(r)) or "none"
         return format("%s seconds, %s processed, threshold %s seconds, loaded: %s, reused: %s",
             statistics.elapsedtime(schemes), n, schemes.threshold, l, r)
     else

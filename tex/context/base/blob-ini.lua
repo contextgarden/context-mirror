@@ -120,15 +120,18 @@ function blobs.append(t,str)
     local list = t.list
     if kind == "string" then
         local pars = lpegmatch(ctxtextcapture,str)
+        local noflist = #list
         for p=1,#pars do
             local str = pars[p]
             if #str == 0 then
-                list[#list+1 ] = { head = nil, tail = nil }
+                noflist = noflist + 1
+                list[noflist] = { head = nil, tail = nil }
             else
-                local l = list[#list]
+                local l = list[noflist]
                 if not l then
                     l = { head = nil, tail = nil }
-                    list[#list+1 ] = l
+                    noflist = noflist + 1
+                    list[noflist] = l
                 end
                 local head, tail = tonodes(str,nil,nil)
                 if head then

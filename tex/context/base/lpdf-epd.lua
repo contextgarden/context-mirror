@@ -61,9 +61,8 @@ local dictionary_access = {
 
 checked_access = function(tab,key,v)
     local n = v:getTypeName()
---~ print("!!!!!!!!!!!!!!",n)
     if n == "array" then
-        local t = { __data__ = v, size = v:arrayGetLength() }
+        local t = { __data__ = v, size = v:arrayGetLength() or 0 }
         setmetatable(t,array_access)
         if cache_lookups then rawset(tab,key,t) end
         return t
@@ -130,7 +129,7 @@ local page_access = {
             local annots = d:getAnnots()
             local a = {
                 __data__ = annots,
-                size = annots:arrayGetLength()
+                size = annots:arrayGetLength() or 0
             }
             setmetatable(a,basic_annots_access)
             rawset(t,k,a)

@@ -323,7 +323,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                     if not metapost.reporterror(result) then
                         if metapost.showlog then
                             local str = (result.term ~= "" and result.term) or "no terminal output"
-                            if not str:is_empty() then
+                            if not string.is_empty(str) then
                                 metapost.lastlog = metapost.lastlog .. "\n" .. str
                                 report_mplib("mp log: %s",str)
                             end

@@ -98,3 +98,14 @@ function storage.setinitializer(data,initialize)
     end
     setmetatable(data, m)
 end
+
+local keyisvalue = { __index = function(t,k)
+    t[k] = k
+    return k
+end }
+
+function storage.sparse(t)
+    t = t or { }
+    setmetatable(t,keyisvalue)
+    return t
+end

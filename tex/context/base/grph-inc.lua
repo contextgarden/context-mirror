@@ -44,7 +44,7 @@ local texbox = tex.box
 local contains = table.contains
 local concat = table.concat
 local todimen = string.todimen
-local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array,  utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
 
 local variables      = interfaces.variables
@@ -215,7 +215,7 @@ function figures.setpaths(locationset,pathlist)
         -- this function can be called each graphic so we provide this optimization
         return
     end
-    local iv, t, h = interfaces.variables, figures.paths, locationset:tohash()
+    local iv, t, h = interfaces.variables, figures.paths, settings_to_hash(locationset)
     if last_locationset ~= locationset then
         -- change == reset (actually, a 'reset' would indeed reset
         if h[iv["local"]] then
@@ -359,114 +359,135 @@ local defaultprefix = "m_k_i_v_"
 
 -- todo: local path or cache path
 
+local function forbiddenname(filename)
+    if not filename or filename == "" then
+        return false
+    end
+    local expandedfullname = file.collapsepath(filename,true)
+    local expandedinputname = file.collapsepath(file.addsuffix(environment.jobfilename,environment.jobfilesuffix),true)
+    if expandedfullname == expandedinputname then
+        report_graphics("skipping graphic with same name as input filename (%s), enforce suffix",expandedinputname)
+        return true
+    end
+    local expandedoutputname = file.collapsepath(codeinjections.getoutputfilename(),true)
+    if expandedfullname == expandedoutputname then
+        report_graphics("skipping graphic with same name as output filename (%s), enforce suffix",expandedoutputname)
+        return true
+    end
+end
+
 local function register(askedname,specification)
     if specification then
-        local format = specification.format
-        if format then
-            local conversion = specification.conversion
-            local resolution = specification.resolution
-            if conversion == "" then
-                conversion = nil
-            end
-            if resolution == "" then
-                resolution = nil
-            end
-            local newformat = conversion
-            if not newformat or newformat == "" then
-                newformat = defaultformat
-            end
-            if trace_conversion then
-                report_graphics("checking conversion of '%s': old format '%s', new format '%s', conversion '%s', resolution '%s'",
-                    askedname,format,newformat,conversion or "default",resolution or "default")
-            end
-            local converter = (newformat ~= format) and converters[format]
-            if converter then
-                if converter[newformat] then
-                    converter = converter[newformat]
-                else
+        if forbiddenname(specification.fullname) then
+            specification = { }
+        else
+            local format = specification.format
+            if format then
+                local conversion = specification.conversion
+                local resolution = specification.resolution
+                if conversion == "" then
+                    conversion = nil
+                end
+                if resolution == "" then
+                    resolution = nil
+                end
+                local newformat = conversion
+                if not newformat or newformat == "" then
                     newformat = defaultformat
+                end
+                if trace_conversion then
+                    report_graphics("checking conversion of '%s': old format '%s', new format '%s', conversion '%s', resolution '%s'",
+                        askedname,format,newformat,conversion or "default",resolution or "default")
+                end
+                local converter = (newformat ~= format) and converters[format]
+                if converter then
                     if converter[newformat] then
                         converter = converter[newformat]
                     else
-                        converter = nil
                         newformat = defaultformat
+                        if converter[newformat] then
+                            converter = converter[newformat]
+                        else
+                            converter = nil
+                            newformat = defaultformat
+                        end
+                    end
+                elseif trace_conversion then
+                    report_graphics("no converter for '%s' -> '%s'",format,newformat)
+                end
+                if converter then
+                 -- local oldname = specification.fullname
+                    local oldname = specification.foundname
+                    local newpath = file.dirname(oldname)
+                    local oldbase = file.basename(oldname)
+                    local newbase = file.removesuffix(oldbase)
+                    local fc = specification.cache or figures.cachepaths.path
+                    if fc and fc ~= "" and fc ~= "." then
+                        newpath = fc
+                    else
+                        newbase = defaultprefix .. newbase
+                    end
+                    if not file.is_writable(newpath) then
+                        if trace_conversion then
+                            report_graphics("[ath '%s'is not writable, forcing conversion path '.' ",newpath)
+                        end
+                        newpath = "."
+                    end
+                    local subpath = specification.subpath or figures.cachepaths.subpath
+                    if subpath and subpath ~= "" and subpath ~= "."  then
+                        newpath = newpath .. "/" .. subpath
+                    end
+                    local prefix = specification.prefix or figures.cachepaths.prefix
+                    if prefix and prefix ~= "" then
+                        newbase = prefix .. newbase
+                    end
+                    if resolution and resolution ~= "" then -- the order might change
+                        newbase = newbase .. "_" .. resolution
+                    end
+                    local newbase = file.addsuffix(newbase,newformat)
+                    local newname = file.join(newpath,newbase)
+                    dir.makedirs(newpath)
+                    oldname = file.collapsepath(oldname)
+                    newname = file.collapsepath(newname)
+                    local oldtime = lfs.attributes(oldname,'modification') or 0
+                    local newtime = lfs.attributes(newname,'modification') or 0
+                    if newtime == 0 or oldtime > newtime then
+                        if trace_conversion then
+                            report_graphics("converting '%s' from '%s' to '%s'",askedname,format,newformat)
+                        end
+                        converter(oldname,newname,resolution or "")
+                    else
+                        if trace_conversion then
+                            report_graphics("no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
+                        end
+                    end
+                    if io.exists(newname) then
+                        specification.foundname = oldname
+                        specification.fullname  = newname
+                        specification.prefix    = prefix
+                        specification.subpath   = subpath
+                        specification.converted = true
+                        format = newformat
+                    elseif io.exists(oldname) then
+                        specification.fullname  = newname
+                        specification.converted = false
                     end
                 end
-            elseif trace_conversion then
-                report_graphics("no converter for '%s' -> '%s'",format,newformat)
             end
-            if converter then
-                local oldname = specification.fullname
-local oldname = specification.foundname
-                local newpath = file.dirname(oldname)
-                local oldbase = file.basename(oldname)
-                local newbase = file.removesuffix(oldbase)
-                local fc = specification.cache or figures.cachepaths.path
-                if fc and fc ~= "" and fc ~= "." then
-                    newpath = fc
-                else
-                    newbase = defaultprefix .. newbase
+            local found = figures.suffixes[format] -- validtypes[format]
+            if not found then
+                specification.found = false
+                if trace_figures then
+                    commands.writestatus("figures","format not supported: %s",format)
                 end
-                if not file.is_writable(newpath) then
-                    if trace_conversion then
-                        report_graphics("[ath '%s'is not writable, forcing conversion path '.' ",newpath)
+            else
+                specification.found = true
+                if trace_figures then
+                    if validtypes[format] then
+                        commands.writestatus("figures","format natively supported by backend: %s",format)
+                    else
+                        commands.writestatus("figures","format supported by output file format: %s",format)
                     end
-                    newpath = "."
-                end
-                local subpath = specification.subpath or figures.cachepaths.subpath
-                if subpath and subpath ~= "" and subpath ~= "."  then
-                    newpath = newpath .. "/" .. subpath
-                end
-                local prefix = specification.prefix or figures.cachepaths.prefix
-                if prefix and prefix ~= "" then
-                    newbase = prefix .. newbase
-                end
-                if resolution and resolution ~= "" then -- the order might change
-                    newbase = newbase .. "_" .. resolution
-                end
-                local newbase = file.addsuffix(newbase,newformat)
-                local newname = file.join(newpath,newbase)
-                dir.makedirs(newpath)
-                oldname = file.collapse_path(oldname)
-                newname = file.collapse_path(newname)
-                local oldtime = lfs.attributes(oldname,'modification') or 0
-                local newtime = lfs.attributes(newname,'modification') or 0
-                if newtime == 0 or oldtime > newtime then
-                    if trace_conversion then
-                        report_graphics("converting '%s' from '%s' to '%s'",askedname,format,newformat)
-                    end
-                    converter(oldname,newname,resolution or "")
-                else
-                    if trace_conversion then
-                        report_graphics("no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
-                    end
-                end
-                if io.exists(newname) then
-                    specification.foundname = oldname
-                    specification.fullname  = newname
-                    specification.prefix    = prefix
-                    specification.subpath   = subpath
-                    specification.converted = true
-                    format = newformat
-                elseif io.exists(oldname) then
-                    specification.fullname  = newname
-                    specification.converted = false
-                end
-            end
-        end
-        local found = figures.suffixes[format] -- validtypes[format]
-        if not found then
-            specification.found = false
-            if trace_figures then
-                commands.writestatus("figures","format not supported: %s",format)
-            end
-        else
-            specification.found = true
-            if trace_figures then
-                if validtypes[format] then
-                    commands.writestatus("figures","format natively supported by backend: %s",format)
-                else
-                    commands.writestatus("figures","format supported by output file format: %s",format)
                 end
             end
         end

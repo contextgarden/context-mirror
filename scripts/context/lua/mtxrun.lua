@@ -54,7 +54,7 @@ if not modules then modules = { } end modules ['l-string'] = {
 
 local string = string
 local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
-local lpegmatch = lpeg.match
+local lpegmatch, S, C, Ct = lpeg.match, lpeg.S, lpeg.C, lpeg.Ct
 
 -- some functions may disappear as they are not used anywhere
 
@@ -62,144 +62,67 @@ if not string.split then
 
     -- this will be overloaded by a faster lpeg variant
 
-    function string:split(pattern)
-        if #self > 0 then
-            local t = { }
-            for s in gmatch(self..pattern,"(.-)"..pattern) do
-                t[#t+1] = s
+    function string.split(str,pattern)
+        local t = { }
+        if #str > 0 then
+            local n = 1
+            for s in gmatch(str..pattern,"(.-)"..pattern) do
+                t[n] = s
+                n = n + 1
             end
-            return t
-        else
-            return { }
         end
+        return t
     end
 
 end
 
-string.patterns = { }
-
-local escapes = {
-    ["%"] = "%%",
-    ["."] = "%.",
-    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
-    ["^"] = "%^", ["$"] = "%$",
-    ["["] = "%[", ["]"] = "%]",
-    ["("] = "%(", [")"] = "%)",
-    ["{"] = "%{", ["}"] = "%}"
-}
-
-string.patterns.escapes = escapes
-
-function string:esc() -- variant 2
-    return (gsub(self,"(.)",escapes))
-end
-
-function string:unquote()
-    return (gsub(self,"^([\"\'])(.*)%1$","%2"))
+function string.unquoted(str)
+    return (gsub(str,"^([\"\'])(.*)%1$","%2"))
 end
 
 
-function string:quote() -- we could use format("%q")
-    return format("%q",self)
+function string.quoted(str)
+    return format("%q",str) -- always "
 end
 
-function string:count(pattern) -- variant 3
+function string.count(str,pattern) -- variant 3
     local n = 0
-    for _ in gmatch(self,pattern) do
+    for _ in gmatch(str,pattern) do -- not for utf
         n = n + 1
     end
     return n
 end
 
-function string:limit(n,sentinel)
-    if #self > n then
+function string.limit(str,n,sentinel)
+    if #str > n then
         sentinel = sentinel or " ..."
-        return sub(self,1,(n-#sentinel)) .. sentinel
+        return sub(str,1,(n-#sentinel)) .. sentinel
     else
-        return self
+        return str
     end
 end
 
+local space    = S(" \t\v\n")
+local nospace  = 1 - space
+local stripper = space^0 * C((space^0 * nospace^1)^0) -- roberto's code
 
-do -- roberto's variant:
-    local space    = lpeg.S(" \t\v\n")
-    local nospace  = 1 - space
-    local stripper = space^0 * lpeg.C((space^0 * nospace^1)^0)
-    function string.strip(str)
-        return lpegmatch(stripper,str) or ""
-    end
+function string.strip(str)
+    return lpegmatch(stripper,str) or ""
 end
 
-function string:is_empty()
-    return not find(self,"%S")
+function string.is_empty(str)
+    return not find(str,"%S")
 end
-
-function string:enhance(pattern,action)
-    local ok, n = true, 0
-    while ok do
-        ok = false
-        self = gsub(self,pattern, function(...)
-            ok, n = true, n + 1
-            return action(...)
-        end)
-    end
-    return self, n
-end
-
-if not string.characters then
-
-    local function nextchar(str, index)
-        index = index + 1
-        return (index <= #str) and index or nil, sub(str,index,index)
-    end
-    function string:characters()
-        return nextchar, self, 0
-    end
-    local function nextbyte(str, index)
-        index = index + 1
-        return (index <= #str) and index or nil, byte(sub(str,index,index))
-    end
-    function string:bytes()
-        return nextbyte, self, 0
-    end
-
-end
-
-function string:rpadd(n,chr)
-    local m = n-#self
-    if m > 0 then
-        return self .. rep(chr or " ",m)
-    else
-        return self
-    end
-end
-
-function string:lpadd(n,chr)
-    local m = n-#self
-    if m > 0 then
-        return rep(chr or " ",m) .. self
-    else
-        return self
-    end
-end
-
-string.padd = string.rpadd
 
 local patterns_escapes = {
-    ["-"] = "%-",
-    ["."] = "%.",
-    ["+"] = "%+",
-    ["*"] = "%*",
     ["%"] = "%%",
-    ["("] = "%)",
-    [")"] = "%)",
-    ["["] = "%[",
-    ["]"] = "%]",
+    ["."] = "%.",
+    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
+    ["["] = "%[", ["]"] = "%]",
+    ["("] = "%)", [")"] = "%)",
+ -- ["{"] = "%{", ["}"] = "%}"
+ -- ["^"] = "%^", ["$"] = "%$",
 }
-
-function string:escapedpattern()
-    return (gsub(self,".",patterns_escapes))
-end
 
 local simple_escapes = {
     ["-"] = "%-",
@@ -208,24 +131,32 @@ local simple_escapes = {
     ["*"] = ".*",
 }
 
-function string:partialescapedpattern()
-    return (gsub(self,".",simple_escapes))
-end
-
-function string:tohash()
-    local t = { }
-    for s in gmatch(self,"([^, ]+)") do -- lpeg
-        t[s] = true
+function string.escapedpattern(str,simple)
+    if simple then
+        return (gsub(str,".",simple_escapes))
+    else
+        return (gsub(str,".",patterns_escapes))
     end
-    return t
 end
 
-local pattern = lpeg.Ct(lpeg.C(1)^0)
-
-function string:totable()
-    return lpegmatch(pattern,self)
+function string.topattern(str,lowercase,strict)
+    if str == "" then
+        return ".*"
+    else
+        str = gsub(str,".",simple_escapes)
+        if lowercase then
+            str = lower(str)
+        end
+        if strict then
+            return "^" .. str .. "$"
+        else
+            return str
+        end
+    end
 end
 
+
+-- The following functions might end up in another namespace.
 
 function string.tabtospace(str,tab)
     -- we don't handle embedded newlines
@@ -246,30 +177,17 @@ function string.tabtospace(str,tab)
     return str
 end
 
-function string:compactlong() -- strips newlines and leading spaces
-    self = gsub(self,"[\n\r]+ *","")
-    self = gsub(self,"^ *","")
-    return self
+
+function string.striplong(str) -- strips all leading spaces
+    str = gsub(str,"^%s*","")
+    str = gsub(str,"[\n\r]+ *","\n")
+    return str
 end
 
-function string:striplong() -- strips newlines and leading spaces
-    self = gsub(self,"^%s*","")
-    self = gsub(self,"[\n\r]+ *","\n")
-    return self
-end
+-- obsolete names:
 
-function string:topattern(lowercase,strict)
-    if lowercase then
-        self = lower(self)
-    end
-    self = gsub(self,".",simple_escapes)
-    if self == "" then
-        self = ".*"
-    elseif strict then
-        self = "^" .. self .. "$"
-    end
-    return self
-end
+string.quote   = string.quoted
+string.unquote = string.unquoted
 
 
 end -- of closure
@@ -292,15 +210,29 @@ local patterns = lpeg.patterns
 local P, R, S, Ct, C, Cs, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.V
 local match = lpeg.match
 
+local utfcharacters    = string.utfcharacters
+local utfgmatch        = unicode and unicode.utf8.gmatch
+
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
-local utf8byte         = R("\128\191")
+local utf8next         = R("\128\191")
+local escaped          = P("\\") * P(1)
+local squote           = P("'")
+local dquote           = P('"')
 
-patterns.utf8byte      = utf8byte
 patterns.utf8one       = R("\000\127")
-patterns.utf8two       = R("\194\223") * utf8byte
-patterns.utf8three     = R("\224\239") * utf8byte * utf8byte
-patterns.utf8four      = R("\240\244") * utf8byte * utf8byte * utf8byte
+patterns.utf8two       = R("\194\223") * utf8next
+patterns.utf8three     = R("\224\239") * utf8next * utf8next
+patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
+patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
+
+local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
+local validutf8char    = utf8char^0 * P(-1) * Cc(true) + Cc(false)
+
+patterns.utf8          = utf8char
+patterns.utf8char      = utf8char
+patterns.validutf8     = validutf8char
+patterns.validutf8char = validutf8char
 
 patterns.digit         = digit
 patterns.sign          = sign
@@ -327,16 +259,23 @@ patterns.nonspace      = 1 - patterns.space
 patterns.nonspacer     = 1 - patterns.spacer
 patterns.whitespace    = patterns.eol + patterns.spacer
 patterns.nonwhitespace = 1 - patterns.whitespace
-patterns.utf8          = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
-patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
-patterns.validutf8     = patterns.utf8^0 * P(-1) * Cc(true) + Cc(false)
 patterns.comma         = P(",")
 patterns.commaspacer   = P(",") * patterns.spacer^0
 patterns.period        = P(".")
-
-patterns.undouble      = P('"')/"" * (1-P('"'))^0 * P('"')/""
-patterns.unsingle      = P("'")/"" * (1-P("'"))^0 * P("'")/""
+patterns.escaped       = escaped
+patterns.squote        = squote
+patterns.dquote        = dquote
+patterns.undouble      = (dquote/"") * ((escaped + (1-dquote))^0) * (dquote/"")
+patterns.unsingle      = (squote/"") * ((escaped + (1-squote))^0) * (squote/"")
+patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
+
+local unquoted = Cs(patterns.unquoted * P(-1)) -- not C
+
+function string.unquoted(str)
+    return match(unquoted,str) or str
+end
+
 
 function lpeg.anywhere(pattern) --slightly adapted from website
     return P { P(pattern) + 1 * V(1) } -- why so complex?
@@ -353,8 +292,8 @@ local content  = (empty + nonempty)^1
 
 local capture = Ct(content^0)
 
-function string:splitlines()
-    return match(capture,self)
+function string.splitlines(str)
+    return match(capture,str)
 end
 
 patterns.textline = content
@@ -366,12 +305,12 @@ local function splitat(separator,single)
     local splitter = (single and splitters_s[separator]) or splitters_m[separator]
     if not splitter then
         separator = P(separator)
+        local other = C((1 - separator)^0)
         if single then
-            local other, any = C((1 - separator)^0), P(1)
+            local any = P(1)
             splitter = other * (separator * C(any^0) + "") -- ?
             splitters_s[separator] = splitter
         else
-            local other = C((1 - separator)^0)
             splitter = other * (separator * other)^0
             splitters_m[separator] = splitter
         end
@@ -392,16 +331,15 @@ function lpeg.split(separator,str)
     return match(c,str)
 end
 
-function string:split(separator)
+function string.split(str,separator)
     local c = cache[separator]
     if not c then
         c = Ct(splitat(separator))
         cache[separator] = c
     end
-    return match(c,self)
+    return match(c,str)
 end
 
-lpeg.splitters = cache
 
 local cache = { }
 
@@ -409,22 +347,22 @@ function lpeg.checkedsplit(separator,str)
     local c = cache[separator]
     if not c then
         separator = P(separator)
-        local other = C((1 - separator)^0)
+        local other = C((1 - separator)^1)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
     return match(c,str)
 end
 
-function string:checkedsplit(separator)
+function string.checkedsplit(str,separator)
     local c = cache[separator]
     if not c then
         separator = P(separator)
-        local other = C((1 - separator)^0)
+        local other = C((1 - separator)^1)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,self)
+    return match(c,str)
 end
 
 
@@ -435,7 +373,9 @@ local function f2(s) local c1, c2         = f1(s,1,2) return   c1 * 64 + c2     
 local function f3(s) local c1, c2, c3     = f1(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
 local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
 
-patterns.utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
+local utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
+
+patterns.utf8byte = utf8byte
 
 
 
@@ -469,18 +409,24 @@ function lpeg.keeper(str)
     end
 end
 
+-- Just for fun I looked at the used bytecode and
+-- p = (p and p + pp) or pp gets one more (testset).
+
 function lpeg.replacer(t)
     if #t > 0 then
         local p
         for i=1,#t do
             local ti= t[i]
             local pp = P(ti[1]) / ti[2]
-            p = (p and p + pp ) or pp
+            if p then
+                p = p + pp
+            else
+                p = pp
+            end
         end
         return Cs((p + 1)^0)
     end
 end
-
 
 local splitters_f, splitters_s = { }, { }
 
@@ -505,8 +451,167 @@ function lpeg.secondofsplit(separator) -- nil if not split
 end
 
 function lpeg.balancer(left,right)
+    left, right = P(left), P(right)
     return P { left * ((1 - left - right) + V(1))^0 * right }
 end
+
+
+
+local nany = utf8char/""
+
+function lpeg.counter(pattern)
+    pattern = Cs((P(pattern)/" " + nany)^0)
+    return function(str)
+        return #match(pattern,str)
+    end
+end
+
+if utfgmatch then
+
+    function lpeg.count(str,what) -- replaces string.count
+        if type(what) == "string" then
+            local n = 0
+            for _ in utfgmatch(str,what) do
+                n = n + 1
+            end
+            return n
+        else -- 4 times slower but still faster than / function
+            return #match(Cs((P(what)/" " + nany)^0),str)
+        end
+    end
+
+else
+
+    local cache = { }
+
+    function lpeg.count(str,what) -- replaces string.count
+        if type(what) == "string" then
+            local p = cache[what]
+            if not p then
+                p = Cs((P(what)/" " + nany)^0)
+                cache[p] = p
+            end
+            return #match(p,str)
+        else -- 4 times slower but still faster than / function
+            return #match(Cs((P(what)/" " + nany)^0),str)
+        end
+    end
+
+end
+
+local patterns_escapes = { -- also defines in l-string
+    ["%"] = "%%",
+    ["."] = "%.",
+    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
+    ["["] = "%[", ["]"] = "%]",
+    ["("] = "%)", [")"] = "%)",
+ -- ["{"] = "%{", ["}"] = "%}"
+ -- ["^"] = "%^", ["$"] = "%$",
+}
+
+local simple_escapes = { -- also defines in l-string
+    ["-"] = "%-",
+    ["."] = "%.",
+    ["?"] = ".",
+    ["*"] = ".*",
+}
+
+local p = Cs((S("-.+*%()[]") / patterns_escapes + P(1))^0)
+local s = Cs((S("-.+*%()[]") / simple_escapes   + P(1))^0)
+
+function string.escapedpattern(str,simple)
+    if simple then
+        return match(s,str)
+    else
+        return match(p,str)
+    end
+end
+
+-- utf extensies
+
+lpeg.UP = lpeg.P
+
+if utfcharacters then
+
+    function lpeg.US(str)
+        local p
+        for uc in utfcharacters(str) do
+            if p then
+                p = p + P(uc)
+            else
+                p = P(uc)
+            end
+        end
+        return p
+    end
+
+
+elseif utfgmatch then
+
+    function lpeg.US(str)
+        local p
+        for uc in utfgmatch(str,".") do
+            if p then
+                p = p + P(uc)
+            else
+                p = P(uc)
+            end
+        end
+        return p
+    end
+
+else
+
+    function lpeg.US(str)
+        local p
+        local f = function(uc)
+            if p then
+                p = p + P(uc)
+            else
+                p = P(uc)
+            end
+        end
+        match((utf8char/f)^0,str)
+        return p
+    end
+
+end
+
+local range = Cs(utf8byte) * (Cs(utf8byte) + Cc(false))
+
+local utfchar = unicode and unicode.utf8 and unicode.utf8.char
+
+function lpeg.UR(str,more)
+    local first, last
+    if type(str) == "number" then
+        first = str
+        last = more or first
+    else
+        first, last = match(range,str)
+        if not last then
+            return P(str)
+        end
+    end
+    if first == last then
+        return P(str)
+    elseif utfchar and last - first < 8 then -- a somewhat arbitrary criterium
+        local p
+        for i=first,last do
+            if p then
+                p = p + P(utfchar(i))
+            else
+                p = P(utfchar(i))
+            end
+        end
+        return p -- nil when invalid range
+    else
+        local f = function(b)
+            return b >= first and b <= last
+        end
+        return utf8byte / f -- nil when invalid range
+    end
+end
+
 
 
 
@@ -577,24 +682,26 @@ end
 -- extra functions, some might go (when not used)
 
 function table.strip(tab)
-    local lst = { }
+    local lst, l = { }, 0
     for i=1,#tab do
         local s = gsub(tab[i],"^%s*(.-)%s*$","%1")
         if s == "" then
             -- skip this one
         else
-            lst[#lst+1] = s
+            l = l + 1
+            lst[l] = s
         end
     end
     return lst
 end
 
 function table.keys(t)
-    local k = { }
+    local keys, k = { }, 0
     for key, _ in next, t do
-        k[#k+1] = key
+        k = k + 1
+        keys[k] = key
     end
-    return k
+    return keys
 end
 
 local function compare(a,b)
@@ -607,9 +714,10 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
+    local srt, kind, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in next, tab do
-        srt[#srt+1] = key
+        s = s + 1
+        srt[s] = key
         if kind == 3 then
             -- no further check
         else
@@ -632,10 +740,11 @@ local function sortedkeys(tab)
 end
 
 local function sortedhashkeys(tab) -- fast one
-    local srt = { }
+    local srt, s = { }, 0
     for key,_ in next, tab do
         if key then
-            srt[#srt+1] = key
+            s= s + 1
+            srt[s] = key
         end
     end
     sort(srt)
@@ -649,8 +758,7 @@ local function nothing() end
 
 local function sortedhash(t)
     if t then
-        local s = sortedhashkeys(t) -- maybe just sortedkeys
-        local n = 0
+        local n, s = 0, sortedkeys(t) -- the robust one
         local function kv(s)
             n = n + 1
             local k = s[n]
@@ -666,20 +774,30 @@ table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash
 
 function table.append(t, list)
-    for _,v in next, list do
-        insert(t,v)
+    local n = #t
+    for i=1,#list do
+        n = n + 1
+        t[n] = list[i]
     end
+    return t
 end
 
 function table.prepend(t, list)
-    for k,v in next, list do
-        insert(t,k,v)
+    local nl = #list
+    local nt = nl + #t
+    for i=#t,1,-1 do
+        t[nt] = t[i]
+        nt = nt - 1
     end
+    for i=1,#list do
+        t[i] = list[i]
+    end
+    return t
 end
 
 function table.merge(t, ...) -- first one is target
     t = t or { }
-    local lst = {...}
+    local lst = { ... }
     for i=1,#lst do
         for k, v in next, lst[i] do
             t[k] = v
@@ -689,7 +807,7 @@ function table.merge(t, ...) -- first one is target
 end
 
 function table.merged(...)
-    local tmp, lst = { }, {...}
+    local tmp, lst = { }, { ... }
     for i=1,#lst do
         for k, v in next, lst[i] do
             tmp[k] = v
@@ -699,22 +817,24 @@ function table.merged(...)
 end
 
 function table.imerge(t, ...)
-    local lst = {...}
+    local lst, nt = { ... }, #t
     for i=1,#lst do
         local nst = lst[i]
         for j=1,#nst do
-            t[#t+1] = nst[j]
+            nt = nt + 1
+            t[nt] = nst[j]
         end
     end
     return t
 end
 
 function table.imerged(...)
-    local tmp, lst = { }, {...}
+    local tmp, ntmp, lst = { }, 0, {...}
     for i=1,#lst do
         local nst = lst[i]
         for j=1,#nst do
-            tmp[#tmp+1] = nst[j]
+            ntmp = ntmp + 1
+            tmp[ntmp] = nst[j]
         end
     end
     return tmp
@@ -790,11 +910,14 @@ function table.tohash(t,value)
 end
 
 function table.fromhash(t)
-    local h = { }
+    local hsh, h = { }, 0
     for k, v in next, t do -- no ipairs here
-        if v then h[#h+1] = k end
+        if v then
+            h = h + 1
+            hsh[h] = k
+        end
     end
-    return h
+    return hsh
 end
 
 table.serialize_functions = true
@@ -815,20 +938,23 @@ local function simple_table(t)
             n = n + 1
         end
         if n == #t then
-            local tt = { }
+            local tt, nt = { }, 0
             for i=1,#t do
                 local v = t[i]
                 local tv = type(v)
                 if tv == "number" then
+                    nt = nt + 1
                     if hexify then
-                        tt[#tt+1] = format("0x%04X",v)
+                        tt[nt] = format("0x%04X",v)
                     else
-                        tt[#tt+1] = tostring(v) -- tostring not needed
+                        tt[nt] = tostring(v) -- tostring not needed
                     end
                 elseif tv == "boolean" then
-                    tt[#tt+1] = tostring(v)
+                    nt = nt + 1
+                    tt[nt] = tostring(v)
                 elseif tv == "string" then
-                    tt[#tt+1] = format("%q",v)
+                    nt = nt + 1
+                    tt[nt] = format("%q",v)
                 else
                     tt = nil
                     break
@@ -1123,10 +1249,11 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
 end
 
 
-function table.serialize(root,name,reduce,noquotes,hexify)
-    local t = { }
+function table.serialize(root,name,reduce,noquotes,hexify) -- can be faster if flush == false and t as argument
+    local t, n = { }, 0
     local function flush(s)
-        t[#t+1] = s
+        n = n + 1
+        t[n] = s
     end
     serialize(root,name,flush,reduce,noquotes,hexify)
     return concat(t,"\n")
@@ -1152,12 +1279,13 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     if f then
         local maxtab = table.tofile_maxtab
         if maxtab > 1 then
-            local t = { }
+            local t, n = { }, 0
             local function flush(s)
-                t[#t+1] = s
-                if #t > maxtab then
+                n = n + 1
+                t[n] = s
+                if n > maxtab then
                     f:write(concat(t,"\n"),"\n") -- hm, write(sometable) should be nice
-                    t = { }
+                    t, n = { }, 0 -- we could recycle t if needed
                 end
             end
             serialize(root,name,flush,reduce,noquotes,hexify)
@@ -1173,12 +1301,51 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     end
 end
 
-local function flatten(t,f,complete) -- is this used? meybe a variant with next, ...
+local function flattened(t,f,depth)
+    if f == nil then
+        f = { }
+        depth = 0xFFFF
+    elseif tonumber(f) then
+        -- assume then only two arguments are given
+        depth = f
+        f = { }
+    elseif not depth then
+        depth = 0xFFFF
+    end
+    for k, v in next, t do
+        if type(k) ~= "number" then
+            if depth > 0 and type(v) == "table" then
+                flattened(v,f,depth-1)
+            else
+                f[k] = v
+            end
+        end
+    end
+    local n = #f
+    for k=1,#t do
+        local v = t[k]
+        if depth > 0 and type(v) == "table" then
+            flattened(v,f,depth-1)
+            n = #f
+        else
+            n = n + 1
+            f[n] = v
+        end
+    end
+    return f
+end
+
+table.flattened = flattened
+
+local function unnest(t,f) -- only used in mk, for old times sake
+    if not f then          -- and only relevant for token lists
+        f = { }
+    end
     for i=1,#t do
         local v = t[i]
         if type(v) == "table" then
-            if complete or type(v[1]) == "table" then
-                flatten(v,f,complete)
+            if type(v[1]) == "table" then
+                unnest(v,f)
             else
                 f[#f+1] = v
             end
@@ -1186,39 +1353,14 @@ local function flatten(t,f,complete) -- is this used? meybe a variant with next,
             f[#f+1] = v
         end
     end
-end
-
-function table.flatten(t)
-    local f = { }
-    flatten(t,f,true)
     return f
 end
 
 function table.unnest(t) -- bad name
-    local f = { }
-    flatten(t,f,false)
-    return f
+    return unnest(t)
 end
 
-table.flattenonelevel = table.unnest
 
--- a better one:
-
-local function flattened(t,f)
-    if not f then
-        f = { }
-    end
-    for k, v in next, t do
-        if type(v) == "table" then
-            flattened(v,f)
-        else
-            f[k] = v
-        end
-    end
-    return f
-end
-
-table.flattened = flattened
 
 local function are_equal(a,b,n,m) -- indexed
     if a and b and #a == #b then
@@ -1244,7 +1386,7 @@ end
 
 local function identical(a,b) -- assumes same structure
     for ka, va in next, a do
-        local vb = b[k]
+        local vb = b[ka]
         if va == vb then
             -- same
         elseif type(va) == "table" and  type(vb) == "table" then
@@ -1258,8 +1400,8 @@ local function identical(a,b) -- assumes same structure
     return true
 end
 
-table.are_equal = are_equal
 table.identical = identical
+table.are_equal = are_equal
 
 -- maybe also make a combined one
 
@@ -1285,14 +1427,14 @@ function table.contains(t, v)
 end
 
 function table.count(t)
-    local n, e = 0, next(t)
-    while e do
-        n, e = n + 1, next(t,e)
+    local n = 0
+    for k, v in next, t do
+        n = n + 1
     end
     return n
 end
 
-function table.swapped(t,s)
+function table.swapped(t,s) -- hash
     local n = { }
     if s then
         for k, v in next, s do
@@ -1305,52 +1447,34 @@ function table.swapped(t,s)
     return n
 end
 
-
-function table.clone(t,p) -- t is optional or nil or table
-    if not p then
-        t, p = { }, t or { }
-    elseif not t then
-        t = { }
-    end
-    setmetatable(t, { __index = function(_,key) return p[key] end }) -- why not __index = p ?
-    return t
-end
-
-function table.hexed(t,seperator)
-    local tt = { }
-    for i=1,#t do tt[i] = format("0x%04X",t[i]) end
-    return concat(tt,seperator or " ")
-end
-
-function table.swaphash(h) -- needs another name
-    local r = { }
-    for k,v in next, h do
-        r[v] = lower(gsub(k," ",""))
-    end
-    return r
-end
-
-function table.reverse(t)
-    local tt = { }
-    if #t > 0 then
-        for i=#t,1,-1 do
-            tt[#tt+1] = t[i]
+function table.reversed(t)
+    if t then
+        local tt, tn = { }, #t
+        if tn > 0 then
+            local ttn = 0
+            for i=tn,1,-1 do
+                ttn = ttn + 1
+                tt[ttn] = t[i]
+            end
         end
+        return tt
     end
-    return tt
 end
 
 function table.sequenced(t,sep,simple) -- hash only
-    local s = { }
+    local s, n = { }, 0
     for k, v in sortedhash(t) do
         if simple then
             if v == true then
-                s[#s+1] = k
+                n = n + 1
+                s[n] = k
             elseif v and v~= "" then
-                s[#s+1] = k .. "=" .. tostring(v)
+                n = n + 1
+                s[n] = k .. "=" .. tostring(v)
             end
         else
-            s[#s+1] = k .. "=" .. tostring(v)
+            n = n + 1
+            s[n] = k .. "=" .. tostring(v)
         end
     end
     return concat(s, sep or " | ")
@@ -1360,7 +1484,7 @@ function table.print(...)
     table.tohandle(print,...)
 end
 
--- -- -- obsolete but we keep them for a while and will comment them later -- -- --
+-- -- -- obsolete but we keep them for a while and might comment them later -- -- --
 
 -- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
 
@@ -1375,14 +1499,7 @@ function table.is_empty(t)
 end
 
 function table.has_one_entry(t)
-    local n = next(t)
-    return n and not next(t,n)
-end
-
-function table.replace(a,b)
-    for k,v in next, b do
-        a[k] = v
-    end
+    return t and not next(t,next(t))
 end
 
 
@@ -1627,6 +1744,8 @@ if not modules then modules = { } end modules ['l-number'] = {
     license   = "see context related readme files"
 }
 
+-- this module will be replaced when we have the bit library
+
 local tostring = tostring
 local format, floor, insert, match = string.format, math.floor, string.match
 local concat, insert = table.concat, table.insert
@@ -1768,10 +1887,11 @@ function set.tolist(n)
     if n == 0 or not tabs[n] then
         return ""
     else
-        local t = { }
+        local t, n = { }, 0
         for k, v in next, tabs[n] do
             if v then
-                t[#t+1] = k
+                n = n + 1
+                t[n] = k
             end
         end
         return concat(t," ")
@@ -1950,7 +2070,7 @@ end
 -- no need for function anymore as we have more clever code and helpers now
 -- this metatable trickery might as well disappear
 
-os.resolvers = os.resolvers or { }
+os.resolvers = os.resolvers or { } -- will become private
 
 local resolvers = os.resolvers
 
@@ -2279,7 +2399,7 @@ end
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
 
--- todo: lpeg
+-- todo: lpeg \\ / .. does not save much
 
 local checkedsplit = string.checkedsplit
 
@@ -2295,7 +2415,7 @@ end
 -- we can hash them weakly
 
 
-function file.collapse_path(str,anchor)
+function file.collapsepath(str,anchor)
     if anchor and not find(str,"^/") and not find(str,"^%a:") then
         str = getcurrentdir() .. "/" .. str
     end
@@ -2349,6 +2469,8 @@ function file.collapse_path(str,anchor)
         return concat(newelements, '/')
     end
 end
+
+file.collapse_path = file.collapsepath
 
 
 function file.robustname(str)
@@ -2782,9 +2904,12 @@ local function glob(str,t)
             end
             return t
         elseif isfile(str) then
-            local t = t or { }
-            t[#t+1] = str
-            return t
+            if t then
+                t[#t+1] = str
+                return t
+            else
+                return { str }
+            end
         else
             local split = lpegmatch(pattern,str)
             if split then
@@ -2812,6 +2937,7 @@ local function globfiles(path,recurse,func,files) -- func == pattern or function
         func = function(name) return find(name,s) end
     end
     files = files or { }
+    local noffiles = #files
     for name in walkdir(path) do
         if find(name,"^%.") then
             --- skip
@@ -2822,12 +2948,9 @@ local function globfiles(path,recurse,func,files) -- func == pattern or function
                     globfiles(path .. "/" .. name,recurse,func,files)
                 end
             elseif mode == "file" then
-                if func then
-                    if func(name) then
-                        files[#files+1] = path .. "/" .. name
-                    end
-                else
-                    files[#files+1] = path .. "/" .. name
+                if not func or func(name) then
+                    noffiles = noffiles + 1
+                    files[noffiles] = path .. "/" .. name
                 end
             end
         end
@@ -3012,8 +3135,12 @@ local type, tonumber = type, tonumber
 boolean = boolean or { }
 local boolean = boolean
 
+-- function boolean.tonumber(b)
+--     return b and 1 or 0 -- test and test and return or return
+-- end
+
 function boolean.tonumber(b)
-    if b then return 1 else return 0 end
+    if b then return 1 else return 0 end -- test and return or return
 end
 
 function toboolean(str,tolerant)
@@ -3037,6 +3164,8 @@ function toboolean(str,tolerant)
     end
 end
 
+string.toboolean = toboolean
+
 function string.is_boolean(str,default)
     if type(str) == "string" then
         if str == "true" or str == "yes" or str == "on" or str == "t" then
@@ -3046,14 +3175,6 @@ function string.is_boolean(str,default)
         end
     end
     return default
-end
-
-function boolean.alwaystrue()
-    return true
-end
-
-function boolean.falsetrue()
-    return false
 end
 
 
@@ -3144,30 +3265,37 @@ function unicode.utftype(f)
 end
 
 function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
-    local result, tmp, n, m, p = { }, { }, 0, 0, 0
+    local result, tmp, n, m, p, r, t = { }, { }, 0, 0, 0, 0, 0 -- we reuse tmp
     -- lf | cr | crlf / (cr:13, lf:10)
     local function doit()
         if n == 10 then
             if p ~= 13 then
-                result[#result+1] = concat(tmp)
-                tmp = { }
+                if t > 0 then
+                    r = r + 1
+                    result[r] = concat(tmp,"",1,t)
+                    t = 0
+                end
                 p = 0
             end
         elseif n == 13 then
-            result[#result+1] = concat(tmp)
-            tmp = { }
+            if t > 0 then
+                r = r + 1
+                result[r] = concat(tmp,"",1,t)
+                t = 0
+            end
             p = n
         else
-            tmp[#tmp+1] = utfchar(n)
+            t = t + 1
+            tmp[t] = utfchar(n)
             p = 0
         end
     end
     for l,r in bytepairs(str) do
         if r then
             if endian then
-                n = l*256 + r
+                n = 256*l + r
             else
-                n = r*256 + l
+                n = 256*r + l
             end
             if m > 0 then
                 n = (m-0xD800)*0x400 + (n-0xDC00) + 0x10000
@@ -3180,29 +3308,36 @@ function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
             end
         end
     end
-    if #tmp > 0 then
-        result[#result+1] = concat(tmp)
+    if t > 0 then
+        r = r + 1
+        result[r] = concat(tmp,"",1,t)
     end
     return result
 end
 
 function unicode.utf32_to_utf8(str, endian)
-    local result = { }
-    local tmp, n, m, p = { }, 0, -1, 0
+    local result, tmp, n, m, p, r, t = { }, { }, 0, -1, 0, 0, 0
     -- lf | cr | crlf / (cr:13, lf:10)
     local function doit()
         if n == 10 then
             if p ~= 13 then
-                result[#result+1] = concat(tmp)
-                tmp = { }
+                if t > 0 then
+                    r = r + 1
+                    result[r] = concat(tmp,"",1,t)
+                    t = 0
+                end
                 p = 0
             end
         elseif n == 13 then
-            result[#result+1] = concat(tmp)
-            tmp = { }
+            if t > 0 then
+                r = r + 1
+                result[r] = concat(tmp,"",1,t)
+                t = 0
+            end
             p = n
         else
-            tmp[#tmp+1] = utfchar(n)
+            t = t + 1
+            tmp[t] = utfchar(n)
             p = 0
         end
     end
@@ -3210,15 +3345,15 @@ function unicode.utf32_to_utf8(str, endian)
         if a and b then
             if m < 0 then
                 if endian then
-                    m = a*256*256*256 + b*256*256
+                    m = 256*256*256*a + 256*256*b
                 else
-                    m = b*256 + a
+                    m = 256*b + a
                 end
             else
                 if endian then
-                    n = m + a*256 + b
+                    n = m + 256*a + b
                 else
-                    n = m + b*256*256*256 + a*256*256
+                    n = m + 256*256*256*b + 256*256*a
                 end
                 m = -1
                 doit()
@@ -3228,13 +3363,14 @@ function unicode.utf32_to_utf8(str, endian)
         end
     end
     if #tmp > 0 then
-        result[#result+1] = concat(tmp)
+        r = r + 1
+        result[r] = concat(tmp,"",1,t)
     end
     return result
 end
 
 local function little(c)
-    local b = byte(c) -- b = c:byte()
+    local b = byte(c)
     if b < 0x10000 then
         return char(b%256,b/256)
     else
@@ -3264,9 +3400,10 @@ function unicode.utf8_to_utf16(str,littleendian)
 end
 
 function unicode.utfcodes(str)
-    local t = { }
-    for k,v in utfvalues(str) do
-        t[#t+1] = format("0x%04X",k)
+    local t, n = { }, 0
+    for u in utfvalues(str) do
+        n = n + 1
+        t[n] = format("0x%04X",u)
     end
     return concat(t,separator or " ")
 end
@@ -3317,6 +3454,189 @@ end
 
 function math.tand(d)
     return tan(d*pipi)
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['util-tab'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+utilities        = utilities or {}
+utilities.tables = utilities.tables or { }
+local tables     = utilities.tables
+
+local format, gmatch = string.format, string.gmatch
+local concat, insert, remove = table.concat, table.insert, table.remove
+local setmetatable = setmetatable
+
+function tables.definetable(target) -- defines undefined tables
+    local composed, t, n = nil, { }, 0
+    for name in gmatch(target,"([^%.]+)") do
+        n = n + 1
+        if composed then
+            composed = composed .. "." .. name
+        else
+            composed = name
+        end
+        t[n] = format("%s = %s or { }",composed,composed)
+    end
+    return concat(t,"\n")
+end
+
+function tables.accesstable(target)
+    local t = _G
+    for name in gmatch(target,"([^%.]+)") do
+        t = t[name]
+    end
+    return t
+end
+
+function tables.removevalue(t,value) -- todo: n
+    if value then
+        for i=1,#t do
+            if t[i] == value then
+                remove(t,i)
+                -- remove all, so no: return
+            end
+        end
+    end
+end
+
+function tables.insertbeforevalue(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i,extra)
+            return
+        end
+    end
+    insert(t,1,extra)
+end
+
+function tables.insertaftervalue(t,value,extra)
+    for i=1,#t do
+        if t[i] == extra then
+            remove(t,i)
+        end
+    end
+    for i=1,#t do
+        if t[i] == value then
+            insert(t,i+1,extra)
+            return
+        end
+    end
+    insert(t,#t+1,extra)
+end
+
+local _empty_table_ = { __index = function(t,k) return "" end }
+
+function table.setemptymetatable(t)
+    setmetatable(t,_empty_table_)
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['util-sto'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local setmetatable, getmetatable = setmetatable, getmetatable
+
+utilities         = utilities or { }
+utilities.storage = utilities.storage or { }
+local storage     = utilities.storage
+
+function storage.mark(t)
+    if not t then
+        texio.write_nl("fatal error: storage '%s' cannot be marked",t)
+        os.exit()
+    end
+    local m = getmetatable(t)
+    if not m then
+        m = { }
+        setmetatable(t,m)
+    end
+    m.__storage__ = true
+    return t
+end
+
+function storage.allocate(t)
+    t = t or { }
+    local m = getmetatable(t)
+    if not m then
+        m = { }
+        setmetatable(t,m)
+    end
+    m.__storage__ = true
+    return t
+end
+
+function storage.marked(t)
+    local m = getmetatable(t)
+    return m and m.__storage__
+end
+
+function storage.checked(t)
+    if not t then
+        texio.write_nl("fatal error: storage '%s' has not been allocated",t)
+        os.exit()
+    end
+    return t
+end
+
+function setmetatablekey(t,key,value)
+    local m = getmetatable(t)
+    if not m then
+        m = { }
+        setmetatable(t,m)
+    end
+    m[key] = value
+end
+
+function getmetatablekey(t,key,value)
+    local m = getmetatable(t)
+    return m and m[key]
+end
+
+
+function storage.setinitializer(data,initialize)
+    local m = getmetatable(data) or { }
+    m.__index = function(data,k)
+        m.__index = nil -- so that we can access the entries during initializing
+        initialize()
+        return data[k]
+    end
+    setmetatable(data, m)
+end
+
+local keyisvalue = { __index = function(t,k)
+    t[k] = k
+    return k
+end }
+
+function storage.sparse(t)
+    t = t or { }
+    setmetatable(t,keyisvalue)
+    return t
 end
 
 
@@ -3483,7 +3803,7 @@ utilities.report = utilities.report or print
 function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
     utilities.report("lua: compiling %s into %s",luafile,lucfile)
     os.remove(lucfile)
-    local command = "-o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
+    local command = "-o " .. string.quoted(lucfile) .. " " .. string.quoted(luafile)
     if strip ~= false then
         command = "-s " .. command
     end
@@ -3494,6 +3814,12 @@ function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: clean
     end
     return done
 end
+
+
+
+
+
+
 
 
 end -- of closure
@@ -3516,7 +3842,7 @@ parsers.patterns  = parsers.patterns or { }
 local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat, format, gmatch = table.concat, string.format, string.gmatch
-local tostring, type, next = tostring, type, next
+local tostring, type, next, setmetatable = tostring, type, next, setmetatable
 local sortedhash = table.sortedhash
 
 local escape, left, right = P("\\"), P('{'), P('}')
@@ -3635,7 +3961,7 @@ end
 
 function parsers.hash_to_string(h,separator,yes,no,strict,omit)
     if h then
-        local t, s = { }, table.sortedkeys(h)
+        local t, tn, s = { }, 0, table.sortedkeys(h)
         omit = omit and table.tohash(omit)
         for i=1,#s do
             local key = s[i]
@@ -3644,15 +3970,19 @@ function parsers.hash_to_string(h,separator,yes,no,strict,omit)
                 if type(value) == "boolean" then
                     if yes and no then
                         if value then
-                            t[#t+1] = key .. '=' .. yes
+                            tn = tn + 1
+                            t[tn] = key .. '=' .. yes
                         elseif not strict then
-                            t[#t+1] = key .. '=' .. no
+                            tn = tn + 1
+                            t[tn] = key .. '=' .. no
                         end
                     elseif value or not strict then
-                        t[#t+1] = key .. '=' .. tostring(value)
+                        tn = tn + 1
+                        t[tn] = key .. '=' .. tostring(value)
                     end
                 else
-                    t[#t+1] = key .. '=' .. value
+                    tn = tn + 1
+                    t[tn] = key .. '=' .. value
                 end
             end
         end
@@ -3679,10 +4009,11 @@ function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate an
 end
 
 function parsers.simple_hash_to_string(h, separator)
-    local t = { }
+    local t, tn = { }, 0
     for k, v in sortedhash(h) do
         if v then
-            t[#t+1] = k
+            tn = tn + 1
+            t[tn] = k
         end
     end
     return concat(t,separator or ",")
@@ -3700,99 +4031,18 @@ end
 function parsers.getparameters(self,class,parentclass,settings)
     local sc = self[class]
     if not sc then
-        sc = table.clone(self[parent])
+        sc = { }
         self[class] = sc
+        if parentclass then
+            local sp = self[parentclass]
+            if not sp then
+                sp = { }
+                self[parentclass] = sp
+            end
+            setmetatable(sc, { __index = sp })
+        end
     end
     parsers.settings_to_hash(settings,sc)
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['util-tab'] = {
-    version   = 1.001,
-    comment   = "companion to luat-lib.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
-utilities        = utilities or {}
-utilities.tables = utilities.tables or { }
-local tables     = utilities.tables
-
-local format, gmatch = string.format, string.gmatch
-local concat, insert, remove = table.concat, table.insert, table.remove
-local setmetatable = setmetatable
-
-function tables.definetable(target) -- defines undefined tables
-    local composed, t = nil, { }
-    for name in gmatch(target,"([^%.]+)") do
-        if composed then
-            composed = composed .. "." .. name
-        else
-            composed = name
-        end
-        t[#t+1] = format("%s = %s or { }",composed,composed)
-    end
-    return concat(t,"\n")
-end
-
-function tables.accesstable(target)
-    local t = _G
-    for name in gmatch(target,"([^%.]+)") do
-        t = t[name]
-    end
-    return t
-end
-
-function table.removevalue(t,value) -- todo: n
-    if value then
-        for i=1,#t do
-            if t[i] == value then
-                remove(t,i)
-                -- remove all, so no: return
-            end
-        end
-    end
-end
-
-function table.insertbeforevalue(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i,extra)
-            return
-        end
-    end
-    insert(t,1,extra)
-end
-
-function table.insertaftervalue(t,value,extra)
-    for i=1,#t do
-        if t[i] == extra then
-            remove(t,i)
-        end
-    end
-    for i=1,#t do
-        if t[i] == value then
-            insert(t,i+1,extra)
-            return
-        end
-    end
-    insert(t,#t+1,extra)
-end
-
-local _empty_table_ = { __index = function(t,k) return "" end }
-
-function table.setemptymetatable(t)
-    setmetatable(t,_empty_table_)
 end
 
 
@@ -3831,9 +4081,9 @@ local number        = digit^1 * (case_1 + case_2)
 local stripper      = Cs((number + 1)^0)
 
 
-lpeg.patterns.strip_zeros = stripper
+lpeg.patterns.stripzeros = stripper
 
-function formatters.strip_zeros(str)
+function formatters.stripzeros(str)
     return lpegmatch(stripper,str)
 end
 
@@ -4005,88 +4255,6 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['util-sto'] = {
-    version   = 1.001,
-    comment   = "companion to luat-lib.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
-local setmetatable, getmetatable = setmetatable, getmetatable
-
-utilities         = utilities or { }
-utilities.storage = utilities.storage or { }
-local storage     = utilities.storage
-
-function storage.mark(t)
-    if not t then
-        texio.write_nl("fatal error: storage '%s' cannot be marked",t)
-        os.exit()
-    end
-    local m = getmetatable(t)
-    if not m then
-        m = { }
-        setmetatable(t,m)
-    end
-    m.__storage__ = true
-    return t
-end
-
-function storage.allocate(t)
-    t = t or { }
-    local m = getmetatable(t)
-    if not m then
-        m = { }
-        setmetatable(t,m)
-    end
-    m.__storage__ = true
-    return t
-end
-
-function storage.marked(t)
-    local m = getmetatable(t)
-    return m and m.__storage__
-end
-
-function storage.checked(t)
-    if not t then
-        texio.write_nl("fatal error: storage '%s' has not been allocated",t)
-        os.exit()
-    end
-    return t
-end
-
-function setmetatablekey(t,key,value)
-    local m = getmetatable(t)
-    if not m then
-        m = { }
-        setmetatable(t,m)
-    end
-    m[key] = value
-end
-
-function getmetatablekey(t,key,value)
-    local m = getmetatable(t)
-    return m and m[key]
-end
-
-
-function storage.setinitializer(data,initialize)
-    local m = getmetatable(data) or { }
-    m.__index = function(data,k)
-        m.__index = nil -- so that we can access the entries during initializing
-        initialize()
-        return data[k]
-    end
-    setmetatable(data, m)
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
 if not modules then modules = { } end modules ['trac-inf'] = {
     version   = 1.001,
     comment   = "companion to trac-inf.mkiv",
@@ -4102,6 +4270,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 
 local format = string.format
 local clock = os.gettimeofday or os.clock -- should go in environment
+local write_nl = texio.write_nl
 
 statistics       = statistics or { }
 local statistics = statistics
@@ -4197,7 +4366,7 @@ end
 
 function statistics.show(reporter)
     if statistics.enable then
-        if not reporter then reporter = function(tag,data,n) texio.write_nl(tag .. " " .. data) end end
+        if not reporter then reporter = function(tag,data,n) write_nl(tag .. " " .. data) end end
         -- this code will move
         local register = statistics.register
         register("luatex banner", function()
@@ -4220,10 +4389,13 @@ function statistics.show(reporter)
                 reporter(s[1],r,n)
             end
         end
-        texio.write_nl("") -- final newline
+        write_nl("") -- final newline
         statistics.enable = false
     end
 end
+
+
+local template, nn = nil, 0 -- we only calcute it once
 
 function statistics.showjobstat(tag,data,n)
     if type(data) == "table" then
@@ -4231,7 +4403,10 @@ function statistics.showjobstat(tag,data,n)
             statistics.showjobstat(tag,data[i],n)
         end
     else
-        texio.write_nl(format("%-15s: %s - %s","mkiv lua stats",tag:rpadd(n," "),data))
+        if not template or n > nn then
+            template, n = format("%%-%ss: %%-%ss - %%s",15,n), nn
+        end
+        write_nl(format(template,"mkiv lua stats",tag,data))
     end
 end
 
@@ -4288,7 +4463,7 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local format, find, lower, gsub, partialescapedpattern = string.format, string.find, string.lower, string.gsub, string.partialescapedpattern
+local format, find, lower, gsub, escapedpattern = string.format, string.find, string.lower, string.gsub, string.escapedpattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
@@ -4368,7 +4543,7 @@ local function set(t,what,newvalue)
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
-            elseif find(name,partialescapedpattern(w)) then
+            elseif find(name,escapedpattern(w,true)) then
                 done[name] = true
                 for i=1,#functions do
                     functions[i](value)
@@ -5151,7 +5326,7 @@ local report_resolvers = logs.new("resolvers")
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
-local unquote, quote = string.unquote, string.quote
+local unquoted, quoted = string.unquoted, string.quoted
 local concat = table.concat
 
 -- precautions
@@ -5219,7 +5394,7 @@ function environment.initializearguments(arg)
         if index > 0 then
             local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
-                arguments[flag] = unquote(value or "")
+                arguments[flag] = unquoted(value or "")
             else
                 flag = match(argument,"^%-+(.+)")
                 if flag then
@@ -5284,19 +5459,21 @@ end
 function environment.reconstructcommandline(arg,noquote)
     arg = arg or environment.originalarguments
     if noquote and #arg == 1 then
+        -- we could just do: return unquoted(resolvers.resolve(arg[i]))
         local a = arg[1]
         a = resolvers.resolve(a)
-        a = unquote(a)
+        a = unquoted(a)
         return a
     elseif #arg > 0 then
         local result = { }
         for i=1,#arg do
+            -- we could just do: result[#result+1] = format("%q",unquoted(resolvers.resolve(arg[i])))
             local a = arg[i]
             a = resolvers.resolve(a)
-            a = unquote(a)
+            a = unquoted(a)
             a = gsub(a,'"','\\"') -- tricky
             if find(a," ") then
-                result[#result+1] = quote(a)
+                result[#result+1] = quoted(a)
             else
                 result[#result+1] = a
             end
@@ -5306,6 +5483,7 @@ function environment.reconstructcommandline(arg,noquote)
         return ""
     end
 end
+
 
 if arg then
 
@@ -6767,7 +6945,7 @@ apply_axis['root'] = function(list)
                 rt = ll
             end
         end
-        collected[#collected+1] = rt
+        collected[l] = rt
     end
     return collected
 end
@@ -6777,7 +6955,7 @@ apply_axis['self'] = function(list)
 end
 
 apply_axis['child'] = function(list)
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
         local ll = list[l]
         local dt = ll.dt
@@ -6786,7 +6964,8 @@ apply_axis['child'] = function(list)
             for k=1,#dt do
                 local dk = dt[k]
                 if dk.tg then
-                    collected[#collected+1] = dk
+                    c = c + 1
+                    collected[c] = dk
                     dk.ni = k -- refresh
                 en = en + 1
                 dk.ei = en
@@ -6798,68 +6977,74 @@ apply_axis['child'] = function(list)
     return collected
 end
 
-local function collect(list,collected)
+local function collect(list,collected,c)
     local dt = list.dt
     if dt then
         local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
-                collected[#collected+1] = dk
+                c = c + 1
+                collected[c] = dk
                 dk.ni = k -- refresh
                 en = en + 1
                 dk.ei = en
-                collect(dk,collected)
+                c = collect(dk,collected,c)
             end
         end
         list.en = en
     end
+    return c
 end
 apply_axis['descendant'] = function(list)
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
-        collect(list[l],collected)
+        c = collect(list[l],collected,c)
     end
     return collected
 end
 
-local function collect(list,collected)
+local function collect(list,collected,c)
     local dt = list.dt
     if dt then
         local en = 0
         for k=1,#dt do
             local dk = dt[k]
             if dk.tg then
-                collected[#collected+1] = dk
+                c = c + 1
+                collected[c] = dk
                 dk.ni = k -- refresh
                 en = en + 1
                 dk.ei = en
-                collect(dk,collected)
+                c = collect(dk,collected,c)
             end
         end
         list.en = en
     end
+    return c
 end
 apply_axis['descendant-or-self'] = function(list)
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
         local ll = list[l]
         if ll.special ~= true then -- catch double root
-            collected[#collected+1] = ll
+            c = c + 1
+            collected[c] = ll
         end
-        collect(ll,collected)
+        c = collect(ll,collected,c)
     end
     return collected
 end
 
 apply_axis['ancestor'] = function(list)
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
         local ll = list[l]
         while ll do
             ll = ll.__p__
             if ll then
-                collected[#collected+1] = ll
+                c = c + 1
+                collected[c] = ll
             end
         end
     end
@@ -6867,14 +7052,16 @@ apply_axis['ancestor'] = function(list)
 end
 
 apply_axis['ancestor-or-self'] = function(list)
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
         local ll = list[l]
-        collected[#collected+1] = ll
+        c = c + 1
+        collected[c] = ll
         while ll do
             ll = ll.__p__
             if ll then
-                collected[#collected+1] = ll
+                c = c + 1
+                collected[c] = ll
             end
         end
     end
@@ -6882,11 +7069,12 @@ apply_axis['ancestor-or-self'] = function(list)
 end
 
 apply_axis['parent'] = function(list)
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
         local pl = list[l].__p__
         if pl then
-            collected[#collected+1] = pl
+            c = c + 1
+            collected[c] = pl
         end
     end
     return collected
@@ -6909,7 +7097,7 @@ apply_axis['preceding'] = function(list) -- incomplete
 end
 
 apply_axis['following-sibling'] = function(list)
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
         local ll = list[l]
         local p = ll.__p__
@@ -6917,7 +7105,8 @@ apply_axis['following-sibling'] = function(list)
         for i=ll.ni+1,#d do
             local di = d[i]
             if type(di) == "table" then
-                collected[#collected+1] = di
+                c = c + 1
+                collected[c] = di
             end
         end
     end
@@ -6925,7 +7114,7 @@ apply_axis['following-sibling'] = function(list)
 end
 
 apply_axis['preceding-sibling'] = function(list)
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
         local ll = list[l]
         local p = ll.__p__
@@ -6933,7 +7122,8 @@ apply_axis['preceding-sibling'] = function(list)
         for i=1,ll.ni-1 do
             local di = d[i]
             if type(di) == "table" then
-                collected[#collected+1] = di
+                c = c + 1
+                collected[c] = di
             end
         end
     end
@@ -6941,7 +7131,7 @@ apply_axis['preceding-sibling'] = function(list)
 end
 
 apply_axis['reverse-sibling'] = function(list) -- reverse preceding
-    local collected = { }
+    local collected, c = { }, 0
     for l=1,#list do
         local ll = list[l]
         local p = ll.__p__
@@ -6949,7 +7139,8 @@ apply_axis['reverse-sibling'] = function(list) -- reverse preceding
         for i=ll.ni-1,1,-1 do
             local di = d[i]
             if type(di) == "table" then
-                collected[#collected+1] = di
+                c = c + 1
+                collected[c] = di
             end
         end
     end
@@ -6975,7 +7166,7 @@ local function apply_nodes(list,directive,nodes)
                 return { }
             end
         else
-            local collected, m, p = { }, 0, nil
+            local collected, c, m, p = { }, 0, 0, nil
             if not nns then -- only check tag
                 for l=1,#list do
                     local ll = list[l]
@@ -6984,11 +7175,13 @@ local function apply_nodes(list,directive,nodes)
                         if directive then
                             if ntg == ltg then
                                 local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
-                                collected[#collected+1], ll.mi = ll, m
+                                c = c + 1
+                                collected[c], ll.mi = ll, m
                             end
                         elseif ntg ~= ltg then
                             local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
-                            collected[#collected+1], ll.mi = ll, m
+                            c = c + 1
+                            collected[c], ll.mi = ll, m
                         end
                     end
                 end
@@ -7000,11 +7193,13 @@ local function apply_nodes(list,directive,nodes)
                         if directive then
                             if lns == nns then
                                 local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
-                                collected[#collected+1], ll.mi = ll, m
+                                c = c + 1
+                                collected[c], ll.mi = ll, m
                             end
                         elseif lns ~= nns then
                             local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
-                            collected[#collected+1], ll.mi = ll, m
+                            c = c + 1
+                            collected[c], ll.mi = ll, m
                         end
                     end
                 end
@@ -7018,11 +7213,13 @@ local function apply_nodes(list,directive,nodes)
                         if directive then
                             if ok then
                                 local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
-                                collected[#collected+1], ll.mi = ll, m
+                                c = c + 1
+                                collected[c], ll.mi = ll, m
                             end
                         elseif not ok then
                             local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
-                            collected[#collected+1], ll.mi = ll, m
+                            c = c + 1
+                            collected[c], ll.mi = ll, m
                         end
                     end
                 end
@@ -7030,7 +7227,7 @@ local function apply_nodes(list,directive,nodes)
             return collected
         end
     else
-        local collected, m, p = { }, 0, nil
+        local collected, c, m, p = { }, 0, 0, nil
         for l=1,#list do
             local ll = list[l]
             local ltg = ll.tg
@@ -7047,11 +7244,13 @@ local function apply_nodes(list,directive,nodes)
                 if directive then
                     if ok then
                         local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
-                        collected[#collected+1], ll.mi = ll, m
+                        c = c + 1
+                        collected[c], ll.mi = ll, m
                     end
                 elseif not ok then
                     local llp = ll.__p__ ; if llp ~= p then p, m = llp, 1 else m = m + 1 end
-                    collected[#collected+1], ll.mi = ll, m
+                    c = c + 1
+                    collected[c], ll.mi = ll, m
                 end
             end
         end
@@ -7062,12 +7261,13 @@ end
 local quit_expression = false
 
 local function apply_expression(list,expression,order)
-    local collected = { }
+    local collected, c = { }, 0
     quit_expression = false
     for l=1,#list do
         local ll = list[l]
         if expression(list,ll,l,order) then -- nasty, order alleen valid als n=1
-            collected[#collected+1] = ll
+            c = c + 1
+            collected[c] = ll
         end
         if quit_expression then
             break
@@ -7363,7 +7563,7 @@ local function nodesettostring(set,nodetest)
         if not ns or ns == "" then ns = "*" end
         if not tg or tg == "" then tg = "*" end
         tg = (tg == "@rt@" and "[root]") or format("%s:%s",ns,tg)
-        t[#t+1] = (directive and tg) or format("not(%s)",tg)
+        t[i] = (directive and tg) or format("not(%s)",tg)
     end
     if nodetest == false then
         return format("not(%s)",concat(t,"|"))
@@ -7382,7 +7582,7 @@ local function tagstostring(list)
             local ns, tg = li.ns, li.tg
             if not ns or ns == "" then ns = "*" end
             if not tg or tg == "" then tg = "*" end
-            t[#t+1] = (tg == "@rt@" and "[root]") or format("%s:%s",ns,tg)
+            t[i] = (tg == "@rt@" and "[root]") or format("%s:%s",ns,tg)
         end
         return concat(t," ")
     end
@@ -8102,16 +8302,17 @@ end
 function xml.collect_tags(root, pattern, nonamespace)
     local collected = xmlapplylpath(root,pattern)
     if collected then
-        local t = { }
+        local t, n = { }, 0
         for c=1,#collected do
             local e = collected[c]
             local ns, tg = e.ns, e.tg
+            n = n + 1
             if nonamespace then
-                t[#t+1] = tg
+                t[n] = tg
             elseif ns == "" then
-                t[#t+1] = tg
+                t[n] = tg
             else
-                t[#t+1] = ns .. ":" .. tg
+                t[n] = ns .. ":" .. tg
             end
         end
         return t
@@ -8219,8 +8420,10 @@ local function inject_element(root,pattern,whatever,prepend)
                 else
                     be, af = edt, cp
                 end
+                local bn = #be
                 for i=1,#af do
-                    be[#be+1] = af[i]
+                    bn = bn + 1
+                    be[bn] = af[i]
                 end
                 if rri then
                     r.dt[rri].dt = be
@@ -8305,11 +8508,12 @@ local function stripelement(e,nolines,anywhere)
     local edt = e.dt
     if edt then
         if anywhere then
-            local t = { }
+            local t, n = { }, 0
             for e=1,#edt do
                 local str = edt[e]
                 if type(str) ~= "string" then
-                    t[#t+1] = str
+                    n = n + 1
+                    t[n] = str
                 elseif str ~= "" then
                     -- todo: lpeg for each case
                     if nolines then
@@ -8317,7 +8521,8 @@ local function stripelement(e,nolines,anywhere)
                     end
                     str = gsub(str,"^%s*(.-)%s*$","%1")
                     if str ~= "" then
-                        t[#t+1] = str
+                        n = n + 1
+                        t[n] = str
                     end
                 end
             end
@@ -8344,9 +8549,10 @@ local function stripelement(e,nolines,anywhere)
                     end
                 end
             end
-            if #edt > 0 then
+            local nedt = #nedt
+            if nedt > 0 then
                 -- strip end
-                local str = edt[#edt]
+                local str = edt[nedt]
                 if type(str) ~= "string" then
                     -- nothing
                 elseif str == "" then
@@ -8359,7 +8565,7 @@ local function stripelement(e,nolines,anywhere)
                     if str == "" then
                         remove(edt)
                     else
-                        edt[#edt] = str
+                        edt[nedt] = str
                     end
                 end
             end
@@ -8506,15 +8712,8 @@ local function all(collected)
     return collected
 end
 
-local function reverse(collected)
-    if collected then
-        local reversed = { }
-        for c=#collected,1,-1 do
-            reversed[#reversed+1] = collected[c]
-        end
-        return reversed
-    end
-end
+
+local reverse = table.reversed
 
 local function attribute(collected,name)
     if collected and #collected > 0 then
@@ -8605,11 +8804,12 @@ end
 
 local function texts(collected)
     if collected then
-        local t = { }
+        local t, n = { }, 0
         for c=1,#collected do
             local e = collection[c]
             if e and e.dt then
-                t[#t+1] = e.dt
+                n = n + 1
+                t[n] = e.dt
             end
         end
         return t
@@ -8652,14 +8852,15 @@ end
 
 local function tags(collected,nonamespace)
     if collected then
-        local t = { }
+        local t, n = { }, 0
         for c=1,#collected do
             local e = collected[c]
             local ns, tg = e.ns, e.tg
+            n = n + 1
             if nonamespace or ns == "" then
-                t[#t+1] = tg
+                t[n] = tg
             else
-                t[#t+1] = ns .. ":" .. tg
+                t[n] = ns .. ":" .. tg
             end
         end
         return t
@@ -8855,9 +9056,13 @@ end
 
 do
 
-    local homedir = osgetenv(ostype == "windows" and 'USERPROFILE' or 'HOME') or '~'
+    local homedir = osgetenv(ostype == "windows" and 'USERPROFILE' or 'HOME') or ''
 
-    homedir = file.collapse_path(homedir)
+    if not homedir or homedir == "" then
+        homedir = string.char(127) -- we need a value, later we wil trigger on it
+    end
+
+    homedir = file.collapsepath(homedir)
 
     ossetenv("HOME",       homedir) -- can be used in unix cnf files
     ossetenv("USERPROFILE",homedir) -- can be used in windows cnf files
@@ -8876,8 +9081,8 @@ do
     local ownbin  = environment.ownbin  or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
     local ownpath = environment.ownpath or os.selfdir
 
-    ownbin  = file.collapse_path(ownbin)
-    ownpath = file.collapse_path(ownpath)
+    ownbin  = file.collapsepath(ownbin)
+    ownpath = file.collapsepath(ownpath)
 
     if not ownpath or ownpath == "" or ownpath == "unset" then
         ownpath = args[-1] or arg[-1]
@@ -8949,9 +9154,9 @@ do
     local ownpath = environment.ownpath or dir.current()
 
     if ownpath then
-        ossetenv('SELFAUTOLOC',    file.collapse_path(ownpath))
-        ossetenv('SELFAUTODIR',    file.collapse_path(ownpath .. "/.."))
-        ossetenv('SELFAUTOPARENT', file.collapse_path(ownpath .. "/../.."))
+        ossetenv('SELFAUTOLOC',    file.collapsepath(ownpath))
+        ossetenv('SELFAUTODIR',    file.collapsepath(ownpath .. "/.."))
+        ossetenv('SELFAUTOPARENT', file.collapsepath(ownpath .. "/../.."))
     else
         report_resolvers("error: unable to locate ownpath")
         os.exit()
@@ -8987,7 +9192,7 @@ if not texroot or texroot == "" then
     ossetenv('TEXROOT',texroot)
 end
 
-environment.texroot = file.collapse_path(texroot)
+environment.texroot = file.collapsepath(texroot)
 
 -- Tracing. Todo ...
 
@@ -9026,7 +9231,7 @@ local lpegCt, lpegCs, lpegP, lpegC, lpegS = lpeg.Ct, lpeg.Cs, lpeg.P, lpeg.C, lp
 local type, next = type, next
 
 local ostype = os.type
-local collapse_path = file.collapse_path
+local collapsepath = file.collapsepath
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
@@ -9062,22 +9267,29 @@ local resolvers = resolvers
 local dummy_path_expr = "^!*unset/*$"
 
 local function do_first(a,b)
-    local t = { }
-    for s in gmatch(b,"[^,]+") do t[#t+1] = a .. s end
+    local t, n = { }, 0
+    for s in gmatch(b,"[^,]+") do
+        n = n + 1
+        t[n] = a .. s
+    end
     return "{" .. concat(t,",") .. "}"
 end
 
 local function do_second(a,b)
-    local t = { }
-    for s in gmatch(a,"[^,]+") do t[#t+1] = s .. b end
+    local t, n = { }, 0
+    for s in gmatch(a,"[^,]+") do
+        n = n + 1
+        t[n] = s .. b
+    end
     return "{" .. concat(t,",") .. "}"
 end
 
 local function do_both(a,b)
-    local t = { }
+    local t, n = { }, 0
     for sa in gmatch(a,"[^,]+") do
         for sb in gmatch(b,"[^,]+") do
-            t[#t+1] = sa .. sb
+            n = n + 1
+            t[n] = sa .. sb
         end
     end
     return "{" .. concat(t,",") .. "}"
@@ -9101,6 +9313,7 @@ local function splitpathexpr(str, newlist, validate)
         report_resolvers("expanding variable '%s'",str)
     end
     local t, ok, done = newlist or { }, false, false
+    local n = #t
     str = lpegmatch(replacer_1,str)
     while true do
         done = false
@@ -9124,11 +9337,15 @@ local function splitpathexpr(str, newlist, validate)
     if validate then
         for s in gmatch(str,"[^,]+") do
             s = validate(s)
-            if s then t[#t+1] = s end
+            if s then
+                n = n + 1
+                t[n] = s
+            end
         end
     else
         for s in gmatch(str,"[^,]+") do
-            t[#t+1] = s
+            n = n + 1
+            t[n] = s
         end
     end
     if trace_expansions then
@@ -9141,7 +9358,7 @@ end
 
 local function validate(s)
     local isrecursive = find(s,"//$")
-    s = collapse_path(s)
+    s = collapsepath(s)
     if isrecursive then
         s = s .. "//"
     end
@@ -9164,10 +9381,14 @@ function resolvers.expandedpathfromlist(pathlist) -- maybe not a list, just a pa
             splitpathexpr(pathlist[k],newlist,validate)
         end
     else
+        local n = 0
         for k=1,#pathlist do
             for p in gmatch(pathlist[k],"([^,]+)") do
                 p = validate(p)
-                if p ~= "" then newlist[#newlist+1] = p end
+                if p ~= "" then
+                    n = n + 1
+                    newlist[n] = p
+                end
             end
         end
     end
@@ -9176,16 +9397,42 @@ end
 
 -- We also put some cleanup code here.
 
-local cleanup -- used recursively
 
-cleanup = lpeg.replacer {
-    { "!",  "" },
-    { "\\", "/" },
-    { "~" , function() return lpegmatch(cleanup,environment.homedir) end },
+
+
+local cleanup = lpeg.replacer {
+    { "!"  , ""  },
+    { "\\" , "/" },
 }
 
+local homedir
+
 function resolvers.cleanpath(str)
-    return str and lpegmatch(cleanup,str)
+    if not homedir then
+        homedir = lpegmatch(cleanup,environment.homedir or "")
+        if homedir == string.char(127) or homedir == "" or not lfs.isdir(homedir) then
+            if trace_expansions then
+                report_resolvers("no home dir set, ignoring dependent paths")
+            end
+            function resolvers.cleanpath(str)
+                if find(str,"~") then
+                    return "" -- special case
+                else
+                    return str and lpegmatch(cleanup,str)
+                end
+            end
+        else
+            cleanup = lpeg.replacer {
+                { "!"  , ""      },
+                { "\\" , "/"     },
+                { "~"  , homedir },
+            }
+            function resolvers.cleanpath(str)
+                return str and lpegmatch(cleanup,str)
+            end
+        end
+    end
+    return resolvers.cleanpath(str)
 end
 
 -- This one strips quotes and funny tokens.
@@ -9211,7 +9458,6 @@ end
 -- we join them and split them after the expansion has taken place. This
 -- is more convenient.
 
-
 local cache = { }
 
 local splitter = lpegCt(lpeg.splitat(lpegS(ostype == "windows" and ";" or ":;"))) -- maybe add ,
@@ -9226,15 +9472,17 @@ local function splitconfigurationpath(str) -- beware, this can be either a path 
                 str = gsub(str,"\\","/")
                 local split = lpegmatch(splitter,str)
                 found = { }
+                local noffound = 0
                 for i=1,#split do
                     local s = split[i]
                     if not find(s,"^{*unset}*") then
-                        found[#found+1] = s
+                        noffound = noffound + 1
+                        found[noffound] = s
                     end
                 end
                 if trace_expansions then
                     report_resolvers("splitting path specification '%s'",str)
-                    for k=1,#found do
+                    for k=1,noffound do
                         report_resolvers("% 4i: %s",k,found[k])
                     end
                 end
@@ -9357,7 +9605,6 @@ formats['enc']          = 'ENCFONTS'       suffixes['enc']          = { 'enc' }
 formats['fmt']          = 'TEXFORMATS'     suffixes['fmt']          = { 'fmt' }
 formats['map']          = 'TEXFONTMAPS'    suffixes['map']          = { 'map' }
 formats['mp']           = 'MPINPUTS'       suffixes['mp']           = { 'mp' }
-formats['ocp']          = 'OCPINPUTS'      suffixes['ocp']          = { 'ocp' }
 formats['ofm']          = 'OFMFONTS'       suffixes['ofm']          = { 'ofm', 'tfm' }
 formats['otf']          = 'OPENTYPEFONTS'  suffixes['otf']          = { 'otf' }
 formats['opl']          = 'OPLFONTS'       suffixes['opl']          = { 'opl' }
@@ -9582,7 +9829,7 @@ local function identify()
             local cachepath = texmfcaches[k]
             if cachepath ~= "" then
                 cachepath = resolvers.cleanpath(cachepath)
-                cachepath = file.collapse_path(cachepath)
+                cachepath = file.collapsepath(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
                     if file.is_readable(cachepath) then
@@ -9921,7 +10168,7 @@ function resolvers.splitmethod(filename)
 end
 
 function resolvers.methodhandler(what, filename, filetype) -- ...
-    filename = file.collapse_path(filename)
+    filename = file.collapsepath(filename)
     local specification = (type(filename) == "string" and resolvers.splitmethod(filename)) or filename -- no or { }, let it bomb
     local scheme = specification.scheme
     local resolver = resolvers[what]
@@ -9966,7 +10213,7 @@ local lpegP, lpegS, lpegR, lpegC, lpegCc, lpegCs, lpegCt = lpeg.P, lpeg.S, lpeg.
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
-local collapse_path = file.collapse_path
+local collapsepath = file.collapsepath
 local allocate = utilities.storage.allocate
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
@@ -10169,7 +10416,7 @@ local function identify_configuration_files()
         expandvars(cnfpaths) --- hm
         local luacnfname = resolvers.luacnfname
         for i=1,#cnfpaths do
-            local filename = collapse_path(filejoin(cnfpaths[i],luacnfname))
+            local filename = collapsepath(filejoin(cnfpaths[i],luacnfname))
             if lfs.isfile(filename) then
                 specification[#specification+1] = filename
             end
@@ -10330,7 +10577,7 @@ local function locate_file_databases()
     -- todo: cache:// and tree:// (runtime)
     local texmfpaths = resolvers.expandedpathlist('TEXMF')
     for i=1,#texmfpaths do
-        local path = collapse_path(texmfpaths[i])
+        local path = collapsepath(texmfpaths[i])
         local stripped = gsub(path,"^!!","")
         local runtime = stripped == path
         path = resolvers.cleanpath(path)
@@ -10443,11 +10690,12 @@ end
 function resolvers.splitexpansions()
     local ie = instance.expansions
     for k,v in next, ie do
-        local t, h, p = { }, { }, splitconfigurationpath(v)
+        local t, tn, h, p = { }, 0, { }, splitconfigurationpath(v)
         for kk=1,#p do
             local vv = p[kk]
             if vv ~= "" and not h[vv] then
-                t[#t+1] = vv
+                tn = tn + 1
+                t[tn] = vv
                 h[vv] = true
             end
         end
@@ -10554,7 +10802,8 @@ end
 
 function resolvers.registerextrapath(paths,subpaths)
     local ep = instance.extra_paths or { }
-    local n = #ep
+    local oldn = #ep
+    local newn = oldn
     if paths and paths ~= "" then
         if subpaths and subpaths ~= "" then
             for p in gmatch(paths,"[^,]+") do
@@ -10562,7 +10811,8 @@ function resolvers.registerextrapath(paths,subpaths)
                 for s in gmatch(subpaths,"[^,]+") do
                     local ps = p .. "/" .. s
                     if not done[ps] then
-                        ep[#ep+1] = resolvers.cleanpath(ps)
+                        newn = newn + 1
+                        ep[newn] = resolvers.cleanpath(ps)
                         done[ps] = true
                     end
                 end
@@ -10570,7 +10820,8 @@ function resolvers.registerextrapath(paths,subpaths)
         else
             for p in gmatch(paths,"[^,]+") do
                 if not done[p] then
-                    ep[#ep+1] = resolvers.cleanpath(p)
+                    newn = newn + 1
+                    ep[newn] = resolvers.cleanpath(p)
                     done[p] = true
                 end
             end
@@ -10581,16 +10832,17 @@ function resolvers.registerextrapath(paths,subpaths)
             for s in gmatch(subpaths,"[^,]+") do
                 local ps = ep[i] .. "/" .. s
                 if not done[ps] then
-                    ep[#ep+1] = resolvers.cleanpath(ps)
+                    newn = newn + 1
+                    ep[newn] = resolvers.cleanpath(ps)
                     done[ps] = true
                 end
             end
         end
     end
-    if #ep > 0 then
+    if newn > 0 then
         instance.extra_paths = ep -- register paths
     end
-    if #ep > n then
+    if newn > oldn then
         instance.lists = { } -- erase the cache
     end
 end
@@ -10600,14 +10852,15 @@ local function made_list(instance,list)
     if not ep or #ep == 0 then
         return list
     else
-        local done, new = { }, { }
+        local done, new, newn = { }, { }, 0
         -- honour . .. ../.. but only when at the start
         for k=1,#list do
             local v = list[k]
             if not done[v] then
                 if find(v,"^[%.%/]$") then
                     done[v] = true
-                    new[#new+1] = v
+                    newn = newn + 1
+                    new[newn] = v
                 else
                     break
                 end
@@ -10618,7 +10871,8 @@ local function made_list(instance,list)
             local v = ep[k]
             if not done[v] then
                 done[v] = true
-                new[#new+1] = v
+                newn = newn + 1
+                new[newn] = v
             end
         end
         -- next the formal paths
@@ -10626,7 +10880,8 @@ local function made_list(instance,list)
             local v = list[k]
             if not done[v] then
                 done[v] = true
-                new[#new+1] = v
+                newn = newn + 1
+                new[newn] = v
             end
         end
         return new
@@ -10637,7 +10892,7 @@ function resolvers.cleanpathlist(str)
     local t = resolvers.expandedpathlist(str)
     if t then
         for i=1,#t do
-            t[i] = collapse_path(resolvers.cleanpath(t[i]))
+            t[i] = collapsepath(resolvers.cleanpath(t[i]))
         end
     end
     return t
@@ -10703,7 +10958,7 @@ resolvers.isreadable.tex = resolvers.isreadable.file
 -- name/name
 
 local function collect_files(names)
-    local filelist = { }
+    local filelist, noffiles = { }, 0
     for k=1,#names do
         local fname = names[k]
         if trace_detail then
@@ -10744,7 +10999,8 @@ local function collect_files(names)
                             if trace_detail then
                                 report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
                             end
-                            filelist[#filelist+1] = { kind, search, result }
+                            noffiles = noffiles + 1
+                            filelist[noffiles] = { kind, search, result }
                         end
                     else
                         for kk=1,#blobfile do
@@ -10756,7 +11012,8 @@ local function collect_files(names)
                                 if trace_detail then
                                     report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
                                 end
-                                filelist[#filelist+1] = { kind, search, result }
+                                noffiles = noffiles + 1
+                                filelist[noffiles] = { kind, search, result }
                             end
                         end
                     end
@@ -10766,7 +11023,7 @@ local function collect_files(names)
             end
         end
     end
-    return #filelist > 0 and filelist or nil
+    return noffiles > 0 and filelist or nil
 end
 
 function resolvers.registerintrees(name)
@@ -10792,7 +11049,7 @@ end
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = collapse_path(filename)
+    filename = collapsepath(filename)
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -11045,7 +11302,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         end
     end
     for k=1,#result do
-        local rk = collapse_path(result[k])
+        local rk = collapsepath(result[k])
         result[k] = rk
         resolvers.registerintrees(rk) -- for tracing used files
     end
@@ -12439,7 +12696,7 @@ function resolvers.load_tree(tree)
         local texos   = "texmf-" .. os.platform
 
         local oldroot = environment.texroot
-        local newroot = file.collapse_path(tree)
+        local newroot = file.collapsepath(tree)
 
         local newtree = file.join(newroot,texos)
         local newpath = file.join(newtree,"bin")
@@ -12668,17 +12925,17 @@ local format = string.format
 
 -- helper for mtxrun
 
-local quote = string.quote
+local quoted = string.quoted
 
 local function primaryflags()
     local trackers   = environment.argument("trackers")
     local directives = environment.argument("directives")
     local flags = ""
     if trackers and trackers ~= "" then
-        flags = flags .. "--trackers=" .. quote(trackers)
+        flags = flags .. "--trackers=" .. quoted(trackers)
     end
     if directives and directives ~= "" then
-        flags = flags .. "--directives=" .. quote(directives)
+        flags = flags .. "--directives=" .. quoted(directives)
     end
     return flags
 end
@@ -12743,7 +13000,7 @@ function environment.make_format(name)
         return
     end
     -- generate format
-    local command = format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quote(usedluastub),quote(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
+    local command = format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
     logs.simple("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
@@ -12781,8 +13038,7 @@ function environment.run_format(name,data,more)
                 logs.simple("using format name: %s",fmtname)
                 logs.simple("no luc/lua with name: %s",barename)
             else
-                local q = string.quote
-                local command = format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quote(barename),quote(luaname),quote(data),more ~= "" and quote(more) or "")
+                local command = format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
                 logs.simple("running command: %s",command)
                 os.spawn(command)
             end
@@ -12813,13 +13069,13 @@ own.libs = { -- order can be made better
     'l-unicode.lua',
     'l-math.lua',
 
+    'util-tab.lua',
+    'util-sto.lua',
     'util-mrg.lua',
     'util-lua.lua',
     'util-prs.lua',
-    'util-tab.lua',
     'util-fmt.lua',
     'util-deb.lua',
-    'util-sto.lua',
 
     'trac-inf.lua',
     'trac-set.lua',

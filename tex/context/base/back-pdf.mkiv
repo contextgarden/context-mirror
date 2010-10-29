@@ -90,6 +90,8 @@
 
 \def\pdfbackendcurrentresources     {\ctxlua{lpdf.collectedresources()}}
 
+\def\pdfcolor                     #1{\ctxlua{lpdf.pdfcolor(\thecolorattribute{#1})}} \let\PDFcolor\pdfcolor
+
 %D Let's block these:
 
 \let\pdfcatalog      \relax  \newtoks\pdfcatalog

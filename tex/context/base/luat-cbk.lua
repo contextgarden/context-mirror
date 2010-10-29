@@ -124,7 +124,7 @@ end
 function callbacks.freeze(name,freeze)
     freeze = type(freeze) == "string" and freeze
     if find(name,"%*") then
-        local pattern = name -- string.partialescapedpattern(name)
+        local pattern = name
         for name, _ in next, list do
             if find(name,pattern) then
                 frozen[name] = freeze or frozen[name] or "frozen"

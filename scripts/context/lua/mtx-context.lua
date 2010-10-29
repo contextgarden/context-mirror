@@ -695,8 +695,19 @@ function scripts.context.run(ctxdata,filename)
                         local texexec = resolvers.findfile("texexec.rb") or ""
                         if texexec ~= "" then
                             os.setenv("RUBYOPT","")
-                            local command = string.format("ruby %s %s",texexec,environment.reconstructcommandline(environment.arguments_after))
-                            os.exec(command)
+                            local options = environment.reconstructcommandline(environment.arguments_after)
+                            options = string.gsub(options,"--purge","")
+                            options = string.gsub(options,"--purgeall","")
+                            local command = string.format("ruby %s %s",texexec,options)
+                            if environment.argument("purge") then
+                                os.execute(command)
+                                scripts.context.purge_job(filename,false,true)
+                            elseif environment.argument("purgeall") then
+                                os.execute(command)
+                                scripts.context.purge_job(filename,true,true)
+                            else
+                                os.exec(command)
+                            end
                         end
                     end
                 else
@@ -1110,6 +1121,10 @@ local persistent_runfiles = {
     "tuo", "tub", "top", "tuc"
 }
 
+local special_runfiles = {
+    "-mpgraph*", "-mprun*"
+}
+
 local function purge_file(dfile,cfile)
     if cfile and lfs.isfile(cfile) then
         if os.remove(dfile) then
@@ -1122,31 +1137,38 @@ local function purge_file(dfile,cfile)
     end
 end
 
-function scripts.context.purge_job(jobname,all)
+local function remove_special_files(pattern)
+end
+
+function scripts.context.purge_job(jobname,all,mkiitoo)
     if jobname and jobname ~= "" then
         jobname = file.basename(jobname)
         local filebase = file.removesuffix(jobname)
-        local deleted = { }
-        for i=1,#obsolete_results do
-            deleted[#deleted+1] = purge_file(filebase.."."..obsolete_results[i],filebase..".pdf")
-        end
-        for i=1,#temporary_runfiles do
-            deleted[#deleted+1] = purge_file(filebase.."."..temporary_runfiles[i])
-        end
-        if all then
-            for i=1,#persistent_runfiles do
-                deleted[#deleted+1] = purge_file(filebase.."."..persistent_runfiles[i])
+        if mkiitoo then
+            scripts.context.purge(all,filebase,true) -- leading "./"
+        else
+            local deleted = { }
+            for i=1,#obsolete_results do
+                deleted[#deleted+1] = purge_file(filebase.."."..obsolete_results[i],filebase..".pdf")
             end
-        end
-        if #deleted > 0 then
-            logs.simple("purged files: %s", table.concat(deleted,", "))
+            for i=1,#temporary_runfiles do
+                deleted[#deleted+1] = purge_file(filebase.."."..temporary_runfiles[i])
+            end
+            if all then
+                for i=1,#persistent_runfiles do
+                    deleted[#deleted+1] = purge_file(filebase.."."..persistent_runfiles[i])
+                end
+            end
+            if #deleted > 0 then
+                logs.simple("purged files: %s", table.concat(deleted,", "))
+            end
         end
     end
 end
 
-function scripts.context.purge(all)
+function scripts.context.purge(all,pattern,mkiitoo)
     local all = all or environment.argument("all")
-    local pattern = environment.argument("pattern") or "*.*"
+    local pattern = environment.argument("pattern") or (pattern and (pattern.."*")) or "*.*"
     local files = dir.glob(pattern)
     local obsolete = table.tohash(obsolete_results)
     local temporary = table.tohash(temporary_runfiles)
@@ -1159,6 +1181,12 @@ function scripts.context.purge(all)
         local basename = file.basename(name)
         if obsolete[suffix] or temporary[suffix] or persistent[suffix] or generic[basename] then
             deleted[#deleted+1] = purge_file(name)
+        elseif mkiitoo then
+            for i=1,#special_runfiles do
+                if string.find(name,special_runfiles[i]) then
+                    deleted[#deleted+1] = purge_file(name)
+                end
+            end
         end
     end
     if #deleted > 0 then

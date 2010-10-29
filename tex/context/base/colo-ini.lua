@@ -345,24 +345,22 @@ function colors.registerspotcolor(parent, str)
 end
 
 function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
-    local dd, pp, nn = { }, { }, { }
+    local dd, pp, nn, max = { }, { }, { }, 0
     for k,v in gmatch(multispec,"(%a+)=([^%,]*)") do
-        dd[#dd+1] = k
-        pp[#pp+1] = v
-        nn[#nn+1] = k
-        nn[#nn+1] = format("%1.3g",tonumber(v) or 0) -- 0 can't happen
+        max = max + 1
+        dd[max] = k
+        pp[max] = v
+        nn[max] = format("%s_%1.3g",k,tonumber(v) or 0) -- 0 can't happen
     end
---~ v = tonumber(v) * p
-    local nof = #dd
-    if nof > 0 then
+    if max > 0 then
         dd, pp, nn = concat(dd,','), concat(pp,','), concat(nn,'_')
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
         colors.defineprocesscolor(parent,colorspec..","..selfspec,true,true)
         local cp = attributes_list[a_color][parent]
         if cp then
-            do_registerspotcolor(parent, name, cp, "", nof, dd, pp)
-            do_registermultitonecolor(parent, name, cp, "", nof, dd, pp)
-            definecolor(name, register_color(name, 'spot', parent, nof, dd, pp), true)
+            do_registerspotcolor(parent, name, cp, "", max, dd, pp)
+            do_registermultitonecolor(parent, name, cp, "", max, dd, pp)
+            definecolor(name, register_color(name, 'spot', parent, max, dd, pp), true)
             local t = settings_to_hash_strict(selfspec)
             if t and t.a and t.t then
                 definetransparent(name, transparencies.register(name,transparent[t.a] or tonumber(t.a) or 1,tonumber(t.t) or 1), global)
@@ -412,7 +410,7 @@ end
 function colors.formatcolor(ca,separator)
     local cv = colors.value(ca)
     if cv then
-        local c, f, t, model = { }, 13, 13, cv[1]
+        local c, cn, f, t, model = { }, 0, 13, 13, cv[1]
         if model == 2 then
             f, t = 2, 2
         elseif model == 3 then
@@ -421,7 +419,8 @@ function colors.formatcolor(ca,separator)
             f, t = 6, 9
         end
         for i=f,t do
-            c[#c+1] = format("%0.3f",cv[i])
+            cn = cn + 1
+            c[cn] = format("%0.3f",cv[i])
         end
         return concat(c,separator)
     else

@@ -34,7 +34,7 @@ function resolvers.splitmethod(filename)
 end
 
 function resolvers.methodhandler(what, filename, filetype) -- ...
-    filename = file.collapse_path(filename)
+    filename = file.collapsepath(filename)
     local specification = (type(filename) == "string" and resolvers.splitmethod(filename)) or filename -- no or { }, let it bomb
     local scheme = specification.scheme
     local resolver = resolvers[what]

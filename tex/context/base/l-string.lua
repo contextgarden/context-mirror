@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['l-string'] = {
 
 local string = string
 local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
-local lpegmatch = lpeg.match
+local lpegmatch, S, C, Ct = lpeg.match, lpeg.S, lpeg.C, lpeg.Ct
 
 -- some functions may disappear as they are not used anywhere
 
@@ -16,156 +16,74 @@ if not string.split then
 
     -- this will be overloaded by a faster lpeg variant
 
-    function string:split(pattern)
-        if #self > 0 then
-            local t = { }
-            for s in gmatch(self..pattern,"(.-)"..pattern) do
-                t[#t+1] = s
+    function string.split(str,pattern)
+        local t = { }
+        if #str > 0 then
+            local n = 1
+            for s in gmatch(str..pattern,"(.-)"..pattern) do
+                t[n] = s
+                n = n + 1
             end
-            return t
-        else
-            return { }
         end
+        return t
     end
 
 end
 
-string.patterns = { }
-
-local escapes = {
-    ["%"] = "%%",
-    ["."] = "%.",
-    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
-    ["^"] = "%^", ["$"] = "%$",
-    ["["] = "%[", ["]"] = "%]",
-    ["("] = "%(", [")"] = "%)",
-    ["{"] = "%{", ["}"] = "%}"
-}
-
-string.patterns.escapes = escapes
-
-function string:esc() -- variant 2
-    return (gsub(self,"(.)",escapes))
+function string.unquoted(str)
+    return (gsub(str,"^([\"\'])(.*)%1$","%2"))
 end
 
-function string:unquote()
-    return (gsub(self,"^([\"\'])(.*)%1$","%2"))
-end
-
---~ function string:unquote()
---~     if find(self,"^[\'\"]") then
---~         return sub(self,2,-2)
+--~ function stringunquoted(str)
+--~     if find(str,"^[\'\"]") then
+--~         return sub(str,2,-2)
 --~     else
---~         return self
+--~         return str
 --~     end
 --~ end
 
-function string:quote() -- we could use format("%q")
-    return format("%q",self)
+function string.quoted(str)
+    return format("%q",str) -- always "
 end
 
-function string:count(pattern) -- variant 3
+function string.count(str,pattern) -- variant 3
     local n = 0
-    for _ in gmatch(self,pattern) do
+    for _ in gmatch(str,pattern) do -- not for utf
         n = n + 1
     end
     return n
 end
 
-function string:limit(n,sentinel)
-    if #self > n then
+function string.limit(str,n,sentinel)
+    if #str > n then
         sentinel = sentinel or " ..."
-        return sub(self,1,(n-#sentinel)) .. sentinel
+        return sub(str,1,(n-#sentinel)) .. sentinel
     else
-        return self
+        return str
     end
 end
 
---~ function string:strip() -- the .- is quite efficient
---~  -- return match(self,"^%s*(.-)%s*$") or ""
---~  -- return match(self,'^%s*(.*%S)') or '' -- posted on lua list
---~     return find(s,'^%s*$') and '' or match(s,'^%s*(.*%S)')
---~ end
+local space    = S(" \t\v\n")
+local nospace  = 1 - space
+local stripper = space^0 * C((space^0 * nospace^1)^0) -- roberto's code
 
-do -- roberto's variant:
-    local space    = lpeg.S(" \t\v\n")
-    local nospace  = 1 - space
-    local stripper = space^0 * lpeg.C((space^0 * nospace^1)^0)
-    function string.strip(str)
-        return lpegmatch(stripper,str) or ""
-    end
+function string.strip(str)
+    return lpegmatch(stripper,str) or ""
 end
 
-function string:is_empty()
-    return not find(self,"%S")
+function string.is_empty(str)
+    return not find(str,"%S")
 end
-
-function string:enhance(pattern,action)
-    local ok, n = true, 0
-    while ok do
-        ok = false
-        self = gsub(self,pattern, function(...)
-            ok, n = true, n + 1
-            return action(...)
-        end)
-    end
-    return self, n
-end
-
-if not string.characters then
-
-    local function nextchar(str, index)
-        index = index + 1
-        return (index <= #str) and index or nil, sub(str,index,index)
-    end
-    function string:characters()
-        return nextchar, self, 0
-    end
-    local function nextbyte(str, index)
-        index = index + 1
-        return (index <= #str) and index or nil, byte(sub(str,index,index))
-    end
-    function string:bytes()
-        return nextbyte, self, 0
-    end
-
-end
-
-function string:rpadd(n,chr)
-    local m = n-#self
-    if m > 0 then
-        return self .. rep(chr or " ",m)
-    else
-        return self
-    end
-end
-
-function string:lpadd(n,chr)
-    local m = n-#self
-    if m > 0 then
-        return rep(chr or " ",m) .. self
-    else
-        return self
-    end
-end
-
-string.padd = string.rpadd
 
 local patterns_escapes = {
-    ["-"] = "%-",
-    ["."] = "%.",
-    ["+"] = "%+",
-    ["*"] = "%*",
     ["%"] = "%%",
-    ["("] = "%)",
-    [")"] = "%)",
-    ["["] = "%[",
-    ["]"] = "%]",
+    ["."] = "%.",
+    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
+    ["["] = "%[", ["]"] = "%]",
+    ["("] = "%)", [")"] = "%)",
+ -- ["{"] = "%{", ["}"] = "%}"
+ -- ["^"] = "%^", ["$"] = "%$",
 }
-
-function string:escapedpattern()
-    return (gsub(self,".",patterns_escapes))
-end
 
 local simple_escapes = {
     ["-"] = "%-",
@@ -174,22 +92,28 @@ local simple_escapes = {
     ["*"] = ".*",
 }
 
-function string:partialescapedpattern()
-    return (gsub(self,".",simple_escapes))
-end
-
-function string:tohash()
-    local t = { }
-    for s in gmatch(self,"([^, ]+)") do -- lpeg
-        t[s] = true
+function string.escapedpattern(str,simple)
+    if simple then
+        return (gsub(str,".",simple_escapes))
+    else
+        return (gsub(str,".",patterns_escapes))
     end
-    return t
 end
 
-local pattern = lpeg.Ct(lpeg.C(1)^0)
-
-function string:totable()
-    return lpegmatch(pattern,self)
+function string.topattern(str,lowercase,strict)
+    if str == "" then
+        return ".*"
+    else
+        str = gsub(str,".",simple_escapes)
+        if lowercase then
+            str = lower(str)
+        end
+        if strict then
+            return "^" .. str .. "$"
+        else
+            return str
+        end
+    end
 end
 
 --~ local t = {
@@ -204,6 +128,8 @@ end
 --~ for k,v do
 --~     print(string.tabtospace(t[k]))
 --~ end
+
+-- The following functions might end up in another namespace.
 
 function string.tabtospace(str,tab)
     -- we don't handle embedded newlines
@@ -224,27 +150,19 @@ function string.tabtospace(str,tab)
     return str
 end
 
-function string:compactlong() -- strips newlines and leading spaces
-    self = gsub(self,"[\n\r]+ *","")
-    self = gsub(self,"^ *","")
-    return self
+--~ local template = string.striplong([[
+--~   aaaa
+--~   bb
+--~   cccccc
+--~ ]])
+
+function string.striplong(str) -- strips all leading spaces
+    str = gsub(str,"^%s*","")
+    str = gsub(str,"[\n\r]+ *","\n")
+    return str
 end
 
-function string:striplong() -- strips newlines and leading spaces
-    self = gsub(self,"^%s*","")
-    self = gsub(self,"[\n\r]+ *","\n")
-    return self
-end
+-- obsolete names:
 
-function string:topattern(lowercase,strict)
-    if lowercase then
-        self = lower(self)
-    end
-    self = gsub(self,".",simple_escapes)
-    if self == "" then
-        self = ".*"
-    elseif strict then
-        self = "^" .. self .. "$"
-    end
-    return self
-end
+string.quote   = string.quoted
+string.unquote = string.unquoted

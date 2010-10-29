@@ -128,16 +128,17 @@ end
 function xml.collect_tags(root, pattern, nonamespace)
     local collected = xmlapplylpath(root,pattern)
     if collected then
-        local t = { }
+        local t, n = { }, 0
         for c=1,#collected do
             local e = collected[c]
             local ns, tg = e.ns, e.tg
+            n = n + 1
             if nonamespace then
-                t[#t+1] = tg
+                t[n] = tg
             elseif ns == "" then
-                t[#t+1] = tg
+                t[n] = tg
             else
-                t[#t+1] = ns .. ":" .. tg
+                t[n] = ns .. ":" .. tg
             end
         end
         return t
@@ -250,8 +251,10 @@ local function inject_element(root,pattern,whatever,prepend)
                 else
                     be, af = edt, cp
                 end
+                local bn = #be
                 for i=1,#af do
-                    be[#be+1] = af[i]
+                    bn = bn + 1
+                    be[bn] = af[i]
                 end
                 if rri then
                     r.dt[rri].dt = be
@@ -339,11 +342,12 @@ local function stripelement(e,nolines,anywhere)
     local edt = e.dt
     if edt then
         if anywhere then
-            local t = { }
+            local t, n = { }, 0
             for e=1,#edt do
                 local str = edt[e]
                 if type(str) ~= "string" then
-                    t[#t+1] = str
+                    n = n + 1
+                    t[n] = str
                 elseif str ~= "" then
                     -- todo: lpeg for each case
                     if nolines then
@@ -351,7 +355,8 @@ local function stripelement(e,nolines,anywhere)
                     end
                     str = gsub(str,"^%s*(.-)%s*$","%1")
                     if str ~= "" then
-                        t[#t+1] = str
+                        n = n + 1
+                        t[n] = str
                     end
                 end
             end
@@ -378,9 +383,10 @@ local function stripelement(e,nolines,anywhere)
                     end
                 end
             end
-            if #edt > 0 then
+            local nedt = #nedt
+            if nedt > 0 then
                 -- strip end
-                local str = edt[#edt]
+                local str = edt[nedt]
                 if type(str) ~= "string" then
                     -- nothing
                 elseif str == "" then
@@ -393,7 +399,7 @@ local function stripelement(e,nolines,anywhere)
                     if str == "" then
                         remove(edt)
                     else
-                        edt[#edt] = str
+                        edt[nedt] = str
                     end
                 end
             end

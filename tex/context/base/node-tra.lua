@@ -515,7 +515,7 @@ end
 --~     else
 --~         t[#t+1] = format("[%s]",node_type(last_id) or "?")
 --~     end
---~     return table.concat(table.reverse(t)," ")
+--~     return table.concat(table.reversed(t)," ")
 --~ end
 
 
@@ -631,7 +631,7 @@ end
 -- might move elsewhere
 
 local factor   = number.dimenfactors.pt
-local stripper = lpeg.patterns.strip_zeros
+local stripper = lpeg.patterns.stripzeros
 
 local points = function(n)
     return lpegmatch(stripper,format("%.5fpt",n*factor))

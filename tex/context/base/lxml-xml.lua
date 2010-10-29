@@ -26,15 +26,18 @@ local function all(collected)
     return collected
 end
 
-local function reverse(collected)
-    if collected then
-        local reversed = { }
-        for c=#collected,1,-1 do
-            reversed[#reversed+1] = collected[c]
-        end
-        return reversed
-    end
-end
+--~ local function reverse(collected)
+--~     if collected then
+--~         local reversed, r = { }, 0
+--~         for c=#collected,1,-1 do
+--~             r = r + 1
+--~             reversed[r] = collected[c]
+--~         end
+--~         return reversed
+--~     end
+--~ end
+
+local reverse = table.reversed
 
 local function attribute(collected,name)
     if collected and #collected > 0 then
@@ -125,11 +128,12 @@ end
 
 local function texts(collected)
     if collected then
-        local t = { }
+        local t, n = { }, 0
         for c=1,#collected do
             local e = collection[c]
             if e and e.dt then
-                t[#t+1] = e.dt
+                n = n + 1
+                t[n] = e.dt
             end
         end
         return t
@@ -172,14 +176,15 @@ end
 
 local function tags(collected,nonamespace)
     if collected then
-        local t = { }
+        local t, n = { }, 0
         for c=1,#collected do
             local e = collected[c]
             local ns, tg = e.ns, e.tg
+            n = n + 1
             if nonamespace or ns == "" then
-                t[#t+1] = tg
+                t[n] = tg
             else
-                t[#t+1] = ns .. ":" .. tg
+                t[n] = ns .. ":" .. tg
             end
         end
         return t

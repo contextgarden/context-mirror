@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 
 local next, type = next, type
 local texwrite, texcount = tex.write, tex.count
-local format, gmatch, concat, remove = string.format, string.gmatch, table.concat, table.remove
+local format, gmatch = string.format, string.gmatch
+local equal, concat, remove = table.are_equal, table.concat, table.remove
 local utfchar = utf.char
 local lpegmatch = lpeg.match
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
@@ -44,7 +45,7 @@ local function filtercollected(names,criterium,number,collected,prevmode)
     if not criterium or criterium == "" then criterium = variables.all end
     local data = documents.data
     local numbers, depth = data.numbers, data.depth
-    local hash, result, all, detail = { }, { }, not names or names == "" or names == variables.all, nil
+    local hash, result, nofresult, all, detail = { }, { }, 0, not names or names == "" or names == variables.all, nil
     if not all then
         for s in gmatch(names,"[^, ]+") do
             hash[s] = true
@@ -54,11 +55,13 @@ local function filtercollected(names,criterium,number,collected,prevmode)
         for i=1,#collected do
             local v = collected[i]
             if all then
-                result[#result+1] = v
+                nofresult = nofresult + 1
+                result[nofresult] = v
             else
                 local vmn = v.metadata and v.metadata.name
                 if hash[vmn] then
-                    result[#result+1] = v
+                    nofresult = nofresult + 1
+                    result[nofresult] = v
                 end
             end
         end
@@ -78,7 +81,8 @@ local function filtercollected(names,criterium,number,collected,prevmode)
                             end
                         end
                         if ok then
-                            result[#result+1] = v
+                            nofresult = nofresult + 1
+                            result[nofresult] = v
                         end
                     end
                 else
@@ -92,7 +96,8 @@ local function filtercollected(names,criterium,number,collected,prevmode)
                             end
                         end
                         if ok then
-                            result[#result+1] = v
+                            nofresult = nofresult + 1
+                            result[nofresult] = v
                         end
                     end
                 end
@@ -123,7 +128,8 @@ local function filtercollected(names,criterium,number,collected,prevmode)
                         end
                     end
                     if ok then
-                        result[#result+1] = v
+                        nofresult = nofresult + 1
+                        result[nofresult] = v
                     end
                 end
             end
@@ -152,7 +158,8 @@ local function filtercollected(names,criterium,number,collected,prevmode)
                         local cnumbers = sectionnumber.numbers
                         if cnumbers then
                             if (all or hash[metadata.name or false]) and #cnumbers >= depth and matchingtilldepth(depth,cnumbers) then
-                                result[#result+1] = v
+                                nofresult = nofresult + 1
+                                result[nofresult] = v
                             end
                         end
                     end
@@ -394,13 +401,15 @@ local function crosslinkseewords(result) -- all words
                 local seeparent = seeparents[text]
                 if seeparent then
                     local seeindex = seewords[text]
-                    local s, d, w, l = { }, data.split, seeparent.split, data.list
+                    local s, ns, d, w, l = { }, 0, data.split, seeparent.split, data.list
                     -- trick: we influence sorting by adding fake subentries
                     for i=1,#d do
-                        s[#s+1] = d[i] -- parent
+                        ns = ns + 1
+                        s[ns] = d[i] -- parent
                     end
                     for i=1,#w do
-                        s[#s+1] = w[i] -- see
+                        ns = ns + 1
+                        s[ns] = w[i] -- see
                     end
                     data.split = s
                     -- we also register a fake extra list entry so that the
@@ -415,7 +424,6 @@ local function crosslinkseewords(result) -- all words
         end
     end
 end
-
 
 local function removeemptyentries(result)
     local i, n, m = 1, #result, 0
@@ -465,53 +473,61 @@ function registers.sort(data,options)
 end
 
 function registers.unique(data,options)
-    local result, prev, equal = { }, nil, table.are_equal
+    local result, nofresult, prev = { }, 0, nil
     local dataresult = data.result
     for k=1,#dataresult do
         local v = dataresult[k]
-        if not prev then
-            result[#result+1], prev = v, v
-        else
+        if prev then
             local pr, vr = prev.references, v.references
             if not equal(prev.list,v.list) then
-                result[#result+1], prev = v, v
+                -- ok
             elseif pr.realpage ~= vr.realpage then
-                result[#result+1], prev = v, v
+                -- ok
             else
                 local pl, vl = pr.lastrealpage, vr.lastrealpage
                 if pl or vl then
                     if not vl then
-                        result[#result+1], prev = v, v
+                        -- ok
                     elseif not pl then
-                        result[#result+1], prev = v, v
+                        -- ok
                     elseif pl ~= vl then
-                        result[#result+1], prev = v, v
+                        -- ok
+                    else
+                        v = nil
                     end
+                else
+                    v = nil
                 end
             end
+        end
+        if v then
+            nofresult = nofresult + 1
+            result[nofresult] = v
+            prev = v
         end
     end
     data.result = result
 end
 
-function registers.finalize(data,options)
+function registers.finalize(data,options) -- maps character to index (order)
     local result = data.result
     data.metadata.nofsorted = #result
-    local split, lasttag, s, d = { }, nil, nil, nil
-    -- maps character to index (order)
+    local split, nofsplit, lasttag, done, nofdone = { }, 0, nil, nil, 0
+    local firstofsplit = sorters.firstofsplit
     for k=1,#result do
         local v = result[k]
-        local entry, tag = sorters.firstofsplit(v)
+        local entry, tag = firstofsplit(v)
         if tag ~= lasttag then
             if trace_registers then
                 report_registers("splitting at %s",tag)
             end
-            d = { }
-            s = { tag = tag, data = d }
-            split[#split+1] = s
+            done, nofdone = { }, 0
+            nofsplit = nofsplit + 1
+            split[nofsplit] = { tag = tag, data = done }
             lasttag = tag
         end
-        d[#d+1] = v
+        nofdone = nofdone + 1
+        done[nofdone] = v
     end
     data.result = split
 end
@@ -576,19 +592,6 @@ local function pagenumber(entry,prefixspec,pagespec)
     )
 end
 
--- local usedtags = { }
--- for i=1,#result do
---     usedtags[#usedtags+1] = result[i].tag
--- end
--- context.setvalue("usedregistertags",concat(usedtags,",")) -- todo: { } and escape special chars
-
---~ local function remove(pages,i) -- todo: use table.remove(pages,i)
---~     for j=i,#pages-1 do
---~         pages[j] = pages[j+1]
---~     end
---~     pages[#pages] = nil
---~ end
-
 local function collapsedpage(pages)
     for i=2,#pages do
         local first, second = pages[i-1], pages[i]
@@ -649,10 +652,10 @@ end
 
 function collapsepages(pages)
     while collapsedpage(pages) do end
+    return #pages
 end
 
 function registers.flush(data,options,prefixspec,pagespec)
-    local equal = table.are_equal
     local collapse_singles = options.compress == variables.yes
     local collapse_ranges  = options.compress == variables.all
     local result = data.result
@@ -716,7 +719,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                 if collapse_singles or collapse_ranges then
                     -- we collapse ranges and keep existing ranges as they are
                     -- so we get prebuilt as well as built ranges
-                    local first, last, prev, pages, dd = entry, nil, entry, { }, d
+                    local first, last, prev, pages, dd, nofpages = entry, nil, entry, { }, d, 0
                     while dd < #data do
                         dd = dd + 1
                         local next = data[dd]
@@ -730,28 +733,32 @@ function registers.flush(data,options,prefixspec,pagespec)
                             --~ first = nil
                                 break
                             elseif next.references.lastrealpage then
-                                pages[#pages+1] = first and { first, last or first } or { entry, entry }
-                                pages[#pages+1] = { next, next }
+                                nofpages = nofpages + 1
+                                pages[nofpages] = first and { first, last or first } or { entry, entry }
+                                nofpages = nofpages + 1
+                                pages[nofpages] = { next, next }
                                 first, last, prev = nil, nil, nil
                             elseif not first then
                                 first, prev = next, next
                             elseif next.references.realpage - prev.references.realpage == 1 then -- 1 ?
                                 last, prev = next, next
                             else
-                                pages[#pages+1] = { first, last or first }
+                                nofpages = nofpages + 1
+                                pages[nofpages] = { first, last or first }
                                 first, last, prev = next, nil, next
                             end
                         end
                     end
                     if first then
-                        pages[#pages+1] = { first, last or first }
+                        nofpages = nofpages + 1
+                        pages[nofpages] = { first, last or first }
                     end
-                    if collapse_ranges and #pages > 1 then
-                        collapsepages(pages)
+                    if collapse_ranges and nofpages > 1 then
+                        nofpages = collapsepages(pages)
                     end
-                    if #pages > 0 then -- or 0
+                    if nofpages > 0 then -- or 0
                         d = dd
-                        for p=1,#pages do
+                        for p=1,nofpages do
                             local first, last = pages[p][1], pages[p][2]
                             if first == last then
                                 if first.references.lastrealpage then
@@ -793,9 +800,10 @@ function registers.flush(data,options,prefixspec,pagespec)
                 end
                 context.stopregisterpages()
             elseif kind == 'see' then
-                local t = { }
+                local t, nt = { }, 0
                 while true do
-                    t[#t+1] = entry
+                    nt = nt + 1
+                    t[nt] = entry
                     if d == #data then
                         break
                     else
@@ -810,8 +818,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                     end
                 end
                 context.startregisterseewords()
-                local n = #t
-                for i=1,n do
+                for i=1,nt do
                     local entry = t[i]
                     local processor = entry.processors and entry.processors[1] or ""
                     local seeindex  = entry.references.seeindex or ""

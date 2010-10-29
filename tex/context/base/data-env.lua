@@ -21,7 +21,6 @@ formats['enc']          = 'ENCFONTS'       suffixes['enc']          = { 'enc' }
 formats['fmt']          = 'TEXFORMATS'     suffixes['fmt']          = { 'fmt' }
 formats['map']          = 'TEXFONTMAPS'    suffixes['map']          = { 'map' }
 formats['mp']           = 'MPINPUTS'       suffixes['mp']           = { 'mp' }
-formats['ocp']          = 'OCPINPUTS'      suffixes['ocp']          = { 'ocp' }
 formats['ofm']          = 'OFMFONTS'       suffixes['ofm']          = { 'ofm', 'tfm' }
 formats['otf']          = 'OPENTYPEFONTS'  suffixes['otf']          = { 'otf' }
 formats['opl']          = 'OPLFONTS'       suffixes['opl']          = { 'opl' }

@@ -95,6 +95,8 @@ local protected = {
 
 userdata, thirddata = nil, nil
 
+-- we could have a metatable that automaticaly creates a top level namespace
+
 if not setfenv then
     texio.write_nl("warning: we need to fix setfenv by using 'load in' or '_ENV'")
 end

@@ -160,7 +160,7 @@ end
 -- no need for function anymore as we have more clever code and helpers now
 -- this metatable trickery might as well disappear
 
-os.resolvers = os.resolvers or { }
+os.resolvers = os.resolvers or { } -- will become private
 
 local resolvers = os.resolvers
 

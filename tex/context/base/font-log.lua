@@ -37,12 +37,13 @@ function logger.save(tfmtable,source,specification) -- save file name in spec he
 end
 
 function logger.report(complete)
-    local t = { }
+    local t, n = { }, 0
     for name, used in table.sortedhash(fonts.used) do
+        n = n + 1
         if complete then
-            t[#t+1] = used .. "->" .. file.basename(name)
+            t[n] = used .. "->" .. file.basename(name)
         else
-            t[#t+1] = file.basename(name)
+            t[n] = file.basename(name)
         end
     end
     return t

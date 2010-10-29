@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 local utf = unicode.utf8
 local lower, utfchar = string.lower, utf.char
+local concat = table.concat
 local lpegmatch = lpeg.match
 local P, S, Cs = lpeg.P, lpeg.S, lpeg.Cs
 
@@ -59,6 +60,7 @@ local loaded = { } -- we share lists
 function words.load(tag,filename)
     local fullname = resolvers.findfile(filename,'other text file') or ""
     if fullname ~= "" then
+        report_languages("loading word file '%s'",fullname)
         statistics.starttiming(languages)
         local list = loaded[fullname]
         if not list then
@@ -78,9 +80,13 @@ function words.found(id, str)
     local tag = languages.numbers[id]
     if tag then
         local data = wordsdata[tag]
-        return data and (data[str] or data[lower(str)])
-    else
-        return false
+        if data then
+            if data[str] then
+                return 1
+            elseif data[lower(str)] then
+                return 2
+            end
+        end
     end
 end
 
@@ -89,20 +95,86 @@ end
 
 -- there is an n=1 problem somewhere in nested boxes
 
+--~ local function mark_words(head,whenfound) -- can be optimized and shared
+--~     local current, start, str, language, n, done = head, nil, "", nil, 0, false
+--~     local function action()
+--~         if #str > 0 then
+--~             local f = whenfound(language,str)
+--~             if f then
+--~                 done = true
+--~                 for i=1,n do
+--~                     f(start)
+--~                     start = start.next
+--~                 end
+--~             end
+--~         end
+--~         str, start, n = "", nil, 0
+--~     end
+--~     while current do
+--~         local id = current.id
+--~         if id == glyph_code then
+--~             local a = current.lang
+--~             if a then
+--~                 if a ~= language then
+--~                     if start then
+--~                         action()
+--~                     end
+--~                     language = a
+--~                 end
+--~             elseif start then
+--~                 action()
+--~                 language = a
+--~             end
+--~             local components = current.components
+--~             if components then
+--~                 start = start or current
+--~                 n = n + 1
+--~                 for g in traverse_nodes(components) do
+--~                     str = str .. utfchar(g.char)
+--~                 end
+--~             else
+--~                 local code = current.char
+--~                 local data = chardata[code]
+--~                 if is_letter[data.category] then
+--~                     start = start or current
+--~                     n = n + 1
+--~                     str = str .. utfchar(code) -- slow, maybe str should be a table (and given max)
+--~                 elseif start then
+--~                     action()
+--~                 end
+--~             end
+--~         elseif id == disc_code then
+--~             if n > 0 then
+--~                 n = n + 1
+--~             end
+--~         elseif id == kern_code and current.subtype == kerning_code and start then
+--~             -- ok
+--~         elseif start then
+--~             action()
+--~         end
+--~         current = current.next
+--~     end
+--~     if start then
+--~         action()
+--~     end
+--~     return head, done
+--~ end
+
 local function mark_words(head,whenfound) -- can be optimized and shared
-    local current, start, str, language, n, done = head, nil, "", nil, 0, false
+    local current, language, done = head, nil, nil, 0, false
+    local str, s, nds, n = { }, 0, { }, 0 -- n could also be a table, saves calls
     local function action()
-        if #str > 0 then
-            local f = whenfound(language,str)
-            if f then
+        if s > 0 then
+            local word = concat(str,"",1,s)
+            local mark = whenfound(language,word)
+            if mark then
                 done = true
                 for i=1,n do
-                    f(start)
-                    start = start.next
+                    mark(nds[i])
                 end
             end
         end
-        str, start, n = "", nil, 0
+        n, s = 0, 0
     end
     while current do
         local id = current.id
@@ -110,46 +182,48 @@ local function mark_words(head,whenfound) -- can be optimized and shared
             local a = current.lang
             if a then
                 if a ~= language then
-                    if start then
+                    if s > 0 then
                         action()
                     end
                     language = a
                 end
-            elseif start then
+            elseif s > 0 then
                 action()
                 language = a
             end
             local components = current.components
             if components then
-                start = start or current
                 n = n + 1
+                nds[n] = current
                 for g in traverse_nodes(components) do
-                    str = str .. utfchar(g.char)
+                    s = s + 1
+                    str[s] = utfchar(g.char)
                 end
             else
                 local code = current.char
                 local data = chardata[code]
-                if data.uccode or data.lccode then
---~                 if is_letter[code] then -- why does this fail
-                    start = start or current
+                if is_letter[data.category] then
                     n = n + 1
-                    str = str .. utfchar(code) -- slow, maybe str should be a table
-                elseif start then
+                    nds[n] = current
+                    s = s + 1
+                    str[s] = utfchar(code)
+                elseif s > 0 then
                     action()
                 end
             end
-        elseif id == disc_code then
+        elseif id == disc_code then -- take the replace
             if n > 0 then
                 n = n + 1
+                nds[n] = current
             end
-        elseif id == kern_code and current.subtype == kerning_code and start then
+        elseif id == kern_code and current.subtype == kerning_code and s > 0 then
             -- ok
-        elseif start then
+        elseif s > 0 then
             action()
         end
         current = current.next
     end
-    if start then
+    if s > 0 then
         action()
     end
     return head, done
@@ -192,7 +266,9 @@ local cache = { } -- can also be done with method 1 -- frozen colors once used
 setmetatable(cache, {
     __index = function(t,k) -- k == language, numbers[k] == tag
         local c
-        if k < 0 then
+        if type(k) == "string" then
+            c = colist[k]
+        elseif k < 0 then
             c = colist["word:unset"]
         else
             c = colist["word:" .. (numbers[k] or "unset")] or colist["word:unknown"]

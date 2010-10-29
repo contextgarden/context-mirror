@@ -552,11 +552,12 @@ function exporters.lists.generic(data)
     end
     if numberdata then
         local numbers = numberdata.numbers
-        local t = { }
+        local t, tn = { }, 0
         for i=1,#numbers do
             local n = numbers[i]
             if n ~= 0 then
-                t[#t+1] = n
+                tn = tn + 1
+                t[tn] = n
             end
         end
         useddata.number = concat(t,".")
@@ -1162,21 +1163,23 @@ function references.setinternalreference(prefix,tag,internal,view)
     if innermethod == "page" then
         return unsetvalue
     else
-        local t = { } -- maybe add to current
+        local t, tn = { }, 0 -- maybe add to current
         if tag then
             if prefix and prefix ~= "" then
                 prefix = prefix .. ":"
                 for ref in gmatch(tag,"[^,]+") do
-                    t[#t+1] = prefix .. ref
+                    tn = tn + 1
+                    t[tn] = prefix .. ref
                 end
             else
                 for ref in gmatch(tag,"[^,]+") do
-                    t[#t+1] = ref
+                    tn = tn + 1
+                    t[tn] = ref
                 end
             end
         end
         if internal and innermethod == "names" then -- mixed or page
-            t[#t+1] = "aut:" .. internal
+            t[tn] = "aut:" .. internal
         end
         local destination = references.mark(t,nil,nil,view) -- returns an attribute
         texcount.lastdestinationattribute = destination

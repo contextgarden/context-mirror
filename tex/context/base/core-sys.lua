@@ -20,5 +20,6 @@ function commands.updatefilenames(inputfilename,outputfilename)
 end
 
 statistics.register("result saved in file", function()
+    -- suffix will be fetched from backend
     return string.format( "%s.%s", environment.outputfilename, (tex.pdfoutput>0 and "pdf") or "dvi")
 end)

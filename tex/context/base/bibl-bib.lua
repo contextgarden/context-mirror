@@ -198,12 +198,12 @@ function bibtex.toxml(session,options)
     -- we can always speed this up if needed
     -- format slows down things a bit but who cares
     statistics.starttiming(bibtex)
-    local result = { }
+    local result, r = { }, 0
     local options = settings_to_hash(options)
     local convert = options.convert -- todo: interface
     local strip = options.strip -- todo: interface
     local entries = session.entries
-    result[#result+1] = format("<?xml version='1.0' standalone='yes'?>")
+    r = r + 1 ; result[r] = format("<?xml version='1.0' standalone='yes'?>")
     result[#result+1] = format("<bibtex>")
     for id, categories in next, session.data do
         id = lower(gsub(id,"^@",""))
@@ -223,14 +223,14 @@ function bibtex.toxml(session,options)
                             -- kind of hackery ... bibtex databases are quite unportable
                             value = lpegmatch(filter,value) or value
                         end
-                        result[#result+1] = format(" <field name='%s'>%s</field>",key,value)
+                        r = r + 1 ; result[r] = format(" <field name='%s'>%s</field>",key,value)
                     end
                 end
-                result[#result+1] = format("</entry>")
+                r = r + 1 ; result[r] = format("</entry>")
             end
         end
     end
-    result[#result+1] = format("</bibtex>")
+    r = r + 1 ; result[r] = format("</bibtex>")
     result = concat(result,"\n")
     -- alternatively we could use lxml.convert
     session.xml = xml.convert(result, {

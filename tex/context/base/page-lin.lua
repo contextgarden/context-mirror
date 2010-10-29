@@ -257,9 +257,10 @@ end
 function boxed.stage_two(n,m)
     if #current_list > 0 then
         m = m or lines.scratchbox
-        local t, i = { }, 0
+        local t, tn = { }, 0
         for l in traverse_id(hlist_code,texbox[m].list) do
-            t[#t+1] = copy_node(l)
+            tn = tn + 1
+            t[tn] = copy_node(l)
         end
         for i=1,#current_list do
             local li = current_list[i]

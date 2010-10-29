@@ -1,4 +1,14 @@
+if not modules then modules = { } end modules ['mtx-unzip'] = {
+    version   = 1.001,
+    comment   = "companion to mtxrun.lua",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
 -- maybe --pattern
+
+local format = string.format
 
 logs.extendbanner("Simple Unzipper 0.10")
 
@@ -36,10 +46,13 @@ function scripts.unzipper.list()
             if #k.filename > n then n = #k.filename end
         end
         local files, paths, compressed, uncompressed = 0, 0, 0, 0
+        local template_a =   "%-"..n.."s"
+        local template_b =   "%-"..n.."s  % 9i  % 9i"
+        local template_c = "\n%-"..n.."s  % 9i  % 9i"
         for k in zipfile:files() do
             if k.filename:find("/$") then
                 paths = paths + 1
-                print(string.format("%s", k.filename:rpadd(n," ")))
+                print(format(template_a, k.filename))
             else
                 files = files + 1
                 local cs, us = k.compressed_size, k.uncompressed_size
@@ -49,10 +62,10 @@ function scripts.unzipper.list()
                 if us > uncompressed then
                     uncompressed = us
                 end
-                print(string.format("%s  % 9i  % 9i", k.filename:rpadd(n," "),cs,us))
+                print(format(template_b,k.filename,cs,us))
             end
-        end
-        print(string.format("\n%s  % 9i  % 9i", (files .. " files, " .. paths .. " directories"):rpadd(n," "),compressed,uncompressed))
+        end -- check following pattern, n is not enough
+        print(format(template_c,files .. " files, " .. paths .. " directories",compressed,uncompressed))
     end
 end
 

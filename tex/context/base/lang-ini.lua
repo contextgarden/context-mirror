@@ -292,16 +292,17 @@ end
 languages.logger = languages.logger or { }
 
 function languages.logger.report()
-    local result = { }
+    local result, r = { }, 0
     local sorted = table.sortedkeys(registered)
     for i=1,#sorted do
         local tag = sorted[i]
         local l = registered[tag]
         if l.loaded then
-            result[#result+1] = format("%s:%s:%s", tag, l.parent, l.number)
+            r = r + 1
+            result[r] = format("%s:%s:%s", tag, l.parent, l.number)
         end
     end
-    return (#result > 0 and concat(result," ")) or "none"
+    return (r > 0 and concat(result," ")) or "none"
 end
 
 -- must happen at the tex end

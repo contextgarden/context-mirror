@@ -268,9 +268,10 @@ end)
 
 local tracedwriter = function(...)
     nofwriters = nofwriters + 1
-    local t, f = { "w : " }, flush
+    local t, f, n = { "w : " }, flush, 0
     flush = function(...)
-        t[#t+1] = concat({...},"",2)
+        n = n + 1
+        t[n] = concat({...},"",2)
         normalflush(...)
     end
     normalwriter(...)
@@ -411,9 +412,10 @@ local nested = { } context.nested = nested
 
 local function indexer(t,k)
     local f = function(...)
-        local t, savedflush = { }, flush
+        local t, savedflush, n = { }, flush, 0
         flush = function(c,f,s,...) -- catcodes are ignored
-            t[#t+1] = s and concat{f,s,...} or f -- optimized for #args == 1
+            n = n + 1
+            t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
         end
         context[k](...)
         flush = savedflush
@@ -424,9 +426,10 @@ local function indexer(t,k)
 end
 
 local function caller(t,...)
-    local t, savedflush = { }, flush
+    local t, savedflush, n = { }, flush, 0
     flush = function(c,f,s,...) -- catcodes are ignored
-        t[#t+1] = s and concat{f,s,...} or f -- optimized for #args == 1
+        n = n + 1
+        t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
     end
     context(...)
     flush = savedflush

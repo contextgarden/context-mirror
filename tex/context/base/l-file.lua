@@ -159,7 +159,7 @@ end
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
 
--- todo: lpeg
+-- todo: lpeg \\ / .. does not save much
 
 local checkedsplit = string.checkedsplit
 
@@ -174,7 +174,7 @@ end
 
 -- we can hash them weakly
 
---~ function file.old_collapse_path(str) -- fails on b.c/..
+--~ function file.collapsepath(str) -- fails on b.c/..
 --~     str = gsub(str,"\\","/")
 --~     if find(str,"/") then
 --~         str = gsub(str,"^%./",(gsub(getcurrentdir(),"\\","/")) .. "/") -- ./xx in qualified
@@ -198,7 +198,7 @@ end
 --~ Of course there are some optimizations too. Finally we had to deal with
 --~ windows drive prefixes and thinsg like sys://.
 
-function file.collapse_path(str,anchor)
+function file.collapsepath(str,anchor)
     if anchor and not find(str,"^/") and not find(str,"^%a:") then
         str = getcurrentdir() .. "/" .. str
     end
@@ -253,8 +253,10 @@ function file.collapse_path(str,anchor)
     end
 end
 
+file.collapse_path = file.collapsepath
+
 --~ local function test(str)
---~    print(string.format("%-20s %-15s %-15s",str,file.collapse_path(str),file.collapse_path(str,true)))
+--~    print(string.format("%-20s %-15s %-15s",str,file.collapsepath(str),file.collapsepath(str,true)))
 --~ end
 --~ test("a/b.c/d") test("b.c/d") test("b.c/..")
 --~ test("/") test("c:/..") test("sys://..")

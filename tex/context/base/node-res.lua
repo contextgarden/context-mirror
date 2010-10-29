@@ -31,10 +31,11 @@ local nodecodes    = nodes.nodecodes
 
 local glyph_code   = nodecodes.glyph
 
-local reserved = { }
+local reserved, nofreserved = { }, 0
 
 local function register_node(n)
-    reserved[#reserved+1] = n
+    nofreserved = nofreserved + 1
+    reserved[nofreserved] = n
     return n
 end
 
@@ -42,8 +43,8 @@ pool.register = register_node
 
 function pool.cleanup(nofboxes) -- todo
     nodes.tracers.steppers.reset() -- todo: make a registration subsystem
-    local nr, nl = #reserved, 0
-    for i=1,nr do
+    local nl, nr = 0, nofreserved
+    for i=1,nofreserved do
         local ri = reserved[i]
     --  if not (ri.id == glue_spec and not ri.is_writable) then
             free_node(reserved[i])
@@ -60,6 +61,7 @@ function pool.cleanup(nofboxes) -- todo
         end
     end
     reserved = { }
+    nofreserved = 0
     return nr, nl, nofboxes -- can be nil
 end
 

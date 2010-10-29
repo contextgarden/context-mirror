@@ -450,17 +450,6 @@ function lxml.mml.stripped(str)
     tex.sprint(ctxcatcodes,str:strip())
 end
 
-function table.keys_as_string(t)
-    local k = { }
-    for k,_ in next, t do
-        k[#k+1] = k
-    end
-    return concat(k,"")
-end
-
---~ local leftdelimiters  = "[" .. table.keys_as_string(l_replacements) .. "]"
---~ local rightdelimiters = "[" .. table.keys_as_string(r_replacements) .. "]"
-
 function characters.remapentity(chr,slot)
     texsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
 end

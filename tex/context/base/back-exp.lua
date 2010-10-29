@@ -740,6 +740,7 @@ end
 local function collapsetree()
     for k, v in next, treehash do
         local d = v[1].data
+        local nd = #d
         for i=2,#v do
             local vi = v[i]
             local vd = vi.data
@@ -753,26 +754,35 @@ local function collapsetree()
                     -- experiment, should be improved
                     -- can be simplified ... lpn instead of done
                     if done then
-                        d[#d+1] = joiner_1
+                        nd = nd + 1
+                        d[nd] = joiner_1
                     else
                         done = true
                         local pn = vi.parnumber
                         if not pn then
-                            d[#d+1], lpn = joiner_2, nil
+                            nd = nd + 1
+                            d[nd] = joiner_2
+                            lpn = nil
                         elseif not lpn then
-                            d[#d+1], lpn = joiner_3, pn
+                            nd = nd + 1
+                            d[nd] = joiner_3
+                            lpn = pn
                         elseif pn and pn ~= lpn then
-                            d[#d+1], lpn = makebreaknode(vi), pn
+                            nd = nd + 1
+                            d[nd] = makebreaknode(vi)
+                            lpn = pn
                         else
-                         -- d[#d+1] = joiner_4 -- we need to be more clever
+                         -- nd = nd + 1
+                         -- d[nd] = joiner_4 -- we need to be more clever
                         end
                     end
                 else
                   -- lpn = nil
                 end
-if vdj ~= "" then
-                d[#d+1] = vdj -- hm, any?
-end
+                if vdj ~= "" then
+                    nd = nd + 1
+                    d[nd] = vdj -- hm, any?
+                end
                 vd[j] = false
             end
             v[i].collapsed = true
@@ -784,19 +794,21 @@ local function prunetree(tree)
     if not tree.collapsed then
         local data = tree.data
         if data then
-            local p = { }
+            local p, np = { }, 0
             for i=1,#data do
                 local d = data[i]
                 if type(d) == "table" then
                     if not d.collapsed then
                         prunetree(d)
-                        p[#p+1] = d
+                        np = np + 1
+                        p[np] = d
                     end
                 elseif type(d) == "string" then
-                    p[#p+1] = d
+                    np = np + 1
+                    p[np] = d
                 end
             end
-            tree.data = #p > 0 and p
+            tree.data = np > 0 and p
         end
     end
 end

@@ -239,13 +239,14 @@ function scripts.chars.makeencoutf()
                         end
                     end
                 end
+                local template = "\\def\\%-".. length .. "s{\\char\"%05X } %% %s: %s\n"
                 for i=1,#list do
                     local code = list[i]
                     if code > 0x5B and code <= 0xFFFF then
                         local chr = data[code]
                         if chr and chr.contextname then
                             local ch = utfchar(code)
-                            f:write(format("\\def\\%s{\\char\"%05X } %% %s: %s\n", chr.contextname:rpadd(length," "), code, chr.description, ch))
+                            f:write(format(template, chr.contextname, code, chr.description, ch))
                         end
                     end
                 end

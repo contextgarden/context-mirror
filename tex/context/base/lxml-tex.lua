@@ -31,6 +31,8 @@ local xmlapplylpath = xml.applylpath
 
 local variables = (interfaces and interfaces.variables) or { }
 
+local insertbeforevalue, insertaftervalue = utilities.tables.insertbeforevalue, utilities.tables.insertaftervalue
+
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 local trace_setups   = false  trackers.register("lxml.setups",   function(v) trace_setups   = v end)
@@ -696,12 +698,12 @@ function lxml.installsetup(what,document,setup,where)
         if trace_loading then
             commands.writestatus("lxml","inserting setup %s for %s before %s",setup,document,where)
         end
-        table.insertbeforevalue(sd,setup,where)
+        insertbeforevalue(sd,setup,where)
     elseif what == 4 then
         if trace_loading then
             commands.writestatus("lxml","inserting setup %s for %s after %s",setup,document,where)
         end
-        table.insertaftervalue(sd,setup,where)
+        insertaftervalue(sd,setup,where)
     end
 end
 
@@ -1450,9 +1452,10 @@ function lxml.toparameters(id)
     if e then
         local a = e.at
         if a and next(a) then
-            local setups = { }
+            local setups, s = { }, 0
             for k, v in next, a do
-                setups[#setups+1] = k .. "=" .. v
+                s = s + 1
+                setups[s] = k .. "=" .. v
             end
             setups = concat(setups,",")
             -- tracing

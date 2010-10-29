@@ -121,6 +121,8 @@ local checkdir = true
 
 -- omkeren class en level -> scheelt functie call in analyze
 
+-- todo: switching inside math
+
 local function processwords(attribute,data,flush,head,parent) -- we have hlistdir and local dir
     local n = head
     if n then

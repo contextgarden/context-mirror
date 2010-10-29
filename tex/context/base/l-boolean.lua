@@ -11,8 +11,12 @@ local type, tonumber = type, tonumber
 boolean = boolean or { }
 local boolean = boolean
 
+-- function boolean.tonumber(b)
+--     return b and 1 or 0 -- test and test and return or return
+-- end
+
 function boolean.tonumber(b)
-    if b then return 1 else return 0 end
+    if b then return 1 else return 0 end -- test and return or return
 end
 
 function toboolean(str,tolerant)
@@ -36,6 +40,8 @@ function toboolean(str,tolerant)
     end
 end
 
+string.toboolean = toboolean
+
 function string.is_boolean(str,default)
     if type(str) == "string" then
         if str == "true" or str == "yes" or str == "on" or str == "t" then
@@ -45,12 +51,4 @@ function string.is_boolean(str,default)
         end
     end
     return default
-end
-
-function boolean.alwaystrue()
-    return true
-end
-
-function boolean.falsetrue()
-    return false
 end

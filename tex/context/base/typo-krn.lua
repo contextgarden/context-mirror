@@ -230,7 +230,7 @@ function kerns.set(factor)
         tasks.enableaction("processors","typesetters.kerns.handler")
         enabled = true
     end
-    if factor > 0 then
+    if factor ~= 0 then
         local a = factors[factor]
         if not a then
             a = #mapping + 1

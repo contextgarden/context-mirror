@@ -107,7 +107,8 @@ function handlers.characters(head)
                     end
                 end
             end
-            prevfont, prevattr = font, attr
+            prevfont = font
+            prevattr = attr
         end
     end
     if trace_fontrun then
@@ -122,11 +123,13 @@ function handlers.characters(head)
         local n = #processors
         if n > 0 then
             local h, d = processors[1](head,font,0)
-            head, done = h or head, done or d
+            head = h or head
+            done = done or d
             if n > 1 then
                 for i=2,n do
                     local h, d = processors[i](head,font,0)
-                    head, done = h or head, done or d
+                    head = h or head
+                    done = done or d
                 end
             end
         end
@@ -134,11 +137,13 @@ function handlers.characters(head)
         for font, processors in next, usedfonts do
             local n = #processors
             local h, d = processors[1](head,font,0)
-            head, done = h or head, done or d
+            head = h or head
+            done = done or d
             if n > 1 then
                 for i=2,n do
                     local h, d = processors[i](head,font,0)
-                    head, done = h or head, done or d
+                    head = h or head
+                    done = done or d
                 end
             end
         end
@@ -148,11 +153,13 @@ function handlers.characters(head)
         for attribute, processors in next, dynamics do -- attr can switch in between
             local n = #processors
             local h, d = processors[1](head,font,attribute)
-            head, done = h or head, done or d
+            head = h or head
+            done = done or d
             if n > 1 then
                 for i=2,n do
                     local h, d = processors[i](head,font,attribute)
-                    head, done = h or head, done or d
+                    head = h or head
+                    done = done or d
                 end
             end
         end
@@ -161,11 +168,13 @@ function handlers.characters(head)
             for attribute, processors in next, dynamics do -- attr can switch in between
                 local n = #processors
                 local h, d = processors[1](head,font,attribute)
-                head, done = h or head, done or d
+                head = h or head
+                done = done or d
                 if n > 1 then
                     for i=2,n do
                         local h, d = processors[i](head,font,attribute)
-                        head, done = h or head, done or d
+                        head = h or head
+                        done = done or d
                     end
                 end
             end

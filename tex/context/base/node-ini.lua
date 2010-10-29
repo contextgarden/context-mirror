@@ -232,7 +232,8 @@ local function remove(head, current, free_too)
             free_node(t)
             t = nil
         else
-            t.next, t.prev = nil, nil
+            t.next = nil
+            t.prev = nil
         end
    end
    return head, current, t
@@ -295,10 +296,12 @@ function nodes.replace(head,current,new) -- no head returned if false
     end
     local prev, next = current.prev, current.next
     if next then
-        new.next, next.prev = next, new
+        new.next = next
+        next.prev = new
     end
     if prev then
-        new.prev, prev.next = prev, new
+        new.prev = prev
+        prev.next = new
     end
     if head then
         if head == current then

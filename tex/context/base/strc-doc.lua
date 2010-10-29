@@ -725,57 +725,7 @@ function sections.fullnumber(depth,what)
     end
 end
 
---~ function sections.directnumber(depth,what)
---~     local sectiondata = sections.findnumber(depth,what)
---~     return sectiondata and sections.typesetnumber(sectiondata,'direct',sectiondata) or ""
---~ end
-
 function sections.getnumber(depth,what) -- redefined here
     local sectiondata = sections.findnumber(depth,what)
     texwrite((sectiondata and sectiondata.numbers[depth]) or 0)
 end
-
---~             local done, preceding = false, false
---~             local function process(index,result) -- move to outer
---~                 -- todo: too much (100 steps)
---~                 local number = numbers and (numbers[index] or 0)
---~                 local ownnumber = ownnumbers and ownnumbers[index] or ""
---~                 if number > criterium or (ownnumber ~= "") then
---~                     local block = (entry.block ~= "" and entry.block) or sections.currentblock() -- added
---~                     if preceding then
---~                         local separator = sets.get("structure:separators",block,separatorset,preceding,".")
---~                         if separator then
---~                             if result then
---~                                 result[#result+1] = ignoreprocessor(separator)
---~                             else
---~                                 sprintprocessor(ctxcatcodes,separator)
---~                             end
---~                         end
---~                         preceding = false
---~                     end
---~                     if result then
---~                         if ownnumber ~= "" then
---~                             result[#result+1] = ownnumber
---~                         elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
---~                             result[#result+1] = converters.convert(conversion,number,true)
---~                         else
---~                             local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
---~                             result[#result+1] = converters.convert(theconversion,number,true)
---~                         end
---~                     else
---~                         if ownnumber ~= "" then
---~                             sprintprocessor(ctxcatcodes,ownnumber)
---~                         elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
---~                             context.convertnumber(conversion,number)
---~                         else
---~                             local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
---~                             sprintprocessor(ctxcatcodes,theconversion,function(str)
---~                                 return format("\\convertnumber{%s}{%s}",str or "numbers",number)
---~                             end)
---~                         end
---~                     end
---~                     preceding, done = index, true
---~                 else
---~                     preceding = preceding or false
---~                 end
---~             end

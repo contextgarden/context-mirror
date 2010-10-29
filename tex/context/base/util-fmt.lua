@@ -35,9 +35,9 @@ local stripper      = Cs((number + 1)^0)
 --~ lpegmatch(stripper,str)
 --~ print(#str, os.clock()-ts, lpegmatch(stripper,sample))
 
-lpeg.patterns.strip_zeros = stripper
+lpeg.patterns.stripzeros = stripper
 
-function formatters.strip_zeros(str)
+function formatters.stripzeros(str)
     return lpegmatch(stripper,str)
 end
 

@@ -27,6 +27,7 @@ local utfbyte, utffind, utfgsub = utf.byte, utf.find, utf.gsub
 local type, next = type, next
 local huge = math.huge
 local byte, sub, find, char, gsub, rep, lower, format, gmatch, match, count = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format, string.gmatch, string.match, string.count
+local splitlines, escapedpattern = string.splitlines, string.escapedpattern
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
@@ -92,7 +93,7 @@ function buffers.grab(name,begintag,endtag,bufferdata)
         end
         dn = gsub(dn,"[\010\013]$","")
         if flags.storeastable then
-            dn = dn:splitlines()
+            dn = splitlines(dn)
         end
     end
     data[name] = dn
@@ -178,7 +179,7 @@ function buffers.range(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
         else
             for i=first,last do
                 if find(lines[i],r_first) then
-                    first, strip = i + 1
+                    first = i + 1
                     break
                 end
             end
@@ -212,7 +213,7 @@ function buffers.type(name,realign,range)
     local action = buffers.typeline
     if lines then
         if type(lines) == "string" then
-            lines = lines:splitlines()
+            lines = splitlines(lines)
             data[name] = lines
         end
         if realign then
@@ -260,7 +261,7 @@ function buffers.typefile(name,realign,range,regime) -- still somewhat messy, si
         str = regimes.translate(str,regime)
     end
     if str and str~= "" then
-        local lines = str:splitlines()
+        local lines = splitlines(str)
         if realign then
             lines = buffers.realign(lines,realign)
         end
@@ -384,11 +385,12 @@ function buffers.collect(names,separator) -- no print
     if type(names) == "string" then
         names = settings_to_array(names)
     end
-    local t = { }
+    local t, n = { }, 0
     for i=1,#names do
         local c = content(names[i],separator)
         if c ~= "" then
-            t[#t+1] = c
+            n = n + 1
+            t[n] = c
         end
     end
     return concat(t,separator or "\r") -- "\n" is safer due to comments and such
@@ -397,7 +399,7 @@ end
 function buffers.feedback(names,separator)
     -- don't change the texprint into texsprint as it fails on mp buffers
     -- because (p<nl>enddef) becomes penddef then
-    texprint(ctxcatcodes,string.splitlines(buffers.collect(names,separator)))
+    texprint(ctxcatcodes,splitlines(buffers.collect(names,separator)))
 end
 
 local function tobyte(c)
@@ -689,7 +691,7 @@ function buffers.realign(name,forced_n) -- no, auto, <number>
     if type(name) == "string" then
         d = data[name]
         if type(d) == "string" then
-            d = d:splitlines()
+            d = splitlines(d)
         end
     else
         d = name -- already a buffer
@@ -760,7 +762,7 @@ function buffers.setescapepair(name,pair)
                 start, stop = "/BTEX", "/ETEX"
             else
                 pair = string.split(pair,",")
-                start, stop = string.esc(pair[1] or ""), string.esc(pair[2] or "")
+                start, stop = escapedpattern(pair[1] or ""), escapedpattern(pair[2] or "")
             end
             if start ~= "" then
                 local pattern

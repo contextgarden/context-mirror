@@ -126,9 +126,11 @@ function mkiv.tolist(t)
     for i=1,#t do
         r[i] = t[i]
     end
+    local n = #r
     for k,v in table.sortedhash(t) do
         if type(k) ~= "number" then
-            r[#r+1] = k .. "=" .. v
+            n = n + 1
+            r[n] = k .. "=" .. v
         end
     end
     return concat(r,", ")

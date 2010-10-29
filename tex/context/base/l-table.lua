@@ -61,24 +61,26 @@ end
 -- extra functions, some might go (when not used)
 
 function table.strip(tab)
-    local lst = { }
+    local lst, l = { }, 0
     for i=1,#tab do
         local s = gsub(tab[i],"^%s*(.-)%s*$","%1")
         if s == "" then
             -- skip this one
         else
-            lst[#lst+1] = s
+            l = l + 1
+            lst[l] = s
         end
     end
     return lst
 end
 
 function table.keys(t)
-    local k = { }
+    local keys, k = { }, 0
     for key, _ in next, t do
-        k[#k+1] = key
+        k = k + 1
+        keys[k] = key
     end
-    return k
+    return keys
 end
 
 local function compare(a,b)
@@ -91,9 +93,10 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
+    local srt, kind, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in next, tab do
-        srt[#srt+1] = key
+        s = s + 1
+        srt[s] = key
         if kind == 3 then
             -- no further check
         else
@@ -116,10 +119,11 @@ local function sortedkeys(tab)
 end
 
 local function sortedhashkeys(tab) -- fast one
-    local srt = { }
+    local srt, s = { }, 0
     for key,_ in next, tab do
         if key then
-            srt[#srt+1] = key
+            s= s + 1
+            srt[s] = key
         end
     end
     sort(srt)
@@ -133,8 +137,7 @@ local function nothing() end
 
 local function sortedhash(t)
     if t then
-        local s = sortedhashkeys(t) -- maybe just sortedkeys
-        local n = 0
+        local n, s = 0, sortedkeys(t) -- the robust one
         local function kv(s)
             n = n + 1
             local k = s[n]
@@ -150,20 +153,30 @@ table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash
 
 function table.append(t, list)
-    for _,v in next, list do
-        insert(t,v)
+    local n = #t
+    for i=1,#list do
+        n = n + 1
+        t[n] = list[i]
     end
+    return t
 end
 
 function table.prepend(t, list)
-    for k,v in next, list do
-        insert(t,k,v)
+    local nl = #list
+    local nt = nl + #t
+    for i=#t,1,-1 do
+        t[nt] = t[i]
+        nt = nt - 1
     end
+    for i=1,#list do
+        t[i] = list[i]
+    end
+    return t
 end
 
 function table.merge(t, ...) -- first one is target
     t = t or { }
-    local lst = {...}
+    local lst = { ... }
     for i=1,#lst do
         for k, v in next, lst[i] do
             t[k] = v
@@ -173,7 +186,7 @@ function table.merge(t, ...) -- first one is target
 end
 
 function table.merged(...)
-    local tmp, lst = { }, {...}
+    local tmp, lst = { }, { ... }
     for i=1,#lst do
         for k, v in next, lst[i] do
             tmp[k] = v
@@ -183,22 +196,24 @@ function table.merged(...)
 end
 
 function table.imerge(t, ...)
-    local lst = {...}
+    local lst, nt = { ... }, #t
     for i=1,#lst do
         local nst = lst[i]
         for j=1,#nst do
-            t[#t+1] = nst[j]
+            nt = nt + 1
+            t[nt] = nst[j]
         end
     end
     return t
 end
 
 function table.imerged(...)
-    local tmp, lst = { }, {...}
+    local tmp, ntmp, lst = { }, 0, {...}
     for i=1,#lst do
         local nst = lst[i]
         for j=1,#nst do
-            tmp[#tmp+1] = nst[j]
+            ntmp = ntmp + 1
+            tmp[ntmp] = nst[j]
         end
     end
     return tmp
@@ -274,11 +289,14 @@ function table.tohash(t,value)
 end
 
 function table.fromhash(t)
-    local h = { }
+    local hsh, h = { }, 0
     for k, v in next, t do -- no ipairs here
-        if v then h[#h+1] = k end
+        if v then
+            h = h + 1
+            hsh[h] = k
+        end
     end
-    return h
+    return hsh
 end
 
 table.serialize_functions = true
@@ -299,20 +317,23 @@ local function simple_table(t)
             n = n + 1
         end
         if n == #t then
-            local tt = { }
+            local tt, nt = { }, 0
             for i=1,#t do
                 local v = t[i]
                 local tv = type(v)
                 if tv == "number" then
+                    nt = nt + 1
                     if hexify then
-                        tt[#tt+1] = format("0x%04X",v)
+                        tt[nt] = format("0x%04X",v)
                     else
-                        tt[#tt+1] = tostring(v) -- tostring not needed
+                        tt[nt] = tostring(v) -- tostring not needed
                     end
                 elseif tv == "boolean" then
-                    tt[#tt+1] = tostring(v)
+                    nt = nt + 1
+                    tt[nt] = tostring(v)
                 elseif tv == "string" then
-                    tt[#tt+1] = format("%q",v)
+                    nt = nt + 1
+                    tt[nt] = format("%q",v)
                 else
                     tt = nil
                     break
@@ -618,10 +639,11 @@ end
 --~ 'return' : return     { }
 --~ number   : [number] = { }
 
-function table.serialize(root,name,reduce,noquotes,hexify)
-    local t = { }
+function table.serialize(root,name,reduce,noquotes,hexify) -- can be faster if flush == false and t as argument
+    local t, n = { }, 0
     local function flush(s)
-        t[#t+1] = s
+        n = n + 1
+        t[n] = s
     end
     serialize(root,name,flush,reduce,noquotes,hexify)
     return concat(t,"\n")
@@ -647,12 +669,13 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     if f then
         local maxtab = table.tofile_maxtab
         if maxtab > 1 then
-            local t = { }
+            local t, n = { }, 0
             local function flush(s)
-                t[#t+1] = s
-                if #t > maxtab then
+                n = n + 1
+                t[n] = s
+                if n > maxtab then
                     f:write(concat(t,"\n"),"\n") -- hm, write(sometable) should be nice
-                    t = { }
+                    t, n = { }, 0 -- we could recycle t if needed
                 end
             end
             serialize(root,name,flush,reduce,noquotes,hexify)
@@ -668,12 +691,51 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     end
 end
 
-local function flatten(t,f,complete) -- is this used? meybe a variant with next, ...
+local function flattened(t,f,depth)
+    if f == nil then
+        f = { }
+        depth = 0xFFFF
+    elseif tonumber(f) then
+        -- assume then only two arguments are given
+        depth = f
+        f = { }
+    elseif not depth then
+        depth = 0xFFFF
+    end
+    for k, v in next, t do
+        if type(k) ~= "number" then
+            if depth > 0 and type(v) == "table" then
+                flattened(v,f,depth-1)
+            else
+                f[k] = v
+            end
+        end
+    end
+    local n = #f
+    for k=1,#t do
+        local v = t[k]
+        if depth > 0 and type(v) == "table" then
+            flattened(v,f,depth-1)
+            n = #f
+        else
+            n = n + 1
+            f[n] = v
+        end
+    end
+    return f
+end
+
+table.flattened = flattened
+
+local function unnest(t,f) -- only used in mk, for old times sake
+    if not f then          -- and only relevant for token lists
+        f = { }
+    end
     for i=1,#t do
         local v = t[i]
         if type(v) == "table" then
-            if complete or type(v[1]) == "table" then
-                flatten(v,f,complete)
+            if type(v[1]) == "table" then
+                unnest(v,f)
             else
                 f[#f+1] = v
             end
@@ -681,39 +743,20 @@ local function flatten(t,f,complete) -- is this used? meybe a variant with next,
             f[#f+1] = v
         end
     end
-end
-
-function table.flatten(t)
-    local f = { }
-    flatten(t,f,true)
     return f
 end
 
 function table.unnest(t) -- bad name
-    local f = { }
-    flatten(t,f,false)
-    return f
+    return unnest(t)
 end
 
-table.flattenonelevel = table.unnest
+--~ function table.unnest(t) -- for old times sake, undocumented (only in mk)
+--~     return flattened(t,1)
+--~ end
 
--- a better one:
-
-local function flattened(t,f)
-    if not f then
-        f = { }
-    end
-    for k, v in next, t do
-        if type(v) == "table" then
-            flattened(v,f)
-        else
-            f[k] = v
-        end
-    end
-    return f
-end
-
-table.flattened = flattened
+--~ function table.are_equal(a,b)
+--~     return table.serialize(a) == table.serialize(b)
+--~ end
 
 local function are_equal(a,b,n,m) -- indexed
     if a and b and #a == #b then
@@ -739,7 +782,7 @@ end
 
 local function identical(a,b) -- assumes same structure
     for ka, va in next, a do
-        local vb = b[k]
+        local vb = b[ka]
         if va == vb then
             -- same
         elseif type(va) == "table" and  type(vb) == "table" then
@@ -753,8 +796,8 @@ local function identical(a,b) -- assumes same structure
     return true
 end
 
-table.are_equal = are_equal
 table.identical = identical
+table.are_equal = are_equal
 
 -- maybe also make a combined one
 
@@ -780,14 +823,14 @@ function table.contains(t, v)
 end
 
 function table.count(t)
-    local n, e = 0, next(t)
-    while e do
-        n, e = n + 1, next(t,e)
+    local n = 0
+    for k, v in next, t do
+        n = n + 1
     end
     return n
 end
 
-function table.swapped(t,s)
+function table.swapped(t,s) -- hash
     local n = { }
     if s then
 --~         for i=1,#s do
@@ -809,55 +852,34 @@ function table.swapped(t,s)
     return n
 end
 
---~ function table.are_equal(a,b)
---~     return table.serialize(a) == table.serialize(b)
---~ end
-
-function table.clone(t,p) -- t is optional or nil or table
-    if not p then
-        t, p = { }, t or { }
-    elseif not t then
-        t = { }
-    end
-    setmetatable(t, { __index = function(_,key) return p[key] end }) -- why not __index = p ?
-    return t
-end
-
-function table.hexed(t,seperator)
-    local tt = { }
-    for i=1,#t do tt[i] = format("0x%04X",t[i]) end
-    return concat(tt,seperator or " ")
-end
-
-function table.swaphash(h) -- needs another name
-    local r = { }
-    for k,v in next, h do
-        r[v] = lower(gsub(k," ",""))
-    end
-    return r
-end
-
-function table.reverse(t)
-    local tt = { }
-    if #t > 0 then
-        for i=#t,1,-1 do
-            tt[#tt+1] = t[i]
+function table.reversed(t)
+    if t then
+        local tt, tn = { }, #t
+        if tn > 0 then
+            local ttn = 0
+            for i=tn,1,-1 do
+                ttn = ttn + 1
+                tt[ttn] = t[i]
+            end
         end
+        return tt
     end
-    return tt
 end
 
 function table.sequenced(t,sep,simple) -- hash only
-    local s = { }
+    local s, n = { }, 0
     for k, v in sortedhash(t) do
         if simple then
             if v == true then
-                s[#s+1] = k
+                n = n + 1
+                s[n] = k
             elseif v and v~= "" then
-                s[#s+1] = k .. "=" .. tostring(v)
+                n = n + 1
+                s[n] = k .. "=" .. tostring(v)
             end
         else
-            s[#s+1] = k .. "=" .. tostring(v)
+            n = n + 1
+            s[n] = k .. "=" .. tostring(v)
         end
     end
     return concat(s, sep or " | ")
@@ -867,7 +889,7 @@ function table.print(...)
     table.tohandle(print,...)
 end
 
--- -- -- obsolete but we keep them for a while and will comment them later -- -- --
+-- -- -- obsolete but we keep them for a while and might comment them later -- -- --
 
 -- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
 
@@ -882,12 +904,5 @@ function table.is_empty(t)
 end
 
 function table.has_one_entry(t)
-    local n = next(t)
-    return n and not next(t,n)
-end
-
-function table.replace(a,b)
-    for k,v in next, b do
-        a[k] = v
-    end
+    return t and not next(t,next(t))
 end

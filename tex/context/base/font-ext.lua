@@ -164,21 +164,6 @@ vectors['default'] = {
 
 vectors['quality'] = vectors['default'] -- metatable ?
 
---~ function table.locator(...)
---~     local k = { ... }
---~     return function(t)
---~         for i=1,#k do
---~             t = t[k[i]]
---~             if not k then
---~                 return false
---~             end
---~         end
---~         return t
---~     end
---~ end
-
---~ local locate = table.locator { "goodies", "expansions" }
-
 function initializers.common.expansion(tfmdata,value)
     if value then
         local class, vector = get_class_and_vector(tfmdata,value,"expansions")

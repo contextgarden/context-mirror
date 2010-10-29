@@ -17,12 +17,13 @@ local packers     = utilities.packers
 packers.version   = 1.00
 
 local function hashed(t)
-    local s = { }
+    local s, ns = { }, 0
     for k, v in next, t do
+        ns = ns + 1
         if type(v) == "table" then
-            s[#s+1] = k .. "={" .. hashed(v) .. "}"
+            s[ns] = k .. "={" .. hashed(v) .. "}"
         else
-            s[#s+1] = k .. "=" .. tostring(v)
+            s[ns] = k .. "=" .. tostring(v)
         end
     end
     sort(s)
@@ -30,9 +31,10 @@ local function hashed(t)
 end
 
 local function simplehashed(t)
-    local s = { }
+    local s, ns = { }, 0
     for k, v in next, t do
-        s[#s+1] = k.. "=" .. v
+        ns = ns + 1
+        s[ns] = k .. "=" .. v
     end
     sort(s)
     return concat(s,",")

@@ -25,7 +25,7 @@ local forcedmodel          = colors.forcedmodel
 -- This module assumes that some functions are defined in the colors namespace
 -- which most likely will be loaded later.
 
-function lpdf.color(model,ca,default) -- todo: use gray when no color
+local function lpdfcolor(model,ca,default) -- todo: use gray when no color
     if colors.supported then
         local cv = colorsvalue(ca)
         if cv then
@@ -55,6 +55,12 @@ function lpdf.color(model,ca,default) -- todo: use gray when no color
     else
         return ""
     end
+end
+
+lpdf.color = lpdfcolor
+
+function lpdf.pdfcolor(attribute) -- bonus, for pgf and friends
+    context(lpdfcolor(1,attribute))
 end
 
 function lpdf.transparency(ct,default) -- kind of overlaps with transparencycode

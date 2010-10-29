@@ -13,6 +13,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 
 local format = string.format
 local clock = os.gettimeofday or os.clock -- should go in environment
+local write_nl = texio.write_nl
 
 statistics       = statistics or { }
 local statistics = statistics
@@ -108,7 +109,7 @@ end
 
 function statistics.show(reporter)
     if statistics.enable then
-        if not reporter then reporter = function(tag,data,n) texio.write_nl(tag .. " " .. data) end end
+        if not reporter then reporter = function(tag,data,n) write_nl(tag .. " " .. data) end end
         -- this code will move
         local register = statistics.register
         register("luatex banner", function()
@@ -131,10 +132,13 @@ function statistics.show(reporter)
                 reporter(s[1],r,n)
             end
         end
-        texio.write_nl("") -- final newline
+        write_nl("") -- final newline
         statistics.enable = false
     end
 end
+
+
+local template, nn = nil, 0 -- we only calcute it once
 
 function statistics.showjobstat(tag,data,n)
     if type(data) == "table" then
@@ -142,7 +146,10 @@ function statistics.showjobstat(tag,data,n)
             statistics.showjobstat(tag,data[i],n)
         end
     else
-        texio.write_nl(format("%-15s: %s - %s","mkiv lua stats",tag:rpadd(n," "),data))
+        if not template or n > nn then
+            template, n = format("%%-%ss: %%-%ss - %%s",15,n), nn
+        end
+        write_nl(format(template,"mkiv lua stats",tag,data))
     end
 end
 

@@ -65,9 +65,13 @@ end
 
 do
 
-    local homedir = osgetenv(ostype == "windows" and 'USERPROFILE' or 'HOME') or '~'
+    local homedir = osgetenv(ostype == "windows" and 'USERPROFILE' or 'HOME') or ''
 
-    homedir = file.collapse_path(homedir)
+    if not homedir or homedir == "" then
+        homedir = string.char(127) -- we need a value, later we wil trigger on it
+    end
+
+    homedir = file.collapsepath(homedir)
 
     ossetenv("HOME",       homedir) -- can be used in unix cnf files
     ossetenv("USERPROFILE",homedir) -- can be used in windows cnf files
@@ -86,8 +90,8 @@ do
     local ownbin  = environment.ownbin  or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
     local ownpath = environment.ownpath or os.selfdir
 
-    ownbin  = file.collapse_path(ownbin)
-    ownpath = file.collapse_path(ownpath)
+    ownbin  = file.collapsepath(ownbin)
+    ownpath = file.collapsepath(ownpath)
 
     if not ownpath or ownpath == "" or ownpath == "unset" then
         ownpath = args[-1] or arg[-1]
@@ -159,9 +163,9 @@ do
     local ownpath = environment.ownpath or dir.current()
 
     if ownpath then
-        ossetenv('SELFAUTOLOC',    file.collapse_path(ownpath))
-        ossetenv('SELFAUTODIR',    file.collapse_path(ownpath .. "/.."))
-        ossetenv('SELFAUTOPARENT', file.collapse_path(ownpath .. "/../.."))
+        ossetenv('SELFAUTOLOC',    file.collapsepath(ownpath))
+        ossetenv('SELFAUTODIR',    file.collapsepath(ownpath .. "/.."))
+        ossetenv('SELFAUTOPARENT', file.collapsepath(ownpath .. "/../.."))
     else
         report_resolvers("error: unable to locate ownpath")
         os.exit()
@@ -197,7 +201,7 @@ if not texroot or texroot == "" then
     ossetenv('TEXROOT',texroot)
 end
 
-environment.texroot = file.collapse_path(texroot)
+environment.texroot = file.collapsepath(texroot)
 
 -- Tracing. Todo ...
 

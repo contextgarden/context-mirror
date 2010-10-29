@@ -178,10 +178,15 @@ local nsdata, nsnone, nslistwise, nsforced, nsselector, nstrigger
 local current, current_selector, done = 0, 0, false -- nb, stack has a local current !
 
 function states.initialize(namespace,attribute,head)
-    nsdata, nsnone = namespace.data, namespace.none
-    nsforced, nsselector, nslistwise = namespace.forced, namespace.selector, namespace.listwise
-    nstrigger = triggering and namespace.triggering and trigger
-    current, current_selector, done = 0, 0, false -- todo: done cleanup
+    nsdata           = namespace.data
+    nsnone           = namespace.none
+    nsforced         = namespace.forced
+    nsselector       = namespace.selector
+    nslistwise       = namespace.listwise
+    nstrigger        = triggering and namespace.triggering and trigger
+    current          = 0
+    current_selector = 0
+    done             = false -- todo: done cleanup
 end
 
 function states.finalize(namespace,attribute,head) -- is this one ok?
@@ -213,11 +218,13 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                 if default and c == inheritance then
                     if current ~= default then
                         head = insert_node_before(head,stack,copy_node(nsdata[default]))
-                        current, done = default, true
+                        current = default
+                        done = true
                     end
                 elseif current ~= c then
                     head = insert_node_before(head,stack,copy_node(nsdata[c]))
-                    current, done = c, true
+                    current = c
+                    done = true
                 end
                 -- here ? compare selective
                 if id == glue_code then --leader
@@ -250,11 +257,13 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
             elseif default and inheritance then
                 if current ~= default then
                     head = insert_node_before(head,stack,copy_node(nsdata[default]))
-                    current, done = default, true
+                    current = default
+                    done = true
                 end
             elseif current > 0 then
                 head = insert_node_before(head,stack,copy_node(nsnone))
-                current, done = 0, true
+                current = 0
+                done = true
             end
         elseif id == hlist_code or id == vlist_code then
             local content = stack.list
@@ -300,21 +309,25 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                     if current ~= default then
                         local data = nsdata[default]
                         head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
-                        current, done = default, true
+                        current = default
+                        done = true
                     end
                 else
                     local s = has_attribute(stack,nsselector)
                     if current ~= c or current_selector ~= s then
                         local data = nsdata[c]
                         head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
-                        current, current_selector, done = c, s, true
+                        current = c
+                        current_selector = s
+                        done = true
                     end
                 end
             elseif default and inheritance then
                 if current ~= default then
                     local data = nsdata[default]
                     head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
-                    current, done = default, true
+                    current = default
+                    done = true
                 end
             elseif current > 0 then
                 head = insert_node_before(head,stack,copy_node(nsnone))
