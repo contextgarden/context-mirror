@@ -25,27 +25,21 @@ local layerspec = { -- predefining saves time
     "epdflinks"
 }
 
-local locationspec = { -- predefining saves time
-    x      = "",
-    y      = "",
-    preset = "leftbottom",
-}
-
-local buttonspec = { -- predefining saves time
-    width  = "",
-    height = "",
-    offset = variables.overlay,
-    frame  = trace_links and variables.on or variables.off,
-}
-
 local function add_link(x,y,w,h,destination,what)
     if trace_links then
-        report_link("dx: %04i, dy: %04i, wd: %04i, ht: %04i, destination: %s, type: %s",x,y,w,h,destination,what)
+        report_link("dx: % 4i, dy: % 4i, wd: % 4i, ht: % 4i, destination: %s, type: %s",x,y,w,h,destination,what)
     end
-    locationspec.x    = x .. "bp"
-    locationspec.y    = y .. "bp"
-    buttonspec.width  = w .. "bp"
-    buttonspec.height = h .. "bp"
+    local locationspec = { -- predefining saves time
+        x      = x .. "bp",
+        y      = y .. "bp",
+        preset = "leftbottom",
+    }
+    local buttonspec = {
+        width  = w .. "bp",
+        height = h .. "bp",
+        offset = variables.overlay,
+        frame  = trace_links and variables.on or variables.off,
+    }
     context.setlayer (
         layerspec,
         locationspec,
@@ -148,6 +142,9 @@ function codeinjections.mergereferences(specification)
                 context.flushlayer { "epdflinks" }
              -- context("\\gdef\\figurereference{%s}",reference) -- global
                 context.setgvalue("figurereference",reference) -- global
+                if trace_links then
+                    report_link("setting figure reference to '%s'",reference)
+                end
                 specification.reference = reference
                 return namespace
             end
