@@ -8549,7 +8549,7 @@ local function stripelement(e,nolines,anywhere)
                     end
                 end
             end
-            local nedt = #nedt
+            local nedt = #edt
             if nedt > 0 then
                 -- strip end
                 local str = edt[nedt]

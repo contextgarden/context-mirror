@@ -984,6 +984,7 @@ actions["prepare unicodes"] = function(data,filename,raw)
     local criterium = fonts.privateoffset
     local private = criterium
     local glyphs = data.glyphs
+    -- todo: nofmultiples
     for index, glyph in next, glyphs do
         if index > 0 then
             local name = glyph.name -- really needed ?
@@ -1003,7 +1004,22 @@ actions["prepare unicodes"] = function(data,filename,raw)
                     unicodes[name] = unicode
                 end
                 -- maybe deal with altuni here in the future but first we need
-                -- to encounter a proper font that sets them
+                -- to encounter a proper font that sets them; we have to wait till
+                -- a next luatex binary as currently the unicode numbers can be out
+                -- of bounds
+                if false then
+                    local altuni = glyph.altuni
+                    if altuni then
+                        local un = { unicodes[name] }
+                        for i=1,#altuni do
+                            local unicode = altuni[i].unicode
+                            multiples[#multiples+1] = name
+                            un[i+1] = unicode
+                            indices[unicode] = index -- maybe check for duplicates
+                        end
+                        unicodes[name] = un
+                    end
+                end
             else
                 -- message that something is wrong
             end
