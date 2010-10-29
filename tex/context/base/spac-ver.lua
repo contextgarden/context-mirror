@@ -624,18 +624,20 @@ end
 
 local trace_list, tracing_info, before, after = { }, false, "", ""
 
+local stripzeros, topoints = utilities.formatters.stripzeros, number.topoints
+
 local function glue_to_string(glue)
     local spec = glue.spec
     local t = { points(spec.width) }
     if spec.stretch_order and spec.stretch_order ~= 0 then
         t[#t+1] = format("plus %s%s",spec.stretch/65536,fillcodes[spec.stretch_order])
     elseif spec.stretch and spec.stretch ~= 0 then
-        t[#t+1] = format("plus %s",utilities.formatters.strip_zeros(number.topoints(spec.stretch)))
+        t[#t+1] = format("plus %s",stripzeros(topoints(spec.stretch)))
     end
     if spec.shrink_order and spec.shrink_order ~= 0 then
         t[#t+1] = format("minus %s%s",spec.shrink/65536,fillcodes[spec.shrink_order])
     elseif spec.shrink and spec.shrink ~= 0 then
-        t[#t+1] = format("minus %s",utilities.formatters.strip_zeros(number.topoints(spec.shrink)))
+        t[#t+1] = format("minus %s",stripzeros(topoints(spec.shrink)))
     end
     return concat(t," ")
 end
@@ -648,9 +650,9 @@ local function nodes_to_string(head)
         if id == penalty_code then
             t[#t+1] = format("%s:%s",ty,current.penalty)
         elseif id == glue_code then
-            t[#t+1] = format("%s:%s",ty,utilities.formatters.strip_zeros(number.topoints(current.spec.width)))
+            t[#t+1] = format("%s:%s",ty,stripzeros(topoints(current.spec.width)))
         elseif id == kern_code then
-            t[#t+1] = format("%s:%s",ty,utilities.formatters.strip_zeros(number.topoints(current.kern)))
+            t[#t+1] = format("%s:%s",ty,stripzeros(topoints(current.kern)))
         else
             t[#t+1] = ty
         end

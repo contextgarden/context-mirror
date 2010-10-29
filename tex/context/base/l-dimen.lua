@@ -81,9 +81,7 @@ local dimenfactors = {
 format (string) is implemented using this table.</p>
 --ldx]]--
 
--- was:
-
-local function todimen(n,unit,fmt)
+local function numbertodimen(n,unit,fmt)
     if type(n) == 'string' then
         return n
     else
@@ -102,21 +100,21 @@ end
 --ldx]]--
 
 number.maxdimen     = 1073741823
-number.todimen      = todimen
+number.todimen      = numbertodimen
 number.dimenfactors = dimenfactors
 
-function number.topoints      (n) return todimen(n,"pt") end
-function number.toinches      (n) return todimen(n,"in") end
-function number.tocentimeters (n) return todimen(n,"cm") end
-function number.tomillimeters (n) return todimen(n,"mm") end
-function number.toscaledpoints(n) return todimen(n,"sp") end
-function number.toscaledpoints(n) return      n .. "sp"  end
-function number.tobasepoints  (n) return todimen(n,"bp") end
-function number.topicas       (n) return todimen(n "pc") end
-function number.todidots      (n) return todimen(n,"dd") end
-function number.tociceros     (n) return todimen(n,"cc") end
-function number.tonewdidots   (n) return todimen(n,"nd") end
-function number.tonewciceros  (n) return todimen(n,"nc") end
+function number.topoints      (n) return numbertodimen(n,"pt") end
+function number.toinches      (n) return numbertodimen(n,"in") end
+function number.tocentimeters (n) return numbertodimen(n,"cm") end
+function number.tomillimeters (n) return numbertodimen(n,"mm") end
+function number.toscaledpoints(n) return numbertodimen(n,"sp") end
+function number.toscaledpoints(n) return            n .. "sp"  end
+function number.tobasepoints  (n) return numbertodimen(n,"bp") end
+function number.topicas       (n) return numbertodimen(n "pc") end
+function number.todidots      (n) return numbertodimen(n,"dd") end
+function number.tociceros     (n) return numbertodimen(n,"cc") end
+function number.tonewdidots   (n) return numbertodimen(n,"nd") end
+function number.tonewciceros  (n) return numbertodimen(n,"nc") end
 
 --[[ldx--
 <p>More interesting it to implement a (sort of) dimen datatype, one
@@ -146,14 +144,24 @@ mt.__index = function(t,s)
     return false
 end
 
-function string:todimen()
-    if type(self) == "number" then
-        return self
-    else
-        local value, unit = lpegmatch(dimenpair,self)
-        return value/unit
-    end
-end
+
+--[[ldx--
+<p>We redefine the following function later on, so we comment it
+here (which saves us bytecodes.</p>
+--ldx]]--
+
+-- function string.todimen(str)
+--     if type(str) == "number" then
+--         return str
+--     else
+--         local value, unit = lpegmatch(dimenpair,str)
+--         return value/unit
+--     end
+-- end
+--
+-- local stringtodimen = string.todimen
+
+local stringtodimen -- assigned later (commenting saves bytecode)
 
 local amount = S("+-")^0 * R("09")^0 * S(".,")^0 * R("09")^0
 local unit   = P("pt") + P("cm") + P("mm") + P("sp") + P("bp") + P("in")  +
@@ -175,12 +183,6 @@ string.todimen("10pt")
 string.todimen("10.0pt")
 </typing>
 
-<p>And of course the often more efficient:</p>
-
-<typing>
-somestring:todimen("12.3cm")
-</typing>
-
 <p>With this in place, we can now implement a proper datatype for dimensions, one
 that permits us to do this:</p>
 
@@ -198,28 +200,28 @@ local dimensions = { }
 <p>The main (and globally) visible representation of a dimen is defined next: it is
 a one-element table. The unit that is returned from the match is normally a number
 (one of the previously defined factors) but we also accept functions. Later we will
-see why.</p>
+see why. This function is redefined later.</p>
 --ldx]]--
 
-function dimen(a)
-    if a then
-        local ta= type(a)
-        if ta == "string" then
-            local value, unit = lpegmatch(pattern,a)
-            if type(unit) == "function" then
-                k = value/unit()
-            else
-                k = value/unit
-            end
-            a = k
-        elseif ta == "table" then
-            a = a[1]
-        end
-        return setmetatable({ a }, dimensions)
-    else
-        return setmetatable({ 0 }, dimensions)
-    end
-end
+-- function dimen(a)
+--     if a then
+--         local ta= type(a)
+--         if ta == "string" then
+--             local value, unit = lpegmatch(pattern,a)
+--             if type(unit) == "function" then
+--                 k = value/unit()
+--             else
+--                 k = value/unit
+--             end
+--             a = k
+--         elseif ta == "table" then
+--             a = a[1]
+--         end
+--         return setmetatable({ a }, dimensions)
+--     else
+--         return setmetatable({ 0 }, dimensions)
+--     end
+-- end
 
 --[[ldx--
 <p>This function return a small hash with a metatable attached. It is
@@ -229,35 +231,35 @@ shared some of the code but for reasons of speed we don't.</p>
 
 function dimensions.__add(a, b)
     local ta, tb = type(a), type(b)
-    if ta == "string" then a = a:todimen() elseif ta == "table" then a = a[1] end
-    if tb == "string" then b = b:todimen() elseif tb == "table" then b = b[1] end
+    if ta == "string" then a = stringtodimen(a) elseif ta == "table" then a = a[1] end
+    if tb == "string" then b = stringtodimen(b) elseif tb == "table" then b = b[1] end
     return setmetatable({ a + b }, dimensions)
 end
 
 function dimensions.__sub(a, b)
     local ta, tb = type(a), type(b)
-    if ta == "string" then a = a:todimen() elseif ta == "table" then a = a[1] end
-    if tb == "string" then b = b:todimen() elseif tb == "table" then b = b[1] end
+    if ta == "string" then a = stringtodimen(a) elseif ta == "table" then a = a[1] end
+    if tb == "string" then b = stringtodimen(b) elseif tb == "table" then b = b[1] end
     return setmetatable({ a - b }, dimensions)
 end
 
 function dimensions.__mul(a, b)
     local ta, tb = type(a), type(b)
-    if ta == "string" then a = a:todimen() elseif ta == "table" then a = a[1] end
-    if tb == "string" then b = b:todimen() elseif tb == "table" then b = b[1] end
+    if ta == "string" then a = stringtodimen(a) elseif ta == "table" then a = a[1] end
+    if tb == "string" then b = stringtodimen(b) elseif tb == "table" then b = b[1] end
     return setmetatable({ a * b }, dimensions)
 end
 
 function dimensions.__div(a, b)
     local ta, tb = type(a), type(b)
-    if ta == "string" then a = a:todimen() elseif ta == "table" then a = a[1] end
-    if tb == "string" then b = b:todimen() elseif tb == "table" then b = b[1] end
+    if ta == "string" then a = stringtodimen(a) elseif ta == "table" then a = a[1] end
+    if tb == "string" then b = stringtodimen(b) elseif tb == "table" then b = b[1] end
     return setmetatable({ a / b }, dimensions)
 end
 
 function dimensions.__unm(a)
     local ta = type(a)
-    if ta == "string" then a = a:todimen() elseif ta == "table" then a = a[1] end
+    if ta == "string" then a = stringtodimen(a) elseif ta == "table" then a = a[1] end
     return setmetatable({ - a }, dimensions)
 end
 
@@ -390,24 +392,26 @@ function dimen(a)
     end
 end
 
-function string:todimen()
-    if type(self) == "number" then
-        return self
+function string.todimen(str)
+    if type(str) == "number" then
+        return str
     else
-        local k = known[self]
+        local k = known[str]
         if not k then
-            local value, unit = lpegmatch(dimenpair,self)
+            local value, unit = lpegmatch(dimenpair,str)
             if value and unit then
                 k = value/unit
             else
                 k = 0
             end
-            -- print(self,value,unit)
-            known[self] = k
+            -- print(str,value,unit)
+            known[str] = k
         end
         return k
     end
 end
+
+stringtodimen = string.todimen -- local variable defined earlier
 
 function number.toscaled(d)
     return format("%0.5f",d/2^16)
@@ -425,7 +429,7 @@ probably use a hash instead of a one-element table.</p>
 function number.percent(n) -- will be cleaned up once luatex 0.30 is out
     local hsize = tex.hsize
     if type(hsize) == "string" then
-        hsize = hsize:todimen()
+        hsize = stringtodimen(hsize)
     end
     return (n/100) * hsize
 end

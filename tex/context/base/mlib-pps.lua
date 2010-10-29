@@ -109,9 +109,10 @@ function specials.register(str) -- only colors
     local size, content, n, class = match(str,"^%%%%MetaPostSpecial: (%d+) (.*) (%d+) (%d+)$")
     if class then
         -- use lpeg splitter
-        local data = { }
+        local data , d = { }, 0
         for s in gmatch(content,"[^ ]+") do
-            data[#data+1] = s
+            d = d + 1
+            data[d] = s
         end
         class, n = tonumber(class), tonumber(n)
         if class == 3 or class == 4 or class == 5 then
@@ -682,14 +683,15 @@ local do_end_fig         = "; endfig ;"
 local do_safeguard       = ";"
 
 function metapost.texttextsdata()
-    local t, n = { }, 0
+    local t, nt, n = { }, 0, 0
     for n, box in next, textexts do
         if box then
             local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
             if trace_textexts then
                 report_mplib("passed textext data %s: (%0.4f,%0.4f,%0.4f)",n,wd,ht,dp)
             end
-            t[#t+1] = format(text_data_template,n,wd,n,ht,n,dp)
+            nt = nt + 1
+            t[nt] = format(text_data_template,n,wd,n,ht,n,dp)
         else
             break
         end
@@ -782,11 +784,12 @@ function makempy.processgraphics(graphics)
         if io.exists(pdffile) then
             command = format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile)
             os.execute(command)
-            local result = { }
+            local result, r = { }, 0
             if io.exists(mpyfile) then
                 local data = io.loaddata(mpyfile)
                 for figure in gmatch(data,"beginfig(.-)endfig") do
-                    result[#result+1] = format("begingraphictextfig%sendgraphictextfig ;\n", figure)
+                    r = r + 1
+                    result[r] = format("begingraphictextfig%sendgraphictextfig ;\n", figure)
                 end
                 io.savedata(mpyfile,concat(result,""))
             end

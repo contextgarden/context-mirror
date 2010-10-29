@@ -65,7 +65,9 @@ local function process(namespace,attribute,head)
                     map = map[start.char]
                     unset_attribute(start,attribute) -- needed?
                     if map then
-                        local left, right, alternative = map.left, map.right, map.alternative
+                        local left = map.left
+                        local right = map.right
+                        local alternative = map.alternative
                         local quad = quaddata[start.font]
                         local prev = start.prev
                         if left and left ~= 0 and prev then

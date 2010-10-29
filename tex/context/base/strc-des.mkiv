@@ -676,18 +676,32 @@
 \def\@@doenumerationtext
   {\ifconditional\enumerationnumberenabled
      \iftrialtypesetting
-       \doenumerationfullnumber\showdntext
+       \doenumerationfullnumberyes
        \doenumerationcouplingsymbol
      \else
        \doenumerationregistercoupling
-       \doenumerationfullnumber\showdntext
+       \doenumerationfullnumberyes
        \doenumerationcouplingsymbol
      \fi
    \else
-     \doenumerationfullnumber\showdnpuretext
+     \doenumerationfullnumbernop
    \fi}
 
-\def\doenumerationfullnumber#1% text, title
+\def\doenumerationfullnumberyes % text, title
+  {\begingroup
+   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \the\everyenumeration
+   \descriptionparameter\c!command{\strut\showdntext\doenumerationnumber\doenumerationextratext}%
+   \endgroup}
+
+\def\doenumerationfullnumbernop % text, title
+  {\begingroup
+   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \the\everyenumeration
+   \descriptionparameter\c!command{\strut\showdnpuretext\doenumerationextratext}%
+   \endgroup}
+
+\def\doenumerationfullnumber#1% text, title (used in notes) .. todo
   {\begingroup
    \dosetdescriptionattributes\c!headstyle\c!headcolor
    \the\everyenumeration
@@ -696,14 +710,15 @@
 
 \def\doenumerationextratext
   {\doif{\descriptionparameter\c!title}\v!yes
-     {\begingroup
-      \dosetdescriptionattributes\c!titlestyle\c!titlecolor
-      \hskip\descriptionparameter\c!titledistance
-      \descriptionparameter\c!titlecommand
-         {\descriptionparameter\c!titleleft
-          \begstrut\@@dodoenumerationtext\endstrut
-          \descriptionparameter\c!titleright}%
-      \endgroup}}
+     {\doifsomething\@@dodoenumerationtext
+        {\begingroup
+         \dosetdescriptionattributes\c!titlestyle\c!titlecolor
+         \hskip\descriptionparameter\c!titledistance
+         \descriptionparameter\c!titlecommand
+            {\descriptionparameter\c!titleleft
+             \begstrut\@@dodoenumerationtext\endstrut
+             \descriptionparameter\c!titleright}%
+         \endgroup}}}
 
 \def\doenumerationsavecounter     {\savestructurecounter[\currentdescriptionnumber]}
 \def\doenumerationrestorecounter  {\restorestructurecounter[\currentdescriptionnumber]}

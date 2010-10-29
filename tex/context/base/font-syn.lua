@@ -6,17 +6,6 @@ if not modules then modules = { } end modules ['font-syn'] = {
     license   = "see context related readme files"
 }
 
-local keyisvalue = { __index = function(t,k)
-    t[k] = k
-    return k
-end }
-
-function table.initialysparse(t)
-    t = t or { }
-    setmetatable(t,keyisvalue)
-    return t
-end
-
 -- todo: subs in lookups requests
 
 local utf = unicode.utf8
@@ -29,6 +18,7 @@ local utfgsub, utflower = utf.gsub, utf.lower
 local unpack = unpack or table.unpack
 
 local allocate = utilities.storage.allocate
+local sparse   = utilities.storage.sparse
 
 local trace_names          = false  trackers.register("fonts.names",          function(v) trace_names          = v end)
 local trace_warnings       = false  trackers.register("fonts.warnings",       function(v) trace_warnings       = v end)
@@ -90,7 +80,7 @@ local weights = Cs ( -- not extra
   + P("regular")  / "normal"
 )
 
-local normalized_weights = table.initialysparse {
+local normalized_weights = sparse {
     regular = "normal",
 }
 
@@ -105,7 +95,7 @@ local styles = Cs (
   + P("ita")            / "italic"
 )
 
-local normalized_styles = table.initialysparse {
+local normalized_styles = sparse {
     reverseoblique = "reverseitalic",
     regular        = "normal",
     oblique        = "italic",
@@ -120,7 +110,7 @@ local widths = Cs(
   + P("book")     / "normal"
 )
 
-local normalized_widths = table.initialysparse()
+local normalized_widths = sparse()
 
 local variants = Cs( -- fax casual
     P("smallcaps")
@@ -128,7 +118,7 @@ local variants = Cs( -- fax casual
   + P("caps")      / "smallcaps"
 )
 
-local normalized_variants = table.initialysparse()
+local normalized_variants = sparse()
 
 local any = P(1)
 
@@ -247,7 +237,7 @@ filters.paths = { }
 filters.names = { }
 
 function names.getpaths(trace)
-    local hash, result = { }, { }
+    local hash, result, r = { }, { }, 0
     local function collect(t,where)
         for i=1, #t do
             local v = resolvers.cleanpath(t[i])
@@ -255,7 +245,9 @@ function names.getpaths(trace)
             local key = lower(v)
             report_names("adding path from %s: %s",where,v)
             if not hash[key] then
-                hash[key], result[#result+1] = true, v
+                r = r + 1
+                result[r] = v
+                hash[key] = true
             end
         end
     end
@@ -783,7 +775,7 @@ local function addfilenames()
 end
 
 local function rejectclashes() -- just to be sure, so no explicit afm will be found then
-    local specifications, used, okay = names.data.specifications, { }, { }
+    local specifications, used, okay, o = names.data.specifications, { }, { }, 0
     for i=1,#specifications do
         local s = specifications[i]
         local f = s.fontname
@@ -794,10 +786,13 @@ local function rejectclashes() -- just to be sure, so no explicit afm will be fo
                     report_names( "fontname '%s' clashes, rejecting '%s' in favor of '%s'",f,fnm,fnd)
                 end
             else
-                used[f], okay[#okay+1] = fnm, s
+                used[f] = fnm
+                o = o + 1
+                okay[o] = s
             end
         else
-            okay[#okay+1] = s
+            o = o + 1
+            okay[o] = s
         end
     end
     local d = #specifications - #okay
@@ -1333,7 +1328,7 @@ local function heuristic(name,weight,style,width,variant,all) -- todo: fallbacks
         if nf then
             local t = { }
             for i=1,nf do
-                t[#t+1] = format("'%s'",found[i].fontname)
+                t[i] = format("'%s'",found[i].fontname)
             end
             report_names("name '%s' resolved to %s instances: %s",name,nf,concat(t," "))
         else
@@ -1388,7 +1383,6 @@ end
 
 function names.collectfiles(askedname,reload) -- no all
     if askedname and askedname ~= "" and names.enabled then
---~         askedname = lower(askedname) -- or cleanname
         askedname = cleanname(askedname) -- or cleanname
         names.load(reload)
         local list = { }
@@ -1396,10 +1390,8 @@ function names.collectfiles(askedname,reload) -- no all
         local specifications = names.data.specifications
         for i=1,#specifications do
             local s = specifications[i]
---~             if find(lower(basename(s.filename)),askedname) then
             if find(cleanname(basename(s.filename)),askedname) then
                 list[#list+1] = s
-
             end
         end
         return list
@@ -1495,20 +1487,22 @@ function names.lookup(pattern,name,reload) -- todo: find
         end
         if lookups then
             for key, value in gmatch(pattern,"([^=,]+)=([^=,]+)") do
-                local t = { }
+                local t, n = { }, 0
                 if find(value,"*") then
                     value = string.topattern(value)
                     for i=1,#lookups do
                         local s = lookups[i]
                         if find(s[key],value) then
-                            t[#t+1] = lookups[i]
+                            n = n + 1
+                            t[n] = lookups[i]
                         end
                     end
                 else
                     for i=1,#lookups do
                         local s = lookups[i]
                         if s[key] == value then
-                            t[#t+1] = lookups[i]
+                            n = n + 1
+                            t[n] = lookups[i]
                         end
                     end
                 end

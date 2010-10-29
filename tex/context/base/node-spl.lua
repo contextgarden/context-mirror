@@ -114,7 +114,7 @@ end
 local contextsetups = fonts.definers.specifiers.contextsetups
 
 local function convert(featuresets,name,set,what)
-    local list, numbers = set[what], { }
+    local list, numbers, nofnumbers = set[what], { }, 0
     if list then
         for i=1,#list do
             local feature = list[i]
@@ -126,7 +126,8 @@ local function convert(featuresets,name,set,what)
                 fn = fs and fs.number
             end
             if fn then
-                numbers[#numbers+1] = fn
+                nofnumbers = nofnumbers + 1
+                numbers[nofnumbers] = fn
                 if trace_goodies or trace_optimize then
                     report_fonts("solution %s of '%s' uses feature '%s' with number %s",i,name,feature,fn)
                 end
@@ -134,7 +135,7 @@ local function convert(featuresets,name,set,what)
                 report_fonts("solution %s has an invalid feature reference '%s'",i,name,tostring(feature))
             end
         end
-        return #numbers > 0 and numbers
+        return nofnumbers > 0 and numbers
     end
 end
 
@@ -179,18 +180,22 @@ function splitters.define(name,parameters)
         end
     else
         if l then
+            local n = #less_set
             for i=1,#l do
                 local ss = contextsetups[l[i]]
                 if ss then
-                    less_set[#less_set+1] = ss.number
+                    n = n + 1
+                    less_set[n] = ss.number
                 end
             end
         end
         if m then
+            local n = #more_set
             for i=1,#m do
                 local ss = contextsetups[m[i]]
                 if ss then
-                    more_set[#more_set+1] = ss.number
+                    n = n + 1
+                    more_set[n] = ss.number
                 end
             end
         end
@@ -198,14 +203,14 @@ function splitters.define(name,parameters)
     if trace_optimize then
         report_fonts("defining solutions '%s', less: '%s', more: '%s'",name,concat(less_set or {}," "),concat(more_set or {}," "))
     end
-    solutions[#solutions+1] = {
+    local nofsolutions = #solutions + 1
+    solutions[nofsolutions] = {
         solution  = solution,
         less      = less_set or { },
         more      = more_set or { },
         settings  = settings, -- for tracing
     }
---~     print(table.serialize(solutions[#solutions]))
-    tex.write(#solutions)
+    tex.write(nofsolutions)
 end
 
 local nofwords, noftries, nofadapted, nofkept, nofparagraphs = 0, 0, 0, 0, 0
@@ -287,13 +292,14 @@ function splitters.split(head)
 end
 
 local function collect_words(list)
-    local words, word = { }, nil
+    local words, w, word = { }, 0, nil
     for current in traverse_ids(whatsit_code,list) do
         if current.subtype == userdefined_code then
             local user_id = current.user_id
             if user_id == 1 then
                 word = { current.value, current, current }
-                words[#words+1] = word
+                w = w + 1
+                words[w] = word
             elseif user_id == 2 then
                 word[3] = current
             end

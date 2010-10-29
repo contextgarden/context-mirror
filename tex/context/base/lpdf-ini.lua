@@ -45,15 +45,17 @@ local function tosixteen(str)
     if not str or str == "" then
         return "()"
     else
-        local r = { "<feff" }
+        local r, n = { "<feff" }, 1
         for b in utfvalues(str) do
+            n = n + 1
             if b < 0x10000 then
-                r[#r+1] = format("%04x",b)
+                r[n] = format("%04x",b)
             else
-                r[#r+1] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
+                r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
             end
         end
-        r[#r+1] = ">"
+        n = n + 1
+        r[n] = ">"
         return concat(r)
     end
 end
@@ -115,24 +117,25 @@ tostring_d = function(t,contentonly,key)
             return "<< >>"
         end
     else
-        local r = { }
+        local r, rn = { }, 0
         for k, v in next, t do
+            rn = rn + 1
             local tv = type(v)
             if tv == "string" then
-                r[#r+1] = format("/%s %s",k,toeight(v))
+                r[rn] = format("/%s %s",k,toeight(v))
             elseif tv == "unicode" then
-                r[#r+1] = format("/%s %s",k,tosixteen(v))
+                r[rn] = format("/%s %s",k,tosixteen(v))
             elseif tv == "table" then
                 local mv = getmetatable(v)
                 if mv and mv.__lpdftype then
-                    r[#r+1] = format("/%s %s",k,tostring(v))
+                    r[rn] = format("/%s %s",k,tostring(v))
                 elseif v[1] then
-                    r[#r+1] = format("/%s %s",k,tostring_a(v))
+                    r[rn] = format("/%s %s",k,tostring_a(v))
                 else
-                    r[#r+1] = format("/%s %s",k,tostring_d(v))
+                    r[rn] = format("/%s %s",k,tostring_d(v))
                 end
             else
-                r[#r+1] = format("/%s %s",k,tostring(v))
+                r[rn] = format("/%s %s",k,tostring(v))
             end
         end
         if contentonly then
@@ -146,7 +149,8 @@ tostring_d = function(t,contentonly,key)
 end
 
 tostring_a = function(t,contentonly,key)
-    if #t == 0 then
+    local tn = #t
+    if tn == 0 then
         if contentonly then
             return ""
         else
@@ -154,24 +158,25 @@ tostring_a = function(t,contentonly,key)
         end
     else
         local r = { }
-        for k, v in next, t do
+        for k=1,tn do
+            local v = t[k]
             local tv = type(v)
             if tv == "string" then
-                r[#r+1] = toeight(v)
+                r[k] = toeight(v)
             elseif tv == "unicode" then
-                r[#r+1] = tosixteen(v)
+                r[k] = tosixteen(v)
             elseif tv == "table" then
                 local mv = getmetatable(v)
                 local mt = mv and mv.__lpdftype
                 if mt then
-                    r[#r+1] = tostring(v)
+                    r[k] = tostring(v)
                 elseif v[1] then
-                    r[#r+1] = tostring_a(v)
+                    r[k] = tostring_a(v)
                 else
-                    r[#r+1] = tostring_d(v)
+                    r[k] = tostring_d(v)
                 end
             else
-                r[#r+1] = tostring(v)
+                r[k] = tostring(v)
             end
         end
         if contentonly then

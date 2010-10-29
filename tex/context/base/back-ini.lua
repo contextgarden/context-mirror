@@ -117,6 +117,8 @@ backends.codeinjections = {
 
     finishreference        = nothing,
 
+    getoutputfilename      = nothing,
+
 }
 
 backends.registrations = {

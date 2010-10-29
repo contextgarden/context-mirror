@@ -131,9 +131,12 @@ local function glob(str,t)
             end
             return t
         elseif isfile(str) then
-            local t = t or { }
-            t[#t+1] = str
-            return t
+            if t then
+                t[#t+1] = str
+                return t
+            else
+                return { str }
+            end
         else
             local split = lpegmatch(pattern,str)
             if split then
@@ -166,6 +169,7 @@ local function globfiles(path,recurse,func,files) -- func == pattern or function
         func = function(name) return find(name,s) end
     end
     files = files or { }
+    local noffiles = #files
     for name in walkdir(path) do
         if find(name,"^%.") then
             --- skip
@@ -176,12 +180,9 @@ local function globfiles(path,recurse,func,files) -- func == pattern or function
                     globfiles(path .. "/" .. name,recurse,func,files)
                 end
             elseif mode == "file" then
-                if func then
-                    if func(name) then
-                        files[#files+1] = path .. "/" .. name
-                    end
-                else
-                    files[#files+1] = path .. "/" .. name
+                if not func or func(name) then
+                    noffiles = noffiles + 1
+                    files[noffiles] = path .. "/" .. name
                 end
             end
         end

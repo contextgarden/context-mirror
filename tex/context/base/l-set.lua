@@ -51,10 +51,11 @@ function set.tolist(n)
     if n == 0 or not tabs[n] then
         return ""
     else
-        local t = { }
+        local t, n = { }, 0
         for k, v in next, tabs[n] do
             if v then
-                t[#t+1] = k
+                n = n + 1
+                t[n] = k
             end
         end
         return concat(t," ")

@@ -83872,8 +83872,8 @@ characters.data={
   description="<CJK Ideograph Extension A>",
   direction="l",
   linebreak="id",
-  unicodeslot=0x3400,
-  range= 0x4DB5,
+--unicodeslot=0x3400,
+  range={ first=0x3400, last=0x4DB5 },
  },
  [0x4DC0]={
   category="so",
@@ -84329,8 +84329,8 @@ characters.data={
   description="<CJK Ideograph>",
   direction="l",
   linebreak="id",
-  unicodeslot=0x4E00,
-  range=0x9FBB,
+--unicodeslot=0x4E00,
+  range={ first=0x4E00, last=0x9FBB },
  },
  [0xA000]={
   category="lo",
@@ -95001,8 +95001,8 @@ characters.data={
   description="<Hangul Syllable>",
   direction="l",
   linebreak="h2",
-  unicodeslot=0xAC00,
-  range=0xD7A3,
+--unicodeslot=0xAC00,
+  range={ first=0xAC00, last=0xD7A3 },
  },
  [0xD800]={
   category="cs",
@@ -133602,8 +133602,8 @@ characters.data={
   description="<CJK Ideograph Extension B>",
   direction="l",
   linebreak="id",
-  unicodeslot=0x20000,
-  range=0x2A6D6,
+--unicodeslot=0x20000,
+  range={ first=0x20000, last=0x2A6D6 },
  },
  [0x2F800]={
   category="lo",

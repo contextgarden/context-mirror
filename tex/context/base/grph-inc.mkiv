@@ -218,7 +218,7 @@
   {\global\setbox\foundexternalfigure\vbox{\cldprocessfile{#1}}}
 
 \def\docheckfigurebuffer  #1{\doprocesstexlikefigure{\getbuffer[#1]}}
-\def\docheckfiguretex     #1{\doprocesstexlikefigure{\input#1\relax}}
+\def\docheckfiguretex     #1{\doprocesstexlikefigure{\input{#1}}}
 \def\docheckfigurecld     #1{\doprocesscldlikefigure{#1}} % we can always add cldrun
 \def\docheckfiguremps     #1{\doprocessmpslikefigure{#1}}
 \def\docheckfiguremprun #1#2{\doprocesstexlikefigure{\useMPrun{#1}{#2}}}

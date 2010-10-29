@@ -464,4 +464,13 @@ function codeinjections.setfigurealternative(data,figure)
     end
 end
 
+local outputfilename
+
+function codeinjections.getoutputfilename()
+    if not outputfilename then
+        outputfilename = file.addsuffix(tex.jobname,"pdf")
+    end
+    return outputfilename
+end
+
 backends.install("pdf")

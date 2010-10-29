@@ -162,64 +162,81 @@ local function curved(ith,pth)
 end
 
 local function flushnormalpath(path, t, open)
-    t = t or { }
-    local pth, ith
+    local pth, ith, nt
+    if t then
+        nt = #t
+    else
+        t = { }
+        nt = 0
+    end
     for i=1,#path do
+        nt = nt + 1
         pth = path[i]
         if not ith then
-            t[#t+1] = format("%f %f m",pth.x_coord,pth.y_coord)
+            t[nt] = format("%f %f m",pth.x_coord,pth.y_coord)
         elseif curved(ith,pth) then
-            t[#t+1] = format("%f %f %f %f %f %f c",ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
+            t[nt] = format("%f %f %f %f %f %f c",ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
         else
-            t[#t+1] = format("%f %f l",pth.x_coord,pth.y_coord)
+            t[nt] = format("%f %f l",pth.x_coord,pth.y_coord)
         end
         ith = pth
     end
     if not open then
+        nt = nt + 1
         local one = path[1]
         if curved(pth,one) then
-            t[#t+1] = format("%f %f %f %f %f %f c",pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord )
+            t[nt] = format("%f %f %f %f %f %f c",pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord )
         else
-            t[#t+1] = format("%f %f l",one.x_coord,one.y_coord)
+            t[nt] = format("%f %f l",one.x_coord,one.y_coord)
         end
     elseif #path == 1 then
         -- special case .. draw point
         local one = path[1]
-        t[#t+1] = format("%f %f l",one.x_coord,one.y_coord)
+        nt = nt + 1
+        t[nt] = format("%f %f l",one.x_coord,one.y_coord)
     end
     return t
 end
 
 local function flushconcatpath(path, t, open)
-    t = t or { }
-    t[#t+1] = format("%f %f %f %f %f %f cm", sx, rx, ry, sy, tx ,ty)
-    local pth, ith
+    local pth, ith, nt
+    if t then
+        nt = #t
+    else
+        t = { }
+        nt = 0
+    end
+    nt = nt + 1
+    t[nt] = format("%f %f %f %f %f %f cm", sx, rx, ry, sy, tx ,ty)
     for i=1,#path do
+        nt = nt + 1
         pth = path[i]
         if not ith then
-           t[#t+1] = format("%f %f m",mpconcat(pth.x_coord,pth.y_coord))
+            t[nt] = format("%f %f m",mpconcat(pth.x_coord,pth.y_coord))
         elseif curved(ith,pth) then
             local a, b = mpconcat(ith.right_x,ith.right_y)
             local c, d = mpconcat(pth.left_x,pth.left_y)
-            t[#t+1] = format("%f %f %f %f %f %f c",a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
+            t[nt] = format("%f %f %f %f %f %f c",a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
         else
-           t[#t+1] = format("%f %f l",mpconcat(pth.x_coord, pth.y_coord))
+           t[nt] = format("%f %f l",mpconcat(pth.x_coord, pth.y_coord))
         end
         ith = pth
     end
     if not open then
+        nt = nt + 1
         local one = path[1]
         if curved(pth,one) then
             local a, b = mpconcat(pth.right_x,pth.right_y)
             local c, d = mpconcat(one.left_x,one.left_y)
-            t[#t+1] = format("%f %f %f %f %f %f c",a,b,c,d,mpconcat(one.x_coord, one.y_coord))
+            t[nt] = format("%f %f %f %f %f %f c",a,b,c,d,mpconcat(one.x_coord, one.y_coord))
         else
-            t[#t+1] = format("%f %f l",mpconcat(one.x_coord,one.y_coord))
+            t[nt] = format("%f %f l",mpconcat(one.x_coord,one.y_coord))
         end
     elseif #path == 1 then
         -- special case .. draw point
+        nt = nt + 1
         local one = path[1]
-        t[#t+1] = format("%f %f l",mpconcat(one.x_coord,one.y_coord))
+        t[nt] = format("%f %f l",mpconcat(one.x_coord,one.y_coord))
     end
     return t
 end
@@ -475,8 +492,10 @@ local flusher = {
         context.startnointerference()
     end,
     flushfigure = function(literals)
+        local n = #t
         for i=1, #literals do
-            t[#t+1] = literals[i]
+            n = n + 1
+            t[n] = literals[i]
         end
     end,
     stopfigure = function()
@@ -504,7 +523,7 @@ function metapost.totable(result)
                 local field = fields[f]
                 tt[field] = object[field]
             end
-            t[#t+1] = tt
+            t[o] = tt
         end
         local b = figure:boundingbox()
         return {

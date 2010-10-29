@@ -214,6 +214,7 @@ local pattern   =
 local function process(spec,text,n,rulethickness,rulecolor,offset)
     insert(stack,{ spec=spec, text=text, n=n })
     local txt = #stack
+    local m = #metacode
     for i=1,#spec do
         local s = spec[i]
         local d = definitions[s]
@@ -226,7 +227,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
             local rep, operation, special, index, upto, set, text = lpegmatch(pattern,s)
             if operation == "pb" then
                 insert(pstack,kind)
-                metacode[#metacode+1] = syntax.pb.direct
+                m = m + 1 ; metacode[m] = syntax.pb.direct
                 if keys[special] == "text" and index then
                     if keys["c"..special] == "text" then -- can be option: auto ...
                         metacode[#metacode+1] = format('chem_c%s(%s,%s,"");',special,bonds,index)
@@ -236,21 +237,21 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                 end
             elseif operation == "save" then
                 insert(pstack,kind)
-                metacode[#metacode+1] = syntax.save.direct
+                m = m + 1 ; metacode[m] = syntax.save.direct
             elseif operation == "pe" or operation == "restore" then
                 kind = remove(pstack)
                 local ss = syntax[kind]
                 local prev = bonds or 6
                 keys, bonds, max, rot = ss.keys, ss.n, ss.max, 1
-                metacode[#metacode+1] = syntax[operation].direct
-                metacode[#metacode+1] = format("chem_set(%s,%s) ;",prev,bonds)
+                m = m + 1 ; metacode[m] = syntax[operation].direct
+                m = m + 1 ; metacode[m] = format("chem_set(%s,%s) ;",prev,bonds)
             elseif operation == "front" then
                 if syntax[kind .. "_front"] then
                     kind = kind .. "_front"
                     local ss = syntax[kind]
                     local prev = bonds or 6
                     keys, bonds, max, rot = ss.keys, ss.n, ss.max, 1
-                    metacode[#metacode+1] = format("chem_set(%s,%s) ;",prev,bonds)
+                    m = m + 1 ; metacode[m] = format("chem_set(%s,%s) ;",prev,bonds)
                 end
             elseif operation then
                 local ss = syntax[operation]
@@ -260,18 +261,18 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                         local sa = ss.arguments
                         if sa == 1 then
                             local one ; txt, one = fetch(txt)
-                            metacode[#metacode+1] = format(ds,one or "")
+                            m = m + 1 ; metacode[m] = format(ds,one or "")
                         elseif sa ==2 then
                             local one ; txt, one = fetch(txt)
                             local two ; txt, two = fetch(txt)
-                            metacode[#metacode+1] = format(ds,one or "",two or "")
+                            m = m + 1 ; metacode[m] = format(ds,one or "",two or "")
                         else
-                            metacode[#metacode+1] = ds
+                            m = m + 1 ; metacode[m] = ds
                         end
                     elseif ss.keys then
                         local prev = bonds or 6
                         kind, keys, bonds, max, rot = s, ss.keys, ss.n, ss.max, 1
-                        metacode[#metacode+1] = format("chem_set(%s,%s) ;",prev,bonds)
+                        m = m + 1 ; metacode[m] = format("chem_set(%s,%s) ;",prev,bonds)
                     end
                 else
                     local what = keys[operation]
@@ -279,31 +280,31 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                         if set then
                             for i=1,#set do
                                 local si = set[i]
-                                metacode[#metacode+1] = format("chem_%s(%s,%s,%s,%s,%s);",operation,bonds,si,si,rulethickness,rulecolor)
+                                m = m + 1 ; metacode[m] = format("chem_%s(%s,%s,%s,%s,%s);",operation,bonds,si,si,rulethickness,rulecolor)
                             end
                         elseif upto then
-                            metacode[#metacode+1] = format("chem_%s(%s,%s,%s,%s,%s);",operation,bonds,index,upto,rulethickness,rulecolor)
+                            m = m + 1 ; metacode[m] = format("chem_%s(%s,%s,%s,%s,%s);",operation,bonds,index,upto,rulethickness,rulecolor)
                         elseif index then
-                            metacode[#metacode+1] = format("chem_%s(%s,%s,%s,%s,%s);",operation,bonds,index,index,rulethickness,rulecolor)
+                            m = m + 1 ; metacode[m] = format("chem_%s(%s,%s,%s,%s,%s);",operation,bonds,index,index,rulethickness,rulecolor)
                         else
-                            metacode[#metacode+1] = format("chem_%s(%s,%s,%s,%s,%s);",operation,bonds,1,max,rulethickness,rulecolor)
+                            m = m + 1 ; metacode[m] = format("chem_%s(%s,%s,%s,%s,%s);",operation,bonds,1,max,rulethickness,rulecolor)
                         end
                     elseif what == "number" then
                         if set then
                             for i=1,#set do
                                 local si = set[i]
-                                metacode[#metacode+1] = format('chem_%s(%s,%s,"\\dochemicaltext{%s}");',operation,bonds,si,si)
+                                m = m + 1 ; metacode[m] = format('chem_%s(%s,%s,"\\dochemicaltext{%s}");',operation,bonds,si,si)
                             end
                         elseif upto then
                             for i=index,upto do
                                 local si = set[i]
-                                metacode[#metacode+1] = format('chem_%s(%s,%s,"\\dochemicaltext{%s}");',operation,bonds,si,si)
+                                m = m + 1 ; metacode[m] = format('chem_%s(%s,%s,"\\dochemicaltext{%s}");',operation,bonds,si,si)
                             end
                         elseif index then
-                            metacode[#metacode+1] = format('chem_%s(%s,%s,"\\dochemicaltext{%s}");',operation,bonds,index,index)
+                            m = m + 1 ; metacode[m] = format('chem_%s(%s,%s,"\\dochemicaltext{%s}");',operation,bonds,index,index)
                         else
                             for i=1,max do
-                                metacode[#metacode+1] = format('chem_%s(%s,%s,"\\dochemicaltext{%s}");',operation,bonds,i,i)
+                                m = m + 1 ; metacode[m] = format('chem_%s(%s,%s,"\\dochemicaltext{%s}");',operation,bonds,i,i)
                             end
                         end
                     elseif what == "text" then
@@ -318,7 +319,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                                 if t then
                                     local a = align and align[si]
                                     if a then a = "." .. a else a = "" end
-                                    metacode[#metacode+1] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,a,bonds,si,molecule(apply(t)))
+                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,a,bonds,si,molecule(apply(t)))
                                 end
                             end
                         elseif upto then
@@ -328,14 +329,14 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                                 if t then
                                     local s = align and align[i]
                                     if s then s = "." .. s else s = "" end
-                                    metacode[#metacode+1] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,i,molecule(apply(t)))
+                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,i,molecule(apply(t)))
                                 end
                             end
                         elseif index == 0 then
                             local t = text
                             if not t then txt, t = fetch(txt) end
                             if t then
-                                metacode[#metacode+1] = format('chem_%s_zero("\\dochemicaltext{%s}");',operation,molecule(apply(t)))
+                                m = m + 1 ; metacode[m] = format('chem_%s_zero("\\dochemicaltext{%s}");',operation,molecule(apply(t)))
                             end
                         elseif index then
                             local t = text
@@ -343,7 +344,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                             if t then
                                 local s = align and align[index]
                                 if s then s = "." .. s else s = "" end
-                                metacode[#metacode+1] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,index,molecule(apply(t)))
+                                m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,index,molecule(apply(t)))
                             end
                         else
                             for i=1,max do
@@ -352,21 +353,21 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                                 if t then
                                     local s = align and align[i]
                                     if s then s = "." .. s else s = "" end
-                                    metacode[#metacode+1] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,i,molecule(apply(t)))
+                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,i,molecule(apply(t)))
                                 end
                             end
                         end
                     elseif what == "transform" then
                         if index then
                             for r=1,rep do
-                                metacode[#metacode+1] = format('chem_%s(%s,%s);',operation,bonds,index)
+                                m = m + 1 ; metacode[m] = format('chem_%s(%s,%s);',operation,bonds,index)
                             end
                             if operation == "rot" then
                                 rot = index
                             end
                         end
                     elseif what == "fixed" then
-                        metacode[#metacode+1] = format("chem_%s(%s,%s,%s);",operation,bonds,rulethickness,rulecolor)
+                        m = m + 1 ; metacode[m] = format("chem_%s(%s,%s,%s);",operation,bonds,rulethickness,rulecolor)
                     end
                 end
             end

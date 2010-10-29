@@ -22,7 +22,7 @@ function resolvers.load_tree(tree)
         local texos   = "texmf-" .. os.platform
 
         local oldroot = environment.texroot
-        local newroot = file.collapse_path(tree)
+        local newroot = file.collapsepath(tree)
 
         local newtree = file.join(newroot,texos)
         local newpath = file.join(newtree,"bin")

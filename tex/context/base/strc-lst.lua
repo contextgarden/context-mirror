@@ -55,7 +55,7 @@ local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.nu
 
 -- -- -- -- -- --
 
-function table.zerostrippedconcat(t,separator)
+local function zerostrippedconcat(t,separator) -- for the moment not public
     local f, l = 1, #t
     for i=f,l do
         if t[i] == 0 then
@@ -198,7 +198,7 @@ local splitter = lpeg.splitat(":")
 
 local function filtercollected(names, criterium, number, collected, forced, nested) -- names is hash or string
     local numbers, depth = documents.data.numbers, documents.data.depth
-    local result, detail = { }, nil
+    local result, nofresult, detail = { }, 0, nil
     local block = false -- all
     criterium = gsub(criterium or ""," ","") -- not needed
     -- new, will be applied stepwise
@@ -230,7 +230,8 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             local v = collected[i]
             local r = v.references
             if r and r.section == 0 then
-                result[#result+1] = v
+                nofresult = nofresult + 1
+                result[nofresult] = v
             end
         end
     elseif all or criterium == variables.all or criterium == variables.text then
@@ -243,7 +244,8 @@ local function filtercollected(names, criterium, number, collected, forced, nest
                     local name = metadata.name or false
                     local sectionnumber = (r.section == 0) or sections.collected[r.section]
                     if forced[name] or (sectionnumber and not metadata.nolist and (all or names[name])) then -- and not sectionnumber.hidenumber then
-                        result[#result+1] = v
+                        nofresult = nofresult + 1
+                        result[nofresult] = v
                     end
                 end
             end
@@ -271,7 +273,8 @@ local function filtercollected(names, criterium, number, collected, forced, nest
                                     end
                                 end
                                 if ok then
-                                    result[#result+1] = v
+                                    nofresult = nofresult + 1
+                                    result[nofresult] = v
                                 end
                             end
                         end
@@ -304,7 +307,8 @@ local function filtercollected(names, criterium, number, collected, forced, nest
                                     end
                                 end
                                 if ok then
-                                    result[#result+1] = v
+                                    nofresult = nofresult + 1
+                                    result[nofresult] = v
                                 end
                             end
                         end
@@ -335,7 +339,8 @@ local function filtercollected(names, criterium, number, collected, forced, nest
                                     end
                                 end
                                 if ok then
-                                    result[#result+1] = v
+                                    nofresult = nofresult + 1
+                                    result[nofresult] = v
                                 end
                             end
                         end
@@ -372,7 +377,8 @@ local function filtercollected(names, criterium, number, collected, forced, nest
                         local cnumbers = sectionnumber.numbers
                         if cnumbers then
                             if (all or names[metadata.name or false]) and #cnumbers >= depth and matchingtilldepth(depth,cnumbers,parent) then
-                                result[#result+1] = v
+                                nofresult = nofresult + 1
+                                result[nofresult] = v
                             end
                         end
                     end
@@ -405,7 +411,7 @@ function lists.process(specification)
     for i=1,#lists.result do
         local r = lists.result[i]
         local m = r.metadata
-        local s = specials and r.numberdata and specials[table.zerostrippedconcat(r.numberdata.numbers,".")] or ""
+        local s = specials and r.numberdata and specials[zerostrippedconcat(r.numberdata.numbers,".")] or ""
         context.processlistofstructure(m.name,m.kind,i,s)
     end
 end
@@ -440,17 +446,6 @@ function lists.location(n)
     local l = lists.result[n]
     texsprint(l.references.internal or n)
 end
-
---~ function lists.stamp(n)
---~     local l = lists.result[n]
---~     local numberdata = l.numberdata
---~     if numberdata then
---~         local numbers = numberdata.numbers
---~         if numbers then
---~             tex.sprint(table.zerostrippedconcat(numbers,"."))
---~         end
---~     end
---~ end
 
 function lists.sectionnumber(name,n,spec)
     local data = lists.result[n]

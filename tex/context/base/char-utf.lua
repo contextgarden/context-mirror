@@ -101,20 +101,22 @@ end
 --~         if initialize then -- saves a call
 --~             initialize()
 --~         end
---~         local tokens, first, done = { }, false, false
+--~         local tokens, n, first, done = { }, 0, false, false
 --~         for second in utfcharacters(str) do
 --~             local cgf = graphemes[first]
 --~             if cgf and cgf[second] then
 --~                 first, done = cgf[second], true
 --~             elseif first then
---~                 tokens[#tokens+1] = first
+--~                 n + n + 1
+--~                 tokens[n] = first
 --~                 first = second
 --~             else
 --~                 first = second
 --~             end
 --~         end
 --~         if done then
---~             tokens[#tokens+1] = first
+--~             n + n + 1
+--~             tokens[n] = first
 --~             return concat(tokens)
 --~         end
 --~     end
@@ -194,17 +196,19 @@ not collecting tokens is not only faster but also saves garbage collecting.
 
 function utffilters.collapse(str) -- not really tested (we could preallocate a table)
     if utffilters.collapsing and str then
-        if #str > 1 then
+        local nstr = #str
+        if nstr > 1 then
             if initialize then -- saves a call
                 initialize()
             end
-            local tokens, first, done, n = { }, false, false, 0
+            local tokens, t, first, done, n = { }, 0, false, false, 0
             for second in utfcharacters(str) do
                 if done then
                     local crs = high[second]
                     if crs then
                         if first then
-                            tokens[#tokens+1] = first
+                            t = t + 1
+                            tokens[t] = first
                         end
                         first = crs
                     else
@@ -212,7 +216,8 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                         if cgf and cgf[second] then
                             first = cgf[second]
                         elseif first then
-                            tokens[#tokens+1] = first
+                            t = t + 1
+                            tokens[t] = first
                             first = second
                         else
                             first = second
@@ -225,13 +230,17 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                             if n == 1 then
                                 break
                             else
-                                tokens[#tokens+1], n = s, n - 1
+                                t = t + 1
+                                tokens[t] = s
+                                n = n -1
                             end
                         end
                         if first then
-                            tokens[#tokens+1] = first
+                            t = t + 1
+                            tokens[t] = first
                         end
-                        first, done = crs, true
+                        first = crs
+                        done = true
                     else
                         local cgf = graphemes[first]
                         if cgf and cgf[second] then
@@ -239,21 +248,26 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                                 if n == 1 then
                                     break
                                 else
-                                    tokens[#tokens+1], n = s, n -1
+                                    t = t + 1
+                                    tokens[t] = s
+                                    n = n -1
                                 end
                             end
-                            first, done = cgf[second], true
+                            first = cgf[second]
+                            done = true
                         else
-                            first, n = second, n + 1
+                            first = second
+                            n = n + 1
                         end
                     end
                 end
             end
             if done then
-                tokens[#tokens+1] = first
+                t = t + 1
+                tokens[t] = first
                 return concat(tokens) -- seldom called
             end
-        elseif #str > 0 then
+        elseif nstr > 0 then
             return high[str] or str
         end
     end
@@ -275,9 +289,10 @@ commands = commands or { }
 --ldx]]--
 
 function utf.split(str)
-    local t = { }
+    local t, n = { }, 0
     for snippet in utfcharacters(str) do
-        t[#t+1] = snippet
+        n = n + 1
+        t[n+1] = snippet
     end
     return t
 end

@@ -57,9 +57,10 @@ tokens.letter = function(chr) return createtoken(utfbyte(chr), 11) end
 tokens.other  = function(chr) return createtoken(utfbyte(chr), 12) end
 
 tokens.letters = function(str)
-    local t = { }
+    local t, n = { }, 0
     for chr in string.utfvalues(str) do
-        t[#t+1] = createtoken(chr, 11)
+        n = n + 1
+        t[n] = createtoken(chr, 11)
     end
     return t
 end
@@ -99,7 +100,7 @@ local letter = command_id("letter")
 local other  = command_id("other_char")
 
 function collectors.install(tag,end_cs)
-    local data  = { }
+    local data, d = { }, 0
     collectordata[tag] = data
     local endcs = csname_id(end_cs)
     while true do
@@ -111,7 +112,8 @@ function collectors.install(tag,end_cs)
         elseif a == call and registered[b] then
             expand()
         else
-            data[#data+1] = t
+            d = d + 1
+            data[d] = t
         end
     end
 end
@@ -135,31 +137,38 @@ function collectors.show(tag, method)
 end
 
 function collectors.defaultwords(t,str)
-    t[#t+1] = tokens.bgroup
-    t[#t+1] = createtoken("red")
+    local n = #t
+    n = n + 1
+    t[n] = tokens.bgroup
+    n = n + 1
+    t[n] = createtoken("red")
     for i=1,#str do
-        t[#t+1] = tokens.other('*')
+        n = n + 1
+        t[n] = tokens.other('*')
     end
-    t[#t+1] = tokens.egroup
+    n = n + 1
+    t[n] = tokens.egroup
 end
 
 function collectors.dowithwords(tag,handle)
-    local t, w = { }, { }
+    local t, w, tn, wn = { }, { }, 0, 0
     handle = handle or collectors.defaultwords
     local tagdata = collectordata[tag]
     for k=1,#tagdata do
         local v = tagdata[k]
         if v[1] == letter then
-            w[#w+1] = v[2]
+            wn = wn + 1
+            w[wn] = v[2]
         else
-            if #w > 0 then
+            if wn > 0 then
                 handle(t,w)
-                w = { }
+                wn = 0
             end
-            t[#t+1] = v
+            tn = tn + 1
+            t[tn] = v
         end
     end
-    if #w > 0 then
+    if wn > 0 then
         handle(t,w)
     end
     collectordata[tag] = t
@@ -297,35 +306,35 @@ function remapper.convert(tag,toks)
     local skipping = 0
     -- todo: math
     if data then
-        local t = { }
+        local t, n = { }, 0
         for s=1,#toks do
             local tok = toks[s]
             local one, two = tok[1], tok[2]
             if one == 11 or one == 12 then
                 if two == leftbracket then
                     skipping = skipping + 1
-                    t[#t+1] = tok
+                    n = n + 1 ; t[n] = tok
                 elseif two == rightbracket then
                     skipping = skipping - 1
-                    t[#t+1] = tok
+                    n = n + 1 ; t[n] = tok
                 elseif skipping == 0 then
                     local new = data[two]
                     if new then
                         if #new > 1 then
                             for n=1,#new do
-                                t[#t+1] = new[n]
+                                n = n + 1 ; t[n] = new[n]
                             end
                         else
-                            t[#t+1] = new[1]
+                            n = n + 1 ; t[n] = new[1]
                         end
                     else
-                        t[#t+1] = tok
+                        n = n + 1 ; t[n] = tok
                     end
                 else
-                    t[#t+1] = tok
+                    n = n + 1 ; t[n] = tok
                 end
             else
-                t[#t+1] = tok
+                n = n + 1 ; t[n] = tok
             end
         end
         return t

@@ -264,7 +264,8 @@
 \setuplistalternative[b][\c!distance=5em,\c!width=2em,\c!stretch=10em,\c!command=\hfill]
 \setuplistalternative[c][\c!distance=5em,\c!width=0pt,\c!stretch=10em,\c!command=\hskip.5em\listdots\hskip.5em\relax]
 
-\def\listdots{\leaders\hbox to .5em{\hss.\hss}\hfill}
+%def\listdots{\leaders \hbox to .5em{\hss.\hss}\hfill}
+\def\listdots{\gleaders\hbox to .5em{\hss.\hss}\hfill}
 
 % \setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}} % ?
 % \getvalue{\??li\c!alternative} % ?

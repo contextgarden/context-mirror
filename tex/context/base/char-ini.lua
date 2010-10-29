@@ -48,10 +48,13 @@ else
 end
 
 if not characters.ranges then
-    local ranges = allocate { }
+    local ranges, r = allocate { }, 0
     characters.ranges = ranges
     for k, v in next, data do
-        ranges[#ranges+1] = k
+        if v.range then
+            r = r + 1
+            ranges[r] = v
+        end
     end
 end
 
@@ -75,6 +78,10 @@ end
 
 characters.tonumber = chartonumber
 
+local private = {
+    description = "PRIVATE SLOT",
+}
+
 setmetatablekey(data, "__index", function(t,k)
     if type(k) == "string" then
         k = lpegmatch(pattern,k) or utfbyte(k)
@@ -86,18 +93,22 @@ setmetatablekey(data, "__index", function(t,k)
                 -- goes to ranges
             end
         else
-            return nil
+            return private
         end
     end
-    for r=1,#ranges do
-        local rr = ranges[r] -- first in range
-        if k > rr and k <= data[rr].range then
-            t[k] = t[rr]
-            return t[k]
+    if k < 0xF0000 then
+        for r=1,#ranges do
+            local rr = ranges[r].range
+            if k >= rr.first and k <= rr.last then
+                t[k] = rr
+                return rr
+            end
         end
     end
-    return nil
+    return private -- handy for when we loop over characters in fonts and check for a property
 end )
+
+--~ setmetatable(data,{ __index = function(t,k) return "" end }) -- quite old, obsolete
 
 characters.blocks = allocate {
     ["aegeannumbers"]                        = { 0x10100, 0x1013F, "Aegean Numbers" },
@@ -380,8 +391,6 @@ characters.bidi = allocate {
     on  = "Other Neutrals",
 }
 
-table.setemptymetatable(data) -- so each key resolves to ""
-
 --[[ldx--
 <p>At this point we assume that the big data table is loaded. From this
 table we derive a few more.</p>
@@ -445,13 +454,14 @@ if texsetcatcode then
             report_defining("defining active character commands")
         end
 
-        local activated = { }
+        local activated, a = { }, 0
 
         for u, chr in next, data do -- these will be commands
             local fallback = chr.fallback
             if fallback then
                 texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}") -- no texprint
-                activated[#activated+1] = u
+                a = a + 1
+                activated[a] = u
             else
                 local contextname = chr.contextname
                 if contextname then
@@ -464,7 +474,8 @@ if texsetcatcode then
                         end
                     elseif is_command[category] then
                         texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
-                        activated[#activated+1] = u
+                        a = a + 1
+                        activated[a] = u
                     end
                 end
             end
@@ -481,8 +492,9 @@ if texsetcatcode then
                     if not chr.fallback and is_letter[chr.category] and u >= 128 and u <= 65536 then
                         texsetcatcode(u,11)
                     end
-                    if chr.range then
-                        for i=1,u,chr.range do
+                    local range = chr.range
+                    if range then
+                        for i=1,range.first,range.last do
                             texsetcatcode(i,11)
                         end
                     end
@@ -521,14 +533,15 @@ else -- char-obs
     local template_b = "\\chardef\\l=11\\chardef\\a=13\\let\\c\\catcode%s\\let\\a\\undefined\\let\\l\\undefined\\let\\c\\undefined"
 
     function characters.define(tobelettered, tobeactivated) -- catcodetables
-        local lettered, activated = { }, { }
+        local lettered, activated, l, a = { }, { }, 0, 0
         for u, chr in next, data do
             -- we can use a macro instead of direct settings
             local fallback = chr.fallback
             if fallback then
             --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\checkedchar{%s}{%s}}}",u,utfchar(u),u,fallback))
                 texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}") -- no texprint
-                activated[#activated+1] = "\\c"..u.."\\a"
+                a = a + 1
+                activated[a] = "\\c"..u.."\\a"
             else
                 local contextname = chr.contextname
                 local category = chr.category
@@ -541,28 +554,35 @@ else -- char-obs
                         else
                             texprint(ctxcatcodes,format("\\let\\%s=%s",contextname,utfchar(u)))
                             if is_letter[category] then
-                                lettered[#lettered+1] = "\\c"..u.."\\l"
+                                l = l + 1
+                                lettered[l] = "\\c"..u.."\\l"
                             end
                         end
                     elseif is_command[category] then
                         -- this might change: contextcommand ipv contextname
                     --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\%s}}",u,utfchar(u),contextname))
                         texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
-                        activated[#activated+1] = "\\c"..u.."\\a"
+                        a = a + 1
+                        activated[a] = "\\c"..u.."\\a"
                     end
                 elseif is_letter[category] then
                     if u >= 128 and u <= 65536 then -- catch private mess
-                        lettered[#lettered+1] = "\\c"..u.."\\l"
+                        l = l + 1
+                        lettered[l] = "\\c"..u.."\\l"
                     end
                 end
             end
-            if chr.range then
-                lettered[#lettered+1] = format('\\dofastrecurse{"%05X}{"%05X}{1}{\\c\\fastrecursecounter\\l}',u,chr.range)
+            local range = chr.range
+            if range then
+                l = l + 1
+                lettered[l] = format('\\dofastrecurse{"%05X}{"%05X}{1}{\\c\\fastrecursecounter\\l}',range.first,range.last)
             end
         end
      -- if false then
-        lettered[#lettered+1] = "\\c"..0x200C.."\\l" -- non-joiner
-        lettered[#lettered+1] = "\\c"..0x200D.."\\l" -- joiner
+        l = l + 1
+        lettered[l] = "\\c"..0x200C.."\\l" -- non-joiner
+        l = l + 1
+        lettered[l] = "\\c"..0x200D.."\\l" -- joiner
      -- fi
         if tobelettered then
             lettered = concat(lettered)
@@ -617,10 +637,13 @@ if texsetcatcode then
                 if cc == "lu" then
                     texsetsfcode(code,999)
                 end
-            elseif cc == "lo" and chr.range then
-                for i=code,chr.range do
-                    texsetcatcode(code,11)       -- letter
-                    texsetlccode(code,code,code) -- self self
+            elseif cc == "lo" then
+                local range = chr.range
+                if range then
+                    for i=range.first,range.last do
+                        texsetcatcode(i,11) -- letter
+                        texsetlccode(i,i,i) -- self self
+                    end
                 end
             end
         end
@@ -640,8 +663,11 @@ else -- char-obs
             if cc == "lu" then
                 texprint(ctxcatcodes,"\\sfcode ",code,"999 ")
             end
-            if cc == "lo" and chr.range then
-                texsprint(ctxcatcodes,format('\\dofastrecurse{"%05X}{"%05X}{1}{\\setcclcucself\\fastrecursecounter}',code,chr.range))
+            if cc == "lo" then
+                local range = chr.range
+                if range then
+                    texsprint(ctxcatcodes,format('\\dofastrecurse{"%05X}{"%05X}{1}{\\setcclcucself\\fastrecursecounter}',range.first,range.last))
+                end
             end
         end
     end
@@ -770,12 +796,13 @@ setmetatable(specialchars, { __index = function(t,u)
         local c = data[utfbyte(u)]
         local s = c and c.specials
         if s then
-            local t = { }
+            local t, tn = { }, 0
             for i=2,#s do
                 local si = s[i]
                 local c = data[si]
                 if is_letter[c.category] then
-                    t[#t+1] = utfchar(si)
+                    tn = tn + 1
+                    t[tn] = utfchar(si)
                 end
             end
             c = concat(t)
@@ -789,27 +816,30 @@ setmetatable(specialchars, { __index = function(t,u)
 end } )
 
 function characters.lower(str)
-    local new = { }
+    local new, n = { }, 0
     for u in utfvalues(str) do
-        new[#new+1] = utfchar(lccodes[u])
+        n = n + 1
+        new[n] = utfchar(lccodes[u])
     end
     return concat(new)
 end
 
 function characters.upper(str)
-    local new = { }
+    local new, n = { }, 0
     for u in utfvalues(str) do
-        new[#new+1] = utfchar(uccodes[u])
+        n = n + 1
+        new[n] = utfchar(uccodes[u])
     end
     return concat(new)
 end
 
 function characters.lettered(str)
-    local new = { }
+    local new, n = { }, 0
     for u in utfvalues(str) do
         local d = data[u]
         if is_letter[d.category] then
-            new[#new+1] = utfchar(lccodes[u])
+            n = n + 1
+            new[n] = utfchar(lccodes[u])
         end
     end
     return concat(new)

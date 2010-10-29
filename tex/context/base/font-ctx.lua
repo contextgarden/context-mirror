@@ -26,11 +26,13 @@ local report_define   = logs.new("define fonts")
 local report_usage    = logs.new("fonts usage")
 local report_mapfiles = logs.new("mapfiles")
 
-local fonts      = fonts
-local tfm        = fonts.tfm
-local fontdata   = fonts.identifiers
-local definers   = fonts.definers
-local specifiers = definers.specifiers
+local fonts        = fonts
+local tfm          = fonts.tfm
+local fontdata     = fonts.identifiers
+local definers     = fonts.definers
+local specifiers   = definers.specifiers
+local currentfont  = font.current
+local texattribute = tex.attribute
 
 specifiers.contextsetups  = specifiers.contextsetups  or { }
 specifiers.contextnumbers = specifiers.contextnumbers or { }
@@ -226,31 +228,28 @@ specifiers.contextnumber   = contextnumber
 specifiers.mergecontext    = mergecontext
 specifiers.registercontext = registercontext
 
-local current_font  = font.current
-local tex_attribute = tex.attribute
-
 local cache = { } -- concat might be less efficient than nested tables
 
 function fonts.withset(name,what)
-    local zero = tex_attribute[0]
+    local zero = texattribute[0]
     local hash = zero .. "+" .. name .. "*" .. what
     local done = cache[hash]
     if not done then
         done = mergecontext(zero,name,what)
         cache[hash] = done
     end
-    tex_attribute[0] = done
+    texattribute[0] = done
 end
 
 function fonts.withfnt(name,what)
-    local font = current_font()
+    local font = currentfont()
     local hash = font .. "*" .. name .. "*" .. what
     local done = cache[hash]
     if not done then
         done = registercontext(font,name,what)
         cache[hash] = done
     end
-    tex_attribute[0] = done
+    texattribute[0] = done
 end
 
 function specifiers.showcontext(name)
@@ -579,7 +578,7 @@ end
 
 local p, f = 1, "%0.1fpt" -- normally this value is changed only once
 
-local stripper = lpeg.patterns.strip_zeros
+local stripper = lpeg.patterns.stripzeros
 
 function fonts.nbfs(amount,precision)
     if precision ~= p then
@@ -663,8 +662,8 @@ fonts.map.reset() -- resets the default file
 
 local nounicode = byte("?")
 
-local function nametoslot(name) -- maybe some day rawdata
-    local tfmdata = fonts.ids[font.current()]
+local function nametoslot(name,all) -- maybe some day rawdata
+    local tfmdata = fontdata[currentfont()]
     local shared = tfmdata and tfmdata.shared
     local fntdata = shared and shared.otfdata or shared.afmdata
     if fntdata then
@@ -673,7 +672,9 @@ local function nametoslot(name) -- maybe some day rawdata
             return nounicode
         elseif type(unicode) == "number" then
             return unicode
-        else -- multiple unicodes
+        elseif all then
+            return unicode
+        else
             return unicode[1]
         end
     end
@@ -682,11 +683,12 @@ end
 
 fonts.nametoslot = nametoslot
 
-function fonts.char(n) -- todo: afm en tfm
+function fonts.char(n,all) -- todo: afm en tfm
     if type(n) == "string" then
-        n = nametoslot(n)
+        n = nametoslot(n,all)
     end
-    if type(n) == "number" then
+ -- if type(n) == "number" then
+    if n then
         context.char(n)
     end
 end
@@ -702,7 +704,7 @@ fonts.afm.char = fonts.char
 -- this will change ...
 
 function fonts.showchardata(n)
-    local tfmdata = fonts.ids[font.current()]
+    local tfmdata = fontdata[currentfont()]
     if tfmdata then
         if type(n) == "string" then
             n = utf.byte(n)
@@ -715,7 +717,7 @@ function fonts.showchardata(n)
 end
 
 function fonts.showfontparameters()
-    local tfmdata = fonts.ids[font.current()]
+    local tfmdata = fontdata[currentfont()]
     if tfmdata then
         local parameters, mathconstants = tfmdata.parameters, tfmdata.MathConstants
         local hasparameters, hasmathconstants = parameters and next(parameters), mathconstants and next(mathconstants)
@@ -733,9 +735,10 @@ end
 
 function fonts.reportdefinedfonts()
     if trace_usage then
-        local t = { }
-        for id, data in table.sortedhash(fonts.ids) do
-            t[#t+1] = {
+        local t, tn = { }, 0
+        for id, data in table.sortedhash(fontdata) do
+            tn = tn + 1
+            t[tn] = {
                 format("%03i",id),
                 format("%09i",data.size or 0),
                 data.type                           or "real",
@@ -755,7 +758,7 @@ function fonts.reportdefinedfonts()
         report_usage()
         report_usage("defined fonts:")
         report_usage()
-        for k=1,#t do
+        for k=1,tn do
             report_usage(t[k])
         end
     end
@@ -766,20 +769,20 @@ luatex.registerstopactions(fonts.reportdefinedfonts)
 function fonts.reportusedfeatures()
     -- numbers, setups, merged
     if trace_usage then
-        local t = { }
-        for i=1,#numbers do
+        local t, n = { }, #numbers
+        for i=1,n do
             local name = numbers[i]
             local setup = setups[name]
             local n = setup.number
             setup.number = nil -- we have no reason to show this
-            t[#t+1] = { i, name, table.sequenced(setup,false,true) } -- simple mode
+            t[i] = { i, name, table.sequenced(setup,false,true) } -- simple mode
             setup.number = n -- restore it (normally not needed as we're done anyway)
         end
         formatcolumns(t,"  ")
         report_usage()
         report_usage("defined featuresets:")
         report_usage()
-        for k=1,#t do
+        for k=1,n do
             report_usage(t[k])
         end
     end
@@ -843,4 +846,8 @@ function fonts.definetypeface(name,t)
     context.stopfontclass()
     local settings = table.sequenced({ features= t.features },",")
     context.dofastdefinetypeface(name, shortcut, shape, size, settings)
+end
+
+function fonts.current(id) -- todo: also handle name
+    return fontdata[currentfont()] or fontdata[0]
 end

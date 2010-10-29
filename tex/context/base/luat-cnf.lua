@@ -28,9 +28,6 @@ local variablenames = allocate { -- most of this becomes obsolete
     'max_in_open',      --    15
     'max_print_line',   --    79
     'max_strings',      -- 15000
-    'ocp_stack_size',   --  1000
-    'ocp_list_size',    --  1000
-    'ocp_buf_size',     --  1000
     'param_size',       --    60
     'pk_dpi',           --    72
     'save_size',        --  4000

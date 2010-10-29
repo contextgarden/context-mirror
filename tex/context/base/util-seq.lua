@@ -19,8 +19,12 @@ local format, gsub, concat, gmatch = string.format, string.gsub, table.concat, s
 local type, loadstring = type, loadstring
 
 utilities            = utilities or { }
-utilities.sequencers = utilities.sequencers or { }
-local sequencers     = utilities.sequencers
+local tables         = utilities.tables
+
+local sequencers     = { }
+utilities.sequencers = sequencers
+
+local removevalue, insertaftervalue, insertbeforevalue = tables.removevalue, tables.insertaftervalue, tables.insertbeforevalue
 
 local function validaction(action)
     local g = _G
@@ -45,23 +49,23 @@ end
 
 function sequencers.prependgroup(t,group,where)
     local list, order = t.list, t.order
-    table.removevalue(order,group)
-    table.insertbeforevalue(order,where,group)
+    removevalue(order,group)
+    insertbeforevalue(order,where,group)
     list[group] = { }
 end
 
 function sequencers.appendgroup(t,group,where)
     local list, order = t.list, t.order
-    table.removevalue(order,group)
-    table.insertaftervalue(order,where,group)
+    removevalue(order,group)
+    insertaftervalue(order,where,group)
     list[group] = { }
 end
 
 function sequencers.prependaction(t,group,action,where,kind,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
-        table.removevalue(g,action)
-        table.insertbeforevalue(g,where,action)
+        removevalue(g,action)
+        insertbeforevalue(g,where,action)
         t.kind[action] = kind
     end
 end
@@ -69,8 +73,8 @@ end
 function sequencers.appendaction(t,group,action,where,kind,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
-        table.removevalue(g,action)
-        table.insertaftervalue(g,where,action)
+        removevalue(g,action)
+        insertaftervalue(g,where,action)
         t.kind[action] = kind
     end
 end
@@ -87,7 +91,7 @@ end
 function sequencers.removeaction(t,group,action,force)
     local g = t.list[group]
     if g and (force or validaction(action)) then
-        table.removevalue(g,action)
+        removevalue(g,action)
     end
 end
 
@@ -114,7 +118,7 @@ end]]
 
 function sequencers.tostring(t)
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
-    local vars, calls, args = { }, { }, nil
+    local vars, calls, args, n = { }, { }, nil, 0
     for i=1,#order do
         local group = order[i]
         if not gskip[group] then
@@ -123,8 +127,9 @@ function sequencers.tostring(t)
                 local action = actions[i]
                 if not askip[action] then
                     local localized = localize(action)
-                    vars [#vars +1] = format("local %s = %s", localized, action)
-                    calls[#calls+1] = format("  %s(...) -- %s %i", localized, group, i)
+                    n = n + 1
+                    vars [n] = format("local %s = %s", localized, action)
+                    calls[n] = format("  %s(...) -- %s %i", localized, group, i)
                 end
             end
         end
@@ -148,7 +153,7 @@ end]]
 
 function sequencers.nodeprocessor(t,n)
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
-    local vars, calls, args = { }, { }, nil
+    local vars, calls, args, n = { }, { }, nil, 0
     if n == 0 then
         args = ""
     elseif n == 1 then
@@ -172,11 +177,12 @@ function sequencers.nodeprocessor(t,n)
                 local action = actions[i]
                 if not askip[action] then
                     local localized = localize(action)
-                    vars[#vars+1] = format("local %s = %s",localized,action)
+                    n = n + 1
+                    vars[n] = format("local %s = %s",localized,action)
                     if kind[action] == "nohead" then
-                        calls[#calls+1] = format("        ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
+                        calls[n] = format("        ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
                     else
-                        calls[#calls+1] = format("  head, ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
+                        calls[n] = format("  head, ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
                     end
                 end
             end

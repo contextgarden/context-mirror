@@ -33,19 +33,25 @@ supplied by <l n='luatex'/>.</p>
 
 -- auto complete font with missing composed characters
 
-table.insert(fonts.manipulators,"compose")
-
-function fonts.initializers.common.compose(tfmdata,value)
-    if value then
-        fonts.vf.aux.compose_characters(tfmdata)
-    end
-end
-
 -- tfm features, experimental
 
 tfm.features         = tfm.features         or { }
 tfm.features.list    = tfm.features.list    or { }
 tfm.features.default = tfm.features.default or { }
+
+local initializers       = fonts.initializers
+local triggers           = fonts.triggers
+local manipulators       = fonts.manipulators
+local featurelist        = tfm.features.list
+local defaultfeaturelist = tfm.features.default
+
+table.insert(manipulators,"compose")
+
+function initializers.common.compose(tfmdata,value)
+    if value then
+        fonts.vf.aux.compose_characters(tfmdata)
+    end
+end
 
 function tfm.enhance(tfmdata,specification)
     -- we don't really share tfm data because we always reload
@@ -72,52 +78,67 @@ function tfm.setfeatures(tfmdata)
     local features = shared.features
     if features and next(features) then
         local mode = tfmdata.mode or features.mode or "base"
-        local fi = fonts.initializers[mode]
+        local fi = initializers[mode]
         if fi and fi.tfm then
             local function initialize(list) -- using tex lig and kerning
                 if list then
+                    -- fi adapts !
                     for i=1,#list do
                         local f = list[i]
                         local value = features[f]
-                        if value and fi.tfm[f] then -- brr
-                            if tfm.trace_features then
-                                report_define("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
+                        if value then
+                            local fitfmf = fi.tfm[f] -- brr
+                            if fitfmf then
+                                if tfm.trace_features then
+                                    report_define("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
+                                end
+                                fitfmf(tfmdata,value)
+                                mode = tfmdata.mode or features.mode or "base"
+                                fi = initializers[mode]
                             end
-                            fi.tfm[f](tfmdata,value)
-                            mode = tfmdata.mode or features.mode or "base"
-                            fi = fonts.initializers[mode]
                         end
                     end
                 end
             end
-            initialize(fonts.triggers)
-            initialize(tfm.features.list)
-            initialize(fonts.manipulators)
+            initialize(triggers)
+            initialize(featurelist)
+            initialize(manipulators)
         end
         local fm = fonts.methods[mode]
-        if fm and fm.tfm then
-            local function register(list) -- node manipulations
-                if list then
-                    for i=1,#list do
-                        local f = list[i]
-                        if features[f] and fm.tfm[f] then -- brr
-                            if not shared.processors then -- maybe also predefine
-                                shared.processors = { fm.tfm[f] }
-                            else
-                                shared.processors[#shared.processors+1] = fm.tfm[f]
+        if fm then
+            local fmtfm = fm.tfm
+            if fmtfm then
+                local function register(list) -- node manipulations
+                    if list then
+                        local sp = shared.processors
+                        local ns = sp and #sp
+                        for i=1,#list do
+                            local f = list[i]
+                            if features[f] then
+                                local fmtfmf = fmtfm[f]
+                                if not fmtfmf then
+                                    -- brr
+                                elseif not sp then
+                                    sp = { fmtfmf }
+                                    ns = 1
+                                    shared.processors = sp
+                                else
+                                    ns = ns + 1
+                                    sp[ns] = fmtfmf
+                                end
                             end
                         end
                     end
                 end
+                register(featurelist)
             end
-            register(tfm.features.list)
         end
     end
 end
 
 function tfm.features.register(name,default)
-    tfm.features.list[#tfm.features.list+1] = name
-    tfm.features.default[name] = default
+    featurelist[#tfm.features.list+1] = name
+    defaultfeaturelist[name] = default
 end
 
 function tfm.reencode(tfmdata,encoding)
@@ -143,8 +164,8 @@ end
 
 tfm.features.register('reencode')
 
-fonts.initializers.base.tfm.reencode = tfm.reencode
-fonts.initializers.node.tfm.reencode = tfm.reencode
+initializers.base.tfm.reencode = tfm.reencode
+initializers.node.tfm.reencode = tfm.reencode
 
 fonts.enc            = fonts.enc            or { }
 fonts.enc.remappings = fonts.enc.remappings or { }
@@ -173,8 +194,8 @@ end
 
 tfm.features.register('remap')
 
-fonts.initializers.base.tfm.remap = tfm.remap
-fonts.initializers.node.tfm.remap = tfm.remap
+initializers.base.tfm.remap = tfm.remap
+initializers.node.tfm.remap = tfm.remap
 
 --~ obsolete
 --~

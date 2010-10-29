@@ -435,71 +435,71 @@ local vector = {
 
 local function tochinese(n,name) -- normal, caps, all
  -- improved version by Li Yanrui
-    local result = { }
+    local result, r = { }, 0
     local vector = vector[name] or vector.normal
     while true do
         if n == 0 then
             break
         elseif n >= 100000000 then
             local m = floor(n/100000000)
-            result[#result+1] = tochinese(m,name)
-            result[#result+1] = vector[100000000]
+            r = r + 1 ; result[r] = tochinese(m,name)
+            r = r + 1 ; result[r] = vector[100000000]
             local z = n - m * 100000000
-            if z > 0 and z < 10000000 then result[#result+1] = vector[0] end
+            if z > 0 and z < 10000000 then r = r + 1 ; result[r] = vector[0] end
             n = n % 100000000
         elseif n >= 10000000 then
             local m = floor(n/10000)
-            result[#result+1] = tochinese(m,name)
-            result[#result+1] = vector[10000]
+            r = r + 1 ; result[r] = tochinese(m,name)
+            r = r + 1 ; result[r] = vector[10000]
             local z = n - m * 10000
-            if z > 0 and z < 1000 then result[#result+1] = vector[0] end
+            if z > 0 and z < 1000 then r = r + 1 ; result[r] = vector[0] end
             n = n % 10000
         elseif n >= 1000000 then
             local m = floor(n/10000)
-            result[#result+1] = tochinese(m,name)
-            result[#result+1] = vector[10000]
+            r = r + 1 ; result[r] = tochinese(m,name)
+            r = r + 1 ; result[r] = vector[10000]
             local z = n - m * 10000
-            if z > 0 and z < 1000 then result[#result+1] = vector[0] end
+            if z > 0 and z < 1000 then r = r + 1 ; result[r] = vector[0] end
             n = n % 10000
         elseif n >= 100000 then
             local m = floor(n/10000)
-            result[#result+1] = tochinese(m,name)
-            result[#result+1] = vector[10000]
+            r = r + 1 ; result[r] = tochinese(m,name)
+            r = r + 1 ; result[r] = vector[10000]
             local z = n - m * 10000
-            if z > 0 and z < 1000 then result[#result+1] = vector[0] end
+            if z > 0 and z < 1000 then r = r + 1 ; result[r] = vector[0] end
             n = n % 10000
          elseif n >= 10000 then
             local m = floor(n/10000)
-            result[#result+1] = vector[m]
-            result[#result+1] = vector[10000]
+            r = r + 1 ; result[r] = vector[m]
+            r = r + 1 ; result[r] = vector[10000]
             local z = n - m * 10000
-            if z > 0 and z < 1000 then result[#result+1] = vector[0] end
+            if z > 0 and z < 1000 then r = r + 1 ; result[r] = vector[0] end
             n = n % 10000
          elseif n >= 1000 then
             local m = floor(n/1000)
-            result[#result+1] = vector[m]
-            result[#result+1] = vector[1000]
+            r = r + 1 ; result[r] = vector[m]
+            r = r + 1 ; result[r] = vector[1000]
             local z =  n - m * 1000
-            if z > 0 and z < 100 then result[#result+1] = vector[0] end
+            if z > 0 and z < 100 then r = r + 1 ; result[r] = vector[0] end
             n = n % 1000
          elseif n >= 100 then
             local m = floor(n/100)
-            result[#result+1] = vector[m]
-            result[#result+1] = vector[100]
+            r = r + 1 ; result[r] = vector[m]
+            r = r + 1 ; result[r] = vector[100]
             local z = n - m * 100
-            if z > 0 and z < 10 then result[#result+1] = vector[0] end
+            if z > 0 and z < 10 then r = r + 1 ; result[r] = vector[0] end
             n = n % 100
          elseif n >= 10 then
             local m = floor(n/10)
             if m > 1 and vector[m*10] then
-                result[#result+1] = vector[m*10]
+                r = r + 1 ; result[r] = vector[m*10]
             else
-                result[#result+1] = vector[m]
-                result[#result+1] = vector[10]
+                r = r + 1 ; result[r] = vector[m]
+                r = r + 1 ; result[r] = vector[10]
             end
             n = n % 10
         else
-            result[#result+1] = vector[n]
+            r = r + 1 ; result[r] = vector[n]
             break
         end
     end

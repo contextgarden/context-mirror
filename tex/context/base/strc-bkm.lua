@@ -105,7 +105,7 @@ function bookmarks.place()
     if next(names) then
         local list = lists.filtercollected(names,"all",nil,lists.collected,forced)
         if #list > 0 then
-            local levels, lastlevel = { }, 1
+            local levels, noflevels, lastlevel = { }, 0, 1
             for i=1,#list do
                 local li = list[i]
                 local metadata = li.metadata
@@ -133,7 +133,8 @@ function bookmarks.place()
                                 title = concat(sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)) .. " " .. title
                             end
                         end
-                        levels[#levels+1] = {
+                        noflevels = noflevels + 1
+                        levels[noflevels] = {
                             lastlevel,
                             stripped(title), -- can be replaced by converter
                             li.references, -- has internal and realpage
@@ -142,7 +143,6 @@ function bookmarks.place()
                     end
                 end
             end
---~ print(table.serialize(levels))
             bookmarks.finalize(levels)
         end
         function bookmarks.place() end -- prevent second run

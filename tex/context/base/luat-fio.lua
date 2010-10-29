@@ -43,7 +43,6 @@ if not resolvers.instance then
         register('find_format_file'    , function(name) return findbinfile(name,"fmt") end, true)
         register('find_image_file'     , function(name) return findbinfile(name,"tex") end, true)
         register('find_map_file'       , function(name) return findbinfile(name,"map") end, true)
-        register('find_ocp_file'       , function(name) return findbinfile(name,"ocp") end, true)
         register('find_opentype_file'  , function(name) return findbinfile(name,"otf") end, true)
         register('find_output_file'    , function(name) return name                    end, true)
         register('find_pk_file'        , function(name) return findbinfile(name,"pk")  end, true)
@@ -58,7 +57,6 @@ if not resolvers.instance then
      -- format
      -- image
         register('read_map_file'       , function(file) return loadbinfile(file,"map") end, true)
-        register('read_ocp_file'       , function(file) return loadbinfile(file,"ocp") end, true)
      -- output
         register('read_pk_file'        , function(file) return loadbinfile(file,"pk")  end, true) -- 600dpi/manfnt.720pk
         register('read_sfd_file'       , function(file) return loadbinfile(file,"sfd") end, true)

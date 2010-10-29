@@ -264,18 +264,20 @@ end
 
 statistics.register("loaded tex modules", function()
     if next(modstatus) then
-        local t, f = { }, { }
+        local t, f, nt, nf = { }, { }, 0, 0
         for k, v in table.sortedhash(modstatus) do
             k = file.basename(k)
             if v == 0 then
-                f[#f+1] = k
+                nf = nf + 1
+                f[nf] = k
             else
-                t[#t+1] = k
+                nt = nt + 1
+                t[nt] = k
             end
         end
-        local ts = (#t>0 and format(" (%s)",concat(t," "))) or ""
-        local fs = (#f>0 and format(" (%s)",concat(f," "))) or ""
-        return format("%s requested, %s found%s, %s missing%s",#t+#f,#t,ts,#f,fs)
+        local ts = (nt>0 and format(" (%s)",concat(t," "))) or ""
+        local fs = (nf>0 and format(" (%s)",concat(f," "))) or ""
+        return format("%s requested, %s found%s, %s missing%s",nt+nf,nt,ts,nf,fs)
     else
         return nil
     end

@@ -125,9 +125,10 @@ local function totable(n,flat,verbose)
     end
     if n then
         if flat then
-            local t = { }
+            local t, tn = { }, 0
             while n do
-                t[#t+1] = to_table(n,flat,verbise)
+                tn = tn + 1
+                t[tn] = to_table(n,flat,verbose)
                 n = n.next
             end
             return t
@@ -219,9 +220,10 @@ local function serialize(root,name,handle,depth,m)
 end
 
 function nodes.serialize(root,name)
-    local t = { }
+    local t, n = { }, 0
     local function flush(s)
-        t[#t+1] = s
+        n = n + 1
+        t[n] = s
     end
     serialize(root, name, flush, nil, 0)
     return concat(t,"\n")

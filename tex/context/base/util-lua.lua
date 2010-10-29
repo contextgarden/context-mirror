@@ -13,7 +13,7 @@ utilities.report = utilities.report or print
 function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
     utilities.report("lua: compiling %s into %s",luafile,lucfile)
     os.remove(lucfile)
-    local command = "-o " .. string.quote(lucfile) .. " " .. string.quote(luafile)
+    local command = "-o " .. string.quoted(lucfile) .. " " .. string.quoted(luafile)
     if strip ~= false then
         command = "-s " .. command
     end
@@ -24,3 +24,25 @@ function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: clean
     end
     return done
 end
+
+--~ local getmetatable, type = getmetatable, type
+
+--~ local types = { }
+
+--~ function utilities.lua.registerdatatype(d,name)
+--~     types[getmetatable(d)] = name
+--~ end
+
+--~ function utilities.lua.datatype(d)
+--~     local t = type(d)
+--~     if t == "userdata" then
+--~         local m = getmetatable(d)
+--~         return m and types[m] or "userdata"
+--~     else
+--~         return t
+--~     end
+--~ end
+
+--~ utilities.lua.registerdatatype(lpeg.P("!"),"lpeg")
+
+--~ print(utilities.lua.datatype(lpeg.P("oeps")))

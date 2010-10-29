@@ -72,7 +72,7 @@ local function identify()
             local cachepath = texmfcaches[k]
             if cachepath ~= "" then
                 cachepath = resolvers.cleanpath(cachepath)
-                cachepath = file.collapse_path(cachepath)
+                cachepath = file.collapsepath(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
                     if file.is_readable(cachepath) then

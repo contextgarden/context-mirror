@@ -65,7 +65,7 @@ end
         for i=1,#data do
             local line = data[i]
             if line ~= "" and (not checker or not lpegmatch(checker,line)) then
-                local result = { } -- we collect as this is nicer in tracing
+                local result, r = { }, 0 -- we collect as this is nicer in tracing
                 local list = lpegmatch(splitter,line)
                 if not found then
                     local setups = settings.setups or ""
@@ -77,20 +77,20 @@ end
                     sprint(ctxcatcodes,before)
                     found = true
                 end
-                result[#result+1] = first
+                r = r + 1 ; result[r] = first
                 for j=1,#list do
                     result[#result+1] = left
                     if command == "" then
-                        result[#result+1] = list[j]
+                        r = r + 1 ; result[r] = list[j]
                     else
-                        result[#result+1] = command
-                        result[#result+1] = "{"
-                        result[#result+1] = list[j]
-                        result[#result+1] = "}"
+                        r = r + 1 ; result[r] = command
+                        r = r + 1 ; result[r] = "{"
+                        r = r + 1 ; result[r] = list[j]
+                        r = r + 1 ; result[r] = "}"
                     end
-                    result[#result+1] = right
+                    r = r + 1 ; result[r] = right
                 end
-                result[#result+1] = last
+                r = r + 1 ; result[r] = last
                 sprint(ctxcatcodes,result)
             end
         end

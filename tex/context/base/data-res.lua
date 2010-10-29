@@ -23,7 +23,7 @@ local lpegP, lpegS, lpegR, lpegC, lpegCc, lpegCs, lpegCt = lpeg.P, lpeg.S, lpeg.
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
-local collapse_path = file.collapse_path
+local collapsepath = file.collapsepath
 local allocate = utilities.storage.allocate
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
@@ -148,7 +148,6 @@ local function expandvars(lst) -- simple vars
         var = gsub(var,"%$([%a%d%_%-]+)",resolve)
         var = gsub(var,";+",";")
         var = gsub(var,";[!{}/\\]+;",";")
---~         var = gsub(var,"~",resolvers.homedir)
         lst[k] = var
     end
 end
@@ -170,7 +169,6 @@ local function expandedvariable(var) -- simple vars
     var = gsub(var,"%$([%a%d%_%-]+)",resolve)
     var = gsub(var,";+",";")
     var = gsub(var,";[!{}/\\]+;",";")
---~     var = gsub(var,"~",resolvers.homedir)
     return var
 end
 
@@ -228,7 +226,7 @@ local function identify_configuration_files()
         expandvars(cnfpaths) --- hm
         local luacnfname = resolvers.luacnfname
         for i=1,#cnfpaths do
-            local filename = collapse_path(filejoin(cnfpaths[i],luacnfname))
+            local filename = collapsepath(filejoin(cnfpaths[i],luacnfname))
             if lfs.isfile(filename) then
                 specification[#specification+1] = filename
             end
@@ -389,7 +387,7 @@ local function locate_file_databases()
     -- todo: cache:// and tree:// (runtime)
     local texmfpaths = resolvers.expandedpathlist('TEXMF')
     for i=1,#texmfpaths do
-        local path = collapse_path(texmfpaths[i])
+        local path = collapsepath(texmfpaths[i])
         local stripped = gsub(path,"^!!","")
         local runtime = stripped == path
         path = resolvers.cleanpath(path)
@@ -502,11 +500,12 @@ end
 function resolvers.splitexpansions()
     local ie = instance.expansions
     for k,v in next, ie do
-        local t, h, p = { }, { }, splitconfigurationpath(v)
+        local t, tn, h, p = { }, 0, { }, splitconfigurationpath(v)
         for kk=1,#p do
             local vv = p[kk]
             if vv ~= "" and not h[vv] then
-                t[#t+1] = vv
+                tn = tn + 1
+                t[tn] = vv
                 h[vv] = true
             end
         end
@@ -613,7 +612,8 @@ end
 
 function resolvers.registerextrapath(paths,subpaths)
     local ep = instance.extra_paths or { }
-    local n = #ep
+    local oldn = #ep
+    local newn = oldn
     if paths and paths ~= "" then
         if subpaths and subpaths ~= "" then
             for p in gmatch(paths,"[^,]+") do
@@ -621,7 +621,8 @@ function resolvers.registerextrapath(paths,subpaths)
                 for s in gmatch(subpaths,"[^,]+") do
                     local ps = p .. "/" .. s
                     if not done[ps] then
-                        ep[#ep+1] = resolvers.cleanpath(ps)
+                        newn = newn + 1
+                        ep[newn] = resolvers.cleanpath(ps)
                         done[ps] = true
                     end
                 end
@@ -629,7 +630,8 @@ function resolvers.registerextrapath(paths,subpaths)
         else
             for p in gmatch(paths,"[^,]+") do
                 if not done[p] then
-                    ep[#ep+1] = resolvers.cleanpath(p)
+                    newn = newn + 1
+                    ep[newn] = resolvers.cleanpath(p)
                     done[p] = true
                 end
             end
@@ -640,16 +642,17 @@ function resolvers.registerextrapath(paths,subpaths)
             for s in gmatch(subpaths,"[^,]+") do
                 local ps = ep[i] .. "/" .. s
                 if not done[ps] then
-                    ep[#ep+1] = resolvers.cleanpath(ps)
+                    newn = newn + 1
+                    ep[newn] = resolvers.cleanpath(ps)
                     done[ps] = true
                 end
             end
         end
     end
-    if #ep > 0 then
+    if newn > 0 then
         instance.extra_paths = ep -- register paths
     end
-    if #ep > n then
+    if newn > oldn then
         instance.lists = { } -- erase the cache
     end
 end
@@ -659,14 +662,15 @@ local function made_list(instance,list)
     if not ep or #ep == 0 then
         return list
     else
-        local done, new = { }, { }
+        local done, new, newn = { }, { }, 0
         -- honour . .. ../.. but only when at the start
         for k=1,#list do
             local v = list[k]
             if not done[v] then
                 if find(v,"^[%.%/]$") then
                     done[v] = true
-                    new[#new+1] = v
+                    newn = newn + 1
+                    new[newn] = v
                 else
                     break
                 end
@@ -677,7 +681,8 @@ local function made_list(instance,list)
             local v = ep[k]
             if not done[v] then
                 done[v] = true
-                new[#new+1] = v
+                newn = newn + 1
+                new[newn] = v
             end
         end
         -- next the formal paths
@@ -685,7 +690,8 @@ local function made_list(instance,list)
             local v = list[k]
             if not done[v] then
                 done[v] = true
-                new[#new+1] = v
+                newn = newn + 1
+                new[newn] = v
             end
         end
         return new
@@ -696,7 +702,7 @@ function resolvers.cleanpathlist(str)
     local t = resolvers.expandedpathlist(str)
     if t then
         for i=1,#t do
-            t[i] = collapse_path(resolvers.cleanpath(t[i]))
+            t[i] = collapsepath(resolvers.cleanpath(t[i]))
         end
     end
     return t
@@ -762,7 +768,7 @@ resolvers.isreadable.tex = resolvers.isreadable.file
 -- name/name
 
 local function collect_files(names)
-    local filelist = { }
+    local filelist, noffiles = { }, 0
     for k=1,#names do
         local fname = names[k]
         if trace_detail then
@@ -803,7 +809,8 @@ local function collect_files(names)
                             if trace_detail then
                                 report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
                             end
-                            filelist[#filelist+1] = { kind, search, result }
+                            noffiles = noffiles + 1
+                            filelist[noffiles] = { kind, search, result }
                         end
                     else
                         for kk=1,#blobfile do
@@ -815,7 +822,8 @@ local function collect_files(names)
                                 if trace_detail then
                                     report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
                                 end
-                                filelist[#filelist+1] = { kind, search, result }
+                                noffiles = noffiles + 1
+                                filelist[noffiles] = { kind, search, result }
                             end
                         end
                     end
@@ -825,7 +833,7 @@ local function collect_files(names)
             end
         end
     end
-    return #filelist > 0 and filelist or nil
+    return noffiles > 0 and filelist or nil
 end
 
 function resolvers.registerintrees(name)
@@ -851,7 +859,7 @@ end
 local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
     local result = collected or { }
     local stamp  = nil
-    filename = collapse_path(filename)
+    filename = collapsepath(filename)
     -- speed up / beware: format problem
     if instance.remember then
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
@@ -1107,7 +1115,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         end
     end
     for k=1,#result do
-        local rk = collapse_path(result[k])
+        local rk = collapsepath(result[k])
         result[k] = rk
         resolvers.registerintrees(rk) -- for tracing used files
     end

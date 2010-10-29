@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['l-number'] = {
     license   = "see context related readme files"
 }
 
+-- this module will be replaced when we have the bit library
+
 local tostring = tostring
 local format, floor, insert, match = string.format, math.floor, string.match
 local concat, insert = table.concat, table.insert

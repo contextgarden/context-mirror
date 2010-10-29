@@ -21,26 +21,36 @@ local backends, lpdf = backends, lpdf
 local variables      = interfaces.variables
 local codeinjections = backends.pdf.codeinjections
 
+local layerspec = { -- predefining saves time
+    "epdflinks"
+}
+
+local locationspec = { -- predefining saves time
+    x      = "",
+    y      = "",
+    preset = "leftbottom",
+}
+
+local buttonspec = { -- predefining saves time
+    width  = "",
+    height = "",
+    offset = variables.overlay,
+    frame  = trace_links and variables.on or variables.off,
+}
+
 local function add_link(x,y,w,h,destination,what)
     if trace_links then
         report_link("dx: %04i, dy: %04i, wd: %04i, ht: %04i, destination: %s, type: %s",x,y,w,h,destination,what)
     end
+    locationspec.x    = x .. "bp"
+    locationspec.y    = y .. "bp"
+    buttonspec.width  = w .. "bp"
+    buttonspec.height = h .. "bp"
     context.setlayer (
-        { "epdflinks" },
-        { x = x .. "bp", y = y .. "bp", preset = "leftbottom" },
-        function()
-         -- context.blackrule { width = w.."bp", height = h.."bp", depth = "0bp" }
-            context.button (
-                {
-                    width  = w.."bp",
-                    height = h.."bp",
-                    offset = variables.overlay,
-                    frame  = trace_links and variables.on or variables.off,
-                },
-                "",
-                { destination }
-            )
-        end
+        layerspec,
+        locationspec,
+        function() context.button ( buttonspec, "", { destination } ) end
+     -- context.nested.button(buttonspec, "", { destination }) -- time this
     )
 end
 
@@ -136,7 +146,8 @@ function codeinjections.mergereferences(specification)
                     end
                 end
                 context.flushlayer { "epdflinks" }
-                context("\\gdef\\figurereference{%s}",reference) -- global
+             -- context("\\gdef\\figurereference{%s}",reference) -- global
+                context.setgvalue("figurereference",reference) -- global
                 specification.reference = reference
                 return namespace
             end

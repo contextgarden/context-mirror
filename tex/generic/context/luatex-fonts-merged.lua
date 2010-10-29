@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/22/10 16:46:39
+-- merge date  : 10/29/10 11:35:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['l-string'] = {
 
 local string = string
 local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
-local lpegmatch = lpeg.match
+local lpegmatch, S, C, Ct = lpeg.match, lpeg.S, lpeg.C, lpeg.Ct
 
 -- some functions may disappear as they are not used anywhere
 
@@ -22,156 +22,74 @@ if not string.split then
 
     -- this will be overloaded by a faster lpeg variant
 
-    function string:split(pattern)
-        if #self > 0 then
-            local t = { }
-            for s in gmatch(self..pattern,"(.-)"..pattern) do
-                t[#t+1] = s
+    function string.split(str,pattern)
+        local t = { }
+        if #str > 0 then
+            local n = 1
+            for s in gmatch(str..pattern,"(.-)"..pattern) do
+                t[n] = s
+                n = n + 1
             end
-            return t
-        else
-            return { }
         end
+        return t
     end
 
 end
 
-string.patterns = { }
-
-local escapes = {
-    ["%"] = "%%",
-    ["."] = "%.",
-    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
-    ["^"] = "%^", ["$"] = "%$",
-    ["["] = "%[", ["]"] = "%]",
-    ["("] = "%(", [")"] = "%)",
-    ["{"] = "%{", ["}"] = "%}"
-}
-
-string.patterns.escapes = escapes
-
-function string:esc() -- variant 2
-    return (gsub(self,"(.)",escapes))
+function string.unquoted(str)
+    return (gsub(str,"^([\"\'])(.*)%1$","%2"))
 end
 
-function string:unquote()
-    return (gsub(self,"^([\"\'])(.*)%1$","%2"))
-end
-
---~ function string:unquote()
---~     if find(self,"^[\'\"]") then
---~         return sub(self,2,-2)
+--~ function stringunquoted(str)
+--~     if find(str,"^[\'\"]") then
+--~         return sub(str,2,-2)
 --~     else
---~         return self
+--~         return str
 --~     end
 --~ end
 
-function string:quote() -- we could use format("%q")
-    return format("%q",self)
+function string.quoted(str)
+    return format("%q",str) -- always "
 end
 
-function string:count(pattern) -- variant 3
+function string.count(str,pattern) -- variant 3
     local n = 0
-    for _ in gmatch(self,pattern) do
+    for _ in gmatch(str,pattern) do -- not for utf
         n = n + 1
     end
     return n
 end
 
-function string:limit(n,sentinel)
-    if #self > n then
+function string.limit(str,n,sentinel)
+    if #str > n then
         sentinel = sentinel or " ..."
-        return sub(self,1,(n-#sentinel)) .. sentinel
+        return sub(str,1,(n-#sentinel)) .. sentinel
     else
-        return self
+        return str
     end
 end
 
---~ function string:strip() -- the .- is quite efficient
---~  -- return match(self,"^%s*(.-)%s*$") or ""
---~  -- return match(self,'^%s*(.*%S)') or '' -- posted on lua list
---~     return find(s,'^%s*$') and '' or match(s,'^%s*(.*%S)')
---~ end
+local space    = S(" \t\v\n")
+local nospace  = 1 - space
+local stripper = space^0 * C((space^0 * nospace^1)^0) -- roberto's code
 
-do -- roberto's variant:
-    local space    = lpeg.S(" \t\v\n")
-    local nospace  = 1 - space
-    local stripper = space^0 * lpeg.C((space^0 * nospace^1)^0)
-    function string.strip(str)
-        return lpegmatch(stripper,str) or ""
-    end
+function string.strip(str)
+    return lpegmatch(stripper,str) or ""
 end
 
-function string:is_empty()
-    return not find(self,"%S")
+function string.is_empty(str)
+    return not find(str,"%S")
 end
-
-function string:enhance(pattern,action)
-    local ok, n = true, 0
-    while ok do
-        ok = false
-        self = gsub(self,pattern, function(...)
-            ok, n = true, n + 1
-            return action(...)
-        end)
-    end
-    return self, n
-end
-
-if not string.characters then
-
-    local function nextchar(str, index)
-        index = index + 1
-        return (index <= #str) and index or nil, sub(str,index,index)
-    end
-    function string:characters()
-        return nextchar, self, 0
-    end
-    local function nextbyte(str, index)
-        index = index + 1
-        return (index <= #str) and index or nil, byte(sub(str,index,index))
-    end
-    function string:bytes()
-        return nextbyte, self, 0
-    end
-
-end
-
-function string:rpadd(n,chr)
-    local m = n-#self
-    if m > 0 then
-        return self .. rep(chr or " ",m)
-    else
-        return self
-    end
-end
-
-function string:lpadd(n,chr)
-    local m = n-#self
-    if m > 0 then
-        return rep(chr or " ",m) .. self
-    else
-        return self
-    end
-end
-
-string.padd = string.rpadd
 
 local patterns_escapes = {
-    ["-"] = "%-",
-    ["."] = "%.",
-    ["+"] = "%+",
-    ["*"] = "%*",
     ["%"] = "%%",
-    ["("] = "%)",
-    [")"] = "%)",
-    ["["] = "%[",
-    ["]"] = "%]",
+    ["."] = "%.",
+    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
+    ["["] = "%[", ["]"] = "%]",
+    ["("] = "%)", [")"] = "%)",
+ -- ["{"] = "%{", ["}"] = "%}"
+ -- ["^"] = "%^", ["$"] = "%$",
 }
-
-function string:escapedpattern()
-    return (gsub(self,".",patterns_escapes))
-end
 
 local simple_escapes = {
     ["-"] = "%-",
@@ -180,22 +98,28 @@ local simple_escapes = {
     ["*"] = ".*",
 }
 
-function string:partialescapedpattern()
-    return (gsub(self,".",simple_escapes))
-end
-
-function string:tohash()
-    local t = { }
-    for s in gmatch(self,"([^, ]+)") do -- lpeg
-        t[s] = true
+function string.escapedpattern(str,simple)
+    if simple then
+        return (gsub(str,".",simple_escapes))
+    else
+        return (gsub(str,".",patterns_escapes))
     end
-    return t
 end
 
-local pattern = lpeg.Ct(lpeg.C(1)^0)
-
-function string:totable()
-    return lpegmatch(pattern,self)
+function string.topattern(str,lowercase,strict)
+    if str == "" then
+        return ".*"
+    else
+        str = gsub(str,".",simple_escapes)
+        if lowercase then
+            str = lower(str)
+        end
+        if strict then
+            return "^" .. str .. "$"
+        else
+            return str
+        end
+    end
 end
 
 --~ local t = {
@@ -210,6 +134,8 @@ end
 --~ for k,v do
 --~     print(string.tabtospace(t[k]))
 --~ end
+
+-- The following functions might end up in another namespace.
 
 function string.tabtospace(str,tab)
     -- we don't handle embedded newlines
@@ -230,30 +156,22 @@ function string.tabtospace(str,tab)
     return str
 end
 
-function string:compactlong() -- strips newlines and leading spaces
-    self = gsub(self,"[\n\r]+ *","")
-    self = gsub(self,"^ *","")
-    return self
+--~ local template = string.striplong([[
+--~   aaaa
+--~   bb
+--~   cccccc
+--~ ]])
+
+function string.striplong(str) -- strips all leading spaces
+    str = gsub(str,"^%s*","")
+    str = gsub(str,"[\n\r]+ *","\n")
+    return str
 end
 
-function string:striplong() -- strips newlines and leading spaces
-    self = gsub(self,"^%s*","")
-    self = gsub(self,"[\n\r]+ *","\n")
-    return self
-end
+-- obsolete names:
 
-function string:topattern(lowercase,strict)
-    if lowercase then
-        self = lower(self)
-    end
-    self = gsub(self,".",simple_escapes)
-    if self == "" then
-        self = ".*"
-    elseif strict then
-        self = "^" .. self .. "$"
-    end
-    return self
-end
+string.quote   = string.quoted
+string.unquote = string.unquoted
 
 end -- closure
 
@@ -275,15 +193,29 @@ local patterns = lpeg.patterns
 local P, R, S, Ct, C, Cs, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.V
 local match = lpeg.match
 
+local utfcharacters    = string.utfcharacters
+local utfgmatch        = unicode and unicode.utf8.gmatch
+
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
-local utf8byte         = R("\128\191")
+local utf8next         = R("\128\191")
+local escaped          = P("\\") * P(1)
+local squote           = P("'")
+local dquote           = P('"')
 
-patterns.utf8byte      = utf8byte
 patterns.utf8one       = R("\000\127")
-patterns.utf8two       = R("\194\223") * utf8byte
-patterns.utf8three     = R("\224\239") * utf8byte * utf8byte
-patterns.utf8four      = R("\240\244") * utf8byte * utf8byte * utf8byte
+patterns.utf8two       = R("\194\223") * utf8next
+patterns.utf8three     = R("\224\239") * utf8next * utf8next
+patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
+patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
+
+local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
+local validutf8char    = utf8char^0 * P(-1) * Cc(true) + Cc(false)
+
+patterns.utf8          = utf8char
+patterns.utf8char      = utf8char
+patterns.validutf8     = validutf8char
+patterns.validutf8char = validutf8char
 
 patterns.digit         = digit
 patterns.sign          = sign
@@ -310,16 +242,27 @@ patterns.nonspace      = 1 - patterns.space
 patterns.nonspacer     = 1 - patterns.spacer
 patterns.whitespace    = patterns.eol + patterns.spacer
 patterns.nonwhitespace = 1 - patterns.whitespace
-patterns.utf8          = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
-patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
-patterns.validutf8     = patterns.utf8^0 * P(-1) * Cc(true) + Cc(false)
 patterns.comma         = P(",")
 patterns.commaspacer   = P(",") * patterns.spacer^0
 patterns.period        = P(".")
-
-patterns.undouble      = P('"')/"" * (1-P('"'))^0 * P('"')/""
-patterns.unsingle      = P("'")/"" * (1-P("'"))^0 * P("'")/""
+patterns.escaped       = escaped
+patterns.squote        = squote
+patterns.dquote        = dquote
+patterns.undouble      = (dquote/"") * ((escaped + (1-dquote))^0) * (dquote/"")
+patterns.unsingle      = (squote/"") * ((escaped + (1-squote))^0) * (squote/"")
+patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
+
+local unquoted = Cs(patterns.unquoted * P(-1)) -- not C
+
+function string.unquoted(str)
+    return match(unquoted,str) or str
+end
+
+--~ print(string.unquoted("test"))
+--~ print(string.unquoted([["t\"est"]]))
+--~ print(string.unquoted([["t\"est"x]]))
+--~ print(string.unquoted("\'test\'"))
 
 function lpeg.anywhere(pattern) --slightly adapted from website
     return P { P(pattern) + 1 * V(1) } -- why so complex?
@@ -336,8 +279,8 @@ local content  = (empty + nonempty)^1
 
 local capture = Ct(content^0)
 
-function string:splitlines()
-    return match(capture,self)
+function string.splitlines(str)
+    return match(capture,str)
 end
 
 patterns.textline = content
@@ -353,12 +296,12 @@ local function splitat(separator,single)
     local splitter = (single and splitters_s[separator]) or splitters_m[separator]
     if not splitter then
         separator = P(separator)
+        local other = C((1 - separator)^0)
         if single then
-            local other, any = C((1 - separator)^0), P(1)
+            local any = P(1)
             splitter = other * (separator * C(any^0) + "") -- ?
             splitters_s[separator] = splitter
         else
-            local other = C((1 - separator)^0)
             splitter = other * (separator * other)^0
             splitters_m[separator] = splitter
         end
@@ -379,16 +322,16 @@ function lpeg.split(separator,str)
     return match(c,str)
 end
 
-function string:split(separator)
+function string.split(str,separator)
     local c = cache[separator]
     if not c then
         c = Ct(splitat(separator))
         cache[separator] = c
     end
-    return match(c,self)
+    return match(c,str)
 end
 
-lpeg.splitters = cache
+--~ lpeg.splitters = cache -- no longer public
 
 local cache = { }
 
@@ -396,22 +339,22 @@ function lpeg.checkedsplit(separator,str)
     local c = cache[separator]
     if not c then
         separator = P(separator)
-        local other = C((1 - separator)^0)
+        local other = C((1 - separator)^1)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
     return match(c,str)
 end
 
-function string:checkedsplit(separator)
+function string.checkedsplit(str,separator)
     local c = cache[separator]
     if not c then
         separator = P(separator)
-        local other = C((1 - separator)^0)
+        local other = C((1 - separator)^1)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,self)
+    return match(c,str)
 end
 
 --~ function lpeg.append(list,pp)
@@ -434,7 +377,9 @@ local function f2(s) local c1, c2         = f1(s,1,2) return   c1 * 64 + c2     
 local function f3(s) local c1, c2, c3     = f1(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
 local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
 
-patterns.utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
+local utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
+
+patterns.utf8byte = utf8byte
 
 --~ local str = " a b c d "
 
@@ -473,21 +418,24 @@ function lpeg.keeper(str)
     end
 end
 
+-- Just for fun I looked at the used bytecode and
+-- p = (p and p + pp) or pp gets one more (testset).
+
 function lpeg.replacer(t)
     if #t > 0 then
         local p
         for i=1,#t do
             local ti= t[i]
             local pp = P(ti[1]) / ti[2]
-            p = (p and p + pp ) or pp
+            if p then
+                p = p + pp
+            else
+                p = pp
+            end
         end
         return Cs((p + 1)^0)
     end
 end
-
---~ print(utf.check(""))
---~ print(utf.check("abcde"))
---~ print(utf.check("abcde\255\123"))
 
 local splitters_f, splitters_s = { }, { }
 
@@ -512,6 +460,7 @@ function lpeg.secondofsplit(separator) -- nil if not split
 end
 
 function lpeg.balancer(left,right)
+    left, right = P(left), P(right)
     return P { left * ((1 - left - right) + V(1))^0 * right }
 end
 
@@ -523,6 +472,179 @@ end
 --~ print(6,match(lpeg.secondofsplit(":",""),"bc"))
 --~ print(7,match(lpeg.secondofsplit(":"),"bc"))
 --~ print(9,match(lpeg.secondofsplit(":","123"),"bc"))
+
+--~ -- slower:
+--~
+--~ function lpeg.counter(pattern)
+--~     local n, pattern = 0, (lpeg.P(pattern)/function() n = n + 1 end  + lpeg.P(1))^0
+--~     return function(str) n = 0 ; lpegmatch(pattern,str) ; return n end
+--~ end
+
+local nany = utf8char/""
+
+function lpeg.counter(pattern)
+    pattern = Cs((P(pattern)/" " + nany)^0)
+    return function(str)
+        return #match(pattern,str)
+    end
+end
+
+if utfgmatch then
+
+    function lpeg.count(str,what) -- replaces string.count
+        if type(what) == "string" then
+            local n = 0
+            for _ in utfgmatch(str,what) do
+                n = n + 1
+            end
+            return n
+        else -- 4 times slower but still faster than / function
+            return #match(Cs((P(what)/" " + nany)^0),str)
+        end
+    end
+
+else
+
+    local cache = { }
+
+    function lpeg.count(str,what) -- replaces string.count
+        if type(what) == "string" then
+            local p = cache[what]
+            if not p then
+                p = Cs((P(what)/" " + nany)^0)
+                cache[p] = p
+            end
+            return #match(p,str)
+        else -- 4 times slower but still faster than / function
+            return #match(Cs((P(what)/" " + nany)^0),str)
+        end
+    end
+
+end
+
+local patterns_escapes = { -- also defines in l-string
+    ["%"] = "%%",
+    ["."] = "%.",
+    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
+    ["["] = "%[", ["]"] = "%]",
+    ["("] = "%)", [")"] = "%)",
+ -- ["{"] = "%{", ["}"] = "%}"
+ -- ["^"] = "%^", ["$"] = "%$",
+}
+
+local simple_escapes = { -- also defines in l-string
+    ["-"] = "%-",
+    ["."] = "%.",
+    ["?"] = ".",
+    ["*"] = ".*",
+}
+
+local p = Cs((S("-.+*%()[]") / patterns_escapes + P(1))^0)
+local s = Cs((S("-.+*%()[]") / simple_escapes   + P(1))^0)
+
+function string.escapedpattern(str,simple)
+    if simple then
+        return match(s,str)
+    else
+        return match(p,str)
+    end
+end
+
+-- utf extensies
+
+lpeg.UP = lpeg.P
+
+if utfcharacters then
+
+    function lpeg.US(str)
+        local p
+        for uc in utfcharacters(str) do
+            if p then
+                p = p + P(uc)
+            else
+                p = P(uc)
+            end
+        end
+        return p
+    end
+
+
+elseif utfgmatch then
+
+    function lpeg.US(str)
+        local p
+        for uc in utfgmatch(str,".") do
+            if p then
+                p = p + P(uc)
+            else
+                p = P(uc)
+            end
+        end
+        return p
+    end
+
+else
+
+    function lpeg.US(str)
+        local p
+        local f = function(uc)
+            if p then
+                p = p + P(uc)
+            else
+                p = P(uc)
+            end
+        end
+        match((utf8char/f)^0,str)
+        return p
+    end
+
+end
+
+local range = Cs(utf8byte) * (Cs(utf8byte) + Cc(false))
+
+local utfchar = unicode and unicode.utf8 and unicode.utf8.char
+
+function lpeg.UR(str,more)
+    local first, last
+    if type(str) == "number" then
+        first = str
+        last = more or first
+    else
+        first, last = match(range,str)
+        if not last then
+            return P(str)
+        end
+    end
+    if first == last then
+        return P(str)
+    elseif utfchar and last - first < 8 then -- a somewhat arbitrary criterium
+        local p
+        for i=first,last do
+            if p then
+                p = p + P(utfchar(i))
+            else
+                p = P(utfchar(i))
+            end
+        end
+        return p -- nil when invalid range
+    else
+        local f = function(b)
+            return b >= first and b <= last
+        end
+        return utf8byte / f -- nil when invalid range
+    end
+end
+
+--~ lpeg.print(lpeg.R("ab","cd","gh"))
+--~ lpeg.print(lpeg.P("a","b","c"))
+--~ lpeg.print(lpeg.S("a","b","c"))
+
+--~ print(lpeg.count("äáàa",lpeg.P("á") + lpeg.P("à")))
+--~ print(lpeg.count("äáàa",lpeg.UP("áà")))
+--~ print(lpeg.count("äáàa",lpeg.US("àá")))
+--~ print(lpeg.count("äáàa",lpeg.UR("aá")))
+--~ print(lpeg.count("äáàa",lpeg.UR("àá")))
+--~ print(lpeg.count("äáàa",lpeg.UR(0x0000,0xFFFF)))
 
 end -- closure
 
@@ -541,8 +663,12 @@ local type, tonumber = type, tonumber
 boolean = boolean or { }
 local boolean = boolean
 
+-- function boolean.tonumber(b)
+--     return b and 1 or 0 -- test and test and return or return
+-- end
+
 function boolean.tonumber(b)
-    if b then return 1 else return 0 end
+    if b then return 1 else return 0 end -- test and return or return
 end
 
 function toboolean(str,tolerant)
@@ -566,6 +692,8 @@ function toboolean(str,tolerant)
     end
 end
 
+string.toboolean = toboolean
+
 function string.is_boolean(str,default)
     if type(str) == "string" then
         if str == "true" or str == "yes" or str == "on" or str == "t" then
@@ -575,14 +703,6 @@ function string.is_boolean(str,default)
         end
     end
     return default
-end
-
-function boolean.alwaystrue()
-    return true
-end
-
-function boolean.falsetrue()
-    return false
 end
 
 end -- closure
@@ -698,24 +818,26 @@ end
 -- extra functions, some might go (when not used)
 
 function table.strip(tab)
-    local lst = { }
+    local lst, l = { }, 0
     for i=1,#tab do
         local s = gsub(tab[i],"^%s*(.-)%s*$","%1")
         if s == "" then
             -- skip this one
         else
-            lst[#lst+1] = s
+            l = l + 1
+            lst[l] = s
         end
     end
     return lst
 end
 
 function table.keys(t)
-    local k = { }
+    local keys, k = { }, 0
     for key, _ in next, t do
-        k[#k+1] = key
+        k = k + 1
+        keys[k] = key
     end
-    return k
+    return keys
 end
 
 local function compare(a,b)
@@ -728,9 +850,10 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, kind = { }, 0 -- 0=unknown 1=string, 2=number 3=mixed
+    local srt, kind, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in next, tab do
-        srt[#srt+1] = key
+        s = s + 1
+        srt[s] = key
         if kind == 3 then
             -- no further check
         else
@@ -753,10 +876,11 @@ local function sortedkeys(tab)
 end
 
 local function sortedhashkeys(tab) -- fast one
-    local srt = { }
+    local srt, s = { }, 0
     for key,_ in next, tab do
         if key then
-            srt[#srt+1] = key
+            s= s + 1
+            srt[s] = key
         end
     end
     sort(srt)
@@ -770,8 +894,7 @@ local function nothing() end
 
 local function sortedhash(t)
     if t then
-        local s = sortedhashkeys(t) -- maybe just sortedkeys
-        local n = 0
+        local n, s = 0, sortedkeys(t) -- the robust one
         local function kv(s)
             n = n + 1
             local k = s[n]
@@ -787,20 +910,30 @@ table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash
 
 function table.append(t, list)
-    for _,v in next, list do
-        insert(t,v)
+    local n = #t
+    for i=1,#list do
+        n = n + 1
+        t[n] = list[i]
     end
+    return t
 end
 
 function table.prepend(t, list)
-    for k,v in next, list do
-        insert(t,k,v)
+    local nl = #list
+    local nt = nl + #t
+    for i=#t,1,-1 do
+        t[nt] = t[i]
+        nt = nt - 1
     end
+    for i=1,#list do
+        t[i] = list[i]
+    end
+    return t
 end
 
 function table.merge(t, ...) -- first one is target
     t = t or { }
-    local lst = {...}
+    local lst = { ... }
     for i=1,#lst do
         for k, v in next, lst[i] do
             t[k] = v
@@ -810,7 +943,7 @@ function table.merge(t, ...) -- first one is target
 end
 
 function table.merged(...)
-    local tmp, lst = { }, {...}
+    local tmp, lst = { }, { ... }
     for i=1,#lst do
         for k, v in next, lst[i] do
             tmp[k] = v
@@ -820,22 +953,24 @@ function table.merged(...)
 end
 
 function table.imerge(t, ...)
-    local lst = {...}
+    local lst, nt = { ... }, #t
     for i=1,#lst do
         local nst = lst[i]
         for j=1,#nst do
-            t[#t+1] = nst[j]
+            nt = nt + 1
+            t[nt] = nst[j]
         end
     end
     return t
 end
 
 function table.imerged(...)
-    local tmp, lst = { }, {...}
+    local tmp, ntmp, lst = { }, 0, {...}
     for i=1,#lst do
         local nst = lst[i]
         for j=1,#nst do
-            tmp[#tmp+1] = nst[j]
+            ntmp = ntmp + 1
+            tmp[ntmp] = nst[j]
         end
     end
     return tmp
@@ -911,11 +1046,14 @@ function table.tohash(t,value)
 end
 
 function table.fromhash(t)
-    local h = { }
+    local hsh, h = { }, 0
     for k, v in next, t do -- no ipairs here
-        if v then h[#h+1] = k end
+        if v then
+            h = h + 1
+            hsh[h] = k
+        end
     end
-    return h
+    return hsh
 end
 
 table.serialize_functions = true
@@ -936,20 +1074,23 @@ local function simple_table(t)
             n = n + 1
         end
         if n == #t then
-            local tt = { }
+            local tt, nt = { }, 0
             for i=1,#t do
                 local v = t[i]
                 local tv = type(v)
                 if tv == "number" then
+                    nt = nt + 1
                     if hexify then
-                        tt[#tt+1] = format("0x%04X",v)
+                        tt[nt] = format("0x%04X",v)
                     else
-                        tt[#tt+1] = tostring(v) -- tostring not needed
+                        tt[nt] = tostring(v) -- tostring not needed
                     end
                 elseif tv == "boolean" then
-                    tt[#tt+1] = tostring(v)
+                    nt = nt + 1
+                    tt[nt] = tostring(v)
                 elseif tv == "string" then
-                    tt[#tt+1] = format("%q",v)
+                    nt = nt + 1
+                    tt[nt] = format("%q",v)
                 else
                     tt = nil
                     break
@@ -1255,10 +1396,11 @@ end
 --~ 'return' : return     { }
 --~ number   : [number] = { }
 
-function table.serialize(root,name,reduce,noquotes,hexify)
-    local t = { }
+function table.serialize(root,name,reduce,noquotes,hexify) -- can be faster if flush == false and t as argument
+    local t, n = { }, 0
     local function flush(s)
-        t[#t+1] = s
+        n = n + 1
+        t[n] = s
     end
     serialize(root,name,flush,reduce,noquotes,hexify)
     return concat(t,"\n")
@@ -1284,12 +1426,13 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     if f then
         local maxtab = table.tofile_maxtab
         if maxtab > 1 then
-            local t = { }
+            local t, n = { }, 0
             local function flush(s)
-                t[#t+1] = s
-                if #t > maxtab then
+                n = n + 1
+                t[n] = s
+                if n > maxtab then
                     f:write(concat(t,"\n"),"\n") -- hm, write(sometable) should be nice
-                    t = { }
+                    t, n = { }, 0 -- we could recycle t if needed
                 end
             end
             serialize(root,name,flush,reduce,noquotes,hexify)
@@ -1305,12 +1448,51 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
     end
 end
 
-local function flatten(t,f,complete) -- is this used? meybe a variant with next, ...
+local function flattened(t,f,depth)
+    if f == nil then
+        f = { }
+        depth = 0xFFFF
+    elseif tonumber(f) then
+        -- assume then only two arguments are given
+        depth = f
+        f = { }
+    elseif not depth then
+        depth = 0xFFFF
+    end
+    for k, v in next, t do
+        if type(k) ~= "number" then
+            if depth > 0 and type(v) == "table" then
+                flattened(v,f,depth-1)
+            else
+                f[k] = v
+            end
+        end
+    end
+    local n = #f
+    for k=1,#t do
+        local v = t[k]
+        if depth > 0 and type(v) == "table" then
+            flattened(v,f,depth-1)
+            n = #f
+        else
+            n = n + 1
+            f[n] = v
+        end
+    end
+    return f
+end
+
+table.flattened = flattened
+
+local function unnest(t,f) -- only used in mk, for old times sake
+    if not f then          -- and only relevant for token lists
+        f = { }
+    end
     for i=1,#t do
         local v = t[i]
         if type(v) == "table" then
-            if complete or type(v[1]) == "table" then
-                flatten(v,f,complete)
+            if type(v[1]) == "table" then
+                unnest(v,f)
             else
                 f[#f+1] = v
             end
@@ -1318,39 +1500,20 @@ local function flatten(t,f,complete) -- is this used? meybe a variant with next,
             f[#f+1] = v
         end
     end
-end
-
-function table.flatten(t)
-    local f = { }
-    flatten(t,f,true)
     return f
 end
 
 function table.unnest(t) -- bad name
-    local f = { }
-    flatten(t,f,false)
-    return f
+    return unnest(t)
 end
 
-table.flattenonelevel = table.unnest
+--~ function table.unnest(t) -- for old times sake, undocumented (only in mk)
+--~     return flattened(t,1)
+--~ end
 
--- a better one:
-
-local function flattened(t,f)
-    if not f then
-        f = { }
-    end
-    for k, v in next, t do
-        if type(v) == "table" then
-            flattened(v,f)
-        else
-            f[k] = v
-        end
-    end
-    return f
-end
-
-table.flattened = flattened
+--~ function table.are_equal(a,b)
+--~     return table.serialize(a) == table.serialize(b)
+--~ end
 
 local function are_equal(a,b,n,m) -- indexed
     if a and b and #a == #b then
@@ -1376,7 +1539,7 @@ end
 
 local function identical(a,b) -- assumes same structure
     for ka, va in next, a do
-        local vb = b[k]
+        local vb = b[ka]
         if va == vb then
             -- same
         elseif type(va) == "table" and  type(vb) == "table" then
@@ -1390,8 +1553,8 @@ local function identical(a,b) -- assumes same structure
     return true
 end
 
-table.are_equal = are_equal
 table.identical = identical
+table.are_equal = are_equal
 
 -- maybe also make a combined one
 
@@ -1417,14 +1580,14 @@ function table.contains(t, v)
 end
 
 function table.count(t)
-    local n, e = 0, next(t)
-    while e do
-        n, e = n + 1, next(t,e)
+    local n = 0
+    for k, v in next, t do
+        n = n + 1
     end
     return n
 end
 
-function table.swapped(t,s)
+function table.swapped(t,s) -- hash
     local n = { }
     if s then
 --~         for i=1,#s do
@@ -1446,55 +1609,34 @@ function table.swapped(t,s)
     return n
 end
 
---~ function table.are_equal(a,b)
---~     return table.serialize(a) == table.serialize(b)
---~ end
-
-function table.clone(t,p) -- t is optional or nil or table
-    if not p then
-        t, p = { }, t or { }
-    elseif not t then
-        t = { }
-    end
-    setmetatable(t, { __index = function(_,key) return p[key] end }) -- why not __index = p ?
-    return t
-end
-
-function table.hexed(t,seperator)
-    local tt = { }
-    for i=1,#t do tt[i] = format("0x%04X",t[i]) end
-    return concat(tt,seperator or " ")
-end
-
-function table.swaphash(h) -- needs another name
-    local r = { }
-    for k,v in next, h do
-        r[v] = lower(gsub(k," ",""))
-    end
-    return r
-end
-
-function table.reverse(t)
-    local tt = { }
-    if #t > 0 then
-        for i=#t,1,-1 do
-            tt[#tt+1] = t[i]
+function table.reversed(t)
+    if t then
+        local tt, tn = { }, #t
+        if tn > 0 then
+            local ttn = 0
+            for i=tn,1,-1 do
+                ttn = ttn + 1
+                tt[ttn] = t[i]
+            end
         end
+        return tt
     end
-    return tt
 end
 
 function table.sequenced(t,sep,simple) -- hash only
-    local s = { }
+    local s, n = { }, 0
     for k, v in sortedhash(t) do
         if simple then
             if v == true then
-                s[#s+1] = k
+                n = n + 1
+                s[n] = k
             elseif v and v~= "" then
-                s[#s+1] = k .. "=" .. tostring(v)
+                n = n + 1
+                s[n] = k .. "=" .. tostring(v)
             end
         else
-            s[#s+1] = k .. "=" .. tostring(v)
+            n = n + 1
+            s[n] = k .. "=" .. tostring(v)
         end
     end
     return concat(s, sep or " | ")
@@ -1504,7 +1646,7 @@ function table.print(...)
     table.tohandle(print,...)
 end
 
--- -- -- obsolete but we keep them for a while and will comment them later -- -- --
+-- -- -- obsolete but we keep them for a while and might comment them later -- -- --
 
 -- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
 
@@ -1519,14 +1661,7 @@ function table.is_empty(t)
 end
 
 function table.has_one_entry(t)
-    local n = next(t)
-    return n and not next(t,n)
-end
-
-function table.replace(a,b)
-    for k,v in next, b do
-        a[k] = v
-    end
+    return t and not next(t,next(t))
 end
 
 end -- closure
@@ -1694,7 +1829,7 @@ end
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
 
--- todo: lpeg
+-- todo: lpeg \\ / .. does not save much
 
 local checkedsplit = string.checkedsplit
 
@@ -1709,7 +1844,7 @@ end
 
 -- we can hash them weakly
 
---~ function file.old_collapse_path(str) -- fails on b.c/..
+--~ function file.collapsepath(str) -- fails on b.c/..
 --~     str = gsub(str,"\\","/")
 --~     if find(str,"/") then
 --~         str = gsub(str,"^%./",(gsub(getcurrentdir(),"\\","/")) .. "/") -- ./xx in qualified
@@ -1733,7 +1868,7 @@ end
 --~ Of course there are some optimizations too. Finally we had to deal with
 --~ windows drive prefixes and thinsg like sys://.
 
-function file.collapse_path(str,anchor)
+function file.collapsepath(str,anchor)
     if anchor and not find(str,"^/") and not find(str,"^%a:") then
         str = getcurrentdir() .. "/" .. str
     end
@@ -1788,8 +1923,10 @@ function file.collapse_path(str,anchor)
     end
 end
 
+file.collapse_path = file.collapsepath
+
 --~ local function test(str)
---~    print(string.format("%-20s %-15s %-15s",str,file.collapse_path(str),file.collapse_path(str,true)))
+--~    print(string.format("%-20s %-15s %-15s",str,file.collapsepath(str),file.collapsepath(str,true)))
 --~ end
 --~ test("a/b.c/d") test("b.c/d") test("b.c/..")
 --~ test("/") test("c:/..") test("sys://..")
@@ -2847,12 +2984,13 @@ function injections.handler(head,where,keep)
             trace(head)
         end
         -- in the future variant we will not copy items but refs to tables
-        local done, ky, rl, valid, cx, wx, mk = false, { }, { }, { }, { }, { }, { }
+        local done, ky, rl, valid, cx, wx, mk, nofvalid = false, { }, { }, { }, { }, { }, { }, 0
         if has_kerns then -- move outside loop
             local nf, tm = nil, nil
             for n in traverse_id(glyph_code,head) do
                 if n.subtype < 256 then
-                    valid[#valid+1] = n
+                    nofvalid = nofvalid + 1
+                    valid[nofvalid] = n
                     if n.font ~= nf then
                         nf = n.font
                         tm = fontdata[nf].marks
@@ -2880,7 +3018,8 @@ function injections.handler(head,where,keep)
             local nf, tm = nil, nil
             for n in traverse_id(glyph_code,head) do
                 if n.subtype < 256 then
-                    valid[#valid+1] = n
+                    nofvalid = nofvalid + 1
+                    valid[nofvalid] = n
                     if n.font ~= nf then
                         nf = n.font
                         tm = fontdata[nf].marks
@@ -2889,7 +3028,7 @@ function injections.handler(head,where,keep)
                 end
             end
         end
-        if #valid > 0 then
+        if nofvalid > 0 then
             -- we can assume done == true because we have cursives and marks
             local cx = { }
             if has_kerns and next(ky) then
@@ -2902,7 +3041,7 @@ function injections.handler(head,where,keep)
                 local p_cursbase, p = nil, nil
                 -- since we need valid[n+1] we can also use a "while true do"
                 local t, d, maxt = { }, { }, 0
-                for i=1,#valid do -- valid == glyphs
+                for i=1,nofvalid do -- valid == glyphs
                     local n = valid[i]
                     if not mk[n] then
                         local n_cursbase = has_attribute(n,cursbase)
@@ -2966,7 +3105,7 @@ function injections.handler(head,where,keep)
                 end
             end
             if has_marks then
-                for i=1,#valid do
+                for i=1,nofvalid do
                     local p = valid[i]
                     local p_markbase = has_attribute(p,markbase)
                     if p_markbase then
@@ -3795,13 +3934,13 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
                         local ivc = vc[i]
                         local key = ivc[1]
                         if key == "right" then
-                            tt[#tt+1] = { key, ivc[2]*hdelta }
+                            tt[i] = { key, ivc[2]*hdelta }
                         elseif key == "down" then
-                            tt[#tt+1] = { key, ivc[2]*vdelta }
+                            tt[i] = { key, ivc[2]*vdelta }
                         elseif key == "rule" then
-                            tt[#tt+1] = { key, ivc[2]*vdelta, ivc[3]*hdelta }
+                            tt[i] = { key, ivc[2]*vdelta, ivc[3]*hdelta }
                         else -- not comment
-                            tt[#tt+1] = ivc -- shared since in cache and untouched
+                            tt[i] = ivc -- shared since in cache and untouched
                         end
                     end
                     chr.commands = tt
@@ -4783,9 +4922,18 @@ local baselines = allocate {
     ['romn'] = 'Roman baseline'
 }
 
-local verbosescripts    = allocate(table.swaphash(scripts  ))
-local verboselanguages  = allocate(table.swaphash(languages))
-local verbosefeatures   = allocate(table.swaphash(features ))
+
+local function swap(h) -- can be a tables.swap when we get a better name
+    local r = { }
+    for k, v in next, h do
+        r[v] = lower(gsub(k," ",""))
+    end
+    return r
+end
+
+local verbosescripts    = allocate(swap(scripts  ))
+local verboselanguages  = allocate(swap(languages))
+local verbosefeatures   = allocate(swap(features ))
 
 tables.scripts          = scripts
 tables.languages        = languages
@@ -4804,12 +4952,6 @@ for k, v in next, verbosefeatures do
 end
 for k, v in next, verbosefeatures do
     verbosefeatures[lower(k)] = v
-end
-
--- can be sped up by local tables
-
-function tables.totag(id) -- not used
-    return format("%4s",lower(id))
 end
 
 local function resolve(tab,id)
@@ -5325,21 +5467,23 @@ fonts.map.addtounicode = function(data,filename)
                         originals[index], tounicode[index], ns = unicode, tounicode16(unicode), ns + 1
                     end
                 else
-                    local t = { }
+                    local t, n = { }, 0
                     for l=1,nplit do
                         local base = split[l]
                         local u = unicodes[base] or (aglmap and aglmap[base])
                         if not u then
                             break
                         elseif type(u) == "table" then
-                            t[#t+1] = u[1]
+                            n = n + 1
+                            t[n] = u[1]
                         else
-                            t[#t+1] = u
+                            n = n + 1
+                            t[n] = u
                         end
                     end
-                    if #t == 0 then -- done then
+                    if n == 0 then -- done then
                         -- nothing
-                    elseif #t == 1 then
+                    elseif n == 1 then
                         originals[index], tounicode[index], nl, unicode = t[1], tounicode16(t[1]), nl + 1, true
                     else
                         originals[index], tounicode[index], nl, unicode = t, tounicode16sequence(t), nl + 1, true
@@ -5499,13 +5643,13 @@ if not modules then modules = { } end modules ['font-otf'] = {
 
 local utf = unicode.utf8
 
-local concat, utfbyte = table.concat, utf.byte
+local utfbyte = utf.byte
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local abs = math.abs
 local getn = table.getn
 local lpegmatch = lpeg.match
-local reverse = table.reverse
+local reversed, concat = table.reversed, table.concat
 local ioflush = io.flush
 
 local allocate = utilities.storage.allocate
@@ -5543,7 +5687,7 @@ local definers       = fonts.definers
 
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.705 -- beware: also sync font-mis.lua
+otf.version          = 2.706 -- beware: also sync font-mis.lua
 otf.cache            = containers.define("fonts", "otf", otf.version, true)
 
 local loadmethod     = "table" -- table, mixed, sparse
@@ -6454,6 +6598,7 @@ actions["prepare unicodes"] = function(data,filename,raw)
     local luatex = data.luatex
     local indices, unicodes, multiples, internals = { }, { }, { }, { }
     local mapmap = data.map or raw.map
+    local mapenc = nil -- will go away
     if not mapmap then
         report_otf("no map in %s",filename)
         mapmap = { }
@@ -6463,6 +6608,7 @@ actions["prepare unicodes"] = function(data,filename,raw)
         mapmap = { }
         data.map.map = mapmap
     else
+        mapenc = mapmap.enc -- will go away
         mapmap = mapmap.map
     end
     local criterium = fonts.privateoffset
@@ -6486,41 +6632,53 @@ actions["prepare unicodes"] = function(data,filename,raw)
                     indices[unicode] = index
                     unicodes[name] = unicode
                 end
+                -- maybe deal with altuni here in the future but first we need
+                -- to encounter a proper font that sets them
             else
                 -- message that something is wrong
             end
         end
     end
     -- beware: the indices table is used to initialize the tfm table
-    for unicode, index in next, mapmap do
-        if not internals[index] then
-            local name = glyphs[index].name
-            if name then
-                local un = unicodes[name]
-                if not un then
-                    unicodes[name] = unicode -- or 0
-                elseif type(un) == "number" then -- tonumber(un)
-                    if un ~= unicode then
-                        multiples[#multiples+1] = name
-                        unicodes[name] = { un, unicode }
-                        indices[unicode] = index
-                    end
-                else
-                    local ok = false
-                    for u=1,#un do
-                        if un[u] == unicode then
-                            ok = true
-                            break
+    local encname = lower(data.enc_name or (mapenc and mapenc[1] and mapenc[1].enc_name) or "") -- mapenc will go away
+ -- will become: local encname = lower(data.enc_name or "")
+    if encname == "" or encname == "unicodebmp" or encname == "unicodefull" then -- maybe find(encname,"unicode")
+        if trace_loading then
+            report_otf("using extra unicode map")
+        end
+        -- ok -- we can also consider using the altuni
+        for unicode, index in next, mapmap do
+            if not internals[index] then
+                local name = glyphs[index].name
+                if name then
+                    local un = unicodes[name]
+                    if not un then
+                        unicodes[name] = unicode -- or 0
+                    elseif type(un) == "number" then -- tonumber(un)
+                        if un ~= unicode then
+                            multiples[#multiples+1] = name
+                            unicodes[name] = { un, unicode }
+                            indices[unicode] = index
                         end
-                    end
-                    if not ok then
-                        multiples[#multiples+1] = name
-                        un[#un+1] = unicode
-                        indices[unicode] = index
+                    else
+                        local ok = false
+                        for u=1,#un do
+                            if un[u] == unicode then
+                                ok = true
+                                break
+                            end
+                        end
+                        if not ok then
+                            multiples[#multiples+1] = name
+                            un[#un+1] = unicode
+                            indices[unicode] = index
+                        end
                     end
                 end
             end
         end
+    else
+        report_otf("warning: non unicode map '%s', only using glyph unicode data",encname or "whatever")
     end
     if trace_loading then
         if #multiples > 0 then
@@ -6549,7 +6707,7 @@ actions["reorganize lookups"] = function(data,filename,raw)
                 for _, vv in next, v.rules do
                     local c = vv.coverage
                     if c and c.before then
-                        c.before = reverse(c.before)
+                        c.before = reversed(c.before)
                     end
                 end
             end
@@ -7068,8 +7226,8 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         local glyphs, pfminfo, metadata = data.glyphs or { }, data.pfminfo or { }, data.metadata or { }
         local luatex = data.luatex
         local unicodes = luatex.unicodes -- names to unicodes
-        local indices = luatex.indices        local mode = data.mode or "base"
-
+        local indices = luatex.indices
+        local mode = data.mode or "base"
         local characters, parameters, math_parameters, descriptions = { }, { }, { }, { }
         local designsize = metadata.designsize or metadata.design_size or 100
         if designsize == 0 then
@@ -8099,7 +8257,7 @@ local zwj      = 0x200D
 local wildcard = "*"
 local default  = "dflt"
 
-local split_at_space = lpeg.splitters[" "] or lpeg.Ct(lpeg.splitat(" ")) -- no trailing or multiple spaces anyway
+local split_at_space = lpeg.Ct(lpeg.splitat(" ")) -- no trailing or multiple spaces anyway
 
 local nodecodes     = nodes.nodecodes
 local whatcodes     = nodes.whatcodes
@@ -8205,9 +8363,9 @@ local function gref(n)
         local num, nam = { }, { }
         for i=1,#n do
             local ni = n[i]
-            num[#num+1] = format("U+%04X",ni)
-            local dni = descriptions[ni]
-            nam[#num] = (dni and dni.name) or "?"
+            local di = descriptions[ni]
+            num[i] = format("U+%04X",ni)
+            nam[i] = di and di.name or "?"
         end
         return format("%s (%s)",concat(num," "), concat(nam," "))
     end
@@ -10177,13 +10335,14 @@ otf.features.prepare = { }
 
 local function split(replacement,original,cache,unicodes)
     -- we can cache this too, but not the same (although unicode is a unique enough hash)
-    local o, t, n = { }, { }, 0
+    local o, t, n, no = { }, { }, 0, 0
     for s in gmatch(original,"[^ ]+") do
         local us = unicodes[s]
+        no = no + 1
         if type(us) == "number" then -- tonumber(us)
-            o[#o+1] = us
+            o[no] = us
         else
-            o[#o+1] = us[1]
+            o[no] = us[1]
         end
     end
     for s in gmatch(replacement,"[^ ]+") do
@@ -10200,9 +10359,11 @@ end
 
 local function uncover(covers,result,cache,unicodes)
     -- lpeg hardly faster (.005 sec on mk)
+    local nofresults = #result
     for n=1,#covers do
         local c = covers[n]
         local cc = cache[c]
+        nofresults = nofresults + 1
         if not cc then
             local t = { }
             for s in gmatch(c,"[^ ]+") do
@@ -10216,9 +10377,9 @@ local function uncover(covers,result,cache,unicodes)
                 end
             end
             cache[c] = t
-            result[#result+1] = t
+            result[nofresults] = t
         else
-            result[#result+1] = cc
+            result[nofresults] = cc
         end
     end
 end
@@ -10260,16 +10421,17 @@ local function prepare_lookups(tfmdata)
         --~ end
         end,
         multiple = function (p,lookup,glyph,unicode)
-            local old, new = unicode, { }
+            local old, new, nnew = unicode, { }, 0
             local m = multiple[lookup]
             if not m then m = { } multiple[lookup] = m end
             m[old] = new
             for pc in gmatch(p[2],"[^ ]+") do
                 local upc = unicodes[pc]
+                nnew = nnew + 1
                 if type(upc) == "number" then
-                    new[#new+1] = upc
+                    new[nnew] = upc
                 else
-                    new[#new+1] = upc[1]
+                    new[nnew] = upc[1]
                 end
             end
         --~ if trace_lookups then
@@ -10277,16 +10439,17 @@ local function prepare_lookups(tfmdata)
         --~ end
         end,
         alternate = function(p,lookup,glyph,unicode)
-            local old, new = unicode, { }
+            local old, new, nnew = unicode, { }, 0
             local a = alternate[lookup]
             if not a then a = { } alternate[lookup] = a end
             a[old] = new
             for pc in gmatch(p[2],"[^ ]+") do
                 local upc = unicodes[pc]
+                nnew = nnew + 1
                 if type(upc) == "number" then
-                    new[#new+1] = upc
+                    new[nnew] = upc
                 else
-                    new[#new+1] = upc[1]
+                    new[nnew] = upc[1]
                 end
             end
         --~ if trace_lookups then
@@ -10480,7 +10643,7 @@ local function prepare_contextchains(tfmdata)
                                 contexts = { }
                                 contextchain[lookupname] = contexts
                             end
-                            local t = { }
+                            local t, nt = { }, 0
                             for nofrules=1,#rules do -- does #rules>1 happen often?
                                 local rule = rules[nofrules]
                                 local coverage = rule.coverage
@@ -10496,7 +10659,8 @@ local function prepare_contextchains(tfmdata)
                                         uncover(after,sequence,cache,unicodes)
                                     end
                                     if sequence[1] then
-                                        t[#t+1] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
+                                        nt = nt + 1
+                                        t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
                                         for unic, _ in next, sequence[start] do
                                             local cu = contexts[unic]
                                             if not cu then
@@ -10516,7 +10680,7 @@ local function prepare_contextchains(tfmdata)
                                 contexts = { }
                                 reversecontextchain[lookupname] = contexts
                             end
-                            local t = { }
+                            local t, nt = { }, 0
                             for nofrules=1,#rules do
                                 local rule = rules[nofrules]
                                 local reversecoverage = rule.reversecoverage
@@ -10536,7 +10700,8 @@ local function prepare_contextchains(tfmdata)
                                     end
                                     if sequence[1] then
                                         -- this is different from normal coverage, we assume only replacements
-                                        t[#t+1] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
+                                        nt = nt + 1
+                                        t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
                                         for unic, _ in next, sequence[start] do
                                             local cu = contexts[unic]
                                             if not cu then
@@ -10556,7 +10721,7 @@ local function prepare_contextchains(tfmdata)
                                 contexts = { }
                                 contextchain[lookupname] = contexts
                             end
-                            local t = { }
+                            local t, nt = { }, 0
                             for nofrules=1,#rules do
                                 -- nearly the same as coverage so we could as well rename it
                                 local rule = rules[nofrules]
@@ -10576,7 +10741,8 @@ local function prepare_contextchains(tfmdata)
                                         uncover(back,sequence,cache,unicodes)
                                     end
                                     if sequence[1] then
-                                        t[#t+1] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
+                                        nt = nt + 1
+                                        t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
                                         for unic, _ in next, sequence[start] do
                                             local cu = contexts[unic]
                                             if not cu then
@@ -15035,14 +15201,15 @@ local sortedhashkeys = table.sortedhashkeys
 function tfm.hashfeatures(specification)
     local features = specification.features
     if features then
-        local t = { }
+        local t, tn = { }, 0
         local normal = features.normal
         if normal and next(normal) then
             local f = sortedhashkeys(normal)
             for i=1,#f do
                 local v = f[i]
                 if v ~= "number" and v ~= "features" then -- i need to figure this out, features
-                    t[#t+1] = v .. '=' .. tostring(normal[v])
+                    tn = tn + 1
+                    t[tn] = v .. '=' .. tostring(normal[v])
                 end
             end
         end
@@ -15051,13 +15218,15 @@ function tfm.hashfeatures(specification)
             local f = sortedhashkeys(vtf)
             for i=1,#f do
                 local v = f[i]
-                t[#t+1] = v .. '=' .. tostring(vtf[v])
+                tn = tn + 1
+                t[tn] = v .. '=' .. tostring(vtf[v])
             end
         end
---~ if specification.mathsize then
---~     t[#t+1] = "mathsize=" .. specification.mathsize
---~ end
-        if #t > 0 then
+    --~ if specification.mathsize then
+    --~     tn = tn + 1
+    --~     t[tn] = "mathsize=" .. specification.mathsize
+    --~ end
+        if tn > 0 then
             return concat(t,"+")
         end
     end
@@ -15642,7 +15811,7 @@ local function colonized(specification) -- xetex mode
     list = { }
     lpegmatch(pattern,specification.specification)
  -- for k, v in next, list do
- --     list[k] = v:is_boolean()
+ --     list[k] = is_boolean(v)
  --     if type(list[a]) == "nil" then
  --         list[k] = v
  --     end

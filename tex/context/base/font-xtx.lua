@@ -74,7 +74,7 @@ local function colonized(specification) -- xetex mode
     list = { }
     lpegmatch(pattern,specification.specification)
  -- for k, v in next, list do
- --     list[k] = v:is_boolean()
+ --     list[k] = is_boolean(v)
  --     if type(list[a]) == "nil" then
  --         list[k] = v
  --     end

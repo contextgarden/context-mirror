@@ -19,7 +19,7 @@ local report_resolvers = logs.new("resolvers")
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
-local unquote, quote = string.unquote, string.quote
+local unquoted, quoted = string.unquoted, string.quoted
 local concat = table.concat
 
 -- precautions
@@ -87,7 +87,7 @@ function environment.initializearguments(arg)
         if index > 0 then
             local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
-                arguments[flag] = unquote(value or "")
+                arguments[flag] = unquoted(value or "")
             else
                 flag = match(argument,"^%-+(.+)")
                 if flag then
@@ -152,19 +152,21 @@ end
 function environment.reconstructcommandline(arg,noquote)
     arg = arg or environment.originalarguments
     if noquote and #arg == 1 then
+        -- we could just do: return unquoted(resolvers.resolve(arg[i]))
         local a = arg[1]
         a = resolvers.resolve(a)
-        a = unquote(a)
+        a = unquoted(a)
         return a
     elseif #arg > 0 then
         local result = { }
         for i=1,#arg do
+            -- we could just do: result[#result+1] = format("%q",unquoted(resolvers.resolve(arg[i])))
             local a = arg[i]
             a = resolvers.resolve(a)
-            a = unquote(a)
+            a = unquoted(a)
             a = gsub(a,'"','\\"') -- tricky
             if find(a," ") then
-                result[#result+1] = quote(a)
+                result[#result+1] = quoted(a)
             else
                 result[#result+1] = a
             end
@@ -174,6 +176,23 @@ function environment.reconstructcommandline(arg,noquote)
         return ""
     end
 end
+
+--~ -- to be tested:
+--~
+--~ function environment.reconstructcommandline(arg,noquote)
+--~     arg = arg or environment.originalarguments
+--~     if noquote and #arg == 1 then
+--~         return unquoted(resolvers.resolve(arg[1]))
+--~     elseif #arg > 0 then
+--~         local result = { }
+--~         for i=1,#arg do
+--~             result[#result+1] = format("%q",unquoted(resolvers.resolve(arg[i]))) -- always quote
+--~         end
+--~         return concat(result," ")
+--~     else
+--~         return ""
+--~     end
+--~ end
 
 if arg then
 

@@ -81,30 +81,37 @@ function unicode.utftype(f)
 end
 
 function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
-    local result, tmp, n, m, p = { }, { }, 0, 0, 0
+    local result, tmp, n, m, p, r, t = { }, { }, 0, 0, 0, 0, 0 -- we reuse tmp
     -- lf | cr | crlf / (cr:13, lf:10)
     local function doit()
         if n == 10 then
             if p ~= 13 then
-                result[#result+1] = concat(tmp)
-                tmp = { }
+                if t > 0 then
+                    r = r + 1
+                    result[r] = concat(tmp,"",1,t)
+                    t = 0
+                end
                 p = 0
             end
         elseif n == 13 then
-            result[#result+1] = concat(tmp)
-            tmp = { }
+            if t > 0 then
+                r = r + 1
+                result[r] = concat(tmp,"",1,t)
+                t = 0
+            end
             p = n
         else
-            tmp[#tmp+1] = utfchar(n)
+            t = t + 1
+            tmp[t] = utfchar(n)
             p = 0
         end
     end
     for l,r in bytepairs(str) do
         if r then
             if endian then
-                n = l*256 + r
+                n = 256*l + r
             else
-                n = r*256 + l
+                n = 256*r + l
             end
             if m > 0 then
                 n = (m-0xD800)*0x400 + (n-0xDC00) + 0x10000
@@ -117,29 +124,36 @@ function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
             end
         end
     end
-    if #tmp > 0 then
-        result[#result+1] = concat(tmp)
+    if t > 0 then
+        r = r + 1
+        result[r] = concat(tmp,"",1,t)
     end
     return result
 end
 
 function unicode.utf32_to_utf8(str, endian)
-    local result = { }
-    local tmp, n, m, p = { }, 0, -1, 0
+    local result, tmp, n, m, p, r, t = { }, { }, 0, -1, 0, 0, 0
     -- lf | cr | crlf / (cr:13, lf:10)
     local function doit()
         if n == 10 then
             if p ~= 13 then
-                result[#result+1] = concat(tmp)
-                tmp = { }
+                if t > 0 then
+                    r = r + 1
+                    result[r] = concat(tmp,"",1,t)
+                    t = 0
+                end
                 p = 0
             end
         elseif n == 13 then
-            result[#result+1] = concat(tmp)
-            tmp = { }
+            if t > 0 then
+                r = r + 1
+                result[r] = concat(tmp,"",1,t)
+                t = 0
+            end
             p = n
         else
-            tmp[#tmp+1] = utfchar(n)
+            t = t + 1
+            tmp[t] = utfchar(n)
             p = 0
         end
     end
@@ -147,15 +161,15 @@ function unicode.utf32_to_utf8(str, endian)
         if a and b then
             if m < 0 then
                 if endian then
-                    m = a*256*256*256 + b*256*256
+                    m = 256*256*256*a + 256*256*b
                 else
-                    m = b*256 + a
+                    m = 256*b + a
                 end
             else
                 if endian then
-                    n = m + a*256 + b
+                    n = m + 256*a + b
                 else
-                    n = m + b*256*256*256 + a*256*256
+                    n = m + 256*256*256*b + 256*256*a
                 end
                 m = -1
                 doit()
@@ -165,13 +179,14 @@ function unicode.utf32_to_utf8(str, endian)
         end
     end
     if #tmp > 0 then
-        result[#result+1] = concat(tmp)
+        r = r + 1
+        result[r] = concat(tmp,"",1,t)
     end
     return result
 end
 
 local function little(c)
-    local b = byte(c) -- b = c:byte()
+    local b = byte(c)
     if b < 0x10000 then
         return char(b%256,b/256)
     else
@@ -201,9 +216,10 @@ function unicode.utf8_to_utf16(str,littleendian)
 end
 
 function unicode.utfcodes(str)
-    local t = { }
-    for k,v in utfvalues(str) do
-        t[#t+1] = format("0x%04X",k)
+    local t, n = { }, 0
+    for u in utfvalues(str) do
+        n = n + 1
+        t[n] = format("0x%04X",u)
     end
     return concat(t,separator or " ")
 end

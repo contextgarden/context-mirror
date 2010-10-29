@@ -14,7 +14,7 @@ parsers.patterns  = parsers.patterns or { }
 local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat, format, gmatch = table.concat, string.format, string.gmatch
-local tostring, type, next = tostring, type, next
+local tostring, type, next, setmetatable = tostring, type, next, setmetatable
 local sortedhash = table.sortedhash
 
 local escape, left, right = P("\\"), P('{'), P('}')
@@ -133,7 +133,7 @@ end
 
 function parsers.hash_to_string(h,separator,yes,no,strict,omit)
     if h then
-        local t, s = { }, table.sortedkeys(h)
+        local t, tn, s = { }, 0, table.sortedkeys(h)
         omit = omit and table.tohash(omit)
         for i=1,#s do
             local key = s[i]
@@ -142,15 +142,19 @@ function parsers.hash_to_string(h,separator,yes,no,strict,omit)
                 if type(value) == "boolean" then
                     if yes and no then
                         if value then
-                            t[#t+1] = key .. '=' .. yes
+                            tn = tn + 1
+                            t[tn] = key .. '=' .. yes
                         elseif not strict then
-                            t[#t+1] = key .. '=' .. no
+                            tn = tn + 1
+                            t[tn] = key .. '=' .. no
                         end
                     elseif value or not strict then
-                        t[#t+1] = key .. '=' .. tostring(value)
+                        tn = tn + 1
+                        t[tn] = key .. '=' .. tostring(value)
                     end
                 else
-                    t[#t+1] = key .. '=' .. value
+                    tn = tn + 1
+                    t[tn] = key .. '=' .. value
                 end
             end
         end
@@ -177,10 +181,11 @@ function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate an
 end
 
 function parsers.simple_hash_to_string(h, separator)
-    local t = { }
+    local t, tn = { }, 0
     for k, v in sortedhash(h) do
         if v then
-            t[#t+1] = k
+            tn = tn + 1
+            t[tn] = k
         end
     end
     return concat(t,separator or ",")
@@ -198,8 +203,16 @@ end
 function parsers.getparameters(self,class,parentclass,settings)
     local sc = self[class]
     if not sc then
-        sc = table.clone(self[parent])
+        sc = { }
         self[class] = sc
+        if parentclass then
+            local sp = self[parentclass]
+            if not sp then
+                sp = { }
+                self[parentclass] = sp
+            end
+            setmetatable(sc, { __index = sp })
+        end
     end
     parsers.settings_to_hash(settings,sc)
 end

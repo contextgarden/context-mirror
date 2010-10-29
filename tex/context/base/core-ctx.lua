@@ -56,7 +56,7 @@ local function found(name) -- used in resolve
 end
 
 local function resolve(name) -- used a few times later on
-    local filename = file.collapse_path(name)
+    local filename = file.collapsepath(name)
     local prepname = islocal and found(file.basename(name))
     if prepname then
         return prepname

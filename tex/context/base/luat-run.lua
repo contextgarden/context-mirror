@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['luat-run'] = {
     license   = "see context related readme files"
 }
 
-local format, rpadd = string.format, string.rpadd
+local format = string.format
 local insert = table.insert
 
 local trace_lua_dump   = false  trackers.register("system.dump",      function(v) trace_lua_dump   = v end)

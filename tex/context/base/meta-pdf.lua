@@ -94,11 +94,11 @@ local function flushpath(cmd)
                     local px, py = v[3], v[4] ; v[3], v[4] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[3],v[4])
                     local px, py = v[5], v[6] ; v[5], v[6] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[5],v[6])
                 end
-                path[#path+1] = concat(v," ")
+                path[k] = concat(v," ")
             end
         else
             for k=1,#m_stack_path do
-                path[#path+1] = concat(m_stack_path[k]," ")
+                path[k] = concat(m_stack_path[k]," ")
             end
         end
         flushconcat()
@@ -146,10 +146,13 @@ end
 
 function mps.rlineto(x,y)
     local dx, dy = 0, 0
-    if #m_stack_path > 0 then
-        dx, dy = m_stack_path[#m_stack_path][1], m_stack_path[#m_stack_path][2]
+    local topofstack = #m_stack_path
+    if topofstack > 0 then
+        local msp = m_stack_path[topofstack]
+        dx = msp[1]
+        dy = msp[2]
     end
-    m_stack_path[#m_stack_path+1] = {dx,dy,"l"}
+    m_stack_path[topofstack+1] = {dx,dy,"l"}
 end
 
 function mps.translate(tx,ty)

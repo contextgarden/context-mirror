@@ -15,14 +15,15 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable = setmetatable
 
 function tables.definetable(target) -- defines undefined tables
-    local composed, t = nil, { }
+    local composed, t, n = nil, { }, 0
     for name in gmatch(target,"([^%.]+)") do
+        n = n + 1
         if composed then
             composed = composed .. "." .. name
         else
             composed = name
         end
-        t[#t+1] = format("%s = %s or { }",composed,composed)
+        t[n] = format("%s = %s or { }",composed,composed)
     end
     return concat(t,"\n")
 end
@@ -35,7 +36,7 @@ function tables.accesstable(target)
     return t
 end
 
-function table.removevalue(t,value) -- todo: n
+function tables.removevalue(t,value) -- todo: n
     if value then
         for i=1,#t do
             if t[i] == value then
@@ -46,7 +47,7 @@ function table.removevalue(t,value) -- todo: n
     end
 end
 
-function table.insertbeforevalue(t,value,extra)
+function tables.insertbeforevalue(t,value,extra)
     for i=1,#t do
         if t[i] == extra then
             remove(t,i)
@@ -61,7 +62,7 @@ function table.insertbeforevalue(t,value,extra)
     insert(t,1,extra)
 end
 
-function table.insertaftervalue(t,value,extra)
+function tables.insertaftervalue(t,value,extra)
     for i=1,#t do
         if t[i] == extra then
             remove(t,i)

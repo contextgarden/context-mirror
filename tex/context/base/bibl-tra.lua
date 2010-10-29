@@ -126,7 +126,7 @@ end
 function hacks.resolve(prefix,block,reference) -- maybe already feed it split
     local subset = references.collected[prefix or ""] or references.collected[""]
     if subset then
-        local result, done = { }, { }
+        local result, nofresult, done = { }, 0, { }
         block = tonumber(block)
         for rest in gmatch(reference,"([^,%s]+)") do
             local blk, tag, found = block, nil, nil
@@ -152,7 +152,8 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
             if found then
                 local current = found.entries and found.entries.text
                 if current and not done[current] then
-                    result[#result+1] = { blk, rest, current }
+                    nofresult = nofresult + 1
+                    result[nofresult] = { blk, rest, current }
                     done[current] = true
                 end
             end
@@ -160,8 +161,8 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
         -- todo: ranges so the interface will change
         sort(result,compare)
         local first, last, firsti, lasti, firstr, lastr
-        local collected = { }
-        for i=1,#result do
+        local collected, nofcollected = { }, 0
+        for i=1,nofresult do
             local r = result[i]
             local current = r[3]
             if not first then
@@ -170,11 +171,14 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
                 last, lasti, lastr = current, i, r
             else
                 if last > first + 1 then
-                    collected[#collected+1] = { firstr[1], firstr[2], lastr[1], lastr[2] }
+                    nofcollected = nofcollected + 1
+                    collected[nofcollected] = { firstr[1], firstr[2], lastr[1], lastr[2] }
                 else
-                    collected[#collected+1] = { firstr[1], firstr[2] }
+                    nofcollected = nofcollected + 1
+                    collected[nofcollected] = { firstr[1], firstr[2] }
                     if last > first then
-                        collected[#collected+1] = { lastr[1], lastr[2] }
+                        nofcollected = nofcollected + 1
+                        collected[nofcollected] = { lastr[1], lastr[2] }
                     end
                 end
                 first, last, firsti, lasti, firstr, lastr = current, current, i, i, r, r
@@ -182,16 +186,19 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
         end
         if first then
             if last > first + 1 then
-                collected[#collected+1] = { firstr[1], firstr[2], lastr[1], lastr[2] }
+                nofcollected = nofcollected + 1
+                collected[nofcollected] = { firstr[1], firstr[2], lastr[1], lastr[2] }
             else
-                collected[#collected+1] = { firstr[1], firstr[2] }
+                nofcollected = nofcollected + 1
+                collected[nofcollected] = { firstr[1], firstr[2] }
                 if last > first then
-                    collected[#collected+1] = { lastr[1], lastr[2] }
+                    nofcollected = nofcollected + 1
+                    collected[nofcollected] = { lastr[1], lastr[2] }
                 end
             end
         end
-        if #collected > 0 then
-            for i=1,#collected do
+        if nofcollected > 0 then
+            for i=1,nofcollected do
                 local c = collected[i]
                 if c[3] then
                     context.dowithbibtexnumrefrange(#collected,i,prefix,c[1],c[2],c[3],c[4])

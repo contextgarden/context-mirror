@@ -43,7 +43,7 @@ with any demand so nothign here is frozen.</p>
 local utf = unicode.utf8
 local gsub, rep, sub, sort, concat = string.gsub, string.rep, string.sub, table.sort, table.concat
 local utfbyte, utfchar = utf.byte, utf.char
-local utfcharacters, utfvalues, strcharacters = string.utfcharacters, string.utfvalues, string.characters
+local utfcharacters = string.utfcharacters
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
 
 local allocate = utilities.storage.allocate
@@ -140,7 +140,7 @@ local function preparetables(data)
     end
     local mtm = {
         __index = function(t,k)
-            local n
+            local n, nn
             if k then
                 if trace_tests then
                     report_sorters("simplifing character 0x%04x %s",utfbyte(k),k)
@@ -153,8 +153,10 @@ local function preparetables(data)
                     local ml = rawget(t,l)
                     if ml then
                         n = { }
+                        nn = 0
                         for i=1,#ml do
-                            n[#n+1] = ml[i] + (t.__delta or 0)
+                            nn = nn + 1
+                            n[nn] = ml[i] + (t.__delta or 0)
                         end
                         if trace_tests then
                             report_sorters(" 2 order: %s",concat(n," "))
@@ -168,6 +170,7 @@ local function preparetables(data)
                             report_sorters(" 3 shape: %s",s)
                         end
                         n = { }
+                        nn = 0
                         for l in utfcharacters(s) do
                             local ml = rawget(t,l)
                             if ml then
@@ -176,7 +179,8 @@ local function preparetables(data)
                                 end
                                 if ml then
                                     for i=1,#ml do
-                                        n[#n+1] = ml[i]
+                                        nn = nn + 1
+                                        n[nn] = ml[i]
                                     end
                                 end
                             else
@@ -188,7 +192,8 @@ local function preparetables(data)
                                     local ml = rawget(t,l)
                                     if ml then
                                         for i=1,#ml do
-                                            n[#n+1] = ml[i] + (t.__delta or 0)
+                                            nn = nn + 1
+                                            n[nn] = ml[i] + (t.__delta or 0)
                                         end
                                     end
                                 end
@@ -200,6 +205,7 @@ local function preparetables(data)
                     end
                     if not n then
                         n = { 0 }
+                     -- nn = 1
                         if trace_tests then
                             report_sorters(" 7 order: 0")
                         end
@@ -207,6 +213,7 @@ local function preparetables(data)
                 end
             else
                 n =  { 0 }
+             -- nn = 1
                 if trace_tests then
                     report_sorters(" 8 order: 0")
                 end
@@ -266,10 +273,12 @@ local function setlanguage(l,m,d)
     --
     local seq = utilities.parsers.settings_to_array(method or "") -- check the list
     sequence = { }
+    local nofsequence = 0
     for i=1,#seq do
         local s = seq[i]
         if validmethods[s] then
-            sequence[#sequence+1] = s
+            nofsequence = nofsequence + 1
+            sequence[nofsequence] = s
         else
             report_sorters("invalid sorter method '%s' in '%s'",s,method)
         end
@@ -434,6 +443,7 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
     end
 
     local m_case, z_case, p_case, m_mapping, z_mapping, p_mapping, char, byte, n = { }, { }, { }, { }, { }, { }, { }, { }, 0
+    local nm, nz, np = 0, 0, 0
     for sc in utfcharacters(str) do
         local b = utfbyte(sc)
         if b >= digitsoffset then
@@ -456,9 +466,12 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             p_case[n] = b
             char[n] = sc
             byte[n] = b
-            m_mapping[#m_mapping+1] = b
-            z_mapping[#z_mapping+1] = b
-            p_mapping[#p_mapping+1] = b
+            nm = nm + 1
+            nz = nz + 1
+            np = np + 1
+            m_mapping[nm] = b
+            z_mapping[nz] = b
+            p_mapping[np] = b
         else
             local l = lower[sc]
             n = n + 1
@@ -474,15 +487,18 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             char[n], byte[n] = sc, b
             local msc = m_mappings[sc]
             for i=1,#msc do
-                m_mapping[#m_mapping+1] = msc[i]
+                nm = nm + 1
+                m_mapping[nm] = msc[i]
             end
             local zsc = z_mappings[sc]
             for i=1,#zsc do
-                z_mapping[#z_mapping+1] = zsc[i]
+                nz = nz + 1
+                z_mapping[nz] = zsc[i]
             end
             local psc = p_mappings[sc]
             for i=1,#psc do
-                p_mapping[#p_mapping+1] = psc[i]
+                np = np + 1
+                p_mapping[np] = psc[i]
             end
         end
     end
@@ -501,15 +517,6 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
  -- table.print(t)
 
     return t
-end
-
-
-function table.remap(t)
-    local tt = { }
-    for k,v in next, t do
-        tt[v]  = k
-    end
-    return tt
 end
 
 local function pack(entry)
