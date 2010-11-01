@@ -6,17 +6,47 @@ if not modules then modules = { } end modules ['cldf-ver'] = {
     license   = "see context related readme files"
 }
 
-local concat = table.concat
+local concat, tohandle = table.concat, table.tohandle
+local tostring, type = tostring, type
 
 local context = context
 
-function table.tocontext(...)
-    local function flush(...)
-        context(concat{...,"\n"})
-    end
-    context.starttyping()
+local function flush(...)
+    context(concat{...,"\n"})
+end
+
+local function t_tocontext(...)
+    context.starttyping { "typing" } -- else [1] is intercepted
     context.pushcatcodes("verbatim")
-    table.tohandle(flush,...)
+    tohandle(flush,...)
     context.stoptyping()
     context.popcatcodes()
+end
+
+local function s_tocontext(...) -- we need to catch {\}
+    context.type()
+    context("{")
+    context.pushcatcodes("verbatim")
+    context(concat({...}," "))
+    context.popcatcodes()
+    context("}")
+end
+
+local function b_tocontext(b)
+    string_tocontext(tostring(b))
+end
+
+table  .tocontext = t_tocontext
+string .tocontext = s_tocontext
+boolean.tocontext = b_tocontext
+
+function tocontext(first,...)
+    local t = type(first)
+    if t == "string" then
+        s_tocontext(first,...)
+    elseif t == "table" then
+        t_tocontext(first,...)
+    elseif t == "boolean" then
+        b_tocontext(first,...)
+    end
 end

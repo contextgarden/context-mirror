@@ -23,6 +23,14 @@ interfaces.interfaces = {
     "cs", "de", "en", "fr", "it", "nl", "ro", "pe",
 }
 
+storage.shared.currentinterface = storage.shared.currentinterface or "en"
+storage.shared.currentresponse  = storage.shared.currentresponse  or "en"
+
+function interfaces.setuserinterface(interface,response)
+    storage.shared.currentinterface = interface
+    storage.shared.currentresponse  = response
+end
+
 local messages, constants, variables = interfaces.messages, interfaces.constants, interfaces.variables
 
 function interfaces.setmessages(category,str)
@@ -105,5 +113,20 @@ function interfaces.cachesetup(t)
 end
 
 function interfaces.is_command(str)
-    return (str and str ~= "" and token.csname_name(token.create(str)) ~= "") or false
+    return (str and str ~= "" and token.csname_name(token.create(str)) ~= "") or false -- there will be a proper function for this
+end
+
+-- -- --
+
+local complete = { } interfaces.complete = complete
+
+setmetatable(complete, { __index = function(t,k)
+    complete = require("mult-def.lua")
+    interfaces.complete = complete
+    return complete[k]
+end } )
+
+function interfaces.interfacedcommand(name)
+    local command = complete.commands[name]
+    return command and command[storage.shared.currentinterface] or name
 end

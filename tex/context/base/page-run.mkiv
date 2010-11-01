@@ -88,7 +88,78 @@
 %   {\toonprint[][gespiegeld][plaats=midden]}           {\strut\break\type{gespiegeld}}
 %   {\toonprint[gespiegeld][gespiegeld][plaats=midden]} {\type{gespiegeld}\break\type{gespiegeld}}
 % \stopcombinatie
-
+
+% maybe we will have page-run.lua
+
+\startluacode
+local function showdimension(name)
+    context.NC()
+    context.tex(interfaces.interfacedcommand(name))
+    context.NC()
+    context(number.todimen(tex.dimen[name],"pt","%0.4fpt"))
+    context.NC()
+    context(number.todimen(tex.dimen[name],"cm","%0.4fcm"))
+    context.NC()
+    context(number.todimen(tex.dimen[name],"bp","%0.4fbp"))
+    context.NC()
+    context(number.todimen(tex.dimen[name],"dd","%0.4fdd"))
+    context.NC()
+    context.NR()
+end
+
+local function showmacro(name)
+    context.NC()
+    context.tex(interfaces.interfacedcommand(name))
+    context.NC()
+    context.getvalue(name)
+    context.NC()
+    context.NR()
+end
+
+function commands.showlayoutvariables()
+
+    context.starttabulate { "|l|Tr|Tr|Tr|Tr|" }
+
+        showdimension("paperheight")
+        showdimension("paperwidth")
+        showdimension("printpaperheight")
+        showdimension("printpaperwidth")
+        showdimension("topspace")
+        showdimension("backspace")
+        showdimension("makeupheight")
+        showdimension("makeupwidth")
+        showdimension("topheight")
+        showdimension("topdistance")
+        showdimension("headerheight")
+        showdimension("headerdistance")
+        showdimension("textheight")
+        showdimension("footerdistance")
+        showdimension("footerheight")
+        showdimension("bottomdistance")
+        showdimension("bottomheight")
+        showdimension("leftedgewidth")
+        showdimension("leftedgedistance")
+        showdimension("leftmarginwidth")
+        showdimension("leftmargindistance")
+        showdimension("textwidth")
+        showdimension("rightmargindistance")
+        showdimension("rightmarginwidth")
+        showdimension("rightedgedistance")
+        showdimension("rightedgewidth")
+        context.NR()
+        showdimension("bodyfontsize")
+        showdimension("lineheight")
+        context.NR()
+        showmacro("strutheightfactor")
+        showmacro("strutdepthfactor")
+        showmacro("topskipfactor")
+        showmacro("maxdepthfactor")
+
+    context.stoptabulate()
+
+end
+\stopluacode
+
 \gdef\doshowframe[#1][#2]%
   {\ifsecondargument
      \setupbackgrounds
@@ -120,246 +191,11 @@
    \setupbackgrounds
      [\c!state=\v!repeat]}
 
-\gdef\showframe{\dodoubleempty\doshowframe}
-
-\gdef\showsetupA#1#2%
-  {#1&\PtToCm{\the#2}&\the#2&\tttf\string#2\cr}
-
-\gdef\showsetupB#1#2#3%
-  {#1&&#2#3&\tttf\string#3\cr}
-
-% \startinterface english % english is fallback
+\gdef\showframe
+  {\dodoubleempty\doshowframe}
 
 \gdef\showsetups
-  {\noindent
-   \vbox
-     {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
-      \tabskip\zeropoint
-      \halign
-        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
-         \showsetupA{paperheight}        \paperheight
-         \showsetupA{paperwidth}         \paperwidth
-         \showsetupA{printpaperheight}   \printpaperheight
-         \showsetupA{printpaperwidth}    \printpaperwidth
-         \showsetupA{topspace}           \topspace
-         \showsetupA{backspace}          \backspace
-         \showsetupA{height}             \makeupheight
-         \showsetupA{width}              \makeupwidth
-         \showsetupA{top}                \topheight
-         \showsetupA{topdistance}        \topdistance
-         \showsetupA{header}             \headerheight
-         \showsetupA{headerdistance}     \headerdistance
-         \showsetupA{textheight}         \textheight
-         \showsetupA{footerdistance}     \footerdistance
-         \showsetupA{footer}             \footerheight
-         \showsetupA{bottomdistance}     \bottomdistance
-         \showsetupA{bottom}             \bottomheight
-         \showsetupA{leftedge}           \leftedgewidth
-         \showsetupA{leftedgedistance}   \leftedgedistance
-         \showsetupA{leftmargin}         \leftmarginwidth
-         \showsetupA{leftmargindistance} \leftmargindistance
-         \showsetupA{textwidth}          \textwidth
-         \showsetupA{rightmargindistance}\rightmargindistance
-         \showsetupA{rightmargin}        \rightmarginwidth
-         \showsetupA{rightedgedistance}  \rightedgedistance
-         \showsetupA{rightedge}          \rightedgewidth
-         \showsetupB{bodyfontsize}       \the   \globalbodyfontsize
-         \showsetupB{line}               \relax \normallineheight
-         \showsetupB{height}             \relax \strutheightfactor
-         \showsetupB{depth}              \relax \strutdepthfactor
-         \showsetupB{topskip}            \relax \topskipfactor
-         \showsetupB{maxdepth}           \relax \maxdepthfactor}}}
-
-% \stopinterface
-
-\startinterface dutch
-
-\gdef\showsetups
-  {\noindent
-   \vbox
-     {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
-      \tabskip\zeropoint
-      \halign
-        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
-         \showsetupA{papierhoogte}       \papierhoogte
-         \showsetupA{papierbreedte}      \papierbreedte
-         \showsetupA{printpapierhoogte}  \printpapierhoogte
-         \showsetupA{printpapierbreedte} \printpapierbreedte
-         \showsetupA{kopwit}             \kopwit
-         \showsetupA{rugwit}             \rugwit
-         \showsetupA{snijwit}            \snijwit
-         \showsetupA{hoogte}             \zethoogte
-         \showsetupA{breedte}            \zetbreedte
-         \showsetupA{boven}              \bovenhoogte
-         \showsetupA{bovenafstand}       \bovenafstand
-         \showsetupA{hoofd}              \hoofdhoogte
-         \showsetupA{hoofdafstand}       \hoofdafstand
-         \showsetupA{teksthoogte}        \teksthoogte
-         \showsetupA{voetafstand}        \voetafstand
-         \showsetupA{voet}               \voethoogte
-         \showsetupA{onderafstand}       \onderafstand
-         \showsetupA{onder}              \onderhoogte
-         \showsetupA{linkerrand}         \linkerrandbreedte
-         \showsetupA{linkerrandafstand}  \linkerrandafstand
-         \showsetupA{linkermarge}        \linkermargebreedte
-         \showsetupA{linkermargeafstand} \linkermargeafstand
-         \showsetupA{tekstbreedte}       \tekstbreedte
-         \showsetupA{rechtermargeafstand}\rechtermargeafstand
-         \showsetupA{rechtermarge}       \rechtermargebreedte
-         \showsetupA{rechterrandafstand} \rechterrandafstand
-         \showsetupA{rechterrand}        \rechterrandbreedte
-         \showsetupB{korps}              \the   \globalbodyfontsize
-         \showsetupB{regel}              \relax \normallineheight
-         \showsetupB{hoogte}             \relax \strutheightfactor
-         \showsetupB{diepte}             \relax \strutdepthfactor
-         \showsetupB{boven}              \relax \topskipfactor
-         \showsetupB{onder}              \relax \maxdepthfactor}}}
-
-\stopinterface
-
-% todo: \showsetupA{rugwit} \rugwit
-
-\startinterface german
-
-\gdef\showsetups%
-  {\noindent
-   \vbox
-     {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
-      \tabskip\zeropoint
-      \halign
-        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
-         \showsetupA{papierhoehe}          \papierhoehe
-         \showsetupA{papierbreite}         \papierbreite
-         \showsetupA{printpapierhoehe}     \printpapierhoehe
-         \showsetupA{printpapierbreite}    \printpapierbreite
-         \showsetupA{kopfweite}            \kopfweite
-         \showsetupA{rumpfweite}           \rumpfweite
-         \showsetupA{hoehe}                \satzhoehe
-         \showsetupA{breite}               \satzbreite
-         \showsetupA{oben}                 \hoeheoben
-         \showsetupA{abstandoben}          \abstandoben
-         \showsetupA{kopfzeile}            \kopfzeilenhoehe
-         \showsetupA{kopfzeilenabstand}    \kopfzeilenabstand
-         \showsetupA{texthoehe}            \texthoehe
-         \showsetupA{fusszeileabstand}     \fusszeileabstand
-         \showsetupA{fusszeilen}           \fusszeilenhoehe
-         \showsetupA{abstandunten}         \abstandunten
-         \showsetupA{hoeheunten}           \hoeheunten
-         \showsetupA{linkerrand}           \breitelinkerrand
-         \showsetupA{abstandlinkerrand}    \abstandlinkerrand
-         \showsetupA{linkemarginal}        \linkemarginalbreite
-         \showsetupA{linkemarginalafstand} \linkemarginalafstand
-         \showsetupA{textbreite}           \textbreite
-         \showsetupA{rechtemarginalafstand}\rechtemarginalafstand
-         \showsetupA{rechtemarginal}       \rechtemarginalbreite
-         \showsetupA{abstandrechterrand}   \abstandrechterrand
-         \showsetupA{rechterrand}          \breiterechterrand
-         \showsetupB{fliesstext}           \the   \globalbodyfontsize
-         \showsetupB{linie}                \relax \normallineheight
-         \showsetupB{hoehe}                \relax \strutheightfactor
-         \showsetupB{tiefe}                \relax \strutdepthfactor
-         \showsetupB{topskip}              \relax \topskipfactor
-         \showsetupB{maxdepth}             \relax \maxdepthfactor}}}
-
-\stopinterface
-
-\startinterface czech
-
-\gdef\showsetups%
-  {\noindent
-   \vbox
-     {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
-      \tabskip\zeropoint
-      \halign
-        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
-         \showsetupA{vyskapapiru}              \vyskapapiru
-         \showsetupA{sirkapapiru}              \sirkapapiru
-         \showsetupA{vyskatiskpapiru}          \vyskatiskpapiru
-         \showsetupA{sirkatiskpapiru}          \sirkatiskpapiru
-         \showsetupA{hornimezera}              \hornimezera
-         \showsetupA{spodnimezera}             \spodnimezera
-         \showsetupA{vyska}                    \vyskasazby
-         \showsetupA{breite}                   \sirkasazby
-         \showsetupA{vyskatextu}               \vyskatextu
-         \showsetupA{sirkatextu}               \sirkatextu
-         \showsetupA{horejsek}                 \vyskahorejsku
-         \showsetupA{vzdalenosthorejsku}       \vzdalenosthorejsku
-         \showsetupA{zahlavi}                  \vyskazahlavi
-         \showsetupA{vzdalenostzahlavi}        \vzdalenostzahlavi
-         \showsetupA{fusszeileabstand}         \vzdalenostupati
-         \showsetupA{upati}                    \vyskaupati
-         \showsetupA{vzdalenostspodku}         \vzdalenostspodku
-         \showsetupA{spodek}                   \vyakaspodku
-         \showsetupA{levyokraj}                \sirkalevehookraje
-         \showsetupA{vzdalenostlevehookraje}   \vzdalenostlevehookraje
-         \showsetupA{levamarginalie}           \sirkalevemarginalie
-         \showsetupA{vzdalenostlevemarginalie} \vzdalenostlevemarginalie
-         \showsetupA{vzdalenostpravemarginalie}\vzdalenostpravemarginalie
-         \showsetupA{pravamarginalie}          \sirkapravemarginalie
-         \showsetupA{vzdalenostpravehookraje}  \vzdalenostpravehookraje
-         \showsetupA{pravyokraj}               \sirkapravehookraje
-         \showsetupB{zakladnivelikost}         \the   \globalbodyfontsize
-         \showsetupB{linka}                    \relax \normallineheight
-         \showsetupB{vyska}                    \relax \strutheightfactor
-         \showsetupB{hloubka}                  \relax \strutdepthfactor
-         \showsetupB{topskip}                  \relax \topskipfactor
-         \showsetupB{maxdepth}                 \relax \maxdepthfactor}}}
-
-\stopinterface
-
-\startinterface romanian
-
-\gdef\showsetups%
-  {\noindent
-   \vbox
-     {\forgetall
-      \dontcomplain
-      \switchtobodyfont[\v!small]
-      \tabskip\zeropoint
-      \halign
-        {\strut##\quad\hss&##\quad\hss&##\quad\hss&##\hss\cr
-         \showsetupA{paperheight}        \paperheight
-         \showsetupA{paperwidth}         \paperwidth
-         \showsetupA{printpaperheight}   \printpaperheight
-         \showsetupA{printpaperwidth}    \printpaperwidth
-         \showsetupA{topspace}           \topspace
-         \showsetupA{backspace}          \backspace
-         \showsetupA{height}             \makeupheight
-         \showsetupA{width}              \makeupwidth
-         \showsetupA{top}                \topheight
-         \showsetupA{topdistance}        \topdistance
-         \showsetupA{header}             \headerheight
-         \showsetupA{headerdistance}     \headerdistance
-         \showsetupA{textheight}         \textheight
-         \showsetupA{footerdistance}     \footerdistance
-         \showsetupA{footer}             \footerheight
-         \showsetupA{bottomdistance}     \bottomdistance
-         \showsetupA{bottom}             \bottomheight
-         \showsetupA{leftedge}           \leftedgewidth
-         \showsetupA{leftedgedistance}   \leftedgedistance
-         \showsetupA{leftmargin}         \leftmarginwidth
-         \showsetupA{leftmargindistance} \leftmargindistance
-         \showsetupA{textwidth}          \textwidth
-         \showsetupA{rightmargindistance}\rightmargindistance
-         \showsetupA{rightmargin}        \rightmarginwidth
-         \showsetupA{rightedgedistance}  \rightedgedistance
-         \showsetupA{rightedge}          \rightedgewidth
-         \showsetupB{bodyfontsize}       \the   \globalbodyfontsize
-         \showsetupB{line}               \relax \normallineheight
-         \showsetupB{height}             \relax \strutheightfactor
-         \showsetupB{depth}              \relax \strutdepthfactor
-         \showsetupB{topskip}            \relax \topskipfactor
-         \showsetupB{maxdepth}           \relax \maxdepthfactor}}}
-
-\stopinterface
+  {\ctxlua{commands.showlayoutvariables()}}
 
 \gdef\showlayout % interfereert lelijk met een \typefile er na
   {\bgroup

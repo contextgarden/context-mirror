@@ -266,7 +266,7 @@ local function setlanguage(l,m,d)
     z_mappings   = data.z_mappings
     p_mappings   = data.p_mappings
     --
-    method = predefinedmethods[method] or method
+    method = predefinedmethods[variables[method]] or method
     data.method  = method
     --
     data.digits  = digite

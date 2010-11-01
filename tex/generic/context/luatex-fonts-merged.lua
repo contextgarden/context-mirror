@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/29/10 18:15:03
+-- merge date  : 11/01/10 12:14:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -1062,7 +1062,7 @@ table.serialize_inline    = true
 
 local noquotes, hexify, handle, reduce, compact, inline, functions
 
-local reserved = table.tohash { -- intercept a language flaw, no reserved words as key
+local reserved = table.tohash { -- intercept a language inconvenience: no reserved words as key
     'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if',
     'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while',
 }
@@ -1682,7 +1682,7 @@ file       = file or { }
 local file = file
 
 local insert, concat = table.insert, table.concat
-local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
+local find, gmatch, match, gsub, sub, char, lower = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char, string.lower
 local lpegmatch = lpeg.match
 local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 
@@ -1838,8 +1838,8 @@ function file.splitpath(str,separator) -- string
     return checkedsplit(str,separator or io.pathseparator)
 end
 
-function file.joinpath(tab) -- table
-    return concat(tab,io.pathseparator) -- can have trailing //
+function file.joinpath(tab,separator) -- table
+    return concat(tab,separator or io.pathseparator) -- can have trailing //
 end
 
 -- we can hash them weakly
@@ -1935,8 +1935,13 @@ file.collapse_path = file.collapsepath
 --~ test("a/./b/..") test("a/aa/../b/bb") test("a/.././././b/..") test("a/./././b/..")
 --~ test("a/b/c/../..") test("./a/b/c/../..") test("a/b/c/../..")
 
-function file.robustname(str)
-    return (gsub(str,"[^%a%d%/%-%.\\]+","-"))
+function file.robustname(str,strict)
+    str = gsub(str,"[^%a%d%/%-%.\\]+","-")
+    if strict then
+        return lower(gsub(str,"^%-*(.-)%-*$","%1"))
+    else
+        return str
+    end
 end
 
 file.readdata = io.loaddata
@@ -2099,6 +2104,7 @@ if not modules then modules = { } end modules ['l-io'] = {
 local io = io
 local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
 local concat = table.concat
+local type = type
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -2157,12 +2163,19 @@ function io.size(filename)
 end
 
 function io.noflines(f)
-    local n = 0
-    for _ in f:lines() do
-        n = n + 1
+    if type(f) == "string" then
+        local f = io.open(filename)
+        local n = f and io.noflines(f) or 0
+        assert(f:close())
+        return n
+    else
+        local n = 0
+        for _ in f:lines() do
+            n = n + 1
+        end
+        f:seek('set',0)
+        return n
     end
-    f:seek('set',0)
-    return n
 end
 
 local nextchar = {
@@ -2254,6 +2267,7 @@ function io.ask(question,default,options)
             io.write(format(" [%s]",default))
         end
         io.write(format(" "))
+        io.flush()
         local answer = io.read()
         answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then

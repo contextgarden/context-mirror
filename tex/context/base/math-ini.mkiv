@@ -411,7 +411,18 @@
 
 %D Even more drastic:
 
-\def\asciimode{\catcodetable\txtcatcodes\nonknuthmode}
+\unexpanded\def\asciimode
+  {\catcodetable\txtcatcodes
+   \nonknuthmode}
+
+\unexpanded\def\startasciimode
+  {\pushcatcodetable
+   \catcodetable\txtcatcodes
+   \nonknuthmode}
+
+\unexpanded\def\stopasciimode
+  {\popcatcodetable
+   \donknuthmode}
 
 %D Needed for unicode:
 
