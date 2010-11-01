@@ -11,8 +11,8 @@ local lpeg = require("lpeg")
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, Ct, C, Cs, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.V
-local match = lpeg.match
+local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
+local Ct, C, Cs, Cc, Cf, Cg = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cf, lpeg.Cg
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch

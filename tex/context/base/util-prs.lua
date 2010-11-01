@@ -11,6 +11,8 @@ utilities.parsers = utilities.parsers or { }
 local parsers     = utilities.parsers
 parsers.patterns  = parsers.patterns or { }
 
+-- we could use a Cf Cg construct
+
 local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat, format, gmatch = table.concat, string.format, string.gmatch

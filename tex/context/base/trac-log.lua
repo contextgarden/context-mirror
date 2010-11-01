@@ -394,6 +394,12 @@ function logs.obsolete(old,new)
     end
 end
 
-function logs.texerrormessage(...) -- for the moment we put this function here
-    tex.error(format(...), { })
+if tex and tex.error then
+    function logs.texerrormessage(...) -- for the moment we put this function here
+        tex.error(format(...), { })
+    end
+else
+    function logs.texerrormessage(...)
+        print(format(...))
+    end
 end
