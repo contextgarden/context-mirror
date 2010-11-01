@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/01/10 12:14:26
+-- merge date  : 11/01/10 21:16:51
 
 do -- begin closure to overcome local limits and interference
 
@@ -190,8 +190,8 @@ local lpeg = require("lpeg")
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, Ct, C, Cs, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.V
-local match = lpeg.match
+local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
+local Ct, C, Cs, Cc, Cf, Cg = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cf, lpeg.Cg
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch

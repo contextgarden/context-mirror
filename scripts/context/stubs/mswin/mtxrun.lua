@@ -207,8 +207,8 @@ local lpeg = require("lpeg")
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, Ct, C, Cs, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.V
-local match = lpeg.match
+local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
+local Ct, C, Cs, Cc, Cf, Cg = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cf, lpeg.Cg
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch
@@ -3866,6 +3866,8 @@ utilities.parsers = utilities.parsers or { }
 local parsers     = utilities.parsers
 parsers.patterns  = parsers.patterns or { }
 
+-- we could use a Cf Cg construct
+
 local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat, format, gmatch = table.concat, string.format, string.gmatch
@@ -5151,8 +5153,14 @@ function logs.obsolete(old,new)
     end
 end
 
-function logs.texerrormessage(...) -- for the moment we put this function here
-    tex.error(format(...), { })
+if tex and tex.error then
+    function logs.texerrormessage(...) -- for the moment we put this function here
+        tex.error(format(...), { })
+    end
+else
+    function logs.texerrormessage(...)
+        print(format(...))
+    end
 end
 
 
