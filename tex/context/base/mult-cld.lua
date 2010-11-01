@@ -198,8 +198,10 @@ local function writer(command,first,...)
 --~     end
 end
 
+local generics = { }  context.generics = generics
+
 local function indexer(t,k)
-    local c = "\\" .. k
+    local c = "\\" .. (generics[k] or k)
     local f = function(first,...)
         if first == nil then
             flush(currentcatcodes,c)

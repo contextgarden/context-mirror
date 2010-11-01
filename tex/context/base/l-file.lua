@@ -12,7 +12,7 @@ file       = file or { }
 local file = file
 
 local insert, concat = table.insert, table.concat
-local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
+local find, gmatch, match, gsub, sub, char, lower = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char, string.lower
 local lpegmatch = lpeg.match
 local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 
@@ -168,8 +168,8 @@ function file.splitpath(str,separator) -- string
     return checkedsplit(str,separator or io.pathseparator)
 end
 
-function file.joinpath(tab) -- table
-    return concat(tab,io.pathseparator) -- can have trailing //
+function file.joinpath(tab,separator) -- table
+    return concat(tab,separator or io.pathseparator) -- can have trailing //
 end
 
 -- we can hash them weakly
@@ -265,8 +265,13 @@ file.collapse_path = file.collapsepath
 --~ test("a/./b/..") test("a/aa/../b/bb") test("a/.././././b/..") test("a/./././b/..")
 --~ test("a/b/c/../..") test("./a/b/c/../..") test("a/b/c/../..")
 
-function file.robustname(str)
-    return (gsub(str,"[^%a%d%/%-%.\\]+","-"))
+function file.robustname(str,strict)
+    str = gsub(str,"[^%a%d%/%-%.\\]+","-")
+    if strict then
+        return lower(gsub(str,"^%-*(.-)%-*$","%1"))
+    else
+        return str
+    end
 end
 
 file.readdata = io.loaddata

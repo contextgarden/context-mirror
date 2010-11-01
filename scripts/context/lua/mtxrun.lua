@@ -926,7 +926,7 @@ table.serialize_inline    = true
 
 local noquotes, hexify, handle, reduce, compact, inline, functions
 
-local reserved = table.tohash { -- intercept a language flaw, no reserved words as key
+local reserved = table.tohash { -- intercept a language inconvenience: no reserved words as key
     'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if',
     'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while',
 }
@@ -1518,6 +1518,7 @@ if not modules then modules = { } end modules ['l-io'] = {
 local io = io
 local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
 local concat = table.concat
+local type = type
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -1576,12 +1577,19 @@ function io.size(filename)
 end
 
 function io.noflines(f)
-    local n = 0
-    for _ in f:lines() do
-        n = n + 1
+    if type(f) == "string" then
+        local f = io.open(filename)
+        local n = f and io.noflines(f) or 0
+        assert(f:close())
+        return n
+    else
+        local n = 0
+        for _ in f:lines() do
+            n = n + 1
+        end
+        f:seek('set',0)
+        return n
     end
-    f:seek('set',0)
-    return n
 end
 
 local nextchar = {
@@ -1673,6 +1681,7 @@ function io.ask(question,default,options)
             io.write(format(" [%s]",default))
         end
         io.write(format(" "))
+        io.flush()
         local answer = io.read()
         answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then
@@ -2282,7 +2291,7 @@ file       = file or { }
 local file = file
 
 local insert, concat = table.insert, table.concat
-local find, gmatch, match, gsub, sub, char = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char
+local find, gmatch, match, gsub, sub, char, lower = string.find, string.gmatch, string.match, string.gsub, string.sub, string.char, string.lower
 local lpegmatch = lpeg.match
 local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 
@@ -2408,8 +2417,8 @@ function file.splitpath(str,separator) -- string
     return checkedsplit(str,separator or io.pathseparator)
 end
 
-function file.joinpath(tab) -- table
-    return concat(tab,io.pathseparator) -- can have trailing //
+function file.joinpath(tab,separator) -- table
+    return concat(tab,separator or io.pathseparator) -- can have trailing //
 end
 
 -- we can hash them weakly
@@ -2473,8 +2482,13 @@ end
 file.collapse_path = file.collapsepath
 
 
-function file.robustname(str)
-    return (gsub(str,"[^%a%d%/%-%.\\]+","-"))
+function file.robustname(str,strict)
+    str = gsub(str,"[^%a%d%/%-%.\\]+","-")
+    if strict then
+        return lower(gsub(str,"^%-*(.-)%-*$","%1"))
+    else
+        return str
+    end
 end
 
 file.readdata = io.loaddata
@@ -2887,7 +2901,7 @@ local function glob(str,t)
         elseif isfile(str) then
             t(str)
         else
-            local split = lpegmatch(pattern,str)
+            local split = lpegmatch(pattern,str) -- we could use the file splitter
             if split then
                 local root, path, base = split[1], split[2], split[3]
                 local recurse = find(base,"%*%*")
@@ -2911,7 +2925,7 @@ local function glob(str,t)
                 return { str }
             end
         else
-            local split = lpegmatch(pattern,str)
+            local split = lpegmatch(pattern,str) -- we could use the file splitter
             if split then
                 local t = t or { }
                 local action = action or function(name) t[#t+1] = name end
@@ -2933,7 +2947,7 @@ dir.glob = glob
 
 local function globfiles(path,recurse,func,files) -- func == pattern or function
     if type(func) == "string" then
-        local s = func -- alas, we need this indirect way
+        local s = func
         func = function(name) return find(name,s) end
     end
     files = files or { }
@@ -2974,7 +2988,9 @@ end
 
 local make_indeed = true -- false
 
-if find(os.getenv("PATH"),";") then -- os.type == "windows"
+local onwindows = os.type == "windows" or find(os.getenv("PATH"),";")
+
+if onwindows then
 
     function dir.mkdirs(...)
         local str, pth, t = "", "", { ... }
@@ -3030,39 +3046,7 @@ if find(os.getenv("PATH"),";") then -- os.type == "windows"
         return pth, (isdir(pth) == true)
     end
 
-
-    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
-        local first, nothing, last = match(str,"^(//)(//*)(.*)$")
-        if first then
-            first = dir.current() .. "/"
-        end
-        if not first then
-            first, last = match(str,"^(//)/*(.*)$")
-        end
-        if not first then
-            first, last = match(str,"^([a-zA-Z]:)(.*)$")
-            if first and not find(last,"^/") then
-                local d = currentdir()
-                if chdir(first) then
-                    first = dir.current()
-                end
-                chdir(d)
-            end
-        end
-        if not first then
-            first, last = dir.current(), str
-        end
-        last = gsub(last,"//","/")
-        last = gsub(last,"/%./","/")
-        last = gsub(last,"^/*","")
-        first = gsub(first,"/*$","")
-        if last == "" then
-            return first
-        else
-            return first .. "/" .. last
-        end
-    end
-
+                                            
 else
 
     function dir.mkdirs(...)
@@ -3103,6 +3087,48 @@ else
         return pth, (isdir(pth) == true)
     end
 
+                            
+end
+
+dir.makedirs = dir.mkdirs
+
+-- we can only define it here as it uses dir.current
+
+if onwindows then
+
+    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
+        local first, nothing, last = match(str,"^(//)(//*)(.*)$")
+        if first then
+            first = dir.current() .. "/"
+        end
+        if not first then
+            first, last = match(str,"^(//)/*(.*)$")
+        end
+        if not first then
+            first, last = match(str,"^([a-zA-Z]:)(.*)$")
+            if first and not find(last,"^/") then
+                local d = currentdir()
+                if chdir(first) then
+                    first = dir.current()
+                end
+                chdir(d)
+            end
+        end
+        if not first then
+            first, last = dir.current(), str
+        end
+        last = gsub(last,"//","/")
+        last = gsub(last,"/%./","/")
+        last = gsub(last,"^/*","")
+        first = gsub(first,"/*$","")
+        if last == "" or last == "." then
+            return first
+        else
+            return first .. "/" .. last
+        end
+    end
+
+else
 
     function dir.expandname(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
@@ -3110,12 +3136,13 @@ else
         end
         str = gsub(str,"//","/")
         str = gsub(str,"/%./","/")
+        str = gsub(str,"(.)/%.$","%1")
         return str
     end
 
 end
 
-dir.makedirs = dir.mkdirs
+file.expandname = dir.expandname -- for convenience
 
 
 end -- of closure

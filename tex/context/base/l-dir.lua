@@ -114,7 +114,7 @@ local function glob(str,t)
         elseif isfile(str) then
             t(str)
         else
-            local split = lpegmatch(pattern,str)
+            local split = lpegmatch(pattern,str) -- we could use the file splitter
             if split then
                 local root, path, base = split[1], split[2], split[3]
                 local recurse = find(base,"%*%*")
@@ -138,7 +138,7 @@ local function glob(str,t)
                 return { str }
             end
         else
-            local split = lpegmatch(pattern,str)
+            local split = lpegmatch(pattern,str) -- we could use the file splitter
             if split then
                 local t = t or { }
                 local action = action or function(name) t[#t+1] = name end
@@ -165,7 +165,7 @@ dir.glob = glob
 
 local function globfiles(path,recurse,func,files) -- func == pattern or function
     if type(func) == "string" then
-        local s = func -- alas, we need this indirect way
+        local s = func
         func = function(name) return find(name,s) end
     end
     files = files or { }
@@ -210,7 +210,9 @@ end
 
 local make_indeed = true -- false
 
-if find(os.getenv("PATH"),";") then -- os.type == "windows"
+local onwindows = os.type == "windows" or find(os.getenv("PATH"),";")
+
+if onwindows then
 
     function dir.mkdirs(...)
         local str, pth, t = "", "", { ... }
@@ -266,49 +268,17 @@ if find(os.getenv("PATH"),";") then -- os.type == "windows"
         return pth, (isdir(pth) == true)
     end
 
---~         print(dir.mkdirs("","","a","c"))
---~         print(dir.mkdirs("a"))
---~         print(dir.mkdirs("a:"))
---~         print(dir.mkdirs("a:/b/c"))
---~         print(dir.mkdirs("a:b/c"))
---~         print(dir.mkdirs("a:/bbb/c"))
---~         print(dir.mkdirs("/a/b/c"))
---~         print(dir.mkdirs("/aaa/b/c"))
---~         print(dir.mkdirs("//a/b/c"))
---~         print(dir.mkdirs("///a/b/c"))
---~         print(dir.mkdirs("a/bbb//ccc/"))
-
-    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
-        local first, nothing, last = match(str,"^(//)(//*)(.*)$")
-        if first then
-            first = dir.current() .. "/"
-        end
-        if not first then
-            first, last = match(str,"^(//)/*(.*)$")
-        end
-        if not first then
-            first, last = match(str,"^([a-zA-Z]:)(.*)$")
-            if first and not find(last,"^/") then
-                local d = currentdir()
-                if chdir(first) then
-                    first = dir.current()
-                end
-                chdir(d)
-            end
-        end
-        if not first then
-            first, last = dir.current(), str
-        end
-        last = gsub(last,"//","/")
-        last = gsub(last,"/%./","/")
-        last = gsub(last,"^/*","")
-        first = gsub(first,"/*$","")
-        if last == "" then
-            return first
-        else
-            return first .. "/" .. last
-        end
-    end
+    --~ print(dir.mkdirs("","","a","c"))
+    --~ print(dir.mkdirs("a"))
+    --~ print(dir.mkdirs("a:"))
+    --~ print(dir.mkdirs("a:/b/c"))
+    --~ print(dir.mkdirs("a:b/c"))
+    --~ print(dir.mkdirs("a:/bbb/c"))
+    --~ print(dir.mkdirs("/a/b/c"))
+    --~ print(dir.mkdirs("/aaa/b/c"))
+    --~ print(dir.mkdirs("//a/b/c"))
+    --~ print(dir.mkdirs("///a/b/c"))
+    --~ print(dir.mkdirs("a/bbb//ccc/"))
 
 else
 
@@ -350,13 +320,55 @@ else
         return pth, (isdir(pth) == true)
     end
 
---~         print(dir.mkdirs("","","a","c"))
---~         print(dir.mkdirs("a"))
---~         print(dir.mkdirs("/a/b/c"))
---~         print(dir.mkdirs("/aaa/b/c"))
---~         print(dir.mkdirs("//a/b/c"))
---~         print(dir.mkdirs("///a/b/c"))
---~         print(dir.mkdirs("a/bbb//ccc/"))
+    --~ print(dir.mkdirs("","","a","c"))
+    --~ print(dir.mkdirs("a"))
+    --~ print(dir.mkdirs("/a/b/c"))
+    --~ print(dir.mkdirs("/aaa/b/c"))
+    --~ print(dir.mkdirs("//a/b/c"))
+    --~ print(dir.mkdirs("///a/b/c"))
+    --~ print(dir.mkdirs("a/bbb//ccc/"))
+
+end
+
+dir.makedirs = dir.mkdirs
+
+-- we can only define it here as it uses dir.current
+
+if onwindows then
+
+    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
+        local first, nothing, last = match(str,"^(//)(//*)(.*)$")
+        if first then
+            first = dir.current() .. "/"
+        end
+        if not first then
+            first, last = match(str,"^(//)/*(.*)$")
+        end
+        if not first then
+            first, last = match(str,"^([a-zA-Z]:)(.*)$")
+            if first and not find(last,"^/") then
+                local d = currentdir()
+                if chdir(first) then
+                    first = dir.current()
+                end
+                chdir(d)
+            end
+        end
+        if not first then
+            first, last = dir.current(), str
+        end
+        last = gsub(last,"//","/")
+        last = gsub(last,"/%./","/")
+        last = gsub(last,"^/*","")
+        first = gsub(first,"/*$","")
+        if last == "" or last == "." then
+            return first
+        else
+            return first .. "/" .. last
+        end
+    end
+
+else
 
     function dir.expandname(str) -- will be merged with cleanpath and collapsepath
         if not find(str,"^/") then
@@ -364,9 +376,10 @@ else
         end
         str = gsub(str,"//","/")
         str = gsub(str,"/%./","/")
+        str = gsub(str,"(.)/%.$","%1")
         return str
     end
 
 end
 
-dir.makedirs = dir.mkdirs
+file.expandname = dir.expandname -- for convenience

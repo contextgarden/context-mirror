@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['l-io'] = {
 local io = io
 local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
 local concat = table.concat
+local type = type
 
 if string.find(os.getenv("PATH"),";") then
     io.fileseparator, io.pathseparator = "\\", ";"
@@ -67,12 +68,19 @@ function io.size(filename)
 end
 
 function io.noflines(f)
-    local n = 0
-    for _ in f:lines() do
-        n = n + 1
+    if type(f) == "string" then
+        local f = io.open(filename)
+        local n = f and io.noflines(f) or 0
+        assert(f:close())
+        return n
+    else
+        local n = 0
+        for _ in f:lines() do
+            n = n + 1
+        end
+        f:seek('set',0)
+        return n
     end
-    f:seek('set',0)
-    return n
 end
 
 local nextchar = {
@@ -164,6 +172,7 @@ function io.ask(question,default,options)
             io.write(format(" [%s]",default))
         end
         io.write(format(" "))
+        io.flush()
         local answer = io.read()
         answer = gsub(answer,"^%s*(.*)%s*$","%1")
         if answer == "" and default then
