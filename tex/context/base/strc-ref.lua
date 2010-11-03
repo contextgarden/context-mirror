@@ -1179,6 +1179,7 @@ function references.setinternalreference(prefix,tag,internal,view)
             end
         end
         if internal and innermethod == "names" then -- mixed or page
+            tn = tn + 1
             t[tn] = "aut:" .. internal
         end
         local destination = references.mark(t,nil,nil,view) -- returns an attribute
