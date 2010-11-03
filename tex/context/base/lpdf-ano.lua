@@ -319,8 +319,6 @@ end  node.free(lln)
 -- -- -- --
 -- -- -- --
 
-
-
 function nodeinjections.destination(width,height,depth,name,view)
     if trace_destinations then
         report_destinations("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
@@ -335,7 +333,7 @@ runners["inner"] = function(var,actions)
         local vir = var.i.references
         local internal = vir and vir.internal
         if internal then
-            var.inner = "aut:"..internal
+            var.inner = "aut:" .. internal
         end
     else
         var.inner = nil
@@ -401,6 +399,7 @@ function specials.internal(var,actions) -- better resolve in strc-ref
     local v = references.internals[i]
     if not v then
         -- error
+        report_references("no internal reference '%s'",var.operation)
     elseif getinnermethod() == "names" then
         -- named
         return link(nil,nil,"aut:"..i,v.references.realpage,actions)

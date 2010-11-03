@@ -99,8 +99,6 @@ local constants = sorters.constants
 local data, language, method, digits
 local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, upper, method, sequence
 
---~ local shchars = characters.specialchars -- no specials for AE and ae
-
 local mte = {
     __index = function(t,k)
         if k ~= "" and utfbyte(k) < digitsoffset then
@@ -112,8 +110,8 @@ local mte = {
             if not el then
                 local l = shchars[k]
                 if l and l ~= k then
-                    if #l > 0 then
-                        l = sub(l,1,1)
+                    if #l > 1 then
+                        l = sub(l,1,1) -- todo
                     end
                     el = rawget(t,l)
                     if not el then

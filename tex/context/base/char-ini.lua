@@ -122,9 +122,11 @@ setmetatablekey(data, "__index", function(t,k)
     if k < 0xF0000 then
         for r=1,#ranges do
             local rr = ranges[r].range
-            if k >= rr.first and k <= rr.last then
-                t[k] = rr
-                return rr
+            local first, last = rr.first, rr.last
+            if k >= first and k <= last then
+                local v = t[first]
+                t[k] = v
+                return v
             end
         end
     end
@@ -308,11 +310,11 @@ characters.blocks = allocate {
 }
 
 setmetatable(characters.blocks, { __index = function(t,k)
-    return rawget(t,lower(gsub(k,"[^a-zA-Z]","")))
+    return k and rawget(t,lower(gsub(k,"[^a-zA-Z]","")))
 end } )
 
 function characters.getrange(name) -- used in font fallback definitions (name or range)
-    local range = characters.blocks[tag]
+    local range = characters.blocks[name]
     if range then
         return range[1], range[2], range[3]
     end
@@ -328,7 +330,7 @@ function characters.getrange(name) -- used in font fallback definitions (name or
     return slot, slot, nil
 end
 
-characters.categories = allocate {
+local categorytags = allocate {
     lu = "Letter Uppercase",
     ll = "Letter Lowercase",
     lt = "Letter Titlecase",
@@ -361,6 +363,8 @@ characters.categories = allocate {
     cn = "Other Not Assigned",
 }
 
+characters.categorytags = categorytags
+
 --~ special   : cf (softhyphen) zs (emspace)
 --~ characters: ll lm lo lt lu mn nl no pc pd pe pf pi po ps sc sk sm so
 
@@ -381,9 +385,30 @@ local is_command = allocate ( table.tohash {
     "cf","zs"
 } )
 
+local is_spacing = allocate ( table.tohash {
+    "zs", "zl","zp",
+} )
+
 characters.is_character = is_character
 characters.is_letter    = is_letter
 characters.is_command   = is_command
+characters.is_spacing   = is_spacing
+
+local mt = { -- yes or no ?
+    __index = function(t,k)
+        if type(k) == "number" then
+            local c = characters.data[k].category
+            return c and rawget(t,c)
+        else
+            -- avoid auto conversion in data.characters lookups
+        end
+    end
+}
+
+setmetatable(characters.is_character, mt)
+setmetatable(characters.is_letter, mt)
+setmetatable(characters.is_command, mt)
+setmetatable(characters.is_spacing, mt)
 
 -- linebreak: todo: hash
 --
@@ -608,7 +633,18 @@ accessing the data table.</p>
 function characters.contextname(n) return data[n].contextname or "" end
 function characters.adobename  (n) return data[n].adobename   or "" end
 function characters.description(n) return data[n].description or "" end
-function characters.category   (n) return data[n].category    or "" end
+-------- characters.category   (n) return data[n].category    or "" end
+
+function characters.category(n,verbose)
+    local c = data[n].category
+    if not c then
+        return ""
+    elseif verbose then
+        return categorytags[c]
+    else
+        return c
+    end
+end
 
 --[[ldx--
 <p>Requesting lower and uppercase codes:</p>
@@ -684,35 +720,27 @@ characters.categories = allocate()  local categories = characters.categories -- 
 
 setmetatable(categories, { __index = function(t,u) if u then local c = data[u] c = c and c.category or u t[u] = c return c end end } )
 
-characters.lccodes    = allocate()  local lccodes    = characters.lccodes    -- lazy table
-characters.uccodes    = allocate()  local uccodes    = characters.uccodes    -- lazy table
-characters.shcodes    = allocate()  local shcodes    = characters.shcodes    -- lazy table
+characters.lccodes = allocate()  local lccodes = characters.lccodes -- lazy table
+characters.uccodes = allocate()  local uccodes = characters.uccodes -- lazy table
+characters.shcodes = allocate()  local shcodes = characters.shcodes -- lazy table
 
-setmetatable(lccodes,    { __index = function(t,u) if u then local c = data[u] c = c and c.lccode   or u t[u] = c return c end end } )
-setmetatable(uccodes,    { __index = function(t,u) if u then local c = data[u] c = c and c.uccode   or u t[u] = c return c end end } )
-setmetatable(shcodes,    { __index = function(t,u) if u then local c = data[u] c = c and c.shcode   or u t[u] = c return c end end } )
+setmetatable(lccodes, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end } )
+setmetatable(uccodes, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end } )
+setmetatable(shcodes, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end } )
 
 characters.lcchars = allocate()  local lcchars = characters.lcchars -- lazy table
 characters.ucchars = allocate()  local ucchars = characters.ucchars -- lazy table
 characters.shchars = allocate()  local shchars = characters.shchars -- lazy table
 
-setmetatable(lcchars, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.lccode c = c and utfchar  (c) or u t[u] = c return c end end } )
-setmetatable(ucchars, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.uccode c = c and utfchar  (c) or u t[u] = c return c end end } )
-setmetatable(shchars, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.shcode c = c and utfstring(c) or u t[u] = c return c end end } )
-
---~ characters.lccharcodes = allocate()  local lccharcodes = characters.lccharcodes -- lazy table
---~ characters.uccharcodes = allocate()  local uccharcodes = characters.uccharcodes -- lazy table
---~ characters.shcharcodes = allocate()  local shcharcodes = characters.shcharcodes -- lazy table
-
---~ setmetatable(lccharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.lccode or u t[u] = c return c end end } )
---~ setmetatable(uccharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.uccode or u t[u] = c return c end end } )
---~ setmetatable(shcharcodes, { __index = function(t,u) if u then local c = data[utfbyte(u)] c = c and c.shcode or u t[u] = c return c end end } )
+setmetatable(lcchars, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode c = c and utfchar  (c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+setmetatable(ucchars, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode c = c and utfchar  (c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+setmetatable(shchars, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
 
 characters.specialchars = allocate()  local specialchars = characters.specialchars -- lazy table
 
 setmetatable(specialchars, { __index = function(t,u)
     if u then
-        local c = data[utfbyte(u)]
+        local c = data[u]
         local s = c and c.specials
         if s then
             local tt, ttn = { }, 0
@@ -728,6 +756,9 @@ setmetatable(specialchars, { __index = function(t,u)
             t[u] = c
             return c
         else
+            if type(u) == "number" then
+                u = utfchar(u)
+            end
             t[u] = u
             return u
         end
@@ -738,7 +769,7 @@ function characters.lower(str)
     local new, n = { }, 0
     for u in utfvalues(str) do
         n = n + 1
-        new[n] = utfchar(lccodes[u])
+        new[n] = lcchars[u]
     end
     return concat(new)
 end
@@ -747,18 +778,44 @@ function characters.upper(str)
     local new, n = { }, 0
     for u in utfvalues(str) do
         n = n + 1
-        new[n] = utfchar(uccodes[u])
+        new[n] = ucchars[u]
     end
     return concat(new)
 end
 
-function characters.lettered(str)
+function characters.shaped(str)
     local new, n = { }, 0
     for u in utfvalues(str) do
-        local d = data[u]
-        if is_letter[d.category] then
-            n = n + 1
-            new[n] = utfchar(lccodes[u])
+        n = n + 1
+        new[n] = shchars[u]
+    end
+    return concat(new)
+end
+
+function characters.lettered(str,spacing)
+    local new, n = { }, 0
+    if spacing then
+        local done = false
+        for u in utfvalues(str) do
+            local c = data[u].category
+            if is_letter[c] then
+                if done and n > 1 then
+                    n = n + 1
+                    new[n] = " "
+                    done = false
+                end
+                n = n + 1
+                new[n] = utfchar(u)
+            elseif spacing and is_spacing[c] then
+                done = true
+            end
+        end
+    else
+        for u in utfvalues(str) do
+            if is_letter[data[u].category] then
+                n = n + 1
+                new[n] = utfchar(u)
+            end
         end
     end
     return concat(new)
