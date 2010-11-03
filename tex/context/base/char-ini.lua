@@ -71,12 +71,35 @@ local pattern = (P("0x") + P("U+")) * ((R("09","AF")^1 * P(-1)) / function(s) re
 lpeg.patterns.chartonumber = pattern
 
 local function chartonumber(k)
-    return type(k) == "string" and (lpegmatch(pattern,k) or utfbyte(k)) or k
+    if type(k) == "string" then
+        local u = lpegmatch(pattern,k)
+        if u then
+            return utfbyte(u)
+        else
+            return utfbyte(k) or 0
+        end
+    else
+        return k or 0
+    end
+end
+
+local function charfromnumber(k)
+    if type(k) == "number" then
+        return utfchar(k) or ""
+    else
+        local u = lpegmatch(pattern,k)
+        if u then
+            return utfchar(u)
+        else
+            return k
+        end
+    end
 end
 
 --~ print(chartonumber(97), chartonumber("a"), chartonumber("0x61"), chartonumber("U+61"))
 
-characters.tonumber = chartonumber
+characters.tonumber   = chartonumber
+characters.fromnumber = charfromnumber
 
 local private = {
     description = "PRIVATE SLOT",
@@ -284,9 +307,11 @@ characters.blocks = allocate {
     ["yisyllables"]                          = { 0x0A000, 0x0A48F, "Yi Syllables" },
 }
 
-function characters.getrange(name)
-    local tag = lower(name)
-    tag = gsub(name,"[^a-z]", "")
+setmetatable(characters.blocks, { __index = function(t,k)
+    return rawget(t,lower(gsub(k,"[^a-zA-Z]","")))
+end } )
+
+function characters.getrange(name) -- used in font fallback definitions (name or range)
     local range = characters.blocks[tag]
     if range then
         return range[1], range[2], range[3]
@@ -438,168 +463,89 @@ end
 
 function tex.uprint(c,n)
     if n then
+     -- texsprint(c,charfromnumber(n))
         texsprint(c,utfchar(n))
     else
+     -- texsprint(charfromnumber(c))
         texsprint(utfchar(c))
     end
 end
 
-if texsetcatcode then
+function characters.define(tobelettered, tobeactivated) -- catcodetables
 
-    -- todo -- define per table and then also register name (for tracing)
-
-    function characters.define(tobelettered, tobeactivated) -- catcodetables
-
-        if trace_defining then
-            report_defining("defining active character commands")
-        end
-
-        local activated, a = { }, 0
-
-        for u, chr in next, data do -- these will be commands
-            local fallback = chr.fallback
-            if fallback then
-                texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}") -- no texprint
-                a = a + 1
-                activated[a] = u
-            else
-                local contextname = chr.contextname
-                if contextname then
-                    local category = chr.category
-                    if is_character[category] then
-                        if chr.unicodeslot < 128 then
-                            texprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u))
-                        else
-                            texprint(ctxcatcodes,format("\\let\\%s=%s",contextname,utfchar(u)))
-                        end
-                    elseif is_command[category] then
-                        texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
-                        a = a + 1
-                        activated[a] = u
-                    end
-                end
-            end
-        end
-
-        if tobelettered then -- shared
-          local saved = tex.catcodetable
-          for i=1,#tobelettered do
-              tex.catcodetable = tobelettered[i]
-                if trace_defining then
-                    report_defining("defining letters (global, shared)")
-                end
-                for u, chr in next, data do
-                    if not chr.fallback and is_letter[chr.category] and u >= 128 and u <= 65536 then
-                        texsetcatcode(u,11)
-                    end
-                    local range = chr.range
-                    if range then
-                        for i=1,range.first,range.last do
-                            texsetcatcode(i,11)
-                        end
-                    end
-                end
-                texsetcatcode(0x200C,11) -- non-joiner
-                texsetcatcode(0x200D,11) -- joiner
-          end
-          tex.catcodetable = saved
-        end
-
-        local nofactivated = #tobeactivated
-        if tobeactivated and nofactivated > 0 then
-            for i=1,nofactivated do
-                local u = activated[i]
-                report_defining("character 0x%05X is active in sets %s (%s)",u,concat(tobeactivated,","),data[u].description)
-            end
-            local saved = tex.catcodetable
-            for i=1,#tobeactivated do
-                local vector = tobeactivated[i]
-                if trace_defining then
-                    report_defining("defining %s active characters in vector %s",nofactivated,vector)
-                end
-                tex.catcodetable = vector
-                for i=1,nofactivated do
-                    texsetcatcode(activated[i],13)
-                end
-            end
-            tex.catcodetable = saved
-        end
-
+    if trace_defining then
+        report_defining("defining active character commands")
     end
 
-else -- char-obs
+    local activated, a = { }, 0
 
-    local template_a = "\\startextendcatcodetable{%s}\\chardef\\l=11\\chardef\\a=13\\let\\c\\catcode%s\\let\\a\\undefined\\let\\l\\undefined\\let\\c\\undefined\\stopextendcatcodetable"
-    local template_b = "\\chardef\\l=11\\chardef\\a=13\\let\\c\\catcode%s\\let\\a\\undefined\\let\\l\\undefined\\let\\c\\undefined"
-
-    function characters.define(tobelettered, tobeactivated) -- catcodetables
-        local lettered, activated, l, a = { }, { }, 0, 0
-        for u, chr in next, data do
-            -- we can use a macro instead of direct settings
-            local fallback = chr.fallback
-            if fallback then
-            --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\checkedchar{%s}{%s}}}",u,utfchar(u),u,fallback))
-                texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}") -- no texprint
-                a = a + 1
-                activated[a] = "\\c"..u.."\\a"
-            else
-                local contextname = chr.contextname
+    for u, chr in next, data do -- these will be commands
+        local fallback = chr.fallback
+        if fallback then
+            texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}") -- no texprint
+            a = a + 1
+            activated[a] = u
+        else
+            local contextname = chr.contextname
+            if contextname then
                 local category = chr.category
-                if contextname then
-                    if is_character[category] then
-                     -- by this time, we're still in normal catcode mode
-                     -- subtle: not "\\",contextname but "\\"..contextname
-                        if chr.unicodeslot < 128 then
-                            texprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u))
-                        else
-                            texprint(ctxcatcodes,format("\\let\\%s=%s",contextname,utfchar(u)))
-                            if is_letter[category] then
-                                l = l + 1
-                                lettered[l] = "\\c"..u.."\\l"
-                            end
-                        end
-                    elseif is_command[category] then
-                        -- this might change: contextcommand ipv contextname
-                    --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\%s}}",u,utfchar(u),contextname))
-                        texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
-                        a = a + 1
-                        activated[a] = "\\c"..u.."\\a"
+                if is_character[category] then
+                    if chr.unicodeslot < 128 then
+                        texprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u))
+                    else
+                        texprint(ctxcatcodes,format("\\let\\%s=%s",contextname,utfchar(u)))
                     end
-                elseif is_letter[category] then
-                    if u >= 128 and u <= 65536 then -- catch private mess
-                        l = l + 1
-                        lettered[l] = "\\c"..u.."\\l"
-                    end
-                end
-            end
-            local range = chr.range
-            if range then
-                l = l + 1
-                lettered[l] = format('\\dofastrecurse{"%05X}{"%05X}{1}{\\c\\fastrecursecounter\\l}',range.first,range.last)
-            end
-        end
-     -- if false then
-        l = l + 1
-        lettered[l] = "\\c"..0x200C.."\\l" -- non-joiner
-        l = l + 1
-        lettered[l] = "\\c"..0x200D.."\\l" -- joiner
-     -- fi
-        if tobelettered then
-            lettered = concat(lettered)
-            if true then
-                texsprint(ctxcatcodes,format(template_b,lettered)) -- global
-            else
-                for l=1,#tobelettered do
-                    texsprint(ctxcatcodes,format(template_a,tobelettered[l],lettered))
+                elseif is_command[category] then
+                    texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
+                    a = a + 1
+                    activated[a] = u
                 end
             end
         end
-        if tobeactivated then
-            activated = concat(activated)
-            for a=1,#tobeactivated do
-                texsprint(ctxcatcodes,format(template_a,tobeactivated[a],activated))
+    end
+
+    if tobelettered then -- shared
+      local saved = tex.catcodetable
+      for i=1,#tobelettered do
+          tex.catcodetable = tobelettered[i]
+            if trace_defining then
+                report_defining("defining letters (global, shared)")
+            end
+            for u, chr in next, data do
+                if not chr.fallback and is_letter[chr.category] and u >= 128 and u <= 65536 then
+                    texsetcatcode(u,11)
+                end
+                local range = chr.range
+                if range then
+                    for i=1,range.first,range.last do
+                        texsetcatcode(i,11)
+                    end
+                end
+            end
+            texsetcatcode(0x200C,11) -- non-joiner
+            texsetcatcode(0x200D,11) -- joiner
+      end
+      tex.catcodetable = saved
+    end
+
+    local nofactivated = #tobeactivated
+    if tobeactivated and nofactivated > 0 then
+        for i=1,nofactivated do
+            local u = activated[i]
+            report_defining("character 0x%05X is active in sets %s (%s)",u,concat(tobeactivated,","),data[u].description)
+        end
+        local saved = tex.catcodetable
+        for i=1,#tobeactivated do
+            local vector = tobeactivated[i]
+            if trace_defining then
+                report_defining("defining %s active characters in vector %s",nofactivated,vector)
+            end
+            tex.catcodetable = vector
+            for i=1,nofactivated do
+                texsetcatcode(activated[i],13)
             end
         end
+        tex.catcodetable = saved
     end
 
 end
@@ -620,58 +566,31 @@ end
 --~ tex.sfcode
 --~ tex.catcode
 
-if texsetcatcode then
-
-    function characters.setcodes()
-        if trace_defining then
-            report_defining("defining lc and uc codes")
-        end
-        for code, chr in next, data do
-            local cc = chr.category
-            if cc == 'll' or cc == 'lu' or cc == 'lt' then
-                local lc, uc = chr.lccode, chr.uccode
-                if not lc then chr.lccode, lc = code, code end
-                if not uc then chr.uccode, uc = code, code end
-                texsetcatcode(code,11)   -- letter
-                texsetlccode(code,lc,uc)
-                if cc == "lu" then
-                    texsetsfcode(code,999)
-                end
-            elseif cc == "lo" then
-                local range = chr.range
-                if range then
-                    for i=range.first,range.last do
-                        texsetcatcode(i,11) -- letter
-                        texsetlccode(i,i,i) -- self self
-                    end
-                end
-            end
-        end
+function characters.setcodes()
+    if trace_defining then
+        report_defining("defining lc and uc codes")
     end
-
-else -- char-obs
-
-    function characters.setcodes()
-        for code, chr in next, data do
-            local cc = chr.category
-            if cc == 'll' or cc == 'lu' or cc == 'lt' then
-                local lc, uc = chr.lccode, chr.uccode
-                if not lc then chr.lccode, lc = code, code end
-                if not uc then chr.uccode, uc = code, code end
-                texsprint(ctxcatcodes,format("\\setcclcuc{%i}{%i}{%i}",code,lc,uc))
-            end
+    for code, chr in next, data do
+        local cc = chr.category
+        if cc == 'll' or cc == 'lu' or cc == 'lt' then
+            local lc, uc = chr.lccode, chr.uccode
+            if not lc then chr.lccode, lc = code, code end
+            if not uc then chr.uccode, uc = code, code end
+            texsetcatcode(code,11)   -- letter
+            texsetlccode(code,lc,uc)
             if cc == "lu" then
-                texprint(ctxcatcodes,"\\sfcode ",code,"999 ")
+                texsetsfcode(code,999)
             end
-            if cc == "lo" then
-                local range = chr.range
-                if range then
-                    texsprint(ctxcatcodes,format('\\dofastrecurse{"%05X}{"%05X}{1}{\\setcclcucself\\fastrecursecounter}',range.first,range.last))
+        elseif cc == "lo" then
+            local range = chr.range
+            if range then
+                for i=range.first,range.last do
+                    texsetcatcode(i,11) -- letter
+                    texsetlccode(i,i,i) -- self self
                 end
             end
         end
     end
-
 end
 
 --[[ldx--
@@ -796,16 +715,16 @@ setmetatable(specialchars, { __index = function(t,u)
         local c = data[utfbyte(u)]
         local s = c and c.specials
         if s then
-            local t, tn = { }, 0
+            local tt, ttn = { }, 0
             for i=2,#s do
                 local si = s[i]
                 local c = data[si]
                 if is_letter[c.category] then
-                    tn = tn + 1
-                    t[tn] = utfchar(si)
+                    ttn = ttn + 1
+                    tt[ttn] = utfchar(si)
                 end
             end
-            c = concat(t)
+            c = concat(tt)
             t[u] = c
             return c
         else

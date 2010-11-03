@@ -78,12 +78,6 @@ local function patch(data,filename)
                 end
                 v.features = {
                     {
---~                         scripts = {
---~                             {
---~                                 langs = { "ARA ", "FAR ", "URD ", "dflt" },
---~                                 script = "arab",
---~                             },
---~                         },
                         scripts = { arab = { "ARA " = true, "FAR " = true, "URD " = true, "dflt" = true } },
                         tag = "mkmk"
                     }

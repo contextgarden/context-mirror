@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['char-cmp'] = {
     license   = "see context related readme files"
 }
 
--- There is some overlap here with shcodes ...
+-- There is some overlap here with shcodes ... this file is only used
+-- for afm loading.
 
 local type = type
 local utfchar, utfbyte = utf.char, utf.byte

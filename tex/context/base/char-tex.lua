@@ -18,7 +18,7 @@ characters       = characters or { }
 local characters = characters
 characters.tex   = characters.tex or { }
 
-local accent_map = allocate {
+local accent_map = allocate { -- incomplete
    ['~'] = "̃" , --  ̃ Ẽ
    ['"'] = "̈" , --  ̈ Ë
    ["`"] = "̀" , --  ̀ È

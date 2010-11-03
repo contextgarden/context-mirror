@@ -33,7 +33,7 @@ local function s_tocontext(...) -- we need to catch {\}
 end
 
 local function b_tocontext(b)
-    string_tocontext(tostring(b))
+    s_tocontext(tostring(b))
 end
 
 table  .tocontext = t_tocontext
