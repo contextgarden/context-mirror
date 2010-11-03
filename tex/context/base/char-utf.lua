@@ -24,6 +24,8 @@ local concat, gmatch, gsub = table.concat, string.gmatch, string.gsub
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local allocate = utilities.storage.allocate
 
+local charfromnumber = characters.fromnumber
+
 -- todo: trackers
 
 characters            = characters or { }
@@ -84,44 +86,16 @@ end
 -- utffilters.addgrapheme(utfchar(318),'l','\string~')
 -- utffilters.addgrapheme('c','a','b')
 
-function utffilters.addgrapheme(result,first,second)
-    local r, f, s = tonumber(result), tonumber(first), tonumber(second)
-    if r then result = utfchar(r) end
-    if f then first  = utfchar(f) end
-    if s then second = utfchar(s) end
+function utffilters.addgrapheme(result,first,second) -- can be U+ 0x string or utf or number
+    local result = charfromnumber(result)
+    local first  = charfromnumber(first)
+    local second = charfromnumber(second)
     if not graphemes[first] then
         graphemes[first] = { [second] = result }
     else
         graphemes[first][second] = result
     end
 end
-
---~ function utffilters.collapse(str) -- old one
---~     if utffilters.collapsing and str and #str > 1 then
---~         if initialize then -- saves a call
---~             initialize()
---~         end
---~         local tokens, n, first, done = { }, 0, false, false
---~         for second in utfcharacters(str) do
---~             local cgf = graphemes[first]
---~             if cgf and cgf[second] then
---~                 first, done = cgf[second], true
---~             elseif first then
---~                 n + n + 1
---~                 tokens[n] = first
---~                 first = second
---~             else
---~                 first = second
---~             end
---~         end
---~         if done then
---~             n + n + 1
---~             tokens[n] = first
---~             return concat(tokens)
---~         end
---~     end
---~     return str
---~ end
 
 --[[ldx--
 <p>In order to deal with 8-bit output, we need to find a way to
@@ -278,27 +252,29 @@ end
 <p>Next we implement some commands that are used in the user interface.</p>
 --ldx]]--
 
-commands = commands or { }
-
---~ function commands.uchar(first,second)
---~     context(utfchar(first*256+second))
---~ end
+-- commands = commands or { }
+--
+-- function commands.uchar(first,second)
+--     context(utfchar(first*256+second))
+-- end
 
 --[[ldx--
 <p>A few helpers (used to be <t>luat-uni<t/>).</p>
 --ldx]]--
 
-function utf.split(str)
-    local t, n = { }, 0
-    for snippet in utfcharacters(str) do
-        n = n + 1
-        t[n+1] = snippet
-    end
-    return t
-end
-
-function utf.each(str,fnc)
-    for snippet in utfcharacters(str) do
-        fnc(snippet)
-    end
-end
+-- obsolete:
+--
+-- function utf.split(str)
+--     local t, n = { }, 0
+--     for snippet in utfcharacters(str) do
+--         n = n + 1
+--         t[n+1] = snippet
+--     end
+--     return t
+-- end
+--
+-- function utf.each(str,fnc)
+--     for snippet in utfcharacters(str) do
+--         fnc(snippet)
+--     end
+-- end

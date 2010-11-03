@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['char-map'] = {
     license   = "see context related readme files"
 }
 
+-- not yet used
+
 characters = characters or { }
 
 characters.casemap={

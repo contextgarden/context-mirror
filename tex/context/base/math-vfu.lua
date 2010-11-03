@@ -455,12 +455,12 @@ function fonts.vf.math.define(specification,set)
             if mm and fp and mp then
                 if ss.extension then
                     mm.math_x_height          = fp.x_height or 0 -- math_x_height           height of x
-                    mm.default_rule_thickness = fp[ 8] or 0 -- default_rule_thickness  thickness of \over bars
-                    mm.big_op_spacing1        = fp[ 9] or 0 -- big_op_spacing1         minimum clearance above a displayed op
-                    mm.big_op_spacing2        = fp[10] or 0 -- big_op_spacing2         minimum clearance below a displayed op
-                    mm.big_op_spacing3        = fp[11] or 0 -- big_op_spacing3         minimum baselineskip above displayed op
-                    mm.big_op_spacing4        = fp[12] or 0 -- big_op_spacing4         minimum baselineskip below displayed op
-                    mm.big_op_spacing5        = fp[13] or 0 -- big_op_spacing5         padding above and below displayed limits
+                    mm.default_rule_thickness = fp[ 8]      or 0 -- default_rule_thickness  thickness of \over bars
+                    mm.big_op_spacing1        = fp[ 9]      or 0 -- big_op_spacing1         minimum clearance above a displayed op
+                    mm.big_op_spacing2        = fp[10]      or 0 -- big_op_spacing2         minimum clearance below a displayed op
+                    mm.big_op_spacing3        = fp[11]      or 0 -- big_op_spacing3         minimum baselineskip above displayed op
+                    mm.big_op_spacing4        = fp[12]      or 0 -- big_op_spacing4         minimum baselineskip below displayed op
+                    mm.big_op_spacing5        = fp[13]      or 0 -- big_op_spacing5         padding above and below displayed limits
                 --  report_virtual("loading and virtualizing font %s at size %s, setting ex parameters",name,size)
                 elseif ss.parameters then
                     mp.x_height      = fp.x_height or mp.x_height
@@ -518,13 +518,17 @@ function fonts.vf.math.define(specification,set)
                                 si[index] = ref
                             end
                             local kerns = fci.kerns
+                            local width = fci.width
+                            local italic = fci.italic
+                            if italic then
+                                width = width + italic
+                            end
                             if kerns then
-                                local width = fci.width
                                 local krn = { }
-                                for k=1,#kerns do
+                                for k, v in next, kerns do -- kerns is sparse
                                     local rk = rotcev[k]
                                     if rk then
-                                        krn[rk] = kerns[k]
+                                        krn[rk] = v -- kerns[k]
                                     end
                                 end
                                 if not next(krn) then
@@ -534,7 +538,7 @@ function fonts.vf.math.define(specification,set)
                                     width    = width,
                                     height   = fci.height,
                                     depth    = fci.depth,
-                                    italic   = fci.italic,
+                                    italic   = italic,
                                     kerns    = krn,
                                     commands = ref,
                                 }
@@ -547,10 +551,10 @@ function fonts.vf.math.define(specification,set)
                                 characters[unicode] = t
                             else
                                 characters[unicode] = {
-                                    width    = fci.width,
+                                    width    = width,
                                     height   = fci.height,
                                     depth    = fci.depth,
-                                    italic   = fci.italic,
+                                    italic   = italic,
                                     commands = ref,
                                 }
                             end
@@ -612,31 +616,10 @@ function fonts.vf.math.define(specification,set)
                             local cu = characters[unicode]
                             if cu then
                                 cu.next = offset + index
-                                --~ local n, c, d = unicode, cu, { }
-                                --~ print("START", unicode)
-                                --~ while n do
-                                --~     n = c.next
-                                --~     if n then
-                                --~         print("NEXT", n)
-                                --~         c = characters[n]
-                                --~         if not c then
-                                --~             print("EXIT")
-                                --~         elseif d[n] then
-                                --~             print("LOOP")
-                                --~             break
-                                --~         end
-                                --~         d[n] = true
-                                --~     end
-                                --~ end
                             else
                                 local fci = fc[index]
                                 if not fci then
---~                                     characters[unicode] = {
---~                                         width    = 0,
---~                                         height   = 0,
---~                                         depth    = 0,
---~                                         index    = 0,
---~                                     }
+                                    -- do nothing
                                 else
                                     local ref = si[index]
                                     if not ref then
@@ -646,8 +629,11 @@ function fonts.vf.math.define(specification,set)
                                     local kerns = fci.kerns
                                     if kerns then
                                         local krn = { }
-                                        for k=1,#kerns do
-                                            krn[offset + k] = kerns[k]
+--~                                         for k=1,#kerns do
+--~                                             krn[offset + k] = kerns[k]
+--~                                         end
+                                        for k, v in next, kerns do -- is kerns sparse?
+                                            krn[offset + k] = v
                                         end
                                         characters[unicode] = {
                                             width    = fci.width,
@@ -689,7 +675,7 @@ function fonts.vf.math.define(specification,set)
     mathematics.scaleparameters(main,main,1)
     main.nomath = false
 --~ print(table.serialize(characters[0x222B]))
---~ print(main.fontname,table.serialize(main.MathConstants))
+--~ table.print(main.MathConstants)
     return main
 end
 

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['char-syn'] = {
     license   = "see context related readme files"
 }
 
--- thanks to tex4ht for these mappings
+-- Thanks to tex4ht for these mappings.
 
 local allocate, setinitializer = utilities.storage.allocate, utilities.storage.setinitializer
 
