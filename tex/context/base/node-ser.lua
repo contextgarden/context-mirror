@@ -17,7 +17,6 @@ local nodes, node = nodes, node
 
 local traverse    = node.traverse
 local node_fields = node.fields
-local node_type   = node.type
 
 local nodecodes   = nodes.nodecodes
 
@@ -88,7 +87,7 @@ function nodes.astable(n,sparse) -- not yet ok
             end
         end
     end
-    t.type = node_type(n.id)
+    t.type = nodecodes[n.id]
     return t
 end
 
@@ -119,7 +118,7 @@ local function totable(n,flat,verbose)
             end
         end
         if verbose then
-            tt.type = node_type(tt.id)
+            tt.type = nodecodes[tt.id]
         end
         return tt
     end

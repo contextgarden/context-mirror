@@ -263,9 +263,8 @@
 %D \showsetup{usesymbols}
 
 \def\dousesymbols#1%
-  {\makeshortfilename[\truefilename{\f!symbolprefix#1}]%
-   \startreadingfile
-     \readsysfile\shortfilename
+  {\startreadingfile
+     \readsysfile{\truefilename{\f!symbolprefix#1}}
        {\showmessage\m!symbols1{#1}}
        \donothing
    \stopreadingfile}

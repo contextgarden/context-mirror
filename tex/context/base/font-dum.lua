@@ -275,7 +275,7 @@ end
 -- bonus
 
 function fonts.otf.nametoslot(name)
-    local tfmdata = fonts.ids[font.current()]
+    local tfmdata = fonts.identifiers[font.current()]
     if tfmdata and tfmdata.shared then
         local otfdata = tfmdata.shared.otfdata
         local unicode = otfdata.luatex.unicodes[name]

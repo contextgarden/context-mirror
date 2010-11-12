@@ -146,9 +146,8 @@
      {\ifcsname\c!file\f!javascriptprefix#1\endcsname \else
         \startnointerference
           \letgvalueempty{\c!file\f!javascriptprefix#1}%
-          \makeshortfilename[\f!javascriptprefix#1]%
           \startreadingfile
-            \readsysfile\shortfilename{\showmessage\m!javascript1{#1}}\donothing
+            \readsysfile{\truefilename{\f!javascriptprefix#1}}{\showmessage\m!javascript1{#1}}\donothing
           \stopreadingfile
         \stopnointerference
       \fi}}

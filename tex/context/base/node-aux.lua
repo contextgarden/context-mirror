@@ -74,6 +74,14 @@ nodes.set_attributes       = set_attributes
 nodes.set_unset_attributes = set_unset_attributes
 nodes.unset_attributes     = unset_attributes
 
+nodes.setattribute         = set_attribute
+nodes.unsetattribute       = unset_attribute
+nodes.hasattribute         = has_attribute
+
+nodes.setattributes        = set_attributes
+nodes.setunsetattributes   = set_unset_attributes
+nodes.unsetattributes      = unset_attributes
+
 -- history:
 --
 -- local function cp_skipable(a,id)  -- skipable nodes at the margins during character protrusion

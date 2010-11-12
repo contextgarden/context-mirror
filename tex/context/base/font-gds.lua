@@ -210,7 +210,7 @@ local function setcolorscheme(tfmdata,scheme)
     tfmdata.colorscheme = false
 end
 
-local fontdata      = fonts.ids
+local fontdata      = fonts.identifiers
 local fcs           = fonts.colors.set
 local has_attribute = node.has_attribute
 local traverse_id   = node.traverse_id

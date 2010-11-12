@@ -73,7 +73,7 @@ local hpack_nodes = node.hpack
 local dimenfactor = fonts.dimenfactor
 local texwrite = tex.write
 
-local fontdata  = fonts.ids
+local fontdata  = fonts.identifiers
 local variables = interfaces.variables
 
 local nodecodes = nodes.nodecodes

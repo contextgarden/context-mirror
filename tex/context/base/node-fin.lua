@@ -411,7 +411,8 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                         done = done or ok
                     end
                 end
-            elseif default then
+--~             elseif default then
+            elseif default > 0 then
                 --
             elseif current > 0 then
                 head = insert_node_before(head,stack,copy_node(nsnone))

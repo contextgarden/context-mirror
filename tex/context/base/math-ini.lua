@@ -369,11 +369,11 @@ local hvars = table.tohash {
 }
 
 function mathematics.scaleparameters(t,tfmtable,delta,hdelta,vdelta)
-    local math_parameters = tfmtable.math_parameters
-    if math_parameters and next(math_parameters) then
+    local mathparameters = tfmtable.mathparameters
+    if mathparameters and next(mathparameters) then
         delta = delta or 1
         hdelta, vdelta = hdelta or delta, vdelta or delta
-        local _, mp = mathematics.dimensions(math_parameters)
+        local _, mp = mathematics.dimensions(mathparameters)
         for name, value in next, mp do
             if name == "RadicalDegreeBottomRaisePercent" then
                 mp[name] = value

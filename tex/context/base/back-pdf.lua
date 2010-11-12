@@ -90,6 +90,7 @@ local cache = { }
 function nodeinjections.startlayer(name)
     local c = cache[name]
     if not c then
+        codeinjections.useviewerlayer(name)
         c = register(pdfliteral(format("/OC /%s BDC",name)))
         cache[name] = c
     end
@@ -104,9 +105,10 @@ end
 
 local cache = { }
 
-function nodeinjections.switchlayer(name)
+function nodeinjections.switchlayer(name) -- not used, optimization
     local c = cache[name]
     if not c then
+        codeinjections.useviewerlayer(name)
         c = register(pdfliteral(format("EMC /OC /%s BDC",name)))
     end
     return copy_node(c)

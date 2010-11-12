@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/03/10 19:42:18
+-- merge date  : 11/12/10 18:22:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -285,11 +285,6 @@ end
 
 patterns.textline = content
 
---~ local p = lpeg.splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
---~ local p = lpeg.splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
---~ local p = lpeg.splitat("->",false)  print(match(p,"oeps"))              -- oeps
---~ local p = lpeg.splitat("->",true)   print(match(p,"oeps"))              -- oeps
-
 local splitters_s, splitters_m = { }, { }
 
 local function splitat(separator,single)
@@ -310,6 +305,11 @@ local function splitat(separator,single)
 end
 
 lpeg.splitat = splitat
+
+--~ local p = splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
+--~ local p = splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
+--~ local p = splitat("->",false)  print(match(p,"oeps"))              -- oeps
+--~ local p = splitat("->",true)   print(match(p,"oeps"))              -- oeps
 
 local cache = { }
 
@@ -2089,6 +2089,13 @@ end
 --~     end
 --~ end
 
+-- for myself:
+
+function file.strip(name,dir)
+    local b, a = match(name,"^(.-)" .. dir .. "(.*)$")
+    return a ~= "" and a or name
+end
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -2699,10 +2706,6 @@ local new_node    = node.new
 
 local glyph_code = nodecodes.glyph
 
--- fonts
-
-local fontdata = fonts.ids or { }
-
 function nodes.simple_font_handler(head)
 --  lang.hyphenate(head)
     head = nodes.handlers.characters(head)
@@ -2718,7 +2721,7 @@ if tex.attribute[0] ~= 0 then
     texio.write_nl("log","!")
     texio.write_nl("log","! Attribute 0 is reserved for ConTeXt's font feature management and has to be")
     texio.write_nl("log","! set to zero. Also, some attributes in the range 1-255 are used for special")
-    texio.write_nl("log","! purposed so setting them at the TeX end might break the font handler.")
+    texio.write_nl("log","! purposes so setting them at the TeX end might break the font handler.")
     texio.write_nl("log","!")
 
     tex.attribute[0] = 0 -- else no features
@@ -2729,36 +2732,41 @@ nodes.handlers.protectglyphs   = node.protect_glyphs
 nodes.handlers.unprotectglyphs = node.unprotect_glyphs
 
 function nodes.handlers.characters(head)
-    local usedfonts, done, prevfont = { }, false, nil
-    for n in traverse_id(glyph_code,head) do
-        local font = n.font
-        if font ~= prevfont then
-            prevfont = font
-            local used = usedfonts[font]
-            if not used then
-                local tfmdata = fontdata[font]
-                if tfmdata then
-                    local shared = tfmdata.shared -- we need to check shared, only when same features
-                    if shared then
-                        local processors = shared.processes
-                        if processors and #processors > 0 then
-                            usedfonts[font] = processors
-                            done = true
+    local fontdata = fonts.identifiers
+    if fontdata then
+        local usedfonts, done, prevfont = { }, false, nil
+        for n in traverse_id(glyph_code,head) do
+            local font = n.font
+            if font ~= prevfont then
+                prevfont = font
+                local used = usedfonts[font]
+                if not used then
+                    local tfmdata = fontdata[font] --
+                    if tfmdata then
+                        local shared = tfmdata.shared -- we need to check shared, only when same features
+                        if shared then
+                            local processors = shared.processes
+                            if processors and #processors > 0 then
+                                usedfonts[font] = processors
+                                done = true
+                            end
                         end
                     end
                 end
             end
         end
-    end
-    if done then
-        for font, processors in next, usedfonts do
-            for i=1,#processors do
-                local h, d = processors[i](head,font,0)
-                head, done = h or head, done or d
+        if done then
+            for font, processors in next, usedfonts do
+                for i=1,#processors do
+                    local h, d = processors[i](head,font,0)
+                    head, done = h or head, done or d
+                end
             end
         end
+        return head, true
+    else
+        return head, false
     end
-    return head, true
 end
 
 -- helper
@@ -2820,7 +2828,7 @@ if not modules then modules = { } end modules ['node-inj'] = {
     license   = "see context related readme files"
 }
 
--- tricky ... fonts.ids is not yet defined .. to be solved (maybe general tex ini)
+-- tricky ... fonts.identifiers is not yet defined .. to be solved (maybe general tex ini)
 
 -- This is very experimental (this will change when we have luatex > .50 and
 -- a few pending thingies are available. Also, Idris needs to make a few more
@@ -2835,18 +2843,18 @@ local report_injections = logs.new("injections")
 
 local attributes, nodes, node = attributes, nodes, node
 
-fonts     = fonts      or { }
-fonts.tfm = fonts.tfm  or { }
-fonts.ids = fonts.ids  or { }
+fonts                    = fonts or { }
+fonts.tfm                = fonts.tfm or { }
+fonts.identifiers        = fonts.identifiers or { }
 
-nodes.injections = nodes.injections or { }
-local injections = nodes.injections
+nodes.injections         = nodes.injections or { }
+local injections         = nodes.injections
 
-local fontdata   = fonts.ids
-local nodecodes  = nodes.nodecodes
-local glyph_code = nodecodes.glyph
-local nodepool   = nodes.pool
-local newkern    = nodepool.kern
+local fontdata           = fonts.identifiers
+local nodecodes          = nodes.nodecodes
+local glyph_code         = nodecodes.glyph
+local nodepool           = nodes.pool
+local newkern            = nodepool.kern
 
 local traverse_id        = node.traverse_id
 local unset_attribute    = node.unset_attribute
@@ -3293,14 +3301,18 @@ fontloader.totable = fontloader.to_table
 
 fonts = fonts or { }
 
--- we will also have des and fam hashes
+-- beware, some already defined
 
--- beware, soem alreadyu defined
+fonts.identifiers = mark(fonts.identifiers or { }) -- fontdata
+-----.characters  = mark(fonts.characters  or { }) -- chardata
+-----.csnames     = mark(fonts.csnames     or { }) -- namedata
+-----.quads       = mark(fonts.quads       or { }) -- quaddata
 
-fonts.ids = mark(fonts.ids or { })  fonts.identifiers = fonts.ids -- aka fontdata
-fonts.chr = mark(fonts.chr or { })  fonts.characters  = fonts.chr -- aka chardata
-fonts.qua = mark(fonts.qua or { })  fonts.quads       = fonts.qua -- aka quaddata
-fonts.css = mark(fonts.css or { })  fonts.csnames     = fonts.css -- aka namedata
+--~ fonts.identifiers[0] = { -- nullfont
+--~     characters   = { },
+--~     descriptions = { },
+--~     name         = "nullfont",
+--~ }
 
 fonts.tfm = fonts.tfm or { }
 fonts.vf  = fonts.vf  or { }
@@ -3309,15 +3321,7 @@ fonts.pfb = fonts.pfb or { }
 fonts.otf = fonts.otf or { }
 
 fonts.privateoffset = 0xF0000 -- 0x10FFFF
-fonts.verbose = false -- more verbose cache tables
-
-fonts.ids[0] = { -- nullfont
-    characters   = { },
-    descriptions = { },
-    name         = "nullfont",
-}
-
-fonts.chr[0] = { }
+fonts.verbose       = false   -- more verbose cache tables (will move to context namespace)
 
 fonts.methods = fonts.methods or {
     base = { tfm = { }, afm = { }, otf = { }, vtf = { }, fix = { } },
@@ -3426,7 +3430,7 @@ fonts.initializers.common = fonts.initializers.common or { }
 
 local set_attribute = node.set_attribute
 
-local fontdata   = fonts.ids
+local fontdata   = fonts.identifiers
 local nodecodes  = nodes.nodecodes
 
 local disc_code  = nodecodes.disc
@@ -3692,7 +3696,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
     end
     -- status
     local isvirtual = tfmtable.type == "virtual" or tfmtable.virtualized
-    local hasmath = (tfmtable.math_parameters ~= nil and next(tfmtable.math_parameters) ~= nil) or (tfmtable.MathConstants ~= nil and next(tfmtable.MathConstants) ~= nil)
+    local hasmath = (tfmtable.mathparameters ~= nil and next(tfmtable.mathparameters) ~= nil) or (tfmtable.MathConstants ~= nil and next(tfmtable.MathConstants) ~= nil)
     local nodemode = tfmtable.mode == "node"
     local hasquality = tfmtable.auto_expand or tfmtable.auto_protrude
     local hasitalic = tfmtable.has_italic
@@ -3718,7 +3722,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
         t.fonts = table.fastcopy(tfmtable.fonts) -- hm  also at the end
     end
     local tp = t.parameters
-    local mp = t.math_parameters
+    local mp = t.mathparameters
     local tfmp = tfmtable.parameters -- let's check for indexes
     --
     tp.slant         = (tfmp.slant         or tfmp[1] or 0)
@@ -5602,7 +5606,7 @@ fonts.otf            = fonts.otf or { }
 local otf            = fonts.otf
 local tfm            = fonts.tfm
 
-local fontdata       = fonts.ids
+local fontdata       = fonts.identifiers
 local chardata       = characters and characters.data -- not used
 
 otf.features         = otf.features         or { }
@@ -6952,7 +6956,7 @@ actions["check metadata"] = function(data,filename,raw)
     data.map = nil
 end
 
-local private_math_parameters = {
+local private_mathparameters = {
     "FractionDelimiterSize",
     "FractionDelimiterDisplayStyleSize",
 }
@@ -6960,8 +6964,8 @@ local private_math_parameters = {
 actions["check math parameters"] = function(data,filename,raw)
     local mathdata = data.metadata.math
     if mathdata then
-        for m=1,#private_math_parameters do
-            local pmp = private_math_parameters[m]
+        for m=1,#private_mathparameters do
+            local pmp = private_mathparameters[m]
             if not mathdata[pmp] then
                 if trace_loading then
                     report_otf("setting math parameter '%s' to 0", pmp)
@@ -7174,7 +7178,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         local unicodes = luatex.unicodes -- names to unicodes
         local indices = luatex.indices
         local mode = data.mode or "base"
-        local characters, parameters, math_parameters, descriptions = { }, { }, { }, { }
+        local characters, parameters, mathparameters, descriptions = { }, { }, { }, { }
         local designsize = metadata.designsize or metadata.design_size or 100
         if designsize == 0 then
             designsize = 100
@@ -7189,7 +7193,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         if metadata.math then
             -- parameters
             for name, value in next, metadata.math do
-                math_parameters[name] = value
+                mathparameters[name] = value
             end
             -- we could use a subset
             for u, char in next, characters do
@@ -7304,7 +7308,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         return {
             characters         = characters,
             parameters         = parameters,
-            math_parameters    = math_parameters,
+            mathparameters     = mathparameters,
             descriptions       = descriptions,
             indices            = indices,
             unicodes           = unicodes,
@@ -7487,7 +7491,7 @@ local report_otf = logs.new("load otf")
 
 local fonts          = fonts
 local otf            = fonts.otf
-local fontdata       = fonts.ids
+local fontdata       = fonts.identifiers
 
 otf.features         = otf.features         or { }
 otf.features.default = otf.features.default or { }
@@ -8238,7 +8242,7 @@ local markonce = true
 local cursonce = true
 local kernonce = true
 
-local fontdata = fonts.ids
+local fontdata = fonts.identifiers
 
 otf.features.process = { }
 
@@ -10784,7 +10788,7 @@ local has_attribute      = node.has_attribute
 local traverse_id        = node.traverse_id
 local traverse_node_list = node.traverse
 
-local fontdata           = fonts.ids
+local fontdata           = fonts.identifiers
 local state              = attributes.private('state')
 local categories         = characters and characters.categories or { } -- sorry, only in context
 
@@ -14983,7 +14987,8 @@ if not modules then modules = { } end modules ['font-def'] = {
     license   = "see context related readme files"
 }
 
-local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
+local concat = table.concat
+local format, gmatch, match, find, lower, gsub = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next = tostring, next
 local lpegmatch = lpeg.match
 
@@ -15006,13 +15011,11 @@ default loader that only handles <l n='tfm'/>.</p>
 local fonts         = fonts
 local tfm           = fonts.tfm
 local vf            = fonts.vf
-local fontcsnames   = fonts.csnames
 
 fonts.used          = allocate()
 
 tfm.readers         = tfm.readers or { }
 tfm.fonts           = allocate()
-tfm.internalized    = allocate() -- internal tex numbers
 
 local readers       = tfm.readers
 local sequence      = allocate { 'otf', 'ttf', 'afm', 'tfm' }
@@ -15102,9 +15105,12 @@ end
 
 definers.getspecification = getspecification
 
-function definers.registersplit(symbol,action)
+function definers.registersplit(symbol,action,verbosename)
     addspecifier(symbol)
     variants[symbol] = action
+    if verbosename then
+        variants[verbosename] = action
+    end
 end
 
 function definers.makespecification(specification, lookup, name, sub, method, detail, size)
@@ -15315,7 +15321,8 @@ function tfm.read(specification)
     if not tfmtable then
         local forced = specification.forced or ""
         if forced ~= "" then
-            tfmtable = readers[lower(forced)](specification)
+            local reader = readers[lower(forced)]
+            tfmtable = reader and reader(specification)
             if not tfmtable then
                 report_define("forced type %s of %s not found",forced,specification.name)
             end
@@ -15368,17 +15375,17 @@ function tfm.readanddefine(name,size) -- no id
     local hash = tfm.hashinstance(specification)
     local id = definers.registered(hash)
     if not id then
-        local fontdata = tfm.read(specification)
-        if fontdata then
-            fontdata.hash = hash
-            id = font.define(fontdata)
-            definers.register(fontdata,id)
-            tfm.cleanuptable(fontdata)
+        local tfmdata = tfm.read(specification)
+        if tfmdata then
+            tfmdata.hash = hash
+            id = font.define(tfmdata)
+            definers.register(tfmdata,id)
+            tfm.cleanuptable(tfmdata)
         else
             id = 0  -- signal
         end
     end
-    return fonts.ids[id], id
+    return fonts.identifiers[id], id
 end
 
 --[[ldx--
@@ -15466,6 +15473,16 @@ function readers.afm(specification,method)
     return tfmtable
 end
 
+function readers.pfb(specification,method) -- only called when forced
+    local original = specification.specification
+    if trace_loading then
+        report_afm("using afm reader for '%s'",original)
+    end
+    specification.specification = gsub(original,"%.pfb",".afm")
+    specification.forced = "afm"
+    return readers.afm(specification,method)
+end
+
 -- maybe some day a set of names
 
 local function check_otf(forced,specification,suffix,what)
@@ -15545,31 +15562,29 @@ not gain much. By the way, passing id's back to in the callback was
 introduced later in the development.</p>
 --ldx]]--
 
-local lastdefined = nil -- we don't want this one to end up in s-tra-02
+local lastdefined  = nil -- we don't want this one to end up in s-tra-02
+local internalized = { }
 
 function definers.current() -- or maybe current
     return lastdefined
 end
 
-function definers.register(fontdata,id)
-    if fontdata and id then
-        local hash = fontdata.hash
-        if not tfm.internalized[hash] then
+function definers.register(tfmdata,id) -- will be overloaded
+    if tfmdata and id then
+        local hash = tfmdata.hash
+        if not internalized[hash] then
             if trace_defining then
-                report_define("loading at 2 id %s, hash: %s",id or "?",hash or "?")
+                report_define("registering font, id: %s, hash: %s",id or "?",hash or "?")
             end
-            fonts.identifiers[id] = fontdata
-            fonts.characters [id] = fontdata.characters
-            fonts.quads      [id] = fontdata.parameters and fontdata.parameters.quad
-            -- todo: extra functions, e.g. setdigitwidth etc in list
-            tfm.internalized[hash] = id
+            fonts.identifiers[id] = tfmdata
+            internalized[hash] = id
         end
     end
 end
 
-function definers.registered(hash)
-    local id = tfm.internalized[hash]
-    return id, id and fonts.ids[id]
+function definers.registered(hash) -- will be overloaded
+    local id = internalized[hash]
+    return id, id and fonts.identifiers[id]
 end
 
 local cache_them = false
@@ -15602,49 +15617,45 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     specification = definers.resolve(specification)
     local hash = tfm.hashinstance(specification)
     if cache_them then
-        local fontdata = containers.read(fonts.cache,hash) -- for tracing purposes
+        local tfmdata = containers.read(fonts.cache,hash) -- for tracing purposes
     end
-    local fontdata = definers.registered(hash) -- id
-    if not fontdata then
+    local tfmdata = definers.registered(hash) -- id
+    if not tfmdata then
         if specification.features.vtf and specification.features.vtf.preset then
-            fontdata = tfm.make(specification)
+            tfmdata = tfm.make(specification)
         else
-            fontdata = tfm.read(specification)
-            if fontdata then
-                tfm.checkvirtualid(fontdata)
+            tfmdata = tfm.read(specification)
+            if tfmdata then
+                tfm.checkvirtualid(tfmdata)
             end
         end
         if cache_them then
-            fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes
+            tfmdata = containers.write(fonts.cache,hash,tfmdata) -- for tracing purposes
         end
-        if fontdata then
-            fontdata.hash = hash
-            fontdata.cache = "no"
+        if tfmdata then
+            tfmdata.hash = hash
+            tfmdata.cache = "no"
             if id then
-                definers.register(fontdata,id)
+                definers.register(tfmdata,id)
             end
         end
     end
-    lastdefined = fontdata or id -- todo ! ! ! ! !
-    if not fontdata then -- or id?
+    lastdefined = tfmdata or id -- todo ! ! ! ! !
+    if not tfmdata then -- or id?
         report_define( "unknown font %s, loading aborted",specification.name)
-    elseif trace_defining and type(fontdata) == "table" then
+    elseif trace_defining and type(tfmdata) == "table" then
         report_define("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
-            fontdata.type          or "unknown",
-            id                     or "?",
-            fontdata.name          or "?",
-            fontdata.size          or "default",
-            fontdata.encodingbytes or "?",
-            fontdata.encodingname  or "unicode",
-            fontdata.fullname      or "?",
-            file.basename(fontdata.filename or "?"))
-    end
-    local cs = specification.cs
-    if cs then
-        fontcsnames[cs] = fontdata -- new (beware: locals can be forgotten)
+            tfmdata.type          or "unknown",
+            id                    or "?",
+            tfmdata.name          or "?",
+            tfmdata.size          or "default",
+            tfmdata.encodingbytes or "?",
+            tfmdata.encodingname  or "unicode",
+            tfmdata.fullname      or "?",
+            file.basename(tfmdata.filename or "?"))
     end
     statistics.stoptiming(fonts)
-    return fontdata
+    return tfmdata
 end
 
 function vf.find(name)
@@ -15675,7 +15686,7 @@ end
 --ldx]]--
 
 callbacks.register('define_font' , definers.read, "definition of fonts (tfmtable preparation)")
-callbacks.register('find_vf_file', vf.find    , "locating virtual fonts, insofar needed") -- not that relevant any more
+callbacks.register('find_vf_file', vf.find,       "locating virtual fonts, insofar needed") -- not that relevant any more
 
 end -- closure
 
@@ -15780,7 +15791,7 @@ local function colonized(specification) -- xetex mode
     return specification
 end
 
-definers.registersplit(":",colonized)
+definers.registersplit(":",colonized,"cryptic")
 
 end -- closure
 
@@ -16063,7 +16074,7 @@ end
 -- bonus
 
 function fonts.otf.nametoslot(name)
-    local tfmdata = fonts.ids[font.current()]
+    local tfmdata = fonts.identifiers[font.current()]
     if tfmdata and tfmdata.shared then
         local otfdata = tfmdata.shared.otfdata
         local unicode = otfdata.luatex.unicodes[name]

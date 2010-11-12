@@ -9,93 +9,74 @@ return {
 
     content = {
 
-        TEXMFCACHE      = "$SELFAUTOPARENT/texmf-cache",
+        variables = {
 
-        TEXMFOS         = "$SELFAUTODIR",
-        TEXMFSYSTEM     = "$SELFAUTOPARENT/texmf-$SELFAUTOSYSTEM",
-        TEXMFMAIN       = "$SELFAUTOPARENT/texmf",
-        TEXMFCONTEXT    = "$SELFAUTOPARENT/texmf-context",
-        TEXMFLOCAL      = "$SELFAUTOPARENT/texmf-local",
-        TEXMFFONTS      = "$SELFAUTOPARENT/texmf-fonts",
-        TEXMFPROJECT    = "$SELFAUTOPARENT/texmf-project",
+            TEXMFCACHE      = "$SELFAUTOPARENT/texmf-cache",
 
-        -- I don't like this texmf under home and texmf-home would make more
-        -- sense. One never knows what installers put under texmf anywhere and
-        -- sorting out problems will be a pain.
+            TEXMFOS         = "$SELFAUTODIR",
+            TEXMFSYSTEM     = "$SELFAUTOPARENT/texmf-$SELFAUTOSYSTEM",
+            TEXMFMAIN       = "$SELFAUTOPARENT/texmf",
+            TEXMFCONTEXT    = "$SELFAUTOPARENT/texmf-context",
+            TEXMFLOCAL      = "$SELFAUTOPARENT/texmf-local",
+            TEXMFFONTS      = "$SELFAUTOPARENT/texmf-fonts",
+            TEXMFPROJECT    = "$SELFAUTOPARENT/texmf-project",
 
-        TEXMFHOME       = "$HOME/texmf", -- "tree:///$HOME/texmf
+            -- I don't like this texmf under home and texmf-home would make more
+            -- sense. One never knows what installers put under texmf anywhere and
+            -- sorting out problems will be a pain.
 
-        -- We need texmfos for a few rare files but as I have a few more bin trees
-        -- a hack is needed. Maybe other users also have texmf-platform-new trees.
+            TEXMFHOME       = "$HOME/texmf", -- "tree:///$HOME/texmf
 
-        TEXMF           = "{$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}",
+            -- We need texmfos for a few rare files but as I have a few more bin trees
+            -- a hack is needed. Maybe other users also have texmf-platform-new trees.
 
-        TEXFONTMAPS     = ".;$TEXMF/fonts/data//;$TEXMF/fonts/map/{pdftex,dvips}//",
-        ENCFONTS        = ".;$TEXMF/fonts/data//;$TEXMF/fonts/enc/{dvips,pdftex}//",
-        VFFONTS         = ".;$TEXMF/fonts/{data,vf}//",
-        TFMFONTS        = ".;$TEXMF/fonts/{data,tfm}//",
-        T1FONTS         = ".;$TEXMF/fonts/{data,type1,pfb}//;$OSFONTDIR",
-        AFMFONTS        = ".;$TEXMF/fonts/{data,afm}//;$OSFONTDIR",
-        TTFONTS         = ".;$TEXMF/fonts/{data,truetype,ttf}//;$OSFONTDIR",
-        OPENTYPEFONTS   = ".;$TEXMF/fonts/{data,opentype}//;$OSFONTDIR",
-        CMAPFONTS       = ".;$TEXMF/fonts/cmap//",
-        FONTFEATURES    = ".;$TEXMF/fonts/{data,fea}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS",
-        FONTCIDMAPS     = ".;$TEXMF/fonts/{data,cid}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS",
-        OFMFONTS        = ".;$TEXMF/fonts/{data,ofm,tfm}//",
-        OVFFONTS        = ".;$TEXMF/fonts/{data,ovf,vf}//",
+            TEXMF           = "{$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}",
 
-        TEXINPUTS       = ".;$TEXMF/tex/{context,plain/base,generic}//",
-        MPINPUTS        = ".;$TEXMF/metapost/{context,base,}//",
+            TEXFONTMAPS     = ".;$TEXMF/fonts/data//;$TEXMF/fonts/map/{pdftex,dvips}//",
+            ENCFONTS        = ".;$TEXMF/fonts/data//;$TEXMF/fonts/enc/{dvips,pdftex}//",
+            VFFONTS         = ".;$TEXMF/fonts/{data,vf}//",
+            TFMFONTS        = ".;$TEXMF/fonts/{data,tfm}//",
+            T1FONTS         = ".;$TEXMF/fonts/{data,type1,pfb}//;$OSFONTDIR",
+            AFMFONTS        = ".;$TEXMF/fonts/{data,afm}//;$OSFONTDIR",
+            TTFONTS         = ".;$TEXMF/fonts/{data,truetype,ttf}//;$OSFONTDIR",
+            OPENTYPEFONTS   = ".;$TEXMF/fonts/{data,opentype}//;$OSFONTDIR",
+            CMAPFONTS       = ".;$TEXMF/fonts/cmap//",
+            FONTFEATURES    = ".;$TEXMF/fonts/{data,fea}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS",
+            FONTCIDMAPS     = ".;$TEXMF/fonts/{data,cid}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS",
+            OFMFONTS        = ".;$TEXMF/fonts/{data,ofm,tfm}//",
+            OVFFONTS        = ".;$TEXMF/fonts/{data,ovf,vf}//",
 
-        -- In the next variable the inputs path will go away.
+            TEXINPUTS       = ".;$TEXMF/tex/{context,plain/base,generic}//",
+            MPINPUTS        = ".;$TEXMF/metapost/{context,base,}//",
 
-        TEXMFSCRIPTS    = ".;$TEXMF/scripts/context/{lua,ruby,python,perl}//;$TEXINPUTS",
-        PERLINPUTS      = ".;$TEXMF/scripts/context/perl",
-        PYTHONINPUTS    = ".;$TEXMF/scripts/context/python",
-        RUBYINPUTS      = ".;$TEXMF/scripts/context/ruby",
-        LUAINPUTS       = ".;$TEXINPUTS;$TEXMF/scripts/context/lua//",
-        CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{$progname,$engine,}/lua//",
+            -- In the next variable the inputs path will go away.
 
-        -- Not really used by MkIV so they might go away.
+            TEXMFSCRIPTS    = ".;$TEXMF/scripts/context/{lua,ruby,python,perl}//;$TEXINPUTS",
+            PERLINPUTS      = ".;$TEXMF/scripts/context/perl",
+            PYTHONINPUTS    = ".;$TEXMF/scripts/context/python",
+            RUBYINPUTS      = ".;$TEXMF/scripts/context/ruby",
+            LUAINPUTS       = ".;$TEXINPUTS;$TEXMF/scripts/context/lua//",
+            CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{$progname,$engine,}/lua//",
 
-        BIBINPUTS       = ".;$TEXMF/bibtex/bib//",
-        BSTINPUTS       = ".;$TEXMF/bibtex/bst//",
+            -- Not really used by MkIV so they might go away.
 
-        -- Experimental
+            BIBINPUTS       = ".;$TEXMF/bibtex/bib//",
+            BSTINPUTS       = ".;$TEXMF/bibtex/bst//",
 
-        ICCPROFILES     = ".;$TEXMF/colors/icc/{context,profiles}//;$OSCOLORDIR",
+            -- Experimental
 
-        -- Sort of obsolete.
+            ICCPROFILES     = ".;$TEXMF/colors/icc/{context,profiles}//;$OSCOLORDIR",
 
-        OTPINPUTS       = ".;$TEXMF/omega/otp//",
-        OCPINPUTS       = ".;$TEXMF/omega/ocp//",
+            -- Sort of obsolete.
 
-        -- A few special ones that will change some day.
+            OTPINPUTS       = ".;$TEXMF/omega/otp//",
+            OCPINPUTS       = ".;$TEXMF/omega/ocp//",
 
-        FONTCONFIG_FILE = "fonts.conf",
-        FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
-        FC_CACHEDIR     = "$TEXMFSYSTEM/fonts/cache", -- not needed
+            -- A few special ones that will change some day.
 
-        -- Some of the following parameters will disappear. Also, some are
-        -- not used at all as we disable the ocp mechanism. At some point
-        -- it makes more sense then to turn then into directives.
-
-        context = {
-
-            hash_extra     =  "100000",
-            nest_size      =     "500",
-            param_size     =   "10000",
-            save_size      =   "50000",
-            stack_size     =   "10000",
-            expand_depth   =   "10000",
-            max_print_line =   "10000",
-            max_in_open    =     "256",
-
-            ocp_stack_size =   "10000",
-            ocp_list_size  =    "1000",
-
-            buf_size       = "4000000", -- obsolete
-            ocp_buf_size   =  "500000", -- obsolete
+            FONTCONFIG_FILE = "fonts.conf",
+            FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
+            FC_CACHEDIR     = "$TEXMFSYSTEM/fonts/cache", -- not needed
 
         },
 
@@ -104,35 +85,48 @@ return {
         -- like ['foo.bar'] so for convenience we also support 'foo_bar'.
 
         directives = {
-         -- system_checkglobals      = "10",
-         -- system_nostatistics      = "yes",
-            system_errorcontext      = "10",
-            mplib_texerrors          = "yes",
-         -- fonts_otf_loader_method  = "table", -- table mixed sparse
-         -- fonts_otf_loader_cleanup = "0",     -- 0 1 2 3
-            system_compile_cleanup   = "no",    -- remove tma files
-            system_compile_strip     = "yes",   -- strip tmc files
+            ["luatex.expanddepth"]       =  "10000", -- 10000
+            ["luatex.hashextra"]         = "100000", --     0
+            ["luatex.nestsize"]          =   "1000", --    50
+            ["luatex.maxinopen"]         =    "500", --    15
+            ["luatex.maxprintline"]      = " 10000", --    79
+            ["luatex.maxstrings"]        = "500000", -- 15000 -- obsolete
+            ["luatex.paramsize"]         =  "25000", --    60
+            ["luatex.savesize"]          =  "50000", --  4000
+            ["luatex.stacksize"]         =  "10000", --   300
+
+         -- ["system.checkglobals"]      = "10",
+         -- ["system.nostatistics"]      = "yes",
+            ["system.errorcontext"]      = "10",
+
+            ["mplib.texerrors"]          = "yes",
+
+         -- ["fonts.otf.loader.method"]  = "table", -- table mixed sparse
+         -- ["fonts.otf.loader.cleanup"] = "0",     -- 0 1 2 3
+
+            ["system.compile.cleanup"]   = "no",    -- remove tma files
+            ["system.compile.strip"]     = "yes",   -- strip tmc files
+
+            -- The io modes are similar to the traditional ones. Possible values
+            -- are all, paranoid and restricted.
+
+            ["system.outputmode"]        = "restricted",
+            ["system.inputmode"]         = "any",
+
+            -- The following variable is under consideration. We do have protection
+            -- mechanims but it's not enabled by default.
+
+            ["system.commandmode"]       = "any", -- any none list
+            ["system.commandlist"]       = "mtxrun, convert, inkscape, gs, imagemagick, curl, bibtex, pstoedit",
+
         },
 
         experiments = {
-            fonts_autorscale = "yes",
+            ["fonts.autorscale"] = "yes",
         },
 
         trackers = {
-
         },
-
-        -- The io modes are similar to the traditional ones. Possible values
-        -- are all, paranoid and restricted.
-
-        output_mode  = "restricted",
-        input_mode   = "any",
-
-        -- The following variable is under consideration. We do have protection
-        -- mechanims but it's not enabled by default.
-
-        command_mode = "any", -- any none list
-        command_list = "mtxrun, convert, inkscape, gs, imagemagick, curl, bibtex, pstoedit",
 
     },
 

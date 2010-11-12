@@ -646,7 +646,7 @@ local function nodes_to_string(head)
     local current, t = head, { }
     while current do
         local id = current.id
-        local ty = node.type(id)
+        local ty = nodecodes[id]
         if id == penalty_code then
             t[#t+1] = format("%s:%s",ty,current.penalty)
         elseif id == glue_code then
@@ -680,7 +680,7 @@ local function trace_info(message, where, what)
 end
 
 local function trace_node(what)
-    local nt = node.type(what.id)
+    local nt = nodecodes[what.id]
     local tl = trace_list[#trace_list]
     if tl and tl[1] == "node" then
         trace_list[#trace_list] = { "node", tl[2] .. " + " .. nt }
@@ -1160,7 +1160,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         end
         show_tracing(head)
         if oldhead ~= head then
-            trace_info("head has been changed from '%s' to '%s'",node.type(oldhead.id),node.type(head.id))
+            trace_info("head has been changed from '%s' to '%s'",nodecodes[oldhead.id],nodecodes[head.id])
         end
     end
     return head, true

@@ -15,6 +15,8 @@
 
 \unprotect
 
+\def\c!printable{printable} % todo
+
 \registerctxluafile{attr-lay}{1.001}
 
 % needs to work over stopitemize grouping etc
@@ -28,5 +30,76 @@
   {\ctxlua{attributes.viewerlayers.enable()}%
    \gdef\dotriggerviewerlayer##1{\csname(vl:##1)\endcsname}%
    \dotriggerviewerlayer}
+
+\getparameters
+  [\??lr]
+  [\c!state=\v!start,
+   \c!title=,
+   \c!printable=\v!yes,
+   \c!method=\v!none]
+
+\def\defineviewerlayer
+  {\dodoubleargument\dodefineviewerlayer}
+
+\def\dodefineviewerlayer[#1][#2]% document wide properties
+  {\begingroup
+   \getparameters[\??lr][#2]%
+   \ctxlua{attributes.viewerlayers.define{
+        tag       = "#1",
+        title     = "\@@lrtitle",
+        visible   = "\@@lrstate",
+        kind      = 0, % 1 == frozen
+        printable = "\@@lrprintable",
+   }}%
+   \doif\@@lrmethod\v!command
+     {\setugvalue{\e!start#1}{\startviewerlayer[#1]}%
+      \setugvalue{\e!stop #1}{\stopviewerlayer     }}%
+   \endgroup}
+
+\unexpanded\def\startviewerlayer[#1]{\ctxlua{attributes.viewerlayers.start("#1")}}             % not grouped
+\unexpanded\def\stopviewerlayer     {\ctxlua{attributes.viewerlayers.stop()}}                  % not grouped
+\unexpanded\def\viewerlayer     [#1]{\groupedcommand{\startviewerlayer[#1]}{\stopviewerlayer}} % grouped
+
+% some day we will keep this at the lua end as the info is only needed there
+
+\let\currentviewerlayer\empty \newtoks\currentviewerlayertoks % soon we can set macros at the lua end
+
+\def\currentviewerlayer{\the\currentviewerlayertoks}
+
+\appendtoks
+    \let\currentviewerlayer\empty
+\to \everypagebody
+
+% layout components are implemented rather directly (speed)
+
+\def\doinitializelayoutcomponent#1#2%
+  {\ctxlua{backends.codeinjections.defineviewerlayer{% this will move to the lua end i.e be merged with register
+     tag       = "#1:#2",
+     title     = "#1 #2",
+     visible   = "\v!start",
+     kind      = 0, % 1 == frozen
+     printable = "\v!yes"
+   }}%
+   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \ctxlua{tex.write(attributes.viewerlayers.register('#1:#2',true))}\relax}%
+   \expandafter\glet\csname\??ly>#1:#2\endcsname\layoutcomponentboxattribute}
+
+\def\dosetlayoutcomponentattribute#1#2% make this faster
+  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??ly>#1:#2\endcsname
+   \ifx\layoutcomponentboxattribute\relax
+     \doinitializelayoutcomponent{#1}{#2}% get rid of { }
+   \fi}
+
+\def\doresetlayoutcomponentattribute
+  {\let\layoutcomponentboxattribute\empty}
+
+\let\setlayoutcomponentattribute  \gobbletwoarguments
+\let\resetlayoutcomponentattribute\relax
+\let\layoutcomponentboxattribute  \empty
+
+\def\showlayoutcomponents
+  {\ctxlua{attributes.viewerlayers.enable()}%
+   \let\setlayoutcomponentattribute  \dosetlayoutcomponentattribute
+   \let\resetlayoutcomponentattribute\doresetlayoutcomponentattribute}
+
 
 \protect \endinput

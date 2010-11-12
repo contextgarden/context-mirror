@@ -840,9 +840,8 @@
 \def\douseMPlibrary#1%
   {\ifcsname\c!file\f!metapostprefix#1\endcsname\else
      \letvalueempty{\c!file\f!metapostprefix#1}%
-     \makeshortfilename[\truefilename{\f!metapostprefix#1}]%
      \startreadingfile
-       \readsysfile\shortfilename{\showmessage\m!metapost1{#1}}\donothing
+       \readsysfile{\truefilename{\f!metapostprefix#1}}{\showmessage\m!metapost1{#1}}\donothing
      \stopreadingfile
    \fi}
 
@@ -1044,8 +1043,8 @@
 %D Usage:
 %D
 %D \starttyping
-%D \defineproperty[one][layer][state=start]
-%D \defineproperty[two][layer][state=stop]
+%D \defineviewerlayer[one][state=start]
+%D \defineviewerlayer[two][state=stop]
 %D
 %D \startuseMPgraphic{step-1}
 %D   fill fullcircle scaled 10cm withcolor red ;
@@ -1055,8 +1054,8 @@
 %D   fill fullcircle scaled 5cm withcolor green ;
 %D \stopuseMPgraphic
 %D
-%D \setlayer[mp]{\property[one]{\useMPgraphic{step-1}}}
-%D \setlayer[mp]{\property[two]{\useMPgraphic{step-2}}}
+%D \setlayer[mp]{\viewerlayer[one]{\useMPgraphic{step-1}}}
+%D \setlayer[mp]{\viewerlayer[two]{\useMPgraphic{step-2}}}
 %D
 %D \ruledhbox{\flushlayer[mp]}
 %D \stoptyping

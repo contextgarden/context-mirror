@@ -56,9 +56,13 @@
    \setvalue {\e!start#2}{\startstructureblock[#1]}%
    \setvalue {\e!stop #2}{\stopstructureblock}}
 
+\ifdefined \resetallstructuremarks \else
+    \let\resetallstructuremarks\relax
+\fi
+
 \appendtoks
     \doifsomething{\structureblockparameter\c!page}{\page[\structureblockparameter\c!page]}%
-% TODO    \resetsectionmarks\zerosection
+    \resetallstructuremarks
     \getstructureblockenvironment\currentstructureblock
     \structureblockparameter\c!before % don't move
     \dostarttagged\t!division\currentstructureblock
@@ -68,7 +72,7 @@
     \structureblockparameter\c!after % don't move
     \doifsomething{\structureblockparameter\c!page}{\page[\structureblockparameter\c!page]}%
     \dostoptagged
-% TODO    \resetsectionmarks\zerosection
+    \resetallstructuremarks
 \to \everyafterstructureblock
 
 \def\dosetupstructureblock[#1]%

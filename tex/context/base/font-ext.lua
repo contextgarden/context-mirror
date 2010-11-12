@@ -590,7 +590,7 @@ initializers.node.afm.extend = initializers.common.extend
 -- historic stuff, move from font-ota
 
 local delete_node = nodes.delete
-local fontdata    = fonts.ids
+local fontdata    = fonts.identifiers
 
 local nodecodes  = nodes.nodecodes
 local glyph_code = nodecodes.glyph

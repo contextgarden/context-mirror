@@ -49,12 +49,13 @@
 \def\automigratemarks  {\the\everyautomigratemarks}
 
 \appendtoks
-  \let\postponenotes\relax
-  \enableexperiments[inserts.migrate]%
+    \let\postponenotes\relax
+    \enableexperiments[inserts.migrate]%
 \to \everyautomigratefootnotes
 
 \appendtoks
-  \enableexperiments[marks.migrate]%
+    \writestatus\m!systems{migration of marks is normally not needed}%
+    \enableexperiments[marks.migrate]%
 \to \everyautomigratemarks
 
 \protect

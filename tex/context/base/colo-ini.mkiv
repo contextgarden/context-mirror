@@ -217,9 +217,8 @@
       \processcommalist[#1]\dodosetupcolor}}
 
 \def\dodosetupcolor#1%
-  {\makeshortfilename[\truefilename{\f!colorprefix#1}]%
-   \startreadingfile
-     \readsysfile\shortfilename
+  {\startreadingfile
+     \readsysfile{\truefilename{\f!colorprefix#1}}
        {\showcolormessage\m!colors4\colorstyle}
        {\showcolormessage\m!colors5\colorstyle}%
    \stopreadingfile}

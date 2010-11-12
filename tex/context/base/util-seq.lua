@@ -151,20 +151,20 @@ return function(head%s)
   return head, done
 end]]
 
-function sequencers.nodeprocessor(t,n)
+function sequencers.nodeprocessor(t,nofarguments)
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
     local vars, calls, args, n = { }, { }, nil, 0
-    if n == 0 then
+    if nofarguments == 0 then
         args = ""
-    elseif n == 1 then
+    elseif nofarguments == 1 then
         args = ",one"
-    elseif n == 2 then
+    elseif nofarguments == 2 then
         args = ",one,two"
-    elseif n == 3 then
+    elseif nofarguments == 3 then
         args = ",one,two,three"
-    elseif n == 4 then
+    elseif nofarguments == 4 then
         args = ",one,two,three,four"
-    elseif n == 5 then
+    elseif nofarguments == 5 then
         args = ",one,two,three,four,five"
     else
         args = ",..."
@@ -189,6 +189,6 @@ function sequencers.nodeprocessor(t,n)
         end
     end
     local processor = format(template,concat(vars,"\n"),args,concat(calls,"\n"))
---~     print(processor)
+ -- print(processor)
     return processor
 end

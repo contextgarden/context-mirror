@@ -28,4 +28,10 @@
 \registernegative{positive}{positive}
 \registernegative{negative}{negative}
 
+\unexpanded\def\startnegative{\dotriggernegative\v!negative}
+\unexpanded\def\stopnegative {\dotriggernegative\v!positive}
+
+\unexpanded\def\startpositive{\dotriggernegative\v!positive}
+\unexpanded\def\stoppositive {\dotriggernegative\v!negative}
+
 \protect \endinput

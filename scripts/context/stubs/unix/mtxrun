@@ -298,7 +298,6 @@ end
 
 patterns.textline = content
 
-
 local splitters_s, splitters_m = { }, { }
 
 local function splitat(separator,single)
@@ -319,6 +318,7 @@ local function splitat(separator,single)
 end
 
 lpeg.splitat = splitat
+
 
 local cache = { }
 
@@ -2559,6 +2559,13 @@ end
 -- test { "aa", "aa/bb", "aa/bb/cc", "aa/bb/cc.dd", "aa/bb/cc.dd.ee" }
 
 
+-- for myself:
+
+function file.strip(name,dir)
+    local b, a = match(name,"^(.-)" .. dir .. "(.*)$")
+    return a ~= "" and a or name
+end
+
 
 end -- of closure
 
@@ -4520,7 +4527,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
         data = data.data
         if data then
             for key, value in next, values do
-                key = gsub(key,"_",".")
+             -- key = gsub(key,"_",".")
                 value = is_boolean(value,value)
                 local functions = data[key]
                 if functions then
@@ -4547,6 +4554,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                     end
                 end
             end
+            return true
         end
     end
 end
@@ -4780,6 +4788,29 @@ if trackers and environment and environment.engineflags.trackers then
 end
 if directives and environment and environment.engineflags.directives then
     d_enable(environment.engineflags.directives)
+end
+
+-- here
+
+if texconfig then
+
+    local function set(k,v)
+        v = tonumber(v)
+        if v then
+            texconfig[k] = v
+        end
+    end
+
+    directives.register("luatex.expanddepth",  function(v) set("expand_depth",v)   end)
+    directives.register("luatex.hashextra",    function(v) set("hash_extra",v)     end)
+    directives.register("luatex.nestsize",     function(v) set("nest_size",v)      end)
+    directives.register("luatex.maxinopen",    function(v) set("max_in_open",v)    end)
+    directives.register("luatex.maxprintline", function(v) set("max_print_line",v) end)
+    directives.register("luatex.maxstrings",   function(v) set("max_strings",v)    end)
+    directives.register("luatex.paramsize",    function(v) set("param_size",v)     end)
+    directives.register("luatex.savesize",     function(v) set("save_size",v)      end)
+    directives.register("luatex.stacksize",    function(v) set("stack_size",v)     end)
+
 end
 
 
@@ -9626,92 +9657,231 @@ if not modules then modules = { } end modules ['data-env'] = {
 }
 
 local allocate = utilities.storage.allocate
+local lower, gsub = string.lower, string.gsub
+
+local fileextname = file.extname
 
 local resolvers = resolvers
 
-local formats      = allocate()  resolvers.formats      = formats
-local suffixes     = allocate()  resolvers.suffixes     = suffixes
-local dangerous    = allocate()  resolvers.dangerous    = dangerous
-local suffixmap    = allocate()  resolvers.suffixmap    = suffixmap
-local alternatives = allocate()  resolvers.alternatives = alternatives
+local formats   = allocate()  resolvers.formats   = formats
+local suffixes  = allocate()  resolvers.suffixes  = suffixes
+local dangerous = allocate()  resolvers.dangerous = dangerous
+local suffixmap = allocate()  resolvers.suffixmap = suffixmap
 
-formats['afm']          = 'AFMFONTS'       suffixes['afm']          = { 'afm' }
-formats['enc']          = 'ENCFONTS'       suffixes['enc']          = { 'enc' }
-formats['fmt']          = 'TEXFORMATS'     suffixes['fmt']          = { 'fmt' }
-formats['map']          = 'TEXFONTMAPS'    suffixes['map']          = { 'map' }
-formats['mp']           = 'MPINPUTS'       suffixes['mp']           = { 'mp' }
-formats['ofm']          = 'OFMFONTS'       suffixes['ofm']          = { 'ofm', 'tfm' }
-formats['otf']          = 'OPENTYPEFONTS'  suffixes['otf']          = { 'otf' }
-formats['opl']          = 'OPLFONTS'       suffixes['opl']          = { 'opl' }
-formats['otp']          = 'OTPINPUTS'      suffixes['otp']          = { 'otp' }
-formats['ovf']          = 'OVFFONTS'       suffixes['ovf']          = { 'ovf', 'vf' }
-formats['ovp']          = 'OVPFONTS'       suffixes['ovp']          = { 'ovp' }
-formats['tex']          = 'TEXINPUTS'      suffixes['tex']          = { 'tex' }
-formats['tfm']          = 'TFMFONTS'       suffixes['tfm']          = { 'tfm' }
-formats['ttf']          = 'TTFONTS'        suffixes['ttf']          = { 'ttf', 'ttc', 'dfont' }
-formats['pfb']          = 'T1FONTS'        suffixes['pfb']          = { 'pfb', 'pfa' }
-formats['vf']           = 'VFFONTS'        suffixes['vf']           = { 'vf' }
-formats['fea']          = 'FONTFEATURES'   suffixes['fea']          = { 'fea' }
-formats['cid']          = 'FONTCIDMAPS'    suffixes['cid']          = { 'cid', 'cidmap' }
-formats['icc']          = 'ICCPROFILES'    suffixes['icc']          = { 'icc' }
-formats['texmfscripts'] = 'TEXMFSCRIPTS'   suffixes['texmfscripts'] = { 'rb', 'pl', 'py' }
-formats['lua']          = 'LUAINPUTS'      suffixes['lua']          = { 'lua', 'luc', 'tma', 'tmc' }
-formats['lib']          = 'CLUAINPUTS'     suffixes['lib']          = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
+local relations = allocate {
+    core = {
+        ofm = {
+            names    = { "ofm", "omega font metric", "omega font metrics" },
+            variable = 'OFMFONTS',
+            suffixes = { 'ofm', 'tfm' },
+        },
+        ovf = {
+            names    = { "ovf", "omega virtual font", "omega virtual fonts" },
+            variable = 'OVFFONTS',
+            suffixes = { 'ovf', 'vf' },
+        },
+        tfm = {
+            names    = { "tfm", "tex font metric", "tex font metrics" },
+            variable = 'TFMFONTS',
+            suffixes = { 'tfm' },
+        },
+        vf = {
+            names    = { "vf", "virtual font", "virtual fonts" },
+            variable = 'VFFONTS',
+            suffixes = { 'vf' },
+        },
+        otf = {
+            names    = { "otf", "opentype", "opentype font", "opentype fonts"},
+            variable = 'OPENTYPEFONTS',
+            suffixes = { 'otf' },
+        },
+        ttf = {
+            names    = { "ttf", "truetype", "truetype font", "truetype fonts", "truetype collection", "truetype collections", "truetype dictionary", "truetype dictionaries" },
+            variable = 'TTFONTS',
+            suffixes = { 'ttf', 'ttc', 'dfont' },
+        },
+        afm = {
+            names    = { "afm", "adobe font metric", "adobe font metrics" },
+            variable = "AFMFONTS",
+            suffixes = { "afm" },
+        },
+        pfb = {
+            names    = { "pfb", "type1", "type 1", "type1 font", "type 1 font", "type1 fonts", "type 1 fonts" },
+            variable = 'T1FONTS',
+            suffixes = { 'pfb', 'pfa' },
+        },
+        fea = {
+            names    = { "fea", "font feature", "font features", "font feature file", "font feature files" },
+            variable = 'FONTFEATURES',
+            suffixes = { 'fea' },
+        },
+        cid = {
+            names    = { "cid", "cid map", "cid maps", "cid file", "cid files" },
+            variable = 'FONTCIDMAPS',
+            suffixes = { 'cid', 'cidmap' },
+        },
+        fmt = {
+            names    = { "fmt", "format", "tex format" },
+            variable = 'TEXFORMATS',
+            suffixes = { 'fmt' },
+        },
+        mem = {
+            names    = { 'mem', "metapost format" },
+            variable = 'MPMEMS',
+            suffixes = { 'mem' },
+        },
+        mp = {
+            names    = { "mp" },
+            variable = 'MPINPUTS',
+            suffixes = { 'mp' },
+        },
+        tex = {
+            names    = { "tex" },
+            variable = 'TEXINPUTS',
+            suffixes = { 'tex', "mkiv", "mkii" },
+        },
+        icc = {
+            names    = { "icc", "icc profile", "icc profiles" },
+            variable = 'ICCPROFILES',
+            suffixes = { 'icc' },
+        },
+        texmfscripts = {
+            names    = { "texmfscript", "texmfscripts", "script", "scripts" },
+            variable = 'TEXMFSCRIPTS',
+            suffixes = { 'rb', 'pl', 'py' },
+        },
+        lua = {
+            names    = { "lua" },
+            variable = 'LUAINPUTS',
+            suffixes = { 'lua', 'luc', 'tma', 'tmc' },
+        },
+        lib = {
+            names    = { "lib" },
+            variable = 'CLUAINPUTS',
+            suffixes = os.libsuffix and { os.libsuffix } or { 'dll', 'so' },
+        },
+        bib = {
+            names    = { 'bib' },
+            suffixes = { 'bib' },
+        },
+        bst = {
+            names    = { 'bst' },
+            suffixes = { 'bst' },
+        },
+        fontconfig = {
+            names    = { 'fontconfig', 'fontconfig file', 'fontconfig files' },
+            variable = 'FONTCONFIG_PATH',
+        },
+    },
+    obsolete = {
+        enc = {
+            names    = { "enc", "enc files", "enc file", "encoding files", "encoding file" },
+            variable = 'ENCFONTS',
+            suffixes = { 'enc' },
+        },
+        map = {
+            names    = { "map", "map files", "map file" },
+            variable = 'TEXFONTMAPS',
+            suffixes = { 'map' },
+        },
+        lig = {
+            names    = { "lig files", "lig file", "ligature file", "ligature files" },
+            variable = 'LIGFONTS',
+            suffixes = { 'lig' },
+        },
+        opl = {
+            names    = { "opl" },
+            variable = 'OPLFONTS',
+            suffixes = { 'opl' },
+        },
+        otp = {
+            names    = { "otp" },
+            variable = 'OTPINPUTS',
+            suffixes = { 'otp' },
+        },
+        ovp = {
+            names    = { "ovp" },
+            variable = 'OVPFONTS',
+            suffixes = { 'ovp' },
+        },
+    },
+    kpse = { -- subset
+        base = {
+            names    = { 'base', "metafont format" },
+            variable = 'MFBASES',
+            suffixes = { 'base', 'bas' },
+        },
+        cmap = {
+            names    = { 'cmap', 'cmap files', 'cmap file' },
+            variable = 'CMAPFONTS',
+            suffixes = { 'cmap' },
+        },
+        cnf = {
+            names    = { 'cnf' },
+            suffixes = { 'cnf' },
+        },
+        web = {
+            names    = { 'web' },
+            suffixes = { 'web', 'ch' }
+        },
+        cweb = {
+            names    = { 'cweb' },
+            suffixes = { 'w', 'web', 'ch' },
+        },
+        gf = {
+            names    = { 'gf' },
+            suffixes = { '<resolution>gf' },
+        },
+        mf = {
+            names    = { 'mf' },
+            variable = 'MFINPUTS',
+            suffixes = { 'mf' },
+        },
+        mft = {
+            names    = { 'mft' },
+            suffixes = { 'mft' },
+        },
+        pk = {
+            names    = { 'pk' },
+            suffixes = { '<resolution>pk' },
+        },
+    },
+}
 
--- backward compatible ones
+resolvers.relations = relations
 
-alternatives['map files']            = 'map'
-alternatives['enc files']            = 'enc'
-alternatives['cid maps']             = 'cid' -- great, why no cid files
-alternatives['font feature files']   = 'fea' -- and fea files here
-alternatives['opentype fonts']       = 'otf'
-alternatives['truetype fonts']       = 'ttf'
-alternatives['truetype collections'] = 'ttc'
-alternatives['truetype dictionary']  = 'dfont'
-alternatives['type1 fonts']          = 'pfb'
-alternatives['icc profiles']         = 'icc'
+-- formats: maps a format onto a variable
 
---[[ldx--
-<p>If you wondered about some of the previous mappings, how about
-the next bunch:</p>
---ldx]]--
+for category, categories in next, relations do
+    for name, relation in next, categories do
+        local rn = relation.names
+        local rv = relation.variable
+        local rs = relation.suffixes
+        if rn and rv then
+            for i=1,#rn do
+                local rni = lower(gsub(rn[i]," ",""))
+                formats[rni] = rv
+                if rs then
+                    suffixes[rni] = rs
+                    for i=1,#rs do
+                        local rsi = rs[i]
+                        suffixmap[rsi] = rni
+                    end
+                end
+            end
+        end
+        if rs then
+        end
+    end
+end
 
--- kpse specific ones (a few omitted) .. we only add them for locating
--- files that we don't use anyway
+local function simplified(t,k)
+    return rawget(t,lower(gsub(k," ","")))
+end
 
-formats['base']                      = 'MFBASES'         suffixes['base']                     = { 'base', 'bas' }
-formats['bib']                       = ''                suffixes['bib']                      = { 'bib' }
-formats['bitmap font']               = ''                suffixes['bitmap font']              = { }
-formats['bst']                       = ''                suffixes['bst']                      = { 'bst' }
-formats['cmap files']                = 'CMAPFONTS'       suffixes['cmap files']               = { 'cmap' }
-formats['cnf']                       = ''                suffixes['cnf']                      = { 'cnf' }
-formats['cweb']                      = ''                suffixes['cweb']                     = { 'w', 'web', 'ch' }
-formats['dvips config']              = ''                suffixes['dvips config']             = { }
-formats['gf']                        = ''                suffixes['gf']                       = { '<resolution>gf' }
-formats['graphic/figure']            = ''                suffixes['graphic/figure']           = { 'eps', 'epsi' }
-formats['ist']                       = ''                suffixes['ist']                      = { 'ist' }
-formats['lig files']                 = 'LIGFONTS'        suffixes['lig files']                = { 'lig' }
-formats['ls-R']                      = ''                suffixes['ls-R']                     = { }
-formats['mem']                       = 'MPMEMS'          suffixes['mem']                      = { 'mem' }
-formats['MetaPost support']          = ''                suffixes['MetaPost support']         = { }
-formats['mf']                        = 'MFINPUTS'        suffixes['mf']                       = { 'mf' }
-formats['mft']                       = ''                suffixes['mft']                      = { 'mft' }
-formats['misc fonts']                = ''                suffixes['misc fonts']               = { }
-formats['other text files']          = ''                suffixes['other text files']         = { }
-formats['other binary files']        = ''                suffixes['other binary files']       = { }
-formats['pdftex config']             = 'PDFTEXCONFIG'    suffixes['pdftex config']            = { }
-formats['pk']                        = ''                suffixes['pk']                       = { '<resolution>pk' }
-formats['PostScript header']         = 'TEXPSHEADERS'    suffixes['PostScript header']        = { 'pro' }
-formats['sfd']                       = 'SFDFONTS'        suffixes['sfd']                      = { 'sfd' }
-formats['TeX system documentation']  = ''                suffixes['TeX system documentation'] = { }
-formats['TeX system sources']        = ''                suffixes['TeX system sources']       = { }
-formats['Troff fonts']               = ''                suffixes['Troff fonts']              = { }
-formats['type42 fonts']              = 'T42FONTS'        suffixes['type42 fonts']             = { }
-formats['web']                       = ''                suffixes['web']                      = { 'web', 'ch' }
-formats['web2c files']               = 'WEB2C'           suffixes['web2c files']              = { }
-formats['fontconfig files']          = 'FONTCONFIG_PATH' suffixes['fontconfig files']         = { } -- not unique
-
-alternatives['subfont definition files'] = 'sfd'
+setmetatablekey(formats,   "__index", simplified)
+setmetatablekey(suffixes,  "__index", simplified)
+setmetatablekey(suffixmap, "__index", simplified)
 
 -- A few accessors, mostly for command line tool.
 
@@ -9720,31 +9890,12 @@ function resolvers.suffixofformat(str)
     return s and s[1] or ""
 end
 
-function resolvers.suffixesofformat(str)
+function resolvers.suffixofformat(str)
     return suffixes[str] or { }
 end
 
--- As we don't register additional suffixes anyway, we can as well
--- freeze the reverse map here.
-
-for name, suffixlist in next, suffixes do
-    for i=1,#suffixlist do
-        suffixmap[suffixlist[i]] = name
-    end
-end
-
-local mt = getmetatable(suffixes)
-
-mt.__newindex = function(suffixes,name,suffixlist)
-    rawset(suffixes,name,suffixlist)
-    suffixes[name] = suffixlist
-    for i=1,#suffixlist do
-        suffixmap[suffixlist[i]] = name
-    end
-end
-
 for name, format in next, formats do
-    dangerous[name] = true
+    dangerous[name] = true -- still needed ?
 end
 
 -- because vf searching is somewhat dangerous, we want to prevent
@@ -9757,23 +9908,19 @@ dangerous.tex = nil
 -- more helpers
 
 function resolvers.formatofvariable(str)
-    return formats[str] or formats[alternatives[str]] or ''
+    return formats[str] or ''
 end
 
 function resolvers.formatofsuffix(str) -- of file
-    return suffixmap[file.extname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
+    return suffixmap[fileextname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
 end
 
 function resolvers.variableofformat(str)
-    return formats[str] or formats[alternatives[str]] or ''
+    return formats[str] or ''
 end
 
 function resolvers.variableofformatorsuffix(str)
     local v = formats[str]
-    if v then
-        return v
-    end
-    v = formats[alternatives[str]]
     if v then
         return v
     end
@@ -10281,7 +10428,6 @@ local formats      = resolvers.formats
 local suffixes     = resolvers.suffixes
 local dangerous    = resolvers.dangerous
 local suffixmap    = resolvers.suffixmap
-local alternatives = resolvers.alternatives
 
 resolvers.defaultsuffixes = { "tex" } --  "mkiv", "cld" -- too tricky
 
@@ -10293,7 +10439,6 @@ function resolvers.newinstance()
     local newinstance = {
         progname        = 'context',
         engine          = 'luatex',
-        format          = '',
         environment     = allocate(),
         variables       = allocate(),
         expansions      = allocate(),
@@ -10313,7 +10458,6 @@ function resolvers.newinstance()
         renewcache      = false,
         loaderror       = false,
         savelists       = true,
-        allresults      = false,
         pattern         = nil, -- lists
         force_suffixes  = true,
     }
@@ -10400,7 +10544,8 @@ end
 local function entry(entries,name)
     if name and name ~= "" then
         name = gsub(name,'%$','')
-        local result = entries[name..'.'..instance.progname] or entries[name]
+     -- local result = entries[name..'.'..instance.progname] or entries[name]
+        local result = entries[instance.progname .. '.' .. name] or entries[name]
         if result then
             return result
         else
@@ -10418,7 +10563,8 @@ end
 local function is_entry(entries,name)
     if name and name ~= "" then
         name = gsub(name,'%$','')
-        return (entries[name..'.'..instance.progname] or entries[name]) ~= nil
+     -- return (entries[name..'.'..instance.progname] or entries[name]) ~= nil
+        return (entries[instance.progname .. '.' .. name] or entries[name]) ~= nil
     else
         return false
     end
@@ -10479,19 +10625,28 @@ local function load_configuration_files()
                     end
                     -- flattening is easier to deal with as we need to collapse
                     local t = { }
-                    for k, v in next, data do -- v = progname
+                    for k, v in next, data do -- k = progname or setter or variables
                         if v ~= unset_variable then
                             local kind = type(v)
                             if kind == "string" then
+                                -- still supported, but preferably use the variables subtable
                                 t[k] = v
                             elseif kind == "table" then
-                                -- this operates on the table directly
-                                initializesetter(filename,k,v)
-                                -- this doesn't (maybe metatables some day)
-                                for kk, vv in next, v do -- vv = variable
-                                    if vv ~= unset_variable then
-                                        if type(vv) == "string" then
-                                            t[kk.."."..k] = vv
+                                if initializesetter(filename,k,v) then
+                                    -- directives, experiments, trackers, ...
+                                else
+                                    for kk, vv in next, v do -- vv = variable
+                                        if vv ~= unset_variable then
+                                            if type(vv) == "string" then
+                                             -- t[kk.."."..k] = vv
+                                                if k == "variables" then
+                                                 -- special table, shared variables can be grouped
+                                                    t[kk] = vv
+                                                else
+                                                 -- category.variable (progname)
+                                                    t[k .. "." .. kk] = vv
+                                                end
+                                            end
                                         end
                                     end
                                 end
@@ -10761,12 +10916,12 @@ function resolvers.expandvariables()
     if engine   ~= "" then environment['engine']   = engine   end
     if progname ~= "" then environment['progname'] = progname end
     for k,v in next, environment do
-        local a, b = match(k,"^(%a+)%_(.*)%s*$")
-        if a and b then
-            expansions[a..'.'..b] = v
-        else
+      --  local a, b = match(k,"^(%a+)%_(.*)%s*$") -- too many vars have an _ in the name
+      --  if a and b then                          -- so let's forget about it; it was a
+      --      expansions[a..'.'..b] = v            -- hack anyway for linux and not needed
+      --  else                                     -- anymore as we now have directives
             expansions[k] = v
-        end
+      --  end
     end
     for k,v in next, environment do -- move environment to expansions (variables are already in there)
         if not expansions[k] then expansions[k] = v end
@@ -10820,7 +10975,7 @@ function resolvers.unexpandedpathlist(str)
 end
 
 function resolvers.unexpandedpath(str)
-    return file.joinpath(resolvers.unexpandedpath_list(str))
+    return file.joinpath(resolvers.unexpandedpathlist(str))
 end
 
 local done = { }
@@ -11081,13 +11236,14 @@ local function can_be_dir(name) -- can become local
     return fakepaths[name] == 1
 end
 
-local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
-    local result = collected or { }
+local function collect_instance_files(filename,askedformat,allresults) -- todo : plugin (scanners, checkers etc)
+    local result = { }
     local stamp  = nil
+    askedformat = askedformat or ""
     filename = collapsepath(filename)
     -- speed up / beware: format problem
-    if instance.remember then
-        stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
+    if instance.remember and not allresults then
+        stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. askedformat
         if instance.found[stamp] then
             if trace_locating then
                 report_resolvers("remembering file '%s'",filename)
@@ -11096,12 +11252,14 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             return instance.found[stamp]
         end
     end
-    if not dangerous[instance.format or "?"] then
+    if not dangerous[askedformat] then
         if resolvers.isreadable.file(filename) then
             if trace_detail then
                 report_resolvers("file '%s' found directly",filename)
             end
-            instance.found[stamp] = { filename }
+            if stamp then
+                instance.found[stamp] = { filename }
+            end
             return { filename }
         end
     end
@@ -11109,7 +11267,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         if trace_locating then
             report_resolvers("checking wildcard '%s'", filename)
         end
-        result = resolvers.findwildcardfiles(filename)
+        result = resolvers.findwildcardfiles(filename) -- we can use th elocal
     elseif file.is_qualified_path(filename) then
         if resolvers.isreadable.file(filename) then
             if trace_locating then
@@ -11119,7 +11277,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         else
             local forcedname, ok, suffix = "", false, fileextname(filename)
             if suffix == "" then -- why
-                local format_suffixes = instance.format == "" and resolvers.defaultsuffixes or suffixes[instance.format]
+                local format_suffixes = askedformat == "" and resolvers.defaultsuffixes or suffixes[askedformat]
                 if format_suffixes then
                     for i=1,#format_suffixes do
                         local s = format_suffixes[i]
@@ -11139,21 +11297,22 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 -- matching last part of the name
                 local basename = filebasename(filename)
                 local pattern = gsub(filename .. "$","([%.%-])","%%%1")
-                local savedformat = instance.format
+                -- messy .. to be sorted out
+                local savedformat = askedformat
                 local format = savedformat or ""
                 if format == "" then
-                    instance.format = resolvers.formatofsuffix(suffix)
+                    askedformat = resolvers.formatofsuffix(suffix)
                 end
                 if not format then
-                    instance.format = "othertextfiles" -- kind of everything, maybe texinput is better
+                    askedformat = "othertextfiles" -- kind of everything, maybe texinput is better
                 end
                 --
                 if basename ~= filename then
-                    local resolved = collect_instance_files(basename)
+                    local resolved = collect_instance_files(basename,askedformat,allresults)
                     if #result == 0 then
                         local lowered = lower(basename)
                         if filename ~= lowered then
-                            resolved = collect_instance_files(lowered)
+                            resolved = collect_instance_files(lowered,askedformat,allresults)
                         end
                     end
                     resolvers.format = savedformat
@@ -11192,7 +11351,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         else
             wantedfiles[#wantedfiles+1] = filename
         end
-        if instance.format == "" then
+        if askedformat == "" then
             if ext == "" or not suffixmap[ext] then
                 local defaultsuffixes = resolvers.defaultsuffixes
                 for i=1,#defaultsuffixes do
@@ -11211,14 +11370,14 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             end
         else
             if ext == "" or not suffixmap[ext] then
-                local format_suffixes = suffixes[instance.format]
+                local format_suffixes = suffixes[askedformat]
                 if format_suffixes then
                     for i=1,#format_suffixes do
                         wantedfiles[#wantedfiles+1] = filename .. "." .. format_suffixes[i]
                     end
                 end
             end
-            filetype = instance.format
+            filetype = askedformat
             if trace_locating then
                 report_resolvers("using given filetype '%s'",filetype)
             end
@@ -11289,7 +11448,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                             --- todo, test for readable
                             result[#result+1] = fl[3]
                             done = true
-                            if instance.allresults then
+                            if allresults then
                                 if trace_detail then
                                     report_resolvers("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
                                 end
@@ -11320,7 +11479,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                                         end
                                         result[#result+1] = fname
                                         done = true
-                                        if not instance.allresults then break end
+                                        if not allresults then break end
                                     end
                                 end
                             else
@@ -11332,7 +11491,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 if not done and doscan then
                     -- todo: slow path scanning ... although we now have tree:// supported in $TEXMF
                 end
-                if done and not instance.allresults then break end
+                if done and not allresults then break end
             end
         end
     end
@@ -11341,7 +11500,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         result[k] = rk
         resolvers.registerintrees(rk) -- for tracing used files
     end
-    if instance.remember then
+    if stamp then
         instance.found[stamp] = result
     end
     return result
@@ -11350,37 +11509,30 @@ end
 resolvers.concatinators.tex  = filejoin
 resolvers.concatinators.file = resolvers.concatinators.tex
 
-function resolvers.findfiles(filename,filetype,mustexist)
-    if type(mustexist) == boolean then
-        -- all set
-    elseif type(filetype) == 'boolean' then
-        filetype, mustexist = nil, false
-    elseif type(filetype) ~= 'string' then
-        filetype, mustexist = nil, false
-    end
-    instance.format = filetype or ''
-    local result = collect_instance_files(filename)
+local function findfiles(filename,filetype,allresults)
+    local result = collect_instance_files(filename,filetype or "",allresults)
     if #result == 0 then
         local lowered = lower(filename)
         if filename ~= lowered then
-            return collect_instance_files(lowered)
+            return collect_instance_files(lowered,filetype or "",allresults)
         end
     end
-    instance.format = ''
     return result
 end
 
-function resolvers.findfile(filename,filetype,mustexist)
-    return (resolvers.findfiles(filename,filetype,mustexist)[1] or "")
+function resolvers.findfiles(filename,filetype)
+    return findfiles(filename,filetype,true)
+end
+
+function resolvers.findfile(filename,filetype)
+    return findfiles(filename,filetype,false)[1] or ""
 end
 
 function resolvers.findpath(filename,filetype)
-    local path = resolvers.findfiles(filename,filetype)[1] or ""
-    -- todo return current path
-    return file.dirname(path)
+    return file.dirname(findfiles(filename,filetype,false)[1] or "")
 end
 
-function resolvers.findgivenfiles(filename)
+local function findgivenfiles(filename,allresults)
     local bname, result = filebasename(filename), { }
     local hashes = instance.hashes
     for k=1,#hashes do
@@ -11398,12 +11550,12 @@ function resolvers.findgivenfiles(filename)
         if blist then
             if type(blist) == 'string' then
                 result[#result+1] = resolvers.concatinators[hash.type](hash.tag,blist,bname) or ""
-                if not instance.allresults then break end
+                if not allresults then break end
             else
                 for kk=1,#blist do
                     local vv = blist[kk]
                     result[#result+1] = resolvers.concatinators[hash.type](hash.tag,vv,bname) or ""
-                    if not instance.allresults then break end
+                    if not allresults then break end
                 end
             end
         end
@@ -11411,8 +11563,12 @@ function resolvers.findgivenfiles(filename)
     return result
 end
 
+function resolvers.findgivenfiles(filename)
+    return findgivenfiles(filename,true)
+end
+
 function resolvers.findgivenfile(filename)
-    return (resolvers.findgivenfiles(filename)[1] or "")
+    return findgivenfiles(filename,false)[1] or ""
 end
 
 local function doit(path,blist,bname,tag,kind,result,allresults)
@@ -11438,7 +11594,7 @@ local function doit(path,blist,bname,tag,kind,result,allresults)
     return done
 end
 
-function resolvers.findwildcardfiles(filename) -- todo: remap: and lpeg
+local function findwildcardfiles(filename,allresults) -- todo: remap: and lpeg
     local result = { }
     local bname, dname = filebasename(filename), filedirname(filename)
     local path = gsub(dname,"^*/","")
@@ -11452,7 +11608,7 @@ function resolvers.findwildcardfiles(filename) -- todo: remap: and lpeg
     name = gsub(name,"-","%%-")
     path = lower(path)
     name = lower(name)
-    local files, allresults, done = instance.files, instance.allresults, false
+    local files, done = instance.files, false
     if find(name,"%*") then
         local hashes = instance.hashes
         for k=1,#hashes do
@@ -11481,8 +11637,12 @@ function resolvers.findwildcardfiles(filename) -- todo: remap: and lpeg
     return result
 end
 
+function resolvers.findwildcardfiles(filename)
+    return findwildcardfiles(filename,true)
+end
+
 function resolvers.findwildcardfile(filename)
-    return (resolvers.findwildcardfiles(filename)[1] or "")
+    return findwildcardfiles(filename,false)[1] or ""
 end
 
 -- main user functions
@@ -11514,14 +11674,14 @@ local function report(str)
     end
 end
 
-function resolvers.dowithfilesandreport(command, files, filetype, mustexist)
+function resolvers.dowithfilesandreport(command, files, ...)
     if files and #files > 0 then
         if trace_locating then
             report('') -- ?
         end
         for f=1,#files do
             local file = files[f]
-            local result = command(file,filetype,mustexist)
+            local result = command(file,...)
             if type(result) == 'string' then
                 report(result)
             else
@@ -11543,9 +11703,7 @@ function resolvers.showpath(str)     -- output search path for file type NAME
 end
 
 -- resolvers.findfile(filename)
--- resolvers.findfile(filename, filetype, mustexist)
--- resolvers.findfile(filename, mustexist)
--- resolvers.findfile(filename, filetype)
+-- resolvers.findfile(filename, f.iletype)
 
 function resolvers.registerfile(files, name, path)
     if files[name] then
@@ -11574,7 +11732,7 @@ function resolvers.locateformat(name)
     local barename = gsub(name,"%.%a+$","")
     local fmtname = caches.getfirstreadablefile(barename..".fmt","formats") or ""
     if fmtname == "" then
-        fmtname = resolvers.findfiles(barename..".fmt")[1] or ""
+        fmtname = resolvers.findfile(barename..".fmt")
         fmtname = resolvers.cleanpath(fmtname)
     end
     if fmtname ~= "" then
@@ -14108,7 +14266,7 @@ elseif environment.argument("expand-var") or environment.argument("expand-variab
     resolvers.load("nofiles")
     runners.register_arguments(filename)
     environment.initializearguments(environment.arguments_after)
-    resolvers.dowithfilesandreport(resolvers.expandvar, environment.files)
+    resolvers.dowithfilesandreport(resolvers.expansion, environment.files)
 
 elseif environment.argument("show-path") or environment.argument("path-value") then
 
@@ -14126,7 +14284,7 @@ elseif environment.argument("var-value") or environment.argument("show-value") t
     resolvers.load("nofiles")
     runners.register_arguments(filename)
     environment.initializearguments(environment.arguments_after)
-    resolvers.dowithfilesandreport(resolvers.var_value,environment.files)
+    resolvers.dowithfilesandreport(resolvers.variable,environment.files)
 
 elseif environment.argument("format-path") then
 

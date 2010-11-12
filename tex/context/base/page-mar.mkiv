@@ -688,7 +688,7 @@
    \to \collectedmargintexts}
 
 \def\doflushmargincontents % plural
-  {\ifcase\margintextcollected\else
+  {\ifconditional\margintextcollected
      \expandafter\flushmargincontentsindeed
    \fi}
 

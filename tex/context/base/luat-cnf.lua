@@ -17,37 +17,35 @@ texconfig.shell_escape = 't'
 luatex       = luatex or { }
 local luatex = luatex
 
-local variablenames = allocate { -- most of this becomes obsolete
-    'buf_size',         --  3000
-    'dvi_buf_size',     -- 16384
-    'error_line',       --    79
-    'expand_depth',     -- 10000
-    'half_error_line',  --    50
-    'hash_extra',       --     0
-    'nest_size',        --    50
-    'max_in_open',      --    15
-    'max_print_line',   --    79
-    'max_strings',      -- 15000
-    'param_size',       --    60
-    'pk_dpi',           --    72
-    'save_size',        --  4000
-    'stack_size',       --   300
-    'strings_free',     --   100
-}
+texconfig.error_line      =     79 --    79 -- obsolete
+texconfig.half_error_line =     50 --    50 -- obsolete
 
-local function initialize()
-    local t, variable = allocate(), resolvers.variable
-    for i=1,#variablenames do
-        local name = variablenames[i]
-        local value = variable(name)
-        value = tonumber(value) or value
-        texconfig[name], t[name] = value, value
-    end
-    initialize = nil
-    return t
-end
+texconfig.expand_depth    =  10000 -- 10000
+texconfig.hash_extra      = 100000 --     0
+texconfig.nest_size       =   1000 --    50
+texconfig.max_in_open     =    500 --    15
+texconfig.max_print_line  =  10000 --    79
+texconfig.max_strings     = 500000 -- 15000
+texconfig.param_size      =  25000 --    60
+texconfig.save_size       =  50000 --  4000
+texconfig.stack_size      =  10000 --   300
 
-luatex.variables = initialize()
+--~ local function initialize()
+--~     local t, variable = allocate(), resolvers.variable
+--~     for name, default in next, variablenames do
+--~         local name = variablenames[i]
+--~         local value = variable(name)
+--~         value = tonumber(value)
+--~         if not value or value == "" or value == 0 then
+--~             value = default
+--~         end
+--~         texconfig[name], t[name] = value, value
+--~     end
+--~     initialize = nil
+--~     return t
+--~ end
+
+--~ luatex.variables = initialize()
 
 local stub = [[
 
@@ -150,6 +148,14 @@ end)
 
 -- done, from now on input and callbacks are internal
 ]]
+
+
+local variablenames = {
+    "error_line", "half_error_line",
+    "expand_depth", "hash_extra", "nest_size",
+    "max_in_open", "max_print_line", "max_strings",
+    "param_size", "save_size", "stack_size",
+}
 
 local function makestub()
     name = name or (environment.jobname .. ".lui")

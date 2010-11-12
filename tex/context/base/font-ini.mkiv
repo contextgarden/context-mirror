@@ -79,7 +79,7 @@
 \registerctxluafile{font-oth}{1.001} % otf helpers
 \registerctxluafile{font-vf} {1.001}
 \registerctxluafile{font-def}{1.001}
-\registerctxluafile{font-ctx}{1.001}
+\registerctxluafile{font-ctx}{1.001} % after def as it overloads
 \registerctxluafile{font-xtx}{1.001}
 \registerctxluafile{font-gds}{1.001}
 \registerctxluafile{font-fbk}{1.001}
@@ -4050,7 +4050,7 @@
 
 % \startluacode
 %     function commands.doifelsecurrentfonthasfeature(name)
-%         local f = fonts.ids[font.current()]
+%         local f = fonts.identifiers[font.current()]
 %         f = f and f.shared
 %         f = f and f.otfdata
 %         f = f and f.luatex

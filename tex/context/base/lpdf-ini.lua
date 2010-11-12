@@ -328,7 +328,7 @@ local function pdfverbose(t) -- maybe check for type
     return setmetatable({ t or "" },mt_v)
 end
 
-lpdf.stream      = pdfstream
+lpdf.stream      = pdfstream -- THIS WILL PROBABLY CHANGE
 lpdf.dictionary  = pdfdictionary
 lpdf.array       = pdfarray
 lpdf.string      = pdfstring

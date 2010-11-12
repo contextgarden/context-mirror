@@ -36,7 +36,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
         data = data.data
         if data then
             for key, value in next, values do
-                key = gsub(key,"_",".")
+             -- key = gsub(key,"_",".")
                 value = is_boolean(value,value)
                 local functions = data[key]
                 if functions then
@@ -63,6 +63,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                     end
                 end
             end
+            return true
         end
     end
 end
@@ -296,4 +297,28 @@ if trackers and environment and environment.engineflags.trackers then
 end
 if directives and environment and environment.engineflags.directives then
     d_enable(environment.engineflags.directives)
+end
+
+-- here
+
+if texconfig then
+
+    local function set(k,v)
+        v = tonumber(v)
+        if v then
+--~     print(k,v)
+            texconfig[k] = v
+        end
+    end
+
+    directives.register("luatex.expanddepth",  function(v) set("expand_depth",v)   end)
+    directives.register("luatex.hashextra",    function(v) set("hash_extra",v)     end)
+    directives.register("luatex.nestsize",     function(v) set("nest_size",v)      end)
+    directives.register("luatex.maxinopen",    function(v) set("max_in_open",v)    end)
+    directives.register("luatex.maxprintline", function(v) set("max_print_line",v) end)
+    directives.register("luatex.maxstrings",   function(v) set("max_strings",v)    end)
+    directives.register("luatex.paramsize",    function(v) set("param_size",v)     end)
+    directives.register("luatex.savesize",     function(v) set("save_size",v)      end)
+    directives.register("luatex.stacksize",    function(v) set("stack_size",v)     end)
+
 end

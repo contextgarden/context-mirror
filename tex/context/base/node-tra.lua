@@ -24,9 +24,12 @@ nodes = nodes or { }
 
 local fonts, nodes, node, context = fonts, nodes, node, context
 
-fonts.tfm = fonts.tfm or { }
-fonts.ids = fonts.ids or { }
-fonts.chr = fonts.chr or { }
+fonts.tfm             = fonts.tfm         or { }
+fonts.identifiers     = fonts.identifiers or { }
+fonts.characters      = fonts.characters  or { }
+
+local fontdata        = fonts.identifiers
+local fontchar        = fonts.characters
 
 nodes.tracers         = nodes.tracers or { }
 local tracers         = nodes.tracers
@@ -49,11 +52,7 @@ local step_tracers    = tracers.steppers
 local copy_node_list  = node.copy_list
 local hpack_node_list = node.hpack
 local free_node_list  = node.flush_list
-local node_type       = node.type
 local traverse_nodes  = node.traverse
-
-local fontdata        = fonts.ids
-local fontchar        = fonts.chr
 
 local nodecodes       = nodes.nodecodes
 local whatcodes       = nodes.whatcodes
@@ -287,7 +286,7 @@ function step_tracers.codes(i,command)
         elseif id == whatsit_code and (c.subtype == localpar_code or c.subtype == dir_code) then
             context("[%s]",c.dir)
         else
-            context("[%s]",node_type(id))
+            context("[%s]",nodecodes[id])
         end
         c = c.next
     end
@@ -371,7 +370,7 @@ function nodes.handlers.checkforleaks(sparse)
     local l = { }
     local q = node.usedlist()
     for p in traverse(q) do
-        local s = table.serialize(nodes.astable(p,sparse),node_type(p.id))
+        local s = table.serialize(nodes.astable(p,sparse),nodecodes[p.id])
         l[s] = (l[s] or 0) + 1
     end
     node.flush_list(q)
@@ -402,13 +401,13 @@ local function tosequence(start,stop,compact)
                 if compact then
                     t[#t+1] = "|"
                 else
-                    t[#t+1] = node_type(id)
+                    t[#t+1] = nodecodes[id]
                 end
             else
                 if compact then
                     t[#t+1] = "[]"
                 else
-                    t[#t+1] = node_type(id)
+                    t[#t+1] = nodecodes[id]
                 end
             end
             if start == stop then
@@ -463,9 +462,9 @@ function nodes.idstostring(head,tail)
             last_n = last_n + 1
         else
             if last_n > 1 then
-                t[#t+1] = format("[%s*%s]",last_n,node_type(last_id) or "?")
+                t[#t+1] = format("[%s*%s]",last_n,nodecodes[last_id] or "?")
             else
-                t[#t+1] = format("[%s]",node_type(last_id) or "?")
+                t[#t+1] = format("[%s]",nodecodes[last_id] or "?")
             end
             last_id, last_n = id, 1
         end
@@ -476,9 +475,9 @@ function nodes.idstostring(head,tail)
     if not last_id then
         t[#t+1] = "no nodes"
     elseif last_n > 1 then
-        t[#t+1] = format("[%s*%s]",last_n,node_type(last_id) or "?")
+        t[#t+1] = format("[%s*%s]",last_n,nodecodes[last_id] or "?")
     else
-        t[#t+1] = format("[%s]",node_type(last_id) or "?")
+        t[#t+1] = format("[%s]",nodecodes[last_id] or "?")
     end
     return concat(t," ")
 end
@@ -497,9 +496,9 @@ end
 --~             last_n = last_n + 1
 --~         else
 --~             if last_n > 1 then
---~                 t[#t+1] = format("[%s*%s]",last_n,node_type(last_id) or "?")
+--~                 t[#t+1] = format("[%s*%s]",last_n,nodecodes[last_id] or "?")
 --~             else
---~                 t[#t+1] = format("[%s]",node_type(last_id) or "?")
+--~                 t[#t+1] = format("[%s]",nodecodes[last_id] or "?")
 --~             end
 --~             last_id, last_n = id, 1
 --~         end
@@ -511,9 +510,9 @@ end
 --~     if not last_id then
 --~         t[#t+1] = "no nodes"
 --~     elseif last_n > 1 then
---~         t[#t+1] = format("[%s*%s]",last_n,node_type(last_id) or "?")
+--~         t[#t+1] = format("[%s*%s]",last_n,nodecodes[last_id] or "?")
 --~     else
---~         t[#t+1] = format("[%s]",node_type(last_id) or "?")
+--~         t[#t+1] = format("[%s]",nodecodes[last_id] or "?")
 --~     end
 --~     return table.concat(table.reversed(t)," ")
 --~ end
@@ -578,54 +577,63 @@ nodes.showboxes = showboxes
 
 local threshold = 65536
 
-local function toutf(list,result,stopcriterium)
-    for n in traverse_nodes(list) do
-        local id = n.id
-        if id == glyph_code then
-            local components = n.components
-            if components then
-                toutf(components,result)
-            else
-                local c = n.char
-                local fc = fontchar[n.font]
-                if fc then
-                    local u = fc[c].tounicode
-                    if u then
-                        for s in gmatch(u,"....") do
-                            result[#result+1] = utfchar(tonumber(s,16))
+local function toutf(list,result,nofresult,stopcriterium)
+    if list then
+        for n in traverse_nodes(list) do
+            local id = n.id
+            if id == glyph_code then
+                local components = n.components
+                if components then
+                    result, nofresult = toutf(components,result,nofresult)
+                else
+                    local c = n.char
+                    local fc = fontchar[n.font]
+                    if fc then
+                        local u = fc[c].tounicode
+                        if u then
+                            for s in gmatch(u,"....") do
+                                nofresult = nofresult + 1
+                                result[nofresult] = utfchar(tonumber(s,16))
+                            end
+                        else
+                            nofresult = nofresult + 1
+                            result[nofresult] = utfchar(c)
                         end
                     else
-                        result[#result+1] = utfchar(c)
+                        nofresult = nofresult + 1
+                        result[nofresult] = utfchar(c)
                     end
-                else
-                    result[#result+1] = utfchar(c)
+                end
+            elseif id == disc_code then
+                result, nofresult = toutf(n.replace,result,nofresult)
+            elseif id == hlist_code or id == vlist_code then
+--~                 if nofresult > 0 and result[nofresult] ~= " " then
+--~                     nofresult = nofresult + 1
+--~                     result[nofresult] = " "
+--~                 end
+                result, nofresult = toutf(n.list,result,nofresult)
+            elseif id == glue_code and n.subtype == userskip_code and n.spec.width > threshold then
+                if nofresult > 0 and result[nofresult] ~= " " then
+                    nofresult = nofresult + 1
+                    result[nofresult] = " "
+                end
+            elseif id == kern_code and n.kern > threshold then
+                if nofresult > 0 and result[nofresult] ~= " " then
+                    nofresult = nofresult + 1
+                    result[nofresult] = " "
                 end
             end
-        elseif id == disc_code then
-            toutf(n.replace,result)
-        elseif id == hlist_code or id == vlist_code then
-            if #result > 0 and result[#result] ~= " " then
-                result[#result+1] = " "
+            if n == stopcriterium then
+                break
             end
-            toutf(n.list,result)
-        elseif id == glue_code and n.subtype == userskip_code and n.spec.width > threshold then
-            if #result > 0 and result[#result] ~= " " then
-                result[#result+1] = " "
-            end
-        elseif id == kern_code and n.kern > threshold then
-            if #result > 0 and result[#result] ~= " " then
-                result[#result+1] = " "
-            end
-        end
-        if n == stopcriterium then
-            break
         end
     end
-    return result
+    return result, nofresult
 end
 
 function nodes.toutf(list,stopcriterium)
-    return concat(toutf(list,{},stopcriterium))
+    local result, nofresult = toutf(list,{},0,stopcriterium)
+    return concat(result)
 end
 
 -- might move elsewhere

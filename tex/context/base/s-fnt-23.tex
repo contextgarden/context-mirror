@@ -17,7 +17,7 @@
     local last_data = nil
     local format = string.format
     function fonts.otf.show_shape(n)
-        local tfmdata = fonts.ids[font.current()]
+        local tfmdata = fonts.identifiers[font.current()]
         last_data = tfmdata
         local charnum = tonumber(n)
         if not charnum then
@@ -194,7 +194,7 @@
         end
     end
     function fonts.otf.show_all_shapes(start,stop)
-        local tfmdata = fonts.ids[font.current()]
+        local tfmdata = fonts.identifiers[font.current()]
         last_data = tfmdata
         start, stop = start or "\\startTEXpage\\gobbleoneargument", stop or "\\stopTEXpage"
         local unicodes, indices, descriptions = tfmdata.unicodes, tfmdata.indices, tfmdata.descriptions
@@ -208,7 +208,7 @@
         end
     end
     function fonts.otf.show_shape_field(unicode,name)
-        local tfmdata = last_data or fonts.ids[font.current()]
+        local tfmdata = last_data or fonts.identifiers[font.current()]
         local d = tfmdata.descriptions[unicode]
         if d then
             if name == "unicode" then

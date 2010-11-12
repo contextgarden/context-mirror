@@ -133,10 +133,12 @@ function ioout.modes.handy()
     o_permit('[^/]')
 end
 
+local input_mode   directives.register("system.inputmode",  function(v) input_mode  = v end)
+local output_mode  directives.register("system.outputmode", function(v) output_mode = v end)
 
 function io.checkopeners()
-    local inp = resolvers.variable("input_mode")
-    local out = resolvers.variable("output_mode")
+    local inp = input_mode  or resolvers.variable("input_mode")  -- or ... will become obsolete
+    local out = output_mode or resolvers.variable("output_mode") -- or ... will become obsolete
     inp = inp and ioinp.modes[inp]
     out = out and ioinp.modes[out]
     if inp then inp() end

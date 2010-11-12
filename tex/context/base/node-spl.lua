@@ -75,7 +75,7 @@ local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 local process_characters = nodes.handlers.characters
 local inject_kerns       = nodes.injections.handler
-local fontdata           = fonts.ids
+local fontdata           = fonts.identifiers
 
 local parbuilders               = builders.paragraphs
 parbuilders.solutions           = parbuilders.solutions           or { }

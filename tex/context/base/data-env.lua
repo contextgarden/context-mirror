@@ -7,92 +7,231 @@ if not modules then modules = { } end modules ['data-env'] = {
 }
 
 local allocate = utilities.storage.allocate
+local lower, gsub = string.lower, string.gsub
+
+local fileextname = file.extname
 
 local resolvers = resolvers
 
-local formats      = allocate()  resolvers.formats      = formats
-local suffixes     = allocate()  resolvers.suffixes     = suffixes
-local dangerous    = allocate()  resolvers.dangerous    = dangerous
-local suffixmap    = allocate()  resolvers.suffixmap    = suffixmap
-local alternatives = allocate()  resolvers.alternatives = alternatives
+local formats   = allocate()  resolvers.formats   = formats
+local suffixes  = allocate()  resolvers.suffixes  = suffixes
+local dangerous = allocate()  resolvers.dangerous = dangerous
+local suffixmap = allocate()  resolvers.suffixmap = suffixmap
 
-formats['afm']          = 'AFMFONTS'       suffixes['afm']          = { 'afm' }
-formats['enc']          = 'ENCFONTS'       suffixes['enc']          = { 'enc' }
-formats['fmt']          = 'TEXFORMATS'     suffixes['fmt']          = { 'fmt' }
-formats['map']          = 'TEXFONTMAPS'    suffixes['map']          = { 'map' }
-formats['mp']           = 'MPINPUTS'       suffixes['mp']           = { 'mp' }
-formats['ofm']          = 'OFMFONTS'       suffixes['ofm']          = { 'ofm', 'tfm' }
-formats['otf']          = 'OPENTYPEFONTS'  suffixes['otf']          = { 'otf' }
-formats['opl']          = 'OPLFONTS'       suffixes['opl']          = { 'opl' }
-formats['otp']          = 'OTPINPUTS'      suffixes['otp']          = { 'otp' }
-formats['ovf']          = 'OVFFONTS'       suffixes['ovf']          = { 'ovf', 'vf' }
-formats['ovp']          = 'OVPFONTS'       suffixes['ovp']          = { 'ovp' }
-formats['tex']          = 'TEXINPUTS'      suffixes['tex']          = { 'tex' }
-formats['tfm']          = 'TFMFONTS'       suffixes['tfm']          = { 'tfm' }
-formats['ttf']          = 'TTFONTS'        suffixes['ttf']          = { 'ttf', 'ttc', 'dfont' }
-formats['pfb']          = 'T1FONTS'        suffixes['pfb']          = { 'pfb', 'pfa' }
-formats['vf']           = 'VFFONTS'        suffixes['vf']           = { 'vf' }
-formats['fea']          = 'FONTFEATURES'   suffixes['fea']          = { 'fea' }
-formats['cid']          = 'FONTCIDMAPS'    suffixes['cid']          = { 'cid', 'cidmap' }
-formats['icc']          = 'ICCPROFILES'    suffixes['icc']          = { 'icc' }
-formats['texmfscripts'] = 'TEXMFSCRIPTS'   suffixes['texmfscripts'] = { 'rb', 'pl', 'py' }
-formats['lua']          = 'LUAINPUTS'      suffixes['lua']          = { 'lua', 'luc', 'tma', 'tmc' }
-formats['lib']          = 'CLUAINPUTS'     suffixes['lib']          = (os.libsuffix and { os.libsuffix }) or { 'dll', 'so' }
+local relations = allocate {
+    core = {
+        ofm = {
+            names    = { "ofm", "omega font metric", "omega font metrics" },
+            variable = 'OFMFONTS',
+            suffixes = { 'ofm', 'tfm' },
+        },
+        ovf = {
+            names    = { "ovf", "omega virtual font", "omega virtual fonts" },
+            variable = 'OVFFONTS',
+            suffixes = { 'ovf', 'vf' },
+        },
+        tfm = {
+            names    = { "tfm", "tex font metric", "tex font metrics" },
+            variable = 'TFMFONTS',
+            suffixes = { 'tfm' },
+        },
+        vf = {
+            names    = { "vf", "virtual font", "virtual fonts" },
+            variable = 'VFFONTS',
+            suffixes = { 'vf' },
+        },
+        otf = {
+            names    = { "otf", "opentype", "opentype font", "opentype fonts"},
+            variable = 'OPENTYPEFONTS',
+            suffixes = { 'otf' },
+        },
+        ttf = {
+            names    = { "ttf", "truetype", "truetype font", "truetype fonts", "truetype collection", "truetype collections", "truetype dictionary", "truetype dictionaries" },
+            variable = 'TTFONTS',
+            suffixes = { 'ttf', 'ttc', 'dfont' },
+        },
+        afm = {
+            names    = { "afm", "adobe font metric", "adobe font metrics" },
+            variable = "AFMFONTS",
+            suffixes = { "afm" },
+        },
+        pfb = {
+            names    = { "pfb", "type1", "type 1", "type1 font", "type 1 font", "type1 fonts", "type 1 fonts" },
+            variable = 'T1FONTS',
+            suffixes = { 'pfb', 'pfa' },
+        },
+        fea = {
+            names    = { "fea", "font feature", "font features", "font feature file", "font feature files" },
+            variable = 'FONTFEATURES',
+            suffixes = { 'fea' },
+        },
+        cid = {
+            names    = { "cid", "cid map", "cid maps", "cid file", "cid files" },
+            variable = 'FONTCIDMAPS',
+            suffixes = { 'cid', 'cidmap' },
+        },
+        fmt = {
+            names    = { "fmt", "format", "tex format" },
+            variable = 'TEXFORMATS',
+            suffixes = { 'fmt' },
+        },
+        mem = {
+            names    = { 'mem', "metapost format" },
+            variable = 'MPMEMS',
+            suffixes = { 'mem' },
+        },
+        mp = {
+            names    = { "mp" },
+            variable = 'MPINPUTS',
+            suffixes = { 'mp' },
+        },
+        tex = {
+            names    = { "tex" },
+            variable = 'TEXINPUTS',
+            suffixes = { 'tex', "mkiv", "mkii" },
+        },
+        icc = {
+            names    = { "icc", "icc profile", "icc profiles" },
+            variable = 'ICCPROFILES',
+            suffixes = { 'icc' },
+        },
+        texmfscripts = {
+            names    = { "texmfscript", "texmfscripts", "script", "scripts" },
+            variable = 'TEXMFSCRIPTS',
+            suffixes = { 'rb', 'pl', 'py' },
+        },
+        lua = {
+            names    = { "lua" },
+            variable = 'LUAINPUTS',
+            suffixes = { 'lua', 'luc', 'tma', 'tmc' },
+        },
+        lib = {
+            names    = { "lib" },
+            variable = 'CLUAINPUTS',
+            suffixes = os.libsuffix and { os.libsuffix } or { 'dll', 'so' },
+        },
+        bib = {
+            names    = { 'bib' },
+            suffixes = { 'bib' },
+        },
+        bst = {
+            names    = { 'bst' },
+            suffixes = { 'bst' },
+        },
+        fontconfig = {
+            names    = { 'fontconfig', 'fontconfig file', 'fontconfig files' },
+            variable = 'FONTCONFIG_PATH',
+        },
+    },
+    obsolete = {
+        enc = {
+            names    = { "enc", "enc files", "enc file", "encoding files", "encoding file" },
+            variable = 'ENCFONTS',
+            suffixes = { 'enc' },
+        },
+        map = {
+            names    = { "map", "map files", "map file" },
+            variable = 'TEXFONTMAPS',
+            suffixes = { 'map' },
+        },
+        lig = {
+            names    = { "lig files", "lig file", "ligature file", "ligature files" },
+            variable = 'LIGFONTS',
+            suffixes = { 'lig' },
+        },
+        opl = {
+            names    = { "opl" },
+            variable = 'OPLFONTS',
+            suffixes = { 'opl' },
+        },
+        otp = {
+            names    = { "otp" },
+            variable = 'OTPINPUTS',
+            suffixes = { 'otp' },
+        },
+        ovp = {
+            names    = { "ovp" },
+            variable = 'OVPFONTS',
+            suffixes = { 'ovp' },
+        },
+    },
+    kpse = { -- subset
+        base = {
+            names    = { 'base', "metafont format" },
+            variable = 'MFBASES',
+            suffixes = { 'base', 'bas' },
+        },
+        cmap = {
+            names    = { 'cmap', 'cmap files', 'cmap file' },
+            variable = 'CMAPFONTS',
+            suffixes = { 'cmap' },
+        },
+        cnf = {
+            names    = { 'cnf' },
+            suffixes = { 'cnf' },
+        },
+        web = {
+            names    = { 'web' },
+            suffixes = { 'web', 'ch' }
+        },
+        cweb = {
+            names    = { 'cweb' },
+            suffixes = { 'w', 'web', 'ch' },
+        },
+        gf = {
+            names    = { 'gf' },
+            suffixes = { '<resolution>gf' },
+        },
+        mf = {
+            names    = { 'mf' },
+            variable = 'MFINPUTS',
+            suffixes = { 'mf' },
+        },
+        mft = {
+            names    = { 'mft' },
+            suffixes = { 'mft' },
+        },
+        pk = {
+            names    = { 'pk' },
+            suffixes = { '<resolution>pk' },
+        },
+    },
+}
 
--- backward compatible ones
+resolvers.relations = relations
 
-alternatives['map files']            = 'map'
-alternatives['enc files']            = 'enc'
-alternatives['cid maps']             = 'cid' -- great, why no cid files
-alternatives['font feature files']   = 'fea' -- and fea files here
-alternatives['opentype fonts']       = 'otf'
-alternatives['truetype fonts']       = 'ttf'
-alternatives['truetype collections'] = 'ttc'
-alternatives['truetype dictionary']  = 'dfont'
-alternatives['type1 fonts']          = 'pfb'
-alternatives['icc profiles']         = 'icc'
+-- formats: maps a format onto a variable
 
---[[ldx--
-<p>If you wondered about some of the previous mappings, how about
-the next bunch:</p>
---ldx]]--
+for category, categories in next, relations do
+    for name, relation in next, categories do
+        local rn = relation.names
+        local rv = relation.variable
+        local rs = relation.suffixes
+        if rn and rv then
+            for i=1,#rn do
+                local rni = lower(gsub(rn[i]," ",""))
+                formats[rni] = rv
+                if rs then
+                    suffixes[rni] = rs
+                    for i=1,#rs do
+                        local rsi = rs[i]
+                        suffixmap[rsi] = rni
+                    end
+                end
+            end
+        end
+        if rs then
+        end
+    end
+end
 
--- kpse specific ones (a few omitted) .. we only add them for locating
--- files that we don't use anyway
+local function simplified(t,k)
+    return rawget(t,lower(gsub(k," ","")))
+end
 
-formats['base']                      = 'MFBASES'         suffixes['base']                     = { 'base', 'bas' }
-formats['bib']                       = ''                suffixes['bib']                      = { 'bib' }
-formats['bitmap font']               = ''                suffixes['bitmap font']              = { }
-formats['bst']                       = ''                suffixes['bst']                      = { 'bst' }
-formats['cmap files']                = 'CMAPFONTS'       suffixes['cmap files']               = { 'cmap' }
-formats['cnf']                       = ''                suffixes['cnf']                      = { 'cnf' }
-formats['cweb']                      = ''                suffixes['cweb']                     = { 'w', 'web', 'ch' }
-formats['dvips config']              = ''                suffixes['dvips config']             = { }
-formats['gf']                        = ''                suffixes['gf']                       = { '<resolution>gf' }
-formats['graphic/figure']            = ''                suffixes['graphic/figure']           = { 'eps', 'epsi' }
-formats['ist']                       = ''                suffixes['ist']                      = { 'ist' }
-formats['lig files']                 = 'LIGFONTS'        suffixes['lig files']                = { 'lig' }
-formats['ls-R']                      = ''                suffixes['ls-R']                     = { }
-formats['mem']                       = 'MPMEMS'          suffixes['mem']                      = { 'mem' }
-formats['MetaPost support']          = ''                suffixes['MetaPost support']         = { }
-formats['mf']                        = 'MFINPUTS'        suffixes['mf']                       = { 'mf' }
-formats['mft']                       = ''                suffixes['mft']                      = { 'mft' }
-formats['misc fonts']                = ''                suffixes['misc fonts']               = { }
-formats['other text files']          = ''                suffixes['other text files']         = { }
-formats['other binary files']        = ''                suffixes['other binary files']       = { }
-formats['pdftex config']             = 'PDFTEXCONFIG'    suffixes['pdftex config']            = { }
-formats['pk']                        = ''                suffixes['pk']                       = { '<resolution>pk' }
-formats['PostScript header']         = 'TEXPSHEADERS'    suffixes['PostScript header']        = { 'pro' }
-formats['sfd']                       = 'SFDFONTS'        suffixes['sfd']                      = { 'sfd' }
-formats['TeX system documentation']  = ''                suffixes['TeX system documentation'] = { }
-formats['TeX system sources']        = ''                suffixes['TeX system sources']       = { }
-formats['Troff fonts']               = ''                suffixes['Troff fonts']              = { }
-formats['type42 fonts']              = 'T42FONTS'        suffixes['type42 fonts']             = { }
-formats['web']                       = ''                suffixes['web']                      = { 'web', 'ch' }
-formats['web2c files']               = 'WEB2C'           suffixes['web2c files']              = { }
-formats['fontconfig files']          = 'FONTCONFIG_PATH' suffixes['fontconfig files']         = { } -- not unique
-
-alternatives['subfont definition files'] = 'sfd'
+setmetatablekey(formats,   "__index", simplified)
+setmetatablekey(suffixes,  "__index", simplified)
+setmetatablekey(suffixmap, "__index", simplified)
 
 -- A few accessors, mostly for command line tool.
 
@@ -101,31 +240,12 @@ function resolvers.suffixofformat(str)
     return s and s[1] or ""
 end
 
-function resolvers.suffixesofformat(str)
+function resolvers.suffixofformat(str)
     return suffixes[str] or { }
 end
 
--- As we don't register additional suffixes anyway, we can as well
--- freeze the reverse map here.
-
-for name, suffixlist in next, suffixes do
-    for i=1,#suffixlist do
-        suffixmap[suffixlist[i]] = name
-    end
-end
-
-local mt = getmetatable(suffixes)
-
-mt.__newindex = function(suffixes,name,suffixlist)
-    rawset(suffixes,name,suffixlist)
-    suffixes[name] = suffixlist
-    for i=1,#suffixlist do
-        suffixmap[suffixlist[i]] = name
-    end
-end
-
 for name, format in next, formats do
-    dangerous[name] = true
+    dangerous[name] = true -- still needed ?
 end
 
 -- because vf searching is somewhat dangerous, we want to prevent
@@ -139,23 +259,19 @@ dangerous.tex = nil
 -- more helpers
 
 function resolvers.formatofvariable(str)
-    return formats[str] or formats[alternatives[str]] or ''
+    return formats[str] or ''
 end
 
 function resolvers.formatofsuffix(str) -- of file
-    return suffixmap[file.extname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
+    return suffixmap[fileextname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
 end
 
 function resolvers.variableofformat(str)
-    return formats[str] or formats[alternatives[str]] or ''
+    return formats[str] or ''
 end
 
 function resolvers.variableofformatorsuffix(str)
     local v = formats[str]
-    if v then
-        return v
-    end
-    v = formats[alternatives[str]]
     if v then
         return v
     end

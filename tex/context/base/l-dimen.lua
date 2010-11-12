@@ -325,7 +325,7 @@ yet be available.</p>
 --ldx]]--
 
 function dimensions.texify()  -- todo: %
-    local fti, fc = fonts and fonts.ids and fonts.ids, font and font.current
+    local fti, fc = fonts and fonts.identifiers, font and font.current
     if fti and fc then
         dimenfactors["ex"] = function() return fti[fc()].ex_height end
         dimenfactors["em"] = function() return fti[fc()].quad      end

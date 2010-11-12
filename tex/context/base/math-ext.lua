@@ -30,9 +30,9 @@ function extras.add(unicode,t)
 end
 
 function extras.copy(tfmdata)
-    local math_parameters = tfmdata.math_parameters
+    local mathparameters = tfmdata.mathparameters
     local MathConstants = tfmdata.MathConstants
-    if (math_parameters and next(math_parameters)) or (MathConstants and next(MathConstants)) then
+    if (mathparameters and next(mathparameters)) or (MathConstants and next(MathConstants)) then
         local characters = tfmdata.characters
         for unicode, extradesc in next, mathdata do
             -- always, because in an intermediate step we can have a non math font

@@ -305,7 +305,8 @@
 \setvalue{\??tk::\v!nomarking}#1#2%
   {\bgroup
    \resettextlinestatus#1%
-   \let\dogetmarking\nogetmarking
+   \settrue\inhibitgetmarking
+   \let\dogetmarking\nogetmarking % obsolete in new marking mechanism
    \doplacelayouttextline#1#2%
    \egroup}
 
@@ -502,79 +503,6 @@
 %D list registers mentioned before.
 
 \def\ignoredlinebreak{\unskip\space\ignorespaces}
-
-% \def\doplacelayouttextline#1#2%
-%   {\ifdim#2>\zeropoint\relax  % prevents pagenumbers when zero height
-%      \goleftonpage
-%      \hbox
-%        {\setbox\scratchpagebox\vbox to #2
-%           {\vsize#2\relax
-%            \normalbaselines
-%            \let\\\ignoredlinebreak
-%            \let\crlf\ignoredlinebreak
-%            \csname\??tk#1\c!before\endcsname
-%            \doifbothsidesoverruled
-%              {\dodoplacelayouttextline#1\c!lefttext \c!middletext\c!righttext\zerocount\plusone}
-%              {\dodoplacelayouttextline#1\c!lefttext \c!middletext\c!righttext\zerocount\plusone}
-%              {\dodoplacelayouttextline#1\c!righttext\c!middletext\c!lefttext \plusone\zerocount}%
-%            \csname\??tk#1\c!after\endcsname
-%            \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
-%         \dp\scratchpagebox\zeropoint
-%         \box\scratchpagebox}%
-%      \vskip-#2\relax
-%    \fi}
-%
-% \def\dodoplacelayouttextline#1#2#3#4#5#6% \hsize toegevoegd, \hss's niet meer wijzigen
-%   {\hbox
-%      {\ifdim\leftedgewidth>\zeropoint
-%         \dododoplacelayouttextline\leftedgewidth#1\v!edge
-%           {\hss\csname\??tk#1\v!edge#2\endcsname}%
-%         \hskip\leftedgedistance
-%       \fi
-%       \ifdim\leftmarginwidth>\zeropoint
-%         \dododoplacelayouttextline\leftmarginwidth#1\v!margin
-%           {\hbox to \leftmarginwidth
-%              {\hss\csname\??tk#1\v!margin#2\endcsname}%
-%            \hskip-\leftmarginwidth
-%            \hbox to \leftmarginwidth
-%              {\hss\ifcase#5\or\csname\??tk#1\v!margin\c!margintext\endcsname\fi}}%
-%         \hskip\leftmargindistance
-%       \fi
-%       \ifdim\makeupwidth>\zeropoint
-%         \dododoplacelayouttextline\makeupwidth{#1}\v!text
-%           {\hbox to \makeupwidth
-%              {\ifcase#5\or\@@nmpre{\csname\??tk#1\v!text\c!marginedgetext\endcsname}\fi
-%               \csname\??tk#1\v!text#2\endcsname\hss}%
-%            \hskip-\makeupwidth
-%            \hbox to \makeupwidth
-%              {\hss\csname\??tk#1\v!text#3\endcsname\hss}%
-%            \hskip-\makeupwidth
-%            \hbox to \makeupwidth
-%              {\hss\csname\??tk#1\v!text#4\endcsname
-%               \ifcase#6\or\@@nmpos{\csname\??tk#1\v!text\c!marginedgetext\endcsname}\fi}}%
-%       \fi
-%       \ifdim\rightmarginwidth>\zeropoint
-%         \hskip\rightmargindistance
-%         \dododoplacelayouttextline\rightmarginwidth{#1}\v!margin
-%           {\hbox to \rightmarginwidth
-%              {\csname\??tk#1\v!margin#4\endcsname\hss}%
-%            \hskip-\rightmarginwidth
-%            \hbox to \rightmarginwidth
-%              {\ifcase#6\or\csname\??tk#1\v!margin\c!margintext\endcsname\fi\hss}}%
-%       \fi
-%       \ifdim\rightedgewidth>\zeropoint
-%         \hskip\rightedgedistance
-%         \dododoplacelayouttextline\rightedgewidth{#1}\v!edge
-%           {\csname\??tk#1\v!edge#4\endcsname\hss}%
-%       \fi}}
-%
-% \def\dododoplacelayouttextline#1#2#3#4%
-%   {\vbox % to \vsize
-%      {\hsize#1\relax
-%       \csname\??tk#2#3\c!before\endcsname
-%       \setlayoutcomponentattribute#2#3%
-%       \hbox \layoutcomponentboxattribute to #1{#4}%
-%       \csname\??tk#2#3\c!after\endcsname}}
 
 \def\doplacelayouttextline#1#2%
   {\let\currentlayouttextline#1%

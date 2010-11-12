@@ -28,7 +28,6 @@ local report_mapfiles = logs.new("mapfiles")
 
 local fonts        = fonts
 local tfm          = fonts.tfm
-local fontdata     = fonts.identifiers
 local definers     = fonts.definers
 local specifiers   = definers.specifiers
 local currentfont  = font.current
@@ -47,8 +46,105 @@ local synonyms = specifiers.synonyms
 local triggers = fonts.triggers
 local names    = fonts.names
 
--- Beware, number can be shared between redefind features but as it is
--- applied only for special cases it probably doesn't matter.
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+fonts.internalized = allocate() -- internal tex numbers
+
+fonts.characters  = mark(fonts.characters or { }) -- chardata
+fonts.csnames     = mark(fonts.csnames    or { }) -- namedata
+fonts.quads       = mark(fonts.quads      or { }) -- quaddata
+fonts.xheights    = mark(fonts.xheights   or { }) -- xheightdata
+
+local fontdata    = fonts.identifiers
+local chardata    = fonts.characters
+local quaddata    = fonts.quads
+local xheightdata = fonts.xheights
+
+fonts.ids      = fontdata -- we keep this one for a while (as it is used in mk etc)
+
+local nulldata = {
+    name         = "nullfont",
+    characters   = { },
+    descriptions = { },
+    parameters   = {
+        xheight = 0,
+        quad    = 0,
+    },
+}
+
+setmetatablekey(fontdata, "__index", function(t,k)
+    return nulldata
+end)
+
+setmetatablekey(chardata, "__index", function(t,k)
+    local characters = fontdata[k].characters
+    chardata[k] = characters
+    return characters
+end)
+
+setmetatablekey(quaddata, "__index", function(t,k)
+    local parameters = fontdata[k].parameters
+    local quad = parameters and parameters.quad or 0
+    quaddata[k] = quad
+    return quad
+end)
+
+setmetatablekey(xheightdata, "__index", function(t,k)
+    local parameters = fontdata[k].parameters
+    local xheight = parameters and parameters.xheight or 0
+    xheightdata[k] = xheight
+    return quad
+end)
+
+-- local function enhancetfmdata(tfmdata)
+--     local characters = tfmdata.characters
+--     local parameters = tfmdata.parameters
+--     local shared     = tfmdata.shared
+--     setmetatablekey(chardata, "__index", function(t,k)
+--         if type(k) == "number" then
+--             return characters[k]
+--         else
+--          -- t[k] = v -- can be option
+--             return parameters[k] or shared[k]
+--         end
+--         return v
+--     end)
+-- end
+
+-- Here we overload the registration code.
+
+function definers.registered(hash)
+    local id = fonts.internalized[hash]
+    return id, id and fonts.identifiers[id]
+end
+
+function definers.register(tfmdata,id)
+    if tfmdata and id then
+        local hash = tfmdata.hash
+        if not fonts.internalized[hash] then
+            fonts.internalized[hash] = id
+            if trace_defining then
+                report_define("registering font, id: %s, hash: %s",id or "?",hash or "?")
+            end
+        --  enhancetfmdata(tfmdata)
+            local characters = tfmdata.characters
+            local parameters = tfmdata.parameters
+            fontdata[id] = tfmdata
+         -- chardata   [id] = characters
+         -- quaddata   [id] = parameters and parameters.quad    or 0
+         -- xheightdata[id] = parameters and parameters.xheight or 0
+            --
+            tfmdata.mathconstants   = tfmdata.mathconstants   or tfmdata.MathMonstants
+            --
+            parameters.xheight      = parameters.xheight      or parameters.x_height
+            parameters.extraspace   = parameters.extraspace   or parameters.extra_space
+            parameters.spacestretch = parameters.spacestretch or parameters.space_stretch
+            parameters.spaceshrink  = parameters.spaceshrink  or parameters.space_shrink
+        end
+    end
+end
+
+-- End of overload.
 
 --[[ldx--
 <p>So far we haven't really dealt with features (or whatever we want
@@ -71,7 +167,7 @@ local function predefined(specification)
     return specification
 end
 
-definers.registersplit("@", predefined)
+definers.registersplit("@", predefined,"virtual")
 
 storage.register("fonts/setups" ,  setups ,  "fonts.definers.specifiers.contextsetups" )
 storage.register("fonts/numbers",  numbers,  "fonts.definers.specifiers.contextnumbers")
@@ -319,7 +415,7 @@ local function starred(features) -- no longer fallbacks here
     return features
 end
 
-definers.registersplit('*',starred)
+definers.registersplit('*',starred,"featureset")
 
 -- define (two steps)
 
@@ -428,6 +524,10 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
         specification.fallbacks = classfallbacks
     end
     local tfmdata = definers.read(specification,size) -- id not yet known
+    local cs = specification.cs
+    if cs then
+        fonts.csnames[cs] = tfmdata -- new (beware: locals can be forgotten)
+    end
     if not tfmdata then
         report_define("unable to define %s as \\%s",name,cs)
         texsetcount("global","lastfontid",-1)
@@ -445,7 +545,7 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
         local id = font.define(tfmdata)
     --  print(name,os.clock()-t)
         tfmdata.id = id
-        definers.register(tfmdata,id)
+        definers.register(tfmdata,id) -- to be sure, normally already done
         tex.definefont(global,cs,id)
         tfm.cleanuptable(tfmdata)
         if trace_defining then
@@ -487,7 +587,7 @@ function definers.define(specification)
         specification.specification = "" -- not used
         specification.resolved      = ""
         specification.forced        = ""
-        specification.features      = { } -- via detail
+        specification.features      = { } -- via detail, maybe some day
         --
         -- we don't care about mathsize textsize goodies fallbacks
         --
@@ -848,6 +948,10 @@ function fonts.definetypeface(name,t)
     context.dofastdefinetypeface(name, shortcut, shape, size, settings)
 end
 
-function fonts.current(id) -- todo: also handle name
+function fonts.current() -- todo: also handle name
     return fontdata[currentfont()] or fontdata[0]
+end
+
+function fonts.currentid()
+    return currentfont() or 0
 end

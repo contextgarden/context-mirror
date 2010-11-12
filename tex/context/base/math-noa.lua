@@ -70,10 +70,21 @@ local left_fence_code = 1
 local function process(start,what,n,parent)
     if n then n = n + 1 else n = 0 end
     while start do
-        if trace_processing then
-            report_noads("%s%s",rep("  ",n or 0),tostring(start))
-        end
         local id = start.id
+        if trace_processing then
+            local margin = rep("  ",n or 0)
+            local detail = tostring(start)
+            if id == math_noad then
+                report_noads("%s%s (class: %s)",margin,detail,noadcodes[start.subtype] or "?")
+            elseif id == math_char then
+                local char = start.char
+                local fam = start.fam
+                local font = font_of_family(fam)
+                report_noads("%s%s (family: %s, font: %s, char: %s, shape: %s)",margin,detail,fam,font,char,utfchar(char))
+            else
+                report_noads("%s%s",margin,detail)
+            end
+        end
         local proc = what[id]
         if proc then
             local done, newstart = proc(start,what,n,parent or start.prev)
@@ -137,7 +148,7 @@ end
 local remapalphabets = mathematics.remapalphabets
 local fcs = fonts.colors.set
 
--- we can have a global famdata == fonts.famdata and chrdata == fonts.chrdata
+-- we can have a global famdata == fonts.famdata
 
 --~ This does not work out well, as there are no fallbacks. Ok, we could
 --~ define a poor mans simplify mechanism.
@@ -453,6 +464,17 @@ end
 function builders.kernel.mlist_to_hlist(head,style,penalties)
     return mlist_to_hlist(head,style,penalties), true
 end
+
+--~ function builders.kernel.mlist_to_hlist(head,style,penalties)
+--~     print("!!!!!!! BEFORE",penalties)
+--~     for n in node.traverse(head) do print(n) end
+--~     print("!!!!!!!")
+--~     head = mlist_to_hlist(head,style,penalties)
+--~     print("!!!!!!! AFTER")
+--~     for n in node.traverse(head) do print(n) end
+--~     print("!!!!!!!")
+--~     return head, true
+--~ end
 
 tasks.new (
     "math",

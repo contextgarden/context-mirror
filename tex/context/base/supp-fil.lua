@@ -155,7 +155,7 @@ end
 -- modules can only have a tex or mkiv suffix or can have a specified one
 
 local prefixes  = { "m", "p", "s", "x", "t" }
-local suffixes  = { "tex", "mkiv" }
+local suffixes  = { "mkiv", "tex" } -- what about cld
 local modstatus = { }
 
 local function usemodule(name,hasscheme)
@@ -173,7 +173,7 @@ local function usemodule(name,hasscheme)
             report_modules("checking suffix driven file '%s'",name)
         end
         foundname = commands.readfilename(name,false,true) or ""
-    else
+    elseif true then
         for i=1,#suffixes do
             local fullname = file.addsuffix(name,suffixes[i])
             if trace_modules then
@@ -184,6 +184,35 @@ local function usemodule(name,hasscheme)
                 break
             end
         end
+    else
+     -- -- we don't want a tex file for each mkiv file so we do some checking
+     -- local foundtexname  = commands.readfilename(file.addsuffix(name,"tex"), false,true) or ""
+     -- local foundmkivname = commands.readfilename(file.addsuffix(name,"mkiv"),false,true) or ""
+     -- if foundtexfile ~= "" and foundmkivfile ~= "" then
+     --     if file.dirname(foundtexname) == file.dirname(foundmkivname) then
+     --         foundname = foundtexname -- we assume that this (shared) file loads the mkiv file
+     --         if trace_modules then
+     --             report_modules("using tex file for module '%s' (mkiv file on same dir)",name)
+     --         end
+     --     else
+     --         foundname = foundmkivname -- we assume that the tex file is an old one someplace else
+     --         if trace_modules then
+     --             report_modules("using mkiv file for module '%s' (tex file on other dir)",name)
+     --         end
+     --     end
+     -- elseif foundtexfile ~= "" then
+     --     foundname = foundtexname
+     --     if trace_modules then
+     --         report_modules("using tex file for module '%s'",name)
+     --     end
+     -- elseif foundmkivfile ~= "" then
+     --     foundname = foundmkivname
+     --     if trace_modules then
+     --         report_modules("using mkiv file for module '%s'",name)
+     --     end
+     -- else
+     --     -- nothing
+     -- end
     end
     if foundname ~= "" then
         if trace_modules then

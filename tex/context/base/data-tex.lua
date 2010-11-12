@@ -225,9 +225,9 @@ function resolvers.openfile(filename)
     end
 end
 
-function resolvers.texdatablob(filename, filetype)
+function resolvers.loadtexfile(filename, filetype)
     local ok, data, size = resolvers.loadbinfile(filename, filetype)
     return data or ""
 end
 
-resolvers.loadtexfile = resolvers.texdatablob
+resolvers.texdatablob = resolvers.loadtexfile

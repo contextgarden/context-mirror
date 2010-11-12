@@ -78,8 +78,6 @@
 
 \newtoks\everymakeup
 
-\appendtoks \postponemarks \to \everymakeup
-
 \let\currentmakeup\empty
 
 \unexpanded\def\startmakeup
@@ -109,7 +107,6 @@
 
 \def\donostopmakeup
   {\egroup
-   \flushmarks % new, here, else empty pages
    \page
    \egroup}
 
@@ -139,7 +136,6 @@
    \makeupparameter\c!bottom
    \doifsomething{\makeupparameter\c!color}{\stopcolor}%
    \egroup
-   \flushmarks % new, here, else empty pages
    \doflushmakeup
    \egroup
    \calculatehsizes

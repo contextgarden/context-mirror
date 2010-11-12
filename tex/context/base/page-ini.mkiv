@@ -814,6 +814,15 @@
 
 \setuplayout[\c!method=\v!normal]
 
+\def\docolumnpagebodymarks#1#2#3#4% first last column box
+  {\ifnum#3=#1\relax
+     \dosynchronizemarking[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4]%
+   \else\ifnum#3=#2\relax
+     \dosynchronizemarking[\number#3,\v!column:\number#3,\v!last, \v!column:\v!last ][#4]%
+   \else
+     \dosynchronizemarking[\number#3,\v!column:\number#3                            ][#4]%
+   \fi\fi}
+
 \def\buildpagebody#1#2%
   {\ifsavepagebody\global\setbox\savedpagebody\fi
    \vbox
@@ -821,10 +830,11 @@
 %       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
       \boxmaxdepth\maxdimen % new
       \dontcomplain
+      % marks get done here
+      \dosynchronizemarking[\v!page][#2]%
       % the following plugin uses and sets pagebox; beware: this
       % will change and is for my (hh) personal experiments
-      \executeifdefined{\??ly\c!method\@@lymethod}%
-        {\getvalue{\??ly\c!method\v!normal}}#1#2%
+      \executeifdefined{\??ly\c!method\@@lymethod}{\getvalue{\??ly\c!method\v!normal}}#1#2%
       % the finishing touch
       \ifcase\pageornamentstate
         \addpagebackground \pagebox
@@ -893,8 +903,7 @@
 \prependtoks \let\nextbox\nestednextbox \to \everybeforepagebody
 
 \def\dopagebody#1#2%
-  {%\getallmarks % now in following token register
-   \the\everybeforepagebody
+  {\the\everybeforepagebody
    \starttextproperties
 %  \setnextsubpageno  % nog eens: als in pagina (tbv standaard opmaak)
    \dontshowboxes     % dan hier blokkeren en verderop resetten
@@ -1020,9 +1029,9 @@
      \penalty-\!!tenthousand % untested ! ! \column
    \fi \fi}
 
-\let\resetcurrentsectionmarks\relax
-
-% was: \resetsectionmarks\firstsection, zie \handlepagebreak
+\ifdefined\resetcurrentstructuremarkswithpage \else
+    \let\resetcurrentstructuremarkswithpage\relax
+\fi
 
 \def\page{\pagebreak} % the short form of \pagebreak (mult-com one)
 
@@ -1164,20 +1173,20 @@
 \installpagebreakhandler \v!left
   {\ejectinsert
    \gotonextpageX % will become \gotonextpage
-   \doifbothsidesoverruled{}{\resetcurrentsectionmarks\ejectdummypage}{}}
+   \doifbothsidesoverruled{}{\resetcurrentstructuremarkswithpage\ejectdummypage}{}}
 
 \installpagebreakhandler \v!right
   {\ejectinsert
    \gotonextpageX % will become \gotonextpage
-   \doifbothsidesoverruled{}{}{\resetcurrentsectionmarks\ejectdummypage}}
+   \doifbothsidesoverruled{}{}{\resetcurrentstructuremarkswithpage\ejectdummypage}}
 
 \installpagebreakhandler \v!even
   {\page
-   \doifoddpageelse{\resetcurrentsectionmarks\ejectdummypage}\donothing}
+   \doifoddpageelse{\resetcurrentstructuremarkswithpage\ejectdummypage}\donothing}
 
 \installpagebreakhandler \v!odd
   {\page
-   \doifoddpageelse\donothing{\resetcurrentsectionmarks\ejectdummypage}}
+   \doifoddpageelse\donothing{\resetcurrentstructuremarkswithpage\ejectdummypage}}
 
 \installpagebreakhandler \v!quadruple % not yet ok inside columnsets
   {\ifdoublesided

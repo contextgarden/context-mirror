@@ -25,7 +25,7 @@ local has_attribute = node.has_attribute
 local chardata      = characters.data
 local collected     = false
 local attribute     = attributes.private("stripping")
-local fontdata      = fonts.ids
+local fontdata      = fonts.identifiers
 local tasks         = nodes.tasks
 
 local nodecodes    = nodes.nodecodes

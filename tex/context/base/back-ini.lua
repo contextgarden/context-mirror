@@ -75,6 +75,7 @@ backends.codeinjections = {
     setpagetransition      = nothing,
 
     defineviewerlayer      = nothing,
+    useviewerlayer         = nothing,
 
     addbookmarks           = nothing,
 

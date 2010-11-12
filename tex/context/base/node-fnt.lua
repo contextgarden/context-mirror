@@ -18,16 +18,16 @@ local report_fontrun = logs.new("font run")
 
 local nodes, node = nodes, node
 
-fonts     = fonts      or { }
-fonts.tfm = fonts.tfm  or { }
-fonts.ids = fonts.ids  or { }
+fonts               = fonts or { }
+fonts.tfm           = fonts.tfm or { }
+fonts.identifiers   = fonts.identifiers or { }
 
 local traverse_id   = node.traverse_id
 local has_attribute = node.has_attribute
 local starttiming   = statistics.starttiming
 local stoptiming    = statistics.stoptiming
 local nodecodes     = nodes.nodecodes
-local fontdata      = fonts.ids
+local fontdata      = fonts.identifiers
 local handlers      = nodes.handlers
 
 local glyph_code    = nodecodes.glyph
@@ -60,7 +60,7 @@ function handlers.characters(head)
                 local font, attr = n.font, has_attribute(n,0) or 0
                 report_run("font %03i dynamic %03i glyph %s",font,attr,utf.char(n.char))
             else
-                report_run("[%s]",node.type(n.id))
+                report_run("[%s]",nodecodes[n.id])
             end
             n = n.next
         end

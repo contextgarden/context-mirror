@@ -42,20 +42,26 @@ local pdf_setocgstate  = pdfconstant("SetOCGState")
 
 local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdfconstant("OFF") } }
 
+-- We can have references to layers before they are places, for instance from
+-- hide and vide actions. This is why we need to be able to force usage of layers
+-- at several moments.
+
 local pdfln, pdfld = { }, { }
 local textlayers, hidelayers, videlayers = pdfarray(), pdfarray(), pdfarray()
-local pagelayers = pdfdictionary()
-
-lpdf.layerreferences = pdfln
-
-function backends.pdf.layerreference(name)
-    return pdfln[name]
-end
-
 local pagelayers, pagelayersreference, cache = nil, nil, { }
+
+local specifications = { }
 
 function codeinjections.defineviewerlayer(specification)
     if viewerlayers.supported and textlayers then
+        specifications[specification.tag] = specification
+    end
+end
+
+local function useviewerlayer(name)
+    local specification = specifications[name]
+    if specification then
+        specifications[name] = nil -- or not
         if not pagelayers then
             pagelayers = pdfdictionary()
             pagelayersreference = pdfreserveobject()
@@ -89,6 +95,20 @@ function codeinjections.defineviewerlayer(specification)
         pagelayers[tag] = dr -- check
     end
 end
+
+codeinjections.useviewerlayer = useviewerlayer
+
+local function layerreference(name)
+    local r = pdfln[name]
+    if r then
+        return r
+    else
+        useviewerlayer(name)
+        return pdfln[name]
+    end
+end
+
+lpdf.layerreference = layerreference -- also triggered when a hide or vide happens
 
 local function flushtextlayers()
     if viewerlayers.supported then
@@ -130,7 +150,7 @@ local function setlayer(what,arguments)
     arguments = (type(arguments) == "table" and arguments) or settings_to_array(arguments)
     local state = pdfarray { what }
     for i=1,#arguments do
-        local p = pdfln[arguments[i]]
+        local p = layerreference(arguments[i])
         if p then
             state[#state+1] = p
         end
@@ -141,9 +161,9 @@ local function setlayer(what,arguments)
     }
 end
 
-function executers.hidelayer  (arguments) setlayer(pdf_off,   arguments) end
-function executers.videlayer  (arguments) setlayer(pdf_on,    arguments) end
-function executers.togglelayer(arguments) setlayer(pdf_toggle,arguments) end
+function executers.hidelayer  (arguments) return setlayer(pdf_off,   arguments) end
+function executers.videlayer  (arguments) return setlayer(pdf_on,    arguments) end
+function executers.togglelayer(arguments) return setlayer(pdf_toggle,arguments) end
 
 -- transitions
 

@@ -51,21 +51,18 @@ loadmodule('luatex-fonts-merged.lua',true) -- you might comment this line
 
 if fonts then
 
-    -- We're using the merged version. That one could be outdated so
-    -- remove it from your system when you want to use the files from
-    -- from the ConTeXt tree, or keep your copy of the merged version
-    -- up to date.
+    if not fonts._merge_loaded_message_done_ then
+        texio.write_nl("log", "!")
+        texio.write_nl("log", "! I am using the merged version of 'luatex-fonts.lua' here. If")
+        texio.write_nl("log", "! you run into problems or experience unexpected behaviour, and")
+        texio.write_nl("log", "! if you have ConTeXt installed you can try to delete the file")
+        texio.write_nl("log", "! 'luatex-font-merged.lua' as I might then use the possibly")
+        texio.write_nl("log", "! updated libraries. The merged version is not supported as it")
+        texio.write_nl("log", "! is a frozen instance.")
+        texio.write_nl("log", "!")
+    end
 
-    texio.write_nl("log",[[
-
-I am using the merged version of 'luatex-fonts.lua' here. If
-you run into problems or experience unexpected behaviour, and
-if you have ConTeXt installed you can try to delete the file
-'luatex-font-merged.lua' as I might then use the possibly
-updated libraries. The merged version is not supported as it
-is a frozen instance.
-
-    ]])
+    fonts._merge_loaded_message_done_ = true
 
 else
 
@@ -93,7 +90,9 @@ else
 
     -- We do need some basic node support although the following
     -- modules contain a little bit of code that is not used. It's
-    -- not worth weeding.
+    -- not worth weeding. Beware, in node-dum some functions use
+    -- fonts.* tables, not that nice but I don't want two dummy
+    -- files. Some day I will sort this out (no problem in context).
 
     loadmodule('node-dum.lua')
     loadmodule('node-inj.lua') -- will be replaced (luatex >= .70)
