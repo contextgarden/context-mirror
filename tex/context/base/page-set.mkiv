@@ -133,28 +133,6 @@
 %D \stoptext
 %D \stoptyping
 
-% not ok yet, for column sets we need a special case: within a column we
-% need to bubble-up the marks; the indirectness permits overloading here
-
-\let\saveOTRSETmark  \refreshsavedmark
-\let\bubbleOTRSETmark\bubblesavedmark
-\let\resetOTRSETmark \resetsavedmark
-\let\presetOTRSETmark\presetsavedmark
-
-\def\doregisterOTRSETmarks#1{\saveOTRSETmark  [#1][\number\mofcolumns]}
-\def\dobubbleOTRSETmarks  #1{\bubbleOTRSETmark[#1][\number\mofcolumns]}
-\def\doresetOTRSETmarks   #1{\resetOTRSETmark [#1][\recurselevel]}
-\def\dopresetOTRSETmarks  #1{\presetOTRSETmark[#1][\recurselevel]}
-
-\def\registerOTRSETmarks
-  {\processcommacommand[\alldefinedmarks]\doregisterOTRSETmarks}
-\def\bubbleOTRSETmarks
-  {\processcommacommand[\alldefinedmarks]\dobubbleOTRSETmarks}
-\def\resetOTRSETmarks
-  {\dorecurse\nofcolumns{\processcommacommand[\alldefinedmarks]\doresetOTRSETmarks}}
-\def\presetOTRSETmarks
-  {\dorecurse\nofcolumns{\processcommacommand[\alldefinedmarks]\dopresetOTRSETmarks}}
-
 %D test case of Vit Zika (context list):
 %D
 %D \starttyping
@@ -459,6 +437,7 @@
               \vss
             \fi}%
          \wd\scratchbox\localcolumnwidth % \textwidth
+         \docolumnpagebodymarks{#1}{#2}\recurselevel\scratchbox
          \ifcase\columndirection
            \hskip\OTRSETgetparameter\c!distance\recurselevel\box\scratchbox
          \else
@@ -512,7 +491,6 @@
 
 \def\OTRSETdoflush
   {\ifcollectingcontent
-     \registerOTRSETmarks
      \global\mofcolumns\plusone
    \else
      \OTRSETdofinalflush
@@ -524,7 +502,6 @@
      \OTRSETinitializecolumns
     %\OTRSETdoflushfloats
      \OTRSETstartnextpage
-\presetOTRSETmarks
      \initializecolumntextareas
    \fi}
 
@@ -861,9 +838,7 @@
   {\OTRSETsetfreecells\mofcolumns\columnlastcell
    \ifsomefreecolumncells
      % okay
-     \bubbleOTRSETmarks % not robust because we reenter
    \else
-     \registerOTRSETmarks % not robust because we reenter
      \global\advance\mofcolumns \plusone
      \ifnum\mofcolumns>\nofcolumns
        \OTRSETdoflush
@@ -1634,7 +1609,6 @@
   {\increment\columnsetlevel\relax
    \globallet\localcolumnmaxcells\!!zerocount
    \global\setfalse\OTRSETfinish
-   \resetOTRSETmarks
    \ifnum\columnsetlevel=\plusone
      \bgroup
      \saveinterlinespace
@@ -1762,7 +1736,6 @@
        \fi
        \vfill
        \eject
-\registerOTRSETmarks
        % brr, may result in empty page after nicely fit text
        % or if left, then lost of first column only text
        \ifnum\mofcolumns>\plusone

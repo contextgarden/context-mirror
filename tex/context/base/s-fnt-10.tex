@@ -1,4 +1,4 @@
-%D \module
+fonts.identifiers%D \module
 %D   [      file=s-fnt-01,
 %D        version=2006.10.10, % guess
 %D          title=\CONTEXT\ Style File,
@@ -15,7 +15,7 @@
 local format, sprint = string.format, tex.sprint
 
 function fonts.otf.show_all()
-    local tfmdata = fonts.ids[font.current()]
+    local tfmdata = fonts.identifiers[font.current()]
     if tfmdata and tfmdata.shared then
         local NC, NR, char = context.NC, context.NR, context.char
         local otfdata = tfmdata.shared.otfdata
@@ -34,7 +34,7 @@ function fonts.otf.show_all()
 end
 
 function fonts.show_all()
-    local tfmdata = fonts.ids[font.current()]
+    local tfmdata = fonts.identifiers[font.current()]
     if tfmdata then
         local NC, NR, HL, char, bold, tttf = context.NC, context.NR, context.HL, context.char, context.bold, context.tttf
         local chars = tfmdata.characters
@@ -100,7 +100,7 @@ function fonts.show_all()
 end
 
 function fonts.show_glyphs()
-    local tfmdata = fonts.ids[font.current()]
+    local tfmdata = fonts.identifiers[font.current()]
     if tfmdata then
         for k, v in ipairs(table.sortedkeys(tfmdata.characters)) do
             if v >=0 then

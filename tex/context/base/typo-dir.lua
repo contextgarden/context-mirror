@@ -51,8 +51,8 @@ local new_textdir        = nodepool.textdir
 local beginmath_code     = mathcodes.beginmath
 local endmath_code       = mathcodes.endmath
 
-local fontdata           = fonts.ids
-local fontchar           = fonts.chr
+local fontdata           = fonts.identifiers
+local fontchar           = fonts.characters
 local chardata           = characters.data
 local chardirs           = characters.directions -- maybe make a special mirror table
 
@@ -381,7 +381,7 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                 end
             else
                 if trace_directions then
-                    list[#list+1] = format("node %s (subtype %s)",node.type(id),current.subtype)
+                    list[#list+1] = format("node %s (subtype %s)",nodecodes[id],current.subtype)
                 end
                 if finish then
                     finish_auto_before()

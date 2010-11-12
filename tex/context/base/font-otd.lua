@@ -12,7 +12,7 @@ local report_otf = logs.new("load otf")
 
 local fonts          = fonts
 local otf            = fonts.otf
-local fontdata       = fonts.ids
+local fontdata       = fonts.identifiers
 
 otf.features         = otf.features         or { }
 otf.features.default = otf.features.default or { }

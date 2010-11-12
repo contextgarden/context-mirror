@@ -15,6 +15,8 @@
 
 \registerctxluafile{attr-eff}{1.001}
 
+% more will move to the lua end (old code, early luatex approach)
+
 \unprotect
 
 \def\registereffect#1#2#3% #2=stretch #3=rulethickness
@@ -28,10 +30,37 @@
       \csname(es:##1:##2:\number\dimexpr##3\relax)\endcsname}%
    \dotriggereffect}
 
-% \registereffect{normal}
-% \registereffect{inner}
-% \registereffect{outer}
-% \registereffect{both}
-% \registereffect{hidden}
+\unexpanded\def\setupeffect
+  {\dodoubleargument\dosetupeffect}
+
+\def\dosetupeffect[#1][#2]%
+  {\getparameters[\??et#1][#2]}
+
+\unexpanded\def\defineeffect
+  {\dodoubleargument\dodefineeffect}
+
+\def\dodefineeffect[#1][#2]%
+  {\getparameters[\??et#1][\c!method=\v!none,\c!stretch=0,\c!rulethickness=\zeropoint,\c!alternative=\v!normal,#2]%
+   \doif{\getvalue{\??et#1\c!method}}\v!command
+     {\setugvalue{\e!start#1}{\starteffect[#1]}%
+      \setugvalue{\e!stop #1}{\stopeffect     }}}
+
+% yes or no grouped
+
+\unexpanded\def\starteffect[#1]%
+  {\dotriggereffect{\getvalue{\??et#1\c!alternative}}{\getvalue{\??et#1\c!stretch}}{\getvalue{\??et#1\c!rulethickness}}}
+
+\unexpanded\def\stopeffect % can be special
+  {\dotriggereffect\v!normal0\zeropoint}
+
+\unexpanded\def\effect[#1]%
+  {\groupedcommand{\starteffect[#1]}{\stopeffect}}
+
+\defineeffect [\v!inner]   [\c!alternative=\v!inner,\c!rulethickness=.25pt]
+\defineeffect [\v!outer]   [\c!alternative=\v!outer,\c!rulethickness=.25pt]
+\defineeffect [\v!both]    [\c!alternative=\v!both, \c!rulethickness=.25pt]
+\defineeffect [\v!normal]  [\c!alternative=\v!normal]
+\defineeffect [\v!hidden]  [\c!alternative=\v!hidden]
+\defineeffect [\v!stretch] [\c!alternative=\v!stretch,\c!stretch=1]
 
 \protect \endinput

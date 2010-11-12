@@ -31,17 +31,17 @@ function buffers.database.process(settings)
     else
         data = buffers.raw(settings.database)
     end
-local function sprint(c,...)
-    tex.sprint(tex.ctxcatcodes,[[\tt\bgroup]])
-    tex.sprint(tex.vrbcatcodes,...)
-    tex.sprint(tex.ctxcatcodes,[[\egroup\crlf]])
-end
-
+--~     local function sprint(c,...)
+--~         tex.sprint(tex.ctxcatcodes,[[\tt\bgroup]])
+--~         tex.sprint(tex.vrbcatcodes,...)
+--~         tex.sprint(tex.ctxcatcodes,[[\egroup\crlf]])
+--~     end
     if data and #data > 0 then
         local separatorchar, quotechar, commentchar = settings.separator, settings.quotechar, settings.commentchar
         local before, after = settings.before or "", settings.after or ""
         local first, last = settings.first or "", settings.last or ""
         local left, right = settings.left or "", settings.right or ""
+        local setups = settings.setups or ""
         local command = settings.command
         separatorchar = (not separatorchar and ",") or separators[separatorchar] or separatorchar
         local separator = type(separatorchar) == "string" and lpegS(separatorchar) or separatorchar
@@ -68,18 +68,14 @@ end
                 local result, r = { }, 0 -- we collect as this is nicer in tracing
                 local list = lpegmatch(splitter,line)
                 if not found then
-                    local setups = settings.setups or ""
-                    if setups == "" then
-                        sprint(ctxcatcodes,"\\begingroup")
-                    else
+                    if setups ~= "" then
                         sprint(ctxcatcodes,"\\begingroup\\setups[",setups,"]")
                     end
                     sprint(ctxcatcodes,before)
-                    found = true
                 end
                 r = r + 1 ; result[r] = first
                 for j=1,#list do
-                    result[#result+1] = left
+                    r = r + 1 ; result[r] = left
                     if command == "" then
                         r = r + 1 ; result[r] = list[j]
                     else
@@ -96,7 +92,9 @@ end
         end
         if found then
             sprint(ctxcatcodes,after)
-            sprint(ctxcatcodes,"\\endgroup")
+            if setups ~= "" then
+                sprint(ctxcatcodes,"\\endgroup")
+            end
         end
     else
         -- message

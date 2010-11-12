@@ -1472,7 +1472,7 @@
    \let\LR\TableLR
    \let\AR\TableAR}
 
-\def\TableSR
+\unexpanded\def\TableSR
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLEfirstrow
        \writestatus\m!TABLE{change \string\SR\space into \string\MR/\string\LR}%
@@ -1485,7 +1485,7 @@
    \checkTABLErow\SR
    \endTABLErow\TABLEseparaterow\TABLErowfactor\TABLErowfactor}
 
-\def\TableFR
+\unexpanded\def\TableFR
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLEmidrow
        \writestatus\m!TABLE{change \string\FR\space into \string\MR/\string\LR}%
@@ -1496,7 +1496,7 @@
    \checkTABLErow\FR
    \endTABLErow\TABLEfirstrow\TABLErowfactor\TABLErowzero}
 
-\def\TableMR
+\unexpanded\def\TableMR
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLErule
        \writestatus\m!TABLE{change \string\MR\space into \string\FR/\string\SR}%
@@ -1507,7 +1507,7 @@
    \checkTABLErow\MR
    \endTABLErow\TABLEmidrow00}
 
-\def\TableLR
+\unexpanded\def\TableLR
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLErule
        \writestatus\m!TABLE{change \string\LR\space into \string\FR/\string\SR}%
@@ -1576,7 +1576,7 @@
 %D check takes care of the first and mid rows, the chuck macro
 %D |<|how about that name|>| handles the last row.
 
-\def\TableAR
+\unexpanded\def\TableAR
   {\ifTABLEgraydone
      \globalletempty\checkTABLEautorow
      \globalletempty\chuckTABLEautorow
@@ -1721,7 +1721,7 @@
    \let\VT\TableVT
    \let\VN\TableVN}
 
-\def\TableVL
+\unexpanded\def\TableVL
   {\checkTABLEautorow
    \nextTABLEgrayline
    \ifnum\currentTABLEcolumn>\maxTABLEcolumn
@@ -1764,10 +1764,10 @@
 % \HL
 % \stoptable
 
-\def\TableVS  {\VN1}
-\def\TableVD  {\VN2}
-\def\TableVT  {\VN3}
-\def\TableVN#1{\gdef\@VLn{#1}\VL}
+\unexpanded\def\TableVS  {\VN1}
+\unexpanded\def\TableVD  {\VN2}
+\unexpanded\def\TableVT  {\VN3}
+\unexpanded\def\TableVN#1{\gdef\@VLn{#1}\VL}
 
 \def\resetVLvalues
   {\dostepwiserecurse\zerocount\maxTABLEcolumn\plusone
@@ -1776,7 +1776,7 @@
       \letgvalueempty{eVL\recurselevel}}%
    \global\currentTABLEcolumn\zerocount}
 
-\def\TableVC
+\unexpanded\def\TableVC
   {\checkTABLEautorow
    \nextTABLEgrayline
    \ifnum\currentTABLEcolumn>\maxTABLEcolumn
@@ -1805,7 +1805,7 @@
      {\getvalue{eVC\the\currentTABLEcolumn}}%
    \doTableVL}
 
-\def\TableHL
+\unexpanded\def\TableHL
   {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
      \chuckTABLEautorow
    \else\ifnum\currentTABLEcolumn=\zerocount
@@ -1850,7 +1850,7 @@
 \let\startHLcommand\empty
 \let\stopHLcommand \empty
 
-\def\TableHC
+\unexpanded\def\TableHC
   {\complexorsimpleTable{HC}}
 
 \def\complexTableHC[#1]%
@@ -1884,7 +1884,7 @@
    \let\MC\TableNC
    \let\LC\TableNC}
 
-\def\TableNL
+\unexpanded\def\TableNL
   {\complexorsimpleTable{NL}}
 
 \def\complexTableNL[#1]%
@@ -1899,7 +1899,7 @@
       \vskip\ht0
       \nobreak}}
 
-\def\TableNR
+\unexpanded\def\TableNR
   {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
      \global\currentTABLEcolumn\zerocount
      \normalTABLElineending
@@ -1911,7 +1911,7 @@
      {\nobreak
       \setTABLEaction\TABLEunknown}}
 
-\def\TableNC
+\unexpanded\def\TableNC
   {\checkTABLEautorow
    \nextTABLEgrayline
    \ifnum\currentTABLEcolumn>\maxTABLEcolumn
@@ -1964,7 +1964,7 @@
      \global\TABLEdivisiontrue
    \fi}
 
-\def\TableDL
+\unexpanded\def\TableDL
   {\checkTABLEdivision
    \complexorsimpleTable{DL}}
 
@@ -2004,13 +2004,13 @@
      %\globalletempty\stopHLcommand
    \fi}
 
-\def\TableDV
+\unexpanded\def\TableDV
   {\TableDCV\normalTABLEsimplebar}
 
-\def\TableDC
+\unexpanded\def\TableDC
   {\TableDCV\normalTABLEquote}
 
-\def\TableDCV#1%
+\unexpanded\def\TableDCV#1%
   {\checkTABLEdivision
    \checkTABLEautorow
    \ifnum\currentTABLEcolumn>\maxTABLEcolumn
@@ -2021,7 +2021,7 @@
      #1%
    \fi}
 
-\def\TableDR
+\unexpanded\def\TableDR
   {\ifnum\currentTABLEcolumn<\maxTABLEcolumn % silent recovery
      %\setTABLEerror\TABLEmissingcolumn      % some day warning
      %\handleTABLEerror
@@ -2070,7 +2070,7 @@
      {\global\TABLEcr\plusone}
      {\global\TABLEcr\plustwo}}
 
-\def\TableBC
+\unexpanded\def\TableBC
   {\ifTABLEgrayline
      \normalTABLEquote
    \else
@@ -2086,7 +2086,7 @@
   {\addtoTABLEgrayline{\BC}%
    \gobbleTableBCL}
 
-\def\TableBL
+\unexpanded\def\TableBL
   {\TABLEnoalign\bgroup
      \globallet\nextTABLEgrayline\executeTABLEgrayline
      \globalletempty\TABLEgrayline % new
@@ -2106,7 +2106,7 @@
   {\analyzeTABLEcr[#1]%
    \handleTABLEcr}
 
-\def\TableBR#1%
+\unexpanded\def\TableBR#1%
   {\TABLEnoalign
      {\globallet\nextTABLEgrayline\executeTABLEgrayline
       \checkTABLEgrayline#1\BR
@@ -2153,7 +2153,7 @@
      {\dodoanalyzeTABLEcr[#2,#1,#3]}
      {\dodoanalyzeTABLEcr[\ifTABLEgrayline1\else\maxTABLEcolumn\fi,#1,#2]}}
 
-\def\TableCL
+\unexpanded\def\TableCL
   {\TABLEnoalign\bgroup
      \globallet\nextTABLEgrayline\executeTABLEgrayline
      \globalletempty\TABLEgrayline % new
@@ -2173,7 +2173,7 @@
   {\analyzeTABLEcrl{c}[#1]%
    \handleTABLEcr}
 
-\def\TableRL
+\unexpanded\def\TableRL
   {\TABLEnoalign\bgroup
      \globallet\nextTABLEgrayline\executeTABLEgrayline
      \globalletempty\TABLEgrayline % new
@@ -2264,7 +2264,7 @@
    \doPostTableGL
    #2}
 
-\def\TableBACKGROUND
+\unexpanded\def\TableBACKGROUND
   {\TableBR}
 
 \def\simpleTableRASTER   #1{\docomplexTableRASTER[1]#1}
@@ -2272,8 +2272,8 @@
 \def\simpleTableCOLOR      {\docomplexTableCOLOR [1]}
 \def\complexTableCOLOR [#1]{\docomplexTableCOLOR [#1]}
 
-\def\TableRASTER{\complexorsimpleTable{RASTER}}
-\def\TableCOLOR {\complexorsimpleTable{COLOR}}
+\unexpanded\def\TableRASTER{\complexorsimpleTable{RASTER}}
+\unexpanded\def\TableCOLOR {\complexorsimpleTable{COLOR}}
 
 \def\addtoTABLEgrayline#1%
   {\TABLEgraytoks\expandafter{\TABLEgrayline}%

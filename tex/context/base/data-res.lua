@@ -56,7 +56,6 @@ local formats      = resolvers.formats
 local suffixes     = resolvers.suffixes
 local dangerous    = resolvers.dangerous
 local suffixmap    = resolvers.suffixmap
-local alternatives = resolvers.alternatives
 
 resolvers.defaultsuffixes = { "tex" } --  "mkiv", "cld" -- too tricky
 
@@ -68,7 +67,6 @@ function resolvers.newinstance()
     local newinstance = {
         progname        = 'context',
         engine          = 'luatex',
-        format          = '',
         environment     = allocate(),
         variables       = allocate(),
         expansions      = allocate(),
@@ -88,7 +86,6 @@ function resolvers.newinstance()
         renewcache      = false,
         loaderror       = false,
         savelists       = true,
-        allresults      = false,
         pattern         = nil, -- lists
         force_suffixes  = true,
     }
@@ -175,7 +172,8 @@ end
 local function entry(entries,name)
     if name and name ~= "" then
         name = gsub(name,'%$','')
-        local result = entries[name..'.'..instance.progname] or entries[name]
+     -- local result = entries[name..'.'..instance.progname] or entries[name]
+        local result = entries[instance.progname .. '.' .. name] or entries[name]
         if result then
             return result
         else
@@ -193,7 +191,8 @@ end
 local function is_entry(entries,name)
     if name and name ~= "" then
         name = gsub(name,'%$','')
-        return (entries[name..'.'..instance.progname] or entries[name]) ~= nil
+     -- return (entries[name..'.'..instance.progname] or entries[name]) ~= nil
+        return (entries[instance.progname .. '.' .. name] or entries[name]) ~= nil
     else
         return false
     end
@@ -254,19 +253,28 @@ local function load_configuration_files()
                     end
                     -- flattening is easier to deal with as we need to collapse
                     local t = { }
-                    for k, v in next, data do -- v = progname
+                    for k, v in next, data do -- k = progname or setter or variables
                         if v ~= unset_variable then
                             local kind = type(v)
                             if kind == "string" then
+                                -- still supported, but preferably use the variables subtable
                                 t[k] = v
                             elseif kind == "table" then
-                                -- this operates on the table directly
-                                initializesetter(filename,k,v)
-                                -- this doesn't (maybe metatables some day)
-                                for kk, vv in next, v do -- vv = variable
-                                    if vv ~= unset_variable then
-                                        if type(vv) == "string" then
-                                            t[kk.."."..k] = vv
+                                if initializesetter(filename,k,v) then
+                                    -- directives, experiments, trackers, ...
+                                else
+                                    for kk, vv in next, v do -- vv = variable
+                                        if vv ~= unset_variable then
+                                            if type(vv) == "string" then
+                                             -- t[kk.."."..k] = vv
+                                                if k == "variables" then
+                                                 -- special table, shared variables can be grouped
+                                                    t[kk] = vv
+                                                else
+                                                 -- category.variable (progname)
+                                                    t[k .. "." .. kk] = vv
+                                                end
+                                            end
                                         end
                                     end
                                 end
@@ -536,12 +544,12 @@ function resolvers.expandvariables()
     if engine   ~= "" then environment['engine']   = engine   end
     if progname ~= "" then environment['progname'] = progname end
     for k,v in next, environment do
-        local a, b = match(k,"^(%a+)%_(.*)%s*$")
-        if a and b then
-            expansions[a..'.'..b] = v
-        else
+      --  local a, b = match(k,"^(%a+)%_(.*)%s*$") -- too many vars have an _ in the name
+      --  if a and b then                          -- so let's forget about it; it was a
+      --      expansions[a..'.'..b] = v            -- hack anyway for linux and not needed
+      --  else                                     -- anymore as we now have directives
             expansions[k] = v
-        end
+      --  end
     end
     for k,v in next, environment do -- move environment to expansions (variables are already in there)
         if not expansions[k] then expansions[k] = v end
@@ -595,7 +603,7 @@ function resolvers.unexpandedpathlist(str)
 end
 
 function resolvers.unexpandedpath(str)
-    return file.joinpath(resolvers.unexpandedpath_list(str))
+    return file.joinpath(resolvers.unexpandedpathlist(str))
 end
 
 local done = { }
@@ -856,13 +864,14 @@ local function can_be_dir(name) -- can become local
     return fakepaths[name] == 1
 end
 
-local function collect_instance_files(filename,collected) -- todo : plugin (scanners, checkers etc)
-    local result = collected or { }
+local function collect_instance_files(filename,askedformat,allresults) -- todo : plugin (scanners, checkers etc)
+    local result = { }
     local stamp  = nil
+    askedformat = askedformat or ""
     filename = collapsepath(filename)
     -- speed up / beware: format problem
-    if instance.remember then
-        stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. instance.format
+    if instance.remember and not allresults then
+        stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. askedformat
         if instance.found[stamp] then
             if trace_locating then
                 report_resolvers("remembering file '%s'",filename)
@@ -871,12 +880,14 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             return instance.found[stamp]
         end
     end
-    if not dangerous[instance.format or "?"] then
+    if not dangerous[askedformat] then
         if resolvers.isreadable.file(filename) then
             if trace_detail then
                 report_resolvers("file '%s' found directly",filename)
             end
-            instance.found[stamp] = { filename }
+            if stamp then
+                instance.found[stamp] = { filename }
+            end
             return { filename }
         end
     end
@@ -884,7 +895,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         if trace_locating then
             report_resolvers("checking wildcard '%s'", filename)
         end
-        result = resolvers.findwildcardfiles(filename)
+        result = resolvers.findwildcardfiles(filename) -- we can use th elocal
     elseif file.is_qualified_path(filename) then
         if resolvers.isreadable.file(filename) then
             if trace_locating then
@@ -894,7 +905,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         else
             local forcedname, ok, suffix = "", false, fileextname(filename)
             if suffix == "" then -- why
-                local format_suffixes = instance.format == "" and resolvers.defaultsuffixes or suffixes[instance.format]
+                local format_suffixes = askedformat == "" and resolvers.defaultsuffixes or suffixes[askedformat]
                 if format_suffixes then
                     for i=1,#format_suffixes do
                         local s = format_suffixes[i]
@@ -914,21 +925,22 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 -- matching last part of the name
                 local basename = filebasename(filename)
                 local pattern = gsub(filename .. "$","([%.%-])","%%%1")
-                local savedformat = instance.format
+                -- messy .. to be sorted out
+                local savedformat = askedformat
                 local format = savedformat or ""
                 if format == "" then
-                    instance.format = resolvers.formatofsuffix(suffix)
+                    askedformat = resolvers.formatofsuffix(suffix)
                 end
                 if not format then
-                    instance.format = "othertextfiles" -- kind of everything, maybe texinput is better
+                    askedformat = "othertextfiles" -- kind of everything, maybe texinput is better
                 end
                 --
                 if basename ~= filename then
-                    local resolved = collect_instance_files(basename)
+                    local resolved = collect_instance_files(basename,askedformat,allresults)
                     if #result == 0 then
                         local lowered = lower(basename)
                         if filename ~= lowered then
-                            resolved = collect_instance_files(lowered)
+                            resolved = collect_instance_files(lowered,askedformat,allresults)
                         end
                     end
                     resolvers.format = savedformat
@@ -970,7 +982,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         else
             wantedfiles[#wantedfiles+1] = filename
         end
-        if instance.format == "" then
+        if askedformat == "" then
             if ext == "" or not suffixmap[ext] then
                 local defaultsuffixes = resolvers.defaultsuffixes
                 for i=1,#defaultsuffixes do
@@ -989,14 +1001,14 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
             end
         else
             if ext == "" or not suffixmap[ext] then
-                local format_suffixes = suffixes[instance.format]
+                local format_suffixes = suffixes[askedformat]
                 if format_suffixes then
                     for i=1,#format_suffixes do
                         wantedfiles[#wantedfiles+1] = filename .. "." .. format_suffixes[i]
                     end
                 end
             end
-            filetype = instance.format
+            filetype = askedformat
             if trace_locating then
                 report_resolvers("using given filetype '%s'",filetype)
             end
@@ -1067,7 +1079,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                             --- todo, test for readable
                             result[#result+1] = fl[3]
                             done = true
-                            if instance.allresults then
+                            if allresults then
                                 if trace_detail then
                                     report_resolvers("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
                                 end
@@ -1098,7 +1110,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                                         end
                                         result[#result+1] = fname
                                         done = true
-                                        if not instance.allresults then break end
+                                        if not allresults then break end
                                     end
                                 end
                             else
@@ -1110,7 +1122,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
                 if not done and doscan then
                     -- todo: slow path scanning ... although we now have tree:// supported in $TEXMF
                 end
-                if done and not instance.allresults then break end
+                if done and not allresults then break end
             end
         end
     end
@@ -1119,7 +1131,7 @@ local function collect_instance_files(filename,collected) -- todo : plugin (scan
         result[k] = rk
         resolvers.registerintrees(rk) -- for tracing used files
     end
-    if instance.remember then
+    if stamp then
         instance.found[stamp] = result
     end
     return result
@@ -1128,37 +1140,30 @@ end
 resolvers.concatinators.tex  = filejoin
 resolvers.concatinators.file = resolvers.concatinators.tex
 
-function resolvers.findfiles(filename,filetype,mustexist)
-    if type(mustexist) == boolean then
-        -- all set
-    elseif type(filetype) == 'boolean' then
-        filetype, mustexist = nil, false
-    elseif type(filetype) ~= 'string' then
-        filetype, mustexist = nil, false
-    end
-    instance.format = filetype or ''
-    local result = collect_instance_files(filename)
+local function findfiles(filename,filetype,allresults)
+    local result = collect_instance_files(filename,filetype or "",allresults)
     if #result == 0 then
         local lowered = lower(filename)
         if filename ~= lowered then
-            return collect_instance_files(lowered)
+            return collect_instance_files(lowered,filetype or "",allresults)
         end
     end
-    instance.format = ''
     return result
 end
 
-function resolvers.findfile(filename,filetype,mustexist)
-    return (resolvers.findfiles(filename,filetype,mustexist)[1] or "")
+function resolvers.findfiles(filename,filetype)
+    return findfiles(filename,filetype,true)
+end
+
+function resolvers.findfile(filename,filetype)
+    return findfiles(filename,filetype,false)[1] or ""
 end
 
 function resolvers.findpath(filename,filetype)
-    local path = resolvers.findfiles(filename,filetype)[1] or ""
-    -- todo return current path
-    return file.dirname(path)
+    return file.dirname(findfiles(filename,filetype,false)[1] or "")
 end
 
-function resolvers.findgivenfiles(filename)
+local function findgivenfiles(filename,allresults)
     local bname, result = filebasename(filename), { }
     local hashes = instance.hashes
     for k=1,#hashes do
@@ -1176,12 +1181,12 @@ function resolvers.findgivenfiles(filename)
         if blist then
             if type(blist) == 'string' then
                 result[#result+1] = resolvers.concatinators[hash.type](hash.tag,blist,bname) or ""
-                if not instance.allresults then break end
+                if not allresults then break end
             else
                 for kk=1,#blist do
                     local vv = blist[kk]
                     result[#result+1] = resolvers.concatinators[hash.type](hash.tag,vv,bname) or ""
-                    if not instance.allresults then break end
+                    if not allresults then break end
                 end
             end
         end
@@ -1189,8 +1194,12 @@ function resolvers.findgivenfiles(filename)
     return result
 end
 
+function resolvers.findgivenfiles(filename)
+    return findgivenfiles(filename,true)
+end
+
 function resolvers.findgivenfile(filename)
-    return (resolvers.findgivenfiles(filename)[1] or "")
+    return findgivenfiles(filename,false)[1] or ""
 end
 
 local function doit(path,blist,bname,tag,kind,result,allresults)
@@ -1216,7 +1225,7 @@ local function doit(path,blist,bname,tag,kind,result,allresults)
     return done
 end
 
-function resolvers.findwildcardfiles(filename) -- todo: remap: and lpeg
+local function findwildcardfiles(filename,allresults) -- todo: remap: and lpeg
     local result = { }
     local bname, dname = filebasename(filename), filedirname(filename)
     local path = gsub(dname,"^*/","")
@@ -1230,7 +1239,7 @@ function resolvers.findwildcardfiles(filename) -- todo: remap: and lpeg
     name = gsub(name,"-","%%-")
     path = lower(path)
     name = lower(name)
-    local files, allresults, done = instance.files, instance.allresults, false
+    local files, done = instance.files, false
     if find(name,"%*") then
         local hashes = instance.hashes
         for k=1,#hashes do
@@ -1259,8 +1268,12 @@ function resolvers.findwildcardfiles(filename) -- todo: remap: and lpeg
     return result
 end
 
+function resolvers.findwildcardfiles(filename)
+    return findwildcardfiles(filename,true)
+end
+
 function resolvers.findwildcardfile(filename)
-    return (resolvers.findwildcardfiles(filename)[1] or "")
+    return findwildcardfiles(filename,false)[1] or ""
 end
 
 -- main user functions
@@ -1292,14 +1305,14 @@ local function report(str)
     end
 end
 
-function resolvers.dowithfilesandreport(command, files, filetype, mustexist)
+function resolvers.dowithfilesandreport(command, files, ...)
     if files and #files > 0 then
         if trace_locating then
             report('') -- ?
         end
         for f=1,#files do
             local file = files[f]
-            local result = command(file,filetype,mustexist)
+            local result = command(file,...)
             if type(result) == 'string' then
                 report(result)
             else
@@ -1321,9 +1334,7 @@ function resolvers.showpath(str)     -- output search path for file type NAME
 end
 
 -- resolvers.findfile(filename)
--- resolvers.findfile(filename, filetype, mustexist)
--- resolvers.findfile(filename, mustexist)
--- resolvers.findfile(filename, filetype)
+-- resolvers.findfile(filename, f.iletype)
 
 function resolvers.registerfile(files, name, path)
     if files[name] then
@@ -1352,7 +1363,7 @@ function resolvers.locateformat(name)
     local barename = gsub(name,"%.%a+$","")
     local fmtname = caches.getfirstreadablefile(barename..".fmt","formats") or ""
     if fmtname == "" then
-        fmtname = resolvers.findfiles(barename..".fmt")[1] or ""
+        fmtname = resolvers.findfile(barename..".fmt")
         fmtname = resolvers.cleanpath(fmtname)
     end
     if fmtname ~= "" then

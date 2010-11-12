@@ -604,6 +604,8 @@
    \setmaxcolumndimensions
    \dohandleallcolumns
      {\mkprocesscolumncontents\currentcolumnbox}%
+   \dohandleallcolumns
+     {\docolumnpagebodymarks\plusone\nofcolumns\mofcolumns\currentcolumnbox}%
    \postprocesscolumns
    \dohandleallcolumns % \hbox i.v.m. \showcomposition
      {\global\setbox\currentcolumnbox\hbox to \localcolumnwidth

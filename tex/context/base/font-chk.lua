@@ -15,7 +15,7 @@ local fonts        = fonts
 fonts.checkers     = fonts.checkers or { }
 local checkers     = fonts.checkers
 
-local fontdata     = fonts.ids
+local fontdata     = fonts.identifiers
 local is_character = characters.is_character
 local chardata     = characters.data
 local tasks        = nodes.tasks

@@ -26,6 +26,8 @@ local pdfimmediateobject = lpdf.immediateobject
 local codeinjections     = backends.pdf.codeinjections
 local nodeinjections     = backends.pdf.nodeinjections
 
+local pdfannotation_node = nodes.pool.pdfannotation
+
 local function insertswf(spec)
 
     local width, height, filename = spec.width, spec.height, spec.foundname
@@ -124,5 +126,5 @@ function backends.pdf.nodeinjections.insertswf(spec)
     --  controls  = spec.controls,
     --  label     = spec.label,
     }
-    node.write(pdfannotation(spec.width,spec.height,0,annotation()))
+    node.write(pdfannotation_node(spec.width,spec.height,0,annotation()))
 end

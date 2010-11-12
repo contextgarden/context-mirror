@@ -28,7 +28,7 @@ local definitions       = collections.definitions
 collections.vectors     = collections.vectors or { }
 local vectors           = collections.vectors
 
-local fontdata          = fonts.ids
+local fontdata          = fonts.identifiers
 
 local glyph = node.id('glyph')
 

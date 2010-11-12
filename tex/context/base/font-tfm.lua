@@ -38,7 +38,7 @@ fonts.initializers.common = fonts.initializers.common or { }
 
 local set_attribute = node.set_attribute
 
-local fontdata   = fonts.ids
+local fontdata   = fonts.identifiers
 local nodecodes  = nodes.nodecodes
 
 local disc_code  = nodecodes.disc
@@ -304,7 +304,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
     end
     -- status
     local isvirtual = tfmtable.type == "virtual" or tfmtable.virtualized
-    local hasmath = (tfmtable.math_parameters ~= nil and next(tfmtable.math_parameters) ~= nil) or (tfmtable.MathConstants ~= nil and next(tfmtable.MathConstants) ~= nil)
+    local hasmath = (tfmtable.mathparameters ~= nil and next(tfmtable.mathparameters) ~= nil) or (tfmtable.MathConstants ~= nil and next(tfmtable.MathConstants) ~= nil)
     local nodemode = tfmtable.mode == "node"
     local hasquality = tfmtable.auto_expand or tfmtable.auto_protrude
     local hasitalic = tfmtable.has_italic
@@ -330,7 +330,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
         t.fonts = table.fastcopy(tfmtable.fonts) -- hm  also at the end
     end
     local tp = t.parameters
-    local mp = t.math_parameters
+    local mp = t.mathparameters
     local tfmp = tfmtable.parameters -- let's check for indexes
     --
     tp.slant         = (tfmp.slant         or tfmp[1] or 0)

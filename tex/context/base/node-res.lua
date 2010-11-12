@@ -20,7 +20,6 @@ local copy_node    = node.copy
 local free_node    = node.free
 local free_list    = node.flush_list
 local new_node     = node.new
-local node_type    = node.type
 
 nodes.pool         = nodes.pool or { }
 local pool         = nodes.pool
@@ -204,7 +203,7 @@ function pool.leftmarginkern(glyph,width)
     if not glyph then
         logs.fatal("nodes","invalid pointer to left margin glyph node")
     elseif glyph.id ~= glyph_code then
-        logs.fatal("nodes","invalid node type %s for left margin glyph node",node_type(glyph))
+        logs.fatal("nodes","invalid node type %s for left margin glyph node",nodecodes[glyph])
     else
         n.glyph = glyph
     end
@@ -219,7 +218,7 @@ function pool.rightmarginkern(glyph,width)
     if not glyph then
         logs.fatal("nodes","invalid pointer to right margin glyph node")
     elseif glyph.id ~= glyph_code then
-        logs.fatal("nodes","invalid node type %s for right margin glyph node",node_type(p))
+        logs.fatal("nodes","invalid node type %s for right margin glyph node",nodecodes[p])
     else
         n.glyph = glyph
     end

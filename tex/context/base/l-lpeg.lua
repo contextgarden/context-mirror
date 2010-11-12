@@ -106,11 +106,6 @@ end
 
 patterns.textline = content
 
---~ local p = lpeg.splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
---~ local p = lpeg.splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
---~ local p = lpeg.splitat("->",false)  print(match(p,"oeps"))              -- oeps
---~ local p = lpeg.splitat("->",true)   print(match(p,"oeps"))              -- oeps
-
 local splitters_s, splitters_m = { }, { }
 
 local function splitat(separator,single)
@@ -131,6 +126,11 @@ local function splitat(separator,single)
 end
 
 lpeg.splitat = splitat
+
+--~ local p = splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
+--~ local p = splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
+--~ local p = splitat("->",false)  print(match(p,"oeps"))              -- oeps
+--~ local p = splitat("->",true)   print(match(p,"oeps"))              -- oeps
 
 local cache = { }
 

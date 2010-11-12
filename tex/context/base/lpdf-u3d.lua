@@ -18,20 +18,22 @@ local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, m
 
 local backends, lpdf = backends, lpdf
 
-local nodeinjections      = backends.pdf.nodeinjections
+local nodeinjections     = backends.pdf.nodeinjections
 
-local pdfconstant         = lpdf.constant
-local pdfboolean          = lpdf.boolean
-local pdfnumber           = lpdf.number
-local pdfunicode          = lpdf.unicode
-local pdfdictionary       = lpdf.dictionary
-local pdfarray            = lpdf.array
-local pdfnull             = lpdf.null
-local pdfreference        = lpdf.reference
-local pdfimmediateobject  = lpdf.immediateobject
+local pdfconstant        = lpdf.constant
+local pdfboolean         = lpdf.boolean
+local pdfnumber          = lpdf.number
+local pdfunicode         = lpdf.unicode
+local pdfdictionary      = lpdf.dictionary
+local pdfarray           = lpdf.array
+local pdfnull            = lpdf.null
+local pdfreference       = lpdf.reference
+local pdfimmediateobject = lpdf.immediateobject
 
-local checkedkey          = lpdf.checkedkey
-local limited             = lpdf.limited
+local checkedkey         = lpdf.checkedkey
+local limited            = lpdf.limited
+
+local pdfannotation_node = nodes.pool.pdfannotation
 
 local schemes = table.tohash {
     "Artwork", "None", "White", "Day", "Night", "Hard",
@@ -486,5 +488,5 @@ function nodeinjections.insertu3d(spec)
         controls  = spec.controls,
         label     = spec.label,
     }
-    node.write(pdfannotation(spec.width,spec.height,0,annotation()))
+    node.write(pdfannotation_node(spec.width,spec.height,0,annotation()))
 end

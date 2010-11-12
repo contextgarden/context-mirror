@@ -20,6 +20,7 @@ local has_attribute   = node.has_attribute
 local unset_attribute = node.unset_attribute
 local set_attribute   = node.set_attribute
 local traverse_id     = node.traverse_id
+local copy_node       = node.copy
 
 local texattribute    = tex.attribute
 
@@ -35,8 +36,8 @@ local userskip_code   = skipcodes.userskip
 
 local tasks           = nodes.tasks
 
-local fontdata        = fonts.ids
-local fontchar        = fonts.chr
+local fontdata        = fonts.identifiers
+local fontchar        = fonts.characters
 local chardata        = characters.data
 
 typesetters           = typesetters or { }

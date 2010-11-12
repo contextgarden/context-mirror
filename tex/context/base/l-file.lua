@@ -418,3 +418,10 @@ end
 --~         return (gsub(currentdir(),"\\","/"))
 --~     end
 --~ end
+
+-- for myself:
+
+function file.strip(name,dir)
+    local b, a = match(name,"^(.-)" .. dir .. "(.*)$")
+    return a ~= "" and a or name
+end

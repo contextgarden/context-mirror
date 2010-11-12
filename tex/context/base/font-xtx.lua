@@ -97,4 +97,4 @@ local function colonized(specification) -- xetex mode
     return specification
 end
 
-definers.registersplit(":",colonized)
+definers.registersplit(":",colonized,"cryptic")

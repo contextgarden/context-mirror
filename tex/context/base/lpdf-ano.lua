@@ -201,7 +201,7 @@ local function pdfaction(actions)
                     what = what(a,actions)
                 end
                 if what then
-                    action.next = what
+                    action.Next = what
                     action = what
                 else
                     -- error

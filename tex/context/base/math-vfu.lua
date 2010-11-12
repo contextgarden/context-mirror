@@ -369,19 +369,21 @@ function fonts.basecopy(tfmtable,name)
 end
 
 local reported = { }
-local reverse -- index -> unicode
+local reverse  = { } -- index -> unicode
+
+setmetatable ( reverse, { __index = function(t,name)
+    if trace_virtual then
+        report_virtual("initializing math vector '%s'",name)
+    end
+    local m, r = mathencodings[name], { }
+    for u, i in next, m do
+        r[i] = u
+    end
+    reverse[name] = r
+    return r
+end } )
 
 function fonts.vf.math.define(specification,set)
-    if not reverse then
-        reverse = { }
-        for k, v in next, mathencodings do
-            local r = { }
-            for u, i in next, v do
-                r[i] = u
-            end
-            reverse[k] = r
-        end
-    end
     local name = specification.name -- symbolic name
     local size = specification.size -- given size
     local fnt, lst, main = { }, { }, nil
@@ -437,7 +439,7 @@ function fonts.vf.math.define(specification,set)
     end
     -- beware, fnt[1] is already passed to tex (we need to make a simple copy then .. todo)
     main = fonts.basecopy(fnt[1],name)
-    main.name, main.fonts, main.virtualized, main.math_parameters = name, lst, true, { }
+    main.name, main.fonts, main.virtualized, main.mathparameters = name, lst, true, { }
     local characters, descriptions = main.characters, main.descriptions
     local mp = main.parameters
     if mp then
@@ -451,7 +453,7 @@ function fonts.vf.math.define(specification,set)
         elseif ss.optional and fonts.vf.math.optional then
             -- skip, redundant
         else
-            local mm, fp = main.math_parameters, fs.parameters
+            local mm, fp = main.mathparameters, fs.parameters
             if mm and fp and mp then
                 if ss.extension then
                     mm.math_x_height          = fp.x_height or 0 -- math_x_height           height of x
@@ -490,7 +492,7 @@ function fonts.vf.math.define(specification,set)
                 local offset = 0xFF000
                 local vector = mathencodings[vectorname]
                 local rotcev = reverse[vectorname]
-                if vector then
+                if vector and rotcev then
                     local fc, fd, si = fs.characters, fs.descriptions, shared[s]
                     local skewchar = ss.skewchar
                     for unicode, index in next, vector do
@@ -658,6 +660,8 @@ function fonts.vf.math.define(specification,set)
                             end
                         end
                     end
+                else
+                    report_virtual("error in loading %s: problematic vector %s",name,vectorname)
                 end
             end
             mathematics.extras.copy(main) --not needed here (yet)

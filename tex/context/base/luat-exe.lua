@@ -13,7 +13,7 @@ local concat = table.concat
 
 local report_executers = logs.new("executers")
 
-resolvers.executers = resolver.executers or { }
+resolvers.executers = resolvers.executers or { }
 local executers     = resolvers.executers
 
 local permitted     = { }
@@ -29,7 +29,7 @@ local function register(...)
 end
 
 local function finalize() -- todo: os.exec, todo: report ipv print
-    execute = function execute(...)
+    execute = function(...)
         -- todo: make more clever first split
         local t, name, arguments = { ... }, "", ""
         local one = t[1]
@@ -68,9 +68,12 @@ executers.finalize = function(...) finalize(...) end
 executers.register = function(...) register(...) end
 executers.execute  = function(...) execute (...) end
 
+local execution_mode  directives.register("system.executionmode", function(v) execution_mode = v end)
+local execution_list  directives.register("system.executionlist", function(v) execution_list = v end)
+
 function executers.check()
-    local mode = resolvers.variable("command_mode")
-    local list = resolvers.variable("command_list")
+    local mode = execution_mode or resolvers.variable("command_mode") -- or ... will become obsolete
+    local list = execution_list or resolvers.variable("command_list") -- or ... will become obsolete
     if mode == "none" then
         finalize()
     elseif mode == "list" and list ~= "" then

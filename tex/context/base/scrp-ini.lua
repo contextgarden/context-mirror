@@ -32,7 +32,7 @@ local state           = attributes.private('state')
 local preproc         = attributes.private('preproc')
 local prestat         = attributes.private('prestat')
 
-local fontdata        = fonts.ids
+local fontdata        = fonts.identifiers
 
 local fcs             = fonts.colors.set
 local fcr             = fonts.colors.reset

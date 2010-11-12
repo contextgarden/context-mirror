@@ -60,4 +60,71 @@
     % enddef;
 \stopMPinclusions
 
-\endinput
+\doifnotmode {demo} {\endinput}
+
+\doiffileelse {agepop91.d} {} {\writestatus{graph}{no data files found}\wait\end}
+
+%D The test:
+
+\starttext
+
+\startMPpage
+draw begingraph(3in,2in);
+    gdraw "agepop91.d";
+endgraph;
+\stopMPpage
+
+\startMPpage
+draw begingraph(3in,2in);
+    gdraw "agepop91.d" plot btex$\bullet$etex;
+endgraph;
+\stopMPpage
+
+\startMPpage
+draw begingraph(3in,2in);
+    glabel.lft(btex \vbox{\hbox{Population} \hbox{in millions}} etex, OUT);
+    glabel.bot(btex Age in years etex, OUT);
+    gdraw "agepopm.d";
+endgraph;
+\stopMPpage
+
+\startMPpage
+draw begingraph(3in,2in);
+    glabel.lft(btex \vbox{\hbox{Population} \hbox{in millions}} etex, OUT);
+    glabel.bot(btex Age in years etex, OUT);
+    setrange(origin, whatever,whatever);
+    gdraw "agepopm.d";
+endgraph;
+\stopMPpage
+
+\startMPpage
+draw begingraph(2.3in,2in);
+    setcoords(log,log);
+    glabel.lft(btex Seconds etex,OUT);
+    glabel.bot(btex Matrix size etex,
+    OUT);
+    gdraw "matmul.d" dashed evenly;
+    glabel.ulft(btex Standard etex,8);
+    gdraw "matmul.d";
+    glabel.lrt(btex Strassen etex,7);
+endgraph;
+\stopMPpage
+
+\startMPpage
+draw begingraph(6.5cm,4.5cm);
+    setrange(80,0, 90,whatever);
+    glabel.bot(btex Year etex, OUT);
+    glabel.lft(btex \vbox{\hbox{Emissions in} \hbox{thousands of}
+    \hbox{metric tons} \hbox{(heavy line)}}etex, OUT);
+    gdraw "lead.d" withpen pencircle scaled 1.5pt;
+    autogrid(,otick.lft);
+    setcoords(linear,linear);
+    setrange(80,0, 90,whatever);
+    glabel.rt(btex \vbox{\hbox{Micrograms} \hbox{per cubic}
+    \hbox{meter of air} \hbox{(thin line)}}etex, OUT);
+    gdraw "lead.d";
+    autogrid(otick.bot,otick.rt);
+endgraph;
+\stopMPpage
+
+\stoptext

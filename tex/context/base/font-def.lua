@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['font-def'] = {
     license   = "see context related readme files"
 }
 
-local format, concat, gmatch, match, find, lower = string.format, table.concat, string.gmatch, string.match, string.find, string.lower
+local concat = table.concat
+local format, gmatch, match, find, lower, gsub = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next = tostring, next
 local lpegmatch = lpeg.match
 
@@ -29,13 +30,11 @@ default loader that only handles <l n='tfm'/>.</p>
 local fonts         = fonts
 local tfm           = fonts.tfm
 local vf            = fonts.vf
-local fontcsnames   = fonts.csnames
 
 fonts.used          = allocate()
 
 tfm.readers         = tfm.readers or { }
 tfm.fonts           = allocate()
-tfm.internalized    = allocate() -- internal tex numbers
 
 local readers       = tfm.readers
 local sequence      = allocate { 'otf', 'ttf', 'afm', 'tfm' }
@@ -125,9 +124,12 @@ end
 
 definers.getspecification = getspecification
 
-function definers.registersplit(symbol,action)
+function definers.registersplit(symbol,action,verbosename)
     addspecifier(symbol)
     variants[symbol] = action
+    if verbosename then
+        variants[verbosename] = action
+    end
 end
 
 function definers.makespecification(specification, lookup, name, sub, method, detail, size)
@@ -338,7 +340,8 @@ function tfm.read(specification)
     if not tfmtable then
         local forced = specification.forced or ""
         if forced ~= "" then
-            tfmtable = readers[lower(forced)](specification)
+            local reader = readers[lower(forced)]
+            tfmtable = reader and reader(specification)
             if not tfmtable then
                 report_define("forced type %s of %s not found",forced,specification.name)
             end
@@ -391,17 +394,17 @@ function tfm.readanddefine(name,size) -- no id
     local hash = tfm.hashinstance(specification)
     local id = definers.registered(hash)
     if not id then
-        local fontdata = tfm.read(specification)
-        if fontdata then
-            fontdata.hash = hash
-            id = font.define(fontdata)
-            definers.register(fontdata,id)
-            tfm.cleanuptable(fontdata)
+        local tfmdata = tfm.read(specification)
+        if tfmdata then
+            tfmdata.hash = hash
+            id = font.define(tfmdata)
+            definers.register(tfmdata,id)
+            tfm.cleanuptable(tfmdata)
         else
             id = 0  -- signal
         end
     end
-    return fonts.ids[id], id
+    return fonts.identifiers[id], id
 end
 
 --[[ldx--
@@ -489,6 +492,16 @@ function readers.afm(specification,method)
     return tfmtable
 end
 
+function readers.pfb(specification,method) -- only called when forced
+    local original = specification.specification
+    if trace_loading then
+        report_afm("using afm reader for '%s'",original)
+    end
+    specification.specification = gsub(original,"%.pfb",".afm")
+    specification.forced = "afm"
+    return readers.afm(specification,method)
+end
+
 -- maybe some day a set of names
 
 local function check_otf(forced,specification,suffix,what)
@@ -568,31 +581,29 @@ not gain much. By the way, passing id's back to in the callback was
 introduced later in the development.</p>
 --ldx]]--
 
-local lastdefined = nil -- we don't want this one to end up in s-tra-02
+local lastdefined  = nil -- we don't want this one to end up in s-tra-02
+local internalized = { }
 
 function definers.current() -- or maybe current
     return lastdefined
 end
 
-function definers.register(fontdata,id)
-    if fontdata and id then
-        local hash = fontdata.hash
-        if not tfm.internalized[hash] then
+function definers.register(tfmdata,id) -- will be overloaded
+    if tfmdata and id then
+        local hash = tfmdata.hash
+        if not internalized[hash] then
             if trace_defining then
-                report_define("loading at 2 id %s, hash: %s",id or "?",hash or "?")
+                report_define("registering font, id: %s, hash: %s",id or "?",hash or "?")
             end
-            fonts.identifiers[id] = fontdata
-            fonts.characters [id] = fontdata.characters
-            fonts.quads      [id] = fontdata.parameters and fontdata.parameters.quad
-            -- todo: extra functions, e.g. setdigitwidth etc in list
-            tfm.internalized[hash] = id
+            fonts.identifiers[id] = tfmdata
+            internalized[hash] = id
         end
     end
 end
 
-function definers.registered(hash)
-    local id = tfm.internalized[hash]
-    return id, id and fonts.ids[id]
+function definers.registered(hash) -- will be overloaded
+    local id = internalized[hash]
+    return id, id and fonts.identifiers[id]
 end
 
 local cache_them = false
@@ -625,49 +636,45 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     specification = definers.resolve(specification)
     local hash = tfm.hashinstance(specification)
     if cache_them then
-        local fontdata = containers.read(fonts.cache,hash) -- for tracing purposes
+        local tfmdata = containers.read(fonts.cache,hash) -- for tracing purposes
     end
-    local fontdata = definers.registered(hash) -- id
-    if not fontdata then
+    local tfmdata = definers.registered(hash) -- id
+    if not tfmdata then
         if specification.features.vtf and specification.features.vtf.preset then
-            fontdata = tfm.make(specification)
+            tfmdata = tfm.make(specification)
         else
-            fontdata = tfm.read(specification)
-            if fontdata then
-                tfm.checkvirtualid(fontdata)
+            tfmdata = tfm.read(specification)
+            if tfmdata then
+                tfm.checkvirtualid(tfmdata)
             end
         end
         if cache_them then
-            fontdata = containers.write(fonts.cache,hash,fontdata) -- for tracing purposes
+            tfmdata = containers.write(fonts.cache,hash,tfmdata) -- for tracing purposes
         end
-        if fontdata then
-            fontdata.hash = hash
-            fontdata.cache = "no"
+        if tfmdata then
+            tfmdata.hash = hash
+            tfmdata.cache = "no"
             if id then
-                definers.register(fontdata,id)
+                definers.register(tfmdata,id)
             end
         end
     end
-    lastdefined = fontdata or id -- todo ! ! ! ! !
-    if not fontdata then -- or id?
+    lastdefined = tfmdata or id -- todo ! ! ! ! !
+    if not tfmdata then -- or id?
         report_define( "unknown font %s, loading aborted",specification.name)
-    elseif trace_defining and type(fontdata) == "table" then
+    elseif trace_defining and type(tfmdata) == "table" then
         report_define("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
-            fontdata.type          or "unknown",
-            id                     or "?",
-            fontdata.name          or "?",
-            fontdata.size          or "default",
-            fontdata.encodingbytes or "?",
-            fontdata.encodingname  or "unicode",
-            fontdata.fullname      or "?",
-            file.basename(fontdata.filename or "?"))
-    end
-    local cs = specification.cs
-    if cs then
-        fontcsnames[cs] = fontdata -- new (beware: locals can be forgotten)
+            tfmdata.type          or "unknown",
+            id                    or "?",
+            tfmdata.name          or "?",
+            tfmdata.size          or "default",
+            tfmdata.encodingbytes or "?",
+            tfmdata.encodingname  or "unicode",
+            tfmdata.fullname      or "?",
+            file.basename(tfmdata.filename or "?"))
     end
     statistics.stoptiming(fonts)
-    return fontdata
+    return tfmdata
 end
 
 function vf.find(name)
@@ -698,4 +705,4 @@ end
 --ldx]]--
 
 callbacks.register('define_font' , definers.read, "definition of fonts (tfmtable preparation)")
-callbacks.register('find_vf_file', vf.find    , "locating virtual fonts, insofar needed") -- not that relevant any more
+callbacks.register('find_vf_file', vf.find,       "locating virtual fonts, insofar needed") -- not that relevant any more

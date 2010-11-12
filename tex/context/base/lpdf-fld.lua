@@ -361,7 +361,7 @@ end
 
 local function fieldlayer(specification) -- we can move this in line
     local layer = specification.layer
-    return (layer and lpdf.layerreferences[layer]) or nil
+    return (layer and lpdf.layerreference(layer)) or nil
 end
 
 -- defining

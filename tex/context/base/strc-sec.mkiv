@@ -78,28 +78,36 @@
 
 \let\laststructuresectionname\empty
 
+\let\resetallstructuremarks            \relax
+\let\resetcurrentstructuremarks        \relax
+\let\resetcurrentstructuremarkswithpage\relax
+
+\def\resetallstructuremarks            {\resetmarking[\v!section-1]}              % will become option
+\def\resetcurrentstructuremarks        {\resetmarking[\laststructuresectionname]} % will become option
+%def\resetcurrentstructuremarkswithpage{\resetmarking[\laststructuresectionname]} % will become option
+
 \unexpanded\def\definestructuresection[#1]%
-  {\doifundefined{\??nh#1}
-     {\global\advance\maxstructuredepth\plusone
-      \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
-      \setstructurelevel{#1}{\the\maxstructuredepth}%
-     %\letvalueempty{\??nh#1\c!marking}% ?
-     %\writestatus{structure}{#1\ifx\laststructuresectionname\empty\else\space->\space\laststructuresectionname\fi}%
-      \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\laststructuresectionname]}%
-      % this is a rather practical default that we don't want to be part of the parent chain
-      % lookup mechanism; it's also mkii compativle; this might become \everystructureheaddefine
-      \getparameters[\??nh#1]
-        [  \c!textstyle=\structureheadparameterstrict\c!style,
-           \c!textcolor=\structureheadparameterstrict\c!color,
-         \c!numberstyle=\structureheadparameterstrict\c!style,
-         \c!numbercolor=\structureheadparameterstrict\c!color]%
-      % so far for these default inheritances
-      \definemarking[#1]%
-      \ifnum\maxstructuredepth>\plusone
-       %\normalexpanded{\noexpand\couplemarking[#1][\laststructuresectionname]}% so, the child inherits settings from the parent
-        \normalexpanded{\noexpand\relatemarking[#1][\laststructuresectionname]}% so, the parent will reset the child
-      \fi
-      \xdef\laststructuresectionname{#1}}}
+  {\ifcsname\??nh#1\endcsname
+     % rather fatal error
+   \else
+     \global\advance\maxstructuredepth\plusone
+     \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
+     \setstructurelevel{#1}{\the\maxstructuredepth}%
+     \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\laststructuresectionname]}%
+     % this is a rather practical default that we don't want to be part of the parent chain
+     % lookup mechanism; it's also mkii compativle; this might become \everystructureheaddefine
+     \getparameters[\??nh#1]
+       [  \c!textstyle=\structureheadparameterstrict\c!style,
+          \c!textcolor=\structureheadparameterstrict\c!color,
+        \c!numberstyle=\structureheadparameterstrict\c!style,
+        \c!numbercolor=\structureheadparameterstrict\c!color]%
+     % so far for these default inheritances
+     \definemarking[#1]%
+     \ifnum\maxstructuredepth>\plusone
+       \normalexpanded{\noexpand\relatemarking[#1][\laststructuresectionname]}% so, the parent will reset the child
+     \fi
+     \xdef\laststructuresectionname{#1}%
+  \fi}
 
 \unexpanded\def\setupstructuresection
   {\dotripleempty\dosetupstructuresection}
@@ -173,25 +181,28 @@
    \edef\currentstructureheaddefault{\structureheadparameter\c!default}%
    \edef\currentstructureheadsection{\structureheadparameter\c!section}%
    \edef\currentstructureheadparent
-     {\??nh
-      \ifx\currentstructurehead\currentstructureheaddefault
+     {\ifx\currentstructurehead\currentstructureheaddefault
         \currentstructureheadsection
       \else\ifx\currentstructureheaddefault\empty
         \currentstructureheadsection
       \else
         \currentstructureheaddefault
       \fi\fi}%
-   \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\currentstructureheadparent]}% \setevalue{\??nh#1\s!parent}{\currentstructureheadparent}%
-   \ifx\currentstructureheadsection\empty
-     %\writestatus{structure}{#1->\currentstructureheadparent}%
-   \else
-     %\writestatus{structure}{#1->\currentstructureheadparent\space(\currentstructureheadsection)}%
-     % todo: filtercommand
-     \definemarking[#1][\currentstructureheadsection]%
-     \definemarking[#1\v!number][#1]%
-     \setupmarking[#1][\c!filtercommand=\sectionheadmarkingtitle{#1}]%
-     \setupmarking[#1\c!number][\c!filtercommand=\sectionheadmarkingnumber{#1}]%
-   \fi
+   \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\currentstructureheadparent]}%
+   % or just \setevalue{\??nh#1\s!parent}{\??nh\currentstructureheadparent}%
+%    \ifx\currentstructureheadsection\empty
+%      \definemarking[#1]%
+%      \setupmarking[#1][\c!filtercommand=\sectionheadmarkingtitle{#1}]%
+%    \else
+%      \definemarking[#1][\currentstructureheadsection]%
+%      \definemarking[#1\v!number][#1]%
+%      \setupmarking[#1][\c!filtercommand=\sectionheadmarkingtitle{#1}]%
+%      \setupmarking[#1\c!number][\c!filtercommand=\sectionheadmarkingnumber{#1}]%
+%    \fi
+   \definemarking[#1]         [\currentstructureheadsection]%
+   \definemarking[#1\v!number][\currentstructureheadsection]%
+   \setupmarking [#1]         [\c!filtercommand=\sectionheadmarkingtitle {#1}]%
+   \setupmarking [#1\c!number][\c!filtercommand=\sectionheadmarkingnumber{#1}]%
    \doifundefined{\??li#1}{\definelist[#1][\c!prefix=\v!no]}% definestructurelist ?
    \the\everystructureheadsetup}
 
@@ -205,7 +216,9 @@
      {\getparameters[\??nh#1][\c!label=#1]%
       \doifundefined{\??li#1}{\definelist[#1][\c!prefix=\v!no]}}%  definestructurelist ?
      {\getparameters[\??nh#1][\s!parent=\??nh#2,\c!label=#1,\c!coupling=#2]%
-      \definemarking[#1][#2]%
+%       \definemarking[#1]         [#2]%
+%       \definemarking[#1\v!number][#2\c!number]%
+      \definemarking[#1]         [#2]%
       \definemarking[#1\v!number][#2\c!number]%
       \doifundefined{\??li#1}{\definelist[#1][#2][\c!prefix=\v!no]}}% definestructurelist ?
    \the\everystructureheadsetup}
@@ -407,8 +420,10 @@
 
 \unexpanded\def\thestructureheadsynchonization
   {\pagetype[\currentstructureheadcoupling]% hm also number
-   \normalexpanded{\noexpand\setmarking[\currentstructureheadcoupling]{\currentstructurelistnumber}}%
    \currentstructuresynchronize}
+
+\unexpanded\def\setstructureheadmarking
+  {\normalexpanded{\noexpand\setmarking[\currentstructurehead]{\currentstructurelistnumber}}}
 
 % \unexpanded\def\fullstructureheadnumber{\labeltexts{\structureheadparameter\c!label}{\structurenumber}} % todo
 % \def\fullstructureheadtitle {\structurevariable{titledata.title}} % no catcode!
@@ -602,15 +617,18 @@
 % typesetting
 
 \unexpanded\def\placestructureheadnumbertext % dummy, will be overloaded
-  {\getstructureheadnumber/\getstructureheadtitle
+  {\setstructureheadmarking
+   \getstructureheadnumber/\getstructureheadtitle
    \getstructureheadsyncs}
 
 \unexpanded\def\placestructureheadtext % dummy, will be overloaded
-  {\getstructureheadtitle
+  {\setstructureheadmarking
+   \getstructureheadtitle
    \getstructureheadsyncs}
 
 \unexpanded\def\placestructureheadempty % dummy, will be overloaded
-  {\getstructureheadsyncs}
+  {\setstructureheadmarking
+   \getstructureheadsyncs}
 
 \unexpanded\def\placestructureheadhidden
   {\setxvalue{\currentstructurehead:sync}%
@@ -709,9 +727,16 @@
      {\doifsomething{\structureheadparameter#2}{\expanded{\setuplayouttext[#1][\c!state=\structureheadparameter#2]}}}
      \donothing}
 
+\setvalue{\??nh:\??mk:n:\v!page }{}
+\setvalue{\??nh:\??mk:n:\v!reset}{\resetcurrentstructuremarks}
+\setvalue{\??nh:\??mk:y:\v!page }{\resetcurrentstructuremarks}
+\setvalue{\??nh:\??mk:y:\v!reset}{\resetcurrentstructuremarks}
+
 \def\docheckstructureheadlayout
-  {\doifsomething{\structureheadparameter\c!page}
+  {\doifelsenothing{\structureheadparameter\c!page}
+     {\getvalue{\??nh:\??mk:n:\structureheadparameter\c!marking}}
      {\page[\structureheadparameter\c!page]%
+      \getvalue{\??nh:\??mk:y:\structureheadparameter\c!marking}%
       \dodocheckstructureheadlayout\v!header\c!header
       \dodocheckstructureheadlayout\v!text  \c!text
       \dodocheckstructureheadlayout\v!footer\c!footer}}

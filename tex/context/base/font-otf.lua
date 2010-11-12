@@ -42,7 +42,7 @@ fonts.otf            = fonts.otf or { }
 local otf            = fonts.otf
 local tfm            = fonts.tfm
 
-local fontdata       = fonts.ids
+local fontdata       = fonts.identifiers
 local chardata       = characters and characters.data -- not used
 
 otf.features         = otf.features         or { }
@@ -1392,7 +1392,7 @@ actions["check metadata"] = function(data,filename,raw)
     data.map = nil
 end
 
-local private_math_parameters = {
+local private_mathparameters = {
     "FractionDelimiterSize",
     "FractionDelimiterDisplayStyleSize",
 }
@@ -1400,8 +1400,8 @@ local private_math_parameters = {
 actions["check math parameters"] = function(data,filename,raw)
     local mathdata = data.metadata.math
     if mathdata then
-        for m=1,#private_math_parameters do
-            local pmp = private_math_parameters[m]
+        for m=1,#private_mathparameters do
+            local pmp = private_mathparameters[m]
             if not mathdata[pmp] then
                 if trace_loading then
                     report_otf("setting math parameter '%s' to 0", pmp)
@@ -1614,7 +1614,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         local unicodes = luatex.unicodes -- names to unicodes
         local indices = luatex.indices
         local mode = data.mode or "base"
-        local characters, parameters, math_parameters, descriptions = { }, { }, { }, { }
+        local characters, parameters, mathparameters, descriptions = { }, { }, { }, { }
         local designsize = metadata.designsize or metadata.design_size or 100
         if designsize == 0 then
             designsize = 100
@@ -1629,7 +1629,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         if metadata.math then
             -- parameters
             for name, value in next, metadata.math do
-                math_parameters[name] = value
+                mathparameters[name] = value
             end
             -- we could use a subset
             for u, char in next, characters do
@@ -1744,7 +1744,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         return {
             characters         = characters,
             parameters         = parameters,
-            math_parameters    = math_parameters,
+            mathparameters     = mathparameters,
             descriptions       = descriptions,
             indices            = indices,
             unicodes           = unicodes,

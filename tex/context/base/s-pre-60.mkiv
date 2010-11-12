@@ -16,8 +16,8 @@
     \let\StopSteps \relax
     \let\FlushStep \relax
     \let\ResetStep \relax
-    \let\StartBusy\relax
-    \let\StopBusy \relax
+    \let\StartBusy \relax
+    \let\StopBusy  \relax
     \endinput
 \stopmode
 
@@ -30,9 +30,11 @@
 
     \ifnum\getvariable{stepper}{nofsteps}>\StepMaximum
 
-        \dostepwiserecurse {\numexpr(\StepMaximum+1)} {\getvariable{stepper}{nofsteps}} {1}
-          {\doifnotmode{nosteps,nostep}
-             {\expanded{\defineproperty[step:\recurselevel][layer][state=stop,global=yes]}}}
+        \dostepwiserecurse {\numexpr\StepMaximum+1\relax} {\getvariable{stepper}{nofsteps}} {1} {
+            \doifnotmode{nosteps,nostep} {
+                \expanded{\defineviewerlayer[step:\recurselevel][state=stop]}
+            }
+        }
 
         \xdef\StepMaximum{\getvariable{stepper}{nofsteps}}
 
@@ -45,64 +47,35 @@
   [set=\setups{set-stepper},
    nofsteps=50]
 
-\defineproperty[step:busy][layer][state=start,global=no]
+\defineviewerlayer[step:busy][state=start]
 
 \definereference [SetupStepper]  [JS(SetupStepper{step,\StepMaximum})]
 \definereference [ResetStepper]  [JS(ResetStepper)]
 \definereference [CheckStepper]  [JS(CheckStepper{\StepCounter})]
 \definereference [InvokeStepper] [JS(InvokeStepper)]
 
-\def\ResetStep {\doglobal\newcounter\StepCounter}
-\def\NextStep  {\doglobal\increment \StepCounter}
-\def\PrevStep  {\doglobal\decrement \StepCounter}
-
 % todo: roll back blank
+
+\def\ResetStep     {\doglobal\newcounter\StepCounter}
+\def\NextStep      {\doglobal\increment \StepCounter}
+\def\PrevStep      {\doglobal\decrement \StepCounter}
 
 \def\StepLayer     {step:\StepCounter}
 \def\NextStepLayer {step:\the\numexpr\StepCounter+1\relax}
 \def\FirstStepLayer{step:1}
 
-\startmode[mkiv]
+\def\StartStep     {\startviewerlayer[\StepLayer]\ignorespaces}
+\def\StopStep      {\removeunwantedspaces\stopviewerlayer}
+\def\StartSteps    {\iftrialtypesetting\else\ResetStep\NextStep\StartStep\fi}
+\def\StopSteps     {\iftrialtypesetting\else\StopStep \PrevStep          \fi}
+\def\FlushStep     {\iftrialtypesetting\else\StopStep \NextStep\StartStep\fi}
 
-    \def\StartStep
-      {\startproperty[\StepLayer]%
-       \ignorespaces}
-
-    \def\StopStep
-      {\removeunwantedspaces
-       \stopproperty}
-
-\stopmode
-
-\startnotmode[mkiv]
-
-    \def\StartStep
-      {\ifvmode
-         \scratchskip\lastskip
-         \vskip-\scratchskip
-         \startproperty[\StepLayer]%
-         \vskip\scratchskip
-       \else
-         \startproperty[\StepLayer]%
-       \fi
-       \ignorespaces}
-
-    \def\StopStep
-      {\removeunwantedspaces
-       \stopproperty}
-
-\stopnotmode
-
-\def\StartSteps{\iftrialtypesetting\else\ResetStep\NextStep\StartStep\fi}
-\def\StopSteps {\iftrialtypesetting\else\StopStep \PrevStep          \fi}
-\def\FlushStep {\iftrialtypesetting\else\StopStep \NextStep\StartStep\fi}
+\def\StartBusy     {\startviewerlayer[step:busy]\ignorespaces}
+\def\StopBusy      {\removeunwantedspaces\stopviewerlayer}
 
 \appendtoks
   \ResetStep
 \to \everyaftershipout
-
-\def\StartBusy{\startproperty[step:busy]\ignorespaces}
-\def\StopBusy {\removeunwantedspaces\stopproperty}
 
 \setupinteraction
   [%openaction=SetupStepper,

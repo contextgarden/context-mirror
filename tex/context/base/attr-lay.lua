@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['attr-lay'] = {
 
 local type = type
 local format = string.format
+local insert, remove = table.insert, table.remove
 
 local allocate = utilities.storage.allocate
 
@@ -26,21 +27,28 @@ local report_viewerlayers = logs.new("viewerlayers")
 local attributes, nodes = attributes, nodes
 
 attributes.viewerlayers = attributes.viewerlayers or { }
+local viewerlayers      = attributes.viewerlayers
 
-local viewerlayers = attributes.viewerlayers
+local a_viewerlayer     = attributes.private("viewerlayer")
 
 viewerlayers            = viewerlayers            or { }
 viewerlayers.data       = allocate()
 viewerlayers.registered = viewerlayers.registered or { }
 viewerlayers.values     = viewerlayers.values     or { }
 viewerlayers.listwise   = allocate()
-viewerlayers.attribute  = attributes.private("viewerlayer")
+viewerlayers.attribute  = a_viewerlayer
 viewerlayers.supported  = true
 viewerlayers.hasorder   = true
 
-local states         = attributes.states
-local tasks          = nodes.tasks
-local nodeinjections = backends.nodeinjections
+local states            = attributes.states
+local tasks             = nodes.tasks
+local nodeinjections    = backends.nodeinjections
+local codeinjections    = backends.codeinjections
+
+local texsetattribute   = tex.setattribute
+local texgetattribute   = tex.getattribute
+local texsettokenlist   = tex.settoks
+local unsetvalue        = attributes.unsetvalue
 
 storage.register("attributes/viewerlayers/registered", viewerlayers.registered, "attributes.viewerlayers.registered")
 storage.register("attributes/viewerlayers/values",     viewerlayers.values,     "attributes.viewerlayers.values")
@@ -81,7 +89,7 @@ local function initializer(...)
     return states.initialize(...)
 end
 
-viewerlayers.register = function(name,lw) -- if not inimode redefine data[n] in first call
+local function register(name,lw) -- if not inimode redefine data[n] in first call
     local stamp = format(template,name)
     local n = registered[stamp]
     if not n then
@@ -92,6 +100,8 @@ viewerlayers.register = function(name,lw) -- if not inimode redefine data[n] in 
     end
     return registered[stamp] -- == n
 end
+
+viewerlayers.register = register
 
 attributes.viewerlayers.handler = nodes.installattributehandler {
     name        = "viewerlayer",
@@ -117,4 +127,51 @@ end
 
 function viewerlayers.setfeatures(hasorder)
     viewerlayers.hasorder = hasorder
+end
+
+local stack, enabled, global = { }, false, false
+
+function viewerlayers.start(name)
+    if not enabled then
+        viewerlayers.enable(true)
+    end
+    insert(stack,texgetattribute(a_viewerlayer))
+    if global then
+        texsetattribute("global",a_viewerlayer,register(name) or unsetvalue)
+    else
+        texsetattribute(a_viewerlayer,register(name) or unsetvalue)
+    end
+    texsettokenlist("currentviewerlayertoks",name)
+end
+
+function viewerlayers.stop()
+    local a = remove(stack)
+    if a >= 0 then
+        if global then
+            texsetattribute("global",a_viewerlayer,a)
+        else
+            texsetattribute(a_viewerlayer,a)
+        end
+        texsettokenlist("currentviewerlayertoks",values[a])
+    else
+        if global then
+            texsetattribute("global",a_viewerlayer,unsetvalue)
+        else
+            texsetattribute(a_viewerlayer,unsetvalue)
+        end
+        texsettokenlist("currentviewerlayertoks","")
+    end
+end
+
+function viewerlayers.define(settings)
+    local tag = settings.tag
+    if not tag or tag == "" then
+        -- error
+    else
+        local title = settings.title
+        if not title or title == "" then
+            settings.title = tag
+        end
+        codeinjections.defineviewerlayer(settings)
+    end
 end

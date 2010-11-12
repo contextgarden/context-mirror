@@ -12,14 +12,15 @@ logs.extendbanner("ConTeXt TDS Management Tool 1.35 (aka luatools)")
 
 local instance = resolvers.instance
 
-instance.engine     =     environment.arguments["engine"]   or instance.engine   or 'luatex'
-instance.progname   =     environment.arguments["progname"] or instance.progname or 'context'
-instance.luaname    =     environment.arguments["luafile"]  or ""
-instance.lualibs    =     environment.arguments["lualibs"]  or nil
-instance.allresults =     environment.arguments["all"]      or false
-instance.pattern    =     environment.arguments["pattern"]  or nil
-instance.sortdata   =     environment.arguments["sort"]     or false
-instance.my_format  =     environment.arguments["format"]   or instance.format
+instance.engine   = environment.arguments["engine"]   or instance.engine   or 'luatex'
+instance.progname = environment.arguments["progname"] or instance.progname or 'context'
+instance.luaname  = environment.arguments["luafile"]  or ""
+instance.lualibs  = environment.arguments["lualibs"]  or nil
+instance.pattern  = environment.arguments["pattern"]  or nil
+instance.sortdata = environment.arguments["sort"]     or false
+
+local my_format   = environment.arguments["format"]   or "" -- nil ?
+local all_results = environment.arguments["all"]      or false
 
 if type(instance.pattern) == 'boolean' then
     logs.simple("invalid pattern specification")
@@ -69,16 +70,14 @@ messages.help = [[
 
 if environment.arguments["find-file"] then
     resolvers.load()
-    instance.format  = environment.arguments["format"] or instance.format
     if instance.pattern then
-        instance.allresults = true
-        resolvers.dowithfilesandreport(resolvers.findfiles, { instance.pattern }, instance.my_format)
+        resolvers.dowithfilesandreport(resolvers.findfiles, { instance.pattern }, my_format, all_results)
     else
-        resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, instance.my_format)
+        resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, my_format, all_results)
     end
 elseif environment.arguments["find-path"] then
     resolvers.load()
-    local path = resolvers.findpath(environment.files[1], instance.my_format)
+    local path = resolvers.findpath(environment.files[1], my_format)
     print(path) -- quite basic, wil become function in logs
 elseif environment.arguments["run"] then
     resolvers.load("nofiles") -- ! no need for loading databases
@@ -96,21 +95,19 @@ elseif environment.arguments["expand-path"] then
     resolvers.dowithfilesandreport(resolvers.expandpath, environment.files)
 elseif environment.arguments["expand-var"] or environment.arguments["expand-variable"] then
     resolvers.load("nofiles")
-    resolvers.dowithfilesandreport(resolvers.expandvar, environment.files)
+    resolvers.dowithfilesandreport(resolvers.expansion, environment.files)
 elseif environment.arguments["show-path"] or environment.arguments["path-value"] then
     resolvers.load("nofiles")
     resolvers.dowithfilesandreport(resolvers.showpath, environment.files)
 elseif environment.arguments["var-value"] or environment.arguments["show-value"] then
     resolvers.load("nofiles")
-    resolvers.dowithfilesandreport(resolvers.var_value, environment.files)
+    resolvers.dowithfilesandreport(resolvers.variable, environment.files)
 elseif environment.arguments["format-path"] then
     resolvers.load()
     logs.simple(caches.getwritablepath("format"))
 elseif instance.pattern then -- brrr
     resolvers.load()
-    instance.format = environment.arguments["format"] or instance.format
-    instance.allresults = true
-    resolvers.dowithfilesandreport(resolvers.findfiles, { instance.pattern }, instance.my_format)
+    resolvers.dowithfilesandreport(resolvers.findfiles, { instance.pattern }, my_format, all_results)
 elseif environment.arguments["generate"] then
     instance.renewcache = true
     trackers.enable("resolvers.locating")
@@ -135,5 +132,5 @@ elseif environment.files[1] == 'texmfcnf.lua' then
     resolvers.listers.configurations()
 else
     resolvers.load()
-    resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, instance.my_format)
+    resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, my_format, all_results)
 end

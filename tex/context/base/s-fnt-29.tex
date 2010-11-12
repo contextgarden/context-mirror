@@ -15,7 +15,7 @@
 
     function fonts.tracers.shapes() -- todo: ranges
         local NC, NR = context.NC, context.NR
-        local chrs = fonts.ids[font.current()].characters
+        local chrs = fonts.identifiers[font.current()].characters
         context.starttabulate { "|l|c|c|c|c|l|" }
             context.FL()
                 NC() context("unicode")

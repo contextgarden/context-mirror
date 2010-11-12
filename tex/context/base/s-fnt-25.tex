@@ -80,13 +80,13 @@ local format, lower = string.format, string.lower
 
 function document.showmathfont(id,slot)
     local data = characters.data
-    local tfmdata = fonts.ids[id]
+    local tfmdata = fonts.identifiers[id]
     local characters = tfmdata.characters
     local sorted = (slot and { slot }) or table.sortedkeys(characters)
     local virtual, names = tfmdata.type == "virtual", { }
     if virtual then
         for k, v in ipairs(tfmdata.fonts) do
-            local name = fonts.ids[v.id].name
+            local name = fonts.identifiers[v.id].name
             names[k] = (name and file.basename(name)) or v.id
         end
     end

@@ -211,7 +211,7 @@ local markonce = true
 local cursonce = true
 local kernonce = true
 
-local fontdata = fonts.ids
+local fontdata = fonts.identifiers
 
 otf.features.process = { }
 
