@@ -246,12 +246,7 @@
 \loadmarkfile{tabl-com}
 \loadmarkfile{tabl-pln}
 
-\doifmodeelse{atpragma} {
-    \definestartstop[\v!table]{\errmessage{please usemodule m-table}}
-} {
-    \loadcorefile{thrd-tab}
-    \loadmarkfile{tabl-tab}
-}
+\loadmarkfile{tabl-tab} % thrd-tab stripped and merged
 
 \loadmarkfile{tabl-tbl}
 \loadmarkfile{tabl-ntb}

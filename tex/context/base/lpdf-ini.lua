@@ -539,6 +539,9 @@ local function set(where,what,f,when,comment)
 end
 
 local function run(where,what)
+    if trace_finalizers then
+        report_backends("start backend: category=%s, n=%s",what,#where)
+    end
     for i=1,#where do
         local w = where[i]
         for j=1,#w do
@@ -548,6 +551,9 @@ local function run(where,what)
             end
             wj[1]()
         end
+    end
+    if trace_finalizers then
+        report_backends("stop finalizing")
     end
 end
 

@@ -7,9 +7,14 @@ if not modules then modules = { } end modules ['m-database'] = {
 }
 
 local sub, gmatch = string.sub, string.gmatch
+local concat = table.concat
 local lpegpatterns, lpegmatch, lpegsplitat = lpeg.patterns, lpeg.match, lpeg.splitat
 local lpegP, lpegC, lpegS, lpegCt = lpeg.P, lpeg.C, lpeg.S, lpeg.Ct
 local sprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+
+local trace_flush = false  trackers.register("module.database.flush", function(v) trace_flush = v end)
+
+local report_database = logs.new("database")
 
 buffers.database = buffers.database or { }
 
@@ -21,9 +26,14 @@ local separators = { -- not interfaced
     spaces = lpegpatterns.space^1,
 }
 
+local function tracedsprint(c,str)
+    report_database("snippet: %s",str)
+    sprint(c,str)
+end
+
 function buffers.database.process(settings)
- -- table.print(settings)
     local data
+    local sprint = trace_flush and tracedsprint or sprint
     if settings.type == "file" then
         local filename = resolvers.finders.any(settings.database)
         data = filename ~= "" and io.loaddata(filename)
@@ -31,11 +41,6 @@ function buffers.database.process(settings)
     else
         data = buffers.raw(settings.database)
     end
---~     local function sprint(c,...)
---~         tex.sprint(tex.ctxcatcodes,[[\tt\bgroup]])
---~         tex.sprint(tex.vrbcatcodes,...)
---~         tex.sprint(tex.ctxcatcodes,[[\egroup\crlf]])
---~     end
     if data and #data > 0 then
         local separatorchar, quotechar, commentchar = settings.separator, settings.quotechar, settings.commentchar
         local before, after = settings.before or "", settings.after or ""
@@ -69,9 +74,10 @@ function buffers.database.process(settings)
                 local list = lpegmatch(splitter,line)
                 if not found then
                     if setups ~= "" then
-                        sprint(ctxcatcodes,"\\begingroup\\setups[",setups,"]")
+                        sprint(ctxcatcodes,format("\\begingroup\\setups[%s]",setups))
                     end
                     sprint(ctxcatcodes,before)
+                    found = true
                 end
                 r = r + 1 ; result[r] = first
                 for j=1,#list do
@@ -87,7 +93,7 @@ function buffers.database.process(settings)
                     r = r + 1 ; result[r] = right
                 end
                 r = r + 1 ; result[r] = last
-                sprint(ctxcatcodes,result)
+                sprint(ctxcatcodes,concat(result))
             end
         end
         if found then
