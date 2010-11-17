@@ -20,10 +20,19 @@
 
 \registerctxluafile{node-bck}{1.001}
 
+\def\doinitializeboxbackgrounds
+  {\ctxlua{nodes.tasks.enableaction("shipouts","nodes.handlers.backgrounds")}%
+   \glet\doinitializeboxbackgrounds\donothing}
+
 %D Box helpers:
 
+% \backgroundvbox[green] {\input tufte } \par
+% \backgroundvbox[blue]  {\input ward } \par
+% \backgroundvbox[red]   {\input knuth } \par
+% \backgroundhbox[yellow]{\rotate[rotation=45]{hello world}} \par
+
 \def\doaddbackgroundtobox#1[#2]%
-  {\begingroup\faststartcolor[#2]%
+  {\begingroup\doinitializeboxbackgrounds\faststartcolor[#2]%
    \normalexpanded{\noexpand\faststopcolor\endgroup#1
      attr \backgroundattribute   \plusone
      attr \colormodelattribute   \the\attribute\colormodelattribute
@@ -63,100 +72,4 @@
 % \def\backgroundvtop[#1]{\vtop \backgroundcolorattr{#1}}
 % \def\backgroundhbox[#1]{\hbox \backgroundcolorattr{#1}}
 
-%D tabulate:
-
-\def\tabulatenormalcolumn#1%
-  {\doiffastoptionalcheckelse{\tabulatenormalcolumnyes#1}{\tabulatenormalcolumnnop#1}}
-
-\def\tabulatenormalcolumnnop#1% overloads anch-pgr
-  {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi&\global\tabulatetype#1&}
-
-\def\tabulatenormalcolumnyes#1[#2]%
-  {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi&\global\tabulatetype#1&%
-   \iftrialtypesetting\else\settabulatecolor{#2}\fi\ignorespaces}
-
-\newcount\maxtabularcolorcolumn
-
-\def\settabulatecolor#1% we could store the attributes at the cost of a lua call
-  {\begingroup
-   \global\settrue\tabulatehascolors
-   \ifnum\tabulatecolumn>\maxtabularcolorcolumn
-     \global\maxtabularcolorcolumn\tabulatecolumn
-   \fi
-   \setxvalue{\??tt:c:\the\tabulatecolumn}{#1}%
-   \attribute\backgroundattribute\plusone
-   \faststartcolor[#1]\strut\char0\faststopcolor
-   \endgroup}
-
-\def\repeatsettabulatecolor
-  {\begingroup
-   \ifcsname\??tt:c:\the\tabulatecolumn\endcsname
-     \attribute\backgroundattribute\plusone
-     \faststartcolor[\csname\??tt:c:\the\tabulatecolumn\endcsname]\strut\char0\faststopcolor
-   \fi
-   \endgroup}
-
-\def\resettabulatecolors
-  {\ifcase\maxtabularcolorcolumn\else
-     \doresettabulatecolors
-   \fi}
-
-\def\doresettabulatecolors
-  {\dorecurse\maxtabularcolorcolumn{\letgvalue{\??tt:c:\recurselevel}\undefined}} % slow
-
-\appendtoks
-  \resettabulatecolors
-\to \everyaftertabulaterow
-
-\def\splitofftabulatebox % overloads in anch-pgr
-  {\dontcomplain
-   \global\setbox\tabulatebox % % % global ? % % %
-     \vsplit\tablebox\tabulatecolumn to \lineheight
-   \setbox\tabulatebox\normalvbox
-     {\unvbox\tabulatebox}%
-   \setbox\tabulatebox\hbox to \wd\tabulatebox
-     {\iftrialtypesetting\else\ifconditional\tabulatehascolors\repeatsettabulatecolor\fi\fi
-      \hss\dotabulatehook{\box\tabulatebox}\hss}%
-   \donormalizetabulatesplitline
-   \box\tabulatebox
-   \iftrialtypesetting\else\ifconditional\tablehaspositions\doflushtabulateepos\fi\fi}
-
-\appendtoks
-    \global\setfalse\tabulatehascolors
-\to \everytabulate
-
 \protect \endinput
-
-% test
-
-\starttext
-
-\backgroundvbox[green] {\input tufte } \par
-\backgroundvbox[blue]  {\input ward } \par
-\backgroundvbox[red]   {\input knuth } \par
-\backgroundhbox[yellow]{\rotate[rotation=45]{hello world}} \par
-
-\starttabulate[||p||]
-\NC test \NC test \NC test \NC \NR
-\NC test \NC[green] \input tufte  \NC[yellow] test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC[blue] test \NC[red] test \NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC test \NC[gray] test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC[blue] test \NC test \NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC test \NC[magenta] test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC[cyan] \dorecurse{10}{\input ward }\NC test \NC \NR
-\NC test \NC test \NC test \NC \NR
-\NC test \NC[yellow] test \NC test \NC \NR
-\stoptabulate
-
-\stoptext

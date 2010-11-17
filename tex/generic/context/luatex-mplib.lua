@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['supp-mpl'] = {
+if not modules then modules = { } end modules ['luatex-mplib'] = {
     version   = 1.001,
     comment   = "companion to luatex-mplib.tex",
     author    = "Hans Hagen & Taco Hoekwater",
@@ -248,15 +248,10 @@ else
     local rx, sx, sy, ry, tx, ty, divider = 1, 0, 0, 1, 0, 0, 1
 
     local function pen_characteristics(object)
-        if mplib.pen_info then
-            local t = mplib.pen_info(object)
-            rx, ry, sx, sy, tx, ty = t.rx, t.ry, t.sx, t.sy, t.tx, t.ty
-            divider = sx*sy - rx*ry
-            return not (sx==1 and rx==0 and ry==0 and sy==1 and tx==0 and ty==0), t.width
-        else
-            rx, sx, sy, ry, tx, ty, divider = 1, 0, 0, 1, 0, 0, 1
-            return false, 1
-        end
+        local t = mplib.pen_info(object)
+        rx, ry, sx, sy, tx, ty = t.rx, t.ry, t.sx, t.sy, t.tx, t.ty
+        divider = sx*sy - rx*ry
+        return not (sx==1 and rx==0 and ry==0 and sy==1 and tx==0 and ty==0), t.width
     end
 
     local function concat(px, py) -- no tx, ty here

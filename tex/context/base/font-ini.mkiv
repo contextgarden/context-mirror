@@ -14,6 +14,8 @@
 
 % runtime commands will move to modules
 
+% todo: (so that we can delay font loading to \starttext
+
 % simplification ... we no longer deal with specific mmtfa specifications
 
 % todo: always fontclass, then less testing
@@ -4045,6 +4047,16 @@
 \def\dolookupgetkeyofindex#1#2{\ctxlua{tex.write(fonts.names.getlookupkey("#1",#2))}}
 \def\dolookupgetkey         #1{\ctxlua{tex.write(fonts.names.getlookupkey("#1"))}}
 \def\cleanfontname          #1{\ctxlua{fonts.cleanname("#1")}}
+
+% Experiment:
+
+\fontdimen1\nullfont      0\scaledpoint
+\fontdimen2\nullfont 256377\scaledpoint
+\fontdimen3\nullfont 128188\scaledpoint
+\fontdimen4\nullfont  85459\scaledpoint
+\fontdimen5\nullfont 338952\scaledpoint
+\fontdimen6\nullfont 786432\scaledpoint
+\fontdimen7\nullfont  85459\scaledpoint
 
 \protect \endinput
 

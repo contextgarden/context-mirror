@@ -13,7 +13,7 @@ local concat = table.concat
 local type, next = type, next
 
 utilities        = utilities or {}
-utilities.merger = utilities.merger or { }
+utilities.merger = utilities.merger or { } -- maybe mergers
 utilities.report = utilities.report or print
 
 local merger     = utilities.merger

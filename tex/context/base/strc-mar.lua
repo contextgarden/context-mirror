@@ -166,9 +166,9 @@ function marks.define(name,settings)
     else
         local dp = data[parent]
         if not dp then
-            setting.parent = false
+            settings.parent = false
         elseif dp.parent then
-            setting.parent = dp.parent
+            settings.parent = dp.parent
         end
     end
     setmetatable(settings, { __index = resolve } )

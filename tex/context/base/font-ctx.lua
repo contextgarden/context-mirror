@@ -62,13 +62,40 @@ local xheightdata = fonts.xheights
 
 fonts.ids      = fontdata -- we keep this one for a while (as it is used in mk etc)
 
+
+-- todo: give parameters at the lua end a metatable
+
+--~ function parameters(t,k)
+--~     local v = 0
+--~         if k == "x_height"      then v = t.xheight
+--~     elseif k == "space_stretch" then v = t.spacestretch
+--~     elseif k == "space_shrink"  then v = t.spaceshrink
+--~     elseif k == "extra_space"   then v = t.extraspace
+--~     elseif k == 1               then v = t.slant
+--~     elseif k == 2               then v = t.space
+--~     elseif k == 3               then v = t.spacestretch
+--~     elseif k == 4               then v = t.spaceshrink
+--~     elseif k == 5               then v = t.xheight
+--~     elseif k == 6               then v = t.quad
+--~     elseif k == 7               then v = t.extraspace
+--~     end
+--~     t[k] = v
+--~     return v
+--~ end
+
 local nulldata = {
     name         = "nullfont",
     characters   = { },
     descriptions = { },
-    parameters   = {
-        xheight = 0,
-        quad    = 0,
+    parameters   = {           -- lmromanregular @ 12pt
+        slant        =      0, -- 1
+        space        = 256377, -- 2
+        spacestretch = 128188, -- 3
+        spaceshrink  =  85459, -- 4
+        xheight      = 338952, -- 5
+        quad         = 786432, -- 6
+        extraspace   =  85459, -- 7
+
     },
 }
 
