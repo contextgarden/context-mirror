@@ -234,6 +234,11 @@
 
 \def\handletabulatepbreakfalse{\setfalse\tabulatehandlepbreak} % depricated
 
+% handy
+
+\def\tabulatenoalign
+  {\noalign\bgroup\let\noalign\relax\let\next=}
+
 % [|lg{.}|] => \NG 12.34 \NC
 
 \gdef\handletabulatecharalign#1 % space delimited ! (will be redone in lua)
@@ -707,7 +712,7 @@
    \fi}
 
 \def\handletabulatepbreak
-  {\TABLEnoalign{\dohandletabulatepbreak}}
+  {\tabulatenoalign{\dohandletabulatepbreak}}
 
 %D \startbuffer
 %D \starttabulate[|c|p|p|]
@@ -771,14 +776,14 @@
 \let\tabulatetailcontent\empty
 
 \def\processtabulateheadcontent
-  {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
+  {\tabulatenoalign{\global\settrue\tabulatesomeamble}%
    \csname\??tt\currenttabulate-\v!header\endcsname
-   \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
+   \tabulatenoalign{\global\setfalse\tabulatesomeamble}}%
 
 \def\processtabulatetailcontent
-  {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
+  {\tabulatenoalign{\global\settrue\tabulatesomeamble}%
    \csname\??tt\currenttabulate-\v!footer\endcsname
-   \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
+   \tabulatenoalign{\global\setfalse\tabulatesomeamble}}%
 
 \def\checkfulltabulatecontent % - needed, else confusion with \c!header
   {\ifcsname\??tt\currenttabulate-\v!header\endcsname
@@ -801,7 +806,7 @@
 \def\removefunnytabulateline
   {\ifhmode
      \strut\crcr
-     \TABLEnoalign{\kern-\lineheight}%
+     \tabulatenoalign{\kern-\lineheight}%
    \fi}
 
 \setuvalue{\e!start\v!tabulatehead}%
@@ -1227,8 +1232,8 @@
    \global\tabulatecolumn\zerocount
    \resettabulatepheight
    \unskip\unskip\crcr\flushtabulated
-   \TABLEnoalign{\the\everyaftertabulaterow}%
-   \TABLEnoalign{\checktabulatepenaltiesa}}
+   \tabulatenoalign{\the\everyaftertabulaterow}%
+   \tabulatenoalign{\checktabulatepenaltiesa}}
 
 \def\checktabulatepenaltiesa
   {\iftolerantTABLEbreak\else
@@ -1299,7 +1304,7 @@
    \global\settrue\tabulatefirstflushed}
 
 \def\tabulateflushtabulatedtwo
-  {\TABLEnoalign{\dotabulateflushtabulatedtwo}%
+  {\tabulatenoalign{\dotabulateflushtabulatedtwo}%
    \flushtabulatedindeed}
 
 \def\tabulatebskipthree
@@ -1313,7 +1318,7 @@
   {\par\verticalstrut\vskip-\struttotal\egroup}
 
 \def\tabulatedoHLfour#1% #1 ignored
-  {\TABLEnoalign
+  {\tabulatenoalign
      {\csname
         \ifnum\noftabulatelines=\zerocount             F\else
         \ifnum\noftabulatelines=\totalnoftabulatelines L\else
@@ -1321,30 +1326,30 @@
       L\endcsname}}%
 
 \def\tabulatedoHRfour#1% horizontal rule line (break untested)
-  {\TABLEnoalign
-     {\globallet\TABLEautoline\dotabulatelinerule
+  {\tabulatenoalign
+     {\globallet\dotabulateautoline\dotabulatelinerule
       \ifcase#1\or
         \ifnum\noftabulatelines=\zerocount
-          \gdef\TABLEautoline{\TABLEnoalign{}}%
+          \gdef\dotabulateautoline{\tabulatenoalign{}}%
         \else\ifnum\noftabulatelines=\totalnoftabulatelines
-          \gdef\TABLEautoline{\TABLEnoalign{}}%
+          \gdef\dotabulateautoline{\tabulatenoalign{}}%
         \fi\fi
       \fi
       \dotabulatenobreak}%
-   \TABLEautoline
-   \TABLEnoalign
+   \dotabulateautoline
+   \tabulatenoalign
      {\nobreak
-      \ifx\TABLEautoline\dotabulatelinerule\kern-\lineheight\fi
+      \ifx\dotabulateautoline\dotabulatelinerule\kern-\lineheight\fi
       \ifnum\noftabulatelines=\totalnoftabulatelines
         \@EA\dotabulatenobreak
       \else
         \@EA\allowbreak
       \fi}%
-   \TABLEautoline
-   \TABLEnoalign
+   \dotabulateautoline
+   \tabulatenoalign
      {\dotabulatenobreak}}
 
-\def\tabulateFLfive{\TABLEnoalign
+\def\tabulateFLfive{\tabulatenoalign
   {\ifinsidefloat\else
      \doifemptyvalue{\??tt\currenttabulate\c!before} % no expansion
        {\tabulatebaselinecorrection}%
@@ -1362,7 +1367,7 @@
 %     \starttabulate[||] \dorecurse{100}{\NC Eins \NC \NR \HL} \stoptabulate
 % \stoptext
 
-\def\tabulateMLfive{\TABLEnoalign % this will be redone in the mkiv spacing way
+\def\tabulateMLfive{\tabulatenoalign % this will be redone in the mkiv spacing way
   {\dotabulateruleseperator
    \dotabulaterule
 %    \ifnum\noftabulatelines>\plusone
@@ -1381,7 +1386,7 @@
 %    \fi
    \dotabulateruleseperator}}
 
-\def\tabulateLLfive{\TABLEnoalign
+\def\tabulateLLfive{\tabulatenoalign
   {\dotabulatenobreak
    \dotabulateruleseperator
    \dotabulatenobreak
@@ -1415,7 +1420,7 @@
 %     \stoptabulate
 % }
 
-\def\tabulateTLfive{\TABLEnoalign
+\def\tabulateTLfive{\tabulatenoalign
   {\dotabulatenobreak
    \dotabulateruleseperator
    \dotabulatenobreak
