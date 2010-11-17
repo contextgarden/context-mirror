@@ -27,7 +27,9 @@ fonts.enc.math = mathencodings -- better is then: fonts.enc.vectors
 local shared = { }
 
 fonts.vf.math          = fonts.vf.math or { }
-fonts.vf.math.optional = false
+local vfmath           = fonts.vf.math
+
+vfmath.optional = false
 
 --~ local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
 
@@ -291,7 +293,7 @@ local function stack(main,characters,id,size,unicode,u1,d12,u2)
     end
 end
 
-function fonts.vf.math.alas(main,id,size)
+function vfmath.alas(main,id,size)
     local characters = main.characters
     for i=0x7A,0x7D do
         make(main,characters,id,size,i,1)
@@ -383,7 +385,7 @@ setmetatable ( reverse, { __index = function(t,name)
     return r
 end } )
 
-function fonts.vf.math.define(specification,set)
+function vfmath.define(specification,set)
     local name = specification.name -- symbolic name
     local size = specification.size -- given size
     local fnt, lst, main = { }, { }, nil
@@ -392,7 +394,7 @@ function fonts.vf.math.define(specification,set)
     for s=1,#set do
         local ss = set[s]
         local ssname = ss.name
-        if ss.optional and fonts.vf.math.optional then
+        if ss.optional and vfmath.optional then
             if trace_virtual then
                 report_virtual("loading font %s subfont %s with name %s at %s is skipped",name,s,ssname,size)
             end
@@ -450,7 +452,7 @@ function fonts.vf.math.define(specification,set)
         local ss, fs = okset[s], fnt[s]
         if not fs then
             -- skip, error
-        elseif ss.optional and fonts.vf.math.optional then
+        elseif ss.optional and vfmath.optional then
             -- skip, redundant
         else
             local mm, fp = main.mathparameters, fs.parameters
@@ -669,7 +671,7 @@ function fonts.vf.math.define(specification,set)
     end
     lst[#lst+1] = { id = font.nextid(), size = size }
     if mp then -- weak catch
-        fonts.vf.math.alas(main,#lst,size)
+        vfmath.alas(main,#lst,size)
     end
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)
@@ -685,7 +687,7 @@ end
 
 function mathematics.makefont(name, set)
     fonts.definers.methods.variants[name] = function(specification)
-        return fonts.vf.math.define(specification,set)
+        return vfmath.define(specification,set)
     end
 end
 
@@ -898,7 +900,6 @@ mathencodings["tex-mi"] = {
 --              0x7F, -- (no idea what that could be)
 }
 
-
 mathencodings["tex-it"] = {
 --  [0x1D434] = 0x41, -- A
     [0x1D6E2] = 0x41, -- Alpha
@@ -976,7 +977,7 @@ mathencodings["tex-bi"]           = { }
 mathencodings["tex-fraktur"]      = { }
 mathencodings["tex-fraktur-bold"] = { }
 
-function fonts.vf.math.setletters(font_encoding, name, uppercase, lowercase)
+function vfmath.setletters(font_encoding, name, uppercase, lowercase)
     local enc = font_encoding[name]
     for i = 0,25 do
         enc[uppercase+i] = i + 0x41
@@ -984,7 +985,7 @@ function fonts.vf.math.setletters(font_encoding, name, uppercase, lowercase)
     end
 end
 
-function fonts.vf.math.setdigits(font_encoding, name, digits)
+function vfmath.setdigits(font_encoding, name, digits)
     local enc = font_encoding[name]
     for i = 0,9 do
         enc[digits+i] = i + 0x30
@@ -1462,19 +1463,19 @@ mathencodings["tex-fraktur"] = {
 
 -- now that all other vectors are defined ...
 
-fonts.vf.math.setletters(mathencodings, "tex-it",           0x1D434, 0x1D44E)
-fonts.vf.math.setletters(mathencodings, "tex-ss",           0x1D5A0, 0x1D5BA)
-fonts.vf.math.setletters(mathencodings, "tex-tt",           0x1D670, 0x1D68A)
-fonts.vf.math.setletters(mathencodings, "tex-bf",           0x1D400, 0x1D41A)
-fonts.vf.math.setletters(mathencodings, "tex-bi",           0x1D468, 0x1D482)
-fonts.vf.math.setletters(mathencodings, "tex-fraktur",      0x1D504, 0x1D51E)
-fonts.vf.math.setletters(mathencodings, "tex-fraktur-bold", 0x1D56C, 0x1D586)
+vfmath.setletters(mathencodings, "tex-it",           0x1D434, 0x1D44E)
+vfmath.setletters(mathencodings, "tex-ss",           0x1D5A0, 0x1D5BA)
+vfmath.setletters(mathencodings, "tex-tt",           0x1D670, 0x1D68A)
+vfmath.setletters(mathencodings, "tex-bf",           0x1D400, 0x1D41A)
+vfmath.setletters(mathencodings, "tex-bi",           0x1D468, 0x1D482)
+vfmath.setletters(mathencodings, "tex-fraktur",      0x1D504, 0x1D51E)
+vfmath.setletters(mathencodings, "tex-fraktur-bold", 0x1D56C, 0x1D586)
 
-fonts.vf.math.setdigits (mathencodings, "tex-ss", 0x1D7E2)
-fonts.vf.math.setdigits (mathencodings, "tex-tt", 0x1D7F6)
-fonts.vf.math.setdigits (mathencodings, "tex-bf", 0x1D7CE)
+vfmath.setdigits (mathencodings, "tex-ss", 0x1D7E2)
+vfmath.setdigits (mathencodings, "tex-tt", 0x1D7F6)
+vfmath.setdigits (mathencodings, "tex-bf", 0x1D7CE)
 
--- fonts.vf.math.setdigits (mathencodings, "tex-bi", 0x1D7CE)
+-- vfmath.setdigits (mathencodings, "tex-bi", 0x1D7CE)
 
 -- todo: add ss, tt, bf etc vectors
 -- todo: we can make ss tt etc an option

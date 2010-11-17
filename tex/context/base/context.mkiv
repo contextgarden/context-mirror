@@ -134,6 +134,8 @@
 \loadmarkfile{colo-ini}
 \loadmarkfile{colo-ext}
 
+\loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
+
 \loadmarkfile{trac-vis}
 
 \loadmarkfile{lang-mis}
@@ -219,6 +221,7 @@
 \loadmarkfile{page-mul}
 \loadmarkfile{page-set}
 \loadmarkfile{pack-lyr}
+\loadmarkfile{pack-pos}
 \loadmarkfile{page-mak}
 
 \loadmarkfile{page-lin}
@@ -242,8 +245,14 @@
 
 \loadmarkfile{tabl-com}
 \loadmarkfile{tabl-pln}
-\loadcorefile{thrd-tab}
-\loadmarkfile{tabl-tab}
+
+\doifmodeelse{atpragma} {
+    \definestartstop[\v!table]{\errmessage{please usemodule m-table}}
+} {
+    \loadcorefile{thrd-tab}
+    \loadmarkfile{tabl-tab}
+}
+
 \loadmarkfile{tabl-tbl}
 \loadmarkfile{tabl-ntb}
 \loadmarkfile{tabl-nte}
@@ -333,8 +342,6 @@
 \loadmarkfile{pack-bar}
 \loadmarkfile{page-app}
 \loadmarkfile{meta-fig}
-
-\loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
 
 \loadmarkfile{lang-spa} % will become obsolete
 

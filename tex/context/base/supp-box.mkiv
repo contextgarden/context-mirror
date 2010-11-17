@@ -614,9 +614,10 @@
 %D The next couple of shortcuts saves us memory as well as
 %D \type {{}}'s in passing parameters.
 
-\def\nextboxht{\ht\nextbox}
-\def\nextboxwd{\wd\nextbox}
-\def\nextboxdp{\dp\nextbox}
+\def\nextboxht   {\ht\nextbox}
+\def\nextboxwd   {\wd\nextbox}
+\def\nextboxdp   {\dp\nextbox}
+\def\nextboxhtdp {\dimexpr\ht\nextbox+\dp\nextbox\relax}
 
 \def\flushnextbox{\box\nextbox}
 

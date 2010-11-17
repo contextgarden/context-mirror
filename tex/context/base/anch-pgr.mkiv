@@ -1457,14 +1457,6 @@
    \hskip-\wd\scratchbox
    \box\scratchbox}
 
-\def\tabulatenormalcolumn#1% overloaded later in node-bck
-  {&\iftabulateequal\tabulateequalpos\else\tabulatenormalpos\fi
-   &\global\tabulatetype#1&}
-
-\def\tabulateequalcolumn#1% overloaded
-  {&\tabulateequalpos
-   &\global\tabulatetype#1&}
-
 \appendtoks
   \global\advance\noftabpositions\plusone
   \global\setfalse\tablehaspositions
@@ -1485,16 +1477,8 @@
      \gdef\doflushtabulateepos{\epos{#1}}%
    \fi}
 
-\def\splitofftabulatebox % overloaded in node-bck
-  {\dontcomplain
-   \global\setbox\tabulatebox % % % global ? % % %
-     \vsplit\tablebox\tabulatecolumn to \lineheight
-   \setbox\tabulatebox\normalvbox
-     {\unvbox\tabulatebox}%
-   \setbox\tabulatebox\hbox to \wd\tabulatebox
-     {\hss\dotabulatehook{\box\tabulatebox}\hss}%
-   \donormalizetabulatesplitline
-   \box\tabulatebox
+\def\flushtabulatesplitbox
+  {\box\tabulatebox
    \iftrialtypesetting\else\ifconditional\tablehaspositions\doflushtabulateepos\fi\fi}
 
 \appendtoks

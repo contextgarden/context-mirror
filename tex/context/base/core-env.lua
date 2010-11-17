@@ -22,44 +22,64 @@ tex.constants    = { }
 tex.conditionals = { }
 tex.ifs          = { }
 
-setmetatable(tex.modes, { __index = function(t,k)
-    local m = modes[k]
-    if m then
-        return m()
-    else
-        local n = "mode" .. k
-        if csname_id(n) == undefined then
-            return false
+setmetatable(tex.modes, {
+    __index = function(t,k)
+        local m = modes[k]
+        if m then
+            return m()
         else
-            modes[k] = function() return texcount[n] >= 1 end
-            return texcount[n] >= 1
+            local n = "mode" .. k
+            if csname_id(n) == undefined then
+                return false
+            else
+                modes[k] = function() return texcount[n] >= 1 end
+                return texcount[n] >= 1
+            end
         end
     end
-end })
+})
 
-setmetatable(tex.systemmodes, { __index = function(t,k)
-    local m = systemmodes[k]
-    if m then
-        return m()
-    else
-        local n = "mode*" .. k
-        if csname_id(n) == undefined then
-            return false
+setmetatable(tex.systemmodes, {
+    __index = function(t,k)
+        local m = systemmodes[k]
+        if m then
+            return m()
         else
-            systemmodes[k] = function() return texcount[n] >= 1 end
-            return texcount[n] >= 1
+            local n = "mode*" .. k
+            if csname_id(n) == undefined then
+                return false
+            else
+                systemmodes[k] = function() return texcount[n] >= 1 end
+                return texcount[n] >= 1
+            end
         end
     end
-end })
+})
 
-setmetatable(tex.constants, { __index = function(t,k)
-    return csname_id(k) ~= undefined and texcount[k] or 0
-end })
+setmetatable(tex.constants, {
+    __index = function(t,k)
+        return csname_id(k) ~= undefined and texcount[k] or 0
+    end,
+--~     __newindex = function(t,k)
+--~         if csname_id(k) ~= undefined then
+--~             texcount[k] = k
+--~         end
+--~     end
+})
 
-setmetatable(tex.conditionals, { __index = function(t,k) -- 0 == true
-    return csname_id(k) ~= undefined and texcount[k] == 0
-end })
+setmetatable(tex.conditionals, {
+    __index = function(t,k) -- 0 == true
+        return csname_id(k) ~= undefined and texcount[k] == 0
+    end,
+--~     __newindex = function(t,k) -- not ok
+--~         if csname_id(k) ~= undefined then
+--~             texcount[k] = k and 0 or 1 -- 0 == true
+--~         end
+--~     end
+})
 
-setmetatable(tex.ifs, { __index = function(t,k)
-    return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
-end })
+setmetatable(tex.ifs, {
+    __index = function(t,k)
+        return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
+    end
+})

@@ -3693,7 +3693,7 @@ local concat = table.concat
 local type, next = type, next
 
 utilities        = utilities or {}
-utilities.merger = utilities.merger or { }
+utilities.merger = utilities.merger or { } -- maybe mergers
 utilities.report = utilities.report or print
 
 local merger     = utilities.merger
@@ -3896,6 +3896,8 @@ local rbrace    = P("}")
 local nobrace   = 1 - (lbrace+rbrace)
 local nested    = P { lbrace * (nobrace + V(1))^0 * rbrace }
 local spaces    = space^0
+
+lpeg.patterns.nested = nested
 
 local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
 

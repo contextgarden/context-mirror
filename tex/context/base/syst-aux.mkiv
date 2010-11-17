@@ -1028,6 +1028,7 @@
    \else
      \@EA\dodoprocesscommaitemindeed
    \fi}
+
 \def\dodoprocesscommaitemindeed
   {\ifx\nexttoken]%
      \@EA\gobbleoneargument
@@ -1042,7 +1043,7 @@
 %D however are treated. We have to check for the special case
 %D \type{[{a,b,c}]}.
 
-\def\processcommalist[%
+\unexpanded\def\processcommalist[%
   {\futurelet\nexttoken\docheckcommaitem}
 
 \def\docheckcommaitem
@@ -1116,7 +1117,7 @@
 % \def\processcommacommand[#1]%
 %   {\expanded{\processcommalist[#1]}}
 
-\def\processcommacommand[#1]%
+\unexpanded\def\processcommacommand[#1]%
   {\expandafter\processcommalist\expandafter[\normalexpanded{#1}]}
 
 % \def\processcommacommand[#1]%
@@ -1557,7 +1558,7 @@
    \expandafter\rawprocesscommaitem#1,],% \relax
    \global\advance\commalevel \minusone }
 
-\def\rawprocesscommacommand[#1]% not really needed
+\unexpanded\def\rawprocesscommacommand[#1]% not really needed
   {\normalexpanded{\rawprocesscommalist[#1]}}
 
 % \def\rawdoifinsetelse#1#2{\doifinstringelse{,#1,}{,#2,}}

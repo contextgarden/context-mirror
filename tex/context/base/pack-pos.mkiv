@@ -1,0 +1,151 @@
+%D \module
+%D   [       file=pack-pos,
+%D        version=2010.11.17 % real old code, updated a bit
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle=Positioning,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packaging Macros / Positioning}
+
+\unprotect
+
+% An old but still usefull mechanism (updated in mkiv):
+%
+% \ruledvbox{\startpositioning
+%     \position(1,1){test}
+%     \position[xstep=relative](1,1){test}
+%     \position[ystep=relative](3,-1){test}
+%     \position(10,10){test}
+% \stoppositioning}
+
+\newdimen\positioningxposition  \newdimen\positioningyposition
+\newdimen\positioningxdimension \newdimen\positioningydimension
+\newdimen\positioningxoffset    \newdimen\positioningyoffset
+
+\newbox\positioningbox
+
+\unexpanded\def\startpositioning
+  {\dosingleempty\dostartpositioning}
+
+\def\dostartpositioning[#1]%
+  {\bgroup
+   \getparameters[\??ps][#1]%
+   \positioningxposition \zeropoint  \positioningyposition \zeropoint
+   \positioningxdimension\zeropoint  \positioningydimension\zeropoint
+   \positioningxoffset   \zeropoint  \positioningyoffset   \zeropoint
+   \hfuzz                \paperwidth \vfuzz                \paperheight
+   \setbox\positioningbox\hbox\bgroup
+   \ignorespaces}
+
+\unexpanded\def\stoppositioning
+  {\removeunwantedspaces
+   \doifnot\@@psoffset\v!yes
+     {\global\positioningxoffset\zeropoint
+      \global\positioningyoffset\zeropoint}%
+   \global\advance\positioningxdimension \positioningxoffset
+   \global\advance\positioningydimension \positioningyoffset
+   \egroup
+   \vbox to \positioningydimension
+     {\vskip\positioningyoffset
+      \hbox to \positioningxdimension
+        {\hskip\positioningxoffset
+         \box\positioningbox
+         \hfill}
+      \vfill}%
+   \egroup}
+
+% \def\resetpositioning
+%   {\getparameters[\??ps]
+%      [\c!state=\v!start,
+%       \c!unit=\s!cm,
+%       \c!factor=\plusone,
+%       \c!scale=\plusone,
+%       \c!xfactor=\@@psfactor,
+%       \c!yfactor=\@@psfactor,
+%       \c!xscale=\@@psscale,
+%       \c!yscale=\@@psscale,
+%       \c!xstep=\v!absolute,
+%       \c!ystep=\v!absolute,
+%       \c!xoffset=\zeropoint,
+%       \c!yoffset=\zeropoint]}
+
+\def\resetpositioning
+  {\let\@@psstate   \v!start
+   \let\@@psunit    \s!cm
+   \let\@@psfactor  \plusone
+   \let\@@psscale   \plusone
+   \def\@@psxfactor{\@@psfactor}%
+   \def\@@psyfactor{\@@psfactor}%
+   \def\@@psxscale {\@@psscale}%
+   \def\@@psyscale {\@@psscale}%
+   \let\@@psxstep   \v!absolute
+   \let\@@psystep   \v!absolute
+   \let\@@psxoffset \zeropoint
+   \let\@@psyoffset \zeropoint}
+
+\resetpositioning
+
+\unexpanded\def\setuppositioning
+  {\resetpositioning
+   \dodoubleargument\getparameters[\??ps]}
+
+\def\calculateposition#1#2#3#4#5#6#7#8#9%
+  {\setdimensionwithunit\scratchdimen{#1}\@@psunit
+   \scratchdimen#8\scratchdimen
+   \scratchdimen#9\scratchdimen
+   \advance\scratchdimen #4\relax
+   % == \scratchdimen\dimexpr#8\dimexpr#9\scratchdimen\relax+#4\relax
+   \doif{#2}\v!relative
+     {\advance\scratchdimen#3%
+      \let#4\zeropoint}%
+   #3\scratchdimen
+   \doifnot\@@psstate\v!overlay
+     {\scratchdimen\dimexpr#5+#3\relax
+      \ifdim           #3<-#7\relax \global#7-#3\relax    \fi
+      \ifdim\scratchdimen> #6\relax \global#6\scratchdimen\fi}}
+
+\def\position
+  {\dosingleempty\doposition}
+
+\def\doposition[#1]#2(#3,#4)%
+  {\removeunwantedspaces
+   \dowithnextbox{\dodoposition{#1}{#2}{#3}{#4}}\hbox}
+
+\def\dodoposition#1#2#3#4%
+  {\bgroup
+   \dontcomplain
+   \getparameters[\??ps][#1]%
+   \calculateposition{#3}\@@psxstep\positioningxposition\@@psxoffset\nextboxwd  \positioningxdimension\positioningxoffset\@@psxscale\@@psxfactor
+   \calculateposition{#4}\@@psystep\positioningyposition\@@psyoffset\nextboxhtdp\positioningydimension\positioningyoffset\@@psyscale\@@psyfactor
+   \vbox to \zeropoint
+     {\vskip\positioningyposition
+      \hbox to \zeropoint
+        {\hskip\positioningxposition
+         \flushnextbox
+         \hss}
+      \vss}%
+   \normalexpanded
+     {\egroup
+      \positioningxposition\the\positioningxposition
+      \positioningyposition\the\positioningyposition
+      \def\noexpand\@@psxoffset{\the\dimexpr\@@psxoffset}%
+      \def\noexpand\@@psyoffset{\the\dimexpr\@@psyoffset}}%
+   \ignorespaces}
+
+\setuppositioning
+  [\c!unit=\s!cm,
+   \c!factor=\plusone,
+   \c!scale=\plusone,
+   \c!xstep=\v!absolute,
+   \c!ystep=\v!absolute,
+   \c!offset=\v!yes,
+   \c!xoffset=\zeropoint,
+   \c!yoffset=\zeropoint]
+
+\protect \endinput

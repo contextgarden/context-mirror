@@ -490,6 +490,21 @@
    u:min=Minuten]
 
 \setuplabeltext
+  [\s!hr]
+  [u:sec=sekunda,
+   u:fsec=femtosekunda,
+   u:psec=pikosekunda,
+   u:nsec=nanosekunda,
+   u:usec=mikrosekunda,
+   u:msec=milisekunda,
+   u:year=godina,
+   u:month=mjesec,
+   u:week=tjedan,
+   u:day=dan,
+   u:hour=sat,
+   u:min=minuta]
+
+\setuplabeltext
   [\s!it]
   [u:sec=secondo,
    u:fsec=femtosecondo,
@@ -525,6 +540,11 @@
    u:deg=Gradma\SS]
 
 \setuplabeltext
+  [\s!hr]
+  [u:rad=radijani,
+   u:deg=kutni stupnjevi]
+
+\setuplabeltext
   [\s!it]
   [u:rad=radianti,
    u:deg=angoli sessagesimali]
@@ -557,6 +577,11 @@
    u:rpm=Umdrehungen pro Minute]
 
 \setuplabeltext
+  [\s!hr]
+  [u:rps=okretaji po sekundi,
+   u:rpm=okretaji po minuti]
+
+\setuplabeltext
   [\s!it]
   [u:rps=giri al secondo,
    u:rpm=giri al minuto]
@@ -587,6 +612,10 @@
 \setuplabeltext
   [\s!de]
   [u:u=Atomare Masseneinheit]
+
+\setuplabeltext
+  [\s!hr]
+  [u:u=unificirana atomska jedinica mase]
 
 \setuplabeltext
   [\s!it]
@@ -670,20 +699,41 @@
    u:vdc=Gleichspannung]
 
 \setuplabeltext
+  [\s!hr]
+  [u:vac=izmjeni\ccaron ni napon,
+   u:vdc=istosmjerni napon]
+
+\setuplabeltext
   [\s!it]
   [u:vac=corrente alternata,
    u:vdc=corrente continua]
 
-%D Computer memory is specified in Bytes:
+%D Network bandwidth is specified in Bits:
 
-\getvalue{\v!unit} [Bit]   {bit}       {Bit}
+\getvalue{\v!unit} [Bit]   {bit}       {\labeltext{u:bit}}
 \getvalue{\v!unit} [Baud]  {Bd}        {Baud (Bit/s)}
 
-\getvalue{\v!unit} [Byte]  {B}           {Byte}
+%D Computer memory size is specified in Bytes:
+
+\getvalue{\v!unit} [Byte]  {B}           {\labeltext{u:byte}}
 \getvalue{\v!unit} [kByte] {\Kilo \Byte} {kilo Byte}
 \getvalue{\v!unit} [MByte] {\Mega \Byte} {mega Byte}
 \getvalue{\v!unit} [GByte] {\Giga \Byte} {giga Byte}
 \getvalue{\v!unit} [TByte] {\Tera \Byte} {tera Byte}
+
+\setuplabeltext
+  [\s!en]
+  [u:bit=Bit,
+   u:byte=Byte]
+
+\setuplabeltext
+  [\s!hr]
+  [u:bit=bit,
+   u:byte=bajt]
+
+%D Telecommunication call density is specified in Erlangs:
+
+\getvalue{\v!unit} [Erlang] {E}          {Erlang}
 
 %D Some radiation related units:
 
@@ -709,7 +759,7 @@
 \getvalue{\v!unit} [Bar]   {bar}        {bar (100 \Kilo \Pascal)}
 \getvalue{\v!unit} [EVolt] {eV}         {electronvolt}
 \getvalue{\v!unit} [Foot]  {ft}         {\labeltext{u:ft}}
-\getvalue{\v!unit} [Inch]  {inch}       {inch}
+\getvalue{\v!unit} [Inch]  {inch}       {\labeltext{u:inch}}
 \getvalue{\v!unit} [Cal]   {cal}        {\labeltext{u:cal}}
 \getvalue{\v!unit} [Force] {f}          {\labeltext{u:f}}
 \getvalue{\v!unit} [kCal]  {\Kilo \Cal} {\labeltext{u:kcal}}
@@ -743,9 +793,10 @@
 
 \setuplabeltext
   [\s!en]
-  [u:at=technical atmosferic pressure,
-   u:atm=physical atmosferic pressure,
+  [u:at=technical atmospheric pressure,
+   u:atm=physical atmospheric pressure,
    u:ft=foot,
+   u:inch=inch,
    u:cal=calory,
    u:f=force,
    u:kcal=kilocalory]
@@ -753,9 +804,19 @@
 \setuplabeltext
   [\s!de]
   [u:at=Technischer atmosph\"arischer Druck,
-   u:atm=physkalischer atmosph\"arischer Druck
+   u:atm=physkalischer atmosph\"arischer Druck,
    u:ft=Fu\SS,
    u:cal=Kalorien,
+   u:f=Force,
+   u:kcal=Kilokalorien]
+
+\setuplabeltext
+  [\s!hr]
+  [u:at=tehni\ccaron ka atmosfera,
+   u:atm=standardna atmosfera,
+   u:ft=stopa,
+   u:inch=in\ccaron a,
+   u:cal=kalorija,
    u:f=Force,
    u:kcal=Kilokalorien]
 

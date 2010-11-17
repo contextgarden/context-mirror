@@ -35,6 +35,8 @@ local nobrace   = 1 - (lbrace+rbrace)
 local nested    = P { lbrace * (nobrace + V(1))^0 * rbrace }
 local spaces    = space^0
 
+lpeg.patterns.nested = nested
+
 local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
 
 local key       = C((1-equal-comma)^1)
