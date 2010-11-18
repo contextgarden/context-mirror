@@ -2043,6 +2043,7 @@
 \def\resetpreloadfonts
   {\global\let\firststagepreloadfonts \relax
    \global\let\secondstagepreloadfonts\relax
+   \global\let\thirdstagepreloadfonts \relax
    \resetnullfont}
 
 \def\firststagepreloadfonts % see core-def.mkiv
@@ -2066,6 +2067,18 @@
      \preloaddefaultfonts
    \fi
    \resetpreloadfonts}
+
+\def\thirdstagepreloadfonts % see core-def.mkiv
+  {\begingroup
+   %ifzeropt\fontcharwd\font\number`!\relax
+   \setbox\scratchbox\hbox{context}%
+   \ifzeropt\wd\scratchbox
+     \writeline
+     \writestatus\m!fonts{!! No bodyfont has been defined and no defaults have been}%
+     \writestatus\m!fonts{!! loaded (maybe due to a missing \string\starttext).}%
+     \writeline
+   \fi
+   \endgroup}
 
 % maybe add this to \everystarttext
 %
