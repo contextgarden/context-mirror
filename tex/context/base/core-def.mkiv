@@ -28,6 +28,7 @@
 
 \ifdefined\firststagepreloadfonts  \else \let\firststagepreloadfonts \relax \fi
 \ifdefined\secondstagepreloadfonts \else \let\secondstagepreloadfonts\relax \fi
+\ifdefined\thirdstagepreloadfonts  \else \let\thirdstagepreloadfonts \relax \fi
 
 \appendtoks  \showcontextbanner                    \to \everyjob
 \appendtoks  \initializenewlinechar                \to \everyjob
@@ -60,6 +61,7 @@
 \prependtoks \lefttoright                          \to \everybeforeoutput
 
 \appendtoks  \secondstagepreloadfonts              \to \everystarttext
+\appendtoks  \thirdstagepreloadfonts               \to \everystoptext
 
 % temporary here:
 
