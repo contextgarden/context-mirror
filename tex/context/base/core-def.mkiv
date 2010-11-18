@@ -26,12 +26,15 @@
 
 % initialization order:
 
+\ifdefined\firststagepreloadfonts  \else \let\firststagepreloadfonts \relax \fi
+\ifdefined\secondstagepreloadfonts \else \let\secondstagepreloadfonts\relax \fi
+
 \appendtoks  \showcontextbanner                    \to \everyjob
 \appendtoks  \initializenewlinechar                \to \everyjob
 \appendtoks  \calculatecurrenttime                 \to \everyjob
 \appendtoks  \loadsystemfiles                      \to \everyjob
 \appendtoks  \loadoptionfile                       \to \everyjob % can load files !
-\appendtoks  \preloadfonts                         \to \everyjob
+\appendtoks  \firststagepreloadfonts               \to \everyjob
 \appendtoks  \settopskip                           \to \everyjob
 \appendtoks  \initializeMPgraphics                 \to \everyjob % after loading system files
 \appendtoks  \initializemainlanguage               \to \everyjob
@@ -55,6 +58,8 @@
 \prependtoks \the\everylastbackendshipout          \to \everylastshipout
 
 \prependtoks \lefttoright                          \to \everybeforeoutput
+
+\appendtoks  \secondstagepreloadfonts              \to \everystarttext
 
 % temporary here:
 

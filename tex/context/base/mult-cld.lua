@@ -80,6 +80,7 @@ context._flush_ = _flush_
 
 local catcodestack    = { }
 local currentcatcodes = ctxcatcodes
+local contentcatcodes = ctxcatcodes
 
 local catcodes = {
     ctx = ctxcatcodes, ctxcatcodes = ctxcatcodes, context  = ctxcatcodes,
@@ -93,19 +94,23 @@ local catcodes = {
 function context.pushcatcodes(c)
     insert(catcodestack,currentcatcodes)
     currentcatcodes = (c and catcodes[c] or tonumber(c)) or currentcatcodes
+    contentcatcodes = currentcatcodes
 end
 
 function context.popcatcodes()
     currentcatcodes = remove(catcodestack) or currentcatcodes
+    contentcatcodes = currentcatcodes
 end
 
 function context.unprotect()
     insert(catcodestack,currentcatcodes)
     currentcatcodes = prtcatcodes
+    contentcatcodes = currentcatcodes
 end
 
 function context.protect()
     currentcatcodes = remove(catcodestack) or currentcatcodes
+    contentcatcodes = currentcatcodes
 end
 
 function tex.fprint(...) -- goodie
@@ -113,89 +118,87 @@ function tex.fprint(...) -- goodie
 end
 
 local function writer(command,first,...)
---~     if first == nil then -- we can move the first test to the caller (twice: direct and boolean)
---~         flush(currentcatcodes,command)
---~     else
-        local t = { first, ... }
-        flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
-        local direct = false
-        for i=1,#t do
-            local ti = t[i]
-            local typ = type(ti)
-            if direct then
-                if typ == "string" or typ == "number" then
-                    flush(currentcatcodes,ti)
-                else
-                    trace_context("error: invalid use of direct in '%s', only strings and numbers can be flushed directly, not '%s'",command,typ)
-                end
-                direct = false
-            elseif ti == nil then
-                -- nothing
-            elseif typ == "string" then
-                if ti == "" then
-                    flush(currentcatcodes,"{}")
-                else
-                    flush(currentcatcodes,"{",ti,"}")
-                end
-            elseif typ == "number" then
-                flush(currentcatcodes,"{",ti,"}")
-            elseif typ == "table" then
-                local tn = #ti
-                if tn == 0 then
-                    local done = false
-                    for k, v in next, ti do
-                        if done then
-                            if v == "" then
-                                flush(currentcatcodes,",",k,'=')
-                            else
-                                flush(currentcatcodes,",",k,'=',v)
-                            end
-                        else
-                            if v == "" then
-                                flush(currentcatcodes,"[",k,'=')
-                            else
-                                flush(currentcatcodes,"[",k,'=',v)
-                            end
-                            done = true
-                        end
-                    end
-                    flush(currentcatcodes,"]")
-                elseif tn == 1 then -- some 20% faster than the next loop
-                    local tj = ti[1]
-                    if type(tj) == "function" then
-                        flush(currentcatcodes,"[\\mkivflush{",_store_(tj),"}]")
-                    else
-                        flush(currentcatcodes,"[",tj,"]")
-                    end
-                else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
-                    for j=1,tn do
-                        local tj = ti[j]
-                        if type(tj) == "function" then
-                            ti[j] = "\\mkivflush{" .. _store_(tj) .. "}"
-                        end
-                    end
-                    flush(currentcatcodes,"[",concat(ti,","),"]")
-                end
-            elseif typ == "function" then
-                flush(currentcatcodes,"{\\mkivflush{",_store_(ti),"}}") -- todo: ctx|prt|texcatcodes
-            elseif typ == "boolean" then
-                if ti then
-                    flush(currentcatcodes,"^^M")
-                else
-                    direct = true
-                end
-            elseif typ == "thread" then
-                trace_context("coroutines not supported as we cannot yield across boundaries")
-            elseif isnode(ti) then
-                writenode(ti)
-            else
-                trace_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
-            end
-        end
+    local t = { first, ... }
+    flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
+    local direct = false
+    for i=1,#t do
+        local ti = t[i]
+        local typ = type(ti)
         if direct then
-            trace_context("error: direct flushing used in '%s' without following argument",command)
+            if typ == "string" or typ == "number" then
+                flush(currentcatcodes,ti)
+            else
+                trace_context("error: invalid use of direct in '%s', only strings and numbers can be flushed directly, not '%s'",command,typ)
+            end
+            direct = false
+        elseif ti == nil then
+            -- nothing
+        elseif ti == "" then
+            flush(currentcatcodes,"{}")
+        elseif typ == "string" or typ == "number" then
+            if currentcatcodes == contentcatcodes then
+                flush(currentcatcodes,"{",ti,"}")
+            else
+                flush(currentcatcodes,"{")
+                flush(contentcatcodes,ti)
+                flush(currentcatcodes,"}")
+            end
+        elseif typ == "table" then
+            local tn = #ti
+            if tn == 0 then
+                local done = false
+                for k, v in next, ti do
+                    if done then
+                        if v == "" then
+                            flush(currentcatcodes,",",k,'=')
+                        else
+                            flush(currentcatcodes,",",k,'=',v)
+                        end
+                    else
+                        if v == "" then
+                            flush(currentcatcodes,"[",k,'=')
+                        else
+                            flush(currentcatcodes,"[",k,'=',v)
+                        end
+                        done = true
+                    end
+                end
+                flush(currentcatcodes,"]")
+            elseif tn == 1 then -- some 20% faster than the next loop
+                local tj = ti[1]
+                if type(tj) == "function" then
+                    flush(currentcatcodes,"[\\mkivflush{",_store_(tj),"}]")
+                else
+                    flush(currentcatcodes,"[",tj,"]")
+                end
+            else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
+                for j=1,tn do
+                    local tj = ti[j]
+                    if type(tj) == "function" then
+                        ti[j] = "\\mkivflush{" .. _store_(tj) .. "}"
+                    end
+                end
+                flush(currentcatcodes,"[",concat(ti,","),"]")
+            end
+        elseif typ == "function" then
+            flush(currentcatcodes,"{\\mkivflush{",_store_(ti),"}}") -- todo: ctx|prt|texcatcodes
+        elseif typ == "boolean" then
+            if ti then
+                flush(ctxcatcodes,"^^M")
+            else
+                direct = true
+            end
+        elseif typ == "thread" then
+            trace_context("coroutines not supported as we cannot yield across boundaries")
+        elseif isnode(ti) then
+            writenode(ti)
+        else
+            trace_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
         end
---~     end
+    end
+    if direct then
+        trace_context("error: direct flushing used in '%s' without following argument",command)
+    end
 end
 
 local generics = { }  context.generics = generics
@@ -286,6 +289,18 @@ local tracedflush = function(...)
     normalflush(...)
     local t = { ... }
     t[1] = "f : " -- replaces the catcode
+    for i=2,#t do
+        local ti = t[i]
+        local tt = type(ti)
+        if tt == "string" then
+            -- ok
+        elseif tt == "number" then
+            -- ok
+        else
+            t[i] = format("<%s>",tostring(ti))
+        end
+    --  currenttrace(format("%02i: %s",i-1,tostring(t[i])))
+    end
     currenttrace(concat(t))
 end
 
@@ -380,9 +395,9 @@ function context.egroup()
     context("}")
 end
 
-function context.verbatim(...)
-    flush(vrbcatcodes,...)
-end
+--~ function context.verbatim(...)
+--~     flush(vrbcatcodes,...)
+--~ end
 
 -- context.delayed
 
@@ -439,6 +454,28 @@ local function caller(t,...)
 end
 
 setmetatable(nested, { __index = indexer, __call = caller } )
+
+-- verbatim
+
+local verbatim = { } context.verbatim = verbatim
+
+local function indexer(t,k)
+    local command = context[k]
+    local f = function(...)
+        local savedcatcodes = contentcatcodes
+        contentcatcodes = vrbcatcodes
+        command(...)
+        contentcatcodes = savedcatcodes
+    end
+    t[k] = f
+    return f
+end
+
+local function caller(t,...)
+    flush(vrbcatcodes,...)
+end
+
+setmetatable(verbatim, { __index = indexer, __call = caller } )
 
 -- metafun
 

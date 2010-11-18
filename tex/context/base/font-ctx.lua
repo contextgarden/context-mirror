@@ -62,7 +62,6 @@ local xheightdata = fonts.xheights
 
 fonts.ids      = fontdata -- we keep this one for a while (as it is used in mk etc)
 
-
 -- todo: give parameters at the lua end a metatable
 
 --~ function parameters(t,k)
@@ -95,9 +94,21 @@ local nulldata = {
         xheight      = 338952, -- 5
         quad         = 786432, -- 6
         extraspace   =  85459, -- 7
-
     },
 }
+
+function definers.resetnullfont()
+    -- resetting is needed because tikz misuses nullfont
+    local p = nulldata.parameters
+    p.slant        = 0 -- 1
+    p.space        = 0 -- 2
+    p.spacestretch = 0 -- 3
+    p.spaceshrink  = 0 -- 4
+    p.xheight      = 0 -- 5
+    p.quad         = 0 -- 6
+    p.extraspace   = 0 -- 7
+    definers.resetnullfont = function() end
+end
 
 setmetatablekey(fontdata, "__index", function(t,k)
     return nulldata
