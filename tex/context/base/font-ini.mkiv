@@ -2020,19 +2020,52 @@
 % \appendtoks
 % \to \everysetupdocument
 
+\fontdimen1\nullfont      0\scaledpoint
+\fontdimen2\nullfont 256377\scaledpoint
+\fontdimen3\nullfont 128188\scaledpoint
+\fontdimen4\nullfont  85459\scaledpoint
+\fontdimen5\nullfont 338952\scaledpoint
+\fontdimen6\nullfont 786432\scaledpoint
+\fontdimen7\nullfont  85459\scaledpoint
+
+\def\resetnullfont % this is needed because some macro packages (tikz) misuse \nullfont
+  {\dorecurse7{\fontdimen\recurselevel\nullfont\zeropoint}%
+   \ctxlua{fonts.definers.resetnullfont()}% in luatex 0.70 this will also do the previous
+   \globallet\resetnullfont\relax}
+
 \newconditional\fontsareloaded
 
-\def\preloadfonts % never called, needs a clean up
+\def\preloaddefaultfonts
+  {\usetypescript[modern]%
+   \setuptypeface[modern]%
+   \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}
+
+\def\resetpreloadfonts
+  {\global\let\firststagepreloadfonts \relax
+   \global\let\secondstagepreloadfonts\relax
+   \resetnullfont}
+
+\def\firststagepreloadfonts % see core-def.mkiv
   {\global\loadingfontsfalse
-   \ifconditional\fontsareloaded \else
+   \ifconditional\fontsareloaded
+      \resetpreloadfonts
+   \else
      \doifmodeelse {*nofonts}
        {\writestatus\m!fonts{latin modern fonts are not preloaded}}
-       {\writestatus\m!fonts{preloading latin modern fonts}%
-        \usetypescript[modern]%
-        \setuptypeface[modern]%
-        \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}%
+       {\writestatus\m!fonts{preloading latin modern fonts (first stage)}%
+        \preloaddefaultfonts
+        \resetpreloadfonts}%
+   \fi}
+
+\def\secondstagepreloadfonts % see core-def.mkiv
+  {\global\loadingfontsfalse
+   \ifconditional\fontsareloaded
+     % nothing
+   \else
+     \writestatus\m!fonts{preloading latin modern fonts (second stage)}%
+     \preloaddefaultfonts
    \fi
-   \global\let\preloadfonts\relax}
+   \resetpreloadfonts}
 
 % maybe add this to \everystarttext
 %
@@ -4047,16 +4080,6 @@
 \def\dolookupgetkeyofindex#1#2{\ctxlua{tex.write(fonts.names.getlookupkey("#1",#2))}}
 \def\dolookupgetkey         #1{\ctxlua{tex.write(fonts.names.getlookupkey("#1"))}}
 \def\cleanfontname          #1{\ctxlua{fonts.cleanname("#1")}}
-
-% Experiment:
-
-\fontdimen1\nullfont      0\scaledpoint
-\fontdimen2\nullfont 256377\scaledpoint
-\fontdimen3\nullfont 128188\scaledpoint
-\fontdimen4\nullfont  85459\scaledpoint
-\fontdimen5\nullfont 338952\scaledpoint
-\fontdimen6\nullfont 786432\scaledpoint
-\fontdimen7\nullfont  85459\scaledpoint
 
 \protect \endinput
 

@@ -65,8 +65,6 @@
 \def\registerfileinfo[#1#2]#3% geen \showmessage ?
   {\writestatus\m!systems{#1#2 file #3 at line \the\inputlineno}}
 
-\ifdefined\preloadfonts\else \let\preloadfonts\relax \fi
-
 \def\loadallsystemfiles#1#2%
   {\ifx\@@svdirectory\empty
      \readsysfile{#1}{\showmessage\m!systems2{#1}}{#2}%
