@@ -140,6 +140,7 @@ local function writer(command,first,...)
                 flush(currentcatcodes,"{",ti,"}")
             else
                 flush(currentcatcodes,"{")
+             -- maybe if string and \n found then auto split
                 flush(contentcatcodes,ti)
                 flush(currentcatcodes,"}")
             end

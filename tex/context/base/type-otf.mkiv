@@ -75,7 +75,7 @@
     %D any more. Filename changes will be catched in luatex (fallbacks) but not in
     %D other tex's.
 
-    \starttypescript [serif] [modern,latin-modern,computer-modern]
+    \starttypescript [serif] [modern,latin-modern,computer-modern,default]
         \definefontsynonym [LMRoman5-Regular]         [\s!file:lmroman5-regular]      [\s!features=\s!default]
         \definefontsynonym [LMRoman6-Regular]         [\s!file:lmroman6-regular]      [\s!features=\s!default]
         \definefontsynonym [LMRoman7-Regular]         [\s!file:lmroman7-regular]      [\s!features=\s!default]
@@ -113,7 +113,7 @@
         \definefontsynonym [LMRoman10-Unslanted]      [\s!file:lmromanunsl10-regular] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [sans] [modern,latin-modern,computer-modern]
+    \starttypescript [sans] [modern,latin-modern,computer-modern,default]
         \definefontsynonym [LMSans8-Regular]               [\s!file:lmsans8-regular]          [\s!features=\s!default]
         \definefontsynonym [LMSans9-Regular]               [\s!file:lmsans9-regular]          [\s!features=\s!default]
         \definefontsynonym [LMSans10-Regular]              [\s!file:lmsans10-regular]         [\s!features=\s!default]
@@ -136,7 +136,7 @@
         \definefontsynonym [LMSansQuotation8-BoldOblique]  [\s!file:lmsansquot8-boldoblique]  [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [mono] [modern,modern-variable,modern-condensed,latin-modern,latin-modern-variable,latin-modern-condensed,computer-modern]
+    \starttypescript [mono] [modern,modern-variable,modern-condensed,latin-modern,latin-modern-variable,latin-modern-condensed,computer-modern,default]
         \definefontsynonym [LMTypewriter8-Regular]                [\s!file:lmmono8-regular]            [\s!features=\s!none]
         \definefontsynonym [LMTypewriter9-Regular]                [\s!file:lmmono9-regular]            [\s!features=\s!none]
         \definefontsynonym [LMTypewriter10-Regular]               [\s!file:lmmono10-regular]           [\s!features=\s!none]
@@ -162,7 +162,7 @@
         \definefontsynonym [LMTypewriterVarWd10-DarkOblique]      [\s!file:lmmonoproplt10-boldoblique] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [math] [modern,latin-modern,computer-modern]
+    \starttypescript [math] [modern,latin-modern,computer-modern,default]
         \definefontsynonym[LMMathRoman5-Regular] [LMMath5-Regular@lmroman5-math]
         \definefontsynonym[LMMathRoman6-Regular] [LMMath6-Regular@lmroman6-math]
         \definefontsynonym[LMMathRoman7-Regular] [LMMath7-Regular@lmroman7-math]
@@ -189,7 +189,7 @@
         \loadfontgoodies[lm-math]
     \stoptypescript
 
-    \starttypescript [serif] [modern,latin-modern,computer-modern] [name]
+    \starttypescript [serif] [modern,latin-modern,computer-modern,default] [name]
         \definefontsynonym [Serif]            [LMRoman-Regular]
         \definefontsynonym [SerifBold]        [LMRoman-Bold]
         \definefontsynonym [SerifItalic]      [LMRoman-Italic]
@@ -200,7 +200,7 @@
         \definefontsynonym [SerifCapsSlanted] [LMRoman-CapsOblique]
     \stoptypescript
 
-    \starttypescript [sans] [modern,latin-modern,computer-modern] [name]
+    \starttypescript [sans] [modern,latin-modern,computer-modern,default] [name]
         \definefontsynonym [Sans]             [LMSans-Regular]
         \definefontsynonym [SansBold]         [LMSans-Bold]
         \definefontsynonym [SansItalic]       [LMSans-Oblique]
@@ -211,7 +211,7 @@
         \definefontsynonym [SansCapsSlanted]  [LMSans-Oblique]
     \stoptypescript
 
-    \starttypescript [mono] [modern,latin-modern,computer-modern] [name]
+    \starttypescript [mono] [modern,latin-modern,computer-modern,default] [name]
         \definefontsynonym [Mono]             [LMTypewriter-Regular]
         \definefontsynonym [MonoBold]         [LMTypewriter-Dark]
         \definefontsynonym [MonoItalic]       [LMTypewriter-Italic]
@@ -223,14 +223,14 @@
         \definefontsynonym [MonoVariable]     [LMTypewriterVarWd-Regular]
     \stoptypescript
 
-    \starttypescript [math] [modern,latin-modern,computer-modern] [name]
+    \starttypescript [math] [modern,latin-modern,computer-modern,default] [name]
         \definefontsynonym [MathRoman]        [LMMathRoman-Regular]
         %definefontsynonym [MathExtension]    [LMMathExtension-Regular]
         %definefontsynonym [MathItalic]       [LMMathItalic-Italic]
         %definefontsynonym [MathSymbol]       [LMMathSymbols-Italic]
     \stoptypescript
 
-    \starttypescript [serif] [modern-variable,latin-modern-variable] [name]
+    \starttypescript [serif] [modern-variable,latin-modern-variable,default] [name]
         \definefontsynonym [Serif]            [LMTypewriterVarWd-Regular]
         \definefontsynonym [SerifBold]        [LMTypewriterVarWd-Oblique]
         \definefontsynonym [SerifItalic]      [LMTypewriterVarWd-Oblique]
@@ -241,7 +241,7 @@
         \definefontsynonym [SerifCapsSlanted] [LMTypewriterVarWd-Oblique]
     \stoptypescript
 
-    \starttypescript [mono] [modern-condensed,latin-modern-condensed,modern-light-condensed,latin-modern-light-condensed] [name]
+    \starttypescript [mono] [modern-condensed,latin-modern-condensed,modern-light-condensed,latin-modern-light-condensed,default] [name]
         \definefontsynonym [Mono]             [LMTypewriter-LightCondensed]
         \definefontsynonym [MonoBold]         [LMTypewriter-LightCondensed]
         \definefontsynonym [MonoItalic]       [LMTypewriter-LightCondensedOblique]
@@ -252,7 +252,7 @@
         \definefontsynonym [MonoCapsSlanted]  [LMTypewriter-LightCondensed]
     \stoptypescript
 
-    \starttypescript [mono] [modern-light,latin-modern-light] [name]
+    \starttypescript [mono] [modern-light,latin-modern-light,default] [name]
         \definefontsynonym [Mono]             [LMTypewriter-Light]
         \definefontsynonym [MonoBold]         [LMTypewriter-Light]
         \definefontsynonym [MonoItalic]       [LMTypewriter-LightOblique]
@@ -265,7 +265,7 @@
 
     % Later we will map the real fonts, here we just map synonyms.
 
-    \starttypescript [serif] [modern,latin-modern,computer-modern]
+    \starttypescript [serif] [modern,latin-modern,computer-modern,default]
         \definefontsynonym [LMRoman-DemiOblique] [LMRoman10-DemiOblique]
         \definefontsynonym [LMRoman-Bold]        [LMRoman10-Bold]
         \definefontsynonym [LMRoman-BoldItalic]  [LMRoman10-BoldItalic]
@@ -277,7 +277,7 @@
         \definefontsynonym [LMRoman-Oblique]     [LMRoman10-Oblique]
     \stoptypescript
 
-    \starttypescript [sans] [modern,latin-modern,computer-modern]
+    \starttypescript [sans] [modern,latin-modern,computer-modern,default]
         \definefontsynonym [LMSans-Regular]              [LMSans10-Regular]
         \definefontsynonym [LMSans-BoldOblique]          [LMSans10-BoldOblique]
         \definefontsynonym [LMSans-Bold]                 [LMSans10-Bold]
@@ -286,7 +286,7 @@
         \definefontsynonym [LMSans-Oblique]              [LMSans10-Oblique]
     \stoptypescript
 
-    \starttypescript [mono] [modern,latin-modern,modern-variable,latin-modern-variable,modern-condensed,latin-modern-condensed]
+    \starttypescript [mono] [modern,latin-modern,modern-variable,latin-modern-variable,modern-condensed,latin-modern-condensed,default]
         \definefontsynonym [LMTypewriter-CapsRegular]           [LMTypewriter10-CapsRegular]
         \definefontsynonym [LMTypewriter-CapsOblique]           [LMTypewriter10-CapsOblique]
         \definefontsynonym [LMTypewriter-Light]                 [LMTypewriter10-Light]
@@ -306,7 +306,7 @@
         \definefontsynonym [LMTypewriterVarWd-DarkOblique]      [LMTypewriterVarWd10-DarkOblique]
     \stoptypescript
 
-    \starttypescript [serif] [modern,latin-modern,computer-modern]
+    \starttypescript [serif] [modern,latin-modern,computer-modern,default]
         \definefontsynonym [ComputerModern]             [LMRoman-Regular]
         \definefontsynonym [ComputerModern-Italic]      [LMRoman-Italic]
         \definefontsynonym [ComputerModern-Slanted]     [LMRoman-Oblique]
@@ -317,7 +317,7 @@
         \definefontsynonym [ComputerModern-CapsSlanted] [LMRoman-CapsOblique]
     \stoptypescript
 
-    \starttypescript [sans] [modern,latin-modern,computer-modern]
+    \starttypescript [sans] [modern,latin-modern,computer-modern,default]
         \definefontsynonym [ComputerModernSans]             [LMSans-Regular]
         \definefontsynonym [ComputerModernSans-Italic]      [LMSans-Oblique]
         \definefontsynonym [ComputerModernSans-Slanted]     [LMSans-Oblique]
@@ -328,7 +328,7 @@
         \definefontsynonym [ComputerModernSans-CapsSlanted] [LMSans-Oblique]% [LMSans-CapsOblique]
     \stoptypescript
 
-    \starttypescript [mono] [modern,latin-modern,computer-modern]
+    \starttypescript [mono] [modern,latin-modern,computer-modern,default]
         \definefontsynonym [ComputerModernMono]             [LMTypewriter-Regular]
         \definefontsynonym [ComputerModernMono-Italic]      [LMTypewriter-Italic]
         \definefontsynonym [ComputerModernMono-Slanted]     [LMTypewriter-Oblique]
@@ -340,7 +340,7 @@
         \definefontsynonym [ComputerModernMono-Variable]    [LMTypewriterVarWd-Regular]
     \stoptypescript
 
-    \starttypescript [mono] [modern-light,latin-modern-light]
+    \starttypescript [mono] [modern-light,latin-modern-light,default]
         \definefontsynonym [ComputerModernMono]             [LMTypewriter-Light]
         \definefontsynonym [ComputerModernMono-Italic]      [LMTypewriter-LightOblique]
         \definefontsynonym [ComputerModernMono-Slanted]     [LMTypewriter-LightOblique]
@@ -352,7 +352,7 @@
         \definefontsynonym [ComputerModernMono-Variable]    [LMTypewriterVarWd-Light]
     \stoptypescript
 
-    \starttypescript [serif] [modern-variable,latin-modern-variable]
+    \starttypescript [serif] [modern-variable,latin-modern-variable,default]
         \definefontsynonym [ComputerModernVariable]             [LMTypewriterVarWd-Regular]
         \definefontsynonym [ComputerModernVariable-Italic]      [LMTypewriterVarWd-Oblique]
         \definefontsynonym [ComputerModernVariable-Slanted]     [LMTypewriterVarWd-Oblique]
@@ -363,7 +363,7 @@
         \definefontsynonym [ComputerModernVariable-CapsSlanted] [LMTypewriterVarWd-Oblique]
     \stoptypescript
 
-    \starttypescript [serif] [modern-variable-light,latin-modern-variable-light]
+    \starttypescript [serif] [modern-variable-light,latin-modern-variable-light,default]
         \definefontsynonym [ComputerModernVariable]             [LMTypewriterVarWd-Light]
         \definefontsynonym [ComputerModernVariable-Italic]      [LMTypewriterVarWd-LightOblique]
         \definefontsynonym [ComputerModernVariable-Slanted]     [LMTypewriterVarWd-LightOblique]
@@ -374,7 +374,7 @@
         \definefontsynonym [ComputerModernVariable-CapsSlanted] [LMTypewriterVarWd-LightOblique]
     \stoptypescript
 
-    \starttypescript [math] [modern,latin-modern]
+    \starttypescript [math] [modern,latin-modern,default]
         % isn't this obsolete now?
         \definefontsynonym [LMMathRoman-Regular]       [LMMathRoman10-Regular]
         \definefontsynonym [LMMathRoman-Bold]          [LMMathRoman10-Bold]
@@ -385,7 +385,7 @@
         %definefontsynonym [LMMathItalic-BoldItalic]   [LMMathItalic10-BoldItalic]
     \stoptypescript
 
-    \starttypescript [modern]
+    \starttypescript [modern,default]
         \definetypeface [modern] [rm] [serif] [modern] [computer-modern]
         \definetypeface [modern] [ss] [sans]  [modern] [computer-modern]
         \definetypeface [modern] [tt] [mono]  [modern] [computer-modern]

@@ -155,35 +155,6 @@ function string.topattern(str,lowercase,strict)
     end
 end
 
-
--- The following functions might end up in another namespace.
-
-function string.tabtospace(str,tab)
-    -- we don't handle embedded newlines
-    while true do
-        local s = find(str,"\t")
-        if s then
-            if not tab then tab = 7 end -- only when found
-            local d = tab-(s-1) % tab
-            if d > 0 then
-                str = gsub(str,"\t",rep(" ",d),1)
-            else
-                str = gsub(str,"\t","",1)
-            end
-        else
-            break
-        end
-    end
-    return str
-end
-
-
-function string.striplong(str) -- strips all leading spaces
-    str = gsub(str,"^%s*","")
-    str = gsub(str,"[\n\r]+ *","\n")
-    return str
-end
-
 -- obsolete names:
 
 string.quote   = string.quoted
@@ -204,6 +175,8 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 
 local lpeg = require("lpeg")
 
+local type = type
+
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
@@ -213,10 +186,16 @@ local Ct, C, Cs, Cc, Cf, Cg = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cf, lpeg.C
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch
 
+local anything         = P(1)
+local endofstring      = P(-1)
+
+patterns.anything      = anything
+patterns.endofstring   = endofstring
+
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
 local utf8next         = R("\128\191")
-local escaped          = P("\\") * P(1)
+local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
 
@@ -227,7 +206,7 @@ patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
 patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
 
 local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
-local validutf8char    = utf8char^0 * P(-1) * Cc(true) + Cc(false)
+local validutf8char    = utf8char^0 * endofstring * Cc(true) + Cc(false)
 
 patterns.utf8          = utf8char
 patterns.utf8char      = utf8char
@@ -252,6 +231,7 @@ patterns.uppercase     = R("AZ")
 patterns.letter        = patterns.lowercase + patterns.uppercase
 patterns.space         = P(" ")
 patterns.tab           = P("\t")
+patterns.spaceortab    = patterns.space + patterns.tab
 patterns.eol           = S("\n\r")
 patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
 patterns.newline       = crlf + cr + lf
@@ -270,7 +250,7 @@ patterns.unsingle      = (squote/"") * ((escaped + (1-squote))^0) * (squote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
-local unquoted = Cs(patterns.unquoted * P(-1)) -- not C
+local unquoted = Cs(patterns.unquoted * endofstring) -- not C
 
 function string.unquoted(str)
     return match(unquoted,str) or str
@@ -306,7 +286,7 @@ local function splitat(separator,single)
         separator = P(separator)
         local other = C((1 - separator)^0)
         if single then
-            local any = P(1)
+            local any = anything
             splitter = other * (separator * C(any^0) + "") -- ?
             splitters_s[separator] = splitter
         else
@@ -364,7 +344,6 @@ function string.checkedsplit(str,separator)
     end
     return match(c,str)
 end
-
 
 
 local f1 = string.byte
@@ -444,7 +423,7 @@ function lpeg.secondofsplit(separator) -- nil if not split
     local splitter = splitters_s[separator]
     if not splitter then
         separator = P(separator)
-        splitter = (1 - separator)^0 * separator * C(P(1)^0)
+        splitter = (1 - separator)^0 * separator * C(anything^0)
         splitters_s[separator] = splitter
     end
     return splitter
@@ -516,8 +495,8 @@ local simple_escapes = { -- also defines in l-string
     ["*"] = ".*",
 }
 
-local p = Cs((S("-.+*%()[]") / patterns_escapes + P(1))^0)
-local s = Cs((S("-.+*%()[]") / simple_escapes   + P(1))^0)
+local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
+local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
     if simple then
@@ -613,6 +592,18 @@ function lpeg.UR(str,more)
 end
 
 
+
+function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then")
+    if type(list) ~= "table" then
+        list = { list, ... }
+    end
+ -- sort(list) -- longest match first
+    local p = P(list[1])
+    for l=2,#list do
+        p = p + P(list[l])
+    end
+    return p
+end
 
 
 end -- of closure
@@ -4199,7 +4190,7 @@ if not modules then modules = { } end modules ['util.deb'] = {
 local debug = require "debug"
 
 local getinfo = debug.getinfo
-local type, next = type, next
+local type, next, tostring = type, next, tostring
 local format, find = string.format, string.find
 local is_boolean = string.is_boolean
 
@@ -4287,6 +4278,19 @@ end
 
 
 
+
+local is_node = node and node.is_node
+
+function inspect(i)
+    local ti = type(i)
+    if ti == "table" then
+        table.print(i,"table")
+    elseif is_node and is_node(i) then
+        print(node.sequenced(i))
+    else
+        print(tostring(i))
+    end
+end
 
 
 end -- of closure

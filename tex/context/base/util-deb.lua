@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['util.deb'] = {
 local debug = require "debug"
 
 local getinfo = debug.getinfo
-local type, next = type, next
+local type, next, tostring = type, next, tostring
 local format, find = string.format, string.find
 local is_boolean = string.is_boolean
 
@@ -142,3 +142,16 @@ end
 --~ debugger.showstats()
 --~ print("")
 --~ debugger.showstats(print,3)
+
+local is_node = node and node.is_node
+
+function inspect(i)
+    local ti = type(i)
+    if ti == "table" then
+        table.print(i,"table")
+    elseif is_node and is_node(i) then
+        print(node.sequenced(i))
+    else
+        print(tostring(i))
+    end
+end

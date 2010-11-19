@@ -27,7 +27,7 @@ local sections   = structures.sections
 local list, done, alldone, used, registered, ordered  = { }, { }, { }, { }, { }, { }
 local mode = 0
 
-local template = string.striplong([[
+local template = utilities.strings.striplong([[
   \citation{*}
   \bibstyle{cont-%s}
   \bibdata{%s}

@@ -803,7 +803,7 @@ local nounicode = byte("?")
 local function nametoslot(name,all) -- maybe some day rawdata
     local tfmdata = fontdata[currentfont()]
     local shared = tfmdata and tfmdata.shared
-    local fntdata = shared and shared.otfdata or shared.afmdata
+    local fntdata = shared and (shared.otfdata or shared.afmdata)
     if fntdata then
         local unicode = fntdata.luatex.unicodes[name]
         if not unicode then

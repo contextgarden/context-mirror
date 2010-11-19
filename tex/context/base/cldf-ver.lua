@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['cldf-ver'] = {
 }
 
 local concat, tohandle = table.concat, table.tohandle
+local splitlines = string.splitlines
 local tostring, type = tostring, type
 
 local context = context
@@ -18,7 +19,7 @@ end
 local function t_tocontext(...)
     context.starttyping { "typing" } -- else [1] is intercepted
     context.pushcatcodes("verbatim")
-    tohandle(flush,...)
+    tohandle(flush,...) -- ok?
     context.stoptyping()
     context.popcatcodes()
 end
@@ -48,5 +49,23 @@ function tocontext(first,...)
         t_tocontext(first,...)
     elseif t == "boolean" then
         b_tocontext(first,...)
+    end
+end
+
+function context.tobuffer(name,str)
+    context.startbuffer { name }
+    context.pushcatcodes("verbatim")
+    local lines = type(str) == "string" and splitlines(str) or str
+    for i=1,#lines do
+        context(lines[i] .. " ")
+    end
+    context.stopbuffer()
+    context.popcatcodes()
+end
+
+function context.tolines(str)
+    local lines = type(str) == "string" and splitlines(str) or str
+    for i=1,#lines do
+        context(lines[i] .. " ")
     end
 end

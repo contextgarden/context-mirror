@@ -34,6 +34,7 @@ local variables = interfaces.variables
 local lpegmatch = lpeg.match
 local settings_to_array = utilities.parsers.settings_to_array
 local allocate = utilities.storage.allocate
+local tabtospace = utilities.strings.tabtospace
 
 buffers = {
     data        = allocate(),
@@ -572,7 +573,7 @@ end
 
 function hooks.line(str)
     if visualizers.enabletab then
-        str = string.tabtospace(str,visualizers.tablength)
+        str = tabtospace(str,visualizers.tablength)
     else
         str = gsub(str,"\t"," ")
     end

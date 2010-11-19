@@ -15,6 +15,7 @@ local traverse_nodes = node.traverse
 local traverse_id    = node.traverse_id
 local has_attribute  = node.has_attribute
 local copy_node      = node.copy
+local free_nodelist  = node.flush_list
 
 local glue_code      = nodecodes.glue
 local glyph_code     = nodecodes.glyph
@@ -30,6 +31,12 @@ local function injectspaces(head)
          -- if at then
                 if p and p.id == glyph_code then
                     local g = copy_node(p)
+                    local c = g.components
+                    if c then -- it happens that we copied a ligature
+                        free_nodelist(c)
+                        g.components = nil
+                        g.subtype = 256
+                    end
                     local s = copy_node(n.spec)
                     g.char, n.spec = 32, s
                     p.next, g.prev = g, p
