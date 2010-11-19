@@ -91,9 +91,6 @@
   {\dosetfontattribute \??cm\c!style
    \dosetcolorattribute\??cm\c!color}
 
-\def\dochemicaltext#1%
-  {\dosetchemicaltext\strut#1} % maybe also \setstrut
-
 \edef\chemicaltoplocation{t}
 \edef\chemicalbotlocation{b}
 
@@ -316,9 +313,24 @@
 \unexpanded\def\chemicaltopright     #1{\chemicalright{\chemicallefttop    {#1}{}}}
 \unexpanded\def\chemicalbottomright  #1{\chemicalright{\chemicalleftbottom {#1}{}}}
 
-\unexpanded\def\chemicalcentered     #1{\setbox\scratchbox\hbox{C}\hbox to \wd\scratchbox{\setstrut\strut\hss#1\hss}}
-\unexpanded\def\chemicalleftcentered #1{\setbox\scratchbox\hbox{C}\hbox to \wd\scratchbox{\setstrut\strut    #1\hss}}
-\unexpanded\def\chemicalrightcentered#1{\setbox\scratchbox\hbox{C}\hbox to \wd\scratchbox{\setstrut\strut\hss#1}}
+% \unexpanded\def\chemicalcentered     #1{\hbox to \fontcharwd\font`C{\setstrut\strut\hss#1\hss}}
+% \unexpanded\def\chemicalleftcentered #1{\hbox to \fontcharwd\font`C{\setstrut\strut    #1\hss}}
+% \unexpanded\def\chemicalrightcentered#1{\hbox to \fontcharwd\font`C{\setstrut\strut\hss#1}}
+
+% \let\chemicalsmashedmiddle\chemicalcentered
+% \let\chemicalsmashedleft  \chemicalleftcentered
+% \let\chemicalsmashedright \chemicalrightcentered
+
+\unexpanded\def\chemicalalignedtext#1#2#3%
+  {\dontleavehmode
+   \begingroup
+   \dosetchemicaltext
+   \hbox to \fontcharwd\font`C{\setstrut\strut#1\molecule{#3}#2}%
+   \endgroup}
+
+\unexpanded\def\chemicalcentered     {\chemicalalignedtext\hss  \hss  }
+\unexpanded\def\chemicalleftcentered {\chemicalalignedtext\relax\hss  }
+\unexpanded\def\chemicalrightcentered{\chemicalalignedtext\hss  \relax}
 
 \let\chemicalsmashedmiddle\chemicalcentered
 \let\chemicalsmashedleft  \chemicalleftcentered
@@ -391,6 +403,7 @@
   {\the\everychemical \everychemical\emptytoks
    \quad
    \vcenter\bgroup
+     \dosetchemicaltext
      \ifthirdargument
        \ifsecondargument
          \halign{&\hss##\hss\cr#2\cr\molecule{#1}\cr#3\cr}%
@@ -404,7 +417,7 @@
    \quad}
 
 \def\inlinechemical#1%
-  {\dontleavehmode\hbox{\ctxlua{chemicals.inline(\!!bs#1\!!es)}}}
+  {\dontleavehmode\hbox{\dosetchemicaltext\ctxlua{chemicals.inline(\!!bs#1\!!es)}}}
 
 \def\chemicalbondrule{\hbox{\vrule\!!height.75ex\!!depth-\dimexpr.75ex-\linewidth\relax\!!width1em\relax}}
 
@@ -458,15 +471,15 @@
    \nointerlineskip
    \ifconditional\formulachemicalhastop
      \ifconditional\formulachemicalhasbot
-       \halign{&\hss##\hss\cr\the\formulachemicaltop\cr\the\formulachemicalmid\cr\the\formulachemicalbot\cr}%
+       \halign{&\hss\dosetchemicaltext##\hss\cr\the\formulachemicaltop\cr\the\formulachemicalmid\cr\the\formulachemicalbot\cr}%
      \else
-       \halign{&\hss##\hss\cr\the\formulachemicaltop\cr\the\formulachemicalmid\cr}%
+       \halign{&\hss\dosetchemicaltext##\hss\cr\the\formulachemicaltop\cr\the\formulachemicalmid\cr}%
      \fi
    \else
      \ifconditional\formulachemicalhasbot
-       \halign{&\hss##\hss\cr\the\formulachemicalmid\cr\the\formulachemicalbot\cr}%
+       \halign{&\hss\dosetchemicaltext##\hss\cr\the\formulachemicalmid\cr\the\formulachemicalbot\cr}%
      \else
-       \halign{&\hss##\hss\cr\the\formulachemicalmid\cr}%
+       \halign{&\hss\dosetchemicaltext##\hss\cr\the\formulachemicalmid\cr}%
      \fi
    \fi
    \egroup}
@@ -474,7 +487,7 @@
 \unexpanded\def\formulachemical
   {\relax\dotriplegroupempty\doformulachemical}
 
-\def\doformulachemical#1#2#3%
+\def\doformulachemical#1#2#3% we could do hboxes and measure
   {\ifthirdargument
      \doifelsenothing{#2}\noformulachemicaltop{\doformulachemicaltop{#2}}%
      \doifelsenothing{#3}\noformulachemicalbot{\doformulachemicalbot{#3}}%

@@ -64,7 +64,7 @@
    \def#6##1##2{\csname#4{#1##1}{##2}\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}} % always root
 
-\def\installparameterhandler#1#2%
+\unexpanded\def\installparameterhandler#1#2%
   {%\message{\detokenize{#1}/\detokenize{#2}}%
    \normalexpanded
      {\doinstallparameterhandler
@@ -81,7 +81,7 @@
    \def#4##1##2{\ifcsname##1##2\endcsname##1\else\expandafter#5\csname##1\s!parent\endcsname{##2}\fi}%
    \def#5##1##2{\ifx##1\relax\else#4{##1}{##2}\fi}}
 
-\def\installparameterhashhandler#1#2%
+\unexpanded\def\installparameterhashhandler#1#2%
   {\normalexpanded
      {\doinstallparameterhashhandler
         {\noexpand#1}% \??aa
@@ -97,7 +97,7 @@
       \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash {##1}\fi
       \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash{##2}\fi}}
 
-\def\installattributehandler#1#2%
+\unexpanded\def\installattributehandler#1#2%
   {\normalexpanded
      {\doinstallattributehandler
         {\noexpand#1}% \??aa
@@ -105,20 +105,20 @@
         \expandafter\noexpand\csname #2parameterhash\endcsname}}
 
 \unexpanded\def\doinstalldefinehandler#1#2#3#4#5#6#7%
-  {\unexpanded\def#2{\dodoubleempty#5}%
+  {\unexpanded\def#2{\dotripleempty#5}%
    \newtoks#6%
    \newtoks#7%
-   \def#5[##1][##2]%
+   \def#5[##1][##2][##3]%
      {\edef#4{##1}%
       \the#6% predefine
       \ifsecondargument
-        \getparameters[#1#4][\s!parent=#1,##2]%
-      \else
-        \getparameters[#1#4][\s!parent=#3]%
+        \doifassignmentelse{##2}
+          {\getparameters[#1#4][\s!parent=#3,##2]}
+          {\getparameters[#1#4][\s!parent=#1##2,##3]}%
       \fi
       \the#7}}
 
-\def\installdefinehandler#1#2#3%
+\unexpanded\def\installdefinehandler#1#2#3%
   {\normalexpanded
      {\doinstalldefinehandler
         {\noexpand#1}% \??aa
@@ -135,7 +135,7 @@
    \def#4[##1][##2]%
      {\ifsecondargument
         \def\docommand####1% we will have a simple one as well
-          {\edef#3{##1}%
+          {\edef#3{####1}%
            \getparameters[#1#3][##2]%
            \the#5}%
         \processcommalist[##1]\docommand
@@ -145,7 +145,7 @@
         \the#5%
       \fi}}
 
-\def\installsetuphandler#1#2%
+\unexpanded\def\installsetuphandler#1#2%
   {\normalexpanded
      {\doinstallsetuphandler
         {\noexpand#1}% \??aa
@@ -161,7 +161,7 @@
    \installsetuphandler        {#1}{#2}%
    \installattributehandler    {#1}{#2}}
 
-\def\installnamespace#1%
+\unexpanded\def\installnamespace#1%
   {\setvalue{????#1}{@@@@#1}}
 
 % \enabletrackers[interfaces.namespaces,context.flush]
@@ -199,7 +199,8 @@
 %
 % \stoptext
 
-\def\definenamespace{\dodoubleargument\dodefinenamespace}
+\unexpanded\def\definenamespace
+  {\dodoubleargument\dodefinenamespace}
 
 \def\dodefinenamespace[#1][#2]% namespace settings
   {\ctxlua{interfaces.namespaces.define(\!!bs#1\!!es,\!!bs#2\!!es)}}

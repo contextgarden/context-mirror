@@ -891,6 +891,7 @@ local function collectresults(head,list,p)
         if id == glyph_code then
             local at = has_attribute(n,a_tagged)
             if at then
+                -- we could add tonunicodes for ligatures
                 local components =  n.components
                 if components then
                     collectresults(components,nil)

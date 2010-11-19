@@ -421,7 +421,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
             end
         end
     --  if trace_scaling then
-    --      report_define("t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or k,description.index,description.name or '-',description.class or '-')
+    --    report_define("t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or "",index or 0,description.name or '-',description.class or '-')
     --  end
         if tounicode then
             local tu = tounicode[index] -- nb: index!

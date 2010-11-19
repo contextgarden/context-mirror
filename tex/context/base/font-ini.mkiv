@@ -1481,18 +1481,18 @@
    \getparameters[\??ft#2#1][#3]%
    %\@@endfontdef
    % new code, see remark
-   \ifloadingfonts
-     % only runtime
-   \else\ifcsname\@size@#1\endcsname
-     % only once
-   \else
-     % prevent loop (hence \empty)
-     \letvalueempty{\@size@#1}%
-     \pushmacro\fontclass     % new per 26102009
-     \edef\fontclass{#2}%     % new per 26102009
-     \defineunknownfont{#1}%
-     \popmacro\fontclass      % new per 26102009
-   \fi\fi
+   \ifproductionrun
+     \ifcsname\@size@#1\endcsname
+       % only once
+     \else
+       % prevent loop (hence \empty)
+       \letvalueempty{\@size@#1}%
+       \pushmacro\fontclass     % new per 26102009
+       \edef\fontclass{#2}%     % new per 26102009
+       \defineunknownfont{#1}%
+       \popmacro\fontclass      % new per 26102009
+     \fi
+   \fi
    % so far
    \setvalue{\@size@#1}{\docompletefontswitch[#1]}}
 
@@ -1941,7 +1941,7 @@
 \def\doswitchpoints[#1]%
   {\normalexpanded{\dodoswitchpoints{#1}}}
 
-\unexpanded \def\dodoswitchpoints#1%
+\unexpanded\def\dodoswitchpoints#1%
   {\ifcsname\@size@#1\endcsname \else
      \defineunknownfont{#1}%
    \fi%
@@ -1956,7 +1956,7 @@
      \showmessage\m!fonts4{#1}%
    \fi}
 
-\unexpanded \def\doswitchstyle[#1]%
+\unexpanded\def\doswitchstyle[#1]%
   {\ifcsname\@style@#1\endcsname
      \csname\@style@#1\endcsname
      \edef\fontstyle{#1}%
@@ -2005,20 +2005,14 @@
 %D we start typesetting.
 %D
 %D Therefore we have to signal the font switching macros that
-%D we are preloading fonts. As long as the next boolean is,
-%D true, no loading is done.
-
-\newif\ifloadingfonts \loadingfontstrue
-
+%D we are preloading fonts.
+%D
 %D \macros
 %D   {preloadfonts}
 %D
 %D Preloading is only called for once, during the startup
 %D sequence of a session. After the loading job is done, the
 %D macro relaxes itself and reset the signal.
-
-% \appendtoks
-% \to \everysetupdocument
 
 \fontdimen1\nullfont      0\scaledpoint
 \fontdimen2\nullfont 256377\scaledpoint
@@ -2033,42 +2027,42 @@
    \ctxlua{fonts.definers.resetnullfont()}% in luatex 0.70 this will also do the previous
    \globallet\resetnullfont\relax}
 
-\newconditional\fontsareloaded
+% \newconditional\fontsareloaded
 
 \def\preloaddefaultfonts
-  {\usetypescript[modern]%
+  {\resetpreloadfonts
+   \usetypescript[modern]%
    \setuptypeface[modern]%
+   %\setuptypeface[\s!default]%
    \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}
 
 \def\resetpreloadfonts
   {\global\let\firststagepreloadfonts \relax
    \global\let\secondstagepreloadfonts\relax
    \global\let\thirdstagepreloadfonts \relax
+   \global\let\fourthstagepreloadfonts\relax
    \resetnullfont}
 
 \def\firststagepreloadfonts % see core-def.mkiv
-  {\global\loadingfontsfalse
-   \ifconditional\fontsareloaded
-      \resetpreloadfonts
-   \else
-     \doifmodeelse {*nofonts}
-       {\writestatus\m!fonts{latin modern fonts are not preloaded}}
-       {\writestatus\m!fonts{preloading latin modern fonts (first stage)}%
-        \preloaddefaultfonts
-        \resetpreloadfonts}%
-   \fi}
+  {\doifmodeelse{*nofonts}
+     {%\resetpreloadfonts
+      \writestatus\m!fonts{latin modern fonts are not preloaded}}
+     {\preloaddefaultfonts
+      \writestatus\m!fonts{preloading latin modern fonts (first stage)}}}
 
 \def\secondstagepreloadfonts % see core-def.mkiv
-  {\global\loadingfontsfalse
-   \ifconditional\fontsareloaded
-     % nothing
-   \else
-     \writestatus\m!fonts{preloading latin modern fonts (second stage)}%
-     \preloaddefaultfonts
-   \fi
-   \resetpreloadfonts}
+  {\writestatus\m!fonts{preloading latin modern fonts (second stage)}%
+   \preloaddefaultfonts}
 
-\def\thirdstagepreloadfonts % see core-def.mkiv
+\def\thirdstagepreloadfonts
+  {\ifx\fontclass\empty
+     \writestatus\m!fonts{preloading latin modern fonts (third stage)}%
+     \preloaddefaultfonts
+   \else
+     \resetpreloadfonts
+   \fi}
+
+\def\fourthstagepreloadfonts
   {\begingroup
    %ifzeropt\fontcharwd\font\number`!\relax
    \setbox\scratchbox\hbox{context}%
@@ -2078,14 +2072,8 @@
      \writestatus\m!fonts{!! loaded (maybe due to a missing \string\starttext).}%
      \writeline
    \fi
+   \resetpreloadfonts
    \endgroup}
-
-% maybe add this to \everystarttext
-%
-% \ifconditional\fontsareloaded\else
-%   \usetypescript[modern]%
-%   \setuptypeface[modern]%
-% \fi
 
 %D Here comes the main font switching macros. These macros
 %D handle changes in size as well as returning to the global
@@ -2095,8 +2083,8 @@
   {\doifelse{#2}\v!global
      {\restoreglobalbodyfont}
      {\processcommacommand[#2]{\dodosetfont{#1}}% ##1 get also passed
-      \ifloadingfonts\else
-        \global\settrue\fontsareloaded
+      \ifproductionrun
+        \thirdstagepreloadfonts
         \doswitchpoints[\normalizedbodyfontsize]%
         \doswitchstyle[\fontstyle]%
         \ifx\defaultfontclass\empty
@@ -2107,11 +2095,6 @@
 
 \def\dodosetfont#1#2%  #1 = set/switch state | check fo rempty, else space
   {\doifsomething{#2}{\dododosetfont{#1}{#2}{\showmessage\m!fonts4{#2}}}}
-
-% % % this can be retrofitted in mkii code % % %
-
-% \def\normalizebodyfontsize#1\to#2%
-%   {\@EA\@EA\@EA\donormalizedbodyfontsize\@EA\WITHOUTPT\the\dimexpr#1+\ifcase\fontdigits.5\or.05\or.005\fi\points\relax000\to#2}
 
 \def\dododosetfont#1#2#3% #1 = set/switch state ! ! ! !could also be used for mkii
   {\doifnumberelse{#2}\dodododosetfont\redododosetfont{#1}{#2}{#3}}
@@ -2156,8 +2139,6 @@
    \else
      #3\dosetsubstitutefont{#1}{#2}%
    \fi}
-
-% % %
 
 %D When users specify for instance a 13 point bodyfont while no
 %D such bodyfont is defined, the system automatically tries to
@@ -2689,7 +2670,7 @@
       \globalbodyfontsize\localbodyfontsize
       \normalizebodyfontsize\globalbodyfontsize\to\normalizedglobalbodyfontsize
       \let\globalfontstyle\fontstyle
-      \ifloadingfonts\else
+      \ifproductionrun
         \the\everybodyfont
         \the\everyglobalbodyfont
         \saveinterlinespace

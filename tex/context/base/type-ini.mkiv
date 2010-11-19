@@ -416,20 +416,6 @@
    {\popmacro\relativefontsize
     \popmacro\fontclass}
 
-% \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
-%   {\dododefinetypeface[#1][#2]%
-%    \iffifthargument % sixth is optional, we need to expand since in #6 there can be a \typescripttwo
-%      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
-%      \dostarttypefacedefining{#1}{#2}{#6}%
-%      \usetypescript[#3][#4][\t!name,\t!default]%
-%      \usetypescript[#3][#5][\t!size]%
-%      \dostoptypefacedefining
-%    \else\iffourthargument
-%      \definetypeface[#1][#2][#3][#4][\s!default]%
-%    \else\ifthirdargument
-%      \getparameters[\??tf#1#2][#3]%
-%    \fi\fi\fi}
-
 \def\dofastdefinetypeface#1#2#3#4#5%
   {\dododefinetypeface[#1][#2]%
    \dostarttypefacedefining{#1}{#2}{#5}%

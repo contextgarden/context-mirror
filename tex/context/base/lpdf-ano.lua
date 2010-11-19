@@ -415,6 +415,7 @@ local pages = references.pages
 
 function specials.page(var,actions) -- better resolve in strc-ref
     local file = var.f
+--~ table.print(var)
     if file then
         file = references.checkedfile(file)
         return link(nil,file,nil,var.operation,actions)

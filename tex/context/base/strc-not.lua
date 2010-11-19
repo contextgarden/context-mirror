@@ -265,17 +265,19 @@ function notes.getsymbolpage(tag,n)
     local nd = get(tag,n)
     local p = nd and nd.references.symbolpage or 0
     if trace_notes then
-        report_notes("note %s of '%s' has page %s",n,tag,p)
+        report_notes("page number of note symbol %s of '%s' is %s",n,tag,p)
     end
     context(p)
 end
 
 function notes.getnumberpage(tag,n)
     local li = internal(tag,n)
-    li = li and li.pagenumber
-    li = li and li.numbers
-    li = li and li[1]
-    context(li or 0)
+    li = li and li.references
+    li = li and li.realpage or 0
+    if trace_notes then
+        report_notes("page number of note number %s of '%s' is %s",n,tag,li)
+    end
+    context(li)
 end
 
 function notes.flush(tag,whatkind,how) -- store and postpone
