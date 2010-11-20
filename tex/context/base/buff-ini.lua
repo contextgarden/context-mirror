@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['buff-ini'] = {
     version   = 1.001,
-    comment   = "companion to core-buf.mkiv",
+    comment   = "companion to buff-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -341,7 +341,7 @@ function buffers.run(name,list,encapsulate)
     end
 end
 
-local printer = (lpeg.patterns.textline/texprint)^0
+local printer = (lpeg.patterns.textline/texprint)^0 -- not the right one, we can use context(b)
 
 function buffers.get(name)
     local b = data[name]
@@ -785,7 +785,7 @@ function buffers.setescapepair(name,pair)
     end
 end
 
--- THIS WILL BECOME A FRAMEWORK: the problem with prety printing is that
+-- THIS WILL BECOME A FRAMEWORK: the problem with pretty printing is that
 -- we deal with snippets and therefore we need tolerant parsing
 
 --~ local type = type

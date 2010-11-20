@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['cldf-ver'] = {
     license   = "see context related readme files"
 }
 
+-- tex.print == newline
+
 local concat, tohandle = table.concat, table.tohandle
 local splitlines = string.splitlines
 local tostring, type = tostring, type
@@ -55,7 +57,7 @@ end
 function context.tobuffer(name,str)
     context.startbuffer { name }
     context.pushcatcodes("verbatim")
-    local lines = type(str) == "string" and splitlines(str) or str
+    local lines = (type(str) == "string" and find(str,"\n") and splitlines(str)) or str
     for i=1,#lines do
         context(lines[i] .. " ")
     end
