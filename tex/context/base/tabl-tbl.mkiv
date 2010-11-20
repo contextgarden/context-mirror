@@ -177,7 +177,7 @@
 \newconditional  \tabulatefirstflushed
 \newconditional  \tabulateequal
 \newconditional  \tabulatesplit              \settrue\tabulatesplit
-\newconditional  \ifautotabulate
+\newconditional  \tabulateautomode
 \newconditional  \tabulatehandlepbreak       \settrue\tabulatehandlepbreak
 
 \newdimen        \tabulatepwidth
@@ -381,7 +381,7 @@
         \checktabulatehook   % unexpandable
         \ifzeropt\tabulatewidth
             \ifcase\tabulatemodus\else
-               \noexpand\settrue\noexpand\autotabulate
+               \noexpand\settrue\noexpand\tabulateautomode
             \fi
         \else
             \ifnum\tabulatemodus=\zerocount
@@ -1277,7 +1277,7 @@
      \global\setbox\tablebox\tabulatecolumn\vbox
      \bgroup
      \glet\tabulatehook\notabulatehook
-     \ifconditional\autotabulate\hsize\tabulatewidth\fi
+     \ifconditional\tabulateautomode\hsize\tabulatewidth\fi
      % \begstrut % interferes with pre-\pars
      % evt: \appendtoks\begstrut\to\everypar
      \ignorespaces
@@ -1309,7 +1309,7 @@
 
 \def\tabulatebskipthree
   {\vtop\bgroup
-     \ifconditional\autotabulate\hsize\tabulatewidth\fi
+     \ifconditional\tabulateautomode\hsize\tabulatewidth\fi
      % \begstrut % interferes with pre-\pars
      % evt: \appendtoks\begstrut\to\everypar
      \ignorespaces}
@@ -1507,7 +1507,7 @@
      \tabulatepreamble{\aligntab\flushtabulateindent\strut\alignmark\alignmark\aligntab\alignmark\alignmark\tabskip\zeropoint}%
    \fi
    \tabulatewidth\zeropoint
-   \ctxlua{commands.presettabulate("\detokenize{#1}")}%
+   \ctxlua{commands.presettabulate(\!!bs\detokenize{#1}\!!es)}%
    \edef\totaltabulatecolumns{\the\numexpr3*\tabulatecolumns+4}%
    \tabulatewidth\zeropoint
    \initializetableboxes\tabulatecolumns

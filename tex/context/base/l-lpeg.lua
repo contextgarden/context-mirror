@@ -21,9 +21,11 @@ local utfgmatch        = unicode and unicode.utf8.gmatch
 
 local anything         = P(1)
 local endofstring      = P(-1)
+local alwaysmatched    = P(true)
 
 patterns.anything      = anything
 patterns.endofstring   = endofstring
+patterns.beginofstring = alwaysmatched
 
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")

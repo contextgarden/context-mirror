@@ -22,9 +22,10 @@ if not modules then modules = { } end modules ['mult-cld'] = {
 context       = context or { }
 local context = context
 
-local format, concat = string.format, table.concat
+local format, find, gmatch, splitlines = string.format, string.find, string.gmatch, string.splitlines
 local next, type, tostring, setmetatable = next, type, tostring, setmetatable
-local insert, remove = table.insert, table.remove
+local insert, remove, concat = table.insert, table.remove, table.concat
+local lpegmatch = lpeg.match
 
 local tex = tex
 
@@ -48,6 +49,8 @@ local flush         = texsprint
 
 local trace_context = logs.new("context") -- here
 local report_cld    = logs.new("cld")
+
+local processlines  = false  experiments.register("context.processlines", function(v) processlines = v end)
 
 local _stack_, _n_ = { }, 0
 
@@ -117,6 +120,49 @@ function tex.fprint(...) -- goodie
     texsprint(currentcatcodes,format(...))
 end
 
+-- -- --
+
+local newline    = lpeg.patterns.newline
+local space      = lpeg.patterns.spacer
+local spacing    = newline * space^0
+local content    = lpeg.C((1-spacing)^1)
+local emptyline  = space^0 * newline^2
+local endofline  = space^0 * newline * space^0
+local simpleline = endofline * lpeg.P(-1)
+
+function lpeg.texlinesplitter(f_content,f_endofline,f_emptyline,f_simpleline)
+    local splitlines =
+        simpleline / (f_simpleline or f_endofline)
+      + (
+            emptyline / f_emptyline
+          + endofline / f_endofline
+          + content   / f_content
+        )^0
+    return function(str) return lpegmatch(splitlines,str) end
+end
+
+local function f_content(s)
+    flush(contentcatcodes,s)
+end
+
+local function f_endofline()
+    texsprint(" ")
+end
+
+local function f_emptyline()
+    texprint("")
+end
+
+local function f_simpleline()
+    texprint("")
+end
+
+local flushlines = lpeg.texlinesplitter(f_content,f_endofline,f_emptyline,f_simpleline)
+
+context.flushlines = flushlines -- maybe context.helpers.flushtexlines
+
+-- -- --
+
 local function writer(command,first,...)
     local t = { first, ... }
     flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
@@ -135,15 +181,21 @@ local function writer(command,first,...)
             -- nothing
         elseif ti == "" then
             flush(currentcatcodes,"{}")
-        elseif typ == "string" or typ == "number" then
-            if currentcatcodes == contentcatcodes then
+        elseif typ == "string" then
+            if processlines and find(ti,"\n") then -- we can check for ti == "\n"
+                flush(currentcatcodes,"{")
+                flushlines(ti)
+                flush(currentcatcodes,"}")
+            elseif currentcatcodes == contentcatcodes then
                 flush(currentcatcodes,"{",ti,"}")
             else
                 flush(currentcatcodes,"{")
-             -- maybe if string and \n found then auto split
                 flush(contentcatcodes,ti)
                 flush(currentcatcodes,"}")
             end
+        elseif typ == "number" then
+            -- numbers never have funny catcodes
+            flush(currentcatcodes,"{",ti,"}")
         elseif typ == "table" then
             local tn = #ti
             if tn == 0 then
@@ -185,7 +237,8 @@ local function writer(command,first,...)
             flush(currentcatcodes,"{\\mkivflush{",_store_(ti),"}}") -- todo: ctx|prt|texcatcodes
         elseif typ == "boolean" then
             if ti then
-                flush(ctxcatcodes,"^^M")
+             -- flush(currentcatcodes,"^^M")
+                texprint("")
             else
                 direct = true
             end
@@ -219,14 +272,16 @@ end
 
 local function caller(t,f,a,...)
     if not t then
-        -- so we don't need to test in the calling (slower but often no issue)
+        -- so we don't need to test in the calling (slower but often no issue) (will go)
     elseif f ~= nil then
         local typ = type(f)
         if typ == "string" then
             if a then
-                flush(currentcatcodes,format(f,a,...))
+                flush(contentcatcodes,format(f,a,...)) -- was currentcatcodes
+            elseif processlines and find(f,"\n") then
+                flushlines(f)
             else
-                flush(currentcatcodes,f)
+                flush(contentcatcodes,f)
             end
         elseif typ == "number" then
             if a then
@@ -238,11 +293,21 @@ local function caller(t,f,a,...)
             -- ignored: a ...
             flush(currentcatcodes,"{\\mkivflush{",_store_(f),"}}") -- todo: ctx|prt|texcatcodes
         elseif typ == "boolean" then
-            -- ignored: a ...
             if f then
-                flush(currentcatcodes,"^^M")
-            elseif a ~= nil then
-                writer("",a,...)
+                if a ~= nil then
+                    flushlines(f)
+                    -- ignore ... maybe some day
+                else
+                 -- flush(currentcatcodes,"^^M")
+                    texprint("")
+                end
+            else
+                if a ~= nil then
+                    -- no command, same as context(a,...)
+                    writer("",a,...)
+                else
+                    -- ignored
+                end
             end
         elseif typ == "thread" then
             trace_context("coroutines not supported as we cannot yield across boundaries")
@@ -253,6 +318,8 @@ local function caller(t,f,a,...)
         end
     end
 end
+
+local defaultcaller = caller
 
 setmetatable(context, { __index = indexer, __call = caller } )
 
@@ -396,11 +463,7 @@ function context.egroup()
     context("}")
 end
 
---~ function context.verbatim(...)
---~     flush(vrbcatcodes,...)
---~ end
-
--- context.delayed
+-- context.delayed (todo: lines)
 
 local delayed = { } context.delayed = delayed -- maybe also store them
 
@@ -424,7 +487,7 @@ end
 
 setmetatable(delayed, { __index = indexer, __call = caller } )
 
--- context.nested
+-- context.nested (todo: lines)
 
 local nested = { } context.nested = nested
 
@@ -473,7 +536,10 @@ local function indexer(t,k)
 end
 
 local function caller(t,...)
-    flush(vrbcatcodes,...)
+    local savedcatcodes = contentcatcodes
+    contentcatcodes = vrbcatcodes
+    defaultcaller(t,...)
+    contentcatcodes = savedcatcodes
 end
 
 setmetatable(verbatim, { __index = indexer, __call = caller } )
