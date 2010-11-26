@@ -315,7 +315,7 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                         postscript = object.postscript,
                                     }
                                     --
-                                    local before, inbetween, after = nil, nil, nil
+                                    local before, inbetween, after, grouped = nil, nil, nil, false
                                     --
                                     local cs, cr = currentobject.color, nil
                                     -- todo document why ...
@@ -329,7 +329,7 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                         -- move test to function
                                         local special = metapost.specials[prescript]
                                         if special then
-                                            currentobject, before, inbetween, after = special(currentobject.postscript,currentobject,t,flusher)
+                                            currentobject, before, inbetween, after, grouped = special(currentobject.postscript,currentobject,t,flusher)
                                             objecttype = currentobject.type
                                         end
                                     end
@@ -339,7 +339,9 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                         t[#t+1], cr = colorconverter(cs)
                                     end
                                     --
-                                    if before then currentobject, t = before() end
+                                    if before then
+                                        currentobject, t = before()
+                                    end
                                     local ml = currentobject.miterlimit
                                     if ml and ml ~= miterlimit then
                                         miterlimit = ml
@@ -426,7 +428,13 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                     if cr then
                                         t[#t+1] = cr
                                     end
-                                    if after then currentobject, t = after() end
+                                    if after then
+                                        currentobject, t = after()
+                                    end
+                                    if grouped then
+                                        -- can be qQ'd so changes can end up in groups
+                                        miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
+                                    end
                                 end
                            end
                         end

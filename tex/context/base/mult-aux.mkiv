@@ -57,12 +57,14 @@
 
 % todo: \def\detokenized...parameter#1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2\endcsname}} % always root
 
-\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7%
+\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7#8#9%
   {\def#3##1{\csname#4{#1#2}{##1}\endcsname}%
    \def#4##1##2{\ifcsname##1##2\endcsname##1##2\else\expandafter#5\csname##1\s!parent\endcsname{##2}\fi}%
    \def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}%
    \def#6##1##2{\csname#4{#1##1}{##2}\endcsname}%
-   \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}} % always root
+   \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}% always root
+   \def#8{\dosetvalue{#1}}% ##1 {##2} (braces are mandate)
+   \def#9{\doletvalue{#1}}}% ##1 ##2
 
 \unexpanded\def\installparameterhandler#1#2%
   {%\message{\detokenize{#1}/\detokenize{#2}}%
@@ -74,7 +76,9 @@
         \expandafter\noexpand\csname do#2parameter\endcsname
         \expandafter\noexpand\csname do#2parentparameter\endcsname
         \expandafter\noexpand\csname named#2parameter\endcsname
-        \expandafter\noexpand\csname detokenized#2parameter\endcsname}}
+        \expandafter\noexpand\csname detokenized#2parameter\endcsname
+        \expandafter\noexpand\csname doset#2parameter\endcsname
+        \expandafter\noexpand\csname dolet#2parameter\endcsname}}
 
 \unexpanded\def\doinstallparameterhashhandler#1#2#3#4#5%
   {\def#3##1{#4{#1#2}{##1}}%
@@ -104,18 +108,38 @@
         \expandafter\noexpand\csname doset#2attributes\endcsname
         \expandafter\noexpand\csname #2parameterhash\endcsname}}
 
+% \unexpanded\def\doinstalldefinehandler#1#2#3#4#5#6#7%
+%   {\unexpanded\def#2{\dotripleempty#5}%
+%    \newtoks#6%
+%    \newtoks#7%
+%    \def#5[##1][##2][##3]% [child][parent][settings]
+%      {\edef#4{##1}%       [child][settings]
+%       \the#6% predefine   [child]
+%       \ifsecondargument
+%         \doifassignmentelse{##2}
+%           {\getparameters[#1#4][\s!parent=#3,##2]}
+%           {\getparameters[#1#4][\s!parent=#1##2,##3]}%
+%       \else
+%         \getparameters[#1#4][\s!parent=#3]%
+%       \fi
+%       \the#7}}
+
 \unexpanded\def\doinstalldefinehandler#1#2#3#4#5#6#7%
   {\unexpanded\def#2{\dotripleempty#5}%
    \newtoks#6%
    \newtoks#7%
-   \def#5[##1][##2][##3]%
-     {\edef#4{##1}%
-      \the#6% predefine
-      \ifsecondargument
+   \def#5[##1][##2][##3]% [child][parent][settings]
+     {\edef#4{##1}%     % [child]        [settings]
+      \the#6% predefine % [child][parent]
+      \ifthirdargument  % [child]
+        \getparameters[#1#4][\s!parent=#1##2,##3]%
+      \else\ifsecondargument
         \doifassignmentelse{##2}
           {\getparameters[#1#4][\s!parent=#3,##2]}
-          {\getparameters[#1#4][\s!parent=#1##2,##3]}%
-      \fi
+          {\getparameters[#1#4][\s!parent=#1##2]}%
+      \else
+        \getparameters[#1#4][\s!parent=#3]%
+      \fi\fi
       \the#7}}
 
 \unexpanded\def\installdefinehandler#1#2#3%
@@ -125,14 +149,14 @@
         \expandafter\noexpand\csname define#2\endcsname
         {\noexpand#3}% root
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname dodefine#2\endcsname
+        \expandafter\noexpand\csname d@define#2\endcsname
         \expandafter\noexpand\csname everypreset#2\endcsname
         \expandafter\noexpand\csname everydefine#2\endcsname}}
 
 \unexpanded\def\doinstallsetuphandler#1#2#3#4#5%
   {\unexpanded\def#2{\dodoubleempty#4}%
    \newtoks#5%
-   \def#4[##1][##2]%
+   \def#4[##1][##2]% maybe helper
      {\ifsecondargument
         \def\docommand####1% we will have a simple one as well
           {\edef#3{####1}%
@@ -151,7 +175,7 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname dosetup#2\endcsname
+        \expandafter\noexpand\csname d@setup#2\endcsname
         \expandafter\noexpand\csname everysetup#2\endcsname}}
 
 \unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)

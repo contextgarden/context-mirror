@@ -10,6 +10,9 @@ local lpeg = require("lpeg")
 
 local type = type
 
+-- Beware, we predefine a bunch of patterns here and one reason for doing so
+-- is that we get consistent behaviour in some of the visualizers.
+
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
@@ -26,19 +29,38 @@ local alwaysmatched    = P(true)
 patterns.anything      = anything
 patterns.endofstring   = endofstring
 patterns.beginofstring = alwaysmatched
+patterns.alwaysmatched = alwaysmatched
 
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
+local newline          = crlf + cr + lf
 local utf8next         = R("\128\191")
 local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
+local space            = P(" ")
+
+patterns.somecontent   = (anything - newline - space)^1
+patterns.beginline     = #(1-newline)
+
+local utfbom_32_be     = P('\000\000\254\255')
+local utfbom_32_le     = P('\255\254\000\000')
+local utfbom_16_be     = P('\255\254')
+local utfbom_16_le     = P('\254\255')
+local utfbom_8         = P('\239\187\191')
+local utfbom           = utfbom_32_be + utfbom_32_le
+                       + utfbom_16_be + utfbom_16_le
+                       + utfbom_8
+local utftype          = utfbom_32_be / "utf-32-be" + utfbom_32_le  / "utf-32-le"
+                       + utfbom_16_be / "utf-16-be" + utfbom_16_le  / "utf-16-le"
+                       + utfbom_8     / "utf-8"     + alwaysmatched / "unknown"
 
 patterns.utf8one       = R("\000\127")
 patterns.utf8two       = R("\194\223") * utf8next
 patterns.utf8three     = R("\224\239") * utf8next * utf8next
 patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
-patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
+patterns.utfbom        = utfbom
+patterns.utftype       = utftype
 
 local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
 local validutf8char    = utf8char^0 * endofstring * Cc(true) + Cc(false)
@@ -64,24 +86,30 @@ patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
 patterns.lowercase     = R("az")
 patterns.uppercase     = R("AZ")
 patterns.letter        = patterns.lowercase + patterns.uppercase
-patterns.space         = P(" ")
+patterns.space         = space
 patterns.tab           = P("\t")
 patterns.spaceortab    = patterns.space + patterns.tab
 patterns.eol           = S("\n\r")
 patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
-patterns.newline       = crlf + cr + lf
-patterns.nonspace      = 1 - patterns.space
+patterns.newline       = newline
+patterns.emptyline     = newline^1
 patterns.nonspacer     = 1 - patterns.spacer
 patterns.whitespace    = patterns.eol + patterns.spacer
 patterns.nonwhitespace = 1 - patterns.whitespace
+patterns.equal         = P("=")
 patterns.comma         = P(",")
 patterns.commaspacer   = P(",") * patterns.spacer^0
 patterns.period        = P(".")
+patterns.colon         = P(":")
+patterns.semicolon     = P(";")
+patterns.underscore    = P("_")
 patterns.escaped       = escaped
 patterns.squote        = squote
 patterns.dquote        = dquote
-patterns.undouble      = (dquote/"") * ((escaped + (1-dquote))^0) * (dquote/"")
-patterns.unsingle      = (squote/"") * ((escaped + (1-squote))^0) * (squote/"")
+patterns.nosquote      = (escaped + (1-squote))^0
+patterns.nodquote      = (escaped + (1-dquote))^0
+patterns.unsingle      = (squote/"") * patterns.nosquote * (squote/"")
+patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
@@ -103,19 +131,6 @@ end
 function lpeg.splitter(pattern, action)
     return (((1-P(pattern))^1)/action+1)^0
 end
-
-local spacing  = patterns.spacer^0 * patterns.newline -- sort of strip
-local empty    = spacing * Cc("")
-local nonempty = Cs((1-spacing)^1) * spacing^-1
-local content  = (empty + nonempty)^1
-
-local capture = Ct(content^0)
-
-function string.splitlines(str)
-    return match(capture,str)
-end
-
-patterns.textline = content
 
 local splitters_s, splitters_m = { }, { }
 
@@ -161,6 +176,35 @@ function string.split(str,separator)
         cache[separator] = c
     end
     return match(c,str)
+end
+
+local spacing  = patterns.spacer^0 * newline -- sort of strip
+local empty    = spacing * Cc("")
+local nonempty = Cs((1-spacing)^1) * spacing^-1
+local content  = (empty + nonempty)^1
+
+patterns.textline = content
+
+--~ local linesplitter = Ct(content^0)
+--~
+--~ function string.splitlines(str)
+--~     return match(linesplitter,str)
+--~ end
+
+local linesplitter = Ct(splitat(newline))
+
+patterns.linesplitter = linesplitter
+
+function string.splitlines(str)
+    return match(linesplitter,str)
+end
+
+local utflinesplitter = utfbom^-1 * Ct(splitat(newline))
+
+patterns.utflinesplitter = utflinesplitter
+
+function string.utfsplitlines(str)
+    return match(utflinesplitter,str)
 end
 
 --~ lpeg.splitters = cache -- no longer public

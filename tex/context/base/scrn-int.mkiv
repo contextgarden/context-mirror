@@ -274,7 +274,6 @@
 \def\dostartcomment[#1][#2][#3]%
   {\bgroup
    \doifassignmentelse{#1}{\getparameters[\??cc][#1]}{\getparameters[\??cc][\c!title=#1,#2]}%
-   \setcurrentbuffer{\v!comment\v!buffer}%
    \dostartbuffer[\v!comment\v!buffer][\v!comment\v!buffer][\e!start\v!comment][\e!stop\v!comment]}
 
 \unexpanded\def\stopcomment

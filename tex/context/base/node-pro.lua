@@ -16,15 +16,15 @@ local report_nodes = logs.new("nodes")
 
 local nodes, node = nodes, node
 
-local nodecodes  = nodes.nodecodes
-local glyph_code = nodecodes.glyph
-local tasks      = nodes.tasks
+local nodecodes   = nodes.nodecodes
+local glyph_code  = nodecodes.glyph
+local tasks       = nodes.tasks
 
-local free_node       = node.free
-local first_character = node.first_character
+local free_node   = node.free
+local first_glyph = node.first_glyph or node.first_character
 
-nodes.processors = nodes.processors or { }
-local processors = nodes.processors
+nodes.processors  = nodes.processors or { }
+local processors  = nodes.processors
 
 -- vbox: grouptype: vbox vtop output split_off split_keep  | box_type: exactly|aditional
 -- hbox: grouptype: hbox adjusted_hbox(=hbox_in_vmode)     | box_type: exactly|aditional
@@ -67,7 +67,7 @@ processors.tracer = tracer
 processors.enabled = true -- this will become a proper state (like trackers)
 
 function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
-    local first, found = first_character(head)
+    local first, found = first_glyph(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
@@ -91,7 +91,7 @@ function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
 end
 
 function processors.hpack_filter(head,groupcode,size,packtype,direction)
-    local first, found = first_character(head)
+    local first, found = first_glyph(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
@@ -119,13 +119,13 @@ callbacks.register('hpack_filter'        , processors.hpack_filter,"all kind of 
 
 local actions = tasks.actions("finalizers",1) -- head, where
 
--- beware, these are packaged boxes so no first_character test
+-- beware, these are packaged boxes so no first_glyph test
 -- maybe some day a hash with valid groupcodes
 --
 -- beware, much can pass twice, for instance vadjust passes two times
 
 function processors.post_linebreak_filter(head,groupcode)
---~     local first, found = first_character(head)
+--~     local first, found = first_glyph(head)
 --~     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)

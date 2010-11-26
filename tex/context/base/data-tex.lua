@@ -36,124 +36,215 @@ function finders.generic(tag,filename,filetype)
     end
 end
 
---~ local lpegmatch = lpeg.match
---~ local getlines = lpeg.Ct(lpeg.patterns.textline)
+-- -- keep this one as reference as it's the first version
+--
+-- resolvers.filters = resolvers.filters or { }
+--
+-- local input_translator, utf_translator, user_translator = nil, nil, nil
+--
+-- function resolvers.filters.install(name,func)
+--         if name == "input" then input_translator = func
+--     elseif name == "utf"   then utf_translator   = func
+--     elseif name == "user"  then user_translator  = func end
+-- end
+--
+-- function openers.textopener(filename,file_handle,tag)
+--     local u = unicode.utftype(file_handle)
+--     local t = { }
+--     if u > 0  then
+--         if trace_locating then
+--             report_resolvers("%s opener, file '%s' opened using method '%s'",tag,filename,unicode.utfname[u])
+--         end
+--         local l
+--         local data = file_handle:read("*a")
+--         if u > 2 then
+--             l = unicode.utf32_to_utf8(data,u==4)
+--         elseif u > 1 then
+--             l = unicode.utf16_to_utf8(data,u==2)
+--         else
+--             l = string.splitlines(data)
+--         end
+--         file_handle:close()
+--         t = {
+--             utftype = u, -- may go away
+--             lines = l,
+--             current = 0, -- line number, not really needed
+--             handle = nil,
+--             noflines = #l,
+--             close = function()
+--                 if trace_locating then
+--                     report_resolvers("%s closer, file '%s' closed",tag,filename)
+--                 end
+--                 logs.show_close(filename)
+--                 t = nil
+--             end,
+--             reader = function(self)
+--                 self = self or t
+--                 local current, lines = self.current, self.lines
+--                 if current >= #lines then
+--                     return nil
+--                 else
+--                     current = current + 1
+--                     self.current = current
+--                     local line = lines[current]
+--                     if not line then
+--                         return nil
+--                     elseif line == "" then
+--                         return ""
+--                     else
+--                         if input_translator then
+--                             line = input_translator(line)
+--                         end
+--                         if utf_translator then
+--                             line = utf_translator(line)
+--                         end
+--                         if user_translator then
+--                             line = user_translator(line)
+--                         end
+--                         return line
+--                     end
+--                 end
+--             end
+--         }
+--     else
+--         if trace_locating then
+--             report_resolvers("%s opener, file '%s' opened",tag,filename)
+--         end
+--         -- todo: file;name -> freeze / eerste regel scannen -> freeze
+--         --~ local data = lpegmatch(getlines,file_handle:read("*a"))
+--         --~ local n = 0
+--         t = {
+--             reader = function() -- self
+--                 local line = file_handle:read()
+--                 --~ n = n + 1
+--                 --~ local line = data[n]
+--                 --~ print(line)
+--                 if not line then
+--                     return nil
+--                 elseif line == "" then
+--                     return ""
+--                 else
+--                     if input_translator then
+--                         line = input_translator(line)
+--                     end
+--                     if utf_translator then
+--                         line = utf_translator(line)
+--                     end
+--                     if user_translator then
+--                         line = user_translator(line)
+--                     end
+--                     return line
+--                 end
+--             end,
+--             close = function()
+--                 if trace_locating then
+--                     report_resolvers("%s closer, file '%s' closed",tag,filename)
+--                 end
+--                 logs.show_close(filename)
+--                 file_handle:close()
+--                 t = nil
+--                 collectgarbage("step") -- saves some memory, maybe checkgarbage but no #
+--             end,
+--             handle = function()
+--                 return file_handle
+--             end,
+--             noflines = function()
+--                 t.noflines = io.noflines(file_handle)
+--                 return t.noflines
+--             end
+--         }
+--     end
+--     return t
+-- end
 
-resolvers.filters = resolvers.filters or { }
 
-local input_translator, utf_translator, user_translator = nil, nil, nil
+-- the main text reader --
 
-function resolvers.filters.install(name,func)
-        if name == "input" then input_translator = func
-    elseif name == "utf"   then utf_translator   = func
-    elseif name == "user"  then user_translator  = func end
-end
+local sequencers = utilities.sequencers
+
+local fileprocessor = nil
+local lineprocessor = nil
+
+local textfileactions = sequencers.reset {
+    arguments    = "str,filename",
+    returnvalues = "str",
+    results      = "str",
+}
+
+local textlineactions = sequencers.reset {
+    arguments    = "str,filename,linenumber",
+    returnvalues = "str",
+    results      = "str",
+}
+
+openers.textfileactions = textfileactions
+openers.textlineactions = textlineactions
+
+sequencers.appendgroup(textfileactions,"system")
+sequencers.appendgroup(textfileactions,"user")
+
+sequencers.appendgroup(textlineactions,"system")
+sequencers.appendgroup(textlineactions,"user")
 
 function openers.textopener(filename,file_handle,tag)
-    local u = unicode.utftype(file_handle)
-    local t = { }
-    if u > 0  then
-        if trace_locating then
-            report_resolvers("%s opener, file '%s' opened using method '%s'",tag,filename,unicode.utfname[u])
-        end
-        local l
-        if u > 2 then
-            l = unicode.utf32_to_utf8(file_handle:read("*a"),u==4)
-        else
-            l = unicode.utf16_to_utf8(file_handle:read("*a"),u==2)
-        end
-        file_handle:close()
-        t = {
-            utftype = u, -- may go away
-            lines = l,
-            current = 0, -- line number, not really needed
-            handle = nil,
-            noflines = #l,
-            close = function()
-                if trace_locating then
-                    report_resolvers("%s closer, file '%s' closed",tag,filename)
-                end
-                logs.show_close(filename)
-                t = nil
-            end,
-            reader = function(self)
-                self = self or t
-                local current, lines = self.current, self.lines
-                if current >= #lines then
-                    return nil
-                else
-                    current = current + 1
-                    self.current = current
-                    local line = lines[current]
-                    if not line then
-                        return nil
-                    elseif line == "" then
-                        return ""
-                    else
-                        if input_translator then
-                            line = input_translator(line)
-                        end
-                        if utf_translator then
-                            line = utf_translator(line)
-                        end
-                        if user_translator then
-                            line = user_translator(line)
-                        end
-                        return line
-                    end
-                end
+    if trace_locating then
+        report_resolvers("%s opener, file '%s' opened using method '%s'",tag,filename,unicode.utfname[u])
+    end
+    if textfileactions.dirty then
+        fileprocessor = sequencers.compile(textfileactions)
+    end
+    local lines = io.loaddata(filename)
+    local kind = unicode.filetype(lines)
+    if kind == "utf-16-be" then
+        lines = unicode.utf16_to_utf8_be(lines)
+    elseif kind == "utf-16-le" then
+        lines = unicode.utf16_to_utf8_le(lines)
+    elseif kind == "utf-32-be" then
+        lines = unicode.utf32_to_utf8_be(lines)
+    elseif kind == "utf-32-le" then
+        lines = unicode.utf32_to_utf8_le(lines)
+    else -- utf8 or unknown
+        lines = fileprocessor(lines,filename) or lines
+        lines = string.splitlines(lines)
+    end
+    local t = {
+        lines = lines,
+        current = 0,
+        handle = nil,
+        noflines = #lines,
+        close = function()
+            if trace_locating then
+                report_resolvers("%s closer, file '%s' closed",tag,filename)
             end
-        }
-    else
-        if trace_locating then
-            report_resolvers("%s opener, file '%s' opened",tag,filename)
-        end
-        -- todo: file;name -> freeze / eerste regel scannen -> freeze
-        --~ local data = lpegmatch(getlines,file_handle:read("*a"))
-        --~ local n = 0
-        t = {
-            reader = function() -- self
-                local line = file_handle:read()
-                --~ n = n + 1
-                --~ local line = data[n]
-                --~ print(line)
+            logs.show_close(filename)
+            t = nil
+        end,
+        reader = function(self)
+            self = self or t
+            local current, noflines = self.current, self.noflines
+            if current >= noflines then
+                return nil
+            else
+                current = current + 1
+                self.current = current
+                local line = lines[current]
                 if not line then
                     return nil
                 elseif line == "" then
                     return ""
                 else
-                    if input_translator then
-                        line = input_translator(line)
+                    if textlineactions.dirty then
+                        lineprocessor = sequencers.compile(textlineactions)
                     end
-                    if utf_translator then
-                        line = utf_translator(line)
-                    end
-                    if user_translator then
-                        line = user_translator(line)
-                    end
-                    return line
+                    return lineprocessor(line,filename,current) or line
                 end
-            end,
-            close = function()
-                if trace_locating then
-                    report_resolvers("%s closer, file '%s' closed",tag,filename)
-                end
-                logs.show_close(filename)
-                file_handle:close()
-                t = nil
-                collectgarbage("step") -- saves some memory, maybe checkgarbage but no #
-            end,
-            handle = function()
-                return file_handle
-            end,
-            noflines = function()
-                t.noflines = io.noflines(file_handle)
-                return t.noflines
             end
-        }
-    end
+        end
+    }
     return t
 end
+
+-- -- --
 
 function openers.generic(tag,filename)
     if filename and filename ~= "" then
@@ -226,6 +317,7 @@ function resolvers.openfile(filename)
 end
 
 function resolvers.loadtexfile(filename, filetype)
+    -- todo: apply filters
     local ok, data, size = resolvers.loadbinfile(filename, filetype)
     return data or ""
 end

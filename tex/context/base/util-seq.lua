@@ -37,88 +37,95 @@ local function validaction(action)
     return true
 end
 
-function sequencers.reset()
-    return {
+function sequencers.reset(t)
+    local s = {
         list  = { },
         order = { },
         kind  = { },
         askip = { },
         gskip = { },
     }
+    if t then
+        s.arguments    = t.arguments
+        s.returnvalues = t.returnvalues
+        s.results      = t.results
+    end
+    s.dirty = true
+    return s
 end
 
 function sequencers.prependgroup(t,group,where)
-    local list, order = t.list, t.order
-    removevalue(order,group)
-    insertbeforevalue(order,where,group)
-    list[group] = { }
+    if t then
+        local list, order = t.list, t.order
+        removevalue(order,group)
+        insertbeforevalue(order,where,group)
+        list[group] = { }
+        t.dirty = true
+    end
 end
 
 function sequencers.appendgroup(t,group,where)
-    local list, order = t.list, t.order
-    removevalue(order,group)
-    insertaftervalue(order,where,group)
-    list[group] = { }
+    if t then
+        local list, order = t.list, t.order
+        removevalue(order,group)
+        insertaftervalue(order,where,group)
+        list[group] = { }
+        t.dirty = true
+    end
 end
 
 function sequencers.prependaction(t,group,action,where,kind,force)
-    local g = t.list[group]
-    if g and (force or validaction(action)) then
-        removevalue(g,action)
-        insertbeforevalue(g,where,action)
-        t.kind[action] = kind
+    if t then
+        local g = t.list[group]
+        if g and (force or validaction(action)) then
+            removevalue(g,action)
+            insertbeforevalue(g,where,action)
+            t.kind[action] = kind
+            t.dirty = true
+        end
     end
 end
 
 function sequencers.appendaction(t,group,action,where,kind,force)
-    local g = t.list[group]
-    if g and (force or validaction(action)) then
-        removevalue(g,action)
-        insertaftervalue(g,where,action)
-        t.kind[action] = kind
+    if t then
+        local g = t.list[group]
+        if g and (force or validaction(action)) then
+            removevalue(g,action)
+            insertaftervalue(g,where,action)
+            t.kind[action] = kind
+            t.dirty = true
+        end
     end
 end
 
-function sequencers.enableaction (t,action) t.askip[action] = false end
-function sequencers.disableaction(t,action) t.askip[action] = true  end
-function sequencers.enablegroup  (t,group)  t.gskip[group]  = false end
-function sequencers.disablegroup (t,group)  t.gskip[group]  = true  end
+function sequencers.enableaction (t,action) if t then t.dirty = true t.askip[action] = false end end
+function sequencers.disableaction(t,action) if t then t.dirty = true t.askip[action] = true  end end
+function sequencers.enablegroup  (t,group)  if t then t.dirty = true t.gskip[group]  = false end end
+function sequencers.disablegroup (t,group)  if t then t.dirty = true t.gskip[group]  = true  end end
 
 function sequencers.setkind(t,action,kind)
-    t.kind[action] = kind
+    if t then
+        t.kind[action] = kind
+        t.dirty = true
+    end
 end
 
 function sequencers.removeaction(t,group,action,force)
-    local g = t.list[group]
+    local g = t and t.list[group]
     if g and (force or validaction(action)) then
         removevalue(g,action)
+        t.dirty = true
     end
-end
-
-function sequencers.compile(t,compiler,n)
-    if type(t) == "string" then
-        -- already compiled
-    elseif compiler then
-        t = compiler(t,n)
-    else
-        t = sequencers.tostring(t)
-    end
-    return loadstring(t)()
 end
 
 local function localize(str)
     return (gsub(str,"%.","_"))
 end
 
-local template = [[
-%s
-return function(...)
-%s
-end]]
-
-function sequencers.tostring(t)
+local function construct(t,nodummy)
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
-    local vars, calls, args, n = { }, { }, nil, 0
+    local arguments, returnvalues, results = t.arguments or "...", t.returnvalues, t.results
+    local variables, calls, n = { }, { }, 0
     for i=1,#order do
         local group = order[i]
         if not gskip[group] then
@@ -128,13 +135,44 @@ function sequencers.tostring(t)
                 if not askip[action] then
                     local localized = localize(action)
                     n = n + 1
-                    vars [n] = format("local %s = %s", localized, action)
-                    calls[n] = format("  %s(...) -- %s %i", localized, group, i)
+                    variables[n] = format("local %s = %s",localized,action)
+                    if not returnvalues then
+                        calls[n] = format("%s(%s)",localized,arguments)
+                    elseif n == 1 then
+                        calls[n] = format("local %s = %s(%s)",returnvalues,localized,arguments)
+                    else
+                        calls[n] = format("%s = %s(%s)",returnvalues,localized,arguments)
+                    end
                 end
             end
         end
     end
-    return format(template,concat(vars,"\n"),concat(calls,"\n"))
+    t.dirty = false
+    if nodummy and #calls == 0 then
+        return nil
+    else
+        variables = concat(variables,"\n")
+        calls = concat(calls,"\n")
+        if results then
+            return format("%s\nreturn function(%s)\n%s\nreturn %s\nend",variables,arguments,calls,results)
+        else
+            return format("%s\nreturn function(%s)\n%s\nend",variables,arguments,calls)
+        end
+    end
+end
+
+sequencers.tostring = construct
+sequencers.localize = localize
+
+function sequencers.compile(t,compiler,n)
+    if not t or type(t) == "string" then
+        -- already compiled
+    elseif compiler then
+        t = compiler(t,n)
+    else
+        t = construct(t)
+    end
+    return loadstring(t)()
 end
 
 -- we used to deal with tail as well but now that the lists are always
@@ -151,7 +189,7 @@ return function(head%s)
   return head, done
 end]]
 
-function sequencers.nodeprocessor(t,nofarguments)
+function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug into tostring
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
     local vars, calls, args, n = { }, { }, nil, 0
     if nofarguments == 0 then
@@ -179,6 +217,7 @@ function sequencers.nodeprocessor(t,nofarguments)
                     local localized = localize(action)
                     n = n + 1
                     vars[n] = format("local %s = %s",localized,action)
+                    -- only difference with tostring is kind and rets (why no return)
                     if kind[action] == "nohead" then
                         calls[n] = format("        ok = %s(head%s) done = done or ok -- %s %i",localized,args,group,i)
                     else

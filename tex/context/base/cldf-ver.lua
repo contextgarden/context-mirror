@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['cldf-ver'] = {
 -- tex.print == newline
 
 local concat, tohandle = table.concat, table.tohandle
-local splitlines = string.splitlines
+local find, splitlines = string.find, string.splitlines
 local tostring, type = tostring, type
 
 local context = context

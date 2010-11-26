@@ -26,7 +26,11 @@ regimes.utf      = regimes.utf or { }
 regimes.synonyms = regimes.synonyms or { }
 local synonyms   = regimes.synonyms
 
-storage.register("regimes/synonyms", synonyms, "regimes.synonyms")
+if storage then
+    storage.register("regimes/synonyms", synonyms, "regimes.synonyms")
+else
+    regimes.synonyms = { }
+end
 
 -- setmetatable(regimes.data,_empty_table_)
 
@@ -72,20 +76,44 @@ function regimes.translate(line,regime)
     return line
 end
 
+-- function regimes.enable(regime)
+--     regime = synonyms[regime] or regime
+--     if data[regime] then
+--         regimes.currentregime = regime
+--         local translate = regimes.translate
+--         resolvers.filters.install('input',function(s)
+--             return translate(s,regime)
+--         end)
+--     else
+--         regimes.disable()
+--     end
+-- end
+--
+-- function regimes.disable()
+--     regimes.currentregime = "utf"
+--     resolvers.filters.install('input',nil)
+-- end
+
+local sequencers = utilities.sequencers
+
+function regimes.process(s)
+    return translate(s,regimes.currentregime)
+end
+
 function regimes.enable(regime)
     regime = synonyms[regime] or regime
     if data[regime] then
         regimes.currentregime = regime
-        local translate = regimes.translate
-        resolvers.filters.install('input',function(s)
-            return translate(s,regime)
-        end)
+        sequencers.enableaction(resolvers.openers.textfileactions,"regimes.process")
     else
-        regimes.disable()
+        sequencers.disableaction(resolvers.openers.textfileactions,"regimes.process")
     end
 end
 
 function regimes.disable()
     regimes.currentregime = "utf"
-    resolvers.filters.install('input',nil)
+    sequencers.disableaction(resolvers.openers.textfileactions,"regimes.process")
 end
+
+utilities.sequencers.prependaction(resolvers.openers.textfileactions,"system","regimes.process")
+utilities.sequencers.disableaction(resolvers.openers.textfileactions,"regimes.process")

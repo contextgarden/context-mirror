@@ -232,7 +232,17 @@
 
 \loadmarkfile{buff-ini}
 \loadmarkfile{buff-ver}
-\loadmarkfile{buff-vis}
+
+\loadmarkfile{v-default}    % preloaded as otherwise spurious spaces inline due to loading
+\loadmarkfile{v-nested}     % preloaded as otherwise spurious spaces inline due to loading
+\loadmarkfile{v-escaped}    % for completeness
+\loadmarkfile{v-tex}        % optional as also runtime if not loaded
+\loadmarkfile{v-mp}         % optional as also runtime if not loaded
+\loadmarkfile{v-lua}        % optional as also runtime if not loaded
+\loadmarkfile{v-xml}        % optional as also runtime if not loaded
+
+\loadmarkfile{v-parsed-xml} % optional
+\loadmarkfile{v-parsed-lua} % optional
 
 \loadmarkfile{strc-blk}
 

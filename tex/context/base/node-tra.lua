@@ -235,7 +235,7 @@ function step_tracers.glyphs(n,i)
 end
 
 function step_tracers.features()
-    -- we cannot use first_character here as it only finds characters with subtype < 256
+    -- we cannot use first_glyph here as it only finds characters with subtype < 256
     local f = collection[1]
     while f do
         if f.id == glyph_code then

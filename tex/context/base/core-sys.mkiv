@@ -194,48 +194,79 @@
 \definecomplexorsimple\start
 \definecomplexorsimple\stop
 
-\def\dododefinestartstop[#1][#2]% todo: use indirect commands
-  {\getparameters
-     [\??be#1]
-     [\c!before=,
-      \c!after=,
-      \c!inbetween=,
-      \c!commands=,
-      \c!style=,
-      #2]%
-   \setuvalue{#1}%
+% \def\dododefinestartstop[#1][#2]% todo: use indirect commands
+%   {\getparameters
+%      [\??be#1]
+%      [\c!before=,
+%       \c!after=,
+%       \c!inbetween=,
+%       \c!commands=,
+%       \c!style=,
+%       #2]%
+%    \setuvalue{#1}%
+%      {\groupedcommand
+%         {\getvalue{\??be#1\c!commands}%
+%          \dostarttagged\t!construct{#1}%
+%          \dostartattributes{\??be#1}\c!style\c!color}
+%         {\dostopattributes
+%          \dostoptagged
+%          \getvalue{\??be#1\c!inbetween}}}%
+%    \setuvalue{\e!start#1}%
+%      {\getvalue{\??be#1\c!before}%
+%       \bgroup
+%       \getvalue{\??be#1\c!commands}%
+%       \dostarttagged\t!construct{#1}%
+%       \dostartattributes{\??be#1}\c!style\c!color\empty}%
+%    \setuvalue{\e!stop#1}%
+%      {\dostopattributes
+%       \dostoptagged
+%       \egroup
+%       \getvalue{\??be#1\c!after}}}
+%
+% \def\dodefinestartstop[#1][#2]%
+%   {\def\docommand##1{\dododefinestartstop[##1][#2]}%
+%    \processcommalist[#1]\docommand}
+%
+% \unexpanded\def\definestartstop
+%   {\dodoubleargument\dodefinestartstop}
+%
+% \def\dosetupstartstop[#1][#2]%
+%   {\def\docommand##1{\getparameters[\??be##1][#2]}%
+%    \processcommalist[#1]\docommand}
+%
+% \unexpanded\def\setupstartstop
+%   {\dodoubleargument\dosetupstartstop}
+
+
+% \c!before \c!after \c!inbetween \c!commands \c!style \c!color
+
+\installcommandhandler{\??be}{startstop}{\??be}
+
+\appendtoks
+    \normalexpanded{\dodefinestartstop{\currentstartstop}}%
+\to \everydefinestartstop
+
+\unexpanded\def\dodefinestartstop#1%
+  {\setuvalue{#1}%
      {\groupedcommand
-        {\getvalue{\??be#1\c!commands}%
-         \dostarttagged\t!construct{#1}%
-         \dostartattributes{\??be#1}\c!style\c!color}
-        {\dostopattributes
+        {\def\currentstartstop{#1}%
+         \startstopparameter\c!commands
+         \dostarttagged\t!construct\currentstartstop
+         \dosetstartstopattributes\c!style\c!color}
+        {\def\currentstartstop{#1}%
          \dostoptagged
-         \getvalue{\??be#1\c!inbetween}}}%
-   \setvalue{\e!start#1}%
-     {\getvalue{\??be#1\c!before}%
+         \startstopparameter\c!inbetween}}%
+   \setuvalue{\e!start#1}%
+     {\namedstartstopparameter{#1}\c!before
       \bgroup
-      \getvalue{\??be#1\c!commands}%
-      \dostarttagged\t!construct{#1}%
-      \dostartattributes{\??be#1}\c!style\c!color\empty}%
-   \setvalue{\e!stop#1}%
-     {\dostopattributes
-      \dostoptagged
+      \def\currentstartstop{#1}%
+      \startstopparameter\c!commands
+      \dostarttagged\t!construct\currentstartstop
+      \dosetstartstopattributes\c!style\c!color}%
+   \setuvalue{\e!stop#1}%
+     {\dostoptagged
       \egroup
-      \getvalue{\??be#1\c!after}}}
-
-\def\dodefinestartstop[#1][#2]%
-  {\def\docommand##1{\dododefinestartstop[##1][#2]}%
-   \processcommalist[#1]\docommand}
-
-\unexpanded\def\definestartstop
-  {\dodoubleargument\dodefinestartstop}
-
-\def\dosetupstartstop[#1][#2]%
-  {\def\docommand##1{\getparameters[\??be##1][#2]}%
-   \processcommalist[#1]\docommand}
-
-\unexpanded\def\setupstartstop
-  {\dodoubleargument\dosetupstartstop}
+      \namedstartstopparameter{#1}\c!after}}
 
 % \docommand kan niet worden gebruikt omdat deze macro
 %  soms lokaal wordt gebruikt

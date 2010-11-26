@@ -18,7 +18,7 @@ local suffixes  = allocate()  resolvers.suffixes  = suffixes
 local dangerous = allocate()  resolvers.dangerous = dangerous
 local suffixmap = allocate()  resolvers.suffixmap = suffixmap
 
-local relations = allocate {
+local relations = allocate { -- todo: handlers also here
     core = {
         ofm = {
             names    = { "ofm", "omega font metric", "omega font metrics" },
@@ -88,7 +88,7 @@ local relations = allocate {
         tex = {
             names    = { "tex" },
             variable = 'TEXINPUTS',
-            suffixes = { 'tex', "mkiv", "mkii" },
+            suffixes = { 'tex', "mkiv", "mkiv", "mkii" },
         },
         icc = {
             names    = { "icc", "icc profile", "icc profiles" },
@@ -202,28 +202,32 @@ resolvers.relations = relations
 
 -- formats: maps a format onto a variable
 
-for category, categories in next, relations do
-    for name, relation in next, categories do
-        local rn = relation.names
-        local rv = relation.variable
-        local rs = relation.suffixes
-        if rn and rv then
-            for i=1,#rn do
-                local rni = lower(gsub(rn[i]," ",""))
-                formats[rni] = rv
-                if rs then
-                    suffixes[rni] = rs
-                    for i=1,#rs do
-                        local rsi = rs[i]
-                        suffixmap[rsi] = rni
+function resolvers.updaterelations()
+    for category, categories in next, relations do
+        for name, relation in next, categories do
+            local rn = relation.names
+            local rv = relation.variable
+            local rs = relation.suffixes
+            if rn and rv then
+                for i=1,#rn do
+                    local rni = lower(gsub(rn[i]," ",""))
+                    formats[rni] = rv
+                    if rs then
+                        suffixes[rni] = rs
+                        for i=1,#rs do
+                            local rsi = rs[i]
+                            suffixmap[rsi] = rni
+                        end
                     end
                 end
             end
-        end
-        if rs then
+            if rs then
+            end
         end
     end
 end
+
+resolvers.updaterelations() -- push this in the metatable -> newindex
 
 local function simplified(t,k)
     return rawget(t,lower(gsub(k," ","")))

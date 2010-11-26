@@ -48,3 +48,33 @@ function context.concat(t,separator)
         end
     end
 end
+
+function context.char(k) -- todo: if catcode == letter or other then just the utf
+    if type(k) == "table" then
+        for i=1,#k do
+            context(format([[\char%s\relax]],k[i]))
+        end
+    elseif k then
+        context(format([[\char%s\relax]],k))
+    end
+end
+
+function context.utfchar(k)
+    context(utfchar(k))
+end
+
+function context.chardef(cs,u)
+    context(format([[\chardef\%s=%s\relax]],k))
+end
+
+function context.par()
+    context([[\par]]) -- no need to add {} there
+end
+
+function context.bgroup()
+    context("{")
+end
+
+function context.egroup()
+    context("}")
+end

@@ -50,11 +50,11 @@ local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces *
 
 local hash = { }
 
-local function set(key,value) -- using Carg is slower here
+local function set(key,value)
     hash[key] = value
 end
 
-local function set(key,value) -- using Carg is slower here
+local function set(key,value)
     hash[key] = value
 end
 

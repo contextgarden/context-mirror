@@ -245,7 +245,7 @@ function specials.fg(specification,object,result,flusher) -- graphics
         object.path = nil
         return object, { }
     end
-    return { } , before, nil, nil -- replace { } by object for tracing
+    return { } , before, nil, nil, true -- replace { } by object for tracing
 end
 
 function specials.ps(specification,object,result) -- positions
@@ -257,7 +257,7 @@ function specials.ps(specification,object,result) -- positions
     x = x - metapost.llx
     y = metapost.ury - y
     context.MPLIBpositionwhd(label,x,y,w,h)
-    return { }, nil, nil, nil
+    return { }, nil, nil, nil, true
 end
 
 local nofshades = 0 -- todo: hash resources, start at 1000 in order not to clash with older
@@ -347,7 +347,7 @@ local function resources(object,name,flusher,result)
         return object, result
     end
     object.color, object.type = nil, nil
-    return object, before, nil, after
+    return object, before, nil, after, true
 end
 
 -- todo: we need a way to move/scale
@@ -361,7 +361,7 @@ function specials.cs(specification,object,result,flusher) -- spot colors?
     local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[7]), tonumber(t[9]), tonumber(t[10]), tonumber(t[11]) }
     local ca, cb, colorspace, name = checkandconvert(ca,cb)
     lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
-    return resources(object,name,flusher,result) -- object, before, nil, after
+    return resources(object,name,flusher,result) -- object, before, nil, after, grouped
 end
 
 function specials.ls(specification,object,result,flusher)
@@ -373,7 +373,7 @@ function specials.ls(specification,object,result,flusher)
     local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[8]), tonumber(t[9]) }
     local ca, cb, colorspace, name = checkandconvert(ca,cb)
     lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
-    return resources(object,name,flusher,result) -- object, before, nil, after
+    return resources(object,name,flusher,result) -- object, before, nil, after, grouped
 end
 
 -- no need for a before here
@@ -428,7 +428,7 @@ function specials.tf(specification,object)
         context.MPLIBsettext(n,str)
         metapost.multipass = true
     end
-    return { }, nil, nil, nil
+    return { }, nil, nil, nil, true
 end
 
 local factor = 65536*(7227/7200)
@@ -473,9 +473,9 @@ function specials.ts(specification,object,result,flusher)
             result = { "Q" }
             return object, result
         end
-        return { }, before, nil, nil -- replace { } by object for tracing
+        return { }, before, nil, nil, true -- replace { } by object for tracing
     else
-        return { }, nil, nil, nil -- replace { } by object for tracing
+        return { }, nil, nil, nil, true -- replace { } by object for tracing
     end
 end
 
@@ -804,7 +804,7 @@ function specials.gt(specification,object) -- number, so that we can reorder
     graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",specification)
     metapost.intermediate.needed = true
     metapost.multipass = true
-    return { }, nil, nil, nil
+    return { }, nil, nil, nil, true
 end
 
 function metapost.intermediate.actions.makempy()

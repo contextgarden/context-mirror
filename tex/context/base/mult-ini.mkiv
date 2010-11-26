@@ -433,11 +433,8 @@
 %D interface. (We no longer need the link back to the main
 %D internal interface.)
 
-\def\doresetvalue#1#2%
-  {\dosetvalue{#1}{#2}{}}
-
-\def\doignorevalue#1#2#3%
-  {\dosetvalue{#1}{#2}{}}
+\def\doresetvalue   #1#2{\dosetvalue{#1}{#2}{}}
+\def\doignorevalue#1#2#3{\dosetvalue{#1}{#2}{}}
 
 % \def\dosetvalue#1#2%
 %   {\let\c!internal!\c!internal!n
@@ -502,6 +499,7 @@
 %      \@EA\def\csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}%
 %    \fi}
 
+\def\doletvalue   #1#2{\@EA \let\csname#1#2\endcsname}
 \def\dosetvalue   #1#2{\@EA \def\csname#1#2\endcsname}
 \def\dosetevalue  #1#2{\@EA\edef\csname#1#2\endcsname}
 \def\dosetgvalue  #1#2{\@EA\gdef\csname#1#2\endcsname}

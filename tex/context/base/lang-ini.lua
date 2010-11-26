@@ -16,6 +16,7 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 --~ lang:hyphenation(string) string = lang:hyphenation() lang:clear_hyphenation()
 
+local type, tonumber = type, tonumber
 local utf = unicode.utf8
 local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
@@ -158,6 +159,10 @@ end
 
 function languages.installed(separator)
     context(concat(table.sortedkeys(registered),separator or ","))
+end
+
+function languages.current(n)
+    return numbers[n and tonumber(n) or tex.language]
 end
 
 function languages.associate(tag,script,language) -- not yet used

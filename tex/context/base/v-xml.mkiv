@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=v-tex,
+%D   [       file=v-xml,
 %D        version=2010.10.19,
 %D          title=\CONTEXT\ Visualizer Macros,
-%D       subtitle=\TEX,
+%D       subtitle=\XML,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright=PRAGMA-ADE]
@@ -11,41 +11,61 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\registerctxluafile{v-tex.lua}{1.001}
+\registerctxluafile{v-xml.lua}{1.001}
 
 \unprotect
 
 \definestartstop
-    [TexSnippet]
+    [XmlSnippet]
     [DefaultSnippet]
 
 \definestartstop
-    [TexSnippetName]
-    [\c!color=darkgreen,
-     \c!style=boldface]
-
-\definestartstop
-    [TexSnippetGroup]
-    [\c!color=darkred,
-     \c!style=boldface]
-
-\definestartstop
-    [TexSnippetBoundary]
+    [XmlSnippetName]
     [\c!color=darkblue,
      \c!style=boldface]
 
 \definestartstop
-    [TexSnippetSpecial]
+    [XmlSnippetKey]
+    [\c!color=darkgreen,
+     \c!style=boldface]
+
+\definestartstop
+    [XmlSnippetBoundary]
+    [\c!color=darkblue,
+     \c!style=boldface]
+
+\definestartstop
+    [XmlSnippetEntity]
+    [\c!color=darkred,
+     \c!style=boldface]
+
+\definestartstop
+    [XmlSnippetString]
+    [\c!color=darkblue,
+     \c!style=boldface]
+
+\definestartstop
+    [XmlSnippetEqual]
+    [\c!color=darkblue,
+     \c!style=boldface]
+
+\definestartstop
+    [XmlSnippetComment]
     [\c!color=darkyellow,
      \c!style=boldface]
 
 \definestartstop
-    [TexSnippetComment]
+    [XmlSnippetCdata]
+    [\c!color=darkyellow,
+     \c!style=boldface]
+
+\definestartstop
+    [XmlSnippetInstruction]
     [\c!color=darkyellow,
      \c!style=boldface]
 
 \definetyping
-    [TEX]
-    [\c!option=tex]
+    [XML]
+    [\c!option=xml]
 
 \protect \endinput

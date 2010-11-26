@@ -23,7 +23,7 @@ schemes.threshold = 24 * 60 * 60
 
 directives.register("schemes.threshold", function(v) schemes.threshold = tonumber(v) or schemes.threshold end)
 
-local cached, loaded, reused = { }, { }, { }
+local cached, loaded, reused, thresholds = { }, { }, { }, { }
 
 function schemes.curl(name,cachename) -- will use sockets instead or the curl library
     local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name -- no protocol .. "://"
@@ -35,7 +35,8 @@ function schemes.fetch(protocol,name,handler)
     local cachename = caches.setfirstwritablefile(cleanname,"schemes")
     if not cached[name] then
         statistics.starttiming(schemes)
-        if not io.exists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification) > schemes.threshold) then
+        if not io.exists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification) >
+                                                            (thresholds[protocol] or schemes.threshold)) then
             cached[name] = cachename
             if handler then
                 if trace_schemes then
@@ -86,14 +87,15 @@ function loaders.schemes(protocol,filename)
     return loaders.generic(protocol,filename)
 end
 
--- could be metatable
+-- could be metatable and proper subtables
 
-function schemes.install(protocol,handler)
-    loaded [protocol] = 0
-    reused [protocol] = 0
-    finders[protocol] = function (filename,filetype) return finders.schemes(protocol,filename,handler) end
-    openers[protocol] = function (filename)          return openers.schemes(protocol,filename)         end
-    loaders[protocol] = function (filename)          return loaders.schemes(protocol,filename)         end
+function schemes.install(protocol,handler,threshold)
+    loaded    [protocol] = 0
+    reused    [protocol] = 0
+    finders   [protocol] = function (filename,filetype) return finders.schemes(protocol,filename,handler) end
+    openers   [protocol] = function (filename)          return openers.schemes(protocol,filename)         end
+    loaders   [protocol] = function (filename)          return loaders.schemes(protocol,filename)         end
+    thresholds[protocol] = threshold or schemes.threshold
 end
 
 local function http_handler(protocol,name,cachename)
@@ -109,6 +111,7 @@ local function http_handler(protocol,name,cachename)
         os.remove(cachename)
         os.rename(tempname,cachename)
     end
+    return cachename
 end
 
 schemes.install('http',http_handler)
