@@ -760,11 +760,12 @@
 
 \def\dodoprocessbuffer#1#2%
   {\edef\currenttyping{#1}%
-   \ctxlua{buffers.typebuffer {
+   \ctxlua{buffers.processbuffer {
      name       = "#2",
      strip      = "\typingparameter\c!strip",
      tab        = "\typingparameter\c!tab",
      visualizer = "\typingparameter\c!option",
+     nature     = "process",
    }}}
 
 % line numbering, keep broken lines together

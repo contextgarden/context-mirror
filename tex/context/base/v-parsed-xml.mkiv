@@ -1,0 +1,68 @@
+%D \module
+%D   [       file=v-parsed-xml,
+%D        version=2010.10.19,
+%D          title=\CONTEXT\ Visualizer Macros,
+%D       subtitle=Parsed \XML,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA-ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{v-parsed-xml.lua}{1.001}
+
+\unprotect
+
+\definestartstop
+    [ParsedXmlSnippet]
+    [%\c!before=\blank,
+     %\c!after=\blank,
+     \c!style=\tt]
+
+\definestartstop
+    [ParsedXmlSnippetDocType]
+    [\c!style=boldface,
+     \c!color=darkgreen]
+
+\definestartstop
+    [ParsedXmlSnippetElement]
+    [\c!style=boldface,
+     \c!color=darkblue]
+
+\definestartstop
+    [ParsedXmlSnippetInstruction]
+    [\c!style=boldface,
+     \c!color=darkgreen]
+
+\definestartstop
+    [ParsedXmlSnippetCdata]
+    [\c!style=boldface,
+     \c!color=darkgreen]
+
+\definestartstop
+    [ParsedXmlSnippetComment]
+    [\c!style=boldface,
+     \c!color=darkgreen]
+
+\definestartstop
+    [ParsedXmlSnippetKey]
+    [\c!style=boldface,
+     \c!color=darkred]
+
+% \definestartstop
+%     [ParsedXmlSnippetQuote]
+%     [\c!style=,
+%      \c!color=]
+
+\definestartstop
+    [ParsedXmlSnippetValue]
+    [\c!style=,
+     \c!color=]
+
+\definetyping
+    [PARSEDXML]
+    [option=parsed-xml]
+
+\protect \endinput

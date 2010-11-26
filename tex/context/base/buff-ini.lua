@@ -218,6 +218,22 @@ function buffers.typebuffer(settings) -- todo: settings.nature = "display"
     end
 end
 
+function buffers.processbuffer(settings) -- overlaps too much with the previous
+    local name = settings.name           -- maybe use processor instead of visualizer
+    local lines = name and data[name]
+    if lines then
+        if type(lines) == "string" then
+            lines = splitlines(lines)
+            data[name] = lines
+        end
+        local content, m = filter(lines,settings)
+        if content and content ~= "" then
+--~         print("!!!!!!!!!!!!!!!!!!!")
+            flush(content,"process",settings)
+        end
+    end
+end
+
 function buffers.typefile(settings) -- todo: settings.nature = "display"
     local name = settings.name
     local str = buffers.loaddata(name)
