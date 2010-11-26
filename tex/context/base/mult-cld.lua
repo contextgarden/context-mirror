@@ -19,6 +19,8 @@ if not modules then modules = { } end modules ['mult-cld'] = {
 
 -- tflush needs checking ... sort of weird that it's not a table
 
+-- __flushlines is an experiment and rather ugly so it will go away
+
 context       = context or { }
 local context = context
 
@@ -130,40 +132,41 @@ local emptyline  = space^0 * newline^2
 local endofline  = space^0 * newline * space^0
 local simpleline = endofline * lpeg.P(-1)
 
+local function n_content(s)
+    flush(contentcatcodes,s)
+end
+
+local function n_endofline()
+    texsprint(" ")
+end
+
+local function n_emptyline()
+    texprint("")
+end
+
+local function n_simpleline()
+    texprint("")
+end
+
 function lpeg.texlinesplitter(f_content,f_endofline,f_emptyline,f_simpleline)
     local splitlines =
-        simpleline / (f_simpleline or f_endofline)
+        simpleline / (f_simpleline or n_simpleline)
       + (
-            emptyline / f_emptyline
-          + endofline / f_endofline
-          + content   / f_content
+            emptyline / (f_emptyline or n_emptyline)
+          + endofline / (f_endofline or n_emptyline)
+          + content   / (f_content or n_content)
         )^0
     return function(str) return lpegmatch(splitlines,str) end
 end
 
-local function f_content(s)
-    flush(contentcatcodes,s)
-end
+local flushlines = lpeg.texlinesplitter(n_content,n_endofline,n_emptyline,n_simpleline)
 
-local function f_endofline()
-    texsprint(" ")
-end
-
-local function f_emptyline()
-    texprint("")
-end
-
-local function f_simpleline()
-    texprint("")
-end
-
-local flushlines = lpeg.texlinesplitter(f_content,f_endofline,f_emptyline,f_simpleline)
-
-context.flushlines = flushlines -- maybe context.helpers.flushtexlines
+context.__flushlines = flushlines -- maybe context.helpers.flushtexlines
+context.__flush      = flush
 
 -- -- --
 
-local function writer(command,first,...)
+local function writer(parent,command,first,...)
     local t = { first, ... }
     flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
     local direct = false
@@ -184,6 +187,7 @@ local function writer(command,first,...)
         elseif typ == "string" then
             if processlines and find(ti,"\n") then -- we can check for ti == "\n"
                 flush(currentcatcodes,"{")
+                local flushlines = parent.__flushlines or flushlines
                 flushlines(ti)
                 flush(currentcatcodes,"}")
             elseif currentcatcodes == contentcatcodes then
@@ -250,28 +254,25 @@ local function writer(command,first,...)
             trace_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
         end
     end
-    if direct then
-        trace_context("error: direct flushing used in '%s' without following argument",command)
-    end
 end
 
 local generics = { }  context.generics = generics
 
-local function indexer(t,k)
+local function indexer(parent,k)
     local c = "\\" .. (generics[k] or k)
     local f = function(first,...)
         if first == nil then
             flush(currentcatcodes,c)
         else
-            return writer(c,first,...)
+            return writer(parent,c,first,...)
         end
     end
-    t[k] = f
+    parent[k] = f
     return f
 end
 
-local function caller(t,f,a,...)
-    if not t then
+local function caller(parent,f,a,...)
+    if not parent then
         -- so we don't need to test in the calling (slower but often no issue) (will go)
     elseif f ~= nil then
         local typ = type(f)
@@ -279,6 +280,7 @@ local function caller(t,f,a,...)
             if a then
                 flush(contentcatcodes,format(f,a,...)) -- was currentcatcodes
             elseif processlines and find(f,"\n") then
+                local flushlines = parent.__flushlines or flushlines
                 flushlines(f)
             else
                 flush(contentcatcodes,f)
@@ -295,6 +297,7 @@ local function caller(t,f,a,...)
         elseif typ == "boolean" then
             if f then
                 if a ~= nil then
+                    local flushlines = parent.__flushlines or flushlines
                     flushlines(f)
                     -- ignore ... maybe some day
                 else
@@ -304,7 +307,7 @@ local function caller(t,f,a,...)
             else
                 if a ~= nil then
                     -- no command, same as context(a,...)
-                    writer("",a,...)
+                    writer(parent,"",a,...)
                 else
                     -- ignored
                 end
@@ -339,7 +342,7 @@ statistics.register("traced context", function()
     end
 end)
 
-local tracedwriter = function(...)
+local tracedwriter = function(parent,...)
     nofwriters = nofwriters + 1
     local t, f, n = { "w : " }, flush, 0
     flush = function(...)
@@ -347,7 +350,7 @@ local tracedwriter = function(...)
         t[n] = concat({...},"",2)
         normalflush(...)
     end
-    normalwriter(...)
+    normalwriter(parent,...)
     flush = f
     currenttrace(concat(t))
 end
@@ -376,12 +379,14 @@ local function pushlogger(trace)
     insert(trace_stack,currenttrace)
     currenttrace = trace
     flush, writer = tracedflush, tracedwriter
+    context.__flush = flush
 end
 
 local function poplogger()
     currenttrace = remove(trace_stack)
     if not currenttrace then
         flush, writer = normalflush, normalwriter
+        context.__flush = flush
     end
 end
 
@@ -392,6 +397,8 @@ local function settracing(v)
         poplogger()
     end
 end
+
+-- todo: share flushers so that we can define in other files
 
 trackers.register("context.trace",settracing)
 
@@ -427,58 +434,26 @@ end
 
 function context.direct(first,...)
     if first ~= nil then
-        return writer("",first,...)
+        return writer(context,"",first,...)
     end
-end
-
--- todo: use flush directly
-
-function context.char(k) -- todo: if catcode == letter or other then just the utf
-    if type(k) == "table" then
-        for i=1,#k do
-            context(format([[\char%s\relax]],k[i]))
-        end
-    elseif k then
-        context(format([[\char%s\relax]],k))
-    end
-end
-
-function context.utfchar(k)
-    context(utfchar(k))
-end
-
-function context.chardef(cs,u)
-    context(format([[\chardef\%s=%s\relax]],k))
-end
-
-function context.par()
-    context([[\par]]) -- no need to add {} there
-end
-
-function context.bgroup()
-    context("{")
-end
-
-function context.egroup()
-    context("}")
 end
 
 -- context.delayed (todo: lines)
 
 local delayed = { } context.delayed = delayed -- maybe also store them
 
-local function indexer(t,k)
+local function indexer(parent,k)
     local f = function(...)
         local a = { ... }
         return function()
             return context[k](unpack(a))
         end
     end
-    t[k] = f
+    parent[k] = f
     return f
 end
 
-local function caller(t,...)
+local function caller(parent,...)
     local a = { ... }
     return function()
         return context(unpack(a))
@@ -491,7 +466,7 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 
 local nested = { } context.nested = nested
 
-local function indexer(t,k)
+local function indexer(parent,k)
     local f = function(...)
         local t, savedflush, n = { }, flush, 0
         flush = function(c,f,s,...) -- catcodes are ignored
@@ -502,11 +477,11 @@ local function indexer(t,k)
         flush = savedflush
         return concat(t)
     end
-    t[k] = f
+    parent[k] = f
     return f
 end
 
-local function caller(t,...)
+local function caller(parent,...)
     local t, savedflush, n = { }, flush, 0
     flush = function(c,f,s,...) -- catcodes are ignored
         n = n + 1
@@ -523,7 +498,7 @@ setmetatable(nested, { __index = indexer, __call = caller } )
 
 local verbatim = { } context.verbatim = verbatim
 
-local function indexer(t,k)
+local function indexer(parent,k)
     local command = context[k]
     local f = function(...)
         local savedcatcodes = contentcatcodes
@@ -531,14 +506,14 @@ local function indexer(t,k)
         command(...)
         contentcatcodes = savedcatcodes
     end
-    t[k] = f
+    parent[k] = f
     return f
 end
 
-local function caller(t,...)
+local function caller(parent,...)
     local savedcatcodes = contentcatcodes
     contentcatcodes = vrbcatcodes
-    defaultcaller(t,...)
+    defaultcaller(parent,...)
     contentcatcodes = savedcatcodes
 end
 
@@ -550,8 +525,8 @@ local metafun = { } context.metafun = metafun
 
 local mpdrawing = "\\MPdrawing"
 
-local function caller(t,f,a,...)
-    if not t then
+local function caller(parent,f,a,...)
+    if not parent then
         -- skip
     elseif f then
         local typ = type(f)
@@ -602,19 +577,19 @@ end
 
 local delayed = { } metafun.delayed = delayed
 
-local function indexer(t,k)
+local function indexer(parent,k)
     local f = function(...)
         local a = { ... }
         return function()
             return metafun[k](unpack(a))
         end
     end
-    t[k] = f
+    parent[k] = f
     return f
 end
 
 
-local function caller(t,...)
+local function caller(parent,...)
     local a = { ... }
     return function()
         return metafun(unpack(a))

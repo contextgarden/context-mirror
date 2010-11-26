@@ -41,7 +41,7 @@ local function load_setup(filename)
     if fullname ~= "" then
         filename = fullname
     end
-    local collection = xmlparseapply({ getid(xml.load(filename)) },"directive")
+    local collection = xml.applylpath({ getid(xml.load(filename)) },"directive") -- is { } needed ?
     if collection then
         local valid = 0
         for i=1,#collection do

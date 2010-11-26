@@ -57,7 +57,7 @@ names.cache      = containers.define("fonts","data",names.version,true)
 <p>A few helpers.</p>
 --ldx]]--
 
-local P, C, Cc, Cs, Carg = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg
+local P, C, Cc, Cs = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cs
 
 -- what to do with 'thin'
 

@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Table Macros / TaBlE Embedding}
 
+% Todo: consistent namespace and get rid of not used code
+
 % In \MKIV\ the old table macros are sort of obsolete. The
 % color extensions have been removed and some code is stripped.
 % For practical reasons the \TABLE\ macros that are used are
@@ -36,34 +38,12 @@
 \newdimen\tablecolumnwidthunit
 \newdimen\tablekernunit
 
-\def\tablelinethicknessfactor    {2}
 \def\tablestrutheightfactor      {8}
 \def\tablestrutdepthfactor       {3}
 \def\tableintercolumnspacefactor {3}
 \def\tablecolumnwidthfactor     {10}
 \def\tablevspacefactor           {2}
 \def\tablekernfactor             {1}
-
-\newtoks\NormalTLTU
-\newtoks\NormalTSU
-\newtoks\NormalTICSU
-\newtoks\NormalTCWU
-\newtoks\NormalTKU
-
-\NormalTLTU ={1in \divide \tablelinethicknessunit by 300 }
-\NormalTSU  ={\normalbaselineskip \divide \tablestrutunit by 11 }
-\NormalTICSU={.5em plus 1fil minus .25em}
-\NormalTCWU ={.5em}
-\NormalTKU  ={.5em}
-
-\def\NormalTableUnits
-  {\tablelinethicknessunit   \the\NormalTLTU
-   \tablestrutunit           \the\NormalTSU
-   \tableintercolumnspaceunit\the\NormalTICSU
-   \tablecolumnwidthunit     \the\NormalTCWU
-   \tablekernunit            \the\NormalTKU}
-
-\NormalTableUnits
 
 \newtoks\everytable
 \newtoks\everytableparbox
@@ -219,7 +199,7 @@
       \noexpand\!!width
       \ifnum\!tgCode=\plusone
         \ifx\!tgValue\empty
-          \tablelinethicknessfactor
+        \tablevrulethicknessfactor
         \else
           \!tgValue
         \fi
@@ -770,7 +750,7 @@
 \def\tableStandardTableStrut
   {\tableMakeStrut
      {\tablestrutheightfactor\tablestrutunit}
-     {\tablestrutdepthfactor\tablestrutunit }}
+     {\tablestrutdepthfactor \tablestrutunit }}
 
 \def\tableAugmentedTableStrut#1#2%
   {\tableMakeStrut
@@ -996,11 +976,13 @@
 \def\@VLn{1}
 \def\@VLd{.125em}
 
+\let\tablecurrentvrulecolor\empty
+
 \def\do!ttInsertVrule % will be merged in 2005
   {\vrule\!!width
      \ifnum\!tgCode=\plusone
        \ifx\!tgValue\empty
-         \tablelinethicknessfactor
+        \tablevrulethicknessfactor
        \else
        \!tgValue
        \fi
@@ -1012,6 +994,9 @@
 
 \def\!ttInsertVrule
   {\hfil
+   \ifx\tablecurrentvrulecolor\empty\else
+     \switchtocolor[\tablecurrentvrulecolor]%
+   \fi
    \ifcase\@VLn\or
      \do!ttInsertVrule
      \unskip
@@ -1020,6 +1005,7 @@
      \gdef\@VLn{1}%
      \unskip
    \fi
+   \global\let\tablecurrentvrulecolor\empty
    \hfil
    &}
 
@@ -1043,26 +1029,23 @@
   {\ifnum#1>\plusone
      \omit
      \global\TABLEdivisionfalse
-     \scratchcounter\numexpr\currentTABLEcolumn+#1-\plusone\relax % added
-     \ifnum\scratchcounter>\maxTABLEcolumn                        % added
-       \def\next                                                  % added
-         {\setTABLEerror\TABLEspanoverflow                        % added
-          \handleTABLEerror}%                                     % added
-     \else                                                        % added
-       \def\next                                                  % added
-         {\global\advance\currentTABLEcolumn#1-\plusone\relax     % added
-          \scratchcounter2\numexpr#1-\plusone\relax               % changed
-          \!thLoop
-            \ifnum\scratchcounter>\plusone
-              \span
-              \omit
-              \advance\scratchcounter\minusone
-          \repeat
-          \span}%
-     \fi                                                 % added
+     \scratchcounter\currentTABLEcolumn              % added
+     \advance\scratchcounter #1%                     % added
+     \advance\scratchcounter \minusone               % added
+     \def\next                                       % added
+       {\global\advance\currentTABLEcolumn #1%       % added
+        \global\advance\currentTABLEcolumn \minusone % added
+        \scratchcounter#1%   \mscount is in Plain
+        \advance\scratchcounter \minusone
+        \advance\scratchcounter \scratchcounter
+        \!thLoop
+          \ifnum\scratchcounter>\plusone
+            \spanomit \advance\scratchcounter\minusone
+        \repeat
+        \span}%
    \else                                                 % added
      \def\next % conflicts with possible next \omit      % added
-       {\global\advance\currentTABLEcolumn\plusone}%    % added
+       {\global\advance\currentTABLEcolumn \plusone}%    % added
    \fi
    \next}                                                % added
 
@@ -1084,7 +1067,11 @@
 
 \def\!ttFullHruleA
   {\!ttGetHalfRuleThickness
+   \ifx\tablecurrenthrulecolor\empty\else
+     \switchtocolor[\tablecurrenthrulecolor]%
+   \fi
    \hrule\!!height\dimen0\!!depth\dimen0
+   \global\let\tablecurrenthrulecolor\empty
    %\penalty0 % removed
    \egroup}
 
@@ -1094,18 +1081,22 @@
 
 \def\!ttShortHruleA
   {\!ttGetHalfRuleThickness
+   \ifx\tablecurrenthrulecolor\empty\else
+     \switchtocolor[\tablecurrenthrulecolor]%
+   \fi
    \leaders\hrule\!!height\dimen0\!!depth\dimen0\hfill
    \null
+   \global\let\tablecurrenthrulecolor\empty
    \ignorespaces}
 
 \def\!ttLongHrule
   {\omit\span\omit\span\!ttShortHrule}
 
 \def\!ttGetHalfRuleThickness
-  {\dimen0=
+  {\dimen0=\dimexpr
      \ifnum\!tgCode=\plusone
        \ifx\!tgValue\empty
-         \tablelinethicknessfactor
+         \tablehrulethicknessfactor
        \else
          \!tgValue    % user-specified integer
        \fi
@@ -1122,10 +1113,8 @@
 \def\tableRight #1{\hfill#1}
 
 \def\tableOpenUp#1#2%
-  {\scratchdimen\tablestrutheightfactor \points \advance\scratchdimen #1\points
-   \edef\tablestrutheightfactor{\withoutpt\the\scratchdimen}%
-   \scratchdimen\tablestrutdepthfactor  \points \advance\scratchdimen #2\points
-   \edef\tablestrutdepthfactor{\withoutpt\the\scratchdimen}}
+  {\edef\tablestrutheightfactor{\withoutpt\the\dimexpr\tablestrutheightfactor\points+#1\points}%
+   \edef\tablestrutdepthfactor {\withoutpt\the\dimexpr\tablestrutdepthfactor \points+#2\points}}
 
 \def\tableSetTableToWidth#1%
   {\doifelsenothing{#1}{\!taTableSpread\emptytoks}{\!taTableSpread{to #1}}}
@@ -1595,8 +1584,21 @@
 %D such hacks become a second nature. However, redefining \type
 %D {\omit} and \type{\span} is not that easy.}
 
+\def\doTABLEnoalign
+  {\let\next=}
+
 \def\TABLEnoalign
-  {\noalign\bgroup\let\noalign\relax\let\next=}
+  {\noalign
+   \bgroup
+   \let\noalign\relax
+   \let\TABLEnoalign\doTABLEnoalign
+   \doTABLEnoalign}
+
+\def\startTABLEnoalign
+  {\TABLEnoalign\bgroup}
+
+\def\stopTABLEnoalign
+  {\iffalse{\else}\fi}
 
 %D \macros
 %D   {starttable}
@@ -1780,19 +1782,16 @@
 
 %D Now we can start the table.
 
+\newtoks \localtabledefinitions
+
 \def\thirdstagestartTABLE#1%
   {\global\setTABLEactiontrue
    \setTABLEaction\TABLEunknown
    \setTABLEforce\TABLEunknown
-   \resetVLvalues
+   \tableresetVLvalues
    \appendtoks\localTABLEsetup\to\everytable
    \tablestandardbegin[\ifsplittables u\else b\fi]%
-   \defineTABLEunits
-   \defineTABLEsteps
-   \defineTABLErules
-   \defineTABLEdivisions
-   \defineTABLEshorthands
-   \defineTABLEendings
+   \the\localtabledefinitions
    \forgetall % added
    \doifsomething{#1}
      {\def\TABLEformat{#1}%
@@ -1907,10 +1906,10 @@
 \let\@@TABLEhead\empty  \def\TABLEhead{\@@TABLEhead}
 \let\@@TABLEtail\empty  \def\TABLEtail{\@@TABLEtail}
 
-\letvalue{\e!start\v!tablehead}=\undefined
-\letvalue{\e!stop \v!tablehead}=\undefined
-\letvalue{\e!start\v!tabletail}=\undefined
-\letvalue{\e!stop \v!tabletail}=\undefined
+\letbeundefined{\e!start\v!tablehead}
+\letbeundefined{\e!stop \v!tablehead}
+\letbeundefined{\e!start\v!tabletail}
+\letbeundefined{\e!stop \v!tabletail}
 
 \expanded
   {\long\def\csname\e!start\v!tablehead\endcsname##1\csname\e!stop\v!tablehead\endcsname%
@@ -1934,23 +1933,6 @@
 
 %D Redudant \type{\HL}'s are removed automatically, so
 %D mid||lines can be used without problems.
-
-%D We need an alternative for the normal complex or simple
-%D commands, because assignments in these system commands
-%D conflict with \type{\noalign}. This alternative is about
-%D as efficient as possible.
-
-\def\complexorsimpleTable#1#2%
-  {\csname\if[\noexpand#2\s!complex\else\s!simple\fi\c!Table#1\endcsname#2}
-
-%D The next one is used in \type{\VL} cum suis and honours
-%D the next grouping.
-
-\def\docomplexorsimpleTable#1#2%
-  {\ifx\next\bgroup\@EA#2\else\@EA\dodocomplexorsimpleTable\@EA#1\@EA#2\fi}
-
-\def\dodocomplexorsimpleTable#1#2#3%
-  {\if[\noexpand#3\@EA#1\else\@EA#2\fi#3}
 
 %D The order of the next macros is more or less random. First
 %D we implement error recovery. Errors are reported to the
@@ -2011,12 +1993,13 @@
 
 \setnewconstant\TABLErowzero\zerocount
 
-\unexpanded\def\defineTABLEendings
-  {\let\SR\TableSR
-   \let\FR\TableFR
-   \let\MR\TableMR
-   \let\LR\TableLR
-   \let\AR\TableAR}
+\appendtoks
+  \let\SR\TableSR
+  \let\FR\TableFR
+  \let\MR\TableMR
+  \let\LR\TableLR
+  \let\AR\TableAR
+\to \localtabledefinitions
 
 \unexpanded\def\TableSR
   {\ifnum\TABLEaction=\TABLEfirstrow
@@ -2144,7 +2127,6 @@
 %D one more than the number of columns.
 
 \newcount\currentTABLEcolumn
-\newcount\maxTABLEcolumn % needed for reset vl properties
 
 %D While defining this macro we change the \CATCODE\ of
 %D \type{|}. When counting the bars, we use a non active
@@ -2161,7 +2143,7 @@
 
 \bgroup \catcode`\|=\othercatcode
 
-\gdef\getTABLEnofcolumns#1%
+\gdef\getTABLEnofcolumns#1% todo: also divert this to lua as with tabulate
   {\bgroup
    \cleanupfeatures % needed !
    \@@useotherbar
@@ -2177,34 +2159,46 @@
 %D \sym{\type{\HC}} a horizontal colored line
 %D \stopitemize
 
-\unexpanded\def\defineTABLErules
-  {\let\VL\TableVL
-   \let\VC\TableVC
-   \let\HL\TableHL
-   \let\HC\TableHC
-   \let\VS\TableVS
-   \let\VD\TableVD
-   \let\VT\TableVT
-   \let\VN\TableVN}
+\newcount\tablevrulethicknessfactor
+\newcount\tablehrulethicknessfactor
+\newcount\tabledrulespan
+\let     \tablecurrentvrulecolor    \empty
+\let     \tablecurrenthrulecolor    \empty
+
+\appendtoks
+  \let\VL\TableVL
+  \let\VC\TableVC
+  \let\HL\TableHL
+  \let\HC\TableHC
+  \let\VS\TableVS
+  \let\VD\TableVD
+  \let\VT\TableVT
+  \let\VN\TableVN
+\to \localtabledefinitions
+
+\def\tableresetVLvalues
+  {\global\currentTABLEcolumn\zerocount}
+
+\def\dotablevrulecommand#1% global assignments
+  {\doifnumberelse{#1}
+     {\global\tablevrulethicknessfactor#1\relax
+      \global\multiply\tablevrulethicknessfactor\@@tiVLwidth\relax}
+     {\xdef\tablecurrentvrulecolor{#1}}}
 
 \unexpanded\def\TableVL
   {\checkTABLEautorow
-   \global\advance\currentTABLEcolumn \plusone
-   \doTableVL}
+   \global\advance\currentTABLEcolumn\plusone
+   \dosingleempty\doTableVL}
 
-\def\doTableVL
-  {\futurelet\next\dodoTableVL}
+\def\doTableVL[#1]%
+  {\global\tablecurrentvrulecolor\empty
+   \global\tablevrulethicknessfactor\@@tiVLwidth\relax
+   \iffirstargument
+     \rawprocesscommalist[#1]\dotablevrulecommand
+   \fi
+   \normalexpanded{\noexpand\normalTABLEcomplexbar\the\tablevrulethicknessfactor} }% \relax breaks \use
 
-\def\dodoTableVL
-  {\docomplexorsimpleTable\complexTableVL\simpleTableVL}
-
-\def\complexTableVL[#1]%
-  {\scratchcounter=0#1%
-   \multiply\scratchcounter \@@tiVLwidth
-   \simpleTableVL}
-
-\def\simpleTableVL
-  {\expanded{\normalTABLEcomplexbar\@@tiVLwidth\space}}% \relax breaks \use
+\let\TableVC\TableVL % for mojca
 
 % \starttable[|||]
 % \HL
@@ -2218,79 +2212,46 @@
 \unexpanded\def\TableVD  {\VN2}
 \unexpanded\def\TableVT  {\VN3}
 \unexpanded\def\TableVN#1{\gdef\@VLn{#1}\VL}
-
-\def\resetVLvalues
-  {\global\currentTABLEcolumn\zerocount}
 
-\unexpanded\def\TableVC
-  {\checkTABLEautorow
-   \doTableVC}
-
-\def\doTableVC
-  {\futurelet\next\dodoTableVC}
-
-\def\dodoTableVC
-  {\docomplexorsimpleTable\complexTableVC\simpleTableVC}
-
-\def\complexTableVC[#1]%
-  {\setgvalue{bVC\the\currentTABLEcolumn}{\startcolor[#1]}%
-   \setgvalue{eVC\the\currentTABLEcolumn}{\stopcolor}%
-   \simpleTableVC}
-
-\def\simpleTableVC
-  {\setgvalue{bVL\the\currentTABLEcolumn}{\getvalue{bVC\the\currentTABLEcolumn}}%
-   \setgvalue{eVL\the\currentTABLEcolumn}{\getvalue{eVC\the\currentTABLEcolumn}}%
-   \doTableVL}
+\def\dotablehrulecommand#1% global assignments
+  {\doifnumberelse{#1}
+     {\global\tablehrulethicknessfactor#1\relax
+      \global\multiply\tablehrulethicknessfactor\@@tiHLheight\relax}
+     {\xdef\tablecurrenthrulecolor{#1}}}
 
 \unexpanded\def\TableHL
   {\finishTABLErow
-   \complexorsimpleTable{HL}}
+   \startTABLEnoalign
+   \dosingleempty\doTableHL}
 
-\def\complexTableHL[#1]%
-  {\TABLEnoalign
-     {\scratchcounter0#1%
-      \multiply\scratchcounter \@@tiHLheight
-      \edef\@@tiHLheight{\the\scratchcounter}}%
-  \simpleTableHL}
+\def\doTableHL[#1]%
+  {\nobreak
+   \ifnum\TABLEaction=\TABLErule
+     \writestatus\m!TABLE{skipping \string\HL}% \statusmessage
+   \else
+     \ifnum\TABLEaction=\TABLEmidrow
+       \writestatus\m!TABLE{change \string\MR\space into \string\LR/\string\SR}%
+     \else\ifnum\TABLEaction=\TABLEfirstrow
+       \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
+     \fi\fi
+     \bgroup
+       \global\tablehrulethicknessfactor\@@tiHLheight\relax
+       \iffirstargument
+         \global\let\tablecurrenthrulecolor\empty
+         \rawprocesscommalist[#1]\dotablehrulecommand
+         \ifx\tablecurrenthrulecolor\empty\else
+           \switchtocolor[\tablecurrenthrulecolor]%
+         \fi
+       \fi
+       \normalexpanded{\noexpand\normalTABLEfullrule\the\tablehrulethicknessfactor} %
+     \egroup
+     \accountTABLElinewidth
+   \fi
+   \setTABLEaction\TABLErule
+   \nobreak
+   \stopTABLEnoalign}
 
-\def\simpleTableHL
-  {\TABLEnoalign
-     {\nobreak
-      \ifnum\TABLEaction=\TABLErule
-        \writestatus\m!TABLE{skipping \string\HL}% \statusmessage
-      \else
-        \ifnum\TABLEaction=\TABLEmidrow
-          \writestatus\m!TABLE{change \string\MR\space into \string\LR/\string\SR}%
-        \else\ifnum\TABLEaction=\TABLEfirstrow
-          \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
-        \fi\fi
-        \startHLcommand
-        \expandafter\normalTABLEfullrule\@@tiHLheight
-        \stopHLcommand
-        \globalletempty\startHLcommand
-        \globalletempty\stopHLcommand
-        \accountTABLElinewidth
-      \fi
-      \setTABLEaction\TABLErule
-      \nobreak}}
-
-\let\startHLcommand\empty
-\let\stopHLcommand \empty
-
-\unexpanded\def\TableHC
-  {\complexorsimpleTable{HC}}
-
-\def\complexTableHC[#1]%
-  {\TABLEnoalign
-     {\gdef\startHCcommand{\startcolor[#1]}%
-      \gdef\stopHCcommand {\stopcolor}}%
-   \simpleTableHC}
-
-\def\simpleTableHC
-  {\TABLEnoalign
-     {\globallet\startHLcommand\startHCcommand
-      \globallet\stopHLcommand \stopHCcommand}%
-   \HL}
+\let\TableHC\TableHL % for mojca
 
 %D \startitemize[3*ruim]
 %D \sym{\type{\NL}} a vertical skip
@@ -2301,30 +2262,37 @@
 %D \sym{\type{\LC}} a last column
 %D \stopitemize
 
+% \starttable[|||]
+% \VL text \VL text \VL \AR
+% \TB[small]
+% \VL text \VL text \VL \AR
+% \TB[4*big]
+% \VL text \VL text \VL \AR
+% \stoptable
+
 % n+1 uitleggen
 
-\unexpanded\def\defineTABLEsteps
-  {\let\NL\TableNL
-   \let\NR\TableNR
-   \let\NC\TableNC
-   \let\FC\TableNC
-   \let\MC\TableNC
-   \let\LC\TableNC}
+\appendtoks
+  \let\TB\TableTB
+  \let\NL\TableNL % old
+  \let\NR\TableNR
+  \let\NC\TableNC
+  \let\FC\TableNC
+  \let\MC\TableNC
+  \let\LC\TableNC
+\to \localtabledefinitions
 
-\unexpanded\def\TableNL
-  {\complexorsimpleTable{NL}}
+\unexpanded\def\TableTB
+  {\finishTABLErow
+   \startTABLEnoalign
+   \dosingleempty\doTableTB}
 
-\def\complexTableNL[#1]%
-  {\TABLEnoalign
-     {\edef\@@tiNL{#1}%
-      \simpleTableNL}}%
+\def\doTableTB[#1]%
+  {\blank[\iffirstargument#1\else\@@tiNL\fi]%
+   \nobreak
+   \stopTABLEnoalign}
 
-\def\simpleTableNL
-  {\TABLEnoalign
-     {\nobreak
-      \setbox0\vbox{\blank[\@@tiNL]}%
-      \vskip\ht0
-      \nobreak}}
+\let\TableNL\TableTB
 
 \unexpanded\def\TableNR
   {\global\currentTABLEcolumn\zerocount
@@ -2347,12 +2315,13 @@
 
 \newif\ifTABLEdivision
 
-\unexpanded\def\defineTABLEdivisions
-  {\global\TABLEdivisionfalse % in start
-   \let\DL\TableDL
-   \let\DC\TableDC
-   \let\DV\TableDV
-   \let\DR\TableDR}
+\appendtoks
+  \global\TABLEdivisionfalse % in start
+  \let\DL\TableDL
+  \let\DC\TableDC
+  \let\DV\TableDV
+  \let\DR\TableDR
+\to \localtabledefinitions
 
 \def\checkTABLEdivision
   {\ifTABLEdivision \else
@@ -2361,14 +2330,21 @@
      \global\TABLEdivisiontrue
    \fi}
 
+\def\dotabledrulecommand#1% global assignments
+  {\doifnumberelse{#1}
+     {\ifcase\tabledrulespan
+        \global\tabledrulespan#1\relax
+      \else
+        \global\tablehrulethicknessfactor#1\relax
+        \global\multiply\tablehrulethicknessfactor\@@tiVLwidth\relax
+      \fi}
+     {\xdef\tablecurrenthrulecolor{#1}}}
+
 \unexpanded\def\TableDL
   {\checkTABLEdivision
-   \complexorsimpleTable{DL}}
+   \dosingleempty\doTableDL}
 
-\def\simpleTableDL
-  {\complexTableDL[1]}
-
-\def\complexTableDL[#1]%
+\def\doTableDL[#1]%
   {\ifnum\TABLEaction=\TABLErule
      \writestatus\m!TABLE{skipping \string\DL}%
    \else
@@ -2378,12 +2354,24 @@
        \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
      \fi\fi
      \setTABLEaction\TABLEunknown
-     \ifnum#1=\plusone
+     \global\tablehrulethicknessfactor\@@tiHLheight\relax
+     \global\tabledrulespan\zerocount
+     \iffirstargument
+       \global\let\tablecurrenthrulecolor\empty
+       \rawprocesscommalist[#1]\dotabledrulecommand
+       \ifx\tablecurrenthrulecolor\empty\else
+         \switchtocolor[\tablecurrenthrulecolor]%
+       \fi
+     \fi
+     \ifcase\tabledrulespan
+       \global\advance\currentTABLEcolumn \plusone
+       \let\next\normalTABLEsinglerule
+     \or
        \global\advance\currentTABLEcolumn \plustwo
        \let\next\normalTABLEsinglerule
      \else
        \global\advance\currentTABLEcolumn \plusone
-       \def\next{\normalTABLEmultirule{#1}}%
+       \edef\next{\noexpand\normalTABLEmultirule{\tabledrulespan} }%
      \fi
      \next
    \fi}
@@ -2412,25 +2400,39 @@
 \def\accountTABLElinewidth
   {\scratchdimen\tablelinethicknessunit}
 
-\unexpanded\def\defineTABLEshorthands
-  {\def\SPAN##1{\use{##1}}%
-   \def\TWO    {\use2}%
-   \def\THREE  {\use3}%
-   \def\FOUR   {\use4}%
-   \def\FIVE   {\use5}%
-   \def\SIX    {\use6}%
-   \def\REF    {\ReFormat}}
-
-\unexpanded\def\defineTABLEunits
-  {\processaction
-     [\@@tidistance]
-     [  \v!none=>\OpenUp00\def\LOW{\Lower6 },
-       \v!small=>\OpenUp00\def\LOW{\Lower6 }, % == baseline
-      \v!medium=>\OpenUp11\def\LOW{\Lower7 },
-         \v!big=>\OpenUp22\def\LOW{\Lower8 }]%
-   \doifelse\@@tidistance\v!none
-     {\TABLErowfactor\zerocount}
-     {\TABLErowfactor\plustwo  }}
+\def\doTableSPAN#1{\use{#1}}
+\def\doTableTWO   {\use2}
+\def\doTableTHREE {\use3}
+\def\doTableFOUR  {\use4}
+\def\doTableFIVE  {\use5}
+\def\doTableSIX   {\use6}
+\def\doTableREF   {\ReFormat}
+
+\appendtoks
+  \let\SPAN \doTableSPAN
+  \let\TWO  \doTableTWO
+  \let\THREE\doTableTHREE
+  \let\FOUR \doTableFOUR
+  \let\FIVE \doTableFIVE
+  \let\SIX  \doTableSIX
+  \let\REF  \doTableREF
+\to \localtabledefinitions
+
+\setvalue{\??ti:\c!distance:\v!none  }{\OpenUp00\def\LOW{\Lower6 }}
+\setvalue{\??ti:\c!distance:\v!small }{\OpenUp00\def\LOW{\Lower6 }} % == baseline
+\setvalue{\??ti:\c!distance:\v!medium}{\OpenUp11\def\LOW{\Lower7 }}
+\setvalue{\??ti:\c!distance:\v!big   }{\OpenUp22\def\LOW{\Lower8 }}
+
+\appendtoks
+  \getvalue{\??ti:\c!distance:\@@tidistance}%
+\to \localtabledefinitions
+
+\appendtoks
+  \doifelse\@@tidistance\v!none
+    {\TABLErowfactor\zerocount}
+    {\TABLErowfactor\plustwo  }%
+\to \localtabledefinitions
+
 
 \def\dohandlebar % here ?
   {\ifmmode
@@ -2446,7 +2448,7 @@
 
 \def\dosetuptables[#1]%
   {\getparameters[\??ti][#1]%
-   \processaction
+   \processaction % we have a command for this
      [\@@tialign]
      [  \v!right=>\def\TABLEparalignment{\raggedright},
          \v!left=>\def\TABLEparalignment{\raggedleft},
@@ -2456,43 +2458,24 @@
    \assignalfadimension\@@tiVL\@@tiVLwidth 246%
    \assignalfadimension\@@tiHL\@@tiHLheight246}
 
-\def\localTABLEsetup
-  {\@@ticommands\relax
-   \expanded{\switchtobodyfont[\@@tibodyfont]}%
-   \def\tablestrutheightfactor  {8}%
-   \def\tablestrutdepthfactor   {4}%
-   \def\tablelinethicknessfactor{4}%
-   \NormalTLTU         {.1pt}%
-   \NormalTSU          {\normalbaselineskip\divide\tablestrutunit 12 }%
-   \NormalTableUnits}
-
-%D And then I wrote the tabulate environment. That
-%D alternative supports setting the rule thickness and color,
-%D so here is the table alternative.
-
-% \let\startglobalTABLEcolor\empty
-% \let\stopglobalTABLEcolor \empty
+\let\tablelinethicknessfactor\plusfour
 
 \def\localTABLEsetup
   {\@@ticommands\relax
-   \expanded{\switchtobodyfont[\@@tibodyfont]}%
-   \def\tablelinethicknessfactor{4}%
-   \scratchdimen\@@tirulethickness
-   \divide\scratchdimen \tablelinethicknessfactor
-   \expanded{\NormalTLTU{\the\scratchdimen}}%
+   \expanded{\switchtobodyfont[\@@tibodyfont]}% expanded ?
+   \tablelinethicknessunit\dimexpr\@@tirulethickness/\tablelinethicknessfactor\relax
    \doifelse\@@tiheight\v!strut
-     {\edef\tablestrutheightfactor{\tablestrutheightfactor}}
-     {\edef\tablestrutheightfactor{\@@tiheight}}%
+     {\let\tablestrutheightfactor\tablestrutheightfactor}
+     {\let\tablestrutheightfactor\@@tiheight}%
    \doifelse\@@tidepth\v!strut
-     {\edef\tablestrutdepthfactor{\tablestrutdepthfactor}}
-     {\edef\tablestrutdepthfactor{\@@tidepth}}%
-   \scratchdimen\tablestrutheightfactor\points \multiply\scratchdimen 10%
-   \edef\tablestrutheightfactor{\withoutpt\the\scratchdimen}%
-   \scratchdimen\tablestrutdepthfactor \points \multiply\scratchdimen 10%
-   \edef\tablestrutdepthfactor{\withoutpt\the\scratchdimen}%
-   % units
-   \NormalTSU{\normalbaselineskip\divide\tablestrutunit 12 }%
-   \NormalTableUnits}
+     {\let\tablestrutdepthfactor\tablestrutdepthfactor}
+     {\let\tablestrutdepthfactor\@@tidepth}%
+   \edef\tablestrutheightfactor{\withoutpt\the\dimexpr10\dimexpr\tablestrutheightfactor\points}%
+   \edef\tablestrutdepthfactor {\withoutpt\the\dimexpr10\dimexpr\tablestrutdepthfactor \points}%
+   \tablestrutunit\dimexpr\normalbaselineskip/12\relax % 12 is default bodyfont
+   \tableintercolumnspaceunit.5em plus 1fil minus .25em\relax
+   \tablecolumnwidthunit     .5em\relax
+   \tablekernunit            .5em\relax}
 
 %D As one can see, we didn't only add color, but also more
 %D control over spacing.

@@ -177,6 +177,9 @@ local lpeg = require("lpeg")
 
 local type = type
 
+-- Beware, we predefine a bunch of patterns here and one reason for doing so
+-- is that we get consistent behaviour in some of the visualizers.
+
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
@@ -193,19 +196,38 @@ local alwaysmatched    = P(true)
 patterns.anything      = anything
 patterns.endofstring   = endofstring
 patterns.beginofstring = alwaysmatched
+patterns.alwaysmatched = alwaysmatched
 
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
+local newline          = crlf + cr + lf
 local utf8next         = R("\128\191")
 local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
+local space            = P(" ")
+
+patterns.somecontent   = (anything - newline - space)^1
+patterns.beginline     = #(1-newline)
+
+local utfbom_32_be     = P('\000\000\254\255')
+local utfbom_32_le     = P('\255\254\000\000')
+local utfbom_16_be     = P('\255\254')
+local utfbom_16_le     = P('\254\255')
+local utfbom_8         = P('\239\187\191')
+local utfbom           = utfbom_32_be + utfbom_32_le
+                       + utfbom_16_be + utfbom_16_le
+                       + utfbom_8
+local utftype          = utfbom_32_be / "utf-32-be" + utfbom_32_le  / "utf-32-le"
+                       + utfbom_16_be / "utf-16-be" + utfbom_16_le  / "utf-16-le"
+                       + utfbom_8     / "utf-8"     + alwaysmatched / "unknown"
 
 patterns.utf8one       = R("\000\127")
 patterns.utf8two       = R("\194\223") * utf8next
 patterns.utf8three     = R("\224\239") * utf8next * utf8next
 patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
-patterns.utfbom        = P('\000\000\254\255') + P('\255\254\000\000') + P('\255\254') + P('\254\255') + P('\239\187\191')
+patterns.utfbom        = utfbom
+patterns.utftype       = utftype
 
 local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
 local validutf8char    = utf8char^0 * endofstring * Cc(true) + Cc(false)
@@ -231,24 +253,30 @@ patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
 patterns.lowercase     = R("az")
 patterns.uppercase     = R("AZ")
 patterns.letter        = patterns.lowercase + patterns.uppercase
-patterns.space         = P(" ")
+patterns.space         = space
 patterns.tab           = P("\t")
 patterns.spaceortab    = patterns.space + patterns.tab
 patterns.eol           = S("\n\r")
 patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
-patterns.newline       = crlf + cr + lf
-patterns.nonspace      = 1 - patterns.space
+patterns.newline       = newline
+patterns.emptyline     = newline^1
 patterns.nonspacer     = 1 - patterns.spacer
 patterns.whitespace    = patterns.eol + patterns.spacer
 patterns.nonwhitespace = 1 - patterns.whitespace
+patterns.equal         = P("=")
 patterns.comma         = P(",")
 patterns.commaspacer   = P(",") * patterns.spacer^0
 patterns.period        = P(".")
+patterns.colon         = P(":")
+patterns.semicolon     = P(";")
+patterns.underscore    = P("_")
 patterns.escaped       = escaped
 patterns.squote        = squote
 patterns.dquote        = dquote
-patterns.undouble      = (dquote/"") * ((escaped + (1-dquote))^0) * (dquote/"")
-patterns.unsingle      = (squote/"") * ((escaped + (1-squote))^0) * (squote/"")
+patterns.nosquote      = (escaped + (1-squote))^0
+patterns.nodquote      = (escaped + (1-dquote))^0
+patterns.unsingle      = (squote/"") * patterns.nosquote * (squote/"")
+patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
@@ -266,19 +294,6 @@ end
 function lpeg.splitter(pattern, action)
     return (((1-P(pattern))^1)/action+1)^0
 end
-
-local spacing  = patterns.spacer^0 * patterns.newline -- sort of strip
-local empty    = spacing * Cc("")
-local nonempty = Cs((1-spacing)^1) * spacing^-1
-local content  = (empty + nonempty)^1
-
-local capture = Ct(content^0)
-
-function string.splitlines(str)
-    return match(capture,str)
-end
-
-patterns.textline = content
 
 local splitters_s, splitters_m = { }, { }
 
@@ -320,6 +335,30 @@ function string.split(str,separator)
         cache[separator] = c
     end
     return match(c,str)
+end
+
+local spacing  = patterns.spacer^0 * newline -- sort of strip
+local empty    = spacing * Cc("")
+local nonempty = Cs((1-spacing)^1) * spacing^-1
+local content  = (empty + nonempty)^1
+
+patterns.textline = content
+
+
+local linesplitter = Ct(splitat(newline))
+
+patterns.linesplitter = linesplitter
+
+function string.splitlines(str)
+    return match(linesplitter,str)
+end
+
+local utflinesplitter = utfbom^-1 * Ct(splitat(newline))
+
+patterns.utflinesplitter = utflinesplitter
+
+function string.utfsplitlines(str)
+    return match(utflinesplitter,str)
 end
 
 
@@ -3247,6 +3286,8 @@ utf = utf or unicode.utf8
 local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
 local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
 
+local utfsplitlines = string.utfsplitlines
+
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
 -- 2  FE FF         UTF-16-big-endian
@@ -3291,109 +3332,129 @@ function unicode.utftype(f)
     end
 end
 
-function unicode.utf16_to_utf8(str, endian) -- maybe a gsub is faster or an lpeg
-    local result, tmp, n, m, p, r, t = { }, { }, 0, 0, 0, 0, 0 -- we reuse tmp
-    -- lf | cr | crlf / (cr:13, lf:10)
-    local function doit()
-        if n == 10 then
-            if p ~= 13 then
-                if t > 0 then
+
+
+local function utf16_to_utf8_be(t)
+    if type(t) == "string" then
+        t = utfsplitlines(str)
+    end
+    local result = { } -- we reuse result
+    for i=1,#t do
+        local r, more = 0, 0
+        for left, right in bytepairs(t[i]) do
+            if right then
+                local now = 256*left + right
+                if more > 0 then
+                    now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
+                    more = 0
                     r = r + 1
-                    result[r] = concat(tmp,"",1,t)
-                    t = 0
+                    result[r] = utfchar(now)
+                elseif now >= 0xD800 and now <= 0xDBFF then
+                    more = now
+                else
+                    r = r + 1
+                    result[r] = utfchar(now)
                 end
-                p = 0
-            end
-        elseif n == 13 then
-            if t > 0 then
-                r = r + 1
-                result[r] = concat(tmp,"",1,t)
-                t = 0
-            end
-            p = n
-        else
-            t = t + 1
-            tmp[t] = utfchar(n)
-            p = 0
-        end
-    end
-    for l,r in bytepairs(str) do
-        if r then
-            if endian then
-                n = 256*l + r
-            else
-                n = 256*r + l
-            end
-            if m > 0 then
-                n = (m-0xD800)*0x400 + (n-0xDC00) + 0x10000
-                m = 0
-                doit()
-            elseif n >= 0xD800 and n <= 0xDBFF then
-                m = n
-            else
-                doit()
             end
         end
+        t[i] = concat(result,"",1,r) -- we reused tmp, hence t
     end
-    if t > 0 then
-        r = r + 1
-        result[r] = concat(tmp,"",1,t)
+    return t
+end
+
+local function utf16_to_utf8_le(t)
+    if type(t) == "string" then
+        t = utfsplitlines(str)
+    end
+    local result = { } -- we reuse result
+    for i=1,#t do
+        local r, more = 0, 0
+        for left, right in bytepairs(t[i]) do
+            if right then
+                local now = 256*right + left
+                if more > 0 then
+                    now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
+                    more = 0
+                    r = r + 1
+                    result[r] = utfchar(now)
+                elseif now >= 0xD800 and now <= 0xDBFF then
+                    more = now
+                else
+                    r = r + 1
+                    result[r] = utfchar(now)
+                end
+            end
+        end
+        t[i] = concat(result,"",1,r) -- we reused tmp, hence t
+    end
+    return t
+end
+
+local function utf32_to_utf8_be(str)
+    if type(t) == "string" then
+        t = utfsplitlines(str)
+    end
+    local result = { } -- we reuse result
+    for i=1,#t do
+        local r, more = 0, -1
+        for a,b in bytepairs(str) do
+            if a and b then
+                if more < 0 then
+                    more = 256*256*256*a + 256*256*b
+                else
+                    r = r + 1
+                    result[t] = utfchar(more + 256*a + b)
+                    more = -1
+                end
+            else
+                break
+            end
+        end
+        t[i] = concat(result,"",1,r)
     end
     return result
 end
 
-function unicode.utf32_to_utf8(str, endian)
-    local result, tmp, n, m, p, r, t = { }, { }, 0, -1, 0, 0, 0
-    -- lf | cr | crlf / (cr:13, lf:10)
-    local function doit()
-        if n == 10 then
-            if p ~= 13 then
-                if t > 0 then
-                    r = r + 1
-                    result[r] = concat(tmp,"",1,t)
-                    t = 0
-                end
-                p = 0
-            end
-        elseif n == 13 then
-            if t > 0 then
-                r = r + 1
-                result[r] = concat(tmp,"",1,t)
-                t = 0
-            end
-            p = n
-        else
-            t = t + 1
-            tmp[t] = utfchar(n)
-            p = 0
-        end
+local function utf32_to_utf8_le(str)
+    if type(t) == "string" then
+        t = utfsplitlines(str)
     end
-    for a,b in bytepairs(str) do
-        if a and b then
-            if m < 0 then
-                if endian then
-                    m = 256*256*256*a + 256*256*b
+    local result = { } -- we reuse result
+    for i=1,#t do
+        local r, more = 0, -1
+        for a,b in bytepairs(str) do
+            if a and b then
+                if more < 0 then
+                    more = 256*b + a
                 else
-                    m = 256*b + a
+                    r = r + 1
+                    result[t] = utfchar(more + 256*256*256*b + 256*256*a)
+                    more = -1
                 end
             else
-                if endian then
-                    n = m + 256*a + b
-                else
-                    n = m + 256*256*256*b + 256*256*a
-                end
-                m = -1
-                doit()
+                break
             end
-        else
-            break
         end
-    end
-    if #tmp > 0 then
-        r = r + 1
-        result[r] = concat(tmp,"",1,t)
+        t[i] = concat(result,"",1,r)
     end
     return result
+end
+
+unicode.utf32_to_utf8_be = utf32_to_utf8_be
+unicode.utf32_to_utf8_le = utf32_to_utf8_le
+unicode.utf16_to_utf8_be = utf16_to_utf8_be
+unicode.utf16_to_utf8_le = utf16_to_utf8_le
+
+function unicode.utf8_to_utf8(t)
+    return type(t) == "string" and utfsplitlines(t) or t
+end
+
+function unicode.utf16_to_utf8(t,endian)
+    return endian and utf16_to_utf8_be(t) or utf16_to_utf8_le(t) or t
+end
+
+function unicode.utf32_to_utf8(t,endian)
+    return endian and utf32_to_utf8_be(t) or utf32_to_utf8_le(t) or t
 end
 
 local function little(c)
@@ -3435,6 +3496,10 @@ function unicode.utfcodes(str)
     return concat(t,separator or " ")
 end
 
+
+function unicode.filetype(data)
+    return data and lpeg.match(lpeg.patterns.utftype,data) or "unknown"
+end
 
 
 end -- of closure
@@ -3905,11 +3970,11 @@ local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces *
 
 local hash = { }
 
-local function set(key,value) -- using Carg is slower here
+local function set(key,value)
     hash[key] = value
 end
 
-local function set(key,value) -- using Carg is slower here
+local function set(key,value)
     hash[key] = value
 end
 
@@ -9676,7 +9741,7 @@ local suffixes  = allocate()  resolvers.suffixes  = suffixes
 local dangerous = allocate()  resolvers.dangerous = dangerous
 local suffixmap = allocate()  resolvers.suffixmap = suffixmap
 
-local relations = allocate {
+local relations = allocate { -- todo: handlers also here
     core = {
         ofm = {
             names    = { "ofm", "omega font metric", "omega font metrics" },
@@ -9746,7 +9811,7 @@ local relations = allocate {
         tex = {
             names    = { "tex" },
             variable = 'TEXINPUTS',
-            suffixes = { 'tex', "mkiv", "mkii" },
+            suffixes = { 'tex', "mkiv", "mkiv", "mkii" },
         },
         icc = {
             names    = { "icc", "icc profile", "icc profiles" },
@@ -9860,28 +9925,32 @@ resolvers.relations = relations
 
 -- formats: maps a format onto a variable
 
-for category, categories in next, relations do
-    for name, relation in next, categories do
-        local rn = relation.names
-        local rv = relation.variable
-        local rs = relation.suffixes
-        if rn and rv then
-            for i=1,#rn do
-                local rni = lower(gsub(rn[i]," ",""))
-                formats[rni] = rv
-                if rs then
-                    suffixes[rni] = rs
-                    for i=1,#rs do
-                        local rsi = rs[i]
-                        suffixmap[rsi] = rni
+function resolvers.updaterelations()
+    for category, categories in next, relations do
+        for name, relation in next, categories do
+            local rn = relation.names
+            local rv = relation.variable
+            local rs = relation.suffixes
+            if rn and rv then
+                for i=1,#rn do
+                    local rni = lower(gsub(rn[i]," ",""))
+                    formats[rni] = rv
+                    if rs then
+                        suffixes[rni] = rs
+                        for i=1,#rs do
+                            local rsi = rs[i]
+                            suffixmap[rsi] = rni
+                        end
                     end
                 end
             end
-        end
-        if rs then
+            if rs then
+            end
         end
     end
 end
+
+resolvers.updaterelations() -- push this in the metatable -> newindex
 
 local function simplified(t,k)
     return rawget(t,lower(gsub(k," ","")))
@@ -10345,7 +10414,7 @@ resolvers.locators      = allocate { notfound = { nil } }  -- locate databases
 resolvers.hashers       = allocate { notfound = { nil } }  -- load databases
 resolvers.generators    = allocate { notfound = { nil } }  -- generate databases
 
-function resolvers.splitmethod(filename)
+function resolvers.splitmethod(filename) -- todo: trigger by suffix
     if not filename then
         return { } -- safeguard
     elseif type(filename) == "table" then
@@ -10364,10 +10433,13 @@ function resolvers.methodhandler(what, filename, filetype) -- ...
     local resolver = resolvers[what]
     if resolver[scheme] then
         if trace_locating then
-            report_resolvers("handler '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
+            report_resolvers("using special handler for '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
         end
         return resolver[scheme](filename,filetype)
     else
+        if trace_locating then
+            report_resolvers("no handler for '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
+        end
         return resolver.tex(filename,filetype) -- todo: specification
     end
 end

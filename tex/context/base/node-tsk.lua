@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['node-tsk'] = {
     license   = "see context related readme files"
 }
 
--- this might move to task-*
+-- this might move to task-* .. we already have dirty flags there
 
 local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 

@@ -28,11 +28,11 @@
 %D since the source files are rather simple, we postpone the
 %D initialization till runtime.
 
+% resolvers.filters.install('utf',characters.filters.utf.collapse)
+
 \appendtoks
-    \ctxlua {
-        characters.filters.utf.collapsing = true
-        resolvers.filters.install('utf',characters.filters.utf.collapse)
-    }%
+    \ctxlua{utilities.sequencers.enableaction
+        (resolvers.openers.textfileactions,"characters.filters.utf.collapse")}%
 \to \everyjob
 
 %D The next one influences input parsing.

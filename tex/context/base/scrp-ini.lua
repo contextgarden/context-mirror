@@ -19,7 +19,7 @@ local allocate = utilities.storage.allocate
 
 local set_attribute   = node.set_attribute
 local has_attribute   = node.has_attribute
-local first_character = node.first_character
+local first_glyph     = node.first_glyph or node.first_character
 local traverse_id     = node.traverse_id
 
 local nodecodes       = nodes.nodecodes
@@ -284,7 +284,7 @@ end
 -- one of the time consuming functiions:
 
 function scripts.preprocess(head)
-    local start = first_character(head)
+    local start = first_glyph(head)
     if not start then
         return head, false
     else

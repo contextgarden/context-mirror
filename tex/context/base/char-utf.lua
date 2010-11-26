@@ -43,9 +43,6 @@ local filters         = characters.filters
 filters.utf           = filters.utf  or { }
 local utffilters      = characters.filters.utf
 
-utffilters.collapsing = true
-utffilters.expanding  = true
-
 --[[ldx--
 <p>It only makes sense to collapse at runtime, since we don't expect
 source code to depend on collapsing.</p>
@@ -169,7 +166,7 @@ not collecting tokens is not only faster but also saves garbage collecting.
 -- lpeg variant is not faster
 
 function utffilters.collapse(str) -- not really tested (we could preallocate a table)
-    if utffilters.collapsing and str then
+    if str and str ~= "" then
         local nstr = #str
         if nstr > 1 then
             if initialize then -- saves a call
@@ -247,6 +244,9 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
     end
     return str
 end
+
+utilities.sequencers.appendaction (resolvers.openers.textfileactions,"system","characters.filters.utf.collapse")
+utilities.sequencers.disableaction(resolvers.openers.textfileactions,"characters.filters.utf.collapse")
 
 --[[ldx--
 <p>Next we implement some commands that are used in the user interface.</p>

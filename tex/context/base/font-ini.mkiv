@@ -3206,11 +3206,36 @@
      \getvalue\emphasizedtypeface
    \fi\fi\fi}
 
-\def\emphasistypeface{\doemphasistypeface\sl\it}
-\def\emphasisboldface{\doemphasistypeface\bs\bi}
+\unexpanded\def\emphasistypeface{\doemphasistypeface\sl\it}
+\unexpanded\def\emphasisboldface{\doemphasistypeface\bs\bi}
+
+\unexpanded\def\normalboldface
+  {\relax\ifx\fontalternative\c!it \bi
+   \else \ifx\fontalternative\c!sl \bs
+   \else                           \bf \fi\fi}
+
+\unexpanded\def\normaltypeface
+  {\relax
+   \ifx\fontalternative\c!bi \it \else
+   \ifx\fontalternative\c!bs \sl \else
+                             \tf \fi\fi}
+
+\let\typeface\normaltypeface
+\let\boldface\normalboldface
+
+\unexpanded\def\swaptypeface
+  {\relax
+   \ifx\fontalternative\c!it \tf               \else
+   \ifx\fontalternative\c!sl \tf               \else
+   \ifx\fontalternative\c!bf \emphasisboldface \else
+   \ifx\fontalternative\c!bs \bf               \else
+   \ifx\fontalternative\c!bi \bf               \else
+                             \emphasistypeface \fi\fi\fi\fi\fi}
 
 %D To be set with the default body font environment: \type
 %D {em} being \type {slanted} or \type {italic}.
+
+% maybe a \csname...\fontalternative\endcsname
 
 \newconditional\emneeded
 
@@ -3238,8 +3263,7 @@
      \emphasistypeface
    \fi\fi\fi\fi\fi
    \the\everyemphasized
-   \ifconditional\emneeded\relax
-   \else
+   \ifconditional\emneeded\else
      \expandafter\aftergroup
    \fi
    \emphasiscorrection}
@@ -3250,7 +3274,7 @@
 % \setupbodyfontenvironment [default] [em={\italic\color[red]}]
 
 %D The next feature was not present in previous versions. It
-%D takes care of \type {\em \bf ...} sitiations.
+%D takes care of \type {\em \bf ...} situations.
 
 \def\setemphasisboldface
   {\let\savedemphasisboldface\bf
@@ -3274,10 +3298,10 @@
 
 \let\italiccorrection=\/ % tex primitive
 
-\def\emphasiscorrection
-  {\ifhmode
-     \expandafter\emphasislook
-   \fi}
+\def\emphasiscorrection % not in raw alignment groups, else omit problem
+  {\ifhmode\ifnum\currentgrouptype=\@@aligngroup\else
+     \expandafter\expandafter\expandafter\emphasislook
+   \fi\fi}
 
 \def\emphasislook
   {\begingroup

@@ -100,8 +100,14 @@ end
 local function mathtopaccent(class,family,slot)
     return format('\\Umathaccent "%X "%X "%X ',0,family,slot) -- no class
 end
-local function mathbotaccent(class,family,slot)
-    return format('\\Umathbotaccent "%X "%X "%X ',0,family,slot) -- no class
+if tex.luatexversion < 65 then -- this will disappear at 0.70
+    local function mathbotaccent(class,family,slot)
+        return format('\\Umathbotaccent "%X "%X "%X ',0,family,slot) -- no class
+    end
+else
+    local function mathbotaccent(class,family,slot)
+        return format('\\Umathaccent bottom "%X "%X "%X ',0,family,slot) -- no class
+    end
 end
 local function mathtopdelimiter(class,family,slot)
     return format('\\Udelimiterover "%X "%X ',family,slot) -- no class

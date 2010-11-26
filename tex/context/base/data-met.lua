@@ -21,7 +21,7 @@ resolvers.locators      = allocate { notfound = { nil } }  -- locate databases
 resolvers.hashers       = allocate { notfound = { nil } }  -- load databases
 resolvers.generators    = allocate { notfound = { nil } }  -- generate databases
 
-function resolvers.splitmethod(filename)
+function resolvers.splitmethod(filename) -- todo: trigger by suffix
     if not filename then
         return { } -- safeguard
     elseif type(filename) == "table" then
@@ -40,10 +40,13 @@ function resolvers.methodhandler(what, filename, filetype) -- ...
     local resolver = resolvers[what]
     if resolver[scheme] then
         if trace_locating then
-            report_resolvers("handler '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
+            report_resolvers("using special handler for '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
         end
         return resolver[scheme](filename,filetype)
     else
+        if trace_locating then
+            report_resolvers("no handler for '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
+        end
         return resolver.tex(filename,filetype) -- todo: specification
     end
 end

@@ -239,7 +239,7 @@ local contextsetups  = specifiers.contextsetups
 local contextnumbers = specifiers.contextnumbers
 local contextmerged  = specifiers.contextmerged
 
--- we cannot optimize with "start = first_character(head)" because then we don't
+-- we cannot optimize with "start = first_glyph(head)" because then we don't
 -- know which rlmode we're in which messes up cursive handling later on
 --
 -- head is always a whatsit so we can safely assume that head is not changed

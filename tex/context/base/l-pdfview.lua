@@ -26,7 +26,8 @@ local allcalls = {
 }
 
 if os.type == "windows" then
-     opencalls['okular'] = 'start "test" "c:/program files/kde/bin/okular.exe" --unique' -- todo: get focus
+--~      opencalls['okular'] = 'start "test" "c:/program files/kde/bin/okular.exe" --unique' -- todo: get focus
+     opencalls['okular'] = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique' -- todo: get focus
 else
      opencalls['okular'] = 'okular --unique'
 end

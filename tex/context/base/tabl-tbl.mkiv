@@ -849,7 +849,7 @@
 
 % The much needed hook:
 
-\appendtoks \optimizeverbatimfalse \to \everytabulate
+% \appendtoks \optimizeverbatimfalse \to \everytabulate
 
 % Todo: proper inheritance
 
@@ -1660,6 +1660,30 @@
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
 %D \stoptabulate
 %D \stoptyping
+
+%D Spacing:
+%
+% \starttabulate
+% \NC text \NC text \NC \NR
+% \TB[small]
+% \NC text \NC text \NC \NR
+% \TB[4*big]
+% \NC text \NC text \NC \NR
+% \stoptabulate
+
+\def\TabulateTB
+  {\startTABLEnoalign
+   \dosingleempty\doTabulateTB}
+
+\def\doTabulateTB[#1]%
+  {\iffirstargument
+     \blank[#1]
+   \else
+     \blank
+   \fi
+   \stopTABLEnoalign}
+
+\appendtoks\let\TB\TabulateTB\to\everytabulate
 
 % \starttabulatie[|mc|]
 % \NC \digits{100.000,00} \NC\NR

@@ -22,7 +22,7 @@ local has_attribute   = node.has_attribute
 local set_attribute   = node.set_attribute
 local get_attribute   = node.get_attribute
 local unset_attribute = node.unset_attribute
-local first_character = node.first_character
+local first_glyph     = node.first_glyph or node.first_character
 
 local texbox          = tex.box
 
@@ -69,6 +69,7 @@ end
 nodes.set_attribute        = set_attribute
 nodes.unset_attribute      = unset_attribute
 nodes.has_attribute        = has_attribute
+nodes.first_glyph          = first_glyph
 
 nodes.set_attributes       = set_attributes
 nodes.set_unset_attributes = set_unset_attributes
@@ -169,7 +170,7 @@ nodes.unsetattributes      = unset_attributes
 
 function nodes.firstcharacter(n,untagged) -- tagged == subtype > 255
     if untagged then
-        return first_character(n)
+        return first_glyph(n)
     else
         for g in traverse_id(glyph_code,n) do
             return g

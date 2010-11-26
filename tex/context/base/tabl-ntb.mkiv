@@ -1574,49 +1574,6 @@
      \fi
   \fi}
 
-%D Spacing:
-%
-% \starttabulate
-% \NC text \NC text \NC \NR
-% \TB[small]
-% \NC text \NC text \NC \NR
-% \TB[4*big]
-% \NC text \NC text \NC \NR
-% \stoptabulate
-%
-% \starttable[|||]
-% \VL text \VL text \VL \AR
-% \TB[small]
-% \VL text \VL text \VL \AR
-% \TB[4*big]
-% \VL text \VL text \VL \AR
-% \stoptable
-
-\def\complexTableTB[#1]{\TABLEnoalign{\blank[#1]}}
-\def\simpleTableTB     {\TABLEnoalign{\blank}}
-
-\def\TabulateTB
-  {\complexorsimpleTable{TB}}
-
-\def\doTableinterline% #1
-  {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
-     \chuckTABLEautorow
-   \else\ifnum\currentTABLEcolumn=\zerocount
-     \TABLEnoalign
-       {\globalletempty\checkTABLEautorow
-        \globalletempty\chuckTABLEautorow}%
-   \else
-     \setTABLEerror\TABLEmissingcolumn
-     \handleTABLEerror
-   \fi\fi
-   \complexorsimpleTable} % {#1}
-
-\def\TableHL{\doTableinterline{HL}}
-\def\TableTB{\doTableinterline{TB}}
-
-\appendtoks\let\TB\TableTB   \to\everytable
-\appendtoks\let\TB\TabulateTB\to\everytabulate % strange place
-
 % new (for Olivier Turlier)
 %
 % \defineTABLEsetup [xx] [foregroundcolor=red]
