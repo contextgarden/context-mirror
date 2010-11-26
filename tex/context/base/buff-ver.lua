@@ -326,7 +326,7 @@ local function visualize(method,nature,content,settings) -- maybe also method an
             m = specifications[method] or specifications.default
         end
         local n = m and m[nature]
-        settings.currentnature = nature or "display" -- tricky ... why sometimes no nature
+        settings.currentnature = nature or settings.nature or "display" -- tricky ... why sometimes no nature
         if n then
             n(content,settings)
         else
