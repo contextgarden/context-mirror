@@ -42,7 +42,7 @@ function resolvers.methodhandler(what, filename, filetype) -- ...
         if trace_locating then
             report_resolvers("using special handler for '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
         end
-        return resolver[scheme](filename,filetype)
+        return resolver[scheme](filename,filetype,specification) -- todo: query
     else
         if trace_locating then
             report_resolvers("no handler for '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))

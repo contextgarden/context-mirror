@@ -10435,7 +10435,7 @@ function resolvers.methodhandler(what, filename, filetype) -- ...
         if trace_locating then
             report_resolvers("using special handler for '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
         end
-        return resolver[scheme](filename,filetype)
+        return resolver[scheme](filename,filetype,specification) -- todo: query
     else
         if trace_locating then
             report_resolvers("no handler for '%s' -> '%s' -> '%s'",specification.original,what,table.sequenced(specification))
@@ -12041,7 +12041,7 @@ if not modules then modules = { } end modules ['data-out'] = {
     license   = "see context related readme files"
 }
 
--- not used yet
+resolvers.savers = utilities.storage.allocate { }
 
 
 
@@ -12301,6 +12301,8 @@ if not modules then modules = { } end modules ['data-zip'] = {
     license   = "see context related readme files"
 }
 
+-- to be redone using the more recent schemes mechanism
+
 local format, find, match = string.format, string.find, string.match
 local unpack = unpack or table.unpack
 
@@ -12436,7 +12438,7 @@ function openers.zip(specification)
                     if trace_locating then
                         report_resolvers("zip opener, file '%s' found",q.name)
                     end
-                    return openers.textopener(specification,dfile,'zip')
+                    return openers.textopener('zip',specification,dfile)
                 elseif trace_locating then
                     report_resolvers("zip opener, file '%s' not found",q.name)
                 end

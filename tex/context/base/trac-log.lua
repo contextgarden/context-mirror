@@ -92,6 +92,7 @@ end
 local texlog = { }  logs.tex = texlog  setmetatable(texlog, { __index = noplog })
 
 function texlog.report(a,b,c,...)
+--~ print(a,b,c,...)
     if c then
         write_nl(format("%-16s> %s\n",a,format(b,c,...)))
     elseif b then

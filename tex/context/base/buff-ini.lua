@@ -22,12 +22,12 @@ local huge = math.huge
 local byte, sub, find, char, gsub, rep, lower, format, gmatch, match, count = string.byte, string.sub, string.find, string.char, string.gsub, string.rep, string.lower, string.format, string.gmatch, string.match, string.count
 local splitlines, escapedpattern = string.splitlines, string.escapedpattern
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
-local ctxcatcodes = tex.ctxcatcodes
 local variables = interfaces.variables
 local lpegmatch = lpeg.match
 local settings_to_array = utilities.parsers.settings_to_array
 local allocate = utilities.storage.allocate
 local tabtospace = utilities.strings.tabtospace
+local texsprint, texprint, ctxcatcodes = tex.sprint, tex.print, tex.ctxcatcodes
 
 buffers = {
     data  = allocate(),
@@ -218,18 +218,18 @@ function buffers.typebuffer(settings) -- todo: settings.nature = "display"
     end
 end
 
-function buffers.processbuffer(settings) -- overlaps too much with the previous
-    local name = settings.name           -- maybe use processor instead of visualizer
+function buffers.processbuffer(settings) -- nearly the same
+    local name = settings.name
     local lines = name and data[name]
     if lines then
+        -- dodo: process only and feedback
         if type(lines) == "string" then
             lines = splitlines(lines)
             data[name] = lines
         end
         local content, m = filter(lines,settings)
         if content and content ~= "" then
---~         print("!!!!!!!!!!!!!!!!!!!")
-            flush(content,"process",settings)
+            flush(content,"direct",settings)
         end
     end
 end
@@ -314,13 +314,14 @@ local printer = (lpeg.patterns.textline/texprint)^0 -- not the right one, we can
 function buffers.get(name)
     local b = data[name]
     if b then
-        if type(b) == "table" then
-            for i=1,#b do
-                texprint(b[i])
-            end
-        else
-            lpegmatch(printer,b)
-        end
+        context.viafile(b)
+--~         if type(b) == "table" then
+--~             for i=1,#b do
+--~                 texprint(b[i])
+--~             end
+--~         else
+--~             lpegmatch(printer,b)
+--~         end
     end
 end
 
@@ -346,6 +347,33 @@ function buffers.evaluate(name)
     else
         report_buffers("invalid lua code in buffer '%s'",name)
     end
+end
+
+-- maybe we should keep buffers unsplit and only split when needed
+-- or better: we need a tex.sprint that splits on newlines (\r \n or
+-- \r\n)
+
+local function n_content(s)
+    flush(contentcatcodes,s)
+end
+
+local function n_endofline()
+    texsprint(" ")
+end
+
+local function n_emptyline()
+    texprint("")
+end
+
+local function n_simpleline()
+    texprint("")
+end
+
+function buffers.mkvi(name,raw)
+    local lines = content(name)
+    lines = resolvers.macros.preprocessed(lines)
+ -- context.printlines(lines,raw)
+    context.viafile(lines)
 end
 
 function buffers.collect(names,separator) -- no print

@@ -43,13 +43,7 @@ function blocks.print(name,data,hide)
     else
         context.dostartnormalblock(name)
     end
-    if type(data) == "table" then
-        for i=1,#data do
-            context(data[i])
-        end
-    else
-        lpegmatch(printer,data)
-    end
+    context.viafile(data)
     if hide then
         context.dostophiddenblock()
     else

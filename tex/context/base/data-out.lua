@@ -6,5 +6,5 @@ if not modules then modules = { } end modules ['data-out'] = {
     license   = "see context related readme files"
 }
 
--- not used yet
+resolvers.savers = utilities.storage.allocate { }
 
