@@ -2220,7 +2220,8 @@
      {\xdef\tablecurrenthrulecolor{#1}}}
 
 \unexpanded\def\TableHL
-  {\finishTABLErow
+  {\chuckTABLEautorow
+   \finishTABLErow
    \startTABLEnoalign
    \dosingleempty\doTableHL}
 
@@ -2283,7 +2284,8 @@
 \to \localtabledefinitions
 
 \unexpanded\def\TableTB
-  {\finishTABLErow
+  {\chuckTABLEautorow
+   \finishTABLErow
    \startTABLEnoalign
    \dosingleempty\doTableTB}
 

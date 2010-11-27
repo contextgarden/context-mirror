@@ -683,6 +683,8 @@
 
 % for a while:
 
-\def\Umathbotaccent{\Umathaccent bottom }
+\ifnum\luatexversion<65
+    \def\Umathbotaccent{\Umathaccent bottom }
+\fi
 
 \protect \endinput
