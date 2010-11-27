@@ -161,8 +161,36 @@ end
 
 local flushlines = lpeg.texlinesplitter(n_content,n_endofline,n_emptyline,n_simpleline)
 
-context.__flushlines = flushlines -- maybe context.helpers.flushtexlines
+context.__flushlines = flushlines       -- maybe context.helpers.flushtexlines
 context.__flush      = flush
+
+local printlines_ctx = (
+    (newline)     / function()  texprint("") end +
+    (1-newline)^1 / function(s) texprint(ctxcatcodes,s) end * newline^-1
+)^0
+
+local printlines_raw = (
+    (newline)     / function()  texprint("") end +
+    (1-newline)^1 / function(s) texprint(s)  end * newline^-1
+)^0
+
+function context.printlines(str,raw)
+    if raw then
+        lpegmatch(printlines_raw,str)
+    else
+        lpegmatch(printlines_ctx,str)
+    end
+end
+
+-- -- --
+
+local savedata = resolvers.savers.virtual
+
+function context.viafile(data)
+    -- this is the only way to deal with nested buffers
+    -- and other catcode sensitive data
+    context.input(savedata(data))
+end
 
 -- -- --
 

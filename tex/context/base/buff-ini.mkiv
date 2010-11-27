@@ -186,10 +186,12 @@
 %
 % \ctxluabuffer[what] \ctxluabuffer
 
-\def\ctxluabuffer
-  {\dosingleempty\doctxluabuffer}
+\def\ctxluabuffer {\dosingleempty\doctxluabuffer}
+\def\mkvibuffer   {\dosingleempty\domkvibuffer}
+\def\mkvibufferraw{\dosingleempty\domkvibufferraw}
 
-\def\doctxluabuffer[#1]%
-  {\ctxlua{buffers.evaluate("#1")}}
+\def\doctxluabuffer [#1]{\ctxlua{buffers.evaluate("#1")}}
+\def\domkvibuffer   [#1]{\ctxlua{buffers.mkvi("#1")}}
+%def\domkvibufferraw[#1]{\ctxlua{buffers.mkvi("#1",true)}}
 
 \protect \endinput

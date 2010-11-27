@@ -23,7 +23,7 @@
 %       check functionality
 %       alternative files (needs further integration elsewhere)
 
-\def\blockparameter#1#2{\ifcsname\??tb#1#2\endcsname\csname\??tb#1#2\endcsname\fi}
+\def\namedblockparameter#1#2{\ifcsname\??tb#1#2\endcsname\csname\??tb#1#2\endcsname\fi}
 
 \unexpanded\def\setupblockparameters{\dodoubleargument       \dosetupblock} % fast one (for compatibility)
 \unexpanded\def\setupblock          {\dodoubleargumentwithset\dosetupblock} % handles set
@@ -42,12 +42,13 @@
       \c!style=,
       \c!file=]% todo
    \ctxlua{structures.blocks.define("#1")}%
-   \setvalue{\e!begin#1}{\dodoubleempty\dobeginofblock[#1]}%
+   \setuvalue{\e!begin#1}{\dodoubleempty\dobeginofblock[#1]}%
    \letvalue{\e!end#1}\relax}
 
 \long\def\dobeginofblock[#1][#2]%
   {\normalexpanded{\noexpand\dodowithbuffer{@block@}{\e!begin#1}{\e!end#1}}
-     {}{\ctxlua{structures.blocks.save("#1","#2","@block@")}}}% before after
+     {}% before
+     {\ctxlua{structures.blocks.save("#1","#2","@block@")}}}% after
 
 \def\dostarthiddenblock
   {\startnointerference
@@ -69,15 +70,15 @@
    \edef\currentblock{#1}%
    \doblocksetups\currentblock
    \let\doblocksetups\gobbleoneargument
-   \blockparameter\currentblock\c!before
+   \namedblockparameter\currentblock\c!before
    \dosetfontattribute{\??tb\currentblock}\c!style
    \dosetcolorattribute{\??tb\currentblock}\c!color
-   \blockparameter\currentblock\c!inner
+   \namedblockparameter\currentblock\c!inner
    \ignorespaces}
 
 \def\dostopnormalblock
   {\removeunwantedspaces
-   \blockparameter\currentblock\c!after
+   \namedblockparameter\currentblock\c!after
    \par % todo: alternative = text, paragraph
    \egroup}
 
