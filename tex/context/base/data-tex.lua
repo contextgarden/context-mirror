@@ -55,6 +55,9 @@ function helpers.textopener(tag,filename,file_handle)
     elseif file_handle then
         lines = file_handle:read("*a")
         file_handle:close()
+    else
+        report_resolvers("%s opener, weird error: filename=%s, handle=%s",tag,tostring(filename),tostring(file_handle))
+        lines = ""
     end
     if type(lines) == "string" then
         local kind = unicode.filetype(lines)

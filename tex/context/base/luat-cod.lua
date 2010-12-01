@@ -117,7 +117,7 @@ end
 
 -- We need a few premature callbacks in the format generator. We
 -- also do this when the format is loaded as otherwise we get
--- a kpse error when disabled. Thi sis en angine issue that will
+-- a kpse error when disabled. This is an engine issue that will
 -- be sorted out in due time.
 
 local isfile = lfs.isfile
@@ -163,5 +163,5 @@ local function open_read_file(name)
 end
 
 callback.register('find_read_file' , find_read_file )
-callback.register('open_read_file' , open_read_file)
+callback.register('open_read_file' , open_read_file )
 callback.register('find_write_file', find_write_file)
