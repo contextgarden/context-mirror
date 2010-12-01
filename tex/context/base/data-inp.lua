@@ -6,10 +6,20 @@ if not modules then modules = { } end modules ['data-inp'] = {
     license   = "see context related readme files"
 }
 
-local allocate = utilities.storage.allocate
-
+local allocate  = utilities.storage.allocate
 local resolvers = resolvers
 
-resolvers.finders = allocate { notfound  = { nil } }
-resolvers.openers = allocate { notfound  = { nil } }
-resolvers.loaders = allocate { notfound  = { false, nil, 0 } }
+local methodhandler  = resolvers.methodhandler
+local registermethod = resolvers.registermethod
+
+local finders = allocate { helpers = { }, notfound = function() end }
+local openers = allocate { helpers = { }, notfound = function() end }
+local loaders = allocate { helpers = { }, notfound = function() return false, nil, 0 end }
+
+registermethod("finders", finders, "uri")
+registermethod("openers", openers, "uri")
+registermethod("loaders", loaders, "uri")
+
+resolvers.finders = finders
+resolvers.openers = openers
+resolvers.loaders = loaders

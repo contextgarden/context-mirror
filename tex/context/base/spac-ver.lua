@@ -1331,7 +1331,7 @@ nodes.builders = nodes.builder or { }
 
 local builders = nodes.builders
 
-local actions = nodes.tasks.actions("vboxbuilders",5)
+local actions = nodes.tasks.actions("vboxbuilders")
 
 function nodes.builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
@@ -1359,7 +1359,7 @@ end
 -- and we operate on the mlv. Also, we need to do the
 -- vspacing last as it removes items from the mvl.
 
-local actions = nodes.tasks.actions("mvlbuilders",1)
+local actions = nodes.tasks.actions("mvlbuilders")
 
 function nodes.builders.buildpage_filter(groupcode)
     starttiming(builders)

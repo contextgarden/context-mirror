@@ -344,7 +344,7 @@ local filenames = {
 local function locatefile(filename)
     local fullname = resolvers.findfile(filename,"icc")
     if not fullname or fullname == "" then
-        fullname = resolvers.finders.loc(filename) -- could be specific to the project
+        fullname = resolvers.finders.byscheme("loc",filename) -- could be specific to the project
     end
     return fullname or ""
 end

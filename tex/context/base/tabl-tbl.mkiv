@@ -98,11 +98,14 @@
 %
 %  present but not yet 100% ok
 %
-%  \FL    top hrule
-%  \ML    mid hrule (with auto split)
-%  \LL    bottom hrule
-%  \HL
-%  \VL
+%  \TL [width,color]   bottom hrule
+%  \FL [width,color]   first hrule
+%  \ML [width,color]   mid hrule (with auto split)
+%  \LL [width,color]   bottom hrule
+%  \BL [width,color]   last hrule
+%
+%  \HL [width,color]   top rule
+%  \VL [width,color]
 %
 %  \CC \CL \CM \CR color
 %
@@ -210,8 +213,11 @@
 \newconstant     \tabulatelocalcolorspan
 
 \newdimen        \defaulttabulatevrulethickness
+\newdimen        \defaulttabulatehrulethickness
 \newdimen        \tabulatevrulethickness
+\newdimen        \tabulatehrulethickness
 \newdimen        \tabulatelocalvrulethickness
+\newdimen        \tabulatelocalhrulethickness
 
 \newskip         \tabulateseparatorskip
 
@@ -234,10 +240,20 @@
 
 \def\handletabulatepbreakfalse{\setfalse\tabulatehandlepbreak} % depricated
 
-% handy
+% handy helper
 
 \def\tabulatenoalign
-  {\noalign\bgroup\let\noalign\relax\let\next=}
+  {\noalign
+   \bgroup
+   \let\noalign\relax
+   \let\tabulatenoalign\relax
+   \let\next=}
+
+\def\starttabulatenoalign
+  {\tabulatenoalign\bgroup}
+
+\def\stoptabulatenoalign
+  {\iffalse{\else}\fi}
 
 % [|lg{.}|] => \NG 12.34 \NC
 
@@ -284,7 +300,7 @@
    \fi}
 
 \def\dotabulatenobreak
-  {\noalign{\dodotabulatenobreak}}
+  {\tabulatenoalign{\dodotabulatenobreak}}
 
 \unexpanded\def\notabulatehook
   {}
@@ -548,7 +564,7 @@
                  \let\tabulatereshape\plusone,
      \s!unknown=>\tabulatewidth#1\relax]%
    \ifnum\tabulatedimen=\plusone
-     \global\advance\tabulatepwidth\tabulatewidth
+     \global\advance\tabulatepwidth\tabulatewidth % accumulated parwidth
    \fi
    \settabulatepreamble}
 
@@ -759,9 +775,9 @@
      \fi
      \copyparameters
        [\??tt#1::#2][\??tt#1::]%
-       [\c!unit,\c!distance,\c!before,\c!bodyfont,\c!after,
-        \c!inner,\c!indenting,\c!frame,\c!split,\c!header,\c!title,
-        \c!margin,\c!align,\c!rulecolor,\c!rulethickness,EQ]%
+       [\c!frame,\c!distance,\c!unit,\c!before,\c!bodyfont,\c!after,
+        \c!inner,\c!indenting,\c!margin,\c!align,\c!header,\c!title,
+        \c!rulecolor,\c!rulethickness,\c!split,EQ]%
      \setuvalue{\e!start#1::#2}{\dofinalstarttabulate[#1][#2][#3]}%
      \setuvalue{\e!start#1}{\bgroup\dosubstarttabulate[#1]}%
      \letvalueempty{\??tt#1-\v!header}%
@@ -831,6 +847,15 @@
 
 \setuvalue{\e!start\v!tabulate}%
   {\bgroup\dodoubleempty\donormalstarttabulate}
+
+\def\doinhibitnestedtabulate
+ {\setuvalue{\e!start\v!tabulate}%
+    {\em Nested tabulate is not (yet) supported.\relax
+     \expandafter\gobbleuntil\csname\e!stop\v!tabulate\endcsname}}
+
+\appendtoks
+    \doinhibitnestedtabulate
+\to \everytabulate
 
 \setuvalue{\e!stop\v!tabulate    }{}
 \setuvalue{\e!stop\v!tabulatehead}{}
@@ -987,7 +1012,7 @@
    \else\ifnum\tabulatecolumn=\noftabulatecolumns
      \global\tabulatehaslastrulespec\plusone
    \fi\fi
-   \global\let\currenttabulatelocalvrulecolor\empty
+   \global\let\currenttabulatelocalvrulecolor\defaulttabulatevrulecolor
    \global\tabulatelocalvrulethickness\defaulttabulatevrulethickness
    \doiffastoptionalcheckelse{\tabulatevruledcolumnyes#1}{\tabulatevruledcolumnnop#1}}
 
@@ -1003,16 +1028,22 @@
   {\rawprocesscommalist[#2]\dotabulatevrulelocalcommand
    \tabulatenormalcolumn#1}
 
+\def\donormaltabulatevrule
+  {\vrule\!!width\tabulatevrulethickness\relax}
+
+\def\docoloredtabulatevrule
+  {\faststartcolor[\currenttabulatevrulecolor]%
+   \vrule\!!width\tabulatevrulethickness\relax
+   \faststopcolor}
+
 \unexpanded\def\dotabulatevrule
   {\ifcase\tabulatevrulethickness\else
      \iftrialtypesetting
-       \vrule\!!width\tabulatevrulethickness\relax
+       \donormaltabulatevrule
      \else\ifx\currenttabulatevrulecolor\empty
-       \vrule\!!width\tabulatevrulethickness\relax
+       \donormaltabulatevrule
      \else
-       \faststartcolor[\currenttabulatevrulecolor]%
-       \vrule\!!width\tabulatevrulethickness\relax
-       \faststopcolor
+       \docoloredtabulatevrule
      \fi\fi
    \fi
    \global\tabulatevrulethickness\zeropoint} % nils second one
@@ -1039,47 +1070,92 @@
 \setvalue{\??tt:rs:\v!none  }{\tabulateseparatorskip\zeropoint\def\factor{0}}
 \setvalue{\??tt:rs:\v!grid  }{\tabulateseparatorskip\zeropoint\def\factor{0}}
 
-\def\dodotabulateruleseperator#1%
+\def\dodotabulateruleseparator#1%
   {\ifcsname\??tt:rs:#1\endcsname
      \csname\??tt:rs:#1\endcsname
    \else
      \tabulateseparatorskip#1\relax
    \fi}
 
-\def\dotabulateruleseperator % can be sped up (will do when used frequently)
+\def\dotabulateruleseparator % can be sped up (will do when used frequently)
   {\bgroup
    \edef\tabulateseparatordistance{\tabulateparameter\c!distance}%
    \tabulateseparatorskip\strutdp
    \ifx\tabulateseparatordistance\empty\else
      \let\factor\!!plusone
-     \normalexpanded{\processcommalist[\tabulateparameter\c!distance]}\dodotabulateruleseperator
+     \normalexpanded{\processcommalist[\tabulateparameter\c!distance]}\dodotabulateruleseparator
      \tabulateseparatorskip\factor\tabulateseparatorskip
    \fi
    \ifconditional\tabulatesomeamble\kern\else\vskip\fi\tabulateseparatorskip % new
    \egroup}
 
-\def\dodotabulaterule#1%
-  {\color % fastcolor ?
-     [\tabulateparameter\c!rulecolor]
-     {\scratchdimen\tabulateparameter\c!rulethickness#1}}
+\def\tabulateignorehrulespec#1%
+  {%\global\let\currenttabulatelocalhrulecolor\empty
+   %\global\tabulatelocalhrulethickness\defaulttabulatehrulethickness
+   \doiffastoptionalcheckelse#1#1}
 
-\def\dotabulaterule
-  {\dodotabulaterule
-     {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
-      \doifvalue{\??tt\currenttabulate\c!distance}\v!grid{\kern-\scratchdimen}}} % experimental tm-prikkels
+\def\tabulatepickuphrulespec#1%
+  {\global\let\currenttabulatelocalhrulecolor\defaulttabulatehrulecolor
+   \global\tabulatelocalhrulethickness\defaulttabulatehrulethickness
+   \doiffastoptionalcheckelse{\tabulatepresethrule#1}#1}
+
+\def\dotabulatehrulelocalcommand#1%
+  {\doifnumberelse{#1}
+     {\global\tabulatelocalhrulethickness#1\defaulttabulatehrulethickness}
+     {\xdef\currenttabulatelocalhrulecolor{#1}}}
+
+\def\tabulatepresethrule#1[#2]%
+  {\rawprocesscommalist[#2]\dotabulatehrulelocalcommand
+   #1}
+
+\def\donormaltabulatehrule
+  {\hrule
+     \!!height.5\tabulatelocalhrulethickness
+     \!!depth .5\tabulatelocalhrulethickness
+     \relax}
+
+\def\docoloredtabulatehrule
+  {\faststartcolor[\currenttabulatelocalhrulecolor]%
+   \donormaltabulatehrule
+   \faststopcolor}
+
+\unexpanded\def\dotabulatehrule
+  {\ifcase\tabulatelocalhrulethickness\else
+     \iftrialtypesetting % does not happen as we nil the caller
+       \donormaltabulatehrule
+     \else\ifx\currenttabulatelocalhrulecolor\empty
+       \donormaltabulatehrule
+     \else
+       \docoloredtabulatehrule
+     \fi\fi
+   \fi}
+
+\def\donormaltabulatehlinerule
+  {\leaders \hrule
+     \!!height\dimexpr.5\lineheight-\strutdepth
+     \!!depth-\dimexpr.5\lineheight-\strutdepth+\tabulatelocalhrulethickness
+     \hfill}
+
+\def\docoloredtabulatehlinerule
+  {\faststartcolor[\currenttabulatelocalhrulecolor]%
+   \donormaltabulatehlinerule
+   \faststopcolor}
 
 \def\dotabulatelinerule
   {\multispan\totaltabulatecolumns % \multispan is a plain macro
    % for the moment this one
    \strut\hskip\tabulateparameter\c!margin
    % neg values are ok !
-   \hskip\tabulateindent % new august 2003
-   \dodotabulaterule
-     {\!!heighta.5\lineheight
-      \advance\!!heighta-\strutdepth
-      \!!deptha-\!!heighta
-      \advance\!!deptha\scratchdimen
-      \leaders\hrule\!!height\!!heighta\!!depth\!!deptha\hfill}%
+   \hskip\tabulateindent\relax % new august 2003
+   \ifcase\tabulatelocalhrulethickness\else
+     \iftrialtypesetting % does not happen as we nil the caller
+       \donormaltabulatehlinerule
+     \else\ifx\currenttabulatelocalhrulecolor\empty
+       \donormaltabulatehlinerule
+     \else
+       \docoloredtabulatehlinerule
+     \fi\fi
+   \fi
    \cr}
 
 %D Color:
@@ -1217,8 +1293,8 @@
 \unexpanded\def\tabulateNGone{\NC\handletabulatecharalign}
 \unexpanded\def\tabulateNNone{\NC\handletabulatedigits} % new, undocumented, test first
 \unexpanded\def\tabulateNDone{\NC\handletabulatedigits} % same, for old times sake
+
 \unexpanded\def\tabulateHRone{\doHR\zerocount}
-\unexpanded\def\tabulateHLone{\doHL\zerocount}
 
 \unexpanded\def\tabulateCCone{\global\tabulatelocalcolorspan\zerocount\tabulatecolorcolumn\zerocount}
 \unexpanded\def\tabulateCLone{\global\tabulatelocalcolorspan\plusone  \tabulatecolorcolumn\zerocount}
@@ -1232,8 +1308,10 @@
    \global\tabulatecolumn\zerocount
    \resettabulatepheight
    \unskip\unskip\crcr\flushtabulated
-   \tabulatenoalign{\the\everyaftertabulaterow}%
-   \tabulatenoalign{\checktabulatepenaltiesa}}
+   \starttabulatenoalign
+     \the\everyaftertabulaterow
+     \checktabulatepenaltiesa
+   \stoptabulatenoalign}
 
 \def\checktabulatepenaltiesa
   {\iftolerantTABLEbreak\else
@@ -1317,49 +1395,6 @@
 \def\tabulateeskipthree % vertical strut added august 2003
   {\par\verticalstrut\vskip-\struttotal\egroup}
 
-\def\tabulatedoHLfour#1% #1 ignored
-  {\tabulatenoalign
-     {\csname
-        \ifnum\noftabulatelines=\zerocount             F\else
-        \ifnum\noftabulatelines=\totalnoftabulatelines L\else
-                                                       M\fi\fi
-      L\endcsname}}%
-
-\def\tabulatedoHRfour#1% horizontal rule line (break untested)
-  {\tabulatenoalign
-     {\globallet\dotabulateautoline\dotabulatelinerule
-      \ifcase#1\or
-        \ifnum\noftabulatelines=\zerocount
-          \gdef\dotabulateautoline{\tabulatenoalign{}}%
-        \else\ifnum\noftabulatelines=\totalnoftabulatelines
-          \gdef\dotabulateautoline{\tabulatenoalign{}}%
-        \fi\fi
-      \fi
-      \dotabulatenobreak}%
-   \dotabulateautoline
-   \tabulatenoalign
-     {\nobreak
-      \ifx\dotabulateautoline\dotabulatelinerule\kern-\lineheight\fi
-      \ifnum\noftabulatelines=\totalnoftabulatelines
-        \@EA\dotabulatenobreak
-      \else
-        \@EA\allowbreak
-      \fi}%
-   \dotabulateautoline
-   \tabulatenoalign
-     {\dotabulatenobreak}}
-
-\def\tabulateFLfive{\tabulatenoalign
-  {\ifinsidefloat\else
-     \doifemptyvalue{\??tt\currenttabulate\c!before} % no expansion
-       {\tabulatebaselinecorrection}%
-   \fi
-   \dotabulaterule
-   \dotabulatenobreak
-   \dotabulateruleseperator
-   \prevdepth\strutdp
-   \dotabulatenobreak}}
-
 % see ***
 %
 % \enabletrackers[nodes.page_vspacing]
@@ -1367,39 +1402,116 @@
 %     \starttabulate[||] \dorecurse{100}{\NC Eins \NC \NR \HL} \stoptabulate
 % \stoptext
 
-\def\tabulateMLfive{\tabulatenoalign % this will be redone in the mkiv spacing way
-  {\dotabulateruleseperator
-   \dotabulaterule
-%    \ifnum\noftabulatelines>\plusone
-%      \ifnum\noftabulatelines<\minusnoftabulatelines
-%      % *** somehow topskip messes up as it's intercepted
-%      % \vskip \topskip\allowbreak\vskip- \topskip
-%      % messy anyhow so this needs to be improved, so for
-%      % the moment we keep this bugged variant
-%        \vskip1\topskip
-%        \allowbreak
-%        \vskip-1\topskip
-       \vskip-\tabulateparameter\c!rulethickness
-       \dotabulaterule
-\nobreak
-%      \fi
-%    \fi
-   \dotabulateruleseperator}}
+% old crap:
+%
+% \ifnum\noftabulatelines>\plusone
+%   \ifnum\noftabulatelines<\minusnoftabulatelines
+%   % *** somehow topskip messes up as it's intercepted
+%   % \vskip \topskip\allowbreak\vskip- \topskip
+%   % messy anyhow so this needs to be improved, so for
+%   % the moment we keep this bugged variant
+%     \vskip1\topskip
+%     \allowbreak
+%     \vskip-1\topskip
 
-\def\tabulateLLfive{\tabulatenoalign
-  {\dotabulatenobreak
-   \dotabulateruleseperator
+\def\tabulateXXnone{\starttabulatenoalign\tabulateignorehrulespec\stoptabulatenoalign}
+
+\def\tabulateFLfive{\starttabulatenoalign\tabulatepickuphrulespec\dotabulateFLfive}
+\def\tabulateMLfive{\starttabulatenoalign\tabulatepickuphrulespec\dotabulateMLfive}
+\def\tabulateLLfive{\starttabulatenoalign\tabulatepickuphrulespec\dotabulateLLfive}
+\def\tabulateTLfive{\starttabulatenoalign\tabulatepickuphrulespec\dotabulateTLfive}
+\def\tabulateBLfive{\starttabulatenoalign\tabulatepickuphrulespec\dotabulateBLfive}
+%def\tabulateHLfive{\starttabulatenoalign\tabulatepickuphrulespec\dotabulateHLfive}
+
+% we can use one common spec: (saves 4 macros)
+%
+% \def\dotabulatecheckhrulespec#1%
+%   {\iftrialtypesetting
+%      \expandafter\tabulateignorehrulespec\expandafter\stoptabulatenoalign
+%    \else
+%      \expandafter\tabulatepickuphrulespec\expandafter\dotabulateFLfive
+%    \fi}
+
+\unexpanded\def\dotabulateFLfive
+  {\ifinsidefloat\else
+     \doifemptyvalue{\??tt\currenttabulate\c!before} % no expansion
+       {\tabulatebaselinecorrection}%
+   \fi
+   \dotabulatehrule
    \dotabulatenobreak
-   \dotabulaterule
+   \dotabulateruleseparator
+   \prevdepth\strutdp
+   \dotabulatenobreak
+   \stoptabulatenoalign}
+
+\unexpanded\def\dotabulateMLfive
+  {\dotabulateruleseparator
+   \dotabulatehrule
+   \vskip-\tabulateparameter\c!rulethickness
+   \dotabulatehrule
+   \nobreak
+   \dotabulateruleseparator
+   \stoptabulatenoalign}
+
+\unexpanded\def\dotabulateLLfive
+  {\dotabulatenobreak
+   \dotabulateruleseparator
+   \dotabulatenobreak
+   \dotabulatehrule
    \ifinsidefloat\else
      \doifemptyvalue{\??tt\currenttabulate\c!after} % no expansion
        {\vskip\strutdp
         \verticalstrut
         \vskip-\struttotal}%
-   \fi}}
+   \fi
+   \stoptabulatenoalign}
+
+\unexpanded\def\dotabulateTLfive
+  {\dotabulatenobreak
+   \dotabulateruleseparator
+   \dotabulatenobreak
+   \dotabulatehrule
+   \dotabulatenobreak
+   \dotabulateruleseparator
+  %\prevdepth\strutdp % todo, might differ between TL and BL
+   \dotabulatenobreak
+   \stoptabulatenoalign}
+
+\let\dotabulateBLfive\dotabulateTLfive
 
 \def\tabulateHLfive
-  {\doHL\zerocount}
+  {\csname
+     \ifnum\noftabulatelines=\zerocount             F\else
+     \ifnum\noftabulatelines=\totalnoftabulatelines L\else
+                                                    M\fi\fi
+   L\endcsname}
+
+\def\tabulatedoHRfive % horizontal rule line (break untested)
+  {\starttabulatenoalign
+     \globallet\dotabulateautoline\dotabulatelinerule
+    %\ifcase#1\or % todo: check what this does
+       \ifnum\noftabulatelines=\zerocount
+         \glet\dotabulateautoline\donothing
+       \else\ifnum\noftabulatelines=\totalnoftabulatelines
+         \glet\dotabulateautoline\donothing
+       \fi\fi
+    %\fi
+     \dotabulatenobreak
+   \stoptabulatenoalign
+   \dotabulateautoline
+   \starttabulatenoalign
+     \nobreak
+     \ifx\dotabulateautoline\dotabulatelinerule\kern-\lineheight\fi
+     \ifnum\noftabulatelines=\totalnoftabulatelines
+       \@EA\dotabulatenobreak
+     \else
+       \@EA\allowbreak
+     \fi
+   \stoptabulatenoalign
+   \dotabulateautoline
+   \starttabulatenoalign
+     \dotabulatenobreak
+   \stoptabulatenoalign}
 
 % \dorecurse{10}{
 %     \starttabulate[|l|]
@@ -1420,22 +1532,12 @@
 %     \stoptabulate
 % }
 
-\def\tabulateTLfive{\tabulatenoalign
-  {\dotabulatenobreak
-   \dotabulateruleseperator
-   \dotabulatenobreak
-   \dotabulaterule
-   \dotabulatenobreak
-   \dotabulateruleseperator
-  %\prevdepth\strutdp % todo, might differ between TL and BL
-   \dotabulatenobreak}}
+% to be redone
 
-\let\tabulateBLfive\tabulateTLfive
-
-\def\tabulaterule    {\HR}% a rule with lineheight
-\def\tabulateline    {\HL}% just a spaced rule
-\def\tabulateautorule{\doHR\plusone}%
-\def\tabulateautoline{\doHL\plusone}%
+\def\tabulaterule    {\HR} % a rule with lineheight
+\def\tabulateline    {\HL} % just a spaced rule
+\def\tabulateautorule{\HR}%
+\def\tabulateautoline{\HL} % no longer different (to be looked into)
 
 % When support for vertical rules we needed a way to pick up the
 % specification for the final rule and a \type {|{}} interface was
@@ -1449,6 +1551,9 @@
   {\tabulateunit\tabulateparameter\c!unit
    \checkfulltabulatecontent
    \defaulttabulatevrulethickness\tabulateparameter\c!rulethickness
+   \defaulttabulatehrulethickness\tabulateparameter\c!rulethickness
+   \edef\defaulttabulatevrulecolor{\tabulateparameter\c!rulecolor}%
+   \edef\defaulttabulatehrulecolor{\tabulateparameter\c!rulecolor}%
    \edef\@@tabulatealign{\executeifdefined{\??tt:\c!align:\tabulateparameter\c!align}0}%
    \tabulateposskip.5\tabulateunit
    \tabulatepreskip\zeropoint
@@ -1483,22 +1588,23 @@
    \let\NG\tabulateNGone
    \let\NN\tabulateNNone
    \let\ND\tabulateNDone
-   \let\HR\tabulateHRone
-   \let\HL\tabulateHLone
    \let\NR\tabulateNRone
    \let\CC\tabulateCCone
    \let\CL\tabulateCLone
    \let\CM\tabulateCMone
    \let\CR\tabulateCRone
-   \let\HL\empty % not needed ? ? ?
-   \let\SR\NR    \let\AR\NR
-   \let\FL\empty \let\FR\NR
-   \let\ML\empty \let\MR\NR
-   \let\LL\empty \let\LR\NR
-   \let\TL\empty
-   \let\BL\empty
-   \let\doHR\gobbleoneargument
-   \let\doHL\gobbleoneargument
+   \let\SR\NR
+   \let\FR\NR
+   \let\MR\NR
+   \let\LR\NR
+   \let\AR\NR
+   \let\FL\tabulateXXnone
+   \let\ML\tabulateXXnone
+   \let\LL\tabulateXXnone
+   \let\TL\tabulateXXnone
+   \let\BL\tabulateXXnone
+   \let\HL\tabulateXXnone
+   \let\HR\tabulateXXnone
    \glet\flushtabulated\empty
    \tabskip\zeropoint
    \ifdim\tabulateparameter\c!margin>\zeropoint
@@ -1560,18 +1666,17 @@
    \totalnoftabulatelines\noftabulatelines
    \minusnoftabulatelines\numexpr\noftabulatelines+\minusone\relax
    \global\noftabulatelines\zerocount
-   \let\doHL\tabulatedoHLfour
-   \let\doHR\tabulatedoHRfour
-   \doifelsevalue{\??tt\currenttabulate\c!rule}\v!line
-     {\let\HL\HR
-      \let\tabulateautoline\tabulateautorule
-      \let\tabulateline\tabulaterule}%
-     {\let\HL\tabulateHLfive}%
    \let\FL\tabulateFLfive
    \let\ML\tabulateMLfive
    \let\LL\tabulateLLfive
    \let\TL\tabulateTLfive
    \let\BL\tabulateBLfive
+   \let\HL\tabulateHLfive
+   \let\HR\tabulateHRfive
+   \doifvalue{\??tt\currenttabulate\c!rule}\v!line
+     {\let\HL\HR
+      \let\tabulateautoline\tabulateautorule
+      \let\tabulateline\tabulaterule}%
    \tabulatepass\plustwo
    %
    \ifcase\tabulaterepeathead
@@ -1590,7 +1695,7 @@
    \@EA\halign\@EA{\the\tabulatepreamble\crcr\fulltabulatecontent\crcr}%
    \dostoptagged
    \dostoptagged
-   \prevdepth\strutdp % nog eens beter, temporary hack
+   \ifhmode\par\prevdepth\strutdp\fi % nog eens beter, temporary hack
    \doifvalue{\??tt\currenttabulate\c!distance}\v!grid{\vskip-\strutdp}% experimental tm-prikkels
    %
    \ifcase\tabulaterepeathead
@@ -1660,7 +1765,7 @@
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
 %D \stoptabulate
 %D \stoptyping
-
+
 %D Spacing:
 %
 % \starttabulate
@@ -1672,7 +1777,7 @@
 % \stoptabulate
 
 \def\TabulateTB
-  {\startTABLEnoalign
+  {\starttabulatenoalign
    \dosingleempty\doTabulateTB}
 
 \def\doTabulateTB[#1]%
@@ -1681,10 +1786,24 @@
    \else
      \blank
    \fi
-   \stopTABLEnoalign}
+   \stoptabulatenoalign}
+
+% to be tested:
+%
+% \def\TabulateTB
+%   {\starttabulatenoalign
+%    \doiffastoptionalcheckelse\doTabulateTByes\doTabulateTBnop}
+%
+% \def\doTabulateTByes[#1]%
+%   {\blank[#1]
+%    \stoptabulatenoalign}
+%
+% \def\doTabulateTBnop[#1]%
+%   {\blank
+%    \stoptabulatenoalign}
 
 \appendtoks\let\TB\TabulateTB\to\everytabulate
-
+
 % \starttabulatie[|mc|]
 % \NC \digits{100.000,00} \NC\NR
 % \NC \digits{@10.000,00} \NC\NR
@@ -1724,7 +1843,7 @@
 % \NC \digits $@@@.@10,@@$ \NC\NR
 % \NC \digits $@@@.@@1,@@$ \NC\NR
 % \stoptabulatie
-
+
 \unexpanded\def\setuptabulate
   {\dotripleempty\dosetuptabulate}
 

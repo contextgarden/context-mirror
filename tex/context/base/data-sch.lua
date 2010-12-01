@@ -23,86 +23,84 @@ schemes.threshold = 24 * 60 * 60
 
 directives.register("schemes.threshold", function(v) schemes.threshold = tonumber(v) or schemes.threshold end)
 
-local cached, loaded, reused, thresholds = { }, { }, { }, { }
+local cached, loaded, reused, thresholds, handlers = { }, { }, { }, { }, { }
 
-function schemes.curl(name,cachename) -- will use sockets instead or the curl library
-    local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name -- no protocol .. "://"
+local function runcurl(name,cachename) -- will use sockets instead or the curl library
+    local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name
     os.spawn(command)
 end
 
-function schemes.fetch(protocol,name,handler)
-    local cleanname = gsub(name,"[^%a%d%.]+","-")
+local function fetch(specification)
+    local original  = specification.original
+    local scheme    = specification.scheme
+    local cleanname = gsub(original,"[^%a%d%.]+","-")
     local cachename = caches.setfirstwritablefile(cleanname,"schemes")
-    if not cached[name] then
+    if not cached[original] then
         statistics.starttiming(schemes)
         if not io.exists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification) >
                                                             (thresholds[protocol] or schemes.threshold)) then
-            cached[name] = cachename
+            cached[original] = cachename
+            local handler = handlers[scheme]
             if handler then
                 if trace_schemes then
-                    report_schemes("fetching '%s', protocol '%s', method 'built-in'",name,protocol)
+                    report_schemes("fetching '%s', protocol '%s', method 'built-in'",original,scheme)
                 end
                 io.flush()
-                handler(protocol,name,cachename)
+                handler(specification,cachename)
             else
                 if trace_schemes then
-                    report_schemes("fetching '%s', protocol '%s', method 'curl'",name,protocol)
+                    report_schemes("fetching '%s', protocol '%s', method 'curl'",original,scheme)
                 end
                 io.flush()
-                schemes.curl(name,cachename)
+                runcurl(original,cachename)
             end
         end
         if io.exists(cachename) then
-            cached[name] = cachename
+            cached[original] = cachename
             if trace_schemes then
-                report_schemes("using cached '%s', protocol '%s', cachename '%s'",name,protocol,cachename)
+                report_schemes("using cached '%s', protocol '%s', cachename '%s'",original,scheme,cachename)
             end
         else
-            cached[name] = ""
+            cached[original] = ""
             if trace_schemes then
-                report_schemes("using missing '%s', protocol '%s'",name,protocol)
+                report_schemes("using missing '%s', protocol '%s'",original,scheme)
             end
         end
-        loaded[protocol] = loaded[protocol] + 1
+        loaded[scheme] = loaded[scheme] + 1
         statistics.stoptiming(schemes)
     else
         if trace_schemes then
-            report_schemes("reusing '%s', protocol '%s'",name,protocol)
+            report_schemes("reusing '%s', protocol '%s'",original,scheme)
         end
-        reused[protocol] = reused[protocol] + 1
+        reused[scheme] = reused[scheme] + 1
     end
-    return cached[name]
+    return cached[original]
 end
 
-function finders.schemes(protocol,filename,handler)
-    local foundname = schemes.fetch(protocol,filename,handler)
-    return finders.generic(protocol,foundname)
+local function finder(specification,filetype)
+    return resolvers.methodhandler("finders",fetch(specification),filetype)
 end
 
-function openers.schemes(protocol,filename)
-    return openers.generic(protocol,filename)
+local opener = openers.file
+local loader = loaders.file
+
+local function install(scheme,handler,threshold)
+    handlers  [scheme] = handler
+    loaded    [scheme] = 0
+    reused    [scheme] = 0
+    finders   [scheme] = finder
+    openers   [scheme] = opener
+    loaders   [scheme] = loader
+    thresholds[scheme] = threshold or schemes.threshold
 end
 
-function loaders.schemes(protocol,filename)
-    return loaders.generic(protocol,filename)
-end
+schemes.install = install
 
--- could be metatable and proper subtables
-
-function schemes.install(protocol,handler,threshold)
-    loaded    [protocol] = 0
-    reused    [protocol] = 0
-    finders   [protocol] = function (filename,filetype) return finders.schemes(protocol,filename,handler) end
-    openers   [protocol] = function (filename)          return openers.schemes(protocol,filename)         end
-    loaders   [protocol] = function (filename)          return loaders.schemes(protocol,filename)         end
-    thresholds[protocol] = threshold or schemes.threshold
-end
-
-local function http_handler(protocol,name,cachename)
+local function http_handler(specification,cachename)
     local tempname = cachename .. ".tmp"
     local f = io.open(tempname,"wb")
     local status, message = http.request {
-        url = name,
+        url = specification.original,
         sink = ltn12.sink.file(f)
     }
     if not status then
@@ -114,9 +112,9 @@ local function http_handler(protocol,name,cachename)
     return cachename
 end
 
-schemes.install('http',http_handler)
-schemes.install('https')
-schemes.install('ftp')
+install('http',http_handler)
+install('https') -- see pod
+install('ftp')
 
 statistics.register("scheme handling time", function()
     local l, r, nl, nr = { }, { }, 0, 0
@@ -142,6 +140,3 @@ statistics.register("scheme handling time", function()
         return nil
     end
 end)
-
---~ trace_schemes = true
---~ print(schemes.fetch("http","http://www.pragma-ade.com/show-man.pdf",http_handler))

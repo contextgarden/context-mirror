@@ -101,7 +101,7 @@ function blocks.select(state,name,tag,criterium)
 end
 
 function blocks.save(name,tag,buffer) -- wrong, not yet adapted
-    local data = buffers.data[buffer]
+    local data = buffers.getcontent(buffer)
     local tags = settings_to_set(tag)
     local plus, minus = false, false
     if tags['+'] then plus  = true tags['+'] = nil end
@@ -139,5 +139,5 @@ function blocks.save(name,tag,buffer) -- wrong, not yet adapted
             end
         end
     end
-    buffers.data[buffer] = nil
+    buffers.erase(buffer)
 end

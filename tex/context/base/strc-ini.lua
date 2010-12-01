@@ -184,7 +184,7 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
                 -- title can contain raw xml
                 local tag = tags[metadata.kind] or tags.generic
                 local xmldata = format("<?xml version='1.0'?><%s>%s</%s>",tag,title,tag)
-                buffers.set(tag,xmldata)
+                buffers.assign(tag,xmldata)
                 if trace_processors then
                     report_processors("putting xml data in buffer: %s",xmldata)
                     report_processors("processing buffer with setup '%s' and tag '%s'",xmlsetup or "",tag)

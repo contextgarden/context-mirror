@@ -70,9 +70,12 @@ colors.data       = allocate()
 colors.values     = colors.values or { }
 colors.registered = colors.registered or { }
 
+local a_color     = attributes.private('color')
+local a_selector  = attributes.private('colormodel')
+
 colors.weightgray = true
-colors.attribute  = attributes.private('color')
-colors.selector   = attributes.private('colormodel')
+colors.attribute  = a_color
+colors.selector   = a_selector
 colors.default    = 1
 colors.main       = nil
 colors.triggering = true
@@ -312,7 +315,7 @@ function colors.register(name, colorspace, ...) -- passing 9 vars is faster (but
     -- colors.reviver(color)
     end
     if name then
-        list[colors.attribute][name] = color -- not grouped, so only global colors
+        list[a_color][name] = color -- not grouped, so only global colors
     end
     return registered[stamp]
 end

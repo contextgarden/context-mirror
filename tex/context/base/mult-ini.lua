@@ -33,6 +33,11 @@ end
 
 local messages, constants, variables = interfaces.messages, interfaces.constants, interfaces.variables
 
+local valueiskey = { __index = function(t,k) t[k] = k return k end }
+
+setmetatable(variables,valueiskey)
+setmetatable(constants,valueiskey)
+
 function interfaces.setmessages(category,str)
     local m = messages[category] or { }
     for k, v in gmatch(str,"(%S+) *: *(.-) *[\n\r]") do

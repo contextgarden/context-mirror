@@ -476,17 +476,21 @@ end
 --~     return head, true
 --~ end
 
-tasks.new (
-    "math",
-    {
+tasks.new {
+    name      = "math",
+    arguments = 2,
+    sequence  = {
         "before",
         "normalizers",
         "builders",
         "after",
     }
-)
+}
 
-local actions = tasks.actions("math",2) -- head, style, penalties
+tasks.freezegroup("math", "normalizers") -- experimental
+tasks.freezegroup("math", "builders")    -- experimental
+
+local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 

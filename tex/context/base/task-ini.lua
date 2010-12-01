@@ -112,3 +112,27 @@ tasks.disableaction("math",        "noads.handlers.tags")
 callbacks.freeze("find_.*_file", "find file using resolver")
 callbacks.freeze("read_.*_file", "read file at once")
 callbacks.freeze("open_.*_file", "open file for reading")
+
+-- experimental:
+
+tasks.freezegroup("processors",   "normalizers")
+tasks.freezegroup("processors",   "characters")
+tasks.freezegroup("processors",   "words")
+tasks.freezegroup("processors",   "fonts")
+tasks.freezegroup("processors",   "lists")
+
+tasks.freezegroup("finalizers",   "normalizers")
+tasks.freezegroup("finalizers",   "fonts")
+tasks.freezegroup("finalizers",   "lists")
+
+tasks.freezegroup("shipouts",     "normalizers")
+tasks.freezegroup("shipouts",     "finishers")
+
+tasks.freezegroup("mvlbuilders",  "normalizers")
+tasks.freezegroup("vboxbuilders", "normalizers")
+
+--~ tasks.freezegroup("parbuilders",  "lists")
+--~ tasks.freezegroup("pagebuilders", "lists")
+
+tasks.freezegroup("math",         "normalizers")
+tasks.freezegroup("math",         "builders")

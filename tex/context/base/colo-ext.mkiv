@@ -76,14 +76,25 @@
 \setupcolors[\c!intent=\v!none]
 
 % A goodie that replaces the startMPcolor hackery
-%
-% \definecolor[red-t]  [r=1,t=0.5,a=1]
+
+%\definecolor[red-t]  [r=1,t=0.5,a=1]
 % \definecolor[green-t][g=1,t=0.5,a=1]
+%
 % \defineintermediatecolor[mycolora][0.5,red,green]
 % \defineintermediatecolor[mycolorb][0.5,red-t,green-t]
+%
+% \definecolor[mycolorc][.5(blue,red)]
+% \definecolor[mycolord][.5(blue)]
+%
+% \enabledirectives[colors.pgf]
+% \definecolor[mycolorx][magenta!50!yellow]
+%
 % \starttext
 %     test {\mycolora OEPS} test
 %     test {\mycolorb OEPS} test
+%     test {\mycolorc OEPS} test
+%     test {\mycolord OEPS} test
+%     test {\mycolorx OEPS} test
 % \stoptext
 
 \unexpanded\def\defineintermediatecolor

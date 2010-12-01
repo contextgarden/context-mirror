@@ -19,13 +19,9 @@
 
 % this needs a further cleanup ...
 %
-% -- set breakpoin in descriptions
+% -- set breakpoint in descriptions
 % -- reset after trialtypesetting
 % -- that way we can trick the symbol space
-
-% obsolete
-
-\let\autopostponenotes\relax
 
 % removed:
 %
@@ -38,11 +34,6 @@
 % saveinsertionbox
 % eraseinsertionbackup
 % restoreinsertionbackup
-%
-% \def\doprocessnotescs#1#2% #1 == \cs that takes arg
-%   {\def\currentnote{#2}\@EA#1\csname\??vn:\currentnote\endcsname}
-% \def\processnotescs#1{\processcommacommand[\noteinsertions]{\doprocessnotescs#1}}
-% \def\noteinsertion     #1{\csname\??vn:#1\endcsname}
 
 \def\savenotedata      {\writestatus{todo}{save    note data}}
 \def\restorenotedata   {\writestatus{todo}{restore note data}}
@@ -277,10 +268,6 @@
 \appendtoks
     \setupenumerations[\currentnote][]%
 \to \everysetupnote
-
-% \appendtoks
-%     \dochecknote
-% \to \everysetupnote
 
 \unexpanded\def\setupnote
   {\dodoubleempty\dosetupnote}

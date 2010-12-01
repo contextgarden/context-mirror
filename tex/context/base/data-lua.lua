@@ -68,7 +68,7 @@ local function loaded(libpaths,name,simple)
         if trace_locating then -- more detail
             report_resolvers("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
         end
-        if resolvers.isreadable.file(resolved) then
+        if file.is_readable(resolved) then
             if trace_locating then
                 report_resolvers("! lib '%s' located via 'package.path': '%s'",name,resolved)
             end
@@ -76,7 +76,6 @@ local function loaded(libpaths,name,simple)
         end
     end
 end
-
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
     if trace_locating then -- mode detail
@@ -115,7 +114,7 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
             if trace_locating then -- mode detail
                 report_resolvers("! checking for '%s' using 'clibformat path': '%s'",libname,path)
             end
-            if resolvers.isreadable.file(resolved) then
+            if file.is_readable(resolved) then
                 if trace_locating then
                     report_resolvers("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
                 end
@@ -129,7 +128,7 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
         if trace_locating then -- more detail
             report_resolvers("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
         end
-        if resolvers.isreadable.file(resolved) then
+        if file.is_readable(resolved) then
             if trace_locating then
                 report_resolvers("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
             end

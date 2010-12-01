@@ -6,10 +6,10 @@ if not modules then modules = { } end modules ['data-exp'] = {
     license   = "see context related readme files",
 }
 
-local format, gsub, find, gmatch, lower = string.format, string.gsub, string.find, string.gmatch, string.lower
+local format, find, gmatch, lower = string.format, string.find, string.gmatch, string.lower
 local concat, sort = table.concat, table.sort
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local lpegCt, lpegCs, lpegP, lpegC, lpegS = lpeg.Ct, lpeg.Cs, lpeg.P, lpeg.C, lpeg.S
+local Ct, Cs, Cc, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.P, lpeg.C, lpeg.S
 local type, next = type, next
 
 local ostype = os.type
@@ -24,7 +24,7 @@ local resolvers = resolvers
 
 -- As this bit of code is somewhat special it gets its own module. After
 -- all, when working on the main resolver code, I don't want to scroll
--- past this every time.
+-- past this every time. See data-obs.lua for the gsub variant.
 
 -- {a,b,c,d}
 -- a,b,c/{p,q,r},d
@@ -39,95 +39,70 @@ local resolvers = resolvers
 -- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
 -- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
 
--- this one is better and faster, but it took me a while to realize
--- that this kind of replacement is cleaner than messy parsing and
--- fuzzy concatenating we can probably gain a bit with selectively
--- applying lpeg, but experiments with lpeg parsing this proved not to
--- work that well; the parsing is ok, but dealing with the resulting
--- table is a pain because we need to work inside-out recursively
-
-local dummy_path_expr = "^!*unset/*$"
-
-local function do_first(a,b)
+local function f_first(a,b)
     local t, n = { }, 0
     for s in gmatch(b,"[^,]+") do
-        n = n + 1
-        t[n] = a .. s
+        n = n + 1 ; t[n] = a .. s
     end
-    return "{" .. concat(t,",") .. "}"
+    return concat(t,",")
 end
 
-local function do_second(a,b)
+local function f_second(a,b)
     local t, n = { }, 0
     for s in gmatch(a,"[^,]+") do
-        n = n + 1
-        t[n] = s .. b
+        n = n + 1 ; t[n] = s .. b
     end
-    return "{" .. concat(t,",") .. "}"
+    return concat(t,",")
 end
 
-local function do_both(a,b)
+local function f_both(a,b)
     local t, n = { }, 0
     for sa in gmatch(a,"[^,]+") do
         for sb in gmatch(b,"[^,]+") do
-            n = n + 1
-            t[n] = sa .. sb
+            n = n + 1 ; t[n] = sa .. sb
         end
     end
-    return "{" .. concat(t,",") .. "}"
+    return concat(t,",")
 end
 
-local function do_three(a,b,c)
-    return a .. b.. c
-end
+local left  = P("{")
+local right = P("}")
+local var   = P((1 - S("{}" ))^0)
+local set   = P((1 - S("{},"))^0)
+local other = P(1)
 
-local stripper_1 = lpeg.stripper("{}@")
+local l_first  = Cs( ( Cc("{") * (C(set) * left * C(var) * right / f_first) * Cc("}")               + other )^0 )
+local l_second = Cs( ( Cc("{") * (left * C(var) * right * C(set) / f_second) * Cc("}")              + other )^0 )
+local l_both   = Cs( ( Cc("{") * (left * C(var) * right * left * C(var) * right / f_both) * Cc("}") + other )^0 )
+local l_rest   = Cs( ( left * var * (left/"") * var * (right/"") * var * right                      + other )^0 )
 
-local replacer_1 = lpeg.replacer {
-    { ",}", ",@}" },
-    { "{,", "{@," },
-}
+local stripper_1 = lpeg.stripper ("{}@")
+local replacer_1 = lpeg.replacer { { ",}", ",@}" }, { "{,", "{@," }, }
 
-local function splitpathexpr(str, newlist, validate)
-    -- no need for further optimization as it is only called a
-    -- few times, we can use lpeg for the sub
+local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpegging it (nice exercise).
     if trace_expansions then
         report_resolvers("expanding variable '%s'",str)
     end
     local t, ok, done = newlist or { }, false, false
     local n = #t
     str = lpegmatch(replacer_1,str)
-    while true do
-        done = false
-        while true do
-            str, ok = gsub(str,"([^{},]+){([^{}]+)}",do_first)
-            if ok > 0 then done = true else break end
-        end
-        while true do
-            str, ok = gsub(str,"{([^{}]+)}([^{},]+)",do_second)
-            if ok > 0 then done = true else break end
-        end
-        while true do
-            str, ok = gsub(str,"{([^{}]+)}{([^{}]+)}",do_both)
-            if ok > 0 then done = true else break end
-        end
-        str, ok = gsub(str,"({[^{}]*){([^{}]+)}([^{}]*})",do_three)
-        if ok > 0 then done = true end
-        if not done then break end
-    end
+    repeat local old = str
+        repeat local old = str ; str = lpegmatch(l_first, str) until old == str
+        repeat local old = str ; str = lpegmatch(l_second,str) until old == str
+        repeat local old = str ; str = lpegmatch(l_both,  str) until old == str
+        repeat local old = str ; str = lpegmatch(l_rest,  str) until old == str
+    until old == str -- or not find(str,"{")
     str = lpegmatch(stripper_1,str)
     if validate then
         for s in gmatch(str,"[^,]+") do
             s = validate(s)
             if s then
-                n = n + 1
-                t[n] = s
+                n = n + 1 ; t[n] = s
             end
         end
     else
         for s in gmatch(str,"[^,]+") do
-            n = n + 1
-            t[n] = s
+            n = n + 1 ; t[n] = s
         end
     end
     if trace_expansions then
@@ -138,70 +113,22 @@ local function splitpathexpr(str, newlist, validate)
     return t
 end
 
+-- We could make the previous one public.
+
 local function validate(s)
-    local isrecursive = find(s,"//$")
-    s = collapsepath(s)
-    if isrecursive then
-        s = s .. "//"
-    end
-    return s ~= "" and not find(s,dummy_path_expr) and s
+    s = collapsepath(s) -- already keeps the //
+    return s ~= "" and not find(s,"^!*unset/*$") and s
 end
 
 resolvers.validatedpath = validate -- keeps the trailing //
 
-function resolvers.expandedpathfromlist(pathlist) -- maybe not a list, just a path
-    -- a previous version fed back into pathlist
-    local newlist, ok = { }, false
+function resolvers.expandedpathfromlist(pathlist)
+    local newlist = { }
     for k=1,#pathlist do
-        if find(pathlist[k],"[{}]") then
-            ok = true
-            break
-        end
-    end
-    if ok then
-        for k=1,#pathlist do
-            splitpathexpr(pathlist[k],newlist,validate)
-        end
-    else
-        local n = 0
-        for k=1,#pathlist do
-            for p in gmatch(pathlist[k],"([^,]+)") do
-                p = validate(p)
-                if p ~= "" then
-                    n = n + 1
-                    newlist[n] = p
-                end
-            end
-        end
+        splitpathexpr(pathlist[k],newlist,validate)
     end
     return newlist
 end
-
--- We also put some cleanup code here.
-
---~ local cleanup -- used recursively
---~ local homedir
-
---~ cleanup = lpeg.replacer {
---~     {
---~         "!",
---~         ""
---~     },
---~     {
---~         "\\",
---~         "/"
---~     },
---~     {
---~         "~" ,
---~         function()
---~             return lpegmatch(cleanup,environment.homedir)
---~         end
---~     },
---~ }
-
---~ function resolvers.cleanpath(str)
---~     return str and lpegmatch(cleanup,str)
---~ end
 
 local cleanup = lpeg.replacer {
     { "!"  , ""  },
@@ -240,18 +167,13 @@ end
 
 -- This one strips quotes and funny tokens.
 
---~ local stripper = lpegCs(
---~     lpegpatterns.unspacer * lpegpatterns.unsingle
---~   + lpegpatterns.undouble * lpegpatterns.unspacer
---~ )
+local expandhome = P("~") / "$HOME" -- environment.homedir
 
-local expandhome = lpegP("~") / "$HOME" -- environment.homedir
+local dodouble = P('"')/"" * (expandhome + (1 - P('"')))^0 * P('"')/""
+local dosingle = P("'")/"" * (expandhome + (1 - P("'")))^0 * P("'")/""
+local dostring =             (expandhome +  1              )^0
 
-local dodouble = lpegP('"')/"" * (expandhome + (1 - lpegP('"')))^0 * lpegP('"')/""
-local dosingle = lpegP("'")/"" * (expandhome + (1 - lpegP("'")))^0 * lpegP("'")/""
-local dostring =                 (expandhome +  1              )^0
-
-local stripper = lpegCs(
+local stripper = Cs(
     lpegpatterns.unspacer * (dosingle + dodouble + dostring) * lpegpatterns.unspacer
 )
 
@@ -267,7 +189,9 @@ end
 
 local cache = { }
 
-local splitter = lpegCt(lpeg.splitat(lpegS(ostype == "windows" and ";" or ":;"))) -- maybe add ,
+local splitter = Ct(lpeg.splitat(S(ostype == "windows" and ";" or ":;"))) -- maybe add ,
+
+local backslashswapper = lpeg.replacer("\\","/")
 
 local function splitconfigurationpath(str) -- beware, this can be either a path or a { specification }
     if str then
@@ -276,8 +200,7 @@ local function splitconfigurationpath(str) -- beware, this can be either a path 
             if str == "" then
                 found = { }
             else
-                str = gsub(str,"\\","/")
-                local split = lpegmatch(splitter,str)
+                local split = lpegmatch(splitter,lpegmatch(backslashswapper,str)) -- can be combined
                 found = { }
                 local noffound = 0
                 for i=1,#split do
@@ -323,13 +246,13 @@ end
 
 -- starting with . or .. etc or funny char
 
---~ local l_forbidden = lpegS("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
---~ local l_confusing = lpegP(" ")
+--~ local l_forbidden = S("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
+--~ local l_confusing = P(" ")
 --~ local l_character = lpegpatterns.utf8
---~ local l_dangerous = lpegP(".")
+--~ local l_dangerous = P(".")
 
---~ local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * lpegP(-1)
---~ ----- l_normal = l_normal * lpegCc(true) + lpegCc(false)
+--~ local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * P(-1)
+--~ ----- l_normal = l_normal * Cc(true) + Cc(false)
 
 --~ local function test(str)
 --~     print(str,lpegmatch(l_normal,str))
@@ -340,57 +263,62 @@ end
 --~ test("ヒラギノ明朝 /Pro W3;")
 --~ test("ヒラギノ明朝 Pro  W3")
 
-local weird = lpegP(".")^1 + lpeg.anywhere(lpegS("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+local weird = P(".")^1 + lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
 
-function resolvers.scanfiles(specification)
-    if trace_locating then
-        report_resolvers("scanning path '%s'",specification)
-    end
-    local attributes, directory = lfs.attributes, lfs.dir
-    local files = { __path__ = specification }
-    local n, m, r = 0, 0, 0
-    local function scan(spec,path)
-        local full = (path == "" and spec) or (spec .. path .. '/')
-        local dirs = { }
-        for name in directory(full) do
-            if not lpegmatch(weird,name) then
-                local mode = attributes(full..name,'mode')
-                if mode == 'file' then
-                    n = n + 1
-                    local f = files[name]
-                    if f then
-                        if type(f) == 'string' then
-                            files[name] = { f, path }
-                        else
-                            f[#f+1] = path
-                        end
-                    else -- probably unique anyway
-                        files[name] = path
-                        local lower = lower(name)
-                        if name ~= lower then
-                            files["remap:"..lower] = name
-                            r = r + 1
-                        end
-                    end
-                elseif mode == 'directory' then
-                    m = m + 1
-                    if path ~= "" then
-                        dirs[#dirs+1] = path..'/'..name
+local attributes, directory = lfs.attributes, lfs.dir
+
+local function scan(files,spec,path,n,m,r)
+    local full = (path == "" and spec) or (spec .. path .. '/')
+    local dirs, nofdirs = { }, 0
+    for name in directory(full) do
+        if not lpegmatch(weird,name) then
+            local mode = attributes(full..name,'mode')
+            if mode == 'file' then
+                n = n + 1
+                local f = files[name]
+                if f then
+                    if type(f) == 'string' then
+                        files[name] = { f, path }
                     else
-                        dirs[#dirs+1] = name
+                        f[#f+1] = path
                     end
+                else -- probably unique anyway
+                    files[name] = path
+                    local lower = lower(name)
+                    if name ~= lower then
+                        files["remap:"..lower] = name
+                        r = r + 1
+                    end
+                end
+            elseif mode == 'directory' then
+                m = m + 1
+                nofdirs = nofdirs + 1
+                if path ~= "" then
+                    dirs[nofdirs] = path..'/'..name
+                else
+                    dirs[nofdirs] = name
                 end
             end
         end
-        if #dirs > 0 then
-            sort(dirs)
-            for i=1,#dirs do
-                scan(spec,dirs[i])
-            end
+    end
+    if nofdirs > 0 then
+        sort(dirs)
+        for i=1,nofdirs do
+            files, n, m, r = scan(files,spec,dirs[i],n,m,r)
         end
     end
-    scan(specification .. '/',"")
-    files.__files__, files.__directories__, files.__remappings__ = n, m, r
+    return files, n, m, r
+end
+
+function resolvers.scanfiles(path)
+    if trace_locating then
+        report_resolvers("scanning path '%s'",path)
+    end
+    local files, n, m, r = scan({ },path .. '/',"",0,0,0)
+    files.__path__        = path
+    files.__files__       = n
+    files.__directories__ = m
+    files.__remappings__  = r
     if trace_locating then
         report_resolvers("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end

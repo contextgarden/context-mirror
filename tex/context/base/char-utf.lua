@@ -245,8 +245,10 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
     return str
 end
 
-utilities.sequencers.appendaction (resolvers.openers.textfileactions,"system","characters.filters.utf.collapse")
-utilities.sequencers.disableaction(resolvers.openers.textfileactions,"characters.filters.utf.collapse")
+local textfileactions = resolvers.openers.helpers.textfileactions
+
+utilities.sequencers.appendaction (textfileactions,"system","characters.filters.utf.collapse")
+utilities.sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
 
 --[[ldx--
 <p>Next we implement some commands that are used in the user interface.</p>

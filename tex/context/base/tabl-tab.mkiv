@@ -25,7 +25,9 @@
 % and extensions. The documented (and larger) source can be found
 % in \type {thrd-tab.tex}.
 %
-% Much more can be stripped.
+% Some code has been stripped. Some color has been added. Some macros
+% have been renamed. Registers have been replaces. And probably much
+% more can be cleaned up.
 
 \unprotect
 
@@ -44,22 +46,22 @@
 \def\tablecolumnwidthfactor     {10}
 \def\tablevspacefactor           {2}
 \def\tablekernfactor             {1}
+\def\tablelinethicknessfactor    {4}
 
 \newtoks\everytable
 \newtoks\everytableparbox
 
-\unexpanded\def\tablebeginparbox#1%
+\unexpanded\def\dotablebeginparbox#1%
   {\setbox\scratchbox\vtop\bgroup % \setbox added
      \hsize#1\relax
      \dontcomplain
-     \restoretablelineskips
+     \dorestoretablelineskips
      \normalbaselines
-     \let~\!ttTie
-     \let\-\!ttDH
+     \let~\fixedspace
      \blank[\v!disable]% % added
      \the\everytableparbox}
 
-\unexpanded\def\tableendparbox
+\unexpanded\def\dotableendparbox
   {\removelastskip                                     % itemize or so
    \endgraf
    \ifnum\prevgraf>\zerocount                          % we want at least
@@ -82,12 +84,9 @@
     \rightskip\zeropoint \!!plus 4em \relax
 \to \everytableparbox
 
-\newtoks\!taTableSpread
+\newskip \tablelefttabskip
+\newskip \tablerighttabskip
 
-\newskip\tablelefttabskip
-\newskip\tablerighttabskip
-
-\newcount\!taCountA
 \newcount\!taColumnNumber
 \newcount\!taRecursionLevel % (Initially 0)
 
@@ -96,20 +95,19 @@
 \newdimen\!taDimenC  % used by numeric.tex
 \newdimen\!taMinimumColumnWidth
 
-\newtoks\!taToksA
+\newtoks \!taTableSpread
+\newtoks \!taPreamble
+\newtoks \!taDataColumnTemplate
+\newtoks \!taRuleColumnTemplate
+\newtoks \!taOldRuleColumnTemplate
+\newtoks \!taLeftGlue
+\newtoks \!taRightGlue
 
-\newtoks\!taPreamble
-\newtoks\!taDataColumnTemplate
-\newtoks\!taRuleColumnTemplate
-\newtoks\!taOldRuleColumnTemplate
-\newtoks\!taLeftGlue
-\newtoks\!taRightGlue
+\newskip \!taLastRegularTabskip
 
-\newskip\!taLastRegularTabskip
-
-\newif\if!taDigit
-\newif\if!taBeginFormat
-\newif\if!taOnceOnlyTabskip
+%newif   \if!taDigit
+\newif   \if!taBeginFormat
+\newif   \if!taOnceOnlyTabskip
 
 \def\!thToksEdef#1=#2%
   {\edef\!ttemp{#2}%
@@ -121,29 +119,29 @@
    \!thIterate
    \let\!thIterate\relax}
 
-\def\BeginFormat
+\def\dobegintableformat
   {\!taPreamble\emptytoks
    \!taColumnNumber\zerocount
    \skip0=\tableintercolumnspaceunit
    \multiply\skip0 \tableintercolumnspacefactor
    \divide\skip0 2
-   \!taRuleColumnTemplate=\expandafter{\expandafter\tabskip\the\skip0 }%
-   \!taLastRegularTabskip=\skip0
+   \!taRuleColumnTemplate\expandafter{\expandafter\tabskip\the\skip0 }%
+   \!taLastRegularTabskip\skip0
    \!taOnceOnlyTabskipfalse
    \!taBeginFormattrue
    \let\!tfRowOfWidths\empty
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
 \def\!tfSetWidth
-  {\ifx\!tfRowOfWidths\empty          % true if no prior "w" keys
+  {\ifx\!tfRowOfWidths\empty            % true if no prior "w" keys
      \ifnum\!taColumnNumber>\zerocount  % true if "w" key is to right of first "|"
-       \begingroup                       % RowOfWidths={&\omit || n copies of &\omit&\omit}, where n = number of column to the left of this one
-       \!taCountA=1
+       \begingroup                      % RowOfWidths={&\omit || n copies of &\omit&\omit}, where n = number of column to the left of this one
+       \scratchcounter\plusone
        \aftergroup \edef \aftergroup \!tfRowOfWidths \aftergroup {%
          \aftergroup &\aftergroup \omit
          \!thLoop
-           \ifnum \!taCountA<\!taColumnNumber
-           \advance\!taCountA 1
+           \ifnum \scratchcounter<\!taColumnNumber
+           \advance\scratchcounter\plusone
            \aftergroup \!tfAOAO
          \repeat
          \aftergroup}%
@@ -160,7 +158,7 @@
 
 \def\!tfSetWidthText[#1]%
   {\def\!tfWidthText{#1}%
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
 \def\!tfSetWidthValue
   {\!taMinimumColumnWidth=
@@ -170,7 +168,7 @@
        \!tgValue
      \fi
    \let\!tfWidthText\empty %      Override possible prior `w[sample entry]'
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
 \def\!tfSetTabskip
   {\ifnum\!tgCode=\plusone
@@ -190,7 +188,7 @@
   \if!taOnceOnlyTabskip\else
     \!taLastRegularTabskip=\skip0 % Remember this Tabskip, for possible
   \fi                             % restoration after a subsequent"OnceOnly"
-  \ReadFormatKeys}
+  \doreadtableformatkeys}
 
 \def\!tfSetVrule
   {\!thToksEdef\!taRuleColumnTemplate
@@ -243,9 +241,8 @@
   \!taMinimumColumnWidth\zeropoint
   \let\!tfWidthText\empty
   \!taOnceOnlyTabskipfalse
-  \ReadFormatKeys}
+  \doreadtableformatkeys}
 
-% UPDATE ROW OF WIDTHS
 \def\!tfUpdateRowOfWidths
   {\ifx\!tfWidthText\empty \else
      \!tfComputeMinColWidth
@@ -272,7 +269,7 @@
    \!taBeginFormatfalse
    \!ttDoHalign}
 
-\def\ReFormat[#1]%
+\def\dotablereformat[#1]% will become local
   {\omit
    \!taDataColumnTemplate{##}%
    \!taLeftGlue\emptytoks
@@ -280,12 +277,16 @@
    \begingroup
    \@@useotherbar
    \@@useotherquote
-   \expanded{\endgroup\noexpand\ReadFormatKeys#1]}}% appear in a \ReFormat cmd; this is here as a safeguard.
+   \expanded{\endgroup\noexpand\doreadtableformatkeys#1]}}% appear in a \dotablereformat cmd; this is here as a safeguard.
+
+\appendtoks
+    \let\ReFormat\dotablereformat
+\to \everytable
 
 \def\!tfEndReFormat
   {\!tfReFormat}
 
-\appendtoks \TABLEparalignment \to \everytableparbox
+\appendtoks \dotableparalignment \to \everytableparbox
 
 \def\!tfReFormat#1%
   {\the \!taLeftGlue
@@ -318,32 +319,35 @@
      \expandafter \!tgCheckForDigit
    \fi}
 
-\def\!tgCheckForDigit
-  {\!taDigitfalse
-        \ifx 0\!ttemp \!taDigittrue
-   \else\ifx 1\!ttemp \!taDigittrue
-   \else\ifx 2\!ttemp \!taDigittrue
-   \else\ifx 3\!ttemp \!taDigittrue
-   \else\ifx 4\!ttemp \!taDigittrue
-   \else\ifx 5\!ttemp \!taDigittrue
-   \else\ifx 6\!ttemp \!taDigittrue
-   \else\ifx 7\!ttemp \!taDigittrue
-   \else\ifx 8\!ttemp \!taDigittrue
-   \else\ifx 9\!ttemp \!taDigittrue
-   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
-   \if!taDigit
-     \expandafter \!tgGetNumber
-   \else
-     \expandafter \!tgReturn
-   \fi}
+% \def\!tgCheckForDigit
+%   {\!taDigitfalse
+%         \ifx 0\!ttemp \!taDigittrue
+%    \else\ifx 1\!ttemp \!taDigittrue
+%    \else\ifx 2\!ttemp \!taDigittrue
+%    \else\ifx 3\!ttemp \!taDigittrue
+%    \else\ifx 4\!ttemp \!taDigittrue
+%    \else\ifx 5\!ttemp \!taDigittrue
+%    \else\ifx 6\!ttemp \!taDigittrue
+%    \else\ifx 7\!ttemp \!taDigittrue
+%    \else\ifx 8\!ttemp \!taDigittrue
+%    \else\ifx 9\!ttemp \!taDigittrue
+%    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+%    \if!taDigit
+%      \expandafter \!tgGetNumber
+%    \else
+%      \expandafter \!tgReturn
+%    \fi}
 
-\def\!tgGetNumber {\afterassignment\!tgGetNumberA\!taCountA=}
-\def\!tgGetNumberA{\edef\!tgValue{\the\!taCountA}\!tgReturn}
+\def\!tgCheckForDigit
+  {\doifnumberelse\!ttemp\!tgGetNumber\!tgReturn}
+
+\def\!tgGetNumber {\afterassignment\!tgGetNumberA\scratchcounter=}
+\def\!tgGetNumberA{\edef\!tgValue{\the\scratchcounter}\!tgReturn}
 
 \def\!tgSetUpParBox
   {\normalexpanded
-     {\noexpand \ReadFormatKeys
-        b{\tablebeginparbox
+     {\noexpand \doreadtableformatkeys
+        b{\dotablebeginparbox
             {\ifnum \!tgCode=1
                \ifx \!tgValue\empty
                  \tablecolumnwidthfactor
@@ -354,7 +358,7 @@
              \else
                \!tgValue
              \fi}}%
-        a{\tableendparbox}}}
+        a{\dotableendparbox}}}
 
 \def\!tgInsertKern
   {\edef\!ttemp
@@ -370,7 +374,7 @@
         \!tgValue
       \fi}%
    \edef\!ttemp
-     {\noexpand\ReadFormatKeys
+     {\noexpand\doreadtableformatkeys
       \ifconditional\tablehasleftspacing
          b{\!ttemp}
       \fi
@@ -379,70 +383,70 @@
       \fi}%
    \!ttemp}
 
-\def\NewFormatKey  #1{\setvalue{!tk<\string#1>}}
-\def\ReadFormatKeys#1{\getvalue{!tk<\string#1>}}
+\def\newtableformatkey  #1{\setvalue{!tk<\string#1>}}
+\def\doreadtableformatkeys#1{\getvalue{!tk<\string#1>}}
 
 % Key "b":  b{TOKENS} adds TOKENS to the left of (before) the template
 
-\NewFormatKey b#1%
+\newtableformatkey b#1%
   {\expandafter\!tkJoin\expandafter{\the\!taDataColumnTemplate}{#1}%
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
 \def\!tkJoin#1#2%
   {\!taDataColumnTemplate{#2#1}}%
 
 % Key "a":  a{TOKENS} adds TOKENS to the right of (after) the template
 
-\NewFormatKey a#1%
+\newtableformatkey a#1%
   {\!taDataColumnTemplate\expandafter{\the\!taDataColumnTemplate #1}%
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
 % Key "\{": Enclose template in braces.
 
-\NewFormatKey \{%
+\newtableformatkey \{%
   {\!taDataColumnTemplate=\expandafter{\expandafter{\the\!taDataColumnTemplate}}%
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
 % Key "*":  "*{N}{KEY LETTERS}" is equivalent to specifying
 % <KEY LETTERS>  N  times.
 % KEY LETTERS may contain further * specifications
 
-\NewFormatKey *#1#2%
-  {\!taCountA=#1\relax
-   \!taToksA={}%
+\newtableformatkey *#1#2%
+  {\scratchcounter=#1\relax
+   \scratchtoks\emptytoks
    \!thLoop
-     \ifnum \!taCountA > 0
-     \!taToksA\expandafter{\the\!taToksA #2}%
-     \advance\!taCountA -1
+     \ifnum\scratchcounter>\zerocount
+     \scratchtoks\expandafter{\the\scratchtoks#2}%
+     \advance\scratchcounter\minusone
    \repeat
-   \expandafter\ReadFormatKeys\the\!taToksA}
+   \expandafter\doreadtableformatkeys\the\scratchtoks}
 
 % Key "\LeftGlue": Specifies the glue (usually \hfil, or nothing) to be
 % added to extreme left of the template to position a column
 
-\NewFormatKey \LeftGlue#1%
+\newtableformatkey \LeftGlue#1%
   {\!taLeftGlue{#1}%
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
-\NewFormatKey \RightGlue#1%
+\newtableformatkey \RightGlue#1%
   {\!taRightGlue{#1}%
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
-\NewFormatKey c%
+\newtableformatkey c%
   {\prependtoks\raggedcenter\to\!taDataColumnTemplate
-   \ReadFormatKeys \LeftGlue\hfil \RightGlue\hfil}
+   \doreadtableformatkeys \LeftGlue\hfil \RightGlue\hfil}
 
-\NewFormatKey l%
+\newtableformatkey l%
   {\prependtoks\raggedright\to\!taDataColumnTemplate
-   \ReadFormatKeys \LeftGlue\empty \RightGlue\hfil}
+   \doreadtableformatkeys \LeftGlue\empty \RightGlue\hfil}
 
-\NewFormatKey r%
+\newtableformatkey r%
   {\prependtoks\raggedleft\to\!taDataColumnTemplate
-   \ReadFormatKeys \LeftGlue\hfil \RightGlue\empty}
+   \doreadtableformatkeys \LeftGlue\hfil \RightGlue\empty}
 
-\NewFormatKey x%
+\newtableformatkey x%
   {\prependtoks\notragged\to\!taDataColumnTemplate
-   \ReadFormatKeys \LeftGlue\hfil \RightGlue\empty}
+   \doreadtableformatkeys \LeftGlue\hfil \RightGlue\empty}
 
 % Key "k": Adds kerns to left and right of "#"
 % This key and the two below use Plain TeX's \if@h as if it were \if@left,
@@ -450,83 +454,83 @@
 % so even in the unlikely circumstance that a \phantom is currently under
 % construction, there's no problem.
 
-\NewFormatKey k%
+\newtableformatkey k%
   {\settrue\tablehasleftspacing
    \settrue\tablehasrightspacing
    \!tgGetValue{\!tgInsertKern}}
 
 % Key "i": Adds a kern to the left of "#"
 
-\NewFormatKey i%
+\newtableformatkey i%
   {\settrue\tablehasleftspacing
    \setfalse\tablehasrightspacing
    \!tgGetValue{\!tgInsertKern}}
 
 % Key "j": Adds a kern to the right of "#"
 
-\NewFormatKey j%
+\newtableformatkey j%
   {\setfalse\tablehasleftspacing
    \settrue\tablehasrightspacing
    \!tgGetValue{\!tgInsertKern}}
 
 % Key "n": numeric item , non-math mode.
 
-\NewFormatKey n%
+\newtableformatkey n%
   {\def\!tnStyle{}%
    \futurelet\!tnext\!tnTestForBracket}
 
 % Key "N": numeric item, math mode.
 
-\NewFormatKey N%
+\newtableformatkey N%
   {\def\!tnStyle{$}%
    \futurelet\!tnext\!tnTestForBracket}
 
 % Key "m": Math mode.
 
-\NewFormatKey m%
-  {\ReadFormatKeys b$ a$}
+\newtableformatkey m%
+  {\doreadtableformatkeys b$ a$}
 
 % Key "M": Displaymath mode.
 
-\NewFormatKey M%
-  {\ReadFormatKeys \{ b{$\displaystyle} a$}
+\newtableformatkey M%
+  {\doreadtableformatkeys \{ b{$\displaystyle} a$}
 
 % Key "\m": Template ${}#\hfil$
-\NewFormatKey \m%
-  {\ReadFormatKeys l b{{}} m}
+\newtableformatkey \m%
+  {\doreadtableformatkeys l b{{}} m}
 
 % Key "\M": Template $\displaystyle{{}#\hfil}$
 
-\NewFormatKey \M%
-  {\ReadFormatKeys l b{{}} M}
+\newtableformatkey \M%
+  {\doreadtableformatkeys l b{{}} M}
 
 % Key "f":  Set font  (E.g., f\it sets up italic font (assuming \it
 % has its usual meaning)
 
-\NewFormatKey f#1%
-  {\ReadFormatKeys b{#1}}
+\newtableformatkey f#1%
+  {\doreadtableformatkeys b{#1}}
 
-\NewFormatKey B{\ReadFormatKeys f\bf} % Key "B": abbreviation for f\bf
-\NewFormatKey I{\ReadFormatKeys f\it} % Key "I": abbreviation for f\it
-\NewFormatKey S{\ReadFormatKeys f\sl} % Key "S": abbreviation for f\sl
-\NewFormatKey R{\ReadFormatKeys f\rm} % Key "R": abbreviation for f\rm
-\NewFormatKey T{\ReadFormatKeys f\tt} % Key "T": abbreviation for f\tt
+\newtableformatkey B{\doreadtableformatkeys f\bf} % Key "B": abbreviation for f\bf
+\newtableformatkey I{\doreadtableformatkeys f\it} % Key "I": abbreviation for f\it
+\newtableformatkey S{\doreadtableformatkeys f\sl} % Key "S": abbreviation for f\sl
+\newtableformatkey R{\doreadtableformatkeys f\rm} % Key "R": abbreviation for f\rm
+\newtableformatkey T{\doreadtableformatkeys f\tt} % Key "T": abbreviation for f\tt
 
 % Key "p": ParBox
 
-\NewFormatKey p%
+\newtableformatkey p%
   {\!tgGetValue{\!tgSetUpParBox}}
 
 % Key "w": minimum column width
 
-\NewFormatKey w%
+\newtableformatkey w%
   {\!tkTestForBeginFormat w{\!tgGetValue{\!tfSetWidth}}}
 
 % Key "s": Set tabskip for the inter-column space to the right
 % of the current column, and all subsequent spaces, until overriden
 % by a new "s" or "o" key.
 
-\NewFormatKey s%
+\newtableformatkey s%
   {\!taOnceOnlyTabskipfalse    % in case same column has a prior "o" key
    \!tkTestForBeginFormat t{\!tgGetValue{\!tfSetTabskip}}}
 
@@ -534,70 +538,68 @@
 % inter-column space just to the right of this column; restore the
 % the previous \tabskip for subsequent columns.
 
-\NewFormatKey o%
+\newtableformatkey o%
   {\!taOnceOnlyTabskiptrue
    \!tkTestForBeginFormat o{\!tgGetValue{\!tfSetTabskip}}}
 
 % Key "|": Standard rule column designator
 
-\NewFormatKey |%
+\newtableformatkey |%
   {\!tkTestForBeginFormat |{\!tgGetValue{\!tfSetVrule}}}
 
 % Key "\|": Non-standard rule column designator
 
-\NewFormatKey \|%
+\newtableformatkey \|%
   {\!tkTestForBeginFormat \|{\!tfSetAlternateVrule}}
 
-% Key ".":  PERIOD -- end of \BeginFormat section.
+% Key ".":  PERIOD -- end of \dobegintableformat section.
 
-\NewFormatKey .%
+\newtableformatkey .%
   {\!tkTestForBeginFormat.{\!tfFinishFormat}}
 
-% Key "\EndFormat": Equivalent to "."
+% Key "\doendtableformat": Equivalent to "."
 
-\NewFormatKey \EndFormat
-  {\!tkTestForBeginFormat\EndFormat{\!tfFinishFormat}}
+\newtableformatkey \doendtableformat
+  {\!tkTestForBeginFormat\doendtableformat{\!tfFinishFormat}}
 
-% Key "]": End of \ReFormat section
+% Key "]": End of \dotablereformat section
 
-\NewFormatKey ]%
+\newtableformatkey ]%
   {\!tkTestForReFormat ] \!tfEndReFormat}
 
 % TEST FOR BEGIN FORMAT{<Key>}{Intended Action}: This test is run
-% on keys that can only be used by \BeginFormat ---  "s",  "o",
-% "|",  "\|",  "w",  ".",  and  "\EndFormat".
+% on keys that can only be used by \dobegintableformat ---  "s",  "o",
+% "|",  "\|",  "w",  ".",  and  "\doendtableformat".
 
 \def\!tkTestForBeginFormat#1#2%
   {\if!taBeginFormat
      \def\!ttemp{#2}%
-     \expandafter \!ttemp
+     \expandafter\!ttemp
    \else
      \toks0={#1}%
-     \toks2=\expandafter{\string\ReFormat}%
-     \expandafter \!tkImproperUse
+     \toks2=\expandafter{\string\dotablereformat}%
+     \expandafter\!tkImproperUse
    \fi}
 
 % TEST FOR RE FORMAT{<Key>}{Intended Action}: This test is run
-% on the key "]", which can only be used by \ReFormat.
+% on the key "]", which can only be used by \dotablereformat.
 
 \def\!tkTestForReFormat#1#2%
   {\if!taBeginFormat
      \toks0={#1}%
-     \toks2=\expandafter{\string\BeginFormat}%
-     \expandafter \!tkImproperUse
+     \toks2=\expandafter{\string\dobegintableformat}%
+     \expandafter\!tkImproperUse
    \else
      \def\!ttemp{#2}%
-     \expandafter \!ttemp
+     \expandafter\!ttemp
    \fi}
 
 % NOTE: THE SPACE BETWEEN A NUMERIC ENTRY AND THE FOLLOWING '|', '"',
 %   OR '\|' IS MANDATORY.
 % EMPTY NUMERIC ENTRIES ARE NOT ALLOWED: USE '{}' OR '\omit' INSTEAD.
 
-% TEST FOR BRACKET: Invoked by the keys "n" and "N".
-
 \def\!tnTestForBracket
-  {\ifx [\!tnext
+  {\ifx[\!tnext
      \expandafter\!tnGetArgument
    \else
      \expandafter\!tnGetCode
@@ -615,20 +617,20 @@
   {\begingroup
    \aftergroup\edef \aftergroup\!ttemp \aftergroup{%
      \aftergroup[%
-     \!taCountA #1
+     \scratchcounter#1\relax
      \!thLoop
-       \ifnum \!taCountA>0
-       \advance\!taCountA -1
-       \aftergroup0
+       \ifnum \scratchcounter>\zerocount
+         \advance\scratchcounter\minusone
+         \aftergroup0
      \repeat
      \def\!ttemp{#3}%
      \ifx\!ttemp \empty
      \else
        \aftergroup.
-       \!taCountA #2
+       \scratchcounter#2\relax
        \!thLoop
-         \ifnum \!taCountA>0
-         \advance\!taCountA -1
+         \ifnum \scratchcounter>\zerocount
+         \advance\scratchcounter\minusone
          \aftergroup0
        \repeat
      \fi
@@ -646,19 +648,19 @@
 \def\!tnMakeNumericTemplate#1#2.#3.#4!% #1=<empty> or $
   {\def\!ttemp{#4}%
    \ifx\!ttemp\empty
-     \!taDimenC=0pt
+     \!taDimenC\zeropoint
    \else
-     \setbox0=\hbox{\mathsurround\zeropoint #1.#3#1}%
-     \!taDimenC=\wd0
+     \setbox\scratchbox=\hbox{\mathsurround\zeropoint #1.#3#1}%
+     \!taDimenC\wd\scratchbox
    \fi
-   \setbox0 =\hbox{\mathsurround\zeropoint #1#2#1}%
+   \setbox\scratchbox\hbox{\mathsurround\zeropoint #1#2#1}%
    \!thToksEdef\!taDataColumnTemplate={%
      \noexpand\!tnSetNumericItem
-     {\the\wd0 }%
+     {\the\wd\scratchbox}%
      {\the\!taDimenC}%
      {#1}%
      \the\!taDataColumnTemplate}  % Might have tabskip glue in here
-   \ReadFormatKeys}
+   \doreadtableformatkeys}
 
 % SET NUMERIC ITEM
 
@@ -672,11 +674,11 @@
 
 % extensions
 
-\NewFormatKey q%
+\newtableformatkey q%
   {\letempty\!tqStyle
    \futurelet\!tnext\!tqTestForBracket}
 
-\NewFormatKey Q%
+\newtableformatkey Q%
   {\def\!tqStyle{$}%
    \futurelet\!tnext\!tqTestForBracket}
 
@@ -696,20 +698,20 @@
    \aftergroup\!ttemp
    \aftergroup{%
    \aftergroup[%
-   \!taCountA #1
+   \scratchcounter#1\relax
    \!thLoop
-     \ifnum \!taCountA>0 % \zerocount
-       \advance\!taCountA \minusone
+     \ifnum \scratchcounter>\zerocount
+       \advance\scratchcounter\minusone
        \aftergroup0
    \repeat
    \def\!ttemp{#3}%
    \ifx\!ttemp\empty
    \else
      \aftergroup,
-     \!taCountA #2
+     \scratchcounter#2\relax
      \!thLoop
-       \ifnum\!taCountA>0 % \zerocount
-         \advance\!taCountA \minusone
+       \ifnum\scratchcounter>\zerocount
+         \advance\scratchcounter\minusone
          \aftergroup0
      \repeat
    \fi
@@ -725,14 +727,14 @@
    \ifx\!ttemp\empty
      \!taDimenC\zeropoint
    \else
-     \setbox0\hbox{\mathsurround\zeropoint #1,#3#1}%
-     \!taDimenC\wd0
+     \setbox\scratchbox\hbox{\mathsurround\zeropoint #1,#3#1}%
+     \!taDimenC\wd\scratchbox
    \fi
-   \setbox0\hbox{\mathsurround\zeropoint #1#2#1}%
+   \setbox\scratchbox\hbox{\mathsurround\zeropoint #1#2#1}%
    \!thToksEdef\!taDataColumnTemplate
-     ={\noexpand\!tqSetQuantityItem{\the\wd0 }{\the\!taDimenC}{#1}%
+     ={\noexpand\!tqSetQuantityItem{\the\wd\scratchbox}{\the\!taDimenC}{#1}%
        \the\!taDataColumnTemplate}%
-  \ReadFormatKeys}
+  \doreadtableformatkeys}
 
 \def\!tqSetQuantityItem #1#2#3#4 %
   {\!tqSetQuantityItemA{#1}{#2}{#3}#4,,!}
@@ -744,29 +746,29 @@
 
 % struts
 
-\def\tableMakeStrut#1#2%
+\def\domaketablestrut#1#2%
   {\vrule\!!width\zeropoint\!!height#1\!!depth#2\relax}
 
-\def\tableStandardTableStrut
-  {\tableMakeStrut
+\def\domakestandardtablestrut
+  {\domaketablestrut
      {\tablestrutheightfactor\tablestrutunit}
      {\tablestrutdepthfactor \tablestrutunit }}
 
-\def\tableAugmentedTableStrut#1#2%
-  {\tableMakeStrut
+\def\domakeaugmentedtablestrut#1#2%
+  {\domaketablestrut
      {\dimexpr\tablestrutheightfactor\tablestrutunit+#1\tablestrutunit\relax}
      {\dimexpr\tablestrutdepthfactor \tablestrutunit+#2\tablestrutunit\relax}}
 
 \appendtoks
-    \let\MakeStrut          \tableMakeStrut
-    \let\StandardTableStrut \tableStandardTableStrut
-    \let\AugmentedTableStrut\tableAugmentedTableStrut
+    \let\MakeStrut          \domaketablestrut
+    \let\StandardTableStrut \domakestandardtablestrut
+    \let\AugmentedTableStrut\domakeaugmentedtablestrut
 \to \everytable
 
 % \Enlarge<extra height><extra depth><original>
 % \enlarge<multiple for extra height><multiple for extra depth><original>
 
-\def\tableEnlarge#1#2%
+\def\dotableEnlarge#1#2%
   {%  3rd argument is picked up later
    % #1=extra height
    % #2=extra depth
@@ -801,32 +803,21 @@
    \dp\zerocount\dimen@
    \box\zerocount \!TsSpaceFactor{}}
 
-\def\tableenlarge#1#2%  3rd argument is picked up later
-  {\tableEnlarge{#1\tablestrutunit}{#2\tablestrutunit}}
+\def\dotableenlarge#1#2%  3rd argument is picked up later
+  {\dotableEnlarge{#1\tablestrutunit}{#2\tablestrutunit}}
 
 \appendtoks
-    \let\enlarge\tableenlarge
-    \let\Enlarge\tableEnlarge
+    \let\enlarge\dotableenlarge
+    \let\Enlarge\dotableEnlarge
 \to \everytable
 
 % BEGIN TABLE
 
-\def\tablestandardbegin
-  {\futurelet\!tnext\!ttBeginTable}
-
-\def\!ttBeginTable
-  {\ifx[\!tnext
-     \def\!tnext{\!ttBeginTableA}%
-   \else
-     \def\!tnext{\!ttBeginTableA[c]}%
-   \fi
-   \!tnext}
-
-\def\!ttBeginTableA[#1]%
-  {\if#1u%                  % "unboxed" table
+\def\dotablestandardbegin[#1]% \!ttBeginTable (always argument)
+  {\if#1u% unboxed table
      \ifmmode
        \def\!ttEndTable{\relax}% user had better be in display math mode and have only one table at the outer level
-     \else                      % user had better be in vertical mode
+     \else                     % user had better be in vertical mode
        \bgroup
        \def\!ttEndTable{\egroup}%
      \fi
@@ -854,11 +845,9 @@
 \bgroup \catcode`\~=13
 
     \appendtoks
-        \let\!ttTie=~%
-        \let\!ttDH =\-%
         \catcode`\~=\active
         \def~{\kern.5em}%
-        \def\\{\par}%
+        \def\\{\ifhmode\space\else\par\fi}%
     \to \everytable
 
 \egroup
@@ -868,7 +857,7 @@
 % DO HALIGN: Invoked by END FORMAT (or the key ".")
 
 \def\!ttDoHalign
-  {\edef\restoretablelineskips
+  {\edef\dorestoretablelineskips
      {\baselineskip \the\baselineskip
       \lineskiplimit\the\lineskiplimit
       \lineskip     \the\lineskip
@@ -889,7 +878,7 @@
 
 % END TABLE
 
-\def\tablenormalend
+\def\dotablenormalend
   {\egroup % finishes the \halign
    \!ttEndTable}%    closes off the table envirnoment set up by \tablestandardbegin
 
@@ -923,11 +912,11 @@
   {\cr}
 
 \def\!ttDoPlus#1#2#3% #1 eats the +
-  {\tableAugmentedTableStrut{#2}{#3}%
+  {\domakeaugmentedtablestrut{#2}{#3}%
    \cr}
 
 \def\!ttDoStandard
-  {\tableStandardTableStrut
+  {\domakestandardtablestrut
    \cr}
 
 % ALTERNATE VRULE
@@ -977,14 +966,15 @@
 \def\@VLd{.125em}
 
 \let\tablecurrentvrulecolor\empty
+\let\tablecurrenthrulecolor\empty
 
 \def\do!ttInsertVrule % will be merged in 2005
   {\vrule\!!width
      \ifnum\!tgCode=\plusone
        \ifx\!tgValue\empty
-        \tablevrulethicknessfactor
+         \tablevrulethicknessfactor
        \else
-       \!tgValue
+         \!tgValue
        \fi
        \tablelinethicknessunit
      \else
@@ -1028,13 +1018,13 @@
 \def\!ttuse#1%
   {\ifnum#1>\plusone
      \omit
-     \global\TABLEdivisionfalse
-     \scratchcounter\currentTABLEcolumn              % added
+     \global\setfalse\istabledivision                % added
+     \scratchcounter\currenttablecolumn              % added
      \advance\scratchcounter #1%                     % added
      \advance\scratchcounter \minusone               % added
      \def\next                                       % added
-       {\global\advance\currentTABLEcolumn #1%       % added
-        \global\advance\currentTABLEcolumn \minusone % added
+       {\global\advance\currenttablecolumn #1%       % added
+        \global\advance\currenttablecolumn \minusone % added
         \scratchcounter#1%   \mscount is in Plain
         \advance\scratchcounter \minusone
         \advance\scratchcounter \scratchcounter
@@ -1043,19 +1033,19 @@
             \spanomit \advance\scratchcounter\minusone
         \repeat
         \span}%
-   \else                                                 % added
-     \def\next % conflicts with possible next \omit      % added
-       {\global\advance\currentTABLEcolumn \plusone}%    % added
+   \else                                             % added
+     \def\next % conflicts with possible next \omit  % added
+       {\global\advance\currenttablecolumn \plusone}%% added
    \fi
-   \next}                                                % added
+   \next}                                            % added
 
 \def\!ttUse#1[%
   {\!ttuse{#1}%
-   \ReFormat[}
+   \dotablereformat[}
 
 \appendtoks
-    \let\use            \!ttuse
-    \let\Use            \!ttUse
+    \let\use\!ttuse
+    \let\Use\!ttUse
 \to \everytable
 
 % rules
@@ -1108,37 +1098,37 @@
 
 % \null prevents \unskip
 
-\def\tableLeft  #1{#1\hfill\null}
-\def\tableCenter#1{\hfill#1\hfill\null}
-\def\tableRight #1{\hfill#1}
+\def\dotableLeft  #1{#1\hfill\null}
+\def\dotableCenter#1{\hfill#1\hfill\null}
+\def\dotableRight #1{\hfill#1}
 
-\def\tableOpenUp#1#2%
+\def\dotableOpenUp#1#2%
   {\edef\tablestrutheightfactor{\withoutpt\the\dimexpr\tablestrutheightfactor\points+#1\points}%
    \edef\tablestrutdepthfactor {\withoutpt\the\dimexpr\tablestrutdepthfactor \points+#2\points}}
 
-\def\tableSetTableToWidth#1%
+\def\dotableSetTableToWidth#1%
   {\doifelsenothing{#1}{\!taTableSpread\emptytoks}{\!taTableSpread{to #1}}}
 
-\def\tableWidenTableBy#1%
+\def\dotableWidenTableBy#1%
   {\ifdim#1=\zeropoint
      \!taTableSpread\emptytoks
    \else
      \!taTableSpread{spread #1}%
    \fi}
 
-\def\tableExpand
-  {\tableSetTableToWidth{\hsize}}
+\def\dotableExpand
+  {\dotableSetTableToWidth{\hsize}}
 
-\def\tableLongLines
+\def\dotableLongLines
   {\tablelefttabskip \zeropoint \!!plus 1fill
    \tablerighttabskip\tablelefttabskip
-   \tableExpand}
+   \dotableExpand}
 
-\def\tableJustLeft  {\omit\let\!ttRightGlue\hfill}
-\def\tableJustCenter{\omit\hfill\null\let\!ttRightGlue\hfill}
-\def\tableJustRight {\omit\hfill\null}
+\def\dotableJustLeft  {\omit\let\!ttRightGlue\hfill}
+\def\dotableJustCenter{\omit\hfill\null\let\!ttRightGlue\hfill}
+\def\dotableJustRight {\omit\hfill\null}
 
-\def\tableSmash
+\def\dotableSmash
   {\relax
    \ifmmode
      \expandafter\mathpalette
@@ -1158,11 +1148,11 @@
 \def\!thFinishVCS
   {\vbox to\zeropoint{\vss\box\zerocount\vss}}
 
-\def\tableRaise
+\def\dotableRaise
   {\def\!thSign{+}%
    \!tgGetValue\!thSetDimen}
 
-\def\tableLower
+\def\dotableLower
   {\def\!thSign{-}%
    \!tgGetValue\!thSetDimen}
 
@@ -1199,7 +1189,7 @@
    \dp\zerocount\zeropoint
    \box\zerocount}
 
-\def\tableBackSpace
+\def\dotableBackSpace
   {\!tgGetValue\!thKernBack}
 
 \def\!thKernBack
@@ -1216,7 +1206,7 @@
    \fi
    \ignorespaces}
 
-\def\tableVspace
+\def\dotableVspace
   {\noalign
    \bgroup
    \!tgGetValue\!thVspace}
@@ -1236,25 +1226,23 @@
    \egroup} % Ends the \noalign
 
 \appendtoks
-    \let\SetTableToWidth\tableSetTableToWidth
-    \let\WidenTableBy   \tableWidenTableBy
-    \let\Expand         \tableExpand
-    \let\LongLines      \tableLongLines
-    \let\JustLeft       \tableJustLeft
-    \let\JustCenter     \tableJustCenter
-    \let\JustRight      \tableJustRight
-    \let\Smash          \tableSmash
-    \let\Raise          \tableRaise
-    \let\Lower          \tableLower
-    \let\BackSpace      \tableBackSpace
-    \let\Vspace         \tableVspace
-    \let\OpenUp         \tableOpenUp
-    \let\tableLeft      \tableLeft
-    \let\tableCenter    \tableCenter
-    \let\tableRight     \tableRight
+    \let\SetTableToWidth\dotableSetTableToWidth
+    \let\WidenTableBy   \dotableWidenTableBy
+    \let\Expand         \dotableExpand
+    \let\LongLines      \dotableLongLines
+    \let\JustLeft       \dotableJustLeft
+    \let\JustCenter     \dotableJustCenter
+    \let\JustRight      \dotableJustRight
+    \let\Smash          \dotableSmash
+    \let\Raise          \dotableRaise
+    \let\Lower          \dotableLower
+    \let\BackSpace      \dotableBackSpace
+    \let\Vspace         \dotableVspace
+    \let\OpenUp         \dotableOpenUp
+    \let\TableLeft      \dotableLeft
+    \let\TableCenter    \dotableCenter
+    \let\TableRight     \dotableRight
 \to \everytable
-
-\protect
 
 %D We felt no need to write our own table building macros,
 %D simply because Michael Wichura made a terrific one. This
@@ -1266,8 +1254,6 @@
 %D means that we end up postponing and overloading macros,
 %D mostly global. Now, let's start with loading the main
 %D macros.
-
-\unprotect
 
 %D \macros
 %D   {inintable, ifsplittables}
@@ -1477,64 +1463,61 @@
 %D track of these specifications is taken care of by the next
 %D variables:
 
-\newif\ifTABLEinbreak
-
-%D Nog vervangen:
-
-\def\c!Table{Table}
+\def\s!TaBlE{TaBlE}
 \def\m!TABLE{TABLE}
-
+
 %D We already saw that the table macros report errors and
 %D provide automatic spacing. These features can only be
 %D implemented by keeping track of the state, often the last
 %D command on a row.
 
-\setnewconstant\TABLEunknown          0
+\newconstant\tableforcestate
+\newconstant\tableactionstate
 
-\setnewconstant\TABLEseparaterow      1
-\setnewconstant\TABLEfirstrow         2
-\setnewconstant\TABLEmidrow           3
-\setnewconstant\TABLElastrow          4
-\setnewconstant\TABLErule             5
-\setnewconstant\TABLEskip             6
-\setnewconstant\TABLEautorow          7
+\setnewconstant\tableunknownstate       0
 
-\setnewconstant\TABLEforcefirstrow    1
-\setnewconstant\TABLEforcelastrow     2
+\setnewconstant\tableseparaterowstate   1
+\setnewconstant\tablefirstrowstate      2
+\setnewconstant\tablemidrowstate        3
+\setnewconstant\tablelastrowstate       4
+\setnewconstant\tablerulestate          5
+%setnewconstant\tableskipstate          6
+%setnewconstant\tableautorowstate       7
 
-\newconstant\TABLErowfactor
+\setnewconstant\tableforcefirstrowstate 1
+\setnewconstant\tableforcelastrowstate  2
+
+\newconstant\tablerowfactor
 \newconstant\TABLEendofrowdepth
 \newconstant\TABLEendofrowheight
 \newconstant\TABLEcr
-\newconstant\TABLErowzero
+\newconstant\tablerowzero
 \newconstant\TABLEn
-\newconstant\TABLEforce
-\newconstant\TABLEaction
 
 %D We store these states using \type {constants}'s and
 %D like most variables, these are global ones. When needed,
 %D especially when we flush the backgrounds, we can temporary
 %D disable the assignment.
 
-\newif\ifsetTABLEaction
+\newconditional\tableactionstatepermitted
 
-\def\setTABLEaction#1{\ifsetTABLEaction\global\TABLEaction#1\fi}
-\def\setTABLEforce #1{\ifsetTABLEaction\global\TABLEforce #1\fi}
+\def\dosettableaction#1{\ifconditional\tableactionstatepermitted\global\tableactionstate#1\fi}
+\def\dosettableforce #1{\ifconditional\tableactionstatepermitted\global\tableforcestate #1\fi}
 
 %D To keep things verbose, as well as to show what \TABLE\
 %D commands we affect, we show some meanings.
 
-\def\normalTABLEshortrule  {\!ttShortHrule} % \-
-\def\normalTABLElongrule   {\!ttLongHrule} % \=
-\def\normalTABLEfullrule   {\!ttFullHrule} % \_
-\def\normalTABLEendofrow   {\!ttEndOfRow} % \\
-\def\normalTABLEsimplebar  {\unskip\!ttRightGlue&&} % |
-\def\normalTABLEcomplexbar {\unskip\!ttRightGlue&\omit\!ttAlternateVrule} % \|
-\def\normalTABLEquote      {\unskip\!ttRightGlue&\omit&} % "
-\def\normalTABLElineformat {\normalTABLEendofrow+}
-\def\normalTABLElineending {\normalTABLEendofrow0 }
-\def\normalTABLEsinglerule {&\normalTABLElongrule&}
-\def\normalTABLEmultirule#1{&\use{#1}\normalTABLElongrule&}
+\def\donormaltableshortrule    {\!ttShortHrule}
+\def\donormaltablelongrule     {\!ttLongHrule}
+\def\donormaltablefullrule     {\!ttFullHrule}
+\def\donormaltableendofrow     {\!ttEndOfRow}
+\def\donormaltablesimplebar    {\unskip\!ttRightGlue&&}
+\def\donormaltablecomplexbar #1{\unskip\!ttRightGlue&\omit\expandafter\!ttAlternateVrule#1 }
+\def\donormaltablequote        {\unskip\!ttRightGlue&\omit&}
+\def\donormaltablelineformat   {\donormaltableendofrow+}
+\def\donormaltablelineending   {\donormaltableendofrow0 }
+\def\donormaltablesinglerule   {&\donormaltablelongrule&}
+\def\donormaltablemultirule  #1{&\use{#1}\donormaltablelongrule&}
 
 %D To give an impression of what the (well documented) source
 %D of \TABLE\ looks like, we first implement an alternative for
@@ -1569,13 +1552,6 @@
 %D support the \type {l}, \type {c} and \type {r} keys for
 %D paragraph entries.
 
-%D We already showed the next one, but here we slightly adapt
-%D the macro by adding an \type{\expandafter}. The space after
-%D \type{#1} is crucial!
-
-\def\normalTABLEcomplexbar#1%
-  {\unskip\!ttRightGlue&\omit\expandafter\!ttAlternateVrule#1 }
-
 %D All commands that are executed between rows are to be put in
 %D \type {\noalign}. We can however not verify if we (that is
 %D \TABLE) does or did not enter this mode. A moderate dirty
@@ -1584,20 +1560,17 @@
 %D such hacks become a second nature. However, redefining \type
 %D {\omit} and \type{\span} is not that easy.}
 
-\def\doTABLEnoalign
-  {\let\next=}
-
-\def\TABLEnoalign
+\def\tablenoalign
   {\noalign
    \bgroup
    \let\noalign\relax
-   \let\TABLEnoalign\doTABLEnoalign
-   \doTABLEnoalign}
+   \let\tablenoalign\relax
+   \let\next=}
 
-\def\startTABLEnoalign
-  {\TABLEnoalign\bgroup}
+\def\starttablenoalign
+  {\tablenoalign\bgroup}
 
-\def\stopTABLEnoalign
+\def\stoptablenoalign
   {\iffalse{\else}\fi}
 
 %D \macros
@@ -1637,7 +1610,7 @@
         {\ifinsidefloat\else\startbaselinecorrection\fi}
         {\startframedcontent[\@@tiframe]}%
       \postponenotes
-      \firststagestartTABLE}}
+      \firststagestarttable}}
 
 % We cannot define \unexpanded\def\dostoptable a ssomehow lookahead
 % in alignments fail then, so we relax it and define it locally.
@@ -1645,11 +1618,13 @@
 \let\stoptabel\relax
 
 \def\dostoptable
-  {\chuckTABLEautorow % before the tail, else noalign problem
-   \insertTABLEtail
-   \TABLEnoalign{\globalletempty\@@TABLEhead}%
-   \TABLEnoalign{\globalletempty\@@TABLEtail}%
-   \finishTABLE
+  {\dochucktableautorow % before the tail, else noalign problem
+   \doinserttabletail
+   \starttablenoalign
+     \globalletempty\dotablehead
+     \globalletempty\dotabletail
+   \stoptablenoalign
+   \dofinishtable
    \doifelsenothing\@@tiframe
      {\ifinsidefloat\else
         \stopbaselinecorrection
@@ -1661,14 +1636,14 @@
 %D Before we can grab the argument, we have to make sure that
 %D the \CATCODES\ are set. The first stage takes care of that.
 
-\def\firststagestartTABLE
+\def\firststagestarttable
   {\bgroup                   % kan-ie weg?
    \global\intabletrue
    %catcode`\|=\othercatcode
-   \complexorsimple\secondstagestartTABLE}
+   \complexorsimple\secondstagestarttable}
 
-\def\simplesecondstagestartTABLE#1%
-  {\complexsecondstagestartTABLE[{#1}]}
+\def\simplesecondstagestarttable#1%
+  {\complexsecondstagestarttable[{#1}]}
 
 %D \macros
 %D   {definetabletemplate}
@@ -1696,14 +1671,14 @@
 
 \def\dodefinetabletemplate[#1][#2][#3][#4]%
   {\ifsecondargument
-     \setgvalue{\c!Table#1}{\douseTABLEtemplate{#2}{#3}{#4}}%
+     \setgvalue{\s!TaBlE#1}{\dousetabletemplate{#2}{#3}{#4}}%
    \fi
    \egroup}
 
-\def\douseTABLEtemplate#1#2#3%
-  {\gdef\TABLEhead{\getvalue{@@TABLEhead#2}}%
-   \gdef\TABLEtail{\getvalue{@@TABLEtail#3}}%
-   \complexsecondstagestartTABLE[#1]}
+\def\dousetabletemplate#1#2#3%
+  {\gdef\dotablehead{\getvalue{@@tablehead#2}}%
+   \gdef\dotabletail{\getvalue{@@tabletail#3}}%
+   \complexsecondstagestarttable[#1]}
 
 %D The optional third and fourth arguments define which table
 %D head and tail to use.
@@ -1729,46 +1704,65 @@
 %D The second half of the next macro prepares table
 %D splitting.
 
-\def\insertTABLEhead
-  {\TABLEnoalign{\global\settrue \preventTABLEbreak \global\setfalse\someTABLEhead}%
-   \TABLEhead
-   \TABLEnoalign{\global\setfalse\preventTABLEbreak}}
+\def\doinserttablehead
+  {\starttablenoalign
+     \global\settrue\preventtablebreak
+     \global\setfalse\hassometablehead
+   \stoptablenoalign
+   \dotablehead
+   \starttablenoalign
+     \global\setfalse\preventtablebreak
+   \stoptablenoalign}
 
-\def\insertTABLEtail
-  {\TABLEnoalign{\global\settrue \preventTABLEbreak \global\setfalse\someTABLEtail}%
-   \TABLEtail
-   \TABLEnoalign{\global\setfalse\preventTABLEbreak}}
+\def\doinserttabletail
+  {\starttablenoalign
+     \global\settrue\preventtablebreak
+     \global\setfalse\hassometabletail
+   \stoptablenoalign
+   \dotabletail
+   \starttablenoalign
+     \global\setfalse\preventtablebreak
+   \stoptablenoalign}
 
-\def\verysimpleTableHL
-  {\TABLEnoalign{\expandafter\normalTABLEfullrule\@@tiHLheight}}
+% \def\doverysimpletableHL % todo
+%   {\starttablenoalign
+%      \expandafter\donormaltablefullrule\@@tiHLheight
+%    \stoptablenoalign}
 
-\def\dorestartTABLE#1%
-  {\gdef\restartTABLE{#1}%
-   \restartTABLE
-   \TABLEnoalign{\globalpushmacro\simpleTableHL\global\let\simpleTableHL\verysimpleTableHL}%
-   \insertTABLEhead
+\def\dorestarttable#1%
+  {\gdef\restarttable{#1}%
+   \restarttable
+%    \starttablenoalign
+%      \globalpushmacro\simpletableHL
+%      \global\let\simpletableHL\doverysimpletableHL
+%    \stoptablenoalign
+   \doinserttablehead
    \ifsplittables \ifconditional \tablerepeattail
-     \TABLEnoalign{\goodbreak}%
-     \insertTABLEtail
-     \TABLEnoalign{\goodbreak}%
+     \tablenoalign{\goodbreak}%
+     \doinserttabletail
+     \tablenoalign{\goodbreak}%
    \fi \fi
-   \TABLEnoalign{\globalpopmacro\simpleTableHL}}
+%    \starttablenoalign
+%      \globalpopmacro\simpletableHL
+%    \stoptablenoalign
+   }
 
 \bgroup \catcode`|=\othercatcode \catcode`"=\othercatcode
 
-\gdef\complexsecondstagestartTABLE#1[#2]% brr nested mess
+\gdef\complexsecondstagestarttable#1[#2]% brr nested mess
   {\bgroup
    \@@useotherbar
    \@@useotherquote
-   \global\setfalse\someTABLEhead
-   \global\setfalse\someTABLEtail
+   \global\setfalse\tableactionstatepermitted
+   \global\setfalse\hassometablehead
+   \global\setfalse\hassometabletail
    \expanded{\doifinstringelse{|}{#2}}
-     {\xdef\restartTABLE{\noexpand\dorestartTABLE{\noexpand\thirdstagestartTABLE{#2}}}}
-     {\doifdefinedelse{\c!Table#2}
-        {\gdef\restartTABLE{\getvalue{\c!Table#2}}}
-        {\gdef\restartTABLE{\dorestartTABLE{\getvalue{#2}}}}}%
+     {\xdef\restarttable{\noexpand\dorestarttable{\noexpand\thirdstagestarttable{#2}}}}
+     {\doifdefinedelse{\s!TaBlE#2}
+        {\gdef\restarttable{\getvalue{\s!TaBlE#2}}}
+        {\gdef\restarttable{\dorestartable{\getvalue{#2}}}}}%
    \egroup
-   \restartTABLE}
+   \restarttable}
 
 \egroup
 
@@ -1784,25 +1778,25 @@
 
 \newtoks \localtabledefinitions
 
-\def\thirdstagestartTABLE#1%
-  {\global\setTABLEactiontrue
-   \setTABLEaction\TABLEunknown
-   \setTABLEforce\TABLEunknown
-   \tableresetVLvalues
-   \appendtoks\localTABLEsetup\to\everytable
-   \tablestandardbegin[\ifsplittables u\else b\fi]%
+\def\thirdstagestarttable#1%
+  {\global\settrue\tableactionstatepermitted
+   \dosettableaction\tableunknownstate
+   \dosettableforce\tableunknownstate
+   \dotableresetVLvalues
+   \appendtoks\dolocaltablesetup\to\everytable
+   \dotablestandardbegin[\ifsplittables u\else b\fi]%
    \the\localtabledefinitions
    \forgetall % added
    \doifsomething{#1}
-     {\def\TABLEformat{#1}%
-      \getTABLEnofcolumns\TABLEformat
+     {\def\currenttableformat{#1}%
+      \dogettablenofcolumns\currenttableformat
       % more modern is to use catcode tables
-      \expandafter\BeginFormat\TABLEformat\EndFormat}}
+      \expandafter\dobegintableformat\currenttableformat\doendtableformat}}
 
-\def\finishTABLE
-  {\chuckTABLEautorow
+\def\dofinishtable
+  {\dochucktableautorow
    \unskip\crcr
-   \tablenormalend
+   \dotablenormalend
    \global\intablefalse
    \egroup}
 
@@ -1839,33 +1833,30 @@
    \flushnotes
    \setbox\tablecontentbox\vbox\bgroup
    \forgetall
-   \global\TABLEinbreakfalse
-   \firststagestartTABLE}
+   \firststagestarttable}
 
 \let\stoptables\relax % needed for \noalign
 
 \def\dostoptables
-  {\chuckTABLEautorow % AM: before the tail, else noalign problem
-   \ifconditional\tablerepeattail\else\insertTABLEtail\fi
-   \finishTABLE
+  {\dochucktableautorow % AM: before the tail, else noalign problem
+   \ifconditional\tablerepeattail\else\doinserttabletail\fi
+   \dofinishtable
    \egroup
    \dontcomplain
    \dosplittablebox\tablecontentbox
    \flushnotes
    \egroup}
 
-\newdimen\TABLEcaptionheight % obsolete
-
 \def\dosplittablebox#1%
   {\resettsplit
    \def\tsplitminimumfreelines{2}%
-   \def\tsplitminimumfreespace{\TABLEcaptionheight}%
+   \def\tsplitminimumfreespace{\zeropoint}%
    \setbox\tsplitcontent\box#1%
-   \ifconditional\tablerepeathead \ifconditional\someTABLEhead
+   \ifconditional\tablerepeathead \ifconditional\hassometablehead
      \setbox\tsplithead\vsplit\tsplitcontent to \lineheight
      \setbox\tsplithead\vbox{\unvbox\tsplithead}%
    \fi \fi
-   \ifconditional\tablerepeattail \ifconditional\someTABLEtail
+   \ifconditional\tablerepeattail \ifconditional\hassometabletail
      \setbox\tsplittail\vsplit\tsplitcontent to \lineheight
      \setbox\tsplittail\vbox{\unvbox\tsplittail}%
    \fi \fi
@@ -1903,8 +1894,8 @@
 %D the fact that the stopcondition is interface language
 %D dependant.
 
-\let\@@TABLEhead\empty  \def\TABLEhead{\@@TABLEhead}
-\let\@@TABLEtail\empty  \def\TABLEtail{\@@TABLEtail}
+\let\dotablehead\empty % needs checking
+\let\dotabletail\empty % needs checking
 
 \letbeundefined{\e!start\v!tablehead}
 \letbeundefined{\e!stop \v!tablehead}
@@ -1913,23 +1904,24 @@
 
 \expanded
   {\long\def\csname\e!start\v!tablehead\endcsname##1\csname\e!stop\v!tablehead\endcsname%
-     {\noexpand\setTABLEhead##1\noexpand\end}}
+     {\noexpand\settablehead##1\noexpand\end}}
 
 \expanded
   {\long\def\csname\e!start\v!tabletail\endcsname##1\csname\e!stop\v!tabletail\endcsname%
-     {\noexpand\setTABLEtail##1\noexpand\end}}
+     {\noexpand\settabletail##1\noexpand\end}}
 
 %D The second argument is a dummy one, by scanning for it, we
 %D get rid of interfering spaces.
 
-\def\setTABLEhead{\dodoubleempty\dosetTABLEhead}
-\def\setTABLEtail{\dodoubleempty\dosetTABLEtail}
+\newconditional\preventtablebreak
+\newconditional\hassometablehead
+\newconditional\hassometabletail
 
-\newconditional\preventTABLEbreak
-\newconditional\someTABLEhead
+\def\settablehead{\dodoubleempty\dosettablehead}
+\def\settabletail{\dodoubleempty\dosettabletail}
 
-\long\def\dosetTABLEhead[#1][#2]#3\end{\setvalue{@@TABLEhead#1}{\TABLEnoalign{\global\settrue\someTABLEhead}#3}}
-\long\def\dosetTABLEtail[#1][#2]#3\end{\setvalue{@@TABLEtail#1}{\TABLEnoalign{\global\settrue\someTABLEtail}#3}}
+\long\def\dosettablehead[#1][#2]#3\end{\setvalue{@@tablehead#1}{\tablenoalign{\global\settrue\hassometablehead}#3}}
+\long\def\dosettabletail[#1][#2]#3\end{\setvalue{@@tabletail#1}{\tablenoalign{\global\settrue\hassometabletail}#3}}
 
 %D Redudant \type{\HL}'s are removed automatically, so
 %D mid||lines can be used without problems.
@@ -1939,14 +1931,15 @@
 %D screen and log file as well as visualized in the table in
 %D teletype.
 
-\def\finishTABLErow
+\def\dofinishtablerow
   {\crcr
-   \TABLEnoalign
-     {\nobreak
-      \setTABLEaction\TABLEunknown
-      \globalletempty\checkTABLEautorow
-      \globalletempty\chuckTABLEautorow
-      \global\currentTABLEcolumn\zerocount}}
+   \starttablenoalign
+     \nobreak
+     \dosettableaction\tableunknownstate
+     \globalletempty\dochecktableautorow
+     \globalletempty\dochucktableautorow
+     \global\currenttablecolumn\zerocount
+   \stoptablenoalign}
 
 %D Next we enter the more complicated area of column and row
 %D switching. I won't go into much detail from now on, but just
@@ -1991,47 +1984,47 @@
 %D handles alignments, we cannot automate spacing for colored
 %D rows and columns.
 
-\setnewconstant\TABLErowzero\zerocount
+\setnewconstant\tablerowzero\zerocount
 
 \appendtoks
-  \let\SR\TableSR
-  \let\FR\TableFR
-  \let\MR\TableMR
-  \let\LR\TableLR
-  \let\AR\TableAR
+  \let\SR\dotableSR
+  \let\FR\dotableFR
+  \let\MR\dotableMR
+  \let\LR\dotableLR
+  \let\AR\dotableAR
 \to \localtabledefinitions
 
-\unexpanded\def\TableSR
-  {\ifnum\TABLEaction=\TABLEfirstrow
+\unexpanded\def\dotableSR
+  {\ifnum\tableactionstate=\tablefirstrowstate
      \writestatus\m!TABLE{change \string\SR\space into \string\MR/\string\LR}%
-   \else\ifnum\TABLEaction=\TABLEmidrow
+   \else\ifnum\tableactionstate=\tablemidrowstate
      \writestatus\m!TABLE{change \string\SR\space into \string\MR/\string\LR}%
-   \else\ifnum\TABLEaction=\TABLEmidrow
+   \else\ifnum\tableactionstate=\tablemidrowstate
      \writestatus\m!TABLE{change \string\SR\space into \string\MR/\string\LR}%
    \fi\fi\fi
-   \endTABLErow\TABLEseparaterow\TABLErowfactor\TABLErowfactor}
+   \doendtablerow\tableseparaterowstate\tablerowfactor\tablerowfactor}
 
-\unexpanded\def\TableFR
-  {\ifnum\TABLEaction=\TABLEmidrow
+\unexpanded\def\dotableFR
+  {\ifnum\tableactionstate=\tablemidrowstate
      \writestatus\m!TABLE{change \string\FR\space into \string\MR/\string\LR}%
-   \else\ifnum\TABLEaction=\TABLElastrow
+   \else\ifnum\tableactionstate=\tablelastrowstate
      \writestatus\m!TABLE{change \string\FR\space into \string\MR/\string\LR}%
    \fi\fi
-   \endTABLErow\TABLEfirstrow\TABLErowfactor\TABLErowzero}
+   \doendtablerow\tablefirstrowstate\tablerowfactor\tablerowzero}
 
-\unexpanded\def\TableMR
-  {\ifnum\TABLEaction=\TABLErule
+\unexpanded\def\dotableMR
+  {\ifnum\tableactionstate=\tablerulestate
      \writestatus\m!TABLE{change \string\MR\space into \string\FR/\string\SR}%
-   \else\ifnum\TABLEaction=\TABLElastrow
+   \else\ifnum\tableactionstate=\tablelastrowstate
      \writestatus\m!TABLE{change \string\MR\space into \string\FR}%
    \fi\fi
-   \endTABLErow\TABLEmidrow00}
+   \doendtablerow\tablemidrowstate00}
 
-\unexpanded\def\TableLR
-  {\ifnum\TABLEaction=\TABLErule
+\unexpanded\def\dotableLR
+  {\ifnum\tableactionstate=\tablerulestate
      \writestatus\m!TABLE{change \string\LR\space into \string\FR/\string\SR}%
    \fi
-   \endTABLErow\TABLElastrow\TABLErowzero\TABLErowfactor}
+   \doendtablerow\tablelastrowstate\tablerowzero\tablerowfactor}
 
 %D \macros
 %D   {ifcheckTABLEcolums}
@@ -2044,80 +2037,69 @@
 %D determine the available space are shown (in color). By default
 %D checking is off.
 
-\let\beforeTABLEline\empty
-\let\afterTABLEline \empty
-
-\def\doendTABLErow#1#2#3%
-  {\handleTABLEbreak#2#3%
-   \beforeTABLEline
+\def\doendtablerow#1#2#3%
+  {\dosettableaction#1%
    \ifcase#1\relax
      % unknown
    \or
-     \endofTABLEline[blue][\SR->\SR]\TABLErowfactor\TABLErowfactor
+     \doendoftableline [blue][\SR->\SR]\tablerowfactor\tablerowfactor
    \or
-     \endofTABLEline[red][\FR->\FR]\TABLErowfactor\TABLErowzero
-   \or
-     \ifnum\TABLEforce=\TABLEforcelastrow
-       \endofTABLEline[red][\MR->\LR]\TABLErowzero\TABLErowfactor
-     \else\ifnum\TABLEforce=\TABLEforcefirstrow
-       \endofTABLEline[red][\MR->\FR]\TABLErowfactor\TABLErowzero
-     \else
-       \endofTABLEline[green][\MR->\MR]\TABLErowzero\TABLErowzero
-     \fi\fi
-   \or
-     \endofTABLEline[red][\LR->\LR]\TABLErowzero\TABLErowfactor
+     \doendoftableline  [red][\FR->\FR]\tablerowfactor\tablerowzero
+   \or\ifnum\tableforcestate=\tableforcelastrowstate
+     \doendoftableline  [red][\MR->\LR]\tablerowzero\tablerowfactor
+   \else\ifnum\tableforcestate=\tableforcefirstrowstate
+     \doendoftableline  [red][\MR->\FR]\tablerowfactor\tablerowzero
+   \else
+     \doendoftableline[green][\MR->\MR]\tablerowzero\tablerowzero
+   \fi\fi\or
+     \doendoftableline  [red][\LR->\LR]\tablerowzero\tablerowfactor
    \fi
-   \TABLEnoalign
-     {\setTABLEforce\TABLEunknown
-      \global\currentTABLEcolumn\zerocount}%
-   \afterTABLEline}
-
-\def\endTABLErow#1#2#3%
-  {\setTABLEaction#1%
-   \doendTABLErow{#1}{#2}{#3}}
+   \starttablenoalign
+     \dosettableforce\tableunknownstate
+     \global\currenttablecolumn\zerocount
+     \ifconditional\preventtablebreak
+       \nobreak
+     \else
+       \goodbreak
+     \fi
+   \stoptablenoalign}
 
 %D Handling \type{\AR} is postponed till the next row. The
 %D check takes care of the first and mid rows, the chuck macro
 %D |<|how about that name|>| handles the last row.
 
-\unexpanded\def\TableAR
-  {\globallet\checkTABLEautorow\docheckTABLEautorow
-   \globallet\chuckTABLEautorow\dochuckTABLEautorow}
+\unexpanded\def\dotableAR
+  {\globallet\dochecktableautorow\dodochecktableautorow
+   \globallet\dochucktableautorow\dodochucktableautorow}
 
-\let\checkTABLEautorow\empty
-\let\chuckTABLEautorow\empty
+\let\dochecktableautorow\empty
+\let\dochucktableautorow\empty
 
-\def\docheckTABLEautorow
-  {\globallet\checkTABLEautorow\empty
-   \ifnum\TABLEaction=\TABLErule          \FR
-   \else\ifnum\TABLEaction=\TABLEunknown  \FR
-   \else                                  \MR
-   \fi\fi}
+\def\dodochecktableautorow
+  {\globallet\dochecktableautorow\empty
+   \ifnum\tableactionstate=\tablerulestate   \FR\else
+   \ifnum\tableactionstate=\tableunknownstate\FR\else
+                                             \MR\fi\fi}
 
-\def\dochuckTABLEautorow
-  {\globalletempty\checkTABLEautorow
-   \globalletempty\chuckTABLEautorow
-   \ifnum\TABLEaction=\TABLErule          \SR
-   \else\ifnum\TABLEaction=\TABLEunknown  \SR
-   \else                                  \LR
-   \fi\fi}
-
+\def\dodochucktableautorow
+  {\globalletempty\dochecktableautorow
+   \globalletempty\dochucktableautorow
+   \ifnum\tableactionstate=\tablerulestate   \SR\else
+   \ifnum\tableactionstate=\tableunknownstate\SR\else
+                                             \LR\fi\fi}
+
 %D When a table is split, we also add a tail and when present
 %D we repeat the table head.
-
-\def\handleTABLEbreak#1#2%
-  {\globalletempty\beforeTABLEline
-   \gdef\afterTABLEline{\TABLEnoalign{\ifconditional\preventTABLEbreak\nobreak\else\goodbreak\fi}}}
 
 %D When tables are split, the spacing before and after a
 %D horizontal rule is corrected according to what we expect.
 
-\def\endofTABLEline[#1][#2->#3]#4#5%
+\def\doendoftableline[#1][#2->#3]#4#5%
   {\ifx#2#3\else
      \writestatus\m!TABLE{\string#2\space changed into \string#3}%
    \fi
-   \expandafter\normalTABLElineformat#4#5\crcr % \crcr nodig ?
-   \TABLEnoalign{\nobreak\global\setTABLEactiontrue}}
+   \expandafter\donormaltablelineformat#4#5\crcr % \crcr nodig ?
+   \tablenoalign{\nobreak\global\settrue\tableactionstatepermitted}}
 
 %D In order to prevent (as good as possible) alignment overflow
 %D and therefore \TEX\ error messages, we check the maximum
@@ -2126,7 +2108,7 @@
 %D the number of \type{|}'s and \type{\VL}'s or alike is always
 %D one more than the number of columns.
 
-\newcount\currentTABLEcolumn
+\newcount\currenttablecolumn
 
 %D While defining this macro we change the \CATCODE\ of
 %D \type{|}. When counting the bars, we use a non active
@@ -2143,7 +2125,7 @@
 
 \bgroup \catcode`\|=\othercatcode
 
-\gdef\getTABLEnofcolumns#1% todo: also divert this to lua as with tabulate
+\gdef\dogettablenofcolumns#1% todo: also divert this to lua as with tabulate
   {\bgroup
    \cleanupfeatures % needed !
    \@@useotherbar
@@ -2166,18 +2148,18 @@
 \let     \tablecurrenthrulecolor    \empty
 
 \appendtoks
-  \let\VL\TableVL
-  \let\VC\TableVC
-  \let\HL\TableHL
-  \let\HC\TableHC
-  \let\VS\TableVS
-  \let\VD\TableVD
-  \let\VT\TableVT
-  \let\VN\TableVN
+  \let\VL\dotableVL
+  \let\VC\dotableVC
+  \let\HL\dotableHL
+  \let\HC\dotableHC
+  \let\VS\dotableVS
+  \let\VD\dotableVD
+  \let\VT\dotableVT
+  \let\VN\dotableVN
 \to \localtabledefinitions
 
-\def\tableresetVLvalues
-  {\global\currentTABLEcolumn\zerocount}
+\def\dotableresetVLvalues
+  {\global\currenttablecolumn\zerocount}
 
 \def\dotablevrulecommand#1% global assignments
   {\doifnumberelse{#1}
@@ -2185,20 +2167,20 @@
       \global\multiply\tablevrulethicknessfactor\@@tiVLwidth\relax}
      {\xdef\tablecurrentvrulecolor{#1}}}
 
-\unexpanded\def\TableVL
-  {\checkTABLEautorow
-   \global\advance\currentTABLEcolumn\plusone
-   \dosingleempty\doTableVL}
+\unexpanded\def\dotableVL
+  {\dochecktableautorow
+   \global\advance\currenttablecolumn\plusone
+   \dosingleempty\dodotableVL}
 
-\def\doTableVL[#1]%
+\def\dodotableVL[#1]%
   {\global\tablecurrentvrulecolor\empty
    \global\tablevrulethicknessfactor\@@tiVLwidth\relax
    \iffirstargument
      \rawprocesscommalist[#1]\dotablevrulecommand
    \fi
-   \normalexpanded{\noexpand\normalTABLEcomplexbar\the\tablevrulethicknessfactor} }% \relax breaks \use
+   \normalexpanded{\noexpand\donormaltablecomplexbar\the\tablevrulethicknessfactor} }% \relax breaks \use
 
-\let\TableVC\TableVL % for mojca
+\let\doableVC\dotableVL % for mojca
 
 % \starttable[|||]
 % \HL
@@ -2208,10 +2190,10 @@
 % \HL
 % \stoptable
 
-\unexpanded\def\TableVS  {\VN1}
-\unexpanded\def\TableVD  {\VN2}
-\unexpanded\def\TableVT  {\VN3}
-\unexpanded\def\TableVN#1{\gdef\@VLn{#1}\VL}
+\unexpanded\def\dotableVS  {\VN1}
+\unexpanded\def\dotableVD  {\VN2}
+\unexpanded\def\dotableVT  {\VN3}
+\unexpanded\def\dotableVN#1{\gdef\@VLn{#1}\VL}
 
 \def\dotablehrulecommand#1% global assignments
   {\doifnumberelse{#1}
@@ -2219,20 +2201,20 @@
       \global\multiply\tablehrulethicknessfactor\@@tiHLheight\relax}
      {\xdef\tablecurrenthrulecolor{#1}}}
 
-\unexpanded\def\TableHL
-  {\chuckTABLEautorow
-   \finishTABLErow
-   \startTABLEnoalign
-   \dosingleempty\doTableHL}
+\unexpanded\def\dotableHL
+  {\dochucktableautorow
+   \dofinishtablerow
+   \starttablenoalign
+   \dosingleempty\dodotableHL}
 
-\def\doTableHL[#1]%
+\def\dodotableHL[#1]%
   {\nobreak
-   \ifnum\TABLEaction=\TABLErule
+   \ifnum\tableactionstate=\tablerulestate
      \writestatus\m!TABLE{skipping \string\HL}% \statusmessage
    \else
-     \ifnum\TABLEaction=\TABLEmidrow
+     \ifnum\tableactionstate=\tablemidrowstate
        \writestatus\m!TABLE{change \string\MR\space into \string\LR/\string\SR}%
-     \else\ifnum\TABLEaction=\TABLEfirstrow
+     \else\ifnum\tableactionstate=\tablefirstrowstate
        \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
      \fi\fi
      \bgroup
@@ -2244,15 +2226,15 @@
            \switchtocolor[\tablecurrenthrulecolor]%
          \fi
        \fi
-       \normalexpanded{\noexpand\normalTABLEfullrule\the\tablehrulethicknessfactor} %
+       \normalexpanded{\noexpand\donormaltablefullrule\the\tablehrulethicknessfactor} %
      \egroup
-     \accountTABLElinewidth
+     \doaccounttablelinewidth
    \fi
-   \setTABLEaction\TABLErule
+   \dosettableaction\tablerulestate
    \nobreak
-   \stopTABLEnoalign}
+   \stoptablenoalign}
 
-\let\TableHC\TableHL % for mojca
+\let\dotableHC\dotableHL % for mojca
 
 %D \startitemize[3*ruim]
 %D \sym{\type{\NL}} a vertical skip
@@ -2274,39 +2256,40 @@
 % n+1 uitleggen
 
 \appendtoks
-  \let\TB\TableTB
-  \let\NL\TableNL % old
-  \let\NR\TableNR
-  \let\NC\TableNC
-  \let\FC\TableNC
-  \let\MC\TableNC
-  \let\LC\TableNC
+  \let\TB\dotableTB
+  \let\NL\dotableNL % old
+  \let\NR\dotableNR
+  \let\NC\dotableNC
+  \let\FC\dotableNC
+  \let\MC\dotableNC
+  \let\LC\dotableNC
 \to \localtabledefinitions
 
-\unexpanded\def\TableTB
-  {\chuckTABLEautorow
-   \finishTABLErow
-   \startTABLEnoalign
-   \dosingleempty\doTableTB}
+\unexpanded\def\dotableTB
+  {\dochucktableautorow
+   \dofinishtablerow
+   \starttablenoalign
+   \dosingleempty\dotableTB}
 
-\def\doTableTB[#1]%
+\def\dotableTB[#1]%
   {\blank[\iffirstargument#1\else\@@tiNL\fi]%
    \nobreak
-   \stopTABLEnoalign}
+   \stoptablenoalign}
 
-\let\TableNL\TableTB
+\let\dotableNL\dotableTB
 
-\unexpanded\def\TableNR
-  {\global\currentTABLEcolumn\zerocount
-   \normalTABLElineending
-   \TABLEnoalign
-     {\nobreak
-      \setTABLEaction\TABLEunknown}}
+\unexpanded\def\dotableNR
+  {\global\currenttablecolumn\zerocount
+   \donormaltablelineending
+   \starttablenoalign
+     \nobreak
+     \dosettableaction\tableunknownstate
+   \stoptablenoalign}
 
-\unexpanded\def\TableNC
-  {\checkTABLEautorow
-   \global\advance\currentTABLEcolumn \plusone
-   \normalTABLEquote}
+\unexpanded\def\dotableNC
+  {\dochecktableautorow
+   \global\advance\currenttablecolumn \plusone
+   \donormaltablequote}
 
 %D \startitemize[3*broad]
 %D \sym{\type{\DL}}
@@ -2315,21 +2298,21 @@
 %D \sym{\type{\DR}}
 %D \stopitemize
 
-\newif\ifTABLEdivision
+\newconditional\istabledivision
 
 \appendtoks
-  \global\TABLEdivisionfalse % in start
-  \let\DL\TableDL
-  \let\DC\TableDC
-  \let\DV\TableDV
-  \let\DR\TableDR
+    \global\setfalse\istabledivision
+    \let\DL\dotableDL
+    \let\DC\dotableDC
+    \let\DV\dotableDV
+    \let\DR\dotableDR
 \to \localtabledefinitions
 
-\def\checkTABLEdivision
-  {\ifTABLEdivision \else
-     \chuckTABLEautorow
-     \global\currentTABLEcolumn\zerocount
-     \global\TABLEdivisiontrue
+\def\dochecktabledivision
+  {\ifcondition\istabledivision\else
+     \dochucktableautorow
+     \global\currenttablecolumn\zerocount
+     \global\settrue\istabledivision
    \fi}
 
 \def\dotabledrulecommand#1% global assignments
@@ -2342,20 +2325,20 @@
       \fi}
      {\xdef\tablecurrenthrulecolor{#1}}}
 
-\unexpanded\def\TableDL
-  {\checkTABLEdivision
-   \dosingleempty\doTableDL}
+\unexpanded\def\dotableDL
+  {\dochecktabledivision
+   \dosingleempty\dotableDL}
 
-\def\doTableDL[#1]%
-  {\ifnum\TABLEaction=\TABLErule
+\def\dotableDL[#1]%
+  {\ifnum\tableactionstate=\tablerulestate
      \writestatus\m!TABLE{skipping \string\DL}%
    \else
-     \ifnum\TABLEaction=\TABLEmidrow
+     \ifnum\tableactionstate=\tablemidrowstate
        \writestatus\m!TABLE{change \string\MR\space into \string\LR/\string\SR}%
-     \else\ifnum\TABLEaction=\TABLEfirstrow
+     \else\ifnum\tableactionstate=\tablefirstrowstate
        \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
      \fi\fi
-     \setTABLEaction\TABLEunknown
+     \dosettableaction\tableunknownstate
      \global\tablehrulethicknessfactor\@@tiHLheight\relax
      \global\tabledrulespan\zerocount
      \iffirstargument
@@ -2366,76 +2349,74 @@
        \fi
      \fi
      \ifcase\tabledrulespan
-       \global\advance\currentTABLEcolumn \plusone
-       \let\next\normalTABLEsinglerule
+       \global\advance\currenttablecolumn \plusone
+       \let\next\donormaltablesinglerule
      \or
-       \global\advance\currentTABLEcolumn \plustwo
-       \let\next\normalTABLEsinglerule
+       \global\advance\currenttablecolumn \plustwo
+       \let\next\donormaltablesinglerule
      \else
-       \global\advance\currentTABLEcolumn \plusone
-       \edef\next{\noexpand\normalTABLEmultirule{\tabledrulespan} }%
+       \global\advance\currenttablecolumn \plusone
+       \edef\next{\noexpand\donormaltablemultirule{\tabledrulespan} }%
      \fi
      \next
    \fi}
 
-\unexpanded\def\TableDV
-  {\TableDCV\normalTABLEsimplebar}
+\unexpanded\def\dotableDV
+  {\dotableDCV\donormaltablesimplebar}
 
-\unexpanded\def\TableDC
-  {\TableDCV\normalTABLEquote}
+\unexpanded\def\dotableDC
+  {\dotableDCV\donormaltablequote}
 
-\unexpanded\def\TableDCV#1%
-  {\checkTABLEdivision
-   \checkTABLEautorow
-   \global\advance\currentTABLEcolumn \plusone
+\unexpanded\def\dotableDCV#1%
+  {\dochecktabledivision
+   \dochecktableautorow
+   \global\advance\currenttablecolumn \plusone
    #1}
 
-\unexpanded\def\TableDR
-  {\global\currentTABLEcolumn\zerocount    % nog check
-   \normalTABLElineending
-   \TABLEnoalign
-     {\nobreak
-      \global\TABLEdivisionfalse
-      \accountTABLElinewidth % temporary solution
-      \setTABLEaction\TABLErule}}
+\unexpanded\def\dotableDR
+  {\global\currenttablecolumn\zerocount    % nog check
+   \donormaltablelineending
+   \starttablenoalign
+     \nobreak
+     \global\setfalse\istabledivision
+     \doaccounttablelinewidth % temporary solution
+     \dosettableaction\tablerulestate
+   \stoptablenoalign}
 
-\def\accountTABLElinewidth
+\def\doaccounttablelinewidth
   {\scratchdimen\tablelinethicknessunit}
 
-\def\doTableSPAN#1{\use{#1}}
-\def\doTableTWO   {\use2}
-\def\doTableTHREE {\use3}
-\def\doTableFOUR  {\use4}
-\def\doTableFIVE  {\use5}
-\def\doTableSIX   {\use6}
-\def\doTableREF   {\ReFormat}
+\def\dotableTWO   {\use2}
+\def\dotableTHREE {\use3}
+\def\dotableFOUR  {\use4}
+\def\dotableFIVE  {\use5}
+\def\dotableSIX   {\use6}
 
 \appendtoks
-  \let\SPAN \doTableSPAN
-  \let\TWO  \doTableTWO
-  \let\THREE\doTableTHREE
-  \let\FOUR \doTableFOUR
-  \let\FIVE \doTableFIVE
-  \let\SIX  \doTableSIX
-  \let\REF  \doTableREF
+  \let\TWO  \dotableTWO
+  \let\THREE\dotableTHREE
+  \let\FOUR \dotableFOUR
+  \let\FIVE \dotableFIVE
+  \let\SIX  \dotableSIX
+  \let\SPAN \use
+  \let\REF  \dotablereformat
 \to \localtabledefinitions
 
-\setvalue{\??ti:\c!distance:\v!none  }{\OpenUp00\def\LOW{\Lower6 }}
-\setvalue{\??ti:\c!distance:\v!small }{\OpenUp00\def\LOW{\Lower6 }} % == baseline
-\setvalue{\??ti:\c!distance:\v!medium}{\OpenUp11\def\LOW{\Lower7 }}
-\setvalue{\??ti:\c!distance:\v!big   }{\OpenUp22\def\LOW{\Lower8 }}
+\setvalue{\??ti:\c!distance:\v!none  }{\dotableOpenUp00\def\LOW{\Lower6 }}
+\setvalue{\??ti:\c!distance:\v!small }{\dotableOpenUp00\def\LOW{\Lower6 }} % == baseline
+\setvalue{\??ti:\c!distance:\v!medium}{\dotableOpenUp11\def\LOW{\Lower7 }}
+\setvalue{\??ti:\c!distance:\v!big   }{\dotableOpenUp22\def\LOW{\Lower8 }}
 
 \appendtoks
-  \getvalue{\??ti:\c!distance:\@@tidistance}%
+    \getvalue{\??ti:\c!distance:\@@tidistance}%
 \to \localtabledefinitions
 
 \appendtoks
   \doifelse\@@tidistance\v!none
-    {\TABLErowfactor\zerocount}
-    {\TABLErowfactor\plustwo  }%
+    {\tablerowfactor\zerocount}
+    {\tablerowfactor\plustwo  }%
 \to \localtabledefinitions
 
-
 \def\dohandlebar % here ?
   {\ifmmode
      \@EA\domathmodebar
@@ -2444,7 +2425,7 @@
    \else
      \@EAEAEA\dotextmodebar
    \fi\fi}
-
+
 \unexpanded\def\setuptables
   {\dosingleargument\dosetuptables}
 
@@ -2452,17 +2433,15 @@
   {\getparameters[\??ti][#1]%
    \processaction % we have a command for this
      [\@@tialign]
-     [  \v!right=>\def\TABLEparalignment{\raggedright},
-         \v!left=>\def\TABLEparalignment{\raggedleft},
-       \v!middle=>\def\TABLEparalignment{\raggedcenter},
-      \s!default=>\def\TABLEparalignment{\notragged},
-      \s!unknown=>\def\TABLEparalignment{\notragged}]%
+     [  \v!right=>\def\dotableparalignment{\raggedright},
+         \v!left=>\def\dotableparalignment{\raggedleft},
+       \v!middle=>\def\dotableparalignment{\raggedcenter},
+      \s!default=>\def\dotableparalignment{\notragged},
+      \s!unknown=>\def\dotableparalignment{\notragged}]%
    \assignalfadimension\@@tiVL\@@tiVLwidth 246%
    \assignalfadimension\@@tiHL\@@tiHLheight246}
 
-\let\tablelinethicknessfactor\plusfour
-
-\def\localTABLEsetup
+\def\dolocaltablesetup
   {\@@ticommands\relax
    \expanded{\switchtobodyfont[\@@tibodyfont]}% expanded ?
    \tablelinethicknessunit\dimexpr\@@tirulethickness/\tablelinethicknessfactor\relax
@@ -2528,7 +2507,7 @@
 %D   {$\vcenter{\getbuffer[b]}$}
 %D     {\hbox{tabulate}}
 %D \stopcombination
-
+
 \setuptables
   [HL=\v!medium,
    VL=\v!medium,
@@ -2547,6 +2526,4 @@
    \c!backgroundcolor=,
    \c!split=\v!auto]
 
-\def\ifintabel{\ifintable} % upward compatible
-
 \protect \endinput

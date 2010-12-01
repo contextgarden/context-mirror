@@ -18,6 +18,7 @@ local patterns = lpeg.patterns
 
 local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
 local Ct, C, Cs, Cc, Cf, Cg = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cf, lpeg.Cg
+local lpegtype = lpeg.type
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch
@@ -34,7 +35,6 @@ patterns.alwaysmatched = alwaysmatched
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
 local newline          = crlf + cr + lf
-local utf8next         = R("\128\191")
 local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
@@ -54,6 +54,8 @@ local utfbom           = utfbom_32_be + utfbom_32_le
 local utftype          = utfbom_32_be / "utf-32-be" + utfbom_32_le  / "utf-32-le"
                        + utfbom_16_be / "utf-16-be" + utfbom_16_le  / "utf-16-le"
                        + utfbom_8     / "utf-8"     + alwaysmatched / "unknown"
+
+local utf8next         = R("\128\191")
 
 patterns.utf8one       = R("\000\127")
 patterns.utf8two       = R("\194\223") * utf8next
@@ -285,19 +287,25 @@ end
 -- Just for fun I looked at the used bytecode and
 -- p = (p and p + pp) or pp gets one more (testset).
 
-function lpeg.replacer(t)
-    if #t > 0 then
-        local p
-        for i=1,#t do
-            local ti= t[i]
-            local pp = P(ti[1]) / ti[2]
-            if p then
-                p = p + pp
-            else
-                p = pp
+function lpeg.replacer(one,two)
+    if type(one) == "table" then
+        local no = #one
+        if no > 0 then
+            local p
+            for i=1,no do
+                local o = one[i]
+                local pp = P(o[1]) / o[2]
+                if p then
+                    p = p + pp
+                else
+                    p = pp
+                end
             end
+            return Cs((p + 1)^0)
         end
-        return Cs((p + 1)^0)
+    else
+        two = two or ""
+        return Cs((P(one)/two + 1)^0)
     end
 end
 
@@ -520,4 +528,8 @@ function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then")
         p = p + P(list[l])
     end
     return p
+end
+
+function lpeg.is_lpeg(p)
+    return p and lpegtype(p) == "pattern"
 end

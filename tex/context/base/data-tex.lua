@@ -6,24 +6,14 @@ if not modules then modules = { } end modules ['data-tex'] = {
     license   = "see context related readme files"
 }
 
--- special functions that deal with io
-
-local format, lower = string.format, string.lower
-local unpack = unpack or table.unpack
-
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local report_resolvers = logs.new("resolvers")
 
 local resolvers = resolvers
 
-local finders, openers, loaders, savers = resolvers.finders, resolvers.openers, resolvers.loaders, resolvers.savers
-
-local checkgarbage = utilities.garbagecollector and utilities.garbagecollector.check
-
--- the main text reader --
-
-local sequencers = utilities.sequencers
+local sequencers    = utilities.sequencers
+local methodhandler = resolvers.methodhandler
 
 local fileprocessor = nil
 local lineprocessor = nil
@@ -35,24 +25,26 @@ local textfileactions = sequencers.reset {
 }
 
 local textlineactions = sequencers.reset {
-    arguments    = "str,filename,linenumber",
+    arguments    = "str,filename,linenumber,noflines",
     returnvalues = "str",
     results      = "str",
 }
 
-openers.textfileactions = textfileactions
-openers.textlineactions = textlineactions
+local helpers     = resolvers.openers.helpers
+local appendgroup = sequencers.appendgroup
 
-sequencers.appendgroup(textfileactions,"system")
-sequencers.appendgroup(textfileactions,"user")
+helpers.textfileactions = textfileactions
+helpers.textlineactions = textlineactions
 
-sequencers.appendgroup(textlineactions,"system")
-sequencers.appendgroup(textlineactions,"user")
+appendgroup(textfileactions,"before") -- user
+appendgroup(textfileactions,"system") -- private
+appendgroup(textfileactions,"after" ) -- user
 
-function openers.textopener(tag,filename,file_handle)
-    if textfileactions.dirty then
-        fileprocessor = sequencers.compile(textfileactions)
-    end
+appendgroup(textlineactions,"before") -- user
+appendgroup(textlineactions,"system") -- private
+appendgroup(textlineactions,"after" ) -- user
+
+function helpers.textopener(tag,filename,file_handle)
     local lines
     if not file_handle then
         lines = io.loaddata(filename)
@@ -67,7 +59,7 @@ function openers.textopener(tag,filename,file_handle)
     if type(lines) == "string" then
         local kind = unicode.filetype(lines)
         if trace_locating then
-            report_resolvers("%s opener, file '%s' opened using method '%s'",tag,filename,kind)
+            report_resolvers("%s opener, '%s' opened using method '%s'",tag,filename,kind)
         end
         if kind == "utf-16-be" then
             lines = unicode.utf16_to_utf8_be(lines)
@@ -78,327 +70,89 @@ function openers.textopener(tag,filename,file_handle)
         elseif kind == "utf-32-le" then
             lines = unicode.utf32_to_utf8_le(lines)
         else -- utf8 or unknown
+            if textfileactions.dirty then -- maybe use autocompile
+                fileprocessor = sequencers.compile(textfileactions)
+            end
             lines = fileprocessor(lines,filename) or lines
             lines = string.splitlines(lines)
         end
     elseif trace_locating then
-        report_resolvers("%s opener, file '%s' opened",tag,filename)
+        report_resolvers("%s opener, '%s' opened",tag,filename)
     end
-    local t = {
-        lines = lines,
-        current = 0,
-        handle = nil,
-        noflines = #lines,
-        close = function()
+    return {
+        filename    = filename,
+        noflines    = #lines,
+        currentline = 0,
+        close       = function()
             if trace_locating then
-                report_resolvers("%s closer, file '%s' closed",tag,filename)
+                report_resolvers("%s closer, '%s' closed",tag,filename)
             end
             logs.show_close(filename)
             t = nil
         end,
-        reader = function(self)
+        reader      = function(self)
             self = self or t
-            local current, noflines = self.current, self.noflines
-            if current >= noflines then
+            local currentline, noflines = self.currentline, self.noflines
+            if currentline >= noflines then
                 return nil
             else
-                current = current + 1
-                self.current = current
-                local line = lines[current]
-                if not line then
+                currentline = currentline + 1
+                self.currentline = currentline
+                local content = lines[currentline]
+                if not content then
                     return nil
-                elseif line == "" then
+                elseif content == "" then
                     return ""
                 else
                     if textlineactions.dirty then
-                        lineprocessor = sequencers.compile(textlineactions)
+                        lineprocessor = sequencers.compile(textlineactions) -- maybe use autocompile
                     end
-                    return lineprocessor(line,filename,current) or line
+                    return lineprocessor(content,filename,currentline,noflines) or content
                 end
             end
         end
     }
-    return t
 end
 
-local data, n, template = { }, 0, "virtual://virtualfile:%s"
-
--- todo: report statistics
-
-function savers.virtual(content)
-    n = n + 1
-    local filename = format(template,n)
-    if trace_locating then
-        report_resolvers("%s finder: virtual file '%s' saved",tag,filename)
-    end
-    data[filename] = content
-    return filename
-end
-
-function finders.virtual(filename,filetype,specification)
-    local path = specification and specification.path
-    local name = path ~= "" and path or filename
-    local d = data[name]
-    if d then
-        if trace_locating then
-            report_resolvers("virtual finder: file '%s' found",filename)
-        end
-        return filename
-    else
-        if trace_locating then
-            report_resolvers("virtual finder: unknown file '%s'",filename)
-        end
-        return unpack(finders.notfound)
-    end
-end
-
-function openers.virtual(filename,filetype,specification) -- duplicate ... todo: specification
-    local path = specification and specification.path
-    local name = path ~= "" and path or filename
-    local d = data[name]
-    if d then
-        if trace_locating then
-            report_resolvers("virtual opener, file '%s' opened",filename)
-        end
-        data[filename] = nil
-        return openers.textopener("virtual",filename,d)
-    else
-        if trace_locating then
-            report_resolvers("virtual opener, file '%s' not found",filename)
-        end
-        return unpack(openers.notfound)
-    end
-end
-
-function loaders.virtual(filename,filetype,specification)
-    local path = specification and specification.path
-    local name = path ~= "" and path or filename
-    local d = data[name]
-    if d then
-        if trace_locating then
-            report_resolvers("virtual loader, file '%s' loaded",filename)
-        end
-        data[filename] = nil
-        return true, d, #d
-    end
-    if trace_locating then
-        report_resolvers("virtual loader, file '%s' not loaded",filename)
-    end
-    return unpack(loaders.notfound)
-end
-
--- could be a finder (beware: the generic finders take a tag!)
-
-function finders.generic(tag,filename,filetype)
-    local foundname = resolvers.findfile(filename,filetype)
-    if foundname and foundname ~= "" then
-        if trace_locating then
-            report_resolvers("%s finder: file '%s' found",tag,filename)
-        end
-        return foundname
-    else
-        if trace_locating then
-            report_resolvers("%s finder: unknown file '%s'",tag,filename)
-        end
-        return unpack(finders.notfound)
-    end
-end
-
-function openers.generic(tag,filename)
-    if filename and filename ~= "" then
-        local f = io.open(filename,"r")
-        if f then
-            logs.show_open(filename) -- todo
-            if trace_locating then
-                report_resolvers("%s opener, file '%s' opened",tag,filename)
-            end
-            return openers.textopener(tag,filename,f)
-        end
-    end
-    if trace_locating then
-        report_resolvers("%s opener, file '%s' not found",tag,filename)
-    end
-    return unpack(openers.notfound)
-end
-
-function loaders.generic(tag,filename)
-    if filename and filename ~= "" then
-        local f = io.open(filename,"rb")
-        if f then
-            logs.show_load(filename)
-            if trace_locating then
-                report_resolvers("%s loader, file '%s' loaded",tag,filename)
-            end
-            local s = f:read("*a")
-            if checkgarbage then
-                checkgarbage(#s)
-            end
-            f:close()
-            if s then
-                return true, s, #s
-            end
-        end
-    end
-    if trace_locating then
-        report_resolvers("%s loader, file '%s' not found",tag,filename)
-    end
-    return unpack(loaders.notfound)
-end
-
-function finders.tex(filename,filetype)
-    return finders.generic('tex',filename,filetype)
-end
-
-function openers.tex(filename)
-    return openers.generic('tex',filename)
-end
-
-function loaders.tex(filename)
-    return loaders.generic('tex',filename)
-end
-
-function resolvers.findtexfile(filename, filetype)
-    return resolvers.methodhandler('finders',filename, filetype)
+function resolvers.findtexfile(filename,filetype)
+    return methodhandler('finders',filename,filetype)
 end
 
 function resolvers.opentexfile(filename)
-    return resolvers.methodhandler('openers',filename)
+    return methodhandler('openers',filename)
 end
 
 function resolvers.openfile(filename)
-    local fullname = resolvers.findtexfile(filename)
-    if fullname and (fullname ~= "") then
-        return resolvers.opentexfile(fullname)
-    else
-        return nil
-    end
+    local fullname = methodhandler('finders',filename)
+    return fullname and fullname ~= "" and methodhandler('openers',fullname) or nil
 end
 
-function resolvers.loadtexfile(filename, filetype)
-    -- todo: apply filters
+function resolvers.loadtexfile(filename,filetype)
+    -- todo: optionally apply filters
     local ok, data, size = resolvers.loadbinfile(filename, filetype)
     return data or ""
 end
 
 resolvers.texdatablob = resolvers.loadtexfile
 
--- -- keep this one as reference as it's the first version
---
--- resolvers.filters = resolvers.filters or { }
---
--- local input_translator, utf_translator, user_translator = nil, nil, nil
---
--- function resolvers.filters.install(name,func)
---         if name == "input" then input_translator = func
---     elseif name == "utf"   then utf_translator   = func
---     elseif name == "user"  then user_translator  = func end
--- end
---
--- function openers.textopener(tag,filename,file_handle)
---     local u = unicode.utftype(file_handle)
---     local t = { }
---     if u > 0  then
---         if trace_locating then
---             report_resolvers("%s opener, file '%s' opened using method '%s'",tag,filename,unicode.utfname[u])
---         end
---         local l
---         local data = file_handle:read("*a")
---         if u > 2 then
---             l = unicode.utf32_to_utf8(data,u==4)
---         elseif u > 1 then
---             l = unicode.utf16_to_utf8(data,u==2)
---         else
---             l = string.splitlines(data)
---         end
---         file_handle:close()
---         t = {
---             utftype = u, -- may go away
---             lines = l,
---             current = 0, -- line number, not really needed
---             handle = nil,
---             noflines = #l,
---             close = function()
---                 if trace_locating then
---                     report_resolvers("%s closer, file '%s' closed",tag,filename)
---                 end
---                 logs.show_close(filename)
---                 t = nil
---             end,
---             reader = function(self)
---                 self = self or t
---                 local current, lines = self.current, self.lines
---                 if current >= #lines then
---                     return nil
---                 else
---                     current = current + 1
---                     self.current = current
---                     local line = lines[current]
---                     if not line then
---                         return nil
---                     elseif line == "" then
---                         return ""
---                     else
---                         if input_translator then
---                             line = input_translator(line)
---                         end
---                         if utf_translator then
---                             line = utf_translator(line)
---                         end
---                         if user_translator then
---                             line = user_translator(line)
---                         end
---                         return line
---                     end
---                 end
---             end
---         }
---     else
---         if trace_locating then
---             report_resolvers("%s opener, file '%s' opened",tag,filename)
---         end
---         -- todo: file;name -> freeze / eerste regel scannen -> freeze
---         --~ local data = lpegmatch(getlines,file_handle:read("*a"))
---         --~ local n = 0
---         t = {
---             reader = function() -- self
---                 local line = file_handle:read()
---                 --~ n = n + 1
---                 --~ local line = data[n]
---                 --~ print(line)
---                 if not line then
---                     return nil
---                 elseif line == "" then
---                     return ""
---                 else
---                     if input_translator then
---                         line = input_translator(line)
---                     end
---                     if utf_translator then
---                         line = utf_translator(line)
---                     end
---                     if user_translator then
---                         line = user_translator(line)
---                     end
---                     return line
---                 end
---             end,
---             close = function()
---                 if trace_locating then
---                     report_resolvers("%s closer, file '%s' closed",tag,filename)
---                 end
---                 logs.show_close(filename)
---                 file_handle:close()
---                 t = nil
---                 collectgarbage("step") -- saves some memory, maybe checkgarbage but no #
---             end,
---             handle = function()
---                 return file_handle
---             end,
---             noflines = function()
---                 t.noflines = io.noflines(file_handle)
---                 return t.noflines
---             end
---         }
---     end
---     return t
--- end
+local function installhandler(namespace,what,where,func)
+    if not func then
+        where, func = "after", where
+    end
+    if where == "before" or where == "after" then
+        sequencers.appendaction(namespace,where,func)
+    else
+        report_resolvers("installing input %s handlers in %s is not possible",what,tostring(where))
+    end
+end
+
+function resolvers.installinputlinehandler(...) installhandler(helpers.textlineactions,"line",...) end
+function resolvers.installinputfilehandler(...) installhandler(helpers.textfileactions,"file",...) end
+
+-- local basename = file.basename
+-- resolvers.installinputlinehandler(function(str,filename,linenumber,noflines)
+--     logs.simple("[lc] file: %s, line: %s of %s, length: %s",basename(filename),linenumber,noflines,#str)
+-- end)
+-- resolvers.installinputfilehandler(function(str,filename)
+--     logs.simple("[fc] file: %s, length: %s",basename(filename),#str)
+-- end)

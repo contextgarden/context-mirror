@@ -35,25 +35,44 @@ end
 
 -- optimizing for no find (*) does not save time
 
+--~ local function globpattern(path,patt,recurse,action) -- fails in recent luatex due to some change in lfs
+--~     local ok, scanner
+--~     if path == "/" then
+--~         ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
+--~     else
+--~         ok, scanner = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
+--~     end
+--~     if ok and type(scanner) == "function" then
+--~         if not find(path,"/$") then path = path .. '/' end
+--~         for name in scanner do
+--~             local full = path .. name
+--~             local mode = attributes(full,'mode')
+--~             if mode == 'file' then
+--~                 if find(full,patt) then
+--~                     action(full)
+--~                 end
+--~             elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+--~                 globpattern(full,patt,recurse,action)
+--~             end
+--~         end
+--~     end
+--~ end
+
 local function globpattern(path,patt,recurse,action)
-    local ok, scanner
     if path == "/" then
-        ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
-    else
-        ok, scanner = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
+        path = path .. "."
+    elseif not find(path,"/$") then
+        path = path .. '/'
     end
-    if ok and type(scanner) == "function" then
-        if not find(path,"/$") then path = path .. '/' end
-        for name in scanner do
-            local full = path .. name
-            local mode = attributes(full,'mode')
-            if mode == 'file' then
-                if find(full,patt) then
-                    action(full)
-                end
-            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                globpattern(full,patt,recurse,action)
+    for name in walkdir(path) do
+        local full = path .. name
+        local mode = attributes(full,'mode')
+        if mode == 'file' then
+            if find(full,patt) then
+                action(full)
             end
+        elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+            globpattern(full,patt,recurse,action)
         end
     end
 end

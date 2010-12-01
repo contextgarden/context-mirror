@@ -9,14 +9,16 @@ if not modules then modules = { } end modules ['buff-ver'] = {
 -- The default visualizers have reserved names starting with v-*. Users are
 -- supposed to use different names for their own variants.
 
-local type, rawset, rawget, setmetatable, getmetatable = type, rawset, rawget, setmetatable, getmetatable
-local format, lower, match = string.format, string.lower, string.match
+local type, next, rawset, rawget, setmetatable, getmetatable = type, next, rawset, rawget, setmetatable, getmetatable
+local format, lower, match, find, sub = string.format, string.lower, string.match, string.find, string.sub
+local splitlines = string.splitlines
+local concat = table.concat
 local C, P, V, Carg = lpeg.C, lpeg.P, lpeg.V, lpeg.Carg
-local patterns, lpegmatch, lpegtype = lpeg.patterns, lpeg.match, lpeg.type
+local patterns, lpegmatch, is_lpeg = lpeg.patterns, lpeg.match, lpeg.is_lpeg
 
-local function is_lpeg(p)
-    return p and lpegtype(p) == "pattern"
-end
+local tabtospace = utilities.strings.tabtospace
+local variables = interfaces.variables
+local settings_to_array = utilities.parsers.settings_to_array
 
 visualizers = visualizers or { }
 
@@ -27,7 +29,8 @@ local variables = interfaces.variables
 local findfile = resolvers.findfile
 local addsuffix = file.addsuffix
 
-local v_yes = variables.yes
+local v_auto = variables.auto
+local v_yes  = variables.yes
 
 -- beware, these all get an argument (like newline)
 
@@ -48,7 +51,7 @@ local doverbatimspace            = context.doverbatimspace
 local CargOne = Carg(1)
 
 local function f_emptyline(s,settings)
-    if settings and settings.currentnature == "inline" then
+    if settings and settings.nature == "inline" then
         doinlineverbatimemptyline()
     else
         dodisplayverbatimemptyline()
@@ -56,7 +59,7 @@ local function f_emptyline(s,settings)
 end
 
 local function f_beginline(s,settings)
-    if settings and settings.currentnature == "inline" then
+    if settings and settings.nature == "inline" then
         doinlineverbatimbeginline()
     else
         dodisplayverbatimbeginline()
@@ -64,7 +67,7 @@ local function f_beginline(s,settings)
 end
 
 local function f_newline(s,settings)
-    if settings and settings.currentnature == "inline" then
+    if settings and settings.nature == "inline" then
         doinlineverbatimnewline()
     else
         dodisplayverbatimnewline()
@@ -72,7 +75,7 @@ local function f_newline(s,settings)
 end
 
 local function f_start(s,settings)
-    if settings and settings.currentnature == "inline" then
+    if settings and settings.nature == "inline" then
         doinlineverbatimstart()
     else
         dodisplayverbatimstart()
@@ -80,7 +83,7 @@ local function f_start(s,settings)
 end
 
 local function f_stop(s,settings)
-    if settings and settings.currentnature == "inline" then
+    if settings and settings.nature == "inline" then
         doinlineverbatimstop()
     else
         dodisplayverbatimstop()
@@ -293,8 +296,9 @@ end
 
 local escapedvisualizers = { }
 
-local function visualize(method,nature,content,settings) -- maybe also method and nature in settings
+local function visualize(content,settings) -- maybe also method in settings
     if content and content ~= "" then
+        local method = settings.method or "default"
         local m
         local e = settings.escape
         if e and e ~= "" then
@@ -325,8 +329,8 @@ local function visualize(method,nature,content,settings) -- maybe also method an
         else
             m = specifications[method] or specifications.default
         end
+        local nature = settings.nature or "display"
         local n = m and m[nature]
-        settings.currentnature = nature or settings.nature or "display" -- tricky ... why sometimes no nature
         if n then
             n(content,settings)
         else
@@ -338,16 +342,27 @@ end
 visualizers.visualize     = visualize
 visualizers.getvisualizer = getvisualizer
 
-function visualizers.visualizestring(method,content,settings)
-    visualize(method,"inline",content)
+local function checkedsettings(settings,nature)
+    if not settings then
+        return { nature = nature }
+    else
+        if not settings.nature then
+            settings.nature = nature
+        end
+        return settings
+    end
 end
 
-function visualizers.visualizefile(method,name,settings)
-    visualize(method,"display",resolvers.loadtexfile(name),settings)
+function visualizers.visualizestring(content,settings)
+    visualize(content,checkedsettings(settings,"inline"))
 end
 
-function visualizers.visualizebuffer(method,name,settings)
-    visualize(method,"display",buffers.content(name),settings)
+function visualizers.visualizefile(name,settings)
+    visualize(resolvers.loadtexfile(name),checkedsettings(settings,"display"))
+end
+
+function visualizers.visualizebuffer(name,settings)
+    visualize(buffers.getcontent(name),checkedsettings(settings,"display"))
 end
 
 -- --
@@ -374,4 +389,183 @@ function visualizers.writeargument(...)
     context("{")  -- If we didn't have tracing then we could
     write(...)    -- use a faster print to tex variant for the
     context("}")  -- { } tokens as they always have ctxcatcodes.
+end
+
+-- helpers
+
+local function realign(lines,forced_n) -- no, auto, <number>
+    forced_n = (forced_n == v_auto and huge) or tonumber(forced_n)
+    if forced_n then
+        local n = 0
+        for i=1, #lines do
+            local spaces = find(lines[i],"%S")
+            if not spaces then
+                -- empty line
+            elseif not n then
+                n = spaces
+            elseif spaces == 0 then
+                n = 0
+                break
+            elseif n > spaces then
+                n = spaces
+            end
+        end
+        if n > 0 then
+            if n > forced_n then
+                n = forced_n
+            end
+            for i=1,#d do
+                lines[i] = sub(lines[i],n)
+            end
+        end
+    end
+    return lines
+end
+
+local function getstrip(lines,first,last)
+    local first, last = first or 1, last or #lines
+    for i=first,last do
+        local li = lines[i]
+        if #li == 0 or find(li,"^%s*$") then
+            first = first + 1
+        else
+            break
+        end
+    end
+    for i=last,first,-1 do
+        local li = lines[i]
+        if #li == 0 or find(li,"^%s*$") then
+            last = last - 1
+        else
+            break
+        end
+    end
+    return first, last, last - first + 1
+end
+
+local function getrange(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
+    local noflines = #lines
+    local first, last = first or 1, last or noflines
+    if last < 0 then
+        last = noflines + last
+    end
+    local what = settings_to_array(range)
+    local r_first, r_last = what[1], what[2]
+    local f, l = tonumber(r_first), tonumber(r_last)
+    if r_first then
+        if f then
+            if f > first then
+                first = f
+            end
+        else
+            for i=first,last do
+                if find(lines[i],r_first) then
+                    first = i + 1
+                    break
+                end
+            end
+        end
+    end
+    if r_last then
+        if l then
+            if l < 0 then
+                l = noflines + l
+            end
+            if find(r_last,"^[%+]") then -- 1,+3
+                l = first + l
+            end
+            if l < last then
+                last = l
+            end
+        else
+            for i=first,last do
+                if find(lines[i],r_last) then
+                    last = i - 1
+                    break
+                end
+            end
+        end
+    end
+    return first, last
+end
+
+local tablength = 7
+
+local function flush(content,settings)
+    local tab = settings.tab
+    tab = tab and (tab == v_yes and tablength or tonumber(tab))
+    if tab then
+        content = tabtospace(content,tab)
+    end
+    visualize(content,settings)
+end
+
+local function filter(lines,settings) -- todo: inline or display in settings
+    local strip = settings.strip
+    if strip == v_yes then
+        lines = realign(lines,strip)
+    end
+    local line, n = 0, 0
+    local first, last, m = getstrip(lines)
+    if range then
+        first, last = getrange(lines,first,last,range)
+        first, last = getstrip(lines,first,last)
+    end
+    local content = concat(lines,(settings.nature == "inline" and " ") or "\n",first,last)
+    return content, m
+end
+
+-- main functions
+
+local getlines = buffers.getlines
+
+function commands.typebuffer(settings)
+    local lines = getlines(settings.name)
+    if lines then
+        local content, m = filter(lines,settings)
+        if content and content ~= "" then
+            flush(content,checkedsettings(settings,"display"))
+        end
+    end
+end
+
+function commands.processbuffer(settings)
+    local lines = getlines(settings.name)
+    if lines then
+        local content, m = filter(lines,settings)
+        if content and content ~= "" then
+            flush(content,checkedsettings(settings,"direct"))
+        end
+    end
+end
+
+-- not really buffers but it's closely related
+
+function commands.typestring(settings)
+    local content = settings.data
+    if content and content ~= "" then
+        flush(content,checkedsettings(settings,"inline"))
+    end
+end
+
+function commands.typefile(settings)
+    local filename = settings.name
+    local foundname = resolvers.findtexfile(filename)
+    if foundname and foundname ~= "" then
+        local str = resolvers.loadtexfile(foundname)
+        if str and str ~= "" then
+            local regime = settings.regime
+            if regime and regime ~= "" then
+                regimes.load(regime)
+                str = regimes.translate(str,regime)
+            end
+            if str and str~= "" then
+                local lines = splitlines(str)
+                local content, m = filter(lines,settings)
+                if content and content ~= "" then
+                    flush(content,checkedsettings(settings,"display"))
+                end
+            end
+        end
+    end
 end

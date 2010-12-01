@@ -18,6 +18,7 @@ at the <l n='tex'/> side.</p>
 
 local find, gsub, match, format, concat = string.find, string.gsub, string.match, string.format, table.concat
 local texcount = tex.count
+local isfile = lfs.isfile
 
 local trace_modules = false  trackers.register("modules.loading", function(v) trace_modules = v end)
 
@@ -27,6 +28,8 @@ commands          = commands or { }
 local commands    = commands
 environment       = environment or { }
 local environment = environment
+
+local findbyscheme = resolvers.finders.byscheme
 
 function commands.checkfilename(str) -- "/whatever..." "c:..." "http://..."
     texcount.kindoffile = (find(str,"^/") or find(str,"[%a]:") and 1) or 0
@@ -100,62 +103,62 @@ local found = { } -- can best be done in the resolver itself
 -- todo: tracing
 
 local function readfilename(specification,backtrack,treetoo)
-    local fnd = found[specification]
+    local name = specification.filename
+    local fnd = found[name]
     if not fnd then
-        local splitspec = resolvers.splitmethod(specification)
-        local filename = splitspec.path or ""
-        if lfs.isfile(filename) then
-            fnd = filename
+        if fnd ~= "" and isfile(name) then
+            fnd = name
         end
-        if not fnd and backtrack then
-            local fname = filename
+        if backtrack and (not fnd or fnd == "") then
+            local fname = name
             for i=1,backtrack,1 do
                 fname = "../" .. fname
-                if lfs.isfile(fname) then
+                if isfile(fname) then
                     fnd = fname
                     break
                 end
             end
         end
         if not fnd and treetoo then
---~             fnd = resolvers.findfile(filename)
-            fnd = resolvers.findtexfile(filename)
+            fnd = resolvers.findtexfile(name)
         end
-        found[specification] = fnd
+        found[name] = fnd
     end
     return fnd or ""
 end
 
-commands.readfilename = readfilename
-
-function finders.job(filename) return readfilename(filename,nil,false) end -- current path, no backtracking
-function finders.loc(filename) return readfilename(filename,2,  false) end -- current path, backtracking
-function finders.sys(filename) return readfilename(filename,nil,true ) end -- current path, obeys tex search
-function finders.fix(filename) return readfilename(filename,2,  false) end -- specified path, backtracking
-function finders.set(filename) return readfilename(filename,nil,false) end -- specified path, no backtracking
-function finders.any(filename) return readfilename(filename,2,  true ) end -- loc job sys
-
-openers.job = openers.generic loaders.job = loaders.generic
-openers.loc = openers.generic loaders.loc = loaders.generic
-openers.sys = openers.generic loaders.sys = loaders.generic
-openers.fix = openers.generic loaders.fix = loaders.generic
-openers.set = openers.generic loaders.set = loaders.generic
-openers.any = openers.generic loaders.any = loaders.generic
-
-function commands.doreadfile(protocol,path,name) -- better do a split and then pass table
-    local specification
-    if url.hasscheme(name) then
-        specification = name
-    else
-        specification = ((path == "") and format("%s:///%s",protocol,name)) or format("%s:///%s/%s",protocol,path,name)
-    end
-    context(resolvers.findtexfile(specification))
+function commands.readfilename(filename)
+    return findbyscheme("any",filename)
 end
 
--- modules can only have a tex or mkiv suffix or can have a specified one
+function finders.job(specification) return readfilename(specification,false,false) end -- current path, no backtracking
+function finders.loc(specification) return readfilename(specification,2,    false) end -- current path, backtracking
+function finders.sys(specification) return readfilename(specification,false,true ) end -- current path, obeys tex search
+function finders.fix(specification) return readfilename(specification,2,    false) end -- specified path, backtracking
+function finders.set(specification) return readfilename(specification,false,false) end -- specified path, no backtracking
+function finders.any(specification) return readfilename(specification,2,    true ) end -- loc job sys
 
-local prefixes  = { "m", "p", "s", "x", "t" }
-local suffixes  = { "mkiv", "tex" } -- what about cld
+openers.job = openers.file loaders.job = loaders.file -- default anyway
+openers.loc = openers.file loaders.loc = loaders.file
+openers.sys = openers.file loaders.sys = loaders.file
+openers.fix = openers.file loaders.fix = loaders.file
+openers.set = openers.file loaders.set = loaders.file
+openers.any = openers.file loaders.any = loaders.file
+
+function commands.doreadfile(scheme,path,name) -- better do a split and then pass table
+    local fullname
+    if url.hasscheme(name) then
+        fullname = name
+    else
+        fullname = ((path == "") and format("%s:///%s",scheme,name)) or format("%s:///%s/%s",scheme,path,name)
+    end
+    context(resolvers.findtexfile(fullname)) -- can be more direct
+end
+
+-- modules can have a specific suffix or can specify one
+
+local prefixes  = { "m", "p", "s", "x", "v", "t" }
+local suffixes  = { "mkiv", "tex", "mkvi" } -- order might change and how about cld
 local modstatus = { }
 
 local function usemodule(name,hasscheme)
@@ -172,22 +175,22 @@ local function usemodule(name,hasscheme)
         if trace_modules then
             report_modules("checking suffix driven file '%s'",name)
         end
-        foundname = commands.readfilename(name,false,true) or ""
+        foundname = findbyscheme("any",name) or ""
     elseif true then
         for i=1,#suffixes do
             local fullname = file.addsuffix(name,suffixes[i])
             if trace_modules then
                 report_modules("checking suffix driven file '%s'",fullname)
             end
-            foundname = commands.readfilename(fullname,false,true) or ""
+            foundname = findbyscheme("any",fullname) or ""
             if foundname ~= "" then
                 break
             end
         end
     else
      -- -- we don't want a tex file for each mkiv file so we do some checking
-     -- local foundtexname  = commands.readfilename(file.addsuffix(name,"tex"), false,true) or ""
-     -- local foundmkivname = commands.readfilename(file.addsuffix(name,"mkiv"),false,true) or ""
+     -- local foundtexname  = readfilename(file.addsuffix(name,"tex"), false,true) or ""
+     -- local foundmkivname = readfilename(file.addsuffix(name,"mkiv"),false,true) or ""
      -- if foundtexfile ~= "" and foundmkivfile ~= "" then
      --     if file.dirname(foundtexname) == file.dirname(foundmkivname) then
      --         foundname = foundtexname -- we assume that this (shared) file loads the mkiv file

@@ -678,7 +678,7 @@
       % we need this trick because tex.sprint does not interprets newlines and the scanner
       % stops at a newline; also, we do need to flush the buffer under a normal catcode
       % regime in order to expand embedded tex macros; #1 can be a list
-      \processMPgraphic{\ctxlua{buffers.feedback("\currentMPgraphicname")}}%
+      \processMPgraphic{\ctxlua{commands.feedback("\currentMPgraphicname")}}%
       \endMPgraphicgroup}}
 
 \def\runMPbuffer

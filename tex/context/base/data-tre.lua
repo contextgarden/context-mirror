@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['data-tre'] = {
 -- \input tree://oeps1/**/oeps.tex
 
 local find, gsub, format = string.find, string.gsub, string.format
-local unpack = unpack or table.unpack
+
+local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local report_resolvers = logs.new("resolvers")
 
@@ -17,10 +18,10 @@ local resolvers = resolvers
 
 local done, found, notfound = { }, { }, resolvers.finders.notfound
 
-function resolvers.finders.tree(specification,filetype)
-    local fnd = found[specification]
-    if not fnd then
-        local spec = resolvers.splitmethod(specification).path or ""
+function resolvers.finders.tree(specification)
+    local spec = specification.filename
+    local fnd = found[spec]
+    if fnd == nil then
         if spec ~= "" then
             local path, name = file.dirname(spec), file.basename(spec)
             if path == "" then path = "." end
@@ -34,50 +35,38 @@ function resolvers.finders.tree(specification,filetype)
             for k=1,#hash do
                 local v = hash[k]
                 if find(v,pattern) then
-                    found[specification] = v
+                    found[spec] = v
                     return v
                 end
             end
         end
-        fnd = unpack(notfound) -- unpack ? why not just notfound[1]
-        found[specification] = fnd
+        fnd = notfound() -- false
+        found[spec] = fnd
     end
     return fnd
 end
 
 function resolvers.locators.tree(specification)
-    local spec = resolvers.splitmethod(specification)
-    local path = spec.path
-    if path ~= '' and lfs.isdir(path) then
+    local name = specification.filename
+    if name ~= '' and lfs.isdir(name) then
         if trace_locating then
-            report_resolvers("tree locator '%s' found (%s)",path,specification)
+            report_resolvers("tree locator '%s' found",name)
         end
-        resolvers.appendhash('tree',specification,path,false) -- don't cache
+        resolvers.appendhash('tree',name,false) -- don't cache
     elseif trace_locating then
-        report_resolvers("tree locator '%s' not found",path)
+        report_resolvers("tree locator '%s' not found",name)
     end
 end
 
-function resolvers.hashers.tree(tag,name)
+function resolvers.hashers.tree(specification)
+    local name = specification.filename
     if trace_locating then
-        report_resolvers("analysing tree '%s' as '%s'",name,tag)
+        report_resolvers("analysing tree '%s'",name)
     end
-    -- todo: maybe share with done above
-    local spec = resolvers.splitmethod(tag)
-    local path = spec.path
-    resolvers.generators.tex(path,tag) -- we share this with the normal tree analyzer
+    resolvers.methodhandler("hashers",name)
 end
 
-function resolvers.generators.tree(tag)
-    local spec = resolvers.splitmethod(tag)
-    local path = spec.path
-    resolvers.generators.tex(path,tag) -- we share this with the normal tree analyzer
-end
-
-function resolvers.concatinators.tree(tag,path,name)
-    return file.join(tag,path,name)
-end
-
-resolvers.isreadable.tree    = file.isreadable
-resolvers.openers.tree       = resolvers.openers.generic
-resolvers.loaders.tree       = resolvers.loaders.generic
+resolvers.concatinators.tree = resolvers.concatinators.file
+resolvers.generators.tree    = resolvers.generators.file
+resolvers.openers.tree       = resolvers.openers.file
+resolvers.loaders.tree       = resolvers.loaders.file

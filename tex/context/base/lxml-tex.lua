@@ -402,7 +402,8 @@ function xml.getbuffer(name,compress,entities) -- we need to make sure that comm
         name = tex.jobname
     end
     nofconverted = nofconverted + 1
-    xmltostring(lxml.convert(name,concat(buffers.data[name] or {},""),compress,entities))
+    local data = buffers.getcontent(name)
+    xmltostring(lxml.convert(name,data,compress,entities)) -- one buffer
 end
 
 function lxml.loadbuffer(id,name,compress,entities)
@@ -411,7 +412,8 @@ function lxml.loadbuffer(id,name,compress,entities)
     end
     starttiming(xml)
     nofconverted = nofconverted + 1
-    local xmltable = lxml.convert(id,buffers.collect(name or id,"\n"),compress,entities)
+    local data = buffers.getcontent(name or id)
+    local xmltable = lxml.convert(id,data,compress,entities)
     lxml.store(id,xmltable)
     stoptiming(xml)
     return xmltable, name or id
