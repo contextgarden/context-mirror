@@ -11296,7 +11296,7 @@ function resolvers.registerfilehash(name,content,someerror)
 end
 
 function isreadable(name)
-    local readable = file.is_readable(name)
+    local readable = lfs.isfile(name) -- not file.is_readable(name) asit can be a dir
     if trace_detail then
         if readable then
             report_resolvers("file '%s' is readable",name)
@@ -11509,10 +11509,11 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
         -- search spec
         local filetype, extra, done, wantedfiles, ext = '', nil, false, { }, fileextname(filename)
         -- tricky as filename can be bla.1.2.3
+
+-- to be checked
+
         if ext == "" then
-            if not instance.force_suffixes then
-                wantedfiles[#wantedfiles+1] = filename
-            end
+            wantedfiles[#wantedfiles+1] = filename
         else
             wantedfiles[#wantedfiles+1] = filename
         end

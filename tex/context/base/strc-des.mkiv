@@ -70,6 +70,8 @@
 \def\descriptionmainparameter  #1{\csname\dodescriptionparameter{\??dd\currentdescriptionmain  }#1\endcsname}
 \def\descriptionnumberparameter#1{\csname\dodescriptionparameter{\??dd\currentdescriptionnumber}#1\endcsname}
 
+\def\nameddescriptionparameter #1#2{\csname\dodescriptionparameter{\??dd#1}#2\endcsname}
+
 \def\detokenizeddescriptionparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??dd\currentdescription#1\endcsname}}
 
 \def\dodescriptionparameter#1#2%

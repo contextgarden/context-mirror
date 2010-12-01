@@ -207,38 +207,85 @@
 \newtoks \everysetupnote
 
 \unexpanded\def\definenote
-  {\dodoubleempty\dodefinenote}
+  {\dotripleempty\dodefinenote}
 
-\def\dodefinenote[#1][#2]%
+\def\dodefinenote[#1][#2][#3]% note [parent] [settings]
   {\edef\currentnote{#1}%
    \ifcsname\??vn:\currentnote\endcsname\else
      \@EA\installinsertion\csname\??vn:\currentnote\endcsname\relax
      \appendtoks\doprocesssomenote{#1}\to\tobeprocessednotes
    \fi
-   \defineenumeration % description
+   \ifsecondargument
+     \doifassignmentelse{#2}{\dodefinenotewithsettings{#2}}{\dodefinenotewithparent{#2}{#3}}%
+   \else
+     \dodefinenotesimple
+   \fi
+   \ctxlua{structures.notes.define("\currentnote","insert",\number\csname\??vn:\currentnote\endcsname)}%
+   \the\everysetupnote
+   \dochecknote}
+
+\def\dodefinenotesimple
+  {\defineenumeration
      [\currentnote]
-     [\c!location=\@@defaultnotedefloc,
+     [\s!handler=\v!note,
+      \c!text=,
+      \c!location=\@@defaultnotedefloc,
       \c!distance=\@@defaultnotedefdis,
       \c!width=\v!fit,
       \c!headstyle=\noteparameter\c!style,
       \c!headcolor=\noteparameter\c!color,
-      \s!handler=\v!note,
-      \c!text=,
       \c!before=,
       \c!after=]%
    \doredefinenotecommands
+   \presetlocalframed
+     [\??vn\currentnote]%
    \setupenumerations
      [\currentnote]
      [\s!parent=\??vn\currentnote,
       \c!number=\v!yes]% no inheritance from decriptions which is okay
-   \presetlocalframed
-     [\??vn\currentnote]%
    \getparameters
      [\??vn\currentnote]
-     [\s!parent=\??vn,#2]%
-   \ctxlua{structures.notes.define("\currentnote","insert",\number\csname\??vn:\currentnote\endcsname)}%
-   \the\everysetupnote
-   \dochecknote}
+     [\s!parent=\??vn]}
+
+\def\dodefinenotewithsettings#1%
+  {\defineenumeration % description
+     [\currentnote]
+     [\s!handler=\v!note,
+      \c!text=,
+      \c!location=\@@defaultnotedefloc,
+      \c!distance=\@@defaultnotedefdis,
+      \c!width=\v!fit,
+      \c!headstyle=\noteparameter\c!style,
+      \c!headcolor=\noteparameter\c!color,
+      \c!before=,
+      \c!after=]%
+   \doredefinenotecommands
+   \presetlocalframed
+     [\??vn\currentnote]%
+   \setupenumerations
+     [\currentnote]
+     [\s!parent=\??vn\currentnote,
+      \c!number=\v!yes]%
+   \getparameters
+     [\??vn\currentnote]
+     [\s!parent=\??vn,#1]}
+
+\def\dodefinenotewithparent#1#2%
+  {%setevalue{\??vn:#2:kids}{\ifcsname\??vn:#2:kids\endcsname\csname\??vn:#2:kids\endcsname,\fi#1}%
+   \defineenumeration
+     [\currentnote]
+     [\s!handler=\v!note,
+      \c!text=]%
+   \doredefinenotecommands
+   \presetlocalframed
+     [\??vn\currentnote]%
+   \setupenumerations
+     [\currentnote]
+     [\s!parent=\??dd#1,
+      \c!number=\v!yes]%
+   \getparameters
+     [\??vn\currentnote]
+     [\s!parent=\??vn#1,#2]}
 
 % \starttext
 %     text \startfootnote Test.\stopfootnote
@@ -264,6 +311,12 @@
       \edef\@@subslevel{\@@subslevel\v!sub}}}
 
 \let\setupnotedefinition\setupenumerations
+
+% \def\dodowithcurrentnoteandkids#1#2% action kid
+%   {\pushmacro\currentnote
+%    \def\currentnote{#2}%
+%    \dowithcurrentnoteandkids{#1}% recursive
+%    \popmacro\currentnote}%
 
 \appendtoks
     \setupenumerations[\currentnote][]%
@@ -355,6 +408,8 @@
 
 \def\dosetcheckednote#1{\csname\??vn @#1\endcsname}
 
+\newtoks\everychecknote
+
 \def\dochecknote
   {% node states
    \setnotelocation\plusone % page
@@ -406,7 +461,8 @@
      \global\dimen\currentnoteins\maxdimen
      \global\count\currentnoteins\zerocount
      \global\skip \currentnoteins\zeropoint
-   \fi}
+   \fi
+   \the\everychecknote}
 
 \def\dosetnotedistance
   {\begingroup

@@ -796,7 +796,7 @@ function resolvers.registerfilehash(name,content,someerror)
 end
 
 function isreadable(name)
-    local readable = file.is_readable(name)
+    local readable = lfs.isfile(name) -- not file.is_readable(name) asit can be a dir
     if trace_detail then
         if readable then
             report_resolvers("file '%s' is readable",name)
@@ -904,6 +904,8 @@ local preparetreepattern = Cs((P(".")/"%%." + P("-")/"%%-" + P(1))^0 * Cc("$"))
 local function collect_instance_files(filename,askedformat,allresults) -- todo : plugin (scanners, checkers etc)
     local result = { }
     local stamp  = nil
+--~ local trace_locating = true
+--~ local trace_detail= true
     askedformat = askedformat or ""
     filename = collapsepath(filename)
     -- speed up / beware: format problem
@@ -1012,10 +1014,11 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
 --~         if not suffixmap[ext] then --- probably needs to be done elsewhere too
 --~             wantedfiles[#wantedfiles+1] = filename
 --~         end
+
+-- to be checked
+
         if ext == "" then
-            if not instance.force_suffixes then
-                wantedfiles[#wantedfiles+1] = filename
-            end
+            wantedfiles[#wantedfiles+1] = filename
         else
             wantedfiles[#wantedfiles+1] = filename
         end
