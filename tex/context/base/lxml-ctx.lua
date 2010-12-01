@@ -88,7 +88,7 @@ function xml.ctx.tshow(specification)
         context.stoptabulate()
         if xmlroot and xmlroot ~= "" then
             if not loaded[xmlroot] then
-                loaded[xmlroot] = xml.convert(buffers.content(xmlroot) or "")
+                loaded[xmlroot] = xml.convert(buffers.getcontent(xmlroot))
             end
             local collected = xml.filter(loaded[xmlroot],xmlpattern)
             if collected then

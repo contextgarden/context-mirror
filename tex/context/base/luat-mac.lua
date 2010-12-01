@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['luat-mac'] = {
     license   = "see context related readme files"
 }
 
-local P, V, S, R, C, Cs = lpeg.P, lpeg.V, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs
+local P, V, S, R, C, Cs, Cmt = lpeg.P, lpeg.V, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cmt
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
 local insert, remove = table.insert, table.remove
@@ -64,8 +64,9 @@ local spaces      = space^1
 local newline     = patterns.newline
 local nobrace     = 1 - leftbrace - rightbrace
 
-local name        = R("AZ","az")^1
-local variable    = P("#")  * name
+local name        = R("AZ","az")^1 -- @?! -- utf?
+local longname    = (leftbrace/"") * (nobrace^1) * (rightbrace/"")
+local variable    = P("#") * Cs(name + longname)
 local escapedname = escape * name
 local definer     = escape * (P("def") + P("egdx") * P("def"))
 local startcode   = P("\\starttexdefinition")
@@ -78,6 +79,10 @@ local poplocal    = always   / pop
 local declaration = variable / set
 local identifier  = variable / get
 
+local function matcherror(str,pos)
+    report_macros("runaway definition at: %s",string.sub(str,pos-30,pos))
+end
+
 local grammar = { "converter",
     texcode     = pushlocal
                 * startcode
@@ -89,8 +94,8 @@ local grammar = { "converter",
                 * stopcode
                 * poplocal,
     texbody     = (   V("definition")
-                    + V("braced")
                     + identifier
+                    + V("braced")
                     + (1 - stopcode)
                   )^0,
     definition  = pushlocal
@@ -101,12 +106,13 @@ local grammar = { "converter",
                 * poplocal,
     braced      = leftbrace
                 * (   V("definition")
+                    + identifier
                     + V("texcode")
                     + V("braced")
-                    + identifier
                     + nobrace
                   )^0
-                * rightbrace,
+             -- * rightbrace^-1, -- the -1 catches errors
+                * (rightbrace + Cmt(always,matcherror)),
 
     pattern     = V("definition") + V("texcode") + anything,
 
@@ -122,8 +128,8 @@ local checker = P("%") * (1 - newline - P("macros"))^0
 
 local macros = { } resolvers.macros = macros
 
-function macros.preprocessed(data)
-    return lpegmatch(parser,data)
+function macros.preprocessed(str)
+    return lpegmatch(parser,str)
 end
 
 function macros.convertfile(oldname,newname)
@@ -136,27 +142,40 @@ function macros.version(data)
     return lpegmatch(checker,data)
 end
 
-local function handler(protocol,name,cachename)
-    local hashed = url.hashed(name)
-    local path = hashed.path
-    if path and path ~= "" then
-        local data = resolvers.loadtexfile(path)
-        data = lpegmatch(parser,data) or ""
-        io.savedata(cachename,data)
-    end
-    return cachename
-end
-
-resolvers.schemes.install('mkvi',handler,1) -- this will cache !
-
 function macros.processmkvi(str,filename)
-    if file.suffix(filename) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
+    if (filename and file.suffix(filename) == "mkvi") or lpegmatch(checker,str) == "mkvi" then
         return lpegmatch(parser,str) or str
     else
         return str
     end
 end
 
-utilities.sequencers.appendaction(resolvers.openers.textfileactions,"system","resolvers.macros.processmkvi")
--- utilities.sequencers.disableaction(resolvers.openers.textfileactions,"resolvers.macros.processmkvi")
+if resolvers.schemes then
 
+    local function handler(protocol,name,cachename)
+        local hashed = url.hashed(name)
+        local path = hashed.path
+        if path and path ~= "" then
+            local data = resolvers.loadtexfile(path)
+            data = lpegmatch(parser,data) or ""
+            io.savedata(cachename,data)
+        end
+        return cachename
+    end
+
+    resolvers.schemes.install('mkvi',handler,1) -- this will cache !
+
+    utilities.sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmkvi")
+ -- utilities.sequencers.disableaction(resolvers.openers.helpers.textfileactions,"resolvers.macros.processmkvi")
+
+end
+
+--~ print(macros.preprocessed([[\def\blä#{blá}{blà:#{blá}}]]))
+--~ print(macros.preprocessed([[\def\blä#bla{blà:#bla}]]))
+--~ print(macros.preprocessed([[\def\bla#bla{bla:#bla}]]))
+--~ print(macros.preprocessed([[\def\test#oeps{test:#oeps}]]))
+--~ print(macros.preprocessed([[\def\test#oeps{test:#{oeps}}]]))
+--~ print(macros.preprocessed([[\def\test#{oeps:1}{test:#{oeps:1}}]]))
+--~ print(macros.preprocessed([[\def\test#{oeps}{test:#oeps}]]))
+--~ macros.preprocessed([[\def\test#{oeps}{test:#oeps \halign{##\cr #oeps\cr}]])
+--~ print(macros.preprocessed([[\def\test#{oeps}{test:#oeps \halign{##\cr #oeps\cr}}]]))

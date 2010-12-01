@@ -378,6 +378,9 @@ local separator = P("://")
 local qualified = P(".")^0 * P("/") + letter*P(":") + letter^1*separator + letter^1 * P("/")
 local rootbased = P("/") + letter*P(":")
 
+lpeg.patterns.qualified = qualified
+lpeg.patterns.rootbased = rootbased
+
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)

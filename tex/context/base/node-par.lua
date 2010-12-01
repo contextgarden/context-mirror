@@ -88,7 +88,7 @@ end
 -- It makes no sense to have a sequence here as we already have
 -- pre and post hooks and only one parbuilder makes sense, so no:
 --
--- local actions = nodes.tasks.actions("parbuilders",1)
+-- local actions = nodes.tasks.actions("parbuilders")
 
 -- todo: enable one as main
 

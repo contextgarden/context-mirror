@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['m-database'] = {
     license   = "see context related readme files"
 }
 
-local sub, gmatch = string.sub, string.gmatch
+local sub, gmatch, format = string.sub, string.gmatch, string.format
 local concat = table.concat
 local lpegpatterns, lpegmatch, lpegsplitat = lpeg.patterns, lpeg.match, lpeg.splitat
 local lpegP, lpegC, lpegS, lpegCt = lpeg.P, lpeg.C, lpeg.S, lpeg.Ct
@@ -35,11 +35,11 @@ function buffers.database.process(settings)
     local data
     local sprint = trace_flush and tracedsprint or sprint
     if settings.type == "file" then
-        local filename = resolvers.finders.any(settings.database)
+        local filename = resolvers.finders.byscheme("any",settings.database)
         data = filename ~= "" and io.loaddata(filename)
         data = data and string.splitlines(data)
     else
-        data = buffers.raw(settings.database)
+        data = buffers.getcontent(settings.database)
     end
     if data and #data > 0 then
         local separatorchar, quotechar, commentchar = settings.separator, settings.quotechar, settings.commentchar

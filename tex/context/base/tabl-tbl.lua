@@ -21,8 +21,7 @@ local nested    = lpeg.patterns.nested
 local pattern   = Ct((separator * (C(nested) + Cc("")) * C((1-separator)^0))^0)
 
 function commands.presettabulate(preamble)
-    -- todo: lpeg
-    preamble = string.escapedpattern(preamble)
+    -- todo: lpeg but not now
     preamble = gsub(preamble, "%*(%b{})(%b{})", function(n,p)
         return rep(sub(p,2,-2),tonumber(sub(n,2,-2)) or 1)
     end)

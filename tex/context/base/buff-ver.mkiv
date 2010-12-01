@@ -331,10 +331,11 @@
 \def\dodotypenormal#1%
   {\secondstageinitializetype
    \dostarttagged\t!verbatim\currenttype
-   \ctxlua{buffers.typestring {
-     data       = \!!bs\detokenize{#1}\!!es,
-     tab        = "\typeparameter\c!tab",
-     visualizer = "\typeparameter\c!option",
+   \ctxlua{commands.typestring {
+     data   = \!!bs\detokenize{#1}\!!es,
+     tab    = "\typeparameter\c!tab",
+     method = "\typeparameter\c!option",
+     nature = "inline",
     }}%
    \dostoptagged
    \egroup}
@@ -342,11 +343,12 @@
 \def\dodotypenested#1%
   {\secondstageinitializetype
    \dostarttagged\t!verbatim\currenttype
-   \ctxlua{buffers.typestring {
-     data       = \!!bs\detokenize{#1}\!!es,
-     tab        = "\typeparameter\c!tab",
-     visualizer = "nested", % we force a special visualizer
-     option     = "\typeparameter\c!option", % extra visualizer (maybe: nested,\typeparameter\c!option)
+   \ctxlua{commands.typestring {
+     data   = \!!bs\detokenize{#1}\!!es,
+     tab    = "\typeparameter\c!tab",
+     method = "nested", % we force a special visualizer
+     option = "\typeparameter\c!option", % extra visualizer (maybe: nested,\typeparameter\c!option)
+     nature = "inline",
    }}%
    \dostoptagged
    \egroup
@@ -449,13 +451,14 @@
   {\secondstageinitializetyping
    \beginofverbatimlines
    \dostarttagged\t!verbatimblock\currenttyping
-   \ctxlua{buffers.typebuffer {
-     name       = "_typing_",
-     strip      = "\typingparameter\c!strip",
-     range      = "\typingparameter\c!range",
-     tab        = "\typingparameter\c!tab",
-     visualizer = "\typingparameter\c!option",
-     escape     = \!!bs\typingparameter\c!escape\!!es,
+   \ctxlua{commands.typebuffer {
+     name   = "_typing_",
+     strip  = "\typingparameter\c!strip",
+     range  = "\typingparameter\c!range",
+     tab    = "\typingparameter\c!tab",
+     method = "\typingparameter\c!option",
+     escape = \!!bs\typingparameter\c!escape\!!es,
+     nature = "display",
    }}%
    \dostoptagged
    \endofverbatimlines
@@ -560,13 +563,14 @@
    \secondstageinitializetyping
    \beginofverbatimlines
    \dostarttagged\t!verbatimblock\currenttyping
-   \ctxlua{buffers.typefile {
-      name       = "#2",
-      strip      = "\typingparameter\c!strip",
-      range      = "\typingparameter\c!range",
-      regime     = "\currentregime",
-      tab        = "\typingparameter\c!tab",
-      visualizer = "\typingparameter\c!option",
+   \ctxlua{commands.typefile {
+      name   = "#2",
+      strip  = "\typingparameter\c!strip",
+      range  = "\typingparameter\c!range",
+      regime = "\currentregime",
+      tab    = "\typingparameter\c!tab",
+      method = "\typingparameter\c!option",
+      nature = "display",
     }}%
    \dostoptagged
    \endofverbatimlines
@@ -721,13 +725,14 @@
    \secondstageinitializetyping
    \beginofverbatimlines
    \dostarttagged\t!verbatim{#1}%
-   \ctxlua{buffers.typebuffer {
-     name       = "#2",
-     strip      = "\typingparameter\c!strip",
-     range      = "\typingparameter\c!range",
-     regime     = "\currentregime",
-     tab        = "\typingparameter\c!tab",
-     visualizer = "\typingparameter\c!option",
+   \ctxlua{commands.typebuffer {
+     name   = "#2",
+     strip  = "\typingparameter\c!strip",
+     range  = "\typingparameter\c!range",
+     regime = "\currentregime",
+     tab    = "\typingparameter\c!tab",
+     method = "\typingparameter\c!option",
+     nature = "display",
    }}%
    \dostoptagged
    \endofverbatimlines
@@ -760,12 +765,12 @@
 
 \def\dodoprocessbuffer#1#2%
   {\edef\currenttyping{#1}%
-   \ctxlua{buffers.processbuffer {
-     name       = "#2",
-     strip      = "\typingparameter\c!strip",
-     tab        = "\typingparameter\c!tab",
-     visualizer = "\typingparameter\c!option",
-     nature     = "direct",
+   \ctxlua{commands.processbuffer {
+     name   = "#2",
+     strip  = "\typingparameter\c!strip",
+     tab    = "\typingparameter\c!tab",
+     method = "\typingparameter\c!option",
+     nature = "direct",
    }}}
 
 % line numbering, keep broken lines together

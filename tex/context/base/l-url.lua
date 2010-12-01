@@ -6,72 +6,95 @@ if not modules then modules = { } end modules ['l-url'] = {
     license   = "see context related readme files"
 }
 
-local char, gmatch, gsub, format, byte = string.char, string.gmatch, string.gsub, string.format, string.byte
+local char, gmatch, gsub, format, byte, find = string.char, string.gmatch, string.gsub, string.format, string.byte, string.find
 local concat = table.concat
 local tonumber, type = tonumber, type
-local lpegmatch, lpegP, lpegC, lpegR, lpegS, lpegCs, lpegCc = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc
+local P, C, R, S, Cs, Cc, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct
+local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replacer
 
--- from the spec (on the web):
+-- from wikipedia:
 --
---     foo://example.com:8042/over/there?name=ferret#nose
---     \_/   \______________/\_________/ \_________/ \__/
---      |           |            |            |        |
---   scheme     authority       path        query   fragment
---      |   _____________________|__
---     / \ /                        \
---     urn:example:animal:ferret:nose
+--   foo://username:password@example.com:8042/over/there/index.dtb?type=animal;name=narwhal#nose
+--   \_/   \_______________/ \_________/ \__/            \___/ \_/ \______________________/ \__/
+--    |           |               |       |                |    |            |                |
+--    |       userinfo         hostname  port              |    |          query          fragment
+--    |    \________________________________/\_____________|____|/
+-- scheme                  |                          |    |    |
+--    |                authority                    path   |    |
+--    |                                                    |    |
+--    |            path                       interpretable as filename
+--    |   ___________|____________                              |
+--   / \ /                        \                             |
+--   urn:example:animal:ferret:nose               interpretable as extension
 
 url       = url or { }
 local url = url
 
-local function tochar(s)
-    return char(tonumber(s,16))
-end
+local tochar      = function(s) return char(tonumber(s,16)) end
 
-local colon, qmark, hash, slash, percent, endofstring = lpegP(":"), lpegP("?"), lpegP("#"), lpegP("/"), lpegP("%"), lpegP(-1)
+local colon       = P(":")
+local qmark       = P("?")
+local hash        = P("#")
+local slash       = P("/")
+local percent     = P("%")
+local endofstring = P(-1)
 
-local hexdigit  = lpegR("09","AF","af")
-local plus      = lpegP("+")
-local nothing   = lpegCc("")
-local escaped   = (plus / " ") + (percent * lpegC(hexdigit * hexdigit) / tochar)
+local hexdigit    = R("09","AF","af")
+local plus        = P("+")
+local nothing     = Cc("")
+local escaped     = (plus / " ") + (percent * C(hexdigit * hexdigit) / tochar)
 
 -- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
 
-local scheme    =                 lpegCs((escaped+(1-colon-slash-qmark-hash))^2) * colon + nothing
-local authority = slash * slash * lpegCs((escaped+(1-      slash-qmark-hash))^0)         + nothing
-local path      = slash *         lpegCs((escaped+(1-            qmark-hash))^0)         + nothing
-local query     = qmark         * lpegCs((escaped+(1-                  hash))^0)         + nothing
-local fragment  = hash          * lpegCs((escaped+(1-           endofstring))^0)         + nothing
+local scheme    =                 Cs((escaped+(1-colon-slash-qmark-hash))^2) * colon + nothing
+local authority = slash * slash * Cs((escaped+(1-      slash-qmark-hash))^0)         + nothing
+local path      = slash *         Cs((escaped+(1-            qmark-hash))^0)         + nothing
+local query     = qmark         * Cs((escaped+(1-                  hash))^0)         + nothing
+local fragment  = hash          * Cs((escaped+(1-           endofstring))^0)         + nothing
 
-local parser = lpeg.Ct(scheme * authority * path * query * fragment)
+local parser = Ct(scheme * authority * path * query * fragment)
 
-lpeg.patterns.urlsplitter = parser
+lpegpatterns.urlsplitter = parser
 
-local escapes = { }
+local escapes = { } ; for i=0,255 do escapes[i] = format("%%%02X",i) end
 
-for i=0,255 do
-    escapes[i] = format("%%%02X",i)
-end
+local escaper = Cs((R("09","AZ","az") + S("-./_") + P(1) / escapes)^0)
 
-local escaper = lpeg.Cs((lpegR("09","AZ","az") + lpegS("-./_") + lpegP(1) / escapes)^0)
-
-lpeg.patterns.urlescaper = escaper
+lpegpatterns.urlescaper = escaper
 
 -- todo: reconsider Ct as we can as well have five return values (saves a table)
 -- so we can have two parsers, one with and one without
 
-function url.split(str)
+local function split(str)
     return (type(str) == "string" and lpegmatch(parser,str)) or str
+end
+
+local function hasscheme(str)
+    local scheme = lpegmatch(scheme,str) -- at least one character
+    return scheme and scheme ~= ""
 end
 
 -- todo: cache them
 
-function url.hashed(str) -- not yet ok (/test?test)
-    local s = url.split(str)
+local rootletter       = R("az","AZ")
+                       + S("_-+")
+local separator        = P("://")
+local qualified        = P(".")^0 * P("/")
+                       + rootletter * P(":")
+                       + rootletter^1 * separator
+                       + rootletter^1 * P("/")
+local rootbased        = P("/")
+                       + rootletter * P(":")
+
+local barswapper       = replacer("|",":")
+local backslashswapper = replacer("\\","/")
+
+local function hashed(str) -- not yet ok (/test?test)
+    local s = split(str)
     local somescheme = s[1] ~= ""
     local somequery  = s[4] ~= ""
     if not somescheme and not somequery then
-        return {
+        s = {
             scheme    = "file",
             authority = "",
             path      = str,
@@ -79,53 +102,81 @@ function url.hashed(str) -- not yet ok (/test?test)
             fragment  = "",
             original  = str,
             noscheme  = true,
+            filename  = str,
         }
-    else
-        return {
+    else -- not always a filename but handy anyway
+        local authority, path, filename = s[2], s[3]
+        if authority == "" then
+            filename = path
+        else
+            filename = authority .. "/" .. path
+        end
+        s = {
             scheme    = s[1],
-            authority = s[2],
-            path      = s[3],
+            authority = authority,
+            path      = path,
             query     = s[4],
             fragment  = s[5],
             original  = str,
             noscheme  = false,
+            filename  = filename,
         }
     end
+    return s
 end
 
---~ table.print(url.hashed("/test?test"))
+-- Here we assume:
+--
+-- files: ///  = relative
+-- files: //// = absolute (!)
 
-function url.hasscheme(str)
-    return url.split(str)[1] ~= ""
-end
+--~ table.print(hashed("file://c:/opt/tex/texmf-local")) -- c:/opt/tex/texmf-local
+--~ table.print(hashed("file://opt/tex/texmf-local"   )) -- opt/tex/texmf-local
+--~ table.print(hashed("file:///opt/tex/texmf-local"  )) -- opt/tex/texmf-local
+--~ table.print(hashed("file:////opt/tex/texmf-local" )) -- /opt/tex/texmf-local
+--~ table.print(hashed("file:///./opt/tex/texmf-local" )) -- ./opt/tex/texmf-local
 
-function url.addscheme(str,scheme)
-    return (url.hasscheme(str) and str) or ((scheme or "file:///") .. str)
+--~ table.print(hashed("c:/opt/tex/texmf-local"       )) -- c:/opt/tex/texmf-local
+--~ table.print(hashed("opt/tex/texmf-local"          )) -- opt/tex/texmf-local
+--~ table.print(hashed("/opt/tex/texmf-local"         )) -- /opt/tex/texmf-local
+
+url.split     = split
+url.hasscheme = hasscheme
+url.hashed    = hashed
+
+function url.addscheme(str,scheme) -- no authority
+    if hasscheme(str) then
+        return str
+    elseif not scheme then
+        return "file:///" .. str
+    else
+        return scheme .. ":///" .. str
+    end
 end
 
 function url.construct(hash) -- dodo: we need to escape !
-    local fullurl = { }
+    local fullurl, f = { }, 0
     local scheme, authority, path, query, fragment = hash.scheme, hash.authority, hash.path, hash.query, hash.fragment
     if scheme and scheme ~= "" then
-        fullurl[#fullurl+1] = scheme .. "://"
+        f = f + 1 ; fullurl[f] = scheme .. "://"
     end
     if authority and authority ~= "" then
-        fullurl[#fullurl+1] = authority
+        f = f + 1 ; fullurl[f] = authority
     end
     if path and path ~= "" then
-        fullurl[#fullurl+1] = "/" .. path
+        f = f + 1 ; fullurl[f] = "/" .. path
     end
     if query and query ~= "" then
-        fullurl[#fullurl+1] = "?".. query
+        f = f + 1 ; fullurl[f] = "?".. query
     end
     if fragment and fragment ~= "" then
-        fullurl[#fullurl+1] = "#".. fragment
+        f = f + 1 ; fullurl[f] = "#".. fragment
     end
     return lpegmatch(escaper,concat(fullurl))
 end
 
 function url.filename(filename)
-    local t = url.hashed(filename)
+    local t = hashed(filename)
     return (t.scheme == "file" and (gsub(t.path,"^/([a-zA-Z])([:|])/)","%1:"))) or filename
 end
 
@@ -186,3 +237,5 @@ end
 
 --~ test("zip:///oeps/oeps.zip#bla/bla.tex")
 --~ test("zip:///oeps/oeps.zip?bla/bla.tex")
+
+--~ table.print(url.hashed("/test?test"))

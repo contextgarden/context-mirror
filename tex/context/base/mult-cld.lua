@@ -37,7 +37,7 @@ local texprint     = tex.print
 local texiowrite   = texio.write
 local texcount     = tex.count
 
-local isnode       = node.is_node
+local isnode       = node.is_node -- after 0.65 just node.type
 local writenode    = node.write
 
 local ctxcatcodes  = tex.ctxcatcodes
@@ -184,12 +184,13 @@ end
 
 -- -- --
 
-local savedata = resolvers.savers.virtual
+local methodhandler = resolvers.methodhandler
 
 function context.viafile(data)
     -- this is the only way to deal with nested buffers
     -- and other catcode sensitive data
-    context.input(savedata(data))
+    local filename = resolvers.savers.byscheme("virtual","viafile",data)
+    context.input(filename)
 end
 
 -- -- --

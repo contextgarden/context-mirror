@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['node-tsk'] = {
     license   = "see context related readme files"
 }
 
--- this might move to task-* .. we already have dirty flags there
+-- This might move to task-* and become less code as in sequencers
+-- we already have dirty flags as well. On the other hand, nodes are
+-- rather specialized and here we focus on node related tasks.
 
 local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 
@@ -18,28 +20,81 @@ local nodes      = nodes
 
 nodes.tasks      = nodes.tasks or { }
 local tasks      = nodes.tasks
-tasks.data       = allocate()
-local tasksdata  = tasks.data
+
+local tasksdata  = { } -- no longer public
 
 local sequencers = utilities.sequencers
 
-function tasks.new(name,list)
-    local tasklist = sequencers.reset()
-    tasksdata[name] = { list = tasklist, runner = false }
-    for l=1,#list do
-        sequencers.appendgroup(tasklist,list[l])
+local frozengroups = "no"
+
+function tasks.freeze(kind)
+    frozengroups = kind or "tolerant" -- todo: hook into jobname
+end
+
+function tasks.new(specification) -- was: name,arguments,list
+    local name      = specification.name
+    local arguments = specification.arguments or 0
+    local sequence  = specification.sequence
+    if name and sequence then
+        local tasklist = sequencers.reset()
+        tasksdata[name] = {
+            list      = tasklist,
+            runner    = false,
+            arguments = arguments,
+         -- sequence  = sequence,
+            frozen    = { },
+        }
+        for l=1,#sequence do
+            sequencers.appendgroup(tasklist,sequence[l])
+        end
+    end
+end
+
+local function valid(name)
+    local data = tasksdata[name]
+    if not data then
+        report_tasks("unknown task %s",name)
+    else
+        return data
+    end
+end
+
+local function validgroup(name,group,what)
+    local data = tasksdata[name]
+    if not data then
+        report_tasks("unknown task %s",name)
+    else
+        local frozen = data.frozen[group]
+        if frozen then
+            if frozengroup == "no" then
+                -- default
+            elseif frozengroup == "strict" then
+                report_tasks("warning: group %s of task %s is frozen, %s applied but not supported",group,name,what)
+                return
+            else -- if frozengroup == "tolerant" then
+                report_tasks("warning: group %s of task %s is frozen, %s ignored",group,name,what)
+            end
+        end
+        return data
+    end
+end
+
+function tasks.freezegroup(name,group)
+    local data = valid(name)
+    if data then
+        data.frozen[group] = true
     end
 end
 
 function tasks.restart(name)
-    local data = tasksdata[name]
+    local data = valid(name)
     if data then
         data.runner = false
     end
 end
 
 function tasks.enableaction(name,action)
-    local data = tasksdata[name]
+    local data = valid(name)
     if data then
         sequencers.enableaction(data.list,action)
         data.runner = false
@@ -47,7 +102,7 @@ function tasks.enableaction(name,action)
 end
 
 function tasks.disableaction(name,action)
-    local data = tasksdata[name]
+    local data = valid(name)
     if data then
         sequencers.disableaction(data.list,action)
         data.runner = false
@@ -55,7 +110,7 @@ function tasks.disableaction(name,action)
 end
 
 function tasks.enablegroup(name,group)
-    local data = tasksdata[name]
+    local data = validgroup(name,"enable group")
     if data then
         sequencers.enablegroup(data.list,group)
         data.runner = false
@@ -63,7 +118,7 @@ function tasks.enablegroup(name,group)
 end
 
 function tasks.disablegroup(name,group)
-    local data = tasksdata[name]
+    local data = validgroup(name,"disable group")
     if data then
         sequencers.disablegroup(data.list,group)
         data.runner = false
@@ -71,7 +126,7 @@ function tasks.disablegroup(name,group)
 end
 
 function tasks.appendaction(name,group,action,where,kind)
-    local data = tasksdata[name]
+    local data = validgroup(name,"append action")
     if data then
         sequencers.appendaction(data.list,group,action,where,kind)
         data.runner = false
@@ -79,7 +134,7 @@ function tasks.appendaction(name,group,action,where,kind)
 end
 
 function tasks.prependaction(name,group,action,where,kind)
-    local data = tasksdata[name]
+    local data = validgroup(name,"prepend action")
     if data then
         sequencers.prependaction(data.list,group,action,where,kind)
         data.runner = false
@@ -87,7 +142,7 @@ function tasks.prependaction(name,group,action,where,kind)
 end
 
 function tasks.removeaction(name,group,action)
-    local data = tasksdata[name]
+    local data = validgroup(name,"remove action")
     if data then
         sequencers.removeaction(data.list,group,action)
         data.runner = false
@@ -95,7 +150,7 @@ function tasks.removeaction(name,group,action)
 end
 
 function tasks.showactions(name,group,action,where,kind)
-    local data = tasksdata[name]
+    local data = valid(name)
     if data then
         report_tasks("task %s, list:\n%s",name,sequencers.nodeprocessor(data.list))
     end
@@ -118,9 +173,10 @@ end)
 
 local compile, nodeprocessor = sequencers.compile, sequencers.nodeprocessor
 
-function tasks.actions(name,n) -- we optimize for the number or arguments (no ...)
+function tasks.actions(name) -- we optimize for the number or arguments (no ...)
     local data = tasksdata[name]
     if data then
+        local n = data.arguments or 0
         if n == 0 then
             return function(head)
                 total = total + 1 -- will go away
@@ -252,9 +308,12 @@ function tasks.table(name) --maybe move this to task-deb.lua
     end
 end
 
-tasks.new (
-    "processors",
-    {
+-- this will move
+
+tasks.new {
+    name      = "processors",
+    arguments = 4,
+    sequence  = {
         "before",      -- for users
         "normalizers",
         "characters",
@@ -263,11 +322,12 @@ tasks.new (
         "lists",
         "after",       -- for users
     }
-)
+}
 
-tasks.new (
-    "finalizers",
-    {
+tasks.new {
+    name      = "finalizers",
+    arguments = 1,
+    sequence  = {
         "before",      -- for users
         "normalizers",
 --      "characters",
@@ -276,50 +336,55 @@ tasks.new (
         "lists",
         "after",       -- for users
     }
-)
+}
 
-tasks.new (
-    "shipouts",
-    {
+tasks.new {
+    name      = "shipouts",
+    arguments = 0,
+    sequence  = {
         "before",      -- for users
         "normalizers",
         "finishers",
         "after",       -- for users
     }
-)
+}
 
-tasks.new (
-    "mvlbuilders",
-    {
+tasks.new {
+    name      = "mvlbuilders",
+    arguments = 1,
+    sequence  = {
         "before",      -- for users
         "normalizers",
         "after",       -- for users
     }
-)
+}
 
-tasks.new (
-    "vboxbuilders",
-    {
+tasks.new {
+    name      = "vboxbuilders",
+    arguments = 5,
+    sequence  = {
         "before",      -- for users
         "normalizers",
         "after",       -- for users
     }
-)
+}
 
---~ tasks.new (
---~     "parbuilders",
---~     {
+--~ tasks.new {
+--~     name      = "parbuilders",
+--~     arguments = 1,
+--~     sequence  = {
 --~         "before",      -- for users
 --~         "lists",
 --~         "after",       -- for users
 --~     }
---~ )
+--~ }
 
---~ tasks.new (
---~     "pagebuilders",
---~     {
+--~ tasks.new {
+--~     name      = "pagebuilders",
+--~     arguments = 5,
+--~     sequence  = {
 --~         "before",      -- for users
 --~         "lists",
 --~         "after",       -- for users
 --~     }
---~ )
+--~ }

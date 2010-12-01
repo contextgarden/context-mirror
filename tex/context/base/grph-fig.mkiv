@@ -516,21 +516,11 @@
      \dodotypesetbuffer[\jobname][]
    \fi\fi}
 
-% \def\dodotypesetbuffer[#1][#2]%
-%   {\bgroup
-%    \global\advance\noftypesetbuffers\plusone
-%    \edef\bufferfilename{\jobname-buffer-\the\noftypesetbuffers}%
-%    \doifmode{*\v!first}
-%      {\ctxlua{buffers.save("\bufferfilename.tmp","#1",true)}%
-%       \executesystemcommand{context \bufferfilename.tmp}}%
-%    \externalfigure[\bufferfilename.pdf][#2]%
-%    \egroup}
-
 \def\dodotypesetbuffer[#1][#2]%
   {\bgroup
    \global\advance\noftypesetbuffers\plusone
    \edef\bufferfilename{\jobname-buffer-\the\noftypesetbuffers}%
-   \ctxlua{buffers.run("\bufferfilename.tmp","#1",true)}%
+   \ctxlua{commands.runbuffer("\bufferfilename.tmp","#1",true)}%
    \externalfigure[\bufferfilename.pdf][#2]%
    \egroup}
 

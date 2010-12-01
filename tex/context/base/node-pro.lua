@@ -29,7 +29,7 @@ local processors  = nodes.processors
 -- vbox: grouptype: vbox vtop output split_off split_keep  | box_type: exactly|aditional
 -- hbox: grouptype: hbox adjusted_hbox(=hbox_in_vmode)     | box_type: exactly|aditional
 
-local actions = tasks.actions("processors",4)
+local actions = tasks.actions("processors")
 
 local n = 0
 
@@ -117,7 +117,7 @@ end
 callbacks.register('pre_linebreak_filter', processors.pre_linebreak_filter,"all kind of horizontal manipulations (before par break)")
 callbacks.register('hpack_filter'        , processors.hpack_filter,"all kind of horizontal manipulations")
 
-local actions = tasks.actions("finalizers",1) -- head, where
+local actions = tasks.actions("finalizers") -- head, where
 
 -- beware, these are packaged boxes so no first_glyph test
 -- maybe some day a hash with valid groupcodes

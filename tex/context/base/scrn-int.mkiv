@@ -293,7 +293,7 @@
      {\hbox to \zeropoint
         {\doifassignmentelse{#1}{\getparameters[\??cc][#1]}{\getparameters[\??cc][\c!title=#1,#2]}%
          \hskip-\@@ccmargin
-         \ctxlua{buffers.set("\v!comment\v!buffer", \!!bs\detokenize{#3}\!!es)}%
+         \ctxlua{buffers.assign("\v!comment\v!buffer", \!!bs\detokenize{#3}\!!es)}%
          \struttedbox{\tbox{\doinsertcomment{\v!comment\v!buffer}}\hss}}}%
    \ignorespaces}
 

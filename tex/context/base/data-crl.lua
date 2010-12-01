@@ -14,50 +14,48 @@ local resolvers = resolvers
 
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
-curl = curl or { }
-local curl = curl
+resolvers.curl = resolvers.curl or { }
+local curl     = resolvers.curl
 
 local cached = { }
 
-function curl.fetch(protocol, name) -- todo: use socket library
-    local cleanname = gsub(name,"[^%a%d%.]+","-")
+local function runcurl(specification)
+    local original  = specification.original
+ -- local scheme    = specification.scheme
+    local cleanname = gsub(original,"[^%a%d%.]+","-")
     local cachename = caches.setfirstwritablefile(cleanname,"curl")
-    if not cached[name] then
+    if not cached[original] then
         if not io.exists(cachename) then
-            cached[name] = cachename
-            local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name -- no protocol .. "://"
+            cached[original] = cachename
+            local command = "curl --silent --create-dirs --output " .. cachename .. " " .. original
             os.spawn(command)
         end
         if io.exists(cachename) then
-            cached[name] = cachename
+            cached[original] = cachename
         else
-            cached[name] = ""
+            cached[original] = ""
         end
     end
-    return cached[name]
+    return cached[original]
 end
 
-function finders.curl(protocol,filename)
-    local foundname = curl.fetch(protocol, filename)
-    return finders.generic(protocol,foundname,filetype)
+-- old code: we could be cleaner using specification (see schemes)
+
+local function finder(specification,filetype)
+    return resolvers.methodhandler("finders",runcurl(specification),filetype)
 end
 
-function openers.curl(protocol,filename)
-    return openers.generic(protocol,filename)
+local opener = openers.file
+local loader = loaders.file
+
+local function install(scheme)
+    finders[scheme] = finder
+    openers[scheme] = opener
+    loaders[scheme] = loader
 end
 
-function loaders.curl(protocol,filename)
-    return loaders.generic(protocol,filename)
-end
+resolvers.curl.install = install
 
--- todo: metamethod
-
-function curl.install(protocol)
-    finders[protocol] = function (filename,filetype) return finders.curl(protocol,filename) end
-    openers[protocol] = function (filename)          return openers.curl(protocol,filename) end
-    loaders[protocol] = function (filename)          return loaders.curl(protocol,filename) end
-end
-
-curl.install('http')
-curl.install('https')
-curl.install('ftp')
+install('http')
+install('https')
+install('ftp')

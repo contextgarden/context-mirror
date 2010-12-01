@@ -13,7 +13,7 @@ pagebuilders = pagebuilders or { }
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-local actions = nodes.tasks.actions("pagebuilders",5)
+local actions = nodes.tasks.actions("pagebuilders")
 
 local function processor(head,groupcode,size,packtype,maxdepth,direction)
     starttiming(pagebuilders)

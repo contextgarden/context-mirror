@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['colo-ini'] = {
 local type, tonumber = type, tonumber
 local concat = table.concat
 local format, gmatch, gsub, lower, match, find = string.format, string.gmatch, string.gsub, string.lower, string.match, string.find
+local P, R, C, Cc = lpeg.P, lpeg.R, lpeg.C, lpeg.Cc
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local trace_define = false  trackers.register("colors.define",function(v) trace_define = v end)
 
@@ -58,7 +60,7 @@ local function inheritcolor(name, ca, global)
             if trace_define then
                 commands.writestatus("color","inherit global color '%s' with attribute: %s",name,ca)
             end
-            context.colordeffgc(name,ca)
+            context.colordeffgc(name,ca) -- some day we will set the macro directly
         else
             if trace_define then
                 commands.writestatus("color","inherit local color '%s' with attribute: %s",name,ca)
@@ -243,11 +245,47 @@ function colors.definesimplegray(name,s)
     return register_color(name,'gray',s) -- we still need to get rid of 'color'
 end
 
+local hexdigit    = R("09","AF","af")
+local hexnumber   = hexdigit * hexdigit / function(s) return tonumber(s,16)/255 end + Cc(0)
+local hexpattern  = hexnumber^-3 * P(-1)
+local hexcolor    = Cc("H") * P("#") * hexpattern
+
+local left        = P("(")
+local right       = P(")")
+local comma       = P(",")
+local mixnumber   = lpegpatterns.number / tonumber
+local mixname     = C(P(1-left-right-comma)^1)
+local mixcolor    = Cc("M") * mixnumber * left * mixname * (comma * mixname)^-1 * right * P(-1)
+
+local exclamation = P("!")
+local pgfnumber   = lpegpatterns.digit^0 / function(s) return tonumber(s)/100 end
+local pgfname     = C(P(1-exclamation)^1)
+local pgfcolor    = Cc("P") * pgfname * exclamation * pgfnumber * (exclamation * pgfname)^-1 * P(-1)
+
+local specialcolor = hexcolor + mixcolor
+
+local l_color        = attributes.list[a_color]
+local l_transparency = attributes.list[a_transparency]
+
+directives.register("colors.pgf",function(v)
+    if v then
+        specialcolor = hexcolor + mixcolor + pgfcolor
+    else
+        specialcolor = hexcolor + mixcolor
+    end
+end)
+
 function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
-    local x = match(str,"^#(.+)$") -- for old times sake (if we need to feed from xml or so)
-    if x then
-        local r, g, b = match(x .. "000000","(..)(..)(..)") -- watch the 255
-        definecolor(name, register_color(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255), global)
+    local what, one, two, three = lpegmatch(specialcolor,str)
+    if what == "H" then
+        -- for old times sake (if we need to feed from xml or so)
+        definecolor(name, register_color(name,'rgb',one,two,three),global)
+    elseif what == "M" then
+        -- intermediate
+        return colors.defineintermediatecolor(name,one,l_color[two],l_color[three],l_transparency[two],l_transparency[three],"",global,freeze)
+    elseif what == "P" then
+        -- pgf for tikz
+        return colors.defineintermediatecolor(name,two,l_color[one],l_color[three],l_transparency[one],l_transparency[three],"",global,freeze)
     else
         local settings = settings_to_hash_strict(str)
         if settings then
@@ -267,8 +305,8 @@ function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent
                     else
                         local x = settings.x or h
                         if x then
-                            r, g, b = match(x .. "000000","(..)(..)(..)") -- watch the 255
-                            definecolor(name, register_color(name,'rgb',(tonumber(r,16) or 0)/255,(tonumber(g,16) or 0)/255,(tonumber(b,16) or 0)/255), global)
+                            r, g, b = lpegmatch(hexpattern,x) -- can be inlined
+                            definecolor(name, register_color(name,'rgb',r,g,b), global)
                         else
                             definecolor(name, register_color(name,'gray',tonumber(s) or 0), global)
                         end
@@ -507,20 +545,35 @@ end
 function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,specs,global,freeze)
     fraction = tonumber(fraction) or 1
     local one, two = colors.value(c_one), colors.value(c_two)
-    if one and two then
-        local csone, cstwo = one[1], two[1]
-        if csone == cstwo then
-            -- actually we can set all 8 values at once here but this is cleaner as we avoid
-            -- problems with weighted gray conversions and work with original values
+    if one then
+        if two then
+            local csone, cstwo = one[1], two[1]
+            if csone == cstwo then
+                -- actually we can set all 8 values at once here but this is cleaner as we avoid
+                -- problems with weighted gray conversions and work with original values
+                local ca
+                if csone == 2 then
+                    ca = register_color(name,'gray',f(one,two,2,fraction))
+                elseif csone == 3 then
+                    ca = register_color(name,'rgb', f(one,two,3,fraction),f(one,two,4,fraction),f(one,two,5,fraction))
+                elseif csone == 4 then
+                    ca = register_color(name,'cmyk',f(one,two,6,fraction),f(one,two,7,fraction),f(one,two,8,fraction),f(one,two,9,fraction))
+                else
+                    ca = register_color(name,'gray',f(one,two,2,fraction))
+                end
+                definecolor(name,ca,global,freeze)
+            end
+        else
+            local csone = one[1]
             local ca
             if csone == 2 then
-                ca = register_color(name,'gray',f(one,two,2,fraction))
+                ca = register_color(name,'gray',fraction*one[2])
             elseif csone == 3 then
-                ca = register_color(name,'rgb',f(one,two,3,fraction),f(one,two,4,fraction),f(one,two,5,fraction))
+                ca = register_color(name,'rgb', fraction*one[3],fraction*one[4],fraction*one[5])
             elseif csone == 4 then
-                ca = register_color(name,'cmyk',f(one,two,6,fraction),f(one,two,7,fraction),f(one,two,8,fraction),f(one,two,9,fraction))
+                ca = register_color(name,'cmyk',fraction*one[6],fraction*one[7],fraction*one[8],fraction*one[9])
             else
-                ca = register_color(name,'gray',f(one,two,2,fraction))
+                ca = register_color(name,'gray',fraction*one[2])
             end
             definecolor(name,ca,global,freeze)
         end
@@ -530,7 +583,6 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     local ta = tonumber((t and t.a) or (one and one[1]) or (two and two[1]))
     local tt = tonumber((t and t.t) or (one and two and f(one,two,2,fraction)))
     if ta and tt then
---~     print(ta,tt)
         definetransparent(name,transparencies.register(name,ta,tt),global)
     end
 end

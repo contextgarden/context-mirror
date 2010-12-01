@@ -76,44 +76,27 @@ function regimes.translate(line,regime)
     return line
 end
 
--- function regimes.enable(regime)
---     regime = synonyms[regime] or regime
---     if data[regime] then
---         regimes.currentregime = regime
---         local translate = regimes.translate
---         resolvers.filters.install('input',function(s)
---             return translate(s,regime)
---         end)
---     else
---         regimes.disable()
---     end
--- end
---
--- function regimes.disable()
---     regimes.currentregime = "utf"
---     resolvers.filters.install('input',nil)
--- end
-
-local sequencers = utilities.sequencers
+local sequencers      = utilities.sequencers
+local textfileactions = resolvers.openers.helpers.textfileactions
 
 function regimes.process(s)
-    return translate(s,regimes.currentregime)
+    return regimes.translate(s,regimes.currentregime)
 end
 
 function regimes.enable(regime)
     regime = synonyms[regime] or regime
     if data[regime] then
         regimes.currentregime = regime
-        sequencers.enableaction(resolvers.openers.textfileactions,"regimes.process")
+        sequencers.enableaction(textfileactions,"regimes.process")
     else
-        sequencers.disableaction(resolvers.openers.textfileactions,"regimes.process")
+        sequencers.disableaction(textfileactions,"regimes.process")
     end
 end
 
 function regimes.disable()
     regimes.currentregime = "utf"
-    sequencers.disableaction(resolvers.openers.textfileactions,"regimes.process")
+    sequencers.disableaction(textfileactions,"regimes.process")
 end
 
-utilities.sequencers.prependaction(resolvers.openers.textfileactions,"system","regimes.process")
-utilities.sequencers.disableaction(resolvers.openers.textfileactions,"regimes.process")
+utilities.sequencers.prependaction(textfileactions,"system","regimes.process")
+utilities.sequencers.disableaction(textfileactions,"regimes.process")

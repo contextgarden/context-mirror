@@ -51,7 +51,7 @@ end
 function moduledata.pstricks.process(n)
     graphics = graphics + 1
     local name = string.format("%s-pstricks-%04i",tex.jobname,graphics)
-    local data = buffers.collect("def-"..n)
+    local data = buffers.collectcontent("def-"..n)
     local tmpfile = name .. ".tmp"
     local epsfile = name .. ".ps"
     local pdffile = name .. ".pdf"

@@ -63,6 +63,8 @@ function context.utfchar(k)
     context(utfchar(k))
 end
 
+-- plain variants
+
 function context.chardef(cs,u)
     context(format([[\chardef\%s=%s\relax]],k))
 end
@@ -78,3 +80,15 @@ end
 function context.egroup()
     context("}")
 end
+
+local rule = nodes.pool.rule
+
+function context.hrule(w,h,d,dir)
+    if type(w) == "table" then
+        context(rule(w.width,w.height,w.depth,w.dir))
+    else
+        context(rule(w,h,d,dir))
+    end
+end
+
+context.vrule = context.hrule
