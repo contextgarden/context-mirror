@@ -306,7 +306,7 @@
    \fi}
 
 \def\!tgDoParen(#1)%
-  {\def\!tgCode{2}%
+  {\def\!tgCode{2}% will be expanded
    \def\!tgValue{#1}%
    \!tgReturn}
 
@@ -348,8 +348,8 @@
   {\normalexpanded
      {\noexpand \doreadtableformatkeys
         b{\dotablebeginparbox
-            {\ifnum \!tgCode=1
-               \ifx \!tgValue\empty
+            {\ifnum\!tgCode=\plusone
+               \ifx\!tgValue\empty
                  \tablecolumnwidthfactor
                \else
                  \!tgValue
@@ -363,7 +363,7 @@
 \def\!tgInsertKern
   {\edef\!ttemp
      {\kern
-      \ifnum \!tgCode=1
+      \ifnum \!tgCode=\plusone
         \ifx \!tgValue\empty
           \tablekernfactor
         \else
@@ -919,47 +919,6 @@
   {\domakestandardtablestrut
    \cr}
 
-% ALTERNATE VRULE
-
-\def\!ttAlternateVrule
-  {\!tgGetValue{\!ttAVTestForCode}}  % AV == Alternate Vrule
-
-% TEST FOR CODE (2)
-
-\def\!ttAVTestForCode
-  {\ifnum\!tgCode=\plustwo               % (...) follows "\|"
-     \expandafter\!ttInsertVrule         % \InsertVrule ends with "&"
-   \else
-     \expandafter\!ttAVTestForEmpty
-   \fi}
-
-% TEST FOR EMPTY (VALUE)
-
-\def\!ttAVTestForEmpty
-  {\ifx\!tgValue\empty           % non-digit after "\|"
-     \expandafter\!ttAVTestForBlank
-   \else
-     \expandafter\!ttInsertVrule         % integer after "\|"
-   \fi}
-
-% TEST FOR BLANK
-
-\def\!ttAVTestForBlank
-  {\ifx\!ttemp\!thSpaceToken     % blank after "\|"
-     \expandafter\!ttInsertVrule
-   \else
-     \expandafter\!ttAVTestForStar
-   \fi}
-
-% TEST FOR STAR
-
-\def\!ttAVTestForStar
-  {\ifx*\!ttemp                  % "*" after "\|"
-     \expandafter\!ttInsertDefaultPR     % PR == pseudo-rule
-   \else
-     \expandafter\!ttGetPseudoVrule      % "Anything else" after "\|"
-   \fi}
-
 % INSERT VRULE
 
 \def\@VLn{1}
@@ -1512,8 +1471,8 @@
 \def\donormaltablefullrule     {\!ttFullHrule}
 \def\donormaltableendofrow     {\!ttEndOfRow}
 \def\donormaltablesimplebar    {\unskip\!ttRightGlue&&}
-\def\donormaltablecomplexbar #1{\unskip\!ttRightGlue&\omit\expandafter\!ttAlternateVrule#1 }
-\def\donormaltablequote        {\unskip\!ttRightGlue&\omit&}
+\def\donormaltablecomplexbar   {\unskip\!ttRightGlue&\omit\!ttInsertVrule}
+\def\donormaltablenobar        {\unskip\!ttRightGlue&\omit&}
 \def\donormaltablelineformat   {\donormaltableendofrow+}
 \def\donormaltablelineending   {\donormaltableendofrow0 }
 \def\donormaltablesinglerule   {&\donormaltablelongrule&}
@@ -2173,14 +2132,15 @@
    \dosingleempty\dodotableVL}
 
 \def\dodotableVL[#1]%
-  {\global\tablecurrentvrulecolor\empty
+  {\global\let\tablecurrentvrulecolor\empty
    \global\tablevrulethicknessfactor\@@tiVLwidth\relax
    \iffirstargument
      \rawprocesscommalist[#1]\dotablevrulecommand
    \fi
-   \normalexpanded{\noexpand\donormaltablecomplexbar\the\tablevrulethicknessfactor} }% \relax breaks \use
+  %\normalexpanded{\noexpand\donormaltablecomplexbar\the\tablevrulethicknessfactor} }% \relax breaks \use
+   \donormaltablecomplexbar}% \relax breaks \use
 
-\let\doableVC\dotableVL % for mojca
+\let\dotableVC\dotableVL % for mojca
 
 % \starttable[|||]
 % \HL
@@ -2289,7 +2249,7 @@
 \unexpanded\def\dotableNC
   {\dochecktableautorow
    \global\advance\currenttablecolumn \plusone
-   \donormaltablequote}
+   \donormaltablenobar}
 
 %D \startitemize[3*broad]
 %D \sym{\type{\DL}}
@@ -2365,7 +2325,7 @@
   {\dotableDCV\donormaltablesimplebar}
 
 \unexpanded\def\dotableDC
-  {\dotableDCV\donormaltablequote}
+  {\dotableDCV\donormaltablenobar}
 
 \unexpanded\def\dotableDCV#1%
   {\dochecktabledivision
