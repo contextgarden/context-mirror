@@ -10,7 +10,7 @@ local P, V, S, R, C, Cs, Cmt = lpeg.P, lpeg.V, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, 
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
 local insert, remove = table.insert, table.remove
-local rep = string.rep
+local rep, sub = string.rep, string.sub
 local setmetatable = setmetatable
 
 local report_macros = logs.new("macros")
@@ -55,7 +55,7 @@ local function pop()
     top = remove(stack)
 end
 
-local leftbrace   = P("{")
+local leftbrace   = P("{")   -- will be in patterns
 local rightbrace  = P("}")
 local escape      = P("\\")
 
@@ -64,8 +64,12 @@ local spaces      = space^1
 local newline     = patterns.newline
 local nobrace     = 1 - leftbrace - rightbrace
 
+local longleft    = leftbrace  -- P("(")
+local longright   = rightbrace -- P(")")
+local nolong      = 1 - longleft - longright
+
 local name        = R("AZ","az")^1 -- @?! -- utf?
-local longname    = (leftbrace/"") * (nobrace^1) * (rightbrace/"")
+local longname    = (longleft/"") * (nolong^1) * (longright/"")
 local variable    = P("#") * Cs(name + longname)
 local escapedname = escape * name
 local definer     = escape * (P("def") + P("egdx") * P("def"))
@@ -80,7 +84,7 @@ local declaration = variable / set
 local identifier  = variable / get
 
 local function matcherror(str,pos)
-    report_macros("runaway definition at: %s",string.sub(str,pos-30,pos))
+    report_macros("runaway definition at: %s",sub(str,pos-30,pos))
 end
 
 local grammar = { "converter",
@@ -132,7 +136,7 @@ function macros.preprocessed(str)
     return lpegmatch(parser,str)
 end
 
-function macros.convertfile(oldname,newname)
+function macros.convertfile(oldname,newname) -- beware, no testing on oldname == newname
     local data = resolvers.loadtexfile(oldname)
     data = interfaces.preprocessed(data) or ""
     io.savedata(newname,data)

@@ -13906,6 +13906,7 @@ function runners.execute_program(fullname)
             return true
         elseif state == "run" then
             local before, after = environment.splitarguments(fullname)
+            for k=1,#after do after[k] = resolvers.resolve(after[k]) end
             environment.initializearguments(after)
             fullname = fullname:gsub("^bin:","")
             local command = fullname .. " " .. (environment.reconstructcommandline(after or "",noquote) or "")

@@ -14,12 +14,31 @@
 %D This is an unfinished, preliminary module. At least two
 %D runs are needed to get the table fixed. Ugly code.
 
+% todo: TABLE TBL -> ntb
 % todo: special parsetb for argless variant
 % todo: protect \tbl...
 % todo: tblnx also count
 % todo: get rid of recurse
 % todo: fast if
 % todo: avoid halign (just do it manual) and thereby globals
+
+
+% \unexpanded\def\startrow            {\bTR}
+% \unexpanded\def\stoprow             {\eTR}
+% \unexpanded\def\startcell#1\stopcell{\bTD#1\eTD}
+%            \let\stopcell             \relax
+%            \let\startcelltable       \bTABLE
+%            \let\stopcelltable        \eTABLE
+
+% \starttext
+%     \startcelltable[|c|c|]
+%         \startrow \startcell a \stopcell \stoprow
+%         \startrow \startcell a \stopcell \stoprow
+%         \startrow \startcell a \stopcell \stoprow
+%         \startrow \startcell a \stopcell \stoprow
+%     \stopcelltable
+% \stoptext
+
 
 % optie=rek beschrijven
 
