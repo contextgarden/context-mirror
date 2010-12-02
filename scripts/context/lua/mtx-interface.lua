@@ -300,6 +300,24 @@ function scripts.interface.context()
     end
 end
 
+function scripts.interface.preprocess()
+    require("luat-mac.lua")
+    local newsuffix = environment.argument("suffix") or "tex"
+    local force = environment.argument("force")
+    for i=1,#environment.files do
+        local oldname = environment.files[i]
+        local newname = file.replacesuffix(oldname,newsuffix)
+        if oldname == newname then
+            logs.simple("skipping '%s' because old and new name are the same",oldname)
+        elseif io.exists(newname) and not force then
+            logs.simple("skipping '%s' because new file exists, use --force",oldname)
+        else
+            logs.simple("processing '%s' into '%s'",oldname,newname)
+            io.savedata(newname,resolvers.macros.preprocessed(io.loaddata(oldname)))
+        end
+    end
+end
+
 function scripts.interface.messages()
     local filename = resolvers.findfile(environment.files[1] or "mult-mes.lua") or ""
     if filename ~= "" then
@@ -338,6 +356,9 @@ messages.help = [[
 --raw                 report commands to the console
 --check               generate check file
 --context             generate context definition files
+--preprocess          preprocess mkvi files to tex files [force,suffix]
+--suffix              use given suffix for output files
+--force               force action even when in doubt
 --messages            generate context message files
 ]]
 
@@ -345,6 +366,8 @@ local ea = environment.argument
 
 if ea("context") then
     scripts.interface.context()
+elseif ea("preprocess") then
+    scripts.interface.preprocess()
 elseif ea("messages") then
     scripts.interface.messages()
 elseif ea("scite") or ea("bbedit") or ea("jedit") or ea("textpad") or ea("text") or ea("raw") then
