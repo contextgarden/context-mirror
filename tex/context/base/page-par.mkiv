@@ -38,11 +38,13 @@
       \kern\@@phdistance}}
 
 \def\doshowparagraphnumberA
-  {\ifprocessingverbatim
-     \iflinepar\dodoshowparagraphnumber\fi
-   \else
+  {%\ifprocessingverbatim
+   %  \iflinepar
+   %    % obsolete: \dodoshowparagraphnumber
+   %  \fi
+   %\else
      \dodoshowparagraphnumber
-   \fi}
+   }%\fi}
 
 \def\doshowparagraphnumberB
   {\ifnumberinglines

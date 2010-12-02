@@ -631,6 +631,7 @@
 
 \appendtoks
   % a position can be mid paragraph in which case we're behind
+  % this will change when we move positions to lua
   \initializeparbackgrounds
 \to \everystarttext
 
@@ -846,42 +847,6 @@
 \def\calculatenexttextpardimensions
   {\docalculatetextpardimensions\nextbtbanchor\nextetbanchor\relax}
 
-% \def\docalculatetextpardimensions#1#2#3% #1=\btbanchor #2=\etbanchor
-%   {\scratchcounter\numexpr\MPp#2-\MPp#1\relax
-%    \edef\textparpages{\the\scratchcounter}%
-%    \ifcase\scratchcounter
-%      % one page
-%      \scratchdimen\dimexpr\MPy#1-\MPy#2\relax
-%    \else
-%      % two or more pages
-%      \ifnum\scratchcounter>2
-%        \ifnum\scratchcounter<5
-%          % more pages
-%          \scratchdimen\textheight
-%          \advance\scratchcounter \minusone
-%          \multiply\scratchdimen \scratchcounter
-%        \else
-%          % keep'm small
-%          \scratchdimen5\textheight
-%        \fi
-%      \else
-%        \scratchdimen\dimexpr\MPy#1-\MPy#2-\MPy\textanchor+\MPy\textanchor+\MPh\textanchor\relax
-%      \fi
-%    \fi
-%    \edef\textparheight{\the\scratchdimen}%
-%    \ifcase\scratchcounter
-%      % one page
-%      \scratchdimen\dimexpr\MPx#2-\MPx#1\relax
-%    \else
-%      % two or more pages / maybe also hang
-%      \ifx#3\relax
-%        \scratchdimen\makeupwidth % \textwidth
-%      \else
-%        \scratchdimen\dimexpr\MPw\MPparanchor-\MPl\MPparanchor-\MPr\MPparanchor\relax
-%      \fi
-%    \fi
-%    \edef\textparwidth{\the\scratchdimen}}
-
 \def\docalculatetextpardimensions#1#2#3% #1=\btbanchor #2=\etbanchor (adapted 8/6/2009)
   {\scratchcounter\numexpr\MPp#2-\MPp#1\relax
    \edef\textparpages
@@ -1021,8 +986,6 @@
 
 \ifx\basegrid\undefined \else \letvalue\v!grid=\basegrid \fi
 
-% lelijk, aanpassen, opties
-
 \setupMPvariables
   [mpos:connect]
   [linecolor=red,
