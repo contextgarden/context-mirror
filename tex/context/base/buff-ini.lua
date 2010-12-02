@@ -46,7 +46,7 @@ local function exists(name)
     return data[name] ~= nil
 end
 
-local function getcontent(name)
+local function getcontent(name) -- == raw
     return data[name] or ""
 end
 

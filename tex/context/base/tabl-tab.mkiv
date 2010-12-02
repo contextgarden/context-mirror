@@ -751,10 +751,10 @@
    \!taDimenB=#2\relax
    \let\!TsSpaceFactor\empty
    \ifmmode
-     \expandafter \mathpalette
-     \expandafter \!TsEnlargeMath
+     \expandafter\mathpalette
+     \expandafter\!TsEnlargeMath
    \else
-     \expandafter \!TsEnlargeOther
+     \expandafter\!TsEnlargeOther
    \fi}
 
 \def\!TsEnlargeOther#1%
@@ -870,10 +870,11 @@
 % INSERT VRULE
 
 \newcount\noftablevrules \noftablevrules\plusone
-\def\@VLd{.125em}
 
 \let\tablecurrentvrulecolor\empty
 \let\tablecurrenthrulecolor\empty
+
+\def\@VLd{.125em}
 
 \def\do!ttInsertVrule % will be merged in 2005
   {\vrule\!!width
@@ -931,7 +932,7 @@
      \def\next                                       % added
        {\global\advance\currenttablecolumn #1%       % added
         \global\advance\currenttablecolumn \minusone % added
-        \scratchcounter#1%   \mscount is in Plain
+        \scratchcounter#1%
         \advance\scratchcounter \minusone
         \advance\scratchcounter \scratchcounter
         \!thLoop

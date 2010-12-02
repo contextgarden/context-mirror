@@ -516,16 +516,27 @@
 
 \let\registerparoptions\relax
 
+% \def\doregisterparoptions
+%   {\ifpositioningpar \ifpositioning \iftrialtypesetting \else
+%      \ifinpagebody \else \ifmmode \else \ifinformula \else
+%       % \ifprocessingverbatim
+%       %   \iflinepar
+%       %     % obsolete: \dodoregisterparoptions
+%       %   \fi
+%       % \else
+%          \dodoregisterparoptions
+%       % \fi
+%      \fi \fi \fi
+%    \fi \fi \fi}
+
 \def\doregisterparoptions
-  {\ifpositioningpar \ifpositioning \iftrialtypesetting \else
-     \ifinpagebody \else \ifmmode \else \ifinformula \else
-       \ifprocessingverbatim
-         \iflinepar \dodoregisterparoptions \fi
-       \else
-         \dodoregisterparoptions
-       \fi
-     \fi \fi \fi
-   \fi \fi \fi}
+  {%\ifpositioningpar \ifpositioning  % true anyway
+     \iftrialtypesetting \else
+       \ifinpagebody \else \ifmmode \else \ifinformula \else
+          \dodoregisterparoptions
+       \fi \fi \fi
+     \fi
+   }%\fi \fi}
 
 \def\dodoregisterparoptions
   {\global\advance\parposcounter\plusone

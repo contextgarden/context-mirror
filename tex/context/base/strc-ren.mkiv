@@ -372,11 +372,6 @@
 \def\presetnumberheadalternative
   {\doifelsevalue{\??ns:\numberheadalternative}\v!horizontal\setfalse\settrue\structureheadisdisplay}
 
-% \def\normalplacehead
-%   {\executeifdefined
-%      {\??ns::\numberheadalternative}
-%      {\getvalue{\??ns::\v!normal}}}
-
 \def\normalplacehead
   {\csname\??ns::\ifcsname\??ns::\numberheadalternative\endcsname\numberheadalternative\else\v!normal\fi\endcsname}
 
@@ -388,23 +383,6 @@
         #1\hskip\numberheaddistance
       \fi
       #2}}
-
-% \defineheadplacement[\v!normal][\v!vertical]#1#2%
-%   {\ifconditional\structureheadshownumber % \ifheadnumbercontent
-%      \setbox0\hbox{{#1}\hskip\numberheaddistance}%
-%      \vbox
-%        {\localheadsetup
-%         \hangindent 1\wd0
-%         \hangafter 1
-%         \noindent
-%         \unhbox0    %  don't use \strut's here!
-%         #2}%
-%    \else
-%      \vbox
-%        {\localheadsetup\noindent#2}%
-%    \fi}
-%
-% enhanced version:
 
 % \setuphead
 %   [chapter]
@@ -419,7 +397,7 @@
       \edef\headwidth      {\structureheadparameter\c!width      }%
       \edef\headnumberwidth{\structureheadparameter\c!numberwidth}%
       \edef\headtextwidth  {\structureheadparameter\c!textwidth  }%
-      \ifconditional\structureheadshownumber % \ifheadnumbercontent
+      \ifconditional\structureheadshownumber
         \ifx\headwidth\empty
         \else
           \ifx\headnumberwidth\empty
@@ -463,7 +441,7 @@
      {\localheadsetup
       \begstrut % use one \strut here!
       \dontleavehmode % in case there is no strut, else side effects with llap
-      \ifconditional\structureheadshownumber % \ifheadnumbercontent
+      \ifconditional\structureheadshownumber
         \llap{\hbox{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
         % maybe better:
         % \inleftmargin{\hbox{\hss{#1}\hskip\localheadskip}}%
@@ -479,7 +457,7 @@
       \veryraggedcenter
       \let\\\endgraf
       \let\crlf\endgraf
-      \ifconditional\structureheadshownumber % \ifheadnumbercontent
+      \ifconditional\structureheadshownumber
         \strut#1\par
       \fi
       \begstrut#2}}
@@ -487,14 +465,14 @@
 \defineheadplacement[\v!text][\v!horizontal]#1#2%
   {\bgroup
    \localheadsetup % no stretch in distance
-   \ifconditional\structureheadshownumber % \ifheadnumbercontent
+   \ifconditional\structureheadshownumber
      {#1}\kern\numberheaddistance
    \fi
    {\begstrut#2}%
    \egroup}
 
 \unexpanded\def\placeheadlohi#1#2#3%
-  {\ifconditional\structureheadshownumber % \ifheadnumbercontent
+  {\ifconditional\structureheadshownumber
      \setbox0\hbox{#2}
      \setbox2=#1{\localheadsetup\advance\hsize-\wd0\relax#3}%
      \hbox{\box0\hskip\numberheaddistance\box2}%
