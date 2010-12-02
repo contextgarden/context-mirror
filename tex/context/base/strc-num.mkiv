@@ -49,7 +49,6 @@
    \c!prefixconnector=.,
    \c!prefixsegments=\thenamedstructurecounterlevel\currentstructurecounter,
    \c!start=0,
-   \c!state=\v!start,
    \c!prefix=\v!yes,
    \c!state=\v!start]
 
@@ -106,7 +105,7 @@
 
 \def\dododefinestructurecounter[#1][#2]%
   {\getparameters[\??nn#1][\s!counter=,#2]% counter is for internal purposes
-   \ctxlua{structures.counters.define("#1",
+   \ctxlua{structures.counters.define("#1", % this will be a table
     tonumber("\structurecounterparameter{#1}\c!start") or 0,
     "\structurecounterparameter{#1}\s!counter",
     "\structurecounterparameter{#1}\c!method")}%
@@ -469,7 +468,7 @@
   {\setupstructurecounter
      [#1]
      [              \c!start=#2\c!start,
-                    \c!state=#2\c!state,
+                    \c!state=#2\c!state, % beware, "" == start
                       \c!way=#2\c!way,
                             %
                    \c!prefix=#2\c!prefix,

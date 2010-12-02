@@ -492,7 +492,6 @@ function lists.savedprefixednumber(name,n)
         helpers.prefix(data,data.prefixdata)
         local numberdata = data.numberdata
         if numberdata then
---~ print(name,n,table.serialize(numberdata))
             sections.typesetnumber(numberdata,"number",numberdata or false)
         end
     end
