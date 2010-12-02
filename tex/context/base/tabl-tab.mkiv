@@ -105,11 +105,10 @@
 
 \newskip \!taLastRegularTabskip
 
-%newif   \if!taDigit
 \newif   \if!taBeginFormat
 \newif   \if!taOnceOnlyTabskip
 
-\def\!thToksEdef#1=#2%
+\def\!thToksEdef#1#2%
   {\edef\!ttemp{#2}%
    #1\expandafter{\!ttemp}%
    \ignorespaces}
@@ -122,11 +121,11 @@
 \def\dobegintableformat
   {\!taPreamble\emptytoks
    \!taColumnNumber\zerocount
-   \skip0=\tableintercolumnspaceunit
-   \multiply\skip0 \tableintercolumnspacefactor
-   \divide\skip0 2
-   \!taRuleColumnTemplate\expandafter{\expandafter\tabskip\the\skip0 }%
-   \!taLastRegularTabskip\skip0
+   \scratchskip\tableintercolumnspaceunit
+   \multiply\scratchskip\tableintercolumnspacefactor
+   \divide\scratchskip\plustwo
+   \!taRuleColumnTemplate\expandafter{\expandafter\tabskip\the\scratchskip}%
+   \!taLastRegularTabskip\scratchskip
    \!taOnceOnlyTabskipfalse
    \!taBeginFormattrue
    \let\!tfRowOfWidths\empty
@@ -172,32 +171,32 @@
 
 \def\!tfSetTabskip
   {\ifnum\!tgCode=\plusone
-     \skip0=\tableintercolumnspaceunit
-     \multiply\skip0 \ifx\!tgValue\empty\tableintercolumnspacefactor\else\!tgValue\fi
+     \scratchskip\tableintercolumnspaceunit
+     \multiply\scratchskip \ifx\!tgValue\empty\tableintercolumnspacefactor\else\!tgValue\fi
   \else
-    \skip0=\!tgValue
+    \scratchskip\!tgValue
   \fi
-  \divide\skip0 by \plustwo
+  \divide\scratchskip\plustwo
   \ifnum\!taColumnNumber=\zerocount
-   %\!thToksEdef\!taRuleColumnTemplate={\the\!taRuleColumnTemplate\tabskip\the\skip0 }%
-    \normalexpanded{\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\skip0 }}%
+   %\!thToksEdef\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}%
+    \normalexpanded{\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}}%
   \else
-   %\!thToksEdef\!taDataColumnTemplate={\the\!taDataColumnTemplate\tabskip\the\skip0 }%
-    \normalexpanded{\!taDataColumnTemplate{\the\!taDataColumnTemplate\tabskip\the\skip0 }}%
+   %\!thToksEdef\!taDataColumnTemplate{\the\!taDataColumnTemplate\tabskip\the\scratchskip}%
+    \normalexpanded{\!taDataColumnTemplate{\the\!taDataColumnTemplate\tabskip\the\scratchskip}}%
   \fi
   \if!taOnceOnlyTabskip\else
-    \!taLastRegularTabskip=\skip0 % Remember this Tabskip, for possible
-  \fi                             % restoration after a subsequent"OnceOnly"
+    \!taLastRegularTabskip\scratchskip % Remember this Tabskip, for possible
+  \fi                                  % restoration after a subsequent"OnceOnly"
   \doreadtableformatkeys}
 
 \def\!tfSetVrule
   {\!thToksEdef\!taRuleColumnTemplate
-    ={\noexpand\hfil
-      \noexpand\vrule
+     {\hfil
+      \vrule
       \noexpand\!!width
       \ifnum\!tgCode=\plusone
         \ifx\!tgValue\empty
-        \tablevrulethicknessfactor
+          \tablevrulethicknessfactor
         \else
           \!tgValue
         \fi
@@ -206,16 +205,16 @@
         \!tgValue
       \fi
       ####%
-      \noexpand\hfil
+      \hfil
       \the\!taRuleColumnTemplate}%
   \!tfAdjoinPriorColumn}
 
 \def\!tfSetAlternateVrule
   {\afterassignment\!tfSetAlternateA
-   \toks0 =}
+   \scratchtoks}
 
 \def\!tfSetAlternateA
-  {\!thToksEdef\!taRuleColumnTemplate={\the\toks0 \the\!taRuleColumnTemplate}%
+  {\!thToksEdef\!taRuleColumnTemplate{\the\scratchtoks\the\!taRuleColumnTemplate}%
    \!tfAdjoinPriorColumn}
 
 \def\!tfAdjoinPriorColumn
@@ -226,12 +225,12 @@
      \else
        \!tfUpdateRowOfWidths
      \fi
-     \!thToksEdef\!taDataColumnTemplate={\the\!taLeftGlue\the\!taDataColumnTemplate\the\!taRightGlue}%
-     \!thToksEdef\!taPreamble={\the\!taPreamble&\the\!taDataColumnTemplate&\the\!taRuleColumnTemplate}%
+     \!thToksEdef\!taDataColumnTemplate{\the\!taLeftGlue\the\!taDataColumnTemplate\the\!taRightGlue}%
+     \!thToksEdef\!taPreamble{\the\!taPreamble&\the\!taDataColumnTemplate&\the\!taRuleColumnTemplate}%
   \fi
   \advance \!taColumnNumber \plusone
   \if!taOnceOnlyTabskip
-    \!thToksEdef\!taDataColumnTemplate={####\tabskip \the\!taLastRegularTabskip}%
+    \!thToksEdef\!taDataColumnTemplate{####\tabskip \the\!taLastRegularTabskip}%
   \else
     \!taDataColumnTemplate{##}%
   \fi
@@ -265,7 +264,7 @@
    \!taMinimumColumnWidth=\wd0 }
 
 \def\!tfFinishFormat
-  {\!thToksEdef\!taPreamble={####\tabskip\tablelefttabskip&\the\!taPreamble \tabskip\tablerighttabskip&####\tabskip\zeropoint\cr}
+  {\!thToksEdef\!taPreamble{####\tabskip\tablelefttabskip&\the\!taPreamble \tabskip\tablerighttabskip&####\tabskip\zeropoint\cr}
    \!taBeginFormatfalse
    \!ttDoHalign}
 
@@ -654,12 +653,9 @@
      \!taDimenC\wd\scratchbox
    \fi
    \setbox\scratchbox\hbox{\mathsurround\zeropoint #1#2#1}%
-   \!thToksEdef\!taDataColumnTemplate={%
-     \noexpand\!tnSetNumericItem
-     {\the\wd\scratchbox}%
-     {\the\!taDimenC}%
-     {#1}%
-     \the\!taDataColumnTemplate}  % Might have tabskip glue in here
+   \!thToksEdef\!taDataColumnTemplate
+     {\noexpand\!tnSetNumericItem{\the\wd\scratchbox}{\the\!taDimenC}{#1}%
+      \the\!taDataColumnTemplate}% Might have tabskip glue in here
    \doreadtableformatkeys}
 
 % SET NUMERIC ITEM
@@ -732,7 +728,7 @@
    \fi
    \setbox\scratchbox\hbox{\mathsurround\zeropoint #1#2#1}%
    \!thToksEdef\!taDataColumnTemplate
-     ={\noexpand\!tqSetQuantityItem{\the\wd\scratchbox}{\the\!taDimenC}{#1}%
+      {\noexpand\!tqSetQuantityItem{\the\wd\scratchbox}{\the\!taDimenC}{#1}%
        \the\!taDataColumnTemplate}%
   \doreadtableformatkeys}
 
@@ -743,27 +739,6 @@
   {\def\!ttemp{#6}%
    \hbox to #1{\hss\mathsurround\zeropoint#3#4#3}%
    \hbox to #2{\ifx\!ttemp\empty\else\mathsurround\zeropoint#3,#5#3\fi\hss}}
-
-% struts
-
-\def\domaketablestrut#1#2%
-  {\vrule\!!width\zeropoint\!!height#1\!!depth#2\relax}
-
-\def\domakestandardtablestrut
-  {\domaketablestrut
-     {\tablestrutheightfactor\tablestrutunit}
-     {\tablestrutdepthfactor \tablestrutunit }}
-
-\def\domakeaugmentedtablestrut#1#2%
-  {\domaketablestrut
-     {\dimexpr\tablestrutheightfactor\tablestrutunit+#1\tablestrutunit\relax}
-     {\dimexpr\tablestrutdepthfactor \tablestrutunit+#2\tablestrutunit\relax}}
-
-\appendtoks
-    \let\MakeStrut          \domaketablestrut
-    \let\StandardTableStrut \domakestandardtablestrut
-    \let\AugmentedTableStrut\domakeaugmentedtablestrut
-\to \everytable
 
 % \Enlarge<extra height><extra depth><original>
 % \enlarge<multiple for extra height><multiple for extra depth><original>
@@ -784,24 +759,21 @@
 
 \def\!TsEnlargeOther#1%
   {\ifhmode
-     \setbox\zerocount\hbox{#1\xdef\!TsSpaceFactor{\spacefactor=\the\spacefactor}}%
+     \setbox\scratchbox\hbox{#1\xdef\!TsSpaceFactor{\spacefactor\the\spacefactor}}%
    \else
-     \setbox\zerocount\hbox{#1}%
+     \setbox\scratchbox\hbox{#1}%
    \fi
    \!TsFinishEnlarge}
 
 \def\!TsEnlargeMath#1#2%
-  {\setbox\zerocount\hbox{$\mathsurround\zeropoint#1{#2}$}%
+  {\setbox\scratchbox\hbox{$\mathsurround\zeropoint#1{#2}$}%
    \!TsFinishEnlarge}
 
 \def\!TsFinishEnlarge
-  {\dimen@\ht\zerocount
-   \advance \dimen@ \!taDimenA
-   \ht\zerocount\dimen@
-   \dimen@\dp\zerocount
-   \advance \dimen@ \!taDimenB
-   \dp\zerocount\dimen@
-   \box\zerocount \!TsSpaceFactor{}}
+  {\ht\scratchbox\dimexpr\ht\scratchbox+\!taDimenA\relax
+   \dp\scratchbox\dimexpr\dp\scratchbox+\!taDimenB\relax
+   \box\scratchbox
+   \!TsSpaceFactor\relax}
 
 \def\dotableenlarge#1#2%  3rd argument is picked up later
   {\dotableEnlarge{#1\tablestrutunit}{#2\tablestrutunit}}
@@ -813,23 +785,25 @@
 
 % BEGIN TABLE
 
+\let\dotablestandardend\relax
+
 \def\dotablestandardbegin[#1]% \!ttBeginTable (always argument)
   {\if#1u% unboxed table
      \ifmmode
-       \def\!ttEndTable{\relax}% user had better be in display math mode and have only one table at the outer level
-     \else                     % user had better be in vertical mode
+       \let\dotablestandardend\relax % user had better be in display math mode and have only one table at the outer level
+     \else                           % user had better be in vertical mode
        \bgroup
-       \def\!ttEndTable{\egroup}%
+       \let\dotablestandardend\egroup
      \fi
    \else
      \hbox\bgroup
-     \def\!ttEndTable{\egroup\egroup}%
+     \def\dotablestandardend{\egroup\egroup}%
      \if#1t%
        \vtop
      \else\if#1b%
        \vbox
      \else
-       \def\!ttEndTable{\egroup$\egroup}%
+       \def\dotablestandardend{\egroup$\egroup}%
        %$\vcenter
        \scratchtoks\everymath\everymath\emptytoks$\everymath\scratchtoks\vcenter
      \fi\fi
@@ -879,49 +853,23 @@
 % END TABLE
 
 \def\dotablenormalend
-  {\egroup % finishes the \halign
-   \!ttEndTable}%    closes off the table envirnoment set up by \tablestandardbegin
+  {\egroup              % finishes the \halign
+   \dotablestandardend} % closes off the table envirnoment set up by \tablestandardbegin
 
-\def\!ttEndOfRow
-  {\futurelet\!tnext\!ttTestForBlank}
-
-\def\!ttTestForBlank
-  {\ifx\!tnext\!thSpaceToken  % the "usual" case
-     \expandafter\!ttDoStandard
-   \else
-     \expandafter\!ttTestForZero
-   \fi}
-
-\def\!ttTestForZero
-  {\ifx0\!tnext
-     \expandafter\!ttDoZero
-   \else
-     \expandafter\!ttTestForPlus
-   \fi}
-
-\def\!ttTestForPlus
-  {\ifx+\!tnext
-     \expandafter\!ttDoPlus
-   \else
-     \expandafter\!ttDoStandard
-   \fi}
-
-% DO ZERO: No strut
-
-\def\!ttDoZero#1%% #1 eats the 0
+\def\donormaltablelineending
   {\cr}
 
-\def\!ttDoPlus#1#2#3% #1 eats the +
-  {\domakeaugmentedtablestrut{#2}{#3}%
-   \cr}
-
-\def\!ttDoStandard
-  {\domakestandardtablestrut
+\def\donormaltablelineformat#1#2%
+  {\vrule
+     \!!width \zeropoint
+     \!!height\dimexpr\tablestrutheightfactor\tablestrutunit+#1\tablestrutunit\relax
+     \!!depth \dimexpr\tablestrutdepthfactor \tablestrutunit+#2\tablestrutunit\relax
+   \relax
    \cr}
 
 % INSERT VRULE
 
-\def\@VLn{1}
+\newcount\noftablevrules \noftablevrules\plusone
 \def\@VLd{.125em}
 
 \let\tablecurrentvrulecolor\empty
@@ -941,36 +889,35 @@
      \fi
    \hskip\@VLd}
 
-\def\!ttInsertVrule
-  {\hfil
+\def\donormaltablesimplebar
+  {\unskip\!ttRightGlue&&}
+
+\def\donormaltablecomplexbar
+  {\unskip\!ttRightGlue&\omit
+   \hfil
    \ifx\tablecurrentvrulecolor\empty\else
      \switchtocolor[\tablecurrentvrulecolor]%
    \fi
-   \ifcase\@VLn\or
+   \ifcase\noftablevrules\or
      \do!ttInsertVrule
      \unskip
    \else
-     \dorecurse\@VLn\do!ttInsertVrule
-     \gdef\@VLn{1}%
+     \dorecurse\noftablevrules\do!ttInsertVrule
+     \global\noftablevrules\plusone
      \unskip
    \fi
    \global\let\tablecurrentvrulecolor\empty
    \hfil
    &}
 
-% INSERT DEFAULT PSEUDO-RULE
+\def\donormaltablenobar
+  {\unskip\!ttRightGlue&\omit&}
 
-\def\!ttInsertDefaultPR*%
-  {\PseudoVrule&}    % User-specified default pseudo-rule
+\def\donormaltablesinglerule
+  {&\donormaltablelongrule&}
 
-% GET PSEUDO-RULE
-
-\def\!ttGetPseudoVrule#1%
-  {\toks0={#1}#1&}
-
-% DEFAULT PSEUDO-RULE
-
-\let\PseudoVrule\empty
+\def\donormaltablemultirule
+  {&\!ttuse\tabledrulespan\donormaltablelongrule&}
 
 % USE
 
@@ -1009,40 +956,26 @@
 
 % rules
 
-\def\!ttFullHrule
-  {\noalign
-   \bgroup
-   \!tgGetValue{\!ttFullHruleA}}
+\def\donormaltablefullrule
+  {\starttablenoalign
+   \!ttGetHalfRuleThickness
+   \hrule\!!height\scratchdimen\!!depth\scratchdimen
+   \stoptablenoalign}
 
-\def\!ttFullHruleA
-  {\!ttGetHalfRuleThickness
-   \ifx\tablecurrenthrulecolor\empty\else
-     \switchtocolor[\tablecurrenthrulecolor]%
-   \fi
-   \hrule\!!height\dimen0\!!depth\dimen0
-   \global\let\tablecurrenthrulecolor\empty
-   %\penalty0 % removed
-   \egroup}
-
-\def\!ttShortHrule
+\def\donormaltableshortrule % was: \!ttShortHrule
   {\omit
-   \!tgGetValue{\!ttShortHruleA}}
-
-\def\!ttShortHruleA
-  {\!ttGetHalfRuleThickness
-   \ifx\tablecurrenthrulecolor\empty\else
-     \switchtocolor[\tablecurrenthrulecolor]%
-   \fi
-   \leaders\hrule\!!height\dimen0\!!depth\dimen0\hfill
+   \!ttGetHalfRuleThickness
+   \leaders\hrule\!!height\scratchdimen\!!depth\scratchdimen\hfill
    \null
-   \global\let\tablecurrenthrulecolor\empty
    \ignorespaces}
 
-\def\!ttLongHrule
-  {\omit\span\omit\span\!ttShortHrule}
+\def\donormaltablelongrule % was: \!ttLongHrule
+  {\omit\span
+   \omit\span
+   \donormaltableshortrule}
 
 \def\!ttGetHalfRuleThickness
-  {\dimen0=\dimexpr
+  {\scratchdimen\dimexpr
      \ifnum\!tgCode=\plusone
        \ifx\!tgValue\empty
          \tablehrulethicknessfactor
@@ -1053,7 +986,7 @@
      \else
        \!tgValue      % user-specified dimension
      \fi
-  \divide\dimen0 \plustwo}
+  \divide\scratchdimen\plustwo}
 
 % \null prevents \unskip
 
@@ -1203,17 +1136,6 @@
     \let\TableRight     \dotableRight
 \to \everytable
 
-%D We felt no need to write our own table building macros,
-%D simply because Michael Wichura made a terrific one. This
-%D package is quite complete and well documented. In \CONTEXT\
-%D we provide a shell for consistent spacing as well as color
-%D support. Implementing these features without adapting the
-%D original macros is not trivial. One easilly gets conflicts
-%D with \type{\omit}, \type{\span} and \type{\noalign}, which
-%D means that we end up postponing and overloading macros,
-%D mostly global. Now, let's start with loading the main
-%D macros.
-
 %D \macros
 %D   {inintable, ifsplittables}
 %D
@@ -1225,7 +1147,7 @@
 \newif\ifintable
 \newif\ifsplittables
 
-%D We show this feature in an eample that also shows some of
+%D We show this feature in an example that also shows some of
 %D the basic table typesetting commands.
 %D
 %D \startbuffer
@@ -1296,131 +1218,22 @@
 %D in the last row.
 %D
 %D \getbuffer
-
-%D Bringing color into tables is complicated by the mere fact
-%D that color is not part of \TEX. The main complication is
-%D that we don't know in advance how wide a column will be. I
-%D implemented color support in tables in the early 90's
-%D because I needed it for some articles on color. I have to
-%D admit that I seldom use the mechanism.
 %D
-%D Most color support in \CONTEXT\ makes use of colored rules.
-%D At first sight, one is tempted to implement colors in tables
-%D in a similar way, but as said, we don't know the dimensions
-%D in advance. It turns out however that we don't have to,
-%D simply because alignments take care of stretching rules to
-%D the appropritate dimensions. This means that we can provide
-%D backgrounds by coloring rules with the height of a row,
-%D skipping upwards and finally drawing the content, like in:
-%D
-%D \gdef\ShowExample
-%D   {\startfiguretext
-%D      {none}
-%D      {\getbuffer}
-%D    \typebuffer
-%D    \stopfiguretext}
+%D Some simple color support is provided:
 %D
 %D \startbuffer
 %D \starttable[|c|c|]
 %D \HL
-%D \BL[2]               \SR
-%D \VL test \VL test \VL\SR
-%D \HL
-%D \VL test \VL test \VL\FR
-%D \VL test \VL test \VL\MR
-%D \VL test \VL test \VL\LR
-%D \HL
-%D \stoptable
-%D \stopbuffer
-%D
-%D \ShowExample
-%D
-%D Just to be complete we show how the other columns can be
-%D given a background. Later we will provide more details over
-%D the commands used.
-%D
-%D \startbuffer
-%D \starttable[|c|c|c|]
-%D \HL
-%D \BL[3]                        \SR
-%D \VL test \VL test \VL test \VL\SR
+%D \VL test      \VL test         \VL     \SR
+%D \HL[green,5]
+%D \VL[red] test \VL test         \VL     \FR
+%D \VL test      \VL[10,red] test \VL     \MR
+%D \VL test      \VL test         \VL[10] \LR
 %D \HL
 %D \stoptable
 %D \stopbuffer
 %D
-%D \ShowExample
-%D
-%D \startbuffer
-%D \starttable[|c|c|c|]
-%D \HL
-%D \BC      \BL[2]               \SR
-%D \VL test \VL test \VL test \VL\SR
-%D \HL
-%D \stoptable
-%D \stopbuffer
-%D
-%D \ShowExample
-%D
-%D \startbuffer
-%D \starttable[|c|c|c|]
-%D \HL
-%D \BC      \BC      \BL         \SR
-%D \VL test \VL test \VL test \VL\SR
-%D \HL
-%D \stoptable
-%D \stopbuffer
-%D
-%D \ShowExample
-%D
-%D \startbuffer
-%D \starttable[|c|c|c|]
-%D \HL
-%D \BC      \BL                  \SR
-%D \VL test \VL test \VL test \VL\SR
-%D \HL
-%D \stoptable
-%D \stopbuffer
-%D
-%D \ShowExample
-%D
-%D \startbuffer
-%D \starttable[|c|c|c|]
-%D \BL               \BL         \SR
-%D \HL
-%D \VL test \VL test \VL test \VL\SR
-%D \HL
-%D \stoptable
-%D \stopbuffer
-%D
-%D \ShowExample
-
-%D In these examples we can clearly see that for being a real
-%D background, the color or gray specification has to precede
-%D the content. Just to keep things simple, we can recall this
-%D specification later on:
-%D
-%D \startbuffer
-%D \starttable[|c|c|c|]
-%D \BC      \BL                  \SR
-%D \HL
-%D \VL test \VL test \VL test \VL\SR
-%D \HL
-%D                            \BR\FR
-%D \VL test \VL test \VL test \VL\FR
-%D                            \BR\MR
-%D \VL test \VL test \VL test \VL\MR
-%D                            \BR\LR
-%D \VL test \VL test \VL test \VL\LR
-%D \HL
-%D \stoptable
-%D \stopbuffer
-%D
-%D \ShowExample
-%D
-%D Close study learns that we can put the specification
-%D before or after the \type{\HL}, whatever suits best. Keeping
-%D track of these specifications is taken care of by the next
-%D variables:
+%D \typebuffer \getbuffer
 
 \def\s!TaBlE{TaBlE}
 \def\m!TABLE{TABLE}
@@ -1462,21 +1275,6 @@
 
 \def\dosettableaction#1{\ifconditional\tableactionstatepermitted\global\tableactionstate#1\fi}
 \def\dosettableforce #1{\ifconditional\tableactionstatepermitted\global\tableforcestate #1\fi}
-
-%D To keep things verbose, as well as to show what \TABLE\
-%D commands we affect, we show some meanings.
-
-\def\donormaltableshortrule    {\!ttShortHrule}
-\def\donormaltablelongrule     {\!ttLongHrule}
-\def\donormaltablefullrule     {\!ttFullHrule}
-\def\donormaltableendofrow     {\!ttEndOfRow}
-\def\donormaltablesimplebar    {\unskip\!ttRightGlue&&}
-\def\donormaltablecomplexbar   {\unskip\!ttRightGlue&\omit\!ttInsertVrule}
-\def\donormaltablenobar        {\unskip\!ttRightGlue&\omit&}
-\def\donormaltablelineformat   {\donormaltableendofrow+}
-\def\donormaltablelineending   {\donormaltableendofrow0 }
-\def\donormaltablesinglerule   {&\donormaltablelongrule&}
-\def\donormaltablemultirule  #1{&\use{#1}\donormaltablelongrule&}
 
 %D To give an impression of what the (well documented) source
 %D of \TABLE\ looks like, we first implement an alternative for
@@ -1529,8 +1327,7 @@
 \def\starttablenoalign
   {\tablenoalign\bgroup}
 
-\def\stoptablenoalign
-  {\iffalse{\else}\fi}
+\let\stoptablenoalign\egroup
 
 %D \macros
 %D   {starttable}
@@ -1830,15 +1627,15 @@
 %D something like:
 %D
 %D \starttyping
-%D \starttablekop
+%D \starttablehead
 %D \HL
 %D \VL element \VL atom weight \VL\AR
 %D \HL
-%D \stoptablekop
+%D \stoptablehead
 %D
-%D \starttablestaart
+%D \starttabletail
 %D \HL
-%D \stoptablestaart
+%D \stoptabletail
 %D
 %D \starttables[|||]
 %D \VL ....... \VL ........... \VL\AR
@@ -2001,17 +1798,17 @@
    \ifcase#1\relax
      % unknown
    \or
-     \doendoftableline [blue][\SR->\SR]\tablerowfactor\tablerowfactor
+     \doendoftableline\SR\SR\tablerowfactor\tablerowfactor
    \or
-     \doendoftableline  [red][\FR->\FR]\tablerowfactor\tablerowzero
+     \doendoftableline\FR\FR\tablerowfactor\tablerowzero
    \or\ifnum\tableforcestate=\tableforcelastrowstate
-     \doendoftableline  [red][\MR->\LR]\tablerowzero\tablerowfactor
+     \doendoftableline\MR\LR\tablerowzero\tablerowfactor
    \else\ifnum\tableforcestate=\tableforcefirstrowstate
-     \doendoftableline  [red][\MR->\FR]\tablerowfactor\tablerowzero
+     \doendoftableline\MR\FR\tablerowfactor\tablerowzero
    \else
-     \doendoftableline[green][\MR->\MR]\tablerowzero\tablerowzero
+     \doendoftableline\MR\MR\tablerowzero\tablerowzero
    \fi\fi\or
-     \doendoftableline  [red][\LR->\LR]\tablerowzero\tablerowfactor
+     \doendoftableline\LR\LR\tablerowzero\tablerowfactor
    \fi
    \starttablenoalign
      \dosettableforce\tableunknownstate
@@ -2053,11 +1850,11 @@
 %D When tables are split, the spacing before and after a
 %D horizontal rule is corrected according to what we expect.
 
-\def\doendoftableline[#1][#2->#3]#4#5%
-  {\ifx#2#3\else
-     \writestatus\m!TABLE{\string#2\space changed into \string#3}%
+\def\doendoftableline#1#2#3#4%
+  {\ifx#1#2\else
+     \writestatus\m!TABLE{\string#1\space changed into \string#2}%
    \fi
-   \expandafter\donormaltablelineformat#4#5\crcr % \crcr nodig ?
+   \expandafter\donormaltablelineformat#3#4\crcr % \crcr nodig ?
    \tablenoalign{\nobreak\global\settrue\tableactionstatepermitted}}
 
 %D In order to prevent (as good as possible) alignment overflow
@@ -2137,7 +1934,6 @@
    \iffirstargument
      \rawprocesscommalist[#1]\dotablevrulecommand
    \fi
-  %\normalexpanded{\noexpand\donormaltablecomplexbar\the\tablevrulethicknessfactor} }% \relax breaks \use
    \donormaltablecomplexbar}% \relax breaks \use
 
 \let\dotableVC\dotableVL % for mojca
@@ -2153,7 +1949,7 @@
 \unexpanded\def\dotableVS  {\VN1}
 \unexpanded\def\dotableVD  {\VN2}
 \unexpanded\def\dotableVT  {\VN3}
-\unexpanded\def\dotableVN#1{\gdef\@VLn{#1}\VL}
+\unexpanded\def\dotableVN#1{\global\noftablevrules#1\relax\VL}
 
 \def\dotablehrulecommand#1% global assignments
   {\doifnumberelse{#1}
@@ -2186,7 +1982,7 @@
            \switchtocolor[\tablecurrenthrulecolor]%
          \fi
        \fi
-       \normalexpanded{\noexpand\donormaltablefullrule\the\tablehrulethicknessfactor} %
+       \donormaltablefullrule
      \egroup
      \doaccounttablelinewidth
    \fi
@@ -2310,15 +2106,14 @@
      \fi
      \ifcase\tabledrulespan
        \global\advance\currenttablecolumn \plusone
-       \let\next\donormaltablesinglerule
+       \donormaltablesinglerule
      \or
        \global\advance\currenttablecolumn \plustwo
-       \let\next\donormaltablesinglerule
+       \donormaltablesinglerule
      \else
        \global\advance\currenttablecolumn \plusone
-       \edef\next{\noexpand\donormaltablemultirule{\tabledrulespan} }%
+       \donormaltablemultirule
      \fi
-     \next
    \fi}
 
 \unexpanded\def\dotableDV
@@ -2346,11 +2141,11 @@
 \def\doaccounttablelinewidth
   {\scratchdimen\tablelinethicknessunit}
 
-\def\dotableTWO   {\use2}
-\def\dotableTHREE {\use3}
-\def\dotableFOUR  {\use4}
-\def\dotableFIVE  {\use5}
-\def\dotableSIX   {\use6}
+\def\dotableTWO   {\use\plustwo}
+\def\dotableTHREE {\use\plusthree}
+\def\dotableFOUR  {\use\plusfour}
+\def\dotableFIVE  {\use\plusfive}
+\def\dotableSIX   {\use\plussix}
 
 \appendtoks
   \let\TWO  \dotableTWO

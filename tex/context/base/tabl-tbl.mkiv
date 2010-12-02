@@ -252,8 +252,7 @@
 \def\starttabulatenoalign
   {\tabulatenoalign\bgroup}
 
-\def\stoptabulatenoalign
-  {\iffalse{\else}\fi}
+\let\stoptabulatenoalign\egroup
 
 % [|lg{.}|] => \NG 12.34 \NC
 

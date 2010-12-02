@@ -182,9 +182,10 @@ end
 function counters.define(name, start, counter, method) -- todo: step
     local d = allocate(name,1)
     d.start = start
+    d.state = variables.start or ""
     if counter ~= "" then
         d.counter = counter -- only for special purposes, cannot be false
-        d.method = method -- frozen at define time
+        d.method  = method -- frozen at define time
     end
 end
 
@@ -374,13 +375,13 @@ end
 
 function counters.add(name,n,delta)
     local cd = counterdata[name]
-    if cd and cd.state == variables.start then
+--~ table.print(cd,name)
+    if cd and (cd.state == variables.start or cd.state == "") then
         local data = cd.data
         local d = allocate(name,n)
--- table.print(cd)
         d.number = (d.number or d.start or 0) + delta*(d.step or 0)
+     -- d.own = nil
         local level = cd.level
--- print(name,n,level)
         if not level or level == -1 then
             -- -1 is signal that we reset manually
         elseif level == -2 then
