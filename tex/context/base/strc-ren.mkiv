@@ -116,18 +116,17 @@
 
 \let\currentstructurereferenceattribute\attributeunsetvalue
 
-\def\structureheadattribute
+\def\structureheadreferenceattributes
   {\iflocation
      attr \destinationattribute \currentstructureattribute
      attr \referenceattribute   \currentstructurereferenceattribute
   \fi}
 
-% \def\docheckstructureheadreference
-%   {\edef\currentstructureheadinteraction{\structureheadparameter\c!interaction}%
-%    \ifx\currentstructureheadinteraction\v!list
-%      \dogetsimplepagereference{bck:\nextinternalreference}%
-%      \let\currentstructurereferenceattribute\currentreferenceattribute
-%    \fi}
+\def\setinlinestructureheadreferenceattributes
+  {\ifconditional\structureheadisdisplay \else \iflocation
+      \attribute\destinationattribute\currentstructureattribute
+      \attribute\referenceattribute  \currentstructurereferenceattribute
+   \fi \fi}
 
 \def\docheckstructureheadreference
   {\edef\currentstructureheadinteraction{\structureheadparameter\c!interaction}%
@@ -151,14 +150,15 @@
    \setstructureheadmarking
    \doresettructureheadnumbercontent
    \ifconditional\structureheadleaveempty
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint{}%
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadreferenceattributes to \zeropoint{}%
      \makestrutofbox\sectionheadbox
    \else
      \docheckstructureheadreference
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadreferenceattributes
        {\dosetlocalgridsnapping{\structureheadparameter\c!internalgrid}%
         \doresettructureheadnumbercontent
         \dosetfontattribute{\??nh\currentstructurehead}\c!style % but we don't want color to influence user command, todo: get the if-else out of it
+        \setinlinestructureheadreferenceattributes
         \structureheadparameter\c!command{}{\doplaceheadtextcomponent\getstructureheadtitle}}%
    \fi
    \endheadplacement{\getstructureheadsyncs}}
@@ -168,19 +168,20 @@
    \setstructureheadmarking
    \doiftextelse{\getstructureheadnumber}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
    \ifconditional\structureheadleaveempty
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute to \zeropoint{}%
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadreferenceattributes to \zeropoint{}%
      \makestrutofbox\sectionheadbox
    \else % = needed
      \docheckstructureheadreference
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadattribute
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadreferenceattributes
        {\dosetlocalgridsnapping{\structureheadparameter\c!internalgrid}%
         \dosetfontattribute{\??nh\currentstructurehead}\c!style
+        \setinlinestructureheadreferenceattributes
         \structureheadparameter\c!command{\doplaceheadnumbercomponent\getstructureheadnumber}{\doplaceheadtextcomponent\getstructureheadtitle}}%
    \fi
    \endheadplacement{\getstructureheadsyncs}}
 
 \unexpanded\def\placestructureheadempty
-  {\hbox \structureheadattribute {\getstructureheadsyncs}}
+  {\hbox \structureheadreferenceattributes {\getstructureheadsyncs}}
 
 %D \starttyping
 %D \def\StretchedBox#1%
@@ -485,5 +486,25 @@
 
 \defineheadplacement[\v!bottom][\v!vertical]#1#2{\placeheadlohi\vbox{#1}{#2}}
 \defineheadplacement[\v!top]   [\v!vertical]#1#2{\placeheadlohi\vtop{#1}{#2}}
+
+% helpers
+
+% \defineinmargin [ChapterInMargin] [outer] [normal] [distance=0.3em]
+%
+% \defineheadplacement[MyTest][horizontal]#1#2%
+%   {\startlocalheadsetup
+%   %\ChapterInMargin{\structureheadhbox{\strut#2}}% proper destination, ref okay
+%    \ChapterInMargin{\strut#2}% zero destination, ref okay
+%    \stoplocalheadsetup}
+%
+% \setuphead
+%   [chapter]
+%   [alternative=MyTest]
+
+\unexpanded\def\structureheadhbox{\hbox\structureheadreferenceattributes}
+\unexpanded\def\structureheadvbox{\vbox\structureheadreferenceattributes}
+
+\unexpanded\def\startlocalheadsetup{\bgroup\localheadsetup}
+\unexpanded\def\stoplocalheadsetup {\egroup}
 
 \protect \endinput

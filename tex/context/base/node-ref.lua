@@ -321,6 +321,15 @@ local function colorize(width,height,depth,n)
         end
         u_colors[n] = u_color
     end
+    if width == 0 then
+        report_backends("reference %s has no horizontal dimensions: width=%s, height=%s, depth=%s",reference,width,height,depth)
+        width = 65536
+    end
+    if height + depth <= 0 then
+        report_backends("reference %s has no vertical dimensions: width=%s, height=%s, depth=%s",reference,width,height,depth)
+        height = 65536/2
+        depth  = height
+    end
     local rule = new_rule(width,height,depth)
     set_attribute(rule,a_colormodel,1) -- gray color model
     set_attribute(rule,a_color,u_color)
@@ -391,7 +400,7 @@ local function makereference(width,height,depth,reference)
             local result, current
             if trace_references then
                 local step = 65536
-                result = hpack_list(colorize(width,height-step,depth-step,2)) -- step subtracted so that we can see seperate links
+                result = hpack_list(colorize(width,height-step,depth-step,2,reference)) -- step subtracted so that we can see seperate links
                 result.width = 0
                 current = result
             end
@@ -460,7 +469,7 @@ local function makedestination(width,height,depth,reference)
                 width, height, depth = 5*step, 5*step, 0
             end
             for n=1,#name do
-                local rule = hpack_list(colorize(width,height,depth,3))
+                local rule = hpack_list(colorize(width,height,depth,3,reference))
                 rule.width = 0
                 if not result then
                     result, current = rule, rule

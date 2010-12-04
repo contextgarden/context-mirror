@@ -491,13 +491,14 @@ end
 
 local tablength = 7
 
-local function flush(content,settings)
+local function dotabs(content,settings)
     local tab = settings.tab
     tab = tab and (tab == v_yes and tablength or tonumber(tab))
     if tab then
-        content = tabtospace(content,tab)
+        return tabtospace(content,tab)
+    else
+        return content
     end
-    visualize(content,settings)
 end
 
 local function filter(lines,settings) -- todo: inline or display in settings
@@ -524,7 +525,8 @@ function commands.typebuffer(settings)
     if lines then
         local content, m = filter(lines,settings)
         if content and content ~= "" then
-            flush(content,checkedsettings(settings,"display"))
+            content = dotabs(content,settings)
+            visualize(content,checkedsettings(settings,"display"))
         end
     end
 end
@@ -534,7 +536,8 @@ function commands.processbuffer(settings)
     if lines then
         local content, m = filter(lines,settings)
         if content and content ~= "" then
-            flush(content,checkedsettings(settings,"direct"))
+            content = dotabs(content,settings)
+            visualize(content,checkedsettings(settings,"direct"))
         end
     end
 end
@@ -544,7 +547,8 @@ end
 function commands.typestring(settings)
     local content = settings.data
     if content and content ~= "" then
-        flush(content,checkedsettings(settings,"inline"))
+     -- content = dotabs(content,settings)
+        visualize(content,checkedsettings(settings,"inline"))
     end
 end
 
@@ -563,7 +567,8 @@ function commands.typefile(settings)
                 local lines = splitlines(str)
                 local content, m = filter(lines,settings)
                 if content and content ~= "" then
-                    flush(content,checkedsettings(settings,"display"))
+                    content = dotabs(content,settings)
+                    visualize(content,checkedsettings(settings,"display"))
                 end
             end
         end

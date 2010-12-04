@@ -121,7 +121,7 @@ end
 
 function codeinjections.registercomment(specification)
     nofcomments = nofcomments + 1
-    local text = buffers.collect(specification.buffer)
+    local text = buffers.collectcontent(specification.buffer)
     if stripleading then
         text = gsub(text,"[\n\r] *","\n")
     end
