@@ -234,6 +234,9 @@ return {
             ["lmroman10-boldmath"] = ten_bold,
             ["lmroman12-math"]     = twelve,
             ["lmroman17-math"]     = seventeen,
+        },
+        variables = {
+            joinrelfactor = 3, -- default anyway
         }
     }
 }

@@ -869,6 +869,15 @@
         <cd:parameter name="barva">
           <cd:constant type="cd:name" default=""/>
         </cd:parameter>
+        <cd:parameter name="vlevo">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
+        <cd:parameter name="vpravo">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
+        <cd:parameter name="prikaz">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

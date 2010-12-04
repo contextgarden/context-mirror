@@ -281,22 +281,25 @@ node_initializers.goodies     = setgoodies
 
 local function initialize(goodies)
     local mathgoodies = goodies.mathematics
-    local virtuals = mathgoodies and mathgoodies.virtuals
-    local mapfiles = mathgoodies and mathgoodies.mapfiles
-    local maplines = mathgoodies and mathgoodies.maplines
-    if virtuals then
-        for name, specification in next, virtuals do
-            mathematics.makefont(name,specification)
+    if mathgoodies then
+        local virtuals  = mathgoodies.virtuals
+        local mapfiles  = mathgoodies.mapfiles
+        local maplines  = mathgoodies.maplines
+        local variables = mathgoodies.variables
+        if virtuals then
+            for name, specification in next, virtuals do
+                mathematics.makefont(name,specification,variables)
+            end
         end
-    end
-    if mapfiles then
-        for i=1,#mapfiles do
-            fonts.map.loadfile(mapfiles[i]) -- todo: backend function
+        if mapfiles then
+            for i=1,#mapfiles do
+                fonts.map.loadfile(mapfiles[i]) -- todo: backend function
+            end
         end
-    end
-    if maplines then
-        for i=1,#maplines do
-            fonts.map.loadline(maplines[i]) -- todo: backend function
+        if maplines then
+            for i=1,#maplines do
+                fonts.map.loadline(maplines[i]) -- todo: backend function
+            end
         end
     end
 end
@@ -390,4 +393,3 @@ fonts.goodies.register("compositions", initialize)
 -- tex/fonts/data/foundry/collection
 --
 -- see lfg files in distribution
-
