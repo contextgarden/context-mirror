@@ -1544,9 +1544,9 @@
    \dotablestandardbegin[\ifsplittables u\else b\fi]%
    \the\localtabledefinitions
    \forgetall % added
-   \doifsomething{#1}
-     {\def\currenttableformat{#1}%
-      \dogettablenofcolumns\currenttableformat
+   \edef\currenttableformat{#1}%
+   \doifsomething\currenttableformat
+     {\dogettablenofcolumns\currenttableformat
       % more modern is to use catcode tables
       \expandafter\dobegintableformat\currenttableformat\doendtableformat}}
 

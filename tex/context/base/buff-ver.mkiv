@@ -269,6 +269,20 @@
 %D
 %D \typebuffer
 
+% beware, the command is supposed to do something like
+% \framed and not manipulate content i.e. it gets no
+% argument but something b/egrouped instead
+%
+% so, if we only had left and right it woul dbe:
+%
+% \def\doleftoftype {\typeparameter\c!left\bgroup}  % we need the grouping in order
+% \def\dorightoftype{\egroup\typeparameter\c!right} % to get the normal font
+%
+% but with command:
+
+\def\doleftoftype {\typeparameter\c!left\typeparameter\c!command\bgroup}
+\def\dorightoftype{\egroup\typeparameter\c!right}
+
 \unexpanded\def\type{\dotype\empty}
 \unexpanded\def\typ {\dotyp \empty}
 
@@ -283,7 +297,8 @@
    \dodotype}
 
 \def\dodotype
-  {\futurelet\next\dodotypeone}
+  {\doleftoftype
+   \futurelet\next\dodotypeone}
 
 \def\dotyp#1%
   {\dontleavehmode
@@ -338,6 +353,7 @@
      nature = "inline",
     }}%
    \dostoptagged
+   \dorightoftype
    \egroup}
 
 \def\dodotypenested#1%
@@ -351,6 +367,7 @@
      nature = "inline",
    }}%
    \dostoptagged
+   \dorightoftype
    \egroup
    \gobbleoneargument} % grab last >
 

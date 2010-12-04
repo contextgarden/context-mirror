@@ -331,7 +331,10 @@ return {
                 { name = "file:lsr.afm", vector = "tex-ss" },
                 { name = "file:lstr.afm", vector = "tex-tt" },
                 { name = "file:lbl.afm", vector = "lbr-fraktur" }, -- more complete
-            }
+            },
+        },
+        variables = {
+            joinrelfactor = 4, -- default is 3
         }
     }
 }

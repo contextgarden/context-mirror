@@ -869,6 +869,15 @@
         <cd:parameter name="رنگ">
           <cd:constant type="cd:name" default=""/>
         </cd:parameter>
+        <cd:parameter name="چپ">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
+        <cd:parameter name="راست">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
+        <cd:parameter name="فرمان">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['cldf-com'] = {
     license   = "see context related readme files"
 }
 
+local tostring, type = tostring, type
+local format = string.format
+
 local context   = context
 local generics  = context.generics
 local variables = interfaces.variables

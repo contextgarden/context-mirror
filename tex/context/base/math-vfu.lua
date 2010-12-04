@@ -293,8 +293,10 @@ local function stack(main,characters,id,size,unicode,u1,d12,u2)
     end
 end
 
-function vfmath.alas(main,id,size)
+function vfmath.alas(main,id,size,variables)
     local characters = main.characters
+    local shared = main.shared
+    local joinrelfactor = variables.joinrelfactor or 3
     for i=0x7A,0x7D do
         make(main,characters,id,size,i,1)
     end
@@ -319,23 +321,23 @@ function vfmath.alas(main,id,size)
     vertbar  (main,characters,id,size,0xFF605,0.30,0xFF606)
     vertbar  (main,characters,id,size,0xFF606,0.30,0xFF607)
     vertbar  (main,characters,id,size,0xFF607,0.30,0xFF608)
-    jointwo  (main,characters,id,size,0x21A6,0xFE321,0,0x02192)           -- \mapstochar\rightarrow
-    jointwo  (main,characters,id,size,0x21A9,0x02190,3,0xFE323)           -- \leftarrow\joinrel\rhook
-    jointwo  (main,characters,id,size,0x21AA,0xFE322,3,0x02192)           -- \lhook\joinrel\rightarrow
-    stack    (main,characters,id,size,0x2259,0x0003D,3,0x02227)           -- \buildrel\wedge\over=
-    jointwo  (main,characters,id,size,0x22C8,0x022B3,4,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
-    jointwo  (main,characters,id,size,0x2260,0x00338,0,0x0003D)           -- \not\equal
-    jointwo  (main,characters,id,size,0x2284,0x00338,0,0x02282)           -- \not\subset
-    jointwo  (main,characters,id,size,0x2285,0x00338,0,0x02283)           -- \not\supset
-    jointwo  (main,characters,id,size,0x22A7,0x0007C,3,0x0003D)           -- \mathrel|\joinrel=
-    jointwo  (main,characters,id,size,0x27F5,0x02190,3,0x0002D)           -- \leftarrow\joinrel\relbar
-    jointwo  (main,characters,id,size,0x27F6,0x0002D,3,0x02192)           -- \relbar\joinrel\rightarrow
-    jointwo  (main,characters,id,size,0x27F7,0x02190,3,0x02192)           -- \leftarrow\joinrel\rightarrow
-    jointwo  (main,characters,id,size,0x27F8,0x021D0,3,0x0003D)           -- \Leftarrow\joinrel\Relbar
-    jointwo  (main,characters,id,size,0x27F9,0x0003D,3,0x021D2)           -- \Relbar\joinrel\Rightarrow
-    jointwo  (main,characters,id,size,0x27FA,0x021D0,3,0x021D2)           -- \Leftarrow\joinrel\Rightarrow
-    jointhree(main,characters,id,size,0x27FB,0x02190,3,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
-    jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,3,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
+    jointwo  (main,characters,id,size,0x21A6,0xFE321,0,0x02192)                       -- \mapstochar\rightarrow
+    jointwo  (main,characters,id,size,0x21A9,0x02190,joinrelfactor,0xFE323)           -- \leftarrow\joinrel\rhook
+    jointwo  (main,characters,id,size,0x21AA,0xFE322,joinrelfactor,0x02192)           -- \lhook\joinrel\rightarrow
+    stack    (main,characters,id,size,0x2259,0x0003D,3,0x02227)                       -- \buildrel\wedge\over=
+    jointwo  (main,characters,id,size,0x22C8,0x022B3,joinrelfactor,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
+    jointwo  (main,characters,id,size,0x2260,0x00338,0,0x0003D)                       -- \not\equal
+    jointwo  (main,characters,id,size,0x2284,0x00338,0,0x02282)                       -- \not\subset
+    jointwo  (main,characters,id,size,0x2285,0x00338,0,0x02283)                       -- \not\supset
+    jointwo  (main,characters,id,size,0x22A7,0x0007C,joinrelfactor,0x0003D)           -- \mathrel|\joinrel=
+    jointwo  (main,characters,id,size,0x27F5,0x02190,joinrelfactor,0x0002D)           -- \leftarrow\joinrel\relbar
+    jointwo  (main,characters,id,size,0x27F6,0x0002D,joinrelfactor,0x02192)           -- \relbar\joinrel\rightarrow
+    jointwo  (main,characters,id,size,0x27F7,0x02190,joinrelfactor,0x02192)           -- \leftarrow\joinrel\rightarrow
+    jointwo  (main,characters,id,size,0x27F8,0x021D0,joinrelfactor,0x0003D)           -- \Leftarrow\joinrel\Relbar
+    jointwo  (main,characters,id,size,0x27F9,0x0003D,joinrelfactor,0x021D2)           -- \Relbar\joinrel\Rightarrow
+    jointwo  (main,characters,id,size,0x27FA,0x021D0,joinrelfactor,0x021D2)           -- \Leftarrow\joinrel\Rightarrow
+    jointhree(main,characters,id,size,0x27FB,0x02190,joinrelfactor,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
+    jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
 end
 
 local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage
@@ -385,7 +387,8 @@ setmetatable ( reverse, { __index = function(t,name)
     return r
 end } )
 
-function vfmath.define(specification,set)
+function vfmath.define(specification,set,variables)
+    variables = variables or { }
     local name = specification.name -- symbolic name
     local size = specification.size -- given size
     local fnt, lst, main = { }, { }, nil
@@ -671,7 +674,7 @@ function vfmath.define(specification,set)
     end
     lst[#lst+1] = { id = font.nextid(), size = size }
     if mp then -- weak catch
-        vfmath.alas(main,#lst,size)
+        vfmath.alas(main,#lst,size,variables)
     end
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)
@@ -685,9 +688,9 @@ function vfmath.define(specification,set)
     return main
 end
 
-function mathematics.makefont(name, set)
+function mathematics.makefont(name, set, variables)
     fonts.definers.methods.variants[name] = function(specification)
-        return vfmath.define(specification,set)
+        return vfmath.define(specification,set,variables)
     end
 end
 

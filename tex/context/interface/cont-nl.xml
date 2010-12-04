@@ -869,6 +869,15 @@
         <cd:parameter name="kleur">
           <cd:constant type="cd:name" default=""/>
         </cd:parameter>
+        <cd:parameter name="links">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
+        <cd:parameter name="rechts">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
+        <cd:parameter name="commando">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

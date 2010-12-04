@@ -869,6 +869,15 @@
         <cd:parameter name="colore">
           <cd:constant type="cd:name" default=""/>
         </cd:parameter>
+        <cd:parameter name="sinistra">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
+        <cd:parameter name="destra">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
+        <cd:parameter name="comando">
+          <cd:constant type="cd:command"/>
+        </cd:parameter>
       </cd:assignments>
     </cd:arguments>
   </cd:command>
