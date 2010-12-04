@@ -530,7 +530,9 @@ local lp_builtin = P (
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
-local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * R("az","AZ","--","__")^1 * Cc("'])")
+-- for the moment we keep namespaces with attributes
+
+local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * ((R("az","AZ") + S("-_:"))^1) * Cc("'])")
 local lp_fastpos_p = ((P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end)
 local lp_fastpos_n = ((P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end)
 local lp_fastpos   = lp_fastpos_n + lp_fastpos_p

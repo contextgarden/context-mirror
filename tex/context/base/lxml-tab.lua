@@ -263,6 +263,7 @@ local function attribute_value_error(str)
     end
     return str
 end
+
 local function attribute_specification_error(str)
     if not reported_attribute_errors[str] then
         report_xml("invalid attribute specification: %q",str)
