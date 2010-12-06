@@ -319,26 +319,41 @@
    \fi}
 
 % \def\!tgCheckForDigit
-%   {\!taDigitfalse
-%         \ifx 0\!ttemp \!taDigittrue
-%    \else\ifx 1\!ttemp \!taDigittrue
-%    \else\ifx 2\!ttemp \!taDigittrue
-%    \else\ifx 3\!ttemp \!taDigittrue
-%    \else\ifx 4\!ttemp \!taDigittrue
-%    \else\ifx 5\!ttemp \!taDigittrue
-%    \else\ifx 6\!ttemp \!taDigittrue
-%    \else\ifx 7\!ttemp \!taDigittrue
-%    \else\ifx 8\!ttemp \!taDigittrue
-%    \else\ifx 9\!ttemp \!taDigittrue
+%   {\donefalse
+%         \ifx 0\!ttemp \donetrue
+%    \else\ifx 1\!ttemp \donetrue
+%    \else\ifx 2\!ttemp \donetrue
+%    \else\ifx 3\!ttemp \donetrue
+%    \else\ifx 4\!ttemp \donetrue
+%    \else\ifx 5\!ttemp \donetrue
+%    \else\ifx 6\!ttemp \donetrue
+%    \else\ifx 7\!ttemp \donetrue
+%    \else\ifx 8\!ttemp \donetrue
+%    \else\ifx 9\!ttemp \donetrue
 %    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
-%    \if!taDigit
+%    \ifdone
 %      \expandafter \!tgGetNumber
 %    \else
 %      \expandafter \!tgReturn
 %    \fi}
 
-\def\!tgCheckForDigit
-  {\doifnumberelse\!ttemp\!tgGetNumber\!tgReturn}
+\def\!tgCheckForDigit % less tokens:
+  {\donetrue
+   \ifx 0\!ttemp \else \ifx 1\!ttemp \else
+   \ifx 2\!ttemp \else \ifx 3\!ttemp \else
+   \ifx 4\!ttemp \else \ifx 5\!ttemp \else
+   \ifx 6\!ttemp \else \ifx 7\!ttemp \else
+   \ifx 8\!ttemp \else \ifx 9\!ttemp \else
+     \donefalse
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+   \ifdone
+     \expandafter \!tgGetNumber
+   \else
+     \expandafter \!tgReturn
+   \fi}
+
+% \def\!tgCheckForDigit % does not work
+%   {\relax\doifnumberelse\!ttemp\!tgGetNumber\!tgReturn}
 
 \def\!tgGetNumber {\afterassignment\!tgGetNumberA\scratchcounter=}
 \def\!tgGetNumberA{\edef\!tgValue{\the\scratchcounter}\!tgReturn}
@@ -967,7 +982,7 @@
   {\omit
    \!ttGetHalfRuleThickness
    \leaders\hrule\!!height\scratchdimen\!!depth\scratchdimen\hfill
-   \null
+   \emptyhbox
    \ignorespaces}
 
 \def\donormaltablelongrule % was: \!ttLongHrule
@@ -989,10 +1004,10 @@
      \fi
   \divide\scratchdimen\plustwo}
 
-% \null prevents \unskip
+% \emptyhbox prevents \unskip
 
-\def\dotableLeft  #1{#1\hfill\null}
-\def\dotableCenter#1{\hfill#1\hfill\null}
+\def\dotableLeft  #1{#1\hfill\emptyhbox}
+\def\dotableCenter#1{\hfill#1\hfill\emptyhbox}
 \def\dotableRight #1{\hfill#1}
 
 \def\dotableOpenUp#1#2%
@@ -1018,8 +1033,8 @@
    \dotableExpand}
 
 \def\dotableJustLeft  {\omit\let\!ttRightGlue\hfill}
-\def\dotableJustCenter{\omit\hfill\null\let\!ttRightGlue\hfill}
-\def\dotableJustRight {\omit\hfill\null}
+\def\dotableJustCenter{\omit\hfill\emptyhbox\let\!ttRightGlue\hfill}
+\def\dotableJustRight {\omit\hfill\emptyhbox}
 
 \def\dotableSmash
   {\relax

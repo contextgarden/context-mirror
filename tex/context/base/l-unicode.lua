@@ -351,6 +351,9 @@ end
 
 --~ print(unicode.utfcodes(str))
 
+local lpegmatch = lpeg.match
+local utftype = lpeg.patterns.utftype
+
 function unicode.filetype(data)
-    return data and lpeg.match(lpeg.patterns.utftype,data) or "unknown"
+    return data and lpegmatch(utftype,data) or "unknown"
 end

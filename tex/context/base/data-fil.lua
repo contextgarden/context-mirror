@@ -63,8 +63,8 @@ end
 
 function openers.helpers.textopener(tag,filename,f)
     return {
-        reader = function() return f:read () end,
-        close  = function() return f:close() end,
+        reader = function()                           return f:read () end,
+        close  = function() logs.show_close(filename) return f:close() end,
     }
 end
 
@@ -73,7 +73,6 @@ function openers.file(specification,filetype)
     if filename and filename ~= "" then
         local f = io.open(filename,"r")
         if f then
-            logs.show_open(filename) -- todo
             if trace_locating then
                 report_resolvers("file opener, '%s' opened",filename)
             end

@@ -53,7 +53,7 @@
 \def\textineqalign#1{$\forgetalign#1$}
 
 \def\eqalign#1% why no halign here, probably because of displaywidth
-  {\null\,\vcenter
+  {\emptyhbox\,\vcenter
      {\openup.25\bodyfontsize% was: \openup\jot
       \mathsurround\zeropoint
       \ialign{\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##{}}$\hfil\crcr#1\crcr}%
@@ -696,7 +696,7 @@
   {\begingroup
    \edef\currentmathmatrix{#1}%
    \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
-   \null
+   \emptyhbox
    \executeifdefined{\??mx:\mathmatrixparameter\c!location}{\getvalue{\??mx:\v!lohi}}%
    \mathmatrixleft
    \mathmatrixbox\bgroup
@@ -890,7 +890,7 @@
 
 % \unexpanded\def\startsubstack
 %    {\begingroup
-%     \null
+%     \emptyhbox
 %     \vcenter\bgroup
 %     \pushmacro\domatrixNC
 %     \let\stopmathmode\relax

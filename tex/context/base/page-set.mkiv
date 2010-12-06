@@ -200,7 +200,7 @@
                \box\csname\@otr@:\!!stringb:\recurselevel\endcsname
               %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\csname\@otr@:\!!stringb:\recurselevel\endcsname
              \else
-               \emptybox
+               \emptyhbox
               %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\emptybox
                \expandafter\newbox\csname\@otr@:\!!stringb:\recurselevel\endcsname
              \fi
@@ -567,7 +567,7 @@
      \doOTRSETsetgridcells
        {\copy\placeholderboxe}
        \plusone\plusone\nofcolumns\scratchcounter
-       \null
+       \emptybox
    \fi}
 
 \def\OTRSETsetvsize % snap per sectie (gap here?)

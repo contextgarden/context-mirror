@@ -907,8 +907,12 @@
    \crcr
    \noalign
      {\nointerlineskip
-      \ifnum\gettblnob\tblrow=\zerocount
-        \allowbreak
+      \ifnum\tblrow>\noftblheadlines
+        \ifnum\gettblnob\tblrow=\zerocount
+          \allowbreak
+        \fi
+      \else
+        \allowbreak % else no proper head split off
       \fi
       \bgroup % protect local vars
         \@@tblsplitafter
@@ -1395,7 +1399,7 @@
        \fi
      \fi
    \fi
-   \setbox2\null
+   \setbox2\emptyhbox
    \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
    \box2
    \egroup}
@@ -1407,7 +1411,7 @@
         [\@@tbl\@@tbl]
         [#4,#1,\c!frame=\v!off,\c!background=]
         {\bTBLCELL#5\eTBLCELL}}%
-   \setbox2\null
+   \setbox2\emptyhbox
    \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
    \ifautoTBLrowspan
      \scratchcounter\numexpr\tblrow+\plusone\relax

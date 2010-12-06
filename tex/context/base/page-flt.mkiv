@@ -221,7 +221,7 @@
 %       \else\ifnum\dofloatsnofstacked\s!page>\zerocount
 %         \doflushsomepagefloat\s!page
 %       \else\ifnum\dofloatsnofstacked\s!leftpage>\zerocount
-%         \null\vfill\eject
+%         \emptyhbox\vfill\eject
 %        %\doflushsomepagefloat\s!leftpage
 %       \fi\fi\fi}
 %      {\ifnum\dofloatsnofstacked\s!leftpage>\zerocount
@@ -229,7 +229,7 @@
 %       \else\ifnum\dofloatsnofstacked\s!page>\zerocount
 %         \doflushsomepagefloat\s!page
 %       \else\ifnum\dofloatsnofstacked\s!rightpage>\zerocount
-%         \null\vfill\eject
+%         \emptyhbox\vfill\eject
 %        %\doflushsomepagefloat\s!rightpage
 %       \fi\fi\fi}}
 
@@ -238,7 +238,7 @@
    \ifx\checkedpagefloat\empty
      % nothing
    \else\ifx\checkedpagefloat\v!empty
-      \null\vfill\eject
+      \emptyhbox\vfill\eject
    \else
       \doflushsomepagefloat\checkedpagefloat
    \fi\fi}

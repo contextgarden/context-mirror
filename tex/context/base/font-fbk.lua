@@ -105,14 +105,14 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                 acc = fallbacks[acc]
                                 charsacc = acc and chars[acc]
                             end
+                            local chr_t = cache[chr]
+                            if not chr_t then
+                                chr_t = {"slot", 1, chr}
+                                cache[chr] = chr_t
+                            end
                             if charsacc then
                                 if trace_combining_all then
                                     report_combining("%s (0x%05X) = %s (0x%05X) + %s (0x%05X)",utfchar(i),i,utfchar(chr),chr,utfchar(acc),acc)
-                                end
-                                local chr_t = cache[chr]
-                                if not chr_t then
-                                    chr_t = {"slot", 1, chr}
-                                    cache[chr] = chr_t
                                 end
                                 local acc_t = cache[acc]
                                 if not acc_t then
@@ -178,9 +178,14 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                         end
                                     end
                                     done = true
+                                else
+                                    t.commands = { chr_t } -- else index mess
+                                    done = true
                                 end
                             elseif trace_combining_all then
-                                report_combining("%s (0x%05X) = %s (0x%05X)",utfchar(i),i,utfchar(chr),chr)
+                                report_combining("%s (0x%05X) = %s (0x%05X) (simplified)",utfchar(i),i,utfchar(chr),chr)
+                                t.commands = { chr_t } -- else index mess
+                                done = true
                             end
                             chars[i] = t
                             local d = { }
@@ -196,6 +201,7 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
             end
         end
         if done then
+            g.type = "virtual" -- for the moment, to be sure
             g.virtualized = true
         end
     end

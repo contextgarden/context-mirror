@@ -250,7 +250,7 @@
 \def\makeph@nt#1#2#3%
   {\begingroup
    \dowithnextbox
-     {\setbox\scratchbox\null
+     {\setbox\scratchbox\emptyhbox
       \ht\scratchbox\ht#1%
       \dp\scratchbox\dp#2%
       \wd\scratchbox\wd#3%
@@ -849,7 +849,7 @@
 \def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\global\reshapingfailedfalse
    \ifzeropt\ht\oldshapebox % \ifdim\ht\oldshapebox=\zeropoint
-     \setbox\newshapebox\normalvbox{}%
+     \setbox\newshapebox\emptyvbox
    \else
      \setbox\newshapebox\normalvbox
        {\unvcopy\oldshapebox
@@ -1268,33 +1268,6 @@
 %D third argument into account, which leads to a bit more
 %D complex macro than needed at first sight.
 
-% \def\dodoboundtext#1%
-%   {\setbox0=\normalhbox{\unhcopy0 #1}%
-%    \ifdim\wd0>\dimen0
-%      \let\dodoboundtext=\gobbleoneargument
-%    \else
-%      #1\relax
-%    \fi}
-%
-% \def\doboundtext#1#2#3%
-%   {\normalhbox
-%      {\setbox0=\normalhbox{#1}%
-%       \dimen0=#2\relax
-%       \ifdim\wd0>\dimen0
-%         \setbox2=\normalhbox{#3}%
-%         \advance\dimen0 by -\wd2
-%         \setbox0=\normalhbox{}%
-%         \processtokens
-%           {\dodoboundtext}
-%           {\dodoboundtext}
-%           {}
-%           {\space}
-%           {#1}%
-%         \box2
-%       \else
-%         \box0
-%       \fi}}
-
 \def\dodoboundtext#1%
   {\setbox0\normalhbox{#1}%
    \advance\scratchdimen -\wd0
@@ -1354,7 +1327,7 @@
 %D            \veryraggedright
 %D            \strut\unhcopy\nextbox}%
 %D         \ifdim\nextboxht>\strutht \else
-%D           \setbox\scratchbox\null % overfull and not split
+%D           \setbox\scratchbox\emptyhbox % overfull and not split
 %D         \fi
 %D         \setbox\nextbox=\normalvbox % if omitted: missing brace reported
 %D           {\splittopskip=\openstrutheight
@@ -2057,7 +2030,7 @@
    \noindent\unhbox0\par}
 
 \def\makehboxofhboxes
-  {\setbox0\normalhbox{}%
+  {\setbox0\emptyhbox
    \loop                  % \doloop { .. \exitloop .. }
      \setbox2\lastbox
      \ifhbox2
@@ -2065,7 +2038,7 @@
    \repeat}
 
 % \def\makehboxofhboxes
-%   {\setbox0\normalhbox{}%
+%   {\setbox0\emptyhbox
 %    \doloop                  % \doloop { .. \exitloop .. }
 %      {% \dorecurse{3}{\unskip\unpenalty}% get rid of ... (better do this in a shapeloop)
 %       \setbox2\lastbox
@@ -2367,7 +2340,7 @@
 %D specified, here being zero.
 
 \def\dofakebox
-  {\setbox\scratchbox\null
+  {\setbox\scratchbox\emptyhbox
    \wd\scratchbox\wd\scratchcounter
    \ht\scratchbox\ht\scratchcounter
    \dp\scratchbox\dp\scratchcounter
@@ -2772,7 +2745,7 @@
 %   {\ifundefined{\@@stackbox#1}%
 %      \@EA\newbox\csname\@@stackbox#1\endcsname
 %    \else
-%      \global\setbox\csname\@@stackbox#1\endcsname\normalvbox{}%
+%      \global\setbox\csname\@@stackbox#1\endcsname\emptyvbox
 %      \def\docommand##1{\global\letbeundefined{\@@stacktag#1:##1}}%
 %      \processcommacommand[\getvalue{\@@stacklst#1}]\docommand
 %    \fi

@@ -37,7 +37,7 @@ local mathematics = mathematics
 -- following approach permits easier remapping of a-a, A-Z and 0-9 to
 -- fallbacks; symbols is currently mostly greek
 
-mathematics.alphabets = allocate {
+local alphabets = allocate {
     regular = {
         tf = {
             digits    = 0x00030,
@@ -272,7 +272,8 @@ mathematics.alphabets = allocate {
     },
 }
 
-local alphabets = mathematics.alphabets
+mathematics.alphabets = alphabets
+
 local mathremap = { }
 
 for alphabet, styles in next, alphabets do
@@ -442,4 +443,21 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
         return newchar ~= char and newchar
     end
     return nil
+end
+
+local function checkedcopy(characters,child,parent)
+    for k, v in next, child do
+        if not characters[v] then
+            characters[v] = characters[parent[k]]
+        end
+    end
+end
+
+function mathematics.addfallbacks(main)
+    local characters = main.characters
+    local regular = alphabets.regular
+    checkedcopy(characters,regular.bf.ucgreek,regular.tf.ucgreek)
+    checkedcopy(characters,regular.bf.lcgreek,regular.tf.lcgreek)
+    checkedcopy(characters,regular.bi.ucgreek,regular.it.ucgreek)
+    checkedcopy(characters,regular.bi.lcgreek,regular.it.lcgreek)
 end

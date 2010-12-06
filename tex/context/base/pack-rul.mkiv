@@ -469,7 +469,7 @@
     \fi\fi}
 
 \def\dostrokedlinedbox
-  {\setbox\scratchbox\null
+  {\setbox\scratchbox\emptyhbox
    \wd\scratchbox\frameddimenwd
    \ht\scratchbox\frameddimenht
    \dp\scratchbox\frameddimendp
@@ -1217,7 +1217,7 @@
    \egroup}
 
 \def\dosetfakedframebox
-  {\setbox\scratchbox\null
+  {\setbox\scratchbox\emptyhbox
    \wd\scratchbox\wd\framebox
    \ht\scratchbox\ht\framebox
    \dp\scratchbox\dp\framebox

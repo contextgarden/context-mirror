@@ -126,12 +126,12 @@
   {\def\dobaselinecorrection % visualization is not watertight!
      {\bgroup
 \ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
-      \setbox0\null
-      \wd0\hsize
-      \dp0\strutdp
+      \setbox\scratchbox\emptyhbox
+      \wd\scratchbox\hsize
+      \dp\scratchbox\strutdp
       \nointerlineskip
       \forgetall
-      \ruledvbox{\box0}%
+      \ruledvbox{\box\scratchbox}%
       \egroup
       \prevdepth\strutdp}%
    \def\dotopbaselinecorrection
@@ -250,7 +250,7 @@
 
 \unexpanded\def\startbaselinecorrection
   {\ifgridsnapping
-     \snaptogrid[v!normal]\vbox\bgroup
+     \snaptogrid[\v!normal]\vbox\bgroup
      \let\stopbaselinecorrection\egroup
    \else
      \normalstartbaselinecorrection

@@ -179,11 +179,11 @@
    \ifdoublesided \ifodd\realpageno\else
      \processaction
        [\makeupparameter\c!doublesided]
-       [  \v!yes=>\null
+       [  \v!yes=>\emptyhbox
                   \page,
         \v!empty=>{\setupmakeuplayout
                   \page[\v!blank]%
-                  \null
+                  \emptyhbox
                   \page}]%
    \fi \fi
    \poppagestate} % new

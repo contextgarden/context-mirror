@@ -14,6 +14,8 @@ local resolvers = resolvers
 
 local sequencers    = utilities.sequencers
 local methodhandler = resolvers.methodhandler
+local splitlines    = string.splitlines
+local utffiletype   = unicode.filetype
 
 local fileprocessor = nil
 local lineprocessor = nil
@@ -44,23 +46,21 @@ appendgroup(textlineactions,"before") -- user
 appendgroup(textlineactions,"system") -- private
 appendgroup(textlineactions,"after" ) -- user
 
-function helpers.textopener(tag,filename,file_handle)
+function helpers.textopener(tag,filename,filehandle)
     local lines
-    if not file_handle then
+    local t_filehandle = type(filehandle)
+    if not filehandle then
         lines = io.loaddata(filename)
-    elseif type(file_handle) == "string" then
-        lines = file_handle
-    elseif type(file_handle) == "table" then
-        lines = file_handle
-    elseif file_handle then
-        lines = file_handle:read("*a")
-        file_handle:close()
+    elseif t_filehandle == "string" then
+        lines = filehandle
+    elseif t_filehandle == "table" then
+        lines = filehandle
     else
-        report_resolvers("%s opener, weird error: filename=%s, handle=%s",tag,tostring(filename),tostring(file_handle))
-        lines = ""
+        lines = filehandle:read("*a")
+        filehandle:close()
     end
     if type(lines) == "string" then
-        local kind = unicode.filetype(lines)
+        local kind = utffiletype(lines)
         if trace_locating then
             report_resolvers("%s opener, '%s' opened using method '%s'",tag,filename,kind)
         end
@@ -77,11 +77,12 @@ function helpers.textopener(tag,filename,file_handle)
                 fileprocessor = sequencers.compile(textfileactions)
             end
             lines = fileprocessor(lines,filename) or lines
-            lines = string.splitlines(lines)
+            lines = splitlines(lines)
         end
     elseif trace_locating then
         report_resolvers("%s opener, '%s' opened",tag,filename)
     end
+    logs.show_open(filename)
     return {
         filename    = filename,
         noflines    = #lines,

@@ -19,11 +19,11 @@
 \newdimen \@@plntabdimen
 
 \def\cleartabs % visible
-  {\global\setbox\@@plntabsyet\null
-   \setbox\@@plntabs\null}
+  {\global\setbox\@@plntabsyet\emptyhbox
+   \setbox\@@plntabs\emptyhbox}
 
 \def\settabs % visible
-  {\setbox\@@plntabs\null
+  {\setbox\@@plntabs\emptyhbox
    \futurelet\next\@@plnsettabs}
 
 \def\tabalign % visible
@@ -61,7 +61,7 @@
 \def\@@plnmaketabbox
   {\begingroup
    \global\setbox\@@plntabsyet\copy\@@plntabs
-   \global\setbox\@@plntabsdone\null
+   \global\setbox\@@plntabsdone\emptyhbox
    \def\cr
      {\@@plncrtrue\crcr\egroup\egroup
       \if@@plnusetab\unvbox\zerocount\lastbox\fi\endgroup

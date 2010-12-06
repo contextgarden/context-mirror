@@ -3554,8 +3554,11 @@ function unicode.utfcodes(str)
 end
 
 
+local lpegmatch = lpeg.match
+local utftype = lpeg.patterns.utftype
+
 function unicode.filetype(data)
-    return data and lpeg.match(lpeg.patterns.utftype,data) or "unknown"
+    return data and lpegmatch(utftype,data) or "unknown"
 end
 
 
@@ -5025,7 +5028,6 @@ function logs.new(category)
 end
 
 
-
 -- nop logging (maybe use __call instead)
 
 local noplog = { } logs.nop = noplog  setmetatable(logs, { __index = noplog })
@@ -5065,6 +5067,9 @@ function texlog.line(fmt,...) -- new
         write_nl("")
     end
 end
+
+
+
 
 local real, user, sub
 
@@ -12200,8 +12205,8 @@ end
 
 function openers.helpers.textopener(tag,filename,f)
     return {
-        reader = function() return f:read () end,
-        close  = function() return f:close() end,
+        reader = function()                           return f:read () end,
+        close  = function() logs.show_close(filename) return f:close() end,
     }
 end
 
@@ -12210,7 +12215,6 @@ function openers.file(specification,filetype)
     if filename and filename ~= "" then
         local f = io.open(filename,"r")
         if f then
-            logs.show_open(filename) -- todo
             if trace_locating then
                 report_resolvers("file opener, '%s' opened",filename)
             end
@@ -12634,7 +12638,6 @@ function resolvers.openers.zip(specification)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
-                    logs.show_open(original)
                     if trace_locating then
                         report_resolvers("zip opener, file '%s' found",queryname)
                     end

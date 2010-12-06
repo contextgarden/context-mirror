@@ -970,7 +970,7 @@
 
 % experiment
 
-\newbox\emptystrutbox \setbox\emptystrutbox\hbox{}
+\newbox\emptystrutbox \setbox\emptystrutbox\emptyhbox
 
 \def\dosetstruthide
   {\setbox\strutbox\copy\emptystrutbox
@@ -1067,7 +1067,7 @@
      \fi
    \fi\fi}
 
-\newbox\nostrutbox \setbox\nostrutbox\normalhbox{} % {\normalhbox{}}
+\newbox\nostrutbox \setbox\nostrutbox\emptyhbox
 
 \def\setnostrut
   {\setbox\strutbox\copy\nostrutbox

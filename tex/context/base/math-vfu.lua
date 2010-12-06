@@ -676,6 +676,7 @@ function vfmath.define(specification,set,variables)
     if mp then -- weak catch
         vfmath.alas(main,#lst,size,variables)
     end
+    mathematics.addfallbacks(main)
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)
     end
