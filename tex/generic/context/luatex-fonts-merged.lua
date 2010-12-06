@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/06/10 15:24:44
+-- merge date  : 12/07/10 00:30:35
 
 do -- begin closure to overcome local limits and interference
 
@@ -3780,10 +3780,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
     local sharedkerns = { }
     for k,v in next, characters do
         local chr, description, index
-        if isvirtual then
-            description = descriptions[k] or v
-            -- no index
-        elseif ischanged then
+        if ischanged then
             -- basemode hack
             local c = changed[k]
             if c then
@@ -4011,6 +4008,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
                 else
                     chr.commands = vc
                 end
+                chr.index = nil
             end
         end
         tc[k] = chr

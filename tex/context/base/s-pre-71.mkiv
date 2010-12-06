@@ -20,6 +20,8 @@
 
 \usemodule[pre-60,abr-02]
 
+\registerctxluafile{s-pre-71}{}
+
 \setupinteraction[state=start,click=off]
 
 \definepapersize[wide][width=900pt,height=600pt]
@@ -60,54 +62,9 @@
 \setupcolors[state=start]
 \setupcolors[textcolor=TopicColor]
 
-\startluacode
-    local locations = {
-        'lefttop',
-        'middletop',
-        'righttop',
-        'middleleft',
-        'middle',
-        'middleright',
-        'leftbottom',
-        'middlebottom',
-        'rightbottom',
-    }
-    local done, current, previous, n = table.tohash(locations,false), 0, 0, 0
-    function document.reset_locations()
-        done, current, previous, n = table.tohash(locations,false), 0, 0, 0
-    end
-    function document.next_location(loc)
-        previous = current
-        n = n + 1
-        loc = loc and loc ~= "" and tonumber(loc)
-        while true do
-            current = loc or math.random(1,#locations)
-            if not done[current] then
-                done[current] = true
-                break
-            end
-        end
-    end
-    function document.current_location()
-        tex.print(locations[current] or "")
-    end
-    function document.previous_location()
-        tex.print(locations[previous] or "")
-    end
-    function document.current_n()
-        tex.print(tostring(current))
-    end
-    function document.previous_n()
-        tex.print(tostring(previous))
-    end
-    function document.step()
-        tex.print(tostring(n))
-    end
-\stopluacode
-
 \def\StartTopics
   {\startstandardmakeup
-   \ctxlua{document.reset_locations()}
+   \ctxlua{moduledata.steps.reset_locations()}
    \doifnotmode{paper}{\StartLocalSteps}}
 
 \def\StopTopics
@@ -120,13 +77,13 @@
 
 \def\doStartTopic[#1]%
   {\doifnotmode{paper}{\NextStep}
-   \ctxlua{document.next_location("#1")}
+   \ctxlua{moduledata.steps.next_location("#1")}
    \startnotmode[paper]
      \doifnothing{#1}
-       {\ifcase\ctxlua{document.previous_n()}\else
+       {\ifcase\ctxlua{moduledata.steps.previous_n()}\else
           \setlayer
             [page]
-            [preset=\ctxlua{document.previous_location()}]
+            [preset=\ctxlua{moduledata.steps.previous_location()}]
              \bgroup
                \doifnotmode{paper}{\startviewerlayer[\StepLayer]}%
                \framed
@@ -145,7 +102,7 @@
    \stopnotmode
    \setlayer
      [page]
-     [preset=\ctxlua{document.current_location()}]
+     [preset=\ctxlua{moduledata.steps.current_location()}]
      \bgroup
        \doifnotmode{paper}{\startviewerlayer[\StepLayer]}%
        \framed
@@ -157,7 +114,7 @@
           height=\dimexpr\paperheight/3\relax,
           width=\dimexpr\paperwidth/3\relax,
           background=color,
-          backgroundcolor=TopicColor-\ctxlua{document.current_n()}]
+          backgroundcolor=TopicColor-\ctxlua{moduledata.steps.current_n()}]
          \bgroup
          \ignorespaces}
 
@@ -169,14 +126,14 @@
    \startmode[numbers]
    \setlayerframed
      [page]
-     [preset=\ctxlua{document.current_location()}]
+     [preset=\ctxlua{moduledata.steps.current_location()}]
      [height=\dimexpr\paperheight/3\relax,
       width=\dimexpr\paperwidth/3\relax,
       frame=off,
       foregroundstyle=\bfa,
       align={flushright,low}]
      {\doifnotmode{paper}{\startviewerlayer[\StepLayer]}%
-      \ctxlua{document.step()}\kern\strutdepth
+      \ctxlua{moduledata.steps.step()}\kern\strutdepth
       \doifnotmode{paper}{\stopviewerlayer}}
    \stopmode}
 
