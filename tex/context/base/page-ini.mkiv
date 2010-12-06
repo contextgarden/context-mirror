@@ -1433,7 +1433,7 @@
 \def\registeredtextarea#1#2#3% #1=lower-dp #2=correct-ht #3=box
   {\hbox\bgroup
      \ifregistertextareas \ifx\registerMPtextarea\undefined \else
-       \setbox\registertextbox\null
+       \setbox\registertextbox\emptyhbox
        \wd\registertextbox\wd#3%
        \ht\registertextbox\ht#3%
        \dp\registertextbox\dp#3%

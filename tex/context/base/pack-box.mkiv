@@ -82,7 +82,7 @@
   {\dowithnextbox
      {\bgroup
       \checktextbackgrounds
-      \setbox\scratchbox\null
+      \setbox\scratchbox\emptyhbox
       \wd\scratchbox\nextboxwd
       \ht\scratchbox\nextboxht
       \dp\scratchbox\nextboxdp
@@ -904,7 +904,7 @@
      [\c!width=\zeropoint,%
       \c!height=\zeropoint,%
       \c!depth=\zeropoint,#1]%
-   \setbox\scratchbox\null
+   \setbox\scratchbox\emptyhbox
    \wd\scratchbox\@@olwidth
    \ht\scratchbox\@@olheight
    \dp\scratchbox\@@oldepth

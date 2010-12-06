@@ -135,7 +135,6 @@ function resolvers.openers.zip(specification)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
-                    logs.show_open(original)
                     if trace_locating then
                         report_resolvers("zip opener, file '%s' found",queryname)
                     end

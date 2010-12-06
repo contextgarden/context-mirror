@@ -379,10 +379,15 @@
 %D We prefer the more readable variant than in plain
 %D \TEX. User should only use \type {\emptybox}:
 
-\newbox\voidbox
+\newbox\voidbox  % public
 
-\def\emptybox {\box   \voidbox}
+\let\normalhbox\hbox
+\let\normalvbox\vbox
+
 \def\unvoidbox{\unhbox\voidbox}
+\def\emptybox {\box   \voidbox}  % used in initializations so no attributes
+\def\emptyvbox{\normalvbox{}}    % no copy as we need to set attributes
+\def\emptyhbox{\normalhbox{}}    % no copy as we need to set attributes
 
 \let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
 

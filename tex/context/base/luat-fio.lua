@@ -29,13 +29,14 @@ if not resolvers.instance then
  -- trackers.disable("resolvers.*")
 
     local findbinfile, loadbinfile = resolvers.findbinfile, resolvers.loadbinfile
+    local findtexfile, opentexfile = resolvers.findtexfile, resolvers.opentexfile
 
     if callback then
 
         local register = callbacks.register
 
-        register('find_read_file'      , function(id,name) return resolvers.findtexfile(name)   end,  true)
-        register('open_read_file'      , function(   name) return resolvers.opentexfile(name)   end,  true)
+        register('find_read_file'      , function(id,name) return findtexfile(name) end, true)
+        register('open_read_file'      , function(   name) return opentexfile(name) end, true)
 
         register('find_data_file'      , function(name) return findbinfile(name,"tex") end, true)
         register('find_enc_file'       , function(name) return findbinfile(name,"enc") end, true)

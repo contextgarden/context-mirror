@@ -860,8 +860,12 @@
    \crcr
    \noalign
      {\nointerlineskip
-      \ifnum\gettblnob\tblrow=\zerocount
-        \allowbreak
+      \ifnum\tblrow>\noftblheadlines
+        \ifnum\gettblnob\tblrow=\zerocount
+          \allowbreak
+        \fi
+      \else
+        \allowbreak % else no proper head split off
       \fi
       \bgroup % protect local vars
         \@@tblsplitafter

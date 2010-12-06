@@ -27,7 +27,7 @@ mathematics.extrabase   = 0xFE000 -- here we push some virtuals
 mathematics.privatebase = 0xFF000 -- here we push the ex
 
 local families = allocate {
-    tf = 0, it = 1, sl = 2, bf = 3, bi = 4, bs = 5, -- virtual fonts or unicode otf
+    tf = 0, it = 1, sl = 2, bf = 3, bi = 4, bs = 5, -- no longer relevant
 }
 
 local classes = allocate {
@@ -220,7 +220,7 @@ end
 
 -- there will be a combined \(math)chardef
 
-function mathematics.define(slots,family)
+function mathematics.define(family)
     family = family or 0
     family = families[family] or family
     local data = characters.data

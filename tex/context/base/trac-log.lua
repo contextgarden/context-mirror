@@ -78,7 +78,6 @@ end
 
 --~ local report = logs.new("fonts")
 
-
 -- nop logging (maybe use __call instead)
 
 local noplog = { } logs.nop = noplog  setmetatable(logs, { __index = noplog })
@@ -119,6 +118,20 @@ function texlog.line(fmt,...) -- new
         write_nl("")
     end
 end
+
+--~ local hasscheme = url.hasscheme
+
+--~ function texlog.show_open(name)
+--~     if hasscheme(name) ~= "virtual" then
+--~         write(format("(",name)) -- tex adds a space
+--~     end
+--~ end
+
+--~ function texlog.show_close(name)
+--~     if hasscheme(name) ~= "virtual" then
+--~         write(")") -- tex adds a space
+--~     end
+--~ end
 
 local real, user, sub
 

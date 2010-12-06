@@ -173,7 +173,7 @@
    \right.}
 
 \def\matrix#1%
-  {\null
+  {\emptyhbox
    \,%
    \vcenter
      {\normalbaselines\mathsurround\zeropoint
@@ -206,7 +206,7 @@
      {$\kern\wd\plusone\kern-\mathparentwd\left(\kern-\wd\plusone
       \global\setbox\plusone\vbox{\box\plusone\kern2\points}%
       \vcenter{\kern-\ht\plusone\unvbox\zerocount\kern-\baselineskip}\,\right)$}%
-   \null
+   \emptyhbox
    \;%
    \vbox{\kern\ht\plusone\box\plustwo}%
    \endgroup}
@@ -230,7 +230,7 @@
 \def\displayopenupvalue{.25\bodyfontsize}
 
 \def\eqalign#1%
-  {\null
+  {\emptyhbox
    \,%
    \vcenter
      {\openup\displayopenupvalue % was \openup\jot

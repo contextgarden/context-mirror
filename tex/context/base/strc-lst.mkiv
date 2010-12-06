@@ -96,7 +96,7 @@
      % new from here
      \xdef\currentstructurelistattribute{\ctxlua{tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
      \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
-     %begingroup\attribute\destinationattribute\currentdestinationattribute\dontleavehmode\hbox{}\endgroup % todo
+     %begingroup\attribute\destinationattribute\currentdestinationattribute\dontleavehmode\emptyhbox\endgroup % todo
      \dontleavehmode\hbox attr \destinationattribute \currentdestinationattribute{}% todo
      % end of new
    \else
@@ -702,7 +702,7 @@
                \hfill}}}
            {\!!widtha\zeropoint
             \!!widthc\zeropoint
-            \setbox2\hbox{}}%
+            \setbox2\emptyhbox}%
          \setbox4\hbox
            {\doif{\listparameter\c!pagenumber}\v!yes
               {\doifsomething{#5}    % \listwidth is new ; temp hack

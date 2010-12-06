@@ -54,7 +54,7 @@
       \let\\\empty
       \setbox\scratchbox\hbox{#1}%
       \edef\characterassignwidth{\the\wd\scratchbox}%
-      \setbox\scratchbox\null
+      \setbox\scratchbox\emptyhbox
       \docheckalignment##1#1\relax\relax
       \scratchdimen-\wd\scratchbox
       \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
@@ -99,7 +99,7 @@
       \let\\\empty % beware, no grouping
       \setbox\scratchbox\hbox{#1}%
       \edef\characterassignwidth{\the\wd\scratchbox}%
-      \setbox\scratchbox\null
+      \setbox\scratchbox\emptyhbox
       % new 12,34 vs 10\\ where 10 aligns on 12 if #1 = ,
       \ifcase\characteralignmentslot
         \docheckalignment##1#1\relax\relax

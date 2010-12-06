@@ -177,7 +177,7 @@
        }%
        % todo: optional
        \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
-       \begingroup\attribute\destinationattribute\currentdestinationattribute\hbox{}\endgroup % todo
+       \begingroup\attribute\destinationattribute\currentdestinationattribute\emptyhbox\endgroup % todo
      \fi
    \fi}
 
@@ -1286,7 +1286,7 @@
    \attribute\referenceattribute\attributeunsetvalue
    \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
      {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
-      \setbox\scratchbox\null\wd\scratchbox#1\ht\scratchbox#2%
+      \setbox\scratchbox\emptyhbox\wd\scratchbox#1\ht\scratchbox#2%
 \global\lastsavedreferenceattribute\lastreferenceattribute
       \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}%
      {}%
@@ -1750,7 +1750,7 @@
 
 \def\overlayfakebox
   {\hbox
-     {\setbox\scratchbox\null
+     {\setbox\scratchbox\emptyhbox
       \wd\scratchbox\overlaywidth
       \ht\scratchbox\overlayheight
       \box\scratchbox}}

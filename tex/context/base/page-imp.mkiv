@@ -921,10 +921,10 @@
    \dontcomplain
    \getfiguredimensions[#1]%
    \getparameters[\??ip][\c!n=\noffigurepages,\c!width=\!!zeropoint,#3]%
-   \doifinset0{#2}{\null\page}%
+   \doifinset0{#2}{\emptyhbox\page}%
    \dorecurse\@@ipn
      {\dofilterpage{#1}\recurselevel
-      \doifinset\recurselevel{#2}{\null\page}}%
+      \doifinset\recurselevel{#2}{\emptyhbox\page}}%
    \egroup}
 
 \def\filterpages

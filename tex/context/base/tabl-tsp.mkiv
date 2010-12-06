@@ -201,21 +201,25 @@
 \newbox\tsplitnext
 \newbox\tsplittail
 
-\def\resettsplit{% only \def's starting a a new line are seen by the dep checker
+\newtoks\everyresettsplit
+
+\def\resettsplit{\the\everyresettsplit}
+
+\appendtoks
    \def\tsplitminimumfreelines{0}%
    \def\tsplitminimumfreespace{0pt}%
-   \setbox\tsplitcontent  \vbox{}%
-   \setbox\tsplitresult   \vbox{}%
-   \setbox\tsplithead     \vbox{}%
-   \setbox\tsplitnext     \vbox{}%
-   \setbox\tsplittail     \vbox{}%
+   \setbox\tsplitcontent\emptyvbox
+   \setbox\tsplitresult \emptyvbox
+   \setbox\tsplithead   \emptyvbox
+   \setbox\tsplitnext   \emptyvbox
+   \setbox\tsplittail   \emptyvbox
    \let\tsplitbeforeresult\donothing
    \let\tsplitafterresult \donothing
    \let\tsplitinbetween   \donothing
    \let\tsplitbefore      \donothing
    \let\tsplitafter       \donothing
    \let\postprocesstsplit \donothing
-}
+\to \everyresettsplit
 
 \resettsplit
 

@@ -43,7 +43,7 @@
         \else
           % prevent duplicate writes in normal run
           \ifarrangingpages \else \ifcase\showspreadmode
-            \global\setbox\spreadbox\null
+            \global\setbox\spreadbox\emptyhbox
             \wd\spreadbox\makeupwidth
             \ht\spreadbox\textheight
           \fi \fi
@@ -56,7 +56,7 @@
 \def\doflushspread
   {\ifinspread \ifvoid\spreadbox\else
      % this page will be discarded later
-     \null \page
+     \emptyhbox \page
    \fi \fi }
 
 \unexpanded\def\startspread

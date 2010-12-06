@@ -364,7 +364,10 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
     local sharedkerns = { }
     for k,v in next, characters do
         local chr, description, index
-        if ischanged then
+        if isvirtual then
+            description = descriptions[k] or v
+            -- no index
+        elseif ischanged then
             -- basemode hack
             local c = changed[k]
             if c then
