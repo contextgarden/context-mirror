@@ -275,7 +275,6 @@
    \!taRightGlue\emptytoks
    \begingroup
    \@@useotherbar
-   \@@useotherquote
    \expanded{\endgroup\noexpand\doreadtableformatkeys#1]}}% appear in a \dotablereformat cmd; this is here as a safeguard.
 
 \appendtoks
@@ -856,8 +855,12 @@
    \lineskiplimit\zeropoint
    \lineskip     \zeropoint
    \tabskip      \zeropoint
-   \halign
-     \the\!taTableSpread
+   \doifelsenothing\@@titextwidth
+     {\halign}
+     {\doifelse\@@titextwidth\v!max
+        {\halign to \hsize}
+        {\halign to \@@titextwidth}}%
+%    \the\!taTableSpread
      \bgroup
      \span
      \the\!taPreamble
@@ -1014,23 +1017,12 @@
   {\edef\tablestrutheightfactor{\withoutpt\the\dimexpr\tablestrutheightfactor\points+#1\points}%
    \edef\tablestrutdepthfactor {\withoutpt\the\dimexpr\tablestrutdepthfactor \points+#2\points}}
 
-\def\dotableSetTableToWidth#1%
-  {\doifelsenothing{#1}{\!taTableSpread\emptytoks}{\!taTableSpread{to #1}}}
-
-\def\dotableWidenTableBy#1%
-  {\ifdim#1=\zeropoint
-     \!taTableSpread\emptytoks
-   \else
-     \!taTableSpread{spread #1}%
-   \fi}
-
-\def\dotableExpand
-  {\dotableSetTableToWidth{\hsize}}
-
-\def\dotableLongLines
-  {\tablelefttabskip \zeropoint \!!plus 1fill
-   \tablerighttabskip\tablelefttabskip
-   \dotableExpand}
+% SetTableToWidth -> textwidth=dimension [to dimension]
+% Expand          -> textwidth=max       [to \hsize]
+% WidenTableBy    ->                     [spread #1]
+%                                        \tablelefttabskip\zeropoint\!!plus1fill
+%                                        \tablerighttabskip\tablelefttabskip
+% LongLines       ->                     [spread \hsize]
 
 \def\dotableJustLeft  {\omit\let\!ttRightGlue\hfill}
 \def\dotableJustCenter{\omit\hfill\emptyhbox\let\!ttRightGlue\hfill}
@@ -1134,10 +1126,6 @@
    \egroup} % Ends the \noalign
 
 \appendtoks
-    \let\SetTableToWidth\dotableSetTableToWidth
-    \let\WidenTableBy   \dotableWidenTableBy
-    \let\Expand         \dotableExpand
-    \let\LongLines      \dotableLongLines
     \let\JustLeft       \dotableJustLeft
     \let\JustCenter     \dotableJustCenter
     \let\JustRight      \dotableJustRight
@@ -1370,8 +1358,15 @@
 \newconditional\tablerepeathead
 \newconditional\tablerepeattail
 
+
 \unexpanded\def\starttable
+  {\dodoubleempty\dostarttable}
+
+\unexpanded\def\dostarttable[#1][#2]% preamble optional-settings
   {\bgroup
+   \ifsecondargument
+     \getparameters[\??ti][#2]%
+   \fi
    \let\stoptable\dostoptable
    \doif\@@tisplit\v!auto
      {\ifinsidesplitfloat\let\@@tisplit\v!yes\fi}%
@@ -1382,7 +1377,8 @@
         {\ifinsidefloat\else\startbaselinecorrection\fi}
         {\startframedcontent[\@@tiframe]}%
       \postponenotes
-      \firststagestarttable}}
+      \firststagestarttable}%
+   [#1]}
 
 % We cannot define \unexpanded\def\dostoptable a ssomehow lookahead
 % in alignments fail then, so we relax it and define it locally.
@@ -1408,14 +1404,10 @@
 %D Before we can grab the argument, we have to make sure that
 %D the \CATCODES\ are set. The first stage takes care of that.
 
-\def\firststagestarttable
-  {\bgroup                   % kan-ie weg?
+\def\firststagestarttable%
+  {\bgroup
    \global\intabletrue
-   %catcode`\|=\othercatcode
-   \complexorsimple\secondstagestarttable}
-
-\def\simplesecondstagestarttable#1%
-  {\complexsecondstagestarttable[{#1}]}
+   \secondstagestarttable}
 
 %D \macros
 %D   {definetabletemplate}
@@ -1450,7 +1442,7 @@
 \def\dousetabletemplate#1#2#3%
   {\gdef\dotablehead{\getvalue{@@tablehead#2}}%
    \gdef\dotabletail{\getvalue{@@tabletail#3}}%
-   \complexsecondstagestarttable[#1]}
+   \secondstagestarttable[#1]}
 
 %D The optional third and fourth arguments define which table
 %D head and tail to use.
@@ -1519,20 +1511,19 @@
 %    \stoptablenoalign
    }
 
-\bgroup \catcode`|=\othercatcode \catcode`"=\othercatcode
+\bgroup \catcode`\|=\othercatcode
 
-\gdef\complexsecondstagestarttable#1[#2]% brr nested mess
+\gdef\secondstagestarttable[#1]% brr nested mess
   {\bgroup
    \@@useotherbar
-   \@@useotherquote
    \global\setfalse\tableactionstatepermitted
    \global\setfalse\hassometablehead
    \global\setfalse\hassometabletail
-   \expanded{\doifinstringelse{|}{#2}}
-     {\xdef\restarttable{\noexpand\dorestarttable{\noexpand\thirdstagestarttable{#2}}}}
-     {\doifdefinedelse{\s!TaBlE#2}
-        {\gdef\restarttable{\getvalue{\s!TaBlE#2}}}
-        {\gdef\restarttable{\dorestartable{\getvalue{#2}}}}}%
+   \expanded{\doifinstringelse{|}{#1}}
+     {\xdef\restarttable{\noexpand\dorestarttable{\noexpand\thirdstagestarttable{#1}}}}
+     {\doifdefinedelse{\s!TaBlE#1}
+        {\gdef\restarttable{\getvalue{\s!TaBlE#1}}}
+        {\gdef\restarttable{\dorestartable{\getvalue{#1}}}}}%
    \egroup
    \restarttable}
 
@@ -1890,9 +1881,7 @@
 
 \bgroup
     \catcode`\|=\othercatcode  \gdef\@@otherbar     {|}
-    \catcode`\"=\othercatcode  \gdef\@@otherquote   {"}
     \catcode`\|=\activecatcode \gdef\@@useotherbar  {\let|\@@otherbar}
-    \catcode`\"=\activecatcode \gdef\@@useotherquote{\let"\@@otherquote}
 \egroup
 
 \bgroup \catcode`\|=\othercatcode
@@ -1901,7 +1890,6 @@
   {\bgroup
    \cleanupfeatures % needed !
    \@@useotherbar
-   \@@useotherquote
    \egroup}
 
 \egroup
@@ -2287,6 +2275,7 @@
    \c!align=\v!right,
    \c!depth=.40, % \v!strut
    \c!height=.80, % \v!strut
+   \c!textwidth=,
    \c!rulethickness=\linewidth,
    \c!rulecolor=,
    \c!distance=\v!medium,
