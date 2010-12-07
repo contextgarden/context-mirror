@@ -177,16 +177,16 @@ function vf.aux.compose_characters(g) -- todo: scaling depends on call location
                                             t.commands = { push, {"right", dx+dd},                      acc_t,        pop, chr_t }
                                         end
                                     end
-                                    done = true
                                 else
                                     t.commands = { chr_t } -- else index mess
-                                    done = true
                                 end
-                            elseif trace_combining_all then
-                                report_combining("%s (0x%05X) = %s (0x%05X) (simplified)",utfchar(i),i,utfchar(chr),chr)
+                            else
+                                if trace_combining_all then
+                                    report_combining("%s (0x%05X) = %s (0x%05X) (simplified)",utfchar(i),i,utfchar(chr),chr)
+                                end
                                 t.commands = { chr_t } -- else index mess
-                                done = true
                             end
+                            done = true
                             chars[i] = t
                             local d = { }
                             for k, v in next, descs[chr] do

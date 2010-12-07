@@ -21,13 +21,13 @@ These can be used for runtime user data or third party modules and will not be
 cluttered by macro package code.</p>
 --ldx]]--
 
-userdata      = userdata      or { } -- might be used
-thirddata     = thirddata     or { } -- might be used
-moduledata    = moduledata    or { } -- might be used
-documentdata  = documentdata  or { } -- might be used
-parametersets = parametersets or { } -- experimental
+userdata      = userdata      or { } -- for users (e.g. functions etc)
+thirddata     = thirddata     or { } -- only for third party modules
+moduledata    = moduledata    or { } -- only for development team
+documentdata  = documentdata  or { } -- for users (e.g. raw data)
+parametersets = parametersets or { } -- experimental for team
 
-document      = document      or { }
+document      = document      or { } -- only for context itself
 
 --[[ldx--
 <p>These can be used/set by the caller program; <t>mtx-context.lua</t> does it.</p>

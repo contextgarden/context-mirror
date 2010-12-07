@@ -347,15 +347,19 @@ function references.urls.define(name,url,file,description)
     end
 end
 
+local pushcatcodes, popcatcodes, txtcatcodes = context.pushcatcodes, context.popcatcodes, tex.txtcatcodes
+
 function references.urls.get(name,method,space) -- method: none, before, after, both, space: yes/no
     local u = urls[name]
     if u then
         local url, file = u[1], u[2]
+        pushcatcodes(txtcatcodes)
         if file and file ~= "" then
             context("%s/%s",url,file)
         else
             context(url)
         end
+        popcatcodes()
     end
 end
 
