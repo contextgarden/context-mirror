@@ -885,19 +885,6 @@
            \v!next%
          \fi]}}}
 
-% \def\dosymbolreference#1#2[#3]%
-%   {\removeunwantedspaces
-%    \goto{\setupsymbolset[\@@iasymbolset]\high{\symbol
-%      [\ifcase\referencepagestate
-%         \v!somewhere
-%       \or % same
-%         \v!nowhere
-%       \or % before
-%         \v!previous
-%       \or % after
-%         \v!next%
-%       \fi]}}[#3]}
-
 \def\dosymbolreference#1#2[#3]%
   {\removeunwantedspaces
    \goto{\referencesymbol}[#3]}
@@ -910,25 +897,12 @@
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.
 
-% \def\dounknownreference#1#2[#3]%
-%   {\dotextprefix{#2}\dummyreference}%
-
 \def\dounknownreference#1#2[#3]%
   {\dotextprefix{#2}{\leftofreference\dummyreference\rightofreference}}
 
-\def\docompletereference#1#2[#3]%
-  {\goto{\dotextprefix{#2}#1}[#3]}
-
-% \def\dolabelonlyreference#1#2[#3]%
-%   {\doifsomespaceelse{#2}% space?
-%      {\doifsomething{#2}{\goto{#2}[#3]}}
-%      {\goto{\dotextprefix{#2}}[#3]}}
-
-\def\dolabelonlyreference#1#2[#3]%
-  {\goto{\dotextprefix{#2}}[#3]}
-
-\def\dotextonlyreference#1#2[#3]%
-  {\dotextprefix{#2}\goto{#1}[#3]}
+\def\docompletereference #1#2[#3]{\goto{\dotextprefix{#2}#1}[#3]}
+\def\dolabelonlyreference#1#2[#3]{\goto{\dotextprefix{#2}}[#3]}
+\def\dotextonlyreference #1#2[#3]{\dotextprefix{#2}\goto{#1}[#3]}
 
 \let\dowantedreference\docompletereference
 

@@ -80,7 +80,7 @@ buffers.append         = append
 buffers.exists         = exists
 buffers.getcontent     = getcontent
 buffers.getlines       = getlines
-buffers.collectcontent = collect
+buffers.collectcontent = collectcontent
 
 -- the context interface
 
