@@ -13,20 +13,25 @@ local format = string.format
 
 local attributes, nodes = attributes, nodes
 
-local states         = attributes.states
-local tasks          = nodes.tasks
-local nodeinjections = backends.nodeinjections
+local states          = attributes.states
+local tasks           = nodes.tasks
+local nodeinjections  = backends.nodeinjections
+local settexattribute = tex.setattribute
+local variables       = interfaces.variables
 
 --- negative / positive
 
-attributes.negatives = attributes.negatives or { }
-local negatives      = attributes.negatives
-negatives.data       = negatives.data or { }
-negatives.attribute  = attributes.private("negative")
+attributes.negatives  = attributes.negatives or { }
+local negatives       = attributes.negatives
+
+local a_negative      = attributes.private("negative")
+
+negatives.data        = negatives.data or { }
+negatives.attribute   = a_negative
 
 negatives.registered = {
-    positive = 1,
-    negative = 2,
+    [variables.positive] = 1,
+    [variables.negative] = 2,
 }
 
 local data, registered = negatives.data, negatives.registered
@@ -54,11 +59,7 @@ end
 setmetatable(negatives,      { __index = extender })
 setmetatable(negatives.data, { __index = reviver  })
 
-function negatives.register(stamp)
-    return registered[stamp] or registered.positive
-end
-
-attributes.negatives.handler = nodes.installattributehandler {
+negatives.handler = nodes.installattributehandler {
     name        = "negative",
     namespace   = negatives,
     initializer = states.initialize,
@@ -66,6 +67,25 @@ attributes.negatives.handler = nodes.installattributehandler {
     processor   = states.process,
 }
 
-function negatives.enable()
+local function register(stamp)
+    return registered[stamp] or registered.positive
+end
+
+local function enable()
     tasks.enableaction("shipouts","attributes.negatives.handler")
+end
+
+negatives.register = register
+negatives.enable   = enable
+
+-- interface
+
+local enabled = false
+
+function commands.triggernegative(stamp)
+    if not enabled then
+        enable()
+        enabled = true
+    end
+    settexattribute(a_negative,register(stamp))
 end

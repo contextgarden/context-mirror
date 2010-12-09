@@ -48,14 +48,6 @@
 \unexpanded\def\definesymbol
   {\dotripleempty\dodefinesymbol}
 
-% \def\dodefinesymbol[#1][#2][#3]% class name meaning
-%   {\ifthirdargument
-%      \setvalue{\??ss:#1:#2}{#3}%
-%      \doifsomething{#1}{\addvalue{\??ss*#1}{#2}}%
-%    \else
-%      \setvalue{\??ss:\currentsymboldef:#1}{#2}%
-%    \fi}
-
 \def\dodefinesymbol[#1][#2][#3]% class name meaning
   {\ifthirdargument
      \setvalue{\??ss:#1:#2}{#3}%
@@ -65,11 +57,19 @@
      \addvalue{\??ss*\currentsymboldef}{#1}%
    \fi}
 
-\def\doifinsymbolsetelse#1#2{\doifdefinedelse{\??ss:#1:#2}}
-\def\doifinsymbolset    #1#2{\doifdefined    {\??ss:#1:#2}}
-\def\doifsymbolsetelse    #1{\doifdefinedelse{\??ss*#1}}
+% \def\doifinsymbolsetelse#1#2{\doifdefinedelse{\??ss:#1:#2}}
+% \def\doifinsymbolset    #1#2{\doifdefined    {\??ss:#1:#2}}
+% \def\doifsymbolsetelse    #1{\doifdefinedelse{\??ss*#1}}
+%
+% \def\symbolset#1{\executeifdefined{\??ss*#1}\empty} % no [#1], to be used in commalists etc
 
-\def\symbolset#1{\executeifdefined{\??ss*#1}\empty} % no [#1], to be used in commalists etc
+\def\doifinsymbolsetelse#1#2{\ifcsname\??ss:#1:#2\endcsname\@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
+\def\doifinsymbolset    #1#2{\ifcsname\??ss:#1:#2\endcsname\@EA\firstofoneargument \else\@EA\gobbleoneargument   \fi}
+\def\doifsymbolsetelse    #1{\ifcsname\??ss*#1\endcsname   \@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
+
+\letvalue{\??ss*}\empty
+
+\def\symbolset#1{\csname\??ss*\ifcsname\??ss*#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
 
 %D Since symbols are used frequently in interactive
 %D documents, we speed up this one. Well, that was history,
@@ -84,8 +84,11 @@
 \def\dodosymbol#1#2% \relax's prevent lookahead problems
   {\nosymbolfalse{\the\everysymbol\csname\??ss:#1:#2\endcsname\relax}\relax}
 
+\letvalue{\??ss:}\firstofoneargument
+
 \def\directsymbol#1#2% no \relax, there can be an argument, see lists
-  {\executeifdefined{\??ss:#1:#2}\firstofoneargument}
+  {%\executeifdefined{\??ss:#1:#2}\firstofoneargument}
+   \csname\??ss:\ifcsname\??ss:#1:#2\endcsname#1:#2\fi\endcsname}
 
 % We support both:
 %
@@ -125,11 +128,7 @@
    \fi}
 
 \def\redosymbol#1%
-% {\doifinsymbolsetelse\empty{#1}{\dodosymbol\empty{#1}}{#1}} % more efficient:
   {\doifinsymbolsetelse\empty{#1}{\dodosymbol\empty}\firstofoneargument{#1}}
-
-% % % % %
-% this should go in symb-fig, to be loaded after core-fig
 
 %D \macros
 %D   {definefiguresymbol}
@@ -162,12 +161,6 @@
   {\ifsecondargument
      \definesymbol[#1][{\dofiguresymbol[#2][#3]}]%
    \fi}
-
-% but for the moment we keep it here
-% % % % % %
-
-%\def\objectsymbol[#1]%
-%  {\dopresetfieldsymbol{#1}\dogetfieldsymbol{#1}}
 
 %D \macros
 %D   {doifsymboldefinedelse}
@@ -233,7 +226,7 @@
 
 \let\currentsymboldef\empty
 
-\unexpanded\def\startsymbolset[#1]
+\unexpanded\def\startsymbolset[#1]%
   {\def\currentsymboldef{#1}}
 
 \unexpanded\def\stopsymbolset
@@ -264,9 +257,11 @@
 
 \def\dousesymbols#1%
   {\startreadingfile
-     \readsysfile{\truefilename{\f!symbolprefix#1}}
+     \readsysfile{\truefilename{\f!symbolprefix#1}.\mksuffix}
        {\showmessage\m!symbols1{#1}}
-       \donothing
+       {\readsysfile{\truefilename{\f!symbolprefix#1}}
+          {\showmessage\m!symbols1{#1}}
+          \donothing}%
    \stopreadingfile}
 
 \def\usesymbols[#1]%

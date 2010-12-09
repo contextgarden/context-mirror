@@ -1028,7 +1028,8 @@ actions["prepare unicodes"] = function(data,filename,raw)
     -- beware: the indices table is used to initialize the tfm table
     local encname = lower(data.enc_name or (mapenc and mapenc[1] and mapenc[1].enc_name) or "") -- mapenc will go away
  -- will become: local encname = lower(data.enc_name or "")
-    if encname == "" or encname == "unicodebmp" or encname == "unicodefull" then -- maybe find(encname,"unicode")
+--~     if encname == "" or encname == "unicodebmp" or encname == "unicodefull" then -- maybe find(encname,"unicode")
+    if find(encname,"unicode") then
         if trace_loading then
             report_otf("using extra unicode map")
         end

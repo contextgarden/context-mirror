@@ -43,7 +43,7 @@
   {\expandafter\newattribute\csname @attr@#1\endcsname
    \expandafter\newconstant \csname :attr:#1\endcsname
    \csname :attr:#1\endcsname\lastallocatedattribute
-   \ctxlua{attributes.define("#1",\number\lastallocatedattribute)}%
+   \ctxlua{commands.defineattribute("#1",\number\lastallocatedattribute)}%
   %\writestatus\m!systems{defining attribute #1 with number \number\lastallocatedattribute}%
    \doifnotinset\s!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
    \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname :attr:#1\endcsname}}
@@ -52,7 +52,7 @@
   {\dodoubleempty\dodefinesystemattribute}
 
 \def\dodefinesystemattribute[#1][#2]% alternatively we can let lua do the housekeeping
-  {\scratchcounter\ctxlua{tex.print(attributes.private("#1"))}\relax
+  {\scratchcounter\ctxlua{commands.getprivateattribute("#1")}\relax
    \expandafter\attributedef\csname @attr@#1\endcsname\scratchcounter
    \expandafter\newconstant \csname :attr:#1\endcsname
    \csname :attr:#1\endcsname\scratchcounter

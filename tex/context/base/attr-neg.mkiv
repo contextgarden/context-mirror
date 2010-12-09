@@ -17,16 +17,9 @@
 
 \unprotect
 
-\def\registernegative#1#2%
-  {\setevalue{(ns:#1)}{\attribute\negativeattribute\ctxlua{tex.write(attributes.negatives.register('#2'))}\relax}}
+% positive and negative are preregistered
 
-\def\dotriggernegative
-  {\ctxlua{attributes.negatives.enable()}%
-   \gdef\dotriggernegative##1{\csname(ns:##1)\endcsname}%
-   \dotriggernegative}
-
-\registernegative{positive}{positive}
-\registernegative{negative}{negative}
+\def\dotriggernegative#1{\ctxlua{commands.triggernegative('#1'))}}
 
 \unexpanded\def\startnegative{\dotriggernegative\v!negative}
 \unexpanded\def\stopnegative {\dotriggernegative\v!positive}

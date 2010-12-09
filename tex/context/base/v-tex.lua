@@ -11,6 +11,8 @@ local P, S, V, patterns = lpeg.P, lpeg.S, lpeg.V, lpeg.patterns
 local context            = context
 local verbatim           = context.verbatim
 local makepattern        = visualizers.makepattern
+local makenested         = visualizers.makenested
+local getvisualizer      = visualizers.getvisualizer
 
 local TexSnippet         = context.TexSnippet
 local startTexSnippet    = context.startTexSnippet
@@ -36,36 +38,93 @@ local handler = visualizers.newhandler {
 
 -- todo: unicode letters in control sequences (slow as we need to test the nature)
 
-local comment     = S("%")
-local name        = P("\\") * (patterns.letter + S("@!?"))^1
-local escape      = P("\\") * (patterns.anything - patterns.newline)^-1 -- else we get \n
-local group       = S("${}")
-local boundary    = S('[]()<>#="')
-local special     = S("/^_-&+'`|")
+local comment  = S("%")
+local name     = P("\\") * (patterns.letter + S("@!?"))^1
+local escape   = P("\\") * (patterns.anything - patterns.newline)^-1 -- else we get \n
+local group    = S("${}")
+local boundary = S('[]()<>#="')
+local special  = S("/^_-&+'`|")
 
-local pattern = visualizers.pattern
+local p_comment     = makepattern(handler,"comment",comment)
+                    * (V("space") + V("content"))^0
+local p_name        = makepattern(handler,"name",name)
+local p_escape      = makepattern(handler,"name",escape)
+local p_group       = makepattern(handler,"group",group)
+local p_boundary    = makepattern(handler,"boundary",boundary)
+local p_special     = makepattern(handler,"special",special)
+local p_somespace   = V("newline") * V("emptyline")^0 * V("beginline")
+                    + V("space")
+
+--~ local pattern = visualizers.pattern
 
 local grammar = visualizers.newgrammar("default", { "visualizer",
 
-    comment     = makepattern(handler,"comment",comment)
-                * (V("space") + V("content"))^0,
-    name        = makepattern(handler,"name",name),
-    escape      = makepattern(handler,"name",escape),
-    group       = makepattern(handler,"group",group),
-    boundary    = makepattern(handler,"boundary",boundary),
-    special     = makepattern(handler,"special",special),
+    comment     = p_comment,
+    name        = p_name,
+    escape      = p_escape,
+    group       = p_group,
+    boundary    = p_boundary,
+    special     = p_special,
+    somespace   = p_somespace,
 
-    pattern     =
-        V("comment") + V("name") + V("escape") + V("group") + V("boundary") + V("special")
-      + V("newline") * V("emptyline")^0 * V("beginline")
-      + V("space")
-      + V("default"),
+    pattern     = V("comment")
+                + V("name") + V("escape") + V("group") + V("boundary") + V("special")
+                + V("newline") * V("emptyline")^0 * V("beginline")
+                + V("space")
+                + V("default"),
 
-    visualizer  =
-        V("pattern")^1
+    visualizer  = V("pattern")^1
 
 } )
 
 local parser = P(grammar)
 
 visualizers.register("tex", { parser = parser, handler = handler, grammar = grammar } )
+
+local function makecommand(handler,how,start,left,right)
+    local c, l, r, f = P(start), P(left), P(right), how
+    local n = ( P { l * ((1 - (l + r)) + V(1))^0 * r } + P(1-r) )^0
+    if type(how) == "string" then
+        f = function(s) getvisualizer(how,"direct")(s) end
+    end
+    return makepattern(handler,"name",c)
+         * V("somespace")^0
+         * makepattern(handler,"group",l)
+         * (n/f)
+         * makepattern(handler,"group",r)
+end
+
+local grammar = visualizers.newgrammar("default", { "visualizer",
+
+    comment     = p_comment,
+    name        = p_name,
+    escape      = p_escape,
+    group       = p_group,
+    boundary    = p_boundary,
+    special     = p_special,
+    somespace   = p_somespace,
+
+    mpcode      = makenested(handler,"mp","\\startMPcode","\\stopMPcode")
+                + makenested(handler,"mp","\\startMPgraphic","\\stopMPgraphic")
+                + makenested(handler,"mp","\\startuseMPgraphic","\\stopuseMPgraphic")
+                + makenested(handler,"mp","\\startreusableMPgraphic","\\stopreusableMPgraphic")
+                + makenested(handler,"mp","\\startuniqueMPgraphic","\\stopuniqueMPgraphic")
+                + makenested(handler,"mp","\\startMPpage","\\stopMPpage"),
+
+    luacode     = makenested (handler,"lua","\\startluacode","\\stopluacode")
+                + makecommand(handler,"lua","\\ctxlua","{","}"),
+
+    pattern     = V("comment")
+                + V("mpcode") + V("luacode")
+                + V("name") + V("escape") + V("group") + V("boundary") + V("special")
+                + V("newline") * V("emptyline")^0 * V("beginline")
+                + V("space")
+                + V("default"),
+
+    visualizer  = V("pattern")^1
+
+} )
+
+local parser = P(grammar)
+
+visualizers.register("context", { parser = parser, handler = handler, grammar = grammar } )

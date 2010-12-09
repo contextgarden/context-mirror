@@ -25,7 +25,7 @@ local jobpositions = {
 
 job.positions = jobpositions
 
-_plib_, _ptbs_, _pcol_ = jobpositions, tobesaved, collected -- global
+_ptbs_, _pcol_ = tobesaved, collected -- global
 
 local dx, dy = "0pt", "0pt"
 
@@ -50,18 +50,27 @@ function jobpositions.replace(name,...)
     collected[name] = {...}
 end
 
-function jobpositions.doifelse(name)
-    commands.testcase(collected[name] or tobesaved[name])
+function jobpositions.page(id)
+    local jpi = collected[id] or tobesaved[id]
+    context(jpi and jpi[1] or '0')
 end
 
-function jobpositions.MPp(id) local jpi = collected[id] or tobesaved[id] context(jpi and jpi[1] or '0'  ) end
-function jobpositions.MPx(id) local jpi = collected[id] or tobesaved[id] context(jpi and jpi[2] or '0pt') end
-function jobpositions.MPy(id) local jpi = collected[id] or tobesaved[id] context(jpi and jpi[3] or '0pt') end
-function jobpositions.MPw(id) local jpi = collected[id] or tobesaved[id] context(jpi and jpi[4] or '0pt') end
-function jobpositions.MPh(id) local jpi = collected[id] or tobesaved[id] context(jpi and jpi[5] or '0pt') end
-function jobpositions.MPd(id) local jpi = collected[id] or tobesaved[id] context(jpi and jpi[6] or '0pt') end
+function jobpositions.width(id)
+    local jpi = collected[id] or tobesaved[id]
+    context(jpi and jpi[4] or '0pt')
+end
 
-function jobpositions.MPx(id)
+function jobpositions.height(id)
+    local jpi = collected[id] or tobesaved[id]
+    context(jpi and jpi[5] or '0pt')
+end
+
+function jobpositions.depth(id)
+    local jpi = collected[id] or tobesaved[id]
+    context(jpi and jpi[6] or '0pt')
+end
+
+function jobpositions.x(id)
     local jpi = collected[id] or tobesaved[id]
     local x = jpi and jpi[2]
     if x then
@@ -71,7 +80,7 @@ function jobpositions.MPx(id)
     end
 end
 
-function jobpositions.MPy(id)
+function jobpositions.y(id)
     local jpi = collected[id] or tobesaved[id]
     local y = jpi and jpi[3]
     if y then
@@ -85,7 +94,7 @@ end
 
 -- can be writes and no format needed any more
 
-function jobpositions.MPxy(id)
+function jobpositions.xy(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
         context('(%s-%s,%s-%s)',jpi[2],dx,jpi[3],dy)
@@ -94,7 +103,7 @@ function jobpositions.MPxy(id)
     end
 end
 
-function jobpositions.MPll(id)
+function jobpositions.lowerleft(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
         context('(%s-%s,%s-%s-%s)',jpi[2],dx,jpi[3],jpi[6],dy)
@@ -103,7 +112,7 @@ function jobpositions.MPll(id)
     end
 end
 
-function jobpositions.MPlr(id)
+function jobpositions.lowerright(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
         context('(%s+%s-%s,%s-%s-%s)',jpi[2],jpi[4],dx,jpi[3],jpi[6],dy)
@@ -112,7 +121,7 @@ function jobpositions.MPlr(id)
     end
 end
 
-function jobpositions.MPur(id)
+function jobpositions.upperright(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
         context('(%s+%s-%s,%s+%s-%s)',jpi[2],jpi[4],dx,jpi[3],jpi[5],dy)
@@ -121,7 +130,7 @@ function jobpositions.MPur(id)
     end
 end
 
-function jobpositions.MPul(id)
+function jobpositions.upperleft(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
         context('(%s-%s,%s+%s-%s)',jpi[2],dx,jpi[3],jpi[5],dy)
@@ -130,7 +139,7 @@ function jobpositions.MPul(id)
     end
 end
 
-function jobpositions.MPpos(id)
+function jobpositions.position(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
         context(concat(jpi,',',1,6))
@@ -141,7 +150,7 @@ end
 
 local splitter = lpeg.Ct(lpeg.splitat(","))
 
-function jobpositions.MPplus(id,n,default)
+function jobpositions.pardata(id,n,default)
     local jpi = collected[id] or tobesaved[id]
     if not jpi then
         context(default)
@@ -155,7 +164,30 @@ function jobpositions.MPplus(id,n,default)
     end
 end
 
-function jobpositions.MPrest(id,default)
+function jobpositions.extradata(id,default)
     local jpi = collected[id] or tobesaved[id]
     context(jpi and jpi[7] or default)
+end
+
+-- interface
+
+commands.replacepospxywhd = jobpositions.replace
+commands.copyposition     = jobpositions.copy
+commands.MPp              = jobpositions.page
+commands.MPx              = jobpositions.x
+commands.MPy              = jobpositions.y
+commands.MPw              = jobpositions.width
+commands.MPh              = jobpositions.height
+commands.MPd              = jobpositions.depth
+commands.MPxy             = jobpositions.xy
+commands.MPll             = jobpositions.lowerleft
+commands.MPlr             = jobpositions.lowerright
+commands.MPur             = jobpositions.upperright
+commands.MPul             = jobpositions.upperleft
+commands.MPpos            = jobpositions.position
+commands.MPplus           = jobpositions.pardata
+commands.MPrest           = jobpositions.extradata
+
+function commands.doifelse(name)
+    commands.testcase(collected[name] or tobesaved[name])
 end

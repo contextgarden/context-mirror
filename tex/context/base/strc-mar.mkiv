@@ -82,31 +82,31 @@
 
 \def\dodefinemarking[#1][#2]% marking parent
   {\doifelsenothing{#2}
-     {\ctxlua{structures.marks.define("#1")}%
+     {\ctxlua{commands.definemarking("#1")}%
       \getparameters[\??mk#1][\s!parent=\??mk]}
-     {\ctxlua{structures.marks.define("#1",{ parent = "#2" })}%
+     {\ctxlua{commands.definemarking("#1",{ parent = "#2" })}%
       \getparameters[\??mk#1][\s!parent=\??mk#2]}}
 
 \def\dorelatemarking[#1][#2]%
-  {\ctxlua{structures.marks.relate("#1","#2")}}
+  {\ctxlua{commands.relatemarking("#1","#2")}}
 
 \def\dosetmarking[#1]#2%
   {\ifconditional\inhibitsetmarking
      % nothing
    \else
      \doifelse{\namedmarkingparameter{#1}\c!expansion}\v!yes
-       {\ctxlua{structures.marks.set("#1",\!!bs#2\!!es)}}
-       {\ctxlua{structures.marks.set("#1",\!!bs\detokenize{#2}\!!es)}}%
+       {\ctxlua{commands.setmarking("#1",\!!bs#2\!!es)}}
+       {\ctxlua{commands.setmarking("#1",\!!bs\detokenize{#2}\!!es)}}%
    \fi}
 
 \def\doresetmarking[#1]%
-  {\ctxlua{structures.marks.reset("#1")}}
+  {\ctxlua{commands.resetmarking("#1")}}
 
 \def\doifelsemarking#1%
-  {\ctxlua{commands.testcase(structures.marks.exists("#1"))}}
+  {\ctxlua{commands.doifelsemarking("#1")}}
 
 \def\dosynchronizemarking[#1][#2]% class boxnumber (some day also name), maybe second argument table
-  {\ifvoid#2\else\ctxlua{structures.marks.synchronize("#1",\number#2)}\fi}
+  {\ifvoid#2\else\ctxlua{commands.synchronizemarking("#1",\number#2)}\fi}
 
 % \appendtoks
 %     \dosynchronizemarking[\v!page][\normalpagebox]%
@@ -138,23 +138,27 @@
       \setsystemmode\v!marking
       \the\everymarking
       \ifthirdargument
-        \ctxlua{structures.marks.fetch("#1","#2","#3")}%
+        \ctxlua{commands.getmarking("#1","#2","#3")}%
       \else
-        \ctxlua{structures.marks.fetch("#1","\v!page","#2")}%
+        \ctxlua{commands.getmarking("#1","\v!page","#2")}%
       \fi
       \endgroup}}
 
 % the fetchers are fully expandable: [name][method]
 
-\def\fetchmark[#1]#2[#3]{\ifconditional\inhibitgetmarking\else\ctxlua{structures.marks.fetchonemark ("#1","\v!page","#2")}\fi}
-\def\fetchtwomarks  [#1]{\ifconditional\inhibitgetmarking\else\ctxlua{structures.marks.fetchtwomarks("#1","\v!page")}\fi}
-\def\fetchallmarks  [#1]{\ifconditional\inhibitgetmarking\else\ctxlua{structures.marks.fetchallmarks("#1","\v!page")}\fi}
+\def\fetchonemark[#1]#2[#3]{\ifconditional\inhibitgetmarking\else\ctxlua{commands.fetchonemark ("#1","\v!page","#2")}\fi}
+\def\fetchtwomarks     [#1]{\ifconditional\inhibitgetmarking\else\ctxlua{commands.fetchtwomarks("#1","\v!page")}\fi}
+\def\fetchallmarks     [#1]{\ifconditional\inhibitgetmarking\else\ctxlua{commands.fetchallmarks("#1","\v!page")}\fi}
+
+\let\fetchmark\fetchonemark
 
 % also fully expandable but here we have: [name][range][method]
 
-\def\fetchmarking[#1]#2[#3]#4[#5]{\ifconditional\inhibitgetmarking\else\ctxlua{structures.marks.fetchonemark ("#1","#3","#5")}\fi}
-\def\fetchtwomarkings  [#1]#2[#3]{\ifconditional\inhibitgetmarking\else\ctxlua{structures.marks.fetchtwomarks("#1","#3")}\fi}
-\def\fetchallmarkings  [#1]#2[#3]{\ifconditional\inhibitgetmarking\else\ctxlua{structures.marks.fetchallmarks("#1","#3")}\fi}
+\def\fetchonemarking[#1]#2[#3]#4[#5]{\ifconditional\inhibitgetmarking\else\ctxlua{commands.fetchonemark ("#1","#3","#5")}\fi}
+\def\fetchtwomarkings     [#1]#2[#3]{\ifconditional\inhibitgetmarking\else\ctxlua{commands.fetchtwomarks("#1","#3")}\fi}
+\def\fetchallmarkings     [#1]#2[#3]{\ifconditional\inhibitgetmarking\else\ctxlua{commands.fetchallmarks("#1","#3")}\fi}
+
+\let\fetchmarking\fetchonemarking
 
 \def\markingseparator#1{\namedmarkingparameter{#1}\c!separator}
 \def\markingcommand  #1{\namedmarkingparameter{#1}\c!filtercommand}

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/07/10 10:47:58
+-- merge date  : 12/09/10 12:11:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -150,7 +150,7 @@ lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
 local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
-local Ct, C, Cs, Cc, Cf, Cg = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cf, lpeg.Cg
+local Ct, C, Cs, Cc = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
 local lpegtype = lpeg.type
 
 local utfcharacters    = string.utfcharacters
@@ -6617,7 +6617,8 @@ actions["prepare unicodes"] = function(data,filename,raw)
     -- beware: the indices table is used to initialize the tfm table
     local encname = lower(data.enc_name or (mapenc and mapenc[1] and mapenc[1].enc_name) or "") -- mapenc will go away
  -- will become: local encname = lower(data.enc_name or "")
-    if encname == "" or encname == "unicodebmp" or encname == "unicodefull" then -- maybe find(encname,"unicode")
+--~     if encname == "" or encname == "unicodebmp" or encname == "unicodefull" then -- maybe find(encname,"unicode")
+    if find(encname,"unicode") then
         if trace_loading then
             report_otf("using extra unicode map")
         end

@@ -547,3 +547,20 @@ function marks.number(tag,n) -- no spec
     -- no prefix (as it is the prefix)
     lists.savednumber(tag,n)
 end
+
+-- interface
+
+commands.definemarking      = marks.define
+commands.relatemarking      = marks.relate
+commands.setmarking         = marks.set
+commands.resetmarking       = marks.reset
+commands.synchronizemarking = marks.synchronize
+commands.getmarking         = marks.fetch
+commands.fetchonemark       = marks.fetchonemark
+commands.fetchtwomarks      = marks.fetchtwomarks
+commands.fetchallmarks      = marks.fetchallmarks
+
+function commands.doifelsemarking(str) -- can be shortcut
+    commands.testcase(marks.exists(str))
+end
+

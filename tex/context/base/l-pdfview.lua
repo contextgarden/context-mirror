@@ -11,17 +11,17 @@ local format, concat = string.format, table.concat
 pdfview = pdfview or { }
 
 local opencalls = {
-    ['default'] = "pdfopen --file", -- "pdfopen --back --file"
+    ['default'] = "pdfopen --ax --file", -- "pdfopen --back --file"
     ['xpdf']    = "xpdfopen",
 }
 
 local closecalls= {
-    ['default'] = "pdfclose --file",
+    ['default'] = "pdfclose --ax --file",
     ['xpdf']    = nil,
 }
 
 local allcalls = {
-    ['default'] = "pdfclose --all",
+    ['default'] = "pdfclose --ax --all",
     ['xpdf']    = nil,
 }
 

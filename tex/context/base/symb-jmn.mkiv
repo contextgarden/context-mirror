@@ -1,0 +1,196 @@
+%D \module
+%D   [       file=symb-jmn,
+%D        version=2004.08.02,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Special Navigational Symbols,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA ADE]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This file defines a few navigational symbol vectors. The font used
+%D here is designed by Janusz M.~Nowacki, one of the Polish Font
+%D Gurus who made this font specially for me, hence the name. If you
+%D you want to meet its designer, come to Bachotek! In case you're
+%D not familiar with his work, take a look at the Antikwa, Iwona and
+%D Kurier fonts!
+%D
+%D \usesymbols[jmn]
+%D
+%D \showsymbolset[navigation 1]
+%D \showsymbolset[navigation 3]
+%D \showsymbolset[navigation 2]
+%D \showsymbolset[navigation 4]
+%D
+%D \page
+%D \showfont[NavigationNormal]
+%D \page
+%D \showfont[NavigationShadowed]
+%D \page
+
+% needed:
+%
+% - inverted crossed
+% - curved diamond
+% - begin/end bars
+
+\unprotect
+
+\definefontsynonym[NavigationNormal]   [hans]
+\definefontsynonym[NavigationShadowed] [hans-sh]
+
+\definefontsynonym[NavigationFont] [NavigationNormal]
+%definefontsynonym[NavigationFont] [NavigationShadowed]
+
+\def\NavigationGlyph{\getnamedglyphdirect{NavigationFont}} % #1
+
+\unprotect
+
+% lowercase up/down
+
+\startsymbolset [navigation 1]
+
+  \definesymbol [\v!PreviousJump]      [\NavigationGlyph{CC}]
+  \definesymbol [\v!NextJump]          [\NavigationGlyph{DD}]
+  \definesymbol [\v!CloseDocument]     [\NavigationGlyph{M}]
+
+  \definesymbol [\v!firstpage]         [\NavigationGlyph{CCC}]
+  \definesymbol [\v!previouspage]      [\NavigationGlyph{C}]
+  \definesymbol [\v!nextpage]          [\NavigationGlyph{D}]
+  \definesymbol [\v!lastpage]          [\NavigationGlyph{DDD}]
+
+  \definesymbol [\v!firstsubpage]      [\NavigationGlyph{ccc}]
+  \definesymbol [\v!previoussubpage]   [\NavigationGlyph{c}]
+  \definesymbol [\v!nextsubpage]       [\NavigationGlyph{d}]
+  \definesymbol [\v!lastsubpage]       [\NavigationGlyph{ddd}]
+
+  \definesymbol [\v!StartSound]        [\NavigationGlyph{D}]
+  \definesymbol [\v!PauseSound]        [\NavigationGlyph{YY}]
+  \definesymbol [\v!StopSound]         [\NavigationGlyph{M}]
+
+  \definesymbol [\v!StartMovie]        [\NavigationGlyph{D}]
+  \definesymbol [\v!PauseMovie]        [\NavigationGlyph{YY}]
+  \definesymbol [\v!StopMovie]         [\NavigationGlyph{M}]
+
+  \definesymbol [\v!StartRendering]    [\NavigationGlyph{D}]
+  \definesymbol [\v!PauseRendering]    [\NavigationGlyph{YY}]
+  \definesymbol [\v!StopRendering]     [\NavigationGlyph{M}]
+  \definesymbol [\v!ResumeRendering]   [\NavigationGlyph{D}]
+
+\stopsymbolset
+
+\startsymbolset [navigation 2]
+
+  \definesymbol [\v!PreviousJump]      [\NavigationGlyph{AA}]
+  \definesymbol [\v!NextJump]          [\NavigationGlyph{BB}]
+  \definesymbol [\v!CloseDocument]     [\NavigationGlyph{N}]
+
+  \definesymbol [\v!firstpage]         [\NavigationGlyph{AAA}]
+  \definesymbol [\v!previouspage]      [\NavigationGlyph{A}]
+  \definesymbol [\v!nextpage]          [\NavigationGlyph{B}]
+  \definesymbol [\v!lastpage]          [\NavigationGlyph{BBB}]
+
+  \definesymbol [\v!firstsubpage]      [\NavigationGlyph{aaa}]
+  \definesymbol [\v!previoussubpage]   [\NavigationGlyph{a}]
+  \definesymbol [\v!nextsubpage]       [\NavigationGlyph{b}]
+  \definesymbol [\v!lastsubpage]       [\NavigationGlyph{bbb}]
+
+  \definesymbol [\v!StartSound]        [\NavigationGlyph{B}]
+  \definesymbol [\v!PauseSound]        [\NavigationGlyph{XX}]
+  \definesymbol [\v!StopSound]         [\NavigationGlyph{N}]
+
+  \definesymbol [\v!StartMovie]        [\NavigationGlyph{B}]
+  \definesymbol [\v!PauseMovie]        [\NavigationGlyph{XX}]
+  \definesymbol [\v!StopMovie]         [\NavigationGlyph{N}]
+
+  \definesymbol [\v!StartRendering]    [\NavigationGlyph{B}]
+  \definesymbol [\v!PauseRendering]    [\NavigationGlyph{XX}]
+  \definesymbol [\v!StopRendering]     [\NavigationGlyph{N}]
+  \definesymbol [\v!ResumeRendering]   [\NavigationGlyph{B}]
+
+\stopsymbolset
+
+\startsymbolset [navigation 3]
+
+  \definesymbol [\v!PreviousJump]      [\NavigationGlyph{KK}]
+  \definesymbol [\v!NextJump]          [\NavigationGlyph{LL}]
+  \definesymbol [\v!CloseDocument]     [\NavigationGlyph{M}]
+
+  \definesymbol [\v!firstpage]         [\NavigationGlyph{KKK}]
+  \definesymbol [\v!previouspage]      [\NavigationGlyph{K}]
+  \definesymbol [\v!nextpage]          [\NavigationGlyph{L}]
+  \definesymbol [\v!lastpage]          [\NavigationGlyph{LLL}]
+
+  \definesymbol [\v!firstsubpage]      [\NavigationGlyph{kkk}]
+  \definesymbol [\v!previoussubpage]   [\NavigationGlyph{k}]
+  \definesymbol [\v!nextsubpage]       [\NavigationGlyph{l}]
+  \definesymbol [\v!lastsubpage]       [\NavigationGlyph{lll}]
+
+  \definesymbol [\v!StartSound]        [\NavigationGlyph{L}]
+  \definesymbol [\v!PauseSound]        [\NavigationGlyph{YY}]
+  \definesymbol [\v!StopSound]         [\NavigationGlyph{M}]
+
+  \definesymbol [\v!StartMovie]        [\NavigationGlyph{L}]
+  \definesymbol [\v!PauseMovie]        [\NavigationGlyph{YY}]
+  \definesymbol [\v!StopMovie]         [\NavigationGlyph{M}]
+
+  \definesymbol [\v!StartRendering]    [\NavigationGlyph{L}]
+  \definesymbol [\v!PauseRendering]    [\NavigationGlyph{YY}]
+  \definesymbol [\v!StopRendering]     [\NavigationGlyph{M}]
+  \definesymbol [\v!ResumeRendering]   [\NavigationGlyph{L}]
+
+\stopsymbolset
+
+\startsymbolset [navigation 4]
+
+  \definesymbol [\v!PreviousJump]      [\NavigationGlyph{II}]
+  \definesymbol [\v!NextJump]          [\NavigationGlyph{JJ}]
+  \definesymbol [\v!CloseDocument]     [\NavigationGlyph{N}]
+
+  \definesymbol [\v!firstpage]         [\NavigationGlyph{III}]
+  \definesymbol [\v!previouspage]      [\NavigationGlyph{I}]
+  \definesymbol [\v!nextpage]          [\NavigationGlyph{J}]
+  \definesymbol [\v!lastpage]          [\NavigationGlyph{JJJ}]
+
+  \definesymbol [\v!firstsubpage]      [\NavigationGlyph{iii}]
+  \definesymbol [\v!previoussubpage]   [\NavigationGlyph{i}]
+  \definesymbol [\v!nextsubpage]       [\NavigationGlyph{j}]
+  \definesymbol [\v!lastsubpage]       [\NavigationGlyph{jjj}]
+
+  \definesymbol [\v!StartSound]        [\NavigationGlyph{J}]
+  \definesymbol [\v!PauseSound]        [\NavigationGlyph{XX}]
+  \definesymbol [\v!StopSound]         [\NavigationGlyph{N}]
+
+  \definesymbol [\v!StartMovie]        [\NavigationGlyph{J}]
+  \definesymbol [\v!PauseMovie]        [\NavigationGlyph{XX}]
+  \definesymbol [\v!StopMovie]         [\NavigationGlyph{N}]
+
+  \definesymbol [\v!StartRendering]    [\NavigationGlyph{J}]
+  \definesymbol [\v!PauseRendering]    [\NavigationGlyph{XX}]
+  \definesymbol [\v!StopRendering]     [\NavigationGlyph{N}]
+  \definesymbol [\v!ResumeRendering]   [\NavigationGlyph{J}]
+
+\stopsymbolset
+
+% 1 left  : 065 067 073 075
+% 2 left  : 128 132 144 148
+% 3 left  : 129 133 145 149
+
+% 1 right : 066 068 074 076
+% 2 right : 130 134 146 150
+% 3 right : 131 135 147 151
+
+% crossed : 160 160 160 160
+% opened  : 152 152 156 156
+% closed  : 154 154 158 158
+
+% larrow  : 208 210 212 214
+% rarrow  : 209 211 213 215
+% barrow  : 178 178 178 178
+% ocircle : 168 168 168 168
+% ccircle : 170 170 170 170
+
+\protect \endinput

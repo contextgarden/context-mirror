@@ -35,7 +35,6 @@
 % at some point (when we no longer share code) we will move to numbers
 % do that we have less garbage collection and hashing
 %
-% the global table _plib_ is equivalent to job.positions
 % the global table _ptbs_ is equivalent to job.positions.tobesaved
 % the global table _pcol_ is equivalent to job.positions.collected
 %
@@ -121,7 +120,7 @@
 \def\lastsavedpositiony {\the\dimexpr\pdflastypos\scaledpoint\relax}
 \let\savecurrentposition\pdfsavepos
 
-\def\dosetposition#1%
+\def\dosetposition#1% will become commands.setposition
   {\savecurrentposition
    \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
      \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony"}}}}
@@ -163,7 +162,7 @@
 
 %D Sometimes we want to trick the position handler a bit:
 
-\def\replacepospxywhd#1#2#3#4#5#6#7{\ctxlua{_plib_.replace('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
+\def\replacepospxywhd#1#2#3#4#5#6#7{\ctxlua{commands.replacepospxywhd('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
 
 %D For postprocessing purposes, we save the number of
 %D positions.
@@ -208,18 +207,18 @@
 % \the\dimexpr\noexpand\lastsavedpositionx\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
 % \the\dimexpr\noexpand\lastsavedpositiony\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
 
-\def\MPp  #1{\ctxlua{_plib_.MPp("#1")}}
-\def\MPx  #1{\ctxlua{_plib_.MPx("#1")}}
-\def\MPy  #1{\ctxlua{_plib_.MPy("#1")}}
-\def\MPw  #1{\ctxlua{_plib_.MPw("#1")}}
-\def\MPh  #1{\ctxlua{_plib_.MPh("#1")}}
-\def\MPd  #1{\ctxlua{_plib_.MPd("#1")}}
-\def\MPxy #1{\ctxlua{_plib_.MPxy("#1")}}
-\def\MPll #1{\ctxlua{_plib_.MPll("#1")}}
-\def\MPlr #1{\ctxlua{_plib_.MPlr("#1")}}
-\def\MPur #1{\ctxlua{_plib_.MPur("#1")}}
-\def\MPul #1{\ctxlua{_plib_.MPul("#1")}}
-\def\MPpos#1{\ctxlua{_plib_.MPpos("#1")}}
+\def\MPp  #1{\ctxlua{commands.MPp("#1")}}
+\def\MPx  #1{\ctxlua{commands.MPx("#1")}}
+\def\MPy  #1{\ctxlua{commands.MPy("#1")}}
+\def\MPw  #1{\ctxlua{commands.MPw("#1")}}
+\def\MPh  #1{\ctxlua{commands.MPh("#1")}}
+\def\MPd  #1{\ctxlua{commands.MPd("#1")}}
+\def\MPxy #1{\ctxlua{commands.MPxy("#1")}}
+\def\MPll #1{\ctxlua{commands.MPll("#1")}}
+\def\MPlr #1{\ctxlua{commands.MPlr("#1")}}
+\def\MPur #1{\ctxlua{commands.MPur("#1")}}
+\def\MPul #1{\ctxlua{commands.MPul("#1")}}
+\def\MPpos#1{\ctxlua{commands.MPpos("#1")}}
 
 %D \macros
 %D  {MPplus, MPrest, MPv, MPvv}
@@ -241,8 +240,8 @@
 %D
 %D The extra parameters are not treated.
 
-\def\MPplus#1#2#3{\ctxlua{_plib_.MPplus("#1",#2,"#3")}}  \let\MPv \MPplus
-\def\MPrest  #1#2{\ctxlua{_plib_.MPrest("#1","#2")}}     \let\MPvv\MPrest
+\def\MPplus#1#2#3{\ctxlua{commands.MPplus("#1",#2,"#3")}}  \let\MPv \MPplus
+\def\MPrest  #1#2{\ctxlua{commands.MPrest("#1","#2")}}     \let\MPvv\MPrest
 
 %D \macros
 %D   {MPanchor}
@@ -403,7 +402,7 @@
 %D
 %D Again, this is a global action.
 
-\def\copyposition#1#2{\ctxlua{_plib_.copy('#1','#2')}}
+\def\copyposition#1#2{\ctxlua{commands.copyposition('#1','#2')}}
 
 %D The fact that handling positions is a two pass operation, is
 %D one of the reasons why we need to be able to test for
@@ -413,7 +412,7 @@
 %D \doifpositionelse {identifier} {found action} {not found action}
 %D \stoptyping
 
-\def\doifpositionelse#1{\ctxlua{_plib_.doifelse('#1')}}
+\def\doifpositionelse#1{\ctxlua{commands.doifpositionelse('#1')}}
 
 %D We have now arrived at a few macros that would make sense as
 %D support macros, but ended up in the core.

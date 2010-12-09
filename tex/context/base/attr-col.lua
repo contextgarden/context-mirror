@@ -64,15 +64,14 @@ local unsetvalue     = attributes.unsetvalue
 -- We assume that only processcolors are defined in the format.
 
 attributes.colors = attributes.colors or { }
-local colors      = attributes.colors          _clib_ = colors -- fast access (less tokens too)
-
-colors.data       = allocate()
-colors.values     = colors.values or { }
-colors.registered = colors.registered or { }
+local colors      = attributes.colors
 
 local a_color     = attributes.private('color')
 local a_selector  = attributes.private('colormodel')
 
+colors.data       = allocate()
+colors.values     = colors.values or { }
+colors.registered = colors.registered or { }
 colors.weightgray = true
 colors.attribute  = a_color
 colors.selector   = a_selector
@@ -350,7 +349,7 @@ end
 -- transparencies
 
 attributes.transparencies = attributes.transparencies or { }
-local transparencies      = attributes.transparencies         _tlib_ = transparencies -- fast access (less tokens too)
+local transparencies      = attributes.transparencies
 transparencies.registered = transparencies.registered or { }
 transparencies.data       = allocate()
 transparencies.values     = transparencies.values or { }
@@ -493,7 +492,7 @@ function colorintents.register(stamp)
     return registered[stamp] or registered.overprint
 end
 
-attributes.colorintents.handler = nodes.installattributehandler {
+colorintents.handler = nodes.installattributehandler {
     name        = "colorintent",
     namespace   = colorintents,
     initializer = states.initialize,
@@ -504,3 +503,13 @@ attributes.colorintents.handler = nodes.installattributehandler {
 function colorintents.enable()
     tasks.enableaction("shipouts","attributes.colorintents.handler")
 end
+
+-- interface
+
+commands.enablecolor        = colors.enable
+commands.enabletransparency = transparencies.enable
+commands.enablecolorintent  = colorintents.enable
+
+function commands.registercolor       (...) context(colors        .register(...)) end
+function commands.registertransparency(...) context(transparencies.register(...)) end
+function commands.registercolorintent (...) context(colorintents  .register(...)) end
