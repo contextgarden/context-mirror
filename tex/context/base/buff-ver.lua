@@ -156,6 +156,15 @@ function visualizers.newgrammar(name,t)
     return t
 end
 
+local function getvisualizer(method,nature)
+    local m = specifications[method] or specifications.default
+    if nature then
+        return m and (m[nature] or m.parser) or nil
+    else
+        return m and m.parser or nil
+    end
+end
+
 local fallback = context.verbatim
 
 local function makepattern(visualizer,kind,pattern)
@@ -172,8 +181,19 @@ local function makepattern(visualizer,kind,pattern)
     end
 end
 
-visualizers.pattern = makepattern
+local function makenested(handler,how,start,stop)
+    local b, e, f = P(start), P(stop), how
+    if type(how) == "string" then
+        f = function(s) getvisualizer(how,"direct")(s) end
+    end
+    return makepattern(handler,"name",b)
+         * ((1-e)^1/f)
+         * makepattern(handler,"name",e)
+end
+
+visualizers.pattern     = makepattern
 visualizers.makepattern = makepattern
+visualizers.makenested  = makenested
 
 function visualizers.load(name)
     if rawget(specifications,name) == nil then
@@ -256,15 +276,6 @@ function visualizers.register(name,specification)
         specification.direct  = parser
     end
     return specification
-end
-
-local function getvisualizer(method,nature)
-    local m = specifications[method] or specifications.default
-    if nature then
-        return m and (m[nature] or m.parser) or nil
-    else
-        return m and m.parser or nil
-    end
 end
 
 local escapepatterns = { } visualizers.escapepatterns = escapepatterns

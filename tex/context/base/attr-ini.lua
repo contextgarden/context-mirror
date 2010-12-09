@@ -58,7 +58,7 @@ function attributes.private(name) -- at the lua end (hidden from user)
     return number
 end
 
--- new
+-- new (actually a tracer)
 
 function attributes.ofnode(n)
     local a = n.attr
@@ -70,4 +70,12 @@ function attributes.ofnode(n)
             a = a.next
         end
    end
+end
+
+-- interface
+
+commands.defineattribute = attributes.define
+
+function commands.getprivateattribute(name)
+    context(attributes.private(name))
 end

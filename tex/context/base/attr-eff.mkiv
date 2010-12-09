@@ -15,20 +15,25 @@
 
 \registerctxluafile{attr-eff}{1.001}
 
-% more will move to the lua end (old code, early luatex approach)
-
 \unprotect
 
-\def\registereffect#1#2#3% #2=stretch #3=rulethickness
-  {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}%
-     {\attribute\effectattribute\ctxlua{tex.write(attributes.effects.register('#1',#2,\number\dimexpr#3\relax))}\relax}}
+% \def\registereffect#1#2#3% #2=stretch #3=rulethickness
+%   {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}% todo: set attribute at lua end
+%      {\attribute\effectattribute\ctxlua{commands.registereffect('#1',#2,\number\dimexpr#3\relax)}\relax}}
+%
+% \def\dotriggereffect
+%   {\ctxlua{commands.enableeffect()}% can then move to caller
+%    \gdef\dotriggereffect##1##2##3%
+%      {\ifcsname(es:##1:##2:\number\dimexpr##3\relax)\endcsname\else\registereffect{##1}{##2}{##3}\fi
+%       \csname(es:##1:##2:\number\dimexpr##3\relax)\endcsname}%
+%    \dotriggereffect}
+%
+% \def\registereffect#1#2#3% #2=stretch #3=rulethickness
+%   {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}% todo: set attribute at lua end
+%      {\attribute\effectattribute\ctxlua{commands.registereffect('#1',#2,\number\dimexpr#3\relax)}\relax}}
 
-\def\dotriggereffect
-  {\ctxlua{attributes.effects.enable()}%
-   \gdef\dotriggereffect##1##2##3%
-     {\ifcsname(es:##1:##2:\number\dimexpr##3\relax)\endcsname\else\registereffect{##1}{##2}{##3}\fi
-      \csname(es:##1:##2:\number\dimexpr##3\relax)\endcsname}%
-   \dotriggereffect}
+\gdef\dotriggereffect#1#2#3%
+  {\ctxlua{commands.triggereffect('#1',#2,\number\dimexpr#3\relax)}}
 
 \unexpanded\def\setupeffect
   {\dodoubleargument\dosetupeffect}
@@ -43,12 +48,15 @@
   {\getparameters[\??et#1][\c!method=\v!none,\c!stretch=0,\c!rulethickness=\zeropoint,\c!alternative=\v!normal,#2]%
    \doif{\getvalue{\??et#1\c!method}}\v!command
      {\setugvalue{\e!start#1}{\starteffect[#1]}%
-      \setugvalue{\e!stop #1}{\stopeffect     }}}
+      \setugvalue{\e!stop #1}{\stopeffect}}}
 
 % yes or no grouped
 
 \unexpanded\def\starteffect[#1]%
-  {\dotriggereffect{\getvalue{\??et#1\c!alternative}}{\getvalue{\??et#1\c!stretch}}{\getvalue{\??et#1\c!rulethickness}}}
+  {\dotriggereffect
+     {\csname\??et#1\c!alternative  \endcsname}%
+     {\csname\??et#1\c!stretch      \endcsname}%
+     {\csname\??et#1\c!rulethickness\endcsname}}
 
 \unexpanded\def\stopeffect % can be special
   {\dotriggereffect\v!normal0\zeropoint}

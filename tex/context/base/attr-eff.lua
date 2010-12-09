@@ -12,16 +12,20 @@ local allocate = utilities.storage.allocate
 
 local attributes, nodes = attributes, nodes
 
-local states         = attributes.states
-local tasks          = nodes.tasks
-local nodeinjections = backends.nodeinjections
+local states          = attributes.states
+local tasks           = nodes.tasks
+local nodeinjections  = backends.nodeinjections
+local settexattribute = tex.setattribute
 
 attributes.effects = attributes.effects or { }
 local effects      = attributes.effects
+
+local a_effect     = attributes.private('effect')
+
 effects.data       = allocate()
 effects.values     = effects.values     or { }
 effects.registered = effects.registered or { }
-effects.attribute  = attributes.private("effect")
+effects.attribute  = a_effect
 
 storage.register("attributes/effects/registered", effects.registered, "attributes.effects.registered")
 storage.register("attributes/effects/values",     effects.values,     "attributes.effects.values")
@@ -52,7 +56,15 @@ end
 setmetatable(effects,      { __index = extender })
 setmetatable(effects.data, { __index = reviver  })
 
-function effects.register(effect,stretch,rulethickness)
+effects.handler = nodes.installattributehandler {
+    name        = "effect",
+    namespace   = effects,
+    initializer = states.initialize,
+    finalizer   = states.finalize,
+    processor   = states.process,
+}
+
+local function register(effect,stretch,rulethickness)
     local stamp = format(template,effect,stretch,rulethickness)
     local n = registered[stamp]
     if not n then
@@ -63,14 +75,21 @@ function effects.register(effect,stretch,rulethickness)
     return n
 end
 
-attributes.effects.handler = nodes.installattributehandler {
-    name        = "effect",
-    namespace   = effects,
-    initializer = states.initialize,
-    finalizer   = states.finalize,
-    processor   = states.process,
-}
-
-function effects.enable()
+local function enable()
     tasks.enableaction("shipouts","attributes.effects.handler")
+end
+
+effects.register = register
+effects.enable   = enable
+
+-- interface
+
+local enabled = false
+
+function commands.triggereffect(effect,stretch,rulethickness)
+    if not enabled then
+        enable()
+        enabled = true
+    end
+    settexattribute(a_effect,register(effect,stretch,rulethickness))
 end

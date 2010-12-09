@@ -20,14 +20,17 @@ local attributes, context, commands = attributes, context, commands
 
 local settings_to_hash_strict = utilities.parsers.settings_to_hash_strict
 
-local colors         = attributes.colors
-local transparencies = attributes.transparencies
-local registrations  = backends.registrations
+local colors          = attributes.colors
+local transparencies  = attributes.transparencies
+local colorintents    = attributes.colorintents
+local registrations   = backends.registrations
+local settexattribute = tex.setattribute
+local gettexattribute = tex.getattribute
 
-local a_color        = attributes.private('color')
-local a_transparency = attributes.private('transparency')
-local a_colorspace   = attributes.private('colormodel')
-local a_background   = attributes.private('background')
+local a_color         = attributes.private('color')
+local a_transparency  = attributes.private('transparency')
+local a_colorspace    = attributes.private('colormodel')
+local a_background    = attributes.private('background')
 
 local register_color  = colors.register
 local attributes_list = attributes.list
@@ -410,7 +413,7 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     end
 end
 
-function colors.mp(model,ca,ta,default) -- will move to mlib-col
+function colors.mpcolor(model,ca,ta,default) -- will move to mlib-col
     local cv = colors.supported and colors.value(ca) -- faster when direct colors.values[ca]
     if cv then
         local tv = transparencies.supported and transparencies.value(ta)
@@ -586,3 +589,46 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
         definetransparent(name,transparencies.register(name,ta,tt),global)
     end
 end
+
+-- interface
+
+local setcolormodel = colors.setmodel
+
+function commands.setcolormodel(model,weight)
+    settexattribute(a_colorspace,setcolormodel(model,weight))
+end
+
+function commands.setrastercolor(name,s)
+    settexattribute(a_color,colors.definesimplegray(name,s))
+end
+
+function commands.registermaintextcolor(a)
+    colors.main = a
+end
+
+commands.defineprocesscolor      = colors.defineprocesscolor
+commands.definespotcolor         = colors.definespotcolor
+commands.definemultitonecolor    = colors.definemultitonecolor
+commands.definetransparency      = colors.definetransparency
+commands.defineintermediatecolor = colors.defineintermediatecolor
+
+function commands.spotcolorname         (a) context(colors.spotcolorname         (a)) end
+function commands.spotcolorparent       (a) context(colors.spotcolorparent       (a)) end
+function commands.spotcolorvalue        (a) context(colors.spotcolorvalue        (a)) end
+function commands.colorcomponents       (a) context(colors.colorcomponents       (a)) end
+function commands.transparencycomponents(a) context(colors.transparencycomponents(a)) end
+function commands.formatcolor           (a) context(colors.formatcolor           (a)) end
+function commands.formatgray            (a) context(colors.formatgray            (a)) end
+
+function commands.mpcolor(model,ca,ta,default)
+    context(colors.mpcolor(model,ca,ta,default))
+end
+
+function commands.doifblackelse(a)
+    commands.doifelse(colors.isblack(a))
+end
+
+function commands.doifdrawingblackelse()
+    commands.doifelse(colors.isblack(gettexattribute(a_color)))
+end
+

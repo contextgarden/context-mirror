@@ -233,7 +233,7 @@
 
 \let\currentsymboldef\empty
 
-\def\startsymbolset[#1]
+\def\startsymbolset[#1]%
   {\def\currentsymboldef{#1}}
 
 \def\stopsymbolset
@@ -263,11 +263,12 @@
 %D \showsetup{usesymbols}
 
 \def\dousesymbols#1%
-  {\makeshortfilename[\truefilename{\f!symbolprefix#1}]%
-   \startreadingfile
-     \readsysfile\shortfilename
+  {\startreadingfile
+     \readsysfile{\truefilename{\f!symbolprefix#1}.\mksuffix}
        {\showmessage\m!symbols1{#1}}
-       \donothing
+       {\readsysfile{\truefilename{\f!symbolprefix#1}}
+          {\showmessage\m!symbols1{#1}}
+          \donothing}%
    \stopreadingfile}
 
 \def\usesymbols[#1]%

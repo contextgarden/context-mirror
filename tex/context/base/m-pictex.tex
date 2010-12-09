@@ -27,7 +27,7 @@
    \fi
    \ifx\beginpicture\undefined
      \ifx\newenvironment\undefined
-       \readfile{thrd-pic.tex}{}{}
+       \loadmarkfile{thrd-pic}%
      \else
        \input prepictex.tex  \relax
        \input pictex.tex     \relax

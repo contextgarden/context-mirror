@@ -24,47 +24,46 @@
 %
 % We could combine this in one attribute but this is not faster and also
 % less flexible because sometimes we want to freeze the attribute bit.
+
+% % color (layer on top)
 %
-% Watch out: real color support will be implemented later.
+% \def\dosetcolormodel#1% overloaded later
+%   {\ctxlua{commands.setcolormodel('#1')}} % sets attribute
+%
+% \dosetcolormodel{all}
+%
+% \def\registerrgbcolor#1#2#3#4% not used
+%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxlua{commands.registercolor('#1','rgb' ,#2,#3,#4)}}}
+%
+% \def\registercmykcolor#1#2#3#4#5% not used
+%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxlua{commands.registercolor('#1','cmyk',#2,#3,#4,#5)}}}
+%
+% \def\registergraycolor#1#2% not used
+%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxlua{commands.registercolor('#1','gray',#2)}}}
 
-\newcount\currentcolormodel
-
-\def\dosetcolormodel#1%
-  {\currentcolormodel\ctxlua{tex.print(_clib_.setmodel('#1'))}%
-   \attribute\colormodelattribute\currentcolormodel}
-
-\dosetcolormodel{all}
-
-\appendtoks
-    \dosetcolormodel{all}% redundant?
-\to \everyjob
-
-\def\registerrgbcolor   #1#2#3#4{\ctxlua{_clib_.register('#1','rgb' ,#2,#3,#4)}}
-\def\registercmykcolor#1#2#3#4#5{\ctxlua{_clib_.register('#1','cmyk',#2,#3,#4,#5)}}
-\def\registergraycolor      #1#2{\ctxlua{_clib_.register('#1','gray',#2)}}
-
-% transparency
-
-\def\registertransparency#1#2#3%
-  {\setevalue{(ts:#1)}{\attribute\transparencyattribute\ctxlua{tex.write(_tlib_.register(#2,#3))} }}
-
-\def\sometransparencyswitch#1{\csname(ts:#1)\endcsname}
-
-\def\sometransparencyswitch
-  {\ctxlua{_tlib_.enable()}%
-   \gdef\sometransparencyswitch##1{\csname(ts:##1)\endcsname}%
-   \sometransparencyswitch}
-
+% % transparency (layer on top)
+%
+% \def\registertransparency#1#2#3%
+%   {\setevalue{(ts:#1)}{\attribute\transparencyattribute\ctxlua{commands.registertransparency(#2,#3)} }}
+%
+% \def\sometransparencyswitch#1%
+%   {\csname(ts:#1)\endcsname}
+%
+% \def\sometransparencyswitch
+%   {\ctxlua{commands.enabletransparency()}%
+%    \gdef\sometransparencyswitch##1{\csname(ts:##1)\endcsname}%
+%    \sometransparencyswitch}
+%
 % \registertransparency {one} {1} {.5}
 % \registertransparency {two} {1} {.6}
 
 % overprint
 
 \def\registercolorintent#1#2%
-  {\setevalue{(os:#1)}{\attribute\colorintentattribute\ctxlua{tex.write(attributes.colorintents.register('#2'))} }}
+  {\setevalue{(os:#1)}{\attribute\colorintentattribute\ctxlua{commands.registercolorintent('#2')} }}
 
 \def\dotriggercolorintent
-  {\ctxlua{attributes.colorintents.enable()}%
+  {\ctxlua{commands.enablecolorintents()}%
    \gdef\dotriggercolorintent##1{\csname(os:##1)\endcsname}%
    \dotriggercolorintent}
 
