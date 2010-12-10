@@ -39,6 +39,7 @@ local texcount     = tex.count
 
 local isnode       = node.is_node -- after 0.65 just node.type
 local writenode    = node.write
+local copynodelist = node.copylist
 
 local ctxcatcodes  = tex.ctxcatcodes
 local prtcatcodes  = tex.prtcatcodes
@@ -54,32 +55,72 @@ local report_cld    = logs.new("cld")
 
 local processlines  = false  experiments.register("context.processlines", function(v) processlines = v end)
 
-local _stack_, _n_ = { }, 0
+-- for tracing it's easier to have two stacks
 
-local function _store_(ti)
-    _n_ = _n_ + 1
-    _stack_[_n_] = ti
-    return _n_
+local _stack_f_, _n_f_ = { }, 0
+local _stack_n_, _n_n_ = { }, 0
+
+local function _store_f_(ti)
+    _n_f_ = _n_f_ + 1
+    _stack_f_[_n_f_] = ti
+    return _n_f_
 end
 
-local function _flush_(n)
-    local sn = _stack_[n]
+local function _store_n_(ti)
+    _n_n_ = _n_n_ + 1
+    _stack_n_[_n_n_] = ti
+    return _n_n_
+end
+
+local function _flush_f_(n)
+    local sn = _stack_f_[n]
     if not sn then
         report_cld("data with id %s cannot be found on stack",n)
-    elseif not sn() and texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
-        _stack_[n] = nil
     else
+        local tn = type(sn)
+        if tn == "function" then
+            if not sn() and texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+                _stack_f_[n] = nil
+            else
+                -- keep, beware, that way the stack can grow
+            end
+        else
+            if texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+                writenode(sn)
+                _stack_f_[n] = nil
+            else
+                writenode(copynodelist(sn))
+                -- keep, beware, that way the stack can grow
+            end
+        end
+    end
+end
+
+local function _flush_n_(n)
+    local sn = _stack_n_[n]
+    if not sn then
+        report_cld("data with id %s cannot be found on stack",n)
+    elseif texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+        writenode(sn)
+        _stack_n_[n] = nil
+    else
+        writenode(copynodelist(sn))
         -- keep, beware, that way the stack can grow
     end
 end
 
 function context.restart()
-    _stack_, _n_ = { }, 0
+    _stack_f_, _n_f_ = { }, 0
+    _stack_n_, _n_n_ = { }, 0
 end
 
-context._stack_ = _stack_
-context._store_ = _store_
-context._flush_ = _flush_
+context._stack_f_ = _stack_f_
+context._store_f_ = _store_f_
+context._flush_f_ = _flush_f_  cldff = _flush_f_
+
+context._stack_n_ = _stack_n_
+context._store_n_ = _store_n_
+context._flush_n_ = _flush_n_  cldfn = _flush_n_
 
 -- Should we keep the catcodes with the function?
 
@@ -205,7 +246,7 @@ local function writer(parent,command,first,...)
         if direct then
             if typ == "string" or typ == "number" then
                 flush(currentcatcodes,ti)
-            else
+            else -- node.write
                 trace_context("error: invalid use of direct in '%s', only strings and numbers can be flushed directly, not '%s'",command,typ)
             end
             direct = false
@@ -253,7 +294,7 @@ local function writer(parent,command,first,...)
             elseif tn == 1 then -- some 20% faster than the next loop
                 local tj = ti[1]
                 if type(tj) == "function" then
-                    flush(currentcatcodes,"[\\mkivflush{",_store_(tj),"}]")
+                    flush(currentcatcodes,"[\\cldff{",_store_f_(tj),"}]")
                 else
                     flush(currentcatcodes,"[",tj,"]")
                 end
@@ -261,13 +302,13 @@ local function writer(parent,command,first,...)
                 for j=1,tn do
                     local tj = ti[j]
                     if type(tj) == "function" then
-                        ti[j] = "\\mkivflush{" .. _store_(tj) .. "}"
+                        ti[j] = "\\cldff{" .. _store_f_(tj) .. "}"
                     end
                 end
                 flush(currentcatcodes,"[",concat(ti,","),"]")
             end
         elseif typ == "function" then
-            flush(currentcatcodes,"{\\mkivflush{",_store_(ti),"}}") -- todo: ctx|prt|texcatcodes
+            flush(currentcatcodes,"{\\cldff{",_store_f_(ti),"}}") -- todo: ctx|prt|texcatcodes
         elseif typ == "boolean" then
             if ti then
              -- flush(currentcatcodes,"^^M")
@@ -277,8 +318,8 @@ local function writer(parent,command,first,...)
             end
         elseif typ == "thread" then
             trace_context("coroutines not supported as we cannot yield across boundaries")
-        elseif isnode(ti) then
-            writenode(ti)
+        elseif isnode(ti) then -- slow
+            flush(currentcatcodes,"{\\cldfn{",_store_n_(ti),"}}")
         else
             trace_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
         end
@@ -288,7 +329,7 @@ end
 local generics = { }  context.generics = generics
 
 local function indexer(parent,k)
-    local c = "\\" .. (generics[k] or k)
+    local c = "\\" .. tostring(generics[k] or k)
     local f = function(first,...)
         if first == nil then
             flush(currentcatcodes,c)
@@ -322,7 +363,7 @@ local function caller(parent,f,a,...)
             end
         elseif typ == "function" then
             -- ignored: a ...
-            flush(currentcatcodes,"{\\mkivflush{",_store_(f),"}}") -- todo: ctx|prt|texcatcodes
+            flush(currentcatcodes,"{\\cldff{",_store_f_(f),"}}") -- todo: ctx|prt|texcatcodes
         elseif typ == "boolean" then
             if f then
                 if a ~= nil then
@@ -343,8 +384,9 @@ local function caller(parent,f,a,...)
             end
         elseif typ == "thread" then
             trace_context("coroutines not supported as we cannot yield across boundaries")
-        elseif isnode(f) then
-            writenode(f)
+        elseif isnode(f) then -- slow
+         -- writenode(f)
+            flush(currentcatcodes,"\\cldfn{",_store_n_(f),"}")
         else
             trace_context("error: 'context' gets a weird argument '%s'",tostring(f))
         end
@@ -367,7 +409,7 @@ local nofflushes    = 0
 
 statistics.register("traced context", function()
     if nofwriters > 0 or nofflushes > 0 then
-        return format("writers: %s, flushes: %s, maxstack: %s",nofwriters,nofflushes,_n_)
+        return format("writers: %s, flushes: %s, maxstack: %s",nofwriters,nofflushes,_n_f_)
     end
 end)
 
@@ -482,7 +524,7 @@ local function indexer(parent,k)
     return f
 end
 
-local function caller(parent,...)
+local function caller(parent,...) -- todo: nodes
     local a = { ... }
     return function()
         return context(unpack(a))
@@ -573,7 +615,7 @@ local function caller(parent,f,a,...)
             end
         elseif typ == "function" then
             -- ignored: a ...
-            flush(currentcatcodes,mpdrawing,"{\\mkivflush{",store_(f),"}}")
+            flush(currentcatcodes,mpdrawing,"{\\cldff{",store_(f),"}}")
         elseif typ == "boolean" then
             -- ignored: a ...
             if f then

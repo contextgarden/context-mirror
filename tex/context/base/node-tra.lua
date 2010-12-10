@@ -605,7 +605,7 @@ local function toutf(list,result,nofresult,stopcriterium)
                     end
                 end
             elseif id == disc_code then
-                result, nofresult = toutf(n.replace,result,nofresult)
+                result, nofresult = toutf(n.replace,result,nofresult) -- needed?
             elseif id == hlist_code or id == vlist_code then
 --~                 if nofresult > 0 and result[nofresult] ~= " " then
 --~                     nofresult = nofresult + 1

@@ -454,8 +454,8 @@
       \ifcase\somestepboxone \box\stepboxone \vskip\@@STPCvoffset \fi
       \ifcase\somestepboxtwo \box\stepboxtwo \vskip\scratchdimen  \fi
       \ifcase\sometextboxtwo \box\textboxtwo \vskip\@@STPCvoffset \fi
-      \global\resetbox\stepboxone \global\resetbox\stepboxtwo % needed indeed
-      \global\resetbox\textboxone \global\resetbox\textboxtwo % needed indeed
+      \global\setbox\stepboxone\emptybox \global\setbox\stepboxtwo\emptybox % needed indeed
+      \global\setbox\textboxone\emptybox \global\setbox\textboxtwo\emptybox % needed indeed
      %\kern-\scratchdimen % no, instead:
       \vskip-\lastskip}
    \hbox

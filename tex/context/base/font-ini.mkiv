@@ -1737,23 +1737,49 @@
 
 % some day we can do an auto-fam if needed
 
+% \def\checkmathbodyfont#1#2#3% style alt size / gdef % #3 can be empty (checking needed as \bf is already defined)
+%   {%\message{!m #1 #2 #3!}%  #1 #2 #3 = signal
+%    %ifcsname     #2\endcsname\else\setugvalue     {#2}{\setcurrentfontalternative                 {#2}}\fi  % \mr \mb
+%    \ifcsname     #1\endcsname\else\setugvalue     {#1}{\setcurrentfontstyle                       {#1}}\fi} % \mm
+
+% \def\checktextbodyfont#1#2#3% style alt size / gdef % #3 can be empty (checking needed as \bf is already defined)
+%   {%\message{!t #1 #2 #3!}%
+%    \ifcsname   #1#3\endcsname\else\setugvalue   {#1#3}{\setcurrentfontstylesize               {#1}{#3}}\fi  % \rma
+%    \ifcsname   #2#3\endcsname\else\setugvalue   {#2#3}{\setcurrentfontalternativesize         {#2}{#3}}\fi  % \sla
+%    \ifcsname #1#2#3\endcsname\else\setugvalue {#1#2#3}{\setcurrentfontstylealternativesize{#1}{#2}{#3}}\fi  % \rmsla
+%    \ifcsname     #1\endcsname\else\setugvalue     {#1}{\setcurrentfontstyle                       {#1}}\fi  % \rm
+%    \ifcsname     #2\endcsname\else\setugvalue     {#2}{\setcurrentfontalternative                 {#2}}\fi  % \sl
+%    \ifcsname #1\c!x\endcsname\else\setugvalue {#1\c!x}{\setcurrentfontxstylealternative           {#1}}\fi  % \rmx
+%    \ifcsname#1\c!xx\endcsname\else\setugvalue{#1\c!xx}{\setcurrentfontxxstylealternative          {#1}}\fi  % \rmxx
+%    \ifcsname #2\c!x\endcsname\else\setugvalue {#2\c!x}{\setcurrentfontxalternative                {#2}}\fi  % \slx
+%    \ifcsname#2\c!xx\endcsname\else\setugvalue{#2\c!xx}{\setcurrentfontxxalternative               {#2}}\fi  % \slxx
+%    \ifcsname   #1#2\endcsname\else\setugvalue   {#1#2}{\setcurrentfontstylealternative        {#1}{#2}}\fi} % \rmsl
+
 \def\checkmathbodyfont#1#2#3% style alt size / gdef % #3 can be empty (checking needed as \bf is already defined)
   {%\message{!m #1 #2 #3!}%  #1 #2 #3 = signal
-   %ifcsname     #2\endcsname\else\setugvalue     {#2}{\setcurrentfontalternative                 {#2}}\fi  % \mr \mb
-   \ifcsname     #1\endcsname\else\setugvalue     {#1}{\setcurrentfontstyle                       {#1}}\fi} % \mm
+   %setugvalue     {#2}{\setcurrentfontalternative                 {#2}}%  % \mr \mb
+   \setugvalue     {#1}{\setcurrentfontstyle                       {#1}}}  % \mm
 
 \def\checktextbodyfont#1#2#3% style alt size / gdef % #3 can be empty (checking needed as \bf is already defined)
-  {%\message{!t #1 #2 #3!}%
-   \ifcsname   #1#3\endcsname\else\setugvalue   {#1#3}{\setcurrentfontstylesize               {#1}{#3}}\fi  % \rma
-   \ifcsname   #2#3\endcsname\else\setugvalue   {#2#3}{\setcurrentfontalternativesize         {#2}{#3}}\fi  % \sla
-   \ifcsname #1#2#3\endcsname\else\setugvalue {#1#2#3}{\setcurrentfontstylealternativesize{#1}{#2}{#3}}\fi  % \rmsla
-   \ifcsname     #1\endcsname\else\setugvalue     {#1}{\setcurrentfontstyle                       {#1}}\fi  % \rm
-   \ifcsname     #2\endcsname\else\setugvalue     {#2}{\setcurrentfontalternative                 {#2}}\fi  % \sl
-   \ifcsname #1\c!x\endcsname\else\setugvalue {#1\c!x}{\setcurrentfontxstylealternative           {#1}}\fi  % \rmx
-   \ifcsname#1\c!xx\endcsname\else\setugvalue{#1\c!xx}{\setcurrentfontxxstylealternative          {#1}}\fi  % \rmxx
-   \ifcsname #2\c!x\endcsname\else\setugvalue {#2\c!x}{\setcurrentfontxalternative                {#2}}\fi  % \slx
-   \ifcsname#2\c!xx\endcsname\else\setugvalue{#2\c!xx}{\setcurrentfontxxalternative               {#2}}\fi  % \slxx
-   \ifcsname   #1#2\endcsname\else\setugvalue   {#1#2}{\setcurrentfontstylealternative        {#1}{#2}}\fi} % \rmsl
+  {%\message{!t #1 #2 #3!}% % beware, some can be defined already
+   \setugvalue   {#1#3}{\setcurrentfontstylesize               {#1}{#3}}%  % \rma
+   \setugvalue   {#2#3}{\setcurrentfontalternativesize         {#2}{#3}}%  % \sla
+   \setugvalue {#1#2#3}{\setcurrentfontstylealternativesize{#1}{#2}{#3}}%  % \rmsla
+   \ifcsname\s!normal#1\endcsname % text/math check
+     \expandafter\let\csname#1\expandafter\endcsname\csname\s!normal#1\endcsname
+   \else
+     \setugvalue   {#1}{\setcurrentfontstyle                       {#1}}%  % \rm
+   \fi
+   \ifcsname\s!normal#2\endcsname % text/math check
+     \expandafter\let\csname#2\expandafter\endcsname\csname\s!normal#2\endcsname
+   \else
+     \setugvalue   {#2}{\setcurrentfontalternative                 {#2}}%  % \sl
+   \fi
+   \setugvalue {#1\c!x}{\setcurrentfontxstylealternative           {#1}}%  % \rmx
+   \setugvalue{#1\c!xx}{\setcurrentfontxxstylealternative          {#1}}%  % \rmxx
+   \setugvalue {#2\c!x}{\setcurrentfontxalternative                {#2}}%  % \slx
+   \setugvalue{#2\c!xx}{\setcurrentfontxxalternative               {#2}}%  % \slxx
+   \setugvalue   {#1#2}{\setcurrentfontstylealternative        {#1}{#2}}}  % \rmsl
 
 \def\dodefinedefaultbodyfont[#1][#2][#3]% sizes styles identifier
   {\def\dododefinedefaultbodyfont##1%
