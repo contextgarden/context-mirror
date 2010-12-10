@@ -804,10 +804,6 @@
   \let\registerpageposition\gobbleoneargument
 \fi
 
-\def\reportarrangedpage#1%
-  {\showmessage\m!systems
-     {23}{\the\realpageno.\the\pageno\ifnum\subpageno>0 .\the\subpageno\fi,\number#1}}
-
 \newif\ifsavepagebody \newbox\savedpagebody
 
 % beware, \??ly is used before defined, i.e. bad module design
