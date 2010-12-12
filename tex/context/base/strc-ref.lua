@@ -1096,7 +1096,7 @@ set.n = n
         set[i] = var
     end
     references.currentset = set
---~ print(bug,table.serialize(set))
+--~ table.print(set,tostring(bug))
     return set, bug
 end
 
@@ -1123,6 +1123,7 @@ function references.doifelse(prefix,reference,highlight,newwindow,layer)
         currentreference = set[1]
     end
     -- we can do the expansion here which saves a call
+--~     print("!!!!!!",not unknown)
     commands.doifelse(not unknown)
 end
 
