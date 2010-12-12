@@ -8,14 +8,19 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 -- this is preliminary code
 
-local nodecodes   = nodes.nodecodes
+local nodecodes    = nodes.nodecodes
 
-local disc_code   = nodecodes.disc
-local hlist_code  = nodecodes.hlist
-local vlist_code  = nodecodes.vlist
+local disc_code    = nodecodes.disc
+local hlist_code   = nodecodes.hlist
+local vlist_code   = nodecodes.vlist
+local glue_code    = nodecodes.glue
+local glyph_code   = nodecodes.glyph
 
-local new_penalty = nodes.pool.penalty
-local free_node   = node.free
+local new_penalty  = nodes.pool.penalty
+local free_node    = node.free
+local copynodelist = node.copy_list
+local copynode     = node.copy
+local texbox       = tex.box
 
 function hyphenatedlist(list)
     while list do
@@ -48,4 +53,61 @@ function commands.showhyphenatedinlist(list)
     commands.writestatus("show hyphens",nodes.listtoutf(list))
 end
 
--- processisolatedwords
+function checkedlist(list)
+    if type(list) == "number" then
+        return texbox[list].list
+    else
+        return list
+    end
+end
+
+local function applytochars(list,what,nested)
+    local doaction = context[what or "ruledhbox"]
+    local noaction = context
+    local current  = checkedlist(list)
+    while current do
+        local id = current.id
+        if nested and (id == hlist_code or id == vlist_code) then
+            context.hbox()
+            context.bgroup()
+            applytochars(current.list,what,nested)
+            context.egroup()
+        elseif id ~= glyph_code then
+            noaction(copynode(current))
+        else
+            doaction(copynode(current))
+        end
+        current = current.next
+    end
+end
+
+local function applytowords(list,what,nested)
+    local doaction = context[what or "ruledhbox"]
+    local noaction = context
+    local current  = checkedlist(list)
+    local start
+    while current do
+        local id = current.id
+        if id == glue_code then
+            if start then
+                doaction(copynodelist(start,current))
+                start = nil
+            end
+            noaction(copynode(current))
+        elseif nested and (id == hlist_code or id == vlist_code) then
+            context.hbox()
+            context.bgroup()
+            applytowords(current.list,what,nested)
+            context.egroup()
+        elseif not start then
+            start = current
+        end
+        current = current.next
+    end
+    if start then
+        doaction(copynodelist(start))
+    end
+end
+
+commands.applytochars = applytochars
+commands.applytowords = applytowords

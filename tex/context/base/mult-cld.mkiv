@@ -26,9 +26,10 @@
            \def\cldcontext    #1{\directlua\zerocount{context(#1)}}
            \def\cldcommand    #1{\directlua\zerocount{context.#1}}
 
-           \def\mkivflush     #1{\directlua\zerocount{context._flush_f_(#1)}} % obsolete
+           \def\cldff         #1{\directlua\zerocount{cldff(#1)}} % global (functions)
+           \def\cldfn         #1{\directlua\zerocount{cldfn(#1)}} % global (nodes)
 
-           \def\cldff         #1{\directlua\zerocount{cldff(#1)}} % global
-           \def\cldfn         #1{\directlua\zerocount{cldfn(#1)}} % global
+          %\def\mkivflush     #1{\directlua\zerocount{context._flush_f_(#1)}} % obsolete
+           \let\mkivflush        \cldff
 
 \protect \endinput
