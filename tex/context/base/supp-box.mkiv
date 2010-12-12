@@ -1285,169 +1285,32 @@
    \egroup}
 
 %D \macros
-%D   {processisolatedwords,
-%D    betweenisolatedwords,nothingbetweenisolatedwords}
-%D
-%D References are often made up of one word or a combination
-%D of tightly connected words. The typeset text {\bf
-%D chapter~5} is for instance the results of the character
-%D sequence:
-%D
-%D \starttyping
-%D The typeset text \in{chapter}[texniques] is for instance
-%D \stoptyping
-%D
-%D When such words are made active in interactive texts, the
-%D combination cannot longer be hyphenated. Normally this is no
-%D problem, because \TEX\ tries to prevent hyphenation as best
-%D as can.
-%D
-%D Sometimes however we need a few more words to make things
-%D clear, like when we want to refer to {\bf \TEX\ by Topic}.
-%D The macros that are responsible for typesetting hyperlinks,
-%D take care of such sub||sentences by breaking them up in
-%D words. Long ago we processed words using the space as a
-%D separator, but the more advanced our interactive text became,
-%D the more we needed a robust solution. Well, here it is and
-%D it called as:
-%D
-%D \starttyping
-%D \processisolatedwords{some words}\someaction
-%D \stoptyping
-%D
-%D The second argument \type{someactions} handles the
-%D individual words, like in:
+%D   {processisolatedwords,processisolatedchars}
 %D
 %D \startbuffer
-%D \processisolatedwords{some more words}           \ruledhbox \par
-%D \processisolatedwords{and some $x + y = z$ math} \ruledhbox \par
+%D \processisolatedchars{some more words}                 \ruledhbox \par
+%D \processisolatedchars{and some $x + y = z$ math}       \ruledhbox \par
+%D \processisolatedchars{and a \normalhbox{$x + y = z$}}  \ruledhbox \par
+%D \processisolatedwords{some more words}                 \ruledhbox \par
+%D \processisolatedwords{and some $x + y = z$ math}       \ruledhbox \par
 %D \processisolatedwords{and a \normalhbox{$x + y = z$}}  \ruledhbox \par
 %D \stopbuffer
 %D
-%D \typebuffer
-%D
-%D which let the words turn up as:
-%D
-%D \startvoorbeeld
-%D \getbuffer
-%D \stopvoorbeeld
-%D
-%D The macro has been made a bit more clever than needed at
-%D first sight. This is due to the fact that we don't want to
-%D generate more overhead in terms of interactive commands than
-%D needed.
-%D
-%D \startbuffer
-%D \processisolatedwords{see this \ruledhskip1em}     \ruledhbox
-%D \processisolatedwords{and \ruledhskip1em this one} \ruledhbox
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D becomes:
-%D
-%D \startvoorbeeld
-%D \startlines
-%D \getbuffer
-%D \stoplines
-%D \stopvoorbeeld
-%D
-%D Single word arguments are treated without further
-%D processing. This was needed because this command is used in
-%D the \type{\goto} command, to which we sometimes pass very
-%D strange and|/|or complicated arguments or simply boxes
-%D whose dimensions are to be left intact.
-%D
-%D First we build a \type{\normalhbox}. This enables us to save the
-%D last skip. Next we fill a \type{\normalvbox} without hyphenating
-%D words. After we've tested if there is more than one word, we
-%D start processing the individual lines (words). We need some
-%D splitting, packing and unpacking to get the spacing and
-%D dimensions right.
-%D
-%D Normally the isolated words are separated by space, but
-%D one can overrule this separator by changing the next macros.
-%D
-%D When needed, spacing can be suppressed by \type
-%D {\nothingbetweenisolatedwords}.
+%D \typebuffer \blank \getbuffer \blank
 
-\newif\ifisolatedwords % public, e.g. used in core-ref
+\def\processisolatedchars#1#2%
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\normalhbox{#1}%
+   \ctxlua{commands.applytochars(\number\scratchbox,"\strippedcsname#2",true)}%
+   \endgroup}
 
-\def\betweenisolatedwords
-  {\hskip\currentspaceskip}
-
-%D In order to prevent problems with nested isolated words, we
-%D do process them, but only split at the outermost level.
-
-\newskip\isolatedlastskip
-
-\chardef\isolatedwordsmode=0 % no nesting
-
-\def\processisolatedwords#1#2% todo: vbox ipv hbox ivm afbreken!
-  {\bgroup                   % todo: doloop
-   \fakecompoundhyphen
-   \dontcomplain
-   \forgetall
-   \nopenalties
-   \ifcase\isolatedwordsmode
-     \def\processisolatedwords##1##2{##2{##1}}% we split only once
-   \fi
-   \global\let\localbetweenisolatedwords\betweenisolatedwords
-   \setbox0\normalhbox % we default to spaces, but from inside out
-     {\normallanguage\minusone % needed for mkiv
-      \ignorespaces#1% \localbetweenisolatedwords can be overruled
-      \global\isolatedlastskip\lastskip}%
-   \setbox2\normalvbox
-     {%\hyphenpenalty10000    % this one fails in \url breaking,
-      \lefthyphenmin\maxcard  % but this trick works ok, due to them
-      \righthyphenmin\maxcard % total>63, when no hyphenation is done
-      \hsize\zeropoint
-      \unhcopy0}% == #1
-   \ifdim\ht0=\ht2
-     \isolatedwordsfalse
-     #2{\unhbox0}% == #2{#1} % was \unhcopy0
-   \else
-     \isolatedwordstrue
-     \setbox0\normalhbox
-       {\ignorespaces
-        \loop
-          \setbox4\normalhbox
-            {\splittopskip\openstrutheight
-             \vsplit2 to \baselineskip}%
-          \normalhbox
-            {\unhbox4\unskip % recently added
-             \setbox4\lastbox
-             \normalvbox            % outer \normalhbox needed
-               {\unvbox4            % for nested use
-                \setbox4\lastbox
-                \normalhbox{#2{\normalhbox
-                  {\unhbox4
-                   \unskip\unpenalty % remove end of line stuff
-                   \global\dimen1\lastkern}}}}}%
-        \ifdim\ht2>\zeropoint\relax
-          \ifdim\dimen1=\compoundbreakpoint
-            \allowbreak
-          \else
-            \localbetweenisolatedwords
-          \fi
-        \repeat
-        \unskip}%
-      \unhbox0\unskip
-      \ifzeropt\isolatedlastskip\else % added % \ifdim\isolatedlastskip=\zeropoint\else % added
-        \hskip\isolatedlastskip
-      \fi
-    \fi
-    \egroup}
-
-%D One can use the next macro to change the intersplit
-%D material. An example can be found in the \type {\url}
-%D macro. The innermost setting is used. In the url case, it
-%D means that either very small spaces are used or no spaces
-%D at all. So, the innermost settings are used, while the
-%D outermost split takes place.
-
-\def\setbetweenisolatedwords#1%
-  {\gdef\localbetweenisolatedwords{#1}}
+\def\processisolatedwords#1#2%
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\normalhbox{#1}%
+   \ctxlua{commands.applytowords(\number\scratchbox,"\strippedcsname#2",true)}%
+   \endgroup}
 
 %D \macros
 %D   {sbox}
@@ -1514,8 +1377,7 @@
 \def\topskippedbox
   {\normalhbox\bgroup
      \dowithnextbox
-       {\edef\next
-          {\ifdim\strutdepth=\nextboxdp\nextboxdp\the\nextboxdp\fi}%
+       {\edef\next{\ifdim\strutdepth=\nextboxdp\nextboxdp\the\nextboxdp\fi}%
         \lower\topskip\normalhbox{\raise\strutheight\flushnextbox}%
         \next
         \egroup}%
@@ -1633,10 +1495,10 @@
   {\bgroup
    \dowithnextbox
      {\setlocalhsize
-      \setbox0\normalhbox{\vrule\!!width \zeropoint#1}%
-      \setbox2\normalvbox{\hrule\!!height\zeropoint#1}%
-      \ifzeropt\wd0\else\hsize\wd0\fi % \hsize\ifdim\wd0=\zeropoint\hsize\else\wd0\fi
-      \ifzeropt\ht2\else\vsize\ht2\fi % \vsize\ifdim\ht2=\zeropoint\vsize\else\ht2\fi
+      \setbox\scratchbox\normalhbox{\vrule\!!width \zeropoint#1}%
+      \ifzeropt\wd\scratchbox\else\hsize\wd\scratchbox\fi
+      \setbox\scratchbox\normalvbox{\hrule\!!height\zeropoint#1}%
+      \ifzeropt\ht\scratchbox\else\vsize\ht\scratchbox\fi
       \normalvbox to \vsize{\vss\normalhbox to \hsize{\hss\flushnextbox\hss}\vss}%
       \egroup}%
      \normalhbox}
@@ -2104,13 +1966,10 @@
 \def\tbbox#1#2%
   {\normalhbox\bgroup
    \dowithnextbox
-     {\scratchdimen\nextboxht
-      \advance\scratchdimen\nextboxdp
-      \advance\scratchdimen-#1\strutbox
+     {\scratchdimen\dimexpr\nextboxht+\nextboxdp-#1\strutbox\relax
       #1\nextbox#1\strutbox
       #2\nextbox\scratchdimen
-      \setbox\nextbox\normalhbox
-        {\lower\nextboxdp\flushnextbox}%
+      \setbox\nextbox\normalhbox{\lower\nextboxdp\flushnextbox}%
       #1\nextbox#1\strutbox
       #2\nextbox\scratchdimen
       \flushnextbox
@@ -2238,70 +2097,70 @@
 
 \def\rightbox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
+     {\setbox\scratchbox\placedbox{#1}%
       \global\boxhdisplacement\boxoffset
-      \global\boxvdisplacement.5\ht0
-      \global\advance\boxvdisplacement-.5\dp0
-      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+      \global\boxvdisplacement.5\ht\scratchbox
+      \global\advance\boxvdisplacement-.5\dp\scratchbox
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
 
 \def\leftbox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-\wd0
+     {\setbox\scratchbox\placedbox{#1}%
+      \global\boxhdisplacement-\wd\scratchbox
       \global\advance\boxhdisplacement-\boxoffset
-      \global\boxvdisplacement.5\ht0
-      \global\advance\boxvdisplacement-.5\dp0
-      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+      \global\boxvdisplacement.5\ht\scratchbox
+      \global\advance\boxvdisplacement-.5\dp\scratchbox
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
 
 \def\topbox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-.5\wd0
-      \global\boxvdisplacement-\dp0
+     {\setbox\scratchbox\placedbox{#1}%
+      \global\boxhdisplacement-.5\wd\scratchbox
+      \global\boxvdisplacement-\dp\scratchbox
       \global\advance\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
 
 \def\bottombox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-.5\wd0
-      \global\boxvdisplacement\ht0
+     {\setbox\scratchbox\placedbox{#1}%
+      \global\boxhdisplacement-.5\wd\scratchbox
+      \global\boxvdisplacement\ht\scratchbox
       \global\advance\boxvdisplacement\boxoffset
-      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
 
 \def\lefttopbox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-\wd0
+     {\setbox\scratchbox\placedbox{#1}%
+      \global\boxhdisplacement-\wd\scratchbox
       \global\advance\boxhdisplacement-\boxoffset
-      \global\boxvdisplacement-\dp0
+      \global\boxvdisplacement-\dp\scratchbox
       \global\advance\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
 
 \def\righttopbox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
+     {\setbox\scratchbox\placedbox{#1}%
       \global\boxhdisplacement\boxoffset
-      \global\boxvdisplacement-\dp0
+      \global\boxvdisplacement-\dp\scratchbox
       \global\advance\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
 
 \def\leftbottombox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-\wd0
+     {\setbox\scratchbox\placedbox{#1}%
+      \global\boxhdisplacement-\wd\scratchbox
       \global\advance\boxhdisplacement-\boxoffset
-      \global\boxvdisplacement\ht0
+      \global\boxvdisplacement\ht\scratchbox
       \global\advance\boxvdisplacement\boxoffset
-      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
 
 \def\rightbottombox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
+     {\setbox\scratchbox\placedbox{#1}%
       \global\boxhdisplacement\boxoffset
-      \global\boxvdisplacement\ht0
+      \global\boxvdisplacement\ht\scratchbox
       \global\advance\boxvdisplacement\boxoffset
-      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
 
 \let\topleftbox    \lefttopbox
 \let\toprightbox   \righttopbox
@@ -2309,30 +2168,30 @@
 \let\bottomrightbox\rightbottombox
 
 \def\middlebox#1%
-  {\normalhbox{\setbox0\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
+  {\normalhbox{\setbox\scratchbox\placedbox{#1}\boxoffset=-.5\wd\scratchbox\rightbox{\box\scratchbox}}}
 
 \def\baselinemiddlebox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-.5\wd0
+     {\setbox\scratchbox\placedbox{#1}%
+      \global\boxhdisplacement-.5\wd\scratchbox
       \global\advance\boxhdisplacement-\boxoffset
       \global\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
 
 \def\baselineleftbox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
-      \global\boxhdisplacement-\wd0
+     {\setbox\scratchbox\placedbox{#1}%
+      \global\boxhdisplacement-\wd\scratchbox
       \global\advance\boxhdisplacement-\boxoffset
       \global\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
 
 \def\baselinerightbox#1%
   {\normalhbox
-     {\setbox0\placedbox{#1}%
+     {\setbox\scratchbox\placedbox{#1}%
       \global\boxhdisplacement\boxoffset
       \global\boxvdisplacement-\boxoffset
-      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
 
 %D \macros
 %D   {obox}
