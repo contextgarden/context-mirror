@@ -188,6 +188,6 @@ commands.MPpos            = jobpositions.position
 commands.MPplus           = jobpositions.pardata
 commands.MPrest           = jobpositions.extradata
 
-function commands.doifelse(name)
+function commands.doifpositionelse(name)
     commands.testcase(collected[name] or tobesaved[name])
 end
