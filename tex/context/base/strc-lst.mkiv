@@ -70,9 +70,18 @@
 
 \def\structurelistinject{\dotripleempty\dostructurelistinject}
 
-\def\dostructurelistinject[#1][#2][#3]%
+\def\dostructurelistinject[#1]% [#2][#3]% no check on nofarguments here
   {\begingroup
-   \edef\currentlistname{#1}%
+   \edef\currentlist{#1}%
+   \doifelse{\listparameter\c!state}\v!start\dodostructurelistinject\nonostructurelistinject}
+
+\def\dodostructurelistinject[#1][#2]%
+  {\endgroup}
+
+\def\dodostructurelistinject[#1][#2]%
+  {\getparameters[\??li\??li][\c!type=userdata,\c!location=\v!none,#1]%
+   \edef\currentlisttype    {\@@li@@litype}%
+   \edef\currentlistlocation{\@@li@@lilocation}%
    \setnextinternalreference
    \edef\currentlistnumber{\ctxlua{structures.lists.push{
          references = {
@@ -81,16 +90,15 @@
             section  = structures.sections.currentid(),
         },
         metadata = {
-            kind     = "#2",
-            name     = "\currentlistname",
+            kind     = "\currentlisttype",
+            name     = "\currentlist",
             level    = structures.sections.currentlevel(),
             catcodes = \the\catcodetable,
         },
-        userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+        userdata = structures.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
    }}}%
-   \edef\structurelistsynchronize{\getvalue{\??li::inject::#2::synchronize}}%
    % we can do the enhance injection at the lua end which saves tokenization and a call
-   \ifx\structurelistsynchronize\v!yes
+   \ifx\currentlistlocation\v!here
      % this injects nodes !
      \expanded{\ctxlatelua{structures.lists.enhance(\currentlistnumber)}}%
      % new from here
@@ -381,23 +389,39 @@
 \let\dowritetolist  \gobblefourarguments
 \let\dodowritetolist\gobblefourarguments
 
-% some day we will have \definestructurelistinjector or maybe just as key in #3
+% command  : location=none
+% userdata : location=none
+% simple   : location=here
 
-\letvalue{\??li::inject::command::synchronize}\v!no
-\letvalue{\??li::inject::userdata::synchronize}\v!no
-\letvalue{\??li::inject::simple::synchronize}\v!yes
+\unexpanded\def\writebetweenlist{\dodoubleempty   \dowritebetweenlist}
+\unexpanded\def\writedatatolist {\dotripleargument\dowritedatatolist}
+\unexpanded\def\writetolist     {\dodoubleempty   \dowritetolist}
 
-\unexpanded\def\writebetweenlist[#1]#2%
-  {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][command][command={#2}]}}
+\def\dowritebetweenlist[#1][#2]#3% we can overload location
+  {\doif{\namedlistparameter{#1}\c!state}\v!start
+     {\ifsecondargument
+        \dostructurelistinject[#1][#2,\c!type=command][command={#3}]%
+      \else
+        \dostructurelistinject[#1][\c!type=command][command={#3}]%
+      \fi}}
 
-\unexpanded\def\writedatatolist
-  {\dodoubleargument\dowritedatatolist}
 
-\def\dowritedatatolist[#1][#2]%
-  {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][userdata][#2]}}
+\def\dowritedatatolist[#1][#2][#3]% we can overload location
+  {\doif{\namedlistparameter{#1}\c!state}\v!start
+    {\ifthirdargument
+       \dostructurelistinject[#1][#2,\c!type=userdata][#3]%
+     \else
+       \dostructurelistinject[#1][\c!type=userdata][#2]%
+     \fi}}
 
-\unexpanded\def\writetolist[#1]#2#3%
-  {\doif{\namedlistparameter{#1}\c!state}\v!start{\structurelistinject[#1][simple][first={#2},second={#3}]}}
+
+\def\dowritetolist[#1][#2]#3#4% we can overload location
+  {\doif{\namedlistparameter{#1}\c!state}\v!start
+     {\ifsecondargument
+        \dostructurelistinject[#1][\c!location=\v!here,#2,\c!type=simple][first={#3},second={#4}]%
+      \else
+        \dostructurelistinject[#1][\c!location=\v!here,\c!type=simple][first={#3},second={#4}]%
+      \fi}}
 
 \installstructurelistprocessor{simple}
   {\dodolistelement

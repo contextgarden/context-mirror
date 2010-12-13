@@ -24,19 +24,14 @@ local texbox       = tex.box
 
 function hyphenatedlist(list)
     while list do
-        local id = list.id
-        local next = list.next
-        local prev = list.prev
+        local id, next, prev = list.id, list.next, list.prev
         if id == disc_code then
             local hyphen = list.pre
             if hyphen then
                 local penalty = new_penalty(-500)
-                hyphen.next = penalty
-                penalty.prev = hyphen
-                prev.next = hyphen
-                next.prev = penalty
-                penalty.next = next
-                hyphen.prev = prev
+                hyphen.next, penalty.prev = penalty, hyphen
+                prev.next, next.prev = hyphen, penalty
+                penalty.next, hyphen.prev = next, prev
                 list.pre = nil
                 free_node(list)
             end

@@ -107,7 +107,12 @@ def do_initialize_numbers =
                    textext.raw("${\times}10$") ,
                    textext.raw("${}^-$")       ,
                    textext.raw("${}^2$")       ) ;
-    numbers_initialized := true ;
+    if unknown _trial_run_ :
+      numbers_initialized := true ;
+    else :
+      % no reset, otherwise textexts get out of sync
+      % slows down graphics a bit but not much
+    fi ;
   fi ;
 enddef ;
 
