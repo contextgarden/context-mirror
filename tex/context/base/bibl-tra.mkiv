@@ -825,11 +825,12 @@
      {\ctxlua{bibtex.hacks.filterall()}}
      {\doif{\listparameter\c!criterium}\v!cite
         {\setuplist[pubs][\c!criterium=\v!here]}%
-      \placestructurelist
+      \doplacestructurelist
         {pubs}%
         {\listparameter\c!criterium}%
         {\listparameter\c!number}%
-        {\listparameter\c!extras}}%
+        {\listparameter\c!extras}%
+        {\listparameter\c!order}}%
    \ctxlua{bibtex.hacks.flush("\@@pbsorttype")}%
    \doendoflist}
 

@@ -88,6 +88,7 @@
             internal = \nextinternalreference,
             block    = "\currentstructureblock", % handy for lists, like bibl
             section  = structures.sections.currentid(),
+          % location = "\currentlistlocation",
         },
         metadata = {
             kind     = "\currentlisttype",
@@ -157,17 +158,18 @@
 % \appendtoks
 % \to \everystructurelist
 
-\unexpanded\def\placestructurelist#1#2#3#4%
+\unexpanded\def\doplacestructurelist#1#2#3#4#5% beware, not a user command
   {\dostarttagged\t!list\empty
    \ctxlua{structures.lists.process {
         names     = "#1",
         criterium = "#2",
         number    = "#3",
-        extras    = "#4"
+        extras    = "#4",
+        order     = "#5"
    }}%
    \dostoptagged}
 
-\unexpanded\def\analyzestructurelist#1#2#3%
+\unexpanded\def\doanalyzestructurelist#1#2#3%
   {\ctxlua{structures.lists.analyze {
         names     = "#1",
         criterium = "#2",
@@ -389,6 +391,23 @@
 \let\dowritetolist  \gobblefourarguments
 \let\dodowritetolist\gobblefourarguments
 
+
+%D Regular list entries are bound to a specific location in order to
+%D get the right pagenumber etc.\ associated. When pushing something
+%D inbetween (in mkiv) it ends up directtly in the list. This is the
+%D default because otherwise users will wonder why spacing might get
+%D messed up (due to an unseen but present node). It is possible to
+%D force a location by explicitly setting \type {location} to \type
+%D {here}.
+%D
+%D Another way to force a certain order is to set the \type {order}
+%D variable when placing a list. The \type {command} option only
+%D pushes commands into the right order, and \type {all} orders all
+%D entries (which might be too much). In this case no specific
+%D location is needed with the inbetween method. Maybe additional
+%D mechanisms show up some day. See \type {inbetween-001.tex} for an
+%D example.
+
 % command  : location=none
 % userdata : location=none
 % simple   : location=here
@@ -404,7 +423,6 @@
       \else
         \dostructurelistinject[#1][\c!type=command][command={#3}]%
       \fi}}
-
 
 \def\dowritedatatolist[#1][#2][#3]% we can overload location
   {\doif{\namedlistparameter{#1}\c!state}\v!start
@@ -440,11 +458,12 @@
    \edef\currentlist{\firststructureelementinlist{#1}}%
    \the\everystructurelist
    \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#1}}%
-   \placestructurelist
+   \doplacestructurelist
      {#1}%
      {\listparameter\c!criterium}%
      {\number\listparameter\c!number}%
      {\listparameter\c!extras}%
+     {\listparameter\c!order}%
    \stoplistreferences
    \endgroup
    \dosetlistmode}
@@ -913,7 +932,7 @@
    \dosetuplist[#1][#2]%
    \edef\currentlist{\firststructureelementinlist{#1}}%
    \the\everystructurelist
-   \analyzestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
+   \doanalyzestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
    \xdef\utilitylistlength{\structurelistsize}%
    \endgroup
    \dosetlistmode}
@@ -955,11 +974,12 @@
    \doif{\combinedlistparameter\c!coupling}\v!on{\startlistreferences{#1}}%
    \dobeginoflist
    \normalexpanded{\noexpand\dosetuplist[\combinedlist][#2]}%
-   \placestructurelist
+   \doplacestructurelist
      {\combinedlist}%
      {\combinedlistparameter\c!criterium}%
      {\combinedlistparameter\c!number}%
      {\combinedlistparameter\c!extras}%
+     {\combinedlistparameter\c!order}%
    \doendoflist
    \stoplistreferences
    \endgroup
