@@ -616,11 +616,12 @@
    \doifelse{\bibtexpublicationsparameter\c!method}\v!local
      {\ctxlua{bibtex.hacks.reset(1)}}% function can take method
      {\ctxlua{bibtex.hacks.reset(2)}}%
-   \placestructurelist
+   \doplacestructurelist
      {\currentbibtexsession}
      {\currentbibtexcriterium}
      {\namedlistparameter\currentbibtexsession\c!number}%
      {\namedlistparameter\currentbibtexsession\c!extras}%
+     {\namedlistparameter\currentbibtexsession\c!order}%
    \ctxlua{bibtex.hacks.flush("\bibtexpublicationsparameter\c!sorttype")}%
    \doendoflist}
 

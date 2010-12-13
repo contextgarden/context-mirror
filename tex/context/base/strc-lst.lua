@@ -196,7 +196,22 @@ local splitter = lpeg.splitat(":")
 
 -- this will become filtercollected(specification) and then we'll also have sectionblock as key
 
-local function filtercollected(names, criterium, number, collected, forced, nested) -- names is hash or string
+local sorters = {
+    [variables.command] = function(a,b)
+        if a.metadata.kind == "command" or b.metadata.kind == "command" then
+            return a.references.internal < b.references.internal
+        else
+            return a.references.order < b.references.order
+        end
+    end,
+    [variables.all] = function(a,b)
+        return a.references.internal < b.references.internal
+    end,
+}
+
+-- some day soon we will pass a table
+
+local function filtercollected(names, criterium, number, collected, forced, nested, sortorder) -- names is hash or string
     local numbers, depth = documents.data.numbers, documents.data.depth
     local result, nofresult, detail = { }, 0, nil
     local block = false -- all
@@ -252,7 +267,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
         end
     elseif criterium == variables.current then
         if depth == 0 then
-            return filtercollected(names,variables.intro,number,collected,forced)
+            return filtercollected(names,variables.intro,number,collected,forced,false,sortorder)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -285,7 +300,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
     elseif criterium == variables.here then
         -- this is quite dirty ... as cnumbers is not sparse we can misuse #cnumbers
         if depth == 0 then
-            return filtercollected(names,variables.intro,number,collected,forced)
+            return filtercollected(names,variables.intro,number,collected,forced,false,sortorder)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -318,7 +333,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
         end
     elseif criterium == variables.previous then
         if depth == 0 then
-            return filtercollected(names,variables.intro,number,collected,forced)
+            return filtercollected(names,variables.intro,number,collected,forced,false,sortorder)
         else
             for i=1,#collected do
                 local v = collected[i]
@@ -351,11 +366,11 @@ local function filtercollected(names, criterium, number, collected, forced, nest
     elseif criterium == variables["local"] then -- not yet ok
         local nested = nesting[#nesting]
         if nested then
-            return filtercollected(names,nested.name,nested.number,collected,forced,nested)
+            return filtercollected(names,nested.name,nested.number,collected,forced,nested,sortorder)
         elseif sections.autodepth(documents.data.numbers) == 0 then
-            return filtercollected(names,variables.all,number,collected,forced)
+            return filtercollected(names,variables.all,number,collected,forced,false,sortorder)
         else
-            return filtercollected(names,variables.current,number,collected,forced)
+            return filtercollected(names,variables.current,number,collected,forced,false,sortorder)
         end
     else -- sectionname, number
         -- not the same as register
@@ -393,13 +408,35 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             report_lists("criterium: %s, block: %s, found: %s",criterium,block or "*",#result)
         end
     end
+
+    if sortorder then -- experiment
+        local sorter = sorters[sortorder]
+        if sorter then
+            if trace_lists then
+                report_lists("sorting list using method %s",sortorder)
+            end
+            for i=1,#result do
+                result[i].references.order = i
+            end
+            table.sort(result,sorter)
+        end
+    end
+
     return result
 end
 
 lists.filtercollected = filtercollected
 
 function lists.filter(specification)
-    return filtercollected(specification.names, specification.criterium, specification.number, lists.collected, specification.forced)
+    return filtercollected(
+        specification.names,
+        specification.criterium,
+        specification.number,
+        lists.collected,
+        specification.forced,
+        false,
+        specification.order
+    )
 end
 
 lists.result = { }
