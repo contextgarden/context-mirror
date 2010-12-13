@@ -78,8 +78,8 @@ begingroup interim warningcheck := 0 ;
 
 %%% Load auxiliary macros.
 
-input string
-input marith
+input string ;
+input marith ;
 
 %%% Choosing the Layout %%%
 
@@ -318,7 +318,7 @@ enddef ;
 % round and typeset a quantity z in exponent form.
 %
 % e  scientific, p significant figures
-% p  decimal, p digits right of the point
+% f  decimal, p digits right of the point
 % g  decimal or scientific, p sig. figs.
 % G  decimal or scientific, p digits
 
