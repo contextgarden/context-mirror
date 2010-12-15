@@ -837,7 +837,7 @@
    \ifx\@@rastervalue\empty
      \let\@@rastervalue\@@rsscreen
    \fi
-   \ctxlua{commands.setrastercolor("_raster_",\@@rastervalue))}} % sets attribute
+   \ctxlua{commands.setrastercolor("_raster_",\@@rastervalue)}} % sets attribute
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok
   {\ctxlua{commands.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
