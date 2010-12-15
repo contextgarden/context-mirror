@@ -4910,8 +4910,14 @@
         <cd:constant type="cd:section"/>
         <cd:constant type="cd:name"/>
       </cd:keywords>
-      <cd:content n="2"/>
+      <cd:assignments n="2" list="yes">
+        <cd:parameter name="plaats">
+          <cd:constant type="hier"/>
+          <cd:constant type="geen"/>
+        </cd:parameter>
+      </cd:assignments>
       <cd:content n="3"/>
+      <cd:content n="4"/>
     </cd:arguments>
   </cd:command>
 
@@ -4924,7 +4930,13 @@
         <cd:constant type="cd:section"/>
         <cd:constant type="cd:name"/>
       </cd:keywords>
-      <cd:content n="2"/>
+      <cd:assignments n="2" list="yes">
+        <cd:parameter name="plaats">
+          <cd:constant type="hier"/>
+          <cd:constant type="geen"/>
+        </cd:parameter>
+      </cd:assignments>
+      <cd:content n="3"/>
     </cd:arguments>
   </cd:command>
 
@@ -5159,6 +5171,11 @@
         </cd:parameter>
         <cd:parameter name="maxbreedte">
           <cd:constant type="cd:dimension"/>
+        </cd:parameter>
+        <cd:parameter name="order">
+          <cd:constant type="commando"/>
+          <cd:constant type="alles"/>
+          <cd:constant type="normaal"/>
         </cd:parameter>
         <cd:inherit name="stelomlijndin" n="2"/>
       </cd:assignments>
