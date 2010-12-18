@@ -6977,6 +6977,7 @@
 
 \def\doprocesswords#1 #2\od
   {\doifsomething{#1}{\processword{#1} \doprocesswords#2 \od}}
+% {\doifsomething{\detokenize{#1}}{\processword{#1} \doprocesswords#2 \od}} % to be tested
 
 \def\processwords#1%
   {\doprocesswords#1 \od}% no \unskip

@@ -36,7 +36,10 @@
 %D with \MKII\ or previous \MKIV\ implementations but in practice this
 %D is not a real problem. It's also easier now to extend this mechanism.
 
-\definesystemattribute[marks]
+% if global has side effects we will need to nil it selectively
+% and optionally enable it in for instance postponed content
+
+\definesystemattribute [marks] [global]
 
 \let\currentmarking\empty
 
