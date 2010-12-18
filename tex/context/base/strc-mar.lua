@@ -98,6 +98,14 @@ local function sweep(head,first,last)
                 last = a
             end
         elseif id == hlist_code or id == vlist_code then
+            local a = hasattribute(n,a_marks)
+            if not a then
+                -- next
+            elseif first == 0 then
+                first, last = a, a
+            elseif a > last then
+                last = a
+            end
             local list = n.list
             if list then
                 first, last = sweep(list, first, last)
@@ -432,12 +440,12 @@ end
 
 local methods  = { }
 
-local function doresolve(name,range,swap,df,dl,strict)
-    local range = ranges[range] or ranges[v_page]
+local function doresolve(name,rangename,swap,df,dl,strict)
+    local range = ranges[rangename] or ranges[v_page]
     local first, last = range.first, range.last
     if trace_marks_get then
         report_marks("resolve: name=%s, range=%s, swap=%s, first=%s, last=%s, df=%s, dl=%s, strict=%s",
-            name,range,tostring(swap or false),first,last,df,dl,tostring(strict or false))
+            name,rangename,tostring(swap or false),first,last,df,dl,tostring(strict or false))
     end
     if swap then
         first, last = last + df, first + dl
@@ -468,7 +476,7 @@ local function fetched(name,range,method)
     elseif value == "" then
         report_marks("nothing fetched: name=%s, range=%s, method=%s",name,range,method)
     else
-        report_marks("marking fetched: name=%s, range=%s, method=%s, value=%s",name,range,method)
+        report_marks("marking fetched: name=%s, range=%s, method=%s, value=%s",name,range,method,value)
     end
     return value or ""
 end

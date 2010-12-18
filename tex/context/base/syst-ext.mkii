@@ -121,21 +121,21 @@
    \dodoglobal\@if#1{false}%
    \escapechar\scratchcounter}
 
-%D Also new:
+%D Also:
 
 \def\define#1%
   {\ifx#1\undefined
-     \expandafter\def
+     \expandafter\long\expandafter\def
    \else
      \message{[\noexpand#1is already defined]}%
-     \expandafter\def\expandafter\gobbleddefinition
+     \expandafter\long\expandafter\def\expandafter\gobbleddefinition
    \fi#1}
 
 \def\redefine#1%
   {\ifx#1\undefined\else
      \message{[\noexpand#1is redefined]}%
    \fi
-   \def#1}
+   \long\def#1}
 
 % \define\hans{hans}
 % \redefine\hans{hans}

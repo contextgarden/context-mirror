@@ -1298,6 +1298,8 @@
 %D
 %D \typebuffer \blank \getbuffer \blank
 
+% todo: provide variant with #1 picked up as box
+
 \def\processisolatedchars#1#2%
   {\dontleavehmode
    \begingroup
@@ -1311,6 +1313,23 @@
    \setbox\scratchbox\normalhbox{#1}%
    \ctxlua{commands.applytowords(\number\scratchbox,"\strippedcsname#2",true)}%
    \endgroup}
+
+\unexpanded\def\processwords#1%
+  {\processisolatedwords{#1}\processword}
+
+\let\processword\relax
+
+%D The better variant:
+
+\def\applytocharacters#1%
+  {\dontleavehmode
+   \dowithnextbox{\ctxlua{commands.applytochars(\number\nextbox,"\strippedcsname#1",true)}}%
+   \normalhbox}
+
+\def\applytowords#1%
+  {\dontleavehmode
+   \dowithnextbox{\ctxlua{commands.applytowords(\number\nextbox,"\strippedcsname#1",true)}}%
+   \normalhbox}
 
 %D \macros
 %D   {sbox}
