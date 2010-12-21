@@ -13,13 +13,10 @@
 
 \writestatus{loading}{ConTeXt Table Macros / Splitting}
 
-%D The code in this file is move here from other places.
+%D The code in this file is move here from other places and needs
+%D a mkiv cleanup.
 
 \unprotect
-
-% only to be used with single tokens (will be prim)
-
-\ifx\htdp\undefined \def\htdp#1{\dimexpr\ht#1+\dp#1\relax} \fi
 
 %D Although the name resembles floats, and therefore this should be
 %D a page module, we decided to make it core functionality because the
@@ -29,12 +26,9 @@
 
 % \splitfloat [settings] {\placetable[optional args]{test}} {content}
 
-% \def\s!noftablesplits{nofsplittables}
+% there is no need for a tracked structure number here
 
-\definenumber % we need a nicer name like nofsplittables, we then also need to set \s!parent
-  [\??si]
-  [\c!way=\v!by\v!text,
-   \c!conversion=\@@siconversion]
+\newcount\noffloatssplits
 
 \unexpanded\def\setupfloatsplitting
   {\dodoubleargument\getparameters[\??si]}
@@ -59,8 +53,8 @@
    \insidefloattrue
    \insidesplitfloattrue
    \getparameters[\??si][#1]%
-   \resetnumber[\??si]%
-   \def\floatcaptionsuffix{\convertednumber[\??si]}%
+   \global\noffloatssplits\zerocount
+   \def\floatcaptionsuffix{\convertnumber\@@siconversion\noffloatssplits}%
    \let\extrasplitfloatlines\@@silines
    \the\everysplitfloatsetup
    \def\splitfloatcommand{#2}%
@@ -114,14 +108,19 @@
       \dontcomplain
       \global\settrue\splitfloatdone
       \nodelocationmode\zerocount % bypass auto-renumbering
-      \incrementnumber[\??si]%
-      \ifcase\rawnumber[\??si]\or \ifconditional\onlyonesplitofffloat
-        \let\floatcaptionsuffix\empty
-      \fi \fi
+      \global\advance\noffloatssplits\plusone
+      \ifcase\noffloatssplits\relax
+      \or
+        \ifconditional\onlyonesplitofffloat
+          \let\floatcaptionsuffix\empty
+        \fi
+      \else
+        \global\settrue\usesamefloatnumber % one shot
+      \fi
       \bgroup
       \ifconditional\somenextplitofffloat
         \settrue\retainfloatnumber
-\notesenabledfalse % best here, experimental, brrr; test with note in caption
+        \notesenabledfalse % best here, experimental, brrr; test with note in caption
       \else
         \setfalse\retainfloatnumber
       \fi

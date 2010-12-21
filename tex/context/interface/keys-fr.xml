@@ -959,6 +959,7 @@
 		<cd:constant name='sub' value='sous'/>
 		<cd:constant name='subtitle' value='soustitre'/>
 		<cd:constant name='suffix' value='suffix'/>
+		<cd:constant name='suffixseparator' value='suffixseparator'/>
 		<cd:constant name='surnamesep' value='surnamesep'/>
 		<cd:constant name='sx' value='sx'/>
 		<cd:constant name='sy' value='sy'/>

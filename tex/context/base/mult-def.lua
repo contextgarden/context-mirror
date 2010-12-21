@@ -10234,6 +10234,10 @@ return {
    ["pe"]="پسوند",
    ["ro"]="suffix",
   },
+  ["suffixseparator"]={
+   ["en"]="suffixseparator",
+   ["nl"]="suffixscheider",
+  },
   ["sx"]={
    ["cs"]="sx",
    ["de"]="sx",

@@ -21,9 +21,9 @@
 %D strc-flt.tex and page-flt.mkiv cq. page-flt.mkii.
 
 \ifdefined\addlocalbackgroundtobox\else \def\addlocalbackgroundtobox{\resetglobal\gobbleoneargument} \fi
-
+
 \unexpanded\def\placefloats{\doflushfloats}  % keep this one
-
+
 \let\currentfloat\empty
 
 \def\letfloatparameter   #1{\expandafter\let\csname\??fl\currentfloat#1\endcsname}
@@ -120,7 +120,8 @@
  % \c!separator=\@@koseparator,
  % \c!starter=\@@kostarter,
  % \c!stopper=\@@kostopper,
- % \c!suffix=\floatcaptionsuffix, % hook
+   \c!suffixseparator=, % currently rather hard coded
+   \c!suffix=\floatcaptionsuffix,
    \c!distance=1em,
    \c!conversion=\v!numbers,
    \c!command=]
@@ -301,11 +302,27 @@
 
 \installstructurelistprocessor{float}{\usestructurelistprocessor{number+title}}
 
+% \def\thecurrentfloatnumber
+%   {\ifnofloatcaption \else \ifnofloatnumber \else
+%      \ifx\currentfloatnumber\relax\else
+%        \dostarttagged\t!floattag\empty
+%        \labeltexts\currentfloat{\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}}%
+%        \dostoptagged
+%      \fi
+%    \fi \fi}
+
+\unexpanded\def\thecurrentfloatnumbersuffix
+  {\doifsomething{\floatcaptionparameter\c!suffix}
+     {\floatcaptionparameter\c!suffixseparator
+      \floatcaptionparameter\c!suffix}}
+
 \def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
      \ifx\currentfloatnumber\relax\else
        \dostarttagged\t!floattag\empty
-       \labeltexts\currentfloat{\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}}%
+       \labeltexts\currentfloat
+          {\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}%
+           \thecurrentfloatnumbersuffix}%
        \dostoptagged
      \fi
    \fi \fi}
@@ -506,7 +523,7 @@
 
 \newconditional\retainfloatnumber
 
-\def\preparefloatnumber#1%
+\def\preparefloatnumber#1% use in special case see below
   {\xdef\floatcaptionnumber{#1}%
    \doifelsenodelocation{\v!float\@@thenumber{#1}}
      \donothing {\nodelocationmode\zerocount}%
@@ -755,6 +772,8 @@
      attr \destinationattribute \currentfloatattribute
    \fi \fi \fi}
 
+\newconditional\usesamefloatnumber
+
 \long\def\docompletefloat#1#2#3#4#5% #1:floatclass #2:reference #3:optionlist #4:caption #5:box number
   {\presetfloatvariables{#1}{#3}{#2}{#5}% check this one
    \bgroup
@@ -762,24 +781,32 @@
    %
    % \dofloatcomponent[\c!name=#1,\c!reference=#2,\c!bookmark=,\c!title={#4}][]% ifnofloatnumber ifnofloatcaption \tracefloatnumber{#1}%
    %
-   \dostructurecountercomponent
-     {float}%
-     \getcaptionparameters
-     \floatcaptionparameter
-     \detokenizedcaptionparameter
-     \relax
-     \relax
-     \relax
-     [\c!name=\currentfloat,\s!counter=\@@thestructurecounter\currentfloat,%
-      \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
-      \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
-      \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi,%
-      \c!reference=#2,\c!title={#4},\c!bookmark=]%
-     []%
-   \globallet\currentfloatnumber     \laststructurecounternumber
-   \globallet\currentfloatattribute  \laststructurecounterattribute
-   \globallet\currentfloatsynchronize\laststructurecountersynchronize
+   \ifconditional\usesamefloatnumber
+      \globallet\currentfloatnumber     \previousfloatnumber
+      \globallet\currentfloatattribute  \empty
+      \globallet\currentfloatsynchronize\relax
+   \else
+     \dostructurecountercomponent
+       {float}%
+       \getcaptionparameters
+       \floatcaptionparameter
+       \detokenizedcaptionparameter
+       \relax
+       \relax
+       \relax
+       [\c!name=\currentfloat,\s!counter=\@@thestructurecounter\currentfloat,%
+        \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
+        \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
+        \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi,%
+        \c!reference=#2,\c!title={#4},\c!bookmark=]%
+       []%
+     \globallet\previousfloatnumber    \laststructurecounternumber
+     \globallet\currentfloatnumber     \laststructurecounternumber
+     \globallet\currentfloatattribute  \laststructurecounterattribute
+     \globallet\currentfloatsynchronize\laststructurecountersynchronize
+   \fi
    %
+   \global\setfalse\usesamefloatnumber % one shot
    % check float box
    \setnaturalfloatdimensions#5%
    \global\setbox\floatbox\vbox{\floatparameter\c!command{\box#5}}%
@@ -833,7 +860,7 @@
    \fi}
 
 \appendtoks
-  \let\rightorleftpageaction\doifrightpagefloatelse
+    \let\rightorleftpageaction\doifrightpagefloatelse
 \to \everyinsidefloat
 
 \newif\ifextrafloatactions \extrafloatactionstrue

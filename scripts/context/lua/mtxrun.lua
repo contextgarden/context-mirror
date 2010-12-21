@@ -5848,6 +5848,10 @@ The find based parser can be found in l-xml-edu.lua along with other older code.
 <p>Beware, the interface may change. For instance at, ns, tg, dt may get more
 verbose names. Once the code is stable we will also remove some tracing and
 optimize the code.</p>
+
+<p>I might even decide to reimplement the parser using the latest <l n='lpeg'/> trickery
+as the current variant was written when <l n='lpeg'/> showed up and it's easier now to
+build tables in one go.</p>
 --ldx]]--
 
 xml = xml or { }
