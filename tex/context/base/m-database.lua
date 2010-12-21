@@ -39,7 +39,7 @@ function buffers.database.process(settings)
         data = filename ~= "" and io.loaddata(filename)
         data = data and string.splitlines(data)
     else
-        data = buffers.getcontent(settings.database)
+        data = buffers.getlines(settings.database)
     end
     if data and #data > 0 then
         local separatorchar, quotechar, commentchar = settings.separator, settings.quotechar, settings.commentchar

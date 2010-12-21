@@ -57,7 +57,7 @@ local definers       = fonts.definers
 
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.706 -- beware: also sync font-mis.lua
+otf.version          = 2.707 -- beware: also sync font-mis.lua
 otf.cache            = containers.define("fonts", "otf", otf.version, true)
 
 local loadmethod     = "table" -- table, mixed, sparse
@@ -964,23 +964,27 @@ actions["reorganize subtables"] = function(data,filename,raw)
     end
 end
 
+-- the next one is still messy but will get better when we have
+-- flattened map/enc tables in the font loader
+
 actions["prepare unicodes"] = function(data,filename,raw)
     local luatex = data.luatex
-    local indices, unicodes, multiples, internals = { }, { }, { }, { }
-    local mapmap = data.map or raw.map
-    local mapenc = nil -- will go away
-    if not mapmap then
-        report_otf("no map in %s",filename)
+    local indices, unicodes, multiples, internals= { }, { }, { }, { }
+    local mapdata = data.map or raw.map -- map already moved
+    local mapmap
+    if not mapdata then
+        report_otf("no mapdata in '%s'",filename)
         mapmap = { }
-        data.map = { map = mapmap }
-    elseif not mapmap.map then
-        report_otf("no unicode map in %s",filename)
+        mapdata = { map = mapmap }
+        data.map = mapdata
+    elseif not mapdata.map then
+        report_otf("no map in mapdata of '%s'",filename)
         mapmap = { }
-        data.map.map = mapmap
+        mapdata.map = mapmap
     else
-        mapenc = mapmap.enc -- will go away
-        mapmap = mapmap.map
+        mapmap = mapdata.map
     end
+    local encname = lower(data.enc_name or raw.enc_name or mapdata.enc_name or "")
     local criterium = fonts.privateoffset
     local private = criterium
     local glyphs = data.glyphs
@@ -1026,12 +1030,9 @@ actions["prepare unicodes"] = function(data,filename,raw)
         end
     end
     -- beware: the indices table is used to initialize the tfm table
-    local encname = lower(data.enc_name or (mapenc and mapenc[1] and mapenc[1].enc_name) or "") -- mapenc will go away
- -- will become: local encname = lower(data.enc_name or "")
---~     if encname == "" or encname == "unicodebmp" or encname == "unicodefull" then -- maybe find(encname,"unicode")
-    if find(encname,"unicode") then
+    if find(encname,"unicode") then -- unicodebmp, unicodefull, ...
         if trace_loading then
-            report_otf("using extra unicode map")
+            report_otf("using embedded unicode map '%s'",encname)
         end
         -- ok -- we can also consider using the altuni
         for unicode, index in next, mapmap do

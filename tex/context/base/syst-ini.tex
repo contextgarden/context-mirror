@@ -441,6 +441,10 @@
 
 \newif\ifdone
 
+%D Potential primitive in \LUATEX:
+
+\ifdefined\htdp \else \def\htdp#1{\dimexpr\ht#1+\dp#1\relax} \fi
+
 %D \macros
 %D   {@@escape,@@begingroup,@@endgroup,@@mathshift,@@alignment,
 %D    @@endofline,@@parameter,@@superscript,@@subscript,

@@ -11,7 +11,7 @@ local lower, strip = string.lower, string.strip
 
 fonts.otf = fonts.otf or { }
 
-fonts.otf.version = fonts.otf.version or 2.706
+fonts.otf.version = fonts.otf.version or 2.707
 fonts.otf.cache   = containers.define("fonts", "otf", fonts.otf.version, true)
 
 function fonts.otf.loadcached(filename,format,sub)

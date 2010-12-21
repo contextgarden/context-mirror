@@ -127,7 +127,7 @@ function regimes.translate(line,regime)
 end
 
 local sequencers      = utilities.sequencers
-local textfileactions = resolvers.openers.helpers.textfileactions
+local textlineactions = resolvers.openers.helpers.textlineactions
 
 function regimes.process(s)
     return regimes.translate(s,regimes.currentregime)
@@ -137,16 +137,16 @@ function regimes.enable(regime)
     regime = synonyms[regime] or regime
     if data[regime] then
         regimes.currentregime = regime
-        sequencers.enableaction(textfileactions,"regimes.process")
+        sequencers.enableaction(textlineactions,"regimes.process")
     else
-        sequencers.disableaction(textfileactions,"regimes.process")
+        sequencers.disableaction(textlineactions,"regimes.process")
     end
 end
 
 function regimes.disable()
     regimes.currentregime = "utf"
-    sequencers.disableaction(textfileactions,"regimes.process")
+    sequencers.disableaction(textlineactions,"regimes.process")
 end
 
-utilities.sequencers.prependaction(textfileactions,"system","regimes.process")
-utilities.sequencers.disableaction(textfileactions,"regimes.process")
+utilities.sequencers.prependaction(textlineactions,"system","regimes.process")
+utilities.sequencers.disableaction(textlineactions,"regimes.process")
