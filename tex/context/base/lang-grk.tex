@@ -85,10 +85,15 @@
 \installlanguage
   [\s!agr]
   [\s!default=\s!gr,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
    \s!patterns=\s!agr,
-   \s!mapping=\s!agr,
-   \s!encoding=\s!agr]
+   \s!mapping=\s!agr,  % not needed for mkiv
+   \s!encoding=\s!agr] % not needed for mkiv
 
 \installlanguage [ancientgreek] [\s!agr]
+\installlanguage [grk]          [\s!agr]
 
 \protect \endinput

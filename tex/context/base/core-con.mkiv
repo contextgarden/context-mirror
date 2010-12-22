@@ -862,4 +862,17 @@
    \mathematics{\ast\ast},
    \mathematics{\ast\ast\ast}]
 
+%D Iteration of suggestion by WS on mailinglist 2010.12.22:
+%D
+%D \starttyping
+%D \setupfloatsplitting[conversion=continued]
+%D \stoptyping
+
+\unexpanded\def\continuednumber#1%
+  {\labeltext{\ifcase#1\or\else\v!continued\fi}}
+
+\defineconversion
+  [\v!continued]
+  [\continuednumber]
+
 \protect \endinput

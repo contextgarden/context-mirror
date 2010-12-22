@@ -69,7 +69,7 @@ end
 -- plain variants
 
 function context.chardef(cs,u)
-    context(format([[\chardef\%s=%s\relax]],k))
+    context(format([[\chardef\%s=%s\relax]],k)) -- context does already do format
 end
 
 function context.par()

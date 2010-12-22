@@ -375,7 +375,7 @@ function tfm.read(specification)
         end
     end
     if not tfmtable then
-        report_define("font with name %s is not found",specification.name)
+        report_define("font with asked name '%s' is not found using lookup '%s'",specification.name,specification.lookup)
     end
     return tfmtable
 end

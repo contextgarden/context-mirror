@@ -165,9 +165,11 @@
 
 % \newtoks \everydefinedfont % not ot be confused with \everydefinefont
 
+\let\thedefinedfont\relax
+
 \def\dodefinedfont[#1]%
   {\iffirstargument\definefont[thedefinedfont][#1]\fi % we can speed this one up
-   \csname thedefinedfont\endcsname
+   \thedefinedfont
    \the\everydefinedfont}
 
 \unexpanded\def\definedfont
@@ -4185,22 +4187,12 @@
 \def\dolookupgetkey         #1{\ctxlua{tex.write(fonts.names.getlookupkey("#1"))}}
 \def\cleanfontname          #1{\ctxlua{fonts.cleanname("#1")}}
 
-\protect \endinput
-
-% \startluacode
-%     function commands.doifelsecurrentfonthasfeature(name)
-%         local f = fonts.identifiers[font.current()]
-%         f = f and f.shared
-%         f = f and f.otfdata
-%         f = f and f.luatex
-%         f = f and f.features
-%         commands.doifelse(f and (f.gpos[name] or f.gsub[name]))
-%     end
-% \stopluacode
-
-% \def\doifelsecurrentfonthasfeature#1%
-%   {\ctxlua{commands.doifelsecurrentfonthasfeature("#1")}}
-
 % \doifelsecurrentfonthasfeature{smcp}{YES}{NO}
 % \doifelsecurrentfonthasfeature{crap}{YES}{NO}
 % \doifelsecurrentfonthasfeature{kern}{YES}{NO}
+
+\def\doifelsecurrentfonthasfeature#1%
+  {\ctxlua{commands.doifelsecurrentfonthasfeature("#1")}}
+
+\protect \endinput
+

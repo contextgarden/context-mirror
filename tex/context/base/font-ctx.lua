@@ -153,7 +153,7 @@ end)
 
 function definers.registered(hash)
     local id = fonts.internalized[hash]
-    return id, id and fonts.identifiers[id]
+    return id, id and fontdata[id]
 end
 
 function definers.register(tfmdata,id)
@@ -569,6 +569,7 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
     if not tfmdata then
         report_define("unable to define %s as \\%s",name,cs)
         texsetcount("global","lastfontid",-1)
+        context.letvaluerelax(cs) -- otherwise the current definition takes the previous one
     elseif type(tfmdata) == "number" then
         if trace_defining then
             report_define("reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s)",
@@ -992,4 +993,15 @@ end
 
 function fonts.currentid()
     return currentfont() or 0
+end
+
+-- interfaces
+
+function commands.doifelsecurrentfonthasfeature(name) -- can be made faster with a supportedfeatures hash
+    local f = fontdata[currentfont()]
+    f = f and f.shared
+    f = f and f.otfdata
+    f = f and f.luatex
+    f = f and f.features
+    commands.doifelse(f and (f.gpos[name] or f.gsub[name]))
 end

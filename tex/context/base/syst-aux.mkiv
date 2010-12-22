@@ -2718,7 +2718,9 @@
 \long\def\sixthofsixarguments #1#2#3#4#5#6{#6}
 
 %D \macros
-%D   {globalletempty,letempty,letvalueempty,letgvalueempty}
+%D   {globalletempty,letempty,
+%D    letvalueempty,letgvalueempty,
+%D    letvaluerelax,letgvaluerelax}
 %D
 %D Trivial:
 
@@ -2727,6 +2729,8 @@
 
 \def\letvalueempty        #1{\expandafter\let\csname#1\endcsname\empty}
 \def\letgvalueempty#1{\global\expandafter\let\csname#1\endcsname\empty}
+\def\letvaluerelax        #1{\expandafter\let\csname#1\endcsname\relax}
+\def\letgvalurelax #1{\global\expandafter\let\csname#1\endcsname\relax}
 
 %D \macros
 %D   {wait}

@@ -129,6 +129,7 @@
 		<cd:variable name='content' value='محتوا'/>
 		<cd:variable name='contents' value='محتویات'/>
 		<cd:variable name='continue' value='ادامه'/>
+		<cd:variable name='continued' value='continued'/>
 		<cd:variable name='controls' value='کنترلها'/>
 		<cd:variable name='conversion' value='تبدیل'/>
 		<cd:variable name='current' value='جاری'/>

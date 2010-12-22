@@ -12465,6 +12465,10 @@ return {
    ["pe"]="ادامه",
    ["ro"]="continuu",
   },
+  ["continued"]={
+   ["en"]="continued",
+   ["nl"]="vervolgd",
+  },
   ["controls"]={
    ["cs"]="controls",
    ["de"]="controls",
