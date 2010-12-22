@@ -12,45 +12,53 @@ local insert, concat = table.insert, table.concat
 local tostring, next, setmetatable, rawget = tostring, next, setmetatable, rawget
 local lpegmatch = lpeg.match
 
-local nodecodes         = nodes.nodecodes
-local glyph_code        = nodecodes.glyph
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
+local nodecodes          = nodes.nodecodes
+local glyph_code         = nodecodes.glyph
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
 
-local hasattribute      = nodes.hasattribute
-local traversenodes     = node.traverse
-local texsetattribute   = tex.setattribute
-local texbox            = tex.box
+local hasattribute       = nodes.hasattribute
+local traversenodes      = node.traverse
+local texsetattribute    = tex.setattribute
+local texbox             = tex.box
 
-local a_marks           = attributes.private('marks')
+local a_marks            = attributes.private('marks')
 
-local trace_marks_set   = false  trackers.register("marks.set",    function(v) trace_marks_set = v end)
-local trace_marks_get   = false  trackers.register("marks.get",    function(v) trace_marks_get = v end)
-local trace_marks_all   = false  trackers.register("marks.detail", function(v) trace_marks_all = v end)
+local trace_marks_set    = false  trackers.register("marks.set",    function(v) trace_marks_set = v end)
+local trace_marks_get    = false  trackers.register("marks.get",    function(v) trace_marks_get = v end)
+local trace_marks_all    = false  trackers.register("marks.detail", function(v) trace_marks_all = v end)
 
-local report_marks      = logs.new("marks")
+local report_marks       = logs.new("marks")
 
-local variables         = interfaces.variables
-local v_first           = variables.first
-local v_last            = variables.last
-local v_previous        = variables.previous
-local v_next            = variables.next
-local v_firstpage       = variables.firstpage
-local v_lastpage        = variables.lastpage
-local v_previouspage    = variables.previouspage
-local v_nextpage        = variables.nextpage
-local v_current         = variables.current
-local v_default         = variables.default
-local v_page            = variables.page
-local v_all             = variables.all
+local variables          = interfaces.variables
 
-local structures        = structures
-local marks             = structures.marks
-local lists             = structures.lists
+local v_first            = variables.first
+local v_last             = variables.last
+local v_previous         = variables.previous
+local v_next             = variables.next
+local v_top              = variables.top
+local v_bottom           = variables.bottom
+local v_current          = variables.current
+local v_default          = variables.default
+local v_page             = variables.page
+local v_all              = variables.all
 
-local settings_to_array = utilities.parsers.settings_to_array
+local v_nocheck_suffix   = ":" .. variables.nocheck
 
-marks.data              = marks.data or { }
+local v_first_nocheck    = variables.first    .. v_nocheck_suffix
+local v_last_nocheck     = variables.last     .. v_nocheck_suffix
+local v_previous_nocheck = variables.previous .. v_nocheck_suffix
+local v_next_nocheck     = variables.next     .. v_nocheck_suffix
+local v_top_nocheck      = variables.top      .. v_nocheck_suffix
+local v_bottom_nocheck   = variables.bottom   .. v_nocheck_suffix
+
+local structures         = structures
+local marks              = structures.marks
+local lists              = structures.lists
+
+local settings_to_array  = utilities.parsers.settings_to_array
+
+marks.data               = marks.data or { }
 
 storage.register("structures/marks/data", marks.data, "structures.marks.data")
 
@@ -184,6 +192,11 @@ end
 
 for k, v in next, data do
     setmetatable(v, { __index = resolve } ) -- runtime loaded table
+end
+
+local function parentname(name)
+    local dn = data[name]
+    return dn and dn.parent or name
 end
 
 function marks.relate(name,chain)
@@ -349,11 +362,11 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
         local s = dn.set
         if first <= last and first <= r then
             if trace_marks_get and not notrace then
-                report_marks("reset: name=%s, reset=%s, index=%s",name,r,first)
+                report_marks("reset (first case): name=%s, first=%s, last=%s, reset=%s, index=%s",name,first,last,r,first)
             end
         elseif first >= last and last <= r then
             if trace_marks_get and not notrace then
-                report_marks("reset: name=%s, reset=%s, index=%s",name,r,last)
+                report_marks("reset (last case): name=%s, first=%s, last=%s, reset=%s, index=%s",name,first,last,r,last)
             end
         elseif not stack[first] or not stack[last] then
             if trace_marks_get and not notrace then
@@ -364,6 +377,9 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
             local top = stack[first]
             local fullchain = dn.fullchain
             if not fullchain or #fullchain == 0 then
+                if trace_marks_get and not notrace then
+                    report_marks("no full chain, trying: name=%s, first=%s, last=%s",name,first,last)
+                end
                 return resolve(name,first,last)
             else
                 if trace_marks_get and not notrace then
@@ -389,6 +405,9 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
                 end
                 local value, index, found = resolve(name,first,last,false,false,true)
                 if value ~= ""  then
+                    if trace_marks_get and not notrace then
+                        report_marks("following chain: %s",concat(fullchain," => "))
+                    end
                     for i=1,chainlength do
                         local cname = fullchain[i]
                         if data[cname].set > 0 and chaindata[i] ~= found[cname] then
@@ -452,17 +471,42 @@ local function doresolve(name,rangename,swap,df,dl,strict)
     else
         first, last = first + df, last + dl
     end
-    return resolve(name,first,last,strict)
+    local value, index, found = resolve(name,first,last,strict)
+    -- maybe something more
+    return value, index, found
 end
 
-methods[v_previous]     = function(name,range) return doresolve(name,range,false,-1,0,true ) end
-methods[v_previouspage] = function(name,range) return doresolve(name,range,false,-1,0,false) end
-methods[v_first]        = function(name,range) return doresolve(name,range,false, 0,0,true ) end
-methods[v_firstpage]    = function(name,range) return doresolve(name,range,false, 0,0,false) end
-methods[v_last]         = function(name,range) return doresolve(name,range,true , 0,0,true ) end
-methods[v_lastpage]     = function(name,range) return doresolve(name,range,true , 0,0,false) end
-methods[v_next]         = function(name,range) return doresolve(name,range,true , 0,1,true ) end
-methods[v_nextpage]     = function(name,range) return doresolve(name,range,true , 0,1,false) end
+methods[v_previous]         = function(name,range) return doresolve(name,range,false,-1,0,true ) end -- strict
+methods[v_top]              = function(name,range) return doresolve(name,range,false, 0,0,true ) end -- strict
+methods[v_bottom]           = function(name,range) return doresolve(name,range,true , 0,0,true ) end -- strict
+methods[v_next]             = function(name,range) return doresolve(name,range,true , 0,1,true ) end -- strict
+
+methods[v_previous_nocheck] = function(name,range) return doresolve(name,range,false,-1,0,false) end
+methods[v_top_nocheck]      = function(name,range) return doresolve(name,range,false, 0,0,false) end
+methods[v_bottom_nocheck]   = function(name,range) return doresolve(name,range,true , 0,0,false) end
+methods[v_next_nocheck]     = function(name,range) return doresolve(name,range,true , 0,1,false) end
+
+local function resolve(name,range,f_swap,l_swap,step,strict) -- we can have an offset
+    local f_value, f_index, f_found = doresolve(name,range,f_swap,0,0,strict)
+    local l_value, l_index, l_found = doresolve(name,range,l_swap,0,0,strict)
+    if f_found and l_found and l_index > f_index then
+        local name = parentname(name)
+        for i=f_index,l_index,step do
+            local si = stack[i]
+            local sn = si[name]
+            if sn and sn ~= false and sn ~= true and sn ~= "" and sn ~= f_value then
+                return sn, i, si
+            end
+        end
+    end
+    return f_value, f_index, f_found
+end
+
+methods[v_first        ] = function(name,range) return resolve(name,range,false,true, 1,true ) end -- strict
+methods[v_last         ] = function(name,range) return resolve(name,range,true,false,-1,true ) end -- strict
+
+methods[v_first_nocheck] = function(name,range) return resolve(name,range,false,true, 1,false) end
+methods[v_last_nocheck ] = function(name,range) return resolve(name,range,true,false,-1,false) end
 
 methods[v_current] = function(name,range) -- range is ignored here
     local top = stack[#topofstack]
