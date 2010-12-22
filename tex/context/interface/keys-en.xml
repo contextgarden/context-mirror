@@ -129,6 +129,7 @@
 		<cd:variable name='content' value='content'/>
 		<cd:variable name='contents' value='contents'/>
 		<cd:variable name='continue' value='continue'/>
+		<cd:variable name='continued' value='continued'/>
 		<cd:variable name='controls' value='controls'/>
 		<cd:variable name='conversion' value='conversion'/>
 		<cd:variable name='current' value='current'/>

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mult-aux'] = {
     license   = "see context related readme files"
 }
 
+local find = string.find
+
 interfaces.namespaces = interfaces.namespaces or { }
 local namespaces      = interfaces.namespaces
 local variables       = interfaces.variables
@@ -50,8 +52,10 @@ function namespaces.define(namespace,settings)
         if trace_namespaces then
             report_namespaces("namespace '%s' for '%s' uses parent '%s'",namespace,name,parent)
         end
-        parent = "\\" .. prefix .. parent
-        -- todo: check if defined
+        if not find(parent,"\\") then
+            parent = "\\" .. prefix .. parent
+            -- todo: check if defined
+        end
     end
     context.installparameterhandler(self,name)
     if trace_namespaces then

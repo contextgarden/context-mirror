@@ -129,6 +129,7 @@
 		<cd:variable name='content' value='obsah'/>
 		<cd:variable name='contents' value='obsah'/>
 		<cd:variable name='continue' value='pokracovat'/>
+		<cd:variable name='continued' value='continued'/>
 		<cd:variable name='controls' value='controls'/>
 		<cd:variable name='conversion' value='konverze'/>
 		<cd:variable name='current' value='aktualni'/>

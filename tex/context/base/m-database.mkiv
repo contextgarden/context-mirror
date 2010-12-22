@@ -18,34 +18,59 @@
 
 \unprotect
 
-% \ifdefined \installparameterhandler \else \input mult-aux.mkiv \fi
-
 \def\c!first       {first}
 \def\c!last        {last}
 \def\c!quotechar   {quotechar}
 \def\c!commentchar {commentchar}
 
-\def\????db{@@@@db}
+% \def\????db{@@@@db}
+%
+% \installparameterhandler  \????db {database}
+% \installcommandhandler    \????db {database} \????db % #3 == defaultroot
+% \installattributehandler  \????db {database}
+%
+% or:
+%
+% \installnamespace{db} \installcommandhandler\????db{database}\????db
+%
+% \appendtoks
+%   \getparameters
+%     [\????db\currentdatabase]
+%     [\c!separator={,},
+%      \c!quotechar=,
+%      \c!commentchar=,
+%      \c!setups=,
+%      \c!before=,
+%      \c!after=,
+%      \c!first=,
+%      \c!last=,
+%      \c!left=,
+%      \c!right=,
+%      \c!command=]%
+% \to \everypresetdatabase
+%
+% or:
 
-\installparameterhandler  \????db {database}
-\installcommandhandler    \????db {database} \????db % #3 == defaultroot
-\installattributehandler  \????db {database}
+\definenamespace
+  [db]
+  [type=module,
+   comment=database module,
+   version=1,
+   name=database,
+   parent=db,
+   setup=yes,
+   command=yes]
 
-\appendtoks
-  \getparameters
-    [\????db\currentdatabase]
-    [\c!separator={,},
-     \c!quotechar=,
-     \c!commentchar=,
-     \c!setups=,
-     \c!before=,
-     \c!after=,
-     \c!first=,
-     \c!last=,
-     \c!left=,
-     \c!right=,
-     \c!command=]%
-\to \everypresetdatabase
+\setupdatabase
+  [\c!separator={,},
+   \c!quotechar=,
+   \c!commentchar=,
+   \c!before=,
+   \c!after=,
+   \c!first=,
+   \c!last=,
+   \c!left=,
+   \c!right=]
 
 % \let\currentdatabase\empty \the\everypresetdatabase % or just:
 
@@ -95,6 +120,10 @@
 
 \def\processseparatedfile[#1][#2]%
   {\processdatabasefile[#1][#2]}
+
+\def\startseparatedlist[#1]% to be interfaced
+  {\def\stopseparatedlist{\processdatabasebuffer[#1][#1]}%
+   \dostartbuffer[#1][startseparatedlist][stopseparatedlist]}
 
 \protect
 
@@ -203,5 +232,10 @@ d e f
 a,b,c,č
 d,e,f,š
 \stopCSV
+
+\startseparatedlist[CSV]
+a,b,c,č
+d,e,f,š
+\stopseparatedlist
 
 \stoptext

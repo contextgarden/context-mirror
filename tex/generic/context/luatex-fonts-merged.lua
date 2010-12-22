@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/21/10 10:50:53
+-- merge date  : 12/22/10 14:07:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -15383,7 +15383,7 @@ function tfm.read(specification)
         end
     end
     if not tfmtable then
-        report_define("font with name %s is not found",specification.name)
+        report_define("font with asked name '%s' is not found using lookup '%s'",specification.name,specification.lookup)
     end
     return tfmtable
 end

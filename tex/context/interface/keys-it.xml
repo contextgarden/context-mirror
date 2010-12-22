@@ -129,6 +129,7 @@
 		<cd:variable name='content' value='indice'/>
 		<cd:variable name='contents' value='indici'/>
 		<cd:variable name='continue' value='continua'/>
+		<cd:variable name='continued' value='continued'/>
 		<cd:variable name='controls' value='controlli'/>
 		<cd:variable name='conversion' value='coversione'/>
 		<cd:variable name='current' value='corrente'/>
