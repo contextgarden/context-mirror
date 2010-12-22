@@ -38,19 +38,7 @@ function context.tabulaterowbold(...) tabulaterow("bold",...) end
 function context.tabulaterowtype(...) tabulaterow("type",...) end
 function context.tabulaterowtyp (...) tabulaterow("typ", ...) end
 
-function context.concat(t,separator)
-    local done = false
-    for i=1,#t do
-        local ti = t[i]
-        if ti ~= "" then
-            if done then
-                context(separator)
-            end
-            context(t)
-            done = true
-        end
-    end
-end
+-- these will move up, just after cld definitions
 
 function context.char(k) -- todo: if catcode == letter or other then just the utf
     if type(k) == "table" then

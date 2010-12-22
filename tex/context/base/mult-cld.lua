@@ -727,3 +727,19 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 --~ end
 --~
 --~ context.direct(something)
+
+-- helpers:
+
+function context.concat(t,separator)
+    local done = false
+    for i=1,#t do
+        local ti = t[i]
+        if ti ~= "" then
+            if done then
+                context(separator)
+            end
+            context(ti)
+            done = true
+        end
+    end
+end
