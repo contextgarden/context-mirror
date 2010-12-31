@@ -83,3 +83,23 @@ function context.hrule(w,h,d,dir)
 end
 
 context.vrule = context.hrule
+
+--~ local hbox, bgroup, egroup = context.hbox, context.bgroup, context.egroup
+
+--~ function context.hbox(a,...)
+--~     if type(a) == "table" then
+--~         local s = { }
+--~         if a.width then
+--~             s[#s+1] = "to " .. a.width -- todo: check for number
+--~         elseif a.spread then
+--~             s[#s+1] = "spread " .. a.spread -- todo: check for number
+--~         end
+--~         -- todo: dir, attr etc
+--~         hbox(false,table.concat(s," "))
+--~         bgroup()
+--~         context(string.format(...))
+--~         egroup()
+--~     else
+--~         hbox(a,...)
+--~     end
+--~ end

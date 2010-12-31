@@ -49,7 +49,7 @@ local function registermessage(font,char,message)
     end
 end
 
-local registermessage = fonts.registermessage
+fonts.registermessage = registermessage
 
 function checkers.missing(head)
     if checkers.enabled then

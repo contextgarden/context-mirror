@@ -1450,7 +1450,7 @@
      \@@beginfontdef
      \doifelse{#2}\s!default
        {\getparameters[\??ft\s!default][#3]}
-       {\normalizebodyfontsize#2\to\tempbodyfontsize
+       {\edef\tempbodyfontsize{\thenormalizedbodyfontsize{#2}}%
         \addtocommalist\tempbodyfontsize\bodyfontenvironmentlist
         \@EA\dododefinebodyfontenvironment\@EA[\tempbodyfontsize][#1][#3]}%
      \@@endfontdef
@@ -1473,7 +1473,7 @@
      % but some day we will clean this up anyway
      \def\docommand##1%
        {\scratchdimen\csname\??ft\s!default##1\endcsname\dimexpr#1\relax
-        \normalizebodyfontsize\scratchdimen\to\tempbodyfontsize
+        \edef\tempbodyfontsize{\thenormalizedbodyfontsize\scratchdimen}%
         \letvalue{\??ft#2#1##1}\tempbodyfontsize}%
      \processcommacommand[\fontrelativesizelist]\docommand
      \copyparameters
@@ -1518,21 +1518,60 @@
 %D So, apart from an occasional switch, one should define an
 %D environment at the outer level.
 
-\def\checkbodyfontenvironment[#1]%
-  {\definebodyfontenvironment[\fontclass][#1][]}
+% \def\checkbodyfontenvironment[#1]%
+%   {\definebodyfontenvironment[\fontclass][#1][]}
+%
+% \def\checkbodyfontenvironment[#1]%
+%   {\ifcsname\??ft\fontclass#1\c!em\endcsname
+%       % we test for em as we assume it to be set
+%    \else
+%       \definebodyfontenvironment[\fontclass][#1][]%
+%    \fi}
+%
+% will be adapted with parent chain:
 
 \def\checkbodyfontenvironment[#1]%
-  {\ifcsname\??ft\fontclass#1\c!em\endcsname
-      % we test for em as we assume it to be set
-   \else
-      \definebodyfontenvironment[\fontclass][#1][]%
-   \fi}
+  {\ifcsname\??ft          #1\c!em\endcsname\else\docheckbodyfontenvironment\empty    {#1}\fi
+   \ifcsname\??ft\fontclass#1\c!em\endcsname\else\docheckbodyfontenvironment\fontclass{#1}\fi}
+
+\def\docheckbodyfontenvironment#1#2% class size (simplified version of definebodyfontenvironment)
+   {\@@beginfontdef
+    \edef\tempbodyfontsize{\thenormalizedbodyfontsize{#2}}%
+    \addtocommalist\tempbodyfontsize\bodyfontenvironmentlist
+    \def\docommand##1% text script scriptscript x xx big small
+      {\setevalue{\??ft#1\tempbodyfontsize##1}%
+         {\thenormalizedbodyfontsize{\csname\??ft\s!default##1\endcsname\dimexpr\tempbodyfontsize\relax}}}%
+    \processcommacommand[\fontrelativesizelist]\docommand
+    \copyparameters % can inherit
+      [\??ft#1\tempbodyfontsize][\??ft\s!default]
+      [\c!interlinespace,\c!em]%
+%     \ifproductionrun
+      \ifcsname\@size@\tempbodyfontsize\endcsname \else
+        \letvalueempty{\@size@\tempbodyfontsize}% prevent loop
+        \pushmacro\fontclass
+        \edef\fontclass{#1}%
+        \normalexpanded{\defineunknownfont{\tempbodyfontsize}}% we can also inherit here
+        \popmacro\fontclass
+      \fi
+%     \fi
+    \setevalue{\@size@#1}{\noexpand\docompletefontswitch[#1]}%
+    \@@endfontdef}
 
 % this one already catches both define/setup
 
 \let\setupbodyfontenvironment\definebodyfontenvironment
 
 %D Just a couple of interface macros:
+
+% todo:
+%
+% \letvalueempty{\??ft\s!empty}
+%
+% \def\currentbodyfontvariable#1%
+%   {\csname\??ft
+%      \ifcsname\??ft\fontclass#1\endcsname\fontclass#1\else
+%      \ifcsname\??ft          #1\endcsname          #1\else \s!empty \fi
+%    \fi}
 
 \def\bodyfontvariable#1%
   {\??ft\ifcsname\??ft\fontclass#1\endcsname\fontclass\fi#1}
@@ -1805,7 +1844,7 @@
 \def\dodefineunknownfont#1#2%
   {\ifcsname\??ft\s!default#2\endcsname
      \donetrue
-     \normalizebodyfontsize\csname\??ft\s!default#2\endcsname\dimexpr#1\relax\to\tempbodyfontsize
+     \edef\tempbodyfontsize{\thenormalizedbodyfontsize{\csname\??ft\s!default#2\endcsname\dimexpr#1\relax}}%
      \letvalue{\??ft#1#2}\tempbodyfontsize
    \fi}
 
@@ -1930,9 +1969,9 @@
 \def\thenormalizedbodyfontsize#1%
   {\ctxlua{fonts.nbfs(\number\dimexpr#1\relax,\number\fontdigits)}}
 
-\normalizebodyfontsize\bodyfontsize\to\normalizedglobalbodyfontsize
-\normalizebodyfontsize\bodyfontsize\to\normalizedlocalbodyfontsize
-\normalizebodyfontsize\bodyfontsize\to\normalizedbodyfontsize
+\edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
+\edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
+\edef\normalizedbodyfontsize      {\thenormalizedbodyfontsize\bodyfontsize}
 
 %D \macros
 %D   {fontstyle,fontalternative,fontsize}
@@ -1976,8 +2015,8 @@
    \ifcsname\@size@#1\endcsname
      \csname\@size@#1\endcsname
      \localbodyfontsize#1\relax
-     \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
    % \edef\fontbody{\fontbody}% to be tested but we can clean up mkiv further
+     \edef\normalizedbodyfontsize{\thenormalizedbodyfontsize\localbodyfontsize}%
      \checkbodyfontenvironment[\normalizedbodyfontsize]%
    \else
      \showmessage\m!fonts4{#1}%
@@ -2060,7 +2099,7 @@
   {\resetpreloadfonts
    \usetypescript[modern]%
    \setuptypeface[modern]%
-   %\setuptypeface[\s!default]%
+  %\setupbodyfont[modern]%
    \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}
 
 \def\resetpreloadfonts
@@ -2156,7 +2195,7 @@
    \fi\fi}
 
 \def\dodododosetfont#1#2#3% #1 = set/switch state
-  {\normalizebodyfontsize#2\to\normalizedsetfont
+  {\edef\normalizedsetfont{\thenormalizedbodyfontsize{#2}}%
    \ifcsname\@size@\normalizedsetfont\endcsname \else
      \defineunknownfont{#2}%
    \fi
@@ -2222,18 +2261,6 @@
    \setxvalue{\fontclass#1\s!goodies  }{#5}}
 
 \settrue\autotypescripts
-
-% \def\trycurrentfontclass#1%
-%   {\ifconditional\autotypescripts
-%      \usetypescript[#1]%
-%      \ifcsname\@fontclass@#1\endcsname
-%        \edef\fontclass{#1}%
-%      \else
-%        \letvalueempty{\@no@fontclass@#1}%
-%      \fi
-%    \else
-%      \letvalueempty{\@no@fontclass@#1}%
-%    \fi}
 
 \def\trycurrentfontclass#1%
   {\ifconditional\autotypescripts
@@ -2646,7 +2673,7 @@
   {\bodyfontsize#1\relax
    \dimensiontocount\bodyfontsize\bodyfontpoints % rounded, still used in m-chart
    \edef\bodyfontfactor{\withoutpt\the\bodyfontsize}%
-   \normalizebodyfontsize\bodyfontsize\to\normalizedbodyfontsize
+   \edef\normalizedbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}%
    \dosetbodyfontface \textface         \s!text
    \dosetbodyfontface \scriptface       \s!script
    \dosetbodyfontface \scriptscriptface \s!scriptscript}
@@ -2695,7 +2722,7 @@
   {\doifsomething{#1}
      {\dosetfont1{#1}%
       \globalbodyfontsize\localbodyfontsize
-      \normalizebodyfontsize\globalbodyfontsize\to\normalizedglobalbodyfontsize
+      \edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\globalbodyfontsize}%
       \let\globalfontstyle\fontstyle
       \ifproductionrun
         \the\everybodyfont

@@ -508,7 +508,7 @@ end
 
 commands.enablecolor        = colors.enable
 commands.enabletransparency = transparencies.enable
-commands.enablecolorintent  = colorintents.enable
+commands.enablecolorintents = colorintents.enable
 
 function commands.registercolor       (...) context(colors        .register(...)) end
 function commands.registertransparency(...) context(transparencies.register(...)) end
