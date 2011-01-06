@@ -509,8 +509,8 @@ methods[v_first_nocheck] = function(name,range) return resolve(name,range,false,
 methods[v_last_nocheck ] = function(name,range) return resolve(name,range,true,false,-1,false) end
 
 methods[v_current] = function(name,range) -- range is ignored here
-    local top = stack[#topofstack]
-    return top and top[name] or ""
+    local top = stack[topofstack]
+    return top and top[parentname(name)] or ""
 end
 
 local function fetched(name,range,method)

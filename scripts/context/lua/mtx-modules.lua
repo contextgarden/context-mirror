@@ -118,7 +118,7 @@ local function source_to_ted(inpname,outname,filetype)
     return true
 end
 
-local suffixes = table.tohash { 'tex','mkii','mkiv','mp' }
+local suffixes = table.tohash { 'tex','mkii','mkiv', 'mkvi', 'mp' }
 
 function scripts.modules.process(runtex)
     local processed = { }

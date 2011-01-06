@@ -18,7 +18,9 @@
 %D better to fix your source.
 
 \startluacode
-    translators = { }
+    local translators = { }
+
+    moduledata.translators = translators
 
     local compiled, list = nil, nil
 
@@ -43,27 +45,35 @@
         end
     end
 
+    local textlineactions = resolvers.openers.helpers.textlineactions
+
+    utilities.sequencers.appendaction(textlineactions,"after","moduledata.translators.translate")
+
+    function translators.enable()
+        utilities.sequencers.enableaction(textlineactions,"moduledata.translators.translate")
+    end
+
+    function translators.disable()
+        utilities.sequencers.disableaction(textlineactions,"moduledata.translators.translate")
+    end
+
     function translators.reset(s)
-        resolvers.install_text_filter("user",nil)
+        translators.enable()
         list, compiled = nil, nil
     end
-    function translators.enable(s)
-        resolvers.install_text_filter("user",translators.translate)
-    end
-    function translators.disable(s)
-        resolvers.install_text_filter("user",nil)
-    end
+
+    translators.disable()
 \stopluacode
 
 \unprotect
 
 \def\translateinput{\dodoubleargument\dotranslateinput}
 
-\def\dotranslateinput[#1][#2]{\ctxlua{translators.register(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\def\dotranslateinput[#1][#2]{\ctxlua{moduledata.translators.register(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
-\def\resetinputtranslation  {\ctxlua{translators.reset()}}
-\def\enableinputtranslation {\ctxlua{translators.enable()}}
-\def\disableinputtranslation{\ctxlua{translators.disable()}}
+\def\resetinputtranslation  {\ctxlua{moduledata.translators.reset()}}
+\def\enableinputtranslation {\ctxlua{moduledata.translators.enable()}}
+\def\disableinputtranslation{\ctxlua{moduledata.translators.disable()}}
 
 \def\readtranslatedfile#1%
   {\enableinputtranslation

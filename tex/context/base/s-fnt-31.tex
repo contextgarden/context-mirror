@@ -1,0 +1,144 @@
+\startluacode
+
+local format, upper, find = string.format, string.upper, string.find
+local chardata = characters.data
+
+function fonts.tracers.coverage(fontfiles,pattern) -- todo: patterns
+
+    local present, names = { }, { }
+    local pattern = pattern and upper(pattern)
+
+    for i=1,#fontfiles do
+        local fontname = format("testfont-%s",i)
+        local fontfile = fontfiles[i]
+        local fontsize = tex.dimen.bodyfontsize
+        local id, fontdata = fonts.definers.define {
+            name = fontfile,
+            size = fontsize,
+            cs   = fontname,
+        }
+        for k, v in next, fontdata.characters do
+            present[k] = true
+        end
+        names[i] = fontname
+    end
+
+    context.starttabulate {"|Tr" .. string.rep("|l",#names) .. "|" }
+        for i=1,#names do
+            context.NC()
+            context(i)
+            context.NC()
+         -- context.getvalue(names[i])
+            context.type(fontfiles[i])
+            context.NC()
+            context.NR()
+        end
+    context.stoptabulate()
+
+    context.starttabulate {"|Tl" .. string.rep("|c",#names) .. "|Tl|" }
+        context.NC()
+        context.type("unicode")
+        context.NC()
+        for i=1,#names do
+            context.type(i)
+            context.NC()
+        end
+        context.type("description")
+        context.NC()
+        context.NR()
+        context.HL()
+        for k, v in table.sortedpairs(present) do
+            local description = chardata[k].description
+            if not pattern or (pattern == k) or (description and find(description,pattern)) then
+                context.NC()
+                context(format("%05X",k))
+                context.NC()
+                for i=1,#names do
+                    context.getvalue(names[i])
+                    context.char(k)
+                    context.NC()
+                end
+                context(description)
+                context.NC()
+                context.NR()
+            end
+        end
+    context.stoptabulate()
+
+end
+
+\stopluacode
+
+\doifnotmode{demo}{\endinput}
+
+\setupbodyfont[10pt]
+
+\setuplayout
+  [backspace=1cm,
+   topspace=1cm,
+   footer=1cm,
+   header=0cm,
+   height=middle,
+   width=middle]
+
+\starttext
+
+% \startluacode
+%     fonts.tracers.coverage {
+%         "pirat.ttf",
+%     }
+% \stopluacode
+
+% \startluacode
+%     fonts.tracers.coverage {
+%      -- "cambria.ttf",
+%         "lbr.afm",
+%         "LucidaBrightRegular.ttf",
+%         "lbi.afm",
+%         "LucidaBrightItalic.ttf",
+%         "lbd.afm",
+%         "LucidaBrightDemiBold.ttf",
+%         "lbdi.afm",
+%         "LucidaBrightDemiItalic.ttf",
+%     }
+% \stopluacode
+
+% \startluacode
+%     fonts.tracers.coverage ( {
+%         "LucidaBrightRegular.ttf",
+%         "cambria.ttf",
+%         "iwona-regular.otf",
+%         "texgyrepagella-regular.otf",
+%         "texgyretermes-regular.otf",
+%         "texgyrebonum-regular.otf",
+%         "antpolt-regular.otf",
+%     }, "OGONEK")
+% \stopluacode
+
+% \loadfontgoodies[lucida-math]
+% \loadfontgoodies[lm-math]
+
+% \startluacode
+%     fonts.tracers.coverage {
+%         "LucidaBrightRegular.ttf",
+%         "LucidaBrightOne@lucida-math",
+%         "cambria.ttc(Cambria Math)",
+%         "xits-math.otf",
+%         "LMMath10-Regular@lmroman10-math",
+%     }
+% \stopluacode
+
+\loadfontgoodies[px-math]
+\loadfontgoodies[lm-math]
+
+\startluacode
+    fonts.tracers.coverage {
+        "cambria.ttc(Cambria Math)",
+        "xits-math.otf",
+        "LMMath10-Regular@lmroman10-math",
+        "pxmath@px-math",
+        "LinLibertine_Re-4.7.5.otf",
+    }
+\stopluacode
+
+\stoptext

@@ -44,10 +44,11 @@ local lpegmatch = lpeg.match
 local utfchar = utf.char
 local insert, remove = table.insert, table.remove
 
-local trace_export = false  trackers.register  ("structures.export",           function(v) trace_export = v end)
-local trace_spaces = false  trackers.register  ("structures.export.spaces",    function(v) trace_spaces = v end)
-local trace_tree   = false  trackers.register  ("structures.export.showtree",  function(v) trace_tree   = v end)
-local less_state   = false  directives.register("structures.export.lessstate", function(v) less_state   = v end)
+local trace_export = false  trackers.register  ("structures.export",            function(v) trace_export = v end)
+local trace_spaces = false  trackers.register  ("structures.export.spaces",     function(v) trace_spaces = v end)
+local trace_tree   = false  trackers.register  ("structures.export.showtree",   function(v) trace_tree   = v end)
+local less_state   = false  directives.register("structures.export.lessstate",  function(v) less_state   = v end)
+local page_breaks  = false  directives.register("structures.export.pagebreaks", function(v) page_breaks  = v end)
 
 local report_export = logs.new("export")
 
@@ -130,7 +131,7 @@ local last          = nil
 local lastpar       = nil
 
 local joiner_1      = " "
-local joiner_2      = " " -- todo: test if this one can alwasy be ""
+local joiner_2      = " " -- todo: test if this one can always be ""
 local joiner_3      = " "
 local joiner_4      = " "
 local joiner_5      = " "
@@ -153,7 +154,8 @@ local spaces = { } -- watch how we also moved the -1 in depth-1 to the creator
 
 setmetatable(spaces, { __index = function(t,k) t[k] = rep("  ",k-1) return t[k] end } )
 
-properties.vspace = { export = "break", nature = "display" }
+properties.vspace = { export = "break",     nature = "display" }
+properties.pbreak = { export = "pagebreak", nature = "display" }
 
 local function makebreak(entry)
     nofbreaks = nofbreaks + 1
@@ -717,7 +719,7 @@ local function flushtree(data)
             linedone = false
         elseif not di.collapsed then
             local element = di.element
-            if element == "break" then
+            if element == "break" or element == "pagebreak" then
                 emptytag(element,nature,di.depth)
             else
                 local nature, depth = di.nature, di.depth
@@ -890,7 +892,9 @@ local function collectresults(head,list,p)
         local id = n.id -- 14: image, 8: literal (mp)
         if id == glyph_code then
             local at = has_attribute(n,a_tagged)
-            if at then
+            if not at then
+                report_export("skipping character: 0x%05X %s (no attribute)",n.char,utfchar(n.char))
+            else
                 -- we could add tonunicodes for ligatures
                 local components =  n.components
                 if components then
@@ -942,13 +946,15 @@ local function collectresults(head,list,p)
                             fc = fc and fc[c]
                             if fc then
                                 local u = fc.tounicode
-                                if u then
+                                if u and u ~= "" then
                                     for s in gmatch(u,"....") do -- is this ok?
                                         result[#result+1] = utfchar(tonumber(s,16))
                                     end
                                 else
                                     result[#result+1] = utfchar(c)
                                 end
+                            else -- weird, happens in hz (we really need to get rid of the pseudo fonts)
+                                result[#result+1] = utfchar(c)
                             end
                         else
                             result[#result+1] = utfchar(c)
@@ -1023,6 +1029,13 @@ function nodes.handlers.export(head)
     if trace_spaces then
         joiner_1 = "<S1/>"  joiner_2 = "<S2/>"  joiner_3 = "<S3/>"  joiner_4 = "<S4/>"  joiner_5 = "<S5/>"
         joiner_6 = "<S6/>"  joiner_7 = "<S7/>"  joiner_8 = "<S8/>"  joiner_9 = "<S9/>"  joiner_0 = "<S0/>"
+    end
+    if result then
+        -- maybe we need a better test for what is in result so far
+        if page_breaks then
+            joiner_0 = "<pagebreak/>"
+        end
+        result[#result+1] = joiner_0
     end
     collectresults(head)
     -- no flush here, pending page stuff
