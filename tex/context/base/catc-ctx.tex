@@ -56,8 +56,8 @@
     \catcode`\$   =  3
     \catcode`\&   =  4
     \catcode`\#   =  6
-    \catcode`\^   =  7
-    \catcode`\_   =  8
+    \catcode`\^   =  7 % soon we will also get rid of the usage of ^^ so then ^ can also be other
+    \catcode`\_   = \ifnum\texengine=\luatexengine 11 \else 8 \fi
     \catcode`\%   = 14
     \catcode`\@   = 11
     \catcode`\!   = 11
@@ -164,7 +164,6 @@
     \catcode`\<   =  1
     \catcode`\>   =  2
 \stopcatcodetable
-
 
 \startcatcodetable \typcatcodesc
     \catcode`\^^I = 12

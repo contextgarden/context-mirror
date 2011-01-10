@@ -42,12 +42,9 @@
 \def\dodoplaceexternalfigure[#1][#2][#3][#4][#5]%
   {\bgroup
    \dostarttagged\t!image\empty
-   \pushmacro\textunderscore
-   \edef\textunderscore{\string_}% brrr, temp hack, still needed?
+   \let\textunderscore\letterunderscore % {\string _} % space needed as _ is now letter in unprotected mode
    \calculateexternalfigure[][#1][#2][#3][#4][#5]% [] is dummy dwcomp
-   \popmacro\textunderscore
-   \global\setbox\foundexternalfigure\naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
-   \box\foundexternalfigure
+   \naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
    \dostoptagged
    \egroup}
 

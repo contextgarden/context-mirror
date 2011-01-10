@@ -50379,6 +50379,8 @@ characters.data={
   description="EULER CONSTANT",
   direction="l",
   linebreak="al",
+  mathclass="variable",
+  mathname="Eulerconst",
   specials={ "compat", 0x0190 },
   unicodeslot=0x2107,
  },
@@ -50435,6 +50437,8 @@ characters.data={
   description="PLANCK CONSTANT",
   direction="l",
   linebreak="al",
+  mathclass="variable",
+  mathname="Plankconst",
   specials={ "font", 0x0068 },
   unicodeslot=0x210E,
  },
@@ -50687,6 +50691,8 @@ characters.data={
   description="TURNED GREEK SMALL LETTER IOTA",
   direction="on",
   linebreak="al",
+  mathclass="variable",
+  mathname="turnediota",
   unicodeslot=0x2129,
  },
  [0x212A]={
@@ -50802,7 +50808,7 @@ characters.data={
   description="BET SYMBOL",
   direction="l",
   linebreak="al",
-  mathclass="ord",
+  mathclass="default",
   mathname="beth",
   specials={ "compat", 0x05D1 },
   unicodeslot=0x2136,
@@ -50812,7 +50818,7 @@ characters.data={
   description="GIMEL SYMBOL",
   direction="l",
   linebreak="al",
-  mathclass="ord",
+  mathclass="default",
   mathname="gimel",
   specials={ "compat", 0x05D2 },
   unicodeslot=0x2137,
@@ -50822,7 +50828,7 @@ characters.data={
   description="DALET SYMBOL",
   direction="l",
   linebreak="al",
-  mathclass="ord",
+  mathclass="default",
   mathname="daleth",
   specials={ "compat", 0x05D3 },
   unicodeslot=0x2138,
@@ -50904,6 +50910,8 @@ characters.data={
   description="TURNED SANS-SERIF CAPITAL L",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+--mathname="sansLturned",-- We need a proper name
   unicodeslot=0x2142,
  },
  [0x2143]={
@@ -50911,6 +50919,8 @@ characters.data={
   description="REVERSED SANS-SERIF CAPITAL L",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+--mathname="sansLmirrored",-- We need a proper name
   unicodeslot=0x2143,
  },
  [0x2144]={
@@ -50918,6 +50928,8 @@ characters.data={
   description="TURNED SANS-SERIF CAPITAL Y",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+--mathname="Yup",-- We need a proper name
   unicodeslot=0x2144,
  },
  [0x2145]={
@@ -50975,6 +50987,8 @@ characters.data={
   description="PROPERTY LINE",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="PropertyLine",
   unicodeslot=0x214A,
  },
  [0x214B]={
@@ -50982,6 +50996,8 @@ characters.data={
   description="TURNED AMPERSAND",
   direction="on",
   linebreak="al",
+  mathclass="bin",
+  mathname="upand",
   unicodeslot=0x214B,
  },
  [0x214C]={
@@ -51654,6 +51670,8 @@ characters.data={
   description="LEFTWARDS WAVE ARROW",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="leftwavearrow",
   unicodeslot=0x219C,
  },
  [0x219D]={
@@ -51661,6 +51679,8 @@ characters.data={
   description="RIGHTWARDS WAVE ARROW",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="rightwavearrow",
   unicodeslot=0x219D,
  },
  [0x219E]={
@@ -51678,7 +51698,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="twoheadupleftarrow",
+  mathname="twoheaduparrow",
   unicodeslot=0x219F,
  },
  [0x21A0]={
@@ -51696,7 +51716,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="twoheaddownleftarrow",
+  mathname="twoheaddownarrow",
   unicodeslot=0x21A1,
  },
  [0x21A2]={
@@ -51722,6 +51742,8 @@ characters.data={
   description="LEFTWARDS ARROW FROM BAR",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="mapsfrom",
   unicodeslot=0x21A4,
  },
  [0x21A5]={
@@ -51729,6 +51751,8 @@ characters.data={
   description="UPWARDS ARROW FROM BAR",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="mapsup",
   unicodeslot=0x21A5,
  },
  [0x21A6]={
@@ -51745,6 +51769,8 @@ characters.data={
   description="DOWNWARDS ARROW FROM BAR",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="mapsdown",
   unicodeslot=0x21A7,
  },
  [0x21A8]={
@@ -51753,6 +51779,8 @@ characters.data={
   description="UP DOWN ARROW WITH BASE",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="updownarrowbar",
   unicodeslot=0x21A8,
  },
  [0x21A9]={
@@ -51815,6 +51843,8 @@ characters.data={
   description="DOWNWARDS ZIGZAG ARROW",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="downzigzagarrow",
   unicodeslot=0x21AF,
  },
  [0x21B0]={
@@ -51841,7 +51871,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="dlsh", -- from mathabx
+  mathname="Ldsh",
   unicodeslot=0x21B2,
  },
  [0x21B3]={
@@ -51850,7 +51880,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="drsh", -- from mathabx
+  mathname="Rdsh",
   unicodeslot=0x21B3,
  },
  [0x21B4]={
@@ -51858,6 +51888,8 @@ characters.data={
   description="RIGHTWARDS ARROW WITH CORNER DOWNWARDS",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="linefeed",
   unicodeslot=0x21B4,
  },
  [0x21B5]={
@@ -51867,6 +51899,8 @@ characters.data={
   description="DOWNWARDS ARROW WITH CORNER LEFTWARDS",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="carriagereturn",
   unicodeslot=0x21B5,
  },
  [0x21B6]={
@@ -51893,6 +51927,8 @@ characters.data={
   description="NORTH WEST ARROW TO LONG BAR",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="barovernorthwestarrow",
   unicodeslot=0x21B8,
  },
  [0x21B9]={
@@ -51901,6 +51937,8 @@ characters.data={
   description="LEFTWARDS ARROW TO BAR OVER RIGHTWARDS ARROW TO BAR",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="barleftarrowrightarrowba", -- This is a strange name
   unicodeslot=0x21B9,
  },
  [0x21BA]={
@@ -51908,8 +51946,10 @@ characters.data={
   description="ANTICLOCKWISE OPEN CIRCLE ARROW",
   direction="on",
   linebreak="al",
-  mathclass="relation",
-  mathname="circlearrowright",
+  mathspec = {
+    {class="relation", name="circlearrowright"},
+    {class="relation", name="acwopencirclearrow"},
+  },
   unicodeslot=0x21BA,
  },
  [0x21BB]={
@@ -51917,8 +51957,10 @@ characters.data={
   description="CLOCKWISE OPEN CIRCLE ARROW",
   direction="on",
   linebreak="al",
-  mathclass="relation",
-  mathname="circlearrowleft",
+  mathspec = {
+    {class="relation", name="circlearrowleft"},
+    {class="relation", name="cwopencirclearrow"},
+  },
   unicodeslot=0x21BB,
  },
  [0x21BC]={
@@ -52246,6 +52288,8 @@ characters.data={
   description="UPWARDS ARROW WITH DOUBLE STROKE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="nHuparrow", -- strange name
   unicodeslot=0x21DE,
  },
  [0x21DF]={
@@ -52253,6 +52297,8 @@ characters.data={
   description="DOWNWARDS ARROW WITH DOUBLE STROKE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="nHdownarrow", -- strange name
   unicodeslot=0x21DF,
  },
  [0x21E0]={
@@ -52261,7 +52307,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="dashleftarrow",
+  mathname="leftdasharrow",
   unicodeslot=0x21E0,
  },
  [0x21E1]={
@@ -52270,7 +52316,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="dashuparrow",
+  mathname="updasharrow",
   unicodeslot=0x21E1,
  },
  [0x21E2]={
@@ -52279,7 +52325,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-    { class="relation", name="dashrightarrow" } ,
+    { class="relation", name="rightdasharrow" } ,
     { class="relation", name="dasharrow" } ,
   },
   unicodeslot=0x21E2,
@@ -52290,7 +52336,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="dashdownarrow",
+  mathname="downdasharrow",
   unicodeslot=0x21E3,
  },
  [0x21E4]={
@@ -52298,6 +52344,8 @@ characters.data={
   description="LEFTWARDS ARROW TO BAR",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="barleftarrow",
   unicodeslot=0x21E4,
  },
  [0x21E5]={
@@ -52305,6 +52353,8 @@ characters.data={
   description="RIGHTWARDS ARROW TO BAR",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="rightarrowbar",
   unicodeslot=0x21E5,
  },
  [0x21E6]={
@@ -52312,6 +52362,8 @@ characters.data={
   description="LEFTWARDS WHITE ARROW",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="leftwhitearrow",
   unicodeslot=0x21E6,
  },
  [0x21E7]={
@@ -52320,6 +52372,8 @@ characters.data={
   description="UPWARDS WHITE ARROW",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="upwhitearrow",
   unicodeslot=0x21E7,
  },
  [0x21E8]={
@@ -52327,6 +52381,8 @@ characters.data={
   description="RIGHTWARDS WHITE ARROW",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="rightwhitearrow",
   unicodeslot=0x21E8,
  },
  [0x21E9]={
@@ -52334,6 +52390,8 @@ characters.data={
   description="DOWNWARDS WHITE ARROW",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="downwhitearrow",
   unicodeslot=0x21E9,
  },
  [0x21EA]={
@@ -52348,6 +52406,8 @@ characters.data={
   description="UPWARDS WHITE ARROW ON PEDESTAL",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="whitearrowupfrombar",
   unicodeslot=0x21EB,
  },
  [0x21EC]={
@@ -52411,6 +52471,8 @@ characters.data={
   description="RIGHT ARROW WITH SMALL CIRCLE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="circleonrightarrow",
   unicodeslot=0x21F4,
  },
  [0x21F5]={
@@ -52418,6 +52480,8 @@ characters.data={
   description="DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="downuparrows",
   unicodeslot=0x21F5,
  },
  [0x21F6]={
@@ -52425,6 +52489,8 @@ characters.data={
   description="THREE RIGHTWARDS ARROWS",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="rightthreearrows",
   unicodeslot=0x21F6,
  },
  [0x21F7]={
@@ -52432,6 +52498,8 @@ characters.data={
   description="LEFTWARDS ARROW WITH VERTICAL STROKE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="nvleftarrow",
   unicodeslot=0x21F7,
  },
  [0x21F8]={
@@ -52439,6 +52507,8 @@ characters.data={
   description="RIGHTWARDS ARROW WITH VERTICAL STROKE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="nvrightarrow",
   unicodeslot=0x21F8,
  },
  [0x21F9]={
@@ -52446,6 +52516,8 @@ characters.data={
   description="LEFT RIGHT ARROW WITH VERTICAL STROKE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="nvleftrightarrow",
   unicodeslot=0x21F9,
  },
  [0x21FA]={
@@ -52453,6 +52525,8 @@ characters.data={
   description="LEFTWARDS ARROW WITH DOUBLE VERTICAL STROKE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="nVleftarrow",
   unicodeslot=0x21FA,
  },
  [0x21FB]={
@@ -52460,6 +52534,8 @@ characters.data={
   description="RIGHTWARDS ARROW WITH DOUBLE VERTICAL STROKE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="nVrightarrow",
   unicodeslot=0x21FB,
  },
  [0x21FC]={
@@ -52467,6 +52543,8 @@ characters.data={
   description="LEFT RIGHT ARROW WITH DOUBLE VERTICAL STROKE",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="nVleftrightarrow",
   unicodeslot=0x21FC,
  },
  [0x21FD]={
@@ -63378,6 +63456,46 @@ characters.data={
   mathname="rrangle",
   mirror=0x27EA,
   unicodeslot=0x27EB,
+ },
+ [0x27EC]={
+  category="ps",
+  cjkwd="na",
+  description="MATHEMATICAL LEFT WHITE TORTOISE SHELL BRACKET",
+  direction="on",
+  linebreak="op",
+  mirror=0x27ED,
+  unicodeslot=0x27EC,
+ },
+ [0x27ED]={
+  category="pe",
+  cjkwd="na",
+  description="MATHEMATICAL RIGHT WHITE TORTOISE SHELL BRACKET",
+  direction="on",
+  linebreak="cl",
+  mirror=0x27EC,
+  unicodeslot=0x27ED,
+ },
+ [0x27EE]={
+  category="ps",
+  cjkwd="na",
+  description="MATHEMATICAL LEFT FLATTENED PARENTHESIS",
+  direction="on",
+  linebreak="op",
+  mathclass="open",
+  mathname="lgroup",
+  mirror=0x27EF,
+  unicodeslot=0x27EE,
+ },
+ [0x27EF]={
+  category="pe",
+  cjkwd="na",
+  description="MATHEMATICAL RIGHT FLATTENED PARENTHESIS",
+  direction="on",
+  linebreak="cl",
+  mathclass="close",
+  mathname="rgroup",
+  mirror=0x27EE,
+  unicodeslot=0x27EF,
  },
  [0x27F0]={
   category="sm",
@@ -75694,8 +75812,6 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0x3015,
-  mathclass="open",
-  mathname="lgroup",
   unicodeslot=0x3014,
  },
  [0x3015]={
@@ -75705,8 +75821,6 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0x3014,
-  mathclass="close",
-  mathname="rgroup",
   unicodeslot=0x3015,
  },
  [0x3016]={

@@ -29,11 +29,6 @@
 
 \ifx\v!compact\undefined \def\v!compact{compact} \fi
 
-%D New:
-
-\let\startimath\Ustartmath         \let\stopimath \Ustopmath
-\let\startdmath\Ustartdisplaymath  \let\stopdmath \Ustopmath
-
 %D We move these definitions into the format:
 
 % test [[\char948 \ctxlua{tex.sprint(utf.char(948))}]]
@@ -360,52 +355,48 @@
 \def\nonknuthmode{\the\everynonknuthmode\let\nonknuthmode\relax}
 \def\donknuthmode{\the\everydonknuthmode}
 
-\ifdefined\normalsuber\else \def\normalsuber{_} \fi
-\ifdefined\normalsuper\else \def\normalsuper{^} \fi
-\ifdefined\normalaltab\else \def\normalaltab{&} \fi
-
 \bgroup
 
-    \catcode`_=\activecatcode
-    \catcode`^=\activecatcode
-    \catcode`&=\activecatcode
+    \catcode`\_=\activecatcode
+    \catcode`\^=\activecatcode
+    \catcode`\&=\activecatcode
 
     \global \everynonknuthmode {\appendtoks
-        \let_\normalsuber
-        \let^\normalsuper
-        \let&\normalaltab
+        \let_\normalsubscript
+        \let^\normalsuperscript
+        \let&\normalmathaligntab
     \to \everymathematics}
 
 \egroup
 
 \appendtoks
-    \mathcode`_="8000
-    \mathcode`^="8000
-    \mathcode`&="8000
-    \catcode`_=\othercatcode
-    \catcode`^=\othercatcode
-    \catcode`&=\othercatcode
+    \mathcode`\_="8000
+    \mathcode`\^="8000
+    \mathcode`\&="8000
+    \catcode`\_=\othercatcode
+    \catcode`\^=\othercatcode
+    \catcode`\&=\othercatcode
 \to \everynonknuthmode
 
 \appendtoks
-    \catcode`_=\subscriptcatcode
-    \catcode`^=\superscriptcatcode
-    \catcode`&=\alignmentcatcode
+    \catcode`\_=\subscriptcatcode
+    \catcode`\^=\superscriptcatcode
+    \catcode`\&=\alignmentcatcode
 \to \everydonknuthmode
 
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
-        \catcode`_=\othercatcode
-        \catcode`^=\othercatcode
-        \catcode`&=\othercatcode
+        \catcode`\_=\othercatcode
+        \catcode`\^=\othercatcode
+        \catcode`\&=\othercatcode
     \stopextendcatcodetable
 \to \everynonknuthmode
 
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
-        \catcode`_=\subscriptcatcode
-        \catcode`^=\superscriptcatcode
-        \catcode`&=\alignmentcatcode
+        \catcode`\_=\subscriptcatcode
+        \catcode`\^=\superscriptcatcode
+        \catcode`\&=\alignmentcatcode
     \stopextendcatcodetable
 \to \everydonknuthmode
 
