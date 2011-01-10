@@ -52,15 +52,15 @@
    \endgroup}
 
 \def\mthfrac#1#2#3#4#5{\mathchoice
-  {\domthfrac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}
-  {\domthfrac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}
-  {\domthfrac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}
+  {\domthfrac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}%
+  {\domthfrac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}%
+  {\domthfrac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}%
   {\domthfrac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
 
 \def\mthsqrt#1#2#3{\mathchoice
-  {\domthsqrt\displaystyle     \textface    {#1}{#2}{#3}}
-  {\domthsqrt\textstyle        \textface    {#1}{#2}{#3}}
-  {\domthsqrt\scriptstyle      \textface    {#1}{#2}{#3}}
+  {\domthsqrt\displaystyle     \textface    {#1}{#2}{#3}}%
+  {\domthsqrt\textstyle        \textface    {#1}{#2}{#3}}%
+  {\domthsqrt\scriptstyle      \textface    {#1}{#2}{#3}}%
   {\domthsqrt\scriptscriptstyle\textface    {#1}{#2}{#3}}}
 
 % temp here
@@ -114,7 +114,7 @@
                  $}%
    \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
    \setbox4\hbox to \dimen0{#3\displaystyle}%
-   \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits^{\box0}_{\box2}}
+   \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits\normalsuperscript{\box0}\normalsubscript{\box2}}%
    \endgroup}
 
 \let\domthxarrsingle\domthxarr

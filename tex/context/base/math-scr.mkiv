@@ -25,9 +25,6 @@
 %D
 %D The grid snapping has been removed.
 
-\global\let\normalsuper=^
-\global\let\normalsuber=_
-
 \ifdefined\supersubmode \else \newcount\supersubmode        \fi
 \ifdefined\newevery     \else \everysupersub \EverySuperSub \fi
 
@@ -37,10 +34,10 @@
   [\c!size=\v!normal]
 
 \def\normalsupsub#1#2%
-  {^{\the\everysupersub#1}_{\the\everysupersub#2}}
+  {\normalsuperscript{\the\everysupersub#1}\normalsubscript{\the\everysupersub#2}}
 
-\def\super#1{^{\the\everysupersub#1}}
-\def\suber#1{_{\the\everysupersub#1}}
+\def\super#1{\normalsuperscript{\the\everysupersub#1}}
+\def\suber#1{\normalsubscript  {\the\everysupersub#1}}
 \def\supsub#1#2{\super{#1}\suber{#2}}
 \def\subsup#1#2{\suber{#1}\super{#2}}
 
@@ -50,14 +47,16 @@
 %D We can let \type {^} and \type {_} act like \type {\super}
 %D and \type {\sub} by saying \type {\enablesupersub}.
 
+% the next macro will become obsolete in mkiv
+
 \bgroup
 \catcode`\^=\activecatcode
 \catcode`\_=\activecatcode
 \gdef\enablesupersub
   {\catcode`\^=\activecatcode
-   \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
+   \def^{\ifmmode\expandafter\super\else\expandafter\normalsuperscript\fi}%
    \catcode`\_=\activecatcode
-   \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
+   \def_{\ifmmode\expandafter\suber\else\expandafter\normalsubscript  \fi}}
 \egroup
 
 %D \macros

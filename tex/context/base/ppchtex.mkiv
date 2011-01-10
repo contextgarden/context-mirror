@@ -1098,7 +1098,7 @@
      \dosetsubscripts
      \setbox2=\hbox{\@@dochemicalcolor
                     $\@@dochemicalstyle{\@@localchemicalformat \chemicaltext}$}%
-     \setbox4=\hbox{$\@@dochemicalstyle{\@@localchemicalformat C_2^2}$}%
+     \setbox4=\hbox{$\@@dochemicalstyle{\@@localchemicalformat C\normalsubscript2\normapsuperscript2}$}%
      \setbox6=\hbox{$\@@dochemicalstyle{\@@localchemicalformat O}$}% or C
      \doresetsubscripts
      \doifnot\@@chemicallocation\v!intext
@@ -2008,7 +2008,7 @@
      {\@@dochemicalcolor
       $\@@dochemicalstyle{\scriptscriptstyle\hskip-.15em#2}$}%
    \wd0=0pt
-   \big#1_{\hskip.1em\box0}%
+   \big#1\normapsubscript{\hskip.1em\box0}%
    \egroup}
 
 \def\disablechemicalspecials%
@@ -2206,13 +2206,11 @@
       \doresetsubscripts}%
    \mathop{\box0}%
    \ifthirdargument
-     \doifnot{#2}{}
-       {^{\@@dochemicalstyle{\strut#2}}}%
-     \doifnot{#3}{}
-       {_{\@@dochemicalstyle{\strut#3}}}%
+     \doifnot{#2}{}{\normapsuperscript{\@@dochemicalstyle{\strut#2}}}%
+     \doifnot{#3}{}{\normapsubscript  {\@@dochemicalstyle{\strut#3}}}%
    \else
      \doifnot{#2}{}
-       {_{\@@dochemicalstyle{\strut#2}}}%
+       {\normapsubscript{\@@dochemicalstyle{\strut#2}}}%
    \fi
    \egroup
    \chemicalspace}

@@ -46,9 +46,24 @@
 %D
 %D Which is implemented as:
 
-\long\def\mathematics#1{\relax         \ifmmode#1\else\Ustartmath       #1\Ustopmath       \fi}
-\long\def\displaymath#1{\noindent      \ifmmode#1\else\Ustartdisplaymath#1\Ustopdisplaymath\fi}
-\long\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\Ustartmath       #1\Ustopmath       \fi}
+\let\normalsuperscript \Usuperscript
+\let\normalsubscript   \Usubscript
+\let\normalstartimath  \Ustartmath
+\let\normalstopimath   \Ustopmath
+\let\normalstartdmath  \Ustartdisplaymath
+\let\normalstopdmath   \Ustopmath
+\let\normalmathaligntab\aligntab
+
+\let\normalsuper      \Usuperscript             % obsolete
+\let\normalsuber      \Usubscript               % obsolete
+\let\startimath       \Ustartmath               % obsolete, less safe
+\let\stopimath        \Ustopmath                % obsolete, less safe
+\let\startdmath       \Ustartdisplaymath        % obsolete, less safe
+\let\stopdmath        \Ustopmath                % obsolete, less safe
+
+\long\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+\long\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
+\long\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
 
 \let\m\mathematics % unexpanded?
 
@@ -58,14 +73,14 @@
   {\relax\ifmmode
      \let\stopmathmode\relax
    \else
-     \Ustartmath\let\stopmathmode\Ustopmath
+     \normalstartimath\let\stopmathmode\normalstopimath
    \fi}
 
 \unexpanded\def\startmathmode % nested variant
   {\relax\ifmmode
      \begingroup\let\stopmathmode\endgroup
    \else
-     \Ustartmath\let\stopmathmode\Ustopmath
+     \normalstartimath\let\stopmathmode\normalstopimath
    \fi}
 
 \def\nomathematics#1%
@@ -137,26 +152,17 @@
 %D normally provided, and therefore provide \type {\super}
 %D and \type{\suber} (\type {\sub} is already taken).
 
-\global\let\normalsuper=^
-\global\let\normalsuber=_
+\global\let\normalsuper=\normalsuperscript % will become obsolete
+\global\let\normalsuber=\normalsubscript   % will become obsolete
 
 \newcount\supersubmode
 
 \newevery\everysupersub \EverySuperSub
 
-\appendtoks \advance\supersubmode 1\relax \to \everysupersub
+\appendtoks \advance\supersubmode\plusone \to \everysupersub
 
-% \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
-% \def\dodosuber#1{\normalsuber{\the\everysupersub#1}}
-%
-% \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
-% \def\dosuber{\ifx\next\bgroup\expandafter\dodosuber\else\normalsuber\fi}
-%
-% \def\super{\futurelet\next\dosuper}
-% \def\suber{\futurelet\next\dosuber}
-
-\def\super#1{\normalsuper{\the\everysupersub#1}}
-\def\suber#1{\normalsuber{\the\everysupersub#1}}
+\def\super#1{\normalsuperscript{\the\everysupersub#1}}
+\def\suber#1{\normalsubscript  {\the\everysupersub#1}}
 
 %D \macros
 %D   {enablesupsub}
@@ -238,7 +244,7 @@
   {\begingroup % added HH, made even more cramped
    \setbox\scratchbox\hbox
      {\nulldelimiterspace\zeropoint
-      \Ustartmath\mathsurround\zeropoint#1\radical\zerocount{#2}\Ustopmath}%
+      \normalstartimath\mathsurround\zeropoint#1\radical\zerocount{#2}\normalstopimath}%
    \ht\scratchbox-\dimexpr
      \ifx#1\displaystyle
        \fontdimen8\textfont3
