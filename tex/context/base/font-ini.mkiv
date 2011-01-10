@@ -1711,7 +1711,7 @@
    \let\relativefontsize\defaultrelativefontsize}
 
 \def\dododefinebodyfont#1#2#3% style defs body
-  {\checkbodyfontenvironment[#3]% just to be sure.
+  {\checkbodyfontenvironment[#3]% just to be sure; can probably be omited now
    \processcommalist[#2]{\dodododefinebodyfont{#1}{#3}}}
 
 \def\dodododefinebodyfont#1#2#3% style body def
@@ -2145,10 +2145,26 @@
 %D handle changes in size as well as returning to the global
 %D bodyfont size.
 
+% \def\dosetfont#1#2%  #1 = set/switch state
+%   {\doifelse{#2}\v!global
+%      {\restoreglobalbodyfont}
+%      {\processcommacommand[#2]{\dodosetfont{#1}}% ##1 get also passed
+%       \ifproductionrun
+%         \thirdstagepreloadfonts
+%         \doswitchpoints[\normalizedbodyfontsize]%
+%         \doswitchstyle[\fontstyle]%
+%         \ifx\defaultfontclass\empty
+%           \let\defaultfontclass\fontclass
+%         \fi
+%       \fi}%
+%    \currentxfontsize\zerocount}
+
+
 \def\dosetfont#1#2%  #1 = set/switch state
   {\doifelse{#2}\v!global
      {\restoreglobalbodyfont}
-     {\processcommacommand[#2]{\dodosetfont{#1}}% ##1 get also passed
+     {\processcommacommand[#2]{\dodocheckfontsize}%
+      \processcommacommand[#2]{\dodosetfont{#1}}%
       \ifproductionrun
         \thirdstagepreloadfonts
         \doswitchpoints[\normalizedbodyfontsize]%
@@ -2158,6 +2174,9 @@
         \fi
       \fi}%
    \currentxfontsize\zerocount}
+
+\def\dodocheckfontsize#1%
+  {\doifnumberelse{#1}{\checkbodyfontenvironment[#1]}\donothing}
 
 \def\dodosetfont#1#2%  #1 = set/switch state | check fo rempty, else space
   {\doifsomething{#2}{\dododosetfont{#1}{#2}{\showmessage\m!fonts4{#2}}}}

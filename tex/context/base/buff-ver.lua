@@ -13,7 +13,7 @@ local type, next, rawset, rawget, setmetatable, getmetatable = type, next, rawse
 local format, lower, match, find, sub = string.format, string.lower, string.match, string.find, string.sub
 local splitlines = string.splitlines
 local concat = table.concat
-local C, P, V, Carg = lpeg.C, lpeg.P, lpeg.V, lpeg.Carg
+local C, P, R, V, Carg = lpeg.C, lpeg.P, lpeg.R, lpeg.V, lpeg.Carg
 local patterns, lpegmatch, is_lpeg = lpeg.patterns, lpeg.match, lpeg.is_lpeg
 
 local tabtospace = utilities.strings.tabtospace
@@ -286,19 +286,42 @@ local function texmethod(s)
     context.egroup()
 end
 
+local function texcommand(s)
+    context[s]()
+end
+
 local function defaultmethod(s,settings)
     lpegmatch(getvisualizer("default"),s,1,settings)
 end
 
+local space_pattern = patterns.space^0
+local name_pattern  = R("az","AZ")^1
+
 function visualizers.registerescapepattern(name,before,after,normalmethod,escapemethod)
     local escapepattern = escapepatterns[name]
     if not escapepattern then
-        before, after = P(before) * patterns.space^0, patterns.space^0 * P(after)
+        before, after = P(before) * space_pattern, space_pattern * P(after)
         escapepattern = (
             (before / "")
           * ((1 - after)^0 / (escapemethod or texmethod))
           * (after / "")
           + ((1 - before)^1) / (normalmethod or defaultmethod)
+        )^0
+        escapepatterns[name] = escapepattern
+    end
+    return escapepattern
+end
+
+function visualizers.registerescapecommand(name,token,normalmethod,escapecommand)
+    local escapepattern = escapepatterns[name]
+    if not escapepattern then
+        token = P(token)
+        local notoken = (1 - token)^1
+        local cstoken = name_pattern * space_pattern
+        escapepattern = (
+            (token   / "")
+          * (cstoken / (escapecommand or texcommand))
+          + (notoken / (normalmethod or defaultmethod))
         )^0
         escapepatterns[name] = escapepattern
     end
@@ -322,20 +345,20 @@ local function visualize(content,settings) -- maybe also method in settings
                 if e == v_yes then
                     start, stop = "/BTEX", "/ETEX"
                 else
-                    start,stop = match(e,"^(.-),(.-)$") -- todo: lpeg
+                    start, stop = match(e,"^(.-),(.-)$") -- todo: lpeg
                 end
+                local oldvisualizer = specifications[method] or specifications.default
+                local oldparser = oldvisualizer.direct
+                local newparser
                 if start and stop then
-                    local oldvisualizer = specifications[method] or specifications.default
-                    local oldparser = oldvisualizer.direct
-                    local newparser = visualizers.registerescapepattern(newname,start,stop,oldparser)
-                    m = visualizers.register(newname, {
-                        parser  = newparser,
-                        handler = oldvisualizer.handler,
-                    })
-                else
-                 -- visualizers.register(newname,n)
-                    specifications[newname] = m -- old spec so that we have one lookup only
+                    newparser = visualizers.registerescapepattern(newname,start,stop,oldparser)
+                else -- for old times sake: /em
+                    newparser = visualizers.registerescapecommand(newname,e,oldparser)
                 end
+                m = visualizers.register(newname, {
+                    parser  = newparser,
+                    handler = oldvisualizer.handler,
+                })
             end
         else
             m = specifications[method] or specifications.default

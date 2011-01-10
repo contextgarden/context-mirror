@@ -152,10 +152,10 @@
 
 %D Helpers:
 
-\def\utfmathclass  #1{\ctxlua{tex.sprint(mathematics.utfmathclass  ("#1"))}}
-\def\utfmathstretch#1{\ctxlua{tex.sprint(mathematics.utfmathstretch("#1"))}}
-\def\utfmathcommand#1{\ctxlua{tex.sprint(mathematics.utfmathcommand("#1"))}}
-\def\utfmathfiller #1{\ctxlua{tex.sprint(mathematics.utfmathfiller ("#1"))}}
+\def\utfmathclass  #1{\cldcontext{mathematics.utfmathclass  (\!!bs#1\!!es)}}
+\def\utfmathstretch#1{\cldcontext{mathematics.utfmathstretch(\!!bs#1\!!es)}}
+\def\utfmathcommand#1{\cldcontext{mathematics.utfmathcommand(\!!bs#1\!!es)}}
+\def\utfmathfiller #1{\cldcontext{mathematics.utfmathfiller (\!!bs#1\!!es)}}
 
 % \def\utfmathclassdefault  #1#2{\ctxlua{
 %     tex.sprint(mathematics.utfmathclass("#1","#2"))

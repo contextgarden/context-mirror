@@ -77,6 +77,8 @@ local startLuaSnippet         = context.startLuaSnippet
 local stopLuaSnippet          = context.stopLuaSnippet
 
 local LuaSnippetBoundary      = verbatim.LuaSnippetBoundary
+local LuaSnippetQuote         = verbatim.LuaSnippetQuote
+local LuaSnippetString        = verbatim.LuaSnippetString
 local LuaSnippetSpecial       = verbatim.LuaSnippetSpecial
 local LuaSnippetComment       = verbatim.LuaSnippetComment
 local LuaSnippetNameCore      = verbatim.LuaSnippetNameCore
@@ -122,8 +124,10 @@ local handler = visualizers.newhandler {
     startdisplay = function() startLuaSnippet() end,
     stopdisplay  = function() stopLuaSnippet() end ,
     boundary     = function(s) LuaSnippetBoundary(s) end,
-    special      = function(s) LuaSnippetSpecial (s) end,
-    comment      = function(s) LuaSnippetComment (s) end,
+    special      = function(s) LuaSnippetSpecial(s) end,
+    comment      = function(s) LuaSnippetComment(s) end,
+    quote        = function(s) LuaSnippetQuote(s) end,
+    string       = function(s) LuaSnippetString(s) end,
     period       = function(s) verbatim(s) end,
     name_a       = visualizename_a,
     name_b       = visualizename_b,
@@ -187,13 +191,13 @@ local grammar = visualizers.newgrammar("default", { "visualizer",
 --~         makepattern(handler,"default",somecontent),
 
     sstring =
-        makepattern(handler,"string",patterns.dquote)
-      * (V("whitespace") + makepattern(handler,"default",1-patterns.dquote))^0
-      * makepattern(handler,"string",patterns.dquote),
+        makepattern(handler,"quote",patterns.dquote)
+      * (V("whitespace") + makepattern(handler,"string",1-patterns.dquote))^0 -- patterns.nodquote
+      * makepattern(handler,"quote",patterns.dquote),
     dstring =
-        makepattern(handler,"string",patterns.squote)
-      * (V("whitespace") + makepattern(handler,"default",1-patterns.squote))^0
-      * makepattern(handler,"string",patterns.squote),
+        makepattern(handler,"quote",patterns.squote)
+      * (V("whitespace") + makepattern(handler,"string",1-patterns.squote))^0 -- patterns.nosquote
+      * makepattern(handler,"quote",patterns.squote),
     longstring =
         longstring / long,
     comment =
