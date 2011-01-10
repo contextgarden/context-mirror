@@ -137,6 +137,8 @@ local handler = visualizers.newhandler {
     boundary     = function(s) MetapostSnippetBoundary(s) end,
     special      = function(s) MetapostSnippetSpecial(s) end,
     comment      = function(s) MetapostSnippetComment(s) end,
+    string       = function(s) MetapostSnippetString(s) end,
+    quote        = function(s) MetapostSnippetQuote(s) end,
     name         = visualizename,
 }
 
@@ -150,9 +152,9 @@ local grammar = visualizers.newgrammar("default", { "visualizer",
 
     comment     = makepattern(handler,"comment",comment)
                 * (V("space") + V("content"))^0,
-    dstring     = makepattern(handler,"special",patterns.dquote)
-                * makepattern(handler,"default",patterns.nodquote)
-                * makepattern(handler,"special",patterns.dquote),
+    dstring     = makepattern(handler,"quote",patterns.dquote)
+                * makepattern(handler,"string",patterns.nodquote)
+                * makepattern(handler,"quote",patterns.dquote),
     name        = makepattern(handler,"name",name),
     constructor = makepattern(handler,"constructor",constructor),
     boundary    = makepattern(handler,"boundary",boundary),

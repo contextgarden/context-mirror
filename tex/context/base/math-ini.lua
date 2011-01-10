@@ -316,12 +316,12 @@ end
 function mathematics.utfmathcommand(chr, default)
     local cd = characters.data[utfbyte(chr)]
     local cmd = cd and cd.mathname
-    texsprint(cmd or default or "")
+    return cmd or default or ""
 end
 function mathematics.utfmathfiller(chr, default)
     local cd = characters.data[utfbyte(chr)]
     local cmd = cd and (cd.mathfiller or cd.mathname)
-    texsprint(cmd or default or "")
+    return cmd or default or ""
 end
 
 -- xml

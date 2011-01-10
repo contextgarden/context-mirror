@@ -1394,10 +1394,10 @@
 %D paper size with the typeset paper size. This setting should
 %D come after the first layout specification (already done).
 
-\setuppapersize
-  [A4][A4]
-
-%D A few goodies:
+\definepapersize
+  [samesized]
+  [ \c!width=\paperwidth,
+   \c!height=\paperheight]
 
 \definepapersize
   [oversized]
@@ -1413,6 +1413,14 @@
   [doubleoversized]
   [ \c!width=\dimexpr \paperheight+1.5cm\relax,
    \c!height=\dimexpr2\paperwidth +1.5cm\relax]
+
+% \setuppapersize
+%   [A4][A4]
+
+\setuppapersize
+  [A4][samesized]
+
+%D A few goodies:
 
 %D For orthogonality:
 
