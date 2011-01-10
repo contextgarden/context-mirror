@@ -49,12 +49,12 @@
 
 \def\controlspace{\hbox{\char32}} % rather tex
 \def\normalspace { }
-\def\normalspaces{\catcode`\ =\spacecatcode}
+\def\normalspaces{\catcode\spaceasciicode\spacecatcode}
 
 \bgroup
-\catcode`\ =\activecatcode
-\gdef\obeyspaces{\catcode`\ =\activecatcode\def {\obeyedspace}}
-\gdef\setcontrolspaces{\catcode`\ =\activecatcode\def {\controlspace}}
+\catcode\spaceasciicode\activecatcode
+\gdef\obeyspaces{\catcode\spaceasciicode\activecatcode\def {\obeyedspace}}
+\gdef\setcontrolspaces{\catcode\spaceasciicode\activecatcode\def {\controlspace}}
 \egroup
 
 %D \macros
@@ -66,25 +66,31 @@
 %D \NEWPAGE\ character locally, we redefine the meaning of
 %D this (often already) active character.
 
-\catcode`\^^L=\activecatcode \def^^L{\par}
+\bgroup \permitcaretescape
+
+    \catcode\formfeedasciicode\activecatcode
+
+    \gdef^^L{\par}
+
+\egroup
 
 %D The following indirect definitions enable us to implement
 %D all kind of \type{\obeyed} handlers.
 
-\bgroup
+\bgroup \permitcaretescape
 
-\catcode`\^^I=\activecatcode
-\catcode`\^^M=\activecatcode
-\catcode`\^^L=\activecatcode
+    \catcode\tabasciicode      \activecatcode
+    \catcode\endoflineasciicode\activecatcode
+    \catcode\formfeedasciicode \activecatcode
 
-\gdef\obeytabs    {\catcode`\^^I=\activecatcode\def^^I{\obeyedtab}}
-\gdef\obeylines   {\catcode`\^^M=\activecatcode\def^^M{\obeyedline}}
-\gdef\obeypages   {\catcode`\^^L=\activecatcode\def^^L{\obeyedpage}}
+    \gdef\obeytabs   {\catcode\tabasciicode      \activecatcode\def^^I{\obeyedtab }}
+    \gdef\obeylines  {\catcode\endoflineasciicode\activecatcode\def^^M{\obeyedline}}
+    \gdef\obeypages  {\catcode\formfeedasciicode \activecatcode\def^^L{\obeyedpage}}
 
-\gdef\ignoretabs  {\catcode`\^^I=\activecatcode\def^^I{\obeyedspace}}
-\gdef\ignorelines {\catcode`\^^M=\activecatcode\def^^M{\obeyedspace}}
-\gdef\ignorepages {\catcode`\^^L=\ignorecatcode}  % \activecatcode\def^^L{\obeyedline}}
-\gdef\ignoreeofs  {\catcode`\^^Z=\ignorecatcode}
+    \gdef\ignoretabs {\catcode\tabasciicode      \activecatcode\def^^I{\obeyedspace}}
+    \gdef\ignorelines{\catcode\endoflineasciicode\activecatcode\def^^M{\obeyedspace}}
+    \gdef\ignorepages{\catcode\formfeedasciicode \ignorecatcode                     } % \def^^L{\obeyedline}}
+    \gdef\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode                     }
 
 \egroup
 
@@ -101,19 +107,6 @@
    \setcatcodetable\ctxcatcodes
    \prettynaturalfont{\scantextokens\expandafter{\ascii}\ifhmode\unskip\fi}%
    \egroup}
-
-%D What-a-mess:
-
-% \def\normalspacecodes
-%   {\catcode`\^^I = 10
-%    \catcode`\^^M =  5
-%    \catcode`\^^L =  5
-%    \catcode`\    = 10
-%    \catcode`\^^Z =  9 }
-
-% \appendtoks
-%     \normalspacecodes
-% \to \everybeforeoutput
 
 \endinput \protect
 

@@ -53,30 +53,6 @@
 \ifx\obeyedline       \undefined \let\obeyedline       \relax \fi
 \ifx\obeyspaces       \undefined \let\obeyspaces       \relax \fi
 \ifx\obeyedspace      \undefined \let\obeyedspace      \relax \fi
-\ifx\outputnewlinechar\undefined \let\outputnewlinechar\relax \fi
-
-%D A previous version used a bit less code and no catcode table,
-%D simply becaus ethey were not around at the time of writing.
-%
-% we keep it around for archival purposes
-%
-% \def\obeylualines
-%   {\obeylines  \let\obeyedline \outputnewlinechar
-%    \obeyspaces \let\obeyedspace\space}
-%
-% \def\obeyluatokens % todo: make this a proper catcode table, use let's
-%   {\catcode`\%=12 \catcode`\#=12
-%    \catcode`\_=12 \catcode`\^=12
-%    \catcode`\&=12 \catcode`\|=12
-%    \catcode`\{=12 \catcode`\}=12
-%    \catcode`\~=12 \catcode`\$=12
-%    \def\\{\string\\}\def\|{\string\|}\def\-{\string\-}%
-%    \def\({\string\(}\def\){\string\)}\def\{{\string\{}\def\}{\string\}}%
-%    \def\'{\string\'}\def\"{\string\"}%
-%    \def\n{\string\n}\def\r{\string\r}\def\f{\string\f}\def\t{\string\t}%
-%    \def\a{\string\a}\def\b{\string\b}\def\v{\string\v}\def\s{\string\s}%
-%    \def\1{\string\1}\def\2{\string\2}\def\3{\string\3}\def\4{\string\4}\def\5{\string\5}%
-%    \def\6{\string\6}\def\7{\string\7}\def\8{\string\8}\def\9{\string\9}\def\0{\string\0}}
 
 \let\obeylualines\relax
 

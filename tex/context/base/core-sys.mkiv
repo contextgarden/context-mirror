@@ -35,20 +35,24 @@
 %D End of lines to the output. \TEX\ will map this onto the platform specific
 %D line ending. I hate this mess.
 
-%newlinechar=10   \def\outputnewlinechar{\rawcharacter{10}}
-\newlinechar=10  \edef\outputnewlinechar{^^J}
+\edef\operatingsystem  {\ctxwrite {os.platform}}
 
-\edef\operatingsystem {\ctxwrite {os.platform}}
+\def \jobfilename      {\ctxsprint{environment.jobfilename       or ""}}
+\def \jobfilesuffix    {\ctxsprint{environment.jobfilesuffix     or ""}}
+\def \inputfilebarename{\ctxsprint{environment.inputfilebarename or ""}}
+\def \inputfilesuffix  {\ctxsprint{environment.inputfilesuffix   or ""}}
+\def \inputfilename    {\ctxsprint{environment.inputfilename     or ""}}
+\def \outputfilename   {\ctxsprint{environment.outputfilename    or ""}}
 
-\def\jobfilename      {\ctxsprint{environment.jobfilename       or ""}}
-\def\jobfilesuffix    {\ctxsprint{environment.jobfilesuffix     or ""}}
-\def\inputfilebarename{\ctxsprint{environment.inputfilebarename or ""}}
-\def\inputfilesuffix  {\ctxsprint{environment.inputfilesuffix   or ""}}
-\def\inputfilename    {\ctxsprint{environment.inputfilename     or ""}}
-\def\outputfilename   {\ctxsprint{environment.outputfilename    or ""}}
+\bgroup \permitcaretescape
 
-\def\initializenewlinechar
-  {\bgroup\newlinechar=10\xdef\outputnewlinechar{^^J}\egroup}
+    \gdef\initializenewlinechar
+      {\bgroup
+       \newlinechar\newlineasciicode
+       \xdef\outputnewlinechar{^^J}%
+       \egroup}
+
+\egroup
 
 \newtoks \everysetupsystem
 
@@ -105,8 +109,6 @@
   {\doifelsenothing\jobfilename
      {\let\jobfullname\empty}
      {\doif\jobfilesuffix\c!tex{\edef\jobfullname{\jobfilename.#1}}}}
-
-\let\systemendofline\outputnewlinechar % will become obsolete
 
 \def\systemparameter#1{\executeifdefined{\??sv#1}\empty}
 

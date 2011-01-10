@@ -70,10 +70,10 @@
 \def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
 
 \def\uncatcodespacetokens
-  {\catcode`\   =\spacecatcode
-   \catcode`\^^L=\ignorecatcode
-   \catcode`\^^M=\endoflinecatcode
-   \catcode`\^^?=\ignorecatcode}
+  {\catcode\spaceasciicode    \spacecatcode
+   \catcode\formfeedasciicode \ignorecatcode
+   \catcode\endoflineasciicode\endoflinecatcode
+   \catcode\delasciicode      \ignorecatcode}
 
 %D \macros
 %D   {setverbosecharacter,setverbosecscharacters}

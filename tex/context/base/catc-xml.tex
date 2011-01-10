@@ -18,62 +18,62 @@
 \ifdefined \xmlcatcodesr \else \newcatcodetable \xmlcatcodesr \fi % reduce
 
 \startcatcodetable \xmlcatcodesn
-    \catcode`\^^I = 10 % ascii tab is a blank space
-    \catcode`\^^M =  5 % ascii return is end-line
-    \catcode`\^^L =  5 % ascii form-feed
-    \catcode`\    = 10 % ascii space is blank space
-    \catcode`\^^Z =  9 % ascii eof is ignored
-    \catcode`\&   = 13 % entity
-    \catcode`\<   = 13 % element
-    \catcode`\>   = 12
-    \catcode`\"   = 12 % probably not needed any more
-    \catcode`\/   = 12 % probably not needed any more
-    \catcode`\'   = 12 % probably not needed any more
-    \catcode`\~   = 12 % probably not needed any more
-    \catcode`\#   = 12 % probably not needed any more
-    \catcode`\\   = 12 % probably not needed any more
+    \catcode\tabasciicode      \spacecatcode
+    \catcode\endoflineasciicode\endoflinecatcode
+    \catcode\formfeedasciicode \endoflinecatcode
+    \catcode\spaceasciicode    \spacecatcode
+    \catcode\endoffileasciicode\ignorecatcode
+    \catcode`\&                \activecatcode
+    \catcode`\<                \activecatcode
+    \catcode`\>                \othercatcode
+    \catcode`\"                \othercatcode % probably not needed any more
+    \catcode`\/                \othercatcode % probably not needed any more
+    \catcode`\'                \othercatcode % probably not needed any more
+    \catcode`\~                \othercatcode % probably not needed any more
+    \catcode`\#                \othercatcode % probably not needed any more
+    \catcode`\\                \othercatcode % probably not needed any more
 \stopcatcodetable
 
 \startcatcodetable \xmlcatcodese
-    \catcode`\^^I = 10 % ascii tab is a blank space
-    \catcode`\^^M =  5 % ascii return is end-line
-    \catcode`\^^L =  5 % ascii form-feed
-    \catcode`\    = 10 % ascii space is blank space
-    \catcode`\^^Z =  9 % ascii eof is ignored
-    \catcode`\&   = 13 % entity
-    \catcode`\<   = 13 % element
-    \catcode`\>   = 12
-    \catcode`\#   = 13
-    \catcode`\$   = 13
-    \catcode`\%   = 13
-    \catcode`\\   = 13
-    \catcode`\^   = 13
-    \catcode`\_   = 13
-    \catcode`\{   = 13
-    \catcode`\}   = 13
-    \catcode`\|   = 13
-    \catcode`\~   = 13
+    \catcode\tabasciicode      \spacecatcode
+    \catcode\endoflineasciicode\endoflinecatcode
+    \catcode\formfeedasciicode \endoflinecatcode
+    \catcode\spaceasciicode    \spacecatcode
+    \catcode\endoffileasciicode\ignorecatcode
+    \catcode`\&                \activecatcode
+    \catcode`\<                \activecatcode
+    \catcode`\>                \activecatcode
+    \catcode`\#                \activecatcode
+    \catcode`\$                \activecatcode
+    \catcode`\%                \activecatcode
+    \catcode`\\                \activecatcode
+    \catcode`\^                \activecatcode
+    \catcode`\_                \activecatcode
+    \catcode`\{                \activecatcode
+    \catcode`\}                \activecatcode
+    \catcode`\|                \activecatcode
+    \catcode`\~                \activecatcode
 \stopcatcodetable
 
 \startcatcodetable \xmlcatcodesr
-    \catcode`\^^I = 10 % ascii tab is a blank space
-    \catcode`\^^M =  5 % ascii return is end-line
-    \catcode`\^^L =  5 % ascii form-feed
-    \catcode`\    = 10 % ascii space is blank space
-    \catcode`\^^Z =  9 % ascii eof is ignored
-    \catcode`\&   = 13 % entity
-    \catcode`\<   = 13 % element
-    \catcode`\>   = 12
-    \catcode`\#   = 13
-    \catcode`\$   = 13
-    \catcode`\%   = 13
-    \catcode`\\   = 13
-    \catcode`\^   = 13
-    \catcode`\_   = 13
-    \catcode`\{   = 13
-    \catcode`\}   = 13
-    \catcode`\|   = 13
-    \catcode`\~   = 13
+    \catcode\tabasciicode      \spacecatcode
+    \catcode\endoflineasciicode\endoflinecatcode
+    \catcode\formfeedasciicode \endoflinecatcode
+    \catcode\spaceasciicode    \spacecatcode
+    \catcode\endoffileasciicode\ignorecatcode
+    \catcode`\&                \activecatcode
+    \catcode`\<                \activecatcode
+    \catcode`\>                \activecatcode
+    \catcode`\#                \activecatcode
+    \catcode`\$                \activecatcode
+    \catcode`\%                \activecatcode
+    \catcode`\\                \activecatcode
+    \catcode`\^                \activecatcode
+    \catcode`\_                \activecatcode
+    \catcode`\{                \activecatcode
+    \catcode`\}                \activecatcode
+    \catcode`\|                \activecatcode
+    \catcode`\~                \activecatcode
 \stopcatcodetable
 
 %D Next we hook in some active character definitions.

@@ -293,11 +293,11 @@
 % \ctxluabuffer
 
 \newtoks\everydefinesetups      \appendtoks
-    \catcode`\^^M\ignorecatcode
+    \catcode\endoflineasciicode \ignorecatcode
 \to \everydefinesetups
 
 \newtoks\everydefinelocalsetups \appendtoks
-    \catcode`\^^M\ignorecatcode
+    \catcode\endoflineasciicode \ignorecatcode
 \to \everydefinelocalsetups
 
 \newtoks\everydefinerawsetups   \appendtoks
@@ -305,7 +305,7 @@
 \to \everydefinerawsetups
 
 \newtoks\everydefinexmlsetups   \appendtoks
-    \catcode`\^^M\ignorecatcode
+    \catcode\endoflineasciicode\ignorecatcode
     \catcode`\|\othercatcode
 \to \everydefinexmlsetups
 

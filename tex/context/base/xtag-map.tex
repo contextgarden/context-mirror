@@ -448,10 +448,10 @@
    \let\par\XMLremappedpar
    \the\everyXMLremapping
    %\ignorelines
-   \catcode`\^^I=\@@space
-   \catcode`\^^M=\@@space
-   \catcode`\^^L=\@@space
-   \catcode`\^^Z=\@@space
+   \catcode\tabasciicode      \spacecatcode
+   \catcode\endoflineasciicode\spacecatcode
+   \catcode\formfeedasciicode \spacecatcode
+   \catcode\endoffileasciicode\spacecatcode
    \pushmacro\unicodechar
    \let\unicodechar\relax
    \xdef\remappedXMLdata{#4\empty}%

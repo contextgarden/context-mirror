@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2011.01.10 09:41}
+\newcontextversion{2011.01.10 13:28}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -337,6 +337,8 @@
 % \dimen0=   1pt \setpercentdimen{\dimen0}{10%} \the\dimen0
 
 \bgroup
+
+\ifdefined\permitcaretescape \permitcaretescape \fi % mkiv
 
 \obeylines % don't remove %'s !
 

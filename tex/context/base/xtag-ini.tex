@@ -2544,7 +2544,7 @@
 %D \stoptyping
 
 \long\def\startdefineXMLhandlers
-  {\bgroup\catcode`\^^M=\@@space
+  {\bgroup\catcode\endoflineasciicode\spacecatcode
    \dodoubleempty\dostartdefineXMLhandlers}
 
 \long\def\dostartdefineXMLhandlers[#1][#2]#3#4\stopdefineXMLhandlers % #2 is dummy
@@ -2760,9 +2760,10 @@
 %D ...
 
 \def\protectXMLdata
-  {\catcode`\^^I\@@space
-   \catcode`\^^M\@@space
-   \catcode`\^^L\@@space
+  {\catcode\tabasciicode      \spacecatcode
+   \catcode\endoflineasciicode\spacecatcode
+   \catcode\formfeedasciicode \spacecatcode
+   \catcode\endoffileasciicode\spacecatcode
    \catcode`\#\@@other}
 
 \long\def\startXMLcode
