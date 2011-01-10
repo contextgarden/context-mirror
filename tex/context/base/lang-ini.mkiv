@@ -191,7 +191,7 @@
 \def\reallanguagetag#1%
   {\ifcsname\l!prefix!#1\endcsname\csname\l!prefix!#1\endcsname\else#1\fi}
 
-% ^^ \language[#1] gave unwanted side effect of loading language specifics
+% \language[#1] gave unwanted side effect of loading language specifics
 
 \def\installlanguage
   {\dodoubleargument\doinstalllanguage}

@@ -17,213 +17,116 @@
 \ifdefined \ctxcatcodes  \else \newcatcodetable \ctxcatcodes  \fi
 \ifdefined \txtcatcodes  \else \newcatcodetable \txtcatcodes  \fi
 \ifdefined \mthcatcodes  \else \newcatcodetable \mthcatcodes  \fi % math, not used, too tricky
-% \ifdefined \xmlcatcodesn \else \newcatcodetable \xmlcatcodesn \fi % normal
-% \ifdefined \xmlcatcodese \else \newcatcodetable \xmlcatcodese \fi % entitle
-% \ifdefined \xmlcatcodesr \else \newcatcodetable \xmlcatcodesr \fi % reduce
 \ifdefined \typcatcodesa \else \newcatcodetable \typcatcodesa \fi % { }
 \ifdefined \typcatcodesb \else \newcatcodetable \typcatcodesb \fi % < >
 \ifdefined \typcatcodesc \else \newcatcodetable \typcatcodesc \fi % delimited
 
 \startcatcodetable \ctxcatcodes
-    \catcode`\^^I = 10
-    \catcode`\^^M =  5
-    \catcode`\^^L =  5
-    \catcode`\    = 10
-  % \catcode`\^^J = 10 % new
-    \catcode`\^^Z =  9
-    \catcode`\\   =  0
-    \catcode`\{   =  1
-    \catcode`\}   =  2
-    \catcode`\$   =  3
-    \catcode`\&   =  4
-    \catcode`\#   =  6
-    \catcode`\^   =  7
-    \catcode`\_   =  8
-    \catcode`\%   = 14
-    \catcode`\~   = 13
-    \catcode`\|   = 13
+    \catcode\tabasciicode      \spacecatcode
+    \catcode\endoflineasciicode\endoflinecatcode
+    \catcode\formfeedasciicode \endoflinecatcode
+    \catcode\spaceasciicode    \spacecatcode
+  % \catcode\newlineasciicode  \spacecatcode
+    \catcode\endoffileasciicode\ignorecatcode
+    \catcode`\\                \escapecatcode
+    \catcode`\{                \begingroupcatcode
+    \catcode`\}                \endgroupcatcode
+    \catcode`\$                \mathshiftcatcode
+    \catcode`\&                \alignmentcatcode
+    \catcode`\#                \parametercatcode
+    \catcode`\^                \superscriptcatcode
+    \catcode`\_                \subscriptcatcode
+    \catcode`\%                \commentcatcode
+    \catcode`\~                \activecatcode
+    \catcode`\|                \activecatcode
 \stopcatcodetable
 
 \startcatcodetable \prtcatcodes
-    \catcode`\^^I = 10
-    \catcode`\^^M =  5
-    \catcode`\^^L =  5
-    \catcode`\    = 10
-    \catcode`\^^Z =  9
-    \catcode`\\   =  0
-    \catcode`\{   =  1
-    \catcode`\}   =  2
-    \catcode`\$   =  3
-    \catcode`\&   =  4
-    \catcode`\#   =  6
-    \catcode`\^   =  7 % soon we will also get rid of the usage of ^^ so then ^ can also be other
-    \catcode`\_   = \ifnum\texengine=\luatexengine 11 \else 8 \fi
-    \catcode`\%   = 14
-    \catcode`\@   = 11
-    \catcode`\!   = 11
-    \catcode`\?   = 11
-    \catcode`\~   = 13
-    \catcode`\|   = 13
+    \catcode\tabasciicode      \spacecatcode
+    \catcode\endoflineasciicode\endoflinecatcode
+    \catcode\formfeedasciicode \endoflinecatcode
+    \catcode\spaceasciicode    \spacecatcode
+    \catcode\endoffileasciicode\ignorecatcode
+    \catcode`\\                \escapecatcode
+    \catcode`\{                \begingroupcatcode
+    \catcode`\}                \endgroupcatcode
+    \catcode`\$                \mathshiftcatcode
+    \catcode`\&                \alignmentcatcode
+    \catcode`\#                \parametercatcode
+    \catcode`\^                \superscriptcatcode % soon we will also get rid of the usage of ^^ so then ^ can also be other
+    \catcode`\_                \ifnum\texengine=\luatexengine\lettercatcode \else \subscriptcatcode \fi
+    \catcode`\%                \commentcatcode
+    \catcode`\@                \lettercatcode
+    \catcode`\!                \lettercatcode
+    \catcode`\?                \lettercatcode
+    \catcode`\~                \activecatcode
+    \catcode`\|                \activecatcode
 \stopcatcodetable
 
 \startcatcodetable \mthcatcodes
-    \catcode`\^^I = 10
-    \catcode`\^^M =  5
-   %\catcode`\^^J = 10 % new
-    \catcode`\^^L =  5
-    \catcode`\    = 10
-    \catcode`\^^Z =  9
-    \catcode`\\   =  0
-    \catcode`\{   =  1
-    \catcode`\}   =  2
-    \catcode`\$   =  3
-    \catcode`\&   =  4
-    \catcode`\#   =  6
-    \catcode`\^   =  7
-    \catcode`\_   =  8
-    \catcode`\%   = 14
-   %\catcode`\~   = 13
-   %\catcode`\|   = 13
+    \catcode\tabasciicode      \spacecatcode
+    \catcode\endoflineasciicode\endoflinecatcode
+   %\catcode\newlineasciicode  \spacecatcode
+    \catcode\formfeedasciicode \endoflinecatcode
+    \catcode\spaceasciicode    \spacecatcode
+    \catcode\endoffileasciicode\ignorecatcode
+    \catcode`\\                \escapecatcode
+    \catcode`\{                \begingroupcatcode
+    \catcode`\}                \endgroupcatcode
+    \catcode`\$                \mathshiftcatcode
+    \catcode`\&                \alignmentcatcode
+    \catcode`\#                \parametercatcode
+    \catcode`\^                \superscriptcatcode
+    \catcode`\_                \subscriptcatcode
+    \catcode`\%                \commentcatcode
+   %\catcode`\~                \activecatcode
+   %\catcode`\|                \activecatcode
 \stopcatcodetable
 
-% \startcatcodetable \xmlcatcodesn
-%     \catcode`\^^I = 10 % ascii tab is a blank space
-%     \catcode`\^^M =  5 % ascii return is end-line
-%     \catcode`\^^L =  5 % ascii form-feed
-%     \catcode`\    = 10 % ascii space is blank space
-%     \catcode`\^^Z =  9 % ascii eof is ignored
-%     \catcode`\&   = 13 % entity
-%     \catcode`\<   = 13 % element
-%     \catcode`\>   = 12
-%     \catcode`\"   = 12 % probably not needed any more
-%     \catcode`\/   = 12 % probably not needed any more
-%     \catcode`\'   = 12 % probably not needed any more
-%     \catcode`\~   = 12 % probably not needed any more
-%     \catcode`\#   = 12 % probably not needed any more
-%     \catcode`\\   = 12 % probably not needed any more
-% \stopcatcodetable
-
-% \startcatcodetable \xmlcatcodese
-%     \catcode`\^^I = 10 % ascii tab is a blank space
-%     \catcode`\^^M =  5 % ascii return is end-line
-%     \catcode`\^^L =  5 % ascii form-feed
-%     \catcode`\    = 10 % ascii space is blank space
-%     \catcode`\^^Z =  9 % ascii eof is ignored
-%     \catcode`\&   = 13 % entity
-%     \catcode`\<   = 13 % element
-%     \catcode`\>   = 12
-%     \catcode`\#   = 13
-%     \catcode`\$   = 13
-%     \catcode`\%   = 13
-%     \catcode`\\   = 13
-%     \catcode`\^   = 13
-%     \catcode`\_   = 13
-%     \catcode`\{   = 13
-%     \catcode`\}   = 13
-%     \catcode`\|   = 13
-%     \catcode`\~   = 13
-% \stopcatcodetable
-
-% \startcatcodetable \xmlcatcodesr
-%     \catcode`\^^I = 10 % ascii tab is a blank space
-%     \catcode`\^^M =  5 % ascii return is end-line
-%     \catcode`\^^L =  5 % ascii form-feed
-%     \catcode`\    = 10 % ascii space is blank space
-%     \catcode`\^^Z =  9 % ascii eof is ignored
-%     \catcode`\&   = 13 % entity
-%     \catcode`\<   = 13 % element
-%     \catcode`\>   = 12
-%     \catcode`\#   = 13
-%     \catcode`\$   = 13
-%     \catcode`\%   = 13
-%     \catcode`\\   = 13
-%     \catcode`\^   = 13
-%     \catcode`\_   = 13
-%     \catcode`\{   = 13
-%     \catcode`\}   = 13
-%     \catcode`\|   = 13
-%     \catcode`\~   = 13
-% \stopcatcodetable
-
 \startcatcodetable \typcatcodesa
-    \catcode`\^^I = 12
-    \catcode`\^^M = 12
-    \catcode`\^^L = 12
-    \catcode`\    = 12
-    \catcode`\^^Z = 12
-    \catcode`\{   =  1
-    \catcode`\}   =  2
+    \catcode\tabasciicode      \othercatcode
+    \catcode\endoflineasciicode\othercatcode
+    \catcode\formfeedasciicode \othercatcode
+    \catcode\spaceasciicode    \othercatcode
+    \catcode\endoffileasciicode\othercatcode
+    \catcode`\{                \begingroupcatcode
+    \catcode`\}                \endgroupcatcode
 \stopcatcodetable
 
 \startcatcodetable \typcatcodesb
-    \catcode`\^^I = 12
-    \catcode`\^^M = 12
-    \catcode`\^^L = 12
-    \catcode`\    = 12
-    \catcode`\^^Z = 12
-    \catcode`\<   =  1
-    \catcode`\>   =  2
+    \catcode\tabasciicode      \othercatcode
+    \catcode\endoflineasciicode\othercatcode
+    \catcode\formfeedasciicode \othercatcode
+    \catcode\spaceasciicode    \othercatcode
+    \catcode\endoffileasciicode\othercatcode
+    \catcode`\<                \begingroupcatcode
+    \catcode`\>                \endgroupcatcode
 \stopcatcodetable
 
 \startcatcodetable \typcatcodesc
-    \catcode`\^^I = 12
-    \catcode`\^^M = 12
-    \catcode`\^^L = 12
-    \catcode`\    = 12
-    \catcode`\^^Z = 12
+    \catcode\tabasciicode      \othercatcode
+    \catcode\endoflineasciicode\othercatcode
+    \catcode\formfeedasciicode \othercatcode
+    \catcode\spaceasciicode    \othercatcode
+    \catcode\endoffileasciicode\othercatcode
 \stopcatcodetable
 
 \startcatcodetable \txtcatcodes
-    \catcode`\^^I = 10
-    \catcode`\^^M =  5
-    \catcode`\^^L =  5
-    \catcode`\    = 10
-    \catcode`\^^Z =  9
-    \catcode`\\   =  0
-    \catcode`\{   =  1
-    \catcode`\}   =  2
+    \catcode\tabasciicode      \spacecatcode
+    \catcode\endoflineasciicode\endoflinecatcode
+    \catcode\formfeedasciicode \endoflinecatcode
+    \catcode\spaceasciicode    \spacecatcode
+    \catcode\endoffileasciicode\ignorecatcode
+    \catcode`\\                \escapecatcode
+    \catcode`\{                \begingroupcatcode
+    \catcode`\}                \endgroupcatcode
 \stopcatcodetable
 
 \letcatcodecommand \ctxcatcodes  `\|   \relax
 \letcatcodecommand \ctxcatcodes  `\~   \relax
 
-%letcatcodecommand \prtcatcodes  `\|   \relax % falls back on ctx
-%letcatcodecommand \prtcatcodes  `\~   \relax % falls back on ctx
-
-% \letcatcodecommand \xmlcatcodesn `\&   \relax
-% \letcatcodecommand \xmlcatcodesn `\<   \relax
-
-% \letcatcodecommand \xmlcatcodese `\&   \relax
-% \letcatcodecommand \xmlcatcodese `\<   \relax
-
-% \letcatcodecommand \xmlcatcodesr `\&   \relax
-% \letcatcodecommand \xmlcatcodesr `\<   \relax
-
-% \letcatcodecommand \xmlcatcodese `\#   \relax
-% \letcatcodecommand \xmlcatcodese `\$   \relax
-% \letcatcodecommand \xmlcatcodese `\%   \relax
-% \letcatcodecommand \xmlcatcodese `\\   \relax
-% \letcatcodecommand \xmlcatcodese `\^   \relax
-% \letcatcodecommand \xmlcatcodese `\_   \relax
-% \letcatcodecommand \xmlcatcodese `\{   \relax
-% \letcatcodecommand \xmlcatcodese `\}   \relax
-% \letcatcodecommand \xmlcatcodese `\|   \relax
-% \letcatcodecommand \xmlcatcodese `\~   \relax
-
-% \letcatcodecommand \xmlcatcodesr `\#   \relax
-% \letcatcodecommand \xmlcatcodesr `\$   \relax
-% \letcatcodecommand \xmlcatcodesr `\%   \relax
-% \letcatcodecommand \xmlcatcodesr `\\   \relax
-% \letcatcodecommand \xmlcatcodesr `\^   \relax
-% \letcatcodecommand \xmlcatcodesr `\_   \relax
-% \letcatcodecommand \xmlcatcodesr `\{   \relax
-% \letcatcodecommand \xmlcatcodesr `\}   \relax
-% \letcatcodecommand \xmlcatcodesr `\|   \relax
-% \letcatcodecommand \xmlcatcodesr `\~   \relax
-
      \catcodetable        \ctxcatcodes
 \let \defaultcatcodetable \ctxcatcodes
-%\let\xmlcatcodes         \xmlcatcodesn % beware, in mkiv we use \notcatcodes
 
 % for the moment here:
 
@@ -241,13 +144,13 @@
 % \newcatcodetable\txtcatcodes
 %
 % \startcatcodetable \txtcatcodes
-%     \catcode`\^^I = 10
-%     \catcode`\^^M =  5
-%     \catcode`\^^L =  5
-%     \catcode`\    = 10
-%     \catcode`\\   =  0
-%     \catcode`\{   =  1
-%     \catcode`\}   =  2
+%     \catcode\tabasciicode      \spacecatcode
+%     \catcode\endoflineasciicode\endoflinecatcode
+%     \catcode\formfeedasciicode \endoflinecatcode
+%     \catcode\spaceasciicode    \spacecatcode
+%     \catcode`\\                \escapecatcode
+%     \catcode`\{                \begingroupcatcode
+%     \catcode`\}                \endgroupcatcode
 % \stopcatcodetable
 %
 % \newcount\relaxedcatcodedepth

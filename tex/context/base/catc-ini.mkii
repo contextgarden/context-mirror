@@ -22,21 +22,30 @@
 \ifx\plusone  \undefined \chardef           \plusone  = 1 \fi
 \ifx\minusone \undefined \newcount\minusone \minusone =-1 \fi
 
-\chardef\escapecatcode      =  0
-\chardef\begingroupcatcode  =  1
-\chardef\endgroupcatcode    =  2
-\chardef\mathshiftcatcode   =  3
-\chardef\alignmentcatcode   =  4
-\chardef\endoflinecatcode   =  5
-\chardef\parametercatcode   =  6
-\chardef\superscriptcatcode =  7
-\chardef\subscriptcatcode   =  8
-\chardef\ignorecatcode      =  9
-\chardef\spacecatcode       = 10
-\chardef\lettercatcode      = 11
-\chardef\othercatcode       = 12   \chardef\other  = 12
-\chardef\activecatcode      = 13   \chardef\active = 13
-\chardef\commentcatcode     = 14
+\chardef\escapecatcode      =   0
+\chardef\begingroupcatcode  =   1
+\chardef\endgroupcatcode    =   2
+\chardef\mathshiftcatcode   =   3
+\chardef\alignmentcatcode   =   4
+\chardef\endoflinecatcode   =   5
+\chardef\parametercatcode   =   6
+\chardef\superscriptcatcode =   7
+\chardef\subscriptcatcode   =   8
+\chardef\ignorecatcode      =   9
+\chardef\spacecatcode       =  10
+\chardef\lettercatcode      =  11
+\chardef\othercatcode       =  12   \chardef\other  = 12
+\chardef\activecatcode      =  13   \chardef\active = 13
+\chardef\commentcatcode     =  14
+
+\chardef\tabasciicode       =   9  % ^^I
+\chardef\newlineasciicode   =  10  % ^^J don't confuse this one with \endoflineasciicode
+\chardef\formfeedasciicode  =  12  % ^^L
+\chardef\endoflineasciicode =  13  % ^^M somewhat messy but this can be the active \par
+\chardef\endoffileasciicode =  26  % ^^Z
+\chardef\spaceasciicode     =  32
+%chardef\barasciicode       = 124
+\chardef\delasciicode       = 127
 
 \newif \ifrecatcodeuppercharacters % only used in good old tex
 

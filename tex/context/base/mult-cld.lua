@@ -53,7 +53,7 @@ local flush         = texsprint
 local trace_context = logs.new("context") -- here
 local report_cld    = logs.new("cld")
 
-local processlines  = false  experiments.register("context.processlines", function(v) processlines = v end)
+local processlines  = true -- experiments.register("context.processlines", function(v) processlines = v end)
 
 -- for tracing it's easier to have two stacks
 

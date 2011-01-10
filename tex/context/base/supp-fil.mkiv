@@ -63,19 +63,17 @@
 
 \newcount \endoflinelevel
 
-\ifx\newlinecode\undefined \chardef\newlinecode=`\^^M \fi
-
 \def\pushendofline
   {\advance\endoflinelevel\plusone
-   \expandafter\chardef\csname :eol:\number\endoflinelevel\endcsname\catcode\newlinecode
-   \catcode\newlinecode\commentcatcode\relax}
+   \expandafter\chardef\csname :eol:\number\endoflinelevel\endcsname\catcode\endoflineasciicode
+   \catcode\endoflineasciicode\commentcatcode\relax}
 
 \def\popendofline
-  {\catcode\newlinecode\csname :eol:\number\endoflinelevel\endcsname
+  {\catcode\endoflineasciicode\csname :eol:\number\endoflinelevel\endcsname
    \advance\endoflinelevel\minusone}
 
 \def\restoreendofline
-  {\catcode\newlinecode\endoflinecatcode}
+  {\catcode\endoflineasciicode\endoflinecatcode}
 
 %D \macros
 %D   {scratchread, scratchwrite}

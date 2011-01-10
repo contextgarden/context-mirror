@@ -37,6 +37,15 @@
 \setnewconstant\activecatcode      13  \let\active\activecatcode
 \setnewconstant\commentcatcode     14
 
+\setnewconstant\tabasciicode        9
+\setnewconstant\newlineasciicode   10  % don't confuse this one with \endoflineasciicode
+\setnewconstant\formfeedasciicode  12
+\setnewconstant\endoflineasciicode 13  % somewhat messy but this can be the active \par
+\setnewconstant\endoffileasciicode 26
+\setnewconstant\spaceasciicode     32
+%setnewconstant\barasciicode      124
+\setnewconstant\delasciicode      127
+
 \ifx\gobbleoneargument\undefined \long\def\gobbleoneargument#1{} \fi
 
 \newif \ifrecatcodeuppercharacters % only used in good old tex
@@ -59,11 +68,11 @@
 \newtoks \setdefaultcatcodes
 
 \setdefaultcatcodes
-  {\catcode`\\   \othercatcode
-   \catcode`\^^M \othercatcode
-   \catcode`\    \othercatcode
-   \catcode`\%   \othercatcode
-   \catcode127   \othercatcode}
+  {\catcode`\\                \othercatcode
+   \catcode\endoflineasciicode\othercatcode
+   \catcode\spaceasciicode    \othercatcode
+   \catcode`\%                \othercatcode
+   \catcode\delasciicode      \othercatcode}
 
 \long\normalprotected\def\startcatcodetable#1#2\stopcatcodetable
   {\bgroup
@@ -72,6 +81,9 @@
    #2%
    \savecatcodetable#1\relax
    \egroup}
+
+\def\permitcaretescape % to be used grouped
+  {\catcode`\^ = \superscriptcatcode}
 
 \newcatcodetable\dummycatcodes
 
