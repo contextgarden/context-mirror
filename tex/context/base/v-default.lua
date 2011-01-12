@@ -15,6 +15,7 @@ local grammar = { "visualizer",
 
     -- basic
 
+    signal     = makepattern(handler,"signal",   visualizers.signalpattern),
     emptyline  = makepattern(handler,"emptyline",patterns.emptyline),
     beginline  = makepattern(handler,"beginline",patterns.beginline),
     newline    = makepattern(handler,"newline",  patterns.newline),
@@ -30,7 +31,7 @@ local grammar = { "visualizer",
 
     -- used
 
-    pattern            = V("line") + V("space") + V("content"),
+    pattern            = V("line") + V("space") + V("signal") + V("content"),
     visualizer         = V("pattern")^1
 
 }

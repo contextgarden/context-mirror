@@ -1,2 +1,2 @@
 #!/bin/sh
-mtxrun --script base "$@"
+mtxrun --script mptopdf "$@"

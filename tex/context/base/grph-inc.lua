@@ -145,13 +145,14 @@ figures.cachepaths = allocate {
 figures.paths  = allocate(table.copy(figures.localpaths))
 
 figures.order =  allocate{
-    "pdf", "mps", "jpg", "png", "jbig", "svg", "eps", "gif", "mov", "buffer", "tex", "cld",
+    "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "gif", "mov", "buffer", "tex", "cld",
 }
 
 figures.formats = allocate{
     ["pdf"]    = { list = { "pdf" } },
     ["mps"]    = { patterns = { "mps", "%d+" } },
     ["jpg"]    = { list = { "jpg", "jpeg" } },
+    ["jp2"]    = { list = { "jp2" } },
     ["png"]    = { list = { "png" } },
     ["jbig"]   = { list = { "jbig", "jbig2", "jb2" } },
     ["svg"]    = { list = { "svg", "svgz" } },

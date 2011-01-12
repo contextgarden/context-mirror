@@ -1360,11 +1360,11 @@
 
 
 \unexpanded\def\starttable
-  {\dodoubleempty\dostarttable}
+  {\bgroup
+   \dodoubleempty\dostarttable}
 
 \unexpanded\def\dostarttable[#1][#2]% preamble optional-settings
-  {\bgroup
-   \ifsecondargument
+  {\ifsecondargument
      \getparameters[\??ti][#2]%
    \fi
    \let\stoptable\dostoptable

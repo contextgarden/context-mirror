@@ -517,7 +517,7 @@
                     show_all_points := true ;
                   \stopMPdrawing,
       \s!unknown=>\startMPdrawing
-                    show_\@@FLOWdot_points := true ;
+                    show_\@@FLOWdot _points := true ;
                   \stopMPdrawing]%
 \doglobal\newcounter\FLOWcomment
    \let\startFLOWcell\startFLOWcellB
@@ -635,7 +635,7 @@
    \fi
    \doifnot\FLOWshape{none} % {\v!none}
      {\ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWshapes}
-        {\edef\FLOWshapetag{shape_\FLOWshape}% beter \expanded
+        {\edef\FLOWshapetag{shape_ \FLOWshape}% beter \expanded
          \@EA\setFLOWname\@EA\FLOWshapetag\@EA{\FLOWshapetag}}
         {\doifnumberelse\FLOWshape
            {\let\FLOWshapetag\FLOWshape}
@@ -726,7 +726,7 @@
 \doFLOWdisplace[0#2,0,0]%
            connection_line_color := \MPcolor{\@@FLOLcolor} ;
            connection_line_width := \@@FLOLrulethickness ;
-           connect_\cFLOWfrom_\cFLOWto (\FLOWfrom,\zFLOWfrom) (\FLOWto,\zFLOWto) ;
+           connect_\cFLOWfrom _\cFLOWto (\FLOWfrom,\zFLOWfrom) (\FLOWto,\zFLOWto) ;
 \doFLOWdisplace[0,0,0]%
          \stopMPdrawing
        \fi
@@ -1785,7 +1785,7 @@
                     show_all_points := true ;
                   \stopMPdrawing,
       \s!unknown=>\startMPdrawing
-                    show_\@@FLOWdot_points := true ;
+                    show_\@@FLOWdot _points := true ;
                   \stopMPdrawing]%
 \doglobal\newcounter\FLOWcomment
    \let\startFLOWcell\startFLOWcellB
@@ -1994,7 +1994,7 @@
 \doFLOWdisplace[0#2,0,0]%
            connection_line_color := \MPcolor{\@@FLOLcolor} ;
            connection_line_width := \@@FLOLrulethickness ;
-           connect_\cFLOWfrom_\cFLOWto (\FLOWfrom,\zFLOWfrom) (\FLOWto,\zFLOWto) ;
+           connect_\cFLOWfrom _\cFLOWto (\FLOWfrom,\zFLOWfrom) (\FLOWto,\zFLOWto) ;
 \doFLOWdisplace[0,0,0]%
          \stopMPdrawing
        \fi
