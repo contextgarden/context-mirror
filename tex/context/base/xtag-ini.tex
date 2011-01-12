@@ -2890,10 +2890,9 @@
 \def\douseXMLfilter#1%
   {\doifundefined{\c!file\f!xtagprefix#1}
      {\letvalue{\c!file\f!xtagprefix#1}\empty
-      \makeshortfilename[\truefilename{\f!xtagprefix#1}]%
       \startreadingfile
         % will be \showmessage
-        \readsysfile\shortfilename{\writestatus{xml}{loading module #1}}\donothing
+        \readsysfile{\truefilename{\f!xtagprefix#1}}{\writestatus{xml}{loading module #1}}\donothing
       \stopreadingfile}}
 
 %D Temporarily here.

@@ -271,14 +271,14 @@
         {\firstXMLRelement#1{\secondXMLRelement}}}%
    #2}
 
-\def\MMLpSUP#1{\MMLpSUBP^}
-\def\MMLpSUB#1{\MMLpSUBP_}
+\def\MMLpSUP#1{\MMLpSUBP ^}
+\def\MMLpSUB#1{\MMLpSUBP _}
 
 \remapXMLsequence [msubsup] [CPA] \MMLpSUBSUP
 
 \def\MMLpSUBSUP#1#2%
   {\withnextthreeXMLRelements
-     {\firstXMLRelement_{\secondXMLRelement}^{\thirdXMLRelement}}%
+     {\firstXMLRelement _{\secondXMLRelement}^{\thirdXMLRelement}}%
    #2}
 
 \remapXMLsequence [mover]      [CPA] \MMLpOVER

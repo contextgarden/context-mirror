@@ -562,7 +562,7 @@
 \def\dododotypefile#1#2%
   {\doifelsetypingfile{#2}
      {\dodododotypefile{#1}\readfilename}
-     {\reporttypingerror{#2}}}
+     {\showmessage\m!verbatims1{#2}}}
 
 \def\doifelsetypingfile#1% sets \readfilename (we will make this proper mkiv i.e. less messy)
   {\doiflocfileelse{#1}

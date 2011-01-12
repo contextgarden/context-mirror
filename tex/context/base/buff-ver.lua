@@ -13,7 +13,7 @@ local type, next, rawset, rawget, setmetatable, getmetatable = type, next, rawse
 local format, lower, match, find, sub = string.format, string.lower, string.match, string.find, string.sub
 local splitlines = string.splitlines
 local concat = table.concat
-local C, P, R, V, Carg = lpeg.C, lpeg.P, lpeg.R, lpeg.V, lpeg.Carg
+local C, P, R, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
 local patterns, lpegmatch, is_lpeg = lpeg.patterns, lpeg.match, lpeg.is_lpeg
 
 local tabtospace = utilities.strings.tabtospace
@@ -98,6 +98,15 @@ local function f_space() -- (s,settings)
     doverbatimspace()
 end
 
+local function f_signal() -- (s,settings)
+    -- we use these for special purposes
+end
+
+local signal = "\000"
+
+visualizers.signal        = signal
+visualizers.signalpattern = P(signal)
+
 local functions = { __index = {
         emptyline = f_emptyline,
         newline   = f_newline,
@@ -106,6 +115,7 @@ local functions = { __index = {
         space     = f_space,
         start     = f_start,
         stop      = f_stop,
+        signal    = f_signal,
     }
 }
 
@@ -294,8 +304,14 @@ local function defaultmethod(s,settings)
     lpegmatch(getvisualizer("default"),s,1,settings)
 end
 
+-- we can consider using a nested instead
+
 local space_pattern = patterns.space^0
 local name_pattern  = R("az","AZ")^1
+
+local function hack(pattern)
+    return Cs(pattern * Cc(signal)) -- hack to retain newlines
+end
 
 function visualizers.registerescapepattern(name,before,after,normalmethod,escapemethod)
     local escapepattern = escapepatterns[name]
@@ -305,7 +321,7 @@ function visualizers.registerescapepattern(name,before,after,normalmethod,escape
             (before / "")
           * ((1 - after)^0 / (escapemethod or texmethod))
           * (after / "")
-          + ((1 - before)^1) / (normalmethod or defaultmethod)
+          + hack((1 - before)^1) / (normalmethod or defaultmethod)
         )^0
         escapepatterns[name] = escapepattern
     end
@@ -316,10 +332,10 @@ function visualizers.registerescapecommand(name,token,normalmethod,escapecommand
     local escapepattern = escapepatterns[name]
     if not escapepattern then
         token = P(token)
-        local notoken = (1 - token)^1
+        local notoken = hack((1 - token)^1)
         local cstoken = name_pattern * space_pattern
         escapepattern = (
-            (token   / "")
+            (token / "")
           * (cstoken / (escapecommand or texcommand))
           + (notoken / (normalmethod or defaultmethod))
         )^0

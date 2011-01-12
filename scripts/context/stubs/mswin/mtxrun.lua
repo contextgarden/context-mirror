@@ -7008,6 +7008,7 @@ function xml.makestandalone(root)
             end
         end
     end
+    return root
 end
 
 

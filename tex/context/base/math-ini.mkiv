@@ -349,54 +349,95 @@
 %D The result is as expected: the first line typesets ok, while the second
 %D one triggers an error message.
 
+\setnewconstant\activemathcharcode "8000
+
+\newtoks\activatedmathcharacters
+
+\def\activatemathcharacter#1%
+  {\appendtoks
+     \global\mathcode#1=\activemathcharcode
+   \to \activatedmathcharacters}
+
+\def\activatemathcharacters
+  {\the\activatedmathcharacters}
+
+\setnewconstant\primeasciicode 39 % '
+
+\activatemathcharacter\caretasciicode
+\activatemathcharacter\underscoreasciicode
+\activatemathcharacter\ampersandasciicode
+\activatemathcharacter\primeasciicode
+
+% not used:
+%
+% \mathcode`\ =\activemathcharcode
+%
+% not used:
+%
+% \bgroup
+%     \catcode`\_ = 13
+%     \doglobal\appendtoks
+%         \mathcode`\_=\activemathcharcode
+%         \let_\activemathunderscore
+%     \to \everymathematics
+% \egroup
+%
+% plain tex legacy:
+
+\bgroup
+    \catcode\primeasciicode\activecatcode
+    \doglobal\appendtoks
+        \let'\activemathquote
+    \to \everymathematics
+\egroup
+
 \newtoks\everydonknuthmode
 \newtoks\everynonknuthmode
+
+\newconditional \knuthmode
 
 \def\nonknuthmode{\the\everynonknuthmode\let\nonknuthmode\relax}
 \def\donknuthmode{\the\everydonknuthmode}
 
 \bgroup
 
-    \catcode`\_=\activecatcode
-    \catcode`\^=\activecatcode
-    \catcode`\&=\activecatcode
+    \catcode\underscoreasciicode\activecatcode
+    \catcode\caretasciicode     \activecatcode
+    \catcode\ampersandasciicode \activecatcode
 
     \global \everynonknuthmode {\appendtoks
         \let_\normalsubscript
         \let^\normalsuperscript
-        \let&\normalmathaligntab
+        \let&\normalmathaligntab % use \def when it's \aligntab
     \to \everymathematics}
 
 \egroup
 
 \appendtoks
-    \mathcode`\_="8000
-    \mathcode`\^="8000
-    \mathcode`\&="8000
-    \catcode`\_=\othercatcode
-    \catcode`\^=\othercatcode
-    \catcode`\&=\othercatcode
+    \catcode\underscoreasciicode\othercatcode
+    \catcode\caretasciicode     \othercatcode
+    \catcode\ampersandasciicode \othercatcode
 \to \everynonknuthmode
 
 \appendtoks
-    \catcode`\_=\subscriptcatcode
-    \catcode`\^=\superscriptcatcode
-    \catcode`\&=\alignmentcatcode
+    \catcode\underscoreasciicode\subscriptcatcode
+    \catcode\caretasciicode     \superscriptcatcode
+    \catcode\ampersandasciicode \alignmentcatcode
 \to \everydonknuthmode
 
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
-        \catcode`\_=\othercatcode
-        \catcode`\^=\othercatcode
-        \catcode`\&=\othercatcode
+        \catcode\underscoreasciicode\othercatcode
+        \catcode\caretasciicode     \othercatcode
+        \catcode\ampersandasciicode \othercatcode
     \stopextendcatcodetable
 \to \everynonknuthmode
 
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
-        \catcode`\_=\subscriptcatcode
-        \catcode`\^=\superscriptcatcode
-        \catcode`\&=\alignmentcatcode
+        \catcode\underscoreasciicode\subscriptcatcode
+        \catcode\caretasciicode     \superscriptcatcode
+        \catcode\ampersandasciicode \alignmentcatcode
     \stopextendcatcodetable
 \to \everydonknuthmode
 
@@ -418,12 +459,6 @@
 %D Needed for unicode:
 
 \def\nulloperator{\mathortext{\mathop{\emptyhbox}}{\emptyhbox}}
-
-%D To be dealt with ...
-
-\mathcode`\ ="8000 % \space
-\mathcode`\'="8000 % ^\prime
-\mathcode`\_="8000 % \_
 
 %D \macros
 %D   {setupmathematics}

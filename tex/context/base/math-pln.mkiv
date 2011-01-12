@@ -282,17 +282,6 @@
 
 % \appendtoks \setcatcodetable\mthcatcodes \to \everymath : spoils xml
 
-% tricky, but some day we will reimplement math
-
-\bgroup
-    \catcode`\_ = 13
-    \catcode`\' = 13
-    \doglobal\appendtoks
-        \let_\activemathunderscore
-        \let'\activemathquote
-    \to \everymathematics
-\egroup
-
 % so far
 
 \protect \endinput

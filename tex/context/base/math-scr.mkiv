@@ -15,67 +15,6 @@
 
 \unprotect
 
-%D \macros
-%D   {super, sub}
-%D
-%D \TEX\ uses \type{^} and \type{_} for entering super- and
-%D subscript mode. We want however a bit more control than
-%D normally provided, and therefore provide \type {\super}
-%D and \type{sub}.
-%D
-%D The grid snapping has been removed.
-
-\ifdefined\supersubmode \else \newcount\supersubmode        \fi
-\ifdefined\newevery     \else \everysupersub \EverySuperSub \fi
-
-\appendtoks \advance\supersubmode \plusone \to \everysupersub
-
-\setuptextformulas
-  [\c!size=\v!normal]
-
-\def\normalsupsub#1#2%
-  {\normalsuperscript{\the\everysupersub#1}\normalsubscript{\the\everysupersub#2}}
-
-\def\super#1{\normalsuperscript{\the\everysupersub#1}}
-\def\suber#1{\normalsubscript  {\the\everysupersub#1}}
-\def\supsub#1#2{\super{#1}\suber{#2}}
-\def\subsup#1#2{\suber{#1}\super{#2}}
-
-%D \macros
-%D   {enablesupersub,enablesimplesupersub}
-%D
-%D We can let \type {^} and \type {_} act like \type {\super}
-%D and \type {\sub} by saying \type {\enablesupersub}.
-
-% the next macro will become obsolete in mkiv
-
-\bgroup
-\catcode`\^=\activecatcode
-\catcode`\_=\activecatcode
-\gdef\enablesupersub
-  {\catcode`\^=\activecatcode
-   \def^{\ifmmode\expandafter\super\else\expandafter\normalsuperscript\fi}%
-   \catcode`\_=\activecatcode
-   \def_{\ifmmode\expandafter\suber\else\expandafter\normalsubscript  \fi}}
-\egroup
-
-%D \macros
-%D   {restoremathstyle}
-%D
-%D We can pick up the current math style by calling \type
-%D {\restoremathstyle}.
-
-\def\restoremathstyle
-  {\ifmmode
-     \ifcase\supersubmode
-       \textstyle
-     \or
-       \scriptstyle
-     \else
-       \scriptscriptstyle
-     \fi
-   \fi}
-
 %D These macros were first needed by Frits Spijker (also
 %D known as Gajes) for typesetting the minus sign that is
 %D keyed into scientific calculators.
@@ -130,5 +69,8 @@
 
 %D How negative such a symbol looks is demonstrated in:
 %D $\negative 10^{\negative 10^{\negative 10}}$.
+
+\setuptextformulas % why here
+  [\c!size=\v!normal]
 
 \protect \endinput

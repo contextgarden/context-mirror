@@ -1465,3 +1465,14 @@ function lxml.toparameters(id)
         end
     end
 end
+
+local template = '<?xml version="1.0" ?>\n\n<!-- %s -->\n\n%s'
+
+function lxml.tofile(id,pattern,filename,comment)
+    local collected = xmlapplylpath(getid(id),pattern)
+    if collected then
+        io.savedata(filename,format(template,comment or "exported fragment",tostring(collected[1])))
+    else
+        os.remove(filename) -- get rid of old content
+    end
+end

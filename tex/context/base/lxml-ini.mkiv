@@ -93,6 +93,8 @@
 
 \def\xmltoparameters       #1{\ctxlua{lxml.toparameters("#1")}}
 
+\def\xmltofile         #1#2#3{\ctxlua{lxml.tofile("#1","#2","#3")}} % id pattern filename
+
 % kind of special:
 
 \def\xmlstartraw{\ctxlua{lxml.startraw()}}

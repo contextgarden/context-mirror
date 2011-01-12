@@ -118,71 +118,79 @@ local MorseShort             = context.MorseShort
 local MorseSpace             = context.MorseSpace
 local MorseUnknown           = context.MorseUnknown
 
-local function tomorse(str,verbose)
-    if verbose then
-        str = gsub(str,"%s*+%s*","+")
-        str = gsub(str,"%s+"," ")
-        local done = false
-        for m in utfcharacters(str) do
+local function toverbose(str)
+    str = gsub(str,"%s*+%s*","+")
+    str = gsub(str,"%s+"," ")
+    local done = false
+    for m in utfcharacters(str) do
+        if done then
+            MorseBetweenCharacters()
+        end
+        if m == "·" or m == "." then
+            MorseShort()
+            done = true
+        elseif m == "—" or m == "-" then
+            MorseLong()
+            done = true
+        elseif m == " " then
             if done then
                 MorseBetweenCharacters()
             end
-            if m == "·" or m == "." then
-                MorseShort()
-                done = true
-            elseif m == "—" or m == "-" then
-                MorseLong()
-                done = true
-            elseif m == " " then
+            done = false
+        elseif m == "+" then
+            MorseBetweenWords()
+            done = false
+        else
+            MorseUnknown(m)
+        end
+    end
+end
+
+local function toregular(str)
+    local inmorse = false
+    for s in utfcharacters(str) do
+        local m = codes[s]
+        if m then
+            if inmorse then
+                MorseBetweenWords()
+            else
+                inmorse = true
+            end
+            local done = false
+            for m in utfcharacters(m) do
                 if done then
                     MorseBetweenCharacters()
+                else
+                    done = true
                 end
-                done = false
-            elseif m == "+" then
+                if m == "·" then
+                    MorseShort()
+                elseif m == "—" then
+                    MorseLong()
+                elseif m == " " then
+                    MorseBetweenCharacters()
+                end
+            end
+            inmorse = true
+        elseif s == "\n" or s == " " then
+            MorseSpace()
+            inmorse = false
+        else
+            if inmorse then
                 MorseBetweenWords()
-                done = false
             else
-                MorseUnknown(m)
-            end
-        end
-    else
-        local inmorse = false
-        for s in utfcharacters(str) do
-            local m = codes[s]
-            if m then
-                if inmorse then
-                    MorseBetweenWords()
-                else
-                    inmorse = true
-                end
-                local done = false
-                for m in utfcharacters(m) do
-                    if done then
-                        MorseBetweenCharacters()
-                    else
-                        done = true
-                    end
-                    if m == "·" then
-                        MorseShort()
-                    elseif m == "—" then
-                        MorseLong()
-                    elseif m == " " then
-                        MorseBetweenCharacters()
-                    end
-                end
                 inmorse = true
-            elseif s == "\n" or s == " " then
-                MorseSpace()
-                inmorse = false
-            else
-                if inmorse then
-                    MorseBetweenWords()
-                else
-                    inmorse = true
-                end
-                MorseUnknown(s)
             end
+            MorseUnknown(s)
         end
+    end
+end
+
+local function tomorse(str,verbose)
+    if verbose then
+        toverbose(str)
+    else
+        toregular(str)
     end
 end
 
