@@ -9,6 +9,16 @@ if not modules then modules = { } end modules ['math-dim'] = {
 -- Beware: only Taco really understands in depth what these dimensions do so
 -- if you run into problems ...
 
+-- The radical_rule value is also used as a trigger. In luatex the accent
+-- placement happens either the opentype way (using top_accent cum suis) or the
+-- traditional way. In order to determine what method to use the \Umathradicalrule
+-- setting is consulted to determine what method to use. This is more efficient
+-- than analyzing the (potentially spread over multiple families) situation. For
+-- this reason we need to set the radical_rule here. It used to be "<unset>" in
+-- which case the engine takes the rulethickness. In c-speak:
+--
+-- int compat_mode = (radical_rule(cur_style) == undefined_math_parameter) ;
+
 local abs, next = math.abs, next
 
 local defaults = {
@@ -85,7 +95,8 @@ local defaults = {
         ['default']={ "RadicalExtraAscender", "default_rule_thickness" },
      },
     ['radical_rule']={
-        ['default']={ "RadicalRuleThickness", "<not set>" },
+        ['default']={ "RadicalRuleThickness", "default_rule_thickness" },
+     -- ['default']={ "surd_height(f)", "default_rule_thickness" },
      },
     ['radical_vgap']={
         ['default']={ "RadicalVerticalGap", "default_rule_thickness+(abs(default_rule_thickness)/4)" },
