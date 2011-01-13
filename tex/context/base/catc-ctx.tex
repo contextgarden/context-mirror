@@ -22,65 +22,64 @@
 \ifdefined \typcatcodesc \else \newcatcodetable \typcatcodesc \fi % delimited
 
 \startcatcodetable \ctxcatcodes
-    \catcode\tabasciicode      \spacecatcode
-    \catcode\endoflineasciicode\endoflinecatcode
-    \catcode\formfeedasciicode \endoflinecatcode
-    \catcode\spaceasciicode    \spacecatcode
-  % \catcode\newlineasciicode  \spacecatcode
-    \catcode\endoffileasciicode\ignorecatcode
-    \catcode`\\                \escapecatcode
-    \catcode`\{                \begingroupcatcode
-    \catcode`\}                \endgroupcatcode
-    \catcode`\$                \mathshiftcatcode
-    \catcode`\&                \alignmentcatcode
-    \catcode`\#                \parametercatcode
-    \catcode`\^                \superscriptcatcode
-    \catcode`\_                \subscriptcatcode
-    \catcode`\%                \commentcatcode
-    \catcode`\~                \activecatcode
-    \catcode`\|                \activecatcode
+    \catcode\tabasciicode       \spacecatcode
+    \catcode\endoflineasciicode \endoflinecatcode
+    \catcode\formfeedasciicode  \endoflinecatcode
+    \catcode\spaceasciicode     \spacecatcode
+    \catcode\endoffileasciicode \ignorecatcode
+    \catcode\caretasciicode     \superscriptcatcode
+    \catcode\underscoreasciicode\subscriptcatcode
+    \catcode\ampersandasciicode \alignmentcatcode
+    \catcode`\\                 \escapecatcode
+    \catcode`\{                 \begingroupcatcode
+    \catcode`\}                 \endgroupcatcode
+    \catcode`\$                 \mathshiftcatcode
+    \catcode`\#                 \parametercatcode
+    \catcode`\%                 \commentcatcode
+    \catcode`\~                 \activecatcode
+    \catcode`\|                 \activecatcode
 \stopcatcodetable
 
 \startcatcodetable \prtcatcodes
-    \catcode\tabasciicode      \spacecatcode
-    \catcode\endoflineasciicode\endoflinecatcode
-    \catcode\formfeedasciicode \endoflinecatcode
-    \catcode\spaceasciicode    \spacecatcode
-    \catcode\endoffileasciicode\ignorecatcode
-    \catcode`\\                \escapecatcode
-    \catcode`\{                \begingroupcatcode
-    \catcode`\}                \endgroupcatcode
-    \catcode`\$                \mathshiftcatcode
-    \catcode`\&                \alignmentcatcode
-    \catcode`\#                \parametercatcode
-    \catcode`\^                \superscriptcatcode % soon we will also get rid of the usage of ^^ so then ^ can also be other
-    \catcode`\_                \ifnum\texengine=\luatexengine\lettercatcode \else \subscriptcatcode \fi
-    \catcode`\%                \commentcatcode
-    \catcode`\@                \lettercatcode
-    \catcode`\!                \lettercatcode
-    \catcode`\?                \lettercatcode
-    \catcode`\~                \activecatcode
-    \catcode`\|                \activecatcode
+    \catcode\tabasciicode       \spacecatcode
+    \catcode\endoflineasciicode \endoflinecatcode
+    \catcode\formfeedasciicode  \endoflinecatcode
+    \catcode\spaceasciicode     \spacecatcode
+    \catcode\endoffileasciicode \ignorecatcode
+    \catcode\caretasciicode     \superscriptcatcode % soon we will also get rid of the usage of ^^ so then ^ can also be other
+    \catcode\underscoreasciicode\ifnum\texengine=\luatexengine\lettercatcode \else \subscriptcatcode \fi
+    \catcode\ampersandasciicode \alignmentcatcode
+    \catcode`\\                 \escapecatcode
+    \catcode`\{                 \begingroupcatcode
+    \catcode`\}                 \endgroupcatcode
+    \catcode`\$                 \mathshiftcatcode
+    \catcode`\#                 \parametercatcode
+    \catcode`\%                 \commentcatcode
+    \catcode`\@                 \lettercatcode
+    \catcode`\!                 \lettercatcode
+    \catcode`\?                 \lettercatcode
+    \catcode`\~                 \activecatcode
+    \catcode`\|                 \activecatcode
 \stopcatcodetable
 
 \startcatcodetable \mthcatcodes
-    \catcode\tabasciicode      \spacecatcode
-    \catcode\endoflineasciicode\endoflinecatcode
-   %\catcode\newlineasciicode  \spacecatcode
-    \catcode\formfeedasciicode \endoflinecatcode
-    \catcode\spaceasciicode    \spacecatcode
-    \catcode\endoffileasciicode\ignorecatcode
-    \catcode`\\                \escapecatcode
-    \catcode`\{                \begingroupcatcode
-    \catcode`\}                \endgroupcatcode
-    \catcode`\$                \mathshiftcatcode
-    \catcode`\&                \alignmentcatcode
-    \catcode`\#                \parametercatcode
-    \catcode`\^                \superscriptcatcode
-    \catcode`\_                \subscriptcatcode
-    \catcode`\%                \commentcatcode
-   %\catcode`\~                \activecatcode
-   %\catcode`\|                \activecatcode
+    \catcode\tabasciicode       \spacecatcode
+    \catcode\endoflineasciicode \endoflinecatcode
+   %\catcode\newlineasciicode   \spacecatcode
+    \catcode\formfeedasciicode  \endoflinecatcode
+    \catcode\spaceasciicode     \spacecatcode
+    \catcode\endoffileasciicode \ignorecatcode
+    \catcode\caretasciicode     \superscriptcatcode
+    \catcode\underscoreasciicode\subscriptcatcode
+    \catcode\ampersandasciicode \alignmentcatcode
+    \catcode`\\                 \escapecatcode
+    \catcode`\{                 \begingroupcatcode
+    \catcode`\}                 \endgroupcatcode
+    \catcode`\$                 \mathshiftcatcode
+    \catcode`\#                 \parametercatcode
+    \catcode`\%                 \commentcatcode
+   %\catcode`\~                 \activecatcode
+   %\catcode`\|                 \activecatcode
 \stopcatcodetable
 
 \startcatcodetable \typcatcodesa

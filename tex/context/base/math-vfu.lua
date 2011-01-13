@@ -684,8 +684,8 @@ function vfmath.define(specification,set,variables)
     main.type = "virtual" -- not needed
     mathematics.scaleparameters(main,main,1)
     main.nomath = false
---~ print(table.serialize(characters[0x222B]))
---~ table.print(main.MathConstants)
+ -- table.print(characters[0x222B])
+ -- table.print(main.MathConstants)
     return main
 end
 
