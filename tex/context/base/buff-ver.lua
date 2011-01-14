@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['buff-ver'] = {
 -- supposed to use different names for their own variants.
 
 local type, next, rawset, rawget, setmetatable, getmetatable = type, next, rawset, rawget, setmetatable, getmetatable
-local format, lower, match, find, sub = string.format, string.lower, string.match, string.find, string.sub
+local format, lower, upper,match, find, sub = string.format, string.lower, string.upper, string.match, string.find, string.sub
 local splitlines = string.splitlines
 local concat = table.concat
 local C, P, R, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
@@ -19,6 +19,10 @@ local patterns, lpegmatch, is_lpeg = lpeg.patterns, lpeg.match, lpeg.is_lpeg
 local tabtospace = utilities.strings.tabtospace
 local variables = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
+
+local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
+
+local report_buffers = logs.new("buffers")
 
 visualizers = visualizers or { }
 
@@ -150,10 +154,14 @@ function visualizers.newhandler(name,data)
 end
 
 function visualizers.newgrammar(name,t)
+    name = lower(name)
     t = t or { }
     local g = visualizers.specifications[name]
     g = g and g.grammar
     if g then
+        if trace_visualize then
+            report_buffers("cloning grammar '%s'",name)
+        end
         for k,v in next, g do
             if not t[k] then
                 t[k] = v
@@ -167,10 +175,17 @@ function visualizers.newgrammar(name,t)
 end
 
 local function getvisualizer(method,nature)
+    method = lower(method)
     local m = specifications[method] or specifications.default
     if nature then
+        if trace_visualize then
+            report_buffers("getting visualizer '%s' with nature '%s'",method,nature)
+        end
         return m and (m[nature] or m.parser) or nil
     else
+        if trace_visualize then
+            report_buffers("getting visualizer '%s'",method)
+        end
         return m and m.parser or nil
     end
 end
@@ -206,6 +221,7 @@ visualizers.makepattern = makepattern
 visualizers.makenested  = makenested
 
 function visualizers.load(name)
+    name = lower(name)
     if rawget(specifications,name) == nil then
         name = lower(name)
         local texname = findfile(format("v-%s.mkiv",name))
@@ -216,8 +232,13 @@ function visualizers.load(name)
             texname = findfile(addsuffix(name,"lua" ))
         end
         if texname == "" or luaname == "" then
-            -- error message
+            if trace_visualize then
+                report_buffers("unknown visualizer '%s'",name)
+            end
         else
+            if trace_visualize then
+                report_buffers("loading visualizer '%s'",name)
+            end
             lua.registercode(luaname)
             context.input(texname)
         end
@@ -232,6 +253,10 @@ function commands.doifelsevisualizer(name)
 end
 
 function visualizers.register(name,specification)
+    name = lower(name)
+    if trace_visualize then
+        report_buffers("registering visualizer '%s'",name)
+    end
     specifications[name] = specification
     local parser, handler = specification.parser, specification.handler
     local displayparser = specification.display or parser
@@ -301,7 +326,7 @@ local function texcommand(s)
 end
 
 local function defaultmethod(s,settings)
-    lpegmatch(getvisualizer("default"),s,1,settings)
+    lpegmatch(getvisualizer("default"),lower(s),1,settings)
 end
 
 -- we can consider using a nested instead
@@ -316,6 +341,9 @@ end
 function visualizers.registerescapepattern(name,before,after,normalmethod,escapemethod)
     local escapepattern = escapepatterns[name]
     if not escapepattern then
+        if trace_visualize then
+            report_buffers("registering escape pattern, name: '%s', before: '%s', after: '%s'",name,before,after)
+        end
         before, after = P(before) * space_pattern, space_pattern * P(after)
         escapepattern = (
             (before / "")
@@ -331,6 +359,9 @@ end
 function visualizers.registerescapecommand(name,token,normalmethod,escapecommand)
     local escapepattern = escapepatterns[name]
     if not escapepattern then
+        if trace_visualize then
+            report_buffers("registering escape token, name: '%s', token: '%s'",name,token)
+        end
         token = P(token)
         local notoken = hack((1 - token)^1)
         local cstoken = name_pattern * space_pattern
@@ -348,7 +379,7 @@ local escapedvisualizers = { }
 
 local function visualize(content,settings) -- maybe also method in settings
     if content and content ~= "" then
-        local method = settings.method or "default"
+        local method = lower(settings.method or "default")
         local m
         local e = settings.escape
         if e and e ~= "" then
@@ -382,8 +413,14 @@ local function visualize(content,settings) -- maybe also method in settings
         local nature = settings.nature or "display"
         local n = m and m[nature]
         if n then
+            if trace_visualize then
+                report_buffers("visualize using method '%s' and nature '%s'",method,nature)
+            end
             n(content,settings)
         else
+            if trace_visualize then
+                report_buffers("visualize using method '%s'",method)
+            end
             fallback(content,1,settings)
         end
     end
@@ -417,11 +454,11 @@ end
 
 -- --
 
-local space     = C(patterns.space)         * CargOne / f_space
-local newline   = C(patterns.newline)       * CargOne / f_newline
-local emptyline = C(patterns.emptyline)     * CargOne / f_emptyline
-local beginline = C(patterns.beginline)     * CargOne / f_beginline
-local anything  = C(patterns.somecontent^1) * CargOne / f_default
+local space     = C(patterns.space)       * CargOne / f_space
+local newline   = C(patterns.newline)     * CargOne / f_newline
+local emptyline = C(patterns.emptyline)   * CargOne / f_emptyline
+local beginline = C(patterns.beginline)   * CargOne / f_beginline
+local anything  = C(patterns.somecontent) * CargOne / f_default
 
 local verbosed  = (space + newline * (emptyline^0) * beginline + anything)^0
 
