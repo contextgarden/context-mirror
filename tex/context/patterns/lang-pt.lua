@@ -92,10 +92,11 @@ return {
 % archives in directory macros/latex/base/lppl.txt; either\
 % version 1 of the License, or any later version.\
 % -----------------------------------------------------------------\
-% Remember! If you *must* change it, then call the resulting file\
+% Remember! If you *must* change it, then call the resulting file \
 % something  else and attach your name to your *documented* changes.\
 % ======================================================================\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="-abcdefghijklmnopqrstuvwxzáâãçéêíóôõú",

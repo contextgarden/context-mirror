@@ -113,7 +113,8 @@ return {
 %\
 % \\message{Latin Hyphenation Patterns `lahyph' Version 3.2 <2010/06/01>}\
 %\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvxzæœ",

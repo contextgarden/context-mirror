@@ -87,7 +87,7 @@ return {
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 %%      checksum        = \"37208 1458 3078 34821\"\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
-%%%%%%%% The most famous good guys who worked hard to obtain something usable.\
+%%%%%%%% The most famous good guys who worked hard to obtain something usable. \
 % Jacques Desarmenien, Universite de Strasbourg :\
 %          -  << how to run TeX in a French environment: hyphenation, fonts,\
 %             typography. >> in Tugboat, 5 (1984) 91-102. and TeX85 conference\
@@ -113,7 +113,8 @@ return {
 % tested in lack of an executable.)\
 %\
 % -----------------------------------------------------------------\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzàâçèéêîïôûœ’",

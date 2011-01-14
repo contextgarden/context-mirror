@@ -89,7 +89,8 @@ return {
 % Current maintainer: Aleksandar Jelenak <ajelenak AT yahoo.com>\
 %\
 % \\message{Serbian Cyrillic Hyphenation Patterns `srhyphc.tex' v1.0a <2003-06-09>}\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="абвгдежзиклмнопрстуфхцчшђјљњћџ",

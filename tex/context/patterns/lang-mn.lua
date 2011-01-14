@@ -93,7 +93,8 @@ return {
 % 2. In the case of hardsign or softsign, it's possible to hyphen after these signs.\
 %    For instance, байгуулъ-я, үзүүль-е\
 % 3. However one vowel can be belong to a syllable, it's not possible to use hyphen.\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="абвгдежзийклмнопрстуфхцчшщъыьэюяёүө",

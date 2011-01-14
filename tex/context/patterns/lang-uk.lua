@@ -70,14 +70,15 @@ return {
 %\
 %------------------------------------------------------------------------------\
 %\
-% Ukrainian hyphenation patterns in LCY (cp866nav) encoding.\
-% Copyright 1998-2001 Maksym Polyakov.\
+% Ukrainian hyphenation patterns in LCY (cp866nav) encoding.    \
+% Copyright 1998-2001 Maksym Polyakov.                          \
 % Released 2001/05/10.\
-% This file can be redistributed and/or modified\
-% under the terms of the LaTeX Project Public License (lppl).\
-% Please, send bug reports via e-mail:\
-%   polyama@auburn.edu\
-%   mpoliak@i.com.ua",
+% This file can be redistributed and/or modified                \
+% under the terms of the LaTeX Project Public License (lppl).   \
+% Please, send bug reports via e-mail:                          \
+%   polyama@auburn.edu                                          \
+%   mpoliak@i.com.ua                                            \
+% ",
  },
  ["patterns"]={
   ["characters"]="-абвгдежзийклмнопрстуфхцчшщьюяєіїґ’",

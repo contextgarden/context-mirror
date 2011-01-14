@@ -72,12 +72,13 @@ return {
 %\
 % Hyphenation patterns for Croatian language\
 %\
-% The first version was realised in late 1994.\
+% The first version was realised in late 1994. \
 % Second, much more improved version was realised in the beginning of 1996.\
 % Date of the last change: 19.03.1996.\
 %\
 %                                              Marinović Igor\
-%                                           migor@student.math.hr",
+%                                           migor@student.math.hr\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnoprstuvzćčđšž",

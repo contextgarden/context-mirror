@@ -86,7 +86,8 @@ return {
 % document files README.ruhyphal and hyphen.rules.  The file cyryoal.tex\
 % can be regenerated using mkcyryo script (a part of ruhyphen package)\
 % and the latest release of rus-ispell dictionaries\
-% <ftp://scon155.phys.msu.su/pub/russian/ispell/>.",
+% <ftp://scon155.phys.msu.su/pub/russian/ispell/>.\
+% ",
  },
  ["patterns"]={
   ["characters"]="-абвгдежзийклмнопрстуфхцчшщъыьэюяё",

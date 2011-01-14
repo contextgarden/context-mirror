@@ -69,7 +69,8 @@ return {
 % patterns.  This file of hyphenation patterns may be freely distributed.\
 %\
 % These patterns require a value of about 14000 for TeX's pattern memory size.\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyz",

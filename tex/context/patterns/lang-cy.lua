@@ -71,7 +71,8 @@ return {
 %------------------------------------------------------------------------------\
 %\
 % Welsh patterns\
-% Yannis Haralambous 1996",
+% Yannis Haralambous 1996\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghilmnoprstuwyáâêëïôö",

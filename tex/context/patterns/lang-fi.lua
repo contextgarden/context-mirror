@@ -85,7 +85,8 @@ return {
 %\
 % *********     Patterns may be freely distributed   **********\
 %\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvyäö",

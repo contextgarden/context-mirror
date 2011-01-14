@@ -33,7 +33,8 @@ return {
 %\
 % Notes:\
 % - you need to use loadhyph-tr.tex, please do not try to put \\catcode-s & \\lccode-s here\
-%",
+% \
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnoprstuvyzâçîöûüğış",

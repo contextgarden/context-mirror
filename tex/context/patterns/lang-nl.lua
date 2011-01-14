@@ -94,7 +94,7 @@ return {
 %           (5) in words that have different hyphenations according to\
 %               there meaning (buur-tje/buurt-je)\
 %\
-% COPYRIGHT (C) 1996: Piet Tutelaers\
+% COPYRIGHT (C) 1996: Piet Tutelaers \
 %\
 % -----------------------------------------------------------------\
 % IMPORTANT NOTICE:\
@@ -107,7 +107,8 @@ return {
 % VERSION: 1.1 (November 1996) Copyright changed March 2000\
 %\
 % AUTHOR:  Piet Tutelaers P.T.H.Tutelaers@tue.nl\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzäçèéêëîïñöûü",
