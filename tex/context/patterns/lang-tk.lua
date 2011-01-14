@@ -25,7 +25,8 @@ return {
 % For more information about UTF-8 hyphenation patterns for TeX and\
 % links to this file see\
 %     http://www.tug.org/tex-hyphen/\
-%",
+% \
+% ",
  },
  ["patterns"]={
   ["characters"]="-abdefghijklmnoprstuwyzäçöüýňşž",

@@ -94,7 +94,8 @@ return {
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA\
 %%% --------------------------------------------------------------------\
 % \\message {Czech Hyphenation Patterns (Pavel Sevecek, v3, 1995)}\
-%\\lefthyphenmin=2\\righthyphenmin=2",
+%\\lefthyphenmin=2\\righthyphenmin=2\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzáéíóúýčďěňřšťůž",

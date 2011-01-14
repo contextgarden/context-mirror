@@ -98,6 +98,7 @@ return {
 % \
 % The LeX format mentioned above was the first version of the adaptation\
 % of TeX to the Polish language. The next version is called MeX.\
+% \
 % ",
  },
  ["patterns"]={

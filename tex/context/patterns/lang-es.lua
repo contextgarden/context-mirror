@@ -33,6 +33,7 @@ return {
 % Javier Bezos                | http://www.cervantex.es/\
 % .............................................................\
 % TeX y tipografia            | http://www.tex-tipografia.com/\
+% \
 % ",
  },
  ["patterns"]={

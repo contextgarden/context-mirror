@@ -44,6 +44,7 @@ return {
 % at-ten-de\
 % be-tre\
 % }\
+% \
 % ",
  },
  ["patterns"]={

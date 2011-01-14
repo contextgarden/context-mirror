@@ -54,7 +54,8 @@ return {
 % any changes. Even more, changing lefthyphen and righthyphen to 1 requires\
 % to review and maybe rebuild the patterns file.\
 %\
-%------------------------------------------------------------------------------",
+%------------------------------------------------------------------------------\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnoprstuvwyząčėęįšūųž",

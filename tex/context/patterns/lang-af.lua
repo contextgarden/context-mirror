@@ -30,10 +30,11 @@ return {
 %\
 % Define lefthyphenmin to one and righthyphenmin to two\
 % (although righthyphenmin could technically be made one,\
-%  in allmost all cases a value of two gives better results):\
+%  in allmost all cases a value of two gives better results): \
 % \\lefthyphenmin=1 \\righthyphenmin=2\
 %\
-% -----------------------------------------------------------------",
+% -----------------------------------------------------------------\
+% ",
  },
  ["patterns"]={
   ["characters"]="-abcdefghijklmnopqrstuvwxyzäèêëîïôöûü’",

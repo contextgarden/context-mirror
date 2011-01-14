@@ -15,10 +15,11 @@ return {
 % Copyright (C) 2003-2008, Bence Nagy <nagybence@tipogral.hu>\
 % This file can be distributed under the terms of the\
 % GNU General Public License version 2.\
-%\
+% \
 % Encoding: UTF8\
 %\
-% \\message{Huhyphn - hungarian hyphenation patterns v20081106}",
+% \\message{Huhyphn - hungarian hyphenation patterns v20081106}\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzáäéíóöúüőű",

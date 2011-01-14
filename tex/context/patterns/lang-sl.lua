@@ -101,7 +101,8 @@ return {
 %             Release of `sihyph23.tex'\
 %  2007-01-20 `sihyph23.tex' renamed to `slhyph.tex'\
 %             (sl is the proper language code for Slovenian)\
-%",
+%\
+% ",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzčšž",
