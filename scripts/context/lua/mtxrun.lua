@@ -207,9 +207,6 @@ local squote           = P("'")
 local dquote           = P('"')
 local space            = P(" ")
 
-patterns.somecontent   = (anything - newline - space)^1
-patterns.beginline     = #(1-newline)
-
 local utfbom_32_be     = P('\000\000\254\255')
 local utfbom_32_le     = P('\255\254\000\000')
 local utfbom_16_be     = P('\255\254')
@@ -281,6 +278,9 @@ patterns.unsingle      = (squote/"") * patterns.nosquote * (squote/"")
 patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
+
+patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
+patterns.beginline     = #(1-newline)
 
 local unquoted = Cs(patterns.unquoted * endofstring) -- not C
 
@@ -13754,7 +13754,7 @@ runners.registered = {
     makempy      = { 'makempy.pl',      true  },
     mptopdf      = { 'mptopdf.pl',      true  },
     pstopdf      = { 'pstopdf.rb',      true  },  -- converts ps (and some more) images, does some cleaning (replaced)
---  examplex     = { 'examplex.rb',     false },
+ -- examplex     = { 'examplex.rb',     false },
     concheck     = { 'concheck.rb',     false },
     runtools     = { 'runtools.rb',     true  },
     textools     = { 'textools.rb',     true  },
@@ -13763,9 +13763,9 @@ runners.registered = {
     rlxtools     = { 'rlxtools.rb',     true  },
     pdftools     = { 'pdftools.rb',     true  },
     mpstools     = { 'mpstools.rb',     true  },
---  exatools     = { 'exatools.rb',     true  },
+ -- exatools     = { 'exatools.rb',     true  },
     xmltools     = { 'xmltools.rb',     true  },
---  luatools     = { 'luatools.lua',    true  },
+ -- luatools     = { 'luatools.lua',    true  },
     mtxtools     = { 'mtxtools.rb',     true  },
     pdftrimwhite = { 'pdftrimwhite.pl', false }
 }

@@ -40,9 +40,6 @@ local squote           = P("'")
 local dquote           = P('"')
 local space            = P(" ")
 
-patterns.somecontent   = (anything - newline - space)^1
-patterns.beginline     = #(1-newline)
-
 local utfbom_32_be     = P('\000\000\254\255')
 local utfbom_32_le     = P('\255\254\000\000')
 local utfbom_16_be     = P('\255\254')
@@ -114,6 +111,9 @@ patterns.unsingle      = (squote/"") * patterns.nosquote * (squote/"")
 patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
+
+patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
+patterns.beginline     = #(1-newline)
 
 local unquoted = Cs(patterns.unquoted * endofstring) -- not C
 

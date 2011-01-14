@@ -134,13 +134,6 @@ local handler = visualizers.newhandler {
     name_c       = visualizename_c,
 }
 
-local space       = patterns.space
-local anything    = patterns.anything
-local newline     = patterns.newline
-local emptyline   = patterns.emptyline
-local beginline   = patterns.beginline
-local somecontent = patterns.somecontent
-
 local comment     = P("--")
 local name        = (patterns.letter + patterns.underscore)
                   * (patterns.letter + patterns.underscore + patterns.digit)^0
@@ -156,14 +149,6 @@ local close       = P("]") * C(equals) * P("]")
 local closeeq     = Cmt(close * Cb("init"), function(s,i,a,b) return a == b end)
 local longstring  = open * Cs((P(1) - closeeq)^0) * close * Carg(1)
 
---~ local simple = P ( -- here we hook into the handler but it is default so we could use that
---~     makepattern(handler,"space",space)
---~   + makepattern(handler,"newline",newline)
---~   * makepattern(handler,"emptyline",emptyline)
---~   * makepattern(handler,"beginline",beginline)
---~   + makepattern(handler,"default",anything)
---~ )^0
-
 local function long(content,equals,settings)
     handler.boundary(format("[%s[",equals or ""))
     visualizers.write(content,settings) -- unhandled
@@ -171,25 +156,6 @@ local function long(content,equals,settings)
 end
 
 local grammar = visualizers.newgrammar("default", { "visualizer",
---~     emptyline =
---~         makepattern(handler,"emptyline",emptyline),
---~     beginline =
---~         makepattern(handler,"beginline",beginline),
---~     newline =
---~         makepattern(handler,"newline",newline),
---~     space =
---~         makepattern(handler,"space",space),
---~     default =
---~         makepattern(handler,"default",anything),
---~     line =
---~         V("newline") * V("emptyline")^0 * V("beginline"),
---~     whitespace =
---~         (V("space") + V("line"))^1,
---~     optionalwhitespace =
---~         (V("space") + V("line"))^0,
---~     content =
---~         makepattern(handler,"default",somecontent),
-
     sstring =
         makepattern(handler,"quote",patterns.dquote)
       * (V("whitespace") + makepattern(handler,"string",1-patterns.dquote))^0 -- patterns.nodquote

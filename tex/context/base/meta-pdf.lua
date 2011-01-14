@@ -24,7 +24,7 @@ local pdfgraycode               = lpdf.graycode
 local pdfspotcode               = lpdf.spotcode
 local pdftransparencycode       = lpdf.transparencycode
 local pdffinishtransparencycode = lpdf.finishtransparencycode
-local pdfliteral                = node.pdfliteral
+local pdfliteral                = nodes.pool.pdfliteral
 
 metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf
@@ -50,12 +50,14 @@ end
 
 resetall()
 
--- todo: collect and flush packed using pdfliteral node injection but we're
--- in no hurry as this kind of conversion does not happen that often in mkiv
+-- -- this does not work as expected (displacement of text)
+-- -- beware, needs another comment hack
+--
+-- local function pdfcode(str)
+--    context(pdfliteral(str))
+-- end
 
-local function pdfcode(str) -- could be a node.write instead
-    context(pdfliteral(str))
-end
+local pdfcode = context.pdfliteral
 
 local function mpscode(str)
     if ignore_path then
@@ -510,7 +512,6 @@ local verbose = (
 -- order matters in terms of speed / we could check for procset first
 
 local captures_old = ( space + verbose + preamble           )^0
---~ local captures_new = ( space + procset + preamble + verbose )^0
 local captures_new = ( space + verbose + procset + preamble )^0
 
 local function parse(m_data)
@@ -532,11 +533,13 @@ function mptopdf.convertmpstopdf(name)
         mps.colormodel = tex.attribute[a_colorspace]
         statistics.starttiming(mptopdf)
         mptopdf.nofconverted = mptopdf.nofconverted + 1
+     -- pdfcode(format("%% mptopdf begin: n=%s, file=%s",mptopdf.nofconverted,file.basename(name)))
         pdfcode(format("\\letterpercent\\space mptopdf begin: n=%s, file=%s",mptopdf.nofconverted,file.basename(name)))
         pdfcode("q 1 0 0 1 0 0 cm")
         parse(m_data)
         pdfcode(pdffinishtransparencycode())
         pdfcode("Q")
+     -- pdfcode("% mptopdf end")
         pdfcode("\\letterpercent\\space mptopdf end")
         resetall()
         statistics.stoptiming(mptopdf)
@@ -544,7 +547,6 @@ function mptopdf.convertmpstopdf(name)
         commands.writestatus("mptopdf","file '%s' not found",name)
     end
 end
-
 
 -- status info
 

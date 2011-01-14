@@ -2095,11 +2095,16 @@
 
 % \newconditional\fontsareloaded
 
+% \def\preloaddefaultfonts
+%   {\resetpreloadfonts
+%    \usetypescript[modern]%
+%    \setuptypeface[modern]%
+%   %\setupbodyfont[modern]%
+%    \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}
+
 \def\preloaddefaultfonts
   {\resetpreloadfonts
-   \usetypescript[modern]%
-   \setuptypeface[modern]%
-  %\setupbodyfont[modern]%
+   \setupbodyfont[modern,\fontstyle,\fontbody]%
    \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}
 
 \def\resetpreloadfonts

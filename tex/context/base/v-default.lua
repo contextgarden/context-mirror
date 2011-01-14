@@ -20,8 +20,8 @@ local grammar = { "visualizer",
     beginline  = makepattern(handler,"beginline",patterns.beginline),
     newline    = makepattern(handler,"newline",  patterns.newline),
     space      = makepattern(handler,"space",    patterns.space),
-    default    = makepattern(handler,"default",  patterns.anything),
-    content    = makepattern(handler,"default",  patterns.somecontent),
+    default    = makepattern(handler,"default",  patterns.utf8char),
+    content    = makepattern(handler,"default",  patterns.somecontent), -- not too efficient
 
     -- handy
 
