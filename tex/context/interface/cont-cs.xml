@@ -1,13 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- versions:
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- versions:
 
     comment  : user interface definitions of ConTeXt
 
-    authors  : Hans Hagen, Taco Hoekwater, Patrick Gundlach
+    authors  : Hans Hagen, Taco Hoekwater, Patrick Gundlach, Wolfgang Schuster, and others
 
     versions : 2004.11.17 : initial version
                2006.08.02 : define + resolve
 
 -->
+
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cs" version="2006.08.02">
 
   <cd:define name="align">

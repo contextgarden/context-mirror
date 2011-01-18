@@ -769,10 +769,11 @@
 
 \definefileconstant {errfilename} {cont-err}
 \definefileconstant {sysfilename} {cont-sys}
-\definefileconstant {oldfilename} {cont-old}
 \definefileconstant {newfilename} {cont-new}
-\definefileconstant {filfilename} {cont-fil.\mksuffix}
-\definefileconstant {modfilename} {cont-mod}
+\definefileconstant {locfilename} {cont-loc}
+\definefileconstant {expfilename} {cont-exp}
+%definefileconstant {usrfilename} {cont-usr} % .tex
+%definefileconstant {fmtfilename} {cont-fmt} % .tex
 
 %D Handy for typescripts (we could use s! instead:
 
@@ -781,12 +782,6 @@
 \definetypescriptconstant {map}     {map}
 \definetypescriptconstant {special} {special}
 \definetypescriptconstant {size}    {size}
-
-%D The next two files specify user settings as well as
-%D \TEXEXEC\ settings when generating a format.
-
-\definefileconstant {usrfilename} {cont-usr} % .tex
-\definefileconstant {fmtfilename} {cont-fmt} % .tex
 
 %D The setup files for the language, font, color and special
 %D subsystems have a common prefix. This means that we have at

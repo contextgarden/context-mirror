@@ -31,29 +31,29 @@ local lpegmatch = lpeg.match
 
 local tex = tex
 
-local texsprint    = tex.sprint
-local textprint    = tex.tprint
-local texprint     = tex.print
-local texiowrite   = texio.write
-local texcount     = tex.count
+local texsprint      = tex.sprint
+local textprint      = tex.tprint
+local texprint       = tex.print
+local texiowrite     = texio.write
+local texcount       = tex.count
 
-local isnode       = node.is_node -- after 0.65 just node.type
-local writenode    = node.write
-local copynodelist = node.copylist
+local isnode         = node.is_node -- after 0.65 just node.type
+local writenode      = node.write
+local copynodelist   = node.copylist
 
-local ctxcatcodes  = tex.ctxcatcodes
-local prtcatcodes  = tex.prtcatcodes
-local texcatcodes  = tex.texcatcodes
-local txtcatcodes  = tex.txtcatcodes
-local vrbcatcodes  = tex.vrbcatcodes
-local xmlcatcodes  = tex.xmlcatcodes
+local ctxcatcodes    = tex.ctxcatcodes
+local prtcatcodes    = tex.prtcatcodes
+local texcatcodes    = tex.texcatcodes
+local txtcatcodes    = tex.txtcatcodes
+local vrbcatcodes    = tex.vrbcatcodes
+local xmlcatcodes    = tex.xmlcatcodes
 
-local flush         = texsprint
+local flush          = texsprint
 
-local trace_context = logs.new("context") -- here
-local report_cld    = logs.new("cld")
+local report_context = logs.new("context") -- here
+local report_cld     = logs.new("cld")
 
-local processlines  = true -- experiments.register("context.processlines", function(v) processlines = v end)
+local processlines   = true -- experiments.register("context.processlines", function(v) processlines = v end)
 
 -- for tracing it's easier to have two stacks
 
@@ -163,7 +163,7 @@ function tex.fprint(...) -- goodie
     texsprint(currentcatcodes,format(...))
 end
 
--- -- --
+-- -- -- todo: tracing
 
 local newline    = lpeg.patterns.newline
 local space      = lpeg.patterns.spacer
@@ -178,15 +178,15 @@ local function n_content(s)
 end
 
 local function n_endofline()
-    texsprint(" ")
+    texsprint(" \r")
 end
 
 local function n_emptyline()
-    texprint("")
+    texprint("\r")
 end
 
 local function n_simpleline()
-    texprint("")
+    texprint("\r")
 end
 
 function lpeg.texlinesplitter(f_content,f_endofline,f_emptyline,f_simpleline)
@@ -247,7 +247,7 @@ local function writer(parent,command,first,...)
             if typ == "string" or typ == "number" then
                 flush(currentcatcodes,ti)
             else -- node.write
-                trace_context("error: invalid use of direct in '%s', only strings and numbers can be flushed directly, not '%s'",command,typ)
+                report_context("error: invalid use of direct in '%s', only strings and numbers can be flushed directly, not '%s'",command,typ)
             end
             direct = false
         elseif ti == nil then
@@ -255,7 +255,7 @@ local function writer(parent,command,first,...)
         elseif ti == "" then
             flush(currentcatcodes,"{}")
         elseif typ == "string" then
-            if processlines and find(ti,"\n") then -- we can check for ti == "\n"
+            if processlines and find(ti,"[\n\r]") then -- we can check for ti == "\n"
                 flush(currentcatcodes,"{")
                 local flushlines = parent.__flushlines or flushlines
                 flushlines(ti)
@@ -317,11 +317,11 @@ local function writer(parent,command,first,...)
                 direct = true
             end
         elseif typ == "thread" then
-            trace_context("coroutines not supported as we cannot yield across boundaries")
+            report_context("coroutines not supported as we cannot yield across boundaries")
         elseif isnode(ti) then -- slow
             flush(currentcatcodes,"{\\cldfn{",_store_n_(ti),"}}")
         else
-            trace_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
+            report_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
         end
     end
 end
@@ -349,7 +349,7 @@ local function caller(parent,f,a,...)
         if typ == "string" then
             if a then
                 flush(contentcatcodes,format(f,a,...)) -- was currentcatcodes
-            elseif processlines and find(f,"\n") then
+            elseif processlines and find(f,"[\n\r]") then
                 local flushlines = parent.__flushlines or flushlines
                 flushlines(f)
             else
@@ -383,12 +383,12 @@ local function caller(parent,f,a,...)
                 end
             end
         elseif typ == "thread" then
-            trace_context("coroutines not supported as we cannot yield across boundaries")
+            report_context("coroutines not supported as we cannot yield across boundaries")
         elseif isnode(f) then -- slow
          -- writenode(f)
             flush(currentcatcodes,"\\cldfn{",_store_n_(f),"}")
         else
-            trace_context("error: 'context' gets a weird argument '%s'",tostring(f))
+            report_context("error: 'context' gets a weird argument '%s'",tostring(f))
         end
     end
 end
@@ -463,7 +463,7 @@ end
 
 local function settracing(v)
     if v then
-        pushlogger(trace_context)
+        pushlogger(report_context)
     else
         poplogger()
     end
@@ -485,19 +485,19 @@ function context.runfile(filename)
         local ok = dofile(foundname)
         if type(ok) == "function" then
             if trace_cld then
-                trace_context("begin of file '%s' (function call)",foundname)
+                report_context("begin of file '%s' (function call)",foundname)
             end
             ok()
             if trace_cld then
-                trace_context("end of file '%s' (function call)",foundname)
+                report_context("end of file '%s' (function call)",foundname)
             end
         elseif ok then
-            trace_context("file '%s' is processed and returns true",foundname)
+            report_context("file '%s' is processed and returns true",foundname)
         else
-            trace_context("file '%s' is processed and returns nothing",foundname)
+            report_context("file '%s' is processed and returns nothing",foundname)
         end
     else
-        trace_context("unknown file '%s'",filename)
+        report_context("unknown file '%s'",filename)
     end
 end
 
@@ -621,10 +621,10 @@ local function caller(parent,f,a,...)
             if f then
                 flush(currentcatcodes,mpdrawing,"{^^M}")
             else
-                trace_context("warning: 'metafun' gets argument 'false' which is currently unsupported")
+                report_context("warning: 'metafun' gets argument 'false' which is currently unsupported")
             end
         else
-            trace_context("error: 'metafun' gets a weird argument '%s'",tostring(f))
+            report_context("error: 'metafun' gets a weird argument '%s'",tostring(f))
         end
     end
 end

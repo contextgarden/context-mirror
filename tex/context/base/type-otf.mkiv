@@ -62,8 +62,6 @@
 % \definefontsynonym [LMRoman10-DemiOblique] [\s!name:LMRoman10-DemiOblique] [\s!features=\s!default]
 % \definefontsynonym [LMRoman10-DemiOblique] [lmroman10-demioblique]         [\s!features=\s!default]
 
-\unprotect
-
 % \starttypescript [math] [modern,computer-modern,latin-modern]
 %     \definefontsynonym[MathSymbol][MathSymbol-Regular@symbol-math]
 %     \loadfontgoodies[symbol-math]
@@ -105,7 +103,7 @@
         \definefontsynonym [LMRoman10-BoldOblique]    [\s!file:lmromanslant10-bold]   [\s!features=\s!default]
         \definefontsynonym [LMRoman10-Demi]           [\s!file:lmromandemi10-regular] [\s!features=\s!default]
         \definefontsynonym [LMRoman10-DemiOblique]    [\s!file:lmromandemi10-oblique] [\s!features=\s!default]
-        \definefontsynonym [LMRoman10-CapsRegular]    [\s!file:lmromancaps10-regular] [\s!features=\s!default] % features=smallcaps?
+        \definefontsynonym [LMRoman10-CapsRegular]    [\s!file:lmromancaps10-regular] [\s!features=\s!default]
         \definefontsynonym [LMRoman10-CapsOblique]    [\s!file:lmromancaps10-oblique] [\s!features=\s!default]
 
         \definefontsynonym [LMRoman10-Dunhill]        [\s!file:lmromandunh10-regular] [\s!features=\s!default]
@@ -143,7 +141,7 @@
         \definefontsynonym [LMTypewriter12-Regular]               [\s!file:lmmono12-regular]           [\s!features=\s!none]
         \definefontsynonym [LMTypewriter10-Italic]                [\s!file:lmmono10-italic]            [\s!features=\s!none]
         \definefontsynonym [LMTypewriter10-Oblique]               [\s!file:lmmonoslant10-regular]      [\s!features=\s!none]
-        \definefontsynonym [LMTypewriter10-CapsRegular]           [\s!file:lmmonocaps10-regular]       [\s!features=\s!none] % features=smallcaps?
+        \definefontsynonym [LMTypewriter10-CapsRegular]           [\s!file:lmmonocaps10-regular]       [\s!features=\s!none]
         \definefontsynonym [LMTypewriter10-CapsOblique]           [\s!file:lmmonocaps10-oblique]       [\s!features=\s!none]
 
         \definefontsynonym [LMTypewriter10-Light]                 [\s!file:lmmonolt10-regular]         [\s!features=\s!none]
@@ -431,7 +429,7 @@
         \quittypescriptscanning
     \stoptypescript
 
-    \starttypescript [serif] [simple] [name] % bad, will be changed but in sycn with manuals that use it
+    \starttypescript [serif] [simple] [name]% bad, will be changed but in sycn with manuals that use it
         \definefontsynonym [Simple] [cmvtt10]
         %setupfontsynonym  [Simple] [handling=pure]
     \stoptypescript
@@ -445,9 +443,9 @@
     \definetypescriptprefix [f:heros]   [heros]     \definetypescriptprefix [f:helvetica]  [heros]
     \definetypescriptprefix [f:bonum]   [bonum]     \definetypescriptprefix [f:bookman]    [bonum]
     \definetypescriptprefix [f:schola]  [schola]    \definetypescriptprefix [f:schoolbook] [schola]
-    \definetypescriptprefix [f:adventor][adventor]  %definetypescriptprefix [f:adventor]   [adventor]
+    \definetypescriptprefix [f:adventor][adventor]% \definetypescriptprefix [f:adventor]   [adventor]
     \definetypescriptprefix [f:cursor]  [cursor]    \definetypescriptprefix [f:courier]    [cursor]
-    \definetypescriptprefix [f:chorus]  [chorus]    \definetypescriptprefix [f:chancery]   [chorus] % not the full set
+    \definetypescriptprefix [f:chorus]  [chorus]    \definetypescriptprefix [f:chancery]   [chorus]
 
     \starttypescript [serif,sans] [adventor,bonum,bookman,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-regular]    [\s!features=\s!default]
@@ -471,14 +469,14 @@
         \definefontsynonym [TeXGyreChorus-MediumItalic] [\s!file:texgyrechorus-mediumitalic] [\s!features=\s!default]
     \stoptypescript
 
-    \definetypescriptprefix [n:pagella]    [TeXGyrePagella]  \definetypescriptprefix [n:palatino]   [TeXGyrePagella]
-    \definetypescriptprefix [n:termes]     [TeXGyreTermes]   \definetypescriptprefix [n:times]      [TeXGyreTermes]
-    \definetypescriptprefix [n:heros]      [TeXGyreHeros]    \definetypescriptprefix [n:helvetica]  [TeXGyreHeros]
-    \definetypescriptprefix [n:bonum]      [TeXGyreBonum]    \definetypescriptprefix [n:bookman]    [TeXGyreBonum]
-    \definetypescriptprefix [n:schola]     [TeXGyreSchola]   \definetypescriptprefix [n:schoolbook] [TeXGyreSchola]
-    \definetypescriptprefix [n:adventor]   [TeXGyreAdventor] %definetypescriptprefix [n:adventor]   [TeXGyreAdventor]
-    \definetypescriptprefix [n:cursor]     [TeXGyreCursor]   \definetypescriptprefix [n:courier]    [TeXGyreCursor]
-    \definetypescriptprefix [n:chorus]     [TeXGyreChorus]   \definetypescriptprefix [n:chancery]   [TeXGyreChorus] % not the full set
+    \definetypescriptprefix [n:pagella]    [TeXGyrePagella]   \definetypescriptprefix [n:palatino]   [TeXGyrePagella]
+    \definetypescriptprefix [n:termes]     [TeXGyreTermes]    \definetypescriptprefix [n:times]      [TeXGyreTermes]
+    \definetypescriptprefix [n:heros]      [TeXGyreHeros]     \definetypescriptprefix [n:helvetica]  [TeXGyreHeros]
+    \definetypescriptprefix [n:bonum]      [TeXGyreBonum]     \definetypescriptprefix [n:bookman]    [TeXGyreBonum]
+    \definetypescriptprefix [n:schola]     [TeXGyreSchola]    \definetypescriptprefix [n:schoolbook] [TeXGyreSchola]
+    \definetypescriptprefix [n:adventor]   [TeXGyreAdventor]% \definetypescriptprefix [n:adventor]   [TeXGyreAdventor]
+    \definetypescriptprefix [n:cursor]     [TeXGyreCursor]    \definetypescriptprefix [n:courier]    [TeXGyreCursor]
+    \definetypescriptprefix [n:chorus]     [TeXGyreChorus]    \definetypescriptprefix [n:chancery]   [TeXGyreChorus] % not the full set
 
     \starttypescript [serif] [pagella,palatino,termes,times,bonum,bookman,schola,schoolbook] [name]
         \definefontsynonym [Serif]                [\typescriptprefix{n:\typescripttwo}-Regular]
@@ -1275,13 +1273,13 @@
 \starttypescriptcollection[charter]
 
     \starttypescript [serif] [charter]
-        \definefontsynonym [Charter-Roman]       [\s!name:CharterBT-Roman]        % or: [bchr8a]
-        \definefontsynonym [Charter-Italic]      [\s!name:CharterBT-Italic]       % or: [bchri8a]
-        \definefontsynonym [Charter-Bold]        [\s!name:CharterBT-Bold]         % or: [bchb8a]
-        \definefontsynonym [Charter-BoldItalic]  [\s!name:CharterBT-BoldItalic]   % or: [bchbi8a]
-        \definefontsynonym [Charter-Slanted]     [\s!name:CharterBT-Italic]       % or: [bchri8a]
-        \definefontsynonym [Charter-BoldSlanted] [\s!name:CharterBT-BoldItalic]   % or: [bchbi8a]
-        \definefontsynonym [Charter-Roman-Caps]  [Charter-Roman]                  % not present
+        \definefontsynonym [Charter-Roman]       [\s!name:CharterBT-Roman]
+        \definefontsynonym [Charter-Italic]      [\s!name:CharterBT-Italic]
+        \definefontsynonym [Charter-Bold]        [\s!name:CharterBT-Bold]
+        \definefontsynonym [Charter-BoldItalic]  [\s!name:CharterBT-BoldItalic]
+        \definefontsynonym [Charter-Slanted]     [\s!name:CharterBT-Italic]
+        \definefontsynonym [Charter-BoldSlanted] [\s!name:CharterBT-BoldItalic]
+        \definefontsynonym [Charter-Roman-Caps]  [Charter-Roman]
     \stoptypescript
 
     \starttypescript [serif] [charter] [name]
@@ -1316,7 +1314,7 @@
 \starttypescriptcollection[lucida]
 
     \starttypescript [serif] [lucida]
-        \definefontsynonym [LucidaBright]               [\s!name:LucidaBright] % [goodies=lucida-one]
+        \definefontsynonym [LucidaBright]               [\s!name:LucidaBright]
         \definefontsynonym [LucidaBright-Demi]          [\s!name:LucidaBright-Demi]
         \definefontsynonym [LucidaBright-Italic]        [\s!name:LucidaBright-Italic]
         \definefontsynonym [LucidaBright-DemiItalic]    [\s!name:LucidaBright-DemiItalic]
@@ -1400,21 +1398,6 @@
         \definefontsynonym [SansCaps]        [LucidaSans]
     \stoptypescript
 
-    % Lucida Bright Typewriter
-
-    % only one family may be used as mono; sans used to be that since the beginning,
-    % so we keep using that as default
-
-    % \starttypescript [mono] [lucida] [name]
-    % 	\definefontsynonym [Mono]            [LucidaTypewriter]
-    % 	\definefontsynonym [MonoBold]        [LucidaTypewriterBold]
-    % 	\definefontsynonym [MonoItalic]      [LucidaTypewriterOblique]
-    % 	\definefontsynonym [MonoBoldItalic]  [LucidaTypewriterBoldOblique]
-    % 	\definefontsynonym [MonoSlanted]     [LucidaTypewriterOblique]
-    % 	\definefontsynonym [MonoBoldSlanted] [LucidaTypewriterBoldOblique]
-    % 	\definefontsynonym [MonoCaps]        [LucidaTypewriter]
-    % \stoptypescript
-
     % Lucida Bright Sans Typewriter
 
     \starttypescript [mono] [lucida] [name]
@@ -1433,33 +1416,11 @@
         \definefontsynonym [Calligraphy] [LucidaCalligraphy-Italic]
     \stoptypescript
 
-    % Lucida Casual
-
-    % \starttypescript [casual] [lucida] [name]
-    % 	% LucidaCasual
-    % 	% LucidaCasual-Italic
-    % \stoptypescript
-
     % Lucida Handwriting
 
     \starttypescript [handwriting] [lucida] [name]
         \definefontsynonym [Handwriting] [LucidaHandwriting-Italic]
     \stoptypescript
-
-    % Lucida Fax
-    %
-    % \starttypescript [fax] [lucida] [name]
-    % 	\definefontsynonym [FaksRegular]    [LucidaFax]
-    % 	\definefontsynonym [FaksBold]       [LucidaFax-Demi]
-    % 	\definefontsynonym [FaksItalic]     [LucidaFax-Italic]
-    % 	\definefontsynonym [FaksBoldItalic] [LucidaFax-DemiItalic]
-    % \stoptypescript
-
-    % Lucida Black Letter
-    %
-    % \starttypescript [blackletter] [lucida] [name]
-    % 	\definefontsynonym [Blackletter] [LucidaBlackletter]
-    % \stoptypescript
 
     \starttypescript [lucida]
         \definetypeface [lucida] [rm] [\s!serif]       [lucida] [\s!default] [\s!features=\s!default]
@@ -1943,4 +1904,4 @@
 
 \stoptypescriptcollection
 
-\protect \endinput
+\endinput

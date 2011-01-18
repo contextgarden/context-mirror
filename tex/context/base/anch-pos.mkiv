@@ -549,7 +549,13 @@
    \iftracepositions\registerparsymbol\fi}
 
 \def\traceposstring#1#2#3%
-  {\iftracepositions\smashedhbox{#1{\infofont#2#3}}\fi}
+  {\iftracepositions
+     \smashedhbox
+       {#1{\infofont#2#3}%
+        \scratchdimen.5\points
+        \kern-2\scratchdimen
+        \vrule\!!width4\scratchdimen\!!height\scratchdimen\!!depth\scratchdimen}%
+   \fi}
 
 \def\registerparsymbol
   {\iftracepositions

@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Beware, this is a MkII specific file. In MkIV we only load
+%D cont-sys.mkiv but in MkII we load the first found of
+%D cont-sys.mkii, cont-sys.tex, cont-sys.rme.
+
 \unprotect
 
 % Speed up typescript loading, but at the cost of much memory:

@@ -1215,6 +1215,8 @@ local function touch(name,pattern)
     end
 end
 
+local touchables = { "cont-new.mkii", "cont-new.mkiv" }
+
 function scripts.context.touch()
     if environment.argument("expert") then
         local done, oldversion, newversion, foundname = touch("context.tex", "(\\edef\\contextversion{)(.-)(})")
@@ -1222,13 +1224,11 @@ function scripts.context.touch()
             logs.simple("old version : %s", oldversion)
             logs.simple("new version : %s", newversion)
             logs.simple("touched file: %s", foundname)
-            local ok, _, _, foundname = touch("cont-new.tex", "(\\newcontextversion{)(.-)(})")
-            if ok then
-                logs.simple("touched file: %s", foundname)
-            end
-            local ok, _, _, foundname = touch("cont-xp.tex", "(\\edef\\contextversion{)(.-)(})")
-            if ok then
-                logs.simple("touched file: %s", foundname)
+            for i=1,#touchables do
+                local ok, _, _, foundname = touch(touchables[i], "(\\newcontextversion{)(.-)(})")
+                if ok then
+                    logs.simple("touched file: %s", foundname)
+                end
             end
         end
     end

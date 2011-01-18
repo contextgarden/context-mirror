@@ -20,12 +20,12 @@ local suffixmap = allocate()  resolvers.suffixmap = suffixmap
 
 local relations = allocate { -- todo: handlers also here
     core = {
-        ofm = {
+        ofm = { -- will become obsolete
             names    = { "ofm", "omega font metric", "omega font metrics" },
             variable = 'OFMFONTS',
             suffixes = { 'ofm', 'tfm' },
         },
-        ovf = {
+        ovf = { -- will become obsolete
             names    = { "ovf", "omega virtual font", "omega virtual fonts" },
             variable = 'OVFFONTS',
             suffixes = { 'ovf', 'vf' },
@@ -75,7 +75,7 @@ local relations = allocate { -- todo: handlers also here
             variable = 'TEXFORMATS',
             suffixes = { 'fmt' },
         },
-        mem = {
+        mem = { -- will become obsolete
             names    = { 'mem', "metapost format" },
             variable = 'MPMEMS',
             suffixes = { 'mem' },

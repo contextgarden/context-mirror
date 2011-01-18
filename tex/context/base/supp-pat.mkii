@@ -31,17 +31,13 @@
 %D is meant as an experiment.
 
 \ifx\writestatus\undefined \else
-
     \writestatus{loading}{ConTeXt Support Macros / Patterns}
-
 \fi
 
 %D \CONTEXT:
 
 \ifx\startmapping\undefined \else \ifx\startencoding\undefined \else
-
     \def\fetchpatterntoken#1{\csname#1\endcsname}
-
 \fi \fi
 
 %D First we define the \ETEX\ variant. We cannot do that inside

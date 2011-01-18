@@ -207,8 +207,7 @@
    :\number#1\endcsname}
 
 %D \macros
-%D   {restorecatcodes,
-%D    beginrestorecatcodes,endrestorecatcodes}
+%D   {restorecatcodes,pushcatcodetable,popcatcodetable}
 %D
 %D We're not finished dealing \CATCODES\ yet. In \CONTEXT\ we
 %D use only one auxiliary file, which deals with tables of
@@ -281,9 +280,6 @@
 \let\tracesetcatcodetable \empty
 \let\tracepushcatcodetable\empty
 \let\tracepopcatcodetable \empty
-
-\def\beginrestorecatcodes{\pushcatcodetable}
-\def\endrestorecatcodes  {\popcatcodetable}
 
 %D Handy for debugging:
 

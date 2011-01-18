@@ -822,8 +822,8 @@
 \def\buildpagebody#1#2%
   {\ifsavepagebody\global\setbox\savedpagebody\fi
    \vbox
-     {\beginrestorecatcodes
-%       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
+     {%\pushcatcodetable
+      %\forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
       \boxmaxdepth\maxdimen % new
       \dontcomplain
       % marks get done here
@@ -858,7 +858,7 @@
         \negateprintbox    \pagebox
       \fi
       \box\pagebox
-      \endrestorecatcodes}%
+      }% \popcatcodetable
    \ifsavepagebody\copy\savedpagebody\fi}
 
 \setvalue{\??ly\c!method\v!normal}#1#2%

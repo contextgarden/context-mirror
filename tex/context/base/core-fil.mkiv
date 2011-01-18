@@ -193,28 +193,7 @@
 %D We also support a singular call, which saves us for
 %D frustrations when we do a typo.
 
-\let\usemodule=\usemodules
-
-% %D The definition shows that the language specific settings
-% %D are activated after loading all the modules specified.
-
-%D \macros
-%D   {ifprotectbuffers, bufferprefix,
-%D    TEXbufferfile, MPgraphicfile}
-%D
-%D The next switch enables protection of temporary filenames,
-%D which is needed when we process more files on one path at
-%D the same time.
-
-\newif\ifprotectbuffers
-
-\def\bufferprefix{\ifprotectbuffers\jobname-\fi}
-
-% The following filenames are defined here:
-
-\def\TEXbufferfile   #1{\bufferprefix#1.\f!temporaryextension}
-\def\MPgraphicfile     {\bufferprefix mp\ifMPrun run\else graph\fi} % not needed in luatex
-\def\convertMPcolorfile{\bufferprefix metacmyk.tmp}
+\let\usemodule\usemodules
 
 %D To save memory, we implement some seldomly used commands
 %D in a lazy way. Nota bene: such runtime definitions are
@@ -258,5 +237,7 @@
   [url=]
 
 %D This module will be perfected / changed / weeded.
+
+\let\protectbufferstrue\relax % will go away ... now in cont-sys.tex
 
 \protect \endinput

@@ -465,9 +465,13 @@
     \doloadbibtexpublicationalternative
 \to \everysetupbibtexpublications
 
-\appendtoks
-    \doloadbibtexpublicationalternative
-\to \everystarttext % was everyjob, will change anyway
+% we expect at least one invocation of the setup commands
+% because otherwise we always load the apa style even if
+% no publications are used
+%
+% \appendtoks
+%     \doloadbibtexpublicationalternative
+% \to \everystarttext
 
 % whatever, should be key
 

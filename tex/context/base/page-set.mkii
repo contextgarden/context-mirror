@@ -2019,6 +2019,21 @@
 \def\OTRSETinhibitinserts
   {\disablenotes}
 
+% undocumented goodie
+
+\def\definecolumnsethsize#1#2#3#4% will be improved/speed up
+  {\bgroup
+   \def\OTRSETidentifier{#1}%
+   \ifcase\columnsetlevel\relax
+     \mofcolumns\plusone
+     \OTRSETinitializecolumns
+     \OTRSETassignwidths
+     \OTRSETsethsize
+   \fi
+   \!!counta#2\!!countb#3\docalculatecolumnsetspan
+   \expandafter\egroup\expandafter\edef\expandafter
+     #4\expandafter{\the\!!widtha}}
+
 % interface to footnotes
 
 \def\OTRSETassignwidths

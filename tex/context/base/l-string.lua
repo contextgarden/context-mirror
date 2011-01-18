@@ -54,9 +54,9 @@ function string.count(str,pattern) -- variant 3
     return n
 end
 
-function string.limit(str,n,sentinel)
+function string.limit(str,n,sentinel) -- not utf proof
     if #str > n then
-        sentinel = sentinel or " ..."
+        sentinel = sentinel or "..."
         return sub(str,1,(n-#sentinel)) .. sentinel
     else
         return str

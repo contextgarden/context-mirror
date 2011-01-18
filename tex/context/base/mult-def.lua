@@ -168,7 +168,8 @@ return {
    ["pe"]="تنظیم‌طرح‌بندی",
    ["ro"]="adapteazaaspect",
   },
-  ["adding"]={},
+  ["adding"]={
+  },
   ["arg"]={
    ["cs"]="arg",
    ["de"]="arg",

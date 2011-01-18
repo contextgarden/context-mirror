@@ -3134,12 +3134,39 @@
 %D text and headings, which is accomplished by assigning both
 %D arguments.
 
+% \def\dodefinealternativestyle[#1][#2][#3]%
+%   {\def\docommand##1%
+%      {\ifcsname##1\endcsname\else\setuvalue{##1}{\groupedcommand{#2}{}}\fi
+%       \setvalue{\@letter@  ##1}{#2}%
+%       \setvalue{\@noletter@##1}{#3}}%
+%    \processcommalist[#1]\docommand}
+
+\setnewconstant \currentalternativestyleindex \plusone
+
+\def\dododefinealternativestyle#1#2#3%
+  {\ifcsname#3\endcsname
+     % no redefinition
+   \else
+     \setuvalue{#3}{\groupedcommand{#1}{}}%
+   \fi
+   \setvalue{\??ft:as:#3}{\doapplyalternativestyle{#1}{#2}}}%
+
 \def\dodefinealternativestyle[#1][#2][#3]%
-  {\def\docommand##1%
-     {\ifcsname##1\endcsname\else\setuvalue{##1}{\groupedcommand{#2}{}}\fi
-      \setvalue{\@letter@  ##1}{#2}%
-      \setvalue{\@noletter@##1}{#3}}%
-   \processcommalist[#1]\docommand}
+  {\processcommalist[#1]{\dododefinealternativestyle{#2}{#3}}} % also gets {##1}
+
+\def\applyalternativestyle#1%
+  {\ifcsname\??ft:as:#1\endcsname\csname\??ft:as:#1\expandafter\endcsname\fi}
+
+\def\doapplyalternativestyle
+  {\ifcase\currentalternativestyleindex
+     \expandafter\gobbletwoarguments
+   \or
+     \expandafter\firstoftwoarguments
+   \or
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
 \unexpanded\def\definealternativestyle
   {\dotripleempty\dodefinealternativestyle}
@@ -3202,51 +3229,72 @@
 % subtle ... \expandafter is needed else problems with lookahead caps
 %
 % this will be cleaned up
-
-\def\@@dodoconvertfont{\csname\@letter@  \p!defined\expandafter\endcsname\gobbleoneargument}
-\def\@@donoconvertfont{\csname\@noletter@\p!defined\endcsname}
-\def\@@redoconvertfont{\csname           \p!defined\expandafter\endcsname\gobbleoneargument}
-
+%
 % beware: p!defined can contain crap like \edef crap {...} and such
 % so we need to pass #1 as well .. no longer needed in luatex
 
-\unexpanded\def\dodoconvertfont#1% #2% we need the protection
-  {\edef\p!defined{#1}%
-   \ifx\p!defined\empty\else
-     \@EA\dododoconvertfont
-   \fi{#1}}
-
-\def\dododoconvertfont % #1
-   {\ifcsname\@letter@\detokenize\@EA{\p!defined}\endcsname
-      \@EA\@@dodoconvertfont
-    \else\ifcsname\detokenize\@EA{\p!defined}\endcsname
-      \@EAEAEA\@@redoconvertfont
-    \else
-      \@EAEAEA\firstofoneargument
-    \fi\fi} % {#1}
-
-\let\doconvertfont\dodoconvertfont
-
-\unexpanded\def\noconvertfont#1% #2%
-  {\edef\p!defined{#1}%
-   \ifx\p!defined\empty
-   \else
-     \@EA\nononoconvertfont
-   \fi}
-
-\def\nononoconvertfont
-  {\ifcsname\@noletter@\detokenize\@EA{\p!defined}\endcsname
-     \@EA\@@donoconvertfont
-   \fi}
-
-%D Extras:
-
-\unexpanded\def\dontconvertfont{\let\doconvertfont\noconvertfont}
-\unexpanded\def\redoconvertfont{\let\doconvertfont\dodoconvertfont}
+% \def\@@dodoconvertfont{\csname\@letter@  \p!defined\expandafter\endcsname\gobbleoneargument}
+% \def\@@donoconvertfont{\csname\@noletter@\p!defined\endcsname}
+% \def\@@redoconvertfont{\csname           \p!defined\expandafter\endcsname\gobbleoneargument}
+%
+% \unexpanded\def\dodoconvertfont#1% #2% we need the protection
+%   {\edef\p!defined{#1}%
+%    \ifx\p!defined\empty\else
+%      \@EA\dododoconvertfont
+%    \fi{#1}}
+%
+% \def\dododoconvertfont % #1 (detokenize no longer needed in luatex)
+%    {\ifcsname\@letter@\detokenize\@EA{\p!defined}\endcsname
+%       \@EA\@@dodoconvertfont
+%     \else\ifcsname\detokenize\@EA{\p!defined}\endcsname
+%       \@EAEAEA\@@redoconvertfont
+%     \else
+%       \@EAEAEA\firstofoneargument
+%     \fi\fi} % {#1}
+%
+% \let\doconvertfont\dodoconvertfont
+%
+% \unexpanded\def\noconvertfont#1% #2%
+%   {\edef\p!defined{#1}%
+%    \ifx\p!defined\empty
+%    \else
+%      \@EA\nononoconvertfont
+%    \fi}
+%
+% \def\nononoconvertfont
+%   {\ifcsname\@noletter@\detokenize\@EA{\p!defined}\endcsname
+%      \@EA\@@donoconvertfont
+%    \fi}
+%
+% %D Extras:
+%
+% \unexpanded\def\dontconvertfont{\let\doconvertfont\noconvertfont}
+% \unexpanded\def\redoconvertfont{\let\doconvertfont\dodoconvertfont}
 
 %D These commands are not grouped! Grouping is most probably
 %D done by the calling macro's and would lead to unnecessary
 %D overhead.
+
+\unexpanded\def\doconvertfont#1% #2% we need the protection
+  {\edef\currentconvertfont{#1}%
+   \ifx\currentconvertfont\empty \else
+     \@EA\dodoconvertfont
+   \fi}
+
+\def\dodoconvertfont
+  {\edef\dtcurrentconvertfont{\detokenize\@EA{\currentconvertfont}}%
+   \ifcsname\??ft:as:\dtcurrentconvertfont\endcsname
+     \csname\??ft:as:\dtcurrentconvertfont\expandafter\endcsname
+   \else\ifcsname\dtcurrentconvertfont\endcsname
+     \csname\dtcurrentconvertfont\expandafter\endcsname
+   \else
+     \@EAEAEA\currentconvertfont
+   \fi\fi}
+
+%D Low level switches (downward compatible):
+
+\unexpanded\def\dontconvertfont{\currentalternativestyleindex\plustwo}
+\unexpanded\def\redoconvertfont{\currentalternativestyleindex\plusone}
 
 %D \macros
 %D  {em,emphasistypeface,emphasisboldface}
