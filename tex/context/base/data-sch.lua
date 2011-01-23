@@ -23,6 +23,34 @@ schemes.threshold = 24 * 60 * 60
 
 directives.register("schemes.threshold", function(v) schemes.threshold = tonumber(v) or schemes.threshold end)
 
+local cleaners = { }
+
+schemes.cleaners = cleaners
+
+function cleaners.none(specification)
+    return specification.original
+end
+
+function cleaners.strip(specification)
+    return (gsub(specification.original,"[^%a%d%.]+","-"))
+end
+
+function cleaners.md5(specification)
+    return file.addsuffix(md5.hex(specification.original),file.suffix(specification.path))
+end
+
+local cleaner = cleaners.strip
+
+directives.register("schemes.cleanmethod", function(v) cleaner = cleaners[v] or cleaners.strip end)
+
+function resolvers.schemes.cleanname(specification)
+    local hash = cleaner(specification)
+    if trace_schemes then
+        report_schemes("hashing %s to %s",specification.original,hash)
+    end
+    return hash
+end
+
 local cached, loaded, reused, thresholds, handlers = { }, { }, { }, { }, { }
 
 local function runcurl(name,cachename) -- will use sockets instead or the curl library
@@ -33,7 +61,7 @@ end
 local function fetch(specification)
     local original  = specification.original
     local scheme    = specification.scheme
-    local cleanname = gsub(original,"[^%a%d%.]+","-")
+    local cleanname = schemes.cleanname(specification)
     local cachename = caches.setfirstwritablefile(cleanname,"schemes")
     if not cached[original] then
         statistics.starttiming(schemes)
