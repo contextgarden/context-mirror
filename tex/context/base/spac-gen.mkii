@@ -1483,6 +1483,21 @@
 
 \fi
 
+\unexpanded\def\textormathglue#1#2#3% cleaned up one
+  {\begingroup
+   \ifmmode
+     \mskip#1#2%
+   \else
+     \scratchdimen#1\hspaceamount\empty{#3}%
+     \scratchskip\scratchdimen\!!plus.5\scratchdimen\!!minus.3\scratchdimen
+     \hskip\scratchskip
+   \fi
+   \endgroup}
+
+\def\thinglue {\textormathglue+\thinmuskip 1}
+\def\medglue  {\textormathglue+\medmuskip  2}
+\def\thickglue{\textormathglue+\thickmuskip3}
+
 \ifx\eject\undefined
 
   \def\eject{\par\break}

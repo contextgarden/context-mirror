@@ -44,16 +44,6 @@
 \def \inputfilename    {\ctxsprint{environment.inputfilename     or ""}}
 \def \outputfilename   {\ctxsprint{environment.outputfilename    or ""}}
 
-\bgroup \permitcaretescape
-
-    \gdef\initializenewlinechar
-      {\bgroup
-       \newlinechar\newlineasciicode
-       \xdef\outputnewlinechar{^^J}%
-       \egroup}
-
-\egroup
-
 \newtoks \everysetupsystem
 
 \unexpanded\def\setupsystem

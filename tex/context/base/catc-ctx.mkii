@@ -1,0 +1,76 @@
+%D \module
+%D   [       file=catc-cys,
+%D        version=2006.09.18,
+%D          title=\CONTEXT\ Catcode Macros,
+%D       subtitle=Extra Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D We prefer to define relevant catcode tables in this file instead
+%D of everywhere around.
+
+\ifdefined \ctxcatcodes \else \newcatcodetable \ctxcatcodes \fi
+\ifdefined \prtcatcodes \else \newcatcodetable \prtcatcodes \fi
+
+\startcatcodetable \ctxcatcodes
+    \catcode\tabasciicode       \spacecatcode
+    \catcode\endoflineasciicode \endoflinecatcode
+    \catcode\formfeedasciicode  \endoflinecatcode
+    \catcode\spaceasciicode     \spacecatcode
+    \catcode\endoffileasciicode \ignorecatcode
+    \catcode\circumflexasciicode\superscriptcatcode
+    \catcode\underscoreasciicode\subscriptcatcode
+    \catcode\ampersandasciicode \alignmentcatcode
+    \catcode\backslashasciicode \escapecatcode
+    \catcode\leftbraceasciicode \begingroupcatcode
+    \catcode\rightbraceasciicode\endgroupcatcode
+    \catcode\dollarasciicode    \mathshiftcatcode
+    \catcode\hashasciicode      \parametercatcode
+    \catcode\commentasciicode   \commentcatcode
+    \catcode\tildeasciicode     \activecatcode
+    \catcode\barasciicode       \activecatcode
+\stopcatcodetable
+
+\startcatcodetable \prtcatcodes
+    \catcode\tabasciicode       \spacecatcode
+    \catcode\endoflineasciicode \endoflinecatcode
+    \catcode\formfeedasciicode  \endoflinecatcode
+    \catcode\spaceasciicode     \spacecatcode
+    \catcode\endoffileasciicode \ignorecatcode
+    \catcode\circumflexasciicode\superscriptcatcode
+    \catcode\underscoreasciicode\subscriptcatcode
+    \catcode\ampersandasciicode \alignmentcatcode
+    \catcode\backslashasciicode \escapecatcode
+    \catcode\leftbraceasciicode \begingroupcatcode
+    \catcode\rightbraceasciicode\endgroupcatcode
+    \catcode\dollarasciicode    \mathshiftcatcode
+    \catcode\hashasciicode      \parametercatcode
+    \catcode\commentasciicode   \commentcatcode
+    \catcode`\@                 \lettercatcode
+    \catcode`\!                 \lettercatcode
+    \catcode`\?                 \lettercatcode
+    \catcode\tildeasciicode     \activecatcode
+    \catcode\barasciicode       \activecatcode
+\stopcatcodetable
+
+\letcatcodecommand \ctxcatcodes \barasciicode   \relax
+\letcatcodecommand \ctxcatcodes \tildeasciicode \relax
+
+     \catcodetable        \ctxcatcodes
+\let \defaultcatcodetable \ctxcatcodes
+
+% for the moment here:
+
+\def\starttexcode
+  {\pushcatcodetable
+   \catcodetable\prtcatcodes}
+
+\def\stoptexcode
+  {\popcatcodetable}
+
+\endinput

@@ -1,0 +1,60 @@
+%D \module
+%D   [       file=lang-cyr,
+%D        version=2003.01.24,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Cyrillic Languages,
+%D         author=see below,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Language Macros / Cyrillic Languages}
+
+%D The cyrillic languages always use a dedicated input regime.
+%D Therefore we define the labels using symbolic names.
+%D Support for cyrillic is initiated by Olga Briginets who
+%D also layed the base for the language, encoding and font
+%D definition. Later Alexander Bokovoy and Victor Figurnov
+%D improved things. I (Hans Hagen) mainly cleaned things up
+%D a bit.
+
+\unprotect
+
+\installlanguage
+  [\s!ru]
+  [\s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\leftguillemot,
+   \c!rightsentence=\rightguillemot,
+   \c!leftsubsentence=\lowerleftdoubleninequote,
+   \c!rightsubsentence=\upperrightdoubleninequote,
+   \c!leftquote=\lowerleftdoubleninequote,
+   \c!rightquote=\upperrightdoubleninequote,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!ua]
+  [\s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\leftguillemot,
+   \c!rightsentence=\rightguillemot,
+   \c!leftsubsentence=\lowerleftdoubleninequote,
+   \c!rightsubsentence=\upperrightdoubleninequote,
+   \c!leftquote=\lowerleftdoubleninequote,
+   \c!rightquote=\upperrightdoubleninequote,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \s!patterns=\s!uk]
+
+\installlanguage [russian]   [\s!ru]
+\installlanguage [ukrainian] [\s!ua]
+
+\protect \endinput

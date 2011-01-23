@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['mtx-cache'] = {
 }
 
 local concat, sort, insert = table.concat, table.sort, table.insert
-local gsub, format, gmatch = string.gsub, string.format, string.gmatch
+local gsub, format, gmatch, find = string.gsub, string.format, string.gmatch, string.find
+local utfchar, utfgsub = utf.char, utf.gsub
 
 scripts           = scripts           or { }
 scripts.interface = scripts.interface or { }
@@ -223,7 +224,7 @@ function scripts.interface.check()
     end
 end
 
-function scripts.interface.context()
+function scripts.interface.interfaces()
     local filename = resolvers.findfile(environment.files[1] or "mult-def.lua") or ""
     if filename ~= "" then
         local interface = dofile(filename)
@@ -277,7 +278,7 @@ function scripts.interface.context()
                 flush(texresult,xmlresult,language,"commands", "command")
                 texresult[#texresult+1] = format("%%\n\\endinput")
                 xmlresult[#xmlresult+1] = format("</cd:interface>")
-                local texfilename = format("mult-%s.tex",language)
+                local texfilename = format("mult-%s.mkii",language)
                 local xmlfilename = format("keys-%s.xml",language)
                 io.savedata(texfilename,concat(texresult,"\n"))
                 logs.simple("saving interface definitions '%s'",texfilename)
@@ -338,16 +339,137 @@ function scripts.interface.messages()
                 end
             end
             texresult[#texresult+1] = format("%%\n\\endinput")
-            local interfacefile = format("mult-m%s.tex",interface)
+            local interfacefile = format("mult-m%s.mkii",interface)
             io.savedata(interfacefile,concat(texresult,"\n"))
             logs.simple("messages for '%s' saved in '%s'",interface,interfacefile)
         end
     end
 end
 
-logs.extendbanner("ConTeXt Interface Related Goodies 0.12")
+function scripts.interface.toutf()
+    local filename = environment.files[1]
+    if filename then
+        require("char-def.lua")
+        local contextnames = { }
+        for unicode, data in next, characters.data do
+            local contextname = data.contextname
+            if contextname then
+                contextnames[contextname] = utf.char(unicode)
+            end
+            contextnames.uumlaut = contextnames.udiaeresis
+            contextnames.Uumlaut = contextnames.Udiaeresis
+            contextnames.oumlaut = contextnames.odiaeresis
+            contextnames.Oumlaut = contextnames.Odiaeresis
+            contextnames.aumlaut = contextnames.adiaeresis
+            contextnames.Aumlaut = contextnames.Adiaeresis
+        end
+        logs.simple("loading '%s'",filename)
+        local str = io.loaddata(filename) or ""
+        local done = { }
+        str = gsub(str,"(\\)([a-zA-Z][a-zA-Z][a-zA-Z]+)(%s*)", function(b,s,a)
+            local cn = contextnames[s]
+            if cn then
+                done[s] = (done[s] or 0) + 1
+                return cn
+            else
+                done[s] = (done[s] or 0) - 1
+                return b .. s .. a
+            end
+        end)
+        for k, v in table.sortedpairs(done) do
+            if v > 0 then
+                logs.simple("+ %5i : %s => %s",v,k,contextnames[k])
+            else
+                logs.simple("- %5i : %s",-v,k,contextnames[k])
+            end
+        end
+        filename = filename .. ".toutf"
+        logs.simple("saving '%s'",filename)
+        io.savedata(filename,str)
+    end
+end
+
+function scripts.interface.labels()
+    require("char-def.lua")
+    require("lang-txt.lua")
+    local interfaces = require("mult-def.lua")
+    local variables = interfaces.variables
+    local contextnames = { }
+    for unicode, data in next, characters.data do
+        local contextname = data.contextname
+        if contextname then
+            contextnames[utfchar(unicode)] = "\\" .. contextname .. " "
+        end
+    end
+    contextnames["i"] = nil
+    contextnames["'"] = nil
+    contextnames["\\"] = nil
+    local function flush(f,kind,what,expand,namespace,prefix)
+        local whatdata = languages.data.labels[what]
+        f:write("\n")
+        f:write(format("%% %s => %s\n",what,kind))
+        for tag, data in table.sortedpairs(whatdata) do
+            if not data.hidden then
+                f:write("\n")
+                for language, text in table.sortedpairs(data.labels) do
+                    if text ~= "" then
+                        if expand then
+                            text = utfgsub(text,".",contextnames)
+                            text = gsub(text,"  ", "\ ")
+                        end
+                        if namespace and namespace[tag] then
+                            tag = prefix .. tag
+                        end
+                        if find(text,",") then
+                            text = "{" .. text .. "}"
+                        end
+
+                        if text == "" then
+                            -- skip
+                        else
+                            if type(text) == "table" then
+                                f:write(format("\\setup%stext[\\s!%s][%s={{%s},}]\n",kind,language,tag,text))
+                            else
+                                f:write(format("\\setup%stext[\\s!%s][%s={{%s},{%s}}]\n",kind,language,tag,text[1],text[2]))
+                            end
+                        end
+
+                    end
+                end
+            end
+        end
+    end
+    function flushall(txtname,expand)
+        local f = io.open(txtname,"w")
+        if f then
+            logs.simple("saving '%s'",txtname)
+            f:write("% this file is auto-generated, don't edit this file\n")
+            flush(f,"head","titles",expand,variables,"\\v!")
+            flush(f,"label","texts",expand,variables,"\\v!")
+            flush(f,"mathlabel","functions",expand)
+            flush(f,"taglabel","tags",expand)
+            f:write("\n")
+            f:write("\\endinput\n")
+            f:close()
+        end
+    end
+    flushall("lang-txt.mkii",true)
+    flushall("lang-txt.mkiv",false)
+end
+
+function scripts.interface.labels()
+    -- maybe supported one day
+end
+
+logs.extendbanner("ConTeXt Interface Related Goodies 0.13")
 
 messages.help = [[
+--interfaces          generate context interface files
+--messages            generate context message files
+--labels              generate context label files
+
+--context             equals --interfaces --messages --languages
+
 --scite               generate scite interface
 --bbedit              generate bbedit interface files
 --jedit               generate jedit interface files
@@ -355,21 +477,36 @@ messages.help = [[
 --text                create text files for commands and environments
 --raw                 report commands to the console
 --check               generate check file
---context             generate context definition files
+
+--toutf               replace named characters by utf
 --preprocess          preprocess mkvi files to tex files [force,suffix]
+
 --suffix              use given suffix for output files
 --force               force action even when in doubt
---messages            generate context message files
 ]]
 
 local ea = environment.argument
 
 if ea("context") then
-    scripts.interface.context()
+    scripts.interface.interfaces()
+    scripts.interface.messages()
+    scripts.interface.labels()
+elseif ea("interfaces") or ea("messages") or ea("labels") then
+    if ea("interfaces") then
+        scripts.interface.interfaces()
+    end
+    if ea("messages") then
+        scripts.interface.messages()
+    end
+    if ea("labels") then
+        scripts.interface.labels()
+    end
 elseif ea("preprocess") then
     scripts.interface.preprocess()
-elseif ea("messages") then
-    scripts.interface.messages()
+elseif ea("toutf") then
+    scripts.interface.toutf()
+elseif ea("check") then
+    scripts.interface.check()
 elseif ea("scite") or ea("bbedit") or ea("jedit") or ea("textpad") or ea("text") or ea("raw") then
     if ea("scite") then
         scripts.interface.editor("scite")
@@ -389,8 +526,6 @@ elseif ea("scite") or ea("bbedit") or ea("jedit") or ea("textpad") or ea("text")
     if ea("raw") then
         scripts.interface.editor("raw")
     end
-elseif ea("check") then
-    scripts.interface.check()
 else
     logs.help(messages.help)
 end

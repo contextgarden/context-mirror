@@ -68,27 +68,27 @@
 \ifx\!\undefined \def\!{\mskip-\thinmuskip } \fi
 \ifx\*\undefined \def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}} \fi
 
-% {\catcode`\'=\active \gdef'{^\bgroup\prim@s}}
+{ \catcode\circumflexasciicode\othercatcode       \global\let\othercircumflextoken      ^ }
+{ \catcode\circumflexasciicode\superscriptcatcode \global\let\superscriptcircumflextoken^ }
 
-\def\activemathquote{^\bgroup\prim@s}
+\def\domathprime{^\bgroup\dodomathprime}
 
-\def\prim@s
- {\prime\futurelet\next\pr@m@s}
+\def\dodomathprime
+ {\prime\futurelet\nexttoken\dododomathprime}
 
-\def\pr@m@s
-  {\ifx'\next
-     \@EA\pr@@@s
-   \else\ifx^\next
-     \@EAEAEA\pr@@@t
-   \else
-     \@EAEAEA\egroup
-   \fi\fi}
+\def\dododomathprime
+  {\csname domathprime@%
+     \ifx                          '\nexttoken a\else
+     \ifx\superscriptcircumflextoken\nexttoken b\else
+     \ifx\othercircumflextoken      \nexttoken b\else
+                                               c\fi\fi\fi
+   \endcsname}
 
-\def\pr@@@s#1%
-  {\prim@s}
+\def\domathprime@a  #1{\dodomathprime}
+\def\domathprime@b#1#2{#2\egroup}
+\def\domathprime@c    {\egroup}
 
-\def\pr@@@t#1#2%
-  {#2\egroup}
+\let\activemathprime\domathprime
 
 % {\catcode`\_=\active \global\let_=\_} % _ in math is either subscript or \_
 

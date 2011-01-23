@@ -283,6 +283,7 @@
    \else
      \@EA\inspectnextcharacterindeed
    \fi}
+
 \def\inspectnextcharacterindeed
   {\ifx\nexttoken\charactertoken
      \@EA\!!stringa
@@ -321,12 +322,14 @@
   {\def\nextbgroupcommandyes{#1}%
    \def\nextbgroupcommandnop{#2}%
    \futurelet\nexttoken\inspectnextbgroupcharacter}
+
 \def\inspectnextbgroupcharacter
   {\ifx\nexttoken\blankspace
      \@EA\reinspectnextbgroupcharacter
    \else
      \@EA\inspectnextbgroupcharacterindeed
    \fi}
+
 \def\inspectnextbgroupcharacterindeed
   {\ifx\nexttoken\nextbgroupcharactertoken
      \@EA\nextbgroupcommandyes
@@ -340,12 +343,14 @@
   {\def\nextparenthesiscommandyes{#1}%
    \def\nextparenthesiscommandnop{#2}%
    \futurelet\nexttoken\inspectnextparenthesischaracter}
+
 \def\inspectnextparenthesischaracter
   {\ifx\nexttoken\blankspace
      \@EA\reinspectnextparenthesischaracter
    \else
      \@EA\inspectnextparenthesischaracterindeed
    \fi}
+
 \def\inspectnextparenthesischaracterindeed
   {\ifx\nexttoken\nextparenthesischaractertoken
      \@EA\nextparenthesiscommandyes
@@ -496,44 +501,8 @@
 %D \ifundefined\NameB ... \else ... \fi
 %D \stoptyping
 
-\def\ifundefined#1% ongelukkige naam .. obsolete
+\def\ifundefined#1% obsolete
   {\unless\ifcsname#1\endcsname}
-
-% \def\p!doifundefined#1%
-%   {\edef\p!defined{#1}%
-%    \unless\ifcsname\detokenize\@EA{\p!defined}\endcsname}
-
-% \def\doifundefinedelse#1%
-%   {\edef\p!defined{#1}%
-%    \ifcsname\detokenize\@EA{\p!defined}\endcsname
-%      \expandafter\secondoftwoarguments
-%    \else
-%      \expandafter\firstoftwoarguments
-%    \fi}
-
-% \def\doifdefinedelse#1%
-%   {\edef\p!defined{#1}%
-%    \ifcsname\detokenize\@EA{\p!defined}\endcsname
-%      \expandafter\firstoftwoarguments
-%    \else
-%      \expandafter\secondoftwoarguments
-%    \fi}
-
-% \def\doifundefined#1%
-%   {\edef\p!defined{#1}%
-%    \ifcsname\detokenize\@EA{\p!defined}\endcsname
-%      \expandafter\gobbleoneargument
-%    \else
-%      \expandafter\firstofoneargument
-%    \fi}
-
-% \def\doifdefined#1%
-%   {\edef\p!defined{#1}%
-%    \ifcsname\detokenize\@EA{\p!defined}\endcsname
-%      \expandafter\firstofoneargument
-%    \else
-%      \expandafter\gobbleoneargument
-%    \fi}
 
 \ifdefined\suppressifcsnameerror
 
@@ -762,6 +731,7 @@
    \else
      \expandafter\dodoifinsetelse
    \fi}
+
 \long\def\dodoifinsetelse#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
@@ -777,6 +747,7 @@
    \else
      \expandafter\dodoifinset
    \fi}
+
 \long\def\dodoifinset#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
@@ -792,6 +763,7 @@
    \else
      \expandafter\dodoifnotinset
    \fi}
+
 \long\def\dodoifnotinset#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
@@ -807,12 +779,14 @@
    \else
      \expandafter\dodocheckifiteminsetelse
    \fi#2}
+
 \def\dodocheckifiteminsetelse
   {\ifx\!!stringb\rightoptionalbracket
      \expandafter\thirdofthreearguments
    \else
      \expandafter\dododocheckifiteminsetelse
    \fi}
+
 \def\dododocheckifiteminsetelse
   {\ifx\!!stringa\!!stringb
      \expandafter\doquitifiteminsetelse
@@ -827,12 +801,14 @@
    \else
      \expandafter\dodocheckifiteminset
    \fi#2}
+
 \def\dodocheckifiteminset
   {\ifx\!!stringb\rightoptionalbracket
      \expandafter\gobbletwoarguments
    \else
      \expandafter\dododocheckifiteminset
    \fi}
+
 \def\dododocheckifiteminset
   {\ifx\!!stringa\!!stringb
      \expandafter\doquitifiteminset
@@ -847,12 +823,14 @@
    \else
      \expandafter\dodocheckifitemnotinset
    \fi#2}
+
 \def\dodocheckifitemnotinset
   {\ifx\!!stringb\rightoptionalbracket
      \expandafter\secondoftwoarguments
    \else
      \expandafter\dododocheckifitemnotinset
    \fi}
+
 \def\dododocheckifitemnotinset
   {\ifx\!!stringa\!!stringb
      \expandafter\doquitifitemnotinset
@@ -2952,7 +2930,7 @@
    \dostarttexdefinition}
 
 \gdef\dostarttexdefinition #1
-  {\catcode13=\ignorecatcode%
+  {\catcode\endoflineasciicode\ignorecatcode%
    \doifinstringelse\letterhash{\detokenize{#1}}\dodostarttexdefinition\nonostarttexdefinition#1
   }
 
@@ -3101,10 +3079,6 @@
 %D \starttyping
 %D \csname if\strippedcsname\something\endcsname
 %D \stoptyping
-
-\ifdefined\letterbackslash \else
-  {\catcode`.=0 .catcode`.\ 12 .xdef.letterbackslash{.string\}} % hack
-\fi
 
 \def\checkedstrippedcsname#1% this permits \strippedcsname{\xxx} and \strippedcsname{xxx}
   {\expandafter\docheckedstrippedcsname\string#1}
@@ -5645,8 +5619,8 @@
 
 \def\untexsomething
   {\begingroup
-   \catcode`\{=\ignorecatcode
-   \catcode`\}=\ignorecatcode
+   \catcode\leftbraceasciicode \ignorecatcode
+   \catcode\rightbraceasciicode\ignorecatcode
    \escapechar\minusone
    \dountexsomething}
 
@@ -6498,9 +6472,10 @@
    \dounspaced}
 
 \def\unspaceargument#1\to#2%
-  {\scratchcounter\catcode32\relax
-   \catcode32\ignorecatcode\scantextokens{\edef#2{#1}}%
-   \catcode32\scratchcounter}
+  {\scratchcounter\catcode\spaceasciicode
+   \catcode\spaceasciicode\ignorecatcode
+   \scantextokens{\edef#2{#1}}%
+   \catcode\spaceasciicode\scratchcounter}
 
 \def\unspaceafter#1#2%
   {\unspaceargument#2\to\ascii
@@ -6695,32 +6670,6 @@
 %D \stoptyping
 
 \def\negated#1{\if-#1\else-#1\fi} % does only work in macros or text
-
-% This permits things like ^\index{hans}^, where hans is
-% duplicated in the text.
-
-\newif\ifduplicate
-
-\bgroup
-
-\gdef\checkduplication % in line with Knuth
-  {\ifmmode\expandafter^\else\expandafter\startduplication\fi}
-
-\gdef\insideduplication
-  {\ifmmode\expandafter^\else\expandafter\egroup\fi}
-
-\catcode`\^=\activecatcode
-
-\gdef\enableduplication
-  {\catcode`\^=\activecatcode \let^\checkduplication}
-
-\gdef\disableduplication
-  {\catcode`\^=\superscriptcatcode}
-
-\gdef\startduplication
-  {\bgroup \duplicatetrue \let^\insideduplication}
-
-\egroup
 
 \def\gobbleassigndimen#1\\{}
 

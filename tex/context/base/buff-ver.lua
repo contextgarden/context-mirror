@@ -334,8 +334,11 @@ end
 local space_pattern = patterns.space^0
 local name_pattern  = R("az","AZ")^1
 
+-- the hack is needed in order to retain newlines when an escape happens at the
+-- at the begin of a line; it also ensures proper line numbering; a bit messy
+
 local function hack(pattern)
-    return Cs(pattern * Cc(signal)) -- hack to retain newlines
+    return Cs(pattern * Cc(signal))
 end
 
 function visualizers.registerescapepattern(name,before,after,normalmethod,escapemethod)
@@ -349,8 +352,7 @@ function visualizers.registerescapepattern(name,before,after,normalmethod,escape
             (before / "")
           * ((1 - after)^0 / (escapemethod or texmethod))
           * (after / "")
-       -- + hack((1 - before)^1) / (normalmethod or defaultmethod)
-          + ((1 - before)^1) / (normalmethod or defaultmethod)
+          + hack((1 - before)^1) / (normalmethod or defaultmethod)
         )^0
         escapepatterns[name] = escapepattern
     end
@@ -601,7 +603,8 @@ local function filter(lines,settings) -- todo: inline or display in settings
         first, last = getrange(lines,first,last,range)
         first, last = getstrip(lines,first,last)
     end
-    local content = concat(lines,(settings.nature == "inline" and " ") or "\r",first,last) -- was \n
+    -- \r is \endlinechar but \n would is more generic so this choice is debatable
+    local content = concat(lines,(settings.nature == "inline" and " ") or "\n",first,last)
     return content, m
 end
 

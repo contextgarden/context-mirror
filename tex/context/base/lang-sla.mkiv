@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=lang-sla,
-%D        version=2006.09.16,
+%D        version=1999.09.13, % 1997.09.03
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Slavic Languages,
 %D         author=Hans Hagen / Tobias Burnus,
@@ -11,7 +11,169 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% Todo: replace \'.. by \namedglyph
+
+%D The framework of this module is set up by Hans Hagen while
+%D many of the first translations were done by Tobias. Later
+%D on, corrections were made by users. If you have suggestions,
+%D or feel that your name missing here, don't hesitate to send
+%D us an email.
+%D
+%D \starttabulate[|lB|l|]
+%D \NC Czech     \NC Tom Hudec, Petr Sojka \NC \NR
+%D \NC Polish    \NC Grzegorz Sapijaszko   \NC \NR
+%D \NC Croatian  \NC \Zcaron eljko Vrba    \NC \NR
+%D \NC Slovenian \NC Mojca Miklavec        \NC \NR
+%D \NC Cz and Sk \NC Richard Gabriel       \NC \NR
+%D \stoptabulate
+
+%  Belarussian, Russian, Ukrainian, Bulgarian, Macedonian,
+%  Serbian, Croatian, Slovenian, Czech, Kushubian,
+%  Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian,
+%  Illyrian, Armenian
+
+\writestatus{loading}{ConTeXt Language Macros / Slavic Languages}
+
+\unprotect
+
+\installlanguage
+  [\s!pl]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!cs]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\thickglue--\thickglue\penalty-20\relax, % hh, \relax added
+   \c!rightsentence=\thickglue--\thickglue\penalty-20\relax,
+   \c!leftsubsentence=~---~\penalty-20\relax,
+   \c!rightsubsentence=~---~\penalty-20\relax,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsinglesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!date={\v!day,{.\,},\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!sk]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,{.\,},\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!hr]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
+
+%D The default quotation marks for Slovenian were chosen as
+%D \lowerleftdoubleninequote these ones\upperrightdoublesixquote\
+%D which was probably due to the strong influence computers
+%D had on typesetting, but \rightguillemot these ones\leftguillemot\
+%D are \quotation{more correct}.
+%D
+%D If you still want the other quotation marks, use this:
+%D
+%D \starttyping
+%D \installlanguage
+%D   [sl]
+%D   [leftquote=\lowerleftsingleninequote,
+%D    rightquote=\upperrightsinglesixquote,
+%D    leftquotation=\lowerleftdoubleninequote,
+%D    rightquotation=\upperrightdoublesixquote]
+%D \stoptyping
+%D
+%D If you disagree with the change, please send an email to Mojca, but
+%D best use some pretty strong arguments because she loves S{\sl love}nia
+%D too much to compromise on this.
+%D
+%D German faces approximately the same problem. I (MM) would prefer to
+%D have something like:
+%D
+%D \starttyping
+%D \mainlanguage[sl][quotationstyle=guillemot|doublequote] % better name needed
+%D \stoptyping
+%D
+%D but users are expected to respect the rules of nice and correct
+%D typography anyway.
+
+\installlanguage
+ [\s!sl]
+ [\c!spacing=\v!packed,
+  \c!leftsentence={\hbox{--~}},
+  \c!rightsentence={\hbox{~--}},
+  \c!leftsubsentence={--},
+  \c!rightsubsentence={--},
+  %\c!leftquote=\lowerleftsingleninequote,
+  %\c!rightquote=\upperrightsinglesixquote,
+  %\c!leftquotation=\lowerleftdoubleninequote,
+  %\c!rightquotation=\upperrightdoublesixquote,
+  \c!leftquote=\guilsingleright,
+  \c!rightquote=\guilsingleleft,
+  \c!leftquotation=\rightguillemot,
+  \c!rightquotation=\leftguillemot,
+  \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
+
+\installlanguage [polish]    [\s!pl]
+\installlanguage [czech]     [\s!cs]
+\installlanguage [slovak]    [\s!sk]
+\installlanguage [croatian]  [\s!hr]
+\installlanguage [slovenian] [\s!sl]
+\installlanguage [slovene]   [\s!sl] % both possible (mojca: still needed?)
+
+\installlanguage [cz]        [\s!cs]
+
+\def\doconvertsloveniancharacters{\dodoconvertcharacters{25}}
+
+\def\sloveniancharacters{\doconvertsloveniancharacters\sloveniancharacter}
+\def\slovenianCharacters{\doconvertsloveniancharacters\slovenianCharacter}
+
+%D Define general-purpose macros for Slovenian character enumerations:
+
+\defineconversion [sloveniancharacter]  [\sloveniancharacter]
+\defineconversion [slovenianCharacter]  [\slovenianCharacter]
+
+\defineconversion [sloveniancharacters] [\sloveniancharacters]
+\defineconversion [slovenianCharacters] [\slovenianCharacters]
+
+%D Define these as the general character enumeration when
+%D language is Slovenian. If you feel uncomfortable with this,
+%D mail Mojca, since she promised to to take the heat.
+
+\defineconversion [sl] [character]  [\sloveniancharacter]
+\defineconversion [sl] [Character]  [\slovenianCharacter]
+
+\defineconversion [sl] [characters] [\sloveniancharacters]
+\defineconversion [sl] [Characters] [\slovenianCharacters]
+
+\defineconversion [sl] [a]          [\sloveniancharacters]
+\defineconversion [sl] [A]          [\slovenianCharacters]
+\defineconversion [sl] [AK]         [\smallcapped\sloveniancharacters]
+\defineconversion [sl] [KA]         [\smallcapped\sloveniancharacters]
+
 \def\sloveniancharacters#1{\ctxlua{converters.alphabetic(\number#1,"sl")}}
 \def\slovenianCharacters#1{\ctxlua{converters.Alphabetic(\number#1,"sl")}}
 
-\endinput
+\protect \endinput

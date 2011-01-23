@@ -66,33 +66,44 @@
 %D \NEWPAGE\ character locally, we redefine the meaning of
 %D this (often already) active character.
 
-\bgroup \permitcaretescape
+% \bgroup \permitcircumflexescape
 
-    \catcode\formfeedasciicode\activecatcode
+%     \catcode\formfeedasciicode\activecatcode
 
-    \gdef^^L{\par}
+%     \gdef^^L{\par}
 
-\egroup
+% \egroup
+
+\expandafter\def\activeformfeedtoken{\par}
 
 %D The following indirect definitions enable us to implement
 %D all kind of \type{\obeyed} handlers.
 
-\bgroup \permitcaretescape
+% \bgroup \permitcircumflexescape
 
-    \catcode\tabasciicode      \activecatcode
-    \catcode\endoflineasciicode\activecatcode
-    \catcode\formfeedasciicode \activecatcode
+%     \catcode\tabasciicode      \activecatcode
+%     \catcode\endoflineasciicode\activecatcode
+%     \catcode\formfeedasciicode \activecatcode
 
-    \gdef\obeytabs   {\catcode\tabasciicode      \activecatcode\def^^I{\obeyedtab }}
-    \gdef\obeylines  {\catcode\endoflineasciicode\activecatcode\def^^M{\obeyedline}}
-    \gdef\obeypages  {\catcode\formfeedasciicode \activecatcode\def^^L{\obeyedpage}}
+%     \gdef\obeytabs   {\catcode\tabasciicode      \activecatcode\def^^I{\obeyedtab }}
+%     \gdef\obeylines  {\catcode\endoflineasciicode\activecatcode\def^^M{\obeyedline}}
+%     \gdef\obeypages  {\catcode\formfeedasciicode \activecatcode\def^^L{\obeyedpage}}
 
-    \gdef\ignoretabs {\catcode\tabasciicode      \activecatcode\def^^I{\obeyedspace}}
-    \gdef\ignorelines{\catcode\endoflineasciicode\activecatcode\def^^M{\obeyedspace}}
-    \gdef\ignorepages{\catcode\formfeedasciicode \ignorecatcode                     } % \def^^L{\obeyedline}}
-    \gdef\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode                     }
+%     \gdef\ignoretabs {\catcode\tabasciicode      \activecatcode\def^^I{\obeyedspace}}
+%     \gdef\ignorelines{\catcode\endoflineasciicode\activecatcode\def^^M{\obeyedspace}}
+%     \gdef\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
+%     \gdef\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
 
-\egroup
+% \egroup
+
+\def\obeytabs   {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedtab }}
+\def\obeylines  {\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedline}}
+\def\obeypages  {\catcode\formfeedasciicode \activecatcode\expandafter\def\activeformfeedtoken {\obeyedpage}}
+
+\def\ignoretabs {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedspace}}
+\def\ignorelines{\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedspace}}
+\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
+\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
 
 %D \macros
 %D   {naturaltextext}

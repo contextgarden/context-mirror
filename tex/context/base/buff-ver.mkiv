@@ -329,17 +329,17 @@
 
 \def\dodotypeA
   {\firststageinitializetype
-   \setcatcodetable\typcatcodesa
+   \setcatcodetable\tpacatcodes
    \dodotypenormal}
 
 \def\dodotypeB#1%
   {\firststageinitializetype
-   \setcatcodetable\typcatcodesb
+   \setcatcodetable\tpbcatcodes
    \dodotypenested}
 
 \def\dodotypeC#1%
   {\firststageinitializetype
-   \setcatcodetable\typcatcodesc
+   \setcatcodetable\vrbcatcodes
    \def\next##1#1{\dodotypenormal{##1}}%
    \next}
 
@@ -413,8 +413,8 @@
 
 \def\setgroupedtype
   {\firststageinitializetype
-   \catcode`\{=\begingroupcatcode
-   \catcode`\}=\endgroupcatcode}
+   \catcode\leftbraceasciicode \begingroupcatcode
+   \catcode\rightbraceasciicode\endgroupcatcode}
 
 \unexpanded\def\tex{\groupedcommand{\setgroupedtype\texescape}{\relax}}
 \unexpanded\def\arg{\groupedcommand{\setgroupedtype\leftargument}{\rightargument}}

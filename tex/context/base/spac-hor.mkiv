@@ -328,7 +328,7 @@
 
 \unexpanded\def\nonbreakablespace{\penalty\plustenthousand\normalspaceprimitive} % no space in math
 
-\letcatcodecommand \ctxcatcodes `\~ \nonbreakablespace % overloaded later
+\letcatcodecommand \ctxcatcodes \tildeasciicode \nonbreakablespace % overloaded later
 
 \def\space          { }
 \def\removelastspace{\ifhmode\unskip\fi}
@@ -350,7 +350,7 @@
    \hskip\wd\scratchbox\relax}
 
 \def\fixedspaces
-  {\letcatcodecommand \ctxcatcodes `\~ \fixedspace}
+  {\letcatcodecommand \ctxcatcodes \tildeasciicode \fixedspace}
 
 \appendtoks
   \let~\space
@@ -931,5 +931,22 @@
 
 \chardef\zwnj="200C
 \chardef\zwj ="200D
+
+% TODO (but used in languages):
+
+\unexpanded\def\textormathglue#1#2#3% cleaned up one
+  {\begingroup
+   \ifmmode
+     \mskip#1#2%
+   \else
+     \scratchdimen#1\hspaceamount\empty{#3}%
+     \scratchskip\scratchdimen\!!plus.5\scratchdimen\!!minus.3\scratchdimen
+     \hskip\scratchskip
+   \fi
+   \endgroup}
+
+\def\thinglue {\textormathglue+\thinmuskip 1}
+\def\medglue  {\textormathglue+\medmuskip  2}
+\def\thickglue{\textormathglue+\thickmuskip3}
 
 \protect \endinput

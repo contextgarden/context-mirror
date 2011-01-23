@@ -171,12 +171,12 @@
 % %D and \type {\suber} by saying \type {\enablesupsub}.
 %
 % \bgroup
-% \catcode`\^=\activecatcode
-% \catcode`\_=\activecatcode
+% \catcode\circumflexasciicode\activecatcode
+% \catcode\underscoreasciicode\activecatcode
 % \gdef\enablesupsub
-%   {\catcode`\^=\activecatcode
+%   {\catcode\circumflexasciicode\activecatcode
+%    \catcode\underscoreasciicode\activecatcode
 %    \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
-%    \catcode`\_=\activecatcode
 %    \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
 % \egroup
 %

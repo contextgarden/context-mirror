@@ -47,20 +47,22 @@
 % \setcclcuc "201C "201C "201C
 % \setcclcuc "201D "201D "201D
 
+% Is setting up vrb tpa and tpb needed?
+
 \ctxlua {
     characters.define(
         {   % letter catcodes
             \number\texcatcodes,
             \number\ctxcatcodes,
             \number\notcatcodes,
-            \number\mthcatcodes,
+            %number\mthcatcodes,
             \number\vrbcatcodes,
             \number\prtcatcodes,
 %           \number\xmlcatcodesn,
 %           \number\xmlcatcodese,
 %           \number\xmlcatcodesr,
-            \number\typcatcodesa,
-            \number\typcatcodesb,
+            \number\tpacatcodes,
+            \number\tpbcatcodes,
             \number\txtcatcodes,
         },
         {   % activate catcodes
