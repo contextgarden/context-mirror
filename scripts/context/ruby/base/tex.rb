@@ -118,18 +118,16 @@ class TEX
 
     # todo norwegian (no)
 
-    ['plain']                                      .each do |f| @@texformats[f] = 'plain'     end
-    ['cont-en','en','english','context','standard'].each do |f| @@texformats[f] = 'cont-en'   end
-    ['cont-nl','nl','dutch']                       .each do |f| @@texformats[f] = 'cont-nl'   end
-    ['cont-de','de','german']                      .each do |f| @@texformats[f] = 'cont-de'   end
-    ['cont-it','it','italian']                     .each do |f| @@texformats[f] = 'cont-it'   end
-    ['cont-fr','fr','french']                      .each do |f| @@texformats[f] = 'cont-fr'   end
-    ['cont-cs','cs','cont-cz','cz','czech']        .each do |f| @@texformats[f] = 'cont-cs'   end
-    ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro'   end
-    ['cont-gb','gb','cont-uk','uk','british']      .each do |f| @@texformats[f] = 'cont-gb'   end
-    ['cont-pe','pe','persian']                     .each do |f| @@texformats[f] = 'cont-pe'   end
-    ['cont-xp','xp','experimental']                .each do |f| @@texformats[f] = 'cont-xp'   end
-    ['mptopdf']                                    .each do |f| @@texformats[f] = 'mptopdf'   end
+    ['plain']                                      .each do |f| @@texformats[f] = 'plain'        end
+    ['cont-en','en','english','context','standard'].each do |f| @@texformats[f] = 'cont-en.mkii' end
+    ['cont-nl','nl','dutch']                       .each do |f| @@texformats[f] = 'cont-nl.mkii' end
+    ['cont-de','de','german']                      .each do |f| @@texformats[f] = 'cont-de.mkii' end
+    ['cont-it','it','italian']                     .each do |f| @@texformats[f] = 'cont-it.mkii' end
+    ['cont-fr','fr','french']                      .each do |f| @@texformats[f] = 'cont-fr.mkii' end
+    ['cont-cs','cs','cont-cz','cz','czech']        .each do |f| @@texformats[f] = 'cont-cs.mkii' end
+    ['cont-ro','ro','romanian']                    .each do |f| @@texformats[f] = 'cont-ro.mkii' end
+    ['cont-gb','gb','cont-uk','uk','british']      .each do |f| @@texformats[f] = 'cont-gb.mkii' end
+    ['mptopdf']                                    .each do |f| @@texformats[f] = 'mptopdf'      end
 
     ['latex']                                      .each do |f| @@texformats[f] = 'latex.ltx' end
 
@@ -142,10 +140,15 @@ class TEX
     ['latex','pdflatex']                           .each do |p| @@prognames[p]  = 'latex'     end
 
     ['plain','default','standard','mptopdf']       .each do |f| @@texmethods[f] = 'plain'     end
-    ['cont-en','cont-nl','cont-de','cont-it',
-     'cont-fr','cont-cs','cont-ro','cont-gb',
-     'cont-pe','cont-xp']                          .each do |f| @@texmethods[f] = 'context'   end
-    ['latex','pdflatex']                           .each do |f| @@texmethods[f] = 'latex'     end
+    ['cont-en','cont-en.mkii',
+     'cont-nl','cont-nl.mkii',
+     'cont-de','cont-de.mkii',
+     'cont-it','cont-it.mkii',
+     'cont-fr','cont-fr.mkii',
+     'cont-cs','cont-cs.mkii',
+     'cont-ro','cont-ro.mkii',
+     'cont-gb','cont-gb.mkii']                     .each do |f| @@texmethods[f] = 'context'   end
+    ['latex','latex.ltx','pdflatex']               .each do |f| @@texmethods[f] = 'latex'     end # untested
 
     ['plain','default','standard']                 .each do |f| @@mpsmethods[f] = 'plain'     end
     ['metafun']                                    .each do |f| @@mpsmethods[f] = 'metafun'   end
@@ -442,14 +445,6 @@ class TEX
         if str.class == String then str.split(',') else str.flatten end
     end
 
-    def validtexformat(str) validsomething(str,@@texformats,'tex')    end
-    def validmpsformat(str) validsomething(str,@@mpsformats,'mp' )    end
-    def validtexengine(str) validsomething(str,@@texengines,'pdftex') end
-    def validmpsengine(str) validsomething(str,@@mpsengines,'mpost' ) end
-
-    def validtexmethod(str) [validsomething(str,@@texmethods)].flatten.first end
-    def validmpsmethod(str) [validsomething(str,@@mpsmethods)].flatten.first end
-
     def validsomething(str,something,type=nil)
         if str then
             list = [str].flatten.collect do |s|
@@ -470,6 +465,15 @@ class TEX
             false
         end
     end
+
+    def validtexformat(str) validsomething(str,@@texformats,'tex')    ||
+                            validsomething(str,@@texformats,'mkii')   end
+    def validmpsformat(str) validsomething(str,@@mpsformats,'mp' )    end
+    def validtexengine(str) validsomething(str,@@texengines,'pdftex') end
+    def validmpsengine(str) validsomething(str,@@mpsengines,'mpost' ) end
+
+    def validtexmethod(str) [validsomething(str,@@texmethods)].flatten.first end
+    def validmpsmethod(str) [validsomething(str,@@mpsmethods)].flatten.first end
 
     def validbackend(str)
         if str && @@backends.key?(str) then
@@ -562,7 +566,7 @@ class TEX
     # will go to context/process context/listing etc
 
     def contextversion # ook elders gebruiken
-        filename = Kpse.found('context.tex')
+        filename = Kpse.found('context.mkii')
         version = 'unknown'
         begin
             if FileTest.file?(filename) && IO.read(filename).match(/\\contextversion\{(\d+\.\d+\.\d+.*?)\}/) then

@@ -626,7 +626,11 @@
      \letvalueempty{\c!file\f!metapostprefix#1}%
      \makeshortfilename[\truefilename{\f!metapostprefix#1}]%
      \startreadingfile
-       \readsysfile\shortfilename{\showmessage\m!metapost1{#1}}\donothing
+       \readsysfile{\shortfilename.\mksuffix}
+         {\showmessage\m!metapost1{#1}}
+         {\readsysfile{\shortfilename.tex}
+            {\showmessage\m!metapost1{#1}}
+            \donothing}%
      \stopreadingfile
    \fi}
 

@@ -1,0 +1,715 @@
+%D \module
+%D   [       file=lang-def,
+%D        version=2011.01.24, % merge of language files
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Languages Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Language Macros / Definitions}
+
+%D See \type {lang-*.tex} for some historic notes.
+
+\unprotect
+
+% Germanic Languages: Danish, Faeroese, Icelandic, Norwegian,
+% Swedish, German, Yiddish, Afrikaans, Dutch, English, Flemush,
+% Frisian, Plattdeutsch
+
+\installlanguage
+  [\s!nl]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!en]
+  [\c!spacing=\v!broad,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!month,\ ,\v!day,{,\ },\v!year},
+   \s!patterns=\s!us,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=3]
+
+\installlanguage
+  [\s!de]
+  [\c!spacing=\v!packed,
+   \s!lefthyphenmin=3,
+   \s!righthyphenmin=3,
+   \c!leftsentence={\hbox{--~}},
+   \c!rightsentence={\hbox{~--}},
+   \c!leftsubsentence={--},
+   \c!rightsubsentence={--},
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsinglesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!da]
+  [\c!spacing=\v!packed,
+   \c!leftsentence={\hbox{--\hskip.5em}},
+   \c!rightsentence={\hbox{\hskip.5em--}},
+   \c!leftsubsentence={--},
+   \c!rightsubsentence={--},
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsinglesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!sv]
+  [\c!spacing=\v!packed,
+   \c!leftsentence={\hbox{--~}},
+   \c!rightsentence={\hbox{~--}},
+   \c!leftsubsentence={--},
+   \c!rightsubsentence={--},
+   \c!leftquote=\upperrightsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperrightdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!af]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day}]
+
+\installlanguage
+  [\s!nb]
+  [spacing=packed,
+   lefthyphenmin=2,
+   righthyphenmin=2,
+   leftsentence=---,
+   rightsentence=---,
+   leftsubsentence=---,
+   rightsubsentence=---,
+   leftquote=\upperleftsinglesixquote,
+   rightquote=\upperrightsingleninequote,
+   leftquotation=\leftguillemot,
+   rightquotation=\rightguillemot,
+   date={day,{.},\ ,month,\ ,year}]
+
+\installlanguage
+  [\s!nn]
+  [spacing=packed,
+   lefthyphenmin=2,
+   righthyphenmin=2,
+   leftsentence=---,
+   rightsentence=---,
+   leftsubsentence=---,
+   rightsubsentence=---,
+   leftquote=\upperleftsinglesixquote,
+   rightquote=\upperrightsingleninequote,
+   leftquotation=\leftguillemot,
+   rightquotation=\rightguillemot,
+   date={day,{.},\ ,month,\ ,year}]
+
+\installlanguage [\s!no]        [\s!nb]
+\installlanguage [\s!norwegian] [\s!nb]
+\installlanguage [\s!bokmal]    [\s!nb]
+\installlanguage [\s!nynorsk]   [\s!nn]
+
+\installlanguage % old german
+  [deo]
+  [\c!spacing=\v!packed,
+   \c!default=\s!de]
+
+\installlanguage
+  [de-de]
+  [\c!spacing=\v!packed,
+   \c!default=\s!de]
+
+\installlanguage
+  [de-at]
+  [\c!spacing=\v!packed,
+   \c!default=\s!de,
+   \c!leftquote=\leftguillemot,
+   \c!rightquote=\rightguillemot,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot]
+
+\installlanguage
+  [de-ch]
+  [\c!spacing=\v!packed,
+   \c!default=\s!de]
+
+%D And some alternative (but very real) english patterns:
+
+\installlanguage
+  [en-gb]
+  [\c!default=\s!en,
+   \s!patterns=\s!gb,
+   \s!lefthyphenmin=3,
+   \s!righthyphenmin=3]
+
+\installlanguage
+  [en-us]
+  [\c!default=\s!en,
+   \s!patterns=\s!us]
+
+\installlanguage [\s!uk] [\s!en-\s!gb]
+\installlanguage [\s!us] [\s!en-\s!us]
+
+\installlanguage [usenglish]   [\s!en-\s!us]
+\installlanguage [ukenglish]   [\s!en-\s!gb]
+\installlanguage [english]     [\s!en]
+\installlanguage [dutch]       [\s!nl]
+\installlanguage [german]      [\s!de]
+\installlanguage [danish]      [\s!da]
+\installlanguage [swedish]     [\s!sv]
+\installlanguage [afrikaans]   [\s!af]
+
+%D Next we implement couple of ordinal mumber converters:
+
+\def\enordinaldaynumber#1%
+  {#1\ifnum\lasttwodigits{#1}=11
+     \highordinalstr{th}%
+   \else\ifnum\lasttwodigits{#1}=12
+     \highordinalstr{th}%
+   \else\ifnum\lasttwodigits{#1}=13
+     \highordinalstr{th}%
+   \else\ifcase\lastdigit{#1}%
+     \highordinalstr{th}%
+   \or % 1
+     \highordinalstr{st}%
+   \or % 2
+     \highordinalstr{nd}%
+   \or % 3
+     \highordinalstr{rd}%
+   \else
+     \highordinalstr{th}%
+   \fi\fi\fi\fi}
+
+% \def\enordinaldaynumber#1%
+%   {#1\ordinalstr{\ifnum\lasttwodigits{#1}=11 th\else\ifcase\lastdigit{#1}
+%          th\or st\or nd\or rd\else th\fi\fi}}
+
+\def\nlordinaldaynumber#1%
+  {#1\highordinalstr{e}}
+
+% Slavic Languages: Belarussian, Russian, Ukrainian, Bulgarian,
+% Macedonian, Serbian, Croatian, Slovenian, Czech, Kushubian,
+% Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian, Illyrian,
+% Armenian
+
+\installlanguage
+  [\s!pl]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!cs]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\thickglue--\thickglue\penalty-20\relax, % hh, \relax added
+   \c!rightsentence=\thickglue--\thickglue\penalty-20\relax,
+   \c!leftsubsentence=~---~\penalty-20\relax,
+   \c!rightsubsentence=~---~\penalty-20\relax,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsinglesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!date={\v!day,{.\,},\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!sk]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,{.\,},\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!hr]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+ [\s!sl]
+ [\c!spacing=\v!packed,
+  \c!leftsentence={\hbox{--~}},
+  \c!rightsentence={\hbox{~--}},
+  \c!leftsubsentence={--},
+  \c!rightsubsentence={--},
+  %\c!leftquote=\lowerleftsingleninequote,
+  %\c!rightquote=\upperrightsinglesixquote,
+  %\c!leftquotation=\lowerleftdoubleninequote,
+  %\c!rightquotation=\upperrightdoublesixquote,
+  \c!leftquote=\guilsingleright,
+  \c!rightquote=\guilsingleleft,
+  \c!leftquotation=\rightguillemot,
+  \c!rightquotation=\leftguillemot,
+  \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year}]
+
+\installlanguage [polish]    [\s!pl]
+\installlanguage [czech]     [\s!cs]
+\installlanguage [slovak]    [\s!sk]
+\installlanguage [croatian]  [\s!hr]
+\installlanguage [slovenian] [\s!sl]
+\installlanguage [slovene]   [\s!sl] % both possible (mojca: still needed?)
+
+\installlanguage [cz]        [\s!cs]
+
+\def\doconvertsloveniancharacters{\dodoconvertcharacters{25}}
+
+\def\sloveniancharacters{\doconvertsloveniancharacters\sloveniancharacter}
+\def\slovenianCharacters{\doconvertsloveniancharacters\slovenianCharacter}
+
+%D Define general-purpose macros for Slovenian character enumerations:
+
+\defineconversion [sloveniancharacter]  [\sloveniancharacter]
+\defineconversion [slovenianCharacter]  [\slovenianCharacter]
+
+\defineconversion [sloveniancharacters] [\sloveniancharacters]
+\defineconversion [slovenianCharacters] [\slovenianCharacters]
+
+%D Define these as the general character enumeration when
+%D language is Slovenian. If you feel uncomfortable with this,
+%D mail Mojca, since she promised to to take the heat.
+
+\defineconversion [sl] [character]  [\sloveniancharacter]
+\defineconversion [sl] [Character]  [\slovenianCharacter]
+
+\defineconversion [sl] [characters] [\sloveniancharacters]
+\defineconversion [sl] [Characters] [\slovenianCharacters]
+
+\defineconversion [sl] [a]          [\sloveniancharacters]
+\defineconversion [sl] [A]          [\slovenianCharacters]
+\defineconversion [sl] [AK]         [\smallcapped\sloveniancharacters]
+\defineconversion [sl] [KA]         [\smallcapped\sloveniancharacters]
+
+\def\sloveniancharacters#1{\ctxlua{converters.alphabetic(\number#1,"sl")}}
+\def\slovenianCharacters#1{\ctxlua{converters.Alphabetic(\number#1,"sl")}}
+
+% Cyrillic Languages
+
+\installlanguage
+  [\s!ru]
+  [\s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\leftguillemot,
+   \c!rightsentence=\rightguillemot,
+   \c!leftsubsentence=\lowerleftdoubleninequote,
+   \c!rightsubsentence=\upperrightdoubleninequote,
+   \c!leftquote=\lowerleftdoubleninequote,
+   \c!rightquote=\upperrightdoubleninequote,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!ua]
+  [\s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\leftguillemot,
+   \c!rightsentence=\rightguillemot,
+   \c!leftsubsentence=\lowerleftdoubleninequote,
+   \c!rightsubsentence=\upperrightdoubleninequote,
+   \c!leftquote=\lowerleftdoubleninequote,
+   \c!rightquote=\upperrightdoubleninequote,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \s!patterns=\s!uk]
+
+\installlanguage [russian]   [\s!ru]
+\installlanguage [ukrainian] [\s!ua]
+
+% Uralic Languages: Cheremiss, Estonian, Finnish, Karelian, Laap,
+% Mordvinian, Permian tongues, Hungarian, Ostyak, Vogul, Samoyed
+
+\installlanguage
+  [\s!fi]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day}]
+
+\installlanguage
+  [\s!hu]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,.,\ ,\v!month,\ ,\v!day,.}]
+
+\installlanguage [finish]    [\s!fi]
+\installlanguage [hungarian] [\s!hu]
+
+% Altaic Languages: Uigur, Uzbek, Azeri/Azerbaijani, Chuvash,
+% Turkish, Turkmen, Kazakh, Kazar, Kireghiz, Noghay, Talar,
+% Buryat, Kalmuck, Khalkha
+
+\installlanguage
+  [\s!tr]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day}]
+
+\installlanguage
+  [\s!tk]
+  [\c!spacing=\v!broad,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day}
+   \s!patterns=\s!tk,
+   \s!lefthyphenmin=1,
+   \s!righthyphenmin=2]
+
+\installlanguage [turkish] [\s!tr]
+\installlanguage [turkmen] [\s!tk]
+
+% Anatolian Languages
+
+% Arabic Languages
+
+\definesystemconstant {arabic}
+\definesystemvariable {ar}
+
+\installlanguage
+  [\s!ar]
+  [\c!spacing=\v!broad,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,\ ,\v!month,{،\ },\v!year}]
+
+\installlanguage [\s!arabic] [\s!ar]
+
+% Just aliases to "ar" for now
+
+\installlanguage[\s!ar-ae][\c!default=\s!ar]    % U.A.E.
+\installlanguage[\s!ar-bh][\c!default=\s!ar]    % Bahrain
+\installlanguage[\s!ar-eg][\c!default=\s!ar]    % Egypt
+\installlanguage[\s!ar-in][\c!default=\s!ar]    % India?
+\installlanguage[\s!ar-kw][\c!default=\s!ar]    % Kuwait
+\installlanguage[\s!ar-ly][\c!default=\s!ar]    % Libya
+\installlanguage[\s!ar-om][\c!default=\s!ar]    % Oman
+\installlanguage[\s!ar-qa][\c!default=\s!ar]    % Qatar
+\installlanguage[\s!ar-sa][\c!default=\s!ar]    % Saudi Arabia
+\installlanguage[\s!ar-sd][\c!default=\s!ar]    % Sudan
+\installlanguage[\s!ar-tn][\c!default=\s!ar]    % Tunisia
+\installlanguage[\s!ar-ye][\c!default=\s!ar]    % Yemen
+
+% Syriac months
+
+\installlanguage[\s!ar-sy][\c!default=\s!ar]    % Syria
+\installlanguage[\s!ar-iq][\c!default=\s!ar-sy] % Iraq
+\installlanguage[\s!ar-jo][\c!default=\s!ar-sy] % Jordan
+\installlanguage[\s!ar-lb][\c!default=\s!ar-sy] % Lebanon
+
+% Maghribi months
+
+\installlanguage[\s!ar-dz][\c!default=\s!ar]    % Algeria
+\installlanguage[\s!ar-ma][\c!default=\s!ar]    % Morocco
+
+% Artificial Languages: Esperanto
+
+% Baltic Languages: Lettish/Latvian, Lietuvių/Lithuanian
+
+\installlanguage
+  [\s!lt]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftdoubleninequote,
+   \c!rightquote=\upperrightdoublesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!date={\v!year,~m.,\ ,\v!month,\ ,\v!day,~d.},
+   \s!patterns=\s!lt,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=2]
+
+\installlanguage [lithuanian] [\s!lt]
+
+% Celtic: Breton, Welsh, Irish, Manx, Scottish Gaelic
+
+% CJK
+
+\definesystemconstant {chinese}  \definesystemconstant {cn}
+\definesystemconstant {japanese} \definesystemconstant {ja}
+\definesystemconstant {korean}   \definesystemconstant {kr}
+
+\installlanguage
+  [\s!cn]
+  [\c!leftsentence=——,
+   \c!rightsentence=——,
+   \c!leftsubsentence=——,
+   \c!rightsubsentence=——,
+   \c!leftquote=‘,
+   \c!rightquote=’,
+   \c!leftquotation=“,
+   \c!rightquotation=”,
+   \c!date={\v!year,年,\ ,\v!month,\v!day,日}]
+
+\installlanguage
+  [\s!ja]
+  [\c!leftsentence=——,
+   \c!rightsentence=——,
+   \c!leftsubsentence=——,
+   \c!rightsubsentence=——,
+   \c!leftquote=‘,
+   \c!rightquote=’,
+   \c!leftquotation=「,
+   \c!rightquotation=」,
+   \c!date={西暦,\v!year,年,\v!month,月,\v!day,日}]
+
+% Greek
+
+\installlanguage
+  [\s!gr]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\greekleftquot,
+   \c!rightquote=\greekrightquot,
+   \c!leftquotation=\greekleftquot,
+   \c!rightquotation=\greekrightquot,
+   \c!date={\v!day\ \v!month\ \v!year},
+   \s!patterns=\s!agr] % ok?
+
+\installlanguage [greek] [\s!gr]
+
+\installlanguage
+  [\s!agr]
+  [\s!default=\s!gr,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote]
+
+\installlanguage [ancientgreek] [\s!agr]
+\installlanguage [grk]          [\s!agr]
+
+% Indo-Iranian Languages: 34.
+
+% Italic Languages: Latin, Italian, Rhaeto-Romanic, Rumanian,
+% Sardian, Catalan, French, Ladino, Portuguese, Proven\c{c}al,
+% Spanish
+
+\ifx\guillemotspace\undefined \let\guillemotspace\empty \fi
+\ifx\sentencespace \undefined \let\sentencespace \empty \fi
+
+\installlanguage
+  [\s!fr]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\leftguillemot,
+   \c!rightquote=\rightguillemot,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day+,\v!space,\v!month,\v!space,\v!year}]
+
+\installlanguage
+  [\s!es]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+\installlanguage [sp] [\s!es] % old times context
+
+\installlanguage
+  [\s!ca]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+% Note GB left|/|right (sub)sentences are for \quote {incisi}.
+
+\installlanguage
+  [\s!it]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=--,
+   \c!rightsubsentence=--,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!leftspeech=\leftguillemot,
+   \c!middlespeech=\leftguillemot,
+   \c!rightspeech=\rightguillemot,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+\installlanguage % the same as italian
+  [\s!la]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\lowerrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\lowerrightdoubleninequote,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+\installlanguage
+  [\s!pt]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day}]
+
+\installlanguage
+  [\s!ro]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\leftguillemot,
+   \c!rightquote=\rightguillemot,
+   \c!leftquotation=\lowerrightdoubleninequote,
+   \c!rightquotation=\upperleftdoublesixquote,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year}]
+
+%D For compatibility reasons we also define:
+
+\installlanguage [fa]          [\s!fr] % for dutchies only
+
+\installlanguage [french]      [\s!fr]
+\installlanguage [spanish]     [\s!es]
+\installlanguage [catalan]     [\s!ca]
+\installlanguage [italian]     [\s!it]
+\installlanguage [latin]       [\s!la]
+\installlanguage [portuguese]  [\s!pt]
+\installlanguage [romanian]    [\s!ro]
+
+%D Ordinal converters:
+
+\def\frordinaldaynumber#1% date is masculine
+  {\number#1\ifcase#1\or
+     \highordinalstr{er}%
+   \fi}
+
+\defineconversion [\s!fr] [\v!day+] [\frordinaldaynumber]
+
+% Vietnamese Language
+
+\installlanguage
+  [\s!vi]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\quoteleft,
+   \c!rightquote=\quoteright,
+   \c!leftquotation=\quotedblleft,
+   \c!rightquotation=\quotedblright,
+   \c!date={{ },dd,{/},mm,{/},yy}]
+
+\installlanguage [vietnamese] [\s!vi]
+
+\protect \endinput

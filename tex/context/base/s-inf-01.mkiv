@@ -26,54 +26,60 @@
     local skip = {
         "prag%-.*%.tex", "docs%-.*.tex", "list%-.*%.tex", "test%-.*%.tex", "demo%-.*%.tex",
         "opti%-.*%.tex", "chrt%-.*%.tex", ".*%-old", ".*%-obs", ".*%-tst", "supp%-.*%.tex",
-        "colo%-pan.tex",
+        "colo%-pan.tex", ".*test.*"
     }
     local types = {
         "tex", "mkii", "mkiv", "mkvi", "lua"
     }
+    local patterns = {
+        "^([a-z][a-z][a-z][a-z])%-[a-z0-9%-]+%.[a-z]+",
+        "^([xms])%-[a-z0-9%-]+%.[a-z]+",
+    }
 
     local function collect(list,suffix,n)
-        local path = file.dirname(resolvers.find_file("context.tex"),".")
+        local path = file.dirname(resolvers.find_file("context.mkiv"),".")
         local pattern = path .. "/*." .. suffix
         local texfiles = dir.glob(pattern)
         for _, name in ipairs(texfiles) do
             local base = file.basename(name)
-            local category = match(base,"^([a-z][a-z][a-z][a-z])%-[a-z0-9]+%.[a-z]+")
-            if category and lfs.isfile(name) then
-                local okay = true
-                for s=1,#skip do
-                    if find(base,skip[s]) then
-                        okay = false
-                        break
-                    end
-                end
-                if okay then
-                    local lm, sm, cm = list[category], size[category], comp[category]
-                    if not lm then
-                        lm, sm, cm = { 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0 }
-                        list[category], size[category], comp[category] = lm, sm, cm
-                    end
-                    lm[n] = lm[n] + 1
-                    local done = true
-                    for o=1,#omit do
-                        if find(base,omit[o]) then
-                            done = false
+            for p=1,#patterns do
+                local category = match(base,patterns[p])
+                if category and lfs.isfile(name) then
+                    local okay = true
+                    for s=1,#skip do
+                        if find(base,skip[s]) then
+                            okay = false
                             break
                         end
                     end
-                    local data = io.loaddata(name)
-                    if suffix == "lua" then
-                        data = gsub(data,"%-%-%[%[.-%]%]%-%-","")
-                        data = gsub(data,"%-%-.-[\n\r]","")
-                    else
-                        data = gsub(data,"%%.-[\n\r]","")
-                    end
-                    data = gsub(data,"%s","")
-                    sm[n+5] = sm[n+5] + #data
-                    if done then
-                        sm[n] = sm[n] + #data
-                    else
-                        cm[n] = cm[n] + 1
+                    if okay then
+                        local lm, sm, cm = list[category], size[category], comp[category]
+                        if not lm then
+                            lm, sm, cm = { 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0 }
+                            list[category], size[category], comp[category] = lm, sm, cm
+                        end
+                        lm[n] = lm[n] + 1
+                        local done = true
+                        for o=1,#omit do
+                            if find(base,omit[o]) then
+                                done = false
+                                break
+                            end
+                        end
+                        local data = io.loaddata(name)
+                        if suffix == "lua" then
+                            data = gsub(data,"%-%-%[%[.-%]%]%-%-","")
+                            data = gsub(data,"%-%-.-[\n\r]","")
+                        else
+                            data = gsub(data,"%%.-[\n\r]","")
+                        end
+                        data = gsub(data,"%s","")
+                        sm[n+5] = sm[n+5] + #data
+                        if done then
+                            sm[n] = sm[n] + #data
+                        else
+                            cm[n] = cm[n] + 1
+                        end
                     end
                 end
             end
@@ -106,7 +112,7 @@
 
     function document.context_state_1(what)
         local max, what, norm = prepare(what)
-        context.starttabulate { "|Tc|T|T|T|T|T|" }
+        context.starttabulate { "|Tl|T|T|T|T|T|" }
         context.NC()
         context(category)
         context.NC()

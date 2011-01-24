@@ -324,7 +324,7 @@
       \startreadingfile
       \startnointerference % \bgroup
       \cleanupfeatures % better \setnormalcatcodes / test first
-      \readfile{#2}\donothing\donothing
+      \readfile{#2.\mksuffix}\donothing\donothing
       \stopnointerference  % \egroup
       \stopreadingfile
       \doglobal\setflag{#2}}%

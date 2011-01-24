@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['buff-ver'] = {
     license   = "see context related readme files"
 }
 
--- The default visualizers have reserved names starting with v-*. Users are
+-- The default visualizers have reserved names starting with buff-imp-*. Users are
 -- supposed to use different names for their own variants.
 
 local type, next, rawset, rawget, setmetatable, getmetatable = type, next, rawset, rawget, setmetatable, getmetatable
@@ -224,8 +224,8 @@ function visualizers.load(name)
     name = lower(name)
     if rawget(specifications,name) == nil then
         name = lower(name)
-        local texname = findfile(format("v-%s.mkiv",name))
-        local luaname = findfile(format("v-%s.lua" ,name))
+        local texname = findfile(format("buff-imp-%s.mkiv",name))
+        local luaname = findfile(format("buff-imp-%s.lua" ,name))
         if texname == "" or luaname == "" then
             -- assume a user specific file
             luaname = findfile(addsuffix(name,"mkiv"))

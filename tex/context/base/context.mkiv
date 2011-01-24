@@ -11,11 +11,39 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\catcode`\{=1 \catcode`\}=2 \catcode`\#=6
+
+%D From the next string (which is set by the script that assembles the
+%D distribution) later on we will calculate a number that can be used
+%D by use modules to identify the feature level. Starting with version
+%D 2004.8.30 the low level interface is english. Watch out and adapt
+%D your styles an modules.
+
+\edef\contextformat {\jobname}
+\edef\contextversion{2011.01.24 23:51}
+
+%D For those who want to use this:
+
+\let\fmtname   \contextformat
+\let\fmtversion\contextversion
+
+%D Loading:
+
+\edef\mksuffix   {mkiv}
+\edef\contextmark{MKIV}
+
+\ifx\normalinput\undefined \let\normalinput\input \fi
+
+\def\loadcorefile#1{\normalinput#1\relax}
+\def\loadmarkfile#1{\normalinput#1.\mksuffix\relax}
+\def\loadmkiifile#1{}
+\def\loadmkivfile#1{\normalinput#1\relax}
+
 %D First we load the system modules. These implement a lot of
 %D manipulation macros. We start with setting up some basic \TEX\
 %D machinery.
 
-\loadcorefile{syst-ini}
+\loadmarkfile{syst-ini}
 
 %D We just quit if new functionality is expected.
 
@@ -31,7 +59,7 @@
 
 %D Now the more fundamnetal code gets defined.
 
-\loadcorefile{norm-ctx}
+\loadmarkfile{norm-ctx}
 \loadmarkfile{syst-pln}
 \loadmarkfile{syst-mes}
 
@@ -138,24 +166,7 @@
 
 \loadmarkfile{lang-mis}
 \loadmarkfile{lang-url}
-
-\loadmarkfile{lang-ger}
-\loadmarkfile{lang-ita}
-\loadmarkfile{lang-sla}
-\loadmarkfile{lang-alt}
-\loadmarkfile{lang-ana}
-\loadmarkfile{lang-art}
-\loadmarkfile{lang-bal}
-\loadmarkfile{lang-cel}
-\loadmarkfile{lang-grk}
-\loadmarkfile{lang-ind}
-\loadmarkfile{lang-ura}
-\loadmarkfile{lang-vn}
-\loadmarkfile{lang-cyr}
-
-\loadmarkfile{lang-ara}
-\loadmarkfile{lang-cjk}
-
+\loadmarkfile{lang-def}
 \loadmarkfile{lang-wrd} % can be optional
 
 \loadmarkfile{symb-ini}
@@ -363,7 +374,7 @@
 
 \loadmarkfile{meta-xml}
 
-\loadcorefile{cont-log}
+\loadmarkfile{cont-log}
 
 \loadmarkfile{task-ini}
 
@@ -399,7 +410,7 @@
 \to \everyjob
 
 \appendtoks
-    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.tex")}% can become automatic
+    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv")}% can become automatic
 \to \everydump
 
 \protect \errorstopmode \dump \endinput

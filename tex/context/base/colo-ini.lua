@@ -590,6 +590,21 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     end
 end
 
+-- for the moment downward compatible
+
+local patterns = { "colo-imp-%s.mkiv", "colo-imp-%s.tex", "colo-%s.mkiv", "colo-%s.tex" }
+
+function colors.usecolors(name)
+    commands.uselibrary(name,patterns,function(name,foundname)
+        context.startreadingfile()
+        context.input(foundname)
+        context.showcolormessage("colors",4,name)
+        context.stopreadingfile()
+    end, function(name)
+        context.showcolormessage("colors",5,name)
+    end)
+end
+
 -- interface
 
 local setcolormodel = colors.setmodel
@@ -632,3 +647,4 @@ function commands.doifdrawingblackelse()
     commands.doifelse(colors.isblack(gettexattribute(a_color)))
 end
 
+commands.usecolors = colors.usecolors

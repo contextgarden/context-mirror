@@ -33,24 +33,7 @@
 %D \JAVA\ support is not implemented as a generic support
 %D module. The main reason for this is that passing system
 %D variables to a \JAVASCRIPT\ is closely related to other core
-%D macros. First some messages:
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
+%D macros.
 
 %D \TEX\ is not the right tool to check the \JAVA\ code; the
 %D most we can do is reporting some passed variables:
@@ -125,13 +108,6 @@
 %D JS_R_3="overflow";
 %D JS_P_3=3;
 %D \stoptyping
-% %D
-% %D Finally we have a counter that tells\JAVA\ how many
-% %D arguments were passed,
-% %D
-% %D \starttyping
-% %D JS_N
-% %D \stoptyping
 
 %D We will also support direct function calls. In that case
 %D no intermediate variables are used.
@@ -699,7 +675,11 @@
            \letgvalueempty{\c!file\f!javascriptprefix#1}%
            \makeshortfilename[\f!javascriptprefix#1]%
            \startreadingfile
-             \readsysfile\shortfilename{\showmessage\m!javascript1{#1}}\donothing
+             \readsysfile{\shortfilename.\mksuffix}
+               {\showmessage\m!javascript1{#1}}
+               {\readsysfile{\shortfilename.tex}
+                  {\showmessage\m!javascript1{#1}}
+                  \donothing}%
            \stopreadingfile
          \stopnointerference}}}
 

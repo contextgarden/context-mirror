@@ -145,14 +145,18 @@ openers.fix = openers.file loaders.fix = loaders.file
 openers.set = openers.file loaders.set = loaders.file
 openers.any = openers.file loaders.any = loaders.file
 
-function commands.doreadfile(scheme,path,name) -- better do a split and then pass table
+function finders.doreadfile(scheme,path,name) -- better do a split and then pass table
     local fullname
     if url.hasscheme(name) then
         fullname = name
     else
         fullname = ((path == "") and format("%s:///%s",scheme,name)) or format("%s:///%s/%s",scheme,path,name)
     end
-    context(resolvers.findtexfile(fullname)) -- can be more direct
+    return resolvers.findtexfile(fullname) or "" -- can be more direct
+end
+
+function commands.doreadfile(scheme,path,name)
+    context(finders.doreadfile(scheme,path,name))
 end
 
 -- modules can have a specific suffix or can specify one
@@ -292,6 +296,31 @@ function commands.usemodules(prefix,askedname,truename)
         end
     end
     modstatus[hashname] = status
+end
+
+local loaded = { }
+
+function commands.uselibrary(name,patterns,action,failure)
+    local files = utilities.parsers.settings_to_array(name)
+    local done = false
+    for i=1,#files do
+        local filename = files[i]
+        if not loaded[filename] then
+            loaded[filename] = true
+            for i=1,#patterns do
+                local filename = format(patterns[i],filename)
+             -- local foundname = resolvers.find_file(filename) or ""
+                local foundname = finders.doreadfile("any",".",filename)
+                if foundname ~= "" then
+                    action(name,foundname)
+                    done = true
+                end
+            end
+        end
+    end
+    if not done then
+        failure(name)
+    end
 end
 
 statistics.register("loaded tex modules", function()

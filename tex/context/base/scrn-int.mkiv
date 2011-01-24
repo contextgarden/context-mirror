@@ -411,14 +411,17 @@
 
 \def\douseattachment[#1][#2][#3][#4]% tag title newname filename
   {\iffourthargument
-     \ctxlua{interactions.attachments.register{ label="#1", title="#2", newname="#3", filename="#4" }}%
+     \dodouseattachment{#1}{#2}{#3}{#4}%
    \else\ifthirdargument
-     \ctxlua{interactions.attachments.register{ label="#1", title="#2", newname="#2", filename="#3" }}%
+     \dodouseattachment{#1}{#2}{#2}{#3}%
    \else\ifsecondargument
-     \ctxlua{interactions.attachments.register{ label="#1", title="#2", newname="#2", filename="#2" }}%
+     \dodouseattachment{#1}{#2}{#2}{#2}%
    \else
-     \ctxlua{interactions.attachments.register{ label="#1", title="#1", newname="#1", filename="#1" }}%
+     \dodouseattachment{#1}{#1}{#1}{#1}%
    \fi\fi\fi}
+
+\def\dodouseattachment#1#2#3#4% tag title newname filename
+  {\ctxlua{interactions.attachments.register{label="#1",title="#2",newname="#3",filename="#4"}}}
 
 \def\attachment
   {\dodoubleempty\doattachment}

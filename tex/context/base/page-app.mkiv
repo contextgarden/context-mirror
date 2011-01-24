@@ -13,8 +13,7 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Applications}
 
-%D The fitting page code is moved from \type {meta-fig} to
-%D here.
+%D This needs an update with a proper define and inheritance.
 
 \unprotect
 
@@ -34,7 +33,6 @@
    \c!leftmargin=\!!zeropoint,\c!leftedge=\!!zeropoint,
    \c!rightmargin=\!!zeropoint,\c!rightedge=\!!zeropoint,
    \c!header=\!!zeropoint,\c!footer=\!!zeropoint]
-
 
 \def\dostartfittingpage[#1][#2]%
   {\page % this is kind of tricky! there can be preceding page refs
@@ -85,7 +83,7 @@
       \c!height=\fittinght]%
    \setuplayout
      [\v!page]%
-   \startmakeup[\v!standard][\c!textstate=\v!empty,\c!doublesided=\v!no,\c!page=]%
+   \startmakeup[\v!standard][\c!textstate=\v!empty,\c!doublesided=\v!no,\c!pagestate=\getvalue{\currentfittingpage\c!pagestate}]%
      \centerbox{\box\scratchbox}%
    \stopmakeup
    \stoplocallayout
@@ -111,6 +109,7 @@
 
 \setupTEXpage
   [\c!scale=1000,
+   \c!pagestate=,
    \c!strut=\v!no,
    \c!align=\v!normal, % needed, else problems !
    \c!offset=\v!overlay,

@@ -35,10 +35,14 @@ function environment.make_format(name)
     end
     logs.simple("format path: %s",lfs.currentdir())
     -- check source file
-    local texsourcename = file.addsuffix(name,"tex")
+    local texsourcename = file.addsuffix(name,"mkiv")
     local fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
     if fulltexsourcename == "" then
-        logs.simple("no tex source file with name: %s",texsourcename)
+        texsourcename = file.addsuffix(name,"tex")
+        fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
+    end
+    if fulltexsourcename == "" then
+        logs.simple("no tex source file with name: %s (mkiv or tex)",name)
         lfs.chdir(olddir)
         return
     else

@@ -1,0 +1,123 @@
+%D \module
+%D   [       file=meta-dum,
+%D        version=2003.03.21,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Dummy (External) Graphics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D This library overloads the normal external figure
+%D placeholder by a nicer one.
+%D
+%D \startbuffer
+%D \useMPlibrary[dum]
+%D
+%D \startlinecorrection
+%D \externalfigure[unknown-a][width=3cm,height=1cm]
+%D \stoplinecorrection
+%D
+%D \startlinecorrection
+%D \externalfigure[unknown-b][width=4cm,height=5cm]
+%D \stoplinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% currently preparempvariables is unable to resolve number
+% fractions like reduction
+
+% June 22, 2003, this definition was patched to adapt itself
+% to transparent colors
+
+\startuseMPgraphic{placeholder}{width,height,reduction,color}
+    numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ;
+    t := is_transparent(\MPvar{color}) ;
+    c := not_transparent(\MPvar{color}) ;
+    b := not_transparent(white) ;
+    w := \MPvar{width} ;
+    h := \MPvar{height} ;
+    r := \MPvar{reduction} ;
+    d := max(w,h) ;
+    p := unitsquare xyscaled (w,h) ;
+    cc := r[.5c,b] ;
+    fill p withcolor if t : transparent(1,.5,cc) else : cc fi ;
+    for i := 1 upto 60 :
+        cc := r[c randomized(.3,.9),b] ;
+        fill fullcircle
+            scaled (d/5 randomized (d/5))
+            shifted (center p randomized (d))
+            withcolor if t : transparent(1,.5,cc) else : cc fi ;
+    endfor ;
+    clip currentpicture to p ;
+\stopuseMPgraphic
+
+\definepalet
+  [placeholder]
+  [1=red,2=green,3=blue,4=cyan,5=magenta,6=yellow]
+
+% \newcounter \figurereplacementcycle
+
+\let\figurereplacementcycle\relax
+
+\setupexternalfigures
+  [\c!reduction=0,
+   \c!text=\v!yes]
+
+\let\normalexternalfigurereplacement\externalfigurereplacement
+
+\def\externalfigurereplacement#1#2#3%
+  {\getpaletsize[placeholder]%
+   \ifx\figurereplacementcycle\relax
+     \getrandomnumber \figurereplacementcycle \!!plusone \paletsize
+     \globallet \figurereplacementcycle \figurereplacementcycle
+   \else
+     \doglobal\increment\figurereplacementcycle
+   \fi
+   \ifnum\figurereplacementcycle>\paletsize
+     \globallet\figurereplacementcycle\!!plusone
+   \fi
+   \weightGRAYfalse % monochrome anyway
+   \MPcmykcolorsfalse
+   \MPspotcolorsfalse
+   \defineoverlay
+     [\s!dummy]
+     [\useMPgraphic
+       {placeholder}%
+       {width=\figurewidth,
+        height=\figureheight,
+        reduction=\@@efreduction,
+        color=placeholder:\figurereplacementcycle}]%
+   \expanded{\localframed
+     [\??ef]
+     [\c!width=\figurewidth,
+      \c!height=\figureheight,
+      \c!frame=\v!off,
+      \c!strut=\v!no,
+      \c!background=\s!dummy,
+      \c!foregroundcolor=\s!white]}%
+     {\doif\@@eftext\v!yes
+        {\infofont \setupinterlinespace \dohyphens % \nohyphens
+         \doifelse{#1}\s!dummy  \!!doneafalse\!!doneatrue
+         \doifelse{#2}\s!dummy  \!!donebfalse\!!donebtrue
+         \doifelse{#3}\s!unknown\!!donecfalse\!!donectrue
+         \if!!donea
+           name: \expanded{\verbatimstring{#1}}\strut\endgraf
+         \fi
+         \if!!doneb
+           \if!!donea file: \else \if!!donec file: \fi \fi
+           \expanded{\verbatimstring{#2}}\strut\endgraf
+         \fi
+         \if!!donec
+           state: \expanded{\verbatimstring{#3}}\strut\endgraf
+         \fi}}}
+
+\def\dummyfigure{\externalfigure[placeholder]}
+
+\protect \endinput

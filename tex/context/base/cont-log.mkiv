@@ -1,0 +1,249 @@
+%D \module
+%D   [       file=cont-log,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=\TEX\ Logos,
+%D         author=J. Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt TeX Logos}
+
+%D The system that is used to typeset this text is called \TEX,
+%D typeset with an lowered~E. From te beginning of \TEX,
+%D authors of macro packages adapted this raising and lowering
+%D style. In this module we define some of those logos.
+
+\unprotect
+
+\def\Mkern#1%
+  {{\setbox\scratchbox\hbox{M}\kern#1\wd\scratchbox}}
+
+\unexpanded\def\TeX
+  {T%
+   \Mkern{-.1667}\lower.5ex\hbox{E}%
+   \Mkern{-.125}X}
+
+\unexpanded\def\ConTeXt{Con\TeX t}
+\unexpanded\def\PPCHTeX{ppch\TeX}
+\unexpanded\def\PRAGMA {Pragma ADE}
+
+\unexpanded\def\LaTeX % requested by erik frambach
+  {{\setbox\scratchbox\hbox{L}%
+    \scratchdimen\ht\scratchbox
+    \setbox\scratchbox\hbox{\txx A}%
+    L\kern-.55\wd\scratchbox
+    \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
+    \kern-.2\wd\scratchbox\TeX}}
+
+\unexpanded\def\TaBlE
+  {T%
+   \kern-.27em\lower.5ex\hbox{A}%
+   \kern-.18emB%
+   \kern-.1em\lower.5ex\hbox{L}%
+   \kern-.075emE}
+
+\unexpanded\def\PiCTeX
+  {P%
+   \kern-.12em\lower.5ex\hbox{I}%
+   \kern-.075em C%
+   \kern-.11em\TeX}
+
+\def\AMSswitch#1%
+  {$\cal\ifdim\bodyfontsize>1.1em\scriptstyle\fi#1$}
+
+\unexpanded\def\AmSTeX
+  {\AMSswitch A%
+   \kern-.1667em\lower.5ex\hbox{\AMSswitch M}%
+   \kern-.125em\AMSswitch S%
+   -\TeX}
+
+\unexpanded\def\LamSTeX
+  {L%
+   \kern-.4em\raise.3ex\hbox{\AMSswitch A}%
+   \kern-.25em\lower.4ex\hbox{\AMSswitch M}%
+   \kern-.1em{\AMSswitch S}%
+   -\TeX}
+
+\unexpanded\def\AmSLaTeX
+  {\AMSswitch A%
+   \kern-.1667em\lower.5ex\hbox{\AMSswitch M}%
+   \kern-.125em\AMSswitch S%
+   -\LaTeX}
+
+%D Alternative \CONTEXT\ logo, first Idris S.~Hamid's version:
+%D
+%D \def\Context
+%D   {{\sc C\kern -.0667emo\kern -.0667emn\kern -.0549emt\kern
+%D    -.1667em\lower.5ex\hbox {e}\kern -.125emx\kern -.0549emt}}
+%D
+%D I changed this into one that adapts itself:
+
+\unexpanded\def\Context
+  {{C\kern -.0667em\getscaledglyph{.8}\empty{O\kern -.0667emN\kern
+   -.0549emT\doifitalicelse{\kern-.1em}{\kern-.1667em}\lower.5ex\hbox
+   {E}\doifitalicelse\empty{\kern-.11em}X\kern-.055emT}}}
+
+%D The \METAFONT\ and \METAPOST\ logos adapt themselves to the
+%D current fontsize, an ugly but usefull hack.
+
+\let\logofont\nullfont
+
+\loadmapfile[original-base.map]
+
+\unexpanded\def\setMFPfont% more sensitive for low level changes
+  {\font\logofont=logo%
+     \ifx\fontalternative\c!bf\else
+     \ifx\fontalternative\c!it\else
+     \ifx\fontalternative\c!sl\else
+     \ifx\fontalternative\c!bi\else
+     \ifx\fontalternative\c!bs\else
+     \fi\fi\fi\fi\fi
+     10 at \currentfontscale\bodyfontsize
+   \logofont}
+
+\def\MetaHyphen% there is no hyphenchar in this font
+  {\discretionary{\vrule\!!height.33em\!!depth-.27em\!!width.33em}{}{}}
+
+\unexpanded\def\MetaFont
+  {{\setMFPfont META\MetaHyphen FONT}}
+
+\unexpanded\def\MetaPost
+  {{\setMFPfont META\MetaHyphen POST}}
+
+\unexpanded\def\MetaFun
+  {MetaFun}
+
+%D \macros
+%D  {TEX, METAFONT, METAPOST, METAFUN,
+%D   PICTEX, TABLE,
+%D   CONTEXT, PPCHTEX,
+%D   AMSTEX, LATEX, LAMSTEX}
+%D
+%D We define the funny written ones as well as the less
+%D error prone upper case names (in \CONTEXT\ we tend to
+%D write all user defined commands, like abbreviations, in
+%D uppercase.)
+
+\unexpanded\def\METAFONT {\MetaFont}
+\unexpanded\def\METAPOST {\MetaPost}
+\unexpanded\def\PPCHTEX  {\PPCHTeX}
+\unexpanded\def\CONTEXT  {\ConTeXt}
+\unexpanded\def\METAFUN  {\MetaFun}
+
+\unexpanded\def\TEX      {\TeX}
+\unexpanded\def\LATEX    {\LaTeX}
+\unexpanded\def\PICTEX   {\PiCTeX}
+\unexpanded\def\TABLE    {\TaBlE}
+\unexpanded\def\AMSTEX   {\AmSTeX}
+\unexpanded\def\LAMSTEX  {\LamSTeX}
+\unexpanded\def\INRSTEX  {inrs\TeX}
+
+%D And this is how they show up: \TeX, \MetaFont, \MetaPost,
+%D \PiCTeX, \TaBlE, \ConTeXt, \PPCHTeX, \AmSTeX, \LaTeX,
+%D \LamSTeX.
+
+%D Some placeholders:
+
+\unexpanded\def\eTeX   {\mathematics{\varepsilon}-\TeX}
+\unexpanded\def\pdfTeX {pdf\TeX}
+\unexpanded\def\pdfeTeX{pdfe-\TeX}
+\unexpanded\def\luaTeX {lua\TeX}
+\unexpanded\def\metaTeX{meta\TeX}
+\unexpanded\def\XeTeX  {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
+
+% Adapted from a patch by Mojca:
+
+\def\@XeTeX@
+  {\setbox\scratchbox\hbox{E}%
+   \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
+
+\unexpanded\def\XeTeX
+  {X\lower.5ex
+   \hbox
+     {\kern-.15em
+      \iffontchar\font"018E\relax
+        \char"018E%
+      \else
+        \ifx\fontalternative\c!bf\mirror{E}\else
+        \ifx\fontalternative\c!it  \@XeTeX@\else
+        \ifx\fontalternative\c!sl  \@XeTeX@\else
+        \ifx\fontalternative\c!bi  \@XeTeX@\else
+        \ifx\fontalternative\c!bs  \@XeTeX@\else
+                                 \mirror{E}\fi\fi\fi\fi\fi
+      \fi}%
+   \kern-.1667em \TeX}
+
+\let\ETEX   \eTeX
+\let\PDFTEX \pdfTeX
+\let\PDFETEX\pdfeTeX
+\let\LUATEX \luaTeX
+\let\LuaTeX \luaTeX
+\let\XETEX  \XeTeX
+
+\unexpanded\def\MkApproved % joke, not used so it might move
+  {\dontleavehmode\rotate
+     [\c!rotation={\ifnum\texengine=\luatexengine\ctxlua{tex.write(45-45*\the\luatexversion/100)}\else0\fi},
+      \c!align=\v!middle,
+      \c!foregroundstyle=\v!type,
+      \c!foregroundcolor=darkred,
+      \c!frame=\v!on,
+      \c!offset=1ex,
+      \c!background=\v!color,
+      \c!backgroundcolor=lightgray,
+      \c!framecolor=darkred,
+      \c!rulethickness=2pt]
+     {Mk\ifnum\texengine=\luatexengine IV\else II\fi\\approved}}
+
+% \unexpanded\def\luaTeX
+%   {\dontleavehmode\begingroup
+%    Lua%
+%    \setbox0\hbox{oT}%
+%    \setbox2\hbox{o\kern0ptT}%
+%    \ifdim\wd0=\wd2
+%      \setbox0\hbox dir TRT{To}%
+%      \setbox2\hbox{T\kern0pto}%
+%      \hskip\dimexpr\wd0-\wd2\relax
+%    \fi
+%    \TeX
+%    \endgroup}
+%
+% a further iteration from the list, patched again
+
+% \ifx\fontalternative\c!it -\else
+% \ifx\fontalternative\c!sl -\else
+% \ifx\fontalternative\c!bi -\else
+% \ifx\fontalternative\c!bs -\fi\fi\fi\fi
+
+\def\LuaTeX
+  {\dontleavehmode
+   \begingroup
+     Lua%
+     % hope for kerning, try aT
+     \setbox0\hbox{aT}%
+     \setbox2\hbox{a\kern\zeropoint T}%
+     \ifdim\wd0=\wd2 % kerns can go two ways
+       % no aT kerning, try oT as a is not symmetrical
+       \setbox0\hbox{oT}%
+       \setbox2\hbox{o\kern\zeropoint T}%
+       \ifdim\wd0=\wd2 % kerns can go two ways
+         % no aT and oT kerning, try To
+         \setbox0\hbox{To}%
+         \setbox2\hbox{T\kern\zeropoint o}%
+         % maybe we need to compensate for the angle (sl/it/bs/bi)
+       \fi
+       \ifdim\wd0=\wd2\else
+         \kern\dimexpr\wd0-\wd2\relax
+       \fi
+     \fi
+     \TeX
+   \endgroup}
+
+\let\luaTeX \LuaTeX
+\let\LUATEX \LuaTeX
+
+\protect \endinput

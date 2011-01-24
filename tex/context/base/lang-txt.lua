@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['lang-txt'] = {
 -- The content of this file is derived from the mkii lang-* files and
 -- early 2011 the mkii labels are generated from this file. The
 -- translations have been collected over years by users, using named
--- glyphs. This file uses utf exclusively.
+-- glyphs. This file uses utf exclusively. For those involved in the
+-- translations see the 'lang-*.mkii' files.
 
 -- For the moment we keep this table in memory. In the future we can then
 -- enable labels.

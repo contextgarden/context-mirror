@@ -1,0 +1,304 @@
+%D \module
+%D   [       file=meta-txt,
+%D        version=2000.07.06,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Text Tricks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In this library some handy text manipulations are
+%D defined. Some can and will be improved as soon as the
+%D \TEX||\METAPOST\ interface is stable. Some of the
+%D solutions may look weird, which is entirely my fault,
+%D since I implemented them in the process of getting grip
+%D on this kind of manipulations. Undoubtly better
+%D \METAPOST\ code is possible, but my way of learning
+%D this kind of trickery happens to be by \quote {trial
+%D and error} and \quote {look and feel} (as well as
+%D identifying tricks in Hobby's code).
+
+% textext ipv btex ... etex
+
+% we need a proper prefix here
+
+\unprotect
+
+\startMPextensions
+  if unknown context_text: input mp-text; fi;
+\stopMPextensions
+
+%%%%%%%
+
+% \def\newchar#1{\chardef#1=0 }
+
+\ifdefined\MPtoks   \else \newtoks\MPtoks        \fi
+\ifdefined\MPbox    \else \newbox \MPbox         \fi
+
+\ifdefined\parwidth     \else \newdimen\parwidth     \fi
+\ifdefined\parheight    \else \newdimen\parheight    \fi
+\ifdefined\parvoffset   \else \newdimen\parvoffset   \fi
+\ifdefined\parhoffset   \else \newdimen\parhoffset   \fi
+\ifdefined\parlines     \else \newcount\parlines     \fi
+\ifdefined\partoks      \else \newtoks \partoks      \fi
+\ifdefined\shapetextbox \else \newbox  \shapetextbox \fi
+                              \newif   \ifparseries
+\ifdefined\parfirst     \else \chardef \parfirst=0   \fi
+
+\def\startshapetext[#1]%
+  {\global\newcounter\currentshapetext
+   \global\setbox\shapetextbox\vbox\bgroup
+     \expanded{\switchtobodyfont[\@@shbodyfont]}%
+     \dontcomplain
+     \hsize\parwidth
+     \setuptolerance[\v!verytolerant,\v!stretch]%
+     \!!counta\zerocount
+     \!!toksa\emptytoks
+     \def\docommand##1%
+       {\setbox\scratchbox\hbox{\useMPgraphic{##1}}%
+        \global\chardef\parfirst\zerocount
+        \getMPdata % \readlocfile{\MPdatafile}{}{}%
+        \setshapecharacteristics
+        \advance\!!counta by \parlines
+        \expandafter\appendtoks\the\partoks\to\!!toksa}%
+     \processcommalist[#1]\docommand
+     \global\parseriestrue
+     \xdef\totalparlines{\the\!!counta}%
+     \global\partoks\!!toksa
+    %\ifx\partoks\emptytoks\else % safeguard
+       \expanded{\parshape \the\!!counta \the\!!toksa}%
+    %\fi
+     \setshapecharacteristics % extra dummy
+     \ifparseries\def\par{\endgraf\adaptparshape}\fi
+     \EveryPar{\begstrut}}
+
+\def\stopshapetext
+  {\endstrut
+  %\removebottomthings
+   \egroup
+   \global\newcounter\currentshapetext
+   \getshapecharacteristics}
+
+\def\adaptparshape%
+  {\def\docommand##1%
+     {\ifcase\!!counta
+        \expandafter\appendtoks\space##1 \to\!!toksa
+      \else
+        \advance\!!counta \minusone
+      \fi}%
+   \!!counta\prevgraf
+   \doglobal\decrement(\totalparlines,\!!counta)%
+   \multiply\!!counta \plustwo
+   \!!toksa\emptytoks
+   \expanded{\processseparatedlist[\the\partoks][\space]}\docommand
+   \global\partoks\!!toksa
+  %\ifx\partoks\emptytoks\else % safeguard
+     \expanded{\parshape\totalparlines\the\partoks}%
+ }%\fi}
+
+\def\getshapecharacteristics%
+  {\doglobal\increment\currentshapetext
+   \doifdefinedelse{parlines:\currentshapetext}
+     {\global\parlines         \getvalue{parlines:\currentshapetext}%
+      \global\chardef\parfirst \getvalue{parfirst:\currentshapetext}%
+      \global\parvoffset       \getvalue{parvoffset:\currentshapetext}%
+      \global\parhoffset       \getvalue{parhoffset:\currentshapetext}%
+      \global\parwidth         \getvalue{parwidth:\currentshapetext}%
+      \global\parheight        \getvalue{parheight:\currentshapetext}}
+     {\global\parlines         \plusone
+      \global\chardef\parfirst \zerocount
+      \global\parvoffset       \zeropoint
+      \global\parhoffset       \zeropoint
+      \global\parwidth         \hsize
+      \global\parheight        \vsize}}
+
+\def\setshapecharacteristics%
+  {\doglobal\increment\currentshapetext
+   \setxvalue{parlines:\currentshapetext  }{\the\parlines}%
+   \setxvalue{parfirst:\currentshapetext  }{\the\parfirst}%
+   \setxvalue{parvoffset:\currentshapetext}{\the\parvoffset}%
+   \setxvalue{parhoffset:\currentshapetext}{\the\parhoffset}%
+   \setxvalue{parwidth:\currentshapetext  }{\the\parwidth}%
+   \setxvalue{parheight:\currentshapetext }{\the\parheight}}
+
+\def\getshapetext% option: unvbox
+  {\vbox\bgroup
+   \forgetall
+   \setbox\scratchbox\vbox to \parheight
+     {\expanded{\switchtobodyfont[\@@shbodyfont]}% evt strutheight en
+      \splittopskip\strutheight               % lineheight opslaan
+      \vskip\parvoffset                       % scheelt switch en
+      \ifcase\parfirst\or\vskip\lineheight\fi % is ook veiliger
+      \hskip\parhoffset
+      \hbox{\vsplit\shapetextbox to \parlines\lineheight}}%
+   \wd\scratchbox\parwidth
+   \ht\scratchbox\parheight
+   \dp\scratchbox\zeropoint
+   \box\scratchbox
+   \getshapecharacteristics
+   \egroup}
+
+\def\setupshapetexts%
+  {\dodoubleempty\getparameters[\??sh]}
+
+\setupshapetexts%
+  [\c!bodyfont=]
+
+%%%%%%% rotfont nog definieren
+
+\doifundefined{RotFont}{\definefont[RotFont][RegularBold]}
+
+\def\processfollowingtoken#1% strut toegevoegd
+  {\appendtoks#1\to\MPtoks
+   \setbox\MPbox=\hbox{\RotFont\setstrut\strut\the\MPtoks}%
+   \startMPdrawing
+     n := n + 1 ; len[n] := \the\wd\MPbox ;
+   \stopMPdrawing
+   \startMPdrawing[-]
+   % pic[n] := textext{\RotFont\setstrut\strut#1} ; % btex \RotFont\setstrut\strut#1 etex ;
+     pic[n] := btex \RotFont\setstrut\strut#1 etex ;
+     pic[n] := pic[n] shifted - llcorner pic[n] ;
+   \stopMPdrawing}
+
+\startuseMPgraphic{followtokens}
+  % we default to nothing
+\stopuseMPgraphic
+
+\def\followtokens#1%
+  {\vbox\bgroup
+   \forgetall
+   \dontcomplain
+   \startMPenvironment
+     \doifundefined{RotFont}{\definefont[RotFont][RegularBold]}
+   \stopMPenvironment
+   \MPtoks\emptytoks
+   \resetMPdrawing
+   \startMPdrawing
+     \includeMPgraphic{followtokens} ;
+     picture pic[] ; numeric len[], n ; n := 0 ;
+   \stopMPdrawing
+   \handletokens#1\with\processfollowingtoken
+   \startMPdrawing
+     if unknown RotPath  : path    RotPath  ; RotPath  := origin ; fi ;
+     if unknown RotColor : color   RotColor ; RotColor := black  ; fi ;
+     if unknown TraceRot : boolean TraceRot ; TraceRot := false  ; fi ;
+     if unknown ExtraRot : numeric ExtraRot ; ExtraRot := 0      ; fi ;
+     numeric al, at, pl, wid, pos ; pair ap, ad ;
+     al := arclength RotPath ;
+     if al=0 :
+       al := len[n] + ExtraRot ;
+       RotPath := origin -- (al,0) ;
+     fi ;
+     if al<len[n]:
+       RotPath := RotPath scaled ((len[n]+ExtraRot)/al) ;
+       al := arclength RotPath ;
+     fi ;
+     pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
+     if TraceRot :
+       draw RotPath withpen pencircle scaled 1pt withcolor blue ;
+     fi ;
+     for i=1 upto n :
+       wid := abs(xpart urcorner pic[i] - xpart llcorner pic[i]) ;
+       pos := len[i]-wid/2 + (i-1)*pl ;
+       at := arctime   pos of RotPath ;
+       ap := point     at  of RotPath ;
+       ad := direction at  of RotPath ;
+       draw pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
+         withcolor RotColor ;
+       if TraceRot :
+         draw boundingbox
+            pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
+            withpen pencircle scaled .25pt withcolor red ;
+         draw ap
+            withpen pencircle scaled .50pt withcolor green ;
+       fi ;
+     endfor ;
+   \stopMPdrawing
+   \MPdrawingdonetrue
+   \getMPdrawing
+   \resetMPdrawing
+   \egroup}
+
+% \followtokens
+%   {This is just a dummy text, kerned by T{\kern
+%    -.1667em\lower .5ex\hbox {E}}{\kern -.125emX} and typeset
+%    in a circle using {\setMFPfont M}{\setMFPfont
+%    E}{\setMFPfont T}{\setMFPfont A}{\setMFPfont
+%    P}{\setMFPfont O}{\setMFPfont S}{\setMFPfont T}.\quad}
+
+\startuseMPgraphic{fuzzycount}
+   begingroup
+   save height, span, drift, d, cp ;
+   height := 3/ 5 * \baselinedistance ;
+   span   := 1/ 3 * height ;
+   drift  := 1/10 * height ;
+   pickup pencircle scaled (1/12 * height) ;
+   def d = (uniformdeviate drift) enddef ;
+   for i := 1 upto \MPvar{n} :
+     draw
+       if (i mod 5)=0 : ((-d-4.5span,d)--(+d-0.5span,height-d))
+       else           : ((-d,+d)--(+d,height-d)) fi
+       shifted (span*i,d-drift) ;
+   endfor;
+   picture cp ; cp := currentpicture ; % for readability
+   setbounds currentpicture to
+     (llcorner cp shifted (0,-ypart llcorner cp) --
+      lrcorner cp shifted (0,-ypart lrcorner cp) --
+      urcorner cp -- ulcorner cp -- cycle) ;
+   endgroup ;
+\stopuseMPgraphic
+
+\setupMPvariables
+  [fuzzycount]
+  [n=10]
+
+\def\fuzzycount#1%
+  {{\tx\useMPgraphic{fuzzycount}{n=#1}}}
+
+\defineconversion[fuzzy][\fuzzycount]
+
+%%%%%%%
+
+\setupMPvariables
+  [EnglishRule]
+  [height=1ex,
+   width=\the\localhsize, % without \the, problems in non e-tex
+   color=darkgray]
+
+\defineblank
+  [EnglishRule]
+  [medium]
+
+\startuniqueMPgraphic{EnglishRule}{height,width,color}
+    height = \MPvar{height} ;
+    x1 = 0 ; x3 = \MPvar{width} ; x2 = x4 = .5x3 ;
+    y1 = y3 = 0 ; y2 = -y4 = height/2 ;
+    fill z1..z2..z3 & z3..z4..z1 & cycle withcolor \MPvar{color} ;
+\stopuniqueMPgraphic
+
+\def\EnglishRule%
+  {\startlinecorrection[EnglishRule]
+   \setlocalhsize \noindent \reuseMPgraphic{EnglishRule}
+   \stoplinecorrection}
+
+%D The following macro returns a tight bound character
+%D sequence.
+%D
+%D \useMPlibrary[txt]
+%D
+%D \startlinecorrection
+%D \TightText{\ss\bf 123}{0cm}{3cm}{red}
+%D \stoplinecorrection
+
+\def\TightText#1#2#3#4%
+  {\hbox % \ruledhbox
+     {\startMPcode
+        picture p ; p := image (graphictext "#1" withfillcolor red) ;
+        draw p xsized #2 ysized #3 withcolor \MPcolor{#4} ;
+      \stopMPcode}}
+
+\protect \endinput
