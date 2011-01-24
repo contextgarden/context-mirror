@@ -1,0 +1,10 @@
+% yes or no
+
+\unprotect
+
+\startsetups defaults:frontpart:pagenumbers:roman
+    \definestructureconversionset[\c!frontpart:\c!pagenumber][][romannumerals]
+    \setupuserpagenumber[\c!way=\v!byblock]
+\stopsetups
+
+\protect
